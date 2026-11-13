@@ -1,0 +1,16 @@
+<%#
+  Лентата „Потвърдете имейла“ (src/accounts/tokens.ts): докато имейлът на вписания не е потвърден, и
+  резултатът от „Изпрати отново“. Без JavaScript — обикновена форма.
+%>
+<% if (currentUser && !locals.hideVerifyBar && (!currentUser.emailVerified || locals.verifyNotice)) { %>
+<div class="verify-bar" role="status">
+  <% if (locals.verifyNotice) { %>
+    <p><%= t('auth.verify.' + (verifyNotice === 'queued' ? 'sent' : verifyNotice)) %></p>
+  <% } else { %>
+    <form method="post" action="/app/potvardi-imeyl">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <p><%= t('auth.verify.bar', { email: currentUser.email }) %> <button type="submit" class="link"><%= t('auth.verify.resend') %></button></p>
+    </form>
+  <% } %>
+</div>
+<% } %>

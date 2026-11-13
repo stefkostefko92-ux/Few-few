@@ -55,3 +55,37 @@ test('кантора: 3 фирми безплатно, после 4 € на ф�
   assert.equal(firmMonthlyCents(firm, 10), 2800);
   assert.throws(() => firmMonthlyCents(firm, -1));
 });
+
+test('формата на плана: неотметната отметка е „не“, а не грешка („Открояван“)', async () => {
+  const { PlanForm } = await import('../src/admin/plan-form.js');
+  const base = {
+    nameBg: 'Безплатен',
+    nameEn: 'Free',
+    priceMonthly: '0.00',
+    priceYearly: '0,00',
+    perClientCompany: '',
+    includedClientCompanies: '',
+    maxUsers: '1',
+    maxCompanies: '1',
+    monthlyDocumentSoftLimit: '10',
+    sortOrder: '10',
+  };
+  // Браузърът не праща неотметнатите отметки — нито една.
+  const none = PlanForm.safeParse(base);
+  assert.ok(none.success, JSON.stringify(none.error?.issues));
+  assert.equal(none.data.highlighted, false);
+  assert.equal(none.data.isPublic, false);
+  assert.equal(none.data.isActive, false);
+  assert.deepEqual(none.data.features, []);
+  const all = PlanForm.parse({ ...base, highlighted: 'on', isPublic: 'on', isActive: 'on' });
+  assert.deepEqual([all.highlighted, all.isPublic, all.isActive], [true, true, true]);
+  assert.equal(all.priceYearly, 0);
+  // Цените — цели центове, без float.
+  const cents = (value: string) => PlanForm.parse({ ...base, priceMonthly: value }).priceMonthly;
+  assert.equal(cents('9.5'), 950);
+  assert.equal(cents('0,01'), 1);
+  assert.equal(cents('19.99'), 1999);
+  assert.equal(cents('1234567.89'), 123456789);
+  assert.equal(cents(''), null);
+  assert.ok(!PlanForm.safeParse({ ...base, highlighted: 'yes' }).success);
+});

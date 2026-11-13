@@ -91,3 +91,12 @@ export function sealHmac(content: string): string {
 export function auditHmac(content: string): string {
   return createHmac('sha256', derived('audit-seal-v1')).update(content, 'utf8').digest('hex');
 }
+
+/**
+ * Токенът на връзка по имейл (нова парола, потвърждение на имейла), докато чака в опашката с писма.
+ * В UserToken е само хешът му; тук е шифрован и вързан с id-то на реда.
+ */
+export const encryptUserToken = (token: string, tokenId: string): string =>
+  encrypt('user-token-v1', token, `user-token:${tokenId}`);
+export const decryptUserToken = (payload: string, tokenId: string): string =>
+  decrypt('user-token-v1', payload, `user-token:${tokenId}`);

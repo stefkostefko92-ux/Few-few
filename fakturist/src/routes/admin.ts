@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { z } from 'zod';
 import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { HttpError, requireMaster, requireUser } from '../auth/guards.js';
@@ -11,48 +10,14 @@ import {
   PAGE_SIZE,
   resourceBySlug,
 } from '../admin/registry.js';
-import { FEATURES, FEATURE_GROUPS, isFeatureCode } from '../features.js';
+import { FEATURES, FEATURE_GROUPS } from '../features.js';
 import { invalidatePublicPlans } from '../billing/public-plans.js';
 import { money } from '../http/view.js';
 import { transferStatus } from '../accounts/transfer.js';
 import { ownershipReviewQueue } from '../accounts/ownership.js';
 import { adminSettingsRouter } from './admin-settings.js';
 import { adminActionsRouter } from './admin-actions.js';
-
-/** Цена от формата на панела: „9,00“ → 900 цента; празно → null („по договор“). */
-const centsField = z
-  .string()
-  .trim()
-  .transform((value) => value.replace(',', '.'))
-  .refine((value) => value === '' || /^\d{1,7}(\.\d{1,2})?$/.test(value), 'invalidAmount')
-  .transform((value) => (value === '' ? null : Math.round(Number(value) * 100)));
-const intField = z
-  .string()
-  .trim()
-  .refine((value) => value === '' || /^\d{1,7}$/.test(value), 'invalidNumber')
-  .transform((value) => (value === '' ? null : Number(value)));
-const checkbox = z.union([z.literal('on'), z.undefined()]).transform((value) => value === 'on');
-
-const PlanForm = z.object({
-  nameBg: z.string().trim().min(1).max(60),
-  nameEn: z.string().trim().min(1).max(60),
-  priceMonthly: centsField,
-  priceYearly: centsField,
-  perClientCompany: centsField,
-  includedClientCompanies: intField,
-  maxUsers: intField,
-  maxCompanies: intField,
-  monthlyDocumentSoftLimit: intField,
-  sortOrder: z.coerce.number().int().min(0).max(1000),
-  highlighted: checkbox,
-  isPublic: checkbox,
-  isActive: checkbox,
-  features: z
-    .union([z.string(), z.array(z.string())])
-    .optional()
-    .transform((value) => (value === undefined ? [] : Array.isArray(value) ? value : [value]))
-    .refine((codes) => codes.every(isFeatureCode), 'unknownFeature'),
-});
+import { PlanForm } from '../admin/plan-form.js';
 
 export function adminRouter(): Router {
   const router = Router();

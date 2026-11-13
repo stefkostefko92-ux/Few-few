@@ -31,9 +31,12 @@ export function errorMessage(error: unknown): string {
 }
 
 /**
- * Пътят на заявката за лога: без заявката (`?…`) и без токена от връзката на покана — токенът в адреса е
- * ключ за достъп и не трябва да остава в логовете.
+ * Пътят на заявката за лога: без заявката (`?…`) и без токена от връзката на покана, за нова парола или
+ * за потвърждение на имейла — токенът в адреса е ключ за достъп и не трябва да остава в логовете.
  */
 export function safeLogPath(url: string): string {
-  return (url.split('?')[0] ?? '').replace(/^\/pokana\/[^/]+/i, '/pokana/[токен]');
+  return (url.split('?')[0] ?? '').replace(
+    /^\/(pokana|nova-parola|potvardi-imeyl)\/[^/]+/i,
+    (_match, prefix: string) => `/${prefix.toLowerCase()}/[токен]`,
+  );
 }

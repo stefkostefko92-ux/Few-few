@@ -34,4 +34,9 @@ test('токенът от връзката на покана и заявката
   assert.equal(safeLogPath('/app/o/abc?next=/x'), '/app/o/abc');
   // Express 5 не различава главни и малки букви в пътя — редакцията също.
   assert.equal(safeLogPath(`/POKANA/${token}`), '/pokana/[токен]');
+  // Връзките по имейл (SPEC 37): нова парола и потвърждение на имейла.
+  assert.equal(safeLogPath(`/nova-parola/${token}`), '/nova-parola/[токен]');
+  assert.equal(safeLogPath(`/Nova-Parola/${token}?x=1`), '/nova-parola/[токен]');
+  assert.equal(safeLogPath(`/potvardi-imeyl/${token}`), '/potvardi-imeyl/[токен]');
+  assert.equal(safeLogPath('/zabravena-parola'), '/zabravena-parola');
 });

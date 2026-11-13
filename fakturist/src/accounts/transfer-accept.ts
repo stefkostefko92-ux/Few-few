@@ -3,6 +3,7 @@ import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { sha256Hex } from '../crypto.js';
 import { hashPassword, passwordProblem } from '../auth/password.js';
+import { recordRegistrationAcceptance } from '../legal/acceptance.js';
 import {
   isFirmMember,
   isOpen,
@@ -125,6 +126,12 @@ export async function acceptTransferInvite(input: {
           },
         });
         userId = user.id;
+        // Новият профил прие условията и договора за обработване с отметката на поканата (SPEC 35).
+        await recordRegistrationAcceptance(tx, {
+          userId,
+          organizationId: invite.organizationId,
+          now,
+        });
       } else {
         const id = 'userId' in input.user ? input.user.userId : '';
         const user = await tx.user.findUnique({ where: { id } });

@@ -27,6 +27,14 @@
         <li><a href="<%= appF.register %>"><%= t('site.cta.register') %></a></li>
 <% } -%>
         <li><a href="<%= appF.login %>"><%= t('site.cta.login') %></a></li>
+        <li><a href="/prilozhenie<%= lang === 'en' ? '?lang=en' : '' %>"><%= t('install.nav') %></a></li>
+      </ul>
+    </nav>
+    <nav class="foot-legal" aria-label="<%= t('legal.navLabel') %>">
+      <ul>
+        <li><a href="<%= legalUrl('terms') %>"><%= t('legal.terms.title') %></a></li>
+        <li><a href="<%= legalUrl('privacy') %>"><%= t('legal.privacy.title') %></a></li>
+        <li><a href="<%= legalUrl('dpa') %>"><%= t('legal.dpa.title') %></a></li>
       </ul>
     </nav>
     <nav class="foot-lang" aria-label="<%= t('site.lang.label') %>">

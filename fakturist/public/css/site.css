@@ -6,27 +6,30 @@
 :root {
   color-scheme: light dark;
 
-  --paper: #f4f5f7;
+  /* Палитра от логото: navy #0c1929 и тюркоаз #05a699. Тюркоазът е 3,03:1 върху бяло — само за
+     линии и акценти (--brand); за текст и бутони светлата тема ползва #03756c (5,15:1 върху хартията). */
+  --paper: #f4f6f8;
   --sheet: #ffffff;
-  --tint: #eaedf1;
-  --ink: #131722;
-  --ink-2: #485064;
-  --rule: #cfd4dd;
-  --accent: #0b6b52;
+  --tint: #e8edf2;
+  --ink: #0c1929;
+  --ink-2: #44546a;
+  --rule: #cdd5de;
+  --brand: #05a699;
+  --accent: #03756c;
   --accent-ink: #ffffff;
-  --accent-soft: #e1f0ea;
-  --focus: #0b6b52;
+  --accent-soft: #dff3f0;
+  --focus: #03756c;
 
   /* Тъмният панел с XML е тъмен и в двете теми: едно смело място на страницата. */
-  --code-bg: #10151f;
-  --code-ink: #e6e9f2;
-  --code-dim: #9aa3b5;
+  --code-bg: #08111d;
+  --code-ink: #e6ecf3;
+  --code-dim: #9fb0c3;
   --code-tag: #93b4f5;
   --code-val: #f0cf8e;
-  --code-bt: #6fd3b1;
-  --code-rule: #283046;
-  --on-code-accent: #6fd3b1;
-  --on-code-accent-ink: #07140f;
+  --code-bt: #2cc5b5;
+  --code-rule: #22344a;
+  --on-code-accent: #2cc5b5;
+  --on-code-accent-ink: #0c1929;
 
   --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
@@ -45,16 +48,17 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #0e121a;
-    --sheet: #171c28;
-    --tint: #121723;
-    --ink: #e8eaf0;
-    --ink-2: #a5adbd;
-    --rule: #2b3243;
-    --accent: #5cc6a4;
-    --accent-ink: #06130f;
-    --accent-soft: #14282a;
-    --focus: #8fe0c4;
+    --paper: #0c1929;
+    --sheet: #111e2e;
+    --tint: #0f1c2c;
+    --ink: #e9eff5;
+    --ink-2: #a3b3c4;
+    --rule: #26374b;
+    --brand: #2cc5b5;
+    --accent: #2cc5b5;
+    --accent-ink: #0c1929;
+    --accent-soft: #0f2e36;
+    --focus: #2cc5b5;
   }
 }
 
@@ -249,8 +253,9 @@ a {
 /* Горна лента */
 
 .top {
+  border-top: 3px solid var(--brand);
   border-bottom: 1px solid var(--rule);
-  background: var(--paper);
+  background: var(--sheet);
 }
 
 .top-row {
@@ -258,7 +263,7 @@ a {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.25rem 1.5rem;
-  padding-block: 0.7rem;
+  padding-block: 0.6rem;
 }
 
 .brand {
@@ -269,14 +274,20 @@ a {
   color: var(--ink);
 }
 
-.brand-mark {
-  color: var(--ink);
+.logo {
+  display: block;
+  min-width: 0;
 }
 
-.brand-name {
-  font-size: 1.2rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+.logo img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.brand {
+  min-width: 0;
+  padding-block: 0.15rem;
 }
 
 .nav {
@@ -1428,8 +1439,12 @@ figcaption {
 
 @media (min-width: 52rem) {
   .foot-grid {
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
   }
+}
+
+.foot {
+  border-top-color: var(--brand);
 }
 
 .foot-name {
@@ -1485,6 +1500,141 @@ figcaption {
 .foot-credit a {
   font-weight: 600;
   color: var(--ink);
+}
+
+/* Правни страници: удобен за четене текст, мярка ~70 знака */
+
+.legal {
+  padding-block: clamp(2rem, 5vw, 3.5rem) clamp(2.5rem, 6vw, 4.5rem);
+}
+
+.legal-head,
+.legal-body,
+.legal-others {
+  max-width: 46rem;
+}
+
+.legal-head {
+  margin-bottom: 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 2px solid var(--ink);
+}
+
+.legal-head h1 {
+  max-width: 24ch;
+}
+
+.legal-meta {
+  margin: 0.75rem 0 0;
+  font-size: var(--step--1);
+  color: var(--ink-2);
+}
+
+.legal-body {
+  font-size: var(--step-0);
+  line-height: 1.7;
+}
+
+.legal-body p,
+.legal-body li {
+  max-width: 70ch;
+}
+
+.legal-body h2 {
+  margin: 2.5rem 0 0.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+  scroll-margin-top: 1rem;
+}
+
+.legal-body h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.legal-body h3 {
+  margin: 1.75rem 0 0.5rem;
+}
+
+.legal-body ul,
+.legal-body ol {
+  margin: 0 0 1em;
+  padding-left: 1.4rem;
+}
+
+.legal-body li {
+  padding: 0.15rem 0;
+}
+
+.legal-body li::marker {
+  color: var(--accent);
+}
+
+.legal-body a,
+.legal-others a {
+  color: var(--accent);
+  text-underline-offset: 0.2em;
+}
+
+.legal-body code {
+  padding: 0.05em 0.35em;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--tint);
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  overflow-wrap: anywhere;
+}
+
+.legal-body .table-wrap {
+  margin: 1.25rem 0 1.5rem;
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+  background: var(--sheet);
+}
+
+.legal-body table {
+  width: 100%;
+  min-width: 30rem;
+  border-collapse: collapse;
+  font-size: var(--step--1);
+  line-height: 1.5;
+}
+
+.legal-body th,
+.legal-body td {
+  padding: 0.6rem 0.8rem;
+  border-top: 1px solid var(--rule);
+  text-align: left;
+  vertical-align: top;
+}
+
+.legal-body thead th {
+  border-top: 0;
+  border-bottom: 2px solid var(--ink);
+  background: var(--tint);
+  font-weight: 600;
+}
+
+.legal-others {
+  margin-top: 3rem;
+  padding-top: 1.25rem;
+  border-top: 2px solid var(--ink);
+}
+
+.legal-others h2 {
+  margin-bottom: 0.5rem;
+  font-size: var(--step-1);
+}
+
+.legal-others ul {
+  list-style: none;
+}
+
+.legal-others li a {
+  display: inline-block;
+  padding: 0.3rem 0;
 }
 
 /* Движение: едно оркестрирано появяване на XML, само веднъж и само ако се позволява */

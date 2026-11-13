@@ -51,6 +51,8 @@ before(async () => {
     legalName: 'Кантора ООД',
     eik: '121604974',
   });
+  // Писмата за потвърждение на имейла от регистрациите (SPEC 38) не са предмет тук — опашката е за шкафчето.
+  await prisma.notification.deleteMany({ where: { kind: 'account.verifyEmail' } });
 });
 
 after(async () => {

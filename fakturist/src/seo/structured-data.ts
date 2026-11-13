@@ -21,7 +21,7 @@ export function faqItems(
   return items;
 }
 
-function organization(base: string): Json {
+export function organization(base: string): Json {
   return {
     '@type': 'Organization',
     '@id': `${COMPANY.url}/#organization`,
@@ -45,7 +45,7 @@ function organization(base: string): Json {
   };
 }
 
-function website(base: string, locale: Locale): Json {
+export function website(base: string, locale: Locale): Json {
   return {
     '@type': 'WebSite',
     '@id': `${base}/#website`,

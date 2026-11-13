@@ -17,6 +17,7 @@ import { pageUrl, SITE_PAGES, type SitePageId } from '../src/seo/pages.js';
 import { faqItems, structuredData } from '../src/seo/structured-data.js';
 import { translator, type Locale } from '../src/i18n.js';
 import { ROOT } from '../src/paths.js';
+import { legalPath, type LegalDocumentId } from '../src/legal/documents.js';
 
 const args = process.argv.slice(2);
 const noShots = args.includes('--no-shots');
@@ -36,6 +37,7 @@ function commonLocals(locale: Locale): Record<string, unknown> {
     lang: locale,
     htmlLang: locale,
     t,
+    legalUrl: (id: LegalDocumentId): string => legalPath(id, locale),
     brand: BRAND,
     company: COMPANY,
     urls: Object.fromEntries(SITE_PAGES.map((p) => [p.id, p.paths[locale]])),

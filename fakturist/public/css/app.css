@@ -1,15 +1,19 @@
 /* Приложението и мастър панелът — същите шрифтове и палитра като витрината (site.css), по-плътна мрежа
    за работа с документи. Без inline стилове (CSP style-src-attr 'none'). */
 :root {
-  --paper: #f4f5f7;
+  /* Палитра от логото: navy #0c1929, тюркоаз #05a699 (само линии — 3,03:1 върху бяло). Текстът и
+     бутоните на светла тема са #03756c (5,15:1 върху хартията), на тъмна — #2cc5b5 върху navy. */
+  --paper: #f4f6f8;
   --sheet: #ffffff;
-  --tint: #eaedf1;
-  --ink: #131722;
-  --ink-2: #485064;
-  --rule: #cfd4dd;
-  --accent: #0b6b52;
+  --tint: #e8edf2;
+  --ink: #0c1929;
+  --ink-2: #44546a;
+  --rule: #cdd5de;
+  --field-line: #718096;
+  --brand: #05a699;
+  --accent: #03756c;
   --accent-ink: #ffffff;
-  --accent-soft: #e1f0ea;
+  --accent-soft: #dff3f0;
   --warn-bg: #fdf3e1;
   --warn-ink: #6b4300;
   --bad-bg: #fbe7e5;
@@ -22,15 +26,17 @@
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #0e121a;
-    --sheet: #171c28;
-    --tint: #121723;
-    --ink: #e8eaf0;
-    --ink-2: #a5adbd;
-    --rule: #2b3243;
-    --accent: #5cc6a4;
-    --accent-ink: #07140f;
-    --accent-soft: #15302a;
+    --paper: #0c1929;
+    --sheet: #111e2e;
+    --tint: #0f1c2c;
+    --ink: #e9eff5;
+    --ink-2: #a3b3c4;
+    --rule: #26374b;
+    --field-line: #6f8399;
+    --brand: #2cc5b5;
+    --accent: #2cc5b5;
+    --accent-ink: #0c1929;
+    --accent-soft: #0f2e36;
     --warn-bg: #33270f;
     --warn-ink: #f0cf8e;
     --bad-bg: #3a1714;
@@ -62,7 +68,7 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
 h1,
@@ -126,21 +132,24 @@ code {
   padding: 0.75rem max(16px, env(safe-area-inset-right, 0px)) 0.75rem
     max(16px, env(safe-area-inset-left, 0px));
   background: var(--sheet);
+  border-top: 3px solid var(--brand);
   border-bottom: 1px solid var(--rule);
 }
 .mark {
-  font-weight: 600;
   color: var(--ink);
   text-decoration: none;
   display: inline-flex;
-  gap: 0.6rem;
-  align-items: baseline;
+  align-items: center;
+  min-width: 0;
 }
-.mark-no {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: var(--accent);
-  letter-spacing: 0.04em;
+.logo {
+  display: block;
+  min-width: 0;
+}
+.logo img {
+  display: block;
+  max-width: 100%;
+  height: auto;
 }
 .bar nav {
   display: flex;
@@ -174,6 +183,26 @@ code {
   color: var(--warn-ink);
 }
 
+/* Лентата „Потвърдете имейла“ (views/partials/verify-bar.ejs): дългият имейл се пренася. */
+.verify-bar {
+  padding: 0.6rem max(16px, env(safe-area-inset-left, 0px));
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+  border-bottom: 1px solid var(--rule);
+}
+.verify-bar form {
+  margin: 0;
+}
+.verify-bar p {
+  max-width: 72rem;
+  margin: 0 auto;
+  overflow-wrap: anywhere;
+}
+.verify-bar button.link {
+  color: inherit;
+  font-weight: 600;
+}
+
 .wrap {
   flex: 1;
   width: 100%;
@@ -192,14 +221,23 @@ code {
   max-width: 28rem;
 }
 .foot {
+  border-top: 1px solid var(--brand);
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 0.5rem 1.5rem;
   padding: 1rem max(16px, env(safe-area-inset-left, 0px));
-  border-top: 1px solid var(--rule);
   color: var(--ink-2);
   font-size: 0.85rem;
+}
+.foot-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1rem 1.1rem;
+}
+.foot-links a,
+.foot a {
+  padding: 0.25rem 0;
 }
 
 /* Форми */
@@ -234,11 +272,16 @@ textarea {
   font: inherit;
   color: var(--ink);
   background: var(--paper);
-  border: 1px solid var(--rule);
+  border: 1px solid var(--field-line);
   border-radius: var(--radius);
   padding: 0.5rem 0.6rem;
   min-width: 0;
   width: 100%;
+}
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  border-color: var(--accent);
 }
 input.mono {
   font-family: var(--font-mono);
@@ -250,9 +293,15 @@ input.mono {
   align-items: baseline;
   flex-wrap: wrap;
 }
+.radio,
+.check:not(:has(.hint)) {
+  flex-wrap: nowrap;
+}
 .check input,
 .radio input {
   width: auto;
+  flex: none;
+  accent-color: var(--accent);
 }
 .check .hint {
   flex-basis: 100%;
@@ -323,7 +372,11 @@ button.big {
 .error-box {
   padding: 0.7rem 0.9rem;
   border-radius: var(--radius);
+  border-left: 4px solid currentColor;
   margin: 0 0 1rem;
+}
+.ok {
+  border-left-color: var(--brand);
 }
 .error,
 .error-box {
@@ -525,6 +578,127 @@ dd {
     transition: none !important;
     animation: none !important;
   }
+}
+
+/* Вход, регистрация, нова парола: една спретната карта по средата */
+main > section.narrow {
+  width: 100%;
+  margin: clamp(0rem, 3vw, 1.5rem) auto 0;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--brand);
+  border-radius: var(--radius);
+}
+main > section.narrow h1 {
+  margin-bottom: 1.25rem;
+}
+main > section.narrow > p:last-child {
+  margin: 1.5rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+}
+main > section.narrow fieldset {
+  background: transparent;
+}
+main > section.narrow button[type='submit'] {
+  justify-self: stretch;
+  padding: 0.7rem 1.1rem;
+  text-align: center;
+}
+main > section.narrow .check input {
+  flex: none;
+}
+.has-error input {
+  border-width: 2px;
+}
+
+/* Страницата „Инсталирай приложението“ */
+.install {
+  max-width: 44rem;
+}
+.install .lead {
+  max-width: 60ch;
+  margin: 0 0 1.5rem;
+  font-size: 1.1rem;
+  line-height: 1.55;
+}
+.install-ready {
+  display: grid;
+  gap: 0.6rem;
+  justify-items: start;
+  background: var(--accent-soft);
+  color: var(--ink);
+  border-left-color: var(--brand);
+}
+.install-ready[hidden],
+.install [hidden] {
+  display: none;
+}
+.install-ready p {
+  margin: 0;
+}
+.install-list {
+  display: grid;
+  gap: 0.6rem;
+  margin: 1.5rem 0;
+}
+details.install-os {
+  padding: 0;
+}
+details.install-os summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+  padding: 0.85rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+details.install-os summary::-webkit-details-marker {
+  display: none;
+}
+details.install-os summary::after {
+  content: '+';
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+details.install-os[open] summary::after {
+  content: '\2212';
+}
+details.install-os[open] summary {
+  border-bottom: 1px solid var(--rule);
+}
+details.install-os ol {
+  margin: 0;
+  padding: 0.85rem 1rem 1rem 2.6rem;
+  display: grid;
+  gap: 0.5rem;
+}
+details.install-os li::marker {
+  color: var(--accent);
+  font-weight: 600;
+}
+.badge {
+  display: inline-block;
+  padding: 0.05rem 0.55rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+.install .panel ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+.install .panel li {
+  padding: 0.15rem 0;
 }
 
 /* Шкафче и пълномощни */

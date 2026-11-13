@@ -1,0 +1,7 @@
+<%#
+  Логото (assets/logo-source.webp → `node scripts/brand-assets.mjs`): светлият вариант с тъмносин текст,
+  тъмният — със светъл, по темата на системата. `height` — височината в px; ширината е по пропорцията
+  на логото (1713 × 397). Картинката е 128 px висока — остра до 4x при 32 px.
+%>
+<% const h = locals.height || 32; const w = Math.round(h * 1713 / 397); %>
+<picture class="logo"><source srcset="/img/brand/logo-dark.webp?v=<%= v %>" media="(prefers-color-scheme: dark)" type="image/webp"><source srcset="/img/brand/logo.webp?v=<%= v %>" type="image/webp"><img src="/img/brand/logo.png?v=<%= v %>" width="<%= w %>" height="<%= h %>" alt="<%= lang === 'bg' ? brand.name : brand.nameLatin %>"></picture>

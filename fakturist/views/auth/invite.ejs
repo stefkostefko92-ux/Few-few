@@ -39,7 +39,7 @@
       <label><%= t('auth.email') %><input type="email" value="<%= invite.email %>" autocomplete="username" readonly></label>
       <label<%= errors.password ? ' class="has-error"' : '' %>><%= t('auth.password') %><input type="password" name="password" autocomplete="new-password" minlength="12" required aria-describedby="pw-help"<%= errors.password ? ' aria-invalid="true"' : '' %>><span class="hint" id="pw-help"><%= t('auth.passwordHelp') %></span></label>
       <% if (mandateBox) { %><label class="check"><input type="checkbox" name="confirmMandate"> <%= t('auth.invite.confirmMandate', { firm: m.firm.legalName }) %><span class="hint"><%= t('auth.invite.confirmMandateHint') %></span></label><% } %>
-      <label class="check<%= errors.acceptTerms ? ' has-error' : '' %>"><input type="checkbox" name="acceptTerms" required> <%= t('auth.acceptTerms') %></label>
+      <%- include('../partials/legal-accept', { orgName: invite.organization.legalName, invalid: Boolean(errors.acceptTerms) }) %>
       <button type="submit"><%= t('auth.invite.create') %></button>
     </form>
   <% } %>

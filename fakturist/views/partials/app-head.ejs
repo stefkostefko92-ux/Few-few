@@ -5,19 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title><%= title %> · <%= lang === 'bg' ? brand.name : brand.nameLatin %></title>
-<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<%- include('pwa-head') %>
 <link rel="stylesheet" href="/fonts/fonts.css?v=<%= v %>">
 <link rel="stylesheet" href="/css/app.css?v=<%= v %>">
-</head>
+<script src="/js/app.js?v=<%= v %>" defer></script>
+<% for (const script of (locals.scripts || [])) { %><script src="/js/<%= script %>.js?v=<%= v %>" defer></script>
+<% } %></head>
 <body class="app">
 <a class="skip" href="#main"><%= lang === 'bg' ? 'Към съдържанието' : 'Skip to content' %></a>
 <header class="bar">
-  <a class="mark" href="<%= currentUser ? '/app' : '/' %>"><span class="mark-no" aria-hidden="true">0000000001</span> <%= lang === 'bg' ? brand.name : brand.nameLatin %></a>
+  <a class="mark" href="<%= currentUser ? '/app' : '/' %>"><%- include('logo', { height: 32 }) %></a>
   <% if (currentUser) { %>
   <nav aria-label="<%= lang === 'bg' ? 'Основно' : 'Main' %>">
     <a href="/app"<%= path === '/app' ? ' aria-current="page"' : '' %>><%= t('app.nav.companies') %></a>
     <a href="/app/sigurnost"<%= path.startsWith('/app/sigurnost') ? ' aria-current="page"' : '' %>><%= t('app.nav.security') %></a>
     <% if (currentUser.platformRole === 'MASTER') { %><a href="/admin"<%= path.startsWith('/admin') ? ' aria-current="page"' : '' %>><%= t('app.nav.admin') %></a><% } %>
+    <a href="/prilozhenie" data-install-link<%= path === '/prilozhenie' ? ' aria-current="page"' : '' %>><%= t('install.nav') %></a>
   </nav>
   <form method="post" action="/izhod" class="logout">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -27,4 +30,5 @@
   <% } %>
 </header>
 <% if (locals.notice) { %><p class="notice" role="status"><%= notice %></p><% } %>
+<%- include('verify-bar') %>
 <main id="main" class="wrap">

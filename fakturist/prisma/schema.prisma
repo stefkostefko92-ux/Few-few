@@ -101,16 +101,18 @@ model User {
 
   sessions         Session[]
   memberships      Membership[]
-  issuedDocuments  Document[]       @relation("IssuedBy")
+  issuedDocuments  Document[]        @relation("IssuedBy")
   auditEntries     AuditLog[]
   inboxDecisions   InboxEntry[]
   mandatesCreated  ClientMandate[]
   settingsChanged  Setting[]
   flagsChanged     FeatureFlag[]
   integrations     Integration[]
-  invitesCreated   TransferInvite[] @relation("InviteCreatedBy")
-  invitesAccepted  TransferInvite[] @relation("InviteAcceptedBy")
+  invitesCreated   TransferInvite[]  @relation("InviteCreatedBy")
+  invitesAccepted  TransferInvite[]  @relation("InviteAcceptedBy")
   pdfStylesChanged PdfStyle[]
+  tokens           UserToken[]
+  legalAcceptances LegalAcceptance[]
 
   @@index([platformRole])
 }
@@ -169,22 +171,23 @@ model Organization {
   createdByFirm        Organization?    @relation("CreatedByFirm", fields: [createdByFirmId], references: [id], onDelete: SetNull)
   createdClients       Organization[]   @relation("CreatedByFirm")
 
-  memberships     Membership[]
-  firmMandates    ClientMandate[]  @relation("Firm")
-  clientMandates  ClientMandate[]  @relation("Client")
-  parties         Party[]
-  items           Item[]
-  series          DocumentSeries[]
-  documents       Document[]       @relation("DocumentOwner")
-  documentsAsFirm Document[]       @relation("DocumentFirm")
-  subscriptions   Subscription[]
-  payments        Payment[]
-  auditEntries    AuditLog[]
-  inboxReceived   InboxEntry[]     @relation("InboxRecipient")
-  inboxSent       InboxEntry[]     @relation("InboxSender")
-  notifications   Notification[]
-  transferInvites TransferInvite[]
-  pdfStyle        PdfStyle?
+  memberships      Membership[]
+  firmMandates     ClientMandate[]   @relation("Firm")
+  clientMandates   ClientMandate[]   @relation("Client")
+  parties          Party[]
+  items            Item[]
+  series           DocumentSeries[]
+  documents        Document[]        @relation("DocumentOwner")
+  documentsAsFirm  Document[]        @relation("DocumentFirm")
+  subscriptions    Subscription[]
+  payments         Payment[]
+  auditEntries     AuditLog[]
+  inboxReceived    InboxEntry[]      @relation("InboxRecipient")
+  inboxSent        InboxEntry[]      @relation("InboxSender")
+  notifications    Notification[]
+  transferInvites  TransferInvite[]
+  pdfStyle         PdfStyle?
+  legalAcceptances LegalAcceptance[]
 
   @@index([kind])
   @@index([legalName])
@@ -592,7 +595,7 @@ model PdfStyle {
   /// classic | band | compact
   template       String       @default("classic")
   /// #rrggbb, с достатъчен контраст върху бяло (WCAG 4.5:1).
-  accent         String       @default("#0b6b52")
+  accent         String       @default("#03756c")
   /// left | right
   logoPosition   String       @default("left")
   updatedAt      DateTime     @updatedAt
@@ -600,4 +603,44 @@ model PdfStyle {
   updatedBy      User?        @relation(fields: [updatedById], references: [id], onDelete: SetNull)
 
   @@index([updatedById])
+}
+
+enum UserTokenPurpose {
+  PASSWORD_RESET
+  EMAIL_VERIFY
+}
+
+/// Еднократните връзки по имейл — нова парола и потвърждение на имейла (src/accounts/tokens.ts). В базата е
+/// само SHA-256 на токена; самият токен е в писмото (в опашката — шифрован и вързан с id-то).
+model UserToken {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose   UserTokenPurpose
+  tokenHash String           @unique
+  /// Адресът, до който е пратена връзката: потвърждението важи само докато профилът е със същия имейл.
+  email     String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, purpose, createdAt])
+}
+
+/// Приетите правни документи (src/legal/documents.ts) — само добавяне: кой, кой документ, коя версия,
+/// кога и за коя фирма. Остава и след изтриване на профила или фирмата (доказателство).
+model LegalAcceptance {
+  id             String        @id @default(cuid())
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  /// terms | privacy | dpa
+  document       String
+  /// Датата на версията (`LEGAL_DOCUMENTS[document].version`).
+  version        String
+  acceptedAt     DateTime      @default(now())
+
+  @@index([userId])
+  @@index([organizationId])
 }

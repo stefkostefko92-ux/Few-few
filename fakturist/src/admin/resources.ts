@@ -269,4 +269,25 @@ export const ADMIN_RESOURCES: AdminResource[] = [
     hidden: ['tokenHash'],
     orderBy: { createdAt: 'desc' },
   },
+  {
+    model: 'UserToken',
+    slug: 'user-tokens',
+    group: 'accounts',
+    label: { bg: 'Връзки по имейл', en: 'Email links' },
+    columns: ['userId', 'purpose', 'createdAt', 'expiresAt', 'usedAt'],
+    search: ['userId'],
+    // Хешът е ключ за достъп до профила; адресът е личен — в панела се вижда профилът, не писмото.
+    hidden: ['tokenHash', 'email'],
+    orderBy: { createdAt: 'desc' },
+  },
+  {
+    model: 'LegalAcceptance',
+    slug: 'legal-acceptances',
+    group: 'accounts',
+    label: { bg: 'Приети условия', en: 'Accepted terms' },
+    columns: ['userId', 'organizationId', 'document', 'version', 'acceptedAt'],
+    search: ['userId', 'organizationId'],
+    hidden: [],
+    orderBy: { acceptedAt: 'desc' },
+  },
 ];

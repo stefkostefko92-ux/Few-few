@@ -1,0 +1,13 @@
+<%- include('../partials/app-head', { title: t('auth.reset.title') }) %>
+<section class="narrow">
+  <h1><%= t('auth.reset.title') %></h1>
+  <p class="muted"><%= t('auth.reset.lead', { email }) %></p>
+  <% if (error) { %><p class="error" role="alert"><%= tOr('auth.errors.' + error, t('auth.errors.invalid')) %></p><% } %>
+  <form method="post" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="email" name="username" autocomplete="username" value="<%= email %>" hidden>
+    <label<%= error ? ' class="has-error"' : '' %>><%= t('auth.reset.password') %><input type="password" name="password" autocomplete="new-password" minlength="12" required aria-describedby="pw-help"><span class="hint" id="pw-help"><%= t('auth.passwordHelp') %></span></label>
+    <button type="submit"><%= t('auth.reset.save') %></button>
+  </form>
+</section>
+<%- include('../partials/app-foot') %>

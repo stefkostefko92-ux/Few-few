@@ -1,0 +1,50 @@
+{
+  "title": "Install the app",
+  "nav": "App",
+  "link": "Install Fakturist on your phone or computer",
+  "lead": "Put Fakturist on the home screen of your phone, tablet or computer: it opens with one tap, in its own window, without the browser bars.",
+  "installed": "You are already using the installed app.",
+  "ready": "This browser can install it right away.",
+  "button": "Install the app",
+  "done": "The app is installed: you will find it on the home screen or among the computer's applications.",
+  "iosNote": "On iPhone and iPad there is no install button: Apple allows it only from the Share menu. Three taps are enough.",
+  "iosButton": "Show how to add it",
+  "samsungNote": "From Samsung Internet the app is installed in a way that Android marks as unsafe. Install it from Chrome: it is the same app, without warnings.",
+  "samsungInstalled": "If you have already installed it from Samsung Internet, remove it from the home screen and install it again from Chrome.",
+  "samsungOpen": "Open in Chrome",
+  "yourDevice": "Your device",
+  "android": {
+    "title": "Android",
+    "s1": "Open Fakturist in Chrome (recommended) or Edge.",
+    "s2": "Tap the ⋮ menu at the top right.",
+    "s3": "Tap “Install app” or “Add to Home screen” and confirm.",
+    "s4": "The Fakturist icon is among your apps and opens in its own window."
+  },
+  "ios": {
+    "title": "iPhone and iPad",
+    "s1": "Open Fakturist in Safari (from iOS 16.4 also in Chrome or Edge).",
+    "s2": "Tap Share — the square with the arrow pointing up.",
+    "s3": "Scroll and tap “Add to Home Screen”.",
+    "s4": "If there is an “Open as Web App” option, leave it on and tap “Add”."
+  },
+  "pc": {
+    "title": "Computer with Chrome or Edge (Windows, Mac, Linux)",
+    "s1": "Use the “Install the app” button above, when it is there.",
+    "s2": "Or click the install icon on the right of the address bar (a screen with an arrow).",
+    "s3": "Confirm with “Install”: Fakturist opens in its own window and stays in the Start menu, the Dock or among your applications.",
+    "s4": "The desktop icon appears by itself or from the window's menu."
+  },
+  "mac": {
+    "title": "Mac with Safari",
+    "s1": "Open Fakturist in Safari (macOS Sonoma or later).",
+    "s2": "From the File menu choose “Add to Dock”.",
+    "s3": "Fakturist opens from the Dock in its own window, without the Safari bars."
+  },
+  "firefox": "Firefox on a computer does not install web apps: use Chrome, Edge or Safari on a Mac. On Android Firefox installs it from the ⋮ menu.",
+  "whyTitle": "Why install it",
+  "why1": "One tap from the home screen or the desktop, like your other apps.",
+  "why2": "More room for the invoice: no address bar and tabs.",
+  "why3": "Always the latest version: it is Fakturist itself, there is nothing to update.",
+  "why4": "Documents stay on the server, not on the phone: without a network the app says so and waits.",
+  "back": "Back to sign-in"
+}

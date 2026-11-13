@@ -41,7 +41,7 @@
       </div>
       <%- field('iban', t('auth.iban'), 'class="mono"') %>
     </fieldset>
-    <label class="check<%= errors.acceptTerms ? ' has-error' : '' %>"><input type="checkbox" name="acceptTerms" required> <%= t('auth.acceptTerms') %></label>
+    <%- include('../partials/legal-accept', { orgName: v('legalName'), invalid: Boolean(errors.acceptTerms) }) %>
     <button type="submit"><%= t('auth.create') %></button>
   </form>
   <% } %>

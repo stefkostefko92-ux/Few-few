@@ -4,6 +4,8 @@ import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { hashPassword, passwordProblem, PASSWORD_MAX_LENGTH } from '../auth/password.js';
 import { isValidBgVat, isValidEik, normalizeVat } from '../einvoice/bg-ids.js';
+import { recordRegistrationAcceptance } from '../legal/acceptance.js';
+import { issueToken } from './tokens.js';
 
 /** Данните на фирма (своята или фирма-клиент на кантора) — проверени, преди да стигнат до базата. */
 export const OrganizationDataSchema = z
@@ -133,6 +135,14 @@ export async function register(
         targetId: organization.id,
         details: { kind: data.kind },
       });
+      // Отметката на формата: общите условия и договорът за обработване — приети, политиката —
+      // прочетена (SPEC 35); писмото за потвърждение на имейла — в същата транзакция (SPEC 38).
+      await recordRegistrationAcceptance(tx, {
+        userId: user.id,
+        organizationId: organization.id,
+        now,
+      });
+      await issueToken(tx, { userId: user.id, email: data.email, purpose: 'EMAIL_VERIFY', now });
       return { userId: user.id, organizationId: organization.id };
     });
   } catch (error) {

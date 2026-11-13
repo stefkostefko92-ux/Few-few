@@ -1,0 +1,24 @@
+{
+  "navLabel": "Legal documents",
+  "othersTitle": "Other documents",
+  "version": "In force from {date}",
+  "keywords": "Fakturist, Carbon Stealth, terms of service, privacy policy, data processing agreement, GDPR, online invoicing",
+  "terms": {
+    "title": "Terms of service",
+    "short": "Terms",
+    "metaTitle": "Terms of service — Fakturist",
+    "metaDescription": "The terms for using Fakturist: the account, plans and payment, responsibility for documents, accounting firms and mandates, termination."
+  },
+  "privacy": {
+    "title": "Privacy policy",
+    "short": "Privacy",
+    "metaTitle": "Privacy policy — Fakturist",
+    "metaDescription": "What personal data Fakturist processes, why, how long we keep it, who sees it, the cookies and your rights under the GDPR."
+  },
+  "dpa": {
+    "title": "Data processing agreement",
+    "short": "Data processing",
+    "metaTitle": "Data processing agreement — Fakturist",
+    "metaDescription": "The Art. 28 GDPR agreement between the client company (controller) and Carbon Stealth VCC (processor) for the data in invoices and contacts."
+  }
+}

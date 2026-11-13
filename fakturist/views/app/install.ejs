@@ -1,0 +1,46 @@
+<%- include('../partials/app-head', { title: t('install.title') }) %>
+<%#
+  „Инсталирай приложението“: бутонът на браузъра, когато го предлага (Chrome, Edge — install.js), и
+  стъпките за всяко устройство. Отворени са тези на устройството (`device` — от User-Agent,
+  src/pwa/device.ts); непознато устройство — всички.
+%>
+<div class="install">
+  <h1><%= t('install.title') %></h1>
+  <p class="lead"><%= t('install.lead') %></p>
+  <p class="ok" data-install-installed hidden><%= t('install.installed') %></p>
+  <div class="callout install-ready" data-install-ready hidden>
+    <p><%= t('install.ready') %></p>
+    <button type="button" data-install-now><%= t('install.button') %></button>
+  </div>
+  <p class="ok" data-install-done role="status" hidden><%= t('install.done') %></p>
+  <% if (samsung) { %><div class="callout install-ready">
+    <p><%= t('install.samsungNote') %></p>
+    <p><%= t('install.samsungInstalled') %></p>
+    <a class="button" href="<%= chromeUrl %>"><%= t('install.samsungOpen') %></a>
+  </div><% } %>
+  <div class="callout install-ready" data-install-ios<% if (device !== 'ios') { %> hidden<% } %>>
+    <p><%= t('install.iosNote') %></p>
+    <button type="button" data-install-ios-steps><%= t('install.iosButton') %></button>
+  </div>
+  <div class="install-list">
+  <% for (const [os, steps] of [['android', 4], ['ios', 4], ['pc', 4], ['mac', 3]]) { %>
+    <details class="panel install-os" data-os="<%= os %>"<% if (!device || device === os) { %> open<% } %>>
+      <summary><span><%= t('install.' + os + '.title') %></span> <span class="badge install-yours"<% if (device !== os) { %> hidden<% } %>><%= t('install.yourDevice') %></span></summary>
+      <ol>
+        <% for (let n = 1; n <= steps; n += 1) { %><li><%= t('install.' + os + '.s' + n) %></li>
+        <% } %>
+      </ol>
+    </details>
+  <% } %>
+  </div>
+  <p class="muted"><%= t('install.firefox') %></p>
+  <section class="panel">
+    <h2><%= t('install.whyTitle') %></h2>
+    <ul>
+      <% for (const n of [1, 2, 3, 4]) { %><li><%= t('install.why' + n) %></li>
+      <% } %>
+    </ul>
+  </section>
+  <% if (!currentUser) { %><p><a href="/vhod<%= lang === 'en' ? '?lang=en' : '' %>"><%= t('install.back') %></a></p><% } %>
+</div>
+<%- include('../partials/app-foot') %>

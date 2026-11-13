@@ -49,7 +49,12 @@ export function authRouter(): Router {
 
   router.get('/vhod', (req, res) => {
     if (req.principal?.verified) return res.redirect(303, '/app');
-    res.render('auth/login', { error: null, next: safeNext(req.query['next']), email: '' });
+    res.render('auth/login', {
+      error: null,
+      next: safeNext(req.query['next']),
+      email: '',
+      reset: req.query['ok'] === 'reset',
+    });
   });
 
   router.post('/vhod', limiter, async (req: Request, res: Response) => {

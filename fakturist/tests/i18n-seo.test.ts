@@ -4,6 +4,7 @@ import { keysOf, translator } from '../src/i18n.js';
 import { SITE_PAGES } from '../src/seo/pages.js';
 import { faqItems, structuredData } from '../src/seo/structured-data.js';
 import { llmsTxt, robotsTxt, sitemapXml } from '../src/routes/seo.js';
+import { LEGAL_DOCUMENT_IDS } from '../src/legal/documents.js';
 
 const BASE = 'https://fakturist.carbonstealth.eu';
 
@@ -45,7 +46,10 @@ test('sitemap: всяка страница на двата езика с hreflan
     for (const path of Object.values(page.paths))
       assert.ok(xml.includes(`<loc>${BASE}${path}</loc>`), path);
   }
-  assert.equal(xml.split('hreflang="x-default"').length - 1, SITE_PAGES.length * 2);
+  assert.equal(
+    xml.split('hreflang="x-default"').length - 1,
+    (SITE_PAGES.length + LEGAL_DOCUMENT_IDS.length) * 2,
+  );
   assert.ok(robotsTxt(BASE).includes(`Sitemap: ${BASE}/sitemap.xml`));
   assert.ok(robotsTxt(BASE).includes('Disallow: /admin/'));
   assert.ok(llmsTxt(BASE).includes(`${BASE}/e-fakturi-2028`));

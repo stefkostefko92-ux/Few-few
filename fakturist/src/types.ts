@@ -8,6 +8,8 @@ export interface SessionUser {
   platformRole: PlatformRole;
   mustChangePassword: boolean;
   totpEnabled: boolean;
+  /** Имейлът е потвърден (връзка от писмо) — иначе приложението показва лента „Потвърдете имейла“. */
+  emailVerified: boolean;
   memberships: Array<{ organizationId: string; role: MemberRole }>;
 }
 

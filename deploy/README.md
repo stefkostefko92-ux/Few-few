@@ -174,7 +174,8 @@ ZIP отпреди месец.
   `HTTP_PORT=4342`** — 4340 е на rilievi, 4341 на semki, проверено 13.11.2026), стъпките са в
   `fakturist/deploy/deploy.sh`: тайните от `/opt/few-few/shared/fakturist/.env` (600; прави ги веднъж
   `fakturist/deploy/setup-env.sh` — `POSTGRES_PASSWORD`, `JWT_SECRET`, `LEDGER_SEAL_KEY`,
-  `PUBLIC_BASE_URL`, `REGISTRATION_OPEN=false`; без тях fakturist се пропуска като „още ненастроен“),
+  `PUBLIC_BASE_URL`, `REGISTRATION_OPEN=true` — правните текстове са публикувани 13.11.2026; без тях
+  fakturist се пропуска като „още ненастроен“),
   `pg_dump` преди смяната (последните 5 в `…/fakturist/backups`), `up -d` (миграциите — от
   entrypoint-а), сонда на `/health` (`"ok":true` и маркер `"app":"fakturist"`; проверява се и че портът е
   публикуван от контейнера `app` на проекта), vhost-ът от репото щом има

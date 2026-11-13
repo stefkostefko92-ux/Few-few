@@ -55,7 +55,7 @@ export interface PdfStyleSettings {
 export const DEFAULT_PDF_STYLE = {
   font: 'dejavu-sans',
   template: 'classic',
-  accent: '#0b6b52',
+  accent: '#03756c',
   logoPosition: 'left',
 } as const satisfies PdfStyleSettings;
 

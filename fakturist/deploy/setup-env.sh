@@ -44,8 +44,8 @@ main() {
     printf 'POSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 32)"
     printf 'JWT_SECRET=%s\n' "$(openssl rand -hex 32)"
     printf 'LEDGER_SEAL_KEY=%s\n' "$(openssl rand -hex 32)"
-    # Затворена, докато правните текстове не са публикувани (SPEC.md, „Блокери преди продукция“).
-    printf 'REGISTRATION_OPEN=false\n'
+    # Правните текстове са публикувани (13.11.2026); спира се и от панела (registration.enabled).
+    printf 'REGISTRATION_OPEN=true\n'
     [ -z "$HTTP_PORT" ] || printf 'HTTP_PORT=%s\n' "$HTTP_PORT"
   } >"$tmp"
   chmod 600 "$tmp"

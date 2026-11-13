@@ -52,11 +52,7 @@
 <meta name="robots" content="noindex">
 <% } -%>
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0e121a" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
-<link rel="icon" href="/img/icon-192.png" type="image/png" sizes="192x192">
-<link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+<%- include('pwa-head') %>
 <link rel="preload" href="/fonts/ibm-plex-sans-<%= preload %>-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/ibm-plex-sans-<%= preload %>-600-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/fonts/fonts.css?v=<%= v %>">
@@ -66,9 +62,8 @@
 <a class="skip" href="#main"><%= t('site.skip') %></a>
 <header class="top">
   <div class="wrap top-row">
-    <a class="brand" href="<%= urls.home %>" aria-label="<%= wordmark %>">
-      <svg class="brand-mark" width="28" height="28" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M4 2h19l7 7v21H4z" fill="currentColor"/><path d="M23 2v7h7" fill="none" stroke="var(--paper)" stroke-width="2"/><path d="M9 14h14M9 19h14M9 24h8" stroke="var(--paper)" stroke-width="2" fill="none"/></svg>
-      <span class="brand-name"><%= wordmark %></span>
+    <a class="brand" href="<%= urls.home %>">
+      <%- include('logo', { height: 34 }) %>
     </a>
     <nav class="nav" aria-label="<%= t('site.nav.label') %>">
       <ul>
@@ -92,7 +87,7 @@
 <nav class="crumbs wrap" aria-label="<%= t('site.crumbs.label') %>">
   <ol>
     <li><a href="<%= urls.home %>"><%= t('site.nav.home') %></a></li>
-    <li><span aria-current="page"><%= t('site.nav.' + page) %></span></li>
+    <li><span aria-current="page"><%= locals.crumbLabel || t('site.nav.' + page) %></span></li>
   </ol>
 </nav>
 <% } -%>

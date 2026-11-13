@@ -1,0 +1,72 @@
+<p>This agreement is made under Art.&nbsp;28 of the General Data Protection Regulation (GDPR). It is concluded when a company creates an account in Fakturist or takes over an account by invitation, and applies to every company whose owner or administrator accepted it. It is part of the <a href="<%= legalUrl('terms') %>">terms of service</a>; in a conflict on personal data protection this agreement prevails. The Bulgarian text prevails.</p>
+
+<h2 id="parties">1. Parties</h2>
+<ul>
+  <li><strong>Controller</strong> — the client company on whose behalf the agreement was accepted.</li>
+  <li><strong>Processor</strong> — <%= company.name %> (<%= company.nameBg %>), EIK&nbsp;<%= company.eik %>, <%= company.street.en %>, <%= company.postalCode %> <%= company.city.en %>, Bulgaria, <a href="mailto:<%= privacyEmail %>"><%= privacyEmail %></a>.</li>
+</ul>
+
+<h2 id="subject">2. Subject matter, nature and purpose</h2>
+<p>The processor processes personal data on behalf of the controller to provide Fakturist: storing counterparties and documents, creating the documents as XML and PDF, delivering them to the recipient's inbox and by email, and backups. The purpose is issuing, keeping and sending the controller's invoices and notes.</p>
+
+<h2 id="data">3. Types of data and data subjects</h2>
+<ul>
+  <li><strong>Data subjects:</strong> the controller's counterparties who are natural persons (traders, freelancers, customers), representatives and contact persons of counterparties, the controller's employees and users.</li>
+  <li><strong>Data:</strong> names, addresses, EIK or VAT number, email, bank account, the content of documents (goods and services, quantities, amounts, dates, grounds). A personal identification number (EGN) — only if the controller enters it where the law requires.</li>
+  <li>Special categories of data (Art.&nbsp;9 GDPR) and data on convictions are not processed; the controller does not enter them.</li>
+</ul>
+
+<h2 id="term">4. Term</h2>
+<p>The agreement applies while the controller uses Fakturist and afterwards — until the data is deleted under section&nbsp;11.</p>
+
+<h2 id="instructions">5. Instructions</h2>
+<p>The processor processes the data only on documented instructions of the controller — these are the controller's actions in the service (entering, issuing, sending, downloading) and this agreement. If an instruction, in the processor's view, infringes the GDPR or other law, it informs the controller immediately. The processor does not use the data for its own purposes, does not sell it and does not provide it for advertising.</p>
+
+<h2 id="confidentiality">6. Confidentiality</h2>
+<p>Only people who maintain the service have access to the data, under a duty of confidentiality, and only as far as needed for its operation, for support at the controller's request or by law.</p>
+
+<h2 id="security">7. Security (Art.&nbsp;32 GDPR)</h2>
+<ul>
+  <li>HTTPS only with HSTS; neither the web server nor the application keeps IP addresses.</li>
+  <li>Passwords — Argon2id hashes; two-factor sign-in (mandatory for the processor's team); secret keys and integration keys — encrypted with AES-256-GCM.</li>
+  <li>Access by roles and mandates, checked on the server on every request; an accounting firm sees a company only with an active mandate.</li>
+  <li>The chain of document fingerprints and the audit log reveal any change; an issued document is never altered.</li>
+  <li>A strict content security policy (CSP), with no external scripts, fonts or analytics.</li>
+  <li>A database backup before every update; server secrets are readable only by their owner and never enter copies of the code.</li>
+  <li>The server and the copies are in a data centre in the European Union.</li>
+</ul>
+
+<h2 id="subprocessors">8. Sub-processors</h2>
+<p>The controller gives general authorisation for the following sub-processors:</p>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th scope="col">Sub-processor</th><th scope="col">Activity</th><th scope="col">Location</th></tr></thead>
+    <tbody>
+      <tr><td>netcup GmbH</td><td>The server and the backups</td><td>Germany, EU</td></tr>
+      <tr><td>Sendinblue SAS (Brevo)</td><td>Sending emails, including inbox documents as PDF and XML</td><td>France, EU</td></tr>
+    </tbody>
+  </table>
+</div>
+<p>The processor notifies the controller by email at least 30 days before adding or replacing a sub-processor. The controller may object within that period; if the parties cannot agree, the controller may stop using the service without penalty. The processor has a contract with each sub-processor imposing the same data protection obligations and remains liable to the controller for it.</p>
+
+<h2 id="transfers">9. Transfers</h2>
+<p>The data is not transferred outside the European Union. If a subcontractor of a sub-processor processes it outside the EU, the transfer is protected by the European Commission's standard contractual clauses (Art.&nbsp;46 GDPR).</p>
+
+<h2 id="assistance">10. Assistance</h2>
+<ul>
+  <li><strong>Data subject rights:</strong> the processor helps the controller answer requests under Art.&nbsp;12–23 GDPR — through the service's functions (viewing, downloading documents as PDF and XML) and, where needed, by email. A request received directly from a data subject is forwarded to the controller without a substantive reply.</li>
+  <li><strong>Personal data breaches:</strong> the processor notifies the controller without undue delay and no later than 48 hours after becoming aware of a breach affecting its data, with the information available under Art.&nbsp;33(3) GDPR, and supplements it as it learns more.</li>
+  <li>The processor assists with impact assessments and consultations with the supervisory authority (Art.&nbsp;35–36 GDPR) as far as they concern the service.</li>
+</ul>
+
+<h2 id="end">11. After the end of the agreement</h2>
+<p>After the controller stops using the service, it has 30 days to download its documents. The processor then deletes its data, unless the law requires the processor to keep it; the data disappears from backups at their next rotation, and no later than 90 days. On request the processor confirms the deletion in writing.</p>
+
+<h2 id="audits">12. Information and audits</h2>
+<p>The processor provides the information needed to demonstrate compliance with this agreement. The controller may request an audit — in writing, with reasonable notice, at most once a year (except after a breach), at its own cost and without access to other clients' data.</p>
+
+<h2 id="controller-duties">13. Obligations of the controller</h2>
+<p>The controller is responsible for the legal basis of the processing, for informing data subjects and for the accuracy of the data it enters, and does not enter data not needed for the documents.</p>
+
+<h2 id="liability">14. Liability</h2>
+<p>Each party is liable under Art.&nbsp;82 GDPR for damage caused by its breach. Otherwise section&nbsp;13 of the terms of service applies.</p>

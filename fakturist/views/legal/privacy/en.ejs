@@ -1,0 +1,69 @@
+<p>This policy explains what personal data Fakturist processes, why, how long we keep it, who sees it and what rights you have under the General Data Protection Regulation (GDPR). The Bulgarian text prevails.</p>
+
+<h2 id="controller">Who processes the data</h2>
+<p><%= company.name %> (<%= company.nameBg %>), EIK&nbsp;<%= company.eik %>, <%= company.street.en %>, <%= company.postalCode %> <%= company.city.en %>, <%= company.region.en %>, Bulgaria, tel.&nbsp;<a href="<%= company.phoneHref %>"><%= company.phone %></a>. For personal data write to <a href="mailto:<%= privacyEmail %>"><%= privacyEmail %></a>.</p>
+<p>For the data of accounts (the people who use Fakturist) we are the <strong>controller</strong> — this policy covers them. For personal data in companies' documents (counterparties, contact persons) we are a <strong>processor</strong>: the controller is the company issuing the document, and we process the data under the <a href="<%= legalUrl('dpa') %>">data processing agreement</a>.</p>
+
+<h2 id="data">What data, why and for how long</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th scope="col">Data</th><th scope="col">Why</th><th scope="col">Legal basis</th><th scope="col">Retention</th></tr></thead>
+    <tbody>
+      <tr><td>Name, email, language, password hash (Argon2id), email confirmation date, last sign-in</td><td>The account and signing in to it</td><td>Contract, Art.&nbsp;6(1)(b) GDPR</td><td>While the account exists</td></tr>
+      <tr><td>Two-factor sign-in: secret key (encrypted with AES-256-GCM) and the last accepted step</td><td>A second factor at sign-in, if you turned it on</td><td>Contract</td><td>Until turned off or the account is closed</td></tr>
+      <tr><td>The data of the company you are a member of (name, EIK, VAT number, address, IBAN) and your role in it</td><td>The particulars of documents and the rights in the account</td><td>Contract</td><td>While the company is registered</td></tr>
+      <tr><td>Session: the cookie and a record in the database (when it was created and used) — no IP address</td><td>To keep you signed in</td><td>Contract</td><td>Until sign-out or expiry: <%= sessionStandard %></td></tr>
+      <tr><td>Email links (new password, email confirmation): SHA-256 hash of the link, the address it was sent to, its validity</td><td>Security of the account</td><td>Contract; legitimate interest, Art.&nbsp;6(1)(f) GDPR</td><td>The link is valid 1 hour (password) or 7 days (email); the record — while the account exists</td></tr>
+      <tr><td>Emails from the queue: recipient address, kind of email, when it was sent</td><td>To send the email and see whether it went out</td><td>Contract</td><td>While the account exists</td></tr>
+      <tr><td>Invitations and mandates: the invitee's email, the link hash, who invited and when</td><td>Transferring a company to its owner and the accounting firm's work under a mandate</td><td>Contract; legitimate interest</td><td>The invitation is valid 7 days; the record — while the company is registered</td></tr>
+      <tr><td>Accepted legal documents: who, which document, which version, when</td><td>Proof of the contract</td><td>Legitimate interest</td><td>Five years after the account is closed (the general limitation period)</td></tr>
+      <tr><td>Audit log: who did what and when in the account and the company — no IP addresses and no emails</td><td>Accountability and defence in a dispute</td><td>Legitimate interest</td><td>While the company is registered</td></tr>
+      <tr><td>Payments: the payer's name, amount and reference from the bank transfer; the invoice for the payment</td><td>The paid plan contract and our accounting</td><td>Contract; legal obligation, Art.&nbsp;6(1)(c) GDPR</td><td>The periods under the Accountancy Act and the VAT Act</td></tr>
+      <tr><td>Emails you write to us</td><td>To answer you</td><td>Legitimate interest</td><td>Up to three years after the last email</td></tr>
+    </tbody>
+  </table>
+</div>
+<p>Email, name and password are needed for an account to exist. Without them we cannot create it.</p>
+
+<h2 id="ip">IP addresses</h2>
+<p>We do not keep IP addresses: neither the application nor the web server logs requests. The limit on sign-in and email attempts counts the address (for IPv6 — the /64 network) only in the server's memory, for up to 15 minutes. The web server records an address only in its log of critical errors.</p>
+
+<h2 id="recipients">Who else sees the data</h2>
+<ul>
+  <li>netcup GmbH, Germany — the server Fakturist runs on, in a data centre in the European Union. The database backups are on it too.</li>
+  <li>Sendinblue SAS (Brevo), France — sending the emails described below.</li>
+  <li>Revolut Bank UAB, Lithuania, and the payer's bank — the payment data, as independent controllers under their own legal obligations.</li>
+</ul>
+<p>We do not sell data or provide it for advertising. We do not transfer personal data outside the European Union; if a subcontractor of Brevo processes data outside the EU, the transfer is protected by standard contractual clauses (Art.&nbsp;46 GDPR).</p>
+
+<h2 id="cookies">Cookies</h2>
+<p>We use one cookie without which the service does not work — the session after sign-in. We have no analytics, advertising or third-party cookies, so we show no consent banner. Fonts are loaded from our own server.</p>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th scope="col">Name</th><th scope="col">Purpose</th><th scope="col">Lifetime</th></tr></thead>
+    <tbody>
+      <tr><td><code>__Host-fakturist</code></td><td>The session after sign-in (signed identifier, HttpOnly, Secure, SameSite=Lax)</td><td><%= sessionStandard %></td></tr>
+    </tbody>
+  </table>
+</div>
+<p>The installed app (on your phone or computer) has a service worker that keeps nothing on the device: it only shows a “No connection” page when there is no network.</p>
+
+<h2 id="emails">Emails</h2>
+<p>We send only emails related to the account and documents: email confirmation, a link for a new password, a notice of a document delivered to your company's inbox (with PDF and XML), an invitation to take over a company's account, and notices to our team to review ownership. We do not send marketing emails.</p>
+
+<h2 id="automated">Automated decisions</h2>
+<p>We make no decisions with legal effects on you solely by automated means. The rules check on issue stops a document with an error — it concerns the document, not you as a person. The temporary limit after many sign-in attempts lifts by itself.</p>
+
+<h2 id="security">Security</h2>
+<p>The connection is HTTPS only, with HSTS. Passwords are stored as Argon2id hashes, two-factor secret keys and integration keys — encrypted, and email links and invitations — only as hashes. Sessions live on the server and end at once on a new password. The master panel opens only with two-factor sign-in. Application logs contain no emails, passwords or IP addresses. Before every software update we back up the database.</p>
+
+<h2 id="rights">Your rights</h2>
+<p>You have the right of access, rectification, erasure, restriction of processing, portability and to object to processing based on legitimate interest. Write to <a href="mailto:<%= privacyEmail %>"><%= privacyEmail %></a> — we reply within one month. You can download every document as PDF and XML from the account at any time.</p>
+<p>On a request for erasure we close your account. Documents issued by the company belong to the company, and the law obliges it to keep them — so they remain in its account while it is registered.</p>
+<p>You have the right to lodge a complaint with the Bulgarian Commission for Personal Data Protection (Sofia 1592, 2 Prof. Tsvetan Lazarov Blvd., <a href="https://www.cpdp.bg" target="_blank" rel="noopener">www.cpdp.bg</a>) or with the supervisory authority in the EU country where you live or work.</p>
+
+<h2 id="minors">Minors</h2>
+<p>Fakturist is a professional tool and is not intended for persons under 16.</p>
+
+<h2 id="changes">Changes</h2>
+<p>If we change this policy materially, we will notify you by email before the change takes effect. The version date is at the top of the page.</p>

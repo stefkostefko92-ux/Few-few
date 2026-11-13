@@ -8,13 +8,16 @@ import { BRAND } from './brand.js';
 import { COMPANY } from './company.js';
 import { config, isProduction } from './config.js';
 import { errorMessage, logger, safeLogPath } from './logger.js';
+import { legalPath, type LegalDocumentId } from './legal/documents.js';
 import { ROOT } from './paths.js';
-import { translator, type Locale } from './i18n.js';
+import { isLocale, translator, type Locale } from './i18n.js';
 import { assetVersion } from './http/assets.js';
 import { SITE_PAGES } from './seo/pages.js';
 import { healthRouter } from './routes/health.js';
 import { seoRouter } from './routes/seo.js';
 import { siteRouter } from './routes/site.js';
+import { pwaRouter } from './routes/pwa.js';
+import { legalRouter } from './routes/legal.js';
 import { mountApp } from './routes/mount.js';
 
 /** Грешките на body-parser носят статус; останалите (и не-Error) са 500. */
@@ -54,6 +57,9 @@ export function createServer(): Express {
   app.use((_req, res, next) => {
     res.locals.cspNonce = randomBytes(16).toString('base64');
     res.locals.v = version;
+    // Връзките към правните документи — на езика, който изгледът е избрал (`lang`), при извикването.
+    res.locals.legalUrl = (id: LegalDocumentId): string =>
+      legalPath(id, isLocale(res.locals.lang) ? res.locals.lang : 'bg');
     next();
   });
   app.use(
@@ -114,8 +120,10 @@ export function createServer(): Express {
   app.use(cookieParser());
 
   app.use(healthRouter());
+  app.use(pwaRouter());
   app.use(seoRouter());
   app.use(siteRouter());
+  app.use(legalRouter());
   mountApp(app);
 
   app.use((req, res) => renderError(req, res, 404));

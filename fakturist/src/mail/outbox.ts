@@ -10,6 +10,7 @@ import { fromCents } from '../einvoice/decimal.js';
 import { decryptInviteToken } from '../auth/keys.js';
 import { inboxReceivedMail, ownershipReviewMail, transferInviteMail } from './templates.js';
 import { mailSender, type MailMessage, type SendMail } from './mailer.js';
+import { ACCOUNT_MAILS, composeAccountMail } from './account-mail.js';
 import { MINUTE } from '../time.js';
 
 /** Опитите на едно писмо; паузата расте: 1, 5, 15, 60, 240 минути. */
@@ -146,6 +147,7 @@ async function compose(kind: string, toEmail: string, payload: unknown): Promise
   if (kind === 'ownership.review') return composeReviewMail(toEmail, payload);
   if (kind === 'inbox.received') return composeInboxMail(toEmail, payload);
   if (kind === 'transfer.invite') return composeInviteMail(toEmail, payload);
+  if (Object.hasOwn(ACCOUNT_MAILS, kind)) return composeAccountMail(kind, toEmail, payload);
   throw new Error(`Непознат вид писмо: ${kind}`);
 }
 

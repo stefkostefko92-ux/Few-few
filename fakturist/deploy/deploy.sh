@@ -246,8 +246,8 @@ hints() {
     warn "няма мастър акаунт — създай го веднъж:"
     warn "  sudo bash $APP_DIR/deploy/create-owner.sh"
   fi
-  [ "$(env_value REGISTRATION_OPEN)" != "true" ] ||
-    warn "REGISTRATION_OPEN=true — само след публикувани правни текстове (SPEC.md, „Блокери преди продукция“)."
+  [ "$(env_value REGISTRATION_OPEN)" = "true" ] ||
+    warn "регистрацията е затворена (REGISTRATION_OPEN не е true в $SHARED/.env) — отвори я там и пусни деплоя пак."
 }
 
 main() {

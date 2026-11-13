@@ -47,7 +47,8 @@ src/
   inbox/         deliver.ts — шкафчето: получател по ЕИК, регистриран при нас → запис + писма в опашката
   mail/          outbox.ts (опашката с повторения, заемане с условен UPDATE) · mailer.ts (Brevo SMTP) ·
                  templates.ts (писмото към шкафчето, екранирано)
-  accounts/      mandates.ts — решение по пълномощно (собственикът на фирмата или мастърът) ·
+  accounts/      tokens.ts — връзките по имейл (нова парола, потвърждение на имейла) ·
+                 mandates.ts — решение по пълномощно (собственикът на фирмата или мастърът) ·
                  ownership.ts — „за проверка“ и „Отнеми собствеността“ (мастърът) ·
                  transfer.ts (+ transfer-core, transfer-accept) — собственикът на фирма, добавена от
                  кантора: покана от кантората или мастъра → приемане → OWNER (+ потвърдено пълномощно)
@@ -61,7 +62,10 @@ src/
   billing/       plans.ts (началните планове) · public-plans.ts · seed-plans.ts · revolut.ts (подписът)
   features.ts    регистърът на функциите (live/planned + дата) — плановете, панелът и витрината четат оттук
   seo/           pages.ts (страниците на витрината — единствен списък) · structured-data.ts (JSON-LD)
-  routes/        site · seo · health · auth · invite (/pokana) · app (+ app-security, app-inbox,
+  legal/         documents.ts (правните документи — единствен списък) · acceptance.ts (записът при приемане)
+  pwa/           manifest.ts · device.ts (устройството по User-Agent за /prilozhenie)
+  routes/        site · seo · health · pwa · legal · auth · account (нова парола, имейл) · install ·
+                 invite (/pokana) · app (+ app-security, app-inbox,
                  app-clients, app-settings, app-shared) · admin (+ admin-settings, admin-actions) · webhooks
   http/          upload.ts — multipart (multer, в паметта) + CSRF след разчитането · view · ip · cookies
 views/           site/ (витрината — Дизайнера) · app/ · admin/ · auth/ · errors/ · partials/
@@ -86,7 +90,19 @@ scripts/         conformance/run.mjs (официалната проверка) �
 - **Никога „одобрен от НАП“ или „сертифициран“** — до наредбата по чл. 120а, ал. 9 от законопроекта такова
   одобрение не съществува.
 - Права по план — само от проверен webhook на Revolut или от мастър панела, никога от redirect.
-- Регистрацията е затворена (`REGISTRATION_OPEN=false`), докато правните текстове не са публикувани.
+- **Правните документи** (общи условия, поверителност, договор за обработване — BG+EN, публикувани
+  13.11.2026) са в `src/legal/documents.ts` (адреси, версия) и `views/legal/<документ>/<език>.ejs`.
+  Съществена промяна на текста = нова `version` (регистрацията записва приетата в `LegalAcceptance`) и
+  писмо до клиентите 30 дни преди. Отметката при регистрация (`views/partials/legal-accept.ejs`) никога не
+  идва отметната. Регистрацията се отваря с `REGISTRATION_OPEN=true` в `.env` И настройката
+  `registration.enabled` в панела.
+- **Връзките по имейл** (`src/accounts/tokens.ts`): нова парола (1 час) и потвърждение на имейла (7 дни) —
+  32 байта, в базата само SHA-256, в опашката шифровани; еднократни; до 3 писма на час за профил;
+  „Забравена парола“ отговаря еднакво на всеки имейл. Пътищата с токен — в `safeLogPath`.
+- **Приложението на началния екран** (собственикът, 13.11.2026 — „като rilievi“): `src/pwa/manifest.ts`
+  (`standalone`, BG/EN манифест), `public/js/sw.js` (не пази нищо — само „Няма връзка“ без мрежа),
+  `/prilozhenie` (стъпките по устройство). Иконите и логото — `node scripts/brand-assets.mjs` от
+  `assets/logo-source.webp` → `public/img/brand/` (никога на ръка).
 - **Подписът „Документът е създаден с fakturist.eu — продукт на Carbon Stealth VCC.“** е последният ред на
   бележката (BT-22) на всеки XML и долният ред на PDF-а (решение на собственика, 13.11.2026). Текстът е в
   `src/brand.ts`, сменя се от мастър панела (`documents.signature`).

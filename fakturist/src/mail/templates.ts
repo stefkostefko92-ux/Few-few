@@ -17,7 +17,7 @@ export interface InboxMailData {
   domain: string;
 }
 
-function escapeHtml(value: string): string {
+export function escapeHtml(value: string): string {
   return value
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -67,13 +67,13 @@ export function inboxReceivedMail(data: InboxMailData): {
         : `<tr><td colspan="2" style="padding:4px 0 8px;font-size:17px"><strong>${escapeHtml(line)}</strong></td></tr>`;
     })
     .join('');
-  const html = `<!doctype html><html lang="bg"><body style="margin:0;padding:24px;background:#f4f5f7;font-family:Arial,Helvetica,sans-serif;color:#131722">
+  const html = `<!doctype html><html lang="bg"><body style="margin:0;padding:24px;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;color:#131722">
 <div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #cfd4dd;padding:24px">
 <p style="margin:0 0 16px">${escapeHtml(data.senderName)} ви изпрати документ. Той е доставен и в шкафчето на ${escapeHtml(data.recipientName)} във Фактурист.</p>
 <table style="border-collapse:collapse;font-size:14px;margin:0 0 16px">${rows}</table>
 <p style="margin:0 0 16px;padding:10px 12px;background:${data.senderVerified ? '#e1f0ea' : '#fdf3e1'}">${escapeHtml(verified)}</p>
 <p style="margin:0 0 16px">Прикачени са PDF копие за четене и структурираният XML (UBL 2.1) за счетоводния софтуер.</p>
-<p style="margin:0 0 24px"><a href="${escapeHtml(data.link)}" style="display:inline-block;background:#0b6b52;color:#ffffff;padding:10px 18px;text-decoration:none">Отвори в шкафчето</a></p>
+<p style="margin:0 0 24px"><a href="${escapeHtml(data.link)}" style="display:inline-block;background:#03756c;color:#ffffff;padding:10px 18px;text-decoration:none">Отвори в шкафчето</a></p>
 <p style="margin:0;font-size:12px;color:#485064">${escapeHtml(data.signature)}</p>
 </div></body></html>`;
   return { subject, text, html };
@@ -94,10 +94,10 @@ export function ownershipReviewMail(data: {
     'Проверете, че собственикът наистина представлява фирмата. Ако не — „Отнеми собствеността“ и поканете истинския собственик с „Прехвърли“.',
   ];
   const text = [...lines, '', `Фирмата в мастър панела: ${data.link}`].join('\n');
-  const html = `<!doctype html><html lang="bg"><body style="margin:0;padding:24px;background:#f4f5f7;font-family:Arial,Helvetica,sans-serif;color:#131722">
+  const html = `<!doctype html><html lang="bg"><body style="margin:0;padding:24px;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;color:#131722">
 <div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #cfd4dd;padding:24px">
 ${lines.map((line) => `<p style="margin:0 0 12px">${escapeHtml(line)}</p>`).join('')}
-<p style="margin:0"><a href="${escapeHtml(data.link)}" style="display:inline-block;background:#0b6b52;color:#ffffff;padding:10px 18px;text-decoration:none">Отвори в мастър панела</a></p>
+<p style="margin:0"><a href="${escapeHtml(data.link)}" style="display:inline-block;background:#03756c;color:#ffffff;padding:10px 18px;text-decoration:none">Отвори в мастър панела</a></p>
 </div></body></html>`;
   return { subject: `За проверка: нов собственик на ${data.companyName}`, text, html };
 }
@@ -143,10 +143,10 @@ export function transferInviteMail(data: InviteMailData): {
     data.signature,
     data.domain,
   ].join('\n');
-  const html = `<!doctype html><html lang="bg"><body style="margin:0;padding:24px;background:#f4f5f7;font-family:Arial,Helvetica,sans-serif;color:#131722">
+  const html = `<!doctype html><html lang="bg"><body style="margin:0;padding:24px;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;color:#131722">
 <div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #cfd4dd;padding:24px">
 <p style="margin:0 0 16px">${escapeHtml(intro)}</p>
-<p style="margin:0 0 8px"><a href="${escapeHtml(data.link)}" style="display:inline-block;background:#0b6b52;color:#ffffff;padding:10px 18px;text-decoration:none">Приеми поканата</a></p>
+<p style="margin:0 0 8px"><a href="${escapeHtml(data.link)}" style="display:inline-block;background:#03756c;color:#ffffff;padding:10px 18px;text-decoration:none">Приеми поканата</a></p>
 <p style="margin:0 0 16px;font-size:13px;color:#485064">${escapeHtml(validity)}</p>
 <p style="margin:0 0 24px;font-size:13px;color:#485064">${escapeHtml(ignore)}</p>
 <p style="margin:0;font-size:12px;color:#485064">${escapeHtml(data.signature)}</p>

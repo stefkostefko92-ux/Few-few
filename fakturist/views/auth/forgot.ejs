@@ -1,0 +1,17 @@
+<%- include('../partials/app-head', { title: t('auth.forgot.title') }) %>
+<section class="narrow">
+  <% if (sent) { %>
+    <h1><%= t('auth.forgot.sentTitle') %></h1>
+    <p class="ok" role="status"><%= t('auth.forgot.sent', { email: sent }) %></p>
+  <% } else { %>
+    <h1><%= t('auth.forgot.title') %></h1>
+    <p class="muted"><%= t('auth.forgot.lead') %></p>
+    <form method="post" action="/zabravena-parola" class="stack">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label><%= t('auth.email') %><input type="email" name="email" autocomplete="username" required maxlength="254" value="<%= email %>"></label>
+      <button type="submit"><%= t('auth.forgot.send') %></button>
+    </form>
+  <% } %>
+  <p class="muted"><a href="/vhod<%= lang === 'en' ? '?lang=en' : '' %>"><%= t('auth.forgot.back') %></a></p>
+</section>
+<%- include('../partials/app-foot') %>

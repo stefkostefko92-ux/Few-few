@@ -27,6 +27,10 @@ export function appLocals() {
       res.locals.path = req.path;
       res.locals.notice = await setting('site.notice');
       res.locals.appUrls = { register: '/registraciya', login: '/vhod' };
+      // Резултатът от „Изпрати отново“ на лентата за потвърждение на имейла (src/routes/account.ts).
+      const verify = req.query['verify'];
+      res.locals.verifyNotice =
+        verify === 'queued' || verify === 'already' || verify === 'rateLimited' ? verify : null;
       next();
     } catch (error) {
       next(error);
