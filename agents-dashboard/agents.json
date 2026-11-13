@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 649
+        "lessons": 651
       },
       "evolution": [
         {
@@ -2037,9 +2037,20 @@
           "date": "2026-11-13",
           "event": "v58.9 — учене",
           "detail": "Научи: Заключване на профил, което отхвърля и вярната парола и нулира стъпките само при успеше… (+28 още)"
+        },
+        {
+          "version": "59.1.0",
+          "date": "2026-11-13",
+          "event": "v59.1 — учене",
+          "detail": "Научи: Работник с findMany({take N, orderBy}) и после continue в JS за част от редовете, на ко… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „Работник с findMany({take N, orderBy}) и после continue в JS за част от редовете, на ко…\" (+1 още)"
+        },
         {
           "date": "2026-11-13",
           "type": "quarantine",
