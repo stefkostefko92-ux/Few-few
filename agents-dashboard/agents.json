@@ -15527,7 +15527,7 @@
           "Docusaurus/MkDocs/VitePress (docs сайтове, версиониране, i18n); markdownlint/Vale",
           "Това репо: per-product CLAUDE.md/README, BG източник, runbook-и (deploy/DEPLOY.md), safety-critical низове"
         ],
-        "lessons": 227
+        "lessons": 229
       },
       "evolution": [
         {
@@ -15589,9 +15589,20 @@
           "date": "2026-11-12",
           "event": "v21.8 — учене",
           "detail": "Научи: SupremeDiscordBot/README.md (ред 333, 350) още твърди „Postgres/Redis bound to localhos… (+1 още)"
+        },
+        {
+          "version": "22.0.0",
+          "date": "2026-11-13",
+          "event": "v22.0 — учене",
+          "detail": "Научи: Всички файлове в frontend/src/data/*.js се четат от marketingTruth.test.js като публиче… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „Всички файлове в frontend/src/data/*.js се четат от marketingTruth.test.js като публиче…\" (+1 още)"
+        },
         {
           "date": "2026-11-12",
           "type": "learning",
