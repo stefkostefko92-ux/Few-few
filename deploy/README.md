@@ -169,6 +169,20 @@ ZIP отпреди месец.
   дневен бекъп (`rilievi-backup.timer`), vhost-ът от репото щом има сертификат. Откатът е към
   `RILIEVI_LAST_GOOD` с `RILIEVI_SKIP_BACKUP=1`; при провалена миграция — човек → `rilievi/DEPLOY.md`.
   Първият MASTER — веднъж с `rilievi/deploy/create-master.sh`; останалите само с покана.
+- **fakturist** (Фактурист — фактуриране върху EN 16931, `fakturist.carbonstealth.eu`): моделът на
+  rilievi — Docker Compose (db + app на `127.0.0.1:4340`, `HTTP_PORT` в `.env` го сменя), стъпките са в
+  `fakturist/deploy/deploy.sh`: тайните от `/opt/few-few/shared/fakturist/.env` (600; прави ги веднъж
+  `fakturist/deploy/setup-env.sh` — `POSTGRES_PASSWORD`, `JWT_SECRET`, `LEDGER_SEAL_KEY`,
+  `PUBLIC_BASE_URL`, `REGISTRATION_OPEN=false`; без тях fakturist се пропуска като „още ненастроен“),
+  `pg_dump` преди смяната (последните 5 в `…/fakturist/backups`), `up -d` (миграциите — от
+  entrypoint-а), сонда на `/health` (`"ok":true` и маркер `"app":"fakturist"`; проверява се и че портът е
+  публикуван от контейнера `app` на проекта), vhost-ът от репото щом има
+  сертификат. **`LEDGER_SEAL_KEY` не се сменя никога след първата фактура** (веригата на документите,
+  2FA тайните и ключовете на интеграциите зависят от него): първият успешен деплой пази отпечатъка му в
+  `…/fakturist/ledger-seal-key.sha256` и друг ключ спира деплоя преди build-а. Откатът е към
+  `FAKTURIST_LAST_GOOD` с `FAKTURIST_SKIP_BACKUP=1`; при провалена миграция (`P3009`/`P3018`) — човек.
+  Мастър акаунтът — веднъж с `fakturist/deploy/create-owner.sh` (паролата през stdin). Дневен бекъп
+  и restic засега **няма** — само дъмпът преди всеки деплой.
 - **vpsdash** (VPS таблото): systemd модел. `rsync` към `/opt/vps-dashboard` (конфигът
   `/etc/vps-dashboard/config.json` и state `/var/lib/vps-dashboard` са извън release-а и оцеляват;
   `deploy/desktop/desktop.env` се пази), бекъп на кода, рестарт, health на `/api/ping` (401 = жив,
@@ -182,7 +196,7 @@ ZIP отпреди месец.
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fivem` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fakturist fivem` | кои проекти да се разгръщат тук |
 | `FIVEM_HEALTH_URL` | `http://127.0.0.1:3010/api/health` | health на fivem |
 | `FIVEM_DOMAIN` | `thraex.carbonstealth.eu` | домейн на fivem (за `.env` и IndexNow) |
 | `PANEV_DIR` | `/opt/panev` | път на panev (systemd) |
@@ -196,6 +210,7 @@ ZIP отпреди месец.
 | `KORPORA_LAST_GOOD` | `/opt/few-few/shared/korpora/last-good` | пътят на последния release на korpora, който е отговорил — към него е откатът |
 | `KORPORA_SHARED` · `KORPORA_HEALTH_WAIT` · `KORPORA_INDEXNOW` | `/opt/few-few/shared/korpora` · `90` · `1` | тайни/бекъпи/данни (и за `autodeploy.sh`: къде са дъмповете), секунди за сондата, IndexNow |
 | `RILIEVI_SHARED` · `RILIEVI_LAST_GOOD` · `RILIEVI_HEALTH_WAIT` | `/opt/few-few/shared/rilievi` · `…/last-good` · `90` | тайни и бекъпи на rilievi, последният работещ release (целта на отката), секунди за сондата |
+| `FAKTURIST_SHARED` · `FAKTURIST_LAST_GOOD` · `FAKTURIST_HEALTH_WAIT` | `/opt/few-few/shared/fakturist` · `…/last-good` · `90` | тайни, бекъпи и отпечатък на `LEDGER_SEAL_KEY` на fakturist, последният работещ release (целта на отката), секунди за сондата |
 | `VPSDASH_DIR` / `VPSDASH_SERVICE` / `VPSDASH_HEALTH_URL` | `/opt/vps-dashboard` · `vps-dashboard` · `http://127.0.0.1:7700/api/ping` | път, systemd услуга и health на VPS таблото |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
 | `FORCE_SEED` | `0` | принудителен сийд на zabobovdol |
