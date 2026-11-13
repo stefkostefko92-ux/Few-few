@@ -503,3 +503,6 @@
 {"t":"handoff","ts":"2026-11-04T09:24:59.979Z","id":"r8129a734","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"b0c662c5"}
 {"t":"handoff","ts":"2026-11-04T09:25:08.120Z","id":"r8129a734","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"ca19e31d"}
 {"t":"handoff","ts":"2026-11-04T09:34:53.703Z","id":"r8129a734","from":"razbivacha","to":"kodadjiyata","status":"наред","run":"18806aee"}
+{"t":"start","ts":"2026-11-13T20:16:56.984Z","id":"r2cd44e43","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-13T20:16:56.984Z","id":"r2cd44e43","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"88c1e9e9"}
+{"t":"handoff","ts":"2026-11-13T20:17:01.027Z","id":"r2cd44e43","from":"hromadjiyata","to":"kodadjiyata","status":"има бележки","run":"371e4964"}
