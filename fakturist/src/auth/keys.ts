@@ -100,3 +100,9 @@ export const encryptUserToken = (token: string, tokenId: string): string =>
   encrypt('user-token-v1', token, `user-token:${tokenId}`);
 export const decryptUserToken = (payload: string, tokenId: string): string =>
   decrypt('user-token-v1', payload, `user-token:${tokenId}`);
+
+/** Токенът на покана за член на фирмата, докато чака в опашката с писма (SPEC 45). */
+export const encryptMemberInviteToken = (token: string, inviteId: string): string =>
+  encrypt('member-invite-token-v1', token, `member-invite:${inviteId}`);
+export const decryptMemberInviteToken = (payload: string, inviteId: string): string =>
+  decrypt('member-invite-token-v1', payload, `member-invite:${inviteId}`);

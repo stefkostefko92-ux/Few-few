@@ -201,7 +201,14 @@ export async function resetPassword(input: {
     await revokeResetLinks(tx, open.userId, now);
     const updated = await tx.user.updateMany({
       where: { id: open.userId, email: open.email, disabledAt: null },
-      data: { passwordHash, mustChangePassword: false },
+      // Връзката доказва притежанието на имейла — заключването след грешни пароли пада (SPEC 46).
+      data: {
+        passwordHash,
+        mustChangePassword: false,
+        failedLogins: 0,
+        lockouts: 0,
+        lockedUntil: null,
+      },
     });
     if (updated.count !== 1) throw new AccountTokenError('invalid');
     await tx.user.updateMany({

@@ -88,3 +88,42 @@ export function accountMail(
 </div></body></html>`;
   return { subject: words.subject, text, html };
 }
+
+/** „Профилът е заключен временно“ — след пет грешни пароли подред (SPEC 46). */
+export function lockedMail(data: {
+  locale: 'bg' | 'en';
+  name: string;
+  until: string;
+  link: string;
+  signature: string;
+  domain: string;
+}): { subject: string; text: string; html: string } {
+  const bg = data.locale === 'bg';
+  const subject = bg
+    ? 'Профилът ви във Фактурист е заключен временно'
+    : 'Your Fakturist account is temporarily locked';
+  const hello = bg ? `Здравейте, ${data.name},` : `Hello ${data.name},`;
+  const body = bg
+    ? `След пет грешни пароли подред входът в профила ви е спрян до ${data.until}. Ако това не сте били вие, някой опитва да познае паролата ви — задайте нова от „Забравена парола“ и включете двуфакторния вход.`
+    : `After five wrong passwords in a row, sign-in to your account is blocked until ${data.until}. If this was not you, someone is trying to guess your password — set a new one via “Forgot your password” and turn on two-factor sign-in.`;
+  const button = bg ? 'Задай нова парола' : 'Set a new password';
+  const text = [
+    hello,
+    '',
+    body,
+    '',
+    `${button}: ${data.link}`,
+    '',
+    '—',
+    data.signature,
+    data.domain,
+  ].join('\n');
+  const html = `<!doctype html><html lang="${data.locale}"><body style="margin:0;padding:24px;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;color:#0c1929">
+<div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #d5dbe3;border-radius:8px;padding:24px">
+<p style="margin:0 0 12px">${escapeHtml(hello)}</p>
+<p style="margin:0 0 16px">${escapeHtml(body)}</p>
+<p style="margin:0 0 24px"><a href="${escapeHtml(data.link)}" style="display:inline-block;background:#03756c;color:#ffffff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:bold">${escapeHtml(button)}</a></p>
+<p style="margin:0;font-size:12px;color:#4a5568">${escapeHtml(data.signature)}</p>
+</div></body></html>`;
+  return { subject, text, html };
+}

@@ -281,6 +281,16 @@ export const ADMIN_RESOURCES: AdminResource[] = [
     orderBy: { createdAt: 'desc' },
   },
   {
+    model: 'MemberInvite',
+    slug: 'member-invites',
+    group: 'accounts',
+    label: { bg: 'Покани за членове', en: 'Member invitations' },
+    columns: ['organizationId', 'role', 'createdAt', 'expiresAt', 'acceptedAt', 'revokedAt'],
+    search: ['organizationId'],
+    hidden: ['tokenHash', 'email'],
+    orderBy: { createdAt: 'desc' },
+  },
+  {
     model: 'LegalAcceptance',
     slug: 'legal-acceptances',
     group: 'accounts',

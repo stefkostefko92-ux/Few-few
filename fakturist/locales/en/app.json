@@ -357,5 +357,33 @@
     "pickPartyNone": "— enter manually —",
     "fill": "Fill in",
     "pickItem": "Item"
+  },
+  "members": {
+    "title": "Members",
+    "person": "Person",
+    "role": "Role",
+    "you": "you",
+    "leave": "Leave",
+    "remove": "Remove",
+    "pending": "Pending invitations",
+    "until": "until {date}",
+    "revoke": "Revoke",
+    "invite": "Invite a member",
+    "inviteHelp": "The invitation is an email link valid for 7 days. The role is below yours; the owner is not invited — ownership comes by transfer.",
+    "send": "Send invitation",
+    "ok": {
+      "invited": "The invitation has been sent.",
+      "revoked": "The invitation has been revoked.",
+      "roleChanged": "The role has been changed.",
+      "removed": "The member has been removed."
+    },
+    "err": {
+      "invalid": "Check the email and the role.",
+      "forbiddenRole": "You cannot give or change this role.",
+      "alreadyMember": "This person is already a member of the company.",
+      "rateLimited": "Too many invitations today — try tomorrow.",
+      "notFound": "No such record.",
+      "self": "You cannot change your own role."
+    }
   }
 }

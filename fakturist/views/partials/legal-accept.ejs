@@ -10,7 +10,10 @@
     const name = /^\{(\w+)\}$/.exec(part);
     return name && Object.hasOwn(links, name[1]) ? links[name[1]] : esc(part);
   }).join('');
-  const acceptLabel = withLinks(t('auth.legalAccept'), {
+  // Член на фирма приема само общите условия за себе си (договорът за обработване е на фирмата).
+  const acceptLabel = locals.memberOnly ? withLinks(t('auth.legalAcceptMember'), {
+    terms: legalLink('terms', t('auth.legalTerms')),
+  }) + ' ' + withLinks(t('auth.legalPrivacy'), { privacy: legalLink('privacy', t('auth.legalPrivacyLink')) }) : withLinks(t('auth.legalAccept'), {
     terms: legalLink('terms', t('auth.legalTerms')),
     dpa: legalLink('dpa', t('auth.legalDpa')),
     org: esc(locals.orgName || t('auth.legalOrg')),

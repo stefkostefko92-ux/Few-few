@@ -5,6 +5,7 @@ import { appLocals } from '../http/view.js';
 import { webhooksRouter } from './webhooks.js';
 import { authRouter } from './auth.js';
 import { inviteRouter } from './invite.js';
+import { memberInviteRouter } from './member-invite.js';
 import { installRouter } from './install.js';
 import { accountRouter } from './account.js';
 import { appRouter } from './app.js';
@@ -24,6 +25,7 @@ export function mountApp(app: Express): void {
   app.use(accountRouter());
   app.use(installRouter());
   app.use(inviteRouter());
+  app.use(memberInviteRouter());
   app.use(appRouter());
   app.use(adminRouter());
 }

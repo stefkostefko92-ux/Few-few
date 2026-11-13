@@ -4,10 +4,43 @@ import { prisma } from '../db.js';
 import { BRAND } from '../brand.js';
 import { setting } from '../admin/settings.js';
 import { decryptUserToken } from '../auth/keys.js';
-import { accountMail, type AccountMailKind } from './account-templates.js';
+import { accountMail, lockedMail, type AccountMailKind } from './account-templates.js';
 import type { MailMessage } from './mailer.js';
 
 const Payload = z.object({ tokenId: z.string().min(1), tokenEnc: z.string().min(1) });
+
+const LockedPayload = z.object({ until: z.string().datetime() });
+
+/** Писмото „профилът е заключен временно“ (SPEC 46) — без връзка, само предупреждение. */
+export async function queueLockedMail(userId: string, toEmail: string, until: Date): Promise<void> {
+  await prisma.notification.create({
+    data: { kind: 'account.locked', toEmail, payload: { userId, until: until.toISOString() } },
+  });
+}
+
+export async function composeLockedMail(toEmail: string, payload: unknown): Promise<MailMessage> {
+  const { until } = LockedPayload.parse(payload);
+  const user = await prisma.user.findUnique({
+    where: { email: toEmail },
+    select: { name: true, locale: true },
+  });
+  const locale = user?.locale === 'en' ? 'en' : 'bg';
+  const time = new Intl.DateTimeFormat(locale === 'bg' ? 'bg-BG' : 'en-GB', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+    timeZone: 'Europe/Sofia',
+  }).format(new Date(until));
+  const signature = (await setting('documents.signature')) || BRAND.signature;
+  const mail = lockedMail({
+    locale,
+    name: user?.name ?? '',
+    until: time,
+    link: `${config().PUBLIC_BASE_URL}/zabravena-parola`,
+    signature,
+    domain: BRAND.signatureDomain,
+  });
+  return { to: toEmail, ...mail, attachments: [] };
+}
 
 /** Видът в опашката → писмото и пътят на връзката. */
 export const ACCOUNT_MAILS: Record<string, { kind: AccountMailKind; path: string }> = {

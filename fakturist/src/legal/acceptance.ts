@@ -3,6 +3,7 @@ import {
   ACCEPTED_ON_REGISTRATION,
   ACKNOWLEDGED_ON_REGISTRATION,
   LEGAL_DOCUMENTS,
+  type LegalDocumentId,
 } from './documents.js';
 
 /**
@@ -12,11 +13,21 @@ import {
  */
 export async function recordRegistrationAcceptance(
   tx: Prisma.TransactionClient,
-  input: { userId: string; organizationId: string; now?: Date },
+  input: {
+    userId: string;
+    organizationId: string;
+    now?: Date;
+    /** По подразбиране — всичко от регистрацията; член на фирма приема само условията и политиката. */
+    documents?: readonly LegalDocumentId[];
+  },
 ): Promise<void> {
   const acceptedAt = input.now ?? new Date();
+  const documents = input.documents ?? [
+    ...ACCEPTED_ON_REGISTRATION,
+    ...ACKNOWLEDGED_ON_REGISTRATION,
+  ];
   await tx.legalAcceptance.createMany({
-    data: [...ACCEPTED_ON_REGISTRATION, ...ACKNOWLEDGED_ON_REGISTRATION].map((document) => ({
+    data: documents.map((document) => ({
       userId: input.userId,
       organizationId: input.organizationId,
       document,

@@ -811,3 +811,25 @@ input[type='color'] {
   flex: 1 1 0;
   min-width: 0;
 }
+
+/* Членове (views/app/members.ejs): смяна на роля в реда и чакащите покани. */
+.inline-form {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+.inline-form label {
+  margin: 0;
+}
+.invite-list {
+  list-style: none;
+  margin: 0 0 var(--gap);
+  padding: 0;
+}
+.invite-list li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--rule);
+  overflow-wrap: anywhere;
+}

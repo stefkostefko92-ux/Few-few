@@ -36,7 +36,7 @@ export function errorMessage(error: unknown): string {
  */
 export function safeLogPath(url: string): string {
   return (url.split('?')[0] ?? '').replace(
-    /^\/(pokana|nova-parola|potvardi-imeyl)\/[^/]+/i,
+    /^\/(pokana|chlen|nova-parola|potvardi-imeyl)\/[^/]+/i,
     (_match, prefix: string) => `/${prefix.toLowerCase()}/[токен]`,
   );
 }

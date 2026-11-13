@@ -20,6 +20,7 @@ import { appInboxRouter } from './app-inbox.js';
 import { appClientsRouter } from './app-clients.js';
 import { appSettingsRouter } from './app-settings.js';
 import { appCatalogRouter } from './app-catalog.js';
+import { appMembersRouter } from './app-members.js';
 import { buyerFromParty, catalogForForm, saveBuyerAsParty } from '../catalog/document-prefill.js';
 
 /** Документите, издадени от фирмата през текущия месец — за мекия лимит на безплатния план. */
@@ -47,6 +48,7 @@ export function appRouter(): Router {
   router.use('/app', requireUser());
   router.use(appSecurityRouter());
   router.use(appCatalogRouter());
+  router.use(appMembersRouter());
   router.use(appInboxRouter());
   router.use(appClientsRouter());
   router.use(appSettingsRouter());
@@ -125,6 +127,7 @@ export function appRouter(): Router {
       pendingMandates,
       canManageMandates: roleCan(access.role, 'mandates.manage') && access.viaFirmId === null,
       canSettings: roleCan(access.role, 'org.settings') && access.viaFirmId === null,
+      canMembers: roleCan(access.role, 'members.manage') && access.viaFirmId === null,
       canParties: roleCan(access.role, 'parties.manage'),
       canItems: roleCan(access.role, 'items.manage'),
       canSeries: roleCan(access.role, 'series.manage') && access.viaFirmId === null,

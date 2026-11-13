@@ -9,6 +9,7 @@
 </div>
 <nav class="org-nav" aria-label="<%= org.legalName %>">
   <a href="/app/o/<%= org.id %>/shkafche"><%= t('app.inbox.title') %><% if (unread > 0) { %> <span class="tag tag-active"><%= t('app.inbox.unread', { count: unread }) %></span><% } %></a>
+  <% if (canMembers) { %><a href="/app/o/<%= org.id %>/chlenove"><%= t('app.members.title') %></a><% } %>
   <% if (canParties) { %><a href="/app/o/<%= org.id %>/kontragenti"><%= t('app.catalog.parties') %></a><% } %>
   <% if (canItems) { %><a href="/app/o/<%= org.id %>/artikuli"><%= t('app.catalog.items') %></a><% } %>
   <% if (canSeries) { %><a href="/app/o/<%= org.id %>/serii"><%= t('app.catalog.series') %></a><% } %>

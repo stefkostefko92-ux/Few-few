@@ -56,6 +56,14 @@ export function weaker(a: MemberRole, b: MemberRole): MemberRole {
   return RANK[a] <= RANK[b] ? a : b;
 }
 
+/**
+ * Може ли `actor` да даде или да управлява роля `target` (покани, смяна, махане — SPEC 45): само роли под
+ * своята и никога OWNER (собствеността минава само по покана за прехвърляне).
+ */
+export function canAssign(actor: MemberRole, target: MemberRole): boolean {
+  return target !== 'OWNER' && RANK[actor] > RANK[target];
+}
+
 export interface MembershipView {
   organizationId: string;
   role: MemberRole;

@@ -12,6 +12,9 @@ import { setting } from '../admin/settings.js';
 import { register, RegistrationError, RegistrationSchema } from '../accounts/register.js';
 import { MINUTE } from '../time.js';
 import { requestRateKey } from '../http/ip.js';
+import { attemptFailed, attemptSucceeded, reserveAttempt } from '../auth/lockout.js';
+import { queueLockedMail } from '../mail/account-mail.js';
+import { kickOutbox } from '../mail/outbox.js';
 
 /** Входът и регистрацията: най-много 10 опита за 15 минути от адрес. */
 const limiter = rateLimit({
@@ -29,7 +32,7 @@ export const MAX_FAILED_CODES = 5;
 
 /** Безопасен адрес за връщане след вход: само наш относителен път (приложението, панелът, покана). */
 function safeNext(value: unknown): string {
-  return typeof value === 'string' && /^\/(app|admin|pokana)(\/[\w\-./?=&%]*)?$/.test(value)
+  return typeof value === 'string' && /^\/(app|admin|pokana|chlen)(\/[\w\-./?=&%]*)?$/.test(value)
     ? value
     : '/app';
 }
@@ -62,14 +65,24 @@ export function authRouter(): Router {
     const email = parsed.success ? parsed.data.email : '';
     const next = safeNext(parsed.success ? parsed.data.next : undefined);
     const user = parsed.success ? await prisma.user.findUnique({ where: { email } }) : null;
-    // Еднакво време за несъществуващ акаунт — отговорът не издава кой имейл е регистриран.
+    // Опитът се заема преди проверката (SPEC 46): заключеният профил не проверява паролата си, но
+    // хешът пак се смята (фиктивен) — отговорът и времето не издават кой имейл съществува и дали е заключен.
+    const allowed = user ? await reserveAttempt(user.id) : false;
     const ok = await verifyPassword(
       parsed.success ? parsed.data.password : '',
-      user?.passwordHash ?? (await dummyHash()),
+      allowed && user ? user.passwordHash : await dummyHash(),
     );
-    if (!user || !ok || user.disabledAt) {
+    if (!user || !allowed || !ok || user.disabledAt) {
+      if (user && allowed && !ok) {
+        const lockedUntil = await attemptFailed(user.id);
+        if (lockedUntil) {
+          await queueLockedMail(user.id, user.email, lockedUntil);
+          kickOutbox();
+        }
+      }
       return res.status(400).render('auth/login', { error: 'auth.invalid', next, email });
     }
+    await attemptSucceeded(user.id);
     if (needsRehash(user.passwordHash) && parsed.success) {
       await prisma.user.update({
         where: { id: user.id },

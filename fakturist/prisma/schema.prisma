@@ -94,25 +94,32 @@ model User {
   /// Последната приета стъпка на TOTP — повторен код в същия прозорец не минава (и след рестарт).
   totpLastStep       Int?
   emailVerifiedAt    DateTime?
+  /// Грешните пароли подред (SPEC 46): при 5 профилът се заключва до `lockedUntil`; всяко поредно
+  /// заключване е по-дълго (`lockouts`: 15 мин → 1 ч → 4 ч → 24 ч). Успешен вход или нова парола нулират.
+  failedLogins       Int          @default(0)
+  lockedUntil        DateTime?
+  lockouts           Int          @default(0)
   lastLoginAt        DateTime?
   disabledAt         DateTime?
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
-  sessions         Session[]
-  memberships      Membership[]
-  issuedDocuments  Document[]        @relation("IssuedBy")
-  auditEntries     AuditLog[]
-  inboxDecisions   InboxEntry[]
-  mandatesCreated  ClientMandate[]
-  settingsChanged  Setting[]
-  flagsChanged     FeatureFlag[]
-  integrations     Integration[]
-  invitesCreated   TransferInvite[]  @relation("InviteCreatedBy")
-  invitesAccepted  TransferInvite[]  @relation("InviteAcceptedBy")
-  pdfStylesChanged PdfStyle[]
-  tokens           UserToken[]
-  legalAcceptances LegalAcceptance[]
+  sessions              Session[]
+  memberships           Membership[]
+  issuedDocuments       Document[]        @relation("IssuedBy")
+  auditEntries          AuditLog[]
+  inboxDecisions        InboxEntry[]
+  mandatesCreated       ClientMandate[]
+  settingsChanged       Setting[]
+  flagsChanged          FeatureFlag[]
+  integrations          Integration[]
+  invitesCreated        TransferInvite[]  @relation("InviteCreatedBy")
+  invitesAccepted       TransferInvite[]  @relation("InviteAcceptedBy")
+  pdfStylesChanged      PdfStyle[]
+  tokens                UserToken[]
+  legalAcceptances      LegalAcceptance[]
+  memberInvitesCreated  MemberInvite[]    @relation("MemberInviteCreatedBy")
+  memberInvitesAccepted MemberInvite[]    @relation("MemberInviteAcceptedBy")
 
   @@index([platformRole])
 }
@@ -187,6 +194,7 @@ model Organization {
   notifications    Notification[]
   transferInvites  TransferInvite[]
   pdfStyle         PdfStyle?
+  memberInvites    MemberInvite[]
   legalAcceptances LegalAcceptance[]
 
   @@index([kind])
@@ -645,4 +653,27 @@ model LegalAcceptance {
 
   @@index([userId])
   @@index([organizationId])
+}
+
+/// Покана за член на фирмата (SPEC 45): еднократна връзка 7 дни, в базата само SHA-256 на токена (в
+/// опашката с писма — шифрован). Ролята е под тази на поканилия; OWNER не се кани.
+model MemberInvite {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  role           MemberRole
+  tokenHash      String       @unique
+  createdById    String?
+  createdBy      User?        @relation("MemberInviteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  acceptedById   String?
+  acceptedBy     User?        @relation("MemberInviteAcceptedBy", fields: [acceptedById], references: [id], onDelete: SetNull)
+  revokedAt      DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([createdById])
+  @@index([acceptedById])
 }
