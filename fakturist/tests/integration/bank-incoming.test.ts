@@ -381,9 +381,15 @@ test('правен преглед: срокът — наредителят се 
     }),
     0,
   );
-  // Изтриване на извлечение: редовете си отиват, плащанията по фактурите — не.
+  // Изтриване на извлечение: несвързаните редове си отиват; свързаните остават без наредителя и
+  // основанието (ревюто на Кодаджията) — иначе повторният внос ги връща като нови и същият превод се
+  // свързва втори път. Плащанията по фактурите остават.
   const statement = await prisma.bankStatement.findFirstOrThrow({
-    where: { organizationId: orgId },
+    where: { organizationId: orgId, lines: { some: { status: 'MATCHED' } } },
+  });
+  const matched = await prisma.bankLine.findMany({
+    where: { statementId: statement.id, status: 'MATCHED' },
+    select: { id: true },
   });
   const payments = await prisma.documentPayment.count();
   const res = await http.post(
@@ -392,8 +398,35 @@ test('правен преглед: срокът — наредителят се 
     {},
   );
   assert.match(res.headers.get('location') ?? '', /ok=deleted/);
-  assert.equal(await prisma.bankLine.count({ where: { statementId: statement.id } }), 0);
+  const left = await prisma.bankLine.findMany({ where: { statementId: statement.id } });
+  assert.deepEqual(left.map((l) => l.id).sort(), matched.map((l) => l.id).sort());
+  assert.ok(
+    left.every(
+      (l) => l.counterparty === null && l.counterpartyIban === null && l.remittance === '',
+    ),
+    'наредителят и основанието са заличени',
+  );
   assert.equal(await prisma.documentPayment.count(), payments);
+  const reimport = await upload(
+    owner,
+    `/app/o/${orgId}/banka`,
+    's.xml',
+    CAMT053,
+    'application/xml',
+  );
+  assert.match(reimport.headers.get('location') ?? '', /err=duplicate/, 'същият файл — отказ');
+  const overlapAgain = await upload(
+    owner,
+    `/app/o/${orgId}/banka`,
+    's3.xml',
+    CAMT053.replace('STMT-1', 'STMT-1c'),
+    'application/xml',
+  );
+  assert.match(overlapAgain.headers.get('location') ?? '', /ok=imported/);
+  for (const line of matched) {
+    const same = await prisma.bankLine.findUniqueOrThrow({ where: { id: line.id } });
+    assert.equal(same.status, 'MATCHED', 'свързаният ред не се връща като нов');
+  }
   // Постъпление по-старо от 12 месеца не се внася наново.
   const old = 'Дата;Основание;Кредит\r\n01.01.2025;стар;5,00\r\n';
   const up = await upload(owner, `/app/o/${orgId}/banka`, 'old.csv', old, 'text/csv');

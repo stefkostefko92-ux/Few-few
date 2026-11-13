@@ -1,6 +1,14 @@
 import type { Prisma } from '@prisma/client';
 import { prisma } from '../db.js';
 import type { Interval } from './billing-core.js';
+import { DAY } from '../time.js';
+
+/**
+ * Гратисът на прихващането при активиране: кредитът е сметнат при поръчката, а преводът идва след дни.
+ * Записаният кредит се приема, ако не е по-голям от кредита към (датата на плащането − 7 дни); иначе
+ * клиентът би получил кредит и за времето, което е ползвал, докато чака да преведе (ревю, 13.11.2026).
+ */
+export const CREDIT_GRACE_MS = 7 * DAY;
 
 /**
  * Прихващане при смяна на план (решение на собственика, 13.11.2026; общите условия, т. 6): неизползваната
@@ -35,6 +43,27 @@ export interface Credit {
 
 type Db = Prisma.TransactionClient | typeof prisma;
 
+/** Неизползваното от платения период на абонамента към `now` (0 — не е платен или е изтекъл). */
+export async function subscriptionCredit(
+  db: Db,
+  subscription: { id: string; currentPeriodStart: Date; currentPeriodEnd: Date },
+  now: Date,
+): Promise<number> {
+  const paid = await db.payment.findFirst({
+    where: { subscriptionId: subscription.id, status: 'COMPLETED' },
+    orderBy: { paidAt: 'desc' },
+    select: { netCents: true, creditCents: true },
+  });
+  if (!paid) return 0;
+  return prorationCredit({
+    // Стойността на периода е цената му — и частта, покрита с прихващане от още по-предишен план.
+    paidNetCents: paid.netCents + paid.creditCents,
+    start: subscription.currentPeriodStart,
+    end: subscription.currentPeriodEnd,
+    now,
+  });
+}
+
 /** Кредитът за нова поръчка: действащ ПЛАТЕН абонамент с друг план или период. */
 export async function currentCredit(
   organizationId: string,
@@ -48,19 +77,7 @@ export async function currentCredit(
     orderBy: { createdAt: 'desc' },
   });
   if (!current || (current.planCode === planCode && current.interval === interval)) return null;
-  const paid = await db.payment.findFirst({
-    where: { subscriptionId: current.id, status: 'COMPLETED' },
-    orderBy: { paidAt: 'desc' },
-    select: { netCents: true, creditCents: true },
-  });
-  if (!paid) return null;
-  const cents = prorationCredit({
-    // Стойността на периода е цената му — и частта, покрита с прихващане от още по-предишен план.
-    paidNetCents: paid.netCents + paid.creditCents,
-    start: current.currentPeriodStart,
-    end: current.currentPeriodEnd,
-    now,
-  });
+  const cents = await subscriptionCredit(db, current, now);
   return cents > 0
     ? {
         cents,

@@ -683,7 +683,7 @@
       "svarzhi": "The payment is recorded on the invoice.",
       "propusni": "Skipped.",
       "otmeni": "Undone.",
-      "deleted": "The statement is deleted; payments on the invoices remain."
+      "deleted": "The statement is deleted. Lines linked to invoices remain without the payer’s name, account and reference, so the same payment is never imported twice. Payments on the invoices remain."
     },
     "err": {
       "feature": "Bank matching is in the Business plan and above.",

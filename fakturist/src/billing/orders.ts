@@ -4,7 +4,7 @@ import { audit } from '../audit.js';
 import { setting } from '../admin/settings.js';
 import { issueSettings } from '../documents/issue.js';
 import { addPeriod, issuePlanInvoice } from './plan-invoice.js';
-import { currentCredit } from './proration.js';
+import { CREDIT_GRACE_MS, currentCredit, subscriptionCredit } from './proration.js';
 import {
   BillingError,
   VAT_RATE_PERCENT,
@@ -189,29 +189,44 @@ export async function activatePayment(input: {
       where: { organizationId: customer.id, status: 'ACTIVE' },
       orderBy: { currentPeriodEnd: 'desc' },
     });
+    // Платен ли е действащият абонамент (безплатният — дори 100-годишният на кантората — не е).
+    const currentPaid =
+      current !== null &&
+      (await tx.payment.count({ where: { subscriptionId: current.id, status: 'COMPLETED' } })) > 0;
     // Заменена поръчка, платена след като по-нова е активирала ДРУГ платен план: не се пипа платеното
     // време — мастърът решава (връщане на парите или ръчно), card.ts я отбелязва за преглед.
     if (
       payment.status === 'CANCELLED' &&
       current &&
+      currentPaid &&
       current.currentPeriodEnd > input.paidAt &&
-      (current.planCode !== plan.code || current.interval !== interval) &&
-      (await tx.payment.count({ where: { subscriptionId: current.id, status: 'COMPLETED' } })) > 0
+      (current.planCode !== plan.code || current.interval !== interval)
     ) {
       throw new BillingError('needsReview');
     }
     // Прихванатото е от абонамент, който вече не е действащият (друга поръчка го смени или периодът
     // изтече преди плащането) — второ прихващане на същото време не се дава; мастърът решава.
-    if (
-      payment.creditCents > 0 &&
-      (!current ||
+    if (payment.creditCents > 0) {
+      if (
+        !current ||
         current.id !== payment.creditSubscriptionId ||
-        current.currentPeriodEnd <= input.paidAt)
-    ) {
-      throw new BillingError('creditStale');
+        current.currentPeriodEnd <= input.paidAt
+      ) {
+        throw new BillingError('creditStale');
+      }
+      // Кредитът е към датата на поръчката; към плащането (с гратис) не може да е по-голям — иначе
+      // ползваното, докато клиентът чака да преведе, би се приспаднало (ревюто на Кодаджията).
+      const allowed = await subscriptionCredit(
+        tx,
+        current,
+        new Date(input.paidAt.getTime() - CREDIT_GRACE_MS),
+      );
+      if (payment.creditCents > allowed) throw new BillingError('creditStale');
     }
+    // Удължава се само платен период; безплатният (и 100-годишният на кантората) не се удължава.
     const start =
       current &&
+      currentPaid &&
       current.planCode === plan.code &&
       current.interval === interval &&
       current.currentPeriodEnd > input.paidAt

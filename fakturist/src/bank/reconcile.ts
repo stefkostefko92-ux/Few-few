@@ -261,23 +261,38 @@ export async function undoLine(access: OrgAccess, actorId: string, lineId: strin
 export { DocumentPaymentError };
 export { numbersIn, suggest, suggestMany, type Suggestion } from './suggest.js';
 
-/** „Изтрий извлечението“: редовете му си отиват; плащанията по документите (счетоводният запис) остават. */
+/**
+ * „Изтрий извлечението“: несвързаните редове си отиват; свързаните остават без наредителя, сметката и
+ * основанието — ключът им пази от повторно внасяне на същия превод (иначе той пак е „нов“ и се свързва
+ * втори път; ревюто на Кодаджията). Извлечението остава, докато има свързани редове (отпечатъкът му спира
+ * същия файл). Плащанията по документите (счетоводният запис) остават.
+ */
 export async function deleteStatement(
   access: OrgAccess,
   actorId: string,
   statementId: string,
-): Promise<void> {
-  await prisma.$transaction(async (tx) => {
-    const deleted = await tx.bankStatement.deleteMany({
-      where: { id: statementId, organizationId: access.organizationId },
+): Promise<{ removed: number; kept: number }> {
+  return prisma.$transaction(async (tx) => {
+    const found = await tx.$queryRaw<Array<{ id: string }>>`
+      SELECT "id" FROM "BankStatement"
+      WHERE "id" = ${statementId} AND "organizationId" = ${access.organizationId} FOR UPDATE`;
+    if (found.length !== 1) throw new ReconcileError('notFound');
+    const removed = await tx.bankLine.deleteMany({
+      where: { statementId, status: { not: 'MATCHED' } },
     });
-    if (deleted.count !== 1) throw new ReconcileError('notFound');
+    const kept = await tx.bankLine.updateMany({
+      where: { statementId, status: 'MATCHED' },
+      data: { counterparty: null, counterpartyIban: null, remittance: '' },
+    });
+    if (kept.count === 0) await tx.bankStatement.delete({ where: { id: statementId } });
     await audit(tx, {
       actorId,
       organizationId: access.organizationId,
       action: 'bank.statement.deleted',
       targetType: 'BankStatement',
       targetId: statementId,
+      details: { removed: removed.count, kept: kept.count },
     });
+    return { removed: removed.count, kept: kept.count };
   });
 }
