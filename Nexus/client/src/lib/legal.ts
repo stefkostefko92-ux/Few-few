@@ -3,25 +3,29 @@
  * and JSON-LD. Single source of truth so changes (new VAT number, new
  * support address, new hosting region) ripple to every legal artefact.
  *
- * Данните са от публичния импресум на Carbon Stealth VCC (same operator
- * record as medqr/zabobovdol; ЕИК/ДДС от Търговския регистър).
+ * Фирмата е вписана в Търговския регистър и на латиница („Carbon Stealth VCC“), и на
+ * кирилица („Карбон Стелт ЕДПК“) — еднолично дружество с променлив капитал (чл. 260а и сл.
+ * ТЗ). Правните страници са на английски: там отделна форма за едноличното няма, затова е
+ * VCC, а българското име стои до латинското (с lang="bg").
  */
 export const OPERATOR = {
   legalName: 'Carbon Stealth VCC',
-  legalForm: 'дружество с променлив капитал (VCC)',
+  legalNameBg: 'Карбон Стелт ЕДПК',
+  legalForm: 'variable capital company (VCC) under Bulgarian law',
   tradingName: 'Nexus Dominion',
   address: {
-    street: 'ул. „Самуил“ 3',
+    street: 'ul. Samuil 3',
     postal: '2670',
-    city: 'Бобов дол',
-    country: 'България',
+    city: 'Bobov Dol',
+    country: 'Bulgaria',
   },
+  eik: '208725180',
   vat: 'BG208725180',
-  registry: 'ЕИК 208725180',
-  representative: 'Стефан Костадинов',
+  registry: 'Commercial Register and Register of Non-Profit Legal Entities (Registry Agency, Bulgaria)',
+  representative: 'Stefan Kostadinov',
   hosting: {
     name: 'Hetzner Online GmbH',
-    region: 'EU (Германия/Финландия)',
+    region: 'EU (Germany/Finland)',
   },
   // Само реално съществуващи пощи от фирмения запис (info/privacy/security) —
   // непотвърдени кутии (support@/dpo@/legal@) биха гълтали писма на играчи.
