@@ -183,8 +183,49 @@ ZIP отпреди месец.
   2FA тайните и ключовете на интеграциите зависят от него): първият успешен деплой пази отпечатъка му в
   `…/fakturist/ledger-seal-key.sha256` и друг ключ спира деплоя преди build-а. Откатът е към
   `FAKTURIST_LAST_GOOD` с `FAKTURIST_SKIP_BACKUP=1`; при провалена миграция (`P3009`/`P3018`) — човек.
-  Мастър акаунтът — веднъж с `fakturist/deploy/create-owner.sh` (паролата през stdin). Дневен бекъп
-  и restic засега **няма** — само дъмпът преди всеки деплой.
+  Мастър акаунтът — веднъж с `fakturist/deploy/create-owner.sh` (паролата през stdin).
+
+  **Бекъпи на fakturist** (само PostgreSQL — медия няма; моделът на `rilievi/deploy/backup.sh`):
+  - Преди всяка миграция: `…/fakturist/backups/pre-deploy-*.sql.gz` (последните 5).
+  - Дневно в 03:40 UTC: `fakturist-backup.timer` → `fakturist/deploy/backup.sh` от last-good →
+    `…/fakturist/backups/daily/fakturist-*.sql.gz` (600, папка 700). Пазят се последните 14, но
+    **никога по-стари от 90 дни** (договорът за обработване, т. 11). Скриптът отказва
+    `FAKTURIST_BACKUP_MAX_DAYS` над 90. Таванът за двата вида копия пази и
+    `/etc/cron.daily/fakturist-backups` (слага го `deploy.sh`), също и в дните, в които бекъпът не минава.
+  - Проверено възстановяване (`fakturist/deploy/restore-test.sh`): всеки дъмп се възстановява във временен
+    PostgreSQL (`--network none`, временна парола, махнат с тома си). Проверява се, че има приложени
+    миграции, че броят редове в `"Document"` и `"AuditLog"` съвпада с дъмпа и че веригите са цели:
+    поредни `chainIndex` по фирма, всеки `prevHash` сочи предишния. HMAC печатът не се проверява тук,
+    защото `LEDGER_SEAL_KEY` не излиза от `.env`; печата проверява мастър панелът. Провалът на
+    проверката е провал на бекъпа: ротацията не тръгва и добрите копия остават.
+  - Успех → `backups/LAST_OK`. Провал → `backups/LAST_ERROR`, критичен ред в журнала
+    (`fakturist-backup-alert.service`) и сигнал до `FAKTURIST_ALERT_URL`, ако е зададен.
+  - Копието извън сървъра е по избор. Задава се веднъж в `/opt/few-few/shared/fakturist/backup.env`
+    (600, root) с `FAKTURIST_OFFSITE=user@host:fakturist` (папката там се създава веднъж) и
+    `FAKTURIST_OFFSITE_SSH="-p 23 -i /root/.ssh/fakturist_backup"` (ключ само за това).
+    `FAKTURIST_HEARTBEAT_URL` (Uptime Kuma push) вдига аларма при пропуснат ден. Отиват само дъмповете,
+    огледално (`rsync --delete`): изтритото тук по срок изчезва и там. Ако бекъпът дълго не минава,
+    сложи и на отсрещната страна правило за триене след 90 дни.
+  - **Тайните не ги изнася нито скриптът, нито агент.** `/opt/few-few/shared/fakturist/.env` носи
+    `LEDGER_SEAL_KEY`, който не се сменя никога. Собственикът го копира веднъж, на ръка, на място само за
+    себе си. При възстановяване `.env` се връща **преди** базата, иначе веригата и 2FA не се проверяват.
+
+  Трите команди за собственика (на сървъра, като root):
+
+  ```bash
+  # 1) включване на таймера (deploy.sh го прави сам; тази е за проверка или ако е бил спрян)
+  sudo systemctl enable --now fakturist-backup.timer && systemctl list-timers fakturist-backup.timer
+  # 2) ръчен бекъп сега (дъмп + проверено възстановяване + копие извън сървъра, ако е зададено)
+  sudo systemctl start fakturist-backup.service && journalctl -u fakturist-backup -n 20 --no-pager
+  # 3) проверка на възстановяване на конкретен дъмп (живата база не се пипа)
+  cd "$(sudo head -n 1 /opt/few-few/shared/fakturist/last-good)" &&
+    sudo bash deploy/restore-test.sh "$(sudo sh -c 'ls -1t /opt/few-few/shared/fakturist/backups/daily/fakturist-*.sql.gz | head -n 1')"
+  ```
+
+  Възстановяване (дъмпът е с `--clean --if-exists` и заменя таблиците). Това е разрушително, затова
+  първо прави нов дъмп:
+  `cd "$(sudo head -n 1 /opt/few-few/shared/fakturist/last-good)" && sudo docker compose stop app &&
+  sudo zcat /opt/few-few/shared/fakturist/backups/daily/fakturist-<дата>.sql.gz | sudo docker compose exec -T db psql -v ON_ERROR_STOP=1 -q -U fakturist -d fakturist && sudo docker compose start app`.
 - **vpsdash** (VPS таблото): systemd модел. `rsync` към `/opt/vps-dashboard` (конфигът
   `/etc/vps-dashboard/config.json` и state `/var/lib/vps-dashboard` са извън release-а и оцеляват;
   `deploy/desktop/desktop.env` се пази), бекъп на кода, рестарт, health на `/api/ping` (401 = жив,

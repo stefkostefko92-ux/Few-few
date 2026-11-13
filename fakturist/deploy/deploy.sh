@@ -148,17 +148,34 @@ backup_db() {
   find "$dir" -maxdepth 1 -name 'pre-deploy-*.sql.gz' -printf '%T@ %p\n' | sort -rn |
     tail -n "+$((KEEP_BACKUPS + 1))" | cut -d' ' -f2- | xargs -r rm -f
   # Договорът за обработване обещава най-много 90 дни (т. 11) — и по възраст, не само по брой.
-  find "$dir" -maxdepth 1 -name 'pre-deploy-*.sql.gz' -mtime "+$BACKUP_MAX_DAYS" -delete
+  # -mtime +N трие от навършени N+1 дни, а cron минава веднъж на ден: N = таванът − 2 дава буквално ≤ 90.
+  find "$dir" -maxdepth 1 -name 'pre-deploy-*.sql.gz' -mtime "+$((BACKUP_MAX_DAYS - 2))" -delete
 }
 
 # Копията се трият по възраст и между деплоите: дневна задача на cron (идемпотентно — презаписва се).
+# Една задача за двата вида копия — преди деплой и дневните (deploy/backup.sh): таванът важи и в дните,
+# в които дневният бекъп не минава (тогава той не стига до собственото си чистене).
+CRON_DAILY="${FAKTURIST_CRON_DAILY:-/etc/cron.daily}"
 install_backup_prune() {
-  local job=/etc/cron.daily/fakturist-backups
-  [ -d /etc/cron.daily ] || return 1
-  printf '#!/bin/sh\n# Фактурист: резервните копия преди деплой — най-много %s дни (договор за обработване, т. 11).\nfind %s -maxdepth 1 -name '"'"'pre-deploy-*.sql.gz'"'"' -mtime +%s -delete 2>/dev/null || true\n' \
-    "$BACKUP_MAX_DAYS" "$SHARED/backups" "$BACKUP_MAX_DAYS" >"$job.tmp"
+  local job="$CRON_DAILY/fakturist-backups"
+  [ -d "$CRON_DAILY" ] || return 1
+  printf '#!/bin/sh\n# Фактурист: резервните копия (преди деплой и дневните) — най-много %s дни (договор за обработване, т. 11).\nfind %s -maxdepth 1 -name '"'"'pre-deploy-*.sql.gz'"'"' -mtime +%s -delete 2>/dev/null || true\nfind %s -maxdepth 1 -name '"'"'fakturist-*.sql.gz'"'"' -mtime +%s -delete 2>/dev/null || true\n' \
+    "$BACKUP_MAX_DAYS" "$SHARED/backups" "$((BACKUP_MAX_DAYS - 2))" "$SHARED/backups/daily" "$((BACKUP_MAX_DAYS - 2))" >"$job.tmp"
   chmod 755 "$job.tmp"
   mv -f "$job.tmp" "$job"
+}
+
+# Дневният бекъп: таймер на systemd (03:40 UTC) пуска deploy/backup.sh от последния работещ release.
+# Идемпотентно: файловете се презаписват от release-а, enable --now на включен таймер не прави нищо.
+SYSTEMD_DIR="${FAKTURIST_SYSTEMD_DIR:-/etc/systemd/system}"
+install_backup_timer() {
+  local unit
+  command -v systemctl >/dev/null 2>&1 || { warn "няма systemd — дневният бекъп не е сложен"; return 0; }
+  for unit in fakturist-backup.service fakturist-backup-alert.service fakturist-backup.timer; do
+    install -m 644 "$APP_DIR/deploy/systemd/$unit" "$SYSTEMD_DIR/$unit" || return 1
+  done
+  systemctl daemon-reload && systemctl enable --now fakturist-backup.timer >/dev/null 2>&1 || return 1
+  ok "дневният бекъп е включен (fakturist-backup.timer: 14 копия до 90 дни, проверено възстановяване)"
 }
 
 # Миграция, която още тече (entrypoint-ът на app я прилага): ред в _prisma_migrations без край, без
@@ -289,7 +306,8 @@ main() {
   remember_live || warn "не записах $LAST_GOOD — откатът сочи предишния release"
   remember_seal_key || warn "не записах отпечатъка на LEDGER_SEAL_KEY — следващият деплой опитва пак"
   sync_nginx "$port" || warn "nginx не е обновен — Фактурист е жив на 127.0.0.1:$port"
-  install_backup_prune || warn "няма /etc/cron.daily — копията се трият по възраст само при деплой"
+  install_backup_prune || warn "няма /etc/cron.daily — копията се трият по възраст само при деплой и бекъп"
+  install_backup_timer || warn "дневният бекъп не е сложен — deploy/README.md (fakturist)"
   hints || true
 }
 

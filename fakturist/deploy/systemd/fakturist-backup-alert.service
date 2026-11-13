@@ -1,0 +1,9 @@
+# Дневният бекъп на Фактурист се провали (OnFailure на fakturist-backup.service): журнал, файл
+# LAST_ERROR и — ако е зададен — FAKTURIST_ALERT_URL (deploy/backup-alert.sh).
+[Unit]
+Description=Fakturist — daily backup failed
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'exec /usr/bin/env bash "$(head -n 1 /opt/few-few/shared/fakturist/last-good)/deploy/backup-alert.sh"'
+UMask=0077
