@@ -8,7 +8,7 @@ import { DATI_VUOTI, vistaCartello } from '../cartelli/vista.js';
 import { config } from '../config.js';
 import { setFlash } from '../http/flash.js';
 import { vistaLimiter } from '../http/limits.js';
-import { notFound, renderImpostazioni } from './impostazioni.js';
+import { notFound, pathSezione, renderImpostazioni } from './impostazioni-vista.js';
 
 /**
  * Настройките на фирмата за табелата „Avviso di fermo impianto“: данните ѝ (главата на табелата до
@@ -34,6 +34,7 @@ impostazioniCartelloRouter.post('/impostazioni/dati', settings, requireCsrf, asy
       }),
     );
     return renderImpostazioni(res, 422, {
+      sezione: 'azienda',
       aziende,
       azienda,
       dati: { values, errors: parsed.errors },
@@ -41,7 +42,7 @@ impostazioniCartelloRouter.post('/impostazioni/dati', settings, requireCsrf, asy
   }
   if (!(await setDatiSocietari(user, azienda.id, parsed.data))) return notFound(req, res);
   setFlash(res, 'ok', 'flash.datiSaved');
-  res.redirect(303, `/impostazioni?azienda=${encodeURIComponent(azienda.id)}#h-dati`);
+  res.redirect(303, pathSezione('azienda', azienda.id));
 });
 
 impostazioniCartelloRouter.post(
@@ -55,11 +56,16 @@ impostazioniCartelloRouter.post(
     const azienda = aziende.find((a) => a.id === body.azienda);
     if (!azienda) return notFound(req, res);
     if (!isModelloId(body.modello)) {
-      return renderImpostazioni(res, 400, { aziende, azienda, error: 'impostazioni.error' });
+      return renderImpostazioni(res, 400, {
+        sezione: 'cartelli',
+        aziende,
+        azienda,
+        error: 'impostazioni.error',
+      });
     }
     if (!(await setCartelloModello(user, azienda.id, body.modello))) return notFound(req, res);
     setFlash(res, 'ok', 'flash.cartelloSaved');
-    res.redirect(303, `/impostazioni?azienda=${encodeURIComponent(azienda.id)}#h-cartello`);
+    res.redirect(303, pathSezione('cartelli', azienda.id));
   },
 );
 

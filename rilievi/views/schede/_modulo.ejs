@@ -31,7 +31,7 @@
   const on = campiApre.some((f) => active.has(f) && (Array.isArray(values[f]) ? values[f].includes(apre) : values[f] === apre));
 %><% if (slot.cede) { %><div class="field--wide" data-when="<%= slot.cede %>" data-when-values="si" data-when-not<% if (ceduto) { %> data-off<% } %>><% } %><div class="field--wide"<% if (marca) { %> data-when="<%= marca.field %>" data-when-values="<%= marca.value %>"<% } %><% if (off(marca)) { %> data-off<% } %>>
 <% for (const c of [modello, impianto]) if (c) { %><div data-when="<%= c.field %>" data-when-values="<%= c.value %>"<% if (off(c)) { %> data-off<% } %>><% } %>
-<div class="modulo" id="f-<%= slot.prefix %>" data-when="<%= slot.question %>"<% if (slot.apertura) { %> data-when-also="<%= slot.apertura.anche.join(' ') %>"<% } %> data-when-values="<%= apre %>"<% if (!on) { %> data-off<% } %> data-modulo data-gemelli="<%= slot.column %>:<%= slot.modulo.id %>">
+<div class="modulo" id="f-<%= slot.prefix %>" data-when="<%= slot.question %>"<% if (slot.apertura && slot.apertura.anche.length) { %> data-when-also="<%= slot.apertura.anche.join(' ') %>"<% } %> data-when-values="<%= apre %>"<% if (!on) { %> data-off<% } %> data-modulo data-gemelli="<%= slot.column %>:<%= slot.modulo.id %>">
   <input type="hidden" name="<%= slot.prefix %>-_" value="1">
   <div class="modulo__head">
     <p class="modulo__title"><strong><%= slot.modulo.titolo %></strong><% if (slot.modulo.fornitore) { %> · <%= slot.modulo.fornitore %><% } %></p>

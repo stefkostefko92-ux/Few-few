@@ -32,7 +32,7 @@ function sigilloRotto(res: Response, row: InterventoFull): void {
   res.redirect(303, `/interventi/${row.id}`);
 }
 
-async function pdfDi(
+export async function pdfDi(
   res: Response,
   row: InterventoFull,
 ): Promise<{ pdf: Buffer; filename: string }> {

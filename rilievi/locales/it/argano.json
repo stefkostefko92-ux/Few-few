@@ -1,11 +1,11 @@
 {
   "argano": {
     "titolo": "Calcolo argano",
-    "sottotitolo": "Verifiche per l'argano nuovo o modificato, con le formule della relazione tecnica RT-E MOD (UNI 10411-1).",
-    "normativa": "Verifiche secondo la relazione tecnica RT-E MOD per le modifiche agli impianti esistenti (UNI 10411-1); aderenza secondo EN 81-1 con i coefficienti C1 e C2.",
+    "sottotitolo": "Verifiche per l'argano nuovo o modificato, con le formule della relazione tecnica RT-E MOD (UNI 10411-1:2024; UNI 10411-11:2024 per gli impianti marcati CE).",
+    "normativa": "Verifiche secondo la relazione tecnica RT-E MOD (UNI 10411-1:2024, impianti non marcati CE): aderenza con i coefficienti C1 e C2 e pressione specifica secondo l'appendice D (D.1, D.2) della UNI 10411-1:2024.",
     "indietro": "Torna alla scheda",
     "apri": "Calcolo argano",
-    "proposto": "Dati proposti dal modulo rilievi dati argani della scheda: sono quelli dell'argano esistente. Controllali e inserisci quelli dell'argano nuovo.",
+    "proposto": "Dati proposti dal modulo «Dati argano» della scheda: sono quelli dell'argano esistente. Controllali e inserisci quelli dell'argano nuovo.",
     "salvatoIl": "Salvato il {quando} da {nome}",
     "conflitto": "Nel frattempo qualcuno ha salvato un altro calcolo per questa scheda. I tuoi dati sono qui sotto: controllali e salva di nuovo.",
     "calcola": "Calcola e salva",
@@ -30,8 +30,14 @@
       "schede": "Schede",
       "liberi": "Calcoli senza scheda",
       "nessuno": "Nessuna scheda e nessun calcolo trovati per «{q}».",
-      "altreSchede": "Altre {n} schede: aggiungi una parola alla ricerca.",
-      "altriLiberi": "Altri {n} calcoli: aggiungi una parola alla ricerca.",
+      "altreSchede": {
+        "one": "Un'altra scheda: aggiungi una parola alla ricerca.",
+        "other": "Altre {n} schede: aggiungi una parola alla ricerca."
+      },
+      "altriLiberi": {
+        "one": "Un altro calcolo: aggiungi una parola alla ricerca.",
+        "other": "Altri {n} calcoli: aggiungi una parola alla ricerca."
+      },
       "salvati": "Calcoli salvati",
       "vuoto": "Nessun calcolo salvato.",
       "vuotoHint": "Cerca una scheda qui sopra o crea un calcolo senza scheda.",
@@ -79,9 +85,9 @@
       "velocita": "Velocità preesistente (m/s)",
       "corsa": "Corsa (m)",
       "sospensione": "Sospensione",
-      "macchina": "Locale macchinario",
+      "macchina": "Locale macchina",
       "azionamento": "Azionamento",
-      "giriMotore": "Giri motore (rpm)",
+      "giriMotore": "Giri motore (giri/min)",
       "velocitaVvvf": "Velocità di esercizio con inverter (m/s)",
       "motoreVvvf": "Motore (con inverter)",
       "rapporto": "Rapporto di riduzione",
@@ -105,7 +111,7 @@
       "compensazione": "Compensazione",
       "compNumero": "Numero funi o catene",
       "compMisura": "Misura (mm)",
-      "compAltroD": "Misura fune o catena (mm)",
+      "compAltroD": "Diametro fune o catena (mm)",
       "compAltroMassa": "Massa lineare (kg/m)",
       "compMetaCorsa": "Catene da metà corsa al contrappeso",
       "massaTenditore": "Massa tenditore (kg)",
@@ -117,7 +123,7 @@
       "giriMotore": "Per 1 o 2 velocità: la velocità dopo la modifica si calcola dai giri.",
       "velocitaVvvf": "Con inverter: dai giri e dalla frequenza necessari per questa velocità.",
       "rapporto": "Ad esempio 1 : 50 oppure 2 : 53.",
-      "angoloGola": "Cuneo: angolo γ della gola. Semicircolare: angolo β dell'intaglio.",
+      "angoloGola": "Cuneo: angolo γ della gola. Semicircolare: angolo β dell'intaglio; con «Funi nuove» la relazione tecnica usa questo valore come angolo γ della gola, con β = 1,83 rad (circa 105°).",
       "funiSostituzione": "Cambia il coefficiente di attrito per le gole semicircolari, come nella relazione tecnica.",
       "decelerazioneRidotta": "Come nella relazione tecnica, solo se l'aderenza non è verificata con la decelerazione normale.",
       "altro": "Per una fune che non è nelle tabelle TELCAL e DONATI.",
@@ -127,7 +133,7 @@
       "compAltro": "Solo per una fune o una catena di compensazione che non è nelle tabelle della relazione tecnica.",
       "gola": "Con gola semicircolare senza intaglio e funi solo verificate la relazione tecnica non ha una formula per l'attrito: l'aderenza risulta non verificata.",
       "compMisura": "Dalle tabelle della relazione tecnica, catene o funi secondo la compensazione scelta. Se non c'è, scegli «Altra misura» e scrivi i dati qui sotto.",
-      "motoreVvvf": "1000 rpm: motore a 6 poli. 1500 rpm: a 4 poli."
+      "motoreVvvf": "1000 giri/min: motore a 6 poli. 1500 giri/min: a 4 poli."
     },
     "opzione": {
       "sospensione": {
@@ -145,8 +151,8 @@
         "VVVF": "Inverter VVVF"
       },
       "motoreVvvf": {
-        "1000": "1000 rpm",
-        "1500": "1500 rpm"
+        "1000": "1000 giri/min",
+        "1500": "1500 giri/min"
       },
       "gola": {
         "cuneo": "A cuneo",
@@ -192,7 +198,7 @@
       "taglia": "Sospensione",
       "vNuova": "Velocità dopo la modifica",
       "vPre": "Velocità preesistente",
-      "variazione": "Variazione (al massimo ±5 %)",
+      "variazione": "Variazione (al massimo ±5%)",
       "giriVvvf": "Giri motore per la velocità richiesta",
       "hzVvvf": "Frequenza dell'inverter",
       "funi": "Funi di trazione",
@@ -219,36 +225,36 @@
       "compContrappeso": "Massa della compensazione con il contrappeso in alto",
       "compDiametri": "Rapporto D/d della compensazione (almeno 30)",
       "aderenza": "Aderenza",
-      "t1": "T1 — lato cabina, cabina in basso con il 125 % del carico",
+      "t1": "T1 — lato cabina, cabina in basso con il 125% della portata",
       "t2": "T2 — lato contrappeso, cabina in basso",
-      "t1Alto": "T'1 — lato contrappeso, cabina in alto vuota",
-      "t2Alto": "T'2 — lato cabina, cabina in alto vuota",
+      "t1Alto": "T'1 — lato cabina, cabina in alto vuota",
+      "t2Alto": "T'2 — lato contrappeso, cabina in alto vuota",
       "decelerazione": "Decelerazione a",
       "f": "Coefficiente di attrito f",
       "rapportoBasso": "(T1 / T2) × C1 × C2, al massimo e^(f·α)",
-      "rapportoAlto": "(T'1 / T'2) × C1 × C2, al massimo e^(f·α)",
+      "rapportoAlto": "(T'2 / T'1) × C1 × C2, al massimo e^(f·α)",
       "pressione": "Pressione specifica",
       "velocitaFuni": "Velocità delle funi",
       "caricoStatico": "Carico statico massimo",
       "p": "Pressione specifica",
-      "pLim": "Pressione limite (12,5 + 4 v) / (1 + v)",
+      "pLim": "Pressione limite (12,5 + 4 v) / (1 + v) × 0,981 (relazione tecnica), v = velocità delle funi",
       "datiAMano": "Dati a mano"
     },
     "esito": {
       "velocita": {
-        "ok": "La variazione di velocità è entro il 5 %: non servono le condizioni del paragrafo 15 della UNI 10411-1.",
-        "no": "La variazione di velocità è oltre il 5 %: vanno rispettate le condizioni del paragrafo 15 della UNI 10411-1."
+        "ok": "Secondo il calcolo la variazione di velocità è entro il 5%: il tecnico valuta se si applica il paragrafo 15 della UNI 10411-1:2024 (UNI 10411-11:2024 per gli impianti marcati CE).",
+        "no": "La variazione di velocità è oltre il 5%: vanno rispettate le condizioni del paragrafo 15 della UNI 10411-1:2024 (UNI 10411-11:2024 per gli impianti marcati CE)."
       },
       "funi": {
-        "ok": "Funi di trazione verificate.",
+        "ok": "Verifica di calcolo soddisfatta con i dati inseriti: funi di trazione.",
         "no": "Funi di trazione non verificate: controlla numero, diametro, coefficiente di sicurezza e rapporto D/d."
       },
       "compensazione": {
-        "ok": "Compensazione verificata.",
+        "ok": "Verifica di calcolo soddisfatta con i dati inseriti: compensazione.",
         "no": "Compensazione non verificata: il rapporto D/d è sotto 30."
       },
       "aderenza": {
-        "ok": "Aderenza verificata nei due casi.",
+        "ok": "Verifica di calcolo soddisfatta con i dati inseriti: aderenza nei due casi.",
         "no": "Aderenza non verificata: cambia gola, angolo di avvolgimento, contrappeso o funi."
       },
       "pressione": {

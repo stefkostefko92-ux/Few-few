@@ -12,8 +12,8 @@ import { ROOT } from './serve.mjs';
 const SITE = path.resolve(ROOT, '..');
 const VIEWER = path.join(SITE, '3d-viewer');
 const IMAGES = path.join(SITE, 'img', '3d');
-// Parts shown on their own on the site (the home page's SG family card).
-const PARTS = ['SG-80-190'];
+// Parts shown on their own on the site (the home page's SG family card, the custom-brackets page).
+const PARTS = ['SG-80-190', 'BRACCIO-160-190'];
 // Renders shown wide (the home page's 3D poster) get a 1600 px WebP as well.
 const LARGE = ['SU-220-160+SG-80-150'];
 // Cuts of a render, [left, top, width, height] in its pixels: the home page's hero shows the tall

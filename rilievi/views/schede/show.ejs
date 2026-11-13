@@ -7,13 +7,19 @@
     <h1><%= ident %></h1>
     <p class="page-head__sub"><%= t('scheda.dateLine', { date: fmt.day(scheda.data) }) %></p>
   </div>
-  <div class="toolbar">
+  <div class="toolbar toolbar--griglia">
     <% if (!scheda.deletedAt && canIn('schede:write', scheda.aziendaId)) { %><a class="btn btn--primary" href="/schede/<%= scheda.id %>/modifica"><%- include('../partials/icon', { name: 'edit' }) %><%= t('scheda.actions.edit') %></a><% } %>
     <a class="btn" href="/schede/<%= scheda.id %>/stampa?auto=1"><%- include('../partials/icon', { name: 'print' }) %><%= t('scheda.actions.print') %></a>
-    <a class="btn" href="/schede/<%= scheda.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('scheda.actions.pdf') %></a>
-    <%# Изчислението за аргано — не при хидравлична уредба (там аргано няма). %>
-    <% if (!(scheda.tipoImpianto || []).includes('IDRAULICO')) { %><a class="btn" href="/schede/<%= scheda.id %>/calcolo-argano"><%- include('../partials/icon', { name: 'calc' }) %><%= t('argano.apri') %></a><% } %>
+    <a class="btn" data-pdf href="/schede/<%= scheda.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('scheda.actions.pdf') %></a>
+    <a class="btn" href="/schede/<%= scheda.id %>/etichetta"><%- include('../partials/icon', { name: 'print' }) %><%= t('etichetta.apri') %></a>
+    <%# Изчисленията за аргано и за ограничителя — не при хидравлична уредба (там аргано и раздел „Limitatore“ няма). %>
+    <% if (!(scheda.tipoImpianto || []).includes('IDRAULICO')) { %><a class="btn" href="/schede/<%= scheda.id %>/calcolo-argano"><%- include('../partials/icon', { name: 'calc' }) %><%= t('argano.apri') %></a>
+    <a class="btn" href="/schede/<%= scheda.id %>/calcolo-limitatore"><%- include('../partials/icon', { name: 'gauge' }) %><%= t('limitatore.apri') %></a><% } %>
     <% if (!scheda.deletedAt && canIn('interventi:write', scheda.aziendaId)) { %><a class="btn" href="/cartelli/nuovo?scheda=<%= scheda.id %>"><%- include('../partials/icon', { name: 'stop' }) %><%= t('cartelli.daScheda.crea') %></a><% } %>
+    <% if (!scheda.deletedAt && canIn('interventi:write', scheda.aziendaId)) { %><a class="btn" href="/buoni/nuovo?scheda=<%= scheda.id %>"><%- include('../partials/icon', { name: 'buono' }) %><%= t('buoni.daScheda.crea') %></a><% } %>
+    <% if (!scheda.deletedAt && scheda.azienda.preventiviAttivi && canIn('preventivi:write', scheda.aziendaId)) { %><a class="btn" href="/preventivi/nuovo?scheda=<%= scheda.id %>"><%- include('../partials/icon', { name: 'euro' }) %><%= t('preventivi.daScheda.crea') %></a><% } %>
+    <% if (!scheda.deletedAt && canIn('interventi:write', scheda.aziendaId)) { %><a class="btn" href="/verbali/nuovo?scheda=<%= scheda.id %>"><%- include('../partials/icon', { name: 'sign' }) %><%= t('verbali.daScheda.crea') %></a><% } %>
+    <% if (!scheda.deletedAt && canIn('schede:write', scheda.aziendaId)) { %><a class="btn" href="/schede/nuova?da=<%= scheda.id %>"><%- include('../partials/icon', { name: 'copy' }) %><%= t('flusso.duplica.azione') %></a><% } %>
     <% if (!scheda.deletedAt && canIn('schede:delete', scheda.aziendaId)) { %><a class="btn btn--ghost" href="/schede/<%= scheda.id %>/elimina"><%- include('../partials/icon', { name: 'trash' }) %><%= t('scheda.actions.delete') %></a><% } %>
   </div>
 </div>
@@ -44,8 +50,8 @@
         <dt><%= field.label %></dt>
         <% if (field.value) { %><dd><%= field.value %><% if (field.table) { %><%- include('_table', { table: field.table }) %><% } %><% if (field.modulo) { %>
           <span class="modulo-links"><span class="modulo-links__name"><%= field.modulo.nome %></span>
-            <a class="btn btn--sm" href="/schede/<%= scheda.id %>/<%= field.modulo.path %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('ordini.download') %></a>
-            <a class="btn btn--sm" href="/schede/<%= scheda.id %>/<%= field.modulo.path %>?inline=1" target="_blank" rel="noopener"><%- include('../partials/icon', { name: 'print' }) %><%= t('ordini.print') %></a>
+            <a class="btn btn--sm" data-pdf href="/schede/<%= scheda.id %>/<%= field.modulo.path %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('ordini.download') %></a>
+            <a class="btn btn--sm" data-pdf href="/schede/<%= scheda.id %>/<%= field.modulo.path %>?inline=1" target="_blank" rel="noopener"><%- include('../partials/icon', { name: 'print' }) %><%= t('ordini.print') %></a>
           </span><% } %></dd><% } else { %><dd class="empty-value">—</dd><% } %>
       </div>
       <% } %>
@@ -81,10 +87,39 @@
     </ul>
   </section>
   <% } %>
+  <% if (typeof buoni !== 'undefined' && buoni && buoni.length) { %>
+  <section class="cartelli-scheda" aria-labelledby="h-buoni-scheda">
+    <h2 class="section__title" id="h-buoni-scheda"><%= t('buoni.daScheda.dellaScheda') %></h2>
+    <ul role="list">
+      <% for (const b of buoni) { %><li><a href="/buoni/<%= b.id %>"><%= b.numero ? t('buoni.campo.numero') + ' ' + b.numero : t('buoni.senzaNumero') %></a> · <%= fmt.dayRoma(b.createdAt) %> · <%= b._count.firme === 0 ? t('buoni.firmeNessuna') : t('buoni.firmeN', { n: b._count.firme }) %></li>
+      <% } %>
+    </ul>
+  </section>
+  <% } %>
+  <% if (typeof preventivi !== 'undefined' && preventivi && preventivi.length) { %>
+  <section class="cartelli-scheda" aria-labelledby="h-preventivi-scheda">
+    <h2 class="section__title" id="h-preventivi-scheda"><%= t('preventivi.daScheda.dellaScheda') %></h2>
+    <ul role="list">
+      <% for (const p of preventivi) { %><li><a href="/preventivi/<%= p.id %>"><%= t('preventivi.numero', { n: p.numero }) %></a> · <%= fmt.day(p.data) %> · <%= t('preventivi.stato.' + p.stato) %></li>
+      <% } %>
+    </ul>
+  </section>
+  <% } %>
+  <% if (verbali && verbali.length) { %>
+  <section class="cartelli-scheda" aria-labelledby="h-verbali-scheda">
+    <h2 class="section__title" id="h-verbali-scheda"><%= t('verbali.daScheda.dellaScheda') %></h2>
+    <ul role="list">
+      <% for (const v of verbali) { %><li><a href="/verbali/<%= v.id %>"><%= fmt.day(v.data) %></a><% if (v.buono) { %> · <%= t('verbali.campo.buono') %> <%= v.buono %><% } %> · <%= t(v.confermatoAt ? 'verbali.stato.chiuso' : 'verbali.stato.bozza') %></li>
+      <% } %>
+    </ul>
+  </section>
+  <% } %>
+  <%- include('_flusso') %>
   <p class="sheet__meta">
     <% if (showAzienda) { %><span><%= t('scheda.field.azienda') %>: <%= scheda.azienda.name %></span><% } %>
     <span><%= t('scheda.meta.created', { name: scheda.createdBy ? scheda.createdBy.name : '—', at: fmt.dateTime(scheda.createdAt) }) %></span>
     <span><%= t('scheda.meta.updated', { name: scheda.updatedBy ? scheda.updatedBy.name : '—', at: fmt.dateTime(scheda.updatedAt) }) %></span>
+    <% if (scheda._count.versioni > 0) { %><span><a href="/schede/<%= scheda.id %>/versioni"><%= t('flusso.versioni.link', { n: scheda._count.versioni }) %></a></span><% } %>
   </p>
 </div>
 <% if (modifica) { %><%- include('_allegati-forms', { ritorno: 'scheda' }) %><% } %>

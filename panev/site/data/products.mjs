@@ -19,6 +19,8 @@ export const PATENT = { number: '202023000002112' };
 export const CATALOG_PDF = '/docs/catalogo-staffe-panev-2026.pdf';
 export const CATALOG_EDITION = '2026';
 export const CATALOG_PAGES = 72;
+// Докога важат цените от листа 2026 (Offer.priceValidUntil в JSON-LD): смени я с новия ценоразпис.
+export const CATALOG_VALID_UNTIL = '2026-12-31';
 
 // Снимките (img) са 3D рендерите на комплекта от img/3d/ (прави ги `cd 3d && npm run site`).
 

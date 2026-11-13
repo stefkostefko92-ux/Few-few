@@ -1,0 +1,23 @@
+/* Формулярът за сигнали (views/site/segnalazioni.ejs): една колона, широка колкото текста на страницата. */
+.segnala {
+  display: grid;
+  gap: 18px;
+  margin: 16px 0 8px;
+  max-width: 44rem;
+}
+.segnala .field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.segnala .textarea {
+  width: 100%;
+  resize: vertical;
+}
+.prose .segnala .errors h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+.prose .segnala .errors ul {
+  margin: 0;
+}

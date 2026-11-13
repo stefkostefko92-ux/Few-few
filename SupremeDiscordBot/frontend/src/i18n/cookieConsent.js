@@ -1,0 +1,160 @@
+// frontend/src/i18n/cookieConsent.js
+// Банерът за бисквитки на 8-те езика на сайта (23.10.2026).
+//
+// Отделен речник, а не ключове в i18n/dashboard: банерът се вижда и от анонимни
+// посетители на /bg, /de… (езикът идва от адреса), а речниците на таблото се
+// зареждат по езика на АКАУНТА — за анонимния те са само английски.
+//
+// ПРАВЕН ТЕКСТ (ePrivacy чл. 5(3), ОРЗД чл. 7): преводите следват английския
+// оригинал дума по дума, без да добавят или махат обещания. Преди пускане —
+// преглед от юрист за всеки език. Политиката за бисквитки е само на английски,
+// затова връзката го казва изрично на другите езици.
+
+export const COOKIE_CONSENT = {
+  en: {
+    dialog: "Cookie consent",
+    title: "We use cookies",
+    body: "We use essential cookies for authentication and session management. No tracking, no ads.",
+    policy: "Read our Cookie Policy",
+    essential: "Essential cookies",
+    essentialDesc: "Required for login, sessions, CSRF protection",
+    analytics: "Analytics cookies",
+    analyticsDesc: "Help us understand usage patterns (not currently used)",
+    marketing: "Marketing cookies",
+    marketingDesc: "Personalized content (not currently used)",
+    required: "(required)",
+    acceptAll: "Accept all",
+    reject: "Reject non-essential",
+    save: "Save preferences",
+    customize: "Customize",
+  },
+  bg: {
+    dialog: "Съгласие за бисквитки",
+    title: "Използваме бисквитки",
+    body: "Използваме необходими бисквитки за удостоверяване и управление на сесията. Без проследяване, без реклами.",
+    policy: "Прочетете Политиката за бисквитки (на английски)",
+    essential: "Необходими бисквитки",
+    essentialDesc: "Нужни за вход, сесии и защита от CSRF",
+    analytics: "Аналитични бисквитки",
+    analyticsDesc: "Помагат ни да разберем как се ползва услугата (в момента не се използват)",
+    marketing: "Маркетингови бисквитки",
+    marketingDesc: "Персонализирано съдържание (в момента не се използват)",
+    required: "(задължителни)",
+    acceptAll: "Приемам всички",
+    reject: "Отказвам незадължителните",
+    save: "Запази избора",
+    customize: "Настрой",
+  },
+  de: {
+    dialog: "Cookie-Einwilligung",
+    title: "Wir verwenden Cookies",
+    body: "Wir verwenden notwendige Cookies für die Anmeldung und die Sitzungsverwaltung. Kein Tracking, keine Werbung.",
+    policy: "Cookie-Richtlinie lesen (auf Englisch)",
+    essential: "Notwendige Cookies",
+    essentialDesc: "Erforderlich für Anmeldung, Sitzungen und CSRF-Schutz",
+    analytics: "Analyse-Cookies",
+    analyticsDesc: "Helfen uns, die Nutzung zu verstehen (derzeit nicht verwendet)",
+    marketing: "Marketing-Cookies",
+    marketingDesc: "Personalisierte Inhalte (derzeit nicht verwendet)",
+    required: "(erforderlich)",
+    acceptAll: "Alle akzeptieren",
+    reject: "Nicht notwendige ablehnen",
+    save: "Auswahl speichern",
+    customize: "Anpassen",
+  },
+  es: {
+    dialog: "Consentimiento de cookies",
+    title: "Usamos cookies",
+    body: "Usamos cookies esenciales para la autenticación y la gestión de la sesión. Sin rastreo, sin anuncios.",
+    policy: "Lee nuestra Política de cookies (en inglés)",
+    essential: "Cookies esenciales",
+    essentialDesc: "Necesarias para el inicio de sesión, las sesiones y la protección CSRF",
+    analytics: "Cookies analíticas",
+    analyticsDesc: "Nos ayudan a entender cómo se usa el servicio (no se usan actualmente)",
+    marketing: "Cookies de marketing",
+    marketingDesc: "Contenido personalizado (no se usan actualmente)",
+    required: "(obligatorias)",
+    acceptAll: "Aceptar todas",
+    reject: "Rechazar las no esenciales",
+    save: "Guardar preferencias",
+    customize: "Personalizar",
+  },
+  fr: {
+    dialog: "Consentement aux cookies",
+    title: "Nous utilisons des cookies",
+    body: "Nous utilisons des cookies essentiels pour l’authentification et la gestion de session. Aucun pistage, aucune publicité.",
+    policy: "Lire notre politique relative aux cookies (en anglais)",
+    essential: "Cookies essentiels",
+    essentialDesc: "Nécessaires à la connexion, aux sessions et à la protection CSRF",
+    analytics: "Cookies analytiques",
+    analyticsDesc: "Nous aident à comprendre l’utilisation du service (non utilisés actuellement)",
+    marketing: "Cookies marketing",
+    marketingDesc: "Contenu personnalisé (non utilisés actuellement)",
+    required: "(obligatoires)",
+    acceptAll: "Tout accepter",
+    reject: "Refuser les non essentiels",
+    save: "Enregistrer mes choix",
+    customize: "Personnaliser",
+  },
+  it: {
+    dialog: "Consenso ai cookie",
+    title: "Usiamo i cookie",
+    body: "Usiamo cookie essenziali per l’autenticazione e la gestione della sessione. Nessun tracciamento, nessuna pubblicità.",
+    policy: "Leggi la nostra Cookie Policy (in inglese)",
+    essential: "Cookie essenziali",
+    essentialDesc: "Necessari per accesso, sessioni e protezione CSRF",
+    analytics: "Cookie analitici",
+    analyticsDesc: "Ci aiutano a capire come viene usato il servizio (attualmente non utilizzati)",
+    marketing: "Cookie di marketing",
+    marketingDesc: "Contenuti personalizzati (attualmente non utilizzati)",
+    required: "(obbligatori)",
+    acceptAll: "Accetta tutti",
+    reject: "Rifiuta i non essenziali",
+    save: "Salva preferenze",
+    customize: "Personalizza",
+  },
+  nl: {
+    dialog: "Cookietoestemming",
+    title: "We gebruiken cookies",
+    body: "We gebruiken essentiële cookies voor aanmelding en sessiebeheer. Geen tracking, geen advertenties.",
+    policy: "Lees ons cookiebeleid (in het Engels)",
+    essential: "Essentiële cookies",
+    essentialDesc: "Nodig voor aanmelden, sessies en CSRF-beveiliging",
+    analytics: "Analytische cookies",
+    analyticsDesc: "Helpen ons het gebruik te begrijpen (momenteel niet gebruikt)",
+    marketing: "Marketingcookies",
+    marketingDesc: "Gepersonaliseerde inhoud (momenteel niet gebruikt)",
+    required: "(verplicht)",
+    acceptAll: "Alles accepteren",
+    reject: "Niet-essentiële weigeren",
+    save: "Voorkeuren opslaan",
+    customize: "Aanpassen",
+  },
+  pl: {
+    dialog: "Zgoda na pliki cookie",
+    title: "Używamy plików cookie",
+    body: "Używamy niezbędnych plików cookie do uwierzytelniania i zarządzania sesją. Bez śledzenia, bez reklam.",
+    policy: "Przeczytaj naszą politykę plików cookie (po angielsku)",
+    essential: "Niezbędne pliki cookie",
+    essentialDesc: "Wymagane do logowania, sesji i ochrony przed CSRF",
+    analytics: "Analityczne pliki cookie",
+    analyticsDesc: "Pomagają nam zrozumieć sposób korzystania z usługi (obecnie nieużywane)",
+    marketing: "Marketingowe pliki cookie",
+    marketingDesc: "Treści spersonalizowane (obecnie nieużywane)",
+    required: "(wymagane)",
+    acceptAll: "Akceptuj wszystkie",
+    reject: "Odrzuć inne niż niezbędne",
+    save: "Zapisz preferencje",
+    customize: "Dostosuj",
+  },
+};
+
+/**
+ * Езикът на банера: преведената страница в адреса (/bg, /de…) печели, иначе
+ * езикът на акаунта, иначе английски.
+ */
+export function cookieConsentLocale(pathname, accountLang) {
+  const seg = String(pathname || "").split("/")[1];
+  if (seg && seg !== "en" && COOKIE_CONSENT[seg]) return seg;
+  return COOKIE_CONSENT[accountLang] ? accountLang : "en";
+}

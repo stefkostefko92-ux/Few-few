@@ -11,6 +11,7 @@
 // или от scheduler-а при изтичане.
 import { prisma } from "../prisma.js";
 import { getServerTier } from "../premium.js";
+import { eachPage } from "../paginate.js";
 import { getGameSettings, grantXpOnce, XP_REWARDS, ensureProgress } from "./xp.js";
 import { TRIVIA_BANK } from "../../data/triviaBank.js";
 
@@ -145,19 +146,19 @@ export async function closeExpiredRounds(now = new Date()) {
  * KB въпроси само Premium. Известява бота да публикува.
  */
 export async function scheduleDue(now = new Date(), rand = Math.random) {
-  const servers = (await prisma.gameSettings.findMany({ where: { enabled: true, triviaChannelId: { not: null }, triviaSchedule: { in: ["daily", "weekly"] } }, take: 500 })) || [];
+  // С курсор през ВСИЧКИ сървъри (И2, lib/paginate.js) — не първите 500.
   let posted = 0;
-  for (const s of servers) {
+  await eachPage(prisma.gameSettings, { where: { enabled: true, triviaChannelId: { not: null }, triviaSchedule: { in: ["daily", "weekly"] } } }, async (s) => {
     const tier = await getServerTier(s.serverId);
     const schedule = s.triviaSchedule === "daily" && !tier.isPremium ? "weekly" : s.triviaSchedule;
     const last = await prisma.triviaRound.findFirst({ where: { serverId: s.serverId }, orderBy: { createdAt: "desc" }, select: { createdAt: true } });
-    if (last && now.getTime() - new Date(last.createdAt).getTime() < SCHEDULE_MS[schedule]) continue;
+    if (last && now.getTime() - new Date(last.createdAt).getTime() < SCHEDULE_MS[schedule]) return;
     // Premium: редуваме банк и база знания (KB пада на банк, когато статиите са < 4).
     const source = tier.isPremium && rand() < 0.5 ? "KB" : "BANK";
     const out = await createRound(s.serverId, s.triviaChannelId, { source, now, rand });
-    if (!out.ok) continue;
+    if (!out.ok) return;
     await notify("POST", { serverId: s.serverId, round: out.round });
     posted++;
-  }
+  }, { key: "serverId", onError: (err, s) => console.warn(`[trivia] сървър ${s.serverId}: ${err?.message}`) });
   return posted;
 }

@@ -61,9 +61,9 @@
       "submit": "Rifiuta la richiesta"
     },
     "delete": {
-      "title": "Elimina la richiesta",
+      "title": "Cancella la richiesta",
       "text": "Cancella subito i dati della richiesta, per esempio se il richiedente lo chiede. L'azienda e l'invito già creati restano.",
-      "submit": "Elimina definitivamente"
+      "submit": "Cancella definitivamente"
     },
     "result": {
       "azienda": "Azienda",

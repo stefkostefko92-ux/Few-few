@@ -193,10 +193,12 @@ describe('the second brief', () => {
       ],
       [true, false, 2, 'MONTANARI', true, 'MANCA_PERIFERICA', 'Selcom', '800 x 2000', '24 V DC'],
     );
+    // The old "Blocca portine" answer does not become the new question of 10 November 2026 (another column).
+    assert.equal(row.bloccaPortineDaInstallare, null);
     const page = await browser.get(`/schede/${id}`);
     assert.doesNotMatch(
       page.body,
-      /Blocca portine|Autolivellamento|Montanari|Manca periferica|Marca operatore|Selcom/,
+      /Autolivellamento|Montanari|Manca periferica|Marca operatore|Selcom/,
     );
   });
 

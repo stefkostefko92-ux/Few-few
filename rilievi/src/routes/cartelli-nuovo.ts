@@ -31,8 +31,8 @@ export const cartelliNuovoRouter: Router = Router();
 
 const write = requireCapability('interventi:write');
 
-/** Фирмите, в които човекът може да създаде табела (като при листа за интервенция). */
-async function aziendePerNuovo(req: Request) {
+/** Фирмите, в които човекът може да създаде табела (като при листа за интервенция; и протоколът). */
+export async function aziendePerNuovo(req: Request) {
   const user = principalOf(req).user;
   const writable = scope(req, 'interventi:write');
   const choices = writable.all
@@ -44,8 +44,8 @@ async function aziendePerNuovo(req: Request) {
   return { choices: only ? [] : choices, only };
 }
 
-/** Картите, от които човекът може да попълни табела: вижда ги и пише табели в тяхната фирма. */
-const fonteSchede = (req: Request) =>
+/** Картите, от които човекът може да попълни табела (и протокол): вижда ги и пише в тяхната фирма. */
+export const fonteSchede = (req: Request) =>
   intersezioneScope(scope(req, 'schede:read'), scope(req, 'interventi:write'));
 
 /** Картата във формата: каква е и докъде води „Cambia“. */
@@ -57,7 +57,7 @@ export interface SchedaScelta {
   aziendaName: string | null;
 }
 
-interface Ricerca {
+export interface Ricerca {
   query: string;
   rows: Array<SchedaRow & { segmenti: ReturnType<typeof highlight> }>;
   total: number;
@@ -89,7 +89,10 @@ export function renderForm(res: Response, status: number, view: FormView): void 
   });
 }
 
-function schedaScelta(row: Scheda, aziende: Array<{ id: string; name: string }>): SchedaScelta {
+export function schedaScelta(
+  row: Scheda,
+  aziende: Array<{ id: string; name: string }>,
+): SchedaScelta {
   return {
     id: row.id,
     matricola: row.matricola,

@@ -1,0 +1,120 @@
+name: rilievi health
+
+# Външен монитор на https://rilievi.carbonstealth.eu/health (собственикът, 12.11.2026): мъртъв сървър не може да
+# се обади сам. „Втори чифт очи“, не SLA — ограниченията:
+#  - `schedule` върви САМО от основния клон (main): монитор има чак след merge; `workflow_dispatch` — от всеки клон;
+#  - GitHub закъснява pull-овете по разписание (минути при натоварване); минутите са изместени (не :00);
+#  - в публично репо разписанието се изключва след 60 дни без активност в репото (пуска се наново от Actions);
+#  - ако GitHub е долу, монитор няма.
+# Състояние = отворен issue с етикет `rilievi-down`: аларма (issue + Discord) само при ПРОМЯНА.
+# Логиката на проверката — rilievi/deploy/monitor-health.sh (тест: rilievi/tests/deploy-monitor.test.ts).
+# Без чужди actions освен checkout (пиннат по SHA); `gh` е на runner-а.
+
+on:
+  schedule:
+    - cron: '7-59/10 * * * *' # :07, :17, … :57 UTC
+  workflow_dispatch:
+    inputs:
+      prova:
+        description: 'Проба: само пробно съобщение в Discord, без проверка и без да пипа issue-то'
+        type: boolean
+        default: false
+
+# Едно пускане наведнъж, вървящото не се прекъсва (иначе issue-то може да се раздвои).
+concurrency:
+  group: rilievi-health
+  cancel-in-progress: false
+
+# Least-privilege: чете кода (checkout) и пише само issue-та.
+permissions:
+  contents: read
+  issues: write
+
+env:
+  RILIEVI_HEALTH_URL: https://rilievi.carbonstealth.eu/health # не е таен
+
+jobs:
+  health:
+    # Не върви във форкове (там няма secret и би отварял issue-та в чужд репо).
+    if: github.repository == 'stefkostefko92-ux/Few-few'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PROVA: ${{ inputs.prova }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      # Само скриптовете: rilievi/deploy (monitor-health.sh и alert.sh за пращането).
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          sparse-checkout: rilievi/deploy
+          persist-credentials: false
+
+      - name: Проверка на /health
+        id: check
+        if: env.PROVA != 'true'
+        run: bash rilievi/deploy/monitor-health.sh
+
+      - name: Състояние (issue) и Discord
+        env:
+          STATO: ${{ steps.check.outputs.stato }}
+          DETTAGLIO: ${{ steps.check.outputs.dettaglio }}
+          # Адресът минава само през средата: не се печата, не е в аргументите на curl (alert.sh го праща през stdin).
+          RILIEVI_ALERT_URL: ${{ secrets.RILIEVI_ALERT_URL }}
+        run: |
+          set +x
+          set -euo pipefail
+          . rilievi/deploy/alert.sh
+
+          LABEL='rilievi-down'
+          TITLE='rilievi: il portale non risponde'
+          NOW="$(date -u '+%F %H:%M') UTC"
+          RUN="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+          # Discord: само истински webhook на Discord (https, discord.com/discordapp.com, /api/webhooks/);
+          # без secret или с друг адрес не се вика — workflow-ът не пада, issue-то върши работата.
+          manda() {
+            if [ -z "${RILIEVI_ALERT_URL:-}" ]; then
+              echo "Discord: secret mancante (RILIEVI_ALERT_URL) — l'avviso resta nell'issue"
+            elif ! alert_discord "$RILIEVI_ALERT_URL"; then
+              echo "Discord: l'indirizzo non è un webhook Discord — non si invia (l'indirizzo non si stampa)"
+            else
+              alert "$1"
+              echo "Discord: invio tentato (se fallisce, sopra c'è 'alert non inviato')"
+            fi
+          }
+
+          if [ "${PROVA:-}" = "true" ]; then
+            manda "rilievi: prova monitor da GitHub Actions, nessun guasto — $NOW"
+            exit 0
+          fi
+
+          case "$STATO" in su | giu) ;; *) echo "stato non valido" >&2; exit 1 ;; esac
+
+          # Състоянието „долу“ = отворен issue с етикета.
+          APERTO="$(gh issue list --label "$LABEL" --state open --limit 1 \
+            --json number,updatedAt \
+            --jq 'if length == 0 then empty else .[0] | "\(.number) \(.updatedAt)" end')"
+          NUM="${APERTO%% *}"
+          AGG="${APERTO#* }"
+
+          if [ "$STATO" = "giu" ]; then
+            if [ -z "$APERTO" ]; then
+              gh label create "$LABEL" --color B60205 \
+                --description "Monitor esterno: il portale non risponde" 2>/dev/null || true
+              gh issue create --title "$TITLE" --label "$LABEL" \
+                --body "Il portale non risponde da fuori (HTTP $DETTAGLIO) — $NOW. Controllo: $RUN. L'issue si chiude da sola quando torna raggiungibile."
+              manda "rilievi: il portale non risponde da fuori (HTTP $DETTAGLIO) — $NOW"
+            else
+              # Ancora giù: un commento al massimo all'ora, nessun nuovo avviso Discord.
+              ETA=$(( $(date -u +%s) - $(date -u -d "$AGG" +%s) ))
+              if [ "$ETA" -ge 3600 ]; then
+                gh issue comment "$NUM" --body "Ancora non risponde (HTTP $DETTAGLIO) — $NOW. Controllo: $RUN"
+              fi
+            fi
+          elif [ -n "$APERTO" ]; then
+            gh issue close "$NUM" --comment "Di nuovo raggiungibile — $NOW. Controllo: $RUN"
+            manda "rilievi: il portale è di nuovo raggiungibile — $NOW"
+          else
+            echo "Il portale risponde, nessun cambiamento."
+          fi

@@ -1,0 +1,137 @@
+/* Условията и правилата (`/condizioni`): съдържание горе, членовете с котви, отпечатъкът — с пренос. */
+.legale-pagina__lead {
+  margin-top: 16px;
+  font-size: 1.1875rem;
+  line-height: 1.55;
+}
+
+/* Индиректните адреси в текста („rilievi.carbonstealth.eu/esportazione#giurisdizione“) не разтягат страницата
+   на телефон — пренасят се, щом не се събират. */
+.legale-pagina {
+  overflow-wrap: break-word;
+}
+
+.prose .legale-pagina__meta {
+  font-size: 0.875rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.legale-indice {
+  margin: 24px 0 8px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+}
+
+.prose .legale-indice h2 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.legale-indice ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.prose section h3 {
+  margin-top: 24px;
+  scroll-margin-top: 80px;
+}
+
+/* `/esportazione`: разделите на dati.json — името, описанието и полетата (свити, дългите се пренасят). */
+.esportazione-campi {
+  margin: 16px 0 0;
+}
+
+.esportazione-campi > div {
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+
+.esportazione-campi dt code {
+  font-weight: 600;
+}
+
+.esportazione-campi dd {
+  margin: 4px 0 0;
+}
+
+.esportazione-campi dd p {
+  margin: 0 0 6px;
+}
+
+.esportazione-campi summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.esportazione-campi__elenco {
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+/* Състоянието на услугата (/stato): общото в рамка (дебела — проблем), частите в списък с дума, без цветове;
+   червеното — само за „Non disponibile“ (грешка). */
+.stato-generale {
+  margin: 16px 0 8px;
+  padding: 14px 16px;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+}
+
+.stato-generale--interruzione,
+.stato-generale--manutenzione {
+  border-width: 3px;
+}
+
+.stato-parti {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stato-parti li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line, #d0d0d0);
+}
+
+.stato-esito--attenzione {
+  text-decoration: underline dashed;
+}
+
+.stato-esito--errore {
+  color: var(--danger, #b00020);
+}
+
+.stato-avvisi {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 14px;
+}
+
+.stato-avviso {
+  padding: 12px 14px;
+  border: 1px solid var(--line, #d0d0d0);
+  border-left-width: 4px;
+  border-radius: 6px;
+}
+
+.stato-avviso p {
+  margin: 0 0 4px;
+}
+
+.stato-avviso__tipo {
+  display: inline-block;
+  margin-right: 6px;
+  font-size: 0.8125rem;
+  text-transform: none;
+}
+
+.stato-avviso__testo {
+  white-space: pre-line;
+}

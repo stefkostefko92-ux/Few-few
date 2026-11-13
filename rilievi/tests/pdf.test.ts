@@ -73,7 +73,7 @@ describe('the sheet PDF', { skip: !fontsHere && 'DejaVu fonts are not installed 
     assert.ok(fewer.length < all.length, 'four sections fewer, a shorter document');
   });
 
-  it('puts the photos of the sections at the end, from a new page, only when there are some', async () => {
+  it('puts the photos of the sections at the end, packed under the sheet, only when there are some', async () => {
     const options = {
       t: translatorFor('it'),
       fmt: viewHelpers('it'),
@@ -100,7 +100,16 @@ describe('the sheet PDF', { skip: !fontsHere && 'DejaVu fonts are not installed 
       foto: [
         {
           titolo: 'Impianto',
-          foto: [{ immagine: landscape, larghezza: 960, altezza: 720, didascalia: 'Ingresso' }],
+          // Annotated (C5): a red arrow over the photo, drawn in the PDF as on the page.
+          foto: [
+            {
+              immagine: landscape,
+              larghezza: 960,
+              altezza: 720,
+              didascalia: 'Ingresso',
+              annotazioni: { e: [{ t: 'p', c: 'r', s: 2, d: 'M200 200l400 300' }] },
+            },
+          ],
         },
         {
           titolo: 'Quadro',
@@ -109,13 +118,14 @@ describe('the sheet PDF', { skip: !fontsHere && 'DejaVu fonts are not installed 
             larghezza: 720,
             altezza: 960,
             didascalia: 'Targa del quadro',
+            annotazioni: null,
           })),
         },
       ],
     });
-    // A new page for the photos; upright ones go two rows of two to a page: one landscape row and one
-    // upright row on the first, the other two upright rows on the second.
-    assert.equal(pages(withPhotos) - pages(plain), 2);
+    // Packed to save paper (the owner, 5 November 2026): under the sheet when there is room, in justified
+    // rows — the landscape one, four upright, one upright. They used to take two pages of their own.
+    assert.ok(pages(withPhotos) - pages(plain) <= 1, `${pages(plain)} → ${pages(withPhotos)}`);
     assert.ok((withPhotos.toString('latin1').match(/\/Subtype \/Image/g) ?? []).length >= 2);
   });
 });

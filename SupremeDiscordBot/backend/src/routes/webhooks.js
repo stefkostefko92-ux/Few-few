@@ -94,7 +94,9 @@ router.put("/:serverId/webhooks/:id", requireServerAdmin, requirePremium("integr
       // `secret` липсва в тялото → остава; null/"" → маха се; низ → нов, шифрован.
       // Клиентът вече не вижда старата тайна, значи не може да я „върне" —
       // затова „не пипай" трябва да е изричен договор, не случайност.
-      data: { ...parsed.data, ...secretWrite(parsed.data.secret) },
+      // А2: включване наново нулира броячa — иначе webhook, изключен след 10
+      // провала, се изключва пак при първия следващ провал.
+      data: { ...parsed.data, ...secretWrite(parsed.data.secret), ...(parsed.data.enabled === true ? { failCount: 0 } : {}) },
     });
     res.json(publicHook(hook));
   } catch (err) { next(err); }

@@ -1,6 +1,6 @@
 // frontend/src/App.jsx
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { I18nProvider } from "./contexts/I18nContext";
@@ -29,6 +29,9 @@ const PanelSetupGuidePage = lazy(() => import("./pages/PanelSetupGuidePage"));
 // /features и /features/:slug — страници по функция (src/data/featurePages.js).
 const FeaturePage = lazy(() => import("./pages/FeaturePage"));
 const FeaturesHubPage = lazy(() => import("./pages/FeaturePage").then((m) => ({ default: m.FeaturesHubPage })));
+// /docs и /docs/:slug — ръководствата за клиенти (src/data/docsPages.js).
+const DocsPage = lazy(() => import("./pages/DocsPage"));
+const DocsHubPage = lazy(() => import("./pages/DocsPage").then((m) => ({ default: m.DocsHubPage })));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 const Layout = lazy(() => import("./components/Layout"));
@@ -47,12 +50,22 @@ const MfaGate = lazy(() => import("./components/MfaGate"));
 const VerificationPage = lazy(() => import("./pages/VerificationPage"));
 const CommandsPage = lazy(() => import("./pages/CommandsPage"));
 const GamePage = lazy(() => import("./pages/GamePage"));
-const AutomationPage = lazy(() => import("./pages/AutomationPage"));
+const PollsGiveawaysPage = lazy(() => import("./pages/PollsGiveawaysPage"));
+const MessagesPage = lazy(() => import("./pages/MessagesPage"));
+const WelcomeRolesPage = lazy(() => import("./pages/WelcomeRolesPage"));
+const BaitPage = lazy(() => import("./pages/BaitPage"));
+const ActivityLogPage = lazy(() => import("./pages/ActivityLogPage"));
 const WebhooksPage = lazy(() => import("./pages/WebhooksPage"));
 const KnowledgeBasePage = lazy(() => import("./pages/KnowledgeBasePage"));
 const TagsPage = lazy(() => import("./pages/TagsPage"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 const ApiKeysPage = lazy(() => import("./pages/ApiKeysPage"));
+
+// Запазена отметка към преместена страница отваря новата, не „404“.
+function MovedRoute({ to }) {
+  const { serverId } = useParams();
+  return <Navigate to={`/dashboard/${serverId}/${to}`} replace />;
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -121,7 +134,14 @@ export default function App() {
                 <Route path=":serverId/tickets" element={<TicketsPage />} />
                 <Route path=":serverId/applications" element={<ApplicationsPage />} />
                 <Route path=":serverId/verification" element={<VerificationPage />} />
-                <Route path=":serverId/automation" element={<AutomationPage />} />
+                <Route path=":serverId/bait" element={<BaitPage />} />
+                <Route path=":serverId/activity-log" element={<ActivityLogPage />} />
+                <Route path=":serverId/welcome" element={<WelcomeRolesPage />} />
+                <Route path=":serverId/polls" element={<PollsGiveawaysPage />} />
+                <Route path=":serverId/messages" element={<MessagesPage />} />
+                {/* Старият адрес пренасочва към новия: „Автоматизация“ е разделена
+                    на три страници (менюто по задачи, 12.11.2026). */}
+                <Route path=":serverId/automation" element={<MovedRoute to="polls" />} />
                 <Route path=":serverId/commands" element={<CommandsPage />} />
                 <Route path=":serverId/webhooks" element={<WebhooksPage />} />
                 <Route path=":serverId/kb" element={<KnowledgeBasePage />} />
@@ -154,6 +174,8 @@ export default function App() {
               <Route path="/guides/gdpr-discord-bot" element={<GdprDiscordBotGuidePage />} />
               <Route path="/guides/ticket-panel-setup" element={<PanelSetupGuidePage />} />
               {/* Страници по функция — маршрутите се извеждат от FEATURE_PAGES; неизвестен slug → 404. */}
+              <Route path="/docs" element={<DocsHubPage />} />
+              <Route path="/docs/:slug" element={<DocsPage />} />
               <Route path="/features" element={<FeaturesHubPage />} />
               <Route path="/features/:slug" element={<FeaturePage />} />
               {/* Catch-all */}
