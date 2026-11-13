@@ -551,3 +551,8 @@
 {"t":"handoff","ts":"2026-11-13T06:58:27.892Z","id":"r39d215ab","from":"kodadjiyata","to":"kachestveniyat","status":"блокер","run":"552c5055"}
 {"t":"start","ts":"2026-11-13T09:02:20.751Z","id":"r8da55ec4","flow":"авто","lead":"vps-adjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-13T09:02:20.751Z","id":"r8da55ec4","from":"vps-adjiyata","to":"човек","status":"има бележки","run":"a10a36ec"}
+{"t":"start","ts":"2026-11-13T10:06:18.717Z","id":"r9dcb5fd4","flow":"авто","lead":"dizayner","auto":true}
+{"t":"handoff","ts":"2026-11-13T10:06:18.717Z","id":"r9dcb5fd4","from":"dizayner","to":"друг","status":"има бележки","run":"d8a3fa64","toRaw":"главната сесия"}
+{"t":"start","ts":"2026-11-13T10:38:21.082Z","id":"r047025e8","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-13T10:38:21.082Z","id":"r047025e8","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"849c5b7c"}
+{"t":"handoff","ts":"2026-11-13T10:40:21.129Z","id":"r047025e8","from":"pravniyat-razbirach","to":"човек","status":"блокер","run":"4d85d8fe"}
