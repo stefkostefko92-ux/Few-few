@@ -35,7 +35,7 @@
   <h2 id="imprint"><%= lang === 'en' ? 'Imprint (service provider)' : 'Импресум (доставчик на услугата)' %></h2>
   <dl class="profile-view">
     <dt><%= lang === 'en' ? 'Company' : 'Дружество' %></dt>
-    <dd><%= company.name %> — <%= company.legalForm %></dd>
+    <dd><%= company.name %> — <%= lang === 'en' ? company.legalFormEn : company.legalForm %></dd>
     <dt><%= lang === 'en' ? 'UIC (ЕИК)' : 'ЕИК' %></dt>
     <dd><%= company.uic %></dd>
     <dt><%= lang === 'en' ? 'VAT No.' : 'ДДС №' %></dt>

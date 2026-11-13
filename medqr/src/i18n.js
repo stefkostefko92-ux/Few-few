@@ -77,6 +77,15 @@ export function transliterate(str) {
   return out;
 }
 // Име за показване: транслитерирано на латиница при английски режим.
+// Свободен текст (напр. „писмено“): в EN показваме оригинала И транслитерацията —
+// чуждият екип поне може да го прочете/произнесе, без да налучква значение.
+// Съзнателно НЕ превеждаме (машинен превод на медицински текст е опасен).
+export function withTransliteration(value, lang) {
+  const v = String(value ?? '');
+  if (lang !== 'en' || !/[\u0400-\u04FF]/.test(v)) return v;
+  return `${v} (${transliterate(v)})`;
+}
+
 export function displayName(value, lang) {
   return lang === 'en' ? transliterate(value) : value;
 }
@@ -611,6 +620,7 @@ const DICT = {
     bg: '1. Сканирайте кода с приложение за автентикация или въведете ключа ръчно.',
     en: '1. Scan the code with an authenticator app, or enter the key manually.',
   },
+  'tfa.manual_key': { bg: 'Ключ за ръчно въвеждане:', en: 'Key for manual entry:' },
   'tfa.qr_alt': { bg: 'QR код за настройка на 2FA', en: 'QR code for 2FA setup' },
   'tfa.pending2': {
     bg: '2. Въведете генерирания 6-цифрен код, за да потвърдите.',
@@ -625,8 +635,8 @@ const DICT = {
   'tfa.start': { bg: 'Започни настройка', en: 'Start setup' },
   'tfa.verify_title': { bg: 'Двуфакторна проверка', en: 'Two-factor verification' },
   'tfa.verify_intro': {
-    bg: 'Въведете 6-цифрения код от приложението ви за автентикация (напр. Google Authenticator, Authy).',
-    en: 'Enter the 6-digit code from your authenticator app (e.g. Google Authenticator, Authy).',
+    bg: 'Въведете 6-цифрения код от приложението ви за автентикация (напр. Google Authenticator, Authy) или един от резервните си кодове.',
+    en: 'Enter the 6-digit code from your authenticator app (e.g. Google Authenticator, Authy) or one of your backup codes.',
   },
   'tfa.confirm': { bg: 'Потвърди', en: 'Confirm' },
 
@@ -707,6 +717,10 @@ const DICT = {
   'msg.csrf': {
     bg: 'Невалидна или изтекла заявка (CSRF). Презаредете страницата и опитайте пак.',
     en: 'Invalid or expired request (CSRF). Reload the page and try again.',
+  },
+  'msg.pin_required': {
+    bg: 'Първо въведете PIN, за да споделите местоположение.',
+    en: 'Enter the PIN first to share your location.',
   },
   'msg.emerg_invalid': { bg: 'Невалиден или изтекъл код.', en: 'Invalid or expired code.' },
   // Грешки при вход/регистрация/2FA

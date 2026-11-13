@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
       loc_fail: 'Не успяхме да определим местоположението.',
       loc_label: 'Местоположение',
       sos_sent: 'Сигналът е изпратен до близките ти.',
+      sos_not_sent: 'Имейл сигналът НЕ е изпратен. Обади се на 112 или използвай SMS към близкия.',
       nfc_tap: 'Допрете таг до телефона…',
       nfc_done: 'Готово! Профилът е записан на тага.',
       nfc_fail: 'Записът не успя: ',
@@ -27,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
       loc_fail: 'Could not determine the location.',
       loc_label: 'Location',
       sos_sent: 'The alert was sent to your contacts.',
+      sos_not_sent: 'The email alert was NOT sent. Call 112 or use the SMS to your contact.',
       nfc_tap: 'Tap a tag to your phone…',
       nfc_done: 'Done! The profile was written to the tag.',
       nfc_fail: 'Write failed: ',
@@ -53,8 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('offline', syncOnline);
   syncOnline();
 
-  // При изход изчистваме личния кеш (SOS/табло/спешен изглед) за поверителност.
-  document.querySelectorAll('form[action="/logout"]').forEach((f) =>
+  // При изход и при изтриване на акаунт изчистваме личния кеш (SOS/табло) за поверителност.
+  document.querySelectorAll('form[action="/logout"], form[action="/profile/delete"]').forEach((f) =>
     f.addEventListener('submit', () => {
       try {
         if (navigator.serviceWorker && navigator.serviceWorker.controller)
@@ -388,14 +390,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (peopleBtn)
       peopleBtn.addEventListener('click', () => {
         const phone = sos.getAttribute('data-contact-phone');
-        const send = (lat, lng) => {
+        const send = async (lat, lng) => {
           const maps = lat != null ? `https://www.google.com/maps?q=${lat},${lng}` : '';
-          fetch('/sos/alert', {
-            method: 'POST',
-            headers: { 'content-type': 'application/json', 'x-csrf-token': csrf() },
-            body: JSON.stringify({ lat, lng }),
-          }).catch(() => {});
-          setStatus(STR.sos_sent);
+          // Успех се обявява само ако сървърът реално е пратил известие. Преди това
+          // интерфейсът казваше „изпратен“ дори офлайн или без настроен близък.
+          let notified = false;
+          try {
+            const res = await fetch('/sos/alert', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json', 'x-csrf-token': csrf() },
+              body: JSON.stringify({ lat, lng }),
+              signal:
+                typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function'
+                  ? AbortSignal.timeout(8000)
+                  : undefined,
+            });
+            if (res.ok) notified = !!(await res.json().catch(() => ({}))).notified;
+          } catch {
+            /* офлайн/таймаут — остава notified=false */
+          }
+          setStatus(notified ? STR.sos_sent : STR.sos_not_sent);
           if (phone) {
             const smsText =
               docLang === 'en'

@@ -24,9 +24,12 @@ import {
   destroyUserSessions,
   requireAuth,
   consumeRecoveryCode,
+  randomToken,
 } from '../auth.js';
 
 const router = asyncRouter();
+// Хеш на случайна парола — само за изравняване на времето при непознат имейл.
+const DUMMY_HASH = await hashPassword(randomToken(18));
 const CONSENT_VERSION = '1.0';
 const MIN_PASSWORD = 10;
 const prod = process.env.NODE_ENV === 'production';
@@ -150,7 +153,12 @@ router.post('/login', async (req, res) => {
   // Еднакво съобщение при липсващ потребител и грешна парола (без разкриване).
   const bad = () => res.status(401).render('login', { error: t('err.bad_login'), email });
 
-  if (!user) return bad();
+  if (!user) {
+    // Същата скъпа Argon2 работа като при съществуващ акаунт, за да не се разкрива
+    // по времето на отговора кои имейли са регистрирани.
+    await verifyPassword(password, DUMMY_HASH);
+    return bad();
+  }
   if (isLocked(user)) {
     audit(req, 'login_locked', { userId: user.id });
     return res.status(429).render('login', { error: t('err.locked'), email });
@@ -196,6 +204,12 @@ router.post('/2fa', async (req, res) => {
   if (!userId) return res.redirect('/login');
 
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
+  // Без лимит на опитите за акаунт 2FA кодът (6 цифри) можеше да се налучква от много
+  // IP адреса — общият лимит е само на IP. Същото заключване като при паролата.
+  if (isLocked(user)) {
+    audit(req, 'login_locked', { userId });
+    return res.status(429).render('2fa-verify', { error: res.locals.t('err.locked') });
+  }
   const code = String(req.body.code || '').replace(/\s+/g, '');
   const secret = decrypt(user.totp_secret);
 
@@ -204,10 +218,12 @@ router.post('/2fa', async (req, res) => {
   const recoveryOk = !totpOk && (await consumeRecoveryCode(userId, code));
 
   if (!totpOk && !recoveryOk) {
-    audit(req, 'twofactor_fail', { userId });
+    const locked = registerFailedAttempt(user);
+    audit(req, locked ? 'login_lockout' : 'twofactor_fail', { userId });
     return res.status(401).render('2fa-verify', { error: res.locals.t('err.bad_code') });
   }
 
+  resetAttempts(userId);
   destroyPending(req.cookies.p2fa);
   res.clearCookie('p2fa');
   const remember = req.cookies?.rmb === '1';

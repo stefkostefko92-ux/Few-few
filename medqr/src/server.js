@@ -27,8 +27,8 @@ import {
   webManifest,
   securityTxt,
 } from './seo.js';
-import { LANGS, pickLang, makeT, clinicalLabel, displayName } from './i18n.js';
-import { ALLERGIES, CONDITIONS, medLabels, sortedCountries } from './medical.js';
+import { LANGS, pickLang, makeT, clinicalLabel, displayName, withTransliteration } from './i18n.js';
+import { ALLERGIES, ALLERGY_GROUPS, CONDITIONS, medLabels, sortedCountries } from './medical.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const prod = process.env.NODE_ENV === 'production';
@@ -44,6 +44,7 @@ app.disable('x-powered-by');
 const COMPANY = {
   name: 'Carbon Stealth VCC',
   legalForm: 'дружество с променлив капитал (VCC)',
+  legalFormEn: 'variable capital company (VCC)',
   url: 'https://carbonstealth.eu',
   uic: '208725180', // ЕИК
   vat: 'BG208725180', // ДДС №
@@ -150,7 +151,9 @@ app.use((req, res, next) => {
   res.locals.t = makeT(lang);
   res.locals.clin = (value) => clinicalLabel(value, lang);
   res.locals.name = (value) => displayName(value, lang);
+  res.locals.both = (value) => withTransliteration(value, lang);
   res.locals.ALLERGIES = ALLERGIES;
+  res.locals.ALLERGY_GROUPS = ALLERGY_GROUPS;
   res.locals.CONDITIONS = CONDITIONS;
   res.locals.COUNTRIES = sortedCountries(lang);
   // CSV от ключове → масив преведени етикети (структурирани алергии/състояния).
@@ -315,10 +318,16 @@ app.use((err, req, res, _next) => {
 // Периодично чистене: изтекли токени/чакащи входове и стари записи (задържане).
 function retentionCleanup() {
   try {
-    db.prepare("DELETE FROM tokens WHERE expires_at <= datetime('now')").run();
-    db.prepare("DELETE FROM pending_logins WHERE expires_at <= datetime('now')").run();
-    db.prepare("DELETE FROM webauthn_challenges WHERE expires_at <= datetime('now')").run();
-    db.prepare("DELETE FROM sessions WHERE expires_at <= datetime('now')").run();
+    db.prepare("DELETE FROM tokens WHERE expires_at <= strftime('%Y-%m-%dT%H:%M:%fZ','now')").run();
+    db.prepare(
+      "DELETE FROM pending_logins WHERE expires_at <= strftime('%Y-%m-%dT%H:%M:%fZ','now')"
+    ).run();
+    db.prepare(
+      "DELETE FROM webauthn_challenges WHERE expires_at <= strftime('%Y-%m-%dT%H:%M:%fZ','now')"
+    ).run();
+    db.prepare(
+      "DELETE FROM sessions WHERE expires_at <= strftime('%Y-%m-%dT%H:%M:%fZ','now')"
+    ).run();
     db.prepare("DELETE FROM access_log WHERE accessed_at < datetime('now','-365 days')").run();
     db.prepare("DELETE FROM audit_log WHERE at < datetime('now','-730 days')").run();
   } catch (e) {
@@ -341,6 +350,13 @@ function validateEnv() {
   if (problems.length) {
     console.error('Грешка в конфигурацията:\n - ' + problems.join('\n - '));
     process.exit(1);
+  }
+  // Не е фатално, но трябва да е видимо: без SMTP писмата (потвърждение, нова парола,
+  // известия до близки) НЕ тръгват, а интерфейсът скрива „известен е близкият“.
+  if (!process.env.SMTP_HOST) {
+    console.warn(
+      '[ВНИМАНИЕ] SMTP_HOST не е зададен — имейлите (вкл. известия до близки и нова парола) няма да се доставят.'
+    );
   }
 }
 
