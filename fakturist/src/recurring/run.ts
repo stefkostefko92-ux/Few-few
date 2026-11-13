@@ -15,6 +15,7 @@ import {
   type IssueRequest,
 } from '../documents/issue.js';
 import { sofiaToday } from '../time.js';
+import { isPdfLanguage } from '../documents/pdf-labels.js';
 import { externalMailAllowed } from '../mail/external-quota.js';
 import { addDays, fillPeriod, nextAfter, periodKey, periodLabel } from './schedule.js';
 
@@ -132,7 +133,10 @@ async function runOne(id: string, today: string): Promise<Outcome> {
           access,
           template.createdById!,
           requestFor(template, today),
-          { recurring: { id, period } },
+          {
+            recurring: { id, period },
+            pdfLanguage: isPdfLanguage(template.pdfLanguage) ? template.pdfLanguage : 'bg',
+          },
           settings,
         );
         const next = nextAfter(run, template.frequency, template.anchorDay, today);

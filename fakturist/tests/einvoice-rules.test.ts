@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { buildEInvoice, type InvoiceInput } from '../src/einvoice/index.js';
+import {
+  buildEInvoice,
+  calculate,
+  DEFAULT_RULE_OPTIONS,
+  validateDocument,
+  type InvoiceInput,
+} from '../src/einvoice/index.js';
 import { SAMPLES, creditNote, domestic, reverseCharge } from './fixtures/einvoice-samples.js';
 
 function rulesOf(input: unknown, options = {}): string[] {
@@ -112,4 +118,22 @@ test('невалиден вход (float, буква в количество) с
   });
   assert.equal(result.ok, false);
   assert.ok(result.issues.every((i) => i.rule === 'INPUT'));
+});
+
+test('BG-07: при обратно начисляване основанието е с „обратно начисляване“ на български (чл. 114, ал. 4)', () => {
+  const english = {
+    ...reverseCharge,
+    vatExemptions: [
+      { category: 'AE' as const, reason: 'Reverse charge, Art. 44 Directive 2006/112' },
+    ],
+  };
+  const issues = validateDocument(english, calculate(english), DEFAULT_RULE_OPTIONS);
+  assert.ok(issues.some((i) => i.rule === 'BG-07' && i.severity === 'fatal'));
+  const both = {
+    ...reverseCharge,
+    vatExemptions: [{ category: 'AE' as const, reason: 'Обратно начисляване / Reverse charge' }],
+  };
+  assert.ok(
+    !validateDocument(both, calculate(both), DEFAULT_RULE_OPTIONS).some((i) => i.rule === 'BG-07'),
+  );
 });

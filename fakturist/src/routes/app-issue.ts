@@ -9,6 +9,7 @@ import {
   SeriesExhausted,
 } from '../documents/issue.js';
 import { formToIssueRequest, inputToFormValues } from '../documents/form.js';
+import { isPdfLanguage } from '../documents/pdf-labels.js';
 import {
   ANNUL_REASONS,
   AnnulError,
@@ -72,6 +73,7 @@ export function appIssueRouter(): Router {
         });
       return renderNewDocument(req, res, access.organizationId, null, {
         ...inputToFormValues(old.input),
+        pdfLanguage: old.pdfLanguage,
         replaces: old.id,
       });
     }
@@ -109,8 +111,10 @@ export function appIssueRouter(): Router {
       return renderNewDocument(req, res, access.organizationId, issues, req.body, 400);
     }
     try {
+      const language = bodyString(req, 'pdfLanguage');
       const result = await issueDocument(access, req.principal!.user.id, request.data, {
         replaces,
+        pdfLanguage: isPdfLanguage(language) ? language : 'bg',
       });
       if (bodyString(req, 'saveBuyer') === 'on') {
         await saveBuyerAsParty({

@@ -43,6 +43,7 @@ function form(extra: Record<string, string> = {}): Record<string, string> {
     'buyer[postalCode]': '1000',
     'buyer[countryCode]': 'BG',
     'buyer[email]': 'Plashtaniya@Roza.example',
+    pdfLanguage: 'bg-en',
     'lines[0][name]': 'Поддръжка',
     'lines[0][quantity]': '1',
     'lines[0][unitCode]': 'C62',
@@ -170,6 +171,12 @@ test('повтаряща се от издадена фактура: един д�
   assert.equal(doc.issueDate.toISOString().slice(0, 10), today);
   assert.equal(doc.dueDate?.toISOString().slice(0, 10), addDays(today, 10));
   assert.equal(doc.recurringPeriod, today.slice(0, 7));
+  // Двуезичният PDF на документа-източник минава към шаблона и към издадените от него.
+  assert.equal(
+    (await prisma.document.findUniqueOrThrow({ where: { id: sourceId } })).pdfLanguage,
+    'bg-en',
+  );
+  assert.equal(doc.pdfLanguage, 'bg-en');
   const month = new Intl.DateTimeFormat('bg-BG', { month: 'long', timeZone: 'UTC' }).format(
     new Date(`${today}T00:00:00Z`),
   );

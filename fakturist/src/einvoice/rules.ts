@@ -282,7 +282,9 @@ export function validateDocument(
         'При нулева ставка или неначисляване се посочва основанието като текст (чл. 114, ал. 1, т. 12 ЗДДС).',
         'With a zero rate or no VAT charged, the legal basis must be stated as text (Art. 114(1)(12) of the VAT Act).',
       );
-    } else if (category === 'AE' && !/обратно начисляване|reverse charge/i.test(entry.reason)) {
+    } else if (category === 'AE' && !/обратно начисляване/i.test(entry.reason)) {
+      // Чл. 114, ал. 4 ЗДДС иска текста на български; „Reverse charge“ (Дир. 2006/112, чл. 226, т. 11а)
+      // може да е до него, не вместо него (Данъчника, 13.11.2026).
       fail(
         'BG-07',
         'vatExemptions',

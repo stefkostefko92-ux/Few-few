@@ -18,6 +18,7 @@ import { formatNumber } from './numbering.js';
 import { deliverToInbox, type Delivery } from '../inbox/deliver.js';
 import type { OrgAccess } from '../auth/guards.js';
 import { recheckAccess } from './recheck.js';
+import type { PdfLanguage } from './pdf-labels.js';
 
 /**
  * Това, което издаващият подава: всичко без номера и без доставчика. Доставчикът идва от данните на
@@ -32,6 +33,8 @@ export type IssueRequest = z.infer<typeof IssueRequestSchema>;
 export interface IssueOptions {
   replaces?: { documentId: string; reason: AnnulReason };
   recurring?: { id: string; period: string };
+  /** Езикът на PDF копието (src/documents/pdf-labels.ts) — по подразбиране български. */
+  pdfLanguage?: PdfLanguage;
 }
 
 export class IssueRejected extends Error {
@@ -227,6 +230,7 @@ export async function issueInTx(
         precedingId: preceding?.id ?? null,
         recurringId: options.recurring?.id ?? null,
         recurringPeriod: options.recurring?.period ?? null,
+        pdfLanguage: options.pdfLanguage ?? 'bg',
         issuedAt: new Date(),
       },
       select: { id: true },

@@ -6,7 +6,8 @@ import type { InvoiceInput, PartyInput } from '../einvoice/model.js';
 import { bgAmount, bgDate, MEANS, partyLines, TITLES, UNITS, unitPrice } from './pdf-format.js';
 import { drawDates, drawHeader, INK, METRICS, RULE, SOFT, tint, type Frame } from './pdf-layout.js';
 import type { ResolvedPdfStyle } from './pdf-style.js';
-import { drawAnnulledStamp } from './pdf-stamp.js';
+import { drawFooters } from './pdf-footer.js';
+import { issuedViaText, labeler, type PdfLanguage } from './pdf-labels.js';
 export { bgAmount } from './pdf-format.js';
 
 /**
@@ -23,6 +24,8 @@ export interface PdfMeta {
   /** Кантората и пълномощното, когато документът е издаден от името на фирмата. */
   issuedVia: { firm: string; mandateRef: string } | null;
   annulled?: string | null; // „АНУЛИРАН …“ горе на всяка страница (чл. 116 ЗДДС, pdf-stamp.ts)
+  /** Български или двуезичен (pdf-labels.ts); липсва — български. */
+  language?: PdfLanguage;
 }
 
 export function renderPdf(
@@ -32,12 +35,15 @@ export function renderPdf(
   style: ResolvedPdfStyle,
 ): Promise<Buffer> {
   const m = METRICS[style.template];
+  const lang = meta.language ?? 'bg';
+  const L = labeler(lang);
+  const title = L(TITLES[input.typeCode] ?? 'ДОКУМЕНТ');
   const doc = new PDFDocument({
     size: 'A4',
     margins: { top: m.margin, bottom: m.margin + 16, left: m.margin, right: m.margin },
     bufferPages: true,
     info: {
-      Title: `${TITLES[input.typeCode] ?? 'Документ'} ${meta.number}`,
+      Title: `${title} ${meta.number}`,
       Author: input.seller.name,
       Creator: 'fakturist.eu — Carbon Stealth VCC',
       Producer: 'Фактурист',
@@ -74,19 +80,22 @@ export function renderPdf(
 
   // --- Глава (по шаблона) и дати ---------------------------------------------------------------------
   y = drawHeader(doc, frame, y, {
-    title: TITLES[input.typeCode] ?? 'ДОКУМЕНТ',
+    title,
     number: meta.number,
     style,
     m,
   });
   const dates: Array<[string, string]> = [
-    ['Дата на издаване', bgDate(input.issueDate)],
-    ['Дата на данъчното събитие', bgDate(input.taxPointDate ?? input.issueDate)],
+    [L('Дата на издаване', '\n'), bgDate(input.issueDate)],
+    [L('Дата на данъчното събитие', '\n'), bgDate(input.taxPointDate ?? input.issueDate)],
   ];
-  if (input.dueDate) dates.push(['Падеж', bgDate(input.dueDate)]);
+  if (input.dueDate) dates.push([L('Падеж', '\n'), bgDate(input.dueDate)]);
   if (input.precedingInvoices[0]) {
     const p = input.precedingInvoices[0];
-    dates.push(['Към фактура', `№ ${p.number}${p.issueDate ? ` от ${bgDate(p.issueDate)}` : ''}`]);
+    dates.push([
+      L('Към фактура', '\n'),
+      `№ ${p.number}${p.issueDate ? ` / ${bgDate(p.issueDate)}` : ''}`,
+    ]);
   }
   y = drawDates(doc, frame, y, dates, m);
   rule(y, INK, 1);
@@ -105,15 +114,15 @@ export function renderPdf(
     doc.font('bold').fontSize(m.partyName).fillColor(INK).text(party.name, x, at, { width: half });
     at = doc.y + 2;
     doc.font('sans').fontSize(m.body).fillColor(INK);
-    for (const line of partyLines(party)) {
+    for (const line of partyLines(party, L)) {
       doc.text(line, x, at, { width: half });
       at = doc.y + 1;
     }
     return at;
   };
   const end = Math.max(
-    block('Доставчик', input.seller, left),
-    block('Получател', input.buyer, left + width / 2 + 12),
+    block(L('Доставчик'), input.seller, left),
+    block(L('Получател'), input.buyer, left + width / 2 + 12),
   );
   y = end + 6;
   if (meta.issuedVia) {
@@ -121,12 +130,9 @@ export function renderPdf(
       .font('sans')
       .fontSize(m.small)
       .fillColor(SOFT)
-      .text(
-        `Издаден от ${meta.issuedVia.firm} от името на доставчика по пълномощно: ${meta.issuedVia.mandateRef} (чл. 113, ал. 7 ЗДДС)`,
-        left,
-        y,
-        { width },
-      );
+      .text(issuedViaText(lang, meta.issuedVia.firm, meta.issuedVia.mandateRef), left, y, {
+        width,
+      });
     y = doc.y + 4;
   }
   y += 8;
@@ -134,22 +140,25 @@ export function renderPdf(
   // --- Редовете ------------------------------------------------------------------------------------
   const cols = [
     { label: '№', w: 22, align: 'left' as const },
-    { label: 'Стока или услуга', w: 0, align: 'left' as const },
-    { label: 'Мярка', w: 44, align: 'left' as const },
-    { label: 'Кол.', w: 42, align: 'right' as const },
-    { label: 'Ед. цена', w: 58, align: 'right' as const },
-    { label: 'Отст.', w: 40, align: 'right' as const },
-    { label: 'ДДС', w: 36, align: 'right' as const },
-    { label: 'Стойност', w: 72, align: 'right' as const },
+    { label: L('Стока или услуга', '\n'), w: 0, align: 'left' as const },
+    { label: L('Мярка', '\n'), w: 44, align: 'left' as const },
+    { label: L('Кол.', '\n'), w: 42, align: 'right' as const },
+    { label: L('Ед. цена', '\n'), w: 58, align: 'right' as const },
+    { label: L('Отст.', '\n'), w: 40, align: 'right' as const },
+    { label: L('ДДС', '\n'), w: 36, align: 'right' as const },
+    { label: L('Стойност', '\n'), w: 72, align: 'right' as const },
   ];
   cols[1]!.w = width - cols.reduce((acc, c) => acc + c.w, 0);
-  const headH = m.head + 10.5;
+  // Двуезичната глава е на два реда (български отгоре, английски отдолу).
+  const headH = (lang === 'bg' ? m.head : m.head * 2 + 2) + 10.5;
   const header = () => {
     doc.rect(left, y, width, headH).fillColor(tint(style.accent)).fill();
     let x = left;
     doc.font('bold').fontSize(m.head).fillColor(INK);
     for (const c of cols) {
-      doc.text(c.label, x + 4, y + (headH - m.head) / 2 - 0.5, { width: c.w - 8, align: c.align });
+      const lines = lang === 'bg' ? 1 : 2;
+      const top = y + (headH - m.head * lines - (lines - 1) * 2) / 2 - 0.5;
+      doc.text(c.label, x + 4, top, { width: c.w - 8, align: c.align, lineGap: 2 });
       x += c.w;
     }
     y += headH + 2;
@@ -172,7 +181,7 @@ export function renderPdf(
     const cells = [
       source.id,
       name,
-      UNITS[source.unitCode] ?? source.unitCode,
+      UNITS[source.unitCode] ? L(UNITS[source.unitCode]!, '/') : source.unitCode,
       toPlain(dec(source.quantity)).replace('.', ','),
       unitPrice(source.netPrice),
       discount,
@@ -203,18 +212,19 @@ export function renderPdf(
       .font(strong ? 'bold' : 'sans')
       .fontSize(strong ? m.total : m.body + 0.5)
       .fillColor(INK);
+    const labelH = doc.heightOfString(label, { width: boxW * 0.6 });
     doc.text(label, boxX, y, { width: boxW * 0.6 });
     doc
       .font(strong ? 'bold' : 'mono')
       .text(value, boxX + boxW * 0.6, y, { width: boxW * 0.4, align: 'right' });
-    y += strong ? m.total + 6.5 : m.body + 5.5;
+    y += Math.max(labelH, strong ? m.total : m.body) + (strong ? 6.5 : 5.5);
   };
   const leftY = y;
   doc
     .font('bold')
     .fontSize(m.small)
     .fillColor(SOFT)
-    .text('РАЗБИВКА ПО ДДС', left, y, { characterSpacing: 0.6 });
+    .text(L('РАЗБИВКА ПО ДДС'), left, y, { characterSpacing: 0.6 });
   let ly = y + m.small + 5;
   for (const group of calc.breakdown) {
     const label = group.rate ? `${group.category} ${toPlain(group.rate)}%` : group.category;
@@ -222,42 +232,47 @@ export function renderPdf(
       .font('sans')
       .fontSize(m.body)
       .fillColor(INK)
-      .text(`${label}: основа ${bgAmount(group.taxable)}, ДДС ${bgAmount(group.vat)}`, left, ly, {
-        width: width * 0.46,
-      });
+      .text(
+        `${label}: ${L('основа')} ${bgAmount(group.taxable)}, ${L('ДДС')} ${bgAmount(group.vat)}`,
+        left,
+        ly,
+        {
+          width: width * 0.46,
+        },
+      );
     ly = doc.y + 2;
     if (group.exemptionReason) {
       doc
         .fillColor(SOFT)
-        .text(`Основание: ${group.exemptionReason}`, left, ly, { width: width * 0.46 });
+        .text(`${L('Основание')}: ${group.exemptionReason}`, left, ly, { width: width * 0.46 });
       ly = doc.y + 2;
     }
   }
   y = leftY;
-  row('Сума на редовете', bgAmount(t.lineExtension));
-  if (calc.hasDocumentAllowances) row('Отстъпки', `−${bgAmount(t.allowances)}`);
-  if (calc.hasDocumentCharges) row('Надбавки', bgAmount(t.charges));
-  row('Данъчна основа', bgAmount(t.taxExclusive));
-  row('ДДС', bgAmount(t.vat));
-  if (t.vatInEur) row('ДДС в евро', `${bgAmount(t.vatInEur)} EUR`);
-  row('Обща сума', bgAmount(t.taxInclusive));
-  if (t.prepaid.v !== 0n) row('Платено авансово', `−${bgAmount(t.prepaid)}`);
+  row(L('Сума на редовете'), bgAmount(t.lineExtension));
+  if (calc.hasDocumentAllowances) row(L('Отстъпки'), `−${bgAmount(t.allowances)}`);
+  if (calc.hasDocumentCharges) row(L('Надбавки'), bgAmount(t.charges));
+  row(L('Данъчна основа'), bgAmount(t.taxExclusive));
+  row(L('ДДС'), bgAmount(t.vat));
+  if (t.vatInEur) row(L('ДДС в евро'), `${bgAmount(t.vatInEur)} EUR`);
+  row(L('Обща сума'), bgAmount(t.taxInclusive));
+  if (t.prepaid.v !== 0n) row(L('Платено авансово'), `−${bgAmount(t.prepaid)}`);
   doc.moveTo(boxX, y).lineTo(right, y).lineWidth(1.2).strokeColor(style.accent).stroke();
   y += 5;
-  row(`За плащане (${currency})`, bgAmount(t.payable), true);
+  row(`${L('За плащане')} (${currency})`, bgAmount(t.payable), true);
   y = Math.max(y, ly) + 12;
 
   // --- Плащане и бележка ---------------------------------------------------------------------------
   const info: string[] = [];
   if (input.payment) {
     const parts = [
-      `Начин на плащане: ${MEANS[input.payment.meansCode] ?? input.payment.meansCode}`,
+      `${L('Начин на плащане')}: ${MEANS[input.payment.meansCode] ? L(MEANS[input.payment.meansCode]!) : input.payment.meansCode}`,
     ];
     if (input.payment.accountId) parts.push(`IBAN: ${input.payment.accountId}`);
     if (input.payment.bic) parts.push(`BIC: ${input.payment.bic}`);
     info.push(parts.join(' · '));
   }
-  if (input.paymentTerms) info.push(`Условия: ${input.paymentTerms}`);
+  if (input.paymentTerms) info.push(`${L('Условия')}: ${input.paymentTerms}`);
   // Бележката без подписа — той е в долния ред на всяка страница.
   const note = documentNote(input, calc);
   if (note) info.push(note);
@@ -268,33 +283,8 @@ export function renderPdf(
     y = doc.y + 6;
   }
 
-  // --- Долен ред на всяка страница: подпис, отпечатък, страница -----------------------------------
-  const pages = doc.bufferedPageRange();
-  for (let i = 0; i < pages.count; i += 1) {
-    doc.switchToPage(pages.start + i);
-    if (meta.annulled) drawAnnulledStamp(doc, meta.annulled, frame);
-    // Под долното поле: без временно нулево поле pdfkit би пренесъл текста на нова страница.
-    const savedBottom = doc.page.margins.bottom;
-    doc.page.margins.bottom = 0;
-    const footY = doc.page.height - savedBottom + 18;
-    doc
-      .moveTo(left, footY - 6)
-      .lineTo(right, footY - 6)
-      .lineWidth(0.6)
-      .strokeColor(RULE)
-      .stroke();
-    const chain = meta.sha256
-      ? `Звено № ${meta.chainIndex?.toString() ?? '—'} · SHA-256 ${meta.sha256.slice(0, 16)}…`
-      : '';
-    doc.font('sans').fontSize(7).fillColor(SOFT);
-    doc.text(meta.signature ?? '', left, footY, { width: width * 0.62, lineBreak: false });
-    doc.font('mono').text(`${chain}   ${i + 1}/${pages.count}`, left + width * 0.62, footY, {
-      width: width * 0.38,
-      align: 'right',
-      lineBreak: false,
-    });
-    doc.page.margins.bottom = savedBottom;
-  }
+  // --- Долен ред на всяка страница: подпис, отпечатък, страница (pdf-footer.ts) ------------------
+  drawFooters(doc, frame, meta);
   doc.end();
   return done;
 }

@@ -128,7 +128,13 @@
     "addLine": "+ Add line",
     "addItem": "Add from items",
     "addItemChoose": "choose…",
-    "noItems": "Save the goods and services you sell often once in"
+    "noItems": "Save the goods and services you sell often once in",
+    "pdfLanguage": "PDF language",
+    "pdfLanguages": {
+      "bg": "Bulgarian",
+      "bg-en": "Bulgarian and English"
+    },
+    "pdfLanguageHint": "The XML has no language. The document is always in Bulgarian; English goes alongside it (Accountancy Act, Art. 5)."
   },
   "view": {
     "issued": "The document has been issued.",

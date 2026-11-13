@@ -66,6 +66,23 @@
     });
   }
 
+  // Чуждестранен получател → двуезичен PDF, докато човекът сам не е избрал езика.
+  const language = form.querySelector('[data-pdf-language]');
+  const country = form.querySelector('[name="buyer[countryCode]"]');
+  if (language && country) {
+    let chosen = false;
+    language.addEventListener('change', () => {
+      chosen = true;
+    });
+    const suggest = () => {
+      if (chosen) return;
+      const code = country.value.trim().toUpperCase();
+      language.value = code && code !== 'BG' ? 'bg-en' : 'bg';
+    };
+    country.addEventListener('change', suggest);
+    country.addEventListener('input', suggest);
+  }
+
   const list = document.getElementById('catalog-items');
   if (list) {
     const byName = new Map();

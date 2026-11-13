@@ -71,7 +71,7 @@ export function bgDate(iso: string | undefined): string {
   return `${d}.${m}.${y}`;
 }
 
-export function partyLines(party: PartyInput): string[] {
+export function partyLines(party: PartyInput, L: (bg: string) => string = (bg) => bg): string[] {
   const address = [
     party.address.street,
     party.address.additionalStreet,
@@ -81,8 +81,8 @@ export function partyLines(party: PartyInput): string[] {
     .filter(Boolean)
     .join(', ');
   return [
-    party.legalId ? `ЕИК: ${party.legalId}` : '',
-    party.vatId ? `ДДС №: ${party.vatId}` : '',
+    party.legalId ? `${L('ЕИК')}: ${party.legalId}` : '',
+    party.vatId ? `${L('ДДС №')}: ${party.vatId}` : '',
     address,
   ].filter(Boolean);
 }

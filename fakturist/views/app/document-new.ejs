@@ -58,6 +58,10 @@
     <label><%= t('app.doc.taxPointDate') %><input type="date" name="taxPointDate" value="<%= val('taxPointDate', today) %>"></label>
     <label><%= t('app.doc.dueDate') %><input type="date" name="dueDate" value="<%= val('dueDate') %>"></label>
     <label><%= t('app.doc.currency') %><input name="currency" maxlength="3" class="mono" value="<%= val('currency', 'EUR') %>"></label>
+    <label><%= t('app.doc.pdfLanguage') %><select name="pdfLanguage" data-pdf-language>
+      <option value="bg"<%= sel('pdfLanguage', 'bg', 'bg') %>><%= t('app.doc.pdfLanguages.bg') %></option>
+      <option value="bg-en"<%= sel('pdfLanguage', 'bg-en', 'bg') %>><%= t('app.doc.pdfLanguages.bg-en') %></option>
+    </select><span class="hint"><%= t('app.doc.pdfLanguageHint') %></span></label>
     <label><%= t('app.doc.rate') %><input name="eurExchangeRate" inputmode="decimal" class="mono" value="<%= val('eurExchangeRate') %>"><span class="hint"><%= t('app.doc.rateHelp') %></span></label>
   </fieldset>
 

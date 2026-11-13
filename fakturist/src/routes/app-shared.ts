@@ -25,6 +25,7 @@ export const DOWNLOAD_SELECT = {
   status: true,
   cancelledAt: true,
   replacedBy: { select: { number: true } },
+  pdfLanguage: true,
 } as const;
 
 export type DownloadSource = {
@@ -40,6 +41,7 @@ export type DownloadSource = {
   status?: string;
   cancelledAt?: Date | null;
   replacedBy?: { number: string | null } | null;
+  pdfLanguage?: string;
 };
 
 /** PDF (от същия вход като XML-а) или XML-ът, както е издаден. Само за изтегляне, без кеш. */

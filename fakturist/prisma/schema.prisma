@@ -377,6 +377,8 @@ model Document {
   taxPointDate       DateTime?            @db.Date
   dueDate            DateTime?            @db.Date
   currency           String               @default("EUR")
+  /// Езикът на PDF копието: „bg“ или „bg-en“ (двуезичен) — XML-ът е без език (src/documents/pdf-labels.ts).
+  pdfLanguage        String               @default("bg")
   /// Входът по семантичния модел на EN 16931 (src/einvoice/model.ts) — източникът на XML-а.
   input              Json
   buyerName          String
@@ -805,6 +807,8 @@ model RecurringInvoice {
   dueDays          Int?
   /// Писмо с PDF и XML до този адрес при всяко издаване (по избор).
   sendTo           String?
+  /// Езикът на PDF-а на издадените документи (от документа-източник).
+  pdfLanguage      String             @default("bg")
   status           RecurringStatus    @default(ACTIVE)
   lastIssuedOn     DateTime?          @db.Date
   /// Последната грешка при издаване (без лични данни) и броят поредни грешки — след 3 шаблонът спира.

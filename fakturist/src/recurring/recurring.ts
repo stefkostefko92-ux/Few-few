@@ -118,7 +118,7 @@ export async function createRecurring(
       typeCode: '380',
       seriesId: { not: null },
     },
-    select: { id: true, input: true, seriesId: true, number: true },
+    select: { id: true, input: true, seriesId: true, number: true, pdfLanguage: true },
   });
   if (!doc?.seriesId) throw new RecurringError('notInvoice');
   return prisma.$transaction(async (tx) => {
@@ -141,6 +141,7 @@ export async function createRecurring(
         endOn: form.endOn ? new Date(`${form.endOn}T00:00:00Z`) : null,
         dueDays: form.dueDays ?? null,
         sendTo: form.sendTo ?? null,
+        pdfLanguage: doc.pdfLanguage,
         createdById: actorId,
         viaFirmId: access.viaFirmId,
       },

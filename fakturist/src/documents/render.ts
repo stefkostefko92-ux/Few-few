@@ -4,6 +4,7 @@ import { InvoiceInputSchema } from '../einvoice/model.js';
 import { setting } from '../admin/settings.js';
 import { renderPdf } from './pdf.js';
 import { loadPdfStyle } from './pdf-style.js';
+import { isPdfLanguage } from './pdf-labels.js';
 
 /** Записът на документа, който трябва за PDF-а. */
 export interface PdfSource {
@@ -19,6 +20,8 @@ export interface PdfSource {
   status?: string;
   cancelledAt?: Date | null;
   replacedBy?: { number: string | null } | null;
+  /** Езикът на PDF-а (pdf-labels.ts); липсва — български. */
+  pdfLanguage?: string;
 }
 
 function annulledText(document: PdfSource): string | null {
@@ -56,6 +59,7 @@ export async function documentPdf(document: PdfSource): Promise<Buffer> {
           ? { firm: document.firm.legalName, mandateRef: document.mandate.documentRef }
           : null,
       annulled: annulledText(document),
+      language: isPdfLanguage(document.pdfLanguage) ? document.pdfLanguage : 'bg',
     },
     style,
   );

@@ -51,7 +51,13 @@ export async function replaceable(
   tx: Prisma.TransactionClient,
   organizationId: string,
   documentId: string,
-): Promise<{ id: string; typeCode: string; number: string; input: Prisma.JsonValue }> {
+): Promise<{
+  id: string;
+  typeCode: string;
+  number: string;
+  input: Prisma.JsonValue;
+  pdfLanguage: string;
+}> {
   const doc = await tx.document.findFirst({
     where: { id: documentId, organizationId },
     select: {
@@ -60,6 +66,7 @@ export async function replaceable(
       typeCode: true,
       number: true,
       input: true,
+      pdfLanguage: true,
       replacedById: true,
       followers: { where: { status: 'ISSUED' }, select: { id: true } },
     },
@@ -67,7 +74,13 @@ export async function replaceable(
   if (!doc || !doc.number) throw new AnnulError('notFound');
   if (doc.status !== 'ISSUED' || doc.replacedById) throw new AnnulError('notIssued');
   if (doc.followers.length > 0) throw new AnnulError('hasFollowers');
-  return { id: doc.id, typeCode: doc.typeCode, number: doc.number, input: doc.input };
+  return {
+    id: doc.id,
+    typeCode: doc.typeCode,
+    number: doc.number,
+    input: doc.input,
+    pdfLanguage: doc.pdfLanguage,
+  };
 }
 
 /**
