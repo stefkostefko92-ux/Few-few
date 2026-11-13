@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 637
+        "lessons": 639
       },
       "evolution": [
         {
@@ -2048,6 +2048,12 @@
           "version": "57.7.0",
           "date": "2026-11-13",
           "event": "v57.7 — учене",
+          "detail": "Научи: discord.js 14.26.4 с Partials.GuildMember емитва guildMemberUpdate и за некеширан член … (+1 още)"
+        },
+        {
+          "version": "57.9.0",
+          "date": "2026-11-13",
+          "event": "v57.9 — учене",
           "detail": "Научи: nodemailer 10.x без requireTLS пуска STARTTLS само ако сървърът го обяви в EHLO; ако на… (+1 още)"
         }
       ],
@@ -2056,6 +2062,11 @@
           "date": "2026-11-13",
           "type": "learning",
           "summary": "Научи: „nodemailer 10.x без requireTLS пуска STARTTLS само ако сървърът го обяви в EHLO; ако на…\" (+1 още)"
+        },
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „discord.js 14.26.4 с Partials.GuildMember емитва guildMemberUpdate и за некеширан член …\" (+1 още)"
         },
         {
           "date": "2026-11-12",
@@ -15527,7 +15538,7 @@
           "Docusaurus/MkDocs/VitePress (docs сайтове, версиониране, i18n); markdownlint/Vale",
           "Това репо: per-product CLAUDE.md/README, BG източник, runbook-и (deploy/DEPLOY.md), safety-critical низове"
         ],
-        "lessons": 227
+        "lessons": 229
       },
       "evolution": [
         {
@@ -15589,9 +15600,20 @@
           "date": "2026-11-12",
           "event": "v21.8 — учене",
           "detail": "Научи: SupremeDiscordBot/README.md (ред 333, 350) още твърди „Postgres/Redis bound to localhos… (+1 още)"
+        },
+        {
+          "version": "22.0.0",
+          "date": "2026-11-13",
+          "event": "v22.0 — учене",
+          "detail": "Научи: Всички файлове в frontend/src/data/*.js се четат от marketingTruth.test.js като публиче… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „Всички файлове в frontend/src/data/*.js се четат от marketingTruth.test.js като публиче…\" (+1 още)"
+        },
         {
           "date": "2026-11-12",
           "type": "learning",
@@ -16100,7 +16122,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 180
+        "lessons": 182
       },
       "evolution": [
         {
@@ -16150,9 +16172,20 @@
           "date": "2026-11-12",
           "event": "v27.7 — учене",
           "detail": "Научи: Инжекционен eval spec с маркери, които само назовават темата (име на пакет, пазач, „под… (+4 още)"
+        },
+        {
+          "version": "27.9.0",
+          "date": "2026-11-13",
+          "event": "v27.9 — учене",
+          "detail": "Научи: Модулите на SupremeDiscordBot backend могат да се пробват в паметта без запис на файлов… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „Модулите на SupremeDiscordBot backend могат да се пробват в паметта без запис на файлов…\" (+1 още)"
+        },
         {
           "date": "2026-11-12",
           "type": "learning",
