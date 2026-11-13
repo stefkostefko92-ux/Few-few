@@ -104,3 +104,17 @@ test('одитът записва регистрацията и всяко из�
   assert.equal(rows.filter((r) => r.action === 'document.issued').length, 10);
   for (let i = 1; i < rows.length; i += 1) assert.equal(rows[i]!.prevHash, rows[i - 1]!.hash);
 });
+
+test('опашката за отчитане към НАП (SPEC 63): ред за всеки издаден документ, с отпечатъка на UBL-а', async () => {
+  const docs = await prisma.document.findMany({ where: { status: 'ISSUED' } });
+  assert.ok(docs.length > 0);
+  const reports = await prisma.nraReport.findMany();
+  assert.equal(reports.length, docs.length, 'отказаните (rollback) не оставят ред');
+  for (const doc of docs) {
+    const report = reports.find((r) => r.documentId === doc.id);
+    assert.ok(report, doc.number ?? doc.id);
+    assert.equal(report.ublSha256, sha256(doc.ublXml!));
+    assert.equal(report.status, 'PENDING', 'нищо не се праща до API на НАП');
+    assert.equal(report.typeCode, doc.typeCode);
+  }
+});

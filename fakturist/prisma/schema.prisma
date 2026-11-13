@@ -438,6 +438,7 @@ model Document {
   payments           DocumentPayment[]
   proforma           Proforma?
   peppolTransmission PeppolTransmission?
+  nraReport          NraReport?
   reminders          PaymentReminder[]
   apiRequests        ApiIdempotency[]
   createdAt          DateTime             @default(now())
@@ -1107,4 +1108,31 @@ model PeppolEvent {
   error       String?
 
   @@index([receivedAt])
+}
+
+enum NraReportStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+/// Опашката за отчитане към НАП (SPEC 63; чл. 120д от законопроект № 52-602-01-60 — данните се
+/// предават „в момента на издаване“): ред за всеки издаден данъчен документ, записан в транзакцията на
+/// издаването. Не се праща нищо, докато няма API на НАП (наредбата по чл. 120а, ал. 9 — срок 01.07.2027);
+/// `ublSha256` е отпечатъкът на точно издадения XML.
+model NraReport {
+  id             String          @id @default(cuid())
+  organizationId String
+  documentId     String          @unique
+  document       Document        @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  typeCode       String
+  ublSha256      String
+  status         NraReportStatus @default(PENDING)
+  attempts       Int             @default(0)
+  lastError      String?
+  sentAt         DateTime?
+  createdAt      DateTime        @default(now())
+
+  @@index([status, createdAt])
+  @@index([organizationId, createdAt])
 }

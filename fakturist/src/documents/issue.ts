@@ -269,6 +269,15 @@ export async function issueInTx(
         mandateId: access.mandateId,
       },
     });
+    // Отчитането към НАП (SPEC 63; чл. 120д от законопроекта): записът е тук, изпращане — след API-то.
+    await tx.nraReport.create({
+      data: {
+        organizationId: org.id,
+        documentId: document.id,
+        typeCode: built.input.typeCode,
+        ublSha256: content.ublSha256,
+      },
+    });
     if (options.peppol) {
       const receiverPartyId = partyIdFromAddress(built.input.buyer.electronicAddress);
       if (!receiverPartyId) throw new IssueRejected([PEPPOL_NO_RECEIVER]);
