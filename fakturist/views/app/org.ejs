@@ -9,6 +9,9 @@
 </div>
 <nav class="org-nav" aria-label="<%= org.legalName %>">
   <a href="/app/o/<%= org.id %>/shkafche"><%= t('app.inbox.title') %><% if (unread > 0) { %> <span class="tag tag-active"><%= t('app.inbox.unread', { count: unread }) %></span><% } %></a>
+  <% if (canParties) { %><a href="/app/o/<%= org.id %>/kontragenti"><%= t('app.catalog.parties') %></a><% } %>
+  <% if (canItems) { %><a href="/app/o/<%= org.id %>/artikuli"><%= t('app.catalog.items') %></a><% } %>
+  <% if (canSeries) { %><a href="/app/o/<%= org.id %>/serii"><%= t('app.catalog.series') %></a><% } %>
   <% if (canSettings) { %><a href="/app/o/<%= org.id %>/nastroyki"><%= t('app.settings.title') %></a><% } %>
   <% if (canManageMandates && org.kind === 'COMPANY') { %><a href="/app/o/<%= org.id %>/palnomoshtni"><%= t('app.mandates.title') %><% if (pendingMandates > 0) { %> <span class="tag tag-pending"><%= pendingMandates %></span><% } %></a><% } %>
 </nav>

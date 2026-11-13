@@ -19,6 +19,8 @@ import { appSecurityRouter } from './app-security.js';
 import { appInboxRouter } from './app-inbox.js';
 import { appClientsRouter } from './app-clients.js';
 import { appSettingsRouter } from './app-settings.js';
+import { appCatalogRouter } from './app-catalog.js';
+import { buyerFromParty, catalogForForm, saveBuyerAsParty } from '../catalog/document-prefill.js';
 
 /** Документите, издадени от фирмата през текущия месец — за мекия лимит на безплатния план. */
 async function monthUsage(
@@ -44,6 +46,7 @@ export function appRouter(): Router {
   const router = Router();
   router.use('/app', requireUser());
   router.use(appSecurityRouter());
+  router.use(appCatalogRouter());
   router.use(appInboxRouter());
   router.use(appClientsRouter());
   router.use(appSettingsRouter());
@@ -122,6 +125,9 @@ export function appRouter(): Router {
       pendingMandates,
       canManageMandates: roleCan(access.role, 'mandates.manage') && access.viaFirmId === null,
       canSettings: roleCan(access.role, 'org.settings') && access.viaFirmId === null,
+      canParties: roleCan(access.role, 'parties.manage'),
+      canItems: roleCan(access.role, 'items.manage'),
+      canSeries: roleCan(access.role, 'series.manage') && access.viaFirmId === null,
       usage: { ...usage, ...softLimitState(usage.limit, usage.issued) },
       canIssue: roleCan(access.role, 'documents.issue'),
       money: (cents: bigint, currency: string) => money(cents, currency, res.locals.lang),
@@ -130,7 +136,9 @@ export function appRouter(): Router {
 
   router.get('/app/o/:orgId/nov', async (req, res) => {
     const access = await requireOrg(req, 'documents.issue');
-    await renderNewDocument(req, res, access.organizationId, null, {});
+    // „Документ към него“ от контрагентите: получателят идва попълнен.
+    const buyer = await buyerFromParty(access.organizationId, req.query['party']);
+    await renderNewDocument(req, res, access.organizationId, null, buyer ? { buyer } : {});
   });
 
   router.post('/app/o/:orgId/nov', async (req, res) => {
@@ -146,6 +154,13 @@ export function appRouter(): Router {
     }
     try {
       const result = await issueDocument(access, req.principal!.user.id, request.data);
+      if ((req.body as { saveBuyer?: unknown }).saveBuyer === 'on') {
+        await saveBuyerAsParty({
+          organizationId: access.organizationId,
+          actorId: req.principal!.user.id,
+          buyer: (req.body as { buyer?: unknown }).buyer,
+        });
+      }
       // Писмата към шкафчето на получателя тръгват веднага след транзакцията (и от опашката при грешка).
       if (result.delivery) kickOutbox();
       res.redirect(303, `/app/o/${access.organizationId}/d/${result.id}?issued=1`);
@@ -217,14 +232,18 @@ async function renderNewDocument(
   values: unknown,
   status = 200,
 ): Promise<void> {
-  const [org, series] = await Promise.all([
+  const [org, series, catalog] = await Promise.all([
     prisma.organization.findUniqueOrThrow({ where: { id: organizationId } }),
     prisma.documentSeries.findMany({ where: { organizationId }, orderBy: { name: 'asc' } }),
+    catalogForForm(organizationId),
   ]);
   const today = new Date().toISOString().slice(0, 10);
   res.status(status).render('app/document-new', {
     org,
     series,
+    parties: catalog.parties,
+    items: catalog.items,
+    scripts: ['document-form'],
     issues,
     values: typeof values === 'object' && values !== null ? values : {},
     today,

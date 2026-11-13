@@ -249,6 +249,8 @@ model Party {
   email          String?
   eAddressScheme String?
   eAddressValue  String?
+  /// Архивиран — не се предлага при издаване; издадените документи пазят свое копие на данните.
+  archivedAt     DateTime?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 

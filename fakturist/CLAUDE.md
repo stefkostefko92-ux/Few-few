@@ -62,10 +62,12 @@ src/
   billing/       plans.ts (началните планове) · public-plans.ts · seed-plans.ts · revolut.ts (подписът)
   features.ts    регистърът на функциите (live/planned + дата) — плановете, панелът и витрината четат оттук
   seo/           pages.ts (страниците на витрината — единствен списък) · structured-data.ts (JSON-LD)
+  catalog/       schemas.ts (zod на формите) · catalog.ts (контрагенти, артикули) · series.ts (сериите под
+                 заключването на фирмата) · document-prefill.ts (каталогът във формата за документ)
   legal/         documents.ts (правните документи — единствен списък) · acceptance.ts (записът при приемане)
   pwa/           manifest.ts · device.ts (устройството по User-Agent за /prilozhenie)
   routes/        site · seo · health · pwa · legal · auth · account (нова парола, имейл) · install ·
-                 invite (/pokana) · app (+ app-security, app-inbox,
+                 invite (/pokana) · app (+ app-catalog, app-security, app-inbox,
                  app-clients, app-settings, app-shared) · admin (+ admin-settings, admin-actions) · webhooks
   http/          upload.ts — multipart (multer, в паметта) + CSRF след разчитането · view · ip · cookies
 views/           site/ (витрината — Дизайнера) · app/ · admin/ · auth/ · errors/ · partials/

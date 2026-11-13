@@ -1,0 +1,32 @@
+<%- include('../partials/app-head', { title: t('app.catalog.items') }) %>
+<p><a href="/app/o/<%= org.id %>">← <%= org.legalName %></a></p>
+<div class="head-row">
+  <h1><%= t('app.catalog.items') %></h1>
+  <a class="button" href="/app/o/<%= org.id %>/artikuli/nov"><%= t('app.catalog.newItem') %></a>
+</div>
+<% if (saved) { %><p class="ok" role="status"><%= t('app.catalog.saved.' + saved) %></p><% } %>
+<form method="get" class="search-row" role="search">
+  <label><span class="sr-only"><%= t('app.catalog.search') %></span><input type="search" name="q" value="<%= q %>" placeholder="<%= t('app.catalog.searchItems') %>"></label>
+  <% if (archived) { %><input type="hidden" name="arhiv" value="1"><% } %>
+  <button type="submit" class="button-secondary"><%= t('app.catalog.search') %></button>
+</form>
+<p><a href="/app/o/<%= org.id %>/artikuli<%= archived ? '' : '?arhiv=1' %>"><%= archived ? t('app.catalog.showActive') : t('app.catalog.showArchived') %></a></p>
+<% if (items.length === 0) { %><p class="muted"><%= t('app.catalog.noneItems') %></p><% } else { %>
+<div class="table-wrap"><table class="stack-table">
+  <thead><tr><th scope="col"><%= t('app.catalog.name') %></th><th scope="col"><%= t('app.doc.unit') %></th><th scope="col" class="num"><%= t('app.doc.price') %></th><th scope="col"><%= t('app.doc.vatRate') %></th><th scope="col"><span class="sr-only"><%= t('app.catalog.actions') %></span></th></tr></thead>
+  <tbody>
+  <% items.forEach((i) => { %>
+    <tr>
+      <td data-label="<%= t('app.catalog.name') %>"><a href="/app/o/<%= org.id %>/artikuli/<%= i.id %>"><%= i.name %></a></td>
+      <td data-label="<%= t('app.doc.unit') %>" class="mono"><%= i.unitCode %></td>
+      <td data-label="<%= t('app.doc.price') %>" class="num mono"><%= i.netPrice %></td>
+      <td data-label="<%= t('app.doc.vatRate') %>" class="mono"><%= i.vatCategory %> · <%= i.vatRate %>%</td>
+      <td class="actions">
+        <form method="post" action="/app/o/<%= org.id %>/artikuli/<%= i.id %>/arhiv"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="archived" value="<%= archived ? '0' : '1' %>"><button type="submit" class="link"><%= archived ? t('app.catalog.restore') : t('app.catalog.archive') %></button></form>
+      </td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+<%- include('../partials/app-foot') %>
