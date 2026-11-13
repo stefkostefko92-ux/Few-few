@@ -112,7 +112,7 @@ test('иконите са в размера си; maskable и apple-touch са �
     const meta = await sharp(join(dir, `${name}.webp`)).metadata();
     assert.equal(meta.height, 128);
     assert.ok(meta.hasAlpha);
-    assert.ok(Math.abs((meta.width ?? 0) / 128 - 1713 / 397) < 0.02, name);
+    assert.ok(Math.abs((meta.width ?? 0) / 128 - 1816 / 385) < 0.02, name);
   }
 });
 

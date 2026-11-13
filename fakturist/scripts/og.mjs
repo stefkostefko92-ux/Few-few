@@ -1,5 +1,5 @@
 // Генерира OG изображенията 1200×630 (BG и EN) през Chromium на Playwright. Логото е
-// public/img/brand/logo.png (иконите — scripts/brand-assets.mjs). Палитра: navy #0c1929, тюркоаз #05a699.
+// public/img/brand/logo.png (иконите — scripts/brand-assets.mjs). Палитра: navy #0c1929, тюркоаз #05a699 (логото — почти черно и тюркоаз #00c9a8).
 //   node scripts/og.mjs   (изисква `npm run build` или `node scripts/fonts.mjs` за шрифтовете)
 import { createRequire } from 'node:module';
 import { mkdtempSync, writeFileSync } from 'node:fs';
