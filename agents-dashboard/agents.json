@@ -6836,7 +6836,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 280
+        "lessons": 281
       },
       "evolution": [
         {
@@ -7258,9 +7258,20 @@
           "date": "2026-11-13",
           "event": "v25.0 — учене",
           "detail": "Научи: tools/seo/indexnow.mjs при недостъпен или празен sitemap тихо подава само началната стр…"
+        },
+        {
+          "version": "25.1.0",
+          "date": "2026-11-13",
+          "event": "v25.1 — учене",
+          "detail": "Научи: tools/seo/indexnow.mjs има AbortSignal.timeout на всяка мрежова заявка (10 s за ключа, …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „tools/seo/indexnow.mjs има AbortSignal.timeout на всяка мрежова заявка (10 s за ключа, …\""
+        },
         {
           "date": "2026-11-13",
           "type": "learning",
