@@ -155,13 +155,22 @@ export class EConnectAccessPoint implements AccessPoint {
     return response;
   }
 
-  private async rejectFrom(response: Response, what: string): Promise<never> {
-    const text = (await response.text().catch(() => '')).slice(0, 300);
+  /**
+   * Грешката на доставчика: тайните се маскират върху целия отговор и чак после се реже — иначе тайна на
+   * границата на рязането оцелява наполовина. `secrets` — допълнителни (тайната на известията при enroll).
+   */
+  private async rejectFrom(
+    response: Response,
+    what: string,
+    secrets: readonly string[] = [],
+  ): Promise<never> {
+    const text = (await response.text().catch(() => '')).slice(0, 4000);
     const code = response.status === 401 || response.status === 403 ? 'unauthorized' : 'rejected';
     throw new AccessPointError(
       code,
       scrub(`${what}: HTTP ${response.status}${text ? ` — ${text}` : ''}`, [
         this.settings.clientSecret,
+        ...secrets,
       ]),
       response.status,
     );
@@ -224,7 +233,11 @@ export class EConnectAccessPoint implements AccessPoint {
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       },
     );
-    if (!response.ok) await this.rejectFrom(response, 'eConnect enroll');
+    if (!response.ok) {
+      // Адресът на известието носи тайната след „#“ — доставчикът може да го повтори в грешката.
+      const hookSecret = input.hookUrl.split('#')[1] ?? '';
+      await this.rejectFrom(response, 'eConnect enroll', [hookSecret]);
+    }
     await response.body?.cancel();
   }
 

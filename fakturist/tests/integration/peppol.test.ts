@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import { createHmac } from 'node:crypto';
 import { after, before, test } from 'node:test';
 import { prepareTestDatabase, truncateAll } from './harness.js';
 import { startHttp, type HttpClient, type Session } from './http.js';
+import { hookSecretOf, installFakeEConnect, postHook } from './peppol-fake.js';
 
 prepareTestDatabase();
 delete process.env['SMTP_HOST'];
@@ -20,52 +20,17 @@ const { sofiaToday } = await import('../../src/time.js');
 /**
  * SPEC 57–59: регистрация на фирмата при точката за достъп, издаване по Peppol BIS 3 с предаване в
  * същата транзакция, работникът, известията (подпис, възраст, повторение) и получаването в регистъра.
- * eConnect е фалшив сървър по документацията им.
+ * eConnect е фалшив сървър по документацията им (peppol-fake.ts). Защитите — в peppol-guards.test.ts.
  */
 const PASSWORD = 'дълга-и-трудна-парола-2026';
-const API = 'https://accp-psb.econnect.eu';
-const IDENTITY = 'https://accp-identity.econnect.eu';
 let http: HttpClient;
 let owner: Session;
 let orgId = '';
 let seriesId = '';
 let hookSecret = '';
 const today = sofiaToday();
-
-const sent: Array<{ party: string; id: string; ubl: string }> = [];
-const enrolled: Array<{ party: string; body: { hooks: Array<{ action: string }> } }> = [];
-let downloadXml = '';
-let downloadFails = false;
-const realFetch = globalThis.fetch;
-globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
-  const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
-  if (url === `${IDENTITY}/connect/token`) {
-    return Response.json({ access_token: 'tok', expires_in: 3600 });
-  }
-  if (!url.startsWith(API)) return realFetch(input, init);
-  const path = decodeURIComponent(url.slice(API.length));
-  const enroll = /^\/api\/v1-beta\/([^/]+)\/enroll$/.exec(path);
-  if (enroll && init?.method === 'PUT') {
-    enrolled.push({ party: enroll[1]!, body: JSON.parse(String(init.body)) });
-    return new Response(null, { status: 200 });
-  }
-  const send = /^\/api\/v1\/([^/]+)\/salesInvoice\/send$/.exec(path);
-  if (send) {
-    const id = (init?.headers as Record<string, string>)['X-EConnect-DocumentId']!;
-    if (sent.some((s) => s.id === id)) return new Response(null, { status: 409 });
-    sent.push({ party: send[1]!, id, ubl: String(init?.body) });
-    return Response.json({ id });
-  }
-  const download = /^\/api\/v1\/([^/]+)\/purchaseInvoice\/([^/]+)\/download$/.exec(path);
-  if (download) {
-    if (downloadFails) return new Response(null, { status: 503 });
-    return new Response(downloadXml, {
-      status: 200,
-      headers: { 'content-type': 'application/xml' },
-    });
-  }
-  return new Response(null, { status: 404 });
-}) as typeof fetch;
+const fake = installFakeEConnect();
+const { sent, enrolled } = fake;
 
 function form(extra: Record<string, string> = {}): Record<string, string> {
   return {
@@ -96,22 +61,10 @@ function form(extra: Record<string, string> = {}): Record<string, string> {
   };
 }
 
-async function hook(
-  body: Record<string, unknown>,
-  opts: { secret?: string; delivery?: string } = {},
-) {
-  const raw = JSON.stringify({ sentOn: new Date().toISOString(), ...body });
-  const signature = createHmac('sha256', opts.secret ?? hookSecret)
-    .update(raw)
-    .digest('hex');
-  return realFetch(`${http.origin}/webhooks/peppol`, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-econnect-signature': `sha256=${signature}`,
-      ...(opts.delivery ? { 'x-econnect-delivery': opts.delivery } : {}),
-    },
-    body: raw,
+function hook(body: Record<string, unknown>, opts: { secret?: string; delivery?: string } = {}) {
+  return postHook(fake, http.origin, body, {
+    secret: opts.secret ?? hookSecret,
+    ...(opts.delivery ? { delivery: opts.delivery } : {}),
   });
 }
 
@@ -132,6 +85,8 @@ before(async () => {
     postalCode: '2300',
   });
   orgId = seller.organizationId;
+  // Peppol — само за фирма, потвърдена от мастъра („Потвърди фирмата“).
+  await prisma.organization.update({ where: { id: orgId }, data: { verifiedAt: new Date() } });
   seriesId = (await prisma.documentSeries.findFirstOrThrow({ where: { organizationId: orgId } }))
     .id;
   const master = await prisma.user.create({
@@ -154,7 +109,7 @@ before(async () => {
 });
 
 after(async () => {
-  globalThis.fetch = realFetch;
+  fake.restore();
   await http.close();
   await prisma.$disconnect();
 });
@@ -165,9 +120,8 @@ test('регистрация: 9926:BG… при точката за достъп
   const res = await http.post(owner, `/app/o/${orgId}/peppol/vklyuchi`, {});
   assert.match(res.headers.get('location') ?? '', /ok=enrolled/);
   assert.equal(enrolled[0]!.party, '9926:BG131063188');
-  const action = enrolled[0]!.body.hooks[0]!.action;
-  assert.match(action, /\/webhooks\/peppol#[A-Za-z0-9_-]{43}$/);
-  hookSecret = action.split('#')[1]!;
+  assert.match(enrolled[0]!.body.hooks[0]!.action, /\/webhooks\/peppol#[A-Za-z0-9_-]{43}$/);
+  hookSecret = hookSecretOf(enrolled[0]!);
   const participant = await prisma.peppolParticipant.findUniqueOrThrow({
     where: { organizationId: orgId },
   });
@@ -242,8 +196,8 @@ test('известия: подпис, възраст, повторение; „�
 });
 
 test('получаване: известие → изтегляне → регистърът (източник Peppol); грешка при изтеглянето — нов опит', async () => {
-  downloadXml = toUbl(domestic, calculate(domestic), 'en16931', 'подпис');
-  downloadFails = true;
+  fake.state.downloadXml = toUbl(domestic, calculate(domestic), 'en16931', 'подпис');
+  fake.state.downloadFails = true;
   const event = {
     topic: 'InvoiceReceived',
     partyId: '9926:BG131063188',
@@ -251,7 +205,7 @@ test('получаване: известие → изтегляне → реги
   };
   assert.equal((await hook(event, { delivery: 'delivery-0100' })).status, 500);
   assert.equal(await prisma.incomingInvoice.count(), 0);
-  downloadFails = false;
+  fake.state.downloadFails = false;
   assert.equal((await hook(event, { delivery: 'delivery-0100' })).status, 200);
   const incoming = await prisma.incomingInvoice.findFirstOrThrow({
     where: { organizationId: orgId },

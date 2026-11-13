@@ -13,11 +13,12 @@
     <div><dt><%= t('app.peppol.status') %></dt><dd><span class="tag<%= participant && participant.status === 'ACTIVE' ? ' tag-active' : participant && participant.status === 'FAILED' ? '' : ' tag-pending' %>"><%= t('app.peppol.statuses.' + (participant ? participant.status : 'NONE')) %></span><% if (participant && participant.enrolledAt) { %> <span class="muted"><%= day(participant.enrolledAt) %></span><% } %></dd></div>
   </dl>
   <% if (participant && participant.lastError) { %><p class="error" role="alert"><%= participant.lastError %></p><% } %>
+  <% if (configured && partyId && !verified && (!participant || participant.status !== 'ACTIVE')) { %><p class="callout"><%= t('app.peppol.notVerified') %></p><% } %>
   <% if (canManage && configured && partyId) { %>
-    <% if (!participant || participant.status !== 'ACTIVE') { %>
-      <form method="post" action="/app/o/<%= org.id %>/peppol/vklyuchi"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit"><%= t('app.peppol.enable') %></button></form>
-    <% } else { %>
+    <% if (participant && participant.status === 'ACTIVE') { %>
       <form method="post" action="/app/o/<%= org.id %>/peppol/izklyuchi"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="button-secondary"><%= t('app.peppol.disable') %></button></form>
+    <% } else if (verified) { %>
+      <form method="post" action="/app/o/<%= org.id %>/peppol/vklyuchi"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit"><%= t('app.peppol.enable') %></button></form>
     <% } %>
   <% } %>
 </section>

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { Prisma } from '@prisma/client';
 import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../db.js';
 import { HttpError, requireOrg } from '../auth/guards.js';
@@ -37,7 +38,7 @@ export function appPeppolRouter(): Router {
     const [org, participant, transmissions, configured] = await Promise.all([
       prisma.organization.findUniqueOrThrow({
         where: { id: access.organizationId },
-        select: { id: true, legalName: true, vatNumber: true },
+        select: { id: true, legalName: true, vatNumber: true, verifiedAt: true },
       }),
       prisma.peppolParticipant.findUnique({ where: { organizationId: access.organizationId } }),
       prisma.peppolTransmission.findMany({
@@ -53,6 +54,7 @@ export function appPeppolRouter(): Router {
       participant,
       transmissions,
       configured,
+      verified: org.verifiedAt !== null,
       partyId: participant?.partyId ?? partyIdForVat(org.vatNumber),
       canManage: roleCan(access.role, 'org.settings') && access.viaFirmId === null,
       ok: code(req.query['ok']),
@@ -114,6 +116,10 @@ export function appPeppolRouter(): Router {
       );
     } catch (error) {
       if (error instanceof PeppolError) return res.redirect(303, `${back}?peppol=notActive`);
+      // Едновременно „Изпрати“ за същия документ: уникалният documentId спира второто.
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        return res.redirect(303, `${back}?peppol=already`);
+      }
       throw error;
     }
     res.redirect(303, `${back}?peppol=queued`);

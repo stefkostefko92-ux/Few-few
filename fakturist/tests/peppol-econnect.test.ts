@@ -179,3 +179,28 @@ test('подписът на известието: HMAC-SHA256 на сурово�
   assert.equal(signatureMatches(body, undefined, 's3cret'), false);
   assert.equal(signatureMatches(Buffer.from('{"topic":"X"}'), good, 's3cret'), false);
 });
+
+test('грешка при регистрация: тайната на известията се маскира и когато е на границата на отрязването', async () => {
+  const hookSecret = 'h00k-s3cret-abcdefghijklmnopqrstuvwxyz0123456789';
+  const { fetchImpl } = fake((call) => {
+    if (call.url.endsWith('/connect/token')) return token();
+    // Тайната започва на 280-ия знак: отрязване преди маскирането би оставило половината ѝ.
+    return new Response(`${'x'.repeat(250)} action=https://f.test/webhooks/peppol#${hookSecret}`, {
+      status: 400,
+    });
+  });
+  const ap = new EConnectAccessPoint(SETTINGS, fetchImpl);
+  await assert.rejects(
+    ap.enroll({
+      partyId: '9926:BG131063188',
+      name: 'Пекарна Зора ЕООД',
+      address: 'Перник',
+      countryCode: 'BG',
+      hookUrl: `https://f.test/webhooks/peppol#${hookSecret}`,
+    }),
+    (error: unknown) =>
+      error instanceof AccessPointError &&
+      !error.message.includes(hookSecret.slice(0, 8)) &&
+      error.message.length <= 300,
+  );
+});

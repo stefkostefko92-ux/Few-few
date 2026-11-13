@@ -117,6 +117,7 @@ export async function handlePeppolWebhook(input: {
     ) {
       const known = await applyTransmissionEvent({
         topic: event.topic,
+        partyId: participant.partyId,
         providerDocumentId: event.documentId,
         message: event.message ?? null,
         at: now,

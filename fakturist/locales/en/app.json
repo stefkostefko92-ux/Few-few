@@ -821,6 +821,7 @@
     "title": "Peppol",
     "how": "The Peppol network delivers e-invoices straight into the recipient’s accounting system — in the EU and beyond. Fakturist connects through a certified access point. The company’s address is its VAT number (scheme 9926).",
     "notConfigured": "The Peppol connection has not been enabled by Fakturist yet — the function is off.",
+    "notVerified": "Peppol registration requires the company to be confirmed by Fakturist first: an address derived from its VAT number is registered on the network, so we check that the company is yours. Contact us to have it confirmed.",
     "receiveTitle": "Receiving via Peppol",
     "address": "Peppol address",
     "status": "Status",
@@ -861,7 +862,10 @@
       "noVat": "The company needs a VAT number.",
       "taken": "This address is already registered by another company in Fakturist.",
       "notActive": "The company is not registered in Peppol.",
-      "provider": "The access point refused — see the error below."
+      "provider": "The access point refused — see the error below.",
+      "notVerified": "The company has not been confirmed by Fakturist yet — Peppol registration follows the confirmation.",
+      "alreadyActive": "The company is already registered in Peppol.",
+      "busy": "Registration is already in progress — wait a minute and reload the page."
     },
     "result": {
       "queued": "The document is queued for sending via Peppol.",

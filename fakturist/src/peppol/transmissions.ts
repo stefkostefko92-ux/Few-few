@@ -85,8 +85,9 @@ export async function sendDueTransmissions(
         documentId: item.providerDocumentId,
         ubl: item.document.ublXml,
       });
-      await prisma.peppolTransmission.update({
-        where: { id: item.id },
+      // Само ако редът още е наш (QUEUED): известие, дошло докато заявката тече, печели.
+      await prisma.peppolTransmission.updateMany({
+        where: { id: item.id, status: 'QUEUED' },
         data: { status: 'ACCEPTED', lastError: null },
       });
       accepted += 1;
@@ -95,8 +96,8 @@ export async function sendDueTransmissions(
         error instanceof AccessPointError ? error.retryable : true; /* неочаквано — пак */
       const message = error instanceof Error ? error.message.slice(0, 500) : 'Неизвестна грешка';
       const exhausted = item.attempts >= MAX_ATTEMPTS;
-      await prisma.peppolTransmission.update({
-        where: { id: item.id },
+      await prisma.peppolTransmission.updateMany({
+        where: { id: item.id, status: 'QUEUED' },
         data:
           retry && !exhausted
             ? {
@@ -111,15 +112,19 @@ export async function sendDueTransmissions(
   return accepted;
 }
 
-/** Статусът от известие на точката за достъп; непознат документ — false. */
+/**
+ * Статусът от известие на точката за достъп; непознат документ — false. Подписът удостоверява само
+ * `partyId` на известието, затова документът се търси само сред изпращанията на този подател.
+ */
 export async function applyTransmissionEvent(input: {
   topic: 'InvoiceSent' | 'InvoiceSentRetry' | 'InvoiceSentError';
+  partyId: string;
   providerDocumentId: string;
   message: string | null;
   at: Date;
 }): Promise<boolean> {
-  const row = await prisma.peppolTransmission.findUnique({
-    where: { providerDocumentId: input.providerDocumentId },
+  const row = await prisma.peppolTransmission.findFirst({
+    where: { providerDocumentId: input.providerDocumentId, senderPartyId: input.partyId },
     select: { id: true, organizationId: true, documentId: true, status: true },
   });
   if (!row) return false;
