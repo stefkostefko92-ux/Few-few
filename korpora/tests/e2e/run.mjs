@@ -8,6 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { chromium } from 'playwright';
+import { editorKeys, constructorKeys } from './keys.mjs';
 
 const base = (process.env.KORPORA_URL ?? 'http://127.0.0.1:4320').replace(/\/+$/, '');
 const email = process.env.E2E_EMAIL ?? '';
@@ -38,6 +39,8 @@ const READY_MS = 30000;
 const CLS_BUDGET = 0.05;
 // unique per run: cleanup finds the project by name even if the editor never opened
 const PROJECT_NAME = `e2e — достъпност ${Date.now().toString(36)}`;
+// the free carcass of the run (signIn): its editor opens on the constructor
+let builderPath = null;
 
 // the landing and the legal pages have a path per language, the rest take ?lang=
 function localized(path, locale) {
@@ -87,9 +90,13 @@ async function check(browser, storageState, path, locale, scheme, viewport) {
       await page.click('#pick-carcass');
       await page.locator('#picker[open]').waitFor({ timeout: READY_MS });
       for (const v of await axe(page, '#picker')) violations.push(`picker: ${v}`);
-      // the keyboard paths once per run (they do not change with the language or the theme)
-      if (locale === 'bg' && scheme === 'light' && viewport === VIEWPORTS.desktop)
-        violations.push(...(await editorKeys(page)));
+      // the keyboard paths once per run (they do not change with the language or the theme); the free carcass
+      // opens on the constructor
+      const once = locale === 'bg' && scheme === 'light' && viewport === VIEWPORTS.desktop;
+      if (path === builderPath) {
+        await page.keyboard.press('Escape');
+        if (once) violations.push(...(await constructorKeys(page)));
+      } else if (once) violations.push(...(await editorKeys(page)));
     }
     return [...violations, ...errors.map((e) => `error: ${e.slice(0, 300)}`)];
   } finally {
@@ -115,61 +122,6 @@ function countLayoutShifts() {
   new PerformanceObserver((list) => {
     for (const e of list.getEntries()) if (!e.hadRecentInput) window.__cls += e.value;
   }).observe({ type: 'layout-shift', buffered: true });
-}
-
-// The editor's keyboard paths (WCAG 2.1.1, 2.1.2, 2.4.3): Enter in the picker's search keeps the dialog; full screen
-// (the overlay a phone gets) keeps Tab in it, Escape leaves it and the focus is back on its button; Escape closes
-// the download menu.
-async function editorKeys(page) {
-  const found = [];
-  // a query that finds something in any catalog (the base one or the shop catalog): the start of the first result
-  const name = await page.evaluate(
-    () => document.querySelector('#pk-list [role="option"] b')?.textContent?.trim() ?? '',
-  );
-  await page.fill('#pk-q', name.slice(0, 3));
-  await page.keyboard.press('Enter');
-  const picked = await page.evaluate(() => ({
-    open: document.getElementById('picker').open,
-    inList: !!document.activeElement?.closest('#pk-list'),
-  }));
-  if (!picked.open) found.push('keys: Enter in the picker search closed the dialog');
-  else if (!picked.inList) found.push('keys: Enter in the picker search did not go to the results');
-  await page.keyboard.press('Escape');
-  if (await page.evaluate(() => document.getElementById('picker').open)) {
-    found.push('keys: Escape in the picker results did not close the dialog');
-    await page.click('#picker [data-close]');
-  }
-  await page.click('#tab-draw');
-  await page.evaluate(() => {
-    Element.prototype.requestFullscreen = undefined;
-    Element.prototype.webkitRequestFullscreen = undefined;
-  });
-  await page.focus('#draw-fs .fs-btn');
-  await page.keyboard.press('Enter');
-  for (let i = 0; i < 8; i++) {
-    await page.keyboard.press('Tab');
-    const inside = await page.evaluate(
-      () =>
-        document.activeElement === document.body || !!document.activeElement?.closest('.is-full'),
-    );
-    if (!inside) {
-      found.push('keys: Tab left the full screen for the page under it');
-      break;
-    }
-  }
-  await page.keyboard.press('Escape');
-  const after = await page.evaluate(() => ({
-    full: !!document.querySelector('.is-full'),
-    inert: document.querySelectorAll('[inert]').length,
-    back: !!document.activeElement?.matches('#draw-fs .fs-btn'),
-  }));
-  if (after.full || after.inert || !after.back)
-    found.push(`keys: Escape did not leave the full screen cleanly ${JSON.stringify(after)}`);
-  await page.click('.menu > summary');
-  await page.keyboard.press('Escape');
-  if (await page.evaluate(() => document.querySelector('.menu').open))
-    found.push('keys: Escape did not close the download menu');
-  return found;
 }
 
 // the first field takes the focus, is marked invalid and is described by the message under it, in the page's language
@@ -231,6 +183,15 @@ async function signIn(session) {
     page.click('.newproj-form button[type=submit]'),
   ]);
   session.editor = new URL(page.url()).pathname;
+  // a free carcass too: the editor opens it on the constructor
+  await page.goto(`${base}/app`);
+  await page.selectOption('#type', 'custom');
+  await page.fill('#pname', `${PROJECT_NAME} — конструктор`);
+  await Promise.all([
+    page.waitForURL(/\/app\/p\//),
+    page.click('.newproj-form button[type=submit]'),
+  ]);
+  builderPath = new URL(page.url()).pathname;
   session.state = await ctx.storageState();
 }
 
@@ -269,7 +230,7 @@ async function main() {
       const ctx = await browser.newContext();
       session = { ctx, page: await ctx.newPage(), state: undefined, editor: null };
       await signIn(session);
-      groups.push([session.state, [...CUSTOMER, session.editor]]);
+      groups.push([session.state, [...CUSTOMER, session.editor, builderPath]]);
     } else {
       process.stdout.write('E2E_EMAIL/E2E_PASSWORD не са зададени — само публичните страници.\n');
     }

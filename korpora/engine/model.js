@@ -133,6 +133,7 @@ export function buildModel(input) {
     groups: ctx.groups,
     symbols: ctx.symbols,
     hardware: ctx.hardwareLines(),
+    ...(ctx.cells.length ? { cells: ctx.cells } : {}),
   };
 }
 

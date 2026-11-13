@@ -1,0 +1,60 @@
+<%# The constructor tab (editor/build-panel.js draws the front view and fills the inspector): a free carcass column by column and cell by cell; a template gets the way to become one. %>
+<% const tb = (k) => te('editor.build.' + k); %>
+<section id="panel-build" role="tabpanel" aria-labelledby="tab-build" hidden data-text="<%= JSON.stringify({ view: tb('view'), column: tb('column'), cell: tb('cell'), between: tb('between'), and: tb('and'), fixed: tb('fixed'), auto: tb('auto'), fill: { open: tb('fillOpen'), shelves: tb('fillShelves'), drawers: tb('fillDrawers'), rail: tb('fillRail') }, colTitle: tb('colTitle'), cellTitle: tb('cellTitle'), cellsTitle: tb('cellsTitle'), merge: tb('merge'), mergeRange: tb('mergeRange'), drawersOwn: tb('drawersOwn'), frontOther: tb('frontOther'), templateText: tb('templateText'), otherText: tb('otherText'), personalize: tb('personalize'), startFree: tb('startFree') }) %>">
+  <div class="bld-intro" id="bld-template" hidden>
+    <p id="bld-template-text"></p>
+    <button type="button" class="btn btn-primary" id="bld-personalize"><%= tb('personalize') %></button>
+  </div>
+  <div class="bld" id="bld-main" hidden>
+    <div class="bld-bar" role="toolbar" aria-label="<%= tb('toolbar') %>">
+      <button type="button" class="btn btn-small" id="bld-undo" aria-keyshortcuts="Control+Z"><%= tb('undo') %></button>
+      <button type="button" class="btn btn-small" id="bld-redo" aria-keyshortcuts="Control+Shift+Z"><%= tb('redo') %></button>
+      <span class="bld-sep" aria-hidden="true"></span>
+      <button type="button" class="btn btn-small" id="bld-add-left"><%= tb('addLeft') %></button>
+      <button type="button" class="btn btn-small" id="bld-add-right"><%= tb('addRight') %></button>
+      <button type="button" class="btn btn-small" id="bld-remove"><%= tb('remove') %></button>
+      <span class="bld-sep" aria-hidden="true"></span>
+      <button type="button" class="btn btn-small" id="bld-split"><%= tb('split') %></button>
+      <button type="button" class="btn btn-small" id="bld-merge"><%= tb('merge') %></button>
+      <label class="check bld-toggle" for="bld-fronts"><input type="checkbox" id="bld-fronts" checked><span><%= tb('showFronts') %></span></label>
+    </div>
+    <div class="bld-body">
+      <figure class="bld-front" id="bld-front" aria-describedby="bld-hint"></figure>
+      <div class="bld-insp" id="bld-insp">
+        <div class="group">
+          <h2 id="bld-col-title"></h2>
+          <div class="field"><label for="bld-w"><%= tb('width') %></label><input type="number" id="bld-w" step="1" inputmode="numeric"></div>
+          <label class="check" for="bld-w-auto"><input type="checkbox" id="bld-w-auto"><span><%= tb('autoWidth') %></span></label>
+        </div>
+        <div class="group">
+          <h2 id="bld-cell-title"></h2>
+          <div class="field"><label for="bld-h"><%= tb('height') %></label><input type="number" id="bld-h" step="1" inputmode="numeric"></div>
+          <label class="check" for="bld-h-auto"><input type="checkbox" id="bld-h-auto"><span><%= tb('autoHeight') %></span></label>
+          <span class="lbl" id="l-bld-fill"><%= tb('fillLabel') %></span>
+          <div class="seg seg-wrap" role="radiogroup" aria-labelledby="l-bld-fill">
+            <label><input type="radio" name="bld-fill" value="open"><span><%= tb('fillOpen') %></span></label>
+            <label><input type="radio" name="bld-fill" value="shelves"><span><%= tb('fillShelves') %></span></label>
+            <label><input type="radio" name="bld-fill" value="drawers"><span><%= tb('fillDrawers') %></span></label>
+            <label><input type="radio" name="bld-fill" value="rail"><span><%= tb('fillRail') %></span></label>
+          </div>
+          <div class="field" id="bld-n-row"><label for="bld-n"><%= tb('count') %></label><input type="number" id="bld-n" step="1" inputmode="numeric"></div>
+          <span class="lbl" id="l-bld-front"><%= tb('frontLabel') %></span>
+          <div class="seg" role="radiogroup" aria-labelledby="l-bld-front" aria-describedby="bld-front-note">
+            <label><input type="radio" name="bld-front" value="none"><span><%= tb('frontNone') %></span></label>
+            <label><input type="radio" name="bld-front" value="door"><span><%= tb('frontDoor') %></span></label>
+            <label><input type="radio" name="bld-front" value="doors2"><span><%= tb('frontDoors2') %></span></label>
+          </div>
+          <div id="bld-hinge-row">
+            <span class="lbl" id="l-bld-hinge"><%= tb('hinge') %></span>
+            <div class="seg" role="radiogroup" aria-labelledby="l-bld-hinge">
+              <label><input type="radio" name="bld-hinge" value="left"><span><%= tb('hingeLeft') %></span></label>
+              <label><input type="radio" name="bld-hinge" value="right"><span><%= tb('hingeRight') %></span></label>
+            </div>
+          </div>
+          <p class="hint" id="bld-front-note" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+    <p class="hint" id="bld-hint"><%= tb('hint') %></p>
+  </div>
+</section>

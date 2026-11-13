@@ -50,6 +50,7 @@ export function cellFronts(ctx, o, a) {
   cells.forEach((cell, k) => {
     const hi = k === last ? yInnerTop : r1(y + res.sizes[k]);
     col.bounds.push({ lo: y, hi });
+    ctx.cells.push({ ...placeOf(k), x0: col.xa, x1: col.xb, y0: y, y1: hi, fill: cell.fill, n: cell.n, auto: cell.h === null });
     if (k < last) {
       const part = placed(ctx, placeOf(k), () => panel(ctx, {
         ...carc, key: key(`c${i + 1}div${k + 1}`), name: nm(n > 1 ? `Неподвижен рафт ${i + 1}.${k + 1}` : `Неподвижен рафт ${k + 1}`),

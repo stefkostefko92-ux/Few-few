@@ -93,7 +93,7 @@ export const TYPES = {
   },
   // The free carcass („Свободен корпус“): the outside here, the columns, cells and fronts in spec.grid (layout.js).
   custom: {
-    label: 'Свободен корпус', group: 'Конструктор', unlisted: true,
+    label: 'Свободен корпус', group: 'Конструктор',
     params: [
       R('width', 'Ширина', 300, 2 * MAX_CARCASS_W, 1), R('height', 'Височина', 300, 2600, 1), R('depth', 'Дълбочина', 250, 650, 1),
       S('placement', 'Монтаж', [['floor', 'На пода'], ['wall', 'На стената']]),

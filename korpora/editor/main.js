@@ -1,7 +1,7 @@
 // Korpora editor: a saved project in the browser. Spec → model → BOM, drilling, nesting, drawings, CNC preview.
 // The server keeps the spec (save) and makes the downloads from the SAVED spec; the preview here is computed live.
 import { registerCatalog } from '../engine/catalog.js';
-import { buildModel, normalizeSpec, withType } from '../engine/model.js';
+import { buildModel, normalizeSpec } from '../engine/model.js';
 import { buildBom } from '../engine/bom.js';
 import { nest } from '../engine/nest.js';
 import { cncBlockers } from '../engine/cam.js';
@@ -14,10 +14,11 @@ import {
   bindTypebox,
   renderHardwareOptions,
   writeForm,
-  bindForm,
   bindRailbox,
 } from './form.js';
-import { openPicker, bindPicker } from './pickers.js';
+import { bindRail } from './bind-rail.js';
+import { bindBuilder } from './build-panel.js';
+import { createSteps } from './steps.js';
 import { renderBom } from './render-bom.js';
 import { renderDrill } from './render-drill.js';
 import { renderNesting } from './render-nest.js';
@@ -69,6 +70,7 @@ const state = {
   drift: [], // hardware and decors of the saved project that have left the catalog, until it is saved
 };
 let viewer = null;
+let builder = null;
 let CATALOG = null;
 
 const meta = () => ({
@@ -79,7 +81,11 @@ const meta = () => ({
 });
 
 const RENDER = {
-  view: () => viewer?.setModel(state.model),
+  view: () => {
+    viewer?.setModel(state.model);
+    viewer?.pick.relight();
+  },
+  build: () => builder?.render(state.model, state.spec),
   bom: () => renderBom(state),
   drill: () => renderDrill(state, meta()),
   nest: () => renderNesting(state, text.fullscreen),
@@ -151,6 +157,8 @@ async function recompute(writeFocused = false) {
     Object.assign(state, { spec: model.spec, model, hash, bom, nesting, blockers });
     writeForm(form, model.spec, writeFocused);
     renderHeader(state.model);
+    $('#personalize').hidden = readOnly || !steps.convertible(model.spec.type);
+    builder.update(model, model.spec);
     showDownloads(state.blockers.length > 0, text.cncBlockedLink);
     for (const t of TABS) if (t !== 'cat') state.dirty.add(t);
     renderTab(state.tab);
@@ -180,6 +188,9 @@ async function flushPending() {
   await recompute(writeFocused);
 }
 
+// the steps to undo: the constructor's edits, the type, „reset“, „Персонализирай“
+const steps = createSteps({ state, isReadOnly: () => readOnly, recompute, schedule });
+
 /* ---------- tabs ---------- */
 
 function selectTab(id, focus = false) {
@@ -197,40 +208,23 @@ function bindUi() {
   renderHardwareOptions();
   bindRailbox($('.railbox', form));
   bindTypebox($('.typebox', form));
-  bindForm(form, (key, value, commit) => {
-    if (readOnly) return;
-    if (key === 'type') {
-      state.spec = withType(state.spec, value);
-      renderParams($('#param-fields'), value);
-      showType(value);
-      void recompute(true);
-      return;
-    }
-    state.spec = { ...state.spec, [key]: value };
-    // a final change shows the value as the engine took it (limits, step), also in a field still focused (Enter)
-    if (commit) schedule(40, true);
-    else schedule(400);
+  bindRail({
+    form,
+    state,
+    isReadOnly: () => readOnly,
+    remember: steps.remember,
+    recompute,
+    schedule,
   });
-  for (const b of $$('[data-pick]')) {
-    b.addEventListener('click', () => {
-      if (readOnly) return;
-      const key = b.dataset.pick;
-      const mode = key === 'frontRal' ? 'ral' : key === 'handle' ? 'handle' : 'decor';
-      openPicker(mode, state.spec[key], (id) => {
-        state.spec = {
-          ...state.spec,
-          [key]: id,
-          ...(key === 'frontRal' ? { frontMaterial: 'ral' } : {}),
-        };
-        void recompute();
-      });
-    });
-  }
-  bindPicker();
-  $('#reset').addEventListener('click', () => {
-    if (readOnly) return;
-    state.spec = normalizeSpec({ type: state.spec.type });
-    void recompute(true);
+  builder = bindBuilder({
+    panel: $('#panel-build'),
+    isReadOnly: () => readOnly,
+    steps,
+    onSelect: (sel) => viewer?.pick.light(sel),
+  });
+  $('#personalize').addEventListener('click', () => {
+    steps.personalize();
+    selectTab('build', true);
   });
 
   bindTabs(selectTab);
@@ -239,7 +233,10 @@ function bindUi() {
   bindCatalog(CATALOG);
 
   // 3D, and full screen for it and the drawings
-  viewer = createViewer(text);
+  // a click on a free carcass's part in 3D selects its cell in the constructor
+  viewer = createViewer(text, (p) =>
+    builder.select({ column: p.column, from: p.cell, to: p.cell }),
+  );
   for (const b of $$('[data-tab-go]'))
     b.addEventListener('click', () => selectTab(b.dataset.tabGo, true));
   bindFullscreens(text);
@@ -249,11 +246,18 @@ function bindUi() {
     $('#save').addEventListener('click', () => void save(true));
     $('#project-name').addEventListener('input', showState);
     document.addEventListener('keydown', (ev) => {
-      // S by its letter, or by its place when the layout puts no Latin letter there (Cyrillic „с“)
-      const s = ev.key.toLowerCase() === 's' || (ev.code === 'KeyS' && !/^[a-z]$/i.test(ev.key));
-      if ((ev.ctrlKey || ev.metaKey) && s) {
+      if (!(ev.ctrlKey || ev.metaKey)) return;
+      // a letter, or its place when the layout puts no Latin letter there (Cyrillic „с“, „з“)
+      const is = (k) =>
+        ev.key.toLowerCase() === k ||
+        (ev.code === `Key${k.toUpperCase()}` && !/^[a-z]$/i.test(ev.key));
+      if (is('s')) {
         ev.preventDefault();
         void save(true);
+      } else if ((is('z') || is('y')) && !ev.target.closest?.('input, textarea, select')) {
+        // a field keeps its own undo; elsewhere Ctrl+Z / Ctrl+Shift+Z (Ctrl+Y) step through the edits
+        ev.preventDefault();
+        steps.step(is('y') || ev.shiftKey ? 1 : -1);
       }
     });
     // a change still waiting for its recompute counts too
@@ -283,7 +287,7 @@ async function start() {
   if (!catalog.ok && !readOnly) lockForReadingOnce(text.catalogFailed);
   showDrift(state.drift, { title: text.driftTitle, text: text.driftText });
   writeForm(form, state.spec, true);
-  followHash(selectTab, () => state.tab);
+  followHash(selectTab, () => state.tab, state.spec.type === 'custom' ? 'build' : 'view');
   await recompute(true);
   // what was just loaded counts as saved, even if this browser's catalog normalizes it slightly differently
   state.savedHash = state.hash;
