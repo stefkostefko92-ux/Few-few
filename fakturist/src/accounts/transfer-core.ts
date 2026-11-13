@@ -16,6 +16,8 @@ export type TransferErrorCode =
   | 'loginRequired'
   | 'firmMember'
   | 'rateLimited'
+  | 'notCreator'
+  | 'invited'
   | `password.${string}`;
 
 export class TransferError extends Error {

@@ -27,7 +27,8 @@
     "added": {
       "added": "The company is added. The mandate waits for confirmation by the owner or by Fakturist.",
       "invited": "The company is added and the invitation to the owner is sent. The mandate becomes active once they confirm it.",
-      "hasOwner": "The company already has an owner in Fakturist — the mandate waits for their confirmation."
+      "hasOwner": "The company already has an owner in Fakturist — the mandate waits for their confirmation.",
+      "existing": "The company is already in Fakturist without an owner. Your mandate waits for confirmation by Fakturist; the owner is invited by the firm that added it."
     },
     "invite": {
       "ok": "The invitation to the owner is sent.",
@@ -36,7 +37,9 @@
       "rateLimited": "The firm’s daily invitation limit is reached. Try again tomorrow.",
       "hasOwner": "The company already has an owner — the mandate waits for their confirmation.",
       "notFound": "There is no active or pending mandate for this company.",
-      "invalid": "The invitation could not be sent."
+      "invalid": "The invitation could not be sent.",
+      "notCreator": "The owner is invited by the firm that added the company to Fakturist. Your mandate waits for confirmation by the owner or by Fakturist.",
+      "invited": "Fakturist or another firm has already invited the owner — wait for their answer."
     }
   },
   "roles": {
@@ -151,7 +154,9 @@
       "rateLimited": "The firm’s daily invitation limit is reached. Try again tomorrow.",
       "hasOwner": "The company already has an owner — the mandate waits for their confirmation.",
       "notFound": "There is no active or pending mandate for this company.",
-      "invalid": "The invitation could not be sent."
+      "invalid": "The invitation could not be sent.",
+      "notCreator": "The owner is invited by the firm that added the company to Fakturist. Your mandate waits for confirmation by the owner or by Fakturist.",
+      "invited": "Fakturist or another firm has already invited the owner — wait for their answer."
     }
   },
   "security": {

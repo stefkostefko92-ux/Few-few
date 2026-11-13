@@ -81,7 +81,7 @@ export function appClientsRouter(): Router {
       return res.status(400).render('app/client-new', { firm, errors, values: req.body });
     }
     const data = parsed.data;
-    type Outcome = 'added' | 'invited' | 'hasOwner';
+    type Outcome = 'added' | 'invited' | 'hasOwner' | 'existing';
     let outcome: Outcome;
     try {
       outcome = await prisma.$transaction(async (tx): Promise<Outcome> => {
@@ -102,6 +102,7 @@ export function appClientsRouter(): Router {
               iban: data.iban || null,
               eAddressScheme: data.vatNumber ? '9926' : null,
               eAddressValue: data.vatNumber ?? null,
+              createdByFirmId: firm.id,
             },
           }));
         if (!existing) {
@@ -143,6 +144,8 @@ export function appClientsRouter(): Router {
         const owned =
           (await tx.membership.count({ where: { organizationId: client.id, role: 'OWNER' } })) > 0;
         if (owned) return 'hasOwner';
+        // Вече съществуваща фирма без собственик: пълномощното чака мастъра, покана не се праща.
+        if (existing) return 'existing';
         if (!data.ownerEmail) return 'added';
         await inviteOwnerByFirm(tx, {
           firmId: firm.id,

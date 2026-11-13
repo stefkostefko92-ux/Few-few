@@ -12,6 +12,8 @@ const { invalidateSettings } = await import('../../src/admin/settings.js');
 const { inviteOwnerByFirm, acceptTransferInvite, findOpenInvite, TransferError } =
   await import('../../src/accounts/transfer.js');
 const { createServer } = await import('../../src/server.js');
+const { hashPassword } = await import('../../src/auth/password.js');
+const { createTransferInvite } = await import('../../src/accounts/transfer.js');
 
 /**
  * Собственик и счетоводител на една фирма (SPEC 26–28): кантората добавя фирмата и кани собственика;
@@ -75,6 +77,15 @@ function clientFields(eik: string, legalName: string, ownerEmail: string) {
     validFrom: '2026-11-01',
     ownerEmail,
   };
+}
+
+async function setDailyLimit(value: number): Promise<void> {
+  await prisma.setting.upsert({
+    where: { key: 'invites.firmDailyLimit' },
+    create: { key: 'invites.firmDailyLimit', value },
+    update: { value },
+  });
+  invalidateSettings();
 }
 
 const isCode = (code: string) => (error: unknown) =>
@@ -249,6 +260,7 @@ test('отказ: служител на кантората, чуждо или о
     legalName: 'Друга Кантора ЕООД',
     eik: '200000002',
   });
+  await setDailyLimit(20);
   const managed = async (eik: string, firmId: string, status: 'PENDING' | 'REVOKED') => {
     const org = await prisma.organization.create({
       data: {
@@ -258,6 +270,7 @@ test('отказ: служител на кантората, чуждо или о
         addressStreet: 'ул. „Шипка“ 3',
         addressCity: 'София',
         postalCode: '1000',
+        createdByFirmId: firmId,
       },
     });
     await prisma.clientMandate.create({
@@ -292,12 +305,7 @@ test('отказ: служител на кантората, чуждо или о
   );
 
   // Таванът е настройка в мастър панела.
-  await prisma.setting.upsert({
-    where: { key: 'invites.firmDailyLimit' },
-    create: { key: 'invites.firmDailyLimit', value: 2 },
-    update: { value: 2 },
-  });
-  invalidateSettings();
+  await setDailyLimit(2);
   const b = await managed('208725180', other.organizationId, 'PENDING');
   await invite(other.organizationId, a, 'a-owner@example.test', other.userId);
   await invite(other.organizationId, b, 'b-owner@example.test', other.userId);
@@ -305,4 +313,158 @@ test('отказ: служител на кантората, чуждо или о
     invite(other.organizationId, b, 'b-owner2@example.test', other.userId),
     isCode('rateLimited'),
   );
+});
+
+test('чужда кантора не взема фирма без собственик: добавя я само с чакащо пълномощно, без покана', async () => {
+  await setDailyLimit(20);
+  // Кантора X създава фирмата; мастърът е пратил покана до истинския собственик.
+  const x = await login('accountant@example.test');
+  await post(
+    x,
+    `/app/o/${firm.organizationId}/klienti/nov`,
+    clientFields('300000003', 'Мелница Жито АД', ''),
+  );
+  const client = await prisma.organization.findUniqueOrThrow({ where: { eik: '300000003' } });
+  assert.equal(client.createdByFirmId, firm.organizationId);
+  const masterInvite = await createTransferInvite({
+    organizationId: client.id,
+    email: 'real-owner@example.test',
+    actorId: firm.userId,
+  });
+
+  // Кантора Y добавя същия ЕИК с „имейл на собственика“ — свой втори имейл.
+  const y = await register({
+    ...base,
+    kind: 'accountant',
+    name: 'Игрек Игреков',
+    email: 'y@example.test',
+    legalName: 'Кантора Игрек ЕООД',
+    eik: '300000010',
+  });
+  const ys = await login('y@example.test');
+  const added = await post(
+    ys,
+    `/app/o/${y.organizationId}/klienti/nov`,
+    clientFields('300000003', 'Мелница Жито АД', 'y.private@example.test'),
+  );
+  assert.equal(added.status, 303);
+  assert.ok(added.headers.get('location')?.includes('klient=existing'));
+  const yMandate = await prisma.clientMandate.findFirstOrThrow({
+    where: { firmId: y.organizationId, clientId: client.id },
+  });
+  assert.equal(yMandate.status, 'PENDING');
+  assert.equal(await prisma.transferInvite.count({ where: { mandateId: yMandate.id } }), 0);
+  const still = await prisma.transferInvite.findUniqueOrThrow({
+    where: { id: masterInvite.inviteId },
+  });
+  assert.equal(still.revokedAt, null);
+  // И пряко, и през „Покани собственика“ — отказ.
+  await assert.rejects(
+    prisma.$transaction((tx) =>
+      inviteOwnerByFirm(tx, {
+        firmId: y.organizationId,
+        clientId: client.id,
+        email: 'y.private@example.test',
+        actorId: y.userId,
+      }),
+    ),
+    isCode('notCreator'),
+  );
+  const resend = await post(ys, `/app/o/${y.organizationId}/klienti/${yMandate.id}/pokana`, {
+    email: 'y.private@example.test',
+  });
+  assert.ok(resend.headers.get('location')?.includes('pokana=notCreator'));
+
+  // Създателят не отменя поканата на мастъра.
+  await assert.rejects(
+    prisma.$transaction((tx) =>
+      inviteOwnerByFirm(tx, {
+        firmId: firm.organizationId,
+        clientId: client.id,
+        email: 'someone@example.test',
+        actorId: firm.userId,
+      }),
+    ),
+    isCode('invited'),
+  );
+  assert.equal(
+    (await prisma.transferInvite.findUniqueOrThrow({ where: { id: masterInvite.inviteId } }))
+      .revokedAt,
+    null,
+  );
+});
+
+test('дневният таван държи и при едновременни покани', async () => {
+  const z = await register({
+    ...base,
+    kind: 'accountant',
+    name: 'Зета Зетова',
+    email: 'z@example.test',
+    legalName: 'Кантора Зета ООД',
+    eik: '300000028',
+  });
+  await setDailyLimit(2);
+  const eiks = ['300000035', '300000042', '300000054', '300000067', '300000074', '300000081'];
+  const clients: string[] = [];
+  for (const eik of eiks) {
+    const org = await prisma.organization.create({
+      data: {
+        kind: 'COMPANY',
+        legalName: `Клиент ${eik}`,
+        eik,
+        addressStreet: 'ул. „Шипка“ 4',
+        addressCity: 'София',
+        postalCode: '1000',
+        createdByFirmId: z.organizationId,
+      },
+    });
+    await prisma.clientMandate.create({
+      data: {
+        firmId: z.organizationId,
+        clientId: org.id,
+        status: 'PENDING',
+        documentRef: 'Пълномощно № 21',
+        validFrom: new Date('2026-11-01T00:00:00Z'),
+      },
+    });
+    clients.push(org.id);
+  }
+  const results = await Promise.allSettled(
+    clients.map((clientId, i) =>
+      prisma.$transaction((tx) =>
+        inviteOwnerByFirm(tx, {
+          firmId: z.organizationId,
+          clientId,
+          email: `owner${i}@example.test`,
+          actorId: z.userId,
+        }),
+      ),
+    ),
+  );
+  assert.equal(results.filter((r) => r.status === 'fulfilled').length, 2);
+});
+
+test('имейлът от поканата се вижда само от OWNER/ADMIN на кантората', async () => {
+  await setDailyLimit(20);
+  const viewer = await prisma.user.create({
+    data: {
+      email: 'viewer@example.test',
+      name: 'Виктор Гледачев',
+      passwordHash: await hashPassword(PASSWORD),
+    },
+  });
+  await prisma.membership.create({
+    data: { userId: viewer.id, organizationId: firm.organizationId, role: 'VIEWER' },
+  });
+  const ownerSession = await login('accountant@example.test');
+  await post(
+    ownerSession,
+    `/app/o/${firm.organizationId}/klienti/nov`,
+    clientFields('300000099', 'Книжарница Перо ООД', 'pero-owner@example.test'),
+  );
+  const mine = await (await get(ownerSession, '/app')).text();
+  assert.ok(mine.includes('pero-owner@example.test'));
+  const theirs = await (await get(await login('viewer@example.test'), '/app')).text();
+  assert.ok(theirs.includes('Книжарница Перо ООД'));
+  assert.ok(!theirs.includes('pero-owner@example.test'));
 });

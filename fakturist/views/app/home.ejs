@@ -34,7 +34,7 @@
             <span class="tag tag-active"><%= t('app.home.hasOwner') %></span>
           <% } else { %>
             <% if (m.owner && m.owner.invite) { %><p class="muted"><%= m.owner.invite.email ? t('app.home.invitedEmail', { email: m.owner.invite.email, date: m.owner.invite.expiresAt.toISOString().slice(0, 10) }) : t('app.home.invited', { date: m.owner.invite.expiresAt.toISOString().slice(0, 10) }) %></p><% } %>
-            <% if (m.status !== 'REVOKED' && canInvite.includes(m.firmId)) { %>
+            <% if (m.status !== 'REVOKED' && canInvite.includes(m.firmId) && m.client.createdByFirmId === m.firmId) { %>
               <form method="post" action="/app/o/<%= m.firmId %>/klienti/<%= m.id %>/pokana" class="invite-row">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <label class="sr-only" for="owner-<%= m.id %>"><%= t('app.client.ownerEmail') %></label>

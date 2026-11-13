@@ -57,6 +57,19 @@ async function inviteOwnerTx(
   });
   if (org.deletedAt) throw new TransferError('notFound');
   if ((await ownerCount(tx, input.organizationId)) > 0) throw new TransferError('hasOwner');
+  // Кантората заменя само своя покана; поканата на мастъра или на друга кантора остава.
+  if (input.mandateId !== null) {
+    const foreign = await tx.transferInvite.count({
+      where: {
+        organizationId: input.organizationId,
+        acceptedAt: null,
+        revokedAt: null,
+        expiresAt: { gt: input.now },
+        OR: [{ mandateId: null }, { mandateId: { not: input.mandateId } }],
+      },
+    });
+    if (foreign > 0) throw new TransferError('invited');
+  }
   const replaced = await tx.transferInvite.updateMany({
     where: { organizationId: input.organizationId, acceptedAt: null, revokedAt: null },
     data: { revokedAt: input.now },
@@ -108,21 +121,25 @@ export async function createTransferInvite(input: {
 }
 
 /**
- * Кантората кани собственика на фирмата, която води по пълномощно (чакащо или действащо — не
- * оттеглено). Правото (OWNER/ADMIN на кантората) се проверява в маршрута. Поканата не може да е за
- * служител на кантората, а броят им за 24 часа е с таван (`invites.firmDailyLimit`) — пощата не е
- * инструмент за масови писма.
+ * Кантората кани собственика на фирмата, която САМА е създала (`createdByFirmId`) и води по пълномощно
+ * (чакащо или действащо — не оттеглено). Кантора, добавила вече съществуваща фирма, не кани — иначе би
+ * я взела чрез свой втори имейл. Правото (OWNER/ADMIN на кантората) се проверява в маршрута. Поканата
+ * не може да е за служител на кантората, а броят им за 24 часа е с таван (`invites.firmDailyLimit`) —
+ * пощата не е инструмент за масови писма. Кантората се заключва преди броенето (иначе едновременни
+ * заявки минават тавана); редът на заключване е кантора → фирма.
  */
 export async function inviteOwnerByFirm(
   tx: Prisma.TransactionClient,
   input: { firmId: string; clientId: string; email: string; actorId: string; now?: Date },
 ): Promise<InviteResult> {
   const now = input.now ?? new Date();
+  await lockOrganization(tx, input.firmId);
   const mandate = await tx.clientMandate.findUnique({
     where: { firmId_clientId: { firmId: input.firmId, clientId: input.clientId } },
-    select: { id: true, status: true },
+    select: { id: true, status: true, client: { select: { createdByFirmId: true } } },
   });
   if (!mandate || mandate.status === 'REVOKED') throw new TransferError('notFound');
+  if (mandate.client.createdByFirmId !== input.firmId) throw new TransferError('notCreator');
   const email = EmailSchema.safeParse(input.email);
   if (!email.success) throw new TransferError('invalidEmail');
   if (await isFirmMember(tx, input.firmId, email.data)) throw new TransferError('firmMember');

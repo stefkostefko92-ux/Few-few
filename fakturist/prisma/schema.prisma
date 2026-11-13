@@ -132,31 +132,36 @@ model Session {
 }
 
 model Organization {
-  id             String           @id @default(cuid())
-  kind           OrganizationKind
-  legalName      String
+  id              String           @id @default(cuid())
+  kind            OrganizationKind
+  legalName       String
   /// ЕИК/БУЛСТАТ (9 или 13 цифри) — проверен с контролната цифра (src/einvoice/bg-ids.ts).
-  eik            String?          @unique
+  eik             String?          @unique
   /// ДДС номер с префикса BG; null — лицето не е регистрирано по ЗДДС.
-  vatNumber      String?
-  addressStreet  String
-  addressCity    String
-  postalCode     String
-  countryCode    String           @default("BG")
-  email          String?
-  phone          String?
-  iban           String?
-  bic            String?
-  bankName       String?
+  vatNumber       String?
+  addressStreet   String
+  addressCity     String
+  postalCode      String
+  countryCode     String           @default("BG")
+  email           String?
+  phone           String?
+  iban            String?
+  bic             String?
+  bankName        String?
   /// Електронният адрес за получаване (чл. 120б от законопроекта) — схема и стойност, напр. 9926:BG123456789.
-  eAddressScheme String?
-  eAddressValue  String?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  deletedAt      DateTime?
+  eAddressScheme  String?
+  eAddressValue   String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  deletedAt       DateTime?
   /// Мастър акаунтът е проверил, че фирмата е тази, за която се представя (пълномощно, документ за
   /// представителство). Получателят в шкафчето вижда дали изпращачът е потвърден.
-  verifiedAt     DateTime?
+  verifiedAt      DateTime?
+  /// Кантората, която е създала фирмата (/klienti/nov). Само тя може да покани собственика; кантора,
+  /// добавила вече съществуваща фирма, — не (иначе би я взела чрез свой втори имейл).
+  createdByFirmId String?
+  createdByFirm   Organization?    @relation("CreatedByFirm", fields: [createdByFirmId], references: [id], onDelete: SetNull)
+  createdClients  Organization[]   @relation("CreatedByFirm")
 
   memberships     Membership[]
   firmMandates    ClientMandate[]  @relation("Firm")
@@ -176,6 +181,7 @@ model Organization {
 
   @@index([kind])
   @@index([legalName])
+  @@index([createdByFirmId])
 }
 
 model Membership {

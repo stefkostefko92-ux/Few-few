@@ -62,8 +62,12 @@ export function appRouter(): Router {
     ]);
     const firmIds = own.filter((org) => org.kind === 'ACCOUNTING_FIRM').map((org) => org.id);
     // Кантората вижда кой клиент има собственик и кани останалите (OWNER/ADMIN на кантората).
+    const canInvite = user.memberships
+      .filter((m) => firmIds.includes(m.organizationId) && roleCan(m.role, 'mandates.manage'))
+      .map((m) => m.organizationId);
+    // Имейлът от поканата е само за OWNER/ADMIN на кантората, която я е пратила.
     const owners = await clientOwnerStatus(
-      firmIds,
+      canInvite,
       mandates.map((m) => m.clientId),
     );
     const flash = (key: string) => {
@@ -76,9 +80,7 @@ export function appRouter(): Router {
         role: user.memberships.find((m) => m.organizationId === org.id)?.role ?? 'VIEWER',
       })),
       clients: mandates.map((m) => ({ ...m, owner: owners.get(m.clientId) ?? null })),
-      canInvite: user.memberships
-        .filter((m) => firmIds.includes(m.organizationId) && roleCan(m.role, 'mandates.manage'))
-        .map((m) => m.organizationId),
+      canInvite,
       invited: flash('pokana'),
       added: flash('klient'),
     });
