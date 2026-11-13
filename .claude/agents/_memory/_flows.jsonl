@@ -549,3 +549,5 @@
 {"t":"handoff","ts":"2026-11-13T06:31:04.687Z","id":"r019f92ff","from":"kodadjiyata","to":"човек","status":"блокер","run":"6bb6c94a"}
 {"t":"start","ts":"2026-11-13T06:58:27.892Z","id":"r39d215ab","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-13T06:58:27.892Z","id":"r39d215ab","from":"kodadjiyata","to":"kachestveniyat","status":"блокер","run":"552c5055"}
+{"t":"start","ts":"2026-11-13T09:02:20.751Z","id":"r8da55ec4","flow":"авто","lead":"vps-adjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-13T09:02:20.751Z","id":"r8da55ec4","from":"vps-adjiyata","to":"човек","status":"има бележки","run":"a10a36ec"}
