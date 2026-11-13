@@ -545,3 +545,5 @@
 {"t":"handoff","ts":"2026-11-12T23:25:55.079Z","id":"rfb0a8dac","from":"kodadjiyata","to":"kachestveniyat","status":"блокер","run":"f2cf3edb"}
 {"t":"start","ts":"2026-11-12T23:37:20.766Z","id":"r6b175f9b","flow":"авто","lead":"dizayner","auto":true}
 {"t":"handoff","ts":"2026-11-12T23:37:20.766Z","id":"r6b175f9b","from":"dizayner","to":"оркестратор","status":"има бележки","run":"5441a3f8"}
+{"t":"start","ts":"2026-11-13T06:31:04.687Z","id":"r019f92ff","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-13T06:31:04.687Z","id":"r019f92ff","from":"kodadjiyata","to":"човек","status":"блокер","run":"6bb6c94a"}
