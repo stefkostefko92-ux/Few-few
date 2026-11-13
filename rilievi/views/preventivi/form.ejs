@@ -105,6 +105,7 @@
       <datalist id="listino-voci"></datalist>
       <datalist id="listino-codici"></datalist>
     </div>
+    <p class="field__hint" data-listino-vuoto hidden><%= t('preventivi.listino.vuotoForm') %> <a href="/preventivi/listino" data-listino-gestione><%= t('preventivi.listino.vuotoFormLink') %></a></p>
     <div class="preventivo-righe-form" data-righe data-max="<%= maxRighe %>" data-max-indice="<%= maxIndice %>" data-prossimo="<%= prossimo %>">
       <% righe.forEach((i, pos) => { %><%- include('_riga', { i, n: pos + 1, messageOf }) %>
       <% }) %>

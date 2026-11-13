@@ -4,7 +4,8 @@
 //   row's position), up to the maximum; "Togli la riga" empties and removes a row.
 // - The price list of the chosen company (/preventivi/listino.json): "Aggiungi dal listino" adds a filled
 //   row; a code typed in a row that matches a list entry fills the row's empty fields. Changing the company
-//   reloads the list and replaces the conditions while they are still the previous company's default.
+//   reloads the list and replaces the conditions while they are still the previous company's default. An empty
+//   list is said under the rows, with a link to where it is filled (the settings, for who manages them).
 // - Indicative totals: the same integer arithmetic as src/preventivi/importi.ts (cents, thousandths, basis
 //   points, half up; VAT per rate on the rate's total). The saved quote's totals come from the server.
 (() => {
@@ -132,6 +133,8 @@
   const dlVoci = form.querySelector('#listino-voci');
   const dlCodici = form.querySelector('#listino-codici');
   const stato = form.querySelector('[data-listino-stato]');
+  const vuoto = form.querySelector('[data-listino-vuoto]');
+  const gestione = form.querySelector('[data-listino-gestione]');
   const condizioni = form.querySelector('#f-condizioni');
   const testi = listino?.dataset ?? {};
   let voci = [];
@@ -163,10 +166,12 @@
     voci = [];
     dlVoci?.replaceChildren();
     dlCodici?.replaceChildren();
+    if (vuoto) vuoto.hidden = true;
     if (!listino || !aziendaId) {
       if (listino) listino.hidden = true;
       return;
     }
+    let caricato = false;
     try {
       const res = await fetch(`/preventivi/listino.json?azienda=${encodeURIComponent(aziendaId)}`, {
         credentials: 'same-origin',
@@ -176,6 +181,13 @@
       const data = await res.json();
       if (mio !== turno) return;
       voci = Array.isArray(data.voci) ? data.voci : [];
+      caricato = true;
+      // Where the list of this company is managed — only one of our own two pages is taken as a link.
+      if (
+        gestione &&
+        /^\/(impostazioni|preventivi)\/listino\?azienda=[\w-]+$/.test(data.gestione ?? '')
+      )
+        gestione.setAttribute('href', data.gestione);
       const nuove = typeof data.condizioni === 'string' ? data.condizioni : '';
       if (
         sostituisci &&
@@ -194,6 +206,8 @@
       if (v.codice) dlCodici?.append(opzione(v.codice, v.descrizione));
     }
     listino.hidden = voci.length === 0;
+    // An empty list is said, with the way to fill it — never when the list could not be read.
+    if (vuoto) vuoto.hidden = !(caricato && voci.length === 0);
     if (stato)
       stato.textContent = voci.length
         ? (testi.caricato ?? '').replace('{n}', String(voci.length))

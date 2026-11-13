@@ -218,7 +218,58 @@
       "flash": {
         "aggiunta": "Voce aggiunta al listino.",
         "salvata": "Voce del listino salvata.",
-        "eliminata": "Voce eliminata dal listino."
+        "eliminata": "Voce eliminata dal listino.",
+        "importate": "Listino aggiornato. Voci nuove: {nuove}; voci aggiornate: {aggiornate}."
+      },
+      "hub0": "Listino vuoto",
+      "vuotoCome": "Aggiungi le voci una alla volta, oppure incollale tutte insieme con «Importa da Excel».",
+      "esporta": "Scarica in Excel (CSV)",
+      "vuotoForm": "Il listino prezzi di questa azienda è vuoto. Con il listino scegli una voce e la riga si compila da sola: codice, descrizione, unità, prezzo e IVA.",
+      "vuotoFormLink": "Compila il listino",
+      "importa": {
+        "titolo": "Importa da Excel",
+        "intro": "Copia le righe dal tuo foglio (Excel, LibreOffice, Fogli Google) e incollale qui sotto; va bene anche il contenuto di un file CSV. Prima controlli che cosa cambia, poi confermi.",
+        "testo": "Righe da importare",
+        "hint": "Se incolli anche la riga dei titoli, le colonne possono stare in qualsiasi ordine: bastano Descrizione e Prezzo. Senza titoli l'ordine è: Codice, Descrizione, Unità, Prezzo, IVA (l'IVA può mancare). Esempio di prezzo: 1.234,50.",
+        "unita": "Unità di misura, se manca nel foglio",
+        "iva": "IVA, se manca nel foglio",
+        "controlla": "Controlla le righe",
+        "conferma": "Conferma e importa",
+        "ricontrolla": "Controlla di nuovo",
+        "codiceNota": "Una riga con un codice già presente nel listino aggiorna quella voce. Le righe senza codice diventano voci nuove, a meno che nel listino ci sia già una voce identica.",
+        "riga": "Riga {riga}",
+        "altriErrori": {
+          "one": "…e un altro errore.",
+          "other": "…e altri {n} errori."
+        },
+        "anteprima": {
+          "titolo": "Controlla prima di importare",
+          "nuove": "Voci nuove: {n}",
+          "aggiornate": "Voci aggiornate (stesso codice): {n}",
+          "dopo": "Voci nel listino dopo l'importazione: {n}",
+          "prime": "Le prime {n} righe su {totale}",
+          "tutte": "Le righe da importare",
+          "uguali": "Righe senza codice già presenti nel listino, non aggiunte: {n}",
+          "cambiato": "Le righe sono cambiate dopo il controllo: questo è il nuovo riepilogo. Conferma di nuovo per importare."
+        },
+        "errore": {
+          "titolo": "Importazione non riuscita: nessuna voce è stata salvata.",
+          "vuoto": "Non ci sono righe da importare.",
+          "troppoLungo": "Il testo è troppo lungo: importa il listino in più parti.",
+          "troppe": "Troppe righe: al massimo {n} per volta.",
+          "colonne": "Colonne non riconosciute. Incolla anche la riga dei titoli (almeno Descrizione e Prezzo) oppure usa quest'ordine: Codice, Descrizione, Unità, Prezzo, IVA.",
+          "pieno": "Il listino può avere al massimo {n} voci: con queste righe diventerebbero {dopo}.",
+          "ambigue": "Due colonne per lo stesso dato: {colonne}. Lasciane una sola e incolla di nuovo."
+        },
+        "motivo": {
+          "required": "manca",
+          "tooLong": "troppi caratteri (massimo {max})",
+          "decimal": "non è un prezzo valido (esempio: 1.234,50)",
+          "option": "aliquota non prevista (22, 10 o 4)",
+          "duplicato": "compare anche in un'altra riga",
+          "numero": "è un numero: controlla l'ordine delle colonne",
+          "troppeColonne": "la riga ha più celle delle colonne: se un testo contiene «;», mettilo tra virgolette"
+        }
       }
     }
   }

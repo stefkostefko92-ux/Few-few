@@ -37,6 +37,7 @@ import { buoniRouter } from './buoni.js';
 import { impostazioniPreventiviRouter } from './impostazioni-preventivi.js';
 import { preventiviAzioniRouter } from './preventivi-azioni.js';
 import { preventiviListinoRouter } from './preventivi-listino.js';
+import { preventiviListinoImportRouter } from './preventivi-listino-import.js';
 import { preventiviNuovoRouter } from './preventivi-nuovo.js';
 import { preventiviRouter } from './preventivi.js';
 import { impostazioniBuonoRouter } from './impostazioni-buono.js';
@@ -131,7 +132,9 @@ export function montaRouter(app: Express): void {
   app.use(buoniNuovoRouter);
   app.use(buoniRouter);
   app.use(buoniFirmeRouter);
-  // Преди preventiviRouter: `/preventivi/listino` и `/preventivi/nuovo` са преди `/preventivi/:id`.
+  // Преди preventiviRouter: `/preventivi/listino` и `/preventivi/nuovo` са преди `/preventivi/:id`; внасянето
+  // и износът на ценоразписа — преди `/preventivi/listino/:id`.
+  app.use(preventiviListinoImportRouter);
   app.use(preventiviListinoRouter);
   app.use(preventiviNuovoRouter);
   app.use(preventiviRouter);

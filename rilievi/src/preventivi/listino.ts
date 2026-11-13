@@ -159,6 +159,8 @@ export async function eliminaVoce(
   id: string,
 ): Promise<boolean> {
   return prisma.$transaction(async (tx) => {
+    // Под същото заключване като добавянето и внасянето: ред не изчезва, докато внасянето го обновява.
+    await tx.$queryRaw`SELECT "id" FROM "Azienda" WHERE "id" = ${aziendaId} FOR UPDATE`;
     const deleted = await tx.voceListino.deleteMany({ where: { id, aziendaId } });
     if (deleted.count === 0) return false;
     await writeAudit(

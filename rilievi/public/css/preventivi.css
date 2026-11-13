@@ -201,3 +201,81 @@
 .stato-preventivo--rifiutato {
   border-style: dashed;
 }
+
+/* Инструментите на ценоразписа („Nuova voce“, „Importa da Excel“): прибрани в един ред, докато не потрябват —
+   списъкът стои веднага под тях. Заглавието е самото разгъване. */
+.listino-strumento > summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.listino-strumento:not([open]) {
+  padding-block: 8px;
+}
+
+.listino-strumento > summary::-webkit-details-marker {
+  display: none;
+}
+
+.listino-strumento > summary::before {
+  content: '+';
+  flex: none;
+  width: 1em;
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+.listino-strumento[open] > summary::before {
+  content: '−';
+}
+
+.listino-strumento[open] > summary {
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.listino-strumento__titolo {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+/* Внасянето на ценоразписа (views/preventivi/_listino-importa.ejs): поставеният текст е таблица — редовете
+   не се пренасят (дългият се превърта в полето си), шрифтът е равноширок, за да стоят колоните една под друга. */
+.listino-importa__testo {
+  font-family: ui-monospace, 'Cascadia Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  white-space: pre;
+  overflow: auto;
+  tab-size: 12;
+}
+
+/* Прегледът преди записа: числата и първите редове, в рамка над полето. */
+.listino-anteprima {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  min-width: 0;
+}
+
+.listino-anteprima h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.listino-anteprima ul {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.listino-anteprima caption {
+  text-align: left;
+  color: var(--muted);
+  padding-bottom: 6px;
+}

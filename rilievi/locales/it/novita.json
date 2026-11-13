@@ -25,6 +25,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-13-versione-4-6": {
+        "area": "Impostazioni",
+        "titolo": "Versione 4.6: il listino prezzi nelle impostazioni, anche da Excel",
+        "testo": "Il listino prezzi dei preventivi ora è una sezione delle impostazioni dell'azienda: «Listino prezzi». Aggiungi le voci una alla volta oppure incollale tutte insieme da Excel o da un file CSV: prima vedi quante voci sono nuove e quante vengono aggiornate, poi confermi. Una riga incollata con un codice già presente nel listino aggiorna quella voce. Se una riga ha un errore non viene salvata nessuna voce, e l'errore è indicato con il numero della riga. Puoi anche scaricare il listino in Excel (CSV). Nel preventivo, se il listino è vuoto, trovi il collegamento per compilarlo. La sezione è disponibile per le aziende con i preventivi attivi."
+      },
       "2026-11-13-versione-4-5": {
         "area": "Schede",
         "titolo": "Versione 4.5: moduli DMG in una sola lingua, niente testo tagliato",

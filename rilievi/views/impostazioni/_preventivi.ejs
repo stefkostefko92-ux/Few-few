@@ -1,6 +1,6 @@
 <%
   // Офертите (routes/impostazioni-preventivi.ts): условията, с които започва всяка нова оферта на фирмата.
-  // Ценоразписът е своя страница (/preventivi/listino) — пише го, който пише офертите.
+  // Ценоразписът е свой раздел на настройките („Listino prezzi“, _listino.ejs).
   const p = preventivi;
 %><section aria-labelledby="h-preventivi">
   <h2 class="section__title" id="h-preventivi"><%= t('impostazioni.pagine.preventivi.titolo') %></h2>
@@ -16,7 +16,7 @@
     </div>
     <div class="toolbar">
       <button class="btn btn--primary" type="submit"><%= t('preventivi.impostazioni.salva') %></button>
-      <a class="btn" href="/preventivi/listino?azienda=<%= encodeURIComponent(azienda.id) %>"><%- include('../partials/icon', { name: 'euro' }) %><%= t('preventivi.impostazioni.listino') %></a>
+      <a class="btn" href="/impostazioni/listino?azienda=<%= encodeURIComponent(azienda.id) %>"><%- include('../partials/icon', { name: 'clipboard' }) %><%= t('preventivi.impostazioni.listino') %></a>
     </div>
   </form>
 </section>
