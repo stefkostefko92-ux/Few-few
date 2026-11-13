@@ -80,11 +80,19 @@ fi
 
 # ── 1) DNS: преди certbot, защото Let's Encrypt брои неуспешните опити ───────
 first_ip() { getent ahostsv4 "$1" 2>/dev/null | awk 'NR==1 { print $1 }'; }
+# Собствените адреси на машината: на VPS публичният е на интерфейса. Старият
+# запис не е мярка, защото може вече да е изтрит. `SERVER_IP` е за машина зад NAT.
+own_ips() { { hostname -I 2>/dev/null || true; printf ' %s' "${SERVER_IP:-}"; } | tr ' ' '\n' | grep -v '^$' || true; }
 HERE="$(first_ip "$OLD" || true)"
 THERE="$(first_ip "$NEW" || true)"
-[ -n "$THERE" ] || die "$NEW още няма DNS запис. Добави A запис към ${HERE:-IP-то на сървъра} и пусни пак."
-[ "$THERE" = "$HERE" ] || die "$NEW сочи към $THERE, а сайтът е на $HERE. Поправи A записа и пусни пак."
-ok "DNS: $NEW → $THERE"
+[ -n "$THERE" ] || die "$NEW още няма DNS запис. Добави A запис към IP-то на сървъра и пусни пак."
+if own_ips | grep -qxF "$THERE" || [ "$THERE" = "$HERE" ]; then
+  ok "DNS: $NEW → $THERE"
+else
+  die "$NEW сочи към $THERE, а тази машина е на: $(own_ips | tr '\n' ' '). Поправи A записа и пусни пак."
+fi
+# Без стария запис старите връзки не водят никъде и сертификатът му не се подновява.
+[ -n "$HERE" ] || warn "$OLD няма DNS запис. Върни A записа към $THERE: без него пренасочването не стига до никого."
 
 # ── 2) Новият сайт-блок. Живият файл не се презаписва: certbot дописва в него ─
 [ -d "$LOG_DIR" ] || die "Няма $LOG_DIR: nginx няма да тръгне. Първо направи деплой на fivem."
@@ -105,7 +113,21 @@ if ! grep -q "live/$NEW/fullchain.pem" "$NEW_SITE"; then
   curl -fsS -m 15 "http://$NEW/api/health" >/dev/null \
     || die "http://$NEW не отговаря отвън. Не пускам certbot напразно."
   log "Издавам сертификат за $NEW…"
-  certbot --nginx -d "$NEW" --non-interactive --redirect --keep-until-expiring
+  # На машината може да има няколко сметки в Let's Encrypt: без избор certbot пита
+  # и в неинтерактивен режим пада. Взима се сметката на стария адрес, иначе на
+  # последно подновения сертификат.
+  conf="$LE/renewal/$OLD.conf"
+  [ -f "$conf" ] || conf="$(ls -t "$LE"/renewal/*.conf 2>/dev/null | head -n 1 || true)"
+  account=""
+  if [ -n "$conf" ] && [ -f "$conf" ]; then
+    account="$(awk -F' *= *' '$1 == "account" { print $2; exit }' "$conf" || true)"
+  fi
+  issue=(--nginx -d "$NEW" --non-interactive --redirect --keep-until-expiring)
+  if [ -n "$account" ]; then
+    issue+=(--account "$account")
+    log "Сметка в Let's Encrypt: $account (от $(basename "$conf"))"
+  fi
+  certbot "${issue[@]}"
 fi
 curl -fsS -m 15 "https://$NEW/api/health" >/dev/null \
   || die "https://$NEW не отговаря. Старият адрес работи както досега."
