@@ -56,6 +56,7 @@ export default function PublicPageLayout({ crumb, children, maxWidth = "max-w-4x
           <div className="flex items-center gap-4 text-xs text-cs-dim">
             <a href="/"          className="hover:text-cs-cyan transition-colors">Home</a>
             <a href="/features"  className="hover:text-cs-cyan transition-colors">Features</a>
+            <a href="/docs"      className="hover:text-cs-cyan transition-colors">Docs</a>
             <a href="/commands"  className="hover:text-cs-cyan transition-colors">Commands</a>
             <a href="/terms"     className="hover:text-cs-cyan transition-colors">Terms</a>
             <a href="/privacy"   className="hover:text-cs-cyan transition-colors">Privacy</a>

@@ -27,6 +27,8 @@ import {
   TICKET_TOOL_COMPARE, APPY_COMPARE, BEST_TICKET_BOT_GUIDE, GDPR_GUIDE, PANEL_SETUP_GUIDE, CHECKED_DATE,
 } from "../src/data/growthContent.js";
 import { FEATURES_HUB, FEATURE_PAGES, featureJsonLd, hubJsonLd } from "../src/data/featurePages.js";
+import { DOCS_HUB, DOCS_PAGES, DOCS_KINDS, docsPath } from "../src/data/docsPages.js";
+import { parseInline, groupByKind, docsJsonLd, docsHubJsonLd } from "../src/data/docsFormat.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIST = join(__dirname, "..", "dist");
@@ -138,6 +140,14 @@ function featureLinks(heading) {
   return `<nav><h2>${esc(heading)}</h2><ul>${items}<li><a href="${FEATURES_HUB.path}">${esc(FEATURES_HUB.nav)}</a></li></ul></nav>`;
 }
 
+// Връзки към /docs/* — ръководствата за клиенти (src/data/docsPages.js). На всяка
+// начална страница, за да стига обхождачът (и човек без JavaScript) до тях.
+function docsLinks() {
+  if (!DOCS_PAGES.length) return "";
+  const items = DOCS_PAGES.map((p) => `<li><a href="${docsPath(p)}">${esc(p.nav)}</a></li>`).join("");
+  return `<nav><h2><a href="${DOCS_HUB.path}">${esc(DOCS_HUB.h1)}</a></h2><ul>${items}</ul></nav>`;
+}
+
 function guideLinks(t) {
   if (!t.guides) return "";
   const items = GUIDE_LINKS
@@ -192,6 +202,7 @@ function landingSnapshot(t) {
     }</section>
     ${guideLinks(t)}
     ${featureLinks(t.guides?.features || "Features")}
+    ${docsLinks()}
   </div>`;
 }
 
@@ -313,6 +324,7 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
       },
     })}
     ${featureLinks("Features")}
+    ${docsLinks()}
   </div>`;
   let html = injectHead(template, `  ${hreflangCluster()}`);
   html = injectRoot(html, rootSnapshot);
@@ -486,6 +498,67 @@ function featureSnapshot(p) {
     page = injectHead(page, `  ${jsonLd(featureJsonLd(p))}`);
     page = injectRoot(page, featureSnapshot(p));
     writeRoute(p.path, page);
+    count++;
+  }
+}
+
+// 4в) /docs + /docs/* — ръководствата за клиенти. Данни: src/data/docsPages.js
+//     (СЪЩИЯТ обект, който рендерира DocsPage.jsx). Снимката е пълна — заглавия,
+//     абзаци, стъпки като <ol>, таблици, код, въпроси — и носи JSON-LD
+//     (TechArticle + BreadcrumbList + FAQPage).
+const inlineHtml = (text) => parseInline(text).map((t) => (
+  t.type === "code" ? `<code>${esc(t.value)}</code>`
+    : t.type === "link" ? `<a href="${esc(t.href)}">${esc(t.value)}</a>`
+      : esc(t.value)
+)).join("");
+
+function docsSectionHtml(sec) {
+  const body = (sec.body || []).map((p) => `<p>${inlineHtml(p)}</p>`).join("");
+  const steps = sec.steps?.length ? `<ol>${sec.steps.map((x) => `<li>${inlineHtml(x)}</li>`).join("")}</ol>` : "";
+  const list = sec.list?.length ? `<ul>${sec.list.map((x) => `<li>${inlineHtml(x)}</li>`).join("")}</ul>` : "";
+  const table = sec.table
+    ? `<table><thead><tr>${sec.table.head.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>${sec.table.rows.map((r) => `<tr>${r.map((c) => `<td>${inlineHtml(c)}</td>`).join("")}</tr>`).join("")}</tbody></table>`
+    : "";
+  const code = sec.code ? `<pre><code>${esc(sec.code)}</code></pre>` : "";
+  const note = sec.note ? `<p><strong>Note:</strong> ${inlineHtml(sec.note)}</p>` : "";
+  return `<section id="${esc(sec.id)}"><h2>${esc(sec.heading)}</h2>${body}${steps}${list}${table}${code}${note}</section>`;
+}
+
+function docsSnapshot(p) {
+  const requires = p.requires?.length ? `<section><h2>Before you start</h2><ul>${p.requires.map((r) => `<li>${inlineHtml(r)}</li>`).join("")}</ul></section>` : "";
+  const faq = p.faq?.length ? `<section id="faq"><h2>Questions people ask</h2>${p.faq.map((f) => `<div><h3>${esc(f.q)}</h3><p>${inlineHtml(f.a)}</p></div>`).join("")}</section>` : "";
+  const related = p.related?.length ? `<section><h2>Keep going</h2><ul>${p.related.map((r) => `<li><a href="${esc(r)}">${esc(r)}</a></li>`).join("")}</ul></section>` : "";
+  return `<div class="prerender-content" style="max-width:48rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+    <nav><a href="/">Supreme Bot</a> / <a href="${DOCS_HUB.path}">Documentation</a> / ${esc(DOCS_KINDS[p.kind].label)}</nav>
+    <h1>${esc(p.title)}</h1>
+    <p>${inlineHtml(p.answer)}</p>
+    ${requires}
+    ${p.sections.map(docsSectionHtml).join("")}
+    ${faq}
+    ${related}
+    <p>Checked against the bot on ${esc(p.updated)}.</p>
+  </div>`;
+}
+
+if (DOCS_PAGES.length) {
+  const groups = groupByKind(DOCS_PAGES).map((g) => `<section><h2>${esc(g.plural)}</h2><ul>${g.pages.map(
+    (p) => `<li><h3><a href="${docsPath(p)}">${esc(p.nav)}</a></h3><p>${esc(p.description)}</p></li>`
+  ).join("")}</ul></section>`).join("");
+  const hubSnapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+    <h1>${esc(DOCS_HUB.h1)}</h1>
+    <p>${esc(DOCS_HUB.answer)}</p>
+    ${groups}
+  </div>`;
+  let html = withHead(template, { title: DOCS_HUB.title, description: DOCS_HUB.description, path: DOCS_HUB.path, lang: "en", keywords: DOCS_HUB.keywords });
+  html = injectHead(html, `  ${jsonLd(docsHubJsonLd(DOCS_PAGES))}`);
+  html = injectRoot(html, hubSnapshot);
+  writeRoute(DOCS_HUB.path, html);
+  count++;
+  for (const p of DOCS_PAGES) {
+    let page = withHead(template, { title: `${p.title} | Supreme Bot`, description: p.description, path: docsPath(p), lang: "en", keywords: p.keywords });
+    page = injectHead(page, `  ${jsonLd(docsJsonLd(p))}`);
+    page = injectRoot(page, docsSnapshot(p));
+    writeRoute(docsPath(p), page);
     count++;
   }
 }

@@ -55,7 +55,7 @@ function MovedSettings() {
       <ul className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
         {links.map((l) => (
           <li key={l.to}>
-            <Link to={l.to} className="cs-card !p-4 flex items-center gap-3 hover:border-cs-cyan/50 transition-colors">
+            <Link to={l.to} className="cs-card !p-4 flex items-center gap-3 no-underline hover:border-cs-cyan/50 transition-colors">
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-medium text-cs-text">{l.label}</span>
                 <span className="block text-xs text-cs-muted mt-0.5">{l.hint}</span>

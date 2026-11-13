@@ -4,10 +4,10 @@
 // търсене и профил (DashboardTopbar.jsx). На телефон горната лента е
 // хамбургер + лого, а превключвателят и профилът са в чекмеджето.
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Outlet, NavLink, useParams, useNavigate } from "react-router-dom";
+import { Outlet, NavLink, useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
-  LayoutDashboard, Shield, LogOut, ExternalLink, Menu, X as CloseIcon, KeyRound,
+  LayoutDashboard, Shield, LogOut, ExternalLink, Menu, X as CloseIcon, KeyRound, ChevronDown,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useT } from "../contexts/I18nContext";
@@ -86,6 +86,17 @@ export default function Layout() {
     { to: "/dashboard/security", icon: KeyRound, label: t("nav.security") },
   ], [navGroups, t]);
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Групите в лентата се сгъват (12.11.2026): менюто по задачи има двайсет реда и
+  // на лаптоп с 800 px височина последните две групи остават под ръба. Кое е
+  // сгънато се помни в браузъра; сгъната група, в която е текущата страница,
+  // свети в заглавието си — мястото не се губи.
+  const { pathname } = useLocation();
+  const [collapsed, setCollapsed] = useState(readCollapsedGroups);
+  const toggleGroup = (key) => setCollapsed((c) => {
+    const next = c.includes(key) ? c.filter((k) => k !== key) : [...c, key];
+    try { localStorage.setItem(COLLAPSED_KEY, JSON.stringify(next)); } catch { /* частен прозорец — само за тази сесия */ }
+    return next;
+  });
   const drawerRef = useRef(null);
   const toggleBtnRef = useRef(null);
 
@@ -207,10 +218,17 @@ export default function Layout() {
 
         {/* Nav — групите на концепцията (dashboardNav.js) */}
         <nav className="flex-1 overflow-y-auto pb-4" aria-label={t("nav.dashboardNav")}>
-          {navGroups.map((g) => (
+          {navGroups.map((g) => {
+            const open = !g.label || !collapsed.includes(g.key);
+            const holdsCurrent = g.items.some((it) => it.to && (pathname === it.to || (!it.end && pathname.startsWith(`${it.to}/`))));
+            return (
             <div key={g.key} className="mt-1">
-              {g.label && <SectionLabel>{g.label}</SectionLabel>}
-              <ul className="space-y-0.5">
+              {g.label && (
+                <SectionToggle open={open} current={!open && holdsCurrent} controls={`nav-group-${g.key}`} onToggle={() => toggleGroup(g.key)}>
+                  {g.label}
+                </SectionToggle>
+              )}
+              <ul id={`nav-group-${g.key}`} hidden={!open} className="space-y-0.5">
                 {g.items.map((it) => (
                   <li key={it.to || it.href}>
                     {it.external ? (
@@ -231,7 +249,8 @@ export default function Layout() {
                 ))}
               </ul>
             </div>
-          ))}
+            );
+          })}
         </nav>
 
         {/* Профилът — на телефон (на десктоп е в горната лента). */}
@@ -372,12 +391,30 @@ export default function Layout() {
   );
 }
 
-function SectionLabel({ children }) {
+// Заглавие на група в лентата — бутон, който я сгъва и разгъва.
+function SectionToggle({ open, current, controls, onToggle, children }) {
   return (
-    <p className="px-6 pt-5 pb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-cs-dim">
-      {children}
-    </p>
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      aria-controls={controls}
+      className={`w-full flex items-center justify-between gap-2 px-6 pt-5 pb-2 text-[11px] font-bold uppercase tracking-[0.14em] transition-colors hover:text-cs-text focus-visible:outline-none focus-visible:text-cs-cyan ${current ? "text-cs-cyan" : "text-cs-dim"}`}
+    >
+      <span className="truncate">{children}</span>
+      <ChevronDown className={`w-3.5 h-3.5 flex-none transition-transform ${open ? "" : "-rotate-90"}`} aria-hidden="true" />
+    </button>
   );
+}
+
+const COLLAPSED_KEY = "supreme-nav-collapsed";
+function readCollapsedGroups() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(COLLAPSED_KEY) || "[]");
+    return Array.isArray(saved) ? saved.filter((k) => typeof k === "string") : [];
+  } catch {
+    return [];
+  }
 }
 
 const NAV_BASE = "flex items-center gap-3 mx-3 px-3 py-2 rounded-lg text-sm transition-colors no-underline";

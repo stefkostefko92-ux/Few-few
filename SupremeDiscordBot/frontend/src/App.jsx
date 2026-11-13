@@ -29,6 +29,9 @@ const PanelSetupGuidePage = lazy(() => import("./pages/PanelSetupGuidePage"));
 // /features и /features/:slug — страници по функция (src/data/featurePages.js).
 const FeaturePage = lazy(() => import("./pages/FeaturePage"));
 const FeaturesHubPage = lazy(() => import("./pages/FeaturePage").then((m) => ({ default: m.FeaturesHubPage })));
+// /docs и /docs/:slug — ръководствата за клиенти (src/data/docsPages.js).
+const DocsPage = lazy(() => import("./pages/DocsPage"));
+const DocsHubPage = lazy(() => import("./pages/DocsPage").then((m) => ({ default: m.DocsHubPage })));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 const Layout = lazy(() => import("./components/Layout"));
@@ -171,6 +174,8 @@ export default function App() {
               <Route path="/guides/gdpr-discord-bot" element={<GdprDiscordBotGuidePage />} />
               <Route path="/guides/ticket-panel-setup" element={<PanelSetupGuidePage />} />
               {/* Страници по функция — маршрутите се извеждат от FEATURE_PAGES; неизвестен slug → 404. */}
+              <Route path="/docs" element={<DocsHubPage />} />
+              <Route path="/docs/:slug" element={<DocsPage />} />
               <Route path="/features" element={<FeaturesHubPage />} />
               <Route path="/features/:slug" element={<FeaturePage />} />
               {/* Catch-all */}

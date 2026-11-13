@@ -212,6 +212,10 @@ const PAGES = [
   { path: "/commands", name: "commands-public" },
   { path: "/features", name: "features-hub" },
   { path: "/features/discord-ticket-system", name: "features-tickets" },
+  // Ръководствата за клиенти (12.11.2026): списъкът и най-дългата страница с таблица и код.
+  { path: "/docs", name: "docs-hub" },
+  { path: "/docs/getting-started", name: "docs-getting-started" },
+  { path: "/docs/webhooks-and-api", name: "docs-webhooks-api" },
   { path: `/dashboard/${SID}`, name: "overview" },
   { path: `/dashboard/${SID}/settings`, name: "settings" },
   { path: `/dashboard/${SID}/forms`, name: "forms" },

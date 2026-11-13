@@ -17,7 +17,7 @@ AI auto-replies, round-robin assignment, white-label bots, per-server subscripti
 | Backend  | —         | 3000           | Internal only, reached via frontend nginx |
 | Bot      | —         | 3001           | Internal only, called by backend |
 
-These ports avoid conflicts with Stefko's VPS: `3002` (syndicate_backend), `3100/4100/4101` (ERP), `4000` (nexus), `4180` (sklad), `5000` (tretimart), `5432/5433/5434` (existing postgres), `5173` (syndicate_frontend), `6379/6380` (existing redis).
+These ports avoid conflicts with other services on the same host: `3002` (syndicate_backend), `3100/4100/4101` (ERP), `4000` (nexus), `4180` (sklad), `5000` (tretimart), `5432/5433/5434` (existing postgres), `5173` (syndicate_frontend), `6379/6380` (existing redis).
 
 ---
 
@@ -28,7 +28,7 @@ These ports avoid conflicts with Stefko's VPS: `3002` (syndicate_backend), `3100
 
 ```bash
 # 1. Upload from your local machine
-scp -r discord-saas-bot/ root@vps.carbonstealth.eu:/opt/supremebot
+scp -r SupremeDiscordBot/ root@vps.carbonstealth.eu:/opt/supremebot
 ssh root@vps.carbonstealth.eu
 cd /opt/supremebot
 
@@ -109,7 +109,7 @@ The deploy script will:
 | `SECURITY_ALERTS_DM` | ➖ | Default `true`: DM the owner on brute-force blocks, MFA changes, denied admin IPs, full erasures |
 | `VERIFICATION_ATTEMPT_RETENTION_DAYS` | ➖ | Default `90`: verification attempts older than this are deleted nightly |
 | `BOT_TOKEN` | ⚠️ | Same token as `bot/.env` — needed for round-robin role lookups |
-| `REDIS_URL` | ➖ | `redis://redis:6379` — status page cache health check |
+| `REDIS_URL` | ➖ | `redis://:<REDIS_PASSWORD>@redis:6379` — status page cache health check |
 | `SENTRY_DSN` | ➖ | Error monitoring |
 
 ### `bot/.env`
@@ -123,7 +123,7 @@ The deploy script will:
 | `BOT_API_PORT` | ✅ | `3001` |
 | `FRONTEND_URL` | ✅ | `https://yourdomain.com` |
 | `ARCHIVE_BASE_URL` | ✅ | `https://yourdomain.com` |
-| `REDIS_URL` | ✅ | `redis://redis:6379` (Docker internal) |
+| `REDIS_URL` | ✅ | `redis://:<REDIS_PASSWORD>@redis:6379` (Docker internal; the password must match `REDIS_PASSWORD`) |
 | `SENTRY_DSN` | ➖ | Optional |
 
 ### `frontend/.env`
@@ -307,18 +307,23 @@ docker compose exec bot     npm test
 
 ## Slash Commands
 
-| Command | Description |
+The full, searchable reference is the [/commands](https://supremebot.carbonstealth.eu/commands) page and `/help` in Discord. Source of truth: `bot/src/utils/commandsCatalog.js` (the frontend keeps an identical copy in `frontend/src/data/commandsCatalog.js`).
+
+| Area | Commands |
 |---|---|
-| `/ticket add/remove/claim/unclaim/close` | Manage tickets |
-| `/apply <form>` | Start application form via DM |
-| `/panel spawn <name>` | Post a ticket panel in a channel |
-| `/form spawn <name>` | Post a form button in a channel |
-| `/form review <id> <action>` | Approve/deny/interview an application |
-| `/setup sync` | Re-sync panels from dashboard |
-| `/premium status/custombot/export` | Premium commands |
-| `/daily`, `/profile`, `/leaderboard`, `/shop` | Server Season: daily sparks, level card, top 10, server shop |
-| `/companion list/info/feed/activate/release/trade` | Server Season: companion collection |
-| `/quest`, `/trivia`, `/spawn`, `/wyr`, `/tod` | Server Season: server quests, trivia round and manual companion spawn (Manage Server), party commands (Premium) |
+| Tickets | `/new`, `/ticket add\|remove\|claim\|unclaim\|close\|priority`, `/rename`, `/escalate`; context menus "Create ticket from message", "Open ticket for user" |
+| Canned replies | `/tag use\|add\|remove\|list`; context menu "Reply with tag" |
+| Panels and setup | `/panel spawn <name>`, `/setup wizard`, `/setup sync` |
+| Forms | `/apply <form>`, `/form spawn <name>`, `/form review <id> approve\|deny` |
+| Protection | `/bait setup\|disable\|status` |
+| Community | `/poll`, `/giveaway start\|end\|reroll`, `/admin sticky set\|remove`, `/admin schedule add\|list\|remove` |
+| Server | `/premium status`, `/premium custombot`, `/premium export`, `/debug`, `/stats`, `/help` |
+| Server Season | `/daily`, `/profile`, `/leaderboard`, `/shop`, `/quest`, `/spawn`, `/trivia`, `/wyr`, `/tod`, `/companion list\|info\|feed\|activate\|trade\|release\|train\|attack\|pvp` |
+| Privacy | `/privacy info\|delete` |
+
+`/premium status` and `/companion info` exist in `bot/src/commands/` but are not yet in the catalog, so `/commands` and `/help` do not list them.
+
+Customer guides (English): `/docs` — source in `frontend/src/data/docsPages.js`.
 
 ---
 
@@ -334,7 +339,7 @@ Served by the frontend SPA at `/terms`, `/privacy`, `/cookies`, `/eula`. Content
 - Helmet.js HTTP security headers (HSTS in production, 1-year max-age)
 - Discord OAuth2 token auto-refresh on expiry
 - Admin destructive actions require `?confirm=true`
-- Postgres + Redis bound to localhost only — not exposed to public internet
+- Postgres and Redis publish no host port at all — reachable only from containers on the Compose network (`docker-compose.yml`)
 - `.dockerignore` prevents `.env` and `node_modules` from leaking into images
 
 ---
@@ -344,14 +349,14 @@ Served by the frontend SPA at `/terms`, `/privacy`, `/cookies`, `/eula`. Content
 This build includes the following fixes over the original codebase:
 1. Prisma initial migration regenerated with complete DDL (was empty — only enums)
 2. `formSession.js` — fixed runtime crashes from undefined `activeSessions`
-3. `auth.js` logout — now clears the correct cookie name (`sid`)
+3. `auth.js` logout — now clears the correct session cookie (`__Host-sid` in production, `sid` in local development)
 4. Added `/api/bot/application/:id/review` so Discord review buttons actually work (was 401)
 5. Stripe `current_period_end` — handles new API (`items.data[0].current_period_end`)
 6. Removed fake PDF endpoint in `tickets.js` (real one is in `export.js` via pdfkit)
 7. `docker-entrypoint.sh` runs `prisma migrate deploy` on every container start
 8. Ports remapped to avoid conflicts with other VPS services
 9. Nginx reverse proxy built into frontend container
-10. Postgres/Redis bound to localhost only
+10. Postgres/Redis publish no host port (container network only)
 11. `.dockerignore` files added
 12. Prisma CLI moved to dependencies (was devDependency but needed at runtime)
 13. Helmet — HSTS added, body size limited to 1MB
