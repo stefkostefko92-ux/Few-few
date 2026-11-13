@@ -1212,7 +1212,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 653
+        "lessons": 654
       },
       "evolution": [
         {
@@ -2066,9 +2066,20 @@
           "date": "2026-11-13",
           "event": "v59.3 — учене",
           "detail": "Научи: TextDecoder('utf-8', { fatal: true }) приема байт 0x00, а PostgreSQL TEXT го отказва с …"
+        },
+        {
+          "version": "59.4.0",
+          "date": "2026-11-13",
+          "event": "v59.4 — учене",
+          "detail": "Научи: Пропорционален кредит, сметнат при създаване на поръчката и записан в нея, трябва да се…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „Пропорционален кредит, сметнат при създаване на поръчката и записан в нея, трябва да се…\""
+        },
         {
           "date": "2026-11-13",
           "type": "learning",
