@@ -1212,7 +1212,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 655
+        "lessons": 656
       },
       "evolution": [
         {
@@ -2078,9 +2078,20 @@
           "date": "2026-11-13",
           "event": "v59.5 — учене",
           "detail": "Научи: Работник с lease, който след външна заявка записва краен статус с update по id без усло…"
+        },
+        {
+          "version": "59.6.0",
+          "date": "2026-11-13",
+          "event": "v59.6 — учене",
+          "detail": "Научи: Планер на chrome.scripting регистрации с <all_urls> и excludeMatches по сайт не може да…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „Планер на chrome.scripting регистрации с <all_urls> и excludeMatches по сайт не може да…\""
+        },
         {
           "date": "2026-11-13",
           "type": "learning",
@@ -12474,7 +12485,7 @@
           "Mozilla web-ext lint — статична проверка (валидна и за Chrome пакети)",
           "chromestatus.com — наличност на API по Chrome milestone"
         ],
-        "lessons": 228
+        "lessons": 229
       },
       "evolution": [
         {
@@ -12854,9 +12865,20 @@
           "date": "2026-11-04",
           "event": "v21.3 — учене",
           "detail": "Научи: adblock/ tests/rules.test.mjs вече гейтва DNR static rule budget с два прага: базов 130… (+6 още)"
+        },
+        {
+          "version": "21.4.0",
+          "date": "2026-11-13",
+          "event": "v21.4 — учене",
+          "detail": "Научи: За регистрация с `matches:<all_urls>` и `excludeMatches`, шаблонът `*://*.a.com/*` изкл…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „За регистрация с `matches:<all_urls>` и `excludeMatches`, шаблонът `*://*.a.com/*` изкл…\""
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
