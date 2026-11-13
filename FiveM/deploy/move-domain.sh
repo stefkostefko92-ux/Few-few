@@ -113,7 +113,21 @@ if ! grep -q "live/$NEW/fullchain.pem" "$NEW_SITE"; then
   curl -fsS -m 15 "http://$NEW/api/health" >/dev/null \
     || die "http://$NEW не отговаря отвън. Не пускам certbot напразно."
   log "Издавам сертификат за $NEW…"
-  certbot --nginx -d "$NEW" --non-interactive --redirect --keep-until-expiring
+  # На машината може да има няколко сметки в Let's Encrypt: без избор certbot пита
+  # и в неинтерактивен режим пада. Взима се сметката на стария адрес, иначе на
+  # последно подновения сертификат.
+  conf="$LE/renewal/$OLD.conf"
+  [ -f "$conf" ] || conf="$(ls -t "$LE"/renewal/*.conf 2>/dev/null | head -n 1 || true)"
+  account=""
+  if [ -n "$conf" ] && [ -f "$conf" ]; then
+    account="$(awk -F' *= *' '$1 == "account" { print $2; exit }' "$conf" || true)"
+  fi
+  issue=(--nginx -d "$NEW" --non-interactive --redirect --keep-until-expiring)
+  if [ -n "$account" ]; then
+    issue+=(--account "$account")
+    log "Сметка в Let's Encrypt: $account (от $(basename "$conf"))"
+  fi
+  certbot "${issue[@]}"
 fi
 curl -fsS -m 15 "https://$NEW/api/health" >/dev/null \
   || die "https://$NEW не отговаря. Старият адрес работи както досега."
