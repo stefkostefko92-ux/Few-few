@@ -11,8 +11,8 @@ import { applyTransmissionEvent } from './transmissions.js';
 /**
  * Известията от точката за достъп (SPEC 59). eConnect подписва суровото JSON тяло с HMAC-SHA256 с
  * тайната след „#“ в адреса на известието (своя за всяка фирма) и праща `X-EConnect-Signature:
- * sha256=<hex>`; `sentOn` не по-старо от 5 мин; доставката е „поне веднъж“ → ключ за повторение
- * (`X-EConnect-Delivery` или отпечатъкът на тялото). Обработеното известие не се обработва втори път.
+ * sha256=<hex>`; `sentOn` не по-старо от 5 мин; доставката е „поне веднъж“ → ключ за повторение е
+ * отпечатъкът на подписаното тяло. Обработеното известие не се обработва втори път.
  */
 export const MAX_AGE_MS = 5 * 60 * 1000;
 
@@ -39,7 +39,6 @@ export function signatureMatches(rawBody: Buffer, header: string | undefined, se
 export async function handlePeppolWebhook(input: {
   rawBody: Buffer;
   signature: string | undefined;
-  delivery: string | undefined;
   ap: AccessPoint | null;
   now?: Date;
 }): Promise<WebhookOutcome> {
@@ -67,10 +66,9 @@ export async function handlePeppolWebhook(input: {
       return { status: 401, result: 'stale' };
     }
   }
-  const deliveryId =
-    input.delivery && /^[\w-]{8,100}$/.test(input.delivery)
-      ? input.delivery
-      : createHash('sha256').update(input.rawBody).digest('hex');
+  // Ключът за повторение е отпечатъкът на ПОДПИСАНОТО тяло: `X-EConnect-Delivery` не е подписан и
+  // с нов такъв хедър заловено известие би минало пак. Повторно изпратеното същото тяло — „вече видяно“.
+  const deliveryId = createHash('sha256').update(input.rawBody).digest('hex');
   const seen = await prisma.peppolEvent.findUnique({ where: { deliveryId } });
   if (seen?.processedAt) return { status: 200, result: 'duplicate' };
   const record = seen

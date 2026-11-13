@@ -1,6 +1,7 @@
 import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { lockOrganization, TransferError } from './transfer-core.js';
+import { revokeOpenMemberInvites } from './member-invite-revoke.js';
 
 /**
  * Проверката на собственост, дошла чрез покана от кантора (остатъчният риск в SECURITY.md: кантора може
@@ -50,6 +51,8 @@ export async function revokeOwnership(input: {
   removedMembers: number;
   suspendedMandates: number;
   revokedInvites: number;
+  revokedMemberInvites: number;
+  revokedApiKeys: number;
   pdfStyleReset: number;
 }> {
   if (!isRevokeReason(input.reason)) throw new OwnershipError('invalidReason');
@@ -83,6 +86,17 @@ export async function revokeOwnership(input: {
       where: { organizationId: input.organizationId, kind: 'transfer.invite', status: 'PENDING' },
       data: { status: 'FAILED', lastError: 'Собствеността е отнета.' },
     });
+    // И поканите за член: иначе подставеният собственик кани свой имейл и се връща след отнемането.
+    const memberInvites = await revokeOpenMemberInvites(
+      tx,
+      { organizationId: input.organizationId },
+      'Собствеността е отнета.',
+    );
+    // Ключовете за API на махнатите — оттеглени, не само спрени (иначе оживяват при ново членство).
+    const apiKeys = await tx.apiKey.updateMany({
+      where: { organizationId: input.organizationId, revokedAt: null },
+      data: { revokedAt: now },
+    });
     const styles = await tx.pdfStyle.deleteMany({
       where: { organizationId: input.organizationId },
     });
@@ -94,6 +108,8 @@ export async function revokeOwnership(input: {
       removedMembers: removed.count,
       suspendedMandates: suspended.count,
       revokedInvites: invites.count,
+      revokedMemberInvites: memberInvites,
+      revokedApiKeys: apiKeys.count,
       pdfStyleReset: styles.count,
     };
     await audit(tx, {

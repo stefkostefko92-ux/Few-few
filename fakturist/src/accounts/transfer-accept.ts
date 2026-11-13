@@ -98,7 +98,7 @@ export async function acceptTransferInvite(input: {
     return await prisma.$transaction(async (tx) => {
       const invite = await tx.transferInvite.findUniqueOrThrow({
         where: { tokenHash },
-        include: { mandate: { select: { id: true, firmId: true } } },
+        include: { mandate: { select: { id: true, firmId: true, status: true } } },
       });
       await lockOrganization(tx, invite.organizationId);
       const org = await tx.organization.findUniqueOrThrow({
@@ -106,6 +106,14 @@ export async function acceptTransferInvite(input: {
         select: { deletedAt: true },
       });
       if (!isOpen(invite, now) || org.deletedAt) throw new TransferError('invalid');
+      // Покана на кантора по пълномощно, което вече е оттеглено, не дава собственост.
+      if (
+        invite.mandateId &&
+        invite.mandate?.status !== 'PENDING' &&
+        invite.mandate?.status !== 'ACTIVE'
+      ) {
+        throw new TransferError('invalid');
+      }
       if ((await ownerCount(tx, invite.organizationId)) > 0) throw new TransferError('invalid');
       // Служител на поканилата кантора не става собственик на клиента ѝ.
       if (invite.mandate && (await isFirmMember(tx, invite.mandate.firmId, invite.email))) {

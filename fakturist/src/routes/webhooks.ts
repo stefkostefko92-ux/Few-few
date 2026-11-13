@@ -32,7 +32,6 @@ export function webhooksRouter(): Router {
       const outcome = await handlePeppolWebhook({
         rawBody,
         signature: req.get('x-econnect-signature'),
-        delivery: req.get('x-econnect-delivery'),
         ap: await accessPoint(),
       });
       res.status(outcome.status).end();

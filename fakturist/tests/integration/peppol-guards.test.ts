@@ -11,6 +11,7 @@ const { register } = await import('../../src/accounts/register.js');
 const { seedPlans } = await import('../../src/billing/seed-plans.js');
 const { createServer } = await import('../../src/server.js');
 const { saveIntegration, invalidateIntegrations } = await import('../../src/admin/integrations.js');
+const { invalidateSettings } = await import('../../src/admin/settings.js');
 const { accessPoint } = await import('../../src/peppol/settings.js');
 const { sendDueTransmissions } = await import('../../src/peppol/transmissions.js');
 const { enrollOrganization, PeppolError } = await import('../../src/peppol/participants.js');
@@ -127,6 +128,48 @@ after(async () => {
   fake.restore();
   await http.close();
   await prisma.$disconnect();
+});
+
+async function setPilots(value: string) {
+  await prisma.setting.upsert({
+    where: { key: 'peppol.pilotOrgIds' },
+    create: { key: 'peppol.pilotOrgIds', value },
+    update: { value },
+  });
+  invalidateSettings();
+}
+
+test('преди пускането: само пилотна фирма и само в acceptance — иначе нищо не тръгва към доставчика', async () => {
+  await prisma.organization.update({ where: { id: orgA }, data: { verifiedAt: new Date() } });
+  const refused = await http.post(owner, `/app/o/${orgA}/peppol/vklyuchi`, {});
+  assert.match(refused.headers.get('location') ?? '', /err=notAvailable/);
+  const page = await (await http.get(owner, `/app/o/${orgA}/peppol`)).text();
+  assert.match(page, /предстои/);
+  assert.doesNotMatch(page, /peppol\/vklyuchi/);
+  // Пилот, но в продукционната среда — пак не (реалните данни чакат новия договор за обработване).
+  await setPilots(`${orgA},${orgB}`);
+  await saveIntegration({
+    code: 'peppol',
+    config: { environment: 'production', clientId: 'fakturist' },
+    secrets: { clientSecret: 'client-secret-123456' },
+    changed: [],
+    cleared: [],
+    actorId: (await prisma.user.findFirstOrThrow({ where: { platformRole: 'MASTER' } })).id,
+  });
+  invalidateIntegrations();
+  const production = await http.post(owner, `/app/o/${orgA}/peppol/vklyuchi`, {});
+  assert.match(production.headers.get('location') ?? '', /err=notAvailable/);
+  await saveIntegration({
+    code: 'peppol',
+    config: { environment: 'acceptance', clientId: 'fakturist' },
+    secrets: { clientSecret: 'client-secret-123456' },
+    changed: [],
+    cleared: [],
+    actorId: (await prisma.user.findFirstOrThrow({ where: { platformRole: 'MASTER' } })).id,
+  });
+  invalidateIntegrations();
+  assert.equal(fake.enrolled.length + fake.rejectedEnrolls.length, 0);
+  await prisma.organization.update({ where: { id: orgA }, data: { verifiedAt: null } });
 });
 
 test('непотвърдена фирма не се регистрира в Peppol (адресът е от самодекларирания ДДС номер)', async () => {

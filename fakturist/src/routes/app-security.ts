@@ -68,11 +68,23 @@ export function appSecurityRouter(): Router {
   router.post('/app/sigurnost/2fa', async (req, res) => {
     const principal = req.principal!;
     const body = z
-      .object({ draft: z.string().max(400), code: z.string().max(20) })
+      .object({
+        draft: z.string().max(400),
+        code: z.string().max(20),
+        password: z.string().max(PASSWORD_MAX_LENGTH),
+      })
       .safeParse(req.body);
     // Включената 2FA не се презаписва оттук: смяната е отделен поток с текущия код и паролата.
     if (principal.user.totpEnabled) throw new HttpError(409);
     if (!body.success) return res.redirect(303, '/app/sigurnost?err=code');
+    // Текущата парола: откраднатата сесия не може да включи свой втори фактор и да заключи собственика.
+    const owner = await prisma.user.findUniqueOrThrow({
+      where: { id: principal.user.id },
+      select: { passwordHash: true },
+    });
+    if (!(await verifyPassword(body.data.password, owner.passwordHash))) {
+      return res.redirect(303, '/app/sigurnost?err=current');
+    }
     // Черновата е вързана с този акаунт (AAD = userId) — чужда чернова не се дешифрира.
     const secret = decryptTotpDraft(body.data.draft, principal.user.id);
     if (!secret) return res.redirect(303, '/app/sigurnost?err=code');

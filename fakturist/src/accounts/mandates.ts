@@ -34,6 +34,31 @@ export async function decideMandate(input: {
           : { status: 'REVOKED', revokedAt: new Date() },
     });
     if (updated.count !== 1) throw new HttpError(409);
+    // Оттеглено пълномощно → и поканите на кантората към собственик по него падат (иначе поканеният
+    // от нея имейл става собственик след оттеглянето).
+    if (input.decision === 'revoke') {
+      const invites = await tx.transferInvite.findMany({
+        where: { mandateId: mandate.id, acceptedAt: null, revokedAt: null },
+        select: { id: true },
+      });
+      if (invites.length > 0) {
+        const now = new Date();
+        await tx.transferInvite.updateMany({
+          where: { id: { in: invites.map((invite) => invite.id) }, acceptedAt: null },
+          data: { revokedAt: now },
+        });
+        for (const invite of invites) {
+          await tx.notification.updateMany({
+            where: {
+              kind: 'transfer.invite',
+              status: 'PENDING',
+              payload: { path: ['inviteId'], equals: invite.id },
+            },
+            data: { status: 'FAILED', lastError: 'Пълномощното е оттеглено.' },
+          });
+        }
+      }
+    }
     // Мастърът потвърждава пълномощно за фирма без профил → проверил е и самата фирма.
     if (
       input.decision === 'approve' &&

@@ -51,6 +51,11 @@ before(async () => {
     legalName: 'Кантора ООД',
     eik: '121604974',
   });
+  // Шкафчето доставя само до потвърдена фирма (одитът от 13.11.2026) — получателят е потвърден от мастъра.
+  await prisma.organization.update({
+    where: { id: b.organizationId },
+    data: { verifiedAt: new Date() },
+  });
   // Писмата за потвърждение на имейла от регистрациите (SPEC 38) не са предмет тук — опашката е за шкафчето.
   await prisma.notification.deleteMany({ where: { kind: 'account.verifyEmail' } });
 });

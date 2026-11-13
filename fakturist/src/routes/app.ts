@@ -1,5 +1,6 @@
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { prisma } from '../db.js';
+import { peppolAllowed } from '../peppol/settings.js';
 import { HttpError, requireOrg, requireUser } from '../auth/guards.js';
 import { roleCan } from '../auth/roles.js';
 import { money } from '../http/view.js';
@@ -257,6 +258,7 @@ export function appRouter(): Router {
           : '',
       canPeppol:
         canIssue &&
+        (await peppolAllowed(access.organizationId, { viaFirmId: access.viaFirmId })) &&
         document.status === 'ISSUED' &&
         !document.peppolTransmission &&
         (document.ublXml ?? '').includes('urn:fdc:peppol.eu:2017:poacc:billing:3.0'),

@@ -211,7 +211,14 @@ test('мастърът с 2FA вижда страницата: списък и �
     code: totpCodeAt(ownerSecret, totpStep(Math.floor(Date.now() / 1000))),
   });
   assert.equal(verified.status, 303);
-  const page = await http.get({ cookie, csrf }, '/admin/mastari');
+  // След кода сесията е нова (нов id) — старата бисквитка вече не е пълна сесия.
+  const fresh = verified.headers
+    .getSetCookie()
+    .map((c) => c.split(';')[0] ?? '')
+    .filter((c) => c.startsWith('fakturist_sid='))
+    .join('; ');
+  assert.ok(fresh, 'нова бисквитка на сесията');
+  const page = await http.get({ cookie: fresh, csrf: '' }, '/admin/mastari');
   assert.equal(page.status, 200);
   const html = await page.text();
   assert.match(html, /admin@example\.test/);

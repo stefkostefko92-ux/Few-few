@@ -5,7 +5,7 @@ import { prisma } from '../db.js';
 import { HttpError, requireOrg } from '../auth/guards.js';
 import { roleCan } from '../auth/roles.js';
 import { HOUR } from '../time.js';
-import { accessPoint } from '../peppol/settings.js';
+import { accessPoint, peppolAllowed } from '../peppol/settings.js';
 import { partyIdForVat, partyIdFromAddress } from '../peppol/ids.js';
 import { disableOrganization, enrollOrganization, PeppolError } from '../peppol/participants.js';
 import { queueTransmission } from '../peppol/transmissions.js';
@@ -35,7 +35,7 @@ export function appPeppolRouter(): Router {
 
   router.get('/app/o/:orgId/peppol', async (req, res) => {
     const access = await requireOrg(req, 'documents.read');
-    const [org, participant, transmissions, configured] = await Promise.all([
+    const [org, participant, transmissions, configured, available] = await Promise.all([
       prisma.organization.findUniqueOrThrow({
         where: { id: access.organizationId },
         select: { id: true, legalName: true, vatNumber: true, verifiedAt: true },
@@ -48,12 +48,14 @@ export function appPeppolRouter(): Router {
         include: { document: { select: { id: true, number: true, buyerName: true } } },
       }),
       accessPoint().then((ap) => ap !== null),
+      peppolAllowed(access.organizationId, { viaFirmId: access.viaFirmId }),
     ]);
     res.render('app/peppol', {
       org,
       participant,
       transmissions,
       configured,
+      available,
       verified: org.verifiedAt !== null,
       partyId: participant?.partyId ?? partyIdForVat(org.vatNumber),
       canManage: roleCan(access.role, 'org.settings') && access.viaFirmId === null,
@@ -115,7 +117,12 @@ export function appPeppolRouter(): Router {
         }),
       );
     } catch (error) {
-      if (error instanceof PeppolError) return res.redirect(303, `${back}?peppol=notActive`);
+      if (error instanceof PeppolError) {
+        return res.redirect(
+          303,
+          `${back}?peppol=${error.code === 'notAvailable' ? 'notAvailable' : 'notActive'}`,
+        );
+      }
       // Едновременно „Изпрати“ за същия документ: уникалният documentId спира второто.
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
         return res.redirect(303, `${back}?peppol=already`);

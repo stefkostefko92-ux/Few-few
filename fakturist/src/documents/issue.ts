@@ -45,6 +45,11 @@ export interface IssueOptions {
    * адреси) и предаването се записва в същата транзакция — без активна регистрация на фирмата е отказ.
    */
   peppol?: boolean;
+  /**
+   * Получателят е известен със сигурност (фактурата за плана — до фирмата, която е поръчала и платила):
+   * шкафчето доставя до нея и когато още не е потвърдена от мастъра.
+   */
+  knownRecipientOrgId?: string;
 }
 
 export class IssueRejected extends Error {
@@ -313,6 +318,7 @@ export async function issueInTx(
       senderOrgId: org.id,
       actorId,
       buyer: built.input.buyer,
+      ...(options.knownRecipientOrgId ? { knownRecipientOrgId: options.knownRecipientOrgId } : {}),
     });
     return {
       id: document.id,

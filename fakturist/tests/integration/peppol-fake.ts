@@ -104,7 +104,21 @@ export function postHook(
   body: Record<string, unknown>,
   opts: { secret: string; delivery?: string },
 ): Promise<Response> {
-  const raw = JSON.stringify({ sentOn: new Date().toISOString(), ...body });
+  return postSignedRaw(
+    fake,
+    origin,
+    JSON.stringify({ sentOn: new Date().toISOString(), ...body }),
+    opts,
+  );
+}
+
+/** Точно това тяло, подписано — за повторение на заловено известие. */
+export function postSignedRaw(
+  fake: FakeEConnect,
+  origin: string,
+  raw: string,
+  opts: { secret: string; delivery?: string },
+): Promise<Response> {
   const signature = createHmac('sha256', opts.secret).update(raw).digest('hex');
   return fake.realFetch(`${origin}/webhooks/peppol`, {
     method: 'POST',

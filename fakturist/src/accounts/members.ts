@@ -23,25 +23,9 @@ const TOKEN = /^[A-Za-z0-9_-]{43}$/;
 export const InviteRoleSchema = z.enum(['ADMIN', 'ACCOUNTANT', 'ISSUER', 'VIEWER']);
 export const MemberEmailSchema = z.string().trim().toLowerCase().max(254).pipe(z.email());
 
-export class MemberError extends Error {
-  constructor(
-    readonly code:
-      | 'notFound'
-      | 'forbiddenRole'
-      | 'alreadyMember'
-      | 'rateLimited'
-      | 'invalid'
-      | 'wrongEmail'
-      | 'loginRequired'
-      | 'invalidName'
-      | 'self'
-      | `password.${string}`,
-  ) {
-    super(code);
-  }
-}
+import { MemberError, type Actor } from './member-core.js';
 
-export type Actor = { userId: string; role: MemberRole };
+export { MemberError, type Actor };
 
 export async function inviteMember(input: {
   organizationId: string;
@@ -173,6 +157,27 @@ export async function acceptMemberInvite(input: {
       if (invite.acceptedAt || invite.revokedAt || invite.expiresAt <= now) {
         throw new MemberError('invalid');
       }
+      // Поканата важи, докато поканилият още може да я даде: собствеността не е отнета и той е член с
+      // роля над поканената (иначе отстранен администратор се връща през покана, пратена преди това).
+      const org = await tx.organization.findUniqueOrThrow({
+        where: { id: invite.organizationId },
+        select: { ownershipLockedAt: true, deletedAt: true },
+      });
+      if (org.ownershipLockedAt || org.deletedAt) throw new MemberError('invalid');
+      const inviter = invite.createdById
+        ? await tx.membership.findUnique({
+            where: {
+              userId_organizationId: {
+                userId: invite.createdById,
+                organizationId: invite.organizationId,
+              },
+            },
+            select: { role: true },
+          })
+        : null;
+      if (!inviter || !canAssign(inviter.role as MemberRole, invite.role as MemberRole)) {
+        throw new MemberError('invalid');
+      }
       let userId: string;
       if (newUser) {
         if (await tx.user.findUnique({ where: { email: invite.email }, select: { id: true } })) {
@@ -233,44 +238,7 @@ export async function acceptMemberInvite(input: {
   }
 }
 
-export async function revokeMemberInvite(input: {
-  organizationId: string;
-  inviteId: string;
-  actor: Actor;
-}): Promise<void> {
-  await prisma.$transaction(async (tx) => {
-    // Под заключването на фирмата — същото, което взема приемането: отмяна и приемане не се разминават.
-    await lockOrganization(tx, input.organizationId);
-    const invite = await tx.memberInvite.findFirst({
-      where: { id: input.inviteId, organizationId: input.organizationId },
-    });
-    if (!invite || invite.acceptedAt || invite.revokedAt) throw new MemberError('notFound');
-    if (!canAssign(input.actor.role, invite.role as MemberRole)) {
-      throw new MemberError('forbiddenRole');
-    }
-    const revoked = await tx.memberInvite.updateMany({
-      where: { id: invite.id, acceptedAt: null, revokedAt: null },
-      data: { revokedAt: new Date() },
-    });
-    if (revoked.count !== 1) throw new MemberError('notFound');
-    await tx.notification.updateMany({
-      where: {
-        kind: 'member.invite',
-        status: 'PENDING',
-        payload: { path: ['inviteId'], equals: invite.id },
-      },
-      data: { status: 'FAILED', lastError: 'Поканата е отменена.' },
-    });
-    await audit(tx, {
-      actorId: input.actor.userId,
-      organizationId: input.organizationId,
-      action: 'member.invite.revoked',
-      targetType: 'MemberInvite',
-      targetId: invite.id,
-    });
-  });
-}
-
 /** Смяна на роля: само на член под своята роля, към роля под своята; не и на себе си. */
 
 export { changeMemberRole, removeMember } from './member-roles.js';
+export { revokeMemberInvite } from './member-invite-revoke.js';

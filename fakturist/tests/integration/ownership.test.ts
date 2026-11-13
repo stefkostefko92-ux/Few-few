@@ -140,6 +140,8 @@ test('отнемане: членове вън, пълномощни чакащи
     removedMembers: 1,
     suspendedMandates: 1,
     revokedInvites: 0,
+    revokedMemberInvites: 0,
+    revokedApiKeys: 0,
     pdfStyleReset: 1,
   });
   assert.equal(await prisma.membership.count({ where: { organizationId: clientId } }), 0);
@@ -158,6 +160,8 @@ test('отнемане: членове вън, пълномощни чакащи
     removedMembers: 1,
     suspendedMandates: 1,
     revokedInvites: 0,
+    revokedMemberInvites: 0,
+    revokedApiKeys: 0,
     pdfStyleReset: 1,
   });
   assert.deepEqual(await ownershipReviewQueue(), { items: [], total: 0 });

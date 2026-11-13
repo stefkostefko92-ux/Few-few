@@ -120,20 +120,27 @@ export function appClientsRouter(): Router {
             },
           });
         }
+        // Действащо пълномощно не се пипа: номерът и датата му са в PDF-ите на вече издадените документи,
+        // а промяна иска ново потвърждение. Оттеглено — новата заявка го връща за потвърждение (PENDING).
+        const current = await tx.clientMandate.findUnique({
+          where: { firmId_clientId: { firmId: firm.id, clientId: client.id } },
+          select: { status: true },
+        });
+        const terms = {
+          documentRef: data.documentRef,
+          validFrom: new Date(`${data.validFrom}T00:00:00Z`),
+        };
         const mandate = await tx.clientMandate.upsert({
           where: { firmId_clientId: { firmId: firm.id, clientId: client.id } },
           create: {
             firmId: firm.id,
             clientId: client.id,
             status: 'PENDING',
-            documentRef: data.documentRef,
-            validFrom: new Date(`${data.validFrom}T00:00:00Z`),
+            ...terms,
             createdById: req.principal!.user.id,
           },
-          update: {
-            documentRef: data.documentRef,
-            validFrom: new Date(`${data.validFrom}T00:00:00Z`),
-          },
+          update:
+            current?.status === 'ACTIVE' ? {} : { ...terms, status: 'PENDING', revokedAt: null },
         });
         // Декларацията на кантората (т. 1а от договора за обработване) — записана за фирмата-клиент.
         await tx.legalAcceptance.create({

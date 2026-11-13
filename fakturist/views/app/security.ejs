@@ -25,6 +25,7 @@
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <input type="hidden" name="draft" value="<%= draft %>">
       <label><%= t('auth.code') %><input name="code" inputmode="numeric" autocomplete="one-time-code" required class="mono"></label>
+      <label><%= t('app.security.current') %><input type="password" name="password" autocomplete="current-password" required></label>
       <button type="submit"><%= t('app.security.enable') %></button>
     </form>
   <% } %>

@@ -9,6 +9,7 @@ import { scrub } from '../admin/integration-checks.js';
 import type { OrgAccess } from '../auth/guards.js';
 import { AccessPointError, type AccessPoint } from './access-point.js';
 import { partyIdForVat } from './ids.js';
+import { peppolAllowed } from './settings.js';
 
 /**
  * Фирмата като получател в Peppol (SPEC 57): адрес `9926:BG…`, регистрация при точката за достъп с
@@ -22,6 +23,7 @@ export class PeppolError extends Error {
   constructor(
     readonly code:
       | 'notConfigured'
+      | 'notAvailable'
       | 'noVat'
       | 'notVerified'
       | 'taken'
@@ -98,6 +100,7 @@ export async function enrollOrganization(
   now = new Date(),
 ): Promise<'ACTIVE' | 'FAILED'> {
   if (!ap) throw new PeppolError('notConfigured');
+  if (!(await peppolAllowed(access.organizationId))) throw new PeppolError('notAvailable');
   const org = await prisma.organization.findUniqueOrThrow({
     where: { id: access.organizationId },
     select: {

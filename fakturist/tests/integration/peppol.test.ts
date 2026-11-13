@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { prepareTestDatabase, truncateAll } from './harness.js';
 import { startHttp, type HttpClient, type Session } from './http.js';
-import { hookSecretOf, installFakeEConnect, postHook } from './peppol-fake.js';
+import { hookSecretOf, installFakeEConnect, postHook, postSignedRaw } from './peppol-fake.js';
 
 prepareTestDatabase();
 delete process.env['SMTP_HOST'];
@@ -11,6 +11,7 @@ const { register } = await import('../../src/accounts/register.js');
 const { seedPlans } = await import('../../src/billing/seed-plans.js');
 const { createServer } = await import('../../src/server.js');
 const { saveIntegration, invalidateIntegrations } = await import('../../src/admin/integrations.js');
+const { invalidateSettings } = await import('../../src/admin/settings.js');
 const { accessPoint } = await import('../../src/peppol/settings.js');
 const { sendDueTransmissions } = await import('../../src/peppol/transmissions.js');
 const { calculate, toUbl } = await import('../../src/einvoice/index.js');
@@ -106,6 +107,9 @@ before(async () => {
     actorId: master.id,
   });
   invalidateIntegrations();
+  // Преди пускането Peppol е само за пилотните фирми и само в acceptance (src/peppol/settings.ts).
+  await prisma.setting.create({ data: { key: 'peppol.pilotOrgIds', value: orgId } });
+  invalidateSettings();
 });
 
 after(async () => {
@@ -189,8 +193,20 @@ test('известия: подпис, възраст, повторение; „�
     (await prisma.peppolTransmission.findUniqueOrThrow({ where: { id: tx.id } })).status,
     'SENT',
   );
-  assert.equal((await hook(event, { delivery: 'delivery-0001' })).status, 200);
-  assert.equal(await prisma.peppolEvent.count({ where: { deliveryId: 'delivery-0001' } }), 1);
+  // Заловеното тяло, поднесено пак с нов (неподписан) X-EConnect-Delivery — пак „вече видяно“.
+  const raw = JSON.stringify({ ...event, sentOn: new Date().toISOString() });
+  const events = await prisma.peppolEvent.count();
+  assert.equal(
+    (await postSignedRaw(fake, http.origin, raw, { secret: hookSecret, delivery: 'replay-0001' }))
+      .status,
+    200,
+  );
+  assert.equal(
+    (await postSignedRaw(fake, http.origin, raw, { secret: hookSecret, delivery: 'replay-0002' }))
+      .status,
+    200,
+  );
+  assert.equal(await prisma.peppolEvent.count(), events + 1);
   const docPage = await (await http.get(owner, `/app/o/${orgId}/d/${tx.documentId}`)).text();
   assert.match(docPage, /доставен/);
 });

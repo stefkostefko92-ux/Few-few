@@ -1,4 +1,5 @@
 import { prisma } from '../db.js';
+import { lockOrganization } from './transfer-core.js';
 import { audit } from '../audit.js';
 import { randomToken } from '../crypto.js';
 import { hashPassword, verifyPassword } from '../auth/password.js';
@@ -78,18 +79,21 @@ export async function closeAccount(input: { userId: string; password: string }):
   });
   if (user.platformRole !== 'NONE') throw new CloseError('master');
   if (!(await verifyPassword(input.password, user.passwordHash))) throw new CloseError('password');
-  for (const owned of user.memberships) {
-    const [owners, others] = await Promise.all([
-      prisma.membership.count({ where: { organizationId: owned.organizationId, role: 'OWNER' } }),
-      prisma.membership.count({
-        where: { organizationId: owned.organizationId, userId: { not: user.id } },
-      }),
-    ]);
-    if (owners === 1 && others > 0) throw new CloseError('transferFirst');
-  }
   const unusable = await hashPassword(randomToken(32));
   const now = new Date();
   await prisma.$transaction(async (tx) => {
+    // Проверката е под заключването на всяка своя фирма (същото, което взема приемането на покана):
+    // покана, приета междувременно, иначе би оставила фирма с членове и без собственик.
+    for (const owned of user.memberships) {
+      await lockOrganization(tx, owned.organizationId);
+      const [owners, others] = await Promise.all([
+        tx.membership.count({ where: { organizationId: owned.organizationId, role: 'OWNER' } }),
+        tx.membership.count({
+          where: { organizationId: owned.organizationId, userId: { not: user.id } },
+        }),
+      ]);
+      if (owners === 1 && others > 0) throw new CloseError('transferFirst');
+    }
     await tx.membership.deleteMany({ where: { userId: user.id } });
     await tx.apiKey.updateMany({
       where: { createdById: user.id, revokedAt: null },

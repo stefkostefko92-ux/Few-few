@@ -2,7 +2,8 @@ import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { canAssign, type MemberRole } from '../auth/roles.js';
 import { lockOrganization } from './transfer-core.js';
-import { MemberError, type Actor } from './members.js';
+import { MemberError, type Actor } from './member-core.js';
+import { revokeOpenMemberInvites } from './member-invite-revoke.js';
 
 /** Смяна на роля и махане на член (SPEC 45) — под своята роля; собственикът не се маха оттук. */
 export async function changeMemberRole(input: {
@@ -60,6 +61,12 @@ export async function removeMember(input: {
       where: { organizationId: input.organizationId, createdById: member.userId, revokedAt: null },
       data: { revokedAt: new Date() },
     });
+    // И поканите, които е пратил — иначе се връща през свой втори имейл.
+    await revokeOpenMemberInvites(
+      tx,
+      { organizationId: input.organizationId, createdById: member.userId },
+      'Поканилият вече не е член.',
+    );
     await audit(tx, {
       actorId: input.actor.userId,
       organizationId: input.organizationId,

@@ -5,6 +5,7 @@ import { audit } from '../audit.js';
 import { MINUTE } from '../time.js';
 import { AccessPointError, type AccessPoint } from './access-point.js';
 import { PeppolError } from './participants.js';
+import { peppolAllowed } from './settings.js';
 
 /**
  * Изпращането през Peppol (SPEC 58): ред в транзакцията на издаването → работникът го взема с условен
@@ -29,6 +30,9 @@ export async function queueTransmission(
     select: { partyId: true, status: true },
   });
   if (participant?.status !== 'ACTIVE') throw new PeppolError('notActive');
+  if (!(await peppolAllowed(input.organizationId, { db: tx }))) {
+    throw new PeppolError('notAvailable');
+  }
   await tx.peppolTransmission.create({
     data: {
       organizationId: input.organizationId,
@@ -64,10 +68,12 @@ export async function sendDueTransmissions(
     where: { status: 'QUEUED', nextAttemptAt: { lte: now } },
     orderBy: { nextAttemptAt: 'asc' },
     take: limit,
-    select: { id: true, attempts: true },
+    select: { id: true, attempts: true, organizationId: true },
   });
   let accepted = 0;
   for (const row of due) {
+    // Изключена функция (флаг, план, краят на пробата) — редът чака, нищо не тръгва към доставчика.
+    if (!(await peppolAllowed(row.organizationId))) continue;
     // Заемане: само един процес взема реда (броят опити трябва да е същият).
     const claimed = await prisma.peppolTransmission.updateMany({
       where: { id: row.id, status: 'QUEUED', attempts: row.attempts },

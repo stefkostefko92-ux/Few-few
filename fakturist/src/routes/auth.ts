@@ -91,14 +91,16 @@ export function authRouter(): Router {
       }
       return res.status(400).render('auth/login', { error: 'auth.invalid', next, email });
     }
-    await attemptSucceeded(active.id);
+    const needsCode = active.totpEnabledAt !== null;
+    // С втори фактор броячът на опитите се нулира едва след кода: иначе знаещият паролата получава нови
+    // опити за кода с всеки вход наново (броячът е общ за паролата и кода, по профил, не по сесия).
+    if (!needsCode) await attemptSucceeded(active.id);
     if (needsRehash(active.passwordHash) && parsed.success) {
       await prisma.user.update({
         where: { id: active.id },
         data: { passwordHash: await hashPassword(parsed.data.password) },
       });
     }
-    const needsCode = active.totpEnabledAt !== null;
     await startSession(res, active, !needsCode);
     if (!needsCode) {
       // Довереното устройство — само след пълен вход (с втория фактор, ако е включен): иначе знаещият
@@ -130,6 +132,13 @@ export function authRouter(): Router {
     const next = safeNext((req.body as { next?: unknown }).next);
     const code = String((req.body as { code?: unknown }).code ?? '');
     const user = await prisma.user.findUniqueOrThrow({ where: { id: principal.user.id } });
+    // Опитът за кода се заема от брояча на профила (същият като на паролата): паралелни заявки и нови
+    // сесии не дават повече от MAX_FAILED опита; заключеният профил не проверява кода.
+    if (!(await reserveAttempt(user.id))) {
+      await attemptFailed(user.id);
+      await endSession(req, res);
+      return res.status(400).render('auth/login', { error: 'auth.codeLocked', next, email: '' });
+    }
     const step = user.totpSecretEnc
       ? verifyTotp(decryptTotpSecret(user.totpSecretEnc, user.id), code, user.totpLastStep)
       : null;
@@ -147,6 +156,11 @@ export function authRouter(): Router {
         })
       ).count === 1;
     if (!accepted) {
+      const lockedUntil = await attemptFailed(user.id);
+      if (lockedUntil) {
+        await queueLockedMail(user.id, user.email, lockedUntil);
+        kickOutbox();
+      }
       const session = await prisma.session.update({
         where: { id: principal.sessionId },
         data: { failedCodes: { increment: 1 } },
@@ -167,7 +181,10 @@ export function authRouter(): Router {
       }
       return res.status(400).render('auth/code', { error: 'auth.badCode', next });
     }
-    await prisma.session.update({ where: { id: principal.sessionId }, data: { verified: true } });
+    await attemptSucceeded(user.id);
+    // Нова сесия след втория фактор (нов id и CSRF токен): сесия, видяна преди кода, не става пълна.
+    await prisma.session.deleteMany({ where: { id: principal.sessionId } });
+    await startSession(res, user, true);
     rememberDevice(res, user.id);
     await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
     await prisma.$transaction((tx) =>

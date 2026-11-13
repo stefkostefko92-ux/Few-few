@@ -81,6 +81,18 @@ export const SETTINGS = {
       en: 'Id of the Carbon Stealth organisation in Fakturist (from “Organisations” in the panel). Empty — plan orders are off.',
     },
   },
+  'peppol.pilotOrgIds': {
+    schema: z.union([z.literal(''), z.string().regex(/^[a-z0-9]{20,40}(,[a-z0-9]{20,40}){0,9}$/)]),
+    default: '',
+    label: {
+      bg: 'Фирми за пробата на Peppol (преди пускането)',
+      en: 'Companies for the Peppol trial (before launch)',
+    },
+    help: {
+      bg: 'Id-та през запетая (до 10). Докато Peppol не е пуснат, само тези фирми го ползват и само в тестовата среда (acceptance) на точката за достъп — с тестови данни, не с реални клиенти.',
+      en: 'Comma-separated ids (up to 10). Until Peppol is launched, only these companies use it and only in the access point’s test environment (acceptance) — with test data, not real customers.',
+    },
+  },
   'site.notice': {
     schema: z.string().max(300),
     default: '',

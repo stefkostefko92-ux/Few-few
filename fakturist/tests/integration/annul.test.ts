@@ -38,8 +38,8 @@ before(async () => {
     postalCode: '2300',
   });
   orgId = seller.organizationId;
-  // Получателят е регистриран — документите стигат до шкафчето му.
-  await register({
+  // Получателят е регистриран и потвърден — документите стигат до шкафчето му.
+  const buyer = await register({
     kind: 'company',
     name: 'Мария Георгиева',
     email: 'buyer@example.test',
@@ -50,6 +50,10 @@ before(async () => {
     addressStreet: 'ул. „Шипка“ 1',
     addressCity: 'София',
     postalCode: '1000',
+  });
+  await prisma.organization.update({
+    where: { id: buyer.organizationId },
+    data: { verifiedAt: new Date() },
   });
   const issuerUser = await prisma.user.create({
     data: {

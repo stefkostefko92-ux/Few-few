@@ -1,6 +1,7 @@
 import { prisma } from '../db.js';
 import { documentPdf } from '../documents/render.js';
 import { DOWNLOAD_SELECT } from '../routes/app-shared.js';
+import { csvCell } from './csv.js';
 import { ZipWriter, type ZipSink } from './zip.js';
 
 /**
@@ -10,10 +11,6 @@ import { ZipWriter, type ZipSink } from './zip.js';
  * броя им.
  */
 const PAGE = 100;
-
-function csvCell(value: string): string {
-  return /[",\n;]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
-}
 
 function cents(value: bigint): string {
   const negative = value < 0n;

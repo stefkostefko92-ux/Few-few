@@ -37,6 +37,8 @@ export async function issuePlanInvoice(
       reference: string | null;
     };
     customer: {
+      /** Фирмата, която е поръчала и платила — шкафчето ѝ получава фактурата и непотвърдена. */
+      id: string;
       legalName: string;
       eik: string | null;
       vatNumber: string | null;
@@ -134,7 +136,7 @@ export async function issuePlanInvoice(
     { organizationId: input.supplierOrgId, role: 'OWNER', viaFirmId: null, mandateId: null },
     owner.userId,
     request,
-    {},
+    { knownRecipientOrgId: input.customer.id },
     input.settings,
   );
   return issued.id;

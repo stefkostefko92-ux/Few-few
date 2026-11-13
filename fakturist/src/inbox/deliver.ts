@@ -21,7 +21,7 @@ export interface Delivery {
 }
 
 /**
- * Шкафчето: ако получателят по фактурата (по ЕИК) е фирма, регистрирана във Фактурист, документът се
+ * Шкафчето: ако получателят по фактурата (по ЕИК) е фирма, регистрирана във Фактурист и потвърдена, документът се
  * доставя в нейното шкафче и всеки неин собственик, администратор и счетоводител (и счетоводителите на
  * кантора с действащо пълномощно) получава писмо — записано в опашката в СЪЩАТА транзакция като
  * издаването, затова няма издаден документ без доставка, нито доставка без документ.
@@ -34,6 +34,8 @@ export async function deliverToInbox(
     senderOrgId: string;
     actorId: string;
     buyer: { legalId?: string | undefined; vatId?: string | undefined };
+    /** Получател, известен със сигурност (фактурата за плана) — без изискване за потвърждение. */
+    knownRecipientOrgId?: string;
   },
 ): Promise<Delivery | null> {
   const eik = recipientEik(input.buyer);
@@ -43,6 +45,7 @@ export async function deliverToInbox(
     select: {
       id: true,
       deletedAt: true,
+      verifiedAt: true,
       memberships: {
         where: { role: { in: [...NOTIFY_ROLES] }, user: { disabledAt: null } },
         select: { user: { select: { email: true } } },
@@ -63,6 +66,9 @@ export async function deliverToInbox(
     },
   });
   if (!recipient || recipient.deletedAt || recipient.id === input.senderOrgId) return null;
+  // Само до потвърдена фирма: ЕИК е публичен и всеки може да регистрира чужд — без потвърждение от мастъра
+  // (или пълномощно, потвърдено от него) фактурите до истинската фирма биха стигали до натрапника.
+  if (!recipient.verifiedAt && recipient.id !== input.knownRecipientOrgId) return null;
 
   const entry = await tx.inboxEntry.create({
     data: {

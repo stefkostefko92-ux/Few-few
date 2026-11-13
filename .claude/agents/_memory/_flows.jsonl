@@ -586,3 +586,9 @@
 {"t":"handoff","ts":"2026-11-13T18:24:16.829Z","id":"r58cd63cd","from":"kodadjiyata","to":"друг","status":"блокер","run":"f9934067","toRaw":"Изпитателя"}
 {"t":"start","ts":"2026-11-13T19:54:38.469Z","id":"r823ef59c","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-13T19:54:38.469Z","id":"r823ef59c","from":"kodadjiyata","to":"друг","status":"блокер","run":"71e818e3","toRaw":"Изпитателя"}
+{"t":"start","ts":"2026-11-13T20:18:38.092Z","id":"r241f4c94","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-13T20:18:38.092Z","id":"r241f4c94","from":"kodadjiyata","to":"човек","status":"блокер","run":"490bfd1f"}
+{"t":"handoff","ts":"2026-11-13T20:20:21.720Z","id":"r241f4c94","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"9b0d2bf4"}
+{"t":"handoff","ts":"2026-11-13T20:20:42.253Z","id":"r241f4c94","from":"kachestveniyat","to":"kodadjiyata","status":"има бележки","run":"a3b0659b"}
+{"t":"handoff","ts":"2026-11-13T20:21:49.124Z","id":"r241f4c94","from":"pravniyat-razbirach","to":"човек","status":"има бележки","run":"81a8770a"}
+{"t":"handoff","ts":"2026-11-13T20:24:56.391Z","id":"r241f4c94","from":"izpitatelya","to":"kachestveniyat","status":"наред","run":"04daa106"}
