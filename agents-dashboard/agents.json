@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 645
+        "lessons": 646
       },
       "evolution": [
         {
@@ -2049,9 +2049,20 @@
           "date": "2026-11-13",
           "event": "v58.5 — учене",
           "detail": "Научи: tools/seo/indexnow.mjs решава ключа в ред --key → --key-file → env INDEXNOW_KEY → <site…"
+        },
+        {
+          "version": "58.6.0",
+          "date": "2026-11-13",
+          "event": "v58.6 — учене",
+          "detail": "Научи: .pr-review/376.diff (IndexNow за panev) е отрязан на 10 от 26 файла (последен agents-da…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „.pr-review/376.diff (IndexNow за panev) е отрязан на 10 от 26 файла (последен agents-da…\""
+        },
         {
           "date": "2026-11-13",
           "type": "learning",
