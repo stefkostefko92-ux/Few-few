@@ -10,17 +10,17 @@ import type { Locale } from '../i18n.js';
  */
 export const LEGAL_DOCUMENTS = {
   terms: {
-    version: '2026-11-13.2',
+    version: '2026-11-13.3',
     date: '2026-11-13',
     paths: { bg: '/obshti-usloviya', en: '/en/terms' },
   },
   privacy: {
-    version: '2026-11-13.2',
+    version: '2026-11-13.3',
     date: '2026-11-13',
     paths: { bg: '/poveritelnost', en: '/en/privacy' },
   },
   dpa: {
-    version: '2026-11-13.2',
+    version: '2026-11-13.3',
     date: '2026-11-13',
     paths: { bg: '/dogovor-za-obrabotvane', en: '/en/data-processing' },
   },
