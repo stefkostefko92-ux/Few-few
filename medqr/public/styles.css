@@ -82,7 +82,7 @@
   --green: #2e9e6e; /* акцент от логото (QR) — за светъл фон */
   --green-light: #57cf9f; /* зелен акцент за тъмния (navy) хедър */
   --danger: #cf1f27;
-  --ok: #2e9e6e;
+  --ok: #1d7a52; /* по-тъмно от логото: бял текст ≥4.5:1 (WCAG 1.4.3) */
   --line: #e2e8ef;
   --radius: 14px;
   --shadow-sm: 0 1px 2px rgba(16, 32, 44, 0.04), 0 1px 3px rgba(16, 32, 44, 0.06);
@@ -750,7 +750,7 @@ table.log td.small {
   font-weight: 600;
 }
 .call-btn:hover {
-  background: #1f7a53;
+  background: #166443;
 }
 .notify-box {
   margin-top: 1.2rem;
