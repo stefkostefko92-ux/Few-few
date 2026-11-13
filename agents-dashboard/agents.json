@@ -9367,7 +9367,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 273
+        "lessons": 278
       },
       "evolution": [
         {
@@ -9729,9 +9729,20 @@
           "date": "2026-11-13",
           "event": "v25.7 — учене",
           "detail": "Научи: Функцията panev_ping_indexnow в deploy/autodeploy.sh чете само публичния IndexNow ключ …"
+        },
+        {
+          "version": "26.2.0",
+          "date": "2026-11-13",
+          "event": "v26.2 — учене",
+          "detail": "Научи: Revolut Merchant API POST /api/orders не приема Idempotency-Key (само refund, subscript… (+4 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „Revolut Merchant API POST /api/orders не приема Idempotency-Key (само refund, subscript…\" (+4 още)"
+        },
         {
           "date": "2026-11-13",
           "type": "learning",
