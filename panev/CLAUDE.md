@@ -164,8 +164,10 @@ node scripts/admin-password.js --list | <имейл> | --stdin <имейл> | --
   EN следва EN 81, BG — асансьорния жаргон („планка“, „етажна врата“,
   „водачи на противотежестта“). Кодове/размери/цени не се превеждат.
 - **SEO:** всяка страница ≥5 ключови думи, една винаги „Carbon Stealth“;
-  hreflang it/en/bg + x-default; при промяна по страници/sitemap → IndexNow
-  (`node tools/seo/indexnow.mjs https://panevascensori.it`).
+  hreflang it/en/bg + x-default; при промяна по страници/sitemap → IndexNow. Ключът е на
+  `<ключ>.txt` в корена на сайта, не на `/indexnow-key.txt`, затова командата иска
+  `--key-file` и `--key-location` (цялата е в `DEPLOY.md` → „IndexNow“); само с адреса спира с
+  „Липсва валиден IndexNow ключ“. Пуска се от корена на репото (на сървъра: `/opt/few-few/current`).
 - **Правно:** сайтът е без бисквитки/трекери — не добавяй такива без банер за
   съгласие и обновена informativa; формата изисква privacy checkbox (GDPR
   чл. 13). Правен изход завършва с „не е правен съвет“.
