@@ -10,7 +10,8 @@
     </nav>
     <p class="foot-disclaimer"><%= t('foot.disclaimer') %></p>
     <p class="foot-credit">
-      <a href="/about"><%= company.name %></a> · <%= company.legalForm %> ·
+      <a href="/about"><%= lang === 'en' ? company.name : company.nameBg + ' (' + company.name + ')' %></a> ·
+      <%= lang === 'en' ? company.legalFormEn : company.legalForm %> ·
       <%= lang === 'en' ? 'UIC' : 'ЕИК' %> <%= company.uic %> ·
       <a href="<%= company.url %>" rel="noopener noreferrer" target="_blank"><%= company.url %></a>
     </p>
