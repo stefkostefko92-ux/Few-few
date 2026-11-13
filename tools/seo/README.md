@@ -9,6 +9,11 @@ node tools/seo/check-jsonld.mjs https://zabobovdol.carbonstealth.eu # валид
 node tools/seo/ai-bots.mjs /var/log/nginx/access.log               # AI обхождане + crawl-to-refer
 ```
 
+- **indexnow.mjs** — изход 0 значи, че **всички** адреси от sitemap-а са подадени. Sitemap, който не
+  се прочита или няма нито един `<loc>`, е изход 1 и не се подава нищо (не пада към началната
+  страница); при индекс с недостъпен под-sitemap прочетеното се подава, изходът пак е 1. Само
+  началната страница: `--url <сайт>/`. `--sitemap <файл>` чете локален sitemap (така подава деплоят на
+  panev). `INDEXNOW_ENDPOINT` сменя адреса за подаване — тестовете сочат локален двойник.
 - **live-check.mjs** — живата проверка в реда на търсачката: DNS → http/https и www →
   началната (като Googlebot) → robots.txt → sitemap (индексите се разгръщат) → извадка от
   sitemap-а → IndexNow ключ → llms.txt. `✘` = сайтът не се намира/индексира (няма DNS,

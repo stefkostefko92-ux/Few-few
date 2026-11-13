@@ -178,10 +178,12 @@ ZIP отпреди месец.
   ping иска сесия), rollback като medqr. Пръв деплой без конфиг: пуска `deploy/install.sh`
   (конфиг + тайни + услуга) → `vpsdash/`.
 - **IndexNow след здрав релийз** (Bing, Yandex, Seznam, Naver, Yep; Google не участва) — подава се
-  сам за zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock, korpora (само при променен
-  sitemap), fivem и panev. Само след минала здравна проба — без adblock, който подава след
+  сам за zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock, korpora и rilievi (двата само
+  при променен sitemap, от собствения си `deploy.sh`), fivem и panev. Само след минала здравна проба — без adblock, който подава след
   качването на файловете, дори когато публичната му проба още не минава. Никъде не е условие за
-  успеха: провал на подаването е предупреждение, деплоят остава успешен. За останалите продукти
+  успеха: провал на подаването е предупреждение, деплоят остава успешен. `tools/seo/indexnow.mjs`
+  излиза с 0 само когато всички адреси от sitemap-а са подадени; непрочетен sitemap е провал, не
+  подаване само на началната страница. За останалите продукти
   командата се пуска ръчно — от корена на release-а (`cd /opt/few-few/current`), не от `/root`.
 - Health check на всеки сервис; маркира `current` release; пази последните 5 за връщане назад.
 

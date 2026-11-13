@@ -78,7 +78,7 @@ hooks, skills).
   **IndexNow** (Bing, Yandex, Seznam, Naver, Yep — one call reaches all):
   `node tools/seo/indexnow.mjs https://<live-domain>` (key at `/indexnow-key.txt`; a
   `<key>.txt` site adds `--key-file` + `--key-location`). `deploy/autodeploy.sh` pings after a healthy release for
-  zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock, korpora, fivem, panev
+  zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock, korpora, rilievi, fivem, panev
   (details: `deploy/README.md`); the rest: run it yourself. **Google does NOT
   support IndexNow** (sitemap ping retired 2023) — for Google keep the sitemap fresh
   (auto-discovered) and use Search Console (`tools/seo/gsc.mjs`).

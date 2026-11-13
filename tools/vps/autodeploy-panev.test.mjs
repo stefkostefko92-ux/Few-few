@@ -5,8 +5,8 @@
 // (`indexnow.mjs https://panevascensori.it`) не работи и от правилната директория — ключът на Panev
 // е на `<key>.txt` в корена на сайта, не на `/indexnow-key.txt`, и инструментът спира с „Липсва
 // валиден IndexNow ключ“. Затова autodeploy.sh го подава сам: от корена на release-а, с
-// `--key-file` и `--key-location`, а адресите — от `panev/sitemap.xml` на същия release (ако живият
-// sitemap не се изтегли, инструментът подава само началната страница и пак връща 0).
+// `--key-file` и `--key-location`, а адресите — от `panev/sitemap.xml` на същия release, за да не
+// зависи подаването от това дали сървърът стига собствения си публичен адрес.
 //
 // Тестът е ИЗПЪЛНИМ (по модела на autodeploy-mastilko.test.mjs): реже реалните функции от скрипта и
 // ги пуска с bash под `set -euo pipefail` върху временна файлова система. npm/systemctl/sudo/rsync/
