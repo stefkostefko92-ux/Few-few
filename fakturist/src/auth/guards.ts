@@ -23,9 +23,12 @@ export class HttpError extends Error {
 export function csrf() {
   const origin = new URL(config().PUBLIC_BASE_URL).origin;
   return (req: Request, _res: Response, next: NextFunction): void => {
-    if (SAFE_METHODS.has(req.method) || !req.principal) return next();
+    if (SAFE_METHODS.has(req.method)) return next();
     const sent = req.get('origin');
+    // И без сесия: чужд сайт не може да впише жертвата в своя акаунт (login CSRF) — браузърите пращат
+    // Origin при всяка междусайтова POST заявка.
     if (sent && sent !== origin) return next(new HttpError(403, 'Чужд Origin'));
+    if (!req.principal) return next();
     const body: unknown = req.body;
     const token =
       typeof body === 'object' && body !== null && '_csrf' in body && typeof body._csrf === 'string'

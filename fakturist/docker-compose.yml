@@ -6,7 +6,8 @@
 # Тайните НЕ са тук — идват от `.env` до този файл (mode 600 на сървъра, никога в репото).
 # Задължителни: POSTGRES_PASSWORD (hex) · JWT_SECRET · LEDGER_SEAL_KEY (НИКОГА не се сменя след първата
 # издадена фактура — с него се проверява веригата) · PUBLIC_BASE_URL. По избор: REGISTRATION_OPEN
-# (true само след публикуване на правните текстове), REVOLUT_WEBHOOK_SECRET, BILLING_IBAN, HTTP_PORT (4340).
+# (true само след публикуване на правните текстове), REVOLUT_WEBHOOK_SECRET, BILLING_IBAN, HTTP_PORT (4340),
+# SMTP_HOST/SMTP_USER/SMTP_PASS (Brevo — писмата към шкафчетата).
 name: fakturist
 
 x-logging: &logging
@@ -70,6 +71,13 @@ services:
       BILLING_IBAN: ${BILLING_IBAN:-}
       CONTACT_EMAIL: ${CONTACT_EMAIL:-info@carbonstealth.eu}
       PRIVACY_EMAIL: ${PRIVACY_EMAIL:-privacy@carbonstealth.eu}
+      # Brevo SMTP (порт 2525). Без SMTP_HOST писмата към шкафчетата чакат в опашката.
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-2525}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      MAIL_FROM: ${MAIL_FROM:-Фактурист <no-reply@fakturist.eu>}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       # Портът е публикуван през Docker NAT; `uniquelocal` вярва само на nginx-а на хоста през тази мрежа.
       TRUST_PROXY: ${TRUST_PROXY:-uniquelocal}

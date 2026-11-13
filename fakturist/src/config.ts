@@ -37,6 +37,18 @@ const schema = z.object({
   REVOLUT_WEBHOOK_SECRET: optionalText(),
   /** IBAN на Revolut Business за плащане по банков път (показва се в поръчката на плана). */
   BILLING_IBAN: optionalText(),
+  /**
+   * Пощата (Brevo SMTP; порт 2525 минава и при хостинг, който блокира 25/465/587). Без SMTP_HOST писмата
+   * чакат в опашката (Notification) и тръгват, щом пощата се настрои.
+   */
+  SMTP_HOST: optionalText(),
+  SMTP_PORT: z.coerce.number().int().positive().default(2525),
+  SMTP_SECURE: flag.default(false),
+  SMTP_USER: optionalText(),
+  SMTP_PASS: optionalText(),
+  MAIL_FROM: z.string().min(3).default('Фактурист <no-reply@fakturist.eu>'),
+  /** Шрифтовете на PDF-а (DejaVu Sans — кирилица и €). В образа: fonts-dejavu-core. */
+  PDF_FONT_DIR: z.string().min(1).default('/usr/share/fonts/truetype/dejavu'),
   /** Адресът за връзка на публичната страница и в JSON-LD. */
   CONTACT_EMAIL: z.string().email().default('info@carbonstealth.eu'),
   PRIVACY_EMAIL: z.string().email().default('privacy@carbonstealth.eu'),

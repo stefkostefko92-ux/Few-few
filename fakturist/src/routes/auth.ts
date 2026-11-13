@@ -11,6 +11,7 @@ import { verifyTotp } from '../auth/totp.js';
 import { setting } from '../admin/settings.js';
 import { register, RegistrationError, RegistrationSchema } from '../accounts/register.js';
 import { MINUTE } from '../time.js';
+import { requestRateKey } from '../http/ip.js';
 
 /** Входът и регистрацията: най-много 10 опита за 15 минути от адрес. */
 const limiter = rateLimit({
@@ -19,7 +20,12 @@ const limiter = rateLimit({
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   skipSuccessfulRequests: true,
+  // IPv6 — по мрежа /64, иначе всеки адрес от мрежата на абоната има свой брояч.
+  keyGenerator: requestRateKey,
 });
+
+/** Грешни кодове за втория фактор в една сесия, след които тя се трие и се иска нов вход с парола. */
+export const MAX_FAILED_CODES = 5;
 
 /** Безопасен адрес за връщане след вход: само наш относителен път. */
 function safeNext(value: unknown): string {
@@ -27,9 +33,6 @@ function safeNext(value: unknown): string {
     ? value
     : '/app';
 }
-
-/** Последната приета стъпка на TOTP по човек — повторен код в същия прозорец не минава. */
-const lastTotpStep = new Map<string, number>();
 
 const LoginSchema = z.object({
   email: z.string().trim().toLowerCase().max(254),
@@ -98,10 +101,42 @@ export function authRouter(): Router {
     const code = String((req.body as { code?: unknown }).code ?? '');
     const user = await prisma.user.findUniqueOrThrow({ where: { id: principal.user.id } });
     const step = user.totpSecretEnc
-      ? verifyTotp(decryptTotpSecret(user.totpSecretEnc), code, lastTotpStep.get(user.id) ?? null)
+      ? verifyTotp(decryptTotpSecret(user.totpSecretEnc, user.id), code, user.totpLastStep)
       : null;
-    if (step === null) return res.status(400).render('auth/code', { error: 'auth.badCode', next });
-    lastTotpStep.set(user.id, step);
+    // Стъпката се записва само ако е по-нова от последната приета — едновременно подаден същият код
+    // минава веднъж (условният UPDATE), и след рестарт.
+    const accepted =
+      step !== null &&
+      (
+        await prisma.user.updateMany({
+          where: {
+            id: user.id,
+            OR: [{ totpLastStep: null }, { totpLastStep: { lt: step } }],
+          },
+          data: { totpLastStep: step },
+        })
+      ).count === 1;
+    if (!accepted) {
+      const session = await prisma.session.update({
+        where: { id: principal.sessionId },
+        data: { failedCodes: { increment: 1 } },
+        select: { failedCodes: true },
+      });
+      if (session.failedCodes >= MAX_FAILED_CODES) {
+        await prisma.$transaction(async (tx) => {
+          await tx.session.deleteMany({ where: { id: principal.sessionId } });
+          await audit(tx, {
+            actorId: user.id,
+            action: 'auth.2fa.locked',
+            targetType: 'User',
+            targetId: user.id,
+          });
+        });
+        await endSession(req, res);
+        return res.status(400).render('auth/login', { error: 'auth.codeLocked', next, email: '' });
+      }
+      return res.status(400).render('auth/code', { error: 'auth.badCode', next });
+    }
     await prisma.session.update({ where: { id: principal.sessionId }, data: { verified: true } });
     await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
     await prisma.$transaction((tx) =>

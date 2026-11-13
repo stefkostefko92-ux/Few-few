@@ -121,13 +121,18 @@ function period(start: string | undefined, end: string | undefined): XmlElement 
   return el('cac:InvoicePeriod', null, leaf('cbc:StartDate', start), leaf('cbc:EndDate', end));
 }
 
-export function toUbl(input: InvoiceInput, calc: Calculated, profile: Profile = 'en16931'): string {
+export function toUbl(
+  input: InvoiceInput,
+  calc: Calculated,
+  profile: Profile = 'en16931',
+  signature?: string,
+): string {
   const isCredit = input.typeCode === '381';
   const root = isCredit ? 'CreditNote' : 'Invoice';
   const currency = input.currency;
   const hasO = calc.breakdown.some((group) => group.category === 'O');
   const vatAllowed = !hasO;
-  const note = documentNote(input, calc);
+  const note = documentNote(input, calc, signature);
   const t = calc.totals;
 
   // BT-9 при кредитно известие е в PaymentMeans (UBL CreditNote няма DueDate в главата).

@@ -2,10 +2,12 @@ import { config } from './config.js';
 import { prisma } from './db.js';
 import { errorMessage, logger } from './logger.js';
 import { createServer } from './server.js';
+import { startOutboxLoop } from './mail/outbox.js';
 
 async function main(): Promise<void> {
   const cfg = config();
   const app = createServer();
+  startOutboxLoop();
   const server = app.listen(cfg.PORT, cfg.HOST, () => {
     logger.info({ port: cfg.PORT }, 'fakturist слуша');
   });

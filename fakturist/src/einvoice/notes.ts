@@ -11,7 +11,11 @@ import type { InvoiceInput } from './model.js';
  * 3. основата и ДДС в евро при фактура в друга валута (чл. 114, ал. 5 ЗДДС) — EN 16931 носи само общия
  *    ДДС в евро (BT-111), не основата по ставки.
  */
-export function documentNote(input: InvoiceInput, calc: Calculated): string | undefined {
+export function documentNote(
+  input: InvoiceInput,
+  calc: Calculated,
+  signature?: string,
+): string | undefined {
   const lines: string[] = [...input.notes];
   const zero = input.vatExemptions.find((entry) => entry.category === 'Z');
   if (calc.breakdown.some((group) => group.category === 'Z') && zero?.reason) {
@@ -30,5 +34,7 @@ export function documentNote(input: InvoiceInput, calc: Calculated): string | un
         `${parts.join('; ')}; общо ДДС ${total} EUR`,
     );
   }
+  // 4. Подписът на продукта („създаден с fakturist.eu“) — винаги последен; текстът е от мастър панела.
+  if (signature) lines.push(signature);
   return lines.length > 0 ? lines.join('\n') : undefined;
 }

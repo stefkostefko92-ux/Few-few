@@ -1,0 +1,25 @@
+<%- include('../partials/app-head', { title: t('app.inbox.title') }) %>
+<p><a href="/app/o/<%= org.id %>">← <%= org.legalName %></a></p>
+<h1><%= t('app.inbox.title') %></h1>
+<p class="muted"><%= t('app.inbox.help') %></p>
+<% if (entries.length === 0) { %><p class="muted"><%= t('app.inbox.none') %></p><% } else { %>
+<div class="table-wrap"><table>
+  <thead><tr>
+    <th scope="col"><%= t('app.inbox.from') %></th><th scope="col"><%= t('app.org.type') %></th><th scope="col"><%= t('app.org.number') %></th>
+    <th scope="col"><%= t('app.org.date') %></th><th scope="col" class="num"><%= t('app.org.total') %></th><th scope="col"><%= t('app.inbox.state') %></th>
+  </tr></thead>
+  <tbody>
+  <% entries.forEach((e) => { %>
+    <tr<%= e.readAt ? '' : ' class="unread"' %>>
+      <td><a href="/app/o/<%= org.id %>/shkafche/<%= e.id %>"><%= e.senderOrg.legalName %></a><% if (!e.senderOrg.verifiedAt) { %> <span class="tag tag-pending"><%= t('app.inbox.unverified') %></span><% } %></td>
+      <td><%= t('app.types.' + e.document.typeCode) %></td>
+      <td class="mono"><%= e.document.number %></td>
+      <td class="mono"><%= e.document.issueDate.toISOString().slice(0, 10) %></td>
+      <td class="num mono"><%= money(e.document.payableCents, e.document.currency) %></td>
+      <td><%= t('app.inbox.status.' + e.status) %><% if (!e.readAt) { %> · <strong><%= t('app.inbox.new') %></strong><% } %></td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+<%- include('../partials/app-foot') %>

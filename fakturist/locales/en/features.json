@@ -91,5 +91,9 @@
   "priority-support": {
     "name": "Priority support",
     "description": "An answer within the working day."
+  },
+  "inbox": {
+    "name": "Inbox between Fakturist companies",
+    "description": "An invoice to a company registered with us lands in its inbox on its own, with an email carrying the PDF and XML."
   }
 }

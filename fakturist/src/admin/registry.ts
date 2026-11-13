@@ -128,6 +128,35 @@ export const ADMIN_RESOURCES: AdminResource[] = [
     orderBy: { createdAt: 'desc' },
   },
   {
+    model: 'InboxEntry',
+    slug: 'inbox',
+    group: 'documents',
+    label: { bg: 'Шкафчета (доставки)', en: 'Inbox deliveries' },
+    columns: ['documentId', 'senderOrgId', 'recipientOrgId', 'status', 'deliveredAt', 'readAt'],
+    search: ['documentId', 'senderOrgId', 'recipientOrgId'],
+    hidden: [],
+    orderBy: { deliveredAt: 'desc' },
+  },
+  {
+    model: 'Notification',
+    slug: 'notifications',
+    group: 'platform',
+    label: { bg: 'Писма (опашка)', en: 'Emails (queue)' },
+    columns: [
+      'kind',
+      'organizationId',
+      'status',
+      'attempts',
+      'nextAttemptAt',
+      'sentAt',
+      'lastError',
+    ],
+    search: ['kind', 'organizationId'],
+    // Адресът на получателя е личен данни — не се показва в панела.
+    hidden: ['toEmail', 'payload'],
+    orderBy: { createdAt: 'desc' },
+  },
+  {
     model: 'AuditLog',
     slug: 'audit',
     group: 'platform',
@@ -286,7 +315,9 @@ export async function getResource(
   id: string,
 ): Promise<Record<string, unknown> | null> {
   const field = resource.idField ?? 'id';
-  const value = resource.model === 'AuditLog' && /^\d+$/.test(id) ? BigInt(id) : id;
+  // Одитът е с числов ключ — нечислов адрес е просто липсващ запис (404), не грешка на базата.
+  if (resource.model === 'AuditLog' && !/^\d{1,19}$/.test(id)) return null;
+  const value = resource.model === 'AuditLog' ? BigInt(id) : id;
   const row = await delegateOf(resource.model).findUnique({ where: { [field]: value } });
   return row ? redact(resource, row) : null;
 }

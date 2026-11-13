@@ -199,8 +199,8 @@
         "a": "One company and one user, the VAT checks and EN 16931 XML. There is a soft monthly limit on documents: a document is always issued, and above the limit we invite you to choose a paid plan."
       },
       "4": {
-        "q": "Can I send my customer a PDF?",
-        "a": "The PDF copy is planned for the first quarter of 2027. Today every document is issued as structured XML in UBL 2.1 and CII. Sending over the e-invoicing network is also still to come and is not offered as available."
+        "q": "Does my customer get a PDF?",
+        "a": "Yes. Every document is issued as structured XML (UBL 2.1 and CII) and as a PDF copy with Cyrillic. If your customer is also on Fakturist, the document lands in their inbox on its own, with an email carrying the PDF and XML. Sending over the e-invoicing network is coming and is not offered as ready."
       },
       "5": {
         "q": "Where is the data stored?",

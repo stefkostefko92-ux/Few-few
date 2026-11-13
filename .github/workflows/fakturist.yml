@@ -32,8 +32,10 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: fakturist/package-lock.json
+      # DejaVu Sans — шрифтът на PDF-а (в образа е fonts-dejavu-core); без него PDF тестът не се пропуска тихо.
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends fonts-dejavu-core
       - run: npm ci
-      # prisma generate, prettier, типове, unit тестове (ядро EN 16931, правила ЗДДС, регистър), билд.
+      # prisma generate, prettier, типове, unit тестове (ядро EN 16931, правила ЗДДС, PDF, регистър), билд.
       - run: npm run check
 
   # Официалната проверка: XSD на UBL 2.1 / CII D16B + Schematron на EN 16931 и Peppol BIS 3.
@@ -88,6 +90,7 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: fakturist/package-lock.json
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends fonts-dejavu-core
       - run: npm ci
       - run: npx prisma generate
       - run: npm run test:integration

@@ -50,7 +50,9 @@ export const RegistrationSchema = z
 export type Registration = z.infer<typeof RegistrationSchema>;
 
 export class RegistrationError extends Error {
-  constructor(readonly code: 'emailTaken' | 'companyTaken' | `password.${string}`) {
+  constructor(
+    readonly code: 'emailTaken' | 'companyTaken' | 'companyManaged' | `password.${string}`,
+  ) {
     super(code);
   }
 }
@@ -73,8 +75,16 @@ export async function register(
       if (await tx.user.findUnique({ where: { email: data.email }, select: { id: true } })) {
         throw new RegistrationError('emailTaken');
       }
-      if (await tx.organization.findUnique({ where: { eik: data.eik }, select: { id: true } })) {
-        throw new RegistrationError('companyTaken');
+      const existing = await tx.organization.findUnique({
+        where: { eik: data.eik },
+        select: { _count: { select: { memberships: true } } },
+      });
+      // Фирма, добавена от кантора (без собственик), се прехвърля от поддръжката след проверка — не
+      // с регистрация, иначе всеки би взел чужда фирма с документите ѝ.
+      if (existing) {
+        throw new RegistrationError(
+          existing._count.memberships > 0 ? 'companyTaken' : 'companyManaged',
+        );
       }
       const user = await tx.user.create({
         data: { email: data.email, name: data.name, passwordHash },

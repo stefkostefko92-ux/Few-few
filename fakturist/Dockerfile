@@ -3,8 +3,8 @@
 # Образът е закован по digest (същият като rilievi/korpora): същият таг утре не носи тихо друг образ.
 FROM node:22-slim@sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c AS base
 ENV TZ=UTC
-# openssl е за Prisma.
-RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
+# openssl е за Prisma; ca-certificates — за SMTP; fonts-dejavu-core — DejaVu Sans за PDF-а (кирилица и €).
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates fonts-dejavu-core \
   && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
@@ -29,6 +29,7 @@ FROM base AS runner
 ENV NODE_ENV=production
 ENV PORT=4340
 ENV HOST=0.0.0.0
+ENV PDF_FONT_DIR=/usr/share/fonts/truetype/dejavu
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma

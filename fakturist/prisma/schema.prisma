@@ -91,6 +91,8 @@ model User {
   /// TOTP тайната — AES-256-GCM с ключ, изведен от JWT_SECRET (src/crypto.ts); никога в явен вид.
   totpSecretEnc      String?
   totpEnabledAt      DateTime?
+  /// Последната приета стъпка на TOTP — повторен код в същия прозорец не минава (и след рестарт).
+  totpLastStep       Int?
   emailVerifiedAt    DateTime?
   lastLoginAt        DateTime?
   disabledAt         DateTime?
@@ -101,6 +103,7 @@ model User {
   memberships     Membership[]
   issuedDocuments Document[]      @relation("IssuedBy")
   auditEntries    AuditLog[]
+  inboxDecisions  InboxEntry[]
   mandatesCreated ClientMandate[]
   settingsChanged Setting[]
   flagsChanged    FeatureFlag[]
@@ -109,15 +112,17 @@ model User {
 }
 
 model Session {
-  id         String   @id @default(uuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  csrfToken  String
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  csrfToken   String
   /// Сесията е минала втория фактор (или акаунтът няма 2FA).
-  verified   Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  lastSeenAt DateTime @default(now())
-  expiresAt  DateTime
+  verified    Boolean  @default(false)
+  /// Грешни кодове за втория фактор в тази сесия; при 5 сесията се трие (src/routes/auth.ts).
+  failedCodes Int      @default(0)
+  createdAt   DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+  expiresAt   DateTime
 
   @@index([userId])
   @@index([expiresAt])
@@ -146,6 +151,9 @@ model Organization {
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   deletedAt      DateTime?
+  /// Мастър акаунтът е проверил, че фирмата е тази, за която се представя (пълномощно, документ за
+  /// представителство). Получателят в шкафчето вижда дали изпращачът е потвърден.
+  verifiedAt     DateTime?
 
   memberships     Membership[]
   firmMandates    ClientMandate[]  @relation("Firm")
@@ -158,6 +166,9 @@ model Organization {
   subscriptions   Subscription[]
   payments        Payment[]
   auditEntries    AuditLog[]
+  inboxReceived   InboxEntry[]     @relation("InboxRecipient")
+  inboxSent       InboxEntry[]     @relation("InboxSender")
+  notifications   Notification[]
 
   @@index([kind])
   @@index([legalName])
@@ -304,6 +315,7 @@ model Document {
   precedingId        String?
   preceding          Document?       @relation("Preceding", fields: [precedingId], references: [id], onDelete: Restrict)
   followers          Document[]      @relation("Preceding")
+  inboxEntries       InboxEntry[]
   issuedAt           DateTime?
   cancelledAt        DateTime?
   cancelReason       String?
@@ -435,4 +447,64 @@ model FeatureFlag {
   updatedBy   User?    @relation(fields: [updatedById], references: [id], onDelete: SetNull)
 
   @@index([updatedById])
+}
+
+enum InboxStatus {
+  RECEIVED
+  ACCEPTED
+  REJECTED
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+/// Шкафчето: документ, доставен автоматично на фирма-получател, регистрирана във Фактурист (съвпадение
+/// по ЕИК при издаването — src/inbox/deliver.ts). Получателят вижда само този документ, не и другите на
+/// изпращача.
+model InboxEntry {
+  id             String       @id @default(cuid())
+  documentId     String
+  document       Document     @relation(fields: [documentId], references: [id], onDelete: Restrict)
+  recipientOrgId String
+  recipientOrg   Organization @relation("InboxRecipient", fields: [recipientOrgId], references: [id], onDelete: Cascade)
+  senderOrgId    String
+  senderOrg      Organization @relation("InboxSender", fields: [senderOrgId], references: [id], onDelete: Cascade)
+  status         InboxStatus  @default(RECEIVED)
+  deliveredAt    DateTime     @default(now())
+  readAt         DateTime?
+  decidedAt      DateTime?
+  decidedById    String?
+  decidedBy      User?        @relation(fields: [decidedById], references: [id], onDelete: SetNull)
+  /// Причината при отказ („не е за нас“, „грешна сума“) — без лични данни.
+  rejectReason   String?
+
+  @@unique([documentId, recipientOrgId])
+  @@index([recipientOrgId, deliveredAt])
+  @@index([senderOrgId])
+  @@index([decidedById])
+}
+
+/// Изходящите писма — опашка с повторения (src/mail/outbox.ts). Писмото се записва в транзакцията на
+/// действието и се праща след нея; провалено се опитва пак до 6 пъти.
+model Notification {
+  id             String             @id @default(cuid())
+  organizationId String?
+  organization   Organization?      @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  kind           String
+  /// Получателят — имейл на член на фирмата; не се показва в списъка на панела.
+  toEmail        String
+  /// Данните за шаблона (идентификатори, не съдържание на фактура).
+  payload        Json
+  status         NotificationStatus @default(PENDING)
+  attempts       Int                @default(0)
+  lastError      String?
+  nextAttemptAt  DateTime           @default(now())
+  sentAt         DateTime?
+  createdAt      DateTime           @default(now())
+
+  @@index([status, nextAttemptAt])
+  @@index([organizationId])
 }

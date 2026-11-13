@@ -526,3 +526,25 @@ dd {
     animation: none !important;
   }
 }
+
+/* Шкафче и пълномощни */
+.org-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin: 0.5rem 0 1rem;
+}
+tr.unread td:first-child a {
+  font-weight: 600;
+}
+.panel {
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+td.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

@@ -1,5 +1,9 @@
 {
-  "nav": { "companies": "Companies", "security": "Security", "admin": "Master panel" },
+  "nav": {
+    "companies": "Companies",
+    "security": "Security",
+    "admin": "Master panel"
+  },
   "home": {
     "title": "Your companies",
     "own": "Your own",
@@ -8,7 +12,11 @@
     "noClients": "No client companies yet.",
     "role": "Role",
     "mandate": "Authorisation",
-    "status": { "PENDING": "awaiting confirmation", "ACTIVE": "active", "REVOKED": "revoked" }
+    "status": {
+      "PENDING": "awaiting confirmation",
+      "ACTIVE": "active",
+      "REVOKED": "revoked"
+    }
   },
   "roles": {
     "OWNER": "Owner",
@@ -38,7 +46,11 @@
     "386": "Prepayment invoice",
     "389": "Self-billed invoice"
   },
-  "statuses": { "DRAFT": "Draft", "ISSUED": "Issued", "CANCELLED": "Cancelled" },
+  "statuses": {
+    "DRAFT": "Draft",
+    "ISSUED": "Issued",
+    "CANCELLED": "Cancelled"
+  },
   "doc": {
     "title": "New document",
     "series": "Series",
@@ -101,11 +113,12 @@
     "issuedBy": "Issued by",
     "viaFirm": "On behalf of the company, under the authorisation of",
     "chain": "Link no. {index} in the chain · fingerprint",
-    "back": "Back to documents"
+    "back": "Back to documents",
+    "delivered": "Delivered to the inbox of {name}"
   },
   "client": {
     "title": "New client company",
-    "help": "The firm issues on behalf of the company under a written authorisation (Art. 113(7) of the VAT Act). If the company already has an account, the authorisation awaits its owner's confirmation.",
+    "help": "The firm issues on behalf of the company under a written authorisation (Art. 113(7) of the VAT Act). The authorisation takes effect once the company's owner (if it has an account) or Fakturist confirms it after checking the document.",
     "documentRef": "Authorisation — number and date",
     "validFrom": "Valid from",
     "save": "Save"
@@ -127,6 +140,40 @@
       "password": "Password changed. Other sessions were signed out.",
       "2fa": "Two-factor sign-in is enabled."
     },
-    "err": { "code": "The code is wrong." }
+    "err": {
+      "code": "The code is wrong."
+    }
+  },
+  "inbox": {
+    "title": "Inbox",
+    "help": "Documents that companies registered with Fakturist issue to you (by EIK). They arrive automatically and an email with the PDF and XML goes to the owners, administrators and accountants.",
+    "none": "No documents received yet.",
+    "from": "Sender",
+    "state": "Status",
+    "new": "new",
+    "unread": "{count} new",
+    "unverified": "unverified",
+    "verified": "The sender is a company verified by Fakturist.",
+    "unverifiedHelp": "The sender has not been verified by Fakturist yet — check the details and the account before you pay.",
+    "deliveredAt": "Delivered",
+    "decided": "Decision",
+    "accept": "Accept the document",
+    "acceptHelp": "The document is for us and the details are correct.",
+    "reject": "Reject",
+    "reason": "Reason (optional, no personal data)",
+    "status": {
+      "RECEIVED": "received",
+      "ACCEPTED": "accepted",
+      "REJECTED": "rejected"
+    }
+  },
+  "mandates": {
+    "title": "Authorisations",
+    "help": "The accounting firms that issue on behalf of the company (Art. 113(7) of the VAT Act). A firm cannot issue until you confirm its authorisation.",
+    "none": "No authorisations.",
+    "firm": "Firm",
+    "actions": "Actions",
+    "approve": "Confirm",
+    "revoke": "Revoke"
   }
 }

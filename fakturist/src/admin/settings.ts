@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { prisma } from '../db.js';
 import { MINUTE } from '../time.js';
+import { BRAND } from '../brand.js';
 
 /**
  * Глобалните настройки, които мастър акаунтът сменя без деплой. ЕДИНСТВЕНИЯТ списък: панелът рисува
@@ -42,6 +43,18 @@ export const SETTINGS = {
     help: {
       bg: 'en16931 — общият стандарт; peppol — с изискванията на Peppol BIS Billing 3.0.',
       en: 'en16931 — the core standard; peppol — with Peppol BIS Billing 3.0 requirements.',
+    },
+  },
+  'documents.signature': {
+    schema: z.string().max(200),
+    default: BRAND.signature as string,
+    label: {
+      bg: 'Подпис на Фактурист във всеки документ',
+      en: 'Fakturist signature on every document',
+    },
+    help: {
+      bg: 'Последният ред на бележката в XML-а и долният ред на PDF-а. Празно — без подпис.',
+      en: 'The last line of the XML note and the footer of the PDF. Empty — no signature.',
     },
   },
   'site.notice': {

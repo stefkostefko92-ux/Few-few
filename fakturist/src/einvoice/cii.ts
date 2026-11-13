@@ -129,10 +129,15 @@ function billingPeriod(start: string | undefined, end: string | undefined): XmlE
   );
 }
 
-export function toCii(input: InvoiceInput, calc: Calculated, profile: Profile = 'en16931'): string {
+export function toCii(
+  input: InvoiceInput,
+  calc: Calculated,
+  profile: Profile = 'en16931',
+  signature?: string,
+): string {
   const currency = input.currency;
   const vatAllowed = !calc.breakdown.some((group) => group.category === 'O');
-  const note = documentNote(input, calc);
+  const note = documentNote(input, calc, signature);
   const t = calc.totals;
 
   const lines = calc.lines.map((line) => {

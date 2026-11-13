@@ -7,6 +7,7 @@
     <h1 class="mono"><%= document.number %></h1>
   </div>
   <div class="actions">
+    <a class="button" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/pdf"><%= t('app.view.download') %> PDF</a>
     <a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/ubl.xml"><%= t('app.view.download') %> <%= t('app.view.ubl') %></a>
     <a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/cii.xml"><%= t('app.view.download') %> <%= t('app.view.cii') %></a>
   </div>
@@ -23,6 +24,9 @@
   <% if (document.issuedBy) { %><div><dt><%= t('app.view.issuedBy') %></dt><dd><%= document.issuedBy.name %></dd></div><% } %>
   <% if (document.firm) { %><div><dt><%= t('app.view.viaFirm') %></dt><dd><%= document.firm.legalName %><% if (document.mandate) { %> · <span class="muted"><%= document.mandate.documentRef %></span><% } %></dd></div><% } %>
 </dl>
+<% document.inboxEntries.forEach((e) => { %>
+<p class="ok"><%= t('app.view.delivered', { name: e.recipientOrg.legalName }) %> · <%= t('app.inbox.status.' + e.status) %></p>
+<% }) %>
 <% if (document.sha256) { %>
 <p class="chain mono"><%= t('app.view.chain', { index: String(document.chainIndex) }) %> <%= document.sha256.slice(0, 16) %>…</p>
 <% } %>

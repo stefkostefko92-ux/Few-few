@@ -14,6 +14,7 @@ import { toCents } from '../einvoice/decimal.js';
 import { EAS_BG_VAT } from '../einvoice/codes.js';
 import { entryHash, GENESIS, sha256 } from '../ledger/chain.js';
 import { formatNumber } from './numbering.js';
+import { deliverToInbox, type Delivery } from '../inbox/deliver.js';
 import type { OrgAccess } from '../auth/guards.js';
 
 /**
@@ -82,11 +83,12 @@ export async function issueDocument(
   access: OrgAccess,
   actorId: string,
   request: IssueRequest,
-): Promise<{ id: string; number: string; warnings: Issue[] }> {
-  const [deadlineDays, requireBankAccount, profile] = await Promise.all([
+): Promise<{ id: string; number: string; warnings: Issue[]; delivery: Delivery | null }> {
+  const [deadlineDays, requireBankAccount, profile, signature] = await Promise.all([
     setting('issue.deadlineDays'),
     setting('issue.requireBankAccount'),
     setting('issue.profile'),
+    setting('documents.signature'),
   ]);
   return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const orgs = await tx.$queryRaw<Array<{ id: string }>>`
@@ -105,7 +107,12 @@ export async function issueDocument(
     const { seriesId: _series, ...rest } = request;
     const built = buildEInvoice(
       { ...rest, number, seller: sellerOf(org) },
-      { profile, issueDeadlineDays: deadlineDays, requireBankAccount },
+      {
+        profile,
+        issueDeadlineDays: deadlineDays,
+        requireBankAccount,
+        signature: signature || undefined,
+      },
     );
     if (!built.ok) throw new IssueRejected(built.issues);
 
@@ -188,10 +195,18 @@ export async function issueDocument(
         mandateId: access.mandateId,
       },
     });
+    // Шкафчето: получател, регистриран във Фактурист (по ЕИК), получава документа и писмо (опашката).
+    const delivery = await deliverToInbox(tx, {
+      documentId: document.id,
+      senderOrgId: org.id,
+      actorId,
+      buyer: built.input.buyer,
+    });
     return {
       id: document.id,
       number,
       warnings: built.issues.filter((issue) => issue.severity === 'warning'),
+      delivery,
     };
   });
 }

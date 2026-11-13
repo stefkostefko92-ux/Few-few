@@ -4,6 +4,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { buildEInvoice, type Profile } from '../src/einvoice/index.js';
 import { SAMPLES } from '../tests/fixtures/einvoice-samples.js';
+import { BRAND } from '../src/brand.js';
 
 const profile = (process.argv[2] ?? 'en16931') as Profile;
 const out = join(process.cwd(), 'samples', profile);
@@ -11,7 +12,7 @@ mkdirSync(out, { recursive: true });
 let failed = 0;
 for (const [name, input] of Object.entries(SAMPLES)) {
   // Peppol иска референция на купувача — примерите я имат; ако правилата откажат, това е грешка.
-  const result = buildEInvoice(input, { profile });
+  const result = buildEInvoice(input, { profile, signature: BRAND.signature });
   if (!result.ok) {
     failed += 1;
     console.error(`${name}: ${result.issues.map((i) => `${i.rule} ${i.path}`).join(', ')}`);

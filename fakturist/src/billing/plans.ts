@@ -38,6 +38,7 @@ const CORE: FeatureCode[] = [
   'tamper-evident-ledger',
   'two-factor',
   'pdf',
+  'inbox',
 ];
 
 export const DEFAULT_PLANS: PlanDefinition[] = [

@@ -47,5 +47,8 @@
     "features": "Features"
   },
   "featuresHelp": "A disabled feature is offered nowhere, whatever the plan.",
-  "planned": "coming"
+  "planned": "coming",
+  "verifyOrg": "Verify the company",
+  "approveMandate": "Confirm the authorisation",
+  "revokeMandate": "Revoke the authorisation"
 }

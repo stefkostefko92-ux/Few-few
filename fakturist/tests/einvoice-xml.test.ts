@@ -118,3 +118,21 @@ test('текстът се екранира — XML не може да се сч�
   assert.ok(ubl.includes('A &amp; B &lt;ООД&gt; "Тест"'));
   assert.ok(cii.includes('A &amp; B &lt;ООД&gt; "Тест"'));
 });
+
+test('подписът на Фактурист е последният ред на бележката в UBL и CII', async () => {
+  const { BRAND } = await import('../src/brand.js');
+  const result = buildEInvoice(foreignCurrency, { signature: BRAND.signature });
+  if (!result.ok) throw new Error('не се издаде');
+  const ublNote = /<cbc:Note>([\s\S]*?)<\/cbc:Note>/.exec(result.ubl)?.[1] ?? '';
+  assert.ok(ublNote.endsWith(BRAND.signature), ublNote);
+  assert.ok(ublNote.includes('основа 92.23 EUR'), 'подписът не измества бележката за еврото');
+  assert.ok(result.cii.includes(BRAND.signature));
+  assert.ok(
+    BRAND.signature.includes('fakturist.eu') && BRAND.signature.includes('Carbon Stealth VCC'),
+  );
+  const plain = buildEInvoice(domestic);
+  assert.ok(
+    plain.ok && !plain.ubl.includes('fakturist.eu'),
+    'без подпис, когато мастърът го изчисти',
+  );
+});

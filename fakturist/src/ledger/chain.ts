@@ -59,23 +59,40 @@ export type ChainProblem =
   | { kind: 'hash'; at: bigint }
   | { kind: 'seal'; at: bigint };
 
+export interface ChainState {
+  prevHash: string;
+  nextIndex: bigint;
+}
+
+export const CHAIN_START: ChainState = { prevHash: GENESIS, nextIndex: 1n };
+
 /**
- * Проверява веригата отначало: поредни индекси от 1, всяка връзка към предишния, отпечатъкът спрямо
- * съдържанието и печатът спрямо отпечатъка. Връща първия проблем или null.
+ * Проверява поредица от звена, продължавайки от `state` (така голяма верига се проверява на страници, без
+ * да се зарежда цялата в паметта): поредни индекси, връзка към предишния, отпечатък спрямо съдържанието,
+ * печат спрямо отпечатъка. Връща първия проблем или новото състояние.
  */
+export function verifyChainFrom(
+  entries: readonly StoredEntry[],
+  seal: (hash: string) => string,
+  state: ChainState,
+): { problem: ChainProblem | null; state: ChainState } {
+  let { prevHash, nextIndex } = state;
+  for (const entry of entries) {
+    const at = entry.chainIndex;
+    if (at !== nextIndex) return { problem: { kind: 'index', at }, state };
+    if (entry.prevHash !== prevHash) return { problem: { kind: 'link', at }, state };
+    if (entryHash(entry) !== entry.sha256) return { problem: { kind: 'hash', at }, state };
+    if (seal(entry.sha256) !== entry.seal) return { problem: { kind: 'seal', at }, state };
+    prevHash = entry.sha256;
+    nextIndex += 1n;
+  }
+  return { problem: null, state: { prevHash, nextIndex } };
+}
+
+/** Цялата верига отначало. Връща първия проблем или null. */
 export function verifyChain(
   entries: readonly StoredEntry[],
   seal: (hash: string) => string,
 ): ChainProblem | null {
-  let prev = GENESIS;
-  let expectedIndex = 1n;
-  for (const entry of entries) {
-    if (entry.chainIndex !== expectedIndex) return { kind: 'index', at: entry.chainIndex };
-    if (entry.prevHash !== prev) return { kind: 'link', at: entry.chainIndex };
-    if (entryHash(entry) !== entry.sha256) return { kind: 'hash', at: entry.chainIndex };
-    if (seal(entry.sha256) !== entry.seal) return { kind: 'seal', at: entry.chainIndex };
-    prev = entry.sha256;
-    expectedIndex += 1n;
-  }
-  return null;
+  return verifyChainFrom(entries, seal, CHAIN_START).problem;
 }

@@ -25,7 +25,12 @@ export type BuildResult =
  * UBL 2.1 и CII. С фатална грешка XML не се прави — документ, който нарушава стандарта или закона,
  * не се издава.
  */
-export function buildEInvoice(raw: unknown, options: Partial<RuleOptions> = {}): BuildResult {
+export interface BuildOptions extends RuleOptions {
+  /** Подписът на продукта в бележката на всеки документ (src/brand.ts; сменя се от мастър панела). */
+  signature: string | undefined;
+}
+
+export function buildEInvoice(raw: unknown, options: Partial<BuildOptions> = {}): BuildResult {
   const parsed = InvoiceInputSchema.safeParse(raw);
   if (!parsed.success) {
     return {
@@ -50,7 +55,7 @@ export function buildEInvoice(raw: unknown, options: Partial<RuleOptions> = {}):
     input,
     calc,
     issues,
-    ubl: toUbl(input, calc, profile),
-    cii: toCii(input, calc, profile),
+    ubl: toUbl(input, calc, profile, options.signature),
+    cii: toCii(input, calc, profile, options.signature),
   };
 }

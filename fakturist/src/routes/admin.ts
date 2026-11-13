@@ -15,8 +15,15 @@ import {
 import { invalidateSettings, SETTINGS, setting, type SettingKey } from '../admin/settings.js';
 import { FEATURES, FEATURE_GROUPS, isFeatureCode } from '../features.js';
 import { invalidatePublicPlans } from '../billing/public-plans.js';
-import { sha256, verifyChain } from '../ledger/chain.js';
+import {
+  CHAIN_START,
+  sha256,
+  verifyChainFrom,
+  type ChainProblem,
+  type ChainState,
+} from '../ledger/chain.js';
 import { money } from '../http/view.js';
+import { decideMandate } from '../accounts/mandates.js';
 
 /** Цена от формата на панела: „9,00“ → 900 цента; празно → null („по договор“). */
 const centsField = z
@@ -230,40 +237,72 @@ export function adminRouter(): Router {
     const organizationId = String(req.params['orgId']);
     const org = await prisma.organization.findUnique({ where: { id: organizationId } });
     if (!org) throw new HttpError(404);
-    const docs = await prisma.document.findMany({
-      where: { organizationId, chainIndex: { not: null } },
-      orderBy: { chainIndex: 'asc' },
-    });
-    const problem = verifyChain(
-      docs.map((d) => ({
-        organizationId: d.organizationId,
-        chainIndex: d.chainIndex!,
-        number: d.number ?? '',
-        typeCode: d.typeCode,
-        status: 'ISSUED' as const,
-        issueDate: d.issueDate.toISOString().slice(0, 10),
-        payableCents: d.payableCents,
-        vatCents: d.vatCents,
-        ublSha256: sha256(d.ublXml ?? ''),
-        ciiSha256: sha256(d.ciiXml ?? ''),
-        prevHash: d.prevHash ?? '',
-        sha256: d.sha256 ?? '',
-        seal: d.seal ?? '',
-      })),
-      sealHmac,
-    );
-    res.render('admin/chain', { org, count: docs.length, problem });
+    // На страници по 500 — голяма фирма не зарежда всичките си XML-и наведнъж.
+    let state: ChainState = CHAIN_START;
+    let problem: ChainProblem | null = null;
+    let count = 0;
+    for (;;) {
+      const docs = await prisma.document.findMany({
+        where: { organizationId, chainIndex: { gte: state.nextIndex } },
+        orderBy: { chainIndex: 'asc' },
+        take: 500,
+        select: {
+          organizationId: true,
+          chainIndex: true,
+          number: true,
+          typeCode: true,
+          issueDate: true,
+          payableCents: true,
+          vatCents: true,
+          ublXml: true,
+          ciiXml: true,
+          prevHash: true,
+          sha256: true,
+          seal: true,
+        },
+      });
+      if (docs.length === 0) break;
+      const result = verifyChainFrom(
+        docs.map((d) => ({
+          organizationId: d.organizationId,
+          chainIndex: d.chainIndex!,
+          number: d.number ?? '',
+          typeCode: d.typeCode,
+          status: 'ISSUED' as const,
+          issueDate: d.issueDate.toISOString().slice(0, 10),
+          payableCents: d.payableCents,
+          vatCents: d.vatCents,
+          ublSha256: sha256(d.ublXml ?? ''),
+          ciiSha256: sha256(d.ciiXml ?? ''),
+          prevHash: d.prevHash ?? '',
+          sha256: d.sha256 ?? '',
+          seal: d.seal ?? '',
+        })),
+        sealHmac,
+        state,
+      );
+      count += docs.length;
+      if (result.problem) {
+        problem = result.problem;
+        break;
+      }
+      state = result.state;
+      if (docs.length < 500) break;
+    }
+    res.render('admin/chain', { org, count, problem });
   });
 
   // --- Ръчно потвърждение на плащане (банков превод към Revolut Business) -----------------------------
   router.post('/admin/plashtaniya/:id/potvardi', async (req, res) => {
     const payment = await prisma.payment.findUnique({ where: { id: String(req.params['id']) } });
-    if (!payment || payment.status !== 'PENDING') throw new HttpError(404);
+    if (!payment) throw new HttpError(404);
     await prisma.$transaction(async (tx) => {
-      await tx.payment.update({
-        where: { id: payment.id },
+      // Условен запис: две едновременни потвърждения (или потвърждение + webhook) не минават двете.
+      const updated = await tx.payment.updateMany({
+        where: { id: payment.id, status: 'PENDING' },
         data: { status: 'COMPLETED', paidAt: new Date() },
       });
+      if (updated.count !== 1) throw new HttpError(409);
       await audit(tx, {
         actorId: req.principal!.user.id,
         organizationId: payment.organizationId,
@@ -274,6 +313,44 @@ export function adminRouter(): Router {
       });
     });
     res.redirect(303, `/admin/r/payments/${payment.id}`);
+  });
+
+  // --- Пълномощни и потвърждаване на фирми ----------------------------------------------------------
+  router.post('/admin/palnomoshtni/:id/:decision', async (req, res) => {
+    const decision =
+      req.params['decision'] === 'potvardi'
+        ? 'approve'
+        : req.params['decision'] === 'ottegli'
+          ? 'revoke'
+          : null;
+    if (!decision) throw new HttpError(404);
+    const mandateId = String(req.params['id']);
+    await decideMandate({
+      mandateId,
+      actorId: req.principal!.user.id,
+      decision,
+      clientOrgId: null,
+    });
+    res.redirect(303, `/admin/r/mandates/${mandateId}`);
+  });
+
+  router.post('/admin/firmi/:id/potvardi', async (req, res) => {
+    const id = String(req.params['id']);
+    await prisma.$transaction(async (tx) => {
+      const updated = await tx.organization.updateMany({
+        where: { id, verifiedAt: null },
+        data: { verifiedAt: new Date() },
+      });
+      if (updated.count !== 1) throw new HttpError(409);
+      await audit(tx, {
+        actorId: req.principal!.user.id,
+        organizationId: id,
+        action: 'organization.verified',
+        targetType: 'Organization',
+        targetId: id,
+      });
+    });
+    res.redirect(303, `/admin/r/organizations/${id}`);
   });
 
   return router;
