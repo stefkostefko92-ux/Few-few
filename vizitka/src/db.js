@@ -166,6 +166,63 @@ const userCols = new Set(
 );
 if (!userCols.has('is_admin'))
   db.exec('ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0');
+// Двуфакторно влизане (TOTP). Тайната е ШИФРОВАНА (src/totp.js); `totp_pending` е
+// тайната по време на включването — става активна едва след първия верен код, за да
+// не заключи акаунта, ако потребителят не е сканирал QR кода докрай.
+if (!userCols.has('totp_secret')) db.exec('ALTER TABLE users ADD COLUMN totp_secret TEXT');
+if (!userCols.has('totp_pending')) db.exec('ALTER TABLE users ADD COLUMN totp_pending TEXT');
+if (!userCols.has('totp_enabled'))
+  db.exec('ALTER TABLE users ADD COLUMN totp_enabled INTEGER NOT NULL DEFAULT 0');
+// Последната ползвана 30-секундна стъпка — код от нея или по-стара се отказва (повторение).
+if (!userCols.has('totp_last_step'))
+  db.exec('ALTER TABLE users ADD COLUMN totp_last_step INTEGER NOT NULL DEFAULT 0');
+
+const sessionCols = new Set(
+  db
+    .prepare('PRAGMA table_info(sessions)')
+    .all()
+    .map((c) => c.name)
+);
+// Груб етикет на устройството („Chrome · Windows“) — за списъка „Активни сесии“.
+// НЕ пазим IP адрес: за да разпознаеш собственото си устройство етикетът стига.
+if (!sessionCols.has('device'))
+  db.exec("ALTER TABLE sessions ADD COLUMN device TEXT NOT NULL DEFAULT ''");
+
+db.exec(`
+  -- Резервни кодове за 2FA (изгубен телефон): само sha256, еднократни.
+  CREATE TABLE IF NOT EXISTS recovery_codes (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    code_hash TEXT NOT NULL,
+    used_at TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_recovery_user ON recovery_codes(user_id);
+
+  -- Адресите на изтрити визитки. „Слъгът е обещание“: отпечатаните QR кодове на
+  -- изтрития потребител продължават да сочат /p/<slug>, затова адресът НИКОГА не се
+  -- дава на друг — иначе някой би го заел и би се представял за него пред всички,
+  -- които сканират старите му визитки. Пазим само адреса и датата.
+  CREATE TABLE IF NOT EXISTS retired_slugs (
+    slug TEXT PRIMARY KEY,
+    retired_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  -- Дневна статистика (без лични данни — само брой на ден). Стари редове се чистят.
+  CREATE TABLE IF NOT EXISTS profile_views_daily (
+    profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    day TEXT NOT NULL,                 -- YYYY-MM-DD (UTC)
+    views INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (profile_id, day)
+  );
+`);
+
+// Пазим дневната статистика 13 месеца — година назад плюс сравнение със същия месец.
+export const VIEWS_RETENTION_DAYS = 400;
+export function purgeOldDailyViews() {
+  db.prepare("DELETE FROM profile_views_daily WHERE day < date('now', ?)").run(
+    `-${VIEWS_RETENTION_DAYS} days`
+  );
+}
 
 // Периодично чистене на изтекли сесии.
 export function purgeExpiredSessions() {

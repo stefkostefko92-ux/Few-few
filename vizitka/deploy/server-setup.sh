@@ -69,6 +69,9 @@ gen_hex() { node -e "console.log(require('crypto').randomBytes($1).toString('hex
 # Ако файлът съществува, запази вече зададените тайни (идемпотентност).
 prev() { [[ -f "$ENV_FILE" ]] && sed -n "s/^$1=//p" "$ENV_FILE" | head -n1 || true; }
 PRINT_API_SECRET="$(prev PRINT_API_SECRET)"; PRINT_API_SECRET="${PRINT_API_SECRET:-$(gen_hex 32)}"
+# Ключ за шифроване на 2FA тайните (src/totp.js). Пази се между пусканията — смяна
+# би обезсилила всички включени двуфакторни влизания.
+ACCOUNT_SECRET="$(prev ACCOUNT_SECRET)"; ACCOUNT_SECRET="${ACCOUNT_SECRET:-$(gen_hex 32)}"
 INDEXNOW_KEY="$(prev INDEXNOW_KEY)";         INDEXNOW_KEY="${INDEXNOW_KEY:-$(gen_hex 16)}"
 # ПОРТЪТ също се пази между пусканията. Беше зачукан на 3100 и всяко повторно
 # пускане го нулираше — а живо vizitka слуша на 3105, защото 3100 е зает от друг
@@ -107,6 +110,7 @@ umask 077
   echo "ADMIN_EMAILS=$ADMIN_EMAIL"
   echo "MASTILKO_URL=$MASTILKO_URL"
   echo "PRINT_API_SECRET=$PRINT_API_SECRET"
+  echo "ACCOUNT_SECRET=$ACCOUNT_SECRET"
   echo "INDEXNOW_KEY=$INDEXNOW_KEY"
   echo "MAIL_FROM=$MAIL_FROM"
   if [[ -n "$SMTP_HOST" ]]; then

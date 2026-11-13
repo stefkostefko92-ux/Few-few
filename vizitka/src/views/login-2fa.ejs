@@ -1,0 +1,23 @@
+<%- include('partials/head', { noindex: true }) %>
+<section class="auth-card">
+  <h1>Код за вход</h1>
+  <p class="muted">
+    Акаунтът ти е защитен с двуфакторно влизане. Въведи 6-цифрения код от приложението
+    за кодове или един от резервните си кодове.
+  </p>
+  <% if (error) { %><p class="alert alert-error" role="alert"><%= error %></p><% } %>
+  <form method="post" action="/login/2fa">
+    <label>Код
+      <input type="text" name="code" required autofocus maxlength="12"
+             inputmode="numeric" autocomplete="one-time-code" autocapitalize="off" spellcheck="false">
+    </label>
+    <button type="submit" class="btn">Потвърди</button>
+  </form>
+  <p class="muted small">
+    Изгубен телефон? Въведи резервен код (вида <code>abcde-fghjk</code>) в същото поле.
+    Нямаш и резервен код — пиши ни на <a href="mailto:<%= company.email %>"><%= company.email %></a>
+    от имейла на акаунта. Нулирането на паролата не изключва втория фактор.
+  </p>
+  <p class="muted small"><a href="/login">← Обратно към входа</a></p>
+</section>
+<%- include('partials/foot') %>

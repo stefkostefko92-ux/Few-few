@@ -70,13 +70,20 @@ export function isValidSlug(slug) {
   return SLUG_RE.test(slug) && !RESERVED.has(slug);
 }
 
+// Адресът на изтрита визитка е „пенсиониран“ — не се дава на никого (виж retired_slugs
+// в db.js): старите отпечатани QR кодове още сочат към него.
+export const isRetiredSlug = (slug) =>
+  Boolean(db.prepare('SELECT 1 FROM retired_slugs WHERE slug = ?').get(slug));
+
 // Свободен слъг на база име: „stefan-kostadinov“, при зает — „stefan-kostadinov-2“…
 export function uniqueSlug(base) {
   let candidate = slugify(base);
   if (!isValidSlug(candidate)) candidate = `profil-${Date.now().toString(36)}`;
   candidate = candidate.slice(0, 34).replace(/-+$/, ''); // място за суфикс „-NN“
-  const taken = db.prepare('SELECT 1 FROM profiles WHERE slug = ?');
+  const taken = db.prepare(
+    'SELECT 1 FROM profiles WHERE slug = ? UNION ALL SELECT 1 FROM retired_slugs WHERE slug = ?'
+  );
   let slug = candidate;
-  for (let i = 2; taken.get(slug); i++) slug = `${candidate}-${i}`;
+  for (let i = 2; taken.get(slug, slug); i++) slug = `${candidate}-${i}`;
   return slug;
 }

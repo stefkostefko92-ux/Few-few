@@ -1464,3 +1464,167 @@ body.card-theme {
 .nowrap {
   white-space: nowrap;
 }
+
+/* ── Настройки на акаунта (/settings) ──────────────────────────────────────── */
+.settings-page h1 {
+  margin-bottom: 0.2rem;
+}
+.set-grid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+@media (min-width: 860px) {
+  .set-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.set-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.4rem;
+  min-width: 0;
+}
+.set-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  margin: 0 0 0.6rem;
+}
+.set-card h2 .ico {
+  color: var(--brand);
+  flex: none;
+}
+.set-card--highlight {
+  border: 2px solid var(--brand);
+  margin-top: 1.2rem;
+}
+.set-card--danger {
+  border-color: #fca5a5;
+  margin-top: 1rem;
+}
+.set-card--danger h2 .ico {
+  color: var(--err);
+}
+.set-form {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 0.6rem;
+  max-width: 420px;
+}
+.set-form .btn {
+  justify-self: start;
+}
+.set-details {
+  margin-top: 0.8rem;
+  border-top: 1px solid var(--line);
+  padding-top: 0.6rem;
+}
+.set-details summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-danger {
+  background: var(--err);
+}
+.btn-danger:hover {
+  background: #7f1d1d;
+}
+.btn-outline {
+  background: transparent;
+  color: var(--brand) !important;
+  border: 1.5px solid var(--brand);
+}
+.btn-outline:hover {
+  background: var(--bg);
+}
+.recovery-codes {
+  columns: 2;
+  column-gap: 2rem;
+  padding-left: 1.4rem;
+  margin: 0.6rem 0 1rem;
+}
+.recovery-codes li {
+  margin: 0.2rem 0;
+}
+.recovery-codes code,
+.totp-secret {
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  word-break: break-all;
+}
+.session-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.8rem;
+}
+.session-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.session-list li:last-child {
+  border-bottom: 0;
+}
+.totp-setup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin: 0.8rem 0;
+}
+.totp-setup img {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+}
+.steps-compact {
+  padding-left: 1.2rem;
+  margin: 0.4rem 0;
+}
+
+/* Графика на преглежданията в таблото (SVG без JavaScript). */
+.views-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 0.5rem;
+}
+.views-chart .area {
+  fill: color-mix(in srgb, var(--brand) 14%, transparent);
+}
+.views-chart .line {
+  fill: none;
+  stroke: var(--brand);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.stats-row {
+  display: flex;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+  margin-top: 0.3rem;
+}
+.stats-row strong {
+  display: block;
+  font-size: 1.15rem;
+}
+.trend-up {
+  color: var(--ok);
+}
+.trend-down {
+  color: var(--err);
+}
+.settings-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 2rem;
+}

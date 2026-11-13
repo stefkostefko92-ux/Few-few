@@ -21,6 +21,7 @@ import publicRoutes from './routes/public.js';
 import adminRoutes from './routes/admin.js';
 import walletRoutes from './routes/wallet.js';
 import mcpRoutes from './routes/mcp.js';
+import accountRoutes from './routes/account.js';
 
 seedAdmins(); // маркира конфигурираните ADMIN_EMAILS акаунти като админ
 
@@ -123,7 +124,7 @@ app.use(express.static(join(__dirname, '..', 'public'), { maxAge: prod ? '7d' : 
 
 // Автентикираните страници не се кешират никъде.
 app.use((req, res, next) => {
-  if (/^\/(dashboard|login|register|logout|profile|admin|forgot|reset)/.test(req.path))
+  if (/^\/(dashboard|login|register|logout|profile|admin|forgot|reset|settings)/.test(req.path))
     res.setHeader('Cache-Control', 'no-store');
   next();
 });
@@ -213,6 +214,7 @@ app.get('/terms', (req, res) => res.render('terms', { title: 'Общи усло�
 app.use(mcpRoutes);
 app.use(authRoutes);
 app.use(dashboardRoutes);
+app.use(accountRoutes);
 app.use(adminRoutes);
 app.use(walletRoutes);
 app.use(publicRoutes);

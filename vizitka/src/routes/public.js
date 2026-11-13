@@ -13,6 +13,8 @@ import { accentCss } from '../personalize.js';
 import { getLinks } from '../links.js';
 import { MASTILKO_URL, mastilkoHandoffUrl, verifyToken, buildPrintPayload } from '../print.js';
 import { walletLinks } from '../wallet/index.js';
+import { recordView } from '../stats.js';
+import { isRetiredSlug } from '../slug.js';
 
 const router = Router();
 
@@ -66,14 +68,23 @@ function findVisibleProfile(req, slug) {
 
 router.get('/p/:slug', (req, res) => {
   const profile = findVisibleProfile(req, req.params.slug);
-  if (!profile) return res.status(404).render('404', { title: 'Няма такава визитка' });
+  if (!profile) {
+    // Изтрита визитка → 410 Gone, не 404: търсачките я махат от индекса веднага, а
+    // който сканира стар отпечатан QR код, разбира, че визитката вече я няма.
+    if (isRetiredSlug(req.params.slug))
+      return res.status(410).render('404', {
+        title: 'Визитката е изтрита',
+        heading: 'Визитката е изтрита',
+        message: 'Собственикът ѝ е изтрил акаунта си. Адресът няма да бъде даден на друг.',
+      });
+    return res.status(404).render('404', { title: 'Няма такава визитка' });
+  }
   const isOwner = profile.user_id === req.user?.id;
   const publicUrl = `${baseUrl(req)}/p/${profile.slug}`;
   // Броим само чуждите преглеждания на публична визитка — и то веднъж на посетител
   // за 12 часа. Без това всеки refresh (дори HEAD) надуваше брояча и статистиката
   // на собственика ставаше безсмислена.
-  if (!isOwner && profile.is_public && firstViewIn12h(req, profile.id))
-    db.prepare('UPDATE profiles SET views = views + 1 WHERE id = ?').run(profile.id);
+  if (!isOwner && profile.is_public && firstViewIn12h(req, profile.id)) recordView(profile.id);
   // Описанието е това, което Google показва под заглавието. „Фотограф · +359…“ (24 знака)
   // не казва какво има на страницата — затова: кой е, с какво се занимава и какво може
   // посетителят да направи тук. Телефонът не влиза, за да остане място за това в

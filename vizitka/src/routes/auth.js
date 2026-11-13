@@ -10,8 +10,11 @@ import {
   isReservedAdminEmail,
   createSession,
   destroySession,
-  requireAuth,
+  startPendingLogin,
+  pendingLoginUser,
+  clearPendingLogin,
 } from '../auth.js';
+import { verifySecondFactor, remainingRecoveryCodes } from '../twofactor.js';
 import { csrfProtect, sameOriginOnly } from '../csrf.js';
 import { uniqueSlug } from '../slug.js';
 import { sendPasswordReset } from '../mailer.js';
@@ -113,7 +116,7 @@ router.post('/register', sameOriginOnly, authLimiter, async (req, res) => {
     ).run({ ...prefill, uid: info.lastInsertRowid });
   }
 
-  createSession(res, Number(info.lastInsertRowid));
+  createSession(res, Number(info.lastInsertRowid), req);
   res.redirect(fromMastilko ? '/dashboard?welcome=mastilko' : '/dashboard');
 });
 
@@ -138,7 +141,38 @@ router.post('/login', sameOriginOnly, authLimiter, async (req, res) => {
       .status(401)
       .render('login', { title: 'Вход', error: 'Грешен имейл или парола.', values: { email } });
   }
-  createSession(res, user.id);
+  // Включен ли е 2FA — паролата сама не стига: сесия има едва след верния код.
+  if (user.totp_enabled) {
+    startPendingLogin(res, user.id);
+    return res.redirect('/login/2fa');
+  }
+  createSession(res, user.id, req);
+  res.redirect('/dashboard');
+});
+
+// ── Втора стъпка на входа (2FA) ──────────────────────────────────────────────
+router.get('/login/2fa', (req, res) => {
+  if (req.user) return res.redirect('/dashboard');
+  if (!pendingLoginUser(req)) return res.redirect('/login');
+  res.render('login-2fa', { title: 'Код за вход', error: null });
+});
+
+router.post('/login/2fa', sameOriginOnly, authLimiter, (req, res) => {
+  const user = pendingLoginUser(req);
+  // Изтекла/липсваща първа стъпка → обратно към паролата (не издаваме нищо повече).
+  if (!user) return res.redirect('/login');
+  const method = verifySecondFactor(user, req.body.code);
+  if (!method)
+    return res.status(401).render('login-2fa', {
+      title: 'Код за вход',
+      error: 'Грешен или вече използван код. Опитай с нов код от приложението.',
+    });
+  clearPendingLogin(res);
+  createSession(res, user.id, req);
+  // Влязъл с резервен код → насочваме към настройките: кодовете намаляват, а
+  // телефонът вероятно е изгубен.
+  if (method === 'recovery')
+    return res.redirect(`/settings?recovery_used=${remainingRecoveryCodes(user.id)}`);
   res.redirect('/dashboard');
 });
 
@@ -215,26 +249,6 @@ router.post('/reset', sameOriginOnly, authLimiter, async (req, res) => {
     values: {},
     notice: 'Паролата е сменена. Влез с новата.',
   });
-});
-
-// Смяна на парола от таблото (изисква текущата парола).
-router.post('/settings/password', requireAuth, csrfProtect, authLimiter, async (req, res) => {
-  const current = String(req.body.current_password || '');
-  const next = String(req.body.new_password || '');
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
-  if (!(await verifyPassword(current, user.password_hash))) {
-    return res.status(400).send('Грешна текуща парола. Върни се и опитай пак.');
-  }
-  if (next.length < 8 || next.length > 200) {
-    return res.status(400).send('Новата парола трябва да е поне 8 знака. Върни се и опитай пак.');
-  }
-  db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(
-    await hashPassword(next),
-    req.user.id
-  );
-  // Инвалидираме всички други сесии — само текущата остава.
-  db.prepare('DELETE FROM sessions WHERE user_id = ? AND id != ?').run(req.user.id, req.session.id);
-  res.redirect('/dashboard?pw=1');
 });
 
 router.post('/logout', csrfProtect, (req, res) => {

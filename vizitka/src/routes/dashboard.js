@@ -15,6 +15,7 @@ import { collectProfileInput, validateProfileInput, saveProfileEdit } from '../p
 import { prepareUpload } from '../images.js';
 import { submitUrls } from '../indexnow.js';
 import { notifyWalletUpdate } from '../wallet/index.js';
+import { viewsChart } from '../stats.js';
 
 const router = Router();
 
@@ -45,7 +46,7 @@ const renderDashboard = (req, res, profile, extra = {}) =>
     maxLinks: MAX_LINKS,
     publicUrl: `${baseUrl(req)}/p/${profile.slug}`,
     saved: req.query.saved === '1',
-    passwordChanged: req.query.pw === '1',
+    chart: viewsChart(profile.id),
     error: null,
     ...extra,
   });

@@ -20,6 +20,7 @@ npm run dev                     # node --watch auto-reload
 npm run lint                    # ESLint (flat config)
 npm run format:check            # Prettier
 npm test                        # smoke.test.js (пълен поток) + mcp.test.js (конекторът)
+                                # + account.test.js (2FA, сесии, изтегляне, изтриване)
 ```
 
 Node ≥20 required. Prod env: `NODE_ENV=production`, `PUBLIC_BASE_URL` (HTTPS —
@@ -58,7 +59,12 @@ src/seo.js           COMPANY (импресум + structured address/geo Бобо
                      Person/Organization + BreadcrumbList)
 src/indexnow.js      IndexNow — авто-подаване на публичните URL към Bing (INDEXNOW_KEY)
 src/config.js        baseUrl (PUBLIC_BASE_URL или от заявката)
-src/routes/auth.js   /register /login /logout /settings/password (+ rate limit)
+src/routes/auth.js   /register /login (+ /login/2fa — втора стъпка) /logout /forgot /reset (+ rate limit)
+src/routes/account.js /settings — парола, 2FA (TOTP + 10 резервни кода), активни сесии,
+                     изтегляне на данните (ZIP: JSON+vCard+снимки, чл. 15/20), изтриване (чл. 17)
+src/totp.js          TOTP по RFC 6238 (без зависимости) + шифроване на тайната (AES-256-GCM)
+src/twofactor.js     verifySecondFactor: TOTP (без повторение) ИЛИ резервен код (еднократен)
+src/stats.js         дневна статистика (profile_views_daily) + SVG графика за таблото
 src/routes/dashboard.js  /dashboard, /profile (редакция+тема), /profile/photo (multer)
 src/routes/public.js /p/:slug (views), qr.png, vizitka.vcf, /p/:slug/print, /api/print/:token, /photo/:file
 src/routes/admin.js  /admin (requireAdmin) — визитки: списък+търсене+странициране на всички
@@ -194,5 +200,28 @@ medqr — rsync без `data/`, npm ci, снимка на базата, health c
   имейл (`mailer.js`, SMTP или dev outbox), `/reset` сменя паролата и изтрива всички
   сесии. Без изтичане на акаунти (еднакъв отговор), rate-limited. Таблица
   `password_resets`.
-- Roadmap (не е имплементирано): изтриване на акаунт от UI (сега — по заявка на
-  privacy@), няколко визитки на акаунт, дневна разбивка на статистиката.
+- **Двуфакторно влизане (TOTP):** по избор, от `/settings`. RFC 6238, SHA-1/6 цифри/30 s
+  (профилът, който ВСИЧКИ приложения поддържат), ±1 стъпка, **код не важи втори път**
+  (`totp_last_step`, условен UPDATE — и при паралелни заявки). Тайната е **шифрована**
+  (AES-256-GCM, ключ през HKDF от `ACCOUNT_SECRET` или `PRINT_API_SECRET`; шифротекстът носи
+  етикет `v1a:`/`v1p:` кой ключ е ползван → добавяне на ACCOUNT_SECRET по-късно не заключва
+  никого). Без ключ/повреден шифротекст → **отказ** (fail closed); резервните кодове (10,
+  само sha256, еднократни) остават изход. При вход: вярна парола → подписана 5-минутна
+  бисквитка `vz_2fa` (path=/login), сесия **едва** след верния код. Включване изхвърля
+  другите сесии; изключване и нови кодове искат парола **И** код. Нулирането на паролата
+  НЕ изключва 2FA. Не сменяй ключа, докато има включени 2FA.
+- **Активни сесии:** всяка носи груб етикет на устройството („Chrome · Android“) — **без IP**.
+  В страницата сесията се идентифицира с непрозрачен хеш, никога с ключа от базата.
+- **Изтриване на акаунта (самообслужване):** потвърждение = адресът на визитката + парола (+ код
+  при 2FA). Каскадно трие всичко, снимките от диска, Apple регистрациите; Google картата
+  става празна EXPIRED. **Адресът се пенсионира** (`retired_slugs`): не се дава на друг —
+  отпечатаните QR кодове на изтрития иначе биха водили към самозванец. `/p/<пенсиониран>`
+  връща **410**, IndexNow се уведомява. Регистрация и смяна на адрес го виждат като „зает“
+  (без да издават, че е имало визитка).
+- **Изтегляне на данните:** `/settings/export` → ZIP (`zipStore`, без зависимости): `danni.json`
+  (акаунт, профил, бутони, статистика, сесии, модерация без имейла на служителя), `.vcf`,
+  снимките, `PROCHETI.txt`. **Никога** хеш на парола, 2FA тайна или CSRF/сесийни ключове —
+  тестът ги търси в байтовете на архива.
+- **Дневна статистика:** `profile_views_daily` (само брой на ден, 400 дни, чисти се при старт
+  и дневно) → SVG графика в таблото без JavaScript; 7/30 дни и посока спрямо предната седмица.
+- Roadmap (не е имплементирано): няколко визитки на акаунт.

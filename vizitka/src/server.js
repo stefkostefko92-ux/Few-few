@@ -1,5 +1,6 @@
 import app from './app.js';
 import { indexNowKey, submitAllPublic } from './indexnow.js';
+import { purgeOldDailyViews } from './db.js';
 
 const port = Number(process.env.PORT || 3105);
 // Слушаме само на loopback — публичният вход е през nginx (reverse proxy).
@@ -7,6 +8,11 @@ const port = Number(process.env.PORT || 3105);
 const host = process.env.HOST || '127.0.0.1';
 app.listen(port, host, () => {
   console.log(`Vizitka слуша на http://${host}:${port}`);
+
+  // Дневната статистика се пази 400 дни (виж db.js) — по-старото се трие при старт
+  // и веднъж дневно. Минимизация на данните (чл. 5(1)(в) ОРЗД), не само място.
+  purgeOldDailyViews();
+  setInterval(purgeOldDailyViews, 24 * 60 * 60 * 1000).unref();
 
   // Напълно автоматично подаване към Bing/IndexNow: целият публичен набор при старт
   // (малко след вдигане) + веднъж дневно. Само в продукция с ключ и публичен домейн,

@@ -2,7 +2,6 @@
 <section class="dash">
   <h1>Моята визитка</h1>
   <% if (saved) { %><p class="alert alert-ok">Записано. Визитката ти е обновена.</p><% } %>
-  <% if (passwordChanged) { %><p class="alert alert-ok">Паролата е сменена. Останалите ти сесии са прекратени.</p><% } %>
   <% if (error) { %><p class="alert alert-error" role="alert"><%= error %></p><% } %>
   <% if (profile.hidden_by_admin) { %>
     <p class="alert alert-warn" role="status">
@@ -47,7 +46,21 @@
 
       <div class="stats-box">
         <p class="stat-number"><%= profile.views %></p>
-        <p class="muted small">преглеждания на визитката<br>(сканирания и посещения, без твоите)</p>
+        <p class="muted small">преглеждания общо (сканирания и посещения, без твоите)</p>
+        <%# Графика за 30 дни — SVG от сървъра, без JavaScript (CSP) и без чужди скриптове. %>
+        <svg class="views-chart" viewBox="0 0 <%= chart.width %> <%= chart.height %>" preserveAspectRatio="none"
+             role="img" aria-label="Преглеждания за последните 30 дни: <%= chart.last30 %>">
+          <polygon class="area" points="<%= chart.area %>"/>
+          <polyline class="line" points="<%= chart.line %>"/>
+        </svg>
+        <div class="stats-row small">
+          <span><strong><%= chart.last7 %></strong> за 7 дни
+            <% const diff = chart.last7 - chart.prev7; if (diff !== 0) { %>
+              <span class="<%= diff > 0 ? 'trend-up' : 'trend-down' %>"><%= diff > 0 ? '+' : '−' %><%= Math.abs(diff) %></span>
+            <% } %>
+          </span>
+          <span><strong><%= chart.last30 %></strong> за 30 дни</span>
+        </div>
       </div>
 
       <div class="photo-box">
@@ -214,18 +227,10 @@
     </form>
   </div>
 
-  <details class="settings">
-    <summary>Настройки на акаунта — смяна на парола</summary>
-    <form method="post" action="/settings/password" class="dash-form">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <label>Текуща парола
-        <input type="password" name="current_password" required autocomplete="current-password">
-      </label>
-      <label>Нова парола (мин. 8 знака)
-        <input type="password" name="new_password" required minlength="8" maxlength="200" autocomplete="new-password">
-      </label>
-      <button type="submit" class="btn">Смени паролата</button>
-    </form>
-  </details>
+  <p class="settings-link">
+    <%- icon('shield') %>
+    <a href="/settings">Настройки на акаунта</a>
+    <span class="muted small">— парола, двуфакторно влизане, сесии, изтегляне и изтриване на данните</span>
+  </p>
 </section>
 <%- include('partials/foot') %>

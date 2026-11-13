@@ -2,7 +2,7 @@
 // админ панела (администраторите редактират чужди визитки). Държи валидацията на
 // едно място, за да не се разминава между двата пътя.
 import db from './db.js';
-import { isValidSlug } from './slug.js';
+import { isValidSlug, isRetiredSlug } from './slug.js';
 import { normalizeTheme } from './themes.js';
 import { normalizeShape, normalizeFont, normalizeAccent } from './personalize.js';
 import { replaceLinks, parseLinkFields } from './links.js';
@@ -55,7 +55,9 @@ export function validateProfileInput(input, excludeProfileId) {
   const clash = db
     .prepare('SELECT 1 FROM profiles WHERE slug = ? AND id != ?')
     .get(slug, excludeProfileId);
-  if (clash) return 'Този адрес вече е зает. Избери друг.';
+  // Пенсиониран адрес (на изтрита визитка) изглежда „свободен“, но не е — същото
+  // съобщение, за да не издаваме, че някога е имало визитка на него.
+  if (clash || isRetiredSlug(slug)) return 'Този адрес вече е зает. Избери друг.';
   for (const url of [fields.website, fields.facebook, fields.instagram, fields.linkedin]) {
     if (url && !/^https?:\/\//i.test(url))
       return 'Линковете трябва да започват с http:// или https://.';
