@@ -25,9 +25,13 @@ const REDACT = {
 
 export const logger = pino({ level: process.env.LOG_LEVEL ?? 'info', redact: REDACT });
 
-/** Причината за лога от каквото е хвърлено — и когато не е Error. */
+/**
+ * Причината за лога от каквото е хвърлено — и когато не е Error. Имейл адресите се маскират: съобщенията
+ * от пощенския сървър или от доставчик често съдържат адреса на получателя, а логът е без лични данни.
+ */
 export function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
+  const message = error instanceof Error ? error.message : String(error);
+  return message.replace(/[^\s@<>"'(),;:]+@[^\s@<>"'(),;:]+\.[^\s@<>"'(),;:]+/g, '[адрес]');
 }
 
 /**

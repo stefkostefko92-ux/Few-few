@@ -5,7 +5,6 @@ import { ROOT } from './paths.js';
 /** Български е източникът на истината; английският следва ключ по ключ (tests/i18n.test.ts пази паритета). */
 export const LOCALES = ['bg', 'en'] as const;
 export type Locale = (typeof LOCALES)[number];
-export const DEFAULT_LOCALE: Locale = 'bg';
 
 /** BCP-47 за Intl форматиране и за `<html lang>`. */
 export const LOCALE_TAG: Record<Locale, string> = { bg: 'bg-BG', en: 'en-GB' };

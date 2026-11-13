@@ -20,7 +20,3 @@ export function partyIdFromAddress(
   const id = `${address.scheme.trim()}:${address.value.trim()}`;
   return PARTY_ID.test(id) ? id : null;
 }
-
-export function isPartyId(value: unknown): value is string {
-  return typeof value === 'string' && PARTY_ID.test(value);
-}

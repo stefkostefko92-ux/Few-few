@@ -1,5 +1,6 @@
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { prisma } from '../db.js';
+import { PEPPOL_BILLING_URN } from '../einvoice/ubl.js';
 import { peppolAllowed } from '../peppol/settings.js';
 import { HttpError, requireOrg, requireUser } from '../auth/guards.js';
 import { roleCan } from '../auth/roles.js';
@@ -261,7 +262,7 @@ export function appRouter(): Router {
         (await peppolAllowed(access.organizationId, { viaFirmId: access.viaFirmId })) &&
         document.status === 'ISSUED' &&
         !document.peppolTransmission &&
-        (document.ublXml ?? '').includes('urn:fdc:peppol.eu:2017:poacc:billing:3.0'),
+        (document.ublXml ?? '').includes(PEPPOL_BILLING_URN),
       // „Анулирай и издай нов“ — издаден документ без известия към него (SPEC 47).
       canAnnul:
         roleCan(access.role, 'documents.cancel') &&

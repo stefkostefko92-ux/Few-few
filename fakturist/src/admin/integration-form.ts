@@ -31,7 +31,6 @@ export const SmtpConfig = z.object({
   user: z.string().max(254),
   from: z.string().max(200).refine(isMailbox),
 });
-export type SmtpConfigValue = z.infer<typeof SmtpConfig>;
 
 export const RevolutConfig = z.object({ environment: z.enum(['sandbox', 'production']) });
 

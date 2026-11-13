@@ -13,7 +13,7 @@ export interface Dec {
 /** Най-много знаци след запетаята във вход (цени и количества); сумите са с 2. */
 export const MAX_INPUT_SCALE = 6;
 
-const DECIMAL = /^(-?)(\d{1,15})(?:\.(\d{1,6}))?$/;
+const DECIMAL = new RegExp(`^(-?)(\\d{1,15})(?:\\.(\\d{1,${MAX_INPUT_SCALE}}))?$`);
 
 export function isDecimalText(text: string): boolean {
   return DECIMAL.test(text);

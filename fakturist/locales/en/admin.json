@@ -203,7 +203,6 @@
   },
   "nav": {
     "menu": "Panel menu",
-    "registry": "Registry",
     "masters": "Masters",
     "chain": "Ledger chain",
     "chainHint": "Checked from a company record",

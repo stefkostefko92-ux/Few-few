@@ -209,8 +209,6 @@ export const InvoiceInputSchema = z.object({
 });
 
 export type InvoiceInput = z.infer<typeof InvoiceInputSchema>;
-export type InvoiceLineInput = z.infer<typeof LineSchema>;
 export type PartyInput = z.infer<typeof PartySchema>;
 export type AddressInput = z.infer<typeof AddressSchema>;
 export type AllowanceChargeInput = z.infer<typeof AllowanceChargeSchema>;
-export type DocumentAllowanceChargeInput = z.infer<typeof DocumentAllowanceChargeSchema>;

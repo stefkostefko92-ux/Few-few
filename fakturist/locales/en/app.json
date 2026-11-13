@@ -12,7 +12,6 @@
     "clients": "Client companies under authorisation",
     "addClient": "Add a client company",
     "noClients": "No client companies yet.",
-    "role": "Role",
     "mandate": "Authorisation",
     "status": {
       "PENDING": "awaiting confirmation",
@@ -127,7 +126,6 @@
     "issue": "Issue",
     "issueHelp": "The number is assigned on issue. An issued document cannot be edited — corrections are made with a note.",
     "problems": "The document was not issued — please fix:",
-    "warnings": "Issued with warnings:",
     "buyerEmail": "Buyer email",
     "buyerEmailHint": "Optional: for recurring invoice emails and payment reminders.",
     "addLine": "+ Add line",
@@ -146,8 +144,6 @@
     "download": "Download",
     "ubl": "UBL 2.1 (XML)",
     "cii": "CII (XML)",
-    "seller": "Seller",
-    "totals": "Totals",
     "net": "Net",
     "vat": "VAT",
     "vatEur": "VAT in euro",
@@ -376,8 +372,7 @@
     "saveBuyer": "Save the recipient as a contact",
     "pickParty": "Contact",
     "pickPartyNone": "— enter manually —",
-    "fill": "Fill in",
-    "pickItem": "Item"
+    "fill": "Fill in"
   },
   "members": {
     "title": "Members",

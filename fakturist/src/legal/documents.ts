@@ -32,10 +32,6 @@ export const LEGAL_DOCUMENTS = {
 export type LegalDocumentId = keyof typeof LEGAL_DOCUMENTS;
 export const LEGAL_DOCUMENT_IDS = Object.keys(LEGAL_DOCUMENTS) as LegalDocumentId[];
 
-export function isLegalDocumentId(value: unknown): value is LegalDocumentId {
-  return typeof value === 'string' && Object.hasOwn(LEGAL_DOCUMENTS, value);
-}
-
 /** Адресът на документ на даден език (относителен; с `base` — пълен). */
 export function legalPath(id: LegalDocumentId, locale: Locale): string {
   return LEGAL_DOCUMENTS[id].paths[locale];

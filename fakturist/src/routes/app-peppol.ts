@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { PEPPOL_BILLING_URN } from '../einvoice/ubl.js';
 import { Prisma } from '@prisma/client';
 import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../db.js';
@@ -23,8 +24,6 @@ const limiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: (req) => req.principal?.user.id ?? 'anonymous',
 });
-
-const PEPPOL_CUSTOMIZATION = 'urn:fdc:peppol.eu:2017:poacc:billing:3.0';
 
 function code(value: unknown): string {
   return typeof value === 'string' && /^[a-zA-Z]{2,30}$/.test(value) ? value : '';
@@ -101,7 +100,7 @@ export function appPeppolRouter(): Router {
     });
     if (!document) throw new HttpError(404);
     if (document.peppolTransmission) return res.redirect(303, `${back}?peppol=already`);
-    if (!document.ublXml?.includes(PEPPOL_CUSTOMIZATION)) {
+    if (!document.ublXml?.includes(PEPPOL_BILLING_URN)) {
       return res.redirect(303, `${back}?peppol=profile`);
     }
     const input = InvoiceInputSchema.safeParse(document.input);

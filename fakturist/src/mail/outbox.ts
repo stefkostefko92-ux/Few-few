@@ -168,9 +168,7 @@ async function compose(kind: string, toEmail: string, payload: unknown): Promise
 
 /** Грешката за записа — без имейл адреси (SMTP съобщенията понякога ги съдържат). */
 function safeError(error: unknown): string {
-  return errorMessage(error)
-    .replace(/[^\s@<>]+@[^\s@<>]+/g, '[адрес]')
-    .slice(0, 300);
+  return errorMessage(error).slice(0, 300);
 }
 
 /**

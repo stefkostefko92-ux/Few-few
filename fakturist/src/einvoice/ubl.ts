@@ -10,9 +10,12 @@ import type { AddressInput, InvoiceInput, PartyInput, Profile } from './model.js
  * XSD-тата на OASIS (UBL-Invoice-2.1 / UBL-CreditNote-2.1) — проверява го scripts/conformance/.
  * Кредитното известие (381) е отделен документ CreditNote; останалите видове са Invoice.
  */
+/** Спецификацията Peppol BIS Billing 3.0 — по нея се разпознава документ, издаден в профил Peppol. */
+export const PEPPOL_BILLING_URN = 'urn:fdc:peppol.eu:2017:poacc:billing:3.0';
+
 export const CUSTOMIZATION = {
   en16931: 'urn:cen.eu:en16931:2017',
-  peppol: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
+  peppol: `urn:cen.eu:en16931:2017#compliant#${PEPPOL_BILLING_URN}`,
 } as const satisfies Record<Profile, string>;
 
 export const PEPPOL_PROFILE_ID = 'urn:fdc:peppol.eu:2017:poacc:billing:01:1.0';

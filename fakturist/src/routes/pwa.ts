@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Router } from 'express';
 import { ROOT } from '../paths.js';
-import { manifestFor } from '../pwa/manifest.js';
+import { manifestFor, manifestPath } from '../pwa/manifest.js';
 
 /**
  * Манифестът и service worker-ът на приложението (src/pwa/manifest.ts). Монтирани са преди сесията —
@@ -14,7 +14,7 @@ export function pwaRouter(): Router {
   const router = Router();
   const serviceWorker = readFileSync(join(ROOT, 'public', 'js', 'sw.js'));
 
-  router.get(['/manifest.webmanifest', '/en/manifest.webmanifest'], (req, res) => {
+  router.get([manifestPath('bg'), manifestPath('en')], (req, res) => {
     const locale = req.path.startsWith('/en/') ? 'en' : 'bg';
     res
       .set('Cache-Control', 'no-cache')

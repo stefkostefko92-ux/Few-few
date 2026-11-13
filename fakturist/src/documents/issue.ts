@@ -117,182 +117,180 @@ export async function issueInTx(
 ): Promise<IssueResult> {
   const { deadlineDays, requireBankAccount, signature } = settings;
   const profile = options.peppol ? 'peppol' : settings.profile;
-  {
-    const orgs = await tx.$queryRaw<Array<{ id: string }>>`
+  const orgs = await tx.$queryRaw<Array<{ id: string }>>`
       SELECT "id" FROM "Organization" WHERE "id" = ${access.organizationId} FOR UPDATE`;
-    if (orgs.length !== 1) throw new Error('Фирмата не съществува');
-    await recheckAccess(tx, access, actorId);
-    const org = await tx.organization.findUniqueOrThrow({ where: { id: access.organizationId } });
+  if (orgs.length !== 1) throw new Error('Фирмата не съществува');
+  await recheckAccess(tx, access, actorId);
+  const org = await tx.organization.findUniqueOrThrow({ where: { id: access.organizationId } });
 
-    const allocated = await tx.$queryRaw<Array<{ number: bigint }>>`
+  const allocated = await tx.$queryRaw<Array<{ number: bigint }>>`
       UPDATE "DocumentSeries" SET "nextNumber" = "nextNumber" + 1
       WHERE "id" = ${request.seriesId} AND "organizationId" = ${org.id} AND "nextNumber" <= "rangeEnd"
       RETURNING "nextNumber" - 1 AS "number"`;
-    const raw = allocated[0]?.number;
-    if (raw === undefined) throw new SeriesExhausted();
-    const number = formatNumber(BigInt(raw));
+  const raw = allocated[0]?.number;
+  if (raw === undefined) throw new SeriesExhausted();
+  const number = formatNumber(BigInt(raw));
 
-    const { seriesId: _series, ...rest } = request;
-    // „5“ и „0000000005“ са един и същ номер — в XML-а и във връзката отива десетразрядният.
-    const precedingInvoices = rest.precedingInvoices.map(normalizePreceding);
-    // Датата на данъчното събитие е реквизит (чл. 114, ал. 1, т. 10): без нея — датата на издаване, и
-    // в XML-а (BT-7), за да не се разминава с PDF-а.
-    const taxPointDate = rest.taxPointDate ?? rest.issueDate;
-    const built = buildEInvoice(
-      { ...rest, taxPointDate, precedingInvoices, number, seller: sellerOf(org) },
-      {
-        profile,
-        issueDeadlineDays: deadlineDays,
-        requireBankAccount,
-        signature: signature || undefined,
-      },
-    );
-    if (!built.ok) throw new IssueRejected(built.issues);
-    const wrongType = notIssuable(rest.typeCode) ?? noteWithoutReason(rest);
-    if (wrongType) throw new IssueRejected([wrongType]);
+  const { seriesId: _series, ...rest } = request;
+  // „5“ и „0000000005“ са един и същ номер — в XML-а и във връзката отива десетразрядният.
+  const precedingInvoices = rest.precedingInvoices.map(normalizePreceding);
+  // Датата на данъчното събитие е реквизит (чл. 114, ал. 1, т. 10): без нея — датата на издаване, и
+  // в XML-а (BT-7), за да не се разминава с PDF-а.
+  const taxPointDate = rest.taxPointDate ?? rest.issueDate;
+  const built = buildEInvoice(
+    { ...rest, taxPointDate, precedingInvoices, number, seller: sellerOf(org) },
+    {
+      profile,
+      issueDeadlineDays: deadlineDays,
+      requireBankAccount,
+      signature: signature || undefined,
+    },
+  );
+  if (!built.ok) throw new IssueRejected(built.issues);
+  const wrongType = notIssuable(rest.typeCode) ?? noteWithoutReason(rest);
+  if (wrongType) throw new IssueRejected([wrongType]);
 
-    const last = await tx.document.findFirst({
-      where: { organizationId: org.id, chainIndex: { not: null } },
-      orderBy: { chainIndex: 'desc' },
-      select: { chainIndex: true, sha256: true },
-    });
-    const chainIndex = (last?.chainIndex ?? 0n) + 1n;
-    const prevHash = last?.sha256 ?? GENESIS;
-    const t = built.calc.totals;
-    const content = {
+  const last = await tx.document.findFirst({
+    where: { organizationId: org.id, chainIndex: { not: null } },
+    orderBy: { chainIndex: 'desc' },
+    select: { chainIndex: true, sha256: true },
+  });
+  const chainIndex = (last?.chainIndex ?? 0n) + 1n;
+  const prevHash = last?.sha256 ?? GENESIS;
+  const t = built.calc.totals;
+  const content = {
+    organizationId: org.id,
+    chainIndex,
+    number,
+    typeCode: built.input.typeCode,
+    status: 'ISSUED' as const,
+    issueDate: built.input.issueDate,
+    payableCents: toCents(t.payable),
+    vatCents: toCents(t.vat),
+    ublSha256: sha256(built.ubl),
+    ciiSha256: sha256(built.cii),
+    prevHash,
+    inputSha256: inputHash(built.input),
+  };
+  const hash = entryHash(content);
+
+  const { linked: preceding, warnings: precedingWarnings } = await precedingDocument(
+    tx,
+    org.id,
+    built.input,
+  );
+
+  const document = await tx.document.create({
+    data: {
       organizationId: org.id,
+      seriesId: request.seriesId,
+      status: 'ISSUED',
+      typeCode: built.input.typeCode,
+      number,
+      issueDate: new Date(`${built.input.issueDate}T00:00:00Z`),
+      taxPointDate: built.input.taxPointDate
+        ? new Date(`${built.input.taxPointDate}T00:00:00Z`)
+        : null,
+      dueDate: built.input.dueDate ? new Date(`${built.input.dueDate}T00:00:00Z`) : null,
+      currency: built.input.currency,
+      input: built.input as unknown as Prisma.InputJsonValue,
+      inputSha256: content.inputSha256,
+      buyerName: built.input.buyer.name,
+      buyerEik: built.input.buyer.legalId ?? null,
+      lineExtensionCents: toCents(t.lineExtension),
+      taxExclusiveCents: toCents(t.taxExclusive),
+      vatCents: toCents(t.vat),
+      taxInclusiveCents: toCents(t.taxInclusive),
+      payableCents: toCents(t.payable),
+      vatEurCents: t.vatInEur ? toCents(t.vatInEur) : null,
+      ublXml: built.ubl,
+      ciiXml: built.cii,
       chainIndex,
+      sha256: hash,
+      prevHash,
+      seal: sealHmac(hash),
+      issuedById: actorId,
+      firmId: access.viaFirmId,
+      mandateId: access.mandateId,
+      precedingId: preceding?.id ?? null,
+      recurringId: options.recurring?.id ?? null,
+      recurringPeriod: options.recurring?.period ?? null,
+      pdfLanguage: options.pdfLanguage ?? 'bg',
+      issuedAt: new Date(),
+    },
+    select: { id: true },
+  });
+  if (options.submission) {
+    await tx.issueSubmission.create({
+      data: { organizationId: org.id, documentId: document.id, ...options.submission },
+    });
+  }
+  await audit(tx, {
+    actorId,
+    organizationId: org.id,
+    action: 'document.issued',
+    targetType: 'Document',
+    targetId: document.id,
+    details: {
       number,
       typeCode: built.input.typeCode,
-      status: 'ISSUED' as const,
-      issueDate: built.input.issueDate,
-      payableCents: toCents(t.payable),
-      vatCents: toCents(t.vat),
-      ublSha256: sha256(built.ubl),
-      ciiSha256: sha256(built.cii),
-      prevHash,
-      inputSha256: inputHash(built.input),
-    };
-    const hash = entryHash(content);
-
-    const { linked: preceding, warnings: precedingWarnings } = await precedingDocument(
-      tx,
-      org.id,
-      built.input,
-    );
-
-    const document = await tx.document.create({
-      data: {
-        organizationId: org.id,
-        seriesId: request.seriesId,
-        status: 'ISSUED',
-        typeCode: built.input.typeCode,
-        number,
-        issueDate: new Date(`${built.input.issueDate}T00:00:00Z`),
-        taxPointDate: built.input.taxPointDate
-          ? new Date(`${built.input.taxPointDate}T00:00:00Z`)
-          : null,
-        dueDate: built.input.dueDate ? new Date(`${built.input.dueDate}T00:00:00Z`) : null,
-        currency: built.input.currency,
-        input: built.input as unknown as Prisma.InputJsonValue,
-        inputSha256: content.inputSha256,
-        buyerName: built.input.buyer.name,
-        buyerEik: built.input.buyer.legalId ?? null,
-        lineExtensionCents: toCents(t.lineExtension),
-        taxExclusiveCents: toCents(t.taxExclusive),
-        vatCents: toCents(t.vat),
-        taxInclusiveCents: toCents(t.taxInclusive),
-        payableCents: toCents(t.payable),
-        vatEurCents: t.vatInEur ? toCents(t.vatInEur) : null,
-        ublXml: built.ubl,
-        ciiXml: built.cii,
-        chainIndex,
-        sha256: hash,
-        prevHash,
-        seal: sealHmac(hash),
-        issuedById: actorId,
-        firmId: access.viaFirmId,
-        mandateId: access.mandateId,
-        precedingId: preceding?.id ?? null,
-        recurringId: options.recurring?.id ?? null,
-        recurringPeriod: options.recurring?.period ?? null,
-        pdfLanguage: options.pdfLanguage ?? 'bg',
-        issuedAt: new Date(),
-      },
-      select: { id: true },
-    });
-    if (options.submission) {
-      await tx.issueSubmission.create({
-        data: { organizationId: org.id, documentId: document.id, ...options.submission },
-      });
-    }
-    await audit(tx, {
-      actorId,
+      viaFirmId: access.viaFirmId,
+      mandateId: access.mandateId,
+    },
+  });
+  // Отчитането към НАП (SPEC 63; чл. 120д от законопроекта): записът е тук, изпращане — след API-то.
+  await tx.nraReport.create({
+    data: {
       organizationId: org.id,
-      action: 'document.issued',
-      targetType: 'Document',
-      targetId: document.id,
-      details: {
-        number,
-        typeCode: built.input.typeCode,
-        viaFirmId: access.viaFirmId,
-        mandateId: access.mandateId,
-      },
-    });
-    // Отчитането към НАП (SPEC 63; чл. 120д от законопроекта): записът е тук, изпращане — след API-то.
-    await tx.nraReport.create({
-      data: {
-        organizationId: org.id,
-        documentId: document.id,
-        typeCode: built.input.typeCode,
-        ublSha256: content.ublSha256,
-      },
-    });
-    if (options.peppol) {
-      const receiverPartyId = partyIdFromAddress(built.input.buyer.electronicAddress);
-      if (!receiverPartyId) throw new IssueRejected([PEPPOL_NO_RECEIVER]);
-      await queueTransmission(tx, {
-        organizationId: org.id,
-        documentId: document.id,
-        receiverPartyId,
-        actorId,
-      });
-    }
-    if (options.fromProforma) {
-      await linkProformaInvoice(tx, {
-        organizationId: org.id,
-        proformaId: options.fromProforma,
-        documentId: document.id,
-        typeCode: built.input.typeCode,
-        actorId,
-      });
-    }
-    if (options.replaces) {
-      await annulInTx(tx, {
-        organizationId: org.id,
-        oldId: options.replaces.documentId,
-        newId: document.id,
-        newTypeCode: built.input.typeCode,
-        reason: options.replaces.reason,
-        actorId,
-      });
-    }
-    // Шкафчето: получател, регистриран във Фактурист (по ЕИК), получава документа и писмо (опашката).
-    const delivery = await deliverToInbox(tx, {
       documentId: document.id,
-      senderOrgId: org.id,
+      typeCode: built.input.typeCode,
+      ublSha256: content.ublSha256,
+    },
+  });
+  if (options.peppol) {
+    const receiverPartyId = partyIdFromAddress(built.input.buyer.electronicAddress);
+    if (!receiverPartyId) throw new IssueRejected([PEPPOL_NO_RECEIVER]);
+    await queueTransmission(tx, {
+      organizationId: org.id,
+      documentId: document.id,
+      receiverPartyId,
       actorId,
-      buyer: built.input.buyer,
-      ...(options.knownRecipientOrgId ? { knownRecipientOrgId: options.knownRecipientOrgId } : {}),
     });
-    return {
-      id: document.id,
-      number,
-      warnings: [
-        ...built.issues.filter((issue) => issue.severity === 'warning'),
-        ...precedingWarnings,
-      ],
-      delivery,
-    };
   }
+  if (options.fromProforma) {
+    await linkProformaInvoice(tx, {
+      organizationId: org.id,
+      proformaId: options.fromProforma,
+      documentId: document.id,
+      typeCode: built.input.typeCode,
+      actorId,
+    });
+  }
+  if (options.replaces) {
+    await annulInTx(tx, {
+      organizationId: org.id,
+      oldId: options.replaces.documentId,
+      newId: document.id,
+      newTypeCode: built.input.typeCode,
+      reason: options.replaces.reason,
+      actorId,
+    });
+  }
+  // Шкафчето: получател, регистриран във Фактурист (по ЕИК), получава документа и писмо (опашката).
+  const delivery = await deliverToInbox(tx, {
+    documentId: document.id,
+    senderOrgId: org.id,
+    actorId,
+    buyer: built.input.buyer,
+    ...(options.knownRecipientOrgId ? { knownRecipientOrgId: options.knownRecipientOrgId } : {}),
+  });
+  return {
+    id: document.id,
+    number,
+    warnings: [
+      ...built.issues.filter((issue) => issue.severity === 'warning'),
+      ...precedingWarnings,
+    ],
+    delivery,
+  };
 }
