@@ -13,12 +13,14 @@ SECTIONS = {
     13: ["A-65-170-7+B-65-320", "A-45-170-7+B-45-320", "A-45-175-2+B-45-320", "A-37-150-7+B-37-320", "A-37-170-2+B-37-320"],
     19: ["SU-220-160+SG-80-150", "SU-220-180+SG-80-170", "SU-220-200+SG-80-190"],
     26: ["SD-150-160+SG-80-150", "SD-150-180+SG-80-170", "SD-150-200+SG-80-190", "SD-220-160+SG-80-150", "SD-220-180+SG-80-170", "SD-220-200+SG-80-190"],
-    39: ["SC-50-200+SG-50-190", "SC-60-200+SG-60-190", "SC-80-200+SG-80-190", "SC-90-200+SG-80-190"],
+    39: ["SC-50-200+SG-50-190", "SC-60-200+SG-60-190", "SC-80-200+SG-80-190", "SC-90-200+SG-80-190",
+         "SC-50-220+SG-50-220", "SC-60-220+SG-60-220", "SC-80-220+SG-80-220", "SC-90-220+SG-80-220"],
     56: ["SG-50-130", "SG-60-170", "SG-80-220"],
     60: ["SC-50-170", "SG-225-50", "SN-60-65", "SN-65-200", "BRACCIO-160-190"],
 }
 X0, X1, GAP, MAX_H, BELOW, CLEAR = 74.0, 770.0, 9.0, 100.0, 30.0, 12.0  # the row: the text column's left edge, gaps, under the chips and the number
 FLOOR = 556.0  # above the footer line (572)
+NARROW = 100.0  # under this width a pairing's two codes do not fit on one line
 
 
 def code(name):
@@ -46,9 +48,10 @@ def build(base_pdf, catalogue, indicative):
             first = code(name.split("+")[0])
             if first not in page_of:
                 raise SystemExit(f"sezioni: {first} is not in src/catalog.js")
-            tiles.append(dict(render=name, code=code(name), page=page_of[first], rect=(X0 + k * (w + GAP), top, w, h),
+            # A narrow tile names the support alone: the pairing does not fit on a line and would hide the render.
+            tiles.append(dict(render=name, code=first if w < NARROW else code(name), page=page_of[first], rect=(X0 + k * (w + GAP), top, w, h),
                               indicative=any(c in indicative for c in code(name).split(" + "))))
-        if not all(cover < t["page"] < cover + 14 for t in tiles):
+        if not all(cover < t["page"] < cover + 17 for t in tiles):
             raise SystemExit(f"sezioni: a tile of page {cover} points outside its section")
         row = (X0, top, X0 + n * w + (n - 1) * GAP, top + h)
         if page.get_text("text", clip=pymupdf.Rect(row)).strip() or page.get_images() and any(

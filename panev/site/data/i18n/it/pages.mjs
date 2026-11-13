@@ -21,7 +21,6 @@ export default {
       '06 · Soluzioni speciali e su misura',
     ],
     interactiveNote: 'Indice interattivo: nella versione digitale tutte le voci sono cliccabili.',
-    previewKicker: 'Anteprima',
     previewTitle: 'Alcune pagine dal catalogo',
   },
   contactsPage: {

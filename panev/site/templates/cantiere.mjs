@@ -39,7 +39,6 @@ export function cantiereSection(t, key) {
   return `
 <section class="section cantiere cantiere-${home ? 'home' : 'fam'}">
   <div class="wrap">
-    <p class="kicker">${esc(c.kicker)}</p>
     <h2>${esc(home ? c.title : c.famTitle)}</h2>
     <p class="lead">${esc(home ? c.lead : c.famLead)}</p>
     <div class="cantiere-grid cantiere-n${names.length}">

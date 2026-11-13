@@ -35,7 +35,6 @@ export default {
       more: 'Dedicated page',
       familiesLabel: 'Bracket families',
       crumbsLabel: 'Breadcrumb',
-      faqKicker: 'Frequently asked questions',
       otherTitle: 'Other bracket families',
       fullList: 'Full price list with every code',
       see3d: 'View in 3D',

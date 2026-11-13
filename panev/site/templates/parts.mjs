@@ -35,7 +35,18 @@ export function itemRow(t, item, name) {
   </tr>`;
 }
 
-export function sectionHead(t, sec, id) {
+// cover: тъмната корица с голямата цифра (листата — както в каталога); без нея — заглавие върху бяло
+// (страниците по семейства, където тъмният блок е само заглавният).
+export function sectionHead(t, sec, id, { cover = true } = {}) {
+  if (!cover) {
+    return `<header class="sec-head" id="${id}">
+    <div class="wrap">
+      <h2>${esc(sec.title)}</h2>
+      <p class="lead">${esc(sec.lead)}</p>
+      <div class="chips">${sec.chips.map((c) => `<span class="chip">${esc(c)}</span>`).join('')}</div>
+    </div>
+  </header>`;
+  }
   const chips = sec.chips.map((c) => `<span class="chip chip-light">${esc(c)}</span>`).join('');
   return `<header class="sec-cover" id="${id}">
     <div class="wrap">
