@@ -255,6 +255,11 @@
       "kodadjiyata",
       "prodavacha",
       "vps-adjiyata"
+    ],
+    "b6e768d4ea11a7de151802dad338d493666d76e9": [
+      "ai-djiyata",
+      "kodadjiyata",
+      "seo"
     ]
   },
   "runs": [
@@ -1288,6 +1293,30 @@
       "agent": "prodavacha",
       "verdict": "чисто",
       "costUsd": 0.6,
+      "date": "2026-11-13"
+    },
+    {
+      "pr": 376,
+      "sha": "b6e768d4ea11a7de151802dad338d493666d76e9",
+      "agent": "kodadjiyata",
+      "verdict": "чисто",
+      "costUsd": 0.84,
+      "date": "2026-11-13"
+    },
+    {
+      "pr": 376,
+      "sha": "b6e768d4ea11a7de151802dad338d493666d76e9",
+      "agent": "seo",
+      "verdict": "чисто",
+      "costUsd": 0.55,
+      "date": "2026-11-13"
+    },
+    {
+      "pr": 376,
+      "sha": "b6e768d4ea11a7de151802dad338d493666d76e9",
+      "agent": "ai-djiyata",
+      "verdict": "чисто",
+      "costUsd": 1.54,
       "date": "2026-11-13"
     }
   ]
