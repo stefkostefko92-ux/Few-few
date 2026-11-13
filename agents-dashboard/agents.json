@@ -6847,7 +6847,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 281
+        "lessons": 282
       },
       "evolution": [
         {
@@ -7275,9 +7275,20 @@
           "date": "2026-11-13",
           "event": "v25.1 — учене",
           "detail": "Научи: tools/seo/indexnow.mjs има AbortSignal.timeout на всяка мрежова заявка (10 s за ключа, …"
+        },
+        {
+          "version": "25.2.0",
+          "date": "2026-11-13",
+          "event": "v25.2 — учене",
+          "detail": "Научи: tools/seo/indexnow.mjs взема ключа в ред --key, после --key-file, после env INDEXNOW_KE…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „tools/seo/indexnow.mjs взема ключа в ред --key, после --key-file, после env INDEXNOW_KE…\""
+        },
         {
           "date": "2026-11-13",
           "type": "learning",
