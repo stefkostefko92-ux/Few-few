@@ -32,6 +32,9 @@ FONTS = ('<link id="cs-theme-fonts" rel="stylesheet" href="/fonts/fonts.css">'
          '<link id="cs-theme-fonts-pre2" rel="preload" as="font" type="font/woff2" href="/fonts/space-mono-latin-e04b1d.woff2" crossorigin>'
          '<link id="cs-theme-fonts-pre3" rel="preload" as="font" type="font/woff2" href="/fonts/space-mono-latin-0319ea.woff2" crossorigin>')  # self-hosted (scripts/self-host-fonts.py)
 JS_FLAG = '<script id="cs-js-flag">document.documentElement.classList.add("js")</script>'
+# лентата зад заглавието е най-голямата картина над сгъвката (LCP кандидат) — предварително зареждане, по една за ширина
+BENCH_PRE = ('<link id="cs-bench-pre" rel="preload" as="image" type="image/webp" href="/brand/bench-1600.webp" media="(min-width:761px)" fetchpriority="high">'
+             '<link id="cs-bench-pre2" rel="preload" as="image" type="image/webp" href="/brand/bench-800.webp" media="(max-width:760px)" fetchpriority="high">')
 
 DISP = "'Space Grotesk','Onest','SG-fallback','Inter Tight',-apple-system,sans-serif"
 MONO = "'Space Mono','JetBrains Mono','SM-fallback',ui-monospace,monospace"
@@ -42,6 +45,10 @@ CHROME = ("background-image:linear-gradient(100deg,transparent calc(var(--sx,-40
           "background-size:100% 100%,100% 1lh;background-repeat:no-repeat,repeat-y;-webkit-background-clip:text;background-clip:text;"
           "color:transparent;-webkit-text-fill-color:transparent")
 
+# .hero-s: „измервателната маса“ зад заглавието — рендер от Blender (marketing/blender/header.py →
+# marketing/blender/export.py → public/brand/bench-1600.webp и bench-800.webp за телефон; само WebP — AVIF
+# оцветява тъмните тонове, виж export.py). На десктоп лентата е поне 300px, за да се побере целият кадър. Отляво тъмен градиент: заглавието стои върху
+# спокоен фон, контрастът се мери върху най-светлата точка под текста.
 CSS = f"""
 @font-face{{font-family:'SG-fallback';src:local('Arial');size-adjust:96%;ascent-override:98%;descent-override:24%;line-gap-override:0%}}
 @font-face{{font-family:'SM-fallback';src:local('Courier New');size-adjust:108%;ascent-override:100%;descent-override:26%;line-gap-override:0%}}
@@ -74,6 +81,19 @@ a{{color:var(--cs-c)}}
 .nav-toggle{{display:none}}
 /* hero */
 .hero-s{{padding:104px 20px 36px!important;border-bottom:1px solid rgba(0,229,255,.1)}}
+.hero-s{{position:relative;isolation:isolate;overflow:hidden;background-color:var(--cs-bg)}}
+@media(min-width:761px){{
+  /* кадърът е 4:1, широк колкото прозореца, но най-много 1560px, и е закотвен вдясно; --by го центрира по
+     височина в видимата част под навигацията (66px). Двата градиента са със същия размер и място като
+     картината и скриват левия и долния ѝ ръб, когато лентата е по-широка или по-висока от нея. */
+  .hero-s{{--bw:min(100vw,1560px);--bh:calc(var(--bw)/4);--by:calc(200px - var(--bh)*.49);min-height:300px;display:flex;align-items:center;
+    background:linear-gradient(90deg,var(--cs-bg) 0,rgba(10,12,14,0) 30%) right var(--by)/var(--bw) var(--bh) no-repeat,
+      linear-gradient(0deg,var(--cs-bg) 0,rgba(10,12,14,0) 24%) right var(--by)/var(--bw) var(--bh) no-repeat,
+      url(/brand/bench-1600.webp) right var(--by)/var(--bw) var(--bh) no-repeat,var(--cs-bg)}}
+  .hero-s>.w{{width:100%}}
+}}
+.hero-s::before{{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(90deg,var(--cs-bg) 0,rgba(10,12,14,.9) 28%,rgba(10,12,14,.5) 55%,rgba(10,12,14,0) 78%)}}
 /* footer */
 .ft{{border-top:1px solid rgba(0,229,255,.18)!important;padding:30px 20px!important;text-align:center;font-size:10px!important;color:#8a949b!important;margin-top:60px;
   background:radial-gradient(ellipse at 50% 100%,rgba(0,229,255,.08),transparent 60%)}}
@@ -94,7 +114,8 @@ a{{color:var(--cs-c)}}
 .work-shot{{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;object-position:top;border:1px solid rgba(0,229,255,.14);margin:28px 0 12px;background:#050607}}
 /* phones */
 @media(max-width:760px){{
-  .hero-s{{padding:86px 16px 22px!important}}
+  .hero-s{{padding:86px 16px 22px!important;background:url(/brand/bench-800.webp) 50% 64px/100% auto no-repeat,var(--cs-bg)}}
+  .hero-s::before{{background:linear-gradient(180deg,rgba(10,12,14,.35) 0,rgba(10,12,14,.7) 120px,rgba(10,12,14,.9) 220px,var(--cs-bg) 280px)}}
   h1{{letter-spacing:-.005em!important;font-size:clamp(1.8rem,8vw,2.4rem)!important}}
   .js .nav>div{{display:none}}
   .js .nav .nav-toggle{{display:flex;flex-direction:column;justify-content:center;gap:5px;width:44px;height:44px;padding:0 11px;background:none;border:1px solid rgba(0,229,255,.3);cursor:pointer;position:relative;z-index:1002}}
@@ -183,7 +204,7 @@ NEEDS_FOOTER = {"privacy", "cookie", "termini", "terms", "usloviya", "404.html"}
 BLOG_HUBS = {"public/blog/index.html", "public/en/blog/index.html", "public/bg/blog/index.html"}
 SKIP = {"public/offline.html", "public/status/index.html"}  # the status page is its own dashboard
 
-STRIP = [re.compile(r'<link id="cs-theme-fonts(?:-pre\d?)?"[^>]*>'), re.compile(r'<script id="cs-js-flag">.*?</script>', re.S),
+STRIP = [re.compile(r'<link id="cs-theme-fonts(?:-pre\d?)?"[^>]*>'), re.compile(r'<link id="cs-bench-pre\d?"[^>]*>'), re.compile(r'<script id="cs-js-flag">.*?</script>', re.S),
          re.compile(r'<style id="cs-theme">.*?</style>', re.S), re.compile(r'<script id="cs-nav-js">.*?</script>', re.S),
          re.compile(r'<div class="ft cs-legal-ft">.*?</div>', re.S), re.compile(r'<script id="cs-cal-js">.*?</script>', re.S)]
 
@@ -201,7 +222,7 @@ def lang_of(path, html):
 def theme(path, html):
     for rx in STRIP:
         html = rx.sub("", html)
-    head_add = FONTS + JS_FLAG + '<style id="cs-theme">' + CSS + "</style>"
+    head_add = FONTS + (BENCH_PRE if 'class="hero-s"' in html else "") + JS_FLAG + '<style id="cs-theme">' + CSS + "</style>"
     if "</head>" not in html:
         return html
     html = html.replace("</head>", head_add + "</head>", 1)

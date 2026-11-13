@@ -463,7 +463,7 @@ export var INSTRUMENT_CSS = [
   // services: the index number is a level gauge that fills when the row is pointed at; a dimension line measures the row
   ".cs-srv-row .cs-srv-n{color:transparent!important;-webkit-background-clip:text;background-clip:text;background-image:linear-gradient(0deg,rgba(" + CR + ",.9) 0 50%,rgba(" + CR + ",.08) 50% 100%);background-size:100% 200%;background-position:0 0;transition:background-position .7s " + EASE + "}",
   ".cs-srv-row:hover .cs-srv-n,.cs-srv-row:focus-visible .cs-srv-n{background-position:0 100%}",
-  ".cs-srv-row::after{content:'';position:absolute;left:120px;right:0;bottom:-1px;height:1px;background:linear-gradient(90deg," + C + ",rgba(" + CR + ",.15));transform:scaleX(0);transform-origin:left;transition:transform .6s " + EASE + "}",
+  ".cs-srv-row::after{content:'';position:absolute;left:calc(var(--srv-col,150px) + 24px);right:0;bottom:-1px;height:1px;background:linear-gradient(90deg," + C + ",rgba(" + CR + ",.15));transform:scaleX(0);transform-origin:left;transition:transform .6s " + EASE + "}",
   ".cs-srv-row:hover::after,.cs-srv-row:focus-visible::after{transform:scaleX(1)}",
   ".cs-srv-row .cs-srv-t span{display:inline-block;transition:transform .35s " + EASE + "}.cs-srv-row:hover .cs-srv-t span{transform:translateX(6px)}",
   // pricing: our price measured against the market (track = market, fill = ours)
