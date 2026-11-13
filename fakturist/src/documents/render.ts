@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client';
 import { calculate } from '../einvoice/calculate.js';
+import { inputHash } from '../ledger/chain.js';
 import { InvoiceInputSchema } from '../einvoice/model.js';
 import { setting } from '../admin/settings.js';
 import { renderPdf } from './pdf.js';
@@ -22,6 +23,8 @@ export interface PdfSource {
   replacedBy?: { number: string | null } | null;
   /** Езикът на PDF-а (pdf-labels.ts); липсва — български. */
   pdfLanguage?: string;
+  /** Отпечатъкът на входа от веригата (v2); null — звено v1. */
+  inputSha256?: string | null;
 }
 
 function annulledText(document: PdfSource): string | null {
@@ -41,6 +44,10 @@ function annulledText(document: PdfSource): string | null {
  * на фирмата-доставчик (`organizationId`).
  */
 export async function documentPdf(document: PdfSource): Promise<Buffer> {
+  // Входът е във веригата (v2): променен след издаването → отказ, не PDF с подменени данни.
+  if (document.inputSha256 && inputHash(document.input) !== document.inputSha256) {
+    throw new Error('Входът на документа не съвпада с отпечатъка във веригата');
+  }
   const input = InvoiceInputSchema.parse(document.input);
   const [signature, style] = await Promise.all([
     setting('documents.signature'),

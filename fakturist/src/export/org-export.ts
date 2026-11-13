@@ -3,6 +3,7 @@ import { documentPdf } from '../documents/render.js';
 import { DOWNLOAD_SELECT } from '../routes/app-shared.js';
 import { csvCell } from './csv.js';
 import { ZipWriter, type ZipSink } from './zip.js';
+import { addIncoming, addPayments, addProformas } from './org-export-extra.js';
 
 /**
  * Износът на фирмата (SPEC 48; договорът за обработване, т. 11 — връщане на данните): ZIP с всеки
@@ -99,6 +100,9 @@ export async function exportOrganization(organizationId: string, sink: ZipSink):
     prisma.item.findMany({ where: { organizationId }, orderBy: { name: 'asc' } }),
     prisma.documentSeries.findMany({ where: { organizationId }, orderBy: { rangeStart: 'asc' } }),
   ]);
+  await addProformas(zip, organizationId);
+  await addIncoming(zip, organizationId);
+  await addPayments(zip, organizationId);
   await zip.add('firma.json', json(org));
   await zip.add('kontragenti.json', json(parties));
   await zip.add('artikuli.json', json(items));
@@ -112,7 +116,9 @@ export async function exportOrganization(organizationId: string, sink: ZipSink):
         '',
         'dokumenti/ — всеки документ: PDF (четимо копие), UBL 2.1 и CII (структурираният XML по',
         'EN 16931, точно както е издаден). dokumenti.csv — регистърът. kontragenti.json, artikuli.json,',
-        'serii.json, firma.json — каталогът и данните на фирмата.',
+        'serii.json, firma.json — каталогът и данните на фирмата. proformi/ — проформите (PDF; не са',
+        'данъчни документи). vhodyashti/ и vhodyashti.csv — получените е-фактури, XML точно както са',
+        'получени. plashtaniya.csv — плащанията по документите.',
         '',
         'Документите се пазят от фирмата за сроковете по Закона за счетоводството и ЗДДС.',
         '',

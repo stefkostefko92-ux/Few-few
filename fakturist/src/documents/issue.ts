@@ -7,7 +7,7 @@ import { sealHmac } from '../auth/keys.js';
 import { setting } from '../admin/settings.js';
 import { buildEInvoice, InvoiceInputSchema, type Issue } from '../einvoice/index.js';
 import { toCents } from '../einvoice/decimal.js';
-import { entryHash, GENESIS, sha256 } from '../ledger/chain.js';
+import { entryHash, GENESIS, inputHash, sha256 } from '../ledger/chain.js';
 import { formatNumber } from './numbering.js';
 import { deliverToInbox, type Delivery } from '../inbox/deliver.js';
 import type { OrgAccess } from '../auth/guards.js';
@@ -168,6 +168,7 @@ export async function issueInTx(
       ublSha256: sha256(built.ubl),
       ciiSha256: sha256(built.cii),
       prevHash,
+      inputSha256: inputHash(built.input),
     };
     const hash = entryHash(content);
 
@@ -191,6 +192,7 @@ export async function issueInTx(
         dueDate: built.input.dueDate ? new Date(`${built.input.dueDate}T00:00:00Z`) : null,
         currency: built.input.currency,
         input: built.input as unknown as Prisma.InputJsonValue,
+        inputSha256: content.inputSha256,
         buyerName: built.input.buyer.name,
         buyerEik: built.input.buyer.legalId ?? null,
         lineExtensionCents: toCents(t.lineExtension),

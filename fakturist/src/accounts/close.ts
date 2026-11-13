@@ -38,7 +38,7 @@ export async function personalData(userId: string): Promise<Record<string, unkno
       legalAcceptances: { select: { document: true, version: true, acceptedAt: true } },
     },
   });
-  const [sessions, actions] = await Promise.all([
+  const [sessions, actions, apiKeys, invitesSent, invitesReceived] = await Promise.all([
     prisma.session.findMany({
       where: { userId },
       select: { createdAt: true, lastSeenAt: true, expiresAt: true },
@@ -47,6 +47,33 @@ export async function personalData(userId: string): Promise<Record<string, unkno
       where: { actorId: userId },
       orderBy: { at: 'asc' },
       select: { at: true, action: true, targetType: true },
+    }),
+    // Ключовете за API, които човекът е създал — без отпечатъка на ключа.
+    prisma.apiKey.findMany({
+      where: { createdById: userId },
+      select: {
+        name: true,
+        prefix: true,
+        scopes: true,
+        createdAt: true,
+        lastUsedAt: true,
+        revokedAt: true,
+        organization: { select: { legalName: true } },
+      },
+    }),
+    prisma.memberInvite.findMany({
+      where: { createdById: userId },
+      select: { email: true, role: true, createdAt: true, acceptedAt: true, revokedAt: true },
+    }),
+    prisma.memberInvite.findMany({
+      where: { email: user.email },
+      select: {
+        role: true,
+        createdAt: true,
+        acceptedAt: true,
+        revokedAt: true,
+        organization: { select: { legalName: true } },
+      },
     }),
   ]);
   return {
@@ -63,6 +90,9 @@ export async function personalData(userId: string): Promise<Record<string, unkno
     memberships: user.memberships,
     acceptedLegalDocuments: user.legalAcceptances,
     sessions,
+    apiKeys,
+    invitationsSent: invitesSent,
+    invitationsReceived: invitesReceived,
     auditTrail: actions,
   };
 }

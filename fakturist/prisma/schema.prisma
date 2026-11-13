@@ -440,6 +440,8 @@ model Document {
   peppolTransmission PeppolTransmission?
   nraReport          NraReport?
   issueSubmission    IssueSubmission?
+  /// Отпечатъкът на входа (от който се рисува PDF-ът) — в звеното на веригата (v2); null — звено v1.
+  inputSha256        String?
   reminders          PaymentReminder[]
   apiRequests        ApiIdempotency[]
   createdAt          DateTime             @default(now())

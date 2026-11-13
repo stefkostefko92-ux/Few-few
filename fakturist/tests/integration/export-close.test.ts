@@ -75,6 +75,54 @@ after(async () => {
 });
 
 test('износът: PDF, UBL и CII на всеки документ, регистър и каталог — валиден ZIP', async () => {
+  // И останалото (одитът от 13.11.2026): проформа, получена е-фактура, плащане по документ.
+  const seriesId = (
+    await prisma.documentSeries.findFirstOrThrow({ where: { organizationId: orgId } })
+  ).id;
+  const proforma = await http.post(owner, `/app/o/${orgId}/nov`, {
+    typeCode: 'proforma',
+    seriesId,
+    issueDate: '2026-11-13',
+    taxPointDate: '2026-11-13',
+    dueDate: '2026-11-27',
+    currency: 'EUR',
+    'buyer[name]': 'Сладкарница Роза ЕООД',
+    'buyer[legalId]': '121604974',
+    'buyer[street]': 'ул. „Шипка“ 1',
+    'buyer[city]': 'София',
+    'buyer[postalCode]': '1000',
+    'buyer[countryCode]': 'BG',
+    'lines[0][name]': 'Торта',
+    'lines[0][quantity]': '1',
+    'lines[0][unitCode]': 'C62',
+    'lines[0][netPrice]': '30.00',
+    'lines[0][category]': 'S',
+    'lines[0][rate]': '20',
+  });
+  assert.equal(proforma.status, 303);
+  await prisma.incomingInvoice.create({
+    data: {
+      organizationId: orgId,
+      format: 'UBL',
+      xml: '<Invoice>входяща</Invoice>',
+      sha256: 'd'.repeat(64),
+      supplierName: 'Мелница Злато ООД',
+      supplierEik: '175074752',
+      number: '0000000777',
+      typeCode: '380',
+      currency: 'EUR',
+      payableCents: 1200n,
+      vatCents: 200n,
+      issues: [],
+      valid: true,
+    },
+  });
+  const first = await prisma.document.findFirstOrThrow({ where: { number: '0000000001' } });
+  const paid = await http.post(owner, `/app/o/${orgId}/d/${first.id}/plashtane`, {
+    amount: '1.00',
+    paidOn: '2026-11-13',
+  });
+  assert.equal(paid.status, 303);
   const res = await http.get(owner, `/app/o/${orgId}/iznos.zip`);
   assert.equal(res.status, 200);
   assert.equal(res.headers.get('content-type'), 'application/zip');
@@ -94,9 +142,25 @@ test('износът: PDF, UBL и CII на всеки документ, реги
     'artikuli.json',
     'serii.json',
     'firma.json',
+    'vhodyashti.csv',
+    'plashtaniya.csv',
   ]) {
     assert.ok(names.includes(n), n);
   }
+  assert.ok(
+    names.some((n) => n.startsWith('proformi/') && n.endsWith('.pdf')),
+    'проформата',
+  );
+  const incoming = names.find((n) => n.startsWith('vhodyashti/') && n.endsWith('.xml'))!;
+  assert.equal(
+    execFileSync('unzip', ['-p', file, incoming], { encoding: 'utf8' }),
+    '<Invoice>входяща</Invoice>',
+    'получената — точно както е получена',
+  );
+  assert.match(
+    execFileSync('unzip', ['-p', file, 'plashtaniya.csv'], { encoding: 'utf8' }),
+    /0000000001,2026-11-13,1\.00,EUR,MANUAL/,
+  );
   const csv = execFileSync('unzip', ['-p', file, 'dokumenti.csv'], { encoding: 'utf8' });
   assert.ok(csv.includes('0000000002') && csv.includes('Сладкарница Роза ЕООД'));
   const ubl = execFileSync('unzip', ['-p', file, 'dokumenti/0000000001-ubl.xml'], {

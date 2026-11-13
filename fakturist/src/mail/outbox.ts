@@ -59,6 +59,7 @@ async function composeInboxMail(toEmail: string, payload: unknown): Promise<Mail
           input: true,
           chainIndex: true,
           sha256: true,
+          inputSha256: true,
           ublXml: true,
           firm: { select: { legalName: true } },
           mandate: { select: { documentRef: true } },

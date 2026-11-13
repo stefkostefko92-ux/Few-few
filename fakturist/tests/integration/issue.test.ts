@@ -7,8 +7,8 @@ const { prisma } = await import('../../src/db.js');
 const { register } = await import('../../src/accounts/register.js');
 const { issueDocument, IssueRejected } = await import('../../src/documents/issue.js');
 const { seedPlans } = await import('../../src/billing/seed-plans.js');
-const { verifyChain, sha256 } = await import('../../src/ledger/chain.js');
-const { sealHmac } = await import('../../src/auth/keys.js');
+const { verifyOrganizationChain } = await import('../../src/ledger/verify-org.js');
+const { sha256 } = await import('../../src/ledger/chain.js');
 const { domestic } = await import('../fixtures/einvoice-samples.js');
 
 let organizationId = '';
@@ -74,29 +74,20 @@ test('едновременно издаване: поредни номера б�
 });
 
 test('веригата на документите се проверява цялата; подправена сума се хваща', async () => {
-  const docs = await prisma.document.findMany({
-    where: { organizationId, chainIndex: { not: null } },
-    orderBy: { chainIndex: 'asc' },
+  assert.deepEqual(await verifyOrganizationChain(organizationId), { count: 10, problem: null });
+  const fifth = await prisma.document.findFirstOrThrow({
+    where: { organizationId, chainIndex: 5n },
   });
-  const entries = docs.map((d) => ({
-    organizationId: d.organizationId,
-    chainIndex: d.chainIndex!,
-    number: d.number!,
-    typeCode: d.typeCode,
-    status: 'ISSUED' as const,
-    issueDate: d.issueDate.toISOString().slice(0, 10),
-    payableCents: d.payableCents,
-    vatCents: d.vatCents,
-    ublSha256: sha256(d.ublXml!),
-    ciiSha256: sha256(d.ciiXml!),
-    prevHash: d.prevHash!,
-    sha256: d.sha256!,
-    seal: d.seal!,
-  }));
-  assert.equal(entries.length, 10);
-  assert.equal(verifyChain(entries, sealHmac), null);
-  entries[4] = { ...entries[4]!, payableCents: 1n };
-  assert.equal(verifyChain(entries, sealHmac)?.kind, 'hash');
+  await prisma.document.update({ where: { id: fifth.id }, data: { payableCents: 1n } });
+  assert.deepEqual((await verifyOrganizationChain(organizationId)).problem, {
+    kind: 'hash',
+    at: 5n,
+  });
+  await prisma.document.update({
+    where: { id: fifth.id },
+    data: { payableCents: fifth.payableCents },
+  });
+  assert.equal((await verifyOrganizationChain(organizationId)).problem, null);
 });
 
 test('одитът записва регистрацията и всяко издаване, свързани във верига', async () => {

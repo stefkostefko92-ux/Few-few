@@ -20,6 +20,7 @@ export const DOWNLOAD_SELECT = {
   ciiXml: true,
   chainIndex: true,
   sha256: true,
+  inputSha256: true,
   firm: { select: { legalName: true } },
   mandate: { select: { documentRef: true } },
   status: true,

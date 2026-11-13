@@ -10,8 +10,7 @@ const { prisma } = await import('../../src/db.js');
 const { register } = await import('../../src/accounts/register.js');
 const { seedPlans } = await import('../../src/billing/seed-plans.js');
 const { createServer } = await import('../../src/server.js');
-const { verifyChain, sha256 } = await import('../../src/ledger/chain.js');
-const { sealHmac } = await import('../../src/auth/keys.js');
+const { verifyOrganizationChain } = await import('../../src/ledger/verify-org.js');
 
 /** SPEC 47: анулиране по чл. 116 ЗДДС — само с нов документ, номерът остава зает, веригата е цяла. */
 const PASSWORD = 'дълга-и-трудна-парола-2026';
@@ -141,28 +140,7 @@ test('анулиране с нов документ: старият е анул�
   assert.equal(after.replacedBy?.number, '0000000002');
 
   // Веригата на документите е цяла (анулирането е в одита, не пипа звеното).
-  const docs = await prisma.document.findMany({
-    where: { organizationId: orgId },
-    orderBy: { chainIndex: 'asc' },
-  });
-  const problem = verifyChain(
-    docs.map((d) => ({
-      organizationId: d.organizationId,
-      chainIndex: d.chainIndex!,
-      number: d.number ?? '',
-      typeCode: d.typeCode,
-      status: 'ISSUED' as const,
-      issueDate: d.issueDate.toISOString().slice(0, 10),
-      payableCents: d.payableCents,
-      vatCents: d.vatCents,
-      ublSha256: sha256(d.ublXml ?? ''),
-      ciiSha256: sha256(d.ciiXml ?? ''),
-      prevHash: d.prevHash ?? '',
-      sha256: d.sha256 ?? '',
-      seal: d.seal ?? '',
-    })),
-    sealHmac,
-  );
+  const { problem } = await verifyOrganizationChain(orgId);
   assert.equal(problem, null);
   const log = await prisma.auditLog.findFirstOrThrow({ where: { action: 'document.annulled' } });
   assert.equal(log.targetId, old.id);

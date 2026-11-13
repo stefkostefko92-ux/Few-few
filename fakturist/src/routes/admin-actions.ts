@@ -8,14 +8,7 @@ import { activatePayment, BillingError } from '../billing/orders.js';
 import { settleRevolutOrder } from '../billing/card.js';
 import { RevolutError } from '../billing/revolut-client.js';
 import { HttpError } from '../auth/guards.js';
-import { sealHmac } from '../auth/keys.js';
-import {
-  CHAIN_START,
-  sha256,
-  verifyChainFrom,
-  type ChainProblem,
-  type ChainState,
-} from '../ledger/chain.js';
+import { verifyOrganizationChain } from '../ledger/verify-org.js';
 import { decideMandate } from '../accounts/mandates.js';
 import { createTransferInvite, revokeTransferInvite, TransferError } from '../accounts/transfer.js';
 import { smtpSettings } from '../admin/integrations.js';
@@ -55,58 +48,7 @@ export function adminActionsRouter(): Router {
     const organizationId = String(req.params['orgId']);
     const org = await prisma.organization.findUnique({ where: { id: organizationId } });
     if (!org) throw new HttpError(404);
-    // На страници по 500 — голяма фирма не зарежда всичките си XML-и наведнъж.
-    let state: ChainState = CHAIN_START;
-    let problem: ChainProblem | null = null;
-    let count = 0;
-    for (;;) {
-      const docs = await prisma.document.findMany({
-        where: { organizationId, chainIndex: { gte: state.nextIndex } },
-        orderBy: { chainIndex: 'asc' },
-        take: 500,
-        select: {
-          organizationId: true,
-          chainIndex: true,
-          number: true,
-          typeCode: true,
-          issueDate: true,
-          payableCents: true,
-          vatCents: true,
-          ublXml: true,
-          ciiXml: true,
-          prevHash: true,
-          sha256: true,
-          seal: true,
-        },
-      });
-      if (docs.length === 0) break;
-      const result = verifyChainFrom(
-        docs.map((d) => ({
-          organizationId: d.organizationId,
-          chainIndex: d.chainIndex!,
-          number: d.number ?? '',
-          typeCode: d.typeCode,
-          status: 'ISSUED' as const,
-          issueDate: d.issueDate.toISOString().slice(0, 10),
-          payableCents: d.payableCents,
-          vatCents: d.vatCents,
-          ublSha256: sha256(d.ublXml ?? ''),
-          ciiSha256: sha256(d.ciiXml ?? ''),
-          prevHash: d.prevHash ?? '',
-          sha256: d.sha256 ?? '',
-          seal: d.seal ?? '',
-        })),
-        sealHmac,
-        state,
-      );
-      count += docs.length;
-      if (result.problem) {
-        problem = result.problem;
-        break;
-      }
-      state = result.state;
-      if (docs.length < 500) break;
-    }
+    const { count, problem } = await verifyOrganizationChain(organizationId);
     res.render('admin/chain', { org, count, problem });
   });
 

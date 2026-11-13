@@ -20,6 +20,11 @@ export interface ChainEntryContent {
   ublSha256: string;
   ciiSha256: string;
   prevHash: string;
+  /**
+   * Отпечатъкът на входа, от който се рисува PDF-ът (v2, от одита на 13.11.2026). Липсва — звено v1 от
+   * преди това: тогава записът е старият и се проверява по стария начин.
+   */
+  inputSha256?: string | null;
 }
 
 export function sha256(value: string): string {
@@ -29,7 +34,7 @@ export function sha256(value: string): string {
 /** Каноничен запис: фиксиран ред на полетата, числата като текст — един и същ вход дава един и същ хеш. */
 export function canonical(entry: ChainEntryContent): string {
   return [
-    'fakturist-ledger-v1',
+    entry.inputSha256 ? 'fakturist-ledger-v2' : 'fakturist-ledger-v1',
     entry.organizationId,
     entry.chainIndex.toString(),
     entry.number,
@@ -41,7 +46,25 @@ export function canonical(entry: ChainEntryContent): string {
     entry.ublSha256,
     entry.ciiSha256,
     entry.prevHash,
+    ...(entry.inputSha256 ? [entry.inputSha256] : []),
   ].join('\n');
+}
+
+/** JSON с подредени ключове — един и същ вход дава един и същ текст и след запис в jsonb. */
+export function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
+  if (value && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .filter(([, v]) => v !== undefined)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${canonicalJson(v)}`).join(',')}}`;
+  }
+  return JSON.stringify(value) ?? 'null';
+}
+
+/** Отпечатъкът на записания вход (както е в базата — затова през JSON и подредени ключове). */
+export function inputHash(input: unknown): string {
+  return sha256(canonicalJson(JSON.parse(JSON.stringify(input ?? null))));
 }
 
 export function entryHash(entry: ChainEntryContent): string {

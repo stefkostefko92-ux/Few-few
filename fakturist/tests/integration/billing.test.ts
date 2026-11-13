@@ -16,8 +16,7 @@ const { activatePayment, createOrder, quotePlan, BillingError } =
   await import('../../src/billing/orders.js');
 const { reconcileCardPayments, settleRevolutOrder } = await import('../../src/billing/card.js');
 const { expireSubscriptions } = await import('../../src/billing/expiry.js');
-const { verifyChain, sha256 } = await import('../../src/ledger/chain.js');
-const { sealHmac } = await import('../../src/auth/keys.js');
+const { verifyOrganizationChain } = await import('../../src/ledger/verify-org.js');
 const { paidOn } = await import('../../src/routes/admin-actions.js');
 
 /**
@@ -288,28 +287,7 @@ test('банков превод: проформа с основанието, м�
   assert.ok(entry);
   const history = await (await http.get(customer, `/app/o/${customerOrgId}/plan`)).text();
   assert.match(history, new RegExp(`/shkafche/${entry.id}`));
-  const docs = await prisma.document.findMany({
-    where: { organizationId: supplierOrgId },
-    orderBy: { chainIndex: 'asc' },
-  });
-  const problem = verifyChain(
-    docs.map((d) => ({
-      organizationId: d.organizationId,
-      chainIndex: d.chainIndex!,
-      number: d.number ?? '',
-      typeCode: d.typeCode,
-      status: 'ISSUED' as const,
-      issueDate: d.issueDate.toISOString().slice(0, 10),
-      payableCents: d.payableCents,
-      vatCents: d.vatCents,
-      ublSha256: sha256(d.ublXml ?? ''),
-      ciiSha256: sha256(d.ciiXml ?? ''),
-      prevHash: d.prevHash ?? '',
-      sha256: d.sha256 ?? '',
-      seal: d.seal ?? '',
-    })),
-    sealHmac,
-  );
+  const { problem } = await verifyOrganizationChain(supplierOrgId);
   assert.equal(problem, null, 'веригата на доставчика е цяла');
   const audit = await prisma.auditLog.findFirstOrThrow({
     where: { action: 'billing.payment.completed', targetId: payment.id },
