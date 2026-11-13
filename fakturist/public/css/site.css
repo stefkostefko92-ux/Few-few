@@ -262,6 +262,41 @@ a {
   background: var(--sheet);
 }
 
+/* Стъклена лента: съдържанието прозира под нея; сянката се появява със скрола (CSS, без JavaScript). */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .top {
+    background: color-mix(in srgb, var(--sheet) 78%, transparent);
+    -webkit-backdrop-filter: saturate(1.5) blur(14px);
+    backdrop-filter: saturate(1.5) blur(14px);
+  }
+}
+
+.top::after {
+  content: '';
+  position: absolute;
+  inset: 100% 0 auto;
+  height: 1.25rem;
+  background: linear-gradient(to bottom, rgb(12 25 41 / 0.08), transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .top::after {
+      animation: top-shade linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 120px;
+    }
+  }
+}
+
+@keyframes top-shade {
+  to {
+    opacity: 1;
+  }
+}
+
 .top-row {
   display: flex;
   align-items: center;
@@ -603,87 +638,7 @@ main {
   }
 }
 
-/* Начало: заглавна част с примерния документ */
-
-.hero {
-  padding-block: clamp(2rem, 5vw, 4rem) clamp(2.5rem, 6vw, 4.5rem);
-}
-
-.hero-grid {
-  display: grid;
-  gap: 2.5rem var(--gap);
-  align-items: start;
-}
-
-.hero-copy h1 {
-  max-width: 14ch;
-}
-
-@media (min-width: 64rem) {
-  .hero-grid {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-  }
-}
-
-.specimen {
-  min-width: 0;
-}
-
-.doc {
-  position: relative;
-  z-index: 1;
-  margin: 0;
-  padding: 1.4rem 1.25rem 1rem 3.4rem;
-  background: var(--sheet);
-  border: 1px solid var(--rule);
-  box-shadow: 0 1px 0 var(--rule);
-  /* Поле на счетоводна книга: две вертикални линии. */
-  background-image:
-    linear-gradient(
-      to right,
-      transparent 2.55rem,
-      var(--accent) 2.55rem,
-      var(--accent) calc(2.55rem + 1px),
-      transparent calc(2.55rem + 1px)
-    ),
-    linear-gradient(
-      to right,
-      transparent 2.75rem,
-      var(--rule) 2.75rem,
-      var(--rule) calc(2.75rem + 1px),
-      transparent calc(2.75rem + 1px)
-    );
-}
-
-.doc-head {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 0.25rem 1rem;
-  padding-bottom: 0.8rem;
-  border-bottom: 2px solid var(--ink);
-}
-
-.doc-kind {
-  margin: 0;
-  font-size: var(--step-2);
-  font-weight: 600;
-  letter-spacing: -0.015em;
-}
-
-.doc-no {
-  margin: 0;
-}
-
-.doc-no .mono {
-  font-size: 1.15rem;
-  font-weight: 500;
-}
-
-.doc-label {
-  color: var(--ink-2);
-}
+/* Номерът на полето по EN 16931 */
 
 .bt {
   display: inline-block;
@@ -698,81 +653,10 @@ main {
   white-space: nowrap;
 }
 
-.doc-meta {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.8rem 1rem;
-  margin-block: 0.9rem;
-  font-size: var(--step--1);
-}
-
-.doc-meta dt {
-  color: var(--ink-2);
-}
-
-.doc-meta dd {
-  font-weight: 500;
-}
-
-.doc-lines {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--step--1);
-  font-variant-numeric: tabular-nums;
-}
-
-.doc-lines th,
-.doc-lines td {
-  padding: 0.5rem 0;
-  border-top: 1px solid var(--rule);
-  text-align: left;
-  font-weight: 400;
-}
-
-.doc-lines td {
-  text-align: right;
-}
-
-.doc-total th,
-.doc-total td {
-  border-top: 2px solid var(--ink);
-  font-weight: 600;
-  font-size: var(--step-0);
-}
-
-.doc-seal {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  max-width: none;
-  margin: 1rem 0 0.8rem;
-  font-size: 0.8rem;
-  color: var(--ink-2);
-  line-height: 1.45;
-}
-
-.doc-seal .mono {
-  color: var(--ink);
-}
-
-.seal-mark {
-  flex: none;
-  width: 2.1rem;
-  height: 2.1rem;
-  border: 2px solid var(--accent);
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--accent) 0 28%, transparent 30%);
-}
-
 figcaption {
   font-size: 0.8rem;
   color: var(--ink-2);
   line-height: 1.4;
-}
-
-.doc figcaption {
-  padding-top: 0.6rem;
-  border-top: 1px solid var(--rule);
 }
 
 /* Панелът с XML: тъмен и в двете теми */
@@ -783,19 +667,6 @@ figcaption {
   background: var(--code-bg);
   color: var(--code-ink);
   border-radius: var(--radius);
-}
-
-.specimen .xml {
-  margin-top: -0.5rem;
-  z-index: 0;
-}
-
-@media (min-width: 40rem) {
-  .specimen .xml {
-    margin-left: 3rem;
-    margin-top: -1.5rem;
-    padding-top: 0.75rem;
-  }
 }
 
 .xml-bar {
@@ -899,54 +770,6 @@ figcaption {
   .ledger-ref {
     grid-column: 2;
   }
-}
-
-/* Верига от отпечатъци */
-
-.chain {
-  margin: 0;
-}
-
-.chain-list {
-  list-style: none;
-}
-
-.chain-list li {
-  position: relative;
-  display: grid;
-  gap: 0.15rem;
-  padding: 0.85rem 1rem;
-  background: var(--sheet);
-  border: 1px solid var(--rule);
-  font-size: 0.85rem;
-}
-
-.chain-list li + li {
-  margin-top: 1.1rem;
-}
-
-.chain-list li + li::before {
-  content: '';
-  position: absolute;
-  left: 1.6rem;
-  top: -1.1rem;
-  height: 1.1rem;
-  border-left: 2px solid var(--accent);
-}
-
-.chain-doc {
-  font-size: 1rem;
-  font-weight: 500;
-}
-
-.chain-k {
-  display: inline-block;
-  min-width: 5.5rem;
-  color: var(--ink-2);
-}
-
-.chain figcaption {
-  margin-top: 0.75rem;
 }
 
 /* Дати */
@@ -1808,72 +1631,6 @@ figcaption {
 .legal-others li a {
   display: inline-block;
   padding: 0.3rem 0;
-}
-
-/* Движение: едно оркестрирано появяване на XML, само веднъж и само ако се позволява */
-
-@media (prefers-reduced-motion: no-preference) {
-  .specimen .xl {
-    animation: line-in 0.45s ease-out both;
-  }
-
-  .specimen .xl:nth-child(1) {
-    animation-delay: 0.15s;
-  }
-  .specimen .xl:nth-child(2) {
-    animation-delay: 0.3s;
-  }
-  .specimen .xl:nth-child(3) {
-    animation-delay: 0.45s;
-  }
-  .specimen .xl:nth-child(4) {
-    animation-delay: 0.6s;
-  }
-  .specimen .xl:nth-child(5) {
-    animation-delay: 0.75s;
-  }
-  .specimen .xl:nth-child(6) {
-    animation-delay: 0.9s;
-  }
-  .specimen .xl:nth-child(7) {
-    animation-delay: 1.05s;
-  }
-  .specimen .xl:nth-child(8) {
-    animation-delay: 1.2s;
-  }
-  .specimen .xl:nth-child(9) {
-    animation-delay: 1.35s;
-  }
-  .specimen .xl:nth-child(10) {
-    animation-delay: 1.5s;
-  }
-  .specimen .xl:nth-child(11) {
-    animation-delay: 1.65s;
-  }
-  .specimen .xl:nth-child(12) {
-    animation-delay: 1.8s;
-  }
-  .specimen .xl:nth-child(13) {
-    animation-delay: 1.95s;
-  }
-
-  .seal-mark {
-    animation: stamp 0.5s ease-out 0.1s both;
-  }
-}
-
-@keyframes line-in {
-  from {
-    opacity: 0;
-    transform: translateX(-0.4rem);
-  }
-}
-
-@keyframes stamp {
-  from {
-    opacity: 0;
-    transform: scale(1.6);
-  }
 }
 
 @media print {

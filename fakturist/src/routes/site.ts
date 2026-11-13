@@ -5,6 +5,7 @@ import { config } from '../config.js';
 import { FEATURES, FEATURE_GROUPS } from '../features.js';
 import { LOCALE_TAG, translator, type Locale } from '../i18n.js';
 import { safeJson } from '../http/json-ld.js';
+import { demoChain } from '../site-demo-chain.js';
 import { publicPlans } from '../billing/public-plans.js';
 import { pageUrl, SITE_PAGES, type SitePageId } from '../seo/pages.js';
 import { faqItems, structuredData } from '../seo/structured-data.js';
@@ -44,6 +45,7 @@ async function renderSitePage(
   res.locals.urls = Object.fromEntries(
     SITE_PAGES.map((page) => [page.id, page.paths[locale]]),
   ) as Record<SitePageId, string>;
+  res.locals.demoChain = demoChain();
   res.locals.registrationOpen = config().REGISTRATION_OPEN;
   res.locals.seo = {
     title: t(`site.${id}.meta.title`),

@@ -62,7 +62,7 @@
     },
     "hero": {
       "title": "Bulgarian VAT invoices, also saved as structured XML",
-      "lead": "Fakturist checks the VAT Act rules at the moment of issue and saves every document under the European standard EN 16931, in UBL 2.1 and CII. That includes the free plan.",
+      "lead": "Fakturist checks the main VAT Act rules at the moment of issue and saves every document under the European standard EN 16931, in UBL 2.1 and CII. That includes the free plan.",
       "secondary": "See pricing",
       "tertiary": "For accounting firms"
     },
@@ -124,7 +124,7 @@
     "why": {
       "title": "Why EN 16931 now",
       "p1": "A PDF invoice is a picture of the data. The recipient's software cannot read the total or the VAT from it without text recognition. A structured document carries the same data in named fields: BT-1 is the number, BT-2 is the date, BT-3 is the document type.",
-      "p2": "According to the bill as introduced, mandatory structured e-invoices between companies and to the state start on 1 July 2028. Most invoicing programs today produce PDF, not structured XML. The documents you issue in Fakturist now are already in these formats.",
+      "p2": "According to the bill as introduced, mandatory structured e-invoices between companies and to the state start on 1 July 2028. Many invoicing programs today produce only PDF, without structured XML. The documents you issue in Fakturist now are already in these formats.",
       "more": "Guide to the 2028 e-invoices",
       "timelineLabel": "According to the text of the bill as introduced",
       "t1": {
@@ -300,7 +300,7 @@
       },
       "3": {
         "title": "Issue on its behalf",
-        "text": "The document is checked against the VAT rules, carries the authorisation and also comes out as XML."
+        "text": "The document is checked against the main VAT Act rules, carries the authorisation and also comes out as XML."
       },
       "4": {
         "title": "Give colleagues roles",
@@ -385,7 +385,7 @@
     "q1": {
       "title": "What does the bill provide?",
       "p1": "The bill provides for mandatory structured e-invoices between companies (B2B) and to the state (B2G) from 1 July 2028. They will travel over the CEF eDelivery AS4 network in UBL 2.1 and CII under EN 16931.",
-      "p2": "The issuer will send the invoice only to the recipient's address in a National Register. There will be accredited providers and certified software. The conditions for them will be set in an ordinance."
+      "p2": "The issuer will send the invoice only to the recipient's address in the register the bill creates. There will be accredited providers and certified software. The conditions for them will be set in an ordinance."
     },
     "q2": {
       "title": "What are the dates?",
@@ -410,7 +410,7 @@
     },
     "q5": {
       "title": "How will the invoice be sent?",
-      "p1": "The issuer will send only to the recipient's address in a National Register, over the CEF eDelivery AS4 network. The details of the register and of the providers will be in the ordinance. Those conditions are not published yet."
+      "p1": "The issuer will send only to the recipient's address in the register the bill creates, over the CEF eDelivery AS4 network. The details of the register and of the providers will be in the ordinance. Those conditions are not published yet."
     },
     "q6": {
       "title": "What is still unclear?",

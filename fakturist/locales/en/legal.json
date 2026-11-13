@@ -1,7 +1,7 @@
 {
   "navLabel": "Legal documents",
   "othersTitle": "Other documents",
-  "version": "In force from {date}",
+  "version": "Version {version}, in force from {date}",
   "keywords": "Fakturist, Carbon Stealth, terms of service, privacy policy, data processing agreement, GDPR, online invoicing",
   "terms": {
     "title": "Terms of service",

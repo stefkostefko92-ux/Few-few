@@ -78,7 +78,7 @@
   },
   "peppol": {
     "name": "Sending and receiving over the e-invoicing network",
-    "description": "Transport over CEF eDelivery AS4, as the 2028 bill provides."
+    "description": "Over the Peppol network (AS4); we will check conformity with the regulation under the 2028 bill once it is published."
   },
   "nra-reporting": {
     "name": "Reporting to the National Revenue Agency",

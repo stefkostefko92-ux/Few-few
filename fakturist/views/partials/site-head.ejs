@@ -59,6 +59,12 @@
 <link rel="preload" href="/fonts/ibm-plex-sans-<%= preload %>-600-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/fonts/fonts.css?v=<%= v %>">
 <link rel="stylesheet" href="/css/site.css?v=<%= v %>">
+<% if (!isErr && page === 'home') { -%>
+<link rel="stylesheet" href="/css/site-home.css?v=<%= v %>">
+<link rel="stylesheet" href="/css/site-proof.css?v=<%= v %>">
+<link rel="stylesheet" href="/css/site-flow.css?v=<%= v %>">
+<link rel="stylesheet" href="/css/site-motion.css?v=<%= v %>">
+<% } -%>
 </head>
 <body class="page-<%= isErr ? 'error' : page %>">
 <a class="skip" href="#main"><%= t('site.skip') %></a>

@@ -6,7 +6,7 @@
   <article class="legal wrap">
     <header class="legal-head">
       <h1><%= t('legal.' + docId + '.title') %></h1>
-      <p class="legal-meta"><%= t('legal.version', { date: versionLabel }) %></p>
+      <p class="legal-meta"><%= t('legal.version', { date: versionLabel, version: version }) %></p>
     </header>
     <div class="legal-body">
       <%- include(docId + '/' + lang) %>

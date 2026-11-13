@@ -13,6 +13,7 @@ import { FEATURES, FEATURE_GROUPS } from '../src/features.js';
 import { DEFAULT_PLANS } from '../src/billing/plans.js';
 import { formatEuro } from '../src/routes/site.js';
 import { safeJson } from '../src/http/json-ld.js';
+import { demoChain } from '../src/site-demo-chain.js';
 import { pageUrl, SITE_PAGES, type SitePageId } from '../src/seo/pages.js';
 import { faqItems, structuredData } from '../src/seo/structured-data.js';
 import { translator, type Locale } from '../src/i18n.js';
@@ -30,6 +31,7 @@ const BASE = 'https://fakturist.example';
 const NONCE = 'preview-nonce';
 const plans = DEFAULT_PLANS.filter((p) => p.isPublic).map((p) => ({ ...p }));
 const noPrices = args.includes('--no-prices');
+const closed = args.includes('--closed');
 
 function commonLocals(locale: Locale): Record<string, unknown> {
   const t = translator(locale);
@@ -41,7 +43,8 @@ function commonLocals(locale: Locale): Record<string, unknown> {
     brand: BRAND,
     company: COMPANY,
     urls: Object.fromEntries(SITE_PAGES.map((p) => [p.id, p.paths[locale]])),
-    registrationOpen: true,
+    registrationOpen: !closed,
+    demoChain: demoChain(),
     cspNonce: NONCE,
     v: 'preview',
   };

@@ -1,6 +1,6 @@
 </main>
 <footer class="foot">
-  <span><%= company.name %> · <%= lang === 'bg' ? 'ЕИК' : 'EIK' %> <%= company.eik %></span>
+  <span><%= lang === 'bg' ? company.nameBg : company.name %> · <%= lang === 'bg' ? 'ЕИК' : 'EIK' %> <%= company.eik %></span>
   <nav class="foot-links" aria-label="<%= t('legal.navLabel') %>">
     <a href="<%= legalUrl('terms') %>"><%= t('legal.terms.short') %></a>
     <a href="<%= legalUrl('privacy') %>"><%= t('legal.privacy.short') %></a>
