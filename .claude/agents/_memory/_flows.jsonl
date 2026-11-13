@@ -592,3 +592,5 @@
 {"t":"handoff","ts":"2026-11-13T20:20:42.253Z","id":"r241f4c94","from":"kachestveniyat","to":"kodadjiyata","status":"има бележки","run":"a3b0659b"}
 {"t":"handoff","ts":"2026-11-13T20:21:49.124Z","id":"r241f4c94","from":"pravniyat-razbirach","to":"човек","status":"има бележки","run":"81a8770a"}
 {"t":"handoff","ts":"2026-11-13T20:24:56.391Z","id":"r241f4c94","from":"izpitatelya","to":"kachestveniyat","status":"наред","run":"04daa106"}
+{"t":"start","ts":"2026-11-13T21:51:53.797Z","id":"rb1bfc4fe","flow":"авто","lead":"skorostnika","auto":true}
+{"t":"handoff","ts":"2026-11-13T21:51:53.797Z","id":"rb1bfc4fe","from":"skorostnika","to":"dizayner","status":"има бележки","run":"a91575ba"}
