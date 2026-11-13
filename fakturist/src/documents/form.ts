@@ -138,6 +138,8 @@ export function inputToFormValues(input: unknown): Record<string, unknown> {
       postalCode: str(address['postalCode']),
       countryCode: str(address['countryCode']),
       email: str(record(buyer['contact'])['email']),
+      eScheme: str(record(buyer['electronicAddress'])['scheme']),
+      eValue: str(record(buyer['electronicAddress'])['value']),
     },
     payment: {
       meansCode: str(payment['meansCode']),

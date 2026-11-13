@@ -72,6 +72,8 @@ src/
   api/           keys.ts (ключовете) · router.ts (REST v1) · serialize.ts (документът като JSON)
   recurring/     schedule.ts (графикът, периодът) · recurring.ts (шаблоните) · run.ts (работникът) · loop.ts
   proforma/      proforma.ts (създаване, отказ, писмо) · link.ts (проформа → фактура) · render.ts (PDF) · mail.ts
+  peppol/        access-point.ts (интерфейсът) · econnect.ts (eConnect PSB) · ids.ts · settings.ts · participants.ts ·
+                 transmissions.ts (опашката) · webhook.ts (известията) · loop.ts
   features.ts    регистърът на функциите (live/planned + дата) — плановете, панелът и витрината четат оттук
   seo/           pages.ts (страниците на витрината — единствен списък) · structured-data.ts (JSON-LD)
   catalog/       schemas.ts (zod на формите) · catalog.ts (контрагенти, артикули) · series.ts (сериите под
@@ -81,7 +83,7 @@ src/
   routes/        site · seo · health · pwa · legal · auth · account (нова парола, имейл) · install ·
                  invite (/pokana) · member-invite (/chlen) · app (+ app-issue, app-members, app-catalog, app-security, app-inbox,
                  app-clients, app-settings, app-plan, app-recurring, app-doc-payments, app-api-keys, app-bank, app-incoming,
-                 app-proforma, app-issue-view, app-shared) · admin (+ admin-settings, admin-actions) ·
+                 app-proforma, app-peppol, app-issue-view, app-shared) · admin (+ admin-settings, admin-actions) ·
                  webhooks
   http/          upload.ts — multipart (multer, в паметта) + CSRF след разчитането · view · ip · cookies
 views/           site/ (витрината — Дизайнера) · app/ · admin/ · auth/ · errors/ · partials/
@@ -143,6 +145,20 @@ scripts/         conformance/run.mjs (официалната проверка) �
   PDF: „ПРОФОРМА ФАКТУРА“, „Срок за плащане“, без дата на данъчно събитие и без звено, с бележката, че не
   е данъчен документ. Писмо `proforma.sent` (само PDF, без XML) — в тавана от 200 писма навън.
   Peppol не допуска вид 325 — проформата никога не става е-фактура.
+- **Peppol** (SPEC 57–60, `src/peppol/`, „Peppol“ на фирмата; решение на собственика 13.11.2026): през
+  сертифицирана точка за достъп — eConnect PSB (`econnect.ts`; интерфейсът е `access-point.ts`, доставчикът се
+  сменя). Ключовете — само от панела (интеграция `peppol`: среда acceptance/production, client ID, тайна;
+  OAuth2 client credentials, scope `ap`); без тях всичко е изключено. Адрес `9926:BG<ДДС>` (`ids.ts`) — фирма
+  без ДДС номер не се регистрира. Регистрацията (OWNER/ADMIN, пряк член) праща визитка и адрес за
+  известията с нова тайна след „#“ (своя за всяка фирма, шифрована с AAD = id-то ѝ). „Изпрати през Peppol“
+  при издаване → профил Peppol BIS 3 + `PeppolTransmission` в СЪЩАТА транзакция (без активна регистрация
+  или е-адрес на получателя — отказ); работникът (`loop.ts`, на 2 мин) заема реда с условен запис и качва
+  UBL-а с нашия UUID (`X-EConnect-DocumentId`; 409 = вече прието); временна грешка → 2^n мин до 8 опита.
+  Известията (`/webhooks/peppol`, `webhook.ts`): HMAC-SHA256 на суровото тяло (`X-EConnect-Signature:
+sha256=`), `sentOn` ≤ 5 мин, повторение по `X-EConnect-Delivery`; обработеното не се обработва втори път;
+  грешка при изтегляне → 500 (точката за достъп опитва пак). Полученото влиза в регистъра на входящите
+  (`registerIncoming`, източник PEPPOL). Формата на регистрацията (`enrollBody`) е по публичното описание —
+  сверява се при първата проба в acceptance. Витрината пише Peppol „предстои“ до успешна проба (SPEC 60).
 - **Повтарящи се фактури** (SPEC 51, `src/recurring/`): шаблон от издадена фактура 380 („Повтаряй“) —
   входът ѝ без номер, дати, доставчик и предплатено; текстът на редовете се редактира (`{период}` →
   „ноември 2026“). Работникът (`run.ts`, на 10 мин) заключва шаблона (FOR UPDATE SKIP LOCKED) и издава в

@@ -15,6 +15,7 @@ import { appRecurringRouter } from './app-recurring.js';
 import { appDocPaymentsRouter } from './app-doc-payments.js';
 import { appApiKeysRouter } from './app-api-keys.js';
 import { appBankRouter } from './app-bank.js';
+import { appPeppolRouter } from './app-peppol.js';
 import { appProformaRouter } from './app-proforma.js';
 import { appIncomingRouter } from './app-incoming.js';
 import { PAYABLE_TYPES } from '../documents/payments.js';
@@ -46,6 +47,7 @@ async function monthUsage(
 
 /** Първият сегмент след /app/o/<id>/ на страниците с менюто на фирмата (HTML; файловете — не). */
 const ORG_NAV_SECTIONS = new Set([
+  'peppol',
   'shkafche',
   'vhodyashti',
   'proformi',
@@ -130,6 +132,7 @@ export function appRouter(): Router {
   router.use(appApiKeysRouter());
   router.use(appBankRouter());
   router.use(appProformaRouter());
+  router.use(appPeppolRouter());
   router.use(appIncomingRouter());
 
   router.get('/app', async (req, res) => {
@@ -223,6 +226,9 @@ export function appRouter(): Router {
         },
         recurring: { select: { id: true, name: true } },
         proforma: { select: { id: true, number: true } },
+        peppolTransmission: {
+          select: { status: true, receiverPartyId: true, sentAt: true, lastError: true },
+        },
       },
     });
     if (!document) throw new HttpError(404);
@@ -245,6 +251,15 @@ export function appRouter(): Router {
       today: sofiaToday(),
       money: (cents: bigint) => money(cents, document.currency, res.locals.lang),
       issued: req.query['issued'] === '1',
+      peppolResult:
+        typeof req.query['peppol'] === 'string' && /^[a-zA-Z]{2,20}$/.test(req.query['peppol'])
+          ? req.query['peppol']
+          : '',
+      canPeppol:
+        canIssue &&
+        document.status === 'ISSUED' &&
+        !document.peppolTransmission &&
+        (document.ublXml ?? '').includes('urn:fdc:peppol.eu:2017:poacc:billing:3.0'),
       // „Анулирай и издай нов“ — издаден документ без известия към него (SPEC 47).
       canAnnul:
         roleCan(access.role, 'documents.cancel') &&

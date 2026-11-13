@@ -81,6 +81,8 @@
       <label><%= t('app.doc.postalCode') %><input name="buyer[postalCode]" class="mono" value="<%= val('buyer.postalCode') %>"></label>
       <label><%= t('app.doc.country') %><input name="buyer[countryCode]" maxlength="2" class="mono" value="<%= val('buyer.countryCode', 'BG') %>"></label>
       <label class="span-2"><%= t('app.doc.buyerEmail') %><input type="email" name="buyer[email]" maxlength="200" autocomplete="off" value="<%= val('buyer.email') %>"><span class="hint"><%= t('app.doc.buyerEmailHint') %></span></label>
+      <label><%= t('app.peppol.eScheme') %><input name="buyer[eScheme]" maxlength="4" inputmode="numeric" class="mono" value="<%= val('buyer.eScheme') %>" placeholder="9926"></label>
+      <label class="span-2"><%= t('app.peppol.eValue') %><input name="buyer[eValue]" maxlength="100" class="mono" autocomplete="off" value="<%= val('buyer.eValue') %>" placeholder="BG123456789"><span class="hint"><%= t('app.peppol.eHint') %></span></label>
       <label class="check span-2"><input type="checkbox" name="saveBuyer"<%= val('saveBuyer') === 'on' ? ' checked' : '' %>> <%= t('app.catalog.saveBuyer') %></label>
     </div>
   </fieldset>
@@ -158,6 +160,10 @@
       <label><%= t('app.doc.note') %><textarea name="note" rows="2"><%= val('note') %></textarea></label>
     </fieldset>
   </div>
+  <% if (locals.peppolReady) { %>
+  <label class="check"><input type="checkbox" name="sendPeppol"<%= val('sendPeppol') === 'on' ? ' checked' : '' %>> <%= t('app.peppol.sendOnIssue') %></label>
+  <p class="hint"><%= t('app.peppol.sendOnIssueHint') %></p>
+  <% } %>
   <button type="submit" class="big"><%= t('app.doc.issue') %></button>
 </form>
 <%- include('../partials/app-foot') %>

@@ -38,9 +38,30 @@ export async function uploadIncoming(
   actorId: string,
   file: { name: string | null; buffer: Buffer },
 ): Promise<{ id: string; valid: boolean; issues: Issue[] }> {
+  return registerIncoming({
+    organizationId: access.organizationId,
+    actorId,
+    fileName: file.name,
+    buffer: file.buffer,
+    source: 'UPLOAD',
+  });
+}
+
+/**
+ * Записът в регистъра — общ за качения файл и за полученото през Peppol (SPEC 59): същите проверки,
+ * същият отпечатък (повторен документ — `duplicate`). `actorId` е null, когато го е получила системата.
+ */
+export async function registerIncoming(input: {
+  organizationId: string;
+  actorId: string | null;
+  fileName: string | null;
+  buffer: Buffer;
+  source: 'UPLOAD' | 'PEPPOL';
+}): Promise<{ id: string; valid: boolean; issues: Issue[] }> {
+  const { buffer } = input;
   let xml: string;
   try {
-    xml = new TextDecoder('utf-8', { fatal: true }).decode(file.buffer);
+    xml = new TextDecoder('utf-8', { fatal: true }).decode(buffer);
   } catch {
     throw new IncomingRegisterError('encoding');
   }
@@ -55,7 +76,7 @@ export async function uploadIncoming(
   if (!number || !supplierName) throw new IncomingError('notInvoice');
 
   const org = await prisma.organization.findUniqueOrThrow({
-    where: { id: access.organizationId },
+    where: { id: input.organizationId },
     select: { eik: true, vatNumber: true },
   });
   const issues = [...check.issues];
@@ -73,14 +94,14 @@ export async function uploadIncoming(
     });
   }
   const valid = check.parsed !== null && !check.issues.some((i) => i.severity === 'fatal');
-  const sha256 = createHash('sha256').update(file.buffer).digest('hex');
+  const sha256 = createHash('sha256').update(buffer).digest('hex');
   try {
     return await prisma.$transaction(async (tx) => {
       const created = await tx.incomingInvoice.create({
         data: {
-          organizationId: access.organizationId,
+          organizationId: input.organizationId,
           format: check.format,
-          fileName: file.name?.slice(0, 200) ?? null,
+          fileName: input.fileName?.slice(0, 200) ?? null,
           xml,
           sha256,
           supplierName: supplierName.slice(0, 200),
@@ -100,14 +121,15 @@ export async function uploadIncoming(
             message: i.message,
           })) as unknown as Prisma.InputJsonValue,
           valid,
-          createdById: actorId,
+          source: input.source,
+          createdById: input.actorId,
         },
         select: { id: true },
       });
       await audit(tx, {
-        actorId,
-        organizationId: access.organizationId,
-        action: 'incoming.uploaded',
+        actorId: input.actorId,
+        organizationId: input.organizationId,
+        action: input.source === 'PEPPOL' ? 'incoming.peppol' : 'incoming.uploaded',
         targetType: 'IncomingInvoice',
         targetId: created.id,
         details: { format: check.format, valid },

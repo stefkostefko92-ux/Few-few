@@ -6,6 +6,7 @@ import { startOutboxLoop } from './mail/outbox.js';
 import { startMaintenanceLoop } from './maintenance.js';
 import { startBillingLoop } from './billing/loop.js';
 import { startAutomationLoop } from './recurring/loop.js';
+import { startPeppolLoop } from './peppol/loop.js';
 
 async function main(): Promise<void> {
   const cfg = config();
@@ -14,6 +15,7 @@ async function main(): Promise<void> {
   startMaintenanceLoop();
   startBillingLoop();
   startAutomationLoop();
+  startPeppolLoop();
   const server = app.listen(cfg.PORT, cfg.HOST, () => {
     logger.info({ port: cfg.PORT }, 'fakturist слуша');
   });

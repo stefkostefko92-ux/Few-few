@@ -20,6 +20,8 @@ import type { OrgAccess } from '../auth/guards.js';
 import { recheckAccess } from './recheck.js';
 import type { PdfLanguage } from './pdf-labels.js';
 import { linkProformaInvoice } from '../proforma/link.js';
+import { partyIdFromAddress } from '../peppol/ids.js';
+import { queueTransmission } from '../peppol/transmissions.js';
 
 /**
  * Това, което издаващият подава: всичко без номера и без доставчика. Доставчикът идва от данните на
@@ -38,6 +40,11 @@ export interface IssueOptions {
   pdfLanguage?: PdfLanguage;
   /** „Издай фактура“ от проформа: проформата става INVOICED в същата транзакция (src/proforma/link.ts). */
   fromProforma?: string;
+  /**
+   * „Изпрати през Peppol“ (SPEC 58): документът се издава в профил Peppol BIS 3 (изисква електронните
+   * адреси) и предаването се записва в същата транзакция — без активна регистрация на фирмата е отказ.
+   */
+  peppol?: boolean;
 }
 
 export class IssueRejected extends Error {
@@ -45,6 +52,16 @@ export class IssueRejected extends Error {
     super('Документът не минава проверките');
   }
 }
+
+const PEPPOL_NO_RECEIVER: Issue = {
+  rule: 'PEPPOL-RECEIVER',
+  severity: 'fatal',
+  path: 'buyer.electronicAddress',
+  message: {
+    bg: 'За Peppol е нужен електронният адрес на получателя (напр. 9926 и ДДС номерът му).',
+    en: 'Peppol needs the buyer electronic address (e.g. 9926 and their VAT number).',
+  },
+};
 
 export class SeriesExhausted extends Error {
   constructor() {
@@ -141,7 +158,8 @@ export async function issueInTx(
   options: IssueOptions,
   settings: IssueSettings,
 ): Promise<IssueResult> {
-  const { deadlineDays, requireBankAccount, profile, signature } = settings;
+  const { deadlineDays, requireBankAccount, signature } = settings;
+  const profile = options.peppol ? 'peppol' : settings.profile;
   {
     const orgs = await tx.$queryRaw<Array<{ id: string }>>`
       SELECT "id" FROM "Organization" WHERE "id" = ${access.organizationId} FOR UPDATE`;
@@ -251,6 +269,16 @@ export async function issueInTx(
         mandateId: access.mandateId,
       },
     });
+    if (options.peppol) {
+      const receiverPartyId = partyIdFromAddress(built.input.buyer.electronicAddress);
+      if (!receiverPartyId) throw new IssueRejected([PEPPOL_NO_RECEIVER]);
+      await queueTransmission(tx, {
+        organizationId: org.id,
+        documentId: document.id,
+        receiverPartyId,
+        actorId,
+      });
+    }
     if (options.fromProforma) {
       await linkProformaInvoice(tx, {
         organizationId: org.id,

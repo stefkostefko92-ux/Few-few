@@ -4,6 +4,8 @@ import { prisma } from '../db.js';
 import { errorMessage, logger } from '../logger.js';
 import { sha256 } from '../ledger/chain.js';
 import { verifyRevolutSignature } from '../billing/revolut.js';
+import { handlePeppolWebhook } from '../peppol/webhook.js';
+import { accessPoint } from '../peppol/settings.js';
 import { revolutSettings } from '../admin/integrations.js';
 import { settleRevolutOrder } from '../billing/card.js';
 
@@ -21,6 +23,21 @@ const RevolutEvent = z.object({
  */
 export function webhooksRouter(): Router {
   const router = Router();
+  // Peppol (SPEC 59): подписът е с тайната на фирмата по `partyId` (src/peppol/webhook.ts).
+  router.post(
+    '/webhooks/peppol',
+    express.raw({ type: 'application/json', limit: '64kb' }),
+    async (req, res) => {
+      const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
+      const outcome = await handlePeppolWebhook({
+        rawBody,
+        signature: req.get('x-econnect-signature'),
+        delivery: req.get('x-econnect-delivery'),
+        ap: await accessPoint(),
+      });
+      res.status(outcome.status).end();
+    },
+  );
   router.post(
     '/webhooks/revolut',
     express.raw({ type: 'application/json', limit: '64kb' }),

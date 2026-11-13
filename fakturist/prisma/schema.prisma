@@ -231,31 +231,33 @@ model Organization {
   createdByFirm        Organization?    @relation("CreatedByFirm", fields: [createdByFirmId], references: [id], onDelete: SetNull)
   createdClients       Organization[]   @relation("CreatedByFirm")
 
-  memberships      Membership[]
-  firmMandates     ClientMandate[]    @relation("Firm")
-  clientMandates   ClientMandate[]    @relation("Client")
-  parties          Party[]
-  items            Item[]
-  series           DocumentSeries[]
-  documents        Document[]         @relation("DocumentOwner")
-  documentsAsFirm  Document[]         @relation("DocumentFirm")
-  subscriptions    Subscription[]
-  payments         Payment[]
-  auditEntries     AuditLog[]
-  inboxReceived    InboxEntry[]       @relation("InboxRecipient")
-  inboxSent        InboxEntry[]       @relation("InboxSender")
-  notifications    Notification[]
-  transferInvites  TransferInvite[]
-  pdfStyle         PdfStyle?
-  memberInvites    MemberInvite[]
-  legalAcceptances LegalAcceptance[]
-  recurring        RecurringInvoice[]
-  recurringAsFirm  RecurringInvoice[] @relation("RecurringFirm")
-  proformas        Proforma[]
-  apiKeys          ApiKey[]
-  incoming         IncomingInvoice[]
-  bankStatements   BankStatement[]
-  bankLines        BankLine[]
+  memberships         Membership[]
+  firmMandates        ClientMandate[]      @relation("Firm")
+  clientMandates      ClientMandate[]      @relation("Client")
+  parties             Party[]
+  items               Item[]
+  series              DocumentSeries[]
+  documents           Document[]           @relation("DocumentOwner")
+  documentsAsFirm     Document[]           @relation("DocumentFirm")
+  subscriptions       Subscription[]
+  payments            Payment[]
+  auditEntries        AuditLog[]
+  inboxReceived       InboxEntry[]         @relation("InboxRecipient")
+  inboxSent           InboxEntry[]         @relation("InboxSender")
+  notifications       Notification[]
+  transferInvites     TransferInvite[]
+  pdfStyle            PdfStyle?
+  memberInvites       MemberInvite[]
+  legalAcceptances    LegalAcceptance[]
+  recurring           RecurringInvoice[]
+  recurringAsFirm     RecurringInvoice[]   @relation("RecurringFirm")
+  proformas           Proforma[]
+  peppolParticipant   PeppolParticipant?
+  peppolTransmissions PeppolTransmission[]
+  apiKeys             ApiKey[]
+  incoming            IncomingInvoice[]
+  bankStatements      BankStatement[]
+  bankLines           BankLine[]
 
   @@index([kind])
   @@index([legalName])
@@ -435,6 +437,7 @@ model Document {
   paidAt             DateTime?            @db.Date
   payments           DocumentPayment[]
   proforma           Proforma?
+  peppolTransmission PeppolTransmission?
   reminders          PaymentReminder[]
   apiRequests        ApiIdempotency[]
   createdAt          DateTime             @default(now())
@@ -933,6 +936,8 @@ model IncomingInvoice {
   issues         Json
   valid          Boolean
   status         IncomingStatus @default(RECEIVED)
+  /// UPLOAD (качен файл) или PEPPOL (получен през точката за достъп).
+  source         String         @default("UPLOAD")
   paidAt         DateTime?      @db.Date
   createdById    String?
   createdBy      User?          @relation("IncomingCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
@@ -1033,4 +1038,73 @@ model Proforma {
   @@index([organizationId, createdAt])
   @@index([createdById])
   @@index([firmId])
+}
+
+enum PeppolParticipantStatus {
+  PENDING
+  ACTIVE
+  FAILED
+  REMOVED
+}
+
+/// Фирмата като получател в мрежата Peppol (SPEC 57): адрес `9926:BG…`, регистрацията при точката за
+/// достъп и тайната на известията ѝ (шифрована, AAD = id-то на фирмата).
+model PeppolParticipant {
+  id             String                  @id @default(cuid())
+  organizationId String                  @unique
+  organization   Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  partyId        String                  @unique
+  status         PeppolParticipantStatus @default(PENDING)
+  hookSecretEnc  String?
+  lastError      String?
+  enrolledAt     DateTime?
+  createdById    String?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+}
+
+enum PeppolTransmissionStatus {
+  QUEUED
+  ACCEPTED
+  SENT
+  RETRYING
+  FAILED
+}
+
+/// Изпращане на документ през Peppol (SPEC 58): записва се в транзакцията на издаването, праща го
+/// работникът; `providerDocumentId` е нашият UUID към точката за достъп — повторение не дублира.
+model PeppolTransmission {
+  id                 String                   @id @default(cuid())
+  organizationId     String
+  organization       Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  documentId         String                   @unique
+  document           Document                 @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  senderPartyId      String
+  receiverPartyId    String
+  providerDocumentId String                   @unique
+  status             PeppolTransmissionStatus @default(QUEUED)
+  attempts           Int                      @default(0)
+  nextAttemptAt      DateTime                 @default(now())
+  lastError          String?
+  sentAt             DateTime?
+  createdById        String?
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+
+  @@index([status, nextAttemptAt])
+  @@index([organizationId, createdAt])
+}
+
+/// Получените известия от точката за достъп — веднъж по `deliveryId` (повторено известие не прави нищо).
+model PeppolEvent {
+  id          String    @id @default(cuid())
+  deliveryId  String    @unique
+  topic       String
+  partyId     String
+  documentId  String?
+  receivedAt  DateTime  @default(now())
+  processedAt DateTime?
+  error       String?
+
+  @@index([receivedAt])
 }

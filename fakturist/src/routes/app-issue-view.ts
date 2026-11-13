@@ -4,6 +4,7 @@ import type { AnnulError } from '../documents/annul.js';
 import { ANNUL_REASONS } from '../documents/annul.js';
 import { COMMON_UNITS, PAYMENT_MEANS, VAT_CATEGORIES } from '../einvoice/codes.js';
 import { catalogForForm } from '../catalog/document-prefill.js';
+import { accessPoint } from '../peppol/settings.js';
 
 /** Формата за документ (views/app/document-new.ejs) — изгледът и съобщенията на маршрутите в app-issue.ts. */
 export type Issue = { rule: string; path: string; message: { bg: string; en: string } };
@@ -64,7 +65,7 @@ export async function renderNewDocument(
     typeof form['fromProforma'] === 'string' && ID.test(form['fromProforma'])
       ? form['fromProforma']
       : null;
-  const [org, series, catalog, replacing, proforma] = await Promise.all([
+  const [org, series, catalog, replacing, proforma, participant, ap] = await Promise.all([
     prisma.organization.findUniqueOrThrow({ where: { id: organizationId } }),
     prisma.documentSeries.findMany({ where: { organizationId }, orderBy: { name: 'asc' } }),
     catalogForForm(organizationId),
@@ -80,6 +81,11 @@ export async function renderNewDocument(
           select: { id: true, number: true },
         })
       : Promise.resolve(null),
+    prisma.peppolParticipant.findUnique({
+      where: { organizationId },
+      select: { status: true },
+    }),
+    accessPoint(),
   ]);
   // qs дава масив до 20 реда, а над това — обект с ключове „0“, „1“… (src/documents/form.ts, list()).
   const rawLines = form['lines'];
@@ -99,6 +105,7 @@ export async function renderNewDocument(
     values: form,
     replacing,
     proforma,
+    peppolReady: ap !== null && participant?.status === 'ACTIVE',
     annulReasons: ANNUL_REASONS,
     today,
     units: COMMON_UNITS,

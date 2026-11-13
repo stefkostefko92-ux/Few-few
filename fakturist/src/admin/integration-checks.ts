@@ -1,5 +1,6 @@
 import { errorMessage } from '../logger.js';
 import type { RevolutEnvironment } from './integrations.js';
+import { AccessPointError, type AccessPoint } from '../peppol/access-point.js';
 
 /**
  * „Провери връзката“ в мастър настройките. Резултатът се записва в Integration и се показва в панела,
@@ -57,6 +58,20 @@ export async function checkRevolut(
     return { ok: false, error: `HTTP ${response.status}` };
   } catch (error) {
     return { ok: false, error: scrub(errorMessage(error), [key]) || 'network' };
+  }
+}
+
+/** Peppol: токен от identity и `GET /api/v1/me` при точката за достъп. */
+export async function checkPeppol(ap: AccessPoint | null): Promise<CheckResult> {
+  if (!ap) return { ok: false, error: 'missingKey' };
+  try {
+    await ap.check();
+    return { ok: true, error: null };
+  } catch (error) {
+    if (error instanceof AccessPointError && error.code === 'unauthorized') {
+      return { ok: false, error: 'unauthorized' };
+    }
+    return { ok: false, error: scrub(errorMessage(error), []) || 'network' };
   }
 }
 

@@ -73,6 +73,12 @@ export const encryptIntegrationSecrets = (plaintext: string, code: string): stri
 export const decryptIntegrationSecrets = (payload: string, code: string): string =>
   decrypt('integration-secrets-v1', payload, `integration:${code}`);
 
+/** Тайната на известията от точката за достъп до Peppol — своя за всяка фирма, вързана с id-то ѝ. */
+export const encryptPeppolHookSecret = (plaintext: string, organizationId: string): string =>
+  encrypt('peppol-hook-v1', plaintext, `peppol:${organizationId}`);
+export const decryptPeppolHookSecret = (payload: string, organizationId: string): string =>
+  decrypt('peppol-hook-v1', payload, `peppol:${organizationId}`);
+
 /**
  * Токенът на поканата за прехвърляне, докато чака в опашката с писма. В TransferInvite е само хешът му;
  * тук е шифрован и вързан с id на поканата.

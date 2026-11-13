@@ -93,7 +93,8 @@
     "webhookUrl": "Webhook address for Revolut:",
     "checkSmtp": "Check and send a test email to {email}",
     "checkRevolut": "Check the Revolut connection",
-    "unreadable": "The saved keys cannot be read (damaged record or a changed LEDGER_SEAL_KEY). Enter them again or delete them explicitly."
+    "unreadable": "The saved keys cannot be read (damaged record or a changed LEDGER_SEAL_KEY). Enter them again or delete them explicitly.",
+    "checkPeppol": "Check the eConnect connection"
   },
   "transfer": {
     "title": "Transfer to the owner",

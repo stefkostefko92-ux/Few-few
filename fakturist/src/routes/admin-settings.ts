@@ -15,7 +15,13 @@ import {
   smtpSettings,
   type IntegrationCode,
 } from '../admin/integrations.js';
-import { checkRevolut, checkSmtp, type CheckResult } from '../admin/integration-checks.js';
+import {
+  checkPeppol,
+  checkRevolut,
+  checkSmtp,
+  type CheckResult,
+} from '../admin/integration-checks.js';
+import { accessPoint } from '../peppol/settings.js';
 import { smtpTransport } from '../mail/mailer.js';
 
 /** Страницата „Настройки“: глобалните настройки + интеграциите (Brevo SMTP, Revolut Merchant API). */
@@ -107,6 +113,8 @@ export function adminSettingsRouter(): Router {
                 secrets: [settings.pass ?? ''],
                 connection: { secure: settings.secure, port: settings.port },
               });
+    } else if (code === 'peppol') {
+      result = await checkPeppol(await accessPoint());
     } else {
       result = await checkRevolut(await revolutSettings());
     }

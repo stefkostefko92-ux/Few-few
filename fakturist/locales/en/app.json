@@ -816,5 +816,59 @@
       "automation": "Automation",
       "team": "Team and settings"
     }
+  },
+  "peppol": {
+    "title": "Peppol",
+    "how": "The Peppol network delivers e-invoices straight into the recipient’s accounting system — in the EU and beyond. Fakturist connects through a certified access point. The company’s address is its VAT number (scheme 9926).",
+    "notConfigured": "The Peppol connection has not been enabled by Fakturist yet — the function is off.",
+    "receiveTitle": "Receiving via Peppol",
+    "address": "Peppol address",
+    "status": "Status",
+    "noVat": "none — a VAT number is needed",
+    "statuses": {
+      "NONE": "not registered",
+      "PENDING": "registering",
+      "ACTIVE": "registered",
+      "FAILED": "registration failed",
+      "REMOVED": "disabled"
+    },
+    "enable": "Register the company in Peppol",
+    "disable": "Remove from Peppol",
+    "sentTitle": "Sent via Peppol",
+    "none": "No documents sent yet.",
+    "document": "Document",
+    "receiver": "Recipient",
+    "sentAt": "Delivered on",
+    "tx": {
+      "QUEUED": "waiting to send",
+      "ACCEPTED": "accepted for sending",
+      "SENT": "delivered",
+      "RETRYING": "retrying",
+      "FAILED": "failed"
+    },
+    "send": "Send via Peppol",
+    "sendOnIssue": "Send via Peppol",
+    "sendOnIssueHint": "The document is issued as Peppol BIS 3: the recipient’s electronic address and a buyer reference or order number are required.",
+    "eScheme": "E-address scheme",
+    "eValue": "Electronic address (Peppol)",
+    "eHint": "For a Bulgarian company: 9926 and its VAT number (BG…). Without it the document is not sent via Peppol.",
+    "ok": {
+      "enrolled": "The company is registered — it can receive e-invoices via Peppol.",
+      "disabled": "The company is removed from Peppol."
+    },
+    "err": {
+      "notConfigured": "The Peppol connection is not enabled.",
+      "noVat": "The company needs a VAT number.",
+      "taken": "This address is already registered by another company in Fakturist.",
+      "notActive": "The company is not registered in Peppol.",
+      "provider": "The access point refused — see the error below."
+    },
+    "result": {
+      "queued": "The document is queued for sending via Peppol.",
+      "already": "The document has already been sent via Peppol.",
+      "profile": "The document was not issued as Peppol BIS 3 — it cannot be sent via Peppol.",
+      "receiver": "The document has no recipient electronic address.",
+      "notActive": "The company is not registered in Peppol."
+    }
   }
 }

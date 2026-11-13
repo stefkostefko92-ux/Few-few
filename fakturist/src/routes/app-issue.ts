@@ -16,6 +16,7 @@ import { buyerFromParty, saveBuyerAsParty } from '../catalog/document-prefill.js
 import { annulProtocolPdf } from '../documents/annul-protocol.js';
 import { createProforma, ProformaRequestSchema } from '../proforma/proforma.js';
 import { ProformaError } from '../proforma/link.js';
+import { PeppolError } from '../peppol/participants.js';
 import { param } from './app-shared.js';
 import {
   ANNUL_MESSAGES,
@@ -24,6 +25,11 @@ import {
   PROFORMA_MESSAGES,
   renderNewDocument,
 } from './app-issue-view.js';
+
+const PEPPOL_NOT_ACTIVE = {
+  bg: 'Фирмата не е регистрирана за Peppol — включете я от „Peppol“.',
+  en: 'The company is not registered for Peppol — enable it under “Peppol”.',
+};
 
 /**
  * Издаването от формата (views/app/document-new.ejs): нов документ, предварително попълнен от контрагент
@@ -118,6 +124,7 @@ export function appIssueRouter(): Router {
         replaces,
         pdfLanguage: isPdfLanguage(language) ? language : 'bg',
         fromProforma,
+        peppol: bodyString(req, 'sendPeppol') === 'on',
       });
       if (bodyString(req, 'saveBuyer') === 'on') {
         await saveBuyerAsParty({
@@ -132,6 +139,16 @@ export function appIssueRouter(): Router {
     } catch (error) {
       if (error instanceof IssueRejected) {
         return renderNewDocument(req, res, access.organizationId, error.issues, req.body, 400);
+      }
+      if (error instanceof PeppolError) {
+        return renderNewDocument(
+          req,
+          res,
+          access.organizationId,
+          [{ rule: 'PEPPOL', path: 'sendPeppol', message: PEPPOL_NOT_ACTIVE }],
+          req.body,
+          400,
+        );
       }
       if (error instanceof ProformaError && (error.code === 'notOpen' || error.code === 'type')) {
         return renderNewDocument(

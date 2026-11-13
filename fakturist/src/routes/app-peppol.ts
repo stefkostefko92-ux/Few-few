@@ -1,0 +1,123 @@
+import { Router } from 'express';
+import { rateLimit } from 'express-rate-limit';
+import { prisma } from '../db.js';
+import { HttpError, requireOrg } from '../auth/guards.js';
+import { roleCan } from '../auth/roles.js';
+import { HOUR } from '../time.js';
+import { accessPoint } from '../peppol/settings.js';
+import { partyIdForVat, partyIdFromAddress } from '../peppol/ids.js';
+import { disableOrganization, enrollOrganization, PeppolError } from '../peppol/participants.js';
+import { queueTransmission } from '../peppol/transmissions.js';
+import { InvoiceInputSchema } from '../einvoice/model.js';
+import { param } from './app-shared.js';
+
+/**
+ * „Peppol“ на фирмата (SPEC 57–58): адресът, регистрацията за получаване (OWNER/ADMIN — `org.settings`,
+ * пряк член), последните изпращания; „Изпрати през Peppol“ за вече издаден документ в профил Peppol.
+ */
+const limiter = rateLimit({
+  windowMs: HOUR,
+  limit: 20,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  keyGenerator: (req) => req.principal?.user.id ?? 'anonymous',
+});
+
+const PEPPOL_CUSTOMIZATION = 'urn:fdc:peppol.eu:2017:poacc:billing:3.0';
+
+function code(value: unknown): string {
+  return typeof value === 'string' && /^[a-zA-Z]{2,30}$/.test(value) ? value : '';
+}
+
+export function appPeppolRouter(): Router {
+  const router = Router();
+
+  router.get('/app/o/:orgId/peppol', async (req, res) => {
+    const access = await requireOrg(req, 'documents.read');
+    const [org, participant, transmissions, configured] = await Promise.all([
+      prisma.organization.findUniqueOrThrow({
+        where: { id: access.organizationId },
+        select: { id: true, legalName: true, vatNumber: true },
+      }),
+      prisma.peppolParticipant.findUnique({ where: { organizationId: access.organizationId } }),
+      prisma.peppolTransmission.findMany({
+        where: { organizationId: access.organizationId },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+        include: { document: { select: { id: true, number: true, buyerName: true } } },
+      }),
+      accessPoint().then((ap) => ap !== null),
+    ]);
+    res.render('app/peppol', {
+      org,
+      participant,
+      transmissions,
+      configured,
+      partyId: participant?.partyId ?? partyIdForVat(org.vatNumber),
+      canManage: roleCan(access.role, 'org.settings') && access.viaFirmId === null,
+      ok: code(req.query['ok']),
+      err: code(req.query['err']),
+    });
+  });
+
+  router.post('/app/o/:orgId/peppol/vklyuchi', limiter, async (req, res) => {
+    const access = await requireOrg(req, 'org.settings');
+    if (access.viaFirmId !== null) throw new HttpError(404);
+    const base = `/app/o/${access.organizationId}/peppol`;
+    try {
+      const status = await enrollOrganization(access, req.principal!.user.id, await accessPoint());
+      res.redirect(303, `${base}?${status === 'ACTIVE' ? 'ok=enrolled' : 'err=provider'}`);
+    } catch (error) {
+      if (error instanceof PeppolError) return res.redirect(303, `${base}?err=${error.code}`);
+      throw error;
+    }
+  });
+
+  router.post('/app/o/:orgId/peppol/izklyuchi', limiter, async (req, res) => {
+    const access = await requireOrg(req, 'org.settings');
+    if (access.viaFirmId !== null) throw new HttpError(404);
+    const base = `/app/o/${access.organizationId}/peppol`;
+    try {
+      await disableOrganization(access, req.principal!.user.id, await accessPoint());
+      res.redirect(303, `${base}?ok=disabled`);
+    } catch (error) {
+      if (error instanceof PeppolError) return res.redirect(303, `${base}?err=${error.code}`);
+      throw error;
+    }
+  });
+
+  // Вече издаден документ в профил Peppol, без изпращане досега.
+  router.post('/app/o/:orgId/d/:docId/peppol', limiter, async (req, res) => {
+    const access = await requireOrg(req, 'documents.issue');
+    const docId = param(req, 'docId');
+    const back = `/app/o/${access.organizationId}/d/${docId}`;
+    const document = await prisma.document.findFirst({
+      where: { id: docId, organizationId: access.organizationId, status: 'ISSUED' },
+      select: { id: true, input: true, ublXml: true, peppolTransmission: { select: { id: true } } },
+    });
+    if (!document) throw new HttpError(404);
+    if (document.peppolTransmission) return res.redirect(303, `${back}?peppol=already`);
+    if (!document.ublXml?.includes(PEPPOL_CUSTOMIZATION)) {
+      return res.redirect(303, `${back}?peppol=profile`);
+    }
+    const input = InvoiceInputSchema.safeParse(document.input);
+    const receiver = input.success ? partyIdFromAddress(input.data.buyer.electronicAddress) : null;
+    if (!receiver) return res.redirect(303, `${back}?peppol=receiver`);
+    try {
+      await prisma.$transaction((tx) =>
+        queueTransmission(tx, {
+          organizationId: access.organizationId,
+          documentId: document.id,
+          receiverPartyId: receiver,
+          actorId: req.principal!.user.id,
+        }),
+      );
+    } catch (error) {
+      if (error instanceof PeppolError) return res.redirect(303, `${back}?peppol=notActive`);
+      throw error;
+    }
+    res.redirect(303, `${back}?peppol=queued`);
+  });
+
+  return router;
+}

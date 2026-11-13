@@ -35,6 +35,10 @@
   <% if (document.issuedBy) { %><div><dt><%= t('app.view.issuedBy') %></dt><dd><%= document.issuedBy.name %></dd></div><% } %>
   <% if (document.firm) { %><div><dt><%= t('app.view.viaFirm') %></dt><dd><%= document.firm.legalName %><% if (document.mandate) { %> · <span class="muted"><%= document.mandate.documentRef %></span><% } %></dd></div><% } %>
 </dl>
+<% if (peppolResult) { %><p class="<%= peppolResult === 'queued' ? 'ok' : 'error' %>" role="status"><%= tOr('app.peppol.result.' + peppolResult, t('auth.errors.invalid')) %></p><% } %>
+<% if (document.peppolTransmission) { const x = document.peppolTransmission; %><p class="muted"><%= t('app.peppol.title') %> → <span class="mono"><%= x.receiverPartyId %></span> · <span class="tag<%= x.status === 'SENT' ? ' tag-active' : x.status === 'FAILED' ? '' : ' tag-pending' %>"><%= t('app.peppol.tx.' + x.status) %></span><% if (x.lastError) { %> · <span class="hint"><%= x.lastError %></span><% } %></p><% } else if (locals.canPeppol) { %>
+<form method="post" action="/app/o/<%= document.organizationId %>/d/<%= document.id %>/peppol" class="inline-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="button-secondary"><%= t('app.peppol.send') %></button></form>
+<% } %>
 <% if (document.proforma) { %><p class="muted"><%= t('app.proforma.fromProforma') %> <a class="mono" href="/app/o/<%= document.organizationId %>/proformi/<%= document.proforma.id %>"><%= document.proforma.number %></a></p><% } %>
 <% if (document.recurring) { %><p class="muted"><%= t('app.recurring.fromTemplate') %> <a href="/app/o/<%= document.organizationId %>/povtaryashti/<%= document.recurring.id %>"><%= document.recurring.name %></a><% if (document.recurringPeriod) { %> · <span class="mono"><%= document.recurringPeriod %></span><% } %></p><% } %>
 <% if (locals.payable) { const remaining = document.payableCents - document.paidCents; const plain = (c) => (c / 100n).toString() + '.' + (c % 100n).toString().padStart(2, '0'); %>

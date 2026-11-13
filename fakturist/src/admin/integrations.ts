@@ -1,312 +1,30 @@
-import { z } from 'zod';
 import type { Prisma } from '@prisma/client';
 import { config, type AppConfig } from '../config.js';
 import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { errorMessage, logger } from '../logger.js';
 import { MINUTE } from '../time.js';
-import { decryptIntegrationSecrets, encryptIntegrationSecrets } from '../auth/keys.js';
+import {
+  DEFAULT_MAIL_FROM,
+  INTEGRATIONS,
+  isIntegrationCode,
+  type IntegrationCode,
+  type IntegrationDefinition,
+} from './integration-defs.js';
+import {
+  openSecrets,
+  RevolutConfig,
+  sealSecrets,
+  SecretsJson,
+  secretHint,
+  SmtpConfig,
+  PeppolConfig,
+  type PeppolEnvironment,
+  type RevolutEnvironment,
+} from './integration-form.js';
 
-/**
- * Външните услуги, които мастър акаунтът настройва от панела (Настройки): пощата (Brevo SMTP) и Revolut
- * Merchant API. ЕДИНСТВЕНИЯТ списък — панелът рисува формите от тук. Тайните се пазят шифровани в
- * Integration.secretsEnc и никога не се връщат към изгледа — само последните 4 знака. Панелът има
- * предимство пред `.env`; без панел важи `.env` (резерва при първото пускане).
- */
-export type IntegrationCode = 'smtp' | 'revolut';
-
-interface Text {
-  bg: string;
-  en: string;
-}
-
-export interface IntegrationField {
-  name: string;
-  kind: 'text' | 'number' | 'checkbox' | 'select' | 'secret';
-  secret: boolean;
-  label: Text;
-  help?: Text;
-  placeholder?: string;
-  options?: readonly string[];
-}
-
-export interface IntegrationDefinition {
-  label: Text;
-  help: Text;
-  fields: readonly IntegrationField[];
-  defaults: Record<string, string | number | boolean>;
-}
-
-export const DEFAULT_MAIL_FROM = 'Фактурист <no-reply@fakturist.eu>';
-
-export const INTEGRATIONS = {
-  smtp: {
-    label: { bg: 'Поща (Brevo SMTP)', en: 'Email (Brevo SMTP)' },
-    help: {
-      bg: 'Писмата към шкафчетата и поканите за прехвърляне. Данните са в Brevo → SMTP & API → SMTP. Порт 2525 минава и там, където 25, 465 и 587 са блокирани.',
-      en: 'Inbox notifications and transfer invitations. Find the values in Brevo → SMTP & API → SMTP. Port 2525 works where 25, 465 and 587 are blocked.',
-    },
-    fields: [
-      {
-        name: 'host',
-        kind: 'text',
-        secret: false,
-        label: { bg: 'SMTP сървър', en: 'SMTP server' },
-        placeholder: 'smtp-relay.brevo.com',
-      },
-      {
-        name: 'port',
-        kind: 'number',
-        secret: false,
-        label: { bg: 'Порт', en: 'Port' },
-        placeholder: '2525',
-      },
-      {
-        name: 'secure',
-        kind: 'checkbox',
-        secret: false,
-        label: { bg: 'TLS от началото на връзката', en: 'TLS from the start' },
-        help: {
-          bg: 'Само за порт 465. На 2525 и 587 връзката минава на TLS със STARTTLS — без него не се свързва.',
-          en: 'Port 465 only. On 2525 and 587 the connection upgrades to TLS with STARTTLS — or does not connect.',
-        },
-      },
-      {
-        name: 'user',
-        kind: 'text',
-        secret: false,
-        label: { bg: 'Вход (SMTP login)', en: 'Login (SMTP login)' },
-      },
-      {
-        name: 'pass',
-        kind: 'secret',
-        secret: true,
-        label: { bg: 'SMTP ключ', en: 'SMTP key' },
-      },
-      {
-        name: 'from',
-        kind: 'text',
-        secret: false,
-        label: { bg: 'Подател', en: 'Sender' },
-        help: {
-          bg: 'Адресът трябва да е потвърден подател (или домейн) в Brevo.',
-          en: 'The address must be a verified sender (or domain) in Brevo.',
-        },
-        placeholder: DEFAULT_MAIL_FROM,
-      },
-    ],
-    defaults: { host: '', port: 2525, secure: false, user: '', from: DEFAULT_MAIL_FROM },
-  },
-  revolut: {
-    label: { bg: 'Revolut Merchant API', en: 'Revolut Merchant API' },
-    help: {
-      bg: 'Ключовете са в Revolut Business → Merchant API. Sandbox и продукцията имат различни ключове. Тайната на webhook-а проверява известията за платени поръчки.',
-      en: 'Find the keys in Revolut Business → Merchant API. Sandbox and production have separate keys. The webhook secret verifies paid-order notifications.',
-    },
-    fields: [
-      {
-        name: 'environment',
-        kind: 'select',
-        secret: false,
-        label: { bg: 'Среда', en: 'Environment' },
-        options: ['sandbox', 'production'],
-      },
-      {
-        name: 'secretKey',
-        kind: 'secret',
-        secret: true,
-        label: { bg: 'Secret API key', en: 'Secret API key' },
-        help: {
-          bg: 'Ползва се за проверката на връзката и за плащанията с карта (етап 2).',
-          en: 'Used for the connection check and for card payments (stage 2).',
-        },
-      },
-      {
-        name: 'webhookSecret',
-        kind: 'secret',
-        secret: true,
-        label: { bg: 'Тайна на webhook-а (wsk_…)', en: 'Webhook signing secret (wsk_…)' },
-      },
-    ],
-    defaults: { environment: 'sandbox' },
-  },
-} as const satisfies Record<IntegrationCode, IntegrationDefinition>;
-
-export function isIntegrationCode(value: string): value is IntegrationCode {
-  return value === 'smtp' || value === 'revolut';
-}
-
-// --- Схемите ----------------------------------------------------------------------------------------
-
-const HOST = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/;
-const ADDRESS = '[^\\s<>@"]+@[^\\s<>@"]+\\.[^\\s<>@"]+';
-const MAILBOX = new RegExp(`^(?:[^<>@"\\r\\n]{1,100} <${ADDRESS}>|${ADDRESS})$`);
-
-/**
- * SMTP сървърът е публично име с домейн: IP адрес, localhost, име без точка и вътрешни домейни се отказват
- * — иначе „Провери връзката“ би опипвал вътрешната мрежа (SSRF) и би показвал отговорите ѝ.
- */
-function isPublicHostname(host: string): boolean {
-  if (!host.includes('.')) return false;
-  if (/^\d+(\.\d+){3}$/.test(host)) return false;
-  return !/(^|\.)(localhost|local|internal|lan|home|arpa)$/.test(host);
-}
-
-/** Подателят: „Име <адрес>“ или само адрес. Без нов ред — иначе е инжекция на заглавки. */
-function isMailbox(value: string): boolean {
-  return !/[\r\n]/.test(value) && MAILBOX.test(value);
-}
-
-const SmtpConfig = z.object({
-  host: z.string().min(1).max(253).regex(HOST),
-  port: z.number().int().min(1).max(65535),
-  secure: z.boolean(),
-  user: z.string().max(254),
-  from: z.string().max(200).refine(isMailbox),
-});
-export type SmtpConfigValue = z.infer<typeof SmtpConfig>;
-
-const RevolutConfig = z.object({ environment: z.enum(['sandbox', 'production']) });
-export type RevolutEnvironment = z.infer<typeof RevolutConfig>['environment'];
-
-/** Полетата на формите (текст от браузъра) → код на грешката на поле. */
-const SmtpForm = z.object({
-  host: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .max(253)
-    .regex(HOST, 'invalidHost')
-    .refine(isPublicHostname, 'invalidHost'),
-  port: z
-    .string()
-    .trim()
-    .regex(/^\d{1,5}$/, 'invalidPort')
-    .transform(Number)
-    .refine((port) => port >= 1 && port <= 65535, 'invalidPort'),
-  secure: z.boolean(),
-  user: z.string().trim().max(254, 'invalidUser').regex(/^\S*$/, 'invalidUser'),
-  from: z.string().trim().max(200, 'invalidFrom').refine(isMailbox, 'invalidFrom'),
-});
-
-const RevolutForm = z.object({
-  environment: z
-    .string()
-    .refine((value) => value === 'sandbox' || value === 'production', 'invalidEnvironment'),
-});
-
-/** Тайните: без интервали; webhook тайната на Revolut започва с wsk_ (документацията на Merchant API). */
-const SECRET_RULES: Record<string, z.ZodType<string>> = {
-  pass: z
-    .string()
-    .max(500, 'invalidSecret')
-    .regex(/^\S{8,}$/, 'invalidSecret'),
-  secretKey: z
-    .string()
-    .max(500, 'invalidSecret')
-    .regex(/^\S{8,}$/, 'invalidSecret'),
-  webhookSecret: z
-    .string()
-    .max(500, 'invalidWebhookSecret')
-    .regex(/^wsk_\S{8,}$/, 'invalidWebhookSecret'),
-};
-
-// --- Формата ----------------------------------------------------------------------------------------
-
-export type ParsedIntegration =
-  | {
-      ok: true;
-      config: Record<string, string | number | boolean>;
-      secrets: Record<string, string>;
-      changed: string[];
-      cleared: string[];
-    }
-  | { ok: false; errors: Record<string, string> };
-
-function text(body: Record<string, unknown>, name: string): string {
-  const value = body[name];
-  return typeof value === 'string' ? value : '';
-}
-
-/**
- * Формата на интеграция → нетайните настройки + тайните. Празно поле за тайна пази записаната стойност;
- * отметнато „изтрий“ я маха. `changed` и `cleared` са имената на полетата (за одита — без стойности).
- * `unreadable` — записани тайни, които не се дешифрират (сменен ключ, повреден запис): празно поле за тях
- * е грешка, а не тихо изтриване.
- */
-export function parseIntegrationForm(
-  code: IntegrationCode,
-  body: Record<string, unknown>,
-  current: Record<string, string>,
-  unreadable: readonly string[] = [],
-): ParsedIntegration {
-  const errors: Record<string, string> = {};
-  let parsedConfig: Record<string, string | number | boolean> = {};
-  const result =
-    code === 'smtp'
-      ? SmtpForm.safeParse({
-          host: text(body, 'host'),
-          port: text(body, 'port'),
-          secure: body['secure'] === 'on',
-          user: text(body, 'user'),
-          from: text(body, 'from'),
-        })
-      : RevolutForm.safeParse({ environment: text(body, 'environment') });
-  if (result.success) parsedConfig = result.data;
-  else
-    for (const issue of result.error.issues) {
-      errors[String(issue.path[0] ?? 'form')] ??= issue.message;
-    }
-
-  const secrets: Record<string, string> = {};
-  const changed: string[] = [];
-  const cleared: string[] = [];
-  for (const field of INTEGRATIONS[code].fields) {
-    if (!field.secret) continue;
-    const raw = text(body, field.name).trim();
-    if (body[`clear_${field.name}`] === 'on') {
-      if (current[field.name] !== undefined || unreadable.includes(field.name)) {
-        cleared.push(field.name);
-      }
-      continue;
-    }
-    if (raw === '') {
-      const kept = current[field.name];
-      if (kept !== undefined) secrets[field.name] = kept;
-      else if (unreadable.includes(field.name)) errors[field.name] = 'reenterSecret';
-      continue;
-    }
-    const rule = SECRET_RULES[field.name];
-    const checked = rule ? rule.safeParse(raw) : { success: true as const, data: raw };
-    if (!checked.success) {
-      errors[field.name] = checked.error.issues[0]?.message ?? 'invalidSecret';
-      continue;
-    }
-    secrets[field.name] = checked.data;
-    if (checked.data !== current[field.name]) changed.push(field.name);
-  }
-  if (Object.keys(errors).length > 0) return { ok: false, errors };
-  return { ok: true, config: parsedConfig, secrets, changed, cleared };
-}
-
-// --- Шифроване и показ ------------------------------------------------------------------------------
-
-const SecretsJson = z.record(z.string(), z.string());
-
-export function sealSecrets(code: IntegrationCode, secrets: Record<string, string>): string | null {
-  if (Object.keys(secrets).length === 0) return null;
-  return encryptIntegrationSecrets(JSON.stringify(secrets), code);
-}
-
-/** Хвърля при подправен запис или запис на друга интеграция (AAD). */
-export function openSecrets(code: IntegrationCode, payload: string): Record<string, string> {
-  return SecretsJson.parse(JSON.parse(decryptIntegrationSecrets(payload, code)));
-}
-
-/** Какво вижда панелът от тайната: последните 4 знака, а при къса тайна — нищо. */
-export function secretHint(value: string): string {
-  return value.length >= 16 ? `…${value.slice(-4)}` : '••••';
-}
+export * from './integration-defs.js';
+export * from './integration-form.js';
 
 // --- Кое важи: панелът или .env ---------------------------------------------------------------------
 
@@ -446,6 +164,28 @@ export async function smtpSettings(): Promise<SmtpSettings | null> {
   return resolveSmtp(await integrationState('smtp'), config());
 }
 
+/** Peppol (eConnect): само от панела — без client ID и тайна функцията е изключена. */
+export interface PeppolSettings {
+  environment: PeppolEnvironment;
+  clientId: string;
+  clientSecret: string;
+}
+
+export function resolvePeppol(panel: PanelIntegration | null): PeppolSettings | null {
+  const parsed = panel ? PeppolConfig.safeParse(panel.config) : null;
+  const secret = panel?.secrets['clientSecret'];
+  if (!parsed?.success || !parsed.data.clientId || !secret) return null;
+  return {
+    environment: parsed.data.environment,
+    clientId: parsed.data.clientId,
+    clientSecret: secret,
+  };
+}
+
+export async function peppolSettings(): Promise<PeppolSettings | null> {
+  return resolvePeppol(await integrationState('peppol'));
+}
+
 export async function revolutSettings(): Promise<RevolutSettings> {
   return resolveRevolut(await integrationState('revolut'), config());
 }
@@ -527,12 +267,16 @@ export async function integrationsView(): Promise<IntegrationView[]> {
   for (const code of Object.keys(INTEGRATIONS) as IntegrationCode[]) {
     const stored = await integrationState(code);
     const definition: IntegrationDefinition = INTEGRATIONS[code];
-    const schema = code === 'smtp' ? SmtpConfig : RevolutConfig;
+    const schema = code === 'smtp' ? SmtpConfig : code === 'peppol' ? PeppolConfig : RevolutConfig;
     const saved = stored ? schema.safeParse(stored.config) : null;
     const source =
       code === 'smtp'
         ? (resolveSmtp(stored, cfg)?.source ?? 'none')
-        : resolveRevolut(stored, cfg).source;
+        : code === 'peppol'
+          ? resolvePeppol(stored)
+            ? 'panel'
+            : 'none'
+          : resolveRevolut(stored, cfg).source;
     views.push({
       code,
       definition,

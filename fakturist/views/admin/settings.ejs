@@ -64,7 +64,7 @@
   </form>
   <form method="post" action="/admin/integratsii/<%= item.code %>/proverka">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-    <button type="submit" class="button-secondary"><%= item.code === 'smtp' ? t('admin.integration.checkSmtp', { email: masterEmail }) : t('admin.integration.checkRevolut') %></button>
+    <button type="submit" class="button-secondary"><%= item.code === 'smtp' ? t('admin.integration.checkSmtp', { email: masterEmail }) : item.code === 'peppol' ? t('admin.integration.checkPeppol') : t('admin.integration.checkRevolut') %></button>
   </form>
 </section>
 <% }) %>
