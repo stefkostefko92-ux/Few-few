@@ -20,8 +20,11 @@ test('правните документи: текст на двата езика
   const paths = new Set<string>();
   for (const id of LEGAL_DOCUMENT_IDS) {
     const doc = LEGAL_DOCUMENTS[id];
-    assert.match(doc.version, /^\d{4}-\d{2}-\d{2}$/, `${id}: версията е дата`);
-    assert.ok(!Number.isNaN(Date.parse(doc.version)), `${id}: истинска дата`);
+    // Идентификаторът е датата + „.N“ при втора промяна в същия ден; `date` — откога важи.
+    assert.match(doc.version, /^\d{4}-\d{2}-\d{2}(\.\d{1,2})?$/, `${id}: версията е дата[.N]`);
+    assert.match(doc.date, /^\d{4}-\d{2}-\d{2}$/, `${id}: датата е дата`);
+    assert.ok(!Number.isNaN(Date.parse(doc.date)), `${id}: истинска дата`);
+    assert.ok(doc.version.startsWith(doc.date), `${id}: версията започва с датата`);
     for (const locale of ['bg', 'en'] as const) {
       const body = read('views', 'legal', id, `${locale}.ejs`);
       assert.ok((body.match(/<h2/g) ?? []).length >= 5, `${id}/${locale}: поне 5 раздела`);

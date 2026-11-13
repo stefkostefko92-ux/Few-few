@@ -3,6 +3,7 @@ import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../db.js';
 import { requireOrg } from '../auth/guards.js';
 import { endSession } from '../auth/sessions.js';
+import { forgetDevice } from '../auth/device.js';
 import { exportOrganization } from '../export/org-export.js';
 import { closeAccount, CloseError, personalData } from '../accounts/close.js';
 import { audit } from '../audit.js';
@@ -89,6 +90,7 @@ export function appExportRouter(): Router {
       throw error;
     }
     await endSession(req, res);
+    forgetDevice(res);
     res.redirect(303, '/?zakrit=1');
   });
 

@@ -33,6 +33,16 @@ export function rememberDevice(res: Response, userId: string, now: number = Date
   });
 }
 
+/** Маха бисквитката (закриване на профила — правният преглед, M3). */
+export function forgetDevice(res: Response): void {
+  res.clearCookie(deviceCookieName(), {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: isProduction(),
+    path: '/',
+  });
+}
+
 /** Носи ли заявката валидна бисквитка за ТОЗИ профил (подпис, срок, id). */
 export function isTrustedDevice(req: Request, userId: string, now: number = Date.now()): boolean {
   const value = readCookie(req, deviceCookieName());

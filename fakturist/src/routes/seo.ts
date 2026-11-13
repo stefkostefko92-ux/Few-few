@@ -48,7 +48,7 @@ export function sitemapXml(base: string): string {
         )
         .join('');
       urls.push(
-        `<url><loc>${xmlEscape(base + doc.paths[locale])}</loc><lastmod>${doc.version}</lastmod>` +
+        `<url><loc>${xmlEscape(base + doc.paths[locale])}</loc><lastmod>${doc.date}</lastmod>` +
           `<changefreq>yearly</changefreq><priority>0.3</priority>${links}</url>`,
       );
     }

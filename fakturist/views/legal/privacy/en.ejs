@@ -2,7 +2,7 @@
 
 <h2 id="controller">Who processes the data</h2>
 <p><%= company.name %> (<%= company.nameBg %>), EIK&nbsp;<%= company.eik %>, <%= company.street.en %>, <%= company.postalCode %> <%= company.city.en %>, <%= company.region.en %>, Bulgaria, tel.&nbsp;<a href="<%= company.phoneHref %>"><%= company.phone %></a>. For personal data write to <a href="mailto:<%= privacyEmail %>"><%= privacyEmail %></a>.</p>
-<p>For the data of accounts (the people who use Fakturist) we are the <strong>controller</strong> — this policy covers them. For personal data in companies' documents (counterparties, contact persons) we are a <strong>processor</strong>: the controller is the company issuing the document, and we process the data under the <a href="<%= legalUrl('dpa') %>">data processing agreement</a>.</p>
+<p>For the data of accounts (the people who use Fakturist) we are the <strong>controller</strong> — this policy covers them. For personal data in companies' documents (counterparties, contact persons), in the bank statements and incoming e-invoices companies upload, and in the emails they send through Fakturist, we are a <strong>processor</strong>: the controller is the company issuing the document, and we process the data under the <a href="<%= legalUrl('dpa') %>">data processing agreement</a>.</p>
 
 <h2 id="data">What data, why and for how long</h2>
 <div class="table-wrap">
@@ -18,7 +18,8 @@
       <tr><td>Invitations and mandates: the invitee's email, the link hash, who invited and when</td><td>Transferring a company to its owner and the accounting firm's work under a mandate</td><td>Contract; legitimate interest</td><td>The invitation is valid 7 days; the record — while the company is registered</td></tr>
       <tr><td>Accepted legal documents: who, which document, which version, when</td><td>Proof of the contract</td><td>Legitimate interest: to prove the conclusion and content of the contract in a dispute</td><td>Five years after the account is closed (the general limitation period)</td></tr>
       <tr><td>Audit log: who did what and when in the account and the company — no IP addresses and no emails</td><td>Accountability and defence in a dispute</td><td>Legitimate interest: to show who did what in a dispute or abuse</td><td>While the company is registered and up to 5 years after it is closed</td></tr>
-      <tr><td>Payments: the amount, date and reference of the payment; the invoice for it</td><td>The paid plan contract and our accounting</td><td>Contract; legal obligation, Art.&nbsp;6(1)(c) GDPR</td><td>The periods under the Accountancy Act and the VAT Act</td></tr>
+      <tr><td>Plan payments: the amount, VAT, the plan and period, the reference ("FKT-…"), the Revolut order identifier, which member placed the order and which of our team confirmed the transfer, the payment date; the pro forma and the invoice, which arrive in the company's inbox and by email to its owner, administrators and accountants</td><td>The paid plan contract and our accounting</td><td>Contract; legal obligation, Art.&nbsp;6(1)(c) GDPR</td><td>The periods under the Accountancy Act and the VAT Act</td></tr>
+      <tr><td>Company API keys: key name, who created it, its prefix, SHA-256 hash, scope, last use, revocation</td><td>Access for the company's integrations; documents issued with the key are recorded in the creator's name</td><td>Contract; legitimate interest: to show which key issued what</td><td>While the company is registered</td></tr>
       <tr><td>Emails you write to us</td><td>To answer you</td><td>Legitimate interest: to answer and keep the correspondence in case of a dispute</td><td>Up to three years after the last email</td></tr>
     </tbody>
   </table>
@@ -26,15 +27,15 @@
 <p>Email, name and password are needed for an account to exist. Without them we cannot create it.</p>
 
 <h2 id="ip">IP addresses</h2>
-<p>We do not keep IP addresses: neither the application nor the web server logs requests. The limit on sign-in and email attempts counts the address (for IPv6 — the /64 network) only in the server's memory, for up to 15 minutes. The web server records an address only in its log of critical errors.</p>
+<p>We do not keep IP addresses: neither the application nor the web server logs requests. The limit on sign-in and email attempts counts the address (for IPv6 — the /64 network) only in the server's memory, for up to 15 minutes. The web server records an address only in its log of critical errors. The same applies to the API request limit.</p>
 
 <h2 id="recipients">Who else sees the data</h2>
 <ul>
   <li>The other members of your company and its accounting firm with an active mandate; the recipient company of a document delivered to its inbox, and its members.</li>
   <li>Our support team — under a duty of confidentiality and only as far as needed.</li>
-  <li>netcup GmbH, Germany — the server Fakturist runs on, in a data centre in the European Union. The database backups are on it too.</li>
+  <li>netcup GmbH, Germany — the server Fakturist runs on, in a data centre in the European Union. The database backups are on it too — every day and before every update, for at most 90 days.</li>
   <li>Sendinblue SAS (Brevo), France — sending the emails described below.</li>
-  <li>Revolut Bank UAB, Lithuania, and the payer's bank — the payment data, as independent controllers under their own legal obligations.</li>
+  <li>Revolut Bank UAB, Lithuania, and the payer's bank — card payment takes place on Revolut's page: you enter your card details there, and we receive only the status, amount, identifier and time of payment. Revolut and the bank process the payment data as independent controllers.</li>
 </ul>
 <p>We do not sell data or provide it for advertising. We do not transfer personal data outside the European Union; if a subcontractor of Brevo processes data outside the EU, the transfer is protected by standard contractual clauses (Art.&nbsp;46 GDPR).</p>
 
@@ -42,23 +43,26 @@
 <p>We use two cookies without which the service does not work or is not protected — the session after sign-in and the trusted device. We have no analytics, advertising or third-party cookies, so we show no consent banner. Fonts are loaded from our own server.</p>
 <div class="table-wrap">
   <table>
-    <thead><tr><th scope="col">Name</th><th scope="col">Purpose</th><th scope="col">Lifetime</th></tr></thead>
+    <thead><tr><th scope="col">Name</th><th scope="col">Purpose</th><th scope="col">Legal basis</th><th scope="col">Lifetime</th></tr></thead>
     <tbody>
-      <tr><td><code>__Host-fakturist</code></td><td>The session after sign-in (signed identifier, HttpOnly, Secure, SameSite=Lax)</td><td><%= sessionStandard %></td></tr>
-      <tr><td><code>__Host-fakturist_dev</code></td><td>Trusted device: a browser you have signed in from successfully can still sign in when someone else has locked the account with wrong passwords (signed account identifier and expiry, no other data)</td><td>180 days from the last sign-in</td></tr>
+      <tr><td><code>__Host-fakturist</code></td><td>The session after sign-in (signed identifier, HttpOnly, Secure, SameSite=Lax)</td><td>Strictly necessary for the requested service (Art.&nbsp;4a(4) Electronic Commerce Act; Art.&nbsp;5(3) Directive 2002/58/EC) — no consent needed; for the data — contract</td><td><%= sessionStandard %></td></tr>
+      <tr><td><code>__Host-fakturist_dev</code></td><td>Trusted device: a browser you have signed in from successfully (with the password and — if enabled — the second factor) can still sign in when someone else has locked the account with wrong passwords (signed account identifier and expiry, no other data)</td><td>Strictly necessary for account security (the same provisions) — no consent needed; for the data — legitimate interest: account security</td><td>180 days from the last sign-in</td></tr>
     </tbody>
   </table>
 </div>
 <p>The installed app (on your phone or computer) has a service worker that keeps nothing on the device: it only shows a “No connection” page when there is no network.</p>
 
 <h2 id="emails">Emails</h2>
-<p>We send only emails related to the account and documents: email confirmation, a link for a new password, a notice of a document delivered to your company's inbox (with PDF and XML), an invitation to take over a company's account, and notices to our team to review ownership. We do not send marketing emails.</p>
+<p>We send only emails related to the account and documents: email confirmation, a link for a new password, a notice of a document delivered to your company's inbox (with PDF and XML), the pro forma and invoice for the paid plan, an invitation to take over a company's account, and notices to our team to review ownership. We do not send marketing emails. Emails that companies send through Fakturist to their recipients (recurring invoices, payment reminders) are sent on their behalf — see "If you do not use Fakturist".</p>
+
+<h2 id="third-parties">If you do not use Fakturist</h2>
+<p>If you received an invoice or a payment reminder from a company through Fakturist, if you are a supplier whose e-invoice a company uploaded, or if you paid a company that reconciles its statements with us, the controller of your data is that company — replies to the email go to it. We process the data only on its instructions under the <a href="<%= legalUrl('dpa') %>">data processing agreement</a> and keep it while the company uses the service; payers' data from statements — for a shorter period (agreement, clause&nbsp;11). We forward any request sent to us to the company.</p>
 
 <h2 id="automated">Automated decisions</h2>
 <p>We make no decisions with legal effects on you solely by automated means. The rules check on issue stops a document with an error — it concerns the document, not you as a person. The temporary limit after many sign-in attempts lifts by itself.</p>
 
 <h2 id="security">Security</h2>
-<p>The connection is HTTPS only, with HSTS. Passwords are stored as Argon2id hashes, two-factor secret keys and integration keys — encrypted, and email links and invitations — only as hashes. Sessions live on the server and end at once on a new password. The master panel opens only with two-factor sign-in. Application logs contain no emails, passwords or IP addresses. Before every software update we back up the database; backups are kept for at most 90 days.</p>
+<p>The connection is HTTPS only, with HSTS. Passwords are stored as Argon2id hashes, two-factor secret keys and our integration keys — encrypted, companies' API keys, email links and invitations — only as hashes. Sessions live on the server and end at once on a new password. The master panel opens only with two-factor sign-in. Application logs contain no emails, passwords or IP addresses. We back up the database every day and before every update; backups are kept for at most 90 days.</p>
 
 <h2 id="rights">Your rights</h2>
 <p>You have the right of access, rectification, erasure, restriction of processing, portability and to object to processing based on legitimate interest. Under “Security” in your account you can download your personal data (JSON) and close the account yourself; the owner downloads the full company archive (ZIP with the PDF and XML of every document). For anything else write to <a href="mailto:<%= privacyEmail %>"><%= privacyEmail %></a> — we reply within one month.</p>

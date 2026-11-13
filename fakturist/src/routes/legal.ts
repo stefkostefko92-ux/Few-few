@@ -51,7 +51,7 @@ function renderLegal(res: Response, id: LegalDocumentId, locale: Locale): void {
   res.locals.company = COMPANY;
   res.locals.page = id;
   res.locals.crumbLabel = title;
-  res.locals.contentUpdated = doc.version;
+  res.locals.contentUpdated = doc.date;
   res.locals.urls = Object.fromEntries(
     SITE_PAGES.map((page) => [page.id, page.paths[locale]]),
   ) as Record<SitePageId, string>;
@@ -92,7 +92,7 @@ function renderLegal(res: Response, id: LegalDocumentId, locale: Locale): void {
           name: title,
           description: t(`legal.${id}.metaDescription`),
           inLanguage: locale,
-          dateModified: doc.version,
+          dateModified: doc.date,
           isPartOf: { '@id': `${base}/#website` },
           publisher: { '@id': `${COMPANY.url}/#organization` },
         },
@@ -102,7 +102,7 @@ function renderLegal(res: Response, id: LegalDocumentId, locale: Locale): void {
   res.render('legal/page', {
     docId: id,
     version: doc.version,
-    versionLabel: versionDate(doc.version, locale),
+    versionLabel: versionDate(doc.date, locale),
     privacyEmail: config().PRIVACY_EMAIL,
     contactEmail: config().CONTACT_EMAIL,
     sessionStandard: sessionText(locale),

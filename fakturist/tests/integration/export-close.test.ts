@@ -141,6 +141,12 @@ test('закриване: грешна парола, единствен собс
     confirm: 'on',
   });
   assert.equal(closed.status, 303);
+  // Бисквитката „доверено устройство“ се маха заедно със сесията.
+  assert.ok(
+    closed.headers
+      .getSetCookie()
+      .some((c) => /^fakturist_dev=;/.test(c) && /Expires=Thu, 01 Jan 1970/.test(c)),
+  );
   const user = await prisma.user.findUniqueOrThrow({ where: { id: ownerId } });
   assert.equal(user.name, 'Закрит профил');
   assert.ok(user.email.endsWith('@fakturist.invalid') && user.disabledAt);

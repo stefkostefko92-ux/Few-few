@@ -3,24 +3,31 @@ import type { Locale } from '../i18n.js';
 /**
  * Правните документи — ЕДИНСТВЕНИЯТ списък: рутерът, футърите, регистрацията, sitemap и llms.txt четат
  * оттук. Текстът е в `views/legal/<документ>/<език>.ejs`. **Съществена промяна на текста = нова
- * `version`** (датата, от която важи) — регистрацията записва приетата версия (`LegalAcceptance`), а
+ * `version`** (идентификаторът, който регистрацията записва) и `date` (датата, от която важи — на
+ * страницата, в sitemap и JSON-LD) — регистрацията записва приетата версия (`LegalAcceptance`), а
  * старата остава в историята на git. Съществената промяна се съобщава по имейл 30 дни преди да влезе
  * (общите условия, т. „Промени“).
  */
 export const LEGAL_DOCUMENTS = {
   terms: {
-    version: '2026-11-13',
+    version: '2026-11-13.2',
+    date: '2026-11-13',
     paths: { bg: '/obshti-usloviya', en: '/en/terms' },
   },
   privacy: {
-    version: '2026-11-13',
+    version: '2026-11-13.2',
+    date: '2026-11-13',
     paths: { bg: '/poveritelnost', en: '/en/privacy' },
   },
   dpa: {
-    version: '2026-11-13',
+    version: '2026-11-13.2',
+    date: '2026-11-13',
     paths: { bg: '/dogovor-za-obrabotvane', en: '/en/data-processing' },
   },
-} as const satisfies Record<string, { version: string; paths: Record<Locale, string> }>;
+} as const satisfies Record<
+  string,
+  { version: string; date: string; paths: Record<Locale, string> }
+>;
 
 export type LegalDocumentId = keyof typeof LEGAL_DOCUMENTS;
 export const LEGAL_DOCUMENT_IDS = Object.keys(LEGAL_DOCUMENTS) as LegalDocumentId[];
