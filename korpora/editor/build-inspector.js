@@ -110,7 +110,7 @@ export function bindInspector(ctx) {
   const num = (v, lo, hi) => Math.max(lo, Math.min(hi, Math.round(Number(v)) || lo));
   ctx.insp.addEventListener('change', (ev) => {
     const el = ev.target;
-    const g = ctx.grid();
+    const g = ctx.live();
     const sel = ctx.sel();
     const c = sel.column;
     const each = (fn) => {

@@ -41,4 +41,6 @@ export function bindDrag(host, { start, move, end }) {
   };
   host.addEventListener('pointerup', stop);
   host.addEventListener('pointercancel', stop);
+  // the browser took the pointer away (a system gesture, the element gone): the drag ends there too
+  host.addEventListener('lostpointercapture', stop);
 }

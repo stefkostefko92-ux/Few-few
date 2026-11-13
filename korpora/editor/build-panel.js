@@ -28,10 +28,13 @@ export function bindBuilder({ panel, isReadOnly, steps, onSelect = () => {} }) {
   let sel = { column: 0, from: 0, to: 0 };
   let current = { model: null, spec: null };
   let showFronts = true;
+  // the grid drawn (it matches the model) and the grid as it is now, which every edit starts from: an edit of the
+  // rail still waiting for its recompute stays in the spec
   const grid = () => current.spec.grid;
+  const live = () => steps.spec().grid ?? grid();
   const edit = (g, opts = {}) => {
-    if (isReadOnly() || g === grid()) return;
-    apply({ ...current.spec, grid: g }, { record: true, ...opts });
+    if (isReadOnly() || g === live()) return;
+    apply({ ...steps.spec(), grid: g }, { record: true, ...opts });
   };
   const built = () => builtColumns(current.model);
   const builtCol = (c) => built().find((x) => x.column === c);
@@ -40,9 +43,11 @@ export function bindBuilder({ panel, isReadOnly, steps, onSelect = () => {} }) {
     return cell ? cell.y1 - cell.y0 : 0;
   };
 
+  // the columns that are built (the model leaves out those that do not fit): the selection stays in them
+  const lastColumn = () => Math.min(grid().columns.length, Math.max(1, built().length)) - 1;
   function clampSel() {
     const cols = grid().columns;
-    const column = Math.min(sel.column, cols.length - 1);
+    const column = Math.min(sel.column, lastColumn());
     const n = cols[column].cells.length;
     const from = Math.min(sel.from, n - 1);
     sel = { column, from, to: Math.min(Math.max(sel.to, from), n - 1) };
@@ -84,6 +89,7 @@ export function bindBuilder({ panel, isReadOnly, steps, onSelect = () => {} }) {
     history,
     edit,
     grid,
+    live,
     sel: () => sel,
     builtCol,
     cellSize,
@@ -120,7 +126,7 @@ export function bindBuilder({ panel, isReadOnly, steps, onSelect = () => {} }) {
     if (ev.key === 'ArrowLeft' || ev.key === 'ArrowRight') {
       const column = Math.max(
         0,
-        Math.min(cols.length - 1, sel.column + (ev.key === 'ArrowLeft' ? -1 : 1)),
+        Math.min(lastColumn(), sel.column + (ev.key === 'ArrowLeft' ? -1 : 1)),
       );
       next = { column, from: sel.from, to: sel.from };
     } else if (ev.key === 'ArrowUp' || ev.key === 'ArrowDown') {
@@ -167,11 +173,11 @@ export function bindBuilder({ panel, isReadOnly, steps, onSelect = () => {} }) {
   };
 
   function moveBoundary(el, delta, opts) {
-    edit(dragBoundary(grid(), boundary(el), delta), opts);
+    edit(dragBoundary(live(), boundary(el), delta), opts);
   }
 
   bindDrag(front, {
-    start: (el) => (isReadOnly() ? null : { from: grid(), at: boundary(el) }),
+    start: (el) => (isReadOnly() ? null : { from: live(), at: boundary(el) }),
     move: (s, delta, first) =>
       edit(dragBoundary(s.from, s.at, delta), { record: first, transient: true }),
     end: () => {},
@@ -183,19 +189,19 @@ export function bindBuilder({ panel, isReadOnly, steps, onSelect = () => {} }) {
   on('#bld-undo', () => steps.step(-1));
   on('#bld-redo', () => steps.step(1));
   on('#bld-add-left', () => {
-    edit(addColumn(grid(), sel.column));
+    edit(addColumn(live(), sel.column));
     select({ column: sel.column, from: 0, to: 0 });
   });
   on('#bld-add-right', () => {
-    edit(addColumn(grid(), sel.column + 1));
+    edit(addColumn(live(), sel.column + 1));
     select({ column: sel.column + 1, from: 0, to: 0 });
   });
-  on('#bld-remove', () => edit(removeColumn(grid(), sel.column)));
+  on('#bld-remove', () => edit(removeColumn(live(), sel.column)));
   on('#bld-split', () =>
-    edit(splitCell(grid(), sel.column, sel.from, cellSize(sel.column, sel.from))),
+    edit(splitCell(live(), sel.column, sel.from, cellSize(sel.column, sel.from))),
   );
   on('#bld-merge', () => {
-    let g = grid();
+    let g = live();
     for (let k = sel.from === sel.to ? 1 : sel.to - sel.from; k > 0; k -= 1)
       g = mergeUp(g, sel.column, sel.from);
     edit(g);

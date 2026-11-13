@@ -146,6 +146,7 @@ async function recompute(writeFocused = false) {
     }
     // a value the engine cannot build is undone, so it is never saved
     showError(text.engineFailed);
+    steps.failed();
     state.spec = state.model.spec;
     writeForm(form, state.spec, true);
     return;
@@ -159,6 +160,7 @@ async function recompute(writeFocused = false) {
     renderHeader(state.model);
     $('#personalize').hidden = readOnly || !steps.convertible(model.spec.type);
     builder.update(model, model.spec);
+    steps.built();
     showDownloads(state.blockers.length > 0, text.cncBlockedLink);
     for (const t of TABS) if (t !== 'cat') state.dirty.add(t);
     renderTab(state.tab);

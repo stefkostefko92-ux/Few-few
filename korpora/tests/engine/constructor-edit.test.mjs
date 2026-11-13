@@ -118,3 +118,25 @@ test('a drag moves one boundary by what was dragged: the two neighbours change, 
   const both = dragBoundary(grid(col([cell('open', 0, 600), cell('open', 0, 600), cell('open')])), { axis: 'y', column: 0, cell: 0, sizes: [600, 600, 710] }, 100);
   assert.deepEqual(both.columns[0].cells.map((x) => x.h), [700, 500, null], 'an asked neighbour gives what the other takes');
 });
+
+test('undo and redo: a step of the constructor goes back by its grid, a reset or another type by the whole spec', async () => {
+  const { createHistory, restored } = await import('../../editor/history.js');
+  const before = { type: 'custom', width: 1600, carcassDecor: 'demo:oak', grid: grid(col([cell('rail')])) };
+  const now = { ...before, width: 1800, grid: grid(col([cell('open')]), col([cell('rail')])) };
+  assert.deepEqual(restored({ spec: before, kind: 'grid' }, now), { ...now, grid: before.grid }, 'the width typed since stays');
+  const reset = { type: 'custom', width: 1000, carcassDecor: 'demo:white', grid: grid(col([cell('open')])) };
+  assert.deepEqual(restored({ spec: before, kind: 'spec' }, reset), before, 'a reset goes back whole');
+  assert.deepEqual(restored({ spec: { type: 'wardrobe', width: 2000 }, kind: 'spec' }, now), { type: 'wardrobe', width: 2000 });
+  const h = createHistory(2);
+  h.push({ spec: 'a', kind: 'grid' });
+  h.push({ spec: 'b', kind: 'spec' });
+  h.push({ spec: 'c', kind: 'grid' });
+  assert.deepEqual(h.undo('d'), { spec: 'c', kind: 'grid' });
+  assert.deepEqual(h.undo('c'), { spec: 'b', kind: 'spec' });
+  assert.equal(h.undo('b'), null, 'two steps kept');
+  assert.deepEqual(h.redo('b'), { spec: 'c', kind: 'spec' }, 'redo keeps the kind of the step');
+  h.push({ spec: 'x', kind: 'grid' });
+  assert.equal(h.canRedo, false, 'a new step forgets what could be redone');
+  h.drop();
+  assert.deepEqual(h.undo('y'), { spec: 'b', kind: 'spec' }, 'a step the engine could not build is dropped');
+});
