@@ -3,10 +3,12 @@
 import { buildCarcass } from './carcass.js';
 import { buildBed, bedOuter } from './bed.js';
 import { buildDesk } from './desk.js';
+import { buildCustom } from './custom.js';
 import { holeThrough, mark } from './panel.js';
 import { STOCK, frontStock } from './materials.js';
 import { HINGE_LIMITS } from './hardware.js';
 import { CONFIRMAT, FRONT_GAP_Z } from './joinery.js';
+import { MAX_CARCASS_W } from './layout.js'; // wider wardrobes and free carcasses are split into several carcasses
 import { clamp, r1 } from './util.js';
 
 const R = (key, label, min, max, step, unit = 'mm') => ({ key, label, type: 'range', min, max, step, unit });
@@ -89,9 +91,24 @@ export const TYPES = {
     params: [R('width', 'Обща ширина', 2200, 3600, 10), R('height', 'Височина на колоните', 1800, 2400, 10), R('depth', 'Дълбочина на колоните', 350, 450, 5), R('sideWidth', 'Ширина на колона', 400, 700, 10), R('tvHeight', 'ТВ шкаф, височина', 400, 600, 5)],
     defaults: { width: 2800, height: 2000, depth: 400, sideWidth: 500, tvHeight: 480 },
   },
+  // The free carcass („Свободен корпус“): the outside here, the columns, cells and fronts in spec.grid (layout.js).
+  custom: {
+    label: 'Свободен корпус', group: 'Конструктор',
+    params: [
+      R('width', 'Ширина', 300, 2 * MAX_CARCASS_W, 1), R('height', 'Височина', 300, 2600, 1), R('depth', 'Дълбочина', 250, 650, 1),
+      S('placement', 'Монтаж', [['floor', 'На пода'], ['wall', 'На стената']]),
+      R('legs', 'Цокъл или крачета', 0, 150, 5), S('plinth', 'Основа', [['legs', 'Крачета'], ['panel', 'Цокъл']]),
+      S('top', 'Таван', [['between', 'Между страниците'], ['over', 'Върху страниците'], ['rails', 'Траверси (под плот)']]),
+      R('mount', 'Монтаж от пода (долен ръб)', 1300, 1800, 10),
+    ],
+    defaults: { width: 1000, height: 2000, depth: 600, placement: 'floor', legs: 100, plinth: 'panel', top: 'between', mount: 1450 },
+  },
 };
 
-export const TYPE_ORDER = ['base', 'wall', 'tall', 'kitchen', 'wardrobe', 'chest', 'nightstand', 'bed', 'bookcase', 'tv', 'desk', 'wallunit'];
+export const TYPE_ORDER = ['base', 'wall', 'tall', 'kitchen', 'wardrobe', 'chest', 'nightstand', 'bed', 'bookcase', 'tv', 'desk', 'wallunit', 'custom'];
+// The types the screens offer (the new-project picker, the editor, the landing): a type marked `unlisted` is built and
+// stored like any other but not offered yet — the free carcass until its editor ships.
+export const LISTED_TYPES = TYPE_ORDER.filter((t) => !TYPES[t].unlisted);
 
 export function normalizeParams(type, input) {
   const t = TYPES[type] ?? TYPES.base;
@@ -119,7 +136,7 @@ const common = (s) => ({
   carcassDecor: s.carcassDecor, frontDecor: s.frontDecor, frontMaterial: s.frontMaterial, frontRal: s.frontRal,
   bands: { carcass: s.bandCarcass, front: s.bandFront }, gap: s.gap, hinge: s.hinge, handle: s.handle, slide: s.slide, kind: s.type,
   // the form has a columns parameter: "add a column" is advice the user can follow
-  columnsParam: TYPES[s.type]?.params.some((p) => p.key === 'columns') ?? false,
+  columnsParam: s.type === 'custom' || (TYPES[s.type]?.params.some((p) => p.key === 'columns') ?? false),
 });
 
 function baseCabinet(ctx, s, at = {}) {
@@ -190,6 +207,7 @@ export const BUILDERS = {
     return s.tvFronts === 'drawers' ? { drawers: 2, drawerZone: s.height - s.legs - 18 } : { shelves: 1, doors: 1, hingeSide: i === 0 ? 'left' : 'right' };
   }) }),
   desk: (ctx, s) => buildDesk(ctx, s, common(s)),
+  custom: (ctx, s) => buildCustom(ctx, s, common(s)),
   wallunit: (ctx, s) => {
     const sw = s.sideWidth;
     const mid = s.width - 2 * sw;
@@ -208,7 +226,6 @@ export const BUILDERS = {
   },
 };
 
-const MAX_CARCASS_W = 2400; // wider wardrobes are split into several carcasses
 const SIDE_SHELVES = 5; // shelves in each side column of a wall unit
 // A door is about 24 mm wider than the inner width of its column (full overlay on the side, half overlay on the
 // partition, less the 3 mm gap). One door up to the hinge maker's width, two above it; fronts.js checks the real width.

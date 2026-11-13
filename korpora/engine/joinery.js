@@ -3,7 +3,12 @@ import { hole, holeThrough, edgeHoles, toUV, THROUGH_EXTRA } from './panel.js';
 import { r1, clamp, AX, dot, sub, neg } from './util.js';
 
 export const SYSTEM = { row: 37, pitch: 32, d: 5, depth: 12, start: 64 };
-export const CONFIRMAT = { face: 7, edge: 5, edgeDepth: 50, maxPitch: 220 };
+// head: the Ø of a 7×50 confirmat's countersunk head, rounded up — McFeely's gives 13/32″ (≈ 10,3 mm); the GTV and
+// Häfele product pages give none (наше допускане, на страната на безопасността)
+export const CONFIRMAT = { face: 7, edge: 5, edgeDepth: 50, maxPitch: 220, head: 11 };
+// Glued wooden dowel 8×35 (наш избор): through the partition, 22 mm into the end of the fixed shelf — where a confirmat
+// cannot be driven (its head would end under the fixed shelf on the other face of the partition).
+export const DOWEL = { d: 8, length: 35, edgeDepth: 22 };
 export const GROOVE = { inset: 16, width: 4, depth: 8, clearance: 1 };
 export const HDF_T = 3;
 export const PILOT = { d: 3, depth: 10 };
@@ -41,11 +46,20 @@ export function confirmatZs(z0, z1, clear = null) {
   return even(n0);
 }
 
-// Confirmat 7×50: Ø7 through the face of `face`, Ø5×50 into the end (`edgeDir`) of `end`.
-export function confirmat(ctx, face, end, edgeDir, points) {
-  for (const p of points) holeThrough(face, p, CONFIRMAT.face, 'confirmat', { hw: 'confirmat' });
+// Confirmat 7×50: Ø7 through the face of `face`, Ø5×50 into the end (`edgeDir`) of `end`. meta goes on the face holes
+// (cap: the head shows on a face that is not counted by its role, model.js).
+export function confirmat(ctx, face, end, edgeDir, points, meta = {}) {
+  for (const p of points) holeThrough(face, p, CONFIRMAT.face, 'confirmat', { hw: 'confirmat', ...meta });
   edgeHoles(end, edgeDir, points, CONFIRMAT.edge, CONFIRMAT.edgeDepth, 'confirmat', { label: 'конфирмат 7×50, за резбата' });
   ctx.hw('confirmat', { name: 'Конфирмат 7×50', qty: points.length, unit: 'бр.', group: 'Крепежи' });
+}
+
+// Glued dowels 8×35: Ø8 through the face of `face` (a partition: drilled through, as all its holes), Ø8 into the end
+// (`edgeDir`) of `end`.
+export function dowels(ctx, face, end, edgeDir, points) {
+  for (const p of points) holeThrough(face, p, DOWEL.d, 'dowel', { hw: 'dowel' });
+  edgeHoles(end, edgeDir, points, DOWEL.d, DOWEL.edgeDepth, 'dowel', { label: 'шкант 8×35, с лепило' });
+  ctx.hw('dowel', { name: 'Шкант 8×35 (с лепило за дърво)', qty: points.length, unit: 'бр.', group: 'Крепежи' });
 }
 
 const sameSpot = (f, u, v, d) => f.type === 'hole' && f.u === u && f.v === v && f.d === d;
@@ -66,6 +80,18 @@ export function addHoleOnce(part, p, d, depth, kind, meta = {}, through = false)
 export function hasHole(part, p, d, kind = null) {
   const [u, v] = toUV(part, p);
   return part.features.some((f) => sameSpot(f, u, v, d) && (!kind || f.kind === kind));
+}
+
+// True when a hole of Ø d at p is not free for a new joint or fitting: it would leave less than MIN_WEB to another
+// hole or bore (clashes), or it would share the spot of a hole drilled for another purpose — only a plain system hole
+// may be taken over (addHoleOnce); through a partition two screws would meet in it.
+// Measured as checkHoles (model.js) measures: holes exactly MIN_WEB apart are fine, 1e-6 absorbs the floating-point
+// error of positions on the 0,1 mm grid.
+export function taken(part, p, d) {
+  const [u, v] = toUV(part, p);
+  const h = { u, v, d, through: true };
+  const near = (f) => (sameSpot(f, u, v, d) ? f.kind !== 'system' : Math.hypot(f.u - u, f.v - v) - (f.d + d) / 2 < MIN_WEB - 1e-6);
+  return part.features.some((f) => f.type === 'hole' && near(f)) || edgeBores(part).some((b) => boreWeb(h, b) < MIN_WEB);
 }
 
 // True when a through hole of Ø d at p would leave less than MIN_WEB of material to a different existing hole or to
