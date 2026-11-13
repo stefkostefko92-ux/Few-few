@@ -582,3 +582,5 @@
 {"t":"start","ts":"2026-11-13T17:19:18.912Z","id":"rdb0ab62e","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-13T17:19:18.912Z","id":"rdb0ab62e","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"edc96e98"}
 {"t":"handoff","ts":"2026-11-13T17:21:30.520Z","id":"rdb0ab62e","from":"pravniyat-razbirach","to":"kodadjiyata","status":"блокер","run":"99fb8f5c"}
+{"t":"start","ts":"2026-11-13T18:24:16.829Z","id":"r58cd63cd","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-13T18:24:16.829Z","id":"r58cd63cd","from":"kodadjiyata","to":"друг","status":"блокер","run":"f9934067","toRaw":"Изпитателя"}
