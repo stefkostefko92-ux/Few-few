@@ -9,30 +9,35 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdtempSync, rmSync, readdirSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const TOOL = join(ROOT, "tools/docs/collect-claude-md.mjs");
-const OUT = join(ROOT, "agents-dashboard/docs.js");
-const run = (env = {}) => spawnSync(process.execPath, [TOOL, "--check"], { cwd: ROOT, encoding: "utf8", env: { ...process.env, ...env } });
+const REAL = join(ROOT, "agents-dashboard/docs.js");
+// Тестовете работят върху ВРЕМЕННО копие (DOCS_JS_OUT), никога върху docs.js в репото. Преди
+// регенерираха истинския файл на място и го връщаха — а `node --test` пуска файловете едновременно,
+// така че build-artifact.test.mjs понякога четеше регенерирания файл по средата (2026-11-13: 3 случайни
+// червени в пълния пробег; сами минаваха 21/21).
+const TMP = mkdtempSync(join(tmpdir(), "docs-js-"));
+const OUT = join(TMP, "docs.js");
+const withOut = (env = {}) => ({ ...process.env, DOCS_JS_OUT: OUT, ...env });
+const run = (env = {}) => spawnSync(process.execPath, [TOOL, "--check"], { cwd: ROOT, encoding: "utf8", env: withOut(env) });
+const generate = (env = {}) => spawnSync(process.execPath, [TOOL], { cwd: ROOT, encoding: "utf8", env: withOut(env) });
+const realBefore = readFileSync(REAL, "utf8");
+process.on("exit", () => rmSync(TMP, { recursive: true, force: true }));
 
 // ВАЖНО (CI провал 2026-08-04): тези тестове НЕ бива да зависят от това дали КОМИТНАТИЯТ docs.js е
 // свеж в момента. Първата им версия твърдеше „--check е зелен днес" и падаше в CI, защото main
 // продължаваше да мени CLAUDE.md, а артефактът се съди срещу СЛЯТОТО дърво. Точно тази зависимост
 // махнахме от гейта (docs-fresh е съветващ, main се лекува сам) — тя не бива да се върне през
 // тестовете. Затова тук първо РЕГЕНЕРИРАМЕ (тестваме ИНСТРУМЕНТА, не състоянието на репото), после
-// съдим, и накрая връщаме файла байт-за-байт.
+// съдим — във временния файл, без да пипаме истинския.
 function withFreshDocs(fn) {
-  const original = readFileSync(OUT, "utf8");
-  try {
-    spawnSync(process.execPath, [TOOL], { cwd: ROOT, encoding: "utf8" }); // регенерирай
-    return fn();
-  } finally {
-    writeFileSync(OUT, original);
-    assert.equal(readFileSync(OUT, "utf8"), original, "възстановяването се провали");
-  }
+  assert.equal(generate().status, 0, "генераторът трябва да мине");
+  return fn();
 }
 
 test("след регенерация --check е зелен (инструментът е самосъгласуван)", () => {
@@ -100,20 +105,42 @@ test("docs-fresh е СЪВЕТВАЩ в гейта (иначе PR-ите при�
     "докато main се лекува сам, docs-fresh не бива да е задължителен — иначе се връща въртележката");
 });
 
-test("--check ХВАЩА реален дрейф на съдържанието (byte-verify restore)", () => {
-  const original = readFileSync(OUT, "utf8");
-  try {
-    // Първо регенерирай: иначе, ако артефактът вече е остарял (main мени CLAUDE.md), тестът щеше
-    // да мине ПРАЗНО — щеше да чете единица, дошла от чужд дрейф, а не от собствената мутация.
-    spawnSync(process.execPath, [TOOL], { cwd: ROOT, encoding: "utf8" });
+test("--check ХВАЩА реален дрейф на съдържанието", () => {
+  // Първо регенерирай: иначе, ако артефактът вече е остарял (main мени CLAUDE.md), тестът щеше
+  // да мине ПРАЗНО — щеше да чете единица, дошла от чужд дрейф, а не от собствената мутация.
+  withFreshDocs(() => {
     assert.equal(run().status, 0, "предпоставка: след регенерация е зелено");
     const fresh = readFileSync(OUT, "utf8");
     const mutated = fresh.replace(/("content":\s*")/, '$1ДРЕЙФ-ТЕСТ ');
     assert.notEqual(mutated, fresh, "мутацията трябва да промени файла");
     writeFileSync(OUT, mutated);
     assert.equal(run().status, 1, "променен docs.js (различен от реалните CLAUDE.md) трябва да ПАДНЕ");
-  } finally {
-    writeFileSync(OUT, original);
-    assert.equal(readFileSync(OUT, "utf8"), original, "възстановяването се провали");
-  }
+  });
+});
+
+// Реален дефект (2026-11-13): FiveM/CLAUDE.md споменава `</script>` в проза. Генераторът го пишеше
+// буквално, а build-artifact.mjs вгражда docs.js в <script>…</script> — блокът се затваряше по-рано и
+// билдът на артефакта падаше със заблуждаващото „остана обвиващ таг: <html“. Докато docs.js беше
+// остарял (от 2026-11-02), дефектът спеше; всяко регенериране го будеше.
+test("docs.js е безопасен за вграждане в <script>: нито едно буквално `</`, а съдържанието е непокътнато", () => {
+  withFreshDocs(() => {
+    const out = readFileSync(OUT, "utf8");
+    assert.doesNotMatch(out, /<\//, "`</` трябва да излиза като `<\\/` — иначе `</script>` от CLAUDE.md затваря вградения блок");
+    const files = JSON.parse(out.match(/window\.__DOCS__ = ([\s\S]*?);\nvar docs/)[1]).files;
+    let withClosingTag = 0;
+    for (const f of files) {
+      const src = readFileSync(join(ROOT, f.path), "utf8");
+      assert.equal(f.content, src, `${f.path}: съдържанието след разчитане е същото като файла`);
+      if (src.includes("</")) withClosingTag++;
+    }
+    assert.ok(withClosingTag > 0, "поне един CLAUDE.md съдържа `</` — иначе тестът не доказва нищо");
+  });
+});
+
+test("генераторът пише там, където сочи DOCS_JS_OUT, и не пипа docs.js в репото", () => {
+  withFreshDocs(() => {
+    assert.ok(existsSync(OUT), "временният изход е записан");
+    assert.deepEqual(readdirSync(TMP), ["docs.js"]);
+  });
+  assert.equal(readFileSync(REAL, "utf8"), realBefore, "истинският docs.js е непроменен след всички тестове дотук");
 });
