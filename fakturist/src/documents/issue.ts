@@ -15,7 +15,51 @@ import { EAS_BG_VAT } from '../einvoice/codes.js';
 import { entryHash, GENESIS, sha256 } from '../ledger/chain.js';
 import { formatNumber } from './numbering.js';
 import { deliverToInbox, type Delivery } from '../inbox/deliver.js';
-import type { OrgAccess } from '../auth/guards.js';
+import { HttpError, type OrgAccess } from '../auth/guards.js';
+import { roleCan, weaker, type MemberRole } from '../auth/roles.js';
+
+/**
+ * Правото се проверява наново под заключването на фирмата: достъпът е сметнат от сесията в началото на
+ * заявката, а междувременно собствеността може да е отнета или пълномощното — оттеглено.
+ */
+async function recheckAccess(
+  tx: Prisma.TransactionClient,
+  access: OrgAccess,
+  actorId: string,
+): Promise<void> {
+  if (access.viaFirmId === null) {
+    const member = await tx.membership.findUnique({
+      where: { userId_organizationId: { userId: actorId, organizationId: access.organizationId } },
+      select: { role: true },
+    });
+    if (!member || !roleCan(member.role as MemberRole, 'documents.issue')) throw new HttpError(404);
+    return;
+  }
+  const now = new Date();
+  const [mandate, member] = await Promise.all([
+    access.mandateId
+      ? tx.clientMandate.findUnique({ where: { id: access.mandateId } })
+      : Promise.resolve(null),
+    tx.membership.findUnique({
+      where: { userId_organizationId: { userId: actorId, organizationId: access.viaFirmId } },
+      select: { role: true },
+    }),
+  ]);
+  const valid =
+    mandate !== null &&
+    mandate.status === 'ACTIVE' &&
+    mandate.firmId === access.viaFirmId &&
+    mandate.clientId === access.organizationId &&
+    mandate.validFrom.getTime() <= now.getTime() &&
+    (mandate.validTo === null || mandate.validTo.getTime() >= now.getTime());
+  if (
+    !valid ||
+    !member ||
+    !roleCan(weaker(member.role as MemberRole, 'ACCOUNTANT'), 'documents.issue')
+  ) {
+    throw new HttpError(404);
+  }
+}
 
 /**
  * Това, което издаващият подава: всичко без номера и без доставчика. Доставчикът идва от данните на
@@ -94,6 +138,7 @@ export async function issueDocument(
     const orgs = await tx.$queryRaw<Array<{ id: string }>>`
       SELECT "id" FROM "Organization" WHERE "id" = ${access.organizationId} FOR UPDATE`;
     if (orgs.length !== 1) throw new Error('Фирмата не съществува');
+    await recheckAccess(tx, access, actorId);
     const org = await tx.organization.findUniqueOrThrow({ where: { id: access.organizationId } });
 
     const allocated = await tx.$queryRaw<Array<{ number: bigint }>>`

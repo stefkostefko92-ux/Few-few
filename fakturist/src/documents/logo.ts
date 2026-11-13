@@ -19,8 +19,11 @@ export const LOGO_MAX_BYTES = 1024 * 1024;
 const MAX_INPUT_PIXELS = 16_000_000;
 const OUT_BOX = { width: 1200, height: 600 };
 
-// Логото се качва рядко: кешът на libvips само би държал памет.
+// Логото се качва рядко: кешът на libvips само би държал памет; една нишка и едно прекодиране наведнъж —
+// 16 Mpx RGBA е ~128 MB декодирано, а контейнерът има 512 MB.
 sharp.cache(false);
+sharp.concurrency(1);
+let queue: Promise<unknown> = Promise.resolve();
 export type LogoKind = 'png' | 'jpeg' | 'webp';
 export type LogoType = 'image/png' | 'image/jpeg';
 export type LogoError = 'type' | 'corrupt';
@@ -45,7 +48,15 @@ export function sniffLogo(buf: Uint8Array): LogoKind | null {
   return null;
 }
 
-export async function normalizeLogo(
+export function normalizeLogo(
+  input: Buffer,
+): Promise<{ ok: true; logo: Logo } | { ok: false; error: LogoError }> {
+  const run = queue.then(() => normalizeNow(input));
+  queue = run.catch(() => undefined);
+  return run;
+}
+
+async function normalizeNow(
   input: Buffer,
 ): Promise<{ ok: true; logo: Logo } | { ok: false; error: LogoError }> {
   const kind = sniffLogo(input);

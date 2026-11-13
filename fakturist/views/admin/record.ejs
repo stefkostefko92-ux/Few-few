@@ -12,7 +12,7 @@
 <% if (resource.model === 'Organization') { %>
 <div class="actions">
   <a class="button-secondary" href="/admin/veriga/<%= row.id %>"><%= t('admin.chain') %></a>
-  <% if (!row.verifiedAt) { %><form method="post" action="/admin/firmi/<%= row.id %>/potvardi"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit"><%= t('admin.verifyOrg') %></button></form><% } %>
+  <% if (!row.verifiedAt || row.ownerReviewPendingAt) { %><form method="post" action="/admin/firmi/<%= row.id %>/potvardi"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit"><%= row.ownerReviewPendingAt ? t('admin.ownership.confirmOwner') : t('admin.verifyOrg') %></button></form><% } %>
 </div>
 <% if (transfer && transfer.hasOwner && row.kind === 'COMPANY' && !row.deletedAt) { %>
 <section class="panel stack narrow-form" aria-labelledby="h-revoke">

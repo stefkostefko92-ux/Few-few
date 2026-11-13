@@ -136,10 +136,16 @@ export async function inviteOwnerByFirm(
   await lockOrganization(tx, input.firmId);
   const mandate = await tx.clientMandate.findUnique({
     where: { firmId_clientId: { firmId: input.firmId, clientId: input.clientId } },
-    select: { id: true, status: true, client: { select: { createdByFirmId: true } } },
+    select: {
+      id: true,
+      status: true,
+      client: { select: { createdByFirmId: true, ownershipLockedAt: true } },
+    },
   });
   if (!mandate || mandate.status === 'REVOKED') throw new TransferError('notFound');
   if (mandate.client.createdByFirmId !== input.firmId) throw new TransferError('notCreator');
+  // След отнемане на собствеността кани само мастърът — кантората не си връща фирмата.
+  if (mandate.client.ownershipLockedAt) throw new TransferError('locked');
   const email = EmailSchema.safeParse(input.email);
   if (!email.success) throw new TransferError('invalidEmail');
   if (await isFirmMember(tx, input.firmId, email.data)) throw new TransferError('firmMember');

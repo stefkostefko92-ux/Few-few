@@ -15,7 +15,12 @@ import {
 import { decideMandate } from '../accounts/mandates.js';
 import { createTransferInvite, revokeTransferInvite, TransferError } from '../accounts/transfer.js';
 import { smtpSettings } from '../admin/integrations.js';
-import { isRevokeReason, OwnershipError, revokeOwnership } from '../accounts/ownership.js';
+import {
+  confirmOwnerReview,
+  isRevokeReason,
+  OwnershipError,
+  revokeOwnership,
+} from '../accounts/ownership.js';
 
 /** Поканата за прехвърляне: имейлът на собственика + отметката, че мастърът е проверил представителството. */
 const TransferForm = z.object({
@@ -134,20 +139,12 @@ export function adminActionsRouter(): Router {
 
   router.post('/admin/firmi/:id/potvardi', async (req, res) => {
     const id = String(req.params['id']);
-    await prisma.$transaction(async (tx) => {
-      const updated = await tx.organization.updateMany({
-        where: { id, verifiedAt: null },
-        data: { verifiedAt: new Date() },
-      });
-      if (updated.count !== 1) throw new HttpError(409);
-      await audit(tx, {
-        actorId: req.principal!.user.id,
-        organizationId: id,
-        action: 'organization.verified',
-        targetType: 'Organization',
-        targetId: id,
-      });
-    });
+    try {
+      await confirmOwnerReview({ organizationId: id, actorId: req.principal!.user.id });
+    } catch (error) {
+      if (!(error instanceof OwnershipError)) throw error;
+      throw new HttpError(error.code === 'notFound' ? 404 : 409);
+    }
     res.redirect(303, `/admin/r/organizations/${id}`);
   });
 

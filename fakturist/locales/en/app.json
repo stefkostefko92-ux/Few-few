@@ -39,7 +39,8 @@
       "notFound": "There is no active or pending mandate for this company.",
       "invalid": "The invitation could not be sent.",
       "notCreator": "The owner is invited by the firm that added the company to Fakturist. Your mandate waits for confirmation by the owner or by Fakturist.",
-      "invited": "Fakturist or another firm has already invited the owner — wait for their answer."
+      "invited": "Fakturist or another firm has already invited the owner — wait for their answer.",
+      "locked": "This company’s ownership was revoked in a dispute — only Fakturist invites a new owner."
     }
   },
   "roles": {
@@ -156,7 +157,8 @@
       "notFound": "There is no active or pending mandate for this company.",
       "invalid": "The invitation could not be sent.",
       "notCreator": "The owner is invited by the firm that added the company to Fakturist. Your mandate waits for confirmation by the owner or by Fakturist.",
-      "invited": "Fakturist or another firm has already invited the owner — wait for their answer."
+      "invited": "Fakturist or another firm has already invited the owner — wait for their answer.",
+      "locked": "This company’s ownership was revoked in a dispute — only Fakturist invites a new owner."
     }
   },
   "security": {

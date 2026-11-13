@@ -1,4 +1,7 @@
 import { Router, type Request, type Response } from 'express';
+import { rateLimit } from 'express-rate-limit';
+import { MINUTE } from '../time.js';
+import { requestRateKey } from '../http/ip.js';
 import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { BRAND } from '../brand.js';
@@ -68,6 +71,15 @@ async function renderSettings(
   });
 }
 
+/** Качванията на лого: 10 за 10 минути на човек (прекодирането е скъпо). */
+const uploadLimiter = rateLimit({
+  windowMs: 10 * MINUTE,
+  limit: 10,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  keyGenerator: (req) => req.principal?.user.id ?? requestRateKey(req),
+});
+
 export function appSettingsRouter(): Router {
   const router = Router();
 
@@ -107,7 +119,7 @@ export function appSettingsRouter(): Router {
     res.redirect(303, `/app/o/${access.organizationId}/nastroyki?ok=pdf`);
   });
 
-  router.post('/app/o/:orgId/nastroyki/logo', logoUpload(), async (req, res) => {
+  router.post('/app/o/:orgId/nastroyki/logo', uploadLimiter, logoUpload(), async (req, res) => {
     const access = await settingsAccess(req);
     const status = uploadStatus(req);
     let error: string | null =

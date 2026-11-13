@@ -190,7 +190,14 @@ export async function acceptTransferInvite(input: {
           });
         }
       }
-      // Собственик, поканен от кантора, е за проверка: мастърите получават писмо (без имейла му).
+      // Собственик, поканен от кантора, е за проверка (таблото + писмо до мастърите, без имейла му);
+      // поканен от мастъра — проверен е, а заключването след отнемане пада.
+      await tx.organization.update({
+        where: { id: invite.organizationId },
+        data: invite.mandate
+          ? { ownerReviewPendingAt: now }
+          : { ownerReviewPendingAt: null, ownershipLockedAt: null },
+      });
       if (invite.mandate) {
         const masters = await tx.user.findMany({
           where: { platformRole: 'MASTER', disabledAt: null },

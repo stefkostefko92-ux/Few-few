@@ -18,6 +18,7 @@ export type TransferErrorCode =
   | 'rateLimited'
   | 'notCreator'
   | 'invited'
+  | 'locked'
   | `password.${string}`;
 
 export class TransferError extends Error {

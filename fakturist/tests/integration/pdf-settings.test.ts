@@ -216,3 +216,43 @@ test('кантората по пълномощно не сменя изглед�
   });
   assert.equal(tried.status, 404);
 });
+
+test('повреден запис на логото в базата не чупи PDF-а — рисува се без лого', async () => {
+  const s = await login('owner@example.test');
+  const broken = {
+    logo: Buffer.from('не е изображение'),
+    logoType: 'image/png',
+    logoWidth: 100,
+    logoHeight: 50,
+  };
+  await prisma.pdfStyle.upsert({
+    where: { organizationId: company.organizationId },
+    create: { organizationId: company.organizationId, ...broken },
+    update: broken,
+  });
+  const sample = await get(s, `/app/o/${company.organizationId}/nastroyki/obrazets.pdf`);
+  assert.equal(sample.status, 200);
+  const raw = Buffer.from(await sample.arrayBuffer()).toString('latin1');
+  assert.ok(!raw.includes('/Subtype /Image'));
+});
+
+test('качването на лого е с таван на заявките на човек', async () => {
+  await register({
+    ...base,
+    kind: 'company',
+    name: 'Драгомир Петков',
+    email: 'limit@example.test',
+    legalName: 'Таван ЕООД',
+    eik: '200000002',
+  });
+  const s = await login('limit@example.test');
+  const org = await prisma.organization.findUniqueOrThrow({ where: { eik: '200000002' } });
+  const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>');
+  const statuses: number[] = [];
+  for (let i = 0; i < 11; i += 1) {
+    const res = await upload(s, `/app/o/${org.id}/nastroyki/logo`, svg, 'image/png', s.csrf);
+    statuses.push(res.status);
+  }
+  assert.deepEqual(statuses.slice(0, 10), Array(10).fill(400));
+  assert.equal(statuses[10], 429);
+});

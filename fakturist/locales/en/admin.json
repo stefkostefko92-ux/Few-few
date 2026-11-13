@@ -115,7 +115,7 @@
   },
   "ownership": {
     "reviewTitle": "To review: owners invited by an accounting firm",
-    "reviewHelp": "An accounting firm invited the owner of a company it added itself. Check that this person really represents the company: “Verify company” removes it from the list, “Revoke ownership” — in a dispute.",
+    "reviewHelp": "An accounting firm invited the owner of a company it added itself. Check that this person really represents the company: “Owner verified” removes it from the list, “Revoke ownership” — in a dispute (the firm then cannot invite until you invite an owner with “Transfer”).",
     "firm": "Accounting firm",
     "acceptedAt": "Accepted (UTC)",
     "title": "Revoke ownership",
@@ -134,6 +134,7 @@
       "invalidReason": "Choose a reason.",
       "noOwner": "The company has no owner.",
       "notCompany": "An accounting firm’s ownership is not revoked here."
-    }
+    },
+    "confirmOwner": "Owner verified"
   }
 }

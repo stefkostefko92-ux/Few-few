@@ -2,6 +2,8 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { config } from '../config.js';
 import { prisma } from '../db.js';
+import { logger } from '../logger.js';
+import { sniffLogo } from './logo.js';
 
 /**
  * Изгледът на PDF копието, който фирмата избира от настройките си: шрифт, шаблон, акцентен цвят, лого и
@@ -169,9 +171,19 @@ export async function loadPdfStyle(organizationId: string | null): Promise<Resol
   const row = organizationId
     ? await prisma.pdfStyle.findUnique({ where: { organizationId } })
     : null;
-  const logo =
-    row?.logo && row.logoWidth && row.logoHeight
-      ? { data: Buffer.from(row.logo), width: row.logoWidth, height: row.logoHeight }
-      : null;
+  let logo: PdfLogo | null = null;
+  if (row?.logo && row.logoWidth && row.logoHeight) {
+    const data = Buffer.from(row.logo);
+    const kind = sniffLogo(data);
+    const matches =
+      (kind === 'png' && row.logoType === 'image/png') ||
+      (kind === 'jpeg' && row.logoType === 'image/jpeg');
+    // Записът идва само от прекодирането (sharp); друго — повреда или ръчна промяна: без лого.
+    if (matches && row.logoWidth <= 1200 && row.logoHeight <= 600) {
+      logo = { data, width: row.logoWidth, height: row.logoHeight };
+    } else {
+      logger.warn({ organizationId }, 'логото на фирмата не е от прекодирането — PDF без лого');
+    }
+  }
   return resolvePdfStyle(row ?? DEFAULT_PDF_STYLE, logo, config().PDF_FONT_ROOT);
 }
