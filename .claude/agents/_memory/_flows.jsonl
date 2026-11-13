@@ -539,3 +539,7 @@
 {"t":"start","ts":"2026-11-12T23:24:52.959Z","id":"rfb0a8dac","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-12T23:24:52.959Z","id":"rfb0a8dac","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"e4259b16"}
 {"t":"handoff","ts":"2026-11-12T23:25:55.079Z","id":"rfb0a8dac","from":"kodadjiyata","to":"kachestveniyat","status":"блокер","run":"f2cf3edb"}
+{"t":"handoff","ts":"2026-11-12T23:27:41.312Z","id":"rfb0a8dac","from":"pravniyat-razbirach","to":"човек","status":"блокер","run":"e7198232"}
+{"t":"handoff","ts":"2026-11-12T23:42:30.649Z","id":"rfb0a8dac","from":"diskordjiyata","to":"човек","status":"има бележки","run":"8b29a206"}
+{"t":"handoff","ts":"2026-11-12T23:46:25.961Z","id":"rfb0a8dac","from":"diskordjiyata","to":"човек","status":"има бележки","run":"965f85f1"}
+{"t":"handoff","ts":"2026-11-12T23:49:15.614Z","id":"rfb0a8dac","from":"diskordjiyata","to":"човек","status":"има бележки","run":"62a44902"}
