@@ -18,6 +18,7 @@
   },
   "records": "{count} records",
   "recent": "Latest audit events",
+  "staleTransfers": "Bank transfers for plans have been waiting for confirmation for more than 3 days: {count}. Check the statement — the invoice is due within 5 days of receiving the payment (Art. 113(4) VAT Act).",
   "search": "Search",
   "searchButton": "Search",
   "page": "Page {page} of {pages}",

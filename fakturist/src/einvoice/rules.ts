@@ -1,8 +1,9 @@
 import { cmp, dec, isNegative, isZero } from './decimal.js';
-import { CREDIT_TRANSFER_MEANS, NOTE_TYPES, type VatCategory } from './codes.js';
-import { EU_VAT, isValidBgVat, isValidEik } from './bg-ids.js';
+import { CREDIT_TRANSFER_MEANS, type VatCategory } from './codes.js';
+import { EU_VAT } from './bg-ids.js';
+import { validateBg } from './rules-bg.js';
 import type { Calculated } from './calculate.js';
-import type { InvoiceInput, PartyInput, Profile } from './model.js';
+import type { InvoiceInput, Profile } from './model.js';
 
 export type Severity = 'fatal' | 'warning';
 
@@ -28,12 +29,6 @@ export const DEFAULT_RULE_OPTIONS: RuleOptions = {
   issueDeadlineDays: 5,
   requireBankAccount: false,
 };
-
-const DAY_MS = 86_400_000;
-
-function days(from: string, to: string): number {
-  return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / DAY_MS);
-}
 
 /**
  * Проверява документа срещу правилата на EN 16931 (подмножеството, което ядрото може да наруши — пълната
@@ -234,122 +229,9 @@ export function validateDocument(
     }
   }
 
-  // --- ЗДДС (България) --------------------------------------------------------------------------------
-  if (!/^\d{10}$/.test(input.number)) {
-    fail(
-      'BG-01',
-      'number',
-      'Номерът на документа е десетразряден, само с арабски цифри (чл. 114, ал. 1, т. 2 ЗДДС).',
-      'The document number has ten Arabic digits (Art. 114(1)(2) of the Bulgarian VAT Act).',
-    );
-  }
-  checkBgParty('seller', input.seller, true, fail);
-  checkBgParty('buyer', input.buyer, false, fail);
-
-  if (input.currency !== 'EUR' && !input.eurExchangeRate) {
-    fail(
-      'BG-05',
-      'eurExchangeRate',
-      'При фактура в друга валута основата и ДДС се посочват и в евро — нужен е курсът на ЕЦБ (чл. 114, ал. 5 и чл. 26, ал. 6 ЗДДС).',
-      'For an invoice in another currency the base and VAT are also stated in euro — the ECB rate is required (Art. 114(5) and 26(6) of the VAT Act).',
-    );
-  }
-  if (input.eurExchangeRate !== undefined && cmp(dec(input.eurExchangeRate), dec('0')) <= 0) {
-    fail(
-      'BG-05',
-      'eurExchangeRate',
-      'Курсът трябва да е над 0.',
-      'The exchange rate must be greater than 0.',
-    );
-  }
-
-  if (NOTE_TYPES.includes(input.typeCode) && input.precedingInvoices.length === 0) {
-    fail(
-      'BG-06',
-      'precedingInvoices',
-      'Известието съдържа номера и датата на фактурата, към която е издадено (чл. 115 ЗДДС).',
-      'A note must reference the number and date of the invoice it corrects (Art. 115 of the VAT Act).',
-    );
-  }
-
-  for (const category of ['Z', 'E', 'AE', 'K', 'G', 'O'] as const) {
-    if (!categories.has(category)) continue;
-    const entry = exemption(category);
-    if (!entry?.reason) {
-      fail(
-        'BG-07',
-        'vatExemptions',
-        'При нулева ставка или неначисляване се посочва основанието като текст (чл. 114, ал. 1, т. 12 ЗДДС).',
-        'With a zero rate or no VAT charged, the legal basis must be stated as text (Art. 114(1)(12) of the VAT Act).',
-      );
-    } else if (category === 'AE' && !/обратно начисляване/i.test(entry.reason)) {
-      // Чл. 114, ал. 4 ЗДДС иска текста на български; „Reverse charge“ (Дир. 2006/112, чл. 226, т. 11а)
-      // може да е до него, не вместо него (Данъчника, 13.11.2026).
-      fail(
-        'BG-07',
-        'vatExemptions',
-        'При обратно начисляване се посочва текстът „обратно начисляване“ (чл. 114, ал. 4 ЗДДС).',
-        'Reverse charge must state the words “обратно начисляване” (Art. 114(4) of the VAT Act).',
-      );
-    }
-  }
-
-  if (input.taxPointDate) {
-    const late = days(input.taxPointDate, input.issueDate);
-    if (late > options.issueDeadlineDays) {
-      fail(
-        'BG-08',
-        'issueDate',
-        `Документът е издаден ${late} дни след данъчното събитие; срокът е ${options.issueDeadlineDays} дни (чл. 113, ал. 4 ЗДДС).`,
-        `The document is issued ${late} days after the tax point; the deadline is ${options.issueDeadlineDays} days (Art. 113(4) of the VAT Act).`,
-        'warning',
-      );
-    }
-  }
-
-  if (options.requireBankAccount && !input.payment?.accountId) {
-    fail(
-      'BG-09',
-      'payment.accountId',
-      'Сметката на доставчика е задължителен реквизит (чл. 114, ал. 1, т. 16 по законопроекта за 2028 г.).',
-      'The supplier bank account is a required field (Art. 114(1)(16) under the 2028 bill).',
-    );
-  }
+  validateBg(input, categories, exemption, options, fail);
 
   return issues;
-}
-
-function checkBgParty(
-  role: 'seller' | 'buyer',
-  party: PartyInput,
-  isSeller: boolean,
-  fail: (rule: string, path: string, bg: string, en: string, severity?: Severity) => void,
-): void {
-  if (party.address.countryCode !== 'BG') return;
-  if (party.legalId !== undefined && !isValidEik(party.legalId)) {
-    fail(
-      isSeller ? 'BG-02' : 'BG-03',
-      `${role}.legalId`,
-      'ЕИК/БУЛСТАТ е невалиден (9 или 13 цифри с вярна контролна цифра).',
-      'The EIK/BULSTAT is invalid (9 or 13 digits with a correct check digit).',
-    );
-  }
-  if (party.vatId !== undefined && party.vatId.startsWith('BG') && !isValidBgVat(party.vatId)) {
-    fail(
-      'BG-04',
-      `${role}.vatId`,
-      'Българският ДДС номер е „BG“ + ЕИК (9 цифри) или + 10 цифри.',
-      'A Bulgarian VAT number is “BG” + the EIK (9 digits) or + 10 digits.',
-    );
-  }
-  if (isSeller && !party.legalId && !party.vatId) {
-    fail(
-      'BG-02',
-      `${role}.legalId`,
-      'Доставчикът се посочва с ЕИК или ДДС номер (чл. 114, ал. 1, т. 5 ЗДДС).',
-      'The supplier must be identified by EIK or VAT number (Art. 114(1)(5) of the VAT Act).',
-    );
-  }
 }
 
 export function hasFatal(issues: readonly Issue[]): boolean {

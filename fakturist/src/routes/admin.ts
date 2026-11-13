@@ -1,4 +1,4 @@
-import { sofiaToday } from '../time.js';
+import { DAY, sofiaToday } from '../time.js';
 import { Router } from 'express';
 import { prisma } from '../db.js';
 import { audit } from '../audit.js';
@@ -62,7 +62,18 @@ export function adminRouter(): Router {
       prisma.auditLog.findMany({ orderBy: { id: 'desc' }, take: 15 }),
     ]);
     const review = await ownershipReviewQueue();
+    // Банкови преводи за план, които чакат потвърждение повече от 3 дни: фактурата се издава до 5 дни
+    // от получаването на плащането (чл. 113, ал. 4 ЗДДС) — мастърът сверява извлечението навреме.
+    const staleTransfers = await prisma.payment.count({
+      where: {
+        provider: 'MANUAL',
+        status: 'PENDING',
+        planCode: { not: null },
+        createdAt: { lt: new Date(Date.now() - 3 * DAY) },
+      },
+    });
     res.render('admin/dashboard', {
+      staleTransfers,
       counts,
       issuedThisMonth,
       firms,

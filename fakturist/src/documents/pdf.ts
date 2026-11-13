@@ -109,10 +109,10 @@ export function renderPdf(
   });
   const dates: Array<[string, string]> = [[L('Дата на издаване', '\n'), bgDate(input.issueDate)]];
   if (!meta.proforma) {
-    dates.push([
-      L('Дата на данъчното събитие', '\n'),
-      bgDate(input.taxPointDate ?? input.issueDate),
-    ]);
+    // Авансова фактура: датата е на получаване на плащането (чл. 114, ал. 1, т. 10 ЗДДС).
+    const taxDate =
+      input.typeCode === '386' ? 'Дата на получаване на плащането' : 'Дата на данъчното събитие';
+    dates.push([L(taxDate, '\n'), bgDate(input.taxPointDate ?? input.issueDate)]);
   }
   if (input.dueDate) {
     dates.push([L(meta.proforma ? 'Срок за плащане' : 'Падеж', '\n'), bgDate(input.dueDate)]);

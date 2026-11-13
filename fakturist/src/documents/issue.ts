@@ -135,8 +135,11 @@ export async function issueInTx(
     const { seriesId: _series, ...rest } = request;
     // „5“ и „0000000005“ са един и същ номер — в XML-а и във връзката отива десетразрядният.
     const precedingInvoices = rest.precedingInvoices.map(normalizePreceding);
+    // Датата на данъчното събитие е реквизит (чл. 114, ал. 1, т. 10): без нея — датата на издаване, и
+    // в XML-а (BT-7), за да не се разминава с PDF-а.
+    const taxPointDate = rest.taxPointDate ?? rest.issueDate;
     const built = buildEInvoice(
-      { ...rest, precedingInvoices, number, seller: sellerOf(org) },
+      { ...rest, taxPointDate, precedingInvoices, number, seller: sellerOf(org) },
       {
         profile,
         issueDeadlineDays: deadlineDays,

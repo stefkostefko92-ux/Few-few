@@ -1,6 +1,7 @@
 <%- include('../partials/app-head', { title: t('admin.title') }) %>
 <h1><%= t('admin.title') %></h1>
 <%- include('_nav') %>
+<% if (staleTransfers > 0) { %><p class="callout" role="status"><%= t('admin.staleTransfers', { count: staleTransfers }) %> <a href="/admin/r/payments"><%= t('admin.open') %></a></p><% } %>
 <dl class="kpis">
   <div><dt><%= t('admin.kpi.issued') %></dt><dd class="mono"><%= issuedThisMonth %></dd></div>
   <div><dt><%= t('admin.kpi.companies') %></dt><dd class="mono"><%= companies %></dd></div>

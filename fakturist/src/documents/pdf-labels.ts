@@ -23,6 +23,7 @@ const EN: Record<string, string> = {
   // Дати и страни
   'Дата на издаване': 'Issue date',
   'Дата на данъчното събитие': 'Date of supply',
+  'Дата на получаване на плащането': 'Payment received on',
   Падеж: 'Due date',
   'Срок за плащане': 'Payment due by',
   'Към фактура': 'Invoice reference',
