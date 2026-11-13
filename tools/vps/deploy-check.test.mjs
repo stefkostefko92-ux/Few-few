@@ -359,3 +359,34 @@ test("присвояване и външни команди без долна ч
   const src = `#!/usr/bin/env bash\nset -euo pipefail\nmy_var=1\ndeploy_failed=1\nnpm ci --omit=dev\ndocker compose up -d\n`;
   assert.equal(lintShell(src, "s.sh").some((x) => x.code === "undefined-function"), false);
 });
+
+test("тялото на heredoc е данни: nginx `server_name` не е извикване на функция", () => {
+  const src = [
+    "#!/usr/bin/env bash",
+    "set -euo pipefail",
+    "cat > /etc/nginx/sites-available/x.conf <<NG",
+    "server {",
+    "    server_name $DOMAIN www.$DOMAIN;",
+    "    proxy_pass http://127.0.0.1:3000;",
+    "}",
+    "NG",
+    "cat <<-'EOF2'",
+    "\tclient_max_body_size 4m;",
+    "\tEOF2",
+  ].join("\n");
+  assert.equal(lintShell(src, "s.sh").some((x) => x.code === "undefined-function"), false);
+});
+
+test("извикване СЛЕД затворен heredoc пак се лови", () => {
+  const src = [
+    "#!/usr/bin/env bash",
+    "set -euo pipefail",
+    "cat > x.conf <<NG",
+    "    server_name a.example;",
+    "NG",
+    "deploy_missing",
+  ].join("\n");
+  const f = lintShell(src, "s.sh").find((x) => x.code === "undefined-function");
+  assert.ok(f, "трябва да хване deploy_missing");
+  assert.match(f.detail || f.message || JSON.stringify(f), /6: deploy_missing/);
+});
