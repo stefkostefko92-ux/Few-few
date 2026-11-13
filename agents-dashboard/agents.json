@@ -49,7 +49,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 451
+        "lessons": 453
       },
       "evolution": [
         {
@@ -633,9 +633,20 @@
           "date": "2026-11-13",
           "event": "v40.4 — учене",
           "detail": "Научи: ЗИДПУ (ДВ бр. 31/11.04.2025, в сила 28.06.2025) обхваща е-търговия само „по индивидуалн… (+2 още)"
+        },
+        {
+          "version": "40.6.0",
+          "date": "2026-11-13",
+          "event": "v40.6 — учене",
+          "detail": "Научи: medqr app.js чисти личния SW кеш (/sos с алергии/лекарства) само при submit на /logout … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „medqr app.js чисти личния SW кеш (/sos с алергии/лекарства) само при submit на /logout …\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-13",
           "type": "learning",
@@ -1223,7 +1234,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 659
+        "lessons": 660
       },
       "evolution": [
         {
@@ -2107,9 +2118,20 @@
           "date": "2026-11-13",
           "event": "v59.9 — учене",
           "detail": "Научи: Когато нов документ заменя стар (анулиране, замяна), записите, от които се смята състоя… (+1 още)"
+        },
+        {
+          "version": "60.0.0",
+          "date": "2026-11-13",
+          "event": "v60.0 — учене",
+          "detail": "Научи: В medqr паролата и 2FA ползват общ брояч failed_attempts, а /login вика resetAttempts п…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „В medqr паролата и 2FA ползват общ брояч failed_attempts, а /login вика resetAttempts п…\""
+        },
         {
           "date": "2026-11-13",
           "type": "learning",
