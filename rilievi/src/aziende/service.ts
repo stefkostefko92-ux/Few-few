@@ -3,6 +3,8 @@ import { prisma } from '../db.js';
 import { writeAudit } from '../audit.js';
 import type { SessionUser } from '../types.js';
 import type { Logo } from './logo.js';
+import { MESI_PROVA, scadenzaDopoMesi } from '../abbonamenti/regole.js';
+import { avvisaRimborsiDovuti } from '../pagamenti/rimborsi.js';
 
 /**
  * Фирмите. Създава ги и ги управлява само MASTER (маршрутите проверяват `aziende:manage`); тук е
@@ -24,6 +26,12 @@ const SUMMARY = {
   logoUpdatedAt: true,
   deactivatedAt: true,
   schizzi: true,
+  preventiviAttivi: true,
+  abbonamentoLivello: true,
+  abbonamentoFino: true,
+  abbonamentoProva: true,
+  abbonamentoCambioAt: true,
+  abbonamentoCambioLivello: true,
   createdAt: true,
 } satisfies Prisma.AziendaSelect;
 
@@ -127,14 +135,23 @@ export async function createAzienda(
   }
 }
 
-/** Записът на нова фирма с одита ѝ — в транзакцията на извикващия (името е проверено от него). */
+/**
+ * Записът на нова фирма с одита ѝ — в транзакцията на извикващия (името е проверено от него). Всяка нова
+ * фирма започва с безплатния пробен месец (#33 — src/abbonamenti/regole.ts).
+ */
 export async function insertAzienda(
   tx: Prisma.TransactionClient,
   actor: SessionUser,
   input: { name: string; logo: Logo | null },
+  now: Date = new Date(),
 ): Promise<{ id: string }> {
   const created = await tx.azienda.create({
-    data: { name: input.name, ...logoData(input.logo) },
+    data: {
+      name: input.name,
+      ...logoData(input.logo),
+      abbonamentoProva: true,
+      abbonamentoFino: scadenzaDopoMesi(null, MESI_PROVA, now),
+    },
     select: { id: true },
   });
   await writeAudit(
@@ -217,7 +234,20 @@ export async function setAziendaActive(
   if (!current) return false;
   if (active === (current.deactivatedAt === null)) return true;
   await prisma.$transaction(async (tx) => {
-    await tx.azienda.update({ where: { id }, data: { deactivatedAt: active ? null : new Date() } });
+    // Активирана наново: и искането за смяна на доставчика (ако е довело до края) отпада — договорът
+    // продължава (src/aziende/cambio.ts).
+    await tx.azienda.update({
+      where: { id },
+      data: active
+        ? {
+            deactivatedAt: null,
+            cambioRichiestoAt: null,
+            cambioFineAt: null,
+            cambioEsito: null,
+            cambioProrogato: false,
+          }
+        : { deactivatedAt: new Date() },
+    });
     // Хората без друга активна фирма излизат веднага (resolveSession би ги спрял и сам); останалите
     // продължават в другите си фирми, без тази.
     if (!active) {
@@ -241,5 +271,7 @@ export async function setAziendaActive(
       tx,
     );
   });
+  // Спряна с платено и неизползвано време: MASTER дължи връщане до 30 дни (чл. 12.9) — писмо до него.
+  if (!active) void avvisaRimborsiDovuti(id, new Date());
   return true;
 }

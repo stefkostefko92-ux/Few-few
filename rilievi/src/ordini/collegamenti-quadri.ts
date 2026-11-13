@@ -15,6 +15,7 @@ export const QUADRI: readonly Collegamento[] = [
       { luogo: 'dp', campo: 'motoreMarca' },
       { luogo: 'mn', campo: 'motore' },
       { luogo: 'eg', campo: 'motoreMarca' },
+      { luogo: 'gt', campo: 'motoreMarca' },
     ],
   },
   {
@@ -45,6 +46,7 @@ export const QUADRI: readonly Collegamento[] = [
     membri: [
       { luogo: 'oq', campo: 'fotocellulaVolt' },
       { luogo: 'om', campo: 'fotocellulaV' },
+      { luogo: 'gt', campo: 'barrieraTensione' },
     ],
   },
   {
@@ -63,6 +65,7 @@ export const QUADRI: readonly Collegamento[] = [
       { luogo: 'om', campo: 'elettroValvN' },
       { luogo: 'dp', campo: 'valvoleN' },
       { luogo: 'eo', campo: 'elettrovalvoleN' },
+      { luogo: 'gt', campo: 'nValvole' },
     ],
   },
   {
@@ -102,6 +105,7 @@ export const QUADRI: readonly Collegamento[] = [
       { luogo: 'mn', voci: { precablaggioSi: 'SI' } },
       { luogo: 'eg', voci: { precablaggio: 'SI' } },
       { luogo: 'eo', voci: { precablaggio: 'SI' } },
+      { luogo: 'gt', voci: { precablato: 'SI' } },
     ],
   },
   {
@@ -147,6 +151,14 @@ export const QUADRI: readonly Collegamento[] = [
           collettivaCompleta: 'COMPLETA',
         },
       })),
+      {
+        luogo: 'gt',
+        voci: {
+          universale: 'UNIVERSALE',
+          prenotazioneDiscesa: 'DISCESA',
+          prenotazioneCompleta: 'COMPLETA',
+        },
+      },
     ],
   },
   {
@@ -161,6 +173,7 @@ export const QUADRI: readonly Collegamento[] = [
         luogo,
         voci: { manovraSimplex: 'SIMPLEX', manovraDuplex: 'DUPLEX', manovraTriplex: 'TRIPLEX' },
       })),
+      { luogo: 'gt', voci: { duplex: 'DUPLEX', triplex: 'TRIPLEX' } },
     ],
   },
   {
@@ -175,12 +188,14 @@ export const QUADRI: readonly Collegamento[] = [
       { luogo: 'eg', voci: { normaEn811: 'EN811', norma8120: 'EN8120' } },
       { luogo: 'el', voci: { en811: 'EN811' } },
       { luogo: 'eo', voci: { normaEn811: 'EN811', norma8120: 'EN8120' } },
+      { luogo: 'gt', voci: { en811: 'EN811', en8120: 'EN8120' } },
     ],
   },
   spunta('norma8121', [
     ['mq', 'en8121'],
     ['eg', 'norma8121'],
     ['eo', 'norma8121'],
+    ['gt', 'en8121'],
   ]),
   spunta('norma8128', [
     ['mn', 'en8128'],
@@ -196,6 +211,7 @@ export const QUADRI: readonly Collegamento[] = [
     ['eg', 'norma8170'],
     ['el', 'en8170'],
     ['eo', 'norma8170'],
+    ['gt', 'en8170'],
   ]),
   spunta('norma8172', [
     ['oq', 'normaEn8172'],
@@ -204,6 +220,7 @@ export const QUADRI: readonly Collegamento[] = [
     ['eg', 'norma8172'],
     ['el', 'en8172'],
     ['eo', 'norma8172'],
+    ['gt', 'en8172'],
   ]),
   spunta('norma8173', [
     ['oq', 'normaEn8173'],
@@ -211,6 +228,7 @@ export const QUADRI: readonly Collegamento[] = [
     ['eg', 'norma8173'],
     ['el', 'en8173'],
     ['eo', 'norma8173'],
+    ['gt', 'en8173'],
   ]),
   spunta('legge13', [
     ['oq', 'normaLegge13'],
@@ -237,6 +255,7 @@ export const QUADRI: readonly Collegamento[] = [
     ['dp', 'sintesiVocale'],
     ['eg', 'sintesiVocale'],
     ['eo', 'sintesiVocale'],
+    ['gt', 'sintesiVocale'],
   ]),
   spunta('manovraOspedaliera', [
     ['oq', 'manovraOspedaliera'],
@@ -253,6 +272,7 @@ export const QUADRI: readonly Collegamento[] = [
     ['mn', 'cabSovraccarico'],
     ['mq', 'cabSovraccarico'],
     ['el', 'sovraccarico'],
+    ['gt', 'segnSovraccarico'],
   ]),
   spunta('pienoCarico', [
     ['oq', 'fondoPienoCarico'],

@@ -57,7 +57,10 @@ describe('the intervention forms', () => {
     const file = `modulo-intervento-${String(row.numero).padStart(6, '0')}-2026-10-30.pdf`;
 
     const page = await browser.get(`/interventi/${id}`);
-    assert.match(page.body, /Modulo firmato e confermato: non si può più modificare\./);
+    assert.match(
+      page.body,
+      /Foglio di intervento firmato e confermato: non si può più modificare\./,
+    );
     assert.match(page.body, /Sigillo verificato: il contenuto è quello firmato\./);
     assert.match(page.body, new RegExp(improntaLeggibile(row.impronta!)));
     assert.doesNotMatch(page.body, new RegExp(`href="/interventi/${id}/modifica"`));
@@ -96,13 +99,13 @@ describe('the intervention forms', () => {
     assert.equal(sent.status, 303);
     const mail = outbox.at(-1)!;
     assert.equal(mail.to, 'cliente@esempio.test');
-    assert.match(mail.subject, /^Modulo di pronto intervento n\. \d{6} — /);
+    assert.match(mail.subject, /^Foglio di intervento n\. \d{6} — /);
     assert.equal(mail.attachments?.[0]?.filename, file);
     assert.equal(mail.attachments?.[0]?.contentType, 'application/pdf');
     // Here the server has no SMTP: the page says so instead of "sent".
     assert.match(
       (await browser.get(`/interventi/${id}`)).body,
-      /L&#39;invio di email non è configurato/,
+      /L&#39;invio delle email non è attivo su questo portale/,
     );
 
     const audit = await prisma.auditLog.findMany({
@@ -140,23 +143,28 @@ describe('the intervention forms', () => {
 });
 
 describe('the side bar', () => {
-  it('groups the pages: Rilievi, Assistenza elevatori, Amministrazione — by what each one may do', async () => {
+  it('groups the pages: Impianti, Calcoli, Documenti, Amministrazione — by what each one may do', async () => {
     const admin = (await signedIn('ADMIN')).browser;
     const page = (await admin.get('/interventi/nuovo')).body;
-    assert.match(page, /<body class="with-nav">/);
+    assert.match(page, /<body class="with-nav"[ >]/);
     assert.match(page, /aria-controls="sidenav" aria-expanded="false" data-nav-open>/);
     const groups = [...page.matchAll(/<p class="sidenav__group" id="nav-(\w+)">/g)].map(
       (m) => m[1],
     );
-    assert.deepEqual(groups, ['rilievi', 'assistenza', 'amministrazione']);
-    // The deepest page is the current one: "Nuovo intervento", not "Interventi".
+    assert.deepEqual(groups, ['impianti', 'calcoli', 'documenti', 'amministrazione']);
+    // A page of "Nuovo" is the current one there; "Interventi" in its group says only "we are here".
     assert.match(page, /<a href="\/interventi\/nuovo" aria-current="page">/);
-    assert.doesNotMatch(page, /<a href="\/interventi" aria-current="page">/);
+    assert.match(page, /<a href="\/interventi" aria-current="true">/);
+    assert.equal(
+      page.match(/aria-current="page"/g)?.length,
+      2,
+      'the list of Nuovo and the phone bar',
+    );
     const cliente = (await signedIn('CLIENTE')).browser;
     const own = (await cliente.get('/interventi')).body;
     assert.deepEqual(
       [...own.matchAll(/<p class="sidenav__group" id="nav-(\w+)">/g)].map((m) => m[1]),
-      ['rilievi', 'assistenza'],
+      ['impianti', 'calcoli', 'documenti'],
     );
     assert.doesNotMatch(own, /href="\/interventi\/nuovo"/);
     assert.doesNotMatch(own, /href="\/schede\/nuova"/);

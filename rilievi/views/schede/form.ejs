@@ -17,7 +17,7 @@
   };
   const anchorOf = (key) => key === identifiersErrorKey ? '#f-indirizzo' : '#f-' + key;
   const paramsOf = (key) => { const misura = misuraOf(key); const moduloField = moduloFieldOf(key); const f = misura ? misura.column : moduloField ? moduloField.field : (fieldMap[key] || {}); return { min: f.min, max: f.max, maxLength: f.maxLength }; };
-%><%- include('../partials/top', { titleKey: isEdit ? 'schede.edit.title' : 'schede.create.title', scripts: ['valori', 'moduli-gemelli', 'moduli', 'collegati-luoghi', 'collegati', 'allegati', 'carica', 'stampa-foto', 'schizzo-forme', 'schizzo-tratti', 'schizzi', 'schizzo-regole', 'schizzo-aggancio', 'schizzo-vista', 'schizzo-editor', 'schizzo-puntatori', 'schizzo-tracciati', 'schizzo-strumenti', 'schizzo-penna', 'schizzo-testi', 'schizzo-quota', 'schizzo-polilinea', 'schizzo-maniglie', 'schizzo-selezione', 'schizzo-azioni', 'schizzo-valore', 'schizzo-menu', 'schizzo-comandi'] }) %>
+%><%- include('../partials/top', { titleKey: isEdit ? 'schede.edit.title' : 'schede.create.title', scripts: ['valori', 'moduli-gemelli', 'moduli', 'collegati-luoghi', 'collegati', 'allegati', 'carica', 'stampa-foto', 'foto-righe', 'foto-ordine', 'schizzo-forme', 'schizzo-tratti', 'schizzi', 'schizzo-regole', 'schizzo-aggancio', 'schizzo-vista', 'schizzo-editor', 'schizzo-puntatori', 'schizzo-tracciati', 'schizzo-strumenti', 'schizzo-penna', 'schizzo-testi', 'schizzo-quota', 'schizzo-polilinea', 'schizzo-maniglie', 'schizzo-selezione', 'schizzo-azioni', 'schizzo-valore', 'schizzo-menu', 'schizzo-comandi', 'annotazioni'] }) %>
 <div class="page-head">
   <div>
     <h1><%= t(isEdit ? 'schede.edit.title' : 'schede.create.title') %></h1>
@@ -25,6 +25,7 @@
   </div>
 </div>
 <div class="stack-gap">
+<% if (locals.duplicataDa) { %><p class="notice" role="status"><strong><%= t('flusso.duplica.titolo', { ident: duplicataDa }) %></strong> <%= t('flusso.duplica.nota') %></p><% } %>
 <% if (conflict) { %>
   <div class="notice" role="alert">
     <p><strong><%= t('schede.conflict.title') %></strong></p>
@@ -168,7 +169,8 @@
   </div>
 </form>
 <script type="application/json" id="collegati-dati" nonce="<%= cspNonce %>"><%- collegati.json %></script>
-<% if (schizzi.attivo) { %><%- include('_schizzo-editor') %><% } %>
+<% if (schizzi.attivo) { %><%- include('_schizzo-editor') %>
+<script type="application/json" id="annotazioni-testi" nonce="<%= cspNonce %>"><%- JSON.stringify(Object.fromEntries(['annota', 'modifica', 'titolo', 'salvate', 'tolte', 'errore'].map((k) => [k, t('allegati.annotazioni.' + k)]))).replace(/</g, '\\u003c') %></script><% } %>
 <% if (isEdit) { %><%- include('_allegati-forms', { ritorno: 'modifica' }) %><% } %>
 </div>
 <% } %>

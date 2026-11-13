@@ -20,6 +20,12 @@ import type { SessionUser } from '../types.js';
  * пипали. Одитът е в същата транзакция и казва кои роли са сменени, не самите имена.
  */
 
+/** Способностите, които формата на ролите не показва: офертите, докато MASTER не ги е включил. */
+export const capacitaNascoste = (azienda: {
+  preventiviAttivi: boolean;
+}): readonly CapacitaConfigurabile[] =>
+  azienda.preventiviAttivi ? [] : ['preventivi:read', 'preventivi:write'];
+
 export type ErroriRuoli = Partial<Record<string, 'tooLong' | 'duplicato' | 'invalid'>>;
 
 const MAX_NOME = 40;
@@ -32,12 +38,16 @@ const pulito = (value: string): string =>
 
 /**
  * Формата: `nome-<РОЛЯ>` (празно — името по подразбиране) и `perm-<РОЛЯ>` (отметките, повтарящ се
- * ключ). Масив на мястото на име или непозната способност е подправка — `invalid`. Две роли с едно и
+ * ключ; `nascoste` — способностите, които формата не показва: пратеното за тях не се чете). Масив на мястото на име или непозната способност е подправка — `invalid`. Две роли с едно и
  * също име (без значение главни/малки, и с имената по подразбиране) — `duplicato`.
  */
 export function parseRuoli(
   body: Record<string, unknown>,
   predefinito: (role: (typeof RUOLI_AZIENDA)[number]) => string,
+  nascosteOpz: { nascoste: readonly CapacitaConfigurabile[]; salvati: PermessiRuoli } = {
+    nascoste: [],
+    salvati: {},
+  },
 ):
   | { ok: true; nomi: NomiRuoli; permessi: PermessiRuoli }
   | { ok: false; errors: ErroriRuoli; valori: Record<string, string | string[]> } {
@@ -76,7 +86,14 @@ export function parseRuoli(
       errors[`perm-${role}`] = 'invalid';
       continue;
     }
-    const scelti = chiudi(list as CapacitaConfigurabile[]);
+    // Способност, която формата не показва (офертите при изключени оферти), остава каквато е записана —
+    // иначе запис на ролите би я махнал тихо и включването от MASTER би намерило ролите без нея.
+    const { nascoste, salvati } = nascosteOpz;
+    const prima = salvati[role] ?? predefiniti(role);
+    const scelti = chiudi([
+      ...(list as CapacitaConfigurabile[]).filter((c) => !nascoste.includes(c)),
+      ...prima.filter((c) => nascoste.includes(c)),
+    ]);
     const base = predefiniti(role);
     if (scelti.length !== base.length || scelti.some((c, i) => c !== base[i]))
       permessi[role] = scelti;

@@ -1,6 +1,11 @@
 import { Router, type Request, type Response } from 'express';
-import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
-import { canIn } from '../auth/scope.js';
+import {
+  principalOf,
+  requireCapability,
+  requireCapabilityPerTogliere,
+  requireCsrf,
+} from '../auth/guards.js';
+import { canIn, canInPerTogliere, scopePerTogliere } from '../auth/scope.js';
 import { datiSalvati } from '../aziende/dati.js';
 import { testataDi } from '../aziende/intestazione.js';
 import { formValuesDalBody, formValuesFromCartello, parseCartello } from '../cartelli/form.js';
@@ -39,6 +44,10 @@ const loadCartello = (req: Request) =>
 
 const puoScrivere = (req: Request, row: { aziendaId: string }) =>
   canIn(principalOf(req).user, 'interventi:write', row.aziendaId);
+// Изтриването остава и при изтекъл абонамент (условията, чл. 12.5 в) — auth/scope.ts.
+const togli = requireCapabilityPerTogliere('interventi:write');
+const puoTogliere = (req: Request, row: { aziendaId: string }) =>
+  canInPerTogliere(principalOf(req).user, 'interventi:write', row.aziendaId);
 
 cartelliRouter.get('/cartelli', read, async (req, res) => {
   const readScope = scope(req, 'interventi:read');
@@ -69,6 +78,7 @@ cartelliRouter.get('/cartelli/:id', read, async (req, res) => {
       dati: datiSalvati(row.azienda.datiSocietari) === null,
     },
     modifica: puoScrivere(req, row),
+    elimina: puoTogliere(req, row),
     impostazioni: canIn(principalOf(req).user, 'aziende:settings', row.aziendaId),
     // Картата, от която е попълнена — връзка, ако човекът я вижда и не е в кошчето.
     apriScheda:
@@ -121,11 +131,11 @@ cartelliRouter.post('/cartelli/:id', write, requireCsrf, async (req, res) => {
   res.redirect(303, `/cartelli/${row.id}`);
 });
 
-cartelliRouter.post('/cartelli/:id/elimina', write, requireCsrf, async (req, res) => {
+cartelliRouter.post('/cartelli/:id/elimina', togli, requireCsrf, async (req, res) => {
   const row = await loadCartello(req);
-  if (!row || !puoScrivere(req, row)) return notFound(req, res);
-  if (!(await deleteCartello(scope(req, 'interventi:write'), row.id, principalOf(req).user.id)))
-    return notFound(req, res);
+  if (!row || !puoTogliere(req, row)) return notFound(req, res);
+  const dove = scopePerTogliere(principalOf(req).user, 'interventi:write');
+  if (!(await deleteCartello(dove, row.id, principalOf(req).user.id))) return notFound(req, res);
   setFlash(res, 'ok', 'cartelli.flash.eliminato');
   res.redirect(303, '/cartelli');
 });

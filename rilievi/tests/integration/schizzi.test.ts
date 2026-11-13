@@ -35,51 +35,27 @@ const conSchizzi = (aziendaId: string, schizzi: boolean) =>
   prisma.azienda.update({ where: { id: aziendaId }, data: { schizzi } });
 
 describe('the sketch pad', () => {
-  it('is turned on and off for a company by the MASTER only, in the log', async () => {
+  it('is on for every company, with no switch to turn it off (the owner, 10 November 2026)', async () => {
     const { browser: master } = await signedIn('MASTER');
     const azienda = await makeAzienda();
     const page = `/aziende/${azienda.id}`;
-    assert.match((await master.get(page)).body, /Attiva gli schizzi/);
-    const on = await master.submit(page, `${page}/schizzi`, { attivi: '1' });
-    assert.equal(on.status, 303);
-    assert.equal(
-      (await prisma.azienda.findUniqueOrThrow({ where: { id: azienda.id } })).schizzi,
-      true,
-    );
-    assert.match((await master.get(page)).body, /Disattiva gli schizzi/);
-    assert.equal((await master.submit(page, `${page}/schizzi`, { attivi: '0' })).status, 303);
-    assert.equal(
-      (await prisma.azienda.findUniqueOrThrow({ where: { id: azienda.id } })).schizzi,
-      false,
-    );
-    const log = await prisma.auditLog.findMany({
-      where: { aziendaId: azienda.id, action: { startsWith: 'AZIENDA_SCHIZZI' } },
-      orderBy: { at: 'asc' },
-    });
-    assert.deepEqual(
-      log.map((row) => row.action),
-      ['AZIENDA_SCHIZZI_ON', 'AZIENDA_SCHIZZI_OFF'],
-    );
-
-    const { browser: admin } = await signedIn('ADMIN', azienda.id);
-    const denied = await admin.submit('/account', `${page}/schizzi`, { attivi: '1' });
-    assert.equal(denied.status, 403);
-    assert.equal(
-      (await prisma.azienda.findUniqueOrThrow({ where: { id: azienda.id } })).schizzi,
-      false,
-    );
+    const body = (await master.get(page)).body;
+    assert.doesNotMatch(body, /Attiva gli schizzi|Disattiva gli schizzi/);
+    assert.doesNotMatch(body, /\/schizzi"/);
+    // The old switch is gone: the address answers nothing.
+    assert.equal((await master.submit(page, `${page}/schizzi`, { attivi: '0' })).status, 404);
+    // Even a company left "off" in the database (before the migration) has the sketch pad.
+    await conSchizzi(azienda.id, false);
+    const { browser } = await signedIn('TECNICO', azienda.id);
+    const id = await newScheda(browser);
+    assert.match((await browser.get(`/schede/${id}/modifica`)).body, /id="s-schizzi"/);
   });
 
   it('saves the sheets with the sheet, shows, prints and puts them in the PDF', async () => {
     const { browser, user } = await signedIn('TECNICO', (await makeAzienda()).id);
     const id = await newScheda(browser);
-    // A company without the sketch pad: no block, the sheets sent are not taken.
-    assert.doesNotMatch((await browser.get(`/schede/${id}/modifica`)).body, /id="s-schizzi"/);
-    const ignored = await salva(browser, id, { 'schizzi-_': '1', schizzo: foglio('M10 10l5 5') });
-    assert.equal(ignored.status, 303);
-    assert.deepEqual(await fogli(id), []);
-
-    await conSchizzi(user.aziendaId!, true);
+    // Every company has the sketch pad, whatever its old flag says.
+    await conSchizzi(user.aziendaId!, false);
     const form = (await browser.get(`/schede/${id}/modifica`)).body;
     assert.match(form, /id="s-schizzi"/);
     assert.match(form, /name="schizziStampati" value="1" checked/);
@@ -111,30 +87,10 @@ describe('the sketch pad', () => {
     assert.doesNotMatch((await browser.get(`/schede/${id}/stampa`)).body, /paper__schizzi/);
     assert.equal(await pdfPages(), plain);
     assert.equal((await fogli(id)).length, 2);
-
-    // The company turned off: the field goes, what was drawn stays and prints; sent sheets are ignored.
-    await conSchizzi(user.aziendaId!, false);
-    const spento = (await browser.get(`/schede/${id}/modifica`)).body;
-    assert.doesNotMatch(spento, /id="s-schizzi"/);
-    assert.match(spento, /id="f-schizziStampati"/, 'the print tick stays while there are sheets');
-    const ripresa = await salva(browser, id, {
-      'schizzi-_': '1',
-      schizzo: VUOTO,
-      'schizziStampati-_': '1',
-      schizziStampati: '1',
-    });
-    assert.equal(ripresa.status, 303);
-    assert.deepEqual(await fogli(id), valori(primo, secondo));
-    assert.equal(
-      ((await browser.get(`/schede/${id}/stampa`)).body.match(/class="paper__schizzo"/g) ?? [])
-        .length,
-      2,
-    );
   });
 
   it('refuses a tampered sheet, leaves the sheets alone from an old page, keeps them on a conflict', async () => {
     const { browser, user } = await signedIn('TECNICO', (await makeAzienda()).id);
-    await conSchizzi(user.aziendaId!, true);
     const id = await newScheda(browser);
     const mio = foglio('M10 10l5 5');
     assert.equal((await salva(browser, id, { 'schizzi-_': '1', schizzo: mio })).status, 303);
@@ -164,7 +120,7 @@ describe('the sketch pad', () => {
     assert.deepEqual(await fogli(id), valori(loro), 'the conflict saved nothing');
   });
 
-  it('takes the sheets of a new sheet only in a company that has the sketch pad', async () => {
+  it('takes the sheets of a new sheet in every company, whatever its old flag says', async () => {
     const nuova = async (browser: Browser) => {
       const reply = await browser.submit('/schede/nuova', '/schede', {
         data: '2026-10-22',
@@ -177,16 +133,13 @@ describe('the sketch pad', () => {
       return /^\/schede\/([a-z0-9]+)$/.exec(reply.location)![1]!;
     };
     const { browser, user } = await signedIn('TECNICO', (await makeAzienda()).id);
-    assert.doesNotMatch((await browser.get('/schede/nuova')).body, /id="s-schizzi"/);
-    assert.deepEqual(await fogli(await nuova(browser)), []);
-    await conSchizzi(user.aziendaId!, true);
+    await conSchizzi(user.aziendaId!, false);
     assert.match((await browser.get('/schede/nuova')).body, /id="s-schizzi"/);
     assert.equal((await fogli(await nuova(browser))).length, 1);
   });
 
   it('takes a large drawing on the sheet form, and only there and signed in', async () => {
-    const { browser, user } = await signedIn('TECNICO', (await makeAzienda()).id);
-    await conSchizzi(user.aziendaId!, true);
+    const { browser } = await signedIn('TECNICO', (await makeAzienda()).id);
     const id = await newScheda(browser);
     // Eight sheets of ~180 KB each: ~1.4 MB, over the 1 MB of every other form.
     const pieno = foglio(...Array.from({ length: 9 }, () => `M0 0${'l1 1'.repeat(4000)}`));

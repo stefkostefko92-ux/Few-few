@@ -54,3 +54,23 @@
 .colori__ripristina {
   margin-top: 12px;
 }
+
+/* Обяснението под заглавието на раздел в настройките и в профила не лепне за първото поле на формата
+   (визуалната проверка, 10 ноември 2026). */
+section > p.muted + .form {
+  margin-top: 14px;
+}
+
+/* „Chiavi API“: ключът — цял, с моноширинен шрифт (да се копира точно); примерът — превърта себе си. */
+.api-chiave {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 0.875rem;
+}
+
+.api-esempio {
+  overflow-x: auto;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-size: 0.8125rem;
+}

@@ -111,6 +111,9 @@ export function renderSchedaPdf(scheda: SchedaFull, options: PdfOptions): Promis
   });
 
   drawPlate(ctx, scheda, byKey);
+  // „Note impianto“ е в раздела Impianto, който не се печата отделно: под табелата, само попълнена.
+  const notaImpianto = byKey.get('noteImpianto');
+  if (notaImpianto?.value) drawFields(ctx, [notaImpianto]);
   // „Impianto“ е вече в заглавната лента и в табелата; изключените в картата не влизат.
   for (const section of sezioniStampate(sections, scheda.sezioniEscluse)) {
     drawSectionTitle(ctx, section.title);
@@ -132,7 +135,7 @@ export function renderSchedaPdf(scheda: SchedaFull, options: PdfOptions): Promis
     drawFields(ctx, modulo.gruppi.map(gruppoField));
   }
   drawSchizzi(ctx, options.schizzi ?? []);
-  drawFoto(ctx, options.foto ?? []);
+  drawFoto(ctx, options.foto ?? [], scheda.fotoDimensione);
   drawFooters(ctx, t('pdf.generated', { at: fmt.dateTime(new Date()), name: options.generatedBy }));
   doc.end();
   return done;

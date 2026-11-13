@@ -10,6 +10,7 @@ export const REFRESH_JOB = 'refresh-tokens';
 export const PUBLISH_JOB = 'publish-post';
 export const INSIGHTS_JOB = 'sync-insights';
 export const AUTOPILOT_JOB = 'autopilot';
+export const REPLY_JOB = 'private-reply';
 
 /**
  * Идентификаторите на задачите са с тире, не с двоеточие: BullMQ отказва custom id с „:“
@@ -20,6 +21,27 @@ export const AUTOPILOT_JOB = 'autopilot';
 export const publishJobId = (postId: string): string => `post-${postId}`;
 export const autopilotJobId = (brandId: string): string => `autopilot-${brandId}`;
 export const insightsJobId = (minute: number): string => `insights-${minute}`;
+/** По id-то на реда: повторна доставка на същия коментар не добавя втора задача. */
+export const replyJobId = (replyId: string): string =>
+  `reply-${replyId.replace(/[^A-Za-z0-9_-]/g, '-')}`;
+
+export interface ReplyJobData {
+  replyId: string;
+}
+
+/**
+ * Едно лично съобщение. Опитите са малко и близо един до друг: 7-дневният прозорец на Meta
+ * е далеч, а повтор се прави САМО при отговор от Meta с повторима грешка (PR15).
+ */
+export async function enqueueReply(replyId: string): Promise<void> {
+  await publishQueue().add(REPLY_JOB, { replyId } satisfies ReplyJobData, {
+    jobId: replyJobId(replyId),
+    attempts: 4,
+    backoff: { type: 'exponential', delay: 60_000 },
+    removeOnComplete: { age: 24 * 3600, count: 5000 },
+    removeOnFail: { age: 7 * 24 * 3600 },
+  });
+}
 
 export interface PublishJobData {
   postId: string;

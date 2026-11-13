@@ -61,14 +61,8 @@ export const SEZIONE_CENTRALINA = {
       when: { field: 'kitA3Altro', values: ['SARACINESCA'] },
     },
     { key: 'tuboFlessibile', kind: 'yesno', when: yes('emendamentoA3') },
-    {
-      key: 'tuboFlessibileDiametroMm',
-      kind: 'decimal',
-      min: 0,
-      max: 1_000,
-      unit: 'mm',
-      when: yes('tuboFlessibile'),
-    },
+    // Свободен текст (собственикът, 9 ноември 2026): „1/2\"“, „DN 25“, „25,4 mm“; ключът пази стария „Mm“.
+    { key: 'tuboFlessibileDiametroMm', kind: 'text', maxLength: 40, when: yes('tuboFlessibile') },
     {
       key: 'tuboFlessibileLunghezzaM',
       kind: 'decimal',

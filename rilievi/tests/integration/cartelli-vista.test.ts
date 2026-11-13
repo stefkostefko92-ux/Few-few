@@ -89,7 +89,7 @@ describe('the template chooser in the settings', () => {
   it('shows each template with the company header, to its ADMIN and the master only', async () => {
     const [azienda, altra] = [await makeAzienda(), await makeAzienda()];
     const { browser: admin } = await signedIn('ADMIN', azienda.id);
-    const page = (await admin.get(`/impostazioni?azienda=${azienda.id}`)).body;
+    const page = (await admin.get(`/impostazioni/cartelli?azienda=${azienda.id}`)).body;
     const srcs = [...page.matchAll(/<img class="modelli__img" src="([^"]+)"/g)].map((m) => m[1]!);
     assert.deepEqual(
       srcs.map((s) => s.replaceAll('&amp;', '&')),
@@ -121,10 +121,10 @@ describe('the template chooser in the settings', () => {
   it('sends the master to the company page for the missing logo, and says nothing once it is there', async () => {
     const azienda = await makeAzienda();
     const { browser: master } = await signedIn('MASTER');
-    const page = (await master.get(`/impostazioni?azienda=${azienda.id}`)).body;
+    const page = (await master.get(`/impostazioni/cartelli?azienda=${azienda.id}`)).body;
     assert.match(page, new RegExp(`<a href="/aziende/${azienda.id}">L&#39;azienda non ha ancora`));
     await withLogo(azienda.id);
     const { browser: admin } = await signedIn('ADMIN', azienda.id);
-    assert.doesNotMatch((await admin.get('/impostazioni')).body, /non ha ancora un logo/);
+    assert.doesNotMatch((await admin.get('/impostazioni/cartelli')).body, /non ha ancora un logo/);
   });
 });
