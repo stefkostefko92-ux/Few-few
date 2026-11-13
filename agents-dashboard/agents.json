@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 637
+        "lessons": 639
       },
       "evolution": [
         {
@@ -2049,9 +2049,20 @@
           "date": "2026-11-13",
           "event": "v57.7 — учене",
           "detail": "Научи: discord.js 14.26.4 с Partials.GuildMember емитва guildMemberUpdate и за некеширан член … (+1 още)"
+        },
+        {
+          "version": "57.9.0",
+          "date": "2026-11-13",
+          "event": "v57.9 — учене",
+          "detail": "Научи: nodemailer 10.x без requireTLS пуска STARTTLS само ако сървърът го обяви в EHLO; ако на… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „nodemailer 10.x без requireTLS пуска STARTTLS само ако сървърът го обяви в EHLO; ако на…\" (+1 още)"
+        },
         {
           "date": "2026-11-13",
           "type": "learning",
