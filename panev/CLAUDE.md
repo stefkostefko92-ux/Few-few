@@ -137,7 +137,7 @@ npm run build:site       # node site/build.mjs — регенерира 36-те 
 npm run dev              # nodemon server.js
 npm start                # node server.js
 npm run db:seed          # node scripts/seed.js (admin/legacy данни)
-npm test                 # node --test test/*.test.js — сесиите на админа и правилата за парола (временна SQLite)
+npm test                 # node --test test/*.test.js — сесиите на админа и правилата за парола (временна SQLite), старите адреси, IndexNow ключът
 node scripts/admin-password.js --list | <имейл> | --stdin <имейл> | --revoke <имейл>   # на сървъра: случайна / своя (по тръба) парола / край на сесиите
 ```
 
@@ -165,7 +165,8 @@ node scripts/admin-password.js --list | <имейл> | --stdin <имейл> | --
   „водачи на противотежестта“). Кодове/размери/цени не се превеждат.
 - **SEO:** всяка страница ≥5 ключови думи, една винаги „Carbon Stealth“;
   hreflang it/en/bg + x-default; при промяна по страници/sitemap → IndexNow. `deploy/autodeploy.sh`
-  го подава сам след здрав релийз (`panev_ping_indexnow`; тест `tools/vps/autodeploy-panev.test.mjs`).
+  го подава сам след здрав релийз (`panev_ping_indexnow`; тестове `tools/vps/autodeploy-panev.test.mjs`
+  и `test/indexnow-key.test.js` — точно един ключов файл, sitemap на каноничния домейн).
   Ключът е на `<ключ>.txt` в корена на сайта, не на `/indexnow-key.txt`, затова ръчната команда иска
   `--key-file` и `--key-location` (цялата е в `DEPLOY.md` → „IndexNow“); само с адреса спира с
   „Липсва валиден IndexNow ключ“. Пуска се от корена на репото (на сървъра: `/opt/few-few/current`).

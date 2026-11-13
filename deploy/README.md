@@ -197,7 +197,7 @@ ZIP отпреди месец.
 | `PANEV_DIR` | `/opt/panev` | път на panev (systemd) |
 | `PANEV_ENV` | `/etc/panev/panev.env` | тайните на panev (600, `EnvironmentFile`) |
 | `PANEV_HEALTH_URL` | `http://127.0.0.1:4102/api/health` | health на panev |
-| `PANEV_SITE` · `PANEV_INDEXNOW` | `https://panevascensori.it` · `1` | публичният адрес на panev (за IndexNow) и подаването след успешен деплой (`0` го спира) |
+| `PANEV_SITE` · `PANEV_INDEXNOW` | `https://panevascensori.it` · `1` | публичният адрес на panev за IndexNow (хостът от `panev/sitemap.xml` — друг хост търсачките отхвърлят) и подаването след успешен деплой (`0` го спира) |
 | `OSPEDALI_DIR` | `/opt/ospedali` | път на ospedali (systemd, без билд) |
 | `OSPEDALI_HEALTH_URL` | `http://127.0.0.1:8788/healthz` | health на ospedali |
 | `ADBLOCK_WWW` | `/var/www/adblock` | www root на статичния adblock сайт |

@@ -13,6 +13,10 @@
 // install/chown са заглушки, а `tools/seo/indexnow.mjs` в release-а е заглушка, която записва от
 // коя директория и с какви аргументи е извикана. Проверява се ПОТОКЪТ: подава ли се само след
 // минала сонда, точната команда, и че провал на подаването не е провал на деплоя.
+//
+// Предпоставките върху файловете на продукта (точно един `panev/<key>.txt`, sitemap на каноничния
+// домейн) се пазят в `panev/test/indexnow-key.test.js`: тестовете тук вървят само при промяна по
+// tools/ и deploy/ (agents.yml), а онези — при всяка промяна по panev/ (panev.yml).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync, mkdtempSync, mkdirSync, writeFileSync, realpathSync, rmSync } from "node:fs";
@@ -177,7 +181,9 @@ test("първи деплой с провалена сонда: няма пре�
 // подаването. Заглушката по-горе не може да хване ключов файл, който инструментът не приема, нито
 // sitemap, от който не излиза нито един адрес.
 test("в репото: истинският инструмент приема ключа и изброява всички адреси от panev/sitemap.xml (--dry-run)", () => {
-  const key = readdirSync(join(root, "panev")).find((f) => /^[0-9a-f]{32}\.txt$/.test(f)).replace(/\.txt$/, "");
+  const keyFile = readdirSync(join(root, "panev")).find((f) => /^[0-9a-f]{32}\.txt$/.test(f));
+  assert.ok(keyFile, "в panev/ има ключов файл <key>.txt (пази го panev/test/indexnow-key.test.js)");
+  const key = keyFile.replace(/\.txt$/, "");
   const locs = new Set([...readFileSync(join(root, "panev", "sitemap.xml"), "utf8").matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((m) => m[1]));
   assert.ok(locs.size > 1, "sitemap-ът в репото има страници");
   const out = execFileSync("bash", ["-c", [
@@ -191,13 +197,4 @@ test("в репото: истинският инструмент приема к
   assert.match(out, new RegExp(`^IndexNow · host=panevascensori\\.it · ${locs.size} URL · keyLocation=https://panevascensori\\.it/${key}\\.txt$`, "m"));
   assert.match(out, /--dry-run: нищо не е подадено/);
   assert.doesNotMatch(out, /WARN/);
-});
-
-// Помощникът намира ключа по името на файла. Ако някой преименува файла в репото или съдържанието
-// му се размине с името, деплоят би пропускал подаването тихо (или търсачките биха го отхвърляли) —
-// затова реалният файл се проверява тук.
-test("в репото: точно един panev/<key>.txt и съдържанието му е самият ключ", () => {
-  const keys = readdirSync(join(root, "panev")).filter((f) => /^[0-9a-f]{32}\.txt$/.test(f));
-  assert.equal(keys.length, 1, `очаквам един ключов файл в panev/, намерих: ${keys.join(", ") || "нито един"}`);
-  assert.equal(readFileSync(join(root, "panev", keys[0]), "utf8").trim(), keys[0].replace(/\.txt$/, ""));
 });
