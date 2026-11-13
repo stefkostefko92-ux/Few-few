@@ -227,3 +227,26 @@
 .grid > [data-campo='tirantiFossaNumero'] {
   grid-column-start: 1;
 }
+
+/* „Invia per email“ на страницата на картата (views/schede/_invia.ejs): заглавието, двете полета и бутонът —
+   с въздух помежду си; под лепкавата лента при скок към `#invia`. */
+.scheda-email {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+  scroll-margin-top: calc(var(--chrome-top) + 24px);
+}
+
+.scheda-email > h2 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.scheda-email .field {
+  display: grid;
+  gap: 6px;
+}
+
+.scheda-email .field__hint {
+  margin: 0;
+}

@@ -99,6 +99,8 @@ export const AUDIT_ACTIONS = [
   'FORNITORE_DELETE',
   'ORDINE_INVIATO',
   'ORDINE_STATO',
+  // Картата по имейл от страницата ѝ (src/schede/invio.ts): кой и коя карта — без адреса.
+  'SCHEDA_EMAIL',
   // „Buono di lavoro“ (src/buoni/): листът, подписите му (броят, без щрихите), писмото, кодът и клаузата.
   'BUONO_CREATE',
   'BUONO_UPDATE',

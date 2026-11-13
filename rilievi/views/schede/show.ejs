@@ -11,6 +11,7 @@
     <% if (!scheda.deletedAt && canIn('schede:write', scheda.aziendaId)) { %><a class="btn btn--primary" href="/schede/<%= scheda.id %>/modifica"><%- include('../partials/icon', { name: 'edit' }) %><%= t('scheda.actions.edit') %></a><% } %>
     <a class="btn" href="/schede/<%= scheda.id %>/stampa?auto=1"><%- include('../partials/icon', { name: 'print' }) %><%= t('scheda.actions.print') %></a>
     <a class="btn" data-pdf href="/schede/<%= scheda.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('scheda.actions.pdf') %></a>
+    <% if (modifica) { %><a class="btn" href="#invia"><%- include('../partials/icon', { name: 'mail' }) %><%= t('scheda.actions.email') %></a><% } %>
     <a class="btn" href="/schede/<%= scheda.id %>/etichetta"><%- include('../partials/icon', { name: 'print' }) %><%= t('etichetta.apri') %></a>
     <%# Изчисленията за аргано и за ограничителя — не при хидравлична уредба (там аргано и раздел „Limitatore“ няма). %>
     <% if (!(scheda.tipoImpianto || []).includes('IDRAULICO')) { %><a class="btn" href="/schede/<%= scheda.id %>/calcolo-argano"><%- include('../partials/icon', { name: 'calc' }) %><%= t('argano.apri') %></a>
@@ -114,6 +115,7 @@
     </ul>
   </section>
   <% } %>
+  <% if (modifica) { %><%- include('_invia') %><% } %>
   <%- include('_flusso') %>
   <p class="sheet__meta">
     <% if (showAzienda) { %><span><%= t('scheda.field.azienda') %>: <%= scheda.azienda.name %></span><% } %>

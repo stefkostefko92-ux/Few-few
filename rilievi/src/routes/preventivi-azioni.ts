@@ -60,10 +60,11 @@ preventiviAzioniRouter.get('/preventivi/:id/pdf', read, pdfLimiter, async (req, 
 
 const invioSchema = z.object({
   email: z.string().trim().max(254).email(),
+  // Първо новите редове (браузърът праща CRLF, а в `maxlength` го брои за един знак), после дължината.
   messaggio: z
     .string()
-    .max(2000)
     .transform((v) => v.replace(/\r\n?/g, '\n').trim())
+    .pipe(z.string().max(2000))
     .optional(),
 });
 

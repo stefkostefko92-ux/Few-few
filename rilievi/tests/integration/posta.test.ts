@@ -164,7 +164,7 @@ describe('the portal email server', () => {
         email: user.email,
       });
       // The owner, 13 November 2026: the emails take minutes to arrive — the page says so.
-      assert.match(chiesto.body, /servono 5–10 minuti perché l&#39;email arrivi/);
+      assert.match(chiesto.body, /servono 5–10 minuti perché arrivi/);
       const dopo = await browser.get('/master/posta');
       assert.match(dopo.body, /Ultima email del portale/);
       assert.match(dopo.body, /non ha accettato la connessione cifrata sulla porta 2525/);

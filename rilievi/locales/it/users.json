@@ -195,6 +195,7 @@
       "FORNITORE_DELETE": "Fornitore tolto dalla rubrica",
       "ORDINE_INVIATO": "Modulo d'ordine inviato al fornitore",
       "ORDINE_STATO": "Stato di un ordine aggiornato",
+      "SCHEDA_EMAIL": "PDF della scheda inviato per email",
       "BUONO_CREATE": "Buono di lavoro creato",
       "BUONO_UPDATE": "Buono di lavoro modificato",
       "BUONO_FIRME": "Firme del buono di lavoro",

@@ -1,0 +1,17 @@
+<%
+  // „Invia per email“ на записаната карта (routes/schede-invio.ts): адресът се пише сега и не се пази; прикачен
+  // е същият PDF като при „Scarica PDF“. Само за който пише карти във фирмата; не в кошчето.
+%><form class="panel intervento-email scheda-email" id="invia" method="post" action="/schede/<%= scheda.id %>/invia">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <h2><%= t('scheda.email.titolo') %></h2>
+  <div class="field">
+    <label class="field__label" for="f-invia-email"><%= t('scheda.email.label') %></label>
+    <input class="input" id="f-invia-email" name="email" type="email" required maxlength="254" autocomplete="email" aria-describedby="h-invia-email">
+    <p class="field__hint" id="h-invia-email"><%= t('scheda.email.hint') %></p>
+  </div>
+  <div class="field">
+    <label class="field__label" for="f-invia-messaggio"><%= t('scheda.email.messaggio') %></label>
+    <textarea class="textarea" id="f-invia-messaggio" name="messaggio" rows="3" maxlength="2000"></textarea>
+  </div>
+  <div class="toolbar"><button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'mail' }) %><%= t('scheda.email.pulsante') %></button></div>
+</form>

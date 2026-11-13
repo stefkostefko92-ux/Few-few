@@ -43,6 +43,7 @@ import { impostazioniBuonoRouter } from './impostazioni-buono.js';
 import { interventiInvioRouter } from './interventi-invio.js';
 import { requestsRouter } from './requests.js';
 import { schedeRouter } from './schede.js';
+import { schedeInvioRouter } from './schede-invio.js';
 import { schedeStampaRouter } from './schede-stampa.js';
 import { schedeEtichettaRouter } from './schede-etichetta.js';
 import { siteRouter } from './site.js';
@@ -105,6 +106,7 @@ export function montaRouter(app: Express): void {
   app.use(esportaCsvRouter);
   app.use(schedeRouter);
   app.use(schedeStampaRouter);
+  app.use(schedeInvioRouter);
   app.use(schedeEtichettaRouter);
   app.use(schedeApprovazioneRouter);
   app.use(schedeVersioniRouter);
