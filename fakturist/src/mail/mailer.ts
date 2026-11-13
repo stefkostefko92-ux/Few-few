@@ -49,6 +49,9 @@ export function transportOptions(settings: SmtpSettings) {
     secure: settings.secure,
     requireTLS: !settings.secure,
     auth: settings.user && settings.pass ? { user: settings.user, pass: settings.pass } : undefined,
+    // С ключ — входът е задължителен: без него nodemailer пропуска входа тихо, ако сървърът не обяви
+    // AUTH, и писмото пада чак на MAIL FROM („530/502 … authenticate first“).
+    forceAuth: Boolean(settings.user && settings.pass),
     connectionTimeout: 10_000,
     greetingTimeout: 10_000,
     socketTimeout: 20_000,

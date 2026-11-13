@@ -68,7 +68,10 @@
       "network": "The server could not be reached.",
       "smtp": "The SMTP server refused the connection.",
       "tlsOnPlainPort": "This port does not start with TLS (2525 and 587 upgrade to TLS with STARTTLS). Untick “TLS from the start” — it is for port 465 only — save and check again.",
-      "plainOnTlsPort": "Port 465 starts with TLS right away. Tick “TLS from the start” or change the port to 2525 or 587."
+      "plainOnTlsPort": "Port 465 starts with TLS right away. Tick “TLS from the start” or change the port to 2525 or 587.",
+      "noAuth": "The server accepted the connection, but the email went out without signing in (“authenticate first”). Re-enter the SMTP key from Brevo → SMTP & API → SMTP (an “xsmtpsib-…” key, not an “xkeysib-…” API key) and its login, save and check again.",
+      "missingCredentials": "No login or SMTP key is saved — fill in both and save.",
+      "unreadableSecret": "The saved key cannot be read (server key changed or damaged record) — enter the SMTP key again and save."
     },
     "errors": {
       "invalidHost": "Invalid server address.",

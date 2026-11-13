@@ -74,7 +74,11 @@ export interface SmtpTransport {
 export function smtpMismatch(
   message: string,
   connection: { secure: boolean; port: number },
-): 'tlsOnPlainPort' | 'plainOnTlsPort' | null {
+): 'tlsOnPlainPort' | 'plainOnTlsPort' | 'noAuth' | null {
+  // Писмото тръгна без вход: сървърът не прие ключа или той не стигна до връзката.
+  if (/authenticate first|authentication required|5\.7\.0 .*auth|^530\b/im.test(message)) {
+    return 'noAuth';
+  }
   if (
     connection.secure &&
     /wrong version number|WRONG_VERSION_NUMBER|tls_validate_record_header/i.test(message)

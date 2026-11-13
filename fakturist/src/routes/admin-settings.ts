@@ -94,14 +94,19 @@ export function adminSettingsRouter(): Router {
     let result: CheckResult;
     if (code === 'smtp') {
       const settings = await smtpSettings();
-      result = settings
-        ? await checkSmtp(smtpTransport(settings), {
-            from: settings.from,
-            to: req.principal!.user.email,
-            secrets: [settings.pass ?? ''],
-            connection: { secure: settings.secure, port: settings.port },
-          })
-        : { ok: false, error: 'notConfigured' };
+      const state = await integrationState('smtp');
+      result = !settings
+        ? { ok: false, error: 'notConfigured' }
+        : state?.unreadable && settings.source === 'panel'
+          ? { ok: false, error: 'unreadableSecret' }
+          : !settings.user || !settings.pass
+            ? { ok: false, error: 'missingCredentials' }
+            : await checkSmtp(smtpTransport(settings), {
+                from: settings.from,
+                to: req.principal!.user.email,
+                secrets: [settings.pass ?? ''],
+                connection: { secure: settings.secure, port: settings.port },
+              });
     } else {
       result = await checkRevolut(await revolutSettings());
     }

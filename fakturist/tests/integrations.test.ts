@@ -274,6 +274,40 @@ test('проверката на SMTP: „TLS от началото“ на по�
     connection: { secure: false, port: 2525 },
   });
   assert.equal(other.error, 'Greeting never received');
+  // Писмо без вход: 502/530 „authenticate first“ → обяснение.
+  const noAuth = await checkSmtp(
+    {
+      verify: async () => true,
+      sendMail: async () => {
+        throw new Error('Mail command failed: 502 5.7.0 Please authenticate first');
+      },
+    },
+    {
+      from: 'a@b.c',
+      to: 'master@example.test',
+      secrets: [BREVO_KEY],
+      connection: { secure: false, port: 2525 },
+    },
+  );
+  assert.deepEqual(noAuth, { ok: false, error: 'noAuth' });
+});
+
+test('транспортът: с вход и ключ — входът е задължителен (forceAuth); без тях — не', async () => {
+  const { transportOptions } = await import('../src/mail/mailer.js');
+  const base = {
+    source: 'panel' as const,
+    host: 'smtp-relay.brevo.com',
+    port: 2525,
+    secure: false,
+    from: 'a@b.c',
+  };
+  const withKey = transportOptions({ ...base, user: 'c1@smtp-brevo.com', pass: BREVO_KEY });
+  assert.equal(withKey.forceAuth, true);
+  assert.equal(withKey.requireTLS, true);
+  assert.deepEqual(withKey.auth, { user: 'c1@smtp-brevo.com', pass: BREVO_KEY });
+  const without = transportOptions({ ...base, user: null, pass: null });
+  assert.equal(without.forceAuth, false);
+  assert.equal(without.auth, undefined);
 });
 
 test('писмото с поканата: екранирано име, връзка, срок; без друго копие на токена', () => {
