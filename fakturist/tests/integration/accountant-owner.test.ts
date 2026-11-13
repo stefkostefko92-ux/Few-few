@@ -106,6 +106,11 @@ before(async () => {
     legalName: 'Кантора Баланс ООД',
     eik: '121604974',
   });
+  // Тук кантората води много фирми-клиенти — план без таван (неплатената има таван, viz client-limit).
+  await prisma.subscription.updateMany({
+    where: { organizationId: firm.organizationId },
+    data: { planCode: 'enterprise' },
+  });
   server = createServer().listen(0, '127.0.0.1');
   await new Promise<void>((resolve) => server.once('listening', resolve));
   origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;

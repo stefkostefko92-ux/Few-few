@@ -8,6 +8,7 @@ import { hashPassword, passwordProblem } from '../auth/password.js';
 import { canAssign, type MemberRole } from '../auth/roles.js';
 import { recordRegistrationAcceptance } from '../legal/acceptance.js';
 import { lockOrganization } from './transfer-core.js';
+import { planLimits, seatsTaken } from '../billing/entitlements.js';
 import { DAY } from '../time.js';
 
 /**
@@ -43,6 +44,11 @@ export async function inviteMember(input: {
       select: { id: true },
     });
     if (member) throw new MemberError('alreadyMember');
+    // Таванът на потребителите от плана: членовете и отворените покани (под заключването на фирмата).
+    const { maxUsers } = await planLimits(tx, input.organizationId);
+    if (maxUsers !== null && (await seatsTaken(tx, input.organizationId, now)) >= maxUsers) {
+      throw new MemberError('limit');
+    }
     const today = await tx.memberInvite.count({
       where: {
         organizationId: input.organizationId,
@@ -178,6 +184,12 @@ export async function acceptMemberInvite(input: {
       if (!inviter || !canAssign(inviter.role as MemberRole, invite.role as MemberRole)) {
         throw new MemberError('invalid');
       }
+      // Планът може да е сменен на по-малък след поканата — тогава таванът важи и при приемането.
+      const { maxUsers } = await planLimits(tx, invite.organizationId);
+      const members = await tx.membership.count({
+        where: { organizationId: invite.organizationId },
+      });
+      if (maxUsers !== null && members >= maxUsers) throw new MemberError('limit');
       let userId: string;
       if (newUser) {
         if (await tx.user.findUnique({ where: { email: invite.email }, select: { id: true } })) {

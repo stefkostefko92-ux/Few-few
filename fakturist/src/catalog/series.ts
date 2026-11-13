@@ -1,4 +1,5 @@
 import { prisma } from '../db.js';
+import { orgHasFeature } from '../billing/entitlements.js';
 import { audit } from '../audit.js';
 import { overlaps } from '../documents/numbering.js';
 import { lockOrganization } from '../accounts/transfer-core.js';
@@ -12,7 +13,14 @@ import type { SeriesInput } from './schemas.js';
 export class SeriesError extends Error {
   constructor(
     readonly code:
-      'notFound' | 'nameTaken' | 'overlap' | 'startLocked' | 'issuedBelow' | 'inUse' | 'isDefault',
+      | 'notFound'
+      | 'nameTaken'
+      | 'overlap'
+      | 'startLocked'
+      | 'issuedBelow'
+      | 'inUse'
+      | 'isDefault'
+      | 'plan',
   ) {
     super(code);
   }
@@ -41,6 +49,13 @@ export async function createSeries(input: {
 }): Promise<{ id: string }> {
   return prisma.$transaction(async (tx) => {
     await lockOrganization(tx, input.organizationId);
+    // Втора и следваща серия — само с функцията „няколко серии“ в плана.
+    const existing = await tx.documentSeries.count({
+      where: { organizationId: input.organizationId },
+    });
+    if (existing > 0 && !(await orgHasFeature(input.organizationId, 'multi-series', { db: tx }))) {
+      throw new SeriesError('plan');
+    }
     await assertFree(tx, input.organizationId, input.data, null);
     const hasDefault =
       (await tx.documentSeries.count({

@@ -51,6 +51,11 @@ before(async () => {
     postalCode: '2300',
   });
   orgId = reg.organizationId;
+  // Членове с роли — план с повече потребители (безплатният е за един).
+  await prisma.subscription.updateMany({
+    where: { organizationId: orgId },
+    data: { planCode: 'business' },
+  });
   ownerId = reg.userId;
   await prisma.notification.deleteMany();
   http = await startHttp(createServer);

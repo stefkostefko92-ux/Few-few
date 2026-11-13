@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { LEGAL_DOCUMENTS } from '../legal/documents.js';
 import { prisma } from '../db.js';
+import { planLimits } from '../billing/entitlements.js';
 import { audit } from '../audit.js';
 import { HttpError, requireOrg } from '../auth/guards.js';
 import { OrganizationDataSchema } from '../accounts/register.js';
@@ -84,6 +85,23 @@ export function appClientsRouter(): Router {
       return res.status(400).render('app/client-new', { firm, errors, values: req.body });
     }
     const data = parsed.data;
+    // Кантора без платен абонамент: първите N фирми-клиенти от плана; следващите — с поръчка на плана
+    // (таксата е на фирма-клиент, src/billing/orders.ts).
+    const limits = await planLimits(prisma, firm.id);
+    if (limits.includedClientCompanies !== null && !limits.paid) {
+      const clients = await prisma.clientMandate.count({
+        where: {
+          firmId: firm.id,
+          status: { in: ['PENDING', 'ACTIVE'] },
+          client: { eik: { not: data.eik } },
+        },
+      });
+      if (clients >= limits.includedClientCompanies) {
+        return res
+          .status(400)
+          .render('app/client-new', { firm, errors: { form: 'clientLimit' }, values: req.body });
+      }
+    }
     type Outcome = 'added' | 'invited' | 'hasOwner' | 'existing';
     let outcome: Outcome;
     try {

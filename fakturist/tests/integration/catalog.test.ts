@@ -33,6 +33,11 @@ before(async () => {
     postalCode: '2300',
   });
   orgId = reg.organizationId;
+  // Няколко серии са в по-голям план (безплатният е с една).
+  await prisma.subscription.updateMany({
+    where: { organizationId: orgId },
+    data: { planCode: 'pro' },
+  });
   const viewerUser = await prisma.user.create({
     data: {
       email: 'viewer@example.test',

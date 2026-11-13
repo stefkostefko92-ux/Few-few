@@ -94,6 +94,16 @@ export function adminRouter(): Router {
     if (!resource) throw new HttpError(404);
     const row = await getResource(resource, String(req.params['id']).slice(0, 100));
     if (!row) throw new HttpError(404);
+    // Достъпът на мастъра до данни на клиенти се записва (кой какво е отворил) — одитна следа.
+    await prisma.$transaction((tx) =>
+      audit(tx, {
+        actorId: req.principal!.user.id,
+        organizationId: typeof row['organizationId'] === 'string' ? row['organizationId'] : null,
+        action: 'admin.viewed',
+        targetType: resource.model,
+        targetId: String(row['id'] ?? ''),
+      }),
+    );
     // Фирма без собственик (добавена от кантора) — картата показва прехвърлянето.
     const transfer =
       resource.model === 'Organization' ? await transferStatus(String(row['id'])) : null;

@@ -65,6 +65,11 @@ before(async () => {
     addressCity: 'Перник',
     postalCode: '2300',
   });
+  // Фирмата кани членове — план с повече потребители (безплатният е за един).
+  await prisma.subscription.updateMany({
+    where: { organizationId: company.organizationId },
+    data: { planCode: 'business' },
+  });
   http = await startHttp(createServer);
   owner = await http.login('owner@example.test', PASSWORD);
 });
@@ -125,6 +130,10 @@ test('F1: поканите за член, пратени от подставен
     token: invite.token,
     user: { name: 'Подставен Собственик', password: PASSWORD },
     confirmMandate: true,
+  });
+  await prisma.subscription.updateMany({
+    where: { organizationId: client.id },
+    data: { planCode: 'business' },
   });
   const { inviteId } = await inviteMember({
     organizationId: client.id,

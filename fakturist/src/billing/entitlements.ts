@@ -30,3 +30,44 @@ export async function orgHasFeature(
   if (await planHas(db, organizationId, code)) return true;
   return options.viaFirmId ? planHas(db, options.viaFirmId, code) : false;
 }
+
+export interface PlanLimits {
+  /** Потребители (членове + отворени покани); null — без таван. */
+  maxUsers: number | null;
+  /** Фирми-клиенти на кантора без платен абонамент; null — без таван. */
+  includedClientCompanies: number | null;
+  /** Абонаментът е платен (има завършено плащане) — допълнителните фирми-клиенти се таксуват. */
+  paid: boolean;
+}
+
+/**
+ * Таваните от плана на активния абонамент. Фирма без абонамент (добавена от кантора — плаща кантората)
+ * няма таван тук: функциите ѝ идват по пълномощното.
+ */
+export async function planLimits(db: Db, organizationId: string): Promise<PlanLimits> {
+  const subscription = await db.subscription.findFirst({
+    where: { organizationId, status: 'ACTIVE' },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      plan: { select: { maxUsers: true, includedClientCompanies: true } },
+      payments: { where: { status: 'COMPLETED' }, select: { id: true }, take: 1 },
+    },
+  });
+  if (!subscription) return { maxUsers: null, includedClientCompanies: null, paid: false };
+  return {
+    maxUsers: subscription.plan.maxUsers,
+    includedClientCompanies: subscription.plan.includedClientCompanies,
+    paid: subscription.payments.length > 0,
+  };
+}
+
+/** Колко места заемат членовете и отворените покани за член — срещу `maxUsers`. */
+export async function seatsTaken(db: Db, organizationId: string, now: Date): Promise<number> {
+  const [members, invites] = await Promise.all([
+    db.membership.count({ where: { organizationId } }),
+    db.memberInvite.count({
+      where: { organizationId, acceptedAt: null, revokedAt: null, expiresAt: { gt: now } },
+    }),
+  ]);
+  return members + invites;
+}

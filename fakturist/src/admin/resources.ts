@@ -97,7 +97,9 @@ export const ADMIN_RESOURCES: AdminResource[] = [
     label: { bg: 'Контрагенти', en: 'Counterparties' },
     columns: ['name', 'organizationId', 'eik', 'vatNumber', 'countryCode'],
     search: ['name', 'eik', 'vatNumber'],
-    hidden: [],
+    // Контрагентът може да е физическо лице: мастърът вижда само каквото е нужно (т. 6 от договора за
+    // обработване) — без имейла и точния адрес.
+    hidden: ['email', 'addressStreet', 'postalCode'],
     orderBy: { createdAt: 'desc' },
   },
   {

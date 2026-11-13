@@ -13,6 +13,7 @@ export class MemberError extends Error {
       | 'loginRequired'
       | 'invalidName'
       | 'self'
+      | 'limit'
       | `password.${string}`,
   ) {
     super(code);

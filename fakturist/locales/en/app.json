@@ -175,7 +175,9 @@
       "invalid": "The invitation could not be sent.",
       "notCreator": "The owner is invited by the firm that added the company to Fakturist. Your mandate waits for confirmation by the owner or by Fakturist.",
       "invited": "Fakturist or another firm has already invited the owner — wait for their answer.",
-      "locked": "This company’s ownership was revoked in a dispute — only Fakturist invites a new owner."
+      "locked": "This company’s ownership was revoked in a dispute — only Fakturist invites a new owner.",
+      "clientLimit": "The first client companies of the plan are free. For more, order the Accounting firm plan — the fee is per client company.",
+      "clientLimitLink": "Plan and payment"
     },
     "processorDeclaration": "I declare that the client company has authorised the firm in writing to use Fakturist for its documents and that the firm has taken on the obligations of a processor under Art. 28(3) GDPR in its contract with the client.",
     "processorDeclarationLink": "Data processing agreement, section 1a"
@@ -368,7 +370,8 @@
       "startLocked": "The start of a series with issued documents cannot move.",
       "issuedBelow": "The end cannot drop below the last issued number.",
       "inUse": "A series with issued documents cannot be deleted.",
-      "isDefault": "The default series cannot be deleted — choose another one first."
+      "isDefault": "The default series cannot be deleted — choose another one first.",
+      "plan": "Several number series are in a larger plan."
     },
     "saveBuyer": "Save the recipient as a contact",
     "pickParty": "Contact",
@@ -401,7 +404,8 @@
       "alreadyMember": "This person is already a member of the company.",
       "rateLimited": "Too many invitations today — try tomorrow.",
       "notFound": "No such record.",
-      "self": "You cannot change your own role."
+      "self": "You cannot change your own role.",
+      "limit": "Your plan covers this many users (open invitations included). For more, choose a larger plan."
     }
   },
   "annul": {
