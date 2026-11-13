@@ -1,0 +1,22 @@
+<%
+  // Офертите (routes/impostazioni-preventivi.ts): условията, с които започва всяка нова оферта на фирмата.
+  // Ценоразписът е своя страница (/preventivi/listino) — пише го, който пише офертите.
+  const p = preventivi;
+%><section aria-labelledby="h-preventivi">
+  <h2 class="section__title" id="h-preventivi"><%= t('impostazioni.pagine.preventivi.titolo') %></h2>
+  <p><%= t('preventivi.impostazioni.intro') %></p>
+  <form class="form" method="post" action="/impostazioni/preventivi" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="azienda" value="<%= azienda.id %>">
+    <div class="field field--wide">
+      <label class="field__label" for="f-prev-condizioni"><%= t('preventivi.impostazioni.condizioni') %></label>
+      <textarea class="input" id="f-prev-condizioni" name="condizioni" rows="8" maxlength="<%= maxCondizioniPreventivo %>" aria-describedby="hint-prev-condizioni<%= p.errore ? ' err-prev-condizioni' : '' %>"<% if (p.errore) { %> aria-invalid="true"<% } %>><%= p.valore %></textarea>
+      <p class="field__hint" id="hint-prev-condizioni"><%= t('preventivi.impostazioni.condizioniHint', { max: maxCondizioniPreventivo }) %></p>
+      <% if (p.errore) { %><p class="field__error" id="err-prev-condizioni"><%= t('preventivi.impostazioni.errore', { max: maxCondizioniPreventivo }) %></p><% } %>
+    </div>
+    <div class="toolbar">
+      <button class="btn btn--primary" type="submit"><%= t('preventivi.impostazioni.salva') %></button>
+      <a class="btn" href="/preventivi/listino?azienda=<%= encodeURIComponent(azienda.id) %>"><%- include('../partials/icon', { name: 'euro' }) %><%= t('preventivi.impostazioni.listino') %></a>
+    </div>
+  </form>
+</section>

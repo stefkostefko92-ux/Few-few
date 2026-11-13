@@ -1,0 +1,137 @@
+import type { Request, Response } from 'express';
+import { buildCorrente, improntaCalcolo } from '../build.js';
+import { testataDi } from '../aziende/intestazione.js';
+import { principalOf } from '../auth/guards.js';
+import { config } from '../config.js';
+import { registraEmissione } from '../legale/emissioni.js';
+import {
+  calcolaLimitatore,
+  INTERVENTI,
+  NORME_IMPIANTO,
+  TIPI_PARACADUTE,
+  type DatiLimitatore,
+} from '../limitatore/calcolo.js';
+import { LIMITI_VN, type ErroriLimitatore, type ValoriForm } from '../limitatore/dati.js';
+import { renderCalcoloLimitatore } from '../limitatore/pdf.js';
+import { sintesiLimitatore } from '../limitatore/righe.js';
+import { aziendaDelCalcolo } from '../argano/service.js';
+import type { CalcoloSalvato } from '../limitatore/service.js';
+import {
+  rigaImpianto,
+  type Identita,
+  type Impianto,
+  type Percorso,
+} from './calcolo-argano-vista.js';
+
+/**
+ * Общото на изчислението за ограничителя на карта (calcolo-limitatore.ts) и без карта
+ * (calcolo-limitatore-libero.ts): страницата с формата и резултатите (`limitatore/calcolo.ejs`) и PDF-ът.
+ * Уредбата в заглавието, пътищата на страницата и фирмата на изчислението — като при аргано.
+ */
+
+type T = (key: string, params?: Record<string, string | number>) => string;
+
+export interface VistaLimitatore {
+  percorso: Percorso;
+  impianto: Impianto | null;
+  identita: Identita | null;
+  salvato: CalcoloSalvato | null;
+  values: ValoriForm;
+  errori: ErroriLimitatore;
+  base: string;
+  puoScrivere: boolean;
+  conflitto?: boolean;
+  proposto?: boolean;
+}
+
+export function renderLimitatore(res: Response, status: number, vista: VistaLimitatore): void {
+  const t = res.locals.t as T;
+  const dati = vista.salvato?.dati ?? null;
+  const senzaErrori =
+    Object.keys(vista.errori).length === 0 &&
+    Object.keys(vista.identita?.errori ?? {}).length === 0 &&
+    !vista.identita?.aziendaErrore;
+  res.status(status).render('limitatore/calcolo', {
+    title: t('limitatore.titolo'),
+    conflitto: false,
+    proposto: false,
+    ...vista,
+    impianto: vista.impianto ? rigaImpianto(vista.impianto, t) : '',
+    // При грешки или конфликт записаният резултат не отговаря на формата — не се показва.
+    sintesi:
+      dati && senzaErrori && !vista.conflitto
+        ? sintesiLimitatore(dati, calcolaLimitatore(dati), t)
+        : null,
+    tipi: TIPI_PARACADUTE,
+    norme: NORME_IMPIANTO,
+    interventi: INTERVENTI,
+    limitiVn: LIMITI_VN,
+  });
+}
+
+/** PDF-ът на записаното изчисление: A4, главата на фирмата на изчислението. */
+export async function inviaPdfLimitatore(
+  req: Request,
+  res: Response,
+  opts: {
+    dati: DatiLimitatore;
+    salvato: CalcoloSalvato;
+    impianto: Impianto;
+    aziendaId: string;
+    nome: string;
+    /** Изчислението и картата му — за записа на изтеглянето (src/legale/emissioni.ts). */
+    rif: { calcoloId: string | null; schedaId: string | null };
+  },
+): Promise<void> {
+  const t = res.locals.t as T;
+  const sintesi = sintesiLimitatore(opts.dati, calcolaLimitatore(opts.dati), t);
+  const build = buildCorrente();
+  const impronta = improntaCalcolo('limitatore', build, opts.dati);
+  const azienda = await aziendaDelCalcolo(opts.aziendaId);
+  const pdf = await renderCalcoloLimitatore({
+    sintesi,
+    t,
+    impianto: {
+      indirizzo: opts.impianto.indirizzo ?? '',
+      matricola: opts.impianto.matricola ?? '',
+      numeroImpianto: opts.impianto.numeroImpianto ?? '',
+    },
+    salvato: {
+      quando: res.locals.fmt.dateTime(opts.salvato.updatedAt),
+      autore: opts.salvato.autore ?? '',
+    },
+    // Който тегли PDF-а сега: „Generato con Rilievi Impianti da <име> il <кога>“ на всяка страница.
+    generato: {
+      quando: res.locals.fmt.dateTime(new Date()),
+      autore: res.locals.currentUser?.name ?? '',
+      build,
+      impronta,
+    },
+    testata: await testataDi(azienda),
+    fontDir: config().PDF_FONT_DIR,
+  });
+  const { id, name: nome, email } = principalOf(req).user;
+  // Само изпратен PDF (HEAD изрисува, но не праща).
+  if (req.method === 'GET')
+    await registraEmissione({
+      calcolo: 'limitatore',
+      impronta,
+      build,
+      dati: opts.dati,
+      risultato: sintesi,
+      ...opts.rif,
+      azienda,
+      user: { id, name: nome, email },
+      pdf,
+    });
+  const name = `calcolo-limitatore-${opts.nome}.pdf`.replace(/[^A-Za-z0-9._-]/g, '');
+  res
+    .status(200)
+    .set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `${req.query.inline === '1' ? 'inline' : 'attachment'}; filename="${name}"`,
+      'Content-Length': String(pdf.length),
+      'Cache-Control': 'no-store',
+    })
+    .end(pdf);
+}

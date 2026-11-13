@@ -36,9 +36,9 @@ describe('the order of the sheet sections in the company settings', () => {
   it('is open to the company ADMIN only, never to the roles below', async () => {
     const azienda = await makeAzienda();
     const { browser: admin } = await signedIn('ADMIN', azienda.id);
-    const page = await admin.get('/impostazioni');
+    const page = await admin.get('/impostazioni/scheda');
     assert.equal(page.status, 200);
-    assert.match(page.body, /Ordine delle sezioni della scheda/);
+    assert.match(page.body, /Ordine delle sezioni/);
     assert.match(page.body, /href="\/impostazioni"[^>]*aria-current="page"/);
     for (const role of ['DIREZIONE', 'TECNICO', 'CLIENTE'] as const) {
       const { browser } = await signedIn(role, azienda.id);
@@ -51,7 +51,7 @@ describe('the order of the sheet sections in the company settings', () => {
     const azienda = await makeAzienda();
     const { browser } = await signedIn('ADMIN', azienda.id);
     const form = { azienda: azienda.id, ordine: [...ORDINABILI] };
-    const moved = await browser.submit('/impostazioni', '/impostazioni/sezioni', {
+    const moved = await browser.submit('/impostazioni/scheda', '/impostazioni/sezioni', {
       ...form,
       sposta: 'note:su',
     });
@@ -68,13 +68,13 @@ describe('the order of the sheet sections in the company settings', () => {
     assert.deepEqual(before.ordineSezioni, [], 'a move alone saves nothing');
 
     const custom = ['note', 'argano', ...ORDINABILI.filter((k) => k !== 'note' && k !== 'argano')];
-    const saved = await browser.submit('/impostazioni', '/impostazioni/sezioni', {
+    const saved = await browser.submit('/impostazioni/scheda', '/impostazioni/sezioni', {
       azienda: azienda.id,
       ordine: custom,
       salva: '1',
     });
     assert.equal(saved.status, 303);
-    assert.equal(saved.location, `/impostazioni?azienda=${azienda.id}`);
+    assert.equal(saved.location, `/impostazioni/scheda?azienda=${azienda.id}`);
     const row = await prisma.azienda.findUniqueOrThrow({ where: { id: azienda.id } });
     assert.deepEqual(row.ordineSezioni, custom);
     const log = await prisma.auditLog.findMany({
@@ -82,7 +82,7 @@ describe('the order of the sheet sections in the company settings', () => {
     });
     assert.equal(log.length, 1);
 
-    const reset = await browser.submit('/impostazioni', '/impostazioni/sezioni', {
+    const reset = await browser.submit('/impostazioni/scheda', '/impostazioni/sezioni', {
       azienda: azienda.id,
       ripristina: '1',
     });
@@ -95,7 +95,7 @@ describe('the order of the sheet sections in the company settings', () => {
     const azienda = await makeAzienda();
     const other = await makeAzienda();
     const { browser } = await signedIn('ADMIN', azienda.id);
-    const forged = await browser.submit('/impostazioni', '/impostazioni/sezioni', {
+    const forged = await browser.submit('/impostazioni/scheda', '/impostazioni/sezioni', {
       azienda: azienda.id,
       ordine: ['note', 'note', ...ORDINABILI.slice(2)],
       salva: '1',
@@ -103,7 +103,7 @@ describe('the order of the sheet sections in the company settings', () => {
     assert.equal(forged.status, 400);
     assert.match(forged.body, /ordine inviato non è valido/);
     assert.equal((await browser.get(`/impostazioni?azienda=${other.id}`)).status, 404);
-    const foreign = await browser.submit('/impostazioni', '/impostazioni/sezioni', {
+    const foreign = await browser.submit('/impostazioni/scheda', '/impostazioni/sezioni', {
       azienda: other.id,
       ordine: [...ORDINABILI].reverse(),
       salva: '1',
@@ -178,7 +178,9 @@ describe('the sheet form, laid out like the printed sheet', () => {
     const legends = [
       ...form.body.matchAll(/<legend class="section__title"><span class="secnum"[^>]*><\/span>/g),
     ];
-    assert.equal(legends.length, 13);
+    // 13 sections of the sheet and the sketch pad, on for every company (the owner, 10 November 2026).
+    assert.equal(legends.length, 14);
+    assert.match(form.body, /id="s-schizzi"/);
     assert.match(form.body, /<fieldset class="section"[^>]*id="s-centralina"[^>]*data-off/);
     assert.match(form.body, /<fieldset class="section"[^>]*id="s-argano"(?![^>]*data-off)[^>]*>/);
     const css = await browser.get('/static/css/sheet.css');
@@ -194,7 +196,8 @@ describe('the sheet form, laid out like the printed sheet', () => {
       ['quadroOrdine', 'quadroOrdine', 'mq', 'quadroNote'],
       ['arganoPreventivo', 'kitControlloGanasceTipo', 'pa', 'arganoNote'],
       ['sospensioni', 'sospensioniNumero', 'sg', 'serratureNote'],
-      ['operatore', 'operatore', 'so', 'serratureNote'],
+      // The operator's sheet after "2SG o altro" and its "Altro" field (10 November 2026).
+      ['operatoreModulo', 'operatoreModuloAltro', 'so', 'serratureNote'],
     ] as const) {
       const ids = [...new Set([question, last, modulo, note])].map((key) => `id="f-${key}"`);
       assert.ok(ascending(positions(form.body, ids)), question);

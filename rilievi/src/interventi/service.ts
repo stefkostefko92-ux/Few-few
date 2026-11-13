@@ -30,6 +30,20 @@ const INCLUDE = {
 
 export type InterventoFull = Prisma.InterventoGetPayload<{ include: typeof INCLUDE }>;
 
+/** Потвърдените листове на фирмата — само id, номер и ден (износът ги прави един по един). */
+export function interventiConfermatiDi(aziendaId: string) {
+  return prisma.intervento.findMany({
+    where: { aziendaId, confermatoAt: { not: null } },
+    orderBy: { numero: 'asc' },
+    select: { id: true, numero: true, data: true },
+  });
+}
+
+/** Целият лист по id — без обхват: само за износа на вече избраната фирма. */
+export function interventoPerId(id: string): Promise<InterventoFull | null> {
+  return prisma.intervento.findUnique({ where: { id }, include: INCLUDE });
+}
+
 const LIST_SELECT = {
   id: true,
   numero: true,

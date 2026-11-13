@@ -24,6 +24,11 @@ export const PORTE_CON_OPERATORE: Condition = {
 };
 /** Двойният достъп — при всеки вид врати, и при ръчните (решение на собственика, октомври 2026). */
 export const PORTE_SCELTE: Condition = { field: 'tipoPorte', values: TIPO_PORTE };
+/**
+ * Контактите на антините и блокировката на вратичките — само при ръчни врати (собственикът, 10 ноември
+ * 2026 — „Se seleziono impianto manuale“).
+ */
+export const PORTE_MANUALI: Condition = { field: 'tipoPorte', values: ['MANUALI'] };
 /** Бравите и прибиращата се шейна — при ръчни и при полуавтоматични врати. */
 export const PORTE_CON_PATTINO: Condition = {
   field: 'tipoPorte',

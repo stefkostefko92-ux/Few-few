@@ -6,6 +6,7 @@ import {
   EQ_GEARED,
   EQ_GEARLESS,
   EQ_OLEO,
+  GEAT,
   MASTECH_NG120,
   MASTECH_QI,
   MOVILIFT,
@@ -37,10 +38,10 @@ import {
  * Mastech NG120 и QI Touch, `eg`, `el` и `eo` — таблото Elettroquadri geared, gearless и oleodinamico,
  * `pa` — листът за аргано, `sg` и `so` — листът на 2SG (окачванията при автоматични врати, операторът при
  * автоматични и полуавтоматични), `ar` — AMI 100 Mono RTBS, `dp` — таблото DMG
- * (Pitagora 4.0), `db` — бутониерите DMG (QF Fixtures).
+ * (Pitagora 4.0), `db` — бутониерите DMG (QF Fixtures), `gt` — таблото GEAT (собственикът, 12 ноември 2026).
  */
 export type Prefisso =
-  'oq' | 'om' | 'dp' | 'mn' | 'mq' | 'eg' | 'el' | 'eo' | 'pa' | 'sg' | 'so' | 'ar' | 'db';
+  'oq' | 'om' | 'dp' | 'mn' | 'mq' | 'eg' | 'el' | 'eo' | 'gt' | 'pa' | 'sg' | 'so' | 'ar' | 'db';
 
 export interface ModuloSlot {
   /** Марката, при която модулът се отваря; без нея — при всяка. */
@@ -55,7 +56,7 @@ export interface ModuloSlot {
     | 'quadroOrdine'
     | 'arganoPreventivo'
     | 'sospensioni'
-    | 'operatore'
+    | 'operatoreModulo'
     | 'fossaInterventi'
     | 'bottoniereOrdine';
   /**
@@ -141,6 +142,14 @@ export const SLOTS: readonly ModuloSlot[] = [
     modulo: EQ_OLEO,
   },
   {
+    marca: { field: 'quadroMarca', value: 'GEAT' },
+    column: 'ordineQuadro',
+    question: 'quadroOrdine',
+    prefix: 'gt',
+    path: 'ordine-quadro-geat',
+    modulo: GEAT,
+  },
+  {
     column: 'preventivoArgano',
     question: 'arganoPreventivo',
     prefix: 'pa',
@@ -156,7 +165,10 @@ export const SLOTS: readonly ModuloSlot[] = [
   },
   {
     column: 'ordineSospensioni',
-    question: 'operatore',
+    // „Vuoi cambiare operatore?“ → „Vuoi compilare modulo d'ordine?“ → „2SG“ (собственикът, 10 ноември
+    // 2026); досега го отваряше „Sì“ на оператора — миграцията даде „2SG“ на тези карти.
+    question: 'operatoreModulo',
+    apertura: { valore: 'MODULO_2SG', anche: [] },
     cede: 'sospensioni',
     prefix: 'so',
     path: 'operatore-2sg',

@@ -1,7 +1,7 @@
 import { access } from 'node:fs/promises';
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { percorsi } from '../allegati/archivio.js';
-import { gruppiScelta, nelFoglioDi, sezioniFoto } from '../allegati/stampa.js';
+import { gruppiScelta, nelFoglioDi, ordineScelte, sezioniFoto } from '../allegati/stampa.js';
 import {
   limiteCorpo,
   multipart,
@@ -24,11 +24,12 @@ import {
   isPartial,
   principalOf,
   requireCapability,
+  requireCapabilityPerTogliere,
   requireCsrf,
   requireSameOrigin,
   sendError,
 } from '../auth/guards.js';
-import { canIn } from '../auth/scope.js';
+import { canIn, canInPerTogliere, scopePerTogliere } from '../auth/scope.js';
 import { setFlash } from '../http/flash.js';
 import { activeParts, type SectionKey } from '../schede/fields.js';
 import { getScheda, type SchedaFull } from '../schede/service.js';
@@ -46,6 +47,8 @@ export const allegatiRouter: Router = Router();
 
 const read = requireCapability('schede:read');
 const write = requireCapability('schede:write');
+// Изтриването на снимка остава и при изтекъл абонамент (чл. 12.5 в) на условията) — auth/scope.ts.
+const togli = requireCapabilityPerTogliere('schede:write');
 const schedeRichiesta = new WeakMap<Request, SchedaFull>();
 
 /** Картата в обхвата за запис (не в кошчето) — преди тялото: чужда карта не пише нищо на диска. */
@@ -86,7 +89,17 @@ async function galleria(
   return new Promise((resolve, reject) => {
     res.render(
       'schede/_allegati-galleria',
-      { scheda, sezione, allegati, modifica, ritorno },
+      {
+        scheda,
+        sezione,
+        allegati,
+        modifica,
+        ritorno,
+        elimina:
+          !modifica &&
+          !scheda.deletedAt &&
+          canInPerTogliere(principalOf(req).user, 'schede:write', scheda.aziendaId),
+      },
       (error: Error | null, html: string) => (error ? reject(error) : resolve(html)),
     );
   });
@@ -165,15 +178,19 @@ allegatiRouter.get('/schede/:id/foto-stampa', write, async (req, res) => {
   if (!scheda) return notFound(req, res);
   const allegati = await allegatiDi(scheda.id);
   const valori = scheda as unknown as Record<string, unknown>;
+  const sezioni = sezioniFoto(scheda.azienda.ordineSezioni, res.locals.t);
+  const scelte = new Set(allegati.filter((a) => a.inStampa).map((a) => a.id));
   res.render('schede/_foto-stampa', {
     scheda,
     fotoStampa: {
       gruppi: gruppiScelta(
-        sezioniFoto(scheda.azienda.ordineSezioni, res.locals.t),
+        sezioni,
         allegati,
         nelFoglioDi(activeParts((key) => valori[key]).sections, scheda.sezioniEscluse),
       ),
-      scelte: new Set(allegati.filter((a) => a.inStampa).map((a) => a.id)),
+      scelte,
+      ordine: ordineScelte(sezioni, allegati, scelte),
+      dimensione: scheda.fotoDimensione,
     },
   });
 });
@@ -231,8 +248,11 @@ allegatiRouter.get('/schede/:id/allegati/:aid', read, async (req, res) => {
 });
 
 /** Картата и файлът ѝ за промяна — или null (404). */
-async function perModifica(req: Request) {
-  const scheda = await getScheda(scope(req, 'schede:write'), String(req.params.id));
+async function perModifica(req: Request, togliere = false) {
+  const scheda = await getScheda(
+    togliere ? scopePerTogliere(principalOf(req).user, 'schede:write') : scope(req, 'schede:write'),
+    String(req.params.id),
+  );
   const allegato = scheda ? await allegatoDi(scheda.id, String(req.params.aid)) : null;
   return scheda && allegato && isSezione(allegato.sezione)
     ? { scheda, allegato, sezione: allegato.sezione }
@@ -260,8 +280,8 @@ allegatiRouter.post(
 );
 
 /** Потвърждението без JavaScript (изтритото не минава през кошчето). */
-allegatiRouter.get('/schede/:id/allegati/:aid/elimina', write, async (req, res) => {
-  const found = await perModifica(req);
+allegatiRouter.get('/schede/:id/allegati/:aid/elimina', togli, async (req, res) => {
+  const found = await perModifica(req, true);
   if (!found) return notFound(req, res);
   res.render('schede/allegato-elimina', {
     scheda: found.scheda,
@@ -270,8 +290,8 @@ allegatiRouter.get('/schede/:id/allegati/:aid/elimina', write, async (req, res) 
   });
 });
 
-allegatiRouter.post('/schede/:id/allegati/:aid/elimina', write, requireCsrf, async (req, res) => {
-  const found = await perModifica(req);
+allegatiRouter.post('/schede/:id/allegati/:aid/elimina', togli, requireCsrf, async (req, res) => {
+  const found = await perModifica(req, true);
   if (!found) return notFound(req, res);
   await eliminaAllegato(found.scheda, found.allegato.id, principalOf(req).user.id);
   await rispondi(req, res, found.scheda, found.sezione, { ok: { key: 'allegati.eliminato' } });

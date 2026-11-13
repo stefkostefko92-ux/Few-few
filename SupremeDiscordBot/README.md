@@ -12,12 +12,12 @@ AI auto-replies, round-robin assignment, white-label bots, per-server subscripti
 | Service  | Host port | Container port | Notes |
 |----------|-----------|----------------|-------|
 | Frontend | `127.0.0.1:8080` | 8080    | Localhost-only — put host nginx/Caddy in front for SSL |
-| Postgres | `5435`    | 5432           | localhost-only bind (127.0.0.1:5435) |
-| Redis    | `6381`    | 6379           | localhost-only bind (127.0.0.1:6381) |
+| Postgres | —         | 5432           | Internal only — admin: `docker compose exec postgres psql -U bot discordbot` |
+| Redis    | —         | 6379           | Internal only — admin: `docker compose exec redis sh -c 'REDISCLI_AUTH="$REDIS_PASSWORD" redis-cli'` |
 | Backend  | —         | 3000           | Internal only, reached via frontend nginx |
 | Bot      | —         | 3001           | Internal only, called by backend |
 
-These ports avoid conflicts with Stefko's VPS: `3002` (syndicate_backend), `3100/4100/4101` (ERP), `4000` (nexus), `4180` (sklad), `5000` (tretimart), `5432/5433/5434` (existing postgres), `5173` (syndicate_frontend), `6379/6380` (existing redis).
+These ports avoid conflicts with other services on the same host: `3002` (syndicate_backend), `3100/4100/4101` (ERP), `4000` (nexus), `4180` (sklad), `5000` (tretimart), `5432/5433/5434` (existing postgres), `5173` (syndicate_frontend), `6379/6380` (existing redis).
 
 ---
 
@@ -28,7 +28,7 @@ These ports avoid conflicts with Stefko's VPS: `3002` (syndicate_backend), `3100
 
 ```bash
 # 1. Upload from your local machine
-scp -r discord-saas-bot/ root@vps.carbonstealth.eu:/opt/supremebot
+scp -r SupremeDiscordBot/ root@vps.carbonstealth.eu:/opt/supremebot
 ssh root@vps.carbonstealth.eu
 cd /opt/supremebot
 
@@ -109,7 +109,7 @@ The deploy script will:
 | `SECURITY_ALERTS_DM` | ➖ | Default `true`: DM the owner on brute-force blocks, MFA changes, denied admin IPs, full erasures |
 | `VERIFICATION_ATTEMPT_RETENTION_DAYS` | ➖ | Default `90`: verification attempts older than this are deleted nightly |
 | `BOT_TOKEN` | ⚠️ | Same token as `bot/.env` — needed for round-robin role lookups |
-| `REDIS_URL` | ➖ | `redis://redis:6379` — status page cache health check |
+| `REDIS_URL` | ➖ | `redis://:<REDIS_PASSWORD>@redis:6379` — status page cache health check |
 | `SENTRY_DSN` | ➖ | Error monitoring |
 
 ### `bot/.env`
@@ -123,7 +123,7 @@ The deploy script will:
 | `BOT_API_PORT` | ✅ | `3001` |
 | `FRONTEND_URL` | ✅ | `https://yourdomain.com` |
 | `ARCHIVE_BASE_URL` | ✅ | `https://yourdomain.com` |
-| `REDIS_URL` | ✅ | `redis://redis:6379` (Docker internal) |
+| `REDIS_URL` | ✅ | `redis://:<REDIS_PASSWORD>@redis:6379` (Docker internal; the password must match `REDIS_PASSWORD`) |
 | `SENTRY_DSN` | ➖ | Optional |
 
 ### `frontend/.env`
@@ -135,7 +135,13 @@ The deploy script will:
 | `VITE_COMPANY_NAME` | ✅ | Shown in legal pages |
 | `VITE_COMPANY_COUNTRY` | ✅ | Shown in legal pages |
 | `VITE_CONTACT_EMAIL` | ✅ | Legal contact |
-| `VITE_SUPPORT_URL` | ✅ | Discord invite link |
+
+The support server link is **not** an environment variable. Every "Support" link — the
+bot's buttons, the dashboard and the site — points to `/support`, which the backend
+redirects to the invite the Main Owner sets in the admin console (**Admin → System →
+Support server invite**). Saving asks Discord whether the invite exists and never
+expires; until one is saved, `/support` opens the guides at `/docs`. Leave the bot's
+`SUPPORT_URL` unset so it keeps following that address.
 
 ---
 
@@ -192,12 +198,16 @@ Enable:
   ✓ Message Content Intent
 ```
 
-Bot invite URL (replace `CLIENT_ID`). `permissions=361045814416` is the
-least-privilege bitmask the bot actually needs (see `bot/src/utils/permissionCheck.js`
-`INVITE_PERMISSIONS_INT`) — **never** invite with `permissions=8` (Administrator):
+Bot invite URL (replace `CLIENT_ID`). `permissions=2252160859499664` is the
+least-privilege bitmask for everything except the bait channel (13 permissions, see
+`bot/src/utils/permissionCheck.js` `INVITE_PERMISSIONS_INT`) — **never** invite with
+`permissions=8` (Administrator):
 ```
-https://discord.com/oauth2/authorize?client_id=CLIENT_ID&scope=bot+applications.commands&permissions=361045814416
+https://discord.com/oauth2/authorize?client_id=CLIENT_ID&scope=bot+applications.commands&permissions=2252160859499664
 ```
+The bait channel (`/bait`) additionally needs **Ban Members** (kick or ban) or **Timeout
+Members** (timeout). They are deliberately not in the invite: grant them to the bot's role by
+hand, only on a server that turns the bait on.
 
 ### 3. Discord Premium Apps (the only way to buy)
 Follow `docs/DISCORD_MONETIZATION.md`: verified Team-owned app, two monthly guild SKUs,
@@ -241,7 +251,7 @@ Frontend container :8080 (nginx + built React SPA)
     └── /*      ─────────► React SPA (built at image build time)
 ```
 
-Only `frontend:8080` is exposed to the host. Postgres & Redis are bound to `127.0.0.1:5435` / `127.0.0.1:6381` for direct admin access from the VPS itself but are not public.
+Only `frontend:8080` is exposed to the host (on `127.0.0.1`). Postgres and Redis have no host port since 23.10.2026 — backups, autodeploy and vpsdash already reach them through `docker exec`, and a loopback port is still open to every local process on a shared VPS. The backend, bot and frontend containers run with a read-only root filesystem (only `/tmp` is writable, in memory), and `deploy.sh` pulls fresh base images on every deploy.
 
 ---
 
@@ -303,18 +313,23 @@ docker compose exec bot     npm test
 
 ## Slash Commands
 
-| Command | Description |
+The full, searchable reference is the [/commands](https://supremebot.carbonstealth.eu/commands) page and `/help` in Discord. Source of truth: `bot/src/utils/commandsCatalog.js` (the frontend keeps an identical copy in `frontend/src/data/commandsCatalog.js`).
+
+| Area | Commands |
 |---|---|
-| `/ticket add/remove/claim/unclaim/close` | Manage tickets |
-| `/apply <form>` | Start application form via DM |
-| `/panel spawn <name>` | Post a ticket panel in a channel |
-| `/form spawn <name>` | Post a form button in a channel |
-| `/form review <id> <action>` | Approve/deny/interview an application |
-| `/setup sync` | Re-sync panels from dashboard |
-| `/premium status/custombot/export` | Premium commands |
-| `/daily`, `/profile`, `/leaderboard`, `/shop` | Server Season: daily sparks, level card, top 10, server shop |
-| `/companion list/info/feed/activate/release/trade` | Server Season: companion collection |
-| `/quest`, `/trivia`, `/spawn`, `/wyr`, `/tod` | Server Season: server quests, trivia round and manual companion spawn (Manage Server), party commands (Premium) |
+| Tickets | `/new`, `/ticket add\|remove\|claim\|unclaim\|close\|priority`, `/rename`, `/escalate`; context menus "Create ticket from message", "Open ticket for user" |
+| Canned replies | `/tag use\|add\|remove\|list`; context menu "Reply with tag" |
+| Panels and setup | `/panel spawn <name>`, `/setup wizard`, `/setup sync` |
+| Forms | `/apply <form>`, `/form spawn <name>`, `/form review <id> approve\|deny` |
+| Protection | `/bait setup\|disable\|status` |
+| Community | `/poll`, `/giveaway start\|end\|reroll`, `/admin sticky set\|remove`, `/admin schedule add\|list\|remove` |
+| Server | `/premium status`, `/premium custombot`, `/premium export`, `/debug`, `/stats`, `/help` |
+| Server Season | `/daily`, `/profile`, `/leaderboard`, `/shop`, `/quest`, `/spawn`, `/trivia`, `/wyr`, `/tod`, `/companion list\|info\|feed\|activate\|trade\|release\|train\|attack\|pvp` |
+| Privacy | `/privacy info\|delete` |
+
+`/premium status` and `/companion info` exist in `bot/src/commands/` but are not yet in the catalog, so `/commands` and `/help` do not list them.
+
+Customer guides (English): `/docs` — source in `frontend/src/data/docsPages.js`.
 
 ---
 
@@ -325,12 +340,12 @@ Served by the frontend SPA at `/terms`, `/privacy`, `/cookies`, `/eula`. Content
 
 ## Security
 - AES-256-GCM encryption for custom bot tokens in DB
-- Session cookies: HttpOnly, Secure (production), SameSite=Lax, signed
+- Session cookie: `__Host-sid` in production (Secure, Path=/, no Domain — cannot be planted from a subdomain or over HTTP), HttpOnly, SameSite=Lax, signed; `sid` in local development
 - Rate limiting: 200/min global, 20/15min auth, 600/min bot-internal
 - Helmet.js HTTP security headers (HSTS in production, 1-year max-age)
 - Discord OAuth2 token auto-refresh on expiry
 - Admin destructive actions require `?confirm=true`
-- Postgres + Redis bound to localhost only — not exposed to public internet
+- Postgres and Redis publish no host port at all — reachable only from containers on the Compose network (`docker-compose.yml`)
 - `.dockerignore` prevents `.env` and `node_modules` from leaking into images
 
 ---
@@ -340,14 +355,14 @@ Served by the frontend SPA at `/terms`, `/privacy`, `/cookies`, `/eula`. Content
 This build includes the following fixes over the original codebase:
 1. Prisma initial migration regenerated with complete DDL (was empty — only enums)
 2. `formSession.js` — fixed runtime crashes from undefined `activeSessions`
-3. `auth.js` logout — now clears the correct cookie name (`sid`)
+3. `auth.js` logout — now clears the correct session cookie (`__Host-sid` in production, `sid` in local development)
 4. Added `/api/bot/application/:id/review` so Discord review buttons actually work (was 401)
 5. Stripe `current_period_end` — handles new API (`items.data[0].current_period_end`)
 6. Removed fake PDF endpoint in `tickets.js` (real one is in `export.js` via pdfkit)
 7. `docker-entrypoint.sh` runs `prisma migrate deploy` on every container start
 8. Ports remapped to avoid conflicts with other VPS services
 9. Nginx reverse proxy built into frontend container
-10. Postgres/Redis bound to localhost only
+10. Postgres/Redis publish no host port (container network only)
 11. `.dockerignore` files added
 12. Prisma CLI moved to dependencies (was devDependency but needed at runtime)
 13. Helmet — HSTS added, body size limited to 1MB

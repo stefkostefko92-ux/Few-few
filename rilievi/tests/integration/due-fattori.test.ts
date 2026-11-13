@@ -176,7 +176,7 @@ describe('signing in with two steps', () => {
     });
     const reply = await sendCode(late, totpCodeAt(secret, step()));
     assert.equal(reply.status, 400);
-    assert.match(message(reply.body), /La verifica è scaduta/);
+    assert.match(message(reply.body), /Tempo scaduto o troppi tentativi/);
   });
 });
 

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
 import sharp from 'sharp';
+import { VERSIONE } from '../../src/legale/versioni.js';
 import { Browser, makeAzienda, prisma, signedIn, startApp, stopApp } from './harness.js';
 
 before(startApp);
@@ -124,6 +125,11 @@ describe('companies', () => {
       (await newAzienda(master, 'Logo Privato', await pngWithAlpha(300, 100))).location,
     );
     const other = await makeAzienda('Azienda Curiosa');
+    // Its terms accepted (src/legale/): until then its people see only the acceptance page.
+    await prisma.azienda.update({
+      where: { id },
+      data: { condizioniVersione: VERSIONE.CONDIZIONI },
+    });
     const { browser: member } = await signedIn('CLIENTE', id);
     const { browser: stranger } = await signedIn('ADMIN', other.id);
     const mine = await member.get(`/aziende/${id}/logo`);

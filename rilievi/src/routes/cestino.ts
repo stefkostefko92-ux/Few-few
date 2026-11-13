@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
+import { principalOf, requireCapability, requireCsrf, sendError } from '../auth/guards.js';
+import { inSolaLettura } from '../auth/scope.js';
 import { setFlash } from '../http/flash.js';
 import { schedaTitle } from '../schede/format.js';
 import { highlight } from '../schede/search.js';
@@ -27,6 +28,12 @@ cestinoRouter.get('/cestino', trash, async (req, res) => {
 });
 
 cestinoRouter.post('/cestino/:id/ripristina', trash, requireCsrf, async (req, res) => {
+  // Кошчето остава при изтекъл абонамент заради изтриването; връщането на карта е запис — не (чл. 12.5).
+  const trashScope = scope(req, 'schede:trash');
+  const scheda = await getScheda(trashScope, String(req.params.id), trashScope);
+  if (!scheda || !scheda.deletedAt) return notFound(req, res);
+  if (inSolaLettura(principalOf(req).user, scheda.aziendaId))
+    return sendError(req, res, 403, 'abbonamento.bloccoTitolo', 'abbonamento.blocco');
   const ok = await restoreScheda(
     scope(req, 'schede:trash'),
     String(req.params.id),

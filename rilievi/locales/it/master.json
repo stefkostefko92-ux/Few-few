@@ -1,0 +1,368 @@
+{
+  "master": {
+    "console": {
+      "title": "Console del portale",
+      "sub": "Aziende, persone, lavoro e salute del sistema, aggiornati a ogni apertura della pagina.",
+      "numeri": "Il portale in numeri",
+      "aziende": "Aziende attive",
+      "aziendeNota": "{spente} disattivate · {senzaFirma} senza firma delle condizioni",
+      "utenti": "Persone attive",
+      "utentiNota": "{attivi30} entrate negli ultimi 30 giorni · {dueFattori} con verifica in due passaggi",
+      "schede": "Schede impianto",
+      "schedeNota": "{ultimi30} nuove negli ultimi 30 giorni · {cestino} nel cestino",
+      "documenti": "Documenti di assistenza",
+      "documentiNota": "{interventi} fogli di intervento · {verbali} verbali · {cartelli} cartelli",
+      "calcoli": "Calcoli salvati",
+      "calcoliNota": "{argano} argano · {limitatore} limitatore · {emissioni} PDF scaricati in 30 giorni",
+      "richieste": "Richieste di accesso",
+      "richiesteNota": "In attesa di una tua decisione",
+      "apri": "Apri",
+      "attivita": "Lavoro sul portale, settimana per settimana",
+      "attivitaDesc": "Le ultime 12 settimane: schede create o modificate, documenti di assistenza, calcoli salvati.",
+      "serie": {
+        "schede": "Schede",
+        "assistenza": "Assistenza",
+        "calcoli": "Calcoli"
+      },
+      "settimanaDel": "Settimana del {data}",
+      "tabellaAttivita": "I numeri del grafico",
+      "totale": "Totale",
+      "piuAttive": "Le aziende più attive negli ultimi 30 giorni",
+      "piuAttiveVuoto": "Nessun lavoro registrato negli ultimi 30 giorni.",
+      "azioni": {
+        "one": "1 azione",
+        "other": "{n} azioni"
+      },
+      "emissioni": "Ultimi calcoli scaricati in PDF",
+      "emissioniVuoto": "Nessun PDF di calcolo scaricato finora.",
+      "registro": "Ultime azioni sul portale",
+      "registroTutto": "Tutto il registro",
+      "sigilloOk": "Sigillo valido",
+      "sigilloKo": "Sigillo non valido",
+      "strumenti": "Strumenti del master",
+      "strumentiDesc": {
+        "contratti": "Chi ha firmato le condizioni di servizio, chi le ha accettate prima del contratto e chi aspetta.",
+        "comunicazioni": "Un avviso in cima alle pagine del portale per tutte le aziende o solo per alcune.",
+        "verifica": "Un foglio è autentico e intatto? Cercalo con il codice stampato o con il PDF stesso.",
+        "aziende": "Crea aziende, cambia nome e logo, scarica i dati o disattiva."
+      }
+    },
+    "sistema": {
+      "titolo": "Salute del sistema",
+      "esito": {
+        "ok": "In ordine",
+        "attenzione": "Da guardare",
+        "errore": "Non funziona"
+      },
+      "voci": {
+        "versione": "Versione del portale",
+        "build": "Impronta del codice",
+        "processo": "Portale acceso da",
+        "database": "Risposta del database",
+        "migrazione": "Ultima migrazione",
+        "spazio": "Spazio libero per foto e video",
+        "coda": "Coda di foto e video",
+        "posta": "Invio delle email",
+        "manutenzione": "Ultima manutenzione oraria",
+        "pagamenti": "Pagamenti da verificare"
+      },
+      "nota": {
+        "versione": "Ogni correzione aumenta il secondo numero, ogni grande novità il primo.",
+        "build": "La stessa impronta stampata su ogni calcolo in PDF.",
+        "processo": "Node {node}, memoria {memoria}.",
+        "database": "Dimensione {dimensione}.",
+        "migrazione": "Lo schema del database è aggiornato a questa versione.",
+        "spazio": "Sotto {minimo} i caricamenti si fermano.",
+        "coda": "Il file più vecchio in attesa di compressione · {errori} non riusciti.",
+        "posta": "Senza posta il codice di firma e gli inviti non partono.",
+        "manutenzione": "Ogni ora: pulizia, avvisi di scadenza, pagamenti in sospeso. Passi non riusciti: {falliti}.",
+        "pagamenti": "Pagati su Revolut senza periodo assegnato: vedi Pagamenti. Avvisi di Revolut rifiutati dall'avvio: {rifiutati}."
+      },
+      "posta": {
+        "attiva": "Attivo",
+        "spenta": "Non configurato",
+        "fallita": "L'ultima email non è partita"
+      },
+      "manutenzione": {
+        "mai": "Non ancora eseguita"
+      }
+    },
+    "contratti": {
+      "title": "Contratti",
+      "sub": "Le condizioni di servizio in vigore (versione del {versione}) azienda per azienda.",
+      "riepilogo": {
+        "firmate": "Firmate con codice",
+        "esistente": "Accettate prima del contratto",
+        "attesa": "In attesa di firma"
+      },
+      "colonne": {
+        "azienda": "Azienda",
+        "stato": "Stato",
+        "firma": "Firma",
+        "regole": "Regole d'uso",
+        "azioni": "Azioni"
+      },
+      "stato": {
+        "firmate": "Firmate",
+        "esistente": "Accettate senza firma",
+        "attesa": "In attesa"
+      },
+      "firmaDi": "{nome}, {data}",
+      "versioneVecchia": "versione del {versione}",
+      "nessunaFirma": "Nessuna firma nel registro",
+      "regole": "{accettate} su {totale}",
+      "senzaAdmin": "Nessun amministratore attivo: nessuno può firmare.",
+      "disattivata": "Disattivata",
+      "copia": "Copia PDF",
+      "richiedi": "Richiedi la firma",
+      "richiediConferma": "Da questo momento le persone di {azienda} usano il portale solo dopo la firma con codice dell'amministratore. Confermi?",
+      "richiediDesc": "L'azienda diventa cliente: il suo amministratore firma davvero, con il codice via email.",
+      "flash": {
+        "ok": "Firma richiesta: l'amministratore la vedrà al prossimo accesso.",
+        "stato": "La firma si chiede solo a un'azienda che ha le condizioni accettate senza firma.",
+        "presto": "La versione delle condizioni di questa azienda entra in vigore il {data}: chiedi la firma da quel giorno, così l'amministratore firma una volta sola."
+      },
+      "esistenteNota": "Accettate senza firma: aziende create prima delle condizioni di servizio, segnate come accettate senza una riga nel registro. Quando un'azienda diventa cliente, chiedi la firma.",
+      "prossima": {
+        "titolo": "Prossima versione delle condizioni",
+        "testo": "Versione del {versione}: entra in vigore {quando}. Le modifiche: {link}.",
+        "dal": "il {data}",
+        "nonAnnunciata": "solo 30 giorni dopo l'annuncio (art. 18.1), non prima del {data}",
+        "annunciata": "Annunciata il {data}: banner nel portale fino all'entrata in vigore ed email a {n} amministratori.",
+        "annunciataSenzaNumero": "Annunciata il {data}: banner nel portale fino all'entrata in vigore.",
+        "ultimoGiorno": "Per entrare in vigore il giorno previsto va annunciata entro il {data}.",
+        "annuncia": "Annuncia agli amministratori",
+        "conferma": "Inviare a tutti gli amministratori l'annuncio delle nuove condizioni (banner ed email)? Non si può annullare.",
+        "flash": {
+          "ok": "Annuncio inviato: banner nel portale ed email agli amministratori.",
+          "gia": "Questa versione è già stata annunciata.",
+          "nessuna": "Non c'è una nuova versione da annunciare."
+        },
+        "daSola": "Entra in vigore da sola, senza annuncio: non devi fare nulla. Le aziende già segnate con questa versione continuano a lavorare; da quel giorno puoi chiedere la firma."
+      }
+    },
+    "verifica": {
+      "title": "Verifica documento",
+      "sub": "Un foglio del portale è autentico e non è stato modificato? Scrivi il codice stampato o carica il PDF.",
+      "codice": "Codice stampato sul foglio",
+      "codiceAiuto": "Il Rif. di un calcolo (12 caratteri, es. A1B2-C3D4-E5F6) o l'impronta sotto le firme di un foglio di intervento o di un verbale (64 caratteri).",
+      "file": "Oppure il PDF",
+      "fileAiuto": "Lo stesso file scaricato dal portale, fino a 25 MB. Non viene salvato: se ne calcola solo l'impronta.",
+      "cerca": "Verifica",
+      "risultato": "Risultato",
+      "impronta": "Impronta del file: {hash}",
+      "nessuno": "Nessun documento corrisponde nei registri del portale.",
+      "nessunoFile": "Il file non è identico a nessun PDF registrato. Un PDF modificato, anche di un solo byte, o salvato di nuovo da un altro programma non corrisponde: verifica con il codice stampato.",
+      "tipo": {
+        "emissione": "Calcolo {calcolo} scaricato in PDF",
+        "accettazione": "Copia delle condizioni di servizio firmate",
+        "intervento": "Foglio di intervento n. {numero}",
+        "verbale": "Verbale di chiusura cantiere"
+      },
+      "calcolo": {
+        "argano": "argano",
+        "limitatore": "limitatore"
+      },
+      "per": {
+        "rif": "Trovato con il Rif.: stessi dati e stesso software. Il PDF di quel giorno è nel registro.",
+        "pdf": "Trovato con il file: è esattamente il PDF uscito dal portale.",
+        "hash": "Trovato con l'impronta."
+      },
+      "dettagli": {
+        "quando": "Quando",
+        "azienda": "Azienda",
+        "chi": "Chi",
+        "rif": "Rif.",
+        "build": "Impronta del codice",
+        "versione": "Versione"
+      },
+      "integro": "Intatto: il sigillo corrisponde al contenuto registrato.",
+      "rotto": "Sigillo non valido: il registro è stato modificato dopo la firma. Non fidarti di questo documento.",
+      "apri": "Apri",
+      "errore": {
+        "codice": "Il codice non è valido: scrivi i 12 caratteri del Rif. o i 64 dell'impronta, come sono stampati.",
+        "file": "Il file supera 25 MB.",
+        "forma": "Il modulo non è arrivato completo: scegli di nuovo il file e riprova."
+      }
+    },
+    "comunicazioni": {
+      "title": "Comunicazioni",
+      "sub": "Un avviso in cima alle pagine del portale, per tutte le aziende o solo per alcune, nei giorni che scegli. Ognuno lo chiude per sé.",
+      "nuova": "Nuova comunicazione",
+      "titolo": "Titolo",
+      "testo": "Testo",
+      "testoAiuto": "Fino a 2000 caratteri. Le righe vuote restano.",
+      "livello": "Tipo",
+      "livelli": {
+        "INFO": "Informazione",
+        "AVVISO": "Avviso",
+        "URGENTE": "Urgente"
+      },
+      "livelliDesc": {
+        "INFO": "Novità, consigli: bordo sottile.",
+        "AVVISO": "Manutenzione programmata, scadenze: bordo spesso.",
+        "URGENTE": "Interruzioni, problemi in corso: in nero, sempre prima."
+      },
+      "destinatari": "A chi",
+      "tutte": "Tutte le aziende",
+      "scelte": "Solo le aziende scelte",
+      "aziende": "Aziende",
+      "dal": "Dal giorno",
+      "al": "Al giorno (compreso)",
+      "alAiuto": "Vuoto: finché non la interrompi.",
+      "email": "Invia anche per email agli amministratori delle aziende",
+      "emailAiuto": "Un'email separata per ogni amministratore: nessuno vede gli indirizzi degli altri.",
+      "pubblica": "Pubblica",
+      "elenco": "Pubblicate",
+      "vuoto": "Ancora nessuna comunicazione.",
+      "stato": {
+        "programmata": "Programmata",
+        "attiva": "In corso",
+        "conclusa": "Conclusa",
+        "fermata": "Interrotta"
+      },
+      "finestra": "Dal {dal} al {al}",
+      "finestraAperta": "Dal {dal}, senza fine",
+      "perTutte": "Tutte le aziende",
+      "chiusa": {
+        "one": "Chiusa da 1 persona",
+        "other": "Chiusa da {n} persone"
+      },
+      "emailInviate": {
+        "one": "1 email inviata",
+        "other": "{n} email inviate"
+      },
+      "di": "Scritta da {nome}",
+      "ferma": "Interrompi",
+      "fermaConferma": "La comunicazione sparisce subito da tutte le pagine. Confermi?",
+      "flash": {
+        "creata": "Comunicazione pubblicata.",
+        "creataEmail": "Comunicazione pubblicata. Le email agli amministratori ({n}) partono adesso: il numero di quelle inviate compare qui sotto.",
+        "fermata": "Comunicazione interrotta.",
+        "doppia": "Questa comunicazione è già stata pubblicata pochi minuti fa: non l'ho pubblicata di nuovo."
+      },
+      "errore": {
+        "campi": "Controlla titolo (2–120 caratteri, una riga), testo (2–2000 caratteri), tipo e date.",
+        "aziende": "Scegli almeno un'azienda attiva.",
+        "date": "L'ultimo giorno non può essere prima del primo, e la comunicazione dura al massimo un anno."
+      },
+      "banner": {
+        "regione": "Comunicazioni del portale",
+        "chiudi": "Chiudi",
+        "chiudiAria": "Chiudi la comunicazione: {titolo}"
+      },
+      "mail": {
+        "oggetto": "Rilievi Impianti — {titolo}",
+        "corpo": "Ciao,\n\nuna comunicazione dal portale Rilievi Impianti.\n\n{titolo}\n\n{testo}\n\nLa trovi anche in cima alle pagine del portale, {quando}:\n{link}\n\nCarbon Stealth VCC"
+      }
+    },
+    "registri": {
+      "title": "Registro dei trattamenti",
+      "sub": "Art. 30 GDPR · versione del {data}",
+      "responsabileDati": "Responsabile e titolare",
+      "contatto": "Contatto privacy",
+      "rappresentante": "Rappresentante nell'Unione",
+      "rpd": "Responsabile della protezione dei dati",
+      "revisione": "Revisione",
+      "titolari": "Titolari per conto dei quali si tratta (art. 30, par. 2, lett. a))",
+      "titolariNota": "Dai dati dichiarati all'accettazione delle Condizioni. Le aziende cancellate non compaiono più.",
+      "colonne": {
+        "azienda": "Azienda",
+        "dichiarati": "Dati dichiarati",
+        "admin": "Amministratori",
+        "versione": "Allegato A accettato",
+        "stato": "Stato",
+        "id": "#",
+        "trattamento": "Trattamento",
+        "dati": "Dati",
+        "interessati": "Interessati",
+        "sub": "Sub-responsabile",
+        "base": "Base giuridica",
+        "conservazione": "Conservazione",
+        "nome": "Sub-responsabile",
+        "sede": "Sede",
+        "attivita": "Attività",
+        "accordo": "Accordo"
+      },
+      "stati": {
+        "attiva": "Attiva",
+        "transizione": "Cambio di fornitore in corso",
+        "recupero": "Servizio terminato: periodo di recupero"
+      },
+      "nessunaFirma": "Senza firma registrata",
+      "subResponsabili": "Sub-responsabili",
+      "trasferimenti": "Trasferimenti verso paesi terzi (art. 30, par. 2, lett. c))",
+      "misure": "Misure tecniche e organizzative (art. 30, par. 2, lett. d))",
+      "stampa": "Stampa il registro"
+    },
+    "violazioni": {
+      "title": "Registro delle violazioni dei dati",
+      "sub": "Art. 33, par. 5 GDPR: ogni violazione, anche quella non notificata.",
+      "nuova": "Registra una violazione",
+      "nessuna": "Nessuna violazione registrata.",
+      "procedura": "Procedura: contenere e conservare le prove; valutare entro 24 ore dati, aziende, nostro ruolo e rischio; come responsabile avvisare ogni azienda coinvolta entro 48 ore (art. A.10); come titolare notificare l'autorità di controllo entro 72 ore dalla scoperta, salvo rischio improbabile; con rischio elevato avvisare gli interessati (art. 34).",
+      "colonne": {
+        "rilevata": "Scoperta",
+        "titolo": "Violazione",
+        "ruolo": "Nostro ruolo",
+        "rischio": "Rischio",
+        "avvisi": "Avvisi",
+        "stato": "Stato"
+      },
+      "aperta": "Aperta",
+      "chiusa": "Chiusa il {data}",
+      "scadenza": "Notifica all'autorità entro il {data}",
+      "avvisiTitolari": "aziende avvisate",
+      "avvisiAutorita": "autorità notificata",
+      "avvisiInteressati": "interessati avvisati",
+      "nessunAvviso": "nessun avviso",
+      "ruoli": {
+        "RESPONSABILE": "Responsabile (dati delle aziende clienti)",
+        "TITOLARE": "Titolare (trattamenti nostri)"
+      },
+      "rischi": {
+        "IMPROBABILE": "Rischio improbabile",
+        "RISCHIO": "Rischio",
+        "ELEVATO": "Rischio elevato"
+      },
+      "modifica": "Violazione registrata il {data}",
+      "autore": "Registrata da {nome}",
+      "salva": "Salva",
+      "torna": "Torna al registro",
+      "sezioni": {
+        "evento": "L'evento",
+        "impatto": "Dati e persone coinvolte",
+        "valutazione": "Valutazione e misure",
+        "avvisi": "Avvisi e notifiche",
+        "chiusura": "Chiusura"
+      },
+      "campi": {
+        "rilevataAt": "Scoperta il (ora di Roma)",
+        "eventoAt": "Avvenuta il (stima, se nota)",
+        "titolo": "Titolo breve",
+        "rilevazione": "Come è stata scoperta",
+        "natura": "Descrizione e natura (riservatezza, integrità, disponibilità)",
+        "ruolo": "Nostro ruolo",
+        "categorieDati": "Categorie di dati e numero approssimativo di registrazioni",
+        "interessati": "Categorie e numero approssimativo di interessati",
+        "aziende": "Aziende clienti (titolari) coinvolte",
+        "conseguenze": "Conseguenze probabili",
+        "misure": "Misure adottate o proposte",
+        "rischio": "Rischio per gli interessati",
+        "titolariAvvisatiAt": "Aziende avvisate il",
+        "autoritaNotificataAt": "Autorità di controllo notificata il",
+        "autoritaProtocollo": "Protocollo della notifica",
+        "interessatiAvvisatiAt": "Interessati avvisati il",
+        "motivazione": "Motivazione delle decisioni (anche della mancata notifica o del ritardo)",
+        "lezioni": "Lezioni apprese e azioni correttive",
+        "chiusaAt": "Chiusa il"
+      },
+      "errore": "Controlla i campi segnati.",
+      "erroreCampo": "Campo mancante o non valido.",
+      "flash": {
+        "creata": "Violazione registrata.",
+        "salvata": "Violazione aggiornata."
+      }
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { mailEnabled } from '../config.js';
+import { mailEnabled } from '../mail/posta.js';
 import { prisma } from '../db.js';
 import { writeUserAudit } from '../audit.js';
 import { normalizeEmail } from '../auth/email.js';

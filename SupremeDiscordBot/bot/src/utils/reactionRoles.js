@@ -23,6 +23,15 @@ const DANGEROUS_ROLE_PERMS = [
   PermissionsBitField.Flags.ManageMessages,
   PermissionsBitField.Flags.ManageNicknames,
   PermissionsBitField.Flags.ViewAuditLog,
+  // Модерация, която липсваше в списъка (червен екип, 13.11.2026): заглушаване,
+  // оглушаване и местене на хора в гласов канал, чужди нишки и чужди събития.
+  // Роля с такова право не се раздава сама — нито с реакция, нито автоматично,
+  // нито от магазина, нито от снимка.
+  PermissionsBitField.Flags.MuteMembers,
+  PermissionsBitField.Flags.DeafenMembers,
+  PermissionsBitField.Flags.MoveMembers,
+  PermissionsBitField.Flags.ManageThreads,
+  PermissionsBitField.Flags.ManageEvents,
 ];
 
 /**
@@ -55,9 +64,53 @@ export function isRoleSafeToSelfAssign(role, botMember) {
 // ─── Emoji ключ ──────────────────────────────────────────────────────────────
 // Каноничният формат, в който dashboard-ът пази двойките:
 //   unicode  → самият знак ("🎮")
-//   custom   → "name:id" ("pepe:123456789012345678")
+//   custom   → "name:id" ("pepe:123456789012345678"); анимираното може да е "a:name:id"
 export function emojiKey(emoji) {
   return emoji?.id ? `${emoji.name}:${emoji.id}` : emoji?.name || "";
+}
+
+const SNOWFLAKE = /^\d{17,20}$/;
+
+/**
+ * Собственото емоджи се разпознава по `id`, не по име: преименуване на емоджито
+ * в сървъра сменяше `name`, ключът „име:id“ спираше да съвпада и реакцията
+ * мълчаливо не даваше роля (З5). Unicode емоджи се сравнява по знак.
+ *
+ * @param {string} stored  стойността от таблото („🎮“, „name:id“, „a:name:id“)
+ * @param {{id?:string|null, name?:string|null}} emoji  емоджито от реакцията
+ */
+export function emojiMatches(stored, emoji) {
+  if (!stored || !emoji) return false;
+  if (emoji.id) {
+    const id = String(stored).split(":").pop();
+    return SNOWFLAKE.test(id) && id === emoji.id;
+  }
+  return stored === emoji.name;
+}
+
+/** Двойката за това емоджи, или undefined. */
+export function findPair(rrm, emoji) {
+  return rrm?.pairs?.find((p) => emojiMatches(p.emoji, emoji));
+}
+
+// ─── Реакции, махнати от самия бот ───────────────────────────────────────────
+// Когато ботът маха реакция (отказана опасна роля, размяна в режим „една роля“),
+// Discord връща събитие messageReactionRemove — и то не бива да свали роля,
+// която човекът има по друг начин (З4). Белегът е кратък и се изяжда веднъж.
+const BOT_REMOVAL_TTL_MS = 30 * 1000;
+const botRemovals = new Map(); // `${messageId}:${userId}:${pairId}` → expiresAt
+
+export function markBotRemoval(messageId, userId, pairId, now = Date.now()) {
+  botRemovals.set(`${messageId}:${userId}:${pairId}`, now + BOT_REMOVAL_TTL_MS);
+}
+
+/** true, ако махането е от бота (и белегът се изразходва). */
+export function consumeBotRemoval(messageId, userId, pairId, now = Date.now()) {
+  const key = `${messageId}:${userId}:${pairId}`;
+  const until = botRemovals.get(key);
+  if (!until) return false;
+  botRemovals.delete(key);
+  return until > now;
 }
 
 // ─── TTL кеш messageId → rrm | null ─────────────────────────────────────────
@@ -91,6 +144,7 @@ export function clearRrmCache(messageId) {
 setInterval(() => {
   const now = Date.now();
   for (const [k, v] of cache) if (v.expiresAt <= now) cache.delete(k);
+  for (const [k, until] of botRemovals) if (until <= now) botRemovals.delete(k);
 }, CACHE_TTL).unref();
 
 // ─── Embed builder ───────────────────────────────────────────────────────────

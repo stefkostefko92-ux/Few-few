@@ -119,5 +119,6 @@ calcoloArganoRouter.get('/schede/:id/calcolo-argano.pdf', read, pdfLimiter, asyn
     impianto: scheda,
     aziendaId: scheda.aziendaId,
     nome: identificativo(scheda),
+    rif: { calcoloId: null, schedaId: scheda.id },
   });
 });

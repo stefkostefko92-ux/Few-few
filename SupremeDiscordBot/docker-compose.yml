@@ -6,12 +6,14 @@
 #     port; put your host nginx/Caddy in front of it for SSL termination
 #   - Backend:   internal only (no host port, reached via frontend nginx)
 #   - Bot:       internal only (no host port)
-#   - Postgres:  127.0.0.1:5435 → 5432 (avoid other postgres instances)
-#   - Redis:     127.0.0.1:6381 → 6379 (avoid 6379/6380)
+#   - Postgres:  internal only (no host port since 23.10.2026)
+#   - Redis:     internal only (no host port since 23.10.2026)
 #
-# All inter-service traffic stays on the Docker bridge network and all host
-# bindings are localhost-only — nothing is reachable from the internet except
-# through your SSL-terminating host proxy.
+# All inter-service traffic stays on the Docker bridge network. Postgres and
+# Redis used to be published on 127.0.0.1:5435/6381 "for admin access" — but
+# nothing used them (backups, autodeploy and vpsdash go through `docker exec`),
+# and a loopback port is still reachable by every local process on a shared
+# VPS. Admin access: `docker compose exec postgres psql -U bot discordbot`.
 # ═══════════════════════════════════════════════════════════════════════════════
 
 services:
@@ -42,8 +44,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-discordbot}
       POSTGRES_USER: ${POSTGRES_USER:-bot}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in supreme/.env (no insecure default)}
-    ports:
-      - "127.0.0.1:5435:5432"  # bind to localhost only — not public
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -80,11 +80,13 @@ services:
     # `requirepass` приема всеки, който стигне до порта — а на споделен VPS това
     # е всеки друг контейнер в мрежата и всеки локален процес през 127.0.0.1:6381.
     # `--save ""` не се ползва: appendonly пази състоянието при рестарт.
+    # Паролата в argv НЕ се вижда в `ps` на хоста: redis-server пренаписва името
+    # на процеса („redis-server *:6379“) веднага след старта — измерено на
+    # redis:7-alpine (23.10.2026). `docker inspect` я показва и през environment,
+    # така че конфигурационен файл не би скрил нищо повече.
     command: >
       redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
       --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD must be set in SupremeDiscordBot/.env (no insecure default)}
-    ports:
-      - "127.0.0.1:6381:6379"  # bind to localhost only
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
     volumes:
@@ -92,7 +94,9 @@ services:
     healthcheck:
       # Health check-ът също се автентикира — иначе рапортува „здрав“ през
       # NOAUTH грешка (redis-cli печата грешката, но кодът за изход е 0).
-      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep -q PONG"]
+      # Паролата е в REDISCLI_AUTH, не в `-a` — иначе на всеки 5 s се виждаше в
+      # списъка с процеси на хоста (Кодаджията, 10.10.2026).
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli ping | grep -q PONG"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -119,6 +123,14 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
+    # Read-only коренова файлова система (23.10.2026): код, който е пробил в
+    # контейнера, не може да подмени файловете на приложението или да остави
+    # инструмент за следващия рестарт. Единственото място за писане е /tmp в
+    # паметта (изчиства се при рестарт). Проверено с истинския процес: старт,
+    # миграции, сесии, тяло на заявка — без нито една грешка за писане.
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
     # Таван на паметта. Без него един подут процес (изтичане, огромен експорт,
     # шардинг на много гилдии) изяжда RAM-а на целия VPS и OOM killer-ът поваля
     # СЛУЧАЕН контейнер — обикновено Postgres, тоест целият продукт. С таван
@@ -152,7 +164,7 @@ services:
     expose:
       - "3000"  # internal only — nginx proxies to this
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -180,6 +192,14 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
+    # Read-only коренова файлова система (23.10.2026): код, който е пробил в
+    # контейнера, не може да подмени файловете на приложението или да остави
+    # инструмент за следващия рестарт. Единственото място за писане е /tmp в
+    # паметта (изчиства се при рестарт). Проверено с истинския процес: старт,
+    # миграции, сесии, тяло на заявка — без нито една грешка за писане.
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
     # Таван на паметта. Без него един подут процес (изтичане, огромен експорт,
     # шардинг на много гилдии) изяжда RAM-а на целия VPS и OOM killer-ът поваля
     # СЛУЧАЕН контейнер — обикновено Postgres, тоест целият продукт. С таван
@@ -206,7 +226,7 @@ services:
     expose:
       - "3001"  # internal only — only backend calls it
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3001/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -237,6 +257,14 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
+    # Read-only коренова файлова система (23.10.2026): код, който е пробил в
+    # контейнера, не може да подмени файловете на приложението или да остави
+    # инструмент за следващия рестарт. Единственото място за писане е /tmp в
+    # паметта (изчиства се при рестарт). Проверено с истинския процес: старт,
+    # миграции, сесии, тяло на заявка — без нито една грешка за писане.
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
     # Таван на паметта. Без него един подут процес (изтичане, огромен експорт,
     # шардинг на много гилдии) изяжда RAM-а на целия VPS и OOM killer-ът поваля
     # СЛУЧАЕН контейнер — обикновено Postgres, тоест целият продукт. С таван
@@ -261,7 +289,8 @@ services:
       # (plain HTTP, no X-Forwarded-Proto → secure session cookie never set).
       - "127.0.0.1:8080:8080"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/ >/dev/null || exit 1"]
+      # 127.0.0.1, не localhost: localhost = ::1 в Alpine, nginx слуша само IPv4 (27.09.2026).
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/ >/dev/null || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3

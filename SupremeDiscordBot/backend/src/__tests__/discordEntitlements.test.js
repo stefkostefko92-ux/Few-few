@@ -47,7 +47,7 @@ describe("POST /entitlement — grant", () => {
     expect(res.body).toMatchObject({ ok: true, granted: true, plan: "premium" });
     expect(prismaMock.server.update).toHaveBeenCalledWith({
       where: { id: "g1" },
-      data: { isPremium: true, plan: "premium", planSource: "discord", discordEntitlementId: "ent1", discordSkuId: "sku_prem" },
+      data: { isPremium: true, plan: "premium", planSource: "discord", discordEntitlementId: "ent1", discordSkuId: "sku_prem", paidAccessEndedAt: null },
     });
   });
 
@@ -103,9 +103,13 @@ describe("POST /entitlement — revoke", () => {
     expect(res.body.revoked).toBe(true);
     // Revoke чисти плановите полета; isPremium се пресмята отделно през
     // syncServerPaidFlag (за да не изгаси agency-покрит сървър) → false тук.
+    // А1: плюс котвата за прозореца за експорт (виж launchData.test.js).
     expect(prismaMock.server.update).toHaveBeenCalledWith({
       where: { id: "g1" },
-      data: { plan: "free", planSource: null, discordEntitlementId: null, discordSkuId: null },
+      data: {
+        plan: "free", planSource: null, discordEntitlementId: null, discordSkuId: null,
+        paidAccessEndedAt: expect.any(Date),
+      },
     });
     expect(prismaMock.server.update).toHaveBeenCalledWith({
       where: { id: "g1" },

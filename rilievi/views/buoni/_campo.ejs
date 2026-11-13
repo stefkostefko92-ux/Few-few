@@ -1,0 +1,11 @@
+<%
+  // Едно поле от данните на листа: текст, ден, час или бележка (`textarea`); `wide` — на целия ред.
+%><div class="field<%= wide ? ' field--wide' : '' %>">
+  <label class="field__label" for="f-<%= key %>"><%= t('buoni.campo.' + key) %></label>
+  <% if (tipo === 'textarea') { %><textarea class="textarea" id="f-<%= key %>" name="<%= key %>" rows="3" maxlength="<%= maxLength %>"<% if (errore) { %> aria-invalid="true" aria-describedby="err-<%= key %>"<% } %>><%= valore %></textarea>
+  <% } else if (tipo === 'date') { %><input class="input" id="f-<%= key %>" name="<%= key %>" type="date" min="1950-01-01" max="2099-12-31" value="<%= valore %>"<% if (errore) { %> aria-invalid="true" aria-describedby="err-<%= key %>"<% } %>>
+  <% } else if (tipo === 'time') { %><input class="input" id="f-<%= key %>" name="<%= key %>" type="time" value="<%= valore %>"<% if (errore) { %> aria-invalid="true" aria-describedby="err-<%= key %>"<% } %>>
+  <% } else { %><input class="input" id="f-<%= key %>" name="<%= key %>" type="text" maxlength="<%= maxLength %>" autocomplete="off" value="<%= valore %>"<% if (errore) { %> aria-invalid="true" aria-describedby="err-<%= key %>"<% } %>>
+  <% } %>
+  <% if (errore) { %><p class="field__error" id="err-<%= key %>"><%= errore %></p><% } %>
+</div>

@@ -1,0 +1,16 @@
+<%
+  // „Accedi con Microsoft / Google“ (D1, routes/accesso-esterno.ts): само доставчиците с приложение и поне
+  // една фирма, която ги е включила (`esterni` в res.locals). Форма с двойната бисквитка — като входа.
+  const esterniLogin = typeof esterni !== 'undefined' ? esterni : [];
+  const nomi = { microsoft: 'Microsoft', google: 'Google' };
+%><% if (esterniLogin.length > 0) { %>
+<div class="auth__esterni">
+  <p class="auth__oppure"><%= t('esterno.login.oppure') %></p>
+  <% for (const f of esterniLogin) { %><form method="post" action="/accesso/esterno/<%= f %>">
+    <input type="hidden" name="_csrf" value="<%= preCsrf %>">
+    <input type="hidden" name="next" value="<%= next %>">
+    <button class="btn btn--block" type="submit"><%= t('esterno.login.pulsante', { fornitore: nomi[f] }) %></button>
+  </form>
+  <% } %>
+</div>
+<% } %>

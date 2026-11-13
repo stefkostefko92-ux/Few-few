@@ -3,6 +3,7 @@
 // always one A4 page.
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
+import { assertPdfA2b } from './pdfa.js';
 import { describe, it } from 'node:test';
 import { PDFDocument } from 'pdf-lib';
 import { translatorFor } from '../src/i18n.js';
@@ -403,7 +404,10 @@ describe(
     it('is one A4 page even when every line is full', async () => {
       const row = fullest();
       assert.ok(fineFoglio(row, options) <= FONDO_PAGINA, `${fineFoglio(row, options)}`);
-      const doc = await PDFDocument.load(await renderInterventoPdf(row, options));
+      const bytes = await renderInterventoPdf(row, options);
+      // Confirmed documents are archival: PDF/A-2b (owner, 12 November 2026 — point D6).
+      await assertPdfA2b(bytes);
+      const doc = await PDFDocument.load(bytes);
       assert.equal(doc.getPageCount(), 1);
       assert.deepEqual(doc.getPage(0).getSize(), { width: 595.28, height: 841.89 });
       assert.equal(doc.getTitle(), 'Modulo di pronto intervento n. 999999');

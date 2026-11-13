@@ -93,12 +93,14 @@ usersManageRouter.post('/utenti/:id/account', manage, requireCsrf, async (req, r
 usersManageRouter.post('/utenti/:id/stato', manage, requireCsrf, async (req, res) => {
   const id = String(req.params.id);
   const active = (req.body as Record<string, unknown>).active === '1';
-  const ok = await setActive(principalOf(req).user, id, active);
-  setFlash(
-    res,
-    ok ? 'ok' : 'error',
-    ok ? (active ? 'flash.userReactivated' : 'flash.userDeactivated') : 'flash.notAllowed',
-  );
+  const esito = await setActive(principalOf(req).user, id, active);
+  const chiave = {
+    ok: active ? 'flash.userReactivated' : 'flash.userDeactivated',
+    no: 'flash.notAllowed',
+    limitePersone: 'flash.riattivaLimite',
+    solaLettura: 'flash.riattivaScaduto',
+  }[esito];
+  setFlash(res, esito === 'ok' ? 'ok' : 'error', chiave);
   back(res, id);
 });
 

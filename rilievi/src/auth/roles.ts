@@ -20,8 +20,11 @@ export type Capability =
   | 'schede:write'
   | 'schede:delete'
   | 'schede:trash'
+  | 'schede:approve'
   | 'interventi:read'
   | 'interventi:write'
+  | 'preventivi:read'
+  | 'preventivi:write'
   | 'users:manage'
   | 'audit:view'
   | 'aziende:manage'
@@ -34,10 +37,16 @@ const REQUIRED: Readonly<Record<Capability, Role>> = {
   'schede:write': 'OPERATORE',
   'schede:delete': 'RESPONSABILE',
   'schede:trash': 'ADMIN',
+  // Одобрението на картите (само във фирма, която го е включила — schede/approvazione.ts).
+  'schede:approve': 'RESPONSABILE',
   // Листовете за интервенция („Servizio assistenza elevatori“, src/interventi/): четат ги като картите;
   // попълва, подписва и праща техникът (като писането на карта). Подписаният лист не се пипа от никого.
   'interventi:read': 'CLIENTE',
   'interventi:write': 'OPERATORE',
+  // Офертите (src/preventivi/; собственикът, 12 ноември 2026 — C1): цените са търговска информация — от
+  // RESPONSABILE нагоре, и само във фирма, в която MASTER ги е включил (auth/scope.ts, `preventivi`).
+  'preventivi:read': 'RESPONSABILE',
+  'preventivi:write': 'RESPONSABILE',
   // Кани и управлява хората само най-високата роля във фирмата (ADMIN — в своята фирма, роли под
   // своята) и собственикът на портала (MASTER — във всяка фирма). Така е поискал собственикът.
   'users:manage': 'ADMIN',

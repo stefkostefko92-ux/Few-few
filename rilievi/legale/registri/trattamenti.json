@@ -1,0 +1,172 @@
+{
+  "versione": "2026-11-12",
+  "revisione": "Rivisto ogni 6 mesi e a ogni modifica dei sub-responsabili; tenuto in forma elettronica (art. 30, par. 3) e messo a disposizione dell'autorità di controllo su richiesta (art. 30, par. 4).",
+  "rappresentante": "Non necessario: il responsabile e titolare è stabilito nell'Unione (art. 27).",
+  "rpd": "Non designato: nessun monitoraggio regolare e sistematico degli interessati su larga scala e nessuna categoria particolare di dati (art. 37). Valutazione da confermare a ogni revisione.",
+  "responsabile": {
+    "titolo": "Registro delle categorie di attività svolte come responsabile del trattamento (art. 30, par. 2)",
+    "trattamenti": [
+      {
+        "id": "T1",
+        "nome": "Ospitalità e conservazione dei dati del Portale",
+        "dati": "Tutti quelli dell'art. A.3 dell'Allegato A",
+        "interessati": "Quelli dell'art. A.4 dell'Allegato A",
+        "sub": "netcup GmbH",
+        "conservazione": "Durata del contratto e 90 giorni dopo la disattivazione (art. A.11)"
+      },
+      {
+        "id": "T2",
+        "nome": "Elaborazione funzionale: calcoli, PDF, compressione di foto e video",
+        "dati": "Dati di lavoro, foto e video",
+        "interessati": "Quelli dell'art. A.4",
+        "sub": "netcup GmbH",
+        "conservazione": "Come T1"
+      },
+      {
+        "id": "T3",
+        "nome": "Autenticazione degli utenti (password, verifica in due passaggi)",
+        "dati": "Dati degli account",
+        "interessati": "Utenti",
+        "sub": "netcup GmbH",
+        "conservazione": "Finché esiste l'account"
+      },
+      {
+        "id": "T4",
+        "nome": "Invio di email per conto del Cliente (fogli di intervento, verbali, inviti, avvisi)",
+        "dati": "Nomi, firme tracciate nei PDF, email dei destinatari",
+        "interessati": "Quelli dell'art. A.4",
+        "sub": "Sendinblue SAS (Brevo)",
+        "conservazione": "Gli indirizzi dei destinatari non sono conservati"
+      },
+      {
+        "id": "T5",
+        "nome": "Copie di sicurezza",
+        "dati": "Come T1",
+        "interessati": "Quelli dell'art. A.4",
+        "sub": "netcup GmbH",
+        "conservazione": "14 giorni"
+      },
+      {
+        "id": "T6",
+        "nome": "Esportazione dei dati e cambio di fornitore (Allegato B)",
+        "dati": "Come T1",
+        "interessati": "Quelli dell'art. A.4",
+        "sub": "netcup GmbH",
+        "conservazione": "Non conservati: il file è generato a ogni richiesta"
+      },
+      {
+        "id": "T7",
+        "nome": "Cancellazione a fine servizio",
+        "dati": "Tutti",
+        "interessati": "Quelli dell'art. A.4",
+        "sub": "—",
+        "conservazione": "Resta una riga anonima nel registro del portale"
+      },
+      {
+        "id": "T8",
+        "nome": "Assistenza e accesso dell'amministrazione del portale (art. A.14)",
+        "dati": "Secondo la richiesta",
+        "interessati": "Quelli dell'art. A.4",
+        "sub": "—",
+        "conservazione": "Gli accessi sono registrati"
+      },
+      {
+        "id": "T9",
+        "nome": "Registro delle attività dell'azienda",
+        "dati": "Autore, azione, oggetto, senza il contenuto delle schede",
+        "interessati": "Utenti",
+        "sub": "netcup GmbH",
+        "conservazione": "{auditGiorni} giorni"
+      }
+    ],
+    "trasferimenti": [
+      "Nessun trasferimento diretto verso paesi terzi da parte del responsabile.",
+      "Brevo può affidare parte dell'invio delle email a propri sub-responsabili fuori dall'Unione, con clausole contrattuali tipo (art. 46, par. 2, lett. c)); allegare a ogni revisione l'elenco attuale di Brevo.",
+      "Nessuna deroga ai sensi dell'art. 49."
+    ]
+  },
+  "titolare": {
+    "titolo": "Registro delle attività svolte come titolare del trattamento (art. 30, par. 1)",
+    "trattamenti": [
+      {
+        "id": "C1",
+        "nome": "Richieste di accesso dal sito",
+        "dati": "Nome, azienda, email, telefono, messaggio",
+        "interessati": "Chi compila il modulo",
+        "base": "Misure precontrattuali (art. 6, par. 1, lett. b))",
+        "conservazione": "{richiesteGiorni} giorni dall'ultima modifica"
+      },
+      {
+        "id": "C2",
+        "nome": "Registri probatori dell'art. 19 delle Condizioni (accettazioni e calcoli emessi)",
+        "dati": "Nome ed email di chi accetta o scarica, IP, browser, codice di firma (come impronta), impronte dei documenti",
+        "interessati": "Amministratori e utenti dei Clienti",
+        "base": "Legittimo interesse alla prova (art. 6, par. 1, lett. f))",
+        "conservazione": "{anni} anni"
+      },
+      {
+        "id": "C3",
+        "nome": "Sicurezza degli accessi (blocchi, limiti per rete)",
+        "dati": "Tentativi errati, impronta HMAC della rete",
+        "interessati": "Chi tenta di accedere",
+        "base": "Legittimo interesse alla sicurezza (art. 6, par. 1, lett. f); art. 32)",
+        "conservazione": "1 giorno per le reti; i blocchi finché servono"
+      },
+      {
+        "id": "C4",
+        "nome": "Comunicazioni del fornitore ai Clienti (nuove condizioni, cambio di fornitore, cancellazione)",
+        "dati": "Nome ed email degli amministratori",
+        "interessati": "Amministratori dei Clienti",
+        "base": "Esecuzione del contratto e obblighi di legge (art. 6, par. 1, lett. b) e c))",
+        "conservazione": "Finché esiste l'account"
+      },
+      {
+        "id": "C5",
+        "nome": "Fatturazione, pagamenti e abbonamenti",
+        "dati": "Ragione sociale, sede e partita IVA del Cliente; nome ed email dell'amministratore che paga; piano, periodo e importi; numero dell'ordine di Revolut; esito e numero di consultazione della verifica della partita IVA nel VIES; rimborsi e contestazioni del pagamento. I dati della carta restano a Revolut Bank UAB (titolare autonomo): il fornitore non li riceve. Destinatari: Revolut Bank UAB per il pagamento, la Commissione europea (VIES) per la verifica della partita IVA, il consulente contabile e il software di fatturazione del fornitore",
+        "interessati": "Amministratori dei Clienti",
+        "base": "Esecuzione del contratto e obblighi di legge contabili e fiscali (art. 6, par. 1, lett. b) e c))",
+        "conservazione": "10 anni dalla fine dell'esercizio (art. 12 della legge bulgara sulla contabilità)"
+      },
+      {
+        "id": "C6",
+        "nome": "Accettazione delle offerte a pagamento (prova della conclusione)",
+        "dati": "Nome ed email di chi accetta, azienda, testo e impronta dell'offerta, data e ora, IP e browser, sigillo",
+        "interessati": "Amministratori dei Clienti",
+        "base": "Legittimo interesse alla prova del contratto (art. 6, par. 1, lett. f))",
+        "conservazione": "{anni} anni dalla cancellazione dei dati del Cliente"
+      },
+      {
+        "id": "C7",
+        "nome": "Avvisi di scadenza della prova e dell'abbonamento",
+        "dati": "Nome ed email degli amministratori, data di scadenza, livello",
+        "interessati": "Amministratori dei Clienti",
+        "base": "Esecuzione del contratto (art. 6, par. 1, lett. b))",
+        "conservazione": "Finché esiste l'account; dell'avviso inviato resta solo la soglia raggiunta"
+      },
+      {
+        "id": "C8",
+        "nome": "Segnalazioni di contenuti illegali e decisioni di moderazione (artt. 16–18 Regolamento (UE) 2022/2065)",
+        "dati": "Nome ed email di chi segnala; posizione del contenuto e motivi; dichiarazione di buona fede; data e ora; decisione, misura e motivazione; comunicazioni al segnalante e agli Amministratori dell'azienda interessata; richieste di riesame ed esito; eventuale comunicazione alle autorità (art. 18)",
+        "interessati": "Chi segnala; persone citate o ritratte nel contenuto segnalato; Amministratori dell'azienda che ha caricato il contenuto",
+        "base": "Obbligo di legge (art. 6, par. 1, lett. c); artt. 16–18 Reg. (UE) 2022/2065; per i dati relativi a reati, art. 10 GDPR in base all'art. 18 del Regolamento); conservazione a fini di prova: legittimo interesse (art. 6, par. 1, lett. f))",
+        "conservazione": "5 anni dalla decisione o dall'esito del riesame; segnalazioni non esaminabili: 1 anno dalla risposta; in caso di contestazione, fino alla definizione"
+      }
+    ]
+  },
+  "subResponsabili": [
+    {
+      "nome": "netcup GmbH",
+      "sede": "Emmy-Noether-Straße 10, 76131 Karlsruhe, Germania",
+      "attivita": "Infrastruttura: server, database, copie di sicurezza, in data center in Germania",
+      "accordo": "Accordo ai sensi dell'art. 28 in vigore"
+    },
+    {
+      "nome": "Sendinblue SAS (Brevo)",
+      "sede": "Francia",
+      "attivita": "Invio delle email",
+      "accordo": "Accordo ai sensi dell'art. 28 in vigore"
+    }
+  ],
+  "misure": "Si rinvia all'Appendice 1 all'Allegato A delle Condizioni di servizio in vigore (art. M.1)."
+}

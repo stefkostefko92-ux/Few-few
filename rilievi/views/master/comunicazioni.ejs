@@ -1,0 +1,96 @@
+<%
+  // „Comunicazioni“ (routes/master-comunicazioni.ts): новото съобщение (и без JavaScript — списъкът с
+  // фирмите е винаги на страницата, master.js само го скрива при „Tutte le aziende“) и публикуваните, всяко
+  // с прозореца си, до кого е, колко души са го затворили и „Interrompi“.
+  const v = (k, d) => (typeof form[k] === 'string' ? form[k] : d);
+  const scelte = new Set([].concat(form.aziende || []));
+  const destinatari = v('destinatari', 'tutte');
+  const livello = v('livello', 'INFO');
+%><%- include('../partials/top', { titleKey: 'master.comunicazioni.title', scripts: ['master'] }) %>
+<div class="page-head">
+  <div>
+    <a href="/master"><%= t('master.console.title') %></a>
+    <h1><%= t('master.comunicazioni.title') %></h1>
+    <p class="page-head__sub"><%= t('master.comunicazioni.sub') %></p>
+  </div>
+</div>
+<div class="stack-gap">
+  <section aria-labelledby="com-nuova">
+    <h2 id="com-nuova"><%= t('master.comunicazioni.nuova') %></h2>
+    <% if (errore) { %><div class="errors" role="alert"><h2><%= t(errore) %></h2></div><% } %>
+    <form class="form comunicazione-form" method="post" action="/master/comunicazioni">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <label class="field__label" for="com-titolo"><%= t('master.comunicazioni.titolo') %></label>
+        <input class="input" id="com-titolo" name="titolo" type="text" maxlength="120" required value="<%= v('titolo', '') %>">
+      </div>
+      <div class="field">
+        <label class="field__label" for="com-testo"><%= t('master.comunicazioni.testo') %></label>
+        <textarea class="textarea" id="com-testo" name="testo" rows="5" maxlength="2000" required aria-describedby="com-testo-aiuto"><%= v('testo', '') %></textarea>
+        <p class="field__hint" id="com-testo-aiuto"><%= t('master.comunicazioni.testoAiuto') %></p>
+      </div>
+      <fieldset class="choice">
+        <legend><%= t('master.comunicazioni.livello') %></legend>
+        <div class="choice__opts scelta-livello">
+          <% for (const l of livelli) { %><label class="tick scelta-livello__voce scelta-livello__voce--<%= l.toLowerCase() %>"><input type="radio" name="livello" value="<%= l %>"<% if (livello === l) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><span class="scelta-livello__nome"><%= t('master.comunicazioni.livelli.' + l) %></span><span class="scelta-livello__desc"><%= t('master.comunicazioni.livelliDesc.' + l) %></span></span></label>
+          <% } %>
+        </div>
+      </fieldset>
+      <fieldset class="choice" data-destinatari>
+        <legend><%= t('master.comunicazioni.destinatari') %></legend>
+        <div class="choice__opts">
+          <label class="tick"><input type="radio" name="destinatari" value="tutte"<% if (destinatari !== 'scelte') { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('master.comunicazioni.tutte') %></span></label>
+          <label class="tick"><input type="radio" name="destinatari" value="scelte"<% if (destinatari === 'scelte') { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('master.comunicazioni.scelte') %></span></label>
+        </div>
+      </fieldset>
+      <fieldset class="choice elenco-aziende" data-elenco-aziende>
+        <legend><%= t('master.comunicazioni.aziende') %></legend>
+        <div class="choice__opts">
+          <% for (const a of aziende) { %><label class="tick"><input type="checkbox" name="aziende" value="<%= a.id %>"<% if (scelte.has(a.id)) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= a.name %></span></label>
+          <% } %>
+        </div>
+      </fieldset>
+      <div class="grid">
+        <div class="field">
+          <label class="field__label" for="com-dal"><%= t('master.comunicazioni.dal') %></label>
+          <input class="input" id="com-dal" name="inizio" type="date" required value="<%= v('inizio', oggi) %>">
+        </div>
+        <div class="field">
+          <label class="field__label" for="com-al"><%= t('master.comunicazioni.al') %></label>
+          <input class="input" id="com-al" name="fine" type="date" value="<%= v('fine', '') %>" aria-describedby="com-al-aiuto">
+          <p class="field__hint" id="com-al-aiuto"><%= t('master.comunicazioni.alAiuto') %></p>
+        </div>
+      </div>
+      <div class="field">
+        <div class="choice__opts"><label class="tick"><input type="checkbox" name="email" value="1"<% if (form.email === '1') { %> checked<% } %> aria-describedby="com-email-aiuto"><span class="tick__box" aria-hidden="true"></span><span><%= t('master.comunicazioni.email') %></span></label></div>
+        <p class="field__hint" id="com-email-aiuto"><%= t('master.comunicazioni.emailAiuto') %></p>
+      </div>
+      <div><button class="btn" type="submit"><%- include('../partials/icon', { name: 'megaphone' }) %><span><%= t('master.comunicazioni.pubblica') %></span></button></div>
+    </form>
+  </section>
+
+  <section aria-labelledby="com-elenco">
+    <h2 id="com-elenco"><%= t('master.comunicazioni.elenco') %></h2>
+    <% if (elenco.length === 0) { %><p class="muted"><%= t('master.comunicazioni.vuoto') %></p><% } %>
+    <ul class="comunicazioni-elenco">
+      <% for (const c of elenco) { %><li class="avviso avviso--<%= c.livello.toLowerCase() %><%= c.stato === 'attiva' || c.stato === 'programmata' ? '' : ' avviso--spento' %>">
+        <div class="avviso__testa">
+          <h3 class="avviso__titolo"><%= c.titolo %></h3>
+          <span class="badge"><%= t('master.comunicazioni.stato.' + c.stato) %></span>
+        </div>
+        <p class="avviso__testo"><%= c.testo %></p>
+        <p class="avviso__meta">
+          <%= c.al ? t('master.comunicazioni.finestra', { dal: c.dal, al: c.al }) : t('master.comunicazioni.finestraAperta', { dal: c.dal }) %>.
+          <%= c.destinatari.length === 0 && c.aziendaIds.length === 0 ? t('master.comunicazioni.perTutte') : c.destinatari.join(', ') %>.
+          <%= t('master.comunicazioni.livelli.' + c.livello) %>. <%= t('master.comunicazioni.chiusa', { n: c._count.chiusure }) %>.<% if (c.emailInviate !== null) { %> <%= t('master.comunicazioni.emailInviate', { n: c.emailInviate }) %>.<% } %><% if (c.autore) { %> <%= t('master.comunicazioni.di', { nome: c.autore.name }) %>.<% } %>
+        </p>
+        <% if (c.stato === 'attiva' || c.stato === 'programmata') { %><form method="post" action="/master/comunicazioni/<%= c.id %>/ferma" data-conferma="<%= t('master.comunicazioni.fermaConferma') %>">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="btn btn--ghost btn--sm" type="submit"><%- include('../partials/icon', { name: 'stop' }) %><span><%= t('master.comunicazioni.ferma') %></span></button>
+        </form><% } %>
+      </li>
+      <% } %>
+    </ul>
+  </section>
+</div>
+<%- include('../partials/bottom') %>

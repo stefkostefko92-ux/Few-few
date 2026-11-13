@@ -1,4 +1,5 @@
 import fontkit from '@pdf-lib/fontkit';
+import type { Rettangolo } from '../allegati/annotazioni.js';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROOT } from '../paths.js';
@@ -79,6 +80,26 @@ export function drawSchizzi(ctx: PdfContext, fogli: readonly Foglio[]): void {
     doc.rect(SINISTRA, y, LARGO, ALTO).stroke();
     doc.y = y + ALTO + GAP;
   });
+}
+
+/**
+ * Анотациите на снимка (C5) над нея: прозорецът на листа `finestra` (снимката в единиците 1400 × 1000)
+ * отива точно в кутията на снимката на страницата; извън нея не се рисува нищо.
+ */
+export function drawAnnotazioni(
+  ctx: PdfContext,
+  foglio: Foglio,
+  box: Rettangolo,
+  finestra: Rettangolo,
+): void {
+  const { doc } = ctx;
+  if (FIRA_PATH) doc.registerFont('Schizzo', FIRA_PATH);
+  const s = box.w / finestra.w;
+  doc.save();
+  doc.rect(box.x, box.y, box.w, box.h).clip();
+  doc.translate(box.x - finestra.x * s, box.y - finestra.y * s).scale(s);
+  for (const primitivo of primitiviFoglio(foglio)) disegna(ctx, primitivo);
+  doc.restore();
 }
 
 /**

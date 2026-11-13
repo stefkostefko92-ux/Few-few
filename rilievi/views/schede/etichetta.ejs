@@ -1,0 +1,47 @@
+<%
+  // Етикетите с QR на уредбата (routes/schede-etichetta.ts): лист A4 — 3 × 8 етикета 70 × 37 mm (или един,
+  // или три); QR-ът е SVG от сървъра (само адресът на картата). Лентата горе не се печата.
+%><!doctype html>
+<html lang="<%= locale %>" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= t('etichetta.titolo') %> — <%= ident.length > 40 ? ident.slice(0, 39) + '…' : ident %></title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/static/img/favicon-32.png?v=<%= v %>" type="image/png" sizes="32x32">
+<link rel="stylesheet" href="/static/fonts/fonts.css?v=<%= v %>">
+<link rel="stylesheet" href="/static/css/base.css?v=<%= v %>">
+<link rel="stylesheet" href="/static/css/buttons.css?v=<%= v %>">
+<link rel="stylesheet" href="/static/css/etichetta.css?v=<%= v %>">
+<script src="/static/js/app.js?v=<%= v %>" defer></script>
+</head>
+<body class="etichetta-body">
+<div class="print-bar etichetta-bar">
+  <h1 class="etichetta-bar__titolo"><%= t('etichetta.titolo') %></h1>
+  <form class="etichetta-bar__scelta" method="get" action="/schede/<%= scheda.id %>/etichetta">
+    <label for="et-n"><%= t('etichetta.quante') %></label>
+    <select class="select" id="et-n" name="n">
+      <% for (const n of scelte) { %><option value="<%= n %>"<% if (n === copie) { %> selected<% } %>><%= t('etichetta.copie.' + n) %></option>
+      <% } %>
+    </select>
+    <button class="btn btn--sm" type="submit"><%= t('etichetta.aggiorna') %></button>
+  </form>
+  <button class="btn btn--primary btn--sm" type="button" data-print><%- include('../partials/icon', { name: 'print' }) %><%= t('scheda.actions.print') %></button>
+  <a class="btn btn--sm" href="/schede/<%= scheda.id %>"><%- include('../partials/icon', { name: 'back' }) %><%= t('print.back') %></a>
+  <p class="etichetta-bar__nota"><%= t('etichetta.nota') %></p>
+</div>
+<main class="etichette etichette--<%= copie %>">
+  <% for (let i = 0; i < copie; i += 1) { %><div class="etichetta">
+    <div class="etichetta__qr" role="img" aria-label="<%= t('etichetta.qrAria') %>"><%- qr %></div>
+    <div class="etichetta__testo">
+      <p class="etichetta__azienda"><%= scheda.azienda.name %></p>
+      <% if (scheda.matricola) { %><p class="etichetta__dato"><span><%= t('etichetta.matricola') %></span> <strong><%= scheda.matricola %></strong></p><% } %>
+      <% if (scheda.numeroImpianto) { %><p class="etichetta__dato"><span><%= t('etichetta.numero') %></span> <strong><%= scheda.numeroImpianto %></strong></p><% } %>
+      <% if (scheda.indirizzo) { %><p class="etichetta__indirizzo"><%= scheda.indirizzo %></p><% } %>
+      <p class="etichetta__piede"><%= t('etichetta.piede') %></p>
+    </div>
+  </div>
+  <% } %>
+</main>
+</body>
+</html>

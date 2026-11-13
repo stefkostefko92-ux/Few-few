@@ -29,7 +29,7 @@ const SOSTITUZIONI: ReadonlyArray<{ campi: readonly string[]; testo: string }> =
   { campi: ['arganoPreventivo'], testo: "dell'argano" },
   { campi: ['centralinaDaFare'], testo: 'della centralina' },
   {
-    campi: ['operatore', 'sospensioni', 'serrature', 'pattinoRetrattile'],
+    campi: ['operatore', 'sospensioni', 'serrature', 'pattinoRetrattile', 'contattiAntine'],
     testo: 'dei meccanismi delle porte',
   },
   { campi: ['bottoniereSostituire'], testo: 'delle bottoniere' },
@@ -49,6 +49,7 @@ const INSTALLAZIONI: ReadonlyArray<{ campi: readonly string[]; testo: string }> 
       'kitControlloGanasce',
       'controlloQuadro',
       'stopArgano',
+      'bloccaPortineDaInstallare',
     ],
     testo: 'di nuovi dispositivi di sicurezza',
   },
