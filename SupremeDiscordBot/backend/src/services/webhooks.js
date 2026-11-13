@@ -184,12 +184,18 @@ export async function fireWebhooks(serverId, event, payload) {
   }
 }
 
-async function deliverWebhook(hook, bodyStr) {
-  const headers = {
-    "Content-Type": "application/json",
-    "User-Agent": "SupremeBot-Webhooks/1.0",
-    "X-SupremeBot-Event": "true",
-  };
+// А2: повторен опит с нарастваща пауза (2 s → 10 s → 60 s). Един мрежов провал
+// или 5xx на приемника вече не губи събитието. Опитите са В ПАМЕТТА на процеса —
+// рестарт ги губи (трайна опашка/outbox е отделно решение, виж одита).
+export const WEBHOOK_RETRY_DELAYS_MS = [2_000, 10_000, 60_000];
+const defaultSleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+// Преходни: мрежа/таймаут (статус 0), 408, 429, 5xx. Останалото (404, 401, 410…)
+// е траен отказ на приемника — повторението само го товари.
+const isTransient = (status) => status === 0 || status === 408 || status === 429 || status >= 500;
+
+export async function deliverWebhook(hook, bodyStr, { sleep = defaultSleep, delaysMs = WEBHOOK_RETRY_DELAYS_MS } = {}) {
+  // Един идентификатор за всички опити — приемникът може да дедуплицира.
+  const deliveryId = crypto.randomUUID();
   // Тайната за подпис вече се пази ШИФРОВАНА при покой (одит по сигурност,
   // 08.09.2026) — същото AES-256-GCM като OAuth токените. `decryptSafe` пуска
   // непроменени заварените plaintext редове (миграция при следващ запис, не
@@ -197,62 +203,86 @@ async function deliverWebhook(hook, bodyStr) {
   // доставката тръгва БЕЗ подпис вместо с боклук като ключ — клиентът вижда
   // липсващ подпис и отхвърля, което е правилният провал.
   const secret = decryptSafe(hook.secret);
+
+  let lastErr = null;
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const res = await attemptDelivery(hook, bodyStr, secret, deliveryId);
+      await prisma.webhook.update({
+        where: { id: hook.id },
+        data: { lastDeliveryAt: new Date(), lastStatus: res.status, failCount: 0 },
+      });
+      return;
+    } catch (err) {
+      lastErr = err;
+      const status = err?.response?.status || 0;
+      if (err?.permanent || !isTransient(status) || attempt >= delaysMs.length) break;
+      await sleep(delaysMs[attempt]);
+    }
+  }
+
+  // Провал СЛЕД всички опити — броячът расте веднъж на доставка.
+  const status = lastErr?.response?.status || 0;
+  await prisma.webhook.update({
+    where: { id: hook.id },
+    data: { lastDeliveryAt: new Date(), lastStatus: status, failCount: { increment: 1 } },
+  }).catch(() => {});
+
+  // Auto-disable after 10 consecutive failures
+  const refreshed = await prisma.webhook.findUnique({ where: { id: hook.id }, select: { failCount: true } }).catch(() => null);
+  if (refreshed?.failCount >= 10) {
+    await prisma.webhook.update({ where: { id: hook.id }, data: { enabled: false } }).catch(() => {});
+  }
+}
+
+async function attemptDelivery(hook, bodyStr, secret, deliveryId) {
+  const headers = {
+    "Content-Type": "application/json",
+    "User-Agent": "SupremeBot-Webhooks/1.0",
+    "X-SupremeBot-Event": "true",
+    "X-SupremeBot-Delivery": deliveryId,
+  };
   if (secret) {
+    // Старият подпис (само тялото) остава за вече интегрираните приемници.
     const sig = crypto.createHmac("sha256", secret).update(bodyStr).digest("hex");
     headers["X-SupremeBot-Signature"] = `sha256=${sig}`;
+    // А2: новият подпис покрива и времето — приемникът отхвърля стари
+    // (повторно пуснати) заявки. Подписва се `${timestamp}.${тяло}`.
+    const ts = String(Math.floor(Date.now() / 1000));
+    headers["X-SupremeBot-Timestamp"] = ts;
+    headers["X-SupremeBot-Signature-V2"] = `sha256=${crypto.createHmac("sha256", secret).update(`${ts}.${bodyStr}`).digest("hex")}`;
   }
 
-  try {
-    // Re-validate at delivery time — DNS may have been re-pointed at an
-    // internal target since the webhook was created (DNS rebinding).
-    const urlError = await validateWebhookUrl(hook.url);
-    if (urlError) throw new Error(`blocked: ${urlError}`);
-
-    const res = await axios.post(hook.url, bodyStr, {
-      headers,
-      timeout: 10000,
-      maxRedirects: 0, // redirects could bounce the request to internal targets
-      httpsAgent: ssrfSafeAgent, // re-checks the resolved IP at connect time (anti-rebinding)
-      // Отговорът е ЧУЖД и НЕ ни трябва — ползваме само статуса. Без таван
-      // враждебен (или просто счупен) приемник може да върне гигабайти и да
-      // напълни паметта ни; таймаутът не помага, докато байтовете си текат.
-      // 64 KiB стигат за всяко смислено потвърждение.
-      maxContentLength: 64 * 1024,
-      maxBodyLength: 1024 * 1024,
-      // Не парсваме чуждото тяло — суров текст, който после изхвърляме.
-      responseType: "text",
-      // Всеки HTTP статус е „доставено“ за нашата сметка; 4xx/5xx се четат
-      // по-долу. Без това axios хвърля и губим реалния статус в лога.
-      validateStatus: () => true,
-    });
-    if (res.status >= 400) {
-      const err = new Error(`webhook отговори ${res.status}`);
-      err.response = { status: res.status };
-      throw err;
-    }
-    await prisma.webhook.update({
-      where: { id: hook.id },
-      data: {
-        lastDeliveryAt: new Date(),
-        lastStatus: res.status,
-        failCount: 0,
-      },
-    });
-  } catch (err) {
-    const status = err?.response?.status || 0;
-    await prisma.webhook.update({
-      where: { id: hook.id },
-      data: {
-        lastDeliveryAt: new Date(),
-        lastStatus: status,
-        failCount: { increment: 1 },
-      },
-    }).catch(() => {});
-
-    // Auto-disable after 10 consecutive failures
-    const refreshed = await prisma.webhook.findUnique({ where: { id: hook.id }, select: { failCount: true } }).catch(() => null);
-    if (refreshed?.failCount >= 10) {
-      await prisma.webhook.update({ where: { id: hook.id }, data: { enabled: false } }).catch(() => {});
-    }
+  // Re-validate at delivery time — DNS may have been re-pointed at an
+  // internal target since the webhook was created (DNS rebinding).
+  const urlError = await validateWebhookUrl(hook.url);
+  if (urlError) {
+    const blocked = new Error(`blocked: ${urlError}`);
+    blocked.permanent = true;
+    throw blocked;
   }
+
+  const res = await axios.post(hook.url, bodyStr, {
+    headers,
+    timeout: 10000,
+    maxRedirects: 0, // redirects could bounce the request to internal targets
+    httpsAgent: ssrfSafeAgent, // re-checks the resolved IP at connect time (anti-rebinding)
+    // Отговорът е ЧУЖД и НЕ ни трябва — ползваме само статуса. Без таван
+    // враждебен (или просто счупен) приемник може да върне гигабайти и да
+    // напълни паметта ни; таймаутът не помага, докато байтовете си текат.
+    // 64 KiB стигат за всяко смислено потвърждение.
+    maxContentLength: 64 * 1024,
+    maxBodyLength: 1024 * 1024,
+    // Не парсваме чуждото тяло — суров текст, който после изхвърляме.
+    responseType: "text",
+    // Всеки HTTP статус е „доставено“ за нашата сметка; 4xx/5xx се четат
+    // по-долу. Без това axios хвърля и губим реалния статус в лога.
+    validateStatus: () => true,
+  });
+  if (res.status >= 400) {
+    const err = new Error(`webhook отговори ${res.status}`);
+    err.response = { status: res.status };
+    throw err;
+  }
+  return res;
 }

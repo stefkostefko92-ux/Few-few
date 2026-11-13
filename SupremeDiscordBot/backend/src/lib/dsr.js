@@ -28,6 +28,7 @@ import { prisma } from "./prisma.js";
 import { writeAudit } from "./auditLog.js";
 import { generateHtmlTranscript } from "../utils/archive.js";
 import { sealTranscript } from "./transcriptAtRest.js";
+import { notifyBot } from "../services/botNotifier.js";
 
 export const STAFF_ROLES = ["MAIN_OWNER", "SUPER_USER", "SUPPORT_STAFF"];
 const ERASED = "[erased]";
@@ -88,6 +89,29 @@ async function regenerateTranscriptsFor(uid) {
   return done;
 }
 
+/**
+ * И4: временната роля от магазина се сваля ПРЕДИ редът на покупката да изчезне.
+ * Иначе `expireShopPurchases` няма какво да намери и ролята остава в Discord
+ * завинаги. Best effort: недостъпен бот не блокира правото на изтриване (чл. 17),
+ * но провалът се отчита в броячите на одита.
+ */
+async function revokeTemporaryShopRoles(uid) {
+  const out = { roleRevoked: 0, roleRevokeFailed: 0 };
+  let purchases = [];
+  try {
+    purchases = await prisma.shopPurchase.findMany({
+      where: { userId: uid, itemType: "ROLE", revokedAt: null, expiresAt: { not: null }, roleId: { not: null } },
+      select: { id: true, serverId: true, userId: true, roleId: true },
+      take: 500,
+    }) ?? [];
+  } catch { return out; }
+  for (const p of purchases) {
+    const r = await notifyBot("GAME_ROLE_REVOKE", { serverId: p.serverId, userId: p.userId, roleId: p.roleId, purchaseId: p.id }).catch(() => null);
+    if (r?.ok) out.roleRevoked++; else out.roleRevokeFailed++;
+  }
+  return out;
+}
+
 /** Активни платени абонаменти на този човек — блокират изтриването (както в routes/gdpr.js). */
 export async function activeSubscriptionsFor(userId) {
   const uid = String(userId);
@@ -125,6 +149,8 @@ export async function eraseDiscordUser(userId, { scope = "identity", via = "admi
 
   const counts = {};
   const tag = label(uid);
+  // И4 — преди транзакцията (мрежа) и преди изтриването на покупките.
+  Object.assign(counts, await revokeTemporaryShopRoles(uid));
   await prisma.$transaction(async (tx) => {
     const c = (name, p) => Promise.resolve().then(p).then((r) => { counts[name] = typeof r === "number" ? r : (r?.count ?? 1); }).catch(() => { counts[name] = 0; });
 
@@ -140,6 +166,17 @@ export async function eraseDiscordUser(userId, { scope = "identity", via = "admi
     await c("roleSnapshots", () => tx.memberRoleSnapshot.deleteMany({ where: { userId: uid } }));
     await c("verificationAttempts", () => tx.verificationAttempt.deleteMany({ where: { userId: uid } }));
     await c("memberships", () => tx.serverMember.deleteMany({ where: { userId: uid } }));
+    // А7 — анкети, раздавания, формуляри: гласове, участия, cooldown.
+    await c("pollVotes", () => tx.pollVote.deleteMany({ where: { userId: uid } }));
+    await c("giveawayEntries", () => tx.giveawayEntry.deleteMany({ where: { userId: uid } }));
+    await c("formCooldowns", () => tx.formCooldown.deleteMany({ where: { userId: uid } }));
+    await c("giveawayWinners", async () => {
+      const won = await tx.giveaway.findMany({ where: { winnerIds: { has: uid } }, select: { id: true, winnerIds: true } });
+      for (const g of won ?? []) {
+        await tx.giveaway.update({ where: { id: g.id }, data: { winnerIds: g.winnerIds.filter((w) => w !== uid) } });
+      }
+      return (won ?? []).length;
+    });
     // v50 — Server Season: общите стъпки (lib/game/privacy.js) — същите и за
     // изтриването от таблото (routes/gdpr.js).
     for (const [name, step] of gameEraseSteps(tx, uid)) await c(name, step);

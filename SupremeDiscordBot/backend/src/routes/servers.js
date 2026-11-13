@@ -10,6 +10,7 @@ import { isSupportedLanguage } from "../lib/languages.js";
 import { getServerTier } from "../lib/premium.js";
 import { guildIconUrl } from "../lib/discordCdn.js";
 import { fetchMemberNames } from "../lib/memberNames.js";
+import { memberJoinSettingsSchema } from "../lib/serverSettingsSchema.js";
 
 // Категориите на Server Activity Logging — един източник за валидация.
 const EVENT_LOG_CATEGORIES = ["voice", "members", "moderation", "messages", "server"];
@@ -213,6 +214,13 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
     language,
   } = req.body;
 
+  // З8: роли за автоматично даване и текстове за посрещане — валидират се ПРЕДИ
+  // всякаква работа с базата.
+  const joinSettings = memberJoinSettingsSchema.safeParse({
+    autoroleIds, autoroleBotIds, welcomerMessage, welcomerDmMessage, welcomerEmbedColor,
+  });
+  if (!joinSettings.success) return res.status(400).json({ error: joinSettings.error.flatten() });
+
   try {
     const server = await prisma.server.findUnique({ where: { id: req.params.serverId } });
     if (!server) return res.status(404).json({ error: "Server not found" });
@@ -289,6 +297,13 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
         ...(language !== undefined && isSupportedLanguage(language) && { language }),
       },
     });
+
+    // З10: изключеното „запазване на роли“ трие снимките на сървъра. Иначе
+    // стари снимки оставаха до 180 дни и се връщаха при повторно включване —
+    // данни без цел (GDPR чл. 5(1)(в)). Идемпотентно, скоупът е от пътя.
+    if (stickyRolesEnabled !== undefined && !Boolean(stickyRolesEnabled)) {
+      await prisma.memberRoleSnapshot.deleteMany({ where: { serverId: req.params.serverId } });
+    }
 
     // If custom bot token was updated, tell the bot to restart the white-label client
     if (customBotToken !== undefined) {

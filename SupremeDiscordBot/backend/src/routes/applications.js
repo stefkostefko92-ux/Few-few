@@ -11,6 +11,7 @@ import { getServerTier, sanitizeFormForTier } from "../lib/premium.js";
 // маршрутът е резервен, но счупен резерв е по-лош от никакъв. Един източник.
 import { submitApplication } from "../services/applicationSubmit.js";
 import { ensureUserStub } from "../lib/ensureUser.js";
+import { claimApplicationReview, closeApplicationDiscussion, openApplicationDiscussion, requireApplicationReviewer } from "../lib/applicationReview.js";
 
 const router = Router();
 
@@ -144,7 +145,7 @@ router.get("/:serverId/:appId", requireAuth, loadUser, requireServerAdmin, async
 // ─── POST /api/applications/:serverId/:appId/review ───────────────────────────
 // Approve or deny an application
 
-router.post("/:serverId/:appId/review", requireAuth, loadUser, requireServerAdmin, async (req, res, next) => {
+router.post("/:serverId/:appId/review", requireAuth, loadUser, requireApplicationReviewer, async (req, res, next) => {
   const { action, note } = req.body; // action: approve | deny
 
   if (!["approve", "deny"].includes(action)) {
@@ -161,20 +162,16 @@ router.post("/:serverId/:appId/review", requireAuth, loadUser, requireServerAdmi
     });
 
     if (!application) return res.status(404).json({ error: "Application not found" });
-    if (application.status !== "PENDING") {
-      return res.status(400).json({ error: "Application already reviewed" });
-    }
-
     const statusMap = { approve: "APPROVED", deny: "DENIED" };
 
-    const updated = await prisma.application.update({
-      where: { id: application.id },
-      data: {
-        status: statusMap[action],
-        reviewerId: req.user.id,
-        reviewNote: note,
-      },
+    // Т6: условен запис по PENDING — вторият ревюър получава 409, роли и ЛС се дават веднъж.
+    const won = application.status === "PENDING" && await claimApplicationReview({
+      id: application.id, serverId: application.serverId, status: statusMap[action], reviewerId: req.user.id, note,
     });
+    if (!won) return res.status(409).json({ error: "Application already reviewed", code: "ALREADY_REVIEWED" });
+    const updated = { ...application, status: statusMap[action], reviewerId: req.user.id, reviewNote: note ?? null };
+    delete updated.form; delete updated.user;
+    closeApplicationDiscussion({ applicationId: application.id, serverId: application.serverId, outcome: action }).catch(() => {});
     // v50 — XP за одобрена кандидатура (веднъж на кандидатура).
     if (action === "approve") grantXpOnce(application.serverId, application.userId, `app:${application.id}`, XP_REWARDS.APPLICATION_APPROVED).catch(() => {});
 
@@ -195,7 +192,9 @@ router.post("/:serverId/:appId/review", requireAuth, loadUser, requireServerAdmi
       // Build DM message: custom template if set, otherwise default with reason
       let dmMessage;
       if (customMessage) {
-        dmMessage = interpolate(customMessage, { user: application.user, server: req.params.serverId, note });
+        // Т18: `{server}` е ИМЕТО на сървъра, не snowflake.
+        const serverRow = await prisma.server.findUnique({ where: { id: req.params.serverId }, select: { name: true } });
+        dmMessage = interpolate(customMessage, { user: application.user, server: serverRow?.name || "", note });
       } else {
         const statusEmoji = action === "approve" ? "✅" : "❌";
         const statusWord  = action === "approve" ? "approved" : "denied";
@@ -278,11 +277,13 @@ router.post("/:serverId/:appId/review", requireAuth, loadUser, requireServerAdmi
 // Supports: {user}, {username}, {server}, {note}
 function interpolate(template, { user, server, note }) {
   if (!template) return null;
-  return template
-    .replaceAll("{user}",     user?.username ? `<@${user.id}>` : "")
-    .replaceAll("{username}", user?.username || "")
-    .replaceAll("{server}",   server || "")
-    .replaceAll("{note}",     note || "");
+  const vars = {
+    user: user?.username ? `<@${user.id}>` : "",
+    username: user?.username || "",
+    server: server || "",
+    note: note || "",
+  };
+  return template.replace(/\{(user|username|server|note)\}/g, (_, k) => vars[k]);
 }
 
 // ─── DELETE /api/applications/:serverId/:appId ────────────────────────────────
@@ -384,75 +385,23 @@ router.post("/:serverId/:appId/discuss", requireAuth, loadUser, requireServerAdm
     });
     if (!app) return res.status(404).json({ error: "Application not found" });
 
-    // Идемпотентност: Ticket.applicationId е @unique → само ЕДИН тикет на
-    // кандидатура. Търсим БЕЗ статус филтър — затворен тикет иначе не се хваща,
-    // ботът прави канал, а create гърми с P2002 (осиротял канал). Активен →
-    // връщаме канала; затворен → 409 (не пресъздаваме). (Кодаджията)
-    const existingTicket = await prisma.ticket.findUnique({
-      where: { applicationId: app.id },
-    });
-    if (existingTicket) {
-      if (["CLOSED", "ARCHIVED"].includes(existingTicket.status)) {
-        return res.status(409).json({
-          error: "A discussion was already opened for this application (the channel was closed).",
-          code: "DISCUSSION_ALREADY_CLOSED",
-        });
-      }
-      return res.json({
-        ok: true,
-        alreadyExists: true,
-        channelId: existingTicket.channelId,
-        ticketId: existingTicket.id,
-      });
-    }
-
     const transcript = buildTranscript(app.form.questions, app.answers);
-
-    // Let bot create the channel
-    const botResult = await notifyBot("APPLICATION_DISCUSS", {
-      serverId: req.params.serverId,
-      applicantId: app.userId,
-      applicantTag: app.user?.username || "applicant",
-      reviewerId: req.user.id,
-      reviewerTag: req.user.username,
-      applicationId: app.id,
-      formName: app.form.name,
-      managerRoleIds: app.form.managerRoleIds || [],
-      discussCategoryId: app.form.discussCategoryId || null, // v34 — фиксирана категория
-      transcript,
+    // Т6: най-много един канал — мястото се заема ПРЕДИ ботът да го създаде.
+    const r = await openApplicationDiscussion({
+      app, serverId: req.params.serverId, reviewerId: req.user.id, reviewerTag: req.user.username, transcript,
     });
-
-    if (!botResult?.ok || !botResult?.channelId) {
-      return res.status(502).json({
-        error: botResult?.error || "Bot failed to create discussion channel",
-      });
+    if (r.status === 200 && r.body.ticketId && !r.body.alreadyExists) {
+      await prisma.auditLog.create({
+        data: {
+          actorId: req.user.id,
+          serverId: req.params.serverId,
+          action: "APPLICATION_DISCUSSION_STARTED",
+          targetId: app.id,
+          metadata: { channelId: r.body.channelId, ticketId: r.body.ticketId },
+        },
+      }).catch(() => {});
     }
-
-    // Create a ticket record linking to the application.
-    // `creatorId` сочи към `users` с външен ключ (RESTRICT) — кандидатът може
-    // никога да не е влизал в таблото.
-    await ensureUserStub(prisma, app.userId);
-    const ticket = await prisma.ticket.create({
-      data: {
-        serverId: req.params.serverId,
-        creatorId: app.userId,
-        applicationId: app.id,
-        channelId: botResult.channelId,
-        status: "OPEN",
-      },
-    });
-
-    await prisma.auditLog.create({
-      data: {
-        actorId: req.user.id,
-        serverId: req.params.serverId,
-        action: "APPLICATION_DISCUSSION_STARTED",
-        targetId: app.id,
-        metadata: { channelId: botResult.channelId, ticketId: ticket.id },
-      },
-    }).catch(() => {});
-
-    res.json({ ok: true, channelId: botResult.channelId, ticketId: ticket.id });
+    res.status(r.status).json(r.body);
   } catch (err) { next(err); }
 });
 

@@ -7,9 +7,13 @@ import cron from "node-cron";
 import { runRetentionJob } from "../jobs/dataRetention.js";
 import { runDunningJob } from "../jobs/dunning.js";
 import { prisma } from "../lib/prisma.js";
-import { pickRandom } from "../lib/shuffle.js";
 import { pushPollUpdate } from "../lib/pollUpdate.js";
 import { effectivePremiumWhere, effectiveFreeWhere, inExportWindow } from "../lib/premium.js";
+import { drawWinners } from "../lib/giveawayDraw.js";
+import { firePollClosed, fireGiveawayEnded } from "../lib/webhookEvents.js";
+import { nextOccurrence } from "../lib/recurrence.js";
+import { planDueMessages } from "../lib/scheduledPlan.js";
+import { eachPage } from "../lib/paginate.js";
 
 // ─── Обвивка на планираните задачи ───────────────────────────────────────────
 // node-cron НЕ чака предното изпълнение: три от задачите тук вървят всяка минута
@@ -118,7 +122,9 @@ cron.schedule("0 3 * * *", job("archive-cleanup", async () => {
     // Get all servers that have a defined retention period
     const servers = await prisma.server.findMany({
       where: { archiveRetentionDays: { not: null } },
-      select: { id: true, archiveRetentionDays: true, accessUntil: true, trialEndsAt: true },
+      // `paidAccessEndedAt` (v55) е котвата за абонати през Discord: без нея
+      // `inExportWindow` връща false и метлата минава преди 30-те дни за експорт.
+      select: { id: true, archiveRetentionDays: true, accessUntil: true, trialEndsAt: true, paidAccessEndedAt: true },
     });
 
     // Прозорецът за експорт е ПРЕДИ метлата.
@@ -227,7 +233,7 @@ cron.schedule("*/30 * * * *", job("inactivity-autoclose", async () => {
 
     if (!panels.length) return;
 
-    const { notifyBot } = await import("./botNotifier.js");
+    const { notifyBotVerbose } = await import("./botNotifier.js");
 
     for (const panel of panels) {
       const cutoff = new Date(Date.now() - panel.inactivityCloseHours * 60 * 60 * 1000);
@@ -241,45 +247,33 @@ cron.schedule("*/30 * * * *", job("inactivity-autoclose", async () => {
         select: { id: true, channelId: true, serverId: true, number: true, creatorId: true },
       });
 
+      let closedNow = 0;
       for (const t of inactiveTickets) {
         try {
-          // Mark closed
-          await prisma.ticket.update({
-            where: { id: t.id },
-            data: {
-              status: "CLOSED",
-              closedAt: new Date(),
-              closeReason: `Auto-closed due to ${panel.inactivityCloseHours}h of inactivity`,
-            },
-          });
-          await prisma.auditLog.create({
-            data: {
-              actorId: null,
-              actorTag: "SYSTEM",
-              serverId: t.serverId,
-              action: "TICKET_AUTO_CLOSED",
-              targetId: t.id,
-              metadata: { reason: "inactivity", hours: panel.inactivityCloseHours },
-            },
-          });
-
-          // Tell the bot to post a notice in the channel
-          await notifyBot("TICKET_AUTO_CLOSED", {
+          // Т2: затварянето е на БОТА (същата функция като бутона: категория
+          // „затворени“/заключена нишка, Reopen/Delete, транскрипт, ЛС, оценка,
+          // лог) върху условен запис в базата (`lastActivityAt < cutoff`).
+          // Ботът недостъпен → в базата нищо не се е променило и следващият ход
+          // (30 мин) опитва пак — преди: известието се губеше без повторен опит.
+          const r = await notifyBotVerbose("TICKET_AUTO_CLOSE", {
             ticketId: t.id,
-            channelId: t.channelId,
             serverId: t.serverId,
+            channelId: t.channelId,
             hours: panel.inactivityCloseHours,
-            logChannelId: panel.logChannelId,
-            number: t.number,
-            padding: panel.counterPadding,
-          }).catch(() => {});
+            inactiveBeforeMs: cutoff.getTime(),
+          });
+          if (r?.botError) {
+            console.warn(`[inactivity] bot unavailable for ticket ${t.id}, retry next run: ${r.botError}`);
+            continue;
+          }
+          if (r?.closed) closedNow++;
         } catch (err) {
           console.error(`[inactivity] failed on ticket ${t.id}:`, err.message);
         }
       }
 
-      if (inactiveTickets.length > 0) {
-        console.log(`[Scheduler] Auto-closed ${inactiveTickets.length} inactive tickets for panel ${panel.id}`);
+      if (closedNow > 0) {
+        console.log(`[Scheduler] Auto-closed ${closedNow} inactive tickets for panel ${panel.id}`);
       }
     }
   } catch (err) {
@@ -297,11 +291,15 @@ cron.schedule("* * * * *", job("giveaway-autoend", async () => {
     if (!due.length) return;
     const { notifyBot } = await import("./botNotifier.js");
     for (const g of due) {
-      const winners = pickRandom(g.entries, g.winnerCount).map(e => e.userId);
+      // Същото теглене като ръчното приключване (lib/giveawayDraw.js): печелят само
+      // хора, които още са в сървъра (А4).
+      const winners = await drawWinners(g, g.entries);
       // Условен запис: ако ръчен /giveaway end вече го е приключил, не обявяваме втори път.
       const won = await prisma.giveaway.updateMany({ where: { id: g.id, endedAt: null }, data: { endedAt: new Date(), winnerIds: winners } });
       if (won.count === 0) continue;
       await notifyBot("GIVEAWAY_ENDED", { serverId: g.serverId, giveawayId: g.id, channelId: g.channelId, messageId: g.messageId, prize: g.prize, winners }).catch(()=>{});
+      // Webhook-ът тръгва от ВСИЧКИ пътища на приключване (А2) — и от автоматичния.
+      fireGiveawayEnded(g, winners, g.entries.length).catch(() => {});
     }
   } catch (err) { await jobFail("giveaway-autoend", err); }
 }), TZ);
@@ -313,12 +311,16 @@ cron.schedule("* * * * *", job("poll-autoclose", async () => {
   try {
     const due = await prisma.poll.findMany({
       where: { closedAt: null, closesAt: { lte: new Date() } },
-      select: { id: true },
+      select: { id: true, serverId: true },
     });
     if (!due.length) return;
     for (const p of due) {
-      await prisma.poll.update({ where: { id: p.id }, data: { closedAt: new Date() } });
+      // Условен запис: анкета, затворена ръчно в същата минута, не се затваря
+      // и не се обявява втори път.
+      const closed = await prisma.poll.updateMany({ where: { id: p.id, closedAt: null }, data: { closedAt: new Date() } });
+      if (closed.count === 0) continue;
       await pushPollUpdate(p.id);
+      firePollClosed(p.id, p.serverId).catch(() => {});
     }
   } catch (err) { await jobFail("poll-autoclose", err); }
 }), TZ);
@@ -326,8 +328,11 @@ cron.schedule("* * * * *", job("poll-autoclose", async () => {
 // ─── Job 6: Scheduled messages (v1.8) ────────────────────
 cron.schedule("* * * * *", job("scheduled-messages", async () => {
   try {
+    // Най-старите първи и с таван: една минута не носи неограничен товар.
     const dueRaw = await prisma.scheduledMessage.findMany({
       where: { sentAt: null, sendAt: { lte: new Date() } },
+      orderBy: { sendAt: "asc" },
+      take: 500,
     });
     if (!dueRaw.length) return;
 
@@ -343,7 +348,25 @@ cron.schedule("* * * * *", job("scheduled-messages", async () => {
         select: { id: true },
       })).map((s) => s.id),
     );
-    const due = dueRaw.filter((m) => premiumIds.has(m.serverId));
+    // Какво става с всяко: изпращане, отпадане или преместване напред (А9, lib/scheduledPlan.js).
+    const plan = planDueMessages(dueRaw, premiumIds, new Date());
+    for (const m of plan.expire) {
+      // Еднократно съобщение, просрочено над 24 часа, не се изпраща със закъснение —
+      // нито на Free сървър, нито когато Premium се върне след месеци.
+      await prisma.scheduledMessage.update({ where: { id: m.id }, data: { sentAt: new Date() } });
+      await prisma.auditLog.create({
+        data: {
+          actorId: null, actorTag: "SYSTEM_SCHEDULER", serverId: m.serverId,
+          action: "SCHEDULED_MESSAGE_EXPIRED", targetId: m.id,
+          metadata: { channelId: m.channelId, sendAt: m.sendAt, premium: premiumIds.has(m.serverId) },
+        },
+      }).catch(() => {});
+    }
+    for (const a of plan.advance) {
+      // Повтарящо се съобщение на сървър без Premium: напред без изпращане.
+      await prisma.scheduledMessage.update({ where: { id: a.id }, data: { sendAt: a.sendAt } });
+    }
+    const due = plan.send;
     if (!due.length) return;
     const { notifyBot } = await import("./botNotifier.js");
     for (const m of due) {
@@ -374,19 +397,12 @@ cron.schedule("* * * * *", job("scheduled-messages", async () => {
 
       const update = { sentAt: new Date() };
       if (m.recurrence) {
-        const now = new Date();
-        const next = new Date(m.sendAt);
-        if (m.recurrence === "daily") next.setDate(next.getDate() + 1);
-        else if (m.recurrence === "weekly") next.setDate(next.getDate() + 7);
-        else if (m.recurrence === "monthly") next.setMonth(next.getMonth() + 1);
-        while (next <= now) {
-          if (m.recurrence === "daily") next.setDate(next.getDate() + 1);
-          else if (m.recurrence === "weekly") next.setDate(next.getDate() + 7);
-          else next.setMonth(next.getMonth() + 1);
-        }
-        // For recurring: reset sentAt=null + push sendAt forward
+        // Следващото изпращане: същият МЕСТЕН час в зоната на съобщението, а
+        // месечното остава на своя ден (31-во → последния ден на месеца) — А5,
+        // lib/recurrence.js. Преди: `setMonth(+1)` местеше 31.01 на 03.03 завинаги,
+        // а часът в UTC бягаше с час при смяната на времето.
         update.sentAt = null;
-        update.sendAt = next;
+        update.sendAt = nextOccurrence(m.sendAt, m.recurrence, new Date(), { timeZone: m.timeZone, anchorDay: m.anchorDay });
       }
       await prisma.scheduledMessage.update({ where: { id: m.id }, data: update });
     }
@@ -480,12 +496,15 @@ function slaDashboardUrl(serverId, ticketId) {
 async function notifySlaBreach({ ticket, panel, type, minutesLate }) {
   const { dmUser } = await import("./botNotifier.js");
   const targetUserId = ticket.assigneeId || ticket.server?.ownerId;
-  if (!targetUserId) return;
+  if (!targetUserId) return "none"; // няма кому — не е „за повторен опит“
 
   const label = type === "first_response" ? "First-response" : "Resolution";
   const ticketLabel = ticket.number != null ? `#${ticket.number}` : ticket.id;
 
-  await dmUser(targetUserId, {
+  // Т14: резултатът решава дали маркерът се записва. `null` = ботът е недостъпен
+  // (временно) → повторен опит на следващия ход; `{ok:false}` = трайна пречка
+  // (затворени ЛС) → повече опити нямат смисъл; иначе е доставено.
+  const delivery = await dmUser(targetUserId, {
     title: `⚠️ SLA breached — ${label}`,
     description:
       `Ticket **${ticketLabel}** in **${panel?.name || "unknown panel"}** missed its ` +
@@ -494,6 +513,8 @@ async function notifySlaBreach({ ticket, panel, type, minutesLate }) {
     color: SLA_BREACH_COLOR,
     timestamp: new Date().toISOString(),
   }).catch(() => null);
+  if (delivery == null) return "retry";
+  return delivery.ok === false ? "permanent" : "sent";
 }
 
 cron.schedule("*/10 * * * *", job("sla-watch", async () => {
@@ -535,8 +556,13 @@ cron.schedule("*/10 * * * *", job("sla-watch", async () => {
 
         for (const t of overdue) {
           try {
-            await prisma.ticket.update({ where: { id: t.id }, data: { slaBreachedAt: now } });
             const minutesLate = Math.round((now.getTime() - t.createdAt.getTime()) / 60000) - panel.slaFirstResponseMinutes;
+            const server = await prisma.server.findUnique({ where: { id: t.serverId }, select: { ownerId: true } });
+            // Т14: маркерът се записва СЛЕД известието. Преди: маркер → ЛС; затворени
+            // ЛС/паднал бот значеше загубена аларма без повторен опит.
+            const delivery = await notifySlaBreach({ ticket: { ...t, server }, panel, type: "first_response", minutesLate });
+            if (delivery === "retry") continue;
+            await prisma.ticket.update({ where: { id: t.id }, data: { slaBreachedAt: now } });
             await prisma.auditLog.create({
               data: {
                 actorId: null,
@@ -547,8 +573,6 @@ cron.schedule("*/10 * * * *", job("sla-watch", async () => {
                 metadata: { type: "first_response", panelId: panel.id, minutesLate },
               },
             });
-            const server = await prisma.server.findUnique({ where: { id: t.serverId }, select: { ownerId: true } });
-            await notifySlaBreach({ ticket: { ...t, server }, panel, type: "first_response", minutesLate });
             breached++;
           } catch (err) {
             console.error(`[sla] first-response breach failed for ticket ${t.id}:`, err.message);
@@ -574,8 +598,11 @@ cron.schedule("*/10 * * * *", job("sla-watch", async () => {
 
         for (const t of overdue) {
           try {
-            await prisma.ticket.update({ where: { id: t.id }, data: { slaResolutionBreachedAt: now } });
             const minutesLate = Math.round((now.getTime() - t.createdAt.getTime()) / 60000) - panel.slaResolutionMinutes;
+            const server = await prisma.server.findUnique({ where: { id: t.serverId }, select: { ownerId: true } });
+            const delivery = await notifySlaBreach({ ticket: { ...t, server }, panel, type: "resolution", minutesLate });
+            if (delivery === "retry") continue; // ботът е недостъпен → следващия ход (10 мин)
+            await prisma.ticket.update({ where: { id: t.id }, data: { slaResolutionBreachedAt: now } });
             await prisma.auditLog.create({
               data: {
                 actorId: null,
@@ -586,8 +613,6 @@ cron.schedule("*/10 * * * *", job("sla-watch", async () => {
                 metadata: { type: "resolution", panelId: panel.id, minutesLate },
               },
             });
-            const server = await prisma.server.findUnique({ where: { id: t.serverId }, select: { ownerId: true } });
-            await notifySlaBreach({ ticket: { ...t, server }, panel, type: "resolution", minutesLate });
             breached++;
           } catch (err) {
             console.error(`[sla] resolution breach failed for ticket ${t.id}:`, err.message);
@@ -645,12 +670,13 @@ cron.schedule("*/15 * * * *", job("game-shop-expiry", async () => {
 cron.schedule("7 * * * *", job("game-quests", async () => {
   const { expireQuests, ensureWeeklyQuest } = await import("../lib/game/questOps.js");
   const ended = await expireQuests();
-  const servers = await prisma.gameSettings.findMany({ where: { enabled: true, questEnabled: true }, select: { serverId: true }, take: 500 });
+  // С курсор през ВСИЧКИ сървъри (И2): `take: 500` без подредба връщаше едни и същи
+  // 500 реда и сървърите след тях никога не получаваха седмичен куест.
   let started = 0;
-  for (const s of servers) {
-    const r = await ensureWeeklyQuest(s.serverId).catch(() => null);
+  await eachPage(prisma.gameSettings, { where: { enabled: true, questEnabled: true }, select: { serverId: true } }, async (s) => {
+    const r = await ensureWeeklyQuest(s.serverId);
     if (r?.created) started++;
-  }
+  }, { key: "serverId", onError: (err, s) => console.warn(`[game-quests] сървър ${s.serverId}: ${err?.message}`) });
   if (started || ended.failed || ended.completed) await jobHeartbeat("game-quests", { started, ...ended });
 }), TZ);
 

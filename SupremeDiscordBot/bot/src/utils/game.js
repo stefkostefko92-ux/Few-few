@@ -344,6 +344,16 @@ export async function revokeShopRole(client, { serverId, userId, roleId }) {
     .catch((err) => PERMANENT_ROLE_ERRORS.has(err?.code));
 }
 
+/**
+ * И1: може ли ботът да даде ролята ПРЕДИ покупката? null = да; иначе причината
+ * ("missing" | "managed" | "dangerous" | "above_bot"). Една дефиниция с grantShopRole.
+ */
+export async function shopRoleBlocker(guild, roleId) {
+  const role = guild.roles.cache.get(roleId) || await guild.roles.fetch(roleId).catch(() => null);
+  if (!role) return "missing";
+  return roleAssignabilityReason(role, guild.members.me);
+}
+
 /** Дава купена роля; връща причината, ако не може. */
 export async function grantShopRole(guild, member, roleId) {
   const role = guild.roles.cache.get(roleId) || await guild.roles.fetch(roleId).catch(() => null);

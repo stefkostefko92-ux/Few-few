@@ -191,6 +191,14 @@ router.post("/game/shop/:serverId/buy", async (req, res, next) => {
         const sold = await tx.shopPurchase.count({ where: { itemId: item.id } });
         if (sold >= item.stock) return { error: "Sold out", code: "SOLD_OUT", status: 409 };
       }
+      // И1: постоянна роля, която човекът вече притежава по покупка → без плащане.
+      if (item.type === "ROLE" && item.roleId) {
+        const owned = await tx.shopPurchase.findFirst({
+          where: { serverId, userId, roleId: item.roleId, revokedAt: null, expiresAt: null },
+          select: { id: true },
+        });
+        if (owned) return { error: "You already own this role", code: "ALREADY_OWNED", status: 409 };
+      }
       const row = await ensureProgress(tx, serverId, userId);
       if (row.sparks < item.priceSparks) {
         return { error: "Not enough sparks", code: "NOT_ENOUGH_SPARKS", status: 402, sparks: row.sparks, price: item.priceSparks };
@@ -214,6 +222,40 @@ router.post("/game/shop/:serverId/buy", async (req, res, next) => {
     });
     if (out.error) return res.status(out.status).json(out);
     res.json(out);
+  } catch (err) { next(err); }
+});
+
+// ─── Връщане на искри при неполучена роля (И1) ───────────────────────────────
+// Ботът го вика, когато ролята не е могла да се даде СЛЕД покупката. ИДЕМПОТЕНТНО:
+// условният `revokedAt: null → now` е „ключалката“ — само първото извикване
+// печели (count 1) и в СЪЩАТА транзакция връща искрите; всяко следващо е
+// `already: true`, без второ връщане. Скоупнато по serverId И userId: покупка на
+// друг човек или сървър не се връща.
+router.post("/game/shop/:serverId/purchase/:id/refund", async (req, res, next) => {
+  const { userId } = req.body || {};
+  const { serverId, id } = req.params;
+  if (!SNOWFLAKE.test(String(userId)) || !SNOWFLAKE.test(String(serverId))) return res.status(400).json({ error: "userId required" });
+  try {
+    const out = await prisma.$transaction(async (tx) => {
+      const purchase = await tx.shopPurchase.findFirst({ where: { id, serverId, userId } });
+      if (!purchase) return { status: 404, body: { error: "Purchase not found", code: "PURCHASE_NOT_FOUND" } };
+      const claimed = await tx.shopPurchase.updateMany({
+        where: { id, serverId, userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+      if (claimed.count !== 1) return { status: 200, body: { ok: true, already: true, refunded: 0 } };
+      const back = await tx.memberProgress.updateMany({
+        where: { serverId, userId },
+        data: { sparks: { increment: purchase.priceSparks } },
+      });
+      // Няма ред за връщане → откат (хвърляме), покупката остава невъзвърната.
+      if (back.count !== 1) throw Object.assign(new Error("no progress row"), { code: "NO_PROGRESS" });
+      return { status: 200, body: { ok: true, already: false, refunded: purchase.priceSparks } };
+    }).catch((err) => {
+      if (err?.code === "NO_PROGRESS") return { status: 409, body: { error: "Nothing to refund to", code: "NO_PROGRESS" } };
+      throw err;
+    });
+    res.status(out.status).json(out.body);
   } catch (err) { next(err); }
 });
 

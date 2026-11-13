@@ -208,12 +208,29 @@ export function sanitizePanelForTier(panel, plan) {
  */
 export const EXPORT_GRACE_DAYS = 30;
 
-/** Още ли е в прозореца за експорт този сървър? Котва: край на платения период. */
-export function inExportWindow(server, now = Date.now()) {
-  const anchor = [server?.accessUntil, server?.trialEndsAt]
+/**
+ * Котвата на прозореца: най-късният от края на платения период (Stripe),
+ * края на пробата и `paidAccessEndedAt` (край на Discord абонамент, А1).
+ * `paidAccessEndedAt` НЕ е `accessUntil`: то не вдига плана, само държи прозореца.
+ */
+function exportAnchor(server) {
+  return [server?.accessUntil, server?.trialEndsAt, server?.paidAccessEndedAt]
     .filter(Boolean)
     .sort((a, b) => b - a)[0];
+}
+
+/** Още ли е в прозореца за експорт този сървър? Котва: край на платения период. */
+export function inExportWindow(server, now = Date.now()) {
+  const anchor = exportAnchor(server);
   return !!anchor && anchor.getTime() + EXPORT_GRACE_DAYS * 86400_000 > now;
+}
+
+/** ISO краят на прозореца (за таблото: `exportUntil`) или null, ако няма/е изтекъл. */
+export function exportWindowUntil(server, now = Date.now()) {
+  const anchor = exportAnchor(server);
+  if (!anchor) return null;
+  const until = anchor.getTime() + EXPORT_GRACE_DAYS * 86400_000;
+  return until > now ? new Date(until).toISOString() : null;
 }
 
 // ─── Форми ────────────────────────────────────────────────────────────────────

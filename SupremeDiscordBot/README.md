@@ -192,12 +192,16 @@ Enable:
   ✓ Message Content Intent
 ```
 
-Bot invite URL (replace `CLIENT_ID`). `permissions=361045814416` is the
-least-privilege bitmask the bot actually needs (see `bot/src/utils/permissionCheck.js`
-`INVITE_PERMISSIONS_INT`) — **never** invite with `permissions=8` (Administrator):
+Bot invite URL (replace `CLIENT_ID`). `permissions=2252160859499664` is the
+least-privilege bitmask for everything except the bait channel (13 permissions, see
+`bot/src/utils/permissionCheck.js` `INVITE_PERMISSIONS_INT`) — **never** invite with
+`permissions=8` (Administrator):
 ```
-https://discord.com/oauth2/authorize?client_id=CLIENT_ID&scope=bot+applications.commands&permissions=361045814416
+https://discord.com/oauth2/authorize?client_id=CLIENT_ID&scope=bot+applications.commands&permissions=2252160859499664
 ```
+The bait channel (`/bait`) additionally needs **Ban Members** (kick or ban) or **Timeout
+Members** (timeout). They are deliberately not in the invite: grant them to the bot's role by
+hand, only on a server that turns the bait on.
 
 ### 3. Discord Premium Apps (the only way to buy)
 Follow `docs/DISCORD_MONETIZATION.md`: verified Team-owned app, two monthly guild SKUs,
