@@ -135,7 +135,13 @@ The deploy script will:
 | `VITE_COMPANY_NAME` | ✅ | Shown in legal pages |
 | `VITE_COMPANY_COUNTRY` | ✅ | Shown in legal pages |
 | `VITE_CONTACT_EMAIL` | ✅ | Legal contact |
-| `VITE_SUPPORT_URL` | ✅ | Discord invite link |
+
+The support server link is **not** an environment variable. Every "Support" link — the
+bot's buttons, the dashboard and the site — points to `/support`, which the backend
+redirects to the invite the Main Owner sets in the admin console (**Admin → System →
+Support server invite**). Saving asks Discord whether the invite exists and never
+expires; until one is saved, `/support` opens the guides at `/docs`. Leave the bot's
+`SUPPORT_URL` unset so it keeps following that address.
 
 ---
 

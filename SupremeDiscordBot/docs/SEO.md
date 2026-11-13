@@ -48,7 +48,7 @@ claiming otherwise is selling snake oil.
 3. **Backlinks** (the strongest ranking factor — nothing in code substitutes for this):
    - Link from `carbonstealth.eu` to `supremebot.carbonstealth.eu` with descriptive anchor text ("Discord ticket bot", not "click here").
    - List the bot on **top.gg**, **discordbotlist.com**, **discords.com** — these are high-authority directories that rank for "discord bot" queries and pass referral traffic.
-   - The Discord server invite (`discord.gg/wpCRpy8B`) should mention the site URL in the server description.
+   - The support server (reached through `https://supremebot.carbonstealth.eu/support`; the invite behind it is set in Admin → System) should mention the site URL in the server description.
 4. **Validate structured data** after each deploy: <https://search.google.com/test/rich-results> on `/`, `/de`, `/fr`.
 5. **Core Web Vitals**: check <https://pagespeed.web.dev/> for `/` after deploy; target LCP < 2.5 s on mobile.
 6. **Keep `lastmod` honest** in `sitemap.xml` when landing content changes.

@@ -89,7 +89,7 @@ GDPR-native data handling.
 ## Optional
 
 - [Carbon Stealth main site](https://carbonstealth.eu/): Parent company catalog of digital products beyond Supreme Bot — includes ERP systems, gaming platforms, e-commerce solutions, carbon fiber composites
-- [Support Discord](https://discord.gg/wpCRpy8B): Community support channel
+- [Support Discord](https://supremebot.carbonstealth.eu/support): Community support server (this address redirects to the current invite)
 - General contact: discord@carbonstealth.eu
 - Privacy and DPO matters: privacy@carbonstealth.eu
 - Security disclosures: security@carbonstealth.eu

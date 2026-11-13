@@ -1454,3 +1454,16 @@ model TriviaAnswer {
   @@index([userId])
   @@map("trivia_answers")
 }
+
+// v56 — настройки на платформата (не на сървър): една стойност по ключ, сменяна
+// от главния акаунт без нов билд. Първият ключ е `support.inviteUrl` — поканата
+// към сървъра за поддръжка, към която води `/support`. КОЙ я е сменил не стои тук,
+// а в одитния дневник (`SUPPORT_INVITE_CHANGED`) — там е и предишната стойност.
+// НИКОГА тайни тук: редът се чете от публичен маршрут.
+model PlatformSetting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("platform_settings")
+}

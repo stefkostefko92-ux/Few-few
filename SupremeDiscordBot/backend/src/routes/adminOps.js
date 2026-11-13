@@ -27,6 +27,7 @@ import { summarizeDiscordUser, eraseDiscordUser } from "../lib/dsr.js";
 import { aiTrainingAttested } from "../services/aiReply.js";
 import { COMPANIONS, publicCompanion } from "../lib/game/companions.js";
 import { getCurrentSeason, listSeasons, createSeason, updateSeason, publicSeason } from "../lib/game/seasons.js";
+import { parseInviteUrl, checkInvite, getSupportInviteUrl, setSupportInviteUrl } from "../lib/supportInvite.js";
 
 const router = Router();
 router.use(requireAuth, loadUser, adminIpAllowlist, requireSuperUser, requireMfa);
@@ -360,6 +361,51 @@ router.post("/dsr/:discordId/erase", requireMainOwner, stepUp, async (req, res, 
         `${req.user.username} erased ALL data (incl. ticket text) for Discord user ${id.data}. Note: ${body.data.note || "—"}.`).catch(() => {});
     }
     res.json(result);
+  } catch (err) { next(err); }
+});
+
+// ─── Поканата към сървъра за поддръжка ───────────────────────────────────────
+// Публичният адрес `/support` (routes/support.js) пренасочва към тази покана. Сменя я
+// само главният акаунт със свеж втори фактор; екипът само я вижда. Записва се едва
+// след като Discord потвърди, че поканата съществува, води към сървър и е БЕЗСРОЧНА —
+// непроверена покана не излиза на живо (предишната умря, защото беше със срок).
+const SUPPORT_INVITE_ERRORS = {
+  INVALID_INVITE_URL: [400, "Enter a Discord invite link — https://discord.gg/… or https://discord.com/invite/…"],
+  INVITE_NOT_FOUND: [400, "Discord does not know this invite. It may have expired or been deleted."],
+  INVITE_TEMPORARY: [400, "This invite expires. Create one set to never expire and try again."],
+  INVITE_NOT_A_SERVER: [400, "This invite does not lead to a server."],
+  INVITE_CHECK_UNAVAILABLE: [503, "Discord could not be reached to verify the invite. Nothing was changed — try again in a minute."],
+};
+const supportInviteError = (res, code) => {
+  const [status, error] = SUPPORT_INVITE_ERRORS[code] || [400, "Invalid invite"];
+  return res.status(status).json({ error, code });
+};
+
+router.get("/support-invite", async (_req, res, next) => {
+  try { res.json({ url: await getSupportInviteUrl(), publicPath: "/support" }); } catch (err) { next(err); }
+});
+
+router.put("/support-invite", requireMainOwner, stepUp, async (req, res, next) => {
+  const body = z.object({ url: z.string().max(200) }).safeParse(req.body);
+  if (!body.success) return supportInviteError(res, "INVALID_INVITE_URL");
+  try {
+    const from = await getSupportInviteUrl();
+    // Празно = поканата се маха; `/support` води към ръководствата, докато няма нова.
+    if (!body.data.url.trim()) {
+      await setSupportInviteUrl(null);
+      await writeAudit({ actorId: req.user.id, action: "SUPPORT_INVITE_CHANGED", targetId: "support", metadata: { from, to: null } });
+      return res.json({ url: null, publicPath: "/support", server: null });
+    }
+    const parsed = parseInviteUrl(body.data.url);
+    if (!parsed.ok) return supportInviteError(res, "INVALID_INVITE_URL");
+    const check = await checkInvite(parsed.code);
+    if (!check.ok) return supportInviteError(res, check.code);
+    await setSupportInviteUrl(parsed.url);
+    await writeAudit({
+      actorId: req.user.id, action: "SUPPORT_INVITE_CHANGED", targetId: "support",
+      metadata: { from, to: parsed.url, guildId: check.server.id, guildName: check.server.name },
+    });
+    res.json({ url: parsed.url, publicPath: "/support", server: check.server });
   } catch (err) { next(err); }
 });
 
