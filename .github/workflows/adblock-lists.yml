@@ -58,8 +58,8 @@ jobs:
             gh pr create --title "chore(adblock): седмичен ребилд на филтър-листите $(date -u +%Y-%m-%d)" \
               --body "Автоматичен седмичен ребилд на EasyList/EasyPrivacy/URLhaus → DNR правила, popup hosts и scriptlets/main.js.
 
-Гейтът в CI е зелен (0 block правила към main_frame, бюджет <30k статични правила, npm test, mv3-lint). Прегледай counts.json диф-а и слей.
+          Гейтът в CI е зелен (0 block правила към main_frame, бюджет <30k статични правила, npm test, mv3-lint). Прегледай counts.json диф-а и слей.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)" \
+          🤖 Generated with [Claude Code](https://claude.com/claude-code)" \
               --base main --head "$branch"
           fi

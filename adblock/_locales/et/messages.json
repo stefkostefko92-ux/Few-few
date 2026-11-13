@@ -856,5 +856,50 @@
   },
   "welTest": {
     "message": "Vaadake seda testlehel töös"
+  },
+  "modeHere": {
+    "message": "Kaitse siin"
+  },
+  "modeBasic": {
+    "message": "Põhiline"
+  },
+  "modeStandard": {
+    "message": "Tavaline"
+  },
+  "modeStrict": {
+    "message": "Range"
+  },
+  "opt_mode": {
+    "message": "Kaitsetase"
+  },
+  "opt_mode_sub": {
+    "message": "Kõigile saitidele. Ühele saidile eraldi taseme andmiseks avage laiendus sellel saidil."
+  },
+  "modeHint": {
+    "message": "Põhiline: ainult blokeerimine võrgus. Tavaline: soovitatav. Range: ka raamide sees. Leht laaditakse uuesti."
+  },
+  "modeBasicDesc": {
+    "message": "Ainult blokeerimine võrgus: kõige kergem, peaaegu midagi ei lähe katki. YouTube jääb oma kaitse juurde."
+  },
+  "modeStandardDesc": {
+    "message": "Soovitatav: täielik kaitse lehel endal."
+  },
+  "modeStrictDesc": {
+    "message": "Ka manustatud raamide sees: peidab kõige rohkem, kasutab kõige rohkem mälu."
+  },
+  "opt_who": {
+    "message": "Keda me peatasime"
+  },
+  "opt_who_sub": {
+    "message": "Ettevõtted, kelle serveritega me ei lasknud teie brauseril viimase 30 päeva jooksul ühendust võtta. Loetakse ainult selles seadmes, ettevõtte ja päeva kaupa: ei aadresse ega saite."
+  },
+  "opt_who_empty": {
+    "message": "Veel pole midagi loetud. Sirvige veidi ja vaadake uuesti."
+  },
+  "opt_who_row": {
+    "message": "Päringud: $1 · Päevad: $2"
+  },
+  "managedNote": {
+    "message": "Määratud teie organisatsiooni poolt"
   }
 }

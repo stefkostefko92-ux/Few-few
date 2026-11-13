@@ -856,5 +856,50 @@
   },
   "welTest": {
     "message": "Bir test sayfasında çalışırken görün"
+  },
+  "modeHere": {
+    "message": "Burada koruma"
+  },
+  "modeBasic": {
+    "message": "Temel"
+  },
+  "modeStandard": {
+    "message": "Standart"
+  },
+  "modeStrict": {
+    "message": "Sıkı"
+  },
+  "opt_mode": {
+    "message": "Koruma düzeyi"
+  },
+  "opt_mode_sub": {
+    "message": "Tüm siteler için. Bir siteye ayrı bir düzey vermek için uzantıyı o sitede açın."
+  },
+  "modeHint": {
+    "message": "Temel: yalnızca ağda engelleme. Standart: önerilen. Sıkı: çerçevelerin içinde de. Sayfa yeniden yüklenir."
+  },
+  "modeBasicDesc": {
+    "message": "Yalnızca ağda engelleme: en hafifi, neredeyse hiçbir şey bozulmaz. YouTube kendi korumasını korur."
+  },
+  "modeStandardDesc": {
+    "message": "Önerilen: sayfanın kendisinde tam koruma."
+  },
+  "modeStrictDesc": {
+    "message": "Gömülü çerçevelerin içinde de: en çok gizler, en çok bellek kullanır."
+  },
+  "opt_who": {
+    "message": "Kimleri durdurduk"
+  },
+  "opt_who_sub": {
+    "message": "Son 30 günde tarayıcınızın sunucularıyla iletişim kurmasını engellediğimiz şirketler. Yalnızca bu cihazda, şirket ve gün bazında sayılır: adres yok, site yok."
+  },
+  "opt_who_empty": {
+    "message": "Henüz hiçbir şey sayılmadı. Bir süre gezinin ve tekrar bakın."
+  },
+  "opt_who_row": {
+    "message": "İstekler: $1 · Günler: $2"
+  },
+  "managedNote": {
+    "message": "Kuruluşunuz tarafından ayarlandı"
   }
 }

@@ -154,4 +154,8 @@ const LIMITED_USE = "The use of information received from Google APIs will adher
 const noLU = ["PRIVACY.md", "server/privacy.html"].filter((f) => !readFileSync(join(ROOT, f), "utf8").includes(LIMITED_USE));
 ok(`privacy policy: Google's Limited Use statement on the site and in PRIVACY.md (${noLU.join(", ") || "both"})`, noLU.length === 0);
 
+// AMO: без browser_specific_settings.gecko_android добавката не се показва във Firefox за Android.
+const pkg = readFileSync(join(ROOT, "tools", "package.sh"), "utf8");
+ok("Firefox package: gecko_android is declared (AMO lists it for Android)", /gecko_android:\s*\{\s*strict_min_version:\s*"128\.0"/.test(pkg));
+
 done();

@@ -48,8 +48,21 @@ stays on your device.
 - **Element picker**, click any element to hide it permanently on that site;
   the popup's ↶ N takes the last one back at once, no reload.
 - **Connections on this page**, the popup lists the other sites a page loaded
-  something from (Resource Timing, read when you open the box) and blocks one on
-  that site only (a dynamic rule with `initiatorDomains`, priority 5000).
+  something from (Resource Timing, read when you open the box), names the company
+  behind each known host (Google, Meta, Amazon…, from our own map in
+  `popup/companies.js`) and blocks one on that site only (a dynamic rule with
+  `initiatorDomains`, priority 5000).
+- **Protection levels** (6.0), Basic (network blocking only, nothing of ours in
+  the page), Standard (default: the top frame) and Strict (every frame) — for every
+  site in Settings or one site in the popup (`lib/modes.js`; the page scripts are
+  registered by the service worker, not the manifest).
+- **Who we stopped** (6.0, Settings), the companies whose servers the browser was
+  kept from contacting in the last 30 days, counted on the device per company and
+  day (`lib/who.js`, `rules/who.json` built by `tools/build_who.mjs`).
+- **Policies for organizations** (6.1), an administrator can preconfigure and lock
+  the level, allowed sites, features, lists and pausing through a Chrome policy for
+  the extension (`managed_schema.json`, `lib/managed.js`, `docs/ENTERPRISE.md`,
+  `/for-it-admins#policy`).
 - **Import from another ad blocker**, the allowed sites and own filters of a
   uBlock Origin, AdGuard or Adblock Plus backup (`lib/foreign.js`, checked
   again in the service worker; a rule it cannot apply is left out, never

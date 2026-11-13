@@ -12,6 +12,8 @@ const FALLBACK = {
   conn_block: "Block here", conn_blocked: "Blocked here", conn_hint: "Block what this site loads from $1",
   receiptText: "$1 requests blocked · $2 cookie banners answered · about $3 of data saved (an estimate)",
   shareCopied: "Link copied",
+  modeBasicDesc: "Network blocking only: the lightest, almost nothing breaks. YouTube keeps its own protection.",
+  managedNote: "Set by your organization",
 };
 
 const toggle = $("toggle");
@@ -24,8 +26,7 @@ const savedTime = $("savedTime");
 const siteHost = $("siteHost");
 const allowToggle = $("allowToggle");
 const allowLabel = $("allowLabel");
-const cosmToggle = $("cosmToggle");
-const cosmLabel = $("cosmLabel");
+const modeSel = $("modeSel"); // 6.0: "Protection here"
 const listDot = $("listDot");
 
 let currentHost = null;
@@ -74,15 +75,27 @@ function load() {
 
       listDot.textContent = t("filtersCount", [(res.filterCount || 0).toLocaleString(UI_LANG)]);
       renderPause(res.pausedUntil || 0);
+      // 6.1: an administrator's policy — what it locks is drawn disabled (the service worker refuses it anyway)
+      const locks = res.managed || {};
+      const managedLock = (el) => { el.disabled = true; el.title = t("managedNote"); };
+      if (locks.pause) { managedLock(toggle); managedLock(pauseBtn); }
 
       $("reportBtn").hidden = !currentHost;
       if (currentHost) {
         siteHost.textContent = currentHost;
         allowToggle.checked = !res.allowed;
         setAllowLabel(!res.allowed);
-        cosmToggle.checked = !res.noCosmetics;
-        setCosmLabel(!res.noCosmetics);
-        cosmToggle.disabled = !!res.allowed;
+        modeSel.value = res.effectiveMode || "standard";
+        modeSel.disabled = !!res.allowed;
+        const covered = (list) => (list || []).some((d) => currentHost === d || currentHost.endsWith("." + d));
+        if (locks.exceptions || covered(locks.siteModes)) managedLock(modeSel);
+        // the policy allows this site (no taking it out), or users may not allow sites at all
+        if ((res.allowed && covered(locks.allowlist)) || (!res.allowed && locks.exceptions)) managedLock(allowToggle);
+        // Basic: nothing of ours runs on the page — no picker, and what it hid would not apply
+        if (res.effectiveMode === "basic") {
+          $("pickBtn").disabled = true;
+          $("pickBtn").title = t("modeBasicDesc");
+        }
         // allowed for a while (the repair page's "for 1 hour"): the label says how long is left
         if (res.allowed && res.allowedUntil > Date.now()) {
           allowLabel.textContent = t("allowedFor", [String(Math.max(1, Math.round((res.allowedUntil - Date.now()) / 60000)))]);
@@ -90,7 +103,8 @@ function load() {
       } else {
         siteHost.textContent = t("thisPage");
         allowToggle.disabled = true;
-        cosmToggle.disabled = true;
+        modeSel.value = res.mode || "standard"; // no site here (a browser page): the level for every site
+        modeSel.disabled = true;
       }
 
       // what the picker hid on this site: one click brings the last one back
@@ -189,10 +203,6 @@ function setAllowLabel(blocking) {
   allowLabel.textContent = blocking ? t("blocking") : t("allowed");
 }
 
-function setCosmLabel(on) {
-  cosmLabel.textContent = on ? t("on") : t("off");
-}
-
 toggle.addEventListener("change", () => {
   setStatus(toggle.checked);
   chrome.runtime.sendMessage({ type: "toggle", enabled: toggle.checked });
@@ -213,11 +223,11 @@ allowToggle.addEventListener("change", () => {
   chrome.runtime.sendMessage({ type: "setAllow", host: currentHost, allow: !blocking }, reloadActiveTab);
 });
 
-cosmToggle.addEventListener("change", () => {
+// 6.0: "Protection here" — the site's mode (Basic replaced "Hide ad boxes here: Off");
+// the page reloads so the new scripts (or none) apply
+modeSel.addEventListener("change", () => {
   if (!currentHost) return;
-  const on = cosmToggle.checked;
-  setCosmLabel(on);
-  chrome.runtime.sendMessage({ type: "setNoCosmetics", host: currentHost, off: !on }, reloadActiveTab);
+  chrome.runtime.sendMessage({ type: "setSiteMode", host: currentHost, mode: modeSel.value }, reloadActiveTab);
 });
 
 const pauseBtn = $("pauseBtn");
@@ -270,6 +280,17 @@ function renderConnections(rows) {
     name.className = "host";
     name.textContent = host;
     name.title = host;
+    // who is behind it (popup/companies.js; an unknown host gets no label, never a guess)
+    const cell = document.createElement("span");
+    cell.className = "cell";
+    cell.append(name);
+    const company = globalThis.SA_COMPANIES ? SA_COMPANIES.companyOf(host) : "";
+    if (company) {
+      const co = document.createElement("span");
+      co.className = "co";
+      co.textContent = company;
+      cell.append(co);
+    }
     const cnt = document.createElement("span");
     cnt.className = "type";
     cnt.textContent = n ? "×" + n.toLocaleString(UI_LANG) : "";
@@ -290,7 +311,7 @@ function renderConnections(rows) {
         if (r && r.ok) { siteBlocked = r.hosts; show(block); }
       });
     });
-    if (n) li.append(name, cnt, btn); else li.append(name, btn);
+    if (n) li.append(cell, cnt, btn); else li.append(cell, btn);
     ul.appendChild(li);
   }
 }

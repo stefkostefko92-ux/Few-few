@@ -1,0 +1,72 @@
+{
+  "type": "object",
+  "properties": {
+    "mode": {
+      "title": "Protection level for every site",
+      "description": "basic: network blocking only; standard: the page itself (default); strict: also inside embedded frames.",
+      "type": "string",
+      "enum": ["basic", "standard", "strict"]
+    },
+    "siteModes": {
+      "title": "Protection level of particular sites",
+      "description": "Host name → basic | standard | strict. Users cannot change these sites.",
+      "type": "object",
+      "additionalProperties": { "type": "string", "enum": ["basic", "standard", "strict"] }
+    },
+    "allowlist": {
+      "title": "Always allowed sites",
+      "description": "Host names where nothing is blocked. Added to the user's own; users cannot remove them.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "features": {
+      "title": "Features",
+      "description": "true or false for each listed feature; features not listed stay the user's choice.",
+      "type": "object",
+      "properties": {
+        "cookies": { "type": "boolean" },
+        "antiAdblock": { "type": "boolean" },
+        "meta": { "type": "boolean" },
+        "youtube": { "type": "boolean" },
+        "smart": { "type": "boolean" },
+        "removeparam": { "type": "boolean" },
+        "malware": { "type": "boolean" },
+        "topics": { "type": "boolean" },
+        "privacy": { "type": "boolean" },
+        "gpc": { "type": "boolean" },
+        "twitch": { "type": "boolean" }
+      }
+    },
+    "lists": {
+      "title": "Filter lists",
+      "description": "List id (see the extension's Settings → Filter lists) → true or false.",
+      "type": "object",
+      "additionalProperties": { "type": "boolean" }
+    },
+    "autoUpdate": {
+      "title": "Filter updates",
+      "description": "Download the signed filter data (filters.json) about twice a day.",
+      "type": "boolean"
+    },
+    "reviewAsk": {
+      "title": "Chrome Web Store review prompt",
+      "description": "false: never ask users for a review.",
+      "type": "boolean"
+    },
+    "sync": {
+      "title": "Sync settings across devices",
+      "description": "Copy settings to the user's browser account (storage.sync).",
+      "type": "boolean"
+    },
+    "disablePause": {
+      "title": "No pause or switch-off",
+      "description": "true: users cannot pause protection or turn it off.",
+      "type": "boolean"
+    },
+    "disableUserExceptions": {
+      "title": "No user exceptions",
+      "description": "true: users cannot allow sites or change the protection level of a site.",
+      "type": "boolean"
+    }
+  }
+}

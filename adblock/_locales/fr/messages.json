@@ -856,5 +856,50 @@
   },
   "welTest": {
     "message": "Le voir à l’œuvre sur une page de test"
+  },
+  "modeHere": {
+    "message": "Protection ici"
+  },
+  "modeBasic": {
+    "message": "Basique"
+  },
+  "modeStandard": {
+    "message": "Standard"
+  },
+  "modeStrict": {
+    "message": "Strict"
+  },
+  "opt_mode": {
+    "message": "Niveau de protection"
+  },
+  "opt_mode_sub": {
+    "message": "Pour tous les sites. Pour donner à un site son propre niveau, ouvrez l’extension sur ce site."
+  },
+  "modeHint": {
+    "message": "Basique : blocage réseau uniquement. Standard : recommandé. Strict : aussi dans les cadres. La page se recharge."
+  },
+  "modeBasicDesc": {
+    "message": "Blocage réseau uniquement : le plus léger, presque rien ne casse. YouTube garde sa propre protection."
+  },
+  "modeStandardDesc": {
+    "message": "Recommandé : protection complète sur la page elle-même."
+  },
+  "modeStrictDesc": {
+    "message": "Aussi dans les cadres intégrés : masque le plus, utilise le plus de mémoire."
+  },
+  "opt_who": {
+    "message": "Qui nous avons arrêté"
+  },
+  "opt_who_sub": {
+    "message": "Les entreprises dont nous avons empêché votre navigateur de contacter les serveurs ces 30 derniers jours. Comptées uniquement sur cet appareil, par entreprise et par jour : aucune adresse, aucun site."
+  },
+  "opt_who_empty": {
+    "message": "Rien n’a encore été compté. Naviguez un moment, puis revenez voir."
+  },
+  "opt_who_row": {
+    "message": "Requêtes : $1 · Jours : $2"
+  },
+  "managedNote": {
+    "message": "Défini par votre organisation"
   }
 }

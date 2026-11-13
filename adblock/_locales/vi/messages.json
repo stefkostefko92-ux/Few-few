@@ -856,5 +856,50 @@
   },
   "welTest": {
     "message": "Xem cách hoạt động trên trang thử nghiệm"
+  },
+  "modeHere": {
+    "message": "Bảo vệ tại đây"
+  },
+  "modeBasic": {
+    "message": "Cơ bản"
+  },
+  "modeStandard": {
+    "message": "Tiêu chuẩn"
+  },
+  "modeStrict": {
+    "message": "Nghiêm ngặt"
+  },
+  "opt_mode": {
+    "message": "Mức bảo vệ"
+  },
+  "opt_mode_sub": {
+    "message": "Cho mọi trang web. Để đặt mức riêng cho một trang, hãy mở tiện ích trên trang đó."
+  },
+  "modeHint": {
+    "message": "Cơ bản: chỉ chặn trên mạng. Tiêu chuẩn: nên dùng. Nghiêm ngặt: cả bên trong khung. Trang sẽ tải lại."
+  },
+  "modeBasicDesc": {
+    "message": "Chỉ chặn trên mạng: nhẹ nhất, hầu như không có gì bị hỏng. YouTube vẫn giữ cơ chế bảo vệ riêng."
+  },
+  "modeStandardDesc": {
+    "message": "Nên dùng: bảo vệ đầy đủ ngay trên trang."
+  },
+  "modeStrictDesc": {
+    "message": "Cả bên trong khung nhúng: ẩn được nhiều nhất, dùng nhiều bộ nhớ nhất."
+  },
+  "opt_who": {
+    "message": "Những bên chúng tôi đã chặn"
+  },
+  "opt_who_sub": {
+    "message": "Các công ty mà chúng tôi không để trình duyệt của bạn liên hệ với máy chủ của họ trong 30 ngày qua. Chỉ đếm trên thiết bị này, theo công ty và theo ngày: không có địa chỉ, không có trang web."
+  },
+  "opt_who_empty": {
+    "message": "Chưa đếm được gì. Hãy duyệt web một lúc rồi xem lại."
+  },
+  "opt_who_row": {
+    "message": "Yêu cầu: $1 · Ngày: $2"
+  },
+  "managedNote": {
+    "message": "Do tổ chức của bạn thiết lập"
   }
 }

@@ -66,8 +66,8 @@ ok("live channel: 25 000 domains capped to 20 000 across 20 chunked rules; scrip
 // ---------- 2) scriptlet registration ----------
 await bg.doSyncScriptlets(true);
 const reg = mock.calls.registered.filter((s) => s.id === "sa-scriptlets").at(-1);
-ok("engine registered MAIN/document_start/allFrames with excludeMatches only for valid allowlist hosts",
-  reg && reg.world === "MAIN" && reg.runAt === "document_start" && reg.allFrames === true && reg.persistAcrossSessions === true &&
+ok("engine registered MAIN/document_start, top frame (Standard, 6.0), with excludeMatches only for valid allowlist hosts",
+  reg && reg.world === "MAIN" && reg.runAt === "document_start" && reg.allFrames === false && reg.persistAcrossSessions === true &&
   reg.excludeMatches.join() === "*://example.com/*,*://*.example.com/*,*://sub.test.org/*,*://*.sub.test.org/*");
 await bg.doSyncScriptlets(false);
 ok("off → unregistered, nothing registered", mock.registered().length === 0 && mock.calls.unregistered.length >= 1);
@@ -116,7 +116,22 @@ al = await sendMessage(mock.listeners, { type: "setAllow", host: "xn--e1afmkfd.x
 const allowRules = mock.dynamic().filter((x) => x.id >= 90000 && x.id < 100000);
 ok("setAllow: punycode accepted; allow rules built only from valid hosts",
   al && al.ok && al.allowlist.includes("xn--e1afmkfd.xn--90ae") &&
-  allowRules.some((x) => x.condition.requestDomains[0] === "xn--e1afmkfd.xn--90ae") && !allowRules.some((x) => x.condition.requestDomains[0] === "bad host"));
+  allowRules.some((x) => x.condition.requestDomains?.[0] === "xn--e1afmkfd.xn--90ae") && !allowRules.some((x) => x.condition.requestDomains?.[0] === "bad host"));
+// 6.1: each site is two rules — allowAllRequests for its frames + a plain allow for what it requests itself
+// (allowAllRequests is attached when the frame commits; an early request could still be blocked — measured)
+ok("setAllow: an allowed site also gets a request-level allow by initiator (no race with the frame rule)",
+  allowRules.some((x) => x.action.type === "allow" && x.condition.initiatorDomains?.[0] === "xn--e1afmkfd.xn--90ae") &&
+  allowRules.filter((x) => x.action.type === "allowAllRequests").length === allowRules.filter((x) => x.action.type === "allow").length);
+{
+  mock.store.set("enabled", false);
+  await bg.applyState();
+  const pr = mock.dynamic().filter((x) => x.id === 69999 || x.id === 69997);
+  ok("pause: allowAllRequests for the frames + a plain allow for every request, both above everything (6.1: the frame rule alone raced)",
+    pr.length === 2 && pr.every((x) => x.priority === 30000) && pr.some((x) => x.action.type === "allow" && JSON.stringify(x.condition) === "{}"));
+  mock.store.set("enabled", true);
+  await bg.applyState();
+  ok("…and both go when protection is back", !mock.dynamic().some((x) => x.id === 69999 || x.id === 69997));
+}
 await bg.doSyncScriptlets(true);
 const ex = mock.calls.registered.at(-1).excludeMatches;
 ok("scriptlets excluded on IDN / IP / localhost too (no invalid *. patterns)", ex.includes("*://xn--e1afmkfd.xn--90ae/*") &&

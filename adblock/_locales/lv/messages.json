@@ -856,5 +856,50 @@
   },
   "welTest": {
     "message": "Skatiet, kā tas darbojas, testa lapā"
+  },
+  "modeHere": {
+    "message": "Aizsardzība šeit"
+  },
+  "modeBasic": {
+    "message": "Pamata"
+  },
+  "modeStandard": {
+    "message": "Standarta"
+  },
+  "modeStrict": {
+    "message": "Stingrā"
+  },
+  "opt_mode": {
+    "message": "Aizsardzības līmenis"
+  },
+  "opt_mode_sub": {
+    "message": "Visām vietnēm. Lai vienai vietnei iestatītu atsevišķu līmeni, atveriet paplašinājumu šajā vietnē."
+  },
+  "modeHint": {
+    "message": "Pamata: tikai bloķēšana tīklā. Standarta: ieteicama. Stingrā: arī rāmju iekšpusē. Lapa tiek ielādēta no jauna."
+  },
+  "modeBasicDesc": {
+    "message": "Tikai bloķēšana tīklā: vieglākā, gandrīz nekas nesabojājas. YouTube saglabā savu aizsardzību."
+  },
+  "modeStandardDesc": {
+    "message": "Ieteicama: pilna aizsardzība pašā lapā."
+  },
+  "modeStrictDesc": {
+    "message": "Arī iegulto rāmju iekšpusē: paslēpj visvairāk, izmanto visvairāk atmiņas."
+  },
+  "opt_who": {
+    "message": "Ko mēs apturējām"
+  },
+  "opt_who_sub": {
+    "message": "Uzņēmumi, ar kuru serveriem pēdējo 30 dienu laikā neļāvām jūsu pārlūkam sazināties. Tiek skaitīts tikai šajā ierīcē, pa uzņēmumiem un dienām: nekādu adrešu, nekādu vietņu."
+  },
+  "opt_who_empty": {
+    "message": "Vēl nekas nav saskaitīts. Kādu laiku pārlūkojiet un apskatiet vēlreiz."
+  },
+  "opt_who_row": {
+    "message": "Pieprasījumi: $1 · Dienas: $2"
+  },
+  "managedNote": {
+    "message": "Iestatījusi jūsu organizācija"
   }
 }

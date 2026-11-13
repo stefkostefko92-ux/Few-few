@@ -12,3 +12,4 @@ Supreme AdBlock-ek iragarkiak nonahi blokeatzen ditu — YouTubeko bideo-iragark
 • Webgunea hautsita? Klik batek konpontzen du, edo esan iezaguzu — ez da ezer bidaltzen zuk aurrez ikusi gabe.
 • uBlock Origin, AdGuard edo Adblock Plus-etik zatoz? Ekarri baimendutako webguneak eta iragazkiak fitxategi bakar batekin.
 • Ikusi orri bat zein beste webgunerekin konektatzen den, eta blokeatu horietako bat bertan soilik klik batekin.
+• Babes-maila: Oinarrizkoa · Estandarra · Zorrotza

@@ -856,5 +856,50 @@
   },
   "welTest": {
     "message": "Shihni si funksionon në një faqe testimi"
+  },
+  "modeHere": {
+    "message": "Mbrojtja këtu"
+  },
+  "modeBasic": {
+    "message": "Bazë"
+  },
+  "modeStandard": {
+    "message": "Standarde"
+  },
+  "modeStrict": {
+    "message": "E rreptë"
+  },
+  "opt_mode": {
+    "message": "Niveli i mbrojtjes"
+  },
+  "opt_mode_sub": {
+    "message": "Për çdo sajt. Për t’i dhënë një sajti nivelin e vet, hapeni shtesën në atë sajt."
+  },
+  "modeHint": {
+    "message": "Bazë: vetëm bllokim në rrjet. Standarde: e rekomanduar. E rreptë: edhe brenda kornizave. Faqja ringarkohet."
+  },
+  "modeBasicDesc": {
+    "message": "Vetëm bllokim në rrjet: më e lehta, pothuajse asgjë nuk prishet. YouTube e ruan mbrojtjen e vet."
+  },
+  "modeStandardDesc": {
+    "message": "E rekomanduar: mbrojtje e plotë në vetë faqen."
+  },
+  "modeStrictDesc": {
+    "message": "Edhe brenda kornizave të ngulitura: fsheh më shumë, përdor më shumë memorie."
+  },
+  "opt_who": {
+    "message": "Kë ndaluam"
+  },
+  "opt_who_sub": {
+    "message": "Kompanitë me serverët e të cilave nuk e lamë shfletuesin tuaj të lidhej në 30 ditët e fundit. Numërohet vetëm në këtë pajisje, sipas kompanisë dhe ditës: pa adresa, pa sajte."
+  },
+  "opt_who_empty": {
+    "message": "Ende s’është numëruar asgjë. Shfletoni pak dhe shikoni sërish."
+  },
+  "opt_who_row": {
+    "message": "Kërkesa: $1 · Ditë: $2"
+  },
+  "managedNote": {
+    "message": "Caktuar nga organizata juaj"
   }
 }

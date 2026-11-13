@@ -856,5 +856,50 @@
   },
   "welTest": {
     "message": "Se at det virker på en testside"
+  },
+  "modeHere": {
+    "message": "Beskyttelse her"
+  },
+  "modeBasic": {
+    "message": "Grunnleggende"
+  },
+  "modeStandard": {
+    "message": "Standard"
+  },
+  "modeStrict": {
+    "message": "Streng"
+  },
+  "opt_mode": {
+    "message": "Beskyttelsesnivå"
+  },
+  "opt_mode_sub": {
+    "message": "For alle nettsteder. Vil du gi ett nettsted et eget nivå, åpner du utvidelsen på det nettstedet."
+  },
+  "modeHint": {
+    "message": "Grunnleggende: bare blokkering i nettverket. Standard: anbefalt. Streng: også inne i rammer. Siden lastes inn på nytt."
+  },
+  "modeBasicDesc": {
+    "message": "Bare blokkering i nettverket: lettest, nesten ingenting går i stykker. YouTube beholder sin egen beskyttelse."
+  },
+  "modeStandardDesc": {
+    "message": "Anbefalt: full beskyttelse på selve siden."
+  },
+  "modeStrictDesc": {
+    "message": "Også inne i innebygde rammer: skjuler mest, bruker mest minne."
+  },
+  "opt_who": {
+    "message": "Hvem vi stoppet"
+  },
+  "opt_who_sub": {
+    "message": "Selskapene som vi hindret nettleseren din i å kontakte serverne til de siste 30 dagene. Telles bare på denne enheten, per selskap og dag: ingen adresser, ingen nettsteder."
+  },
+  "opt_who_empty": {
+    "message": "Ingenting er talt ennå. Surf en stund, og se igjen."
+  },
+  "opt_who_row": {
+    "message": "Forespørsler: $1 · Dager: $2"
+  },
+  "managedNote": {
+    "message": "Angitt av organisasjonen din"
   }
 }

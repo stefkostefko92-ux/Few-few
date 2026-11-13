@@ -856,5 +856,50 @@
   },
   "welTest": {
     "message": "在测试页面查看实际效果"
+  },
+  "modeHere": {
+    "message": "本网站的防护"
+  },
+  "modeBasic": {
+    "message": "基础"
+  },
+  "modeStandard": {
+    "message": "标准"
+  },
+  "modeStrict": {
+    "message": "严格"
+  },
+  "opt_mode": {
+    "message": "防护级别"
+  },
+  "opt_mode_sub": {
+    "message": "适用于所有网站。要为某个网站单独设置，请在该网站上打开扩展程序。"
+  },
+  "modeHint": {
+    "message": "基础：仅在网络层拦截。标准：推荐。严格：框架内也生效。页面会重新加载。"
+  },
+  "modeBasicDesc": {
+    "message": "仅在网络层拦截：最轻量，几乎不会出问题。YouTube 保留自己的防护。"
+  },
+  "modeStandardDesc": {
+    "message": "推荐：在页面本身提供完整防护。"
+  },
+  "modeStrictDesc": {
+    "message": "嵌入的框架内也生效：隐藏最多，占用内存也最多。"
+  },
+  "opt_who": {
+    "message": "我们拦截了谁"
+  },
+  "opt_who_sub": {
+    "message": "过去 30 天里，我们阻止你的浏览器联系其服务器的公司。仅在此设备上按公司和日期计数：不记录地址，也不记录网站。"
+  },
+  "opt_who_empty": {
+    "message": "还没有统计到任何内容。浏览一会儿后再来看看。"
+  },
+  "opt_who_row": {
+    "message": "请求：$1 · 天数：$2"
+  },
+  "managedNote": {
+    "message": "由你的组织设置"
   }
 }

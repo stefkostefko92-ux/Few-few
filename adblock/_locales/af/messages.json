@@ -856,5 +856,50 @@
   },
   "welTest": {
     "message": "Sien hoe dit werk op 'n toetsbladsy"
+  },
+  "modeHere": {
+    "message": "Beskerming hier"
+  },
+  "modeBasic": {
+    "message": "Basies"
+  },
+  "modeStandard": {
+    "message": "Standaard"
+  },
+  "modeStrict": {
+    "message": "Streng"
+  },
+  "opt_mode": {
+    "message": "Beskermingsvlak"
+  },
+  "opt_mode_sub": {
+    "message": "Vir elke webwerf. Om een webwerf anders te stel, maak die uitbreiding op daardie webwerf oop."
+  },
+  "modeHint": {
+    "message": "Basies: slegs blokkering op die netwerk. Standaard: aanbeveel. Streng: ook binne rame. Die bladsy herlaai."
+  },
+  "modeBasicDesc": {
+    "message": "Slegs blokkering op die netwerk: die ligste, amper niks breek nie. YouTube behou sy eie beskerming."
+  },
+  "modeStandardDesc": {
+    "message": "Aanbeveel: volle beskerming op die bladsy self."
+  },
+  "modeStrictDesc": {
+    "message": "Ook binne ingebedde rame: steek die meeste weg, gebruik die meeste geheue."
+  },
+  "opt_who": {
+    "message": "Wie ons gestop het"
+  },
+  "opt_who_sub": {
+    "message": "Die maatskappye wie se bedieners ons jou blaaier die afgelope 30 dae verhoed het om te kontak. Slegs op hierdie toestel getel, per maatskappy en per dag: geen adresse, geen webwerwe nie."
+  },
+  "opt_who_empty": {
+    "message": "Nog niks getel nie. Blaai ’n rukkie en kyk weer."
+  },
+  "opt_who_row": {
+    "message": "Versoeke: $1 · Dae: $2"
+  },
+  "managedNote": {
+    "message": "Deur jou organisasie gestel"
   }
 }

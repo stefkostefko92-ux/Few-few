@@ -12,3 +12,4 @@ Supreme AdBlock blokira oglase posvuda — videooglase na YouTubeu, bannere, sko
 • Stranica ne radi? Jedan klik to popravlja — ili nam javite; ništa se ne šalje dok to sami ne vidite.
 • Prelazite s uBlock Origin, AdGuard ili Adblock Plus? Prenesite dopuštene web-lokacije i filtre jednom datotekom.
 • Pogledajte s kojim se drugim web-lokacijama stranica povezuje i jednim klikom blokirajte bilo koju od njih samo ondje.
+• Razina zaštite: Osnovna · Standardna · Stroga

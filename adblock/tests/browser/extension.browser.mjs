@@ -54,6 +54,8 @@ const PAGES = {
       <button class="iubenda-cs-reject-btn" onclick="__clicks.push('pay')">Rifiuta e abbonati</button>
       <button class="iubenda-cs-accept-btn" onclick="__clicks.push('accept')">Accetta</button></div>
   </body></html>`,
+  "/track": `<!doctype html><html><body><p>tracked</p><script src="https://www.google-analytics.com/analytics.js"></script></body></html>`,
+  "/framed": `<!doctype html><html><body><iframe src="/cosmetic" width="420" height="320"></iframe></body></html>`,
   "/pause": `<!doctype html><html><body><script>window.__loaded=false;</script><script src="/pausetest.js"></script></body></html>`,
   "/focus": `<!doctype html><html><body><ytd-reel-shelf-renderer id="shorts">shorts shelf</ytd-reel-shelf-renderer><ytd-video-renderer id="video">a normal video</ytd-video-renderer></body></html>`,
   "/cookie": `<!doctype html><html><body style="min-height:2000px">
@@ -98,6 +100,12 @@ try {
       await wel.click("#done");
       ok("welcome page: 'Got it' closes its own tab", await closed);
     }
+  }
+
+  // the first install registers the page scripts (6.0: by protection level, not the manifest) a few seconds in
+  for (let i = 0; i < 40; i++) {
+    if (await sw.evaluate(async () => (await chrome.scripting.getRegisteredContentScripts()).some((c) => c.id === "sa-page-standard-content"))) break;
+    await new Promise((r) => setTimeout(r, 250));
   }
 
   // ---- procedural policy in the isolated world (every source, here "My filters") ----
@@ -241,9 +249,12 @@ try {
     await rep.click("#fullUrl");
     ok("report: the full address only when the user ticks it", (await rep.evaluate(() => document.getElementById("preview").textContent)).includes("secret=1"));
     await rep.click("#fixCosm");
-    await rep.waitForTimeout(800);
-    ok("report: 'turn off element hiding here' applies to that site", (await sw.evaluate(async () => (await chrome.storage.local.get("noCosmetics")).noCosmetics || [])).includes("127.0.0.1"));
-    await sw.evaluate(async () => chrome.storage.local.set({ noCosmetics: [] }));
+    // 6.0: element hiding off = the site's Basic mode (re-registering the scripts takes Chrome ~2 s)
+    const basicHere = async () => ((await sw.evaluate(async () => (await chrome.storage.local.get("siteModes")).siteModes || {}))["127.0.0.1"]) === "basic";
+    for (let i = 0; i < 40 && !(await basicHere()); i++) await rep.waitForTimeout(100);
+    ok("report: 'turn off element hiding here' applies to that site (its Basic mode since 6.0)", await basicHere());
+    await rep.waitForSelector("#fixedAsk", { state: "visible", timeout: 6000 }).catch(() => {});
+    await sw.evaluate(async () => { await chrome.storage.local.set({ noCosmetics: [], siteModes: {} }); await syncPageScripts(); await syncScriptlets(); });
     await rep.close(); await site.close();
   }
 
@@ -253,6 +264,9 @@ try {
     await sw.evaluate(() => chrome.declarativeNetRequest.updateDynamicRules({ addRules: [{ id: 80999, priority: 1, action: { type: "block" }, condition: { urlFilter: "/pausetest.js", resourceTypes: ["script"] } }] }));
     const before = await loaded();
     await sw.evaluate(() => pauseFor(1));
+    // the pause rule is readable back before the page loads (right after the update Chrome sometimes
+    // still applied the old set to the next navigation: 2 of 7 runs, 6.0)
+    await sw.evaluate(async () => (await chrome.declarativeNetRequest.getDynamicRules()).some((r) => r.action.type === "allowAllRequests"));
     const during = await loaded();
     await sw.evaluate(() => resumeNow());
     const after = await loaded();
@@ -277,6 +291,89 @@ try {
   const c2 = await p2.evaluate(() => window.__clicks.slice());
   ok("removed from the allowlist → handled again without a reload", c2.join() === "reject");
   await p2.close();
+
+  // ---- 6.0 protection modes, in the real browser (the page scripts are registered by the SW) ----
+  {
+    const adShown = async (path, inFrame) => {
+      const pg = await ctx.newPage(); await pg.goto(origin + path); await pg.waitForTimeout(900);
+      const fr = inFrame ? pg.frames().find((f) => f !== pg.mainFrame()) : pg.mainFrame();
+      const v = await fr.evaluate(() => getComputedStyle(document.getElementById("ad")).display !== "none");
+      await pg.close(); return v;
+    };
+    const std = await adShown("/cosmetic", false);
+    const stdFrame = await adShown("/framed", true);
+    await sw.evaluate(() => setSiteMode("127.0.0.1", "basic"));
+    const basic = await adShown("/cosmetic", false);
+    await sw.evaluate(() => setSiteMode("127.0.0.1", "strict"));
+    const strictFrame = await adShown("/framed", true);
+    await sw.evaluate(() => setSiteMode("127.0.0.1", "standard"));
+    const back = await adShown("/cosmetic", false);
+    const again = await sw.evaluate(async () => { const t = performance.now(); await syncPageScripts(); return performance.now() - t; });
+    ok(`modes: the same level again (browser start) re-registers nothing (${Math.round(again)} ms; a re-register costs Chrome ~1 s)`, again < 300);
+    ok(`modes: Standard hides in the page but not in its frames; Basic adds nothing of ours; Strict hides inside frames too (shown: standard ${std}, its frame ${stdFrame}, basic ${basic}, strict frame ${strictFrame}, standard again ${back})`,
+      std === false && stdFrame === true && basic === true && strictFrame === false && back === false);
+  }
+
+  // ---- 6.0 "Who we stopped": the blocked request is counted for its company, shown in Settings ----
+  {
+    await sw.evaluate(() => chrome.storage.local.set({ who: {} }));
+    const tp = await ctx.newPage();
+    await tp.goto(origin + "/track");
+    let who = {};
+    for (let i = 0; i < 40; i++) {
+      who = await sw.evaluate(async () => (await chrome.storage.local.get("who")).who || {});
+      if (Object.values(who).some((d) => d.Google > 0)) break;
+      await tp.waitForTimeout(150);
+    }
+    ok(`who: a blocked google-analytics.com request counts for Google, no address stored (${JSON.stringify(who)})`,
+      Object.values(who).some((d) => d.Google > 0) && !/google-analytics|127\.0\.0\.1/.test(JSON.stringify(who)));
+    const extId = sw.url().split("/")[2];
+    const op = await ctx.newPage();
+    await op.goto(`chrome-extension://${extId}/options/options.html`);
+    await op.waitForTimeout(800);
+    const card = await op.evaluate(() => ({ hidden: document.getElementById("whoCard").hidden, rows: [...document.querySelectorAll("#whoList li .who-name")].map((e) => e.textContent) }));
+    ok(`who: Settings shows the card with Google in it (${JSON.stringify(card)})`, card.hidden === false && card.rows.includes("Google"));
+    await op.close(); await tp.close();
+  }
+
+  // ---- 6.1 an administrator's policy: Settings and the popup lock what it sets, the SW refuses the rest.
+  //      The policy SOURCE is stubbed (writing Chrome's policy directory needs root on the test machine);
+  //      validation, enforcement and the UI are the real ones. ----
+  {
+    const extId = sw.url().split("/")[2];
+    await sw.evaluate(async () => {
+      self.__realPolicy = managedPolicy;
+      // what a read of chrome.storage.managed would give: the full read (managedPolicy) and the cached one (policyValue)
+      policyValue = SA_MANAGED.clean({ mode: "strict", disablePause: true, allowlist: ["corp.example"], features: { cookies: false } });
+      managedPolicy = async () => policyValue;
+      await enforceManaged();
+    });
+    const op = await ctx.newPage();
+    await op.goto(`chrome-extension://${extId}/options/options.html`);
+    await op.waitForTimeout(900);
+    const o = await op.evaluate(() => {
+      const $ = (id) => document.getElementById(id);
+      const corp = [...document.querySelectorAll("#allowList button[data-host]")].find((b) => b.dataset.host === "corp.example");
+      return { banner: !$("managedBanner").hidden, mode: $("modeSelect").disabled ? $("modeSelect").value : "unlocked", cookies: $("featCookies").disabled && !$("featCookies").checked,
+        gpc: $("featGpc").disabled, corp: !!corp && corp.disabled, note: $("modeSelect").title };
+    });
+    ok(`policy: Settings shows the banner and locks the level, the feature and the allowed site, nothing else (${JSON.stringify(o)})`,
+      o.banner && o.mode === "strict" && o.cookies && o.gpc === false && o.corp && /organi[sz]ation/i.test(o.note));
+    const refused = await op.evaluate(() => new Promise((r) => chrome.runtime.sendMessage({ type: "setMode", mode: "basic" }, r)));
+    ok("policy: the service worker refuses a locked change sent anyway", refused && refused.ok === false && refused.reason === "managed");
+    const pp = await ctx.newPage();
+    await pp.goto(`chrome-extension://${extId}/popup/popup.html`);
+    await pp.waitForTimeout(700);
+    const pu = await pp.evaluate(() => ({ toggle: document.getElementById("toggle").disabled, pause: document.getElementById("pauseBtn").disabled }));
+    ok(`policy: no switch-off and no pause in the popup (${JSON.stringify(pu)})`, pu.toggle && pu.pause);
+    await pp.close(); await op.close();
+    await sw.evaluate(async () => {
+      managedPolicy = self.__realPolicy;
+      policyValue = null; policyP = null;
+      await chrome.storage.local.set({ mode: "standard", allowlist: [], features: { ...(await chrome.storage.local.get("features")).features, cookies: true } });
+      await syncAllowRules(); await syncPageScripts(); await applyState();
+    });
+  }
 } finally {
   await ctx.close();
 }

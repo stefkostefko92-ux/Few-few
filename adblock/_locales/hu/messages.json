@@ -856,5 +856,50 @@
   },
   "welTest": {
     "message": "Nézze meg működés közben egy tesztoldalon"
+  },
+  "modeHere": {
+    "message": "Védelem itt"
+  },
+  "modeBasic": {
+    "message": "Alap"
+  },
+  "modeStandard": {
+    "message": "Normál"
+  },
+  "modeStrict": {
+    "message": "Szigorú"
+  },
+  "opt_mode": {
+    "message": "Védelmi szint"
+  },
+  "opt_mode_sub": {
+    "message": "Minden webhelyre. Ha egy webhelynek saját szintet adna, nyissa meg rajta a bővítményt."
+  },
+  "modeHint": {
+    "message": "Alap: csak blokkolás a hálózaton. Normál: ajánlott. Szigorú: a keretekben is. Az oldal újratöltődik."
+  },
+  "modeBasicDesc": {
+    "message": "Csak blokkolás a hálózaton: a legkönnyebb, szinte semmi sem romlik el. A YouTube megtartja a saját védelmét."
+  },
+  "modeStandardDesc": {
+    "message": "Ajánlott: teljes védelem magán az oldalon."
+  },
+  "modeStrictDesc": {
+    "message": "A beágyazott keretekben is: a legtöbbet rejti el, a legtöbb memóriát használja."
+  },
+  "opt_who": {
+    "message": "Kiket állítottunk meg"
+  },
+  "opt_who_sub": {
+    "message": "Azok a cégek, amelyek szervereivel az elmúlt 30 napban nem engedtük kapcsolatba lépni a böngészőjét. Csak ezen az eszközön számoljuk, cégenként és naponként: nincs cím, nincs webhely."
+  },
+  "opt_who_empty": {
+    "message": "Még semmi sincs megszámolva. Böngésszen egy kicsit, és nézzen vissza."
+  },
+  "opt_who_row": {
+    "message": "Kérések: $1 · Napok: $2"
+  },
+  "managedNote": {
+    "message": "A szervezete állította be"
   }
 }

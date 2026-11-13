@@ -12,3 +12,4 @@ Supreme AdBlock chặn quảng cáo ở khắp mọi nơi — quảng cáo video
 • Trang web bị lỗi? Một cú nhấp là sửa được, hoặc báo cho chúng tôi — không gì được gửi đi khi bạn chưa xem trước.
 • Chuyển từ uBlock Origin, AdGuard hoặc Adblock Plus sang? Mang theo các trang web bạn đã cho phép và bộ lọc của bạn chỉ với một tệp.
 • Xem một trang kết nối tới những trang web nào khác, và chặn một trang web chỉ tại đó bằng một cú nhấp.
+• Mức bảo vệ: Cơ bản · Tiêu chuẩn · Nghiêm ngặt

@@ -12,3 +12,4 @@ Supreme AdBlock bloqueja els anuncis a tot arreu —anuncis de vídeo de YouTube
 • El lloc no funciona? Un clic ho arregla, o feu-nos-ho saber: no s’envia res sense que ho vegeu abans.
 • Veniu d’uBlock Origin, AdGuard o Adblock Plus? Porteu els vostres llocs permesos i filtres amb un sol fitxer.
 • Vegeu amb quins altres llocs es connecta una pàgina i bloquegeu-ne qualsevol només en aquell lloc amb un clic.
+• Nivell de protecció: Bàsica · Estàndard · Estricta
