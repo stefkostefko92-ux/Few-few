@@ -67,7 +67,7 @@ src/
   legal/         documents.ts (правните документи — единствен списък) · acceptance.ts (записът при приемане)
   pwa/           manifest.ts · device.ts (устройството по User-Agent за /prilozhenie)
   routes/        site · seo · health · pwa · legal · auth · account (нова парола, имейл) · install ·
-                 invite (/pokana) · app (+ app-catalog, app-security, app-inbox,
+                 invite (/pokana) · member-invite (/chlen) · app (+ app-issue, app-members, app-catalog, app-security, app-inbox,
                  app-clients, app-settings, app-shared) · admin (+ admin-settings, admin-actions) · webhooks
   http/          upload.ts — multipart (multer, в паметта) + CSRF след разчитането · view · ip · cookies
 views/           site/ (витрината — Дизайнера) · app/ · admin/ · auth/ · errors/ · partials/
@@ -114,6 +114,12 @@ scripts/         conformance/run.mjs (официалната проверка) �
 - **Заключване след грешни пароли** (`src/auth/lockout.ts`): опитът се заема атомарно преди проверката;
   5 грешни → 15 мин, после 1 ч → 4 ч → 24 ч; писмо „профилът е заключен“; заключеният и непознатият
   получават същия отговор (фиктивен хеш). Успешен вход и нова парола по връзка нулират.
+- **Анулиране** (`src/documents/annul.ts`, казусът — `docs/kazus-anulirane.md`): само погрешно съставен
+  документ (затворен списък причини по чл. 116, ал. 1–3, 6 ЗДДС), само без издадени известия към него и
+  само заедно с нов документ от същия вид — „Анулирай и издай нов“ (`/nov?zamenya=`), в транзакцията на
+  издаването. Номерът остава зает, веригата не се пипа (звеното хешира съдържанието при издаване);
+  анулирането е в одита. Протоколът по ал. 4 (`annul-protocol.ts`), печат „АНУЛИРАН“ в PDF-а
+  (`pdf-stamp.ts`), писмо до получателя в шкафчето. Отчетите не изключват анулирания (дневникът го иска).
 - **Кантора добавя клиент само с декларацията по т. 1а от договора за обработване** (кантората е
   обработващ на клиента, ние — подобработващ); записва се в `LegalAcceptance` за клиента.
 - **Подписът „Документът е създаден с fakturist.eu — продукт на Carbon Stealth VCC.“** е последният ред на

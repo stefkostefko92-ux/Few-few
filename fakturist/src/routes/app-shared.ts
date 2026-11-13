@@ -22,6 +22,9 @@ export const DOWNLOAD_SELECT = {
   sha256: true,
   firm: { select: { legalName: true } },
   mandate: { select: { documentRef: true } },
+  status: true,
+  cancelledAt: true,
+  replacedBy: { select: { number: true } },
 } as const;
 
 export type DownloadSource = {
@@ -34,6 +37,9 @@ export type DownloadSource = {
   sha256: string | null;
   firm: { legalName: string } | null;
   mandate: { documentRef: string } | null;
+  status?: string;
+  cancelledAt?: Date | null;
+  replacedBy?: { number: string | null } | null;
 };
 
 /** PDF (от същия вход като XML-а) или XML-ът, както е издаден. Само за изтегляне, без кеш. */

@@ -833,3 +833,20 @@ input[type='color'] {
   border-bottom: 1px solid var(--rule);
   overflow-wrap: anywhere;
 }
+
+/* Анулиран документ (SPEC 47): червената рамка — същият цвят като грешките, с контраст ≥ 4,5:1. */
+.callout.annulled {
+  border-color: var(--bad-ink);
+  background: var(--bad-bg);
+  color: var(--bad-ink);
+}
+.callout.annulled a {
+  color: inherit;
+}
+.annul-box select {
+  max-width: 100%;
+}
+.tag-revoked {
+  background: var(--bad-bg);
+  color: var(--bad-ink);
+}

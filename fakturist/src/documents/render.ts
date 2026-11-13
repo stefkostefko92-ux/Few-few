@@ -15,6 +15,21 @@ export interface PdfSource {
   sha256: string | null;
   firm: { legalName: string } | null;
   mandate: { documentRef: string } | null;
+  /** Анулиран документ (SPEC 47) — PDF-ът носи печат с датата и новия номер. */
+  status?: string;
+  cancelledAt?: Date | null;
+  replacedBy?: { number: string | null } | null;
+}
+
+function annulledText(document: PdfSource): string | null {
+  if (document.status !== 'CANCELLED') return null;
+  const date = document.cancelledAt
+    ? document.cancelledAt.toISOString().slice(0, 10).split('-').reverse().join('.')
+    : '';
+  const replaced = document.replacedBy?.number
+    ? ` — заменен с № ${document.replacedBy.number}`
+    : '';
+  return `АНУЛИРАН ${date}${replaced} (чл. 116 ЗДДС)`;
 }
 
 /**
@@ -40,6 +55,7 @@ export async function documentPdf(document: PdfSource): Promise<Buffer> {
         document.firm && document.mandate
           ? { firm: document.firm.legalName, mandateRef: document.mandate.documentRef }
           : null,
+      annulled: annulledText(document),
     },
     style,
   );

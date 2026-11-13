@@ -1,17 +1,8 @@
-import { Router, type Request, type Response } from 'express';
+import { Router } from 'express';
 import { prisma } from '../db.js';
 import { HttpError, requireOrg, requireUser } from '../auth/guards.js';
 import { roleCan } from '../auth/roles.js';
-import {
-  issueDocument,
-  IssueRejected,
-  IssueRequestSchema,
-  SeriesExhausted,
-} from '../documents/issue.js';
-import { formToIssueRequest } from '../documents/form.js';
-import { COMMON_UNITS, PAYMENT_MEANS, VAT_CATEGORIES } from '../einvoice/codes.js';
 import { money } from '../http/view.js';
-import { kickOutbox } from '../mail/outbox.js';
 import { softLimitState } from '../billing/plans.js';
 import { clientOwnerStatus } from '../accounts/transfer.js';
 import { DOWNLOAD_SELECT, param, sendDocumentFile } from './app-shared.js';
@@ -21,7 +12,7 @@ import { appClientsRouter } from './app-clients.js';
 import { appSettingsRouter } from './app-settings.js';
 import { appCatalogRouter } from './app-catalog.js';
 import { appMembersRouter } from './app-members.js';
-import { buyerFromParty, catalogForForm, saveBuyerAsParty } from '../catalog/document-prefill.js';
+import { appIssueRouter } from './app-issue.js';
 
 /** Документите, издадени от фирмата през текущия месец — за мекия лимит на безплатния план. */
 async function monthUsage(
@@ -49,6 +40,7 @@ export function appRouter(): Router {
   router.use(appSecurityRouter());
   router.use(appCatalogRouter());
   router.use(appMembersRouter());
+  router.use(appIssueRouter());
   router.use(appInboxRouter());
   router.use(appClientsRouter());
   router.use(appSettingsRouter());
@@ -137,60 +129,6 @@ export function appRouter(): Router {
     });
   });
 
-  router.get('/app/o/:orgId/nov', async (req, res) => {
-    const access = await requireOrg(req, 'documents.issue');
-    // „Документ към него“ от контрагентите: получателят идва попълнен.
-    const buyer = await buyerFromParty(access.organizationId, req.query['party']);
-    await renderNewDocument(req, res, access.organizationId, null, buyer ? { buyer } : {});
-  });
-
-  router.post('/app/o/:orgId/nov', async (req, res) => {
-    const access = await requireOrg(req, 'documents.issue');
-    const request = IssueRequestSchema.safeParse(formToIssueRequest(req.body));
-    if (!request.success) {
-      const issues = request.error.issues.map((issue) => ({
-        rule: 'INPUT',
-        path: issue.path.join('.'),
-        message: { bg: issue.message, en: issue.message },
-      }));
-      return renderNewDocument(req, res, access.organizationId, issues, req.body, 400);
-    }
-    try {
-      const result = await issueDocument(access, req.principal!.user.id, request.data);
-      if ((req.body as { saveBuyer?: unknown }).saveBuyer === 'on') {
-        await saveBuyerAsParty({
-          organizationId: access.organizationId,
-          actorId: req.principal!.user.id,
-          buyer: (req.body as { buyer?: unknown }).buyer,
-        });
-      }
-      // Писмата към шкафчето на получателя тръгват веднага след транзакцията (и от опашката при грешка).
-      if (result.delivery) kickOutbox();
-      res.redirect(303, `/app/o/${access.organizationId}/d/${result.id}?issued=1`);
-    } catch (error) {
-      if (error instanceof IssueRejected) {
-        return renderNewDocument(req, res, access.organizationId, error.issues, req.body, 400);
-      }
-      if (error instanceof SeriesExhausted) {
-        return renderNewDocument(
-          req,
-          res,
-          access.organizationId,
-          [
-            {
-              rule: 'SERIES',
-              path: 'seriesId',
-              message: { bg: 'Серията е изчерпана.', en: 'The series is exhausted.' },
-            },
-          ],
-          req.body,
-          400,
-        );
-      }
-      throw error;
-    }
-  });
-
   router.get('/app/o/:orgId/d/:docId', async (req, res) => {
     const access = await requireOrg(req, 'documents.read');
     const document = await prisma.document.findFirst({
@@ -200,6 +138,9 @@ export function appRouter(): Router {
         firm: { select: { legalName: true } },
         mandate: true,
         inboxEntries: { include: { recipientOrg: { select: { legalName: true } } } },
+        replacedBy: { select: { id: true, number: true } },
+        replaces: { select: { id: true, number: true } },
+        _count: { select: { followers: { where: { status: 'ISSUED' } } } },
       },
     });
     if (!document) throw new HttpError(404);
@@ -207,6 +148,12 @@ export function appRouter(): Router {
       document,
       money: (cents: bigint) => money(cents, document.currency, res.locals.lang),
       issued: req.query['issued'] === '1',
+      // „Анулирай и издай нов“ — издаден документ без известия към него (SPEC 47).
+      canAnnul:
+        roleCan(access.role, 'documents.cancel') &&
+        roleCan(access.role, 'documents.issue') &&
+        document.status === 'ISSUED' &&
+        document._count.followers === 0,
     });
   });
 
@@ -225,36 +172,4 @@ export function appRouter(): Router {
   });
 
   return router;
-}
-
-async function renderNewDocument(
-  req: Request,
-  res: Response,
-  organizationId: string,
-  issues: Array<{ rule: string; path: string; message: { bg: string; en: string } }> | null,
-  values: unknown,
-  status = 200,
-): Promise<void> {
-  const [org, series, catalog] = await Promise.all([
-    prisma.organization.findUniqueOrThrow({ where: { id: organizationId } }),
-    prisma.documentSeries.findMany({ where: { organizationId }, orderBy: { name: 'asc' } }),
-    catalogForForm(organizationId),
-  ]);
-  const today = new Date().toISOString().slice(0, 10);
-  res.status(status).render('app/document-new', {
-    org,
-    series,
-    parties: catalog.parties,
-    items: catalog.items,
-    scripts: ['document-form'],
-    issues,
-    values: typeof values === 'object' && values !== null ? values : {},
-    today,
-    units: COMMON_UNITS,
-    categories: VAT_CATEGORIES,
-    paymentMeans: PAYMENT_MEANS,
-    lineCount: 6,
-    canIssue: true,
-    reqPath: req.path,
-  });
 }

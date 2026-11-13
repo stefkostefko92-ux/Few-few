@@ -103,3 +103,61 @@ export function formToIssueRequest(body: unknown): Record<string, unknown> {
     lines,
   };
 }
+
+/**
+ * Обратното: записаният вход на документ → стойностите на формата (за „Анулирай и издай нов“ — новият
+ * документ започва като копие на анулирания). Датите и номерът не се пренасят: новият е днешен.
+ */
+export function inputToFormValues(input: unknown): Record<string, unknown> {
+  const doc = record(input);
+  const buyer = record(doc['buyer']);
+  const address = record(buyer['address']);
+  const payment = record(doc['payment']);
+  const notes = Array.isArray(doc['notes']) ? doc['notes'] : [];
+  const preceding = list(doc['precedingInvoices'])[0] ?? {};
+  const exemption = list(doc['vatExemptions'])[0] ?? {};
+  const str = (value: unknown) => (typeof value === 'string' ? value : '');
+  return {
+    typeCode: str(doc['typeCode']),
+    dueDate: '',
+    currency: str(doc['currency']),
+    eurExchangeRate: str(doc['eurExchangeRate']),
+    buyerReference: str(doc['buyerReference']),
+    orderReference: str(doc['orderReference']),
+    paymentTerms: str(doc['paymentTerms']),
+    note: typeof notes[0] === 'string' ? notes[0] : '',
+    preceding: { number: str(preceding['number']), issueDate: str(preceding['issueDate']) },
+    buyer: {
+      name: str(buyer['name']),
+      legalId: str(buyer['legalId']),
+      vatId: str(buyer['vatId']),
+      street: str(address['street']),
+      city: str(address['city']),
+      postalCode: str(address['postalCode']),
+      countryCode: str(address['countryCode']),
+    },
+    payment: {
+      meansCode: str(payment['meansCode']),
+      accountId: str(payment['accountId']),
+      bic: str(payment['bic']),
+    },
+    exemption: {
+      category: str(exemption['category']),
+      reason: str(exemption['reason']),
+      code: str(exemption['reasonCode']),
+    },
+    lines: list(doc['lines']).map((line) => {
+      const vat = record(line['vat']);
+      const discount = list(line['allowanceCharges']).find((a) => a['isCharge'] === false);
+      return {
+        name: str(line['name']),
+        quantity: str(line['quantity']),
+        unitCode: str(line['unitCode']),
+        netPrice: str(line['netPrice']),
+        category: str(vat['category']),
+        rate: str(vat['rate']),
+        discount: discount ? str(discount['percent']) : '',
+      };
+    }),
+  };
+}

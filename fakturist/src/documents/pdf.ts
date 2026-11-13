@@ -6,7 +6,7 @@ import type { InvoiceInput, PartyInput } from '../einvoice/model.js';
 import { bgAmount, bgDate, MEANS, partyLines, TITLES, UNITS, unitPrice } from './pdf-format.js';
 import { drawDates, drawHeader, INK, METRICS, RULE, SOFT, tint, type Frame } from './pdf-layout.js';
 import type { ResolvedPdfStyle } from './pdf-style.js';
-
+import { drawAnnulledStamp } from './pdf-stamp.js';
 export { bgAmount } from './pdf-format.js';
 
 /**
@@ -22,6 +22,7 @@ export interface PdfMeta {
   signature: string | undefined;
   /** Кантората и пълномощното, когато документът е издаден от името на фирмата. */
   issuedVia: { firm: string; mandateRef: string } | null;
+  annulled?: string | null; // „АНУЛИРАН …“ горе на всяка страница (чл. 116 ЗДДС, pdf-stamp.ts)
 }
 
 export function renderPdf(
@@ -271,6 +272,7 @@ export function renderPdf(
   const pages = doc.bufferedPageRange();
   for (let i = 0; i < pages.count; i += 1) {
     doc.switchToPage(pages.start + i);
+    if (meta.annulled) drawAnnulledStamp(doc, meta.annulled, frame);
     // Под долното поле: без временно нулево поле pdfkit би пренесъл текста на нова страница.
     const savedBottom = doc.page.margins.bottom;
     doc.page.margins.bottom = 0;

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '../db.js';
 import { audit } from '../audit.js';
+import { annulInTx, type AnnulReason } from './annul.js';
 import { sealHmac } from '../auth/keys.js';
 import { setting } from '../admin/settings.js';
 import {
@@ -127,6 +128,8 @@ export async function issueDocument(
   access: OrgAccess,
   actorId: string,
   request: IssueRequest,
+  /** Анулиране по чл. 116 ЗДДС: новият документ заменя `documentId` в същата транзакция. */
+  options: { replaces?: { documentId: string; reason: AnnulReason } } = {},
 ): Promise<{ id: string; number: string; warnings: Issue[]; delivery: Delivery | null }> {
   const [deadlineDays, requireBankAccount, profile, signature] = await Promise.all([
     setting('issue.deadlineDays'),
@@ -240,6 +243,16 @@ export async function issueDocument(
         mandateId: access.mandateId,
       },
     });
+    if (options.replaces) {
+      await annulInTx(tx, {
+        organizationId: org.id,
+        oldId: options.replaces.documentId,
+        newId: document.id,
+        newTypeCode: built.input.typeCode,
+        reason: options.replaces.reason,
+        actorId,
+      });
+    }
     // Шкафчето: получател, регистриран във Фактурист (по ЕИК), получава документа и писмо (опашката).
     const delivery = await deliverToInbox(tx, {
       documentId: document.id,

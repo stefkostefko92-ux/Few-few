@@ -13,7 +13,7 @@
     <tr<%= e.readAt ? '' : ' class="unread"' %>>
       <td><a href="/app/o/<%= org.id %>/shkafche/<%= e.id %>"><%= e.senderOrg.legalName %></a><% if (!e.senderOrg.verifiedAt) { %> <span class="tag tag-pending"><%= t('app.inbox.unverified') %></span><% } %></td>
       <td><%= t('app.types.' + e.document.typeCode) %></td>
-      <td class="mono"><%= e.document.number %></td>
+      <td class="mono"><%= e.document.number %><% if (e.document.status === 'CANCELLED') { %> <span class="tag tag-revoked"><%= t('app.statuses.CANCELLED') %></span><% } %></td>
       <td class="mono"><%= e.document.issueDate.toISOString().slice(0, 10) %></td>
       <td class="num mono"><%= money(e.document.payableCents, e.document.currency) %></td>
       <td><%= t('app.inbox.status.' + e.status) %><% if (!e.readAt) { %> · <strong><%= t('app.inbox.new') %></strong><% } %></td>

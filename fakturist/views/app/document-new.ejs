@@ -34,8 +34,21 @@
 <% } %>
 <form method="post" action="/app/o/<%= org.id %>/nov" class="doc-form">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <% if (replacing) { %>
+  <fieldset class="callout annul-box">
+    <legend><%= t('app.annul.title') %></legend>
+    <p><%= t('app.annul.lead', { number: replacing.number, date: replacing.issueDate.toISOString().slice(0, 10).split('-').reverse().join('.') }) %></p>
+    <input type="hidden" name="replaces" value="<%= replacing.id %>">
+    <input type="hidden" name="typeCode" value="<%= replacing.typeCode %>">
+    <label><%= t('app.annul.reason') %><select name="annulReason" required>
+      <option value=""><%= t('app.annul.choose') %></option>
+      <% annulReasons.forEach((r) => { %><option value="<%= r %>"<%= val('annulReason') === r ? ' selected' : '' %>><%= t('app.annul.reasons.' + r) %></option><% }) %>
+    </select></label>
+    <p class="hint"><%= t('app.annul.hint') %></p>
+  </fieldset>
+  <% } %>
   <fieldset class="grid-4">
-    <label><%= t('app.doc.type') %><select name="typeCode">
+    <label><%= t('app.doc.type') %><select name="typeCode"<%= replacing ? ' disabled' : '' %>>
       <% ['380','381','383','386'].forEach((code) => { %><option value="<%= code %>"<%= sel('typeCode', code, '380') %>><%= t('app.types.' + code) %></option><% }) %>
     </select></label>
     <label><%= t('app.doc.series') %><select name="seriesId">

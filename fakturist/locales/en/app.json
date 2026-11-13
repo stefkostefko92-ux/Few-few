@@ -385,5 +385,23 @@
       "notFound": "No such record.",
       "self": "You cannot change your own role."
     }
+  },
+  "annul": {
+    "button": "Annul and issue a new one",
+    "title": "Annulment under Art. 116 of the VAT Act",
+    "lead": "You are annulling document no. {number} of {date}. The document you are issuing now replaces it — both happen in one step. The annulled number stays taken.",
+    "reason": "Reason",
+    "choose": "— choose —",
+    "hint": "Only for an incorrectly drawn up document. A discount, return or cancelled supply is corrected with a credit or debit note (Art. 115 of the VAT Act).",
+    "isAnnulled": "ANNULLED on {date}",
+    "replacedBy": "Replaced by",
+    "replaces": "Replaces the annulled document",
+    "protocol": "Annulment protocol (PDF)",
+    "reasons": {
+      "requisite": "Wrong particular (Art. 116(1))",
+      "vatMissing": "VAT not charged when it should have been (para. 2)",
+      "vatCharged": "VAT charged when it should not have been (para. 3)",
+      "vatRate": "Wrong VAT rate (para. 6)"
+    }
   }
 }

@@ -51,6 +51,7 @@ export function appInboxRouter(): Router {
           document: {
             select: {
               number: true,
+              status: true,
               typeCode: true,
               issueDate: true,
               payableCents: true,

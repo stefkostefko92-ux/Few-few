@@ -107,6 +107,7 @@ model User {
   sessions              Session[]
   memberships           Membership[]
   issuedDocuments       Document[]        @relation("IssuedBy")
+  cancelledDocuments    Document[]        @relation("CancelledBy")
   auditEntries          AuditLog[]
   inboxDecisions        InboxEntry[]
   mandatesCreated       ClientMandate[]
@@ -351,7 +352,14 @@ model Document {
   inboxEntries       InboxEntry[]
   issuedAt           DateTime?
   cancelledAt        DateTime?
+  /// Кодът на причината за анулиране (src/documents/annul.ts — затворен списък по чл. 116 ЗДДС).
   cancelReason       String?
+  /// Новият документ, издаден на мястото на анулирания (чл. 116, ал. 1 — анулира се и се издава нов).
+  replacedById       String?         @unique
+  replacedBy         Document?       @relation("Replacement", fields: [replacedById], references: [id], onDelete: Restrict)
+  replaces           Document?       @relation("Replacement")
+  cancelledById      String?
+  cancelledBy        User?           @relation("CancelledBy", fields: [cancelledById], references: [id], onDelete: SetNull)
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
 
@@ -361,6 +369,7 @@ model Document {
   @@index([organizationId, status])
   @@index([seriesId])
   @@index([issuedById])
+  @@index([cancelledById])
   @@index([firmId])
   @@index([mandateId])
   @@index([precedingId])
