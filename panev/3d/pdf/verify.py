@@ -85,6 +85,7 @@ for sec in data["sezioni"]["pages"]:
     changed[sec["page"]] = [pymupdf.Rect(sec["rect"])]
 for rt in data["ritocchi"]["pages"]:  # the legend, the comparison table, the side tabs (old place and new pill)
     zones_rt = ([R.LEG_AREA] if "legend" in rt else []) + ([R.TAB_AREA] if "table" in rt else []) + ([pymupdf.Rect(rt["tab"]["old"]) | pymupdf.Rect(rt["tab"]["area"])] if "tab" in rt else [])
+    zones_rt += [R.SHIP_AREA] if "shipping" in rt else []
     changed.setdefault(rt["page"], []).extend(zones_rt)
 changed[5] = [pymupdf.Rect(r) for _, _, r, _, _ in L.P5] + [pymupdf.Rect(r) for r in L.P5_OLD]
 renders[5] = [pymupdf.Rect(r) for _, _, r, _, _ in L.P5]
