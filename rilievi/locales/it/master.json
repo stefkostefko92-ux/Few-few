@@ -137,7 +137,8 @@
           "ok": "Annuncio inviato: banner nel portale ed email agli amministratori.",
           "gia": "Questa versione è già stata annunciata.",
           "nessuna": "Non c'è una nuova versione da annunciare."
-        }
+        },
+        "daSola": "Entra in vigore da sola, senza annuncio: non devi fare nulla. Le aziende già segnate con questa versione continuano a lavorare; da quel giorno puoi chiedere la firma."
       }
     },
     "verifica": {

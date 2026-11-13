@@ -21,7 +21,9 @@
   <% if (prossima) { const giornoV = new Date(prossima.versione + 'T12:00:00Z'); const entro = new Date(giornoV.getTime() - preavviso * 86400000); %><section class="notice" aria-labelledby="h-prossima">
     <h2 id="h-prossima"><%= t('master.contratti.prossima.titolo') %></h2>
     <p><%= t('master.contratti.prossima.testo', { versione: fmt.day(giornoV), quando: prossima.dal ? t('master.contratti.prossima.dal', { data: fmt.dayRoma(prossima.dal) }) : t('master.contratti.prossima.nonAnnunciata', { data: fmt.day(giornoV) }), link: '/condizioni/prossima' }) %></p>
-    <% if (prossima.annunciataAt) { %><p><%= prossima.email !== null ? t('master.contratti.prossima.annunciata', { data: fmt.dateTime(prossima.annunciataAt), n: prossima.email }) : t('master.contratti.prossima.annunciataSenzaNumero', { data: fmt.dateTime(prossima.annunciataAt) }) %></p>
+    <% if (prossima.daSola) { %><p><strong><%= t('master.contratti.prossima.daSola') %></strong></p>
+    <div class="toolbar"><a class="btn" href="/condizioni/prossima"><%- include('../partials/icon', { name: 'seal' }) %><span><%= t('legale.prossima.cambia') %></span></a></div>
+    <% } else if (prossima.annunciataAt) { %><p><%= prossima.email !== null ? t('master.contratti.prossima.annunciata', { data: fmt.dateTime(prossima.annunciataAt), n: prossima.email }) : t('master.contratti.prossima.annunciataSenzaNumero', { data: fmt.dateTime(prossima.annunciataAt) }) %></p>
     <% } else { %><p><strong><%= t('master.contratti.prossima.ultimoGiorno', { data: fmt.day(entro) }) %></strong></p>
     <form method="post" action="/master/contratti/annuncia" data-conferma="<%= t('master.contratti.prossima.conferma') %>">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">

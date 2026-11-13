@@ -24,6 +24,16 @@ describe('announcing the new terms', () => {
       assert.equal(VERSIONE.CONDIZIONI, '2026-11-13');
       assert.equal(page.status, 200);
       assert.match(page.body, /12\.10 Partita IVA e IVA/);
+      // It comes into force by itself: the console says so and offers nothing to announce.
+      const { browser: master } = await signedIn('MASTER');
+      const contratti = await master.get('/master/contratti', HTML);
+      assert.match(contratti.body, /Entra in vigore da sola, senza annuncio/);
+      assert.doesNotMatch(contratti.body, /Annuncia agli amministratori/);
+      assert.doesNotMatch(contratti.body, /va annunciata entro/);
+      const tentativo = await master.submit('/account', '/master/contratti/annuncia', {});
+      assert.equal(tentativo.status, 303);
+      assert.equal(await prisma.annuncioTesto.count(), 0);
+      assert.equal(await prisma.comunicazione.count(), 0);
       return;
     }
     assert.equal(page.status, 303);

@@ -4,7 +4,13 @@ import { creaComunicazione } from '../master/comunicazioni.js';
 import { giornoRoma } from '../master/tempo.js';
 import type { SessionUser } from '../types.js';
 import { DEFAULT_LOCALE, translate } from '../i18n.js';
-import { dataEntrata, impostaAnnunci, versioneProssima, type TipoTesto } from './versioni.js';
+import {
+  dataEntrata,
+  impostaAnnunci,
+  SENZA_PREAVVISO,
+  versioneProssima,
+  type TipoTesto,
+} from './versioni.js';
 
 /**
  * Обявата на нова версия (чл. 18.1 на условията; собственикът, 12 ноември 2026): MASTER я пуска от
@@ -41,6 +47,8 @@ export async function annunciaVersione(
 ): Promise<EsitoAnnuncio> {
   const prossima = versioneProssima(tipo, now);
   if (!prossima) return 'nessuna';
+  // Версия, която влиза сама от своя ден (без обява — versioni.ts): няма какво да се обявява.
+  if (SENZA_PREAVVISO[tipo].includes(prossima.versione)) return 'nessuna';
   if (inCorso) return 'gia';
   inCorso = true;
   try {
@@ -97,5 +105,10 @@ export async function statoAnnuncio(tipo: TipoTesto, now = new Date()) {
     where: { tipo_versione: { tipo, versione: prossima.versione } },
     select: { annunciatoAt: true, emailInviate: true },
   });
-  return { ...prossima, email: riga?.emailInviate ?? null };
+  return {
+    ...prossima,
+    email: riga?.emailInviate ?? null,
+    // Влиза сама от своя ден: конзолата не предлага обява и не говори за 30-те дни.
+    daSola: SENZA_PREAVVISO[tipo].includes(prossima.versione),
+  };
 }

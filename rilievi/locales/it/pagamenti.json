@@ -195,7 +195,8 @@
         "viesData": "Data VIES"
       },
       "fatturaNumero": "Numero fattura (facoltativo)",
-      "fatturaNumeroErrore": "Il numero della fattura può avere lettere, cifre, spazi e i segni . / - _ #, fino a 40 caratteri."
+      "fatturaNumeroErrore": "Il numero della fattura può avere lettere, cifre, spazi e i segni . / - _ #, fino a 40 caratteri.",
+      "fatturaNumeroBreve": "N. fattura"
     },
     "mail": {
       "subject": "Pagamento ricevuto — {azienda} — Rilievi Impianti",

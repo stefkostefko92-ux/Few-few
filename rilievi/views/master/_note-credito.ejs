@@ -20,7 +20,7 @@
         <td data-label="<%= t(n + 'colonna.importo') %>"><%= importi(x) %></td>
         <td data-label="<%= t(n + 'colonna.entro') %>"><%= fmt.dayRoma(x.entroIl) %><% if (x.entroIl < note.adesso) { %><br><strong><%= t(n + 'scaduta') %></strong><% } %></td>
         <td data-label="<%= t(n + 'colonna.emissione') %>"><form class="row-form" method="post" action="/master/pagamenti/note-credito/<%= x.id %>/emessa"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <label class="visually-hidden" for="nc-numero-<%= x.id %>"><%= t(n + 'numero') %></label><input class="input" id="nc-numero-<%= x.id %>" name="numero" type="text" maxlength="40" required placeholder="<%= t(n + 'numero') %>">
+          <label class="visually-hidden" for="nc-numero-<%= x.id %>"><%= t(n + 'numero') %></label><input class="input" id="nc-numero-<%= x.id %>" name="numero" type="text" maxlength="40" required placeholder="<%= t(n + 'numeroBreve') %>">
           <label class="visually-hidden" for="nc-data-<%= x.id %>"><%= t(n + 'data') %></label><input class="input" id="nc-data-<%= x.id %>" name="data" type="date" required value="<%= note.oggi %>" max="<%= note.oggi %>">
           <button class="btn btn--sm" type="submit" aria-label="<%= t(n + 'segnaPer', { cliente: x.pagamento.ragioneSociale }) %>"><%= t(n + 'segna') %></button></form></td>
       </tr>

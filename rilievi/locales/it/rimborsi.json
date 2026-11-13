@@ -134,7 +134,8 @@
         "regime": "Regime IVA",
         "numero": "Nota di credito n.",
         "emessa": "Emessa il"
-      }
+      },
+      "numeroBreve": "N. nota"
     }
   }
 }
