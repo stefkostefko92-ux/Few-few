@@ -15290,7 +15290,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 213
+        "lessons": 219
       },
       "evolution": [
         {
@@ -15382,9 +15382,20 @@
           "date": "2026-11-04",
           "event": "v21.5 — учене",
           "detail": "Научи: Нови чисти решения за предупреждение (console.warn) се изразяват като функция, която вр… (+9 още)"
+        },
+        {
+          "version": "21.9.0",
+          "date": "2026-11-13",
+          "event": "v21.9 — учене",
+          "detail": "Научи: Когато CSRF пазачът сравнява заглавието Origin с PUBLIC_BASE_URL, e2e сървърът трябва д… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „Когато CSRF пазачът сравнява заглавието Origin с PUBLIC_BASE_URL, e2e сървърът трябва д…\" (+3 още)"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
