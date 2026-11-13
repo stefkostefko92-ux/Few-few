@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 643
+        "lessons": 644
       },
       "evolution": [
         {
@@ -2037,9 +2037,20 @@
           "date": "2026-11-13",
           "event": "v58.3 — учене",
           "detail": "Научи: Отнемане на собственост, което само сваля пълномощното на поканилия посредник от ACTIVE… (+22 още)"
+        },
+        {
+          "version": "58.4.0",
+          "date": "2026-11-13",
+          "event": "v58.4 — учене",
+          "detail": "Научи: В live-run worktree дори единичната команда node --test <файл> иска одобрение, затова и…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „В live-run worktree дори единичната команда node --test <файл> иска одобрение, затова и…\""
+        },
         {
           "date": "2026-11-13",
           "type": "learning",
