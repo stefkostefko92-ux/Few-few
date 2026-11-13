@@ -49,7 +49,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 445
+        "lessons": 448
       },
       "evolution": [
         {
@@ -621,9 +621,20 @@
           "date": "2026-11-13",
           "event": "v39.8 — учене",
           "detail": "Научи: Ротация на резервни копия по брой (пази последните N дъмпа, правени само преди деплой) … (+13 още)"
+        },
+        {
+          "version": "40.1.0",
+          "date": "2026-11-13",
+          "event": "v40.1 — учене",
+          "detail": "Научи: WP194 (WP29 Opinion 04/2012) §3.3 освобождава от съгласие „user-centric security cookie… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „WP194 (WP29 Opinion 04/2012) §3.3 освобождава от съгласие „user-centric security cookie…\" (+2 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-13",
           "type": "learning",
