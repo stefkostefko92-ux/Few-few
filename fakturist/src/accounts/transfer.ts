@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { randomToken, sha256Hex } from '../crypto.js';
@@ -201,80 +201,89 @@ export async function acceptTransferInvite(input: {
     newUser = { name, passwordHash: await hashPassword(input.user.password) };
   }
 
-  return prisma.$transaction(async (tx) => {
-    const invite = await tx.transferInvite.findUniqueOrThrow({ where: { tokenHash } });
-    await lockOrganization(tx, invite.organizationId);
-    const org = await tx.organization.findUniqueOrThrow({
-      where: { id: invite.organizationId },
-      select: { deletedAt: true },
-    });
-    if (!isOpen(invite, now) || org.deletedAt) throw new TransferError('invalid');
-    if ((await ownerCount(tx, invite.organizationId)) > 0) throw new TransferError('invalid');
-
-    let userId: string;
-    if (newUser) {
-      if (await tx.user.findUnique({ where: { email: invite.email }, select: { id: true } })) {
-        throw new TransferError('loginRequired');
-      }
-      const user = await tx.user.create({
-        data: {
-          email: invite.email,
-          name: newUser.name,
-          passwordHash: newUser.passwordHash,
-          emailVerifiedAt: now,
-        },
+  try {
+    return await prisma.$transaction(async (tx) => {
+      const invite = await tx.transferInvite.findUniqueOrThrow({ where: { tokenHash } });
+      await lockOrganization(tx, invite.organizationId);
+      const org = await tx.organization.findUniqueOrThrow({
+        where: { id: invite.organizationId },
+        select: { deletedAt: true },
       });
-      userId = user.id;
-    } else {
-      const id = 'userId' in input.user ? input.user.userId : '';
-      const user = await tx.user.findUnique({ where: { id } });
-      if (!user || user.disabledAt) throw new TransferError('invalid');
-      if (user.email !== invite.email) throw new TransferError('wrongEmail');
-      userId = user.id;
-      // Връзката от писмото доказва, че имейлът е негов.
-      if (!user.emailVerifiedAt) {
-        await tx.user.update({ where: { id: user.id }, data: { emailVerifiedAt: now } });
+      if (!isOpen(invite, now) || org.deletedAt) throw new TransferError('invalid');
+      if ((await ownerCount(tx, invite.organizationId)) > 0) throw new TransferError('invalid');
+
+      let userId: string;
+      if (newUser) {
+        if (await tx.user.findUnique({ where: { email: invite.email }, select: { id: true } })) {
+          throw new TransferError('loginRequired');
+        }
+        const user = await tx.user.create({
+          data: {
+            email: invite.email,
+            name: newUser.name,
+            passwordHash: newUser.passwordHash,
+            emailVerifiedAt: now,
+          },
+        });
+        userId = user.id;
+      } else {
+        const id = 'userId' in input.user ? input.user.userId : '';
+        const user = await tx.user.findUnique({ where: { id } });
+        if (!user || user.disabledAt) throw new TransferError('invalid');
+        if (user.email !== invite.email) throw new TransferError('wrongEmail');
+        userId = user.id;
+        // Връзката от писмото доказва, че имейлът е негов.
+        if (!user.emailVerifiedAt) {
+          await tx.user.update({ where: { id: user.id }, data: { emailVerifiedAt: now } });
+        }
       }
-    }
 
-    const claimed = await tx.transferInvite.updateMany({
-      where: { id: invite.id, acceptedAt: null, revokedAt: null, expiresAt: { gt: now } },
-      data: { acceptedAt: now, acceptedById: userId },
-    });
-    if (claimed.count !== 1) throw new TransferError('invalid');
-
-    await tx.membership.upsert({
-      where: { userId_organizationId: { userId, organizationId: invite.organizationId } },
-      create: { userId, organizationId: invite.organizationId, role: 'OWNER' },
-      update: { role: 'OWNER' },
-    });
-    // Фирмата, добавена от кантора, няма собствен план — получава безплатния, както при регистрация.
-    const active = await tx.subscription.findFirst({
-      where: { organizationId: invite.organizationId, status: 'ACTIVE' },
-      select: { id: true },
-    });
-    if (!active) {
-      const periodEnd = new Date(now);
-      periodEnd.setUTCFullYear(periodEnd.getUTCFullYear() + 100);
-      await tx.subscription.create({
-        data: {
-          organizationId: invite.organizationId,
-          planCode: 'free',
-          currentPeriodStart: now,
-          currentPeriodEnd: periodEnd,
-        },
+      const claimed = await tx.transferInvite.updateMany({
+        where: { id: invite.id, acceptedAt: null, revokedAt: null, expiresAt: { gt: now } },
+        data: { acceptedAt: now, acceptedById: userId },
       });
-    }
-    await audit(tx, {
-      actorId: userId,
-      organizationId: invite.organizationId,
-      action: 'organization.transfer.accepted',
-      targetType: 'TransferInvite',
-      targetId: invite.id,
-      details: { newAccount: newUser !== null },
+      if (claimed.count !== 1) throw new TransferError('invalid');
+
+      await tx.membership.upsert({
+        where: { userId_organizationId: { userId, organizationId: invite.organizationId } },
+        create: { userId, organizationId: invite.organizationId, role: 'OWNER' },
+        update: { role: 'OWNER' },
+      });
+      // Фирмата, добавена от кантора, няма собствен план — получава безплатния, както при регистрация.
+      const active = await tx.subscription.findFirst({
+        where: { organizationId: invite.organizationId, status: 'ACTIVE' },
+        select: { id: true },
+      });
+      if (!active) {
+        const periodEnd = new Date(now);
+        periodEnd.setUTCFullYear(periodEnd.getUTCFullYear() + 100);
+        await tx.subscription.create({
+          data: {
+            organizationId: invite.organizationId,
+            planCode: 'free',
+            currentPeriodStart: now,
+            currentPeriodEnd: periodEnd,
+          },
+        });
+      }
+      await audit(tx, {
+        actorId: userId,
+        organizationId: invite.organizationId,
+        action: 'organization.transfer.accepted',
+        targetType: 'TransferInvite',
+        targetId: invite.id,
+        details: { newAccount: newUser !== null },
+      });
+      return { userId, organizationId: invite.organizationId, created: newUser !== null };
     });
-    return { userId, organizationId: invite.organizationId, created: newUser !== null };
-  });
+  } catch (error) {
+    // Две покани (за различни фирми) към един нов имейл, приети едновременно: заключването е по фирма,
+    // затова решава уникалният индекс — вторият вече има профил и трябва да влезе.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      throw new TransferError('loginRequired');
+    }
+    throw error;
+  }
 }
 
 /** За картата на фирмата в мастър панела: има ли собственик и чакаща покана. */

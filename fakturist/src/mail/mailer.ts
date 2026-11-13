@@ -35,20 +35,30 @@ function fingerprint(settings: SmtpSettings): string {
     .digest('hex');
 }
 
+/**
+ * Опциите на транспорта. Без TLS от началото (2525/587) STARTTLS е задължителен: nodemailer иначе
+ * минава на TLS само ако сървърът го обяви — нападател по пътя, който махне обявата, би видял ключа и
+ * писмата (с връзките на поканите) в явен текст. `requireTLS` прави това грешка.
+ */
+export function transportOptions(settings: SmtpSettings) {
+  return {
+    host: settings.host,
+    port: settings.port,
+    secure: settings.secure,
+    requireTLS: !settings.secure,
+    auth: settings.user && settings.pass ? { user: settings.user, pass: settings.pass } : undefined,
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 20_000,
+  };
+}
+
 /** Транспортът за настройките (Brevo SMTP от панела или от .env). */
 export function smtpTransport(settings: SmtpSettings): Transporter {
   const print = fingerprint(settings);
   if (current?.fingerprint === print) return current.transporter;
   current?.transporter.close();
-  const transporter = nodemailer.createTransport({
-    host: settings.host,
-    port: settings.port,
-    secure: settings.secure,
-    auth: settings.user && settings.pass ? { user: settings.user, pass: settings.pass } : undefined,
-    connectionTimeout: 10_000,
-    greetingTimeout: 10_000,
-    socketTimeout: 20_000,
-  });
+  const transporter = nodemailer.createTransport(transportOptions(settings));
   current = { fingerprint: print, transporter };
   return transporter;
 }

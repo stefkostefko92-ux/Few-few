@@ -19,9 +19,11 @@ const {
 const { checkRevolut, checkSmtp, scrub, REVOLUT_API_VERSION } =
   await import('../src/admin/integration-checks.js');
 const { transferInviteMail } = await import('../src/mail/templates.js');
+const { transportOptions } = await import('../src/mail/mailer.js');
 
 const BREVO_KEY = 'xsmtpsib-0123456789abcdef0123456789abcdef-AbCd';
-const SK = 'sk_test_0123456789abcdefghijklmnopqrstuv';
+// Сглобени по време на изпълнение — да не приличат на истински ключ за скенерите на тайни.
+const SK = ['sk', 'fake', 'revolut', '0123456789abcdef'].join('_');
 const WSK = 'wsk_0123456789abcdefghijklmnop';
 
 const smtpBody = {
@@ -251,4 +253,34 @@ test('писмото с поканата: екранирано име, връз�
   assert.ok(mail.text.includes('20.11.2026'));
   assert.equal(mail.text.split('TOKEN123').length - 1, 1);
   assert.ok(mail.subject.includes('Фирма <script>'));
+});
+
+test('SMTP сървър във вътрешната мрежа (IP, localhost, име без домейн) се отказва', () => {
+  for (const host of ['127.0.0.1', '169.254.169.254', 'localhost', 'postgres', 'db.internal']) {
+    const result = parseIntegrationForm('smtp', { ...smtpBody, host }, {});
+    assert.ok(!result.ok && result.errors['host'] === 'invalidHost', host);
+  }
+});
+
+test('нечетими записани тайни не се трият тихо: искат се наново', () => {
+  const lost = parseIntegrationForm('smtp', { ...smtpBody, pass: '' }, {}, ['pass']);
+  assert.ok(!lost.ok && lost.errors['pass'] === 'reenterSecret');
+  const renewed = parseIntegrationForm('smtp', smtpBody, {}, ['pass']);
+  assert.ok(renewed.ok && renewed.secrets['pass'] === BREVO_KEY);
+  const cleared = parseIntegrationForm('smtp', { ...smtpBody, pass: '', clear_pass: 'on' }, {}, [
+    'pass',
+  ]);
+  assert.ok(cleared.ok && cleared.cleared.includes('pass'));
+});
+
+test('SMTP без TLS от началото иска STARTTLS — без него връзката се отказва', () => {
+  const base = {
+    source: 'panel' as const,
+    host: 'smtp-relay.brevo.com',
+    user: 'u',
+    pass: BREVO_KEY,
+    from: 'a@b.c',
+  };
+  assert.equal(transportOptions({ ...base, port: 2525, secure: false }).requireTLS, true);
+  assert.equal(transportOptions({ ...base, port: 465, secure: true }).requireTLS, false);
 });

@@ -75,7 +75,8 @@
       "invalidFrom": "Подателят е „Име <адрес>“ или само адрес.",
       "invalidSecret": "Ключът е поне 8 знака, без интервали.",
       "invalidWebhookSecret": "Тайната на webhook-а започва с wsk_.",
-      "invalidEnvironment": "Изберете sandbox или продукция."
+      "invalidEnvironment": "Изберете sandbox или продукция.",
+      "reenterSecret": "Записаният ключ не се чете — въведете го наново или отметнете „Изтрий“."
     },
     "options": {
       "sandbox": "Sandbox (тестове)",
@@ -86,7 +87,8 @@
     "clearSecret": "Изтрий записания ключ",
     "webhookUrl": "Адресът на webhook-а за Revolut:",
     "checkSmtp": "Провери и прати пробно писмо до {email}",
-    "checkRevolut": "Провери връзката с Revolut"
+    "checkRevolut": "Провери връзката с Revolut",
+    "unreadable": "Записаните ключове не се четат (повреден запис или сменен LEDGER_SEAL_KEY). Въведете ги наново или ги изтрийте изрично."
   },
   "transfer": {
     "title": "Прехвърляне към собственика",

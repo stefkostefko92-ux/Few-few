@@ -75,7 +75,8 @@
       "invalidFrom": "The sender is “Name <address>” or just an address.",
       "invalidSecret": "The key is at least 8 characters, no spaces.",
       "invalidWebhookSecret": "The webhook secret starts with wsk_.",
-      "invalidEnvironment": "Choose sandbox or production."
+      "invalidEnvironment": "Choose sandbox or production.",
+      "reenterSecret": "The saved key cannot be read — enter it again or tick “Delete”."
     },
     "options": {
       "sandbox": "Sandbox (testing)",
@@ -86,7 +87,8 @@
     "clearSecret": "Delete the saved key",
     "webhookUrl": "Webhook address for Revolut:",
     "checkSmtp": "Check and send a test email to {email}",
-    "checkRevolut": "Check the Revolut connection"
+    "checkRevolut": "Check the Revolut connection",
+    "unreadable": "The saved keys cannot be read (damaged record or a changed LEDGER_SEAL_KEY). Enter them again or delete them explicitly."
   },
   "transfer": {
     "title": "Transfer to the owner",

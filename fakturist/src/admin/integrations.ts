@@ -67,8 +67,8 @@ export const INTEGRATIONS = {
         secret: false,
         label: { bg: 'TLS от началото на връзката', en: 'TLS from the start' },
         help: {
-          bg: 'Само за порт 465. На 2525 и 587 връзката минава на TLS сама (STARTTLS).',
-          en: 'Port 465 only. On 2525 and 587 the connection upgrades to TLS itself (STARTTLS).',
+          bg: 'Само за порт 465. На 2525 и 587 връзката минава на TLS със STARTTLS — без него не се свързва.',
+          en: 'Port 465 only. On 2525 and 587 the connection upgrades to TLS with STARTTLS — or does not connect.',
         },
       },
       {
@@ -142,6 +142,16 @@ const HOST = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,6
 const ADDRESS = '[^\\s<>@"]+@[^\\s<>@"]+\\.[^\\s<>@"]+';
 const MAILBOX = new RegExp(`^(?:[^<>@"\\r\\n]{1,100} <${ADDRESS}>|${ADDRESS})$`);
 
+/**
+ * SMTP сървърът е публично име с домейн: IP адрес, localhost, име без точка и вътрешни домейни се отказват
+ * — иначе „Провери връзката“ би опипвал вътрешната мрежа (SSRF) и би показвал отговорите ѝ.
+ */
+function isPublicHostname(host: string): boolean {
+  if (!host.includes('.')) return false;
+  if (/^\d+(\.\d+){3}$/.test(host)) return false;
+  return !/(^|\.)(localhost|local|internal|lan|home|arpa)$/.test(host);
+}
+
 /** Подателят: „Име <адрес>“ или само адрес. Без нов ред — иначе е инжекция на заглавки. */
 function isMailbox(value: string): boolean {
   return !/[\r\n]/.test(value) && MAILBOX.test(value);
@@ -161,7 +171,13 @@ export type RevolutEnvironment = z.infer<typeof RevolutConfig>['environment'];
 
 /** Полетата на формите (текст от браузъра) → код на грешката на поле. */
 const SmtpForm = z.object({
-  host: z.string().trim().toLowerCase().max(253).regex(HOST, 'invalidHost'),
+  host: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(253)
+    .regex(HOST, 'invalidHost')
+    .refine(isPublicHostname, 'invalidHost'),
   port: z
     .string()
     .trim()
@@ -215,11 +231,14 @@ function text(body: Record<string, unknown>, name: string): string {
 /**
  * Формата на интеграция → нетайните настройки + тайните. Празно поле за тайна пази записаната стойност;
  * отметнато „изтрий“ я маха. `changed` и `cleared` са имената на полетата (за одита — без стойности).
+ * `unreadable` — записани тайни, които не се дешифрират (сменен ключ, повреден запис): празно поле за тях
+ * е грешка, а не тихо изтриване.
  */
 export function parseIntegrationForm(
   code: IntegrationCode,
   body: Record<string, unknown>,
   current: Record<string, string>,
+  unreadable: readonly string[] = [],
 ): ParsedIntegration {
   const errors: Record<string, string> = {};
   let parsedConfig: Record<string, string | number | boolean> = {};
@@ -246,12 +265,15 @@ export function parseIntegrationForm(
     if (!field.secret) continue;
     const raw = text(body, field.name).trim();
     if (body[`clear_${field.name}`] === 'on') {
-      if (current[field.name] !== undefined) cleared.push(field.name);
+      if (current[field.name] !== undefined || unreadable.includes(field.name)) {
+        cleared.push(field.name);
+      }
       continue;
     }
     if (raw === '') {
       const kept = current[field.name];
       if (kept !== undefined) secrets[field.name] = kept;
+      else if (unreadable.includes(field.name)) errors[field.name] = 'reenterSecret';
       continue;
     }
     const rule = SECRET_RULES[field.name];
@@ -368,6 +390,8 @@ export function resolveRevolut(
 
 export interface StoredIntegration extends PanelIntegration {
   hints: Record<string, string>;
+  /** Записаните тайни не се дешифрират — формата иска да се въведат наново. */
+  unreadable: boolean;
   lastCheckAt: Date | null;
   lastCheckOk: boolean | null;
   lastCheckError: string | null;
@@ -386,10 +410,12 @@ async function loadAll(): Promise<Map<IntegrationCode, StoredIntegration>> {
   for (const row of await prisma.integration.findMany()) {
     if (!isIntegrationCode(row.code)) continue;
     let secrets: Record<string, string> = {};
+    let unreadable = false;
     if (row.secretsEnc) {
       try {
         secrets = openSecrets(row.code, row.secretsEnc);
       } catch (error) {
+        unreadable = true;
         // Повреден запис или сменен LEDGER_SEAL_KEY: без тайни (отказ), не с чужди.
         logger.error(
           { code: row.code, err: errorMessage(error) },
@@ -400,6 +426,7 @@ async function loadAll(): Promise<Map<IntegrationCode, StoredIntegration>> {
     rows.set(row.code, {
       config: row.config,
       secrets,
+      unreadable,
       hints: SecretsJson.catch({}).parse(row.secretHints ?? {}),
       lastCheckAt: row.lastCheckAt,
       lastCheckOk: row.lastCheckOk,
@@ -486,6 +513,7 @@ export interface IntegrationView {
   definition: IntegrationDefinition;
   values: Record<string, unknown>;
   hints: Record<string, string>;
+  unreadable: boolean;
   source: 'panel' | 'env' | 'none';
   lastCheckAt: Date | null;
   lastCheckOk: boolean | null;
@@ -510,6 +538,7 @@ export async function integrationsView(): Promise<IntegrationView[]> {
       definition,
       values: saved?.success ? saved.data : { ...definition.defaults },
       hints: stored?.hints ?? {},
+      unreadable: stored?.unreadable ?? false,
       source,
       lastCheckAt: stored?.lastCheckAt ?? null,
       lastCheckOk: stored?.lastCheckOk ?? null,

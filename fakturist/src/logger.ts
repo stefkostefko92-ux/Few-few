@@ -35,5 +35,5 @@ export function errorMessage(error: unknown): string {
  * ключ за достъп и не трябва да остава в логовете.
  */
 export function safeLogPath(url: string): string {
-  return (url.split('?')[0] ?? '').replace(/^\/pokana\/[^/]+/, '/pokana/[токен]');
+  return (url.split('?')[0] ?? '').replace(/^\/pokana\/[^/]+/i, '/pokana/[токен]');
 }

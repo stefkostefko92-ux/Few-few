@@ -73,8 +73,13 @@ export function adminSettingsRouter(): Router {
   router.post('/admin/integratsii/:code', async (req, res) => {
     const code = String(req.params['code']);
     if (!isIntegrationCode(code)) throw new HttpError(404);
-    const current = (await integrationState(code))?.secrets ?? {};
-    const parsed = parseIntegrationForm(code, req.body as Record<string, unknown>, current);
+    const state = await integrationState(code);
+    const parsed = parseIntegrationForm(
+      code,
+      req.body as Record<string, unknown>,
+      state?.secrets ?? {},
+      state?.unreadable ? Object.keys(state.hints) : [],
+    );
     if (!parsed.ok) {
       return renderSettings(req, res, { status: 400, errors: parsed.errors, errorsFor: code });
     }

@@ -321,3 +321,20 @@ test('отказ: отменена, изтекла, чужд имейл, същ�
   });
   assert.equal(owners, 1);
 });
+
+test('два едновременни нови профила с един имейл за две фирми: единият минава, другият — „влезте“', async () => {
+  const one = await managedCompany('200000034', 'Клиент Четири ЕООД');
+  const two = await managedCompany('208725180', 'Клиент Пет ЕООД');
+  const email = 'twice@example.test';
+  const a = await createTransferInvite({ organizationId: one, email, actorId: masterId });
+  const b = await createTransferInvite({ organizationId: two, email, actorId: masterId });
+  const user = { name: 'Двойна Покана', password: PASSWORD };
+  const results = await Promise.allSettled([
+    acceptTransferInvite({ token: a.token, user }),
+    acceptTransferInvite({ token: b.token, user }),
+  ]);
+  const rejected = results.filter((r) => r.status === 'rejected');
+  assert.equal(rejected.length, 1);
+  const reason = (rejected[0] as PromiseRejectedResult).reason as unknown;
+  assert.ok(reason instanceof TransferError && reason.code === 'loginRequired');
+});

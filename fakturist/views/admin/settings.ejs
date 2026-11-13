@@ -33,6 +33,7 @@
       <span class="muted"><%= item.lastCheckAt.toISOString().slice(0, 16).replace('T', ' ') %> UTC</span>
     <% } %>
   </p>
+  <% if (item.unreadable) { %><p class="callout" role="alert"><%= t('admin.integration.unreadable') %></p><% } %>
   <% if (item.lastCheckAt && !item.lastCheckOk && item.lastCheckError) { %>
     <p class="error" role="alert"><%= tOr('admin.integration.checkErrors.' + item.lastCheckError, item.lastCheckError) %></p>
   <% } %>

@@ -32,4 +32,6 @@ test('токенът от връзката на покана и заявката
   assert.equal(safeLogPath(`/pokana/${token}`), '/pokana/[токен]');
   assert.equal(safeLogPath(`/pokana/${token}?lang=en`), '/pokana/[токен]');
   assert.equal(safeLogPath('/app/o/abc?next=/x'), '/app/o/abc');
+  // Express 5 не различава главни и малки букви в пътя — редакцията също.
+  assert.equal(safeLogPath(`/POKANA/${token}`), '/pokana/[токен]');
 });
