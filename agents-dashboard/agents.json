@@ -11522,7 +11522,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 242
+        "lessons": 244
       },
       "evolution": [
         {
@@ -11968,9 +11968,20 @@
           "date": "2026-11-13",
           "event": "v23.2 — учене",
           "detail": "Научи: Картинка с width/height атрибути и CSS `width:auto;height:auto` се показва в естествени… (+4 още)"
+        },
+        {
+          "version": "23.4.0",
+          "date": "2026-11-13",
+          "event": "v23.4 — учене",
+          "detail": "Научи: Абсолютно позициониран .sr-only (или друг absolute) вътре в overflow-x:auto контейнер б… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „Абсолютно позициониран .sr-only (или друг absolute) вътре в overflow-x:auto контейнер б…\" (+1 още)"
+        },
         {
           "date": "2026-11-13",
           "type": "learning",
