@@ -379,6 +379,10 @@ try {
     !/[\r\n]/.test(dirty) && !dirty.includes('http') && dirty.length <= 60,
     'името е почистено'
   );
+  const sneaky = mailName({ full_name: 'Иван\u0085ред Мария evil.tld/phish' });
+  assert.ok(!/[\u0080-\u009f]/.test(sneaky), 'C1 контролни знаци (NEL) са махнати');
+  assert.ok(!sneaky.includes('evil.tld'), 'голи домейни без схема са махнати');
+  assert.equal(mailName({ full_name: 'Д-р Иван П. Иванов' }), 'Д-р Иван П. Иванов');
   ok('името в писмата е очистено от нови редове и връзки');
 
   // 14. Нулиране на парола

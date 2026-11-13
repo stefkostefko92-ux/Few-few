@@ -35,11 +35,22 @@ function claimWindow(profileId, column, minutes) {
 // иначе името (контролирано от потребителя) става канал за подправено съдържание
 // в писмо, изпратено от НАШ домейн до произволен адрес.
 export function mailName(profile) {
-  const noLinks = String(profile.full_name || '').replace(/https?:\/\/\S+/gi, '');
-  // контролни знаци (нови редове, табове, NUL) и ъглови скоби → интервал
+  // връзки със схема и „голи“ домейни (evil.tld/път) — писмото тръгва от НАШ домейн
+  const noLinks = String(profile.full_name || '')
+    .replace(/https?:\/\/\S+/gi, '')
+    .replace(/\S*\.[a-z]{2,}(?:[/?#]\S*)?/gi, '');
+  // контролни знаци C0 и C1 (нови редове, табове, NUL, U+0085 NEL), разделители на редове
+  // и ъглови скоби → интервал
   const clean = Array.from(noLinks, (ch) => {
     const code = ch.codePointAt(0);
-    return code < 32 || code === 127 || ch === '<' || ch === '>' ? ' ' : ch;
+    return code < 32 ||
+      (code >= 127 && code <= 159) ||
+      code === 0x2028 ||
+      code === 0x2029 ||
+      ch === '<' ||
+      ch === '>'
+      ? ' '
+      : ch;
   })
     .join('')
     .replace(/\s+/g, ' ')

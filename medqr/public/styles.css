@@ -1732,15 +1732,18 @@ picture {
 /* Тесен екран: етикет над стойността — иначе дългите етикети („Хронични заболявания“)
    свиват стойностите в тясна колона и всяка дума е на отделен ред. */
 @media (max-width: 480px) {
-  .profile-view {
+  .profile-view,
+  .sos-info {
     grid-template-columns: 1fr;
     gap: 0;
   }
-  .profile-view dt {
+  .profile-view dt,
+  .sos-info dt {
     margin-top: 0.6rem;
     font-size: 0.85rem;
   }
-  .profile-view dt:first-child {
+  .profile-view dt:first-child,
+  .sos-info dt:first-child {
     margin-top: 0;
   }
 }
