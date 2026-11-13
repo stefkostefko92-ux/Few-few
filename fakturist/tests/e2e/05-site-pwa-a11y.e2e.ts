@@ -205,6 +205,8 @@ test('достъпност в приложението: имена на поле
           `${base.slice(app.origin.length)}/vhodyashti`,
           `${base.slice(app.origin.length)}/banka`,
           `${base.slice(app.origin.length)}/povtaryashti`,
+          `${base.slice(app.origin.length)}/proformi`,
+          `${base.slice(app.origin.length)}/nov?vid=proforma`,
           `${base.slice(app.origin.length)}/plan`,
           `${base.slice(app.origin.length)}/nastroyki`,
           `${base.slice(app.origin.length)}/serii`,

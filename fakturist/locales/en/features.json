@@ -95,5 +95,9 @@
   "inbox": {
     "name": "Inbox between Fakturist companies",
     "description": "An invoice to a company registered with us lands in its inbox on its own, with an email carrying the PDF and XML."
+  },
+  "proforma": {
+    "name": "Pro forma invoices",
+    "description": "A payment request with its own numbering, PDF and sending by email; “Issue invoice” turns it into an invoice."
   }
 }

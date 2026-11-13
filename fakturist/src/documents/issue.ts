@@ -19,6 +19,7 @@ import { deliverToInbox, type Delivery } from '../inbox/deliver.js';
 import type { OrgAccess } from '../auth/guards.js';
 import { recheckAccess } from './recheck.js';
 import type { PdfLanguage } from './pdf-labels.js';
+import { linkProformaInvoice } from '../proforma/link.js';
 
 /**
  * Това, което издаващият подава: всичко без номера и без доставчика. Доставчикът идва от данните на
@@ -35,6 +36,8 @@ export interface IssueOptions {
   recurring?: { id: string; period: string };
   /** Езикът на PDF копието (src/documents/pdf-labels.ts) — по подразбиране български. */
   pdfLanguage?: PdfLanguage;
+  /** „Издай фактура“ от проформа: проформата става INVOICED в същата транзакция (src/proforma/link.ts). */
+  fromProforma?: string;
 }
 
 export class IssueRejected extends Error {
@@ -51,7 +54,7 @@ export class SeriesExhausted extends Error {
 
 type Seller = InvoiceInput['seller'];
 
-function sellerOf(org: {
+export function sellerOf(org: {
   legalName: string;
   eik: string | null;
   vatNumber: string | null;
@@ -248,6 +251,15 @@ export async function issueInTx(
         mandateId: access.mandateId,
       },
     });
+    if (options.fromProforma) {
+      await linkProformaInvoice(tx, {
+        organizationId: org.id,
+        proformaId: options.fromProforma,
+        documentId: document.id,
+        typeCode: built.input.typeCode,
+        actorId,
+      });
+    }
     if (options.replaces) {
       await annulInTx(tx, {
         organizationId: org.id,

@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from 'express';
 import { prisma } from '../db.js';
-import { HttpError, requireOrg } from '../auth/guards.js';
+import { HttpError, requireOrg, type OrgAccess } from '../auth/guards.js';
 import { roleCan } from '../auth/roles.js';
 import {
   issueDocument,
@@ -10,48 +10,20 @@ import {
 } from '../documents/issue.js';
 import { formToIssueRequest, inputToFormValues } from '../documents/form.js';
 import { isPdfLanguage } from '../documents/pdf-labels.js';
-import {
-  ANNUL_REASONS,
-  AnnulError,
-  isAnnulReason,
-  replaceable,
-  type AnnulReason,
-} from '../documents/annul.js';
-import { COMMON_UNITS, PAYMENT_MEANS, VAT_CATEGORIES } from '../einvoice/codes.js';
+import { AnnulError, isAnnulReason, replaceable, type AnnulReason } from '../documents/annul.js';
 import { kickOutbox } from '../mail/outbox.js';
-import { buyerFromParty, catalogForForm, saveBuyerAsParty } from '../catalog/document-prefill.js';
+import { buyerFromParty, saveBuyerAsParty } from '../catalog/document-prefill.js';
 import { annulProtocolPdf } from '../documents/annul-protocol.js';
+import { createProforma, ProformaRequestSchema } from '../proforma/proforma.js';
+import { ProformaError } from '../proforma/link.js';
 import { param } from './app-shared.js';
-
-type Issue = { rule: string; path: string; message: { bg: string; en: string } };
-
-const ANNUL_MESSAGES: Record<AnnulError['code'], { bg: string; en: string }> = {
-  notFound: {
-    bg: 'Документът за анулиране не е намерен.',
-    en: 'The document to annul was not found.',
-  },
-  notIssued: {
-    bg: 'Документът вече е анулиран или не е издаден.',
-    en: 'The document is already annulled or not issued.',
-  },
-  hasFollowers: {
-    bg: 'Към документа има издадени известия — поправката е чрез известие, не чрез анулиране.',
-    en: 'Notes have been issued for this document — correct it with a note, not by annulment.',
-  },
-  typeMismatch: {
-    bg: 'Новият документ трябва да е от същия вид като анулирания.',
-    en: 'The new document must be of the same type as the annulled one.',
-  },
-  invalidReason: {
-    bg: 'Изберете основанието за анулиране.',
-    en: 'Choose the reason for the annulment.',
-  },
-};
-
-function bodyString(req: Request, name: string): string | undefined {
-  const value = (req.body as Record<string, unknown>)[name];
-  return typeof value === 'string' && value !== '' ? value : undefined;
-}
+import {
+  ANNUL_MESSAGES,
+  bodyString,
+  ID,
+  PROFORMA_MESSAGES,
+  renderNewDocument,
+} from './app-issue-view.js';
 
 /**
  * Издаването от формата (views/app/document-new.ejs): нов документ, предварително попълнен от контрагент
@@ -77,9 +49,34 @@ export function appIssueRouter(): Router {
         replaces: old.id,
       });
     }
+    // „Издай фактура“ от проформа: формата идва с нейните данни и днешни дати.
+    const fromProforma = req.query['ot-proforma'];
+    if (typeof fromProforma === 'string') {
+      const proforma = ID.test(fromProforma)
+        ? await prisma.proforma.findFirst({
+            where: { id: fromProforma, organizationId: access.organizationId, status: 'OPEN' },
+            select: { id: true, input: true, pdfLanguage: true },
+          })
+        : null;
+      if (!proforma) throw new HttpError(404);
+      const today = new Date().toISOString().slice(0, 10);
+      return renderNewDocument(req, res, access.organizationId, null, {
+        ...inputToFormValues(proforma.input),
+        typeCode: '380',
+        issueDate: today,
+        taxPointDate: today,
+        pdfLanguage: proforma.pdfLanguage,
+        fromProforma: proforma.id,
+      });
+    }
     // „Документ към него“ от контрагентите: получателят идва попълнен.
     const buyer = await buyerFromParty(access.organizationId, req.query['party']);
-    await renderNewDocument(req, res, access.organizationId, null, buyer ? { buyer } : {});
+    // „Нова проформа“ от списъка: видът идва избран.
+    const kind = req.query['vid'] === 'proforma' ? { typeCode: 'proforma' } : {};
+    await renderNewDocument(req, res, access.organizationId, null, {
+      ...kind,
+      ...(buyer ? { buyer } : {}),
+    });
   });
 
   router.post('/app/o/:orgId/nov', async (req, res) => {
@@ -101,6 +98,11 @@ export function appIssueRouter(): Router {
       }
       replaces = { documentId: replacesId, reason };
     }
+    if (bodyString(req, 'typeCode') === 'proforma' && !replacesId) {
+      return createProformaFromForm(req, res, access);
+    }
+    const fromProforma = bodyString(req, 'fromProforma');
+    if (fromProforma !== undefined && !ID.test(fromProforma)) throw new HttpError(400);
     const request = IssueRequestSchema.safeParse(formToIssueRequest(req.body));
     if (!request.success) {
       const issues = request.error.issues.map((issue) => ({
@@ -115,6 +117,7 @@ export function appIssueRouter(): Router {
       const result = await issueDocument(access, req.principal!.user.id, request.data, {
         replaces,
         pdfLanguage: isPdfLanguage(language) ? language : 'bg',
+        fromProforma,
       });
       if (bodyString(req, 'saveBuyer') === 'on') {
         await saveBuyerAsParty({
@@ -129,6 +132,16 @@ export function appIssueRouter(): Router {
     } catch (error) {
       if (error instanceof IssueRejected) {
         return renderNewDocument(req, res, access.organizationId, error.issues, req.body, 400);
+      }
+      if (error instanceof ProformaError && (error.code === 'notOpen' || error.code === 'type')) {
+        return renderNewDocument(
+          req,
+          res,
+          access.organizationId,
+          [{ rule: 'PROFORMA', path: 'fromProforma', message: PROFORMA_MESSAGES[error.code] }],
+          req.body,
+          400,
+        );
       }
       if (error instanceof AnnulError) {
         return renderNewDocument(
@@ -193,52 +206,40 @@ export function appIssueRouter(): Router {
   return router;
 }
 
-async function renderNewDocument(
-  req: Request,
-  res: Response,
-  organizationId: string,
-  issues: Issue[] | null,
-  values: unknown,
-  status = 200,
-): Promise<void> {
-  const form =
-    typeof values === 'object' && values !== null ? (values as Record<string, unknown>) : {};
-  const replacesId = typeof form['replaces'] === 'string' ? form['replaces'] : null;
-  const [org, series, catalog, replacing] = await Promise.all([
-    prisma.organization.findUniqueOrThrow({ where: { id: organizationId } }),
-    prisma.documentSeries.findMany({ where: { organizationId }, orderBy: { name: 'asc' } }),
-    catalogForForm(organizationId),
-    replacesId
-      ? prisma.document.findFirst({
-          where: { id: replacesId, organizationId },
-          select: { id: true, number: true, issueDate: true, typeCode: true },
-        })
-      : Promise.resolve(null),
-  ]);
-  // qs дава масив до 20 реда, а над това — обект с ключове „0“, „1“… (src/documents/form.ts, list()).
-  const rawLines = form['lines'];
-  const lines = Array.isArray(rawLines)
-    ? rawLines.length
-    : typeof rawLines === 'object' && rawLines !== null
-      ? Object.keys(rawLines).length
-      : 0;
-  const today = new Date().toISOString().slice(0, 10);
-  res.status(status).render('app/document-new', {
-    org,
-    series,
-    parties: catalog.parties,
-    items: catalog.items,
-    scripts: ['document-form'],
-    issues,
-    values: form,
-    replacing,
-    annulReasons: ANNUL_REASONS,
-    today,
-    units: COMMON_UNITS,
-    categories: VAT_CATEGORIES,
-    paymentMeans: PAYMENT_MEANS,
-    lineCount: Math.max(6, lines + 1),
-    canIssue: true,
-    reqPath: req.path,
+/** Проформа от формата: същият вход и същите проверки като фактура, своя номерация (src/proforma/). */
+async function createProformaFromForm(req: Request, res: Response, access: OrgAccess) {
+  const parsed = ProformaRequestSchema.safeParse({
+    ...(formToIssueRequest(req.body) as Record<string, unknown>),
+    typeCode: '380',
   });
+  if (!parsed.success) {
+    const issues = parsed.error.issues.map((issue) => ({
+      rule: 'INPUT',
+      path: issue.path.join('.'),
+      message: { bg: issue.message, en: issue.message },
+    }));
+    return renderNewDocument(req, res, access.organizationId, issues, req.body, 400);
+  }
+  try {
+    const language = bodyString(req, 'pdfLanguage');
+    const created = await createProforma(
+      access,
+      req.principal!.user.id,
+      parsed.data,
+      isPdfLanguage(language) ? language : 'bg',
+    );
+    if (bodyString(req, 'saveBuyer') === 'on') {
+      await saveBuyerAsParty({
+        organizationId: access.organizationId,
+        actorId: req.principal!.user.id,
+        buyer: (req.body as { buyer?: unknown }).buyer,
+      });
+    }
+    res.redirect(303, `/app/o/${access.organizationId}/proformi/${created.id}?ok=created`);
+  } catch (error) {
+    if (error instanceof IssueRejected) {
+      return renderNewDocument(req, res, access.organizationId, error.issues, req.body, 400);
+    }
+    throw error;
+  }
 }

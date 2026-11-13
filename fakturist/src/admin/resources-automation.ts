@@ -1,7 +1,7 @@
 import type { AdminResource } from './resources.js';
 
 /**
- * Таблиците на Етап 2 в мастър панела: повтарящи се, плащания и напомняния (SPEC 51–52), API (SPEC 53),
+ * Таблиците на Етап 2 в мастър панела: проформи, повтарящи се, плащания и напомняния (SPEC 51–52), API (SPEC 53),
  * входящи и банка (SPEC 54–55). Личните данни на трети лица (наредител, IBAN, основание) и тайните
  * (хешове на ключове, XML-ът на входящите) са в `hidden`.
  */
@@ -23,6 +23,24 @@ export const AUTOMATION_RESOURCES: AdminResource[] = [
     search: ['organizationId', 'name'],
     // Шаблонът носи данните на получателя; адресът за писмата е личен.
     hidden: ['template', 'sendTo'],
+    orderBy: { createdAt: 'desc' },
+  },
+  {
+    model: 'Proforma',
+    slug: 'proformas',
+    group: 'documents',
+    label: { bg: 'Проформи', en: 'Pro forma invoices' },
+    columns: [
+      'organizationId',
+      'number',
+      'status',
+      'issueDate',
+      'payableCents',
+      'invoiceDocumentId',
+    ],
+    search: ['organizationId', 'number'],
+    // Входът носи данните на получателя; имейлът му е личен.
+    hidden: ['input', 'buyerEmail'],
     orderBy: { createdAt: 'desc' },
   },
   {

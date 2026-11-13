@@ -34,6 +34,10 @@
 <% } %>
 <form method="post" action="/app/o/<%= org.id %>/nov" class="doc-form">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <% if (proforma) { %>
+  <p class="callout"><%= t('app.proforma.invoiceFrom', { number: proforma.number }) %></p>
+  <input type="hidden" name="fromProforma" value="<%= proforma.id %>">
+  <% } %>
   <% if (replacing) { %>
   <fieldset class="callout annul-box">
     <legend><%= t('app.annul.title') %></legend>
@@ -49,8 +53,9 @@
   <% } %>
   <fieldset class="grid-4">
     <label><%= t('app.doc.type') %><select name="typeCode"<%= replacing ? ' disabled' : '' %>>
-      <% ['380','381','383','386'].forEach((code) => { %><option value="<%= code %>"<%= sel('typeCode', code, '380') %>><%= t('app.types.' + code) %></option><% }) %>
-    </select></label>
+      <% (proforma ? ['380','386'] : ['380','381','383','386']).forEach((code) => { %><option value="<%= code %>"<%= sel('typeCode', code, '380') %>><%= t('app.types.' + code) %></option><% }) %>
+      <% if (!replacing && !proforma) { %><option value="proforma"<%= sel('typeCode', 'proforma', '380') %>><%= t('app.types.proforma') %></option><% } %>
+    </select><% if (!replacing && !proforma) { %><span class="hint"><%= t('app.proforma.typeHint') %></span><% } %></label>
     <label><%= t('app.doc.series') %><select name="seriesId">
       <% series.forEach((s) => { %><option value="<%= s.id %>"<%= sel('seriesId', s.id, series.find((x) => x.isDefault)?.id) %>><%= s.name %> (<%= String(s.nextNumber).padStart(10, '0') %>)</option><% }) %>
     </select></label>

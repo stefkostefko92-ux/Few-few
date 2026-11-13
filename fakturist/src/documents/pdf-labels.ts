@@ -18,11 +18,13 @@ const EN: Record<string, string> = {
   'КОРИГИРАЩА ФАКТУРА': 'CORRECTED INVOICE',
   'АВАНСОВА ФАКТУРА': 'PREPAYMENT INVOICE',
   САМОФАКТУРА: 'SELF-BILLED INVOICE',
+  'ПРОФОРМА ФАКТУРА': 'PRO FORMA INVOICE',
   ДОКУМЕНТ: 'DOCUMENT',
   // Дати и страни
   'Дата на издаване': 'Issue date',
   'Дата на данъчното събитие': 'Date of supply',
   Падеж: 'Due date',
+  'Срок за плащане': 'Payment due by',
   'Към фактура': 'Invoice reference',
   Доставчик: 'Supplier',
   Получател: 'Customer',
@@ -80,6 +82,12 @@ const EN: Record<string, string> = {
   услуга: 'service',
 };
 
+/** Бележката на проформата — тя не е данъчен документ (ЗДДС); фактурата идва при плащането или доставката. */
+export const PROFORMA_NOT_TAX =
+  'Проформата не е данъчен документ по ЗДДС. Фактурата се издава при плащането или доставката.';
+EN[PROFORMA_NOT_TAX] =
+  'This pro forma invoice is not a tax document. The invoice is issued upon payment or delivery.';
+
 /**
  * Надписът на избрания език: „bg“ — българският; „bg-en“ — „български / english“ (с `sep` — например
  * нов ред в главата на таблицата). Мерките с еднакъв запис (м², кг…) не се повтарят.
@@ -90,6 +98,12 @@ export function labeler(lang: PdfLanguage) {
     const en = EN[bg];
     return en && en !== bg ? `${bg}${sep}${en}` : bg;
   };
+}
+
+/** Английският превод на надпис (за подзаглавието на двуезичния PDF); липсва или е същият — null. */
+export function englishOf(bg: string): string | null {
+  const en = EN[bg];
+  return en && en !== bg ? en : null;
 }
 
 /** Изречението за пълномощното (чл. 113, ал. 7 ЗДДС) — на български, при двуезичния и на английски. */

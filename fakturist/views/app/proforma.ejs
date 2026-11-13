@@ -1,0 +1,41 @@
+<%- include('../partials/app-head', { title: t('app.proforma.one') + ' ' + proforma.number }) %>
+<% const day = (d) => d ? d.toISOString().slice(0, 10).split('-').reverse().join('.') : '—'; %>
+<% const money = (c) => (Number(c) / 100).toFixed(2).replace('.', lang === 'bg' ? ',' : '.') + ' ' + proforma.currency; %>
+<p><a href="/app/o/<%= org.id %>/proformi">← <%= t('app.proforma.title') %></a></p>
+<% if (ok) { %><p class="ok" role="status"><%= tOr('app.proforma.ok.' + ok, t('app.catalog.saved.updated')) %></p><% } %>
+<% if (err) { %><p class="error" role="alert"><%= tOr('app.proforma.err.' + err, t('auth.errors.invalid')) %></p><% } %>
+<div class="head-row">
+  <div>
+    <p class="muted"><%= t('app.proforma.one') %> · <span class="tag<%= proforma.status === 'INVOICED' ? ' tag-active' : proforma.status === 'OPEN' ? ' tag-pending' : '' %>"><%= t('app.proforma.statuses.' + proforma.status) %></span></p>
+    <h1 class="mono"><%= proforma.number %></h1>
+  </div>
+  <div class="actions">
+    <a class="button<%= proforma.status === 'OPEN' && canWrite ? '-secondary' : '' %>" href="/app/o/<%= org.id %>/proformi/<%= proforma.id %>/proforma.pdf" target="_blank" rel="noopener"><%= t('app.view.download') %> PDF</a>
+    <% if (canWrite && proforma.status === 'OPEN') { %><a class="button" href="/app/o/<%= org.id %>/nov?ot-proforma=<%= proforma.id %>"><%= t('app.proforma.issueInvoice') %></a><% } %>
+  </div>
+</div>
+<p class="callout"><%= t('app.proforma.notTax') %></p>
+<dl class="facts">
+  <div><dt><%= t('app.doc.issueDate') %></dt><dd class="mono"><%= day(proforma.issueDate) %></dd></div>
+  <% if (proforma.validUntil) { %><div><dt><%= t('app.proforma.validUntil') %></dt><dd class="mono"><%= day(proforma.validUntil) %></dd></div><% } %>
+  <div><dt><%= t('app.org.buyer') %></dt><dd><%= proforma.buyerName %><% if (proforma.buyerEik) { %> <span class="mono muted"><%= proforma.buyerEik %></span><% } %></dd></div>
+  <div><dt><%= t('app.view.net') %></dt><dd class="mono"><%= money(proforma.taxExclusiveCents) %></dd></div>
+  <div><dt><%= t('app.view.vat') %></dt><dd class="mono"><%= money(proforma.vatCents) %></dd></div>
+  <div><dt><%= t('app.view.payable') %></dt><dd class="mono strong"><%= money(proforma.payableCents) %></dd></div>
+  <% if (proforma.createdBy) { %><div><dt><%= t('app.proforma.createdBy') %></dt><dd><%= proforma.createdBy.name %></dd></div><% } %>
+  <% if (proforma.sentAt) { %><div><dt><%= t('app.proforma.sentAt') %></dt><dd class="mono"><%= day(proforma.sentAt) %></dd></div><% } %>
+  <% if (proforma.invoiceDocument) { %><div><dt><%= t('app.proforma.invoice') %></dt><dd><a class="mono" href="/app/o/<%= org.id %>/d/<%= proforma.invoiceDocument.id %>"><%= proforma.invoiceDocument.number %></a></dd></div><% } %>
+</dl>
+<% if (canWrite && proforma.status === 'OPEN') { %>
+<section class="panel">
+  <h2><%= t('app.proforma.sendTitle') %></h2>
+  <form method="post" action="/app/o/<%= org.id %>/proformi/<%= proforma.id %>/izprati" class="stack narrow-form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label><%= t('app.proforma.sendTo') %><input type="email" name="email" required maxlength="200" autocomplete="off" value="<%= proforma.buyerEmail || '' %>"></label>
+    <p class="hint"><%= t('app.proforma.sendHint') %></p>
+    <div><button type="submit"><%= t('app.proforma.send') %></button></div>
+  </form>
+</section>
+<form method="post" action="/app/o/<%= org.id %>/proformi/<%= proforma.id %>/otkazhi" class="plan-cancel"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="link"><%= t('app.proforma.cancel') %></button></form>
+<% } %>
+<%- include('../partials/app-foot') %>

@@ -35,6 +35,7 @@
   <% if (document.issuedBy) { %><div><dt><%= t('app.view.issuedBy') %></dt><dd><%= document.issuedBy.name %></dd></div><% } %>
   <% if (document.firm) { %><div><dt><%= t('app.view.viaFirm') %></dt><dd><%= document.firm.legalName %><% if (document.mandate) { %> · <span class="muted"><%= document.mandate.documentRef %></span><% } %></dd></div><% } %>
 </dl>
+<% if (document.proforma) { %><p class="muted"><%= t('app.proforma.fromProforma') %> <a class="mono" href="/app/o/<%= document.organizationId %>/proformi/<%= document.proforma.id %>"><%= document.proforma.number %></a></p><% } %>
 <% if (document.recurring) { %><p class="muted"><%= t('app.recurring.fromTemplate') %> <a href="/app/o/<%= document.organizationId %>/povtaryashti/<%= document.recurring.id %>"><%= document.recurring.name %></a><% if (document.recurringPeriod) { %> · <span class="mono"><%= document.recurringPeriod %></span><% } %></p><% } %>
 <% if (locals.payable) { const remaining = document.payableCents - document.paidCents; const plain = (c) => (c / 100n).toString() + '.' + (c % 100n).toString().padStart(2, '0'); %>
 <section class="panel" id="plashtane" aria-labelledby="plashtane-h">

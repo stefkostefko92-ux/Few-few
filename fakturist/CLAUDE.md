@@ -71,6 +71,7 @@ src/
   bank/          camt.ts · csv.ts · reconcile.ts (импорт, предложение, свързване, отмяна)
   api/           keys.ts (ключовете) · router.ts (REST v1) · serialize.ts (документът като JSON)
   recurring/     schedule.ts (графикът, периодът) · recurring.ts (шаблоните) · run.ts (работникът) · loop.ts
+  proforma/      proforma.ts (създаване, отказ, писмо) · link.ts (проформа → фактура) · render.ts (PDF) · mail.ts
   features.ts    регистърът на функциите (live/planned + дата) — плановете, панелът и витрината четат оттук
   seo/           pages.ts (страниците на витрината — единствен списък) · structured-data.ts (JSON-LD)
   catalog/       schemas.ts (zod на формите) · catalog.ts (контрагенти, артикули) · series.ts (сериите под
@@ -80,7 +81,7 @@ src/
   routes/        site · seo · health · pwa · legal · auth · account (нова парола, имейл) · install ·
                  invite (/pokana) · member-invite (/chlen) · app (+ app-issue, app-members, app-catalog, app-security, app-inbox,
                  app-clients, app-settings, app-plan, app-recurring, app-doc-payments, app-api-keys, app-bank, app-incoming,
-                 app-shared) · admin (+ admin-settings, admin-actions) ·
+                 app-proforma, app-issue-view, app-shared) · admin (+ admin-settings, admin-actions) ·
                  webhooks
   http/          upload.ts — multipart (multer, в паметта) + CSRF след разчитането · view · ip · cookies
 views/           site/ (витрината — Дизайнера) · app/ · admin/ · auth/ · errors/ · partials/
@@ -129,6 +130,16 @@ scripts/         conformance/run.mjs (официалната проверка) �
   Поръчката помни `creditSubscriptionId`; при активиране той трябва още да е действащият абонамент (с
   непреминал край), иначе `creditStale` → FAILED, чака мастъра (второ прихващане на същото време — не).
   Кредит ≥ цената (по-евтин план) → `downgrade`: поръчва се след края на платения период.
+- **Проформа фактура** (`src/proforma/`, решение на собственика 13.11.2026; „Проформи“ на фирмата): НЕ е
+  данъчен документ — отделна таблица `Proforma`, номер „ПФ-“ + 10 цифри от брояча на фирмата
+  (`Organization.proformaNext`, под заключването ѝ; rollback връща номера), без серията на фактурите,
+  без веригата, дневниците, отчетите, напомнянията, банката и шкафчето. Създава се от формата за документ
+  (вид „Проформа фактура“) и минава същите проверки като фактура 380 (входът се пази като 380).
+  „Издай фактура“ (`/nov?ot-proforma=`) попълва формата; издаването я прави INVOICED в СЪЩАТА транзакция
+  (`src/proforma/link.ts`, условен запис по състоянието — втори опит връща номера); само 380/386.
+  PDF: „ПРОФОРМА ФАКТУРА“, „Срок за плащане“, без дата на данъчно събитие и без звено, с бележката, че не
+  е данъчен документ. Писмо `proforma.sent` (само PDF, без XML) — в тавана от 200 писма навън.
+  Peppol не допуска вид 325 — проформата никога не става е-фактура.
 - **Повтарящи се фактури** (SPEC 51, `src/recurring/`): шаблон от издадена фактура 380 („Повтаряй“) —
   входът ѝ без номер, дати, доставчик и предплатено; текстът на редовете се редактира (`{период}` →
   „ноември 2026“). Работникът (`run.ts`, на 10 мин) заключва шаблона (FOR UPDATE SKIP LOCKED) и издава в

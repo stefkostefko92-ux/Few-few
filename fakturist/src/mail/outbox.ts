@@ -14,6 +14,7 @@ import { ACCOUNT_MAILS, composeAccountMail, composeLockedMail } from './account-
 import { composeMemberInviteMail } from './member-mail.js';
 import { composeAnnulledMail } from './annul-mail.js';
 import { composeDocumentSentMail, composeReminderMail } from './document-mail.js';
+import { composeProformaSentMail } from '../proforma/mail.js';
 import { MINUTE } from '../time.js';
 
 /** Опитите на едно писмо; паузата расте: 1, 5, 15, 60, 240 минути. */
@@ -156,6 +157,7 @@ async function compose(kind: string, toEmail: string, payload: unknown): Promise
   if (kind === 'inbox.annulled') return composeAnnulledMail(toEmail, payload);
   if (kind === 'document.sent') return composeDocumentSentMail(toEmail, payload);
   if (kind === 'document.reminder') return composeReminderMail(toEmail, payload);
+  if (kind === 'proforma.sent') return composeProformaSentMail(toEmail, payload);
   throw new Error(`Непознат вид писмо: ${kind}`);
 }
 

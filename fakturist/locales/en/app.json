@@ -69,7 +69,8 @@
     "383": "Debit note",
     "384": "Corrected invoice",
     "386": "Prepayment invoice",
-    "389": "Self-billed invoice"
+    "389": "Self-billed invoice",
+    "proforma": "Pro forma invoice"
   },
   "statuses": {
     "DRAFT": "Draft",
@@ -760,6 +761,46 @@
       "encoding": "The file is not UTF-8.",
       "date": "Enter the payment date (not in the future).",
       "invalid": "Invalid status."
+    }
+  },
+  "proforma": {
+    "title": "Pro forma invoices",
+    "one": "Pro forma invoice",
+    "new": "New pro forma",
+    "how": "A pro forma invoice is a request for payment: it is not a tax document under the VAT Act and takes no number from the invoice series. When the customer pays (or on delivery), “Issue invoice” turns it into an invoice with a new number.",
+    "none": "No pro forma invoices yet.",
+    "number": "Number",
+    "status": "Status",
+    "statuses": {
+      "OPEN": "open",
+      "INVOICED": "invoiced",
+      "CANCELLED": "cancelled"
+    },
+    "issueInvoice": "Issue invoice",
+    "notTax": "A pro forma invoice is not a tax document — the invoice is issued upon payment or delivery.",
+    "validUntil": "Payment due by",
+    "createdBy": "Created by",
+    "sentAt": "Sent on",
+    "invoice": "Invoice",
+    "sendTitle": "Send by email",
+    "sendTo": "Recipient email",
+    "sendHint": "The email carries a PDF copy; replies go to the company email. It counts towards the limit of 200 emails per day to addresses outside Fakturist.",
+    "send": "Send",
+    "cancel": "Cancel the pro forma",
+    "typeHint": "A “pro forma invoice” is not a tax document and takes no number from the series.",
+    "invoiceFrom": "Invoice from pro forma {number}: the data comes from the pro forma, the dates are today. Check them before issuing.",
+    "fromProforma": "Issued from pro forma",
+    "ok": {
+      "created": "The pro forma invoice has been created.",
+      "sent": "The email is queued for sending.",
+      "cancelled": "The pro forma invoice has been cancelled."
+    },
+    "err": {
+      "notOpen": "The pro forma invoice has already been invoiced or cancelled.",
+      "notFound": "The pro forma invoice was not found.",
+      "mailLimit": "The limit of 200 emails per day to addresses outside Fakturist has been reached. Try tomorrow.",
+      "noEmail": "Enter a valid email.",
+      "type": "A pro forma invoice becomes an invoice or a prepayment invoice."
     }
   }
 }

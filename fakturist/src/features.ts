@@ -16,6 +16,7 @@ export const FEATURES = [
   { code: 'multi-series', group: 'documents', status: 'live' },
   { code: 'pdf', group: 'documents', status: 'live' },
   { code: 'inbox', group: 'documents', status: 'live' },
+  { code: 'proforma', group: 'documents', status: 'live' },
   { code: 'recurring', group: 'automation', status: 'live' },
   { code: 'reminders', group: 'automation', status: 'live' },
   { code: 'bank-matching', group: 'automation', status: 'live' },

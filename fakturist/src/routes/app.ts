@@ -15,6 +15,7 @@ import { appRecurringRouter } from './app-recurring.js';
 import { appDocPaymentsRouter } from './app-doc-payments.js';
 import { appApiKeysRouter } from './app-api-keys.js';
 import { appBankRouter } from './app-bank.js';
+import { appProformaRouter } from './app-proforma.js';
 import { appIncomingRouter } from './app-incoming.js';
 import { PAYABLE_TYPES } from '../documents/payments.js';
 import { sofiaToday } from '../time.js';
@@ -59,6 +60,7 @@ export function appRouter(): Router {
   router.use(appDocPaymentsRouter());
   router.use(appApiKeysRouter());
   router.use(appBankRouter());
+  router.use(appProformaRouter());
   router.use(appIncomingRouter());
 
   router.get('/app', async (req, res) => {
@@ -163,6 +165,7 @@ export function appRouter(): Router {
           select: { id: true, amountCents: true, paidOn: true, source: true, note: true },
         },
         recurring: { select: { id: true, name: true } },
+        proforma: { select: { id: true, number: true } },
       },
     });
     if (!document) throw new HttpError(404);

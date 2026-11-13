@@ -150,6 +150,7 @@ model User {
   cancelledDocuments    Document[]         @relation("CancelledBy")
   paymentsCreated       Payment[]          @relation("PaymentCreatedBy")
   recurringCreated      RecurringInvoice[]
+  proformasCreated      Proforma[]         @relation("ProformaCreatedBy")
   apiKeysCreated        ApiKey[]
   incomingCreated       IncomingInvoice[]  @relation("IncomingCreatedBy")
   bankStatements        BankStatement[]    @relation("BankStatementCreatedBy")
@@ -224,6 +225,8 @@ model Organization {
   ownershipLockedAt    DateTime?
   /// Напомняния за просрочени фактури до получателя (SPEC 52) — включват се от настройките на фирмата.
   remindersEnabled     Boolean          @default(false)
+  /// Следващият номер на проформа (своя номерация — проформата не е данъчен документ).
+  proformaNext         Int              @default(1)
   createdByFirmId      String?
   createdByFirm        Organization?    @relation("CreatedByFirm", fields: [createdByFirmId], references: [id], onDelete: SetNull)
   createdClients       Organization[]   @relation("CreatedByFirm")
@@ -248,6 +251,7 @@ model Organization {
   legalAcceptances LegalAcceptance[]
   recurring        RecurringInvoice[]
   recurringAsFirm  RecurringInvoice[] @relation("RecurringFirm")
+  proformas        Proforma[]
   apiKeys          ApiKey[]
   incoming         IncomingInvoice[]
   bankStatements   BankStatement[]
@@ -430,6 +434,7 @@ model Document {
   paidCents          BigInt               @default(0)
   paidAt             DateTime?            @db.Date
   payments           DocumentPayment[]
+  proforma           Proforma?
   reminders          PaymentReminder[]
   apiRequests        ApiIdempotency[]
   createdAt          DateTime             @default(now())
@@ -514,43 +519,43 @@ model Subscription {
 }
 
 model Payment {
-  id                String           @id @default(cuid())
-  organizationId    String
-  organization      Organization     @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  subscriptionId    String?
-  subscription      Subscription?    @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  id                   String           @id @default(cuid())
+  organizationId       String
+  organization         Organization     @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  subscriptionId       String?
+  subscription         Subscription?    @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
   /// Сумата за плащане С ДДС (евроцентове) — изчислена на сървъра (src/billing/orders.ts).
-  amountCents       Int
-  currency          String           @default("EUR")
-  provider          PaymentProvider
+  amountCents          Int
+  currency             String           @default("EUR")
+  provider             PaymentProvider
   /// Идентификаторът на поръчката при Revolut — уникален (идемпотентност на webhook-а).
-  providerOrderId   String?          @unique
+  providerOrderId      String?          @unique
   /// Страницата за плащане с карта (Revolut) — пренасочването след поръчката.
-  checkoutUrl       String?
-  status            PaymentStatus    @default(PENDING)
-  paidAt            DateTime?
+  checkoutUrl          String?
+  status               PaymentStatus    @default(PENDING)
+  paidAt               DateTime?
   /// Поръчаният план и периодът (SPEC 49) — null при плащания отпреди поръчките от профила.
-  planCode          String?
-  interval          BillingInterval?
+  planCode             String?
+  interval             BillingInterval?
   /// Основата и ДДС-ът (евроцентове), от които е `amountCents`; ставката към момента на поръчката.
-  netCents          Int              @default(0)
-  vatCents          Int              @default(0)
+  netCents             Int              @default(0)
+  vatCents             Int              @default(0)
   /// Прихванатата неизползвана част от предишния платен план (основа, евроцентове) — вече извадена от netCents.
-  creditCents       Int              @default(0)
+  creditCents          Int              @default(0)
   /// Абонаментът, от който е прихванатото (creditCents) — при активиране трябва още да е действащият.
   creditSubscriptionId String?
-  vatRate           String           @default("20")
+  vatRate              String           @default("20")
   /// Основанието за банков превод („FKT-XXXXXXXX“) — по него се сверява преводът.
-  reference         String?          @unique
+  reference            String?          @unique
   /// Фактурата за плащането, издадена от Карбон Стелт в транзакцията на активирането (SPEC 50).
-  invoiceDocumentId String?          @unique
-  invoiceDocument   Document?        @relation("PaymentInvoice", fields: [invoiceDocumentId], references: [id], onDelete: Restrict)
-  createdById       String?
-  createdBy         User?            @relation("PaymentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  invoiceDocumentId    String?          @unique
+  invoiceDocument      Document?        @relation("PaymentInvoice", fields: [invoiceDocumentId], references: [id], onDelete: Restrict)
+  createdById          String?
+  createdBy            User?            @relation("PaymentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   /// Кой е потвърдил банковия превод в панела (null — webhook на Revolut).
-  confirmedById     String?
-  confirmedBy       User?            @relation("PaymentConfirmedBy", fields: [confirmedById], references: [id], onDelete: SetNull)
-  createdAt         DateTime         @default(now())
+  confirmedById        String?
+  confirmedBy          User?            @relation("PaymentConfirmedBy", fields: [confirmedById], references: [id], onDelete: SetNull)
+  createdAt            DateTime         @default(now())
 
   @@index([organizationId])
   @@index([subscriptionId])
@@ -984,4 +989,48 @@ model BankLine {
   @@unique([organizationId, uniqueKey])
   @@index([organizationId, status])
   @@index([statementId])
+}
+
+enum ProformaStatus {
+  OPEN
+  INVOICED
+  CANCELLED
+}
+
+/// Проформа фактура (UNTDID 325): НЕ е данъчен документ — своя номерация „ПФ-…“, без серията на
+/// фактурите, без веригата, дневниците, напомнянията и банката. Входът е като на фактура (380), за да
+/// минава същите проверки; „Издай фактура“ я свързва с издадената фактура в същата транзакция.
+model Proforma {
+  id                String         @id @default(cuid())
+  organizationId    String
+  organization      Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  number            String
+  status            ProformaStatus @default(OPEN)
+  issueDate         DateTime
+  validUntil        DateTime?
+  currency          String
+  input             Json
+  buyerName         String
+  buyerEik          String?
+  buyerEmail        String?
+  taxExclusiveCents BigInt
+  vatCents          BigInt
+  payableCents      BigInt
+  pdfLanguage       String         @default("bg")
+  createdById       String?
+  createdBy         User?          @relation("ProformaCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  /// Кантората, ако е създадена по пълномощно.
+  firmId            String?
+  invoiceDocumentId String?        @unique
+  invoiceDocument   Document?      @relation(fields: [invoiceDocumentId], references: [id], onDelete: SetNull)
+  invoicedAt        DateTime?
+  cancelledAt       DateTime?
+  sentAt            DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@unique([organizationId, number])
+  @@index([organizationId, createdAt])
+  @@index([createdById])
+  @@index([firmId])
 }

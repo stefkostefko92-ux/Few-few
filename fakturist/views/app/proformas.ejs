@@ -1,0 +1,26 @@
+<%- include('../partials/app-head', { title: t('app.proforma.title') }) %>
+<% const day = (d) => d ? d.toISOString().slice(0, 10).split('-').reverse().join('.') : '—'; %>
+<% const money = (c, cur) => (Number(c) / 100).toFixed(2).replace('.', lang === 'bg' ? ',' : '.') + ' ' + cur; %>
+<p><a href="/app/o/<%= org.id %>">← <%= org.legalName %></a></p>
+<div class="head-row">
+  <h1><%= t('app.proforma.title') %></h1>
+  <% if (canWrite) { %><div class="actions"><a class="button" href="/app/o/<%= org.id %>/nov?vid=proforma"><%= t('app.proforma.new') %></a></div><% } %>
+</div>
+<p class="muted"><%= t('app.proforma.how') %></p>
+<% if (proformas.length === 0) { %><p class="muted"><%= t('app.proforma.none') %></p><% } else { %>
+<div class="table-wrap"><table class="stack-table">
+  <thead><tr><th scope="col"><%= t('app.proforma.number') %></th><th scope="col"><%= t('app.doc.issueDate') %></th><th scope="col"><%= t('app.doc.buyer') %></th><th scope="col" class="num"><%= t('app.view.payable') %></th><th scope="col"><%= t('app.proforma.status') %></th></tr></thead>
+  <tbody>
+  <% proformas.forEach((p) => { %>
+    <tr>
+      <td data-label="<%= t('app.proforma.number') %>" class="mono"><a href="/app/o/<%= org.id %>/proformi/<%= p.id %>"><%= p.number %></a></td>
+      <td data-label="<%= t('app.doc.issueDate') %>" class="mono"><%= day(p.issueDate) %></td>
+      <td data-label="<%= t('app.doc.buyer') %>"><%= p.buyerName %></td>
+      <td data-label="<%= t('app.view.payable') %>" class="num mono"><%= money(p.payableCents, p.currency) %></td>
+      <td data-label="<%= t('app.proforma.status') %>"><span class="tag<%= p.status === 'INVOICED' ? ' tag-active' : p.status === 'OPEN' ? ' tag-pending' : '' %>"><%= t('app.proforma.statuses.' + p.status) %></span><% if (p.invoiceDocument) { %> <a class="mono" href="/app/o/<%= org.id %>/d/<%= p.invoiceDocument.id %>"><%= p.invoiceDocument.number %></a><% } %></td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+<%- include('../partials/app-foot') %>

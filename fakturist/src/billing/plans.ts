@@ -39,6 +39,7 @@ const CORE: FeatureCode[] = [
   'two-factor',
   'pdf',
   'inbox',
+  'proforma',
 ];
 
 export const DEFAULT_PLANS: PlanDefinition[] = [

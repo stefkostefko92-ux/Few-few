@@ -7,7 +7,13 @@ import { bgAmount, bgDate, MEANS, partyLines, TITLES, UNITS, unitPrice } from '.
 import { drawDates, drawHeader, INK, METRICS, RULE, SOFT, tint, type Frame } from './pdf-layout.js';
 import type { ResolvedPdfStyle } from './pdf-style.js';
 import { drawFooters } from './pdf-footer.js';
-import { issuedViaText, labeler, type PdfLanguage } from './pdf-labels.js';
+import {
+  englishOf,
+  issuedViaText,
+  labeler,
+  PROFORMA_NOT_TAX,
+  type PdfLanguage,
+} from './pdf-labels.js';
 export { bgAmount } from './pdf-format.js';
 
 /**
@@ -26,6 +32,8 @@ export interface PdfMeta {
   annulled?: string | null; // „АНУЛИРАН …“ горе на всяка страница (чл. 116 ЗДДС, pdf-stamp.ts)
   /** Български или двуезичен (pdf-labels.ts); липсва — български. */
   language?: PdfLanguage;
+  /** Проформа (src/proforma/): заглавие „ПРОФОРМА ФАКТУРА“, без дата на данъчно събитие, с бележка, че не е данъчен документ. */
+  proforma?: boolean;
 }
 
 export function renderPdf(
@@ -37,7 +45,10 @@ export function renderPdf(
   const m = METRICS[style.template];
   const lang = meta.language ?? 'bg';
   const L = labeler(lang);
-  const title = L(TITLES[input.typeCode] ?? 'ДОКУМЕНТ');
+  const titleBg = meta.proforma ? 'ПРОФОРМА ФАКТУРА' : (TITLES[input.typeCode] ?? 'ДОКУМЕНТ');
+  const title = L(titleBg);
+  // При двуезичния английското заглавие е подзаглавие (pdf-layout.ts) — едно дълго не се побира.
+  const subtitle = lang === 'bg-en' ? (englishOf(titleBg) ?? undefined) : undefined;
   const doc = new PDFDocument({
     size: 'A4',
     margins: { top: m.margin, bottom: m.margin + 16, left: m.margin, right: m.margin },
@@ -80,16 +91,22 @@ export function renderPdf(
 
   // --- Глава (по шаблона) и дати ---------------------------------------------------------------------
   y = drawHeader(doc, frame, y, {
-    title,
+    title: titleBg,
+    subtitle,
     number: meta.number,
     style,
     m,
   });
-  const dates: Array<[string, string]> = [
-    [L('Дата на издаване', '\n'), bgDate(input.issueDate)],
-    [L('Дата на данъчното събитие', '\n'), bgDate(input.taxPointDate ?? input.issueDate)],
-  ];
-  if (input.dueDate) dates.push([L('Падеж', '\n'), bgDate(input.dueDate)]);
+  const dates: Array<[string, string]> = [[L('Дата на издаване', '\n'), bgDate(input.issueDate)]];
+  if (!meta.proforma) {
+    dates.push([
+      L('Дата на данъчното събитие', '\n'),
+      bgDate(input.taxPointDate ?? input.issueDate),
+    ]);
+  }
+  if (input.dueDate) {
+    dates.push([L(meta.proforma ? 'Срок за плащане' : 'Падеж', '\n'), bgDate(input.dueDate)]);
+  }
   if (input.precedingInvoices[0]) {
     const p = input.precedingInvoices[0];
     dates.push([
@@ -276,6 +293,7 @@ export function renderPdf(
   // Бележката без подписа — той е в долния ред на всяка страница.
   const note = documentNote(input, calc);
   if (note) info.push(note);
+  if (meta.proforma) info.push(L(PROFORMA_NOT_TAX, '\n'));
   for (const text of info) {
     doc.font('sans').fontSize(m.body);
     ensure(doc.heightOfString(text, { width }) + 6);

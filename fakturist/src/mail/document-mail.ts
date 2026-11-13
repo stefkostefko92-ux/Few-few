@@ -39,7 +39,7 @@ async function load(documentId: string) {
   });
 }
 
-function wrap(paragraphs: string[], signature: string): { text: string; html: string } {
+export function wrap(paragraphs: string[], signature: string): { text: string; html: string } {
   const text = [
     'Здравейте,',
     '',

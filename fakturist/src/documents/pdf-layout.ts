@@ -84,22 +84,64 @@ function fitLogo(style: ResolvedPdfStyle, box: { w: number; h: number }): { w: n
   return { w: style.logo.width * scale, h: style.logo.height * scale };
 }
 
-/** Главата: вид на документа, номер и лого според шаблона. Връща y под нея. */
+/**
+ * Главата: вид на документа (при двуезичния — английското заглавие е подзаглавие отдолу), номер и лого
+ * според шаблона. Височините се мерят (дългото заглавие се пренася, без да застъпва номера). Връща y
+ * под главата.
+ */
 export function drawHeader(
   doc: PDFKit.PDFDocument,
   frame: Frame,
   top: number,
-  opts: { title: string; number: string; style: ResolvedPdfStyle; m: Metrics },
+  opts: {
+    title: string;
+    subtitle?: string;
+    number: string;
+    style: ResolvedPdfStyle;
+    m: Metrics;
+  },
 ): number {
   const { left, right, width } = frame;
   const { style, m } = opts;
   const logo = fitLogo(style, m.logo);
   const logoLeft = style.logoPosition === 'left';
+  const numberText = `№ ${opts.number}`;
+  const subSize = Math.max(m.small + 2, Math.round(m.title * 0.55));
+  const numberW = doc.font('mono').fontSize(m.number).widthOfString(numberText);
+  /** Заглавието и подзаглавието в колона с ширина `w` от (x, y); връща долния им край. */
+  const titleBlock = (
+    x: number,
+    y: number,
+    w: number,
+    color: string,
+    align: 'left' | 'right',
+    draw: boolean,
+  ): number => {
+    doc.font('bold').fontSize(m.title);
+    const titleH = doc.heightOfString(opts.title, { width: w });
+    if (draw) doc.fillColor(color).text(opts.title, x, y, { width: w, align });
+    let bottom = y + titleH;
+    if (opts.subtitle) {
+      doc.font('sans').fontSize(subSize);
+      const subH = doc.heightOfString(opts.subtitle, { width: w });
+      if (draw) doc.fillColor(color).text(opts.subtitle, x, bottom + 1, { width: w, align });
+      bottom += 1 + subH;
+    }
+    return bottom;
+  };
 
   if (style.template === 'band') {
-    const bandH = Math.max(62, logo.h + 20);
-    doc.rect(left, top, width, bandH).fillColor(style.accent).fill();
     const pad = 12;
+    const textX = style.logo && logoLeft ? left + pad + logo.w + 24 : left + pad;
+    const textW = width - pad * 2 - (style.logo ? logo.w + 24 : 0);
+    const align = style.logo && logoLeft ? 'right' : 'left';
+    // С лого: заглавие, подзаглавие и номер едно под друго; без лого: номерът е вдясно на заглавието.
+    const stacked = Boolean(style.logo);
+    const titleW = stacked ? textW : textW - numberW - 16;
+    const textH =
+      titleBlock(textX, 0, titleW, '#ffffff', align, false) + (stacked ? m.number + 4 : 0);
+    const bandH = Math.max(62, logo.h + 20, textH + 24);
+    doc.rect(left, top, width, bandH).fillColor(style.accent).fill();
     if (style.logo) {
       const boxW = logo.w + 12;
       const boxH = logo.h + 12;
@@ -108,43 +150,26 @@ export function drawHeader(
       doc.roundedRect(boxX, boxY, boxW, boxH, 3).fillColor('#ffffff').fill();
       doc.image(style.logo.data, boxX + 6, boxY + 6, { width: logo.w, height: logo.h });
     }
-    const textX = style.logo && logoLeft ? left + pad + logo.w + 24 : left + pad;
-    const textW = width - pad * 2 - (style.logo ? logo.w + 24 : 0);
-    const align = style.logo && logoLeft ? 'right' : 'left';
-    const titleY = top + bandH / 2 - (m.title + m.number) / 2 - 2;
-    if (style.logo) {
-      doc.font('bold').fontSize(m.title).fillColor('#ffffff').text(opts.title, textX, titleY, {
-        width: textW,
-        align,
-      });
-      doc
-        .font('mono')
-        .fontSize(m.number)
-        .text(`№ ${opts.number}`, textX, titleY + m.title + 4, { width: textW, align });
+    const textY = top + (bandH - textH) / 2;
+    const bottom = titleBlock(textX, textY, titleW, '#ffffff', align, true);
+    doc.font('mono').fontSize(m.number).fillColor('#ffffff');
+    if (stacked) {
+      doc.text(numberText, textX, bottom + 4, { width: textW, align });
     } else {
-      const midY = top + bandH / 2 - m.title / 2 - 1;
-      doc
-        .font('bold')
-        .fontSize(m.title)
-        .fillColor('#ffffff')
-        .text(opts.title, textX, midY, { width: textW });
-      doc
-        .font('mono')
-        .fontSize(m.number)
-        .text(`№ ${opts.number}`, textX, midY + 3, { width: textW, align: 'right' });
+      doc.text(numberText, textX, textY + 3, { width: textW, align: 'right' });
     }
     return top + bandH + 14;
   }
 
   // Класически и компактен: бяла глава, номерът в акцентния цвят.
   if (!style.logo) {
-    doc.font('bold').fontSize(m.title).fillColor(INK).text(opts.title, left, top);
+    const bottom = titleBlock(left, top, width - numberW - 16, INK, 'left', true);
     doc
       .font('mono')
       .fontSize(m.number)
       .fillColor(style.accent)
-      .text(`№ ${opts.number}`, left, top + 4, { width, align: 'right' });
-    return top + m.title + 14;
+      .text(numberText, left, top + 4, { width, align: 'right' });
+    return bottom + 14;
   }
   const textW = width - logo.w - 24;
   const textX = logoLeft ? left + logo.w + 24 : left;
@@ -153,17 +178,13 @@ export function drawHeader(
     width: logo.w,
     height: logo.h,
   });
-  doc
-    .font('bold')
-    .fontSize(m.title)
-    .fillColor(INK)
-    .text(opts.title, textX, top, { width: textW, align });
+  const bottom = titleBlock(textX, top, textW, INK, align, true);
   doc
     .font('mono')
     .fontSize(m.number)
     .fillColor(style.accent)
-    .text(`№ ${opts.number}`, textX, top + m.title + 6, { width: textW, align });
-  return top + Math.max(logo.h, m.title + m.number + 8) + 12;
+    .text(numberText, textX, bottom + 6, { width: textW, align });
+  return Math.max(top + logo.h, bottom + 6 + m.number) + 14;
 }
 
 /** Датите под главата: до четири колони, стойностите под най-високия етикет. */
