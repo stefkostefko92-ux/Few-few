@@ -7,10 +7,10 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Activity, ShieldCheck, ShieldAlert, KeyRound, Ban, RefreshCw, Trash2, Search, Server, CreditCard, Bot, FileText, AlertTriangle, Sparkles, Plus,
+  Activity, ShieldCheck, ShieldAlert, KeyRound, Ban, RefreshCw, Trash2, Search, Server, CreditCard, Bot, FileText, AlertTriangle, Sparkles, Plus, LifeBuoy, ExternalLink,
 } from "lucide-react";
 import {
-  getAdminSystem, getAdminSecurity, adminUnblock, adminRevokeApiKey, getAdminBilling, adminReconcileBilling,
+  getAdminSystem, getAdminSecurity, getAdminSupportInvite, setAdminSupportInvite, adminUnblock, adminRevokeApiKey, getAdminBilling, adminReconcileBilling,
   getAdminFleet, adminReconcileFleet, getAdminFleetBots, adminFleetAction, adminFleetBranding, adminFleetRemoveToken, getDsrRequests, getDsrSummary, dsrErase, adminResetUserMfa,
   getAdminGameSeason, createAdminGameSeason, updateAdminGameSeason, deleteAdminGameSeason,
 } from "../api";
@@ -72,6 +72,70 @@ export function LoadError({ error, onRetry }) {
 }
 const Bool = ({ v }) => <span className={v ? "text-success" : "text-danger"}>{v ? "yes" : "no"}</span>;
 
+// ═══ SUPPORT SERVER INVITE ════════════════════════════════════════════════════
+// Всяка връзка „Support“ — бутоните на бота, таблото, сайтът — сочи към /support,
+// а той пренасочва към поканата оттук. Записва само главният акаунт със свеж втори
+// фактор; backend-ът пита Discord дали поканата съществува и е безсрочна.
+export function SupportInviteCard() {
+  const qc = useQueryClient();
+  const toast = useToast();
+  const { data, isLoading, isError, error: loadError, refetch } = useQuery({ queryKey: ["admin-support-invite"], queryFn: getAdminSupportInvite });
+  const [url, setUrl] = useState("");
+  const [saved, setSaved] = useState(null); // сървърът, който Discord върна за последно записаната покана
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  const save = useMutation({
+    mutationFn: setAdminSupportInvite,
+    onSuccess: (r) => {
+      setSaved(r.server || null);
+      setUrl("");
+      setConfirmRemove(false);
+      toast.success(r.url ? `Saved. /support now opens ${r.server?.name || "the new invite"}.` : "Invite removed. /support now opens the guides.");
+      qc.invalidateQueries({ queryKey: ["admin-support-invite"] });
+    },
+    onError: (e) => { setConfirmRemove(false); toast.error(adminErr(e)); },
+  });
+  if (isLoading) return <Loading />;
+  if (isError) return <LoadError error={loadError} onRetry={refetch} />;
+  const current = data?.url || null;
+  return (
+    <Section title="Support server invite" icon={LifeBuoy}
+      right={<a href="/support" target="_blank" rel="noopener noreferrer" className="cs-btn-secondary text-xs flex items-center gap-1"><ExternalLink className="w-3 h-3" aria-hidden="true" /> Open /support</a>}>
+      <p className="text-sm text-cs-muted leading-relaxed max-w-2xl">
+        Every Support link — the bot's buttons, the dashboard and the site — points to <span className="font-mono text-xs">/support</span>, which forwards to the invite below. A change applies at once, with no rebuild.
+      </p>
+      <div className="mt-4 text-sm">
+        <span className="text-cs-dim">Current invite: </span>
+        {current
+          ? <a href={current} target="_blank" rel="noopener noreferrer" className="font-mono text-xs text-cs-cyan underline break-all">{current}</a>
+          : <span className="text-warning">not set — /support opens the guides instead</span>}
+        {current && saved?.name && <span className="text-cs-dim"> · {saved.name}{saved.members != null ? `, ${saved.members} members` : ""}</span>}
+      </div>
+      <form onSubmit={(e) => { e.preventDefault(); save.mutate(url.trim()); }} className="mt-4 flex flex-wrap items-end gap-2">
+        <div className="min-w-0 flex-1 basis-64">
+          <label className="cs-label" htmlFor="support-invite">New invite link</label>
+          <input id="support-invite" className="cs-input font-mono text-xs" inputMode="url" autoComplete="off" spellCheck={false} maxLength={200}
+            value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://discord.gg/…" aria-describedby="support-invite-hint" />
+        </div>
+        <button type="submit" className="cs-btn-primary" disabled={save.isPending || !url.trim()}>{save.isPending ? "Checking with Discord…" : "Save invite"}</button>
+        {current && <button type="button" className="cs-btn-ghost text-danger" disabled={save.isPending} onClick={() => setConfirmRemove(true)}>Remove</button>}
+      </form>
+      <p id="support-invite-hint" className="text-xs leading-relaxed text-cs-dim mt-2 max-w-2xl">
+        In Discord, create the invite with Expire after: Never and Max number of uses: No limit. We ask Discord before saving and refuse an invite that is unknown or expires; a use limit is not visible to us, so set it yourself. Main Owner only — you will be asked for your second factor.
+      </p>
+      <ConfirmDialog
+        open={confirmRemove}
+        title="Remove the support invite?"
+        message="Support links will open the guides at /docs until you save a new invite."
+        confirmLabel="Remove invite"
+        destructive
+        loading={save.isPending}
+        onConfirm={() => save.mutate("")}
+        onCancel={() => setConfirmRemove(false)}
+      />
+    </Section>
+  );
+}
+
 // ═══ SYSTEM ═══════════════════════════════════════════════════════════════════
 export function SystemTab() {
   const { data, isLoading, isError, error: loadError, refetch, isFetching } = useQuery({ queryKey: ["admin-system"], queryFn: getAdminSystem, refetchInterval: 30000 });
@@ -93,6 +157,7 @@ export function SystemTab() {
         <Tile label="AI replies" value={d.config?.gemini ? (d.config.aiTrainingAttested ? "on" : "BLOCKED") : "off"} ok={d.config?.gemini ? d.config.aiTrainingAttested : undefined}
               sub={d.config?.gemini && !d.config.aiTrainingAttested ? "Developer Policy §21: attest paid tier (AI_REPLY_TRAINING_ATTESTED)" : "Discord content never trains models"} />
       </div>
+      <SupportInviteCard />
       <Section title="Scheduled jobs — last heartbeat" icon={Activity}
         right={<button onClick={() => refetch()} className="cs-btn-secondary text-xs flex items-center gap-1"><RefreshCw className={`w-3 h-3 ${isFetching ? "animate-spin" : ""}`} /> Refresh</button>}>
         <div className="overflow-x-auto"><table className="cs-table"><thead><tr><th>Job</th><th>Last OK</th><th>Last failure</th></tr></thead><tbody>

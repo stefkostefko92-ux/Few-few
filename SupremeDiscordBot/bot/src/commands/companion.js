@@ -309,6 +309,13 @@ async function attackCommand(interaction) {
   const quick = resolveLangSync(interaction);
   if (target.bot) return interaction.reply({ content: t("game.profile.noBots", quick), flags: MessageFlags.Ephemeral });
   if (target.id === interaction.user.id) return interaction.reply({ content: t("game.battle.self", quick), flags: MessageFlags.Ephemeral });
+  // И6: `getUser` приема и човек, който не е в сървъра — редът му живее, докато
+  // ботът е тук, и напусналият губеше искри без да може да пусне `pvp off`.
+  // `getMember` е null за такъв (разрешеният член идва със самото взаимодействие,
+  // без мрежова заявка — 3-секундният срок е спазен).
+  if (!interaction.options.getMember("user")) {
+    return interaction.reply({ content: t("game.battle.notMember", quick, { user: `<@${target.id}>` }), flags: MessageFlags.Ephemeral, allowedMentions: { parse: [] } });
+  }
   await interaction.deferReply();
   const lang = await resolveLang(interaction);
   let data;

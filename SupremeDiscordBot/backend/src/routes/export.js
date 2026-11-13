@@ -52,7 +52,7 @@ async function requirePremium(req, res) {
 
   const server = await prisma.server.findUnique({
     where: { id: serverId },
-    select: { accessUntil: true, trialEndsAt: true },
+    select: { accessUntil: true, trialEndsAt: true, paidAccessEndedAt: true },
   });
   if (inExportWindow(server)) return true;
 

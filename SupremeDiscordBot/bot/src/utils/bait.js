@@ -190,10 +190,57 @@ export async function onBaitMessage(message, now = Date.now()) {
   return true;
 }
 
+const republishing = new Set(); // serverId — едно публикуване наведнъж
+
 async function refreshWarning(channel, config, lang) {
   if (!config.warningMessageId || !channel?.messages) return;
-  const msg = await channel.messages.fetch(config.warningMessageId).catch(() => null);
-  if (msg) await msg.edit(warningMessage(config, lang)).catch(() => {});
+  let gone = false;
+  const msg = await channel.messages.fetch(config.warningMessageId).catch((err) => {
+    // Само „Unknown Message“ значи изтрито предупреждение; друга грешка (мрежа,
+    // 5xx) не е основание за второ съобщение (З2).
+    gone = err?.code === 10008 || err?.status === 404;
+    return null;
+  });
+  if (msg) { await msg.edit(warningMessage(config, lang)).catch(() => {}); return; }
+  if (!gone || !channel.client) return;
+  const serverId = channel.guildId || config.serverId;
+  if (!serverId || republishing.has(serverId)) return;
+  republishing.add(serverId);
+  try {
+    // Съобщението го няма → публикува се наново; старият id се зачита за изтрит.
+    config.warningMessageId = null;
+    await syncBaitWarning(channel.client, serverId, null, { staleWarning: true });
+  } finally {
+    republishing.delete(serverId);
+  }
+}
+
+/** Изключва стръвта в базата (когато не може да се поддържа безопасно). */
+async function disableBait(serverId, patch = {}) {
+  await api.put(`/bot/honeypot/${serverId}`, { enabled: false, ...patch }).catch(() => {});
+  invalidateBait(serverId);
+}
+
+/**
+ * Изтрит канал-стръв (З1): стръвта се изключва в базата (иначе остава „включена“
+ * към несъществуващ канал, а защитата е тихо изключена) и екипът научава в лога.
+ * Вика се от events/channelDelete.js; не хвърля.
+ */
+export async function onBaitChannelDeleted(channel) {
+  try {
+    const guild = channel?.guild;
+    if (!guild?.id) return false;
+    const config = await getBait(guild.id);
+    if (!config?.channelId || config.channelId !== channel.id) return false;
+    if (!config.enabled) return false;
+    await disableBait(guild.id, { channelId: null });
+    const lang = await resolveLangForGuild(guild.id).catch(() => "en");
+    await sendLog(guild, config, lang, { content: t("bait.log.trapDeleted", lang, { channel: `#${channel.name || "bait"} (${channel.id})` }) });
+    return true;
+  } catch (err) {
+    console.warn(`[bait] channelDelete handling failed: ${err?.message}`);
+    return false;
+  }
 }
 
 /**
@@ -201,7 +248,7 @@ async function refreshWarning(channel, config, lang) {
  * канал, публикуване в новия, ако липсва, махане при изключена стръв.
  * Вика се след /bait и когато таблото смени настройките.
  */
-export async function syncBaitWarning(client, serverId, previous = null) {
+export async function syncBaitWarning(client, serverId, previous = null, { staleWarning = false } = {}) {
   invalidateBait(serverId);
   const config = await getBait(serverId);
   if (!config) return { ok: false, reason: "BACKEND" };
@@ -222,16 +269,29 @@ export async function syncBaitWarning(client, serverId, previous = null) {
     invalidateBait(serverId);
     return { ok: true };
   }
-  if (!channel?.isTextBased?.()) return { ok: false, reason: "NO_CHANNEL" };
+  // Активна стръв без предупреждение няма право да остане (З2): хората не са
+  // предупредени, а който напише, бива изваден. Ако предупреждението не може да
+  // се гарантира, стръвта се изключва и командата/таблото казват защо.
+  const hasWarning = !!config.warningMessageId && !staleWarning;
+  if (!channel?.isTextBased?.()) {
+    await disableBait(serverId);
+    return { ok: false, reason: "NO_CHANNEL", disabled: true };
+  }
   const me = guild.members?.me;
-  if (!me || !channel.permissionsFor(me)?.has(TRAP_CHANNEL_PERMS)) return { ok: false, reason: "CHANNEL_PERMS" };
+  if (!me || !channel.permissionsFor(me)?.has(TRAP_CHANNEL_PERMS)) {
+    if (!hasWarning) await disableBait(serverId);
+    return { ok: false, reason: "CHANNEL_PERMS", disabled: !hasWarning };
+  }
 
   const existing = config.warningMessageId ? await channel.messages.fetch(config.warningMessageId).catch(() => null) : null;
   if (existing) {
     await existing.edit(warningMessage(config, lang)).catch(() => {});
   } else {
     const sent = await channel.send(warningMessage(config, lang)).catch(() => null);
-    if (!sent) return { ok: false, reason: "CHANNEL_PERMS" };
+    if (!sent) {
+      await disableBait(serverId);
+      return { ok: false, reason: "CHANNEL_PERMS", disabled: true };
+    }
     await api.patch(`/bot/honeypot/${serverId}/warning`, { messageId: sent.id, channelId: channel.id }).catch(() => {});
   }
   invalidateBait(serverId);

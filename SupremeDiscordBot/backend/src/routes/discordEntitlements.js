@@ -132,6 +132,8 @@ async function grantEntitlement(ent, via) {
         planSource: "discord",
         discordEntitlementId: ent.id,
         discordSkuId: ent.skuId,
+        // А1: нов платен период — старият прозорец за експорт вече не важи.
+        paidAccessEndedAt: null,
       },
     });
   } catch (err) {
@@ -216,7 +218,7 @@ router.post("/subscription", async (req, res, next) => {
  * Revoke a server's Discord-provisioned plan — only when it is provisioned by
  * exactly `entitlementId`. Never downgrades a Stripe-backed server.
  */
-async function revokeServer(serverId, entitlementId, reason) {
+async function revokeServer(serverId, entitlementId, reason, endedAt = null) {
   const server = await prisma.server.findUnique({
     where: { id: serverId },
     select: { id: true, planSource: true, discordEntitlementId: true, discordSkuId: true },
@@ -235,6 +237,11 @@ async function revokeServer(serverId, entitlementId, reason) {
           planSource: null,
           discordEntitlementId: null,
           discordSkuId: null,
+          // А1: котва САМО за прозореца за експорт (30 дни). НЕ accessUntil —
+          // то вдига плана; тук планът остава free.
+          // Никога в бъдещето: при възстановена сума `endsAt` е краят на периода,
+          // който още не е дошъл — прозорецът щеше да стане endsAt + 30 дни.
+          paidAccessEndedAt: endedAt && endedAt < new Date() ? endedAt : new Date(),
         },
       });
       // НЕ хардкодвай isPremium:false — сървърът може да е покрит от АКТИВНА
@@ -281,7 +288,7 @@ router.post("/entitlement", async (req, res, next) => {
     if (type === "delete" || ent.deleted === true || isExpired(ent)) {
       if (!ent.guildId) return res.json({ ok: true, ignored: "no guildId" });
       const reason = type === "delete" ? "delete" : ent.deleted ? "deleted-flag" : "expired";
-      const outcome = await revokeServer(ent.guildId, ent.id, reason);
+      const outcome = await revokeServer(ent.guildId, ent.id, reason, toDate(ent.endsAt));
       return res.json({ ok: true, ...outcome });
     }
 
