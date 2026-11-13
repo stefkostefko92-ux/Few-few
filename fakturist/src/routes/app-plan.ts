@@ -8,7 +8,7 @@ import { HttpError, requireOrg } from '../auth/guards.js';
 import { errorMessage, logger } from '../logger.js';
 import { HOUR } from '../time.js';
 import { BillingError, createOrder } from '../billing/orders.js';
-import { startCardCheckout } from '../billing/card.js';
+import { CHECKOUT_TTL_MS, startCardCheckout } from '../billing/card.js';
 import { RevolutError } from '../billing/revolut-client.js';
 import { addressLine, paymentMethods, planPage, planSupplier } from '../billing/plan-view.js';
 import { proformaPdf } from '../billing/proforma-pdf.js';
@@ -91,24 +91,25 @@ export function appPlanRouter(): Router {
       if (error instanceof BillingError) return res.redirect(303, `${base}?err=${error.code}`);
       throw error;
     }
-    const opened =
-      parsed.data.method === 'card' ? await openCheckout(access.organizationId, paymentId) : true;
-    res.redirect(303, `${base}/${paymentId}${opened ? '' : '?err=revolut'}`);
+    const failed =
+      parsed.data.method === 'card' ? await openCheckout(access.organizationId, paymentId) : null;
+    res.redirect(303, `${base}/${paymentId}${failed ? `?err=${failed}` : ''}`);
   });
 
-  /** Страницата при Revolut се създава след поръчката; при грешка — бутон „Опитай пак“. */
-  async function openCheckout(organizationId: string, paymentId: string): Promise<boolean> {
+  /** Страницата при Revolut се създава след поръчката; при грешка — кодът за съобщението. */
+  async function openCheckout(organizationId: string, paymentId: string): Promise<string | null> {
     try {
       await startCardCheckout({
         paymentId,
         organizationId,
         redirectUrl: `${config().PUBLIC_BASE_URL}/app/o/${organizationId}/plan/${paymentId}?vrashtane=1`,
       });
-      return true;
+      return null;
     } catch (error) {
+      if (error instanceof BillingError && error.code === 'expired') return 'expired';
       if (!(error instanceof RevolutError) && !(error instanceof BillingError)) throw error;
       logger.warn({ paymentId, err: errorMessage(error) }, 'страницата за плащане не се създаде');
-      return false;
+      return 'revolut';
     }
   }
 
@@ -140,6 +141,11 @@ export function appPlanRouter(): Router {
       inboxEntryId: entry?.id ?? null,
       returning,
       err: code(req.query['err']),
+      // Страницата при Revolut е изтекла — само нова поръчка.
+      expired:
+        payment.provider === 'REVOLUT' &&
+        payment.status === 'PENDING' &&
+        Date.now() - payment.createdAt.getTime() > CHECKOUT_TTL_MS,
       // Връщане от Revolut, а webhook-ът още не е дошъл: страницата се презарежда на 5 секунди.
       refresh: returning && payment.status === 'PENDING' && payment.provider === 'REVOLUT',
     });
@@ -149,10 +155,10 @@ export function appPlanRouter(): Router {
     const access = await owner(req);
     const payment = await orderOf(access.organizationId, param(req, 'paymentId'));
     if (payment.provider !== 'REVOLUT' || payment.status !== 'PENDING') throw new HttpError(409);
-    const opened = await openCheckout(access.organizationId, payment.id);
+    const failed = await openCheckout(access.organizationId, payment.id);
     res.redirect(
       303,
-      `/app/o/${access.organizationId}/plan/${payment.id}${opened ? '' : '?err=revolut'}`,
+      `/app/o/${access.organizationId}/plan/${payment.id}${failed ? `?err=${failed}` : ''}`,
     );
   });
 

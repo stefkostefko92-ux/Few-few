@@ -479,7 +479,8 @@
       "free": "There is nothing to pay on this plan.",
       "noPrice": "This plan is priced by agreement — write to us.",
       "noSupplier": "Plan orders are not open yet.",
-      "revolut": "The payment page did not open. Try again shortly."
+      "revolut": "The payment page did not open. Try again shortly.",
+      "expired": "The payment page has expired (24 hours). Place a new order from the page"
     }
   }
 }

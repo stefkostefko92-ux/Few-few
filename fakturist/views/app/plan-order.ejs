@@ -34,7 +34,9 @@
 </section>
 <% } %>
 
-<% if (payment.status === 'PENDING' && payment.provider === 'REVOLUT' && !refresh) { %>
+<% if (expired) { %>
+<p class="callout"><%= t('app.plan.err.expired') %> <a href="/app/o/<%= orgId %>/plan"><%= t('app.plan.title') %></a></p>
+<% } else if (payment.status === 'PENDING' && payment.provider === 'REVOLUT' && !refresh) { %>
 <section class="panel">
   <h2><%= t('app.plan.cardTitle') %></h2>
   <p class="hint"><%= t('app.plan.cardNote') %></p>

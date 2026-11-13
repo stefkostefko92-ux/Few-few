@@ -126,10 +126,12 @@ export function adminActionsRouter(): Router {
           paidAt,
           confirmedById: req.principal!.user.id,
         });
-        if (!result.activated) throw new HttpError(409);
+        if (!result.activated) {
+          return res.redirect(303, `/admin/r/payments/${payment.id}?proverka=billing-notPending`);
+        }
       } catch (error) {
-        if (error instanceof BillingError) throw new HttpError(409);
-        throw error;
+        if (!(error instanceof BillingError)) throw error;
+        return res.redirect(303, `/admin/r/payments/${payment.id}?proverka=billing-${error.code}`);
       }
       kickOutbox();
       return res.redirect(303, `/admin/r/payments/${payment.id}`);

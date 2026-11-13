@@ -151,6 +151,12 @@
     "revolut-rejected": "Revolut refused the request (key or environment).",
     "revolut-network": "No connection to Revolut — try again.",
     "revolut-invalidResponse": "Unexpected response from Revolut.",
-    "error": "The check failed."
+    "error": "The check failed.",
+    "review": "Paid but not activated: the Revolut amount does not match or the order was superseded by a newer paid plan. See the audit log and refund through Revolut.",
+    "billing-needsReview": "The order was superseded by a newer paid plan — not activated. Decide manually (refund).",
+    "billing-notPending": "The payment is already processed.",
+    "billing-noSupplier": "The supplier company is not set (Settings → billing.supplierOrgId) or has no default series.",
+    "billing-amountMismatch": "The amount does not match the order.",
+    "billing-notFound": "No such payment."
   }
 }

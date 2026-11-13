@@ -6,7 +6,15 @@ export type Interval = 'MONTH' | 'YEAR';
 export class BillingError extends Error {
   constructor(
     readonly code:
-      'notFound' | 'audience' | 'free' | 'noPrice' | 'noSupplier' | 'notPending' | 'amountMismatch',
+      | 'notFound'
+      | 'audience'
+      | 'free'
+      | 'noPrice'
+      | 'noSupplier'
+      | 'notPending'
+      | 'amountMismatch'
+      | 'needsReview'
+      | 'expired',
   ) {
     super(code);
   }

@@ -168,15 +168,14 @@ export async function findRevolutOrderByReference(
   fetchImpl: FetchLike = fetch,
 ): Promise<RevolutOrder | null> {
   if (!/^FKT-[A-Z0-9]{8}$/.test(reference)) throw new RevolutError('invalidResponse');
-  const json = record(
-    await call(
-      'GET',
-      `/api/orders?merchant_order_data_reference=${encodeURIComponent(reference)}&limit=5`,
-      null,
-      fetchImpl,
-    ),
+  const raw = await call(
+    'GET',
+    `/api/orders?merchant_order_data_reference=${encodeURIComponent(reference)}&limit=5`,
+    null,
+    fetchImpl,
   );
-  const orders = json?.['orders'];
+  // Спецификацията (Orders-v2) е {orders: [...]}; по-старите версии връщат масив — приема се и той.
+  const orders = Array.isArray(raw) ? raw : record(raw)?.['orders'];
   if (!Array.isArray(orders)) throw new RevolutError('invalidResponse');
   const first = record(orders[0]);
   const id = first?.['id'];

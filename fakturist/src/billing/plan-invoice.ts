@@ -2,13 +2,15 @@ import type { Prisma } from '@prisma/client';
 import { issueInTx, type IssueRequest, type IssueSettings } from '../documents/issue.js';
 import { lockOrganization } from '../accounts/transfer-core.js';
 import { BillingError, VAT_RATE_PERCENT, type Interval } from './billing-core.js';
+import { sofiaToday } from '../time.js';
 
 /**
  * Фактурата за платен план (SPEC 50): издава я Карбон Стелт (организацията от `billing.supplierOrgId`)
  * от името на собственика си, по серията си по подразбиране, в транзакцията на активирането. BT-7 е
  * датата на плащането (чл. 25, ал. 7 ЗДДС); платената сума е BT-113 → за плащане 0.
  */
-const isoDay = (date: Date) => date.toISOString().slice(0, 10);
+// Датите на фактурата са по българско време: плащане в 00:30 на 1-во число е в новия данъчен период.
+const isoDay = (date: Date) => sofiaToday(date);
 export const bgDay = (date: Date) => isoDay(date).split('-').reverse().join('.');
 
 function cents(value: number): string {
@@ -85,10 +87,12 @@ export async function issuePlanInvoice(
         countryCode: 'BG',
       },
     },
-    payment:
-      card || !supplier.iban
-        ? { meansCode: '48' }
-        : { meansCode: '30', accountId: supplier.iban, bic: supplier.bic ?? undefined },
+    // Сметката на доставчика е реквизит и при карта (BG-09, когато е задължителна).
+    payment: card
+      ? { meansCode: '48', accountId: supplier.iban ?? undefined }
+      : supplier.iban
+        ? { meansCode: '30', accountId: supplier.iban, bic: supplier.bic ?? undefined }
+        : { meansCode: '48' },
     notes: [
       card
         ? `Платено с карта на ${bgDay(input.paidAt)}.`

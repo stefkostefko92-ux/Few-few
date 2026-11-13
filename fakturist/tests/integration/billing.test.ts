@@ -219,6 +219,7 @@ test('цената е от сървъра: ДДС 20 % върху цели це�
   await assert.rejects(quotePlan(customerOrgId, 'free', 'MONTH'), /free/);
   await assert.rejects(quotePlan(customerOrgId, 'enterprise', 'MONTH'), /notFound|noPrice/);
   await assert.rejects(quotePlan(customerOrgId, 'firm', 'MONTH'), /audience/);
+  await assert.rejects(quotePlan(supplierOrgId, 'pro', 'MONTH'), /notFound/);
   // Сума от формата не съществува: полето се пренебрегва, записът е от сървъра.
   const res = await http.post(customer, `/app/o/${customerOrgId}/plan/poruchka`, {
     choice: 'pro:MONTH',
@@ -397,14 +398,21 @@ test('сумата при Revolut не съвпада → не се активи
   const payment = await prisma.payment.findUniqueOrThrow({ where: { id: paymentId } });
   pay(payment.providerOrderId!, '2026-11-12T09:00:00Z', 100);
   assert.equal(await settleRevolutOrder(payment.providerOrderId!), 'mismatch');
+  // За решение от мастъра: FAILED с датата на плащането, един запис в одита — проверката не го чете пак.
+  const marked = await prisma.payment.findUniqueOrThrow({ where: { id: paymentId } });
+  assert.equal(marked.status, 'FAILED');
+  assert.ok(marked.paidAt);
+  assert.equal(await settleRevolutOrder(payment.providerOrderId!), 'mismatch');
+  await prisma.payment.update({
+    where: { id: paymentId },
+    data: { createdAt: new Date(Date.now() - 10 * 60 * 1000) },
+  });
+  assert.equal(await reconcileCardPayments(), 0);
   assert.equal(
-    (await prisma.payment.findUniqueOrThrow({ where: { id: paymentId } })).status,
-    'PENDING',
-  );
-  assert.ok(
-    await prisma.auditLog.findFirst({
-      where: { action: 'billing.payment.mismatch', targetId: paymentId },
+    await prisma.auditLog.count({
+      where: { action: 'billing.payment.review', targetId: paymentId },
     }),
+    1,
   );
   const bad = await realFetch(`${http.origin}/webhooks/revolut`, {
     method: 'POST',
@@ -416,10 +424,9 @@ test('сумата при Revolut не съвпада → не се активи
     body: JSON.stringify({ event: 'ORDER_COMPLETED', order_id: payment.providerOrderId }),
   });
   assert.equal(bad.status, 401);
-  await prisma.payment.update({ where: { id: paymentId }, data: { status: 'FAILED' } });
 });
 
-test('заменена поръчка, платена все пак, се активира; изгубен webhook — от проверката на висящите', async () => {
+test('заменена поръчка, платена след по-нов ДРУГ платен план → не го пипа, чака мастъра', async () => {
   const first = await createOrder({
     organizationId: customerOrgId,
     actorId: masterId,
@@ -444,19 +451,24 @@ test('заменена поръчка, платена все пак, се акт
   const old = await prisma.payment.findUniqueOrThrow({ where: { id: first.paymentId } });
   assert.equal(old.status, 'CANCELLED');
   pay(old.providerOrderId!, '2026-11-12T10:00:00Z');
-  // Webhook-ът не стигна; проверката на висящите (по-стари от 5 мин) го намира.
   await prisma.payment.update({
     where: { id: old.id },
     data: { createdAt: new Date(Date.now() - 10 * 60 * 1000) },
   });
-  assert.equal(await reconcileCardPayments(), 1);
-  const done = await prisma.payment.findUniqueOrThrow({ where: { id: old.id } });
-  assert.equal(done.status, 'COMPLETED');
+  // Активният „Професионален“ е платен до 10.01.2027 — годишният „Бизнес“ не го прекратява мълчаливо.
+  assert.equal(await reconcileCardPayments(), 0);
+  const review = await prisma.payment.findUniqueOrThrow({ where: { id: old.id } });
+  assert.equal(review.status, 'FAILED');
+  assert.equal(review.paidAt?.toISOString(), '2026-11-12T10:00:00.000Z');
+  const audit = await prisma.auditLog.findFirstOrThrow({
+    where: { action: 'billing.payment.review', targetId: old.id },
+  });
+  assert.equal((audit.details as { reason: string }).reason, 'superseded');
   const active = await prisma.subscription.findFirstOrThrow({
     where: { organizationId: customerOrgId, status: 'ACTIVE' },
   });
-  assert.equal(active.planCode, 'business');
-  assert.equal(await reconcileCardPayments(), 0, 'втори път — нищо');
+  assert.equal(active.planCode, 'pro');
+  assert.equal(active.currentPeriodEnd.toISOString(), '2027-01-10T12:00:00.000Z');
 });
 
 test('Revolut недостъпен при създаването → търсене по основанието, не втора поръчка', async () => {
@@ -503,6 +515,30 @@ test('Revolut недостъпен при създаването → търсе�
     (await prisma.payment.findUniqueOrThrow({ where: { id: paymentId } })).status,
     'CANCELLED',
   );
+
+  // Страница за плащане на поръчка отпреди 24 ч: не се отваря — само нова поръчка.
+  const stale = await createOrder({
+    organizationId: customerOrgId,
+    actorId: masterId,
+    planCode: 'pro',
+    interval: 'MONTH',
+    method: 'card',
+  });
+  await prisma.payment.update({
+    where: { id: stale.paymentId },
+    data: { createdAt: new Date(Date.now() - 25 * 60 * 60 * 1000) },
+  });
+  const expired = await http.post(
+    customer,
+    `/app/o/${customerOrgId}/plan/${stale.paymentId}/karta`,
+    {},
+  );
+  assert.match(expired.headers.get('location') ?? '', /err=expired/);
+  const page = await (
+    await http.get(customer, `/app/o/${customerOrgId}/plan/${stale.paymentId}`)
+  ).text();
+  assert.match(page, /изтекла/);
+  await http.post(customer, `/app/o/${customerOrgId}/plan/${stale.paymentId}/otkazhi`, {});
 });
 
 test('изтекъл платен период → началният план; данните остават', async () => {
@@ -513,6 +549,63 @@ test('изтекъл платен период → началният план; 
   });
   assert.equal(active.planCode, 'free');
   assert.equal(await expireSubscriptions(later), 0);
+});
+
+test('на безплатен план заменена, но платена поръчка се активира; дата по софийско време; сметка и при карта', async () => {
+  await prisma.setting.upsert({
+    where: { key: 'issue.requireBankAccount' },
+    create: { key: 'issue.requireBankAccount', value: true },
+    update: { value: true },
+  });
+  invalidateSettings();
+  const first = await createOrder({
+    organizationId: customerOrgId,
+    actorId: masterId,
+    planCode: 'business',
+    interval: 'MONTH',
+    method: 'card',
+  });
+  const { startCardCheckout } = await import('../../src/billing/card.js');
+  await startCardCheckout({
+    paymentId: first.paymentId,
+    organizationId: customerOrgId,
+    redirectUrl: 'https://x.test/',
+  });
+  await createOrder({
+    organizationId: customerOrgId,
+    actorId: masterId,
+    planCode: 'pro',
+    interval: 'MONTH',
+    method: 'transfer',
+  });
+  const old = await prisma.payment.findUniqueOrThrow({ where: { id: first.paymentId } });
+  assert.equal(old.status, 'CANCELLED');
+  // 31.10.2026 22:30 UTC = 01.11.2026 00:30 в София — данъчното събитие е в ноември.
+  pay(old.providerOrderId!, '2026-10-31T22:30:00Z');
+  await prisma.payment.update({
+    where: { id: old.id },
+    data: { createdAt: new Date(Date.now() - 10 * 60 * 1000) },
+  });
+  assert.equal(await reconcileCardPayments(), 1);
+  const done = await prisma.payment.findUniqueOrThrow({ where: { id: old.id } });
+  assert.equal(done.status, 'COMPLETED');
+  const invoice = await prisma.document.findUniqueOrThrow({
+    where: { id: done.invoiceDocumentId! },
+  });
+  assert.match(invoice.ublXml ?? '', /<cbc:TaxPointDate>2026-11-01<\/cbc:TaxPointDate>/);
+  assert.match(invoice.ublXml ?? '', /<cbc:PaymentMeansCode>48<\/cbc:PaymentMeansCode>/);
+  assert.match(invoice.ublXml ?? '', /BG80BNBG96611020345678/);
+  const active = await prisma.subscription.findMany({
+    where: { organizationId: customerOrgId, status: 'ACTIVE' },
+  });
+  assert.equal(active.length, 1);
+  assert.equal(active[0]!.planCode, 'business');
+  assert.equal(await reconcileCardPayments(), 0, 'втори път — нищо');
+  await prisma.setting.update({
+    where: { key: 'issue.requireBankAccount' },
+    data: { value: false },
+  });
+  invalidateSettings();
 });
 
 test('чужда фирма и член без billing.manage не стигат до плана', async () => {

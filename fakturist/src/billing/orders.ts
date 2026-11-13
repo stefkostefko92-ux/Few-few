@@ -11,7 +11,6 @@ import {
   type Interval,
   type OrderMethod,
 } from './billing-core.js';
-import { lockOrganization } from '../accounts/transfer-core.js';
 
 /**
  * Поръчка и плащане на план (SPEC 49–50; ДДС — docs/kazus-dds-abonamenti.md). Сумата се смята САМО тук:
@@ -42,6 +41,9 @@ export async function quotePlan(
     prisma.plan.findUnique({ where: { code: planCode } }),
   ]);
   if (!org || !plan || !plan.isActive || !plan.isPublic) throw new BillingError('notFound');
+  // Доставчикът не си продава план сам на себе си (и заключванията биха се заплели).
+  if (organizationId === (await setting('billing.supplierOrgId')))
+    throw new BillingError('notFound');
   const audience = org.kind === 'ACCOUNTING_FIRM' ? 'ACCOUNTANT' : 'COMPANY';
   if (plan.audience !== audience) throw new BillingError('audience');
   const base = interval === 'YEAR' ? plan.priceYearlyCents : plan.priceMonthlyCents;
@@ -87,7 +89,10 @@ export async function createOrder(input: {
   if (!supplier) throw new BillingError('noSupplier');
   const quote = await quotePlan(input.organizationId, input.planCode, input.interval);
   return prisma.$transaction(async (tx) => {
-    await lockOrganization(tx, input.organizationId);
+    // FOR NO KEY UPDATE: сериализира поръчките на фирмата, без да спира проверката на външния ключ при
+    // активиране (subscription.create → FOR KEY SHARE на фирмата) — иначе deadlock с activatePayment.
+    await tx.$queryRaw`
+      SELECT "id" FROM "Organization" WHERE "id" = ${input.organizationId} FOR NO KEY UPDATE`;
     // Заменената поръчка е CANCELLED, не FAILED: ако все пак се плати (картата е вече в Revolut,
     // преводът — в банката), activatePayment я активира — парите не се губят.
     await tx.payment.updateMany({
@@ -165,6 +170,17 @@ export async function activatePayment(input: {
       where: { organizationId: customer.id, status: 'ACTIVE' },
       orderBy: { currentPeriodEnd: 'desc' },
     });
+    // Заменена поръчка, платена след като по-нова е активирала ДРУГ платен план: не се пипа платеното
+    // време — мастърът решава (връщане на парите или ръчно), card.ts я отбелязва за преглед.
+    if (
+      payment.status === 'CANCELLED' &&
+      current &&
+      current.currentPeriodEnd > input.paidAt &&
+      (current.planCode !== plan.code || current.interval !== interval) &&
+      (await tx.payment.count({ where: { subscriptionId: current.id, status: 'COMPLETED' } })) > 0
+    ) {
+      throw new BillingError('needsReview');
+    }
     const start =
       current &&
       current.planCode === plan.code &&

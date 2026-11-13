@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 
@@ -16,7 +17,24 @@ export async function expireSubscriptions(now = new Date()): Promise<number> {
   });
   let count = 0;
   for (const subscription of expired) {
-    const done = await prisma.$transaction(async (tx) => {
+    // Едновременно активиране печели: уникалният индекс „един активен абонамент“ спира единия.
+    const done = await expireOne(subscription, now).catch((error: unknown) => {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        return false;
+      }
+      throw error;
+    });
+    if (done) count += 1;
+  }
+  return count;
+}
+
+async function expireOne(
+  subscription: { id: string; organizationId: string; planCode: string },
+  now: Date,
+): Promise<boolean> {
+  {
+    return prisma.$transaction(async (tx) => {
       // Условно: ново плащане в същия момент (активиране) печели — то вече е отменило този запис.
       const updated = await tx.subscription.updateMany({
         where: { id: subscription.id, status: 'ACTIVE', currentPeriodEnd: { lte: now } },
@@ -48,7 +66,5 @@ export async function expireSubscriptions(now = new Date()): Promise<number> {
       });
       return true;
     });
-    if (done) count += 1;
   }
-  return count;
 }

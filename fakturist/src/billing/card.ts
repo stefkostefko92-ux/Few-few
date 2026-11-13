@@ -35,6 +35,9 @@ export async function startCardCheckout(
     },
   });
   if (!payment || !payment.reference) throw new BillingError('notPending');
+  // Поръчката при Revolut живее 24 ч от създаването (то е веднага след нашата поръчка); след това —
+  // нова поръчка от страницата „План“, а проверката на висящите покрива целия живот на страницата.
+  if (Date.now() - payment.createdAt.getTime() > CHECKOUT_TTL_MS) throw new BillingError('expired');
   if (payment.checkoutUrl) return payment.checkoutUrl;
   const plan = await prisma.plan.findUnique({
     where: { code: payment.planCode ?? '' },
@@ -77,7 +80,11 @@ export async function startCardCheckout(
   return current.checkoutUrl;
 }
 
-export type SettleOutcome = 'activated' | 'already' | 'notFound' | 'notPaid' | 'mismatch';
+/** Колко време страницата за плащане е годна (Revolut я проваля след 24 ч — малко по-рано при нас). */
+export const CHECKOUT_TTL_MS = 23 * 60 * 60 * 1000;
+
+export type SettleOutcome =
+  'activated' | 'already' | 'notFound' | 'notPaid' | 'mismatch' | 'review';
 
 /** Сверката преди права: поръчката при Revolut срещу нашия запис. */
 function matches(
@@ -111,28 +118,18 @@ export async function settleRevolutOrder(
   if (payment.status === 'COMPLETED' || payment.status === 'REFUNDED') return 'already';
   const order = await retrieveRevolutOrder(orderId, fetchImpl);
   if (order.state !== 'completed') return 'notPaid';
-  if (!matches(order, payment)) {
-    await prisma.$transaction((tx) =>
-      audit(tx, {
-        actorId: null,
-        organizationId: payment.organizationId,
-        action: 'billing.payment.mismatch',
-        targetType: 'Payment',
-        targetId: payment.id,
-        details: {
-          expectedCents: payment.amountCents,
-          orderCents: order.amount,
-          currency: order.currency,
-          referenceMatches: order.reference === payment.reference,
-        },
-      }),
-    );
-    logger.warn({ paymentId: payment.id }, 'плащане от Revolut не съвпада с поръчката');
-    return 'mismatch';
-  }
   // Часът е на Revolut; ако го няма или е „в бъдещето“ (разминаване на часовниците) — сега.
   const now = new Date();
   const paidAt = order.paidAt && order.paidAt <= now ? order.paidAt : now;
+  if (!matches(order, payment)) {
+    await markForReview(payment, paidAt, 'mismatch', {
+      expectedCents: payment.amountCents,
+      orderCents: order.amount,
+      currency: order.currency,
+      referenceMatches: order.reference === payment.reference,
+    });
+    return 'mismatch';
+  }
   if (!payment.planCode) {
     const done = await prisma.payment.updateMany({
       where: { id: payment.id, status: { in: ['PENDING', 'CANCELLED'] } },
@@ -140,13 +137,49 @@ export async function settleRevolutOrder(
     });
     return done.count === 1 ? 'activated' : 'already';
   }
-  const result = await activatePayment({
-    paymentId: payment.id,
-    paidAt,
-    expectedAmountCents: order.amount,
-  });
+  let result: { activated: boolean };
+  try {
+    result = await activatePayment({
+      paymentId: payment.id,
+      paidAt,
+      expectedAmountCents: order.amount,
+    });
+  } catch (error) {
+    if (!(error instanceof BillingError) || error.code !== 'needsReview') throw error;
+    await markForReview(payment, paidAt, 'superseded', { planCode: payment.planCode });
+    return 'review';
+  }
   if (result.activated) kickOutbox();
   return result.activated ? 'activated' : 'already';
+}
+
+/**
+ * Платено, но не за активиране (несъвпадение или заменена поръчка при по-нов платен план): FAILED с
+ * датата на плащането — излиза от проверката на висящите (без шум в одита на 10 мин) и чака мастъра
+ * (връщане на парите през Revolut). Записва се веднъж — условно по статуса.
+ */
+async function markForReview(
+  payment: { id: string; organizationId: string },
+  paidAt: Date,
+  reason: 'mismatch' | 'superseded',
+  details: Record<string, string | number | boolean | null>,
+): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const marked = await tx.payment.updateMany({
+      where: { id: payment.id, status: { in: ['PENDING', 'CANCELLED'] } },
+      data: { status: 'FAILED', paidAt },
+    });
+    if (marked.count !== 1) return;
+    await audit(tx, {
+      actorId: null,
+      organizationId: payment.organizationId,
+      action: 'billing.payment.review',
+      targetType: 'Payment',
+      targetId: payment.id,
+      details: { reason, ...details },
+    });
+  });
+  logger.warn({ paymentId: payment.id, reason }, 'плащане с карта чака решение на мастъра');
 }
 
 /** Висящите плащания с карта от последните 48 часа (поръчката при Revolut живее 24). */
