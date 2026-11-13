@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 644
+        "lessons": 645
       },
       "evolution": [
         {
@@ -2043,9 +2043,20 @@
           "date": "2026-11-13",
           "event": "v58.4 — учене",
           "detail": "Научи: В live-run worktree дори единичната команда node --test <файл> иска одобрение, затова и…"
+        },
+        {
+          "version": "58.5.0",
+          "date": "2026-11-13",
+          "event": "v58.5 — учене",
+          "detail": "Научи: tools/seo/indexnow.mjs решава ключа в ред --key → --key-file → env INDEXNOW_KEY → <site…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „tools/seo/indexnow.mjs решава ключа в ред --key → --key-file → env INDEXNOW_KEY → <site…\""
+        },
         {
           "date": "2026-11-13",
           "type": "learning",
