@@ -190,6 +190,23 @@ export async function acceptTransferInvite(input: {
           });
         }
       }
+      // Собственик, поканен от кантора, е за проверка: мастърите получават писмо (без имейла му).
+      if (invite.mandate) {
+        const masters = await tx.user.findMany({
+          where: { platformRole: 'MASTER', disabledAt: null },
+          select: { email: true },
+        });
+        for (const master of masters) {
+          await tx.notification.create({
+            data: {
+              organizationId: invite.organizationId,
+              kind: 'ownership.review',
+              toEmail: master.email,
+              payload: { organizationId: invite.organizationId, inviteId: invite.id },
+            },
+          });
+        }
+      }
       return { userId, organizationId: invite.organizationId, created: newUser !== null };
     });
   } catch (error) {

@@ -248,6 +248,18 @@ export const ADMIN_RESOURCES: AdminResource[] = [
     idField: 'code',
   },
   {
+    model: 'PdfStyle',
+    slug: 'pdf-styles',
+    group: 'documents',
+    label: { bg: 'Изглед на PDF', en: 'PDF styles' },
+    columns: ['organizationId', 'template', 'font', 'accent', 'logoType', 'updatedAt'],
+    search: ['organizationId'],
+    // Логото е двоично — не се рисува в панела (вижда се в образеца на фирмата).
+    hidden: ['logo'],
+    orderBy: { updatedAt: 'desc' },
+    idField: 'organizationId',
+  },
+  {
     model: 'TransferInvite',
     slug: 'transfers',
     group: 'accounts',

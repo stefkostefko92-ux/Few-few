@@ -99,17 +99,18 @@ model User {
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
-  sessions        Session[]
-  memberships     Membership[]
-  issuedDocuments Document[]       @relation("IssuedBy")
-  auditEntries    AuditLog[]
-  inboxDecisions  InboxEntry[]
-  mandatesCreated ClientMandate[]
-  settingsChanged Setting[]
-  flagsChanged    FeatureFlag[]
-  integrations    Integration[]
-  invitesCreated  TransferInvite[] @relation("InviteCreatedBy")
-  invitesAccepted TransferInvite[] @relation("InviteAcceptedBy")
+  sessions         Session[]
+  memberships      Membership[]
+  issuedDocuments  Document[]       @relation("IssuedBy")
+  auditEntries     AuditLog[]
+  inboxDecisions   InboxEntry[]
+  mandatesCreated  ClientMandate[]
+  settingsChanged  Setting[]
+  flagsChanged     FeatureFlag[]
+  integrations     Integration[]
+  invitesCreated   TransferInvite[] @relation("InviteCreatedBy")
+  invitesAccepted  TransferInvite[] @relation("InviteAcceptedBy")
+  pdfStylesChanged PdfStyle[]
 
   @@index([platformRole])
 }
@@ -178,6 +179,7 @@ model Organization {
   inboxSent       InboxEntry[]     @relation("InboxSender")
   notifications   Notification[]
   transferInvites TransferInvite[]
+  pdfStyle        PdfStyle?
 
   @@index([kind])
   @@index([legalName])
@@ -567,4 +569,29 @@ model TransferInvite {
   @@index([createdById])
   @@index([acceptedById])
   @@index([mandateId])
+}
+
+/// Изгледът на PDF копието на фирмата (настройките на фирмата → „Изглед на документите“). Само външният
+/// вид: реквизитите, сумите и подписът на продукта са едни и същи във всеки изглед (src/documents/pdf.ts).
+model PdfStyle {
+  organizationId String       @id
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  /// Логото — винаги прекодирано (sharp): PNG или JPEG, до 1200×600, без метаданни.
+  logo           Bytes?
+  logoType       String?
+  logoWidth      Int?
+  logoHeight     Int?
+  /// Ключ от PDF_FONTS (src/documents/pdf-style.ts).
+  font           String       @default("dejavu-sans")
+  /// classic | band | compact
+  template       String       @default("classic")
+  /// #rrggbb, с достатъчен контраст върху бяло (WCAG 4.5:1).
+  accent         String       @default("#0b6b52")
+  /// left | right
+  logoPosition   String       @default("left")
+  updatedAt      DateTime     @updatedAt
+  updatedById    String?
+  updatedBy      User?        @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([updatedById])
 }

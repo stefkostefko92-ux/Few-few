@@ -2,7 +2,8 @@
 <p><a href="/admin/r/<%= resource.slug %>">← <%= resource.label[lang] %></a></p>
 <h1><%= resource.label[lang] %></h1>
 <%- include('_nav') %>
-<% if (error) { %><p class="error" role="alert"><%= tOr('admin.transfer.errors.' + error, t('auth.errors.invalid')) %></p><% } %>
+<% if (error) { %><p class="error" role="alert"><%= tOr('admin.transfer.errors.' + error, tOr('admin.ownership.errors.' + error, t('auth.errors.invalid'))) %></p><% } %>
+<% if (revoked) { %><p class="ok" role="status"><%= t('admin.ownership.done') %></p><% } %>
 <dl class="record">
   <% Object.entries(row).forEach(([key, value]) => { %>
     <div><dt class="mono"><%= key %></dt><dd class="mono"><%- include('_value', { value }) %></dd></div>
@@ -13,6 +14,18 @@
   <a class="button-secondary" href="/admin/veriga/<%= row.id %>"><%= t('admin.chain') %></a>
   <% if (!row.verifiedAt) { %><form method="post" action="/admin/firmi/<%= row.id %>/potvardi"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit"><%= t('admin.verifyOrg') %></button></form><% } %>
 </div>
+<% if (transfer && transfer.hasOwner && row.kind === 'COMPANY' && !row.deletedAt) { %>
+<section class="panel stack narrow-form" aria-labelledby="h-revoke">
+  <h2 id="h-revoke"><%= t('admin.ownership.title') %></h2>
+  <p><%= t('admin.ownership.intro') %></p>
+  <form method="post" action="/admin/firmi/<%= row.id %>/otnemi" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label><%= t('admin.ownership.reason') %><select name="reason" required><% ['disputed', 'mistake', 'other'].forEach((r) => { %><option value="<%= r %>"><%= t('admin.ownership.reasons.' + r) %></option><% }) %></select></label>
+    <label class="check"><input type="checkbox" name="understood" required> <%= t('admin.ownership.understood') %></label>
+    <button type="submit" class="button-danger"><%= t('admin.ownership.button') %></button>
+  </form>
+</section>
+<% } %>
 <% if (transfer && !transfer.hasOwner && !row.deletedAt) { %>
 <section class="panel stack narrow-form" aria-labelledby="h-transfer">
   <h2 id="h-transfer"><%= t('admin.transfer.title') %></h2>

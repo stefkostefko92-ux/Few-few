@@ -13,6 +13,7 @@ export function param(req: Request, name: string): string {
 }
 
 export const DOWNLOAD_SELECT = {
+  organizationId: true,
   number: true,
   input: true,
   ublXml: true,
@@ -24,6 +25,7 @@ export const DOWNLOAD_SELECT = {
 } as const;
 
 export type DownloadSource = {
+  organizationId: string;
   number: string | null;
   input: Prisma.JsonValue;
   ublXml: string | null;

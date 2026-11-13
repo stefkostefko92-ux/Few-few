@@ -17,6 +17,12 @@ export class HttpError extends Error {
 }
 
 /**
+ * Адресите, които приемат multipart (качване на файл). Тялото им още не е разчетено, когато минава
+ * csrf(), затова токенът се проверява след разчитането (src/http/upload.ts). Всеки друг multipart — 403.
+ */
+const MULTIPART_PATHS = [/^\/app\/o\/[a-z0-9]{20,40}\/nastroyki\/logo$/];
+
+/**
  * CSRF: всеки запис носи токена на сесията (скрито поле `_csrf`) и, ако браузърът подаде Origin, той е
  * нашият. SameSite=Lax на бисквитката е втори слой, не единствен.
  */
@@ -28,6 +34,12 @@ export function csrf() {
     // И без сесия: чужд сайт не може да впише жертвата в своя акаунт (login CSRF) — браузърите пращат
     // Origin при всяка междусайтова POST заявка.
     if (sent && sent !== origin) return next(new HttpError(403, 'Чужд Origin'));
+    if (req.is('multipart/form-data')) {
+      if (!req.principal || !MULTIPART_PATHS.some((path) => path.test(req.path))) {
+        return next(new HttpError(403, 'multipart'));
+      }
+      return next();
+    }
     if (!req.principal) return next();
     const body: unknown = req.body;
     const token =

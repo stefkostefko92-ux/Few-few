@@ -15,6 +15,7 @@ import { FEATURES, FEATURE_GROUPS, isFeatureCode } from '../features.js';
 import { invalidatePublicPlans } from '../billing/public-plans.js';
 import { money } from '../http/view.js';
 import { transferStatus } from '../accounts/transfer.js';
+import { ownershipReviewQueue } from '../accounts/ownership.js';
 import { adminSettingsRouter } from './admin-settings.js';
 import { adminActionsRouter } from './admin-actions.js';
 
@@ -76,6 +77,7 @@ export function adminRouter(): Router {
       }),
       prisma.auditLog.findMany({ orderBy: { id: 'desc' }, take: 15 }),
     ]);
+    const review = await ownershipReviewQueue();
     res.render('admin/dashboard', {
       counts,
       issuedThisMonth,
@@ -83,6 +85,7 @@ export function adminRouter(): Router {
       companies,
       revenue: money(revenue._sum.amountCents ?? 0, 'EUR', res.locals.lang),
       recent,
+      review,
     });
   });
 
@@ -115,6 +118,7 @@ export function adminRouter(): Router {
       resource,
       row,
       transfer,
+      revoked: req.query['otneta'] === '1',
       error: error && /^[a-zA-Z.]{1,40}$/.test(error) ? error : null,
     });
   });

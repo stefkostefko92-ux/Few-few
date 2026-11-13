@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { test } from 'node:test';
 import { renderPdf, bgAmount } from '../src/documents/pdf.js';
+import { DEFAULT_PDF_STYLE, resolvePdfStyle } from '../src/documents/pdf-style.js';
 import { calculate } from '../src/einvoice/calculate.js';
 import { dec } from '../src/einvoice/decimal.js';
 import { InvoiceInputSchema } from '../src/einvoice/model.js';
@@ -10,7 +11,8 @@ import { recipientEik } from '../src/inbox/deliver.js';
 import { BRAND } from '../src/brand.js';
 import { SAMPLES } from './fixtures/einvoice-samples.js';
 
-const FONT_DIR = process.env['PDF_FONT_DIR'] ?? '/usr/share/fonts/truetype/dejavu';
+const FONT_ROOT = process.env['PDF_FONT_ROOT'] ?? '/usr/share/fonts/truetype';
+const FONT_DIR = `${FONT_ROOT}/dejavu`;
 
 test('сумите в PDF-а: групи с неразделим интервал и десетична запетая', () => {
   assert.equal(bgAmount(dec('1234567.5')), '1 234 567,50');
@@ -24,15 +26,19 @@ test(
   async () => {
     for (const [name, raw] of Object.entries(SAMPLES)) {
       const input = InvoiceInputSchema.parse(raw);
-      const pdf = await renderPdf(input, calculate(input), {
-        number: input.number,
-        chainIndex: 7n,
-        sha256: 'a'.repeat(64),
-        signature: BRAND.signature,
-        issuedVia:
-          name === 'domestic' ? { firm: 'Кантора ООД', mandateRef: 'Пълномощно № 1' } : null,
-        fontDir: FONT_DIR,
-      });
+      const pdf = await renderPdf(
+        input,
+        calculate(input),
+        {
+          number: input.number,
+          chainIndex: 7n,
+          sha256: 'a'.repeat(64),
+          signature: BRAND.signature,
+          issuedVia:
+            name === 'domestic' ? { firm: 'Кантора ООД', mandateRef: 'Пълномощно № 1' } : null,
+        },
+        resolvePdfStyle(DEFAULT_PDF_STYLE, null, FONT_ROOT),
+      );
       assert.equal(pdf.subarray(0, 5).toString(), '%PDF-', name);
       assert.ok(pdf.subarray(-8).toString().includes('%%EOF'), name);
       assert.ok(pdf.length > 5000, `${name}: ${pdf.length}`);

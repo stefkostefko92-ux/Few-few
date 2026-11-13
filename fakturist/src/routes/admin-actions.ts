@@ -15,6 +15,7 @@ import {
 import { decideMandate } from '../accounts/mandates.js';
 import { createTransferInvite, revokeTransferInvite, TransferError } from '../accounts/transfer.js';
 import { smtpSettings } from '../admin/integrations.js';
+import { isRevokeReason, OwnershipError, revokeOwnership } from '../accounts/ownership.js';
 
 /** Поканата за прехвърляне: имейлът на собственика + отметката, че мастърът е проверил представителството. */
 const TransferForm = z.object({
@@ -186,6 +187,27 @@ export function adminActionsRouter(): Router {
       if (error.code === 'hasOwner') throw new HttpError(409);
       res.redirect(303, `/admin/r/organizations/${id}?greshka=${error.code}`);
     }
+  });
+
+  // --- Отнемане на собствеността (собственик, поканен от кантора, при спор) ------------------------
+  router.post('/admin/firmi/:id/otnemi', async (req, res) => {
+    const id = String(req.params['id']);
+    const body = req.body as Record<string, unknown>;
+    if (body['understood'] !== 'on') {
+      return res.redirect(303, `/admin/r/organizations/${id}?greshka=notUnderstood`);
+    }
+    const reason = body['reason'];
+    if (!isRevokeReason(reason)) {
+      return res.redirect(303, `/admin/r/organizations/${id}?greshka=invalidReason`);
+    }
+    try {
+      await revokeOwnership({ organizationId: id, actorId: req.principal!.user.id, reason });
+    } catch (error) {
+      if (!(error instanceof OwnershipError)) throw error;
+      if (error.code === 'notFound') throw new HttpError(404);
+      return res.redirect(303, `/admin/r/organizations/${id}?greshka=${error.code}`);
+    }
+    res.redirect(303, `/admin/r/organizations/${id}?otneta=1`);
   });
 
   router.post('/admin/pokani/:id/otmeni', async (req, res) => {

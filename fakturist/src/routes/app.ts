@@ -18,6 +18,7 @@ import { DOWNLOAD_SELECT, param, sendDocumentFile } from './app-shared.js';
 import { appSecurityRouter } from './app-security.js';
 import { appInboxRouter } from './app-inbox.js';
 import { appClientsRouter } from './app-clients.js';
+import { appSettingsRouter } from './app-settings.js';
 
 /** Документите, издадени от фирмата през текущия месец — за мекия лимит на безплатния план. */
 async function monthUsage(
@@ -45,6 +46,7 @@ export function appRouter(): Router {
   router.use(appSecurityRouter());
   router.use(appInboxRouter());
   router.use(appClientsRouter());
+  router.use(appSettingsRouter());
 
   router.get('/app', async (req, res) => {
     const user = req.principal!.user;
@@ -119,6 +121,7 @@ export function appRouter(): Router {
       unread,
       pendingMandates,
       canManageMandates: roleCan(access.role, 'mandates.manage') && access.viaFirmId === null,
+      canSettings: roleCan(access.role, 'org.settings') && access.viaFirmId === null,
       usage: { ...usage, ...softLimitState(usage.limit, usage.issued) },
       canIssue: roleCan(access.role, 'documents.issue'),
       money: (cents: bigint, currency: string) => money(cents, currency, res.locals.lang),

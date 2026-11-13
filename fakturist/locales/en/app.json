@@ -211,5 +211,68 @@
     "actions": "Actions",
     "approve": "Confirm",
     "revoke": "Revoke"
+  },
+  "settings": {
+    "title": "Company settings",
+    "pdfTitle": "Document look (PDF)",
+    "pdfIntro": "The logo, font and layout of the PDF copy you send to your clients. The structured XML (UBL and CII) does not change.",
+    "preview": "View a sample (PDF)",
+    "logo": "Logo",
+    "logoAlt": "The logo of {company}",
+    "noLogo": "No logo uploaded.",
+    "uploadLogo": "Upload a logo",
+    "replaceLogo": "Replace the logo",
+    "logoHelp": "PNG, JPEG or WebP up to 1 MB. It is re-encoded to at most 1200×600 pixels without metadata; SVG is not accepted.",
+    "uploadButton": "Upload",
+    "removeLogo": "Remove the logo",
+    "look": "Font, layout and colour",
+    "fields": {
+      "template": "Layout",
+      "font": "Font",
+      "accent": "Accent colour",
+      "logoPosition": "Logo on the"
+    },
+    "templates": {
+      "classic": {
+        "name": "Classic",
+        "help": "White header, the number in the accent colour — closest to a paper invoice."
+      },
+      "band": {
+        "name": "Band",
+        "help": "A coloured band with the document type and number; the logo sits in a white box inside it."
+      },
+      "compact": {
+        "name": "Compact",
+        "help": "Smaller type and narrower margins — more lines per page."
+      }
+    },
+    "fontKinds": {
+      "dejavu-sans": "sans-serif (default)",
+      "dejavu-serif": "serif",
+      "liberation-sans": "sans-serif, like Arial",
+      "liberation-serif": "serif, like Times"
+    },
+    "fontHelp": "Every font has Cyrillic, € and Bulgarian quotation marks.",
+    "accentHelp": "For the number, the band and the rule above “Amount due”. A colour that is too light is rejected — it must read on white (contrast at least 4.5:1).",
+    "positions": {
+      "left": "left",
+      "right": "right"
+    },
+    "contentNote": "The look changes appearance only. The VAT Act particulars, the amounts, the mandate and the Fakturist signature are in every look.",
+    "save": "Save the look",
+    "saved": {
+      "pdf": "The look is saved. It also applies to already issued documents the next time they are downloaded.",
+      "logo": "The logo is uploaded.",
+      "mahnato": "The logo is removed."
+    },
+    "errors": {
+      "invalid": "Choose from the list.",
+      "invalidAccent": "The colour is in the #rrggbb form.",
+      "lowContrast": "The colour is too light — choose a darker one.",
+      "logoTooLarge": "The file is over 1 MB.",
+      "logoType": "The logo is PNG, JPEG or WebP.",
+      "logoCorrupt": "The file cannot be read as an image.",
+      "logoMissing": "Choose a file."
+    }
   }
 }

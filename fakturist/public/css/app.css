@@ -605,3 +605,35 @@ td.actions {
     color: var(--ink-2);
   }
 }
+
+/* Необратимо действие на мастъра (отнемане на собственост): различно от основния бутон. */
+button.button-danger {
+  background: var(--bad-bg);
+  color: var(--bad-ink);
+  border: 1px solid var(--bad-ink);
+}
+
+/* Прегледът на логото в настройките на фирмата: на светло поле, без разтягане. */
+.logo-preview {
+  display: block;
+  max-width: min(100%, 320px);
+  max-height: 120px;
+  height: auto;
+  padding: 0.5rem;
+  background: #ffffff;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+/* Полето за цвят: видима мостра с размер на бутон, не тънка черта. */
+input[type='color'] {
+  width: 5.5rem;
+  height: 2.75rem;
+  padding: 0.2rem;
+  cursor: pointer;
+}
+/* Радио с описание: бутонът до текста, текстът заема останалото място. */
+.choice .radio > span {
+  flex: 1 1 0;
+  min-width: 0;
+}

@@ -79,6 +79,29 @@ export function inboxReceivedMail(data: InboxMailData): {
   return { subject, text, html };
 }
 
+/** Писмото до мастъра: собственик, поканен от кантора — за проверка. Без имейла на собственика. */
+export function ownershipReviewMail(data: {
+  companyName: string;
+  companyEik: string | null;
+  firmName: string;
+  link: string;
+}): { subject: string; text: string; html: string } {
+  const company = data.companyEik
+    ? `${data.companyName} (ЕИК ${data.companyEik})`
+    : data.companyName;
+  const lines = [
+    `${company} има нов собственик във Фактурист — по покана от кантора ${data.firmName}.`,
+    'Проверете, че собственикът наистина представлява фирмата. Ако не — „Отнеми собствеността“ и поканете истинския собственик с „Прехвърли“.',
+  ];
+  const text = [...lines, '', `Фирмата в мастър панела: ${data.link}`].join('\n');
+  const html = `<!doctype html><html lang="bg"><body style="margin:0;padding:24px;background:#f4f5f7;font-family:Arial,Helvetica,sans-serif;color:#131722">
+<div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #cfd4dd;padding:24px">
+${lines.map((line) => `<p style="margin:0 0 12px">${escapeHtml(line)}</p>`).join('')}
+<p style="margin:0"><a href="${escapeHtml(data.link)}" style="display:inline-block;background:#0b6b52;color:#ffffff;padding:10px 18px;text-decoration:none">Отвори в мастър панела</a></p>
+</div></body></html>`;
+  return { subject: `За проверка: нов собственик на ${data.companyName}`, text, html };
+}
+
 export interface InviteMailData {
   companyName: string;
   companyEik: string | null;

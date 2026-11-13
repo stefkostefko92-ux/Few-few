@@ -47,8 +47,11 @@ const schema = z.object({
   SMTP_USER: optionalText(),
   SMTP_PASS: optionalText(),
   MAIL_FROM: z.string().min(3).default('Фактурист <no-reply@fakturist.eu>'),
-  /** Шрифтовете на PDF-а (DejaVu Sans — кирилица и €). В образа: fonts-dejavu-core. */
-  PDF_FONT_DIR: z.string().min(1).default('/usr/share/fonts/truetype/dejavu'),
+  /**
+   * Коренът на шрифтовете за PDF-а (src/documents/pdf-style.ts: dejavu/…, liberation/…). В образа:
+   * fonts-dejavu-core и fonts-liberation — кирилица и €.
+   */
+  PDF_FONT_ROOT: z.string().min(1).default('/usr/share/fonts/truetype'),
   /** Адресът за връзка на публичната страница и в JSON-LD. */
   CONTACT_EMAIL: z.string().email().default('info@carbonstealth.eu'),
   PRIVACY_EMAIL: z.string().email().default('privacy@carbonstealth.eu'),

@@ -8,7 +8,7 @@ import { documentPdf } from '../documents/render.js';
 import { bgAmount } from '../documents/pdf.js';
 import { fromCents } from '../einvoice/decimal.js';
 import { decryptInviteToken } from '../auth/keys.js';
-import { inboxReceivedMail, transferInviteMail } from './templates.js';
+import { inboxReceivedMail, ownershipReviewMail, transferInviteMail } from './templates.js';
 import { mailSender, type MailMessage, type SendMail } from './mailer.js';
 import { MINUTE } from '../time.js';
 
@@ -43,6 +43,7 @@ async function composeInboxMail(toEmail: string, payload: unknown): Promise<Mail
       recipientOrg: { select: { legalName: true } },
       document: {
         select: {
+          organizationId: true,
           number: true,
           typeCode: true,
           issueDate: true,
@@ -117,7 +118,32 @@ async function composeInviteMail(toEmail: string, payload: unknown): Promise<Mai
   return { to: toEmail, ...mail, attachments: [] };
 }
 
+const ReviewPayload = z.object({ organizationId: z.string().min(1), inviteId: z.string().min(1) });
+
+/** Писмото до мастъра за собственик, поканен от кантора. */
+async function composeReviewMail(toEmail: string, payload: unknown): Promise<MailMessage> {
+  const { organizationId, inviteId } = ReviewPayload.parse(payload);
+  const [org, invite] = await Promise.all([
+    prisma.organization.findUniqueOrThrow({
+      where: { id: organizationId },
+      select: { legalName: true, eik: true },
+    }),
+    prisma.transferInvite.findUniqueOrThrow({
+      where: { id: inviteId },
+      select: { mandate: { select: { firm: { select: { legalName: true } } } } },
+    }),
+  ]);
+  const mail = ownershipReviewMail({
+    companyName: org.legalName,
+    companyEik: org.eik,
+    firmName: invite.mandate?.firm.legalName ?? '—',
+    link: `${config().PUBLIC_BASE_URL}/admin/r/organizations/${organizationId}`,
+  });
+  return { to: toEmail, ...mail, attachments: [] };
+}
+
 async function compose(kind: string, toEmail: string, payload: unknown): Promise<MailMessage> {
+  if (kind === 'ownership.review') return composeReviewMail(toEmail, payload);
   if (kind === 'inbox.received') return composeInboxMail(toEmail, payload);
   if (kind === 'transfer.invite') return composeInviteMail(toEmail, payload);
   throw new Error(`Непознат вид писмо: ${kind}`);
