@@ -1,15 +1,15 @@
 {
  "https://panevascensori.it/": {
-  "hash": "04ae0747e9d0a235",
-  "date": "2026-11-12"
+  "hash": "a92924008438d0b1",
+  "date": "2026-11-13"
  },
  "https://panevascensori.it/en/": {
-  "hash": "a084d3352fe252c4",
-  "date": "2026-11-12"
+  "hash": "7b64cd029ff42f19",
+  "date": "2026-11-13"
  },
  "https://panevascensori.it/bg/": {
-  "hash": "52c8d25cd98af7f3",
-  "date": "2026-11-12"
+  "hash": "4fe3dc5b9671e4e7",
+  "date": "2026-11-13"
  },
  "https://panevascensori.it/prodotti": {
   "hash": "aba4bbbc78035336",
@@ -36,16 +36,16 @@
   "date": "2026-11-12"
  },
  "https://panevascensori.it/contatti": {
-  "hash": "8be039e432c279b5",
-  "date": "2026-11-12"
+  "hash": "ab5894a83192e7b1",
+  "date": "2026-11-13"
  },
  "https://panevascensori.it/en/contacts": {
-  "hash": "13d6be8869620207",
-  "date": "2026-11-12"
+  "hash": "93de9de903ad94bf",
+  "date": "2026-11-13"
  },
  "https://panevascensori.it/bg/kontakti": {
-  "hash": "f0db154e74cf86d3",
-  "date": "2026-11-12"
+  "hash": "a297eb7a1cd919d3",
+  "date": "2026-11-13"
  },
  "https://panevascensori.it/privacy": {
   "hash": "64e9d6d35b65cd5f",
@@ -60,16 +60,16 @@
   "date": "2026-11-11"
  },
  "https://panevascensori.it/condizioni": {
-  "hash": "85c2fb88e2a6e340",
-  "date": "2026-11-11"
+  "hash": "5ee1eed53bd8340f",
+  "date": "2026-11-13"
  },
  "https://panevascensori.it/en/terms": {
-  "hash": "1385b0da458a3728",
-  "date": "2026-11-11"
+  "hash": "f88d54f63a46dc97",
+  "date": "2026-11-13"
  },
  "https://panevascensori.it/bg/usloviya": {
-  "hash": "c9fb6257c41415b5",
-  "date": "2026-11-11"
+  "hash": "c1c22966c897078f",
+  "date": "2026-11-13"
  },
  "https://panevascensori.it/staffe-porte-di-piano": {
   "hash": "f162b453033d4207",
@@ -132,7 +132,7 @@
   "date": "2026-11-11"
  },
  "https://panevascensori.it/docs/catalogo-staffe-panev-2026.pdf": {
-  "hash": "8b8fdf94e5f90e90",
-  "date": "2026-11-12"
+  "hash": "481b20e46d4e3726",
+  "date": "2026-11-13"
  }
 }
