@@ -309,7 +309,8 @@ router.post("/delete-account", subjectRightsLimiter, async (req, res, next) => {
     // записи), одитът е `DSR_ERASED` с via: "dashboard".
     const result = await eraseDiscordUser(userId, { scope: "identity", via: "dashboard", requestedBy: userId });
     if (!result.ok) {
-      const status = result.code === "INVALID_ID" ? 400 : 409;
+      // ERASE_FAILED = временен провал, нищо не е изтрито → 503 „опитай пак“.
+      const status = result.code === "INVALID_ID" ? 400 : result.code === "ERASE_FAILED" ? 503 : 409;
       return res.status(status).json({ error: result.error, code: result.code });
     }
 

@@ -478,6 +478,7 @@ export default {
   "app.review.reasonLine": "**Powód:** {{note}}",
   "app.review.done": "✅ Gotowe!",
   "app.review.alreadyReviewed": "⚠️ To podanie zostało już ocenione.",
+  "app.review.selfReview": "❌ Nie możesz rozstrzygać własnego podania. Poproś osobę z uprawnieniem Manage Server.",
   "app.review.error": "❌ Nie udało się zakończyć oceny. Spróbuj ponownie później.",
   "app.review.logUnpostable": "⚠️ Podanie od {{user}} zostało zapisane, ale nie udało się opublikować wiadomości do oceny. Sprawdź kanał oceny i uprawnienia bota, a następnie oceń podanie w panelu.",
   "app.review.discussionClosedApproved": "🔒 Podanie zostało zatwierdzone — ten kanał dyskusji jest już zamknięty.",

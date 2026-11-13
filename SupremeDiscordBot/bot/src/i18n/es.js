@@ -478,6 +478,7 @@ export default {
   "app.review.reasonLine": "**Motivo:** {{note}}",
   "app.review.done": "✅ ¡Hecho!",
   "app.review.alreadyReviewed": "⚠️ Esta solicitud ya fue revisada.",
+  "app.review.selfReview": "❌ No puedes decidir sobre tu propia solicitud. Pídeselo a alguien con el permiso Manage Server.",
   "app.review.error": "❌ No se pudo completar la revisión. Inténtalo de nuevo más tarde.",
   "app.review.logUnpostable": "⚠️ Se guardó una solicitud de {{user}}, pero no se pudo publicar su mensaje de revisión. Revisa el canal de revisión y los permisos del bot, y revísala en el panel.",
   "app.review.discussionClosedApproved": "🔒 La solicitud fue aprobada — este canal de discusión está cerrado.",

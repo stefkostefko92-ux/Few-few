@@ -70,8 +70,12 @@ describe("А2 — всяко събитие от VALID_EVENTS има изпра�
   // (планировчик) не добавят своите извиквания — не се заглушава.
   for (const ev of svc.VALID_EVENTS) {
     it(`А2: ${ev} се изпраща от поне едно място в backend/src`, () => {
-      const hits = callers.filter(({ text }) => text.includes(`"${ev}"`)).map(({ f }) => f);
-      expect(hits, `няма fireWebhooks за ${ev}`).not.toEqual([]);
+      // Името трябва да е в самото извикване `fireWebhooks(<сървър>, "EV" …)`. Преди гейтът
+      // търсеше низа където и да е във файла и минаваше за APPLICATION_SUBMITTED, което
+      // живееше само в недостижим клон на тернарен оператор (ревю на Кодаджията, 13.11.2026).
+      const inCall = new RegExp(`fireWebhooks\\(\\s*[^,()]+(?:\\([^()]*\\))?[^,()]*,[^{;]{0,120}"${ev}"`);
+      const hits = callers.filter(({ text }) => inCall.test(text)).map(({ f }) => f);
+      expect(hits, `няма fireWebhooks(…, "${ev}")`).not.toEqual([]);
     });
   }
 

@@ -476,6 +476,7 @@ export default {
   "app.review.reasonLine": "**Motivo:** {{note}}",
   "app.review.done": "✅ Fatto!",
   "app.review.alreadyReviewed": "⚠️ Questa candidatura è già stata esaminata.",
+  "app.review.selfReview": "❌ Non puoi decidere sulla tua stessa candidatura. Chiedi a qualcuno con il permesso Manage Server.",
   "app.review.error": "❌ Non è stato possibile completare l'esame. Riprova più tardi.",
   "app.review.logUnpostable": "⚠️ Una candidatura di {{user}} è stata salvata, ma il messaggio di revisione non è stato pubblicato. Controlla il canale di revisione e i permessi del bot, poi esaminala dalla dashboard.",
   "app.review.discussionClosedApproved": "🔒 La candidatura è stata approvata — questo canale di discussione è ora chiuso.",

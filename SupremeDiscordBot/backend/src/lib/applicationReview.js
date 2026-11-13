@@ -10,6 +10,7 @@ import { prisma } from "./prisma.js";
 import { notifyBot } from "../services/botNotifier.js";
 import { requireServerAdmin } from "../middleware/auth.js";
 import { ensureUserStub } from "./ensureUser.js";
+import { closeTicketIfOpen } from "./ticketClose.js";
 
 const STALE_RESERVATION_MS = 2 * 60 * 1000;
 
@@ -30,11 +31,12 @@ export async function closeApplicationDiscussion({ applicationId, serverId, outc
       select: { id: true, channelId: true, status: true },
     });
     if (!ticket || !["OPEN", "CLAIMED"].includes(ticket.status)) return false;
-    const r = await prisma.ticket.updateMany({
-      where: { applicationId, serverId, status: { in: ["OPEN", "CLAIMED"] } },
-      data: { status: "CLOSED", closedAt: new Date() },
-    });
-    if (r.count !== 1 || !ticket.channelId) return r.count === 1;
+    // Същото затваряне като за всеки тикет (Т2, lib/ticketClose.js): условен запис,
+    // транскрипт, одит и webhook. Преди тук се сменяше само статусът и разговорът с
+    // кандидата не се архивираше (ревю на Кодаджията, 13.11.2026).
+    const closed = await closeTicketIfOpen(ticket.id, { serverId, source: "manual", reason: `Application ${outcome === "approve" ? "approved" : "denied"}` });
+    if (!closed.ok) return false;
+    if (!ticket.channelId) return true;
     await notifyBot("APPLICATION_DISCUSSION_CLOSE", { serverId, channelId: ticket.channelId, ticketId: ticket.id, outcome });
     return true;
   } catch (err) {
@@ -106,17 +108,37 @@ export async function openApplicationDiscussion({ app, serverId, reviewerId, rev
 export async function requireApplicationReviewer(req, res, next) {
   let denied = null;
   let adminOk = false;
+  let failed = false;
+  // Подменен `res`, за да видим ОТГОВОРА на requireServerAdmin, без да го пратим.
   const shim = {
+    _code: 200,
+    _headers: {},
     status(code) { this._code = code; return this; },
-    json(body) { denied = { code: this._code || 200, body }; return this; },
+    set(name, value) { this._headers[name] = value; return this; },
+    json(body) { denied = { code: this._code, body, headers: this._headers }; return this; },
   };
-  await requireServerAdmin(req, shim, () => { adminOk = true; });
-  if (adminOk) return next();
-  if (!denied) return; // middleware-ът е отговорил сам по друг път
-  // Само отказът „няма Manage Server“ се опитва като мениджър; 401 (изтекла сесия) се връща както е.
-  if (denied.code !== 403 || !/Manage Server/i.test(String(denied.body?.error || ""))) {
-    return res.status(denied.code).json(denied.body);
+  // `next(err)` НЕ е разрешение. requireServerAdmin вика next(err) при всяка грешка на
+  // Discord или базата (5xx, таймаут); подменената функция преди не гледаше аргумента
+  // и грешката ставаше „админ“ — кандидат можеше да одобри сам себе си в чужд сървър,
+  // щом Discord се забави. Грешка → отказ (fail closed). (Ревю на Кодаджията, 13.11.2026)
+  try {
+    await requireServerAdmin(req, shim, (err) => { if (err) failed = true; else adminOk = true; });
+  } catch {
+    failed = true;
   }
+  if (failed || (!adminOk && !denied)) {
+    return res.status(503).json({ error: "Permission check unavailable — try again shortly" });
+  }
+  // Маршрутът пита това, за да откаже самопреглед от мениджър.
+  req.reviewerIsAdmin = adminOk;
+  if (adminOk) return next();
+  const deny = () => {
+    for (const [name, value] of Object.entries(denied.headers)) res.set(name, value);
+    return res.status(denied.code).json(denied.body);
+  };
+  // Само отказът „няма Manage Server“ се опитва като мениджър; 401 (изтекла сесия) и
+  // 503 (Discord ни лимитира) се връщат както са.
+  if (denied.code !== 403 || !/Manage Server/i.test(String(denied.body?.error || ""))) return deny();
   try {
     const serverId = String(req.params.serverId);
     const appRow = await prisma.application.findFirst({
@@ -130,5 +152,5 @@ export async function requireApplicationReviewer(req, res, next) {
       if (r?.ok && managers.some((m) => have.has(String(m)))) return next();
     }
   } catch { /* fail closed */ }
-  return res.status(denied.code).json(denied.body);
+  return deny();
 }

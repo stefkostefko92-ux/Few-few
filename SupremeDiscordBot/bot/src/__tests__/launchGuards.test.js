@@ -478,4 +478,22 @@ describe("З14 — шум и грешна атрибуция в лога", () =>
     await memberUpdate.execute(oldM(g2), newM(g2));
     expect(send.mock.calls[0][0].embeds[0].fields.find((f) => f.name === "Actor")?.value).toBe("<@777777777777777777>");
   });
+
+  // Ревю на Кодаджията (13.11.2026): с Partials.GuildMember (В5) discord.js емитва
+  // guildMemberUpdate и за НЕКЕШИРАН член — старият е частичен (само @everyone, без
+  // псевдоним). Сравнението със „старото“ тогава лъже: всички роли излизат „добавени“,
+  // а псевдонимът — „сменен от (none)“. Без старо състояние няма какво да се сравни.
+  it("частичен стар член (некеширан) не произвежда фалшиви „role_add“ и „nickname_change“", async () => {
+    apiGet.mockResolvedValue({ data: { enabled: true, categories: ["members"], channelId: LOG } });
+    const send = vi.fn(async () => {});
+    const ch = { isTextBased: () => true, guildId: SID, send };
+    const client = { user: { id: BOT }, channels: { cache: new Map([[LOG, ch]]), fetch: vi.fn() } };
+    const fetchAuditLogs = vi.fn(async () => ({ entries: { find: () => undefined } }));
+    const guild = { id: SID, fetchAuditLogs };
+    const oldPartial = { partial: true, guild, client, id: UID, user: { username: "u" }, roles: { cache: new Map([[SID, {}]]) }, nickname: null };
+    const now = { partial: false, guild, client, id: UID, user: { username: "u" }, roles: { cache: new Map([[SID, {}], ["r1", {}], ["r2", {}]]) }, nickname: "Nick" };
+    await memberUpdate.execute(oldPartial, now);
+    expect(send).not.toHaveBeenCalled();
+    expect(fetchAuditLogs, "без заявка към одитния дневник за събитие без старо състояние").not.toHaveBeenCalled();
+  });
 });

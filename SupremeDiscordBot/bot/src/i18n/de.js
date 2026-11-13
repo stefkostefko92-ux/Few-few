@@ -478,6 +478,7 @@ export default {
   "app.review.reasonLine": "**Grund:** {{note}}",
   "app.review.done": "✅ Erledigt!",
   "app.review.alreadyReviewed": "⚠️ Diese Bewerbung wurde bereits geprüft.",
+  "app.review.selfReview": "❌ Du kannst nicht über deine eigene Bewerbung entscheiden. Bitte jemanden mit der Berechtigung Manage Server.",
   "app.review.error": "❌ Die Prüfung konnte nicht abgeschlossen werden. Versuche es später erneut.",
   "app.review.logUnpostable": "⚠️ Eine Bewerbung von {{user}} wurde gespeichert, aber die Prüfnachricht konnte nicht gepostet werden. Prüfe den Prüfkanal und die Bot-Rechte und bearbeite die Bewerbung im Dashboard.",
   "app.review.discussionClosedApproved": "🔒 Die Bewerbung wurde angenommen — dieser Diskussionskanal ist jetzt geschlossen.",

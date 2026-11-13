@@ -1109,6 +1109,13 @@ async function canReviewApplications(interaction, appId) {
   }
 }
 
+// Какво да чуе ревюърът при отказ от бекенда — без суровото съобщение.
+function reviewErrorKey(err) {
+  if (err?.response?.status === 409) return "app.review.alreadyReviewed"; // Т6: вече е решена
+  if (err?.response?.data?.code === "SELF_REVIEW") return "app.review.selfReview";
+  return "app.review.error";
+}
+
 export async function handleAppReview(interaction, appId, action) {
   const lang = await capped(resolveLang(interaction), 800, resolveLangSync(interaction));
 
@@ -1128,7 +1135,7 @@ export async function handleAppReview(interaction, appId, action) {
         t(data.alreadyExists ? "app.review.discussExists" : "app.review.discussOpened", lang, { channel: `<#${data.channelId}>` })
       );
     } catch (err) {
-      await interaction.editReply(t(err?.response?.status === 409 ? "app.review.alreadyReviewed" : "app.review.error", lang)).catch(() => {});
+      await interaction.editReply(t(reviewErrorKey(err), lang)).catch(() => {});
     }
     return;
   }
@@ -1172,6 +1179,8 @@ export async function handleAppReviewModalSubmit(interaction, appId, action) {
       serverId: interaction.guildId,
       reviewerId: interaction.user.id,
       reviewerTag: interaction.user.username,
+      // Собствената си кандидатура решава само човек с Manage Server (бекендът отказва иначе).
+      reviewerIsAdmin: !!interaction.member?.permissions?.has("ManageGuild"),
     });
 
     // Disable all buttons on the review embed. Модалът е отворен от бутон на
@@ -1201,7 +1210,7 @@ export async function handleAppReviewModalSubmit(interaction, appId, action) {
     await interaction.editReply(t("app.review.done", lang));
   } catch (err) {
     // Т6: вторият ревюър (409) чува ясно „вече е прегледана“; суровото съобщение не стига до човека.
-    await interaction.editReply(t(err?.response?.status === 409 ? "app.review.alreadyReviewed" : "app.review.error", lang)).catch(() => {});
+    await interaction.editReply(t(reviewErrorKey(err), lang)).catch(() => {});
   }
 }
 

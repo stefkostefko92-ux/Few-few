@@ -12,6 +12,7 @@ import { getServerTier, sanitizeFormForTier } from "../lib/premium.js";
 import { submitApplication } from "../services/applicationSubmit.js";
 import { ensureUserStub } from "../lib/ensureUser.js";
 import { claimApplicationReview, closeApplicationDiscussion, openApplicationDiscussion, requireApplicationReviewer } from "../lib/applicationReview.js";
+import { fireApplicationReviewed } from "../lib/webhookEvents.js";
 
 const router = Router();
 
@@ -162,6 +163,13 @@ router.post("/:serverId/:appId/review", requireAuth, loadUser, requireApplicatio
     });
 
     if (!application) return res.status(404).json({ error: "Application not found" });
+    // Собствената кандидатура решава само човек с Manage Server (червен екип,
+    // 13.11.2026): мениджър подаваше в своя формуляр и си я одобряваше сам —
+    // взимаше ролите от acceptRoleIds и сваляше изпитателната. Забранен е и
+    // отказът: и той раздава и маха роли.
+    if (!req.reviewerIsAdmin && String(application.userId) === String(req.user.id)) {
+      return res.status(403).json({ error: "You cannot review your own application", code: "SELF_REVIEW" });
+    }
     const statusMap = { approve: "APPROVED", deny: "DENIED" };
 
     // Т6: условен запис по PENDING — вторият ревюър получава 409, роли и ЛС се дават веднъж.
@@ -254,18 +262,8 @@ router.post("/:serverId/:appId/review", requireAuth, loadUser, requireApplicatio
       },
     });
 
-    // v1.8 — fire webhook
-    const { fireWebhooks } = await import("../services/webhooks.js");
-    const eventName = action === "approve" ? "APPLICATION_APPROVED"
-                    : action === "deny"    ? "APPLICATION_DENIED"
-                    : "APPLICATION_SUBMITTED";
-    fireWebhooks(req.params.serverId, eventName, {
-      applicationId: application.id,
-      formId: application.formId,
-      userId: application.userId,
-      reviewerId: req.user.id,
-      note,
-    }).catch(() => {});
+    // Webhook — същият помощник като при решение от бутон в Discord (А2).
+    fireApplicationReviewed(application, action, { reviewerId: req.user.id, note });
 
     res.json(updated);
   } catch (err) {

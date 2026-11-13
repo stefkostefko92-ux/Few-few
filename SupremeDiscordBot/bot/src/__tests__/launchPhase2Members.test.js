@@ -36,6 +36,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   apiGet.mockResolvedValue({ data: [] });
   apiPost.mockResolvedValue({ data: {} });
+  apiDelete.mockResolvedValue({ data: {} });
   fetchRemovalCause.mockResolvedValue(null);
 });
 afterEach(() => vi.useRealTimers());
@@ -67,6 +68,23 @@ describe("В4 — бан/изгонване и снимката на ролит�
     expect(snapshotPosts()).toHaveLength(1);
     expect(snapshotPosts()[0][1]).toEqual({ roleIds: ["r1"] });
   });
+  // Червен екип (13.11.2026): стара снимка (от предишно доброволно напускане, чието
+  // връщане не е станало) преживяваше бана — след разбан ролите се връщаха.
+  it("изгонване или бан ТРИЕ стара снимка на ролите", async () => {
+    apiDelete.mockResolvedValue({ data: {} });
+    fetchRemovalCause.mockResolvedValue({ kind: "ban", executorId: "m", executorTag: "m", reason: null });
+    await memberRemove.execute(member());
+    expect(snapshotPosts()).toHaveLength(0);
+    expect(apiDelete).toHaveBeenCalledWith(`/bot/member-roles/${GUILD}/${USER}`);
+  });
+  it("доброволното напускане НЕ трие — то записва", async () => {
+    vi.useFakeTimers();
+    const p = memberRemove.execute(member());
+    await vi.advanceTimersByTimeAsync(1500);
+    await p;
+    expect(apiDelete).not.toHaveBeenCalled();
+  });
+
   it("човек без роли за пазене не плаща повторна проверка", async () => {
     const m = member({ roles: [] });
     await memberRemove.execute(m);

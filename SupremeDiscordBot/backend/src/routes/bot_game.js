@@ -166,7 +166,9 @@ router.get("/game/shop/:serverId", async (req, res, next) => {
     const items = await prisma.shopItem.findMany({
       where: { serverId: req.params.serverId, enabled: true },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-      include: { _count: { select: { purchases: true } } },
+      // Върнатите покупки (И1, `refundedAt`) не заемат наличност. НЕ `revokedAt` —
+      // той се слага и при изтекла временна роля, а „5 бройки“ значи пет продадени.
+      include: { _count: { select: { purchases: { where: { refundedAt: null } } } } },
     });
     res.json(items.map((i) => ({
       id: i.id, name: i.name, description: i.description, priceSparks: i.priceSparks, type: i.type,
@@ -188,7 +190,8 @@ router.post("/game/shop/:serverId/buy", async (req, res, next) => {
       const item = await tx.shopItem.findFirst({ where: { id: itemId, serverId, enabled: true } });
       if (!item) return { error: "Item not found", code: "ITEM_NOT_FOUND", status: 404 };
       if (item.stock != null) {
-        const sold = await tx.shopPurchase.count({ where: { itemId: item.id } });
+        // Върнатите покупки не се броят — иначе възстановена сума „изяждаше“ бройка.
+        const sold = await tx.shopPurchase.count({ where: { itemId: item.id, refundedAt: null } });
         if (sold >= item.stock) return { error: "Sold out", code: "SOLD_OUT", status: 409 };
       }
       // И1: постоянна роля, която човекът вече притежава по покупка → без плащане.
@@ -241,7 +244,7 @@ router.post("/game/shop/:serverId/purchase/:id/refund", async (req, res, next) =
       if (!purchase) return { status: 404, body: { error: "Purchase not found", code: "PURCHASE_NOT_FOUND" } };
       const claimed = await tx.shopPurchase.updateMany({
         where: { id, serverId, userId, revokedAt: null },
-        data: { revokedAt: new Date() },
+        data: { revokedAt: new Date(), refundedAt: new Date() },
       });
       if (claimed.count !== 1) return { status: 200, body: { ok: true, already: true, refunded: 0 } };
       const back = await tx.memberProgress.updateMany({

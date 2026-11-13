@@ -14,3 +14,10 @@ ALTER TABLE "servers" ADD COLUMN     "paidAccessEndedAt" TIMESTAMP(3);
 -- AlterTable
 ALTER TABLE "scheduled_messages" ADD COLUMN     "timeZone" TEXT,
 ADD COLUMN     "anchorDay" INTEGER;
+
+-- v55 (И1) — върната покупка в магазина. Отделна от revokedAt, която се слага и при
+-- изтекла временна роля: само върнатото освобождава бройка от ограничен артикул.
+-- Адитивно — една nullable колона.
+
+-- AlterTable
+ALTER TABLE "shop_purchases" ADD COLUMN     "refundedAt" TIMESTAMP(3);

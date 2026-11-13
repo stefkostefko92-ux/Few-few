@@ -136,9 +136,9 @@ describe("А9 — сървър, паднал на Free, не изпраща на
 describe("И2 — седмичните куестове и trivia стигат до ВСИЧКИ сървъри", () => {
   it("обхожда с курсор до празна страница, не спира на първите 500", async () => {
     const all = Array.from({ length: 1234 }, (_, i) => ({ serverId: String(1000 + i) }));
-    const findMany = vi.fn(async ({ take, cursor, skip }) => {
-      const start = cursor ? all.findIndex((r) => r.serverId === cursor.serverId) + (skip || 0) : 0;
-      return all.slice(start, start + take);
+    const findMany = vi.fn(async ({ take, where }) => {
+      const after = where?.serverId?.gt;
+      return all.filter((r) => after === undefined || r.serverId > after).slice(0, take);
     });
     const seen = [];
     const total = await eachPage({ findMany }, { where: { enabled: true }, select: { serverId: true } }, async (row) => { seen.push(row.serverId); }, { key: "serverId", pageSize: 500 });
@@ -148,12 +148,30 @@ describe("И2 — седмичните куестове и trivia стигат �
     expect(findMany).toHaveBeenCalledTimes(3); // 500 + 500 + 234 — последната страница е непълна и приключва
     // Подредбата е задължителна: без orderBy курсорът няма смисъл и редове се пропускат.
     expect(findMany.mock.calls[0][0].orderBy).toEqual({ serverId: "asc" });
-    expect(findMany.mock.calls[1][0]).toMatchObject({ cursor: { serverId: "1499" }, skip: 1 });
+    // Следващата страница е „всичко СЛЕД последния ред“ — филтър, не Prisma `cursor`.
+    expect(findMany.mock.calls[1][0].where).toMatchObject({ enabled: true, serverId: { gt: "1499" } });
+    expect(findMany.mock.calls[1][0].cursor, "Prisma cursor спира тихо, ако редът му е изтрит междувременно").toBeUndefined();
+  });
+
+  // Ревю на Кодаджията (13.11.2026): с Prisma `cursor` изтрит ред-курсор връща 0 реда и
+  // обходът свършва тихо — сървърите след него остават без седмичен куест.
+  it("ред, изтрит по време на обхода, не прекъсва останалите", async () => {
+    let rows = ["1", "2", "3", "4", "5"].map((serverId) => ({ serverId }));
+    const findMany = vi.fn(async ({ take, where }) => {
+      const after = where?.serverId?.gt;
+      return rows.filter((r) => after === undefined || r.serverId > after).slice(0, take);
+    });
+    const seen = [];
+    await eachPage({ findMany }, {}, async (r) => {
+      seen.push(r.serverId);
+      if (r.serverId === "2") rows = rows.filter((x) => x.serverId !== "2"); // сървърът е махнат точно сега
+    }, { key: "serverId", pageSize: 2 });
+    expect(seen).toEqual(["1", "2", "3", "4", "5"]);
   });
 
   it("грешка за един сървър не спира останалите", async () => {
     const rows = [{ serverId: "1" }, { serverId: "2" }, { serverId: "3" }];
-    const findMany = vi.fn(async ({ cursor }) => (cursor ? [] : rows));
+    const findMany = vi.fn(async ({ where }) => (where?.serverId?.gt ? [] : rows));
     const done = [];
     const total = await eachPage({ findMany }, {}, async (r) => { if (r.serverId === "2") throw new Error("бум"); done.push(r.serverId); }, { key: "serverId", pageSize: 3 });
     expect(done).toEqual(["1", "3"]);

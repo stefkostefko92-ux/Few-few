@@ -239,7 +239,9 @@ async function revokeServer(serverId, entitlementId, reason, endedAt = null) {
           discordSkuId: null,
           // А1: котва САМО за прозореца за експорт (30 дни). НЕ accessUntil —
           // то вдига плана; тук планът остава free.
-          paidAccessEndedAt: endedAt ?? new Date(),
+          // Никога в бъдещето: при възстановена сума `endsAt` е краят на периода,
+          // който още не е дошъл — прозорецът щеше да стане endsAt + 30 дни.
+          paidAccessEndedAt: endedAt && endedAt < new Date() ? endedAt : new Date(),
         },
       });
       // НЕ хардкодвай isPremium:false — сървърът може да е покрит от АКТИВНА

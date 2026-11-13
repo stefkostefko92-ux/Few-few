@@ -478,6 +478,7 @@ export default {
   "app.review.reasonLine": "**Motif :** {{note}}",
   "app.review.done": "✅ Terminé !",
   "app.review.alreadyReviewed": "⚠️ Cette candidature a déjà été examinée.",
+  "app.review.selfReview": "❌ Tu ne peux pas statuer sur ta propre candidature. Demande à quelqu'un qui a la permission Manage Server.",
   "app.review.error": "❌ L'examen n'a pas pu être terminé. Réessaie plus tard.",
   "app.review.logUnpostable": "⚠️ Une candidature de {{user}} a été enregistrée, mais son message d'examen n'a pas pu être publié. Vérifie le salon d'examen et les permissions du bot, puis examine-la depuis le tableau de bord.",
   "app.review.discussionClosedApproved": "🔒 La candidature a été approuvée — ce salon de discussion est maintenant fermé.",

@@ -1267,6 +1267,10 @@ model ShopPurchase {
   priceSparks Int
   expiresAt   DateTime? // временна роля — ботът я маха след изтичане (scheduler)
   revokedAt   DateTime?
+  // v55 — върната покупка (искрите са възстановени, ролята не е получена). Отделно
+  // от revokedAt, който се слага и при ИЗТЕКЛА временна роля: върнатото освобождава
+  // бройка от ограничен артикул, изтеклото — не.
+  refundedAt  DateTime?
   createdAt   DateTime  @default(now())
 
   server Server    @relation(fields: [serverId], references: [id], onDelete: Cascade)

@@ -223,3 +223,36 @@ describe("И8 — най-много една жива поява на сървъ
     expect(tx.companionSpawn.create).not.toHaveBeenCalled();
   });
 });
+
+// Червен екип (13.11.2026): върната покупка продължаваше да заема бройка от ограничен
+// артикул. `revokedAt` обаче се слага и при ИЗТЕКЛА временна роля — затова върнатото се
+// бележи отделно (`refundedAt`, v55): „5 бройки“ си остава пет продадени, а не пет наведнъж.
+describe("наличност в магазина: върнатото освобождава бройка, изтеклото — не", () => {
+  it("покупката брои продадените без върнатите (refundedAt: null), не по revokedAt", async () => {
+    prismaMock.shopItem.findFirst.mockResolvedValue({ id: "i1", serverId: SID, enabled: true, stock: 1, type: "CUSTOM", priceSparks: 10, name: "X" });
+    prismaMock.shopPurchase.count.mockResolvedValue(1);
+    const res = await request(app).post(`/api/bot/game/shop/${SID}/buy`).send({ userId: UID, itemId: "i1" });
+    expect(res.status).toBe(409);
+    expect(res.body.code).toBe("SOLD_OUT");
+    const where = prismaMock.shopPurchase.count.mock.calls[0][0].where;
+    expect(where).toEqual({ itemId: "i1", refundedAt: null });
+  });
+
+  it("връщането бележи покупката като върната (refundedAt), заедно с revokedAt", async () => {
+    prismaMock.shopPurchase.findFirst.mockResolvedValue({ id: "p1", serverId: SID, userId: UID, priceSparks: 100 });
+    prismaMock.shopPurchase.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.memberProgress.updateMany.mockResolvedValue({ count: 1 });
+    await request(app).post(`/api/bot/game/shop/${SID}/purchase/p1/refund`).send({ userId: UID });
+    const data = prismaMock.shopPurchase.updateMany.mock.calls[0][0].data;
+    expect(data.revokedAt).toBeInstanceOf(Date);
+    expect(data.refundedAt).toBeInstanceOf(Date);
+  });
+
+  it("списъкът на магазина показва оставащото без върнатите", async () => {
+    prismaMock.shopItem.findMany.mockResolvedValue([]);
+    await request(app).get(`/api/bot/game/shop/${SID}`);
+    const include = prismaMock.shopItem.findMany.mock.calls[0][0].include;
+    expect(include._count.select.purchases).toEqual({ where: { refundedAt: null } });
+  });
+});
+

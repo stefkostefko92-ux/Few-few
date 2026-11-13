@@ -7,6 +7,8 @@ import request from "supertest";
 import { createPrismaMock } from "./testUtils/prismaMock.js";
 
 process.env.API_SECRET = "test-bot-secret";
+// Транскриптът се шифрова при покой (lib/transcriptAtRest.js) — тестов ключ, не е тайна.
+process.env.ENCRYPTION_KEY = "ab".repeat(32);
 const prismaMock = createPrismaMock();
 vi.mock("../lib/prisma.js", () => ({ prisma: prismaMock }));
 vi.mock("../lib/premium.js", async (orig) => ({
@@ -20,11 +22,18 @@ vi.mock("../services/botNotifier.js", () => ({
   notifyBot, notifyBotVerbose: vi.fn(), dmUser: vi.fn(), sendTicketReply: vi.fn(), reconcileWhitelabel: vi.fn(),
 }));
 let ADMIN = true;
+// Как отговаря проверката „Manage Server“: true/false, или грешка от Discord
+// ("error" → next(err), както прави истинският requireServerAdmin при 5xx и таймаут;
+// "ratelimit" → 503 с Retry-After, както при 429).
 vi.mock("../middleware/auth.js", () => ({
   requireBotSecret: (req, res, next) => next(),
   requireAuth: (req, res, next) => next(),
   loadUser: (req, res, next) => { req.user = { id: "333333333333333333", username: "mgr" }; next(); },
-  requireServerAdmin: (req, res, next) => (ADMIN ? next() : res.status(403).json({ error: "You need Manage Server permission to access this" })),
+  requireServerAdmin: (req, res, next) => {
+    if (ADMIN === "error") return next(Object.assign(new Error("Discord 502"), { response: { status: 502 } }));
+    if (ADMIN === "ratelimit") { res.set("Retry-After", "5"); return res.status(503).json({ error: "Discord is rate limiting us — try again shortly" }); }
+    return ADMIN ? next() : res.status(403).json({ error: "You need Manage Server permission to access this" });
+  },
 }));
 vi.mock("../lib/auditLog.js", () => ({ writeAudit: vi.fn(async () => true) }));
 vi.mock("../lib/game/xp.js", () => ({ awardTicketSlaXp: vi.fn(), grantXpOnce: vi.fn(() => Promise.resolve()), XP_REWARDS: {} }));
@@ -117,11 +126,35 @@ describe("Т6 — канал за обсъждане", () => {
   it("решението затваря канала за обсъждане (условно) и казва на бота", async () => {
     prismaMock.ticket.findFirst.mockResolvedValue({ id: "t1", channelId: "dc1", status: "OPEN" });
     prismaMock.ticket.updateMany.mockResolvedValue({ count: 1 });
-    await botPost("/application/a1/review", { action: "approve", serverId: GUILD, reviewerId: "9" });
+    prismaMock.ticket.findUnique.mockResolvedValue({
+      id: "t1", serverId: GUILD, number: 7, creatorId: USER, assigneeId: null, archiveToken: "tok", messages: [],
+      creator: { id: USER, username: "u" }, assignee: null, panel: null, server: { name: "S", archiveChannelId: null, customBotName: null },
+    });
+    prismaMock.ticket.update.mockResolvedValue({});
+    await botPost("/application/a1/review", { action: "deny", serverId: GUILD, reviewerId: "999999999999999999" });
+    await new Promise((r) => setTimeout(r, 20)); // затварянето на обсъждането не се чака от маршрута
+    // Условният запис е по id + сървър + „още отворен“ — същият като за всеки тикет (Т2).
     const w = prismaMock.ticket.updateMany.mock.calls[0][0];
-    expect(w.where).toMatchObject({ applicationId: "a1", serverId: GUILD, status: { in: ["OPEN", "CLAIMED"] } });
-    expect(w.data).toMatchObject({ status: "CLOSED" });
+    expect(w.where).toMatchObject({ id: "t1", serverId: GUILD, status: { in: ["OPEN", "CLAIMED"] } });
     expect(notifyBot).toHaveBeenCalledWith("APPLICATION_DISCUSSION_CLOSE", expect.objectContaining({ serverId: GUILD, channelId: "dc1" }));
+  });
+
+  // Ревю на Кодаджията (13.11.2026): това беше последният път, който затваряше „по
+  // старому“ — само статус. Разговорът с кандидата не се архивираше.
+  it("каналът за обсъждане се затваря като всеки тикет: с транскрипт и webhook TICKET_CLOSE", async () => {
+    prismaMock.ticket.findFirst.mockResolvedValue({ id: "t1", channelId: "dc1", status: "OPEN" });
+    prismaMock.ticket.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.ticket.findUnique.mockResolvedValue({
+      id: "t1", serverId: GUILD, number: 7, creatorId: USER, assigneeId: null, archiveToken: "tok", messages: [],
+      creator: { id: USER, username: "u" }, assignee: null, panel: null, server: { name: "S", archiveChannelId: null, customBotName: null },
+    });
+    prismaMock.ticket.update.mockResolvedValue({});
+    await botPost("/application/a1/review", { action: "approve", serverId: GUILD, reviewerId: "999999999999999999" });
+    await new Promise((r) => setTimeout(r, 20));
+    const saved = prismaMock.ticket.update.mock.calls.find(([q]) => q.data?.archiveHtml !== undefined);
+    expect(saved, "транскриптът на обсъждането трябва да се запише").toBeTruthy();
+    const events = (await import("../services/webhooks.js")).fireWebhooks.mock.calls.map((c) => c[1]);
+    expect(events).toContain("TICKET_CLOSE");
   });
 });
 
@@ -145,6 +178,70 @@ describe("Т11 — мениджърите на кандидатури", () => {
     const r = await dash(`/${GUILD}/a1/review`, { action: "approve" });
     expect(r.status).toBe(403);
   });
+
+  // Ревю на Кодаджията (13.11.2026, High): проверката минаваше през подменена `next`,
+  // която не различаваше next() от next(err) — грешка от Discord ставаше РАЗРЕШЕНИЕ.
+  // Кандидат можеше да одобри собствената си кандидатура в чужд сървър, щом Discord
+  // върне 5xx или таймаут на /users/@me/guilds.
+  it("табло: грешка от Discord при проверката за админ → отказ (503), НЕ одобрение", async () => {
+    ADMIN = "error";
+    notifyBot.mockImplementation(async (ev) => (ev === "GUILD_MEMBER_ROLES" ? { ok: true, roleIds: ["m1"] } : null));
+    const r = await dash(`/${GUILD}/a1/review`, { action: "approve" });
+    expect(r.status).toBe(503);
+    expect(prismaMock.application.updateMany, "решението не бива да се записва").not.toHaveBeenCalled();
+    expect(notifyBot).not.toHaveBeenCalledWith("APPLICATION_APPLY_OUTCOME", expect.anything());
+  });
+  it("табло: Discord ни лимитира (429) → 503 с Retry-After, без увиснала заявка", async () => {
+    ADMIN = "ratelimit";
+    const r = await dash(`/${GUILD}/a1/review`, { action: "approve" });
+    expect(r.status).toBe(503);
+    expect(r.headers["retry-after"]).toBe("5");
+    expect(prismaMock.application.updateMany).not.toHaveBeenCalled();
+  });
+  // Червен екип (Разбивача, 13.11.2026): мениджър подаваше кандидатура в своя формуляр и
+  // си я одобряваше сам — получаваше ролите от acceptRoleIds и губеше изпитателната.
+  // Правило: собствената кандидатура решава само човек с Manage Server.
+  describe("никой без Manage Server не решава собствената си кандидатура", () => {
+    const own = () => ({ ...application(), userId: "333333333333333333", user: { id: "333333333333333333", username: "mgr" } });
+
+    it("бот: мениджър одобрява своята → 403 SELF_REVIEW, нищо не се записва и роли не се дават", async () => {
+      prismaMock.application.findFirst.mockResolvedValue(own());
+      const r = await botPost("/application/a1/review", { action: "approve", serverId: GUILD, reviewerId: "333333333333333333", reviewerTag: "mgr" });
+      expect(r.status).toBe(403);
+      expect(r.body.code).toBe("SELF_REVIEW");
+      expect(prismaMock.application.updateMany).not.toHaveBeenCalled();
+      expect(notifyBot).not.toHaveBeenCalledWith("APPLICATION_APPLY_OUTCOME", expect.anything());
+    });
+    it("бот: и отказът на собствената кандидатура е забранен (сваля роли по removeRoleIds/denyRoleIds)", async () => {
+      prismaMock.application.findFirst.mockResolvedValue(own());
+      const r = await botPost("/application/a1/review", { action: "deny", serverId: GUILD, reviewerId: "333333333333333333" });
+      expect(r.status).toBe(403);
+    });
+    it("бот: човек с Manage Server може (тества собствения си формуляр)", async () => {
+      prismaMock.application.findFirst.mockResolvedValue(own());
+      const r = await botPost("/application/a1/review", { action: "approve", serverId: GUILD, reviewerId: "333333333333333333", reviewerIsAdmin: true });
+      expect(r.status).toBe(200);
+    });
+    it("бот: чужда кандидатура се решава както досега", async () => {
+      const r = await botPost("/application/a1/review", { action: "approve", serverId: GUILD, reviewerId: "333333333333333333" });
+      expect(r.status).toBe(200);
+    });
+    it("табло: мениджър (без Manage Server) върху своята → 403 SELF_REVIEW", async () => {
+      ADMIN = false;
+      prismaMock.application.findFirst.mockResolvedValue(own());
+      notifyBot.mockImplementation(async (ev) => (ev === "GUILD_MEMBER_ROLES" ? { ok: true, roleIds: ["m1"] } : null));
+      const r = await dash(`/${GUILD}/a1/review`, { action: "approve" });
+      expect(r.status).toBe(403);
+      expect(r.body.code).toBe("SELF_REVIEW");
+      expect(prismaMock.application.updateMany).not.toHaveBeenCalled();
+    });
+    it("табло: админ върху своята → минава", async () => {
+      prismaMock.application.findFirst.mockResolvedValue(own());
+      const r = await dash(`/${GUILD}/a1/review`, { action: "approve" });
+      expect(r.status).toBe(200);
+    });
+  });
+
   it("бот: GET reviewers връща managerRoleIds само за същия сървър", async () => {
     prismaMock.application.findFirst.mockResolvedValue({ form: { managerRoleIds: ["m1"] } });
     const ok = await request(app()).get(`/api/bot/application/a1/reviewers?serverId=${GUILD}`).set("x-bot-secret", "test-bot-secret");
@@ -154,3 +251,36 @@ describe("Т11 — мениджърите на кандидатури", () => {
     expect(bad.status).toBe(400);
   });
 });
+
+// А2 — webhook-ите за кандидатури от ВСИЧКИ пътища (ревю на Кодаджията + Летописеца,
+// 13.11.2026): APPLICATION_SUBMITTED не се изпращаше никога, а решение от бутоните в
+// Discord не пращаше нищо — само таблото.
+describe("А2 — webhook за кандидатури", () => {
+  const fired = async () => (await import("../services/webhooks.js")).fireWebhooks.mock.calls.map((c) => [c[0], c[1]]);
+
+  it("решение от бутон в Discord → APPLICATION_APPROVED, точно веднъж", async () => {
+    const r = await botPost("/application/a1/review", { action: "approve", serverId: GUILD, reviewerId: "999999999999999999", note: "добре дошъл" });
+    expect(r.status).toBe(200);
+    expect(await fired()).toEqual([[GUILD, "APPLICATION_APPROVED"]]);
+    const payload = (await import("../services/webhooks.js")).fireWebhooks.mock.calls[0][2];
+    expect(payload).toMatchObject({ applicationId: "a1", formId: "f1", userId: USER, reviewerId: "999999999999999999" });
+  });
+
+  it("отказ от бутон в Discord → APPLICATION_DENIED", async () => {
+    await botPost("/application/a1/review", { action: "deny", serverId: GUILD, reviewerId: "999999999999999999" });
+    expect(await fired()).toEqual([[GUILD, "APPLICATION_DENIED"]]);
+  });
+
+  it("решение от таблото → същото събитие, точно веднъж", async () => {
+    await dash(`/${GUILD}/a1/review`, { action: "approve" });
+    expect(await fired()).toEqual([[GUILD, "APPLICATION_APPROVED"]]);
+  });
+
+  it("второ решение (409) не праща нищо", async () => {
+    prismaMock.application.updateMany.mockResolvedValue({ count: 0 });
+    const r = await botPost("/application/a1/review", { action: "approve", serverId: GUILD, reviewerId: "999999999999999999" });
+    expect(r.status).toBe(409);
+    expect(await fired()).toEqual([]);
+  });
+});
+

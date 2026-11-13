@@ -225,6 +225,22 @@ export function inExportWindow(server, now = Date.now()) {
   return !!anchor && anchor.getTime() + EXPORT_GRACE_DAYS * 86400_000 > now;
 }
 
+/**
+ * Същото правило като `inExportWindow`, но като Prisma `where` върху Server:
+ * сървърите, чийто прозорец за експорт е ЗАТВОРЕН (или никога не е имало платен
+ * период). За заявки, които трият данни на безплатни сървъри — те трябва да
+ * прескачат сървър, чийто план е свършил преди по-малко от 30 дни.
+ *
+ * ЗАЩО е отделна функция, а не проверка в цикъл: чистката избира ТИКЕТИ с
+ * `take: 500`; ако филтърът е след заявката, първите 500 може да са все на
+ * сървъри в прозореца и останалите никога няма да дойдат на ред.
+ */
+export function exportWindowClosedWhere(now = new Date()) {
+  const cutoff = new Date(now.getTime() - EXPORT_GRACE_DAYS * 86400_000);
+  const closed = (field) => ({ OR: [{ [field]: null }, { [field]: { lte: cutoff } }] });
+  return { AND: [closed("accessUntil"), closed("trialEndsAt"), closed("paidAccessEndedAt")] };
+}
+
 /** ISO краят на прозореца (за таблото: `exportUntil`) или null, ако няма/е изтекъл. */
 export function exportWindowUntil(server, now = Date.now()) {
   const anchor = exportAnchor(server);

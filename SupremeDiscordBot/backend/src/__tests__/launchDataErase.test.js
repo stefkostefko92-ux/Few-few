@@ -135,3 +135,36 @@ describe("И4 — /privacy сваля временната роля от маг�
     expect(notifyBot).not.toHaveBeenCalled();
   });
 });
+
+// Червен екип + ревю (13.11.2026): всяка стъпка в транзакцията беше обвита в
+// `.catch(() => counts[x] = 0)`. В Postgres първата грешка прекъсва транзакцията,
+// следващите заявки падат (и също се гълтат), а COMMIT на прекъсната транзакция е
+// тих ROLLBACK — одитът записваше „изтрито“, а не беше изтрито нищо. Доказано срещу
+// жива база в integration/dsrErase.integration.test.js.
+describe("изтриването е всичко или нищо — провалът се чува", () => {
+  it("провалена стъпка → ok:false ERASE_FAILED и одит DSR_ERASE_FAILED, не DSR_ERASED", async () => {
+    prismaMock.pollVote.deleteMany.mockRejectedValue(new Error("connection reset"));
+    const r = await eraseDiscordUser(USER.id, { via: "dashboard", requestedBy: USER.id });
+    expect(r).toMatchObject({ ok: false, code: "ERASE_FAILED" });
+    const actions = prismaMock.auditLog.create.mock.calls.map(([q]) => q.data.action);
+    expect(actions).toContain("DSR_ERASE_FAILED");
+    expect(actions, "одитът не бива да твърди успех").not.toContain("DSR_ERASED");
+    const failed = prismaMock.auditLog.create.mock.calls.find(([q]) => q.data.action === "DSR_ERASE_FAILED")[0].data;
+    expect(failed.metadata.step, "одитът казва коя стъпка е паднала").toBe("pollVotes");
+    expect(JSON.stringify(failed.metadata), "без текста на грешката от базата (може да носи данни)").not.toContain("connection reset");
+  });
+
+  it("след провал транскриптите не се регенерират (нищо не е анонимизирано)", async () => {
+    prismaMock.memberRoleSnapshot.deleteMany.mockRejectedValue(new Error("boom"));
+    await eraseDiscordUser(USER.id, { via: "bot", requestedBy: USER.id });
+    expect(prismaMock.ticket.findMany).not.toHaveBeenCalled();
+  });
+
+  it("таблото: провал → 503 „опитай пак“, сесията остава (човекът не е изтрит)", async () => {
+    prismaMock.pollVote.deleteMany.mockRejectedValue(new Error("connection reset"));
+    const res = await request(gdprApp()).post("/api/gdpr/delete-account").send({ confirmDiscordId: USER.id });
+    expect(res.status).toBe(503);
+    expect(res.body.code).toBe("ERASE_FAILED");
+  });
+});
+

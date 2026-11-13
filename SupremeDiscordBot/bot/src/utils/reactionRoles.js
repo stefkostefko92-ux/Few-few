@@ -23,6 +23,15 @@ const DANGEROUS_ROLE_PERMS = [
   PermissionsBitField.Flags.ManageMessages,
   PermissionsBitField.Flags.ManageNicknames,
   PermissionsBitField.Flags.ViewAuditLog,
+  // Модерация, която липсваше в списъка (червен екип, 13.11.2026): заглушаване,
+  // оглушаване и местене на хора в гласов канал, чужди нишки и чужди събития.
+  // Роля с такова право не се раздава сама — нито с реакция, нито автоматично,
+  // нито от магазина, нито от снимка.
+  PermissionsBitField.Flags.MuteMembers,
+  PermissionsBitField.Flags.DeafenMembers,
+  PermissionsBitField.Flags.MoveMembers,
+  PermissionsBitField.Flags.ManageThreads,
+  PermissionsBitField.Flags.ManageEvents,
 ];
 
 /**

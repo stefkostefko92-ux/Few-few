@@ -24,6 +24,7 @@ import { ssrfSafeAgent, validateWebhookUrl, fireWebhooks } from "../services/web
 import { closeTicketIfOpen, archiveBase, CLOSE_REASON_MAX } from "../lib/ticketClose.js";
 import { loadSanitizedPanel, withSanitizedPanel, withServerLogFallback } from "../lib/ticketPanel.js";
 import { checkTicketLimits } from "../lib/ticketLimits.js";
+import { fireApplicationReviewed } from "../lib/webhookEvents.js";
 
 const router = Router();
 const BOT_SNOWFLAKE = /^\d{17,20}$/;
@@ -1247,7 +1248,7 @@ router.post("/dsr/erase", async (req, res, next) => {
     // Самообслужване = обхват identity (съдържанието на тикетите е запис на
     // оператора; за пълно изтриване → заявка към нас, админ конзола).
     const result = await eraseDiscordUser(String(userId), { scope: "identity", via: "bot", requestedBy: String(userId), guildId: guildId ? String(guildId) : null });
-    if (!result.ok) return res.status(409).json(result);
+    if (!result.ok) return res.status(result.code === "ERASE_FAILED" ? 503 : 409).json(result);
     dsrRecent.set(String(userId), Date.now());
     if (dsrRecent.size > 10000) dsrRecent.clear();
     res.json(result);
@@ -1296,6 +1297,8 @@ router.get("/servers/with-custom-tokens", async (req, res, next) => {
 
 router.post("/application/:appId/review", async (req, res, next) => {
   const { action, note, reviewerId, reviewerTag, serverId } = req.body;
+  // Ботът казва дали ревюърът има Manage Server (той вижда правата в Discord).
+  const reviewerIsAdmin = req.body.reviewerIsAdmin === true;
 
   if (!["approve", "deny"].includes(action)) {
     return res.status(400).json({ error: "action must be approve or deny" });
@@ -1319,6 +1322,13 @@ router.post("/application/:appId/review", async (req, res, next) => {
     });
 
     if (!application) return res.status(404).json({ error: "Application not found" });
+    // Собствената кандидатура решава само човек с Manage Server (червен екип,
+    // 13.11.2026): мениджър подаваше в своя формуляр и си я одобряваше сам —
+    // взимаше ролите от acceptRoleIds и сваляше изпитателната. Забранен е и
+    // отказът: и той раздава и маха роли.
+    if (!reviewerIsAdmin && reviewerId && String(reviewerId) === String(application.userId)) {
+      return res.status(403).json({ error: "You cannot review your own application", code: "SELF_REVIEW" });
+    }
     const statusMap = { approve: "APPROVED", deny: "DENIED" };
 
     // Т6: условен запис по PENDING — вторият ревюър/двоен клик получава 409, роли и ЛС веднъж.
@@ -1340,6 +1350,9 @@ router.post("/application/:appId/review", async (req, res, next) => {
       targetId: application.id,
       metadata: { note: note || null, via: "discord_button" },
     });
+    // Webhook — същият помощник като при решение от таблото (А2). Преди решение от
+    // бутон в Discord не пращаше нищо.
+    fireApplicationReviewed(application, action, { reviewerId: reviewerId || null, note });
 
     // Grant/remove roles + DM the applicant. The Discord-button path previously
     // only changed status, so approvals granted no role and sent no notification —

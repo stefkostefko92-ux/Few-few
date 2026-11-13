@@ -361,7 +361,16 @@ export async function grantShopRole(guild, member, roleId) {
   const reason = roleAssignabilityReason(role, guild.members.me);
   if (reason) return reason;
   if (member.roles.cache.has(roleId)) return null;
-  return member.roles.add(role, "Server Season: shop purchase").then(() => null).catch(() => "failed");
+  try {
+    await member.roles.add(role, "Server Season: shop purchase");
+    return null;
+  } catch {
+    // Неясен провал (таймаут, прекъсната връзка): Discord може вече да е дал ролята.
+    // Питаме наново — иначе искрите се връщат за роля, която човекът има.
+    let fresh = null;
+    try { fresh = await guild.members.fetch({ user: member.id, force: true }); } catch { /* не знаем → неуспех */ }
+    return fresh?.roles?.cache?.has(roleId) ? null : "failed";
+  }
 }
 
 /** Само за тестове. */

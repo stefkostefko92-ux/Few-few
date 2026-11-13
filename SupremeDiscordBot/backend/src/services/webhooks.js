@@ -208,10 +208,13 @@ export async function deliverWebhook(hook, bodyStr, { sleep = defaultSleep, dela
   for (let attempt = 0; ; attempt++) {
     try {
       const res = await attemptDelivery(hook, bodyStr, secret, deliveryId);
+      // Доставено. Записът на резултата е ОТДЕЛНО: ако той падне (webhook-ът е
+      // изтрит междувременно, базата мигне), това не е причина да изпратим
+      // същото събитие още три пъти (червен екип, 13.11.2026).
       await prisma.webhook.update({
         where: { id: hook.id },
         data: { lastDeliveryAt: new Date(), lastStatus: res.status, failCount: 0 },
-      });
+      }).catch((err) => console.warn(`[webhooks] резултатът от доставката не се записа: ${err?.code || err?.message}`));
       return;
     } catch (err) {
       lastErr = err;

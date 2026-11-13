@@ -478,6 +478,7 @@ export default {
   "app.review.reasonLine": "**Reden:** {{note}}",
   "app.review.done": "✅ Klaar!",
   "app.review.alreadyReviewed": "⚠️ Deze sollicitatie is al beoordeeld.",
+  "app.review.selfReview": "❌ Je kunt niet over je eigen sollicitatie beslissen. Vraag iemand met de permissie Manage Server.",
   "app.review.error": "❌ De beoordeling kon niet worden voltooid. Probeer het later opnieuw.",
   "app.review.logUnpostable": "⚠️ Een sollicitatie van {{user}} is opgeslagen, maar het beoordelingsbericht kon niet worden geplaatst. Controleer het beoordelingskanaal en de botrechten en beoordeel de sollicitatie in het dashboard.",
   "app.review.discussionClosedApproved": "🔒 De sollicitatie is goedgekeurd — dit discussiekanaal is nu gesloten.",

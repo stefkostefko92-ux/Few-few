@@ -14,18 +14,24 @@ export async function eachPage(model, args, fn, { key = "id", pageSize = 500, on
   let cursor = null;
   let total = 0;
   for (;;) {
+    // „След последния ред“ е ФИЛТЪР (`key > cursor`), не Prisma `cursor`: Prisma търси
+    // реда-курсор с подзаявка и ако той е изтрит междувременно (махнат сървър,
+    // изтриване на данни), връща 0 реда — обходът свършваше тихо по средата.
     const rows = (await model.findMany({
       ...args,
+      where: { ...(args.where || {}), ...(cursor !== null ? { [key]: { gt: cursor } } : {}) },
       orderBy: { [key]: "asc" },
       take: pageSize,
-      ...(cursor !== null ? { cursor: { [key]: cursor }, skip: 1 } : {}),
     })) || [];
     for (const row of rows) {
       total += 1;
       try { await fn(row); } catch (err) { if (onError) onError(err, row); }
     }
     if (rows.length < pageSize) return total;
-    cursor = rows[rows.length - 1][key];
-    if (cursor === undefined || cursor === null) throw new Error(`eachPage: редовете нямат поле „${key}“ — добави го в select`);
+    const last = rows[rows.length - 1][key];
+    if (last === undefined || last === null) throw new Error(`eachPage: редовете нямат поле „${key}“ — добави го в select`);
+    // Курсорът трябва да расте — иначе заявката не е подредена по `key` и цикълът е безкраен.
+    if (cursor !== null && !(last > cursor)) throw new Error(`eachPage: курсорът не напредва (${key})`);
+    cursor = last;
   }
 }

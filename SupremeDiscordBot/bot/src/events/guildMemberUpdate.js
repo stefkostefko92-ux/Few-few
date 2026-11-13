@@ -26,6 +26,11 @@ export default {
       const guild = newMember.guild || oldMember.guild;
       if (!guild?.id) return;
 
+      // Частичен стар член = некеширан (Partials.GuildMember, В5): няма с какво да
+      // сравним. Без тази проверка всяка негова роля излизаше „добавена“, а
+      // псевдонимът — „сменен“, с до две заявки към одитния дневник за нищо.
+      if (oldMember.partial) return;
+
       // Гейт ПРЕДИ audit-log fetch (rate limit) — виж messageDelete.
       if (!(await isEventCategoryEnabled(guild.id, "members"))) return;
 

@@ -326,14 +326,19 @@ cron.schedule("* * * * *", job("poll-autoclose", async () => {
 }), TZ);
 
 // ─── Job 6: Scheduled messages (v1.8) ────────────────────
+// Таван на обработените за една минута; над него остатъкът чака следващата.
+const SCHEDULED_PER_TICK_MAX = 5000;
 cron.schedule("* * * * *", job("scheduled-messages", async () => {
   try {
-    // Най-старите първи и с таван: една минута не носи неограничен товар.
-    const dueRaw = await prisma.scheduledMessage.findMany({
-      where: { sentAt: null, sendAt: { lte: new Date() } },
-      orderBy: { sendAt: "asc" },
-      take: 500,
-    });
+    // Всички дължими, на страници (lib/paginate.js), с общ таван за една минута.
+    // НЕ „първите 500 по sendAt“: редове, които тази минута само чакат (сървър
+    // без Premium под 24 ч, неуспешно изпращане), щяха да заемат прозореца и
+    // съобщенията на плащащите зад тях да закъсняват с часове.
+    const dueRaw = [];
+    const dueNow = new Date();
+    await eachPage(prisma.scheduledMessage, { where: { sentAt: null, sendAt: { lte: dueNow } } }, async (m) => {
+      if (dueRaw.length < SCHEDULED_PER_TICK_MAX) dueRaw.push(m);
+    }, { key: "id" });
     if (!dueRaw.length) return;
 
     // Premium-gated (както Job 1/SLA): без tier проверка насрочените/повтарящите

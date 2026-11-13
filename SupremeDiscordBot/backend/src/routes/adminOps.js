@@ -354,7 +354,7 @@ router.post("/dsr/:discordId/erase", requireMainOwner, stepUp, async (req, res, 
   if (!body.success) return res.status(400).json({ error: "confirm:true and a valid scope are required" });
   try {
     const result = await eraseDiscordUser(id.data, { scope: body.data.scope, via: "admin", requestedBy: req.user.id, note: body.data.note || null });
-    if (!result.ok) return res.status(409).json(result);
+    if (!result.ok) return res.status(result.code === "ERASE_FAILED" ? 503 : 409).json(result);
     if (body.data.scope === "full") {
       alertOwner(ALERT_KINDS.DSR_FULL_ERASE, "Full data erasure executed",
         `${req.user.username} erased ALL data (incl. ticket text) for Discord user ${id.data}. Note: ${body.data.note || "—"}.`).catch(() => {});

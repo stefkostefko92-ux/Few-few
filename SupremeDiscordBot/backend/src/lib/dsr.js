@@ -151,8 +151,23 @@ export async function eraseDiscordUser(userId, { scope = "identity", via = "admi
   const tag = label(uid);
   // И4 — преди транзакцията (мрежа) и преди изтриването на покупките.
   Object.assign(counts, await revokeTemporaryShopRoles(uid));
+  // Всичко или нищо. Грешка в стъпка НЕ се гълта: в Postgres тя прекъсва цялата
+  // транзакция, следващите заявки падат, а COMMIT на прекъсната транзакция е тих
+  // ROLLBACK. Преди всяка стъпка беше обвита в `.catch(() => counts[x] = 0)` —
+  // одитът записваше „DSR_ERASED“, а не беше изтрит нито един ред (червен екип +
+  // ревю, 13.11.2026; доказано в integration/dsrErase.integration.test.js).
+  let failedStep = null;
+  try {
   await prisma.$transaction(async (tx) => {
-    const c = (name, p) => Promise.resolve().then(p).then((r) => { counts[name] = typeof r === "number" ? r : (r?.count ?? 1); }).catch(() => { counts[name] = 0; });
+    const c = async (name, p) => {
+      try {
+        const r = await p();
+        counts[name] = typeof r === "number" ? r : (r?.count ?? 1);
+      } catch (err) {
+        failedStep = failedStep || name;
+        throw err;
+      }
+    };
 
     if (user) {
       await c("user", () => tx.user.update({
@@ -192,6 +207,19 @@ export async function eraseDiscordUser(userId, { scope = "identity", via = "admi
       }));
     }
   });
+  } catch (err) {
+    // Нищо не е изтрито (транзакцията е върната). Одитът го казва честно, с името
+    // на стъпката — без текста на грешката от базата, който може да носи данни.
+    console.error(`[dsr] изтриването за ${tag} се провали на стъпка „${failedStep || "transaction"}“: ${err?.code || err?.name || "error"}`);
+    await writeAudit({
+      actorId: requestedBy || null,
+      actorTag: requestedBy ? undefined : "SYSTEM",
+      action: "DSR_ERASE_FAILED",
+      targetId: uid,
+      metadata: { scope, via, guildId, note, step: failedStep || "transaction", registered: !!user },
+    });
+    return { ok: false, code: "ERASE_FAILED", error: "The erasure could not be completed. Nothing was deleted — please try again in a few minutes." };
+  }
 
   // Транскриптите (archiveHtml) са ГОТОВ HTML със снимка на подписите и
   // текста от момента на затваряне — анонимизацията на редовете не ги

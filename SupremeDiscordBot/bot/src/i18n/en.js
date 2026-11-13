@@ -489,6 +489,7 @@ export default {
   "app.review.reasonLine": "**Reason:** {{note}}",
   "app.review.done": "✅ Done!",
   "app.review.alreadyReviewed": "⚠️ This application has already been reviewed.",
+  "app.review.selfReview": "❌ You can't decide your own application. Ask someone with the Manage Server permission.",
   "app.review.error": "❌ Could not complete the review. Please try again later.",
   "app.review.logUnpostable": "⚠️ An application from {{user}} was saved, but its review message could not be posted. Check the review channel and the bot's permissions, then review it in the dashboard.",
   "app.review.discussionClosedApproved": "🔒 The application was approved — this discussion channel is now closed.",

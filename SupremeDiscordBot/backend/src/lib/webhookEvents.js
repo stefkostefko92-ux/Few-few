@@ -1,5 +1,5 @@
 // backend/src/lib/webhookEvents.js
-// Изпращачи на изходящите webhook събития за анкети и раздавания (А2): ЕДНО
+// Изпращачи на изходящите webhook събития за анкети, раздавания и кандидатури (А2): ЕДНО
 // място за payload-а, от което го викат ВСИЧКИ пътища — бот (`bot_v18.js`),
 // табло (`automation.js`) и планировчик (`services/scheduler.js`). Преди това
 // POLL_CLOSED нямаше нито едно извикване, а GIVEAWAY_ENDED тръгваше само от
@@ -42,3 +42,30 @@ export async function fireGiveawayEnded(giveaway, winners, entryCount, { reroll 
     console.error("[webhooks] GIVEAWAY_ENDED failed:", err?.message);
   }
 }
+
+/** Подадена кандидатура — от единственото място, което я създава (services/applicationSubmit.js). */
+export async function fireApplicationSubmitted(application) {
+  try {
+    await fireWebhooks(application.serverId, "APPLICATION_SUBMITTED", {
+      applicationId: application.id, formId: application.formId, userId: application.userId,
+    });
+  } catch (err) {
+    console.error("[webhooks] APPLICATION_SUBMITTED failed:", err?.message);
+  }
+}
+
+/**
+ * Решение по кандидатура — едно и също тяло от таблото и от бутоните в Discord.
+ * Преди решението от Discord не пращаше нищо, а „SUBMITTED“ живееше само в
+ * недостижим клон на тернарен оператор.
+ */
+export async function fireApplicationReviewed(application, action, { reviewerId = null, note = null } = {}) {
+  try {
+    await fireWebhooks(application.serverId, action === "approve" ? "APPLICATION_APPROVED" : "APPLICATION_DENIED", {
+      applicationId: application.id, formId: application.formId, userId: application.userId, reviewerId, note: note || null,
+    });
+  } catch (err) {
+    console.error("[webhooks] APPLICATION review webhook failed:", err?.message);
+  }
+}
+

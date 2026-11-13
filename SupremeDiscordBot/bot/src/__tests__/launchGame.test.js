@@ -178,3 +178,24 @@ describe("И3 — messageCreate: двата клиента, едно съобщ�
     expect(counting).toHaveLength(1);
   });
 });
+
+// Червен екип (13.11.2026): при таймаут Discord може вече да е дал ролята. Тогава
+// „неуспех“ връщаше искрите, а ролята оставаше — безплатна покупка.
+describe("И1 — неясен провал при даване на роля", () => {
+  const role = { id: "r1", managed: false, position: 1, permissions: { has: () => false, any: () => false }, comparePositionTo: () => -1 };
+  const guildWith = (afterRoles) => ({
+    roles: { cache: new Map([["r1", role]]), fetch: vi.fn() },
+    members: { me: { roles: { highest: { position: 10 } }, permissions: { has: () => true } }, fetch: vi.fn(async () => ({ roles: { cache: new Map(afterRoles.map((r) => [r, {}])) } })) },
+  });
+  const buyer = () => ({ id: "u1", roles: { cache: new Map(), add: vi.fn(async () => { throw new Error("ETIMEDOUT"); }) } });
+
+  it("add хвърля, но ролята Е дадена → успех (без връщане на искри)", async () => {
+    const { grantShopRole } = await import("../utils/game.js");
+    expect(await grantShopRole(guildWith(["r1"]), buyer(), "r1")).toBeNull();
+  });
+  it("add хвърля и ролята я няма → „failed“ (искрите се връщат)", async () => {
+    const { grantShopRole } = await import("../utils/game.js");
+    expect(await grantShopRole(guildWith([]), buyer(), "r1")).toBe("failed");
+  });
+});
+
