@@ -18,7 +18,7 @@ export default function BaitCard({ serverId }) {
     queryKey: ["bait", serverId],
     queryFn: () => getBait(serverId),
   });
-  if (isLoading || !data) return <div className="cs-card h-32 animate-pulse mb-8" />;
+  if (isLoading || !data) return <div className="cs-card h-32 animate-pulse" />;
   // key: формата се попълва наново само когато сървърът върне друго състояние.
   return <BaitForm key={`${data.enabled}:${data.channelId}:${data.action}:${data.logChannelId}:${data.dmUser}`} serverId={serverId} data={data} />;
 }
@@ -51,23 +51,19 @@ function BaitForm({ serverId, data }) {
   });
 
   return (
-    <section className="cs-card mb-8 space-y-4" aria-labelledby="bait-title">
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-        <div>
-          <h2 id="bait-title" className="font-display font-bold text-cs-text text-xl flex items-center gap-2">
-            <Fish className="w-5 h-5 text-cs-cyan" aria-hidden="true" /> {t("bait.title")}
-          </h2>
-          <p className="text-cs-muted text-sm mt-1 max-w-2xl">{t("bait.intro")}</p>
-        </div>
-        <div className="text-sm text-cs-dim sm:text-right shrink-0">
+    <section className="cs-card space-y-4" aria-label={t("bait.title")}>
+      {/* Заглавието и обяснението са в шапката на страницата (BaitPage). */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" className="accent-cs-cyan w-5 h-5" checked={!!form.enabled} onChange={(e) => set("enabled", e.target.checked)} />
+          <span className="text-sm text-cs-text font-medium flex items-center gap-2">
+            <Fish className="w-4 h-4 text-cs-cyan" aria-hidden="true" /> {t("bait.enabled")}
+          </span>
+        </label>
+        <div className="text-sm text-cs-dim shrink-0">
           {t("bait.caught")}: <span className="text-cs-text font-bold">{data.caughtCount ?? 0}</span>
         </div>
       </div>
-
-      <label className="flex items-center gap-3">
-        <input type="checkbox" className="accent-cs-cyan w-5 h-5" checked={!!form.enabled} onChange={(e) => set("enabled", e.target.checked)} />
-        <span className="text-sm text-cs-text">{t("bait.enabled")}</span>
-      </label>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <label className="block">

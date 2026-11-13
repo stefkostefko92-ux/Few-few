@@ -127,6 +127,10 @@ model Server {
   trialUsed                 Boolean   @default(false)
   trialStartedAt            DateTime?
   trialEndsAt               DateTime?
+  // v55 (А1) — кога е свършил платеният достъп през Discord. Котва САМО за
+  // 30-дневния прозорец за експорт и отлагането на метлата; НЕ вдига плана
+  // (за разлика от accessUntil, който се чете от getServerTier).
+  paidAccessEndedAt         DateTime?
   // v2.1 Localization
   language                  String    @default("en") // Server-wide bot UI language
   stripeCustomerId          String?   @unique
@@ -896,6 +900,11 @@ model ScheduledMessage {
   embedColor       String    @default("#00e5ff")
   sendAt           DateTime
   recurrence       String? // daily | weekly | monthly | null(one-shot)
+  // v55 (А5): повтарящото се съобщение пази МЕСТНИЯ час през смяната на времето и
+  // деня от месеца (31-во → последния ден), вместо да се измества — lib/recurrence.js.
+  // null = смята се в UTC, както преди (стари редове и /schedule от Discord).
+  timeZone         String? // IANA, напр. Europe/Sofia
+  anchorDay        Int? // 1–31, денят от месеца в зоната на съобщението
   sentAt           DateTime?
   nextAt           DateTime?
   createdBy        String
@@ -1258,6 +1267,10 @@ model ShopPurchase {
   priceSparks Int
   expiresAt   DateTime? // временна роля — ботът я маха след изтичане (scheduler)
   revokedAt   DateTime?
+  // v55 — върната покупка (искрите са възстановени, ролята не е получена). Отделно
+  // от revokedAt, който се слага и при ИЗТЕКЛА временна роля: върнатото освобождава
+  // бройка от ограничен артикул, изтеклото — не.
+  refundedAt  DateTime?
   createdAt   DateTime  @default(now())
 
   server Server    @relation(fields: [serverId], references: [id], onDelete: Cascade)
@@ -1440,4 +1453,17 @@ model TriviaAnswer {
   @@unique([roundId, userId])
   @@index([userId])
   @@map("trivia_answers")
+}
+
+// v56 — настройки на платформата (не на сървър): една стойност по ключ, сменяна
+// от главния акаунт без нов билд. Първият ключ е `support.inviteUrl` — поканата
+// към сървъра за поддръжка, към която води `/support`. КОЙ я е сменил не стои тук,
+// а в одитния дневник (`SUPPORT_INVITE_CHANGED`) — там е и предишната стойност.
+// НИКОГА тайни тук: редът се чете от публичен маршрут.
+model PlatformSetting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("platform_settings")
 }

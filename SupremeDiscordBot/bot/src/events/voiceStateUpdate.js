@@ -5,8 +5,10 @@
 // Закача се И на главния, И на всеки white-label клиент (loadEventModules чете
 // само /events/). Клиентът се взима от newState.client.
 //
-// Rate-limit внимание: audit log се пипа САМО при server_mute/server_deaf
-// (best-effort актьор), НЕ при self_* или join/leave — гласовете шумят силно.
+// Rate-limit внимание: audit log се пипа само когато категорията „voice“ е
+// включена (гейт по-долу, ПРЕДИ всяка заявка) и само при: излизане от канал
+// (MemberDisconnect), преместване (MemberMove) и server_mute/server_deaf —
+// best-effort актьор. НЕ се пипа при self_* и join — гласовете шумят силно.
 
 import { logServerEvent, fetchAuditActor, fetchVoiceMoveActor, fetchVoiceDisconnectActor, isEventCategoryEnabled, AuditLogEvent } from "../utils/serverEventLog.js";
 import { onVoiceForXp } from "../utils/game.js";
@@ -52,7 +54,7 @@ export default {
           await emit({ action: "voice_join", actorId: targetId, channelId: newCh });
         } else if (oldCh && !newCh) {
           // Изключен ли е от модератор, или си е излязъл сам?
-          const kicker = await fetchVoiceDisconnectActor(guild);
+          const kicker = await fetchVoiceDisconnectActor(guild, targetId);
           await emit({
             action: "voice_leave",
             actorId: kicker?.executorId || targetId,

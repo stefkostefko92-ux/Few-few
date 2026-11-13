@@ -119,6 +119,7 @@ import analyticsRouter from "./routes/analytics.js";
 import statusRouter from "./routes/status.js";
 import publicApiRouter, { apiKeyManagementRouter } from "./routes/publicApi.js";
 import archiveRouter from "./routes/archive.js";
+import supportRouter from "./routes/support.js";
 import v1Router from "./routes/v1.js";
 import gdprRouter from "./routes/gdpr.js";
 import kbRouter from "./routes/kb.js";
@@ -295,6 +296,18 @@ const archiveLimiter = rateLimit({
   message: "Too many requests — please slow down",
 });
 
+// `/support` е публично пренасочване извън `/api` (значи и извън общия лимитер).
+// Евтино е (стойността е в паметта), но анонимен адрес без таван е покана за цикъл.
+const supportLimiter = rateLimit({
+  keyGenerator: ipKeyGenerator, // IPv6 по /56 (lib/ipKey.js)
+  windowMs: 60 * 1000,
+  max: 60,
+  store: redisStore("rl:support"),
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: "Too many requests — please slow down",
+});
+
 // Вторият фактор: отделен, по-широк лимит само за опитите (не-GET) — над
 // гарда срещу налучкване по потребител в routes/mfa.js.
 const mfaLimiter = rateLimit({
@@ -371,6 +384,7 @@ app.use("/api/honeypot", honeypotRouter);           // v52 — капан за �
 app.use("/api/bot", botHoneypotRouter);             // v52 — капан за спам ботове (bot secret)
 app.use("/public/v1", publicApiRouter);       // v2.1 Public REST API (bearer token)
 app.use("/archive", archiveRouter);           // v2.1 Public ticket transcript viewer
+app.use("/support", supportLimiter, supportRouter); // v56 Публично пренасочване към сървъра за поддръжка (целта — от конзолата на главния акаунт)
 // apikeys.js (файлът-примамка) е ИЗТРИТ на 09.08.2026: немонтиран, но с втори
 // дрейфнал списък scope-ове, от който v1.js внасяше requireApiKey — направи
 // /api/v1/server вечно 403 и подлъга и одитори. Едното определение живее в

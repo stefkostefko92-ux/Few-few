@@ -12,7 +12,6 @@ import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
 import EmojiPicker from "../components/EmojiPicker";
-import BaitCard from "../components/BaitCard";
 import { useT } from "../contexts/I18nContext";
 import PageHeader from "../components/PageHeader";
 import { useToast } from "../contexts/ToastContext";
@@ -144,9 +143,6 @@ export default function VerificationPage() {
           </button>
         )}
       />
-
-      {/* v52 — канал-стръв за спам ботове: втората защита на страницата. */}
-      <BaitCard serverId={serverId} />
 
       {isLoading && <div className="cs-card h-32 animate-pulse" />}
 

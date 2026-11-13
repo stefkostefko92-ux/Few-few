@@ -1,15 +1,14 @@
 // backend/src/routes/tickets.js
 import { Router } from "express";
-import { sealTranscript, openTranscript } from "../lib/transcriptAtRest.js";
+import { openTranscript } from "../lib/transcriptAtRest.js";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
-import { awardTicketSlaXp } from "../lib/game/xp.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
-import { generateHtmlTranscript } from "../utils/archive.js";
-import { notifyBot, notifyBotVerbose, sendTicketReply } from "../services/botNotifier.js";
+import { notifyBotVerbose, sendTicketReply } from "../services/botNotifier.js";
 import { check, recordFailure, recordSuccess } from "../lib/bruteForce.js";
 import { requirePremium } from "../lib/premium.js";
-import { ensureArchiveToken, tokenizedArchiveUrl, archiveTokenMatches } from "../lib/archiveToken.js";
+import { tokenizedArchiveUrl, archiveTokenMatches } from "../lib/archiveToken.js";
+import { closeTicketIfOpen, archiveBase } from "../lib/ticketClose.js";
 
 const router = Router();
 
@@ -166,46 +165,26 @@ router.get("/:serverId/:ticketId", requireServerAdmin, async (req, res, next) =>
 // ─── POST /api/tickets/:serverId/:ticketId/close ──────────────────────────────
 
 router.post("/:serverId/:ticketId/close", requireServerAdmin, async (req, res, next) => {
-  const { reason } = req.body;
+  const reason = typeof req.body?.reason === "string" ? req.body.reason : undefined;
 
   try {
-    const ticket = await prisma.ticket.findFirst({
-      where: { id: req.params.ticketId, serverId: req.params.serverId },
-      include: {
-        messages: { orderBy: { createdAt: "asc" } },
-        creator: true,
-        assignee: true,
-        // Нужен на транскрипта: при white-label бот брандът в архива е на
-        // клиента, а нашето име не се появява (виж utils/archive.js).
-        server: { select: { name: true, customBotName: true } },
-        panel: { select: { slaFirstResponseMinutes: true, slaResolutionMinutes: true } },
-      },
+    // Т2/Т14: същото условно затваряне като от бота (статус, транскрипт, одит,
+    // webhook TICKET_CLOSE). После ботът прави Discord частта по ЕДИН път.
+    const r = await closeTicketIfOpen(req.params.ticketId, {
+      serverId: req.params.serverId,
+      closedById: req.user.id,
+      reason,
+      source: "dashboard",
     });
-
-    if (!ticket) return res.status(404).json({ error: "Ticket not found" });
-    if (ticket.status === "CLOSED" || ticket.status === "ARCHIVED") {
+    if (!r.ok) {
+      if (r.code === "NOT_FOUND") return res.status(404).json({ error: "Ticket not found" });
       return res.status(400).json({ error: "Ticket is already closed" });
     }
-    // v50 — XP за staff, затворил тикет БЕЗ пробив на SLA (само панели със SLA; веднъж на тикет).
-    awardTicketSlaXp(ticket, req.user.id).catch(() => {});
+    const { ticket, archiveUrl } = r;
+    const base = archiveBase(req);
 
-    // Generate HTML transcript
-    const html = generateHtmlTranscript(ticket);
-    const archiveToken = await ensureArchiveToken(ticket.id, ticket.archiveToken);
-    const archiveUrl = tokenizedArchiveUrl(ticket.id, archiveToken);
-    // Note: base tier transcripts can be cleaned up after 30 days via a scheduled job.
-    const updated = await prisma.ticket.update({
-      where: { id: req.params.ticketId },
-      data: {
-        status: "CLOSED",
-        closeReason: reason,
-        closedAt: new Date(),
-        archiveHtml: sealTranscript(html),
-        archiveUrl,
-      },
-    });
-
-    // Tell bot to close Discord channel/thread and post archive link.
+    // Tell bot to finalize the Discord side (closed category / thread lock,
+    // Reopen/Delete message, transcript post, DM, rating, log) — НЕ да трие канала.
     // Тих провал = „затворен" тикет в базата + ОТВОРЕН канал в Discord
     // (лъжещ успех). Записът е валиден, затова не грешка, а botWarning.
     const closeResult = await notifyBotVerbose("TICKET_CLOSE", {
@@ -213,33 +192,15 @@ router.post("/:serverId/:ticketId/close", requireServerAdmin, async (req, res, n
       serverId: req.params.serverId,
       channelId: ticket.channelId,
       archiveUrl,
-      reason,
+      fullArchiveUrl: base ? `${base}${archiveUrl}` : archiveUrl,
+      reason: ticket.closeReason,
+      closedById: req.user.id,
     });
     const botWarning = closeResult?.botError
       ? `Ticket closed, but the Discord channel was not: ${String(closeResult.botError).slice(0, 300)}`
       : null;
 
-    await prisma.auditLog.create({
-      data: {
-        actorId: req.user.id,
-        serverId: req.params.serverId,
-        action: "TICKET_CLOSED",
-        targetId: ticket.id,
-        metadata: { reason },
-      },
-    });
-
-    // v1.8 — fire webhook
-    const { fireWebhooks } = await import("../services/webhooks.js");
-    fireWebhooks(req.params.serverId, "TICKET_CLOSE", {
-      ticketId: ticket.id,
-      number: ticket.number,
-      creatorId: ticket.creatorId,
-      assigneeId: ticket.assigneeId,
-      reason,
-      closedBy: req.user.id,
-    }).catch(() => {});
-
+    const updated = { ...ticket, messages: undefined, creator: undefined, assignee: undefined, panel: undefined, server: undefined, archiveHtml: undefined };
     res.json(botWarning ? { ...updated, botWarning } : updated);
   } catch (err) {
     next(err);
@@ -252,13 +213,21 @@ router.post("/:serverId/:ticketId/claim", requireServerAdmin, requirePremium("ti
   try {
     const existing = await prisma.ticket.findFirst({
       where: { id: req.params.ticketId, serverId: req.params.serverId },
-      select: { id: true },
+      select: { id: true, status: true, assigneeId: true },
     });
     if (!existing) return res.status(404).json({ error: "Ticket not found" });
-    const ticket = await prisma.ticket.update({
-      where: { id: req.params.ticketId },
-      data: { assigneeId: req.user.id, status: "CLAIMED" },
+    // Т4: claim само на OPEN тикет — условен запис, чужд claim не се краде.
+    const won = await prisma.ticket.updateMany({
+      where: { id: req.params.ticketId, serverId: req.params.serverId, status: "OPEN" },
+      data: { assigneeId: req.user.id, status: "CLAIMED", lastActivityAt: new Date() },
     });
+    if (won.count === 0) {
+      return res.status(409).json({
+        error: existing.status === "CLAIMED" ? "Ticket is already claimed" : "Ticket is not open",
+        code: existing.status === "CLAIMED" ? "ALREADY_CLAIMED" : "NOT_OPEN",
+      });
+    }
+    const ticket = await prisma.ticket.findUnique({ where: { id: req.params.ticketId } });
 
     const claimResult = await notifyBotVerbose("TICKET_CLAIMED", {
       ticketId: ticket.id,
@@ -285,11 +254,13 @@ router.post("/:serverId/:ticketId/unclaim", requireServerAdmin, async (req, res,
       select: { id: true },
     });
     if (!existing) return res.status(404).json({ error: "Ticket not found" });
-    const ticket = await prisma.ticket.update({
-      where: { id: req.params.ticketId },
+    // Само CLAIMED → OPEN: иначе unclaim „съживяваше“ затворен тикет.
+    const won = await prisma.ticket.updateMany({
+      where: { id: req.params.ticketId, serverId: req.params.serverId, status: "CLAIMED" },
       data: { assigneeId: null, status: "OPEN" },
     });
-    res.json(ticket);
+    if (won.count === 0) return res.status(409).json({ error: "Ticket is not claimed", code: "NOT_CLAIMED" });
+    res.json(await prisma.ticket.findUnique({ where: { id: req.params.ticketId } }));
   } catch (err) {
     next(err);
   }
@@ -322,7 +293,7 @@ router.post("/:serverId/:ticketId/reply", requireServerAdmin, async (req, res, n
       // IDOR guard: тикетът трябва да принадлежи точно на ТОЗИ сървър —
       // никога lookup само по ticketId от клиента.
       where: { id: req.params.ticketId, serverId: req.params.serverId },
-      select: { id: true, status: true, channelId: true, number: true },
+      select: { id: true, status: true, channelId: true, number: true, firstResponseAt: true },
     });
 
     if (!ticket) return res.status(404).json({ error: "Ticket not found" });
@@ -361,6 +332,17 @@ router.post("/:serverId/:ticketId/reply", requireServerAdmin, async (req, res, n
         content,
       },
     });
+
+    // Т14: отговорът от таблото е активност на екипа — вдига lastActivityAt и
+    // (първия път) firstResponseAt. Иначе: фалшива SLA аларма и авто-затваряне,
+    // докато екипът отговаря активно. Вторично: провал не губи доставения отговор.
+    const now = new Date();
+    await prisma.ticket
+      .update({
+        where: { id: ticket.id },
+        data: { lastActivityAt: now, ...(!ticket.firstResponseAt && { firstResponseAt: now }) },
+      })
+      .catch((e) => console.warn(`[tickets] activity bump failed for ${ticket.id}: ${e?.message}`));
 
     res.status(201).json(message);
   } catch (err) {
