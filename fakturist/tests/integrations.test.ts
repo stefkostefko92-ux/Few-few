@@ -284,3 +284,18 @@ test('SMTP без TLS от началото иска STARTTLS — без нег�
   assert.equal(transportOptions({ ...base, port: 2525, secure: false }).requireTLS, true);
   assert.equal(transportOptions({ ...base, port: 465, secure: true }).requireTLS, false);
 });
+
+test('писмото от кантора назовава кантората и пълномощното, екранирано', () => {
+  const mail = transferInviteMail({
+    companyName: 'Пекарна Зора ЕООД',
+    companyEik: '131063188',
+    firmName: 'Кантора <Баланс>',
+    link: 'https://fakturist.carbonstealth.eu/pokana/TOKEN456',
+    expires: '20.11.2026',
+    signature: 'подпис',
+    domain: 'fakturist.eu',
+  });
+  assert.ok(mail.text.includes('счетоводната кантора Кантора <Баланс>'));
+  assert.ok(mail.text.includes('собствеността и достъпът остават ваши'));
+  assert.ok(mail.html.includes('Кантора &lt;Баланс&gt;') && !mail.html.includes('<Баланс>'));
+});

@@ -97,7 +97,10 @@ async function composeInviteMail(toEmail: string, payload: unknown): Promise<Mai
   const { inviteId, tokenEnc } = InvitePayload.parse(payload);
   const invite = await prisma.transferInvite.findUniqueOrThrow({
     where: { id: inviteId },
-    include: { organization: { select: { legalName: true, eik: true } } },
+    include: {
+      organization: { select: { legalName: true, eik: true } },
+      mandate: { select: { firm: { select: { legalName: true } } } },
+    },
   });
   if (invite.acceptedAt || invite.revokedAt) throw new Error('Поканата вече не е отворена');
   const token = decryptInviteToken(tokenEnc, inviteId);
@@ -105,6 +108,7 @@ async function composeInviteMail(toEmail: string, payload: unknown): Promise<Mai
   const mail = transferInviteMail({
     companyName: invite.organization.legalName,
     companyEik: invite.organization.eik,
+    firmName: invite.mandate?.firm.legalName ?? null,
     link: `${config().PUBLIC_BASE_URL}/pokana/${token}`,
     expires: bgDate(invite.expiresAt),
     signature,

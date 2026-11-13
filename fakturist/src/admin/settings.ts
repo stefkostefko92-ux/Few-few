@@ -57,6 +57,18 @@ export const SETTINGS = {
       en: 'The last line of the XML note and the footer of the PDF. Empty — no signature.',
     },
   },
+  'invites.firmDailyLimit': {
+    schema: z.number().int().min(1).max(200),
+    default: 20,
+    label: {
+      bg: 'Покани към собственици от една кантора на ден',
+      en: 'Owner invitations per accounting firm per day',
+    },
+    help: {
+      bg: 'Таван срещу злоупотреба с пощата: кантора праща най-много толкова покани за 24 часа.',
+      en: 'A cap against mail abuse: one firm sends at most this many invitations in 24 hours.',
+    },
+  },
   'site.notice': {
     schema: z.string().max(300),
     default: '',

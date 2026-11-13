@@ -1,109 +1,141 @@
-import { z } from 'zod';
-import { Prisma } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { randomToken, sha256Hex } from '../crypto.js';
 import { encryptInviteToken } from '../auth/keys.js';
-import { hashPassword, passwordProblem } from '../auth/password.js';
+import { setting } from '../admin/settings.js';
 import { DAY } from '../time.js';
+import {
+  EmailSchema,
+  INVITE_TTL_MS,
+  isFirmMember,
+  lockOrganization,
+  ownerCount,
+  TransferError,
+} from './transfer-core.js';
 
 /**
- * Прехвърлянето на фирма, добавена от счетоводна кантора, към собственика ѝ. Регистрация с ЕИК на
- * такава фирма се отказва (`companyManaged`), иначе всеки би взел чужда фирма с документите ѝ. Затова:
- * мастърът проверява документ за представителство и праща еднократна покана до имейла на собственика;
- * той я приема с този имейл (нов профил или вход) и става OWNER. Пълномощното на кантората остава —
- * собственикът решава за него от профила си.
+ * Собствеността на фирма, добавена от счетоводна кантора, е на собственика ѝ. Регистрация с ЕИК на
+ * такава фирма се отказва (`companyManaged`), иначе всеки би взел чужда фирма с документите ѝ. Затова
+ * собственикът получава еднократна покана до имейла си — от кантората, която води счетоводството (при
+ * добавяне на фирмата или по-късно), или от мастъра след проверка на документ за представителство. Той я
+ * приема (transfer-accept.ts) и става OWNER; кантората работи по пълномощно, след като той го потвърди.
  */
-export const INVITE_TTL_MS = 7 * DAY;
-const TOKEN = /^[A-Za-z0-9_-]{43}$/;
+export { INVITE_TTL_MS, TransferError, type TransferErrorCode } from './transfer-core.js';
+export { acceptTransferInvite, findOpenInvite, type OpenInvite } from './transfer-accept.js';
 
-export type TransferErrorCode =
-  | 'notFound'
-  | 'hasOwner'
-  | 'invalid'
-  | 'invalidEmail'
-  | 'invalidName'
-  | 'wrongEmail'
-  | 'loginRequired'
-  | `password.${string}`;
-
-export class TransferError extends Error {
-  constructor(readonly code: TransferErrorCode) {
-    super(code);
-  }
-}
-
-const EmailSchema = z.string().trim().toLowerCase().max(254).pipe(z.email());
-
-async function lockOrganization(tx: Prisma.TransactionClient, organizationId: string) {
-  const rows = await tx.$queryRaw<Array<{ id: string }>>`
-    SELECT "id" FROM "Organization" WHERE "id" = ${organizationId} FOR UPDATE`;
-  if (rows.length !== 1) throw new TransferError('notFound');
-}
-
-function ownerCount(tx: Prisma.TransactionClient, organizationId: string): Promise<number> {
-  return tx.membership.count({ where: { organizationId, role: 'OWNER' } });
+interface InviteResult {
+  inviteId: string;
+  token: string;
+  expiresAt: Date;
 }
 
 /**
- * Нова покана: само за фирма без собственик. Предишните отворени покани и непратените им писма се
- * отменят. В поканата е само SHA-256 на токена; писмото в опашката носи токена шифрован.
+ * Нова покана в транзакцията на извикващия: само за фирма без собственик. Предишните отворени покани и
+ * непратените им писма се отменят. В поканата е само SHA-256 на токена; писмото в опашката го носи
+ * шифрован.
  */
+async function inviteOwnerTx(
+  tx: Prisma.TransactionClient,
+  input: {
+    organizationId: string;
+    email: string;
+    actorId: string;
+    mandateId: string | null;
+    now: Date;
+  },
+): Promise<InviteResult> {
+  const parsed = EmailSchema.safeParse(input.email);
+  if (!parsed.success) throw new TransferError('invalidEmail');
+  const email = parsed.data;
+  const token = randomToken(32);
+  const expiresAt = new Date(input.now.getTime() + INVITE_TTL_MS);
+  await lockOrganization(tx, input.organizationId);
+  const org = await tx.organization.findUniqueOrThrow({
+    where: { id: input.organizationId },
+    select: { deletedAt: true },
+  });
+  if (org.deletedAt) throw new TransferError('notFound');
+  if ((await ownerCount(tx, input.organizationId)) > 0) throw new TransferError('hasOwner');
+  const replaced = await tx.transferInvite.updateMany({
+    where: { organizationId: input.organizationId, acceptedAt: null, revokedAt: null },
+    data: { revokedAt: input.now },
+  });
+  await tx.notification.updateMany({
+    where: { organizationId: input.organizationId, kind: 'transfer.invite', status: 'PENDING' },
+    data: { status: 'FAILED', lastError: 'Поканата е заменена с нова.' },
+  });
+  const invite = await tx.transferInvite.create({
+    data: {
+      organizationId: input.organizationId,
+      email,
+      tokenHash: sha256Hex(token),
+      createdById: input.actorId,
+      createdAt: input.now,
+      expiresAt,
+      mandateId: input.mandateId,
+    },
+  });
+  await tx.notification.create({
+    data: {
+      organizationId: input.organizationId,
+      kind: 'transfer.invite',
+      toEmail: email,
+      payload: { inviteId: invite.id, tokenEnc: encryptInviteToken(token, invite.id) },
+    },
+  });
+  await audit(tx, {
+    actorId: input.actorId,
+    organizationId: input.organizationId,
+    action: 'organization.transfer.invited',
+    targetType: 'TransferInvite',
+    targetId: invite.id,
+    details: { replaced: replaced.count, byFirm: input.mandateId !== null },
+  });
+  return { inviteId: invite.id, token, expiresAt };
+}
+
+/** Мастърът: покана след проверка на документ за представителство (без пълномощно). */
 export async function createTransferInvite(input: {
   organizationId: string;
   email: string;
   actorId: string;
   now?: Date;
-}): Promise<{ inviteId: string; token: string; expiresAt: Date }> {
-  const parsed = EmailSchema.safeParse(input.email);
-  if (!parsed.success) throw new TransferError('invalidEmail');
-  const email = parsed.data;
+}): Promise<InviteResult> {
+  return prisma.$transaction((tx) =>
+    inviteOwnerTx(tx, { ...input, mandateId: null, now: input.now ?? new Date() }),
+  );
+}
+
+/**
+ * Кантората кани собственика на фирмата, която води по пълномощно (чакащо или действащо — не
+ * оттеглено). Правото (OWNER/ADMIN на кантората) се проверява в маршрута. Поканата не може да е за
+ * служител на кантората, а броят им за 24 часа е с таван (`invites.firmDailyLimit`) — пощата не е
+ * инструмент за масови писма.
+ */
+export async function inviteOwnerByFirm(
+  tx: Prisma.TransactionClient,
+  input: { firmId: string; clientId: string; email: string; actorId: string; now?: Date },
+): Promise<InviteResult> {
   const now = input.now ?? new Date();
-  const token = randomToken(32);
-  const expiresAt = new Date(now.getTime() + INVITE_TTL_MS);
-  return prisma.$transaction(async (tx) => {
-    await lockOrganization(tx, input.organizationId);
-    const org = await tx.organization.findUniqueOrThrow({
-      where: { id: input.organizationId },
-      select: { deletedAt: true },
-    });
-    if (org.deletedAt) throw new TransferError('notFound');
-    if ((await ownerCount(tx, input.organizationId)) > 0) throw new TransferError('hasOwner');
-    const replaced = await tx.transferInvite.updateMany({
-      where: { organizationId: input.organizationId, acceptedAt: null, revokedAt: null },
-      data: { revokedAt: now },
-    });
-    await tx.notification.updateMany({
-      where: { organizationId: input.organizationId, kind: 'transfer.invite', status: 'PENDING' },
-      data: { status: 'FAILED', lastError: 'Поканата е заменена с нова.' },
-    });
-    const invite = await tx.transferInvite.create({
-      data: {
-        organizationId: input.organizationId,
-        email,
-        tokenHash: sha256Hex(token),
-        createdById: input.actorId,
-        createdAt: now,
-        expiresAt,
-      },
-    });
-    await tx.notification.create({
-      data: {
-        organizationId: input.organizationId,
-        kind: 'transfer.invite',
-        toEmail: email,
-        payload: { inviteId: invite.id, tokenEnc: encryptInviteToken(token, invite.id) },
-      },
-    });
-    await audit(tx, {
-      actorId: input.actorId,
-      organizationId: input.organizationId,
-      action: 'organization.transfer.invited',
-      targetType: 'TransferInvite',
-      targetId: invite.id,
-      details: { replaced: replaced.count },
-    });
-    return { inviteId: invite.id, token, expiresAt };
+  const mandate = await tx.clientMandate.findUnique({
+    where: { firmId_clientId: { firmId: input.firmId, clientId: input.clientId } },
+    select: { id: true, status: true },
+  });
+  if (!mandate || mandate.status === 'REVOKED') throw new TransferError('notFound');
+  const email = EmailSchema.safeParse(input.email);
+  if (!email.success) throw new TransferError('invalidEmail');
+  if (await isFirmMember(tx, input.firmId, email.data)) throw new TransferError('firmMember');
+  const sent = await tx.transferInvite.count({
+    where: { mandate: { firmId: input.firmId }, createdAt: { gt: new Date(now.getTime() - DAY) } },
+  });
+  if (sent >= (await setting('invites.firmDailyLimit'))) throw new TransferError('rateLimited');
+  return inviteOwnerTx(tx, {
+    organizationId: input.clientId,
+    email: email.data,
+    actorId: input.actorId,
+    mandateId: mandate.id,
+    now,
   });
 }
 
@@ -133,158 +165,7 @@ export async function revokeTransferInvite(input: {
   });
 }
 
-export interface OpenInvite {
-  id: string;
-  email: string;
-  expiresAt: Date;
-  organization: { id: string; legalName: string; eik: string | null };
-  existingUser: boolean;
-}
-
-function isOpen(
-  invite: { acceptedAt: Date | null; revokedAt: Date | null; expiresAt: Date },
-  now: Date,
-) {
-  return !invite.acceptedAt && !invite.revokedAt && invite.expiresAt.getTime() > now.getTime();
-}
-
-/** Отворена покана по токена от връзката — иначе null (непознат, използван, отменен, изтекъл). */
-export async function findOpenInvite(token: string, now = new Date()): Promise<OpenInvite | null> {
-  if (!TOKEN.test(token)) return null;
-  const invite = await prisma.transferInvite.findUnique({
-    where: { tokenHash: sha256Hex(token) },
-    include: {
-      organization: { select: { id: true, legalName: true, eik: true, deletedAt: true } },
-    },
-  });
-  if (!invite || !isOpen(invite, now) || invite.organization.deletedAt) return null;
-  if ((await ownerCount(prisma, invite.organizationId)) > 0) return null;
-  const existingUser = (await prisma.user.count({ where: { email: invite.email } })) > 0;
-  const { deletedAt: _deleted, ...organization } = invite.organization;
-  return {
-    id: invite.id,
-    email: invite.email,
-    expiresAt: invite.expiresAt,
-    organization,
-    existingUser,
-  };
-}
-
-type Acceptor = { userId: string } | { name: string; password: string };
-
-/**
- * Приемане: само с имейла от поканата. Вписан човек — неговият профил; без вход — нов профил, ако няма
- * такъв с този имейл (иначе първо вход). Всичко в една транзакция със заключена фирма: поканата се
- * „заема“ с условен UPDATE — две едновременни приемания не минават и двете.
- */
-export async function acceptTransferInvite(input: {
-  token: string;
-  user: Acceptor;
-  now?: Date;
-}): Promise<{ userId: string; organizationId: string; created: boolean }> {
-  const now = input.now ?? new Date();
-  if (!TOKEN.test(input.token)) throw new TransferError('invalid');
-  const tokenHash = sha256Hex(input.token);
-  const pre = await prisma.transferInvite.findUnique({
-    where: { tokenHash },
-    select: { email: true },
-  });
-  if (!pre) throw new TransferError('invalid');
-
-  // Хешът на паролата е бавен (Argon2id) — смята се преди заключването на фирмата.
-  let newUser: { name: string; passwordHash: string } | null = null;
-  if ('password' in input.user) {
-    const name = input.user.name.trim();
-    if (name.length < 2 || name.length > 100) throw new TransferError('invalidName');
-    const problem = passwordProblem(input.user.password, [pre.email, name]);
-    if (problem) throw new TransferError(`password.${problem}`);
-    newUser = { name, passwordHash: await hashPassword(input.user.password) };
-  }
-
-  try {
-    return await prisma.$transaction(async (tx) => {
-      const invite = await tx.transferInvite.findUniqueOrThrow({ where: { tokenHash } });
-      await lockOrganization(tx, invite.organizationId);
-      const org = await tx.organization.findUniqueOrThrow({
-        where: { id: invite.organizationId },
-        select: { deletedAt: true },
-      });
-      if (!isOpen(invite, now) || org.deletedAt) throw new TransferError('invalid');
-      if ((await ownerCount(tx, invite.organizationId)) > 0) throw new TransferError('invalid');
-
-      let userId: string;
-      if (newUser) {
-        if (await tx.user.findUnique({ where: { email: invite.email }, select: { id: true } })) {
-          throw new TransferError('loginRequired');
-        }
-        const user = await tx.user.create({
-          data: {
-            email: invite.email,
-            name: newUser.name,
-            passwordHash: newUser.passwordHash,
-            emailVerifiedAt: now,
-          },
-        });
-        userId = user.id;
-      } else {
-        const id = 'userId' in input.user ? input.user.userId : '';
-        const user = await tx.user.findUnique({ where: { id } });
-        if (!user || user.disabledAt) throw new TransferError('invalid');
-        if (user.email !== invite.email) throw new TransferError('wrongEmail');
-        userId = user.id;
-        // Връзката от писмото доказва, че имейлът е негов.
-        if (!user.emailVerifiedAt) {
-          await tx.user.update({ where: { id: user.id }, data: { emailVerifiedAt: now } });
-        }
-      }
-
-      const claimed = await tx.transferInvite.updateMany({
-        where: { id: invite.id, acceptedAt: null, revokedAt: null, expiresAt: { gt: now } },
-        data: { acceptedAt: now, acceptedById: userId },
-      });
-      if (claimed.count !== 1) throw new TransferError('invalid');
-
-      await tx.membership.upsert({
-        where: { userId_organizationId: { userId, organizationId: invite.organizationId } },
-        create: { userId, organizationId: invite.organizationId, role: 'OWNER' },
-        update: { role: 'OWNER' },
-      });
-      // Фирмата, добавена от кантора, няма собствен план — получава безплатния, както при регистрация.
-      const active = await tx.subscription.findFirst({
-        where: { organizationId: invite.organizationId, status: 'ACTIVE' },
-        select: { id: true },
-      });
-      if (!active) {
-        const periodEnd = new Date(now);
-        periodEnd.setUTCFullYear(periodEnd.getUTCFullYear() + 100);
-        await tx.subscription.create({
-          data: {
-            organizationId: invite.organizationId,
-            planCode: 'free',
-            currentPeriodStart: now,
-            currentPeriodEnd: periodEnd,
-          },
-        });
-      }
-      await audit(tx, {
-        actorId: userId,
-        organizationId: invite.organizationId,
-        action: 'organization.transfer.accepted',
-        targetType: 'TransferInvite',
-        targetId: invite.id,
-        details: { newAccount: newUser !== null },
-      });
-      return { userId, organizationId: invite.organizationId, created: newUser !== null };
-    });
-  } catch (error) {
-    // Две покани (за различни фирми) към един нов имейл, приети едновременно: заключването е по фирма,
-    // затова решава уникалният индекс — вторият вече има профил и трябва да влезе.
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-      throw new TransferError('loginRequired');
-    }
-    throw error;
-  }
-}
+const openWhere = (now: Date) => ({ acceptedAt: null, revokedAt: null, expiresAt: { gt: now } });
 
 /** За картата на фирмата в мастър панела: има ли собственик и чакаща покана. */
 export async function transferStatus(organizationId: string): Promise<{
@@ -294,15 +175,53 @@ export async function transferStatus(organizationId: string): Promise<{
   const [owners, invite] = await Promise.all([
     ownerCount(prisma, organizationId),
     prisma.transferInvite.findFirst({
-      where: {
-        organizationId,
-        acceptedAt: null,
-        revokedAt: null,
-        expiresAt: { gt: new Date() },
-      },
+      where: { organizationId, ...openWhere(new Date()) },
       orderBy: { createdAt: 'desc' },
       select: { id: true, email: true, expiresAt: true },
     }),
   ]);
   return { hasOwner: owners > 0, openInvite: invite };
+}
+
+export interface ClientOwnerStatus {
+  hasOwner: boolean;
+  /** Чакаща покана; имейлът се вижда само ако е от същата кантора. */
+  invite: { email: string | null; expiresAt: Date } | null;
+}
+
+/** За началната страница на кантората: кой клиент има собственик и кой чака покана. */
+export async function clientOwnerStatus(
+  firmIds: readonly string[],
+  clientIds: readonly string[],
+): Promise<Map<string, ClientOwnerStatus>> {
+  const [owners, invites] = await Promise.all([
+    prisma.membership.findMany({
+      where: { organizationId: { in: [...clientIds] }, role: 'OWNER' },
+      select: { organizationId: true },
+    }),
+    prisma.transferInvite.findMany({
+      where: { organizationId: { in: [...clientIds] }, ...openWhere(new Date()) },
+      select: {
+        organizationId: true,
+        email: true,
+        expiresAt: true,
+        mandate: { select: { firmId: true } },
+      },
+    }),
+  ]);
+  const owned = new Set(owners.map((o) => o.organizationId));
+  const result = new Map<string, ClientOwnerStatus>();
+  for (const clientId of clientIds) {
+    const invite = invites.find((i) => i.organizationId === clientId);
+    result.set(clientId, {
+      hasOwner: owned.has(clientId),
+      invite: invite
+        ? {
+            email: invite.mandate && firmIds.includes(invite.mandate.firmId) ? invite.email : null,
+            expiresAt: invite.expiresAt,
+          }
+        : null,
+    });
+  }
+  return result;
 }

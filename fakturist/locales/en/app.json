@@ -16,6 +16,27 @@
       "PENDING": "awaiting confirmation",
       "ACTIVE": "active",
       "REVOKED": "revoked"
+    },
+    "owner": "Owner",
+    "hasOwner": "Has a profile",
+    "invited": "Invited — until {date}",
+    "invitedEmail": "Invited {email} — until {date}",
+    "ownerPlaceholder": "owner’s email",
+    "inviteOwner": "Invite the owner",
+    "reinvite": "Invite again",
+    "added": {
+      "added": "The company is added. The mandate waits for confirmation by the owner or by Fakturist.",
+      "invited": "The company is added and the invitation to the owner is sent. The mandate becomes active once they confirm it.",
+      "hasOwner": "The company already has an owner in Fakturist — the mandate waits for their confirmation."
+    },
+    "invite": {
+      "ok": "The invitation to the owner is sent.",
+      "invalidEmail": "The email is invalid.",
+      "firmMember": "This is an email of the firm’s employee — the invitation is for the company’s owner.",
+      "rateLimited": "The firm’s daily invitation limit is reached. Try again tomorrow.",
+      "hasOwner": "The company already has an owner — the mandate waits for their confirmation.",
+      "notFound": "There is no active or pending mandate for this company.",
+      "invalid": "The invitation could not be sent."
     }
   },
   "roles": {
@@ -121,7 +142,17 @@
     "help": "The firm issues on behalf of the company under a written authorisation (Art. 113(7) of the VAT Act). The authorisation takes effect once the company's owner (if it has an account) or Fakturist confirms it after checking the document.",
     "documentRef": "Authorisation — number and date",
     "validFrom": "Valid from",
-    "save": "Save"
+    "save": "Save",
+    "ownerEmail": "Company owner’s email",
+    "ownerEmailHelp": "Optional. The owner gets an invitation and takes over ownership; with one tick they also confirm your mandate. Until then it waits.",
+    "errors": {
+      "invalidEmail": "The email is invalid.",
+      "firmMember": "This is an email of the firm’s employee — the invitation is for the company’s owner.",
+      "rateLimited": "The firm’s daily invitation limit is reached. Try again tomorrow.",
+      "hasOwner": "The company already has an owner — the mandate waits for their confirmation.",
+      "notFound": "There is no active or pending mandate for this company.",
+      "invalid": "The invitation could not be sent."
+    }
   },
   "security": {
     "title": "Security",

@@ -252,7 +252,7 @@ export const ADMIN_RESOURCES: AdminResource[] = [
     slug: 'transfers',
     group: 'accounts',
     label: { bg: 'Покани за прехвърляне', en: 'Transfer invitations' },
-    columns: ['organizationId', 'createdAt', 'expiresAt', 'acceptedAt', 'revokedAt'],
+    columns: ['organizationId', 'mandateId', 'createdAt', 'expiresAt', 'acceptedAt', 'revokedAt'],
     search: ['organizationId'],
     hidden: ['tokenHash'],
     orderBy: { createdAt: 'desc' },

@@ -560,3 +560,48 @@ td.actions {
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+
+/* Поканата към собственика в таблицата с клиенти на кантората: поле и бутон на един ред, на телефон — един под друг. */
+.invite-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  margin: 0;
+}
+.invite-row input[type='email'] {
+  flex: 1 1 12rem;
+  width: auto;
+}
+
+/* Таблица, която на телефон става карти: всеки ред е блок, а заглавието на колоната е над стойността. */
+@media (max-width: 40rem) {
+  .stack-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  .stack-table,
+  .stack-table tbody,
+  .stack-table tr,
+  .stack-table td {
+    display: block;
+    width: 100%;
+  }
+  .stack-table tr {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .stack-table td {
+    border: 0;
+    padding: 0.25rem 0.75rem;
+  }
+  .stack-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.78rem;
+    color: var(--ink-2);
+  }
+}

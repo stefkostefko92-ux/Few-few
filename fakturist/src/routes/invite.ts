@@ -82,6 +82,7 @@ export function inviteRouter(): Router {
         const result = await acceptTransferInvite({
           token,
           user: { userId: req.principal!.user.id },
+          confirmMandate: body['confirmMandate'] === 'on',
         });
         return res.redirect(303, `/app/o/${result.organizationId}`);
       }
@@ -97,6 +98,7 @@ export function inviteRouter(): Router {
       const result = await acceptTransferInvite({
         token,
         user: { name: parsed.data.name, password: parsed.data.password },
+        confirmMandate: body['confirmMandate'] === 'on',
       });
       await startSession(res, { id: result.userId, platformRole: 'NONE' }, true);
       res.redirect(303, `/app/o/${result.organizationId}`);
@@ -105,6 +107,10 @@ export function inviteRouter(): Router {
       if (error.code === 'invalid' || error.code === 'notFound') throw new HttpError(404);
       if (error.code === 'loginRequired')
         return render(res, 409, { invite, token, state: 'login' });
+      // Служител на поканилата кантора не става собственик на клиента ѝ.
+      if (error.code === 'firmMember') {
+        return render(res, 403, { invite, token, state, errors: { form: 'firmMember' }, name });
+      }
       if (error.code === 'wrongEmail') {
         return render(res, 403, { invite, token, state: 'wrongAccount' });
       }

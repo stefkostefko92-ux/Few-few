@@ -82,6 +82,8 @@ export function inboxReceivedMail(data: InboxMailData): {
 export interface InviteMailData {
   companyName: string;
   companyEik: string | null;
+  /** Кантората, която кани (по пълномощно); null — поканата е от Фактурист. */
+  firmName?: string | null;
   link: string;
   expires: string;
   signature: string;
@@ -97,7 +99,11 @@ export function transferInviteMail(data: InviteMailData): {
   const company = data.companyEik
     ? `${data.companyName} (ЕИК ${data.companyEik})`
     : data.companyName;
-  const intro = `${company} е добавена във Фактурист от счетоводната си кантора. Поканени сте да поемете профила ѝ като собственик: ще виждате документите, издадени от нейно име, и ще решавате кой има достъп до нея.`;
+  const by = data.firmName ? `счетоводната кантора ${data.firmName}` : 'счетоводната си кантора';
+  const mandate = data.firmName
+    ? ` При приемането можете да потвърдите и пълномощното на ${data.firmName} — тя ще издава документи от името на фирмата, но собствеността и достъпът остават ваши.`
+    : '';
+  const intro = `${company} е добавена във Фактурист от ${by}. Поканени сте да поемете профила ѝ като собственик: ще виждате документите, издадени от нейно име, и ще решавате кой има достъп до нея.${mandate}`;
   const validity = `Връзката важи до ${data.expires} и се използва веднъж.`;
   const ignore = 'Ако не очаквате това писмо, не правете нищо — без приемане нищо не се променя.';
   const text = [

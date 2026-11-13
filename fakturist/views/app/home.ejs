@@ -1,5 +1,7 @@
 <%- include('../partials/app-head', { title: t('app.home.title') }) %>
 <h1><%= t('app.home.title') %></h1>
+<% if (added) { %><p class="ok" role="status"><%= tOr('app.home.added.' + added, t('app.home.added.added')) %></p><% } %>
+<% if (invited) { %><p class="<%= invited === 'ok' ? 'ok' : 'error' %>" role="<%= invited === 'ok' ? 'status' : 'alert' %>"><%= tOr('app.home.invite.' + invited, t('app.client.errors.invalid')) %></p><% } %>
 <section>
   <h2><%= t('app.home.own') %></h2>
   <ul class="cards">
@@ -19,14 +21,29 @@
 <section>
   <h2><%= t('app.home.clients') %></h2>
   <% if (clients.length === 0) { %><p class="muted"><%= t('app.home.noClients') %></p><% } else { %>
-  <div class="table-wrap"><table>
-    <thead><tr><th scope="col"><%= t('auth.legalName') %></th><th scope="col"><%= t('auth.eik') %></th><th scope="col"><%= t('app.home.mandate') %></th></tr></thead>
+  <div class="table-wrap"><table class="stack-table">
+    <thead><tr><th scope="col"><%= t('auth.legalName') %></th><th scope="col"><%= t('auth.eik') %></th><th scope="col"><%= t('app.home.mandate') %></th><th scope="col"><%= t('app.home.owner') %></th></tr></thead>
     <tbody>
     <% clients.forEach((m) => { %>
       <tr>
-        <td><% if (m.status === 'ACTIVE') { %><a href="/app/o/<%= m.client.id %>"><%= m.client.legalName %></a><% } else { %><%= m.client.legalName %><% } %></td>
-        <td class="mono"><%= m.client.eik %></td>
-        <td><span class="tag tag-<%= m.status.toLowerCase() %>"><%= t('app.home.status.' + m.status) %></span> <span class="muted"><%= m.documentRef %></span></td>
+        <td data-label="<%= t('auth.legalName') %>"><% if (m.status === 'ACTIVE') { %><a href="/app/o/<%= m.client.id %>"><%= m.client.legalName %></a><% } else { %><%= m.client.legalName %><% } %></td>
+        <td class="mono" data-label="<%= t('auth.eik') %>"><%= m.client.eik %></td>
+        <td data-label="<%= t('app.home.mandate') %>"><span class="tag tag-<%= m.status.toLowerCase() %>"><%= t('app.home.status.' + m.status) %></span> <span class="muted"><%= m.documentRef %></span></td>
+        <td data-label="<%= t('app.home.owner') %>">
+          <% if (m.owner && m.owner.hasOwner) { %>
+            <span class="tag tag-active"><%= t('app.home.hasOwner') %></span>
+          <% } else { %>
+            <% if (m.owner && m.owner.invite) { %><p class="muted"><%= m.owner.invite.email ? t('app.home.invitedEmail', { email: m.owner.invite.email, date: m.owner.invite.expiresAt.toISOString().slice(0, 10) }) : t('app.home.invited', { date: m.owner.invite.expiresAt.toISOString().slice(0, 10) }) %></p><% } %>
+            <% if (m.status !== 'REVOKED' && canInvite.includes(m.firmId)) { %>
+              <form method="post" action="/app/o/<%= m.firmId %>/klienti/<%= m.id %>/pokana" class="invite-row">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <label class="sr-only" for="owner-<%= m.id %>"><%= t('app.client.ownerEmail') %></label>
+                <input type="email" id="owner-<%= m.id %>" name="email" required autocomplete="off" spellcheck="false" placeholder="<%= t('app.home.ownerPlaceholder') %>">
+                <button type="submit" class="button-secondary"><%= m.owner && m.owner.invite ? t('app.home.reinvite') : t('app.home.inviteOwner') %></button>
+              </form>
+            <% } %>
+          <% } %>
+        </td>
       </tr>
     <% }) %>
     </tbody>

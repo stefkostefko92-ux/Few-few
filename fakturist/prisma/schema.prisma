@@ -193,21 +193,23 @@ model Membership {
 
 /// Пълномощното на кантора да издава от името на фирма-клиент (чл. 113, ал. 7 ЗДДС — писмено упълномощаване).
 model ClientMandate {
-  id          String        @id @default(cuid())
+  id          String           @id @default(cuid())
   firmId      String
-  firm        Organization  @relation("Firm", fields: [firmId], references: [id], onDelete: Cascade)
+  firm        Organization     @relation("Firm", fields: [firmId], references: [id], onDelete: Cascade)
   clientId    String
-  client      Organization  @relation("Client", fields: [clientId], references: [id], onDelete: Cascade)
-  status      MandateStatus @default(PENDING)
+  client      Organization     @relation("Client", fields: [clientId], references: [id], onDelete: Cascade)
+  status      MandateStatus    @default(PENDING)
   /// Номер и дата на писменото пълномощно — пазят се като доказателство при проверка.
   documentRef String
   validFrom   DateTime
   validTo     DateTime?
   createdById String?
-  createdBy   User?         @relation(fields: [createdById], references: [id], onDelete: SetNull)
-  createdAt   DateTime      @default(now())
+  createdBy   User?            @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime         @default(now())
   revokedAt   DateTime?
   documents   Document[]
+  /// Поканите към собственика, изпратени от кантората по това пълномощно.
+  invites     TransferInvite[]
 
   @@unique([firmId, clientId])
   @@index([clientId])
@@ -536,22 +538,27 @@ model Integration {
 /// Прехвърлянето на фирма, добавена от кантора, към собственика ѝ (src/accounts/transfer.ts). Мастърът
 /// изпраща еднократна покана до имейла на собственика; в базата е само SHA-256 на токена.
 model TransferInvite {
-  id             String       @id @default(cuid())
+  id             String         @id @default(cuid())
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   /// Имейлът, с който поканата се приема (малки букви).
   email          String
-  tokenHash      String       @unique
+  tokenHash      String         @unique
   createdById    String?
-  createdBy      User?        @relation("InviteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  createdAt      DateTime     @default(now())
+  createdBy      User?          @relation("InviteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt      DateTime       @default(now())
   expiresAt      DateTime
   acceptedAt     DateTime?
   acceptedById   String?
-  acceptedBy     User?        @relation("InviteAcceptedBy", fields: [acceptedById], references: [id], onDelete: SetNull)
+  acceptedBy     User?          @relation("InviteAcceptedBy", fields: [acceptedById], references: [id], onDelete: SetNull)
   revokedAt      DateTime?
+  /// Поканата е от кантората по това пълномощно (null — от мастъра). Приелият я може да потвърди
+  /// пълномощното с една отметка.
+  mandateId      String?
+  mandate        ClientMandate? @relation(fields: [mandateId], references: [id], onDelete: SetNull)
 
   @@index([organizationId])
   @@index([createdById])
   @@index([acceptedById])
+  @@index([mandateId])
 }
