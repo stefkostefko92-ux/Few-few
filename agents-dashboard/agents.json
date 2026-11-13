@@ -1234,7 +1234,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 659
+        "lessons": 660
       },
       "evolution": [
         {
@@ -2118,9 +2118,20 @@
           "date": "2026-11-13",
           "event": "v59.9 — учене",
           "detail": "Научи: Когато нов документ заменя стар (анулиране, замяна), записите, от които се смята състоя… (+1 още)"
+        },
+        {
+          "version": "60.0.0",
+          "date": "2026-11-13",
+          "event": "v60.0 — учене",
+          "detail": "Научи: В medqr паролата и 2FA ползват общ брояч failed_attempts, а /login вика resetAttempts п…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „В medqr паролата и 2FA ползват общ брояч failed_attempts, а /login вика resetAttempts п…\""
+        },
         {
           "date": "2026-11-13",
           "type": "learning",
