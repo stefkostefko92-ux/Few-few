@@ -43,9 +43,11 @@ function storeCookies(res) {
 const cookieHeader = () => [...jar].map(([k, v]) => `${k}=${v}`).join('; ');
 const csrf = () => jar.get('csrf');
 
-async function req(path, { method = 'GET', body, csrfToken } = {}) {
+async function req(path, { method = 'GET', body, csrfToken, ip } = {}) {
   // Реален браузър (не link-preview бот) — иначе /e/:token не известява близкия.
   const headers = { 'user-agent': 'Mozilla/5.0 (test-browser)' };
+  // ip: симулира заявки от различни адреси (разпределен нападател) — IP лимитът не пречи.
+  if (ip) headers['x-forwarded-for'] = ip;
   if (jar.size) headers.cookie = cookieHeader();
   let payload;
   if (body) {
@@ -344,7 +346,7 @@ try {
   assert.equal((await locateReq()).status, 403, 'locate без PIN е отказан при защитен профил');
   const pinOk = await postPin('135790');
   assert.equal(pinOk.status, 200, 'верният PIN отваря профила');
-  const proof = (pinOk.headers.getSetCookie().find((c) => c.startsWith('pinok=')) || '').split(
+  const proof = (pinOk.headers.getSetCookie().find((c) => c.startsWith('pinok_')) || '').split(
     ';'
   )[0];
   assert.ok(proof, 'издадена е бисквитка „pinok“');
@@ -458,6 +460,44 @@ try {
   r = await req('/2fa', { method: 'POST', body: { code: codes[0] } });
   assert.equal(r.status, 401);
   ok('резервен код работи еднократно');
+
+  // 18б. 2FA заключването не се нулира с повторен вход и не се изпреварва с паралелни опити
+  const unlock = () =>
+    db
+      .prepare('UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = ?')
+      .run(user.id);
+  unlock();
+  for (let i = 0; i < 3; i++) {
+    await req('/logout', { method: 'POST', body: {}, ip: `10.0.${i}.1` });
+    await req('/login', {
+      method: 'POST',
+      body: { email: 'ivan@test.bg', password },
+      ip: `10.0.${i}.2`,
+    });
+    await req('/2fa', { method: 'POST', body: { code: '000000' }, ip: `10.0.${i}.3` });
+    await req('/2fa', { method: 'POST', body: { code: '000001' }, ip: `10.0.${i}.4` });
+  }
+  r = await req('/2fa', {
+    method: 'POST',
+    body: { code: authenticator.generate(secret) },
+    ip: '10.0.9.9',
+  });
+  assert.equal(r.status, 429, 'повторният вход с паролата не нулира 2FA заключването');
+  unlock();
+  await req('/login', {
+    method: 'POST',
+    body: { email: 'ivan@test.bg', password },
+    ip: '10.1.0.1',
+  });
+  const burst2fa = await Promise.all(
+    Array.from({ length: 20 }, (_, i) =>
+      req('/2fa', { method: 'POST', body: { code: String(100000 + i) }, ip: `10.2.0.${i + 1}` })
+    )
+  );
+  const locked429 = burst2fa.filter((x) => x.status === 429).length;
+  assert.ok(locked429 >= 15, `паралелни 2FA опити се заключват (429: ${locked429}/20)`);
+  unlock();
+  ok('2FA заключването издържа повторен вход и паралелни опити');
 
   // 19. Целостта на одит веригата
   assert.equal(verifyAuditChain().ok, true);

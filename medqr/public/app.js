@@ -411,10 +411,13 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           setStatus(notified ? STR.sos_sent : STR.sos_not_sent);
           if (phone) {
+            // Само вярното за слуха/говора (от профила) — без „Аз съм глух/а“ за всеки.
+            const deaf = sos.getAttribute('data-hearing') === '1';
+            const mute = sos.getAttribute('data-speech') === '1';
             const smsText =
               docLang === 'en'
-                ? `Emergency! I need help. I am deaf.${maps ? ' Location: ' + maps : ''}`
-                : `Спешно! Нуждая се от помощ. Аз съм глух/а.${maps ? ' Локация: ' + maps : ''}`;
+                ? `Emergency! I need help.${deaf ? ' I cannot hear well — please text me.' : ''}${mute ? ' I cannot speak.' : ''}${maps ? ' Location: ' + maps : ''}`
+                : `Спешно! Нуждая се от помощ.${deaf ? ' Не чувам добре — пишете ми.' : ''}${mute ? ' Не мога да говоря.' : ''}${maps ? ' Локация: ' + maps : ''}`;
             const body = encodeURIComponent(smsText);
             window.location.href = `sms:${phone}?body=${body}`;
           }

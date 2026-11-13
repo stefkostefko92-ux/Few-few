@@ -255,8 +255,8 @@ app.get('/privacy', (req, res) => {
 app.get('/cookies', (req, res) => {
   publicPage(
     res,
-    'Политика за бисквитки на MedQR: използваме само строго необходими бисквитки за вход и сигурност. Без проследяване, реклами или трети страни.',
-    'MedQR cookie policy: we use only strictly necessary cookies for sign-in and security. No tracking, ads or third parties.'
+    'Политика за бисквитки на MedQR: използваме само строго необходими бисквитки за вход и сигурност. Без проследяване, реклами или бисквитки на трети страни.',
+    'MedQR cookie policy: we use only strictly necessary cookies for sign-in and security. No tracking, ads or third-party cookies.'
   );
   res.render('cookies', { user: req.user });
 });

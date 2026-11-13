@@ -104,7 +104,18 @@ self.addEventListener('fetch', (e) => {
       (async () => {
         try {
           const res = await fetch(request);
-          if (res.ok) cachePut(e, cacheName, request, res.clone());
+          if (res.ok && !res.redirected) cachePut(e, cacheName, request, res.clone());
+          else if (
+            cacheName === PRIVATE &&
+            (res.type === 'opaqueredirect' ||
+              res.redirected ||
+              res.status === 401 ||
+              res.status === 403)
+          ) {
+            // Сесията вече не важи (изтекла, отнета отдалечено, нова парола) → личното
+            // офлайн копие (алергии, лекарства) не бива да остава на устройството.
+            e.waitUntil(caches.delete(PRIVATE));
+          }
           return res;
         } catch {
           const hit = await caches.match(request);

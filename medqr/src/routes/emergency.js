@@ -25,15 +25,16 @@ function pinLocked(profile) {
 
 // Доказателство „PIN е въведен“: подписана бисквитка, вързана към профила, срока и
 // ТЕКУЩИЯ PIN хеш (смяна на PIN я обезсилва). Нужна е за /locate при защитен профил —
-// иначе токенът сам би заобикалял PIN-а.
-const PIN_PROOF_COOKIE = 'pinok';
+// иначе токенът сам би заобикалял PIN-а. Името е по профил: спасител с двама пострадали
+// не губи доказателството за първия, когато въведе PIN-а на втория.
+const pinProofCookie = (profile) => `pinok_${profile.id}`;
 const PIN_PROOF_TTL_MS = 2 * 60 * 60 * 1000;
 const pinProofMac = (profile, exp) =>
   mac(`pinok|${profile.id}|${exp}|${String(profile.pin_hash).slice(-24)}`);
 
 function issuePinProof(res, profile) {
   const exp = Date.now() + PIN_PROOF_TTL_MS;
-  res.cookie(PIN_PROOF_COOKIE, `${profile.id}.${exp}.${pinProofMac(profile, exp)}`, {
+  res.cookie(pinProofCookie(profile), `${profile.id}.${exp}.${pinProofMac(profile, exp)}`, {
     httpOnly: true,
     sameSite: 'strict',
     secure: process.env.NODE_ENV === 'production',
@@ -43,7 +44,7 @@ function issuePinProof(res, profile) {
 }
 
 function hasPinProof(req, profile) {
-  const [id, exp, sig] = String(req.cookies?.[PIN_PROOF_COOKIE] || '').split('.');
+  const [id, exp, sig] = String(req.cookies?.[pinProofCookie(profile)] || '').split('.');
   if (!sig || Number(id) !== profile.id || !(Number(exp) > Date.now())) return false;
   return safeEqual(sig, pinProofMac(profile, exp));
 }
