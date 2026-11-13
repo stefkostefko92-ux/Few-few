@@ -516,13 +516,11 @@ export var INSTRUMENT_CSS = [
   // coverage readout: over the plot, under it on phones
   ".cs-cov-hud{position:absolute;top:12px;left:14px}",
   "@media(max-width:600px){.cs-cov-hud{position:static;padding:10px 12px 12px;border-top:1px solid rgba(" + CR + ",.12)}}",
-  // hero: the mark tilts toward the pointer like an object on a turntable
-  "@media(min-width:861px) and (hover:hover){.cs-hero-art{transform:perspective(1100px) rotateX(var(--hrx,0deg)) rotateY(var(--hry,0deg));transition:transform .9s " + EASE + "}}",
   ".cs-hero-coords .cs-live{display:inline-block;width:5px;height:5px;border-radius:50%;background:" + C + ";margin-right:6px;vertical-align:1px;animation:csLive 2.2s ease-in-out 2}",
   "@keyframes csLive{0%,100%{opacity:1}50%{opacity:.25}}",
   // nav status LED: steady; one "reading taken" pulse each time the section under the reading line changes
   // (it used to blink forever — WCAG 2.2.2 wants auto-blinking content to stop within 5 s)
   ".cs-led{animation:csLed .9s " + EASE + " 1}",
   "@keyframes csLed{0%{opacity:.2;box-shadow:0 0 0 0 rgba(" + CR + ",.7)}40%{opacity:1}100%{opacity:1;box-shadow:0 0 0 7px rgba(" + CR + ",0)}}",
-  "@media(prefers-reduced-motion:reduce){.cs-work-card,.cs-hero-art{transform:none!important}.cs-wa::before,.cs-wa::after,.cs-prod-card::before{animation:none!important}}"
+  "@media(prefers-reduced-motion:reduce){.cs-work-card{transform:none!important}.cs-wa::before,.cs-wa::after,.cs-prod-card::before{animation:none!important}}"
 ].join("");

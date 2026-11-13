@@ -55,14 +55,17 @@ a{color:var(--cs-c)}
 .hero-s{position:relative;isolation:isolate;overflow:hidden;background-color:var(--cs-bg)}
 @media(min-width:761px){
   /* кадърът е 4:1, широк колкото прозореца, но най-много 1560px, и е закотвен вдясно; --by го центрира по
-     височина в видимата част под навигацията (66px). Двата градиента са със същия размер и място като
-     картината и скриват левия и долния ѝ ръб, когато лентата е по-широка или по-висока от нея. */
+     височина в видимата част под навигацията (66px). ::after е със същия размер и място като картината:
+     двата му градиента скриват левия и долния ѝ ръб, когато лентата е по-широка или по-висока от нея.
+     .cs-bench е рамката на „живата“ сцена (cs-live.js) — точно върху картината, под градиентите. */
   .hero-s{--bw:min(100vw,1560px);--bh:calc(var(--bw)/4);--by:calc(200px - var(--bh)*.49);min-height:300px;display:flex;align-items:center;
-    background:linear-gradient(90deg,var(--cs-bg) 0,rgba(10,12,14,0) 30%) right var(--by)/var(--bw) var(--bh) no-repeat,
-      linear-gradient(0deg,var(--cs-bg) 0,rgba(10,12,14,0) 24%) right var(--by)/var(--bw) var(--bh) no-repeat,
-      url(/brand/bench-1600.webp) right var(--by)/var(--bw) var(--bh) no-repeat,var(--cs-bg)}
+    background:url(/brand/bench-1600.webp) right var(--by)/var(--bw) var(--bh) no-repeat,var(--cs-bg)}
+  .hero-s::after,.cs-bench{position:absolute;right:0;top:var(--by);width:var(--bw);height:var(--bh);pointer-events:none}
+  .hero-s::after{content:"";z-index:-1;background:linear-gradient(90deg,var(--cs-bg) 0,rgba(10,12,14,0) 30%),linear-gradient(0deg,var(--cs-bg) 0,rgba(10,12,14,0) 24%)}
+  .cs-bench{z-index:-2}
   .hero-s>.w{width:100%}
 }
+@media(max-width:760px){.cs-bench{display:none}}
 .hero-s::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
   background:linear-gradient(90deg,var(--cs-bg) 0,rgba(10,12,14,.9) 28%,rgba(10,12,14,.5) 55%,rgba(10,12,14,0) 78%)}
 /* footer */

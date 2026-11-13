@@ -8,6 +8,7 @@
 Пускане:  blender -b -P header.py -- --out DIR [--w 3200 --h 800 --samples 512]
 """
 import argparse
+import json
 import math
 import os
 import sys
@@ -22,6 +23,7 @@ import cslib as L  # noqa: E402
 PART_AT = Vector((4.6, 0.6, 0.0))
 PART_ROT = math.radians(24)
 PX, PY, PZ = 5.4, 3.8, 1.7  # размери на детайла
+SWEEPS = 5  # брой положения на подвижната светлина
 
 
 def part_point(x, y, z):
@@ -156,25 +158,55 @@ def main(a):
 
     # студио: голям заден-горен софтбокс осветява плетката и горните повърхности; далечен нисък дава
     # едва доловим блясък по лака отдясно; ивица отляво рисува ръбовете; циан контра отзад
-    L.softbox("Sky", (10, 34, 30), (4, 0, 0), size=(50, 26), strength=4.6, edge=0.7, grad=(0.85, 0))
-    L.softbox("Key", (11, 15, 17), (4.6, 0.6, 1.0), size=(11, 8), strength=13.0, edge=0.6)
-    L.softbox("Horizon", (30, 120, 44), (4, 0, 0), size=(80, 16), strength=1.3, edge=0.8, grad=(0.95, 0))
-    L.softbox("StripL", (-17, 2, 7), (4, 0, 0.8), size=(1.6, 15), strength=20.0)
-    L.softbox("Front", (-4, -44, 15), (3, 0, 0.5), size=(44, 18), strength=9.5, edge=0.7)
-    L.softbox("RimC", (21, 20, 15.0), (5, 0, 1.0), size=(9, 5), strength=11.0, color=L.CYAN, edge=0.8)
-    bpy.context.scene.world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.004, 0.005, 0.006, 1)
+    base = [
+        L.softbox("Sky", (10, 34, 30), (4, 0, 0), size=(50, 26), strength=4.6, edge=0.7, grad=(0.85, 0)),
+        L.softbox("Key", (11, 15, 17), (4.6, 0.6, 1.0), size=(11, 8), strength=13.0, edge=0.6),
+        L.softbox("Horizon", (30, 120, 44), (4, 0, 0), size=(80, 16), strength=1.3, edge=0.8, grad=(0.95, 0)),
+        L.softbox("StripL", (-17, 2, 7), (4, 0, 0.8), size=(1.6, 15), strength=20.0),
+        L.softbox("Front", (-4, -44, 15), (3, 0, 0.5), size=(44, 18), strength=9.5, edge=0.7),
+        L.softbox("RimC", (21, 20, 15.0), (5, 0, 1.0), size=(9, 5), strength=11.0, color=L.CYAN, edge=0.8),
+    ]
+    world = bpy.context.scene.world
+    world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.004, 0.005, 0.006, 1)
     # лазерен профилен скенер: вертикален лист светлина. Линията върви по плочата, изкачва се отвесно по
-    # лявата стена, пресича върха (хлътва в прореза и в отвора — оттам се чете профилът) и изчезва зад детайла
-    # (минава покрай прореза, през зенкера на предния ляв болт и през отвора с втулката — там линията се
-    # „чупи“ и показва дълбочината; от средата към краищата избледнява, с лек спекъл)
+    # лявата стена, пресича върха (минава покрай прореза, през зенкера на предния ляв болт и през отвора
+    # с втулката — там се „чупи“ и показва дълбочината); от средата към краищата избледнява, с лек спекъл
     q = part_point(-0.4, -0.75, 0.0)
     d = Vector((0.8, 0.6, 0.0))
-    L.laser_line("Laser", (q.x - d.x * 40, q.y - d.y * 40, 45.0), (q.x, q.y, 0.0), power=a.laser, width=0.0008,
-                 spread=62.0, blend=1.0, speckle=0.35)
+    src = Vector((q.x - d.x * 40, q.y - d.y * 40, 45.0))
+    spot = L.laser_line("Laser", src, (q.x, q.y, 0.0), power=a.laser, width=0.0008, spread=62.0, blend=1.0, speckle=0.35)
     # детайлът стои в дясната третина на кадъра: заглавието на страницата е отляво и не бива да го застъпва
-    L.camera((-15.9, -60.7, 23.7), (-3.9, 0.95, 0.8), lens=85, fstop=a.fstop, focus=tip)
-    L.post(glare=0.14, threshold=1.8, size=7, dispersion=0.008, vignette=0.5)
-    L.render(os.path.join(a.out, a.name), (a.w, a.h), a.samples, a.border)
+    cam = L.camera((-15.9, -60.7, 23.7), (-3.9, 0.95, 0.8), lens=85, fstop=a.fstop, focus=tip)
+    if not a.live:
+        L.post(glare=0.14, threshold=1.8, size=7, dispersion=0.008, vignette=0.5)
+        L.render(os.path.join(a.out, a.name), (a.w, a.h), a.samples, a.border)
+        return
+    # ── „жива“ версия: същият кадър, разделен на светлинни слоеве за public/js/cs-live.js ──
+    for ob in base:
+        L.group(ob, "base")
+    L.group(world, "base")
+    L.group(spot, "spot")
+    # подвижната светлина: пет тесни софтбокса в равнината на „Sky“, от ляво надясно; в браузъра
+    # съседните се преливат един в друг и отражението се плъзга по плетката и фаските
+    sweeps = {}
+    for k in range(SWEEPS):
+        x = -34.0 + k * 11.0
+        # малко пред „Sky“ и пропускливи: добавят светлина, без да му я отнемат
+        L.group(L.softbox(f"Sweep{k}", (x, 33.2, 29.3), (x - 6.0, 0, 0), size=(17, 26), strength=13.0, edge=0.85, through=True), f"sw{k}")
+        sweeps[f"sw{k}"] = ([f"sw{k}"], False)
+    # „потопът“ на лазера: успоредна светлина по посоката на проектора (в равнината на листа)
+    L.group(L.sun("Flood", (Vector((q.x, q.y, 0.0)) - src), strength=a.flood), "flood")
+    os.makedirs(a.live, exist_ok=True)
+    L.live_passes(a.live, ["base", "spot"], {"base": (["base"], True), "flood": (["flood"], False), **sweeps}, raw=bool(a.border))
+    L.render(os.path.join(a.live, "_combined.png"), (a.w, a.h), a.samples, a.border)
+    if a.border:
+        return
+    n = Vector((-d.y, d.x, 0.0))  # нормалата на лазерния лист: по нея се мести линията
+    s_min, s_max = L.render_position(a.live, (a.w, a.h), n)
+    meta = {"w": a.w, "h": a.h, "sweeps": SWEEPS, "sMin": s_min, "sMax": s_max, "s0": float(n.dot(Vector((q.x, q.y, 0.0))))}
+    with open(os.path.join(a.live, "meta.json"), "w", encoding="utf8") as f:
+        json.dump(meta, f, indent=1)
+    print("live:", meta, flush=True)
 
 
 if __name__ == "__main__":
@@ -188,6 +220,8 @@ if __name__ == "__main__":
     ap.add_argument("--exposure", type=float, default=0.0)
     ap.add_argument("--laser", type=float, default=7.0e7)
     ap.add_argument("--border", type=float, nargs=4, default=None)
+    ap.add_argument("--live", default="", help="папка за светлинните слоеве на живата версия")
+    ap.add_argument("--flood", type=float, default=28.0)
     # blender -b -P header.py -- --out DIR → аргументите са след „--“; като bpy модул → всички
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else (sys.argv[1:] if sys.argv[0].endswith(".py") else [])
     A = ap.parse_args(argv)

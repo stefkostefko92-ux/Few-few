@@ -60,6 +60,7 @@ def solid(M, name, mat, ob, width=0.012, chamfer=0.0, seg=2):
 
 def lit(M, ob, key="glow"):
     L.assign(ob, M[key])
+    L.group(ob, "glow")  # светещият елемент е отделна светлинна група — за „живия“ слой на иконата
     for poly in ob.data.polygons:
         poly.use_smooth = False
     return ob
@@ -244,7 +245,9 @@ def api(M):  # три възела, свързани с дебели пръти;
     zc = Z + 0.46
     for k, (x, y) in enumerate(nodes):
         solid(M, f"Foot{k}", "ano", L.cyl(f"Foot{k}", 0.52, 0.12, (x, y, Z + 0.06), verts=64), chamfer=0.025)
-        L.assign(L.sphere(f"Node{k}", 0.43, (x, y, zc)), M["glow"] if k == 1 else M["polish"])
+        node = L.assign(L.sphere(f"Node{k}", 0.43, (x, y, zc)), M["glow"] if k == 1 else M["polish"])
+        if k == 1:
+            L.group(node, "glow")
     for k, (a, b) in enumerate(((0, 1), (1, 2), (0, 2))):
         (x1, y1), (x2, y2) = nodes[a], nodes[b]
         ln = math.hypot(x2 - x1, y2 - y1)
@@ -274,8 +277,9 @@ def reverse(M):  # фрезовано зъбно колело под лазер�
     L.cut(hub, L.cyl("HubBore", 0.19, 1.0, (0, 0, Z + 0.2), verts=6))
     q = Vector(R(0.0, -0.30, 0.0))
     n = ROT @ Vector((0.0, -1.0, 0.0))
-    L.laser_line("Laser", (q.x + n.x * 14, q.y + n.y * 14, 16.0), (q.x, q.y, Z), power=2.4e6, width=0.0022,
-                 roll=math.radians(90), spread=10.5, blend=0.5, speckle=0.3)
+    # тук светещият елемент е самата лазерна линия → тя е светлинната група „glow“ на иконата
+    L.group(L.laser_line("Laser", (q.x + n.x * 14, q.y + n.y * 14, 16.0), (q.x, q.y, Z), power=2.4e6, width=0.0022,
+                         roll=math.radians(90), spread=10.5, blend=0.5, speckle=0.3), "glow")
 
 
 ICONS = {
@@ -308,19 +312,32 @@ def build(name, a):
     L.shadow_catcher(z=0.0, size=60)
     # студио (в координатите на камерата): горен-заден софтбокс, чийто долен край се оглежда в лака и
     # избледнява към предната част на плочката; ивица отляво за фаските; циан контра; мек фронт
-    L.softbox("Sky", R(1.0, 6.0, 15.0), (0, 0, 0.3), size=(15, 9), strength=10.0, edge=0.8, grad=(0.4, 0))
-    # нисък софтбокс точно в огледалната посока: по него металът отгоре става светъл, с преход
-    L.softbox("Mirror", R(2.0, 10.4, 9.8), (0, 0, 0.3), size=(13, 6.5), strength=a.mirror, edge=0.9, grad=(0.55, 0.35))
-    L.softbox("StripL", R(-9.5, 0.5, 4.0), (0, 0, 0.4), size=(1.6, 12), strength=8.0, edge=0.8)
-    # „beauty“ светлина откъм камерата: фаските, обърнати към обектива, светват в непрекъсната ярка линия —
-    # тя отделя символа от карбона и чертае силуета на плочката
-    L.softbox("Beauty", R(0.8, -13.0, 14.0), (0, 0, 0.3), size=(7, 4), strength=7.5, edge=0.7)
-    L.softbox("Front", R(-2.0, -14.0, 6.0), (0, 0, 0.3), size=(16, 8), strength=5.0, edge=0.7)
-    L.softbox("RimC", R(8.5, 7.0, 4.0), (0, 0, 0.4), size=(5, 3), strength=13.0, color=L.CYAN, edge=0.8)
+    studio = [
+        L.softbox("Sky", R(1.0, 6.0, 15.0), (0, 0, 0.3), size=(15, 9), strength=10.0, edge=0.8, grad=(0.4, 0)),
+        # нисък софтбокс точно в огледалната посока: по него металът отгоре става светъл, с преход
+        L.softbox("Mirror", R(2.0, 10.4, 9.8), (0, 0, 0.3), size=(13, 6.5), strength=a.mirror, edge=0.9, grad=(0.55, 0.35)),
+        L.softbox("StripL", R(-9.5, 0.5, 4.0), (0, 0, 0.4), size=(1.6, 12), strength=8.0, edge=0.8),
+        # „beauty“ светлина откъм камерата: фаските, обърнати към обектива, светват в непрекъсната ярка линия —
+        # тя отделя символа от карбона и чертае силуета на плочката
+        L.softbox("Beauty", R(0.8, -13.0, 14.0), (0, 0, 0.3), size=(7, 4), strength=7.5, edge=0.7),
+        L.softbox("Front", R(-2.0, -14.0, 6.0), (0, 0, 0.3), size=(16, 8), strength=5.0, edge=0.7),
+        L.softbox("RimC", R(8.5, 7.0, 4.0), (0, 0, 0.4), size=(5, 3), strength=13.0, color=L.CYAN, edge=0.8),
+    ]
     bpy.context.scene.world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.006, 0.007, 0.008, 1)
     d = 20.5
     L.camera(R(0, -d * math.cos(ELEV), d * math.sin(ELEV) + 0.25), R(0, 0.1, 0.42), lens=135, fstop=0.42,
              focus=R(0, -0.2, 0.5))
+    if a.live:
+        # „живи“ слоеве на иконата, със същата камера: glow — само светлината на циан елемента (и отблясъкът ѝ
+        # по околното); glint — отражението на един широк софтбокс в огледалната посока. Студиото е изключено.
+        for ob in studio:
+            ob.hide_render = True
+        bpy.context.scene.world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.0
+        L.group(L.softbox("Glint", R(0.5, 10.4, 9.8), (0, 0, 0.3), size=(17, 8.5), strength=9.0, edge=0.55), "glint")
+        out = os.path.join(a.live, name)
+        os.makedirs(out, exist_ok=True)
+        L.live_passes(out, ["glow"], {"glow": (["glow"], True), "glint": (["glint"], False)}, glare=0.22, threshold=1.4, size=6, dispersion=0.0, vignette=0.0)
+        return L.render(os.path.join(out, "_combined.png"), (a.res, a.res), a.samples)
     L.post(glare=0.20, threshold=1.6, size=6, alpha=True)
     return L.render(os.path.join(a.out, f"{name}.png"), (a.res, a.res), a.samples)
 
@@ -334,6 +351,7 @@ if __name__ == "__main__":
     ap.add_argument("--exposure", type=float, default=0.0)
     ap.add_argument("--glow", type=float, default=3.8)
     ap.add_argument("--mirror", type=float, default=3.4)
+    ap.add_argument("--live", default="", help="папка за „живите“ слоеве (glow, glint) на иконите")
     # blender -b -P icons.py -- --out DIR → аргументите са след „--“; като bpy модул → всички
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else (sys.argv[1:] if sys.argv[0].endswith(".py") else [])
     A = ap.parse_args(argv)

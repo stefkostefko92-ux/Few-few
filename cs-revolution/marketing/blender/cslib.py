@@ -667,9 +667,12 @@ def aim(ob, target, track="-Z", up="Y"):
 
 # ── светлина и камера ──────────────────────────────────────────────────────────────────────────
 def softbox(name, loc, look_at, size=(6.0, 3.0), strength=10.0, color=(1.0, 1.0, 1.0), edge=0.5, camera=False,
-            grad=(0.0, 0.0)):
+            grad=(0.0, 0.0), through=False):
     """Софтбокс: светеща плоскост с мек спад към краищата (така изглежда в отражението). grad=(gx, gy)
-    добавя линеен спад по ширина/височина — за отражения, които избледняват към едната страна."""
+    добавя линеен спад по ширина/височина — за отражения, които избледняват към едната страна.
+    through=True: плоскостта свети, но е прозрачна за лъчите — не закрива софтбоксовете зад себе си.
+    Така се правят подвижните лампи на „живите“ слоеве: иначе лампа пред основния софтбокс му отнема
+    светлината и базовият слой излиза без блясъка по плетката (хванато на 13.11.2026 при сверка с одобрения кадър)."""
     bpy.ops.mesh.primitive_plane_add(size=1, location=loc)
     ob = bpy.context.active_object
     ob.name = name
@@ -695,7 +698,14 @@ def softbox(name, loc, look_at, size=(6.0, 3.0), strength=10.0, color=(1.0, 1.0,
     em.inputs["Color"].default_value = (*color, 1)
     g.link(g.math("MULTIPLY", fall, strength), em.inputs["Strength"])
     out = g.n.new("ShaderNodeOutputMaterial")
-    g.link(em.outputs[0], out.inputs["Surface"])
+    if through:
+        tr = g.n.new("ShaderNodeBsdfTransparent")
+        add = g.n.new("ShaderNodeAddShader")
+        g.link(em.outputs[0], add.inputs[0])
+        g.link(tr.outputs[0], add.inputs[1])
+        g.link(add.outputs[0], out.inputs["Surface"])
+    else:
+        g.link(em.outputs[0], out.inputs["Surface"])
     assign(ob, m)
     ob.visible_camera = camera
     ob.visible_shadow = False
@@ -768,3 +778,187 @@ def shadow_catcher(z=0.0, size=40.0):
     p.inputs["Roughness"].default_value = 0.9
     assign(ob, m)
     return ob
+
+
+# ── „живи“ слоеве ──────────────────────────────────────────────────────────────────────────────
+# Сайтът не върти видео: Blender рендерира ЕДИН кадър, но разделен на светлинни групи (база, подвижни
+# софтбоксове, лазерен „потоп“), плюс карта на позицията. Браузърът ги смесва в реално време
+# (public/js/cs-live.js): светлината се плъзга по карбона, а лазерната линия отива там, където сочиш —
+# и изкачва стените и хлътва в отворите вярно, защото позицията на всеки пиксел идва от самата сцена.
+def group(ob, name):
+    """Слага обекта (лампа, светеща плоскост) в светлинна група; създава я, ако я няма."""
+    vl = bpy.context.view_layer
+    if name not in [g.name for g in vl.lightgroups]:
+        vl.lightgroups.add(name=name)
+    ob.lightgroup = name
+    return ob
+
+
+def sun(name, direction, strength=30.0, color=(1.0, 1.0, 1.0)):
+    """Успоредна светлина по `direction` — „потопът“ на лазера: показва как всяка точка отговаря на
+    светлина от посоката на проектора, заедно със сенките. Линията = потоп × тясна лента по позиция."""
+    ld = bpy.data.lights.new(name, "SUN")
+    ld.energy, ld.color, ld.angle = strength, color, 0.0
+    ob = bpy.data.objects.new(name, ld)
+    ob.location = (0, 0, 60)
+    aim(ob, Vector(ob.location) + Vector(direction))
+    return link(ob)
+
+
+def live_passes(outdir, poster, passes, glare=0.14, threshold=1.8, size=7, dispersion=0.008, vignette=0.5, denoise=True, raw=False):
+    """Компоситор за слоевете. poster: списък групи, които заедно са неподвижният кадър.
+    passes: {име: (списък групи, с_ореол)}. Всеки слой минава през денойзър и същата винетка, и се
+    записва през тоновата крива на сцената като <име>_0001.png (16 бита)."""
+    sc = bpy.context.scene
+    bpy.context.view_layer.cycles.denoising_store_passes = True
+    sc.use_nodes = True
+    t = sc.node_tree
+    for n in list(t.nodes):
+        t.nodes.remove(n)
+    N, L = t.nodes, t.links
+    rl = N.new("CompositorNodeRLayers")
+    mask = None
+    if vignette > 0:
+        e = N.new("CompositorNodeEllipseMask")
+        e.width, e.height = 1.25, 1.35
+        b = N.new("CompositorNodeBlur")
+        b.use_relative = True
+        b.factor_x = b.factor_y = 28
+        b.filter_type = "FAST_GAUSS"
+        L.new(e.outputs[0], b.inputs[0])
+        mask = b.outputs[0]
+
+    def den(g):
+        if not denoise:
+            return rl.outputs[f"Combined_{g}"]
+        d = N.new("CompositorNodeDenoise")
+        d.prefilter = "ACCURATE"
+        L.new(rl.outputs[f"Combined_{g}"], d.inputs["Image"])
+        L.new(rl.outputs["Denoising Normal"], d.inputs["Normal"])
+        L.new(rl.outputs["Denoising Albedo"], d.inputs["Albedo"])
+        return d.outputs[0]
+
+    def total(groups):
+        img = den(groups[0])
+        for g in groups[1:]:
+            a = N.new("CompositorNodeMixRGB")
+            a.blend_type = "ADD"
+            a.inputs[0].default_value = 1.0
+            L.new(img, a.inputs[1])
+            L.new(den(g), a.inputs[2])
+            img = a.outputs[0]
+        return img
+
+    def fin(img, glow):
+        if glow and glare > 0:
+            g = N.new("CompositorNodeGlare")
+            g.glare_type, g.quality, g.threshold, g.size, g.mix = "FOG_GLOW", "HIGH", threshold, size, 1.0
+            L.new(img, g.inputs[0])
+            a = N.new("CompositorNodeMixRGB")
+            a.blend_type = "ADD"
+            a.inputs[0].default_value = glare
+            L.new(img, a.inputs[1])
+            L.new(g.outputs[0], a.inputs[2])
+            img = a.outputs[0]
+            if dispersion > 0:
+                d = N.new("CompositorNodeLensdist")
+                d.use_fit = True
+                d.inputs["Dispersion"].default_value = dispersion
+                L.new(img, d.inputs["Image"])
+                img = d.outputs["Image"]
+        if mask is not None:
+            m = N.new("CompositorNodeMixRGB")
+            m.blend_type = "MULTIPLY"
+            m.inputs[0].default_value = vignette
+            L.new(img, m.inputs[1])
+            L.new(mask, m.inputs[2])
+            img = m.outputs[0]
+        return img
+
+    out = N.new("CompositorNodeOutputFile")
+    out.base_path = outdir
+    out.format.file_format, out.format.color_mode, out.format.color_depth = "PNG", "RGB", "16"
+    out.file_slots.clear()
+    post_img = fin(total(poster), True)
+    out.file_slots.new("poster_")
+    L.new(post_img, out.inputs["poster_"])
+    for name, (groups, glow) in passes.items():
+        out.file_slots.new(name + "_")
+        L.new(fin(total(groups), glow), out.inputs[name + "_"])
+    if raw:  # за диагностика: същите слоеве без денойзър
+        for name, (groups, glow) in passes.items():
+            out.file_slots.new("raw" + name + "_")
+            img = rl.outputs[f"Combined_{groups[0]}"]
+            L.new(fin(img, False), out.inputs["raw" + name + "_"])
+    comp = N.new("CompositorNodeComposite")
+    L.new(post_img, comp.inputs["Image"])
+
+
+def render_position(outdir, res, normal, clip=None, name="pos"):
+    """Карта на позицията за лазера: втори, мигновен рендер (1 лъч на пиксел, без разфокусиране).
+    Записва <name>.png: R·256+G = s (позицията на точката по нормалата на лазерния лист, 16 бита,
+    разтегната до обхвата на кадъра), B = размерът на кръга на разсейване (за да се размива линията там,
+    където и снимката е извън фокус). Връща (s_min, s_max) в единиците на сцената."""
+    sc = bpy.context.scene
+    vl = bpy.context.view_layer
+    cam = sc.camera
+    c = sc.cycles
+    keep = (c.samples, c.use_denoising, c.use_adaptive_sampling, cam.data.dof.use_dof, sc.use_nodes, sc.render.filepath)
+    vl.use_pass_position = True
+    c.samples, c.use_denoising, c.use_adaptive_sampling = 1, False, False
+    cam.data.dof.use_dof = False
+    sc.render.resolution_x, sc.render.resolution_y = res
+    sc.use_nodes = True
+    t = sc.node_tree
+    for n in list(t.nodes):
+        t.nodes.remove(n)
+    rl = t.nodes.new("CompositorNodeRLayers")
+    fo = t.nodes.new("CompositorNodeOutputFile")
+    fo.base_path = outdir
+    fo.format.file_format, fo.format.color_mode, fo.format.color_depth = "OPEN_EXR", "RGBA", "32"
+    fo.file_slots.clear()
+    fo.file_slots.new("posraw_")
+    fo.file_slots["posraw_"].save_as_render = False
+    t.links.new(rl.outputs["Position"], fo.inputs["posraw_"])
+    cp = t.nodes.new("CompositorNodeComposite")
+    t.links.new(rl.outputs["Image"], cp.inputs["Image"])
+    sc.render.filepath = os.path.join(outdir, "_posdummy.png")
+    bpy.ops.render.render(write_still=False)
+    raw = bpy.data.images.load(os.path.join(outdir, "posraw_0001.exr"))
+    w, h = raw.size
+    arr = np.empty(w * h * 4, dtype=np.float32)
+    raw.pixels.foreach_get(arr)
+    P = arr.reshape(h, w, 4)[..., :3].astype(np.float64)
+    hit = np.abs(P).sum(-1) > 1e-6  # фонът (без геометрия) е (0,0,0)
+    n = np.array(normal, dtype=np.float64)
+    n /= np.linalg.norm(n)
+    s = P @ n
+    s_min, s_max = float(s[hit].min()), float(s[hit].max())
+    if clip:  # 16-те бита отиват за обхвата, в който лазерът наистина се движи (подът стига до хоризонта)
+        s_min, s_max = max(s_min, clip[0]), min(s_max, clip[1])
+    q = np.clip((s - s_min) / (s_max - s_min), 0, 1)
+    q16 = np.round(q * 65535).astype(np.int64)
+    # кръг на разсейване в пиксели (диаметър), от дълбочината по оста на камерата
+    M = cam.matrix_world
+    C = np.array(M.translation)
+    fwd = -np.array(M.to_3x3().col[2])
+    d = np.maximum((P - C) @ fwd, 1e-3)
+    lens = cam.data.lens / 1000.0
+    F = cam.data.dof.focus_distance
+    if cam.data.dof.focus_object is not None:
+        F = float((np.array(cam.data.dof.focus_object.matrix_world.translation) - C) @ fwd)
+    coc = (lens / cam.data.dof.aperture_fstop) * lens * np.abs(d - F) / (d * (F - lens)) / (cam.data.sensor_width / 1000.0) * w
+    out = np.zeros((h, w, 4), dtype=np.float32)
+    out[..., 0] = (q16 // 256) / 255.0
+    out[..., 1] = (q16 % 256) / 255.0
+    out[..., 2] = np.clip(coc / 64.0, 0, 1)
+    out[..., 3] = 1.0
+    out[~hit, :3] = 0.0
+    img = bpy.data.images.new("cs_pos", w, h, alpha=False, is_data=True)
+    img.pixels.foreach_set(out.ravel())
+    img.filepath_raw = os.path.join(outdir, name + ".png")
+    img.file_format = "PNG"
+    img.save()
+    c.samples, c.use_denoising, c.use_adaptive_sampling, cam.data.dof.use_dof, sc.use_nodes, sc.render.filepath = keep
+    os.remove(os.path.join(outdir, "posraw_0001.exr"))
+    return s_min, s_max

@@ -84,14 +84,17 @@ a{{color:var(--cs-c)}}
 .hero-s{{position:relative;isolation:isolate;overflow:hidden;background-color:var(--cs-bg)}}
 @media(min-width:761px){{
   /* кадърът е 4:1, широк колкото прозореца, но най-много 1560px, и е закотвен вдясно; --by го центрира по
-     височина в видимата част под навигацията (66px). Двата градиента са със същия размер и място като
-     картината и скриват левия и долния ѝ ръб, когато лентата е по-широка или по-висока от нея. */
+     височина в видимата част под навигацията (66px). ::after е със същия размер и място като картината:
+     двата му градиента скриват левия и долния ѝ ръб, когато лентата е по-широка или по-висока от нея.
+     .cs-bench е рамката на „живата“ сцена (cs-live.js) — точно върху картината, под градиентите. */
   .hero-s{{--bw:min(100vw,1560px);--bh:calc(var(--bw)/4);--by:calc(200px - var(--bh)*.49);min-height:300px;display:flex;align-items:center;
-    background:linear-gradient(90deg,var(--cs-bg) 0,rgba(10,12,14,0) 30%) right var(--by)/var(--bw) var(--bh) no-repeat,
-      linear-gradient(0deg,var(--cs-bg) 0,rgba(10,12,14,0) 24%) right var(--by)/var(--bw) var(--bh) no-repeat,
-      url(/brand/bench-1600.webp) right var(--by)/var(--bw) var(--bh) no-repeat,var(--cs-bg)}}
+    background:url(/brand/bench-1600.webp) right var(--by)/var(--bw) var(--bh) no-repeat,var(--cs-bg)}}
+  .hero-s::after,.cs-bench{{position:absolute;right:0;top:var(--by);width:var(--bw);height:var(--bh);pointer-events:none}}
+  .hero-s::after{{content:"";z-index:-1;background:linear-gradient(90deg,var(--cs-bg) 0,rgba(10,12,14,0) 30%),linear-gradient(0deg,var(--cs-bg) 0,rgba(10,12,14,0) 24%)}}
+  .cs-bench{{z-index:-2}}
   .hero-s>.w{{width:100%}}
 }}
+@media(max-width:760px){{.cs-bench{{display:none}}}}
 .hero-s::before{{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
   background:linear-gradient(90deg,var(--cs-bg) 0,rgba(10,12,14,.9) 28%,rgba(10,12,14,.5) 55%,rgba(10,12,14,0) 78%)}}
 /* footer */
@@ -176,6 +179,17 @@ b.addEventListener('click',function(){set(!n.classList.contains('open'))});docum
 d.addEventListener('click',function(e){if(e.target.closest('a'))set(false)});
 var mq=window.matchMedia&&matchMedia('(min-width:761px)');if(mq){var f=function(){if(mq.matches&&n.classList.contains('open'))set(false)};mq.addEventListener?mq.addEventListener('change',f):mq.addListener(f);}})();</script>"""
 
+# „Жива“ лента (public/js/cs-live.js): лазерът минава веднъж през кадъра и светлината се плъзга по карбона
+# (встъпление 4,2 s + уталожване, общо под 5 s — WCAG 2.2.2), после сцената почива и реагира само на курсора. Зарежда се след load.
+LIVE_JS = """<script id="cs-live-boot">(function(){var h=document.querySelector('.hero-s');if(!h||!window.matchMedia)return;
+if(!matchMedia('(min-width:761px) and (hover:hover) and (pointer:fine)').matches||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+var n=navigator.connection;if(n&&(n.saveData||/(^|-)2g$/.test(n.effectiveType||'')))return;
+function go(){var s=document.createElement('script');s.src='/js/cs-live.js';s.onload=function(){fetch('/brand/live/bench.json').then(function(r){return r.json()}).then(function(m){
+var f=document.createElement('div');f.className='cs-bench';f.setAttribute('aria-hidden','true');h.appendChild(f);var d='/brand/live/bench-';
+window.CSLive.mount(f,{base:d+'base.webp',sweep:d+'sweep.webp',flood:d+'flood.webp',pos:d+'pos.png',sweeps:m.sweeps,sMin:m.sMin,sMax:m.sMax,s0:m.s0,scan:[m.s0-10,m.s0+6],auto:'intro',introSeconds:4.2,laserWidth:.05,restLaser:1})}).catch(function(){})};document.head.appendChild(s)}
+function idle(){(window.requestIdleCallback||function(f){setTimeout(f,700)})(go,{timeout:3000})}
+if(document.readyState==='complete')idle();else addEventListener('load',idle)})();</script>"""
+
 CAL_JS = """<script id="cs-cal-js">(function(){if(!(window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches)||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
 var w=document.createElement('div');w.className='cs-caliper';w.setAttribute('aria-hidden','true');w.innerHTML='<i class="jl"></i><i class="jr"></i><i class="dm"><b></b></i>';document.body.appendChild(w);
 var jl=w.children[0],jr=w.children[1],dm=w.children[2],lb=dm.firstChild,t=null,r=0,px=-1e4,py=-1e4,h=document.querySelector('h1');
@@ -206,7 +220,8 @@ SKIP = {"public/offline.html", "public/status/index.html"}  # the status page is
 
 STRIP = [re.compile(r'<link id="cs-theme-fonts(?:-pre\d?)?"[^>]*>'), re.compile(r'<link id="cs-bench-pre\d?"[^>]*>'), re.compile(r'<script id="cs-js-flag">.*?</script>', re.S),
          re.compile(r'<style id="cs-theme">.*?</style>', re.S), re.compile(r'<script id="cs-nav-js">.*?</script>', re.S),
-         re.compile(r'<div class="ft cs-legal-ft">.*?</div>', re.S), re.compile(r'<script id="cs-cal-js">.*?</script>', re.S)]
+         re.compile(r'<div class="ft cs-legal-ft">.*?</div>', re.S), re.compile(r'<script id="cs-cal-js">.*?</script>', re.S),
+         re.compile(r'<script id="cs-live-boot">.*?</script>', re.S)]
 
 
 LEGAL = {"it": ("/termini/", "Termini", "/note-legali/", "Note legali"),
@@ -233,7 +248,7 @@ def theme(path, html):
         html = html.replace("</body>", FOOT[lang_of(path, html)] + "</body>", 1)
     if 'class="nav"' in html:
         html = html.replace("</body>", NAV_JS + "</body>", 1)
-    html = html.replace("</body>", CAL_JS + "</body>", 1)
+    html = html.replace("</body>", CAL_JS + (LIVE_JS if 'class="hero-s"' in html else "") + "</body>", 1)
     # footer: "Terms" label in the page's own language, and a link to the legal notice (impressum),
     # which the law wants one click away from every page (audit 2026-10-05: only 9 pages linked it)
     lg = lang_of(path, html)

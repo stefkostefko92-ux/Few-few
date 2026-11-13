@@ -60,14 +60,17 @@ a{color:var(--cs-c)}
 .hero-s{position:relative;isolation:isolate;overflow:hidden;background-color:var(--cs-bg)}
 @media(min-width:761px){
   /* кадърът е 4:1, широк колкото прозореца, но най-много 1560px, и е закотвен вдясно; --by го центрира по
-     височина в видимата част под навигацията (66px). Двата градиента са със същия размер и място като
-     картината и скриват левия и долния ѝ ръб, когато лентата е по-широка или по-висока от нея. */
+     височина в видимата част под навигацията (66px). ::after е със същия размер и място като картината:
+     двата му градиента скриват левия и долния ѝ ръб, когато лентата е по-широка или по-висока от нея.
+     .cs-bench е рамката на „живата“ сцена (cs-live.js) — точно върху картината, под градиентите. */
   .hero-s{--bw:min(100vw,1560px);--bh:calc(var(--bw)/4);--by:calc(200px - var(--bh)*.49);min-height:300px;display:flex;align-items:center;
-    background:linear-gradient(90deg,var(--cs-bg) 0,rgba(10,12,14,0) 30%) right var(--by)/var(--bw) var(--bh) no-repeat,
-      linear-gradient(0deg,var(--cs-bg) 0,rgba(10,12,14,0) 24%) right var(--by)/var(--bw) var(--bh) no-repeat,
-      url(/brand/bench-1600.webp) right var(--by)/var(--bw) var(--bh) no-repeat,var(--cs-bg)}
+    background:url(/brand/bench-1600.webp) right var(--by)/var(--bw) var(--bh) no-repeat,var(--cs-bg)}
+  .hero-s::after,.cs-bench{position:absolute;right:0;top:var(--by);width:var(--bw);height:var(--bh);pointer-events:none}
+  .hero-s::after{content:"";z-index:-1;background:linear-gradient(90deg,var(--cs-bg) 0,rgba(10,12,14,0) 30%),linear-gradient(0deg,var(--cs-bg) 0,rgba(10,12,14,0) 24%)}
+  .cs-bench{z-index:-2}
   .hero-s>.w{width:100%}
 }
+@media(max-width:760px){.cs-bench{display:none}}
 .hero-s::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
   background:linear-gradient(90deg,var(--cs-bg) 0,rgba(10,12,14,.9) 28%,rgba(10,12,14,.5) 55%,rgba(10,12,14,0) 78%)}
 /* footer */
@@ -159,4 +162,11 @@ var up=q.top>34;dm.style.transform='translate('+(q.left-g)+'px,'+(up?top-9:q.bot
 function k(){if(!r)r=requestAnimationFrame(place)}
 document.addEventListener('pointerover',function(e){t=e.target.closest&&e.target.closest('a,button,[role=button],input,textarea,select,summary,label');k()},{passive:true});
 document.addEventListener('pointermove',function(e){px=e.clientX;py=e.clientY;k()},{passive:true});addEventListener('scroll',k,{passive:true});
-document.documentElement.addEventListener('pointerleave',function(){t=null;w.classList.remove('on')})})();</script></body></html>
+document.documentElement.addEventListener('pointerleave',function(){t=null;w.classList.remove('on')})})();</script><script id="cs-live-boot">(function(){var h=document.querySelector('.hero-s');if(!h||!window.matchMedia)return;
+if(!matchMedia('(min-width:761px) and (hover:hover) and (pointer:fine)').matches||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+var n=navigator.connection;if(n&&(n.saveData||/(^|-)2g$/.test(n.effectiveType||'')))return;
+function go(){var s=document.createElement('script');s.src='/js/cs-live.js';s.onload=function(){fetch('/brand/live/bench.json').then(function(r){return r.json()}).then(function(m){
+var f=document.createElement('div');f.className='cs-bench';f.setAttribute('aria-hidden','true');h.appendChild(f);var d='/brand/live/bench-';
+window.CSLive.mount(f,{base:d+'base.webp',sweep:d+'sweep.webp',flood:d+'flood.webp',pos:d+'pos.png',sweeps:m.sweeps,sMin:m.sMin,sMax:m.sMax,s0:m.s0,scan:[m.s0-10,m.s0+6],auto:'intro',introSeconds:4.2,laserWidth:.05,restLaser:1})}).catch(function(){})};document.head.appendChild(s)}
+function idle(){(window.requestIdleCallback||function(f){setTimeout(f,700)})(go,{timeout:3000})}
+if(document.readyState==='complete')idle();else addEventListener('load',idle)})();</script></body></html>

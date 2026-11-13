@@ -19,12 +19,35 @@ properties — never `top`/`inset`/`width` of something that moves (a `top` swee
 `inset` animation measured CLS 1.6); every effect has a reduced-motion static state; pointer
 effects only on `(hover:hover) and (pointer:fine)`; nothing blinks forever (WCAG 2.2.2).
 
+## Live scenes — `public/js/cs-live.js` + `public/brand/live/`
+The hero of the homepage (`src/HeroLive.jsx`), the band behind the title of the static pages (`.hero-s`,
+`scripts/static-theme.py`) and the service icons are photoreal Blender renders that move **without video**:
+each scene is rendered once, split into light groups (`marketing/blender/*.py --live`, see its README), and
+`cs-live.js` blends the layers in WebGL — the studio light glides over carbon and chrome, the laser line goes
+where the pointer is. Rules that must survive any edit: the still frame (`*-poster.webp`, `bench-1600.webp`)
+is the LCP image and the whole experience under `prefers-reduced-motion`, data-saver, a weak GPU or no JS
+(the engine is gated **before** it loads); the homepage loops, so it has a pause button (WCAG 2.2.2, choice
+kept in `localStorage["cs-motion"]`); the static pages move on their own for under 5 s (`auto:"intro"`), then
+only with the pointer; icons light up on hover/focus and once when their row enters the viewport. Nothing
+blinks: the laser and the moving light are speed-capped and **calm down** when the pointer is thrashed back
+and forth (`calm()` in the engine — measured frame by frame at 0.5–5 Hz: at most 2 flashes/s on a quarter of
+a 10° field, WCAG 2.3.1 allows 3). The engine loads after `load`, in idle time. `#cs-boot` in `index.html`
+mirrors `.cs-hl-img` / `.cs-hl-shade` so the handover to React shifts nothing.
+
+Hero layout, two scenes: the wide one (`hero-*`, 16:9, emblem on the right, H1 capped at `43vw`) and the
+portrait one (`herop-*`, 2:3) for a **narrow and upright** screen — `(max-width:860px) and
+(max-aspect-ratio:1/1)`, the same query in `HeroLive.jsx`, its CSS, the `<picture>` and the two preloads in
+`index.html`. The portrait scene is anchored to the top at width `--hw` (an exact 2:3 box, no cropping) and
+the text starts under the emblem's plinth (`padding-top: calc(var(--hw)*.8)`), so on a short phone the H1
+never lands on the emblem — the section just grows taller than the screen. A phone held sideways gets the
+wide scene. Re-rendering a scene with a different framing means re-checking these numbers.
+
 ## Brand assets — `public/brand/` + root icons
 All generated from the three logo renders (never hand-edit the PNGs):
 `logo.png`/`logo.webp`/`logo-nav.webp` = horizontal lockup at the historical 2.35:1
 ratio (387 static pages reference it with fixed width/height — keep that ratio);
 `brand/cs-logo-*.webp` = square logo (footer, mobile menu); `brand/cs-scene*.webp` =
-hero mark; `brand/cs-poster.webp` = about plate; `og-image*.png`, `icon-*.png`,
+the former hero mark (the hero is now the live scene above; kept as brand art); `brand/cs-poster.webp` = about plate; `og-image*.png`, `icon-*.png`,
 `apple-touch-icon.png`, `favicon.ico`/`.svg` = derived. Static-page nav/brand tweaks
 live in `scripts/rebrand-static.py` (idempotent, also patches the generators).
 

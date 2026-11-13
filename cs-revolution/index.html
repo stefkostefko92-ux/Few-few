@@ -20,7 +20,8 @@
     <!-- nav logo is in the first viewport: fetch it with the document, not after JS -->
   <link rel="preload" as="image" href="/logo-nav.webp" fetchpriority="high" />
   <!-- hero mark (likely LCP on desktop): start it with the document too -->
-  <link rel="preload" as="image" href="/brand/cs-scene-800.webp" imagesrcset="/brand/cs-scene-800.webp 800w, /brand/cs-scene.webp 1254w" imagesizes="(max-width:860px) 72vw, 34vw" fetchpriority="high" />
+  <link rel="preload" as="image" type="image/webp" href="/brand/live/hero-poster.webp" imagesrcset="/brand/live/hero-poster-1280.webp 1280w, /brand/live/hero-poster.webp 1920w" imagesizes="100vw" media="(min-width:861px), (min-aspect-ratio:1001/1000)" fetchpriority="high" />
+  <link rel="preload" as="image" type="image/webp" href="/brand/live/herop-poster.webp" imagesrcset="/brand/live/herop-poster-720.webp 720w, /brand/live/herop-poster.webp 1080w" imagesizes="100vw" media="(max-width:860px) and (max-aspect-ratio:1/1)" fetchpriority="high" />
   <!-- Fonts are self-hosted (public/fonts/, no request to Google — GDPR). The CSS is
        tiny and same-origin; the hero face is preloaded so the H1 swaps early. -->
   <link rel="preload" as="font" type="font/woff2" href="/fonts/space-grotesk-latin-ecea81.woff2" crossorigin />
@@ -49,11 +50,11 @@
       /* identical box to <section id="hero">: bottom-aligned, same paddings */
       height: 100vh; overflow: hidden;
       display: flex; flex-direction: column; justify-content: flex-end;
-      padding: 0 clamp(20px,5vw,64px) clamp(40px,6vh,72px);
+      padding: 96px clamp(20px,5vw,64px) clamp(40px,6vh,72px);
       background: #0A0C0E; color: #C9D1D6;
       font-family: 'Space Mono', 'SM-fallback', ui-monospace, monospace; }
     #cs-boot > * { max-width: 1180px; width: 100%; margin-left: auto; margin-right: auto; }
-    #cs-boot .navpad { position: fixed; top: 0; left: 0; width: 100%; height: 59px;
+    #cs-boot .navpad { position: fixed; top: 0; left: 0; width: 100%; height: 59px; z-index: 3;
       max-width: none; background: rgba(0,0,0,.85);
       border-bottom: 1px solid rgba(245,245,240,.08); }
     #cs-boot .eb { display: flex; align-items: center; gap: 14px; font-size: 10px;
@@ -65,19 +66,39 @@
       /* three lines reserved: the localized titles differ in length, so pin the
          box height and the swap to React can't move anything below it */
       min-height: calc(clamp(2.4rem,6vw,5.4rem) * .98 * 3); }
-    /* same width cap as the React hero H1 (it stops before the logo art) */
-    @media (min-width: 861px) { #cs-boot h1 { max-width: min(16ch, calc(100vw - min(28vw,380px) - 2*clamp(20px,5vw,64px) - max(0px,(100vw - 2*clamp(20px,5vw,64px) - 1180px)/2) - 40px)); } }
     #cs-boot .sub { font-size: 11px; letter-spacing: .2em; color: #7C868D;
       margin-top: 24px; text-transform: uppercase; }
     /* The moment React paints anything into #root, the boot layer is gone in the
        SAME frame — the browser never composites both, so the handover can't be
        recorded as a layout shift. main.jsx then removes the node entirely. */
-    /* the hero mark, same box as React's .cs-hero-art (App.jsx) — it is the mobile LCP
-       image, so it must paint with the document, not after the bundle (was 4.6s) */
-    #cs-boot .art { position: absolute; right: clamp(16px,4vw,60px); top: clamp(72px,9vh,96px); width: min(28vw,380px); height: auto; max-width: none; margin: 0;
-      pointer-events: none; mix-blend-mode: screen; opacity: .95; filter: saturate(1.05);
-      -webkit-mask-image: radial-gradient(ellipse at 50% 50%,#000 52%,transparent 74%); mask-image: radial-gradient(ellipse at 50% 50%,#000 52%,transparent 74%); }
-    @media (max-width: 860px) { #cs-boot .art { right: auto; left: 50%; transform: translateX(-50%); top: 64px; width: min(74vw,340px); opacity: .85; } }
+    /* the hero scene, same box as React's .cs-hl-img / .cs-hl-shade (src/HeroLive.jsx) — it is the LCP
+       image, so it must paint with the document, not after the bundle */
+    #cs-boot .hl, #cs-boot .shade { position: absolute; inset: 0; max-width: none; width: 100%; margin: 0; z-index: 0; }
+    #cs-boot .art { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; margin: 0; object-fit: cover; object-position: 80% 50%; display: block; }
+    #cs-boot .shade { z-index: 1; pointer-events: none; background:
+      linear-gradient(90deg,rgba(10,12,14,.86) 0,rgba(10,12,14,.6) 30%,rgba(10,12,14,0) 56%),
+      linear-gradient(0deg,#0A0C0E 0,rgba(10,12,14,.5) 14%,rgba(10,12,14,0) 34%),
+      linear-gradient(180deg,rgba(10,12,14,.7) 0,rgba(10,12,14,0) 16%); }
+    #cs-boot .eb, #cs-boot h1, #cs-boot .sub { position: relative; z-index: 2; }
+    /* same width cap as the React hero H1 (it stops before the emblem, which starts mid-screen) */
+    /* left edge on the 1180px column like the React H1 (the h1 rule above zeroes the auto margins) */
+    #cs-boot h1 { max-width: min(16ch, 43vw); margin-left: max(0px, calc((100% - 1180px) / 2)); }
+    #cs-boot .eb i { flex: none; }
+    /* on narrow windows the two mono lines wrap instead of running across the emblem (same rule in HeroLive.jsx) */
+    @media (max-width: 1180px) { #cs-boot .eb, #cs-boot .sub { max-width: 40vw; line-height: 1.9; margin-left: 0; margin-right: auto; } }
+    /* narrow AND upright screen: the portrait scene is anchored to the top at width --hw (an exact 2:3 box, no
+       cropping) and the text starts under the emblem's plinth — mirrors HERO_LIVE_CSS in src/HeroLive.jsx */
+    @media (max-width: 860px) and (max-aspect-ratio: 1/1) {
+      #cs-boot { --hw: max(100vw, min(118vw, 600px)); height: auto; min-height: 100vh; padding-top: calc(var(--hw) * .8); }
+      #cs-boot .hl { inset: auto; top: 0; left: 50%; width: var(--hw); height: calc(var(--hw) * 1.5); transform: translateX(-50%);
+        -webkit-mask-image: linear-gradient(180deg,#000 0,#000 56%,transparent 90%); mask-image: linear-gradient(180deg,#000 0,#000 56%,transparent 90%); }
+      #cs-boot .art { object-position: 50% 50%; }
+      #cs-boot .shade { background: linear-gradient(180deg,rgba(10,12,14,.72) 0,rgba(10,12,14,0) 120px,rgba(10,12,14,0) calc(var(--hw) * .72),rgba(10,12,14,.8) calc(var(--hw) * .9),#0A0C0E calc(var(--hw) * 1.36)); }
+      #cs-boot h1 { max-width: 16ch; }
+      #cs-boot .eb, #cs-boot .sub { max-width: 1180px; line-height: inherit; margin-left: auto; }
+    }
+    /* phones: the SPA gives every section 12px side/bottom padding below 768px — same here, so the text does not jump sideways */
+    @media (max-width: 767px) { #cs-boot { padding-left: 12px; padding-right: 12px; padding-bottom: 12px; } }
     #root:not(:empty) ~ #cs-boot { display: none !important; }
   </style>
   <!-- Open Graph -->
@@ -130,7 +151,8 @@
     <!-- Reserves the exact height of the fixed nav React mounts (12px padding
          + 34px logo + 12px + 1px border) so its arrival shifts nothing. -->
     <div class="navpad"></div>
-    <img class="art" src="/brand/cs-scene-800.webp" srcset="/brand/cs-scene-800.webp 800w, /brand/cs-scene.webp 1254w" sizes="(max-width:860px) 72vw, 34vw" alt="" width="800" height="800" fetchpriority="high" />
+    <picture class="hl"><source media="(max-width:860px) and (max-aspect-ratio:1/1)" srcset="/brand/live/herop-poster-720.webp 720w, /brand/live/herop-poster.webp 1080w" sizes="100vw" /><img class="art" src="/brand/live/hero-poster.webp" srcset="/brand/live/hero-poster-1280.webp 1280w, /brand/live/hero-poster.webp 1920w" sizes="100vw" alt="" width="1920" height="1080" fetchpriority="high" /></picture>
+    <div class="shade"></div>
     <div class="eb"><i></i>WEB &amp; SOFTWARE AGENCY — ITALY · BULGARIA</div>
     <h1>Siti Web, E-commerce &amp; Software ERP</h1>
     <div class="sub">SITI WEB · E-COMMERCE · APP · ERP · SEO/AEO · REVERSE ENGINEERING</div>
