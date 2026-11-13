@@ -239,6 +239,8 @@ export async function revokeMemberInvite(input: {
   actor: Actor;
 }): Promise<void> {
   await prisma.$transaction(async (tx) => {
+    // Под заключването на фирмата — същото, което взема приемането: отмяна и приемане не се разминават.
+    await lockOrganization(tx, input.organizationId);
     const invite = await tx.memberInvite.findFirst({
       where: { id: input.inviteId, organizationId: input.organizationId },
     });
@@ -246,7 +248,11 @@ export async function revokeMemberInvite(input: {
     if (!canAssign(input.actor.role, invite.role as MemberRole)) {
       throw new MemberError('forbiddenRole');
     }
-    await tx.memberInvite.update({ where: { id: invite.id }, data: { revokedAt: new Date() } });
+    const revoked = await tx.memberInvite.updateMany({
+      where: { id: invite.id, acceptedAt: null, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    if (revoked.count !== 1) throw new MemberError('notFound');
     await tx.notification.updateMany({
       where: {
         kind: 'member.invite',

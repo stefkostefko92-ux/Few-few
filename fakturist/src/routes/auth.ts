@@ -12,7 +12,8 @@ import { setting } from '../admin/settings.js';
 import { register, RegistrationError, RegistrationSchema } from '../accounts/register.js';
 import { MINUTE } from '../time.js';
 import { requestRateKey } from '../http/ip.js';
-import { attemptFailed, attemptSucceeded, reserveAttempt } from '../auth/lockout.js';
+import { attemptFailed, attemptSucceeded, NO_USER, reserveAttempt } from '../auth/lockout.js';
+import { isTrustedDevice, rememberDevice } from '../auth/device.js';
 import { queueLockedMail } from '../mail/account-mail.js';
 import { kickOutbox } from '../mail/outbox.js';
 
@@ -67,38 +68,47 @@ export function authRouter(): Router {
     const user = parsed.success ? await prisma.user.findUnique({ where: { email } }) : null;
     // Опитът се заема преди проверката (SPEC 46): заключеният профил не проверява паролата си, но
     // хешът пак се смята (фиктивен) — отговорът и времето не издават кой имейл съществува и дали е заключен.
-    const allowed = user ? await reserveAttempt(user.id) : false;
+    // Довереното устройство (бисквитка от предишен вход) не спира от заключването и не го трупа;
+    // блокиран профил и непознат имейл минават през същите заявки с несъществуващ id.
+    const active = user && !user.disabledAt ? user : null;
+    const trusted = active ? isTrustedDevice(req, active.id) : false;
+    const allowed = active
+      ? trusted || (await reserveAttempt(active.id))
+      : (await reserveAttempt(NO_USER), false);
     const ok = await verifyPassword(
       parsed.success ? parsed.data.password : '',
-      allowed && user ? user.passwordHash : await dummyHash(),
+      allowed && active ? active.passwordHash : await dummyHash(),
     );
-    if (!user || !allowed || !ok || user.disabledAt) {
-      if (user && allowed && !ok) {
-        const lockedUntil = await attemptFailed(user.id);
+    if (!active || !allowed || !ok) {
+      if (active && allowed && !trusted) {
+        const lockedUntil = await attemptFailed(active.id);
         if (lockedUntil) {
-          await queueLockedMail(user.id, user.email, lockedUntil);
+          await queueLockedMail(active.id, active.email, lockedUntil);
           kickOutbox();
         }
+      } else {
+        await attemptFailed(NO_USER);
       }
       return res.status(400).render('auth/login', { error: 'auth.invalid', next, email });
     }
-    await attemptSucceeded(user.id);
-    if (needsRehash(user.passwordHash) && parsed.success) {
+    await attemptSucceeded(active.id);
+    rememberDevice(res, active.id);
+    if (needsRehash(active.passwordHash) && parsed.success) {
       await prisma.user.update({
-        where: { id: user.id },
+        where: { id: active.id },
         data: { passwordHash: await hashPassword(parsed.data.password) },
       });
     }
-    const needsCode = user.totpEnabledAt !== null;
-    await startSession(res, user, !needsCode);
+    const needsCode = active.totpEnabledAt !== null;
+    await startSession(res, active, !needsCode);
     if (!needsCode) {
-      await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+      await prisma.user.update({ where: { id: active.id }, data: { lastLoginAt: new Date() } });
       await prisma.$transaction((tx) =>
         audit(tx, {
-          actorId: user.id,
+          actorId: active.id,
           action: 'auth.login',
           targetType: 'User',
-          targetId: user.id,
+          targetId: active.id,
         }),
       );
       return res.redirect(303, next);

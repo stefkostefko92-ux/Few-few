@@ -45,7 +45,10 @@ async function login(email: string): Promise<Session> {
     body: new URLSearchParams({ email, password: PASSWORD }),
   });
   assert.equal(res.status, 303, `вход ${email}`);
-  const cookie = (res.headers.get('set-cookie') ?? '').split(';')[0] ?? '';
+  const cookie = res.headers
+    .getSetCookie()
+    .map((c) => c.split(';')[0])
+    .join('; ');
   const page = await fetch(`${origin}/app`, { headers: { cookie } });
   const csrf = /name="_csrf" value="([^"]+)"/.exec(await page.text())?.[1] ?? '';
   assert.ok(csrf, 'CSRF токен на страницата');

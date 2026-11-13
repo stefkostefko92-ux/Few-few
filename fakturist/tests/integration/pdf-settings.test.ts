@@ -39,7 +39,10 @@ async function login(email: string): Promise<Session> {
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ email, password: PASSWORD }),
   });
-  const cookie = (res.headers.get('set-cookie') ?? '').split(';')[0] ?? '';
+  const cookie = res.headers
+    .getSetCookie()
+    .map((c) => c.split(';')[0])
+    .join('; ');
   const page = await fetch(`${origin}/app`, { headers: { cookie } });
   const csrf = /name="_csrf" value="([^"]+)"/.exec(await page.text())?.[1] ?? '';
   return { cookie, csrf };

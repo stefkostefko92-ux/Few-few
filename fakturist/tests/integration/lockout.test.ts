@@ -43,7 +43,14 @@ after(async () => {
 const tryLogin = (password: string, email = 'owner@example.test') =>
   http.post(null, '/vhod', { email, password });
 
-test('пет грешни пароли заключват; вярната парола тогава не влиза; отговорът е същият', async () => {
+test('пет грешни пароли заключват; вярната парола тогава не влиза; доверено устройство — влиза', async () => {
+  // Успешен вход по-рано: браузърът получава бисквитката за доверено устройство.
+  const first = await tryLogin(PASSWORD);
+  assert.equal(first.status, 303);
+  const device = (first.headers.getSetCookie() ?? []).find((c) => c.startsWith('fakturist_dev='));
+  assert.ok(device, 'бисквитка за доверено устройство');
+  const deviceCookie = device.split(';')[0]!;
+
   const wrong = await tryLogin('грешна-парола-1');
   const wrongText = await wrong.text();
   for (let i = 2; i <= 5; i += 1) assert.equal((await tryLogin(`грешна-парола-${i}`)).status, 400);
@@ -57,21 +64,27 @@ test('пет грешни пароли заключват; вярната пар
   const strip = (html: string) => html.replace(/value="[^"]*@example\.test"/g, '');
   assert.equal(strip(await locked.text()), strip(wrongText));
   assert.equal(strip(await unknown.text()), strip(wrongText));
-  // Писмо „профилът е заключен“.
   assert.equal(
     await prisma.notification.count({
       where: { kind: 'account.locked', toEmail: 'owner@example.test' },
     }),
     1,
   );
+  // Собственикът от своя браузър влиза въпреки заключването (чуждият не може да го държи вън).
+  const trusted = await http.post({ cookie: deviceCookie, csrf: '' }, '/vhod', {
+    email: 'owner@example.test',
+    password: PASSWORD,
+  });
+  assert.equal(trusted.status, 303);
 });
 
 test('второто заключване е по-дълго; успешен вход след срока нулира всичко', async () => {
   // Таванът на заявките по адрес (10 за 15 минути) вече спира HTTP входа от теста — по-нататък
   // логиката на заключването се вика пряко.
+  // Едно скорошно заключване (в рамките на деня) — следващото е по-дългото.
   await prisma.user.update({
     where: { id: userId },
-    data: { lockedUntil: new Date(Date.now() - 1000), failedLogins: 0 },
+    data: { lockedUntil: new Date(Date.now() - 1000), failedLogins: 0, lockouts: 1 },
   });
   let until: Date | null = null;
   for (let i = 1; i <= 5; i += 1) {
@@ -79,6 +92,7 @@ test('второто заключване е по-дълго; успешен в�
     until = await lockout.attemptFailed(userId);
   }
   assert.ok(until && until.getTime() > Date.now() + 55 * MINUTE, 'второто — час');
+  assert.ok(until.getTime() < Date.now() + 61 * MINUTE, 'таванът е час');
   const second = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
   assert.equal(second.lockouts, 2);
   assert.equal(await lockout.reserveAttempt(userId), false, 'заключен — без проверка');
@@ -99,6 +113,21 @@ test('паралелни опити не получават повече от 5 
   assert.equal(results.filter(Boolean).length, 5);
   assert.equal(lockout.lockDuration(0), 15 * MINUTE);
   assert.equal(lockout.lockDuration(1), HOUR);
-  assert.equal(lockout.lockDuration(9), 24 * HOUR);
+  assert.equal(lockout.lockDuration(9), HOUR);
   await prisma.user.update({ where: { id: userId }, data: { failedLogins: 0 } });
+});
+
+test('стъпката отшумява след ден без заключване; блокиран профил не трупа брояча', async () => {
+  // Последното заключване е отпреди повече от ден → следващото е пак 15 минути.
+  await prisma.user.update({
+    where: { id: userId },
+    data: { failedLogins: 0, lockouts: 5, lockedUntil: new Date(Date.now() - 2 * 24 * HOUR) },
+  });
+  let until: Date | null = null;
+  for (let i = 1; i <= 5; i += 1) {
+    await lockout.reserveAttempt(userId);
+    until = await lockout.attemptFailed(userId);
+  }
+  assert.ok(until && until.getTime() < Date.now() + 16 * MINUTE);
+  assert.equal((await prisma.user.findUniqueOrThrow({ where: { id: userId } })).lockouts, 1);
 });

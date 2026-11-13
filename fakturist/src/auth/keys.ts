@@ -106,3 +106,10 @@ export const encryptMemberInviteToken = (token: string, inviteId: string): strin
   encrypt('member-invite-token-v1', token, `member-invite:${inviteId}`);
 export const decryptMemberInviteToken = (payload: string, inviteId: string): string =>
   decrypt('member-invite-token-v1', payload, `member-invite:${inviteId}`);
+
+/** Подписът на бисквитката за доверено устройство (src/auth/device.ts) — свой ключ. */
+export function deviceHmac(content: string): string {
+  return createHmac('sha256', derived('device-cookie-v1'))
+    .update(content, 'utf8')
+    .digest('base64url');
+}

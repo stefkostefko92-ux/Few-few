@@ -39,12 +39,13 @@
 <p>We do not sell data or provide it for advertising. We do not transfer personal data outside the European Union; if a subcontractor of Brevo processes data outside the EU, the transfer is protected by standard contractual clauses (Art.&nbsp;46 GDPR).</p>
 
 <h2 id="cookies">Cookies</h2>
-<p>We use one cookie without which the service does not work — the session after sign-in. We have no analytics, advertising or third-party cookies, so we show no consent banner. Fonts are loaded from our own server.</p>
+<p>We use two cookies without which the service does not work or is not protected — the session after sign-in and the trusted device. We have no analytics, advertising or third-party cookies, so we show no consent banner. Fonts are loaded from our own server.</p>
 <div class="table-wrap">
   <table>
     <thead><tr><th scope="col">Name</th><th scope="col">Purpose</th><th scope="col">Lifetime</th></tr></thead>
     <tbody>
       <tr><td><code>__Host-fakturist</code></td><td>The session after sign-in (signed identifier, HttpOnly, Secure, SameSite=Lax)</td><td><%= sessionStandard %></td></tr>
+      <tr><td><code>__Host-fakturist_dev</code></td><td>Trusted device: a browser you have signed in from successfully can still sign in when someone else has locked the account with wrong passwords (signed account identifier and expiry, no other data)</td><td>180 days from the last sign-in</td></tr>
     </tbody>
   </table>
 </div>
