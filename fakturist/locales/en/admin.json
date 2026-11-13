@@ -164,5 +164,39 @@
     "billing-noSupplier": "The supplier company is not set (Settings → billing.supplierOrgId) or has no default series.",
     "billing-amountMismatch": "The amount does not match the order.",
     "billing-notFound": "No such payment."
+  },
+  "masterRole": {
+    "title": "Masters",
+    "help": "Masters have full access to the panel. Every grant and revocation is confirmed with the code from your two-factor app; the other masters receive an email and the action is in the audit log. The last master cannot be removed.",
+    "email": "Email",
+    "name": "Name",
+    "twoFactor": "Two-factor sign-in",
+    "lastLogin": "Last sign-in",
+    "actions": "Actions",
+    "you": "you",
+    "disabled": "blocked",
+    "on": "on",
+    "off": "not enabled",
+    "code": "Code from the app",
+    "codeFor": "Code from the app to revoke the role of {email}",
+    "codeHint": "six digits from your two-factor app",
+    "revoke": "Revoke the role",
+    "grantTitle": "Grant the master role",
+    "nameHint": "only for a new account",
+    "grant": "Grant the role",
+    "ok": {
+      "granted": "The role is granted; the account signs in again and enables two-factor sign-in.",
+      "created": "The account is created with the master role; we sent a password link (1 hour; then use “Forgot password”).",
+      "revoked": "The role is revoked."
+    },
+    "err": {
+      "invalid": "Check the email and the code.",
+      "badCode": "The code is wrong or already used — wait for the next one.",
+      "disabled": "The account is blocked.",
+      "already": "The account is already a master.",
+      "notMaster": "The account is not a master.",
+      "lastMaster": "This is the last master — grant the role to someone else first.",
+      "nameRequired": "Enter a name for a new account."
+    }
   }
 }

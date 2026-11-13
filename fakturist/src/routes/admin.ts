@@ -17,6 +17,7 @@ import { transferStatus } from '../accounts/transfer.js';
 import { ownershipReviewQueue } from '../accounts/ownership.js';
 import { adminSettingsRouter } from './admin-settings.js';
 import { adminActionsRouter } from './admin-actions.js';
+import { adminMastersRouter } from './admin-masters.js';
 import { PlanForm } from '../admin/plan-form.js';
 
 export function adminRouter(): Router {
@@ -24,6 +25,7 @@ export function adminRouter(): Router {
   router.use('/admin', requireUser(), requireMaster());
   router.use(adminSettingsRouter());
   router.use(adminActionsRouter());
+  router.use(adminMastersRouter());
 
   router.get('/admin', async (_req, res) => {
     const monthStart = new Date();
