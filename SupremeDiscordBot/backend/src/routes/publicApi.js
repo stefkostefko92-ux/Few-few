@@ -20,7 +20,7 @@ export { VALID_SCOPES } from "../lib/apiKeyAuth.js";
 import { VALID_SCOPES } from "../lib/apiKeyAuth.js";
 import { bruteForceGuard, recordFailure, recordSuccess } from "../lib/bruteForce.js";
 import { ipKey } from "../lib/ipKey.js";
-import { parsePaging, parseEnum, parseDate, parseExpiresInDays } from "../lib/publicApiQuery.js";
+import { parsePaging, parseEnum, parseDate, parseExpiresInDays, publicTicket } from "../lib/publicApiQuery.js";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // API KEY MANAGEMENT (dashboard-authed)
@@ -212,12 +212,20 @@ function requireScope(scope) {
 // преди който и да е лимитер да се е изпълнил → налучкването на API ключове
 // беше НАПЪЛНО НЕДРОСЕЛИРАНО. Двата слоя се допълват: този пази ВХОДА по IP,
 // долният пази квотата per-key.
+//
+// Брои САМО неуспешната автентикация (401). Преди броеше всяка заявка и така
+// сам ограничаваше валидните клиенти до 60/мин на адрес — обещаните „300 в
+// минута на ключ“ (таблото, началната страница) бяха недостижими от един адрес
+// (сверка на Летописеца с кода, 13.11.2026). Блокираните заявки не стигат до
+// автентикацията, затова прагът остава затворен до края на прозореца.
 const preAuthLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 60,
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req) => ipKey(req.ip),
+  skipSuccessfulRequests: true,
+  requestWasSuccessful: (_req, res) => res.statusCode !== 401,
   message: { error: "Too many requests — please slow down" },
 });
 
@@ -286,7 +294,7 @@ api.get("/tickets/:id", requireScope("tickets:read"), async (req, res, next) => 
       where: { id: req.params.id, serverId: req.serverId },
     });
     if (!ticket) return res.status(404).json({ error: "Not found" });
-    res.json(ticket);
+    res.json(publicTicket(ticket));
   } catch (err) { next(err); }
 });
 

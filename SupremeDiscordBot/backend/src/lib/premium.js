@@ -90,7 +90,7 @@ export const PREMIUM_FEATURES = {
   "data.panelDuplicate":       { label: "Duplicate Panels",            category: "Data" },
   // v50 — Server Season (играта)
   "game.shop50":               { label: "50 Shop Items",               category: "Game" },
-  "game.levelRolesUnlimited":  { label: "Unlimited Level Roles",       category: "Game" },
+  "game.levelRolesUnlimited":  { label: "100 Level Roles",             category: "Game" },
   "game.companionsFull":       { label: "Full Companion Collection",   category: "Game" },
   "game.quests3":              { label: "3 Active Server Quests",      category: "Game" },
   "game.kbTrivia":             { label: "Knowledge Base Trivia",       category: "Game" },

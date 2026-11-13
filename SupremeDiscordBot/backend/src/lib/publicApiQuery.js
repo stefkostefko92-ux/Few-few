@@ -34,3 +34,17 @@ export function parseExpiresInDays(v) {
   if (typeof v !== "number" || !Number.isInteger(v) || v < 1 || v > 3650) return { ok: false, error: "expiresInDays must be an integer between 1 and 3650" };
   return { ok: true, value: v };
 }
+
+/**
+ * Тикет, както го връща API-то: без вътрешните полета на архива. `archiveHtml` е
+ * шифрованият транскрипт при покой (lib/transcriptAtRest.js), а `archiveToken` —
+ * тайната зад връзката към него; нито едното е част от публичния договор.
+ * Връзката към транскрипта (`archiveUrl`) остава.
+ */
+export function publicTicket(ticket) {
+  if (!ticket) return ticket;
+  // eslint-disable-next-line no-unused-vars
+  const { archiveHtml, archiveToken, ...rest } = ticket;
+  return rest;
+}
+

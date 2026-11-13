@@ -283,7 +283,7 @@ export default function Login() {
               {/* Статичната значка „всичко работи“ беше твърдение без измерване —
                   сега води към живия статус (одит 24.09.2026). */}
               <a href="/status" className="flex items-center gap-2 no-underline hover:text-cs-cyan transition-colors"><Activity className="w-3.5 h-3.5" aria-hidden="true" /> Live system status</a>
-              <span>GDPR compliant</span>
+              <span>Data export and deletion built in</span>
               <span>Ad-free, no advertising trackers</span>
               <span>Cancel anytime, no lock-in</span>
             </div>
