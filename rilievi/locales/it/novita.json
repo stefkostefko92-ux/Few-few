@@ -25,6 +25,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-13-versione-4-5": {
+        "area": "Schede",
+        "titolo": "Versione 4.5: moduli DMG in una sola lingua, niente testo tagliato",
+        "testo": "I moduli d'ordine DMG (Pitagora 4.0 e Fixtures) ora escono solo in italiano, con qualsiasi lettore PDF e stampante. Prima alcuni lettori PDF e alcune stampanti mostravano le scritte in italiano, francese e inglese una sopra l'altra. La data e gli altri campi dei moduli compilabili non vengono più tagliati dal bordo: un indirizzo lungo va su due righe e una nota che non entra nel suo campo finisce con «…». Sul modulo Fixtures le larghezze del modello stanno accanto alle loro caselle e non coprono più il titolo della sezione 3."
+      },
       "2026-11-13-versione-4-4": {
         "area": "Schede",
         "titolo": "Versione 4.4: la scheda si invia per email dal portale",

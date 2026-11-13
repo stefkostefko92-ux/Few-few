@@ -98,7 +98,8 @@ describe('CSV and API', () => {
 
     for (const bad of [
       undefined,
-      `${chiave.slice(0, -1)}A`,
+      // One character off — and really another one: a real key ends with «A» once in sixteen.
+      `${chiave.slice(0, -1)}${chiave.endsWith('A') ? 'B' : 'A'}`,
       'rk_aaaaaaaaaaaa_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
     ]) {
       const r = await api('/api/v1/schede', bad);

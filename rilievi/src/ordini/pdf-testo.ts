@@ -141,21 +141,34 @@ export function fitRighe(
   return { lines: wrap(font, text, width, MIN_SIZE).slice(0, righe), size: MIN_SIZE };
 }
 
-/** Най-едрият шрифт (до `max`), при който абзацът влиза в кутията; иначе 5 pt и каквото влезе. */
+/** Височината на `righe` реда при стъпка 1,18 от размера — така ги рисуваме сами на плоските листове. */
+const altoRighe = (righe: number, size: number): number => righe * size * 1.18;
+
+/**
+ * Най-едрият шрифт (до `max`), при който абзацът влиза в кутията; иначе 5 pt и каквото влезе — тогава
+ * последният ред свършва с „…“, за да се вижда, че има още. `alto` е височината на толкова реда при този
+ * размер: друг я подава, когато редовете не ги реди нашият код (полето на формуляр — pdf-form-testo.ts).
+ */
 export function fitBlock(
   font: PDFFont,
   text: string,
   width: number,
   height: number,
   max: number,
+  alto: (righe: number, size: number) => number = altoRighe,
 ): { lines: string[]; size: number } {
   for (let size = max; size >= MIN_SIZE; size -= 0.5) {
     const lines = wrap(font, text, width, size);
-    if (lines.length * size * 1.18 <= height) return { lines, size };
+    if (alto(lines.length, size) <= height) return { lines, size };
   }
   const lines = wrap(font, text, width, MIN_SIZE);
-  return {
-    lines: lines.slice(0, Math.max(1, Math.floor(height / (MIN_SIZE * 1.18)))),
-    size: MIN_SIZE,
-  };
+  let righe = lines.length;
+  while (righe > 1 && alto(righe, MIN_SIZE) > height) righe -= 1;
+  if (righe === lines.length) return { lines, size: MIN_SIZE };
+  const ultima = lines[righe - 1]!;
+  const intera = font.widthOfTextAtSize(`${ultima}…`, MIN_SIZE) <= width;
+  const cut = intera
+    ? ultima.length
+    : segniCheEntrano(font, ultima, ultima.length - 1, MIN_SIZE, width, '…');
+  return { lines: [...lines.slice(0, righe - 1), `${ultima.slice(0, cut)}…`], size: MIN_SIZE };
 }
