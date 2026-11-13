@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { Router } from 'express';
 import { BRAND } from '../brand.js';
 import { COMPANY, CONTENT_UPDATED } from '../company.js';
@@ -5,6 +7,8 @@ import { config } from '../config.js';
 import { translator } from '../i18n.js';
 import { pageUrl, SITE_PAGES } from '../seo/pages.js';
 import { LEGAL_DOCUMENTS, LEGAL_DOCUMENT_IDS } from '../legal/documents.js';
+import { ROOT } from '../paths.js';
+import { DAY } from '../time.js';
 
 function xmlEscape(value: string): string {
   return value
@@ -114,8 +118,35 @@ export function llmsTxt(base: string): string {
   return lines.join('\n');
 }
 
+/**
+ * security.txt (RFC 9116): къде се съобщава уязвимост. `Expires` е задължително и не бива да е след
+ * повече от година — смята се при заявката (6 месеца напред), за да не остарява след деплой.
+ */
+export function securityTxt(base: string, contact: string, now = new Date()): string {
+  const expires = new Date(now.getTime() + 182 * DAY).toISOString().replace(/\.\d{3}Z$/, 'Z');
+  return [
+    `Contact: mailto:${contact}`,
+    `Expires: ${expires}`,
+    'Preferred-Languages: bg, en',
+    `Canonical: ${base}/.well-known/security.txt`,
+    '',
+  ].join('\n');
+}
+
+/** IndexNow: ключът е публичен по замисъл — търсачките го четат от сайта (tools/seo/indexnow.mjs). */
+export const INDEXNOW_KEY = readFileSync(join(ROOT, 'public', 'indexnow-key.txt'), 'utf8').trim();
+
 export function seoRouter(): Router {
   const router = Router();
+  router.get(['/indexnow-key.txt', `/${INDEXNOW_KEY}.txt`], (_req, res) => {
+    res.type('text/plain').set('Cache-Control', 'public, max-age=86400').send(INDEXNOW_KEY);
+  });
+  router.get('/.well-known/security.txt', (_req, res) => {
+    res
+      .type('text/plain; charset=utf-8')
+      .set('Cache-Control', 'public, max-age=86400')
+      .send(securityTxt(config().PUBLIC_BASE_URL, config().CONTACT_EMAIL));
+  });
   router.get('/robots.txt', (_req, res) => {
     res.type('text/plain').send(robotsTxt(config().PUBLIC_BASE_URL));
   });

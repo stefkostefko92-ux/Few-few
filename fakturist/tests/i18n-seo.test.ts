@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { keysOf, translator } from '../src/i18n.js';
 import { SITE_PAGES } from '../src/seo/pages.js';
 import { faqItems, structuredData } from '../src/seo/structured-data.js';
-import { llmsTxt, robotsTxt, sitemapXml } from '../src/routes/seo.js';
+import { INDEXNOW_KEY, llmsTxt, robotsTxt, securityTxt, sitemapXml } from '../src/routes/seo.js';
 import { LEGAL_DOCUMENT_IDS } from '../src/legal/documents.js';
 
 const BASE = 'https://fakturist.carbonstealth.eu';
@@ -64,4 +64,14 @@ test('JSON-LD: Organization, WebSite, BreadcrumbList и FAQPage, когато и
       assert.ok(types.includes(type), `${page.id}: ${type}`);
     if (faqItems('bg', t, page.id).length > 0) assert.ok(types.includes('FAQPage'), page.id);
   }
+});
+
+test('security.txt (RFC 9116) и ключът за IndexNow', () => {
+  const now = new Date('2026-11-13T12:00:00Z');
+  const text = securityTxt(BASE, 'info@carbonstealth.eu', now);
+  assert.match(text, /^Contact: mailto:info@carbonstealth\.eu$/m);
+  assert.match(text, new RegExp(`^Canonical: ${BASE}/\\.well-known/security\\.txt$`, 'm'));
+  const expires = Date.parse(/^Expires: (.+)$/m.exec(text)![1]!);
+  assert.ok(expires > now.getTime() && expires - now.getTime() < 365 * 24 * 3600 * 1000);
+  assert.match(INDEXNOW_KEY, /^[a-f0-9]{32}$/);
 });
