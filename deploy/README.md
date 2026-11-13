@@ -162,15 +162,16 @@ ZIP отпреди месец.
   същото, затова откат няма; скриптът сочи последния дъмп и вика човек → `korpora/DEPLOY.md`:
   обикновено `migrate resolve --rolled-back` (PostgreSQL е върнал миграцията цялата), а
   възстановяване от дъмпа — само ако данните трябва да се върнат.
-- **rilievi** (схемите за оглед на асансьори): моделът на korpora — Docker Compose (db + app на
-  `127.0.0.1:4330`), стъпките са в `rilievi/deploy/deploy.sh`: тайните от
+- **rilievi** (схемите за оглед на асансьори): моделът на korpora — Docker Compose (db + app; в
+  контейнера 4330, **на живия сървър публикуван на `127.0.0.1:4340`** — проверено 13.11.2026), стъпките са в `rilievi/deploy/deploy.sh`: тайните от
   `/opt/few-few/shared/rilievi/.env` (прави ги веднъж `rilievi/deploy/setup-env.sh`; без тях rilievi
   се пропуска като „още ненастроен“), `pg_dump` преди смяната, сонда с маркер `"app":"rilievi"`,
   дневен бекъп (`rilievi-backup.timer`), vhost-ът от репото щом има сертификат. Откатът е към
   `RILIEVI_LAST_GOOD` с `RILIEVI_SKIP_BACKUP=1`; при провалена миграция — човек → `rilievi/DEPLOY.md`.
   Първият MASTER — веднъж с `rilievi/deploy/create-master.sh`; останалите само с покана.
 - **fakturist** (Фактурист — фактуриране върху EN 16931, `fakturist.carbonstealth.eu`): моделът на
-  rilievi — Docker Compose (db + app на `127.0.0.1:4340`, `HTTP_PORT` в `.env` го сменя), стъпките са в
+  rilievi — Docker Compose (db + app; по подразбиране `127.0.0.1:4340`, **на живия сървър
+  `HTTP_PORT=4342`** — 4340 е на rilievi, 4341 на semki, проверено 13.11.2026), стъпките са в
   `fakturist/deploy/deploy.sh`: тайните от `/opt/few-few/shared/fakturist/.env` (600; прави ги веднъж
   `fakturist/deploy/setup-env.sh` — `POSTGRES_PASSWORD`, `JWT_SECRET`, `LEDGER_SEAL_KEY`,
   `PUBLIC_BASE_URL`, `REGISTRATION_OPEN=false`; без тях fakturist се пропуска като „още ненастроен“),
