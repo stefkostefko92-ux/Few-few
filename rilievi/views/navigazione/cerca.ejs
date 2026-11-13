@@ -1,0 +1,18 @@
+<%- include('../partials/top', { titleKey: 'cerca.titolo', narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('cerca.titolo') %></h1>
+    <p class="page-head__sub"><%= t('cerca.sottotitolo') %></p>
+  </div>
+</div>
+<form class="cerca__form" method="get" action="/cerca" role="search">
+  <label class="field__label" for="cerca-q"><%= t('cerca.label') %></label>
+  <div class="filter__row">
+    <input class="input" id="cerca-q" name="q" type="search" value="<%= r.q %>" placeholder="<%= t('cerca.placeholder') %>" autocomplete="off" enterkeyhint="search"<% if (!r.q) { %> autofocus<% } %>>
+    <button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'search' }) %><%= t('cerca.cerca') %></button>
+  </div>
+</form>
+<div class="cerca" aria-live="polite">
+  <%- include('_risultati') %>
+</div>
+<%- include('../partials/bottom') %>

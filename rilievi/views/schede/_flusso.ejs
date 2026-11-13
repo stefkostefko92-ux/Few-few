@@ -1,0 +1,54 @@
+<%
+  // Одобрението и поръчките към доставчиците на картата (routes/schede.ts → `flusso`): състоянието и
+  // бутоните по правата; модулите на картата за „Invia al fornitore“; пратените поръчки със състоянието им.
+  const st = scheda.statoApprovazione || 'BOZZA';
+  const usaApprovazione = scheda.azienda.approvazioneSchede;
+%><% if (usaApprovazione) { %><section class="cartelli-scheda flusso" aria-labelledby="h-approvazione">
+  <h2 class="section__title" id="h-approvazione"><%= t('flusso.approvazione.titolo') %></h2>
+  <p><span class="badge<%= st === 'APPROVATA' ? '' : ' badge--off' %>"><%= t('flusso.approvazione.stati.' + st) %></span>
+    <% if (st === 'APPROVATA' && scheda.approvazioneAt) { %><%= t('flusso.approvazione.approvataDa', { data: fmt.dateTime(scheda.approvazioneAt), nome: scheda.approvazioneDa ? scheda.approvazioneDa.name : '—' }) %><% } %>
+    <% if (st === 'RESPINTA') { %><%= t('flusso.approvazione.respintaDa', { nome: scheda.approvazioneDa ? scheda.approvazioneDa.name : '—' }) %><% } %>
+  </p>
+  <% if (scheda.notaApprovazione) { %><p class="flusso__nota"><strong><%= t('flusso.approvazione.nota') %>:</strong> <%= scheda.notaApprovazione %></p><% } %>
+  <% if (!scheda.deletedAt && modifica && ['BOZZA', 'RESPINTA'].includes(st)) { %><form method="post" action="/schede/<%= scheda.id %>/approvazione/invia">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="toolbar"><button class="btn btn--primary" type="submit"><%= t('flusso.approvazione.invia') %></button></div>
+  </form><% } %>
+  <% if (!scheda.deletedAt && flusso.approva && st === 'INVIATA') { %><form class="form form--tight" method="post" action="/schede/<%= scheda.id %>/approvazione/decidi">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="base" value="<%= scheda.updatedAt.toISOString() %>">
+    <div class="field">
+      <label class="field__label" for="f-nota-approvazione"><%= t('flusso.approvazione.nota') %></label>
+      <textarea class="input" id="f-nota-approvazione" name="nota" rows="2" maxlength="1000" aria-describedby="hint-nota-approvazione"></textarea>
+      <p class="field__hint" id="hint-nota-approvazione"><%= t('flusso.approvazione.notaHint') %></p>
+    </div>
+    <div class="toolbar">
+      <button class="btn btn--primary" type="submit" name="decisione" value="approva"><%= t('flusso.approvazione.approva') %></button>
+      <button class="btn" type="submit" name="decisione" value="respingi"><%= t('flusso.approvazione.respingi') %></button>
+    </div>
+  </form><% } %>
+  <p class="muted"><%= t('flusso.approvazione.riapre') %> <%= t('flusso.approvazione.ordiniBloccati') %></p>
+</section><% } %>
+<% if (flusso.moduli.length > 0 || flusso.ordini.length > 0) { %><section class="cartelli-scheda flusso" id="ordini" aria-labelledby="h-ordini">
+  <h2 class="section__title" id="h-ordini"><%= t('flusso.ordini.sezione') %></h2>
+  <% if (!scheda.deletedAt && modifica && flusso.moduli.length > 0) { %><% if (flusso.consentito) { %><ul class="flusso__moduli" role="list">
+    <% for (const m of flusso.moduli) { %><li><a class="btn btn--sm" href="/schede/<%= scheda.id %>/ordini/invia?modulo=<%= encodeURIComponent(m.path) %>"><%- include('../partials/icon', { name: 'mail' }) %><span><%= t('flusso.invio.azione') %>: <%= m.titolo %></span></a></li>
+    <% } %>
+  </ul><% } else { %><p class="muted"><%= t('flusso.approvazione.ordiniBloccati') %></p><% } %><% } %>
+  <% if (flusso.ordini.length === 0) { %><p class="muted"><%= t('flusso.ordini.nessuno') %></p><% } else { %>
+  <ul class="flusso__ordini" role="list">
+    <% for (const o of flusso.ordini) { %><li>
+      <p><strong><%= o.destinatarioNome %></strong> · <span class="email"><%= o.destinatarioEmail %></span> · <%= fmt.dateTime(o.inviatoAt) %><% if (o.inviatoDa) { %> · <%= o.inviatoDa.name %><% } %></p>
+      <p><span class="badge<%= o.stato === 'CONFERMATO' ? '' : ' badge--off' %>"><%= t('flusso.ordini.stati.' + o.stato) %></span><% if (o.confermatoAt) { %> <%= t('flusso.ordini.confermato', { data: fmt.dayRoma(o.confermatoAt) }) %><% } %><% if (o.nota) { %> · <%= o.nota %><% } %></p>
+      <% if (!scheda.deletedAt && modifica && o.stato === 'INVIATO') { %><form class="flusso__stato" method="post" action="/ordini/<%= o.id %>/stato">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" name="scheda" value="<%= scheda.id %>">
+        <label class="visually-hidden" for="nota-<%= o.id %>"><%= t('flusso.ordini.nota') %></label>
+        <input class="input" id="nota-<%= o.id %>" name="nota" type="text" maxlength="1000" placeholder="<%= t('flusso.ordini.nota') %>">
+        <button class="btn btn--sm" type="submit" name="stato" value="CONFERMATO"><%= t('flusso.ordini.conferma') %></button>
+        <button class="btn btn--sm btn--ghost" type="submit" name="stato" value="ANNULLATO"><%= t('flusso.ordini.annulla') %></button>
+      </form><% } %>
+    </li>
+    <% } %>
+  </ul><% } %>
+</section><% } %>

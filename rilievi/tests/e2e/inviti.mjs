@@ -13,7 +13,7 @@ async function acceptInvite(context, base, link, name) {
   await page.fill('#name', name);
   await page.fill('#password', 'Fune-Trefolo-Tenditore-7');
   await page.fill('#confirm', 'Fune-Trefolo-Tenditore-7');
-  await page.click('form button[type=submit]');
+  await page.click('form:not([data-avviso-chiudi]) button[type=submit]');
   await page.waitForURL(/\/(schede|condizioni\/accetta)/);
   await acceptTerms(page, name);
   return page;
@@ -38,7 +38,7 @@ export async function checkInvites({
   await masterPage.fill('#name', 'Amministratore E2E');
   await masterPage.selectOption('#azienda', { label: aziendaName });
   await masterPage.selectOption('#role', 'ADMIN');
-  await masterPage.click('form button[type=submit]');
+  await masterPage.click('form:not([data-avviso-chiudi]) button[type=submit]');
   const adminLink = await masterPage.inputValue('#link');
   const adminContext = await browser.newContext();
   const adminPage = await acceptInvite(adminContext, base, adminLink, 'Amministratore E2E');
@@ -47,7 +47,7 @@ export async function checkInvites({
   await adminPage.fill('#email', `tecnico.e2e.${stamp}@rilievi.test`);
   await adminPage.fill('#name', 'Tecnico E2E');
   await adminPage.selectOption('#role', 'TECNICO');
-  await adminPage.click('form button[type=submit]');
+  await adminPage.click('form:not([data-avviso-chiudi]) button[type=submit]');
   const techLink = await adminPage.inputValue('#link');
   const techContext = await browser.newContext();
   const techPage = await acceptInvite(techContext, base, techLink, 'Tecnico E2E');

@@ -306,3 +306,83 @@
   color: var(--muted);
   font-size: 0.8125rem;
 }
+
+/* Информацията по чл. 13 над подписите (views/partials/firma-informativa.ejs): текстът на фирмата на редове. */
+.informativa-firma__testo {
+  white-space: pre-line;
+  max-width: 80ch;
+}
+
+/* Одобрението и поръчките на картата (views/schede/_flusso.ejs). */
+.flusso__nota {
+  white-space: pre-line;
+}
+
+.flusso__moduli,
+.flusso__ordini {
+  display: grid;
+  gap: 10px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.flusso__ordini > li {
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.flusso__ordini p {
+  margin: 0 0 4px;
+  overflow-wrap: anywhere;
+}
+
+.flusso__stato {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.flusso__stato .input {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+/* Списък с действие вдясно (адресникът на доставчиците). */
+.elenco-semplice {
+  margin: 8px 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.elenco-semplice > li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+
+/* „Invia al fornitore: <modulo>“ — името на модула е дълго: бутонът се пренася, не разширява страницата. */
+.flusso,
+.flusso__moduli > li {
+  min-width: 0;
+}
+
+.flusso__moduli .btn {
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+  line-height: 1.25;
+  height: auto;
+}
+
+/* Текст, написан от човек извън портала (сигнал, мотиви): редовете му остават, дълга дума не избутва страницата. */
+.testo-libero {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,203 @@
+/* Офертите (views/preventivi/): редовете на формата като карти — описанието на цял ред, числата в колони,
+   сумата на реда вдясно; страницата — клиентът и данните, таблицата, обобщението вдясно. Монохромно; на
+   състоянието — само рамка и дебелина (без цвят — червеното е само за грешки). */
+
+.preventivo-righe-form {
+  display: grid;
+  gap: 14px;
+}
+
+.preventivo-riga {
+  margin: 0;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  min-width: 0;
+}
+
+.preventivo-riga__titolo {
+  padding: 0 6px;
+  font-weight: 600;
+}
+
+.preventivo-riga__campi {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 14px;
+}
+
+.preventivo-riga__descr {
+  grid-column: 1 / -1;
+}
+
+/* Кодът стои на реда на описанието (по-високо поле): не се разтяга до неговата височина. */
+.preventivo-riga__codice > .input {
+  align-self: start;
+}
+
+@media (min-width: 720px) {
+  .preventivo-riga__campi {
+    grid-template-columns:
+      minmax(0, 0.9fr) minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 0.9fr)
+      minmax(0, 1fr);
+  }
+
+  .preventivo-riga__codice {
+    grid-column: 1 / 2;
+  }
+
+  .preventivo-riga__descr {
+    grid-column: 2 / -1;
+  }
+}
+
+.preventivo-riga__importo {
+  grid-column: 1 / -1;
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.preventivo-riga__importo output {
+  font-weight: 600;
+}
+
+.preventivo-riga__togli {
+  margin-top: 8px;
+}
+
+/* Сумите и количествата — вдясно, с таблични цифри (`.num` на портала е за номерата на уредбите). */
+.input.importo,
+.table .importo {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.table .importo {
+  white-space: nowrap;
+}
+
+.preventivo-righe td:first-child {
+  white-space: nowrap;
+}
+
+.preventivo-listino {
+  margin-bottom: 14px;
+}
+
+/* Сумите: двете колони вдясно, „Totale“ — с линия над него и получер. */
+.preventivo-totali {
+  display: grid;
+  gap: 4px;
+  width: min(100%, 380px);
+  margin: 16px 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.preventivo-totali > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.preventivo-totali dt {
+  color: var(--muted);
+}
+
+.preventivo-totali dd {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.preventivo-totali__totale {
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 2px solid var(--line-strong);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.preventivo-totali__totale dt {
+  color: inherit;
+}
+
+.preventivo-testa {
+  display: grid;
+  gap: 16px 32px;
+}
+
+@media (min-width: 720px) {
+  .preventivo-testa {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  }
+}
+
+.preventivo-testa p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.preventivo-dati {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 20px;
+  margin: 0;
+}
+
+.preventivo-dati dt {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.preventivo-dati dd {
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.preventivo-dati__wide {
+  grid-column: 1 / -1;
+}
+
+.preventivo-righe {
+  min-width: 640px;
+}
+
+.preventivo-righe td {
+  vertical-align: top;
+}
+
+.preventivo-righe__descr {
+  white-space: pre-line;
+  min-width: 220px;
+}
+
+.testo-libero {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+/* Състоянието: рамка; приетото — плътна и получер, отказаното — пунктир. */
+.stato-preventivo {
+  display: inline-block;
+  padding: 1px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.stato-preventivo--bozza {
+  border-color: var(--line);
+  color: var(--muted);
+}
+
+.stato-preventivo--accettato {
+  border-width: 2px;
+  font-weight: 700;
+}
+
+.stato-preventivo--rifiutato {
+  border-style: dashed;
+}

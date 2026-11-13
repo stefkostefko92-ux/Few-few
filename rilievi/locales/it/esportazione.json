@@ -1,0 +1,183 @@
+{
+  "esportazione": {
+    "inCorso": "L'esportazione di questa azienda è già in corso. Attendi che finisca e riprova.",
+    "scarica": {
+      "titolo": "Scarica tutti i dati",
+      "testo": "Un unico file .tar con tutto quello che l'azienda ha nel portale. Dentro trovi il file dati.json, il logo, le foto e i video già elaborati e i documenti confermati in PDF/A. Il file dati.json contiene azienda, persone e ruoli, schede con misure e schizzi, fogli di intervento con firme e sigilli, cartelli, calcoli, verbali, buoni di lavoro, preventivi e listino, registro delle attività. Si apre con qualsiasi programma per archivi (7-Zip, Archivio di Windows e Mac, tar).",
+      "esclusi": "Non contiene password, chiavi della verifica in due passaggi, link e codici di accesso: non sono dati dell'azienda, ma chiavi personali.",
+      "bottone": "Scarica tutti i dati",
+      "ultima": "Ultima esportazione: {data}, da {nome}.",
+      "ultimaPortale": "Ultima esportazione: {data}, dall'amministrazione del portale.",
+      "mai": "Nessuna esportazione finora.",
+      "formato": "Formato e struttura del file",
+      "password": "La tua password",
+      "passwordAiuto": "Per sicurezza: chi usa il tuo account senza conoscere la password non può scaricare tutti i dati dell'azienda."
+    },
+    "cambio": {
+      "titolo": "Cambio di fornitore",
+      "intro": "Puoi passare a un altro fornitore, portare i dati su una tua infrastruttura o chiedere la cancellazione. Il cambio è gratuito.",
+      "comeFunziona": "Dopo la richiesta il portale continua a funzionare come sempre per 30 giorni (periodo di transizione). Puoi prorogare il periodo una volta o annullare la richiesta finché è in corso. Alla fine il servizio termina: per 90 giorni gli amministratori accedono solo per scaricare i dati, poi i dati sono cancellati definitivamente.",
+      "esito": "Cosa vuoi fare dei dati?",
+      "esiti": {
+        "ALTRO_FORNITORE": "Passare a un altro fornitore",
+        "INFRASTRUTTURA_PROPRIA": "Trasferirli su un'infrastruttura propria",
+        "CANCELLAZIONE": "Cancellarli alla fine del servizio"
+      },
+      "conferma": "Per confermare, scrivi il nome dell'azienda: {nome}",
+      "letto": "Ho letto le condizioni del cambio di fornitore (Allegato B delle Condizioni di servizio).",
+      "allegato": "Leggi l'Allegato B",
+      "richiedi": "Richiedi il cambio di fornitore",
+      "inCorso": "Cambio di fornitore richiesto il {data}: {esito}.",
+      "fino": "Il portale funziona come sempre fino al {data} compreso.",
+      "giorni": "Mancano {n} giorni.",
+      "giorno": "Manca 1 giorno.",
+      "prorogato": "Il periodo è già stato prorogato: la proroga è una sola.",
+      "proroga": "Proroga il periodo di transizione",
+      "prorogaDi": "Proroga di",
+      "prorogaGiorni": "{n} giorni",
+      "prorogaBottone": "Proroga",
+      "annulla": "Annulla la richiesta",
+      "annullaTesto": "Se annulli, il servizio continua come prima, senza scadenze.",
+      "terminato": "Il servizio per questa azienda è terminato il {data}.",
+      "eliminazione": "I dati restano scaricabili fino al {data}; dopo sono cancellati definitivamente e le copie di sicurezza scadono entro 14 giorni.",
+      "soloEsportazione": "Il servizio è terminato: da questo account puoi solo scaricare i dati dell'azienda.",
+      "cambiaEsito": "Cambia la scelta",
+      "prorogaAltro": "Ti serve un periodo diverso? Scrivici: la proroga può avere la durata che ritieni adeguata.",
+      "password": "La password del tuo account"
+    },
+    "errore": {
+      "esito": "Scegli cosa fare dei dati.",
+      "conferma": "Scrivi esattamente il nome dell'azienda e conferma di aver letto le condizioni del cambio.",
+      "proroga": "Scegli di quanti giorni prorogare il periodo.",
+      "password": "Password non corretta. Per scaricare i dati dell'azienda serve la password del tuo account.",
+      "passwordCambio": "Password non corretta. Per chiedere il cambio di fornitore serve la password del tuo account."
+    },
+    "banner": {
+      "titolo": "Cambio di fornitore in corso per {azienda}",
+      "testo": "Il portale funziona come sempre fino al {data} compreso; dopo, il servizio termina.",
+      "link": "Esportazione e cambio fornitore"
+    },
+    "pagina": {
+      "nav": "Esportazione dei dati",
+      "meta": {
+        "title": "Esportazione dati e cambio fornitore — Rilievi Impianti",
+        "description": "Scarica tutti i dati della tua azienda: formato del file, struttura di dati.json, procedura e tempi del cambio di fornitore. Sempre gratis.",
+        "keywords": "esportazione dati, cambio di fornitore, Data Act, portabilità dei dati, Rilievi Impianti, Carbon Stealth"
+      },
+      "titolo": "Esportazione dei dati e cambio di fornitore",
+      "lead": "I dati che la tua azienda inserisce in Rilievi Impianti sono tuoi. L'amministratore dell'azienda può scaricarli tutti, in qualsiasi momento e gratis, in un unico file, e può chiedere di passare a un altro fornitore o di chiudere il servizio.",
+      "intro": "Questa pagina descrive il file, la procedura e i tempi, come previsto dal Regolamento (UE) 2023/2854 (Data Act) e dall'Allegato B delle Condizioni di servizio.",
+      "aggiornato": "Ultimo aggiornamento: {data}",
+      "indice": "In questa pagina",
+      "scaricare": {
+        "titolo": "Come si scaricano i dati?",
+        "testo": "Solo gli amministratori dell'azienda possono scaricare il file. Apri Impostazioni → Esportazione e cambio fornitore, scrivi la tua password e premi «Scarica i dati». Ogni esportazione resta nel registro delle attività dell'azienda. Puoi scaricare il file quante volte vuoi.",
+        "tecnico": "Indirizzo tecnico, per chi automatizza: POST {indirizzo}, con la sessione di un amministratore, il token del modulo e la password. La risposta è il file .tar."
+      },
+      "file": {
+        "titolo": "Che cosa contiene il file?",
+        "testo": "Un archivio tar non compresso (ustar, POSIX.1-1988), chiamato rilievi-<identificativo>-<AAAA-MM-GG>.tar. Si apre con tar, 7-Zip o gli strumenti di Windows e macOS.",
+        "dati": "dati.json: tutti i dati in JSON (UTF-8). Date e ore in ISO 8601 (UTC); i numeri decimali sono testo, per esempio «6.5».",
+        "logo": "logo.png o logo.jpg: il logo dell'azienda, se c'è.",
+        "allegati": "allegati/<scheda>/<id>.jpg o .mp4: le foto (JPEG, fino a 2560 px, senza metadati) e i video (MP4, H.264 e AAC, fino a 1080p) già elaborati.",
+        "documenti": "documenti/: i fogli di intervento e i verbali confermati in PDF/A (per ogni verbale, la copia azienda e la copia installatore) e ogni buono di lavoro e ogni preventivo in PDF/A, così com'è al momento dell'esportazione.",
+        "versioni": "versioni/<scheda>.json: la cronologia di ogni scheda, un file per scheda."
+      },
+      "struttura": {
+        "titolo": "Com'è fatto dati.json?",
+        "intro": "Un oggetto JSON con queste chiavi, in quest'ordine. L'elenco dei campi è generato dal codice del portale: è sempre quello del file che scarichi.",
+        "campi": "Campi",
+        "figli": "In ogni scheda, anche:",
+        "sezioni": {
+          "formato": "La versione del formato, oggi «{formato}». Se cambia in modo incompatibile, lo scriviamo qui.",
+          "esportatoIl": "Data e ora dell'esportazione.",
+          "azienda": "L'azienda: nome, dati societari come inseriti, ordine delle sezioni della scheda, modello del cartello, nomi e permessi dei ruoli, informativa per chi firma, approvazione delle schede, codice e clausola del buono di lavoro, date; logo è il nome del file nell'archivio.",
+          "persone": "Le persone dell'azienda con il loro ruolo (ADMIN, DIREZIONE, RESPONSABILE, TECNICO, OPERATORE, CLIENTE) e la data di ingresso.",
+          "inviti": "Gli inviti non ancora accettati, senza il link di accesso.",
+          "schede": "Le schede di rilievo, anche quelle nel cestino, con tutti i campi, i moduli d'ordine compilati, le scelte di stampa, lo stato di approvazione e la cronologia delle versioni.",
+          "interventi": "I fogli di intervento: voci (per numero, da «01» a «97»), orari, firme tracciate (riquadro 600 × 200), nomi dei firmatari, impronta SHA-256 e sigillo.",
+          "cartelli": "I cartelli di fermo impianto.",
+          "calcoliArgano": "I calcoli argano con i dati di ingresso. I risultati non sono salvati: si ricalcolano dai dati.",
+          "calcoliLimitatore": "I calcoli del limitatore con i dati di ingresso.",
+          "verbali": "I verbali di chiusura cantiere, con le firme, l'impronta e il sigillo.",
+          "buoni": "I buoni di lavoro: dati generali, sequenze di lavoro (descrizione, esito, data, fornitore), controlli, resoconto e, in «firme», ogni firma con il suo posto (riga, controllo o firma in fondo), il tracciato, l'impronta SHA-256 di ciò che firma e il sigillo.",
+          "registro": "Il registro delle attività dell'azienda, per il periodo in cui è conservato: chi, quando, che cosa, senza il contenuto delle schede. Le azioni dell'amministrazione del portale compaiono senza autore.",
+          "preventivi": "I preventivi (anche se i preventivi sono disattivati): numero, data, validità, cliente, oggetto, impianto, righe (codice, descrizione, unità, quantità in millesimi, prezzo in centesimi, sconto in centesimi di punto, aliquota IVA), totali in centesimi, note, condizioni e stato.",
+          "listino": "Il listino prezzi dell'azienda: codice, descrizione, unità, prezzo in centesimi e aliquota IVA.",
+          "fornitori": "La rubrica dei fornitori per gli ordini: nome ed email.",
+          "ordini": "Gli ordini inviati ai fornitori dal portale: scheda, modulo, destinatario, messaggio, stato e date."
+        },
+        "figliNomi": {
+          "misureBottoniere": "misureBottoniere: le misure delle bottoniere per fermata",
+          "schizzi": "schizzi: i fogli dello schizzo, con il disegno in JSON",
+          "allegati": "allegati: foto e video; file è il percorso nell'archivio, o null se il file non è ancora elaborato",
+          "versioni": "versioni: il percorso del file versioni/<scheda>.json con la cronologia della scheda (le ultime 100 versioni salvate, ognuna con tutti i campi), o null"
+        }
+      },
+      "esclusi": {
+        "titolo": "Che cosa non c'è nel file?",
+        "testo": "Password e loro impronte, chiavi e codici della verifica in due passaggi, sessioni, token e link monouso, contatori dei tentativi e blocchi: sono chiavi di sicurezza, non dati tuoi. Mancano anche le miniature (si ricavano dai file), gli originali di foto e video (il portale non li conserva dopo la compressione) e gli indirizzi a cui hai inviato email (non li conserviamo). Il registro delle accettazioni e quello dei calcoli emessi li conserviamo noi (art. 19 delle Condizioni): una copia delle voci che riguardano la tua azienda te la mandiamo gratis, su richiesta."
+      },
+      "cambio": {
+        "titolo": "Come funziona il cambio di fornitore?",
+        "passi": {
+          "p1": "Un amministratore lo chiede in Impostazioni → Esportazione e cambio fornitore, o per email, e sceglie se passare a un altro fornitore, portare i dati su un'infrastruttura propria o farli cancellare.",
+          "p2": "Inizia subito un periodo di transizione di 30 giorni: il portale funziona per tutti, come sempre, e i dati si scaricano quando vuoi.",
+          "p3": "Se ti serve più tempo, proroga una volta di 30, 60 o 90 giorni, o del periodo che ci chiedi per iscritto.",
+          "p4": "Fino alla fine del periodo puoi cambiare la scelta o annullare la richiesta: il contratto continua come prima.",
+          "p5": "Alla fine il servizio termina e te lo confermiamo per email. Per 90 giorni gli amministratori entrano solo nella pagina di esportazione e scaricano il file.",
+          "p6": "Poi cancelliamo tutto; le copie di sicurezza scadono entro altri 14 giorni. Ti confermiamo la cancellazione per email."
+        },
+        "impossibile": "Se 30 giorni sono tecnicamente impossibili, te lo diciamo entro 14 giorni lavorativi e proponiamo un periodo fino a sette mesi, con il servizio attivo."
+      },
+      "costi": {
+        "titolo": "Quanto costa?",
+        "testo": "Niente. Esportazione, cambio di fornitore, proroga, annullamento e cancellazione sono gratuiti (art. 29 Data Act)."
+      },
+      "limiti": {
+        "titolo": "Limiti tecnici noti",
+        "testo": "Con molti video il file può essere grande. Il sigillo dei fogli firmati si verifica solo con la nostra chiave: su richiesta lo verifichiamo noi, finché i dati esistono. Il portale non importa dati da altri programmi."
+      },
+      "giurisdizione": {
+        "titolo": "Dove sono i dati e chi può accedervi?",
+        "fornitore": "Fornitore: Carbon Stealth VCC, Bulgaria (Unione europea), diritto bulgaro.",
+        "infrastruttura": "Infrastruttura: netcup GmbH, Karlsruhe. Server, database e copie di sicurezza sono in data center in Germania, soggetti al diritto tedesco e dell'Unione.",
+        "email": "Email: Sendinblue SAS (Brevo), Francia. Brevo può usare sub-responsabili fuori dall'Unione, con clausole contrattuali tipo.",
+        "misureTitolo": "Le misure contro l'accesso di autorità di paesi terzi ai dati non personali (art. 28 Data Act):",
+        "misure": {
+          "m1": "dati e copie di sicurezza solo nell'Unione, presso fornitori con sede nell'Unione;",
+          "m2": "connessioni solo in HTTPS;",
+          "m3": "accesso amministrativo riservato al personale autorizzato e registrato;",
+          "m4": "contratti con i sub-responsabili che li vincolano alle nostre istruzioni;",
+          "m5": "una richiesta di un'autorità di un paese terzo la accogliamo solo se si basa su un accordo internazionale o nei casi dell'art. 32 Data Act, dopo una verifica giuridica e per il minimo dei dati;",
+          "m6": "prima ti informiamo, salvo i casi in cui la legge lo vieta."
+        }
+      },
+      "faq": {
+        "titolo": "Domande frequenti",
+        "voci": {
+          "tutti": {
+            "q": "Il file contiene davvero tutti i dati?",
+            "a": "Sì: contiene tutto ciò che la tua azienda ha inserito o generato nel portale, tranne le chiavi di sicurezza elencate sopra."
+          },
+          "costo": {
+            "q": "Quanto costa esportare o cambiare fornitore?",
+            "a": "Niente: esportazione, cambio, proroga e cancellazione sono gratuiti."
+          },
+          "durante": {
+            "q": "Il portale funziona durante il cambio?",
+            "a": "Sì: per i 30 giorni del periodo di transizione, e per l'eventuale proroga, funziona per tutti senza limitazioni."
+          },
+          "dopo": {
+            "q": "Che cosa succede ai dati dopo il cambio?",
+            "a": "Restano scaricabili dagli amministratori per 90 giorni, poi li cancelliamo; le copie di sicurezza scadono entro altri 14 giorni."
+          },
+          "aprire": {
+            "q": "Posso aprire il file con un altro programma?",
+            "a": "Sì: dati.json è JSON standard, le foto sono JPEG e i video MP4; la struttura è descritta in questa pagina."
+          }
+        }
+      }
+    }
+  }
+}

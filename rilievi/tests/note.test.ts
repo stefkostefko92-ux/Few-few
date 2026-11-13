@@ -185,6 +185,7 @@ describe('the alarm and the emergency call', () => {
       'cornettaInstallare',
       'allarmePortineria',
       'displayPortineria',
+      'allarmeNote',
     ]);
     assert.ok(!SECTIONS.some((s) => (s.key as string) === 'telesoccorso'));
   });

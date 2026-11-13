@@ -1,0 +1,175 @@
+/* Инструментите на MASTER (views/master/contratti, verifica, comunicazioni): договорите, проверката на
+   документ, формата и списъкът на съобщенията. Общото с конзолата (`.cifre`, `.codice`) — в master.css. */
+
+/* Договорите. */
+.cifre--tre {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+}
+
+.stato-contratto {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.stato-contratto--firmate {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.stato-contratto--esistente {
+  border-style: dashed;
+}
+
+.stato-contratto--attesa {
+  border-width: 2px;
+}
+
+.riga-spenta {
+  color: var(--muted);
+}
+
+.azioni-riga {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.azioni-riga form {
+  margin: 0;
+}
+
+/* Проверката на документ. */
+.verifica-esito {
+  display: grid;
+  gap: 12px;
+}
+
+.verifica-esito:focus {
+  outline: none;
+}
+
+.verifica-esito > h2,
+.verifica-esito > p {
+  margin: 0;
+}
+
+.verifica-esito__vuoto {
+  padding: 16px 18px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+}
+
+.verifica-esito__lista {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.prova {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px;
+  border: 2px solid var(--fg);
+  border-radius: var(--radius);
+}
+
+.prova--ko {
+  border-color: var(--danger);
+}
+
+.prova > * {
+  margin: 0;
+}
+
+.prova__esito {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-weight: 600;
+}
+
+.prova--ko .prova__esito {
+  color: var(--danger);
+}
+
+.prova__titolo {
+  font-size: 1.0625rem;
+}
+
+.prova__dati {
+  display: grid;
+  gap: 6px 18px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr));
+}
+
+.prova__dati div {
+  min-width: 0;
+}
+
+.prova__dati dt {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.prova__dati dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Съобщенията: видът е избор с описание — името горе, описанието отдолу. */
+.scelta-livello__voce > span:last-child {
+  display: grid;
+  padding: 8px 0;
+}
+
+.scelta-livello__nome {
+  font-weight: 600;
+}
+
+.scelta-livello__desc {
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.elenco-aziende .choice__opts {
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.comunicazioni-elenco {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.avviso__meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.avviso--spento {
+  opacity: 0.72;
+}
+
+.comunicazione-form {
+  margin-top: 14px;
+}
+
+/* „Al giorno“ има подсказка отдолу — двете полета се подравняват по горния край. */
+.comunicazione-form .grid {
+  align-items: start;
+}

@@ -71,6 +71,11 @@
       "displayPortineria": "Display in portineria",
       "noteQuadretto": "Note quadretto elettrico",
       "noteImpianto": "Note impianto",
+      "ubicazioneNote": "Note ubicazione e accesso",
+      "tipologiaNote": "Note tipologia",
+      "funiNote": "Note funi, tiranti e contrappeso",
+      "limitatoreNote": "Note limitatore, tenditore, funicella",
+      "allarmeNote": "Note allarme e telesoccorso",
       "noteBottoniere": "Note bottoniere in opera",
       "bottoniereSostituire": "Bottoniere da sostituire",
       "bottoniereOrdine": "Scheda ordine bottoniere DMG",
@@ -167,6 +172,7 @@
         "DMG": "DMG",
         "MASTECH": "Mastech",
         "ELETTROQUADRI": "Elettroquadri",
+        "GEAT": "GEAT",
         "ALTRO": "Altro"
       },
       "quadroModello": {

@@ -37,6 +37,9 @@ export const SECTIONS = [
       { key: 'capienzaPersone', kind: 'int', min: 0, max: 1_000, unit: 'persone' },
       { key: 'fermate', kind: 'int', min: 0, max: 300 },
       { key: 'marca', kind: 'text', maxLength: 120 },
+      // Бележка на всеки раздел (собственикът, 11 ноември 2026): „Note impianto“ дойде тук от „Note e
+      // lavori“ — същата колона, написаното остава. Разделът не се печата отделно: бележката е под табелата.
+      { key: 'noteImpianto', kind: 'textarea', maxLength: 4000, wide: true },
     ],
   },
   {
@@ -48,6 +51,7 @@ export const SECTIONS = [
       // Къде е кутийката — свободен текст („Piano -1, vano contatori“).
       { key: 'ubicazioneCassettina', kind: 'text', maxLength: 120 },
       { key: 'parcheggio', kind: 'text', maxLength: 300, wide: true },
+      { key: 'ubicazioneNote', kind: 'textarea', maxLength: 4000, wide: true },
     ],
   },
   {
@@ -61,6 +65,7 @@ export const SECTIONS = [
       { key: 'tipoPorte', kind: 'checks', options: TIPO_PORTE, single: true },
       // „Accessi: 1 / 2“ — двойният достъп като брой достъпи.
       { key: 'doppioAccesso', kind: 'yesno', risposte: ['no', 'si'], when: PORTE_SCELTE },
+      { key: 'tipologiaNote', kind: 'textarea', maxLength: 4000, wide: true },
     ],
   },
   SEZIONE_QUADRO,
@@ -86,6 +91,7 @@ export const SECTIONS = [
       { key: 'tirantiContrappesoTipo', kind: 'text', maxLength: 120, when: NON_IDRAULICO },
       { key: 'tirantiFossaNumero', kind: 'int', min: 0, max: 100, when: IDRAULICO },
       { key: 'tirantiFossaTipo', kind: 'text', maxLength: 120, when: IDRAULICO },
+      { key: 'funiNote', kind: 'textarea', maxLength: 4000, wide: true },
     ],
   },
   {
@@ -96,6 +102,7 @@ export const SECTIONS = [
       { key: 'funicellaDiametroMm', kind: 'decimal', min: 0, max: 100, unit: 'mm' },
       { key: 'funicellaLunghezzaM', kind: 'decimal', min: 0, max: 10_000, unit: 'm' },
       { key: 'tenditore', kind: 'text', maxLength: 120 },
+      { key: 'limitatoreNote', kind: 'textarea', maxLength: 4000, wide: true },
     ],
   },
   {
@@ -118,6 +125,7 @@ export const SECTIONS = [
       { key: 'cornettaInstallare', kind: 'yesno' },
       { key: 'allarmePortineria', kind: 'yesno' },
       { key: 'displayPortineria', kind: 'yesno' },
+      { key: 'allarmeNote', kind: 'textarea', maxLength: 4000, wide: true },
     ],
   },
   {
@@ -142,7 +150,6 @@ export const SECTIONS = [
     key: 'note',
     fields: [
       { key: 'noteQuadretto', kind: 'textarea', maxLength: 4000, wide: true },
-      { key: 'noteImpianto', kind: 'textarea', maxLength: 4000, wide: true },
       // „Luce vano da sostituire“ — в бележките (собственикът го премести от „Tipologia“); при Sì —
       // бележка на ръка (октомври 2026).
       { key: 'luceVanoSostituire', kind: 'yesno' },
@@ -179,6 +186,8 @@ export const SEARCHABLE = [
   'buonoLavoro',
   'parcheggio',
   'noteLocaleMacchina',
+  'ubicazioneNote',
+  'tipologiaNote',
   'grembiuleNote',
   'quadroNote',
   'arganoTipo',
@@ -193,11 +202,14 @@ export const SEARCHABLE = [
   'tirantiCabinaTipo',
   'tirantiContrappesoTipo',
   'tirantiFossaTipo',
+  'funiNote',
   'limitatoreTipo',
   'tenditore',
+  'limitatoreNote',
   'serratureTipo',
   'pattinoRetrattileTipo',
   'serratureNote',
+  'allarmeNote',
   'noteQuadretto',
   'noteImpianto',
   'luceVanoNote',
