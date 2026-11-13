@@ -23,12 +23,17 @@ var NARROW = "(max-width:860px) and (max-aspect-ratio:1/1)";
 // вертикалния кадър кутията е точно 2:3 (виж --hw), затова няма изрязване.
 var SETS = { wide: { key: "hero", fit: { x: 0.80, y: 0.5 } }, tall: { key: "herop", fit: { x: 0.5, y: 0.5 } } };
 var DIR = "/brand/live/";
+// ?v=<хеш на двигателя и слоевете> (vite.config.js): файловете са с постоянни имена, а сървърът ги кешира
+// за година — версията в адреса е единственият начин поправка или нов рендер да стигнат до посетителя.
+// Същата стойност е в index.html (%CS_LIVE_V%) — адресите трябва да съвпадат с предварително заредените.
+/* global __CS_LIVE_V__ */
+var V = "?v=" + __CS_LIVE_V__;
 
 function loadEngine() {
   return new Promise(function (ok, bad) {
     if (window.CSLive) return ok();
     var s = document.createElement("script");
-    s.src = "/js/cs-live.js";
+    s.src = "/js/cs-live.js" + V;
     s.async = true;
     s.onload = function () { ok(); };
     s.onerror = bad;
@@ -54,10 +59,10 @@ export default function HeroLive(props) {
       if (gone || loading || api.current || !host.current) return;
       loading = true;
       var set = mq.matches ? SETS.tall : SETS.wide, k = DIR + set.key;
-      loadEngine().then(function () { return fetch(k + ".json"); }).then(function (r) { return r.json(); }).then(function (m) {
+      loadEngine().then(function () { return fetch(k + ".json" + V); }).then(function (r) { return r.json(); }).then(function (m) {
         if (gone || !host.current) return null;
         return window.CSLive.mount(host.current, {
-          base: k + "-base.webp", sweep: k + "-sweep.webp", flood: k + "-flood.webp", pos: k + "-pos.png", glow: k + "-glow.webp",
+          base: k + "-base.webp" + V, sweep: k + "-sweep.webp" + V, flood: k + "-flood.webp" + V, pos: k + "-pos.png" + V, glow: k + "-glow.webp" + V,
           sweeps: m.sweeps, sMin: m.sMin, sMax: m.sMax, s0: m.s0, scan: m.scan, phi0: m.phi0, fit: set.fit,
           auto: "loop", laserWidth: 0.075, dpr: mq.matches ? 1.25 : 1.5,
           // вертикалният кадър е за екрани без курсор и не го следи: в тесен прозорец на компютър лазерът и
@@ -107,8 +112,8 @@ export default function HeroLive(props) {
     <>
       <div ref={host} className="cs-hl" aria-hidden="true">
         <picture>
-          <source media={NARROW} srcSet={DIR + "herop-poster-720.webp 720w, " + DIR + "herop-poster.webp 1080w"} sizes="100vw" />
-          <img className="cs-hl-img" src={DIR + "hero-poster.webp"} srcSet={DIR + "hero-poster-1280.webp 1280w, " + DIR + "hero-poster.webp 1920w"} sizes="100vw"
+          <source media={NARROW} srcSet={DIR + "herop-poster-720.webp" + V + " 720w, " + DIR + "herop-poster.webp" + V + " 1080w"} sizes="100vw" />
+          <img className="cs-hl-img" src={DIR + "hero-poster.webp" + V} srcSet={DIR + "hero-poster-1280.webp" + V + " 1280w, " + DIR + "hero-poster.webp" + V + " 1920w"} sizes="100vw"
             alt="" width={1920} height={1080} fetchPriority="high" decoding="async" />
         </picture>
       </div>

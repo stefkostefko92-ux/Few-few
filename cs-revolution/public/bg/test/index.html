@@ -294,7 +294,7 @@ a{color:var(--cs-c)}
      двата му градиента скриват левия и долния ѝ ръб, когато лентата е по-широка или по-висока от нея.
      .cs-bench е рамката на „живата“ сцена (cs-live.js) — точно върху картината, под градиентите. */
   .hero-s{--bw:min(100vw,1560px);--bh:calc(var(--bw)/4);--by:calc(200px - var(--bh)*.49);min-height:300px;display:flex;align-items:center;
-    background:url(/brand/bench-1600.webp) right var(--by)/var(--bw) var(--bh) no-repeat,var(--cs-bg)}
+    background:url(/brand/bench-1600.webp?v=8dea30a964) right var(--by)/var(--bw) var(--bh) no-repeat,var(--cs-bg)}
   .hero-s::after,.cs-bench{position:absolute;right:0;top:var(--by);width:var(--bw);height:var(--bh);pointer-events:none}
   .hero-s::after{content:"";z-index:-1;background:linear-gradient(90deg,var(--cs-bg) 0,rgba(10,12,14,0) 30%),linear-gradient(0deg,var(--cs-bg) 0,rgba(10,12,14,0) 24%)}
   .cs-bench{z-index:-2}
@@ -323,7 +323,7 @@ a{color:var(--cs-c)}
 .work-shot{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;object-position:top;border:1px solid rgba(0,229,255,.14);margin:28px 0 12px;background:#050607}
 /* phones */
 @media(max-width:760px){
-  .hero-s{padding:86px 16px 22px!important;background:url(/brand/bench-800.webp) 50% 64px/100% auto no-repeat,var(--cs-bg)}
+  .hero-s{padding:86px 16px 22px!important;background:url(/brand/bench-800.webp?v=8dea30a964) 50% 64px/100% auto no-repeat,var(--cs-bg)}
   .hero-s::before{background:linear-gradient(180deg,rgba(10,12,14,.35) 0,rgba(10,12,14,.7) 120px,rgba(10,12,14,.9) 220px,var(--cs-bg) 280px)}
   h1{letter-spacing:-.005em!important;font-size:clamp(1.8rem,8vw,2.4rem)!important}
   .js .nav>div{display:none}

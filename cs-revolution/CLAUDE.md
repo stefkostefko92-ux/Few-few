@@ -42,6 +42,14 @@ edge under the cursor does not flip it. The engine loads after `load`, in idle t
 `index.html` mirrors `.cs-hl-img` / `.cs-hl-shade` and the text column so the handover to React shifts
 nothing sideways.
 
+**Cache version.** nginx serves every `.js/.webp/.png` with `immutable, max-age=1y` and the service worker is
+cache-first for them, but the engine, the layers, the stills (`bench-1600/800.webp`) and the icons have fixed
+names. So every URL to them carries `?v=<hash of their contents>`: computed in `vite.config.js`
+(`liveVersion` → `__CS_LIVE_V__` in the SPA, `%CS_LIVE_V%` in `index.html`) and by the same algorithm in
+`scripts/static-theme.py` (`live_version`). Never reference these files without it — a fix to the engine or
+a re-render would not reach a returning visitor for a year. After changing any of them: `static-theme.py` →
+`self-host-fonts.py` → `vite build` (the hash moves, ~400 static pages change — that is expected).
+
 Hero layout, two scenes: the wide one (`hero-*`, 16:9, emblem on the right, H1 capped at `43vw`) and the
 portrait one (`herop-*`, 2:3) for a **narrow and upright** screen — `(max-width:860px) and
 (max-aspect-ratio:1/1)`, the same query in `HeroLive.jsx`, its CSS, the `<picture>` and the two preloads in

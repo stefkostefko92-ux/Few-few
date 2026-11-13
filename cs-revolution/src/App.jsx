@@ -609,6 +609,9 @@ const CTA_GLOW = {background:"rgba(0,229,255,.05)",boxShadow:"0 0 22px rgba(0,22
 // Размерите идват от marketing/blender/export.py (общ изрез за всички, за да са подравнени в списъка).
 var SRV_ICON_W = 192, SRV_ICON_H = 159;
 var SRV_ICONS = ["web","ecommerce","software","erp","mobile","gamedev","seo","aeo","analytics","hosting","security","api","reverse"];
+// ?v=<хеш> към адресите на иконите: имената им са постоянни, а сървърът ги кешира за година (vite.config.js).
+/* global __CS_LIVE_V__ */
+var LIVE_Q = "?v=" + __CS_LIVE_V__;
 // Where each of the 13 homepage services leads (same order as SRV_DATA).
 // Services without their own page point to the closest one; reverse
 // engineering scrolls to the Reverse Lab section.
@@ -2035,11 +2038,11 @@ export default function App(){
             {/* иконата е продуктова снимка на малък предмет (Blender); номерът остава зад нея с hover запълването си */}
             <div className="cs-srv-ico" aria-hidden="true">
               <div className="cs-srv-n" style={{fontFamily:HEAD,fontWeight:900,fontSize:"2.4rem",lineHeight:1,letterSpacing:"-.03em"}}>{s.n}</div>
-              <img src={"/brand/svc/"+SRV_ICONS[i]+".webp"} srcSet={"/brand/svc/"+SRV_ICONS[i]+".webp 192w, /brand/svc/"+SRV_ICONS[i]+"-384.webp 384w"} sizes="(max-width:640px) 104px, 150px" alt="" width={SRV_ICON_W} height={SRV_ICON_H} loading="lazy" decoding="async"/>
+              <img src={"/brand/svc/"+SRV_ICONS[i]+".webp"+LIVE_Q} srcSet={"/brand/svc/"+SRV_ICONS[i]+".webp"+LIVE_Q+" 192w, /brand/svc/"+SRV_ICONS[i]+"-384.webp"+LIVE_Q+" 384w"} sizes="(max-width:640px) 104px, 150px" alt="" width={SRV_ICON_W} height={SRV_ICON_H} loading="lazy" decoding="async"/>
               {/* „живи“ слоеве (Blender, същата камера): gl — светлината на циан елемента, gt — отражение на
                   софтбокс, което минава през иконата при посочване и веднъж, когато редът влезе в екрана */}
-              <img className="gl" src={"/brand/svc/"+SRV_ICONS[i]+"-glow.webp"} alt="" width={SRV_ICON_W} height={SRV_ICON_H} loading="lazy" decoding="async"/>
-              <img className="gt" src={"/brand/svc/"+SRV_ICONS[i]+"-glint.webp"} alt="" width={SRV_ICON_W} height={SRV_ICON_H} loading="lazy" decoding="async"/>
+              <img className="gl" src={"/brand/svc/"+SRV_ICONS[i]+"-glow.webp"+LIVE_Q} alt="" width={SRV_ICON_W} height={SRV_ICON_H} loading="lazy" decoding="async"/>
+              <img className="gt" src={"/brand/svc/"+SRV_ICONS[i]+"-glint.webp"+LIVE_Q} alt="" width={SRV_ICON_W} height={SRV_ICON_H} loading="lazy" decoding="async"/>
             </div>
             <div>
               <div className="cs-srv-t" style={{fontFamily:HEAD,fontWeight:700,fontSize:"1.1rem",textTransform:"uppercase",letterSpacing:"-.01em",marginBottom:6,transition:"color .2s"}}>{s.t} <span aria-hidden="true" style={{color:C}}>{"\u2192"}</span></div>

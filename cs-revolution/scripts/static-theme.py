@@ -23,8 +23,34 @@ Space Grotesk, циан сияние) и ~400 статични страници 
 Мястото му във веригата е след генераторите и inject-widgets.py (виж CLAUDE.md).
 """
 import glob
+import hashlib
 import os
 import re
+
+
+def live_version():
+    """Версия на „живите“ файлове: хеш на двигателя, слоевете, иконите и неподвижните кадри.
+
+    nginx ги праща с „immutable“ за една година, а service worker-ът ги държи cache-first, но имената им са
+    постоянни — затова адресите носят ?v=<хеш>; иначе поправка по двигателя или нов рендер не стигат до
+    върнал се посетител. СЪЩИЯТ алгоритъм е във vite.config.js (liveVersion) — двете трябва да съвпадат.
+    """
+    h = hashlib.sha1()
+    with open("public/js/cs-live.js", "rb") as f:
+        h.update(f.read())
+    for d in ("public/brand/live", "public/brand/svc"):
+        for name in sorted(os.listdir(d)):
+            h.update(name.encode())
+            with open(os.path.join(d, name), "rb") as f:
+                h.update(f.read())
+    for name in ("bench-1600.webp", "bench-800.webp"):
+        h.update(name.encode())
+        with open("public/brand/" + name, "rb") as f:
+            h.update(f.read())
+    return h.hexdigest()[:10]
+
+
+LV = "?v=" + live_version()
 
 FONTS = ('<link id="cs-theme-fonts" rel="stylesheet" href="/fonts/fonts.css">'
          # the two faces every page paints first: fetched with the CSS, so the swap lands before first paint (CLS)
@@ -33,8 +59,8 @@ FONTS = ('<link id="cs-theme-fonts" rel="stylesheet" href="/fonts/fonts.css">'
          '<link id="cs-theme-fonts-pre3" rel="preload" as="font" type="font/woff2" href="/fonts/space-mono-latin-0319ea.woff2" crossorigin>')  # self-hosted (scripts/self-host-fonts.py)
 JS_FLAG = '<script id="cs-js-flag">document.documentElement.classList.add("js")</script>'
 # лентата зад заглавието е най-голямата картина над сгъвката (LCP кандидат) — предварително зареждане, по една за ширина
-BENCH_PRE = ('<link id="cs-bench-pre" rel="preload" as="image" type="image/webp" href="/brand/bench-1600.webp" media="(min-width:761px)" fetchpriority="high">'
-             '<link id="cs-bench-pre2" rel="preload" as="image" type="image/webp" href="/brand/bench-800.webp" media="(max-width:760px)" fetchpriority="high">')
+BENCH_PRE = ('<link id="cs-bench-pre" rel="preload" as="image" type="image/webp" href="/brand/bench-1600.webp' + LV + '" media="(min-width:761px)" fetchpriority="high">'
+             '<link id="cs-bench-pre2" rel="preload" as="image" type="image/webp" href="/brand/bench-800.webp' + LV + '" media="(max-width:760px)" fetchpriority="high">')
 
 DISP = "'Space Grotesk','Onest','SG-fallback','Inter Tight',-apple-system,sans-serif"
 MONO = "'Space Mono','JetBrains Mono','SM-fallback',ui-monospace,monospace"
@@ -88,7 +114,7 @@ a{{color:var(--cs-c)}}
      двата му градиента скриват левия и долния ѝ ръб, когато лентата е по-широка или по-висока от нея.
      .cs-bench е рамката на „живата“ сцена (cs-live.js) — точно върху картината, под градиентите. */
   .hero-s{{--bw:min(100vw,1560px);--bh:calc(var(--bw)/4);--by:calc(200px - var(--bh)*.49);min-height:300px;display:flex;align-items:center;
-    background:url(/brand/bench-1600.webp) right var(--by)/var(--bw) var(--bh) no-repeat,var(--cs-bg)}}
+    background:url(/brand/bench-1600.webp{LV}) right var(--by)/var(--bw) var(--bh) no-repeat,var(--cs-bg)}}
   .hero-s::after,.cs-bench{{position:absolute;right:0;top:var(--by);width:var(--bw);height:var(--bh);pointer-events:none}}
   .hero-s::after{{content:"";z-index:-1;background:linear-gradient(90deg,var(--cs-bg) 0,rgba(10,12,14,0) 30%),linear-gradient(0deg,var(--cs-bg) 0,rgba(10,12,14,0) 24%)}}
   .cs-bench{{z-index:-2}}
@@ -117,7 +143,7 @@ a{{color:var(--cs-c)}}
 .work-shot{{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;object-position:top;border:1px solid rgba(0,229,255,.14);margin:28px 0 12px;background:#050607}}
 /* phones */
 @media(max-width:760px){{
-  .hero-s{{padding:86px 16px 22px!important;background:url(/brand/bench-800.webp) 50% 64px/100% auto no-repeat,var(--cs-bg)}}
+  .hero-s{{padding:86px 16px 22px!important;background:url(/brand/bench-800.webp{LV}) 50% 64px/100% auto no-repeat,var(--cs-bg)}}
   .hero-s::before{{background:linear-gradient(180deg,rgba(10,12,14,.35) 0,rgba(10,12,14,.7) 120px,rgba(10,12,14,.9) 220px,var(--cs-bg) 280px)}}
   h1{{letter-spacing:-.005em!important;font-size:clamp(1.8rem,8vw,2.4rem)!important}}
   .js .nav>div{{display:none}}
@@ -184,11 +210,11 @@ var mq=window.matchMedia&&matchMedia('(min-width:761px)');if(mq){var f=function(
 LIVE_JS = """<script id="cs-live-boot">(function(){var h=document.querySelector('.hero-s');if(!h||!window.matchMedia)return;
 if(!matchMedia('(min-width:761px) and (hover:hover) and (pointer:fine)').matches||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
 var n=navigator.connection;if(n&&(n.saveData||/(^|-)2g$/.test(n.effectiveType||'')))return;
-function go(){var s=document.createElement('script');s.src='/js/cs-live.js';s.onload=function(){fetch('/brand/live/bench.json').then(function(r){return r.json()}).then(function(m){
+function go(){var q='@LV@',s=document.createElement('script');s.src='/js/cs-live.js'+q;s.onload=function(){fetch('/brand/live/bench.json'+q).then(function(r){return r.json()}).then(function(m){
 var f=document.createElement('div');f.className='cs-bench';f.setAttribute('aria-hidden','true');h.appendChild(f);var d='/brand/live/bench-';
-window.CSLive.mount(f,{base:d+'base.webp',sweep:d+'sweep.webp',flood:d+'flood.webp',pos:d+'pos.png',sweeps:m.sweeps,sMin:m.sMin,sMax:m.sMax,s0:m.s0,scan:[m.s0-10,m.s0+6],auto:'intro',introSeconds:4.2,laserWidth:.05,restLaser:1})}).catch(function(){})};document.head.appendChild(s)}
+window.CSLive.mount(f,{base:d+'base.webp'+q,sweep:d+'sweep.webp'+q,flood:d+'flood.webp'+q,pos:d+'pos.png'+q,sweeps:m.sweeps,sMin:m.sMin,sMax:m.sMax,s0:m.s0,scan:[m.s0-10,m.s0+6],auto:'intro',introSeconds:4.2,laserWidth:.05,restLaser:1})}).catch(function(){})};document.head.appendChild(s)}
 function idle(){(window.requestIdleCallback||function(f){setTimeout(f,700)})(go,{timeout:3000})}
-if(document.readyState==='complete')idle();else addEventListener('load',idle)})();</script>"""
+if(document.readyState==='complete')idle();else addEventListener('load',idle)})();</script>""".replace("@LV@", LV)
 
 CAL_JS = """<script id="cs-cal-js">(function(){if(!(window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches)||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
 var w=document.createElement('div');w.className='cs-caliper';w.setAttribute('aria-hidden','true');w.innerHTML='<i class="jl"></i><i class="jr"></i><i class="dm"><b></b></i>';document.body.appendChild(w);
