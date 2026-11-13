@@ -541,5 +541,17 @@
 {"t":"start","ts":"2026-11-12T23:24:52.959Z","id":"rfb0a8dac","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-12T23:24:52.959Z","id":"rfb0a8dac","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"e4259b16"}
 {"t":"handoff","ts":"2026-11-12T23:25:55.079Z","id":"rfb0a8dac","from":"kodadjiyata","to":"kachestveniyat","status":"блокер","run":"f2cf3edb"}
+{"t":"handoff","ts":"2026-11-12T23:27:41.312Z","id":"rfb0a8dac","from":"pravniyat-razbirach","to":"човек","status":"блокер","run":"e7198232"}
+{"t":"handoff","ts":"2026-11-12T23:42:30.649Z","id":"rfb0a8dac","from":"diskordjiyata","to":"човек","status":"има бележки","run":"8b29a206"}
+{"t":"handoff","ts":"2026-11-12T23:46:25.961Z","id":"rfb0a8dac","from":"diskordjiyata","to":"човек","status":"има бележки","run":"965f85f1"}
+{"t":"handoff","ts":"2026-11-12T23:49:15.614Z","id":"rfb0a8dac","from":"diskordjiyata","to":"човек","status":"има бележки","run":"62a44902"}
+{"t":"start","ts":"2026-11-13T04:52:43.033Z","id":"r9506b41e","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-13T04:52:43.033Z","id":"r9506b41e","from":"kodadjiyata","to":"diskordjiyata","status":"блокер","run":"a717f8c7"}
+{"t":"handoff","ts":"2026-11-13T04:53:59.638Z","id":"r9506b41e","from":"razbivacha","to":"kodadjiyata","status":"има бележки","run":"4ade1ac0"}
+{"t":"handoff","ts":"2026-11-13T05:00:25.846Z","id":"r9506b41e","from":"letopisetsa","to":"ai-djiyata","status":"има бележки","run":"b29c3c2a"}
+{"t":"start","ts":"2026-11-13T05:45:50.085Z","id":"r3b6d18d5","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-13T05:45:50.085Z","id":"r3b6d18d5","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"76f84c89"}
 {"t":"start","ts":"2026-11-12T23:37:20.766Z","id":"r6b175f9b","flow":"авто","lead":"dizayner","auto":true}
 {"t":"handoff","ts":"2026-11-12T23:37:20.766Z","id":"r6b175f9b","from":"dizayner","to":"оркестратор","status":"има бележки","run":"5441a3f8"}
+{"t":"start","ts":"2026-11-13T06:21:06.559Z","id":"r6cb19f91","flow":"авто","lead":"prevodach","auto":true}
+{"t":"handoff","ts":"2026-11-13T06:21:06.560Z","id":"r6cb19f91","from":"prevodach","to":"човек","status":"има бележки","run":"0b600041"}

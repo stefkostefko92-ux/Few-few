@@ -5,7 +5,7 @@
 // Partials.Message: изтрит стар пост извън кеша идва без автор/съдържание.
 
 import { logServerEvent, fetchAuditActor, isEventCategoryEnabled, AuditLogEvent } from "../utils/serverEventLog.js";
-import { markTicketMessage } from "../utils/api.js";
+import api, { markTicketMessage } from "../utils/api.js";
 
 function tagOf(user) {
   if (!user) return null;
@@ -24,6 +24,11 @@ export default {
       // Кеширан ботски пост (панел/анкета) — шум; при partial авторът е
       // неизвестен и пускаме лога (по-добре запис с "(unknown)", отколкото
       // сляпо петно за изтритото).
+      // З9: изтрито съобщение с роли по реакция се маркира като непубликувано в таблото.
+      // Съобщението е ботско → ПРЕДИ ранния изход за ботове; backend-ът е no-op за чужди съобщения.
+      if (message.author?.bot || message.partial || !message.author) {
+        api.post(`/bot/reaction-roles/message/${message.id}/deleted`, { serverId: guild.id }).catch(() => {});
+      }
       if (message.author?.bot) return;
 
       // ── Одитна следа в ТИКЕТ транскрипта (v36) ──────────────────────────

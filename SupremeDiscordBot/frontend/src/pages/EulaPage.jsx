@@ -4,11 +4,12 @@
 // premium features, white-label, API usage, and enforcement.
 
 import Seo from "../components/Seo";
+import { SUPPORT_URL, SUPPORT_LABEL } from "../lib/support";
 
 export default function EulaPage() {
   const COMPANY = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
   const EMAIL   = import.meta.env.VITE_CONTACT_EMAIL || "legal@carbonstealth.eu";
-  const SUPPORT = import.meta.env.VITE_SUPPORT_URL   || "https://discord.gg/support";
+  const SUPPORT = SUPPORT_URL;
   const COUNTRY = import.meta.env.VITE_COMPANY_COUNTRY || "Bulgaria";
 
   return (
@@ -693,7 +694,7 @@ export default function EulaPage() {
         </p>
         <ul>
           <li>Email: <a href={`mailto:${EMAIL}`} className="text-cs-cyan hover:underline">{EMAIL}</a></li>
-          <li>Support Server: <a href={SUPPORT} target="_blank" rel="noopener noreferrer" className="text-cs-cyan hover:underline">{SUPPORT}</a></li>
+          <li>Support Server: <a href={SUPPORT} target="_blank" rel="noopener noreferrer" className="text-cs-cyan hover:underline">{SUPPORT_LABEL}</a></li>
         </ul>
         <p className="mt-4 text-xs text-cs-muted">
           This EULA was last reviewed by the Licensor's legal team on 27 June 2026.

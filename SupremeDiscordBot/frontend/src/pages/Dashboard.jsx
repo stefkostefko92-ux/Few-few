@@ -5,6 +5,7 @@ import { PlusCircle, AlertCircle, RefreshCw, Star } from "lucide-react";
 import { getServers } from "../api";
 import { useT } from "../contexts/I18nContext";
 import PageHeader from "../components/PageHeader";
+import { botInviteUrl } from "../lib/invite";
 
 export default function Dashboard() {
   const { t } = useT();
@@ -15,7 +16,7 @@ export default function Dashboard() {
     queryFn: getServers,
   });
 
-  const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814416&scope=bot+applications.commands`;
+  const BOT_INVITE_URL = botInviteUrl();
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">

@@ -618,14 +618,14 @@
         },
         {
           "version": "39.7.0",
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "event": "v39.7 — учене",
           "detail": "Научи: При смяна на платежния канал (Stripe→Discord MoR) провери дали НОВИЯТ revoke път записв… (+12 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "type": "learning",
           "summary": "Научи: „При смяна на платежния канал (Stripe→Discord MoR) провери дали НОВИЯТ revoke път записв…\" (+12 още) · 1 в карантина"
         },
@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 640
+        "lessons": 639
       },
       "evolution": [
         {
@@ -2033,61 +2033,17 @@
           "detail": "Научи: sharp 0.35 с limitInputPixels не пази паметта при прогресивен JPEG (208 Mpx, 4:4:4, фай… (+1 още)"
         },
         {
-          "version": "57.4.0",
-          "date": "2026-11-12",
-          "event": "v57.4 — учене",
-          "detail": "Научи: В SupremeDiscordBot revokeServer за Discord entitlement не пише accessUntil, а inExport… (+13 още)"
-        },
-        {
-          "version": "57.5.0",
-          "date": "2026-11-12",
-          "event": "v57.5 — учене",
-          "detail": "Научи: AES-GCM шифрован \"draft\" за TOTP тайна, върнат от клиента без AAD с userId, е преносим …"
-        },
-        {
-          "version": "57.7.0",
-          "date": "2026-11-13",
-          "event": "v57.7 — учене",
-          "detail": "Научи: discord.js 14.26.4 с Partials.GuildMember емитва guildMemberUpdate и за некеширан член … (+1 още)"
-        },
-        {
-          "version": "57.9.0",
-          "date": "2026-11-13",
-          "event": "v57.9 — учене",
-          "detail": "Научи: nodemailer 10.x без requireTLS пуска STARTTLS само ако сървърът го обяви в EHLO; ако на… (+1 още)"
-        },
-        {
           "version": "58.0.0",
           "date": "2026-11-13",
           "event": "v58.0 — учене",
-          "detail": "Научи: Кеш в паметта, който записва резултата от await-нато четене от базата без брояч на верс…"
+          "detail": "Научи: Кеш в паметта, който записва резултата от await-нато четене от базата без брояч на верс… (+19 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-13",
           "type": "learning",
-          "summary": "Научи: „Кеш в паметта, който записва резултата от await-нато четене от базата без брояч на верс…\""
-        },
-        {
-          "date": "2026-11-13",
-          "type": "learning",
-          "summary": "Научи: „nodemailer 10.x без requireTLS пуска STARTTLS само ако сървърът го обяви в EHLO; ако на…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-13",
-          "type": "learning",
-          "summary": "Научи: „discord.js 14.26.4 с Partials.GuildMember емитва guildMemberUpdate и за некеширан член …\" (+1 още)"
-        },
-        {
-          "date": "2026-11-12",
-          "type": "learning",
-          "summary": "Научи: „AES-GCM шифрован \"draft\" за TOTP тайна, върнат от клиента без AAD с userId, е преносим …\""
-        },
-        {
-          "date": "2026-11-12",
-          "type": "learning",
-          "summary": "Научи: „В SupremeDiscordBot revokeServer за Discord entitlement не пише accessUntil, а inExport…\" (+13 още) · 1 в карантина"
+          "summary": "Научи: „Кеш в паметта, който записва резултата от await-нато четене от базата без брояч на верс…\" (+19 още) · 1 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -4353,14 +4309,14 @@
         },
         {
           "version": "23.1.0",
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "event": "v23.1 — учене",
           "detail": "Научи: В panev SEO повърхността идва от head()/jsonLd() в site/templates/layout.mjs; допълните…"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "type": "learning",
           "summary": "Научи: „В panev SEO повърхността идва от head()/jsonLd() в site/templates/layout.mjs; допълните…\" · 2 в карантина"
         },
@@ -4967,14 +4923,14 @@
         },
         {
           "version": "20.7.0",
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "event": "v20.7 — учене",
           "detail": "Научи: panev/ няма node_modules и server.js не тръгва без dotenv/express; за одит копирай прод… (+2 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "type": "learning",
           "summary": "Научи: „panev/ няма node_modules и server.js не тръгва без dotenv/express; за одит копирай прод…\" (+2 още)"
         },
@@ -6869,7 +6825,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 277
+        "lessons": 276
       },
       "evolution": [
         {
@@ -7282,14 +7238,14 @@
         },
         {
           "version": "24.7.0",
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "event": "v24.7 — учене",
           "detail": "Научи: Docker тагът на OpenSEO standalone v0.1.25 сочи към друг digest от sha-78c5d85 (по-нов … (+1 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "type": "learning",
           "summary": "Научи: „Docker тагът на OpenSEO standalone v0.1.25 сочи към друг digest от sha-78c5d85 (по-нов …\" (+1 още)"
         },
@@ -8952,14 +8908,14 @@
         },
         {
           "version": "21.2.0",
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "event": "v21.2 — учене",
           "detail": "Научи: YouTube закачането на коментар иска включени advanced features (до 24 ч), води се през … (+1 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "type": "learning",
           "summary": "Научи: „YouTube закачането на коментар иска включени advanced features (до 24 ч), води се през …\" (+1 още)"
         },
@@ -10463,14 +10419,14 @@
         },
         {
           "version": "20.9.0",
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "event": "v20.9 — учене",
           "detail": "Научи: Във WebKit bug 290847 линк с Content-Disposition attachment (и inline PDF) в iOS home-s…"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "type": "learning",
           "summary": "Научи: „Във WebKit bug 290847 линк с Content-Disposition attachment (и inline PDF) в iOS home-s…\" · 1 в карантина"
         },
@@ -11938,16 +11894,16 @@
         },
         {
           "version": "23.0.0",
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "event": "v23.0 — учене",
-          "detail": "Научи: В panev/css/site.css `:focus-visible` е navy-3 (#24408c); върху тъмните секции (#162862… (+2 още)"
+          "detail": "Научи: IBM Plex Sans Condensed във @fontsource няма основна кирилица (само cyrillic-ext), зато… (+2 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "type": "learning",
-          "summary": "Научи: „В panev/css/site.css `:focus-visible` е navy-3 (#24408c); върху тъмните секции (#162862…\" (+2 още) · 1 в карантина"
+          "summary": "Научи: „IBM Plex Sans Condensed във @fontsource няма основна кирилица (само cyrillic-ext), зато…\" (+2 още) · 1 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -13542,38 +13498,17 @@
           "detail": "Научи: В SupremeDiscordBot ботът резолвира канала през guildChannel(serverId, channelId), зато… (+10 още)"
         },
         {
-          "version": "21.8.0",
-          "date": "2026-11-12",
-          "event": "v21.8 — учене",
-          "detail": "Научи: Audit log събитието MemberDisconnect (и MemberMove) не носи target потребител (само cou… (+6 още)"
-        },
-        {
           "version": "21.9.0",
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "event": "v21.9 — учене",
-          "detail": "Научи: Prisma-мок тестове с vi.resetAllMocks нулират и mockResolvedValue на модулни мокове (dn…"
+          "detail": "Научи: Prisma-мок тестове с vi.resetAllMocks нулират и mockResolvedValue на модулни мокове (dn… (+7 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „prismaMock.updateMany връща undefined, ако не е мокнат; handler, който чете count от ус…\""
-        },
-        {
-          "date": "2026-11-12",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „prismaMock.updateMany връща undefined, ако не е мокнат; всеки handler, който чете count…\""
-        },
-        {
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "type": "learning",
-          "summary": "Научи: „Prisma-мок тестове с vi.resetAllMocks нулират и mockResolvedValue на модулни мокове (dn…\""
-        },
-        {
-          "date": "2026-11-12",
-          "type": "learning",
-          "summary": "Научи: „Audit log събитието MemberDisconnect (и MemberMove) не носи target потребител (само cou…\" (+6 още) · 1 в карантина"
+          "summary": "Научи: „Prisma-мок тестове с vi.resetAllMocks нулират и mockResolvedValue на модулни мокове (dn…\" (+7 още) · 3 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -14402,14 +14337,14 @@
         },
         {
           "version": "30.7.0",
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "event": "v30.7 — учене",
           "detail": "Научи: Регулярен израз в кука, закотвен в началото на команда (след ^ ; & | ( $( и sudo), проп… (+10 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "type": "learning",
           "summary": "Научи: „Регулярен израз в кука, закотвен в началото на команда (след ^ ; & | ( $( и sudo), проп…\" (+10 още) · 2 в карантина"
         },
@@ -14906,14 +14841,14 @@
         },
         {
           "version": "23.3.0",
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "event": "v23.3 — учене",
           "detail": "Научи: Discord privileged intents — праг 10 000 уникални потребители (не сървъри); при достига… (+4 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "type": "learning",
           "summary": "Научи: „Discord privileged intents — праг 10 000 уникални потребители (не сървъри); при достига…\" (+4 още) · 1 в карантина"
         },
@@ -15612,28 +15547,17 @@
           "detail": "Научи: Фикстурата за инжекция в уеб страница е в tools/agents/evals/fixtures/injection-web-pag… (+13 още)"
         },
         {
-          "version": "21.8.0",
-          "date": "2026-11-12",
-          "event": "v21.8 — учене",
-          "detail": "Научи: SupremeDiscordBot/README.md (ред 333, 350) още твърди „Postgres/Redis bound to localhos… (+1 още)"
-        },
-        {
           "version": "22.0.0",
           "date": "2026-11-13",
           "event": "v22.0 — учене",
-          "detail": "Научи: Всички файлове в frontend/src/data/*.js се четат от marketingTruth.test.js като публиче… (+1 още)"
+          "detail": "Научи: Всички файлове в frontend/src/data/*.js се четат от marketingTruth.test.js като публиче… (+3 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-13",
           "type": "learning",
-          "summary": "Научи: „Всички файлове в frontend/src/data/*.js се четат от marketingTruth.test.js като публиче…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-12",
-          "type": "learning",
-          "summary": "Научи: „SupremeDiscordBot/README.md (ред 333, 350) още твърди „Postgres/Redis bound to localhos…\" (+1 още)"
+          "summary": "Научи: „Всички файлове в frontend/src/data/*.js се четат от marketingTruth.test.js като публиче…\" (+3 още)"
         },
         {
           "date": "2026-11-04",
@@ -16184,28 +16108,17 @@
           "detail": "Научи: guard-exfil DATA_FILE_SEND блокира curl с --data поле на име password/token дори към lo… (+2 още)"
         },
         {
-          "version": "27.7.0",
-          "date": "2026-11-12",
-          "event": "v27.7 — учене",
-          "detail": "Научи: Инжекционен eval spec с маркери, които само назовават темата (име на пакет, пазач, „под… (+4 още)"
-        },
-        {
           "version": "27.9.0",
           "date": "2026-11-13",
           "event": "v27.9 — учене",
-          "detail": "Научи: Модулите на SupremeDiscordBot backend могат да се пробват в паметта без запис на файлов… (+1 още)"
+          "detail": "Научи: Модулите на SupremeDiscordBot backend могат да се пробват в паметта без запис на файлов… (+6 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-13",
           "type": "learning",
-          "summary": "Научи: „Модулите на SupremeDiscordBot backend могат да се пробват в паметта без запис на файлов…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-12",
-          "type": "learning",
-          "summary": "Научи: „Инжекционен eval spec с маркери, които само назовават темата (име на пакет, пазач, „под…\" (+4 още) · 2 в карантина"
+          "summary": "Научи: „Модулите на SupremeDiscordBot backend могат да се пробват в паметта без запис на файлов…\" (+6 още) · 2 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -16512,16 +16425,16 @@
         },
         {
           "version": "19.8.0",
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "event": "v19.8 — учене",
-          "detail": "Научи: Подмяната на етажни врати е modifica costruttiva по DPR 162/1999 (първоначален текст) ч… (+2 още)"
+          "detail": "Научи: DPR 162/1999 (текст 1999) чл. 2 ал. 1 б. i) т. 5 не изброява поименно въжетата и тирант… (+2 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "type": "learning",
-          "summary": "Научи: „Подмяната на етажни врати е modifica costruttiva по DPR 162/1999 (първоначален текст) ч…\" (+2 още)"
+          "summary": "Научи: „DPR 162/1999 (текст 1999) чл. 2 ал. 1 б. i) т. 5 не изброява поименно въжетата и тирант…\" (+2 още)"
         },
         {
           "date": "2026-11-04",
@@ -16591,14 +16504,14 @@
         },
         {
           "version": "0.3.0",
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "event": "v0.3 — учене",
           "detail": "Научи: В Korpora checkHoles (engine/model.js) дава 'error' само за застъпване cup/cup, всяко д… (+1 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "type": "learning",
           "summary": "Научи: „В Korpora checkHoles (engine/model.js) дава 'error' само за застъпване cup/cup, всяко д…\" (+1 още)"
         },
@@ -16714,14 +16627,14 @@
         },
         {
           "version": "0.4.0",
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "event": "v0.4 — учене",
           "detail": "Научи: SAF-T в България е в ДОПК глава осма \"б\" чл. 71з–71к (ДВ бр. 26/2025, в сила 31.03.2025… (+2 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-13",
           "type": "learning",
           "summary": "Научи: „SAF-T в България е в ДОПК глава осма \"б\" чл. 71з–71к (ДВ бр. 26/2025, в сила 31.03.2025…\" (+2 още)"
         },
