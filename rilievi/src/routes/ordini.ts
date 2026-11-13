@@ -1,10 +1,8 @@
 import { Router } from 'express';
-import { config } from '../config.js';
 import { requireCapability } from '../auth/guards.js';
 import { pdfLimiter } from '../http/limits.js';
-import { renderModulo } from '../ordini/pdf.js';
-import { campoCheApre, sceltoNellaScheda, SLOTS } from '../ordini/registry.js';
-import { storedValori } from '../ordini/valori.js';
+import { moduloDellaScheda } from '../ordini/modulo-scheda.js';
+import { SLOTS } from '../ordini/registry.js';
 import { getScheda } from '../schede/service.js';
 import { notFound, scope } from './schede-shared.js';
 
@@ -27,23 +25,10 @@ for (const slot of SLOTS) {
     );
     // Записаната карта пази само видимото: „Sì“ (или отметката, която отваря модула) значи видимо поле;
     // слотът с предимство го затваря.
-    const valueOf = (key: string): unknown => (scheda ? scheda[key as keyof typeof scheda] : null);
-    if (
-      !scheda ||
-      campoCheApre(slot, valueOf) === undefined ||
-      (slot.cede && scheda[slot.cede] === true) ||
-      !sceltoNellaScheda(slot, valueOf)
-    ) {
-      return notFound(req, res);
-    }
-    const valori = storedValori(slot.modulo, scheda[slot.column]);
-    if (!valori) return notFound(req, res);
-    const pdf = Buffer.from(await renderModulo(slot.modulo, valori, config().PDF_FONT_DIR));
-    const id = scheda.numeroImpianto ?? scheda.matricola ?? scheda.id.slice(-8);
-    const name = `${slot.path}-${id}-${scheda.data.toISOString().slice(0, 10)}.pdf`.replace(
-      /[^A-Za-z0-9._-]/g,
-      '',
-    );
+    if (!scheda) return notFound(req, res);
+    const modulo = await moduloDellaScheda(scheda, slot);
+    if (!modulo) return notFound(req, res);
+    const { pdf, nome: name } = modulo;
     res
       .status(200)
       .set({

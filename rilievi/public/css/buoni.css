@@ -1,0 +1,206 @@
+/* „Buono di lavoro“ (views/buoni/): формата — редовете с работа и проверките като карти с подпис по избор;
+   листът само за четене — данните, таблиците, подписите в малко; подписите долу. Монохромно, като портала. */
+
+.buono-righe {
+  display: grid;
+  gap: 14px;
+}
+
+.buono-riga {
+  margin: 0;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  min-width: 0;
+}
+
+.buono-riga + .buono-riga {
+  margin-top: 0;
+}
+
+.buono-controllo {
+  margin-top: 12px;
+}
+
+.buono-riga__titolo {
+  padding: 0 6px;
+  font-weight: 600;
+}
+
+/* Подписаният ред: само за четене, с плътна рамка — личи, че е подписан. */
+.buono-riga--firmata {
+  border-color: var(--line-strong);
+}
+
+.buono-riga__campi {
+  margin-bottom: 8px;
+}
+
+.buono-gruppo {
+  margin: 20px 0 4px;
+  font-size: 1rem;
+}
+
+.buono-pos {
+  display: grid;
+  gap: 4px 16px;
+}
+
+@media (min-width: 640px) {
+  .buono-pos {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: end;
+  }
+}
+
+.buono-pos__nota {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Подписът по избор — затворен, докато не се поиска. */
+.buono-firma {
+  margin-top: 6px;
+}
+
+.buono-firma > summary {
+  list-style: none;
+  width: max-content;
+  max-width: 100%;
+}
+
+.buono-firma > summary::-webkit-details-marker {
+  display: none;
+}
+
+.buono-firma[open] > summary {
+  margin-bottom: 10px;
+}
+
+.buono-firmata {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  margin-top: 6px;
+}
+
+/* Подписът е черно мастило на бяло, и в тъмната тема — като на хартия. */
+.buono-firmata__svg {
+  width: min(100%, 360px);
+  height: auto;
+  aspect-ratio: 3 / 1;
+  color: #000000;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.buono-firmata--non-valida {
+  padding: 8px 10px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+}
+
+/* Стойностите на подписан ред и на листа: надпис над стойността, в колони от 640 px. */
+.buono-letta {
+  display: grid;
+  gap: 10px 20px;
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  .buono-letta {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+.buono-letta > div {
+  min-width: 0;
+}
+
+.buono-letta dt {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.buono-letta dd {
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.buono-letta__wide {
+  grid-column: 1 / -1;
+}
+
+.buono-testo {
+  white-space: pre-line;
+}
+
+/* Листът само за четене. */
+.buono-foglio {
+  display: grid;
+  gap: 24px;
+}
+
+.buono-foglio__titolo {
+  margin: 0 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--line-strong);
+  font-size: 1rem;
+}
+
+.buono-tabella {
+  min-width: 560px;
+}
+
+.buono-tabella td,
+.buono-tabella th {
+  vertical-align: top;
+}
+
+.buono-tabella__gruppo th {
+  font-weight: 600;
+  background: var(--surface, transparent);
+}
+
+.buono-firma-mini {
+  display: block;
+  width: 120px;
+  height: auto;
+  aspect-ratio: 3 / 1;
+  margin-top: 4px;
+  color: #000000;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.buono-firma-mini--non-valida {
+  width: auto;
+  aspect-ratio: auto;
+  padding: 2px 6px;
+  color: var(--muted);
+  background: transparent;
+  border-style: dashed;
+}
+
+.buono-finali__grid {
+  margin-bottom: 14px;
+}
+
+.buono-finale {
+  min-width: 0;
+}
+
+.buono-autori {
+  margin: 0;
+}
+
+.buono-cerca {
+  margin-bottom: 8px;
+}
+
+.buono-elimina > summary {
+  cursor: pointer;
+  font-weight: 600;
+}

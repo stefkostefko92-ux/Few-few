@@ -85,10 +85,16 @@ export async function checkPhotoOrder(page, { sheetUrl, shots }) {
   await page.goto(`${sheetUrl}/stampa`);
   if (!(await page.locator('.paper__foto-grid--grandi').count()))
     fail('photo order: the print does not have the size chosen');
+  // An annotated photo is printed as an SVG with the photo inside (C5): both count, in the order of the sheet.
   const printed = await page
-    .locator('.paper__foto .paper__figura img')
-    .evaluateAll((imgs) =>
-      imgs.map((img) => /\/allegati\/([a-z0-9]+)\?mini=1/.exec(img.getAttribute('src'))?.[1]),
+    .locator('.paper__foto .paper__figura :is(img, .paper__foto-annotata image)')
+    .evaluateAll((els) =>
+      els.map(
+        (el) =>
+          /\/allegati\/([a-z0-9]+)\?mini=1/.exec(
+            el.getAttribute('src') ?? el.getAttribute('href') ?? '',
+          )?.[1],
+      ),
     );
   if (printed.join(' ') !== after.join(' '))
     fail(`photo order: printed ${printed}, chosen ${after}`);

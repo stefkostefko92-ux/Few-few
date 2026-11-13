@@ -73,7 +73,12 @@ export function unitLabel(field: FieldDef, value: number, t: Translator): string
   return field.unit ? t(`scheda.unit.${field.unit}`, { n: value }) : '';
 }
 
-function displayValue(field: FieldDef, raw: unknown, t: Translator, fmt: ViewHelpers): string {
+export function displayValue(
+  field: FieldDef,
+  raw: unknown,
+  t: Translator,
+  fmt: ViewHelpers,
+): string {
   switch (field.kind) {
     case 'date':
       return raw instanceof Date ? fmt.day(raw) : '';

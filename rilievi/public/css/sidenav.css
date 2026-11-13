@@ -89,7 +89,7 @@
   background: var(--bar-hover);
 }
 
-.sidenav__nav a[aria-current='page'],
+.sidenav__nav a[aria-current],
 .who[aria-current='page'] {
   color: var(--bar-fg);
   background: var(--bar-current);

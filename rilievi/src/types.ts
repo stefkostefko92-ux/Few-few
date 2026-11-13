@@ -14,6 +14,18 @@ export interface MembershipView {
   /** Версията на условията за услугата, приети за фирмата (src/legale/); друга или липсваща — неприети. */
   condizioniVersione?: string | null;
   nomiRuoli?: NomiRuoli;
+  /**
+   * Фирмата е деактивирана (краят на услугата) и човекът е неин ADMIN: 90 дни влиза само за износа —
+   * никаква способност в нея (auth/scope.ts), нищо за приемане (legale/stato.ts).
+   */
+  soloEsportazione?: true;
+  /** MASTER е включил офертите на фирмата (src/preventivi/) — без това `preventivi:*` не важи в нея. */
+  preventivi?: true;
+  /** Краят на абонамента или на пробния месец (src/abbonamenti/); няма го — без срок. */
+  abbonamentoFino?: Date;
+  abbonamentoProva?: true;
+  /** Абонаментът е изтекъл: във фирмата остава само четенето (auth/scope.ts). */
+  solaLettura?: true;
 }
 
 /** Вписаният човек, както го виждат маршрутите и шаблоните. */

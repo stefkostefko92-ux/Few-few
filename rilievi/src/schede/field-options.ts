@@ -14,6 +14,7 @@ export const QUADRO_MARCA = [
   'DMG',
   'MASTECH',
   'ELETTROQUADRI',
+  'GEAT',
   'ALTRO',
 ] as const;
 /** Mastech: таблото за поръчка — NG120 или QI Touch (всеки със своя модул). */

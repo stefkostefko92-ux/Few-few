@@ -7,7 +7,8 @@
 # `deploy/setup-env.sh`). Задължителни: POSTGRES_PASSWORD (hex — влиза некодирана в DATABASE_URL) ·
 # JWT_SECRET · PUBLIC_BASE_URL. По избор: SMTP_HOST/SMTP_USER/SMTP_PASS (Brevo; без тях поканите се
 # копират от екрана), HTTP_PORT (4330), MEDIA_MAX_PHOTO_MB/MEDIA_MAX_VIDEO_MB/MEDIA_MAX_VIDEO_MIN/
-# MEDIA_MIN_FREE_MB (таваните на снимките и клиповете, src/config.ts).
+# MEDIA_MIN_FREE_MB (таваните на снимките и клиповете, src/config.ts), OIDC_MICROSOFT_CLIENT_ID/_SECRET и
+# OIDC_GOOGLE_CLIENT_ID/_SECRET (входът с Microsoft/Google — DEPLOY.md).
 # В контейнера влиза само изброеното в `environment:` — нова настройка от `.env` се добавя и там.
 name: rilievi
 
@@ -80,6 +81,11 @@ services:
       CONTACT_EMAIL: ${CONTACT_EMAIL:-}
       PRIVACY_EMAIL: ${PRIVACY_EMAIL:-}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      # Входът с Microsoft / Google (D1, DEPLOY.md) — по избор: без двете стойности на доставчик го няма.
+      OIDC_MICROSOFT_CLIENT_ID: ${OIDC_MICROSOFT_CLIENT_ID:-}
+      OIDC_MICROSOFT_CLIENT_SECRET: ${OIDC_MICROSOFT_CLIENT_SECRET:-}
+      OIDC_GOOGLE_CLIENT_ID: ${OIDC_GOOGLE_CLIENT_ID:-}
+      OIDC_GOOGLE_CLIENT_SECRET: ${OIDC_GOOGLE_CLIENT_SECRET:-}
       # Портът е публикуван през Docker NAT: приложението вижда шлюза на мрежата, не 127.0.0.1.
       # `uniquelocal` вярва само на nginx-а на хоста през тази мрежа; портът е вързан за 127.0.0.1.
       TRUST_PROXY: ${TRUST_PROXY:-uniquelocal}

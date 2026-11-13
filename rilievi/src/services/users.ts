@@ -1,4 +1,5 @@
 import type { Prisma, Role } from '@prisma/client';
+import { postoLibero } from '../abbonamenti/persone.js';
 import { prisma } from '../db.js';
 import { writeUserAudit } from '../audit.js';
 import {
@@ -155,16 +156,36 @@ export function loadTarget(id: string) {
   });
 }
 
-/** Деактивиран акаунт не влиза, а сесиите му падат веднага. Данните (схемите) остават. Себе си — не. */
+export type EsitoStato = 'ok' | 'no' | 'limitePersone' | 'solaLettura';
+
+/**
+ * Деактивиран акаунт не влиза, а сесиите му падат веднага. Данните (схемите) остават. Себе си — не.
+ * Повторното активиране заема място като покана (одитът от 12 ноември 2026: спрян човек, нова покана на мястото
+ * му, после пак включен — и таванът на нивото падаше): брои се в транзакцията с реда на всяка активна фирма на
+ * човека `FOR UPDATE` (в постоянен ред), а фирма с изтекъл абонамент не включва никого. MASTER — без таван.
+ */
 export async function setActive(
   actor: SessionUser,
   targetId: string,
   active: boolean,
-): Promise<boolean> {
+): Promise<EsitoStato> {
   const target = await loadTarget(targetId);
-  if (!target || !canSetActive(actor, target)) return false;
-  if (active === (target.deactivatedAt === null)) return true;
-  await prisma.$transaction(async (tx) => {
+  if (!target || !canSetActive(actor, target)) return 'no';
+  if (active === (target.deactivatedAt === null)) return 'ok';
+  return prisma.$transaction(async (tx): Promise<EsitoStato> => {
+    if (active && !actor.master) {
+      const ids = [...new Set(target.memberships.map((m) => m.aziendaId))].sort();
+      const attive = await tx.azienda.findMany({
+        where: { id: { in: ids }, deactivatedAt: null },
+        select: { id: true },
+        orderBy: { id: 'asc' },
+      });
+      for (const { id } of attive) {
+        if (actor.memberships.some((m) => m.aziendaId === id && m.solaLettura))
+          return 'solaLettura';
+        if (!(await postoLibero(tx, id, target.email))) return 'limitePersone';
+      }
+    }
     await tx.user.update({
       where: { id: target.id },
       data: active
@@ -187,8 +208,8 @@ export async function setActive(
       target.id,
       tx,
     );
+    return 'ok';
   });
-  return true;
 }
 
 /**

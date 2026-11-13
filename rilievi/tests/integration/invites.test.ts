@@ -34,7 +34,10 @@ describe('invitations', () => {
       role: 'TECNICO',
     });
     assert.equal(reply.status, 200);
-    assert.match(reply.body, /L&#39;invio di email non è attivo|L'invio di email non è attivo/);
+    assert.match(
+      reply.body,
+      /L&#39;invio delle email non è attivo|L'invio delle email non è attivo/,
+    );
     const path = linkFrom(reply.body);
     assert.match(path, /^\/invito\/[A-Za-z0-9_-]{43}$/);
     const stored = await prisma.invite.findFirst({

@@ -1,0 +1,82 @@
+{
+  "abbonamento": {
+    "bloccoTitolo": "Abbonamento scaduto",
+    "blocco": "L'abbonamento dell'azienda è scaduto: puoi consultare, stampare e scaricare i dati, ma non crearne di nuovi né modificarli. L'amministratore può rinnovarlo in Impostazioni → Abbonamento.",
+    "livello": "Livello {n}",
+    "persone": "Persone nell'azienda",
+    "posti": "{n} su {max}",
+    "postiSenzaLimite": "{n}, senza limite",
+    "invitiAttesa": "Inviti in attesa (contano come persone)",
+    "contatto": "Per attivare o rinnovare l'abbonamento scrivi a {email}.",
+    "poi": "Piano acquistato: livello {livello} dal {dal} al {data} compreso.",
+    "livelli": {
+      "titolo": "Livelli",
+      "fino": "fino a {n} persone",
+      "oltre": "oltre {n} persone",
+      "breveFino": "fino a {n}",
+      "breveOltre": "oltre {n}"
+    },
+    "stato": {
+      "illimitato": {
+        "titolo": "Nessuna scadenza",
+        "testo": "L'azienda usa il portale senza una data di scadenza."
+      },
+      "prova": {
+        "titolo": "Prova gratuita fino al {data}",
+        "testo": "Durante la prova puoi usare tutte le funzioni e invitare tutte le persone che vuoi. Alla fine non parte nessun pagamento: senza un abbonamento il portale passa in sola lettura e i dati restano tutti disponibili."
+      },
+      "attivo": {
+        "titolo": "Livello {livello} fino al {data}",
+        "testo": "L'abbonamento non si rinnova da solo: ti avvisiamo per email prima della scadenza."
+      },
+      "scaduto": {
+        "titolo": "Abbonamento scaduto il {data}",
+        "testo": "L'azienda è in sola lettura: si possono consultare, stampare e scaricare i dati, ma non crearne di nuovi né modificarli. L'esportazione di tutti i dati resta sempre disponibile."
+      }
+    },
+    "hub": {
+      "illimitato": "Nessuna scadenza",
+      "prova": "Prova gratuita fino al {data}",
+      "attivo": "Livello {livello} fino al {data}",
+      "scaduto": "Scaduto il {data}: sola lettura"
+    },
+    "banner": {
+      "link": "Scegli un piano",
+      "scaduto": {
+        "titolo": "L'abbonamento di {azienda} è scaduto",
+        "testo": "È scaduto il {data}: puoi consultare e scaricare i dati, ma non crearne di nuovi né modificarli."
+      },
+      "prova": {
+        "titolo": "La prova gratuita di {azienda} sta per finire",
+        "testo": "L'ultimo giorno è il {data}. Dopo, senza un abbonamento, il portale passa in sola lettura."
+      },
+      "scade": {
+        "titolo": "L'abbonamento di {azienda} sta per scadere",
+        "testo": "L'ultimo giorno è il {data}. L'abbonamento non si rinnova da solo."
+      }
+    },
+    "master": {
+      "titolo": "Abbonamento",
+      "testo": "Per i pagamenti ricevuti fuori da Revolut: scegli il livello (1 fino a 10 persone, 2 fino a 25, 3 oltre 25) e l'ultimo giorno compreso. Senza livello non c'è limite di persone; senza data l'azienda non ha scadenza. Il salvataggio sostituisce anche un piano acquistato che non è ancora iniziato.",
+      "livello": "Livello",
+      "nessuno": "Nessun livello",
+      "fino": "Valido fino al (compreso)",
+      "salva": "Salva l'abbonamento",
+      "salvato": "Abbonamento salvato.",
+      "errore": "Controlla il livello e la data.",
+      "opzione": "Livello {n} ({persone})",
+      "cambiato": "L'abbonamento è cambiato nel frattempo (per esempio con un pagamento): controlla la pagina e salva di nuovo.",
+      "confermo": "Confermo anche se c'è un piano pagato o se la scadenza arriva tra meno di 30 giorni",
+      "pagato": "Questa azienda ha un piano pagato su Revolut ancora in corso o in attesa: salvando lo sostituisci. Se è quello che vuoi, spunta la conferma e ricorda l'eventuale rimborso (art. 12.9).",
+      "preavviso": "Questa azienda non ha una scadenza: per introdurla servono almeno 30 giorni di preavviso (art. 12.8). Scegli una data più lontana oppure spunta la conferma, se il cliente è già stato avvisato."
+    },
+    "esporta": "Scarica tutti i dati",
+    "accessi": {
+      "titolo": "Accessi ancora attivi",
+      "testo": "Con l'abbonamento scaduto questi accessi restano attivi finché non li togli. Puoi revocarli qui.",
+      "chiave": "Chiave API «{nome}» ({prefisso}…), valida fino al {data}",
+      "esterno": "Accesso con Microsoft o Google attivo per l'azienda.",
+      "disattiva": "Disattiva"
+    }
+  }
+}

@@ -1,0 +1,54 @@
+<%
+  // Ред на офертата (`r-<i>-…`): код, описание, мерна единица, количество, цена, отстъпка, ставка на ДДС;
+  // сумата на реда — само показана (браузърът; сървърът смята при записа). В <template> за „Aggiungi una
+  // riga“ — `i` и `n` са „__i__“ и „__n__“ (public/js/preventivo.js ги сменя).
+  const p = 'r-' + i + '-';
+  const v = (k) => typeof values[p + k] === 'string' ? values[p + k] : '';
+  const err = (k) => errors[p + k] ? messageOf(p + k) : '';
+  const aria = (k) => errors[p + k] ? ' aria-invalid="true" aria-describedby="err-' + p + k + '"' : '';
+  const iva = v('iva') || '22';
+%><fieldset class="preventivo-riga" id="riga-<%= i %>" data-preventivo-riga>
+  <legend class="preventivo-riga__titolo"><%= t('preventivi.riga.titolo', { n }) %></legend>
+  <div class="preventivo-riga__campi grid--righe">
+    <div class="field preventivo-riga__codice">
+      <label class="field__label" for="f-<%= p %>codice"><%= t('preventivi.colonna.codice') %></label>
+      <input class="input" id="f-<%= p %>codice" name="<%= p %>codice" type="text" maxlength="<%= max.codice %>" autocomplete="off" list="listino-codici" value="<%= v('codice') %>" data-campo="codice"<%- aria('codice') %>>
+      <div class="field__piede"><% if (err('codice')) { %><p class="field__error" id="err-<%= p %>codice"><%= err('codice') %></p><% } %></div>
+    </div>
+    <div class="field preventivo-riga__descr">
+      <label class="field__label" for="f-<%= p %>descrizione"><%= t('preventivi.colonna.descrizione') %></label>
+      <textarea class="textarea" id="f-<%= p %>descrizione" name="<%= p %>descrizione" rows="2" maxlength="<%= max.descrizione %>" data-campo="descrizione"<%- aria('descrizione') %>><%= v('descrizione') %></textarea>
+      <div class="field__piede"><% if (err('descrizione')) { %><p class="field__error" id="err-<%= p %>descrizione"><%= err('descrizione') %></p><% } %></div>
+    </div>
+    <div class="field preventivo-riga__corto">
+      <label class="field__label" for="f-<%= p %>unita"><%= t('preventivi.colonna.unita') %></label>
+      <input class="input" id="f-<%= p %>unita" name="<%= p %>unita" type="text" maxlength="<%= max.unita %>" autocomplete="off" value="<%= v('unita') %>" data-campo="unita"<%- aria('unita') %>>
+      <div class="field__piede"><% if (err('unita')) { %><p class="field__error" id="err-<%= p %>unita"><%= err('unita') %></p><% } %></div>
+    </div>
+    <div class="field preventivo-riga__corto">
+      <label class="field__label" for="f-<%= p %>quantita"><%= t('preventivi.colonna.quantita') %></label>
+      <input class="input importo" id="f-<%= p %>quantita" name="<%= p %>quantita" type="text" inputmode="decimal" maxlength="14" autocomplete="off" value="<%= v('quantita') %>" data-campo="quantita"<%- aria('quantita') %>>
+      <div class="field__piede"><% if (err('quantita')) { %><p class="field__error" id="err-<%= p %>quantita"><%= err('quantita') %></p><% } %></div>
+    </div>
+    <div class="field preventivo-riga__medio">
+      <label class="field__label" for="f-<%= p %>prezzo"><%= t('preventivi.colonna.prezzoEuro') %></label>
+      <input class="input importo" id="f-<%= p %>prezzo" name="<%= p %>prezzo" type="text" inputmode="decimal" maxlength="16" autocomplete="off" value="<%= v('prezzo') %>" data-campo="prezzo"<%- aria('prezzo') %>>
+      <div class="field__piede"><% if (err('prezzo')) { %><p class="field__error" id="err-<%= p %>prezzo"><%= err('prezzo') %></p><% } %></div>
+    </div>
+    <div class="field preventivo-riga__corto">
+      <label class="field__label" for="f-<%= p %>sconto"><%= t('preventivi.colonna.scontoPercento') %></label>
+      <input class="input importo" id="f-<%= p %>sconto" name="<%= p %>sconto" type="text" inputmode="decimal" maxlength="6" autocomplete="off" value="<%= v('sconto') %>" data-campo="sconto"<%- aria('sconto') %>>
+      <div class="field__piede"><% if (err('sconto')) { %><p class="field__error" id="err-<%= p %>sconto"><%= err('sconto') %></p><% } %></div>
+    </div>
+    <div class="field preventivo-riga__corto">
+      <label class="field__label" for="f-<%= p %>iva"><%= t('preventivi.colonna.ivaPercento') %></label>
+      <select class="select" id="f-<%= p %>iva" name="<%= p %>iva" data-campo="iva"<%- aria('iva') %>>
+        <% for (const a of aliquote) { %><option value="<%= a %>"<% if (String(a) === iva) { %> selected<% } %>><%= a %> %</option>
+        <% } %>
+      </select>
+      <div class="field__piede"><% if (err('iva')) { %><p class="field__error" id="err-<%= p %>iva"><%= err('iva') %></p><% } %></div>
+    </div>
+    <p class="preventivo-riga__importo"><span class="muted"><%= t('preventivi.colonna.importo') %></span> <output data-importo for="f-<%= p %>quantita f-<%= p %>prezzo f-<%= p %>sconto">—</output></p>
+  </div>
+  <button class="btn btn--ghost preventivo-riga__togli" type="button" data-togli-riga hidden><%- include('../partials/icon', { name: 'trash' }) %><%= t('preventivi.riga.togli') %></button>
+</fieldset>
