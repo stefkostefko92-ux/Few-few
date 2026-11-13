@@ -129,6 +129,11 @@
   color: var(--muted);
 }
 
+/* Съобщение, което чака в страницата (подписът на условията): `hidden` важи въпреки `display: flex`. */
+.field__error[hidden] {
+  display: none;
+}
+
 .field__error {
   display: flex;
   gap: 6px;

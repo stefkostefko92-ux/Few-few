@@ -7,8 +7,12 @@ import { MINUTE } from '../time.js';
 import type { SessionUser } from '../types.js';
 import { condizioniValide, versioneDaFirmare } from './versioni.js';
 
-/** Колко важи кодът, колко грешни опита се допускат, колко често и колко пъти се праща нов. */
-export const CODICE_MINUTI = 10;
+/**
+ * Колко важи кодът, колко грешни опита се допускат, колко често и колко пъти се праща нов. 30 минути
+ * (собственикът, 13 ноември 2026 — писмото с кода пристигна след 5 минути: „Вдигни малко валидността на кода,
+ * нека бъде 30 минути“); налучкването го пазят опитите (5 на код), не срокът.
+ */
+export const CODICE_MINUTI = 30;
 export const MAX_TENTATIVI = 5;
 export const ATTESA_NUOVO_CODICE_MS = MINUTE;
 export const MAX_CODICI_ORA = 5;

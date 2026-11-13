@@ -78,8 +78,20 @@ export async function acceptTerms(page, who) {
     }
     const codice = /\b(\d{6})\b/.exec((await page.locator('.flash').textContent()) ?? '')?.[1];
     if (!codice) return fail(`${who}: no code on the signature page (SMTP set on a test server?)`);
-    await spunta(page.locator('input[name=clausole]'));
+    // Without the tick nothing is sent: the message shows, the typed code stays; the tick clears the message
+    // (the owner, 13 November 2026: "spunta l'approvazione" stood next to a ticked box).
     await page.fill('#f-codice', codice);
+    await page.click('form.form button[type=submit]');
+    const avviso = page.locator('[data-errore-clausole]');
+    if (
+      !new URL(page.url()).pathname.startsWith('/condizioni/firma') ||
+      !(await avviso.isVisible())
+    )
+      fail(`${who}: the signature went without the tick, or says nothing`);
+    if ((await page.inputValue('#f-codice')) !== codice)
+      fail(`${who}: the code typed before the tick is lost`);
+    await spunta(page.locator('input[name=clausole]'));
+    if (await avviso.isVisible()) fail(`${who}: the message stays after the tick`);
     await Promise.all([page.waitForEvent('load'), page.click('form.form button[type=submit]')]);
   }
   if (new URL(page.url()).pathname.startsWith('/condizioni/'))

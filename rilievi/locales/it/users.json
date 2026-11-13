@@ -38,7 +38,7 @@
     "copied": "Copiato",
     "linkOnce": "Il link si vede solo ora: copialo e mandalo alla persona (WhatsApp, SMS o email).",
     "mail": {
-      "sent": "Email inviata.",
+      "sent": "Email inviata. A volte servono 5–10 minuti perché arrivi.",
       "disabled": "L'invio delle email non è attivo su questo portale: manda tu il link.",
       "failed": "L'email non è partita: manda tu il link."
     },

@@ -25,6 +25,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-13-versione-4-3": {
+        "area": "Portale",
+        "titolo": "Versione 4.3: il codice per la firma vale 30 minuti",
+        "testo": "Il codice che ricevi per email per firmare le condizioni di servizio ora vale 30 minuti invece di 10: se l'email arriva in ritardo, fai in tempo a inserirlo. Quando il portale invia un'email — il link per la nuova password, il codice per la firma, un invito — ora avvisa che a volte servono 5–10 minuti perché arrivi. Nella pagina della firma, se manca la spunta dell'approvazione il modulo non parte e il codice che hai scritto resta al suo posto."
+      },
       "2026-11-13-versione-4-2": {
         "area": "Portale",
         "titolo": "Versione 4.2: preventivo a tutta larghezza, firma più semplice",

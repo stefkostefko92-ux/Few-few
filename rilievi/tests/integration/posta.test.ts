@@ -160,7 +160,11 @@ describe('the portal email server', () => {
       // A real email of the portal (the link for a new password) fails the same way: the page says so.
       assert.doesNotMatch(page.body, /Ultima email del portale/);
       const fuori = new Browser();
-      await fuori.submit('/password-dimenticata', '/password-dimenticata', { email: user.email });
+      const chiesto = await fuori.submit('/password-dimenticata', '/password-dimenticata', {
+        email: user.email,
+      });
+      // The owner, 13 November 2026: the emails take minutes to arrive — the page says so.
+      assert.match(chiesto.body, /servono 5–10 minuti perché l&#39;email arrivi/);
       const dopo = await browser.get('/master/posta');
       assert.match(dopo.body, /Ultima email del portale/);
       assert.match(dopo.body, /non ha accettato la connessione cifrata sulla porta 2525/);
