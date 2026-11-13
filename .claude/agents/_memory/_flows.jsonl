@@ -556,3 +556,10 @@
 {"t":"start","ts":"2026-11-13T10:38:21.082Z","id":"r047025e8","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-13T10:38:21.082Z","id":"r047025e8","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"849c5b7c"}
 {"t":"handoff","ts":"2026-11-13T10:40:21.129Z","id":"r047025e8","from":"pravniyat-razbirach","to":"човек","status":"блокер","run":"4d85d8fe"}
+{"t":"start","ts":"2026-11-13T15:28:11.679Z","id":"rca107c7d","flow":"авто","lead":"danachnika","auto":true}
+{"t":"handoff","ts":"2026-11-13T15:28:11.679Z","id":"rca107c7d","from":"danachnika","to":"prodavacha","status":"има бележки","run":"ca855f3c"}
+{"t":"handoff","ts":"2026-11-13T15:29:53.172Z","id":"rca107c7d","from":"vps-adjiyata","to":"оркестратор","status":"има бележки","run":"be0fafcb"}
+{"t":"handoff","ts":"2026-11-13T15:41:04.833Z","id":"rca107c7d","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"55c4fe21"}
+{"t":"handoff","ts":"2026-11-13T16:00:52.651Z","id":"rca107c7d","from":"prodavacha","to":"kodadjiyata","status":"има бележки","run":"0075725d"}
+{"t":"handoff","ts":"2026-11-13T16:20:49.845Z","id":"rca107c7d","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"f5113524"}
+{"t":"handoff","ts":"2026-11-13T16:47:08.478Z","id":"rca107c7d","from":"kodadjiyata","to":"друг","status":"има бележки","run":"9da9b805","toRaw":"Изпитателя"}
