@@ -76,8 +76,9 @@
     animation-delay: calc(0.5s + var(--i, 0) * 0.22s);
   }
 
+  /* Само движение, без прозрачност: проверката на контраста (axe) не хваща отметките по средата на появата. */
   .stage .ck {
-    animation: fr-in 0.4s ease-out both;
+    animation: ck-in 0.4s ease-out both;
     animation-delay: calc(2.4s + var(--k) * 0.32s);
   }
 
@@ -236,5 +237,11 @@
   from {
     opacity: 0.4;
     transform: scale(0.85);
+  }
+}
+
+@keyframes ck-in {
+  from {
+    transform: translateY(6px);
   }
 }

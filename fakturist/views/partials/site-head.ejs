@@ -6,7 +6,9 @@
   const pageTitle = isErr ? locals.title : seo.title;
   const altBg = isErr ? '/' : seo.alternates.bg;
   const altEn = isErr ? '/en/' : seo.alternates.en;
-  const preload =lang === 'bg' ? 'cyrillic' : 'latin';
+  // Интервалите, запетаите и цифрите и в българския текст са в latin подмножеството (unicode-range): без
+  // preload то пристига късно и пренарежда заглавието (CLS) — затова latin винаги, cyrillic и за BG.
+  const preloads = lang === 'bg' ? ['latin', 'cyrillic'] : ['latin'];
 -%>
 <!doctype html>
 <html lang="<%= htmlLang %>">
@@ -55,8 +57,9 @@
 <% } -%>
 <meta name="color-scheme" content="light dark">
 <%- include('pwa-head') %>
-<link rel="preload" href="/fonts/ibm-plex-sans-<%= preload %>-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/fonts/ibm-plex-sans-<%= preload %>-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+<% for (const subset of preloads) { for (const weight of [400, 600]) { -%>
+<link rel="preload" href="/fonts/ibm-plex-sans-<%= subset %>-<%= weight %>-normal.woff2" as="font" type="font/woff2" crossorigin>
+<% } } -%>
 <link rel="stylesheet" href="/fonts/fonts.css?v=<%= v %>">
 <link rel="stylesheet" href="/css/site.css?v=<%= v %>">
 <% if (!isErr && page === 'home') { -%>
