@@ -584,5 +584,47 @@
       "notFound": "No such payment.",
       "source": "A matched payment is removed from bank matching."
     }
+  },
+  "api": {
+    "title": "API keys",
+    "intro": "A key connects your software (web shop, warehouse, CRM) to Fakturist: it reads documents, downloads PDF and XML, and issues. The key acts on behalf of the person who created it, with their rights at the time.",
+    "needsPlan": "The API is in the Business plan and above.",
+    "createdTitle": "Key “{name}” created",
+    "once": "Copy it now — it is shown only once. We keep only its fingerprint; if lost, revoke it and create a new one.",
+    "name": "Name",
+    "namePlaceholder": "e.g. Web shop",
+    "key": "Key",
+    "scopes": "Rights",
+    "scope": {
+      "read": "read",
+      "issue": "issue"
+    },
+    "scopeHelp": {
+      "read": "documents, PDF, UBL, CII, series",
+      "issue": "new documents via POST /api/v1/documents"
+    },
+    "lastUsed": "Last used",
+    "by": "{name}, {date}",
+    "revoked": "revoked",
+    "revoke": "Revoke",
+    "new": "New key",
+    "create": "Create key",
+    "limit": "Up to {max} active keys per company.",
+    "docsTitle": "How to use it",
+    "docsIntro": "Base path: /api/v1. The key goes in the Authorization header. Responses are JSON.",
+    "docs": {
+      "amounts": "Amounts are text with a dot (“100.00”), dates are YYYY-MM-DD. The number and the supplier come from Fakturist, not from the request.",
+      "idempotency": "Idempotency-Key when issuing: a repeated request with the same key returns the same document instead of issuing a second one.",
+      "errors": "Errors: 400 invalid request, 401 key, 403 rights or plan, 422 the document fails the checks (with the rule codes), 429 too many requests.",
+      "limits": "Limit: 120 requests per minute per key, of which up to 30 issues."
+    },
+    "ok": {
+      "revoked": "The key is revoked."
+    },
+    "err": {
+      "invalid": "Enter a name and at least one right.",
+      "feature": "The API is in the Business plan and above.",
+      "limit": "The limit of active keys is reached — revoke an old key."
+    }
   }
 }

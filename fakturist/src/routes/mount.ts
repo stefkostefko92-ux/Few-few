@@ -3,6 +3,7 @@ import { attachSession } from '../auth/sessions.js';
 import { csrf } from '../auth/guards.js';
 import { appLocals } from '../http/view.js';
 import { webhooksRouter } from './webhooks.js';
+import { apiRouter } from '../api/router.js';
 import { authRouter } from './auth.js';
 import { inviteRouter } from './invite.js';
 import { memberInviteRouter } from './member-invite.js';
@@ -17,6 +18,8 @@ import { adminRouter } from './admin.js';
  */
 export function mountApp(app: Express): void {
   app.use(webhooksRouter());
+  // REST API (SPEC 53): собствен JSON парсер, ключ вместо сесия, без CSRF — преди формите и сесията.
+  app.use(apiRouter());
   app.use(express.urlencoded({ extended: true, limit: '256kb', parameterLimit: 2000 }));
   app.use(attachSession());
   app.use(csrf());

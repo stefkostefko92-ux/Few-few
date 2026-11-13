@@ -65,6 +65,7 @@ src/
                  (фактурата от Карбон Стелт) · revolut-client.ts (Merchant API) · card.ts (страница за
                  плащане, сверка, проверка на висящите) · expiry.ts · loop.ts (на 10 мин) ·
                  plan-view.ts · proforma-pdf.ts · entitlements.ts (функциите по план)
+  api/           keys.ts (ключовете) · router.ts (REST v1) · serialize.ts (документът като JSON)
   recurring/     schedule.ts (графикът, периодът) · recurring.ts (шаблоните) · run.ts (работникът) · loop.ts
   features.ts    регистърът на функциите (live/planned + дата) — плановете, панелът и витрината четат оттук
   seo/           pages.ts (страниците на витрината — единствен списък) · structured-data.ts (JSON-LD)
@@ -74,7 +75,8 @@ src/
   pwa/           manifest.ts · device.ts (устройството по User-Agent за /prilozhenie)
   routes/        site · seo · health · pwa · legal · auth · account (нова парола, имейл) · install ·
                  invite (/pokana) · member-invite (/chlen) · app (+ app-issue, app-members, app-catalog, app-security, app-inbox,
-                 app-clients, app-settings, app-plan, app-recurring, app-doc-payments, app-shared) · admin (+ admin-settings, admin-actions) ·
+                 app-clients, app-settings, app-plan, app-recurring, app-doc-payments, app-api-keys,
+                 app-shared) · admin (+ admin-settings, admin-actions) ·
                  webhooks
   http/          upload.ts — multipart (multer, в паметта) + CSRF след разчитането · view · ip · cookies
 views/           site/ (витрината — Дизайнера) · app/ · admin/ · auth/ · errors/ · partials/
@@ -130,6 +132,13 @@ scripts/         conformance/run.mjs (официалната проверка) �
   `buyer[email]`), най-много едно писмо на ден; писмото се отказва, ако междувременно е платено.
   Писмата до получатели извън Фактурист (`document.sent`, `document.reminder`) са с `replyTo` = имейлът
   на фирмата.
+- **API** (SPEC 53, `src/api/`, „API ключове“ на фирмата — `org.settings`, пряк член, план с `api`):
+  ключ „fkt_“ + 32 байта, показва се веднъж (страницата се рисува направо, без redirect), в базата —
+  SHA-256 и началото; обхват `read`/`issue`; до 10 действащи. `/api/v1` е преди формите, сесията и CSRF —
+  само `Authorization: Bearer`, бисквитките не важат; JSON грешки. Издава от името на създателя (ролята
+  му към момента; recheckAccess); `Idempotency-Key` се записва в транзакцията на издаването — повторена
+  или едновременна заявка връща същия документ, номерът не изгаря. Номерът и доставчикът — само от
+  сървъра. Таван: 300/мин по IP преди ключа, 120/мин по ключ, 30/мин издавания.
 - **Правните документи** (общи условия, поверителност, договор за обработване — BG+EN, публикувани
   13.11.2026) са в `src/legal/documents.ts` (адреси, версия) и `views/legal/<документ>/<език>.ejs`.
   Съществена промяна на текста = нова `version` (регистрацията записва приетата в `LegalAcceptance`) и

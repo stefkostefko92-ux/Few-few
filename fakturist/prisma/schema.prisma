@@ -136,6 +136,7 @@ model User {
   cancelledDocuments    Document[]         @relation("CancelledBy")
   paymentsCreated       Payment[]          @relation("PaymentCreatedBy")
   recurringCreated      RecurringInvoice[]
+  apiKeysCreated        ApiKey[]
   documentPayments      DocumentPayment[]
   paymentsConfirmed     Payment[]          @relation("PaymentConfirmedBy")
   auditEntries          AuditLog[]
@@ -231,6 +232,7 @@ model Organization {
   legalAcceptances LegalAcceptance[]
   recurring        RecurringInvoice[]
   recurringAsFirm  RecurringInvoice[] @relation("RecurringFirm")
+  apiKeys          ApiKey[]
 
   @@index([kind])
   @@index([legalName])
@@ -408,6 +410,7 @@ model Document {
   paidAt             DateTime?            @db.Date
   payments           DocumentPayment[]
   reminders          PaymentReminder[]
+  apiRequests        ApiIdempotency[]
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
@@ -831,4 +834,43 @@ model PaymentReminder {
   createdAt  DateTime @default(now())
 
   @@unique([documentId, step])
+}
+
+/// API ключ на фирма (SPEC 53): показва се веднъж; в базата е само SHA-256 и началото за разпознаване.
+/// Издава от името на създателя (правото му се проверява наново при всяко издаване).
+model ApiKey {
+  id             String           @id @default(cuid())
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  /// „fkt_“ + първите 8 знака — за списъка, не стига за вход.
+  prefix         String
+  keyHash        String           @unique
+  /// „read“ (четене) и/или „issue“ (издаване).
+  scopes         String[]
+  createdById    String?
+  createdBy      User?            @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  lastUsedAt     DateTime?
+  revokedAt      DateTime?
+  createdAt      DateTime         @default(now())
+  idempotency    ApiIdempotency[]
+
+  @@index([organizationId])
+  @@index([createdById])
+}
+
+/// Повторена заявка за издаване със същия Idempotency-Key връща същия документ, не издава втори.
+model ApiIdempotency {
+  id          String   @id @default(cuid())
+  apiKeyId    String
+  apiKey      ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  key         String
+  /// SHA-256 на тялото — същият ключ с друго тяло е грешка (422), не втори документ.
+  requestHash String
+  documentId  String
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Restrict)
+  createdAt   DateTime @default(now())
+
+  @@unique([apiKeyId, key])
+  @@index([documentId])
 }

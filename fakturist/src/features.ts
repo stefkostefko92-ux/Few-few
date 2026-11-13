@@ -19,7 +19,7 @@ export const FEATURES = [
   { code: 'recurring', group: 'automation', status: 'live' },
   { code: 'reminders', group: 'automation', status: 'live' },
   { code: 'bank-matching', group: 'automation', status: 'planned', target: '2027-Q2' },
-  { code: 'api', group: 'automation', status: 'planned', target: '2027-Q2' },
+  { code: 'api', group: 'automation', status: 'live' },
   { code: 'roles', group: 'team', status: 'live' },
   { code: 'audit-log', group: 'team', status: 'live' },
   { code: 'two-factor', group: 'team', status: 'live' },
