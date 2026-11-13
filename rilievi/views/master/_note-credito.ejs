@@ -1,0 +1,36 @@
+<%# The credit notes to issue (pagamenti/note-credito.ts): one for each refund and each lost dispute. The portal
+    issues nothing: the MASTER writes here the number and the day of the note issued in the invoicing software. %>
+<% const n = 'rimborsi.note.';
+   const importi = (x) => x.ivaCent > 0
+     ? t(n + 'conIva', { imponibile: euro(x.imponibileCent), iva: euro(x.ivaCent), totale: euro(x.totaleCent) })
+     : t(n + 'senzaIva', { totale: euro(x.totaleCent) });
+   const fattura = (p) => p.fatturaNumero ? t(n + 'fattura', { numero: p.fatturaNumero }) : t(p.fatturataAt ? n + 'fatturaSenzaNumero' : n + 'fatturaNon');
+%>
+<section class="panel pagamenti-pannello" aria-labelledby="h-note">
+  <h2 class="section__title" id="h-note"><%= t(n + 'titolo') %></h2>
+  <p class="muted"><%= t(n + 'testo', { giorni: note.giorni }) %></p>
+  <% if (!note.daEmettere.length) { %><p class="muted"><%= t(n + 'nessuna') %></p><% } else { %><div class="table-scorre"><table class="table table--stack">
+    <caption class="visually-hidden"><%= t(n + 'titolo') %></caption>
+    <thead><tr><th scope="col"><%= t(n + 'colonna.evento') %></th><th scope="col"><%= t(n + 'colonna.cliente') %></th><th scope="col"><%= t(n + 'colonna.fattura') %></th><th scope="col"><%= t(n + 'colonna.importo') %></th><th scope="col"><%= t(n + 'colonna.entro') %></th><th scope="col"><%= t(n + 'colonna.emissione') %></th></tr></thead>
+    <tbody>
+      <% for (const x of note.daEmettere) { %><tr>
+        <th scope="row" data-label="<%= t(n + 'colonna.evento') %>"><%= fmt.dayRoma(x.eventoAt) %><br><span class="muted"><%= t(n + 'origine.' + x.origine) %></span></th>
+        <td data-label="<%= t(n + 'colonna.cliente') %>"><%= x.pagamento.ragioneSociale %> — <%= x.pagamento.partitaIva %><% if (x.origine === 'CONTESTAZIONE') { %><br><span class="muted"><%= t(n + 'contestazione') %></span><% } %></td>
+        <td data-label="<%= t(n + 'colonna.fattura') %>"><%= fattura(x.pagamento) %></td>
+        <td data-label="<%= t(n + 'colonna.importo') %>"><%= importi(x) %></td>
+        <td data-label="<%= t(n + 'colonna.entro') %>"><%= fmt.dayRoma(x.entroIl) %><% if (x.entroIl < note.adesso) { %><br><strong><%= t(n + 'scaduta') %></strong><% } %></td>
+        <td data-label="<%= t(n + 'colonna.emissione') %>"><form class="row-form" method="post" action="/master/pagamenti/note-credito/<%= x.id %>/emessa"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <label class="visually-hidden" for="nc-numero-<%= x.id %>"><%= t(n + 'numero') %></label><input class="input" id="nc-numero-<%= x.id %>" name="numero" type="text" maxlength="40" required placeholder="<%= t(n + 'numero') %>">
+          <label class="visually-hidden" for="nc-data-<%= x.id %>"><%= t(n + 'data') %></label><input class="input" id="nc-data-<%= x.id %>" name="data" type="date" required value="<%= note.oggi %>" max="<%= note.oggi %>">
+          <button class="btn btn--sm" type="submit" aria-label="<%= t(n + 'segnaPer', { cliente: x.pagamento.ragioneSociale }) %>"><%= t(n + 'segna') %></button></form></td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table></div><% } %>
+  <% if (note.emesse.length) { %><h3><%= t(n + 'ultime') %></h3>
+  <ul class="list-plain">
+    <% for (const x of note.emesse) { %><li><%= t(n + 'emessaIl', { numero: x.numero, data: fmt.dayRoma(x.emessaAt) }) %> — <%= x.pagamento.ragioneSociale %> — <%= importi(x) %></li>
+    <% } %>
+  </ul><% } %>
+  <div class="toolbar"><a class="btn" href="/master/pagamenti/note-credito.csv"><%- include('../partials/icon', { name: 'download' }) %><span><%= t(n + 'esportaCsv') %></span></a></div>
+</section>

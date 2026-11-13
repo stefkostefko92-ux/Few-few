@@ -7,7 +7,11 @@ import { leggiConfig, registraIlWebhook, salvaConfig } from '../pagamenti/config
 import { formatoEuro, GIORNI_FATTURA } from '../pagamenti/offerta.js';
 import { attivaPiano, creaPiano, leggiPiano, tuttiIPiani } from '../pagamenti/piani.js';
 import { elencoContestazioni } from '../pagamenti/contestazioni.js';
+import { elencoNoteCredito } from '../pagamenti/note-credito.js';
+import { GIORNI_NOTA_CREDITO } from '../pagamenti/note-credito-importi.js';
 import { riconcilia } from '../pagamenti/riconcilia.js';
+import { quotaSoglia, SOGLIA_UE_CENT, venditeSenzaVies } from '../pagamenti/soglia.js';
+import { businessDay } from '../time.js';
 import { ErroreRevolut } from '../pagamenti/revolut.js';
 import { rimborsiDovuti } from '../pagamenti/rimborsi.js';
 import { isProduction } from '../config.js';
@@ -46,8 +50,9 @@ async function vista(
     viesConsultazione: true,
     viesAt: true,
     viesNome: true,
+    regimeIva: true,
   } as const;
-  const [cfg, piani, pagamenti, daVerificare, daFatturare, rimborsi, contestazioni] =
+  const [cfg, piani, pagamenti, daVerificare, daFatturare, rimborsi, contestazioni, note, vendite] =
     await Promise.all([
       leggiConfig(),
       tuttiIPiani(),
@@ -72,6 +77,8 @@ async function vista(
       }),
       rimborsiDovuti(),
       elencoContestazioni(),
+      elencoNoteCredito(),
+      venditeSenzaVies(),
     ]);
   res.status(status).render('master/pagamenti', {
     cfg: {
@@ -88,6 +95,8 @@ async function vista(
     daFatturare,
     rimborsi,
     contestazioni,
+    note: { ...note, giorni: GIORNI_NOTA_CREDITO, adesso: new Date(), oggi: businessDay() },
+    iva: { senzaVies: cfg.senzaVies, vendite, soglia: SOGLIA_UE_CENT, quota: quotaSoglia(vendite) },
     giorniFattura: GIORNI_FATTURA,
     euro: formatoEuro,
     errore: extra.errore ?? null,

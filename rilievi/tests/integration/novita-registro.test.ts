@@ -19,9 +19,12 @@ describe('the updates on a new installation', () => {
     assert.equal(page.status, 200);
     assert.doesNotMatch(page.body, /data-novita/);
     const righe = await prisma.novita.findMany();
+    // Each on its own day — never later than the start of the current UTC day (an entry dated a day that has not
+    // begun in UTC yet would be published in the future).
+    const oggi = new Date().toISOString().slice(0, 10);
     assert.deepEqual(
       righe.map((r) => [r.id, r.pubblicataAt.toISOString()]).sort(),
-      VOCI.map((v) => [v.id, `${v.data}T00:00:00.000Z`]).sort(),
+      VOCI.map((v) => [v.id, `${v.data < oggi ? v.data : oggi}T00:00:00.000Z`]).sort(),
     );
   });
 });

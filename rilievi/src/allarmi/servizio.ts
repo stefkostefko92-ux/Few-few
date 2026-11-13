@@ -23,6 +23,8 @@ const PAGINA: Record<TipoAllarme, string> = {
   rimborsoFallito: '/master/pagamenti#h-rimborsi',
   posta: '/master/posta',
   segnalazione: '/master/segnalazioni',
+  sogliaIva: '/master/pagamenti',
+  notaCredito: '/master/pagamenti#h-note',
 };
 
 /** Адресът е в паметта за минута: алармата не пита базата всеки път; записът от конзолата го сменя веднага. */

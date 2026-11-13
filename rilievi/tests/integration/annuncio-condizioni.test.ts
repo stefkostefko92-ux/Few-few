@@ -1,6 +1,6 @@
 // The notice of a new version of the terms (conditions art. 18.1; owner, 12 November 2026 — point A2): the
 // MASTER announces the next version once from "Contratti"; every company gets a banner and every ADMIN an email.
-// 2026-11-12 and 2026-11-13 are in force on their own day (the owner: only his test companies, nothing to
+// 2026-11-12, 2026-11-13 and 2026-11-14 are in force on their own day (the owner: only his test companies, nothing to
 // announce — legale/versioni.ts, SENZA_PREAVVISO): once the last one is in force there is no next version —
 // nothing to announce, and the page of the next version goes back to the terms. Until midnight (Rome) of its day
 // the last version is "the next one", shown with its date. The dates are tested in tests/versioni.test.ts.
@@ -17,13 +17,13 @@ const HTML = { accept: 'text/html' };
 describe('announcing the new terms', () => {
   it('has nothing to announce once the last version is in force', async () => {
     const ultima = STORIA.CONDIZIONI.at(-1)!;
-    assert.equal(ultima, '2026-11-13');
+    assert.equal(ultima, '2026-11-14');
     const page = await new Browser().get('/condizioni/prossima');
     if (VERSIONE.CONDIZIONI !== ultima) {
       // The evening before: the last version is still "the next one", with what changes — and comes in by itself.
-      assert.equal(VERSIONE.CONDIZIONI, '2026-11-12');
+      assert.equal(VERSIONE.CONDIZIONI, '2026-11-13');
       assert.equal(page.status, 200);
-      assert.match(page.body, /25\.4 Chi decide/);
+      assert.match(page.body, /12\.10 Partita IVA e IVA/);
       return;
     }
     assert.equal(page.status, 303);

@@ -43,7 +43,7 @@ export const PRIVACY_UPDATED = '2026-11-12';
 export const ESPORTAZIONE_UPDATED = '2026-11-12';
 
 /** Последната промяна на текста на `/prezzi` (самите цени идват от плановете в конзолата). */
-export const PREZZI_UPDATED = '2026-11-12';
+export const PREZZI_UPDATED = '2026-11-13';
 
 /** Последната промяна на `/segnalazioni` (чл. 16 Рег. (ЕС) 2022/2065). */
 export const SEGNALAZIONI_UPDATED = '2026-11-12';

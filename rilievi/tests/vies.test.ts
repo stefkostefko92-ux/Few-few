@@ -83,16 +83,22 @@ describe('the VIES check of a VAT number', () => {
   });
 
   it('says "not valid" for an unknown number and for an input VIES refuses', async () => {
+    // VIES answered for this number: the consultation and its moment are the proof that it was asked (the sale
+    // then goes with Bulgarian VAT — conditions 2026-11-14, art. 12.10 b).
     risposta = { status: 200, body: JSON.stringify({ ...valida, valid: false, name: '---' }) };
-    assert.deepEqual(await consultaVies('IT00743110157', { base }), { esito: 'nonValida' });
+    const no = await consultaVies('IT00743110157', { base });
+    assert.equal(no.esito, 'nonValida');
+    assert.ok(no.esito === 'nonValida' && no.at instanceof Date);
+    assert.equal(no.esito === 'nonValida' && no.consultazione, valida.requestIdentifier);
+    const senza = { esito: 'nonValida', consultazione: null, at: null };
     risposta = {
       status: 200,
       body: JSON.stringify({ actionSucceed: false, errorWrappers: [{ error: 'INVALID_INPUT' }] }),
     };
-    assert.deepEqual(await consultaVies('IT00743110157', { base }), { esito: 'nonValida' });
+    assert.deepEqual(await consultaVies('IT00743110157', { base }), senza);
     // A number that is not "country + digits" never leaves the portal.
     const prima = richieste.length;
-    assert.deepEqual(await consultaVies('00743110157', { base }), { esito: 'nonValida' });
+    assert.deepEqual(await consultaVies('00743110157', { base }), senza);
     assert.equal(richieste.length, prima);
   });
 

@@ -1,5 +1,5 @@
 import { prisma } from '../db.js';
-import { VERSIONE } from '../legale/versioni.js';
+import { versioniValide } from '../legale/versioni.js';
 import { DAY } from '../time.js';
 import { inizioSettimana } from './tempo.js';
 
@@ -87,7 +87,7 @@ export async function panoramica(now: Date = new Date()) {
     prisma.azienda.count({
       where: {
         deactivatedAt: null,
-        OR: [{ condizioniVersione: null }, { condizioniVersione: { not: VERSIONE.CONDIZIONI } }],
+        OR: [{ condizioniVersione: null }, { condizioniVersione: { notIn: versioniValide() } }],
       },
     }),
     prisma.user.count({ where: { master: false, deactivatedAt: null } }),

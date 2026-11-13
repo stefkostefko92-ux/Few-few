@@ -229,6 +229,7 @@
       "PAGAMENTO_DA_VERIFICARE": "Pagamento da verificare",
       "PAGAMENTO_RIMBORSATO": "Pagamento rimborsato",
       "PAGAMENTO_FATTURATO": "Pagamento fatturato",
+      "NOTA_CREDITO_EMESSA": "Nota di credito emessa",
       "PAGAMENTO_RIMBORSO_AVVIATO": "Rimborso disposto su Revolut",
       "PAGAMENTO_RIMBORSO_FALLITO": "Rimborso su Revolut non riuscito",
       "PAGAMENTO_CONTESTATO": "Pagamento contestato (chargeback)",

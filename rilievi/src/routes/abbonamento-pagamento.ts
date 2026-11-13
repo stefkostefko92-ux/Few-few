@@ -11,7 +11,8 @@ import { riconcilia } from '../pagamenti/riconcilia.js';
 import { daPeriodo } from '../pagamenti/situazione.js';
 import { config } from '../config.js';
 import { BUSINESS_TZ } from '../time.js';
-import { avviaPagamento, preparaOfferta, type Dichiarati } from '../pagamenti/servizio.js';
+import { preparaOfferta, type Dichiarati } from '../pagamenti/prepara-offerta.js';
+import { avviaPagamento } from '../pagamenti/servizio.js';
 
 /**
  * Плащането на план от администратора на фирмата (#31; условията 2026-11-12, чл. 12): офертата с данните за
@@ -86,16 +87,26 @@ async function vistaOfferta(
   errore: string | null = null,
   /** Друго плащане на фирмата е още отворено в Revolut: връзката към него и до колко часа. */
   aperto: { checkoutUrl: string | null; fino: Date } | null = null,
+  /** Номерът не е валиден във VIES: офертата се показва с 20 % български ДДС (чл. 12.10) и защо. */
+  senzaVies = false,
 ): Promise<void> {
   const t = res.locals.t as (k: string, p?: Record<string, string | number>) => string;
   const user = principalOf(req).user;
   // Прегледът: с невалиден ДДС номер — като за Италия; потвърждението го проверява и сверява отпечатъка.
   const piva = partitaIvaDa(valori.partitaIva) ?? { numero: valori.partitaIva, paese: 'IT' };
-  const pronta = await preparaOfferta(t, user, azienda.id, piano, {
-    ragioneSociale: valori.ragioneSociale || azienda.name,
-    sede: valori.sede || '—',
-    partitaIva: piva,
-  });
+  const pronta = await preparaOfferta(
+    t,
+    user,
+    azienda.id,
+    piano,
+    {
+      ragioneSociale: valori.ragioneSociale || azienda.name,
+      sede: valori.sede || '—',
+      partitaIva: piva,
+    },
+    new Date(),
+    senzaVies,
+  );
   if (!pronta.offerta) {
     // План в опашка или период, даден на ръка: тук не се купува — разделът казва защо.
     setFlash(res, 'info', `pagamenti.errore.${pronta.errore}`, { email: config().CONTACT_EMAIL });
@@ -116,6 +127,7 @@ async function vistaOfferta(
     aperto,
     oraAperto: aperto ? oraRoma(aperto.fino) : '',
     contatto: config().CONTACT_EMAIL,
+    senzaVies,
   });
 }
 
@@ -177,13 +189,27 @@ abbonamentoPagamentoRouter.post(
         checkoutUrl: esito.checkoutUrl,
         fino: esito.fino,
       });
+    // Офертата е друга (ден, данни, ДДС): показва се наново. С номер извън VIES — с 20 % ДДС и защо.
+    if (esito.errore === 'cambiata')
+      return vistaOfferta(
+        req,
+        res,
+        409,
+        azienda,
+        piano,
+        valori,
+        {},
+        esito.senzaVies ? 'vies.cambiata' : 'pagamenti.errore.cambiata',
+        null,
+        esito.senzaVies,
+      );
     const [status, chiave] =
-      esito.errore === 'cambiata'
-        ? [409, 'pagamenti.errore.cambiata']
-        : esito.errore === 'persone'
-          ? [422, 'pagamenti.errore.persone']
-          : esito.errore === 'revolut'
-            ? [503, 'pagamenti.errore.revolut']
+      esito.errore === 'persone'
+        ? [422, 'pagamenti.errore.persone']
+        : esito.errore === 'revolut'
+          ? [503, 'pagamenti.errore.revolut']
+          : esito.errore === 'viesSoglia'
+            ? [422, 'vies.errore.soglia']
             : esito.errore === 'viesNonValida'
               ? [422, 'vies.errore.nonValida']
               : esito.errore === 'viesNonDisponibile'

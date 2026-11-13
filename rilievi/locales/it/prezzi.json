@@ -34,7 +34,7 @@
     },
     "iva": {
       "titolo": "IVA",
-      "testo": "I prezzi sono senza IVA. Per un'azienda italiana o di un altro paese dell'Unione europea, con una partita IVA valida nel VIES, si applica l'inversione contabile: paghi il prezzo indicato, senza IVA. Per un'azienda bulgara si aggiunge l'IVA bulgara del 20%."
+      "testo": "I prezzi sono senza IVA. Se la tua azienda ha una partita IVA valida nel VIES, il registro europeo delle partite IVA, si applica l'inversione contabile: paghi il prezzo indicato, senza IVA. Se la partita IVA non risulta valida nel VIES, al prezzo si aggiunge l'IVA bulgara del 20 %. In Italia l'iscrizione al VIES si chiede all'Agenzia delle Entrate. Prima di pagare vedi sempre nell'offerta l'IVA e il totale."
     },
     "rimborsi": {
       "titolo": "Rimborsi",
@@ -61,7 +61,7 @@
         },
         "iva": {
           "q": "I prezzi comprendono l'IVA?",
-          "a": "No, i prezzi sono senza IVA. Un'azienda dell'Unione europea con partita IVA valida nel VIES paga senza IVA, con l'inversione contabile. Un'azienda bulgara paga in più l'IVA del 20%."
+          "a": "No, i prezzi sono senza IVA. Con una partita IVA valida nel VIES paghi senza IVA, con l'inversione contabile. Se la partita IVA non risulta valida nel VIES, si aggiunge l'IVA bulgara del 20 %. L'offerta ti mostra l'IVA e il totale prima del pagamento."
         },
         "persone": {
           "q": "Chi conta nel numero di persone?",

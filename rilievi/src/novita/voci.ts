@@ -22,6 +22,7 @@ export interface VoceNovita {
 
 /** Най-новите отгоре; в един ден — по важност. */
 export const VOCI: readonly VoceNovita[] = [
+  { id: '2026-11-13-versione-4-1', data: '2026-11-13' },
   { id: '2026-11-12-versione-4', data: '2026-11-12' },
   { id: '2026-11-12-condizioni-13', data: '2026-11-12' },
   { id: '2026-11-12-prezzi', data: '2026-11-12' },
@@ -95,11 +96,16 @@ export function daRegistrare(
   voci: readonly VoceNovita[] = VOCI,
 ): Array<{ id: string; pubblicataAt: Date }> {
   const nuova = esistenti.size === 0;
+  const oggi = ora.toISOString().slice(0, 10);
   return voci
     .filter((v) => !esistenti.has(v.id))
     .map((v) => ({
       id: v.id,
-      pubblicataAt: nuova ? inizioGiorno(v.data) : ora,
+      // Нова инсталация: денят на новината — но не по-късно от началото на днешния ден по UTC (ден, който в UTC
+      // още не е започнал, би я пуснал „в бъдещето“ и прозорецът би се връщал до тогава).
+      pubblicataAt: nuova
+        ? new Date(Math.min(inizioGiorno(v.data).getTime(), inizioGiorno(oggi).getTime()))
+        : ora,
     }));
 }
 

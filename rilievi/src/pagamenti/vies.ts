@@ -27,7 +27,11 @@ export type EsitoVies =
       nome: string | null;
       indirizzo: string | null;
     }
-  | { esito: 'nonValida' }
+  /**
+   * VIES не го потвърждава. `consultazione` и `at` — ако VIES е отговорил за този номер (доказателството, че е
+   * питан); празни — номерът не е стигнал до VIES или е отказан по форма.
+   */
+  | { esito: 'nonValida'; consultazione: string | null; at: Date | null }
   /** VIES или държавата на номера не отговаря (кодът е на VIES, „rete“ или „risposta“) — нищо не се продава. */
   | { esito: 'nonDisponibile'; codice: string };
 
@@ -66,7 +70,7 @@ export async function consultaVies(
   opzioni: { base?: string; timeoutMs?: number } = {},
 ): Promise<EsitoVies> {
   const m = /^([A-Z]{2})([0-9A-Z]{2,13})$/.exec(numero);
-  if (!m) return { esito: 'nonValida' };
+  if (!m) return { esito: 'nonValida', consultazione: null, at: null };
   let raw: unknown;
   try {
     const res = await fetch(`${opzioni.base ?? baseVies()}/check-vat-number`, {
@@ -91,17 +95,19 @@ export async function consultaVies(
       .replace(/[^A-Z_]/g, '')
       .slice(0, 40);
     // Номер, който VIES не приема по форма, не е валиден номер — човекът го поправя, не чака.
-    if (codice === 'INVALID_INPUT') return { esito: 'nonValida' };
+    if (codice === 'INVALID_INPUT') return { esito: 'nonValida', consultazione: null, at: null };
     return { esito: 'nonDisponibile', codice: codice || 'errore' };
   }
   const risposta = rispostaSchema.safeParse(raw);
   if (!risposta.success) return { esito: 'nonDisponibile', codice: 'risposta' };
-  if (!risposta.data.valid) return { esito: 'nonValida' };
   const quando = risposta.data.requestDate ? new Date(risposta.data.requestDate) : new Date();
+  const at = Number.isNaN(quando.getTime()) ? new Date() : quando;
+  const consultazione = dato(risposta.data.requestIdentifier, 40);
+  if (!risposta.data.valid) return { esito: 'nonValida', consultazione, at };
   return {
     esito: 'valida',
-    consultazione: dato(risposta.data.requestIdentifier, 40),
-    at: Number.isNaN(quando.getTime()) ? new Date() : quando,
+    consultazione,
+    at,
     nome: dato(risposta.data.name, 300),
     indirizzo: dato(risposta.data.address, 500),
   };

@@ -10,7 +10,7 @@ import { perSettimana, SETTIMANE } from '../src/master/panoramica.js';
 import { byteLeggibili, durata, esitoCoda, esitoSpazio } from '../src/master/sistema.js';
 import { inizioSettimana, mezzanotteRoma } from '../src/master/tempo.js';
 import { leggiCodice } from '../src/master/verifica.js';
-import { VERSIONE } from '../src/legale/versioni.js';
+import { STORIA, VERSIONE } from '../src/legale/versioni.js';
 
 describe('the code typed from a sheet', () => {
   it('reads a Rif. however it is copied', () => {
@@ -153,6 +153,10 @@ describe('the state of a contract', () => {
     assert.equal(statoContratto(VERSIONE.CONDIZIONI, '2000-01-01'), 'esistente');
     assert.equal(statoContratto(null, null), 'attesa');
     assert.equal(statoContratto('2000-01-01', '2000-01-01'), 'attesa');
+    // A later version than the one in force, accepted in advance (the companies marked by the migration).
+    const ultima = STORIA.CONDIZIONI.at(-1)!;
+    assert.equal(statoContratto(ultima, null), 'esistente');
+    assert.equal(statoContratto(ultima, ultima), 'firmate');
   });
 });
 

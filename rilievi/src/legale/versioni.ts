@@ -19,7 +19,7 @@ export const PREAVVISO_GIORNI = 30;
 
 /** Версиите на всеки текст, от най-старата; `versione` е и денят, от който може да влезе. */
 export const STORIA: Readonly<Record<TipoTesto, readonly string[]>> = {
-  CONDIZIONI: ['2026-11-10', '2026-11-12', '2026-11-13'],
+  CONDIZIONI: ['2026-11-10', '2026-11-12', '2026-11-13', '2026-11-14'],
   REGOLE: ['2026-11-10'],
 };
 
@@ -31,11 +31,13 @@ export const STORIA: Readonly<Record<TipoTesto, readonly string[]>> = {
  * целият ѝ текст е в 2026-11-12, а файлът ѝ остава непипнат. 2026-11-13 (връщането върху същото платежно
  * средство — 12.9; проверката на ДДС номера във VIES — 12.10; 15.2; чл. 25 — сигнали и модериране по Регламент
  * (ЕС) 2022/2065): собственикът, 12 ноември 2026 — „Веднага“ (от своя ден, без обява; фирмите в портала още са
- * само неговите тестови). Клаузите за специално одобрение (чл. 24) не са променени. Нова версия оттук нататък —
- * само обявена.
+ * само неговите тестови). Клаузите за специално одобрение (чл. 24) не са променени. 2026-11-14 (ДДС при номер
+ * извън VIES — 12.1 и 12.10; кредитното известие — 12.9; 17.4; мотивите при спиране на акаунт заради съдържание
+ * — 25.6): собственикът, 12 ноември 2026 — „Довърши и това с Юридта“; пак от своя ден без обява, фирмите са още
+ * само неговите тестови. Клаузите по чл. 24 не са променени. Нова версия оттук нататък — само обявена.
  */
 export const SENZA_PREAVVISO: Readonly<Record<TipoTesto, readonly string[]>> = {
-  CONDIZIONI: ['2026-11-12', '2026-11-13'],
+  CONDIZIONI: ['2026-11-12', '2026-11-13', '2026-11-14'],
   REGOLE: [],
 };
 
@@ -108,6 +110,33 @@ export function versioneProssima(
     annunciataAt: annuncioDi(tipo, versione),
   };
 }
+
+/**
+ * Версиите на условията, с които фирма е „приела“: действащата и всяка по-нова в `STORIA` (приета предварително —
+ * влиза в сила след дни; фирмата не се пита втори път, когато денят дойде).
+ */
+export function versioniValide(
+  now: Date = new Date(),
+  storia: readonly string[] = STORIA.CONDIZIONI,
+): string[] {
+  return storia.slice(storia.indexOf(versioneVigente('CONDIZIONI', now, storia)));
+}
+
+/** Приела ли е фирмата условията, които важат сега (или по-нови). */
+export const condizioniValide = (
+  versione: string | null | undefined,
+  now: Date = new Date(),
+  storia: readonly string[] = STORIA.CONDIZIONI,
+): boolean => typeof versione === 'string' && versioniValide(now, storia).includes(versione);
+
+/**
+ * Версията, която урежда договора на фирмата: приетата, ако важи (действащата или по-нова, приета предварително),
+ * иначе действащата. Нея цитира офертата за план.
+ */
+export const versioneContratto = (versione: string | null | undefined): string =>
+  typeof versione === 'string' && condizioniValide(versione)
+    ? versione
+    : versioneVigente('CONDIZIONI');
 
 /** Действащите версии — четени при всяко обръщение, затова сменят деня сами. */
 export const VERSIONE: Readonly<Record<TipoTesto, string>> = {

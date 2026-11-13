@@ -46,6 +46,8 @@ export async function leggiConfig() {
     chiave: riga?.chiaveEnc ? decifraRevolut(riga.chiaveEnc) : null,
     webhookId: riga?.webhookId ?? null,
     webhookSegreto: riga?.webhookSegretoEnc ? decifraRevolut(riga.webhookSegretoEnc) : null,
+    senzaVies: riga?.senzaVies ?? true,
+    altreVenditeUeCent: riga?.altreVenditeUeCent ?? 0,
     updatedAt: riga?.updatedAt ?? null,
     updatedBy: riga?.updatedBy?.name ?? null,
   };
@@ -103,6 +105,37 @@ export async function salvaConfig(
     );
   });
   return 'ok';
+}
+
+/**
+ * ДДС при номер извън VIES (условията 2026-11-14, чл. 12.10 b): ключът и другите продажби на фирмата за годината
+ * към данъчно незадължени лица в ЕС (от счетоводството — порталът не ги знае; влизат в прага от 10 000 €).
+ */
+export async function salvaIva(
+  actorId: string,
+  v: { senzaVies: boolean; altreVenditeUeCent: number; altreVenditeUePrecCent: number },
+  now: Date = new Date(),
+): Promise<void> {
+  // Двете числа са за текущата и за предходната календарна година към момента на записа.
+  const dati = { ...v, altreVenditeUeAnno: now.getUTCFullYear(), updatedById: actorId };
+  await prisma.$transaction(async (tx) => {
+    await tx.configPagamenti.upsert({ where: { id: 'revolut' }, create: dati, update: dati });
+    await writeAudit(
+      {
+        actorId,
+        action: 'PAGAMENTI_IMPOSTATI',
+        aziendaId: null,
+        targetType: 'pagamento',
+        targetId: 'revolut',
+        meta: {
+          senzaVies: v.senzaVies,
+          altreVenditeUeCent: v.altreVenditeUeCent,
+          altreVenditeUePrecCent: v.altreVenditeUePrecCent,
+        },
+      },
+      tx,
+    );
+  });
 }
 
 /**

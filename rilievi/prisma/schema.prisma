@@ -1704,15 +1704,25 @@ enum AmbienteRevolut {
 /// Плащанията през Revolut Business (#31), настроени от MASTER в конзолата: един ред (`id` = "revolut").
 /// Ключът на API и signing secret-ът на webhook-а — шифровани (src/auth/chiavi.ts), никога показани.
 model ConfigPagamenti {
-  id                String          @id @default("revolut") @db.VarChar(10)
-  attivo            Boolean         @default(false)
-  ambiente          AmbienteRevolut @default(SANDBOX)
-  chiaveEnc         String?
-  webhookId         String?         @db.VarChar(100)
-  webhookSegretoEnc String?
-  updatedAt         DateTime        @updatedAt
-  updatedById       String?
-  updatedBy         User?           @relation("PagamentiAggiornati", fields: [updatedById], references: [id], onDelete: SetNull)
+  id                     String          @id @default("revolut") @db.VarChar(10)
+  attivo                 Boolean         @default(false)
+  ambiente               AmbienteRevolut @default(SANDBOX)
+  chiaveEnc              String?
+  webhookId              String?         @db.VarChar(100)
+  webhookSegretoEnc      String?
+  /// Продажба и на фирми, чийто ДДС номер не е валиден във VIES — с 20 % български ДДС (условията 2026-11-14,
+  /// чл. 12.10 b). Изключено: такава покупка онлайн не се сключва (както до версия 4.0).
+  senzaVies              Boolean         @default(true)
+  /// Другите продажби на фирмата за текущата година към данъчно незадължени лица в ЕС, извън портала (без ДДС,
+  /// в центове): влизат в прага от 10 000 € по чл. 59в от Дир. 2006/112 — въвежда ги MASTER от счетоводството.
+  altreVenditeUeCent     Int             @default(0)
+  /// Същото за предходната година и годината, за която е `altreVenditeUeCent`: след Нова година числото за
+  /// „тази година“ само става „миналата“, докато MASTER не въведе новото (soglia.ts).
+  altreVenditeUePrecCent Int             @default(0)
+  altreVenditeUeAnno     Int?
+  updatedAt              DateTime        @updatedAt
+  updatedById            String?
+  updatedBy              User?           @relation("PagamentiAggiornati", fields: [updatedById], references: [id], onDelete: SetNull)
 
   @@index([updatedById])
 }
@@ -1791,6 +1801,8 @@ model Pagamento {
   rimborsatoAt      DateTime?
   /// Фактурата е издадена (извън портала) — отбелязва MASTER; празно = „da fatturare“.
   fatturataAt       DateTime?
+  /// Номерът на фактурата (по избор) — кредитното известие се издава към нея.
+  fatturaNumero     String?           @db.VarChar(40)
   /// Проверката на ДДС номера във VIES при приемането на офертата (чл. 12.10; чл. 18, пар. 1, б. „а“ Регл.
   /// 282/2011): номерът на консултацията, кога и какво име и адрес е върнал VIES. Празно — български номер
   /// (20 % ДДС, без проверка) или плащане отпреди проверката.
@@ -1803,6 +1815,7 @@ model Pagamento {
   /// Връщанията, направени ЗАРАДИ това плащане (и върху по-стари поръчки — кредитът по чл. 12.4).
   rimborsiPer       Rimborso[]        @relation("RimborsiPer")
   contestazioni     Contestazione[]
+  noteCredito       NotaCredito[]
 
   @@index([aziendaId])
   @@index([pianoId])
@@ -1841,11 +1854,47 @@ model Rimborso {
   createdBy       User?         @relation("RimborsiCreati", fields: [createdById], references: [id], onDelete: SetNull)
   createdAt       DateTime      @default(now())
   completatoAt    DateTime?
+  notaCredito     NotaCredito?
 
   @@index([pagamentoId])
   @@index([perPagamentoId])
   @@index([createdById])
   @@index([stato, createdAt])
+}
+
+enum OrigineNotaCredito {
+  RIMBORSO
+  CONTESTAZIONE
+}
+
+/// Кредитно известие за издаване (чл. 115 ЗДДС; условията 2026-11-14, чл. 12.9). Порталът не издава документи —
+/// помни, че известието се дължи: към кое плащане (фактура), за колко, от кога и до кога, и какво е записал MASTER,
+/// след като го е издал в софтуера си за фактури. Едно за всяко връщане и за всеки спор, решен срещу нас.
+model NotaCredito {
+  id              String             @id @default(cuid())
+  pagamentoId     String
+  pagamento       Pagamento          @relation(fields: [pagamentoId], references: [id], onDelete: Cascade)
+  origine         OrigineNotaCredito
+  /// Връщането през Revolut (ръчно отбелязаното връщане няма ред) или спорът, от който идва.
+  rimborsoId      String?            @unique
+  rimborso        Rimborso?          @relation(fields: [rimborsoId], references: [id], onDelete: Cascade)
+  contestazioneId String?            @unique @db.VarChar(100)
+  contestazione   Contestazione?     @relation(fields: [contestazioneId], references: [id], onDelete: Cascade)
+  /// Сумите на известието (в полза на клиента), положителни, в центове.
+  imponibileCent  Int
+  ivaCent         Int
+  totaleCent      Int
+  /// Кога парите са върнати или спорът е решен.
+  eventoAt        DateTime
+  /// Срокът за издаване: 5 дни от събитието (чл. 115, ал. 2 ЗДДС).
+  entroIl         DateTime
+  /// Записаното от MASTER след издаването.
+  numero          String?            @db.VarChar(40)
+  emessaAt        DateTime?
+  createdAt       DateTime           @default(now())
+
+  @@index([pagamentoId])
+  @@index([emessaAt])
 }
 
 enum StatoContestazione {
@@ -1873,6 +1922,7 @@ model Contestazione {
   apertaAt      DateTime?
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
+  notaCredito   NotaCredito?
 
   @@index([pagamentoId])
   @@index([stato])
@@ -1921,6 +1971,8 @@ model Segnalazione {
   nome         String?            @db.VarChar(200)
   email        String?            @db.VarChar(254)
   minori       Boolean            @default(false)
+  /// Не е сигнал отвън, а проверка по инициатива на доставчика (чл. 25.6): без подател.
+  iniziativa   Boolean            @default(false)
   stato        StatoSegnalazione  @default(RICEVUTA)
   esito        EsitoSegnalazione?
   /// Мотивите към подателя (чл. 16(5)).

@@ -146,6 +146,7 @@ export const AUDIT_ACTIONS = [
   'PAGAMENTO_DA_VERIFICARE',
   'PAGAMENTO_RIMBORSATO',
   'PAGAMENTO_FATTURATO',
+  'NOTA_CREDITO_EMESSA',
   // Връщането през Revolut (src/pagamenti/rimborso-revolut.ts): наредено (сумата, на колко поръчки) и неуспешно
   // (кодът); спорът за плащане (chargeback) — само състоянието.
   'PAGAMENTO_RIMBORSO_AVVIATO',

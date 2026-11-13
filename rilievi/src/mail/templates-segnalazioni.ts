@@ -75,7 +75,9 @@ export function segnalazioneMotivazioneMail(params: {
     azienda: s.aziendaNome ?? '',
     data: giorno(s.decisaAt ?? new Date()),
     misura: s.misura ?? '',
-    origine: t(`${m}origine`, { data: giorno(s.createdAt) }),
+    origine: t(s.iniziativa ? `${m}origineIniziativa` : `${m}origine`, {
+      data: giorno(s.createdAt),
+    }),
     fatti: s.fatti ?? '',
     fondamento: s.fondamento ?? '',
     motivazione: s.motivazione ?? '',

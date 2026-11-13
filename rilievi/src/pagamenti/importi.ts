@@ -1,8 +1,10 @@
 /**
- * Сумата за плащане на план (#31; условията 2026-11-12, чл. 12.1): цели центове, смятани на сървъра от плана —
- * цената е „IVA esclusa“; фирма в България плаща и 20 % български ДДС (половин цент — нагоре), фирма в друга
- * държава от ЕС — без ДДС, с обратно начисляване (чл. 196 от Директива 2006/112/ЕО). Редът за ДДС и фактурите
- * го потвърждава Данъчника.
+ * Сумата за плащане на план (#31; условията 2026-11-14, чл. 12.1 и 12.10): цели центове, смятани на сървъра от
+ * плана — цената е „IVA esclusa“. Три режима (`REGIMI`): фирма в България — 20 % български ДДС (половин цент —
+ * нагоре); фирма в друга държава от ЕС с ДДС номер, валиден във VIES — без ДДС, с обратно начисляване (чл. 196
+ * от Директива 2006/112/ЕО); фирма в друга държава от ЕС, чийто номер НЕ е валиден във VIES — третира се като
+ * данъчно незадължено лице (чл. 18 Регл. 282/2011) и плаща 20 % български ДДС, докато тези продажби са под
+ * прага по чл. 59в от Директивата (pagamenti/soglia.ts). Подготвен казус — Данъчника; не е данъчен съвет.
  */
 export const ALIQUOTA_BG_BP = 2000;
 
@@ -63,17 +65,40 @@ export function partitaIvaDa(raw: unknown): { numero: string; paese: string } | 
   return { numero: v, paese: m[1]! };
 }
 
+/** Режимите на ДДС, както се пазят в `Pagamento.regimeIva`. */
+export const REGIMI = ['iva-bg', 'inversione', 'iva-bg-ue'] as const;
+export type Regime = (typeof REGIMI)[number];
+
+/** Начислен ли е български ДДС върху цената (връщането и кредитното известие го носят). */
+export const conIva = (regime: string): boolean => regime === 'iva-bg' || regime === 'iva-bg-ue';
+
+/** Ключът на етикета на режима за счетоводството (`pagamenti.mail.regime.<ключ>`). */
+export const chiaveRegime = (regime: string): 'ivaBg' | 'ivaBgUe' | 'inversione' =>
+  regime === 'iva-bg' ? 'ivaBg' : regime === 'iva-bg-ue' ? 'ivaBgUe' : 'inversione';
+
 export interface Importo {
   imponibile: number;
   iva: number;
   totale: number;
-  regime: 'iva-bg' | 'inversione';
+  regime: Regime;
 }
 
-export function importoDi(prezzoCent: number, paese: string): Importo {
-  if (paese !== 'BG') {
+/** Български ДДС върху сума без ДДС (половин цент — нагоре). */
+export const ivaSu = (imponibileCent: number): number =>
+  Math.floor((imponibileCent * ALIQUOTA_BG_BP + 5000) / 10000);
+
+/**
+ * `senzaVies`: номерът на фирма от друга държава от ЕС не е валиден във VIES — 20 % български ДДС в свой режим
+ * (`iva-bg-ue`). За български номер няма значение: той е винаги `iva-bg`.
+ */
+export function importoDi(prezzoCent: number, paese: string, senzaVies = false): Importo {
+  if (paese !== 'BG' && !senzaVies)
     return { imponibile: prezzoCent, iva: 0, totale: prezzoCent, regime: 'inversione' };
-  }
-  const iva = Math.floor((prezzoCent * ALIQUOTA_BG_BP + 5000) / 10000);
-  return { imponibile: prezzoCent, iva, totale: prezzoCent + iva, regime: 'iva-bg' };
+  const iva = ivaSu(prezzoCent);
+  return {
+    imponibile: prezzoCent,
+    iva,
+    totale: prezzoCent + iva,
+    regime: paese === 'BG' ? 'iva-bg' : 'iva-bg-ue',
+  };
 }

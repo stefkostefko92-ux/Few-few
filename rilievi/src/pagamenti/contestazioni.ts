@@ -8,6 +8,7 @@ import { sendMail } from '../mail/mailer.js';
 import { contestazioneMail } from '../mail/templates-rimborsi.js';
 import { indirizziMaster } from './avvisi-rimborsi.js';
 import { baseDi, leggiConfig } from './config.js';
+import { avvisaNoteCredito, registraNotaCredito } from './note-credito.js';
 import { ErroreRevolut, leggiDisputa, type DisputaRevolut } from './revolut.js';
 
 /**
@@ -80,6 +81,17 @@ export async function aggiornaContestazione(disputeId: string): Promise<void> {
       update: dati,
     });
     if (prima?.stato === stato) return null;
+    // Спор, решен срещу нас: парите са върнати на клиента от банката — дължи се кредитно известие (чл. 12.9).
+    const nota =
+      stato === 'PERSA' && pagamento
+        ? await registraNotaCredito(tx, {
+            pagamentoId: pagamento.id,
+            origine: 'CONTESTAZIONE',
+            contestazioneId: d.id,
+            totaleCent: d.amount,
+            eventoAt: new Date(),
+          })
+        : false;
     await writeAudit(
       {
         actorId: null,
@@ -91,10 +103,11 @@ export async function aggiornaContestazione(disputeId: string): Promise<void> {
       },
       tx,
     );
-    return { riga, azienda: pagamento?.aziendaNome ?? null };
+    return { riga, azienda: pagamento?.aziendaNome ?? null, nota };
   });
   if (!cambiata) return;
   void allarme('contestazione');
+  if (cambiata.nota) void avvisaNoteCredito();
   try {
     const link = `${config().PUBLIC_BASE_URL}/master/pagamenti#h-contestazioni`;
     for (const to of await indirizziMaster())

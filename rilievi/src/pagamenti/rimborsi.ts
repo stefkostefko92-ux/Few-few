@@ -5,7 +5,8 @@ import { errorMessage, logger } from '../logger.js';
 import { sendMail } from '../mail/mailer.js';
 import { rimborsoDovutoMail } from '../mail/templates-pagamenti.js';
 import { DAY } from '../time.js';
-import { ALIQUOTA_BG_BP } from './importi.js';
+import { ALIQUOTA_BG_BP, conIva } from './importi.js';
+import { registraNotaCredito } from './note-credito.js';
 import { formatoEuro } from './offerta.js';
 
 /**
@@ -24,14 +25,20 @@ export interface PerRimborso {
   regimeIva: string;
 }
 
+const ORA = 60 * 60_000;
+
 /** Дължимото към момента `al`, с ДДС (ако е начислен), в центове; 0 — планът е изтекъл или няма период. */
 export function rimborsoDovuto(p: PerRimborso, al: Date): number {
   if (!p.inizio || !p.fine || p.fine.getTime() <= al.getTime()) return 0;
   const totali = Math.max(1, Math.round((p.fine.getTime() - p.inizio.getTime()) / DAY));
-  const da = Math.max(al.getTime(), p.inizio.getTime());
-  const nonGoduti = Math.min(totali, Math.floor((p.fine.getTime() - da) / DAY));
+  // План, който още не е започнал — всичко (чл. 12.9). Иначе — целите дни след прекратяването, с един час
+  // допуск: денят с 23 часа при смяната към лятно време не струва ден на клиента.
+  const nonGoduti =
+    al.getTime() <= p.inizio.getTime()
+      ? totali
+      : Math.min(totali, Math.floor((p.fine.getTime() - al.getTime() + ORA) / DAY));
   const netto = Math.floor(((p.imponibileCent + p.creditoCent) * nonGoduti) / totali);
-  return p.regimeIva === 'iva-bg' ? netto + Math.round((netto * ALIQUOTA_BG_BP) / 10_000) : netto;
+  return conIva(p.regimeIva) ? netto + Math.round((netto * ALIQUOTA_BG_BP) / 10_000) : netto;
 }
 
 const SELECT = {
@@ -160,6 +167,14 @@ export async function segnaRimborsato(
     });
     if (count !== 1) return false;
     const p = await tx.pagamento.findUniqueOrThrow({ where: { id }, select: { aziendaId: true } });
+    // Върнато извън портала: кредитното известие се дължи и тогава (чл. 12.9).
+    if (rimborsoCent > 0)
+      await registraNotaCredito(tx, {
+        pagamentoId: id,
+        origine: 'RIMBORSO',
+        totaleCent: rimborsoCent,
+        eventoAt: new Date(),
+      });
     await writeAudit(
       {
         actorId,
@@ -175,12 +190,16 @@ export async function segnaRimborsato(
   });
 }
 
-/** MASTER отбелязва, че фактурата е издадена (извън портала). */
-export async function segnaFatturato(actorId: string, id: string): Promise<boolean> {
+/** MASTER отбелязва, че фактурата е издадена (извън портала); номерът ѝ — по избор, за кредитното известие. */
+export async function segnaFatturato(
+  actorId: string,
+  id: string,
+  numero: string | null = null,
+): Promise<boolean> {
   return prisma.$transaction(async (tx) => {
     const { count } = await tx.pagamento.updateMany({
       where: { id, stato: { in: ['COMPLETATO', 'RIMBORSATO'] }, fatturataAt: null },
-      data: { fatturataAt: new Date() },
+      data: { fatturataAt: new Date(), fatturaNumero: numero },
     });
     if (count !== 1) return false;
     const p = await tx.pagamento.findUniqueOrThrow({ where: { id }, select: { aziendaId: true } });

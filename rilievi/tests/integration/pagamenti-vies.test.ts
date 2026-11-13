@@ -4,24 +4,30 @@
 //  - a company of another member state: VIES is asked when the offer is accepted, with our number as the
 //    requester; valid → the order is opened and the payment keeps the consultation number, the moment and the
 //    name and address VIES gave; the same offer accepted twice does not ask again;
-//  - not valid in VIES → no payment, no sealed acceptance, no order on Revolut, and the page says why;
-//  - VIES does not answer → the same: nothing is sold "to be checked later"; when VIES is back, the purchase works;
+//  - not valid in VIES (the owner, 12 November 2026: the alternative; terms 2026-11-14, art. 12.10): the offer is
+//    shown again with Bulgarian VAT 20 % and why — nothing is stored until THAT offer is accepted; then the order
+//    is for the total with VAT, in a regime of its own, with the moment VIES said "not valid" as the evidence;
+//  - the threshold of 10 000 € a year for such sales and the owner's switch: pagamenti-soglia.test.ts;
+//  - VIES does not answer → nothing is sold "to be checked later"; when VIES is back, the purchase works;
 //  - a Bulgarian company pays 20 % VAT and VIES is not asked;
 //  - the accountant finds the consultation number in the CSV of the payments.
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
-import { vies } from './esterni-finti.js';
+import { vies, WEBHOOK_DISCORD } from './esterni-finti.js';
 import { avviaRevolutFinto, CHIAVE, fermaRevolutFinto, ordineDa, ordini } from './revolut-finto.js';
 
 await avviaRevolutFinto();
 const h = await import('./harness.js');
 const { Browser, makeAzienda, prisma, signedIn, startApp, stopApp } = h;
-const { cifraRevolut } = await import('../../src/auth/chiavi.js');
+const { cifraAllarmi, cifraRevolut } = await import('../../src/auth/chiavi.js');
 
 before(async () => {
   await startApp();
   await prisma.configPagamenti.create({
     data: { id: 'revolut', attivo: true, ambiente: 'SANDBOX', chiaveEnc: cifraRevolut(CHIAVE) },
+  });
+  await prisma.configAllarmi.create({
+    data: { id: 'discord', attivo: true, urlEnc: cifraAllarmi(WEBHOOK_DISCORD) },
   });
 });
 after(async () => {
@@ -115,18 +121,56 @@ describe('the VAT number in VIES before the reverse charge', () => {
     assert.ok(console.body.includes(pagamento.viesConsultazione!));
   });
 
-  it('sells nothing when the number is not valid in VIES', async () => {
+  it('sells with Bulgarian VAT when the number is not valid in VIES, after showing the offer again', async () => {
     const { a, browser, dati } = await inProva('Vies Non Valida', '00743110157');
     const p = await piano();
     vies.risposte.set('IT00743110157', 'nonValida');
     const ordiniPrima = ordini.size;
-    const { esito } = await accetta(browser, a.id, p.id, dati);
-    assert.equal(esito.status, 422);
-    assert.match(esito.body, /non risulta valida nel VIES/);
-    assert.match(esito.body, /Non ti abbiamo addebitato nulla/);
+    // The offer first seen has no VAT (nobody has asked VIES yet): accepting it does not sell — it comes back
+    // with the VAT, the total and the reason, and nothing is stored.
+    const prima = await accetta(browser, a.id, p.id, dati);
+    assert.match(prima.vista.body, /290,00\s€/);
+    assert.equal(prima.esito.status, 409);
+    assert.match(prima.esito.body, /non risulta valida nel VIES/);
+    assert.match(prima.esito.body, /IVA bulgara/);
+    assert.match(prima.esito.body, /58,00/);
+    assert.match(prima.esito.body, /348,00/);
+    assert.notEqual(hashDi(prima.esito.body), hashDi(prima.vista.body));
     assert.equal(await prisma.pagamento.count({ where: { aziendaId: a.id } }), 0);
     assert.equal(await prisma.accettazioneOfferta.count({ where: { aziendaId: a.id } }), 0);
     assert.equal(ordini.size, ordiniPrima);
+
+    // The offer with VAT, accepted: the order is for the total, the sealed text carries the VAT.
+    const seconda = await browser.submit('/account', '/impostazioni/abbonamento/paga', {
+      azienda: a.id,
+      piano: p.id,
+      ...dati,
+      accetto: 'si',
+      hash: hashDi(prima.esito.body),
+    });
+    assert.equal(seconda.status, 303, seconda.body.slice(0, 300));
+    const ordine = ordineDa(seconda.location);
+    assert.equal(ordine.amount, 34800);
+    const pagamento = await prisma.pagamento.findUniqueOrThrow({ where: { id: ordine.reference } });
+    assert.deepEqual(
+      [pagamento.regimeIva, pagamento.imponibileCent, pagamento.ivaCent, pagamento.totaleCent],
+      ['iva-bg-ue', 29000, 5800, 34800],
+    );
+    // The evidence: when VIES said "not valid" — and no consultation number, name or address.
+    assert.ok(pagamento.viesAt && Date.now() - pagamento.viesAt.getTime() < 60_000);
+    assert.deepEqual(
+      [pagamento.viesConsultazione, pagamento.viesNome, pagamento.viesIndirizzo],
+      [null, null, null],
+    );
+    const sigillata = await prisma.accettazioneOfferta.findUniqueOrThrow({
+      where: { pagamentoId: pagamento.id },
+    });
+    assert.match(sigillata.testo, /IVA bulgara/);
+    assert.equal(sigillata.totaleCent, 34800);
+    // The accountant tells it from the reverse charge and from the domestic sale.
+    const master = await signedIn('MASTER');
+    const csv = await master.browser.get('/master/pagamenti/esporta.csv');
+    assert.match(csv.body, /senza partita IVA valida nel VIES/);
   });
 
   it('sells nothing while VIES does not answer, and sells when it is back', async () => {

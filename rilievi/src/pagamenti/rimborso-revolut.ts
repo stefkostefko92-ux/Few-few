@@ -5,6 +5,7 @@ import { prisma } from '../db.js';
 import { logger } from '../logger.js';
 import { avvisaRimborso, avvisaRimborsoFallito } from './avvisi-rimborsi.js';
 import { clientePer } from './config.js';
+import { avvisaNoteCredito, registraNotaCredito } from './note-credito.js';
 import { ErroreRevolut, rimborsaOrdine, type OrdineRevolut } from './revolut.js';
 import { ripartisci, type OrdinePagato } from './rimborsi-riparto.js';
 
@@ -197,6 +198,7 @@ export async function registra(rimborsoId: string, r: OrdineRevolut): Promise<Pa
 /** Частта е върната: сумата отива при плащането на поръчката; ако нареждането е цяло — плащането се затваря. */
 async function completa(rimborsoId: string): Promise<void> {
   const adesso = new Date();
+  let dovuta = false;
   const chiuso = await prisma.$transaction(async (tx) => {
     const { count } = await tx.rimborso.updateMany({
       where: { id: rimborsoId, stato: 'IN_CORSO' },
@@ -205,6 +207,15 @@ async function completa(rimborsoId: string): Promise<void> {
     if (count !== 1) return null;
     const r = await tx.rimborso.findUniqueOrThrow({ where: { id: rimborsoId } });
     await tx.$executeRaw`UPDATE "Pagamento" SET "rimborsoCent" = COALESCE("rimborsoCent", 0) + ${r.importoCent}, "rimborsatoAt" = ${adesso} WHERE id = ${r.pagamentoId}`;
+    // Кредитното известие следва фактурата: към плащането, върху чиято поръчка са върнати парите (чл. 12.9).
+    const nota = await registraNotaCredito(tx, {
+      pagamentoId: r.pagamentoId,
+      origine: 'RIMBORSO',
+      rimborsoId: r.id,
+      totaleCent: r.importoCent,
+      eventoAt: adesso,
+    });
+    if (nota) dovuta = true;
     // Последното нареждане за плащането: затваря се само ако всичките му части са върнати.
     const ultimo = await tx.rimborso.findMany({
       where: { perPagamentoId: r.perPagamentoId, createdAt: r.createdAt },
@@ -230,6 +241,7 @@ async function completa(rimborsoId: string): Promise<void> {
     );
     return { p, totale };
   });
+  if (dovuta) void avvisaNoteCredito();
   // Писмата — след записа; не се чакат.
   if (chiuso) void avvisaRimborso(chiuso.p, chiuso.totale);
 }

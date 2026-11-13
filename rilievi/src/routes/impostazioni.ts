@@ -10,7 +10,7 @@ import { modelloDi } from '../cartelli/modelli.js';
 import { prisma } from '../db.js';
 import { setFlash } from '../http/flash.js';
 import { ultimaAccettazione } from '../legale/accettazioni.js';
-import { VERSIONE, versioneProssima } from '../legale/versioni.js';
+import { condizioniValide, VERSIONE, versioneProssima } from '../legale/versioni.js';
 import { parseMossa, parseOrdine, sposta } from '../schede/ordine.js';
 import { rigaAbbonamento } from './impostazioni-abbonamento.js';
 import { vistaAccesso } from './impostazioni-accesso.js';
@@ -53,14 +53,14 @@ async function statoCondizioni(azienda: AziendaImpostabile) {
       },
     }),
   ]);
-  const vigente = azienda.condizioniVersione === VERSIONE.CONDIZIONI;
+  const vigente = condizioniValide(azienda.condizioniVersione);
   return {
     stato: !vigente
       ? 'attesa'
-      : accettazione?.versione === VERSIONE.CONDIZIONI
+      : accettazione?.versione === azienda.condizioniVersione
         ? 'firmate'
         : 'esistente',
-    versione: VERSIONE.CONDIZIONI,
+    versione: vigente ? (azienda.condizioniVersione ?? VERSIONE.CONDIZIONI) : VERSIONE.CONDIZIONI,
     // La prossima versione — solo annunciata (art. 18.1): prima non ha una data.
     prossima: (() => {
       const p = versioneProssima('CONDIZIONI');

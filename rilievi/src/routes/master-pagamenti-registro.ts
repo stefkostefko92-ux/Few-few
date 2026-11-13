@@ -3,6 +3,8 @@ import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
 import { prisma } from '../db.js';
 import { setFlash } from '../http/flash.js';
 import { nomeCsv, righeCsv } from '../http/csv.js';
+import { chiaveRegime } from '../pagamenti/importi.js';
+import { avvisaNoteCredito, numeroDocumento } from '../pagamenti/note-credito.js';
 import { formatoEuro } from '../pagamenti/offerta.js';
 import { importoDa, segnaFatturato, segnaRimborsato } from '../pagamenti/rimborsi.js';
 import { businessDay } from '../time.js';
@@ -21,7 +23,14 @@ masterPagamentiRegistroRouter.post(
   manage,
   requireCsrf,
   async (req, res) => {
-    const ok = await segnaFatturato(principalOf(req).user.id, String(req.params.id));
+    // Номерът на фактурата е по избор; написан, но невалиден — нищо не се отбелязва.
+    const raw = (req.body as Record<string, unknown>).numero;
+    const numero = numeroDocumento(raw);
+    if (typeof raw === 'string' && raw.trim() !== '' && numero === null) {
+      setFlash(res, 'error', 'pagamenti.master.fatturaNumeroErrore');
+      return res.redirect(303, `${PATH}#h-fatturare`);
+    }
+    const ok = await segnaFatturato(principalOf(req).user.id, String(req.params.id), numero);
     if (ok) setFlash(res, 'ok', 'pagamenti.master.fatturato');
     res.redirect(303, `${PATH}#h-fatturare`);
   },
@@ -38,6 +47,7 @@ masterPagamentiRegistroRouter.post(
       return res.redirect(303, `${PATH}#h-rimborsi`);
     }
     const ok = await segnaRimborsato(principalOf(req).user.id, String(req.params.id), importo);
+    if (ok) void avvisaNoteCredito();
     setFlash(
       res,
       ok ? 'ok' : 'error',
@@ -74,6 +84,7 @@ masterPagamentiRegistroRouter.get(`${PATH}/esporta.csv`, manage, async (_req, re
       c('credito'),
       c('rimborso'),
       c('fatturato'),
+      c('fattura'),
       c('ordine'),
       c('vies'),
       c('viesData'),
@@ -94,10 +105,11 @@ masterPagamentiRegistroRouter.get(`${PATH}/esporta.csv`, manage, async (_req, re
       formatoEuro(p.imponibileCent),
       formatoEuro(p.ivaCent),
       formatoEuro(p.totaleCent),
-      t(`pagamenti.mail.regime.${p.regimeIva === 'iva-bg' ? 'ivaBg' : 'inversione'}`),
+      t(`pagamenti.mail.regime.${chiaveRegime(p.regimeIva)}`),
       p.creditoCent > 0 ? formatoEuro(p.creditoCent) : '',
       p.rimborsoCent !== null ? formatoEuro(p.rimborsoCent) : '',
       giorno(p.fatturataAt),
+      p.fatturaNumero ?? '',
       p.revolutOrderId ?? '',
       p.viesConsultazione ?? '',
       giorno(p.viesAt),

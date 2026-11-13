@@ -8,6 +8,7 @@ import {
   elencoSegnalazioni,
   ESITI,
   registraAutorita,
+  registraIniziativa,
   registraRiesame,
 } from '../segnalazioni/servizio.js';
 
@@ -36,6 +37,19 @@ const testo = (v: unknown, max: number): string =>
 
 masterSegnalazioniRouter.get(PATH, manage, async (_req, res) => {
   res.render('master/segnalazioni', await elencoSegnalazioni());
+});
+
+// Проверка по собствена инициатива (чл. 25.6): случаят се отваря тук и се решава като сигнал.
+masterSegnalazioniRouter.post(`${PATH}/iniziativa`, manage, requireCsrf, async (req, res) => {
+  const b = req.body as Record<string, unknown>;
+  const dove = testo(b.dove, 2000);
+  const motivo = testo(b.motivo, 5000);
+  if (dove.length < 5 || motivo.length < 20) {
+    setFlash(res, 'error', 'segnalazioni.master.iniziativa.errore');
+    return res.redirect(303, `${PATH}#h-iniziativa`);
+  }
+  const id = await registraIniziativa(principalOf(req).user.id, { dove, motivo });
+  res.redirect(303, `${PATH}/${id}`);
 });
 
 async function scheda(

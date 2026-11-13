@@ -4,6 +4,7 @@ import { errorMessage, logger } from './logger.js';
 import { allarme } from './allarmi/servizio.js';
 import { eseguiPassi, ricordaManutenzione } from './manutenzione-passi.js';
 import { aggiornaContestazioniAperte } from './pagamenti/contestazioni.js';
+import { ricordaNoteInScadenza } from './pagamenti/note-credito.js';
 import { riconciliaRimborsi } from './pagamenti/rimborsi-riconcilia.js';
 import { pulisciSegnalazioni } from './segnalazioni/servizio.js';
 import { pulisciArrivi } from './allegati/archivio.js';
@@ -86,6 +87,8 @@ export async function runMaintenance(): Promise<void> {
       // Връщанията през Revolut, които още чакат крайното си състояние, и отворените спорове.
       ['rimborsi', () => riconciliaRimborsi(quando)],
       ['contestazioni', () => aggiornaContestazioniAperte()],
+      // Кредитните известия със срок до ден (5 дни от връщането) — напомняне в Discord; нищо не се трие.
+      ['noteCredito', async () => (await ricordaNoteInScadenza(quando), 0)],
       // Решените сигнали за незаконно съдържание след срока им (5 години; неразгледаемите — 1).
       ['segnalazioni', () => pulisciSegnalazioni(quando)],
       ['piani', () => avviaPianiInCoda(quando)],

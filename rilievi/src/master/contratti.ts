@@ -1,13 +1,14 @@
 import { writeAudit } from '../audit.js';
 import { prisma } from '../db.js';
 import { CAMPI_ACCETTAZIONE, sigilloValido } from '../legale/sigillo.js';
-import { VERSIONE } from '../legale/versioni.js';
+import { condizioniValide, inVigoreDal, VERSIONE } from '../legale/versioni.js';
 import type { SessionUser } from '../types.js';
 
 /**
  * Договорът на фирмата: `firmate` — текущата версия е подписана с код (ред в регистъра); `esistente` —
  * отбелязана като приета от миграцията за фирмите отпреди условията (без ред — подпис, който не е бил,
- * не се измисля); `attesa` — чака подписа на администратора ѝ.
+ * не се измисля); `attesa` — чака подписа на администратора ѝ. Версията на фирмата е действащата или по-нова
+ * (приета предварително, legale/versioni.ts).
  */
 export type StatoContratto = 'firmate' | 'esistente' | 'attesa';
 
@@ -15,8 +16,8 @@ export function statoContratto(
   condizioniVersione: string | null,
   ultimaVersioneFirmata: string | null,
 ): StatoContratto {
-  if (condizioniVersione !== VERSIONE.CONDIZIONI) return 'attesa';
-  return ultimaVersioneFirmata === VERSIONE.CONDIZIONI ? 'firmate' : 'esistente';
+  if (!condizioniValide(condizioniVersione)) return 'attesa';
+  return ultimaVersioneFirmata === condizioniVersione ? 'firmate' : 'esistente';
 }
 
 export interface RigaContratto {
@@ -102,24 +103,28 @@ export async function elencoContratti(): Promise<RigaContratto[]> {
 export async function richiediFirma(
   master: SessionUser,
   aziendaId: string,
-): Promise<'ok' | 'stato' | 'missing'> {
+): Promise<'ok' | 'stato' | 'missing' | { presto: Date }> {
   return prisma.$transaction(async (tx) => {
     const azienda = await tx.azienda.findUnique({
       where: { id: aziendaId },
       select: { condizioniVersione: true },
     });
     if (!azienda) return 'missing';
-    const firmata = await tx.accettazione.findFirst({
-      where: { aziendaId, tipo: 'CONDIZIONI', versione: VERSIONE.CONDIZIONI },
-      select: { id: true },
-    });
-    if (
-      statoContratto(azienda.condizioniVersione, firmata ? VERSIONE.CONDIZIONI : null) !==
-      'esistente'
-    )
-      return 'stato';
+    const versione = azienda.condizioniVersione;
+    const firmata = versione
+      ? await tx.accettazione.findFirst({
+          where: { aziendaId, tipo: 'CONDIZIONI', versione },
+          select: { id: true },
+        })
+      : null;
+    if (statoContratto(versione, firmata ? versione : null) !== 'esistente') return 'stato';
+    // Версията на фирмата още не е в сила: подписът сега би бил за досегашната и след дни — пак. Чака се денят.
+    if (versione !== VERSIONE.CONDIZIONI) {
+      const dal = versione ? inVigoreDal('CONDIZIONI', versione) : null;
+      return dal ? { presto: dal } : 'stato';
+    }
     const { count } = await tx.azienda.updateMany({
-      where: { id: aziendaId, condizioniVersione: VERSIONE.CONDIZIONI },
+      where: { id: aziendaId, condizioniVersione: versione },
       data: { condizioniVersione: null },
     });
     if (count === 0) return 'stato';

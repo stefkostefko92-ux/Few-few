@@ -41,6 +41,8 @@ export interface DatiOfferta {
   ragioneSociale: string;
   sede: string;
   partitaIva: { numero: string; paese: string };
+  /** Номерът на фирма извън България не е валиден във VIES: 20 % български ДДС (чл. 12.10). */
+  senzaVies?: boolean;
   livello: number;
   mesi: number;
   prezzoCent: number;
@@ -68,7 +70,7 @@ export interface Offerta {
 }
 
 export function offertaDi(t: T, d: DatiOfferta): Offerta {
-  const importo = importoDi(d.prezzoCent, d.partitaIva.paese);
+  const importo = importoDi(d.prezzoCent, d.partitaIva.paese, d.senzaVies === true);
   const { inizio, fine, credito, modo } = d.periodo;
   const ultimo = giorno.format(new Date(fine.getTime() - 1));
   const max = maxPersone(d.livello);
@@ -118,7 +120,9 @@ export function offertaDi(t: T, d: DatiOfferta): Offerta {
     t('pagamenti.offerta.prezzo', { prezzo: formatoEuro(importo.imponibile) }),
     importo.regime === 'iva-bg'
       ? t('pagamenti.offerta.ivaBg', { iva: formatoEuro(importo.iva) })
-      : t('pagamenti.offerta.ivaInversione'),
+      : importo.regime === 'iva-bg-ue'
+        ? t('pagamenti.offerta.ivaSenzaVies', { iva: formatoEuro(importo.iva) })
+        : t('pagamenti.offerta.ivaInversione'),
     t('pagamenti.offerta.totale', { totale: formatoEuro(importo.totale) }),
     t('pagamenti.offerta.rinnovo'),
     t('pagamenti.offerta.scadenza'),

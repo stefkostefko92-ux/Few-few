@@ -1,5 +1,6 @@
 import type { Pagamento } from '@prisma/client';
 import { DEFAULT_LOCALE, translatorFor } from '../i18n.js';
+import { chiaveRegime } from '../pagamenti/importi.js';
 import { durataMesi, formatoEuro, GIORNI_FATTURA } from '../pagamenti/offerta.js';
 import { BUSINESS_TZ } from '../time.js';
 import type { MailMessage } from './mailer.js';
@@ -43,7 +44,7 @@ const dati = (p: Pagamento): Record<string, string | number> => ({
   imponibile: formatoEuro(p.imponibileCent),
   iva: formatoEuro(p.ivaCent),
   totale: formatoEuro(p.totaleCent),
-  regime: t(`pagamenti.mail.regime.${p.regimeIva === 'iva-bg' ? 'ivaBg' : 'inversione'}`),
+  regime: t(`pagamenti.mail.regime.${chiaveRegime(p.regimeIva)}`),
   ragioneSociale: p.ragioneSociale,
   sede: p.sede,
   partitaIva: p.partitaIva,

@@ -25,6 +25,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-13-versione-4-1": {
+        "area": "Portale",
+        "titolo": "Versione 4.1: acquisto anche senza VIES e nota di credito sui rimborsi",
+        "testo": "Se la partita IVA della tua azienda non risulta valida nel VIES, ora puoi comprare lo stesso il piano: al prezzo si aggiunge l'IVA bulgara del 20 % e il portale ti mostra di nuovo l'offerta, con l'IVA e il totale, prima del pagamento. Per ogni rimborso emettiamo una nota di credito sulla fattura del piano. Dal 14 novembre 2026 valgono le condizioni di servizio aggiornate (artt. 12.1, 12.9, 12.10, 17.4 e 25.6); le clausole approvate specificamente non cambiano."
+      },
       "2026-11-12-versione-4": {
         "area": "Portale",
         "titolo": "Rilievi Impianti 4.0",

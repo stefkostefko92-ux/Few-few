@@ -119,7 +119,8 @@
       "richiediDesc": "L'azienda diventa cliente: il suo amministratore firma davvero, con il codice via email.",
       "flash": {
         "ok": "Firma richiesta: l'amministratore la vedrà al prossimo accesso.",
-        "stato": "La firma si chiede solo a un'azienda che ha le condizioni accettate senza firma."
+        "stato": "La firma si chiede solo a un'azienda che ha le condizioni accettate senza firma.",
+        "presto": "La versione delle condizioni di questa azienda entra in vigore il {data}: chiedi la firma da quel giorno, così l'amministratore firma una volta sola."
       },
       "esistenteNota": "Accettate senza firma: aziende create prima delle condizioni di servizio, segnate come accettate senza una riga nel registro. Quando un'azienda diventa cliente, chiedi la firma.",
       "prossima": {

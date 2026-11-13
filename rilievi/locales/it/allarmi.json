@@ -7,7 +7,9 @@
       "contestazione": "Rilievi Impianti · un cliente ha contestato un pagamento presso la sua banca (chargeback). Controlla la scadenza e rispondi in Revolut Business: {link}",
       "rimborsoFallito": "Rilievi Impianti · un rimborso su Revolut non è riuscito. Guarda cosa è successo: {link}",
       "posta": "Rilievi Impianti · le email del portale non partono. Controlla la posta: {link}",
-      "segnalazione": "Rilievi Impianti · è arrivata una segnalazione di contenuto illegale da esaminare: {link}"
+      "segnalazione": "Rilievi Impianti · è arrivata una segnalazione di contenuto illegale da esaminare: {link}",
+      "sogliaIva": "Rilievi Impianti · le vendite con IVA bulgara a clienti senza partita IVA nel VIES sono vicine alla soglia di 10.000 € dell'anno, o l'hanno raggiunta: oltre la soglia serve il regime OSS e il portale non le conclude più. {link}",
+      "notaCredito": "Rilievi Impianti · note di credito da emettere: {n}. Il termine è di 5 giorni dal rimborso. {link}"
     },
     "salvato": "Allarmi salvati.",
     "errore": {

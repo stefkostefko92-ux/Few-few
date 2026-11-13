@@ -85,7 +85,8 @@
       },
       "origine": "una segnalazione ricevuta il {data}",
       "motivazioneSubject": "Contenuto limitato nel portale: i motivi ({riferimento})",
-      "motivazioneBody": "Gentile amministratore di {azienda},\n\nil {data} abbiamo adottato una misura su un contenuto caricato dalla tua azienda in Rilievi Impianti. Ti indichiamo i motivi, come prevedono l'art. 17 del Regolamento (UE) 2022/2065 e l'art. 25.6 delle Condizioni generali di servizio.\n\nMisura, contenuto interessato, ambito e durata: {misura}\nOrigine: {origine}\nFatti e circostanze: {fatti}\nFondamento: {fondamento}\nPerché: {motivazione}\nMezzi automatizzati: nessuno. Ha deciso una persona, il responsabile della moderazione di Carbon Stealth VCC.\n\nSe non sei d'accordo, rispondi a questa email spiegando perché e allegando ciò che può aiutare. Una persona riesamina la decisione, senza costi: se la richiesta è fondata, revochiamo o modifichiamo la misura senza ritardo, e in ogni caso ti comunichiamo l'esito con i motivi. Restano salvi il ricorso al giudice (art. 22 delle Condizioni) e il reclamo al Coordinatore dei servizi digitali dello Stato in cui ha sede la tua azienda (in Italia l'AGCOM).\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+      "motivazioneBody": "Gentile amministratore di {azienda},\n\nil {data} abbiamo adottato una misura su un contenuto caricato dalla tua azienda in Rilievi Impianti. Ti indichiamo i motivi, come prevedono l'art. 17 del Regolamento (UE) 2022/2065 e l'art. 25.6 delle Condizioni generali di servizio.\n\nMisura, contenuto interessato, ambito e durata: {misura}\nOrigine: {origine}\nFatti e circostanze: {fatti}\nFondamento: {fondamento}\nPerché: {motivazione}\nMezzi automatizzati: nessuno. Ha deciso una persona, il responsabile della moderazione di Carbon Stealth VCC.\n\nSe non sei d'accordo, rispondi a questa email spiegando perché e allegando ciò che può aiutare. Una persona riesamina la decisione, senza costi: se la richiesta è fondata, revochiamo o modifichiamo la misura senza ritardo, e in ogni caso ti comunichiamo l'esito con i motivi. Restano salvi il ricorso al giudice (art. 22 delle Condizioni) e il reclamo al Coordinatore dei servizi digitali dello Stato in cui ha sede la tua azienda (in Italia l'AGCOM).\n\nCarbon Stealth VCC — https://carbonstealth.eu",
+      "origineIniziativa": "una verifica di nostra iniziativa, avviata il {data}"
     },
     "master": {
       "titolo": "Segnalazioni",
@@ -137,7 +138,7 @@
         "azienda": "Azienda che ha caricato il contenuto",
         "aziendaNessuna": "— scegli l'azienda —",
         "misura": "Misura, contenuto interessato, ambito e durata",
-        "misuraHint": "Per esempio: rimozione della foto X della scheda n. 12; per tutti gli utenti; definitiva.",
+        "misuraHint": "Per esempio: rimozione della foto X della scheda n. 12; per tutti gli utenti; definitiva. Oppure: sospensione dell'account di una persona per 30 giorni.",
         "fatti": "Fatti e circostanze",
         "fondamento": "Fondamento",
         "fondamentoHint": "La norma di legge violata, oppure «art. 4.4, lett. a), delle Condizioni generali di servizio».",
@@ -177,6 +178,16 @@
         "decisa": "Decisione registrata e comunicazioni inviate.",
         "riesame": "Riesame registrato.",
         "autorita": "Comunicazione alle autorità registrata."
+      },
+      "iniziativa": {
+        "titolo": "Verifica di nostra iniziativa",
+        "intro": "Se trovi tu un contenuto illegale o contrario alle Condizioni, apri qui il caso e decidilo come una segnalazione: l'azienda riceve la motivazione dell'art. 25.6. Vale anche quando sospendi o chiudi un account o il servizio per i suoi contenuti: scrivilo nella misura.",
+        "dove": "Dove si trova il contenuto",
+        "doveHint": "Per esempio: scheda n. 12 dell'azienda Rossi, foto del quadro.",
+        "motivo": "Perché lo ritieni illegale o contrario alle Condizioni",
+        "apri": "Apri la verifica",
+        "errore": "Scrivi dove si trova il contenuto e il motivo (almeno 20 caratteri).",
+        "segnalante": "Nessun segnalante: verifica di nostra iniziativa."
       }
     }
   }

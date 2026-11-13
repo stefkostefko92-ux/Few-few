@@ -39,6 +39,9 @@ const PUBBLICATI: Record<string, string> = {
   // The refund on the same means of payment (12.9), the VAT number in VIES (12.10), 15.2 and art. 25 (reports and
   // moderation, Regulation (EU) 2022/2065) — in force on its own day; the specific approval (art. 24) is untouched.
   'condizioni-2026-11-13': 'e731f2f74680652e4d8ce278b40c948fa6789084a0fea9569d077e8c796b1a0e',
+  // Bulgarian VAT when the VAT number is not valid in VIES (12.1, 12.10), the credit note (12.9), 17.4 and the
+  // statement of reasons when an account is suspended because of its content (25.6) — in force on its own day.
+  'condizioni-2026-11-14': '0cb9938a6035f8443c1546134dae975a72cd0f12abcea917d2ee25a0fc2a3788',
 };
 
 const tutto = (doc: TestoLegaleDoc): string => testoPiano(doc);

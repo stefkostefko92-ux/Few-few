@@ -85,6 +85,56 @@
       },
       "senzaPagamento": "ordine non trovato nel portale",
       "senzaData": "—"
+    },
+    "note": {
+      "titolo": "Note di credito",
+      "testo": "Per ogni rimborso e per ogni contestazione persa va emessa una nota di credito sulla fattura del piano, entro {giorni} giorni (art. 12.9 delle Condizioni; art. 115 della legge bulgara sull'IVA). Il portale non emette documenti: emetti la nota nel tuo programma di fatturazione, inviala al cliente e scrivi qui numero e data.",
+      "nessuna": "Nessuna nota di credito da emettere.",
+      "colonna": {
+        "evento": "Rimborso del",
+        "cliente": "Cliente",
+        "fattura": "Fattura",
+        "importo": "Importo della nota",
+        "entro": "Entro il",
+        "emissione": "Emissione"
+      },
+      "origine": {
+        "RIMBORSO": "Rimborso",
+        "CONTESTAZIONE": "Contestazione persa"
+      },
+      "contestazione": "Per una contestazione persa chiedi al commercialista se serve la nota di credito (art. 115) o un altro documento (artt. 126a–126b).",
+      "fattura": "n. {numero}",
+      "fatturaSenzaNumero": "emessa, numero non indicato",
+      "fatturaNon": "non ancora fatturato",
+      "conIva": "{imponibile} € + IVA {iva} € = {totale} €",
+      "senzaIva": "{totale} € (senza IVA)",
+      "scaduta": "termine superato",
+      "numero": "Numero della nota",
+      "data": "Data di emissione",
+      "segna": "Segna emessa",
+      "segnaPer": "Segna emessa la nota di credito per {cliente}",
+      "emessaIl": "n. {numero} del {data}",
+      "ultime": "Ultime emesse",
+      "esportaCsv": "Scarica le note di credito (CSV)",
+      "flash": {
+        "ok": "Nota di credito registrata.",
+        "errore": "Scrivi il numero della nota e una data valida, non futura."
+      },
+      "csv": {
+        "evento": "Rimborso del",
+        "entro": "Da emettere entro",
+        "origine": "Origine",
+        "azienda": "Azienda",
+        "ragioneSociale": "Ragione sociale",
+        "partitaIva": "Partita IVA",
+        "fattura": "Fattura n.",
+        "imponibile": "Imponibile a credito",
+        "iva": "IVA a credito",
+        "totale": "Totale a credito",
+        "regime": "Regime IVA",
+        "numero": "Nota di credito n.",
+        "emessa": "Emessa il"
+      }
     }
   }
 }

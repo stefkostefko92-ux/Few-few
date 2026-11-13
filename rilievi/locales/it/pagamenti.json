@@ -21,6 +21,7 @@
       "prezzo": "Prezzo: {prezzo} € IVA esclusa, da pagare ora in un'unica soluzione.",
       "ivaInversione": "Fattura senza IVA bulgara, con inversione contabile (art. 196 della Direttiva 2006/112/CE): l'IVA la applica la tua azienda nel suo Paese.",
       "ivaBg": "IVA bulgara 20 %: {iva} €.",
+      "ivaSenzaVies": "IVA bulgara 20 %: {iva} €. La partita IVA non risulta valida nel VIES, quindi non possiamo applicare l'inversione contabile (art. 12.10 delle Condizioni).",
       "totale": "Totale da pagare ora: {totale} €.",
       "rinnovo": "Nessun rinnovo automatico. Alla scadenza non addebitiamo nulla. Ti avvisiamo nel portale e per email 14 e 3 giorni prima e il giorno della scadenza.",
       "scadenza": "Alla scadenza, senza un nuovo periodo, l'azienda passa in sola lettura: tutti possono vedere, stampare e scaricare i dati e i documenti già presenti, ma non si possono creare nuovi dati né modificarli. L'esportazione di tutti i dati e il cambio di fornitore restano sempre disponibili e gratuiti. Nessun dato viene cancellato.",
@@ -188,10 +189,13 @@
         "credito": "Credito convertito",
         "rimborso": "Rimborsato",
         "fatturato": "Fatturato il",
+        "fattura": "Fattura n.",
         "ordine": "Ordine Revolut",
         "vies": "Consultazione VIES",
         "viesData": "Data VIES"
-      }
+      },
+      "fatturaNumero": "Numero fattura (facoltativo)",
+      "fatturaNumeroErrore": "Il numero della fattura può avere lettere, cifre, spazi e i segni . / - _ #, fino a 40 caratteri."
     },
     "mail": {
       "subject": "Pagamento ricevuto — {azienda} — Rilievi Impianti",
@@ -201,6 +205,7 @@
       "cambiatiAmbiente": "Ciao,\n\n{chi} ha cambiato l'ambiente dei pagamenti di Revolut: ora è {ambiente}.\n\nSe non sei stato tu o un collega, cambia subito la password e controlla la pagina Pagamenti della console.\n\nCarbon Stealth VCC — https://carbonstealth.eu",
       "regime": {
         "ivaBg": "IVA bulgara 20%",
+        "ivaBgUe": "IVA bulgara 20 % — cliente UE senza partita IVA valida nel VIES (art. 59 quater Dir. 2006/112/CE; art. 18 Reg. 282/2011)",
         "inversione": "inversione contabile (art. 196 Dir. 2006/112/CE), senza IVA"
       },
       "masterSubject": "Nuovo pagamento: {azienda} — {totale} € — da fatturare",

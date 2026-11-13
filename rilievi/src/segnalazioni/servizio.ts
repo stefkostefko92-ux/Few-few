@@ -88,6 +88,34 @@ export async function registraSegnalazione(
   return { ok: true, riferimento: s.riferimento };
 }
 
+/**
+ * Проверка по инициатива на доставчика (условията 2026-11-14, чл. 25.6; чл. 17 DSA): MASTER сам отваря случай за
+ * съдържание или акаунт — без подател, без писмо за потвърждение — и го решава като сигнал, с мотивите до
+ * фирмата (и при спиране или прекратяване на акаунт заради съдържанието му — чл. 17, пар. 1, б. „в“ и „г“).
+ */
+export async function registraIniziativa(
+  actorId: string,
+  dati: { dove: string; motivo: string },
+): Promise<string> {
+  return prisma.$transaction(async (tx) => {
+    const riga = await tx.segnalazione.create({
+      data: { ...dati, iniziativa: true, stato: 'IN_ESAME', riferimento: riferimento() },
+    });
+    await writeAudit(
+      {
+        actorId,
+        action: 'SEGNALAZIONE_RICEVUTA',
+        aziendaId: null,
+        targetType: 'segnalazione',
+        targetId: riga.id,
+        meta: { iniziativa: true },
+      },
+      tx,
+    );
+    return riga.id;
+  });
+}
+
 /** Отворените първи (най-старите отгоре), после решените. */
 export async function elencoSegnalazioni() {
   const [aperte, chiuse] = await Promise.all([

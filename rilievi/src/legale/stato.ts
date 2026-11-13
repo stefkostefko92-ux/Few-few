@@ -1,5 +1,5 @@
 import type { SessionUser } from '../types.js';
-import { VERSIONE } from './versioni.js';
+import { condizioniValide, VERSIONE } from './versioni.js';
 
 /** Какво още трябва да приеме вписаният човек, преди да ползва портала. */
 export interface DaAccettare {
@@ -26,7 +26,7 @@ export function daAccettare(user: UtenteAccettazioni): DaAccettare {
   if (user.master) return { condizioni: null, azienda: null, regole: false };
   // Свършилата фирма (само износ) не приема нищо: договорът ѝ е приключил.
   const vive = user.memberships.filter((m) => !m.soloEsportazione);
-  const pendenti = vive.filter((m) => m.condizioniVersione !== VERSIONE.CONDIZIONI);
+  const pendenti = vive.filter((m) => !condizioniValide(m.condizioniVersione));
   const propria = pendenti.find((m) => m.role === 'ADMIN');
   const scelta = propria ?? pendenti[0];
   return {

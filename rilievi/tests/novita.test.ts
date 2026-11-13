@@ -83,6 +83,18 @@ describe('the publication of an entry', () => {
     );
   });
 
+  it('on a new installation is never in the future: an entry of a day not begun in UTC counts from today', () => {
+    // Just after midnight in Rome the day of the entry is "tomorrow" in UTC: published in the future, the window
+    // would come back to everyone until then. It counts from the start of the current UTC day instead — before
+    // any account created today, so a new installation still announces nothing.
+    const giorno = new Date(`${VOCI[0]!.data}T00:00:00.000Z`).getTime();
+    const sera = new Date(giorno - 20 * 60 * 1000);
+    const [prima] = daRegistrare(new Set(), sera);
+    assert.equal(prima!.id, VOCI[0]!.id);
+    assert.equal(prima!.pubblicataAt.getTime(), giorno - 24 * 60 * 60 * 1000);
+    assert.ok(prima!.pubblicataAt.getTime() <= sera.getTime());
+  });
+
   it('after an update is the moment the portal first runs with it; the known ones stay', () => {
     const [nuova, ...note] = VOCI;
     assert.deepEqual(daRegistrare(new Set(note.map((v) => v.id)), ora), [

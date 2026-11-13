@@ -23,7 +23,7 @@
     <h3><%= t(m + 'motivo') %></h3>
     <p class="testo-libero"><%= s.motivo %></p>
     <h3><%= t(m + 'segnalante') %></h3>
-    <p><% if (s.nome || s.email) { %><%= s.nome || '' %><% if (s.email) { %> — <a href="mailto:<%= s.email %>"><%= s.email %></a><% } %><% } else { %><%= t(m + 'senzaNome') %><% } %></p>
+    <p><% if (s.iniziativa) { %><%= t(m + 'iniziativa.segnalante') %><% } else if (s.nome || s.email) { %><%= s.nome || '' %><% if (s.email) { %> — <a href="mailto:<%= s.email %>"><%= s.email %></a><% } %><% } else { %><%= t(m + 'senzaNome') %><% } %></p>
   </section>
 
   <% if (aperta) { %><form class="panel form" method="post" action="/master/segnalazioni/<%= s.id %>/decisione" novalidate>
