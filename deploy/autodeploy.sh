@@ -82,6 +82,10 @@ PANEV_DIR="${PANEV_DIR:-/opt/panev}"
 PANEV_SERVICE="${PANEV_SERVICE:-panev}"
 PANEV_ENV="${PANEV_ENV:-/etc/panev/panev.env}"
 PANEV_HEALTH_URL="${PANEV_HEALTH_URL:-http://127.0.0.1:4102/api/health}"
+# IndexNow след здрав релийз (PANEV_INDEXNOW=0 го спира — напр. на тестова машина). Ключът НЕ се
+# задава тук: той е името на файла `panev/<key>.txt` в архива.
+PANEV_SITE="${PANEV_SITE:-https://panevascensori.it}"
+PANEV_INDEXNOW="${PANEV_INDEXNOW:-1}"
 
 # ospedali (Ospedali Trasparenti — systemd модел, като medqr/vizitka, НО без npm
 # ci/build: лек Node сервиз с нула зависимости обслужва предбилднатия статичен сайт
@@ -664,6 +668,7 @@ EOF
       && warn "panev: SMTP_PASS все още е CHANGE_ME — формата пише в базата, но НЕ праща имейл."
     [ -e /etc/nginx/sites-enabled/panev.conf ] \
       || warn "panev: няма /etc/nginx/sites-enabled/panev.conf — сайтът върви само на 127.0.0.1:4102 (виж panev/DEPLOY.md)."
+    panev_ping_indexnow   # търсачките — само към release, минал здравната проба
   else
     deploy_failed=1
     warn "panev health провал — спирам услугата и връщам базата (кодът само при наличен предишен деплой)."
@@ -687,6 +692,29 @@ EOF
       warn "panev: първи деплой — няма предишна версия. Кодът остава в $PANEV_DIR, услугата остава спряна (виж: journalctl -u $PANEV_SERVICE -b)."
     fi
   fi
+}
+
+# IndexNow след зелена здравна проба. До 13.11.2026 беше ръчна стъпка и се провали на живо:
+# командата беше пусната от /root („Cannot find module '/root/tools/seo/indexnow.mjs'“). А късата
+# форма — само с адреса на сайта — спира и от правилната директория с „Липсва валиден IndexNow
+# ключ“: ключът на Panev е на `<key>.txt` в корена на сайта (схемата на Supreme), не на
+# `/indexnow-key.txt`. Затова се пуска от корена на release-а и ключът се подава явно — и файлът,
+# и публичният му адрес. Името на файла Е ключът → не се повтаря в скрипта и смяната му не иска
+# промяна тук (в panev/ стои точно един такъв файл — пази го tools/vps/autodeploy-panev.test.mjs).
+# Провалът е предупреждение, не провал на деплоя (минава при следващия).
+panev_ping_indexnow() {
+  [ "$PANEV_INDEXNOW" = "1" ] || return 0
+  local site="${PANEV_SITE%/}" key_file key
+  key_file="$(ls "$SRC"/panev/*.txt 2>/dev/null | grep -E '/[0-9a-f]{32}\.txt$' | head -1 || true)"
+  [ -n "$key_file" ] || { warn "panev: няма IndexNow ключ (<key>.txt) в panev/ — пропускам подаването."; return 0; }
+  key="$(basename "$key_file" .txt)"
+  local args=("$site" --key-file "panev/${key}.txt" --key-location "$site/${key}.txt")
+  # Адресите идват от sitemap-а на САМИЯ release (той току-що мина пробата), не от живия сайт:
+  # ако публичният sitemap не се изтегли, инструментът подава само началната страница и пак
+  # връща 0 — „успех“ с един адрес вместо всички. Липсва ли файлът, остава подразбирането му.
+  if [ -f "$SRC/panev/sitemap.xml" ]; then args+=(--sitemap panev/sitemap.xml); fi
+  ( cd "$SRC" && node tools/seo/indexnow.mjs "${args[@]}" ) \
+    || warn "panev: IndexNow подаването пропадна — не е фатално, минава при следващия деплой (ръчно: panev/DEPLOY.md → „IndexNow“)."
 }
 
 # ── 3b'') ospedali — systemd, БЕЗ npm ci/build (нула зависимости) ─────────────

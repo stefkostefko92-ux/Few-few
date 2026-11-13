@@ -3,7 +3,7 @@
 ```bash
 node tools/seo/live-check.mjs                                       # намират ли се ВСИЧКИ сайтове? (първо това)
 node tools/seo/live-check.mjs mastilko-bg.com --sample 8            # един сайт, по-голяма извадка
-node tools/seo/indexnow.mjs https://panevascensori.it               # подай страниците към Bing/Yandex/…
+node tools/seo/indexnow.mjs https://korpora.carbonstealth.eu        # подай страниците към Bing/Yandex/… (ключ на /indexnow-key.txt; при <key>.txt — с --key-file и --key-location)
 node tools/seo/cwv.mjs https://zabobovdol.carbonstealth.eu mobile   # реални CWV (поле+лаб)
 node tools/seo/check-jsonld.mjs https://zabobovdol.carbonstealth.eu # валидност на JSON-LD
 node tools/seo/ai-bots.mjs /var/log/nginx/access.log               # AI обхождане + crawl-to-refer

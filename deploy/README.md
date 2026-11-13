@@ -128,7 +128,10 @@ ZIP отпреди месец.
   сийд **само при липсваща база** (админ + каталог за `/admin`), снимка на базата преди
   рестарт, самоинсталиращ се systemd unit (`panev/deploy/systemd/panev.service`, порт
   `127.0.0.1:4102`, User=`panev`), `systemctl restart panev`; при провал — автоматичен
-  rollback на кода **и** на базата. Health на `127.0.0.1:4102/api/health`. Тайните са в
+  rollback на кода **и** на базата. Health на `127.0.0.1:4102/api/health`; при успех — IndexNow
+  през `tools/seo/indexnow.mjs`, пуснат от корена на release-а с ключовия файл от архива
+  (`panev/<key>.txt` — името му е ключът), публичния му адрес и адресите от `panev/sitemap.xml`
+  на същия release; `PANEV_INDEXNOW=0` го спира. Тайните са в
   `/etc/panev/panev.env` (systemd `EnvironmentFile`, права 600) — при пръв деплой се
   генерира с random `JWT_SECRET` (без него приложението спира в продукция), `SMTP_PASS`
   остава `CHANGE_ME`. Еднократно: DNS, nginx vhost (301 `www.` → каноничния non-www) +
@@ -174,6 +177,12 @@ ZIP отпреди месец.
   `deploy/desktop/desktop.env` се пази), бекъп на кода, рестарт, health на `/api/ping` (401 = жив,
   ping иска сесия), rollback като medqr. Пръв деплой без конфиг: пуска `deploy/install.sh`
   (конфиг + тайни + услуга) → `vpsdash/`.
+- **IndexNow след здрав релийз** (Bing, Yandex, Seznam, Naver, Yep; Google не участва) — подава се
+  сам за zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock, korpora (само при променен
+  sitemap), fivem и panev. Само след минала здравна проба — без adblock, който подава след
+  качването на файловете, дори когато публичната му проба още не минава. Никъде не е условие за
+  успеха: провал на подаването е предупреждение, деплоят остава успешен. За останалите продукти
+  командата се пуска ръчно — от корена на release-а (`cd /opt/few-few/current`), не от `/root`.
 - Health check на всеки сервис; маркира `current` release; пази последните 5 за връщане назад.
 
 ## Конфигурация
@@ -188,6 +197,7 @@ ZIP отпреди месец.
 | `PANEV_DIR` | `/opt/panev` | път на panev (systemd) |
 | `PANEV_ENV` | `/etc/panev/panev.env` | тайните на panev (600, `EnvironmentFile`) |
 | `PANEV_HEALTH_URL` | `http://127.0.0.1:4102/api/health` | health на panev |
+| `PANEV_SITE` · `PANEV_INDEXNOW` | `https://panevascensori.it` · `1` | публичният адрес на panev (за IndexNow) и подаването след успешен деплой (`0` го спира) |
 | `OSPEDALI_DIR` | `/opt/ospedali` | път на ospedali (systemd, без билд) |
 | `OSPEDALI_HEALTH_URL` | `http://127.0.0.1:8788/healthz` | health на ospedali |
 | `ADBLOCK_WWW` | `/var/www/adblock` | www root на статичния adblock сайт |
