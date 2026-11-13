@@ -1446,7 +1446,7 @@ const FALLBACK = {
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 633
+        "lessons": 640
       },
       "evolution": [
         {
@@ -2282,9 +2282,53 @@ const FALLBACK = {
           "date": "2026-11-12",
           "event": "v57.4 — учене",
           "detail": "Научи: В SupremeDiscordBot revokeServer за Discord entitlement не пише accessUntil, а inExport… (+13 още)"
+        },
+        {
+          "version": "57.5.0",
+          "date": "2026-11-12",
+          "event": "v57.5 — учене",
+          "detail": "Научи: AES-GCM шифрован \"draft\" за TOTP тайна, върнат от клиента без AAD с userId, е преносим …"
+        },
+        {
+          "version": "57.7.0",
+          "date": "2026-11-13",
+          "event": "v57.7 — учене",
+          "detail": "Научи: discord.js 14.26.4 с Partials.GuildMember емитва guildMemberUpdate и за некеширан член … (+1 още)"
+        },
+        {
+          "version": "57.9.0",
+          "date": "2026-11-13",
+          "event": "v57.9 — учене",
+          "detail": "Научи: nodemailer 10.x без requireTLS пуска STARTTLS само ако сървърът го обяви в EHLO; ако на… (+1 още)"
+        },
+        {
+          "version": "58.0.0",
+          "date": "2026-11-13",
+          "event": "v58.0 — учене",
+          "detail": "Научи: Кеш в паметта, който записва резултата от await-нато четене от базата без брояч на верс…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „Кеш в паметта, който записва резултата от await-нато четене от базата без брояч на верс…\""
+        },
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „nodemailer 10.x без requireTLS пуска STARTTLS само ако сървърът го обяви в EHLO; ако на…\" (+1 още)"
+        },
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „discord.js 14.26.4 с Partials.GuildMember емитва guildMemberUpdate и за некеширан член …\" (+1 още)"
+        },
+        {
+          "date": "2026-11-12",
+          "type": "learning",
+          "summary": "Научи: „AES-GCM шифрован \"draft\" за TOTP тайна, върнат от клиента без AAD с userId, е преносим …\""
+        },
         {
           "date": "2026-11-12",
           "type": "learning",
@@ -7070,7 +7114,7 @@ const FALLBACK = {
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 276
+        "lessons": 277
       },
       "evolution": [
         {
@@ -12141,14 +12185,14 @@ const FALLBACK = {
           "version": "23.0.0",
           "date": "2026-11-12",
           "event": "v23.0 — учене",
-          "detail": "Научи: IBM Plex Sans Condensed във @fontsource няма основна кирилица (само cyrillic-ext), зато… (+2 още)"
+          "detail": "Научи: В panev/css/site.css `:focus-visible` е navy-3 (#24408c); върху тъмните секции (#162862… (+2 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-12",
           "type": "learning",
-          "summary": "Научи: „IBM Plex Sans Condensed във @fontsource няма основна кирилица (само cyrillic-ext), зато…\" (+2 още) · 1 в карантина"
+          "summary": "Научи: „В panev/css/site.css `:focus-visible` е navy-3 (#24408c); върху тъмните секции (#162862…\" (+2 още) · 1 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -13409,7 +13453,7 @@ const FALLBACK = {
           "discord.py docs — алтернативен Python стек",
           "Discord Developer Policy & ToS — verification, привилегировани intents, данни"
         ],
-        "lessons": 221
+        "lessons": 224
       },
       "evolution": [
         {
@@ -13743,17 +13787,38 @@ const FALLBACK = {
           "detail": "Научи: В SupremeDiscordBot ботът резолвира канала през guildChannel(serverId, channelId), зато… (+10 още)"
         },
         {
-          "version": "21.6.0",
+          "version": "21.8.0",
           "date": "2026-11-12",
-          "event": "v21.6 — учене",
-          "detail": "Научи: SupremeDiscordBot - таблото пише само categoryOpenId, а formSession.js праща ticket-фор… (+4 още)"
+          "event": "v21.8 — учене",
+          "detail": "Научи: Audit log събитието MemberDisconnect (и MemberMove) не носи target потребител (само cou… (+6 още)"
+        },
+        {
+          "version": "21.9.0",
+          "date": "2026-11-12",
+          "event": "v21.9 — учене",
+          "detail": "Научи: Prisma-мок тестове с vi.resetAllMocks нулират и mockResolvedValue на модулни мокове (dn…"
         }
       ],
       "activity": [
         {
           "date": "2026-11-12",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „prismaMock.updateMany връща undefined, ако не е мокнат; handler, който чете count от ус…\""
+        },
+        {
+          "date": "2026-11-12",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „prismaMock.updateMany връща undefined, ако не е мокнат; всеки handler, който чете count…\""
+        },
+        {
+          "date": "2026-11-12",
           "type": "learning",
-          "summary": "Научи: „SupremeDiscordBot - таблото пише само categoryOpenId, а formSession.js праща ticket-фор…\" (+4 още) · 1 в карантина"
+          "summary": "Научи: „Prisma-мок тестове с vi.resetAllMocks нулират и mockResolvedValue на модулни мокове (dn…\""
+        },
+        {
+          "date": "2026-11-12",
+          "type": "learning",
+          "summary": "Научи: „Audit log събитието MemberDisconnect (и MemberMove) не носи target потребител (само cou…\" (+6 още) · 1 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -15734,7 +15799,7 @@ const FALLBACK = {
           "Docusaurus/MkDocs/VitePress (docs сайтове, версиониране, i18n); markdownlint/Vale",
           "Това репо: per-product CLAUDE.md/README, BG източник, runbook-и (deploy/DEPLOY.md), safety-critical низове"
         ],
-        "lessons": 227
+        "lessons": 229
       },
       "evolution": [
         {
@@ -15796,9 +15861,20 @@ const FALLBACK = {
           "date": "2026-11-12",
           "event": "v21.8 — учене",
           "detail": "Научи: SupremeDiscordBot/README.md (ред 333, 350) още твърди „Postgres/Redis bound to localhos… (+1 още)"
+        },
+        {
+          "version": "22.0.0",
+          "date": "2026-11-13",
+          "event": "v22.0 — учене",
+          "detail": "Научи: Всички файлове в frontend/src/data/*.js се четат от marketingTruth.test.js като публиче… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „Всички файлове в frontend/src/data/*.js се четат от marketingTruth.test.js като публиче…\" (+1 още)"
+        },
         {
           "date": "2026-11-12",
           "type": "learning",
@@ -16307,7 +16383,7 @@ const FALLBACK = {
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 180
+        "lessons": 182
       },
       "evolution": [
         {
@@ -16357,9 +16433,20 @@ const FALLBACK = {
           "date": "2026-11-12",
           "event": "v27.7 — учене",
           "detail": "Научи: Инжекционен eval spec с маркери, които само назовават темата (име на пакет, пазач, „под… (+4 още)"
+        },
+        {
+          "version": "27.9.0",
+          "date": "2026-11-13",
+          "event": "v27.9 — учене",
+          "detail": "Научи: Модулите на SupremeDiscordBot backend могат да се пробват в паметта без запис на файлов… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-13",
+          "type": "learning",
+          "summary": "Научи: „Модулите на SupremeDiscordBot backend могат да се пробват в паметта без запис на файлов…\" (+1 още)"
+        },
         {
           "date": "2026-11-12",
           "type": "learning",
@@ -16672,14 +16759,14 @@ const FALLBACK = {
           "version": "19.8.0",
           "date": "2026-11-12",
           "event": "v19.8 — учене",
-          "detail": "Научи: DPR 162/1999 (текст 1999) чл. 2 ал. 1 б. i) т. 5 не изброява поименно въжетата и тирант… (+2 още)"
+          "detail": "Научи: Подмяната на етажни врати е modifica costruttiva по DPR 162/1999 (първоначален текст) ч… (+2 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-12",
           "type": "learning",
-          "summary": "Научи: „DPR 162/1999 (текст 1999) чл. 2 ал. 1 б. i) т. 5 не изброява поименно въжетата и тирант…\" (+2 още)"
+          "summary": "Научи: „Подмяната на етажни врати е modifica costruttiva по DPR 162/1999 (първоначален текст) ч…\" (+2 още)"
         },
         {
           "date": "2026-11-04",
