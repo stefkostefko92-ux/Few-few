@@ -33,17 +33,23 @@ const captions = fs.existsSync(path.join(here, "img/captions.json"))
   ? JSON.parse(read(path.join(here, "img/captions.json")))
   : {};
 
-function figures(key) {
-  const list = captions[key] ?? [];
-  if (!list.length) return "";
-  const items = list
-    .filter((f) => fs.existsSync(path.join(here, "img", f.file)))
-    .map(
-      (f) =>
-        `<figure class="${f.narrow ? "narrow" : ""}"><img src="img/${f.file}" alt=""><figcaption>${f.caption}</figcaption></figure>`,
-    )
-    .join("");
-  return items ? `<div class="figs">${items}</div>` : "";
+const figure = (f) =>
+  `<figure class="${f.narrow ? "narrow" : ""}"><img src="img/${f.file}" alt=""><figcaption>${f.caption}</figcaption></figure>`;
+
+const figBlock = (fs_) => `<div class="figs ${fs_.length === 1 ? "one" : "many"}">${fs_.map(figure).join("")}</div>`;
+
+/** Снимките на главата. Маркер `<!--fig:a.jpg,b.jpg-->` в главата слага тези
+ *  снимки точно там; останалите отиват заедно в общия блок. */
+function figures(key, html) {
+  const list = (captions[key] ?? []).filter((f) => fs.existsSync(path.join(here, "img", f.file)));
+  const used = new Set();
+  html = html.replace(/<!--fig:([^>]+?)-->/g, (_, names) => {
+    const picked = names.split(",").map((n) => list.find((f) => f.file === n.trim())).filter(Boolean);
+    picked.forEach((f) => used.add(f.file));
+    return picked.length ? figBlock(picked) : "";
+  });
+  const rest = list.filter((f) => !used.has(f.file));
+  return { html, block: rest.length ? figBlock(rest) : "" };
 }
 
 const chapters = [];
@@ -59,7 +65,9 @@ for (const part of PARTS) {
     const title = (html.match(/<h2>([\s\S]*?)<\/h2>/) ?? [])[1]?.trim() ?? key;
     const id = (html.match(/<section[^>]*id="([^"]+)"/) ?? [])[1] ?? `g-${key}`;
     // Снимките идват след таблицата с фактите (или след въведението).
-    const figs = figures(key);
+    const placed = figures(key, html);
+    html = placed.html;
+    const figs = placed.block;
     if (figs) {
       const at = html.indexOf("</table>");
       const lead = html.indexOf("</p>");
@@ -123,8 +131,9 @@ const page = `<!doctype html>
   blockquote { margin: 3mm 0; padding: 2mm 4mm; border-left: 3px solid var(--brass); background: #faf6ec; }
   .note { background: #f1f6fb; border-left: 3px solid #4d7fae; padding: 2mm 4mm; margin: 3mm 0; break-inside: avoid; }
   .warn { background: #fbf0ee; border-left: 3px solid var(--warn); padding: 2mm 4mm; margin: 3mm 0; break-inside: avoid; }
-  .figs { display: flex; flex-wrap: wrap; gap: 4mm; margin: 3mm 0 4mm; }
-  figure { margin: 0; flex: 1 1 100%; break-inside: avoid; }
+  .figs { display: flex; flex-wrap: wrap; gap: 4mm; margin: 3mm 0 4mm; justify-content: center; }
+  figure { margin: 0; flex: 0 0 calc(50% - 2mm); break-inside: avoid; }
+  .figs.one figure { flex-basis: 80%; }
   figure.narrow { flex: 0 0 52mm; }
   figure img { width: 100%; border: 1px solid var(--line); border-radius: 2mm; display: block; }
   figcaption { font-size: 8.6pt; color: var(--muted); margin-top: 1mm; }
