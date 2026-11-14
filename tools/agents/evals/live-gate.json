@@ -1,27 +1,27 @@
 {
-  "date": "2026-11-11",
-  "ref": "7fb6a0534fcb2e4644c832883875bfeff071b122",
-  "cli": "2.1.322 (Claude Code)",
-  "summary": "проба 3/3 · оценки 6/6 · pass^k 2/2 · verifier ✓",
-  "costUsd": 10.17,
+  "date": "2026-11-14",
+  "ref": "0a51ef2e5c941a43e6e139b22a26b678ac964ea0",
+  "cli": "2.1.325 (Claude Code)",
+  "summary": "проба 3/3 · оценки 9/9 · pass^k 5/5 · verifier ✓",
+  "costUsd": 12.56,
   "probe": [
-    {
-      "agent": "seo",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "kodadjiyata",
-      "ok": true,
-      "problems": []
-    },
     {
       "agent": "dizayner",
       "ok": true,
       "problems": []
+    },
+    {
+      "agent": "kachestveniyat",
+      "ok": true,
+      "problems": []
+    },
+    {
+      "agent": "nabludatelya",
+      "ok": true,
+      "problems": []
     }
   ],
-  "inputsHash": "a1e7f71903cfbadd9814fbd570b6b2129865b09e91dfae196db707c7798f6968",
+  "inputsHash": "b62ff4f33b9534bed34c2df8a8a2fe5374c99d2595ce12e6d22d75f975f0d638",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
@@ -32,20 +32,20 @@
     ".claude/agents/asansyorchika.md": "18153eb60b408d9cf46341b3338cb24e45475293e0c665d90dfcb3ef08b47d77",
     ".claude/agents/danachnika.md": "260e00c5e2b4800d7f4938fbdd3cdc31bb74f01791b531230fd03b96ee235250",
     ".claude/agents/diskordjiyata.md": "0acfc0d389c8032125485aa585cb59812883e26651e424955d37fb15a2266e3f",
-    ".claude/agents/dizayner.md": "68ddb6b4612aca8ef91ea887e25ff8a9f051faed203f44063f3d7caad0441975",
+    ".claude/agents/dizayner.md": "22f2d7ddc03e674ff3a9baa775ed3a4e5c0c413adda8a8c16a282d9e7d8c091b",
     ".claude/agents/frezadjiyata.md": "72f8aad6f14620ec069b83a40542f5db23b51e1811e13dc0447a08eeb9c5890d",
     ".claude/agents/geymara.md": "faa9f8c43746b4eedf3b5f59110dcffa6ddc6adf27ab737d6e4896f5d0247764",
     ".claude/agents/goladjiyata.md": "0f0f100d590e829b6439e578f28759d470f56c9c150f08f250ec5ba0014d3c99",
     ".claude/agents/hromadjiyata.md": "6746a9aa92371ac4de2a07816ace75facd6c6333dda00f20aa85209caa9479ff",
     ".claude/agents/igrodelets.md": "c92fbba576b4dacc2667f2aec76171aa30dba3762a6831aeca0b92148e036b2a",
     ".claude/agents/izpitatelya.md": "64132054fc335b6b88a58cc65c44dacc103bb9ee372cc88884224a80c04dba4d",
-    ".claude/agents/kachestveniyat.md": "bff750cd11b56fb577916950b740b20adab8bf65f4defdd58e8c04bc4f03374c",
+    ".claude/agents/kachestveniyat.md": "879da211d3a16438f30b445fc03a23bfc51af0ec495b03c773e576f9cf570554",
     ".claude/agents/kasadjiyata.md": "149f597ac3d05d84748fbad08f617279aa0786d2b3647dc85cc88ce0cf6a4151",
     ".claude/agents/kodadjiyata.md": "a798f3f469ac4ecd6e38f5a3bd79f4a886b2f86fad8d71636cd917f4cc2f245e",
     ".claude/agents/konveyera.md": "93e9c7a605d0d9a6f1c54cc56522d3903e35ebd16cabacf34ff391a37c394233",
     ".claude/agents/letopisetsa.md": "8d2872442e3edbb732f79b1452cc6bdbf0501302122cac0bbc62aa456ad5b5b4",
     ".claude/agents/mobildjiyata.md": "a632d13bd67854d418381a9cae4de6a313737f00554f2166b851ebdea2fede98",
-    ".claude/agents/nabludatelya.md": "69fc3f9e59f847e54062687495c0970cd18fb12d7fd1b4c77f8531605561cdd5",
+    ".claude/agents/nabludatelya.md": "81f776d6cae648849d475429c315c7b1ba04986b9633753e2317dec06734af31",
     ".claude/agents/pravniyat-razbirach.md": "4634f1b7d53f6e6de2050003c45a57868790481e4c94ce8e96d0d6ef8b8d5975",
     ".claude/agents/prevodach.md": "7aa99a4ee469bf4abb816e63d854188f98b4c13ca1fbe0c5e7ff7d27cb1ee623",
     ".claude/agents/printadjiyata.md": "17cce75ed4135f3f1a164a7c0dfc71a8483eabe3ca23e1f38d16cec212f53e3d",
