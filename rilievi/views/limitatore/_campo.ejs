@@ -19,5 +19,5 @@
   <% } else { %><input class="input" id="<%= id %>" name="<%= key %>" type="text" inputmode="decimal" autocomplete="off" required value="<%= text %>"<% if (errText) { %> aria-invalid="true" aria-describedby="err-<%= key %>"<% } %>>
   <% } %>
   <%# Подножието е винаги тук (и празно): третата линия на реда в `.grid--righe`. %>
-  <div class="field__piede"><% if (errText) { %><p class="field__error" id="err-<%= key %>"><%= errText %></p><% } %></div>
+  <div class="field__piede"><% if (key === 'vn') { %><p class="field__hint"><%= t('limitatore.hint.vn') %></p><% } %><% if (errText) { %><p class="field__error" id="err-<%= key %>"><%= errText %></p><% } %></div>
 </div>

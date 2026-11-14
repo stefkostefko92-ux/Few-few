@@ -27,6 +27,19 @@ function buildViewHelpers(locale: Locale) {
     year: 'numeric',
     timeZone: 'UTC',
   });
+  /** Денят на МОМЕНТ (край на преход, влизане на версия) — по Рим, не в UTC като колоните `@db.Date`. */
+  const dayRomaFmt = new Intl.DateTimeFormat(tag, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: BUSINESS_TZ,
+  });
+  const dayLongRomaFmt = new Intl.DateTimeFormat(tag, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: BUSINESS_TZ,
+  });
   const dateTimeFmt = new Intl.DateTimeFormat(tag, {
     day: '2-digit',
     month: '2-digit',
@@ -41,6 +54,8 @@ function buildViewHelpers(locale: Locale) {
   return {
     day: (value: Date | null | undefined) => (value ? dayFmt.format(value) : ''),
     dayLong: (value: Date | null | undefined) => (value ? dayLongFmt.format(value) : ''),
+    dayRoma: (value: Date | null | undefined) => (value ? dayRomaFmt.format(value) : ''),
+    dayLongRoma: (value: Date | null | undefined) => (value ? dayLongRomaFmt.format(value) : ''),
     dateTime: (value: Date | null | undefined) => (value ? dateTimeFmt.format(value) : ''),
     num: (value: NumberLike) => {
       const n = toNumber(value);

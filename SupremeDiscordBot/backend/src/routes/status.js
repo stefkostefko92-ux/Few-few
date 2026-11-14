@@ -136,19 +136,10 @@ async function computeStatus() {
     results.services.cache = { status: "unknown", note: "REDIS_URL not configured" };
   }
 
-  // Get recent metrics for "servers monitored" display
-  try {
-    const totalServers = await prisma.server.count();
-    const activeToday = await prisma.ticket.findMany({
-      where: { createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
-      distinct: ["serverId"],
-      select: { serverId: true },
-    });
-    results.stats = {
-      totalServers,
-      activeServers24h: activeToday.length,
-    };
-  } catch { /* silent */ }
+  // Без бизнес числа на публичната страница (одит 07.10.2026): „Total servers“ и
+  // „Active (24h)“ показваха брой клиенти навън, а „активен“ значеше само „нов
+  // тикет за 24 ч“ — сървър, който само играе, излизаше 0. Статусът е за здравето
+  // на услугата; числата са в админ конзолата (routes/admin.js).
 
   cache = { data: results, expiresAt: Date.now() + 30 * 1000 };
   return results;

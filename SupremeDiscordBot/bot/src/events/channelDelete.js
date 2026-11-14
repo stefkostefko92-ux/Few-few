@@ -8,6 +8,7 @@ import api from "../utils/api.js";
 import { ticketChannelCache, stickyCache } from "../utils/ticketCaches.js";
 import { logServerEvent, fetchAuditActor, isEventCategoryEnabled, AuditLogEvent } from "../utils/serverEventLog.js";
 import { CHANNEL_TYPE_LABELS } from "../utils/channelTypes.js";
+import { onBaitChannelDeleted } from "../utils/bait.js";
 
 export default {
   name: "channelDelete",
@@ -25,6 +26,10 @@ export default {
     } catch {
       // Silently ignore — channel may not have been a ticket
     }
+
+    // Изтрит канал-стръв (З1): стръвта се изключва и екипът научава. Преди това
+    // `enabled` оставаше true към несъществуващ канал, а /bait status казваше „включена“.
+    await onBaitChannelDeleted(channel);
 
     // Server Event Logging — category "server". Отделно от тикет cleanup-а
     // по-горе: то е вътрешна хигиена, това е одитна следа за собственика.

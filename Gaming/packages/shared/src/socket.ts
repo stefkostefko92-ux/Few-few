@@ -147,6 +147,8 @@ export interface GameOverMsg {
 export interface SocketErrorMsg {
   code: string;
   message: string;
+  /** Отговорна игра (self_excluded / daily_limit): ISO момент, до който масите са затворени. */
+  until?: string;
 }
 
 /** Client -> server: a chat line for the player's current match. */

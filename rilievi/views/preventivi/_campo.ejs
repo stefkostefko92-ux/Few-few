@@ -1,0 +1,15 @@
+<%
+  // Едно поле на офертата: текст, имейл, ден, дни на валидност или бележка (`textarea`); `wide` — на целия ред.
+  const desc = [hint ? 'hint-' + key : '', errore ? 'err-' + key : ''].filter(Boolean).join(' ');
+  const attrs = (errore ? ' aria-invalid="true"' : '') + (desc ? ' aria-describedby="' + desc + '"' : '');
+%><div class="field<%= wide ? ' field--wide' : '' %>">
+  <label class="field__label" for="f-<%= key %>"><%= t('preventivi.campo.' + key) %></label>
+  <% if (tipo === 'textarea') { %><textarea class="textarea" id="f-<%= key %>" name="<%= key %>" rows="4" maxlength="<%= maxLength %>"<%- attrs %>><%= valore %></textarea>
+  <% } else if (tipo === 'date') { %><input class="input" id="f-<%= key %>" name="<%= key %>" type="date" min="2000-01-01" max="2099-12-31" value="<%= valore %>"<%- attrs %>>
+  <% } else if (tipo === 'giorni') { %><input class="input" id="f-<%= key %>" name="<%= key %>" type="text" inputmode="numeric" maxlength="3" autocomplete="off" value="<%= valore %>"<%- attrs %>>
+  <% } else if (tipo === 'email') { %><input class="input" id="f-<%= key %>" name="<%= key %>" type="email" maxlength="254" autocomplete="off" value="<%= valore %>"<%- attrs %>>
+  <% } else { %><input class="input" id="f-<%= key %>" name="<%= key %>" type="text" maxlength="<%= maxLength %>" autocomplete="off" value="<%= valore %>"<%- attrs %>>
+  <% } %>
+  <%# Подножието е винаги тук (и празно): третата линия на реда в `.grid--righe`. %>
+  <div class="field__piede"><% if (hint) { %><p class="field__hint" id="hint-<%= key %>"><%= hint %></p><% } %><% if (errore) { %><p class="field__error" id="err-<%= key %>"><%= errore %></p><% } %></div>
+</div>

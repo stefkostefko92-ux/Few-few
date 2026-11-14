@@ -1,0 +1,2172 @@
+{
+  "id": "geat-modulo-quadro",
+  "fornitore": "GEAT Elevators",
+  "titolo": "Modulo quadro (preventivo o ordine)",
+  "fonte": "GEAT_modulo_quadro.pdf caricato dal proprietario del portale il 12/11/2026 (modulo compilabile GEAT, invariato; mappa da scripts/moduli/geat.mjs)",
+  "file": "geat-modulo-quadro.pdf",
+  "sha256": "637f3c9b22d9b0628eb216a14defa3748298bf118c552dc247840a1de7d31b67",
+  "tipo": "acroform",
+  "pulizia": {
+    "nonStampare": ["^BtnSvuota$"]
+  },
+  "gruppi": [
+    {
+      "titolo": "Modulo",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "tipoModulo",
+              "kind": "radio",
+              "label": "Modulo",
+              "acro": "Tipo Modulo",
+              "opzioni": [
+                {
+                  "valore": "preventivo",
+                  "label": "Preventivo",
+                  "stato": "Preventivo"
+                },
+                {
+                  "valore": "ordine",
+                  "label": "Ordine",
+                  "stato": "Ordine"
+                }
+              ],
+              "predefinito": "ordine"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Cliente",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "cliente",
+              "kind": "text",
+              "label": "Cliente",
+              "acro": "Cliente",
+              "maxLength": 40,
+              "prefill": "societaNome"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "rifCliente",
+              "kind": "text",
+              "label": "Rif. cliente",
+              "acro": "RiferimentoCliente",
+              "maxLength": 40,
+              "prefill": "rif"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "quantita",
+              "kind": "text",
+              "label": "Quantità",
+              "acro": "Quantita",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "data",
+              "kind": "text",
+              "label": "Data",
+              "acro": "Data",
+              "maxLength": 40,
+              "prefill": "data"
+            },
+            {
+              "key": "consegna",
+              "kind": "text",
+              "label": "Consegna",
+              "acro": "Consegna",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "rifGeat",
+              "kind": "text",
+              "label": "Rif. GEAT",
+              "acro": "RiferimentoGeat",
+              "maxLength": 43
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "matricola",
+              "kind": "text",
+              "label": "Matricola",
+              "acro": "Matricola",
+              "maxLength": 40
+            },
+            {
+              "key": "nImpianto",
+              "kind": "text",
+              "label": "Impianto",
+              "acro": "Impianto",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "portata",
+              "kind": "text",
+              "label": "Portata",
+              "acro": "Portata",
+              "maxLength": 40
+            },
+            {
+              "key": "capienza",
+              "kind": "text",
+              "label": "Capienza",
+              "acro": "Capienza",
+              "maxLength": 40
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Manovra",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "universale",
+              "kind": "check",
+              "label": "Universale",
+              "acro": "Universale"
+            },
+            {
+              "key": "uomoPresente",
+              "kind": "check",
+              "label": "Uomo presente",
+              "acro": "UomoPresente"
+            },
+            {
+              "key": "prenotazioneDiscesa",
+              "kind": "check",
+              "label": "Prenotazione discesa",
+              "acro": "PrenotazioneDiscesa"
+            },
+            {
+              "key": "prenotazioneCompleta",
+              "kind": "check",
+              "label": "Prenotazione completa",
+              "acro": "PrenotazioneCompleta"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "duplex",
+              "kind": "check",
+              "label": "Duplex",
+              "acro": "Duplex"
+            },
+            {
+              "key": "triplex",
+              "kind": "check",
+              "label": "Triplex",
+              "acro": "Triplex"
+            },
+            {
+              "key": "quadruplex",
+              "kind": "check",
+              "label": "Quadruplex",
+              "acro": "Quadruplex"
+            },
+            {
+              "key": "pompieri",
+              "kind": "check",
+              "label": "Pompieri",
+              "acro": "Pompieri"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Impianto",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "tipoImpianto",
+              "kind": "radio",
+              "label": "Impianto",
+              "acro": "Gruppo Impianto",
+              "opzioni": [
+                {
+                  "valore": "funi",
+                  "label": "Funi",
+                  "stato": "Funi"
+                },
+                {
+                  "valore": "idraulico",
+                  "label": "Idraulico",
+                  "stato": "Idraulico"
+                },
+                {
+                  "valore": "gearless",
+                  "label": "Gearless",
+                  "stato": "Gearless"
+                },
+                {
+                  "valore": "geared",
+                  "label": "Geared",
+                  "stato": "Geared"
+                },
+                {
+                  "valore": "piattaforma",
+                  "label": "Piattaforma",
+                  "stato": "Piattaforma"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "salaMacchinaPiano",
+              "kind": "text",
+              "label": "Sala macchina al piano",
+              "acro": "SalaMacchinaAlPiano",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "salaMacchina",
+              "kind": "radio",
+              "label": "Sala macchina",
+              "acro": "Gruppo sala macchina",
+              "opzioni": [
+                {
+                  "valore": "alto",
+                  "label": "Alto",
+                  "stato": "Alto"
+                },
+                {
+                  "valore": "basso",
+                  "label": "Basso",
+                  "stato": "Basso"
+                },
+                {
+                  "valore": "mrl",
+                  "label": "MRL",
+                  "stato": "MRL"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Sistema di riporto al piano",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "riporto",
+              "kind": "radio",
+              "label": "Sistema di riporto al piano",
+              "acro": "Gruppo Sistema di riporto al piano",
+              "opzioni": [
+                {
+                  "valore": "sbilanciamento",
+                  "label": "Per sbilanciamento (gearless)",
+                  "stato": "Sbilanciamento"
+                },
+                {
+                  "valore": "batterie96",
+                  "label": "Con gruppo batterie a 96 VDC",
+                  "stato": "Batterie96vdc"
+                },
+                {
+                  "valore": "emergenzaDedicata",
+                  "label": "Con emergenza dedicata della SMS",
+                  "stato": "EmergenzaDedicata"
+                },
+                {
+                  "valore": "ups",
+                  "label": "Con UPS (per VVVF Alex200Lift)",
+                  "stato": "UPS"
+                },
+                {
+                  "valore": "senzaAperturaPorte",
+                  "label": "Senza apertura porte",
+                  "stato": "SenzaAperturaPorte"
+                },
+                {
+                  "valore": "conAperturaPorte",
+                  "label": "Con apertura porte",
+                  "stato": "ConAperturaPorte"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "predisposizione",
+              "kind": "text",
+              "label": "Predisposizione",
+              "acro": "Predisposizione",
+              "maxLength": 40
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Normative",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "en811",
+              "kind": "check",
+              "label": "EN 81.1",
+              "acro": "EN81_1"
+            },
+            {
+              "key": "en812",
+              "kind": "check",
+              "label": "EN 81.2",
+              "acro": "EN81_2"
+            },
+            {
+              "key": "en8121",
+              "kind": "check",
+              "label": "EN 81.21/41",
+              "acro": "EN81_21-41"
+            },
+            {
+              "key": "en8120",
+              "kind": "check",
+              "label": "EN 81.20/50",
+              "acro": "EN81_21-50"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "en8170",
+              "kind": "check",
+              "label": "EN 81.70",
+              "acro": "EN81_70"
+            },
+            {
+              "key": "en8172",
+              "kind": "check",
+              "label": "EN 81.72",
+              "acro": "EN81_72"
+            },
+            {
+              "key": "en8173",
+              "kind": "check",
+              "label": "EN 81.73",
+              "acro": "EN81_73"
+            },
+            {
+              "key": "emA3",
+              "kind": "check",
+              "label": "Em. A3",
+              "acro": "EM_A3"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "tipoEmendamentoA3",
+              "kind": "text",
+              "label": "Tipo emendamento A3",
+              "acro": "TipoEmendamentoA3",
+              "maxLength": 42
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Avviamento",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "avviamento",
+              "kind": "radio",
+              "label": "Avviamento",
+              "acro": "Gruppo Avviamento",
+              "opzioni": [
+                {
+                  "valore": "diretto",
+                  "label": "Diretto",
+                  "stato": "Diretto"
+                },
+                {
+                  "valore": "stellaTriangolo",
+                  "label": "Stella triangolo",
+                  "stato": "StellaTriangolo"
+                },
+                {
+                  "valore": "softStart",
+                  "label": "Soft/Start",
+                  "stato": "SoftStart"
+                },
+                {
+                  "valore": "valvolaElettronica",
+                  "label": "Valvola elettronica",
+                  "stato": "ValvolaElettrica"
+                },
+                {
+                  "valore": "dueVelocita",
+                  "label": "2 velocità",
+                  "stato": "DueVelocita"
+                },
+                {
+                  "valore": "vvvfAlex",
+                  "label": "VVVF Alex 200 Lift",
+                  "stato": "VVVFAlex"
+                },
+                {
+                  "valore": "vvvfToshiba",
+                  "label": "VVVF Toshiba",
+                  "stato": "VVVFToshiba"
+                },
+                {
+                  "valore": "vvvfFuji",
+                  "label": "VVVF Fuji Frenic Lift",
+                  "stato": "VVVFFuji"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "tastierinoFuji",
+              "kind": "check",
+              "label": "Tastierino Fuji",
+              "acro": "TastierinoFuji"
+            },
+            {
+              "key": "tipoAvviamento",
+              "kind": "text",
+              "label": "Tipo",
+              "acro": "TipoAvviamento",
+              "maxLength": 68
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Motore",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "tensioneMotore",
+              "kind": "radio",
+              "label": "Tensione",
+              "acro": "GruppoMotore",
+              "opzioni": [
+                {
+                  "valore": "v230",
+                  "label": "230 VAC",
+                  "stato": "Motore230Vac"
+                },
+                {
+                  "valore": "v400",
+                  "label": "400 VAC",
+                  "stato": "Motore400Vac"
+                }
+              ]
+            },
+            {
+              "key": "fase",
+              "kind": "radio",
+              "label": "Fase",
+              "acro": "GruppoFase",
+              "opzioni": [
+                {
+                  "valore": "monofase",
+                  "label": "Monofase",
+                  "stato": "MotoreMonofase"
+                },
+                {
+                  "valore": "trifase",
+                  "label": "Trifase",
+                  "stato": "MotoreTrifase"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "motoreKw",
+              "kind": "text",
+              "label": "kW",
+              "acro": "MotoreKW",
+              "maxLength": 40
+            },
+            {
+              "key": "motoreHp",
+              "kind": "text",
+              "label": "HP",
+              "acro": "MotoreHP",
+              "maxLength": 40
+            },
+            {
+              "key": "correnteNominale",
+              "kind": "text",
+              "label": "Corrente nominale",
+              "acro": "MotoreCorrenteNominale",
+              "maxLength": 40
+            },
+            {
+              "key": "tensioneFreno",
+              "kind": "text",
+              "label": "Tensione freno",
+              "acro": "MotoreTensioneFreno",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "velocita",
+              "kind": "text",
+              "label": "Vel. m/s",
+              "acro": "MotoreVelocita",
+              "maxLength": 40
+            },
+            {
+              "key": "motoreMarca",
+              "kind": "text",
+              "label": "Marca",
+              "acro": "MotoreMarca",
+              "maxLength": 57
+            },
+            {
+              "key": "motoreModello",
+              "kind": "text",
+              "label": "Modello",
+              "acro": "MotoreModello",
+              "maxLength": 46
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "nValvole",
+              "kind": "text",
+              "label": "N. valvole",
+              "acro": "MotoreNumeroValvole",
+              "maxLength": 40
+            },
+            {
+              "key": "tensioneValvole",
+              "kind": "text",
+              "label": "Tensione valvole",
+              "acro": "MotoreTensioneValvole",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "encoder",
+              "kind": "check",
+              "label": "Encoder",
+              "acro": "Encoder"
+            },
+            {
+              "key": "encoderTipo",
+              "kind": "text",
+              "label": "Encoder: tipo",
+              "acro": "MotoreEncoder",
+              "maxLength": 70
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Servizi",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "nFermate",
+              "kind": "text",
+              "label": "N° fermate",
+              "acro": "ServiziNumeroFermate",
+              "maxLength": 40
+            },
+            {
+              "key": "nServizi",
+              "kind": "text",
+              "label": "N° servizi",
+              "acro": "ServiziNumeroServizi",
+              "maxLength": 40
+            },
+            {
+              "key": "nAccessi",
+              "kind": "text",
+              "label": "N° accessi",
+              "acro": "ServiziNumeroAccessi",
+              "maxLength": 40
+            },
+            {
+              "key": "pianoPrincipale",
+              "kind": "text",
+              "label": "Piano principale",
+              "acro": "ServiziPianoPrincipale",
+              "maxLength": 47
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Operatore porte",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "operatoreA",
+              "kind": "check",
+              "label": "Operatore A",
+              "acro": "OperatoreA"
+            },
+            {
+              "key": "operatoreB",
+              "kind": "check",
+              "label": "Operatore B",
+              "acro": "OperatoreB"
+            },
+            {
+              "key": "operatoreC",
+              "kind": "check",
+              "label": "Operatore C",
+              "acro": "OperatoreC"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "operatoreMarca",
+              "kind": "text",
+              "label": "Marca",
+              "acro": "OperatoreMarca",
+              "maxLength": 40
+            },
+            {
+              "key": "operatoreTensione",
+              "kind": "text",
+              "label": "Tensione",
+              "acro": "OperatoreTensione",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "operatoreTipo",
+              "kind": "radio",
+              "label": "Operatore",
+              "acro": "GruppoOperatorePortaTipo",
+              "opzioni": [
+                {
+                  "valore": "meccanico",
+                  "label": "Meccanico",
+                  "stato": "Meccanico"
+                },
+                {
+                  "valore": "elettronico",
+                  "label": "Elettronico",
+                  "stato": "Elettronico"
+                }
+              ]
+            },
+            {
+              "key": "operatoreNote",
+              "kind": "text",
+              "label": "Note",
+              "acro": "OperatoreNote",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "porteCabina",
+              "kind": "radio",
+              "label": "Porte di cabina",
+              "acro": "GruppoOperatorePorteCabina",
+              "opzioni": [
+                {
+                  "valore": "auto",
+                  "label": "Auto",
+                  "stato": "Auto"
+                },
+                {
+                  "valore": "manuale",
+                  "label": "Manuale",
+                  "stato": "Manuale"
+                }
+              ]
+            },
+            {
+              "key": "portePiano",
+              "kind": "radio",
+              "label": "Porte di piano",
+              "acro": "GruppoOperatorePortePiano",
+              "opzioni": [
+                {
+                  "valore": "auto",
+                  "label": "Auto",
+                  "stato": "Auto"
+                },
+                {
+                  "valore": "manuale",
+                  "label": "Manuale",
+                  "stato": "Manuale"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "stazionamento",
+              "kind": "radio",
+              "label": "Stazionamento porte",
+              "acro": "GruppoOperatorePorteStazionamento",
+              "opzioni": [
+                {
+                  "valore": "aperto",
+                  "label": "Aperto",
+                  "stato": "Aperto"
+                },
+                {
+                  "valore": "chiuso",
+                  "label": "Chiuso",
+                  "stato": "Chiuso"
+                }
+              ]
+            },
+            {
+              "key": "alimentatoMarcia",
+              "kind": "radio",
+              "label": "Operatore alimentato in marcia",
+              "acro": "GruppoOperatorePorteAlimentato",
+              "opzioni": [
+                {
+                  "valore": "si",
+                  "label": "Sì",
+                  "stato": "Si"
+                },
+                {
+                  "valore": "no",
+                  "label": "No",
+                  "stato": "No"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "pattino",
+              "kind": "radio",
+              "label": "Pattino",
+              "acro": "GruppoOperatorePortePattino",
+              "opzioni": [
+                {
+                  "valore": "si",
+                  "label": "Sì",
+                  "stato": "Si"
+                },
+                {
+                  "valore": "no",
+                  "label": "No",
+                  "stato": "No"
+                }
+              ]
+            },
+            {
+              "key": "pattinoTensione",
+              "kind": "text",
+              "label": "Pattino: tensione",
+              "acro": "PattinoTensione",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "rallentamento",
+              "kind": "radio",
+              "label": "Rallentamento porte",
+              "acro": "GruppoOperatorePorteRallentamento",
+              "opzioni": [
+                {
+                  "valore": "si",
+                  "label": "Sì",
+                  "stato": "Si"
+                },
+                {
+                  "valore": "no",
+                  "label": "No",
+                  "stato": "No"
+                }
+              ]
+            },
+            {
+              "key": "rallentamentoTensione",
+              "kind": "text",
+              "label": "Rallentamento: tensione",
+              "acro": "RallentamentoPorteTensione",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "fineCorsa",
+              "kind": "radio",
+              "label": "Fine corsa chiusura",
+              "acro": "GruppoOperatorePorteFineCorsa",
+              "opzioni": [
+                {
+                  "valore": "si",
+                  "label": "Sì",
+                  "stato": "Si"
+                },
+                {
+                  "valore": "no",
+                  "label": "No",
+                  "stato": "No"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "cellula",
+              "kind": "radio",
+              "label": "Fotocellula o barriera",
+              "acro": "GruppoCellulaBarriera",
+              "opzioni": [
+                {
+                  "valore": "fotocellula",
+                  "label": "Fotocellula",
+                  "stato": "FotoCellula"
+                },
+                {
+                  "valore": "barriera",
+                  "label": "Barriera",
+                  "stato": "Barriera"
+                }
+              ]
+            },
+            {
+              "key": "barrieraTensione",
+              "kind": "text",
+              "label": "Fotocellula o barriera: tensione",
+              "acro": "BarrieraTensione",
+              "maxLength": 40
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Sbarchi",
+      "pagina": 2,
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "denominazionePiani",
+              "kind": "text",
+              "label": "Denominazione piani",
+              "acro": "DenominazionePiani",
+              "maxLength": 136
+            }
+          ]
+        },
+        {
+          "titolo": "Piano 1",
+          "campi": [
+            {
+              "key": "operatoreA1",
+              "kind": "check",
+              "label": "Operatore A",
+              "acro": "OperatoreA-1"
+            },
+            {
+              "key": "operatoreB1",
+              "kind": "check",
+              "label": "Operatore B",
+              "acro": "OperatoreB-1"
+            },
+            {
+              "key": "operatoreC1",
+              "kind": "check",
+              "label": "Operatore C",
+              "acro": "OperatoreC-1"
+            },
+            {
+              "key": "interpiano1",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "Interpiani-1",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "titolo": "Piano 2",
+          "campi": [
+            {
+              "key": "operatoreA2",
+              "kind": "check",
+              "label": "Operatore A",
+              "acro": "OperatoreA-2"
+            },
+            {
+              "key": "operatoreB2",
+              "kind": "check",
+              "label": "Operatore B",
+              "acro": "OperatoreB-2"
+            },
+            {
+              "key": "operatoreC2",
+              "kind": "check",
+              "label": "Operatore C",
+              "acro": "OperatoreC-2"
+            },
+            {
+              "key": "interpiano2",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "Interpiani-2",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "titolo": "Piano 3",
+          "campi": [
+            {
+              "key": "operatoreA3",
+              "kind": "check",
+              "label": "Operatore A",
+              "acro": "OperatoreA-3"
+            },
+            {
+              "key": "operatoreB3",
+              "kind": "check",
+              "label": "Operatore B",
+              "acro": "OperatoreB-3"
+            },
+            {
+              "key": "operatoreC3",
+              "kind": "check",
+              "label": "Operatore C",
+              "acro": "OperatoreC-3"
+            },
+            {
+              "key": "interpiano3",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "Interpiani-3",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "titolo": "Piano 4",
+          "campi": [
+            {
+              "key": "operatoreA4",
+              "kind": "check",
+              "label": "Operatore A",
+              "acro": "OperatoreA-4"
+            },
+            {
+              "key": "operatoreB4",
+              "kind": "check",
+              "label": "Operatore B",
+              "acro": "OperatoreB-4"
+            },
+            {
+              "key": "operatoreC4",
+              "kind": "check",
+              "label": "Operatore C",
+              "acro": "OperatoreC-4"
+            },
+            {
+              "key": "interpiano4",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "Interpiani-4",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "titolo": "Piano 5",
+          "campi": [
+            {
+              "key": "operatoreA5",
+              "kind": "check",
+              "label": "Operatore A",
+              "acro": "OperatoreA-5"
+            },
+            {
+              "key": "operatoreB5",
+              "kind": "check",
+              "label": "Operatore B",
+              "acro": "OperatoreB-5"
+            },
+            {
+              "key": "operatoreC5",
+              "kind": "check",
+              "label": "Operatore C",
+              "acro": "OperatoreC-5"
+            },
+            {
+              "key": "interpiano5",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "Interpiani-5",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "titolo": "Piano 6",
+          "campi": [
+            {
+              "key": "operatoreA6",
+              "kind": "check",
+              "label": "Operatore A",
+              "acro": "OperatoreA-6"
+            },
+            {
+              "key": "operatoreB6",
+              "kind": "check",
+              "label": "Operatore B",
+              "acro": "OperatoreB-6"
+            },
+            {
+              "key": "operatoreC6",
+              "kind": "check",
+              "label": "Operatore C",
+              "acro": "OperatoreC-6"
+            },
+            {
+              "key": "interpiano6",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "Interpiani-6",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "titolo": "Piano 7",
+          "campi": [
+            {
+              "key": "operatoreA7",
+              "kind": "check",
+              "label": "Operatore A",
+              "acro": "OperatoreA-7"
+            },
+            {
+              "key": "operatoreB7",
+              "kind": "check",
+              "label": "Operatore B",
+              "acro": "OperatoreB-7"
+            },
+            {
+              "key": "operatoreC7",
+              "kind": "check",
+              "label": "Operatore C",
+              "acro": "OperatoreC-7"
+            },
+            {
+              "key": "interpiano7",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "Interpiani-7",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "titolo": "Piano 8",
+          "campi": [
+            {
+              "key": "operatoreA8",
+              "kind": "check",
+              "label": "Operatore A",
+              "acro": "OperatoreA-8"
+            },
+            {
+              "key": "operatoreB8",
+              "kind": "check",
+              "label": "Operatore B",
+              "acro": "OperatoreB-8"
+            },
+            {
+              "key": "operatoreC8",
+              "kind": "check",
+              "label": "Operatore C",
+              "acro": "OperatoreC-8"
+            },
+            {
+              "key": "interpiano8",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "Interpiani-8",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "titolo": "Piano 9",
+          "campi": [
+            {
+              "key": "operatoreA9",
+              "kind": "check",
+              "label": "Operatore A",
+              "acro": "OperatoreA-9"
+            },
+            {
+              "key": "operatoreB9",
+              "kind": "check",
+              "label": "Operatore B",
+              "acro": "OperatoreB-9"
+            },
+            {
+              "key": "operatoreC9",
+              "kind": "check",
+              "label": "Operatore C",
+              "acro": "OperatoreC-9"
+            },
+            {
+              "key": "interpiano9",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "Interpiani-9",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "titolo": "Piano 10",
+          "campi": [
+            {
+              "key": "operatoreA10",
+              "kind": "check",
+              "label": "Operatore A",
+              "acro": "OperatoreA-10"
+            },
+            {
+              "key": "operatoreB10",
+              "kind": "check",
+              "label": "Operatore B",
+              "acro": "OperatoreB-10"
+            },
+            {
+              "key": "operatoreC10",
+              "kind": "check",
+              "label": "Operatore C",
+              "acro": "OperatoreC-10"
+            },
+            {
+              "key": "interpiano10",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "Interpiani-10",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "titolo": "Piano 11",
+          "campi": [
+            {
+              "key": "operatoreA11",
+              "kind": "check",
+              "label": "Operatore A",
+              "acro": "OperatoreA-11"
+            },
+            {
+              "key": "operatoreB11",
+              "kind": "check",
+              "label": "Operatore B",
+              "acro": "OperatoreB-11"
+            },
+            {
+              "key": "operatoreC11",
+              "kind": "check",
+              "label": "Operatore C",
+              "acro": "OperatoreC-11"
+            },
+            {
+              "key": "interpiano11",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "Interpiani-11",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "titolo": "Piano 12",
+          "campi": [
+            {
+              "key": "operatoreA12",
+              "kind": "check",
+              "label": "Operatore A",
+              "acro": "OperatoreA-12"
+            },
+            {
+              "key": "operatoreB12",
+              "kind": "check",
+              "label": "Operatore B",
+              "acro": "OperatoreB-12"
+            },
+            {
+              "key": "operatoreC12",
+              "kind": "check",
+              "label": "Operatore C",
+              "acro": "OperatoreC-12"
+            },
+            {
+              "key": "interpiano12",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "Interpiani-12",
+              "maxLength": 40
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Armadio",
+      "pagina": 2,
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "anta",
+              "kind": "radio",
+              "label": "Anta",
+              "acro": "GruppoAnta",
+              "opzioni": [
+                {
+                  "valore": "cernieraDx",
+                  "label": "Anta cerniera DX",
+                  "stato": "AntaDx"
+                },
+                {
+                  "valore": "cernieraSx",
+                  "label": "Anta cerniera SX",
+                  "stato": "AntaSx"
+                }
+              ]
+            },
+            {
+              "key": "ip",
+              "kind": "radio",
+              "label": "Grado IP",
+              "acro": "GruppoIP",
+              "opzioni": [
+                {
+                  "valore": "ip54",
+                  "label": "IP 54 stagno",
+                  "stato": "IP54"
+                },
+                {
+                  "valore": "ip65",
+                  "label": "IP 65 stagno",
+                  "stato": "IP65"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "finituraMrl",
+              "kind": "text",
+              "label": "Finitura MRL",
+              "acro": "Finitura",
+              "maxLength": 40
+            },
+            {
+              "key": "coloreRal",
+              "kind": "text",
+              "label": "Colore RAL MRL",
+              "acro": "ColoreRal",
+              "maxLength": 40
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Display",
+      "pagina": 2,
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "displayTensione",
+              "kind": "text",
+              "label": "Tensione",
+              "acro": "DisplayTensione",
+              "maxLength": 40
+            },
+            {
+              "key": "displayCom",
+              "kind": "radio",
+              "label": "COM",
+              "acro": "GruppoCom",
+              "opzioni": [
+                {
+                  "valore": "comPiu",
+                  "label": "COM +",
+                  "stato": "ComPiu"
+                },
+                {
+                  "valore": "comMeno",
+                  "label": "COM −",
+                  "stato": "ComMeno"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "displayCollegamento",
+              "kind": "text",
+              "label": "Collegamento",
+              "acro": "DisplayCollegamento",
+              "maxLength": 44
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Segnalazioni e servizi",
+      "pagina": 2,
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "presente",
+              "kind": "radio",
+              "label": "Presente",
+              "acro": "GruppoPresente",
+              "opzioni": [
+                {
+                  "valore": "daSerratura",
+                  "label": "Da serratura",
+                  "stato": "DaSerratura"
+                },
+                {
+                  "valore": "daQuadro",
+                  "label": "Da quadro",
+                  "stato": "DaQuadro"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "titolo": "Allarme",
+          "campi": [
+            {
+              "key": "allarmeRicevuto",
+              "kind": "check",
+              "label": "Ricevuto",
+              "acro": "AllarmeRicevuto"
+            },
+            {
+              "key": "allarmeAttivato",
+              "kind": "check",
+              "label": "Attivato",
+              "acro": "AllarmeAttivato"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "occupato",
+              "kind": "check",
+              "label": "Occupato",
+              "acro": "AllarmeOccupato"
+            },
+            {
+              "key": "prenotato",
+              "kind": "check",
+              "label": "Prenotato",
+              "acro": "AllarmePrenotato"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "altreSegnalazioni",
+              "kind": "text",
+              "label": "Altre segnalazioni",
+              "acro": "AltreSegnalazioni",
+              "maxLength": 65
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Sistema di comunicazione",
+      "pagina": 2,
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "combinatore",
+              "kind": "check",
+              "label": "Combinatore + terminale cabina + telefono sala macchina",
+              "acro": "ComunicazioneCombinatore"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "terminaleFossa",
+              "kind": "check",
+              "label": "Terminale fossa con pulsante allarme",
+              "acro": "ComunicazioneTerminaleFossa"
+            },
+            {
+              "key": "terminaleTetto",
+              "kind": "check",
+              "label": "Terminale tetto cabina con pulsante allarme",
+              "acro": "ComunicazioneTerminaleTetto"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "linea",
+              "kind": "radio",
+              "label": "Linea",
+              "acro": "GruppoSchedaLinea",
+              "opzioni": [
+                {
+                  "valore": "lineaUrbana",
+                  "label": "Scheda linea urbana",
+                  "stato": "LineaUrbana"
+                },
+                {
+                  "valore": "interfacciaGsm",
+                  "label": "Interfaccia GSM",
+                  "stato": "Interfaccia"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Optional",
+      "pagina": 2,
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "precablato",
+              "kind": "check",
+              "label": "Precablato parte elettrica",
+              "acro": "OptionalPrecablato"
+            },
+            {
+              "key": "cloud",
+              "kind": "check",
+              "label": "Cloud - monitoraggio remoto",
+              "acro": "OptionalCloud"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "sintesiVocale",
+              "kind": "check",
+              "label": "Sintesi vocale",
+              "acro": "OptionalSintesiVocale"
+            },
+            {
+              "key": "citofono",
+              "kind": "check",
+              "label": "Citofono quadro",
+              "acro": "OptionalCitofono"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "teleruttore",
+              "kind": "check",
+              "label": "Teleruttore ventola",
+              "acro": "OptionalTeleRuttore"
+            },
+            {
+              "key": "quadro3708",
+              "kind": "check",
+              "label": "Quadro elettrico 37/08",
+              "acro": "OptionalQuadroElettrico"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "kitIlluminazione",
+              "kind": "check",
+              "label": "Kit illuminazione vano",
+              "acro": "OptionalKitIlluminazione"
+            },
+            {
+              "key": "elettroserratura",
+              "kind": "check",
+              "label": "Gestione elettroserratura 24 V",
+              "acro": "OptionalElettroserratura"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "trolley",
+              "kind": "radio",
+              "label": "Trolley o contatto",
+              "acro": "GruppoTrolley",
+              "opzioni": [
+                {
+                  "valore": "trolley",
+                  "label": "Trolley",
+                  "stato": "Trolley"
+                },
+                {
+                  "valore": "contattoStriscio",
+                  "label": "Contatto a striscio",
+                  "stato": "ContattoStriscio"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "scivolo",
+              "kind": "check",
+              "label": "Scivolo per ogni piano",
+              "acro": "OptionalScivolo"
+            },
+            {
+              "key": "staffa",
+              "kind": "check",
+              "label": "Staffa su guida per scivolo (per ogni piano)",
+              "acro": "OptionalStaffa"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Cabina",
+      "pagina": 2,
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "cabina",
+              "kind": "radio",
+              "label": "Cabina",
+              "acro": "GruppoCabinaSeriale",
+              "opzioni": [
+                {
+                  "valore": "seriale",
+                  "label": "Seriale",
+                  "stato": "Seriale"
+                },
+                {
+                  "valore": "tradizionale",
+                  "label": "Tradizionale",
+                  "stato": "Tradizionale"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "colonna",
+              "kind": "radio",
+              "label": "Pulsantiera di cabina",
+              "acro": "GruppoColonna",
+              "opzioni": [
+                {
+                  "valore": "colonnaGeat",
+                  "label": "Colonna fornitura GEAT",
+                  "stato": "ColonnaGeat"
+                },
+                {
+                  "valore": "cablaggioColonna",
+                  "label": "Cablaggio colonna",
+                  "stato": "CablaggioColonna"
+                },
+                {
+                  "valore": "piastraPiana",
+                  "label": "Piastra piana",
+                  "stato": "PiastraPiana"
+                },
+                {
+                  "valore": "piastraSovrapposta",
+                  "label": "Piastra sovrapposta",
+                  "stato": "PiastraSovrapposta"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "cabinaMisure",
+              "kind": "text",
+              "label": "Specifica misure",
+              "acro": "CabineMisure",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "contattoChiave",
+              "kind": "check",
+              "label": "Contatto a chiave",
+              "acro": "SegnalazioniContattoChiave"
+            },
+            {
+              "key": "tipoContattoChiave",
+              "kind": "text",
+              "label": "Tipo contatto a chiave",
+              "acro": "TipoContattoChiave",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "displayCabina",
+              "kind": "radio",
+              "label": "Display",
+              "acro": "GruppoDisplay",
+              "opzioni": [
+                {
+                  "valore": "lcdIcaro",
+                  "label": "LCD Icaro",
+                  "stato": "LcdIcaro"
+                },
+                {
+                  "valore": "lcdTricolor",
+                  "label": "LCD Tricolor",
+                  "stato": "LcdTricolor"
+                },
+                {
+                  "valore": "tftIris",
+                  "label": "TFT 7\" Iris",
+                  "stato": "TftIris"
+                }
+              ]
+            },
+            {
+              "key": "lampada",
+              "kind": "radio",
+              "label": "Lampada emergenza",
+              "acro": "GruppoLampada",
+              "opzioni": [
+                {
+                  "valore": "el01Icaro",
+                  "label": "EL01 Icaro",
+                  "stato": "EL01Icaro"
+                },
+                {
+                  "valore": "lem00Tricolor",
+                  "label": "LEM00 Tricolor",
+                  "stato": "LemTricolor"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "titolo": "Servizi",
+          "campi": [
+            {
+              "key": "servAllarme",
+              "kind": "check",
+              "label": "Allarme",
+              "acro": "ServiziAllarme"
+            },
+            {
+              "key": "servApriporta",
+              "kind": "check",
+              "label": "Apriporta",
+              "acro": "ServiziApriporta"
+            },
+            {
+              "key": "servChiudiporta",
+              "kind": "check",
+              "label": "Chiudiporta",
+              "acro": "ServiziChiudiPorta"
+            },
+            {
+              "key": "servStop",
+              "kind": "check",
+              "label": "Stop",
+              "acro": "ServiziStop"
+            },
+            {
+              "key": "servStopFungo",
+              "kind": "check",
+              "label": "Stop a fungo",
+              "acro": "ServiziStopFungo"
+            }
+          ]
+        },
+        {
+          "titolo": "Segnalazioni cabina",
+          "campi": [
+            {
+              "key": "segnVietatoFumare",
+              "kind": "check",
+              "label": "Vietato fumare",
+              "acro": "SegnalazioniVietatoFumare"
+            },
+            {
+              "key": "segnAllarmeAttivato",
+              "kind": "check",
+              "label": "Allarme attivato",
+              "acro": "SegnalazioniAllarme"
+            },
+            {
+              "key": "segnEmergenza",
+              "kind": "check",
+              "label": "Impianto in emergenza",
+              "acro": "SegnalazioniImpianto"
+            },
+            {
+              "key": "segnSovraccarico",
+              "kind": "check",
+              "label": "Sovraccarico",
+              "acro": "SegnalazioniSovraccarico"
+            },
+            {
+              "key": "segnVentilatore",
+              "kind": "check",
+              "label": "Ventilatore",
+              "acro": "SegnalazioniVentilatore"
+            },
+            {
+              "key": "segnParla",
+              "kind": "check",
+              "label": "Parla/ascolta",
+              "acro": "SegnalazioniParla"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Misure (distanza da quadro, mm)",
+      "pagina": 2,
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "misuraMotore",
+              "kind": "text",
+              "label": "A motore",
+              "acro": "MisureAMotore",
+              "maxLength": 40
+            },
+            {
+              "key": "misuraQuadro3708",
+              "kind": "text",
+              "label": "A quadro 37/08",
+              "acro": "MisureAQuadro",
+              "maxLength": 40
+            },
+            {
+              "key": "misuraPulsantiera",
+              "kind": "text",
+              "label": "A prima pulsantiera",
+              "acro": "MisureAPrimaPulsantiera",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "misuraMontante",
+              "kind": "text",
+              "label": "Distanza dalla montante vano alla pulsantiera piano",
+              "acro": "MisureDistanza",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "misuraTestata",
+              "kind": "text",
+              "label": "Testata",
+              "acro": "MisureTestata",
+              "maxLength": 40
+            },
+            {
+              "key": "misuraCorsa",
+              "kind": "text",
+              "label": "Corsa",
+              "acro": "MisureCorsa",
+              "maxLength": 40
+            },
+            {
+              "key": "misuraFossa",
+              "kind": "text",
+              "label": "Fossa",
+              "acro": "MisureFossa",
+              "maxLength": 40
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Piani",
+      "pagina": 2,
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "pianiSistema",
+              "kind": "radio",
+              "label": "Piani",
+              "acro": "GruppoPianiSeriale",
+              "opzioni": [
+                {
+                  "valore": "seriale",
+                  "label": "Seriale",
+                  "stato": "Seriale"
+                },
+                {
+                  "valore": "tradizionale",
+                  "label": "Tradizionale",
+                  "stato": "Tradizionale"
+                }
+              ]
+            },
+            {
+              "key": "pianiPiastra",
+              "kind": "radio",
+              "label": "Piastra",
+              "acro": "GruppoPianiPiastra",
+              "opzioni": [
+                {
+                  "valore": "piastraPiana",
+                  "label": "Piastra piana",
+                  "stato": "PiastraPiana"
+                },
+                {
+                  "valore": "piastraSovrapposta",
+                  "label": "Piastra sovrapposta",
+                  "stato": "PiastraSovrapposta"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "scatola",
+              "kind": "check",
+              "label": "Scatola",
+              "acro": "PianiScatola"
+            },
+            {
+              "key": "logo",
+              "kind": "check",
+              "label": "Logo su piastre",
+              "acro": "PianiLogo"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "pianiMisure",
+              "kind": "text",
+              "label": "Specifica misure",
+              "acro": "PianiMisure",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "pianiTipoContatto",
+              "kind": "text",
+              "label": "Tipo contatto a chiave",
+              "acro": "PianiTipoContatto",
+              "maxLength": 40
+            }
+          ]
+        },
+        {
+          "titolo": "Display LCD Icaro",
+          "campi": [
+            {
+              "key": "displayIcaro",
+              "kind": "check",
+              "label": "Sì",
+              "acro": "PianiDisplayIcaro"
+            },
+            {
+              "key": "displayIcaroPrincipale",
+              "kind": "check",
+              "label": "Piano principale",
+              "acro": "PianoPrincipale-1"
+            },
+            {
+              "key": "displayIcaroAltri",
+              "kind": "check",
+              "label": "Altri piani",
+              "acro": "AltriPiani-1"
+            }
+          ]
+        },
+        {
+          "titolo": "Display LCD su architrave",
+          "campi": [
+            {
+              "key": "displayArchitrave",
+              "kind": "check",
+              "label": "Sì",
+              "acro": "PianiDisplayArchitrave"
+            },
+            {
+              "key": "displayArchitravePrincipale",
+              "kind": "check",
+              "label": "Piano principale",
+              "acro": "PianoPrincipale-2"
+            },
+            {
+              "key": "displayArchitraveAltri",
+              "kind": "check",
+              "label": "Altri piani",
+              "acro": "AltriPiani-2"
+            }
+          ]
+        },
+        {
+          "titolo": "Presente",
+          "campi": [
+            {
+              "key": "presentePiani",
+              "kind": "check",
+              "label": "Sì",
+              "acro": "PianiPresente"
+            },
+            {
+              "key": "presentePianiPrincipale",
+              "kind": "check",
+              "label": "Piano principale",
+              "acro": "PianoPrincipale-3"
+            },
+            {
+              "key": "presentePianiAltri",
+              "kind": "check",
+              "label": "Altri piani",
+              "acro": "AltriPiani-3"
+            }
+          ]
+        },
+        {
+          "titolo": "Allarme campana",
+          "campi": [
+            {
+              "key": "allarmeCampana",
+              "kind": "check",
+              "label": "Sì",
+              "acro": "PianiAllarme"
+            },
+            {
+              "key": "allarmeCampanaPrincipale",
+              "kind": "check",
+              "label": "Piano principale",
+              "acro": "PianoPrincipale-4"
+            },
+            {
+              "key": "allarmeCampanaAltri",
+              "kind": "check",
+              "label": "Altri piani",
+              "acro": "AltriPiani-4"
+            }
+          ]
+        },
+        {
+          "titolo": "In arrivo",
+          "campi": [
+            {
+              "key": "inArrivo",
+              "kind": "check",
+              "label": "Sì",
+              "acro": "PianiInArrivo"
+            },
+            {
+              "key": "inArrivoPrincipale",
+              "kind": "check",
+              "label": "Piano principale",
+              "acro": "PianoPrincipale-5"
+            },
+            {
+              "key": "inArrivoAltri",
+              "kind": "check",
+              "label": "Altri piani",
+              "acro": "AltriPiani-5"
+            }
+          ]
+        },
+        {
+          "titolo": "Fuori servizio",
+          "campi": [
+            {
+              "key": "fuoriServizio",
+              "kind": "check",
+              "label": "Sì",
+              "acro": "PianiFuoriServizio"
+            },
+            {
+              "key": "fuoriServizioPrincipale",
+              "kind": "check",
+              "label": "Piano principale",
+              "acro": "PianoPrincipale-6"
+            },
+            {
+              "key": "fuoriServizioAltri",
+              "kind": "check",
+              "label": "Altri piani",
+              "acro": "AltriPiani-6"
+            }
+          ]
+        },
+        {
+          "titolo": "Contatto a chiave",
+          "campi": [
+            {
+              "key": "contattoChiavePiani",
+              "kind": "check",
+              "label": "Sì",
+              "acro": "PianiContattoChiave"
+            },
+            {
+              "key": "contattoChiavePianiPrincipale",
+              "kind": "check",
+              "label": "Piano principale",
+              "acro": "PianoPrincipale-7"
+            },
+            {
+              "key": "contattoChiavePianiAltri",
+              "kind": "check",
+              "label": "Altri piani",
+              "acro": "AltriPiani-7"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -33,11 +33,11 @@
       <span class="muted"><%= t('cartelli.modelloTesto') %></span>
       <% if (manca.logo) { %><span class="field__hint"><%= t('cartelli.mancaLogo') %></span><% } %>
       <% if (manca.dati) { %><span class="field__hint"><%= t('cartelli.mancaDati') %></span><% } %>
-      <% if (impostazioni) { %><a href="/impostazioni?azienda=<%= encodeURIComponent(c.aziendaId) %>#h-cartello"><%= t('cartelli.modelloCambia') %></a><% } %>
+      <% if (impostazioni) { %><a href="/impostazioni/cartelli?azienda=<%= encodeURIComponent(c.aziendaId) %>"><%= t('cartelli.modelloCambia') %></a><% } %>
     </figcaption>
   </figure>
   <p class="muted"><%= t('cartelli.creato', { name: c.createdBy ? c.createdBy.name : '—', date: fmt.dateTime(c.createdAt) }) %></p>
-  <% if (modifica) { %>
+  <% if (elimina) { %>
   <details class="danger-zone">
     <summary><%= t('cartelli.elimina.title') %></summary>
     <p class="muted"><%= t('cartelli.elimina.text') %></p>

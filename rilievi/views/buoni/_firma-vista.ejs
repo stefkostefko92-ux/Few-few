@@ -1,0 +1,3 @@
+<%
+  // Подписът в листа само за четене: щрихите на валидния, „non valida“ на пипнатия, нищо — на липсващия.
+%><% if (f && f.valida && f.path) { %><svg class="buono-firma-mini" viewBox="0 0 600 200" role="img" aria-label="<%= label %>"><path d="<%= f.path %>" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg><% } else if (f) { %><span class="buono-firma-mini buono-firma-mini--non-valida"><%= t('buoni.pdfTesto.nonValida') %></span><% } %>

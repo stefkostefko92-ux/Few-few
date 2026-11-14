@@ -359,7 +359,7 @@ describe('a person in several companies', () => {
 });
 
 describe('the companies and people present before the terms (the owner’s test data)', () => {
-  it('get in without the acceptance page after the migration, with nothing in the register', async () => {
+  it('count as having accepted 2026-11-10, with nothing in the register', async () => {
     const azienda = await aziendaNuova();
     const { browser, user } = await senzaRegole('TECNICO', azienda.id);
     assert.equal((await browser.get('/schede')).status, 303);
@@ -380,9 +380,19 @@ describe('the companies and people present before the terms (the owner’s test 
       .map((s) => s.trim())
       .filter(Boolean))
       await prisma.$executeRawUnsafe(statement);
-    assert.equal((await browser.get('/schede')).status, 200);
+    // The migration counted them as having accepted 2026-11-10 — without a row in the register.
+    assert.equal(
+      (await prisma.azienda.findUniqueOrThrow({ where: { id: azienda.id } })).condizioniVersione,
+      '2026-11-10',
+    );
+    assert.equal(
+      (await prisma.user.findUniqueOrThrow({ where: { id: user.id } })).regoleVersione,
+      '2026-11-10',
+    );
     assert.equal(await prisma.accettazione.count({ where: { userId: user.id } }), 0);
     assert.equal(await prisma.accettazione.count({ where: { aziendaId: azienda.id } }), 0);
+    // Since 2026-11-12 is in force, their ADMIN signs the new version for real (art. 18.2).
+    assert.equal((await browser.get('/schede')).status, 303);
     const dopo = await prisma.user.findUniqueOrThrow({ where: { id: owner.id } });
     assert.equal(dopo.regoleVersione, null, 'the owner is not touched');
   });

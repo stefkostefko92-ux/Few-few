@@ -34,7 +34,16 @@ export const COMPANY = {
 } as const;
 
 /** Последната промяна на публичната страница — сменя се ръчно с текста ѝ; отива в sitemap и JSON-LD. */
-export const CONTENT_UPDATED = '2026-11-10';
+export const CONTENT_UPDATED = '2026-11-12';
 
 /** Последната промяна на политиката за поверителност — показва се на страницата и отива в sitemap. */
-export const PRIVACY_UPDATED = '2026-11-10';
+export const PRIVACY_UPDATED = '2026-11-12';
+
+/** Последната промяна на страницата `/esportazione` (видима дата, sitemap, JSON-LD). */
+export const ESPORTAZIONE_UPDATED = '2026-11-12';
+
+/** Последната промяна на текста на `/prezzi` (самите цени идват от плановете в конзолата). */
+export const PREZZI_UPDATED = '2026-11-13';
+
+/** Последната промяна на `/segnalazioni` (чл. 16 Рег. (ЕС) 2022/2065). */
+export const SEGNALAZIONI_UPDATED = '2026-11-12';

@@ -31,6 +31,7 @@ const PANNELLI: ReadonlyArray<Values> = [
   { quadroMarca: 'MASTECH', quadroModello: 'NG120' },
   { quadroMarca: 'MASTECH', quadroModello: 'QI_TOUCH' },
   { quadroMarca: 'ELETTROQUADRI' },
+  { quadroMarca: 'GEAT' },
 ];
 
 /** The rest of the sheet: the argano sheet, 2SG, AMI 100, the DMG fixtures, the power unit. */

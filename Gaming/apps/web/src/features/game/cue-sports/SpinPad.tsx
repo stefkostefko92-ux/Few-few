@@ -1,22 +1,17 @@
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { clampSpin } from "@aso/shared";
+import { snapSpin, type SpinValue } from "./cueControls";
 
-export interface Spin {
-  /** −1..1 — вляво/вдясно от центъра спрямо посоката на удара. */
-  x: number;
-  /** −1..1 — долу (draw) / горе (follow). */
-  y: number;
-}
+export type Spin = SpinValue;
 
 const STEP = 0.1;
-const snap = (v: number): number => Math.round(v * 100) / 100;
 
 /**
  * Малката „бяла топка“ за избор на точката на удара (ефект). Влачене с мишка
  * или пръст, стрелки от клавиатурата (Shift = по-фино), Home/0 = център.
  * Пунктираният кръг е позволеният радиус — по-навън е „miscue“ и точката се
- * задържа на ръба му (същата нормализация като в двигателя).
+ * задържа на ръба му (същата нормализация като в двигателя, винаги в диска,
+ * който сървърът приема — виж `snapSpin`).
  */
 export function SpinPad({
   value,
@@ -31,10 +26,7 @@ export function SpinPad({
   const ref = useRef<SVGSVGElement>(null);
   const dragging = useRef(false);
 
-  const set = (x: number, y: number) => {
-    const c = clampSpin(x, y);
-    onChange({ x: snap(c.spinX), y: snap(c.spinY) });
-  };
+  const set = (x: number, y: number) => onChange(snapSpin(x, y));
 
   function fromPointer(e: React.PointerEvent) {
     const svg = ref.current;
@@ -88,6 +80,9 @@ export function SpinPad({
       <svg
         ref={ref}
         className="aso-cue__spinpad"
+        data-control="spin"
+        data-spin-x={value.x}
+        data-spin-y={value.y}
         viewBox="-1.25 -1.25 2.5 2.5"
         role="slider"
         tabIndex={disabled ? -1 : 0}

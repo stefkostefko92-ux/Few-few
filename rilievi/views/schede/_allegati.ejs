@@ -11,7 +11,7 @@
   const qui = allegati.filter((a) => a.sezione === sezione);
 %><% if (!scheda) { %><p class="allegati allegati--nota"><%- include('../partials/icon', { name: 'camera' }) %><span><%= t('allegati.dopoSalvataggio') %></span></p>
 <% } else if (modifica || qui.length) { %><div class="allegati" id="a-<%= sezione %>" data-allegati="<%= sezione %>">
-  <div class="allegati__galleria" data-galleria="<%= sezione %>" data-aggiorna="/schede/<%= scheda.id %>/allegati/sezione/<%= sezione %>?ritorno=<%= ritorno %>" tabindex="-1"><%- include('_allegati-galleria', { allegati: qui, modifica, ritorno }) %></div>
+  <div class="allegati__galleria" data-galleria="<%= sezione %>" data-aggiorna="/schede/<%= scheda.id %>/allegati/sezione/<%= sezione %>?ritorno=<%= ritorno %>" tabindex="-1"><%- include('_allegati-galleria', { allegati: qui, modifica, ritorno, elimina: locals.elimina === true }) %></div>
   <p class="allegati__avvisi" data-avvisi="<%= sezione %>" role="status" aria-live="polite"></p>
   <% if (modifica) { %>
   <div class="allegati__azioni">

@@ -1,0 +1,11 @@
+<%
+  // Избор с радио бутони (P.O.S. SÌ/NO, изходът OK / NON OK): махат се с повторно докосване
+  // (`data-clearable`, public/js/app.js) — неизбраното остава празно.
+  const value = typeof values[name] === 'string' ? values[name] : '';
+%><fieldset class="choice buono-scelta" id="f-<%= name %>"<% if (message) { %> aria-describedby="err-<%= name %>"<% } %>>
+  <legend><%= legend %></legend>
+  <div class="choice__opts">
+    <% for (const o of opzioni) { %><label class="tick"><input type="radio" name="<%= name %>" value="<%= o.value %>" data-clearable<% if (value === o.value) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= o.label %></span></label><% } %>
+  </div>
+  <% if (message) { %><p class="field__error" id="err-<%= name %>"><%= message %></p><% } %>
+</fieldset>

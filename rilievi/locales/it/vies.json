@@ -1,0 +1,32 @@
+{
+  "vies": {
+    "hint": "Per un'azienda fuori dalla Bulgaria, quando accetti verifichiamo la partita IVA nel VIES, il registro europeo delle partite IVA. Se risulta valida paghi senza IVA; se non risulta valida, al prezzo si aggiunge l'IVA bulgara del 20 % e ti mostriamo di nuovo l'offerta prima di pagare.",
+    "errore": {
+      "nonValida": "La partita IVA {numero} non risulta valida nel VIES, il registro europeo delle partite IVA: l'acquisto qui non si può concludere. Non ti abbiamo addebitato nulla. Controlla il numero; se è giusto, chiedi all'amministrazione fiscale del tuo paese l'iscrizione al VIES (in Italia, all'Agenzia delle Entrate) oppure scrivi a {email}.",
+      "soglia": "La partita IVA {numero} non risulta valida nel VIES e con questo numero non possiamo concludere l'acquisto qui nel portale. Non ti abbiamo addebitato nulla. Scrivici a {email} e troviamo insieme come procedere. Se il numero è giusto, puoi anche chiedere all'Agenzia delle Entrate l'iscrizione al VIES e poi riprovare.",
+      "nonDisponibile": "Il VIES, il registro europeo delle partite IVA, in questo momento non risponde, e senza la sua conferma non possiamo concludere l'acquisto. Non ti abbiamo addebitato nulla: riprova tra qualche minuto."
+    },
+    "master": {
+      "consultazione": "VIES n. {numero} del {data}",
+      "senzaNumero": "VIES: valida il {data} (senza numero di consultazione)",
+      "nome": "Nel VIES: {nome}",
+      "nonValida": "VIES: non valida il {data} — venduto con IVA bulgara 20 %",
+      "nonValidaNumero": "VIES n. {numero} del {data}: non valida — venduto con IVA bulgara 20 %",
+      "ivaTitolo": "IVA con partita IVA non valida nel VIES",
+      "ivaTesto": "Se la partita IVA di un'azienda di un altro Paese dell'UE non risulta valida nel VIES, il portale vende il piano con l'IVA bulgara del 20 % (art. 12.10 delle Condizioni). Vale finché le vendite di questo tipo di tutta Carbon Stealth VCC restano entro 10.000 € senza IVA nell'anno e non hanno superato la soglia l'anno scorso (art. 59 quater della Direttiva 2006/112/CE). Oltre la soglia il portale non conclude l'acquisto e ti avvisa: serve il regime OSS.",
+      "ivaAnno": "Quest'anno: {portale} € dal portale + {altre} € fuori dal portale = {totale} € su {soglia} € ({quota} %).",
+      "ivaPrecedente": "L'anno scorso le vendite di questo tipo hanno superato la soglia: il portale non vende più con l'IVA bulgara. Parla con il commercialista del regime OSS.",
+      "ivaAttivoTitolo": "Vendita senza VIES",
+      "ivaAttivo": "Vendi con l'IVA bulgara del 20 % quando la partita IVA non è valida nel VIES",
+      "ivaSpento": "Spento: con una partita IVA non valida nel VIES l'acquisto nel portale non si conclude.",
+      "ivaAltre": "Altre vendite di quest'anno a clienti UE senza partita IVA valida, fuori dal portale (€, senza IVA)",
+      "ivaAltreHint": "La soglia vale per tutta l'azienda, non solo per questo portale: scrivi i totali che ti dà il commercialista. Lascia 0 se non ce ne sono. Dal 1° gennaio il totale di quest'anno diventa da solo quello dell'anno scorso.",
+      "ivaSalva": "Salva",
+      "ivaSalvato": "Impostazioni dell'IVA salvate.",
+      "ivaErrore": "Scrivi un importo valido, per esempio 1.250,00.",
+      "ivaAltrePrecedente": "Le stesse vendite dell'anno scorso, fuori dal portale (€, senza IVA)",
+      "ivaAnnoScorso": "L'anno scorso, in tutto: {totale} € su {soglia} €."
+    },
+    "cambiata": "La partita IVA {numero} non risulta valida nel VIES, il registro europeo delle partite IVA. Per questo non possiamo applicare l'inversione contabile e al prezzo si aggiunge l'IVA bulgara del 20 %. Qui sotto trovi l'offerta aggiornata, con l'IVA e il nuovo totale. Non ti abbiamo addebitato nulla. Puoi accettare questa offerta con l'IVA. Oppure puoi controllare il numero e, se è giusto, chiedere all'Agenzia delle Entrate l'iscrizione al VIES: quando la partita IVA risulta valida, riprova e paghi senza IVA. Attenzione: è IVA bulgara, non italiana; chiedi al tuo commercialista se e come puoi recuperarla. Per qualsiasi dubbio scrivi a {email}."
+  }
+}

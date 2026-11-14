@@ -4,7 +4,9 @@ import { chromium } from 'playwright';
 import path from 'node:path';
 
 const OUT = path.resolve(import.meta.dirname, '..', 'dist', 'pdf');
-const browser = await chromium.launch();
+// CHROMIUM: a Chromium binary to use instead of the one bundled with the pinned Playwright (a machine
+// with only another Playwright's browsers installed).
+const browser = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
 try {
   const page = await browser.newPage();
   const cdp = await page.context().newCDPSession(page);

@@ -68,6 +68,10 @@ src/seo-site.js          ФИНАЛЕН проход върху site/ (част 
                          различител при еднакви <title>, връзки за сираци, sitemap.xml = ИНДЕКС →
                          sitemap-{pagine,strutture,fornitori}.xml (само индексируеми самоканонични),
                          реален lastmod от data/sitemap-lastmod.json (отпечатък на <main>), robots.txt
+src/shell-site.js        подменя ОБВИВКАТА (CSS, горна лента, мега-меню, footer, скриптове) на всяка
+                         страница в site/ с текущата от lib/site-ui.js; <main>/title/meta не пипа.
+                         Идемпотентен (част от `npm run site`; сам: `npm run shell`). Нов дизайн БЕЗ
+                         сурови данни: `npm run shell && npm run seo` върху комитнатия site/
 src/lib/seo.js           ЕДИНСТВЕН източник на SEO политиката: SOGLIA_FORNITORE (≥10 договора И ≥3
                          възложители → индекс), keywordsPagina (≥5 + „Carbon Stealth"), sitemap XML
 src/render/              изнесени render модули (виж по-горе); всеки връща HTML стринг
@@ -100,6 +104,13 @@ src/lib/                 http (retry/кеш/curl + ZIP magic-byte валидац
   Обработва се поточно (readline над `unzip -p`); филтрирането по health-CIG прави
   разбитите от вградени нови редове фрагменти безобидни (не съвпадат). Иска
   `--max-old-space-size=4096` (виж npm script).
+- **Дизайн система „Conto pubblico“** (`lib/site-ui.js`): навигацията е `NAV_GROUPS` (4 групи с
+  описания → мега-меню на desktop, акордеон в чекмеджето под 1080px, колоните на footer-а) —
+  нова страница в менюто се добавя САМО там (тест: всяка връзка съществува в site/). Заглавия
+  h1/h2 в системен сериф (`--serif`), без ALL CAPS етикети; CSS се минимизира (`minCss`, без
+  коментари към браузъра); CSS само за началната страница е `CSS_HOME` през `page({ css })`.
+  Началните агрегати („Il conto“) са само структурите с ПЪЛЕН CE за `ultimoAnnoCe` (не смесвай
+  години); редовете се събират след закръгляне до 0,1 mld.
 - Сайтът е **на италиански**, self-contained (inline CSS/SVG/JS, нула външни ресурси —
   добро за CSP/Netlify), theme-aware (light/dark). Publish dir = `site/`.
 - `config.json → siteUrl` включва откриваемостта: canonical + OG/Twitter meta,

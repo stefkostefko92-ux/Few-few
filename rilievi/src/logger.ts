@@ -52,6 +52,20 @@ function pickHeaders(headers: unknown, allow: readonly string[]): Record<string,
 
 /** Опциите на pino-http: собствен id на заявката, пътят без токени, без адреса на клиента. */
 export const httpLogOptions = {
+  /**
+   * Нивото на реда за заявката (одитът от 12 ноември 2026: и 5xx излизаха на „info“ — нищо не можеше да ги
+   * улови): грешка на сървъра — `error`; спрян от тавана или твърде голямо тяло — `warn`; другото — `info`.
+   */
+  customLogLevel: (
+    _req: IncomingMessage,
+    res: ServerResponse,
+    err?: Error,
+  ): 'error' | 'warn' | 'info' =>
+    err || res.statusCode >= 500
+      ? 'error'
+      : res.statusCode === 429 || res.statusCode === 413
+        ? 'warn'
+        : 'info',
   genReqId: (req: IncomingMessage, res: ServerResponse) => {
     const incoming = req.headers['x-request-id'];
     const id =

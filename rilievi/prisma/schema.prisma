@@ -61,6 +61,7 @@ enum QuadroMarca {
   DMG
   MASTECH
   ELETTROQUADRI
+  GEAT
   ALTRO
 }
 
@@ -89,42 +90,84 @@ enum AccessRequestStatus {
 /// Фирма — клиент на портала: свои хора, свои карти, свое лого на листа. Създава я само MASTER
 /// (собственикът на портала); всяка фирма вижда само своето (src/auth/scope.ts).
 model Azienda {
-  id                 String    @id @default(cuid())
-  name               String    @unique @db.VarChar(120)
+  id                       String       @id @default(cuid())
+  name                     String       @unique @db.VarChar(120)
   /// Логото за листа и PDF-а — вече прекодирано от src/aziende/logo.ts (PNG или JPEG, без метаданни).
-  logo               Bytes?
-  logoType           String?   @db.VarChar(20)
-  logoWidth          Int?
-  logoHeight         Int?
-  logoUpdatedAt      DateTime?
+  logo                     Bytes?
+  logoType                 String?      @db.VarChar(20)
+  logoWidth                Int?
+  logoHeight               Int?
+  logoUpdatedAt            DateTime?
   /// Деактивирана фирма: хората ѝ не влизат и сесиите им падат; картите ѝ остават.
-  deactivatedAt      DateTime?
+  deactivatedAt            DateTime?
   /// Редът на разделите на картата във фирмата (ключовете от src/schede/fields.ts); празно — редът по
   /// подразбиране. Подрежда го администраторът ѝ (src/aziende/sezioni.ts).
-  ordineSezioni      String[]  @default([])
+  ordineSezioni            String[]     @default([])
   /// Скицникът — от 10 ноември 2026 винаги включен за всички (собственикът: „attiva gli schizzi per tutti
   /// … togli l'opzione per disattivarli“); кодът не чете колоната, тя остава за връщане назад.
-  schizzi            Boolean   @default(true)
+  schizzi                  Boolean      @default(true)
   /// Последният даден номер на лист за интервенция във фирмата (собствен брояч от 1, без дупки):
   /// новият лист взема +1 в транзакцията си (src/interventi/service.ts).
-  interventiNumero   Int       @default(0)
+  interventiNumero         Int          @default(0)
   /// Данните на фирмата за главата на табелата „Avviso di fermo impianto“ (име, дейност, адрес,
   /// контакти, P. IVA) — попълва ги администраторът ѝ; проверени при запис и четени с недоверие
   /// (src/aziende/dati.ts). null — още не са записани.
-  datiSocietari      Json?
+  datiSocietari            Json?
   /// Шаблонът на табелата, избран в настройките (src/cartelli/modelli.ts); непознат или null — първият.
-  cartelloModello    String?   @db.VarChar(40)
+  cartelloModello          String?      @db.VarChar(40)
   /// Имената на ролите във фирмата ({ADMIN: „Titolare“, …}) — сменя ги администраторът ѝ; липсващото
   /// е името по подразбиране (src/auth/permessi.ts).
-  nomiRuoli          Json?
+  nomiRuoli                Json?
   /// Правата на ролите под ADMIN за картите, листовете, табелите и регистъра ({TECNICO: [...], …}) —
   /// сменя ги администраторът ѝ; липсващата роля е по йерархията (src/auth/permessi.ts).
-  permessiRuoli      Json?
+  permessiRuoli            Json?
   /// Версията на условията за услугата, приети за фирмата от неин ADMIN (src/legale/); различна от
   /// текущата — хората ѝ не ползват портала до приемането. Доказателството е в `Accettazione`.
-  condizioniVersione String?   @db.VarChar(20)
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  condizioniVersione       String?      @db.VarChar(20)
+  /// Смяната на доставчика (Data Act, чл. 23–30; src/aziende/cambio.ts): поискана от ADMIN на фирмата;
+  /// услугата продължава през прехода, който свършва в `cambioFineAt` (30 дни, веднъж удължен) — тогава
+  /// фирмата се деактивира. Трите полета са заедно или ги няма (CHECK `Azienda_cambio_check`).
+  cambioRichiestoAt        DateTime?
+  cambioFineAt             DateTime?
+  cambioEsito              CambioEsito?
+  /// Преходът е удължен веднъж (чл. 25(5) Data Act — правото е еднократно).
+  cambioProrogato          Boolean      @default(false)
+  /// Информацията по чл. 13 GDPR на страницата на подписа (листът за интервенция, протоколът), както
+  /// фирмата я е написала — тя е администраторът; null — моделът, попълнен с данните ѝ (legale/informativa.ts).
+  informativaFirme         String?      @db.VarChar(4000)
+  /// Одобрението на две стъпки на картите (C7) — включва го администраторът ѝ; по подразбиране — не.
+  approvazioneSchede       Boolean      @default(false)
+  /// „Buono di lavoro“: кодът на модула горе вдясно („Mod. PO-05-3 Ed. 02 …“) и клаузата долу — както
+  /// фирмата ги е написала в настройките; null — нищо (src/buoni/).
+  buonoCodice              String?      @db.VarChar(80)
+  buonoClausola            String?      @db.VarChar(1000)
+  /// Офертите (C1) — включва ги САМО MASTER на страницата на фирмата; по подразбиране — не.
+  preventiviAttivi         Boolean      @default(false)
+  /// Последният номер на оферта на фирмата (увеличава се в транзакцията на новата — без дупки и повторения).
+  preventiviNumero         Int          @default(0)
+  /// Условията за плащане по подразбиране на новата оферта (настройките на фирмата).
+  preventivoCondizioni     String?      @db.VarChar(2000)
+  /// Входът с доставчика на самоличност на клиента (D1, чл. 4.6 на условията): директорията на Microsoft
+  /// Entra (tenant ID — GUID с малки букви) и домейнът на Google Workspace (`hd`). Пише ги ADMIN;
+  /// null — изключено. Сменени или махнати, свързаните акаунти спират при следващия вход (src/auth/oidc*.ts).
+  accessoMicrosoft         String?      @db.VarChar(36)
+  accessoGoogle            String?      @db.VarChar(253)
+  /// Абонаментът (#31, #33 — src/abbonamenti/): нивото по брой хора (1 — до 10, 2 — до 25, 3 — над 25),
+  /// краят (полунощ по Рим; null — без срок: фирмите отпреди абонаментите, докато MASTER реши) и дали тече
+  /// безплатният пробен месец на нова фирма. Изтекъл — цялата фирма само чете (auth/scope.ts).
+  abbonamentoLivello       Int?
+  abbonamentoFino          DateTime?
+  abbonamentoProva         Boolean      @default(false)
+  /// Платеният план, който започва по-късно (след пробата или текущия план — чл. 12.3): от този момент нивото е
+  /// `abbonamentoCambioLivello` и пробата свършва; двете — заедно или нито едното (CHECK).
+  abbonamentoCambioAt      DateTime?
+  abbonamentoCambioLivello Int?
+  /// Известията за края (чл. 12.6 — 14 и 3 дни преди, в деня): за кой край и коя е последната пратена
+  /// граница в дни (14, 3, 0) — всяка тръгва веднъж (src/abbonamenti/scadenze.ts).
+  avvisoScadenzaPer        DateTime?
+  avvisoScadenzaSoglia     Int?
+  createdAt                DateTime     @default(now())
+  updatedAt                DateTime     @updatedAt
 
   memberships       Membership[]
   invites           Invite[]
@@ -134,8 +177,19 @@ model Azienda {
   calcoliArgano     CalcoloArgano[]
   calcoliLimitatore CalcoloLimitatore[]
   verbali           Verbale[]
+  fornitori         Fornitore[]
+  ordini            OrdineFornitore[]
+  buoni             BuonoLavoro[]
+  preventivi        Preventivo[]
+  listino           VoceListino[]
   audit             AuditLog[]
   accessRequests    AccessRequest[]
+  chiaviApi         ChiaveApi[]
+  pagamenti         Pagamento[]
+  segnalazioni      Segnalazione[]
+
+  @@index([abbonamentoFino])
+  @@index([abbonamentoCambioAt])
 }
 
 /// Акаунт. Създава се САМО от приета покана (или от `owner:create` за първия MASTER) — регистрация няма.
@@ -181,31 +235,51 @@ model User {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  invitedUsers      User[]              @relation("InvitedUsers")
-  memberships       Membership[]
-  sessions          Session[]
-  invitesSent       Invite[]            @relation("InvitesSent")
-  resets            PasswordReset[]     @relation("ResetsFor")
-  resetsCreated     PasswordReset[]     @relation("ResetsCreated")
-  schedeCreated     Scheda[]            @relation("SchedeCreated")
-  schedeUpdated     Scheda[]            @relation("SchedeUpdated")
-  schedeDeleted     Scheda[]            @relation("SchedeDeleted")
-  allegatiCaricati  Allegato[]          @relation("AllegatiCaricati")
-  interventiCreati  Intervento[]        @relation("InterventiCreati")
-  interventiMod     Intervento[]        @relation("InterventiModificati")
-  interventiChiusi  Intervento[]        @relation("InterventiChiusi")
-  cartelliCreati    Cartello[]          @relation("CartelliCreati")
-  recoveryCodes     RecoveryCode[]
-  firmeCondizioni   FirmaCondizioni[]
-  loginChallenges   LoginChallenge[]
-  cartelliMod       Cartello[]          @relation("CartelliModificati")
-  calcoliArgano     CalcoloArgano[]
-  calcoliLimitatore CalcoloLimitatore[]
-  verbaliCreati     Verbale[]           @relation("VerbaliCreati")
-  verbaliMod        Verbale[]           @relation("VerbaliModificati")
-  verbaliChiusi     Verbale[]           @relation("VerbaliChiusi")
-  auditEntries      AuditLog[]
-  requestsDecided   AccessRequest[]     @relation("AccessRequestsDecided")
+  invitedUsers        User[]                @relation("InvitedUsers")
+  memberships         Membership[]
+  sessions            Session[]
+  invitesSent         Invite[]              @relation("InvitesSent")
+  resets              PasswordReset[]       @relation("ResetsFor")
+  resetsCreated       PasswordReset[]       @relation("ResetsCreated")
+  schedeCreated       Scheda[]              @relation("SchedeCreated")
+  schedeUpdated       Scheda[]              @relation("SchedeUpdated")
+  schedeDeleted       Scheda[]              @relation("SchedeDeleted")
+  allegatiCaricati    Allegato[]            @relation("AllegatiCaricati")
+  interventiCreati    Intervento[]          @relation("InterventiCreati")
+  interventiMod       Intervento[]          @relation("InterventiModificati")
+  interventiChiusi    Intervento[]          @relation("InterventiChiusi")
+  cartelliCreati      Cartello[]            @relation("CartelliCreati")
+  recoveryCodes       RecoveryCode[]
+  firmeCondizioni     FirmaCondizioni[]
+  loginChallenges     LoginChallenge[]
+  cartelliMod         Cartello[]            @relation("CartelliModificati")
+  calcoliArgano       CalcoloArgano[]
+  calcoliLimitatore   CalcoloLimitatore[]
+  verbaliCreati       Verbale[]             @relation("VerbaliCreati")
+  verbaliMod          Verbale[]             @relation("VerbaliModificati")
+  verbaliChiusi       Verbale[]             @relation("VerbaliChiusi")
+  auditEntries        AuditLog[]
+  requestsDecided     AccessRequest[]       @relation("AccessRequestsDecided")
+  comunicazioni       Comunicazione[]       @relation("ComunicazioniScritte")
+  comunicazioniChiuse ComunicazioneChiusa[]
+  identitaEsterne     IdentitaEsterna[]
+  postaAggiornata     PostaPortale[]        @relation("PostaAggiornata")
+  pagamentiAggiornati ConfigPagamenti[]     @relation("PagamentiAggiornati")
+  pagamenti           Pagamento[]           @relation("PagamentiCreati")
+  rimborsi            Rimborso[]            @relation("RimborsiCreati")
+  allarmiAggiornati   ConfigAllarmi[]       @relation("AllarmiAggiornati")
+  segnalazioniDecise  Segnalazione[]        @relation("SegnalazioniDecise")
+  violazioni          Violazione[]          @relation("ViolazioniScritte")
+  schedeApprovate     Scheda[]              @relation("SchedeApprovate")
+  versioniScritte     SchedaVersione[]      @relation("VersioniScritte")
+  ordiniInviati       OrdineFornitore[]     @relation("OrdiniInviati")
+  buoniCreati         BuonoLavoro[]         @relation("BuoniCreati")
+  buoniMod            BuonoLavoro[]         @relation("BuoniModificati")
+  buoniFirme          BuonoFirma[]          @relation("BuoniFirmati")
+  preventiviCreati    Preventivo[]          @relation("PreventiviCreati")
+  preventiviMod       Preventivo[]          @relation("PreventiviModificati")
+  avvisiStato         AvvisoStato[]         @relation("AvvisiStato")
+  chiaviApi           ChiaveApi[]           @relation("ChiaviApi")
 
   @@index([invitedById])
   @@index([master])
@@ -421,6 +495,14 @@ model Scheda {
   cornettaInstallare           Boolean?
   noteQuadretto                String?
   noteImpianto                 String?
+  /// Бележка на всеки раздел (собственикът, 11 ноември 2026): „Note ubicazione e accesso“, „Note
+  /// tipologia“, „Note funi, tiranti e contrappeso“, „Note limitatore, tenditore, funicella“, „Note allarme
+  /// e telesoccorso“; „Note impianto“ (горе) — вече в раздела Impianto.
+  ubicazioneNote               String?
+  tipologiaNote                String?
+  funiNote                     String?
+  limitatoreNote               String?
+  allarmeNote                  String?
   noteBottoniere               String?
   /// Разделът „Bottoniere“ (24 октомври 2026): „Bottoniere da sostituire?“ — при true бележка на ръка.
   bottoniereSostituire         Boolean?
@@ -582,9 +664,26 @@ model Scheda {
   verbali                      Verbale[]
   calcoloArgano                CalcoloArgano?
   calcoloLimitatore            CalcoloLimitatore?
+  /// Одобрението на две стъпки (src/schede/approvazione.ts) — само във фирма с `approvazioneSchede`:
+  /// техникът праща, отговорникът одобрява или връща с бележка; промяна на одобрена карта я връща в чернова.
+  /// null — фирмата не го ползва (или картата е отпреди).
+  statoApprovazione            StatoApprovazione?
+  approvazioneAt               DateTime?
+  approvazioneDaId             String?
+  approvazioneDa               User?                    @relation("SchedeApprovate", fields: [approvazioneDaId], references: [id], onDelete: SetNull)
+  notaApprovazione             String?                  @db.VarChar(1000)
+  /// Кой е пратил картата за одобрение — той не я одобрява (четирите очи, в условието на самия запис).
+  inviataDaId                  String?
+  /// Записаните версии (src/schede/versioni.ts) и пратените поръчки (src/ordini/invio.ts).
+  versioni                     SchedaVersione[]
+  ordini                       OrdineFornitore[]
+  buoni                        BuonoLavoro[]
+  preventivi                   Preventivo[]
   createdAt                    DateTime                 @default(now())
   updatedAt                    DateTime                 @updatedAt
 
+  @@index([aziendaId, statoApprovazione])
+  @@index([approvazioneDaId])
   @@index([aziendaId, deletedAt])
   @@index([data])
   @@index([matricola])
@@ -664,6 +763,9 @@ model Allegato {
   /// Мястото на снимката в печата и PDF-а, избрано в „Stampa e PDF“ (10 ноември 2026); празно — по
   /// разделите в реда на фирмата и по реда на качване, след подредените.
   ordineStampa  Int?
+  /// Анотациите върху снимката (C5): лист от скицника `{e: [...]}` в единиците 1400 × 1000, снимката —
+  /// цяла, в средата (src/allegati/annotazioni.ts); null — без.
+  annotazioni   Json?
   tentativi     Int           @default(0)
   caricatoDaId  String?
   caricatoDa    User?         @relation("AllegatiCaricati", fields: [caricatoDaId], references: [id], onDelete: SetNull)
@@ -1178,5 +1280,754 @@ model EmissioneCalcolo {
 
   @@index([aziendaId, at])
   @@index([impronta])
+  @@index([conservaFino])
+}
+
+enum LivelloComunicazione {
+  INFO
+  AVVISO
+  URGENTE
+}
+
+/// Съобщение на MASTER до фирмите (собственикът, 10 ноември 2026 — „Espandi le funzioni di master“): лента
+/// над страниците на портала за хората на избраните фирми (празно `aziendaIds` — всички) в прозореца
+/// `inizioAt`…`fineAt`; всеки я затваря за себе си (`ComunicazioneChiusa`). Пише и спира само MASTER
+/// (src/master/comunicazioni.ts); в одита — без текста.
+model Comunicazione {
+  id           String                @id @default(cuid())
+  titolo       String                @db.VarChar(120)
+  testo        String                @db.VarChar(2000)
+  livello      LivelloComunicazione  @default(INFO)
+  /// Фирмите, до които е; празно — до всички.
+  aziendaIds   String[]              @default([])
+  inizioAt     DateTime
+  /// Краят на показването; null — докато MASTER не я спре.
+  fineAt       DateTime?
+  /// Спряна на ръка от MASTER.
+  fermataAt    DateTime?
+  autoreId     String?
+  autore       User?                 @relation("ComunicazioniScritte", fields: [autoreId], references: [id], onDelete: SetNull)
+  /// Колко писма до администраторите на фирмите са тръгнали при създаването (null — без писма).
+  emailInviate Int?
+  createdAt    DateTime              @default(now())
+  chiusure     ComunicazioneChiusa[]
+
+  @@index([inizioAt])
+  @@index([autoreId])
+}
+
+/// Човекът е затворил лентата на съобщението — не я вижда повече.
+model ComunicazioneChiusa {
+  comunicazioneId String
+  comunicazione   Comunicazione @relation(fields: [comunicazioneId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  at              DateTime      @default(now())
+
+  @@id([comunicazioneId, userId])
+  @@index([userId])
+}
+
+/// Какво ще стане с данните след прехода (Data Act, чл. 25(2)(d)) — изборът на клиента.
+enum CambioEsito {
+  ALTRO_FORNITORE
+  INFRASTRUTTURA_PROPRIA
+  CANCELLAZIONE
+}
+
+/// Рискът за хората (чл. 33–34 GDPR): малко вероятен — без уведомяване на органа; риск — органът;
+/// висок риск — и самите хора.
+enum RischioViolazione {
+  IMPROBABILE
+  RISCHIO
+  ELEVATO
+}
+
+/// В каква роля сме при нарушението: обработващ (данните на фирмите-клиенти — уведомяваме тях, чл. 33(2))
+/// или администратор (нашите обработвания — уведомяваме органа, чл. 33(1)).
+enum RuoloViolazione {
+  RESPONSABILE
+  TITOLARE
+}
+
+/// Регистърът на нарушенията на сигурността на личните данни (чл. 33(5) GDPR; src/master/violazioni.ts):
+/// пише само MASTER, редове не се трият (доказателство пред надзорния орган); фирмите — като текст, за да
+/// надживее изтриването им. Без лични данни отвъд необходимото — описания, не копия.
+model Violazione {
+  id                    String            @id @default(cuid())
+  /// Кога е открито (T0 — от него текат 72-та часа на чл. 33(1)).
+  rilevataAt            DateTime
+  /// Кога се е случило (оценка), ако се знае.
+  eventoAt              DateTime?
+  titolo                String            @db.VarChar(160)
+  rilevazione           String            @db.VarChar(2000)
+  natura                String            @db.VarChar(4000)
+  ruolo                 RuoloViolazione
+  categorieDati         String            @db.VarChar(2000)
+  interessati           String            @db.VarChar(2000)
+  aziende               String            @db.VarChar(2000)
+  conseguenze           String            @db.VarChar(4000)
+  misure                String            @db.VarChar(4000)
+  rischio               RischioViolazione
+  /// Уведомени администратори на данните (фирмите-клиенти; чл. 33(2) — ние сме обработващ).
+  titolariAvvisatiAt    DateTime?
+  /// Уведомен надзорен орган (чл. 33(1) — само където ние сме администратор) и номерът при него.
+  autoritaNotificataAt  DateTime?
+  autoritaProtocollo    String?           @db.VarChar(80)
+  /// Уведомени хора (чл. 34).
+  interessatiAvvisatiAt DateTime?
+  /// Защо е решено така (и защо някой не е уведомен, или защо със закъснение).
+  motivazione           String?           @db.VarChar(4000)
+  /// Какво научихме и какво променяме.
+  lezioni               String?           @db.VarChar(4000)
+  chiusaAt              DateTime?
+  autoreId              String?
+  autore                User?             @relation("ViolazioniScritte", fields: [autoreId], references: [id], onDelete: SetNull)
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  @@index([rilevataAt])
+  @@index([autoreId])
+}
+
+/// Обявата на нова версия на правен текст (чл. 18.1 на условията; src/legale/annunci.ts): кога е обявена
+/// и със кое съобщение. Версията влиза в сила най-рано 30 дни след обявата (src/legale/versioni.ts); без ред
+/// тук не влиза никога. Не се трие — доказателството за предизвестието.
+model AnnuncioTesto {
+  tipo            TipoTesto
+  versione        String    @db.VarChar(20)
+  annunciatoAt    DateTime  @default(now())
+  autoreId        String?
+  comunicazioneId String?
+  /// Колко писма до администраторите са тръгнали (попълва се след изпращането).
+  emailInviate    Int?
+
+  @@id([tipo, versione])
+}
+
+/// Одобрението на картата (C7; src/schede/approvazione.ts).
+enum StatoApprovazione {
+  BOZZA
+  INVIATA
+  APPROVATA
+  RESPINTA
+}
+
+/// Пратената поръчка към доставчика (C2): пратена, потвърдена от доставчика (на ръка) или отменена.
+enum StatoOrdine {
+  INVIATO
+  CONFERMATO
+  ANNULLATO
+}
+
+/// Записаните версии на картата (C4; src/schede/versioni.ts): снимка на полетата и мерките след всеки
+/// запис — за разликите между версиите. Пазят се последните 100; падат с картата.
+model SchedaVersione {
+  id       String   @id @default(cuid())
+  schedaId String
+  scheda   Scheda   @relation(fields: [schedaId], references: [id], onDelete: Cascade)
+  numero   Int
+  at       DateTime @default(now())
+  autoreId String?
+  autore   User?    @relation("VersioniScritte", fields: [autoreId], references: [id], onDelete: SetNull)
+  dati     Json
+
+  @@unique([schedaId, numero])
+  @@index([autoreId])
+}
+
+/// Адресникът на доставчиците на фирмата за поръчките (C2) — пише го администраторът ѝ.
+model Fornitore {
+  id        String   @id @default(cuid())
+  aziendaId String
+  azienda   Azienda  @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
+  nome      String   @db.VarChar(120)
+  email     String   @db.VarChar(254)
+  createdAt DateTime @default(now())
+
+  @@unique([aziendaId, email])
+}
+
+/// Модул за поръчка, пратен от портала на доставчика (C2; src/ordini/invio.ts): кой, кога, до кого, кой
+/// модул и състоянието. Пази адреса — той е поръчката (износът го носи, Allegato B, B.7 k).
+model OrdineFornitore {
+  id                String      @id @default(cuid())
+  aziendaId         String
+  azienda           Azienda     @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
+  schedaId          String
+  scheda            Scheda      @relation(fields: [schedaId], references: [id], onDelete: Cascade)
+  modulo            String      @db.VarChar(60)
+  destinatarioNome  String      @db.VarChar(120)
+  destinatarioEmail String      @db.VarChar(254)
+  messaggio         String?     @db.VarChar(2000)
+  stato             StatoOrdine @default(INVIATO)
+  inviatoAt         DateTime    @default(now())
+  inviatoDaId       String?
+  inviatoDa         User?       @relation("OrdiniInviati", fields: [inviatoDaId], references: [id], onDelete: SetNull)
+  confermatoAt      DateTime?
+  nota              String?     @db.VarChar(1000)
+  updatedAt         DateTime    @updatedAt
+
+  @@index([aziendaId, stato])
+  @@index([schedaId])
+  @@index([inviatoDaId])
+}
+
+/// „Buono di lavoro“ (собственикът, 12 ноември 2026 — по хартиения лист; src/buoni/): общите данни,
+/// редовете с работа (`sequenze` — JSON, проверен при запис и четен с недоверие), шестте проверки
+/// (`controlli`), отчетът и фамилиите на техниците. Подписите — в `BuonoFirma`, всеки по избор.
+model BuonoLavoro {
+  id             String       @id @default(cuid())
+  aziendaId      String
+  azienda        Azienda      @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
+  /// Картата, от която е попълнен (същата фирма — проверява се при записа); окончателно изтритата я нулира.
+  schedaId       String?
+  scheda         Scheda?      @relation(fields: [schedaId], references: [id], onDelete: SetNull)
+  numero         String?      @db.VarChar(40)
+  dataConferma   DateTime?    @db.Date
+  geometra       String?      @db.VarChar(80)
+  ordine         String?      @db.VarChar(40)
+  offerta        String?      @db.VarChar(40)
+  inizioPrevisto DateTime?    @db.Date
+  finePrevista   DateTime?    @db.Date
+  matricola      String?      @db.VarChar(40)
+  ubicazione     String?      @db.VarChar(200)
+  pos            Boolean?
+  note           String?      @db.VarChar(4000)
+  /// [{id, descrizione, esito: "ok"|"nonOk"|null, data: "YYYY-MM-DD"|null, fornitore}] — до 30.
+  sequenze       Json         @default("[]")
+  /// {<ключ на проверката>: {esito, data}} — ключовете от src/buoni/voci.ts.
+  controlli      Json         @default("{}")
+  noteControlli  String?      @db.VarChar(4000)
+  inizioLavori   DateTime?    @db.Date
+  inizioOra      String?      @db.VarChar(5)
+  fineLavori     DateTime?    @db.Date
+  fineOra        String?      @db.VarChar(5)
+  sospensioni    String?      @db.VarChar(4000)
+  tecnici        String?      @db.VarChar(200)
+  /// Нормализираният текст за търсене (номер, матрикула, място, поръчка, оферта, геометър).
+  searchText     String       @default("")
+  createdById    String?
+  createdBy      User?        @relation("BuoniCreati", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById    String?
+  updatedBy      User?        @relation("BuoniModificati", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  firme          BuonoFirma[]
+
+  @@index([aziendaId, createdAt])
+  @@index([schedaId, createdAt])
+  @@index([createdById])
+  @@index([updatedById])
+}
+
+/// Подпис на „Buono di lavoro“: мястото (`s-<ред>`, `c-<проверка>`, `f-<подпис долу>` — src/buoni/posti.ts),
+/// щрихите (600 × 200, src/interventi/firma.ts), SHA-256 на щрихите (копиран подпис се отказва в целия
+/// портал), SHA-256 на подписаното и печатът HMAC (src/buoni/firme.ts).
+model BuonoFirma {
+  id          String      @id @default(cuid())
+  buonoId     String
+  buono       BuonoLavoro @relation(fields: [buonoId], references: [id], onDelete: Cascade)
+  posto       String      @db.VarChar(24)
+  tratti      Json
+  hash        String      @db.Char(64)
+  impronta    String      @db.Char(64)
+  sigillo     String      @db.Char(64)
+  firmatoAt   DateTime
+  /// Кой е бил вписан, когато подписът е взет (подписва друг — техникът, пазачът; това е устройството).
+  firmatoDaId String?
+  firmatoDa   User?       @relation("BuoniFirmati", fields: [firmatoDaId], references: [id], onDelete: SetNull)
+
+  @@unique([buonoId, posto])
+  @@index([hash])
+  @@index([firmatoDaId])
+}
+
+enum StatoPreventivo {
+  BOZZA
+  INVIATO
+  ACCETTATO
+  RIFIUTATO
+}
+
+/// Оферта към клиента на фирмата (C1; src/preventivi/): номерът е на фирмата, от 1; редовете — JSON с
+/// цели числа (центове, хилядни, стотни от процента — preventivi/importi.ts), проверен при запис и четен с
+/// недоверие; сборовете се смятат на сървъра при всеки запис и се пазят за списъка. Не е фактура.
+model Preventivo {
+  id               String          @id @default(cuid())
+  aziendaId        String
+  azienda          Azienda         @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
+  schedaId         String?
+  scheda           Scheda?         @relation(fields: [schedaId], references: [id], onDelete: SetNull)
+  numero           Int
+  data             DateTime        @db.Date
+  validitaGiorni   Int             @default(30)
+  cliente          String          @db.VarChar(200)
+  clienteIndirizzo String?         @db.VarChar(300)
+  clientePiva      String?         @db.VarChar(20)
+  clienteEmail     String?         @db.VarChar(254)
+  oggetto          String          @db.VarChar(300)
+  impianto         String?         @db.VarChar(300)
+  /// [{codice, descrizione, unita, quantita, prezzo, sconto, iva}] — до 100.
+  righe            Json            @default("[]")
+  note             String?         @db.VarChar(4000)
+  condizioni       String?         @db.VarChar(2000)
+  imponibile       Int             @default(0)
+  imposta          Int             @default(0)
+  totale           Int             @default(0)
+  stato            StatoPreventivo @default(BOZZA)
+  statoAt          DateTime?
+  searchText       String          @default("")
+  createdById      String?
+  createdBy        User?           @relation("PreventiviCreati", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById      String?
+  updatedBy        User?           @relation("PreventiviModificati", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@unique([aziendaId, numero])
+  @@index([aziendaId, createdAt])
+  @@index([schedaId])
+  @@index([createdById])
+  @@index([updatedById])
+}
+
+/// Ред от ценоразписа на фирмата (C1): цената в центове, ставката на ДДС; оттам се попълват редовете на
+/// офертата. До 1000 на фирма.
+model VoceListino {
+  id          String   @id @default(cuid())
+  aziendaId   String
+  azienda     Azienda  @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
+  codice      String?  @db.VarChar(30)
+  descrizione String   @db.VarChar(300)
+  unita       String   @db.VarChar(12)
+  prezzo      Int
+  iva         Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([aziendaId, codice])
+  @@index([aziendaId, descrizione])
+}
+
+/// Какво казва `/stato` (чл. 2.4 от условията, версия 2026-11-12): прекъсване в ход или планирана
+/// поддръжка, написани от MASTER. `fine` празно — прекъсването още трае. Не се трие: историята е на страницата.
+model AvvisoStato {
+  id          String          @id @default(cuid())
+  tipo        TipoAvvisoStato
+  titolo      String          @db.VarChar(160)
+  testo       String          @db.VarChar(2000)
+  inizio      DateTime
+  fine        DateTime?
+  createdById String?
+  createdBy   User?           @relation("AvvisiStato", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([inizio])
+  @@index([createdById])
+}
+
+enum TipoAvvisoStato {
+  INTERRUZIONE
+  MANUTENZIONE
+}
+
+/// Ключ за API само за четене на фирма (D2): в базата — префиксът (за търсене) и HMAC на тайната част; самият
+/// ключ се показва веднъж. Изтича (`scadeAt`), отменя се (`revocataAt`); не влиза в износа (Allegato B, B.7).
+model ChiaveApi {
+  id          String    @id @default(cuid())
+  aziendaId   String
+  azienda     Azienda   @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
+  nome        String    @db.VarChar(80)
+  prefisso    String    @unique @db.VarChar(16)
+  hash        String    @db.VarChar(64)
+  scadeAt     DateTime
+  usataAt     DateTime?
+  revocataAt  DateTime?
+  createdById String?
+  createdBy   User?     @relation("ChiaviApi", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+
+  @@index([aziendaId])
+  @@index([createdById])
+}
+
+enum FornitoreIdentita {
+  MICROSOFT
+  GOOGLE
+}
+
+/// Акаунтът на човека при доставчика на самоличност на клиента (D1): свързва го самият човек от „Account“ с
+/// паролата си; входът го намира САМО по `soggetto` — никога по имейл. Не влиза в износа (B.8 b).
+model IdentitaEsterna {
+  id             String            @id @default(cuid())
+  userId         String
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fornitore      FornitoreIdentita
+  /// Microsoft: `<tid>:<oid>` (oid е единствен в директорията си); Google: `sub`.
+  soggetto       String            @db.VarChar(200)
+  /// Директорията (tid) или домейнът (hd), от които е дошъл — входът ги сверява с настройката на фирмата.
+  organizzazione String            @db.VarChar(253)
+  /// Имейлът/UPN от токена — само за да го види човекът в „Account“.
+  etichetta      String?           @db.VarChar(254)
+  createdAt      DateTime          @default(now())
+  usataAt        DateTime?
+
+  @@unique([fornitore, soggetto])
+  @@unique([userId, fornitore])
+}
+
+/// Пощата на портала (#32 — Brevo SMTP), настроена от MASTER в конзолата: един ред (`id` = "posta"). Докато
+/// е включена, е над SMTP_* от средата. Ключът — шифрован (AES-256-GCM, src/auth/chiavi.ts), никога показан.
+model PostaPortale {
+  id            String   @id @default("posta") @db.VarChar(10)
+  host          String   @db.VarChar(253)
+  porta         Int
+  utente        String   @db.VarChar(254)
+  passwordEnc   String
+  mittenteNome  String   @db.VarChar(80)
+  mittenteEmail String   @db.VarChar(254)
+  attiva        Boolean  @default(true)
+  updatedAt     DateTime @updatedAt
+  updatedById   String?
+  updatedBy     User?    @relation("PostaAggiornata", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([updatedById])
+}
+
+enum AmbienteRevolut {
+  SANDBOX
+  PRODUZIONE
+}
+
+/// Плащанията през Revolut Business (#31), настроени от MASTER в конзолата: един ред (`id` = "revolut").
+/// Ключът на API и signing secret-ът на webhook-а — шифровани (src/auth/chiavi.ts), никога показани.
+model ConfigPagamenti {
+  id                     String          @id @default("revolut") @db.VarChar(10)
+  attivo                 Boolean         @default(false)
+  ambiente               AmbienteRevolut @default(SANDBOX)
+  chiaveEnc              String?
+  webhookId              String?         @db.VarChar(100)
+  webhookSegretoEnc      String?
+  /// Продажба и на фирми, чийто ДДС номер не е валиден във VIES — с 20 % български ДДС (условията 2026-11-14,
+  /// чл. 12.10 b). Изключено: такава покупка онлайн не се сключва (както до версия 4.0).
+  senzaVies              Boolean         @default(true)
+  /// Другите продажби на фирмата за текущата година към данъчно незадължени лица в ЕС, извън портала (без ДДС,
+  /// в центове): влизат в прага от 10 000 € по чл. 59в от Дир. 2006/112 — въвежда ги MASTER от счетоводството.
+  altreVenditeUeCent     Int             @default(0)
+  /// Същото за предходната година и годината, за която е `altreVenditeUeCent`: след Нова година числото за
+  /// „тази година“ само става „миналата“, докато MASTER не въведе новото (soglia.ts).
+  altreVenditeUePrecCent Int             @default(0)
+  altreVenditeUeAnno     Int?
+  updatedAt              DateTime        @updatedAt
+  updatedById            String?
+  updatedBy              User?           @relation("PagamentiAggiornati", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([updatedById])
+}
+
+/// Плановете Premium (#31): ниво по брой хора, срок в месеци, цена в центове БЕЗ ДДС — задава ги MASTER.
+/// Стар план не се трие, а се изключва (плащанията го помнят).
+model PianoAbbonamento {
+  id         String      @id @default(cuid())
+  livello    Int
+  mesi       Int
+  prezzoCent Int
+  attivo     Boolean     @default(true)
+  createdAt  DateTime    @default(now())
+  pagamenti  Pagamento[]
+
+  @@index([attivo])
+}
+
+enum StatoPagamento {
+  IN_ATTESA
+  COMPLETATO
+  FALLITO
+  ANNULLATO
+  SCADUTO
+  /// Платено в Revolut, но периодът НЕ е даден (фирма без срок, изтрита или спряна; период, който вече не се
+  /// смята; поръчка, която не се чете от 30 дни) — MASTER решава: връща парите или го дава на ръка.
+  DA_VERIFICARE
+  /// Върнато (изцяло или отчасти — чл. 12.9): не се брои повече за платен период.
+  RIMBORSATO
+}
+
+/// Плащане на план през Revolut (#31): сумите — смятани на сървъра при офертата (центове), данните за фактурата
+/// — каквито ги е декларирал ADMIN; счетоводен запис на Carbon Stealth като администратор — надживява фирмата
+/// (`aziendaId` става празно, името остава). Поръчката в Revolut — една на плащане.
+model Pagamento {
+  id                String            @id @default(cuid())
+  aziendaId         String?
+  azienda           Azienda?          @relation(fields: [aziendaId], references: [id], onDelete: SetNull)
+  aziendaNome       String            @db.VarChar(120)
+  pianoId           String?
+  piano             PianoAbbonamento? @relation(fields: [pianoId], references: [id], onDelete: SetNull)
+  livello           Int
+  mesi              Int
+  imponibileCent    Int
+  ivaCent           Int
+  totaleCent        Int
+  regimeIva         String            @db.VarChar(20)
+  ragioneSociale    String            @db.VarChar(200)
+  sede              String            @db.VarChar(300)
+  partitaIva        String            @db.VarChar(20)
+  stato             StatoPagamento    @default(IN_ATTESA)
+  ambiente          AmbienteRevolut
+  revolutOrderId    String?           @unique @db.VarChar(100)
+  checkoutUrl       String?           @db.VarChar(500)
+  createdById       String?
+  createdBy         User?             @relation("PagamentiCreati", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt         DateTime          @default(now())
+  completatoAt      DateTime?
+  /// Периодът от офертата (полунощ по Рим): нивото важи от `inizio`, краят на абонамента става `fine`.
+  inizio            DateTime?
+  fine              DateTime?
+  /// Отпечатъкът на приетата оферта — второ „Accetta e paga“ на същата оферта отива на същата поръчка.
+  offertaHash       String?           @db.Char(64)
+  /// Стойността на платените и неизползвани дни, превърната в дни на по-високото ниво (чл. 12.4), без ДДС.
+  creditoCent       Int               @default(0)
+  /// Абонаментът при офертата: ако при плащането е друг, периодът се смята наново.
+  baseFino          DateTime?
+  baseLivello       Int?
+  baseCambioAt      DateTime?
+  /// Плащанията, чиито неизползвани дни са превърнати в това (за фактурата на надграждането).
+  creditoDa         String[]          @default([])
+  /// Защо чака MASTER (при DA_VERIFICARE): senzaScadenza, aziendaAssente, aziendaDisattivata, periodo, nonLetto.
+  verificaMotivo    String?           @db.VarChar(30)
+  /// Върнатото (чл. 12.9), отбелязано от MASTER — сумата с ДДС и кога.
+  rimborsoCent      Int?
+  rimborsatoAt      DateTime?
+  /// Фактурата е издадена (извън портала) — отбелязва MASTER; празно = „da fatturare“.
+  fatturataAt       DateTime?
+  /// Номерът на фактурата (по избор) — кредитното известие се издава към нея.
+  fatturaNumero     String?           @db.VarChar(40)
+  /// Проверката на ДДС номера във VIES при приемането на офертата (чл. 12.10; чл. 18, пар. 1, б. „а“ Регл.
+  /// 282/2011): номерът на консултацията, кога и какво име и адрес е върнал VIES. Празно — български номер
+  /// (20 % ДДС, без проверка) или плащане отпреди проверката.
+  viesConsultazione String?           @db.VarChar(40)
+  viesAt            DateTime?
+  viesNome          String?           @db.VarChar(300)
+  viesIndirizzo     String?           @db.VarChar(500)
+  /// Връщанията през Revolut върху поръчката на това плащане.
+  rimborsi          Rimborso[]        @relation("RimborsiOrdine")
+  /// Връщанията, направени ЗАРАДИ това плащане (и върху по-стари поръчки — кредитът по чл. 12.4).
+  rimborsiPer       Rimborso[]        @relation("RimborsiPer")
+  contestazioni     Contestazione[]
+  noteCredito       NotaCredito[]
+
+  @@index([aziendaId])
+  @@index([pianoId])
+  @@index([createdById])
+  @@index([stato, createdAt])
+  @@index([fatturataAt])
+}
+
+/// Приетата оферта (чл. 12.1 и 19.1 a на условията 2026-11-12): кой, за коя фирма, планът, сумите, точният текст
+/// и отпечатъкът му, кога, IP и браузър, плащането — запечатано с HMAC (src/legale/sigillo.ts), без връзки към
+/// човека и фирмата (надживява ги). Пази се 10 години (`conservaFino`), изтрива го само поддръжката.
+enum StatoRimborso {
+  /// Наредено към Revolut; чака се крайното състояние (до 2 дни) или отговорът не е дошъл.
+  IN_CORSO
+  COMPLETATO
+  FALLITO
+}
+
+/// Връщане през Revolut върху поръчката на едно плащане (условията 2026-11-13, чл. 12.9): `POST
+/// /api/orders/{id}/refund` със собствения id като Idempotency-Key — повторено нареждане не връща два пъти.
+model Rimborso {
+  id              String        @id @default(cuid())
+  /// Плащането, върху чиято поръчка в Revolut се връща.
+  pagamentoId     String
+  pagamento       Pagamento     @relation("RimborsiOrdine", fields: [pagamentoId], references: [id], onDelete: Cascade)
+  /// Плащането, за което се дължи връщането (при надграждане — по-новото; иначе същото).
+  perPagamentoId  String
+  perPagamento    Pagamento     @relation("RimborsiPer", fields: [perPagamentoId], references: [id], onDelete: Cascade)
+  importoCent     Int
+  stato           StatoRimborso @default(IN_CORSO)
+  /// Поръчката за връщане в Revolut (`type: refund`); празно — отговорът не е дошъл (повтаря се със същия ключ).
+  revolutRefundId String?       @unique @db.VarChar(100)
+  /// При FALLITO: кодът от Revolut (HTTP или състоянието на поръчката) — без текст.
+  errore          String?       @db.VarChar(30)
+  createdById     String?
+  createdBy       User?         @relation("RimborsiCreati", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt       DateTime      @default(now())
+  completatoAt    DateTime?
+  notaCredito     NotaCredito?
+
+  @@index([pagamentoId])
+  @@index([perPagamentoId])
+  @@index([createdById])
+  @@index([stato, createdAt])
+}
+
+enum OrigineNotaCredito {
+  RIMBORSO
+  CONTESTAZIONE
+}
+
+/// Кредитно известие за издаване (чл. 115 ЗДДС; условията 2026-11-14, чл. 12.9). Порталът не издава документи —
+/// помни, че известието се дължи: към кое плащане (фактура), за колко, от кога и до кога, и какво е записал MASTER,
+/// след като го е издал в софтуера си за фактури. Едно за всяко връщане и за всеки спор, решен срещу нас.
+model NotaCredito {
+  id              String             @id @default(cuid())
+  pagamentoId     String
+  pagamento       Pagamento          @relation(fields: [pagamentoId], references: [id], onDelete: Cascade)
+  origine         OrigineNotaCredito
+  /// Връщането през Revolut (ръчно отбелязаното връщане няма ред) или спорът, от който идва.
+  rimborsoId      String?            @unique
+  rimborso        Rimborso?          @relation(fields: [rimborsoId], references: [id], onDelete: Cascade)
+  contestazioneId String?            @unique @db.VarChar(100)
+  contestazione   Contestazione?     @relation(fields: [contestazioneId], references: [id], onDelete: Cascade)
+  /// Сумите на известието (в полза на клиента), положителни, в центове.
+  imponibileCent  Int
+  ivaCent         Int
+  totaleCent      Int
+  /// Кога парите са върнати или спорът е решен.
+  eventoAt        DateTime
+  /// Срокът за издаване: 5 дни от събитието (чл. 115, ал. 2 ЗДДС).
+  entroIl         DateTime
+  /// Записаното от MASTER след издаването.
+  numero          String?            @db.VarChar(40)
+  emessaAt        DateTime?
+  createdAt       DateTime           @default(now())
+
+  @@index([pagamentoId])
+  @@index([emessaAt])
+}
+
+enum StatoContestazione {
+  DA_RISPONDERE
+  IN_ESAME
+  VINTA
+  PERSA
+}
+
+/// Спор за плащане (chargeback), отворен от клиента при банката му: Revolut го съобщава (`DISPUTE_*`), порталът
+/// го чете обратно (`GET /api/disputes/{id}`) и го показва на MASTER. Отговаря се в Revolut Business; порталът
+/// нищо не решава сам (чл. 12.9).
+model Contestazione {
+  /// id-то на спора в Revolut.
+  id            String             @id @db.VarChar(100)
+  pagamentoId   String?
+  pagamento     Pagamento?         @relation(fields: [pagamentoId], references: [id], onDelete: SetNull)
+  stato         StatoContestazione
+  sottostato    String?            @db.VarChar(30)
+  /// Кодът и описанието на причината от картовата схема.
+  motivo        String?            @db.VarChar(300)
+  importoCent   Int
+  valuta        String             @db.Char(3)
+  rispostaEntro DateTime?
+  apertaAt      DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  notaCredito   NotaCredito?
+
+  @@index([pagamentoId])
+  @@index([stato])
+}
+
+/// Алармите на портала към Discord (собственикът, 12 ноември 2026): адресът на webhook-а — шифрован (съдържа
+/// токена), само се пише. Съобщенията са без лични данни: вид на събитието, брой и връзка към конзолата.
+model ConfigAllarmi {
+  id          String   @id @default("discord") @db.VarChar(10)
+  attivo      Boolean  @default(false)
+  urlEnc      String?
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+  updatedBy   User?    @relation("AllarmiAggiornati", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([updatedById])
+}
+
+enum StatoSegnalazione {
+  RICEVUTA
+  IN_ESAME
+  DECISA
+  /// Поискан е преглед на решението (чл. 25.7).
+  RIESAME
+  /// Прегледът е приключил.
+  CHIUSA
+}
+
+enum EsitoSegnalazione {
+  RIMOSSO
+  LIMITATO
+  NESSUNA_AZIONE
+  NON_VALIDA
+}
+
+/// Сигнал за незаконно съдържание (чл. 16 Рег. (ЕС) 2022/2065; условията 2026-11-13, чл. 25): от публичната
+/// страница `/segnalazioni`; решава MASTER — отговорникът за модерирането — с мотиви (чл. 16(5), 17).
+model Segnalazione {
+  id           String             @id @default(cuid())
+  /// Номерът за подателя („SG-AB12CD34“).
+  riferimento  String             @unique @db.VarChar(20)
+  createdAt    DateTime           @default(now())
+  dove         String             @db.VarChar(2000)
+  motivo       String             @db.VarChar(5000)
+  /// По избор само при `minori` (чл. 16(2)(c)).
+  nome         String?            @db.VarChar(200)
+  email        String?            @db.VarChar(254)
+  minori       Boolean            @default(false)
+  /// Не е сигнал отвън, а проверка по инициатива на доставчика (чл. 25.6): без подател.
+  iniziativa   Boolean            @default(false)
+  stato        StatoSegnalazione  @default(RICEVUTA)
+  esito        EsitoSegnalazione?
+  /// Мотивите към подателя (чл. 16(5)).
+  motivazione  String?            @db.VarChar(5000)
+  /// Чл. 17(3) — при RIMOSSO и LIMITATO: мярката с обхвата и срока, фактите, основанието.
+  misura       String?            @db.VarChar(500)
+  fatti        String?            @db.VarChar(5000)
+  fondamento   String?            @db.VarChar(500)
+  /// Фирмата, качила съдържанието (за известието по чл. 17); името остава и след изтриването ѝ.
+  aziendaId    String?
+  azienda      Azienda?           @relation(fields: [aziendaId], references: [id], onDelete: SetNull)
+  aziendaNome  String?            @db.VarChar(120)
+  decisaAt     DateTime?
+  decisaById   String?
+  decisaBy     User?              @relation("SegnalazioniDecise", fields: [decisaById], references: [id], onDelete: SetNull)
+  /// Чл. 18: кой орган е уведомен и кога.
+  autorita     String?            @db.VarChar(200)
+  autoritaAt   DateTime?
+  /// Прегледът (чл. 25.7): кога е поискан и изходът му.
+  riesameAt    DateTime?
+  riesameEsito String?            @db.VarChar(5000)
+  /// До кога се пази (от решението или от изхода на прегледа); трие го поддръжката.
+  conservaFino DateTime?
+
+  @@index([stato, createdAt])
+  @@index([aziendaId])
+  @@index([decisaById])
+  @@index([conservaFino])
+}
+
+model AccettazioneOfferta {
+  id             String   @id @default(cuid())
+  at             DateTime
+  userId         String
+  userNome       String   @db.VarChar(120)
+  userEmail      String   @db.VarChar(254)
+  aziendaId      String?
+  aziendaNome    String   @db.VarChar(120)
+  ragioneSociale String   @db.VarChar(200)
+  sede           String   @db.VarChar(300)
+  partitaIva     String   @db.VarChar(20)
+  livello        Int
+  mesi           Int
+  imponibileCent Int
+  ivaCent        Int
+  totaleCent     Int
+  versione       String   @db.VarChar(20)
+  testo          String
+  hash           String   @db.Char(64)
+  ip             String?  @db.VarChar(45)
+  userAgent      String?  @db.VarChar(300)
+  pagamentoId    String   @unique
+  sigillo        String   @db.Char(64)
+  conservaFino   DateTime
+
+  @@index([aziendaId])
   @@index([conservaFino])
 }

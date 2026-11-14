@@ -17,19 +17,177 @@
     "popup": {
       "titolo": "Novità dal tuo ultimo accesso",
       "lead": "Abbiamo aggiornato Rilievi Impianti. Ecco cosa cambia:",
-      "altre": "E altre {n} novità.",
+      "altre": {
+        "one": "E un'altra novità.",
+        "other": "E altre {n} novità."
+      },
       "tutte": "Tutte le novità",
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-13-versione-4-1": {
+        "area": "Portale",
+        "titolo": "Versione 4.1: acquisto anche senza VIES e nota di credito sui rimborsi",
+        "testo": "Se la partita IVA della tua azienda non risulta valida nel VIES, ora puoi comprare lo stesso il piano: al prezzo si aggiunge l'IVA bulgara del 20 % e il portale ti mostra di nuovo l'offerta, con l'IVA e il totale, prima del pagamento. Per ogni rimborso emettiamo una nota di credito sulla fattura del piano. Dal 14 novembre 2026 valgono le condizioni di servizio aggiornate (artt. 12.1, 12.9, 12.10, 17.4 e 25.6); le clausole approvate specificamente non cambiano."
+      },
+      "2026-11-12-versione-4": {
+        "area": "Portale",
+        "titolo": "Rilievi Impianti 4.0",
+        "testo": "La versione 4.0 porta i prezzi su una pagina pubblica, la verifica della partita IVA prima dell'acquisto di un piano, i rimborsi sullo stesso mezzo di pagamento e la pagina per segnalare un contenuto illegale. Dal 13 novembre 2026 valgono le nuove condizioni di servizio. In tutto il portale la stessa cosa ha ora lo stesso nome: «foglio di intervento», «verbale di chiusura cantiere», «cartello di fermo impianto»."
+      },
+      "2026-11-12-condizioni-13": {
+        "area": "Portale",
+        "titolo": "Nuove condizioni di servizio dal 13 novembre 2026",
+        "testo": "Cambiano l'art. 12.9 (il rimborso torna sullo stesso mezzo di pagamento) e l'art. 15.2; sono nuovi l'art. 12.10 (la verifica della partita IVA nel VIES) e l'art. 25 (contenuti illegali, segnalazioni e moderazione). Le clausole approvate specificamente non cambiano. L'amministratore dell'azienda legge e accetta la nuova versione al primo accesso."
+      },
+      "2026-11-12-prezzi": {
+        "area": "Portale",
+        "titolo": "I prezzi sono pubblici",
+        "testo": "La pagina Prezzi mostra i piani in vendita, senza IVA, e spiega come funzionano: primo mese gratuito, nessun rinnovo automatico, sola lettura alla scadenza, fattura entro pochi giorni dal pagamento."
+      },
+      "2026-11-12-vies-rimborsi": {
+        "area": "Portale",
+        "titolo": "Partita IVA verificata e rimborsi sullo stesso mezzo di pagamento",
+        "testo": "Quando un'azienda fuori dalla Bulgaria acquista un piano, il portale verifica la partita IVA nel VIES, il registro della Commissione europea: se non risulta valida, o se il VIES non risponde, l'acquisto non parte e non viene addebitato nulla. I rimborsi dovuti alla fine del contratto tornano sullo stesso mezzo di pagamento usato per il piano, e arriva un'email quando sono confermati."
+      },
+      "2026-11-12-segnalazioni": {
+        "area": "Portale",
+        "titolo": "Segnalare un contenuto illegale",
+        "testo": "Una pagina pubblica permette a chiunque di segnalare un contenuto illegale caricato nel portale. Una persona esamina ogni segnalazione e risponde con i motivi. Se un contenuto viene rimosso o limitato, gli amministratori dell'azienda che lo ha caricato ricevono i motivi per email e possono chiedere il riesame."
+      },
+      "2026-11-12-versione-3-1": {
+        "area": "Portale",
+        "titolo": "Versione 3.1: controllo completo prima dell'apertura",
+        "testo": "Abbiamo ricontrollato il portale in ogni sua parte e corretto quello che non andava. Abbonamento: chi ha già comprato un piano può passare subito a un livello superiore e i giorni già pagati vengono contati; un secondo pagamento non parte finché il primo è ancora aperto; la partita IVA italiana viene controllata cifra per cifra. Con l'abbonamento scaduto puoi ancora eliminare singoli dati e revocare chiavi API e accessi. Le firme non restano mai salvate sul telefono quando manca la rete. Per scaricare tutti i dati dell'azienda e per chiedere il cambio di fornitore serve la password. Testi più chiari in tutto il portale."
+      },
+      "2026-11-12-versione-3": {
+        "area": "Portale",
+        "titolo": "Rilievi Impianti 3.0",
+        "testo": "Il portale ha ora un numero di versione: 3.0. Lo trovi in fondo a ogni pagina e sui fogli in PDF. Ogni correzione aumenta il secondo numero (3.1, 3.2 e così via), ogni grande novità il primo. Se ci scrivi per un problema, indicaci la versione."
+      },
+      "2026-11-12-pagamento-carta": {
+        "area": "Portale",
+        "titolo": "Abbonamento pagabile con carta",
+        "testo": "L'amministratore dell'azienda sceglie il piano in Impostazioni → Abbonamento, legge l'offerta con prezzo, IVA e date, e paga con carta sulla pagina sicura di Revolut. L'abbonamento si attiva appena arriva la conferma del pagamento e la copia dell'offerta arriva per email. Se la prova o il piano sono ancora in corso, il nuovo periodo parte dalla loro fine. Il numero della carta non passa dal portale."
+      },
+      "2026-11-12-prova-abbonamento": {
+        "area": "Portale",
+        "titolo": "Un mese di prova e abbonamento per numero di persone",
+        "testo": "Ogni nuova azienda ha un mese di prova gratuita con tutte le funzioni, da quando l'amministratore accetta le condizioni. Poi si sceglie un piano in base al numero di persone: fino a 10, fino a 25 oppure oltre 25. Non si rinnova da solo e avvisiamo 14 e 3 giorni prima della fine. Senza abbonamento il portale passa in sola lettura: i dati restano tutti, si consultano, si stampano e si esportano. Lo stato è in Impostazioni → Abbonamento."
+      },
+      "2026-11-12-accesso-microsoft-google": {
+        "area": "Portale",
+        "titolo": "Accesso con Microsoft o Google",
+        "testo": "Le aziende che usano Microsoft 365 o Google Workspace possono far entrare le proprie persone con l'account di lavoro. L'amministratore indica l'organizzazione dell'azienda in Impostazioni → Accesso con Microsoft o Google; poi ognuno collega il proprio account dalla pagina «Il tuo account», confermando con la password. La verifica in due passaggi, se attiva, resta valida."
+      },
+      "2026-11-12-csv-api": {
+        "area": "Portale",
+        "titolo": "Elenchi in Excel e chiavi API",
+        "testo": "Gli elenchi delle schede e dei preventivi si scaricano in un file CSV che Excel apre direttamente, con la ricerca e il filtro che stai usando. L'amministratore dell'azienda può creare chiavi API (in Impostazioni → Chiavi API) per far leggere le schede a un altro programma, solo in lettura: ogni chiave si vede una volta, scade dopo un anno e si può revocare."
+      },
+      "2026-11-12-stato-servizio": {
+        "area": "Portale",
+        "titolo": "Pagina dello stato del servizio",
+        "testo": "Su /stato si vede se Rilievi Impianti funziona in questo momento, parte per parte: portale, archivio dei dati, elaborazione di foto e video, invio delle email. La pagina riporta anche le interruzioni in corso, le manutenzioni programmate con data e ora, gli ultimi 90 giorni e i tempi di ripristino che ci diamo. Il link è in fondo a ogni pagina."
+      },
+      "2026-11-12-annotazioni-foto": {
+        "area": "Schede",
+        "titolo": "Annotazioni sulle foto",
+        "testo": "Nel modulo della scheda ogni foto ha «Annota»: si apre l'editor degli schizzi a schermo intero con la foto sotto, e frecce, cerchi, quote e testi si disegnano direttamente sopra. Le annotazioni si vedono sulla miniatura, nella stampa e nel PDF della scheda e si salvano senza toccare il resto della scheda."
+      },
+      "2026-11-12-senza-rete": {
+        "area": "Portale",
+        "titolo": "Documenti salvati anche senza rete",
+        "testo": "Se invii una scheda, un foglio di intervento, un buono, un verbale, un cartello o un preventivo mentre il telefono non ha rete, il documento non si perde: resta salvato sul dispositivo così com'era e, quando torna la rete, in cima a ogni pagina del portale trovi «Invia ora». Il salvataggio vale solo per chi ha compilato il documento, resta fino a 7 giorni e si cancella uscendo dall'account."
+      },
+      "2026-11-12-preventivi": {
+        "area": "Documenti",
+        "titolo": "Preventivi con listino prezzi",
+        "testo": "Per le aziende in cui l'amministrazione del portale li attiva: preventivi numerati dalla scheda dell'impianto o liberi, righe dal listino prezzi dell'azienda, sconto per riga, IVA al 22, 10 o 4% riepilogata per aliquota, PDF/A con «Per accettazione» e invio al cliente per email. Stato bozza, inviato, accettato o rifiutato; condizioni predefinite nelle impostazioni."
+      },
+      "2026-11-12-quadro-geat": {
+        "area": "Schede",
+        "titolo": "Quadro GEAT con il suo modulo",
+        "testo": "In «Marca quadro» c'è anche GEAT: con «Sì» all'ordine del quadro si apre il modulo GEAT (preventivo o ordine), già compilato con i dati della scheda — cliente, impianto, fermate, porte, motore, normative — e si scarica nel PDF originale del fornitore, su due pagine."
+      },
+      "2026-11-12-buono-lavoro": {
+        "area": "Documenti",
+        "titolo": "Il buono di lavoro, dalla scheda o da zero",
+        "testo": "Nuovo documento in «Documenti → Buoni di lavoro»: dati generali del cantiere, sequenze di lavoro con esito, data e fornitore, i sei controlli (anche quelli per la sostituzione del quadro), resoconto attività e firme. Dalla scheda si compilano da soli N° buono, matricola, ubicazione e i lavori previsti. Ogni firma è facoltativa: quelle vuote restano uno spazio nel PDF da firmare a mano. Codice del modulo e clausola si impostano per azienda."
+      },
+      "2026-11-12-ordini-fornitori": {
+        "area": "Schede",
+        "titolo": "Invia il modulo d'ordine al fornitore dal portale",
+        "testo": "Dalla scheda, «Invia al fornitore» manda il modulo compilato in PDF al fornitore scelto dalla rubrica (Impostazioni → Fornitori) o scritto a mano; le risposte arrivano a chi invia. Ogni ordine resta nella scheda e in «Ordini ai fornitori», e si segna come confermato o annullato."
+      },
+      "2026-11-12-approvazione": {
+        "area": "Schede",
+        "titolo": "Approvazione delle schede in due passaggi, se la vuoi",
+        "testo": "L'amministratore può attivarla in Impostazioni → Scheda: il tecnico invia la scheda, un responsabile la approva o la respinge con una nota, e solo allora partono gli ordini. Chi invia non approva la propria scheda. All'inizio è disattivata."
+      },
+      "2026-11-12-versioni": {
+        "area": "Schede",
+        "titolo": "Versioni della scheda e «Duplica»",
+        "testo": "Ogni salvataggio crea una versione: dalla scheda, «Versioni» mostra che cosa è cambiato, campo per campo. «Duplica» apre una nuova scheda con i dati di un'altra, senza matricola, numero e buono."
+      },
+      "2026-11-12-etichette-qr": {
+        "area": "Schede",
+        "titolo": "Etichette con QR per gli impianti",
+        "testo": "«Etichetta QR» stampa un foglio A4 di etichette (70 × 37 mm) con il QR della scheda, la matricola, il numero e l'indirizzo: nel locale macchina basta inquadrarlo per aprire la scheda."
+      },
+      "2026-11-12-copia-firmatario": {
+        "area": "Assistenza",
+        "titolo": "Copia in PDF a chi firma, con l'informativa privacy",
+        "testo": "Sulla pagina della firma del foglio di intervento e del verbale chi firma legge l'informativa sul trattamento dei dati dell'azienda e può lasciare un'email: appena confermato, riceve la copia in PDF. L'informativa si personalizza in Impostazioni → Informativa per chi firma; l'indirizzo non viene conservato."
+      },
+      "2026-11-12-pdfa": {
+        "area": "Assistenza",
+        "titolo": "Fogli di intervento e verbali in PDF/A",
+        "testo": "I PDF dei fogli di intervento e dei verbali confermati sono ora in formato PDF/A, il formato pensato per l'archiviazione a lungo termine: caratteri incorporati e profilo colore incluso."
+      },
+      "2026-11-12-esportazione": {
+        "area": "Impostazioni",
+        "titolo": "Scarica tutti i dati dell'azienda, quando vuoi",
+        "testo": "In Impostazioni → Esportazione e cambio fornitore l'amministratore dell'azienda scarica, con la sua password, un unico file con tutto: schede, fogli di intervento con le firme, cartelli, calcoli, verbali, foto e video. Il formato è descritto, campo per campo, nella pagina pubblica Esportazione dei dati."
+      },
+      "2026-11-12-cambio-fornitore": {
+        "area": "Impostazioni",
+        "titolo": "Cambio di fornitore senza costi e senza interruzioni",
+        "testo": "Dalla stessa pagina si può chiedere il cambio di fornitore: il portale continua a funzionare per 30 giorni, il periodo si proroga una volta e la richiesta si può annullare. Alla fine l'amministratore può ancora scaricare i dati per 90 giorni. È quanto prevede il Data Act europeo."
+      },
+      "2026-11-11-note-sezioni": {
+        "area": "Schede",
+        "titolo": "Una nota in fondo a più sezioni della scheda",
+        "testo": "Impianto, Ubicazione e accesso, Tipologia, Funi e tiranti, Limitatore e Allarme e telesoccorso hanno ora un campo di testo per le note. «Note impianto» è passato dalla sezione Note e lavori alla sezione Impianto: le note già scritte restano, e nella stampa e nel PDF compaiono sotto la targa."
+      },
+      "2026-11-10-menu": {
+        "area": "Portale",
+        "titolo": "Un menu più chiaro, su ogni dispositivo",
+        "testo": "Il menu è diviso in Impianti, Calcoli, Documenti e Amministrazione. Il pulsante «Nuovo» raccoglie tutto quello che puoi creare: scheda, foglio di intervento, verbale, cartello, calcoli. Sul telefono le voci principali sono in una barra in basso, sempre a portata di pollice; sul tablet in una colonna di icone a sinistra."
+      },
+      "2026-11-10-cerca": {
+        "area": "Portale",
+        "titolo": "Una ricerca per tutto il portale",
+        "testo": "Dalla casella «Cerca impianto» in cima al menu, o con Ctrl K (⌘ K sul Mac), cerchi per matricola, numero o indirizzo in schede e calcoli, e arrivi a qualsiasi pagina del portale. Con le frecce scegli il risultato, con Invio lo apri."
+      },
+      "2026-11-10-impostazioni": {
+        "area": "Impostazioni",
+        "titolo": "Impostazioni divise per argomento",
+        "testo": "Le impostazioni dell'azienda hanno una pagina di riepilogo con lo stato di ogni parte e una pagina per ciascuna: dati dell'azienda, ordine delle sezioni della scheda, cartello di fermo impianto, ruoli e permessi, condizioni di servizio."
+      },
+      "2026-11-10-comunicazioni": {
+        "area": "Portale",
+        "titolo": "Comunicazioni del portale",
+        "testo": "Avvisi importanti, come una manutenzione programmata, compaiono in cima alle pagine del portale per i giorni indicati. Ognuno li chiude per sé con «Chiudi» e non li rivede più."
+      },
       "2026-11-10-condizioni": {
         "area": "Portale",
         "titolo": "Condizioni di servizio e regole d'uso",
-        "testo": "Al primo accesso l'amministratore di ogni azienda accetta le condizioni di servizio e l'accordo sul trattamento dei dati, con l'approvazione specifica delle clausole firmata con un codice inviato per email; ogni utente accetta le regole d'uso. La copia delle condizioni accettate arriva per email e si scarica dalla pagina Account."
+        "testo": "Al primo accesso l'amministratore di ogni azienda accetta le condizioni di servizio e l'accordo sul trattamento dei dati. Le clausole che richiedono un'approvazione specifica le firma con un codice inviato per email. Ogni persona accetta le regole d'uso. La copia delle condizioni accettate arriva per email e si scarica dalla pagina «Il tuo account»."
       },
       "2026-11-10-avvertenza-calcoli": {
         "area": "Calcoli",
-        "titolo": "Firma del tecnico su ogni foglio di calcolo",
+        "titolo": "Spazio per la firma del tecnico su ogni calcolo",
         "testo": "I PDF del calcolo argano e del calcolo limitatore riportano su ogni pagina chi li ha generati, quando, la versione del software e un codice di riferimento. In fondo c'è lo spazio per la verifica e la firma del tecnico abilitato: senza, il foglio non è valido."
       },
       "2026-11-10-novita": {
@@ -45,7 +203,7 @@
       "2026-11-10-schizzi": {
         "area": "Schizzi",
         "titolo": "Schizzi per tutte le aziende",
-        "testo": "Gli schizzi a mano libera in fondo alla scheda sono attivi per tutti, senza doverli attivare."
+        "testo": "Gli schizzi a mano libera in fondo alla scheda ora sono attivi per tutte le aziende."
       },
       "2026-11-10-scatta-foto": {
         "area": "Foto",
@@ -60,7 +218,7 @@
       "2026-11-10-matricola": {
         "area": "Scheda",
         "titolo": "Matricola anche con lettere",
-        "testo": "La matricola è testo libero fino a 40 caratteri. Nella ricerca maiuscole e minuscole valgono uguali; nel PDF matricola e numero dell'impianto stanno su una riga."
+        "testo": "La matricola è testo libero fino a 40 caratteri. La ricerca non distingue maiuscole e minuscole; nel PDF matricola e numero dell'impianto stanno su una riga."
       },
       "2026-11-10-porte-manuali": {
         "area": "Scheda",
@@ -70,7 +228,7 @@
       "2026-11-10-impaginazione": {
         "area": "Portale",
         "titolo": "Pagine più ordinate su tablet e telefono",
-        "testo": "Le tabelle non fanno più scorrere la pagina di lato, i pulsanti della scheda su telefono stanno in due colonne e le misure delle bottoniere restano nel loro riquadro. Nei moduli di intervento e nei verbali i pulsanti «Salva» e «Firma e conferma» sono di nuovo ben visibili."
+        "testo": "Le tabelle non fanno più scorrere la pagina di lato, i pulsanti della scheda su telefono stanno in due colonne e le misure delle bottoniere restano nel loro riquadro. Nei fogli di intervento e nei verbali i pulsanti «Salva» e «Firma e conferma» sono di nuovo ben visibili."
       },
       "2026-11-09-tubo-flessibile": {
         "area": "Scheda",
@@ -90,7 +248,7 @@
       "2026-11-05-limitatore": {
         "area": "Calcolo limitatore",
         "titolo": "Nuovo: calcolo del limitatore di velocità",
-        "testo": "Dalla scheda dell'impianto o senza scheda, dal menu «Rilievi», con il PDF di una pagina. Per gli impianti a fune; non per gli idraulici."
+        "testo": "Dalla scheda dell'impianto o senza scheda, dal menu «Calcoli», con il PDF di una pagina. Per gli impianti a fune; non per gli idraulici."
       },
       "2026-11-05-verbale": {
         "area": "Verbali",
@@ -105,7 +263,7 @@
       "2026-11-05-pdf-iphone": {
         "area": "App",
         "titolo": "PDF nell'app su iPhone",
-        "testo": "Nell'app sulla schermata Home dell'iPhone un PDF si apre in «Condividi», da dove si salva, si stampa o si invia, e si chiude."
+        "testo": "Nell'app sulla schermata Home dell'iPhone il PDF si apre nel menu «Condividi»: da lì lo salvi, lo stampi o lo invii."
       },
       "2026-11-05-installa": {
         "area": "App",
