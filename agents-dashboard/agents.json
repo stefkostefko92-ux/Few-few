@@ -1256,7 +1256,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 663
+        "lessons": 664
       },
       "evolution": [
         {
@@ -2158,9 +2158,20 @@
           "date": "2026-11-14",
           "event": "v60.3 — учене",
           "detail": "Научи: Fixed-width export that slices and pads with JS String.length (UTF-16 code units) but e… (+1 още)"
+        },
+        {
+          "version": "60.4.0",
+          "date": "2026-11-14",
+          "event": "v60.4 — учене",
+          "detail": "Научи: При предплатени планове проверката дали покупката е позволена трябва да се повтори при …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-14",
+          "type": "learning",
+          "summary": "Научи: „При предплатени планове проверката дали покупката е позволена трябва да се повтори при …\""
+        },
         {
           "date": "2026-11-14",
           "type": "learning",
