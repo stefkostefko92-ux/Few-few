@@ -77,14 +77,13 @@ async function buildPurchases(req: Request, access: OrgAccess) {
     where: { id: access.organizationId },
     select: { id: true, vatNumber: true },
   });
-  if (!org.vatNumber) return { org, period, result: null, cancelled: [] as string[] };
-  const { entries, cancelled } = await loadPurchases(org.id, period);
+  if (!org.vatNumber) return { org, period, result: null };
   const result = purchaseJournal({
     vatNumber: org.vatNumber,
     period: period.replace('-', ''),
-    entries,
+    entries: await loadPurchases(org.id, period),
   });
-  return { org, period, result, cancelled };
+  return { org, period, result };
 }
 
 export function appJournalRouter(): Router {
@@ -99,7 +98,6 @@ export function appJournalRouter(): Router {
       period,
       result,
       purchases: purchases.result,
-      purchasesCancelled: purchases.cancelled,
       maxPeriod: sofiaToday().slice(0, 7),
     });
   });

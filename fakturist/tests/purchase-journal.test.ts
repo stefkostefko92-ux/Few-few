@@ -4,6 +4,7 @@ import type { InvoiceInput } from '../src/einvoice/model.js';
 import {
   PURCHASE_RECORD_LENGTH,
   purchaseJournal,
+  supplierDocumentKey,
   type PurchaseEntry,
 } from '../src/export/purchase-journal.js';
 import {
@@ -146,4 +147,56 @@ test('за ръчно: доставчик извън България, обра�
     { number: 'X', reason: 'type' },
     { number: 'Y', reason: 'unreadable' },
   ]);
+});
+
+test('сума, която не се побира в 15 знака — за ръчно, не срив; сборовете — без нея', () => {
+  const huge: InvoiceInput = {
+    ...domestic,
+    number: '0000000999',
+    lines: domestic.lines.map((l) => ({ ...l, quantity: '1', netPrice: '9999999999999' })),
+  };
+  const result = purchaseJournal({
+    vatNumber: 'BG131063188',
+    period: '202611',
+    entries: [entry(huge), entry(domestic)],
+  });
+  assert.deepEqual(result.manual, [{ number: '0000000999', reason: 'amount' }]);
+  assert.equal(result.records, 1);
+  assert.equal(result.totals['03-31'], 9649n);
+});
+
+test('решеното при зареждането (копие, анулиран…) и липсващата дата — за ръчно, не във файла', () => {
+  const result = purchaseJournal({
+    vatNumber: 'BG131063188',
+    period: '202611',
+    entries: [
+      { ...entry(domestic), number: 'A', manual: 'duplicate' },
+      { ...entry(domestic), number: 'B', issueDate: null },
+      { ...entry(domestic), number: 'C', manual: 'cancelledLater', input: null },
+    ],
+  });
+  assert.equal(result.records, 0);
+  assert.equal(result.file.length, 0);
+  assert.deepEqual(
+    [...result.manual].sort((a, b) => a.number.localeCompare(b.number)),
+    [
+      { number: 'A', reason: 'duplicate' },
+      { number: 'B', reason: 'date' },
+      { number: 'C', reason: 'cancelledLater' },
+    ],
+  );
+  assert.equal(result.totals['03-31'], 0n);
+});
+
+test('ключ на документа на доставчика: ДДС номер = ЕИК; друг вид или друг доставчик — друг документ', () => {
+  const base = { number: '0000000124', typeCode: '380' };
+  const byVat = supplierDocumentKey({ ...base, vatId: 'BG 208725180', name: 'Карбон' });
+  assert.equal(byVat, supplierDocumentKey({ ...base, legalId: '208725180', name: 'Друго име' }));
+  assert.notEqual(byVat, supplierDocumentKey({ ...base, typeCode: '381', vatId: 'BG208725180' }));
+  assert.notEqual(byVat, supplierDocumentKey({ ...base, vatId: 'BG131063188' }));
+  assert.equal(
+    supplierDocumentKey({ ...base, name: 'Мелница „Злато“' }),
+    supplierDocumentKey({ ...base, name: 'МЕЛНИЦА ЗЛАТО' }),
+    'без номера — по наименованието',
+  );
 });

@@ -9,19 +9,19 @@ import { toCents, type Dec } from '../einvoice/decimal.js';
  * Нулевата ставка по чл. 140, 146, ал. 1 и 173 ЗДДС — своето поле (02-16) и свой код в SAF-T (100216).
  * Краят на номера е изричен: `\b` в JS не познава кирилицата и би приел „чл. 140а“ за чл. 140.
  */
-export const ZERO_RATE_SPECIAL = /чл\.\s*(140|146|173)(?![0-9а-яА-Я])/;
+export const ZERO_RATE_SPECIAL = /чл\.\s*(140|146|173)(?![0-9а-яА-Яa-zA-Z])/i;
 
 /** Обратно начисляване при услуги по чл. 21, ал. 2 ЗДДС — поле 02-17, код 100217 (SAF-T). */
-export const EU_SERVICES_ART_21_2 = /чл\.\s*21,?\s*ал\.\s*2(?![0-9])/;
+export const EU_SERVICES_ART_21_2 = /чл\.\s*21,?\s*ал\.\s*2(?![0-9])/i;
 /** Доставки по чл. 69, ал. 2 ЗДДС (място на изпълнение в друга държава) — поле 02-18, код 100218. */
-export const PLACE_ABROAD_ART_69_2 = /чл\.\s*69,?\s*ал\.\s*2(?![0-9])/;
+export const PLACE_ABROAD_ART_69_2 = /чл\.\s*69,?\s*ал\.\s*2(?![0-9])/i;
 /** Обратно начисляване по чл. 163а ЗДДС — в PRODAGBI има само кодово поле 02-27 (сумата — за ръчно). */
-export const DOMESTIC_REVERSE_163A = /чл\.\s*163а(?![0-9а-яА-Я])/;
+export const DOMESTIC_REVERSE_163A = /чл\.\s*163[аa](?![0-9а-яА-Яa-zA-Z])/i;
 
 /** Частта от Приложение № 2 ЗДДС в основанието по чл. 163а; null — не е посочена. */
 export function annex2Part(reason: string | undefined): 'I' | 'II' | null {
-  const match = /част\s+(II|I)(?![IVX])/.exec(reason ?? '');
-  return match ? (match[1] as 'I' | 'II') : null;
+  const match = /част\s+(II|I)(?![IVX])/i.exec(reason ?? '');
+  return match ? (match[1]!.toUpperCase() as 'I' | 'II') : null;
 }
 
 /**
@@ -59,6 +59,23 @@ export function amountText(cents: bigint): string {
   const sign = cents < 0n ? '-' : '';
   const abs = cents < 0n ? -cents : cents;
   return `${sign}${abs / 100n}.${(abs % 100n).toString().padStart(2, '0')}`;
+}
+
+/** Ширината на полетата за суми в двата дневника. */
+export const AMOUNT_WIDTH = 15;
+
+/**
+ * Сумите на един запис, вдясно в 15 знака; null — някоя не се побира (над 999 999 999 999.99 или под
+ * −99 999 999 999.99). Тогава документът е за ръчно вписване: отрязана сума би била грешна сума.
+ */
+export function amountCells(values: readonly bigint[]): string | null {
+  const cells: string[] = [];
+  for (const value of values) {
+    const shown = amountText(value);
+    if (shown.length > AMOUNT_WIDTH) return null;
+    cells.push(shown.padStart(AMOUNT_WIDTH, ' '));
+  }
+  return cells.join('');
 }
 
 export function dayText(date: Date): string {

@@ -999,7 +999,8 @@
       "category": "reverse charge or out-of-scope supply — the field depends on the basis (Art. 21(2), 69(2), 163a of the VAT Act…)",
       "rate": "a rate other than 20% and 9%",
       "type": "a document type that is not entered automatically",
-      "currency": "a foreign-currency document without a euro rate"
+      "currency": "a foreign-currency document without a euro rate",
+      "amount": "an amount that does not fit the 15-character field"
     },
     "notesTitle": "How it is built",
     "notes": {
@@ -1027,7 +1028,13 @@
         "type": "a document type that is not entered automatically",
         "currency": "a document in a currency without a euro rate",
         "unreadable": "the file cannot be read against the EN 16931 model — see the check in “Incoming”",
-        "cancelled": "cancelled by the sender — entered under the cancellation rules"
+        "cancelled": "cancelled by the supplier by the end of the ledger month — not entered",
+        "amount": "an amount that does not fit the 15-character field",
+        "date": "the file has no issue date — check the invoice and enter it by hand",
+        "duplicate": "the same supplier document was received twice (“Incoming” and “Inbox”, or two files) — reject one copy",
+        "invalid": "the file failed the check on receipt — see the errors in “Incoming”",
+        "buyer": "the buyer on the invoice is not this company — check whether the invoice is yours",
+        "cancelledLater": "cancelled by the supplier this month after being entered in an earlier ledger — a correction is needed"
       }
     }
   },

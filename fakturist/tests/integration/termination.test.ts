@@ -422,6 +422,11 @@ type CountDelegate = { count(args: { where: Record<string, string> }): Promise<n
 
 test('след 30 дни: доставените — при получателя; всичко друго е изтрито; ЕИК е свободен', async () => {
   assert.deepEqual(await purgeTerminated(new Date()), { purged: 0, archived: 0 });
+  // Решенията на Роза върху доставения остават в копието: отказан не влиза в дневника ѝ за покупките.
+  await prisma.inboxEntry.updateMany({
+    where: { recipientOrgId: ids.b, document: { number: replacementNumber } },
+    data: { status: 'REJECTED', vatCredit: 'PARTIAL', journalPeriod: '2026-12' },
+  });
   const result = await purgeTerminated(new Date(Date.now() + 31 * DAY));
   assert.equal(result.purged, 2, 'Зора и фирмата без собственик');
   assert.ok(result.archived >= 1);
@@ -438,6 +443,9 @@ test('след 30 дни: доставените — при получателя
     'анулираният не става валиден входящ',
   );
   assert.equal(kept.source, 'INBOX');
+  assert.equal(kept.status, 'REJECTED');
+  assert.equal(kept.vatCredit, 'PARTIAL');
+  assert.equal(kept.journalPeriod, '2026-12');
   assert.match(kept.xml, /<cbc:ID>/);
 
   const delegates = prisma as unknown as Record<string, CountDelegate>;

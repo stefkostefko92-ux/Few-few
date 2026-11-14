@@ -4,7 +4,8 @@ import { InvoiceInputSchema } from '../einvoice/model.js';
 import { sofiaToday } from '../time.js';
 import { encodeCp1251 } from './cp1251.js';
 import {
-  amountText,
+  amountCells,
+  AMOUNT_WIDTH,
   cents,
   counterpartyId,
   dayText,
@@ -63,7 +64,7 @@ export interface JournalDocument {
   input: unknown;
 }
 
-export type ManualReason = 'category' | 'rate' | 'type' | 'currency';
+export type ManualReason = 'category' | 'rate' | 'type' | 'currency' | 'amount';
 export interface JournalResult {
   file: Buffer;
   records: number;
@@ -190,12 +191,14 @@ export function salesJournal(input: {
       continue;
     }
     const sign = (doc.typeCode === '381' ? -1n : 1n) * (mode === 'reverse' ? -1n : 1n);
-    const fields = AMOUNT_FIELDS.map((field) => {
-      if (mode === 'blank') return ' '.repeat(15);
-      const value = (split.values[field] ?? 0n) * sign;
-      totals[field] += value;
-      return digits(amountText(value), 15);
-    }).join('');
+    const values = AMOUNT_FIELDS.map((field) => (split.values[field] ?? 0n) * sign);
+    const fields =
+      mode === 'blank' ? ' '.repeat(AMOUNT_WIDTH * AMOUNT_FIELDS.length) : amountCells(values);
+    if (fields === null) {
+      manual.push({ number, reason: 'amount' });
+      continue;
+    }
+    if (mode !== 'blank') AMOUNT_FIELDS.forEach((field, i) => (totals[field] += values[i]!));
     const record = [
       text(vatNumber, 15),
       text(period, 6),

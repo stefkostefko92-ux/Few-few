@@ -58,6 +58,12 @@ export async function registerIncoming(input: {
   buffer: Buffer;
   /** INBOX — копие на документ от шкафчето, когато изпращачът е изтрит след прекратяване. */
   source: 'UPLOAD' | 'PEPPOL' | 'INBOX';
+  /** Решенията на получателя върху записа от шкафчето — копието ги запазва (отказан, кредит, месец). */
+  carry?: {
+    status: 'RECEIVED' | 'REJECTED';
+    vatCredit: 'FULL' | 'PARTIAL' | 'NONE';
+    journalPeriod: string | null;
+  };
 }): Promise<{ id: string; valid: boolean; issues: Issue[] }> {
   const { buffer } = input;
   let xml: string;
@@ -124,6 +130,7 @@ export async function registerIncoming(input: {
           valid,
           source: input.source,
           createdById: input.actorId,
+          ...(input.carry ?? {}),
         },
         select: { id: true },
       });

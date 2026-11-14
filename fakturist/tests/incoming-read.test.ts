@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { calculate, toCii, toUbl } from '../src/einvoice/index.js';
 import { toPlain } from '../src/einvoice/decimal.js';
-import { checkIncoming, IncomingError } from '../src/incoming/check.js';
+import { checkIncoming, IncomingError, parseIncoming } from '../src/incoming/check.js';
 import { SAMPLES } from './fixtures/einvoice-samples.js';
 
 /**
@@ -60,4 +60,15 @@ test('подправена обща сума → грешка TOTALS; DTD и н�
     () => checkIncoming('<Invoice><ID>1</Invoice>'),
     (e: unknown) => e instanceof IncomingError && e.code === 'xml',
   );
+});
+
+test('само разчитане (за дневника): същият вход като пълната проверка; счупен файл — null, не грешка', () => {
+  for (const input of Object.values(SAMPLES)) {
+    for (const write of [toUbl, toCii]) {
+      const xml = write(input, calculate(input), 'en16931', 'подпис');
+      assert.deepEqual(parseIncoming(xml), checkIncoming(xml).parsed);
+    }
+  }
+  assert.equal(parseIncoming('<не е xml'), null);
+  assert.equal(parseIncoming('<?xml version="1.0"?><Order/>'), null);
 });

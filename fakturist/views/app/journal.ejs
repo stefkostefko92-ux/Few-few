@@ -42,11 +42,10 @@
     </tbody>
   </table></div>
   <% } %>
-  <% if (purchases.manual.length || purchasesCancelled.length) { %>
+  <% if (purchases.manual.length) { %>
   <h3><%= t('app.journal.manualTitle') %></h3>
   <ul>
     <% purchases.manual.forEach((m) => { %><li><span class="mono"><%= m.number %></span> — <%= t('app.journal.purchases.reasons.' + m.reason) %></li><% }) %>
-    <% purchasesCancelled.forEach((n) => { %><li><span class="mono"><%= n %></span> — <%= t('app.journal.purchases.reasons.cancelled') %></li><% }) %>
   </ul>
   <% } %>
 </section>

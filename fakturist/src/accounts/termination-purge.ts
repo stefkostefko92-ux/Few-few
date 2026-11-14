@@ -31,7 +31,9 @@ const PURGE_TIMEOUT_MS = 2 * MINUTE;
 
 /**
  * Документите, доставени в шкафчето на други фирми, стават техни входящи (XML-ът, както е издаден) —
- * получателят ги пази по закон, нашето изтриване не бива да ги вземе. Повторен проход — дубликат, не грешка.
+ * получателят ги пази по закон, нашето изтриване не бива да ги вземе. Решенията му остават: отказаният е
+ * отказан (иначе би влязъл в дневника за покупките), правото на кредит и месецът — същите. Повторен
+ * проход — дубликат, не грешка.
  */
 async function archiveDelivered(organizationId: string): Promise<number> {
   const entries = await prisma.inboxEntry.findMany({
@@ -44,6 +46,9 @@ async function archiveDelivered(organizationId: string): Promise<number> {
     },
     select: {
       recipientOrgId: true,
+      status: true,
+      vatCredit: true,
+      journalPeriod: true,
       document: { select: { id: true, number: true, ublXml: true } },
     },
   });
@@ -58,6 +63,11 @@ async function archiveDelivered(organizationId: string): Promise<number> {
         fileName: `${entry.document.number ?? 'document'}.xml`,
         buffer: Buffer.from(xml, 'utf8'),
         source: 'INBOX',
+        carry: {
+          status: entry.status === 'REJECTED' ? 'REJECTED' : 'RECEIVED',
+          vatCredit: entry.vatCredit,
+          journalPeriod: entry.journalPeriod,
+        },
       });
       archived += 1;
     } catch (error) {

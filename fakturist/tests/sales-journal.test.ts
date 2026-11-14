@@ -8,6 +8,11 @@ import {
 } from '../src/export/sales-journal.js';
 import { encodeCp1251 } from '../src/export/cp1251.js';
 import {
+  annex2Part,
+  DOMESTIC_REVERSE_163A,
+  EU_SERVICES_ART_21_2,
+} from '../src/export/journal-format.js';
+import {
   creditNote,
   domestic,
   foreignCurrency,
@@ -191,4 +196,33 @@ test('нулевата ставка по чл. 140/146/173 — само точн
   for (const text of ['чл. 140а ЗДДС', 'чл. 1730', 'чл. 30 ЗДДС', 'чл. 14 ЗДДС']) {
     assert.ok(!ZERO_RATE_SPECIAL.test(text), text);
   }
+});
+
+test('основанието е без значение за регистъра: „ЧЛ. 140“, латинско „163a“, „част ii“', () => {
+  assert.ok(ZERO_RATE_SPECIAL.test('ЧЛ. 140 ЗДДС'));
+  assert.ok(!ZERO_RATE_SPECIAL.test('чл. 140a ЗДДС'), 'латинско „a“ след номера също е друг член');
+  assert.ok(DOMESTIC_REVERSE_163A.test('чл. 163a, ал. 2 ЗДДС'), 'латинско „a“');
+  assert.ok(DOMESTIC_REVERSE_163A.test('ЧЛ. 163А ЗДДС'));
+  assert.ok(!DOMESTIC_REVERSE_163A.test('чл. 163аа ЗДДС'));
+  assert.ok(EU_SERVICES_ART_21_2.test('ЧЛ. 21, АЛ. 2 ЗДДС'));
+  assert.equal(annex2Part('Приложение № 2, Част II'), 'II');
+  assert.equal(annex2Part('приложение № 2, част ii'), 'II');
+  assert.equal(annex2Part('част i'), 'I');
+  assert.equal(annex2Part('част IV'), null);
+});
+
+test('сума, която не се побира в 15 знака — за ръчно, не срив; другите документи остават', () => {
+  const huge = {
+    ...domestic,
+    number: '0000000999',
+    lines: domestic.lines.map((l) => ({ ...l, quantity: '1', netPrice: '9999999999999' })),
+  };
+  const result = salesJournal({
+    vatNumber: 'BG208725180',
+    period: '202611',
+    documents: [doc(huge), doc(domestic)],
+  });
+  assert.deepEqual(result.manual, [{ number: '0000000999', reason: 'amount' }]);
+  assert.equal(result.records, 1);
+  assert.equal(result.totals['02-11'], 8650n, 'сборът е само от вписания документ');
 });

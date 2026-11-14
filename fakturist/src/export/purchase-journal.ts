@@ -3,7 +3,7 @@ import type { InvoiceInput } from '../einvoice/model.js';
 import { toCents } from '../einvoice/decimal.js';
 import { encodeCp1251 } from './cp1251.js';
 import {
-  amountText,
+  amountCells,
   cents,
   counterpartyId,
   dayText,
@@ -23,7 +23,9 @@ import {
  *
  * Не се гадае — „за ръчно“: доставчик извън България (ВОП, внос, получени доставки по чл. 82 искат
  * протокол по чл. 117 и самоначисляване), обратно начисляване и ВОД от български доставчик, ставка
- * различна от 20 % и 9 %, вид документ извън 380/381/383/386, файл, който не се разчита по модела.
+ * различна от 20 % и 9 %, вид документ извън 380/381/383/386, файл, който не се разчита по модела, сума,
+ * която не се побира в полето. Решенията, които искат базата (копие, анулиране, проверка на файла), идват
+ * готови от `purchase-load.ts` в `manual`.
  */
 export const PURCHASE_RECORD_LENGTH = 274;
 
@@ -31,15 +33,49 @@ const AMOUNT_FIELDS = ['03-30', '03-31', '03-41', '03-32', '03-42', '03-43', '03
 export type PurchaseField = (typeof AMOUNT_FIELDS)[number];
 
 export type PurchaseManualReason =
-  'foreign' | 'category' | 'rate' | 'type' | 'currency' | 'unreadable';
+  | 'foreign'
+  | 'category'
+  | 'rate'
+  | 'type'
+  | 'currency'
+  | 'unreadable'
+  | 'amount'
+  | 'date'
+  | 'duplicate'
+  | 'invalid'
+  | 'buyer'
+  | 'cancelled'
+  | 'cancelledLater';
 
 export interface PurchaseEntry {
   number: string;
   typeCode: string;
-  issueDate: Date;
+  /** null — файлът няма дата на издаване (полето 03-07 е задължително). */
+  issueDate: Date | null;
   credit: 'FULL' | 'PARTIAL' | 'NONE';
   /** Входът по EN 16931; null — файлът не се разчита по модела. */
   input: InvoiceInput | null;
+  /** Решено от зареждането — документът не влиза във файла, а в списъка „за ръчно“. */
+  manual?: PurchaseManualReason;
+}
+
+/**
+ * Един и същ документ на доставчика: идентификатор + номер + вид. ДДС номерът е без префикса на държавата
+ * (BG131063188 и ЕИК 131063188 са един доставчик); без номера — наименованието. Номерът — без водещи нули
+ * и интервали: „0000000123“ и „123“ са едно и също за доставчика, различни за нас биха дали двойно броене.
+ */
+export function supplierDocumentKey(input: {
+  vatId?: string | null | undefined;
+  legalId?: string | null | undefined;
+  name?: string | null | undefined;
+  number: string;
+  typeCode: string;
+}): string {
+  const clean = (value: string) => value.replace(/[^0-9A-Za-zА-Яа-я]/g, '').toUpperCase();
+  const vat = input.vatId ? clean(input.vatId).replace(/^[A-Z]{2}/, '') : '';
+  const supplier = vat || clean(input.legalId ?? '') || `name:${clean(input.name ?? '')}`;
+  const number = clean(input.number).replace(/^0+(?=.)/, '');
+  return `${supplier}|${number}|${input.typeCode}`;
 }
 
 export interface PurchaseJournalResult {
@@ -97,10 +133,19 @@ export function purchaseJournal(input: {
     PurchaseField,
     bigint
   >;
+  const time = (date: Date | null) => date?.getTime() ?? 0;
   const entries = [...input.entries].sort(
-    (a, b) => a.issueDate.getTime() - b.issueDate.getTime() || a.number.localeCompare(b.number),
+    (a, b) => time(a.issueDate) - time(b.issueDate) || a.number.localeCompare(b.number),
   );
   for (const entry of entries) {
+    if (entry.manual) {
+      manual.push({ number: entry.number, reason: entry.manual });
+      continue;
+    }
+    if (!entry.issueDate) {
+      manual.push({ number: entry.number, reason: 'date' });
+      continue;
+    }
     const kind = DOCUMENT_KIND[entry.typeCode];
     if (!kind) {
       manual.push({ number: entry.number, reason: 'type' });
@@ -117,11 +162,13 @@ export function purchaseJournal(input: {
     }
     // Кредитното известие намалява — с минус (както в PRODAGBI.TXT; сверява се с програмата на НАП).
     const sign = entry.typeCode === '381' ? -1n : 1n;
-    const fields = AMOUNT_FIELDS.map((field) => {
-      const value = (split.values[field] ?? 0n) * sign;
-      totals[field] += value;
-      return digits(amountText(value), 15);
-    }).join('');
+    const values = AMOUNT_FIELDS.map((field) => (split.values[field] ?? 0n) * sign);
+    const fields = amountCells(values);
+    if (fields === null) {
+      manual.push({ number: entry.number, reason: 'amount' });
+      continue;
+    }
+    AMOUNT_FIELDS.forEach((field, i) => (totals[field] += values[i]!));
     const record = [
       text(vatNumber, 15),
       text(period, 6),

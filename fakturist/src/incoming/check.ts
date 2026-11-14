@@ -81,9 +81,8 @@ export function recoverBgFields(input: Record<string, unknown>, declared: Declar
   }
 }
 
-/** `limit` — таванът на качения файл; копието от шкафчето (наш, вече проверен XML) минава без него. */
-export function checkIncoming(xml: string, limit = MAX_INCOMING_BYTES): IncomingCheck {
-  if (Buffer.byteLength(xml, 'utf8') > limit) throw new IncomingError('tooLarge');
+/** XML → заглавните данни и входа (още непроверен); хвърля `IncomingError` за счупен файл. */
+function readIncoming(xml: string): ReadResult {
   let read: ReadResult;
   try {
     const root = parseXml(xml);
@@ -94,6 +93,27 @@ export function checkIncoming(xml: string, limit = MAX_INCOMING_BYTES): Incoming
     throw error;
   }
   recoverBgFields(read.input, read.declared);
+  return read;
+}
+
+/**
+ * Само входът по модела, без изчисление и правила — за дневника, където проверката вече е записана при
+ * получаването (`valid`, `issues`). null — файлът не се разчита по модела.
+ */
+export function parseIncoming(xml: string): InvoiceInput | null {
+  try {
+    const parsed = InvoiceInputSchema.safeParse(readIncoming(xml).input);
+    return parsed.success ? parsed.data : null;
+  } catch (error) {
+    if (error instanceof IncomingError) return null;
+    throw error;
+  }
+}
+
+/** `limit` — таванът на качения файл; копието от шкафчето (наш, вече проверен XML) минава без него. */
+export function checkIncoming(xml: string, limit = MAX_INCOMING_BYTES): IncomingCheck {
+  if (Buffer.byteLength(xml, 'utf8') > limit) throw new IncomingError('tooLarge');
+  const read = readIncoming(xml);
   const parsed = InvoiceInputSchema.safeParse(read.input);
   if (!parsed.success) {
     return {
