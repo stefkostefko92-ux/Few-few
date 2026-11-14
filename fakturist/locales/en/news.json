@@ -7,6 +7,11 @@
     "ok": "Got it"
   },
   "entries": {
+    "2026-11-14-versiya-1-2-pokupki": {
+      "area": "VAT",
+      "title": "Purchase ledger (version 1.2)",
+      "text": "Besides PRODAGBI.TXT you can now download POKUPKI.TXT — from “Incoming” and “Inbox”. On each incoming invoice the accountant chooses the right to deduct (full, partial, none) and the ledger month. VAT exemption bases come from a ready list, and reverse charge under Art. 21(2) and supplies under Art. 69(2) now go into the ledger and the SAF-T data automatically."
+    },
     "2026-11-14-versiya-1-1-saf-t": {
       "area": "VAT",
       "title": "SAF-T data (version 1.1)",

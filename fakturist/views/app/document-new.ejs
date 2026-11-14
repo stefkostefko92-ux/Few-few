@@ -143,7 +143,8 @@
         <option value="">—</option>
         <% ['Z','E','AE','K','G','O'].forEach((c) => { %><option<%= sel('exemption.category', c) %>><%= c %></option><% }) %>
       </select></label>
-      <label><%= t('app.doc.exemptionReason') %><input name="exemption[reason]" value="<%= val('exemption.reason') %>"></label>
+      <label><%= t('app.doc.exemptionReason') %><input name="exemption[reason]" list="exemption-presets" value="<%= val('exemption.reason') %>" aria-describedby="exemption-hint"><span class="hint" id="exemption-hint"><%= t('app.doc.exemptionHint') %></span></label>
+      <datalist id="exemption-presets"><% exemptionPresets.forEach((p) => { %><option value="<%= p.text %>"><%= p.category %></option><% }) %></datalist>
       <label><%= t('app.doc.exemptionCode') %><input name="exemption[code]" class="mono" value="<%= val('exemption.code') %>"></label>
     </fieldset>
   </div>

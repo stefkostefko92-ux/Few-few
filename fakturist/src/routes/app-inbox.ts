@@ -7,6 +7,13 @@ import { roleCan } from '../auth/roles.js';
 import { money } from '../http/view.js';
 import { DOWNLOAD_SELECT, param, sendDocumentFile } from './app-shared.js';
 import { afterDate, PAGE_SIZE, pageOf, pagerLinks, readCursor } from '../http/pagination.js';
+import { IncomingRegisterError } from '../incoming/register.js';
+import {
+  allowedPeriods,
+  journalPeriodOf,
+  setInboxVatCredit,
+  VAT_CREDIT_RIGHTS,
+} from '../incoming/vat-credit.js';
 
 /** Записът в шкафчето САМО на тази фирма — чужд запис е 404, а получателят не вижда други документи на изпращача. */
 async function inboxEntryFor(recipientOrgId: string, entryId: string) {
@@ -88,6 +95,18 @@ export function appInboxRouter(): Router {
       entry,
       document: entry.document,
       canDecide: roleCan(access.role, 'documents.issue'),
+      canAccounting: roleCan(access.role, 'accounting.manage'),
+      creditRights: VAT_CREDIT_RIGHTS,
+      journal: {
+        period: journalPeriodOf({
+          journalPeriod: entry.journalPeriod,
+          issueDate: entry.document.issueDate,
+        }),
+        window: allowedPeriods(entry.document.issueDate),
+      },
+      journalOk: req.query['ok'] === 'journal',
+      journalErr:
+        req.query['err'] === 'period' || req.query['err'] === 'invalid' ? req.query['err'] : null,
       money: (cents: bigint) => money(cents, entry.document.currency, res.locals.lang),
     });
   });
@@ -96,6 +115,27 @@ export function appInboxRouter(): Router {
     const access = await requireOrg(req, 'documents.read');
     const entry = await inboxEntryFor(access.organizationId, param(req, 'entryId'));
     await sendDocumentFile(res, entry.document, String(req.params['format']));
+  });
+
+  // Дневникът за покупките — преди `/:decision`, иначе „dnevnik“ би минало за решение.
+  router.post('/app/o/:orgId/shkafche/:entryId/dnevnik', async (req, res) => {
+    const access = await requireOrg(req, 'accounting.manage');
+    const id = param(req, 'entryId');
+    const body = req.body as Record<string, unknown>;
+    const base = `/app/o/${access.organizationId}/shkafche/${id}`;
+    try {
+      await setInboxVatCredit(access, req.principal!.user.id, id, {
+        credit: body['credit'],
+        period: body['period'],
+      });
+    } catch (error) {
+      if (error instanceof IncomingRegisterError) {
+        if (error.code === 'notFound') throw new HttpError(404);
+        return res.redirect(303, `${base}?err=${error.code === 'date' ? 'period' : 'invalid'}`);
+      }
+      throw error;
+    }
+    res.redirect(303, `${base}?ok=journal`);
   });
 
   router.post('/app/o/:orgId/shkafche/:entryId/:decision', async (req, res) => {

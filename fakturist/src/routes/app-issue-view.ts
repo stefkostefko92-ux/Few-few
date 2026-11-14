@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { prisma } from '../db.js';
 import type { AnnulError } from '../documents/annul.js';
 import { ANNUL_REASONS } from '../documents/annul.js';
+import { EXEMPTION_PRESETS } from '../documents/exemption-reasons.js';
 import { COMMON_UNITS, PAYMENT_MEANS, VAT_CATEGORIES } from '../einvoice/codes.js';
 import { catalogForForm } from '../catalog/document-prefill.js';
 import { accessPoint, peppolAllowed } from '../peppol/settings.js';
@@ -121,6 +122,7 @@ export async function renderNewDocument(
     proforma,
     peppolReady: ap !== null && peppolOk && participant?.status === 'ACTIVE',
     annulReasons: ANNUL_REASONS,
+    exemptionPresets: EXEMPTION_PRESETS,
     today,
     units: COMMON_UNITS,
     categories: VAT_CATEGORIES,

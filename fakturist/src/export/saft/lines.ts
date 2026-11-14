@@ -3,6 +3,7 @@ import type { VatCategory } from '../../einvoice/codes.js';
 import { dec, divRound, neg, toFixed, type Dec } from '../../einvoice/decimal.js';
 import { el, leaf, type XmlElement } from '../../einvoice/xml.js';
 import type { AddressInput, InvoiceInput } from '../../einvoice/model.js';
+import { exemptionReasonFor } from '../journal-format.js';
 import { clip, DOCUMENT_ALLOWANCE, DOCUMENT_CHARGE, productCode } from './keys.js';
 
 /** AddressStructure — редът е по XSD: StreetName, AdditionalAddressDetail, City, PostalCode, Country. */
@@ -63,7 +64,11 @@ export function saftLines(input: InvoiceInput, calc: Calculated): SaftLine[] {
       net: computed.net,
       category: computed.category,
       rate: computed.rate,
-      exemption: breakdownGroup(calc, computed.category, computed.rate)?.exemptionReason,
+      exemption: exemptionReasonFor(
+        computed.category,
+        breakdownGroup(calc, computed.category, computed.rate)?.exemptionReason,
+        input.vatExemptions,
+      ),
     };
   });
   for (const ac of calc.allowanceCharges) {
@@ -78,7 +83,11 @@ export function saftLines(input: InvoiceInput, calc: Calculated): SaftLine[] {
       net: ac.isCharge ? ac.amount : neg(ac.amount),
       category: ac.category,
       rate: ac.rate,
-      exemption: breakdownGroup(calc, ac.category, ac.rate)?.exemptionReason,
+      exemption: exemptionReasonFor(
+        ac.category,
+        breakdownGroup(calc, ac.category, ac.rate)?.exemptionReason,
+        input.vatExemptions,
+      ),
     });
   }
   return lines;

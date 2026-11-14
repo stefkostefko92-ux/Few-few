@@ -1,6 +1,6 @@
 {
   "name": "fakturist",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "description": "Фактурист by Carbon Stealth VCC — онлайн фактуриране за фирми и счетоводни кантори, с ядро върху EN 16931 (структурирани е-фактури UBL 2.1 и CII).",

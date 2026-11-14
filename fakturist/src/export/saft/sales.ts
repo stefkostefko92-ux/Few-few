@@ -4,6 +4,7 @@ import { add, isNegative, neg, toFixed, toPlain, ZERO, type Dec } from '../../ei
 import { el, leaf, type XmlElement } from '../../einvoice/xml.js';
 import { NOTE_REASON_PREFIX } from '../../documents/form.js';
 import { amountStructure, lineVat, money, parseRate, toEur } from './amounts.js';
+import { exemptionReasonFor } from '../journal-format.js';
 import { clip } from './keys.js';
 import { addressXml, saftLines, type SaftLine } from './lines.js';
 import { SAFT_NAMESPACE, type SaftAccounts, type SaftCodes, type SaftDocument } from './model.js';
@@ -136,7 +137,11 @@ function invoiceXml(
       taxInformation(
         'TaxInformationTotals',
         codes,
-        { category: g.category, rate: g.rate, exemption: g.exemptionReason },
+        {
+          category: g.category,
+          rate: g.rate,
+          exemption: exemptionReasonFor(g.category, g.exemptionReason, input.vatExemptions),
+        },
         g.taxableEur ?? g.taxable,
         g.vat,
         g.vatEur,
@@ -203,7 +208,14 @@ export function salesInvoices(input: {
     const lines = saftLines(doc.input, calc);
     const unmapped =
       lines.some((x) => codes.vatTaxCode(x.category, x.rate, x.exemption) === null) ||
-      calc.breakdown.some((g) => codes.vatTaxCode(g.category, g.rate, g.exemptionReason) === null);
+      calc.breakdown.some(
+        (g) =>
+          codes.vatTaxCode(
+            g.category,
+            g.rate,
+            exemptionReasonFor(g.category, g.exemptionReason, doc.input.vatExemptions),
+          ) === null,
+      );
     if (unmapped) {
       manual.push({ number: doc.number, reason: 'category' });
       continue;

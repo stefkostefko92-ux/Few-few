@@ -109,7 +109,7 @@ test('чужда валута: сумата в евро по курса, вал�
   assert.deepEqual(values(xml, 'GrossTotal'), ['110.68']);
 });
 
-test('за ръчно: обратно начисляване и извън обхвата (зависят от основанието), анулиран; 0 % по чл. 30 — 100214', () => {
+test('обратно начисляване по чл. 21, ал. 2 — 100217; 0 % по чл. 30 — 100214; извън обхвата без член и анулиран — за ръчно', () => {
   const result = salesInvoices({
     documents: [doc(reverseCharge), doc(zeroRated), doc(notRegistered), doc(domestic, 'CANCELLED')],
     accounts,
@@ -117,14 +117,16 @@ test('за ръчно: обратно начисляване и извън об�
   });
   assert.deepEqual(
     result.included.map((d) => d.number),
-    [zeroRated.number],
+    [reverseCharge.number, zeroRated.number],
   );
   assert.deepEqual(
     result.manual.map((m) => m.reason),
-    ['category', 'category', 'cancelled'],
+    ['category', 'cancelled'],
   );
   const xml = renderXml(result.xml);
-  assert.deepEqual([...new Set(values(xml, 'TaxCode'))], ['100214']);
+  assert.deepEqual([...new Set(values(xml, 'TaxCode'))], ['100217', '100214']);
+  // Обратно начисляване: ставката е „Н/П“ — без TaxPercentage; клиентът от ЕС — 11 + ДДС номер.
+  assert.deepEqual(values(xml, 'CustomerID')[0], '11IT12345678903');
   assert.match(xml, /<TaxPercentage>0\.00<\/TaxPercentage>/);
 });
 
@@ -155,8 +157,15 @@ test('TaxCode по категорията — точно по лист TAX-IMP �
   assert.equal(code('G', '0'), '100214');
   assert.equal(code('K', '0'), '100215');
   assert.equal(code('E', '0'), '100219');
-  assert.equal(code('AE', '0'), null);
+  assert.equal(code('AE', '0'), null, 'без член — за ръчно');
   assert.equal(code('O'), null);
+  assert.equal(code('AE', '0', 'Обратно начисляване — чл. 21, ал. 2 ЗДДС'), '100217');
+  assert.equal(code('O', undefined, 'Място на изпълнение — чл. 69, ал. 2 ЗДДС'), '100218');
+  assert.equal(code('AE', '0', 'чл. 163а, ал. 2 ЗДДС (Приложение № 2, част I)'), '100227');
+  assert.equal(code('AE', '0', 'чл. 163а, ал. 2 ЗДДС (Приложение № 2, част II)'), '100228');
+  assert.equal(code('AE', '0', 'чл. 163а, ал. 2 ЗДДС'), null, 'без частта — за ръчно');
+  assert.equal(code('AE', '0', 'чл. 21, ал. 20'), null, 'ал. 20 не е ал. 2');
+  assert.equal(code('O', undefined, 'чл. 113, ал. 9 ЗДДС'), null);
   assert.equal(official.vatTaxType, NRA_CODES.vatTaxType);
   assert.equal(
     official.vatRegistrationTypes.find((t) => t.code === NRA_CODES.vatRegistrationType)
@@ -310,7 +319,7 @@ test('салда: документ, анулиран по-късно, е в си
 
 test('пакетът: пет файла, свързано лице Y, артикулите — по веднъж, услугите с 00000000', () => {
   const bundle = saftBundle({
-    documents: [doc(domestic), doc(creditNote), doc(reverseCharge)],
+    documents: [doc(domestic), doc(creditNote), doc(notRegistered)],
     balances: new Map([['10131063188', { openingCents: -500n, closingCents: 11469n }]]),
     accounts,
     codes: NRA_CODES,
@@ -321,7 +330,7 @@ test('пакетът: пет файла, свързано лице Y, артик
     ['SalesInvoices.xml', 'Customers.xml', 'Products.xml', 'TaxTable.xml', 'UOMTable.xml'],
   );
   assert.equal(bundle.included, 2);
-  assert.deepEqual(bundle.manual, [{ number: '0000000126', reason: 'category' }]);
+  assert.deepEqual(bundle.manual, [{ number: notRegistered.number, reason: 'category' }]);
   const file = (name: string) => bundle.files.find((f) => f.name === name)!.xml;
   const customers = file('Customers.xml');
   assert.deepEqual(values(customers, 'RelatedParty'), ['Y']);
@@ -338,13 +347,13 @@ test('пакетът: пет файла, свързано лице Y, артик
   assert.deepEqual(values(products, 'UOMBase'), values(products, 'UOMStandard'));
   assert.deepEqual(values(customers, 'TaxType'), ['100010']);
   const readme = saftReadme({ orgName: 'Карбон Стелт ЕДПК', period: '2026-11', accounts, bundle });
-  assert.match(readme, /0000000126 — обратно начисляване, извън обхвата или друга ставка/);
+  assert.match(readme, /0000000001 — обратно начисляване, извън обхвата или друга ставка/);
   assert.match(readme, /\r\n$/);
 });
 
 test('месец без документи — без файлове (схемата иска поне един запис)', () => {
   const bundle = saftBundle({
-    documents: [doc(reverseCharge)],
+    documents: [doc(notRegistered)],
     balances: new Map(),
     accounts,
     codes: NRA_CODES,

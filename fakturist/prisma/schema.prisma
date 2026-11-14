@@ -657,9 +657,13 @@ model InboxEntry {
   decidedBy      User?        @relation(fields: [decidedById], references: [id], onDelete: SetNull)
   /// Причината при отказ („не е за нас“, „грешна сума“) — без лични данни.
   rejectReason   String?
+  /// Дневник за покупките на получателя — както при входящите (SPEC 68).
+  vatCredit      VatCredit    @default(FULL)
+  journalPeriod  String?
 
   @@unique([documentId, recipientOrgId])
   @@index([recipientOrgId, deliveredAt])
+  @@index([recipientOrgId, journalPeriod])
   @@index([senderOrgId])
   @@index([decidedById])
 }

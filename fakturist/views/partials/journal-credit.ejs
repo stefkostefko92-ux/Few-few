@@ -1,0 +1,16 @@
+<%# Дневникът за покупките (SPEC 68): правото на кредит и месецът — общо за „Входящи“ и „Шкафче“. %>
+<section class="panel" aria-labelledby="journal-h">
+  <h2 id="journal-h"><%= t('app.incoming.journal.title') %></h2>
+  <dl class="facts">
+    <div><dt><%= t('app.incoming.journal.credit') %></dt><dd><%= t('app.incoming.journal.rights.' + journalCredit) %></dd></div>
+    <div><dt><%= t('app.incoming.journal.period') %></dt><dd class="mono"><%= journal.period || '—' %></dd></div>
+  </dl>
+  <% if (canAccounting && journal.window) { %>
+  <form method="post" action="<%= journalAction %>" class="stack narrow-form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label><%= t('app.incoming.journal.credit') %><select name="credit"><% creditRights.forEach((r) => { %><option value="<%= r %>"<%= journalCredit === r ? ' selected' : '' %>><%= t('app.incoming.journal.rights.' + r) %></option><% }) %></select></label>
+    <label><%= t('app.incoming.journal.period') %><input type="month" name="period" required min="<%= journal.window.from %>" max="<%= journal.window.to %>" value="<%= journal.period %>"><span class="hint"><%= t('app.incoming.journal.periodHint') %></span></label>
+    <div><button type="submit" class="button-secondary"><%= t('app.incoming.journal.save') %></button></div>
+  </form>
+  <% } %>
+</section>

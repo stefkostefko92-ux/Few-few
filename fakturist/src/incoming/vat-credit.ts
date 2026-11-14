@@ -48,40 +48,51 @@ export const journalPeriodOf = (entry: {
   issueDate: Date | null;
 }): string | null => entry.journalPeriod ?? monthOf(entry.issueDate);
 
+/** Проверява избора спрямо датата на издаване; връща записа или хвърля `state`/`date`. */
+function validated(
+  input: { credit: unknown; period: unknown },
+  issueDate: Date | null,
+): { vatCredit: VatCreditRight; journalPeriod: string | null; period: string } {
+  const credit = input.credit;
+  if (typeof credit !== 'string' || !VAT_CREDIT_RIGHTS.includes(credit as VatCreditRight)) {
+    throw new IncomingRegisterError('state');
+  }
+  const window = allowedPeriods(issueDate);
+  const period = input.period;
+  if (
+    !window ||
+    typeof period !== 'string' ||
+    !PERIOD.test(period) ||
+    period < window.from ||
+    period > window.to
+  ) {
+    throw new IncomingRegisterError('date');
+  }
+  // Месецът на издаване не се пише — той е по подразбиране и следва датата.
+  return {
+    vatCredit: credit as VatCreditRight,
+    journalPeriod: period === window.from ? null : period,
+    period,
+  };
+}
+
+/** Качена/получена входяща фактура (`IncomingInvoice`). */
 export async function setIncomingVatCredit(
   access: OrgAccess,
   actorId: string,
   id: string,
   input: { credit: unknown; period: unknown },
 ): Promise<void> {
-  const credit = input.credit;
-  if (typeof credit !== 'string' || !VAT_CREDIT_RIGHTS.includes(credit as VatCreditRight)) {
-    throw new IncomingRegisterError('state');
-  }
   await prisma.$transaction(async (tx) => {
     const entry = await tx.incomingInvoice.findFirst({
       where: { id, organizationId: access.organizationId },
       select: { issueDate: true },
     });
     if (!entry) throw new IncomingRegisterError('notFound');
-    const window = allowedPeriods(entry.issueDate);
-    const period = input.period;
-    if (
-      !window ||
-      typeof period !== 'string' ||
-      !PERIOD.test(period) ||
-      period < window.from ||
-      period > window.to
-    ) {
-      throw new IncomingRegisterError('date');
-    }
+    const { vatCredit, journalPeriod, period } = validated(input, entry.issueDate);
     await tx.incomingInvoice.updateMany({
       where: { id, organizationId: access.organizationId },
-      data: {
-        vatCredit: credit as VatCreditRight,
-        // Месецът на издаване не се пише — той е по подразбиране и следва датата.
-        journalPeriod: period === window.from ? null : period,
-      },
+      data: { vatCredit, journalPeriod },
     });
     await audit(tx, {
       actorId,
@@ -89,7 +100,36 @@ export async function setIncomingVatCredit(
       action: 'incoming.vatCredit',
       targetType: 'IncomingInvoice',
       targetId: id,
-      details: { credit, period },
+      details: { credit: vatCredit, period },
+    });
+  });
+}
+
+/** Документ от шкафчето (`InboxEntry`) — датата е на документа на изпращача. */
+export async function setInboxVatCredit(
+  access: OrgAccess,
+  actorId: string,
+  id: string,
+  input: { credit: unknown; period: unknown },
+): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const entry = await tx.inboxEntry.findFirst({
+      where: { id, recipientOrgId: access.organizationId },
+      select: { document: { select: { issueDate: true } } },
+    });
+    if (!entry) throw new IncomingRegisterError('notFound');
+    const { vatCredit, journalPeriod, period } = validated(input, entry.document.issueDate);
+    await tx.inboxEntry.updateMany({
+      where: { id, recipientOrgId: access.organizationId },
+      data: { vatCredit, journalPeriod },
+    });
+    await audit(tx, {
+      actorId,
+      organizationId: access.organizationId,
+      action: 'inbox.vatCredit',
+      targetType: 'InboxEntry',
+      targetId: id,
+      details: { credit: vatCredit, period },
     });
   });
 }

@@ -1,8 +1,23 @@
 import { calculate, type VatBreakdown } from '../einvoice/calculate.js';
+import { toCents } from '../einvoice/decimal.js';
 import { InvoiceInputSchema } from '../einvoice/model.js';
-import { toCents, type Dec } from '../einvoice/decimal.js';
 import { sofiaToday } from '../time.js';
 import { encodeCp1251 } from './cp1251.js';
+import {
+  amountText,
+  cents,
+  counterpartyId,
+  dayText,
+  digits,
+  DOCUMENT_KIND,
+  EU_SERVICES_ART_21_2,
+  exemptionReasonFor,
+  PLACE_ABROAD_ART_69_2,
+  text,
+  ZERO_RATE_SPECIAL,
+} from './journal-format.js';
+
+export { amountText, ZERO_RATE_SPECIAL } from './journal-format.js';
 
 /**
  * Дневникът за продажбите като файл PRODAGBI.TXT (SPEC 61) — по Приложение № 12 към чл. 113, ал. 4
@@ -16,13 +31,6 @@ import { encodeCp1251 } from './cp1251.js';
  * гадае: документът излиза в списъка „за ръчно вписване“.
  */
 export const RECORD_LENGTH = 424;
-
-/**
- * Нулевата ставка по чл. 140, 146, ал. 1 и 173 ЗДДС — своето поле (02-16) и свой код в SAF-T (100216).
- * Краят на номера е изричен: `\b` в JS не познава кирилицата и би приел „чл. 140а“ за чл. 140.
- */
-export const ZERO_RATE_SPECIAL = /чл\.\s*(140|146|173)(?![0-9а-яА-Я])/;
-const NO_ID = '999999999999999';
 
 /** Полетата по реда на таблицата в Приложение № 12 (код, дължина). */
 const AMOUNT_FIELDS = [
@@ -46,14 +54,6 @@ const AMOUNT_FIELDS = [
 ] as const;
 export type AmountField = (typeof AMOUNT_FIELDS)[number];
 
-/** Вид на документа (02-04): фактура и авансова фактура — 01, дебитно — 02, кредитно — 03. */
-const DOCUMENT_KIND: Record<string, string> = {
-  '380': '01',
-  '386': '01',
-  '383': '02',
-  '381': '03',
-};
-
 export interface JournalDocument {
   number: string | null;
   typeCode: string;
@@ -71,37 +71,18 @@ export interface JournalResult {
   manual: Array<{ number: string; reason: ManualReason }>;
 }
 
-/** По знаци (code points), не по UTF-16 единици: знак извън BMP е един байт в cp1251 („?“), не два. */
-const text = (value: string, length: number) => {
-  const chars = [...value.replace(/[\r\n\t]+/g, ' ')].slice(0, length);
-  return chars.join('') + ' '.repeat(length - chars.length);
-};
-const digits = (value: number | bigint | string, length: number) =>
-  String(value).padStart(length, ' ');
-
-export function amountText(cents: bigint): string {
-  const sign = cents < 0n ? '-' : '';
-  const abs = cents < 0n ? -cents : cents;
-  return `${sign}${abs / 100n}.${(abs % 100n).toString().padStart(2, '0')}`;
-}
-
-function dayText(date: Date): string {
-  const [y, m, d] = date.toISOString().slice(0, 10).split('-');
-  return `${d}/${m}/${y}`;
-}
-
-const cents = (value: Dec | null) => (value ? toCents(value) : 0n);
-
 /** Разбивката по ставки → полетата; null — не се разпределя еднозначно. */
 function amounts(
   breakdown: readonly VatBreakdown[],
   inEur: boolean,
+  exemptions: ReadonlyArray<{ category: string; reason?: string | undefined }>,
 ): { values: Partial<Record<AmountField, bigint>> } | { manual: ManualReason } {
   const values: Partial<Record<AmountField, bigint>> = {};
   const put = (field: AmountField, value: bigint) => {
     values[field] = (values[field] ?? 0n) + value;
   };
   for (const group of breakdown) {
+    const reason = exemptionReasonFor(group.category, group.exemptionReason, exemptions);
     const base = inEur ? cents(group.taxable) : cents(group.taxableEur);
     const vat = inEur ? cents(group.vat) : cents(group.vatEur);
     if (!inEur && group.taxableEur === null) return { manual: 'currency' };
@@ -121,12 +102,23 @@ function amounts(
       put('02-14', base);
     } else if (group.category === 'Z') {
       // Нулевата ставка по чл. 140, 146, ал. 1 и 173 има свое поле; другата по глава трета — 02-14.
-      put(ZERO_RATE_SPECIAL.test(group.exemptionReason ?? '') ? '02-16' : '02-14', base);
+      put(ZERO_RATE_SPECIAL.test(reason) ? '02-16' : '02-14', base);
     } else if (group.category === 'E') {
       put('02-19', base);
+    } else if (
+      (group.category === 'AE' || group.category === 'O') &&
+      EU_SERVICES_ART_21_2.test(reason)
+    ) {
+      // Услуги по чл. 21, ал. 2 с място в друга държава членка — не влизат в 02-10.
+      put('02-17', base);
+    } else if (
+      (group.category === 'AE' || group.category === 'O') &&
+      PLACE_ABROAD_ART_69_2.test(reason)
+    ) {
+      put('02-18', base);
     } else {
-      // AE (обратно начисляване) и O (извън обхвата): полето зависи от основанието (чл. 21, ал. 2,
-      // чл. 69, ал. 2, чл. 163а…) — решава счетоводителят.
+      // Друго обратно начисляване (чл. 163а — само кодово поле 02-27) и извън обхвата без основание по
+      // чл. 21, ал. 2 или чл. 69, ал. 2 — решава счетоводителят.
       return { manual: 'category' };
     }
   }
@@ -144,17 +136,6 @@ function amounts(
     (values['02-23'] ?? 0n) +
     (values['02-24'] ?? 0n);
   return { values };
-}
-
-function counterpartyId(buyer: {
-  vatId?: string | undefined;
-  legalId?: string | undefined;
-  address: { countryCode: string };
-}): string {
-  if (buyer.vatId) return buyer.vatId.replace(/\s+/g, '').slice(0, 15);
-  // Неregистриран по ДДС в България — ЕИК (§ 1 от ДР на ППЗДДС); чуждестранно лице без номер — 9-ки.
-  if (buyer.address.countryCode === 'BG' && buyer.legalId) return buyer.legalId.slice(0, 15);
-  return NO_ID;
 }
 
 /**
@@ -203,7 +184,7 @@ export function salesJournal(input: {
     }
     const parsed = InvoiceInputSchema.parse(doc.input);
     const calc = calculate(parsed);
-    const split = amounts(calc.breakdown, parsed.currency === 'EUR');
+    const split = amounts(calc.breakdown, parsed.currency === 'EUR', parsed.vatExemptions);
     if ('manual' in split) {
       manual.push({ number, reason: split.manual });
       continue;

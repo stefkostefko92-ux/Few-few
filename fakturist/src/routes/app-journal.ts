@@ -5,11 +5,14 @@ import { audit } from '../audit.js';
 import { requireOrg, type OrgAccess } from '../auth/guards.js';
 import { DAY, HOUR, sofiaToday } from '../time.js';
 import { salesJournal } from '../export/sales-journal.js';
+import { purchaseJournal } from '../export/purchase-journal.js';
+import { loadPurchases } from '../export/purchase-load.js';
 
 /**
- * „Дневник за продажбите“ (SPEC 61): преглед за месец и файлът PRODAGBI.TXT за внос в програмата на НАП
- * или в счетоводната програма. Четене — `documents.read` (и счетоводителят по пълномощно). Подава го
- * фирмата; ние само го подготвяме. Без ДДС номер — фирмата не води дневник по ЗДДС.
+ * „Дневници по ДДС“ (SPEC 61, 69): за месец — PRODAGBI.TXT от издадените документи и POKUPKI.TXT от
+ * входящите и шкафчето, за внос в програмата на НАП или в счетоводната програма. Четене — `documents.read`
+ * (и счетоводителят по пълномощно). Подава ги фирмата; ние само ги подготвяме. Без ДДС номер — фирмата
+ * не води дневници по ЗДДС.
  */
 const limiter = rateLimit({
   windowMs: HOUR,
@@ -68,16 +71,35 @@ async function build(req: Request, access: OrgAccess) {
   return { org, period, result };
 }
 
+async function buildPurchases(req: Request, access: OrgAccess) {
+  const period = journalPeriod(req.query['period']);
+  const org = await prisma.organization.findUniqueOrThrow({
+    where: { id: access.organizationId },
+    select: { id: true, vatNumber: true },
+  });
+  if (!org.vatNumber) return { org, period, result: null, cancelled: [] as string[] };
+  const { entries, cancelled } = await loadPurchases(org.id, period);
+  const result = purchaseJournal({
+    vatNumber: org.vatNumber,
+    period: period.replace('-', ''),
+    entries,
+  });
+  return { org, period, result, cancelled };
+}
+
 export function appJournalRouter(): Router {
   const router = Router();
 
   router.get('/app/o/:orgId/dnevnik', limiter, async (req, res) => {
     const access = await requireOrg(req, 'documents.read');
     const { org, period, result } = await build(req, access);
+    const purchases = await buildPurchases(req, access);
     res.render('app/journal', {
       org,
       period,
       result,
+      purchases: purchases.result,
+      purchasesCancelled: purchases.cancelled,
       maxPeriod: sofiaToday().slice(0, 7),
     });
   });
@@ -101,6 +123,28 @@ export function appJournalRouter(): Router {
       .set('Cache-Control', 'private, no-store')
       .type('text/plain; charset=windows-1251')
       .set('Content-Disposition', 'attachment; filename="PRODAGBI.TXT"')
+      .send(result.file);
+  });
+
+  router.get('/app/o/:orgId/dnevnik/POKUPKI.TXT', limiter, async (req, res) => {
+    const access = await requireOrg(req, 'documents.read');
+    const { org, period, result } = await buildPurchases(req, access);
+    if (!result) return res.redirect(303, `/app/o/${org.id}/dnevnik`);
+    await prisma.$transaction((tx) =>
+      audit(tx, {
+        actorId: req.principal!.user.id,
+        organizationId: org.id,
+        action: 'journal.purchases.exported',
+        targetType: 'Organization',
+        targetId: org.id,
+        details: { period, records: result.records, manual: result.manual.length },
+      }),
+    );
+    res
+      .status(200)
+      .set('Cache-Control', 'private, no-store')
+      .type('text/plain; charset=windows-1251')
+      .set('Content-Disposition', 'attachment; filename="POKUPKI.TXT"')
       .send(result.file);
   });
 

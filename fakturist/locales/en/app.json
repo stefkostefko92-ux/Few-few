@@ -160,7 +160,8 @@
     },
     "pdfLanguageHint": "The XML has no language. The document is always in Bulgarian; English goes alongside it (Accountancy Act, Art. 5).",
     "advanceNumber": "Deduct the advance from invoice no.",
-    "advanceHint": "Final invoices only: the number of the prepayment invoice (type 386) for the same buyer. Adds a minus line for the advance base at the same rate."
+    "advanceHint": "Final invoices only: the number of the prepayment invoice (type 386) for the same buyer. Adds a minus line for the advance base at the same rate.",
+    "exemptionHint": "Pick a ready legal basis or write your own — with the article of the VAT Act; the ledger and SAF-T use it to find the field."
   },
   "view": {
     "issued": "The document has been issued.",
@@ -971,8 +972,8 @@
     "tag": "terminated"
   },
   "journal": {
-    "title": "Sales VAT journal",
-    "intro": "The PRODAGBI.TXT file for a month — to import into the NRA program or your accounting software. You or your accountant file it together with the purchase journal and the VAT return.",
+    "title": "VAT ledgers",
+    "intro": "The PRODAGBI.TXT and POKUPKI.TXT files for a month — for import into the NRA program or your accounting software. You or your accountant submit them, together with the VAT return.",
     "noVat": "The company has no VAT number — no VAT sales journal is kept.",
     "period": "Month",
     "show": "Show",
@@ -1005,7 +1006,29 @@
       "format": "Per Annex 12 to Art. 113(4) of the VAT Act Regulations: windows-1251, one document per line, fixed-length fields.",
       "euro": "Amounts are in euro (Euro Introduction Act, Art. 50). Credit notes carry a minus sign.",
       "annul": "A document cancelled in the same month has no amounts; one cancelled later appears in the month of cancellation with the same amounts and the opposite sign.",
-      "check": "Check the file with the NRA program before filing. Fakturist files nothing with the NRA on your behalf."
+      "check": "Check the file with the NRA program before filing. Fakturist files nothing with the NRA on your behalf.",
+      "credit": "Purchases follow the right to deduct chosen on each incoming invoice (full by default); the month is the one chosen for the ledger, otherwise the month of issue."
+    },
+    "purchases": {
+      "title": "Purchase ledger",
+      "intro": "From “Incoming” and “Inbox” — rejected ones excluded. The right to deduct and the month are chosen on each invoice.",
+      "download": "Download POKUPKI.TXT",
+      "fields": {
+        "03_30": "Base and tax without the right to deduct, or without tax",
+        "03_31": "Base with the right to full deduction",
+        "03_41": "VAT with the right to full deduction",
+        "03_32": "Base with the right to partial deduction",
+        "03_42": "VAT with the right to partial deduction"
+      },
+      "reasons": {
+        "foreign": "supplier outside Bulgaria — intra-EU acquisition, import or a supply under Art. 82: a protocol under Art. 117 is needed",
+        "category": "reverse charge or intra-EU supply from a Bulgarian supplier — a protocol under Art. 117 is needed",
+        "rate": "a rate other than 20 % and 9 %",
+        "type": "a document type that is not entered automatically",
+        "currency": "a document in a currency without a euro rate",
+        "unreadable": "the file cannot be read against the EN 16931 model — see the check in “Incoming”",
+        "cancelled": "cancelled by the sender — entered under the cancellation rules"
+      }
     }
   },
   "saft": {

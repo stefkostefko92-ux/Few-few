@@ -124,21 +124,51 @@ test('анулиране: в същия период — без стойност
   assert.equal(amount(reversed, 3), '-17.30'.padStart(15));
 });
 
-test('валута — суми в евро; нулева ставка — 02-14; обратно начисляване и извън обхвата — за ръчно вписване', () => {
+test('валута — суми в евро; нулева ставка — 02-14; услуги по чл. 21, ал. 2 — 02-17; извън обхвата без член — за ръчно', () => {
   const result = salesJournal({
     vatNumber: 'BG208725180',
     period: '202611',
     documents: [doc(foreignCurrency), doc(zeroRated), doc(reverseCharge), doc(notRegistered)],
   });
-  assert.equal(result.records, 2);
+  assert.equal(result.records, 3);
   assert.equal(result.totals['02-11'], 92_23n);
   assert.equal(result.totals['02-21'], 18_45n);
   assert.ok(result.totals['02-14'] > 0n, 'чл. 30 — глава трета');
+  // Обратно начисляване, чл. 21, ал. 2: 10 ч × 55.00 = 550.00 в 02-17 — извън 02-10.
+  assert.equal(result.totals['02-17'], 550_00n);
+  assert.equal(result.totals['02-10'], 92_23n + result.totals['02-14']);
+  const rc = decode(result.file)
+    .split('\r\n')
+    .find((r) => r.slice(42, 62).trim() === reverseCharge.number)!;
+  assert.equal(amount(rc, 13), '550.00'.padStart(15), '02-17 на мястото си');
   assert.deepEqual(
-    result.manual.map((m) => m.reason).sort(),
-    ['category', 'category'],
-    'AE и O — полето зависи от основанието',
+    result.manual,
+    [{ number: notRegistered.number, reason: 'category' }],
+    'O по чл. 113, ал. 9 — без поле в дневника',
   );
+});
+
+test('основанието решава: чл. 69, ал. 2 — 02-18; чл. 163а — само кодово поле, сумата за ръчно', () => {
+  const withReason = (reason: string, category: 'AE' | 'O') => ({
+    ...reverseCharge,
+    number: `R-${category}-${reason.length}`,
+    vatExemptions: [{ category, reason }],
+    lines: reverseCharge.lines.map((l) => ({
+      ...l,
+      vat: { category, rate: category === 'AE' ? '0' : undefined },
+    })),
+  });
+  const result = salesJournal({
+    vatNumber: 'BG208725180',
+    period: '202611',
+    documents: [
+      doc(withReason('Място на изпълнение извън страната — чл. 69, ал. 2 ЗДДС', 'O')),
+      doc(withReason('Обратно начисляване — чл. 163а, ал. 2 ЗДДС (Приложение № 2, част I)', 'AE')),
+    ],
+  });
+  assert.equal(result.totals['02-18'], 550_00n);
+  assert.equal(result.manual.length, 1);
+  assert.equal(result.manual[0]!.reason, 'category');
 });
 
 test('знак извън BMP (емоджи) в името: един байт „?“, записът остава 424 байта', () => {

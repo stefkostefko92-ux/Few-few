@@ -25,6 +25,9 @@
   <div><dt><%= t('app.inbox.deliveredAt') %></dt><dd class="mono"><%= entry.deliveredAt.toISOString().replace('T', ' ').slice(0, 16) %></dd></div>
   <% if (entry.decidedAt) { %><div><dt><%= t('app.inbox.decided') %></dt><dd><%= entry.decidedBy ? entry.decidedBy.name : '—' %><% if (entry.rejectReason) { %> · <%= entry.rejectReason %><% } %></dd></div><% } %>
 </dl>
+<% if (journalOk) { %><p class="ok" role="status"><%= t('app.incoming.ok.journal') %></p><% } %>
+<% if (journalErr) { %><p class="error" role="alert"><%= tOr('app.incoming.err.' + journalErr, t('auth.errors.invalid')) %></p><% } %>
+<% if (entry.status !== 'REJECTED') { %><%- include('../partials/journal-credit', { journalAction: '/app/o/' + entry.recipientOrgId + '/shkafche/' + entry.id + '/dnevnik', journalCredit: entry.vatCredit }) %><% } %>
 <% if (canDecide && entry.status === 'RECEIVED') { %>
 <div class="grid-2">
   <form method="post" action="/app/o/<%= entry.recipientOrgId %>/shkafche/<%= entry.id %>/priemi" class="stack panel">
