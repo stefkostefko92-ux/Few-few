@@ -1,27 +1,17 @@
 {
   "date": "2026-11-14",
-  "ref": "0a51ef2e5c941a43e6e139b22a26b678ac964ea0",
+  "ref": "7dfd688bde078a10cc2a8551ccc6288c46c02a2f",
   "cli": "2.1.325 (Claude Code)",
-  "summary": "проба 3/3 · оценки 9/9 · pass^k 5/5 · verifier ✓",
-  "costUsd": 12.56,
+  "summary": "проба 1/1 · оценки 7/7 · pass^k 3/3 · verifier ✓",
+  "costUsd": 7.83,
   "probe": [
     {
-      "agent": "dizayner",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "kachestveniyat",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "nabludatelya",
+      "agent": "letopisetsa",
       "ok": true,
       "problems": []
     }
   ],
-  "inputsHash": "b62ff4f33b9534bed34c2df8a8a2fe5374c99d2595ce12e6d22d75f975f0d638",
+  "inputsHash": "63e66821d0d28d3426f850d0a10722930af8321075cf2b756f0a3a591a7607b1",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
@@ -43,7 +33,7 @@
     ".claude/agents/kasadjiyata.md": "149f597ac3d05d84748fbad08f617279aa0786d2b3647dc85cc88ce0cf6a4151",
     ".claude/agents/kodadjiyata.md": "a798f3f469ac4ecd6e38f5a3bd79f4a886b2f86fad8d71636cd917f4cc2f245e",
     ".claude/agents/konveyera.md": "93e9c7a605d0d9a6f1c54cc56522d3903e35ebd16cabacf34ff391a37c394233",
-    ".claude/agents/letopisetsa.md": "8d2872442e3edbb732f79b1452cc6bdbf0501302122cac0bbc62aa456ad5b5b4",
+    ".claude/agents/letopisetsa.md": "56396fb16d4c630d0c3c4770aafe4eb89a01dd0b15d111d0be7d490cafe07248",
     ".claude/agents/mobildjiyata.md": "a632d13bd67854d418381a9cae4de6a313737f00554f2166b851ebdea2fede98",
     ".claude/agents/nabludatelya.md": "81f776d6cae648849d475429c315c7b1ba04986b9633753e2317dec06734af31",
     ".claude/agents/pravniyat-razbirach.md": "4634f1b7d53f6e6de2050003c45a57868790481e4c94ce8e96d0d6ef8b8d5975",
