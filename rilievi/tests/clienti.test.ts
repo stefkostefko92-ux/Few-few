@@ -8,6 +8,7 @@ import { describe, it } from 'node:test';
 import {
   clienteDaPreventivo,
   MAX_CLIENTE,
+  numeriTelefono,
   parseCliente,
   searchTextCliente,
   valoriCliente,
@@ -19,8 +20,8 @@ const PIENO = {
   indirizzo: 'Via Roma 12, 20121 Milano (MI)',
   piva: 'it 0123 4567 890',
   email: ' Amministratore@Studio-Bianchi.IT ',
-  telefono: '+39 02 1234567',
-  referente: 'Geom. Luca Bianchi',
+  telefono: '+39 379 29 69 699, +359 877 414 874',
+  referente: 'Stefan Kostadinov',
   note: 'Riga 1\r\nRiga 2',
 };
 
@@ -46,8 +47,8 @@ describe('the profile of a customer', () => {
       indirizzo: 'Via Roma 12, 20121 Milano (MI)',
       piva: 'IT01234567890',
       email: 'amministratore@studio-bianchi.it',
-      telefono: '+39 02 1234567',
-      referente: 'Geom. Luca Bianchi',
+      telefono: '+39 379 29 69 699, +359 877 414 874',
+      referente: 'Stefan Kostadinov',
       note: 'Riga 1\nRiga 2',
     });
   });
@@ -69,6 +70,13 @@ describe('the profile of a customer', () => {
     assert.deepEqual(errori({ telefono: '12' }), { telefono: 'invalid' });
     assert.deepEqual(errori({ telefono: '02/123.45.67 (int. 3)' }), { telefono: 'invalid' });
     assert.deepEqual(errori({ telefono: '02/123.45.67' }), {});
+    // Two numbers (the office and a mobile, an Italian and a foreign one): a comma, a semicolon or a
+    // slash with spaces around it; every number on its own is a number.
+    assert.deepEqual(errori({ telefono: '+39 379 29 69 699 / +359 877 414 874' }), {});
+    assert.deepEqual(errori({ telefono: '+39 379 29 69 699; 02 1234567' }), {});
+    assert.deepEqual(errori({ telefono: '+39 379 29 69 699, 12' }), { telefono: 'invalid' });
+    assert.deepEqual(errori({ telefono: '+39 379+359 877 414' }), { telefono: 'invalid' });
+    assert.deepEqual(errori({ telefono: '+39 379 29 69 699,' }), { telefono: 'invalid' });
     assert.deepEqual(errori({ note: 'x'.repeat(MAX_CLIENTE.note + 1) }), { note: 'tooLong' });
     assert.deepEqual(errori({ indirizzo: 'x'.repeat(301), referente: 'y'.repeat(121) }), {
       indirizzo: 'tooLong',
@@ -80,10 +88,34 @@ describe('the profile of a customer', () => {
     const parsed = parseCliente({ ...PIENO, nome: 'Società Àncora S.r.l.' });
     assert.ok(parsed.ok);
     const testo = searchTextCliente(parsed.data);
-    for (const parola of ['societa', 'ancora', 'roma', 'it01234567890', 'bianchi', '021234567'])
+    for (const parola of [
+      'societa',
+      'ancora',
+      'roma',
+      'it01234567890',
+      'bianchi',
+      'kostadinov',
+      // Every number also by its digits alone.
+      '393792969699',
+      '359877414874',
+    ])
       assert.ok(testo.includes(parola), `${parola} in «${testo}»`);
     // The note is not searched: it is free text about the customer, not a way to find them.
     assert.ok(!testo.includes('riga'));
+  });
+
+  it('gives every phone number on its own, for a call link each', () => {
+    assert.deepEqual(numeriTelefono('+39 379 29 69 699, +359 877 414 874'), [
+      '+39 379 29 69 699',
+      '+359 877 414 874',
+    ]);
+    assert.deepEqual(numeriTelefono('+39 379 29 69 699 / +359 877 414 874'), [
+      '+39 379 29 69 699',
+      '+359 877 414 874',
+    ]);
+    // A slash without spaces is part of one number.
+    assert.deepEqual(numeriTelefono('02/123.45.67'), ['02/123.45.67']);
+    assert.deepEqual(numeriTelefono(null), []);
   });
 
   it('goes back into its form as it was saved', () => {
@@ -94,8 +126,8 @@ describe('the profile of a customer', () => {
       indirizzo: 'Via Roma 12, 20121 Milano (MI)',
       piva: 'IT01234567890',
       email: 'amministratore@studio-bianchi.it',
-      telefono: '+39 02 1234567',
-      referente: 'Geom. Luca Bianchi',
+      telefono: '+39 379 29 69 699, +359 877 414 874',
+      referente: 'Stefan Kostadinov',
       note: 'Riga 1\nRiga 2',
     });
     assert.deepEqual(valoriCliente(null), {});

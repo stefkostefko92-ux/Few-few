@@ -45,7 +45,7 @@
     </tr>
   </thead>
   <tbody>
-    <% for (const row of page.rows) { const contatti = [row.email, row.telefono].filter(Boolean); %><tr>
+    <% for (const row of page.rows) { const contatti = [row.email, ...numeriTelefono(row.telefono)].filter(Boolean); %><tr>
       <td class="wide" data-label="<%= t('clienti.colonna.nome') %>"><a class="row-link" href="/clienti/<%= row.id %>"><%= row.nome %></a><% if (row.referente) { %><br><span class="muted"><%= row.referente %></span><% } %></td>
       <td data-label="<%= t('clienti.colonna.indirizzo') %>"><%= row.indirizzo || '—' %></td>
       <td data-label="<%= t('clienti.colonna.piva') %>"><%= row.piva || '—' %></td>

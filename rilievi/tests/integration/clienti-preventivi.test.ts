@@ -30,8 +30,8 @@ const PIENO = {
   indirizzo: 'Via Roma 12, 20121 Milano (MI)',
   piva: 'IT 0123 4567 890',
   email: 'Amministratore@Studio-Bianchi.it',
-  telefono: '+39 02 1234567',
-  referente: 'Geom. Luca Bianchi',
+  telefono: '+39 379 29 69 699, +359 877 414 874',
+  referente: 'Stefan Kostadinov',
   note: 'Citofono 14, portineria solo la mattina',
 };
 

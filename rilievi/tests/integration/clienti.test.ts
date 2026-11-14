@@ -28,8 +28,8 @@ const PIENO = {
   indirizzo: 'Via Roma 12, 20121 Milano (MI)',
   piva: 'IT 0123 4567 890',
   email: 'Amministratore@Studio-Bianchi.it',
-  telefono: '+39 02 1234567',
-  referente: 'Geom. Luca Bianchi',
+  telefono: '+39 379 29 69 699, +359 877 414 874',
+  referente: 'Stefan Kostadinov',
   note: 'Citofono 14, portineria solo la mattina',
 };
 
@@ -67,15 +67,25 @@ describe('the customers of a company', () => {
       'Via Roma 12, 20121 Milano (MI)',
       'IT01234567890',
       'amministratore@studio-bianchi.it',
-      '+39 02 1234567',
-      'Geom. Luca Bianchi',
+      'Stefan Kostadinov',
       'Citofono 14, portineria solo la mattina',
     ])
       assert.ok(profilo.body.includes(testo), testo);
     assert.match(profilo.body, new RegExp(`href="/preventivi/nuovo\\?cliente=${id}"`));
 
-    // Found by any part of the profile — the phone also without its spaces — but not by the note.
-    for (const q of ['roma', '01234567890', 'studio-bianchi', '021234567', 'LUCA']) {
+    // Every number has its own call link.
+    for (const numero of ['+393792969699', '+359877414874'])
+      assert.match(profilo.body, new RegExp(`href="tel:\\${numero}"`), numero);
+
+    // Found by any part of the profile — each phone also without its spaces — but not by the note.
+    for (const q of [
+      'roma',
+      '01234567890',
+      'studio-bianchi',
+      '393792969699',
+      '359877414874',
+      'KOSTADINOV',
+    ]) {
       const trovato = await browser.get(`/clienti?q=${encodeURIComponent(q)}`);
       assert.match(trovato.body, new RegExp(`href="/clienti/${id}"`), q);
     }
@@ -102,7 +112,10 @@ describe('the customers of a company', () => {
       where: { action: 'CLIENTE_CREATE', targetId: id },
     });
     assert.equal(audit.aziendaId, azienda.id);
-    assert.doesNotMatch(JSON.stringify(audit), /Roma|Bianchi|01234567890|1234567/i);
+    assert.doesNotMatch(
+      JSON.stringify(audit),
+      /Roma|Bianchi|Kostadinov|01234567890|379 ?29|877 ?414/i,
+    );
   });
 
   it('is changed only on the opened version; deleting it keeps the quotes', async () => {
@@ -119,16 +132,23 @@ describe('the customers of a company', () => {
     const salvato = await browser.submit(modifica, `/clienti/${id}`, {
       ...PIENO,
       base: aperta,
-      telefono: '02 7654321',
+      telefono: '+359 877 414 874',
     });
     assert.equal(salvato.status, 303);
     assert.equal(salvato.location, `/clienti/${id}`);
     assert.equal(
       (await prisma.cliente.findUniqueOrThrow({ where: { id } })).telefono,
-      '02 7654321',
+      '+359 877 414 874',
     );
     // The search follows the change.
-    assert.match((await browser.get('/clienti?q=027654321')).body, new RegExp(`/clienti/${id}"`));
+    assert.match(
+      (await browser.get('/clienti?q=359877414874')).body,
+      new RegExp(`/clienti/${id}"`),
+    );
+    assert.doesNotMatch(
+      (await browser.get('/clienti?q=393792969699')).body,
+      new RegExp(`/clienti/${id}"`),
+    );
 
     // A second save from the page opened before: nothing is written, the typed text stays.
     const vecchio = await browser.submit(modifica, `/clienti/${id}`, {
@@ -140,7 +160,7 @@ describe('the customers of a company', () => {
     assert.match(vecchio.body, /value="Scritto sulla versione vecchia"/);
     assert.equal(
       (await prisma.cliente.findUniqueOrThrow({ where: { id } })).referente,
-      'Geom. Luca Bianchi',
+      'Stefan Kostadinov',
     );
 
     const preventivo = await crea(browser, { ...RIGHE, cliente: PIENO.nome, clienteId: id });
@@ -158,7 +178,7 @@ describe('the customers of a company', () => {
     assert.equal(rimasto.clienteEmail, 'amministratore@example.it');
     for (const action of ['CLIENTE_UPDATE', 'CLIENTE_DELETE'] as const) {
       const audit = await prisma.auditLog.findFirstOrThrow({ where: { action, targetId: id } });
-      assert.doesNotMatch(JSON.stringify(audit), /Roma|Bianchi|7654321/i, action);
+      assert.doesNotMatch(JSON.stringify(audit), /Roma|Kostadinov|877 ?414/i, action);
     }
   });
 

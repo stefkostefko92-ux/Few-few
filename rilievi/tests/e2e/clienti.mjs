@@ -35,8 +35,10 @@ export async function checkClienti(page, { base, shots, scheme, aziendaPath }) {
   await page.fill('#f-indirizzo', indirizzo);
   await page.fill('#f-piva', 'it 0123 4567 890');
   await page.fill('#f-email', 'Amministratore@Example.it');
-  await page.fill('#f-telefono', '+39 02 1234567');
-  await page.fill('#f-referente', 'Geom. Luca Bianchi');
+  // The contact person and the two numbers are the owner's own (Carbon Stealth, Italian and Bulgarian) —
+  // the screenshots show real data, never an invented person or a number that may be someone's.
+  await page.fill('#f-telefono', '+39 379 29 69 699, +359 877 414 874');
+  await page.fill('#f-referente', 'Stefan Kostadinov');
   await page.fill('#f-note', 'Citofono 14\nPortineria solo la mattina');
   await aligned(page, `${name} form`);
   await page.screenshot({ path: join(shots, `${scheme}-cliente-form.png`), fullPage: true });
@@ -50,9 +52,14 @@ export async function checkClienti(page, { base, shots, scheme, aziendaPath }) {
     indirizzo,
     'IT01234567890',
     'amministratore@example.it',
-    '+39 02 1234567',
+    '+39 379 29 69 699',
+    '+359 877 414 874',
+    'Stefan Kostadinov',
   ])
     if (!testo.includes(atteso)) fail(`${name}: the profile does not show «${atteso}»`);
+  // Every number has its own call link.
+  for (const tel of ['tel:+393792969699', 'tel:+359877414874'])
+    if (!(await page.locator(`a[href="${tel}"]`).count())) fail(`${name}: no call link ${tel}`);
   await audit(page, `${name} profile`);
   await aligned(page, `${name} profile`);
   await page.screenshot({ path: join(shots, `${scheme}-cliente.png`), fullPage: true });
@@ -140,7 +147,9 @@ export async function checkClienti(page, { base, shots, scheme, aziendaPath }) {
     fail(`${name}: the customer of the quote is not in the registry`);
 
   // The list finds a customer by a part of the profile; list and profile at phone width.
-  await page.goto(`${base}/clienti?azienda=${aziendaId}&q=${encodeURIComponent('luca bianchi')}`);
+  await page.goto(
+    `${base}/clienti?azienda=${aziendaId}&q=${encodeURIComponent('stefan kostadinov')}`,
+  );
   if (!(await page.locator(`a[href="/clienti/${clienteId}"]`).count()))
     fail(`${name}: the search by contact person does not find the customer`);
   await page.screenshot({ path: join(shots, `${scheme}-clienti.png`), fullPage: true });

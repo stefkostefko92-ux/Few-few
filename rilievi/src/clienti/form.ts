@@ -53,9 +53,23 @@ const schema = z.object({
 const CHIAVI = Object.keys(schema.shape) as Array<keyof typeof schema.shape>;
 const emailSchema = z.string().trim().max(MAX_CLIENTE.email).email();
 
-/** Телефон: цифри (поне 5) с „+“ отпред и обичайните разделители — без букви. */
-const TELEFONO = /^\+?[\d\s()./-]+$/;
+/** Един номер: цифри (поне 5) с „+“ отпред и обичайните разделители — без букви. */
+const NUMERO = /^\+?[\d\s()./-]+$/;
 const cifre = (value: string): string => value.replace(/\D/g, '');
+/**
+ * Между два номера (собственикът, 14 ноември 2026 — двата телефона на Carbon Stealth, италианският и
+ * българският): запетая, точка и запетая или наклонена черта с интервали. „02/123.45.67“ (черта без
+ * интервали) е един номер.
+ */
+const TRA_NUMERI = /\s*[,;]\s*|\s+\/\s+/;
+
+/** Всеки номер поотделно — за връзката „tel:“ на всеки и за търсенето по цифрите му. */
+export function numeriTelefono(telefono: string | null): string[] {
+  return telefono ? telefono.split(TRA_NUMERI).map((n) => n.trim()) : [];
+}
+
+const telefonoValido = (telefono: string): boolean =>
+  numeriTelefono(telefono).every((n) => NUMERO.test(n) && cifre(n).length >= 5);
 
 const vuoto = (value: unknown): boolean =>
   value === undefined || (typeof value === 'string' && value.trim() === '');
@@ -76,8 +90,7 @@ export function parseCliente(
   } else {
     if (!parsed.data.nome) errors.nome = 'required';
     const telefono = parsed.data.telefono;
-    if (telefono && (!TELEFONO.test(telefono) || cifre(telefono).length < 5))
-      errors.telefono = 'invalid';
+    if (telefono && !telefonoValido(telefono)) errors.telefono = 'invalid';
   }
   const piva = pivaDa(raw.piva);
   if (!piva.ok) errors.piva = 'invalid';
@@ -122,8 +135,8 @@ export function valoriDalBody(body: unknown): Record<string, string> {
 }
 
 /**
- * Каквото търсенето намира: името, адресът, P. IVA, имейлът, телефонът (и само цифрите му) и лицето за
- * контакт. Бележката не се търси — тя е за клиента, не начин да бъде намерен.
+ * Каквото търсенето намира: името, адресът, P. IVA, имейлът, телефонът (и цифрите на всеки номер) и
+ * лицето за контакт. Бележката не се търси — тя е за клиента, не начин да бъде намерен.
  */
 export function searchTextCliente(data: ClienteData): string {
   return [
@@ -132,7 +145,7 @@ export function searchTextCliente(data: ClienteData): string {
     data.piva ?? '',
     data.email ?? '',
     data.telefono ?? '',
-    data.telefono ? cifre(data.telefono) : '',
+    ...numeriTelefono(data.telefono).map(cifre),
     data.referente ?? '',
   ]
     .map((part) => normalizeSearch(part))

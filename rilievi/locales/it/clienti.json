@@ -32,6 +32,7 @@
     },
     "hint": {
       "piva": "Partita IVA: 11 cifre (anche con «IT» davanti). Codice fiscale: 16 caratteri.",
+      "telefono": "Anche due numeri, separati da una virgola: per esempio il fisso e il cellulare.",
       "referente": "Chi contattare: l'amministratore, il portiere, l'ufficio tecnico.",
       "note": "Appunti di lavoro, non compaiono nei preventivi: non scrivere dati sulla salute né giudizi sulla persona."
     },
@@ -41,7 +42,7 @@
       "nome": "Nome non valido.",
       "piva": "P. IVA di 11 cifre o codice fiscale di 16 caratteri.",
       "email": "Indirizzo email non valido.",
-      "telefono": "Numero non valido: solo cifre, spazi e i segni + ( ) / . -",
+      "telefono": "Numero non valido: ogni numero ha almeno 5 cifre e solo cifre, spazi e i segni + ( ) / . -. Separa i numeri con una virgola.",
       "azienda": "Scegli l'azienda del cliente.",
       "pieno": "L'anagrafica ha già {max} clienti: per aggiungerne uno elimina quelli che non servono più."
     },

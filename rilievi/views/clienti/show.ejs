@@ -3,7 +3,8 @@
   // офертата идва с клиента вече написан. Изтриването пази офертите.
   const c = cliente;
   const vuoto = '—';
-  const tel = c.telefono ? c.telefono.replace(/[^\d+]/g, '') : '';
+  // Всеки номер — своя връзка „tel:“ (RFC 3966: без интервали и разделители).
+  const numeri = numeriTelefono(c.telefono);
 %><%- include('../partials/top', { titleKey: 'clienti.titolo' }) %>
 <div class="page-head">
   <div>
@@ -24,7 +25,7 @@
   <dl class="preventivo-dati">
     <div class="preventivo-dati__wide"><dt><%= t('clienti.campo.indirizzo') %></dt><dd><%= c.indirizzo || vuoto %></dd></div>
     <div><dt><%= t('clienti.campo.piva') %></dt><dd><%= c.piva || vuoto %></dd></div>
-    <div><dt><%= t('clienti.campo.telefono') %></dt><dd><% if (c.telefono) { %><a href="tel:<%= tel %>"><%= c.telefono %></a><% } else { %><%= vuoto %><% } %></dd></div>
+    <div><dt><%= t('clienti.campo.telefono') %></dt><dd><% if (numeri.length === 0) { %><%= vuoto %><% } %><% numeri.forEach((numero, i) => { %><% if (i > 0) { %><br><% } %><a href="tel:<%= numero.replace(/[^\d+]/g, '') %>"><%= numero %></a><% }) %></dd></div>
     <%# Imeylat e na tsyal red: dalag adres ne se chupi po sredata v tyasna kolona na telefon. %>
     <div class="preventivo-dati__wide"><dt><%= t('clienti.campo.email') %></dt><dd><% if (c.email) { %><a href="mailto:<%= c.email %>"><%= c.email %></a><% } else { %><%= vuoto %><% } %></dd></div>
     <div class="preventivo-dati__wide"><dt><%= t('clienti.campo.referente') %></dt><dd><%= c.referente || vuoto %></dd></div>

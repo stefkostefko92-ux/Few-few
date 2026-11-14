@@ -8,6 +8,7 @@ import {
 import { canIn, canInPerTogliere, scopeFor } from '../auth/scope.js';
 import {
   MAX_CLIENTE,
+  numeriTelefono,
   parseCliente,
   valoriCliente,
   valoriDalBody,
@@ -67,6 +68,7 @@ clientiRouter.get('/clienti', read, async (req, res) => {
     aziende,
     aziendaFilter: azienda ?? '',
     query,
+    numeriTelefono,
   });
 });
 
@@ -162,6 +164,7 @@ clientiRouter.get('/clienti/:id', read, async (req, res) => {
     scrive: puoScrivere(req, cliente),
     elimina: canInPerTogliere(principalOf(req).user, 'preventivi:write', cliente.aziendaId),
     euro,
+    numeriTelefono,
   });
 });
 
