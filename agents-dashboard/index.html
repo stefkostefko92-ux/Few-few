@@ -7,8 +7,9 @@
 <meta name="description" content="Галактика от персонализираните Claude Code агенти на Carbon Stealth — агентите са звезди в истинска галактика (NASA/ESA). Ключова дума: Carbon Stealth." />
 <meta name="keywords" content="Carbon Stealth, Claude Code агенти, AI агенти табло, галактика от агенти, интерактивна визуализация, самообучаващи се агенти" />
 <style>
-  :root { --bg: #00020a; --panel: #080b12; --panel2: #0e131c; --line: #1a2634; --txt: #e9f1f6; --mut: #8493a2; --accent: #00e5ff;
-    --glass-bg: rgba(10,14,22,.58); --glass-hi: rgba(255,255,255,.22); --glass-lo: rgba(255,255,255,.08); --glass-border: rgba(255,255,255,.11); }
+  :root { --bg: #04060b; --panel: #090d15; --panel2: #0e141e; --line: rgba(176,198,222,.14); --txt: #eef3f8; --mut: #8ea0b2; --accent: #32dcff;
+    --plat: #cfdae6; --plat-hi: #f4f8fc; --hair: rgba(176,198,222,.16); --accent-soft: rgba(50,220,255,.14);
+    --glass-bg: rgba(8,11,18,.62); --glass-hi: rgba(206,222,240,.20); --glass-lo: rgba(206,222,240,.055); --glass-border: rgba(176,198,222,.14); }
   /* премиум стъклен материал: blur+saturate, ръб-bevel (по-светъл отгоре), вътрешна сянка, финна текстура —
      общ за горната лента/търсачката/статистиките/подсказката. Fallback (без backdrop-filter): плътен фон,
      все така четим (проверен контраст) — вижда се в @supports по-долу. */
@@ -30,7 +31,7 @@
 
   .hud { position: fixed; inset: 0 0 auto 0; padding: 18px 22px; pointer-events: none; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; z-index: 5; }
   .hud > * { pointer-events: auto; }
-  .brand h1 { margin: 0; font-size: 19px; letter-spacing: .3px; font-weight: 650; background: linear-gradient(100deg,#e9f1f6 0%,#00e5ff 26%,#a98bff 50%,#00e5ff 74%,#e9f1f6 100%); background-size: 220% auto; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 18px rgba(0,229,255,.35)) drop-shadow(0 2px 8px rgba(0,0,0,.85)); animation: aurora 9s linear infinite; }
+  .brand h1 { margin: 0; font-size: 18px; letter-spacing: -.1px; font-weight: 600; background: linear-gradient(100deg,#eef3f8 0%,#eef3f8 34%,#bfeeff 47%,#32dcff 51%,#dbeaf4 60%,#eef3f8 72%,#eef3f8 100%); background-size: 240% auto; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 16px rgba(50,220,255,.22)) drop-shadow(0 2px 8px rgba(0,0,0,.9)); animation: aurora 11s linear infinite; }
   @keyframes aurora { to { background-position: 220% center; } }
   @media (prefers-reduced-motion: reduce) { .brand h1 { animation: none; } }
   .brand p { margin: 3px 0 0; color: var(--mut); font-size: 12.5px; max-width: 42ch; text-shadow: 0 1px 6px #000; }
@@ -39,12 +40,13 @@
   .search input { background: none; border: 0; color: var(--txt); font-size: 13px; width: 148px; outline: none; } .search input::placeholder { color: var(--mut); }
   .seg { display: flex; border-radius: 999px; padding: 3px; }
   .seg button { display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; color: var(--mut); font: inherit; font-size: 12.5px; padding: 5px 13px; border-radius: 999px; cursor: pointer; transition: .18s; }
-  .seg button svg { width: 15px; height: 15px; } .seg button.on { background: var(--accent); color: #04121a; font-weight: 600; }
+  .seg button svg { width: 15px; height: 15px; } .seg button:hover { color: var(--txt); } .seg button.on { background: linear-gradient(180deg, rgba(50,220,255,.20), rgba(50,220,255,.075)); color: var(--plat-hi); font-weight: 600; box-shadow: inset 0 0 0 1px rgba(50,220,255,.42), 0 0 16px -5px var(--accent); }
 
   .live { position: fixed; left: 22px; bottom: 22px; display: flex; gap: 10px; flex-wrap: wrap; z-index: 5; }
-  .chip { border-radius: 12px; padding: 10px 14px; min-width: 78px; }
-  .chip b { display: block; font-size: 21px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; letter-spacing: -.2px; text-shadow: 0 1px 10px rgba(0,229,255,.18); }
-  .chip span { color: var(--mut); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .8px; }
+  .chip { border-radius: 13px; padding: 12px 15px 10px; min-width: 84px; position: relative; }
+  .chip::before { content: ""; position: absolute; left: 14px; right: 14px; top: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(50,220,255,.42), transparent); }
+  .chip b { display: block; font-size: 22px; font-weight: 650; line-height: 1.08; font-variant-numeric: tabular-nums; letter-spacing: -.4px; color: var(--plat-hi); text-shadow: 0 0 16px rgba(50,220,255,.16); }
+  .chip span { color: var(--mut); font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.1px; }
   .hint { position: fixed; right: 22px; bottom: 22px; z-index: 5; color: var(--mut); font-size: 11.5px; border-radius: 10px; padding: 8px 12px; max-width: 250px; }
   .brand { padding: 10px 16px; border-radius: 14px; }
   .credit { position: fixed; left: 50%; transform: translateX(-50%); bottom: 9px; z-index: 4; color: rgba(170,188,204,.5); font-size: 10.5px; letter-spacing: .2px; pointer-events: none; text-shadow: 0 1px 4px #000; }
