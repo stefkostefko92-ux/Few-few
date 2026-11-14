@@ -76,6 +76,57 @@ ok "Порт $HTTP_PORT е свободен."
 # Тайните в .env — само за собственика (стари инсталации го имат 644).
 chmod 600 .env 2>/dev/null || true
 
+# --- Монтиранията НЕ живеят в папката на release-а ---
+# При деплой през deploy/autodeploy.sh кодът е в /opt/few-few/releases/<час>/…, а
+# старите release-и се чистят (KEEP_RELEASES) при деплой на ВСЕКИ продукт. Ако nginx
+# монтира ./nginx/zabobovdol.conf от изтрит release, при следващия рестарт Docker
+# създава празна папка на мястото на файла и контейнерът пада („not a directory“) →
+# 502 (инциденти 11.10 и 11.2026). Затова конфигурацията и скриптовете се копират в
+# неизменим снимък в споделената папка (адрес = хеш на съдържанието), а бекъпите
+# отиват направо в споделената папка. Ръчен деплой от клонирано репо не се променя.
+set_env_kv() { # KEY VALUE → .env (идемпотентно, правата остават 600)
+  local tmp
+  [ "$(read_env "$1")" = "$2" ] && return 0
+  tmp="$(mktemp .env.XXXXXX)"
+  { grep -vE "^$1=" .env || true; printf '%s=%s\n' "$1" "$2"; } > "$tmp"
+  chmod 600 "$tmp" && mv -f "$tmp" .env
+}
+HERE="$(pwd -P)"
+ZBD_SHARED_DIR="${ZBD_SHARED_DIR:-}"
+case "$HERE" in
+  */releases/*) [ -z "$ZBD_SHARED_DIR" ] && [ -d "${HERE%%/releases/*}/shared" ] \
+                  && ZBD_SHARED_DIR="${HERE%%/releases/*}/shared/zabobovdol" ;;
+esac
+if [ -n "$ZBD_SHARED_DIR" ]; then
+  RUNTIME_HASH="$( { sha256sum nginx/zabobovdol.conf; find scripts -maxdepth 1 -type f -exec sha256sum {} + | sort; } \
+                   | sha256sum | cut -c1-16 )"
+  ZBD_RUNTIME_DIR="$ZBD_SHARED_DIR/runtime/$RUNTIME_HASH"
+  if [ ! -f "$ZBD_RUNTIME_DIR/nginx/zabobovdol.conf" ]; then
+    tmp_rt="$ZBD_SHARED_DIR/runtime/.tmp-$$"
+    rm -rf "$tmp_rt"; mkdir -p "$tmp_rt/nginx" "$tmp_rt/scripts"
+    cp -p nginx/zabobovdol.conf "$tmp_rt/nginx/"
+    find scripts -maxdepth 1 -type f -exec cp -p {} "$tmp_rt/scripts/" \;
+    rm -rf "$ZBD_RUNTIME_DIR"; mv "$tmp_rt" "$ZBD_RUNTIME_DIR"
+  fi
+  touch "$ZBD_RUNTIME_DIR"
+  # ACME уеб-коренът и бекъпите — общи за всички release-и.
+  ZBD_CERTBOT_DIR="$ZBD_SHARED_DIR/certbot"
+  ZBD_BACKUPS_DIR="$ZBD_SHARED_DIR/backups"
+  mkdir -p "$ZBD_CERTBOT_DIR" "$ZBD_BACKUPS_DIR"
+  # В .env, за да ги ползва и ръчно `docker compose …` от тази папка, и откатът към нея.
+  set_env_kv ZBD_RUNTIME_DIR "$ZBD_RUNTIME_DIR"
+  set_env_kv ZBD_CERTBOT_DIR "$ZBD_CERTBOT_DIR"
+  set_env_kv ZBD_BACKUPS_DIR "$ZBD_BACKUPS_DIR"
+  export ZBD_RUNTIME_DIR ZBD_CERTBOT_DIR ZBD_BACKUPS_DIR
+  ok "Монтирания извън release-а: $ZBD_RUNTIME_DIR"
+  # Пазим последните 10 снимки (по последно ползване) — файловете са няколко KB.
+  find "$ZBD_SHARED_DIR/runtime" -mindepth 1 -maxdepth 1 -type d ! -name '.tmp-*' -printf '%T@ %p\n' 2>/dev/null \
+    | sort -rn | tail -n +11 | cut -d' ' -f2- | while read -r old; do
+        if [ "$old" != "$ZBD_RUNTIME_DIR" ]; then rm -rf "$old"; fi
+      done
+fi
+BACKUPS_DIR="${ZBD_BACKUPS_DIR:-backups}"
+
 # Нестандартен порт = зад друг reverse proxy на хоста. Тогава портът трябва да
 # слуша само локално, иначе сайтът е достъпен и направо по IP:порт — без HTTPS и
 # покрай заглавията на хостовия прокси.
@@ -98,8 +149,8 @@ fi
 # схемата и пресен дъмп е застраховката срещу лоша миграция. ---
 if $DC ps 2>/dev/null | grep -i "db" | grep -qiE 'up|running|healthy'; then
   bold "0/3 Правя бекъп на базата преди деплоя…"
-  mkdir -p backups
-  PRE_DUMP="backups/pre-deploy-$(date +%Y%m%d-%H%M%S).sql.gz"
+  mkdir -p "$BACKUPS_DIR"
+  PRE_DUMP="$BACKUPS_DIR/pre-deploy-$(date +%Y%m%d-%H%M%S).sql.gz"
   if $DC exec -T db sh -c 'pg_dump -U "${POSTGRES_USER:-zabobovdol}" "${POSTGRES_DB:-zabobovdol}"' | gzip > "$PRE_DUMP"; then
     ok "Бекъп преди деплой: $PRE_DUMP"
   else

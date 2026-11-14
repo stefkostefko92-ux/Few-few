@@ -129,6 +129,26 @@ docker compose up -d --build
 Схемата се синхронизира автоматично при старт. Промени, които заличават данни,
 изискват ръчна намеса (вижте Prisma migrations за продукционна история).
 
+### 7.1. Деплой през `deploy/autodeploy.sh` (споделен сървър с много продукти)
+
+Там кодът живее в `/opt/few-few/releases/<час>/…`, а старите release-и се изтриват при
+деплой на **всеки** продукт. Ако nginx монтира конфигурацията си от изтрит release, при
+следващия рестарт контейнерът пада и сайтът дава 502. Затова `scripts/deploy.sh`, щом
+разпознае такъв път, слага монтиранията извън release-а и ги записва в `.env`:
+
+| Променлива в `.env` | Път | Какво има |
+|---|---|---|
+| `ZBD_RUNTIME_DIR` | `/opt/few-few/shared/zabobovdol/runtime/<хеш>` | неизменимо копие на `nginx/zabobovdol.conf` и `scripts/` (пазят се последните 10) |
+| `ZBD_CERTBOT_DIR` | `/opt/few-few/shared/zabobovdol/certbot` | уеб-коренът за Let's Encrypt |
+| `ZBD_BACKUPS_DIR` | `/opt/few-few/shared/zabobovdol/backups` | бекъпите на базата |
+
+Ръчен деплой от клонирано репо не задава тези променливи и всичко остава в `./`.
+Проверка, че nginx не зависи от release папка:
+
+```bash
+docker inspect zabobovdol-nginx-1 --format '{{range .Mounts}}{{.Source}}{{"\n"}}{{end}}'
+```
+
 ## 8. Включване на AI чатбота (по избор)
 
 Помощникът има три режима (`CHAT_PROVIDER` в `.env`):
