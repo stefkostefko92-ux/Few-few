@@ -78,3 +78,19 @@ export const loginAccountLimiter: RequestHandler = failOpen(
     store: store("rl:login-acct:"),
   }),
 );
+
+/**
+ * Пощата в админ панела (запис, пробно писмо, изключване): всяко действие иска
+ * паролата на собственика и може да прати писмо — ограничено по акаунт.
+ */
+export const mailAdminLimiter: RequestHandler = failOpen(
+  rateLimit({
+    windowMs: 15 * 60_000,
+    max: env.isProd ? 15 : 2000,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => `user:${(req as { user?: { sub?: string } }).user?.sub ?? req.ip}`,
+    message: { error: { code: "rate_limited", message: "Too many attempts, try again later" } },
+    store: store("rl:mail-admin:"),
+  }),
+);

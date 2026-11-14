@@ -18,7 +18,6 @@ export const badRequest = (code: string, msg: string) => new HttpError(400, code
 export const unauthorized = (msg = "Unauthorized") => new HttpError(401, "unauthorized", msg);
 export const forbidden = (msg = "Forbidden") => new HttpError(403, "forbidden", msg);
 export const conflict = (code: string, msg: string) => new HttpError(409, code, msg);
-export const notFoundError = (msg = "Resource not found") => new HttpError(404, "not_found", msg);
 
 /**
  * Цяло число от query параметър в [min, max]; липсващ или нечислов → `def`.

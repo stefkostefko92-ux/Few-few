@@ -1140,7 +1140,7 @@ paths:
                 properties:
                   user: { type: object, additionalProperties: true }
                   audits: { type: array, items: { type: object, additionalProperties: true } }
-        "400": { $ref: "#/components/responses/NotFoundAs400" }
+        "404": { $ref: "#/components/responses/NotFound" }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "403": { $ref: "#/components/responses/Forbidden" }
     patch:
@@ -1525,6 +1525,121 @@ paths:
         "400": { $ref: "#/components/responses/ValidationError" }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "403": { $ref: "#/components/responses/Forbidden" }
+  /api/admin/mail:
+    get:
+      operationId: adminMailGet
+      tags: [Админ]
+      summary: Пощата на портала (Brevo SMTP) — записаното без ключа и откъде тръгват писмата сега.
+      description: >-
+        По модела на Rilievi Impianti. Настройката от панела (ключът — шифрован с
+        SETTINGS_SECRET_KEY, AES-256-GCM) има предимство пред SMTP_* от .env, докато е включена.
+      x-required-roles: [OWNER]
+      responses:
+        "200":
+          description: Изгледът на настройката.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MailSettingsView" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    put:
+      operationId: adminMailPut
+      tags: [Админ]
+      summary: Записва и включва настройката на пощата (иска паролата на акаунта).
+      description: >-
+        Празен `password` пази записания ключ — освен при друг сървър или логин
+        (`password_new_server`). В продукция `host` е име на хост (не IP, не localhost).
+      x-required-roles: [OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [host, port, username, password, fromName, fromEmail, accountPassword]
+              properties:
+                host: { type: string, maxLength: 253, example: smtp-relay.brevo.com }
+                port: { type: integer, enum: [587, 2525, 465] }
+                username: { type: string, maxLength: 254, description: SMTP логинът от Brevo. }
+                password: { type: string, maxLength: 512, description: "SMTP ключът; празно = остава записаният. Никога не се връща." }
+                fromName: { type: string, maxLength: 80 }
+                fromEmail: { type: string, format: email, maxLength: 254 }
+                accountPassword: { type: string, description: Паролата на собственика (потвърждение). }
+      responses:
+        "200":
+          description: Обновеният изглед.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MailSettingsView" }
+        "400":
+          description: "`validation_error`, `invalid_host`, `password_required` или `password_new_server`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403":
+          description: "`forbidden` (не е OWNER) или `wrong_password`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503":
+          description: "`settings_key_missing` — на сървъра няма SETTINGS_SECRET_KEY."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/admin/mail/test:
+    post:
+      operationId: adminMailTest
+      tags: [Админ]
+      summary: Пробно писмо до самия собственик (verify + изпращане).
+      x-required-roles: [OWNER]
+      responses:
+        "200":
+          description: "Резултатът: `sent`, `disabled` (няма поща) или `error` със SMTP кода (EAUTH, ECONNECTION…)."
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [result]
+                properties:
+                  result: { type: string, enum: [sent, disabled, error] }
+                  to: { type: string, format: email }
+                  code: { type: string }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /api/admin/mail/disable:
+    post:
+      operationId: adminMailDisable
+      tags: [Админ]
+      summary: Изключва настройката от панела (остава записана; пак важи .env).
+      x-required-roles: [OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [accountPassword]
+              properties:
+                accountPassword: { type: string }
+      responses:
+        "200":
+          description: Обновеният изглед.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MailSettingsView" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403":
+          description: "`forbidden` или `wrong_password`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "429": { $ref: "#/components/responses/RateLimited" }
   /api/admin/reports:
     get:
       operationId: adminReportsList
@@ -2172,11 +2287,6 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/Error" }
-    NotFoundAs400:
-      description: "`not_found` с код 400 (историческо поведение на `admin.ts`; останалите админ маршрути връщат 404)."
-      content:
-        application/json:
-          schema: { $ref: "#/components/schemas/Error" }
     RateLimited:
       description: "`rate_limited` — твърде много опити (лимитер по IP и по акаунт)."
       content:
@@ -2311,6 +2421,26 @@ components:
                 effectiveAt: { type: string, format: date-time }
         playedTodayMinutes: { type: integer, description: Изиграни минути в мачове днес (сървърно преброени). }
         selfExcludedUntil: { type: [string, "null"], format: date-time }
+    MailSettingsView:
+      type: object
+      required: [settings, hasPassword, source, keyReady]
+      properties:
+        settings:
+          oneOf:
+            - type: "null"
+            - type: object
+              properties:
+                host: { type: string }
+                port: { type: integer }
+                username: { type: string }
+                fromName: { type: string }
+                fromEmail: { type: string, format: email }
+                active: { type: boolean }
+                updatedAt: { type: string, format: date-time }
+                updatedBy: { type: [string, "null"] }
+        hasPassword: { type: boolean, description: Има ли записан ключ (самият ключ никога не излиза). }
+        source: { type: [string, "null"], enum: [console, env, null], description: Откъде тръгват писмата сега. }
+        keyReady: { type: boolean, description: Има ли SETTINGS_SECRET_KEY на сървъра. }
     FriendLite:
       type: object
       properties:

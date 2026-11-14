@@ -62,6 +62,8 @@ common_env() {
   export JWT_SECRET="e2e-access-secret-${N}-0123456789abcdef0123456789"
   export JWT_REFRESH_SECRET="e2e-refresh-secret-${N}-0123456789abcdef012345678"
   export INTERNAL_API_SECRET="e2e-internal-secret-${N}-0123456789"
+  # Тестов ключ за шифроване на пощата от админ панела (64 hex).
+  export SETTINGS_SECRET_KEY="$(printf 'e2e%061d' "$N")"
   export CORS_ORIGINS="http://127.0.0.1:${WEB},http://localhost:${WEB}"
   export PUBLIC_WEB_URL="http://127.0.0.1:${WEB}"
   export PUBLIC_API_URL="http://127.0.0.1:${API}"

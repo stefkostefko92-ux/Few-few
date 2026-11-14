@@ -13,6 +13,7 @@ import { progressionRouter } from "./routes/progression.js";
 import { announcementsRouter } from "./routes/announcements.js";
 import { adminRouter } from "./routes/admin.js";
 import { adminCrudRouter } from "./routes/adminCrud.js";
+import { adminMailRouter } from "./routes/adminMail.js";
 import { metricsRouter } from "./routes/metrics.js";
 import { stripeWebhookRouter } from "./webhooks/stripe.js";
 
@@ -47,6 +48,8 @@ const MOUNTS = new Map<object, string>([
   [metricsRouter, "/api/metrics"],
   // `adminRouter.use(adminCrudRouter)` — без собствен префикс.
   [adminCrudRouter, ""],
+  // `adminRouter.use(adminMailRouter)` — пощата (Brevo), също без префикс.
+  [adminMailRouter, ""],
 ]);
 
 /** Минималният контракт на Express 5 / router 2 слоя, който ползваме. */

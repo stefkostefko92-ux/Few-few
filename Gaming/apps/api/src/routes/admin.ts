@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "@aso/db";
 import { PRODUCT_KINDS, ROLES, VIP_TIERS, levelFromXp, selfExclusionActive, type Role, type VipTier } from "@aso/shared";
-import { asyncHandler, badRequest, forbidden, HttpError, intQuery, notFoundError } from "../http.js";
+import { asyncHandler, badRequest, forbidden, HttpError, intQuery } from "../http.js";
 import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 import { revokeUser, unrevokeUser } from "../auth/revocation.js";
 import { discordEnabled, notifyBroadcast, sendTest } from "../integrations/discord.js";
@@ -10,8 +10,9 @@ import { getDiscordConfig, setDiscordConfig } from "../settings.js";
 import { getStripe, stripeEnabled } from "../economy/stripe.js";
 import { env } from "../env.js";
 import { logger } from "../logger.js";
-import { audit, resolveActorName } from "./adminShared.js";
+import { audit, notFoundError, resolveActorName } from "./adminShared.js";
 import { adminCrudRouter } from "./adminCrud.js";
+import { adminMailRouter } from "./adminMail.js";
 
 export const adminRouter: Router = Router();
 
@@ -1015,3 +1016,5 @@ adminRouter.patch(
 // Под-рутерът наследява requireAuth + staff RBAC от горния `use`; записите са
 // гейтнати поотделно вътре (ADMIN+; изтриване на акаунт — само OWNER).
 adminRouter.use(adminCrudRouter);
+// Пощата на портала (Brevo) — само OWNER, по модела на Rilievi.
+adminRouter.use(adminMailRouter);
