@@ -7,6 +7,8 @@
 противоречие → стоп (човек решава). Без тайни/лични данни.
 
 ## Проверени поуки (verified)
+- **2026-11-14:** В Кент SWAP.handIndex е индекс в раздадената ръка, затова при подредена за показване ръка всяка карта трябва да носи оригиналния си индекс, иначе се сменя грешна карта. _(всяка промяна на показвания ред на ръка в игра, чиито действия сочат карта по индекс; verified; Gaming/packages/game-core/src/engines/trick/kent.ts:75,177 + Gaming/apps/web/src/features/game/kent/KentView.tsx (handView))_
+- **2026-11-14:** В Белот некозовият ред е A T K Q J 9 8 7 (десетката над поп), а козовият J 9 A T K Q 8 7; фазата BID още няма окончателен договор, затова подредбата тогава е без коз. _(показване и сравнение на ръка в Белот; verified; Gaming/packages/game-core/src/engines/trick/belote.ts:51-52,156-158 + sortHand.test.ts (vitest зелен))_
 - **2026-11-02:** chess.js 1.4.0 `move()` хвърля „Invalid move“ за ход, който оставя собствения цар в шах (вързан топ), и такъв ход липсва в `moves()` — затова в АСО `legalActions` (от `chess.moves()`) не го съдържа, а `reduce` го превръща в `IllegalActionError`. Шахът на сървъра разчита на chess.js, не на собствена проверка за шах. _(проверка на законност на шахов ход на сървъра; verified; node скрипт с chess.js от Gaming/packages/game-core → FEN „4q2k/8/8/8/8/8/4R3/4K3 w“, ход e2a2 → „THROWS: Invalid move“, легални ходове на e2: Re3..Rxe8+ (само по линията e) + Gaming/packages/game-core/src/engines/move-validation/chess.ts (legalActions, reduce))_
 
 ## Карантина (непроверени / спорни — НЕ са факт)
