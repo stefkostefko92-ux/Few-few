@@ -43,6 +43,7 @@ karpathy-guidelines) е минала и двата прегледа (втори:
 | `observability-and-instrumentation` (+ `references/observability-checklist.md`) | addyosmani/agent-skills @ `39b723ceebf8` · `skills/observability-and-instrumentation` + `references/observability-checklist.md` (14.11) | MIT · Addy Osmani | Наблюдателят |
 | `deprecation-and-migration` | addyosmani/agent-skills @ `39b723ceebf8` · `skills/deprecation-and-migration` (14.11) | MIT · Addy Osmani | Качествения |
 | `ui-ux-pro-max` (каталог + локална търсачка) | nextlevelbuilder/ui-ux-pro-max-skill @ `6ae86f61f520` · `.claude/skills/ui-ux-pro-max/` без тестовете и `validate_data.py` (14.11); данни: метаданни на иконки от `@phosphor-icons/core` 2.1.1 (MIT, по-долу), метаданни от google/fonts и Google Fonts API (без файлове на шрифтове) | MIT · Next Level Builder | Дизайнера |
+| `archify-diagrams` | tt-a1i/archify @ `e37848822238` · цялата папка `archify/` (14.11; 187 от 191 сверени файла вградени, каналите за обновления и марки по мрежа махнати — виж бележката на файла и по-долу) | Apache-2.0 · Copyright (c) 2026 tt-a1i (Archify) + (c) 2025 Cocoon AI | Летописецът |
 
 **Какво сменихме навсякъде:** описание на български; „Наши предпазители“ най-отгоре (те печелят пред
 останалия текст и оцеляват при компактиране); нищо не се изпълнява, инсталира или записва извън
@@ -90,6 +91,18 @@ scratchpad-а; подпис, изпращане и публикуване са �
 > OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 > DEALINGS IN THE SOFTWARE.
 
+**archify-diagrams и вградените му компоненти.** Умението носи собствените си `LICENSE` (Apache-2.0),
+`NOTICE`, `LICENSE-MIT` (историческите MIT грантове до commit `25cf3708`) и `THIRD_PARTY_NOTICES.md` —
+те пътуват с папката и остават меродавни. Вградени трети страни: **Pele** (`explainer/vendor/pele/`,
+MIT · © 2026 kepano); **JetBrains Mono** (`assets/JetBrainsMono-OFL.txt`, SIL OFL 1.1 · © 2020 JetBrains
+Mono Project Authors) — вграден като subset през Google Fonts в изведените артефакти; **марки** в
+`renderers/shared/generated-brand-marks.mjs` — повечето от Simple Icons 16.28.0 (CC0-1.0 за сбора, но не
+за всяка икона), а отделни носят свои условия: **Vue.js** (CC-BY-NC-SA-4.0 — некомерсиално и share-alike),
+**Rust** и **Jenkins** (CC-BY-SA-3.0/4.0 — share-alike), **Angular** (CC-BY-4.0), **OpenAI** (само по
+бранд-насоките). Пълната таблица по марка е в `THIRD_PARTY_NOTICES.md` на умението. Марките са опционална
+авторска идентичност в диаграмата, не заместват типа/цвета/връзките на възела, и внасянето им по мрежа е
+изключено в нашия вариант (само вградените пресети по име).
+
 **humanizer и CC BY-SA.** Няколко примера „Before“ в §12–§18 са цитирани (някои съкратени) от
 „Wikipedia:Signs of AI writing“ © Wikipedia contributors. Тези откъси, със съкращенията, са под
 CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/), не под MIT; атрибуцията е в раздел Source.
@@ -112,7 +125,6 @@ CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/), не под MIT;
 | coleam00/second-brain-starter | чист, невписан | Лична система за бележки — без съответствие в нашите продукти. |
 | antfu/skills | чист, невписан | Умения за стека на antfu (Vue, Nuxt, Pinia, UnoCSS, VitePress); продуктите ни са на Next.js/React/Express, а Vitest и pnpm вече се покриват от Изпитателя и `quality-gate`. |
 | rampstackco/claude-skills | чист, невписан | 321 умения, които се застъпват с маркетинговите; добра хигиена, но без нужда. |
-| tt-a1i/archify @ `e37848822238` | отложен | Минава само с условия, които правят от него наш поддържан вариант на ~49 000 реда: `SKILL.md` пише ред в глобалния `~/.claude/CLAUDE.md` и превключва режим от ред в контекста; при всеки `finalize` проверка за обновления към `tt-a1i.github.io` с отдалечен текст, чийто филтър пропуска невидими символи (PoC на Разбивача); рендерът тегли URL на марка от самата диаграма, без това да се спира с настройка. За внасяне: хеш на всички 206 файла, махната проверка за обновления и отдалечените марки, преглед на екранирането (XSS) в рендерите. Mermaid остава. |
 | DietrichGebert/ponytail · `skills/ponytail` + куките | не влиза | Режим „за цялата сесия“ и куки за много агенти; правилата му вече са в `PROCEDURE.md` (Karpathy, red line 9). Взети са само прегледът и одитът. |
 | thedotmack/claude-mem · headroomlabs-ai/headroom · Panniantong/Agent-Reach · mvanhorn/last30days-skill · pbakaus/impeccable | отхвърлени (триаж по README, 14.11) | Телеметрия по подразбиране и облачна синхронизация; прокси пред целия трафик към Claude (против „Claude само в ЕС“); копиране на влезлия логин в Chrome; X с бисквитки и scraping; телеметрия, двоичен файл и Claude с изключен sandbox. |
 | affaan-m/everything-claude-code · Egonex-AI/Understand-Anything · Graphify-Labs/graphify · hugohe3/ppt-master · calesthio/OpenMontage · santifer/career-ops | отхвърлени или отложени (триаж по README, 14.11) | Непроверим обем (71 агента, 314 умения) и diff към OpenAI; скъп петагентен конвейер; graphify — отложен, избира LLM доставчик по наличния ключ (вкл. извън ЕС), без измерена нужда; външни доставчици за картинки; AGPL и замразените промо клипове; scraping на кариерни страници. |
