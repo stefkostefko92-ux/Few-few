@@ -613,6 +613,7 @@
       ],
       "title": "EasyList Thailand",
       "license": "Apache-2.0",
+      "copyright": "Copyright 2016-2017 EasyList Thailand",
       "homepage": "https://github.com/easylist-thailand/easylist-thailand",
       "urls": [
         "https://raw.githubusercontent.com/easylist-thailand/easylist-thailand/master/subscription/easylist-thailand.txt"

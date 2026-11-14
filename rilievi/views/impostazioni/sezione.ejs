@@ -1,0 +1,31 @@
+<%
+  // Един раздел на настройките (routes/impostazioni.ts, impostazioni-vista.ts): пътят обратно към
+  // настройките, заглавието на раздела, фирмата (при няколко — изборът), местната навигация и самата част.
+  // Заглавието на частта (h2) е за четеца — на страницата заглавието е h1.
+%><%- include('../partials/top', { title: t('impostazioni.pagine.' + sezione + '.titolo') + ' — ' + t('impostazioni.title'), narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <% if (!locals.senzaPanoramica) { %><a href="/impostazioni?azienda=<%= encodeURIComponent(azienda.id) %>"><%= t('impostazioni.title') %></a><% } %>
+    <h1><%= t('impostazioni.pagine.' + sezione + '.titolo') %></h1>
+    <p class="page-head__sub"><%= azienda.name %></p>
+  </div>
+</div>
+<div class="stack-gap impostazioni-pagina">
+  <% if (!locals.senzaPanoramica) { %><%- include('_nav') %><% } %>
+  <%- include('_scelta', { azione: '/impostazioni/' + sezione }) %>
+  <% if (error) { %><div class="errors" id="form-error" role="alert"><h2><%= t(error) %></h2></div><% } %>
+  <% if (sezione === 'azienda') { %><%- include('_dati') %><% } %>
+  <% if (sezione === 'abbonamento') { %><%- include('_abbonamento') %><% } %>
+  <% if (sezione === 'scheda') { %><%- include('_sezioni') %><%- include('_approvazione') %><% } %>
+  <% if (sezione === 'cartelli') { %><%- include('_cartello') %><% } %>
+  <% if (sezione === 'buoni') { %><%- include('_buono') %><% } %>
+  <% if (sezione === 'preventivi') { %><%- include('_preventivi') %><% } %>
+  <% if (sezione === 'ruoli') { %><%- include('_ruoli') %><% } %>
+  <% if (sezione === 'fornitori') { %><%- include('_fornitori') %><% } %>
+  <% if (sezione === 'firme') { %><%- include('_firme') %><% } %>
+  <% if (sezione === 'condizioni') { %><%- include('_condizioni') %><% } %>
+  <% if (sezione === 'accesso') { %><%- include('_accesso') %><% } %>
+  <% if (sezione === 'api') { %><%- include('_api') %><% } %>
+  <% if (sezione === 'esportazione') { %><%- include('_esportazione') %><% } %>
+</div>
+<%- include('../partials/bottom') %>

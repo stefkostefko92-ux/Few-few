@@ -1,0 +1,10 @@
+[Unit]
+Description=Rilievi Impianti — daily database backup at 03:10 UTC
+
+[Timer]
+OnCalendar=*-*-* 03:10:00 UTC
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

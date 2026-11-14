@@ -1,0 +1,189 @@
+<%
+  // „Pagamenti“ (routes/master-pagamenti.ts): Revolut Business — вкл./изкл., средата, ключът (само се пише),
+  // webhook-ът; плановете; последните плащания със сверка на ръка.
+  const m = 'pagamenti.master.';
+%><%- include('../partials/top', { titleKey: 'pagamenti.master.titolo' }) %>
+<div class="page-head">
+  <div>
+    <a href="/master"><%= t('master.console.title') %></a>
+    <h1><%= t(m + 'titolo') %></h1>
+    <p class="page-head__sub"><%= t(m + 'sub') %></p>
+  </div>
+</div>
+<div class="stack-gap">
+  <form class="panel form" method="post" action="/master/pagamenti" novalidate>
+    <h2 class="section__title"><%= t(m + 'configTitolo') %></h2>
+    <p><strong><%= cfg.attivo ? t(m + 'stato.attivo', { ambiente: t(m + 'ambiente.' + cfg.ambiente) }) : t(m + 'stato.spento') %></strong></p>
+    <% if (erroreConfig) { %><div class="errors" role="alert" tabindex="-1"><h2><%= t(erroreConfig) %></h2></div><% } %>
+    <p class="muted"><%= t(m + 'configIntro') %></p>
+    <% if (cfg.updatedAt && cfg.updatedBy) { %><p class="muted"><%= t(m + 'ultimaModifica', { data: fmt.dateTime(cfg.updatedAt), nome: cfg.updatedBy }) %></p><% } %>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <fieldset class="choice">
+      <legend><%= t(m + 'attivoTitolo') %></legend>
+      <div class="choice__opts"><label class="tick"><input type="checkbox" name="attivo" value="1"<% if (cfg.attivo) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t(m + 'attivo') %></span></label></div>
+    </fieldset>
+    <fieldset class="choice">
+      <legend><%= t(m + 'ambienteTitolo') %></legend>
+      <div class="choice__opts">
+        <% for (const a of ['SANDBOX', 'PRODUZIONE']) { %><label class="tick"><input type="radio" name="ambiente" value="<%= a %>"<% if (cfg.ambiente === a) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t(m + 'ambiente.' + a) %></span></label>
+        <% } %>
+      </div>
+    </fieldset>
+    <div class="field field--wide">
+      <label class="field__label" for="pg-chiave"><%= t(m + 'chiave') %></label>
+      <input class="input" id="pg-chiave" name="chiave" type="password" autocomplete="new-password" maxlength="300" value="" aria-describedby="pg-chiave-hint">
+      <p class="field__hint" id="pg-chiave-hint"><%= t(cfg.haChiave ? m + 'chiaveHint' : m + 'chiaveHintNuova') %></p>
+    </div>
+    <div class="field field--wide">
+      <label class="field__label" for="pg-password"><%= t(m + 'passwordCampo') %></label>
+      <input class="input" id="pg-password" name="password" type="password" autocomplete="current-password" maxlength="256" value="" aria-describedby="pg-password-hint">
+      <p class="field__hint" id="pg-password-hint"><%= t(m + 'passwordHint') %></p>
+    </div>
+    <div class="toolbar"><button class="btn btn--primary" type="submit"><%= t(m + 'salva') %></button></div>
+  </form>
+
+  <section class="panel pagamenti-pannello" aria-labelledby="h-webhook">
+    <h2 class="section__title" id="h-webhook"><%= t(m + 'webhookTitolo') %></h2>
+    <p><strong><%= t(cfg.webhook ? m + 'webhookSi' : m + 'webhookNo') %></strong></p>
+    <p class="muted"><%= t(m + 'webhookTesto') %></p>
+    <form method="post" action="/master/pagamenti/webhook"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><div class="toolbar"><button class="btn" type="submit"<% if (!cfg.haChiave) { %> disabled<% } %>><%= t(m + 'webhookRegistra') %></button></div></form>
+  </section>
+
+  <%- include('_pagamenti-iva') %>
+
+  <section class="panel pagamenti-pannello" aria-labelledby="h-piani">
+    <h2 class="section__title" id="h-piani"><%= t(m + 'pianiTitolo') %></h2>
+    <p class="muted"><%= t(m + 'pianiIntro') %></p>
+    <% if (errore) { %><div class="errors" role="alert" tabindex="-1"><h2><%= t(errore) %></h2></div><% } %>
+    <% if (piani.length) { %><div class="table-scorre"><table class="table table--stack">
+      <caption class="visually-hidden"><%= t(m + 'pianiTitolo') %></caption>
+      <thead><tr><th scope="col"><%= t(m + 'livello') %></th><th scope="col"><%= t(m + 'mesi') %></th><th scope="col"><%= t(m + 'prezzo') %></th><th scope="col"><span class="visually-hidden"><%= t(m + 'spegni') %></span></th></tr></thead>
+      <tbody>
+        <% for (const p of piani) { %><tr>
+          <th scope="row" data-label="<%= t(m + 'livello') %>"><%= t('abbonamento.livello', { n: p.livello }) %> — <%= p.attivo ? t(m + 'attivoSi') : t(m + 'attivoNo') %></th>
+          <td data-label="<%= t(m + 'mesi') %>"><%= p.mesi %></td>
+          <td data-label="<%= t(m + 'prezzo') %>"><%= euro(p.prezzoCent) %> €</td>
+          <td><form method="post" action="/master/pagamenti/piani/<%= p.id %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="attivo" value="<%= p.attivo ? '' : '1' %>"><button class="btn btn--sm" type="submit"><%= t(p.attivo ? m + 'spegni' : m + 'attiva') %></button></form></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table></div><% } %>
+    <form class="row-form" method="post" action="/master/pagamenti/piani" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <label class="field__label" for="pn-livello"><%= t(m + 'livello') %></label>
+        <select class="select" id="pn-livello" name="livello">
+          <% for (const [n, persone] of [[1, 'abbonamento.livelli.breveFino'], [2, 'abbonamento.livelli.breveFino'], [3, 'abbonamento.livelli.breveOltre']]) { %><option value="<%= n %>"><%= t('abbonamento.master.opzione', { n, persone: t(persone, { n: n === 1 ? 10 : 25 }) }) %></option>
+          <% } %>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field__label" for="pn-mesi"><%= t(m + 'mesi') %></label>
+        <input class="input" id="pn-mesi" name="mesi" type="number" min="1" max="36" step="1" value="12" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label class="field__label" for="pn-prezzo"><%= t(m + 'prezzo') %></label>
+        <input class="input" id="pn-prezzo" name="prezzo" type="text" inputmode="decimal" maxlength="12" autocomplete="off">
+      </div>
+      <button class="btn" type="submit"><%= t(m + 'crea') %></button>
+    </form>
+  </section>
+
+  <% if (daVerificare.length) { %><section class="panel pagamenti-pannello" aria-labelledby="h-verificare">
+    <h2 class="section__title" id="h-verificare"><%= t(m + 'verificareTitolo') %></h2>
+    <div class="errors" role="status"><p><%= t(m + 'verificareTesto') %></p></div>
+    <div class="table-scorre"><table class="table table--stack">
+      <caption class="visually-hidden"><%= t(m + 'verificareTitolo') %></caption>
+      <thead><tr><th scope="col"><%= t(m + 'colonna.data') %></th><th scope="col"><%= t(m + 'colonna.azienda') %></th><th scope="col"><%= t(m + 'colonna.totale') %></th><th scope="col"><%= t(m + 'colonna.stato') %></th><th scope="col"><%= t(m + 'rimborsoImporto') %></th></tr></thead>
+      <tbody>
+        <% for (const p of daVerificare) { %><tr>
+          <th scope="row" data-label="<%= t(m + 'colonna.data') %>"><%= fmt.dateTime(p.createdAt) %></th>
+          <td data-label="<%= t(m + 'colonna.azienda') %>"><%= p.aziendaNome %></td>
+          <td data-label="<%= t(m + 'colonna.totale') %>"><%= euro(p.totaleCent) %> €</td>
+          <td data-label="<%= t(m + 'colonna.stato') %>"><%= t(m + 'motivo.' + (p.verificaMotivo || 'periodo')) %></td>
+          <td data-label="<%= t(m + 'rimborsoImporto') %>"><a class="btn btn--sm" href="/master/pagamenti/<%= p.id %>/rimborso" aria-label="<%= t('rimborsi.console.apri', { azienda: p.aziendaNome }) %>"><%= t('rimborsi.console.rimborsa') %></a></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table></div>
+  </section><% } %>
+
+  <section class="panel pagamenti-pannello" aria-labelledby="h-fatturare">
+    <h2 class="section__title" id="h-fatturare"><%= t(m + 'fatturareTitolo') %></h2>
+    <p class="muted"><%= t(m + 'fatturareTesto', { giorni: giorniFattura }) %></p>
+    <% if (!daFatturare.length) { %><p class="muted"><%= t(m + 'fatturareNessuno') %></p><% } else { %><div class="table-scorre"><table class="table table--stack">
+      <caption class="visually-hidden"><%= t(m + 'fatturareTitolo') %></caption>
+      <thead><tr><th scope="col"><%= t(m + 'colonna.data') %></th><th scope="col"><%= t(m + 'cliente') %></th><th scope="col"><%= t(m + 'colonna.piano') %></th><th scope="col"><%= t(m + 'colonna.totale') %></th><th scope="col"><span class="visually-hidden"><%= t(m + 'segnaFatturato') %></span></th></tr></thead>
+      <tbody>
+        <% for (const p of daFatturare) { %><tr>
+          <th scope="row" data-label="<%= t(m + 'colonna.data') %>"><%= fmt.dateTime(p.completatoAt || p.createdAt) %></th>
+          <td data-label="<%= t(m + 'cliente') %>"><%= p.ragioneSociale %> — <%= p.partitaIva %><% if (p.viesAt) { %><br><span class="muted"><%= p.regimeIva === 'iva-bg-ue' ? (p.viesConsultazione ? t('vies.master.nonValidaNumero', { numero: p.viesConsultazione, data: fmt.dayRoma(p.viesAt) }) : t('vies.master.nonValida', { data: fmt.dayRoma(p.viesAt) })) : p.viesConsultazione ? t('vies.master.consultazione', { numero: p.viesConsultazione, data: fmt.dayRoma(p.viesAt) }) : t('vies.master.senzaNumero', { data: fmt.dayRoma(p.viesAt) }) %><% if (p.viesNome) { %> — <%= t('vies.master.nome', { nome: p.viesNome }) %><% } %></span><% } %></td>
+          <td data-label="<%= t(m + 'colonna.piano') %>"><%= t('abbonamento.livello', { n: p.livello }) %>, <%= t(p.mesi === 1 ? 'pagamenti.mesi.uno' : 'pagamenti.mesi.altri', { n: p.mesi }) %></td>
+          <td data-label="<%= t(m + 'colonna.totale') %>"><%= euro(p.totaleCent) %> €</td>
+          <td><form class="row-form" method="post" action="/master/pagamenti/<%= p.id %>/fatturato"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><label class="visually-hidden" for="ft-numero-<%= p.id %>"><%= t(m + 'fatturaNumero') %></label><input class="input" id="ft-numero-<%= p.id %>" name="numero" type="text" maxlength="40" placeholder="<%= t(m + 'fatturaNumeroBreve') %>"><button class="btn btn--sm" type="submit"><%= t(m + 'segnaFatturato') %></button></form></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table></div><% } %>
+    <div class="toolbar"><a class="btn" href="/master/pagamenti/esporta.csv"><%- include('../partials/icon', { name: 'download' }) %><span><%= t(m + 'esportaCsv') %></span></a></div>
+  </section>
+
+  <%- include('_note-credito') %>
+
+  <section class="panel pagamenti-pannello" aria-labelledby="h-rimborsi">
+    <h2 class="section__title" id="h-rimborsi"><%= t(m + 'rimborsiTitolo') %></h2>
+    <p class="muted"><%= t(m + 'rimborsiTesto') %></p>
+    <% if (!rimborsi.length) { %><p class="muted"><%= t(m + 'rimborsiNessuno') %></p><% } else { %><div class="table-scorre"><table class="table table--stack">
+      <caption class="visually-hidden"><%= t(m + 'rimborsiTitolo') %></caption>
+      <thead><tr><th scope="col"><%= t(m + 'colonna.azienda') %></th><th scope="col"><%= t(m + 'rimborsoCessazione') %></th><th scope="col"><%= t(m + 'rimborsoDovuto') %></th><th scope="col"><%= t(m + 'rimborsoImporto') %></th></tr></thead>
+      <tbody>
+        <% for (const p of rimborsi) { %><tr>
+          <th scope="row" data-label="<%= t(m + 'colonna.azienda') %>"><%= p.aziendaNome %></th>
+          <td data-label="<%= t(m + 'rimborsoCessazione') %>"><%= fmt.dayRoma(p.cessazione) %></td>
+          <td data-label="<%= t(m + 'rimborsoDovuto') %>"><%= euro(p.dovutoCent) %> €</td>
+          <td data-label="<%= t(m + 'rimborsoImporto') %>"><a class="btn btn--sm" href="/master/pagamenti/<%= p.id %>/rimborso" aria-label="<%= t('rimborsi.console.apri', { azienda: p.aziendaNome }) %>"><%= t('rimborsi.console.rimborsa') %></a></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table></div><% } %>
+  </section>
+
+  <% if (contestazioni.length) { const c = 'rimborsi.contestazioni.'; %><section class="panel pagamenti-pannello" aria-labelledby="h-contestazioni">
+    <h2 class="section__title" id="h-contestazioni"><%= t(c + 'titolo') %></h2>
+    <p class="muted"><%= t(c + 'testo') %></p>
+    <div class="table-scorre"><table class="table table--stack">
+      <caption class="visually-hidden"><%= t(c + 'titolo') %></caption>
+      <thead><tr><th scope="col"><%= t(c + 'colonna.aperta') %></th><th scope="col"><%= t(c + 'colonna.azienda') %></th><th scope="col"><%= t(c + 'colonna.importo') %></th><th scope="col"><%= t(c + 'colonna.stato') %></th><th scope="col"><%= t(c + 'colonna.entro') %></th><th scope="col"><%= t(c + 'colonna.motivo') %></th></tr></thead>
+      <tbody>
+        <% for (const x of contestazioni) { %><tr>
+          <th scope="row" data-label="<%= t(c + 'colonna.aperta') %>"><%= fmt.dayRoma(x.apertaAt || x.createdAt) %></th>
+          <td data-label="<%= t(c + 'colonna.azienda') %>"><%= x.pagamento ? x.pagamento.aziendaNome : t(c + 'senzaPagamento') %></td>
+          <td data-label="<%= t(c + 'colonna.importo') %>"><%= euro(x.importoCent) %> €</td>
+          <td data-label="<%= t(c + 'colonna.stato') %>"><%= t(c + 'stato.' + x.stato) %></td>
+          <td data-label="<%= t(c + 'colonna.entro') %>"><%= x.rispostaEntro ? fmt.dayRoma(x.rispostaEntro) : t(c + 'senzaData') %></td>
+          <td data-label="<%= t(c + 'colonna.motivo') %>"><%= x.motivo || t(c + 'senzaData') %></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table></div>
+  </section><% } %>
+
+  <section class="panel" aria-labelledby="h-pagamenti">
+    <h2 class="section__title" id="h-pagamenti"><%= t(m + 'pagamentiTitolo') %></h2>
+    <% if (!pagamenti.length) { %><p class="muted"><%= t(m + 'nessunPagamento') %></p><% } else { %><div class="table-scorre"><table class="table table--stack">
+      <caption class="visually-hidden"><%= t(m + 'pagamentiTitolo') %></caption>
+      <thead><tr><th scope="col"><%= t(m + 'colonna.data') %></th><th scope="col"><%= t(m + 'colonna.azienda') %></th><th scope="col"><%= t(m + 'colonna.piano') %></th><th scope="col"><%= t(m + 'colonna.totale') %></th><th scope="col"><%= t(m + 'colonna.stato') %></th></tr></thead>
+      <tbody>
+        <% for (const p of pagamenti) { %><tr>
+          <th scope="row" data-label="<%= t(m + 'colonna.data') %>"><%= fmt.dateTime(p.createdAt) %></th>
+          <td data-label="<%= t(m + 'colonna.azienda') %>"><%= p.aziendaNome %></td>
+          <td data-label="<%= t(m + 'colonna.piano') %>"><%= t('abbonamento.livello', { n: p.livello }) %>, <%= t(p.mesi === 1 ? 'pagamenti.mesi.uno' : 'pagamenti.mesi.altri', { n: p.mesi }) %></td>
+          <td data-label="<%= t(m + 'colonna.totale') %>"><%= euro(p.totaleCent) %> €</td>
+          <td data-label="<%= t(m + 'colonna.stato') %>"><%= t(m + 'statoPagamento.' + p.stato) %><% if (p.rimborsoCent !== null) { %> (<%= euro(p.rimborsoCent) %> €)<% } %><% if (p.stato === 'IN_ATTESA') { %> <form class="inline-form" method="post" action="/master/pagamenti/<%= p.id %>/verifica"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--sm" type="submit"><%= t(m + 'verifica') %></button></form><% } %></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table></div><% } %>
+  </section>
+</div>
+<%- include('../partials/bottom') %>

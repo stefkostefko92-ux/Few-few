@@ -6,16 +6,18 @@ import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, canonical, itemListLd, webPageLd } from "@/lib/seo";
 import { getGuideIndex, getSnippets } from "@/lib/howto-index";
 import {
-  CATEGORY_TOPIC_PAGES,
   categoryPath,
   categorySlug,
   guidesLabel,
   pageCount,
   pageSlice,
   parsePageParam,
+  topicPageFor,
+  topicSectionOf,
 } from "@/lib/howto";
 import { GuideList } from "../../_components/GuideList";
 import { Pagination } from "../../_components/Pagination";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +40,8 @@ async function resolve(params: Params, searchParams: SP) {
   const page = parsePageParam(sp.page);
   const category = index.categoryBySlug.get(cat);
   if (!category) {
-    // Име на кирилица в адреса („/kak-da/kategoriya/Еврото“) → към адреса на темата.
+    // Име на кирилица в адреса („/kak-da/kategoriya/Еврото“) или стар адрес на
+    // тема, слята с друга (CATEGORY_SYNONYMS) → постоянно (308) към каноничния.
     const alias = index.categoryBySlug.get(categorySlug(safeDecode(cat)));
     if (alias && page !== null) permanentRedirect(categoryPath(alias.slug, page));
     return null;
@@ -75,6 +78,7 @@ export async function generateMetadata({
       "ръководства за възрастни",
       "е-услуги",
       "Бобов дол",
+      "Carbon Stealth",
     ],
   });
 }
@@ -93,7 +97,8 @@ export default async function CategoryPage({
   const items = pageSlice(category.items, page);
   const snippets = await getSnippets(items.map((g) => g.id));
   const path = categoryPath(category.slug, page);
-  const topic = category.names.map((n) => CATEGORY_TOPIC_PAGES[n]).find(Boolean);
+  const topic = topicPageFor(category.slug);
+  const section = topicSectionOf(category.slug);
 
   return (
     <>
@@ -116,7 +121,7 @@ export default async function CategoryPage({
         ]}
       />
       <PageHero
-        eyebrow="Как да…"
+        eyebrow={section?.title ?? SECTION.guides}
         title={category.name}
         intro={`${guidesLabel(category.count)} стъпка по стъпка.${
           total > 1 ? ` Страница ${page} от ${total}.` : ""
@@ -130,8 +135,8 @@ export default async function CategoryPage({
         {topic && (
           <p className="mb-6 text-base text-slate-700">
             Вижте и страницата{" "}
-            <Link href={topic.href} className="font-semibold text-brand-700 underline hover:decoration-2">
-              {topic.label}
+            <Link href={topic.href} className="link">
+              „{topic.label}“
             </Link>
             .
           </p>

@@ -36,18 +36,177 @@ export type CategoryGroup = {
   lastModified: Date;
 };
 
-// Тема → съдържателна страница на сайта със същата тема (връзка „Вижте и…“).
-export const CATEGORY_TOPIC_PAGES: Record<string, { href: string; label: string }> = {
-  "Еврото": { href: "/evroto", label: "Еврото — въпроси и отговори" },
-  "Пенсии и социални помощи": { href: "/pomoshti", label: "Пенсии и помощи" },
-  "Измами и безопасност": { href: "/izmami", label: "Пази се от измами" },
-  "Безопасност и измами": { href: "/izmami", label: "Пази се от измами" },
-  "Достъпност": { href: "/dostapnost", label: "Достъпност на сайта" },
+// --- Теми: синоними и раздели ---
+
+/**
+ * Карта-синоним: имена на теми от базата, които значат едно и също → едно
+ * канонично име. Базата не се пипа — сливането е при показване: старият адрес
+ * на темата (`/kak-da/kategoriya/izmami-i-bezopasnost`) води с 308 към
+ * каноничния, а ръководствата влизат в каноничната тема навсякъде (списъци,
+ * трохи, „Сродни“, sitemap). Нов дубъл в базата → един ред тук.
+ */
+export const CATEGORY_SYNONYMS: Readonly<Record<string, string>> = {
+  "Измами и безопасност": "Безопасност и измами",
+  "Интернет и онлайн безопасност": "Безопасност и измами",
+  "Забавление": "Забавление и хобита",
+  "Достъпност (за по-лесно ползване)": "Достъпност",
+  "Здраве и грижа": "Здраве",
+  "Здраве и първа помощ": "Здраве",
+  "Пари, карта и банкомат": "Пари, сметки и права",
+  "Интернет и браузър": "Смартфон и интернет",
 };
 
-/** Детерминистичен адрес на тема от кирилско име („Еврото“ → „evroto“). */
+// По адрес (slug), за да работи и за име, и за стар адрес, и за „еврото“/„Еврото“.
+const SYNONYM_SLUGS = new Map(
+  Object.entries(CATEGORY_SYNONYMS).map(([from, to]) => [slugify(from), slugify(to)]),
+);
+const CANONICAL_NAMES = new Map(
+  Object.values(CATEGORY_SYNONYMS).map((name) => [slugify(name), name]),
+);
+
+/**
+ * Адресът на темата от кирилско име или от стар адрес („Еврото“ → „evroto“,
+ * „Измами и безопасност“ → „bezopasnost-i-izmami“). Синонимите дават
+ * каноничния адрес; иначе — детерминистичен slug.
+ */
 export function categorySlug(name: string): string {
-  return slugify(name);
+  const s = slugify(name);
+  return SYNONYM_SLUGS.get(s) ?? s;
+}
+
+/** Името на темата, както се показва (каноничното при синоним). */
+export function canonicalCategory(name: string): string {
+  return CANONICAL_NAMES.get(categorySlug(name)) ?? name.trim();
+}
+
+// Тема → съдържателна страница на сайта със същата тема (връзка „Вижте и…“).
+const TOPIC_PAGES: Record<string, { href: string; label: string }> = {
+  [categorySlug("Еврото")]: { href: "/evroto", label: "Еврото — въпроси и отговори" },
+  [categorySlug("Пенсии и социални помощи")]: { href: "/pomoshti", label: "Пенсии и помощи" },
+  [categorySlug("Безопасност и измами")]: { href: "/izmami", label: "Пазете се от измами" },
+  [categorySlug("Достъпност")]: { href: "/dostapnost", label: "Достъпност на сайта" },
+};
+
+/** Съдържателната страница за темата (или null). Приема име или адрес. */
+export function topicPageFor(name: string): { href: string; label: string } | null {
+  return TOPIC_PAGES[categorySlug(name)] ?? null;
+}
+
+/** Темата, чиито ръководства показва /izmami. */
+export const SCAM_TOPIC = "Безопасност и измами";
+
+// Оригиналните теми в реда, в който /izmami ги показва: първо ръководствата
+// точно за измамите („Какво да направя, ако вече дадох пари?“, „Измамник на
+// вратата“), после общата безопасност и чак тогава слетите синоними
+// („Интернет и онлайн безопасност“ — официален сайт, адрес, фалшиви новини).
+const SCAM_CATEGORY_PRIORITY = ["Измами и безопасност", SCAM_TOPIC];
+
+/**
+ * Първите `n` ръководства за /izmami от слетата тема: по приоритет на
+ * оригиналната тема (SCAM_CATEGORY_PRIORITY), после по реда в темата.
+ */
+export function pickScamGuides<T extends Pick<GuideIndexItem, "category">>(items: T[], n: number): T[] {
+  const rank = (c: string) => {
+    const i = SCAM_CATEGORY_PRIORITY.indexOf(c.trim());
+    return i === -1 ? SCAM_CATEGORY_PRIORITY.length : i;
+  };
+  return items
+    .map((it, i) => ({ it, i, r: rank(it.category) }))
+    .sort((a, b) => a.r - b.r || a.i - b.i)
+    .slice(0, n)
+    .map((x) => x.it);
+}
+
+/**
+ * Разделите на /kak-da: темите (каноничните имена) в 6 смислови групи, за да
+ * не се превърта през 30 карти подред. Тема, която я няма тук (нова в базата),
+ * отива в „Други теми“ — нищо не се губи.
+ */
+export const TOPIC_SECTIONS: readonly { id: string; title: string; topics: readonly string[] }[] = [
+  {
+    id: "telefonat",
+    title: "Телефонът стъпка по стъпка",
+    topics: [
+      "Смартфон и интернет",
+      "Настройки на телефона",
+      "Писане и клавиатура",
+      "Снимки, видео и галерия",
+      "Памет, място и облак",
+      "Всекидневни помощници",
+      "Технологии (основни понятия)",
+    ],
+  },
+  {
+    id: "saobshteniya",
+    title: "Съобщения, имейл и акаунти",
+    topics: [
+      "Viber, Messenger и WhatsApp",
+      "Facebook (стъпка по стъпка)",
+      "Имейл (Gmail)",
+      "Акаунти и пароли",
+      "Онлайн пазаруване",
+    ],
+  },
+  {
+    id: "dokumenti-pari",
+    title: "Документи, пари и пенсии",
+    topics: ["Документи и плащания", "Пари, сметки и права", "Пенсии и социални помощи", "Еврото"],
+  },
+  {
+    id: "zdrave-grizha",
+    title: "Здраве и грижа",
+    topics: ["Здраве", "Грижа за близък", "Достъпност"],
+  },
+  {
+    id: "bezopasnost",
+    title: "Безопасност",
+    topics: ["Безопасност и измами", "Дом и безопасност"],
+  },
+  {
+    id: "vsekidnevie",
+    title: "Ежедневие и свободно време",
+    topics: [
+      "Общуване и всекидневие",
+      "Кухня и хранене",
+      "Транспорт и пътуване",
+      "Карти и навигация",
+      "Забавление и хобита",
+    ],
+  },
+];
+
+/** Разделът (от TOPIC_SECTIONS), в който е темата — за eyebrow над заглавието. */
+export function topicSectionOf(name: string): { id: string; title: string } | null {
+  const slug = categorySlug(name);
+  const s = TOPIC_SECTIONS.find((x) => x.topics.some((t) => categorySlug(t) === slug));
+  return s ? { id: s.id, title: s.title } : null;
+}
+
+export type TopicSection<C> = { id: string; title: string; categories: C[] };
+
+/**
+ * Подрежда темите по разделите на TOPIC_SECTIONS (в реда на списъка там).
+ * Празни раздели не се връщат; непознатите теми — в „Други теми“ накрая.
+ */
+export function sectionCategories<C extends { slug: string }>(categories: C[]): TopicSection<C>[] {
+  const bySlug = new Map(categories.map((c) => [c.slug, c]));
+  const used = new Set<string>();
+  const out: TopicSection<C>[] = [];
+  for (const s of TOPIC_SECTIONS) {
+    const list: C[] = [];
+    for (const name of s.topics) {
+      const slug = categorySlug(name);
+      const c = bySlug.get(slug);
+      if (c && !used.has(slug)) {
+        list.push(c);
+        used.add(slug);
+      }
+    }
+    if (list.length) out.push({ id: s.id, title: s.title, categories: list });
+  }
+  const rest = categories.filter((c) => !used.has(c.slug));
+  if (rest.length) out.push({ id: "drugi", title: "Други теми", categories: rest });
+  return out;
 }
 
 export function categoryPath(slug: string, page = 1): string {
@@ -127,7 +286,10 @@ export function duplicateRedirects(
   return out;
 }
 
-/** Групира ръководствата по тема. Имена с еднакъв адрес се сливат в една тема. */
+/**
+ * Групира ръководствата по тема. Имена с еднакъв адрес (и синонимите от
+ * CATEGORY_SYNONYMS) се сливат в една тема с каноничното име.
+ */
 export function groupCategories(items: GuideIndexItem[], topN = TOP_PER_CATEGORY): CategoryGroup[] {
   const bySlug = new Map<string, { names: Map<string, number>; items: GuideIndexItem[] }>();
   for (const it of items) {
@@ -145,7 +307,7 @@ export function groupCategories(items: GuideIndexItem[], topN = TOP_PER_CATEGORY
     const sorted = sortGuides(g.items);
     groups.push({
       slug,
-      name: names[0][0],
+      name: CANONICAL_NAMES.get(slug) ?? names[0][0],
       names: names.map(([n]) => n).sort((a, b) => a.localeCompare(b, "bg")),
       count: sorted.length,
       items: sorted,
@@ -205,7 +367,8 @@ function firstSentenceEnd(text: string): number {
     const boldOpen = (before.match(/\*\*/g) ?? []).length % 2 === 1;
     const linkOpen = before.lastIndexOf("[") > before.lastIndexOf(")");
     const word = /([\p{L}.\-№]+)$/u.exec(text.slice(0, m.index))?.[1]?.toLowerCase() ?? "";
-    const abbr = m[0].startsWith(".") && ABBREVIATIONS.has(word);
+    // Еднобуквените („2026 г.“, „с. Мала Фуча“, инициали) — винаги съкращение.
+    const abbr = m[0].startsWith(".") && (word.length === 1 || ABBREVIATIONS.has(word));
     if (boldOpen || linkOpen || abbr) continue;
     return end;
   }

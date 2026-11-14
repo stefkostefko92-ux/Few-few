@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { BUSINESS_CATEGORY_LABELS } from "@/lib/categories";
 import { createRateLimiter } from "@/lib/ratelimit-core";
 import { RESERVED_BUSINESS_SLUGS, businessSlug } from "@/lib/business-form";
-import { screenBusinessSubmission } from "@/app/biznes/nova/schema";
+import { businessChanges, screenBusinessSubmission } from "@/app/biznes/nova/schema";
 
 // Формата „Добавете своя бизнес“ (/biznes/nova): адрес и ред на проверките.
 
@@ -95,4 +95,26 @@ test("screenBusinessSubmission: съобщението за грешка е от
   const r = await screenBusinessSubmission({ values: { ...ok, contactPhone: "", contactEmail: "" }, homepage: "" }, () => true);
   assert.equal(r.status, "invalid");
   if (r.status === "invalid") assert.match(r.error, /телефон или имейл/);
+});
+
+test("businessChanges: непроменената форма не е поправка (адресът на сайта се нормализира и от двете страни)", () => {
+  const row = {
+    name: "Банка ДСК",
+    category: "FINANCE",
+    description: "",
+    address: "ул. „Александър Стамболийски“ 3",
+    phone: "0700 10 375",
+    hours: "",
+    website: "https://dsk.bg",
+    facebook: "facebook.com/dskbank",
+  };
+  // Формата е попълнена от каталога и изпратена без промени: toBusinessData
+  // минава адресите през safeWebUrl („https://dsk.bg/“).
+  const same = { ...row, website: "https://dsk.bg/", facebook: "https://facebook.com/dskbank" };
+  assert.deepEqual(businessChanges(row, same), []);
+  const changed = businessChanges(row, { ...same, hours: "8:30–17:00", website: "https://dskbank.bg/" });
+  assert.deepEqual(
+    changed.map((c) => c.key),
+    ["hours", "websiteUrl"],
+  );
 });

@@ -146,8 +146,9 @@ Members**. **Presence НЕ се иска** и не се включва — ня�
 > restore must happen *at the moment* a member joins or leaves — there is no
 > interaction to hook into and no user id to look up in advance. On-demand
 > lookups (Get Guild Member, interaction member payloads) are already used
-> wherever they suffice (permission checks, verification, forms) and do not
-> require the intent. The full member list is never requested and never cached
+> wherever they suffice (permission checks, verification, forms, and the
+> display names of game players on the operator's own dashboard, looked up per
+> id and never stored) and do not require the intent. The full member list is never requested and never cached
 > (`members.fetch` is used only for a single id).
 
 **Data handling:**
@@ -221,8 +222,8 @@ notice; Server Activity Logging settings with categories off by default;
 
 ## 5. Bot invite — правата, които искаме (без Administrator)
 
-Поканата (`bot/src/utils/permissionCheck.js`, `frontend/src/pages/Login.jsx`)
-иска `permissions=361045814416`, тоест точно:
+Поканата (`bot/src/utils/permissionCheck.js`, `frontend/src/lib/invite.js`)
+иска `permissions=2252160859499664`, тоест точно тези 13 права:
 
 | Право | За какво |
 |---|---|
@@ -232,8 +233,13 @@ notice; Server Activity Logging settings with categories off by default;
 | Manage Messages | лепкави съобщения, чистене на панели |
 | Manage Roles | верификация, autorole, reaction roles, sticky roles |
 | View Audit Log | актьорът в Server Activity Logging |
+| Pin Messages | закачане на приветствието в тикета. От 2026 закачането е отделно право (`PIN_MESSAGES`, 1<<51) и не идва с Manage Messages. Препоръчително, не задължително: сървър, поканил бота по-рано, го няма и тикетите му работят — само приветствието не се закача. |
 
-Промяна на правата = промяна на числото на двете места + тук; гейтът го сверява.
+За канал-стръвта (`/bait`) се искат още **Ban Members** (изгонване, бан) или **Timeout Members**
+(заглушаване). Те **не са** в поканата: дават се ръчно на ролята на бота само от сървър, който включи стръвта.
+
+Промяна на правата = промяна на числото на двете места (`permissionCheck.js`, `lib/invite.js`) + тук;
+гейтът (`discordCompliance.test.js`) сверява трите и търси разминало се число из фронтенда и README.
 
 ## 6. Premium Apps onboarding — след заверката
 

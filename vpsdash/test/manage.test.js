@@ -9,7 +9,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { parseEnv, formatValue, maskValue, isSecretKey, discover, readEnv, writeEnv } from '../src/env.js';
 import { assertBytes, assertQuota, assertTasks, renderDropin } from '../src/limits.js';
-import { validateSchedule, validateCommand } from '../src/cronedit.js';
+import { validateSchedule, validateCommand, parseCronLines } from '../src/cronedit.js';
 import { assertDomain, isWildcard, issueSpec } from '../src/domains.js';
 import { verifySignature, describe as describeEvent, _resetRejectThrottle } from '../src/webhook.js';
 
@@ -233,4 +233,21 @@ test('CPUQuota се превежда в проценти от двата фор�
   assert.equal(quotaToPercent('infinity'), null);
   assert.equal(quotaToPercent(''), null);
   assert.equal(quotaToPercent('[not set]'), null);
+});
+
+test('crontab: етикетът (единичен коментар отгоре) е на задачата — заглавният блок не е', () => {
+  const lines = [
+    '# Edit this file to introduce tasks to be run by cron.',
+    '#',
+    '# m h  dom mon dow   command',
+    '30 3 * * * /usr/bin/true',
+    '',
+    '# лабораторен ред',
+    '15 4 * * * /usr/bin/true',
+  ];
+  const jobs = parseCronLines(lines);
+  assert.equal(jobs.length, 2);
+  assert.equal(jobs[0].comment, undefined, 'заглавката на Ubuntu не е етикет на първата задача');
+  assert.equal(jobs[1].comment, 'лабораторен ред');
+  assert.equal(jobs[1].commentIndex, 5);
 });

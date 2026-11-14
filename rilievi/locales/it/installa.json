@@ -1,0 +1,54 @@
+{
+  "installa": {
+    "title": "Installa l'app",
+    "nav": "Installa l'app",
+    "authLink": "Installa l'app sul telefono o sul computer",
+    "lead": "Aggiungi Rilievi Impianti alla schermata Home del telefono o al computer: si apre con un tocco, a schermo intero, senza le barre del browser.",
+    "installed": "Stai già usando l'app installata.",
+    "ready": "Questo browser può installarla subito.",
+    "iosNote": "Su iPhone e iPad nessun pulsante può installare l'app: Apple lo permette solo dal menu Condividi. Bastano tre tocchi.",
+    "iosButton": "Mostra come aggiungerla",
+    "samsung": {
+      "nota": "Con Samsung Internet l'app si installa in un modo che Android segnala come «non sicura». Installala da Chrome: è la stessa app, senza avvisi.",
+      "giaInstallata": "Se l'hai già installata da Samsung Internet, eliminala dalla schermata Home e installala di nuovo da Chrome.",
+      "apri": "Apri in Chrome"
+    },
+    "button": "Installa l'app",
+    "done": "App installata: la trovi nella schermata Home o tra le applicazioni del computer.",
+    "yourDevice": "Il tuo dispositivo",
+    "android": {
+      "title": "Android",
+      "s1": "Apri il portale con Chrome (consigliato) o Edge.",
+      "s2": "Tocca il menu ⋮ in alto a destra.",
+      "s3": "Tocca «Installa app» o «Aggiungi a schermata Home» e conferma.",
+      "s4": "L'icona Rilievi è tra le app: si apre a tutto schermo, senza le barre del telefono."
+    },
+    "ios": {
+      "title": "iPhone e iPad",
+      "s1": "Apri il portale con Safari (da iOS 16.4 anche con Chrome o Edge).",
+      "s2": "Tocca Condividi: il quadrato con la freccia verso l'alto.",
+      "s3": "Scorri e tocca «Aggiungi alla schermata Home».",
+      "s4": "Se compare l'opzione per aprirlo come app web, lasciala attiva, poi tocca «Aggiungi»: Rilievi si apre senza le barre di Safari."
+    },
+    "pc": {
+      "title": "Computer con Chrome o Edge (Windows, Mac, Linux)",
+      "s1": "Usa il pulsante «Installa l'app» qui sopra, quando c'è.",
+      "s2": "Oppure clicca l'icona di installazione a destra nella barra degli indirizzi (uno schermo con una freccia).",
+      "s3": "Conferma con «Installa»: Rilievi si apre in una finestra sua, senza le barre del browser, e resta nel menu Start, nel Dock o tra le applicazioni.",
+      "s4": "Per lo schermo intero premi F11; sul Mac usa il pulsante verde della finestra."
+    },
+    "mac": {
+      "title": "Mac con Safari",
+      "s1": "Apri il portale con Safari (macOS Sonoma o successivo).",
+      "s2": "Dal menu Archivio scegli «Aggiungi al Dock».",
+      "s3": "Rilievi si apre dal Dock in una finestra sua, senza le barre di Safari."
+    },
+    "firefox": "Firefox sul computer non installa le app web: usa Chrome, Edge o, sul Mac, Safari. Su Android Firefox la installa dal menu ⋮.",
+    "whyTitle": "Perché installarla",
+    "why1": "Un tocco dalla schermata Home o dal desktop, come le altre app.",
+    "why2": "Più spazio per la scheda: niente barra degli indirizzi, su Android tutto lo schermo.",
+    "why3": "Sempre aggiornata: è il portale stesso, non c'è nulla da aggiornare.",
+    "why4": "Senza rete, quello che invii resta salvato sul telefono fino a 7 giorni e lo invii quando torna il segnale.",
+    "back": "Torna all'accesso"
+  }
+}

@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { sofiaDay } from "@/lib/stats-core";
 import { sofiaWallNow } from "@/lib/ingest-outages-core";
+import { formatDate, formatTime } from "@/lib/format-date";
 
 // Чистата логика на листа „Седмицата в Бобов дол“ (без база) — за тестовете.
 
@@ -91,25 +92,10 @@ export function fmtDate(d: Date): string {
   }).format(d);
 }
 
-// „23.10.2026 г., 19:45 ч.“ — кога е генериран листът (виси на таблото с дни).
+// „23 октомври 2026 г., 19:45 ч.“ — кога е генериран листът (виси на таблото
+// с дни). Същият формат като навсякъде в сайта (lib/format-date, по София).
 export function fmtGenerated(d: Date): string {
-  const date = new Intl.DateTimeFormat("bg-BG", {
-    timeZone: "Europe/Sofia",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  })
-    .format(d)
-    .replace(/\s*г\.?$/, "");
-  const time = new Intl.DateTimeFormat("bg-BG", {
-    timeZone: "Europe/Sofia",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  })
-    .format(d)
-    .replace(/\s*ч\.?$/, "");
-  return `${date} г., ${time} ч.`;
+  return `${formatDate(d)}, ${formatTime(d)}`;
 }
 
 // Кратко, без да се реже по средата на дума.

@@ -1,10 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  CATEGORY_SYNONYMS,
+  TOPIC_SECTIONS,
+  canonicalCategory,
   categoryPath,
   categorySlug,
   duplicateRedirects,
   formatBgDate,
+  pickScamGuides,
   groupCategories,
   guidesLabel,
   hasTag,
@@ -15,7 +19,9 @@ import {
   pageWindow,
   parsePageParam,
   parseTags,
+  sectionCategories,
   splitLead,
+  topicPageFor,
   type GuideIndexItem,
 } from "@/lib/howto";
 
@@ -36,8 +42,67 @@ test("categorySlug е детерминистичен и латински", () =>
   assert.equal(categorySlug("Еврото"), "evroto");
   assert.equal(categorySlug("Документи и плащания"), "dokumenti-i-plashtaniya");
   assert.equal(categorySlug("Viber, Messenger и WhatsApp"), "viber-messenger-i-whatsapp");
-  assert.equal(categorySlug("Достъпност (за по-лесно ползване)"), "dostapnost-za-po-lesno-polzvane");
+  assert.equal(categorySlug("Транспорт и пътуване"), "transport-i-patuvane");
   assert.equal(categorySlug(categorySlug("Еврото")), "evroto", "slug от slug е същият");
+});
+
+test("синоними: дублиращите се теми водят до един каноничен адрес", () => {
+  assert.equal(categorySlug("Измами и безопасност"), "bezopasnost-i-izmami");
+  assert.equal(categorySlug("Безопасност и измами"), "bezopasnost-i-izmami");
+  assert.equal(categorySlug("Достъпност (за по-лесно ползване)"), "dostapnost");
+  // Старият адрес също води до каноничния (за 308 от /kak-da/kategoriya/<стар>).
+  assert.equal(categorySlug("izmami-i-bezopasnost"), "bezopasnost-i-izmami");
+  assert.equal(categorySlug("dostapnost-za-po-lesno-polzvane"), "dostapnost");
+  assert.equal(categorySlug(categorySlug("Здраве и първа помощ")), "zdrave", "идемпотентно");
+  assert.equal(canonicalCategory("Измами и безопасност"), "Безопасност и измами");
+  assert.equal(canonicalCategory("Еврото"), "Еврото", "без синоним — както е");
+  // Каноничното име не е само по себе си синоним (иначе веригата се губи).
+  for (const to of Object.values(CATEGORY_SYNONYMS)) {
+    assert.equal(CATEGORY_SYNONYMS[to], undefined, to);
+  }
+});
+
+test("topicPageFor: съдържателната страница и за синоним, и за адрес", () => {
+  assert.equal(topicPageFor("Измами и безопасност")?.href, "/izmami");
+  assert.equal(topicPageFor("bezopasnost-i-izmami")?.href, "/izmami");
+  assert.equal(topicPageFor("Достъпност (за по-лесно ползване)")?.href, "/dostapnost");
+  assert.equal(topicPageFor("Кухня и хранене"), null);
+});
+
+test("groupCategories слива синонимите под каноничното име", () => {
+  const groups = groupCategories([
+    item({ slug: "a", category: "Измами и безопасност", order: 1 }),
+    item({ slug: "b", category: "Безопасност и измами", order: 2 }),
+    item({ slug: "c", category: "Интернет и онлайн безопасност", order: 3 }),
+    item({ slug: "d", category: "Измами и безопасност", order: 4 }),
+  ]);
+  assert.equal(groups.length, 1);
+  assert.equal(groups[0].slug, "bezopasnost-i-izmami");
+  assert.equal(groups[0].name, "Безопасност и измами", "каноничното, не най-честото");
+  assert.equal(groups[0].count, 4);
+});
+
+test("sectionCategories: редът на разделите, без празни, непознатите — накрая", () => {
+  const cat = (name: string) => ({ slug: categorySlug(name), name });
+  const out = sectionCategories([
+    cat("Еврото"),
+    cat("Нова тема"),
+    cat("Смартфон и интернет"),
+    cat("Документи и плащания"),
+  ]);
+  assert.deepEqual(
+    out.map((s) => s.id),
+    ["telefonat", "dokumenti-pari", "drugi"],
+  );
+  assert.deepEqual(
+    out[1].categories.map((c) => c.name),
+    ["Документи и плащания", "Еврото"],
+    "в реда от TOPIC_SECTIONS",
+  );
+  assert.deepEqual(out[2].categories.map((c) => c.name), ["Нова тема"]);
+  // Всяка тема е само в един раздел.
+  const all = TOPIC_SECTIONS.flatMap((s) => s.topics.map(categorySlug));
+  assert.equal(new Set(all).size, all.length);
 });
 
 test("categoryPath слага ?page= само след първата страница", () => {
@@ -155,4 +220,27 @@ test("дати: български формат и ISO ден по софийс�
   const d = new Date("2026-10-11T22:30:00Z"); // 12 октомври в София (UTC+3)
   assert.equal(isoDay(d), "2026-10-12");
   assert.match(formatBgDate(d), /^12 октомври 2026/);
+});
+
+test("pickScamGuides: първо ръководствата точно за измамите, после общата безопасност, после синонимите", () => {
+  const items = [
+    { slug: "kak-da-razpoznavam-onlayn-izmami", category: "Безопасност и измами" },
+    { slug: "i-namerya-oficialen-sayt", category: "Интернет и онлайн безопасност" },
+    { slug: "iz-telefonna-izmama-vnuche", category: "Измами и безопасност" },
+    { slug: "telefonni-izmami-falshiv-policay", category: "Безопасност и измами" },
+    { slug: "iz-kakvo-ako-me-izmamiha", category: "Измами и безопасност" },
+  ];
+  assert.deepEqual(
+    pickScamGuides(items, 4).map((g) => g.slug),
+    ["iz-telefonna-izmama-vnuche", "iz-kakvo-ako-me-izmamiha", "kak-da-razpoznavam-onlayn-izmami", "telefonni-izmami-falshiv-policay"],
+  );
+});
+
+test("splitLead: „2026 г.“ не е край на първото изречение", () => {
+  const long =
+    "В **банки и пощенски станции — безплатно — до 30 юни 2026 г.** (по фиксирания курс). " +
+    "За по-големи суми уведомете банката предварително; в пощата има дневен лимит. ".repeat(4) +
+    "Най-сигурно: в БНБ — безплатно и без срок.";
+  const s = splitLead(long);
+  assert.equal(s?.lead, "В **банки и пощенски станции — безплатно — до 30 юни 2026 г.** (по фиксирания курс).");
 });

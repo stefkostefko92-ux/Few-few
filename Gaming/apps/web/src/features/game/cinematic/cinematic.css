@@ -1,19 +1,53 @@
-/* ─── Cinematic stage (shared by all 18 games) ─────────────────────────────
-   A darkened private-club room: overhead spotlight, deep vignette, film grain,
-   and a camera entrance. Tone variants tint the ambient spill. */
+/* ─── Cinematic stage — the Рейвънхолд hall (shared by all 21 games) ───────
+   Art direction ported from the `boy` project: a castle hall at night drawn
+   live in WebGL2 (.raven-hall, see ravenhold/hallShader.ts). The CSS room
+   below (spotlight, grain) is the FALLBACK when WebGL2 is unavailable. */
 
 .cine {
   position: relative;
   isolation: isolate;
-  margin: -2rem -1rem 0; /* bleed past the app's main padding for full immersion */
+  /* bleed past the app's main padding (top AND bottom) for full immersion, and
+     fill the whole viewport under the header so no page background shows
+     beneath the hall on short tables */
+  margin: -2rem -1rem -2rem;
   padding: 2.5rem 1rem 3rem;
-  min-height: calc(100vh - 64px);
+  min-height: calc(100dvh - 64px);
   overflow: hidden;
   /* The dark room itself: charcoal with a faint warm floor. */
   background:
     radial-gradient(140% 90% at 50% -10%, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.55) 100%),
     radial-gradient(80% 60% at 50% 120%, rgba(217, 178, 95, 0.05), transparent 60%),
     linear-gradient(180deg, #060807 0%, #0a0d0c 55%, #050706 100%);
+}
+
+/* The live WebGL hall sits at the very back of the stage. */
+.raven-hall {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  display: block;
+  pointer-events: none;
+}
+/* Hall live: the shader supplies light shafts, grain and grade, so the CSS
+   fallback room steps aside; its night fog colour backs any gap. */
+.cine--hall {
+  background: #0b0d12;
+}
+.cine--hall .cine__spot,
+.cine--hall .cine__grain {
+  display: none;
+}
+/* Tables and boards in the hall pick up the torchlight at their edges. */
+.cine.cine--hall .aso-table,
+.cine.cine--hall .aso-board {
+  box-shadow:
+    0 44px 100px -20px rgba(0, 0, 0, 0.9),
+    0 14px 34px -10px rgba(0, 0, 0, 0.75),
+    -26px 0 60px -30px rgba(255, 128, 40, 0.28),
+    26px 0 60px -30px rgba(255, 128, 40, 0.28),
+    inset 0 1px 0 rgba(217, 178, 95, 0.3);
 }
 
 /* Volumetric overhead spotlight cone pouring onto the table. */

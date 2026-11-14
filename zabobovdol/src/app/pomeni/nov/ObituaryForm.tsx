@@ -1,14 +1,34 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useMemo } from "react";
 import Link from "next/link";
-import { CheckCircle2, Phone } from "@/components/icons";
+import {
+  CHECKBOX,
+  CHECK_ROW,
+  FORM,
+  Field,
+  FieldError,
+  FormError,
+  FormSuccess,
+  Honeypot,
+  INPUT,
+  RequiredNote,
+  SubmitButton,
+  fields,
+  useFormFocus,
+} from "@/components/FormKit";
 import { PrivacyNote } from "@/components/PrivacyNote";
+import { PhoneButton } from "@/components/PhoneButton";
+import { TelLink } from "@/components/TelLink";
 import { SITE } from "@/lib/site";
-import type { FormField } from "@/lib/obituary";
+import type { FormState } from "@/lib/form-state";
 import { submitObituary, type ObituaryFormState } from "./actions";
 
 const initial: ObituaryFormState = { ok: false };
+
+// Радио-карта (некролог / помен) — цялата карта е цел за докосване.
+const RADIO_CARD =
+  "flex min-h-tap cursor-pointer items-start gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-800 has-[:checked]:border-slate-700 has-[:checked]:bg-slate-50 dark:has-[:checked]:border-slate-300";
 
 // Текстовете идват като props от сървърната страница — така чистата логика
 // (със Zod) не влиза в браузърния бъндъл.
@@ -23,334 +43,202 @@ export function ObituaryForm({
   retentionDays: number;
 }) {
   const [state, action, pending] = useActionState(submitObituary, initial);
-  const alertRef = useRef<HTMLDivElement>(null);
-  const doneRef = useRef<HTMLDivElement>(null);
-
-  // След изпращане фокусът отива на съобщението — четецът го прочита веднага,
-  // а на телефон човек вижда резултата, без да търси.
-  useEffect(() => {
-    if (state.ok) doneRef.current?.focus();
-    else if (state.error) alertRef.current?.focus();
-  }, [state]);
+  // Проверката на некролога връща една грешка с полето ѝ — същият вид като
+  // останалите форми: под полето и в обобщението най-горе.
+  const view = useMemo<FormState>(
+    () => ({
+      ok: state.ok,
+      attempt: state.attempt,
+      values: state.values as Record<string, string> | undefined,
+      error: state.field ? undefined : state.error,
+      fieldErrors: state.field && state.error ? { [state.field]: state.error } : undefined,
+    }),
+    [state],
+  );
+  const { errorRef, doneRef } = useFormFocus(view);
 
   if (state.ok) {
     return (
-      <div
-        ref={doneRef}
-        tabIndex={-1}
-        role="status"
-        className="max-w-2xl rounded-2xl border border-slate-200 bg-green-50 p-6 outline-none"
+      <FormSuccess
+        title="Благодарим ви."
+        headingRef={doneRef}
+        action={
+          <Link href="/pomeni" className="btn-secondary">
+            Към некролозите и помените
+          </Link>
+        }
       >
-        <div className="flex items-center gap-2">
-          <CheckCircle2 className="h-6 w-6 shrink-0 text-green-700" aria-hidden />
-          <p className="text-lg font-semibold text-slate-800">Благодарим ви.</p>
-        </div>
-        <p className="mt-2 text-lg text-slate-700">
-          Ще го прегледаме и публикуваме до 24 часа.
-        </p>
-        <p className="mt-2 text-slate-700">
-          Ако имаме въпрос, ще ви се обадим на посочения телефон. Снимка може да ни
-          изпратите по Viber на{" "}
-          <a href={`tel:${SITE.contact.phone}`} className="font-semibold text-brand-700 underline underline-offset-2">
+        <p>Ще го прегледаме и публикуваме до 24 часа.</p>
+        <p className="text-base text-slate-700">
+          Ако имаме въпрос, ще ви се обадим на посочения телефон. Снимка може да ни изпратите по
+          Viber на{" "}
+          <TelLink phone={SITE.contact.phone} className="link">
             {phone}
-          </a>
+          </TelLink>
           .
         </p>
-        <Link href="/pomeni" className="btn-secondary mt-5">
-          Към некролозите и помените
-        </Link>
-      </div>
+      </FormSuccess>
     );
   }
 
-  const v = state.values ?? {};
-  const invalid = (f: FormField) => (state.field === f ? true : undefined);
-  const describe = (f: FormField, hint?: string) =>
-    [hint, state.field === f ? "pomen-error" : undefined].filter(Boolean).join(" ") || undefined;
+  const f = fields(view);
+  const kind = f.value("kind");
 
   return (
-    <form key={state.attempt ?? 0} action={action} className="max-w-2xl space-y-6" noValidate>
-      {state.error && (
-        <div
-          ref={alertRef}
-          id="pomen-error"
-          tabIndex={-1}
-          role="alert"
-          className="rounded-xl bg-red-50 px-4 py-3 text-base text-red-700 outline-none"
-        >
-          {state.error}
-        </div>
-      )}
+    <form key={state.attempt ?? 0} action={action} className={FORM} noValidate>
+      <FormError state={view} innerRef={errorRef} />
+      <RequiredNote />
 
-      <p className="text-sm text-slate-600">Полетата със * са задължителни.</p>
-
-      <fieldset aria-describedby={describe("kind")}>
-        <legend className="label">Какво подавате? *</legend>
+      <fieldset aria-describedby={f.error("kind") ? "kind-error" : undefined}>
+        <legend className="label">Какво подавате?</legend>
         <div className="mt-1 grid gap-3 sm:grid-cols-2">
-          <label className="flex min-h-[44px] cursor-pointer items-start gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-800">
+          <label className={RADIO_CARD}>
             <input
+              id="kind"
               type="radio"
               name="kind"
               value="NECROLOGY"
               required
-              defaultChecked={v.kind === "NECROLOGY"}
-              className="mt-1 h-5 w-5 shrink-0 accent-brand-700"
+              defaultChecked={kind === "NECROLOGY"}
+              className="mt-1 h-5 w-5 shrink-0 accent-slate-700"
             />
             <span>
               <strong>Некролог</strong>
-              <span className="block text-sm text-slate-600">Тъжна вест — човекът почина наскоро.</span>
+              <span className="block text-base text-slate-600">Тъжна вест — човекът почина наскоро.</span>
             </span>
           </label>
-          <label className="flex min-h-[44px] cursor-pointer items-start gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-800">
+          <label className={RADIO_CARD}>
             <input
               type="radio"
               name="kind"
               value="MEMORIAL"
-              defaultChecked={v.kind === "MEMORIAL"}
-              className="mt-1 h-5 w-5 shrink-0 accent-brand-700"
+              defaultChecked={kind === "MEMORIAL"}
+              className="mt-1 h-5 w-5 shrink-0 accent-slate-700"
             />
             <span>
               <strong>Помен</strong>
-              <span className="block text-sm text-slate-600">40 дни, 6 месеца, година или друг помен.</span>
+              <span className="block text-base text-slate-600">40 дни, 6 месеца, година или друг помен.</span>
             </span>
           </label>
         </div>
+        <FieldError name="kind" error={f.error("kind")} />
       </fieldset>
 
-      <div>
-        <label className="label" htmlFor="fullName">
-          Име на починалия *
-        </label>
+      <Field name="fullName" label="Име на починалия" error={f.error("fullName")} hint="Напр. Иван Петров Иванов.">
         <input
-          id="fullName"
-          name="fullName"
+          {...f.props("fullName", { hint: true })}
           required
+          minLength={3}
           maxLength={120}
           autoComplete="off"
-          defaultValue={v.fullName}
-          aria-invalid={invalid("fullName")}
-          aria-describedby={describe("fullName")}
-          className="input"
-          placeholder="напр. Иван Петров Иванов"
+          className={INPUT}
         />
-      </div>
+      </Field>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label className="label" htmlFor="birthYear">
-            Година на раждане
-          </label>
+        <Field
+          name="birthYear"
+          label="Година на раждане"
+          optional
+          error={f.error("birthYear")}
+          hint="Само годината, с 4 цифри, напр. 1945."
+        >
           <input
-            id="birthYear"
-            name="birthYear"
+            {...f.props("birthYear", { hint: true })}
             inputMode="numeric"
             maxLength={4}
             autoComplete="off"
-            defaultValue={v.birthYear}
-            aria-invalid={invalid("birthYear")}
-            aria-describedby={describe("birthYear", "birthYear-hint")}
-            className="input"
-            placeholder="напр. 1945"
+            className={INPUT}
           />
-          <p id="birthYear-hint" className="mt-1 text-sm text-slate-600">
-            Само годината, с 4 цифри.
-          </p>
-        </div>
-        <div>
-          <label className="label" htmlFor="deathDate">
-            Дата на смъртта
-          </label>
-          <input
-            id="deathDate"
-            name="deathDate"
-            type="date"
-            defaultValue={v.deathDate}
-            aria-invalid={invalid("deathDate")}
-            aria-describedby={describe("deathDate")}
-            className="input"
-          />
-        </div>
+        </Field>
+        <Field name="deathDate" label="Дата на смъртта" optional error={f.error("deathDate")}>
+          <input {...f.props("deathDate")} type="date" className={INPUT} />
+        </Field>
       </div>
 
-      <fieldset className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-        <legend className="px-1 text-base font-semibold text-slate-800">
-          Погребение или помен — кога и къде
-        </legend>
-        <p className="text-sm text-slate-600">
+      <fieldset className="fieldset">
+        <legend className="legend">Погребение или помен — кога и къде (по избор)</legend>
+        <p className="text-base text-slate-600">
           Ако още не знаете — оставете празно. Можем да го добавим по-късно.
         </p>
-        <div className="mt-3 grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="label" htmlFor="ceremonyDate">
-              Дата
-            </label>
-            <input
-              id="ceremonyDate"
-              name="ceremonyDate"
-              type="date"
-              defaultValue={v.ceremonyDate}
-              aria-invalid={invalid("ceremonyDate")}
-              aria-describedby={describe("ceremonyDate")}
-              className="input"
-            />
-          </div>
-          <div>
-            <label className="label" htmlFor="ceremonyTime">
-              Час
-            </label>
-            <input
-              id="ceremonyTime"
-              name="ceremonyTime"
-              type="time"
-              defaultValue={v.ceremonyTime}
-              aria-invalid={invalid("ceremonyTime")}
-              aria-describedby={describe("ceremonyTime")}
-              className="input"
-            />
-          </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field name="ceremonyDate" label="Дата" optional error={f.error("ceremonyDate")}>
+            <input {...f.props("ceremonyDate")} type="date" className={INPUT} />
+          </Field>
+          <Field name="ceremonyTime" label="Час" optional error={f.error("ceremonyTime")}>
+            <input {...f.props("ceremonyTime")} type="time" className={INPUT} />
+          </Field>
         </div>
-        <div className="mt-4">
-          <label className="label" htmlFor="ceremonyPlace">
-            Място
-          </label>
-          <input
-            id="ceremonyPlace"
-            name="ceremonyPlace"
-            maxLength={160}
-            defaultValue={v.ceremonyPlace}
-            aria-invalid={invalid("ceremonyPlace")}
-            aria-describedby={describe("ceremonyPlace")}
-            className="input"
-            placeholder="напр. църквата в Бобов дол, гробищния парк"
-          />
-        </div>
+        <Field
+          name="ceremonyPlace"
+          label="Място"
+          optional
+          error={f.error("ceremonyPlace")}
+          hint="Напр. църквата в Бобов дол, гробищния парк."
+        >
+          <input {...f.props("ceremonyPlace", { hint: true })} maxLength={160} className={INPUT} />
+        </Field>
       </fieldset>
 
-      <div>
-        <label className="label" htmlFor="text">
-          Текст от близките
-        </label>
-        <textarea
-          id="text"
-          name="text"
-          rows={5}
-          maxLength={2000}
-          defaultValue={v.text}
-          aria-invalid={invalid("text")}
-          aria-describedby={describe("text", "text-hint")}
-          className="input"
-          placeholder="напр. „Почина нашият скъп съпруг, баща и дядо. Поклон пред светлата му памет!“"
-        />
-        <p id="text-hint" className="mt-1 text-sm text-slate-600">
-          Без телефони, адреси, ЕГН, линкове и банкови сметки — тук всичко се вижда от
-          всички.
-        </p>
-      </div>
+      <Field
+        name="text"
+        label="Текст от близките"
+        optional
+        error={f.error("text")}
+        hint="Без телефони, адреси, ЕГН, линкове и банкови сметки — тук всичко се вижда от всички."
+      >
+        <textarea {...f.props("text", { hint: true })} rows={5} maxLength={2000} className={INPUT} />
+      </Field>
 
-      <div>
-        <label className="label" htmlFor="fromFamily">
-          Подпис
-        </label>
-        <input
-          id="fromFamily"
-          name="fromFamily"
-          maxLength={120}
-          defaultValue={v.fromFamily}
-          aria-invalid={invalid("fromFamily")}
-          aria-describedby={describe("fromFamily")}
-          className="input"
-          placeholder="напр. „От семейството“"
-        />
-      </div>
+      <Field name="fromFamily" label="Подпис" optional error={f.error("fromFamily")} hint="Напр. „От семейството“.">
+        <input {...f.props("fromFamily", { hint: true })} maxLength={120} className={INPUT} />
+      </Field>
 
-      <fieldset className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-        <legend className="px-1 text-base font-semibold text-slate-800">
-          Вашите данни — само за нас
-        </legend>
-        <p className="text-sm text-slate-600">
-          Не се показват никъде. Ползваме ги само за да ви се обадим и да проверим
-          обявата, преди да я публикуваме. Изтриват се до {retentionDays} дни.
+      <fieldset className="fieldset">
+        <legend className="legend">Вашите данни — само за нас</legend>
+        <p className="text-base text-slate-600">
+          Не се показват никъде. Ползваме ги само за да ви се обадим и да проверим обявата, преди
+          да я публикуваме. Изтриват се до {retentionDays} дни.
         </p>
-        <div className="mt-3 grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="label" htmlFor="contactName">
-              Вашето име *
-            </label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field name="contactName" label="Вашето име" error={f.error("contactName")}>
             <input
-              id="contactName"
-              name="contactName"
+              {...f.props("contactName")}
               required
+              minLength={2}
               maxLength={80}
               autoComplete="name"
-              defaultValue={v.contactName}
-              aria-invalid={invalid("contactName")}
-              aria-describedby={describe("contactName")}
-              className="input"
+              className={INPUT}
             />
-          </div>
-          <div>
-            <label className="label" htmlFor="contactPhone">
-              Вашият телефон *
-            </label>
+          </Field>
+          <Field name="contactPhone" label="Вашият телефон" error={f.error("contactPhone")} hint="Напр. 0888 123 456.">
             <input
-              id="contactPhone"
-              name="contactPhone"
+              {...f.props("contactPhone", { hint: true })}
               type="tel"
               required
               maxLength={30}
               autoComplete="tel"
-              defaultValue={v.contactPhone}
-              aria-invalid={invalid("contactPhone")}
-              aria-describedby={describe("contactPhone")}
-              className="input"
-              placeholder="напр. 0888 123 456"
+              className={INPUT}
             />
-          </div>
+          </Field>
         </div>
       </fieldset>
 
-      {/* Honeypot против ботове */}
-      <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
+      <Honeypot />
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
-        <p>
-          <strong>Какво публикуваме:</strong> името, годините, датата, погребението или
-          помена (кога и къде), текста и подписа. Обявата се появява едва след като я
-          прегледаме — обикновено до 24 часа.
-        </p>
-        <p className="mt-2">
-          <strong>Снимка:</strong> не я качвайте тук. Ако желаете, изпратете я по Viber на{" "}
-          {phone}, след като ви се обадим.
-        </p>
-        <p className="mt-2">
-          <strong>Сваляне:</strong> по молба на близките сваляме или поправяме обявата до
-          72 часа — на {phone} или на {SITE.contact.email}.
-        </p>
+      <div>
+        <label className={CHECK_ROW} htmlFor="consent">
+          <input {...f.checkbox("consent")} type="checkbox" required className={CHECKBOX} />
+          <span>{consentText}.</span>
+        </label>
+        <FieldError name="consent" error={f.error("consent")} />
       </div>
-
-      <label className="flex min-h-[44px] cursor-pointer items-start gap-3 text-base text-slate-800">
-        <input
-          type="checkbox"
-          name="consent"
-          required
-          defaultChecked={v.consent === "on"}
-          aria-invalid={invalid("consent")}
-          aria-describedby={describe("consent")}
-          className="mt-1 h-5 w-5 shrink-0 accent-brand-700"
-        />
-        <span>{consentText}. *</span>
-      </label>
 
       <PrivacyNote />
 
-      <div className="flex flex-wrap items-center gap-4">
-        <button type="submit" className="btn-primary" disabled={pending}>
-          {pending ? "Изпращане…" : "Изпрати за преглед"}
-        </button>
-        <a href={`tel:${SITE.contact.phone}`} className="btn-secondary">
-          <Phone className="h-5 w-5" aria-hidden />
-          Или се обадете: {phone}
-        </a>
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <SubmitButton pending={pending}>Изпратете за преглед</SubmitButton>
+        <PhoneButton phone={SITE.contact.phone} label="Или се обадете:" />
       </div>
     </form>
   );

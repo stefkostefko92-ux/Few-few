@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { formatDateTimeNumeric } from "@/lib/format-date";
 import { setAdRequestStatus, deleteAdRequest } from "@/lib/admin/adrequest-actions";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { AdReport } from "./AdReport";
@@ -58,13 +59,7 @@ export default async function AdminAdRequestsPage() {
                   </span>
                 </div>
                 <span className="text-xs text-slate-600">
-                  {new Intl.DateTimeFormat("bg-BG", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }).format(r.createdAt)}
+                  {formatDateTimeNumeric(r.createdAt)}
                 </span>
               </div>
 

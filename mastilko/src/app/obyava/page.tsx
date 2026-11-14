@@ -3,6 +3,7 @@ import Image from "next/image";
 import ObyavaStudio from "@/components/studios/ObyavaStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import RelatedTools from "@/components/RelatedTools";
+import ToolGuide from "@/components/ToolGuide";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатна обява с откъсващи се телефончета";
@@ -64,6 +65,7 @@ export default function ObyavaPage() {
         </p>
       </header>
       <ObyavaStudio />
+      <ToolGuide current="/obyava" howTo={HOWTO} />
       <ToolFaq items={FAQ} />
       <RelatedTools current="/obyava" />
       <script

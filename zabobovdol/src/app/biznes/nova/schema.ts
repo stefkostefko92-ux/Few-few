@@ -3,6 +3,7 @@
 // безопасни адреси (http/https), за да не влезе „javascript:“ или друга схема.
 import { z } from "zod";
 import { BUSINESS_CATEGORY_LABELS } from "@/lib/categories";
+import { fieldErrorsOf, type FieldErrors } from "@/lib/form-state";
 
 const CATEGORY_KEYS = Object.keys(BUSINESS_CATEGORY_LABELS);
 
@@ -100,7 +101,7 @@ export type BusinessInput = z.infer<typeof businessSchema>;
 
 export type BusinessScreen =
   | { status: "honeypot" }
-  | { status: "invalid"; error: string }
+  | { status: "invalid"; error: string; fieldErrors: FieldErrors }
   | { status: "limited" }
   | { status: "ok"; data: BusinessInput };
 
@@ -122,7 +123,11 @@ export async function screenBusinessSubmission(
     homepage: "",
   });
   if (!parsed.success) {
-    return { status: "invalid", error: parsed.error.issues[0]?.message ?? "Невалидни данни." };
+    return {
+      status: "invalid",
+      error: parsed.error.issues[0]?.message ?? "Невалидни данни.",
+      fieldErrors: fieldErrorsOf(parsed.error.issues),
+    };
   }
 
   if (!(await allow())) return { status: "limited" };
@@ -155,4 +160,51 @@ export function toBusinessData(d: BusinessInput) {
     website: d.websiteUrl ? (safeWebUrl(d.websiteUrl) ?? "") : "",
     facebook: d.facebook ? (safeFacebookUrl(d.facebook) ?? "") : "",
   };
+}
+
+type BusinessRow = {
+  name: string;
+  category: string;
+  description: string;
+  address: string;
+  phone: string;
+  hours: string;
+  website: string;
+  facebook: string;
+};
+
+/**
+ * Полетата, които поправката наистина променя: [поле, етикет, преди, след].
+ * И двете страни се сравняват нормализирани — адресът от каталога
+ * („https://dsk.bg“) и същият адрес от формата (safeWebUrl → „https://dsk.bg/“)
+ * не са промяна; иначе всяко празно изпращане минава като поправка.
+ */
+export function businessChanges(
+  existing: BusinessRow,
+  next: BusinessRow,
+): { key: PublicField; label: string; before: string; after: string }[] {
+  const norm = (v: string, fix: (raw: string) => string | null) => (v ? (fix(v) ?? v) : "");
+  const before: Record<PublicField, string> = {
+    name: existing.name,
+    category: existing.category,
+    description: existing.description,
+    address: existing.address,
+    phone: existing.phone,
+    hours: existing.hours,
+    websiteUrl: norm(existing.website, safeWebUrl),
+    facebook: norm(existing.facebook, safeFacebookUrl),
+  };
+  const after: Record<PublicField, string> = {
+    name: next.name,
+    category: next.category,
+    description: next.description,
+    address: next.address,
+    phone: next.phone,
+    hours: next.hours,
+    websiteUrl: next.website,
+    facebook: next.facebook,
+  };
+  return PUBLIC_FIELDS.filter(([key]) => (before[key] ?? "").trim() !== (after[key] ?? "").trim()).map(
+    ([key, label]) => ({ key, label, before: before[key], after: after[key] }),
+  );
 }

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
 import { Button } from "../../../ui";
 import { useAuthStore } from "../../../lib/store";
 import { playCue } from "../../../lib/sound";
@@ -74,7 +73,6 @@ function relativePos(seat: number, mySeat: number): SeatPos {
 
 export function BeloteView({ title }: { title: string }) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const m = useMatch<BeloteState, BeloteAction>("BELOTE");
   const { state, legal, seat, phase, result, players } = m;
@@ -171,12 +169,8 @@ export function BeloteView({ title }: { title: string }) {
 
   return (
     <div className="mx-auto w-full max-w-[min(94vw,1240px)]">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-3xl text-brass-300">{title}</h1>
-        <Button variant="ghost" onClick={() => navigate("/")}>
-          {t("game.leave")}
-        </Button>
-      </div>
+      {/* Shared header: leaving mid-match resigns the seat (no bot finishing for us). */}
+      <SceneHeader title={title} />
 
       <div ref={tableRef} style={{ position: "relative" }}>
         <Announcements banners={banners} />

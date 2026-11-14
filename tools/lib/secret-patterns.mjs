@@ -55,6 +55,9 @@ export const CREDENTIAL = [
   { name: "AWS Secret (aws_secret_access_key)", re: /aws_secret_access_key\s*[:=]\s*['"]?[A-Za-z0-9/+]{40}\b/i },
   { name: "Stripe live secret", re: /\bsk_live_[0-9a-zA-Z]{16,}\b/ },
   { name: "Stripe restricted live key", re: /\brk_live_[0-9a-zA-Z]{16,}\b/ },
+  // Подписният ключ на Stripe webhook (02.11.2026, червеният екип + Кодаджията): с него се подправя всяко
+  // събитие на linketto/panev/SupremeDiscordBot/Gaming. Фикстурите в репото са ≤16 знака → прагът 24 е без шум.
+  { name: "Stripe webhook signing secret", re: /\bwhsec_[0-9a-zA-Z]{24,}\b/ },
   { name: "GitHub PAT (classic)", re: /\bghp_[0-9A-Za-z]{36}\b/ },
   { name: "GitHub PAT (fine-grained)", re: /\bgithub_pat_[0-9A-Za-z_]{60,}\b/ },
   { name: "GitHub OAuth/App token", re: /\b(?:gho|ghu|ghs|ghr)_[0-9A-Za-z]{36}\b/ },
@@ -69,6 +72,10 @@ export const CREDENTIAL = [
   { name: "Discord webhook", re: /https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/api\/webhooks\/\d{17,}\/[\w-]{60,}/ },
   { name: "Twilio API key", re: /\bSK[0-9a-fA-F]{32}\b/ },
   { name: "SendGrid key", re: /\bSG\.[0-9A-Za-z_-]{22}\.[0-9A-Za-z_-]{43}\b/ },
+  // abuse.ch Auth-Key (URLhaus, 2026-10): ключът е ЧАСТ ОТ ПЪТЯ на експорта, без префикс — самостоятелно е
+  // просто hex низ (≈ SHA-1/хеш, твърде много фалшиви), затова гейтът е самият URL с вграден ключ.
+  // Плейсхолдърът в документите (`/exports/<Auth-Key>/`) не съвпада.
+  { name: "abuse.ch Auth-Key в URL на експорт", re: /urlhaus-api\.abuse\.ch\/v2\/files\/exports\/[0-9A-Fa-f]{20,}/ },
   // Вход за сайт/админ (виж бележката по-горе): `имейл/парола`, `имейл : парола`, `имейл | парола`.
   { name: "Имейл + парола (двойка за вход)", re: new RegExp(String.raw`${EMAIL}\s{0,3}[/:|]\s{0,3}${PW_VALUE}`) },
   // `login: имейл password: …`, JSON `{"email":…,"password":…}`, и обратният ред `парола: … имейл`.

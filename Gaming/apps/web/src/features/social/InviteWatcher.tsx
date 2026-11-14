@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { SOCKET_EVENTS, type InviteReceivedMsg, type MatchFoundMsg } from "@aso/shared";
 import { getSocket } from "../../lib/socket";
 import { useMatchStore } from "../../lib/store";
-import { GAME_CATALOG } from "../lobby/games";
+import { gameTitle } from "../lobby/games";
 
 /**
  * App-wide socket watcher (mounted in Layout). Routes both players into a
@@ -67,7 +67,7 @@ export function InviteWatcher() {
   return (
     <div className="fixed bottom-4 left-4 z-[60] flex flex-col gap-2">
       {invites.map((inv) => {
-        const title = GAME_CATALOG.find((g) => g.key === inv.game)?.title ?? inv.game;
+        const title = gameTitle(t, inv.game);
         return (
           <div
             key={inv.fromUserId}

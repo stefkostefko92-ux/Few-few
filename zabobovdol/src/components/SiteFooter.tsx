@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { Phone, Mail } from "@/components/icons";
-import { SITE, PRIMARY_NAV, FOOTER_NAV, isFeedHref } from "@/lib/site";
+import { ChevronDown, Mail, Phone } from "@/components/icons";
+import { SITE, FOOTER_GROUPS, LEGAL_NAV, isFeedHref, type NavGroup } from "@/lib/site";
 import { getFacebookUrl, getPlayStoreUrl, getViberChannelUrl } from "@/lib/settings";
-import { TrustCard } from "@/components/TrustCard";
+import { TrustCard, breakableAddress } from "@/components/TrustCard";
 import { TelLink } from "@/components/TelLink";
+import { PhoneButton } from "@/components/PhoneButton";
 import { ViberButton } from "@/components/ViberButton";
 import { VisitCounter } from "@/components/VisitCounter";
+import { formatPhoneBg } from "@/lib/phone";
 
 // Вградена иконка на Google Play.
 function GooglePlayIcon({ className }: { className?: string }) {
@@ -28,10 +30,81 @@ function FacebookIcon({ className }: { className?: string }) {
   );
 }
 
-// Във футъра „Информация“ показва само страниците, които ги няма в „Раздели“ —
-// иначе половината връзки се повтаряха и футърът ставаше по-дълъг от екран.
-const FOOTER_ONLY = FOOTER_NAV.filter((i) => !PRIMARY_NAV.some((p) => p.href === i.href));
+// „е-услуги“, „е-поща“: тирето след еднобуквена представка става неразделящо
+// (U+2011) — иначе редът се пренася като „е-/услуги“. Само при показване:
+// SITE.description отива и в метаданните, където остава с обикновено тире.
+function noBreakPrefixes(text: string): string {
+  return text.replace(/(^|[\s(„])(\p{L})-(?=\p{L})/gu, "$1$2‑");
+}
 
+// Плочките на всички раздели на началната (Section id="razdeli").
+const ALL_SECTIONS_HREF = "/#razdeli";
+
+// Връзка във футъра: цел ≥44px, подчертана (на тъмно фон само цветът не
+// стига), без предварително зареждане за RSS (канал, не страница).
+function FooterLink({ href, label }: { href: string; label: string }) {
+  const cls = "link-on-dark inline-flex min-h-tap items-center [overflow-wrap:anywhere]";
+  return isFeedHref(href) ? (
+    <a href={href} type="application/rss+xml" className={cls}>
+      {label}
+    </a>
+  ) : (
+    <Link href={href} className={cls}>
+      {label}
+    </Link>
+  );
+}
+
+// Група връзки. На телефон (под sm) — сгъната <details> (затворена по
+// подразбиране; цялото заглавие е бутон ≥44px със стрелка), за да не е
+// футърът ~2000px; от sm — винаги отворена секция със заглавие. Двата вида
+// са в DOM, но скритият е display:none — за четеца и клавиатурата е само
+// единият. (::details-content за „винаги отворена“ още не е навсякъде.)
+function FooterGroup({ group, id, more = false }: { group: NavGroup; id: string; more?: boolean }) {
+  const list = (
+    <ul className="space-y-1 text-base">
+      {group.items.map((i) => (
+        <li key={i.href}>
+          <FooterLink href={i.href} label={i.label} />
+        </li>
+      ))}
+      {/* Футърът е кратък (SPEC т. 8), но пълният списък е на една връзка и
+          отдолу: плочките „Най-търсено“ + „Всички раздели“ на началната. */}
+      {more && (
+        <li>
+          <Link href={ALL_SECTIONS_HREF} className="link-on-dark inline-flex min-h-tap items-center gap-1 font-semibold">
+            Всички раздели <span aria-hidden="true">→</span>
+          </Link>
+        </li>
+      )}
+    </ul>
+  );
+  return (
+    <div className="min-w-0">
+      <details className="group/fg border-b border-white/20 sm:hidden">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 py-1 [&::-webkit-details-marker]:hidden">
+          <span className="footer-heading text-base">{group.title}</span>
+          <ChevronDown
+            className="h-6 w-6 shrink-0 text-brand-200 transition-transform group-open/fg:rotate-180 motion-reduce:transition-none"
+            aria-hidden
+          />
+        </summary>
+        <div className="pb-3">{list}</div>
+      </details>
+      <section aria-labelledby={id} className="hidden sm:block">
+        <h2 id={id} className="footer-heading">
+          {group.title}
+        </h2>
+        <div className="mt-2">{list}</div>
+      </section>
+    </div>
+  );
+}
+
+// Футърът — тъмносин (brand-900), „затваря“ страницата под светлия хедър.
+// Спешният номер е в свой блок САМО със 112; телефонът и имейлът на екипа са
+// отделно, под ясно заглавие — да не се вземат за спешен номер. Правните
+// връзки и независимостта са в долната лента.
 export async function SiteFooter() {
   const year = new Date().getFullYear();
   const [facebookUrl, playStoreUrl, viberUrl] = await Promise.all([
@@ -39,166 +112,173 @@ export async function SiteFooter() {
     getPlayStoreUrl(),
     getViberChannelUrl(),
   ]);
+  const emergency = SITE.emergency[0];
+  const [mostWanted, aboutSite, ...rest] = FOOTER_GROUPS;
+
   return (
-    <footer className="mt-16 border-t border-slate-200 bg-slate-50">
-      <div className="container-content py-10">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-12">
-          {/* Гербът и спешните телефони са в една колона: на компютър колоните
-              излизат с близка височина, а на телефон спешните са преди
-              дългите списъци с връзки. */}
-          <div className="grid content-start gap-8 sm:col-span-2 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-1">
+    <footer className="site-footer mt-8 bg-brand-900 text-white">
+      {/* pb-28 на всички ширини — място за плаващия бутон на чата под
+          последния ред (от sm той е широк бутон с надпис и при 125% стига
+          ~90px от долния ръб; иначе покрива реквизитите на фирмата). */}
+      <div className="container-content pb-28 pt-12">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
+          <div className="min-w-0 space-y-8 lg:col-span-4">
             <div>
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/brand/bobov-dol-grb.png"
-                  alt="Герб на Бобов дол"
-                  width={28}
-                  height={40}
-                  className="h-10 w-auto"
+                  src="/brand/bobov-dol-grb-mark.png"
+                  alt=""
+                  width={34}
+                  height={49}
+                  className="h-12 w-auto shrink-0"
                 />
-                <span className="text-lg font-bold">{SITE.name}</span>
+                <p className="leading-tight">
+                  <span className="block font-display text-xl font-bold text-white">
+                    {SITE.name}
+                  </span>
+                  <span className="block text-sm text-brand-100">{SITE.tagline}</span>
+                </p>
               </div>
-              <p className="mt-2 text-sm text-slate-600">{SITE.description}</p>
+              <p className="mt-3 max-w-md text-base text-brand-100">
+                {noBreakPrefixes(SITE.description)}
+              </p>
             </div>
-            <div>
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
-                Спешни телефони
+
+            <section aria-labelledby="footer-emergency">
+              <h2 id="footer-emergency" className="footer-heading">
+                Спешен номер
               </h2>
-              <ul className="mt-4 space-y-2.5 text-base">
-                {SITE.emergency.map((e) => (
-                  <li key={e.phone} className="text-slate-700">
-                    {e.label}:{" "}
-                    <TelLink phone={e.phone} className="font-bold text-brand-700">
-                      {e.phone}
+              <p className="mt-2 text-base text-brand-100">{emergency.label}</p>
+              <PhoneButton
+                phone={emergency.phone}
+                label="Спешност"
+                variant="danger"
+                className="mt-3 text-lg"
+              />
+            </section>
+
+            <section aria-labelledby="footer-team">
+              <h2 id="footer-team" className="footer-heading">
+                Връзка с екипа на сайта
+              </h2>
+              <p className="mt-2 text-base text-brand-100">
+                За грешки в сайта и предложения. При спешност — 112.
+              </p>
+              <ul className="mt-2 text-base">
+                {SITE.contact.phone && (
+                  <li>
+                    <TelLink
+                      phone={SITE.contact.phone}
+                      className="link-on-dark inline-flex min-h-tap items-center gap-2 font-semibold tabular-nums"
+                    >
+                      <Phone className="h-5 w-5 shrink-0 text-brand-200" aria-hidden />
+                      {formatPhoneBg(SITE.contact.phone)}
                     </TelLink>
+                  </li>
+                )}
+                {SITE.contact.email && (
+                  <li>
+                    <a
+                      href={`mailto:${SITE.contact.email}`}
+                      className="link-on-dark inline-flex min-h-tap max-w-full items-center gap-2"
+                    >
+                      <Mail className="h-5 w-5 shrink-0 text-brand-200" aria-hidden />
+                      <span className="min-w-0 [overflow-wrap:anywhere]">
+                        {breakableAddress(SITE.contact.email)}
+                      </span>
+                    </a>
+                  </li>
+                )}
+              </ul>
+              {(facebookUrl || viberUrl || playStoreUrl) && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {facebookUrl && (
+                    <a
+                      href={facebookUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-secondary"
+                    >
+                      <FacebookIcon className="h-5 w-5 shrink-0 text-[#1877F2]" />
+                      Последвайте ни във Facebook
+                    </a>
+                  )}
+                  {/* Viber каналът — само ако е зададен в /admin/nastroyki. */}
+                  {viberUrl && <ViberButton url={viberUrl} />}
+                  {playStoreUrl && (
+                    <a
+                      href={playStoreUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-secondary"
+                    >
+                      <GooglePlayIcon className="h-5 w-5 shrink-0" />
+                      Приложението в Google Play
+                    </a>
+                  )}
+                </div>
+              )}
+            </section>
+          </div>
+
+          <nav
+            aria-label="Връзки в долната част на сайта"
+            className="grid min-w-0 grid-cols-1 border-t border-white/20 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-8 sm:border-t-0 md:grid-cols-3 lg:col-span-8"
+          >
+            <FooterGroup group={mostWanted} id="footer-g0" more />
+            <FooterGroup group={aboutSite} id="footer-g1" />
+            <div className="min-w-0 sm:space-y-8">
+              {rest.map((g, i) => (
+                <FooterGroup key={g.title} group={g} id={`footer-g${i + 2}`} />
+              ))}
+            </div>
+          </nav>
+        </div>
+
+        {/* Кратката „истински адрес / никога не искаме“ — на всяка страница. */}
+        <TrustCard variant="compact" className="mt-10" />
+
+        <div className="mt-8 flex flex-col gap-4 border-t border-white/20 pt-6 text-sm text-brand-100 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0 space-y-1">
+            <p>
+              © {year} {SITE.name} — гражданска инициатива в полза на жителите на{" "}
+              {SITE.geo.city}.
+            </p>
+            <p className="font-semibold text-white">
+              Независим проект, не е официален сайт на Община {SITE.geo.city}.
+            </p>
+            <nav aria-label="Правна информация">
+              <ul className="flex flex-wrap gap-x-6">
+                {LEGAL_NAV.map((l) => (
+                  <li key={l.href}>
+                    <Link href={l.href} className="link-on-dark inline-flex min-h-tap items-center">
+                      {l.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
-              {SITE.contact.phone && (
-                <p className="mt-3 flex items-center gap-2 text-sm text-slate-700">
-                  <Phone className="h-4 w-4 shrink-0 text-brand-700" aria-hidden />
-                  <TelLink
-                    phone={SITE.contact.phone}
-                    className="font-semibold text-brand-700 hover:underline"
-                  >
-                    {SITE.contact.phone}
-                  </TelLink>
-                </p>
-              )}
-              {SITE.contact.email && (
-                <p className="mt-1.5 flex items-center gap-2 text-sm text-slate-700">
-                  <Mail className="h-4 w-4 shrink-0 text-brand-700" aria-hidden />
-                  <a
-                    href={`mailto:${SITE.contact.email}`}
-                    className="break-all text-brand-700 hover:underline"
-                  >
-                    {SITE.contact.email}
-                  </a>
-                </p>
-              )}
-              {facebookUrl && (
-                <a
-                  href={facebookUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-2 rounded-lg bg-[#1877F2] px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
-                >
-                  <FacebookIcon className="h-4 w-4" />
-                  Последвайте ни във Facebook
-                </a>
-              )}
-              {/* Viber каналът — само ако е зададен в /admin/nastroyki. */}
-              {viberUrl && (
-                <div className="mt-3">
-                  <ViberButton url={viberUrl} />
-                </div>
-              )}
-              {playStoreUrl && (
-                <a
-                  href={playStoreUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
-                >
-                  <GooglePlayIcon className="h-5 w-5" />
-                  Изтегли приложението от Google Play
-                </a>
-              )}
-            </div>
+            </nav>
           </div>
-          <div className="lg:col-span-5">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
-              Раздели
-            </h2>
-            {/* На две колони (освен на съвсем тесен таблет) — половин височина. */}
-            <ul className="mt-4 columns-2 gap-x-6 text-base sm:columns-1 md:columns-2">
-              {PRIMARY_NAV.map((i) => (
-                <li key={i.href} className="mb-2.5 break-inside-avoid">
-                  <Link href={i.href} className="text-slate-700 underline-offset-4 hover:text-brand-700 hover:underline">
-                    {i.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="lg:col-span-4">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
-              Информация
-            </h2>
-            <ul className="mt-4 columns-2 gap-x-6 text-base sm:columns-1 md:columns-2">
-              {FOOTER_ONLY.map((i) => (
-                <li key={i.href} className="mb-2.5 break-inside-avoid">
-                  {/* RSS е канал, не страница — обикновена връзка, без
-                      предварително зареждане от Next. */}
-                  {isFeedHref(i.href) ? (
-                    <a
-                      href={i.href}
-                      type="application/rss+xml"
-                      className="text-slate-700 underline-offset-4 hover:text-brand-700 hover:underline"
-                    >
-                      {i.label}
-                    </a>
-                  ) : (
-                    <Link href={i.href} className="text-slate-700 underline-offset-4 hover:text-brand-700 hover:underline">
-                      {i.label}
-                    </Link>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        {/* Кратката „истински адрес / никога не искаме“ — на всяка страница. */}
-        <TrustCard variant="compact" className="mt-8" />
-        <div className="mt-8 flex flex-col items-start justify-between gap-3 border-t border-slate-200 pt-6 text-sm text-slate-600 sm:flex-row sm:items-center">
-          <div className="space-y-1">
+          <div className="min-w-0 space-y-1 lg:text-right">
+            <VisitCounter className="text-brand-200" />
             <p>
-              © {year} {SITE.name}. Гражданска инициатива в полза на жителите на{" "}
-              {SITE.geo.city}.
+              Изработка и поддръжка на сайта:{" "}
+              <a
+                href={SITE.company.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="link-on-dark font-semibold"
+              >
+                {SITE.company.tradeName}
+              </a>
             </p>
-            <p>
-              Независим проект, който не е официален сайт на община{" "}
-              {SITE.geo.city}.
+            <p className="text-xs text-brand-200">
+              <span className="whitespace-nowrap">{SITE.company.legalName}</span> ·{" "}
+              <span className="whitespace-nowrap">ЕИК {SITE.company.eik}</span> ·{" "}
+              <span className="whitespace-nowrap">ДДС № {SITE.company.vat}</span>
             </p>
-            <VisitCounter />
           </div>
-          <p className="text-slate-600">
-            Изработка и поддръжка на сайта:{" "}
-            <a
-              href={SITE.company.website}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-slate-700 underline decoration-gold-400 decoration-2 underline-offset-2 hover:text-brand-700"
-            >
-              {SITE.company.tradeName}
-            </a>
-            <br />
-            <span className="text-xs text-slate-600">
-              {SITE.company.legalName} · ЕИК {SITE.company.eik} · ДДС №{" "}
-              {SITE.company.vat}
-            </span>
-          </p>
         </div>
       </div>
     </footer>

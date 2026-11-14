@@ -165,7 +165,7 @@ export default async function ResourceListPage({
             className="input w-56"
             aria-label="Търсене в списъка"
           />
-          <button type="submit" className="btn-secondary">Търси</button>
+          <button type="submit" className="btn-secondary">Търсете</button>
         </form>
       </div>
 

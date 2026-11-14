@@ -18,6 +18,7 @@ function craft(over: Partial<BeloteState>): BeloteState {
   return {
     ...base,
     phase: "PLAY",
+    talon: [],
     contract: "S",
     trump: "S",
     declarer: 0,
@@ -26,13 +27,111 @@ function craft(over: Partial<BeloteState>): BeloteState {
 }
 
 describe("belote engine — наддаване", () => {
-  it("deals four hands of 8 from a 32-card deck", () => {
+  const allCards = (s: BeloteState) => [...s.hands.flat(), ...s.talon, ...s.trick.map((p) => p.card)];
+
+  it("раздава по 5 карти (3+2) за наддаването; 12 остават в скрития талон", () => {
     const s = init();
     expect(s.hands).toHaveLength(4);
-    for (const h of s.hands) expect(h).toHaveLength(8);
-    expect(new Set(s.hands.flat()).size).toBe(32);
+    for (const h of s.hands) expect(h).toHaveLength(5);
+    expect(s.talon).toHaveLength(12);
+    expect(new Set(allCards(s)).size).toBe(32);
     expect(s.phase).toBe("BID");
     expect(s.matchPoints).toEqual([0, 0]);
+  });
+
+  it("redact крие талона от всички места и чуждите ръце", () => {
+    const s = init();
+    for (const seat of [0, 1, 2, 3]) {
+      const v = beloteEngine.redact(s, seat);
+      expect(v.talon).toHaveLength(12);
+      expect(v.talon.every((c) => c === "?")).toBe(true);
+      expect(v.hands[seat]).toEqual(s.hands[seat]);
+      for (const o of [0, 1, 2, 3]) if (o !== seat) expect(v.hands[o]!.every((c) => c === "?")).toBe(true);
+      // Нито една истинска чужда/талонна карта не присъства в сериализирания изглед.
+      const json = JSON.stringify(v);
+      for (const c of [...s.talon, ...s.hands.filter((_, i) => i !== seat).flat()]) {
+        expect(json.includes(`"${c}"`)).toBe(false);
+      }
+    }
+  });
+
+  it("след договор дораздава по 3 (по реда на раздаването) → по 8, после обявите", () => {
+    const s0 = init();
+    const talon = s0.talon.slice();
+    const s = reduceSeq(s0, [{ type: "BID", contract: "H" }, { type: "PASS" }, { type: "PASS" }, { type: "PASS" }]);
+    expect(s.phase).toBe("PLAY");
+    expect(s.talon).toHaveLength(0);
+    for (const h of s.hands) expect(h).toHaveLength(8);
+    expect(new Set(allCards(s)).size).toBe(32);
+    // Ред: вляво от раздаващия получава първите 3 от талона и т.н.
+    for (let k = 1; k <= 4; k++) {
+      const seat = (s0.dealer + k) % 4;
+      expect(s.hands[seat]!.slice(5)).toEqual(talon.slice((k - 1) * 3, k * 3));
+      expect(s.hands[seat]!.slice(0, 5)).toEqual(s0.hands[seat]);
+    }
+  });
+
+  it("обявите се изчисляват върху пълните 8 карти (след дораздаването)", () => {
+    // Терца J-Q-K купа: K,Q са в първите 5 на място 1; J идва от талона. Никой
+    // друг няма обява → ако обявите се смятаха върху 5 карти, нямаше да има нищо.
+    const base = init();
+    const s0: BeloteState = {
+      ...base,
+      dealer: 0,
+      turn: 1,
+      hands: [
+        ["KD", "JC", "KC", "AC", "TS"],
+        ["KH", "QH", "7D", "9D", "7C"],
+        ["8H", "TH", "8D", "TD", "8C"],
+        ["7H", "9H", "AH", "7S", "9S"],
+      ],
+      // Ред на дораздаване: 1, 2, 3, 0 (вляво от раздаващия 0) — по 3.
+      talon: ["JH", "JD", "9C", "TC", "QD", "8S", "QC", "AD", "QS", "JS", "KS", "AS"],
+    };
+    expect(new Set([...s0.hands.flat(), ...s0.talon]).size).toBe(32);
+    const s = reduceSeq(s0, [{ type: "BID", contract: "S" }, { type: "PASS" }, { type: "PASS" }, { type: "PASS" }]);
+    expect(s.phase).toBe("PLAY");
+    expect(s.hands[1]).toContain("JH");
+    expect(s.declarations).toEqual([expect.objectContaining({ seat: 1, kind: "tierce", suit: "H" })]);
+    expect(s.declPoints).toEqual([0, 20]);
+  });
+
+  it("при 4 паса — ново раздаване пак по 5, талон 12, общо 32", () => {
+    let s = init();
+    s = reduceSeq(s, [{ type: "PASS" }, { type: "PASS" }, { type: "PASS" }, { type: "PASS" }]);
+    for (const h of s.hands) expect(h).toHaveLength(5);
+    expect(s.talon).toHaveLength(12);
+    expect(new Set(allCards(s)).size).toBe(32);
+  });
+
+  it("сумата от картите винаги е 32 (случайни мачове с бот)", () => {
+    for (let g = 0; g < 3; g++) {
+      let s = beloteEngine.init({ seats: 4 }, new SeededRng(`sum${g}`));
+      const r = new SeededRng(`sumr${g}`);
+      for (let i = 0; i < 600 && !s.done; i++) {
+        const tricksDone = s.tricksTaken[0] + s.tricksTaken[1];
+        expect(allCards(s).length + tricksDone * 4).toBe(32);
+        if (s.phase === "BID") {
+          for (const h of s.hands) expect(h).toHaveLength(5);
+          expect(s.talon).toHaveLength(12);
+        }
+        const a = beloteEngine.bot!(s, s.turn, r)!;
+        s = beloteEngine.reduce(s, a, r).state;
+      }
+    }
+  });
+
+  it("ботът наддава и с 5 карти (не пасува вечно)", () => {
+    let contracts = 0;
+    for (let g = 0; g < 20; g++) {
+      let s = beloteEngine.init({ seats: 4 }, new SeededRng(`bid${g}`));
+      const r = new SeededRng(`bidr${g}`);
+      for (let i = 0; i < 4 && s.phase === "BID"; i++) {
+        s = beloteEngine.reduce(s, beloteEngine.bot!(s, s.turn, r)!, r).state;
+      }
+      if (s.contract !== null) contracts++;
+    }
+    expect(contracts).toBeGreaterThan(3);
   });
 
   it("offers the full rising ladder, then only higher bids", () => {

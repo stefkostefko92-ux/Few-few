@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PageHero } from "@/components/ui";
+import { FormLayout, NextSteps } from "@/components/FormLayout";
 import { buildMetadata } from "@/lib/seo";
 import { BusinessForm, type BusinessFormTarget } from "./BusinessForm";
 
@@ -88,7 +89,27 @@ export default async function NewBusinessPage({
         crumbs={CRUMBS}
       />
       <div className="container-content py-10">
-        <BusinessForm target={fix?.target} defaults={fix?.defaults} />
+        <FormLayout
+          aside={
+            <NextSteps
+              steps={
+                fix
+                  ? [
+                      "Получаваме поправката — нищо не се сменя автоматично.",
+                      "Проверяваме данните.",
+                      "Обновяваме каталога.",
+                    ]
+                  : [
+                      "Получаваме данните.",
+                      "Свързваме се с вас, за да ги проверим.",
+                      "Бизнесът се появява в каталога — безплатно.",
+                    ]
+              }
+            />
+          }
+        >
+          <BusinessForm target={fix?.target} defaults={fix?.defaults} />
+        </FormLayout>
       </div>
     </>
   );

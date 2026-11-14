@@ -9,23 +9,71 @@ export type LinkSegment = {
   href?: string;
 };
 
-// Имейл, дълъг телефон (с +359/0 и 7–11 цифри със separator-и) и кратки спешни
-// номера (112, 150, 160, 166). Подредбата в алтернативата има значение.
+export type LinkifyOptions = {
+  /** Имейлите като mailto: (по подразбиране — да). */
+  email?: boolean;
+  /**
+   * Кратките номера: „all“ — 112, 150, 160, 166 (по подразбиране); „112“ —
+   * само 112; „none“ — никакви. В стъпките на ръководствата е „112“: там
+   * „150“ е по-често грамове или градуси, отколкото телефон.
+   */
+  short?: "all" | "112" | "none";
+};
+
+// Опциите за стъпките на ръководствата: само дълги телефони и 112. Примерните
+// адреси в стъпките („ime.familia@gmail.com“) не са за писане.
+export const STEP_LINKIFY: LinkifyOptions = { email: false, short: "112" };
+
+// Имейл и дълъг телефон (с +359/0 и 7–11 цифри със separator-и).
 const EMAIL = "[A-Za-z0-9._%+\\-]+@[A-Za-z0-9.\\-]+\\.[A-Za-z]{2,}";
 const PHONE = "(?:\\+359|00359|0)(?:[\\s\\-/]?\\d){7,11}";
-const SHORT = "(?:112|150|160|166)";
 
-function buildRe(): RegExp {
-  // \b около краткия номер, за да не хваща части от по-дълги числа/години.
-  return new RegExp(`(${EMAIL})|(${PHONE})|\\b(${SHORT})\\b`, "g");
+// Краткият номер е отделна „дума“ — не част от адрес (112.mvr.bg), диапазон
+// (130–150 г.), по-дълго число, дата или мярка (150 г, 160 °C). Какво има
+// СЛЕД него проверява регулярният израз (lookahead); какво има ПРЕДИ него —
+// shortStandsAlone() в кода: lookbehind (?<!…) хвърля SyntaxError в Safari
+// под 16.4, а linkify работи и в браузъра (чата) — по-старите айфони са
+// точно при хората, за които е сайтът.
+const SHORT_AFTER =
+  "(?![.,:\\-–—/]?[\\p{L}\\d])(?!\\s?[\\-–—]\\s?\\d)" +
+  "(?!\\s?(?:°|%|€|(?:г|гр|грама|градуса?|мл|л|кг|км|м|см|мм|лв|ст|евро|лева|ч|мин|сек)(?!\\p{L})))";
+
+const SHORT_NUMBERS: Record<NonNullable<LinkifyOptions["short"]>, string | null> = {
+  all: "112|150|160|166",
+  "112": "112",
+  none: null,
+};
+
+function buildRe(opts: LinkifyOptions): RegExp {
+  const short = SHORT_NUMBERS[opts.short ?? "all"];
+  // Групите са на фиксирани места: 1 — имейл, 2 — дълъг телефон, 3 — кратък.
+  // Изключеният вид е празна група, която никога не съвпада („((?!))“), за да
+  // не се изместят номерата на другите.
+  const never = "((?!))";
+  const parts = [
+    opts.email === false ? never : `(${EMAIL})`,
+    `(${PHONE})`,
+    short ? `(${short})${SHORT_AFTER}` : never,
+  ];
+  return new RegExp(parts.join("|"), "gu");
 }
 
-export function linkifySegments(input: string): LinkSegment[] {
+// Непосредствено преди краткия номер: буква, цифра, точка, запетая, „:“,
+// тире, наклонена черта или „+“ — или „130 – “ (диапазон).
+const SHORT_BAD_BEFORE = /[\p{L}\d.,:\-–—/+]$|\d\s?[-–—]\s?$/u;
+
+function shortStandsAlone(input: string, index: number): boolean {
+  return !SHORT_BAD_BEFORE.test(input.slice(Math.max(0, index - 4), index));
+}
+
+export function linkifySegments(input: string, opts: LinkifyOptions = {}): LinkSegment[] {
   const out: LinkSegment[] = [];
-  const re = buildRe();
+  const re = buildRe(opts);
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = re.exec(input))) {
+    // Кратък номер, залепен за нещо отпред, остава обикновен текст.
+    if (m[3] && !shortStandsAlone(input, m.index)) continue;
     if (m.index > last) {
       out.push({ kind: "text", text: input.slice(last, m.index) });
     }

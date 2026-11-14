@@ -21,7 +21,8 @@ export function AdminShell({
   const [open, setOpen] = useState(false);
 
   const link = (href: string, label: string, key?: string) => {
-    const active = pathname === href || pathname.startsWith(href + "/");
+    // „Табло“ (/admin) е активно само на самото табло, не на всяка подстраница.
+    const active = pathname === href || (href !== "/admin" && pathname.startsWith(href + "/"));
     const count = key ? pending[key] ?? 0 : 0;
     const hasPending = count > 0;
     const cls = hasPending
@@ -102,6 +103,7 @@ export function AdminShell({
               Система
             </div>
             {user.role === "ADMIN" && link("/admin/pomoshtnik", "Дигитален помощник")}
+            {user.role === "ADMIN" && link("/admin/poshta", "Поща (Brevo)")}
             {user.role === "ADMIN" && link("/admin/mobilno", "Мобилно приложение")}
             {user.role === "ADMIN" && link("/admin/statistika", "Статистика")}
             {user.role === "ADMIN" && link("/admin/izvestiya", "Известия (push)")}

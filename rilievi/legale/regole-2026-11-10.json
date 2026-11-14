@@ -1,0 +1,50 @@
+{
+  "tipo": "REGOLE",
+  "versione": "2026-11-10",
+  "titolo": "Regole d'uso di Rilievi Impianti per gli utenti",
+  "premessa": [
+    "Queste regole valgono per ogni persona che usa Rilievi Impianti per conto della propria azienda. Il rapporto tra l'azienda e Carbon Stealth VCC è regolato dalle Condizioni generali di servizio, accettate dall'amministratore dell'azienda: queste regole ne riprendono gli articoli 4, 5 e 6, che riguardano direttamente chi lavora nel portale. Ogni utente ne prende visione al primo accesso e a ogni loro modifica (art. 4.5 delle Condizioni)."
+  ],
+  "articoli": [
+    {
+      "numero": "1",
+      "titolo": "Credenziali",
+      "paragrafi": [
+        "Le credenziali sono personali e non cedibili. Custodisci password e codici e non farli usare ad altri. Se pensi che qualcuno abbia usato il tuo account, avvisa subito l'amministratore della tua azienda. Ti consigliamo di attivare la verifica in due passaggi."
+      ]
+    },
+    {
+      "numero": "2",
+      "titolo": "Che cosa non è consentito",
+      "paragrafi": [
+        "Non è consentito: (a) caricare contenuti illeciti o che violano diritti di terzi; (b) tentare di accedere a dati di altre aziende o a funzioni non autorizzate; (c) compromettere il funzionamento del portale, sovraccaricarlo o eseguire scansioni o test di sicurezza senza accordo scritto di Carbon Stealth VCC; (d) estrarre dati in modo automatizzato; (e) usare i documenti generati in violazione dell'articolo 3 di queste regole."
+      ]
+    },
+    {
+      "numero": "3",
+      "titolo": "Calcoli e documenti generati",
+      "paragrafi": [
+        "I calcoli del portale (tra cui il calcolo argano e il calcolo limitatore, e quelli che saranno aggiunti) sono strumenti di ausilio. Il loro risultato non è un progetto, una relazione tecnica, una certificazione, una verifica, un collaudo né un'attestazione di conformità e non sostituisce il giudizio del tecnico abilitato.",
+        "Prima di qualsiasi uso (ordini di materiali, interventi, tarature, modifiche, messa in servizio, presentazione a committenti, organismi o autorità) i dati di ingresso e i risultati devono essere controllati, approvati e firmati da un tecnico abilitato. Senza questa verifica e firma il documento non deve essere usato.",
+        "Non togliere, alterare né nascondere le indicazioni che ogni foglio di calcolo riporta su ogni pagina: chi lo ha generato e quando, la build del software, il riferimento del calcolo, l'avvertenza e lo spazio per la verifica e la firma del tecnico abilitato.",
+        "Il testo dell'avvertenza riportata su ogni foglio di calcolo è il seguente: «Questo documento è stato generato automaticamente dal software Rilievi Impianti di Carbon Stealth VCC, con i dati inseriti dall'utente indicato a piè di pagina insieme alla build del software e al riferimento del calcolo. Il calcolo è uno strumento di ausilio: non costituisce progetto, certificazione né verifica ai sensi del D.P.R. 162/1999 e delle norme tecniche applicabili, e non sostituisce il giudizio professionale. Prima di qualsiasi utilizzo i dati di ingresso e i risultati devono essere controllati, approvati e sottoscritti da un tecnico abilitato e competente; in mancanza di tale verifica e firma il documento non deve essere utilizzato. L'utente che lo ha generato risponde della correttezza e della completezza dei dati inseriti. Nei limiti consentiti dalla legge applicabile, Carbon Stealth VCC non risponde dei danni derivanti dall'uso dei risultati in assenza della verifica sopra indicata. Restano ferme le responsabilità che per legge non possono essere escluse o limitate, tra cui quelle per dolo o colpa grave e quelle verso le persone fisiche per danni da prodotti difettosi.»"
+      ]
+    },
+    {
+      "numero": "4",
+      "titolo": "Dati inseriti",
+      "paragrafi": [
+        "Chi inserisce i dati ne risponde verso la propria azienda: misure, dati dell'impianto, norma alla data di installazione e opzioni devono essere corretti e completi. I valori proposti dalla compilazione automatica e dal collegamento tra i campi vanno sempre controllati."
+      ]
+    },
+    {
+      "numero": "5",
+      "titolo": "Registri",
+      "paragrafi": [
+        "Il portale registra la presa visione di queste regole (chi, quando, quale versione) e, per ogni PDF di un calcolo, chi lo ha generato, quando, con quali dati e con quale versione del software, insieme ai risultati riportati e al riferimento del calcolo. Questi registri servono a dimostrare il contenuto dei documenti generati e sono descritti nell'informativa sulla privacy (art. 19 delle Condizioni)."
+      ]
+    }
+  ],
+  "allegati": [],
+  "clausoleSpecifiche": []
+}

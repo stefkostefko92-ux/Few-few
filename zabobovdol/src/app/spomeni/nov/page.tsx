@@ -1,101 +1,54 @@
-"use client";
-
-import { useActionState } from "react";
-import Link from "next/link";
+import type { Metadata } from "next";
 import { PageHero } from "@/components/ui";
-import { submitMemory, type MemoryState } from "./actions";
-import { PrivacyNote } from "@/components/PrivacyNote";
+import { FormLayout, NextSteps } from "@/components/FormLayout";
+import { buildMetadata } from "@/lib/seo";
+import { MemoryForm } from "./MemoryForm";
 
-const initial: MemoryState = { ok: false };
+// Сървърна обвивка: собствено заглавие и описание; формата — noindex.
+export const metadata: Metadata = buildMetadata({
+  title: "Споделете спомен",
+  description:
+    "Разкажете спомен от стария Бобов дол — за мините, училището, празниците и хората. Публикува се след кратък преглед.",
+  path: "/spomeni/nov",
+  noindex: true,
+  follow: true,
+  keywords: [
+    "спомени Бобов дол",
+    "история на Бобов дол",
+    "стар Бобов дол",
+    "миньорски спомени",
+    "сподели спомен",
+    "Carbon Stealth",
+  ],
+});
+
+const CRUMBS = [
+  { name: "Спомени", path: "/spomeni" },
+  { name: "Споделете спомен", path: "/spomeni/nov" },
+];
 
 export default function NewMemoryPage() {
-  const [state, action, pending] = useActionState(submitMemory, initial);
-
-  if (state.ok) {
-    return (
-      <>
-        <PageHero
-          title="Благодарим за спомена!"
-          crumbs={[
-            { name: "Спомени", path: "/spomeni" },
-            { name: "Нов спомен", path: "/spomeni/nov" },
-          ]}
-        />
-        <div className="container-content py-10">
-          <div className="card max-w-xl bg-green-50">
-            <p className="text-lg text-slate-800">
-              Получихме вашия спомен и ще го публикуваме след кратък преглед.
-              Така заедно пазим историята на Бобов дол жива.
-            </p>
-            <Link href="/spomeni" className="btn-primary mt-4">
-              Към „Спомени“
-            </Link>
-          </div>
-        </div>
-      </>
-    );
-  }
-
   return (
     <>
       <PageHero
         title="Споделете спомен"
         intro="Разкажете спомен от стария Бобов дол — за мините, училището, празниците, хората. Публикува се след кратък преглед."
-        crumbs={[
-          { name: "Спомени", path: "/spomeni" },
-          { name: "Нов спомен", path: "/spomeni/nov" },
-        ]}
+        crumbs={CRUMBS}
       />
       <div className="container-content py-10">
-        <form action={action} className="max-w-2xl space-y-4">
-          {state.error && (
-            <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-              {state.error}
-            </div>
-          )}
-
-          <div>
-            <label className="label" htmlFor="title">
-              Заглавие *
-            </label>
-            <input id="title" name="title" required maxLength={140} className="input" placeholder="напр. Празникът на миньора през 80-те" />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="label" htmlFor="author">
-                Вашето име (по избор)
-              </label>
-              <input id="author" name="author" className="input" />
-            </div>
-            <div>
-              <label className="label" htmlFor="period">
-                Период (по избор)
-              </label>
-              <input id="period" name="period" className="input" placeholder="напр. 1980-те" />
-            </div>
-          </div>
-
-          <div>
-            <label className="label" htmlFor="content">
-              Спомен *
-            </label>
-            <textarea id="content" name="content" required rows={8} maxLength={6000} className="input" placeholder="Разкажете спомена със свои думи…" />
-          </div>
-
-          <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
-
-          <p className="text-xs text-slate-600">
-            Споделяйте само спомени, които искате да са публични. Имате стара
-            снимка? Споменете в текста и ще я добавим след връзка с вас.
-          </p>
-
-          <PrivacyNote />
-
-          <button type="submit" className="btn-primary" disabled={pending}>
-            {pending ? "Изпращане…" : "Споделете спомена"}
-          </button>
-        </form>
+        <FormLayout
+          aside={
+            <NextSteps
+              steps={[
+                "Получаваме спомена.",
+                "Преглеждаме го.",
+                "Публикуваме го в „Спомени“ с вашето име, ако сте го написали.",
+              ]}
+            />
+          }
+        >
+          <MemoryForm />
+        </FormLayout>
       </div>
     </>
   );

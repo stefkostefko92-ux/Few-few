@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "YouTube भिडियो विज्ञापन, ब्यानर, पप-अप, ट्र्याकर, कुकी सन्देश र एन्टी-एडब्लक पर्खालहरू जताततै ब्लक गर्छ।"
+    "message": "विज्ञापन ब्लकर, YouTube र वेबका लागि: भिडियो विज्ञापन, ब्यानर, पप-अप, ट्र्याकर, कुकी ब्यानर र एन्टी-एडब्लक पर्खाल।"
   },
   "byCarbon": {
     "message": "Carbon Stealth द्वारा"
@@ -647,6 +647,12 @@
     "message": "ठेगाना पट्टीछेउको पजलको टुक्राको आइकनमा क्लिक गर्नुहोस् र Supreme AdBlock पिन गर्नुहोस्। त्यसपछि एक क्लिकमै पेजमा के ब्लक भयो भनेर देखिन्छ।",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "एक्सटेन्सन टुलबारमा पिन गरिएको छ"
+  },
+  "welPinnedText": {
+    "message": "यसको आइकनमा एक क्लिकमै पेजमा के ब्लक भयो भनेर देखिन्छ।"
+  },
   "welBrokenTitle": {
     "message": "कुनै साइट बिग्रिएको देखिए",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -793,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "नियम क्षमता"
+  },
+  "helpTitle": {
+    "message": "साइटहरू बिग्रिँदैछन्?"
+  },
+  "helpText": {
+    "message": "एक पटकमा एउटा साइट पर्याप्त छ: त्यहाँ एक घण्टाका लागि विज्ञापनलाई अनुमति दिनुहोस्, वा त्यहाँ मात्र एलिमेन्ट लुकाउने सुविधा बन्द गर्नुहोस्। हामीलाई भन्नुभयो भने सबैका लागि ठीक हुन्छ।"
+  },
+  "helpFix": {
+    "message": "यो साइट ठीक गर्नुहोस्"
+  },
+  "cardNever": {
+    "message": "यो फेरि नदेखाउनुहोस्"
+  },
+  "cardClose": {
+    "message": "बन्द गर्नुहोस्"
+  },
+  "receiptTitle": {
+    "message": "तपाईंका पछिल्ला 30 दिन"
+  },
+  "receiptText": {
+    "message": "$1 अनुरोध ब्लक भए · $2 कुकी ब्यानरको जवाफ दिइयो · लगभग $3 डेटा बचत भयो (अनुमानित)"
+  },
+  "share": {
+    "message": "सेयर"
+  },
+  "shareTitle": {
+    "message": "Chrome Web Store मा Supreme AdBlock को लिङ्क कपी गर्नुहोस्"
+  },
+  "shareCopied": {
+    "message": "लिङ्क कपी भयो"
+  },
+  "rep_fixed_q": {
+    "message": "साइट ठीक भयो?"
+  },
+  "rep_fixed_yes": {
+    "message": "हो, यसले काम गर्छ"
+  },
+  "rep_fixed_no": {
+    "message": "होइन, अझै बिग्रिएको छ"
+  },
+  "rep_fixed_yes_note": {
+    "message": "काम गरेकोमा खुसी लाग्यो। तल हामीलाई भन्नुभयो भने रिपोर्टमा कुन उपायले काम गर्‍यो भनेर लेखिनेछ, ताकि हामी सबैका लागि साइट ठीक गर्न सकौँ।"
+  },
+  "rep_fixed_next": {
+    "message": "अर्को उपाय प्रयास गर्नुहोस्: $1"
+  },
+  "rep_fixed_none": {
+    "message": "त्यसो भए कृपया तल हामीलाई भन्नुहोस्: हामी साइट हेर्नेछौँ।"
+  },
+  "rep_webmail": {
+    "message": "इमेल एप छैन? रिपोर्ट कपी गर्नुहोस् र आफ्नो वेबमेलबाट $1 मा पठाउनुहोस्।"
+  },
+  "blk_mistake": {
+    "message": "यो गल्ती हो जस्तो लाग्छ? हामीलाई भन्नुहोस्"
+  },
+  "welTest": {
+    "message": "परीक्षण पेजमा यसले काम गरेको हेर्नुहोस्"
   }
 }

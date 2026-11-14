@@ -9,6 +9,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { PhoneOff } from "@/components/icons";
 import { track } from "@/lib/events";
+import { UI_LABEL } from "@/lib/ui-labels";
 
 export { TelLink } from "@/components/TelLink";
 
@@ -63,10 +64,10 @@ export function PhoneReportButton({
             setStatus("open");
           }}
           aria-expanded={false}
-          className="a11y-btn inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 underline decoration-slate-300 underline-offset-2 hover:text-brand-700"
+          className="a11y-btn link-quiet inline-flex items-center gap-1.5 text-base font-medium text-slate-700"
         >
-          <PhoneOff className="h-4 w-4 shrink-0" aria-hidden />
-          Този номер е сгрешен
+          <PhoneOff className="h-5 w-5 shrink-0" aria-hidden />
+          {UI_LABEL.phoneWrong}
         </button>
       </div>
     );
@@ -110,7 +111,7 @@ export function PhoneReportButton({
       </p>
       <div>
         <label htmlFor={`${formId}-note`} className="label">
-          Какво не е наред? (по желание)
+          Какво не е наред? (по избор)
         </label>
         <textarea
           ref={noteRef}
@@ -135,19 +136,19 @@ export function PhoneReportButton({
         aria-hidden
       />
 
-      <p className="text-sm text-slate-600">
+      <p className="text-base text-slate-600">
         Не пазим кой изпраща сигнала. Моля, не пишете име или личен телефон.
       </p>
 
       {error && (
-        <p className="text-sm font-medium text-crimson-700" role="alert">
+        <p className="text-base font-medium text-crimson-700" role="alert">
           {error}
         </p>
       )}
 
       <div className="flex flex-wrap gap-3">
         <button type="submit" className="btn-primary" disabled={sending}>
-          {sending ? "Изпращане…" : "Изпрати сигнала"}
+          {sending ? "Изпращане…" : "Изпратете сигнала"}
         </button>
         <button
           type="button"

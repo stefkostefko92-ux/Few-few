@@ -9,6 +9,8 @@ import { notifyBot } from "../services/botNotifier.js";
 import { isSupportedLanguage } from "../lib/languages.js";
 import { getServerTier } from "../lib/premium.js";
 import { guildIconUrl } from "../lib/discordCdn.js";
+import { fetchMemberNames } from "../lib/memberNames.js";
+import { memberJoinSettingsSchema } from "../lib/serverSettingsSchema.js";
 
 // Категориите на Server Activity Logging — един източник за валидация.
 const EVENT_LOG_CATEGORIES = ["voice", "members", "moderation", "messages", "server"];
@@ -212,6 +214,13 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
     language,
   } = req.body;
 
+  // З8: роли за автоматично даване и текстове за посрещане — валидират се ПРЕДИ
+  // всякаква работа с базата.
+  const joinSettings = memberJoinSettingsSchema.safeParse({
+    autoroleIds, autoroleBotIds, welcomerMessage, welcomerDmMessage, welcomerEmbedColor,
+  });
+  if (!joinSettings.success) return res.status(400).json({ error: joinSettings.error.flatten() });
+
   try {
     const server = await prisma.server.findUnique({ where: { id: req.params.serverId } });
     if (!server) return res.status(404).json({ error: "Server not found" });
@@ -289,6 +298,13 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
       },
     });
 
+    // З10: изключеното „запазване на роли“ трие снимките на сървъра. Иначе
+    // стари снимки оставаха до 180 дни и се връщаха при повторно включване —
+    // данни без цел (GDPR чл. 5(1)(в)). Идемпотентно, скоупът е от пътя.
+    if (stickyRolesEnabled !== undefined && !Boolean(stickyRolesEnabled)) {
+      await prisma.memberRoleSnapshot.deleteMany({ where: { serverId: req.params.serverId } });
+    }
+
     // If custom bot token was updated, tell the bot to restart the white-label client
     if (customBotToken !== undefined) {
       notifyBot("WHITELABEL_UPDATE", { serverId: req.params.serverId }).catch(() => {});
@@ -321,6 +337,17 @@ router.get("/:serverId/stats", requireServerAdmin, async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+// ─── GET /api/servers/:serverId/member-names?ids=… ───────────────────────────
+// Имената на членовете за страницата „Игра“ (класация, покупки, колекционери,
+// куестове, trivia) вместо сурови Discord ID (преглед 10.10.2026). Живо от
+// бота, нищо не се пази. Скоупът е `requireServerAdmin` + guildId от ПЪТЯ;
+// ботът връща само членове на същия guild. Само снежинки, без дубли, до 100.
+// Без бота таблото пак работи — празен отговор, UI-ят показва кратко ID.
+router.get("/:serverId/member-names", requireServerAdmin, async (req, res) => {
+  const out = await fetchMemberNames(req.params.serverId, String(req.query.ids || "").split(","));
+  res.json(out.unavailable ? { members: {}, unavailable: true } : { members: out.members });
 });
 
 // ─── GET /api/servers/:serverId/directory ─────────────────────────────────────

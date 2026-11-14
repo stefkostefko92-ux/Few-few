@@ -3,6 +3,7 @@ import { Section } from "@/components/ui";
 import { getLatestNews } from "@/lib/news";
 import { MUNICIPALITY_SOURCE } from "@/lib/ingest-news-parse";
 import { plainText } from "@/lib/markdown";
+import { formatDate, isoDate } from "@/lib/format-date";
 
 // Блок „Последно от общината“ за началната страница (сървърен компонент).
 // Показва последните ПУБЛИКУВАНИ новини с дата и източник. Ако няма нито една —
@@ -22,13 +23,6 @@ export async function LatestNews({
   const items = await getLatestNews(limit, source ? { source } : {});
   if (items.length === 0) return null;
 
-  const fmt = new Intl.DateTimeFormat("bg-BG", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "Europe/Sofia",
-  });
-
   return (
     <Section title={title} href="/novini" hrefLabel="Всички новини">
       <ul className="grid gap-4 md:grid-cols-3">
@@ -36,15 +30,13 @@ export async function LatestNews({
           const summary = n.excerpt || plainText(n.content ?? "", 130);
           return (
             <li key={n.id}>
-              <Link href={`/novini/${n.slug}`} className="card block h-full min-h-[44px]">
-                <div className="text-sm text-slate-600">
-                  <time dateTime={n.date.toISOString()}>{fmt.format(n.date)}</time>
-                </div>
-                <h3 className="mt-1 text-lg font-semibold text-slate-900">{n.title}</h3>
-                {summary && <p className="mt-1 text-sm text-slate-600">{summary}</p>}
-                {n.source && (
-                  <div className="mt-2 text-xs text-slate-600">Източник: {n.source}</div>
-                )}
+              <Link href={`/novini/${n.slug}`} className="card group flex h-full flex-col">
+                <p className="text-meta">
+                  <time dateTime={isoDate(n.date)}>{formatDate(n.date)}</time>
+                </p>
+                <h3 className="h-card mt-1 group-hover:underline">{n.title}</h3>
+                {summary && <p className="mt-1 text-base text-slate-600">{summary}</p>}
+                {n.source && <p className="text-meta mt-auto pt-2">Източник: {n.source}</p>}
               </Link>
             </li>
           );

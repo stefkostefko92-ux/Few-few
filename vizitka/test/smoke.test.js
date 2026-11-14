@@ -306,7 +306,7 @@ await test('правни страници, robots и sitemap отговарят'
   }
   const robots = await request('/robots.txt');
   assert.equal(robots.status, 200);
-  assert.match(await robots.text(), /Disallow: \/dashboard/);
+  assert.match(await robots.text(), /Disallow: \/api\//);
   const sitemap = await request('/sitemap.xml');
   assert.equal(sitemap.status, 200);
   assert.match(await sitemap.text(), /ivan-testov/);
@@ -324,7 +324,7 @@ await test('launch SEO: GEO схема, robots disallows, IndexNow ключ', as
   assert.match(home, /max-image-preview:large/);
   const robots = await (await request('/robots.txt')).text();
   assert.match(robots, /Disallow: \/api\//);
-  assert.match(robots, /Disallow: \/p\/\*\/print/);
+  assert.match(robots, /Disallow: \/p\/\*\/wallet/);
   // IndexNow ключов файл се сервира
   const key = await request('/testindexnowkey1234567890abcdef0.txt');
   assert.equal(key.status, 200);
@@ -336,6 +336,52 @@ await test('launch правно: политиката разкрива mastilko 
   assert.match(priv, /mastilko-bg\.com/);
   assert.match(priv, /IndexNow/);
   assert.match(priv, /коричен образ/);
+});
+
+await test('индексиране: noindex вместо Disallow, един адрес на страница', async () => {
+  const { PAGE_UPDATED } = await import('../src/seo.js');
+  // Search Console 2026-10-22: /login и /register (линкнати от менюто) бяха „Блокирано
+  // от robots.txt“. Disallow крие noindex от Google — затова тези пътища НЕ са в robots,
+  // а носят noindex (мета + X-Robots-Tag).
+  const robots = await (await request('/robots.txt')).text();
+  for (const p of ['/login', '/register', '/dashboard', '/p/*/print'])
+    assert.ok(!robots.includes(`Disallow: ${p}\n`), `${p} не бива да е Disallow`);
+  assert.match(robots, /User-agent: GPTBot\nDisallow: \/p\//); // обучението — без визитки
+  // Анонимно (без бисквитките на сесията), както ги вижда Googlebot.
+  const anon = (p) => fetch(base + p, { redirect: 'manual' });
+  for (const p of ['/login', '/register', '/forgot', '/p/ivan-testov/print']) {
+    const res = await anon(p);
+    assert.equal(res.status, 200, p);
+    assert.match(res.headers.get('x-robots-tag') || '', /noindex/, `${p}: X-Robots-Tag`);
+    assert.match(await res.text(), /<meta name="robots" content="noindex/, `${p}: мета`);
+  }
+  const vcf = await request('/p/ivan-testov/vizitka.vcf');
+  assert.match(vcf.headers.get('x-robots-tag') || '', /noindex/);
+  await vcf.arrayBuffer();
+  // 404 не се индексира.
+  const missing = await request('/p/nyama-takava-vizitka-xyz');
+  assert.equal(missing.status, 404);
+  assert.match(await missing.text(), /<meta name="robots" content="noindex/);
+  // Наклонена черта в края → 301 към адреса без нея, заявката се пази.
+  const slash = await request('/privacy/?ref=x');
+  assert.equal(slash.status, 301);
+  assert.equal(slash.headers.get('location'), '/privacy?ref=x');
+  const card = await request('/p/ivan-testov/');
+  assert.equal(card.status, 301);
+  assert.equal(card.headers.get('location'), '/p/ivan-testov');
+  // Без отворен редирект през `//домейн/`.
+  const evil = await request('//evil.example/');
+  assert.ok(!/^\/\//.test(evil.headers.get('location') || ''), 'протоколно-относителен редирект');
+  // Canonical: абсолютен, без заявка, в малки букви.
+  const priv = await (await request('/privacy?ref=x')).text();
+  assert.ok(priv.includes(`<link rel="canonical" href="${base}/privacy">`), 'canonical /privacy');
+  const upper = await (await request('/Terms')).text();
+  assert.ok(upper.includes(`<link rel="canonical" href="${base}/terms">`), 'canonical /terms');
+  const cardHtml = await (await request('/p/ivan-testov?utm_source=qr')).text();
+  assert.ok(cardHtml.includes(`<link rel="canonical" href="${base}/p/ivan-testov">`));
+  // lastmod е по страница, не една обща дата.
+  const sitemap = await (await request('/sitemap.xml')).text();
+  assert.ok(sitemap.includes(`<loc>${base}/terms</loc><lastmod>${PAGE_UPDATED.terms}</lastmod>`));
 });
 
 await test('canonical и OG тагове присъстват', async () => {

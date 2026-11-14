@@ -140,7 +140,7 @@ test("2м. МУТАЦИЯ: обединяване без поуките на л�
   const f = fixture();
   try {
     const other = clone(f, "other");
-    const { publishLessons, syncMemoryBranch } = await mutantLib((s) => s.replace("const lessons = addedSince(cwd, other, since);", "const lessons = {};"));
+    const { publishLessons, syncMemoryBranch } = await mutantLib((s) => s.replace('const merged = b == null ? o : mergeLessons3(since ? show(cwd, since, path) || "" : "", o, b);', "const merged = b;"));
     publishLessons(other, { testagent: { verified: [L("2026-09-23", "поука от другата сесия")] } });
     syncMemoryBranch(other);
     publishLessons(f.work, { testagent: { verified: [L("2026-09-23", "поука от тази сесия")] } });
@@ -186,13 +186,85 @@ test("3. напреднал main се сгъва: PR-ът е бърз, кура�
   } finally { rmSync(f.root, { recursive: true, force: true }); }
 });
 
+// Регресия 02.11.2026: сгъването на main взимаше ДЪРВОТО на main за паметта и пренасяше само ДОБАВЕНИТЕ в
+// клона редове. Всяка редакция в agents/memory — промоция от Карантина, маркер ОПРОВЕРГАНА, курация, нов
+// обхват — се губеше при следващото сгъване. Измерено: от вълната за обхвата (1177 реда) във върха бяха
+// останали 9, от сутрешната пресверка (467) — 3. Курацията на main (тест 3) трябва да остане запазена.
+test("3б. сгъването пази РЕДАКЦИИТЕ в клона на паметта: промоция, опровержение, курация", async () => {
+  const f = fixture();
+  try {
+    const { publishLessons, syncMemoryBranch } = await lib();
+    const Q1 = "- **2026-02-01:** поука за промоция _(тест; unverified; https://example.org/q1)_";
+    const Q2 = "- **2026-02-02:** поука за опровергаване _(тест; unverified; https://example.org/q2)_";
+    publishLessons(f.work, { testagent: { quarantine: [Q1, Q2] } });
+    syncMemoryBranch(f.work, { date: "2026-09-23" });
+    // Както в реалността (#240): PR-ът на паметта е слят в main — Q1 и Q2 са и в main.
+    const human = clone(f, "human");
+    git(human, "fetch", "-q", "origin");
+    git(human, "merge", "-q", "--ff-only", "origin/agents/memory");
+    git(human, "push", "-q", "origin", "main");
+    syncMemoryBranch(f.work, { date: "2026-09-23" });
+    // Пресверката и курацията стават В клона на паметта (worktree, както при promote.mjs/curate.mjs).
+    const wt = join(f.root, "memwt");
+    git(f.work, "worktree", "add", "-q", "--detach", wt, "origin/agents/memory");
+    const file = join(wt, MEM);
+    const V1 = "- **2026-02-01 (пресверена 2026-11-02):** поука за промоция _(тест; verified; https://example.org/q1)_";
+    const R2 = "- **2026-02-02:** ОПРОВЕРГАНА 2026-11-02 (поправено) — поука за опровергаване _(тест; unverified; https://example.org/q2)_";
+    let txt = readFileSync(file, "utf8").replace(Q1 + "\n", "").replace(Q2, R2).replace(L0 + "\n", "");
+    txt = txt.replace(/(## Проверени поуки[^\n]*\n)/, `$1${V1}\n`);
+    writeFileSync(file, txt);
+    git(wt, "commit", "-q", "-am", "памет: пресверка + курация");
+    git(wt, "push", "-q", "origin", "HEAD:agents/memory");
+    git(f.work, "fetch", "-q", "origin");
+    // main напредва: продукт + нова поука, научена в клон на задача и слята в main.
+    git(human, "pull", "-q", "--ff-only", "origin", "main");
+    const LM = L("2026-03-01", "поука, дошла през main");
+    const mf = join(human, MEM);
+    writeFileSync(mf, readFileSync(mf, "utf8").replace(/(## Проверени поуки[^\n]*\n)/, `$1${LM}\n`));
+    writeFileSync(join(human, "product.txt"), "продукт\n");
+    git(human, "add", "-A");
+    git(human, "commit", "-q", "-m", "продукт + поука");
+    git(human, "push", "-q", "origin", "main");
+
+    const r = syncMemoryBranch(f.work, { date: "2026-11-02" });
+    assert.ok(r.steps.includes("сгънат main"), r.steps.join(" · "));
+    const mem = memAt(f.work, "origin/agents/memory");
+    const quarantine = mem.split(/^## Карантина.*$/m)[1] || "";
+    assert.ok(mem.includes(V1), "промоцията в проверените оцелява");
+    assert.ok(!quarantine.includes(Q1), "промотираната поука НЕ се връща в Карантина");
+    assert.ok(mem.includes(R2), "маркерът ОПРОВЕРГАНА оцелява");
+    assert.ok(!mem.includes(Q2), "неопровергарното копие не се връща");
+    assert.ok(!mem.includes(L0), "курацията в клона на паметта не се връща");
+    assert.ok(mem.includes(LM), "поуката от main е пренесена");
+    assert.equal(git(f.work, "show", "origin/agents/memory:product.txt").out, "продукт", "продуктовото дърво е на main");
+    assert.equal(git(f.work, "merge-base", "--is-ancestor", "origin/main", "origin/agents/memory").status, 0, "PR-ът остава бърз");
+  } finally { rmSync(f.root, { recursive: true, force: true }); }
+});
+
+test("3бм. МУТАЦИЯ: старото сгъване (файлът на main + добавените редове) губи промоцията (тестът хапе)", async () => {
+  const { mergeLessons3 } = await import(pathToFileURL(join(REPO, "tools", "lib", "memory-core.mjs")).href);
+  const base = "## Проверени поуки (verified)\n\n## Карантина\n- **2026-02-01:** поука _(т; unverified; https://e.org/q)_\n";
+  const ours = "## Проверени поуки (verified)\n- **2026-02-01 (пресверена 2026-11-02):** поука _(т; verified; https://e.org/q)_\n\n## Карантина\n";
+  const theirs = base.replace("## Карантина\n", "## Карантина\n- **2026-03-01:** нова от main _(т; unverified; https://e.org/m)_\n");
+  const good = mergeLessons3(base, ours, theirs);
+  assert.match(good, /пресверена 2026-11-02/);
+  assert.doesNotMatch(good.split("## Карантина")[1], /2026-02-01/, "промотираната не се връща в Карантина");
+  assert.match(good, /нова от main/);
+  // Старото поведение: основата е файлът на main, от другата страна се пренасят само добавените редове.
+  const { addLessons, sectionLessons } = await import(pathToFileURL(join(REPO, "tools", "lib", "memory-core.mjs")).href);
+  const old = addLessons(theirs, { verified: sectionLessons(ours, "verified"), quarantine: sectionLessons(ours, "quarantine") }).txt;
+  assert.match(old.split("## Карантина")[1], /2026-02-01/, "мутантът връща промотираната в Карантина");
+});
+
 test("4. кука → клон на паметта → следващият агент я вижда; клонът на задачата остава чист", async () => {
   const f = fixture();
   try {
     git(f.work, "checkout", "-q", "-b", "claude/task");
     const transcript = join(f.root, "t.jsonl");
     const block = "```learn\nagent: testagent\ndate: 2026-09-23\nlessons:\n  - text: поука от куката през клона на паметта\n    confidence: verified\n    source: https://web.dev/articles/lcp\n    scope: тест\n```";
-    writeFileSync(transcript, JSON.stringify({ type: "assistant", message: { role: "assistant", content: [{ type: "text", text: block }] } }) + "\n");
+    // Агентът е изтеглил източника си — „verified“ иска това (source-provenance.mjs, 31.10.2026).
+    const fetched = JSON.stringify({ type: "assistant", message: { role: "assistant", content: [{ type: "tool_use", name: "WebFetch", input: { url: "https://web.dev/articles/lcp" } }] } });
+    writeFileSync(transcript, fetched + "\n" + JSON.stringify({ type: "assistant", message: { role: "assistant", content: [{ type: "text", text: block }] } }) + "\n");
     const env = { ...process.env, ...ENV, CLAUDE_PROJECT_DIR: f.work, AGENT_MEMORY_SYNC: "0" };
     const c = spawnSync(process.execPath, [CAPTURE], { input: JSON.stringify({ transcript_path: transcript }), encoding: "utf8", env });
     assert.equal(c.status, 0, c.stderr);

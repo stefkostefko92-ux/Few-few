@@ -10,9 +10,12 @@ const nextConfig = {
   poweredByHeader: false,
   compress: true,
   reactStrictMode: true,
-  // Позволява качване на снимки до 8 MB чрез server actions.
+  // Снимките са до 8 MB (src/lib/uploads.ts). Тялото на заявката е по-голямо
+  // от файла (останалите полета на формата + multipart), затова таванът тук е
+  // 10 MB — така файл от 8–10 MB стига до проверката и човекът вижда грешка
+  // под полето, вместо да загуби всичко въведено.
   experimental: {
-    serverActions: { bodySizeLimit: "8mb" },
+    serverActions: { bodySizeLimit: "10mb" },
   },
   images: {
     formats: ["image/avif", "image/webp"],
@@ -61,7 +64,7 @@ const nextConfig = {
       "object-src 'none'",
       "base-uri 'self'",
       "frame-ancestors 'self'",
-      // Позволяваме вградена карта от OpenStreetMap (за страницата „Опознай Бобов дол").
+      // Позволяваме вградена карта от OpenStreetMap (за страницата „Опознайте Бобов дол").
       "frame-src 'self' https://www.openstreetmap.org",
       "form-action 'self'",
       "upgrade-insecure-requests",

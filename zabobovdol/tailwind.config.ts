@@ -47,6 +47,12 @@ const config: Config = {
           800: "#7a1818",
           900: "#661818",
         },
+        // Топлият „хартиен“ фон на тялото и една по-тъмна стъпка за ленти
+        // (футър, Section tone="muted") — вместо студеното slate-50.
+        paper: {
+          DEFAULT: "#faf8f3",
+          muted: "#f3efe6",
+        },
       },
       fontFamily: {
         sans: [
@@ -62,6 +68,14 @@ const config: Config = {
       },
       maxWidth: {
         content: "72rem",
+      },
+      // Минимална цел за докосване (WCAG 2.5.5/2.5.8) — едно име вместо
+      // разпилени min-h-[44px]: `min-h-tap`, `min-w-tap`.
+      minHeight: {
+        tap: "44px",
+      },
+      minWidth: {
+        tap: "44px",
       },
     },
   },

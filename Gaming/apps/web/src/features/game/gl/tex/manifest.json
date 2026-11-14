@@ -1,0 +1,68 @@
+{
+ "brass": {
+  "key": "23699b335a4f4c63:512",
+  "size": 512,
+  "tile": 1,
+  "heightRange": 0.0093904840759933,
+  "files": {
+   "albedo": "brass_albedo.webp",
+   "normal": "brass_normal.webp",
+   "orm": "brass_orm.webp"
+  }
+ },
+ "felt": {
+  "key": "23699b335a4f4c63:512",
+  "size": 512,
+  "tile": 1,
+  "heightRange": 0.004293357138521969,
+  "files": {
+   "albedo": "felt_albedo.webp",
+   "normal": "felt_normal.webp",
+   "orm": "felt_orm.webp"
+  }
+ },
+ "walnut": {
+  "key": "23699b335a4f4c63:1024",
+  "size": 1024,
+  "tile": 1,
+  "heightRange": 0.0006954701239010319,
+  "files": {
+   "albedo": "walnut_albedo.webp",
+   "normal": "walnut_normal.webp",
+   "orm": "walnut_orm.webp"
+  }
+ },
+ "plaster": {
+  "key": "23699b335a4f4c63:512",
+  "size": 512,
+  "tile": 1,
+  "heightRange": 0.002461683237925172,
+  "files": {
+   "albedo": "plaster_albedo.webp",
+   "normal": "plaster_normal.webp",
+   "orm": "plaster_orm.webp"
+  }
+ },
+ "roof": {
+  "key": "0129114447503788:1024",
+  "size": 1024,
+  "tile": 1,
+  "heightRange": 0.026524446671828628,
+  "files": {
+   "albedo": "roof_albedo.webp",
+   "normal": "roof_normal.webp",
+   "orm": "roof_orm.webp"
+  }
+ },
+ "stone": {
+  "key": "23699b335a4f4c63:1024",
+  "size": 1024,
+  "tile": 1,
+  "heightRange": 0.031044592149555683,
+  "files": {
+   "albedo": "stone_albedo.webp",
+   "normal": "stone_normal.webp",
+   "orm": "stone_orm.webp"
+  }
+ }
+}

@@ -87,8 +87,17 @@ Client (web)                  API                         Stripe
   │  → refetch /me (wallet updates)                           │
 ```
 
+- **Каталог = таблицата `Product`** (само `active`): админ редакторът управлява
+  цена/награда/активност/нови SKU. Статичният `CATALOG` е само seed (create-only при
+  старт) + заглавие. Цената за Stripe е `Product.priceCents` (сървърът, никога клиентът);
+  при checkout снимка на наградата отива в `metadata` → webhook-ът дава точно платеното.
+  Нов VIP SKU трябва да започва с `vip_<bronze|silver|gold|platinum>`.
 - **One-time** SKUs (gems, chips): `mode: payment`; granted on
-  `checkout.session.completed`.
+  `checkout.session.completed` **само** при `payment_status` `paid`/`no_payment_required`;
+  отложените методи → `Purchase.status = pending` до
+  `checkout.session.async_payment_succeeded` (`_failed` → `failed`).
+- `Purchase.amountCents`/`currency` = реално платеното (`session.amount_total`) —
+  приходите в таблото се сумират от тях, не от текущата цена.
 - **VIP**: `mode: subscription`; VIP applied on `invoice.paid`, kept in sync via
   `customer.subscription.updated` / `.deleted`; managed through the Stripe
   **Billing Portal** (`POST /api/shop/portal`).
@@ -96,7 +105,10 @@ Client (web)                  API                         Stripe
   knows what to grant, to whom.
 
 Webhook events handled (`handleEvent`): `checkout.session.completed`,
-`invoice.paid`, `customer.subscription.updated`, `customer.subscription.deleted`.
+`checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`,
+`invoice.paid`, `invoice.payment_failed`, `customer.subscription.updated`,
+`customer.subscription.deleted`, `charge.dispute.created`, `charge.refunded` —
+абонирай endpoint-а в Stripe Dashboard за всички тях.
 
 ## 5. In-game purchase surfaces (web)
 

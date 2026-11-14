@@ -1,0 +1,53 @@
+{
+  "esterno": {
+    "login": {
+      "oppure": "oppure",
+      "pulsante": "Accedi con {fornitore}"
+    },
+    "account": {
+      "titolo": "Accesso con Microsoft o Google",
+      "intro": "La tua azienda permette di entrare con l'account di lavoro Microsoft o Google invece che con la password. Per collegare il tuo account conferma con la password del portale.",
+      "collegato": "Collegato a {etichetta} dal {data}.",
+      "collegatoSenza": "Collegato dal {data}.",
+      "ultimo": "Ultimo accesso con {fornitore}: {data}.",
+      "mai": "Non ancora usato per entrare.",
+      "password": "Password del portale",
+      "collega": "Collega l'account {fornitore}",
+      "scollega": "Scollega {fornitore}",
+      "nota": "La password del portale resta valida anche dopo il collegamento. Se hai attivato la verifica in due passaggi, il codice viene chiesto anche quando entri con Microsoft o Google."
+    },
+    "flash": {
+      "collegato": "Account {fornitore} collegato: da ora puoi entrare anche con «Accedi con {fornitore}».",
+      "scollegato": "Account {fornitore} scollegato."
+    },
+    "errore": {
+      "scaduto": "La richiesta di accesso non è più valida. Ricomincia dalla pagina di accesso.",
+      "annullato": "Accesso con {fornitore} annullato.",
+      "verifica": "{fornitore} non ha confermato l'accesso. Riprova tra qualche minuto.",
+      "nonRaggiungibile": "{fornitore} non risponde in questo momento. Riprova tra qualche minuto oppure entra con email e password.",
+      "sconosciuto": "Questo account {fornitore} non è collegato a nessuna persona del portale. Entra con email e password, poi collegalo dalla pagina «Il tuo account».",
+      "nonAttivo": "La tua azienda non permette l'accesso con questo account {fornitore}. Entra con email e password.",
+      "altraOrganizzazione": "Questo account {fornitore} non appartiene all'organizzazione indicata dalla tua azienda. Usa l'account di lavoro.",
+      "giaUsato": "Questo account {fornitore} è già collegato a un'altra persona del portale."
+    },
+    "impostazioni": {
+      "intro": "Le persone dell'azienda possono entrare con l'account di lavoro Microsoft o Google invece che con la password del portale. Indica qui l'organizzazione dell'azienda: il portale accetta solo gli account che ne fanno parte.",
+      "microsoft": "ID tenant di Microsoft Entra",
+      "microsoftHint": "Lo trovi nell'interfaccia di amministrazione di Microsoft Entra, alla voce «Panoramica»: è un codice di 36 caratteri con quattro trattini. Lascia vuoto per disattivare.",
+      "google": "Dominio Google Workspace",
+      "googleHint": "Il dominio principale di Google Workspace dell'azienda, per esempio ascensorirossi.it. Gli account Gmail personali non sono accettati. Lascia vuoto per disattivare.",
+      "collegati": "Persone che hanno collegato un account {fornitore}: {n}.",
+      "salva": "Salva",
+      "salvato": "Impostazioni di accesso salvate.",
+      "erroreMicrosoft": "ID tenant non valido: copialo dalla «Panoramica» di Microsoft Entra.",
+      "erroreGoogle": "Dominio non valido: scrivi solo il dominio, per esempio ascensorirossi.it.",
+      "comeTitolo": "Come funziona",
+      "passo1": "Indica qui l'ID tenant di Microsoft o il dominio Google Workspace dell'azienda e salva.",
+      "passo2": "Ogni persona apre la pagina «Il tuo account», inserisce la password del portale e collega il proprio account di lavoro.",
+      "passo3": "Da quel momento può entrare con il pulsante «Accedi con Microsoft» o «Accedi con Google» nella pagina di accesso.",
+      "responsabilita": "Il fornitore di identità lo sceglie e lo gestisce la tua azienda (art. 4.6 delle Condizioni). Quando una persona lascia l'azienda, disattiva il suo account in Microsoft o Google e anche qui, in Utenti: la password del portale resta valida finché l'account non viene disattivato.",
+      "hub0": "Non attivo",
+      "disattivato": "Accesso con Microsoft e Google disattivato per l'azienda."
+    }
+  }
+}

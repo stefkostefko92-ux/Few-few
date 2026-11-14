@@ -23,6 +23,7 @@
 
 import { createHash, createHmac, randomBytes } from "node:crypto";
 import { readFileSync, existsSync } from "node:fs";
+import { isMain } from "../lib/is-main.mjs";
 
 const COMMANDS = new Set(["brands", "accounts", "drafts", "draft", "insights", "help"]);
 
@@ -212,6 +213,6 @@ export function summarizeLearned(learned, brand) {
   return `${out.join("\n")}\n`;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   main().catch((error) => die(error.message ?? String(error), error.status ? 1 : 1));
 }

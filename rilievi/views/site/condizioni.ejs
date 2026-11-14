@@ -1,0 +1,67 @@
+<%
+  // Условията за услугата с приложенията и правилата за ползване (src/legale/): текстът — дума по дума от
+  // файловете на версията в legale/, с отпечатъка, който се пази при приемането. Всеки член — с котва.
+  const ancora = (prefisso, numero) => `${prefisso}-${numero.replace(/\./g, '-').toLowerCase()}`;
+%><%- include('top', { pageTitle: t('legale.pagina.title') + ' — Rilievi Impianti', description: t('legale.pagina.metaDescription'), keywords: t('legale.pagina.keywords'), extraSheets: ['site-percorso', 'site-legale'], noindex: Boolean(locals.prossima) }) %>
+<div class="prose legale-pagina">
+  <nav class="percorso" aria-label="<%= t('novita.percorso') %>">
+    <ol>
+      <li><a href="<%= homePath %>">Rilievi Impianti</a></li>
+      <li><a href="<%= condizioniPath %>" aria-current="page"><%= t('legale.pagina.title') %></a></li>
+    </ol>
+  </nav>
+  <h1><%= t('legale.pagina.title') %></h1>
+  <p class="legale-pagina__lead"><%= t('legale.pagina.lead') %></p>
+  <% if (locals.prossima) { %><div class="notice" role="status">
+    <h2><%= t('legale.prossima.title') %></h2>
+    <p><%= prossima.dal ? t('legale.prossima.lead', { data: fmt.dayLongRoma(prossima.dal) }) : t('legale.prossima.nonAnnunciata') %> <a href="<%= condizioniPath %>"><%= t('legale.prossima.vigente') %></a></p>
+    <h3><%= t('legale.prossima.cambia') %></h3>
+    <ul>
+      <% for (const m of prossima.modifiche) { %><li><a href="#<%= ancora('art', /^\d/.test(m.numero) ? m.numero.split('.')[0] : m.numero) %>"><%= m.numero %></a> <%= m.titolo %> (<%= t('legale.prossima.tipi.' + m.tipo) %>)</li>
+      <% } %>
+    </ul>
+  </div>
+  <% } else { %><p class="prose__updated"><%= t('legale.pagina.inVigore', { data: fmt.dayLong(new Date(condizioni.versione + 'T00:00:00Z')) }) %></p><% } %>
+  <p><%= t('legale.pagina.salva') %> <a href="<%= pdfPath %>"><%= t('legale.pagina.pdf') %></a></p>
+
+  <nav class="legale-indice" aria-labelledby="h-indice">
+    <h2 id="h-indice"><%= t('legale.pagina.indice') %></h2>
+    <ul>
+      <li><a href="#condizioni"><%= condizioni.titolo %></a></li>
+      <% for (const allegato of condizioni.allegati) { %><li><a href="#allegato-<%= allegato.id %>"><%= allegato.titolo %></a></li>
+      <% } %><li><a href="#regole"><%= regole.titolo %></a></li>
+    </ul>
+  </nav>
+
+  <section aria-labelledby="condizioni">
+    <h2 id="condizioni"><%= condizioni.titolo %></h2>
+    <p class="legale-pagina__meta"><%= t('legale.versione', { versione: fmt.day(new Date(condizioni.versione + 'T00:00:00Z')) }) %> · <%= t('legale.impronta', { hash: hash.condizioni }) %></p>
+    <% for (const p of condizioni.premessa) { %><p><%= p %></p>
+    <% } %>
+    <% for (const a of condizioni.articoli) { %><h3 id="<%= ancora('art', a.numero) %>">Art. <%= a.numero %> – <%= a.titolo %></h3>
+    <% for (const p of a.paragrafi) { %><p><%= p %></p>
+    <% } %><% } %>
+  </section>
+
+  <% for (const allegato of condizioni.allegati) { %><section aria-labelledby="allegato-<%= allegato.id %>">
+    <h2 id="allegato-<%= allegato.id %>"><%= allegato.titolo %></h2>
+    <% for (const a of allegato.articoli) { %><h3 id="<%= ancora('art', a.numero) %>"><%= a.numero %> – <%= a.titolo %></h3>
+    <% if (allegato.id === 'dpa' || allegato.id === 'cambio') { %><% for (const p of a.paragrafi) { %><p><%= p %></p>
+    <% } %><% } else { %><ul>
+      <% for (const p of a.paragrafi) { %><li><%= p %></li>
+      <% } %></ul>
+    <% } %><% } %>
+  </section>
+  <% } %>
+
+  <section aria-labelledby="regole">
+    <h2 id="regole"><%= regole.titolo %></h2>
+    <p class="legale-pagina__meta"><%= t('legale.versione', { versione: fmt.day(new Date(regole.versione + 'T00:00:00Z')) }) %> · <%= t('legale.impronta', { hash: hash.regole }) %></p>
+    <% for (const p of regole.premessa) { %><p><%= p %></p>
+    <% } %>
+    <% for (const a of regole.articoli) { %><h3 id="<%= ancora('regola', a.numero) %>"><%= a.numero %>. <%= a.titolo %></h3>
+    <% for (const p of a.paragrafi) { %><p><%= p %></p>
+    <% } %><% } %>
+  </section>
+</div>
+<%- include('bottom') %>

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import {
   UPPER_BONUS,
   UPPER_BONUS_TARGET,
-  scoreCategory,
+  scoreFor,
   totalOf,
   upperTotal,
 } from "@aso/game-core";
@@ -162,8 +162,8 @@ export function DiceView({ title }: { title: string }) {
                           {filled ? (
                             sc[cat]
                           ) : selectable ? (
-                            // Preview what this category would bank right now.
-                            <span style={{ opacity: 0.55 }}>{scoreCategory(state.dice, cat)}</span>
+                            // Preview what this category would bank right now (вкл. правилото „Жокер“).
+                            <span style={{ opacity: 0.55 }}>{scoreFor(state, seat, cat)}</span>
                           ) : (
                             ""
                           )}

@@ -1,18 +1,21 @@
 import Link from "next/link";
-import { SITE, PRIMARY_NAV, localPhone } from "@/lib/site";
+import { SITE, PRIMARY_NAV, QUICK_DAILY } from "@/lib/site";
 import { SearchBar } from "@/components/SearchBar";
-import { Section, EmptyState } from "@/components/ui";
+import { Section, SectionHeader, EmptyState, FilterChips } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
 import { faqPageLd } from "@/lib/seo";
 import { plainText } from "@/lib/markdown";
-import { SERVICE_CATEGORY_LABELS } from "@/lib/categories";
+import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ORDER } from "@/lib/categories";
 import { BannerCard, BannerEmptySlot } from "@/components/BannerCard";
 import { ScamBanner } from "@/components/ScamBanner";
 import { WeatherWidget } from "@/components/WeatherWidget";
 import { TodayPanel } from "@/components/TodayPanel";
 import { LatestNews } from "@/components/LatestNews";
 import { TelLink } from "@/components/TelLink";
+import { PhoneButton } from "@/components/PhoneButton";
 import { ViberButton } from "@/components/ViberButton";
+import { isDangerNav, navIcon } from "@/components/nav-icons";
+import { GuideList } from "@/app/kak-da/_components/GuideList";
 import {
   getBanners,
   getDutyToday,
@@ -21,6 +24,7 @@ import {
   getLatestListings,
   getLatestPosts,
   getOutagesTodayTomorrow,
+  getServiceCategoryCounts,
   getTopFaqs,
   getUpcomingEvents,
 } from "@/lib/cache";
@@ -28,99 +32,54 @@ import { getViberChannelUrl } from "@/lib/settings";
 import { nextBuses, pickTodayOutages, todayCalendar } from "@/lib/today";
 import { BUS } from "@/lib/bus-schedule";
 import { newsDate } from "@/lib/ingest-news-rss";
-import {
-  HelpCircle,
-  Phone,
-  Store,
-  CalendarDays,
-  CalendarClock,
-  Megaphone,
-  Bus,
-  Newspaper,
-  AlertTriangle,
-  Landmark,
-  HeartHandshake,
-  Users,
-  Images,
-  ShieldAlert,
-  Cross,
-  Coins,
-  Trash2,
-  Euro,
-  BookOpen,
-  Camera,
-  Zap,
-  Banknote,
-  Flame,
-  type LucideIcon,
-} from "@/components/icons";
-
-const NAV_ICONS: Record<string, LucideIcon> = {
-  "/kak-da": HelpCircle,
-  "/uslugi": Phone,
-  "/izmami": ShieldAlert,
-  "/dezhurna-apteka": Cross,
-  "/pomoshti": Coins,
-  "/evroto": Euro,
-  "/biznes": Store,
-  "/sabitiya": CalendarDays,
-  "/imen-den": CalendarDays,
-  "/danaci-srokove": CalendarClock,
-  "/grafik-smetosabirane": Trash2,
-  "/obyavi": Megaphone,
-  "/transport": Bus,
-  "/novini": Newspaper,
-  "/signali": AlertTriangle,
-  "/prozrachnost": Banknote,
-  "/prekysvaniya": Zap,
-  "/smetishta": Trash2,
-  "/grada": BookOpen,
-  "/istoriya": Landmark,
-  "/zov-za-pomosht": HeartHandshake,
-  "/dobrovolci": Users,
-  "/spomeni": Images,
-  "/galeriya": Camera,
-  "/pomeni": Flame,
-};
-
-// Цветова тема за всяка категория — за по-лесно разпознаване и по-жив вид.
-// Ползваме нюанси -100/-700, които НЕ се променят в тъмен режим (остават
-// като цветни „значки" на тъмните карти).
-const NAV_COLOR: Record<string, string> = {
-  "/kak-da": "blue", "/uslugi": "sky", "/novini": "blue",
-  "/izmami": "rose", "/signali": "rose", "/zov-za-pomosht": "rose", "/sabitiya": "rose",
-  "/dezhurna-apteka": "green", "/smetishta": "green", "/grafik-smetosabirane": "green",
-  "/pomoshti": "amber", "/evroto": "amber", "/prekysvaniya": "amber", "/istoriya": "amber", "/danaci-srokove": "orange",
-  "/biznes": "purple", "/spomeni": "purple", "/galeriya": "purple", "/imen-den": "purple",
-  "/obyavi": "orange",
-  "/transport": "sky",
-  "/prozrachnost": "teal", "/grada": "teal", "/dobrovolci": "teal",
-  // Некролозите — тихо, без ярък цвят (свещ в сиво).
-  "/pomeni": "slate",
-};
-const COLOR: Record<string, { chip: string; title: string }> = {
-  blue: { chip: "bg-blue-100 text-blue-700 group-hover:bg-blue-600 group-hover:text-white", title: "group-hover:text-blue-700" },
-  sky: { chip: "bg-sky-100 text-sky-700 group-hover:bg-sky-600 group-hover:text-white", title: "group-hover:text-sky-700" },
-  green: { chip: "bg-green-100 text-green-700 group-hover:bg-green-600 group-hover:text-white", title: "group-hover:text-green-700" },
-  amber: { chip: "bg-amber-100 text-amber-700 group-hover:bg-amber-600 group-hover:text-white", title: "group-hover:text-amber-700" },
-  rose: { chip: "bg-rose-100 text-rose-700 group-hover:bg-rose-600 group-hover:text-white", title: "group-hover:text-rose-700" },
-  purple: { chip: "bg-purple-100 text-purple-700 group-hover:bg-purple-600 group-hover:text-white", title: "group-hover:text-purple-700" },
-  orange: { chip: "bg-orange-100 text-orange-700 group-hover:bg-orange-600 group-hover:text-white", title: "group-hover:text-orange-700" },
-  teal: { chip: "bg-teal-100 text-teal-700 group-hover:bg-teal-600 group-hover:text-white", title: "group-hover:text-teal-700" },
-  // Без смяна на цвета на заглавието при посочване: group-hover:text-slate-*
-  // няма тъмен вариант и би станал тъмен текст на тъмна карта.
-  slate: { chip: "bg-slate-100 text-slate-700 group-hover:bg-slate-600 group-hover:text-white", title: "" },
-};
+import { formatEventWhen, isoDateTime } from "@/lib/format-date";
+import { formatPhoneBg, isDialablePhone, nationalDigits } from "@/lib/phone";
+import { ChevronRight, Inbox, MapPin, Phone, Plus } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
 
-function formatDate(d: Date): string {
-  return new Intl.DateTimeFormat("bg-BG", {
-    day: "numeric",
-    month: "long",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(d);
+// Иконните квадратчета са в ЕДИН тон (brand). Червено — само „Пазете се от
+// измами“ (опасност), сиво — некролозите (траур). Пълни имена на класовете,
+// за да ги вижда Tailwind.
+function chipClass(href: string, size: "sm" | "lg"): string {
+  const base = size === "sm" ? "icon-chip-sm" : "icon-chip sm:h-16 sm:w-16";
+  if (isDangerNav(href)) return `${base} icon-chip-danger`;
+  if (href === "/pomeni") return `${base} icon-chip-neutral`;
+  return base;
+}
+
+// „Банка ДСК — Бобов дол“: тирето остава в края на реда, не в началото на
+// следващия (неразделящ интервал пред него). Само за показване.
+function glueDash(s: string): string {
+  return s.replace(/ ([—–]) /g, "\u00a0$1 ");
+}
+
+// Меко тире (U+00AD) в най-дългата дума на плочките „Всички раздели“: ако тя
+// не се побира (само 320px при шрифт 125%), се пренася ПРАВИЛНО
+// („Нерегла-ментирани“), а не се реже на произволна буква. Само за първа дума
+// в етикета: в средата на реда браузърът предпочита тирето пред пренасяне на
+// цялата дума („График за смето-събиране“). Само за показване — етикетите в
+// site.ts остават чисти (менюта, търсене, 404).
+const SOFT_HYPHENS: Record<string, string> = {
+  Нерегламентирани: "Нерегла\u00adментирани",
+};
+function softHyphens(s: string): string {
+  return s.replace(/\p{L}{12,}/gu, (w) => SOFT_HYPHENS[w] ?? w);
+}
+
+// Редът на рекламите се измества с една позиция всяка минута (страницата е
+// force-dynamic). На телефон се виждат първите 2 слота — така всеки платен
+// банер се показва и там, на равни смени.
+function rotate<T>(list: T[], by: number): T[] {
+  if (list.length < 2) return list;
+  const k = by % list.length;
+  return [...list.slice(k), ...list.slice(0, k)];
+}
+
+// Спешните телефони от админа (отметка „Спешен телефон“) без 112 — той е
+// отделният червен бутон.
+function is112(phone: string): boolean {
+  return (nationalDigits(phone) ?? phone.trim()) === "112";
 }
 
 // Данните за панела „Днес“ са допълнение — ако някоя от заявките се провали
@@ -135,35 +94,32 @@ async function orEmpty<T>(label: string, p: Promise<T[]>): Promise<T[]> {
   }
 }
 
-// „Помогнете ни да я напълним“ — вместо празна кутия „Още няма…“. С телефон
-// за хората без смартфон. Навигацията към разделите остава непокътната.
+// Покана вместо празна кутия „Още няма…“ — положително, без „помогнете ни да
+// я напълним“. С телефон за хората без смартфон.
 function FillStrip({ events, listings }: { events: boolean; listings: boolean }) {
-  const sections =
-    events && listings ? "„Обяви“ и „Събития“" : listings ? "„Обяви“" : "„Събития“";
+  const title =
+    events && listings
+      ? "Имате обява или събитие? Публикуваме ги безплатно."
+      : listings
+        ? "Продавате, търсите или подарявате нещо? Подайте безплатна обява."
+        : "Организирате събитие в града? Кажете ни и ще го публикуваме.";
   return (
-    <section aria-label={`Помогнете ни да напълним ${sections}`} className="border-y border-slate-200/70 bg-slate-50">
-      <div className="container-content flex flex-wrap items-center gap-x-6 gap-y-3 py-5">
-        <div className="min-w-[14rem] flex-1">
-          <p className="text-lg font-semibold text-slate-900">
-            Помогнете ни да напълним {sections}
-          </p>
+    <section aria-labelledby="pokana-zaglavie" className="container-content pb-10">
+      <div className="panel flex flex-wrap items-center gap-x-6 gap-y-4">
+        <div className="min-w-[min(14rem,100%)] flex-1">
+          <h2 id="pokana-zaglavie" className="font-display text-xl font-bold text-slate-900">
+            {title}
+          </h2>
           {SITE.contact.phone && (
-            <p className="text-base text-slate-700">
-              Нямате смартфон? Обадете се на{" "}
-              <TelLink
-                phone={SITE.contact.phone}
-                className="whitespace-nowrap font-semibold text-brand-700 underline underline-offset-4"
-              >
-                {localPhone(SITE.contact.phone)}
-              </TelLink>{" "}
-              и ни кажете.
+            <p className="mt-1 text-base text-slate-700">
+              Нямате смартфон? Обадете ни се и ни кажете.
             </p>
           )}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
           {listings && (
             <Link href="/obyavi/nova" className="btn-secondary">
-              Пуснете обява
+              Подайте обява
             </Link>
           )}
           {events && (
@@ -171,6 +127,9 @@ function FillStrip({ events, listings }: { events: boolean; listings: boolean })
               Кажете ни за събитие
             </Link>
           )}
+          {/* Телефонът е бутон (≥44px), не малка връзка в изречението —
+              поканата е точно за хората, на които им е трудно с телефона. */}
+          {SITE.contact.phone && <PhoneButton phone={SITE.contact.phone} />}
         </div>
       </div>
     </section>
@@ -181,7 +140,6 @@ export default async function HomePage() {
   const now = new Date();
   const [
     topFaqs,
-    emergency,
     events,
     listings,
     businesses,
@@ -189,10 +147,11 @@ export default async function HomePage() {
     dutyToday,
     outageRows,
     latestPosts,
+    emergency,
     viberUrl,
+    serviceCounts,
   ] = await Promise.all([
     getTopFaqs(),
-    getEmergencyServices(),
     getUpcomingEvents(),
     getLatestListings(),
     getFeaturedBusinesses(),
@@ -200,14 +159,26 @@ export default async function HomePage() {
     orEmpty("дежурна аптека", getDutyToday()),
     orEmpty("прекъсвания", getOutagesTodayTomorrow()),
     orEmpty("новини", getLatestPosts()),
+    orEmpty("спешни телефони", getEmergencyServices()),
     getViberChannelUrl(),
+    orEmpty("услуги по категории", getServiceCategoryCounts()),
   ]);
 
-  // Винаги показваме 4 слота: запълнените с реклами, останалите — покана.
-  const bannerSlots = Array.from({ length: 4 }, (_, i) => banners[i] ?? null);
+  const serviceCountOf = new Map(serviceCounts.map((c) => [c.category, c.count]));
+  // Номер с грешна дължина не стои в спешната лента (виж isDialablePhone).
+  const otherEmergency = emergency.filter((s) => s.phone && !is112(s.phone) && isDialablePhone(s.phone));
+
+  // Винаги 4 слота: запълнените с реклами (на смени, виж rotate), останалите
+  // — покана. На телефон се виждат първите 2 (рекламата не изтиква
+  // гражданското съдържание).
+  const rotatedBanners = rotate(banners, Math.floor(now.getTime() / 60_000));
+  const bannerSlots = Array.from({ length: 4 }, (_, i) => rotatedBanners[i] ?? null);
 
   const latest = latestPosts[0];
   const todayNews = latest ? { slug: latest.slug, title: latest.title, date: newsDate(latest) } : null;
+
+  const bothFeeds = events.length > 0 && listings.length > 0;
+  const feedGrid = bothFeeds ? "grid gap-4" : "grid gap-4 sm:grid-cols-2 lg:grid-cols-3";
 
   return (
     <>
@@ -225,93 +196,139 @@ export default async function HomePage() {
       {/* Лента с предупреждение за актуална измама (ако има закачена) */}
       <ScamBanner />
 
-      {/* Заглавна секция */}
+      {/* Заглавна секция. На телефон е по-ниска (без чиповете и с едно
+          изречение увод), за да се вижда спешната лента и „Днес“ без скрол. */}
       <section className="relative overflow-hidden bg-brand-800 text-white">
-        {/* Декоративен релеф на долината (намек за „долината с форма на боб“). */}
+        {/* Декоративен релеф на долината (намек за „долината с форма на боб“).
+            fill-* (а не text-* + currentColor): текстовите цветове се
+            пренасочват в тъмен режим и долната вълна ставаше светлосиня ивица. */}
         <svg
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-40 w-full text-brand-900/60"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-16 w-full sm:h-28 lg:h-32"
           viewBox="0 0 1440 200"
           preserveAspectRatio="none"
         >
-          <path d="M0 200 L0 120 C 180 70 320 150 520 110 C 720 70 820 160 1040 120 C 1240 84 1320 150 1440 110 L1440 200 Z" fill="currentColor" />
-          <path d="M0 200 L0 160 C 240 120 420 180 640 150 C 900 116 1060 184 1440 150 L1440 200 Z" className="text-brand-900" fill="currentColor" />
+          <path
+            d="M0 200 L0 120 C 180 70 320 150 520 110 C 720 70 820 160 1040 120 C 1240 84 1320 150 1440 110 L1440 200 Z"
+            className="fill-brand-900/60"
+          />
+          <path
+            d="M0 200 L0 160 C 240 120 420 180 640 150 C 900 116 1060 184 1440 150 L1440 200 Z"
+            className="fill-brand-900"
+          />
         </svg>
-        {/* Герб като воден знак — версията с прозрачен фон, иначе белият фон
-            на герба се вижда като бледа кутия върху синьото. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/brand/bobov-dol-grb-mark.png"
-          alt=""
-          aria-hidden
-          className="pointer-events-none absolute -right-6 top-1/2 hidden -translate-y-1/2 opacity-[0.08] md:block"
-          width={320}
-          height={460}
-        />
 
-        <div className="container-content relative py-14 sm:py-20">
-          <p className="eyebrow text-gold-300">
-            {SITE.geo.city} · {SITE.geo.region}
-          </p>
-          <h1 className="mt-3 max-w-3xl text-4xl font-extrabold leading-[1.1] sm:text-5xl">
-            Всичко за{" "}
-            <span className="text-gold-300">Бобов дол</span> — на едно място
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg text-brand-50">
-            Направено от местни хора за местни хора: важни телефони и услуги,
-            обяснения стъпка по стъпка, събития, обяви и взаимопомощ. Лесно и
-            разбираемо, за всички възрасти.
-          </p>
-          <div className="mt-7 max-w-xl rounded-xl bg-white p-2 shadow-xl ring-1 ring-black/5">
-            <SearchBar />
+        {/* От xl гербът-воден знак е СОБСТВЕНА клетка на мрежата (не absolute
+            над текста) — до увода и търсачката, над реда с чиповете. Не може да
+            застъпи нищо при никоя ширина и размер на шрифта. Под xl го няма. */}
+        <div className="container-content relative pb-10 pt-8 sm:pb-20 sm:pt-14 lg:pb-16 lg:pt-12 xl:grid xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center xl:gap-x-12">
+          <div className="relative min-w-0">
+            {/* Независимостта — още над прегъвката: това НЕ е сайтът на общината. */}
+            <p className="eyebrow text-gold-300">
+              Независима гражданска инициатива&nbsp;· {SITE.geo.region}
+            </p>
+            <h1 className="mt-3 max-w-3xl text-3xl font-bold leading-[1.1] sm:text-5xl">
+              Всичко за <span className="text-gold-300">Бобов&nbsp;дол</span>&nbsp;— на едно място
+            </h1>
+            <p className="mt-3 max-w-2xl text-lg text-brand-50 sm:mt-4">
+              Важни телефони, обяснения стъпка по стъпка, събития и обяви — от местни хора за
+              местни хора.
+              <span className="hidden sm:inline"> Лесно и разбираемо, за всички възрасти.</span>
+            </p>
+            <div className="hero-search mt-5 max-w-xl rounded-xl bg-white p-1.5 shadow-lg sm:mt-7">
+              <SearchBar />
+            </div>
+            <Link
+              href="/kak-da-polzvam-sayta"
+              className="mt-2 inline-flex min-h-tap items-center text-base font-medium text-gold-200 underline decoration-gold-200/60 underline-offset-4 hover:decoration-gold-200"
+            >
+              {/* Стрелката е залепена за последната дума: на телефон редът се
+                  пренася, а „→“ не остава сам вдясно. */}
+              <span>
+                Първи път сте тук? Вижте как да ползвате{" "}
+                <span className="whitespace-nowrap">
+                  сайта
+                  <span aria-hidden="true" className="ml-1.5 inline-block">
+                    →
+                  </span>
+                </span>
+              </span>
+            </Link>
           </div>
-          <Link
-            href="/kak-da-polzvam-sayta"
-            className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-gold-200 underline-offset-2 hover:underline"
-          >
-            Нов тук? Вижте как да ползвате сайта →
-          </Link>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {PRIMARY_NAV.slice(0, 5).map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white ring-1 ring-white/20 transition hover:bg-white/20"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
+          {/* Версията с прозрачен фон — иначе белият фон личи като кутия.
+              Височина в px: не расте с шрифта от „Настройки за четене“. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/bobov-dol-grb-mark.png"
+            alt=""
+            aria-hidden
+            className="pointer-events-none hidden h-[320px] w-auto select-none opacity-[0.07] xl:block"
+            width={320}
+            height={460}
+          />
+          {/* Ежедневните неща, които ги няма в картите отдолу — само от sm.
+              От xl редът е под герба, на цялата ширина (не се пренася). */}
+          <nav aria-label="Всеки ден" className="relative mt-4 hidden sm:block xl:col-span-2">
+            <ul className="flex flex-wrap gap-2">
+              {QUICK_DAILY.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="chip-on-dark">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
       </section>
 
-      {/* Спешни телефони */}
-      <section className="border-b border-amber-200 bg-amber-50">
-        <div className="container-content flex flex-wrap items-center gap-x-5 gap-y-3 py-3.5">
-          <span className="flex items-center gap-2 font-bold text-amber-900">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-amber-200 text-amber-900">
-              <Phone className="h-5 w-5" aria-hidden />
-            </span>
-            Спешни телефони
-          </span>
-          {/* 112 е най-важният номер — затова е бутон, а не ред в списък. */}
-          <a
-            href="tel:112"
-            className="a11y-btn inline-flex items-center gap-2 rounded-lg bg-crimson-600 px-4 py-2 text-base font-bold text-white shadow-sm transition hover:bg-crimson-700"
-          >
-            Спешност 112
-          </a>
-          {emergency
-            .filter((s) => s.phone !== "112")
-            .map((s) => (
-              <a
-                key={s.id}
-                href={`tel:${s.phone}`}
-                className="a11y-btn inline-flex items-center rounded-lg px-2 text-base font-medium text-amber-900 underline decoration-amber-400 underline-offset-4 transition hover:decoration-amber-700"
-              >
-                {s.name.includes(s.phone) ? s.name : `${s.name} ${s.phone}`}
-              </a>
-            ))}
+      {/* Спешни телефони. Червеното е само за спешност: 112 е единственият
+          червен бутон. До него — номерата с отметка „Спешен телефон“ от
+          админа (и на телефон), после връзка към всички телефони. */}
+      <section aria-label="Спешни телефони" className="border-b border-crimson-200 bg-crimson-50">
+        <div className="container-content flex flex-wrap items-center gap-x-5 gap-y-1 py-2.5">
+          {/* flex-wrap: на 320px при шрифт 125% бутонът минава под „При
+              спешност“ (иначе редът беше 383px при колона 288px). */}
+          <div className="flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-2 sm:w-auto sm:justify-start sm:gap-x-5">
+            <p className="text-lg font-bold text-crimson-700">При спешност</p>
+            <TelLink phone="112" className="btn-danger shrink-0 px-4 tabular-nums sm:px-5">
+              <Phone className="h-5 w-5 shrink-0" aria-hidden />
+              Спешност 112
+            </TelLink>
+          </div>
+          {otherEmergency.length === 0 && (
+            <p className="hidden text-base text-slate-700 lg:block">
+              Безплатно, от всеки телефон, денонощно.
+            </p>
+          )}
+          {otherEmergency.length > 0 && (
+            <ul
+              aria-label="Други спешни телефони"
+              className="flex w-full flex-wrap gap-x-5 sm:w-auto sm:min-w-[16rem] sm:flex-1"
+            >
+              {otherEmergency.map((s) => (
+                <li key={s.id}>
+                  <TelLink
+                    phone={s.phone}
+                    className="link-quiet inline-flex min-h-tap items-center font-semibold text-slate-900"
+                  >
+                    {s.name.includes(s.phone) ? (
+                      s.name
+                    ) : (
+                      <span>
+                        {s.name}{" "}
+                        <span className="whitespace-nowrap tabular-nums">{formatPhoneBg(s.phone)}</span>
+                      </span>
+                    )}
+                  </TelLink>
+                </li>
+              ))}
+            </ul>
+          )}
+          <Link href="/uslugi" className="link-more sm:ml-auto">
+            Всички важни телефони
+            <span aria-hidden="true">→</span>
+          </Link>
         </div>
       </section>
 
@@ -332,69 +349,78 @@ export default async function HomePage() {
       {/* Бързи раздели. PRIMARY_NAV е подреден по важност, затова първите шест
           са едри („това търсят хората най-често“), а останалите — компактни.
           21 еднакви карти са твърде много за сканиране от възрастен човек. */}
-      <Section title="Какво търсите днес?">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* id="razdeli" — „Всички раздели →“ във футъра води тук. */}
+      <Section title="Най-търсено" id="razdeli">
+        <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {PRIMARY_NAV.slice(0, 6).map((item) => {
-            const Icon = NAV_ICONS[item.href] ?? HelpCircle;
-            const c = COLOR[NAV_COLOR[item.href] ?? "blue"];
+            const Icon = navIcon(item.href);
             return (
-              <Link key={item.href} href={item.href} className="card group flex items-start gap-4">
-                <span className={"grid h-16 w-16 shrink-0 place-items-center rounded-2xl transition duration-200 group-hover:scale-110 " + c.chip}>
-                  <Icon className="h-9 w-9" aria-hidden />
-                </span>
-                <span>
-                  <span className={"block font-display text-xl font-bold text-slate-900 " + c.title}>
-                    {item.label}
+              <li key={item.href} className="flex">
+                <Link
+                  href={item.href}
+                  className="card group flex w-full items-start gap-3 p-4 sm:gap-4 sm:p-5"
+                >
+                  <span className={chipClass(item.href, "lg")}>
+                    <Icon className="h-7 w-7 sm:h-9 sm:w-9" aria-hidden />
                   </span>
-                  <span className="mt-1 block text-base text-slate-600">{item.description}</span>
-                </span>
-              </Link>
+                  <span className="min-w-0">
+                    <span className="block font-display text-xl font-bold leading-snug text-slate-900 decoration-2 underline-offset-4 group-hover:underline">
+                      {item.label}
+                    </span>
+                    <span className="mt-1 block text-base text-slate-600">{item.description}</span>
+                  </span>
+                </Link>
+              </li>
             );
           })}
-        </div>
+        </ul>
 
-        <h3 className="mb-4 mt-10 font-display text-lg font-bold text-slate-700">
-          Всички раздели
-        </h3>
-        {/* Под 360px две колони оставят ~123px за текста и дълги думи като
-            „сметосъбиране“ не се побират — там минаваме на една колона. */}
-        <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+        <h3 className="h-sub mb-4 mt-10">Всички раздели</h3>
+        {/* Ширината на колоната е в rem, не брой колони: при шрифт 112,5%/125%
+            колоните сами намаляват и най-дългата дума („Нерегламентирани“ —
+            ~11rem) се събира цяла до иконата. На телефон плочките са редове на
+            цялата ширина; стрелката „›“ се показва само ако остава място за
+            думата (container query, също в rem). Под това — меко тире. */}
+        <ul className="grid gap-2 sm:grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] sm:gap-3">
           {PRIMARY_NAV.slice(6).map((item) => {
-            const Icon = NAV_ICONS[item.href] ?? HelpCircle;
-            const c = COLOR[NAV_COLOR[item.href] ?? "blue"];
+            const Icon = navIcon(item.href);
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                /* На телефон иконата е отгоре, а надписът заема цялата ширина на
-                   картата — при две колони на 390px за хоризонтален ред остават
-                   ~95px и дълги имена („Транспорт“) се чупеха по средата на
-                   думата. От sm нагоре има място и редът е хоризонтален. */
-                className="group flex min-w-0 flex-col items-start gap-2 rounded-xl border border-slate-200/80 bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md sm:flex-row sm:items-center sm:gap-3"
-              >
-                <span className={"grid h-10 w-10 shrink-0 place-items-center rounded-lg transition " + c.chip}>
-                  <Icon className="h-6 w-6" aria-hidden />
-                </span>
-                <span className={"min-w-0 hyphens-auto font-semibold leading-snug text-slate-900 [overflow-wrap:anywhere] " + c.title}>
-                  {item.label}
-                </span>
-              </Link>
+              <li key={item.href} className="flex [container-type:inline-size]">
+                <Link
+                  href={item.href}
+                  className="card group flex min-h-[3.5rem] w-full min-w-0 items-center gap-3 rounded-xl px-2.5 py-2 sm:py-3 [@container_(min-width:18rem)]:px-3"
+                >
+                  <span className={chipClass(item.href, "sm")}>
+                    <Icon aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1 break-words font-semibold leading-snug text-slate-900 underline-offset-4 group-hover:underline">
+                    {softHyphens(item.label)}
+                  </span>
+                  <ChevronRight
+                    className="hidden h-5 w-5 shrink-0 text-slate-500 max-sm:[@container_(min-width:18rem)]:block"
+                    aria-hidden
+                  />
+                </Link>
+              </li>
             );
           })}
-        </div>
+        </ul>
       </Section>
 
       {/* „Последно от общината“ — само ако има публикувани новини. */}
       <LatestNews />
 
-      {/* Абониране — ненатрапчива лента към известията (и Viber, ако го има). */}
+      {/* Абониране — ненатрапчиво каре към известията (и Viber, ако го има). */}
       <section aria-label="Известия на телефона" className="container-content pb-10">
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-2xl border border-brand-200 bg-brand-50 px-5 py-4">
-          <p className="min-w-[14rem] flex-1 text-lg text-slate-800">
+        <div className="panel flex flex-wrap items-center gap-x-5 gap-y-4">
+          <span className="icon-chip hidden sm:grid">
+            <Inbox aria-hidden />
+          </span>
+          <p className="min-w-[min(14rem,100%)] flex-1 text-lg text-slate-800">
             Искате ли да ви казваме, когато спира токът или има нова измама?
           </p>
-          <div className="flex flex-wrap gap-2">
-            <Link href="/izvestiya" className="btn-secondary min-h-[44px]">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
+            <Link href="/izvestiya" className="btn-secondary">
               Включете известията
             </Link>
             {viberUrl && <ViberButton url={viberUrl} />}
@@ -402,152 +428,169 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Рекламни банери (4 слота) */}
-      <Section title="Реклама" href="/reklama" hrefLabel="Рекламирайте при нас" tone="muted">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {bannerSlots.map((b, i) =>
-            b ? (
-              <BannerCard
-                key={b.id}
-                banner={{
-                  id: b.id,
-                  title: b.title,
-                  sponsor: b.sponsor,
-                  description: b.description,
-                  imageUrl: b.imageUrl,
-                  linkUrl: b.linkUrl,
-                  bgColor: b.bgColor,
-                  accentColor: b.accentColor,
-                }}
-              />
-            ) : (
-              <BannerEmptySlot key={`empty-${i}`} />
-            ),
-          )}
-        </div>
-      </Section>
-
-      {/* Популярни „Как да“ */}
-      <Section title="Популярни въпроси „Как да…“" href="/kak-da">
+      {/* Популярни „Как да“ — на телефон 4, от md нагоре всички. */}
+      <Section title="Популярни въпроси „Как да…“" href="/kak-da" tone="muted">
         {topFaqs.length === 0 ? (
           <EmptyState title="Скоро тук ще има полезни въпроси и отговори." />
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {topFaqs.map((f) => (
-              <Link key={f.id} href={`/kak-da/${f.slug}`} className="card">
-                <div className="badge">{f.category}</div>
-                <h3 className="mt-2 text-lg font-semibold text-slate-900">
-                  {f.question}
-                </h3>
-                <p className="mt-1 text-sm text-slate-600">
-                  {plainText(f.answer, 120)}
-                </p>
-              </Link>
-            ))}
-          </div>
+          // Същите карти като в „Как да…“, /izmami и /pomoshti (GuideCard).
+          <GuideList
+            items={topFaqs.map((f) => ({
+              id: f.id,
+              slug: f.slug,
+              question: f.question,
+              snippet: plainText(f.answer, 120),
+            }))}
+            as="h3"
+            className="max-md:[&>*:nth-child(n+5)]:hidden"
+          />
         )}
       </Section>
 
       {/* Събития и обяви — показват се само ако има какво (по брой, както
-          „Местен бизнес“). Празен раздел → лента „Помогнете ни да я напълним“. */}
+          „Местен бизнес“). Празен раздел → покана (FillStrip). */}
       {(events.length > 0 || listings.length > 0) && (
-        <div className="bg-white">
-          <div
-            className={
-              "container-content grid gap-10 py-10" +
-              (events.length > 0 && listings.length > 0 ? " lg:grid-cols-2" : "")
-            }
-          >
-            {events.length > 0 && (
-              <div>
-                <div className="mb-5 flex items-end justify-between">
-                  <h2 className="text-2xl font-bold">Предстоящи събития</h2>
-                  <Link href="/sabitiya" className="text-sm font-medium text-brand-700">
-                    Всички →
-                  </Link>
-                </div>
-                <ul className="space-y-3">
-                  {events.map((e) => (
-                    <li key={e.id}>
-                      <Link href={`/sabitiya/${e.slug}`} className="card block">
-                        <div className="text-sm font-medium text-brand-700">
-                          {formatDate(e.startAt)}
-                        </div>
-                        <div className="text-lg font-semibold">{e.title}</div>
-                        {e.location && (
-                          <div className="text-sm text-slate-600">{e.location}</div>
-                        )}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {listings.length > 0 && (
-              <div>
-                <div className="mb-5 flex items-end justify-between">
-                  <h2 className="text-2xl font-bold">Последни обяви</h2>
-                  <Link href="/obyavi" className="text-sm font-medium text-brand-700">
-                    Всички →
-                  </Link>
-                </div>
-                <ul className="space-y-3">
-                  {listings.map((l) => (
-                    <li key={l.id}>
-                      <Link href={`/obyavi/${l.slug}`} className="card block">
-                        <div className="text-lg font-semibold">{l.title}</div>
-                        <p className="text-sm text-slate-600">
-                          {plainText(l.description, 100)}
+        <div className={"container-content grid gap-10 py-10" + (bothFeeds ? " lg:grid-cols-2" : "")}>
+          {events.length > 0 && (
+            <section aria-labelledby="sabitiya-zaglavie">
+              <SectionHeader id="sabitiya-zaglavie" title="Предстоящи събития" href="/sabitiya" />
+              <ul className={feedGrid}>
+                {events.map((e) => (
+                  <li key={e.id} className="flex">
+                    <Link href={`/sabitiya/${e.slug}`} className="card group flex w-full flex-col">
+                      {/* Като в /sabitiya и детайла: с година и край. Часът е
+                          „стенно“ софийско време от админ полето (format-date.ts). */}
+                      <p className="text-base font-semibold text-brand-700">
+                        <time dateTime={isoDateTime(e.startAt, { wall: true })}>
+                          {formatEventWhen(e.startAt, e.endAt, { wall: true })}
+                        </time>
+                      </p>
+                      <h3 className="h-card mt-1 group-hover:underline">{glueDash(e.title)}</h3>
+                      {e.location && (
+                        <p className="mt-1 flex items-start gap-1.5 text-base text-slate-600">
+                          <MapPin className="mt-1 h-4 w-4 shrink-0" aria-hidden />
+                          <span className="min-w-0">{e.location}</span>
                         </p>
-                        {l.price && (
-                          <div className="mt-1 font-semibold text-brand-700">
-                            {l.price}
-                          </div>
-                        )}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
+                      )}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {listings.length > 0 && (
+            <section aria-labelledby="obyavi-zaglavie">
+              <SectionHeader id="obyavi-zaglavie" title="Последни обяви" href="/obyavi" />
+              <ul className={feedGrid}>
+                {listings.map((l) => (
+                  <li key={l.id} className="flex">
+                    <Link href={`/obyavi/${l.slug}`} className="card group flex w-full flex-col">
+                      <h3 className="h-card group-hover:underline">{glueDash(l.title)}</h3>
+                      <p className="mt-1 text-base text-slate-600">{plainText(l.description, 100)}</p>
+                      {l.price && (
+                        <p className="mt-auto pt-2 font-semibold text-brand-700">{l.price}</p>
+                      )}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </div>
       )}
       {(events.length === 0 || listings.length === 0) && (
         <FillStrip events={events.length === 0} listings={listings.length === 0} />
       )}
 
-      {/* Местен бизнес */}
+      {/* Местен бизнес. При по-малко от 4 фирми — покана да добавят своя. */}
       {businesses.length > 0 && (
         <Section title="Местен бизнес" href="/biznes" tone="muted">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {businesses.map((b) => (
-              <Link key={b.id} href={`/biznes/${b.slug}`} className="card">
-                <div className="text-lg font-semibold text-slate-900">{b.name}</div>
-                {b.address && (
-                  <div className="mt-1 text-sm text-slate-600">{b.address}</div>
-                )}
-              </Link>
+              <li key={b.id} className="flex">
+                <Link href={`/biznes/${b.slug}`} className="card group flex w-full flex-col">
+                  <h3 className="h-card group-hover:underline">{glueDash(b.name)}</h3>
+                  {b.address && (
+                    <p className="mt-1 flex items-start gap-1.5 text-base text-slate-600">
+                      <MapPin className="mt-1 h-4 w-4 shrink-0" aria-hidden />
+                      <span className="min-w-0">{b.address}</span>
+                    </p>
+                  )}
+                </Link>
+              </li>
             ))}
-          </div>
+            {businesses.length < 4 && (
+              <li className="flex">
+                <Link
+                  href="/biznes/nova"
+                  className="card group flex w-full flex-col items-start gap-2 border-dashed"
+                >
+                  <span className="icon-chip-sm">
+                    <Plus aria-hidden />
+                  </span>
+                  <span className="h-card group-hover:underline">
+                    Добавете своя бизнес
+                    <span aria-hidden="true">&nbsp;→</span>
+                  </span>
+                  <span className="text-base text-slate-600">Безплатно — с кратка форма.</span>
+                </Link>
+              </li>
+            )}
+          </ul>
         </Section>
       )}
 
-      {/* Помощ онлайн + взаимопомощ */}
-      <section className="bg-brand-50">
-        <div className="container-content grid items-center gap-6 py-12 sm:grid-cols-[2fr,1fr]">
+      {/* Реклама — след гражданското съдържание, с малък надпис (без златната
+          черта на разделите). Всеки банер носи и свой етикет „Реклама“. */}
+      <section aria-labelledby="reklama-zaglavie" className="container-content py-10">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-x-4">
+          <h2 id="reklama-zaglavie" className="label-caps">
+            Реклама
+          </h2>
+          <Link href="/reklama" className="link-more">
+            Рекламирайте при нас
+            <span aria-hidden="true">→</span>
+          </Link>
+        </div>
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 max-sm:[&>*:nth-child(n+3)]:hidden">
+          {bannerSlots.map((b, i) => (
+            <li key={b ? b.id : `empty-${i}`} className="flex">
+              {b ? (
+                <BannerCard
+                  banner={{
+                    id: b.id,
+                    title: b.title,
+                    sponsor: b.sponsor,
+                    description: b.description,
+                    imageUrl: b.imageUrl,
+                    linkUrl: b.linkUrl,
+                    bgColor: b.bgColor,
+                    accentColor: b.accentColor,
+                  }}
+                />
+              ) : (
+                <BannerEmptySlot />
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Помощ онлайн + взаимопомощ — единственият акцентен (brand-50) блок. */}
+      <section aria-labelledby="pomosht-zaglavie" className="bg-brand-50">
+        <div className="container-content grid items-center gap-6 py-12 md:grid-cols-[minmax(0,1fr)_auto] md:gap-10">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">
+            <h2 id="pomosht-zaglavie" className="section-title">
               Не се справяте онлайн? Помагаме безплатно.
             </h2>
-            <p className="mt-2 max-w-2xl text-slate-700">
+            <p className="mt-4 max-w-2xl text-slate-700">
               Питайте дигиталния помощник долу вдясно или вижте обясненията{" "}
               „Как да…“ — стъпка по стъпка, на разбираем език, за всички възрасти.
               А ако възрастен човек се нуждае от подкрепа, вижте „Зов за помощ“.
             </p>
           </div>
-          <div className="flex flex-col gap-2 sm:items-end">
+          <div className="flex flex-col gap-2 sm:w-64">
             <Link href="/kak-da" className="btn-primary">
               Вижте „Как да…“
             </Link>
@@ -559,19 +602,20 @@ export default async function HomePage() {
       </section>
 
       {/* Бърз достъп до категории услуги (помага за GEO/AEO) */}
-      <Section title="Услуги по категории" href="/uslugi">
-        <div className="flex flex-wrap gap-2">
-          {Object.entries(SERVICE_CATEGORY_LABELS).map(([key, label]) => (
-            <Link
-              key={key}
-              href={`/uslugi?cat=${key}`}
-              className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:border-brand-400 hover:text-brand-700"
-            >
-              {label}
-            </Link>
-          ))}
-        </div>
-      </Section>
+      {serviceCountOf.size > 0 && (
+        <Section title="Услуги по категории" href="/uslugi">
+          {/* Само непразните категории, в реда и с бройката от /uslugi —
+              чип не води до „Няма услуги“. */}
+          <FilterChips
+            label="Категории услуги"
+            items={SERVICE_CATEGORY_ORDER.filter((key) => (serviceCountOf.get(key) ?? 0) > 0).map((key) => ({
+              href: `/uslugi?cat=${key}#rezultati`,
+              label: SERVICE_CATEGORY_LABELS[key],
+              count: serviceCountOf.get(key),
+            }))}
+          />
+        </Section>
+      )}
     </>
   );
 }

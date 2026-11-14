@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { Phone } from "@/components/icons";
+import { Clock, Coins, ShieldCheck, Users } from "@/components/icons";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { PageHero, Prose } from "@/components/ui";
+import { ContactPanel, DetailActions, FactList, Notice, PageHero, Prose } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { RIDE_KIND_LABELS, labelFor } from "@/lib/categories";
-import { PrintButton } from "@/components/PrintButton";
 import { ReportContent } from "@/components/ReportContent";
+import { Route, routeText } from "../RouteLabel";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -23,11 +24,20 @@ export async function generateMetadata({
   const { slug } = await params;
   const r = await getRide(slug);
   if (!r) return buildMetadata({ title: "Не е намерено", noindex: true });
+  // Без „→“ в <title>: четецът го чете „стрелка надясно“.
+  const route = routeText(r.routeFrom, r.routeTo);
   return buildMetadata({
-    title: `Споделено пътуване: ${r.routeFrom} – ${r.routeTo}`,
-    description: plainText(r.description, 150) || `${r.routeFrom} – ${r.routeTo}`,
+    title: `Споделено пътуване ${route}`,
+    description: plainText(r.description, 150) || `Споделено пътуване ${route}.`,
     path: `/spodeleno-patuvane/${r.slug}`,
     type: "article",
+    keywords: [
+      `${r.routeFrom} ${r.routeTo}`,
+      "споделено пътуване Бобов дол",
+      `превоз ${r.routeFrom} ${r.routeTo}`,
+      "спътници Бобов дол",
+      "споделяне на разходи за път",
+    ],
   });
 }
 
@@ -39,78 +49,58 @@ export default async function RidePage({
   const { slug } = await params;
   const r = await getRide(slug);
   if (!r) notFound();
+  // Маршрутът в един формат навсякъде: на екрана „Бобов дол → Дупница“
+  // (стрелката скрита за четеца — той чува „до“), в текста — „от … до …“.
+  const route = routeText(r.routeFrom, r.routeTo);
+  const routeLabel = <Route from={r.routeFrom} to={r.routeTo} />;
 
   return (
     <>
       <PageHero
-        title={`${r.routeFrom} → ${r.routeTo}`}
+        eyebrow={SECTION.participate}
+        title={routeLabel}
         crumbs={[
           { name: "Споделено пътуване", path: "/spodeleno-patuvane" },
-          { name: `${r.routeFrom} – ${r.routeTo}`, path: `/spodeleno-patuvane/${r.slug}` },
+          {
+            name: `${r.routeFrom} – ${r.routeTo}`,
+            label: routeLabel,
+            path: `/spodeleno-patuvane/${r.slug}`,
+          },
         ]}
       />
-      <div className="container-content grid gap-8 py-10 lg:grid-cols-[1fr,18rem]">
-        <div>
-          <span
-            className={
-              "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold " +
-              (r.kind === "OFFER" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800")
-            }
-          >
+      <div className="container-content grid gap-8 py-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="min-w-0">
+          <span className={r.kind === "OFFER" ? "badge-success" : "badge"}>
             {labelFor(RIDE_KIND_LABELS, r.kind)}
           </span>
-          <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:max-w-md">
-            {r.schedule && (
-              <div>
-                <dt className="text-slate-600">Кога</dt>
-                <dd className="font-medium text-slate-800">{r.schedule}</dd>
-              </div>
-            )}
-            {r.seats && (
-              <div>
-                <dt className="text-slate-600">Свободни места</dt>
-                <dd className="font-medium text-slate-800">{r.seats}</dd>
-              </div>
-            )}
-            {r.costNote && (
-              <div>
-                <dt className="text-slate-600">Дял от разхода</dt>
-                <dd className="font-medium text-slate-800">{r.costNote}</dd>
-              </div>
-            )}
-          </dl>
+          <FactList
+            className="mt-4 max-w-md"
+            items={[
+              { label: "Кога", icon: Clock, value: r.schedule },
+              { label: "Свободни места", icon: Users, value: r.seats },
+              { label: "Дял от разхода", icon: Coins, value: r.costNote },
+            ]}
+          />
           {r.description && (
-            <div className="mt-4">
+            <div className="mt-6">
               <Prose html={renderMarkdown(r.description)} />
             </div>
           )}
-          <div className="mt-6 no-print">
-            <PrintButton variant="secondary" />
-          </div>
-        </div>
-        <aside>
-          <div className="card space-y-3">
-            <div className="text-base font-semibold text-slate-900">Контакт</div>
-            {r.contactName && <div className="text-slate-700">{r.contactName}</div>}
-            {r.contactPhone && (
-              <a href={`tel:${r.contactPhone}`} className="block text-lg font-semibold text-brand-700">
-                <Phone className="inline h-5 w-5 align-text-bottom" aria-hidden /> {r.contactPhone}
-              </a>
-            )}
-            {r.contactEmail && (
-              <a href={`mailto:${r.contactEmail}`} className="block break-all text-brand-700 hover:underline">
-                {r.contactEmail}
-              </a>
-            )}
-          </div>
-          <p className="mt-3 text-xs text-slate-600">
-            Уговаряйте се предварително и споделяйте плана с близък. Внимавайте при
-            плащания на непознати.
-          </p>
-          <ReportContent
-            subject={`${r.routeFrom} → ${r.routeTo}`}
-            path={`/spodeleno-patuvane/${r.slug}`}
+          <DetailActions
+            shareTitle={`Споделено пътуване ${route}`}
+            shareText={`Споделено пътуване ${route}${r.schedule ? ` — ${r.schedule}` : ""}`}
+            sharePath={`/spodeleno-patuvane/${r.slug}`}
           />
+        </div>
+        <aside className="space-y-4">
+          <ContactPanel name={r.contactName} phone={r.contactPhone} email={r.contactEmail} />
+          <Notice title="За сигурност" icon={ShieldCheck}>
+            <p>
+              Уговаряйте се предварително и споделяйте плана с близък. Внимавайте при плащания
+              на непознати.
+            </p>
+          </Notice>
+          <ReportContent subject={`Споделено пътуване ${route}`} path={`/spodeleno-patuvane/${r.slug}`} className="" />
         </aside>
       </div>
     </>

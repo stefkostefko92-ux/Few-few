@@ -19,7 +19,8 @@ import {
   verifyRefreshToken,
 } from "../auth/tokens.js";
 import { issueAuthToken, consumeAuthToken } from "../auth/authTokens.js";
-import { isRevoked } from "../auth/revocation.js";
+import { revokeUser } from "../auth/revocation.js";
+import { banDetails, isBanActive } from "../auth/bans.js";
 import {
   providerEnabled,
   buildAuthorizeUrl,
@@ -29,14 +30,34 @@ import {
 import { sendEmail } from "../email/mailer.js";
 import { verificationEmail, passwordResetEmail } from "../email/templates.js";
 import { notifyRegistration } from "../integrations/discord.js";
-import { asyncHandler, badRequest, conflict, forbidden, unauthorized, HttpError } from "../http.js";
+import { asyncHandler, badRequest, conflict, unauthorized, HttpError } from "../http.js";
 import { env } from "../env.js";
+import { webUrl as sharedWebUrl } from "../webUrl.js";
 import { logger } from "../logger.js";
 import { authLimiter, loginAccountLimiter } from "../middleware/rateLimit.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { toPublicUser } from "./users.js";
 
 export const authRouter: Router = Router();
+
+/**
+ * 403 `banned` с причината (DSA чл. 17 — изложение на мотивите) в `message` и
+ * срока в `until` (ISO; null = безсрочен). Клиентът го оформя и показва
+ * контакта за обжалване.
+ */
+function bannedError(user: Parameters<typeof banDetails>[0]): HttpError {
+  const { reason, until } = banDetails(user);
+  return new HttpError(403, "banned", reason, { until });
+}
+
+/** Издава нова двойка access + refresh (refresh носи текущата версия на сесиите). */
+function issueSession(
+  res: Parameters<typeof setAuthCookies>[0],
+  user: { id: string; role: string; locale: string; tokenVersion: number },
+): void {
+  const accessToken = signAccessToken({ sub: user.id, role: user.role, locale: user.locale });
+  setAuthCookies(res, accessToken, signRefreshToken(user.id, user.tokenVersion));
+}
 
 // The strict brute-force limiter is applied per-route to the credential
 // endpoints only, so the SPA's routine /refresh calls don't share (and exhaust)
@@ -47,9 +68,10 @@ const PASSWORD_RESET_TTL_SEC = 60 * 60; // 1h
 const OAUTH_STATE_COOKIE = "aso_oauth_state";
 const OAUTH_STATE_TTL_MS = 10 * 60 * 1000; // 10 min
 
-/** Build a deep link into the SPA (which may live under a base path in prod). */
+/** Build a deep link into the SPA (which may live under a base path in prod).
+ *  Общ помощник — не дублира `/app`, ако PUBLIC_WEB_URL вече завършва на него. */
 function webUrl(path: string): string {
-  return `${env.PUBLIC_WEB_URL}${env.WEB_BASE_PATH}${path}`;
+  return sharedWebUrl(path);
 }
 
 /** Issue a verification token and email the link. Best-effort (never throws). */
@@ -90,8 +112,7 @@ authRouter.post(
 
     // Sign the player in immediately; verification is a soft gate surfaced in
     // the UI, not a hard block on entering the lobby.
-    const accessToken = signAccessToken({ sub: user.id, role: user.role, locale: user.locale });
-    setAuthCookies(res, accessToken, signRefreshToken(user.id));
+    issueSession(res, user);
     res.status(201).json({ user: toPublicUser(user) });
   }),
 );
@@ -114,17 +135,16 @@ authRouter.post(
     if (!user || !user.passwordHash || !ok || user.deletedAt) {
       throw unauthorized("Грешен имейл или парола");
     }
-    if (user.banned) {
+    // Изтекъл временен бан се вдига тук, без да чака админ панела.
+    if (await isBanActive(user)) {
       // DSA art. 17: give the player the reason for the restriction (statement
-      // of reasons) so they can contest it. The message carries the raw reason;
-      // the client frames it and shows the appeal contact.
-      throw new HttpError(403, "banned", user.banReason ?? "");
+      // of reasons) and its expiry so they can contest it.
+      throw bannedError(user);
     }
 
     await prisma.user.update({ where: { id: user.id }, data: { lastSeenAt: new Date() } });
 
-    const accessToken = signAccessToken({ sub: user.id, role: user.role, locale: user.locale });
-    setAuthCookies(res, accessToken, signRefreshToken(user.id));
+    issueSession(res, user);
     res.json({ user: toPublicUser(user) });
   }),
 );
@@ -136,25 +156,35 @@ authRouter.post(
     const token = req.cookies?.aso_rt as string | undefined;
     if (!token) throw unauthorized("Missing refresh token");
 
-    let userId: string;
+    let claims: ReturnType<typeof verifyRefreshToken>;
     try {
-      userId = verifyRefreshToken(token).sub;
+      claims = verifyRefreshToken(token);
     } catch {
       throw unauthorized("Invalid refresh token");
     }
 
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user || user.deletedAt) throw unauthorized("User no longer exists");
-    // Refresh must honor bans/erasure/revocation — otherwise a long-lived
-    // refresh cookie mints fresh access tokens forever, defeating the denylist.
-    // DB `banned` is the backstop here, so the revocation lookup may fail open.
-    if (user.banned || (await isRevoked(user.id).catch(() => false))) {
+    const user = await prisma.user.findUnique({ where: { id: claims.sub } });
+    if (!user || user.deletedAt) {
       clearAuthCookies(res);
-      throw forbidden("Този акаунт е блокиран");
+      throw unauthorized("User no longer exists");
+    }
+    // Версията на сесиите: нулиране на парола/изтриване я вдига и така прекратява
+    // refresh токените на всички други устройства. Стар токен без `tv` = версия 0.
+    if ((claims.tv ?? 0) !== user.tokenVersion) {
+      clearAuthCookies(res);
+      throw unauthorized("Session expired");
+    }
+    // Refresh must honor bans/erasure — otherwise a long-lived refresh cookie
+    // mints fresh access tokens forever. Проверката е по базата (източникът на
+    // истина), не по Redis денилиста: той отменя само ВЕЧЕ издадени access
+    // токени, а тук издаваме нов — с ролята от базата, затова понижена роля
+    // влиза в сила при първия refresh.
+    if (await isBanActive(user)) {
+      clearAuthCookies(res);
+      throw bannedError(user);
     }
 
-    const accessToken = signAccessToken({ sub: user.id, role: user.role, locale: user.locale });
-    setAuthCookies(res, accessToken, signRefreshToken(user.id));
+    issueSession(res, user);
     res.json({ user: toPublicUser(user) });
   }),
 );
@@ -172,8 +202,9 @@ authRouter.get(
   asyncHandler(async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.user!.sub } });
     if (!user || user.deletedAt) throw unauthorized("User no longer exists");
-    // A ban applied mid-session ends it at the next /me (cookie restore).
-    if (user.banned) throw forbidden("Този акаунт е блокиран");
+    // A ban applied mid-session ends it at the next /me (cookie restore);
+    // изтекъл временен бан се вдига тук.
+    if (await isBanActive(user)) throw bannedError(user);
     res.json({ user: toPublicUser(user) });
   }),
 );
@@ -238,10 +269,14 @@ authRouter.post(
 
     const passwordHash = await hashPassword(password);
     // A successful reset via the emailed link also proves email ownership.
+    // tokenVersion +1 → refresh токените на всички други устройства (вкл. на
+    // евентуален нападател с изтекла парола) спират; живите access токени се
+    // отменят веднага през денилиста.
     await prisma.user.update({
       where: { id: userId },
-      data: { passwordHash, emailVerified: true },
+      data: { passwordHash, emailVerified: true, tokenVersion: { increment: 1 } },
     });
+    await revokeUser(userId);
     res.json({ ok: true });
   }),
 );
@@ -368,15 +403,15 @@ authRouter.get(
         res.redirect(webUrl("/login?error=oauth_no_email"));
         return;
       }
-      // Social login must not become a ban-bypass (DB flags are the backstop).
-      if (user.banned || user.deletedAt || (await isRevoked(user.id).catch(() => false))) {
+      // Social login must not become a ban-bypass (DB flags are the source of
+      // truth; изтекъл временен бан се вдига тук, както при вход с парола).
+      if (user.deletedAt || (await isBanActive(user))) {
         res.redirect(webUrl("/login?error=banned"));
         return;
       }
 
       await prisma.user.update({ where: { id: user.id }, data: { lastSeenAt: new Date() } });
-      const accessToken = signAccessToken({ sub: user.id, role: user.role, locale: user.locale });
-      setAuthCookies(res, accessToken, signRefreshToken(user.id));
+      issueSession(res, user);
       res.redirect(webUrl("/"));
     } catch (err) {
       logger.error({ err, provider }, "oauth callback failed");

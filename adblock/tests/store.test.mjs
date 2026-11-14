@@ -50,6 +50,9 @@ const en = descs.find(([l]) => l === "en")[1];
 ok(`summary (en): no promotional words (${en})`, !BANNED.test(en) && !/\b(fast|private|no cost)\b/i.test(en));
 const sub = readFileSync(join(ROOT, "docs", "SUBMISSION.md"), "utf8");
 ok("SUBMISSION.md summary == extDescription (en)", sub.includes("`" + en + "`"));
+// Edge 1.1.2: листингът не говори за друг браузър — описанията по езици (docs/listing) отиват и в Edge.
+const chromeIn = locs.filter((l) => /Chrome/.test(readFileSync(join(ROOT, "docs", "listing", l + ".txt"), "utf8")));
+ok(`docs/listing/*.txt never name Chrome (Edge uses the same texts) (${chromeIn.join(",") || "none"})`, chromeIn.length === 0);
 const long = descs.filter(([, d]) => d.length > 132).map(([l]) => l);
 ok(`summary: ≤132 chars in every locale (${long.join(",") || "all"})`, long.length === 0);
 
@@ -85,7 +88,7 @@ ok(`promo: lightning strikes ≥ 2 s apart in every cut (${tight.join(",") || "a
 // (es/es_419, pt_BR/pt_PT, zh_CN/zh_TW са варианти). 5.1.5–5.1.8 казваха „73“ — грешно.
 const listing = "https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk";
 const pills = [...idxHtml.matchAll(/<a class="verified" href="([^"]+)"[\s\S]*?<\/a>/g)];
-ok("site: the Established Publisher mark links to the store listing", pills.length >= 1 && pills.every((m) => m[1] === listing && /Established Publisher/.test(m[0])));
+ok("site: the Established Publisher mark links to the store listing", pills.length >= 1 && pills.every((m) => m[1] === listing + "?utm_source=site&amp;utm_medium=home" && /Established Publisher/.test(m[0])));
 const llms = readFileSync(join(ROOT, "server", "llms.txt"), "utf8");
 const storeListing = readFileSync(join(ROOT, "docs", "STORE_LISTING.md"), "utf8");
 const langCount = new Set(locs.map((l) => l.split("_")[0])).size;

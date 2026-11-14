@@ -1,0 +1,178 @@
+{
+ "android": {
+  "title": "Android",
+  "hex": "3DDC84"
+ },
+ "apple": {
+  "title": "Apple",
+  "hex": "000000"
+ },
+ "appstore": {
+  "title": "App Store",
+  "hex": "0D96F6"
+ },
+ "bluetooth": {
+  "title": "Bluetooth",
+  "hex": "0082FC"
+ },
+ "duckduckgo": {
+  "title": "DuckDuckGo",
+  "hex": "DE5833"
+ },
+ "facebook": {
+  "title": "Facebook",
+  "hex": "0866FF"
+ },
+ "firefox": {
+  "title": "Firefox",
+  "hex": "FF7139"
+ },
+ "gmail": {
+  "title": "Gmail",
+  "hex": "EA4335"
+ },
+ "google": {
+  "title": "Google",
+  "hex": "4285F4"
+ },
+ "googleassistant": {
+  "title": "Google Assistant",
+  "hex": "4285F4"
+ },
+ "googlecalendar": {
+  "title": "Google Calendar",
+  "hex": "4285F4"
+ },
+ "googlechrome": {
+  "title": "Google Chrome",
+  "hex": "4285F4"
+ },
+ "googledrive": {
+  "title": "Google Drive",
+  "hex": "4285F4"
+ },
+ "googlelens": {
+  "title": "Google Lens",
+  "hex": "4285F4"
+ },
+ "googlemaps": {
+  "title": "Google Maps",
+  "hex": "4285F4"
+ },
+ "googlemeet": {
+  "title": "Google Meet",
+  "hex": "00897B"
+ },
+ "googlemessages": {
+  "title": "Google Messages",
+  "hex": "1A73E8"
+ },
+ "googlepay": {
+  "title": "Google Pay",
+  "hex": "4285F4"
+ },
+ "googlephotos": {
+  "title": "Google Photos",
+  "hex": "4285F4"
+ },
+ "googleplay": {
+  "title": "Google Play",
+  "hex": "414141"
+ },
+ "googletranslate": {
+  "title": "Google Translate",
+  "hex": "4285F4"
+ },
+ "instagram": {
+  "title": "Instagram",
+  "hex": "FF0069"
+ },
+ "mastercard": {
+  "title": "MasterCard",
+  "hex": "EB001B"
+ },
+ "messenger": {
+  "title": "Messenger",
+  "hex": "0866FF"
+ },
+ "netflix": {
+  "title": "Netflix",
+  "hex": "E50914"
+ },
+ "nfc": {
+  "title": "NFC",
+  "hex": "002E5F"
+ },
+ "opera": {
+  "title": "Opera",
+  "hex": "FF1B2D"
+ },
+ "paypal": {
+  "title": "PayPal",
+  "hex": "002991"
+ },
+ "revolut": {
+  "title": "Revolut",
+  "hex": "191C1F"
+ },
+ "safari": {
+  "title": "Safari",
+  "hex": "006CFF"
+ },
+ "samsung": {
+  "title": "Samsung",
+  "hex": "1428A0"
+ },
+ "signal": {
+  "title": "Signal",
+  "hex": "3B45FD"
+ },
+ "snapchat": {
+  "title": "Snapchat",
+  "hex": "FFFC00"
+ },
+ "spotify": {
+  "title": "Spotify",
+  "hex": "1ED760"
+ },
+ "telegram": {
+  "title": "Telegram",
+  "hex": "26A5E4"
+ },
+ "tiktok": {
+  "title": "TikTok",
+  "hex": "000000"
+ },
+ "viber": {
+  "title": "Viber",
+  "hex": "7360F2"
+ },
+ "visa": {
+  "title": "Visa",
+  "hex": "1A1F71"
+ },
+ "waze": {
+  "title": "Waze",
+  "hex": "33CCFF"
+ },
+ "whatsapp": {
+  "title": "WhatsApp",
+  "hex": "25D366"
+ },
+ "wise": {
+  "title": "Wise",
+  "hex": "9FE870"
+ },
+ "x": {
+  "title": "X",
+  "hex": "000000"
+ },
+ "youtube": {
+  "title": "YouTube",
+  "hex": "FF0000"
+ },
+ "zoom": {
+  "title": "Zoom",
+  "hex": "0B5CFF"
+ }
+}

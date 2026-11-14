@@ -1,28 +1,46 @@
 import "server-only";
+import { createHash } from "node:crypto";
 import nodemailer from "nodemailer";
+import { getMailConfig } from "@/lib/mail-config";
+import type { SmtpParams } from "@/lib/mail-config-core";
 
 // Имейл по подразбиране на получателя на сигнали (Община Бобов дол).
 export const MUNICIPALITY_EMAIL =
   process.env.MUNICIPALITY_EMAIL || "obshtina@bobovdol.egov.bg";
 
-function isConfigured(): boolean {
-  return Boolean(process.env.SMTP_HOST && process.env.SMTP_PORT);
+// Транспортът се прави наново, щом се сменят параметрите (запис в /admin/poshta
+// или смяна между панела и .env) — сравнява се отпечатък (SHA-256) на параметрите.
+let transporter: { fp: string; t: nodemailer.Transporter } | null = null;
+
+function fingerprint(p: SmtpParams): string {
+  return createHash("sha256")
+    .update(JSON.stringify([p.host, p.port, p.secure, p.user ?? "", p.pass ?? "", p.from]))
+    .digest("hex");
 }
 
-let transporter: nodemailer.Transporter | null = null;
-function getTransporter(): nodemailer.Transporter | null {
-  if (!isConfigured()) return null;
-  if (transporter) return transporter;
-  transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: process.env.SMTP_SECURE === "true",
-    auth:
-      process.env.SMTP_USER && process.env.SMTP_PASS
-        ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-        : undefined,
+/** Нов транспорт по параметрите (и за пробното писмо от панела). */
+export function createSmtpTransport(p: SmtpParams): nodemailer.Transporter {
+  return nodemailer.createTransport({
+    host: p.host,
+    port: p.port,
+    secure: p.secure,
+    auth: p.user && p.pass ? { user: p.user, pass: p.pass } : undefined,
+    // Бърз отказ вместо висене на формата, ако сървърът не отговаря.
+    connectionTimeout: 15_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 20_000,
   });
-  return transporter;
+}
+
+async function getTransporter(): Promise<{ t: nodemailer.Transporter; p: SmtpParams } | null> {
+  const { params } = await getMailConfig();
+  if (!params) return null;
+  const fp = fingerprint(params);
+  if (!transporter || transporter.fp !== fp) {
+    transporter?.t.close();
+    transporter = { fp, t: createSmtpTransport(params) };
+  }
+  return { t: transporter.t, p: params };
 }
 
 export type MailResult = { sent: boolean; reason?: string };
@@ -36,7 +54,7 @@ function safeReplyTo(v?: string): string | undefined {
   return /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(s) ? s : undefined;
 }
 
-// Изпраща имейл, ако е конфигуриран SMTP. Никога не хвърля грешка нагоре —
+// Изпраща имейл, ако има поща (панелът /admin/poshta или SMTP_* от .env). Никога не хвърля грешка нагоре —
 // сигналът се запазва в базата дори когато изпращането не успее.
 export async function sendMail(opts: {
   to: string;
@@ -44,11 +62,11 @@ export async function sendMail(opts: {
   text: string;
   replyTo?: string;
 }): Promise<MailResult> {
-  const t = getTransporter();
-  if (!t) return { sent: false, reason: "SMTP не е конфигуриран" };
+  const tp = await getTransporter();
+  if (!tp) return { sent: false, reason: "SMTP не е конфигуриран" };
   try {
-    await t.sendMail({
-      from: process.env.SMTP_FROM || "no-reply@carbonstealth.eu",
+    await tp.t.sendMail({
+      from: tp.p.from,
       to: opts.to,
       subject: opts.subject,
       text: opts.text,

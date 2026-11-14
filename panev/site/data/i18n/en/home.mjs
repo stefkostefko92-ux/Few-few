@@ -3,19 +3,16 @@
 export default {
   hero: {
     kicker: 'Brackets & accessories for lifts and goods lifts',
-    title: 'Patented brackets for guide rails and landing doors',
-    lead: 'A perforated, hinged and slotted system for the adjustable fixing of counterweight guide rails and landing doors — designed to adapt to irregular, out-of-plumb masonry and walls with rebar. A utility model patent recognised by the Italian Ministry of Enterprises and Made in Italy.',
-    chips: ['Made in Italy', 'Galvanised steel', 'Ambidextrous system', 'Patented'],
+    title: 'Patented lift brackets for landing doors and counterweight guide rails',
+    lead: 'A perforated, hinged and slotted system for the adjustable fixing of counterweight guide rails and landing doors — designed to adapt to irregular, out-of-plumb masonry and walls with rebar.',
+    chips: ['Made in Italy', 'Galvanised steel'],
     ctaProducts: 'See products & prices',
     ctaCatalog: 'Download the catalogue (PDF)',
-    cta3d: 'View in 3D',
     patentLabel: 'Utility model patent',
     numAbbr: 'No.',
     patentOffice: 'Ministry of Enterprises and Made in Italy — UIBM · filed 19 May 2023',
-    visualAlt: '3D render of plate A 65 170 7 installed with bracket B 65 320',
   },
   viewer3d: {
-    kicker: '3D view',
     title: 'The brackets in 3D, before you order',
     lead: 'All 48 catalogue items, modelled in galvanised sheet steel from the dimensions in mm: rotate them, switch between DX and SX, see them installed with their partner bracket and try the adjustment.',
     start: 'Start the 3D view',
@@ -36,7 +33,6 @@ export default {
     { value: '4 / 5', label: 'Sheet thickness (mm)' },
   ],
   problem: {
-    kicker: 'The problem on site',
     title: 'Crooked walls, rebar, tight schedules',
     body1: 'Along the lift shaft, cast-in-place concrete often has protrusions and recesses that make precise mounting difficult. Traditional brackets cannot adapt, forcing the installer into on-site modifications that cost time and extra material.',
     body2: 'The Panev bracket joins a wall-fixing element and a component-support element through an articulated joint that sets the angle, locked by a clamping element. The stiffening ribs are widest right next to the joint — precisely the most stressed area in service.',
@@ -46,7 +42,6 @@ export default {
     highlightBody: 'Contiguous ribs, wider next to the articulated joint: the bracket is strongest exactly at its most stressed point.',
   },
   applications: {
-    kicker: 'Fields of use',
     title: 'Three applications, one system',
     items: [
       {
@@ -68,7 +63,6 @@ export default {
     ambi: 'Ambidextrous system. The stiffening rib can sit on the left or on the right: this lets you avoid rebar in concrete walls and drill in the most suitable spots, without moving the door components.',
   },
   featured: {
-    kicker: 'Product families',
     title: 'From the price list: the most requested brackets',
     families: [
       {
@@ -97,7 +91,6 @@ export default {
     seeAll: 'Full price list with every code',
   },
   patent: {
-    kicker: 'Industrial property',
     title: 'A patented system',
     body: 'The Panev Ascensori support bracket is protected by a utility model patent granted by the Italian Ministry of Enterprises and Made in Italy (UIBM). The title protects the adjustable fixing solution for structural components of lift and goods-lift installations.',
     conformity: 'Products compliant with UNI EN 81 (safety rules for lifts), steel compliant with UNI EN 10025, suitable for UNI 10411 inspection.',
@@ -111,7 +104,6 @@ export default {
     ],
   },
   order: {
-    kicker: 'How to order',
     title: 'Direct ordering by email',
     lead: 'No cart, no registration: pick the codes from the price list and send your order by email. We reply with an order confirmation or a quote.',
     steps: [
@@ -125,7 +117,7 @@ export default {
       },
       {
         title: 'Get confirmation',
-        body: 'We reply with availability, total and delivery times: standard 2 – 5 working days, express 24 – 48 h on request.',
+        body: 'We reply with availability, total and delivery times: standard about 2 – 3 working weeks, express 1 week on request.',
       },
     ],
     freeShipping: 'Free shipping across Italy for orders above € 500 (excl.',
@@ -134,7 +126,6 @@ export default {
     mailBody: 'Dear Panev Ascensori,\n\nwe would like to order the following items:\n\n- CODE — quantity — DX/SX hand (if applicable)\n\nCompany details (company name, VAT no., delivery address):\n\nKind regards',
   },
   faq: {
-    kicker: 'Frequently asked questions',
     title: 'FAQ — orders, prices, shipping',
     items: [
       {
@@ -147,7 +138,7 @@ export default {
       },
       {
         q: 'How much is shipping and how long does delivery take?',
-        a: 'Shipping is free across Italy for orders above € 500 (excl. VAT); below that threshold costs are stated in the order confirmation. Standard delivery takes 2 – 5 working days, express 24 – 48 hours on request.',
+        a: 'Shipping is free across Italy for orders above € 500 (excl. VAT); below that threshold costs are stated in the order confirmation. Standard delivery takes about 2 – 3 working weeks, express 1 week on request.',
       },
       {
         q: 'What do DX and SX mean?',

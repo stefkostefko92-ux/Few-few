@@ -1,0 +1,292 @@
+{
+  "schede": {
+    "title": "Schede",
+    "subtitle": "Cerca per n° impianto, matricola, indirizzo, marca, buono di lavoro o note.",
+    "new": "Nuova scheda",
+    "count": {
+      "one": "1 scheda",
+      "other": "{n} schede"
+    },
+    "empty": "Ancora nessuna scheda.",
+    "createFirst": "Crea la prima scheda",
+    "openRow": "Apri la scheda {id}",
+    "back": "Tutte le schede",
+    "unsaved": "Modifiche non salvate",
+    "search": {
+      "label": "Cerca nelle schede",
+      "placeholder": "N° impianto, matricola, indirizzo…",
+      "found": {
+        "one": "1 scheda per «{q}»",
+        "other": "{n} schede per «{q}»"
+      },
+      "none": "Nessuna scheda per «{q}».",
+      "tip": "Prova con una parte del numero, della matricola o della via: maiuscole e accenti non contano."
+    },
+    "create": {
+      "title": "Nuova scheda",
+      "sub": "La data è quella di oggi: cambiala se il rilievo è di un altro giorno.",
+      "submit": "Salva scheda"
+    },
+    "edit": {
+      "title": "Modifica scheda",
+      "submit": "Salva modifiche"
+    },
+    "delete": {
+      "title": "Spostare la scheda nel cestino?",
+      "text": "Un amministratore potrà ripristinarla dal cestino.",
+      "confirm": "Sposta nel cestino"
+    },
+    "conflict": {
+      "title": "Qualcuno ha modificato questa scheda mentre la stavi compilando.",
+      "text": "I tuoi dati sono ancora qui sotto. Apri la versione attuale in un'altra finestra del browser e confronta: se salvi ora, sostituisci le modifiche dell'altra persona.",
+      "open": "Apri la versione attuale"
+    },
+    "filter": {
+      "all": "Tutte le aziende",
+      "apply": "Filtra"
+    },
+    "noAziende": "Prima crea un'azienda: ogni scheda appartiene a un'azienda."
+  },
+  "scheda": {
+    "title": "Scheda rilievo impianto",
+    "titleImpianto": "Impianto n° {n}",
+    "titleMatricola": "Matricola {n}",
+    "dateLine": "Rilievo del {date}",
+    "noAddress": "Indirizzo non indicato",
+    "buonoRiferimento": "Buono di lavoro",
+    "plateLabel": "Dati di targa",
+    "identifiers": "Identificazione",
+    "identifiersHint": "Compila almeno uno tra indirizzo, matricola e n° impianto: servono per ritrovare la scheda.",
+    "errorSummary": {
+      "one": "Correggi 1 campo",
+      "other": "Correggi {n} campi"
+    },
+    "meta": {
+      "created": "Creata da {name} il {at}",
+      "updated": "Ultima modifica di {name} il {at}"
+    },
+    "actions": {
+      "edit": "Modifica",
+      "print": "Stampa",
+      "pdf": "Scarica PDF",
+      "delete": "Elimina"
+    },
+    "misure": {
+      "row": "Fermata {n}",
+      "fermata": "Fermata",
+      "needFermate": "Indica prima le fermate in «Impianto»: qui compare una riga per ogni fermata.",
+      "errorLabel": "{col}, fermata {n}",
+      "col": {
+        "piano": "Piano",
+        "lunghezzaMm": "Lunghezza",
+        "larghezzaMm": "Larghezza",
+        "interasseSuperiore": "Interasse foro superiore",
+        "interasseInferiore": "Interasse foro inferiore",
+        "display": "Display"
+      }
+    },
+    "error": {
+      "invalid": "Valore non valido.",
+      "required": "Indica la data del rilievo.",
+      "invalidDate": "Data non valida.",
+      "tooLong": "Massimo {maxLength} caratteri.",
+      "digitsOnly": "Solo cifre, senza lettere o simboli.",
+      "integer": "Inserisci un numero intero.",
+      "decimal": "Inserisci un numero, ad esempio 6,5.",
+      "decimalPlaces": "Al massimo 2 decimali.",
+      "range": "Inserisci un valore tra {min} e {max}.",
+      "option": "Scelta non valida.",
+      "identifierNeeded": "Compila almeno indirizzo, matricola o n° impianto.",
+      "modelloNeeded": "Scegli la tipologia del quadro (NG120 o QI Touch) per compilare il suo modulo d'ordine.",
+      "impiantoNeeded": "Scegli il tipo di impianto (elettrico, idraulico o MRL): il modulo d'ordine Elettroquadri dipende da questo.",
+      "azienda": "Scegli l'azienda della scheda."
+    },
+    "compiledBy": "Compilata da",
+    "index": "Sezioni della scheda"
+  },
+  "trash": {
+    "title": "Cestino",
+    "subtitle": "Schede eliminate: ripristinale o eliminale definitivamente.",
+    "empty": "Il cestino è vuoto.",
+    "deletedAt": "Eliminata il",
+    "restore": "Ripristina",
+    "purge": "Elimina definitivamente",
+    "banner": "Nel cestino dal {at} (eliminata da {name}).",
+    "purgeTitle": "Eliminare definitivamente la scheda?",
+    "purgeText": "L'operazione non si può annullare: la scheda sparirà dal portale.",
+    "purgeConfirm": "Elimina definitivamente"
+  },
+  "print": {
+    "back": "Torna alla scheda"
+  },
+  "pdf": {
+    "generated": "Generato il {at} da {name}",
+    "page": "Pagina {page} di {pages}"
+  },
+  "ordini": {
+    "hint": "I campi del modulo d'ordine, nello stesso ordine del foglio. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte.",
+    "download": "Scarica PDF",
+    "print": "Stampa",
+    "errorLabel": "{label} ({fornitore})"
+  },
+  "collegati": {
+    "luogo": {
+      "scheda": "Scheda",
+      "oq": "Ordine quadro",
+      "om": "Ordine quadro",
+      "dp": "Ordine quadro",
+      "mn": "Ordine quadro",
+      "mq": "Ordine quadro",
+      "eg": "Ordine quadro",
+      "el": "Ordine quadro",
+      "eo": "Ordine quadro",
+      "gt": "Ordine quadro",
+      "pa": "Dati argano",
+      "sg": "Ordine 2SG",
+      "so": "Ordine 2SG",
+      "ar": "Ordine AMI 100",
+      "db": "Ordine bottoniere DMG"
+    },
+    "fermate": "Fermate",
+    "velocita": "Velocità (m/s)",
+    "tipoVelocita": "Tipo di velocità",
+    "corsa": "Corsa (m)",
+    "portata": "Portata (kg)",
+    "capienza": "Capienza (persone)",
+    "numeroImpianto": "N° impianto",
+    "tensioneMotore": "Tensione motore",
+    "tensioneFreno": "Tensione freno",
+    "porte": "Porte",
+    "accessi": "Accessi",
+    "ingressi": "Accessi",
+    "macchina": "Posizione macchina",
+    "funiNumero": "Numero funi",
+    "funiDiametro": "Diametro funi (mm)",
+    "funiTrefoli": "Trefoli funi",
+    "indirizzo": "Indirizzo",
+    "matricola": "Matricola",
+    "marca": "Marca impianto",
+    "tipoImpianto": "Tipo impianto",
+    "operatoreMarca": "Marca operatore",
+    "correnteMotore": "Corrente motore (A)",
+    "giriMotore": "Giri motore (giri/min)",
+    "servizi": "Servizi",
+    "poli": "Poli motore",
+    "potenzaMotore": "Potenza motore (kW)",
+    "taglia": "Taglia",
+    "diametroPuleggia": "Diametro puleggia (mm)",
+    "rapportoRiduzione": "Rapporto di riduzione",
+    "tensionePattino": "Tensione pattino retrattile",
+    "centralina": "Marca centralina",
+    "potenzaHp": "Potenza motore (HP/CV)",
+    "avviamento": "Avviamento",
+    "tensioneValvole": "Tensione elettrovalvole",
+    "emendamentoA3": "Emendamento A3",
+    "testataRidotta": "Testata ridotta",
+    "fossaRidotta": "Fossa ridotta",
+    "grembiule": "Grembiule retrattile",
+    "portePiano": "Porte di piano",
+    "porteCabina": "Porte di cabina",
+    "argano": "Argano",
+    "potenzaInverter": "Potenza inverter (kW)",
+    "tensioneOperatore": "Tensione operatore (Vca)",
+    "motoreMarca": "Marca motore",
+    "vvvfMarca": "Marca VVVF",
+    "cavoSchermato": "Cavo schermato (m)",
+    "fotocellulaVolt": "Tensione fotocellula",
+    "pattiniNumero": "Numero pattini retrattili",
+    "valvoleNumero": "Numero elettrovalvole",
+    "forzaMotrice": "Forza motrice",
+    "correnteFreno": "Corrente freno (A)",
+    "ventilazioneVolt": "Tensione ventilazione forzata",
+    "precablato": "Precablato",
+    "manovra": "Manovra",
+    "funzionamento": "Simplex, duplex, triplex",
+    "normaEn81": "Norma EN 81",
+    "norma8121": "EN 81-21",
+    "norma8128": "EN 81-28",
+    "norma8170": "EN 81-70",
+    "norma8172": "EN 81-72",
+    "norma8173": "EN 81-73",
+    "legge13": "DM 236 (Legge 13)",
+    "norma9516": "Direttiva 95/16",
+    "dm2005": "D.M. 15/09/2005",
+    "sintesiVocale": "Sintesi vocale",
+    "manovraOspedaliera": "Manovra ospedaliera",
+    "fondoMobile": "Fondo mobile",
+    "sovraccarico": "Sovraccarico",
+    "pienoCarico": "Pieno carico",
+    "copMateriale": "Pulsantiera di cabina: materiale",
+    "copPulsanti": "Pulsantiera di cabina: pulsanti",
+    "copIlluminazione": "Pulsantiera di cabina: illuminazione",
+    "servizioApri": "Pulsante di servizio: apri porte",
+    "servizioChiudi": "Pulsante di servizio: chiudi porte",
+    "servizioAllarme": "Pulsante di servizio: allarme",
+    "servizioStop": "Pulsante di servizio: stop",
+    "chiave1Tipo": "Chiave 1",
+    "chiave1Posizioni": "Chiave 1: posizioni",
+    "chiave1Incisione": "Chiave 1: incisione",
+    "chiave2Tipo": "Chiave 2",
+    "chiave2Posizioni": "Chiave 2: posizioni",
+    "chiave2Incisione": "Chiave 2: incisione",
+    "smartKey": "Smart Key Plus",
+    "smartKeyMaster": "Smart Key Plus: master",
+    "smartKeyUser": "Smart Key Plus: user",
+    "numeroCe": "N° CE",
+    "altoChiave": "Pulsantiera piano alto: chiave",
+    "altoGong": "Pulsantiera piano alto: gong",
+    "altoPresente": "Pulsantiera piano alto: «Presente»",
+    "altoAllarme": "Pulsantiera piano alto: allarme",
+    "altoFuoriServizio": "Pulsantiera piano alto: fuori servizio",
+    "intermediChiave": "Pulsantiera piani intermedi: chiave",
+    "intermediGong": "Pulsantiera piani intermedi: gong",
+    "intermediPresente": "Pulsantiera piani intermedi: «Presente»",
+    "intermediAllarme": "Pulsantiera piani intermedi: allarme",
+    "intermediFuoriServizio": "Pulsantiera piani intermedi: fuori servizio",
+    "bassoChiave": "Pulsantiera piano basso: chiave",
+    "bassoGong": "Pulsantiera piano basso: gong",
+    "bassoPresente": "Pulsantiera piano basso: «Presente»",
+    "bassoAllarme": "Pulsantiera piano basso: allarme",
+    "bassoFuoriServizio": "Pulsantiera piano basso: fuori servizio",
+    "diversi": "Dati diversi tra scheda e ordini",
+    "conferma": {
+      "title": {
+        "one": "Un dato non coincide tra scheda e ordini",
+        "other": "{n} dati non coincidono tra scheda e ordini"
+      },
+      "text": "Controlla i valori qui sotto. Se sono giusti così, premi «Salva comunque» nella barra in basso; altrimenti correggili e salva di nuovo.",
+      "submit": "Salva comunque"
+    },
+    "banner": "Questi dati sono diversi tra la scheda e gli ordini:"
+  },
+  "riepilogo": {
+    "title": "Stampa e PDF",
+    "moduli": "Dati dei moduli nella stampa e nel PDF",
+    "modulo": {
+      "ordineQuadro": "Ordine quadro",
+      "preventivoArgano": "Dati argano",
+      "ordineSospensioni": "Ordine 2SG (operatori e sospensioni)",
+      "ordineAmi": "Ordine AMI 100",
+      "ordineBottoniere": "Ordine bottoniere DMG"
+    },
+    "hint": "Spunta i moduli da aggiungere in fondo al foglio: entra solo quello che è compilato. I moduli restano anche come PDF a parte.",
+    "sezioni": "Sezioni nella stampa e nel PDF",
+    "sezioniHint": "Togli la spunta alle sezioni da lasciare fuori dal foglio stampato. L'intestazione con indirizzo, matricola e n° impianto c'è sempre."
+  },
+  "etichetta": {
+    "titolo": "Etichetta QR dell'impianto",
+    "apri": "Etichetta QR",
+    "quante": "Etichette sul foglio",
+    "copie": {
+      "1": "Una",
+      "3": "Tre",
+      "24": "Foglio da 24 (70 × 37 mm)"
+    },
+    "aggiorna": "Aggiorna",
+    "nota": "Stampa al 100% su fogli A4 da 24 etichette (3 × 8, 70 × 37 mm). Il QR apre la scheda nel portale a chi ha accesso all'azienda.",
+    "qrAria": "Codice QR che apre la scheda dell'impianto",
+    "matricola": "Matricola",
+    "numero": "N° impianto",
+    "piede": "Inquadra il QR per aprire la scheda · Rilievi Impianti"
+  }
+}

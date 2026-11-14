@@ -16,7 +16,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const bareEntries: Array<{ path: string; changeFrequency: "weekly" | "monthly"; priority: number }> = [
     { path: "/", changeFrequency: "weekly", priority: 1 },
-    ...["games/", "faq/", "about/", "terms/", "privacy/", "cookies/", "responsible/"].map((p) => ({
+    ...["games/", "faq/", "about/", "terms/", "privacy/", "cookies/", "responsible/", "accessibility/"].map((p) => ({
       path: `/${p}`,
       changeFrequency: "weekly" as const,
       priority: 0.8,

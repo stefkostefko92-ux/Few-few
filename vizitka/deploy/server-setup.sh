@@ -26,7 +26,7 @@ ENV_DIR=/etc/vizitka
 ENV_FILE="$ENV_DIR/vizitka.env"
 
 DOMAIN="${DOMAIN:-vizitka-bg.com}"
-ADMIN_EMAIL="${ADMIN_EMAIL:-stefan.kostadinov16@gmail.com}"
+ADMIN_EMAIL="${ADMIN_EMAIL:-}"   # без default: реален имейл не стои в репото
 MASTILKO_URL="${MASTILKO_URL:-https://mastilko-bg.com}"
 
 say() { printf '\n\033[1;36m▸ %s\033[0m\n' "$*"; }
@@ -81,9 +81,12 @@ PORT_VAL="$(prev PORT)"; PORT_VAL="${PORT_VAL:-${PORT:-3105}}"
 # стават невалидни при повторно пускане и устройствата спират да се обновяват.
 WALLET_LINES="$([[ -f "$ENV_FILE" ]] && grep -E '^#? *(APPLE_|GOOGLE_WALLET_|WALLET_AUTH_SECRET)' "$ENV_FILE" || true)"
 
-# Домейн/админ (default = стойностите на проекта).
+# Домейн/админ. Админ имейлът няма default в репото — при повторно пускане се
+# предлага вече записаният в $ENV_FILE (първият от ADMIN_EMAILS).
+ADMIN_EMAIL="${ADMIN_EMAIL:-$(prev ADMIN_EMAILS | cut -d, -f1)}"
 ask DOMAIN      "Домейн" "$DOMAIN"
 ask ADMIN_EMAIL "Админ имейл (достъп до /admin)" "$ADMIN_EMAIL"
+[[ "$ADMIN_EMAIL" == *@* ]] || { echo "Нужен е админ имейл (ADMIN_EMAIL=… или въведи го)." >&2; exit 1; }
 
 # SMTP за „забравена парола" — по избор. Без SMTP_HOST писмата само се логват.
 say "SMTP за нулиране на парола (Enter пропуска — писмата ще се само логват)"
