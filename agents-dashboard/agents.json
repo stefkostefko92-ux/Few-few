@@ -49,7 +49,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 453
+        "lessons": 454
       },
       "evolution": [
         {
@@ -639,9 +639,20 @@
           "date": "2026-11-13",
           "event": "v40.6 — учене",
           "detail": "Научи: medqr app.js чисти личния SW кеш (/sos с алергии/лекарства) само при submit на /logout … (+1 още)"
+        },
+        {
+          "version": "40.7.0",
+          "date": "2026-11-14",
+          "event": "v40.7 — учене",
+          "detail": "Научи: Rate limiter в паметта, който трие изтеклите ключове само при надхвърлен таван на броя …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-14",
+          "type": "learning",
+          "summary": "Научи: „Rate limiter в паметта, който трие изтеклите ключове само при надхвърлен таван на броя …\""
+        },
         {
           "date": "2026-11-13",
           "type": "learning",
@@ -1234,7 +1245,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 660
+        "lessons": 661
       },
       "evolution": [
         {
@@ -2124,9 +2135,20 @@
           "date": "2026-11-13",
           "event": "v60.0 — учене",
           "detail": "Научи: В medqr паролата и 2FA ползват общ брояч failed_attempts, а /login вика resetAttempts п…"
+        },
+        {
+          "version": "60.1.0",
+          "date": "2026-11-14",
+          "event": "v60.1 — учене",
+          "detail": "Научи: В live-run worktree дори node tools/agents/rubric.mjs и curl към api.osv.dev искат одоб…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-14",
+          "type": "learning",
+          "summary": "Научи: „В live-run worktree дори node tools/agents/rubric.mjs и curl към api.osv.dev искат одоб…\""
+        },
         {
           "date": "2026-11-13",
           "type": "learning",
@@ -9466,7 +9488,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 278
+        "lessons": 283
       },
       "evolution": [
         {
@@ -9828,9 +9850,31 @@
           "date": "2026-11-13",
           "event": "v26.2 — учене",
           "detail": "Научи: Revolut Merchant API POST /api/orders не приема Idempotency-Key (само refund, subscript… (+5 още)"
+        },
+        {
+          "version": "26.3.0",
+          "date": "2026-11-14",
+          "event": "v26.3 — учене",
+          "detail": "Научи: Webhook-ът на linketto няма дедупликация по event.id; идемпотентността е чрез условни з…"
+        },
+        {
+          "version": "26.7.0",
+          "date": "2026-11-14",
+          "event": "v26.7 — учене",
+          "detail": "Научи: Revolut Merchant ретрайва webhook 3 пъти, всеки път след 10 минути (около 30 мин общо),… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-14",
+          "type": "learning",
+          "summary": "Научи: „Revolut Merchant ретрайва webhook 3 пъти, всеки път след 10 минути (около 30 мин общо),…\" (+3 още)"
+        },
+        {
+          "date": "2026-11-14",
+          "type": "learning",
+          "summary": "Научи: „Webhook-ът на linketto няма дедупликация по event.id; идемпотентността е чрез условни з…\""
+        },
         {
           "date": "2026-11-13",
           "type": "learning",
@@ -16863,7 +16907,7 @@
           "ЗДДС, консолидиран текст (dela.bg) — чл. 20б, 21, 66, 82, 96, 97а, 114",
           "Регл. (ЕС) 282/2011, чл. 9а — доставчик при електронен интерфейс"
         ],
-        "lessons": 32
+        "lessons": 36
       },
       "evolution": [
         {
@@ -16901,9 +16945,20 @@
           "date": "2026-11-14",
           "event": "v3.1 — учене",
           "detail": "Научи: Форматът на DEKLAR/POKUPKI/PRODAGBI.TXT е в Приложение № 12 към чл. 113, ал. 4 ППЗДДС (… (+4 още)"
+        },
+        {
+          "version": "3.5.0",
+          "date": "2026-11-14",
+          "event": "v3.5 — учене",
+          "detail": "Научи: EUR-Lex връща само навигацията на Официалния вестник за WebFetch при CELEX HTML, CELEX … (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-14",
+          "type": "learning",
+          "summary": "Научи: „EUR-Lex връща само навигацията на Официалния вестник за WebFetch при CELEX HTML, CELEX …\" (+3 още)"
+        },
         {
           "date": "2026-11-14",
           "type": "learning",
