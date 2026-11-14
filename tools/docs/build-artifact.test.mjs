@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { build, inlineScript, stripDocumentWrapper, mascotDataUris, assertPublishable, versionRegressions, mascot3dAsGlobal, mascot3dLoader, mascotPortraitUris, findSecretsIn } from "./build-artifact.mjs";
+import { build, stripDocumentWrapper, mascotDataUris, assertPublishable, versionRegressions, mascot3dAsGlobal, mascot3dLoader, mascotPortraitUris, findSecretsIn } from "./build-artifact.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -178,14 +178,14 @@ test("реалният билд НЕ съдържа нито един шабло
   assert.deepEqual(findSecretsIn(html), [], "реалният артефакт трябва да е чист");
 });
 
-test("ЗЪБИ: `$` знаците във вграденото съдържание НЕ размножават страницата (инцидент 2026-11-14)", () => {
-  const page = "<p>преди</p><script src=\"./docs.js\"></script><p>след</p>";
-  const code = "const a = `$`; const b = \"$'\"; const c = \"$&\"; const d = \"$$\";";
-  const out = inlineScript(page, "<script src=\"./docs.js\"></script>", code);
-  assert.equal(out, `<p>преди</p><script>\n${code}\n</script><p>след</p>`);
-});
-
-test("реалният билд: страницата е вътре точно веднъж", () => {
-  const { html } = build();
-  assert.equal(html.split("const FALLBACK").length - 1, 1);
+test("вграждането не разгъва $` / $' / $& от съдържанието (31.10.2026: 58 агента вместо 29)", async () => {
+  const { dashReader } = await import("./build-artifact.mjs");
+  const real = dashReader(null, ROOT);
+  // „(`$`)“ дойде с rilievi/CLAUDE.md в docs.js; низова замяна вмъкваше началото на страницата втори път.
+  const reader = { ...real, read: (p) => (p === "docs.js" ? real.read(p) + "\n// (`$`) · $' · $& · $$\n" : real.read(p)) };
+  const { html, agents } = build(join(ROOT, "agents-dashboard"), reader);
+  assert.equal((html.match(/const FALLBACK = \{/g) || []).length, 1, "FALLBACK е вграден веднъж");
+  assert.ok(html.includes("// (`$`) · $' · $& · $$"), "текстът е вграден дословно");
+  const reg = JSON.parse(readFileSync(join(ROOT, "agents-dashboard", "agents.json"), "utf8"));
+  assert.equal(agents, (Array.isArray(reg) ? reg : reg.agents).length);
 });

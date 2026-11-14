@@ -19,7 +19,7 @@
   let customSelectors = [];
   let procSelectors = [];
   let unhideSelectors = [];
-  let genericHideHost = false; // EasyList $generichide за този хост
+  let genericHideHost = false; // EasyList $generichide за този хост (и YouTube — виж isYouTube)
 
   const host = location.hostname.replace(/^www\./, "");
   // Multi-part публични суфикси (co.uk, com.au, ...) — иначе isThirdParty би
@@ -34,6 +34,10 @@
   // Not on YouTube: an attribute of ours on <html> is a tell its scripts can read;
   // youtube.css (ungated) covers YouTube's ad surfaces there.
   const isYouTube = /(^|\.)youtube(-nocookie)?\.com$/.test(host);
+  // На YouTube и нищо генерично в JS (AD_SELECTORS, unhide маркери, Smart Detection): всяко от тях
+  // пише data-tbab-* атрибут и inline style по елементите на страницата — четими от скриптовете ѝ.
+  // Рекламите там покриват youtube_ads.css (стил на разширението — няма го в document.styleSheets) и youtube_main.js.
+  if (isYouTube) genericHideHost = true;
   const gate = (on) => {
     if (isYouTube) return;
     try {
@@ -315,6 +319,7 @@
   // EasyList #@# exceptions за този домейн: маркираме елементите, така hide()
   // ги прескача, а inline display:revert надделява над генеричния CSS файл.
   function applyUnhide() {
+    if (isYouTube) return; // нищо генерично не е скрито там → нищо за връщане (и без маркер по #player-ads)
     for (const sel of unhideSelectors) {
       let nodes;
       try {
@@ -554,7 +559,7 @@
   }
 
   function smartScan() {
-    if (!enabled || allowed || cosmeticsOff || !smartEnabled) return; // Smart Detection also hides → same per-site switch
+    if (!enabled || allowed || cosmeticsOff || !smartEnabled || isYouTube) return; // Smart Detection also hides → same per-site switch; never on YouTube
     const items = [];
     scanFrames(items);
     scanSticky(items);
@@ -663,7 +668,7 @@
             unhideSelectors = Array.isArray(res.unhide) ? res.unhide : [];
             // EasyList $generichide за този хост → не прилагай генеричния CSS
             // (иначе скриваме легитимен UI, напр. Google sign-in, Ads Manager).
-            genericHideHost = !!res.genericHide;
+            genericHideHost = !!res.genericHide || isYouTube;
             if (genericHideHost) gate(false);
             rebuildSelectors();
             hide();

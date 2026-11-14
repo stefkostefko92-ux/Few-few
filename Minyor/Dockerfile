@@ -32,6 +32,12 @@ COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/next.config.mjs ./next.config.mjs
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh
+# Непривилегирован потребител: без него Next.js върви като root в контейнера и
+# всяка RCE в рамката дава root вътре. Собствеността на /app е нужна, защото
+# `next start` пише в .next/cache, а entrypoint-ът синхронизира схемата.
+RUN groupadd -g 1001 nodejs && useradd -u 1001 -g nodejs -m nextjs \
+ && chown -R nextjs:nodejs /app
+USER nextjs
 EXPOSE 3000
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["npm", "run", "start"]

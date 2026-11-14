@@ -1,12 +1,61 @@
 {
   "id": "kodadjiyata",
   "agent": "kodadjiyata",
-  "task": "Прегледай този diff в medqr/src/routes/profile.js.",
+  "task": "Прегледай този diff в medqr/src/routes/profile.js (нов маршрут за смяна на имейл; файлът в репото е без него):\n\n```diff\n@@ -120,6 +120,13 @@ router.get('/dashboard', requireAuth, (req, res) => {\n+// ---------- Смяна на имейл ----------\n+router.post('/account/email', requireAuth, (req, res) => {\n+  const email = String(req.body.email || '').trim();\n+  db.prepare('UPDATE users SET email = ? WHERE id = ?').run(email, req.body.userId);\n+  audit(req.user.id, 'email_changed');\n+  res.redirect('/dashboard');\n+});\n```",
   "expect": [
-    { "any": ["/file:?\\s?\\d/", "ред ", ":line", "файл:"], "label": "находки с файл:ред препратка" },
-    { "any": ["поправк", "fix", "минимал"], "label": "предлага минимална поправка" },
-    { "any": ["lint", "test", "npm audit", "гейт", "доказателств"], "label": "пуска гейт като доказателство" },
-    { "any": ["severity", "тежест", "блокер", "критич", "увереност"], "label": "severity × увереност" },
-    { "none": ["гарантирам, че няма бъгове", "кодът е перфектен"], "label": "капан: свръх-увереност без доказателство" }
+    {
+      "any": [
+        "/file:?\\s?\\d/",
+        "ред ",
+        ":line",
+        "файл:"
+      ],
+      "label": "находки с файл:ред препратка"
+    },
+    {
+      "any": [
+        "req.body.userId",
+        "IDOR",
+        "чужд акаунт",
+        "чужд профил",
+        "req.user.id"
+      ],
+      "label": "хваща IDOR (userId от тялото)"
+    },
+    {
+      "any": [
+        "поправк",
+        "fix",
+        "минимал"
+      ],
+      "label": "предлага минимална поправка"
+    },
+    {
+      "any": [
+        "lint",
+        "test",
+        "npm audit",
+        "гейт",
+        "доказателств"
+      ],
+      "label": "пуска гейт като доказателство"
+    },
+    {
+      "any": [
+        "severity",
+        "тежест",
+        "блокер",
+        "критич",
+        "увереност"
+      ],
+      "label": "severity × увереност"
+    },
+    {
+      "none": [
+        "гарантирам, че няма бъгове",
+        "кодът е перфектен"
+      ],
+      "label": "капан: свръх-увереност без доказателство"
+    }
   ]
 }

@@ -1,0 +1,101 @@
+<%- include('../partials/shell-start', { active: 'accounts' }) %>
+<div class="topbar">
+  <div>
+    <h1><%= t('replies.title', { username: account.username }) %></h1>
+    <p class="sub"><%- t('replies.subtitle') %></p>
+  </div>
+  <a class="btn ghost" href="/admin/accounts"><%- icon('instagram') %> <%= t('nav.accounts') %></a>
+</div>
+
+<% if (!featureOn) { %><div class="flash error"><%- icon('severity-high') %><span><%= t('replies.featureOff') %></span></div><% } %>
+<% if (!scopeOk) { %><div class="flash error"><%- icon('status-token-expired') %><span><%= t('replies.scopeMissing') %></span></div><% } %>
+<% if (!account.igProfessionalId) { %><div class="flash error"><%- icon('instagram') %><span><%= t('replies.reconnect') %></span></div><% } %>
+<% if (!legalOk) { %><div class="flash error"><%- icon('shield') %><span><%= t('replies.legalMissing') %></span></div><% } %>
+
+<section class="panel replies-panel">
+  <div class="spread">
+    <p class="sub mono m-0"><%= t('replies.webhookUrl', { url: webhookUrl }) %></p>
+    <% if (can('accounts:manage') && featureOn && scopeOk && account.igProfessionalId && account.status === 'ACTIVE') { %>
+    <form method="post" action="/admin/accounts/<%= account.id %>/replies/subscribe" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn ghost small" type="submit"><%- icon('refresh', { class: 'ic-sm' }) %> <%= t('replies.subscribe') %></button></form>
+    <% } %>
+  </div>
+  <div class="row mt-1">
+    <span class="sub"><%= t('replies.stats', { days: retentionDays }) %>:</span>
+    <% ['SENT', 'SKIPPED', 'FAILED', 'QUEUED'].forEach((s) => { const st = ui.replyStatus(s); %>
+      <span class="chip <%= st.tone %>"><%- icon(st.icon, { class: 'ic-sm' }) %> <%= t(st.key) %> · <%= ui.num(stats[s] || 0) %></span>
+    <% }) %>
+  </div>
+</section>
+
+<% if (can('replies:edit')) { %>
+<section class="panel replies-panel">
+  <h2><%- icon('plus') %> <%= t('replies.newRule') %></h2>
+  <% if (!posts.length) { %>
+    <div class="empty"><%- icon('posts', { class: 'ic-xl' }) %><strong><%= t('replies.noMedia') %></strong></div>
+  <% } else { %>
+  <form method="post" action="/admin/accounts/<%= account.id %>/replies" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label><%= t('replies.media') %><select name="mediaId" required><option value=""><%= t('replies.chooseMedia') %></option><% posts.forEach((p) => { %><option value="<%= p.igMediaId %>"><%= ui.date(p.publishedAt) %> · <%= (p.caption || t('posts.noCaption')).slice(0, 70) %></option><% }) %></select></label>
+    <label><%= t('replies.keyword') %> <span class="hint"><%= t('replies.keywordHint') %></span><input name="keyword" required minlength="2" maxlength="30" class="field-md"></label>
+    <label><%= t('replies.message') %> <span class="hint"><%= t('replies.messageHint') %></span><textarea name="message" required rows="5" maxlength="1000"></textarea></label>
+    <p class="sub"><%= t('replies.footerPreview', { bytes: footerBytes }) %><br><span class="mono"><%= footer %></span></p>
+    <label class="check"><input type="checkbox" name="announced"> <span><%= t('replies.announced') %></span></label>
+    <button class="btn primary" type="submit"><%- icon('approve') %> <%= t('replies.create') %></button>
+  </form>
+  <% } %>
+</section>
+<% } %>
+
+<section class="panel replies-panel">
+  <h2><%- icon('metric-comments') %> <%= t('replies.rules') %></h2>
+  <% if (!rules.length) { %>
+    <div class="empty"><%- icon('metric-comments', { class: 'ic-xl' }) %><strong><%= t('replies.empty') %></strong><%= t('replies.emptyHint') %></div>
+  <% } %>
+  <div class="stack">
+  <% rules.forEach((r) => { const st = ui.ruleStatus(r.status); %>
+    <article class="card">
+      <div class="spread">
+        <div>
+          <strong class="mono"><%= r.keyword %></strong>
+          <span class="sub-line mono"><%= t('replies.media') %>: <%= r.mediaId %></span>
+        </div>
+        <span class="chip <%= st.tone %>"><%- icon(st.icon, { class: 'ic-sm' }) %> <%= t(st.key) %></span>
+      </div>
+      <p class="preview"><%= r.message %></p>
+      <% if (r.approvedAt) { %><p class="sub"><%= t('replies.approvedAt') %>: <%= ui.dateTime(r.approvedAt) %></p><% } %>
+      <div class="row">
+        <% if (r.status === 'DRAFT' && can('replies:approve')) { %>
+        <form method="post" action="/admin/replies/<%= r.id %>/approve" class="row">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <label class="check"><input type="checkbox" name="confirm" required> <span><%= t('replies.confirm') %></span></label>
+          <button class="btn primary small" type="submit"><%- icon('approve', { class: 'ic-sm' }) %> <%= t('replies.approve') %></button>
+        </form>
+        <% } %>
+        <% if (r.status === 'ACTIVE' && can('replies:approve')) { %>
+        <form method="post" action="/admin/replies/<%= r.id %>/pause" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn ghost small" type="submit"><%- icon('status-disabled', { class: 'ic-sm' }) %> <%= t('replies.pause') %></button></form>
+        <% } %>
+        <% if (r.status === 'PAUSED' && can('replies:approve')) { %>
+        <form method="post" action="/admin/replies/<%= r.id %>/resume" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn ghost small" type="submit"><%- icon('play', { class: 'ic-sm' }) %> <%= t('replies.resume') %></button></form>
+        <% } %>
+        <% if (can('replies:approve')) { %>
+        <form method="post" action="/admin/replies/<%= r.id %>/delete" class="inline" data-confirm="<%= t('replies.deleteConfirm') %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn danger small" type="submit"><%- icon('reject', { class: 'ic-sm' }) %> <%= t('replies.delete') %></button></form>
+        <% } %>
+      </div>
+      <% if (can('replies:edit')) { %>
+      <details>
+        <summary><%- icon('edit', { class: 'ic-sm' }) %> <%= t('replies.edit') %></summary>
+        <form method="post" action="/admin/replies/<%= r.id %>" class="stack mt-1">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <label><%= t('replies.media') %><select name="mediaId" required><% posts.forEach((p) => { %><option value="<%= p.igMediaId %>" <%= p.igMediaId === r.mediaId ? 'selected' : '' %>><%= ui.date(p.publishedAt) %> · <%= (p.caption || t('posts.noCaption')).slice(0, 70) %></option><% }) %></select></label>
+          <label><%= t('replies.keyword') %><input name="keyword" required minlength="2" maxlength="30" value="<%= r.keyword %>" class="field-md"></label>
+          <label><%= t('replies.message') %><textarea name="message" required rows="5" maxlength="1000"><%= r.message %></textarea></label>
+          <label class="check"><input type="checkbox" name="announced" <%= r.announced ? 'checked' : '' %>> <span><%= t('replies.announced') %></span></label>
+          <button class="btn small" type="submit"><%- icon('edit', { class: 'ic-sm' }) %> <%= t('replies.save') %></button>
+        </form>
+      </details>
+      <% } %>
+    </article>
+  <% }) %>
+  </div>
+</section>
+<%- include('../partials/shell-end') %>

@@ -11,6 +11,7 @@ import { notifyBot, notifyBotVerbose } from "../services/botNotifier.js";
 import { check, recordFailure, recordSuccess } from "../lib/bruteForce.js";
 import { validatePremiumFields, getServerTier, planHasFeature } from "../lib/premium.js";
 import { createWithinLimit } from "../lib/withinLimit.js";
+import { fireWebhooks } from "../services/webhooks.js";
 
 const router = Router();
 
@@ -34,6 +35,24 @@ router.get("/bot/:panelId", requireBotSecret, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// GET /api/verification/bot/server/:serverId/roles — какво дават и какво махат
+// панелите на сървъра. Ботът го пита при влизане (З3), за да не даде
+// „Unverified“ чрез автоматичните роли на човек, който вече е верифициран.
+// Скоупът е по serverId от пътя; връщат се само id-та на роли, нищо друго.
+router.get("/bot/server/:serverId/roles", requireBotSecret, async (req, res, next) => {
+  const serverId = String(req.params.serverId);
+  if (!/^\d{17,20}$/.test(serverId)) return res.status(400).json({ error: "invalid serverId" });
+  try {
+    const panels = await prisma.verificationPanel.findMany({
+      where: { serverId },
+      select: { grantRoleIds: true, removeRoleIds: true },
+    });
+    res.json({
+      panels: panels.map((p) => ({ grantRoleIds: p.grantRoleIds || [], removeRoleIds: p.removeRoleIds || [] })),
+    });
+  } catch (err) { next(err); }
+});
+
 // POST /api/verification/bot/:panelId/attempt — log attempt + gate check + apply roles
 router.post("/bot/:panelId/attempt", requireBotSecret, async (req, res, next) => {
   const { userId, success, answer } = req.body;
@@ -45,31 +64,25 @@ router.post("/bot/:panelId/attempt", requireBotSecret, async (req, res, next) =>
     });
     if (!panel) return res.status(404).json({ error: "Verification panel not found" });
 
-    // Check rate limit — count attempts in the last cooldownMinutes
-    const since = new Date(Date.now() - panel.cooldownMinutes * 60 * 1000);
-    const recentAttempts = await prisma.verificationAttempt.count({
-      where: {
-        verificationPanelId: panel.id,
-        userId,
-        createdAt: { gte: since },
-      },
-    });
     // Обхватът е ПО СЪРВЪР. Общият брояч в стълбата движи адаптивното
     // затягане; ако обхватът беше просто „verify", един член, който спами
     // своя сървър, би свил праговете за верификация на ВСИЧКИ наематели —
     // cross-tenant griefing. (Червен екип, 12.08.2026)
     const vScope = `verify:${panel.serverId}`;
     const vKey = `${panel.id}:${userId}`;
+    const since = new Date(Date.now() - panel.cooldownMinutes * 60 * 1000);
 
-    if (recentAttempts >= panel.maxAttempts) {
-      // ВАЖНО: тук НЕ броим провал. Опитът дори не е оценяван — отказваме го
-      // заради изчерпан лимит. Броенето тук даваше на нападателя безплатен
-      // лост: вече блокиран, той продължаваше да помпи брояча с всяка заявка.
-      // Стълбата се храни само от РЕАЛНО оценени провали (по-долу).
-      const esc = await check(vScope, vKey);
-      const waitMinutes = esc.blocked
-        ? Math.max(panel.cooldownMinutes, Math.ceil(esc.retryAfterSec / 60))
-        : panel.cooldownMinutes;
+    // Ескалиралата блокировка важи и ПРЕДИ да се изчерпи прозорецът: иначе
+    // нападателят би получавал нови 5 опита на всеки cooldown, вечно.
+    // Опитът дори не се оценява (и не се брои като провал): отказът заради
+    // блокировка не бива да храни брояча — безплатен лост за нападателя.
+    const esc = await check(vScope, vKey);
+    if (esc.blocked) {
+      const recent = await prisma.verificationAttempt.count({
+        where: { verificationPanelId: panel.id, userId, createdAt: { gte: since } },
+      });
+      const escMinutes = Math.ceil(esc.retryAfterSec / 60);
+      const waitMinutes = recent >= panel.maxAttempts ? Math.max(panel.cooldownMinutes, escMinutes) : escMinutes;
       return res.status(429).json({
         error: `Too many attempts. Please wait ${waitMinutes} minutes before trying again.`,
         code: "VERIFICATION_COOLDOWN",
@@ -77,33 +90,41 @@ router.post("/bot/:panelId/attempt", requireBotSecret, async (req, res, next) =>
       });
     }
 
-    // Ескалиралата блокировка важи и ПРЕДИ да се изчерпи прозорецът: иначе
-    // нападателят би получавал нови 5 опита на всеки cooldown, вечно.
-    const escalated = await check(vScope, vKey);
-    if (escalated.blocked) {
+    // „Прочети, после запиши“ върху лимит (З11): без заключване N паралелни
+    // клика четяха всички „0 опита“ и всички минаваха над maxAttempts. Тук
+    // броенето и записът са в ЕДНА транзакция под advisory lock по (панел,
+    // потребител): втората заявка чака първата и вижда нейния запис.
+    const answerText = answer ? String(answer).slice(0, 100) : null;
+    const taken = await prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${vKey}))`;
+      const recent = await tx.verificationAttempt.count({
+        where: { verificationPanelId: panel.id, userId, createdAt: { gte: since } },
+      });
+      if (recent >= panel.maxAttempts) return false;
+      await tx.verificationAttempt.create({
+        data: {
+          verificationPanelId: panel.id,
+          userId,
+          success: Boolean(success),
+          answer: answerText,
+        },
+      });
+      return true;
+    });
+    if (!taken) {
       return res.status(429).json({
-        error: `Too many attempts. Please wait ${Math.ceil(escalated.retryAfterSec / 60)} minutes before trying again.`,
+        error: `Too many attempts. Please wait ${panel.cooldownMinutes} minutes before trying again.`,
         code: "VERIFICATION_COOLDOWN",
-        cooldownMinutes: Math.ceil(escalated.retryAfterSec / 60),
+        cooldownMinutes: panel.cooldownMinutes,
       });
     }
 
-    // Record attempt
     // Успешна верификация чисти ескалацията — човек, който е сбъркал няколко
     // пъти и после е решил задачата, не бива да носи наказание.
     if (success) await recordSuccess(vScope, vKey);
     else await recordFailure(vScope, vKey);
     // v50 — XP за успешна верификация: веднъж на панел.
     if (success) grantXpOnce(panel.serverId, userId, `verify:${panel.id}`, XP_REWARDS.VERIFIED).catch(() => {});
-
-    await prisma.verificationAttempt.create({
-      data: {
-        verificationPanelId: panel.id,
-        userId,
-        success: Boolean(success),
-        answer: answer ? String(answer).slice(0, 100) : null,
-      },
-    });
 
     // Update panel stats
     await prisma.verificationPanel.update({
@@ -113,6 +134,12 @@ router.post("/bot/:panelId/attempt", requireBotSecret, async (req, res, next) =>
         failCount: !success ? { increment: 1 } : undefined,
       },
     });
+
+    // З13: webhook за интеграции (договор: fireWebhooks(serverId, event, payload)).
+    fireWebhooks(panel.serverId, success ? "VERIFICATION_SUCCESS" : "VERIFICATION_FAILURE", {
+      panelId: panel.id,
+      userId,
+    })?.catch?.(() => {});
 
     res.json({
       ok: true,

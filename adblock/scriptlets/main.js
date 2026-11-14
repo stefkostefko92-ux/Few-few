@@ -708,10 +708,22 @@ var SA_POLICY = (function () {
   // answers for the native: fn.toString() stays "function fetch() { [native code] }".
   // Anti-adblock scripts (YouTube's included) compare exactly that; a plain
   // replacement function gave us away on every site that checks.
+  // An error that passes through a wrapper (`Function.prototype.toString.call({})`, a
+  // JSON.parse of bad text…) carries no frame of ours: the trap's line would name this
+  // file's chrome-extension:// URL — the easiest tell of all. Only the throw path pays.
   var NativeProxy = typeof Proxy === "function" ? Proxy : null;
   var nativeReflectApply = typeof Reflect === "object" && Reflect ? Reflect.apply : null;
   var cloakMap = typeof WeakMap === "function" ? new WeakMap() : null;
   var cloakedToString = false;
+  var OWN_FRAME = /(?:chrome|moz)-extension:\/\//;
+  function scrubStack(e) {
+    try {
+      if (e && typeof e === "object" && typeof e.stack === "string" && OWN_FRAME.test(e.stack)) {
+        e.stack = e.stack.split("\n").filter(function (l) { return !OWN_FRAME.test(l); }).join("\n");
+      }
+    } catch (x) {}
+    return e;
+  }
   function cloak(impl, orig) {
     if (!NativeProxy || !nativeReflectApply || !cloakMap || typeof orig !== "function" || typeof impl !== "function") return impl;
     try {
@@ -721,12 +733,14 @@ var SA_POLICY = (function () {
         var tsP = new NativeProxy(ts, { apply: function (t, self, args) {
           var o = self, n = 0;
           while (n++ < 8 && cloakMap.has(o)) o = cloakMap.get(o); // a native wrapped twice (two scriptlets) still answers as itself
-          return nativeReflectApply(t, o, args);
+          try { return nativeReflectApply(t, o, args); } catch (e) { throw scrubStack(e); }
         } });
         cloakMap.set(tsP, ts);
         Function.prototype.toString = tsP;
       }
-      var p = new NativeProxy(orig, { apply: function (t, self, args) { return nativeReflectApply(impl, self, args); } });
+      var p = new NativeProxy(orig, { apply: function (t, self, args) {
+        try { return nativeReflectApply(impl, self, args); } catch (e) { throw scrubStack(e); }
+      } });
       cloakMap.set(p, orig);
       return p;
     } catch (e) { return impl; }

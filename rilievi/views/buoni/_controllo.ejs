@@ -1,0 +1,30 @@
+<%
+  // Една проверка (`ctl-<ключ>-…`): изход OK / NON OK, ден и подпис по избор — като реда с работа.
+  const p = 'ctl-' + c.key + '-';
+  const v = (k) => typeof values[p + k] === 'string' ? values[p + k] : '';
+  const err = (k) => errors[p + k] ? messageOf(p + k) : '';
+  const nome = t('buoni.controllo.' + c.key);
+  const esitoLabel = (e) => e === 'ok' ? t('buoni.esito.ok') : e === 'nonOk' ? t('buoni.esito.nonOk') : '—';
+%><fieldset class="buono-riga buono-controllo<%= firmata ? ' buono-riga--firmata' : '' %>" id="controllo-<%= c.key %>">
+  <legend class="buono-riga__titolo"><%= nome %></legend>
+  <% if (firmata) { %>
+  <input type="hidden" name="<%= p %>esito" value="<%= v('esito') %>">
+  <input type="hidden" name="<%= p %>data" value="<%= v('data') %>">
+  <dl class="buono-letta">
+    <div><dt><%= t('buoni.controllo.esito') %></dt><dd><%= esitoLabel(v('esito')) %></dd></div>
+    <div><dt><%= t('buoni.controllo.data') %></dt><dd><%= v('data') ? fmt.day(new Date(v('data') + 'T00:00:00Z')) : '—' %></dd></div>
+  </dl>
+  <p class="field__hint"><%= t('buoni.firma.bloccatoControllo') %></p>
+  <%- include('_firma-fatta', { stato: firmata, name: p + 'firma', posto: 'c-' + c.key, label: nome + ' — ' + t('buoni.controllo.firma'), puoTogliere: true, errore: err('firma') }) %>
+  <% } else { %>
+  <div class="grid buono-riga__campi">
+    <%- include('_scelta', { name: p + 'esito', legend: t('buoni.controllo.esito'), opzioni: [{ value: 'ok', label: t('buoni.esito.ok') }, { value: 'nonOk', label: t('buoni.esito.nonOk') }], message: err('esito') }) %>
+    <div class="field">
+      <label class="field__label" for="f-<%= p %>data"><%= t('buoni.controllo.data') %></label>
+      <input class="input" id="f-<%= p %>data" name="<%= p %>data" type="date" min="1950-01-01" max="2099-12-31" value="<%= v('data') %>"<% if (errors[p + 'data']) { %> aria-invalid="true" aria-describedby="err-<%= p %>data"<% } %>>
+      <% if (err('data')) { %><p class="field__error" id="err-<%= p %>data"><%= err('data') %></p><% } %>
+    </div>
+  </div>
+  <%- include('_firma-pad', { name: p + 'firma', label: nome + ' — ' + t('buoni.controllo.firma'), value: v('firma'), errore: err('firma') }) %>
+  <% } %>
+</fieldset>

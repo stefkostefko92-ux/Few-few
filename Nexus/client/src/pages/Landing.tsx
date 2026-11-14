@@ -8,29 +8,15 @@ import LandingEffects from '../components/LandingEffects';
 import CinematicIntro from '../components/CinematicIntro';
 import LanguageSelector from '../components/LanguageSelector';
 import '../styles/landing.css';
+import SEO_LOCALES from '../../public/seo-locales.json';
 
 // Per-locale page titles + descriptions. Picked up at mount based on
 // ?lang= or the user's browser language, and written into the actual
-// document <title> / <meta name="description"> so search engines and AI
-// crawlers serving Italian / Bulgarian queries see locale-targeted copy
-// rather than the English default.
-const LOCALES: Record<string, { html: string; title: string; description: string }> = {
-  en: {
-    html: 'en',
-    title: 'Nexus Dominion — Free Browser MMORPG',
-    description: 'Server-authoritative turn-based MMORPG. Four classes, 500 levels of roster, ELO arena, real-time auction, five-tier guilds. Free, browser-based, no installer.',
-  },
-  it: {
-    html: 'it-IT',
-    title: 'Nexus Dominion — MMORPG da browser, gratuito',
-    description: "MMORPG con combattimenti a turni validati dal server. Quattro classi, 500 livelli di mostri, arena ELO, casa d'aste in tempo reale, gilde a cinque livelli. Gratuito, senza installazione.",
-  },
-  bg: {
-    html: 'bg-BG',
-    title: 'Nexus Dominion — Безплатна браузърна ММОРПГ',
-    description: 'Пошагова ММОРПГ, валидирана на сървъра. Четири класа, 500 нива монстри, ELO арена, аукцион в реално време, гилдии на пет нива. Безплатна, без инсталация.',
-  },
-};
+// document <title> / <meta name="description">. The SAME file is read by the
+// server (server/src/lib/seoHead.ts), which puts the locale head into the HTML
+// it sends for /?lang=it|bg — so crawlers get the right canonical/lang/title
+// without running JavaScript (one source, no drift).
+const LOCALES: Record<string, { html: string; title: string; description: string }> = SEO_LOCALES;
 
 function pickLocale(): string {
   if (typeof window === 'undefined') return 'en';

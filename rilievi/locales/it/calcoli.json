@@ -1,0 +1,22 @@
+{
+  "calcoli": {
+    "piede": {
+      "generato": "Generato con Rilievi Impianti {versione} (Carbon Stealth VCC), build {build}, da {nome} il {quando} · Rif. {impronta}",
+      "verifica": "Strumento di supporto al calcolo: privo di validità senza verifica e firma di un tecnico abilitato.",
+      "salvato": "Calcolo salvato il {quando} da {nome}"
+    },
+    "avvertenza": {
+      "titolo": "Avvertenza",
+      "testo": "Questo documento è stato generato automaticamente dal software Rilievi Impianti di Carbon Stealth VCC, con i dati inseriti dall'utente indicato a piè di pagina insieme alla build del software e al riferimento del calcolo. Il calcolo è uno strumento di ausilio: non costituisce progetto, certificazione né verifica ai sensi del D.P.R. 162/1999 e delle norme tecniche applicabili, e non sostituisce il giudizio professionale. Prima di qualsiasi utilizzo i dati di ingresso e i risultati devono essere controllati, approvati e sottoscritti da un tecnico abilitato e competente; in mancanza di tale verifica e firma il documento non deve essere utilizzato. L'utente che lo ha generato risponde della correttezza e della completezza dei dati inseriti. Nei limiti consentiti dalla legge applicabile, Carbon Stealth VCC non risponde dei danni derivanti dall'uso dei risultati in assenza della verifica sopra indicata. Restano ferme le responsabilità che per legge non possono essere escluse o limitate, tra cui quelle per dolo o colpa grave e quelle verso le persone fisiche per danni da prodotti difettosi.",
+      "pagina": "Il PDF riporta chi lo ha generato e quando, la build del software, il riferimento del calcolo e lo spazio per la verifica e la firma del tecnico."
+    },
+    "verifica": {
+      "titolo": "Verifica del tecnico abilitato",
+      "dati": "Dati di ingresso verificati",
+      "nome": "Nome e cognome",
+      "qualifica": "Qualifica e n. di iscrizione all'albo",
+      "data": "Data",
+      "firma": "Firma"
+    }
+  }
+}
