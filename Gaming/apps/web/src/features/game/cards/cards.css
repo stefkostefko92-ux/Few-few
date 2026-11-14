@@ -51,7 +51,10 @@
 button.aso-card {
   cursor: pointer;
 }
-button.aso-card:hover {
+button.aso-card:disabled {
+  cursor: default;
+}
+button.aso-card:not(:disabled):hover {
   /* Lift + a whisper of scale so the raised card reads as nearer the eye, with
      a warm brass ambient halo the felt light would cast under the raised edge. */
   transform: translateY(-12px) scale(1.035);
@@ -217,7 +220,7 @@ button.aso-card:hover {
 
 @media (prefers-reduced-motion: reduce) {
   .aso-card,
-  button.aso-card:hover {
+  button.aso-card:not(:disabled):hover {
     transition: none;
   }
   .aso-card {
@@ -267,6 +270,9 @@ button.aso-card:hover {
   height: 52px;
   border-radius: 12px;
   font-size: 1.6rem;
+  /* Dark ink on the ivory face: without it the label inherited the page's
+     light ink and vanished (Риба's rank buttons rendered blank; Белот's ♣/♠). */
+  color: var(--suit-black);
   background: linear-gradient(to bottom, #fffdf6, #ece3cf);
   border: 1px solid rgba(217, 178, 95, 0.5);
   box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.5);
@@ -302,6 +308,29 @@ button.aso-card:hover {
 .aso-fx-layer .aso-announce {
   position: static;
   transform: none;
+  /* Своя входна анимация: общата носи translateX(-50%) на абсолютния банер —
+     в слоя банерът влиташе изместен наляво и после подскачаше в центъра. */
+  animation-name: announce-in-stacked;
+}
+@keyframes announce-in-stacked {
+  from { opacity: 0; transform: translateY(-8px) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aso-fx-layer .aso-announce { animation: none; }
+}
+/* Телефон: дълъг банер („X плаща 32 наем на Y“, „… взима раздаването (+2)“)
+   се пренася на редове, вместо да излиза от двете страни. Изричната ширина е
+   нужна: центриран с left:50%, слоят иначе се свива в половината маса. */
+@media (max-width: 639px) {
+  .aso-fx-layer {
+    width: max-content;
+    max-width: calc(100% - 16px);
+  }
+  .aso-fx-layer .aso-announce {
+    white-space: normal;
+    text-align: center;
+  }
 }
 .aso-announce[data-tone="win"] {
   background: linear-gradient(to bottom, #d8f5d0, #6fbf73);

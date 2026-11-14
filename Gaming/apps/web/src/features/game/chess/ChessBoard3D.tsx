@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { registerE2EHook } from "../board/e2eHook";
 import type { ChessScene } from "./chessScene";
 import type { ChessAction, Orientation } from "./types";
 
@@ -57,10 +58,14 @@ export function ChessBoard3D({ fen, legalActions, myTurn, orientation, lastMove,
   clickRef.current = onCellClick;
   const viewRef = useRef({ fen, selected, targetSet, lastMove });
   viewRef.current = { fen, selected, targetSet, lastMove };
+  // Тестовата кука (само под WebDriver) чете какво вижда играчът.
+  const e2eRef = useRef({ fen, legalActions, selected, targets, myTurn });
+  e2eRef.current = { fen, legalActions, selected, targets, myTurn };
 
   useEffect(() => {
     let scene: ChessScene | null = null;
     let ro: ResizeObserver | null = null;
+    let unhook = () => {};
     let cancelled = false;
     const canvas = canvasRef.current;
     const wrap = wrapRef.current;
@@ -69,16 +74,25 @@ export function ChessBoard3D({ fen, legalActions, myTurn, orientation, lastMove,
     void import("./chessScene")
       .then(({ ChessScene }) => {
         if (cancelled) return;
-        scene = new ChessScene(canvas, width(), orientation);
-        sceneRef.current = scene;
+        const s = new ChessScene(canvas, width(), orientation);
+        scene = s;
+        sceneRef.current = s;
         const v = viewRef.current;
-        scene.setState(v.fen, { selected: v.selected, targets: v.targetSet, last: v.lastMove });
-        ro = new ResizeObserver(() => scene?.resize(width()));
+        s.setState(v.fen, { selected: v.selected, targets: v.targetSet, last: v.lastMove });
+        ro = new ResizeObserver(() => s.resize(width()));
         ro.observe(wrap);
+        unhook = registerE2EHook("chess", {
+          screenPoint: (id) => s.screenPoint(String(id), canvas.getBoundingClientRect()),
+          view: () => {
+            const e = e2eRef.current;
+            return { fen: e.fen, legal: e.legalActions, selected: e.selected, targets: e.targets, myTurn: e.myTurn };
+          },
+        });
       })
       .catch(() => {});
     return () => {
       cancelled = true;
+      unhook();
       ro?.disconnect();
       scene?.destroy();
       sceneRef.current = null;
@@ -111,6 +125,7 @@ export function ChessBoard3D({ fen, legalActions, myTurn, orientation, lastMove,
     >
       <canvas
         ref={canvasRef}
+        data-board-canvas="chess"
         onPointerUp={onClick}
         style={{ width: "100%", height: "auto", display: "block", cursor: myTurn ? "pointer" : "default" }}
       />

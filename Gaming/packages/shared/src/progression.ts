@@ -210,3 +210,21 @@ export interface LeaderboardEntry {
 export const leaderboardKey = (game: GameKey): string => `lb:${game}`;
 /** Redis sorted-set key for the current season's global leaderboard. */
 export const seasonLeaderboardKey = (seasonIndex: number): string => `lb:season:${seasonIndex}`;
+
+/**
+ * ISO седмица (UTC) за ключа на седмичните мисии: „2026-W46“. Един източник за
+ * API-то (създаване на мисиите) и worker-а (чистене на старите) — ако се
+ * разминат, worker-ът би изтрил мисиите на текущата седмица.
+ */
+export function isoWeek(d = new Date()): string {
+  const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const dayNum = (date.getUTCDay() + 6) % 7;
+  date.setUTCDate(date.getUTCDate() - dayNum + 3);
+  const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+  const week =
+    1 +
+    Math.round(
+      ((date.getTime() - firstThursday.getTime()) / 86_400_000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7,
+    );
+  return `${date.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
+}

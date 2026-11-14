@@ -16,8 +16,13 @@ export type GameResult = "win" | "loss" | "draw";
 export interface SeatScore {
   seat: Seat;
   result: GameResult;
-  /** Optional magnitude (e.g. backgammon gammon = 2, backgammon = 3). */
+  /** The game's own final score for this seat (match points, books, frame
+   *  points…; Свара: the seat's chips, which settle the stakes). Its meaning
+   *  differs per game — it is NOT a reward multiplier. */
   points?: number;
+  /** Optional win magnitude for the reward (1 = normal win, 2–3 = a bigger
+   *  win such as a gammon). Only engines that define one set it. */
+  margin?: number;
   /** Optional final place (1 = first) for games that rank every seat. */
   rank?: number;
 }
