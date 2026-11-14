@@ -96,9 +96,9 @@ export function withType(spec, type) {
 // those the model really uses. An export built from them would drill and cut for something the customer never chose.
 const usesHw = (model, hw) => model.parts.some((p) => p.features.some((f) => f.hw === hw));
 const usesDecor = (model, id) => model.parts.some((p) => p.decor === id);
-// Parts cut from the front material (frontStock): doors, drawer fronts, the plinth board, the bed's head and foot
-// boards. The desk top takes the front decor too (boardTopDecor) — but not a RAL colour.
-const FRONT_ROLES = new Set(['door', 'drawer-front', 'plinth', 'bed-head', 'bed-foot']);
+// Parts cut from the front material (frontStock): doors, drawer fronts, the blind fronts of corner cabinets, the plinth
+// board, the bed's head and foot boards. The desk top takes the front decor too (boardTopDecor) — but not a RAL colour.
+const FRONT_ROLES = new Set(['door', 'drawer-front', 'blind', 'plinth', 'bed-head', 'bed-foot']);
 const usesFronts = (model) => model.parts.some((p) => FRONT_ROLES.has(p.role));
 const usesFrontDecor = (model) => usesFronts(model) || model.parts.some((p) => p.key === 'deskTop');
 const CATALOG_FIELDS = [
@@ -134,6 +134,7 @@ export function buildModel(input) {
     symbols: ctx.symbols,
     hardware: ctx.hardwareLines(),
     ...(ctx.cells.length ? { cells: ctx.cells } : {}),
+    ...(ctx.runs.length ? { runs: ctx.runs } : {}),
   };
 }
 
