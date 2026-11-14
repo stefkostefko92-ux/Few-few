@@ -602,3 +602,5 @@
 {"t":"handoff","ts":"2026-11-14T07:29:36.216Z","id":"r388445ec","from":"danachnika","to":"човек","status":"има бележки","run":"a5008821"}
 {"t":"start","ts":"2026-11-14T07:49:15.586Z","id":"rd25a0f89","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-14T07:49:15.586Z","id":"rd25a0f89","from":"kodadjiyata","to":"друг","status":"има бележки","run":"6a5ce777","toRaw":"Изпитателя"}
+{"t":"start","ts":"2026-11-14T09:42:24.012Z","id":"r006ae014","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-14T09:42:24.012Z","id":"r006ae014","from":"kodadjiyata","to":"izpitatelya","status":"блокер","run":"61a654d6"}
