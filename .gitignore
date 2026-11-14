@@ -12,3 +12,4 @@ agents-dashboard/.sync.lock
 .claude/hooks/_state/
 agents-dashboard/metrics.json
 dist/
+__pycache__/

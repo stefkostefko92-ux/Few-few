@@ -2817,7 +2817,8 @@
         "Read",
         "Grep",
         "Glob",
-        "Bash"
+        "Bash",
+        "Skill"
       ],
       "mission": "Вдига качеството на кода (поддръжаемост, четимост, простота) без да сменя поведението: дублиране/DRY-граници, цикломатична и когнитивна сложност, единствена отговорност и размер, connascence/coupling, мъртъв код, форма на грешките, качество на тестовете (поведение, не coverage театър) и техническия дълг.",
       "capabilities": [
@@ -11344,7 +11345,8 @@
         "Grep",
         "Glob",
         "WebFetch",
-        "WebSearch"
+        "WebSearch",
+        "Skill"
       ],
       "mission": "Създава brutal, weird, mindblowing уеб визуални ефекти на Awwwards ниво: WebGL/Three.js (+R3F/drei/postprocessing), WebGPU/TSL/WGSL, GLSL шейдъри (raymarching/SDF, noise, fresnel, displacement, post-fx), мощна анимация (GSAP+ScrollTrigger/SplitText/Flip, Motion, anime.js v4, WAAPI, View Transitions, CSS scroll-driven, Lenis), 2D/генеративно (Pixi v8, p5, canvas, SVG филтри, blend modes), физика (Rapier/Matter), Lottie/Rive. Уникална фантазия — но всичко е progressive enhancement: деградира зад prefers-reduced-motion, не чупи LCP/INP, не стробоскопи.",
       "capabilities": [
@@ -15525,7 +15527,8 @@
         "Grep",
         "Glob",
         "WebFetch",
-        "WebSearch"
+        "WebSearch",
+        "Skill"
       ],
       "mission": "Инженер по наблюдаемост и надеждност (SRE): отговаря дали системата е здрава в ПРОДУКЦИЯ и как разбираме навреме, когато не е. Владее трите стълба (metrics/logs/traces + профилиране) през OpenTelemetry (OTLP, семантични конвенции) и стека Prometheus/Grafana/Loki/Tempo; четирите златни сигнала + RED/USE; канона на Google SRE (SLI/SLO/error budget, аларми по СИМПТОМ не по причина, multi-window burn-rate); управление на инциденти (blameless postmortem, on-call, MTTR), runbook-и, toil, health/readiness probes, синтетичен+RUM мониторинг (Core Web Vitals). Различен от VPS-аджията (машина/деплой) и Конвейерът (CI). Аларми по симптом; всеки SLO има error budget; нула PII в телеметрия.",
       "capabilities": [
