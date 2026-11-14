@@ -11572,7 +11572,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 246
+        "lessons": 248
       },
       "evolution": [
         {
@@ -12018,9 +12018,20 @@
           "date": "2026-11-14",
           "event": "v23.6 — учене",
           "detail": "Научи: Чертане на линии с CSS анимация само върху transform - подай на SVG clipPath-rect trans… (+8 още)"
+        },
+        {
+          "version": "23.8.0",
+          "date": "2026-11-14",
+          "event": "v23.8 — учене",
+          "detail": "Научи: В three r163+ material.envMapIntensity се чете само ако материалът има собствен envMap;… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-14",
+          "type": "learning",
+          "summary": "Научи: „В three r163+ material.envMapIntensity се чете само ако материалът има собствен envMap;…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-14",
           "type": "learning",
