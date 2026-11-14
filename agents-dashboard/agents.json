@@ -9488,7 +9488,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 279
+        "lessons": 283
       },
       "evolution": [
         {
@@ -9856,9 +9856,20 @@
           "date": "2026-11-14",
           "event": "v26.3 — учене",
           "detail": "Научи: Webhook-ът на linketto няма дедупликация по event.id; идемпотентността е чрез условни з…"
+        },
+        {
+          "version": "26.7.0",
+          "date": "2026-11-14",
+          "event": "v26.7 — учене",
+          "detail": "Научи: Revolut Merchant ретрайва webhook 3 пъти, всеки път след 10 минути (около 30 мин общо),… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-14",
+          "type": "learning",
+          "summary": "Научи: „Revolut Merchant ретрайва webhook 3 пъти, всеки път след 10 минути (около 30 мин общо),…\" (+3 още)"
+        },
         {
           "date": "2026-11-14",
           "type": "learning",
