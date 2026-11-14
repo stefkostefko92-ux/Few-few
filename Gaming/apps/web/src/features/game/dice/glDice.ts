@@ -156,6 +156,33 @@ export class GLDice {
     return this.size * 1.62;
   }
 
+  /**
+   * Нова ширина на тавата (завъртян телефон, преоразмерен прозорец). Платното
+   * пазеше първоначалната си ширина: на по-тясна тава последният зар излизаше
+   * извън нея, а прозрачните бутони за задържане (те следват тавата) вече не
+   * стояха над заровете — кликът задържаше съседния. Подреждаме наново;
+   * викащият после рисува стойностите с render().
+   */
+  resize(cssWidth: number): void {
+    const count = this.dice.length;
+    const size = cssWidth / (1.22 * count + 0.22);
+    if (count === 0 || !(size > 0) || Math.abs(size - this.size) < 0.25) return;
+    this.size = size;
+    this.gap = size * 0.22;
+    this.app.renderer.resize(cssWidth, size * 1.62);
+    for (const d of this.dice) d.root.destroy({ children: true });
+    this.dice = [];
+    for (let i = 0; i < count; i++) this.dice.push(this.build(i));
+  }
+
+  /** Тестова кука (board/e2eHook): client координати на центъра на зар `i`. */
+  screenPoint(i: number, rect: DOMRect): { x: number; y: number } | null {
+    if (!Number.isInteger(i) || i < 0 || i >= this.dice.length) return null;
+    const sx = rect.width / this.app.screen.width;
+    const sy = rect.height / this.app.screen.height;
+    return { x: rect.left + this.cx(i) * sx, y: rect.top + this.cy * sy };
+  }
+
   private cx(i: number): number {
     return this.gap + this.size / 2 + i * (this.size + this.gap);
   }

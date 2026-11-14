@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Badge, Button } from "../../../ui";
 import { useAuthStore } from "../../../lib/store";
 import { MatchChrome, TurnBadge } from "../cards/MatchChrome";
+import { DecisionPrompt } from "../scene/DecisionPrompt";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { useMatch } from "../useMatch";
 import { ChessBoard } from "./ChessBoard";
@@ -49,16 +50,29 @@ export function ChessView({ title }: { title: string }) {
   const myTurn = turn === seat && moveActions.length > 0;
   // Pawn-promotion picker: the board hands us all variants of the move.
   const [promo, setPromo] = useState<ChessAction[] | null>(null);
+  // „Предай се“ / „Предложи реми“ искат потвърждение в прозореца за решение —
+  // без случайни загуби от погрешен клик (по-рано: „Сигурен?“ за 3 s).
+  const [confirm, setConfirm] = useState<"resign" | "draw" | null>(null);
+  // Брояч на отварянията: всяко ново отваряне е ново решение (promptKey), иначе
+  // прозорецът, отказан веднъж на същата позиция, не се показва пак.
+  const [ask, setAsk] = useState(0);
   useEffect(() => {
-    if (!myTurn) setPromo(null); // stale picker if the clock played for us
+    if (!myTurn) {
+      setPromo(null); // stale picker if the clock played for us
+      setConfirm(null);
+    }
   }, [myTurn]);
-  // "Resign" arms first ("Сигурен?") and disarms after 3s — no misclick losses.
-  const [resignArmed, setResignArmed] = useState(false);
-  useEffect(() => {
-    if (!resignArmed) return;
-    const id = setTimeout(() => setResignArmed(false), 3000);
-    return () => clearTimeout(id);
-  }, [resignArmed]);
+  // Едно решение наведнъж: новото затваря предишното.
+  const pickPromotion = (options: ChessAction[]) => {
+    setAsk((n) => n + 1);
+    setConfirm(null);
+    setPromo(options);
+  };
+  const askConfirm = (what: "resign" | "draw") => {
+    setAsk((n) => n + 1);
+    setPromo(null);
+    setConfirm(what);
+  };
 
   const opponent = players.find((p) => p.seat !== seat)?.displayName ?? t("game.opponent");
   const Board = useGL ? ChessBoard3D : ChessBoard;
@@ -134,69 +148,113 @@ export function ChessView({ title }: { title: string }) {
               lastMove={state.lastMove}
               onMove={(a) => m.send(a)}
               onIllegal={onIllegal}
-              onPromote={setPromo}
+              onPromote={pickPromotion}
             />
-            {promo ? (
-              <div className="mt-3 flex items-center justify-center gap-2" role="group" aria-label={t("chess.promoteTitle")}>
-                <span className="text-sm text-ink-300">{t("chess.promoteTitle")}:</span>
-                {promo.map((a) => (
-                  <button
-                    key={a.promotion}
-                    type="button"
-                    onClick={() => {
-                      m.send(a);
-                      setPromo(null);
-                    }}
-                    className="rounded-card border border-brass-400/30 bg-felt-800 px-3 py-1.5 text-2xl leading-none text-ink-100 hover:border-brass-300"
-                    aria-label={t(`chess.promo.${a.promotion ?? "q"}`)}
-                  >
-                    {glyphs[a.promotion ?? "q"]}
-                  </button>
-                ))}
-              </div>
-            ) : null}
           </div>
 
-          {oppOffersDraw ? (
-            <div className="flex items-center gap-3 rounded-card border border-brass-400/30 bg-felt-800/80 px-4 py-2">
-              <span className="text-sm text-brass-200">{t("chess.drawOffered", "Съперникът предлага реми")}</span>
-              {acceptDraw ? (
-                <Button onClick={() => m.send(acceptDraw)}>{t("chess.acceptDraw", "Приеми реми")}</Button>
-              ) : null}
-            </div>
-          ) : null}
-
-          <div className="flex w-full items-center justify-between">
+          {/* На телефон бутоните минават на нов ред, вместо да се пречупят на две. */}
+          <div className="flex w-full flex-wrap items-center justify-between gap-2">
             <Badge tone="felt">{user?.displayName ?? t("game.you")}</Badge>
             {phase === "playing" ? (
-              <div className="flex items-center gap-2">
-                {!oppOffersDraw ? (
-                  <Button
-                    variant="ghost"
-                    disabled={!canOfferDraw}
-                    onClick={() => m.send({ type: "DRAW_OFFER" })}
-                  >
-                    {t("chess.offerDraw", "Предложи реми")}
-                  </Button>
-                ) : null}
+              <div className="flex items-center gap-1 whitespace-nowrap">
                 <Button
                   variant="ghost"
-                  className={resignArmed ? "!text-loss" : undefined}
-                  disabled={!canResign}
-                  onClick={() => {
-                    if (!resignArmed) {
-                      setResignArmed(true);
-                      return;
-                    }
-                    setResignArmed(false);
-                    m.send({ type: "RESIGN" });
-                  }}
+                  className="!px-3"
+                  data-action="draw-offer"
+                  disabled={!canOfferDraw}
+                  onClick={() => askConfirm("draw")}
                 >
-                  {resignArmed ? t("game.leaveConfirm") : t("chess.resign", "Предай се")}
+                  {t("chess.offerDraw", "Предложи реми")}
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="!px-3"
+                  data-action="resign"
+                  disabled={!canResign}
+                  onClick={() => askConfirm("resign")}
+                >
+                  {t("chess.resign", "Предай се")}
                 </Button>
               </div>
             ) : null}
           </div>
+
+          {/* Решенията — прозорец, който идва сам (масата остава видима). */}
+          <DecisionPrompt
+            open={!!promo && myTurn && phase === "playing"}
+            promptKey={`promo-${ask}-${promo?.[0]?.from ?? ""}${promo?.[0]?.to ?? ""}`}
+            title={t("chess.promoteHeading")}
+            hint={t("chess.promoteHint")}
+            optional={{ label: t("chess.otherMove"), onSkip: () => setPromo(null) }}
+            testId="chess-promotion"
+          >
+            <div className="flex flex-wrap items-center justify-center gap-2" role="group" aria-label={t("chess.promoteTitle")}>
+              {(promo ?? []).map((a) => (
+                <button
+                  key={a.promotion}
+                  type="button"
+                  data-action="promote"
+                  data-piece={a.promotion}
+                  onClick={() => {
+                    m.send(a);
+                    setPromo(null);
+                  }}
+                  className="flex min-w-[4.5rem] flex-col items-center gap-1 rounded-card border border-brass-400/30 bg-felt-800 px-3 py-2 text-ink-100 hover:border-brass-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-300"
+                >
+                  <span className="text-3xl leading-none" aria-hidden="true">
+                    {glyphs[a.promotion ?? "q"]}
+                  </span>
+                  <span className="text-xs">{t(`chess.promo.${a.promotion ?? "q"}`)}</span>
+                </button>
+              ))}
+            </div>
+          </DecisionPrompt>
+
+          <DecisionPrompt
+            open={oppOffersDraw && !!acceptDraw && !promo && confirm === null}
+            promptKey={`draw-offer-${state.fen}`}
+            title={t("chess.drawOffered", "Съперникът предлага реми")}
+            hint={t("chess.drawOfferHint")}
+            placement="top"
+            optional={{ label: t("chess.declineDraw") }}
+            testId="chess-draw-offer"
+          >
+            <Button data-action="draw-accept" onClick={() => acceptDraw && m.send(acceptDraw)}>
+              {t("chess.acceptDraw", "Приеми реми")}
+            </Button>
+          </DecisionPrompt>
+
+          <DecisionPrompt
+            open={confirm !== null && phase === "playing" && (confirm === "resign" ? canResign : canOfferDraw)}
+            promptKey={`confirm-${confirm ?? ""}-${ask}`}
+            title={confirm === "resign" ? t("chess.resignQ") : t("chess.offerDrawQ")}
+            hint={confirm === "resign" ? t("chess.resignHint") : t("chess.offerDrawHint")}
+            optional={{ label: t("chess.keepPlaying"), onSkip: () => setConfirm(null) }}
+            testId="chess-confirm"
+          >
+            {confirm === "resign" ? (
+              <Button
+                data-action="resign-confirm"
+                className="!bg-none !bg-loss !text-ink-100"
+                onClick={() => {
+                  setConfirm(null);
+                  m.send({ type: "RESIGN" });
+                }}
+              >
+                {t("chess.resign", "Предай се")}
+              </Button>
+            ) : (
+              <Button
+                data-action="draw-offer-confirm"
+                onClick={() => {
+                  setConfirm(null);
+                  m.send({ type: "DRAW_OFFER" });
+                }}
+              >
+                {t("chess.offerDraw", "Предложи реми")}
+              </Button>
+            )}
+          </DecisionPrompt>
         </div>
       ) : null}
     </MatchChrome>
