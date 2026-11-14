@@ -41,7 +41,8 @@ import {
  * е избран seed-ът — офлайн реплика на стаята).
  */
 
-const SEEDED_FIRST_HAND = ["2C", "TS", "AC", "2S"];
+// Раздадено: 2C TS AC 2S. Показва се подредена: ♠ преди ♣, в боята A K Q J T … 2.
+const SEEDED_FIRST_HAND = ["TS", "2S", "AC", "2C"];
 const SEEDED_FIRST_CENTER = ["9H", "7D", "4H", "9C"];
 
 type Step = "swap" | "pass" | "signal" | "kupe" | "stop";
@@ -150,7 +151,8 @@ async function takeTurn(page: Page, done: Record<Step, number>): Promise<Step> {
   await expect(handCard(page, swap.handIndex)).toHaveClass(/aso-card--selected/);
   const taken = center[swap.centerIndex]!;
   await act(page, centerCard(page, swap.centerIndex));
-  expect((await view(page)).hand[swap.handIndex]).toBe(taken);
+  // ръката се подрежда наново по боя и сила — новата карта е в нея, не непременно на същото място
+  expect((await view(page)).hand).toContain(taken);
   return "swap";
 }
 

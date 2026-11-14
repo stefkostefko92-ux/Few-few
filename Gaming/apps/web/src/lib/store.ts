@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { GameKey, LobbySnapshot, MatchPlayerInfo, PublicUser } from "@aso/shared";
 import type { MatchPhase } from "../features/game/useMatch";
+import { localizeBots } from "./botNames";
 
 interface AuthState {
   user: PublicUser | null;
@@ -74,7 +75,7 @@ export const useMatchStore = create<MatchState>((set) => ({
   epoch: 0,
   playAgain: () => set((s) => ({ epoch: s.epoch + 1 })),
   setMatch: ({ matchId, seat, players, game }) =>
-    set({ matchId, seat, players, game, phase: "playing", disconnected: [], substituted: [], timeoutStrikes: 0 }),
+    set({ matchId, seat, players: localizeBots(players), game, phase: "playing", disconnected: [], substituted: [], timeoutStrikes: 0 }),
   setPhase: (phase) => set({ phase }),
   setLive: (turn, turnEndsAt, turnMs = 0, timeoutStrikes = 0) => set({ turn, turnEndsAt, turnMs, timeoutStrikes }),
   setPresence: (seat, connected) =>

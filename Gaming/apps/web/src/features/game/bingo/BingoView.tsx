@@ -60,7 +60,7 @@ export function BingoView({ title }: { title: string }) {
   const user = useAuthStore((s) => s.user);
   const m = useMatch<BingoState, BingoAction>("BINGO");
   const { state, seat, phase, result, players, send } = m;
-  // Ботовете са все „АСО Бот“ — с номер, за да се различават (АСО Бот 1, 2, 3).
+  // Еднакви имена на играчи се различават с номер (ботовете идват като „Бот 1, 2, 3“).
   const names = useMemo(() => seatNames(players), [players]);
 
   const drawnSet = new Set(state?.drawn ?? []);
