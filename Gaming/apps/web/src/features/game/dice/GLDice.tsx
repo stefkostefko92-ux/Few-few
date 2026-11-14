@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { registerE2EHook } from "../board/e2eHook";
 import type { GLDice as GLDiceRenderer } from "./glDice";
 
 /** Returns false if WebGL is unavailable (lets the caller fall back to CSS dice). */
@@ -37,11 +38,13 @@ export function GLDice({
   const wrapRef = useRef<HTMLDivElement>(null);
   const diceRef = useRef<GLDiceRenderer | null>(null);
   const prevNonce = useRef(rollNonce);
-  const latest = useRef({ values, held });
-  latest.current = { values, held };
+  const latest = useRef({ values, held, canToggle });
+  latest.current = { values, held, canToggle };
 
   useEffect(() => {
     let renderer: GLDiceRenderer | null = null;
+    let ro: ResizeObserver | null = null;
+    let unhook = () => {};
     let cancelled = false;
     const canvas = canvasRef.current;
     const wrap = wrapRef.current;
@@ -58,10 +61,24 @@ export function GLDice({
         renderer = r;
         diceRef.current = r;
         r.render(latest.current.values, latest.current.held);
+        // The tray follows the layout (rotation/resize): re-lay the dice so they
+        // stay under their hold buttons.
+        ro = new ResizeObserver(() => {
+          r.resize(width());
+          r.render(latest.current.values, latest.current.held);
+        });
+        ro.observe(wrap);
+        // id = индекс на зара (0..4); кликът там пада върху прозрачния му бутон.
+        unhook = registerE2EHook("dice", {
+          screenPoint: (id) => r.screenPoint(Number(id), canvas.getBoundingClientRect()),
+          view: () => ({ ...latest.current }),
+        });
       });
 
     return () => {
       cancelled = true;
+      ro?.disconnect();
+      unhook();
       renderer?.destroy();
       diceRef.current = null;
     };
@@ -81,7 +98,7 @@ export function GLDice({
 
   return (
     <div ref={wrapRef} className="dice-gl">
-      <canvas ref={canvasRef} style={{ width: "100%", height: "auto", display: "block" }} />
+      <canvas ref={canvasRef} data-board-canvas="dice" style={{ width: "100%", height: "auto", display: "block" }} />
       <div className="dice-gl__hit" role="group">
         {values.map((_, i) => (
           <button

@@ -88,18 +88,27 @@
   font-style: italic;
 }
 /* Typed answer — the player writes the word (no served options). */
+/* Формата и редът „поле + Играй“ не излизат от сукното: на телефон полето се
+   свива (min-width: 0), вместо да изрязва „Играй“ (беше наполовина отрязан). */
 .words-form {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  max-width: 100%;
 }
 .words-input-wrap {
   display: flex;
   gap: 8px;
   align-items: center;
+  max-width: 100%;
+}
+.words-input-wrap > button {
+  flex: none;
 }
 .words-input {
+  flex: 1 1 auto;
+  min-width: 0;
   width: min(70vw, 300px);
   padding: 10px 16px;
   border-radius: 10px;
@@ -127,6 +136,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  max-width: 100%;
 }
 .words-pass-hint {
   font-size: 0.75rem;

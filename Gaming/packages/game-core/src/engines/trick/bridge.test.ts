@@ -312,6 +312,9 @@ describe("bridge онори", () => {
     for (let i = 0; i < 3; i++) s = bridgeEngine.reduce(s, { type: "PASS" }, r).state;
     expect(s.phase).toBe("PLAY");
     expect(s.honors).toEqual({ seat: 1, team: 1, points: 100 });
+    // Докато се играе, онорите вижда само притежателят — иначе издават ръката му.
+    expect(bridgeEngine.redact(s, 1).honors).toEqual({ seat: 1, team: 1, points: 100 });
+    for (const other of [0, 2, 3]) expect(bridgeEngine.redact(s, other).honors).toBeNull();
     // Изиграй ръката с първата законна карта.
     let honorsEv = 0;
     for (let i = 0; i < 60 && s.dealNo === 1; i++) {

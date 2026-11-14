@@ -271,7 +271,47 @@
     "eraseDone": "The account has been deleted (anonymised).",
     "selfExcludedShort": "SELF-EXCL.",
     "selfExcludedUntil": "Self-excluded until",
-    "selfExcludedNote": "The player's choice — it can't be lifted before it ends."
+    "selfExcludedNote": "The player's choice — it can't be lifted before it ends.",
+    "mail": {
+      "tab": "Email (Brevo)",
+      "title": "Portal email",
+      "hint": "All АСО emails are sent from here — email confirmation and password reset. This setting takes precedence over the server's SMTP.",
+      "sourceConsole": "Emails are sent from here",
+      "sourceEnv": "Emails are sent via the server SMTP (.env)",
+      "sourceNone": "Email isn't set up — messages only go to the log",
+      "updated": "Last change: {{date}} · {{who}}",
+      "inactive": "disabled",
+      "keyMissing": "SETTINGS_SECRET_KEY is missing on the server — the next deploy creates it. Saving is disabled until then.",
+      "host": "SMTP server",
+      "port": "Port",
+      "port587": "587 — STARTTLS (recommended)",
+      "port2525": "2525 — STARTTLS (if 587 is blocked)",
+      "port465": "465 — TLS",
+      "username": "SMTP login",
+      "password": "SMTP key",
+      "passwordKeep": "saved — leave empty to keep it",
+      "fromName": "Sender name",
+      "fromEmail": "Sender email",
+      "brevoHelp": "Brevo: Settings → SMTP & API → SMTP — the server is smtp-relay.brevo.com, the login is on the same page, the key is the “SMTP key” (not the API key). The sender email must be verified in Brevo (Senders & IP) for a domain with SPF and DKIM.",
+      "accountPassword": "Your password (confirmation)",
+      "save": "Save and enable",
+      "test": "Send me a test email",
+      "disable": "Disable",
+      "saved": "Saved — emails are now sent from here.",
+      "disabled": "Disabled — emails go via the server SMTP, if set.",
+      "testSent": "The test email was sent to {{email}}.",
+      "testDisabled": "Email isn't set up — there's nothing to send from.",
+      "testError": "The email wasn't sent — code {{code}} (EAUTH = wrong login or key; ECONNECTION/ESOCKET/ETIMEDOUT = the server doesn't answer).",
+      "err": {
+        "wrong_password": "Wrong account password.",
+        "password_required": "Enter the SMTP key.",
+        "password_new_server": "The server or login changed — enter the SMTP key again.",
+        "invalid_host": "Invalid SMTP server (host name).",
+        "settings_key_missing": "SETTINGS_SECRET_KEY is missing on the server.",
+        "validation_error": "Check the fields.",
+        "rate_limited": "Too many attempts — wait a little."
+      }
+    }
   },
   "auth": {
     "loginTitle": "Sign in",
@@ -337,6 +377,7 @@
     "opponentDropped": "{{name}} dropped — bot is covering",
     "yourTurnTimer": "Your turn: {{s}}s",
     "opponentTurnTimer": "{{name}} thinking · {{s}}s",
+    "timeoutWarningWords": "Your time ran out — that counts as a pass and costs 1 life.",
     "timeoutWarning": "Your time ran out — the bot played this move for you. Miss one more turn and the bot takes your seat."
   },
   "verify": {
@@ -413,7 +454,14 @@
     "declareWith": "66 with {{n}} {{suit}}",
     "declareHint": "Declare only if you really have 66 — a false declaration gives your opponent 3 points.",
     "declaredOk": "{{name}} goes out with {{n}}!",
-    "declaredFalse": "{{name}} declared 66 with only {{n}} — 3 points to the opponent"
+    "declaredFalse": "{{name}} declared 66 with only {{n}} — 3 points to the opponent",
+    "leadTitle": "Your lead — any call?",
+    "have66Title": "You have 66!",
+    "leadHint": "Points: {{pts}} · Trump {{suit}} · Stock: {{count}}",
+    "announceKing": "Call {{n}} {{suit}} — play the king",
+    "announceQueen": "Call {{n}} {{suit}} — play the queen",
+    "exchangeWith": "Swap trump ({{nine}} ↔ {{card}})",
+    "quietHint": "On: a king or queen of a pair clicked in your hand is played without the call."
   },
   "belote": {
     "yourTeam": "Your team",
@@ -443,7 +491,8 @@
     "lastDeal": "Deal",
     "valat": "Capot!",
     "inside": "Inside",
-    "redeal": "New deal"
+    "redeal": "New deal",
+    "noBidYet": "Nobody has named trumps yet."
   },
   "wallet": {
     "chips": "Chips",
@@ -568,6 +617,13 @@
     "free": "Chips are earned for free too — daily bonus and wins.",
     "topUp": "Buy chips"
   },
+  "playPaused": {
+    "limitTitle": "Break until tomorrow",
+    "limitBody": "You've reached your daily play limit. New tables and queues open again on {{date}}.",
+    "excludedTitle": "Self-exclusion is active",
+    "excludedBody": "Tables are closed for you until {{date}}. This was your choice and can't be lifted earlier.",
+    "settings": "Responsible gaming settings"
+  },
   "store": {
     "title": "Quick store",
     "topUp": "Top up balance",
@@ -596,7 +652,8 @@
   },
   "common": {
     "loading": "Loading…",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "close": "Close"
   },
   "a11y": {
     "skipToContent": "Skip to content",
@@ -642,7 +699,9 @@
     "mainPot": "Main pot",
     "sidePot": "Side pot {{n}}",
     "winsSidePot": "{{name}} wins a side pot ({{pot}})",
-    "splitsPot": "{{name}} splits the side pot ({{pot}})"
+    "splitsPot": "{{name}} splits the side pot ({{pot}})",
+    "yourBet": "Your bet",
+    "showdownTitle": "Cards revealed"
   },
   "bridge": {
     "dummyHand": "Dummy's hand",
@@ -664,7 +723,8 @@
     "honors": "honours {{n}} ({{side}})",
     "honorsBanner": "Honours: {{name}} +{{n}}",
     "us": "us",
-    "them": "them"
+    "them": "them",
+    "noBidYet": "Nobody has bid yet."
   },
   "war": {
     "flip": "Flip",
@@ -718,12 +778,18 @@
     "roundReport": "End of round {{n}}",
     "penalty": "Penalty",
     "total": "Total",
-    "continue": "Continue"
+    "continue": "Continue",
+    "openTitle": "Open now?",
+    "openHint": "Your staged opening is {{pts}} pts ({{min}} needed):",
+    "swapTitle": "Swap a joker",
+    "swapHint": "{{card}} can replace a joker on the table — you take the joker (use it this turn)."
   },
   "gofish": {
     "ocean": "Ocean",
     "askFrom": "Ask",
-    "books": "Books"
+    "books": "Books",
+    "askTitle": "Whom do you ask, and for what?",
+    "askFor": "For which rank"
   },
   "backgammon": {
     "roll": "Roll",
@@ -747,7 +813,9 @@
     "marsWon": "Mars! +2 points",
     "marsLost": "Mars — opponent took 2 points",
     "matchWon": "You won the match {{score}}",
-    "matchLost": "You lost the match {{score}}"
+    "matchLost": "You lost the match {{score}}",
+    "noMovesTitle": "No legal move",
+    "noMovesHint": "The dice {{dice}} can’t be played — you pass."
   },
   "draughts": {
     "variant": "Russian draughts"
@@ -790,7 +858,9 @@
     },
     "upper": "Upper sum",
     "bonus": "Bonus (63+)",
-    "pickCategory": "Pick a category"
+    "scoreTitle": "Score your roll",
+    "scoreHint": "Pick a category — the best one is highlighted.",
+    "earlyScoreHint": "or score in the table"
   },
   "bingo": {
     "draw": "Draw",
@@ -848,12 +918,20 @@
     "blocked": "blocked",
     "pass": "Pass",
     "boneyard": "Boneyard",
-    "tie": "tie"
+    "tie": "tie",
+    "whichEnd": "Which end?",
+    "fitsBoth": "This tile fits both ends.",
+    "otherTile": "Another tile",
+    "leftEnd": "Left end",
+    "rightEnd": "Right end",
+    "nothingFits": "Nothing fits",
+    "drawHint": "The ends are {{left}} and {{right}} — draw from the boneyard ({{n}} left).",
+    "passHint": "The boneyard is empty — you pass."
   },
   "cue": {
     "power": "Power",
     "shoot": "Shoot",
-    "yourTurn": "Aim and shoot",
+    "yourTurn": "Click or drag on the table to aim, then shoot",
     "yourTurnBih": "Ball in hand — place and shoot",
     "placeCue": "Place cue ball",
     "placeHint": "Click to place the cue ball",
@@ -899,7 +977,7 @@
     "twoFouls": "Warning: two consecutive fouls — a third loses the rack.",
     "twoFoulsOpp": "Your opponent is on two consecutive fouls.",
     "miss": "foul and a miss",
-    "foulChoice": "Opponent fouled — play on or make them play again.",
+    "foulChoice": "Play from here, or make them play again?",
     "playAgain": "Make them play again",
     "replay": "Replace the balls",
     "spin": "Spin",
@@ -912,8 +990,22 @@
     "spinReset": "No spin",
     "spinHelp": "Choose where the cue strikes the cue ball: top — it keeps rolling after contact (follow), bottom — it comes back (draw), side — it changes the rebound off the rail. Arrow keys to move, Shift for finer steps, Home to centre.",
     "callPocket": "Pocket for the 8",
-    "callPocketHint": "You're on the 8 — call a pocket (click next to it or use the buttons)",
-    "calledPocket": "called pocket",
+    "callPocketHint": "You're on the 8 — call its pocket.",
+    "calledPocket": "Called pocket",
+    "callTitle": "Call a pocket for the 8",
+    "callHint": "Tap the pocket here — or the pocket itself on the table.",
+    "callPocketOpen": "Call",
+    "changePocket": "Change",
+    "pushTitle": "Push-out?",
+    "pushHint": "You need not hit the lowest ball — then your opponent chooses who plays.",
+    "pushNo": "Normal shot",
+    "pushArmed": "this shot is a push-out",
+    "pushCancel": "Cancel push-out",
+    "pushReplyTitle": "Your opponent played a push-out",
+    "pushReplyHint": "Play from this position, or pass the shot back to them?",
+    "playMyself": "I'll play",
+    "foulChoiceTitle": "Your opponent fouled",
+    "foulChoiceMiss": "Play from here, make them play again — or replace the balls and have them retake the shot?",
     "pockets": {
       "0": "top left",
       "1": "top middle",
@@ -939,7 +1031,7 @@
     "pickToPass": "Awaiting passes",
     "signaled": "Signal!",
     "chosen": "chose",
-    "youHaveKent": "You have KENT! Signal your partner or call Kupe.",
+    "youHaveKent": "You have KENT! Signal your partner — they call “Kupe!”.",
     "signal": "Signal",
     "callKupe": "Kupe!",
     "target": "to",
@@ -952,7 +1044,10 @@
     "deckLeft": "Stock",
     "pass": "Pass",
     "pickHandCard": "Pick your card to swap",
-    "pickCenterCard": "Pick a centre card"
+    "pickCenterCard": "Pick a centre card",
+    "haveKentTitle": "You have Kent!",
+    "partnerSignaledTitle": "Your partner signalled!",
+    "kupeHint": "{{name}} gave you the secret signal — call “Kupe!” to take the round."
   },
   "chess": {
     "check": "Check!",
@@ -978,7 +1073,17 @@
     "drawThreefold": "Draw — threefold repetition",
     "drawAgreement": "Draw by agreement",
     "drawFifty": "Draw — fifty-move rule",
-    "drawMaterial": "Draw — insufficient material"
+    "drawMaterial": "Draw — insufficient material",
+    "promoteHeading": "Pawn promotion",
+    "promoteHint": "Your pawn reaches the last rank — choose what it becomes.",
+    "otherMove": "Another move",
+    "drawOfferHint": "Accept the draw — or decline and play your move.",
+    "declineDraw": "Decline (play on)",
+    "resignQ": "Resign the game?",
+    "resignHint": "You lose the game immediately.",
+    "offerDrawQ": "Offer a draw?",
+    "offerDrawHint": "Then play your move. Your opponent can accept on their turn — if they move instead, the offer lapses.",
+    "keepPlaying": "No, keep playing"
   },
   "fx": {
     "hit": "Hit!",
@@ -1069,17 +1174,14 @@
     "boardTitle": "Magnat board",
     "gameOver": "Game over.",
     "turnOf": "Turn: {{name}}.",
-    "noWebGL": "The 3D board requires WebGL, which isn't available in this browser. You can play via the panel on the right.",
+    "noWebGL": "The 3D board requires WebGL, which isn't available in this browser — showing a simplified 2D board; your moves are in the panel.",
     "jailCard": "Jail card",
     "payBail": "Pay bail (50)",
     "roll": "Roll the dice",
-    "buy": "Buy {{name}} ({{price}})",
     "decline": "Decline",
-    "auctionFor": "Auction: {{name}} · current offer",
     "auctionNone": "none",
     "bid": "Bid {{amount}}",
     "pass": "Pass",
-    "tradeOffer": "{{name}} offers you a trade:",
     "give": "You give:",
     "get": "You get:",
     "accept": "Accept",
@@ -1125,8 +1227,24 @@
     "debtWaiting": "{{name}} owes {{amount}} to {{to}} and is choosing what to sell or mortgage…",
     "debtTitle": "You owe {{amount}} to {{to}}",
     "debtCash": "Cash: {{cash}}",
-    "debtHint": "Sell buildings (houses first, evenly) or mortgage properties from the list below, then pay. If time runs out, the bank liquidates automatically.",
-    "payDebt": "Pay {{amount}}"
+    "payDebt": "Pay {{amount}}",
+    "decideInPrompt": "Your turn — the choice is in the pop-up.",
+    "jailTitle": "You’re in jail",
+    "jailHint": "Attempt {{attempt}} of 3: roll for doubles — or get out right away.",
+    "jailRoll": "Roll for doubles",
+    "buyTitle": "Buy {{name}}?",
+    "buyHint": "Price {{price}} · cash {{cash}}.",
+    "declineAuction": "Decline (auction)",
+    "auctionTitle": "Auction: {{name}}",
+    "auctionNoBids": "No bids yet",
+    "bidAmount": "Bid amount",
+    "tradeOfferTitle": "{{name}} offers you a trade",
+    "debtPromptHint": "Sell buildings or mortgage, then pay. If time runs out, the bank liquidates automatically.",
+    "sellHouse": "Sell a house: {{name}} (+{{amount}})",
+    "sellHotel": "Sell the hotel: {{name}}",
+    "mortgageFor": "Mortgage {{name}} (+{{amount}})",
+    "buyFor": "Buy for {{price}}",
+    "buyShort": "Not enough: mortgage a property or decline."
   },
   "errors": {
     "generic": "Something went wrong",
@@ -1136,7 +1254,9 @@
     "illegal_action": "Illegal move",
     "chat_rate": "Too fast. Wait a moment.",
     "rate_limited": "Too many attempts — wait.",
-    "self_excluded": "Self-exclusion is active — tables and purchases are unavailable until it ends"
+    "self_excluded": "Self-exclusion is active — tables and purchases are unavailable until it ends",
+    "daily_limit": "You've reached your daily play limit — new tables and queues tomorrow.",
+    "member_unavailable": "A player in your group can't join a table right now."
   },
   "games": {
     "CHESS": "Chess",
@@ -1245,7 +1365,10 @@
     "clock": "You have {{s}} seconds per turn.",
     "timeout": "If your time runs out, the bot plays just that move for you — the seat stays yours.",
     "timeoutWords": "If your time runs out, it counts as a pass — you lose a life (the bot never says a word for you).",
-    "takeover": "After two missed turns in a row (or a dropped connection) the bot takes your seat until you press “Return to the game”."
+    "clockBingo": "There are no turns and no turn clock here: a new number is drawn every {{s}} seconds. Mark whenever you like and call “Bingo!” as soon as you have a full line.",
+    "takeoverBingo": "If your connection drops, the bot marks your card until you are back.",
+    "takeover": "After two missed turns in a row (or a dropped connection) the bot takes your seat until you press “Return to the game”.",
+    "gotIt": "Got it — to the table"
   },
   "difficulty": {
     "label": "Bot difficulty",
@@ -1260,8 +1383,11 @@
     "realityHint": "We show “You've been playing for X min” at the chosen interval.",
     "off": "Off",
     "everyMin": "Every {{n}} min",
-    "limitLabel": "Daily session limit",
-    "limitHint": "You've played {{n}} min today. When you reach the limit we'll remind you to take a break.",
+    "limitLabel": "Daily play limit",
+    "limitHint": "You've played {{n}} min in matches today.",
+    "limitRule": "Once you reach the limit, new tables and queues close until midnight (Sofia time); a match you've started is played out. A lower limit applies at once, a higher one or “No limit” after 24 hours.",
+    "limitPending": "Your new {{n}} min limit takes effect on {{date}}.",
+    "limitPendingOff": "Your limit is removed on {{date}}.",
     "noLimit": "No limit",
     "minutes": "{{n}} min",
     "excludeLabel": "Self-exclusion",
@@ -1284,7 +1410,12 @@
     "takeBreak": "Take a break",
     "keepPlaying": "Continue",
     "limitTitle": "Daily limit reached",
-    "limitBody": "You've played the {{n}} min limit you set for today. A good moment for a break.",
+    "limitBody": "You've played the {{n}} min limit you set for today. New tables and queues open again tomorrow — a good moment for a break.",
     "understood": "Got it"
+  },
+  "decision": {
+    "minimize": "Show the table",
+    "sec": "s",
+    "notNow": "Not now"
   }
 }
