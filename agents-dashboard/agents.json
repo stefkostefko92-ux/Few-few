@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 669
+        "lessons": 670
       },
       "evolution": [
         {
@@ -2055,9 +2055,20 @@
           "date": "2026-11-14",
           "event": "v60.9 — учене",
           "detail": "Научи: Хукът guard-readonly блокира Bash пренасочване към файл, ако пътят е в shell променлива…"
+        },
+        {
+          "version": "61.0.0",
+          "date": "2026-11-14",
+          "event": "v61.0 — учене",
+          "detail": "Научи: nodemailer 10.x SMTPTransport (без пул) close() само премахва oauth2 слушатели и излъчв…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-14",
+          "type": "learning",
+          "summary": "Научи: „nodemailer 10.x SMTPTransport (без пул) close() само премахва oauth2 слушатели и излъчв…\""
+        },
         {
           "date": "2026-11-14",
           "type": "learning",
