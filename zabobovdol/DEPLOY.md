@@ -149,6 +149,24 @@ docker compose up -d --build
 docker inspect zabobovdol-nginx-1 --format '{{range .Mounts}}{{.Source}}{{"\n"}}{{end}}'
 ```
 
+### 7.2. Ново съдържание в работеща база
+
+`scripts/deploy.sh` зарежда данните само при първо пускане (иначе би презаписал
+редакциите от админ панела). Затова след обновяване на кода:
+
+```bash
+# ръководства, добавени в prisma/seed-*.ts след първото пускане — първо само показва
+docker exec zabobovdol-app-1 npm run db:sync:guides
+docker exec zabobovdol-app-1 npm run db:sync:guides -- --apply   # създава САМО липсващите
+
+# поправени остарели текстове (еврото, гарантираните влогове, „Аа Настройки за четене“);
+# поле, редактирано от админ панела, не се пипа
+docker exec zabobovdol-app-1 npm run db:fix:texts
+```
+
+`db:sync:guides` засява всички seed-ове във временна база `zbd_seedtmp` на същия
+сървър, сравнява по slug и я трие накрая. Съществуващите ръководства не се пипат.
+
 ## 8. Включване на AI чатбота (по избор)
 
 Помощникът има три режима (`CHAT_PROVIDER` в `.env`):
