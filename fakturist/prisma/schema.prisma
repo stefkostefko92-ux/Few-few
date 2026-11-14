@@ -167,6 +167,7 @@ model User {
   pdfStylesChanged      PdfStyle[]
   tokens                UserToken[]
   legalAcceptances      LegalAcceptance[]
+  announcements         Announcement[]     @relation("AnnouncementBy")
   memberInvitesCreated  MemberInvite[]     @relation("MemberInviteCreatedBy")
   memberInvitesAccepted MemberInvite[]     @relation("MemberInviteAcceptedBy")
 
@@ -443,7 +444,7 @@ model Document {
   payments           DocumentPayment[]
   proforma           Proforma?
   peppolTransmission PeppolTransmission?
-  nraReport          NraReport?
+  nraReports         NraReport[]
   issueSubmission    IssueSubmission?
   /// Отпечатъкът на входа (от който се рисува PDF-ът) — в звеното на веригата (v2); null — звено v1.
   inputSha256        String?
@@ -1135,9 +1136,13 @@ enum NraReportStatus {
 model NraReport {
   id             String          @id @default(cuid())
   organizationId String
-  documentId     String          @unique
+  documentId     String
   document       Document        @relation(fields: [documentId], references: [id], onDelete: Restrict)
   typeCode       String
+  /// ISSUED (издаден) или CANCELLED (анулиран) — src/nra/queue.ts.
+  event          String          @default("ISSUED")
+  /// Разбивката по категория и ставка в евроцентове (низове) — данните за API-то на НАП.
+  breakdown      Json?
   ublSha256      String
   status         NraReportStatus @default(PENDING)
   attempts       Int             @default(0)
@@ -1145,6 +1150,7 @@ model NraReport {
   sentAt         DateTime?
   createdAt      DateTime        @default(now())
 
+  @@unique([documentId, event])
   @@index([status, createdAt])
   @@index([organizationId, createdAt])
 }
@@ -1164,4 +1170,23 @@ model IssueSubmission {
   @@unique([userId, token])
   @@index([organizationId])
   @@index([createdAt])
+}
+
+/// Съобщение до клиентите от мастъра (src/admin/announcements.ts): промяна в условията (30 дни
+/// предизвестие), инцидент, обявление. Доказателството кога и до колко адреса е пратено — писмата в
+/// опашката се трият след 90 дни. Без адресите.
+model Announcement {
+  id          String    @id @default(cuid())
+  /// legal | incident | service
+  kind        String
+  subject     String
+  body        String
+  effectiveOn DateTime? @db.Date
+  recipients  Int
+  createdById String?
+  createdBy   User?     @relation("AnnouncementBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+
+  @@index([createdAt])
+  @@index([createdById])
 }

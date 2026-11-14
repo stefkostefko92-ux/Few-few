@@ -99,7 +99,7 @@ test('одитът записва регистрацията и всяко из�
 test('опашката за отчитане към НАП (SPEC 63): ред за всеки издаден документ, с отпечатъка на UBL-а', async () => {
   const docs = await prisma.document.findMany({ where: { status: 'ISSUED' } });
   assert.ok(docs.length > 0);
-  const reports = await prisma.nraReport.findMany();
+  const reports = await prisma.nraReport.findMany({ where: { event: 'ISSUED' } });
   assert.equal(reports.length, docs.length, 'отказаните (rollback) не оставят ред');
   for (const doc of docs) {
     const report = reports.find((r) => r.documentId === doc.id);

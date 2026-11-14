@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { config } from '../config.js';
 import { BRAND } from '../brand.js';
 import { setting } from '../admin/settings.js';
+import { prisma } from '../db.js';
 import { wrap } from './document-mail.js';
 import type { MailMessage } from './mailer.js';
 
@@ -19,7 +20,10 @@ export const ORG_MAIL_KINDS = [
   'org.terminated',
   'org.termination.cancelled',
   'org.purged',
+  'org.notice',
 ] as const;
+
+const Notice = z.object({ announcementId: z.string().min(1).max(40) });
 
 function longDate(iso: string): string {
   return new Intl.DateTimeFormat('bg-BG', { dateStyle: 'long', timeZone: 'Europe/Sofia' }).format(
@@ -57,6 +61,20 @@ export async function composeOrgMail(
       `Данните на „${legalName}“ във Фактурист са изтрити след срока за изтегляне. Резервните копия ги губят до 90 дни.`,
       'Пазим само наименованието, одита, приетите условия и фактурите за плана — те са и наши счетоводни документи. Документите, изпратени до други фирми във Фактурист, остават при тях.',
     ];
+  } else if (kind === 'org.notice') {
+    // Съобщението от мастъра (src/admin/announcements.ts): текстът е в записа, не в опашката.
+    const { announcementId } = Notice.parse(payload);
+    const notice = await prisma.announcement.findUniqueOrThrow({ where: { id: announcementId } });
+    subject = `Фактурист — ${notice.subject}`;
+    paragraphs = notice.body
+      .split(/\n\s*\n/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+    if (notice.kind === 'legal' && notice.effectiveOn) {
+      paragraphs.push(
+        `Промяната е в сила от ${longDate(notice.effectiveOn.toISOString())}. Ако не сте съгласни, можете да прекратите ползването преди това без неустойка (общите условия, т. 15).`,
+      );
+    }
   } else {
     throw new Error(`Непознат вид писмо: ${kind}`);
   }

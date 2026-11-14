@@ -1,6 +1,7 @@
 import type { Prisma } from '@prisma/client';
 import { audit } from '../audit.js';
 import { movePaymentsInTx } from './payments.js';
+import { recordNraCancellation } from '../nra/queue.js';
 
 /**
  * Анулиране по чл. 116 ЗДДС (SPEC 47; казусът — docs/kazus-anulirane.md). Анулира се само ПОГРЕШНО
@@ -122,6 +123,8 @@ export async function annulInTx(
     },
   });
   if (updated.count !== 1) throw new AnnulError('notIssued');
+  // Опашката към НАП: анулирането е събитие в същата транзакция (SPEC 63).
+  await recordNraCancellation(tx, old.id);
   // Платеното по стария е за същата доставка — минава към новия; иначе новият е „неплатен“, тръгват
   // напомняния към клиент, който вече е платил, а банката го предлага за следващото постъпление.
   const { paid, payable } = await movePaymentsInTx(tx, old.id, input.newId);

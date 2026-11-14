@@ -206,7 +206,8 @@
     "masters": "Masters",
     "chain": "Ledger chain",
     "chainHint": "Checked from a company record",
-    "main": "Manage"
+    "main": "Manage",
+    "announcements": "Notices"
   },
   "termination": {
     "title": "Terminate the company",
@@ -217,5 +218,35 @@
     "state": "The company is terminated; its data is deleted on {date}.",
     "cancel": "Undo the termination",
     "done": "Done — recorded in the audit trail, the emails are queued."
+  },
+  "announcements": {
+    "title": "Notices to customers",
+    "help": "An email to the owners and administrators of every company ({count} addresses), one per address. The record here is the proof of when and to how many addresses it went.",
+    "new": "New notice",
+    "kind": "Kind",
+    "kinds": {
+      "legal": "Change to the terms",
+      "incident": "Security incident",
+      "service": "Service announcement"
+    },
+    "subject": "Subject",
+    "body": "Text",
+    "bodyHint": "Separate paragraphs with a blank line. No token links and no personal data.",
+    "effectiveOn": "Effective from",
+    "effectiveHint": "Only for a change to the terms: {date} at the earliest (30 days’ notice, terms s. 15).",
+    "confirm": "I checked the text; send it to {count} addresses.",
+    "send": "Send",
+    "ok": "Sent to {count} addresses — the emails are queued.",
+    "err": {
+      "invalid": "Fill in the kind, subject, text, the tick and the code.",
+      "code": "Wrong code.",
+      "effective": "For a change to the terms “Effective from” must be at least 30 days ahead.",
+      "noRecipients": "There is nobody to send it to."
+    },
+    "history": "Sent",
+    "none": "No notices sent yet.",
+    "date": "Date",
+    "recipients": "Addresses",
+    "from": "effective {date}"
   }
 }

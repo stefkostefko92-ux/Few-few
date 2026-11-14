@@ -259,4 +259,14 @@ export const ADMIN_RESOURCES: AdminResource[] = [
     hidden: [],
     orderBy: { acceptedAt: 'desc' },
   },
+  {
+    model: 'Announcement',
+    slug: 'announcements',
+    group: 'accounts',
+    label: { bg: 'Съобщения до клиентите', en: 'Notices to customers' },
+    columns: ['kind', 'subject', 'effectiveOn', 'recipients', 'createdAt'],
+    search: ['subject'],
+    hidden: [],
+    orderBy: { createdAt: 'desc' },
+  },
 ];

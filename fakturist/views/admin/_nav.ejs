@@ -11,6 +11,7 @@
     { href: '/admin/r/plans', icon: 'tag', label: t('admin.plans'), active: startsAny('/admin/r/plans', '/admin/planove') },
     { href: '/admin/r/organizations', icon: 'chain', label: t('admin.nav.chain'), hint: t('admin.nav.chainHint'), active: startsAny('/admin/veriga') },
     { href: '/admin/mastari', icon: 'crown', label: t('admin.nav.masters'), active: path.startsWith('/admin/mastari') },
+    { href: '/admin/saobshteniya', icon: 'inbox', label: t('admin.nav.announcements'), active: path.startsWith('/admin/saobshteniya') },
   ];
   let current = main.find((i) => i.active) || null;
   if (!current) {

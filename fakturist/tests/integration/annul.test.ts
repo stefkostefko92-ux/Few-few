@@ -202,3 +202,22 @@ test('втори път, без право, с известие към доку�
   assert.equal(blocked.status, 400);
   assert.ok((await blocked.text()).includes('известия'));
 });
+
+test('опашката към НАП: анулирането е събитие със същия отпечатък и разбивката в евро', async () => {
+  const cancelled = await prisma.document.findFirstOrThrow({
+    where: { organizationId: orgId, status: 'CANCELLED' },
+  });
+  const events = await prisma.nraReport.findMany({
+    where: { documentId: cancelled.id },
+    orderBy: { createdAt: 'asc' },
+  });
+  assert.deepEqual(
+    events.map((e) => e.event),
+    ['ISSUED', 'CANCELLED'],
+  );
+  assert.equal(events[0]!.ublSha256, events[1]!.ublSha256);
+  const breakdown = events[0]!.breakdown as Array<{ category: string; baseEurCents: string }>;
+  assert.ok(breakdown.length > 0);
+  assert.match(breakdown[0]!.baseEurCents, /^\d+$/, 'центове като низ — без float');
+  assert.deepEqual(events[1]!.breakdown, events[0]!.breakdown);
+});

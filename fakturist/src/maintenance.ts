@@ -3,6 +3,7 @@ import { errorMessage, logger } from './logger.js';
 import { DAY, HOUR } from './time.js';
 import { purgeBankData } from './bank/retention.js';
 import { purgeTerminated } from './accounts/termination-purge.js';
+import { purgeLegalRecords } from './legal/retention.js';
 
 /**
  * Сроковете от политиката за поверителност (views/legal/privacy): изтеклите сесии и връзките по имейл
@@ -67,7 +68,11 @@ export async function purgeExpired(now: Date = new Date()): Promise<{
 export function startMaintenanceLoop(): NodeJS.Timeout {
   const run = () => {
     purgeExpired()
-      .then(async (result) => ({ ...result, organizations: await purgeTerminated() }))
+      .then(async (result) => ({
+        ...result,
+        organizations: await purgeTerminated(),
+        legal: await purgeLegalRecords(),
+      }))
       .then((result) => logger.info(result, 'почистване по сроковете'))
       .catch((error: unknown) =>
         logger.error({ err: errorMessage(error) }, 'почистването не мина'),

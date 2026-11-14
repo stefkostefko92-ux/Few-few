@@ -21,6 +21,7 @@ import { adminActionsRouter } from './admin-actions.js';
 import { adminMastersRouter } from './admin-masters.js';
 import { PlanForm } from '../admin/plan-form.js';
 import { adminTerminationRouter } from './admin-termination.js';
+import { adminAnnouncementsRouter } from './admin-announcements.js';
 
 /**
  * Регистърът по групи за менюто на панела (views/admin/_nav.ejs). „Планове“ са отделна връзка в главните,
@@ -45,6 +46,7 @@ export function adminRouter(): Router {
   router.use(adminActionsRouter());
   router.use(adminMastersRouter());
   router.use(adminTerminationRouter());
+  router.use(adminAnnouncementsRouter());
 
   router.get('/admin', async (_req, res) => {
     const monthStart = new Date();

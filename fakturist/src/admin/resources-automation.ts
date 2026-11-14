@@ -30,7 +30,7 @@ export const AUTOMATION_RESOURCES: AdminResource[] = [
     slug: 'nra-reports',
     group: 'documents',
     label: { bg: 'Отчитане към НАП (опашка)', en: 'NRA reporting (queue)' },
-    columns: ['organizationId', 'documentId', 'typeCode', 'status', 'createdAt', 'sentAt'],
+    columns: ['organizationId', 'documentId', 'typeCode', 'event', 'status', 'createdAt', 'sentAt'],
     search: ['organizationId', 'documentId'],
     hidden: [],
     orderBy: { createdAt: 'desc' },
