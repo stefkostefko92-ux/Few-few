@@ -77,6 +77,31 @@
       "network": "trusted",
       "secretsInEnv": false,
       "output": "draft-pr"
+    },
+    {
+      "id": "code-hygiene",
+      "description": "Седмичен доклад за чистотата на продуктовия код (Boris Cherny: рутини за мъртъв код, дубли и покритие): маркери за дълг, дублирани блокове, файлове над 600 реда и дял тестове по продукт. Стъпка в agents-sweep.yml; Качествения чете доклада и предлага рефактор с умението improve-codebase-architecture.",
+      "trigger": "schedule:weekly",
+      "command": "node tools/qa/hygiene.mjs",
+      "owner": "kachestveniyat",
+      "autonomy": "L1",
+      "escalation": "Само доклад — нищо не се пипа автоматично. Рефактор е промяна с поведение-запазващи тестове, по решение на собственика за всеки продукт.",
+      "budgetCap": null,
+      "denylist": [],
+      "runtime": "ci"
+    },
+    {
+      "id": "ablation-watch",
+      "description": "Ритуал при нов модел (Boris Cherny: при всяко издание махни промпта и върни само реда, който поправя видим провал): сравнява модела, на който флотът реално върви (записите за употреба), с печата tools/agents/evals/ablation.json и печата командите за рамената (live-run --patch). Видим в гейта като доклад.",
+      "trigger": "event:new-model",
+      "command": "node tools/agents/ablation-watch.mjs",
+      "owner": "ai-djiyata",
+      "autonomy": "L1",
+      "escalation": "Нов модел → доклад с командите; самата аблация е скъпа (k≥6 на рамо) и тече само по решение. Ред се маха само при равно качество (golden + verifier + сляпо двойково съдийство); пазачите не са кандидати.",
+      "budgetCap": null,
+      "denylist": [
+        ".claude/hooks/guard-*"
+      ]
     }
   ]
 }

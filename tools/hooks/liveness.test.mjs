@@ -87,6 +87,8 @@ const PAYLOADS = {
   // 31.10.2026: ConfigChange (локални настройки без отслабване → 0) и таванът на общите агенти (наш → 0).
   "guard-config.mjs": { hook_event_name: "ConfigChange", source: "local_settings", file_path: "/nonexistent/settings.local.json" },
   "agent-cap.mjs": { session_id: "liveness", tool_name: "Agent", tool_input: { subagent_type: "kodadjiyata" } },
+  // 11.11.2026: файл без продукт с prettier → куката мълчи с 0 (удобство, не защита).
+  "format-on-edit.mjs": { hook_event_name: "PostToolUse", tool_name: "Edit", tool_input: { file_path: "src/app.ts" } },
 };
 
 const hooks = registeredHooks();
@@ -120,6 +122,8 @@ const REGISTRATION = {
   "guard-config.mjs": { event: "ConfigChange" },
   // ПРЕДИ пускането на агент — иначе 11-ият общ агент вече е тръгнал.
   "agent-cap.mjs": { event: "PreToolUse", matcher: /Agent/ },
+  // СЛЕД записа — форматира вече записания файл; на PreToolUse няма какво да форматира.
+  "format-on-edit.mjs": { event: "PostToolUse", matcher: /Write/, alsoMatcher: [/Edit/] },
 };
 
 /** Кое събитие и с какъв matcher е регистриран даден хук (истината е settings.json). */

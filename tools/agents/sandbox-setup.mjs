@@ -20,6 +20,7 @@ import { join, dirname } from "node:path";
 import { homedir, platform } from "node:os";
 import { execFileSync } from "node:child_process";
 import { isMain } from "../lib/is-main.mjs";
+import { minCliProblem } from "../lib/cli-version.mjs";
 
 // Домейните, които нашата работа реално ползва от Bash (git, npm, документацията). Останалото се
 // одобрява при нужда — първият опит към нов домейн пита, не минава тихо.
@@ -77,6 +78,10 @@ function main(argv) {
   const file = val("--settings-file") || join(homedir(), ".claude", "settings.json");
   const existing = existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : {};
   const merged = mergeSandbox(existing, buildBlock({ strict: argv.includes("--strict") }));
+
+  // Sandbox без достатъчно нова версия е дупка: под MIN_CLI създаването на worktree може да избяга от него.
+  const cliProblem = minCliProblem((() => { try { return execFileSync("claude", ["--version"], { encoding: "utf8" }); } catch { return "?"; } })());
+  if (cliProblem) console.log(`⚠ ${cliProblem}`);
 
   const deps = missingDeps();
   if (deps.length)

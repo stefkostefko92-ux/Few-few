@@ -190,6 +190,10 @@ function check() {
 async function run() {
   const { claudeAvailable, makeWorktree, runJobs, expandJobs, EVAL_ALLOWED } = await import("./evals/live-run.mjs");
   if (!claudeAvailable()) { console.error("live-gate: няма `claude` CLI с вход — живата проверка не е възможна тук."); return 2; }
+  // Пробите тичат в отделни worktree-та: под MIN_CLI създаването им може да избяга от sandbox-а (2.1.319).
+  const { minCliProblem } = await import("../lib/cli-version.mjs");
+  const cliProblem = minCliProblem((() => { try { return execFileSync("claude", ["--version"], { encoding: "utf8" }); } catch { return "?"; } })());
+  if (cliProblem) { console.error(`live-gate: ${cliProblem}`); return 2; }
   const files = inputFiles();
   const dirty = execFileSync("git", ["-C", ROOT, "status", "--porcelain", "--", ...files], { encoding: "utf8" }).trim();
   if (dirty) { console.error(`live-gate: има незаписани промени по агентския слой — комитни ги първо (пробата тича върху commit-а):\n${dirty}`); return 2; }

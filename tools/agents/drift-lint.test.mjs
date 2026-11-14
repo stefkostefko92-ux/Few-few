@@ -67,3 +67,14 @@ test("умения: бройката и изброяването се сверя
   assert.equal(skillRosterHits("Ours (BG, vetted; 4): deploy · seed-author-x · razpit · web-vitals", skills).length, 1,
     "частично съвпадение (seed-author-x) не брои за seed-author");
 });
+
+test("ростерът се чете до „Gate:“ — дълъг списък не губи края си, име след маркера не се брои", () => {
+  const skills = ["deploy", "late-skill", "after-gate"];
+  const filler = " · ".repeat(500);
+  const long = `Ours (BG, vetted; 3): deploy${filler}late-skill. Gate: lint. Споменато после: after-gate.`;
+  assert.ok(long.indexOf("late-skill") > 1200, "фикстурата е по-дълга от стария прозорец");
+  const hits = skillRosterHits(long, skills);
+  assert.equal(hits.length, 1);
+  assert.match(hits[0].detail, /after-gate/);
+  assert.doesNotMatch(hits[0].detail, /late-skill/);
+});

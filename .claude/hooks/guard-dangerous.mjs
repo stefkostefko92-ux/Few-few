@@ -166,7 +166,7 @@ export const REMOTE_EXEC = [
 const SHELL_C = new RegExp(`${SEP}${PRE}(?:(?:\\S*\\/)?(?:ba|z|k|da|a|c|tc|fi)?sh(?:\\s+-\\S+)*?\\s+-[a-zA-Z]*c[a-zA-Z]*\\s+|eval\\s+)(['"])`, "gi");
 const FETCH_AT = new RegExp(`${SEP}${PRE}(${FETCH})`, "gi");
 const EXEC_AT = new RegExp(`${SEP}${PRE}(?:(${INTERP}|source|\\.)(?:\\s+-\\S+)*\\s+)?["']?([^\\s"';&|<>()]+)`, "gi");
-const base = (p) => String(p).replace(/[?#].*$/, "").replace(/\/+$/, "").split("/").pop();
+export const base = (p) => String(p).replace(/[?#].*$/, "").replace(/\/+$/, "").split("/").pop();
 
 // `curl … | python3 -c '…'` / `| node -e '…'`: кодът е в АРГУМЕНТА, stdin е само ДАННИ (JSON/HTML за
 // разбор). FP-пробата върху 9 749 реални команди от транскриптите: 9 от 9 останали блока бяха точно това.
@@ -260,7 +260,7 @@ const HEREDOC_RUNNER = /^(?:(?:ba|z|k|da|a|c|tc|fi)?sh|ssh|eval|source)$/;
 const WRAP_ARG = { sudo: /^-[ugChpU]$/, doas: /^-[uC]$/, env: /^-[uSC]$/, xargs: /^-[InPLdaEs]$/, timeout: /^-[sk]$/, nice: /^-n$/, stdbuf: /^-[ioe]$/ };
 
 /** argv без префиксите, които не сменят командата (VAR=x, sudo, env, timeout 30, xargs -I {} …). */
-function commandOf(argv) {
+export function commandOf(argv) {
   const a = argv.slice();
   for (let n = 0; a.length && n < 20; n++) {
     const w = a[0], name = base(w);
@@ -358,7 +358,7 @@ export function gitPushDanger(argv) {
 
 const RUN_FLAG = /^--(?:server|cmd|command|exec|execute|run|shell)(?:=([\s\S]*))?$/;
 /** Низовете в argv, които програмата ще подаде на обвивка. */
-function execStrings(argv) {
+export function execStrings(argv) {
   const a = commandOf(argv), out = [];
   if (!a.length) return out;
   const name = base(a[0]);

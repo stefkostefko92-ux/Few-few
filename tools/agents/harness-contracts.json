@@ -1,5 +1,5 @@
 {
-  "$note": "Допусканията на агентския ни слой за харнеса на Claude Code. Всяко има източник, ключови думи, по които anthropic-watch.mjs го хваща в changelog-а, и файловете, които стъпват на него. Новост, която засяга договор, се оценява първа и води до node tools/agents/live-gate.mjs. Причина (2026-10-27): таванът от 10 000 знака на additionalContext влезе в 2.1.89 (01.04.2026), а ние го разбрахме чак след 7 месеца.",
+  "$note": "Допусканията на агентския ни слой за харнеса на Claude Code. Всяко има източник, ключови думи, по които anthropic-watch.mjs го хваща в changelog-а, и файловете, които стъпват на него. Новост, която засяга договор, се оценява първа и води до node tools/agents/live-gate.mjs. Причина (2026-10-27): таванът от 10 000 знака на additionalContext влезе в 2.1.89 (01.04.2026), а ние го разбрахме чак след 7 месеца. Ключова дума = подниз без значение регистъра; масив = всички части в реда ([\"skill\",\"compact\"]) — за общи думи (08.11.2026: \"ws\", \"timeout\", \"compaction\" дадоха 41 от 53 фалшиви удара).",
   "contracts": [
     {
       "id": "additional-context-10k",
@@ -60,8 +60,14 @@
       "claim": "При agent teams именуваният агент тръгва като teammate, а на teammate харнесът не прилага skills: от дефиницията.",
       "source": "https://code.claude.com/docs/en/agent-teams.md",
       "keywords": [
-        "agent teams",
-        "teammate",
+        [
+          "teammate",
+          "skill"
+        ],
+        [
+          "agent team",
+          "skill"
+        ],
         "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS"
       ],
       "relies": [
@@ -128,9 +134,12 @@
       "claim": "След компактиране от всяко заредено умение остават първите 5 000 токена (общо до 25 000).",
       "source": "https://code.claude.com/docs/en/skills.md",
       "keywords": [
-        "compaction",
-        "auto-compact",
-        "5,000 tokens"
+        [
+          "skill",
+          "compact"
+        ],
+        "5,000 tokens",
+        "25,000 tokens"
       ],
       "relies": [
         "tools/skills/lint.mjs",
@@ -198,12 +207,24 @@
     },
     {
       "id": "monitor-bash-hooks",
-      "claim": "Shell командата на Monitor стига до куките с matcher Bash като tool_name \"Bash\" (могат да блокират или питат, не да одобряват); WebSocket режимът (ws.url, protocols, headers) не минава през Bash-куки — вижда го само matcher, който назовава Monitor. Проба на живо 31.10.2026 (2.1.316).",
+      "claim": "Shell командата на Monitor стига до куките с matcher Bash като tool_name \"Bash\" (могат да блокират или питат, не да одобряват); WebSocket режимът (ws.url, protocols, headers) не минава през Bash-куки — вижда го само matcher, който назовава Monitor (нашият: Bash|Monitor, guard-exfil.mjs клон за tool Monitor). От 2.1.319 правило за права върху Bash (deny/ask) важи и за WebSocket режима — права, не куки. Проба на живо 31.10.2026 (2.1.316).",
       "source": "https://code.claude.com/docs/en/changelog.md (2.1.314) + проба: headless сесия с кука-запис за Bash и Monitor",
       "keywords": [
-        "Monitor",
+        [
+          "monitor",
+          "bash"
+        ],
+        [
+          "monitor",
+          "hook"
+        ],
+        [
+          "monitor",
+          "shell"
+        ],
+        "Monitor tool",
         "WebSocket",
-        "ws"
+        "ws.url"
       ],
       "relies": [
         ".claude/hooks/guard-exfil.mjs",
@@ -213,11 +234,14 @@
     },
     {
       "id": "subagent-effort-env",
-      "claim": "CLAUDE_CODE_SUBAGENT_EFFORT задава усилието на субагент, на когото нищо друго не го задава (иначе наследява сесията); effort във frontmatter на нашите агенти го надделява.",
+      "claim": "CLAUDE_CODE_SUBAGENT_EFFORT задава усилието на субагент, на когото нищо друго не го задава; effort във frontmatter на нашите агенти го надделява (всичките 32 го имат). Без effort: на модела на сесията — усилието на сесията; на друг модел (от 2.1.317) — запазеното за този модел или неговото по подразбиране, не това на сесията.",
       "source": "https://code.claude.com/docs/en/changelog.md (2.1.316) + https://code.claude.com/docs/en/sub-agents",
       "keywords": [
         "CLAUDE_CODE_SUBAGENT_EFFORT",
-        "effort"
+        [
+          "subagent",
+          "effort"
+        ]
       ],
       "relies": [
         ".claude/settings.json"
@@ -243,7 +267,7 @@
       "keywords": [
         "ConfigChange",
         "project_settings",
-        "skills"
+        "policy_settings"
       ],
       "relies": [
         ".claude/hooks/guard-config.mjs",
@@ -255,9 +279,16 @@
       "claim": "Проектно умение с име verify в .claude/skills/ кара вградените commit инструкции (v2.1.286+) да го пускат точно преди всеки commit, освен за docs и тестове; не важи за plugin умения, вграденото /verify или при disable-model-invocation.",
       "source": "https://code.claude.com/docs/en/skills#run-your-checks-before-each-commit",
       "keywords": [
-        "verify",
         "before each commit",
-        "includeGitInstructions"
+        "includeGitInstructions",
+        [
+          "verify",
+          "skill"
+        ],
+        [
+          "verify",
+          "commit"
+        ]
       ],
       "relies": [
         ".claude/skills/verify/SKILL.md"
@@ -269,7 +300,14 @@
       "source": "https://code.claude.com/docs/en/changelog.md (2.1.314) + проба на живо 31.10.2026 (2.1.316): headless сесия и съобщението на харнеса при Edit на .claude/settings.json",
       "keywords": [
         "blockWritesOutsideWorkingDirectories",
-        "managed settings"
+        [
+          "outside the working director",
+          "write"
+        ],
+        [
+          "settings file",
+          "write"
+        ]
       ],
       "relies": [
         ".claude/settings.json"
@@ -282,7 +320,10 @@
       "keywords": [
         "CLAUDE_CODE_SUBAGENT_EFFORT",
         "CLAUDE_CODE_EFFORT_LEVEL",
-        "effort"
+        [
+          "subagent",
+          "effort"
+        ]
       ],
       "relies": [
         ".claude/settings.json",
@@ -296,7 +337,10 @@
       "source": "https://code.claude.com/docs/en/sub-agents.md#concurrent-subagent-limit + https://code.claude.com/docs/en/workflows.md (Behavior and limits)",
       "keywords": [
         "CLAUDE_CODE_WORKFLOW_MAX_CONCURRENT_AGENTS",
-        "workflow"
+        [
+          "workflow",
+          "concurren"
+        ]
       ],
       "relies": [
         ".claude/settings.json"
@@ -307,9 +351,15 @@
       "claim": "SubagentStop кука без matcher тича и за вътрешните помощници на харнеса с празен agent_type; usage-capture ги записва като „вътрешен“, не като „общ“ агент.",
       "source": "https://code.claude.com/docs/en/hooks.md#subagentstop-input",
       "keywords": [
-        "SubagentStop",
         "agent_type",
-        "matcher"
+        [
+          "SubagentStop",
+          "matcher"
+        ],
+        [
+          "SubagentStop",
+          "internal"
+        ]
       ],
       "relies": [
         ".claude/hooks/usage-capture.mjs"
@@ -335,7 +385,15 @@
       "source": "https://code.claude.com/docs/en/hooks.md#timeouts",
       "keywords": [
         "onFailure",
-        "timeout"
+        "hook timeout",
+        [
+          "hook",
+          "time out"
+        ],
+        [
+          "hook",
+          "timed out"
+        ]
       ],
       "relies": [
         ".claude/settings.json"
@@ -352,6 +410,48 @@
       ],
       "relies": [
         ".claude/settings.json"
+      ]
+    },
+    {
+      "id": "print-mode-loads-hooks",
+      "claim": "claude -p без --bare зарежда куките от settings, CLAUDE.md и агентите; --bare ги пропуска (CLI 2.1.322 --help). Boris Cherny (30.03.2026) обяви, че по-късна версия ще направи --bare подразбиране за -p и SDK — тогава live-run (жив гейт, pr-review) би тръгнал без memory-preload и без пазачите. Пробата на живия гейт пада шумно (липсват маркерите на паметта), но всяко друго -p пускане би загубило пазачите тихо.",
+      "source": "https://threadreaderapp.com/thread/2038454336355999749",
+      "keywords": [
+        "--bare",
+        [
+          "bare",
+          "default"
+        ],
+        [
+          "bare",
+          "print mode"
+        ]
+      ],
+      "relies": [
+        "tools/agents/evals/live-run.mjs",
+        "tools/agents/evals/rubric-grade.mjs",
+        ".claude/settings.json"
+      ]
+    },
+    {
+      "id": "min-cli-2-1-319",
+      "claim": "Под Claude Code 2.1.319 създаването на worktree може да избяга от sandbox-а, а sed може да прескочи проверката на правата в accept-edits/auto; живият гейт отказва да тръгне под MIN_CLI (tools/lib/cli-version.mjs), sandbox-setup предупреждава.",
+      "source": "https://code.claude.com/docs/en/changelog.md",
+      "keywords": [
+        [
+          "sandbox",
+          "worktree"
+        ],
+        [
+          "sed",
+          "permission"
+        ],
+        "sandbox escape"
+      ],
+      "relies": [
+        "tools/lib/cli-version.mjs",
+        "tools/agents/live-gate.mjs",
+        "tools/agents/sandbox-setup.mjs"
       ]
     }
   ]

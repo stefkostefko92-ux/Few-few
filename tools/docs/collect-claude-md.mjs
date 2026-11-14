@@ -78,7 +78,9 @@ const banner = "// АВТО-ГЕНЕРИРАН от tools/docs/collect-claude-md
 // псевдоним проверката `typeof docs === "undefined"` винаги пада и Docs табът показва вечния
 // плейсхолдър „Документите се зареждат от docs.js при деплой". Пишем и двете: `__DOCS__` е
 // стабилното име за външни четци, `docs` е това, което рендерът реално ползва.
-const body = banner + "window.__DOCS__ = " + JSON.stringify(payload, null, 2) + ";\nvar docs = window.__DOCS__;\n";
+// `</` → `<\/` (14.11.2026): docs.js се вгражда в <script>; буквално „</script>“ в CLAUDE.md (FiveM, обяснение
+// за XSS) затваряше блока рано и билдът на артефакта падаше на „остана обвиващ таг“. `\/` е валидно в JSON и JS.
+const body = banner + "window.__DOCS__ = " + JSON.stringify(payload, null, 2).replace(/<\//g, "<\\/") + ";\nvar docs = window.__DOCS__;\n";
 
 if (CHECK) {
   const cur = existsSync(OUT) ? readFileSync(OUT, "utf8") : "";

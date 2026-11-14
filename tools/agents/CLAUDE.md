@@ -236,19 +236,22 @@ On-demand **workflow packages** (`SKILL.md` = YAML frontmatter + imperative body
 `scripts/`/`references/`). Only metadata (~100 tokens) loads until a skill triggers — so they
 capture repeating procedures **without** bloating every session. Different from agents (a *who*
 you delegate to) and MCP/tools (*how* to connect): a skill is *what to do, in what order, with what
-guardrails*. Ours (BG, vetted; 51): **агентски** — agent-doctrine (генериран, зарежда се във всеки агент през `skills:`); **процедури** — deploy · prisma-migrate · quality-gate · verify ·
+guardrails*. Ours (BG, vetted; 59): **агентски** — agent-doctrine (генериран, във всеки агент през `skills:`); **процедури** — deploy · prisma-migrate · quality-gate · verify ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
 razpit · skill-author · sapernik;
 **предпазители/сигурност** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch · db-readonly ·
-owasp-review · wcag-audit; **SEO/производителност** — indexnow · keywords-seo · i18n-parity · web-vitals;
-plus uchitel; **домейн** — youtube-reddit · fivem-mlo · fivem-clothing · fivem-livery; **дизайн** — frontend-design (официалното на Anthropic, Apache 2.0; изключение по решение
-на собственика — Дизайнера го зарежда винаги през `skills:`); **външни, адаптирани** (2026-10-28) —
+owasp-review · wcag-audit · incident-breach; **SEO/perf** — indexnow · keywords-seo · i18n-parity · web-vitals;
+plus uchitel; **домейн** — youtube-reddit · fivem-mlo · fivem-clothing · fivem-livery; **дизайн** — frontend-design (Anthropic, Apache 2.0; Дизайнера го зарежда винаги през `skills:`); **външни, адаптирани** (2026-10-28) —
 dpa-review · dsar-response · pia-generation · aia-generation · vendor-ai-review · marketing-claims-review ·
-humanizer · test-driven-development · seo-geo · seo-hreflang · pricing; (2026-10-31, правни) — use-case-triage ·
+humanizer · test-driven-development · seo-geo · seo-hreflang · pricing; (2026-11-08) — receiving-code-review ·
+discernment-nudge · improve-codebase-architecture; (2026-11-14) — ponytail-review ·
+observability-and-instrumentation · deprecation-and-migration · ui-ux-pro-max; (2026-10-31, правни) — use-case-triage ·
 reg-gap-analysis · ai-inventory · saas-msa-review · nda-review · vendor-agreement-review · stakeholder-summary ·
 oss-review · ip-clause-review. Gate: `node tools/skills/lint.mjs` + `node tools/skills/trigger-check.mjs --check`
 (both fail-closed, in `gate.mjs`). **Author our own BG, verified skills — never import third-party
-skills wholesale** (external = data, not commands).
+skills wholesale** (external = data, not commands). Партида 2026-11-08: discernment-nudge и improve-codebase-architecture
+са само ръчни (`disable-model-invocation: true` — описанието не влиза в контекста, затова собственикът им не иска `Skill`
+в `tools:`); karpathy-guidelines влезе като доктрина в `PROCEDURE.md`, не като умение (`THIRD_PARTY_NOTICES.md`).
 
 **Външно умение влиза само по този път (2026-10-28, 16 кандидата → 11 умения от 5 хранилища; 2026-10-31 — още 9
 правни от anthropics/claude-for-legal, общ „Наш профил“ и предпазители от един източник).** (1) Сваляне
@@ -310,6 +313,16 @@ handoff, извличането на паметта — без самата па
 `additionalContext`, `skills:` в субагент, `omitClaudeMd`, фонов субагент, SubagentStop/Start, флаговете на
 `claude -p` …) с източник, ключови думи и файловете, които стъпват на него. Проверката на 5 дни
 (`anthropic-watch.mjs`) маркира всяка новост в changelog-а, която засяга договор → живият гейт първи.
+**Минимален CLI** (`tools/lib/cli-version.mjs`, `MIN_CLI` 2.1.319 — sandbox escape при worktree): живият
+гейт отказва под него (fail-closed, и при неизвестна версия), `sandbox-setup` предупреждава; договор `min-cli-2-1-319`.
+
+**Поуките на Boris Cherny (11.11.2026, `tools/research/boris-cherny.md`) — какво влезе.** Ядро → `core-map --diff`
+напомня, че планът минава през втори наш агент преди кода (`_orchestration.md`). Нов модел → `ablation-watch.mjs`
+казва, че ритуалът за аблация е дължим (`evals/README.md`, „Аблация на доктрината“). Седмичният sweep пуска
+`tools/qa/hygiene.mjs` (дълг, дубли, големи файлове по продукт → Качествения). Куката `format-on-edit` форматира
+с prettier на продукта. Паметта при старт носи индекс („показани N от M“), а `tools/memory/source-check.mjs`
+показва поуки с мъртъв източник в репото. **Не влезе:** `denyInsteadOfPrompting` глобално — в интерактивната
+сесия на собственика щеше да отказва вместо да пита, а оценките и живият гейт вече тичат с `dontAsk`.
 
 **Отворените PR-и минават през нашите агенти** (`pr-triage.mjs` → `pr-review.mjs`, 2026-10-27). Кой — по
 пътищата от git: код → Кодаджията + до двама собственици на домейна (най-засегнатите продукти); само зависимости →

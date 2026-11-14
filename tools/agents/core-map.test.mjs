@@ -1,7 +1,7 @@
 // core-map.test.mjs — ядро: пари, фискал, вход, медицински данни, схема; листа: изгледи, стилове, тестове.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { isCore, coreReport } from "./core-map.mjs";
+import { isCore, coreReport, planReviewHint } from "./core-map.mjs";
 
 test("ядро в реалните продукти", () => {
   for (const f of ["CSPos/src/lib/fiscal/erpnet.ts", "CSPos/src/app/api/sales/[id]/storno/route.ts", "linketto/src/app/api/stripe/webhook/route.ts",
@@ -20,4 +20,12 @@ test("ядро без тест в същия продукт се вижда; т�
   assert.deepEqual(b.coreWithoutTest, []);
   const c = coreReport(["CSPos/src/lib/fiscal/erpnet.ts", "medqr/src/routes/emergency.test.js"]);
   assert.equal(c.coreWithoutTest.length, 1, "тест в друг продукт не покрива");
+});
+
+test("ядро → подсказка за втори преглед на плана преди кода; листо → нищо", () => {
+  const hint = planReviewHint(coreReport(["CSPos/src/lib/fiscal/erpnet.ts"]));
+  assert.match(hint, /втори наш агент преди кода/);
+  for (const w of ["Разбивача", "Качествения", "razpit", "тест първо"]) assert.ok(hint.includes(w), w);
+  assert.equal(planReviewHint(coreReport(["CSPos/src/app/(app)/page.tsx", "zabobovdol/README.md"])), "");
+  assert.equal(planReviewHint(null), "");
 });
