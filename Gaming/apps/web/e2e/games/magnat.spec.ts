@@ -256,7 +256,8 @@ test("магнат (2D): ~15 хода с хвърляне, купуване, т�
     // Само решенията имат прозорец; обикновеният ход — не.
     if (phase === "MANAGE") await expect(page.locator("[data-decision]")).toHaveCount(0);
     if (phase === "ROLL") {
-      if (await page.getByTestId("magnat-jail").isVisible()) {
+      const jailed = await page.getByTestId("magnat-jail").isVisible();
+      if (jailed) {
         // Затвор: гаранция, карта или хвърляне за чифт — всичко в прозореца, не в таблото.
         await firstLook("magnat-jail");
         await expect(side(page).locator('[data-action="roll"]')).toHaveCount(0);
@@ -269,7 +270,13 @@ test("магнат (2D): ~15 хода с хвърляне, купуване, т�
         await expect(page.locator("[data-decision]")).toHaveCount(0);
       }
       await send(page, act(page, "roll"));
-      await expect(page.locator("[data-dice]")).toBeVisible();
+      // Неуспешно хвърляне за чифт в затвора приключва хода (заровете се нулират) —
+      // хвърлянето се показва в банера „… не хвърли чифт, оставаш в затвора“.
+      await expect(
+        jailed
+          ? page.locator("[data-dice]").or(page.locator(".aso-announce", { hasText: /не хвърли чифт/ }))
+          : page.locator("[data-dice]"),
+      ).toBeVisible();
       stats.rolls++;
       if ((await page.locator(`[data-mag-player="${me}"]`).getAttribute("data-bankrupt")) === "true") break;
       // Пулът на 2D дъската стои там, където е по сървъра.

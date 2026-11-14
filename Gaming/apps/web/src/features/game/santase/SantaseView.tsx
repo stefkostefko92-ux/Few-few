@@ -15,6 +15,7 @@ import { useTrickDisplay, TrickCardSlot } from "../anim/useTrickDisplay";
 import { useMatch } from "../useMatch";
 import { Scene, ScorePill, HandCard } from "../scene/SceneShell";
 import { DecisionPrompt } from "../scene/DecisionPrompt";
+import { useClearOfDecision } from "../scene/useClearOfDecision";
 
 interface Play {
   seat: number;
@@ -154,6 +155,14 @@ export function SantaseView({ title }: { title: string }) {
     phase === "playing" && onLead && (!!exchangeAction || marriagePlays.length > 0 || declareReady.length > 0);
   const [skippedLead, setSkippedLead] = useState<string | null>(null);
   const callsInPrompt = leadPrompt && skippedLead !== leadKey;
+  // Прозорецът с обявите е горе; превъртяната страница вдига ръката под него —
+  // тогава я сваляме точно под прозореца (решението е за картите в нея).
+  useClearOfDecision(
+    () => document.querySelector<HTMLElement>('[data-zone="hand"]'),
+    callsInPrompt,
+    leadKey,
+    "below",
+  );
   const smallCalls =
     onLead && !callsInPrompt && (!!closeAction || hasMarriageChoice || declareActions.length > 0 || !!exchangeAction);
 
@@ -422,10 +431,10 @@ export function SantaseView({ title }: { title: string }) {
               suit: SUIT_GLYPH[state.trump] ?? "",
               count: state.stock.length,
             })}
-            // On my lead the trick is empty: the middle of the felt is free on
-            // a laptop. A phone's popup spans the felt and would cover the
-            // talon on the left rail — there it goes to the top third.
-            placement={narrow ? "top" : "center"}
+            // Горе, над гърбовете на противника: с няколко обяви (две двойки
+            // 20/40 + „Затвори“ + „Имам 66…“) прозорецът става висок и в
+            // средата покриваше ръката ми; на телефон — и талона на левия ръб.
+            placement="top"
             optional={{ label: t("decision.notNow"), onSkip: () => setSkippedLead(leadKey) }}
             testId="santase-lead"
           >

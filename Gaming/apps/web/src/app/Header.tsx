@@ -201,8 +201,10 @@ export function Header() {
     : "";
 
   return (
+    // min-h 69px = височината на стария хедър: масите и прозорците за решение в
+    // игрите са подредени спрямо нея (e2e проверява, че не се застъпват).
     <header
-      className="relative z-30 flex items-center justify-between gap-3 bg-gradient-to-b from-charcoal-900/95 to-felt-900/80 px-4 py-2.5 shadow-[0_10px_30px_-18px_rgba(0,0,0,.9)] backdrop-blur-md sm:gap-4 sm:px-6 lg:px-8"
+      className="relative z-30 flex min-h-[69px] items-center justify-between gap-3 bg-gradient-to-b from-charcoal-900/95 to-felt-900/80 px-4 py-2.5 shadow-[0_10px_30px_-18px_rgba(0,0,0,.9)] backdrop-blur-md sm:gap-4 sm:px-6 lg:px-8"
       data-testid="app-header"
     >
       {/* Месингова линия отдолу — тънка, избледняваща към краищата. */}
