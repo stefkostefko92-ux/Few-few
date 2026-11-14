@@ -6864,7 +6864,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 284
+        "lessons": 287
       },
       "evolution": [
         {
@@ -7280,9 +7280,20 @@
           "date": "2026-11-14",
           "event": "v25.4 — учене",
           "detail": "Научи: В текстовия формат на pg_dump всеки ред на таблица е точно един ред между „COPY public.… (+8 още)"
+        },
+        {
+          "version": "25.7.0",
+          "date": "2026-11-14",
+          "event": "v25.7 — учене",
+          "detail": "Научи: Prisma 6.19.3 при PRISMA_ENGINES_MIRROR иска <name>.gz.sha256 (sha256 на самия gz файл)… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-14",
+          "type": "learning",
+          "summary": "Научи: „Prisma 6.19.3 при PRISMA_ENGINES_MIRROR иска <name>.gz.sha256 (sha256 на самия gz файл)…\" (+2 още)"
+        },
         {
           "date": "2026-11-14",
           "type": "learning",
