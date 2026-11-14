@@ -371,7 +371,8 @@ export class GameRoom {
     this.turnTimer = undefined;
     const strikes = (this.strikes.get(seat) ?? 0) + 1;
     this.strikes.set(seat, strikes);
-    const takeover = strikes >= TIMEOUT_STRIKES_FOR_TAKEOVER;
+    // Думи (timeoutAction): бот никога не играе човешко място — няма и „поемане“.
+    const takeover = strikes >= TIMEOUT_STRIKES_FOR_TAKEOVER && !this.engine.timeoutAction;
     if (takeover && !this.substituted.has(seat)) {
       this.substituted.add(seat);
       this.emitPresence(seat, false); // surfaces "под контрол на бот" to the table

@@ -337,6 +337,7 @@
     "opponentDropped": "{{name}} dropped — bot is covering",
     "yourTurnTimer": "Your turn: {{s}}s",
     "opponentTurnTimer": "{{name}} thinking · {{s}}s",
+    "timeoutWarningWords": "Your time ran out — that counts as a pass and costs 1 life.",
     "timeoutWarning": "Your time ran out — the bot played this move for you. Miss one more turn and the bot takes your seat."
   },
   "verify": {
@@ -1315,6 +1316,8 @@
     "clock": "You have {{s}} seconds per turn.",
     "timeout": "If your time runs out, the bot plays just that move for you — the seat stays yours.",
     "timeoutWords": "If your time runs out, it counts as a pass — you lose a life (the bot never says a word for you).",
+    "clockBingo": "There are no turns and no turn clock here: a new number is drawn every {{s}} seconds. Mark whenever you like and call “Bingo!” as soon as you have a full line.",
+    "takeoverBingo": "If your connection drops, the bot marks your card until you are back.",
     "takeover": "After two missed turns in a row (or a dropped connection) the bot takes your seat until you press “Return to the game”.",
     "gotIt": "Got it — to the table"
   },

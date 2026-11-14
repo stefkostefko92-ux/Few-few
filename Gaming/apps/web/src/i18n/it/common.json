@@ -337,6 +337,7 @@
     "opponentDropped": "{{name}} si è disconnesso — il bot subentra",
     "yourTurnTimer": "Il tuo turno: {{s}}s",
     "opponentTurnTimer": "{{name}} sta pensando · {{s}}s",
+    "timeoutWarningWords": "Tempo scaduto — vale come passo e costa 1 vita.",
     "timeoutWarning": "Tempo scaduto — il bot ha giocato questa mossa per te. Salta un altro turno e il bot prende il tuo posto."
   },
   "verify": {
@@ -1315,6 +1316,8 @@
     "clock": "Hai {{s}} secondi per turno.",
     "timeout": "Se il tempo scade, il bot gioca solo quella mossa per te — il posto resta tuo.",
     "timeoutWords": "Se il tempo scade, vale come passo — perdi una vita (il bot non dice mai una parola al posto tuo).",
+    "clockBingo": "Qui non ci sono turni né timer: ogni {{s}} secondi viene estratto un nuovo numero. Segna quando vuoi e chiama «Bingo!» appena hai una linea completa.",
+    "takeoverBingo": "Se la connessione cade, il bot segna la tua cartella finché non torni.",
     "takeover": "Dopo due turni saltati di fila (o una connessione persa) il bot prende il tuo posto finché non premi «Torna in gioco».",
     "gotIt": "Ho capito — al tavolo"
   },

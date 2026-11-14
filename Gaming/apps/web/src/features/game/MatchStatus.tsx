@@ -55,6 +55,7 @@ export function MatchPills() {
   const substituted = useMatchStore((s) => s.substituted);
   const players = useMatchStore((s) => s.players);
   const disconnected = useMatchStore((s) => s.disconnected);
+  const game = useMatchStore((s) => s.game);
 
   const [now, setNow] = useState(() => Date.now());
   const myTurn = phase === "playing" && turn === mySeat && turnEndsAt > 0;
@@ -108,7 +109,8 @@ export function MatchPills() {
 
       {warned ? (
         <div role="status" className={`${PILL} border border-loss/40 bg-felt-900/90 text-ink-100`}>
-          ⚠ {t("live.timeoutWarning")}
+          {/* Думи: изтеклото време е пас за 1 живот — бот не играе вместо теб. */}
+          ⚠ {t(game === "WORDS" ? "live.timeoutWarningWords" : "live.timeoutWarning")}
         </div>
       ) : null}
 

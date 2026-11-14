@@ -131,6 +131,7 @@ export function BattleshipView({ title }: { title: string }) {
               key={m.matchId}
               ready={state.ready?.[seat] === true}
               oppReady={state.ready?.[opp] === true}
+              fleet={state.ships?.[seat]}
               onReady={(ships) => m.send({ type: "PLACE", seat, ships })}
             />
           </div>

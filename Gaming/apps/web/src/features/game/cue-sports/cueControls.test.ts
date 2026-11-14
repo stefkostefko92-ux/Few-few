@@ -112,6 +112,12 @@ describe("spaceShoots — Space стреля, освен при писане", (
     expect(spaceShoots({ tagName: "BUTTON" })).toBe(true);
     expect(spaceShoots({ tagName: "svg" })).toBe(true);
     expect(spaceShoots({ tagName: "BODY" })).toBe(true);
+  });
+  it("бутон в прозореца за решение или в диалог → Space натиска него, не удря", () => {
+    const inside = (sel: string) => (s: string) => (s.includes(sel) ? {} : null);
+    expect(spaceShoots({ tagName: "BUTTON", closest: inside("[data-decision]") })).toBe(false);
+    expect(spaceShoots({ tagName: "BUTTON", closest: inside("[role='dialog']") })).toBe(false);
+    expect(spaceShoots({ tagName: "BUTTON", closest: () => null })).toBe(true);
     expect(spaceShoots(null)).toBe(true);
   });
 });

@@ -214,6 +214,20 @@ describe("GameRoom — часовник на хода по игра + два п�
     expect(st.turn).toBe(1);
     expect(st.timeoutStrikes).toBe(1);
   });
+
+  it("Думи: и след два поредни изтекли часовника мястото НЕ е „под контрол на бот“", async () => {
+    vi.useFakeTimers();
+    const log: Emit[] = [];
+    const room = new GameRoom(fakeIo(log), "wd3", "WORDS", humans(2), "seed");
+    room.start();
+    // u0 изпуска, u1 изпуска, u0 изпуска пак → 2 поредни за u0.
+    await vi.advanceTimersByTimeAsync(3 * (30_000 + 10));
+    const st = lastState(log, "u0");
+    expect((st.state.lives as number[])[0]).toBe(1);
+    expect(st.timeoutStrikes).toBe(2);
+    expect(st.substituted).toBeUndefined();
+    expect(log.filter((e) => e.event === SOCKET_EVENTS.PRESENCE)).toEqual([]);
+  });
 });
 
 describe("GameRoom — бот, който хвърля, не замразява масата", () => {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../../lib/store";
 import { Button, cn } from "../../../ui";
@@ -7,6 +7,7 @@ import { useMatch } from "../useMatch";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene, ScorePill } from "../scene/SceneShell";
 import { FeltTable } from "../table/FeltTable";
+import { seatNames } from "../seatNames";
 import "./bingo.css";
 
 interface BingoState {
@@ -59,6 +60,8 @@ export function BingoView({ title }: { title: string }) {
   const user = useAuthStore((s) => s.user);
   const m = useMatch<BingoState, BingoAction>("BINGO");
   const { state, seat, phase, result, players, send } = m;
+  // Ботовете са все „АСО Бот“ — с номер, за да се различават (АСО Бот 1, 2, 3).
+  const names = useMemo(() => seatNames(players), [players]);
 
   const drawnSet = new Set(state?.drawn ?? []);
   const last = state?.drawn[state.drawn.length - 1];
@@ -71,7 +74,7 @@ export function BingoView({ title }: { title: string }) {
   const canAct = !!state && phase === "playing" && blockedLeft === 0;
 
   const nameOf = (s: number) =>
-    s === seat ? (user?.displayName ?? t("game.you")) : (players.find((p) => p.seat === s)?.displayName ?? `#${s}`);
+    s === seat ? (user?.displayName ?? t("game.you")) : (names(s) ?? `#${s}`);
 
   // „Бинго!“, невярно викане и наказание — за всички на масата.
   const { banners } = useGameAnnouncements({
@@ -207,7 +210,7 @@ export function BingoView({ title }: { title: string }) {
             {state.cards.map((_card, s) => {
               if (s === seat) return null;
               const { marked, best } = progress(state.marks?.[s] ?? []);
-              const name = players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
+              const name = names(s) ?? `#${s}`;
               return (
                 <div key={s} className={cn("bingo-rival", best >= 4 && "bingo-rival--hot")} data-rival={s} data-best={best}>
                   <span className="bingo-rival-name">{name}</span>

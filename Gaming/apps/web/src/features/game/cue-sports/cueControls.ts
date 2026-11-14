@@ -80,6 +80,8 @@ export interface FocusTarget {
   tagName: string;
   type?: string;
   isContentEditable?: boolean;
+  /** DOM `closest` — to tell a button in a decision prompt or dialog apart. */
+  closest?: (selector: string) => unknown;
 }
 
 /**
@@ -91,6 +93,10 @@ export interface FocusTarget {
 export function spaceShoots(el: FocusTarget | null | undefined): boolean {
   if (!el) return true;
   if (el.isContentEditable) return false;
+  // A button in the decision prompt (джоб за осмицата, push-out…) or in any
+  // dialog: Space presses THAT button, as the keyboard user expects — it used
+  // to fire the shot instead and swallow the choice.
+  if (el.closest?.("[data-decision], [role='dialog']")) return false;
   const tag = el.tagName.toUpperCase();
   if (tag === "TEXTAREA" || tag === "SELECT") return false;
   if (tag === "INPUT") return (el.type ?? "text").toLowerCase() === "range";

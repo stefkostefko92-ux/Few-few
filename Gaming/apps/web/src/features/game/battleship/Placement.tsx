@@ -85,10 +85,14 @@ function conflicts(layout: ShipLayout[]): Set<number> {
 export function BattleshipPlacement({
   ready,
   oppReady,
+  fleet,
   onReady,
 }: {
   ready: boolean;
   oppReady: boolean;
+  /** The fleet the server holds for me (once I'm ready). After a timeout the
+   *  bot placed it at random — the locked board must show THAT, not my draft. */
+  fleet?: number[][];
   onReady: (ships: number[][]) => void;
 }) {
   const { t } = useTranslation();
@@ -97,11 +101,13 @@ export function BattleshipPlacement({
   const [sent, setSent] = useState(false);
   const drag = useRef<{ ship: number; offset: number; moved: boolean } | null>(null);
 
+  const serverFleet = ready && fleet && fleet.length > 0 ? fleet : null;
   const owner = useMemo(() => {
     const map = new Map<number, number>();
-    layout.forEach((s, k) => cellsOf(s).forEach((cell) => map.set(cell, k)));
+    if (serverFleet) serverFleet.forEach((ship, k) => ship.forEach((cell) => map.set(cell, k)));
+    else layout.forEach((s, k) => cellsOf(s).forEach((cell) => map.set(cell, k)));
     return map;
-  }, [layout]);
+  }, [layout, serverFleet]);
   const bad = useMemo(() => conflicts(layout), [layout]);
   const ships = useMemo(() => layout.map(cellsOf), [layout]);
   const valid = battleshipFleetError(ships) === null;
