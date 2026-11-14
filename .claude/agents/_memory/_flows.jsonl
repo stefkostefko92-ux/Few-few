@@ -559,3 +559,7 @@
 {"t":"handoff","ts":"2026-11-13T11:25:31.883Z","id":"r848d2add","from":"dizayner","to":"kodadjiyata","status":"има бележки","run":"6319c7db"}
 {"t":"start","ts":"2026-11-13T13:58:53.577Z","id":"rb2200970","flow":"авто","lead":"dizayner","auto":true}
 {"t":"handoff","ts":"2026-11-13T13:58:53.577Z","id":"rb2200970","from":"dizayner","to":"kodadjiyata","status":"блокер (находка 1: 4 проблясъка/s върху >25% от поле 10° при in/out на курсора; качването да почака корекцията)","run":"3ab61b08"}
+{"t":"start","ts":"2026-11-14T09:01:21.675Z","id":"rab931466","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-14T09:01:21.675Z","id":"rab931466","from":"kodadjiyata","to":"kachestveniyat","status":"блокер","run":"1218b645"}
+{"t":"start","ts":"2026-11-14T09:16:13.457Z","id":"r4ba9c50c","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-14T09:16:13.457Z","id":"r4ba9c50c","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"43169f56"}

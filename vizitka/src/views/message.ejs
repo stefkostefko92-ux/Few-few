@@ -1,0 +1,8 @@
+<%- include('partials/head') %>
+<%# Кратко съобщение след връзка от писмо (потвърден имейл, сменен имейл, невалидна връзка). %>
+<section class="auth-card">
+  <h1><%= heading %></h1>
+  <p class="<%= ok ? 'alert alert-ok' : 'alert alert-error' %>" role="<%= ok ? 'status' : 'alert' %>"><%= message %></p>
+  <p><a class="btn" href="<%= user ? '/settings' : '/login' %>"><%= user ? 'Към настройките' : 'Към входа' %></a></p>
+</section>
+<%- include('partials/foot') %>

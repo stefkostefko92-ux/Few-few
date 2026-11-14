@@ -55,17 +55,43 @@ export async function verifyDummyPassword(password) {
 
 const sha256 = (value) => crypto.createHash('sha256').update(value).digest('hex');
 
-export function createSession(res, userId) {
+// Груб етикет на устройството от User-Agent („Chrome · Android“) — само за да познаеш
+// своята сесия в списъка. Без версии и без IP: идентификация не е нужна, а и не я искаме.
+export function deviceLabel(ua) {
+  const s = String(ua || '');
+  const browser = /Edg\//.test(s)
+    ? 'Edge'
+    : /OPR\/|Opera/.test(s)
+      ? 'Opera'
+      : /Firefox\//.test(s)
+        ? 'Firefox'
+        : /Chrome\//.test(s)
+          ? 'Chrome'
+          : /Safari\//.test(s)
+            ? 'Safari'
+            : '';
+  const os = /Android/.test(s)
+    ? 'Android'
+    : /iPhone|iPad|iPod/.test(s)
+      ? 'iOS'
+      : /Windows/.test(s)
+        ? 'Windows'
+        : /Mac OS X|Macintosh/.test(s)
+          ? 'macOS'
+          : /Linux/.test(s)
+            ? 'Linux'
+            : '';
+  return [browser, os].filter(Boolean).join(' · ') || 'Непознато устройство';
+}
+
+export function createSession(res, userId, req) {
   purgeExpiredSessions();
   const token = crypto.randomBytes(32).toString('hex');
   const csrfToken = crypto.randomBytes(32).toString('hex');
   const expiresAt = Date.now() + SESSION_TTL_MS;
-  db.prepare('INSERT INTO sessions (id, user_id, csrf_token, expires_at) VALUES (?, ?, ?, ?)').run(
-    sha256(token),
-    userId,
-    csrfToken,
-    expiresAt
-  );
+  db.prepare(
+    'INSERT INTO sessions (id, user_id, csrf_token, expires_at, device) VALUES (?, ?, ?, ?, ?)'
+  ).run(sha256(token), userId, csrfToken, expiresAt, deviceLabel(req?.get?.('user-agent')));
   res.cookie(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: 'lax',
@@ -74,6 +100,42 @@ export function createSession(res, userId) {
     path: '/',
   });
 }
+
+// ── Чакащ втори фактор ───────────────────────────────────────────────────────
+// След вярна парола при включен 2FA НЕ създаваме сесия: даваме краткоживееща (5 мин)
+// подписана бисквитка „паролата е минала за потребител N“. Сесията се ражда едва след
+// верния код. Подписът е HMAC с тайна, генерирана при старт — бисквитката не може да
+// се подправи, а рестарт просто я обезсилва (потребителят въвежда паролата отново).
+const PENDING_COOKIE = 'vz_2fa';
+const PENDING_TTL_MS = 5 * 60 * 1000;
+const pendingKey = crypto.randomBytes(32);
+const signPending = (payload) =>
+  crypto.createHmac('sha256', pendingKey).update(payload).digest('base64url');
+
+export function startPendingLogin(res, userId) {
+  const payload = `${userId}.${Date.now() + PENDING_TTL_MS}`;
+  res.cookie(PENDING_COOKIE, `${payload}.${signPending(payload)}`, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: prod,
+    maxAge: PENDING_TTL_MS,
+    path: '/login',
+  });
+}
+
+// Потребителят, чиято парола е минала преди малко, или null.
+export function pendingLoginUser(req) {
+  const raw = String(req.cookies?.[PENDING_COOKIE] || '');
+  const m = /^(\d+)\.(\d+)\.([\w-]+)$/.exec(raw);
+  if (!m) return null;
+  const expected = Buffer.from(signPending(`${m[1]}.${m[2]}`));
+  const got = Buffer.from(m[3]);
+  if (expected.length !== got.length || !crypto.timingSafeEqual(expected, got)) return null;
+  if (Number(m[2]) < Date.now()) return null;
+  return db.prepare('SELECT * FROM users WHERE id = ?').get(Number(m[1])) || null;
+}
+
+export const clearPendingLogin = (res) => res.clearCookie(PENDING_COOKIE, { path: '/login' });
 
 export function destroySession(req, res) {
   const token = req.cookies?.[SESSION_COOKIE];
@@ -92,7 +154,7 @@ export function attachUser(req, res, next) {
     .get(sha256(token), Date.now());
   if (!session) return next();
   const user = db
-    .prepare('SELECT id, email, is_admin, created_at FROM users WHERE id = ?')
+    .prepare('SELECT id, email, is_admin, created_at, email_verified_at FROM users WHERE id = ?')
     .get(session.user_id);
   if (user) {
     req.user = user;

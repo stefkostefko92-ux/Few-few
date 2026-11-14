@@ -69,6 +69,9 @@ gen_hex() { node -e "console.log(require('crypto').randomBytes($1).toString('hex
 # Ако файлът съществува, запази вече зададените тайни (идемпотентност).
 prev() { [[ -f "$ENV_FILE" ]] && sed -n "s/^$1=//p" "$ENV_FILE" | head -n1 || true; }
 PRINT_API_SECRET="$(prev PRINT_API_SECRET)"; PRINT_API_SECRET="${PRINT_API_SECRET:-$(gen_hex 32)}"
+# Ключ за шифроване на 2FA тайните (src/totp.js). Пази се между пусканията — смяна
+# би обезсилила всички включени двуфакторни влизания.
+ACCOUNT_SECRET="$(prev ACCOUNT_SECRET)"; ACCOUNT_SECRET="${ACCOUNT_SECRET:-$(gen_hex 32)}"
 INDEXNOW_KEY="$(prev INDEXNOW_KEY)";         INDEXNOW_KEY="${INDEXNOW_KEY:-$(gen_hex 16)}"
 # ПОРТЪТ също се пази между пусканията. Беше зачукан на 3100 и всяко повторно
 # пускане го нулираше — а живо vizitka слуша на 3105, защото 3100 е зает от друг
@@ -107,6 +110,7 @@ umask 077
   echo "ADMIN_EMAILS=$ADMIN_EMAIL"
   echo "MASTILKO_URL=$MASTILKO_URL"
   echo "PRINT_API_SECRET=$PRINT_API_SECRET"
+  echo "ACCOUNT_SECRET=$ACCOUNT_SECRET"
   echo "INDEXNOW_KEY=$INDEXNOW_KEY"
   echo "MAIL_FROM=$MAIL_FROM"
   if [[ -n "$SMTP_HOST" ]]; then
@@ -163,7 +167,7 @@ if [[ ! -d "/etc/letsencrypt/live/$DOMAIN" ]]; then
 server {
     listen 80;
     listen [::]:80;
-    server_name $DOMAIN;
+    server_name $DOMAIN www.$DOMAIN;
     root /var/www/html;
     location /.well-known/acme-challenge/ { allow all; }
 }
@@ -171,7 +175,7 @@ NG
   rm -f /etc/nginx/sites-enabled/vizitka.conf
   ln -sf ../sites-available/vizitka-acme.conf /etc/nginx/sites-enabled/vizitka-acme.conf
   nginx -t && systemctl reload nginx
-  certbot certonly --webroot -w /var/www/html -d "$DOMAIN" --non-interactive --agree-tos -m "$ADMIN_EMAIL" || {
+  certbot certonly --webroot -w /var/www/html -d "$DOMAIN" -d "www.$DOMAIN" --non-interactive --agree-tos -m "$ADMIN_EMAIL" || {
     echo "  ! certbot се провали (провери, че DNS за $DOMAIN сочи този сървър)."
     echo "    Оправи DNS и пусни пак този скрипт."
   }
@@ -181,7 +185,19 @@ fi
 # Активирай пълния vhost (443) само когато вече има сертификат — иначе nginx няма да стартира.
 if [[ -d "/etc/letsencrypt/live/$DOMAIN" ]]; then
   ln -sf ../sites-available/vizitka.conf /etc/nginx/sites-enabled/vizitka.conf
+  mkdir -p /var/www/html
   nginx -t && systemctl reload nginx
+  # Стар сертификат само за голия домейн → разшири го с www. Без това
+  # https://www.$DOMAIN показва грешка за сертификата, а Google отчита www като чужда
+  # страница. Идемпотентно: при вече покрит www нищо не прави.
+  if ! openssl x509 -noout -ext subjectAltName -in "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" 2>/dev/null \
+      | grep -q "DNS:www.$DOMAIN"; then
+    say "Разширявам сертификата с www.$DOMAIN"
+    certbot certonly --webroot -w /var/www/html --cert-name "$DOMAIN" --expand \
+      -d "$DOMAIN" -d "www.$DOMAIN" --non-interactive --agree-tos -m "$ADMIN_EMAIL" \
+      && nginx -t && systemctl reload nginx \
+      || echo "  ! Разширяването падна — провери, че DNS за www.$DOMAIN сочи този сървър."
+  fi
 else
   echo "  ! Няма сертификат за $DOMAIN — пълният HTTPS vhost НЕ е активиран. Пусни пак след DNS."
 fi

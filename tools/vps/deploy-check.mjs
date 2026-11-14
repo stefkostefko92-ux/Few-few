@@ -13,6 +13,28 @@ import { join, extname } from "node:path";
 import { isMain } from "../lib/is-main.mjs";
 
 // Оценява едно shell съдържание. Чиста функция — тестваема.
+// Заменя съдържанието на heredoc блоковете с празни редове (номерацията се пази).
+// Поддържа `<<WORD`, `<<-WORD` и кавичките `<<'WORD'`/`<<"WORD"`.
+export function blankHeredocBodies(src) {
+  const lines = src.split("\n");
+  let end = null;
+  let strip = false;
+  for (let i = 0; i < lines.length; i++) {
+    if (end !== null) {
+      const t = strip ? lines[i].replace(/^\t+/, "") : lines[i];
+      lines[i] = "";
+      if (t === end) end = null;
+      continue;
+    }
+    const h = /<<(-?)\s*(['"]?)([A-Za-z_][A-Za-z0-9_]*)\2/.exec(lines[i]);
+    if (h && !/^\s*#/.test(lines[i])) {
+      end = h[3];
+      strip = h[1] === "-";
+    }
+  }
+  return lines.join("\n");
+}
+
 export function lintShell(src, rel) {
   const out = [];
   const add = (sev, code, msg) => out.push({ sev, code, msg, where: rel });
@@ -253,15 +275,21 @@ export function lintShell(src, rel) {
   // име с долна черта (нашата конвенция за помощни функции — `deploy_x`,
   // `x_indexnow`, `x_ping_y`) трябва да има `име() {` в същия файл. Външни
   // команди с долна черта не ползваме, а вградените са без нея.
+  //
+  // Тялото на heredoc (`<<NG … NG`) е ДАННИ — конфигурация на nginx, systemd и пр., —
+  // не shell код: `server_name example.com;` там не е извикване на функция. Без това
+  // правилото пищеше за всеки vhost, сглобен с heredoc (vizitka/server-setup.sh,
+  // 13.11.2026). Редовете се заменят с празни, за да остане номерацията вярна.
   {
-    const defined = new Set([...src.matchAll(/^[ \t]*([A-Za-z_][A-Za-z0-9_]*)\s*\(\)\s*\{/gm)].map((m) => m[1]));
+    const code = blankHeredocBodies(src);
+    const defined = new Set([...code.matchAll(/^[ \t]*([A-Za-z_][A-Za-z0-9_]*)\s*\(\)\s*\{/gm)].map((m) => m[1]));
     const missing = new Map();
     const CALL = /^[ \t]*([a-z][a-z0-9]*_[a-z0-9_]+)\b(?![=(])/gm;
     let m;
-    while ((m = CALL.exec(src)) !== null) {
+    while ((m = CALL.exec(code)) !== null) {
       const name = m[1];
       if (defined.has(name)) continue;
-      const n = src.slice(0, m.index).split("\n").length;
+      const n = code.slice(0, m.index).split("\n").length;
       if (!missing.has(name)) missing.set(name, n);
     }
     if (missing.size)

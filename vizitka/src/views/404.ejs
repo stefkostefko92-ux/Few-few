@@ -1,8 +1,8 @@
 <%# 404 (и скрита визитка) не бива да влиза в индекса. %>
 <%- include('partials/head', { noindex: true }) %>
 <section class="auth-card center">
-  <h1>404</h1>
-  <p>Няма такава страница или визитката е скрита.</p>
+  <h1><%= typeof heading !== 'undefined' ? heading : '404' %></h1>
+  <p><%= typeof message !== 'undefined' ? message : 'Няма такава страница или визитката е скрита.' %></p>
   <p><a class="btn" href="/">Към началото</a></p>
 </section>
 <%- include('partials/foot') %>

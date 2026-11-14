@@ -25,6 +25,12 @@ const PATHS = {
   refresh: `<path ${P} d="M20 11a8 8 0 0 0-14-4.5L4 8"/><path ${P} d="M4 4v4h4"/><path ${P} d="M4 13a8 8 0 0 0 14 4.5L20 16"/><path ${P} d="M20 20v-4h-4"/>`,
   user: `<circle ${P} cx="12" cy="8" r="3.5"/><path ${P} d="M5 20a7 7 0 0 1 14 0"/>`,
   building: `<rect ${P} x="5" y="3" width="14" height="18" rx="1.5"/><path ${P} d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/>`,
+  // Настройки на акаунта
+  shield: `<path ${P} d="M12 3 5 6v5c0 4.5 3 8.3 7 10 4-1.7 7-5.5 7-10V6l-7-3Z"/><path ${P} d="m9 12 2 2 4-4"/>`,
+  key: `<circle ${P} cx="8" cy="15" r="4"/><path ${P} d="m11 12 9-9"/><path ${P} d="m17 6 3 3"/><path ${P} d="m15 8 2 2"/>`,
+  device: `<rect ${P} x="6" y="2.5" width="12" height="19" rx="2.5"/><path ${P} d="M11 18h2"/>`,
+  trash: `<path ${P} d="M4 7h16"/><path ${P} d="M10 11v6M14 11v6"/><path ${P} d="M6 7l1 13a1.5 1.5 0 0 0 1.5 1.4h7a1.5 1.5 0 0 0 1.5-1.4L18 7"/><path ${P} d="M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7"/>`,
+  chart: `<path ${P} d="M4 20V4"/><path ${P} d="M4 20h16"/><path ${P} d="m7 15 4-4 3 3 5-6"/>`,
   // Соц. мрежи
   facebook: `<path ${P} d="M14 8.5V7a1.5 1.5 0 0 1 1.5-1.5H17V3h-2A4 4 0 0 0 11 7v1.5H9V11h2v10h3V11h2l.5-2.5H14Z"/>`,
   instagram: `<rect ${P} x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle ${P} cx="12" cy="12" r="3.6"/><circle cx="17" cy="7" r="1.1" fill="currentColor"/>`,

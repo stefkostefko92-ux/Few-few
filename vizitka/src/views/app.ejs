@@ -1,0 +1,80 @@
+<%- include('partials/head') %>
+<%#
+  „Инсталирай приложението“: бутонът на браузъра, когато го предлага (Chrome, Edge — public/app.js), и
+  стъпките за всяко устройство. Отворени са тези на устройството (`device` — от User-Agent, src/pwa.js);
+  непознато устройство — всички.
+%>
+<section class="app-page" data-install>
+  <h1>Инсталирай приложението</h1>
+  <p class="lead">Сложи Vizitka на началния екран на телефона или на компютъра: отваря се с едно докосване, в свой прозорец, без лентите на браузъра.</p>
+
+  <p class="alert alert-ok" data-install-installed hidden>Вече ползваш инсталираното приложение.</p>
+  <div class="install-ready" data-install-ready hidden>
+    <p>Този браузър може да го инсталира веднага.</p>
+    <button class="btn" type="button" data-install-now><%- icon('download') %> Инсталирай приложението</button>
+  </div>
+  <p class="alert alert-ok" data-install-done role="status" hidden>Готово — Vizitka е на началния екран или сред програмите на компютъра.</p>
+
+  <% if (samsung) { %>
+  <div class="install-ready">
+    <p>Приложението, инсталирано от Samsung Internet, Android го отбелязва като „несигурно“. Инсталирай го от Chrome — същото приложение, без предупреждения.</p>
+    <p class="muted small">Ако вече си го инсталирал от Samsung Internet, махни го от началния екран и го инсталирай наново от Chrome.</p>
+    <a class="btn" href="<%= chromeUrl %>">Отвори в Chrome</a>
+  </div>
+  <% } %>
+
+  <div class="install-ready" data-install-ios<% if (device !== 'ios') { %> hidden<% } %>>
+    <p>На iPhone и iPad няма бутон, който да инсталира приложение — Apple го позволява само от менюто „Сподели“. Три докосвания са.</p>
+    <button class="btn btn-outline" type="button" data-install-ios-steps>Покажи как</button>
+  </div>
+
+  <div class="install-list">
+  <%
+    const host = siteBase.replace(/^https?:\/\//, '');
+    const systems = [
+      ['ios', 'iPhone и iPad', [
+        `Отвори ${host} в Safari (от iOS 16.4 — и в Chrome или Edge).`,
+        'Докосни „Сподели“ — квадратчето със стрелка нагоре.',
+        'Превърти и докосни „Добави към началния екран“.',
+        'Остави включено „Отвори като уеб приложение“, ако се появи, и докосни „Добави“.',
+      ]],
+      ['android', 'Android', [
+        `Отвори ${host} в Chrome (препоръчително) или Edge.`,
+        'Докосни менюто ⋮ горе вдясно.',
+        'Докосни „Инсталиране на приложението“ или „Добавяне към началния екран“ и потвърди.',
+        'Иконата на Vizitka е сред приложенията и се отваря без лентите на браузъра.',
+      ]],
+      ['pc', 'Компютър с Chrome или Edge (Windows, Mac, Linux)', [
+        'Натисни бутона „Инсталирай приложението“ по-горе, когато го има.',
+        'Или натисни иконата за инсталиране вдясно в адресната лента (екран със стрелка).',
+        'Потвърди с „Инсталиране“ — Vizitka се отваря в свой прозорец и остава в менюто „Старт“, в Dock или сред програмите.',
+      ]],
+      ['mac', 'Mac със Safari', [
+        `Отвори ${host} в Safari (macOS Sonoma или по-нова).`,
+        'От менюто „Файл“ избери „Добави в Dock“.',
+        'Vizitka се отваря от Dock в свой прозорец, без лентите на Safari.',
+      ]],
+    ];
+  %>
+  <% for (const [os, name, steps] of systems) { %>
+  <details class="install-os" data-os="<%= os %>"<% if (!device || device === os) { %> open<% } %>>
+    <summary><span><%= name %></span><span class="badge badge-on" data-install-yours<% if (device !== os) { %> hidden<% } %>>Твоето устройство</span></summary>
+    <ol>
+      <% for (const s of steps) { %><li><%= s %></li>
+      <% } %>
+    </ol>
+  </details>
+  <% } %>
+  </div>
+  <p class="muted small">Firefox на компютър не инсталира уеб приложения — ползвай Chrome, Edge или Safari на Mac. На Android Firefox го инсталира от менюто ⋮.</p>
+
+  <h2>Защо да го инсталираш</h2>
+  <ul class="install-why">
+    <li>Едно докосване от началния екран или работния плот — като всяко друго приложение.</li>
+    <li>Визитката ти е винаги под ръка, за да покажеш QR кода си на среща.</li>
+    <li>Визитките, които си отварял, се отварят и без мрежа — в мазе, в самолет, на панаир с претоварена мрежа.</li>
+    <li>Винаги последната версия: това е самият сайт, няма нищо за обновяване и нищо от магазин.</li>
+  </ul>
+  <p class="muted small">Инсталираното приложение пази на устройството само публичните визитки, които си отварял, и техните снимки (до 30). Таблото и настройките винаги идват от сървъра. При изход от акаунта запазеното се изтрива.</p>
+</section>
+<%- include('partials/foot') %>

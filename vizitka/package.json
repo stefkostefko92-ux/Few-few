@@ -18,7 +18,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "test": "node test/smoke.test.js && node test/mcp.test.js",
+    "test": "node test/smoke.test.js && node test/mcp.test.js && node test/account.test.js && node test/pwa.test.js && node test/email.test.js && node test/mail-settings.test.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{js,mjs,json,css,md}\"",
@@ -38,7 +38,7 @@
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.0.0",
     "multer": "^2.4.0",
-    "nodemailer": "^9.0.3",
+    "nodemailer": "^10.5.0",
     "qrcode": "^1.5.4"
   },
   "devDependencies": {

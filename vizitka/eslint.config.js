@@ -29,4 +29,12 @@ export default [
       globals: { ...globals.browser },
     },
   },
+  {
+    // Service worker-ът (сервира се като /sw.js).
+    files: ['public/sw.js'],
+    languageOptions: {
+      sourceType: 'script',
+      globals: { ...globals.serviceworker },
+    },
+  },
 ];

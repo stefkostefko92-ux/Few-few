@@ -1,0 +1,217 @@
+<%- include('partials/head', { noindex: true }) %>
+<section class="dash settings-page">
+  <p class="crumbs"><a href="/dashboard">← Моята визитка</a></p>
+  <h1>Настройки на акаунта</h1>
+  <p class="muted">Влязъл си като <strong><%= account.email %></strong>.</p>
+
+  <% if (notice) { %><p class="alert alert-ok" role="status"><%= notice %></p><% } %>
+  <% if (error) { %><p class="alert alert-error" role="alert"><%= error %></p><% } %>
+  <% if (recoveryUsed !== null) { %>
+    <p class="alert alert-warn" role="status">
+      Влезе с резервен код. Остават ти <strong><%= recoveryUsed %></strong>.
+      <% if (recoveryUsed < 4) { %>Направи нови по-долу, докато още имаш достъп.<% } %>
+    </p>
+  <% } %>
+
+  <%# ── Резервни кодове: показват се ЕДИН път ───────────────────────────── %>
+  <% if (recoveryCodes) { %>
+    <div class="set-card set-card--highlight" id="rezervni-kodove">
+      <h2><%- icon('key') %> Резервни кодове</h2>
+      <p>
+        Запиши ги на хартия или в мениджъра на пароли. Всеки работи <strong>един път</strong>,
+        ако загубиш телефона. Тук се показват <strong>само сега</strong>.
+      </p>
+      <ol class="recovery-codes">
+        <% for (const c of recoveryCodes) { %><li><code><%= c %></code></li><% } %>
+      </ol>
+      <div class="link-box">
+        <input type="text" readonly value="<%= recoveryCodes.join(' ') %>" id="recovery-all" aria-label="Всички резервни кодове">
+        <button type="button" class="btn btn-small" data-copy="#recovery-all">Копирай всички</button>
+      </div>
+    </div>
+  <% } %>
+
+  <div class="set-grid">
+    <%# ── Имейл: потвърждаване и смяна (src/emailflow.js) ─────────────────── %>
+    <div class="set-card" id="imeil">
+      <h2><%- icon('mail') %> Имейл за вход</h2>
+      <p><strong><%= account.email %></strong>
+        <% if (account.emailVerified) { %><span class="badge badge-on">Потвърден</span><% } else { %><span class="badge badge-off">Непотвърден</span><% } %>
+      </p>
+      <% if (!account.emailVerified) { %>
+        <form method="post" action="/settings/email/verify" class="set-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <p class="muted small">Потвърденият имейл е единственият път обратно при забравена парола.</p>
+          <button type="submit" class="btn btn-outline">Изпрати писмото за потвърждаване пак</button>
+        </form>
+      <% } %>
+      <% if (account.pendingEmail) { %>
+        <form method="post" action="/settings/email/cancel" class="set-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <p class="alert alert-warn" role="status">Чака потвърждаване: смяна към <strong><%= account.pendingEmail %></strong>. Ако не си я заявявал(а) ти, откажи я и смени паролата.</p>
+          <button type="submit" class="btn btn-outline">Откажи смяната</button>
+        </form>
+      <% } %>
+      <details class="set-details">
+        <summary>Смени имейла</summary>
+        <form method="post" action="/settings/email" class="set-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <label>Нов имейл
+            <input type="email" name="new_email" required maxlength="254" autocomplete="email">
+          </label>
+          <label>Парола
+            <input type="password" name="password" required autocomplete="current-password">
+          </label>
+          <% if (account.twoFactor) { %>
+          <label>Код от приложението или резервен код
+            <input type="text" name="code" required inputmode="text" autocomplete="one-time-code" maxlength="12">
+          </label>
+          <% } %>
+          <button type="submit" class="btn">Изпрати връзка на новия адрес</button>
+          <p class="muted small">Имейлът се сменя едва когато отвориш връзката от новия адрес. Старият получава известие.</p>
+        </form>
+      </details>
+    </div>
+
+    <%# ── Парола ──────────────────────────────────────────────────────────── %>
+    <div class="set-card">
+      <h2><%- icon('key') %> Парола</h2>
+      <form method="post" action="/settings/password" class="set-form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <label>Текуща парола
+          <input type="password" name="current_password" required autocomplete="current-password">
+        </label>
+        <label>Нова парола (мин. 8 знака)
+          <input type="password" name="new_password" required minlength="8" maxlength="200" autocomplete="new-password">
+        </label>
+        <button type="submit" class="btn">Смени паролата</button>
+        <p class="muted small">Останалите ти сесии се прекратяват след смяната.</p>
+      </form>
+    </div>
+
+    <%# ── Двуфакторно влизане ─────────────────────────────────────────────── %>
+    <div class="set-card" id="dvufaktorno">
+      <h2><%- icon('shield') %> Двуфакторно влизане</h2>
+      <% if (account.twoFactor) { %>
+        <p><span class="badge badge-on">Включено</span> При вход искаме и код от приложението.</p>
+        <p class="muted small">Неизползвани резервни кодове: <strong><%= account.recoveryLeft %></strong> от 10.</p>
+        <details class="set-details">
+          <summary>Нови резервни кодове</summary>
+          <form method="post" action="/settings/2fa/recovery" class="set-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <label>Парола <input type="password" name="password" required autocomplete="current-password"></label>
+            <label>Код от приложението <input type="text" name="code" required inputmode="numeric" autocomplete="one-time-code" maxlength="12"></label>
+            <button type="submit" class="btn btn-small">Направи нови кодове</button>
+          </form>
+        </details>
+        <details class="set-details">
+          <summary>Изключи двуфакторното влизане</summary>
+          <form method="post" action="/settings/2fa/disable" class="set-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <label>Парола <input type="password" name="password" required autocomplete="current-password"></label>
+            <label>Код от приложението или резервен код <input type="text" name="code" required autocomplete="one-time-code" maxlength="12"></label>
+            <button type="submit" class="btn btn-small btn-danger">Изключи</button>
+          </form>
+        </details>
+      <% } else if (setup) { %>
+        <ol class="steps-compact">
+          <li>Отвори приложение за кодове (Google Authenticator, Microsoft Authenticator, 1Password, Aegis…).</li>
+          <li>Сканирай QR кода или въведи ключа на ръка.</li>
+          <li>Въведи 6-цифрения код, който приложението показва.</li>
+        </ol>
+        <div class="totp-setup">
+          <img src="<%= setup.qr %>" alt="QR код за приложението за кодове" width="180" height="180">
+          <p class="small">Ключ за ръчно въвеждане:<br><code class="totp-secret"><%= setup.secret %></code></p>
+        </div>
+        <form method="post" action="/settings/2fa/enable" class="set-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <label>Код от приложението
+            <input type="text" name="code" required autofocus inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,7}" maxlength="7">
+          </label>
+          <button type="submit" class="btn">Включи</button>
+        </form>
+      <% } else { %>
+        <p>
+          Освен паролата искаме и код от телефона ти. Откраднатата парола сама вече
+          не стига, за да влезе някой в акаунта.
+        </p>
+        <% if (totpAvailable) { %>
+          <form method="post" action="/settings/2fa/setup">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn">Настрой двуфакторно влизане</button>
+          </form>
+        <% } else { %>
+          <p class="muted small">Функцията още не е активирана на сървъра.</p>
+        <% } %>
+      <% } %>
+    </div>
+
+    <%# ── Активни сесии ───────────────────────────────────────────────────── %>
+    <div class="set-card">
+      <h2><%- icon('device') %> Активни сесии</h2>
+      <ul class="session-list">
+        <% for (const s of sessions) { %>
+          <li>
+            <span>
+              <strong><%= s.device %></strong>
+              <% if (s.current) { %><span class="badge badge-on">Това устройство</span><% } %>
+              <br><span class="muted small">Влизане: <time datetime="<%= s.createdAt.replace(' ', 'T') %>Z"><%= s.createdAt.slice(0, 16) %></time> UTC</span>
+            </span>
+            <% if (!s.current) { %>
+              <form method="post" action="/settings/sessions/revoke">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="session" value="<%= s.handle %>">
+                <button type="submit" class="btn btn-small btn-outline">Изход</button>
+              </form>
+            <% } %>
+          </li>
+        <% } %>
+      </ul>
+      <% if (sessions.length > 1) { %>
+        <form method="post" action="/settings/sessions/revoke-others">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-small">Излез от всички други устройства</button>
+        </form>
+      <% } %>
+    </div>
+
+    <%# ── Твоите данни ────────────────────────────────────────────────────── %>
+    <div class="set-card">
+      <h2><%- icon('download') %> Твоите данни</h2>
+      <p>
+        Всичко, което пазим за теб — акаунт, визитка, бутони, статистика, снимки — в един
+        ZIP файл: машинно четим JSON, визитката като контакт (.vcf) и снимките.
+      </p>
+      <a class="btn" href="/settings/export" download><%- icon('download', { size: 18 }) %> Изтегли данните си</a>
+      <p class="muted small">Право на достъп и на преносимост — чл. 15 и чл. 20 ОРЗД.</p>
+    </div>
+  </div>
+
+  <%# ── Опасна зона ─────────────────────────────────────────────────────── %>
+  <div class="set-card set-card--danger" id="iztrivane">
+    <h2><%- icon('trash') %> Изтриване на акаунта</h2>
+    <p>
+      Изтрива <strong>завинаги</strong> акаунта, визитката, бутоните, снимките и
+      статистиката. Отпечатаните QR кодове ще показват „Визитката е изтрита“.
+      Адресът <code>/p/<%= profile.slug %></code> няма да бъде даден на друг човек.
+    </p>
+    <p class="muted small">Искаш копие? Първо <a href="/settings/export">изтегли данните си</a>.</p>
+    <details class="set-details">
+      <summary>Искам да изтрия акаунта си</summary>
+      <form method="post" action="/settings/delete" class="set-form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <label>За потвърждение напиши адреса на визитката: <code><%= profile.slug %></code>
+          <input type="text" name="confirm" required autocomplete="off" autocapitalize="off" spellcheck="false">
+        </label>
+        <label>Парола <input type="password" name="password" required autocomplete="current-password"></label>
+        <% if (account.twoFactor) { %>
+          <label>Код от приложението или резервен код
+            <input type="text" name="code" required autocomplete="one-time-code" maxlength="12">
+          </label>
+        <% } %>
+        <button type="submit" class="btn btn-danger">Изтрий акаунта завинаги</button>
+      </form>
+    </details>
+  </div>
+</section>
+<%- include('partials/foot') %>

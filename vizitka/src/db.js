@@ -166,6 +166,103 @@ const userCols = new Set(
 );
 if (!userCols.has('is_admin'))
   db.exec('ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0');
+// Двуфакторно влизане (TOTP). Тайната е ШИФРОВАНА (src/totp.js); `totp_pending` е
+// тайната по време на включването — става активна едва след първия верен код, за да
+// не заключи акаунта, ако потребителят не е сканирал QR кода докрай.
+if (!userCols.has('totp_secret')) db.exec('ALTER TABLE users ADD COLUMN totp_secret TEXT');
+if (!userCols.has('totp_pending')) db.exec('ALTER TABLE users ADD COLUMN totp_pending TEXT');
+if (!userCols.has('totp_enabled'))
+  db.exec('ALTER TABLE users ADD COLUMN totp_enabled INTEGER NOT NULL DEFAULT 0');
+// Последната ползвана 30-секундна стъпка — код от нея или по-стара се отказва (повторение).
+if (!userCols.has('totp_last_step'))
+  db.exec('ALTER TABLE users ADD COLUMN totp_last_step INTEGER NOT NULL DEFAULT 0');
+// Кога човекът е натиснал връзката в писмото (NULL — още не е). Не спира нищо: само го
+// казваме в таблото — грешно написан имейл значи загубен акаунт при забравена парола.
+if (!userCols.has('email_verified_at'))
+  db.exec('ALTER TABLE users ADD COLUMN email_verified_at TEXT');
+
+const sessionCols = new Set(
+  db
+    .prepare('PRAGMA table_info(sessions)')
+    .all()
+    .map((c) => c.name)
+);
+// Груб етикет на устройството („Chrome · Windows“) — за списъка „Активни сесии“.
+// НЕ пазим IP адрес: за да разпознаеш собственото си устройство етикетът стига.
+if (!sessionCols.has('device'))
+  db.exec("ALTER TABLE sessions ADD COLUMN device TEXT NOT NULL DEFAULT ''");
+
+db.exec(`
+  -- Резервни кодове за 2FA (изгубен телефон): само sha256, еднократни.
+  CREATE TABLE IF NOT EXISTS recovery_codes (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    code_hash TEXT NOT NULL,
+    used_at TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_recovery_user ON recovery_codes(user_id);
+
+  -- Адресите на изтрити визитки. „Слъгът е обещание“: отпечатаните QR кодове на
+  -- изтрития потребител продължават да сочат /p/<slug>, затова адресът НИКОГА не се
+  -- дава на друг — иначе някой би го заел и би се представял за него пред всички,
+  -- които сканират старите му визитки. Пазим само адреса и датата.
+  CREATE TABLE IF NOT EXISTS retired_slugs (
+    slug TEXT PRIMARY KEY,
+    retired_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  -- Еднократни връзки по имейл: потвърждаване на адреса ('verify') и смяна ('change').
+  -- email е адресът, до който е пратена връзката (за 'change' — новият). Само sha256.
+  CREATE TABLE IF NOT EXISTS email_tokens (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    purpose TEXT NOT NULL CHECK (purpose IN ('verify', 'change')),
+    email TEXT NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE,
+    expires_at INTEGER NOT NULL,       -- unix ms
+    used_at TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_email_tokens_user ON email_tokens(user_id);
+
+  -- Пощата на сайта, настроена от админ панела (/admin/poshta — Brevo SMTP, моделът на rilievi).
+  -- Един ред; ключът е ШИФРОВАН (src/seal.js) и никога не се показва. Изключена (active = 0)
+  -- остава записана, а писмата се връщат към SMTP_* от средата.
+  CREATE TABLE IF NOT EXISTS mail_settings (
+    id TEXT PRIMARY KEY CHECK (id = 'mail'),
+    host TEXT NOT NULL CHECK (length(trim(host)) > 0),
+    port INTEGER NOT NULL CHECK (port IN (465, 587, 2525)),
+    username TEXT NOT NULL CHECK (length(trim(username)) > 0),
+    pass_enc TEXT NOT NULL CHECK (length(pass_enc) > 0),
+    from_name TEXT NOT NULL CHECK (length(trim(from_name)) > 0),
+    from_email TEXT NOT NULL CHECK (length(trim(from_email)) > 0),
+    active INTEGER NOT NULL DEFAULT 1,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL
+  );
+
+  -- Дневна статистика (без лични данни — само брой на ден). Стари редове се чистят.
+  CREATE TABLE IF NOT EXISTS profile_views_daily (
+    profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    day TEXT NOT NULL,                 -- YYYY-MM-DD (UTC)
+    views INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (profile_id, day)
+  );
+`);
+
+// Пазим дневната статистика 13 месеца — година назад плюс сравнение със същия месец.
+export const VIEWS_RETENTION_DAYS = 400;
+export function purgeOldDailyViews() {
+  db.prepare("DELETE FROM profile_views_daily WHERE day < date('now', ?)").run(
+    `-${VIEWS_RETENTION_DAYS} days`
+  );
+}
+
+// Изтекли/използвани връзки по имейл и нулирания на паролата — не се пазят (минимизация).
+export function purgeExpiredTokens() {
+  const now = Date.now();
+  db.prepare('DELETE FROM email_tokens WHERE expires_at < ? OR used_at IS NOT NULL').run(now);
+  db.prepare('DELETE FROM password_resets WHERE expires_at < ? OR used = 1').run(now);
+}
 
 // Периодично чистене на изтекли сесии.
 export function purgeExpiredSessions() {
