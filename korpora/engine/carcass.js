@@ -1,5 +1,6 @@
 // Carcass furniture: sides, bottom, top (between / over / rails), partitions, a back per column, plinth or legs,
-// then the column interiors in two passes — fronts first (slide pilots, hinge plates), then the 32 mm system holes
+// sliding doors across the carcass (o.sliding; the interior stands o.frontZone behind the front edge), then the
+// column interiors in two passes — fronts first (slide pilots, hinge plates), then the 32 mm system holes
 // that avoid them and the shelves that sit on those holes — and last the confirmats into the edges of the panels the
 // interiors drilled, placed clear of every hole there.
 import { panel, groove, holeThrough } from './panel.js';
@@ -12,6 +13,7 @@ import { buildDrawers } from './drawers.js';
 import { hangRail, RAIL } from './rail.js';
 import { shelvesInZone } from './shelves.js';
 import { cellFronts, cellInteriors, joinCellShelves } from './cells.js';
+import { buildSlidingDoors } from './sliding.js';
 
 const WORKTOP_SCREW = { d: 5 }; // the worktop screws through the rails: lbl.worktopScrew, hw.worktopScrews
 const RAIL_W = 100; // top rails of base cabinets
@@ -41,6 +43,8 @@ export function buildCarcass(ctx, o) {
   const bc = o.bands?.carcass ?? 1;
   const backFront = z0 + GROOVE.inset + HDF_T;
   const zEnd = z0 + D;
+  // the front of the interior: partitions, system holes, shelves and rails stand behind sliding doors (sliding.js)
+  const zIn = zEnd - (o.frontZone ?? 0);
   const carc = { stock: CARCASS.id, decor: o.carcassDecor, grain: hasGrain(o.carcassDecor), module: mod };
   const out = { panels: {}, columns: [], dims: { x0, y0, z0, W, H, D, T, c, Hc, plinthH, backFront } };
   const sideBands = { '+z': bc, ...(top === 'over' ? {} : { '+y': o.visibleTop ? bc : 0 }) };
@@ -102,7 +106,7 @@ export function buildCarcass(ctx, o) {
     out.columns.push({ ...cw, index: i, xa: x, xb, left: i === 0 ? sideL : null, right: i === n - 1 ? sideR : null });
     x = xb;
     if (i < n - 1) {
-      const p = panel(ctx, { ...carc, key: key(`part${i + 1}`), name: nm(ctx.t('part.partition', { n: i + 1 })), role: 'partition', box: { min: [x, yInnerBottom, backFront], max: [x + T, yInnerTop, zEnd] }, n: '+x', L: 'y', bands: { '+z': bc }, explode: [0, 0, 0.35] });
+      const p = panel(ctx, { ...carc, key: key(`part${i + 1}`), name: nm(ctx.t('part.partition', { n: i + 1 })), role: 'partition', box: { min: [x, yInnerBottom, backFront], max: [x + T, yInnerTop, zIn] }, n: '+x', L: 'y', bands: { '+z': bc }, explode: [0, 0, 0.35] });
       partitions.push(p);
       out.columns[i].right = p;
       x += T;
@@ -115,6 +119,7 @@ export function buildCarcass(ctx, o) {
   buildBacks(ctx, { x0, W, T, c, Hc, z0, sideTop, sideL, sideR, bottom, topPart, top, partitions, n, mod, key, nm });
   buildPlinth(ctx, { ...o, plinth }, { x0, y0, W, T, zEnd, plinthH, bc, mod, key, nm });
   if (o.mount === 'wall') ctx.hw('hangers', { name: ctx.t('hw.hangers'), qty: 1, unit: ctx.t('u.pair'), group: ctx.t('g.hardware') });
+  if (o.sliding) buildSlidingDoors(ctx, o, { x0, W, T, c, Hc, zEnd, nm, key, mod });
 
   // interiors, pass 1: drawers and doors (slide pilots and hinge plates claim their holes first)
   const gap = o.gap ?? 3;
@@ -143,7 +148,7 @@ export function buildCarcass(ctx, o) {
     col.hingeYs = col.doors ? buildDoors(ctx, o, { ...a, ...span, ...dy, hingeSides }) : [];
   }
   // pass 2: system holes where they do not clash, shelves on holes present on both sides, hanging rails
-  const rows = systemRows(zEnd, backFront);
+  const rows = systemRows(zIn, backFront);
   for (const [i, col] of out.columns.entries()) {
     if (col.cells) {
       cellInteriors(ctx, { i, n, col, c, yInnerTop, rows, T, backFront, zEnd, bc, carc, key, nm, mod });
@@ -151,12 +156,12 @@ export function buildCarcass(ctx, o) {
     }
     const zoneBottom = col.drawersOnTop ? c + T : c + col.dzH + (col.drawers ? 0 : T);
     const zoneTop = col.drawersOnTop ? col.dz0 : yInnerTop - (col.rail ? RAIL_DROP : 0);
-    shelvesInZone(ctx, { col, i, n, shelves: col.shelves, c, yInnerTop, zoneBottom, zoneTop, rows, T, backFront, zEnd, bc, carc, key, nm });
-    if (col.rail) hangRail(ctx, { col, i, yInnerTop, backFront, zEnd, mod, nm });
+    shelvesInZone(ctx, { col, i, n, shelves: col.shelves, c, yInnerTop, zoneBottom, zoneTop, rows, T, backFront, zEnd: zIn, bc, carc, key, nm });
+    if (col.rail) hangRail(ctx, { col, i, yInnerTop, backFront, zEnd: zIn, mod, nm });
   }
   // the confirmats of the fixed shelves of free carcass columns, clear of every hole the panels have by now
   for (const col of out.columns) if (col.cells) joinCellShelves(ctx, { col, backFront, zEnd, z0, T });
-  joinEdges(ctx, { x0, W, T, c, Hc, z0, zEnd, backFront, top, topPart, rails, sideL, sideR, bottom, partitions });
+  joinEdges(ctx, { x0, W, T, c, Hc, z0, zEnd, zIn, backFront, top, topPart, rails, sideL, sideR, bottom, partitions });
   return out;
 }
 
@@ -164,10 +169,12 @@ export function buildCarcass(ctx, o) {
 // partitions), made last: each one moves off the slide, hinge plate and system holes already there, so the bore
 // running 50 mm into the panel keeps MIN_WEB to them. Rails take one confirmat in their middle, which has nowhere to go.
 function joinEdges(ctx, a) {
-  const { x0, W, T, c, Hc, z0, zEnd, backFront, top, topPart, rails, sideL, sideR, bottom, partitions } = a;
+  const { x0, W, T, c, Hc, z0, zEnd, zIn, backFront, top, topPart, rails, sideL, sideR, bottom, partitions } = a;
   const yTop = c + Hc - T;
+  // a partition ends at the front of the interior (zIn, behind sliding doors), a side at the front edge
   const joint = (face, end, dir, x, y, zStart) => {
-    const zs = confirmatZs(zStart, zEnd - 50, (z) => boreClear(end, dir, [x, y, z]));
+    const zFront = end.role === 'partition' ? zIn : zEnd;
+    const zs = confirmatZs(zStart, zFront - 50, (z) => boreClear(end, dir, [x, y, z]));
     confirmat(ctx, face, end, dir, zs.map((z) => [x, y, z]));
   };
   if (top === 'over') {

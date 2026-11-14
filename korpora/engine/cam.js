@@ -30,6 +30,20 @@ export const POSTS = {
 export const STEP_DOWN_RANGE = [0.5, 20];
 export const MAX_FEED_RANGE = [300, 10000];
 
+// A groove wider than the cutter (the 10 mm groove of a Planofit straightener) is cut in passes side by side, the
+// outer ones on the edges of the groove, at most 80 % of the cutter apart; a groove as wide as the cutter, in one.
+export function grooveLines(g, tool) {
+  const spread = g.w - tool.d;
+  if (spread <= 0.01) return [g];
+  const n = Math.ceil(spread / (0.8 * tool.d)) + 1;
+  const len = Math.hypot(g.X2 - g.X1, g.Y2 - g.Y1);
+  const [nx, ny] = [-(g.Y2 - g.Y1) / len, (g.X2 - g.X1) / len];
+  return Array.from({ length: n }, (_, k) => {
+    const o = -spread / 2 + (spread * k) / (n - 1);
+    return { X1: r1(g.X1 + nx * o), Y1: r1(g.Y1 + ny * o), X2: r1(g.X2 + nx * o), Y2: r1(g.Y2 + ny * o) };
+  });
+}
+
 // The name of a sheet's CNC file — one rule for cnc.zip, project.zip (under cnc/) and the CNC tab: sheet-01.nc.
 export const cncFileName = (index, ext) => `sheet-${String(index).padStart(2, '0')}.${ext}`;
 
@@ -235,15 +249,15 @@ export function toGcode(model, sheet, meta) {
     const tool = GROOVE_MILL;
     const F = tool.rpm * tool.flutes * tool.fz;
     startTool(tool, `${ops.grooves.length} GROOVES`);
-    for (const g of ops.grooves) {
+    for (const g of ops.grooves) for (const line of grooveLines(g, tool)) {
       const passes = Math.ceil(g.depth / Math.min(4, stepDown));
-      rapid(g.X1, g.Y1);
+      rapid(line.X1, line.Y1);
       rapid(undefined, undefined, CLEAR);
       let atStart = true;
       for (let k = 1; k <= passes; k++) {
         feed(undefined, undefined, -Math.min(g.depth, (g.depth * k) / passes), tool.plunge, tool.id);
-        if (atStart) feed(g.X2, g.Y2, undefined, F, tool.id);
-        else feed(g.X1, g.Y1, undefined, F, tool.id);
+        if (atStart) feed(line.X2, line.Y2, undefined, F, tool.id);
+        else feed(line.X1, line.Y1, undefined, F, tool.id);
         atStart = !atStart;
       }
       rapid(undefined, undefined, CLEAR);

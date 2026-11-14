@@ -99,7 +99,7 @@ const usesHw = (model, hw) => model.parts.some((p) => p.features.some((f) => f.h
 const usesDecor = (model, id) => model.parts.some((p) => p.decor === id);
 // Parts cut from the front material (frontStock): doors, drawer fronts, the blind fronts of corner cabinets, the plinth
 // board, the bed's head and foot boards. The desk top takes the front decor too (boardTopDecor) — but not a RAL colour.
-const FRONT_ROLES = new Set(['door', 'drawer-front', 'blind', 'plinth', 'bed-head', 'bed-foot']);
+const FRONT_ROLES = new Set(['door', 'drawer-front', 'blind', 'sliding-door', 'plinth', 'bed-head', 'bed-foot']);
 const usesFronts = (model) => model.parts.some((p) => FRONT_ROLES.has(p.role));
 const usesFrontDecor = (model) => usesFronts(model) || model.parts.some((p) => p.key === 'deskTop');
 const CATALOG_FIELDS = [

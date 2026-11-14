@@ -157,6 +157,10 @@ export class Viewer {
     this.items = [];
     const meshOf = new Map();
     const doors = new Map(model.groups.filter((g) => g.type === 'door').map((g) => [g.id, g]));
+    // a sliding door opens along its track (sliding.js: the rear one runs behind the front one)
+    const sliding = new Map(
+      model.groups.filter((g) => g.type === 'sliding-door').map((g) => [g.id, g]),
+    );
     const drawerOf = new Map();
     for (const g of model.groups.filter((x) => x.type === 'drawer'))
       for (const id of g.partIds) drawerOf.set(id, g);
@@ -205,11 +209,12 @@ export class Viewer {
         holder.add(mesh);
         this.parentOf(part.run).add(holder);
         this.items.push({
-          kind: 'part',
+          kind: sliding.has(part.id) ? 'sliding' : 'part',
           part,
           holder,
           base: new THREE.Vector3(),
           explode: part.explode,
+          travel: sliding.get(part.id)?.travel ?? 0,
         });
       }
       addHoles(this, mesh, part, centre, holeGeo);
@@ -282,6 +287,7 @@ export class Viewer {
         it.holder.rotation.y =
           (it.part.hingeSide === 'left' ? -1 : 1) * THREE.MathUtils.degToRad(105 * this.open);
       if (it.kind === 'drawer') it.holder.position.z += it.travel * S * this.open;
+      if (it.kind === 'sliding') it.holder.position.x += it.travel * S * this.open;
       if (it.kind === 'slide') it.holder.position.z += it.travel * S * this.open * 0.5;
     }
     this.changed();
