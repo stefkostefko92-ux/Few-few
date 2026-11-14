@@ -8,8 +8,12 @@ import { playCue } from "../../../lib/sound";
 import { Button } from "../../../ui";
 import { PlayingCard } from "../cards/PlayingCard";
 import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
+import { useNarrowTable } from "../table/useNarrowTable";
+import { SeatCount } from "../trick/SeatCount";
 import { useMatch } from "../useMatch";
 import { GameOverPanel, SceneHeader, ScorePill, fitOverlap } from "../scene/SceneShell";
+import { DecisionPrompt } from "../scene/DecisionPrompt";
+import { useClearOfDecision } from "../scene/useClearOfDecision";
 import "../cards/cards.css";
 
 interface KentState {
@@ -20,6 +24,8 @@ interface KentState {
   turn: number;
   passStreak: number;
   round: number;
+  /** Брояч на ходовете (сървърът го праща) — различава ходовете в кръга. */
+  moves?: number;
   matchScore: [number, number];
   lastRound: { caller: number; kind: "KUPE" | "STOP"; correct: boolean; winningTeam: number } | null;
 }
@@ -41,17 +47,36 @@ export function KentView({ title }: { title: string }) {
   const m = useMatch<KentState, KentAction>("KENT");
   const { state, legal, seat, phase, result, players } = m;
   const [pickedHand, setPickedHand] = useState<number | null>(null);
+  // „Не сега“ на знака/„Купе!“ — за ТОЗИ ход; бутонът остава под масата.
+  const [skippedCall, setSkippedCall] = useState<string | null>(null);
+  const signalAction = legal.find((a) => a.type === "SIGNAL");
+  const kupeAction = legal.find((a) => a.type === "CALL_KUPE");
+  // Решенията, за които излиза прозорец: имам кент → тайният знак; партньорът
+  // ми е дал знак → „Купе!“. И двете са по желание (може и да смениш/пасуваш).
+  // „Стоп Кент!“ е облог, възможен на всеки ход — той остава бутон под масата.
+  const callKey = `call-${state?.round ?? 0}-${state?.moves ?? 0}-${signalAction ? "s" : ""}${kupeAction ? "k" : ""}`;
+  const callPrompt = phase === "playing" && !!state && state.turn === seat && (!!signalAction || !!kupeAction);
+  const callsInPrompt = callPrompt && skippedCall !== callKey;
 
   // Всяка валидна смяна (handIndex→centerIndex) от изброените legalActions.
   const swaps = useMemo(() => legal.filter((a) => a.type === "SWAP") as Extract<KentAction, { type: "SWAP" }>[], [legal]);
   const swappableHand = useMemo(() => new Set(swaps.map((a) => a.handIndex)), [swaps]);
   const passAction = legal.find((a) => a.type === "PASS");
-  const signalAction = legal.find((a) => a.type === "SIGNAL");
-  const kupeAction = legal.find((a) => a.type === "CALL_KUPE");
   const stopAction = legal.find((a) => a.type === "CALL_STOP");
 
   const tableRef = useRef<HTMLDivElement>(null);
   const flight = useCardFlight(tableRef);
+  // The popup sits in the top third; scrolled down to „Пас“ under the table,
+  // the partner's sign and the centre cards slid under it — bring them below.
+  useClearOfDecision(
+    () =>
+      tableRef.current?.querySelector<HTMLElement>('[data-testid="partner-signal"]') ??
+      tableRef.current?.querySelector<HTMLElement>('[data-zone="center"]'),
+    callsInPrompt,
+    callKey,
+    "below",
+  );
+  const narrow = useNarrowTable();
   const myTeamForFx = seat % 2;
   const nameFor = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
   const { banners } = useTableFx({
@@ -110,6 +135,17 @@ export function KentView({ title }: { title: string }) {
   const partnerSignaled = state.signaled[partner];
   const myKent = myHand.length === 4 && myHand.every((c) => c[0] === myHand[0]![0]);
 
+  const sendSignal = () => {
+    if (!signalAction) return;
+    playCue("flip");
+    m.send(signalAction);
+  };
+  const sendKupe = () => {
+    if (!kupeAction) return;
+    playCue("deal");
+    m.send(kupeAction);
+  };
+
   const doSwap = (centerIndex: number, el: HTMLElement | null) => {
     if (pickedHand === null) return;
     playCue("flip");
@@ -124,33 +160,49 @@ export function KentView({ title }: { title: string }) {
 
       <div ref={tableRef} style={{ position: "relative" }}>
         <Announcements banners={banners} />
-        <FeltTable crest="♤">
+        <FeltTable
+          crest="♤"
+          className="aso-table--compact"
+          style={{ ["--compact-center-top" as string]: "53%" }}
+        >
           {[0, 1, 2, 3]
             .filter((s) => s !== seat)
-            .map((s) => (
-              <Seat
-                key={s}
-                pos={relativePos(s, seat)}
-                name={`${nameFor(s)}${s === partner ? " ★" : ""}`}
-                active={state.turn === s}
-                badge={<TeamDot team={s % 2} myTeam={myTeam} />}
-              >
-                <div style={{ display: "flex" }}>
-                  {Array.from({ length: state.hands[s]?.length ?? 4 }).map((_, i) => (
-                    <PlayingCard key={i} card="?" size="sm" style={{ marginLeft: i ? -22 : 0 }} />
-                  ))}
-                </div>
-                {/* Тайният знак на партньора — виждаш го само ти. */}
-                {s === partner && partnerSignaled ? (
-                  <div className="mt-1 text-center text-xs font-bold text-brass-300">👁 {t("kent.signaled")}</div>
-                ) : null}
-              </Seat>
-            ))}
+            .map((s) => {
+              const pos = relativePos(s, seat);
+              const count = state.hands[s]?.length ?? 4;
+              return (
+                <Seat
+                  key={s}
+                  pos={pos}
+                  name={`${nameFor(s)}${s === partner ? " ★" : ""}`}
+                  active={state.turn === s}
+                  badge={<TeamDot team={s % 2} myTeam={myTeam} />}
+                >
+                  {narrow && pos !== "top" ? (
+                    <SeatCount count={count} />
+                  ) : (
+                    <div style={{ display: "flex" }}>
+                      {Array.from({ length: count }).map((_, i) => (
+                        <PlayingCard key={i} card="?" size="sm" style={{ marginLeft: i ? -22 : 0 }} />
+                      ))}
+                    </div>
+                  )}
+                  {/* Тайният знак на партньора — виждаш го само ти. */}
+                  {s === partner && partnerSignaled ? (
+                    <div data-testid="partner-signal" className="mt-1 text-center text-xs font-bold text-brass-300">
+                      👁 {t("kent.signaled")}
+                    </div>
+                  ) : null}
+                </Seat>
+              );
+            })}
 
           <TableCenter>
-            <div className="text-center">
+            {/* a fixed width on phones: centred with left:50%, the block could
+                otherwise only shrink-wrap into half of the felt */}
+            <div className="text-center" style={narrow ? { width: 280 } : undefined}>
               <div className="text-xs text-ink-muted">{t("kent.center")}</div>
-              <div className="mt-1 flex justify-center">
+              <div className="mt-1 flex justify-center" data-zone="center">
                 {state.center.map((card, i) => {
                   const canTake = myTurn && pickedHand !== null;
                   const slot: { el: HTMLElement | null } = { el: null };
@@ -166,6 +218,7 @@ export function KentView({ title }: { title: string }) {
                         card={card}
                         size="sm"
                         dimmed={!canTake}
+                        interactive
                         onClick={canTake ? () => doSwap(i, slot.el) : undefined}
                       />
                     </div>
@@ -175,13 +228,21 @@ export function KentView({ title }: { title: string }) {
               <div className="mt-2 text-[11px] text-ink-muted">
                 {t("kent.round")} {state.round} · {t("kent.deckLeft")}: {state.deck.length}
               </div>
-              <div className="mt-1 text-xs text-ink-300">
-                {myTurn
-                  ? pickedHand === null
-                    ? t("kent.pickHandCard")
-                    : t("kent.pickCenterCard")
-                  : t("kent.waiting")}
-              </div>
+              {/* Holding a Kent, the status line becomes the call to action —
+                  on the felt, where nothing (the sticky bar) can cover it. */}
+              {myKent ? (
+                <div className="mt-1 text-xs font-bold text-brass-300" data-testid="kent-hint">
+                  🂡 {t("kent.youHaveKent")}
+                </div>
+              ) : (
+                <div className="mt-1 text-xs text-ink-300">
+                  {myTurn
+                    ? pickedHand === null
+                      ? t("kent.pickHandCard")
+                      : t("kent.pickCenterCard")
+                    : t("kent.waiting")}
+                </div>
+              )}
             </div>
           </TableCenter>
 
@@ -191,7 +252,7 @@ export function KentView({ title }: { title: string }) {
             active={myTurn}
             badge={<TeamDot team={myTeam} myTeam={myTeam} />}
           >
-            <div className="aso-myhand" style={{ display: "flex" }}>
+            <div className="aso-myhand" data-zone="hand" style={{ display: "flex" }}>
               {myHand.map((card, i) => {
                 const canPick = myTurn && swappableHand.has(i);
                 return (
@@ -201,6 +262,7 @@ export function KentView({ title }: { title: string }) {
                       size="md"
                       selected={pickedHand === i}
                       dimmed={!canPick}
+                      interactive
                       onClick={canPick ? () => setPickedHand(pickedHand === i ? null : i) : undefined}
                     />
                   </div>
@@ -211,32 +273,77 @@ export function KentView({ title }: { title: string }) {
         </FeltTable>
       </div>
 
-      {/* Каре банер + действия */}
-      {myKent ? (
-        <p className="mt-3 text-center text-sm font-bold text-brass-300">🂡 {t("kent.youHaveKent")}</p>
+      {/* My calls — sticky, so they are on screen while my clock runs even
+          when the table pushes this row below the fold (768px laptops). */}
+      {passAction || signalAction || kupeAction || stopAction ? (
+        <div
+          data-zone="actions"
+          className="z-30 mx-auto sm:sticky sm:bottom-1 mt-4 flex w-fit max-w-full flex-wrap items-center justify-center gap-3 rounded-panel bg-felt-900/70 p-1.5 backdrop-blur"
+        >
+          {passAction ? (
+            <Button
+              variant="felt"
+              className="!py-2"
+              data-action="pass"
+              onClick={() => { playCue("flip"); m.send(passAction); setPickedHand(null); }}
+            >
+              {t("kent.pass")}
+            </Button>
+          ) : null}
+          {/* Знакът и „Купе!“ са в прозореца; тук — само след „Не сега“. */}
+          {signalAction && !callsInPrompt ? (
+            <Button variant="ghost" className="!py-2" data-action="signal" onClick={sendSignal}>
+              👁 {t("kent.signal")}
+            </Button>
+          ) : null}
+          {kupeAction && !callsInPrompt ? (
+            <Button className="!py-2" data-action="kupe" onClick={sendKupe}>
+              {t("kent.callKupe")}
+            </Button>
+          ) : null}
+          {stopAction ? (
+            <Button
+              variant="ghost"
+              className="!py-2"
+              data-action="stop"
+              onClick={() => {
+                playCue("deal");
+                m.send(stopAction);
+              }}
+            >
+              ✋ {t("kent.callStop")}
+            </Button>
+          ) : null}
+        </div>
       ) : null}
-      <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-        {passAction ? (
-          <Button variant="felt" onClick={() => { playCue("flip"); m.send(passAction); setPickedHand(null); }}>
-            {t("kent.pass")}
+
+      <DecisionPrompt
+        open={callPrompt}
+        promptKey={callKey}
+        title={kupeAction ? t("kent.partnerSignaledTitle") : t("kent.haveKentTitle")}
+        hint={kupeAction ? t("kent.kupeHint", { name: nameFor(partner) }) : t("kent.youHaveKent")}
+        placement="top"
+        optional={{ label: t("decision.notNow"), onSkip: () => setSkippedCall(callKey) }}
+        testId="kent-call"
+      >
+        {kupeAction ? (
+          <Button className="!py-2" data-action="kupe" onClick={sendKupe}>
+            {t("kent.callKupe")}
           </Button>
         ) : null}
         {signalAction ? (
-          <Button variant="ghost" onClick={() => { playCue("flip"); m.send(signalAction); }}>
+          <Button variant={kupeAction ? "felt" : "brass"} className="!py-2" data-action="signal" onClick={sendSignal}>
             👁 {t("kent.signal")}
           </Button>
         ) : null}
-        {kupeAction ? (
-          <Button onClick={() => { playCue("deal"); m.send(kupeAction); }}>{t("kent.callKupe")}</Button>
-        ) : null}
-        {stopAction ? (
-          <Button variant="ghost" onClick={() => { playCue("deal"); m.send(stopAction); }}>
-            ✋ {t("kent.callStop")}
-          </Button>
-        ) : null}
-      </div>
+      </DecisionPrompt>
 
-      <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+      <div
+        className="mt-4 flex flex-wrap items-center justify-center gap-3"
+        data-zone="score"
+        data-score={`${state.matchScore[myTeam] ?? 0}:${state.matchScore[myTeam === 0 ? 1 : 0] ?? 0}`}
+        data-round={state.round}
+      >
         <ScorePill label={t("belote.yourTeam")} value={state.matchScore[myTeam] ?? 0} highlight />
         <ScorePill label={t("belote.theirTeam")} value={state.matchScore[myTeam === 0 ? 1 : 0] ?? 0} />
         <span className="text-xs text-ink-muted">{t("kent.target")} {3}</span>

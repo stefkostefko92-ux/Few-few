@@ -450,7 +450,10 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
     const hands = state.hands.map((h, i) =>
       i === seat || (leadMade && dummy !== null && i === dummy) ? h.slice() : hiddenLike(h),
     );
-    return { ...state, hands };
+    // Онорите на текущия договор издават коя ръка държи 4–5 онора — виждат се
+    // само от притежателя, докато раздаването не свърши (тогава са в lastDeal).
+    const honors = state.honors && state.honors.seat === seat ? state.honors : null;
+    return { ...state, hands, honors };
   },
 };
 
