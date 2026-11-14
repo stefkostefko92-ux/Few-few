@@ -21,12 +21,14 @@ export function paramsHtml(params) {
 <input type="number" id="p-${p.key}" data-field="${p.key}" min="${p.min}" max="${p.max}" step="${p.step}" inputmode="numeric">
 <input type="range" data-field="${p.key}" min="${p.min}" max="${p.max}" step="${p.step}" aria-label="${esc(tx('slider', { label: p.label }))}"></div>`;
       }
-      return `<span class="lbl" id="l-${p.key}">${esc(p.label)}</span><div class="seg" role="radiogroup" aria-labelledby="l-${p.key}">${p.options
+      const seg = `<span class="lbl" id="l-${p.key}">${esc(p.label)}</span><div class="seg" role="radiogroup" aria-labelledby="l-${p.key}">${p.options
         .map(
           ([v, l]) =>
             `<label><input type="radio" name="${p.key}" value="${v}" data-field="${p.key}"><span>${esc(l)}</span></label>`,
         )
         .join('')}</div>`;
+      // a choice that belongs to another (doorsPerColumn: hinged doors only) hides with its label
+      return p.when ? `<div class="segfield"${whenAttr(p)}>${seg}</div>` : seg;
     })
     .join('');
 }

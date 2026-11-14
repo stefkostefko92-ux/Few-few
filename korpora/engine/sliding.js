@@ -61,7 +61,7 @@ export function buildSlidingDoors(ctx, o, d) {
     planofit(ctx, door, { x0: dd.x, x1: dd.x + size.W, y0, y1: y0 + size.H, z: zBack });
     // the housings of the running gear: Ø35, 64 mm in from each side edge at the top — by the maker's instruction
     for (const gx of [dd.x + sys.gear.fromSide, dd.x + size.W - sys.gear.fromSide]) {
-      mark(door, [gx, y0 + size.H - sys.gear.fromTop, zBack], 'sliding-gear', { hw: 'sliding', d: sys.gear.d, label: ctx.t('lbl.slidingGear', { d: sys.gear.d }) });
+      mark(door, [gx, y0 + size.H - sys.gear.fromTop, zBack], 'sliding-gear', { hw: 'sliding', d: sys.gear.d, label: ctx.t('lbl.slidingGear', { d: sys.gear.d, depth: sys.gear.depth }) });
     }
     // opened in the 3D, the door on the rear track runs behind the other one; the front one stays
     ctx.groups.push({ type: 'sliding-door', id: door.id, partIds: [door.id], track: dd.track, travel: dd.track === 'rear' ? size.W - sys.overlap : 0 });
@@ -72,10 +72,32 @@ export function buildSlidingDoors(ctx, o, d) {
   // hardware: one fitting set per carcass (two doors), the double track cut to the inner width, its screws, Planofit
   const track = sys.tracks.find((t) => t.length >= innerW) ?? sys.tracks.at(-1);
   ctx.hw(`slidingSet:${sys.id}`, { name: ctx.t('hw.slidingSet', { sys: sys.name }), brand: sys.brand, sku: sys.set.sku, qty: 1, unit: ctx.t('u.set'), group: ctx.t('g.hardware') });
-  ctx.hw(`slidingTrack:${track.sku}`, { name: ctx.t('hw.slidingTrack', { L: track.length / 1000, cut: ctx.t.num(r1(innerW)) }), brand: sys.brand, sku: track.sku, qty: 1, unit: ctx.t('u.pcs'), group: ctx.t('g.hardware') });
+  // the cut length is in the name: carcasses of other widths get lines of their own
+  ctx.hw(`slidingTrack:${track.sku}:${r1(innerW)}`, { name: ctx.t('hw.slidingTrack', { L: ctx.t.num(track.length / 1000), cut: ctx.t.num(r1(innerW)) }), brand: sys.brand, sku: track.sku, qty: 1, unit: ctx.t('u.pcs'), group: ctx.t('g.hardware') });
   ctx.hw('slidingTrackScrews', { name: ctx.t('hw.slidingTrackScrews', { d: ctx.t.num(sys.trackScrew.d) }), qty: Math.ceil(innerW / sys.trackScrew.every) + 1, unit: ctx.t('u.pcs'), group: ctx.t('g.fasteners') });
   ctx.hw('planofit', { name: ctx.t('hw.planofit'), brand: 'Häfele', sku: PLANOFIT.sku, qty: PLANOFIT.perDoor * doors.length, unit: ctx.t('u.set'), group: ctx.t('g.hardware') });
+  topSag(ctx, sys, { x0, W, T, zEnd, mod, where, kg: 2 * kg, innerW });
   return doors;
+}
+
+// The doors hang on the top: between two supports (the sides, the partitions) it must not sag more than the running
+// gear makes up for. Short-term deflection of a simply supported board (E = 1600 N/mm², the EN 312 P2 minimum, as for
+// the shelves in model.js) under the doors' whole weight spread over the inner width — our choice, on the safe side;
+// the limit is the ±2 mm height adjustment of the running gear (p. 1.20). The cure is a partition: add a column.
+const E_P2 = 1600;
+const SAG_LIMIT = 2;
+function topSag(ctx, sys, { x0, W, T, zEnd, mod, where, kg, innerW }) {
+  const supports = ctx.parts
+    .filter((p) => (p.module ?? '') === mod && ['side', 'partition'].includes(p.role) && p.box.min[0] >= x0 - 0.01 && p.box.max[0] <= x0 + W + 0.01)
+    .map((p) => [p.box.min[0], p.box.max[0]])
+    .sort((a, b) => a[0] - b[0]);
+  let span = 0;
+  for (let k = 1; k < supports.length; k++) span = Math.max(span, supports[k][0] - supports[k - 1][1]);
+  const D = zEnd - Math.min(...ctx.parts.filter((p) => p.role === 'top' && (p.module ?? '') === mod).map((p) => p.box.min[2]));
+  const w = (kg * 9.81) / innerW; // N/mm along the track
+  const I = (D * T ** 3) / 12;
+  const mm = (5 * w * span ** 4) / (384 * E_P2 * I);
+  if (mm > SAG_LIMIT) ctx.warn('error', ctx.t('w.slidingSag', { where, mm: ctx.t.num(r1(mm)), span: ctx.t.num(r1(span)), max: SAG_LIMIT, sys: sys.name }));
 }
 
 // Two Planofit straighteners on the back of a door: at a quarter and three quarters of its width, the bosses 150 mm
@@ -85,9 +107,12 @@ function planofit(ctx, door, { x0, x1, y0, y1, z }) {
   const yt = y1 - PLANOFIT.fromEdge;
   for (const fx of [0.25, 0.75]) {
     const x = r1(x0 + (x1 - x0) * fx);
-    for (const y of [yb, yt]) hole(door, [x, y, z], PLANOFIT.boss.d, PLANOFIT.boss.depth, 'planofit', { hw: 'planofit', label: ctx.t('lbl.planofit') });
+    // the groove runs into its own two bosses by design (p. 1.144): `fitting` tells checkHoles they belong together
+    const fitting = `planofit@${fx}`;
+    for (const y of [yb, yt]) hole(door, [x, y, z], PLANOFIT.boss.d, PLANOFIT.boss.depth, 'planofit', { hw: 'planofit', fitting, label: ctx.t('lbl.planofit') });
     const g = groove(door, [x, yb, z], [x, yt, z], PLANOFIT.groove.w, PLANOFIT.groove.depth, 'planofit');
     g.hw = 'planofit';
+    g.fitting = fitting;
   }
 }
 

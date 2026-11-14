@@ -32,9 +32,10 @@ export const SLIDING_SYSTEMS = {
     // the interior (partitions, shelves, rails) stands behind the rear door and the track: 11 + 16 + 10 + 16 = 53 mm of
     // doors, 15 + 42 = 57 mm of track — our choice: 60 mm, 3 mm clear of the track
     frontZone: 60,
-    // p. 1.20 drilling diagram: the housing of the running gear in a Ø35 recess 64 mm in from each side edge at the top
-    // of the door (the recess opens through the top edge, so it is made by the maker's instruction, not on the CNC)
-    gear: { d: 35, fromSide: 64, fromTop: 12 },
+    // p. 1.20 drilling diagram: the housing of the running gear in a Ø35 recess 12 mm deep, 64 mm in from each side edge
+    // (the soft-close set 402.33.027 has no inspection support: not the +43), its centre on the line of the fixing holes
+    // 11 mm under the top edge — the recess opens through the top edge, so it is made by the maker's instruction
+    gear: { d: 35, depth: 12, fromSide: 64, fromTop: 11 },
     // p. 1.20 drilling diagram: a 6 mm groove 9.5 mm deep in the bottom edge runs on the guides
     bottomGroove: { w: 6, depth: 9.5 },
     // p. 1.21: fitting set for 2 doors with soft close; double top track for screw fixing, 2.5 m and 3.5 m
