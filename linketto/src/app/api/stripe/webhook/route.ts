@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db';
 import { PLANS, totalFeeCents, type PlanId } from '@/lib/plans';
 import { payoutSeller } from '@/lib/payout';
 import { applyPlanLimits } from '@/lib/plan-limits';
+import { limitsOnDowngrade } from '@/lib/plan-limits-core';
 import { deliveryEmailHtml, deliverySubject, sendEmail } from '@/lib/email';
 import { referralRewardCents } from '@/lib/referral';
 import type { Prisma } from '@prisma/client';
@@ -314,7 +315,9 @@ async function syncPlanSubscription(
   // (домейн, скрит бадж, излишни профили) — иначе Pro за месец е „Pro завинаги“.
   // Без условие по count: при ретрай планът вече е FREE, а ограниченията може
   // още да не са приложени; applyPlanLimits чете текущия план (FOUNDER → нищо).
-  if (decision.plan === 'FREE') await enforcePlanLimits(row.id);
+  if (limitsOnDowngrade({ plan: decision.plan, cause: 'subscription' })) {
+    await enforcePlanLimits(row.id);
+  }
 }
 
 // Не-разрушително (plan-limits-core); провалът се логва и се хвърля, за да
@@ -381,7 +384,9 @@ async function syncFounderReversal(
     });
     // Refund е окончателен → платените функции спират. Спорът е временен
     // (може да се спечели и планът да се върне) — домейнът не се трие.
-    if (founder.reason === 'refund') await enforcePlanLimits(founderRow.id);
+    if (limitsOnDowngrade({ plan: 'FREE', cause: founder.reason })) {
+      await enforcePlanLimits(founderRow.id);
+    }
   } else if (founderRow && founder.action === 'restore') {
     await prisma.user.updateMany({
       where: {

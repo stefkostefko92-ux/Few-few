@@ -201,7 +201,8 @@ stripeTransferId). fee е capped на нето-1 (Stripe инвариант).
 архивира (active=false), а `lib/account-erasure.ts` анонимизира акаунт с
 покупки/достъп вместо да го изтрие (иначе — каскадно изтриване). Сроковете от
 политиката са в `lib/retention-days.ts` (единен източник; cron SQL в DEPLOY §9).
-Сваляне на план (`customer.subscription.deleted`, админ смяна) → `lib/plan-limits.ts`
+Окончателно сваляне на план (изтекъл/отказан абонамент, пълен refund на Founder, админ
+смяна; НЕ временен спор — `limitsOnDowngrade`, billing-spec §9.5) → `lib/plan-limits.ts`
 спира платените функции (домейн/бадж/излишни профили; чиста логика в
 `plan-limits-core.ts`; флаговете са в `PlanDef`). Публичните форми (контакт/
 резервация/бюлетин/анкета) и входът минават през `lib/rate-limit.ts` (в паметта на

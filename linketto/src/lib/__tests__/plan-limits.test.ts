@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { planLimitPatches, type LimitableProfile } from '../plan-limits-core';
+import { limitsOnDowngrade, planLimitPatches, type LimitableProfile } from '../plan-limits-core';
 
 const profile = (over: Partial<LimitableProfile> = {}): LimitableProfile => ({
   id: 'p1',
@@ -47,4 +47,16 @@ test('вече непубликуван излишен профил не се п
     profile({ id: 'b', customDomain: null, style: {}, published: false }),
   ];
   assert.deepEqual(planLimitPatches('FREE', list), []);
+});
+
+// L1/L2 (docs/billing-spec.md §9.5): кога сваленият план спира платените функции.
+test('limitsOnDowngrade: окончателно сваляне към FREE → да (абонамент, refund)', () => {
+  assert.equal(limitsOnDowngrade({ plan: 'FREE', cause: 'subscription' }), true);
+  assert.equal(limitsOnDowngrade({ plan: 'FREE', cause: 'refund' }), true);
+});
+
+test('limitsOnDowngrade: временен спор не трие домейна; платен план → нищо', () => {
+  assert.equal(limitsOnDowngrade({ plan: 'FREE', cause: 'dispute' }), false);
+  assert.equal(limitsOnDowngrade({ plan: 'PRO', cause: 'subscription' }), false);
+  assert.equal(limitsOnDowngrade({ plan: 'BUSINESS', cause: 'refund' }), false);
 });

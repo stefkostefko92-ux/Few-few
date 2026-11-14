@@ -580,3 +580,12 @@ isSubscriptionDispute(user) =
   - `'second-dispute'` се дава само при решение `revoke` или `unchanged`; не при `not-plan-subscription-payment` или `founder`.
   - `'restore-founder-trace'` се дава при всеки `restore`, когато `planPaymentIntentId !== null`.
 - **DEPLOY §1 т. 6:** dry-run след рестарта, при нужда `--apply`.
+
+### 9.5 Платените функции при сваляне на план (растежен клон, сливане с main 14.11.2026)
+Клонът с одита добави `lib/plan-limits.ts` (спира собствен домейн, скрит бадж и излишни профили при сваляне);
+main добави синхронизацията по-горе. При сливането решението „кога“ е чиста функция
+`limitsOnDowngrade` (`src/lib/plan-limits-core.ts`), тествана в `plan-limits.test.ts`:
+- **L1:** окончателно сваляне към FREE — абонаментът е изтекъл/отказан (`syncPlanSubscription` → FREE) или
+  пълен refund на FOUNDER → `applyPlanLimits` (идемпотентен, чете текущия план; при ретрай без условие по `count`).
+- **L2:** спор (по абонамента или по FOUNDER) е обратим → платените функции НЕ се пипат (иначе спечелен спор
+  връща плана без собствения домейн). Провал на `applyPlanLimits` → 500 → Stripe ретрайва.

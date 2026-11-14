@@ -42,3 +42,16 @@ export function planLimitPatches(
   });
   return out;
 }
+
+/**
+ * Спира ли сваленият план платените функции (docs/billing-spec.md §9.5)?
+ * Само при окончателно сваляне към FREE: изтекъл/отказан абонамент или пълен
+ * refund. Спорът е временен (може да се спечели и планът да се върне) — тогава
+ * собственият домейн и останалото НЕ се пипат.
+ */
+export function limitsOnDowngrade(input: {
+  plan: string;
+  cause: 'subscription' | 'refund' | 'dispute';
+}): boolean {
+  return input.plan === 'FREE' && input.cause !== 'dispute';
+}
