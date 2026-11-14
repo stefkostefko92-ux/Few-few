@@ -126,6 +126,12 @@ model Profile {
   // пращат се на собственика при бана.
   bannedCategory   String?
   bannedReason     String?
+  banNoticeSentAt  DateTime? // изложението на мотивите е изпратено по имейл (DSA чл. 17)
+  // Предупреждение преди спиране при леки нарушения (ОУ: „не се спират без
+  // предизвестие, освен при тежки злоупотреби“) — срок за поправка.
+  warnedAt         DateTime?
+  warnedCategory   String?
+  warnedReason     String?
   // Собствен домейн: TXT `_linketto.<домейн>` = `linketto-verify=<токен>`;
   // публично се сервира само проверен домейн (без „заемане“ на чужд).
   domainToken      String?
@@ -470,9 +476,9 @@ model ClickEvent {
   profileId    String
   profile      Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
   linkId       String?
-  link         Link?    @relation(fields: [linkId], references: [id], onDelete: SetNull)
+  link         Link?    @relation(fields: [linkId], references: [id], onDelete: Cascade) // Cascade: иначе кликовете на изтрит линк стават „прегледи“
   productId    String? // клик по продукт (/u/<slug>/p/<id>) — към линка за плащане
-  product      Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  product      Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
   locale       String? // на кой език е гледан профилът
   referrerHost String? // само хостът, без пълния URL
   country      String? // от CDN хедър, ако има (напр. CF-IPCountry)
@@ -515,6 +521,8 @@ model PlanOrder {
   // „Откажи се от договора тук“ — кога и с какво име; връщането го прави админът.
   withdrawalRequestedAt DateTime?
   withdrawalName        String?
+  // Потвърждението на получаването (траен носител) е изпратено — иначе cron-ът опитва пак.
+  withdrawalAckSentAt   DateTime?
   // Опит за връщане (Idempotency-Key = `<id>-<опит>`: повторен клик в същия
   // опит не връща два пъти, а нов опит след неуспешен refund не взима стария отговор).
   refundAttempts        Int       @default(0)

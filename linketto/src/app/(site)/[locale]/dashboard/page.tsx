@@ -260,12 +260,11 @@ export default async function DashboardPage({
     prisma.referral.count({ where: { referrerId: user.id } }),
   ]);
   // Функцията за отказ (чл. 11а Дир. 2011/83): платените поръчки от последните
-  // 15 дни — допустимите показват „Откажи се от договора тук“, а подадените —
+  // 15 дни — допустимите показват „Откажете се от договора тук“, а подадените —
   // кога е получено изявлението.
   const recentPaidOrders = await prisma.planOrder.findMany({
     where: {
       userId: user.id,
-      applied: true,
       completedAt: { gte: new Date(Date.now() - 16 * 86_400_000) },
     },
     orderBy: { completedAt: 'desc' },
@@ -357,6 +356,45 @@ export default async function DashboardPage({
           <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
             {t('domainVerifiedOk')}
           </p>
+        )}
+        {/* DSA чл. 17: мотивите за спиране/предупреждението — и в таблото, не
+            само по имейл (видимо само за собственика, никога публично). */}
+        {profile?.bannedAt && (
+          <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+            <p className="font-semibold">
+              {t('moderationBanned', {
+                slug: profile.slug,
+                date: new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(profile.bannedAt),
+              })}
+            </p>
+            {profile.bannedCategory && (
+              <p className="mt-1">
+                {t(`moderationCategory.${profile.bannedCategory}`)}
+                {profile.bannedReason ? ` — ${profile.bannedReason}` : ''}
+              </p>
+            )}
+            <p className="mt-1">{t('moderationAppeal')}</p>
+          </div>
+        )}
+        {profile && !profile.bannedAt && profile.warnedAt &&
+          profile.warnedAt.getTime() > Date.now() - 30 * 86_400_000 && (
+          <div role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            <p className="font-semibold">
+              {t('moderationWarned', {
+                slug: profile.slug,
+                date: new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(
+                  new Date(profile.warnedAt.getTime() + 7 * 86_400_000),
+                ),
+              })}
+            </p>
+            {profile.warnedCategory && (
+              <p className="mt-1">
+                {t(`moderationCategory.${profile.warnedCategory}`)}
+                {profile.warnedReason ? ` — ${profile.warnedReason}` : ''}
+              </p>
+            )}
+            <p className="mt-1">{t('moderationAppeal')}</p>
+          </div>
         )}
         {withdrawn && (
           <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">

@@ -142,16 +142,28 @@ export async function updateProfileAction(formData: FormData): Promise<void> {
   // Нов/сменен домейн → нов токен и непроверен (TXT проверка на собствеността).
   const current = await prisma.profile.findFirst({
     where: { id: profileId, userId: user.id },
-    select: { customDomain: true },
+    select: { customDomain: true, domainToken: true },
   });
   if (!current) redirect(await dash(uiLocale, '?error=generic'));
   const change = domainChange({ current: current.customDomain, next: customDomain });
+  // Заварен домейн без токен (отпреди проверката) също получава токен.
+  const needsToken = change.kind === 'keep' && customDomain !== null && !current.domainToken;
   const domainFields =
-    change.kind === 'reset'
+    change.kind === 'reset' || needsToken
       ? { domainToken: randomBytes(16).toString('hex'), domainVerifiedAt: null }
       : change.kind === 'clear'
         ? { domainToken: null, domainVerifiedAt: null }
         : {};
+
+  // Уникалността пази само ПРОВЕРЕН домейн: чужди непроверени заявки за същия
+  // домейн се освобождават (иначе всеки може да „заеме“ чужд домейн и истинският
+  // собственик получава „зает“). Кой го държи решава TXT проверката.
+  if (customDomain && change.kind === 'reset') {
+    await prisma.profile.updateMany({
+      where: { customDomain, domainVerifiedAt: null, id: { not: profileId } },
+      data: { customDomain: null, domainToken: null },
+    });
+  }
 
   try {
     const { count } = await prisma.profile.updateMany({

@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
 import { requestPlanRefund, type RefundRequest } from '@/lib/plan-order-service';
-import { banNoticeEmail, isBanCategory } from '@/lib/dsa-notice';
+import { banAllowed, banNoticeEmail, isBanCategory, warningNoticeEmail } from '@/lib/dsa-notice';
 import { emailConfigured, sendEmail } from '@/lib/email';
 import { eraseUser } from '@/lib/account-erasure';
 import { applyPlanLimits } from '@/lib/plan-limits';
@@ -31,39 +31,74 @@ export async function setProfileBanAction(formData: FormData): Promise<void> {
   if (!ban) {
     await prisma.profile.updateMany({
       where: { id: profileId },
-      data: { bannedAt: null, bannedCategory: null, bannedReason: null },
+      data: { bannedAt: null, bannedCategory: null, bannedReason: null, banNoticeSentAt: null },
     });
     redirect(`/${uiLocale}/admin?ok=1`);
   }
-  // DSA чл. 17: без категория и обосновка няма бан — собственикът получава
-  // изложение на мотивите с възможностите за обжалване.
+  // DSA чл. 17: без категория и обосновка няма мярка — собственикът получава
+  // мотивите и пътищата за обжалване. ОУ: леките нарушения (спам/друго) —
+  // първо предупреждение със срок; тежките — веднага.
+  const mode = formData.get('mode') === 'warn' ? 'warn' : 'ban';
   const category = String(formData.get('category') ?? '');
   const reason = String(formData.get('reason') ?? '').trim();
+  const legalGround = String(formData.get('legalGround') ?? '').trim().slice(0, 300);
   if (!isBanCategory(category) || reason.length < 10 || reason.length > 2000) {
     redirect(`/${uiLocale}/admin?error=ban`);
+  }
+  if (mode === 'ban' && category === 'illegal' && legalGround.length < 3) {
+    redirect(`/${uiLocale}/admin?error=ban-ground`);
   }
   const decidedAt = new Date();
   const profile = await prisma.profile.findUnique({
     where: { id: profileId },
-    select: { slug: true, bannedAt: true, user: { select: { email: true, locale: true } } },
+    select: { slug: true, warnedAt: true, user: { select: { email: true, locale: true } } },
   });
   if (!profile) redirect(`/${uiLocale}/admin?error=input`);
+  const fromReport = formData.get('fromReport') === 'on';
+
+  if (mode === 'warn') {
+    await prisma.profile.update({
+      where: { id: profileId },
+      data: { warnedAt: decidedAt, warnedCategory: category, warnedReason: reason },
+    });
+    if (emailConfigured()) {
+      const { subject, html } = warningNoticeEmail({
+        locale: profile.user.locale,
+        slug: profile.slug,
+        category,
+        reason,
+        decidedAt,
+        fromReport,
+      });
+      await sendEmail({ to: profile.user.email, subject, html, tag: 'dsa-warning' }).catch(() => false);
+    }
+    redirect(`/${uiLocale}/admin?ok=1`);
+  }
+
+  const allowed = banAllowed({ category, warnedAt: profile.warnedAt, now: decidedAt });
+  if (allowed !== 'ok') redirect(`/${uiLocale}/admin?error=ban-warn`);
   await prisma.profile.update({
     where: { id: profileId },
-    data: { bannedAt: decidedAt, bannedCategory: category, bannedReason: reason },
+    data: { bannedAt: decidedAt, bannedCategory: category, bannedReason: reason, banNoticeSentAt: null },
   });
+  let sent = false;
   if (emailConfigured()) {
     const { subject, html } = banNoticeEmail({
       locale: profile.user.locale,
       slug: profile.slug,
       category,
       reason,
+      legalGround: legalGround || undefined,
       decidedAt,
-      fromReport: formData.get('fromReport') === 'on',
+      fromReport,
     });
-    await sendEmail({ to: profile.user.email, subject, html, tag: 'dsa-notice' }).catch(() => false);
+    sent = await sendEmail({ to: profile.user.email, subject, html, tag: 'dsa-notice' }).catch(() => false);
   }
-  redirect(`/${uiLocale}/admin?ok=1`);
+  if (sent) {
+    await prisma.profile.updateMany({ where: { id: profileId, bannedAt: decidedAt }, data: { banNoticeSentAt: new Date() } });
+  }
+  // Мотивите се виждат и в таблото на собственика; неизпратен имейл — видимо в админа.
+  redirect(`/${uiLocale}/admin?${sent ? 'ok=1' : 'error=ban-notice'}`);
 }
 
 const updateUserSchema = z.object({

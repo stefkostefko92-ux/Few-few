@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { canWithdraw, withdrawalAckEmail, withdrawalDeadline } from '../withdrawal';
+import { canWithdraw, withdrawalAckEmail, withdrawalDeadline, withdrawalLastDay } from '../withdrawal';
 
 // W (чл. 11а Дир. 2011/83, изм. с Дир. 2023/2673; ЗЗП): функцията „Откажи се от
 // договора тук“ е налична през целия 14-дневен срок за всяка платена и приложена
@@ -8,21 +8,29 @@ import { canWithdraw, withdrawalAckEmail, withdrawalDeadline } from '../withdraw
 
 const paid = new Date('2026-11-14T15:30:00Z');
 
-test('W1: срокът изтича в края на 14-ия ден след деня на плащането (UTC)', () => {
-  assert.equal(withdrawalDeadline(paid).toISOString(), '2026-11-29T00:00:00.000Z');
+test('W1: срокът — 14 дни от деня СЛЕД плащането, отворен до 24:00 в най-западната зона на ЕС', () => {
+  // Денят на плащането се брои в най-източната зона (UTC+3), краят — в 24:00 UTC−1.
+  assert.equal(withdrawalDeadline(paid).toISOString(), '2026-11-29T01:00:00.000Z');
+  assert.equal(withdrawalLastDay(paid).toISOString().slice(0, 10), '2026-11-28');
+  // Плащане в 01:30 софийско време на 2.11 (= 23:30 UTC на 1.11): последният ден е 16.11
+  // и бутонът е отворен поне до края му по софийско време (22:00 UTC).
+  const night = new Date('2026-11-01T23:30:00Z');
+  assert.equal(withdrawalLastDay(night).toISOString().slice(0, 10), '2026-11-16');
+  assert.ok(withdrawalDeadline(night).getTime() >= Date.parse('2026-11-16T22:00:00Z'));
 });
 
 test('W2: допустим отказ — платена, приложена, в срока, без предишно изявление', () => {
   const base = { state: 'completed', applied: true, completedAt: paid, withdrawalRequestedAt: null };
   assert.equal(canWithdraw({ ...base, now: new Date('2026-11-20T10:00:00Z') }), true);
-  assert.equal(canWithdraw({ ...base, now: new Date('2026-11-28T23:59:59Z') }), true);
-  assert.equal(canWithdraw({ ...base, now: new Date('2026-11-29T00:00:00Z') }), false);
+  assert.equal(canWithdraw({ ...base, now: new Date('2026-11-29T00:59:59Z') }), true);
+  assert.equal(canWithdraw({ ...base, now: new Date('2026-11-29T01:00:00Z') }), false);
+  // платена, но неприложена (conflict) поръчка също е договор → и тя има бутон
+  assert.equal(canWithdraw({ state: 'conflict', applied: false, completedAt: paid, withdrawalRequestedAt: null, now: new Date('2026-11-20T10:00:00Z') }), true);
 });
 
-test('W3: недопустим — вече поискан, неприложен, непълен или върнат', () => {
+test('W3: недопустим — вече поискан, неплатен, чакащ връщане или върнат', () => {
   const now = new Date('2026-11-20T10:00:00Z');
   assert.equal(canWithdraw({ state: 'completed', applied: true, completedAt: paid, withdrawalRequestedAt: now, now }), false);
-  assert.equal(canWithdraw({ state: 'conflict', applied: false, completedAt: paid, withdrawalRequestedAt: null, now }), false);
   assert.equal(canWithdraw({ state: 'pending', applied: false, completedAt: null, withdrawalRequestedAt: null, now }), false);
   assert.equal(canWithdraw({ state: 'refund_pending', applied: true, completedAt: paid, withdrawalRequestedAt: null, now }), false);
   assert.equal(canWithdraw({ state: 'refunded', applied: true, completedAt: paid, withdrawalRequestedAt: null, now }), false);

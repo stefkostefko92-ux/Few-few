@@ -6,7 +6,7 @@ import { SiteHeader } from '@/components/SiteChrome';
 import { type Locale } from '@/i18n/locales';
 import { getSessionUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { canWithdraw, withdrawalDeadline } from '@/lib/withdrawal';
+import { canWithdraw, withdrawalLastDay } from '@/lib/withdrawal';
 import { withdrawPlanAction } from '@/app/actions/withdrawal';
 import { ChevronLeftIcon } from '@/components/icons';
 
@@ -16,7 +16,7 @@ export const metadata: Metadata = { robots: { index: false } };
 const PLAN_NAMES: Record<string, string> = { PRO: 'Pro', BUSINESS: 'Business', FOUNDER: 'Founder' };
 
 // Втората стъпка на функцията за отказ (чл. 11а Дир. 2011/83): потребителят
-// вижда кой договор, името и имейла за потвърждението и натиска „Потвърди отказа“.
+// вижда кой договор, името и имейла за потвърждението и натиска „Потвърждавам отказа“.
 export default async function WithdrawPage({
   params,
   searchParams,
@@ -80,7 +80,7 @@ export default async function WithdrawPage({
               <dt className="font-medium text-slate-500">{t('withdrawEmail')}</dt>
               <dd className="text-slate-900">{user.email}</dd>
               <dt className="font-medium text-slate-500">{t('withdrawUntil')}</dt>
-              <dd className="text-slate-900">{fmt(new Date(withdrawalDeadline(order.completedAt as Date).getTime() - 1))}</dd>
+              <dd className="text-slate-900">{fmt(withdrawalLastDay(order.completedAt as Date))}</dd>
             </dl>
             <label className="block text-sm font-medium text-slate-700">
               {t('withdrawName')}

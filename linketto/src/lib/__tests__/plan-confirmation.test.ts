@@ -56,3 +56,16 @@ test('P14: непознат език → английски; потребите�
   assert.ok(!html.includes('<img src=x>'));
   assert.ok(html.includes('&lt;img src=x&gt;'));
 });
+
+test('P14: ред с бутона „Откажете се от договора тук“ и последния ден на срока', () => {
+  const { html } = planConfirmationEmail({
+    ...base,
+    locale: 'bg',
+    name: null,
+    withdrawUntil: new Date('2026-11-28T00:00:00Z'),
+    dashboardUrl: 'https://l.example/bg/dashboard#plan',
+  });
+  assert.match(html, /Откажете се от договора тук/);
+  assert.match(html, /28 ноември 2026/);
+  assert.ok(html.includes('https://l.example/bg/dashboard#plan'));
+});

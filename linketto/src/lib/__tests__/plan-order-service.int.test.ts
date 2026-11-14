@@ -147,7 +147,37 @@ test('I3: стара висяща PRO поръчка, платена след FO
   assert.equal(u.planExpiresAt, null);
 });
 
-test('I4: две поръчки, уредени едновременно → и двете удължения (FOR UPDATE)', { skip }, async () => {
+test('I4: уреждането чака заключения ред на потребителя (FOR UPDATE) и после го вижда', { skip }, async () => {
+  // Детерминистично: външна транзакция държи реда; без FOR UPDATE в ядрото
+  // уреждането НЕ чака и проверката „още pending“ пада.
+  const user = await mkUser();
+  const a = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => (release = resolve));
+  let locked!: () => void;
+  const isLocked = new Promise<void>((resolve) => (locked = resolve));
+  const holder = db.$transaction(
+    async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${user.id} FOR UPDATE`;
+      // Докато държим реда, „друг процес“ сменя плана — уреждането трябва да го види.
+      await tx.user.update({ where: { id: user.id }, data: { plan: 'FOUNDER' } });
+      locked();
+      await gate;
+    },
+    { timeout: 20_000 },
+  );
+  await isLocked;
+  const settling = service.settlePlanOrder({ id: a.id });
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  assert.equal((await reload(a.id)).state, 'pending', 'уреждането трябва да чака заключването');
+  release();
+  await holder;
+  // След освобождаването вижда FOUNDER → PRO вече не е позволен → conflict.
+  assert.equal(await settling, 'conflict');
+  assert.equal((await userOf(user.id)).plan, 'FOUNDER');
+});
+
+test('I4b: две поръчки, уредени едновременно → и двете удължения', { skip }, async () => {
   const user = await mkUser();
   const a = await mkOrder(user.id, 'PRO', 'monthly', 400);
   const b = await mkOrder(user.id, 'PRO', 'monthly', 400);

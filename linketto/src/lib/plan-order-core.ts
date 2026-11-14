@@ -3,6 +3,7 @@ import { orderOutcome } from '@/lib/revolut-core';
 import { applyPaidOrder, checkPurchase, isPaidPlan, planAfterRefund } from '@/lib/plan-orders';
 import { referralRewardCents } from '@/lib/referral';
 import { planConfirmationEmail } from '@/lib/plan-confirmation';
+import { withdrawalLastDay } from '@/lib/withdrawal';
 import type { BillingIntervalId, PlanId } from '@/lib/plans';
 
 // Уреждане на поръчка за план (spec §7.1 P4/P5/P6/P10/P12/P14) — общо за
@@ -178,6 +179,8 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
       paidUntil: order.plan === 'FOUNDER' ? null : order.user.planExpiresAt,
       orderRef: order.id,
       termsUrl: `${deps.siteUrl}/${order.user.locale}/terms`,
+      withdrawUntil: withdrawalLastDay(order.completedAt ?? order.createdAt),
+      dashboardUrl: `${deps.siteUrl}/${order.user.locale}/dashboard#plan`,
     });
     const sent = await deps.email.send({ to: order.user.email, subject, html, tag: 'plan-confirmation' });
     if (!sent) return false;
@@ -293,6 +296,7 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
   async function finalizeRefund(planOrderId: string): Promise<void> {
     const order = await db.planOrder.findUnique({ where: { id: planOrderId } });
     if (!order || order.state !== 'refund_pending') return;
+    let planNotRestored = false;
     const restoredPlan = await db.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${order.userId} FOR UPDATE`;
       const claimed = await tx.planOrder.updateMany({
@@ -313,6 +317,7 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
       });
       if (newer > 0) {
         deps.log(`[plan-order] ${order.id}: върната, но има по-нова приложена поръчка — планът НЕ е върнат, нужна е ръчна проверка`);
+        planNotRestored = true;
       }
       const restored = newer > 0 ? null : planAfterRefund({
         prevPlan: order.prevPlan,
@@ -339,6 +344,15 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
       return true;
     });
     if (restoredPlan) await deps.applyPlanLimits(order.userId);
+    // Имейлът — извън транзакцията (тя може да се повтори, а писмото — не).
+    if (planNotRestored) {
+      await deps
+        .notifyAdmins('Върната поръчка — планът НЕ е върнат', [
+          `Поръчка: ${order.id} (€${(order.amountCents / 100).toFixed(2)})`,
+          'Има по-нова приложена поръчка — реши ръчно срока/плана на потребителя.',
+        ])
+        .catch(() => undefined);
+    }
   }
 
   return { settlePlanOrder, sendPlanConfirmation, requestPlanRefund, settlePlanRefund };

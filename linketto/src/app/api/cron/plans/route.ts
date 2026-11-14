@@ -9,6 +9,7 @@ import { planReminderEmail } from '@/lib/plan-reminder';
 import { sendPlanConfirmation, settlePlanOrder, settlePlanRefund } from '@/lib/plan-order-service';
 import { revolutConfigured } from '@/lib/revolut';
 import { notifyAdmins } from '@/lib/admin-alert';
+import { sendWithdrawalAck } from '@/lib/withdrawal-service';
 import type { PlanId } from '@/lib/plans';
 
 // Cron за предплатените планове (spec §7.1 P7–P10, P14), POST с
@@ -94,6 +95,25 @@ export async function POST(request: Request): Promise<NextResponse> {
     for (const order of unconfirmed) {
       try {
         if (await sendPlanConfirmation(order.id)) report.confirmed += 1;
+      } catch {
+        report.errors += 1;
+      }
+    }
+  }
+
+  // (1г) Чл. 11а(4): неизпратени потвърждения за получен отказ — до 14 дни назад.
+  if (emailConfigured()) {
+    const acks = await prisma.planOrder.findMany({
+      where: {
+        withdrawalRequestedAt: { not: null, gt: new Date(now.getTime() - 14 * DAY) },
+        withdrawalAckSentAt: null,
+      },
+      take: BATCH,
+      select: { id: true },
+    });
+    for (const order of acks) {
+      try {
+        if (await sendWithdrawalAck(order.id)) report.confirmed += 1;
       } catch {
         report.errors += 1;
       }

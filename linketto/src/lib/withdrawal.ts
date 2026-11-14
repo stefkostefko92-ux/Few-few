@@ -1,19 +1,30 @@
 // Функцията за отказ (чл. 11а Дир. 2011/83, изм. с Дир. (ЕС) 2023/2673 — в
-// сила от 19.06.2026; ЗЗП): „Откажи се от договора тук“ → потвърждение →
+// сила от 19.06.2026; ЗЗП): „Откажете се от договора тук“ → потвърждение →
 // потвърждение на получаването на траен носител. Чисто, тества се. Правните
-// низове са родни само bg/en (останалите → en до родния превод — никога машинен).
+// низове са родни bg/en/it/es/de/fr (останалите → en до родния превод — никога машинен).
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 export const WITHDRAWAL_DAYS = 14;
 
+const HOUR_MS = 60 * 60 * 1000;
+// Потребителите в ЕС са между UTC−1 (Азорските о-ви) и UTC+3 (лятно EEST).
+const EASTMOST_OFFSET_MS = 3 * HOUR_MS;
+const WESTMOST_OFFSET_MS = 1 * HOUR_MS;
+
 /**
- * Краят на срока: 14 дни, които започват от деня СЛЕД плащането (Регл. 1182/71)
- * и изтичат в края на 14-ия ден — по UTC (с няколко часа в полза на потребителя
- * в ЕС часовите зони).
+ * Последният ден на срока (UTC полунощ на календарната дата): 14 дни, които
+ * започват от деня СЛЕД плащането (Регл. 1182/71). Денят на плащането се взима
+ * в най-източната зона на ЕС — така никой потребител не губи ден.
  */
+export function withdrawalLastDay(completedAt: Date): Date {
+  const east = new Date(completedAt.getTime() + EASTMOST_OFFSET_MS);
+  const dayStart = Date.UTC(east.getUTCFullYear(), east.getUTCMonth(), east.getUTCDate());
+  return new Date(dayStart + WITHDRAWAL_DAYS * DAY_MS);
+}
+
+/** Бутонът е отворен до 24:00 на последния ден в най-западната зона на ЕС. */
 export function withdrawalDeadline(completedAt: Date): Date {
-  const dayStart = Date.UTC(completedAt.getUTCFullYear(), completedAt.getUTCMonth(), completedAt.getUTCDate());
-  return new Date(dayStart + (WITHDRAWAL_DAYS + 1) * DAY_MS);
+  return new Date(withdrawalLastDay(completedAt).getTime() + DAY_MS + WESTMOST_OFFSET_MS);
 }
 
 /** Може ли потребителят да подаде изявление за отказ по тази поръчка сега. */
@@ -24,7 +35,9 @@ export function canWithdraw(order: {
   withdrawalRequestedAt: Date | null;
   now: Date;
 }): boolean {
-  if (order.state !== 'completed' || !order.applied || !order.completedAt) return false;
+  // Платена поръчка е договор — приложена (completed) или неприложена (conflict).
+  const paidContract = (order.state === 'completed' && order.applied) || order.state === 'conflict';
+  if (!paidContract || !order.completedAt) return false;
   if (order.withdrawalRequestedAt) return false;
   return order.now.getTime() < withdrawalDeadline(order.completedAt).getTime();
 }
@@ -62,6 +75,46 @@ const STRINGS: Record<string, Strings> = {
     orderedOn: 'Ordered (paid) on',
     receivedOn: 'Statement received on',
     next: 'We refund the full amount paid without undue delay and no later than 14 days from receiving your withdrawal, using the same means of payment and at no cost to you. Only what this order bought is removed — the plan and period you had before it are restored.',
+  },
+  it: {
+    subject: 'Linketto: conferma di ricevimento del recesso dal contratto',
+    intro: 'Abbiamo ricevuto la tua dichiarazione di recesso dal contratto. Questa email è la conferma del suo ricevimento — conservala.',
+    statement: (n) => `Con la presente ${n} notifica il recesso dal contratto per la prestazione del seguente servizio:`,
+    contract: 'Contratto',
+    periods: { monthly: '1 mese', quarterly: '3 mesi', semiannual: '6 mesi', annual: '12 mesi', lifetime: 'per sempre' },
+    orderedOn: 'Ordinato (pagato) il',
+    receivedOn: 'Dichiarazione ricevuta il',
+    next: 'Ti rimborsiamo l’intero importo pagato senza indebito ritardo e comunque entro 14 giorni dal ricevimento del recesso, con lo stesso mezzo di pagamento e senza costi per te. Viene meno solo ciò che è stato acquistato con questo ordine — il piano e il periodo che avevi prima vengono ripristinati.',
+  },
+  es: {
+    subject: 'Linketto: acuse de recibo de tu desistimiento del contrato',
+    intro: 'Hemos recibido tu declaración de desistimiento del contrato. Este email es el acuse de recibo; guárdalo.',
+    statement: (n) => `Por la presente, ${n} comunica que desiste del contrato de prestación del siguiente servicio:`,
+    contract: 'Contrato',
+    periods: { monthly: '1 mes', quarterly: '3 meses', semiannual: '6 meses', annual: '12 meses', lifetime: 'para siempre' },
+    orderedOn: 'Pedido (pagado) el',
+    receivedOn: 'Declaración recibida el',
+    next: 'Te devolvemos el importe íntegro pagado sin demoras indebidas y, a más tardar, 14 días después de recibir tu desistimiento, por el mismo medio de pago y sin ningún coste para ti. Solo se retira lo adquirido con este pedido: se restablecen el plan y el período que tenías antes.',
+  },
+  de: {
+    subject: 'Linketto: Eingangsbestätigung deines Widerrufs',
+    intro: 'Wir haben deine Widerrufserklärung erhalten. Diese E-Mail bestätigt ihren Eingang — bitte bewahre sie auf.',
+    statement: (n) => `Hiermit widerruft ${n} den Vertrag über die Erbringung der folgenden Dienstleistung:`,
+    contract: 'Vertrag',
+    periods: { monthly: '1 Monat', quarterly: '3 Monate', semiannual: '6 Monate', annual: '12 Monate', lifetime: 'für immer' },
+    orderedOn: 'Bestellt (bezahlt) am',
+    receivedOn: 'Erklärung eingegangen am',
+    next: 'Wir erstatten dir den vollen gezahlten Betrag unverzüglich und spätestens binnen 14 Tagen ab Eingang deines Widerrufs, über dasselbe Zahlungsmittel und ohne Kosten für dich. Es entfällt nur, was mit dieser Bestellung bezahlt wurde — Plan und Zeitraum von davor werden wiederhergestellt.',
+  },
+  fr: {
+    subject: 'Linketto : accusé de réception de votre rétractation',
+    intro: 'Nous avons bien reçu votre déclaration de rétractation du contrat. Cet e-mail en accuse réception — conservez-le.',
+    statement: (n) => `Par la présente, ${n} notifie sa rétractation du contrat portant sur la prestation du service ci-dessous :`,
+    contract: 'Contrat',
+    periods: { monthly: '1 mois', quarterly: '3 mois', semiannual: '6 mois', annual: '12 mois', lifetime: 'pour toujours' },
+    orderedOn: 'Commandé (payé) le',
+    receivedOn: 'Déclaration reçue le',
+    next: 'Nous vous remboursons l’intégralité du montant payé sans retard excessif et au plus tard 14 jours après réception de votre rétractation, par le même moyen de paiement et sans frais pour vous. Seul ce qui a été acheté avec cette commande est retiré — le plan et la période dont vous disposiez auparavant sont rétablis.',
   },
 };
 

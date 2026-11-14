@@ -26,6 +26,8 @@ interface Strings {
   form: string;
   terms: string;
   orderRef: string;
+  /** Ред за бутона „Откажете се от договора тук“ (чл. 11а); липсващ език → без реда. */
+  withdrawButton?: (date: string, url: string) => string;
 }
 
 const STRINGS: Record<string, Strings> = {
@@ -43,12 +45,14 @@ const STRINGS: Record<string, Strings> = {
     noAuto: 'Еднократно плащане, без автоматично подновяване — не те таксуваме повече, освен ако сам не удължиш.',
     withdrawalTitle: 'Право на отказ',
     withdrawal:
-      'Ако си потребител, можеш да се откажеш от договора в 14 дни от деня на плащането, без да посочваш причина и без разноски. Планът започва веднага; при отказ в срока връщаме цялата сума, без да удържаме нищо за използваните дни, не по-късно от 14 дни от получаването на отказа, по същия начин на плащане. Изпрати ни ясно изявление на info@carbonstealth.eu — можеш да ползваш формуляра по-долу, но не е задължително. При отказ отпада само платеното с това плащане — планът и срокът отпреди него се възстановяват.',
+      'Ако си потребител, можеш да се откажеш от договора в срок от 14 дни, считано от деня след плащането, без да посочваш причина и без разноски. Планът започва веднага; при отказ в срока връщаме цялата сума, без да удържаме нищо за използваните дни, не по-късно от 14 дни от получаването на отказа, по същия начин на плащане. Изпрати ни ясно изявление на info@carbonstealth.eu — можеш да ползваш формуляра по-долу, но не е задължително. При отказ отпада само платеното с това плащане — планът и срокът отпреди него се възстановяват.',
     formTitle: 'Стандартен формуляр за отказ',
     form:
       'До: Carbon Stealth VCC, ул. „Самуил“ 3, 2670 Бобов дол, България, info@carbonstealth.eu. С настоящото уведомявам, че се отказвам от договора за следната услуга: … / Поръчана на: … / Име: … / Адрес: … / Имейл на акаунта: … / Подпис (само на хартия) / Дата: …',
     terms: 'Общи условия',
     orderRef: 'Номер на поръчката',
+    withdrawButton: (d, u) =>
+      `Можеш да се откажеш и с бутона „Откажете се от договора тук“ в <a href="${u}" style="color:#3b82c4">таблото</a> (секция „План“) до ${d} включително.`,
   },
   en: {
     subject: (p) => `Linketto ${p}: payment confirmation`,
@@ -64,12 +68,14 @@ const STRINGS: Record<string, Strings> = {
     noAuto: 'One-time payment, no automatic renewal — we will not charge you again unless you extend yourself.',
     withdrawalTitle: 'Right of withdrawal',
     withdrawal:
-      'If you are a consumer, you may withdraw from the contract within 14 days of the day of payment, without giving any reason and at no cost. The plan starts immediately; if you withdraw in time, we refund the full amount, with no deduction for days used, no later than 14 days from receiving your notice, using the same means of payment. Send us a clear statement at info@carbonstealth.eu — you may use the form below, but you do not have to. Withdrawal removes only what this payment bought — the plan and period you had before it are restored.',
+      'If you are a consumer, you may withdraw from the contract within 14 days starting from the day after the payment, without giving any reason and at no cost. The plan starts immediately; if you withdraw in time, we refund the full amount, with no deduction for days used, no later than 14 days from receiving your notice, using the same means of payment. Send us a clear statement at info@carbonstealth.eu — you may use the form below, but you do not have to. Withdrawal removes only what this payment bought — the plan and period you had before it are restored.',
     formTitle: 'Model withdrawal form',
     form:
       'To: Carbon Stealth VCC, 3 Samuil St, 2670 Bobov Dol, Bulgaria, info@carbonstealth.eu. I hereby give notice that I withdraw from my contract for the provision of the following service: … / Ordered on: … / Name: … / Address: … / Account email: … / Signature (only if on paper) / Date: …',
     terms: 'Terms of service',
     orderRef: 'Order number',
+    withdrawButton: (d, u) =>
+      `You can also withdraw with the “Withdraw from contract here” button in your <a href="${u}" style="color:#3b82c4">dashboard</a> (section “Plan”) until ${d} inclusive.`,
   },
   it: {
     subject: (p) => `Linketto ${p}: conferma del pagamento`,
@@ -91,6 +97,8 @@ const STRINGS: Record<string, Strings> = {
       'Destinatario: Carbon Stealth VCC, ul. Samuil 3, 2670 Bobov Dol, Bulgaria, info@carbonstealth.eu. Con la presente notifico il recesso dal mio contratto di vendita dei seguenti servizi: … / Ordinato il: … / Nome: … / Indirizzo: … / Email dell’account: … / Firma (solo se il presente modulo è notificato in versione cartacea) / Data: …',
     terms: 'Termini di servizio',
     orderRef: 'Numero d’ordine',
+    withdrawButton: (d, u) =>
+      `Puoi recedere anche con il pulsante «Recedere dal contratto qui» nel <a href="${u}" style="color:#3b82c4">pannello</a> (sezione «Piano») fino al ${d} incluso.`,
   },
   es: {
     subject: (p) => `Linketto ${p}: confirmación del pago`,
@@ -112,6 +120,8 @@ const STRINGS: Record<string, Strings> = {
       'A la atención de: Carbon Stealth VCC, ul. Samuil 3, 2670 Bobov Dol, Bulgaria, info@carbonstealth.eu. Por la presente le comunico que desisto de mi contrato de prestación del siguiente servicio: … / Pedido el: … / Nombre: … / Domicilio: … / Email de la cuenta: … / Firma (solo si el presente formulario se presenta en papel) / Fecha: …',
     terms: 'Términos del servicio',
     orderRef: 'Número de pedido',
+    withdrawButton: (d, u) =>
+      `También puedes desistir con el botón «Desistir del contrato aquí» de tu <a href="${u}" style="color:#3b82c4">panel</a> (sección «Plan») hasta el ${d} inclusive.`,
   },
   de: {
     subject: (p) => `Linketto ${p}: Zahlungsbestätigung`,
@@ -133,6 +143,8 @@ const STRINGS: Record<string, Strings> = {
       'An: Carbon Stealth VCC, ul. Samuil 3, 2670 Bobov Dol, Bulgarien, info@carbonstealth.eu. Hiermit widerrufe ich den von mir abgeschlossenen Vertrag über die Erbringung der folgenden Dienstleistung: … / Bestellt am: … / Name: … / Anschrift: … / E-Mail-Adresse des Kontos: … / Unterschrift (nur bei Mitteilung auf Papier) / Datum: …',
     terms: 'Nutzungsbedingungen',
     orderRef: 'Bestellnummer',
+    withdrawButton: (d, u) =>
+      `Du kannst auch über die Schaltfläche „Vertrag widerrufen“ in deinem <a href="${u}" style="color:#3b82c4">Dashboard</a> (Bereich „Plan“) bis einschließlich ${d} widerrufen.`,
   },
   fr: {
     subject: (p) => `Linketto ${p} : confirmation du paiement`,
@@ -154,6 +166,8 @@ const STRINGS: Record<string, Strings> = {
       'À l’attention de : Carbon Stealth VCC, ul. Samuil 3, 2670 Bobov Dol, Bulgarie, info@carbonstealth.eu. Je vous notifie par la présente ma rétractation du contrat pour la prestation de services ci-dessous : … / Commandé le : … / Nom : … / Adresse : … / E-mail du compte : … / Signature (uniquement en cas de notification du présent formulaire sur papier) / Date : …',
     terms: 'Conditions d’utilisation',
     orderRef: 'Numéro de commande',
+    withdrawButton: (d, u) =>
+      `Vous pouvez également vous rétracter avec le bouton « Renoncer au contrat ici » dans votre <a href="${u}" style="color:#3b82c4">tableau de bord</a> (section « Plan ») jusqu’au ${d} inclus.`,
   },
 };
 
@@ -173,6 +187,9 @@ export function planConfirmationEmail(input: {
   paidUntil: Date | null;
   orderRef: string;
   termsUrl: string;
+  /** Последният ден на срока за отказ и адресът на таблото (бутонът за отказ). */
+  withdrawUntil?: Date;
+  dashboardUrl?: string;
 }): { subject: string; html: string } {
   const s = STRINGS[input.locale] ?? STRINGS.en;
   const lang = STRINGS[input.locale] ? input.locale : 'en';
@@ -189,6 +206,14 @@ export function planConfirmationEmail(input: {
   <p>${s.noAuto}</p>
   <h2 style="font-size:16px;margin-top:24px">${s.withdrawalTitle}</h2>
   <p style="font-size:14px;line-height:1.6">${s.withdrawal}</p>
+  ${
+    s.withdrawButton && input.withdrawUntil && input.dashboardUrl
+      ? `<p style="font-size:14px;line-height:1.6">${s.withdrawButton(
+          new Intl.DateTimeFormat(lang, { dateStyle: 'long', timeZone: 'UTC' }).format(input.withdrawUntil),
+          esc(input.dashboardUrl),
+        )}</p>`
+      : ''
+  }
   <p style="font-size:13px;color:#475569"><strong>${s.formTitle}</strong><br>${s.form}</p>
   <p><a href="${esc(input.termsUrl)}" style="color:#3b82c4;font-weight:600">${s.terms} →</a></p>
   <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0">

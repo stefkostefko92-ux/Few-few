@@ -5,13 +5,13 @@ import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
 import { isLocale } from '@/i18n/locales';
-import { canWithdraw, withdrawalAckEmail } from '@/lib/withdrawal';
-import { emailConfigured, sendEmail } from '@/lib/email';
+import { canWithdraw } from '@/lib/withdrawal';
+import { sendWithdrawalAck } from '@/lib/withdrawal-service';
 import { notifyAdmins } from '@/lib/admin-alert';
 import { requestPlanRefund } from '@/lib/plan-order-service';
 
 // Функцията за отказ (чл. 11а Дир. 2011/83, изм. с Дир. 2023/2673): втората
-// стъпка „Потвърди отказа“. Изявлението се записва веднъж (условен запис),
+// стъпка „Потвърждавам отказа“. Изявлението се записва веднъж (условен запис),
 // потвърждението на получаването отива на траен носител (имейл), а връщането
 // тръгва автоматично — ако поръчката не е последната приложена, админът го
 // поема ръчно (алармата казва защо).
@@ -45,24 +45,19 @@ export async function withdrawPlanAction(formData: FormData): Promise<void> {
 
   // Изявлението — веднъж (повторен клик/таб не записва второ).
   const { count } = await prisma.planOrder.updateMany({
-    where: { id: order.id, userId: user.id, state: 'completed', withdrawalRequestedAt: null },
+    where: {
+      id: order.id,
+      userId: user.id,
+      state: { in: ['completed', 'conflict'] },
+      withdrawalRequestedAt: null,
+    },
     data: { withdrawalRequestedAt: now, withdrawalName: name.data },
   });
   if (count !== 1) redirect(`/${uiLocale}/dashboard?withdrawn=1#plan`);
 
-  if (emailConfigured()) {
-    const { subject, html } = withdrawalAckEmail({
-      locale: user.locale,
-      name: name.data,
-      plan: order.plan,
-      interval: order.interval,
-      amountCents: order.amountCents,
-      orderRef: order.id,
-      orderedAt: order.completedAt ?? order.createdAt,
-      requestedAt: now,
-    });
-    await sendEmail({ to: user.email, subject, html, tag: 'withdrawal-ack' }).catch(() => false);
-  }
+  // Потвърждението на траен носител; неизпратеното опитва пак cron-ът, а
+  // алармата казва на админа, ако не е тръгнало.
+  const ackSent = await sendWithdrawalAck(order.id).catch(() => false);
 
   let outcome: string;
   try {
@@ -78,6 +73,7 @@ export async function withdrawPlanAction(formData: FormData): Promise<void> {
       `Поръчка: ${order.id} (${order.plan}, ${order.interval}, €${(order.amountCents / 100).toFixed(2)})`,
       `Изявление: ${now.toISOString()}`,
       `Връщане: ${outcome}${outcome === 'newer-first' ? ' — има по-нова приложена поръчка; върни по-новата или реши ръчно' : ''}`,
+      `Потвърждение до потребителя: ${ackSent ? 'изпратено' : 'НЕ Е ИЗПРАТЕНО — cron-ът ще опита пак; провери Brevo'}`,
       'Срок за връщане: 14 дни от получаването на изявлението.',
     ],
   );

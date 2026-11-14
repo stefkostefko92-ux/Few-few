@@ -109,6 +109,9 @@ export default async function AdminPage({
           bannedAt: true,
           bannedCategory: true,
           bannedReason: true,
+          banNoticeSentAt: true,
+          warnedAt: true,
+          warnedCategory: true,
           customDomain: true,
         },
       },
@@ -142,7 +145,13 @@ export default async function AdminPage({
                     ? t('errorRefundOrder')
                     : error === 'ban'
                       ? t('errorBan')
-                      : t('errorInput')}
+                      : error === 'ban-warn'
+                        ? t('errorBanWarn')
+                        : error === 'ban-ground'
+                          ? t('errorBanGround')
+                          : error === 'ban-notice'
+                            ? t('errorBanNotice')
+                            : t('errorInput')}
           </p>
         )}
 
@@ -500,6 +509,7 @@ export default async function AdminPage({
                           {profile.bannedCategory && (
                             <span className="text-xs text-slate-500">
                               {t(`banCategory.${profile.bannedCategory}`)} · {profile.bannedReason}
+                              {profile.banNoticeSentAt ? '' : ` · ${t('banNoticeNotSent')}`}
                             </span>
                           )}
                         </form>
@@ -509,6 +519,14 @@ export default async function AdminPage({
                         <details className="w-full rounded-xl border border-red-200 p-3">
                           <summary className="cursor-pointer font-semibold text-red-700">
                             {t('banProfile', { slug: profile.slug })}
+                            {profile.warnedAt && (
+                              <span className="ml-2 text-xs font-normal text-amber-700">
+                                {t('warnedOn', {
+                                  date: profile.warnedAt.toISOString().slice(0, 10),
+                                  category: t(`banCategory.${profile.warnedCategory ?? 'other'}`),
+                                })}
+                              </span>
+                            )}
                           </summary>
                           <form action={setProfileBanAction} className="mt-3 space-y-2">
                             <input type="hidden" name="uiLocale" value={locale} />
@@ -535,17 +553,33 @@ export default async function AdminPage({
                                 className={inputClass}
                               />
                             </label>
+                            <label className="block">
+                              {t('banLegalGroundLabel')}
+                              <input type="text" name="legalGround" maxLength={300} className={inputClass} />
+                            </label>
                             <label className="flex items-center gap-2 text-xs text-slate-600">
                               <input type="checkbox" name="fromReport" className="h-3.5 w-3.5" />
                               {t('banFromReport')}
                             </label>
                             <p className="text-xs text-slate-500">{t('banNoticeHint')}</p>
-                            <button
-                              type="submit"
-                              className="rounded-full bg-red-600 px-4 py-1.5 font-semibold text-white hover:bg-red-700"
-                            >
-                              {t('banConfirm')}
-                            </button>
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                type="submit"
+                                name="mode"
+                                value="warn"
+                                className="rounded-full border border-amber-600 px-4 py-1.5 font-semibold text-amber-700 hover:bg-amber-50"
+                              >
+                                {t('warnConfirm')}
+                              </button>
+                              <button
+                                type="submit"
+                                name="mode"
+                                value="ban"
+                                className="rounded-full bg-red-600 px-4 py-1.5 font-semibold text-white hover:bg-red-700"
+                              >
+                                {t('banConfirm')}
+                              </button>
+                            </div>
                           </form>
                         </details>
                       )}
