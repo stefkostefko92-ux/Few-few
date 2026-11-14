@@ -70,9 +70,9 @@ test('the mirror cabinet: a mirror per door, bought to size, and its weight in t
     assert.deepEqual(cncBlockers(m, nest(m)), [], label(s));
   }
   assert.equal(MIRROR.kgM2, 10);
-  // a mirror door too heavy for its hinges: the same door without the mirror passes
-  const heavy = buildModel({ type: 'mirror', width: 600, height: 1000, doors: 1 });
-  const heavyWarn = heavy.warnings.find((w) => /kg/.test(w.text));
-  const plain = buildModel({ type: 'wall', width: 600, height: 1000, doors: 1 });
-  assert.ok(!plain.warnings.some((w) => /kg/.test(w.text)) || heavyWarn, 'the mirror adds its weight');
+  // the mirror's weight counts in the hinges: the same 500 × 600 door takes a third hinge with its mirror
+  const hinges = (m) => m.hardware.filter((h) => h.key.startsWith('hinge:')).reduce((a, h) => a + h.qty, 0);
+  const door = { width: 500, height: 600, doors: 1, shelves: 0 };
+  assert.equal(hinges(buildModel({ type: 'mirror', depth: 200, ...door })), 3);
+  assert.equal(hinges(buildModel({ type: 'wall', depth: 300, ...door })), 2);
 });

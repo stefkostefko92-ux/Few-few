@@ -33,10 +33,11 @@ export function plainCopy(root) {
   const drop = [];
   copy.traverse((o) => {
     if (o.isInstancedMesh) drop.push(o);
+    else if (o.userData.ops) drop.push(o);
     else if (o.isMesh) {
       let p = o;
       while (p && !p.userData.part) p = p.parent;
-      const part = p?.userData.part;
+      const part = o.userData.board ? p?.userData.part : null;
       o.material = part
         ? material(decor(part.decor)?.hex ?? '#cccccc', 0.6, 0)
         : material('#9a9a9a', 0.35, 0.8);
@@ -53,15 +54,30 @@ export function plainCopy(root) {
   return holder;
 }
 
+// The copy at rest — the fronts closed, nothing exploded — whatever pose the view is in; the view is put back.
+export function restingCopy(viewer) {
+  const { open, explode } = viewer;
+  viewer.open = 0;
+  viewer.explode = 0;
+  viewer.applyPose();
+  try {
+    return plainCopy(viewer.root);
+  } finally {
+    viewer.open = open;
+    viewer.explode = explode;
+    viewer.applyPose();
+  }
+}
+
 // iPhone, iPad: a USDZ of the copy, opened by AR Quick Look (an <a rel="ar"> with an image inside, as Safari wants)
-export async function quickLookBlob(root) {
+export async function quickLookBlob(copy) {
   const { USDZExporter } = await import('three/addons/exporters/USDZExporter.js');
-  const data = await new USDZExporter().parseAsync(plainCopy(root));
+  const data = await new USDZExporter().parseAsync(copy);
   return new Blob([data], { type: 'model/vnd.usdz+zip' });
 }
 
 async function quickLook(viewer) {
-  const url = URL.createObjectURL(await quickLookBlob(viewer.root));
+  const url = URL.createObjectURL(await quickLookBlob(restingCopy(viewer)));
   const a = document.createElement('a');
   a.rel = 'ar';
   a.href = url;
@@ -89,7 +105,7 @@ async function webxr(viewer) {
   const sun = new THREE.DirectionalLight(0xffffff, 1.4);
   sun.position.set(1, 3, 2);
   scene.add(sun);
-  const model = plainCopy(viewer.root);
+  const model = restingCopy(viewer);
   model.visible = false;
   scene.add(model);
   const ring = new THREE.Mesh(
@@ -100,6 +116,12 @@ async function webxr(viewer) {
   ring.visible = false;
   scene.add(ring);
   const camera = new THREE.PerspectiveCamera();
+  const release = () => {
+    renderer.setAnimationLoop(null);
+    renderer.domElement.remove();
+    renderer.dispose();
+    renderer.forceContextLoss();
+  };
   let session;
   try {
     session = await navigator.xr.requestSession('immersive-ar', {
@@ -108,30 +130,35 @@ async function webxr(viewer) {
       domOverlay: { root: overlay },
     });
   } catch (err) {
-    renderer.domElement.remove();
-    renderer.dispose();
+    release();
     throw err;
   }
+  let source = null;
+  const exit = $('#ar-exit');
+  const end = () => session.end().catch(() => {});
+  session.addEventListener('end', () => {
+    overlay.hidden = true;
+    exit.removeEventListener('click', end);
+    source?.cancel();
+    release();
+  });
+  exit.addEventListener('click', end);
   overlay.hidden = false;
-  renderer.xr.setReferenceSpaceType('local');
-  await renderer.xr.setSession(session);
-  const viewerSpace = await session.requestReferenceSpace('viewer');
-  const source = await session.requestHitTestSource({ space: viewerSpace });
+  try {
+    renderer.xr.setReferenceSpaceType('local');
+    await renderer.xr.setSession(session);
+    const viewerSpace = await session.requestReferenceSpace('viewer');
+    source = await session.requestHitTestSource({ space: viewerSpace });
+  } catch (err) {
+    await end();
+    throw err;
+  }
   session.addEventListener('select', () => {
     if (!ring.visible) return;
     model.position.setFromMatrixPosition(ring.matrix);
     const eye = new THREE.Vector3().setFromMatrixPosition(camera.matrixWorld);
     model.rotation.y = Math.atan2(eye.x - model.position.x, eye.z - model.position.z);
     model.visible = true;
-  });
-  const end = () => session.end().catch(() => {});
-  $('#ar-exit').addEventListener('click', end, { once: true });
-  session.addEventListener('end', () => {
-    overlay.hidden = true;
-    source.cancel();
-    renderer.setAnimationLoop(null);
-    renderer.domElement.remove();
-    renderer.dispose();
   });
   renderer.setAnimationLoop((t, frame) => {
     const hits = frame ? frame.getHitTestResults(source) : [];
@@ -148,6 +175,7 @@ export async function bindAr(viewer, text) {
   const mode = await arMode();
   if (!mode) return;
   button.hidden = false;
+  $('#ar-overlay')?.addEventListener('beforexrselect', (ev) => ev.preventDefault());
   button.addEventListener('click', async () => {
     button.disabled = true;
     try {

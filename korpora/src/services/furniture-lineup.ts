@@ -154,17 +154,20 @@ export function furnitureLineup(): LineupGroup[] {
   return cached;
 }
 
+/** Групите, които в брошурата застават в края на реда на хола: собствен ред не се побира на листа. */
+const BROCHURE_FOLDED: readonly FurnitureGroup[] = ['bathroom', 'custom'];
+
 /**
- * За брошурата: свободният корпус застава в края на предишния ред — собствен ред не се побира на листа
- * (витрината в сайта го показва като отделна група).
+ * За брошурата: банята и свободният корпус застават в края на реда на хола — още редове не се побират на листа
+ * (витрината в сайта ги показва като отделни групи).
  */
 export function brochureLineup(): LineupGroup[] {
   const groups = furnitureByGroup();
-  const at = groups.findIndex((g) => g.group === 'custom');
-  if (at < 1) return lineupOf(groups);
-  const folded = groups.filter((_, i) => i !== at);
-  const before = folded[at - 1];
-  if (before)
-    folded[at - 1] = { group: before.group, kinds: [...before.kinds, ...groups[at]!.kinds] };
-  return lineupOf(folded);
+  const living = groups.find((g) => g.group === 'living');
+  if (!living) return lineupOf(groups);
+  const extra = groups.filter((g) => BROCHURE_FOLDED.includes(g.group)).flatMap((g) => g.kinds);
+  const rows = groups
+    .filter((g) => !BROCHURE_FOLDED.includes(g.group))
+    .map((g) => (g === living ? { group: g.group, kinds: [...g.kinds, ...extra] } : g));
+  return lineupOf(rows);
 }

@@ -35,7 +35,7 @@ interface Three {
 interface ArModule {
   arMode(nav: unknown, doc: unknown): Promise<string | null>;
   plainCopy(root: Obj): Obj;
-  quickLookBlob(root: Obj): Promise<Blob>;
+  quickLookBlob(copy: Obj): Promise<Blob>;
 }
 
 browserGlobals();
@@ -107,7 +107,7 @@ test('the copy: decor colours, plain metal for hardware, no instanced meshes, on
 });
 
 test('the USDZ for Quick Look is a ZIP (USDZ is an uncompressed ZIP of the USD and its files)', async () => {
-  const blob = await ar.quickLookBlob(furniture());
+  const blob = await ar.quickLookBlob(ar.plainCopy(furniture()));
   const head = new Uint8Array(await blob.arrayBuffer()).subarray(0, 4);
   assert.deepEqual([...head], [0x50, 0x4b, 0x03, 0x04]);
   assert.equal(blob.type, 'model/vnd.usdz+zip');
