@@ -19,10 +19,10 @@ import { RandomBot } from "./bot.js";
 import { redis } from "./redis.js";
 import { env } from "./env.js";
 import { logger } from "./logger.js";
-import { notifySelfExcluded, selfExcludedAmong } from "./responsible.js";
+import { notifyBlocked, playBlockedAmong } from "./responsible.js";
 
 /** Резултат от влизане в опашка. */
-export type JoinQueueResult = "joined" | "no_engine" | "self_excluded";
+export type JoinQueueResult = "joined" | "no_engine" | "self_excluded" | "daily_limit";
 
 interface QueueDesc {
   game: GameKey;
@@ -137,11 +137,12 @@ export class Matchmaker {
   /** Launch a match from an assembled lobby (host pressed start). Returns id. */
   async startFromLobby(lobby: Lobby): Promise<string> {
     const members = lobby.slots.flatMap((s) => (s.userId && !s.isBot ? [s.userId] : []));
-    // Отговорна игра: никой самоизключен не сяда на маса (и хостът научава защо).
-    const excluded = await selfExcludedAmong(members);
+    // Отговорна игра: никой самоизключен или стигнал дневния си лимит не сяда на
+    // маса (хостът научава само, че някой от групата не може).
+    const excluded = await playBlockedAmong(members);
     if (excluded.size > 0) {
-      notifySelfExcluded(this.io, excluded, [lobby.hostUserId]);
-      throw new Error("self-excluded member");
+      notifyBlocked(this.io, excluded, [lobby.hostUserId]);
+      throw new Error("blocked member (self-excluded or daily limit)");
     }
     if (!(await this.allAffordBuyIn(members, lobby.game, [lobby.hostUserId]))) {
       throw new Error("buy-in not covered");
@@ -188,11 +189,12 @@ export class Matchmaker {
     difficulty?: BotDifficulty,
   ): Promise<JoinQueueResult> {
     if (!this.engineFor(game)) return "no_engine";
-    // Отговорна игра: по време на самоизключване опашките са затворени.
-    const excluded = await selfExcludedAmong([userId]);
-    if (excluded.size > 0) {
-      notifySelfExcluded(this.io, excluded);
-      return "self_excluded";
+    // Отговорна игра: при самоизключване или достигнат дневен лимит опашките са затворени.
+    const excluded = await playBlockedAmong([userId]);
+    const block = excluded.get(userId);
+    if (block) {
+      notifyBlocked(this.io, excluded);
+      return block.code;
     }
     const q: QueueDesc = { game, mode };
     // Remember this player's preferred bot strength for any bot-filled seats.
@@ -325,11 +327,11 @@ export class Matchmaker {
       players.push({ userId, mmr, waitedMs: now - Number(joinedRaw || now) });
     }
 
-    // Самоизключил се, докато чака → изваждаме го от опашката, не го сядаме.
-    const excluded = await selfExcludedAmong(players.map((p) => p.userId));
+    // Самоизключил се или стигнал лимита, докато чака → изваждаме го от опашката.
+    const excluded = await playBlockedAmong(players.map((p) => p.userId));
     if (excluded.size > 0) {
       await this.dequeue(q, [...excluded.keys()]);
-      notifySelfExcluded(this.io, excluded);
+      notifyBlocked(this.io, excluded);
       for (let i = players.length - 1; i >= 0; i--) if (excluded.has(players[i]!.userId)) players.splice(i, 1);
       if (players.length === 0) return;
     }
@@ -388,9 +390,9 @@ export class Matchmaker {
     if (free.length === 0) return null;
     const seats = Math.max(2, seatsFor(game));
     const humans = free.slice(0, seats);
-    const excluded = await selfExcludedAmong(humans);
+    const excluded = await playBlockedAmong(humans);
     if (excluded.size > 0) {
-      notifySelfExcluded(this.io, excluded, humans);
+      notifyBlocked(this.io, excluded, humans);
       return null;
     }
     if (!(await this.allAffordBuyIn(humans, game))) return null;

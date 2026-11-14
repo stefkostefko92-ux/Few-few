@@ -577,6 +577,13 @@
     "free": "Chips are earned for free too — daily bonus and wins.",
     "topUp": "Buy chips"
   },
+  "playPaused": {
+    "limitTitle": "Break until tomorrow",
+    "limitBody": "You've reached your daily play limit. New tables and queues open again on {{date}}.",
+    "excludedTitle": "Self-exclusion is active",
+    "excludedBody": "Tables are closed for you until {{date}}. This was your choice and can't be lifted earlier.",
+    "settings": "Responsible gaming settings"
+  },
   "store": {
     "title": "Quick store",
     "topUp": "Top up balance",
@@ -1207,7 +1214,9 @@
     "illegal_action": "Illegal move",
     "chat_rate": "Too fast. Wait a moment.",
     "rate_limited": "Too many attempts — wait.",
-    "self_excluded": "Self-exclusion is active — tables and purchases are unavailable until it ends"
+    "self_excluded": "Self-exclusion is active — tables and purchases are unavailable until it ends",
+    "daily_limit": "You've reached your daily play limit — new tables and queues tomorrow.",
+    "member_unavailable": "A player in your group can't join a table right now."
   },
   "games": {
     "CHESS": "Chess",
@@ -1334,8 +1343,11 @@
     "realityHint": "We show “You've been playing for X min” at the chosen interval.",
     "off": "Off",
     "everyMin": "Every {{n}} min",
-    "limitLabel": "Daily session limit",
-    "limitHint": "You've played {{n}} min today. When you reach the limit we'll remind you to take a break.",
+    "limitLabel": "Daily play limit",
+    "limitHint": "You've played {{n}} min in matches today.",
+    "limitRule": "Once you reach the limit, new tables and queues close until midnight (Sofia time); a match you've started is played out. A lower limit applies at once, a higher one or “No limit” after 24 hours.",
+    "limitPending": "Your new {{n}} min limit takes effect on {{date}}.",
+    "limitPendingOff": "Your limit is removed on {{date}}.",
     "noLimit": "No limit",
     "minutes": "{{n}} min",
     "excludeLabel": "Self-exclusion",
@@ -1358,7 +1370,7 @@
     "takeBreak": "Take a break",
     "keepPlaying": "Continue",
     "limitTitle": "Daily limit reached",
-    "limitBody": "You've played the {{n}} min limit you set for today. A good moment for a break.",
+    "limitBody": "You've played the {{n}} min limit you set for today. New tables and queues open again tomorrow — a good moment for a break.",
     "understood": "Got it"
   },
   "decision": {

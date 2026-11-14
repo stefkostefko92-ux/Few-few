@@ -41,6 +41,10 @@ model User {
   // Не може да се съкрати/отмени преди изтичане (само удължаване).
   realityCheckMinutes Int       @default(0)
   dailyLimitMinutes   Int?
+  // Вдигане/махане на дневния лимит чака 24 ч (свалянето важи веднага):
+  // от `dailyLimitPendingAt` нататък действа `dailyLimitPendingMinutes` (null = без лимит).
+  dailyLimitPendingMinutes Int?
+  dailyLimitPendingAt      DateTime?
   selfExcludedUntil   DateTime?
   selfExcludedAt      DateTime?
   createdAt     DateTime  @default(now())

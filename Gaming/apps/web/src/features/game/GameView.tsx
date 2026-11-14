@@ -1,7 +1,15 @@
-import { lazy, Suspense, type ComponentType } from "react";
+import { lazy, Suspense, useEffect, useState, type ComponentType } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { buyInFor, isGameKey, type GameKey } from "@aso/shared";
+import {
+  DAILY_LIMIT_CODE,
+  SELF_EXCLUDED_CODE,
+  SOCKET_EVENTS,
+  buyInFor,
+  isGameKey,
+  type GameKey,
+  type SocketErrorMsg,
+} from "@aso/shared";
 import { Button, Panel } from "../../ui";
 import { useAuthStore, useMatchStore } from "../../lib/store";
 import { GAME_CATALOG, gameTitle } from "../lobby/games";
@@ -10,6 +18,8 @@ import { ChatDock } from "./chat/ChatDock";
 import { MatchStatus } from "./MatchStatus";
 import { GameHelp } from "./GameHelp";
 import { OutOfChips } from "./OutOfChips";
+import { PlayPaused } from "./PlayPaused";
+import { getSocket } from "../../lib/socket";
 
 // Game views pull in heavy WebGL/3D scene code (three.js). Lazy-load them so the
 // lobby/shell bundle stays small; each game's chunk loads only when entered.
@@ -118,6 +128,21 @@ export function GameView() {
   const meta = GAME_CATALOG.find((g) => g.key === gameKey);
   const playable = !!gameKey && isGameKey(gameKey) && !!meta?.ready;
 
+  // Отговорна игра: сървърът е отказал маса (дневен лимит / самоизключване) →
+  // ясен екран вместо безкрайно „Търсим съперник…“. Нова игра/епоха го нулира.
+  const [paused, setPaused] = useState<SocketErrorMsg | null>(null);
+  useEffect(() => {
+    setPaused(null);
+    const socket = getSocket();
+    const onError = (msg: SocketErrorMsg) => {
+      if (msg.code === DAILY_LIMIT_CODE || msg.code === SELF_EXCLUDED_CODE) setPaused(msg);
+    };
+    socket.on(SOCKET_EVENTS.ERROR, onError);
+    return () => {
+      socket.off(SOCKET_EVENTS.ERROR, onError);
+    };
+  }, [gameKey, epoch]);
+
   if (!meta || !playable || !gameKey) {
     return (
       <div className="mx-auto max-w-md text-center">
@@ -139,6 +164,8 @@ export function GameView() {
   if (buyIn !== undefined && user && Number(user.chips) < buyIn) {
     return <OutOfChips minBuyIn={buyIn} chips={Number(user.chips)} />;
   }
+
+  if (paused) return <PlayPaused code={paused.code} until={paused.until} />;
 
   return (
     <CinematicStage key={epoch} tone={TONE[key] ?? "default"}>

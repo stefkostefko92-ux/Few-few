@@ -577,6 +577,13 @@
     "free": "I gettoni si guadagnano anche gratis — bonus giornaliero e vittorie.",
     "topUp": "Compra gettoni"
   },
+  "playPaused": {
+    "limitTitle": "Pausa fino a domani",
+    "limitBody": "Hai raggiunto il tuo limite di gioco giornaliero. Nuovi tavoli e code riaprono il {{date}}.",
+    "excludedTitle": "Autoesclusione attiva",
+    "excludedBody": "I tavoli sono chiusi per te fino al {{date}}. È stata una tua scelta e non può essere annullata prima.",
+    "settings": "Impostazioni di gioco responsabile"
+  },
   "store": {
     "title": "Negozio rapido",
     "topUp": "Ricarica saldo",
@@ -1207,7 +1214,9 @@
     "illegal_action": "Mossa non valida",
     "chat_rate": "Troppo veloce. Attendi un momento.",
     "rate_limited": "Troppi tentativi — attendi.",
-    "self_excluded": "L'autoesclusione è attiva — tavoli e acquisti non sono disponibili fino alla scadenza"
+    "self_excluded": "L'autoesclusione è attiva — tavoli e acquisti non sono disponibili fino alla scadenza",
+    "daily_limit": "Hai raggiunto il tuo limite di gioco giornaliero — nuovi tavoli e code domani.",
+    "member_unavailable": "Un giocatore del gruppo non può sedersi a un tavolo ora."
   },
   "games": {
     "CHESS": "Scacchi",
@@ -1334,8 +1343,11 @@
     "realityHint": "Mostriamo «Stai giocando da X min» all'intervallo scelto.",
     "off": "Disattivato",
     "everyMin": "Ogni {{n}} min",
-    "limitLabel": "Limite giornaliero di sessione",
-    "limitHint": "Oggi hai giocato {{n}} min. Al raggiungimento del limite ti ricorderemo di fare una pausa.",
+    "limitLabel": "Limite di gioco giornaliero",
+    "limitHint": "Oggi hai giocato {{n}} min in partita.",
+    "limitRule": "Raggiunto il limite, nuovi tavoli e code si chiudono fino a mezzanotte (ora di Sofia); la partita già iniziata si porta a termine. Un limite più basso vale subito, uno più alto o «Nessun limite» dopo 24 ore.",
+    "limitPending": "Il nuovo limite di {{n}} min entra in vigore il {{date}}.",
+    "limitPendingOff": "Il limite viene rimosso il {{date}}.",
     "noLimit": "Nessun limite",
     "minutes": "{{n}} min",
     "excludeLabel": "Autoesclusione",
@@ -1358,7 +1370,7 @@
     "takeBreak": "Pausa",
     "keepPlaying": "Continua",
     "limitTitle": "Limite giornaliero raggiunto",
-    "limitBody": "Oggi hai giocato il limite di {{n}} min che hai scelto. Un buon momento per una pausa.",
+    "limitBody": "Oggi hai giocato il limite di {{n}} min che hai scelto. Nuovi tavoli e code riaprono domani — un buon momento per una pausa.",
     "understood": "Ho capito"
   },
   "decision": {

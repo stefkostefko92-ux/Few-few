@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button, Modal } from "../../ui";
 import { api } from "../../lib/api";
 import { useAuthStore } from "../../lib/store";
-import { nextRealityCheck, readDaily, sessionMinutes, sessionStart, tickDaily } from "./playTime";
+import { nextRealityCheck, sessionMinutes, sessionStart } from "./playTime";
 
 /** Повторно напомняне за достигнат дневен лимит (минути), ако играчът продължи. */
 const LIMIT_REMIND_EVERY = 15;
@@ -20,14 +20,17 @@ export function useResponsibleSettings() {
     queryFn: api.responsible,
     enabled: !!user && user.role !== "GUEST",
     staleTime: 60_000,
+    // Изиграните днес минути са сървърни (по мачовете) — обновяват се всяка минута.
+    refetchInterval: 60_000,
   });
 }
 
 /**
  * Отговорна игра (монтиран в Layout): модал „Играете от X мин“ на всеки
- * избран интервал (30/60/120) с „Почивка“ / „Продължи“, и известие при
- * достигнат дневен лимит на сесията. Времето се брои само докато разделът е
- * видим. Помощ за играча, не наказание — самоизключването е сървърно.
+ * избран интервал (30/60/120) с „Почивка“ / „Продължи“ (времето на сесията се
+ * брои само докато разделът е видим), и известие при достигнат дневен лимит.
+ * Лимитът се брои и налага от сървъра по изиграните мачове: след него нови маси
+ * и опашки се отказват до утре, а започнатият мач се доиграва.
  */
 export function RealityCheck() {
   const { t } = useTranslation();
@@ -38,7 +41,7 @@ export function RealityCheck() {
 
   const start = useRef(sessionStart());
   const [elapsed, setElapsed] = useState(() => sessionMinutes(start.current));
-  const [today, setToday] = useState(() => readDaily().minutes);
+  const today = data?.playedTodayMinutes ?? 0;
   const [checkAt, setCheckAt] = useState<number | null>(null);
   const [limitOpen, setLimitOpen] = useState(false);
   const nextCheck = useRef<number | null>(null);
@@ -48,7 +51,6 @@ export function RealityCheck() {
     const id = setInterval(() => {
       if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
       setElapsed(sessionMinutes(start.current));
-      setToday(tickDaily(1).minutes);
     }, 60_000);
     return () => clearInterval(id);
   }, []);
