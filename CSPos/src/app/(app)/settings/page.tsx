@@ -369,6 +369,8 @@ export default function SettingsPage() {
         </p>
       </section>
 
+      <LicenseSection />
+
       {/* Потребители */}
       <section className="card p-5 space-y-4">
         <div className="flex items-center justify-between">
@@ -555,5 +557,99 @@ function UserModal({
         </button>
       </div>
     </Modal>
+  );
+}
+
+// Лиценз на касата — статус + активация с ключ от магазина (роля администратор).
+function LicenseSection() {
+  const [state, setState] = useState<{
+    status: string;
+    plan: string | null;
+    seats: number | null;
+    expiresAt: number | null;
+    keyMasked: string | null;
+  } | null>(null);
+  const [key, setKey] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const load = () =>
+    fetch("/api/license")
+      .then((r) => r.json())
+      .then(setState)
+      .catch(() => setState(null));
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  async function activate() {
+    setBusy(true);
+    setMsg(null);
+    try {
+      await apiJson(
+        await fetch("/api/license", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key: key.trim() }),
+        })
+      );
+      setMsg({ ok: true, text: "Лицензът е активиран за тази каса." });
+      setKey("");
+      void load();
+    } catch (e) {
+      setMsg({ ok: false, text: e instanceof Error ? e.message : "Грешка при активация." });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const PLAN_LABEL: Record<string, string> = {
+    monthly: "месечен",
+    yearly: "годишен",
+    lifetime: "доживотен",
+  };
+
+  return (
+    <section className="card p-5 space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="font-bold text-lg">Лиценз</h2>
+        {state && (
+          <Badge tone={state.status === "active" ? "success" : state.status === "none" ? "warning" : "danger"}>
+            {state.status === "active"
+              ? `активен · ${PLAN_LABEL[state.plan ?? ""] ?? state.plan} · ${state.seats} каси`
+              : state.status === "none"
+                ? "неактивиран (демо)"
+                : state.status === "expired"
+                  ? "изтекъл"
+                  : "невалиден"}
+          </Badge>
+        )}
+      </div>
+      {state?.status === "active" && state.expiresAt && (
+        <p className="text-sm text-ink-500">
+          Валиден до {new Date(state.expiresAt).toLocaleDateString("bg-BG")} (вкл. гратис период) ·{" "}
+          {state.keyMasked}
+        </p>
+      )}
+      <div className="flex flex-wrap gap-3">
+        <input
+          value={key}
+          onChange={(e) => setKey(e.target.value)}
+          placeholder="CSPOS-XXXXX-XXXXX-XXXXX-XXXXX"
+          className="input flex-1 min-w-[16rem] font-mono"
+        />
+        <button onClick={activate} disabled={busy || key.trim().length < 10} className="btn-primary">
+          {busy ? "Активира се…" : "Активирай"}
+        </button>
+      </div>
+      {msg && (
+        <p className={`text-sm font-medium ${msg.ok ? "text-mint-600" : "text-coral-600"}`}>{msg.text}</p>
+      )}
+      <p className="text-xs text-ink-500">
+        Ключът се получава при покупка от магазина и важи за закупения брой каси. Активацията изисква
+        еднократна интернет връзка; след това касата работи офлайн.
+      </p>
+    </section>
   );
 }

@@ -1,7 +1,8 @@
 # CLAUDE.md
 
 Guidance for AI assistants working in this **monorepo** — several independent
-products by Carbon Stealth VCC (https://carbonstealth.eu). Products share **no
+products by Carbon Stealth VCC (https://carbonstealth.eu; юр. лице „Карбон Стелт“ ЕДПК · ЕИК 208725180 ·
+ЗДДС № BG208725180 · гр. Бобов дол 2670, ул. „Самуил“ № 3 · info@carbonstealth.eu). Products share **no
 code**: separate deps, toolchains, CI and deploy paths. Always `cd` into the
 product you touch — **there is no root `package.json`** (root `.gitignore` only
 ignores `node_modules/` and `.DS_Store`).

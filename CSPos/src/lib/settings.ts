@@ -80,6 +80,8 @@ const DEFAULTS = {
   } satisfies DisplayConfig,
   vatRates: DEFAULT_VAT_RATES,
   barcodeMasks: DEFAULT_MASK_RULES,
+  /** Лиценз на тази каса: ключ + подписан офлайн blob + локален deviceId. */
+  license: { key: "", blob: "", deviceId: "" },
 };
 
 export type SettingKey = keyof typeof DEFAULTS;
