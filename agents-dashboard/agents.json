@@ -5253,7 +5253,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 254
+        "lessons": 256
       },
       "evolution": [
         {
@@ -5765,9 +5765,20 @@
           "date": "2026-11-14",
           "event": "v28.1 — учене",
           "detail": "Научи: linketto messages/*.json — редът на секциите е еднакъв в 27-те локала (home→pricing, da…"
+        },
+        {
+          "version": "28.3.0",
+          "date": "2026-11-14",
+          "event": "v28.3 — учене",
+          "detail": "Научи: WebFetch към EUR-Lex (legal-content/XX/TXT/HTML/?uri=CELEX:… и /eli/…/oj/xxx) връща сам… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-14",
+          "type": "learning",
+          "summary": "Научи: „WebFetch към EUR-Lex (legal-content/XX/TXT/HTML/?uri=CELEX:… и /eli/…/oj/xxx) връща сам…\" (+1 още)"
+        },
         {
           "date": "2026-11-14",
           "type": "learning",
