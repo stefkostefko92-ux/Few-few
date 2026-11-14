@@ -568,3 +568,5 @@
 {"t":"start","ts":"2026-11-14T11:04:31.314Z","id":"r9845e096","flow":"авто","lead":"prevodach","auto":true}
 {"t":"handoff","ts":"2026-11-14T11:04:31.314Z","id":"r9845e096","from":"prevodach","to":"човек","status":"има бележки","run":"f56adbf3"}
 {"t":"handoff","ts":"2026-11-14T11:04:51.975Z","id":"r9845e096","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"a86b387a"}
+{"t":"start","ts":"2026-11-14T11:52:39.501Z","id":"r605dcb13","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-14T11:52:39.502Z","id":"r605dcb13","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"9220f229"}
