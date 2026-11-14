@@ -6853,7 +6853,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 286
+        "lessons": 290
       },
       "evolution": [
         {
@@ -7269,9 +7269,20 @@
           "date": "2026-11-14",
           "event": "v25.7 — учене",
           "detail": "Научи: GNU sed -i запазва правата 600 на редактирания файл, затова sed -i върху .env след chmo… (+11 още)"
+        },
+        {
+          "version": "26.0.0",
+          "date": "2026-11-14",
+          "event": "v26.0 — учене",
+          "detail": "Научи: Prisma 6.19.3 при PRISMA_ENGINES_MIRROR иска <name>.gz.sha256 (sha256 на самия gz файл)… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-14",
+          "type": "learning",
+          "summary": "Научи: „Prisma 6.19.3 при PRISMA_ENGINES_MIRROR иска <name>.gz.sha256 (sha256 на самия gz файл)…\" (+2 още)"
+        },
         {
           "date": "2026-11-14",
           "type": "learning",
