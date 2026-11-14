@@ -6,6 +6,7 @@ import { prisma } from '../db.js';
 import type { RequestMeta } from '../http/meta.js';
 import { LABEL } from '../labels.js';
 import { logger } from '../logger.js';
+import { orderNo } from '../plans/order-number.js';
 import { addDays } from '../plans/plan.js';
 import { isOptionId, optionMonths, optionPriceCents } from '../plans/pricing.js';
 import {
@@ -25,6 +26,8 @@ import {
 import { settlePlanAfterWithdrawal } from './withdrawal-plan.js';
 
 export type RequestResult = { ok: true } | { ok: false; key: string };
+/** Приетата поръчка: номерата на поръчките, които е заменила — съобщението на екрана ги казва. */
+export type OrderResult = { ok: true; replaced: string[] } | { ok: false; key: string };
 
 /** Толкова поръчки за 24 часа на акаунт — истинският клиент прави една-две, поправката на грешка — още една. */
 const ORDERS_PER_DAY = 5;
@@ -50,7 +53,7 @@ export async function createUpgradeRequest(
   raw: unknown,
   meta: RequestMeta,
   now: Date = new Date(),
-): Promise<RequestResult> {
+): Promise<OrderResult> {
   const parsed = orderSchema.safeParse(raw);
   if (!parsed.success) {
     const buyerMissing = parsed.error.issues.some((issue) => issue.path[0] === 'buyer');
@@ -95,9 +98,9 @@ export async function createUpgradeRequest(
         handledByLabel: LABEL.superseded,
         supersededById: order.id,
       },
-      select: { id: true },
+      select: { id: true, number: true, createdAt: true },
     });
-    return { order, replaced: replaced.map((row) => row.id) };
+    return { order, replaced };
   });
   if (!created) return { ok: false, key: 'plan.errors.tooMany' };
   const { order, replaced } = created;
@@ -110,7 +113,7 @@ export async function createUpgradeRequest(
       buyer: buyerType,
       earlyStart: order.earlyStartRequestedAt !== null,
       terms: LEGAL_UPDATED.terms,
-      replaced,
+      replaced: replaced.map((row) => row.id),
     },
   });
   if (await sendOrderConfirmation(order, user, replaced)) {
@@ -120,7 +123,7 @@ export async function createUpgradeRequest(
     });
   }
   void notifyStaffOfOrder(order, user, replaced);
-  return { ok: true };
+  return { ok: true, replaced: replaced.map(orderNo) };
 }
 
 /**
@@ -212,7 +215,8 @@ export async function withdrawFromOrder(
 
 /**
  * Поддръжката: потвърждение на договор или на отказ, което не е тръгнало (SMTP грешка), се праща пак.
- * Само за поръчки от последните дни и не по-млади от 10 минути — тези още ги праща самата заявка.
+ * Само за поръчки от последните дни и не по-млади от 10 минути — тези още ги праща самата заявка — и само
+ * на живи акаунти: от поръчката на изтрит акаунт е останал само договорът.
  */
 export async function resendOrderMail(now: Date = new Date()): Promise<number> {
   const recent = addDays(now, -(WITHDRAWAL_DAYS + 16));
@@ -220,6 +224,7 @@ export async function resendOrderMail(now: Date = new Date()): Promise<number> {
   const pending = await prisma.upgradeRequest.findMany({
     where: {
       termsVersion: { not: null },
+      userId: { not: null },
       OR: [
         {
           confirmationSentAt: null,
@@ -236,31 +241,27 @@ export async function resendOrderMail(now: Date = new Date()): Promise<number> {
     include: {
       user: true,
       planChanges: { where: { note: LABEL.withdrawal }, take: 1 },
-      supersedes: { select: { id: true }, orderBy: { createdAt: 'asc' } },
+      supersedes: { select: { number: true, createdAt: true }, orderBy: { createdAt: 'asc' } },
     },
     take: 50,
   });
   let sent = 0;
   for (const order of pending) {
+    const { user } = order;
+    if (!user) continue;
     if (order.status === 'WITHDRAWN') {
       // заявката взима само поръчки с момент на отказа; проверката стеснява типа
       const { withdrawnAt } = order;
       if (!withdrawnAt) continue;
       const outcome = withdrawalOutcomeOf(order);
-      if (await sendWithdrawalReceipt({ ...order, withdrawnAt }, order.user, outcome)) {
+      if (await sendWithdrawalReceipt({ ...order, withdrawnAt }, user, outcome)) {
         await prisma.upgradeRequest.update({
           where: { id: order.id },
           data: { withdrawalAckSentAt: now },
         });
         sent += 1;
       }
-    } else if (
-      await sendOrderConfirmation(
-        order,
-        order.user,
-        order.supersedes.map((row) => row.id),
-      )
-    ) {
+    } else if (await sendOrderConfirmation(order, user, order.supersedes)) {
       await prisma.upgradeRequest.update({
         where: { id: order.id },
         data: { confirmationSentAt: now },

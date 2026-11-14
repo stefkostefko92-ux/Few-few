@@ -7,6 +7,7 @@ import { isStaff } from '../auth/rbac.js';
 import { sensitiveLimiter } from '../http/limits.js';
 import { idParam, rawField, requestMeta, stringField } from '../http/meta.js';
 import { listSessions, revokeOtherSessions, revokeOwnSession } from '../services/account-self.js';
+import { withdrawDeviceConsent } from '../services/device-consent.js';
 import {
   changePassword,
   confirmTotp,
@@ -14,11 +15,13 @@ import {
   regenerateRecoveryCodes,
   startTotp,
 } from '../services/security.js';
+import { resumeTotpSetup } from '../services/totp-setup.js';
 import { back, me } from './account-common.js';
 
 /**
- * „Сигурност“ в акаунта: парола, двуфакторна защита, резервни кодове, сесии. Закача се ВЪТРЕ в
- * accountRouter, затова минава през неговата защита (вход + CSRF + no-store).
+ * „Сигурност“ в акаунта: парола, двуфакторна защита, резервни кодове, сесии, съгласието за
+ * отпечатъка. Закача се ВЪТРЕ в accountRouter, затова минава през неговата защита (вход + CSRF +
+ * no-store).
  */
 export const accountSecurityRouter: Router = Router();
 
@@ -53,6 +56,7 @@ async function renderSecurity(
     recoveryLeft,
     staff: isStaff(user.role),
     setup: null,
+    setupError: null,
     codes: null,
     section: 'security',
     ...extra,
@@ -97,12 +101,19 @@ accountSecurityRouter.post('/account/security/2fa/start', sensitiveLimiter, asyn
 });
 
 accountSecurityRouter.post('/account/security/2fa/confirm', sensitiveLimiter, async (req, res) => {
-  const result = await confirmTotp(
-    await me(req),
-    stringField(req.body, 'code', 12),
-    requestMeta(req),
-  );
+  const user = await me(req);
+  const result = await confirmTotp(user, stringField(req.body, 'code', 12), requestMeta(req));
   if (!result.ok) {
+    // сгрешен код: същата настройка (QR и ключ) с грешката до полето — не отначало
+    const setup =
+      result.key === 'flash.codeMismatch'
+        ? await resumeTotpSetup(user, stringField(req.body, 'setup', 600))
+        : null;
+    if (setup) {
+      res.status(400);
+      await renderSecurity(req, res, { setup, setupError: result.key });
+      return;
+    }
     totpRefusal(res, result.key);
     return;
   }
@@ -152,4 +163,10 @@ accountSecurityRouter.post('/account/security/sessions/:id/revoke', async (req, 
 accountSecurityRouter.post('/account/security/sessions/revoke-others', async (req, res) => {
   await revokeOtherSessions(await me(req), principalOf(req).session.id, requestMeta(req));
   back(res, '/account/security', 'ok', 'flash.sessionsRevoked');
+});
+
+/** Оттеглянето на съгласието за отпечатъка — без парола: толкова лесно, колкото се дава. */
+accountSecurityRouter.post('/account/security/device-consent/withdraw', async (req, res) => {
+  await withdrawDeviceConsent(await me(req), requestMeta(req));
+  back(res, '/account/security', 'ok', 'flash.deviceConsentWithdrawn');
 });

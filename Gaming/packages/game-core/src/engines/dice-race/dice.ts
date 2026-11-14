@@ -14,6 +14,15 @@ import type { SeededRng } from "../../kernel/rng.js";
  * section (ones..sixes) to 63+ earns a +35 bonus. After every player fills all
  * 13 categories the highest total wins (equal totals draw). Original
  * naming/scoring; no trademarked assets (§2).
+ *
+ * „Покер“ бонус и „Жокер“ (правилата на Hasbro): пет еднакви, когато кутията
+ * „Покер“ вече е попълнена (с 50 ИЛИ с 0), е жокер —
+ *   1. ако съответната горна кутия (напр. 3-ки за пет тройки) е свободна, ТРЯБВА
+ *      да се запише там;
+ *   2. иначе — в която и да е свободна долна кутия, като Фул = 25, Малка кента =
+ *      30, Голяма кента = 40 (3/4 еднакви и Шанс — сумата на заровете);
+ *   3. ако и долните са пълни — 0 в която и да е свободна горна кутия.
+ * +100 бонус се дава само ако „Покер“ е записан с 50 (не и при 0).
  */
 
 export const CATEGORIES = [
@@ -34,8 +43,8 @@ export interface DiceState {
   held: boolean[];
   rerollsLeft: number;
   scores: Array<Partial<Record<Category, number>>>; // per seat
-  /** Accumulated Yahtzee bonus per seat: +100 for every extra Yahtzee rolled
-   *  once the 50-point Yahtzee box is already filled (official rule). */
+  /** Натрупан бонус „Покер“ за всяко място: +100 за всеки следващ „Покер“,
+   *  когато кутията „Покер“ вече е записана с 50 (не с 0). */
   bonusYahtzee: number[];
   turn: Seat;
   seats: number;
@@ -55,7 +64,7 @@ export type DiceEvent =
   | { type: "WIN"; seat: Seat }
   | { type: "DRAW"; seats: Seat[] };
 
-/** The official +100 bonus for each extra Yahtzee after the 50-box is filled. */
+/** +100 за всеки следващ „Покер“, когато кутията „Покер“ вече е записана с 50. */
 export const YAHTZEE_BONUS = 100;
 
 const NO_HOLD: readonly boolean[] = [false, false, false, false, false];
@@ -93,6 +102,45 @@ function hasStraight(c: number[], len: number): boolean {
     if (run >= len) return true;
   }
   return false;
+}
+
+const LOWER_CATEGORIES: readonly Category[] = CATEGORIES.slice(6, 12); // без „Покер“
+
+/** Пет еднакви — лицето им (1..6), иначе null. */
+function fiveOfAKind(dice: number[]): number | null {
+  const c = counts(dice);
+  for (let f = 1; f <= 6; f++) if (c[f] === 5) return f;
+  return null;
+}
+
+/**
+ * Кутиите, в които `seat` може да запише текущите зарове. Без жокер — всяка
+ * свободна. При жокер (пет еднакви и попълнен „Покер“) — принудителният ред:
+ * съответната горна → свободните долни → свободните горни (за 0).
+ */
+export function allowedCategories(state: Pick<DiceState, "dice" | "scores">, seat: number): Category[] {
+  const sheet = state.scores[seat] ?? {};
+  const open = CATEGORIES.filter((c) => sheet[c] === undefined);
+  const face = fiveOfAKind(state.dice);
+  if (face === null || sheet.yahtzee === undefined) return open;
+  const upper = UPPER_CATEGORIES[face - 1]!;
+  if (sheet[upper] === undefined) return [upper];
+  const lower = LOWER_CATEGORIES.filter((c) => sheet[c] === undefined);
+  if (lower.length > 0) return lower;
+  return UPPER_CATEGORIES.filter((c) => sheet[c] === undefined);
+}
+
+/** Точките за кутията, с жокер-стойностите за Фул/кентите при пет еднакви и
+ *  вече попълнен „Покер“. Останалите кутии се смятат нормално (горна кутия за
+ *  друго лице дава 0). */
+export function scoreFor(state: Pick<DiceState, "dice" | "scores">, seat: number, cat: Category): number {
+  const joker = fiveOfAKind(state.dice) !== null && state.scores[seat]?.yahtzee !== undefined;
+  if (joker) {
+    if (cat === "fullHouse") return 25;
+    if (cat === "smallStraight") return 30;
+    if (cat === "largeStraight") return 40;
+  }
+  return scoreCategory(state.dice, cat);
 }
 
 /** Upper-section (ones..sixes) subtotal — drives the +35 bonus. */
@@ -138,9 +186,7 @@ export const diceEngine: GameEngine<DiceState, DiceAction, DiceEvent> = {
     const actions: DiceAction[] = [];
     if (!state.rolledThisTurn || state.rerollsLeft > 0) actions.push({ type: "ROLL" });
     if (state.rolledThisTurn) {
-      for (const category of CATEGORIES) {
-        if (state.scores[seat]![category] === undefined) actions.push({ type: "SCORE", category });
-      }
+      for (const category of allowedCategories(state, seat)) actions.push({ type: "SCORE", category });
     }
     return actions;
   },
@@ -159,7 +205,7 @@ export const diceEngine: GameEngine<DiceState, DiceAction, DiceEvent> = {
       return (
         state.rolledThisTurn &&
         CATEGORIES.includes(a.category) &&
-        state.scores[seat]![a.category] === undefined
+        allowedCategories(state, seat).includes(a.category)
       );
     }
     return false;
@@ -199,14 +245,16 @@ export const diceEngine: GameEngine<DiceState, DiceAction, DiceEvent> = {
     if (next.scores[seat]![action.category] !== undefined) {
       throw new IllegalActionError("Category already used");
     }
-    const pts = scoreCategory(next.dice, action.category);
+    if (!allowedCategories(state, seat).includes(action.category)) {
+      throw new IllegalActionError("Joker rule: category not allowed");
+    }
+    const pts = scoreFor(state, seat, action.category);
     next.scores[seat]![action.category] = pts;
     events.push({ type: "SCORE", seat, category: action.category, points: pts });
 
-    // Yahtzee bonus: rolling a five-of-a-kind when the 50-point Yahtzee box is
-    // ALREADY filled earns +100 (official rule), whatever category you fill now.
-    const isYahtzeeRoll = counts(next.dice).some((n) => n === 5);
-    if (isYahtzeeRoll && state.scores[seat]!.yahtzee === 50) {
+    // Бонус „Покер“: пет еднакви, когато кутията „Покер“ ВЕЧЕ е записана с 50,
+    // носи +100, в която и кутия да се запишат (по жокер-реда). При 0 — без бонус.
+    if (fiveOfAKind(next.dice) !== null && state.scores[seat]!.yahtzee === 50) {
       next.bonusYahtzee[seat] = (next.bonusYahtzee[seat] ?? 0) + YAHTZEE_BONUS;
       events.push({ type: "YAHTZEE_BONUS", seat, bonus: next.bonusYahtzee[seat]! });
     }
@@ -236,14 +284,14 @@ export const diceEngine: GameEngine<DiceState, DiceAction, DiceEvent> = {
     if (state.done || seat !== state.turn) return null;
     if (!state.rolledThisTurn) return { type: "ROLL" };
 
-    const sheet = state.scores[seat]!;
-    const open = CATEGORIES.filter((c) => sheet[c] === undefined);
+    // Само кутиите, които правилата (вкл. жокер) позволяват.
+    const open = allowedCategories(state, seat);
     if (open.length === 0) return null;
     const isUpper = (c: Category) => UPPER_CATEGORIES.includes(c);
     let best: Category = open[0]!;
     let bestPts = -1;
     for (const c of open) {
-      const pts = scoreCategory(state.dice, c);
+      const pts = scoreFor(state, seat, c);
       // Ties prefer the upper section — it feeds the +35 bonus.
       if (pts > bestPts || (pts === bestPts && isUpper(c) && !isUpper(best))) {
         best = c;

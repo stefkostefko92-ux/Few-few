@@ -83,7 +83,7 @@ test('stacked carcasses: the screws and their pilots stay clear of the confirmat
 // into the partition from the bottom or the top panel (the first: the slide pilot at u 28,3, v 192 on „Делител 2“
 // and the bore at v 197,7, 1,7 mm apart). Partition holes go through, so the plan distance is the whole story.
 const BORE_CASES = [
-  { type: 'wardrobe', slide: 'base:gtv_h45' },
+  { type: 'wardrobe', slide: 'base:gtv_h45', columns: 3 }, // the default before it took 4 columns
   { type: 'wardrobe', slide: 'base:blum_tandem_560h', depth: 450 },
   { type: 'wardrobe', slide: 'base:gtv_h45', width: 3000, columns: 5, depth: 650 },
   { type: 'chest', slide: 'base:gtv_h45', depth: 520, columns: 2 },

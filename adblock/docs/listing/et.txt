@@ -1,10 +1,14 @@
 Supreme AdBlock blokeerib reklaamid kõikjal — YouTube'i videoreklaamid, bännerid, hüpikaknad ja jälgijad — ilma teie tegevust jälgimata.
 
+• Allkirjastatud filtrivärskendused kaks korda päevas: uued reklaamivõrgud kaetakse tundidega, ilma kaugkoodita.
 • YouTube'i reklaamid peatatakse juba allikas, nii et videod lihtsalt mängivad.
+• Küpsisebännerid: vajutab teie eest „Keeldu“, kui bänner seda pakub, ja „Nõustu“ ainult siis, kui bännerit ei saa muul viisil sulgeda; eemaldab järelejäänud hägususe ja kerimislukustuse ega vajuta kunagi sisselogimis-, OAuth- ega maksenuppu.
+• Ilma kontota, ilma telemeetriata, ilma andmekogumiseta ning ühtegi reklaami ei lasta tasu eest läbi. Global Privacy Control palub igal saidil teie andmeid mitte müüa ega jagada.
 • Sisse on ehitatud EasyList, EasyPrivacy ja teised avatud filtriloendid ning teie keele loend (31 piirkondlikku loendit).
-• Küpsisebännerid: vajutab teie eest „Keeldu“, eemaldab järelejäänud hägususe ja kerimislukustuse ega vajuta kunagi sisselogimis-, OAuth- ega maksenuppu.
+• Sponsitud postitused Facebookis, Instagramis ja Threadsis peidetakse.
 • Fookusrežiim: peidab vestlusmullid, uudiskirjahüpikud, teavituste päringud, sotsiaalmeedia vidinad, AI-hüpikud ja YouTube Shortsi.
 • Anti-adblock seinad ja pop-under aknad neutraliseeritakse.
+• Ohtlikud saidid: teadaoleva pahavarasaidi asemel avaneb hoiatusleht ja teie otsustate, kas jätkata.
 • Sait ei tööta? Üks klõps parandab selle — või andke meile teada; midagi ei saadeta enne, kui olete seda näinud.
-• Allkirjastatud filtrivärskendused kaks korda päevas: uued reklaamivõrgud kaetakse tundidega, ilma kaugkoodita.
-• Ilma kontota, ilma telemeetriata, ilma andmekogumiseta.
+• Tulete üle uBlock Originist, AdGuardist või Adblock Plusist? Tooge oma lubatud saidid ja filtrid kaasa ühe failiga.
+• Vaadake, milliste teiste saitidega leht ühendub, ja blokeerige ühe klõpsuga üks neist ainult seal.

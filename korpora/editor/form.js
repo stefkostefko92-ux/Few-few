@@ -17,8 +17,10 @@ import {
   GAP_RANGE,
   TOOL_DIAMETERS,
 } from '../engine/model.js';
+import { STEP_DOWN_RANGE, MAX_FEED_RANGE } from '../engine/cam.js';
 import { $, $$, esc, money, swatchStyle, setHtml } from './dom.js';
 import { typeIcon, handleIcon } from './icons.js';
+import { paramsHtml } from './params-html.js';
 
 export function renderTypes(host) {
   const groups = [...new Set(TYPE_ORDER.map((t) => TYPES[t].group))];
@@ -37,24 +39,30 @@ export function renderTypes(host) {
     .join('');
 }
 
-// Fields of the current type: ranges as number + slider, segments as radio buttons.
+// Fields of the current type: ranges as number + slider, segments as radio buttons. The server has drawn them for
+// the type the project opened with (data-type); they are drawn here again only for another type.
 export function renderParams(host, type) {
-  host.innerHTML = TYPES[type].params
-    .map((p) => {
-      if (p.type === 'range') {
-        const unit = p.unit ? `, ${p.unit}` : '';
-        return `<div class="field"><label for="p-${p.key}">${esc(p.label)}${unit}</label>
-<input type="number" id="p-${p.key}" data-field="${p.key}" min="${p.min}" max="${p.max}" step="${p.step}" inputmode="numeric">
-<input type="range" data-field="${p.key}" min="${p.min}" max="${p.max}" step="${p.step}" aria-label="${esc(p.label)}, плъзгач"></div>`;
-      }
-      return `<span class="lbl" id="l-${p.key}">${esc(p.label)}</span><div class="seg" role="radiogroup" aria-labelledby="l-${p.key}">${p.options
-        .map(
-          ([v, l]) =>
-            `<label><input type="radio" name="${p.key}" value="${v}" data-field="${p.key}"><span>${esc(l)}</span></label>`,
-        )
-        .join('')}</div>`;
-    })
-    .join('');
+  if (host.dataset.type === type && host.firstElementChild) return;
+  host.innerHTML = paramsHtml(TYPES[type].params);
+  host.dataset.type = type;
+}
+
+// The chosen type on the closed „Furniture“ panel: its icon and name (the server writes the name first).
+export function showType(type) {
+  $('#type-icon').innerHTML = typeIcon(type);
+  $('#type-name').textContent = TYPES[type].label;
+}
+
+// The types are chosen once per project, so they stay folded under the chosen one. A click on a card folds them
+// again; the arrow keys move through the cards and keep them open.
+export function bindTypebox(box) {
+  box.querySelector('#type-picker').addEventListener('click', (ev) => {
+    if (ev.detail === 0 || !ev.target.closest('.tcard')) return;
+    window.setTimeout(() => {
+      box.open = false;
+      box.querySelector(':scope > summary').focus();
+    });
+  });
 }
 
 export function renderHardwareOptions() {
@@ -109,6 +117,14 @@ export function renderHardwareOptions() {
   const gap = $('#f-gap');
   gap.min = String(GAP_RANGE[0]);
   gap.max = String(GAP_RANGE[1]);
+  // the GRBL limits of the machine: the ranges normalizeSpec keeps them in
+  for (const [id, [min, max]] of [
+    ['#f-grblStepDown', STEP_DOWN_RANGE],
+    ['#f-grblMaxFeed', MAX_FEED_RANGE],
+  ]) {
+    $(id).min = String(min);
+    $(id).max = String(max);
+  }
 }
 
 function groupOptions(list, groupOf, labelOf) {
@@ -143,6 +159,7 @@ export function writeForm(form, spec, writeFocused = false) {
   $('#row-frontDecor').hidden = ral;
   $('#row-frontRal').hidden = !ral;
   $('#row-bedFitting').hidden = spec.type !== 'bed';
+  for (const id of ['#row-grblStepDown', '#row-grblMaxFeed']) $(id).hidden = spec.post !== 'grbl';
   $('#f-frontMaterial-ral').disabled = !ralList().length;
   pickButton('carcassDecor', decor(spec.carcassDecor), decorName(spec.carcassDecor));
   pickButton('frontDecor', decor(spec.frontDecor), decorName(spec.frontDecor));
@@ -182,10 +199,10 @@ export function bindForm(form, onField) {
   form.addEventListener('submit', (ev) => ev.preventDefault());
 }
 
-// From 1040 px the parameters are always open and their summary is a plain heading (10-rail.css): neither a key nor a
+// From 900 px the parameters are always open and their summary is a plain heading (10-rail.css): neither a key nor a
 // click closes them there, and a panel closed on a narrower screen opens again when the screen widens.
 export function bindRailbox(box) {
-  const wide = window.matchMedia('(min-width: 1040px)');
+  const wide = window.matchMedia('(min-width: 900px)');
   const summary = box.querySelector(':scope > summary');
   summary.addEventListener('click', (ev) => {
     if (wide.matches) ev.preventDefault();

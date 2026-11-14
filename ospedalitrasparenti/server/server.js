@@ -7,6 +7,7 @@
 // Тайни:       OSPEDALI_ADMIN_PASSWORD, OSPEDALI_SESSION_SECRET (env / server/.env)
 
 import { createServer } from 'node:http';
+import { createHash } from 'node:crypto';
 import { readFile, stat, access } from 'node:fs/promises';
 import { constants as FS } from 'node:fs';
 import { join, normalize, extname, sep } from 'node:path';
@@ -31,6 +32,31 @@ const MIME = {
 };
 
 // ── Чисти помощници (без състояние) ───────────────────────────────────────────
+/**
+ * Слаб ETag от тялото (след инжектирания hide-CSS) → краулерите (Googlebot) правят
+ * условни заявки и получават 304 вместо пълните ~5000 страници при всяко обхождане.
+ * @param {string|Buffer} body
+ * @returns {string}
+ */
+export function etagDi(body) {
+  return `W/"${createHash('sha1').update(body).digest('base64url').slice(0, 22)}"`;
+}
+
+/**
+ * Съвпада ли If-None-Match с ETag-а (списък или `*`; слабо сравнение).
+ * @param {string|undefined} inm
+ * @param {string} etag
+ * @returns {boolean}
+ */
+export function corrispondeEtag(inm, etag) {
+  if (!inm) return false;
+  const bare = etag.replace(/^W\//, '');
+  return inm.split(',').some((t) => {
+    const v = t.trim();
+    return v === '*' || v.replace(/^W\//, '') === bare;
+  });
+}
+
 /**
  * @param {ServerResponse} res
  * @param {number} status
@@ -182,12 +208,18 @@ export async function creaApp(overrides = {}) {
     // Защита срещу path traversal
     let rel;
     try { rel = decodeURIComponent(url.pathname); } catch { return serveNotFound(res); }
+    // ЕДИН канонизиран (декодиран) път за политиката и за ключа на брояча. Суровият
+    // `url.pathname` НЕ става: файлът се резолвира по декодирания, значи
+    // `/%63ordate.html` отваря cordate.html, но не съвпада с името „cordate.html“ →
+    // скритата страница се сервира, а броячът си прави нов ключ за всяко кодиране
+    // (неограничен растеж). Двете дупки имат една първопричина — тази.
+    const pathCanonico = rel;
     if (rel.endsWith('/')) rel += 'index.html';
     let abs = normalize(join(cfg.siteDir, rel));
     if (abs !== cfg.siteDir && !abs.startsWith(cfg.siteDir + sep)) return send(res, 403, 'Forbidden');
 
     // Скрита страница → 404 (все едно не съществува)
-    if (isHidden(url.pathname, visibility.hidden)) {
+    if (isHidden(pathCanonico, visibility.hidden)) {
       return serveNotFound(res);
     }
 
@@ -203,13 +235,17 @@ export async function creaApp(overrides = {}) {
 
     if (ext === '.html') {
       // брои посещението (анонимно) + инжектира CSS за скритите връзки
-      if (req.method === 'GET') contatore.registra(nomePagina(url.pathname) || url.pathname, clientIp(req), req.headers['user-agent']);
+      if (req.method === 'GET') contatore.registra(nomePagina(pathCanonico) || pathCanonico, clientIp(req), req.headers['user-agent']);
       let html = await readFile(abs, 'utf8');
       html = iniettaHideCss(html, visibility.hidden);
-      return send(res, 200, html, { 'content-type': type, 'cache-control': 'no-cache' });
+      const etag = etagDi(html);
+      if (corrispondeEtag(req.headers['if-none-match'], etag)) return send(res, 304, '', { etag, 'cache-control': 'no-cache' });
+      return send(res, 200, html, { 'content-type': type, 'cache-control': 'no-cache', etag });
     }
     const buf = await readFile(abs);
-    return send(res, 200, buf, { 'content-type': type, 'cache-control': 'public, max-age=3600' });
+    const etag = etagDi(buf);
+    if (corrispondeEtag(req.headers['if-none-match'], etag)) return send(res, 304, '', { etag, 'cache-control': 'public, max-age=3600' });
+    return send(res, 200, buf, { 'content-type': type, 'cache-control': 'public, max-age=3600', etag });
   }
 
   /** @param {ServerResponse} res @returns {Promise<void>} */

@@ -1,11 +1,17 @@
-<%- include('_top', { titleKey: !result.ok ? 'auth.verifyFailedTitle' : result.kind === 'changed' ? 'auth.emailChangedTitle' : 'auth.verifiedTitle' }) %>
+<%# Неуспехът казва какво е станало: вече потвърден имейл или сменен адрес не са „грешка“ — човекът просто влиза. %>
+<% const spent = !result.ok && result.state ? result.state : null; -%>
+<% const titleKey = result.ok ? (result.kind === 'changed' ? 'auth.emailChangedTitle' : 'auth.verifiedTitle') : spent === 'verified' ? 'auth.alreadyVerifiedTitle' : spent === 'changed' ? 'auth.alreadyChangedTitle' : 'auth.verifyFailedTitle'; -%>
+<%- include('_top', { titleKey }) %>
+<h1><%= t(titleKey) %></h1>
 <% if (result.ok) { %>
-<h1><%= t(result.kind === 'changed' ? 'auth.emailChangedTitle' : 'auth.verifiedTitle') %></h1>
 <p><%= t(result.kind === 'changed' ? 'auth.emailChangedText' : 'auth.verifiedText') %></p>
 <a class="btn btn-primary btn-wide" href="/login"><%= t('auth.toLogin') %></a>
+<% } else if (spent) { %>
+<p><%= t(spent === 'verified' ? 'auth.alreadyVerifiedText' : 'auth.alreadyChangedText') %></p>
+<a class="btn btn-primary btn-wide" href="/login"><%= t('auth.toLogin') %></a>
 <% } else { %>
-<h1><%= t('auth.verifyFailedTitle') %></h1>
 <p><%= t('auth.verifyFailedText') %></p>
-<div class="auth-links"><a href="/login"><%= t('auth.toLogin') %></a></div>
+<a class="btn btn-primary btn-wide" href="/login"><%= t('auth.toLogin') %></a>
+<div class="auth-links"><a href="/forgot"><%= t('auth.forgotLink') %></a></div>
 <% } %>
 <%- include('_bottom') %>

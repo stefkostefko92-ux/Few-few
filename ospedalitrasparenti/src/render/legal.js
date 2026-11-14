@@ -256,7 +256,7 @@ prima rigenerazione del sito.</p>
 <p>I contenuti sono forniti «così come sono», a fini informativi e di trasparenza. Non sostituiscono le fonti ufficiali
 né i controlli della Corte dei conti o dell’ANAC.</p>
 `;
-  return page({ title: 'Note legali — Ospedali Trasparenti', description: 'Titolare, natura dei contenuti, fonti, licenze e rettifiche.', active: '', body });
+  return page({ title: 'Note legali — Ospedali Trasparenti', description: 'Titolare, natura dei contenuti, fonti, licenze e rettifiche.', active: '', canonical: 'note-legali.html', body });
 }
 
 /**
@@ -320,5 +320,5 @@ protezione dei dati personali</strong> (<a href="https://www.garanteprivacy.it/"
 <h2>Log di hosting</h2>
 ${hostingHtml}
 `;
-  return page({ title: 'Privacy — Ospedali Trasparenti', description: 'Nessun cookie o tracciamento. Trattamento dei dati di terzi e diritti.', active: '', body });
+  return page({ title: 'Privacy — Ospedali Trasparenti', description: 'Nessun cookie o tracciamento. Trattamento dei dati di terzi e diritti.', active: '', canonical: 'privacy.html', body });
 }

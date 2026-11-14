@@ -95,6 +95,8 @@ router.get('/p/:slug', (req, res) => {
     publicUrl,
     wallet: walletLinks(profile, { preview: isOwner || Boolean(req.user?.is_admin) }),
     jsonLd: profile.is_public ? cardJsonLd(profile, publicUrl, baseUrl(req)) : null,
+    // Собственикът преглежда СКРИТАТА си визитка → тя не бива да е индексируема.
+    noindex: !profile.is_public,
     pageMeta: {
       description,
       // Профилните думи са първи (те носят намерението „търся този човек/фирма“),

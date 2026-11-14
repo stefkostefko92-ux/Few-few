@@ -10,6 +10,7 @@ import { accountLocale } from '../i18n.js';
 import { greetingName, mailLocked } from '../mail/templates.js';
 import { claimTotpStep } from './auth-common.js';
 import { attemptFailed, attemptSucceeded, reserveAttempt } from './lockout.js';
+import { phantomFailure } from '../auth/phantom-lock.js';
 
 /**
  * Акаунтът се заключи от грешни потвърждения в отворена сесия: отворена сесия не дава безкрайни опити —
@@ -44,7 +45,10 @@ async function reauth(
     await attemptSucceeded(user.id, false);
     return null;
   }
-  if ((await attemptFailed(user, meta)).lockedNow) await lockedBySession(user);
+  const failed = await attemptFailed(user, meta);
+  // и в брояча на имейла, по който говори входът (auth/phantom-lock.ts): след заключване „входът е спрян“
+  phantomFailure(user.email);
+  if (failed.lockedNow) await lockedBySession(user);
   return wrongKey;
 }
 

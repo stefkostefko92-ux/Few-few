@@ -1,0 +1,11 @@
+<%#
+  Широк екран (≥1024 px): до картата за вход — снимка от продукта (разглобената кухня от витрината) и едно
+  изречение какво прави. На по-тесен екран я няма, а loading="lazy" не я тегли, докато е скрита. Снимката е
+  украса (alt=""); текстът е в подписа.
+%>
+<aside class="auth-aside" aria-labelledby="auth-aside-title">
+  <figure>
+    <img src="/static/img/story/step-2-640.webp?v=<%= v %>" srcset="/static/img/story/step-2-640.webp?v=<%= v %> 640w, /static/img/story/step-2-1120.webp?v=<%= v %> 1120w" sizes="(min-width: 1024px) 460px, 1px" width="640" height="800" alt="" loading="lazy" decoding="async">
+    <figcaption><b id="auth-aside-title"><%= t('auth.asideTitle') %></b><span><%= t('auth.asideText') %></span></figcaption>
+  </figure>
+</aside>

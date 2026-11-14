@@ -124,11 +124,18 @@ export class Stage {
     scene.fog = new THREE.Fog(0xffffff, 10, 40);
     this.base = new THREE.Vector3();
     this.dark = window.matchMedia?.('(prefers-color-scheme: dark)');
-    this.dark?.addEventListener?.('change', () => {
+    this.onTheme = () => {
       this.applyTheme();
       viewer.changed();
-    });
+    };
+    this.dark?.addEventListener?.('change', this.onTheme);
     this.applyTheme();
+  }
+
+  // The theme listener is the scene's one tie to the page: a viewer that is given up drops it, or the page keeps the
+  // whole scene graph alive (landing/story.js releases its viewer on a slow device or a lost context).
+  dispose() {
+    this.dark?.removeEventListener?.('change', this.onTheme);
   }
 
   applyTheme() {

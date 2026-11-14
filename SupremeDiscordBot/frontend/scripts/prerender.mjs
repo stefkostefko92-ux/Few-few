@@ -20,11 +20,15 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { LANDING_TRANSLATIONS } from "../src/i18n/landing.js";
+import { LANDING_CONCEPT } from "../src/i18n/landingConcept.js";
+import { BAIT_COPY } from "../src/i18n/landingBait.js";
 import { COMMAND_CATALOG } from "../src/data/commandsCatalog.js";
 import {
   TICKET_TOOL_COMPARE, APPY_COMPARE, BEST_TICKET_BOT_GUIDE, GDPR_GUIDE, PANEL_SETUP_GUIDE, CHECKED_DATE,
 } from "../src/data/growthContent.js";
 import { FEATURES_HUB, FEATURE_PAGES, featureJsonLd, hubJsonLd } from "../src/data/featurePages.js";
+import { DOCS_HUB, DOCS_PAGES, DOCS_KINDS, docsPath } from "../src/data/docsPages.js";
+import { parseInline, groupByKind, docsJsonLd, docsHubJsonLd } from "../src/data/docsFormat.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIST = join(__dirname, "..", "dist");
@@ -128,12 +132,20 @@ const GUIDE_LINKS = [
   ["/compare/appy-alternative", "vsAppy"],
 ];
 
-// Връзки към /features/* — същият масив, който храни components/FeatureLinks.jsx.
+// Връзки към /features/* — същият масив, който храни общия футър (components/LandingParts.jsx).
 // Заглавието е на езика на посетителя (t.guides.features), етикетите са
 // английските имена на страниците (съдържанието им е на английски).
 function featureLinks(heading) {
   const items = FEATURE_PAGES.map((p) => `<li><a href="${p.path}">${esc(p.nav)}</a></li>`).join("");
   return `<nav><h2>${esc(heading)}</h2><ul>${items}<li><a href="${FEATURES_HUB.path}">${esc(FEATURES_HUB.nav)}</a></li></ul></nav>`;
+}
+
+// Връзки към /docs/* — ръководствата за клиенти (src/data/docsPages.js). На всяка
+// начална страница, за да стига обхождачът (и човек без JavaScript) до тях.
+function docsLinks() {
+  if (!DOCS_PAGES.length) return "";
+  const items = DOCS_PAGES.map((p) => `<li><a href="${docsPath(p)}">${esc(p.nav)}</a></li>`).join("");
+  return `<nav><h2><a href="${DOCS_HUB.path}">${esc(DOCS_HUB.h1)}</a></h2><ul>${items}</ul></nav>`;
 }
 
 function guideLinks(t) {
@@ -145,8 +157,18 @@ function guideLinks(t) {
   return items ? `<nav><h2>${esc(t.guides.heading)}</h2><ul>${items}</ul></nav>` : "";
 }
 
+// v52 — каналът-стръв за спам ботове: заглавие, обяснение и точките (без демото).
+function baitSnapshot(locale) {
+  const h = BAIT_COPY[locale];
+  if (!h) return "";
+  return `<section><h2>${esc(h.heading)}</h2><p>${esc(h.sub)}</p><ul>${h.bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul></section>`;
+}
+
 // ─── content snapshot from a landing translation object ──────────────────────
 function landingSnapshot(t) {
+  // Героят и заглавията — от одобрената концепция (същите като на живата страница).
+  const c = LANDING_CONCEPT[t.locale] || LANDING_CONCEPT.en;
+  const bots = c.bots.map(([n, d]) => `<li><h3>${esc(n)}</h3><p>${esc(d)}</p></li>`).join("");
   const features = t.features.map(
     (f) => `<li><h3>${esc(f.title)}</h3><p>${esc(f.desc)}</p></li>`
   ).join("");
@@ -165,18 +187,22 @@ function landingSnapshot(t) {
       }</tbody></table></section>`
     : "";
   return `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
-    <p>${esc(t.eyebrow)}</p>
-    <h1>${esc(t.h1a)} ${esc(t.h1b)}</h1>
-    <p>${esc(t.sub)}</p>
-    <section><h2>${esc(t.featuresHeading)}</h2><p>${esc(t.featuresSub)}</p><ul>${features}</ul></section>
+    <p>${esc(c.eyebrow)}</p>
+    <h1>${esc(c.h1.join(" "))}</h1>
+    <p>${esc(c.sub)}</p>
+    <section><h2>${esc(c.botsTitle)}</h2><p>${esc(c.botsSub)}</p><ul>${bots}</ul></section>
+    <section><h2>${esc(c.featuresTitle)}</h2><p>${esc(c.featuresSub)}</p><ul>${features}</ul></section>
+    ${t.game ? `<section><h2>${esc(t.game.heading)}</h2><p>${esc(t.game.sub)}</p><ul>${t.game.bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul></section>` : ""}
+    ${baitSnapshot(t.locale)}
     <section><h2>${esc(t.euHeading)}</h2><ul>${eu}</ul></section>
     ${compare}
-    <section><h2>${esc(t.faqHeading)}</h2>${faq}</section>
-    <section><h2>${esc(t.pricingHeading)}</h2>${tier(t.tiers.free)}${tier(t.tiers.premium)}${tier(t.tiers.whitelabel)}${
+    <section><h2>${esc(c.faqTitle)}</h2>${faq}</section>
+    <section><h2>${esc(c.plansTitle)}</h2>${tier(t.tiers.free)}${tier(t.tiers.premium)}${tier(t.tiers.whitelabel)}${
       t.priceNote ? `<p>${esc(t.priceNote)}</p>` : ""
     }</section>
     ${guideLinks(t)}
     ${featureLinks(t.guides?.features || "Features")}
+    ${docsLinks()}
   </div>`;
 }
 
@@ -247,16 +273,17 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
     ["Ticket system", "Unlimited tickets with button panels, claim, escalation, rename, two-step close and full HTML transcripts that survive channel deletion."],
     ["Forms & applications", "Multi-step questionnaires with validation, logic branching and an approve/deny review workflow — a full Appy.bot replacement."],
     ["Verification & anti-bot", "One-click button or math captcha, account-age requirements and brute-force protection."],
+    ["Bait channel for spam bots", "A channel spam bots can't resist: whoever writes there is kicked (soft-ban, deletes their last hour of messages), banned or timed out for 24 hours. Owner and staff exempt; message text is never read. Free."],
     ["Polls & giveaways", "Live polls (up to 9 options) and giveaways with role requirements, scheduled end and re-roll."],
     ["Automation", "Sticky messages and one-off or recurring (daily/weekly/monthly) scheduled messages."],
     ["AI auto-replies", "Optional automatic AI first reply to a new ticket, labelled as AI (EU AI Act Art. 50)."],
     ["Webhooks & API", "HMAC-signed webhook events and a public REST API with scoped bearer keys."],
-    ["White-label bot", "White-label & Agency servers run their own branded bot with a custom token, encrypted with AES-256-GCM."],
+    ["White-label bot", "White-label & Agency servers run their own branded bot from their own Discord bot application; its token is encrypted with AES-256-GCM."],
   ];
   const featuresHtml = EN_FEATURES.map(([t, d]) => `<li><h3>${esc(t)}</h3><p>${esc(d)}</p></li>`).join("");
   const pricingHtml = `<div><h3>Free — €0</h3><ul><li>1 ticket panel</li><li>2 application forms (up to 5 questions each)</li><li>1 verification panel</li><li>Persistent transcripts (30-day retention)</li></ul></div>`
     + `<div><h3>Premium — €4.99 / server / month</h3><ul><li>Up to 50 panels, 50 forms, 50 questions each</li><li>AI auto-replies and round-robin assignment</li><li>Webhooks (HMAC), public REST API, advanced analytics, unlimited retention</li></ul></div>`
-    + `<div><h3>White-label — €9.99 / server / month</h3><ul><li>Everything in Premium</li><li>White-label custom bot — upload your own Discord token</li><li>Runs under your own brand (name & avatar)</li></ul></div>`
+    + `<div><h3>White-label — €9.99 / server / month</h3><ul><li>Everything in Premium</li><li>White-label custom bot — connect your own Discord bot application (bot token from the Discord Developer Portal)</li><li>Runs under your own brand (name & avatar)</li></ul></div>`
     + `<p>All prices in EUR, VAT included · per server, monthly · sold and billed through the Discord store (Discord is the seller of record) · subscriptions renew automatically until cancelled.</p>`;
   // Free-vs-Premium comparison — the most AI-citable, answer-first content.
   // Rendered as a real <table> so non-JS AEO crawlers (ClaudeBot/GPTBot/Perplexity)
@@ -278,9 +305,10 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
   }</tbody></table>`;
   const upsellPassage = "Free gets you running; Premium gets you scaling. The Free tier gives one ticket panel, two application forms and 30-day transcript retention — enough to run real support today at no cost. Premium (€4.99 per server per month, sold as a monthly subscription in the Discord store) raises the limits to 50 panels, 50 forms and 50 questions each, and unlocks AI auto-replies, round-robin assignment, conditional form logic, 20 webhook integrations, a public REST API, advanced analytics and unlimited transcript retention. The White-label tier (€9.99/month) adds a custom bot that runs under your own brand. Billing is per server and handled by Discord, so a small community can stay on Free while your main server runs Premium; cancel anytime in Discord; panels, forms and settings are kept, while transcripts of tickets closed more than 30 days ago are deleted once the server is back on Free.";
   const rootSnapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
-    <p>One bot replaces six. Built in the EU.</p>
-    <h1>Supreme Bot — Discord Ticket Bot &amp; SaaS Platform</h1>
-    <p>Eight bots. Eight bills. One dashboard. Tickets, applications, verification, giveaways, scheduled messages, webhooks and AI-powered replies for Discord communities that outgrew a folder full of single-purpose bots. Multi-tenant Discord bot management by Carbon Stealth VCC — EU-hosted (Germany), GDPR-native.</p>
+    <p>${esc(LANDING_CONCEPT.en.eyebrow)}</p>
+    <h1>${esc(LANDING_CONCEPT.en.h1.join(" "))}</h1>
+    <p>${esc(LANDING_CONCEPT.en.sub)} Supreme Bot is a Discord ticket bot and all-in-one platform: tickets, applications, verification, giveaways, scheduled messages, webhooks and AI-assisted replies. Multi-tenant Discord bot management by Carbon Stealth VCC — EU-hosted (Germany), GDPR-native.</p>
+    <section><h2>${esc(LANDING_CONCEPT.en.botsTitle)}</h2><p>${esc(LANDING_CONCEPT.en.botsSub)}</p><ul>${LANDING_CONCEPT.en.bots.map(([n, d]) => `<li><h3>${esc(n)}</h3><p>${esc(d)}</p></li>`).join("")}</ul></section>
     <section><h2>Free vs Premium</h2><p>${upsellPassage}</p>${compareHtml}</section>
     <section><h2>Everything, integrated</h2><ul>${featuresHtml}</ul></section>
     <section><h2>Simple pricing, per server</h2>${pricingHtml}</section>
@@ -296,6 +324,7 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
       },
     })}
     ${featureLinks("Features")}
+    ${docsLinks()}
   </div>`;
   let html = injectHead(template, `  ${hreflangCluster()}`);
   html = injectRoot(html, rootSnapshot);
@@ -469,6 +498,67 @@ function featureSnapshot(p) {
     page = injectHead(page, `  ${jsonLd(featureJsonLd(p))}`);
     page = injectRoot(page, featureSnapshot(p));
     writeRoute(p.path, page);
+    count++;
+  }
+}
+
+// 4в) /docs + /docs/* — ръководствата за клиенти. Данни: src/data/docsPages.js
+//     (СЪЩИЯТ обект, който рендерира DocsPage.jsx). Снимката е пълна — заглавия,
+//     абзаци, стъпки като <ol>, таблици, код, въпроси — и носи JSON-LD
+//     (TechArticle + BreadcrumbList + FAQPage).
+const inlineHtml = (text) => parseInline(text).map((t) => (
+  t.type === "code" ? `<code>${esc(t.value)}</code>`
+    : t.type === "link" ? `<a href="${esc(t.href)}">${esc(t.value)}</a>`
+      : esc(t.value)
+)).join("");
+
+function docsSectionHtml(sec) {
+  const body = (sec.body || []).map((p) => `<p>${inlineHtml(p)}</p>`).join("");
+  const steps = sec.steps?.length ? `<ol>${sec.steps.map((x) => `<li>${inlineHtml(x)}</li>`).join("")}</ol>` : "";
+  const list = sec.list?.length ? `<ul>${sec.list.map((x) => `<li>${inlineHtml(x)}</li>`).join("")}</ul>` : "";
+  const table = sec.table
+    ? `<table><thead><tr>${sec.table.head.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>${sec.table.rows.map((r) => `<tr>${r.map((c) => `<td>${inlineHtml(c)}</td>`).join("")}</tr>`).join("")}</tbody></table>`
+    : "";
+  const code = sec.code ? `<pre><code>${esc(sec.code)}</code></pre>` : "";
+  const note = sec.note ? `<p><strong>Note:</strong> ${inlineHtml(sec.note)}</p>` : "";
+  return `<section id="${esc(sec.id)}"><h2>${esc(sec.heading)}</h2>${body}${steps}${list}${table}${code}${note}</section>`;
+}
+
+function docsSnapshot(p) {
+  const requires = p.requires?.length ? `<section><h2>Before you start</h2><ul>${p.requires.map((r) => `<li>${inlineHtml(r)}</li>`).join("")}</ul></section>` : "";
+  const faq = p.faq?.length ? `<section id="faq"><h2>Questions people ask</h2>${p.faq.map((f) => `<div><h3>${esc(f.q)}</h3><p>${inlineHtml(f.a)}</p></div>`).join("")}</section>` : "";
+  const related = p.related?.length ? `<section><h2>Keep going</h2><ul>${p.related.map((r) => `<li><a href="${esc(r)}">${esc(r)}</a></li>`).join("")}</ul></section>` : "";
+  return `<div class="prerender-content" style="max-width:48rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+    <nav><a href="/">Supreme Bot</a> / <a href="${DOCS_HUB.path}">Documentation</a> / ${esc(DOCS_KINDS[p.kind].label)}</nav>
+    <h1>${esc(p.title)}</h1>
+    <p>${inlineHtml(p.answer)}</p>
+    ${requires}
+    ${p.sections.map(docsSectionHtml).join("")}
+    ${faq}
+    ${related}
+    <p>Checked against the bot on ${esc(p.updated)}.</p>
+  </div>`;
+}
+
+if (DOCS_PAGES.length) {
+  const groups = groupByKind(DOCS_PAGES).map((g) => `<section><h2>${esc(g.plural)}</h2><ul>${g.pages.map(
+    (p) => `<li><h3><a href="${docsPath(p)}">${esc(p.nav)}</a></h3><p>${esc(p.description)}</p></li>`
+  ).join("")}</ul></section>`).join("");
+  const hubSnapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
+    <h1>${esc(DOCS_HUB.h1)}</h1>
+    <p>${esc(DOCS_HUB.answer)}</p>
+    ${groups}
+  </div>`;
+  let html = withHead(template, { title: DOCS_HUB.title, description: DOCS_HUB.description, path: DOCS_HUB.path, lang: "en", keywords: DOCS_HUB.keywords });
+  html = injectHead(html, `  ${jsonLd(docsHubJsonLd(DOCS_PAGES))}`);
+  html = injectRoot(html, hubSnapshot);
+  writeRoute(DOCS_HUB.path, html);
+  count++;
+  for (const p of DOCS_PAGES) {
+    let page = withHead(template, { title: `${p.title} | Supreme Bot`, description: p.description, path: docsPath(p), lang: "en", keywords: p.keywords });
+    page = injectHead(page, `  ${jsonLd(docsJsonLd(p))}`);
+    page = injectRoot(page, docsSnapshot(p));
+    writeRoute(docsPath(p), page);
     count++;
   }
 }

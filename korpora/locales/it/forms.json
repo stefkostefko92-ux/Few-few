@@ -1,0 +1,10 @@
+{
+  "form": {
+    "required": "Compilate questo campo.",
+    "check": "Spuntate la casella per continuare.",
+    "choose": "Scegliete una delle opzioni.",
+    "tooShort": "Troppo corto: almeno {n} caratteri.",
+    "tooLong": "Troppo lungo: al massimo {n} caratteri.",
+    "invalid": "Controllate quanto inserito in questo campo."
+  }
+}

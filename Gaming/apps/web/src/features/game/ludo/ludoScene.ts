@@ -4,6 +4,7 @@
  * peg tokens in seat colours, a single 3D die, and raycast picking of a token.
  * Shares gl/helpers (composer, env, disposal). Render-on-demand; reduced-motion.
  */
+import { upgradeMaterial } from "../gl/baked.js";
 import {
   AmbientLight,
   BoxGeometry,
@@ -192,6 +193,7 @@ export class LudoScene {
     const woodN = woodNormal();
     woodN.repeat.set(4, 4);
     const woodMat = new MeshStandardMaterial({ map: woodTex, normalMap: woodN, normalScale: new Vector2(0.5, 0.5), roughness: 0.52, metalness: 0.08 });
+    upgradeMaterial(woodMat, "walnut", { repeat: [4, 4], albedo: true, roughness: 0.9, normalScale: 0.7, onReady: () => this.core.invalidate() });
     const base = new Mesh(new BoxGeometry(N + 0.9, 0.5, N + 0.9), woodMat);
     base.position.y = -0.05;
     base.receiveShadow = true;

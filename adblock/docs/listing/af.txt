@@ -1,10 +1,14 @@
 Supreme AdBlock blokkeer advertensies oral — YouTube-videoadvertensies, baniere, opspringers en spoorsnyers — sonder om dop te hou wat u doen.
 
+• Ondertekende filterbywerkings twee keer per dag: nuwe advertensienetwerke word binne ure hanteer, sonder afgeleë kode.
 • YouTube-advertensies word by die bron gestop, sodat video’s sommer net speel.
+• Koekiebaniere: dit druk Weier namens u wanneer die banier dit bied, en Aanvaar slegs wanneer daar geen ander manier is om dit toe te maak nie; dit verwyder die oorblywende vervaging en rolslot, en druk nooit ’n aanmeld-, OAuth- of betaalknoppie nie.
+• Geen rekening, geen telemetrie, geen data-insameling nie, en geen advertensie word teen betaling deurgelaat nie. Global Privacy Control vra elke werf om u data nie te verkoop of te deel nie.
 • EasyList, EasyPrivacy en ander oop filterlyste is ingebou, plus die lys vir u taal (31 streekslyste).
-• Koekiebaniere: dit druk Weier namens u, verwyder die oorblywende vervaging en rolslot, en druk nooit ’n aanmeld-, OAuth- of betaalknoppie nie.
+• Geborgde plasings op Facebook, Instagram en Threads word versteek.
 • Fokusmodus: versteek kletsborrels, nuusbrief-opspringers, kennisgewingversoeke, sosiale legstukke, KI-opspringers en YouTube Shorts.
 • Anti-adblokmure en pop-unders word geneutraliseer.
+• Gevaarlike werwe: ’n bekende malware-werf maak eerder ’n waarskuwingsbladsy oop, en u besluit of u voortgaan.
 • Werf stukkend? Een klik herstel dit, of laat weet ons — niks word gestuur sonder dat u dit eers sien nie.
-• Ondertekende filterbywerkings twee keer per dag: nuwe advertensienetwerke word binne ure hanteer, sonder afgeleë kode.
-• Geen rekening, geen telemetrie, geen data-insameling nie.
+• Skuif u van uBlock Origin, AdGuard of Adblock Plus oor? Bring u toegelate werwe en filters met een lêer saam.
+• Sien met watter ander werwe ’n bladsy verbinding maak, en blokkeer een met ’n enkele klik net op daardie werf.

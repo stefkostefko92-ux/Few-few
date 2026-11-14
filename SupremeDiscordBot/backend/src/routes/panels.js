@@ -102,6 +102,8 @@ const createPanelSchema = z.object({
   // До 25 опции: Discord позволява 25 в падащо меню (DROPDOWN) и 25 бутона
   // (5 реда × 5). Ботът вече реди бутоните по редове — виж utils/embed.js.
   buttons: z.array(z.object({
+    // Т16: по-желание id на съществуващ бутон — запазва се при редакция.
+    id: z.string().max(64).optional(),
     label: z.string().min(1).max(80),
     emoji: z.string().optional(),
     style: z.enum(["PRIMARY", "SECONDARY", "SUCCESS", "DANGER"]).optional(),
@@ -169,6 +171,42 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
   }
 });
 
+// ─── Т16: стабилни ID-та на бутоните при редакция ────────────────────────────
+// ДЕФЕКТЪТ: всеки PUT правеше `deleteMany + create` → нови ID-та. Публикуваното
+// съобщение пази `panel_button:<panelId>:<buttonId>`; след редакция (или ако
+// ботът е офлайн/съобщението не е презаписано) старият бутон умираше с
+// „Button configuration not found“.
+//
+// Съпоставяне на входните бутони със съществуващите (по ред на приоритет):
+//   1) по `id` (ако клиентът го праща и е от ТОЗИ панел),
+//   2) по същия етикет (без значение от регистъра),
+//   3) по същата позиция (преименуван на място бутон).
+// Несъпоставените входни се създават, несъпоставените стари се изтриват.
+export function planButtonSync(existing, incoming) {
+  const free = new Map(existing.map((b, i) => [b.id, { b, i }]));
+  const plan = incoming.map(() => null);
+
+  incoming.forEach((inc, idx) => {
+    if (inc.id && free.has(inc.id)) { plan[idx] = inc.id; free.delete(inc.id); }
+  });
+  incoming.forEach((inc, idx) => {
+    if (plan[idx]) return;
+    const hit = [...free.values()].find(({ b }) => b.label.trim().toLowerCase() === inc.label.trim().toLowerCase());
+    if (hit) { plan[idx] = hit.b.id; free.delete(hit.b.id); }
+  });
+  incoming.forEach((inc, idx) => {
+    if (plan[idx]) return;
+    const hit = [...free.values()].find(({ i }) => i === idx);
+    if (hit) { plan[idx] = hit.b.id; free.delete(hit.b.id); }
+  });
+
+  return {
+    updates: plan.map((id, idx) => (id ? { id, data: incoming[idx] } : null)).filter(Boolean),
+    creates: incoming.filter((_, idx) => !plan[idx]),
+    deleteIds: [...free.keys()],
+  };
+}
+
 // ─── PUT /api/panels/:serverId/:panelId ───────────────────────────────────────
 
 router.put("/:serverId/:panelId", requireServerAdmin, async (req, res, next) => {
@@ -187,21 +225,34 @@ router.put("/:serverId/:panelId", requireServerAdmin, async (req, res, next) => 
 
     const { buttons, ...rest } = parsed.data;
 
+    let buttonOps;
+    if (buttons) {
+      const existing = await prisma.panelButton.findMany({
+        where: { panelId: req.params.panelId },
+        orderBy: { id: "asc" },
+        select: { id: true, label: true },
+      });
+      const sync = planButtonSync(existing, buttons);
+      const fields = (b) => ({
+        label: b.label,
+        emoji: b.emoji ?? null, // липсващ емоджи = изчистен (както при пресъздаване)
+        style: b.style || "PRIMARY",
+        formId: b.formId || null,
+      });
+      buttonOps = {
+        ...(sync.deleteIds.length && { deleteMany: { id: { in: sync.deleteIds } } }),
+        ...(sync.updates.length && {
+          update: sync.updates.map((u) => ({ where: { id: u.id }, data: fields(u.data) })),
+        }),
+        ...(sync.creates.length && { create: sync.creates.map(fields) }),
+      };
+    }
+
     const panel = await prisma.panel.update({
       where: { id: req.params.panelId },
       data: {
         ...rest,
-        ...(buttons && {
-          buttons: {
-            deleteMany: {},
-            create: buttons.map((b) => ({
-              label: b.label,
-              emoji: b.emoji,
-              style: b.style || "PRIMARY",
-              formId: b.formId || null,
-            })),
-          },
-        }),
+        ...(buttonOps && { buttons: buttonOps }),
       },
       include: { buttons: true },
     });

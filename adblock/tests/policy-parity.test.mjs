@@ -36,7 +36,7 @@ ok("shipped main.js has policy.js inlined (SA_POLICY defined, marker consumed)",
 ok("background.js loads policy (then the shared converter) via importScripts (classic SW)", /importScripts\("scriptlets\/policy\.js", "lib\/abp2dnr\.js"\)/.test(bg));
 
 // 3) IMPL keys == canonical names
-const impl = [...engine.matchAll(/^ {4}"([\w-]+)": function/gm)].map((m) => m[1]).sort().join("|");
+const impl = [...engine.matchAll(/^ {4}"([\w.-]+)": function/gm)].map((m) => m[1]).sort().join("|"); // "popads.net", "window.name-defuser"
 ok("engine IMPL keys == policy CANON", impl === Object.keys(P.CANON).sort().join("|"));
 
 // 4) profiles: live ⊂ build (strictness)

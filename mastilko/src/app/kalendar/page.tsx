@@ -3,6 +3,7 @@ import Image from "next/image";
 import CalendarStudio from "@/components/studios/CalendarStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import RelatedTools from "@/components/RelatedTools";
+import ToolGuide from "@/components/ToolGuide";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатен календар за печат с българските празници";
@@ -64,6 +65,7 @@ export default function KalendarPage() {
         </p>
       </header>
       <CalendarStudio />
+      <ToolGuide current="/kalendar" howTo={HOWTO} />
       <ToolFaq items={FAQ} />
       <RelatedTools current="/kalendar" />
       <script

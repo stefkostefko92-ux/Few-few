@@ -16,23 +16,21 @@ interface BackgammonState {
   bar: [number, number];
   off: [number, number];
   turn: number;
-  phase: "ROLL" | "MOVE" | "DOUBLE";
+  phase: "ROLL" | "MOVE";
   dice: number[];
   remaining: number[];
   /** Opening roll [white die, black die] — present only during the first turn. */
   openingRoll?: [number, number];
-  /** Doubling cube value (1 → 64) and its owner (null = centered). */
-  cube: number;
-  cubeOwner: number | null;
+  /** Мачът до N точки: цел, резултат [бели, черни], поредна игра. */
+  match: { target: number; score: [number, number]; game: number };
+  lastGame: { winner: number; points: number; mars: boolean } | null;
+  /** Победител в мача. */
   winner: number | null;
 }
 type BackgammonAction =
   | { type: "ROLL" }
   | { type: "MOVE"; from: number | "BAR"; die: number }
-  | { type: "PASS" }
-  | { type: "DOUBLE" }
-  | { type: "TAKE" }
-  | { type: "DROP" };
+  | { type: "PASS" };
 
 function webglSupported(): boolean {
   try {
@@ -69,14 +67,15 @@ export function BackgammonView({ title }: { title: string }) {
     toBanner: (ev) => {
       if (ev.type === "HIT") return ev.seat === seat ? { text: t("fx.hit"), tone: "win" } : { text: t("fx.hitYou"), tone: "loss" };
       if (ev.type === "PASS") return { text: t("backgammon.noMoves", "Няма възможен ход — пас"), tone: "brass" };
-      if (ev.type === "DOUBLE" && typeof ev.value === "number") {
-        return { text: t("backgammon.doubleOffered", { value: ev.value, defaultValue: "Удвояване до ×{{value}}" }), tone: "brass" };
+      if (ev.type === "GAME_WIN" && typeof ev.points === "number") {
+        const mine = ev.seat === seat;
+        const text = ev.mars
+          ? t(mine ? "backgammon.marsWon" : "backgammon.marsLost", mine ? "Марс! +2 точки" : "Марс — съперникът взе 2 точки")
+          : t(mine ? "backgammon.gameWon" : "backgammon.gameLost", mine ? "Спечели играта! +1 точка" : "Съперникът спечели играта");
+        return { text, tone: mine ? "win" : "loss" };
       }
-      if (ev.type === "TAKE") return { text: t("backgammon.doubleTaken", "Удвояването е прието"), tone: "brass" };
-      if (ev.type === "DROP") return { text: t("backgammon.doubleDropped", "Удвояването е отказано"), tone: "brass" };
-      if (ev.type === "WIN" && typeof ev.points === "number" && ev.points >= 2) {
-        const label = ev.points >= 3 ? t("backgammon.backgammon", "Капия!") : t("backgammon.gammon", "Марс!");
-        return { text: `${label} ×${ev.points}`, tone: ev.seat === seat ? "win" : "loss" };
+      if (ev.type === "NEW_GAME" && typeof ev.game === "number") {
+        return { text: t("backgammon.newGame", { game: ev.game, defaultValue: "Игра {{game}}" }), tone: "brass" };
       }
       return null;
     },
@@ -87,12 +86,6 @@ export function BackgammonView({ title }: { title: string }) {
   const myTurn = !!state && state.turn === seat && legal.length > 0;
   const rollAction = legal.find((a) => a.type === "ROLL");
   const passAction = legal.find((a) => a.type === "PASS");
-  // Doubling cube actions: DOUBLE is offered on my roll; TAKE/DROP answer an
-  // offer (the responder is the seat that did NOT propose the double).
-  const doubleAction = legal.find((a) => a.type === "DOUBLE");
-  const takeAction = legal.find((a) => a.type === "TAKE");
-  const dropAction = legal.find((a) => a.type === "DROP");
-  const doubleOffered = !!state && state.phase === "DOUBLE";
   const moves = useMemo(
     () => legal.filter((a): a is Extract<BackgammonAction, { type: "MOVE" }> => a.type === "MOVE"),
     [legal],
@@ -212,9 +205,10 @@ export function BackgammonView({ title }: { title: string }) {
   const oppName = players.find((p) => p.seat !== seat)?.displayName ?? t("game.opponent");
   const myColor = seat === 0 ? t("backgammon.white", "белите") : t("backgammon.black", "черните");
   const oppColor = seat === 0 ? t("backgammon.black", "черните") : t("backgammon.white", "белите");
-  // Gammon (марс ×2) / backgammon (капия ×3) verdict for the game-over screen.
-  const winLine = result?.score.find((s) => s.result === "win");
-  const winPts = winLine?.points ?? 1;
+  // Резултат в мача — моите точки първи.
+  const oppSeat = seat === 0 ? 1 : 0;
+  const myPts = state?.match.score[seat] ?? 0;
+  const oppPts = state?.match.score[oppSeat] ?? 0;
   const topPoints = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
   const bottomPoints = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
 
@@ -249,13 +243,17 @@ export function BackgammonView({ title }: { title: string }) {
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
       <Announcements banners={banners} fixed />
-      {phase === "over" && result && winPts >= 2 ? (
+      {phase === "over" && result && state && state.winner !== null ? (
         <div
           style={{ position: "fixed", top: "12vh", left: 0, right: 0, zIndex: 80, textAlign: "center", pointerEvents: "none" }}
           aria-live="polite"
         >
-          <span className="aso-announce" data-tone={winLine?.seat === seat ? "win" : "loss"}>
-            {winPts >= 3 ? t("backgammon.backgammon", "Капия!") : t("backgammon.gammon", "Марс!")} ×{winPts}
+          <span className="aso-announce" data-tone={state.winner === seat ? "win" : "loss"}>
+            {t(state.winner === seat ? "backgammon.matchWon" : "backgammon.matchLost", {
+              score: `${myPts} : ${oppPts}`,
+              defaultValue: state.winner === seat ? "Спечели мача {{score}}" : "Загуби мача {{score}}",
+            })}
+            {state.lastGame?.mars ? ` · ${t("backgammon.gammon", "Марс!")}` : ""}
           </span>
         </div>
       ) : null}
@@ -269,13 +267,11 @@ export function BackgammonView({ title }: { title: string }) {
                 value={`${state.openingRoll[0]} : ${state.openingRoll[1]}`}
               />
             ) : null}
-            {state.cube > 1 || doubleOffered ? (
-              <ScorePill
-                label={t("backgammon.cube", "Куб")}
-                value={`×${doubleOffered ? state.cube * 2 : state.cube}${doubleOffered ? " ?" : ""}`}
-                highlight={doubleOffered}
-              />
-            ) : null}
+            <ScorePill
+              label={t("backgammon.matchTo", { target: state.match.target, defaultValue: "Мач до {{target}}" })}
+              value={`${myPts} : ${oppPts}`}
+            />
+            <ScorePill label={t("backgammon.game", "Игра")} value={state.match.game} />
           </div>
 
           {useGL ? (
@@ -310,22 +306,6 @@ export function BackgammonView({ title }: { title: string }) {
             />
             {state.remaining.length > 0 ? <DiceRow values={state.remaining} /> : null}
             {rollAction ? <Button onClick={() => { playCue("flip"); send(rollAction); }}>{t("backgammon.roll")}</Button> : null}
-            {doubleAction ? (
-              <Button variant="brass" onClick={() => { playCue("flip"); send(doubleAction); }}>
-                {t("backgammon.double", "Удвои")}
-              </Button>
-            ) : null}
-            {takeAction ? (
-              <Button variant="brass" onClick={() => send(takeAction)}>{t("backgammon.take", "Приемам")}</Button>
-            ) : null}
-            {dropAction ? (
-              <Button variant="ghost" onClick={() => send(dropAction)}>{t("backgammon.drop", "Отказвам")}</Button>
-            ) : null}
-            {doubleOffered && !takeAction && !dropAction ? (
-              <span className="text-sm text-ink-muted">
-                {t("backgammon.waitingDouble", "Изчакване на отговор за удвояване")}
-              </span>
-            ) : null}
             {passAction ? <Button variant="ghost" onClick={() => send(passAction)}>{t("backgammon.pass")}</Button> : null}
             {(state.bar[seat] ?? 0) > 0 ? (
               <Button variant="felt" onClick={() => setFromSel("BAR")}>{t("backgammon.bar")}</Button>

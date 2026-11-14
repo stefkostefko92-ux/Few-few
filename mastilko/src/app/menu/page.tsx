@@ -3,6 +3,7 @@ import Image from "next/image";
 import MenuStudio from "@/components/studios/MenuStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import RelatedTools from "@/components/RelatedTools";
+import ToolGuide from "@/components/ToolGuide";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатно меню и ценоразпис за печат";
@@ -64,6 +65,7 @@ export default function MenuPage() {
         </p>
       </header>
       <MenuStudio />
+      <ToolGuide current="/menu" howTo={HOWTO} />
       <ToolFaq items={FAQ} />
       <RelatedTools current="/menu" />
       <script

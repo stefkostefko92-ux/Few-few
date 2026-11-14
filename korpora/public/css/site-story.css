@@ -10,10 +10,12 @@
 }
 @media (min-width: 900px) {
   .workbench {
-    grid-template-columns: minmax(0, min(560px, 42%)) minmax(0, 1fr);
+    grid-template-columns: minmax(0, min(500px, 38%)) minmax(0, 1fr);
     column-gap: clamp(28px, 4vw, 64px);
     /* the text column starts where the page's 1200 px column starts */
     padding-left: max(var(--gutter), calc(50% - 600px + var(--gutter)));
+    /* and the stage ends where it ends, on the bar's right edge */
+    padding-right: max(var(--stage-pad), calc(50% - 600px + var(--gutter)));
   }
   .workbench > .hero {
     grid-column: 1;

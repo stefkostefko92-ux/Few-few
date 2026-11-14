@@ -1,14 +1,14 @@
-<%- include('../partials/head', { title: project.name + ' — Korpora', styles: ['app'], noindex: true, extraHead: '<link rel="stylesheet" href="/static/editor/editor.css?v=' + v + '">' + editorPreload.map((p) => '<link rel="modulepreload" href="/static/editor/' + p + '">').join('') }) %>
+<%- include('../partials/head', { title: project.name + ' — Korpora', styles: ['app'], noindex: true, extraHead: '<link rel="stylesheet" href="/static/editor/editor.css?v=' + v + '"><link rel="preload" as="fetch" href="/app/catalog.json" crossorigin="anonymous">' + editorPreload.map((p) => '<link rel="modulepreload" href="/static/editor/' + p + '">').join('') }) %>
 <body class="appbody editor-body">
 <%- include('../partials/app-header') %>
-<main class="editor" id="main" lang="bg" data-readonly="<%= readOnly ? 'true' : 'false' %>" data-csrf="<%= csrfToken %>" data-text="<%= JSON.stringify({ saving: te('editor.saving'), unsaved: te('editor.unsaved'), saved: te('editor.saved'), saveFailed: te('editor.saveFailed'), noWebgl: te('editor.noWebgl'), photoPreparing: te('editor.photoPreparing'), photoProgress: te('editor.photoProgress'), photoReady: te('editor.photoReady'), photoUnsupported: te('editor.photoUnsupported'), photoFailed: te('editor.photoFailed'), photoSaveFailed: te('editor.photoSaveFailed'), fullscreen: te('editor.fullscreen'), zoomIn: te('editor.zoomIn'), zoomOut: te('editor.zoomOut'), zoomFit: te('editor.zoomFit'), zoomHint: te('editor.zoomHint'), cncBlockedLink: te('editor.cncBlockedLink'), catalogFailed: te('editor.catalogFailed'), engineFailed: te('editor.engineFailed'), showFailed: te('editor.showFailed'), driftTitle: te('editor.driftTitle'), driftText: te('editor.driftText') }) %>">
+<main class="editor" id="main" lang="bg" data-readonly="<%= readOnly ? 'true' : 'false' %>" data-csrf="<%= csrfToken %>" data-text="<%= JSON.stringify({ saving: te('editor.saving'), unsaved: te('editor.unsaved'), saved: te('editor.saved'), saveFailed: te('editor.saveFailed'), tooManyDownloads: te('editor.tooManyDownloads'), notSaved: te('editor.notSaved'), conflictTitle: te('editor.conflictTitle'), conflictText: te('editor.conflictText'), saveCopy: te('editor.saveCopy'), reload: te('editor.reload'), copyFailed: te('editor.copyFailed'), sessionTitle: te('editor.sessionTitle'), sessionText: te('editor.sessionText'), signIn: te('editor.signIn'), saveAgain: te('editor.saveAgain'), blockedTitle: te('editor.blockedTitle'), planExpired: te('app.errors.planExpired'), nameInvalid: te('app.errors.name'), specInvalid: te('app.errors.spec'), unverified: te('app.errors.unverified'), seePlans: te('app.seePlans'), noWebgl: te('editor.noWebgl'), noWebglHint: te('editor.noWebglHint'), toBom: te('editor.toBom'), photoPreparing: te('editor.photoPreparing'), photoProgress: te('editor.photoProgress'), photoReady: te('editor.photoReady'), photoUnsupported: te('editor.photoUnsupported'), photoFailed: te('editor.photoFailed'), photoSaveFailed: te('editor.photoSaveFailed'), fullscreen: te('editor.fullscreen'), fullscreenExit: te('editor.fullscreenExit'), zoomArea: te('editor.zoomArea'), zoomIn: te('editor.zoomIn'), zoomOut: te('editor.zoomOut'), zoomFit: te('editor.zoomFit'), zoomHint: te('editor.zoomHint'), cncBlockedLink: te('editor.cncBlockedLink'), catalogFailed: te('editor.catalogFailed'), engineFailed: te('editor.engineFailed'), openFailed: te('editor.openFailed'), showFailed: te('editor.showFailed'), readOnlyState: te('editor.readOnlyState'), driftTitle: te('editor.driftTitle'), driftText: te('editor.driftText') }) %>">
   <h1 class="sr-only"><%= project.name %></h1>
   <div class="ed-top">
     <a class="btn btn-quiet btn-small" href="/app"><%- include('../partials/icon', { name: 'back' }) %><span><%= te('editor.back') %></span></a>
     <div class="ed-title">
       <label class="sr-only" for="project-name"><%= te('editor.name') %></label>
       <input id="project-name" class="ed-name" type="text" maxlength="80" value="<%= project.name %>"<%= readOnly ? ' readonly' : '' %>>
-      <span class="ed-spec" id="title-spec"></span>
+      <span class="ed-spec" id="title-spec"><%= rail ? rail.title : '' %></span>
     </div>
     <div class="ed-actions">
       <span class="ed-state" id="save-state" role="status" aria-live="polite"><%= readOnly ? te('editor.readOnlyState') : te('editor.saved') %></span>
@@ -43,15 +43,21 @@
     </div>
   </section>
   <% } %>
-  <p class="ed-error" id="save-error" role="alert" hidden></p>
+  <div class="ed-error" id="save-error" role="alert" tabindex="-1" hidden></div>
 
   <div class="app-grid">
     <form id="params" class="rail" aria-label="<%= te('editor.params') %>">
       <fieldset<%= readOnly ? ' disabled' : '' %>>
       <details class="railbox" open>
         <summary><%= te('editor.project') %></summary>
-        <div class="group"><h2><%= te('editor.furniture') %></h2><div id="type-picker" role="radiogroup" aria-label="<%= te('editor.furnitureType') %>"></div></div>
-        <div class="group"><h2><%= te('editor.sizes') %></h2><div id="param-fields" class="group group-flat"></div></div>
+        <div class="group">
+          <h2 id="h-type"><%= te('editor.furniture') %></h2>
+          <details class="typebox">
+            <summary class="pickbtn" aria-describedby="h-type"><span class="tslot" id="type-icon"></span><span class="pv"><span id="type-name"><%= rail ? rail.label : '' %></span><small><%= te('editor.changeType') %></small></span></summary>
+            <div id="type-picker" role="radiogroup" aria-label="<%= te('editor.furnitureType') %>"></div>
+          </details>
+        </div>
+        <div class="group"><h2><%= te('editor.sizes') %></h2><div id="param-fields" class="group group-flat"<% if (rail) { %> data-type="<%= rail.type %>"<% } %>><% if (rail) { %><%- include('editor-params', { fields: rail.fields }) %><% } %></div></div>
         <div class="group">
           <h2><%= te('editor.materials') %></h2>
           <span class="lbl" id="l-carcass"><%= te('editor.carcass') %></span>
@@ -83,6 +89,8 @@
             <label><input type="radio" name="post" value="iso" data-field="post"><span>ISO / Fanuc</span></label>
             <label><input type="radio" name="post" value="grbl" data-field="post"><span>GRBL</span></label>
           </div>
+          <div class="field" id="row-grblStepDown"><label for="f-grblStepDown"><%= te('editor.grblStepDown') %></label><input type="number" id="f-grblStepDown" data-field="grblStepDown" step="0.1" inputmode="decimal"></div>
+          <div class="field" id="row-grblMaxFeed"><label for="f-grblMaxFeed"><%= te('editor.grblMaxFeed') %></label><input type="number" id="f-grblMaxFeed" data-field="grblMaxFeed" step="10" inputmode="numeric"></div>
           <label class="check" for="f-onion"><input type="checkbox" id="f-onion" data-field="onion"><span><%= te('editor.onion') %></span></label>
           <label class="check" for="f-comp"><input type="checkbox" id="f-comp" data-field="bandCompensation"><span><%= te('editor.compensation') %></span></label>
           <span class="lbl" id="l-load"><%= te('editor.shelfLoad') %></span>
@@ -107,15 +115,15 @@
       <section id="panel-view" role="tabpanel" aria-labelledby="tab-view">
         <div class="stage" id="stage"></div>
         <div class="viewbar">
-          <div class="ctl"><label for="open"><%= te('editor.open') %></label><input type="range" id="open" min="0" max="100" value="0" step="1"><output id="open-out" for="open">0%</output></div>
-          <div class="ctl"><label for="explode"><%= te('editor.explode') %></label><input type="range" id="explode" min="0" max="100" value="0" step="1"><output id="explode-out" for="explode">0%</output></div>
+          <div class="ctl"><label for="open"><%= te('editor.open') %></label><input type="range" id="open" min="0" max="100" value="0" step="1"><output id="open-out" for="open">0&nbsp;%</output></div>
+          <div class="ctl"><label for="explode"><%= te('editor.explode') %></label><input type="range" id="explode" min="0" max="100" value="0" step="1"><output id="explode-out" for="explode">0&nbsp;%</output></div>
           <button type="button" class="btn btn-small" id="explode-play"><%= te('editor.explodePlay') %></button>
           <label class="check" for="ops"><input type="checkbox" id="ops" checked><span><%= te('editor.showHoles') %></span></label>
           <label class="check" for="room"><input type="checkbox" id="room"><span><%= te('editor.room') %></span></label>
           <button type="button" class="btn btn-small" id="photo" aria-pressed="false"><%= te('editor.photo') %></button>
           <button type="button" class="btn btn-small" id="photo-save" hidden><%= te('editor.photoSave') %></button>
           <output id="photo-state" class="hint" aria-live="polite"></output>
-          <button type="button" class="btn btn-small fs-btn" data-fs="panel-view" aria-pressed="false"><%- include('../partials/icon', { name: 'expand' }) %><span><%= te('editor.fullscreen') %></span></button>
+          <button type="button" class="btn btn-small fs-btn" data-fs="panel-view"><%- include('../partials/icon', { name: 'expand' }) %><span><%= te('editor.fullscreen') %></span></button>
         </div>
         <p class="hint"><%= te('editor.viewHint') %></p>
       </section>
@@ -138,10 +146,11 @@
         <div class="row"><h2><%= te('editor.drillTitle') %></h2><button type="button" class="btn btn-small" id="copy-drill"><%= te('editor.copyDrill') %></button></div>
         <div class="cols" id="drill-cards"></div>
         <div class="fs" id="drill-fs">
-          <div class="row"><h2 id="drill-map-h"><%= te('editor.drillMap') %></h2><div class="acts"><select id="drill-part" class="pick" aria-label="<%= te('editor.part') %>"></select><button type="button" class="btn btn-small fs-btn" data-fs="drill-fs" data-fs-zoom="drill-map" aria-pressed="false"><%- include('../partials/icon', { name: 'expand' }) %><span><%= te('editor.fullscreen') %></span></button></div></div>
+          <div class="row"><h2 id="drill-map-h"><%= te('editor.drillMap') %></h2><div class="acts"><select id="drill-part" class="pick" aria-label="<%= te('editor.part') %>"></select><button type="button" class="btn btn-small fs-btn" data-fs="drill-fs" data-fs-zoom="drill-map"><%- include('../partials/icon', { name: 'expand' }) %><span><%= te('editor.fullscreen') %></span></button></div></div>
           <p class="hint" id="drill-axes"></p>
           <div class="paperwrap" id="drill-map"></div>
         </div>
+        <p class="hint"><%= te('editor.zoomTap') %></p>
         <div class="tablewrap" tabindex="0" role="region" aria-labelledby="drill-map-h"><table id="drill-table"><thead><tr><th>№</th><th><%= te('editor.col.letter') %></th><th>X (u)</th><th>Y (v)</th><th>Ø</th><th><%= te('editor.col.depth') %></th><th><%= te('editor.col.purpose') %></th><th><%= te('editor.col.hardware') %></th></tr></thead><tbody></tbody></table></div>
         <p class="note"><%= te('editor.drillNote') %></p>
       </section>
@@ -155,9 +164,10 @@
 
       <section id="panel-draw" role="tabpanel" aria-labelledby="tab-draw" hidden>
         <div class="fs" id="draw-fs">
-          <div class="row"><h2><%= te('editor.drawings') %></h2><div class="acts"><select id="draw-part" class="pick" aria-label="<%= te('editor.sheet') %>"></select><button type="button" class="btn btn-small" id="copy-svg"><%= te('editor.copySvg') %></button><button type="button" class="btn btn-small fs-btn" data-fs="draw-fs" data-fs-zoom="drawing" aria-pressed="false"><%- include('../partials/icon', { name: 'expand' }) %><span><%= te('editor.fullscreen') %></span></button></div></div>
+          <div class="row"><h2><%= te('editor.drawings') %></h2><div class="acts"><select id="draw-part" class="pick" aria-label="<%= te('editor.sheet') %>"></select><button type="button" class="btn btn-small" id="copy-svg"><%= te('editor.copySvg') %></button><button type="button" class="btn btn-small fs-btn" data-fs="draw-fs" data-fs-zoom="drawing"><%- include('../partials/icon', { name: 'expand' }) %><span><%= te('editor.fullscreen') %></span></button></div></div>
           <div class="paperwrap" id="drawing"></div>
         </div>
+        <p class="hint"><%= te('editor.zoomTap') %></p>
         <p class="note"><%= te('editor.drawNote') %></p>
       </section>
 
@@ -168,7 +178,7 @@
         <div class="stats" id="cnc-stats"></div>
         <div id="cnc-manual"></div>
         <div class="card fs" id="cnc-fs">
-          <div class="sim"><button type="button" class="btn btn-primary btn-small" id="sim-play" aria-pressed="false"><%= te('editor.simulate') %></button><input type="range" id="sim-progress" min="0" max="1000" value="1000" aria-label="<%= te('editor.progress') %>"><output id="sim-label" for="sim-progress">100%</output><button type="button" class="btn btn-small fs-btn" data-fs="cnc-fs" data-fs-zoom="toolpath" aria-pressed="false"><%- include('../partials/icon', { name: 'expand' }) %><span><%= te('editor.fullscreen') %></span></button></div>
+          <div class="sim"><button type="button" class="btn btn-primary btn-small" id="sim-play" aria-pressed="false"><%= te('editor.simulate') %></button><input type="range" id="sim-progress" min="0" max="1000" value="1000" aria-label="<%= te('editor.progress') %>"><output id="sim-label" for="sim-progress">100&nbsp;%</output><button type="button" class="btn btn-small fs-btn" data-fs="cnc-fs" data-fs-zoom="toolpath"><%- include('../partials/icon', { name: 'expand' }) %><span><%= te('editor.fullscreen') %></span></button></div>
           <div id="toolpath"></div>
           <div class="legend" id="cnc-tools"></div>
         </div>
@@ -195,12 +205,13 @@
 </main>
 
 <dialog id="picker" class="picker" lang="bg" aria-labelledby="picker-title">
-  <form method="dialog" class="pk">
-    <header><h2 id="picker-title"><%= te('editor.pick') %></h2><button value="close" class="btn btn-small"><%= te('editor.close') %></button></header>
+  <div class="pk">
+    <header><h2 id="picker-title"><%= te('editor.pick') %></h2><button type="button" class="btn btn-small" data-close><%= te('editor.close') %></button></header>
     <div class="pk-tools"><input type="search" id="pk-q" placeholder="<%= te('editor.search') %>" aria-label="<%= te('editor.search') %>"><div class="chips" id="pk-chips"></div><div class="chips" id="pk-chips2"></div></div>
     <p class="hint" id="pk-count"></p>
     <div class="pk-list" id="pk-list" role="listbox" aria-label="<%= te('editor.results') %>"></div>
-  </form>
+    <div class="pk-more" id="pk-more"></div>
+  </div>
 </dialog>
 <%- include('../partials/app-footer') %>
 <script type="application/json" id="boot"><%- boot %></script>

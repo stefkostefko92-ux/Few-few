@@ -1,6 +1,7 @@
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mailTo, prisma, STAFF_INBOX, startApp, stopApp } from './harness.js';
+import { orderNo } from '../../src/plans/order-number.js';
 import { placeOrder, sessionCsrf, staff, withdraw } from './people.js';
 
 before(startApp);
@@ -55,7 +56,7 @@ test('withdrawal: a button, a confirmation step, the plan goes back, and a recei
   );
   const receipt = await mailTo('withdraw@example.test', /Получихме отказа ви/);
   assert.match(receipt.text, /подадено на \d+ \S+ \d{4} г\. в \d{1,2}:\d{2} \(UTC\+0[23]:00\)/);
-  assert.match(receipt.text, new RegExp(`поръчка № ${row.id}`));
+  assert.match(receipt.text, new RegExp(`поръчка № ${orderNo(row)}`));
   assert.match(receipt.text, /Планът ви е върнат такъв, какъвто беше преди поръчката\./);
   assert.match(receipt.text, /задържаме частта от цената/);
   const notice = await mailTo(STAFF_INBOX, /Отказ от договора в Korpora: withdraw@example\.test/);
@@ -112,9 +113,10 @@ test('activation after a withdrawal is refused; a plan changed since activation 
 
 test('after the period there is no withdrawal button; an unpaid order can still be cancelled', async () => {
   const { c, row } = await placeOrder('late@example.test', { option: 'm6', buyer: 'consumer' });
+  // 40 days: longer than any possible period (14 days plus up to 5 non-working days), whatever today is
   await prisma.upgradeRequest.update({
     where: { id: row.id },
-    data: { createdAt: new Date(Date.now() - 20 * DAY) },
+    data: { createdAt: new Date(Date.now() - 40 * DAY) },
   });
   const page = await c.get('/account/plan');
   assert.doesNotMatch(page.body, /Откажете се от договора тук<\/a>/);
@@ -154,13 +156,9 @@ test('a request from before the orders is no contract under these rules; a plan 
     buyer: 'consumer',
     early: 'yes',
   });
+  // a paid plan by hand waits for the open order (business:A1); trial days by hand do not
   assert.deepEqual(
-    await changePlan(actor, second.userId, {
-      plan: 'PREMIUM',
-      mode: 'months',
-      months: 1,
-      notify: false,
-    }),
+    await changePlan(actor, second.userId, { plan: 'TRIAL', days: 5, notify: false }),
     { ok: true },
   );
   await withdraw(c2, second.id);

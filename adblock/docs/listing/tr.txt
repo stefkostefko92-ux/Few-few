@@ -1,10 +1,14 @@
 Supreme AdBlock, ne yaptığınızı izlemeden reklamları her yerde engeller — YouTube video reklamları, banner'lar, pop-up'lar ve izleyiciler.
 
+• Günde iki kez imzalı filtre güncellemeleri: yeni reklam ağları saatler içinde ele alınır, uzaktan kod olmadan.
 • YouTube reklamları kaynağında durdurulur, böylece videolar doğrudan oynar.
+• Çerez banner'ları: banner'da varsa sizin yerinize “Reddet”e basar, “Kabul et”e ise yalnızca banner'ı kapatmanın başka yolu olmadığında basar. Kalan bulanıklığı ve kaydırma kilidini temizler; oturum açma, OAuth veya ödeme düğmelerine asla basmaz.
+• Hesap yok, telemetri yok, veri toplama yok ve hiçbir reklama ücret karşılığında izin verilmez. Global Privacy Control her siteden verilerinizi satmamasını veya paylaşmamasını ister.
 • EasyList, EasyPrivacy ve diğer açık filtre listeleri yerleşiktir; ayrıca dilinize uygun liste de vardır (31 bölgesel liste).
-• Çerez banner'ları: sizin yerinize “Reddet”e basar, kalan bulanıklığı ve kaydırma kilidini temizler; oturum açma, OAuth veya ödeme düğmelerine asla basmaz.
+• Facebook, Instagram ve Threads'teki sponsorlu gönderiler gizlenir.
 • Odak modu: sohbet baloncuklarını, bülten pop-up'larını, bildirim isteklerini, sosyal medya widget'larını, yapay zekâ pop-up'larını ve YouTube Shorts'u gizleyin.
 • Anti-adblock duvarları ve pop-under'lar etkisiz hâle getirilir.
+• Tehlikeli siteler: bilinen kötü amaçlı bir site yerine bir uyarı sayfası açılır ve devam edip etmeyeceğinize siz karar verirsiniz.
 • Site bozuk mu? Tek tıklama düzeltir ya da bize bildirin — siz görmeden hiçbir şey gönderilmez.
-• Günde iki kez imzalı filtre güncellemeleri: yeni reklam ağları saatler içinde ele alınır, uzaktan kod olmadan.
-• Hesap yok, telemetri yok, veri toplama yok.
+• uBlock Origin, AdGuard veya Adblock Plus'tan mı geçiyorsunuz? İzin verdiğiniz siteleri ve filtrelerinizi tek bir dosyayla getirin.
+• Bir sayfanın başka hangi sitelere bağlandığını görün ve birini tek tıkla yalnızca orada engelleyin.

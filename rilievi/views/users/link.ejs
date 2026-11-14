@@ -1,0 +1,20 @@
+<%- include('../partials/top', { titleKey: kind === 'invite' ? 'users.inviteCreated' : 'users.resetCreated', narrowMain: true }) %>
+<div class="stack-gap">
+  <div>
+    <h1><%= t(kind === 'invite' ? 'users.inviteCreated' : 'users.resetCreated') %></h1>
+    <p class="page-head__sub"><%= kind === 'invite' ? t('users.inviteFor', { email, days }) : t('users.resetFor', { name, email, hours }) %></p>
+  </div>
+  <div class="notice" role="status">
+    <p><strong><%= t('users.mail.' + mail) %></strong></p>
+    <p><%= t('users.linkOnce') %></p>
+  </div>
+  <div class="field">
+    <label class="field__label" for="link"><%= t('users.link') %></label>
+    <div class="copy">
+      <input class="input" id="link" type="text" readonly value="<%= link %>" data-copy-source>
+      <button class="btn" type="button" data-copy data-copied="<%= t('users.copied') %>"><%- include('../partials/icon', { name: 'copy' }) %><span data-copy-label><%= t('users.copy') %></span></button>
+    </div>
+  </div>
+  <div class="toolbar"><a class="btn btn--primary" href="/utenti"><%= t('users.back') %></a></div>
+</div>
+<%- include('../partials/bottom') %>

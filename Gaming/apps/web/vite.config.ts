@@ -18,7 +18,9 @@ export default defineConfig({
   },
   preview: { port: 4502 },
   build: {
-    sourcemap: true,
+    // Source maps are 12 MB of the 17 MB build and were served publicly (the
+    // whole client source). Opt in for a debugging build: SOURCEMAP=1.
+    sourcemap: process.env.SOURCEMAP === "1",
     rollupOptions: {
       output: {
         // Split stable vendor libs into their own long-cached chunks so a code

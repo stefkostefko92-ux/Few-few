@@ -6,7 +6,7 @@ import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { estTokens, computeBudget, PREFIX_TOKEN_WARN, PREFIX_TOKEN_HARD, ROOT_DOC_TOKEN_HARD } from "./token-budget.mjs";
+import { estTokens, computeBudget, injectedText, PREFIX_TOKEN_WARN, PREFIX_TOKEN_HARD, ROOT_DOC_TOKEN_HARD } from "./token-budget.mjs";
 
 const CLI = join(dirname(fileURLToPath(import.meta.url)), "token-budget.mjs");
 
@@ -97,4 +97,11 @@ test("гейтът РЕАЛНО пада при раздут префикс (и�
   // HARD 6000) и превръщаше съвет в провал. Проверяваме това, което наистина гейтва.
   assert.equal(simulate(STATIC_PREFIX_TOKENS).over, false,
     `префиксът (${STATIC_PREFIX_TOKENS} т) е над твърдия таван ${PREFIX_TOKEN_HARD} — слим текста, не вдигай тавана`);
+});
+
+test("injectedText: HTML коментарът не се брои (харнесът го маха), коментар в код блок остава", () => {
+  const md = "А\n<!-- бележка за поддръжката -->\nБ\n```html\n<!-- в код -->\n```\n";
+  const out = injectedText(md);
+  assert.ok(!out.includes("бележка за поддръжката"));
+  assert.ok(out.includes("<!-- в код -->"));
 });

@@ -1,0 +1,36 @@
+<%
+  // Адресникът на доставчиците за поръчките от портала (routes/impostazioni-flusso.ts; ordini/fornitori.ts).
+  const nf = nuovoFornitore;
+%><section aria-labelledby="h-fornitori">
+  <h2 class="section__title" id="h-fornitori"><%= t('flusso.fornitori.titolo') %></h2>
+  <p class="muted"><%= t('flusso.fornitori.testo') %></p>
+  <% if (fornitori.length === 0) { %><p class="muted"><%= t('flusso.fornitori.nessuno') %></p><% } else { %>
+  <ul class="elenco-semplice">
+    <% for (const f of fornitori) { %><li>
+      <span><strong><%= f.nome %></strong> · <span class="email"><%= f.email %></span></span>
+      <form class="inline-form" method="post" action="/impostazioni/fornitori/togli">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" name="azienda" value="<%= azienda.id %>">
+        <input type="hidden" name="id" value="<%= f.id %>">
+        <button class="btn btn--sm btn--ghost" type="submit" aria-label="<%= t('flusso.fornitori.togli') %> <%= f.nome %>"><%= t('flusso.fornitori.togli') %></button>
+      </form>
+    </li>
+    <% } %>
+  </ul><% } %>
+  <form class="form" method="post" action="/impostazioni/fornitori" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="azienda" value="<%= azienda.id %>">
+    <% if (nf.errore) { %><p class="field__error" id="err-fornitore"><%= t('flusso.fornitori.errore') %></p><% } %>
+    <div class="grid">
+      <div class="field">
+        <label class="field__label" for="f-forn-nome"><%= t('flusso.fornitori.nome') %></label>
+        <input class="input" id="f-forn-nome" name="nome" type="text" maxlength="120" autocomplete="organization" value="<%= nf.nome %>"<% if (nf.errore) { %> aria-invalid="true" aria-describedby="err-fornitore"<% } %>>
+      </div>
+      <div class="field">
+        <label class="field__label" for="f-forn-email"><%= t('flusso.fornitori.email') %></label>
+        <input class="input" id="f-forn-email" name="email" type="email" maxlength="254" autocomplete="email" value="<%= nf.email %>"<% if (nf.errore) { %> aria-invalid="true" aria-describedby="err-fornitore"<% } %>>
+      </div>
+    </div>
+    <div class="toolbar"><button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'plus' }) %><%= t('flusso.fornitori.aggiungi') %></button></div>
+  </form>
+</section>

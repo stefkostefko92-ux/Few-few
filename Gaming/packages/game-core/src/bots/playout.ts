@@ -28,7 +28,12 @@ export function playRandom<S, A, E extends GameEvent>(
       acted = true;
       break;
     }
-    if (!acted) break; // no seat can move — stuck (should not happen in well-formed engines)
+    if (!acted) {
+      // Server-driven engines (Бинго): the host applies the timed action.
+      const srv = engine.serverAction?.(state);
+      if (!srv) break; // no seat can move — stuck (should not happen in well-formed engines)
+      state = engine.reduce(state, srv.action, matchRng).state;
+    }
     steps++;
   }
 

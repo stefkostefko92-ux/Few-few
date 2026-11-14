@@ -4,6 +4,8 @@ import { gameHasCosmetics } from "@aso/shared";
 import { Badge, Panel, cn } from "../../ui";
 import { useAuthStore, useCosmeticsModal } from "../../lib/store";
 import { DailyReward } from "../progression/DailyReward";
+import { Quests } from "../progression/Quests";
+import { useRefreshUserOnFocus } from "../progression/userRefresh";
 import { BotDifficultyPicker } from "./BotDifficultyPicker";
 import { GAME_CATALOG, gameTitle, type GameCard } from "./games";
 
@@ -60,6 +62,8 @@ function GameTile({ game }: { game: GameCard }) {
 export function Lobby() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
+  // Чиповете/нивото в хедъра се опресняват при връщане в таба.
+  useRefreshUserOnFocus();
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -71,6 +75,7 @@ export function Lobby() {
       </div>
 
       {user ? <DailyReward /> : null}
+      {user ? <Quests /> : null}
 
       <BotDifficultyPicker />
 

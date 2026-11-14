@@ -45,5 +45,7 @@ pnpm db:migrate          # pnpm --filter @aso/db migrate:deploy
   the virtual economy is **not** real-money gambling — keep that boundary explicit.
 - **Realtime:** Socket.IO for live play; heavy/async work goes through BullMQ
   (`apps/worker`), not the request path.
-- CI: `.github/workflows/ci.yml` (lint + typecheck + test); see `SECURITY.md`,
+- CI: root `.github/workflows/gaming.yml` (lint + typecheck + test + build, path-filtered to
+  `Gaming/**`). Deploy: `infra/autodeploy.sh` (or root `deploy/autodeploy.sh`, project
+  `gaming`) — pg_dump backup + rollback to `:rollback` images; no CI push to prod. See `SECURITY.md`,
   `LAUNCH.md`, `CONTRIBUTING.md`.

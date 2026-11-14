@@ -94,6 +94,29 @@ if (prod) {
   });
 }
 
+// Един адрес на страница. Express по подразбиране отговаря 200 и на `/privacy/`, и на
+// `/p/<слъг>/`, а canonical-ът следваше пътя → два адреса, всеки сочещ себе си („Дубликат
+// без избран от потребителя canonical“ в Search Console). Наклонената черта в края
+// се маха с 301 (заявката се пази). Водещите наклонени се свиват до една, иначе
+// `//evil.example/` би станал протоколно-относителен отворен редирект.
+app.use((req, res, next) => {
+  if ((req.method !== 'GET' && req.method !== 'HEAD') || req.path.length < 2) return next();
+  if (!req.path.endsWith('/')) return next();
+  const clean = `/${req.path.replace(/^\/+|\/+$/g, '')}`;
+  const q = req.originalUrl.indexOf('?');
+  res.redirect(301, clean + (q === -1 ? '' : req.originalUrl.slice(q)));
+});
+
+// Страници, които НЕ искаме в индекса: X-Robots-Tag важи и за не-HTML отговори
+// (vCard файла с лични данни) и стига до Google, защото пътищата вече не са в
+// Disallow на robots.txt (Disallow скрива noindex от обхождащия).
+const NOINDEX_PATH =
+  /^\/(dashboard|login|register|logout|profile|admin|forgot|reset|settings)(\/|$)|^\/p\/[^/]+\/(print|vizitka\.vcf)$/;
+app.use((req, res, next) => {
+  if (NOINDEX_PATH.test(req.path)) res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  next();
+});
+
 app.use(express.urlencoded({ extended: false, limit: '64kb', parameterLimit: 100 }));
 app.use(cookieParser());
 app.use(express.static(join(__dirname, '..', 'public'), { maxAge: prod ? '7d' : 0 }));

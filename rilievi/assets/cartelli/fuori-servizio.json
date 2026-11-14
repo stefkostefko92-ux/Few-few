@@ -1,0 +1,59 @@
+{
+  "id": "fuori-servizio",
+  "titolo": "Fuori servizio",
+  "fonte": "«5_Cartelli_Riprodotti_Fedeli_Senza_Logo.zip» caricato dal proprietario del portale il 30/10/2026: l'immagine JPEG del PDF 03_Fuori_Servizio.pdf, ingrandita per la stampa il 31/10/2026 con Real-ESRGAN x4plus (3:1 con Lanczos) e riportata a 3× con Lanczos (scripts/cartelli/upscale.py)",
+  "file": "fuori-servizio.jpg",
+  "sha256": "bf94df632c9efcfda409649df76714b08b4a00cbbd785dfa967051877603c485",
+  "larghezza": 1216,
+  "altezza": 918,
+  "scala": 3,
+  "copri": [
+    {
+      "rect": [347, 109, 829, 139]
+    },
+    {
+      "rect": [497, 556, 623, 588]
+    },
+    {
+      "rect": [643, 556, 803, 588]
+    },
+    {
+      "rect": [833, 556, 931, 588]
+    },
+    {
+      "rect": [965, 556, 1208, 588]
+    },
+    {
+      "rect": [497, 662, 1163, 766]
+    }
+  ],
+  "logo": {
+    "box": [500, 14, 700, 104]
+  },
+  "azienda": {
+    "box": [716, 18, 1200, 104],
+    "colore": "#1a1a1a",
+    "dimensione": 18
+  },
+  "valori": {
+    "y": 580,
+    "dimensione": 24,
+    "colore": "#111111",
+    "colonne": [
+      [505, 115],
+      [651, 150],
+      [840, 88],
+      [972, 228]
+    ]
+  },
+  "testo": {
+    "x": 504,
+    "y": 683,
+    "larghezza": 650,
+    "riga": 25.3,
+    "righe": 4,
+    "dimensione": 21,
+    "colore": "#111111"
+  },
+  "scritte": []
+}

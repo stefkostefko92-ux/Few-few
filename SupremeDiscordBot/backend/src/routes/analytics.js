@@ -254,6 +254,16 @@ router.get("/:serverId/leaderboard", requireServerAdmin, async (req, res, next) 
       .sort((a, b) => (b.claimed + b.closed) - (a.claimed + a.closed))
       .slice(0, 10);
 
+    // Имената: таблото показваше `<@123…>` — Discord синтаксис, който в браузъра
+    // е само цифри (визуален одит 07.10.2026). Екипът е влизал в таблото →
+    // има ред в users; който няма, остава без име и UI-ят показва кратко id.
+    const named = await prisma.user.findMany({
+      where: { id: { in: leaderboard.map((s) => s.userId) } },
+      select: { id: true, username: true },
+    });
+    const nameOf = new Map(named.map((u) => [u.id, u.username]));
+    for (const s of leaderboard) s.username = nameOf.get(s.userId) || null;
+
     res.json({ period: "30d", leaderboard });
   } catch (err) { next(err); }
 });

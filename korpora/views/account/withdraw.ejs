@@ -8,7 +8,7 @@
   <p><%= t('plan.withdraw.intro', { date: fmt.date(lastDay) }) %></p>
   <dl class="dl">
     <dt><%= t('plan.withdraw.name') %></dt><dd><%= user.name %></dd>
-    <dt><%= t('plan.withdraw.contract') %></dt><dd><%= planName %>, <%= t('plan.withdraw.orderNo', { id: order.id }) %>, <%= fmt.dateTime(order.createdAt) %></dd>
+    <dt><%= t('plan.withdraw.contract') %></dt><dd><%= planName %>, <%= t('plan.withdraw.orderNo', { id: fmt.orderNo(order) }) %>, <%= fmt.dateTime(order.createdAt) %></dd>
     <dt><%= t('plan.withdraw.email') %></dt><dd><%= user.email %></dd>
   </dl>
   <figure class="statement">

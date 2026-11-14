@@ -1,0 +1,53 @@
+<%
+  const themes = [
+    { value: 'auto', key: 'theme.auto', icon: 'auto', on: theme === 'AUTO' },
+    { value: 'chiaro', key: 'theme.light', icon: 'sun', on: theme === 'LIGHT' },
+    { value: 'scuro', key: 'theme.dark', icon: 'moon', on: theme === 'DARK' },
+  ];
+%></main>
+<footer class="sitefoot">
+  <div class="sitefoot__inner">
+    <div class="sitefoot__brand">
+      <p class="sitefoot__name"><%- include('../partials/logo', { classe: 'sitefoot__logo', sizes: '320px', pigro: true }) %></p>
+      <p class="sitefoot__company"><%= t('company.legalName') %>, <%= t('company.legalForm') %>, <%= t('company.eikLabel') %> <%= company.eik %>, <%= t('company.vatLabel') %> <%= company.vat %></p>
+    </div>
+    <nav class="sitefoot__col" aria-label="<%= t('site.footer.pages') %>">
+      <h2><%= t('site.footer.pages') %></h2>
+      <ul>
+        <li><a href="<%= homePath %>"><%= t('site.home') %></a></li>
+        <li><a href="<%= prezziPath %>"><%= t('prezzi.nav') %></a></li>
+        <li><a href="<%= novitaPath %>"><%= t('novita.nav') %></a></li>
+        <li><a href="<%= homePath %>#richiesta"><%= t('site.nav.request') %></a></li>
+        <li><a href="<%= loginUrl %>"><%= t('site.nav.login') %></a></li>
+      </ul>
+    </nav>
+    <div class="sitefoot__col">
+      <h2><%= t('site.footer.contact') %></h2>
+      <address>
+        <%= t('company.street') %>, <%= company.postalCode %> <%= t('company.city') %>, <%= t('company.region') %>, <%= t('company.country') %><br>
+        <%= t('company.phoneLabel') %> <% company.phones.forEach((p, i) => { %><%= i ? ' · ' : '' %><a href="<%= p.href %>"><%= p.number %></a><% }) %><br>
+        <a href="mailto:<%= contactEmail %>"><%= contactEmail %></a>
+      </address>
+    </div>
+    <div class="sitefoot__col">
+      <h2><%= t('site.footer.legal') %></h2>
+      <ul>
+        <li><a href="<%= privacyPath %>"><%= t('privacy.title') %></a></li>
+        <li><a href="<%= segnalazioniPath %>"><%= t('site.footer.segnalazioni') %></a></li>
+        <li><a href="<%= condizioniPath %>"><%= t('legale.pagina.title') %></a></li>
+        <li><a href="<%= esportazionePath %>"><%= t('esportazione.pagina.nav') %></a></li>
+        <li><a href="<%= statoPath %>"><%= t('stato.nav') %></a></li>
+      </ul>
+      <p class="sitefoot__note"><%= t('site.footer.trademarks') %></p>
+    </div>
+  </div>
+  <div class="sitefoot__base">
+    <% if (themeUrl('auto')) { %><nav class="switch" aria-label="<%= t('switch.theme') %>">
+      <% for (const item of themes) { %><a href="<%= themeUrl(item.value) %>" rel="nofollow"<% if (item.on) { %> aria-current="true"<% } %>><%- include('../partials/icon', { name: item.icon }) %><%= t(item.key) %></a>
+      <% } %>
+    </nav><% } else { %><span></span><% } %>
+    <p class="credit"><% if (locals.contentUpdated) { %><time datetime="<%= contentUpdated %>"><%= t('site.footer.aggiornato', { data: fmt.day(new Date(contentUpdated + 'T12:00:00Z')) }) %></time> · <% } %><% if (locals.versioneSoftware) { %><a href="/novita"><%= t('versione.piede', { versione: versioneSoftware }) %></a> · <% } %>Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></p>
+  </div>
+</footer>
+</body>
+</html>

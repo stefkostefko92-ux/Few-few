@@ -18,15 +18,17 @@ function frontOf(part, s) {
 }
 
 export function extents(model) {
-  const e = { x0: Infinity, x1: -Infinity, y1: 0, z0: Infinity, z1: -Infinity };
+  const e = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: 0, z0: Infinity, z1: -Infinity };
   for (const p of model.parts) {
     e.x0 = Math.min(e.x0, p.box.min[0]);
+    e.y0 = Math.min(e.y0, Math.max(0, p.box.min[1]));
     e.x1 = Math.max(e.x1, p.box.max[0]);
     e.y1 = Math.max(e.y1, p.box.max[1]);
     e.z0 = Math.min(e.z0, p.box.min[2]);
     e.z1 = Math.max(e.z1, p.box.max[2]);
   }
   for (const s of model.symbols) if (s.type === 'worktop') e.y1 = Math.max(e.y1, s.y + s.t);
+  if (!Number.isFinite(e.y0)) e.y0 = 0;
   return e;
 }
 

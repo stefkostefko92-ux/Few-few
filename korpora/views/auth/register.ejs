@@ -1,27 +1,47 @@
 <%- include('_top', { titleKey: 'auth.registerTitle' }) %>
 <h1><%= t('auth.registerTitle') %></h1>
 <p class="lead-small"><%= t('auth.registerLead', { days: trialDays }) %></p>
-<%- include('_error') %>
+<%# Всички грешки наведнъж: обобщение отгоре (взима фокуса, връзки към полетата) и всяка под своето поле. %>
+<% const order = ['name', 'email', 'password', 'terms']; const wrong = order.filter((f) => errors[f]); const ids = { name: 'name', email: 'email', password: 'password', terms: 'terms' }; %>
+<% if (wrong.length) { %>
+<div class="flash flash-error error-summary" role="alert" id="form-error" tabindex="-1" autofocus>
+  <%- include('../partials/icon', { name: 'alert' }) %>
+  <div>
+    <span><%= wrong.length === 1 ? t(errors[wrong[0]]) : t('auth.errorsTitle') %></span>
+    <% if (wrong.length > 1) { %><ul><% for (const f of wrong) { %><li><a href="#<%= ids[f] %>"><%= t(errors[f]) %></a></li><% } %></ul><% } %>
+  </div>
+</div>
+<% } %>
 <form method="post" action="/register" class="form" data-fingerprint novalidate>
   <input type="hidden" name="_csrf" value="<%= pre %>">
   <input type="hidden" name="fp" value="">
   <div class="field">
     <label for="name"><%= t('auth.name') %></label>
-    <input id="name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="80" value="<%= values.name %>"<% if (field === 'name') { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+    <input id="name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="80" value="<%= values.name %>"<% if (errors.name) { %> aria-invalid="true" aria-describedby="err-name"<% } %>>
+    <% if (errors.name) { %><p class="field-error" id="err-name"><%- include('../partials/icon', { name: 'alert' }) %><span><%= t(errors.name) %></span></p><% } %>
   </div>
   <div class="field">
     <label for="email"><%= t('auth.email') %></label>
-    <input id="email" name="email" type="email" autocomplete="email" inputmode="email" required maxlength="254" value="<%= values.email %>"<% if (field === 'email') { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+    <input id="email" name="email" type="email" autocomplete="email" inputmode="email" required maxlength="254" value="<%= values.email %>"<% if (errors.email) { %> aria-invalid="true" aria-describedby="err-email"<% } %>>
+    <% if (errors.email) { %><p class="field-error" id="err-email"><%- include('../partials/icon', { name: 'alert' }) %><span><%= t(errors.email) %></span></p><% } %>
   </div>
   <div class="field">
     <label for="password"><%= t('auth.password') %></label>
-    <input id="password" name="password" type="password" autocomplete="new-password" required minlength="<%= passwordMin %>" maxlength="<%= passwordMax %>" aria-describedby="<%= field === 'password' ? 'form-error pw-rules' : 'pw-rules' %>"<% if (field === 'password') { %> aria-invalid="true"<% } %>>
+    <input id="password" name="password" type="password" autocomplete="new-password" required minlength="<%= passwordMin %>" maxlength="<%= passwordMax %>" aria-describedby="<%= errors.password ? 'err-password pw-rules' : 'pw-rules' %>"<% if (errors.password) { %> aria-invalid="true"<% } %>>
+    <% if (errors.password) { %><p class="field-error" id="err-password"><%- include('../partials/icon', { name: 'alert' }) %><span><%= t(errors.password) %></span></p><% } %>
     <p class="hint" id="pw-rules"><%= t('password.rules') %></p>
   </div>
   <label class="check">
-    <input type="checkbox" name="terms" value="yes" required<% if (field === 'terms') { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+    <input type="checkbox" id="terms" name="terms" value="yes" required<% if (errors.terms) { %> aria-invalid="true" aria-describedby="err-terms"<% } %>>
     <span><%- t('auth.termsLabel', { terms: '<a href="' + legalPath(locale, 'terms') + '" target="_blank" rel="noopener">' + t('auth.termsLink') + '</a>', privacy: '<a href="' + legalPath(locale, 'privacy') + '" target="_blank" rel="noopener">' + t('auth.privacyLink') + '</a>' }) %></span>
   </label>
+  <% if (errors.terms) { %><p class="field-error" id="err-terms"><%- include('../partials/icon', { name: 'alert' }) %><span><%= t(errors.terms) %></span></p><% } %>
+  <%# Отделна отметка по желание, никога отметната предварително: без нея отпечатък не се чете (public/js/auth.js) и не се пази. %>
+  <label class="check">
+    <input type="checkbox" name="deviceConsent" value="yes" aria-describedby="consent-hint"<% if (values.deviceConsent) { %> checked<% } %>>
+    <span><%= t('auth.deviceConsentLabel') %></span>
+  </label>
+  <p class="hint" id="consent-hint"><%= t('auth.deviceConsentHint') %></p>
   <button class="btn btn-primary btn-wide" type="submit"><%= t('auth.registerButton') %></button>
 </form>
 <div class="auth-links">
