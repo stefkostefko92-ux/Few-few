@@ -23,6 +23,21 @@ function loadKey() {
 
 const KEY = loadKey();
 
+// MAC ключ с отделен домейн (не ползваме KEY директно за подписване).
+const MAC_KEY = crypto.createHmac('sha256', KEY).update('medqr-mac-v1').digest();
+
+// Подписване (HMAC-SHA256, base64url) — напр. за доказателство „PIN е въведен".
+export function mac(data) {
+  return crypto.createHmac('sha256', MAC_KEY).update(String(data)).digest('base64url');
+}
+
+// Сравнение в константно време на два низа.
+export function safeEqual(a, b) {
+  const x = Buffer.from(String(a));
+  const y = Buffer.from(String(b));
+  return x.length === y.length && crypto.timingSafeEqual(x, y);
+}
+
 export function encrypt(plain) {
   if (plain == null || plain === '') return '';
   const iv = crypto.randomBytes(12);

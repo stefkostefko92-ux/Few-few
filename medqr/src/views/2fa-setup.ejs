@@ -27,6 +27,9 @@
   <% } else if (state === 'pending') { %>
     <p><%= t('tfa.pending1') %></p>
     <p class="center"><img src="<%= qr %>" alt="<%= t('tfa.qr_alt') %>" class="qr"></p>
+    <% if (typeof manualKey !== 'undefined' && manualKey) { %>
+      <p class="center muted small"><%= t('tfa.manual_key') %><br><code><%= manualKey.replace(/(.{4})/g, '$1 ').trim() %></code></p>
+    <% } %>
     <p><%= t('tfa.pending2') %></p>
     <form method="post" action="/profile/2fa/enable" class="stack">
       <%- include('partials/csrf') %>

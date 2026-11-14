@@ -5,6 +5,7 @@ import { decrypt } from '../crypto.js';
 import { createForUser } from '../profiles.js';
 import { audit } from '../audit.js';
 import { sendMail, baseUrl } from '../mailer.js';
+import { LEGAL } from '../seo.js';
 import {
   hashPassword,
   verifyPassword,
@@ -24,10 +25,15 @@ import {
   destroyUserSessions,
   requireAuth,
   consumeRecoveryCode,
+  randomToken,
 } from '../auth.js';
 
 const router = asyncRouter();
-const CONSENT_VERSION = '1.0';
+// Хеш на случайна парола — само за изравняване на времето при непознат имейл.
+const DUMMY_HASH = await hashPassword(randomToken(18));
+// Версията на приетия документ — същата като показаната политика (иначе записът не доказва
+// кой текст е приет, чл. 7(1) GDPR).
+const CONSENT_VERSION = LEGAL.version;
 const MIN_PASSWORD = 10;
 const prod = process.env.NODE_ENV === 'production';
 
@@ -150,18 +156,27 @@ router.post('/login', async (req, res) => {
   // Еднакво съобщение при липсващ потребител и грешна парола (без разкриване).
   const bad = () => res.status(401).render('login', { error: t('err.bad_login'), email });
 
-  if (!user) return bad();
+  if (!user) {
+    // Същата скъпа Argon2 работа като при съществуващ акаунт, за да не се разкрива
+    // по времето на отговора кои имейли са регистрирани.
+    await verifyPassword(password, DUMMY_HASH);
+    return bad();
+  }
   if (isLocked(user)) {
     audit(req, 'login_locked', { userId: user.id });
     return res.status(429).render('login', { error: t('err.locked'), email });
   }
+  // Опитът се таксува СИНХРОННО преди бавната (async) Argon2 проверка — иначе паралелни
+  // заявки минават всички, преди първата да бъде записана. При успех броячът се връща.
+  const lockedNow = registerFailedAttempt(user);
   if (!(await verifyPassword(password, user.password_hash))) {
-    const locked = registerFailedAttempt(user);
-    audit(req, locked ? 'login_lockout' : 'login_fail', { userId: user.id });
+    audit(req, lockedNow ? 'login_lockout' : 'login_fail', { userId: user.id });
     return bad();
   }
 
-  resetAttempts(user.id);
+  // С 2FA броячът НЕ се нулира тук: иначе повторен вход с паролата би нулирал и
+  // заключването за грешни 2FA кодове (общ брояч). Нулира се след успешния втори фактор.
+  if (!user.totp_enabled) resetAttempts(user.id);
 
   // Прозрачна миграция на стари (bcrypt) хешове към Argon2id.
   if (needsRehash(user.password_hash)) {
@@ -196,18 +211,28 @@ router.post('/2fa', async (req, res) => {
   if (!userId) return res.redirect('/login');
 
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
+  // Без лимит на опитите за акаунт 2FA кодът (6 цифри) можеше да се налучква от много
+  // IP адреса — общият лимит е само на IP. Същото заключване като при паролата.
+  if (isLocked(user)) {
+    audit(req, 'login_locked', { userId });
+    return res.status(429).render('2fa-verify', { error: res.locals.t('err.locked') });
+  }
   const code = String(req.body.code || '').replace(/\s+/g, '');
   const secret = decrypt(user.totp_secret);
 
-  // Приема валиден TOTP код ИЛИ еднократен резервен код.
+  // Приема валиден TOTP код ИЛИ еднократен резервен код. Неуспехът се таксува СИНХРОННО
+  // преди бавната проверка на резервните кодове (Argon2) — паралелните опити не изпреварват
+  // заключването. Валиден резервен код после връща брояча (resetAttempts по-долу).
   const totpOk = secret && authenticator.check(code, secret);
+  const locked = totpOk ? false : registerFailedAttempt(user);
   const recoveryOk = !totpOk && (await consumeRecoveryCode(userId, code));
 
   if (!totpOk && !recoveryOk) {
-    audit(req, 'twofactor_fail', { userId });
+    audit(req, locked ? 'login_lockout' : 'twofactor_fail', { userId });
     return res.status(401).render('2fa-verify', { error: res.locals.t('err.bad_code') });
   }
 
+  resetAttempts(userId);
   destroyPending(req.cookies.p2fa);
   res.clearCookie('p2fa');
   const remember = req.cookies?.rmb === '1';
