@@ -6,6 +6,12 @@ import { roleCan } from '../auth/roles.js';
 import { documentUpload, uploadStatus } from '../http/upload.js';
 import { IncomingError } from '../incoming/check.js';
 import { IncomingRegisterError, setIncomingStatus, uploadIncoming } from '../incoming/register.js';
+import {
+  allowedPeriods,
+  journalPeriodOf,
+  setIncomingVatCredit,
+  VAT_CREDIT_RIGHTS,
+} from '../incoming/vat-credit.js';
 import { HOUR, sofiaToday } from '../time.js';
 import { param } from './app-shared.js';
 import { money } from '../http/view.js';
@@ -164,6 +170,9 @@ export function appIncomingRouter(): Router {
       entry,
       issues: Array.isArray(entry.issues) ? entry.issues : [],
       canWrite: roleCan(access.role, 'documents.issue'),
+      canAccounting: roleCan(access.role, 'accounting.manage'),
+      creditRights: VAT_CREDIT_RIGHTS,
+      journal: { period: journalPeriodOf(entry), window: allowedPeriods(entry.issueDate) },
       today: sofiaToday(),
       ok: code(req.query['ok']),
       err: code(req.query['err']),
@@ -210,6 +219,27 @@ export function appIncomingRouter(): Router {
       throw error;
     }
     res.redirect(303, `${base}?ok=status`);
+  });
+
+  // Дневникът за покупките: правото на кредит и месецът на включване.
+  router.post('/app/o/:orgId/vhodyashti/:id/dnevnik', async (req, res) => {
+    const access = await requireOrg(req, 'accounting.manage');
+    const id = param(req, 'id');
+    const body = req.body as Record<string, unknown>;
+    const base = `/app/o/${access.organizationId}/vhodyashti/${id}`;
+    try {
+      await setIncomingVatCredit(access, req.principal!.user.id, id, {
+        credit: body['credit'],
+        period: body['period'],
+      });
+    } catch (error) {
+      if (error instanceof IncomingRegisterError) {
+        if (error.code === 'notFound') throw new HttpError(404);
+        return res.redirect(303, `${base}?err=${error.code === 'date' ? 'period' : 'invalid'}`);
+      }
+      throw error;
+    }
+    res.redirect(303, `${base}?ok=journal`);
   });
 
   return router;

@@ -76,6 +76,13 @@ enum IncomingStatus {
   REJECTED
 }
 
+/// Правото на данъчен кредит по входящата фактура (чл. 69–73 ЗДДС) — за дневника за покупките.
+enum VatCredit {
+  FULL
+  PARTIAL
+  NONE
+}
+
 /// Ред от банково извлечение (SPEC 54): нов → свързан с плащане по документ или пропуснат.
 enum BankLineStatus {
   NEW
@@ -959,6 +966,10 @@ model IncomingInvoice {
   /// изтрит след прекратяване, XML-ът е както е издаден).
   source         String         @default("UPLOAD")
   paidAt         DateTime?      @db.Date
+  /// Дневник за покупките: правото на кредит (по подразбиране пълно) и месецът на включване (ГГГГ-ММ;
+  /// null — месецът на издаване). Избира ги счетоводителят (`accounting.manage`).
+  vatCredit      VatCredit      @default(FULL)
+  journalPeriod  String?
   createdById    String?
   createdBy      User?          @relation("IncomingCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   createdAt      DateTime       @default(now())
@@ -966,6 +977,8 @@ model IncomingInvoice {
   @@unique([organizationId, sha256])
   @@index([organizationId, status, dueDate])
   @@index([organizationId, createdAt])
+  @@index([organizationId, journalPeriod])
+  @@index([organizationId, issueDate])
   @@index([createdById])
 }
 

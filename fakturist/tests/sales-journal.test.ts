@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { salesJournal, RECORD_LENGTH, type JournalDocument } from '../src/export/sales-journal.js';
+import {
+  salesJournal,
+  RECORD_LENGTH,
+  ZERO_RATE_SPECIAL,
+  type JournalDocument,
+} from '../src/export/sales-journal.js';
 import { encodeCp1251 } from '../src/export/cp1251.js';
 import {
   creditNote,
@@ -147,4 +152,13 @@ test('знак извън BMP (емоджи) в името: един байт �
   const record = decode(result.file).slice(0, RECORD_LENGTH);
   assert.equal(at(record, 88, 137), 'Пекарна ? Зора ЕООД'.padEnd(50), '02-08 на мястото си');
   assert.equal(amount(record, 2), '86.50'.padStart(15), '02-11 не е отместено');
+});
+
+test('нулевата ставка по чл. 140/146/173 — само точният член (кирилска буква след номера не е същият)', () => {
+  for (const text of ['чл. 140 ЗДДС', 'чл.146, ал. 1', 'Нулева ставка — чл. 173, ал. 1 ЗДДС']) {
+    assert.ok(ZERO_RATE_SPECIAL.test(text), text);
+  }
+  for (const text of ['чл. 140а ЗДДС', 'чл. 1730', 'чл. 30 ЗДДС', 'чл. 14 ЗДДС']) {
+    assert.ok(!ZERO_RATE_SPECIAL.test(text), text);
+  }
 });

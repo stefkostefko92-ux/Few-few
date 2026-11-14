@@ -777,7 +777,8 @@
     "ok": {
       "uploaded": "The invoice is in the register and passes the checks.",
       "uploadedIssues": "The invoice is in the register but has issues — see the check.",
-      "status": "The status is saved."
+      "status": "The status is saved.",
+      "journal": "Saved for the purchase ledger."
     },
     "err": {
       "file": "Choose a file.",
@@ -788,7 +789,20 @@
       "duplicate": "This file is already in the register.",
       "encoding": "The file is not UTF-8.",
       "date": "Enter the payment date (not in the future).",
-      "invalid": "Invalid status."
+      "invalid": "Invalid status.",
+      "period": "Choose a month from the month of issue to the end of the tax credit period, not in the future."
+    },
+    "journal": {
+      "title": "Purchase ledger",
+      "credit": "Right to deduct input VAT",
+      "period": "Month in the ledger",
+      "periodHint": "Defaults to the month of issue. A later month within the period under Art. 72 of the VAT Act is allowed.",
+      "rights": {
+        "FULL": "Full deduction",
+        "PARTIAL": "Partial deduction",
+        "NONE": "No right to deduct"
+      },
+      "save": "Save for the ledger"
     }
   },
   "proforma": {
