@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 670
+        "lessons": 671
       },
       "evolution": [
         {
@@ -2051,9 +2051,15 @@
           "detail": "Научи: Салдо на вземане, смятано от документи минус записани плащания, остава фантомно за всек…"
         },
         {
-          "version": "61.0.0",
+          "version": "60.9.0",
           "date": "2026-11-14",
-          "event": "v61.0 — учене",
+          "event": "v60.9 — учене",
+          "detail": "Научи: Хукът guard-readonly блокира Bash пренасочване към файл, ако пътят е в shell променлива…"
+        },
+        {
+          "version": "61.1.0",
+          "date": "2026-11-14",
+          "event": "v61.1 — учене",
           "detail": "Научи: В CSPos ensureDbGuards и upgradeSchema се викат само от guard() в API маршрутите; Serve… (+1 още)"
         }
       ],
@@ -2062,6 +2068,11 @@
           "date": "2026-11-14",
           "type": "learning",
           "summary": "Научи: „В CSPos ensureDbGuards и upgradeSchema се викат само от guard() в API маршрутите; Serve…\" (+1 още)"
+        },
+        {
+          "date": "2026-11-14",
+          "type": "learning",
+          "summary": "Научи: „Хукът guard-readonly блокира Bash пренасочване към файл, ако пътят е в shell променлива…\""
         },
         {
           "date": "2026-11-14",
