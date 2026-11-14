@@ -217,6 +217,16 @@ export function versionRegressions(html, mem) {
   return out;
 }
 
+/**
+ * Слага `code` като вграден `<script>` на мястото на `tag`. Заместителят е ФУНКЦИЯ, не низ:
+ * в низ `String.replace` чете `` $` `` / `$'` / `$&` като „текстът преди/след/самото съвпадение“.
+ * Инцидент 2026-11-14: два CLAUDE.md в docs.js съдържаха `` `$` `` → страницата влезе ТРИ пъти
+ * в билда (5,6 MB вместо 2,8; табът Docs празен, двоен canvas) и гардовете не го видяха.
+ */
+export function inlineScript(html, tag, code) {
+  return html.replace(tag, () => `<script>\n${code}\n</script>`);
+}
+
 /** Целият билд. Връща готовия за публикуване текст + числата за доклада. */
 export function build(dash = DASH, reader = null) {
   const rd = reader || { read: (p) => readFileSync(join(dash, p), "utf8") };
@@ -224,13 +234,13 @@ export function build(dash = DASH, reader = null) {
 
   const docs = rd.read("docs.js").trim();
   if (!html.includes(DOCS_TAG)) throw new Error(`не намирам ${DOCS_TAG} — таблото е сменено`);
-  html = html.replace(DOCS_TAG, `<script>\n${docs}\n</script>`);
+  html = inlineScript(html, DOCS_TAG, docs);
 
   // Галактиката: условно (виж бележката при GALAXY_TAG) — по-стари върхове на паметта я нямат.
   let galaxy = "";
   if (html.includes(GALAXY_TAG)) {
     galaxy = rd.read("galaxy.js").trim();
-    html = html.replace(GALAXY_TAG, `<script>\n${galaxy}\n</script>`);
+    html = inlineScript(html, GALAXY_TAG, galaxy);
   }
 
   const icons = mascotDataUris(join(dash, "mascots"), reader);
@@ -254,6 +264,9 @@ export function build(dash = DASH, reader = null) {
   }
 
   assertPublishable(html, { "docs.js": docs, "galaxy.js": galaxy, "маскоти": JSON.stringify(icons) });
+  // Пазач: вграденото съдържание е в билда точно веднъж (иначе нещо е размножило страницата).
+  const copies = html.split(docs).length - 1;
+  if (copies !== 1) throw new Error(`docs.js е вграден ${copies} пъти вместо веднъж — НЕ публикувай`);
 
   const lessons = [...html.matchAll(/"lessons":\s*(\d+)/g)].map((m) => Number(m[1]));
   return { html, icons: Object.keys(icons).length, agents: lessons.length, lessons: lessons.reduce((a, b) => a + b, 0) };
