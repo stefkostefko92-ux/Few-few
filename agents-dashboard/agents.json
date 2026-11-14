@@ -16636,7 +16636,7 @@
           "korpora/CLAUDE.md — правилото „CNC никога не е грешен“ (cncBlockers, 422)",
           "GRBL v1.1 — списък на поддържаните G-кодове (github.com/gnea/grbl, README и wiki)"
         ],
-        "lessons": 5
+        "lessons": 8
       },
       "evolution": [
         {
@@ -16650,9 +16650,20 @@
           "date": "2026-11-14",
           "event": "v0.5 — учене",
           "detail": "Научи: В Korpora маркировките (type 'mark', напр. blind-fix, шаблон за дръжка) не стигат до G-… (+3 още)"
+        },
+        {
+          "version": "0.8.0",
+          "date": "2026-11-14",
+          "event": "v0.8 — учене",
+          "detail": "Научи: Häfele Slido F-Line21 40C с релса на винтове — B = A − 23,5 = 17,5 (релса) + 2 (над вра… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-14",
+          "type": "learning",
+          "summary": "Научи: „Häfele Slido F-Line21 40C с релса на винтове — B = A − 23,5 = 17,5 (релса) + 2 (над вра…\" (+2 още)"
+        },
         {
           "date": "2026-11-14",
           "type": "learning",
