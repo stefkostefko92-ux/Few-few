@@ -142,7 +142,7 @@ describe('quotes turned off on a company with data', () => {
 
   it('lets the MASTER correct what is saved, never send, mark or create (A.9)', async () => {
     // The review of Кодаджията, 14 November 2026: the MASTER passes every capability, so in the archive he
-    // could still send a quote, mark it accepted or create from it. The terms (2026-12-14, 2.5 and A.9) give
+    // could still send a quote, mark it accepted or create from it. The terms (2026-11-15, 2.5 and A.9) give
     // him only the correction on the written instruction of the company.
     const azienda = await makeAzienda('Archivio Master');
     const { browser: master } = await signedIn('MASTER');

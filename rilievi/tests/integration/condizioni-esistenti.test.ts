@@ -16,8 +16,7 @@ before(startApp);
 after(stopApp);
 
 const HTML = { accept: 'text/html' };
-/** The version the migration marked the companies with — the last one in force by itself (SENZA_PREAVVISO). */
-const ULTIMA = '2026-11-14';
+const ULTIMA = STORIA.CONDIZIONI.at(-1)!;
 const ACCETTA = '/condizioni/accetta';
 const FIRMA = '/condizioni/firma';
 

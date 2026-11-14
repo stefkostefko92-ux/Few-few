@@ -45,7 +45,7 @@ const PUBBLICATI: Record<string, string> = {
   // The customers registry and the contact person (A.2–A.4, B.7), quotes turned off — read and delete only
   // (2.5, A.9), the notice at the end of the quote (15.3, 15.4), the export as it is (A.11, B.7–B.9), Brevo
   // (S.1). Article 24 untouched. In force only announced (art. 18.1).
-  'condizioni-2026-12-14': '0b382bd9daa76966b1a486603bbdbc126eda204e3071b1713b7678f30e5b0909',
+  'condizioni-2026-11-15': 'dc43326c4e1953c80b96695ad174e65444f887ec0cf391ada4cad0a0a31fe7ae',
 };
 
 const tutto = (doc: TestoLegaleDoc): string => testoPiano(doc);
