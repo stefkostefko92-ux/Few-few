@@ -540,3 +540,7 @@
 {"t":"handoff","ts":"2026-11-08T10:27:06.212Z","id":"r639b0e73","from":"ai-djiyata","to":"човек","status":"има бележки","run":"8d6cbc10"}
 {"t":"start","ts":"2026-11-14T10:13:47.189Z","id":"r07dce916","flow":"авто","lead":"ai-djiyata","auto":true}
 {"t":"handoff","ts":"2026-11-14T10:13:47.189Z","id":"r07dce916","from":"ai-djiyata","to":"kodadjiyata","status":"има бележки","run":"b7cc61fb"}
+{"t":"start","ts":"2026-11-14T10:30:11.510Z","id":"r3f8442cc","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-14T10:30:11.510Z","id":"r3f8442cc","from":"kodadjiyata","to":"razbivacha","status":"има бележки","run":"ca69ee15"}
+{"t":"start","ts":"2026-11-14T10:30:21.798Z","id":"r08d4ba7a","flow":"авто","lead":"razbivacha","auto":true}
+{"t":"handoff","ts":"2026-11-14T10:30:21.799Z","id":"r08d4ba7a","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"d1341dc7"}
