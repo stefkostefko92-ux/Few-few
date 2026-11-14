@@ -422,6 +422,16 @@
       },
       "viewer": {
         "label": "Vista 3D del mobile: trascinate o usate le frecce — rotazione, rotellina o + e − — zoom, 0 — il mobile intero"
+      },
+      "room": {
+        "title": "Mobili nella stanza",
+        "add": "Aggiungete un mobile",
+        "type": "Tipo",
+        "wall": "Parete",
+        "x": "Dall'angolo, mm",
+        "width": "Larghezza, mm",
+        "remove": "Togliete il mobile {n}",
+        "hint": "La distanza è dall'angolo lungo la parete. Le altre misure di ogni mobile sono quelle predefinite del suo tipo."
       }
     }
   },

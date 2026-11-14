@@ -7,6 +7,7 @@ import { buildCustom } from './custom.js';
 import { buildKitchen, baseCabinet, wallCabinet, kitchenDims, SHAPES } from './kitchen.js';
 import { buildWardrobe, doorsFor, columnWidth } from './wardrobe.js';
 import { buildVanity, buildMirrorCabinet } from './bathroom.js';
+import { buildRoom, roomDims, ROOM_SHAPES } from './room.js';
 import { holeThrough, mark } from './panel.js';
 import { CONFIRMAT } from './joinery.js';
 import { MAX_CARCASS_W } from './layout.js'; // wider wardrobes and free carcasses are split into several carcasses
@@ -19,6 +20,7 @@ const S = (key, label, options) => ({ key, label, type: 'seg', options });
 // The modules of a side wall: a range the form shows only for the shapes that have that wall (when).
 const sideWall = (key, label, shapes) => ({ ...R(key, label, 1, 6, 1, ''), when: { shape: shapes } });
 const SHAPE_LABELS = { line: 'Права', left: 'Г, крило вляво', right: 'Г, крило вдясно', u: 'П' };
+const ROOM_SHAPE_LABELS = { line: 'Една стена', left: 'Г, и лявата', right: 'Г, и дясната', u: 'П, три стени' };
 const FRONTS = S('fronts', 'Фронт', [['doors', 'Врати'], ['drawers', 'Чекмеджета'], ['mixed', 'Чекмедже + врати']]);
 const DOORS = S('doors', 'Врати', [[1, '1'], [2, '2']]);
 
@@ -110,6 +112,12 @@ export const TYPES = {
     params: [R('width', 'Ширина', 400, 1200, 1), R('height', 'Височина', 500, 900, 1), R('depth', 'Дълбочина', 120, 200, 1), R('mount', 'Долен ръб от пода', 1000, 1500, 10), DOORS, R('shelves', 'Рафтове', 0, 4, 1, '')],
     defaults: { width: 700, height: 700, depth: 150, mount: 1200, doors: 2, shelves: 2 },
   },
+  // A room (room.js): its walls here, the pieces of furniture on them in spec.items
+  room: {
+    label: 'Стая', group: 'custom',
+    params: [S('shape', 'Стени', ROOM_SHAPES.map((v) => [v, ROOM_SHAPE_LABELS[v]])), R('roomWidth', 'Задна стена (А)', 1500, 8000, 10), { ...R('roomDepth', 'Странични стени (Б, В)', 1500, 6000, 10), when: { shape: ['left', 'right', 'u'] } }],
+    defaults: { shape: 'line', roomWidth: 4000, roomDepth: 3000 },
+  },
   // The free carcass („Свободен корпус“): the outside here, the columns, cells and fronts in spec.grid (layout.js).
   custom: {
     label: 'Свободен корпус', group: 'custom',
@@ -148,7 +156,7 @@ export function typeTextKeys() {
   ]);
 }
 
-export const TYPE_ORDER = ['base', 'wall', 'tall', 'kitchen', 'wardrobe', 'chest', 'nightstand', 'bed', 'bookcase', 'tv', 'desk', 'wallunit', 'vanity', 'mirror', 'custom'];
+export const TYPE_ORDER = ['base', 'wall', 'tall', 'kitchen', 'wardrobe', 'chest', 'nightstand', 'bed', 'bookcase', 'tv', 'desk', 'wallunit', 'vanity', 'mirror', 'room', 'custom'];
 // The types the screens offer (the new-project picker, the editor, the landing): a type marked `unlisted` is built and
 // stored like any other but not offered yet — the free carcass until its editor ships.
 export const LISTED_TYPES = TYPE_ORDER.filter((t) => !TYPES[t].unlisted);
@@ -212,6 +220,7 @@ export const BUILDERS = {
   desk: (ctx, s) => buildDesk(ctx, s, common(s)),
   vanity: (ctx, s) => buildVanity(ctx, s, common(s)),
   mirror: (ctx, s) => buildMirrorCabinet(ctx, s, common(s)),
+  room: (ctx, s) => buildRoom(ctx, s, BUILDERS),
   custom: (ctx, s) => buildCustom(ctx, s, common(s)),
   wallunit: (ctx, s) => {
     const sw = s.sideWidth;
@@ -266,6 +275,8 @@ export function typeDims(type, s) {
     }
     case 'kitchen':
       return kitchenDims(s);
+    case 'room':
+      return roomDims(s);
     case 'vanity':
       return { W: s.width, H: s.height + (s.mount === 'legs' ? s.legs : 0), D: s.depth };
     default:

@@ -43,6 +43,8 @@ const PROJECT_NAME = `e2e — достъпност ${Date.now().toString(36)}`;
 let builderPath = null;
 // a Г kitchen (signIn): two walls in the 3D, the blind corner, the fields of the side wall
 let cornerPath = null;
+// a room (signIn): the list of its pieces in the rail, a piece added
+let roomPath = null;
 
 // the landing and the legal pages have a path per language, the rest take ?lang=
 function localized(path, locale) {
@@ -217,6 +219,21 @@ async function signIn(session) {
   await page.click('#save');
   await page.locator('#save-state[data-state="saved"]').waitFor();
   cornerPath = new URL(page.url()).pathname;
+  // a room with a piece added to its list: the editor opens it with three pieces in the rail
+  await page.goto(`${base}/app`);
+  await page.selectOption('#type', 'room');
+  await page.fill('#pname', `${PROJECT_NAME} — стая`);
+  await Promise.all([
+    page.waitForURL(/\/app\/p\//),
+    page.click('.newproj-form button[type=submit]'),
+  ]);
+  await page.locator('#room-list .room-item').first().waitFor();
+  await page.click('#room-add');
+  await page.locator('#room-list .room-item').nth(2).waitFor();
+  await page.locator('#save-state[data-state="dirty"]').waitFor();
+  await page.click('#save');
+  await page.locator('#save-state[data-state="saved"]').waitFor();
+  roomPath = new URL(page.url()).pathname;
   session.state = await ctx.storageState();
 }
 
@@ -258,7 +275,10 @@ async function main() {
       const ctx = await browser.newContext();
       session = { ctx, page: await ctx.newPage(), state: undefined, editor: null };
       await signIn(session);
-      groups.push([session.state, [...CUSTOMER, session.editor, builderPath, cornerPath]]);
+      groups.push([
+        session.state,
+        [...CUSTOMER, session.editor, builderPath, cornerPath, roomPath],
+      ]);
     } else {
       process.stdout.write('E2E_EMAIL/E2E_PASSWORD не са зададени — само публичните страници.\n');
     }

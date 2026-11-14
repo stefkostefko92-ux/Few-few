@@ -18,6 +18,7 @@ import {
   bindRailbox,
 } from './form.js';
 import { bindRail } from './bind-rail.js';
+import { bindRoomItems, renderRoomItems } from './room-items.js';
 import { bindBuilder } from './build-panel.js';
 import { createSteps } from './steps.js';
 import { renderBom } from './render-bom.js';
@@ -150,6 +151,7 @@ async function recompute(writeFocused = false) {
     steps.failed();
     state.spec = state.model.spec;
     writeForm(form, state.spec, true);
+    renderRoomItems(state.spec);
     return;
   }
   try {
@@ -158,6 +160,7 @@ async function recompute(writeFocused = false) {
     if (mine !== seq || state.spec !== spec) return;
     Object.assign(state, { spec: model.spec, model, hash, bom, nesting, blockers });
     writeForm(form, model.spec, writeFocused);
+    renderRoomItems(model.spec);
     renderHeader(state.model);
     $('#personalize').hidden = readOnly || !steps.convertible(model.spec.type);
     builder.update(model, model.spec);
@@ -213,6 +216,13 @@ function bindUi() {
   bindTypebox($('.typebox', form));
   bindRail({
     form,
+    state,
+    isReadOnly: () => readOnly,
+    remember: steps.remember,
+    recompute,
+    schedule,
+  });
+  bindRoomItems({
     state,
     isReadOnly: () => readOnly,
     remember: steps.remember,
@@ -290,6 +300,7 @@ async function start() {
   if (!catalog.ok && !readOnly) lockForReadingOnce(text.catalogFailed);
   showDrift(state.drift, { title: text.driftTitle, text: text.driftText });
   writeForm(form, state.spec, true);
+  renderRoomItems(state.spec);
   followHash(selectTab, () => state.tab, state.spec.type === 'custom' ? 'build' : 'view');
   await recompute(true);
   // what was just loaded counts as saved, even if this browser's catalog normalizes it slightly differently

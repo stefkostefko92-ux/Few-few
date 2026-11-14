@@ -10,6 +10,7 @@ import { clamp, r1 } from './util.js';
 import { purposeOf, edgePurposeOf } from './drill.js';
 import { MIN_WEB, toSegment, edgeBores, boreWeb } from './joinery.js';
 import { POSTS, STEP_DOWN_RANGE, MAX_FEED_RANGE } from './cam.js';
+import { normalizeItems } from './room.js';
 
 const SPEC_VERSION = 2;
 export const SHEET_TRIM = 10; // sheet edge trim for nesting, mm
@@ -60,6 +61,8 @@ export function normalizeSpec(raw = {}) {
   const s = { v: SPEC_VERSION, type, ...normalizeParams(type, input) };
   // the columns, cells and fronts of a free carcass (layout.js); no other type has one
   if (type === 'custom') s.grid = normalizeLayout(input.grid);
+  // the pieces of furniture of a room (room.js)
+  if (type === 'room') s.items = normalizeItems(input.items, s.shape);
   s.carcassDecor = hasDecor(input.carcassDecor) ? input.carcassDecor : d.carcassDecor;
   s.frontDecor = hasDecor(input.frontDecor) ? input.frontDecor : d.frontDecor;
   s.frontRal = hasRal(input.frontRal) ? input.frontRal : hasRal(d.frontRal) ? d.frontRal : null;

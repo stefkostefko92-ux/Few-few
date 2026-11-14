@@ -422,6 +422,16 @@
       },
       "viewer": {
         "label": "3D view of the furniture: drag or arrow keys — rotate, wheel or + and − — zoom, 0 — the whole piece"
+      },
+      "room": {
+        "title": "Furniture in the room",
+        "add": "Add a piece",
+        "type": "Type",
+        "wall": "Wall",
+        "x": "From the corner, mm",
+        "width": "Width, mm",
+        "remove": "Remove piece {n}",
+        "hint": "The distance is from the corner along the wall. The other sizes of each piece are its type's defaults."
       }
     }
   },

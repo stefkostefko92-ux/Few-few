@@ -38,3 +38,27 @@ export function worldParts(model) {
   if (!model.runs?.length) return model.parts;
   return model.parts.map((p) => (p.run === undefined ? p : { ...p, box: worldBox(p.box, runOf(model, p.run)) }));
 }
+
+// Moves along x everything built since `from` (the lengths of ctx.parts, groups and symbols then): a piece of furniture
+// built at x = 0 put in its place on a wall (room.js). Only what is in the run's coordinates moves — the boxes, the
+// frames, the world points of the features and edge operations, the symbols and the hinge axes; u and v, sizes and
+// drilling stay (tests/engine/room.test.mjs: the same as building it there).
+export const mark = (ctx) => ({ parts: ctx.parts.length, groups: ctx.groups.length, symbols: ctx.symbols.length });
+
+const shiftPoint = (p, dx) => [p[0] + dx, p[1], p[2]];
+const SYMBOL_X = ['x', 'x0', 'x1'];
+
+export function shiftBuilt(ctx, from, dx) {
+  if (!dx) return;
+  for (const p of ctx.parts.slice(from.parts)) {
+    p.box = { min: shiftPoint(p.box.min, dx), max: shiftPoint(p.box.max, dx) };
+    p.frame = { ...p.frame, origin: shiftPoint(p.frame.origin, dx) };
+    for (const f of p.features) {
+      if (f.type === 'groove') f.world = f.world.map((w) => shiftPoint(w, dx));
+      else if (f.world) f.world = shiftPoint(f.world, dx);
+    }
+    for (const op of p.edgeOps) op.world = op.world.map((w) => shiftPoint(w, dx));
+  }
+  for (const s of ctx.symbols.slice(from.symbols)) for (const k of SYMBOL_X) if (typeof s[k] === 'number') s[k] += dx;
+  for (const g of ctx.groups.slice(from.groups)) if (typeof g.axisX === 'number') g.axisX += dx;
+}

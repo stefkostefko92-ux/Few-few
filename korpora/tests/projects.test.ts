@@ -23,6 +23,28 @@ test('a deeply nested spec is bad input (null), not a stack overflow thrown as a
   assert.equal(normalizedSpec({ type: 'no-such-type' }), null);
 });
 
+test('a room takes its pieces in exactly their shape: flat parameters, at most eight, nothing else nested', () => {
+  const piece = { type: 'chest', wall: 'A', x: 2100, params: { width: 800 } };
+  const room = normalizedSpec({
+    type: 'room',
+    items: [{ ...piece, x: 0, type: 'wardrobe' }, piece],
+  });
+  assert.deepEqual(
+    (room?.items as Array<{ type: string }> | undefined)?.map((it) => it.type),
+    ['wardrobe', 'chest'],
+  );
+  assert.equal(
+    normalizedSpec({ type: 'room', items: Array.from({ length: 9 }, () => piece) }),
+    null,
+  );
+  assert.equal(
+    normalizedSpec({ type: 'room', items: [{ ...piece, params: { width: { deep: 1 } } }] }),
+    null,
+  );
+  assert.equal(normalizedSpec({ type: 'room', items: [{ ...piece, wall: 'D' }] }), null);
+  assert.equal(normalizedSpec({ type: 'room', items: [{ ...piece, extra: true }] }), null);
+});
+
 test('a stored spec that is not an object reads as an empty spec', () => {
   assert.deepEqual(specOf(null), {});
   assert.deepEqual(specOf([1, 2]), {});
