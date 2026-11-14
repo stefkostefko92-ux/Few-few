@@ -574,3 +574,5 @@
 {"t":"handoff","ts":"2026-11-14T12:00:09.125Z","id":"r9c536a98","from":"frezadjiyata","to":"kodadjiyata","status":"има бележки","run":"a72687bb"}
 {"t":"start","ts":"2026-11-14T12:13:29.116Z","id":"rc5f02ab4","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-14T12:13:29.116Z","id":"rc5f02ab4","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"92cdc844"}
+{"t":"start","ts":"2026-11-14T13:10:00.758Z","id":"r7cb1f299","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-14T13:10:00.758Z","id":"r7cb1f299","from":"kodadjiyata","to":"друг","status":"има бележки","run":"e63a81c0","toRaw":"автора на клона (поправки)"}
