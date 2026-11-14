@@ -1,7 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { clientIp, isRateLimited, rateLimit } from '@/lib/rate-limit';
 import { z } from 'zod';
 import {
   createSession,
@@ -121,18 +121,23 @@ export async function loginAction(formData: FormData): Promise<void> {
   if (!parsed.success) {
     redirect(`/${locale}/login?error=invalid`);
   }
-  // Лимит на опитите: 10 за 10 мин по IP и 5 за 10 мин по имейл (bcrypt е
-  // скъп и няма друг праг срещу налучкване на пароли).
+  // Лимит на опитите (bcrypt е скъп и няма друг праг срещу налучкване):
+  // 10 за 10 мин по IP (всеки опит) и 20 за 10 мин по имейл — броят се САМО
+  // неуспешните, за да не може чужд човек да заключи акаунта с 5 грешни пароли
+  // (ревю 2026-11-14). Разпределено налучкване по много IP-та спира таванът
+  // по имейл; заключване на жертвата иска 20 неуспеха на всеки 10 минути.
   const ip = await clientIp();
   const email = parsed.data.email.toLowerCase();
+  const emailKey = `login-email:${email}`;
   if (
     !rateLimit(`login-ip:${ip}`, 10, 10 * 60_000) ||
-    !rateLimit(`login-email:${email}`, 5, 10 * 60_000)
+    isRateLimited(emailKey, 20, 10 * 60_000)
   ) {
     redirect(`/${locale}/login?error=invalid`);
   }
   const user = await verifyLogin(parsed.data.email, parsed.data.password);
   if (!user) {
+    rateLimit(emailKey, 20, 10 * 60_000);
     redirect(`/${locale}/login?error=invalid`);
   }
   await logLoginIp(user.id);

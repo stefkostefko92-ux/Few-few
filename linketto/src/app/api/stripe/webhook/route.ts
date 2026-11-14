@@ -670,6 +670,7 @@ async function fulfilProduct(purchaseId: string): Promise<void> {
     ? `${base}/u/${purchase.product.profile.slug}/receipt?session=${encodeURIComponent(purchase.stripeSessionId)}`
     : undefined;
   const sent = await sendEmail({
+    tag: 'delivery',
     to: purchase.buyerEmail,
     subject: deliverySubject(title, locale),
     html: deliveryEmailHtml({

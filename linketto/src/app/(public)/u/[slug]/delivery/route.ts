@@ -38,8 +38,10 @@ export async function GET(
     return NextResponse.redirect(new URL(`/u/${slug}`, url.origin), 302);
   }
 
+  // По id, не по адреса: платеното се доставя и след анонимизиран акаунт или
+  // свален профил (адресът се сменя) — R-buyer; банът спира доставката.
   const product = await prisma.product.findFirst({
-    where: { id: productId, profile: { slug, bannedAt: null } },
+    where: { id: productId, profile: { bannedAt: null } },
   });
   // COURSE/MEMBERSHIP нямат deliveryUrl — достъпът е през /learn.
   if (!product || !product.deliveryUrl) {

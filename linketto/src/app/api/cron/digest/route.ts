@@ -114,15 +114,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       dashboardUrl: `${SITE_URL}/${user.locale}/dashboard?p=${profile.id}`,
       unsubscribeUrl,
     });
-    const ok = await sendEmail({
-      to: user.email,
-      subject,
-      html,
-      headers: {
-        'List-Unsubscribe': `<${unsubscribeUrl}>`,
-        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-      },
-    });
+    // Отписването е нашата връзка в писмото (Brevo не приема List-Unsubscribe).
+    const ok = await sendEmail({ to: user.email, subject, html, tag: 'digest' });
     if (ok) sent += 1;
   }
   // Всички обработени (и пропуснатите/неуспешните) — следващият опит след ~седмица.

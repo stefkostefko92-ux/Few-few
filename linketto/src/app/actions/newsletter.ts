@@ -109,6 +109,7 @@ export async function subscribeAction(formData: FormData): Promise<void> {
   const who = sellerName(profile.translations, profile.defaultLocale, slug);
   const confirmUrl = `${baseUrl()}/u/${slug}/subscribe/confirm?token=${token}`;
   await sendEmail({
+    tag: 'newsletter-confirm',
     to: email,
     subject: subscribeConfirmSubject(who, locale ?? undefined),
     html: subscribeConfirmHtml({
@@ -161,6 +162,7 @@ export async function sendBroadcastAction(formData: FormData): Promise<void> {
     const results = await Promise.all(
       chunk.map((sub) =>
         sendEmail({
+          tag: 'newsletter',
           to: sub.email,
           subject: broadcastSubject(subject),
           html: broadcastHtml({
@@ -175,7 +177,7 @@ export async function sendBroadcastAction(formData: FormData): Promise<void> {
     );
     sent += results.filter(Boolean).length;
   }
-  // Брои се САМО реално изпратеното (без RESEND_API_KEY sendEmail връща
+  // Брои се САМО реално изпратеното (без BREVO_API_KEY sendEmail връща
   // false) — иначе дашбордът лъже „изпратен до N“ (одит L2).
   if (subscribers.length > 0 && sent === 0) {
     redirect(await dash(uiLocale, '?error=broadcast'));

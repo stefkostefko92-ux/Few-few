@@ -8,6 +8,7 @@ import { videoEmbedSrc } from '@/lib/blocks';
 import { VideoFacade } from '@/components/VideoFacade';
 import { getBuyerEmail, hasActiveEntitlement } from '@/lib/buyer-auth';
 import { requestAccessAction, buyerLogoutAction } from '@/app/actions/buyer';
+import { canViewPaidProduct } from '@/lib/buyer-access';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -103,11 +104,13 @@ export default async function LearnPage({
   const { slug, productId } = await params;
   const { hl, sent, accessError, session_id } = await searchParams;
 
+  // По id, не по адреса: при анонимизиран акаунт адресът става deleted-<id>,
+  // а линковете в писмата на купувачите сочат стария (R-buyer).
   const product = await prisma.product.findFirst({
     where: {
       id: productId,
       type: { in: ['COURSE', 'MEMBERSHIP'] },
-      profile: { slug, published: true, bannedAt: null },
+      profile: { bannedAt: null },
     },
     include: {
       translations: true,
@@ -128,9 +131,17 @@ export default async function LearnPage({
 
   const email = await getBuyerEmail();
   const access = email ? await hasActiveEntitlement(email, productId) : false;
-  // Архивиран/скрит продукт е недостъпен за случайни посетители, но
-  // платилите купувачи пазят достъпа си (продуктът не се трие при продажби).
-  if (!product.active && !access) notFound();
+  // Архивиран продукт или свален/анонимизиран профил е недостъпен за случайни
+  // посетители, но платилите купувачи пазят достъпа си (buyer-access.ts).
+  if (
+    !canViewPaidProduct({
+      productActive: product.active,
+      profilePublished: product.profile.published && product.profile.slug === slug,
+      hasAccess: access,
+    })
+  ) {
+    notFound();
+  }
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-10 font-ui text-slate-900 sm:px-6 sm:py-14">

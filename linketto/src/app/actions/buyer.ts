@@ -37,6 +37,7 @@ export async function requestAccessAction(formData: FormData): Promise<void> {
       entitlement.product.translations[0]?.title ??
       'Linketto';
     await sendEmail({
+      tag: 'buyer-access',
       to: email,
       subject: buyerAccessSubject(locale),
       html: buyerAccessHtml({ productTitle: title, accessUrl, locale }),

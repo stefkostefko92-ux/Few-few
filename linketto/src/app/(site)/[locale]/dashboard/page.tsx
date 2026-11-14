@@ -35,6 +35,7 @@ import {
   canWithdraw,
   payoutProgressPercent,
   REFERRAL_MIN_PAYOUT_CENTS,
+  REFERRAL_PERCENT,
 } from '@/lib/referral';
 import {
   ChartColumnIcon,
@@ -2280,7 +2281,10 @@ export default async function DashboardPage({
             <section id="referral" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
               <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('referralSection')}</h2>
               <p className="mt-1 text-sm text-slate-500">
-                {t('referralReward')}
+                {t('referralReward', {
+                  percent: REFERRAL_PERCENT,
+                  minPayout: REFERRAL_MIN_PAYOUT_CENTS / 100,
+                })}
               </p>
               {referralUrl ? (
                 <div className="mt-4">

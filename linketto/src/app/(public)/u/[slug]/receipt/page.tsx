@@ -31,8 +31,9 @@ export default async function ReceiptPage({
 
   const profile =
     purchase &&
+    // По id на покупката, не по адреса (анонимизиран акаунт сменя адреса) — R-buyer.
     (await prisma.profile.findFirst({
-      where: { id: purchase.profileId, slug },
+      where: { id: purchase.profileId },
       include: { translations: true, user: { select: { isTrader: true } } },
     }));
 
