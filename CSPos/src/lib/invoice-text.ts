@@ -102,7 +102,7 @@ export function buildInvoiceText(
   }
   out.push(line());
   if (meta.fiscalReceiptNo) {
-    out.push(`Основание: фискален бон № ${meta.fiscalReceiptNo}`);
+    out.push(`Към касов бон № ${meta.fiscalReceiptNo}`);
   }
   out.push(row(`Съставил: ${store.mol || "______________"}`, "Получил: ______________"));
 

@@ -6,12 +6,18 @@ directories:
   output: dist
   buildResources: build
 
+# т. 4: манифест + подпис върху опакованите файлове (виж after-pack.js)
+afterPack: ./after-pack.js
+
 # Пакетираме само Electron обвивката; целият Next standalone сървър влиза като
 # extraResources (разпакетиран), защото стартира собствен Node процес и има
 # нативен Prisma engine (.node) — не може да тича от вътре в asar.
 files:
   - main.js
   - preload.js
+  - integrity.js
+  # публичният ключ за подписа на компилацията (т. 4); частният е само в тайните на CI
+  - integrity-public.pem
   - package.json
 
 extraResources:
@@ -28,7 +34,9 @@ win:
 
 nsis:
   oneClick: false
-  perMachine: false
+  # т. 4: в Program Files — касиер без админ права не може да подмени файловете на програмата
+  # (сървъра, проверката на подписа или публичния ключ). Базата остава в профила (%APPDATA%).
+  perMachine: true
   allowToChangeInstallationDirectory: true
   # българският NSIS език няма някои multiuser низове → пада на английски (ОК);
   # без това warning-ите се третират като грешки и билдът пада

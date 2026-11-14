@@ -1,5 +1,5 @@
-// Текстово изображение на фискалния бон — за демо режим, преглед на екран
-// и дублиращ журнал. Реквизити по чл. 26 от Наредба Н-18 + двойно обозначаване
+// Текстово изображение на бона — за демонстрация и преглед на екран. Това НЕ е фискален
+// документ, затова текстът не съдържа „фискален“ и производните му (Прил. № 29, т. 14). Реквизити по чл. 26 от Наредба Н-18 + двойно обозначаване
 // на крайната сума по чл. 20 ЗВЕРБ (EUR + BGN + курс 1.95583).
 
 import { BGN_PER_EUR, STORNO_REASONS, VAT_GROUPS } from "../constants";
@@ -129,9 +129,10 @@ export function buildReceiptText(
   out.push(row(`Оператор: ${data.operatorName}`, `код ${data.operatorCode}`));
   if (data.unp) out.push(`УНП: ${data.unp}`);
   out.push(row(now.toLocaleDateString("bg-BG"), now.toLocaleTimeString("bg-BG")));
-  out.push(row(`БОН № ${meta.receiptNumber}`, meta.storno ? "СТОРНО" : "ФИСКАЛЕН БОН"));
+  out.push(row(`БОН № ${meta.receiptNumber}`, meta.storno ? "СТОРНО" : "ПРОДАЖБА"));
   out.push(row(`ФУ ${meta.deviceSerial}`, `ФП ${meta.fiscalMemoryNumber}`));
   out.push(center("[ QR код — Приложение № 18а ]"));
+  out.push(center("ПРИМЕРЕН ДОКУМЕНТ — НЕ Е КАСОВ БОН"));
   if (store.footerText) {
     out.push(line);
     out.push(...centerWrap(store.footerText));

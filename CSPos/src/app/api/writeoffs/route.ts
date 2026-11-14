@@ -2,12 +2,12 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { guard, jsonError, requireRole } from "@/lib/auth";
+import { guard, jsonError, requireRole, requireRead } from "@/lib/auth";
 import { audit } from "@/lib/audit";
 
 export async function GET() {
   return guard(async () => {
-    await requireRole("MANAGER");
+    await requireRead("MANAGER");
     const writeOffs = await prisma.writeOff.findMany({
       include: {
         user: { select: { name: true } },

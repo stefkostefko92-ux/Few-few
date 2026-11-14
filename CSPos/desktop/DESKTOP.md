@@ -69,16 +69,48 @@ npm run dist:win:portable     # → dist/Carbon Stealth POS <версия>.exe (
 ## Автоматичен билд (GitHub Actions)
 
 `.github/workflows/cspos.yml` прави `.exe` автоматично на Windows runner:
-- при **всеки push** към `CSPos/**` — качва инсталатора като artifact на билда;
+- при **всеки push** към `CSPos/**` — само качествената порта (lint, typecheck, тестове, build);
+  инсталаторът не се строи, за да не се харчат Windows минути;
 - при **таг** `cspos-v*` (напр. `git tag cspos-v1.0.0 && git push --tags`) — прави
   **GitHub Release** с прикачен инсталатор;
 - ръчно от раздела **Actions → Run workflow**.
 
 Не е нужно да билдваш локално — CI-ът произвежда `Carbon Stealth POS Setup <версия>.exe`.
 
+## Подпис на компилацията (Прил. № 29, т. 4)
+
+`after-pack.js` записва `resources/server/integrity-manifest.json` (SHA-256 на всеки файл) и, ако
+има ключ, `integrity-manifest.sig` (Ed25519). При старт `main.js` проверява подписа с
+`integrity-public.pem` и всеки хеш **преди** да пусне сървъра. Променен, добавен или липсващ файл
+→ касата не тръгва. Неподписана компилация тръгва, но в режим СУПТО не продава.
+
+Еднократно, от собственика, на собствения му компютър:
+
+```bash
+node scripts/gen-signing-key.mjs            # от CSPos/; частният ключ отива ИЗВЪН репото
+```
+
+1. Съдържанието на частния ключ → GitHub → Settings → Secrets → `CSPOS_SIGNING_KEY`; копие в
+   сейф; файлът се изтрива от компютъра. Никога в репото, в чат или в имейл.
+2. `desktop/integrity-public.pem` → commit.
+3. Таг `cspos-v*` без тайната пада нарочно (`CSPOS_REQUIRE_SIGNATURE=1`).
+
+Защитата стъпва на това, че касиерът не може да пише в папката на програмата: инсталацията е
+в Program Files (`perMachine: true`). Production сървър, пуснат без Electron, се брои за
+неподписан. Следващи стъпки за собственика:
+
+- **Authenticode подпис на .exe** (сертификат за подписване на код). Без него Windows
+  предупреждава при инсталация, а подмяна на самия `.exe` не се забелязва.
+- **Electron fuses** (`EnableEmbeddedAsarIntegrityValidation`, `OnlyLoadAppFromAsar`) — след
+  обновяване на electron-builder до версия с `electronFuses`. `RunAsNode` остава включен,
+  защото сървърът тръгва с `fork`. Всяка такава промяна се изпитва по
+  `docs/FISCAL-TEST-PROTOCOL.md`, иначе инсталаторът може да не тръгне.
+
 ## Бележки
 
 - Инсталаторът е с избор на папка, пряк път на десктоп и в Старт меню, езици
   BG/EN.
-- Ъпдейт: нова версия в `package.json` + нов билд; базата в `%APPDATA%` се пази.
+- Ъпдейт: нова версия в `package.json` + нов билд; базата в `%APPDATA%` се пази и при първия
+  старт се обновява до новата схема само с добавяне (`src/lib/schema-upgrade.ts`).
+- Първа инсталация: шаблонна база без демо данни; вход с код 1 и ПИН 0000, който се сменя веднага.
 - Приложението е самостоятелно (self-hosted, EU) — без облак, без телеметрия.

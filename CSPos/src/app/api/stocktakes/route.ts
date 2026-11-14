@@ -3,12 +3,12 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { guard, jsonError, requireRole } from "@/lib/auth";
+import { guard, jsonError, requireRole, requireRead } from "@/lib/auth";
 import { audit } from "@/lib/audit";
 
 export async function GET() {
   return guard(async () => {
-    await requireRole("MANAGER");
+    await requireRead("MANAGER");
     const stocktakes = await prisma.stocktake.findMany({
       include: {
         user: { select: { name: true } },

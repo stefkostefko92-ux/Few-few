@@ -54,6 +54,7 @@ export class ErpNetFiscalDriver implements FiscalDriver {
         ok?: boolean;
         receiptNumber?: string;
         deviceSerialNumber?: string;
+        deviceDateTime?: string;
         messages?: Array<{ type: string; text: string }>;
       };
       if (!res.ok || json.ok === false) {
@@ -66,6 +67,7 @@ export class ErpNetFiscalDriver implements FiscalDriver {
         ok: true,
         receiptNumber: json.receiptNumber,
         deviceSerial: json.deviceSerialNumber,
+        deviceDateTime: json.deviceDateTime,
       };
     } catch (e) {
       return {
@@ -76,11 +78,13 @@ export class ErpNetFiscalDriver implements FiscalDriver {
   }
 
   async status(): Promise<FiscalStatus> {
-    const r = await this.call(`/printers/${this.cfg.printerId}/status`, {});
+    // GET по протокола на ErpNet.FP: статус + ИН на ФУ + час на ФУ (т. 5, т. 8)
+    const r = await this.call(`/printers/${this.cfg.printerId}/status`);
     return {
       ok: r.ok,
       driver: this.id,
       deviceSerial: r.deviceSerial,
+      deviceDateTime: r.deviceDateTime,
       detail: r.ok ? "Връзката с моста е активна." : r.error ?? "Няма връзка.",
     };
   }
@@ -121,9 +125,12 @@ export class ErpNetFiscalDriver implements FiscalDriver {
     });
   }
 
-  cashInOut(amountCents: number): Promise<FiscalResult> {
-    return this.call(`/printers/${this.cfg.printerId}/deposit`, {
-      amount: amountCents / 100,
+  cashInOut(amountCents: number, operatorCode?: number): Promise<FiscalResult> {
+    // ErpNet.FP: служебно въведени → /deposit, изведени → /withdraw, и двете с положителна сума
+    const path = amountCents >= 0 ? "deposit" : "withdraw";
+    return this.call(`/printers/${this.cfg.printerId}/${path}`, {
+      amount: Math.abs(amountCents) / 100,
+      ...(operatorCode !== undefined && { operator: String(operatorCode) }),
     });
   }
 

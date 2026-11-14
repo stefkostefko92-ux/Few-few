@@ -4,8 +4,10 @@
 // последни бонове със сторно, закриване с преброяване и Z-отчет.
 
 import { useCallback, useEffect, useState } from "react";
-import { Money, ArrowDown, ArrowUp, XCircle, Printer, FileText } from "@phosphor-icons/react";
-import { Modal, Field, Badge, Spinner, apiJson } from "@/components/ui";
+import { Money, ArrowDown, ArrowUp, XCircle, Printer, FileText, MagnifyingGlass, X } from "@phosphor-icons/react";
+import Link from "next/link";
+import { Modal, Field, Badge, Spinner, EmptyState, apiJson } from "@/components/ui";
+import { ReconcilePanel } from "@/components/reconcile-panel";
 import { formatEur, parseCents } from "@/lib/money";
 import { STORNO_REASONS, PAYMENT_TYPES } from "@/lib/constants";
 
@@ -47,9 +49,28 @@ export default function ShiftsPage() {
   const [cashModal, setCashModal] = useState<"IN" | "OUT" | null>(null);
   const [closeModal, setCloseModal] = useState(false);
   const [stornoSale, setStornoSale] = useState<Sale | null>(null);
+  // сторно на бон от предишна смяна (връщане, рекламация): търсене по №, УНП или фискален бон
+  const [query, setQuery] = useState("");
+  const [found, setFound] = useState<Sale[] | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [invoiceSale, setInvoiceSale] = useState<Sale | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<string | null>(null);
+
+  async function searchSales() {
+    const q = query.trim();
+    if (!q) {
+      setFound(null);
+      return;
+    }
+    setSearchError(null);
+    try {
+      const r = await apiJson<{ sales: Sale[] }>(await fetch(`/api/sales?q=${encodeURIComponent(q)}&take=20`, { cache: "no-store" }));
+      setFound(r.sales);
+    } catch (e) {
+      setSearchError(e instanceof Error ? e.message : "Търсенето не успя.");
+    }
+  }
 
   const load = useCallback(async () => {
     const d = await apiJson<ShiftData>(await fetch("/api/shifts"));
@@ -73,7 +94,7 @@ export default function ShiftsPage() {
   return (
     <div className="space-y-5 animate-fade-up">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-black">Смяна</h1>
+        <h1 className="text-2xl font-black">Смени и наличност</h1>
         {data.shift && (
           <div className="flex gap-2">
             <button onClick={() => setCashModal("IN")} className="btn-ghost text-sm">
@@ -83,7 +104,7 @@ export default function ShiftsPage() {
               <ArrowUp size={18} /> Служебно извеждане
             </button>
             <button onClick={() => setCloseModal(true)} className="btn-danger text-sm">
-              Закрий смяната (Z-отчет)
+              Закрий смяната
             </button>
           </div>
         )}
@@ -95,10 +116,20 @@ export default function ShiftsPage() {
         </div>
       )}
 
+      <ReconcilePanel onChanged={() => void load()} />
+
       {!data.shift ? (
-        <div className="card p-8 text-center text-ink-400">
-          <Money size={40} className="mx-auto mb-3 text-brand-700" weight="duotone" />
-          Нямате отворена смяна. Отворете я от екрана „Продажби“.
+        <div className="card">
+          <EmptyState
+            icon={<Money size={28} weight="duotone" />}
+            title="Нямате отворена смяна"
+            hint="Смяната се открива с началната наличност в касата — тя влиза като служебно въведена сума на ФУ."
+            action={
+              <Link href="/pos" className="btn-primary">
+                <Money size={18} /> Открий смяна
+              </Link>
+            }
+          />
         </div>
       ) : (
         <>
@@ -120,10 +151,45 @@ export default function ShiftsPage() {
           </div>
 
           <section className="card overflow-hidden">
-            <h2 className="font-bold px-5 py-4 border-b border-ink-800">Бонове в смяната</h2>
+            <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-ink-800">
+              <h2 className="font-bold">{found ? `Намерени бонове: ${found.length}` : "Бонове в смяната"}</h2>
+              <form
+                className="flex items-center gap-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void searchSales();
+                }}
+              >
+                <input
+                  className="input !py-2 w-64 text-sm"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="№ на бон, УНП или № от ФУ"
+                  aria-label="Търсене на бон от предишна смяна"
+                />
+                <button type="submit" className="btn-ghost !py-2 !px-3 text-sm">
+                  <MagnifyingGlass size={16} /> Намери
+                </button>
+                {found && (
+                  <button
+                    type="button"
+                    className="btn-ghost !py-2 !px-2.5 text-sm"
+                    title="Обратно към боновете в смяната"
+                    aria-label="Обратно към боновете в смяната"
+                    onClick={() => {
+                      setFound(null);
+                      setQuery("");
+                    }}
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </form>
+            </div>
+            {searchError && <p className="px-5 py-2 text-sm text-coral-600">{searchError}</p>}
             <table className="w-full text-sm">
               <tbody>
-                {sales.map((s) => (
+                {(found ?? sales).map((s) => (
                   <tr key={s.id} className="border-b border-ink-800/60 last:border-0 hover:bg-ink-850/50">
                     <td className="py-2.5 px-5 font-mono text-ink-400 w-20">№ {s.number}</td>
                     <td className="py-2.5 px-2">
@@ -135,7 +201,8 @@ export default function ShiftsPage() {
                         <Badge tone="success">{PAYMENT_TYPES[s.paymentType]}</Badge>
                       )}
                     </td>
-                    <td className="py-2.5 px-2 text-ink-400">
+                    <td className="py-2.5 px-2 text-ink-400 tabular-nums">
+                      {found && `${new Date(s.createdAt).toLocaleDateString("bg-BG")} `}
                       {new Date(s.createdAt).toLocaleTimeString("bg-BG")}
                     </td>
                     <td className="py-2.5 px-2 text-right font-bold tabular-nums">
@@ -167,10 +234,10 @@ export default function ShiftsPage() {
                     </td>
                   </tr>
                 ))}
-                {sales.length === 0 && (
+                {(found ?? sales).length === 0 && (
                   <tr>
                     <td className="py-8 text-center text-ink-500" colSpan={5}>
-                      Още няма бонове в тази смяна.
+                      {found ? "Няма бон с този номер или УНП." : "Още няма бонове в тази смяна."}
                     </td>
                   </tr>
                 )}
@@ -214,6 +281,7 @@ export default function ShiftsPage() {
           setMessage(msg);
           setReceipt(text);
           void load();
+          if (found) void searchSales();
         }}
       />
 
@@ -336,12 +404,14 @@ function CloseModal({
   onDone: (message: string, receiptText: string | null) => void;
 }) {
   const [counted, setCounted] = useState("");
+  const [report, setReport] = useState<"Z" | "X">("Z");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (open) {
       setCounted("");
+      setReport("Z");
       setError(null);
     }
   }, [open]);
@@ -358,7 +428,7 @@ function CloseModal({
         await fetch("/api/shifts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "close", closingCashCents: countedCents }),
+          body: JSON.stringify({ action: "close", closingCashCents: countedCents, report }),
         })
       );
       onDone(
@@ -380,8 +450,30 @@ function CloseModal({
         <p className="text-ink-400 text-sm">
           Очаквана касова наличност по системата:{" "}
           <b className="text-ink-100">{formatEur(expected)}</b>. Пребройте касата и въведете
-          реалната сума — след потвърждение ФУ ще пусне дневен финансов отчет (Z).
+          реалната сума. Z отчетът е дневен (чл. 39 Н-18) — при смяна посред деня изберете X.
         </p>
+        <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Отчет при закриване">
+          {(
+            [
+              ["Z", "Край на деня", "Дневен отчет с нулиране (Z)"],
+              ["X", "Смяна посред деня", "Отчет без нулиране (X)"],
+            ] as const
+          ).map(([key, title, hint]) => (
+            <button
+              key={key}
+              type="button"
+              role="radio"
+              aria-checked={report === key}
+              onClick={() => setReport(key)}
+              className={`rounded-2xl px-3 py-2.5 text-left border transition-colors ${
+                report === key ? "bg-white/[0.9] border-brand-500/50 shadow-card" : "border-ink-800 text-ink-300"
+              }`}
+            >
+              <span className="block font-semibold text-sm">{title}</span>
+              <span className="block text-xs text-ink-500">{hint}</span>
+            </button>
+          ))}
+        </div>
         <Field label="Преброена наличност (EUR)">
           <input
             autoFocus
@@ -399,7 +491,7 @@ function CloseModal({
         )}
         {error && <p className="text-coral-600 text-sm">{error}</p>}
         <button onClick={close} disabled={busy} className="btn-danger w-full h-12">
-          {busy ? "Пуска се Z-отчет…" : "Закрий смяната"}
+          {busy ? `Пуска се ${report} отчет…` : "Закрий смяната"}
         </button>
       </div>
     </Modal>

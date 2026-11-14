@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Storefront, Backspace, SignIn, User } from "@phosphor-icons/react";
 import { apiJson } from "@/components/ui";
+import { APP_VERSION } from "@/lib/constants";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -22,14 +23,14 @@ export default function LoginPage() {
     setBusy(true);
     setError(null);
     try {
-      await apiJson(
+      const r = await apiJson<{ mustChangePin?: boolean }>(
         await fetch("/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ operatorCode: code, pin: pinValue }),
         })
       );
-      router.push("/pos");
+      router.push(r.mustChangePin ? "/change-pin" : "/pos");
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Грешка при вход.");
@@ -81,6 +82,7 @@ export default function LoginPage() {
             Carbon Stealth <span className="text-brand-600">POS</span>
           </h1>
           <p className="text-ink-400 mt-1">Касова система за хранителни магазини</p>
+          <p className="text-ink-500 text-xs mt-1">версия {APP_VERSION}</p>
         </div>
 
         <div className="card p-6 space-y-5">
@@ -131,9 +133,12 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <p className="text-center text-ink-500 text-xs mt-6">
-          Демо: администратор 1/9999 · управител 2/5555 · касиер 3/1111
-        </p>
+        {/* демо ПИН кодовете са само за разработка — инсталаторът е с шаблонна база без тях */}
+        {process.env.NODE_ENV !== "production" && (
+          <p className="text-center text-ink-500 text-xs mt-6">
+            Демо база: администратор 1/9999, управител 2/5555, касиер 3/1111, одитор 99/2929
+          </p>
+        )}
       </div>
     </main>
   );

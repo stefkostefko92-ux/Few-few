@@ -70,3 +70,17 @@ export const SESSION_TTL_HOURS = 14; // една дълга смяна
  * алармата за изчерпващи се наличности (нямат реален склад).
  */
 export const SERVICE_PLU_MIN = 990;
+
+/** Наименование и версия на софтуера — идентификация по Прил. № 29 Н-18. */
+export const APP_NAME = "Carbon Stealth POS";
+export const APP_VERSION = "1.0.0";
+
+/** Производител на софтуера — за „За програмата“ и декларацията пред НАП (чл. 52в Н-18). */
+export const MANUFACTURER = {
+  name: "„Карбон Стелт“ ЕДПК",
+  eik: "208725180",
+  vatNumber: "BG208725180",
+  address: "гр. Бобов дол 2670, ул. „Самуил“ № 3",
+  email: "info@carbonstealth.eu",
+  web: "https://carbonstealth.eu",
+} as const;

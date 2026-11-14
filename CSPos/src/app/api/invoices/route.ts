@@ -3,7 +3,7 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { guard, jsonError, requireSession } from "@/lib/auth";
+import { guard, jsonError, requireSession, requireRole } from "@/lib/auth";
 import { audit } from "@/lib/audit";
 import { buildInvoiceText, type InvoiceLine } from "@/lib/invoice-text";
 import { getSetting, isDualDisplayActive } from "@/lib/settings";
@@ -34,7 +34,7 @@ const schema = z.object({
 
 export async function POST(req: Request) {
   return guard(async () => {
-    const s = await requireSession();
+    const s = await requireRole("CASHIER");
     const parsed = schema.safeParse(await req.json());
     if (!parsed.success) throw jsonError(400, "Невалидни данни за фактура.");
     const d = parsed.data;

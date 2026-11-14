@@ -5,7 +5,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { TrendUp, Money, CreditCard, Receipt, Warning, Clock, ArrowRight, CheckCircle } from "@phosphor-icons/react";
-import { Spinner, Badge, apiJson } from "@/components/ui";
+import { Spinner, Badge, EmptyState, apiJson } from "@/components/ui";
+import { ColumnChart, euroAxis } from "@/components/charts";
 import { formatEur, formatQty } from "@/lib/money";
 import { UNITS } from "@/lib/constants";
 
@@ -28,6 +29,15 @@ interface Report {
     minStockMilli: number;
   }>;
   byCashier: Array<{ name: string; totalCents: number; count: number }>;
+  byHour: Array<{ hour: number; totalCents: number; count: number }>;
+}
+
+/** Часовете на работния ден: поне 07–21 ч., разширени до първата/последната продажба. */
+function hourRange(byHour: Report["byHour"]): Report["byHour"] {
+  const sold = byHour.filter((h) => h.count > 0).map((h) => h.hour);
+  const from = Math.min(7, ...sold);
+  const to = Math.max(21, ...sold);
+  return byHour.filter((h) => h.hour >= from && h.hour <= to);
 }
 
 function Tile({
@@ -131,11 +141,27 @@ export default function DashboardPage() {
         <Tile label="С карта" value={formatEur(t.cardCents)} icon={<CreditCard size={28} weight="duotone" />} />
       </div>
 
+      <ColumnChart
+        title="Оборот по часове"
+        description="Приключени продажби днес, по часа на приключване"
+        height={230}
+        data={hourRange(report.byHour ?? []).map((h) => ({
+          key: String(h.hour),
+          label: `${String(h.hour).padStart(2, "0")}:00–${String(h.hour).padStart(2, "0")}:59`,
+          short: String(h.hour).padStart(2, "0"),
+          value: h.totalCents,
+          detail: `${h.count} ${h.count === 1 ? "бон" : "бона"}`,
+        }))}
+        formatValue={formatEur}
+        formatAxis={euroAxis}
+        emptyText="Още няма продажби днес."
+      />
+
       <div className="grid lg:grid-cols-2 gap-5">
         <section className="card p-5">
           <h2 className="font-bold mb-4">Топ стоки днес</h2>
           {report.topProducts.length === 0 && (
-            <p className="text-ink-500 text-sm">Още няма продажби днес.</p>
+            <EmptyState compact icon={<Receipt size={26} weight="duotone" />} title="Още няма продажби днес" hint="Първият бон ще се появи тук веднага." />
           )}
           <table className="w-full text-sm">
             <tbody>

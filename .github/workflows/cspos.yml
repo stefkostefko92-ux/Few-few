@@ -81,6 +81,11 @@ jobs:
       - name: Сглобяване + electron-builder (NSIS .exe)
         working-directory: CSPos/desktop
         run: npm run dist:win
+        env:
+          # т. 4: подпис на манифеста на компилацията (Ed25519). Само в тази стъпка.
+          CSPOS_SIGNING_KEY: ${{ secrets.CSPOS_SIGNING_KEY }}
+          # релийз (таг) без подпис не се прави
+          CSPOS_REQUIRE_SIGNATURE: ${{ startsWith(github.ref, 'refs/tags/cspos-v') && '1' || '0' }}
 
       - name: Качване на инсталатора като artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

@@ -3,7 +3,7 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { guard, jsonError, requireSession } from "@/lib/auth";
+import { guard, jsonError, requireSession, requireRole } from "@/lib/auth";
 import { audit } from "@/lib/audit";
 import { getFiscalDriver } from "@/lib/fiscal";
 
@@ -64,6 +64,8 @@ const openSchema = z.object({
 });
 const closeSchema = z.object({
   action: z.literal("close"),
+  // Z е дневен отчет (чл. 39 Н-18) — при смяна посред деня се пуска X
+  report: z.enum(["X", "Z"]).default("Z"),
   closingCashCents: z.number().int().min(0),
   note: z.string().max(500).optional(),
 });
@@ -71,7 +73,7 @@ const bodySchema = z.discriminatedUnion("action", [openSchema, closeSchema]);
 
 export async function POST(req: Request) {
   return guard(async () => {
-    const s = await requireSession();
+    const s = await requireRole("CASHIER");
     const parsed = bodySchema.safeParse(await req.json());
     if (!parsed.success) throw jsonError(400, "Невалидни данни.");
     const body = parsed.data;
@@ -84,7 +86,7 @@ export async function POST(req: Request) {
       if (current) throw jsonError(409, "Вече имате отворена смяна.");
       const fiscal = await getFiscalDriver();
       if (body.openingCashCents > 0) {
-        const r = await fiscal.cashInOut(body.openingCashCents);
+        const r = await fiscal.cashInOut(body.openingCashCents, s.operatorCode);
         if (!r.ok) throw jsonError(502, r.error ?? "ФУ отказа служебното въвеждане.");
       }
       const shift = await prisma.shift.create({
@@ -98,6 +100,13 @@ export async function POST(req: Request) {
 
     // close
     if (!current) throw jsonError(409, "Няма отворена смяна.");
+    // открита продажба не остава „висяща“ в затворена смяна (т. 2, т. 12)
+    const pending = await prisma.saleDraft.count({
+      where: { userId: s.userId, state: { in: ["OPEN", "HELD", "PAYING", "RECONCILE"] }, lines: { some: {} } },
+    });
+    if (pending > 0) {
+      throw jsonError(409, `Имате ${pending} открити, задържани или прекъснати продажби — приключете или анулирайте откритите, а прекъснатите плащания се сверяват от управител (Смени и наличност → Сверка).`);
+    }
 
     const agg = await prisma.sale.aggregate({
       where: { shiftId: current.id, status: "COMPLETED" },
@@ -118,8 +127,8 @@ export async function POST(req: Request) {
       cashOut;
 
     const fiscal = await getFiscalDriver();
-    const z = await fiscal.zReport();
-    if (!z.ok) throw jsonError(502, z.error ?? "ФУ отказа Z-отчета.");
+    const z = body.report === "X" ? await fiscal.xReport() : await fiscal.zReport();
+    if (!z.ok) throw jsonError(502, z.error ?? `ФУ отказа ${body.report}-отчета.`);
 
     const shift = await prisma.shift.update({
       where: { id: current.id },
@@ -127,7 +136,7 @@ export async function POST(req: Request) {
         closedAt: new Date(),
         closingCashCents: body.closingCashCents,
         expectedCashCents: expected,
-        zReportNumber: z.receiptNumber ?? null,
+        zReportNumber: body.report === "Z" ? z.receiptNumber ?? null : null,
         note: body.note ?? null,
       },
     });
@@ -135,7 +144,8 @@ export async function POST(req: Request) {
       expectedCashCents: expected,
       closingCashCents: body.closingCashCents,
       differenceCents: body.closingCashCents - expected,
-      zReportNumber: z.receiptNumber,
+      report: body.report,
+      reportNumber: z.receiptNumber,
     });
     return Response.json({
       shift,

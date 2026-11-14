@@ -2,6 +2,10 @@
 
 Касата — касова (POS) система за хранителни магазини. BG. Евро-готова.
 
+Производител (декларацията за СУПТО, „За програмата“, Общите условия): „Карбон Стелт“ ЕДПК /
+Carbon Stealth VCC · ЕИК 208725180 · ЗДДС № BG208725180 · гр. Бобов дол 2670, ул. „Самуил“ № 3 ·
+info@carbonstealth.eu — в кода: `MANUFACTURER` в `src/lib/constants.ts`.
+
 ## Стек и команди
 
 Next.js 15 App Router · React 19 · TS strict · Prisma + **SQLite** (offline-first)
@@ -11,6 +15,7 @@ Next.js 15 App Router · React 19 · TS strict · Prisma + **SQLite** (offline-f
 npm run dev / build / start
 npm run lint && npm run typecheck && npm test   # качествена порта (задължителна)
 npx prisma db push && npm run db:seed           # локална база + демо данни
+npm run db:schema-sql && npm run db:doc         # СЛЕД ВСЯКА промяна на schema.prisma (тест пада иначе)
 ```
 
 В пясъчници без директен интернет Prisma engines не се свалят от node fetch —
@@ -31,8 +36,20 @@ npx prisma db push && npm run db:seed           # локална база + де
 - **Нищо не се трие**: стоки се деактивират, продажби се сторнират (чл. 31 —
   3 причини, срок за операторска грешка до 7-о число на следващия месец),
   одиторският дневник е само-добавящ. СУПТО принципи (Прил. № 29).
-- **УНП**: `ФУ(8)-оператор(4)-пореден(7)` — `src/lib/unp.ts`; печата се при
-  `fiscal.suptoMode`.
+- **УНП**: `ФУ(8)-оператор(4)-пореден(7)` — `src/lib/unp.ts`; генерира се при
+  ПЪРВИЯ артикул (`SaleDraft`), поредният № е отделен брояч за всеки ИН на ФУ
+  (`unpSeq:<ИН>`) и не се харчи от сторно; печата се при `fiscal.suptoMode`.
+- **Продажбата живее в базата от първия артикул** (Прил. № 29, т. 9.1, т. 12):
+  `SaleDraft` (OPEN/HELD/PAYING/COMPLETED/CANCELLED) + редове; всяко намаление или
+  премахване → `CancelledItem` със сървърна стойност. Плащането чете редовете от БД,
+  не от клиента; OPEN → PAYING е атомарен UPDATE (двойно плащане → 409).
+- **т. 8:** ФУ се проверява при старт на POS, при откриване (ИН ≤ 2 ч.) и на живо при
+  плащане ПРЕДИ картата — `src/lib/fiscal/link.ts`.
+- **Режим СУПТО е еднопосочен** и забранява демо ФУ/терминал (т. 10, т. 20).
+- **Пишещ маршрут = `requireRole`, четящ = `requireRead`** — одиторският профил
+  (`readOnly`, т. 19); статичният тест `routeGuards.test.ts` го пази.
+- **Без триене на ниво база:** SQLite тригери (`src/lib/integrity.ts`) + хеш верига
+  на `AuditLog` (`src/lib/audit.ts`). УНП при сторно/анулиране е поле `AuditLog.unp`.
 - **Сумите се смятат само на сървъра** — клиентът праща продукти/количества.
 - Тегловни баркодове: маски в Settings (`28`=тегло, `29`=цена по подразбиране);
   търсене на артикул САМО по PLU цифрите; EAN контролната цифра се валидира.
@@ -60,9 +77,26 @@ npx prisma db push && npm run db:seed           # локална база + де
   FEFO ред. Разходът НЕ се води по партида — списъкът е „провери рафта“, не
   точен остатък.
 
+## СУПТО модули
+
+`src/lib/pricing.ts` (остойностяване + ред към ФУ: заключена цена = 1 × сума, MxN =
+отстъпка в сума) · `src/lib/sale-draft.ts` (открита продажба) · `src/lib/fiscal/readiness.ts`
+(чисти правила т. 5/8/20) + `link.ts` (връзка на живо) · `src/lib/supto-export.ts` +
+`supto-reports.ts` + `xlsx.ts` (справки 18.1–18.9, XLSX без зависимости) ·
+`src/lib/audit-chain.ts` · `src/lib/nav.ts` (менюто по роли) · `src/lib/fiscal/device-time.ts`
+(час и ИН от отговора на ФУ) · `src/lib/pin-policy.ts` + `api/auth/change-pin` (задължителна смяна
+на ПИН: `User.mustChangePin`, проверка в `requireSession`) · `src/lib/schema-upgrade*.ts` (база на
+стара инсталация се обновява при старт САМО с добавяне; иначе отказ) · `desktop/integrity.js` +
+`after-pack.js` (т. 4: манифест SHA-256 + Ed25519 подпис, проверка преди старт; ключът е само в
+CI като `CSPOS_SIGNING_KEY`). Инсталаторът е с шаблонна база `prisma/seed-template.ts` — без
+демо данни; демо базата `prisma/seed.ts` е само за разработка. Спецификация:
+`docs/SUPTO-SPEC.md`; карта за декларацията: `docs/SUPTO-DECLARATION.md`.
+
 ## Документи
 
 `docs/COMPLIANCE.md` (правно проучване: Н-18, СУПТО, евро, ЗДДС, GDPR, ЗСч),
+`docs/USER-MANUAL.md` · `docs/DATABASE.md` (генериран) · `docs/VERSIONING.md` ·
+`docs/FISCAL-TEST-PROTOCOL.md` (документите към декларацията по чл. 52в),
 `docs/MARKET.md` (пазар: устройства, терминали, конкуренти),
 `docs/INTEGRATIONS.md` (технически бележки за ФУ/терминали/везни).
 При промяна на нормативно-обвързана логика — обнови и документа.

@@ -4,21 +4,27 @@
 
 import { prisma } from "@/lib/db";
 import { guard, requireRead } from "@/lib/auth";
+import { audit } from "@/lib/audit";
+import { actionLabel } from "@/lib/audit-actions";
 import { toCsv } from "@/lib/csv";
 
 export async function GET(req: Request) {
   return guard(async () => {
-    await requireRead("MANAGER");
+    const s = await requireRead("MANAGER");
 
     const url = new URL(req.url);
     const action = url.searchParams.get("action") ?? undefined;
     const from = url.searchParams.get("from");
     const to = url.searchParams.get("to");
+    const operator = url.searchParams.get("operator");
+    const unp = url.searchParams.get("unp")?.trim() || undefined;
 
     // Филтрите са СЪЩИТЕ като на четящия маршрут — иначе експортът мълчаливо дава друг
     // обхват от показания на екрана, а т. 18 иска точно изнасяне на приложения филтър.
     const where: Record<string, unknown> = {};
     if (action) where.action = action;
+    if (unp) where.unp = { contains: unp };
+    if (operator && /^\d{1,4}$/.test(operator)) where.user = { operatorCode: Number(operator) };
     if (from || to) {
       where.createdAt = {
         ...(from && { gte: new Date(from) }),
@@ -30,23 +36,36 @@ export async function GET(req: Request) {
     const logs = await prisma.auditLog.findMany({
       where,
       include: { user: { select: { name: true, operatorCode: true } } },
-      orderBy: { createdAt: "asc" },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
     });
 
     // Колоните следват РЕАЛНИЯ модел AuditLog (id/userId/action/entity/entityId/detail/createdAt).
-    // ЗАБЕЛЕЖКА за собственика: моделът НЯМА отделно поле `unp`, а Прил. № 29, т. 15 иска УНП
-    // при сторниране/анулиране. Ако УНП се пази вътре в JSON-а на `detail`, експортът го изнася
-    // с него; ако не се пази — това е отделна дупка за схемата, не за експорта.
-    const head = ["Дата и час", "Оператор", "Код на оператора", "Действие", "Обект", "ИД на обекта", "Детайли"];
+    // УНП е отделно поле (т. 15, б. „б“) — изнася се като колона.
+    const head = [
+      "Дата и час",
+      "Оператор",
+      "Код на оператора",
+      "Код на действието",
+      "Вид на действието",
+      "УНП",
+      "Обект",
+      "ИД на обекта",
+      "Детайли",
+      "Хеш",
+    ];
     const rows = logs.map((l) => [
       l.createdAt.toISOString(),
       l.user?.name ?? "",
-      l.user?.operatorCode ?? "",
+      l.user ? String(l.user.operatorCode).padStart(4, "0") : "",
       l.action,
+      actionLabel(l.action),
+      l.unp ?? "",
       l.entity ?? "",
       l.entityId ?? "",
       l.detail ?? "",
+      l.hash ?? "",
     ]);
+    await audit(s.userId, "AUDIT_EXPORT", "AuditLog", undefined, { action, from, to, operator, unp, rows: rows.length });
 
     const csv = toCsv([head, ...rows]);
     const stamp = new Date().toISOString().slice(0, 10);

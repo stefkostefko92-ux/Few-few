@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
+import { getLiveSession } from "@/lib/auth";
 import { AppShell } from "@/components/app-shell";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const session = await getSession();
+  const session = await getLiveSession();
   if (!session) redirect("/login");
+  if (session.mustChangePin) redirect("/change-pin");
 
   return <AppShell session={session}>{children}</AppShell>;
 }

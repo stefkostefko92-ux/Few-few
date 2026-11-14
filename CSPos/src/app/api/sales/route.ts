@@ -1,299 +1,251 @@
-// Продажба — сърцето на касата. Принципи:
-// • Сумите се изчисляват САМО на сървъра (клиентът праща стоки и количества).
-// • Без отворена смяна няма продажба.
-// • Карта: първо терминалът одобрява, после се печата фискалният бон (Н-18);
-//   ако бонът се провали — опит за автоматично връщане по картата.
-// • УНП се генерира при откриване на продажбата (Прил. 29 т. 9).
-// • Складът се изписва в същата транзакция (единна складова книга).
+// Плащане и приключване на открита продажба — сърцето на касата. Принципи:
+// • Редовете идват от откритата продажба В БАЗАТА (т. 9.1), не от браузъра; сумите се смятат
+//   само на сървъра — и се смятат НАНОВО след заключването (редовете не могат да се сменят
+//   между проверката и печата).
+// • т. 8: ФУ се проверява на живо ПРЕДИ картата — без готово ФУ няма плащане.
+// • т. 2: OPEN → PAYING атомарно; второ натискане/втора заявка не печата втори бон.
+//   Намерението за плащане, референцията на картата и номерът на бона се пазят веднага,
+//   за да може прекъснато плащане да се свери (виж /api/sales/reconcile).
+// • Ред: карта → фискален бон с УНП (т. 10) → запис + склад в една транзакция.
+//   Отказ на ФУ → връщане по картата и продажбата остава открита.
 
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { guard, jsonError, requireSession } from "@/lib/auth";
+import { guard, jsonError, requireRead, requireRole } from "@/lib/auth";
 import { audit } from "@/lib/audit";
 import { getFiscalDriver } from "@/lib/fiscal";
+import { fiscalNow, requireFiscalForPayment } from "@/lib/fiscal/link";
 import { getTerminalDriver } from "@/lib/terminal";
-import { buildUnp } from "@/lib/unp";
-import { applyDiscount, eurCentsToBgnCents, lineTotalCents } from "@/lib/money";
-import { includedVatCents } from "@/lib/vat";
-import { getSetting, getVatRates, isDualDisplayActive } from "@/lib/settings";
-import { UNITS, type VatGroupKey } from "@/lib/constants";
-import { bestPromotion } from "@/lib/promotions";
-import { nextSaleNumber } from "@/lib/counters";
-import { fetchActivePromotions } from "@/lib/promotions-db";
-import type { FiscalItem } from "@/lib/fiscal/types";
+import { getSetting, isDualDisplayActive } from "@/lib/settings";
+import { UNITS } from "@/lib/constants";
+import { manualDiscountAllowed, toFiscalItem, type PricedLine } from "@/lib/pricing";
+import { recordSale } from "@/lib/sale-record";
+import {
+  lockDraftForPayment,
+  markCardCharged,
+  markPrinted,
+  markReconcile,
+  priceLines,
+  pricingContext,
+  releaseDraft,
+  type PaymentIntent,
+} from "@/lib/sale-draft";
 
-const saleSchema = z.object({
-  items: z
-    .array(
-      z.object({
-        productId: z.string().min(1),
-        qtyMilli: z.number().int().min(1).max(1_000_000_000),
-        discountPermille: z.number().int().min(0).max(999).default(0),
-        /** заключена цена от ценови баркод (29…) — редова сума */
-        priceLockedCents: z.number().int().min(0).optional(),
-      })
-    )
-    .min(1),
+const paySchema = z.object({
+  draftId: z.string().min(1),
   payment: z.object({
     type: z.enum(["CASH", "CARD", "MIXED", "CREDIT"]),
     cashCents: z.number().int().min(0).default(0),
     cardCents: z.number().int().min(0).default(0),
   }),
-  customerCard: z.string().max(32).optional(),
 });
 
 export async function GET(req: Request) {
   return guard(async () => {
-    await requireSession();
+    await requireRead("CASHIER");
     const url = new URL(req.url);
-    const take = Math.min(parseInt(url.searchParams.get("take") ?? "50", 10), 200);
+    const take = Math.min(Math.max(parseInt(url.searchParams.get("take") ?? "50", 10) || 50, 1), 200);
+    const skip = Math.max(parseInt(url.searchParams.get("skip") ?? "0", 10) || 0, 0);
     const shiftId = url.searchParams.get("shiftId") ?? undefined;
-    const sales = await prisma.sale.findMany({
-      where: shiftId ? { shiftId } : {},
-      include: {
-        items: true,
-        user: { select: { name: true } },
-        invoice: { select: { number: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      take,
-    });
-    return Response.json({ sales });
+    const from = url.searchParams.get("from");
+    const to = url.searchParams.get("to");
+    // търсене на бон от предишна смяна (сторно при връщане): вътрешен №, УНП или № на фискалния бон
+    const q = (url.searchParams.get("q") ?? "").trim().slice(0, 40);
+    const qNum = /^\d{1,9}$/.test(q) ? Number(q) : null;
+    const where = {
+      ...(shiftId && { shiftId }),
+      // число → точен вътрешен № или № на бона от ФУ; текст (с тире) → част от УНП
+      ...(q && {
+        OR: qNum !== null ? [{ number: qNum }, { fiscalReceiptNo: q }] : [{ unp: { contains: q } }, { fiscalReceiptNo: q }],
+      }),
+      ...((from || to) && {
+        createdAt: {
+          ...(from && { gte: new Date(`${from}T00:00:00`) }),
+          ...(to && { lte: new Date(`${to}T23:59:59.999`) }),
+        },
+      }),
+    };
+    const [sales, total] = await Promise.all([
+      prisma.sale.findMany({
+        where,
+        include: {
+          items: true,
+          user: { select: { name: true } },
+          invoice: { select: { number: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take,
+      }),
+      prisma.sale.count({ where }),
+    ]);
+    return Response.json({ sales, total });
   });
+}
+
+type Payment = z.infer<typeof paySchema>["payment"];
+
+/** Валидира плащането срещу сумата и връща разпределението брой/карта/ресто. */
+function settle(payment: Payment, total: number, customer: { balanceCents: number; creditLimitCents: number } | null): PaymentIntent {
+  const { type, cashCents, cardCents } = payment;
+  if (type === "CREDIT" && !customer) throw jsonError(400, "Вересия се записва само на клиентска карта.");
+  if (type === "CREDIT" && customer && customer.creditLimitCents > 0 && customer.balanceCents + total > customer.creditLimitCents) {
+    throw jsonError(409, "Надвишен кредитен лимит на клиента. Погасете част от вересията.");
+  }
+  if (type === "CASH" && cashCents < total) throw jsonError(400, "Недостатъчна сума в брой.");
+  if (type === "CARD" && cardCents !== total) throw jsonError(400, "Картовото плащане трябва да е точно колкото сумата.");
+  if (type === "MIXED" && (cardCents <= 0 || cardCents > total || cashCents < total - cardCents)) {
+    throw jsonError(400, "Невалидно смесено плащане.");
+  }
+  const paidCard = type === "CASH" || type === "CREDIT" ? 0 : cardCents;
+  const paidCashDue = type === "CREDIT" ? 0 : total - paidCard;
+  const change = type === "CARD" || type === "CREDIT" ? 0 : cashCents - paidCashDue;
+  return { type, paidCashDue, paidCard, change, totalCents: total };
+}
+
+async function loadPriced(draftId: string, userId: string) {
+  const draft = await prisma.saleDraft.findUnique({
+    where: { id: draftId },
+    include: { lines: { orderBy: { position: "asc" } } },
+  });
+  if (!draft) throw jsonError(404, "Откритата продажба не е намерена.");
+  if (draft.userId !== userId) throw jsonError(403, "Продажбата е открита от друг оператор.");
+  if (draft.lines.length === 0) throw jsonError(400, "Бонът е празен.");
+  const { ctx, customer } = await pricingContext(draft.customerCard);
+  const lines = await priceLines(draft.lines, ctx);
+  return { draft, lines, customer, total: lines.reduce((a, l) => a + l.totalCents, 0) };
 }
 
 export async function POST(req: Request) {
   return guard(async () => {
-    const s = await requireSession();
-    const parsed = saleSchema.safeParse(await req.json());
-    if (!parsed.success) throw jsonError(400, "Невалидни данни за продажба.");
-    const body = parsed.data;
+    const s = await requireRole("CASHIER");
+    const parsed = paySchema.safeParse(await req.json());
+    if (!parsed.success) throw jsonError(400, "Невалидни данни за плащане.");
+    const { draftId, payment } = parsed.data;
 
-    const shift = await prisma.shift.findFirst({
-      where: { userId: s.userId, closedAt: null },
-    });
+    const shift = await prisma.shift.findFirst({ where: { userId: s.userId, closedAt: null } });
     if (!shift) throw jsonError(409, "Няма отворена смяна — първо отворете смяна.");
 
-    // клиентска карта (лоялност)
-    const customer = body.customerCard
-      ? await prisma.customer.findUnique({ where: { cardNumber: body.customerCard } })
-      : null;
-    if (body.customerCard && (!customer || !customer.active)) {
-      throw jsonError(404, "Клиентската карта не е намерена.");
+    const pre = await loadPriced(draftId, s.userId);
+    if (pre.draft.state !== "OPEN") throw jsonError(409, "Продажбата вече се плаща или е приключена.");
+    const policy = await getSetting("pos");
+    const maxManual = Math.max(0, ...pre.draft.lines.map((l) => l.discountPermille));
+    if (!manualDiscountAllowed(maxManual, s.role, policy.maxCashierDiscountPermille)) {
+      throw jsonError(403, `Отстъпка над ${policy.maxCashierDiscountPermille / 10}% се дава от управител.`);
+    }
+    const intent = settle(payment, pre.total, pre.customer);
+
+    // т. 8: готовност на ФУ на живо — ПРЕДИ картата и преди заключването
+    const liveSerial = await requireFiscalForPayment();
+
+    if (!(await lockDraftForPayment(draftId, s.userId, intent))) {
+      throw jsonError(409, "Продажбата вече се плаща — изчакайте резултата.");
     }
 
-    // сървърно остойностяване
-    const vatRates = await getVatRates();
-    const now = new Date();
-    const promos = await fetchActivePromotions(now);
-    const ids = body.items.map((i) => i.productId);
-    const products = await prisma.product.findMany({ where: { id: { in: ids } } });
-    const byId = new Map(products.map((p) => [p.id, p]));
-
-    let subtotal = 0;
-    const lines = body.items.map((i) => {
-      const p = byId.get(i.productId);
-      if (!p || !p.active) throw jsonError(404, "Стока от количката не е намерена.");
-      const catalogLine = lineTotalCents(p.priceCents, i.qtyMilli);
-      const customerDiscount = Math.max(i.discountPermille, customer?.discountPermille ?? 0);
-      const rate = vatRates[p.vatGroup as VatGroupKey];
-
-      // Заключена цена (свободна продажба / ценови баркод) прескача промоциите.
-      if (i.priceLockedCents !== undefined) {
-        const total = applyDiscount(i.priceLockedCents, customerDiscount);
-        subtotal += i.priceLockedCents;
-        return {
-          product: p, qtyMilli: i.qtyMilli, unitCents: p.priceCents,
-          discountPermille: customerDiscount, discountCents: 0, promotion: null,
-          totalCents: total, vatRatePermille: rate, vatCents: includedVatCents(total, rate),
-        };
-      }
-
-      const promo = bestPromotion(p, i.qtyMilli, promos, now);
-      subtotal += catalogLine;
-      const isMxn = promo.promotion?.kind === "MXN";
-
-      if (isMxn) {
-        // MxN = абсолютна отстъпка; печели по-изгодното (MxN vs клиентска отстъпка), не се стакира
-        const promoAbs = catalogLine - promo.lineCents;
-        const custAbs = catalogLine - applyDiscount(catalogLine, customerDiscount);
-        const discountCents = Math.max(promoAbs, custAbs);
-        const total = catalogLine - discountCents;
-        return {
-          product: p, qtyMilli: i.qtyMilli, unitCents: p.priceCents,
-          discountPermille: 0, discountCents, promotion: promo.promotion,
-          totalCents: total, vatRatePermille: rate, vatCents: includedVatCents(total, rate),
-        };
-      }
-
-      // PERCENT/PRICE сменят единичната цена; клиентската отстъпка се прилага отгоре
-      const unitCents = promo.unitCents;
-      const raw = lineTotalCents(unitCents, i.qtyMilli);
-      const total = applyDiscount(raw, customerDiscount);
-      return {
-        product: p, qtyMilli: i.qtyMilli, unitCents,
-        discountPermille: customerDiscount, discountCents: 0, promotion: promo.promotion,
-        totalCents: total, vatRatePermille: rate, vatCents: includedVatCents(total, rate),
-      };
-    });
-    const total = lines.reduce((acc, l) => acc + l.totalCents, 0);
-    const discountTotal = subtotal - total;
-
-    // валидация на плащането
-    const { type, cashCents, cardCents } = body.payment;
-    if (type === "CREDIT" && !customer) {
-      throw jsonError(400, "Вересия се записва само на клиентска карта.");
-    }
-    // таван на вересията (ако е зададен) — не позволяваме неограничено задължение
-    if (type === "CREDIT" && customer && customer.creditLimitCents > 0) {
-      if (customer.balanceCents + total > customer.creditLimitCents) {
-        throw jsonError(
-          409,
-          "Надвишен кредитен лимит на клиента. Погасете част от вересията."
-        );
-      }
-    }
-    if (type === "CASH" && cashCents < total) throw jsonError(400, "Недостатъчна сума в брой.");
-    if (type === "CARD" && cardCents !== total) {
-      throw jsonError(400, "Картовото плащане трябва да е точно колкото сумата.");
-    }
-    if (type === "MIXED" && (cardCents <= 0 || cardCents > total || cashCents < total - cardCents)) {
-      throw jsonError(400, "Невалидно смесено плащане.");
-    }
-    const paidCard = type === "CASH" || type === "CREDIT" ? 0 : cardCents;
-    const paidCashDue = type === "CREDIT" ? 0 : total - paidCard; // дължимото в брой
-    const change = type === "CARD" || type === "CREDIT" ? 0 : cashCents - paidCashDue;
-
-    // 1) картата минава първа през терминала
     let terminalRef: string | null = null;
-    if (paidCard > 0) {
-      const terminal = await getTerminalDriver();
-      if (terminal) {
-        const t = await terminal.purchase(paidCard);
-        if (!t.ok) throw jsonError(402, t.error ?? "Терминалът отказа плащането.");
-        terminalRef = t.reference ?? null;
+    let printed = false;
+    let lines: PricedLine[] = [];
+    let customerId: string | null = null;
+    let receipt: { receiptNumber: string | null; deviceSerial: string | null; receiptText: string | null } | null = null;
+    let sale: Awaited<ReturnType<typeof recordSale>> | null = null;
+    try {
+      // редовете — наново СЛЕД заключването: това, което се печата, е това, което се записва
+      const locked = await loadPriced(draftId, s.userId);
+      if (locked.total !== intent.totalCents) {
+        throw jsonError(409, "Бонът се промени по време на плащането — потвърдете сумата отново.");
       }
-    }
+      lines = locked.lines;
+      customerId = locked.customer?.id ?? null;
 
-    // 2) УНП + фискален бон
-    const fiscalCfg = await getSetting("fiscal");
-    const number = await nextSaleNumber();
-    const unp = buildUnp(fiscalCfg.deviceSerial, s.operatorCode, number);
-    const dualDisplay = await isDualDisplayActive();
-
-    const fiscalItems: FiscalItem[] = lines.map((l) => ({
-      name: l.product.name,
-      qtyMilli: l.qtyMilli,
-      unitLabel: UNITS[l.product.unit as keyof typeof UNITS].label,
-      unitPriceCents: l.unitCents, // ефективна цена (с промоция)
-      vatGroup: l.product.vatGroup as VatGroupKey,
-      discountPermille: l.discountPermille,
-      discountCents: l.discountCents,
-      totalCents: l.totalCents,
-    }));
-    // на бона: В БРОЙ = подадената сума (рестото се показва отделно)
-    const payments = [
-      ...(paidCashDue > 0
-        ? [{ type: "CASH" as const, amountCents: paidCashDue + change }]
-        : []),
-      ...(paidCard > 0 ? [{ type: "CARD" as const, amountCents: paidCard }] : []),
-      ...(type === "CREDIT" ? [{ type: "CREDIT" as const, amountCents: total }] : []),
-    ];
-
-    const fiscal = await getFiscalDriver();
-    const receipt = await fiscal.printReceipt({
-      unp: fiscalCfg.suptoMode ? unp : null,
-      operatorCode: s.operatorCode,
-      operatorName: s.name,
-      items: fiscalItems,
-      payments,
-      totalCents: total,
-      changeCents: change,
-      dualDisplay,
-    });
-
-    if (!receipt.ok) {
-      // касата НЕ записва продажба без фискален бон; връщаме картата, ако мина
-      if (paidCard > 0 && terminalRef) {
+      // 1) картата минава първа през терминала
+      if (intent.paidCard > 0) {
         const terminal = await getTerminalDriver();
-        await terminal?.refund(paidCard, terminalRef).catch(() => undefined);
+        if (terminal) {
+          const t = await terminal.purchase(intent.paidCard);
+          if (!t.ok) throw jsonError(402, t.error ?? "Терминалът отказа плащането.");
+          terminalRef = t.reference ?? null;
+          await markCardCharged(draftId, terminalRef);
+        }
       }
-      await audit(s.userId, "FISCAL_FAILED", "Sale", unp, { error: receipt.error });
-      throw jsonError(502, receipt.error ?? "Фискалното устройство не отговори.");
+
+      // 2) фискален бон с УНП на откритата продажба
+      const fiscalCfg = await getSetting("fiscal");
+      const fiscal = await getFiscalDriver();
+      const r = await fiscal.printReceipt({
+        unp: fiscalCfg.suptoMode ? locked.draft.unp : null,
+        operatorCode: s.operatorCode,
+        operatorName: s.name,
+        items: lines.map((l) => toFiscalItem(l, UNITS[l.product.unit as keyof typeof UNITS]?.label ?? "бр.")),
+        payments: [
+          ...(intent.paidCashDue > 0 ? [{ type: "CASH" as const, amountCents: intent.paidCashDue + intent.change }] : []),
+          ...(intent.paidCard > 0 ? [{ type: "CARD" as const, amountCents: intent.paidCard }] : []),
+          ...(intent.type === "CREDIT" ? [{ type: "CREDIT" as const, amountCents: intent.totalCents }] : []),
+        ],
+        totalCents: intent.totalCents,
+        changeCents: intent.change,
+        dualDisplay: await isDualDisplayActive(),
+      });
+      if (!r.ok) {
+        await audit(s.userId, "FISCAL_FAILED", "SaleDraft", draftId, { error: r.error }, { unp: locked.draft.unp });
+        throw jsonError(502, r.error ?? "Фискалното устройство не отговори.");
+      }
+      printed = true;
+      receipt = { receiptNumber: r.receiptNumber ?? null, deviceSerial: r.deviceSerial ?? liveSerial, receiptText: r.receiptText ?? null };
+      await markPrinted(draftId, receipt.receiptNumber, receipt.deviceSerial);
+
+      // 3) запис + склад + приключване на откритата продажба — една транзакция
+      sale = await recordSale({
+        draft: locked.draft,
+        lines,
+        customerId,
+        payment: intent,
+        receipt,
+        terminalRef,
+        closedAt: await fiscalNow(),
+        fromStates: ["PAYING"],
+      });
+    } catch (e) {
+      if (printed) {
+        // бонът е издаден, записът не успя: сверка от управител; картата НЕ се връща
+        await markReconcile(draftId).catch(() => undefined);
+        await audit(s.userId, "SALE_RECORD_FAILED", "SaleDraft", draftId, {
+          error: e instanceof Error ? e.message : String(e),
+          fiscalReceiptNo: receipt?.receiptNumber,
+        }, { unp: pre.draft.unp }).catch(() => undefined);
+        throw jsonError(500, `Бонът е издаден, но записът не успя. Продажба ${pre.draft.unp} чака сверка — уведомете управителя.`);
+      }
+      if (intent.paidCard > 0 && terminalRef) {
+        const terminal = await getTerminalDriver();
+        const refund = await terminal?.refund(intent.paidCard, terminalRef).catch(() => null);
+        if (!refund?.ok) {
+          // парите са взети, бон няма — връщането се прави ръчно, но следата остава
+          await audit(s.userId, "CARD_REFUND_FAILED", "SaleDraft", draftId, {
+            cardCents: intent.paidCard,
+            terminalRef,
+            error: refund?.error ?? "терминалът не отговори",
+          }, { unp: pre.draft.unp }).catch(() => undefined);
+        }
+      }
+      await releaseDraft(draftId);
+      throw e;
     }
 
-    // 3) запис + склад в една транзакция
-    const sale = await prisma.$transaction(async (tx) => {
-      const created = await tx.sale.create({
-        data: {
-          unp,
-          number,
-          shiftId: shift.id,
-          userId: s.userId,
-          customerId: customer?.id ?? null,
-          subtotalCents: subtotal,
-          discountCents: discountTotal,
-          totalCents: total,
-          totalBgnCents: eurCentsToBgnCents(total),
-          paymentType: type,
-          cashCents: paidCashDue,
-          cardCents: paidCard,
-          changeCents: change,
-          fiscalReceiptNo: receipt.receiptNumber ?? null,
-          fiscalDeviceSn: receipt.deviceSerial ?? fiscalCfg.deviceSerial,
-          terminalRef,
-          items: {
-            create: lines.map((l) => ({
-              productId: l.product.id,
-              nameSnapshot: l.product.name,
-              unitPriceCents: l.unitCents, // ефективна цена (с промоция)
-              qtyMilli: l.qtyMilli,
-              vatGroup: l.product.vatGroup,
-              vatRatePermille: l.vatRatePermille,
-              discountPermille: l.discountPermille,
-              totalCents: l.totalCents,
-              vatCents: l.vatCents,
-            })),
-          },
-        },
-        include: { items: true },
-      });
-
-      // вересия: задължението отива по клиентската карта
-      if (type === "CREDIT" && customer) {
-        await tx.customer.update({
-          where: { id: customer.id },
-          data: { balanceCents: { increment: total } },
-        });
-      }
-
-      for (const l of lines) {
-        await tx.product.update({
-          where: { id: l.product.id },
-          data: { stockMilli: { decrement: l.qtyMilli } },
-        });
-        await tx.stockMovement.create({
-          data: {
-            productId: l.product.id,
-            type: "SALE",
-            qtyMilliDelta: -l.qtyMilli,
-            refId: created.id,
-          },
-        });
-      }
-      return created;
-    });
-
-    await audit(s.userId, "SALE_COMPLETED", "Sale", sale.id, {
-      unp,
-      totalCents: total,
-      paymentType: type,
-      fiscalReceiptNo: receipt.receiptNumber,
-    });
-
-    return Response.json(
-      { sale, receiptText: receipt.receiptText ?? null },
-      { status: 201 }
-    );
+    // одитът е след записа и ИЗВЪН catch-а: провален одит не превръща успешна продажба в „за сверка“
+    await audit(
+      s.userId,
+      "SALE_COMPLETED",
+      "Sale",
+      sale.id,
+      {
+        number: sale.number,
+        totalCents: intent.totalCents,
+        discountCents: sale.discountCents,
+        paymentType: intent.type,
+        fiscalReceiptNo: receipt?.receiptNumber,
+        fiscalDeviceSn: sale.fiscalDeviceSn,
+      },
+      { unp: sale.unp }
+    ).catch((err) => console.error("[cspos audit]", err));
+    return Response.json({ sale, receiptText: receipt?.receiptText ?? null }, { status: 201 });
   });
 }

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { audit } from "@/lib/audit";
 import { guard, jsonError, requireRole, requireSession } from "@/lib/auth";
 
 export async function GET() {
@@ -24,10 +25,11 @@ const schema = z.object({
 
 export async function POST(req: Request) {
   return guard(async () => {
-    await requireRole("MANAGER");
+    const s = await requireRole("MANAGER");
     const parsed = schema.safeParse(await req.json());
     if (!parsed.success) throw jsonError(400, "Невалидни данни за доставчик.");
     const supplier = await prisma.supplier.create({ data: parsed.data });
+    await audit(s.userId, "SUPPLIER_CREATE", "Supplier", supplier.id, { name: supplier.name, eik: supplier.eik });
     return Response.json({ supplier }, { status: 201 });
   });
 }

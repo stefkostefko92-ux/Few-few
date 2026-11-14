@@ -39,6 +39,7 @@ export async function POST(req: Request) {
       role: user.role as RoleKey,
       operatorCode: user.operatorCode,
       readOnly: user.readOnly,
+      mustChangePin: user.mustChangePin,
     });
     await audit(user.id, "LOGIN");
 
@@ -49,6 +50,7 @@ export async function POST(req: Request) {
     return Response.json({
       user: { name: user.name, role: user.role, operatorCode: user.operatorCode, readOnly: user.readOnly },
       hasOpenShift: Boolean(openShift),
+      mustChangePin: user.mustChangePin,
     });
   });
 }

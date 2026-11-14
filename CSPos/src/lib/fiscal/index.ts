@@ -5,10 +5,33 @@ import { DemoFiscalDriver } from "./demo";
 import { ErpNetFiscalDriver } from "./erpnet";
 import { TremolFiscalDriver } from "./tremol";
 import { DatecsLanFiscalDriver } from "./datecs-lan";
-import type { FiscalDriver } from "./types";
+import type { FiscalDriver, FiscalResult, FiscalStatus } from "./types";
+
+/**
+ * Прил. № 29, т. 20: в режим СУПТО няма демо режим. Ако настройките все пак сочат демо
+ * драйвера (стара база, ръчна намеса), касата не печата — отказва затворено.
+ */
+class BlockedFiscalDriver implements FiscalDriver {
+  readonly id = "blocked";
+  readonly label = "Блокиран (демо драйвер в режим СУПТО)";
+  private readonly reason =
+    "Режим СУПТО е включен, а за ФУ е избран демо драйвер (Прил. № 29, т. 20). Изберете реално фискално устройство.";
+  async status(): Promise<FiscalStatus> {
+    return { ok: false, driver: this.id, detail: this.reason };
+  }
+  private async refuse(): Promise<FiscalResult> {
+    return { ok: false, error: this.reason };
+  }
+  printReceipt = this.refuse;
+  printStorno = this.refuse;
+  cashInOut = this.refuse;
+  xReport = this.refuse;
+  zReport = this.refuse;
+}
 
 export async function getFiscalDriver(): Promise<FiscalDriver> {
   const cfg = await getSetting("fiscal");
+  if (cfg.suptoMode && cfg.driver === "demo") return new BlockedFiscalDriver();
   switch (cfg.driver) {
     case "erpnet":
       return new ErpNetFiscalDriver({
