@@ -21,6 +21,7 @@ import {
   Coins,
   Seal,
   WifiSlash,
+  CaretRight,
 } from "@phosphor-icons/react";
 import type { SessionData } from "@/lib/auth";
 import { BGN_PER_EUR, DUAL_DISPLAY_END, ROLES } from "@/lib/constants";
@@ -280,10 +281,11 @@ export function AppShell({ session, children }: { session: SessionData; children
         }`}
         aria-label="Главно меню"
       >
+        <div className="flex items-center h-16 border-b border-black/[0.06] shrink-0 pr-2.5">
         <button
           type="button"
           onClick={() => setAboutOpen(true)}
-          className="flex items-center gap-3 px-[22px] h-16 border-b border-black/[0.06] text-left shrink-0"
+          className="flex flex-1 min-w-0 items-center gap-3 pl-[22px] h-full text-left"
           title="За програмата"
         >
           <span
@@ -300,6 +302,19 @@ export function AppShell({ session, children }: { session: SessionData; children
             <span className="text-[11px] font-bold text-brand-700 mt-1">POS {status?.app.version ?? ""}</span>
           </span>
         </button>
+        {wide && (
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            className="btn-ghost !p-0 size-11 shrink-0 hidden xl:inline-flex !shadow-none !bg-transparent hover:!bg-white/70"
+            title="Свий менюто"
+            aria-label="Свий менюто"
+            aria-pressed={false}
+          >
+            <SidebarSimple size={20} />
+          </button>
+        )}
+        </div>
 
         <nav className="relative flex-1 py-3 px-3 overflow-y-auto overflow-x-hidden">
           {lens && (
@@ -310,14 +325,14 @@ export function AppShell({ session, children }: { session: SessionData; children
             />
           )}
           {groups.map((g, gi) => (
-            <div key={g.id} className={gi > 0 ? "mt-3" : ""} role="group" aria-label={g.label}>
+            <div key={g.id} className={gi > 0 ? "mt-2.5" : ""} role="group" aria-label={g.label}>
               {wide ? (
-                <div className="hidden xl:block px-3 pt-1 pb-1.5 text-[12px] font-semibold text-ink-500">
+                <div className="hidden xl:block px-3 pt-1 pb-1 text-[12px] font-semibold text-ink-500">
                   {g.label}
                 </div>
               ) : null}
-              {gi > 0 && <div className={`${wide ? "xl:hidden" : ""} mx-3 mb-3 h-px bg-black/[0.07]`} />}
-              <ul className="space-y-1">
+              {gi > 0 && <div className={`${wide ? "xl:hidden" : ""} mx-3 mb-2.5 h-px bg-black/[0.07]`} />}
+              <ul className="space-y-0.5">
                 {g.items.map((n) => {
                   const shortcut = items.indexOf(n) + 1;
                   const active = n.href === current;
@@ -332,7 +347,7 @@ export function AppShell({ session, children }: { session: SessionData; children
                         aria-current={active ? "page" : undefined}
                         title={`${n.label} — ${n.hint}`}
                         aria-label={n.label}
-                        className={`relative z-[1] flex items-center gap-3 rounded-2xl px-[17px] min-h-[52px] font-semibold transition-colors outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 ${
+                        className={`relative z-[1] flex items-center gap-3 rounded-2xl px-[17px] min-h-[48px] font-semibold transition-colors outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 ${
                           active ? "text-ink-100" : "text-ink-300 hover:text-ink-100 hover:bg-white/[0.45]"
                         }`}
                       >
@@ -354,9 +369,14 @@ export function AppShell({ session, children }: { session: SessionData; children
           ))}
         </nav>
 
-        <div className="p-3 border-t border-black/[0.06] space-y-1.5 shrink-0">
-          <div className="flex items-center gap-3 px-[10px] py-1.5">
+        <div
+          className={`p-3 border-t border-black/[0.06] shrink-0 flex gap-2 ${
+            wide ? "flex-col items-center xl:flex-row xl:items-center" : "flex-col items-center"
+          }`}
+        >
+          <div className="flex items-center gap-3 min-w-0 xl:flex-1 px-1">
             <span
+              title={`${session.name}, ${readOnly ? "одитор, само четене" : ROLES[session.role]}, код ${String(session.operatorCode).padStart(4, "0")}`}
               className={`size-10 shrink-0 rounded-full flex items-center justify-center font-bold text-sm ${
                 readOnly ? "bg-sky2-500/15 text-sky2-500" : "bg-white/[0.8] text-ink-200"
               } shadow-[inset_0_1px_0_rgba(255,255,255,.9),0_2px_8px_-3px_rgba(23,32,58,.2)]`}
@@ -365,36 +385,32 @@ export function AppShell({ session, children }: { session: SessionData; children
               {initials(session.name)}
             </span>
             <span className={`${label} min-w-0`}>
-              <span className="block font-semibold truncate">{session.name}</span>
-              <span className="block text-xs text-ink-400">
-                {readOnly ? "Одитор, само четене" : ROLES[session.role]}, код {String(session.operatorCode).padStart(4, "0")}
+              <span className="block font-semibold truncate leading-tight">{session.name}</span>
+              <span
+                className="block text-xs text-ink-400 truncate"
+                title={`Код на оператор ${String(session.operatorCode).padStart(4, "0")}`}
+              >
+                {readOnly ? "Одитор, само четене" : ROLES[session.role]}
               </span>
             </span>
           </div>
           <div className={`flex ${wide ? "flex-col xl:flex-row" : "flex-col"} gap-1.5`}>
-            <button
-              type="button"
-              onClick={() => setPaletteOpen(true)}
-              className="btn-ghost flex-1 !px-3 min-h-[44px]"
-              title="Търсене (Ctrl+K)"
-              aria-label="Търсене"
-            >
-              <MagnifyingGlass size={20} />
-            </button>
-            <button
-              type="button"
-              onClick={toggleCollapsed}
-              className="btn-ghost flex-1 !px-3 min-h-[44px] hidden xl:inline-flex"
-              title={collapsed ? "Разгъни менюто" : "Свий менюто"}
-              aria-label={collapsed ? "Разгъни менюто" : "Свий менюто"}
-              aria-pressed={collapsed}
-            >
-              <SidebarSimple size={20} />
-            </button>
+            {collapsed && (
+              <button
+                type="button"
+                onClick={toggleCollapsed}
+                className="btn-ghost !p-0 size-11 hidden xl:inline-flex"
+                title="Разгъни менюто"
+                aria-label="Разгъни менюто"
+                aria-pressed
+              >
+                <SidebarSimple size={20} />
+              </button>
+            )}
             <button
               type="button"
               onClick={logout}
-              className="btn-ghost flex-1 !px-3 min-h-[44px]"
+              className="btn-ghost !p-0 size-11"
               title="Изход"
               aria-label="Изход"
             >
@@ -408,15 +424,14 @@ export function AppShell({ session, children }: { session: SessionData; children
         <header className="h-16 border-b border-black/[0.06] bg-white/[0.5] backdrop-blur-2xl flex items-center justify-between gap-4 px-4 md:px-6 sticky top-0 z-40">
           <div className="flex items-center gap-3 min-w-0">
             {currentItem && (
-              <>
-                <span className="text-brand-700 hidden md:flex">
-                  <NavGlyph icon={currentItem.icon} active />
+              // тиха пътечка: голямото заглавие е на самата страница, тук е само ориентирът
+              <nav aria-label="Пътечка" className="flex items-center gap-1.5 text-sm min-w-0">
+                <span className="text-ink-400 hidden md:inline">{currentGroup?.label}</span>
+                <CaretRight size={12} weight="bold" className="text-ink-600 hidden md:inline" aria-hidden />
+                <span className="font-semibold text-ink-200 truncate" aria-current="page">
+                  {currentItem.label}
                 </span>
-                <div className="min-w-0 leading-tight">
-                  <div className="text-xs text-ink-400 hidden md:block">{currentGroup?.label}</div>
-                  <p className="font-bold text-ink-100 truncate">{currentItem.label}</p>
-                </div>
-              </>
+              </nav>
             )}
           </div>
           <div className="flex items-center gap-2 md:gap-3 min-w-0">

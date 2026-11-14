@@ -5,7 +5,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Truck, ClipboardText, Trash, Plus, X, Clock, WarningCircle, CheckCircle } from "@phosphor-icons/react";
-import { Modal, Field, Badge, Spinner, apiJson } from "@/components/ui";
+import { Modal, Field, Badge, Spinner, EmptyState, apiJson } from "@/components/ui";
 import { formatEur, formatQty, parseCents, parseQty } from "@/lib/money";
 import { UNITS } from "@/lib/constants";
 
@@ -170,7 +170,18 @@ export default function InventoryPage() {
         ) : (
           <div className="space-y-3">
             {deliveries.length === 0 && (
-              <p className="text-ink-500">Още няма доставки.</p>
+              <div className="card">
+                <EmptyState
+                  icon={<Truck size={28} weight="duotone" />}
+                  title="Още няма доставки"
+                  hint="Въведете първата доставка по фактурата от доставчика — наличностите и доставните цени се обновяват веднага."
+                  action={
+                    <button onClick={() => setModal("deliveries")} className="btn-primary">
+                      <Truck size={18} /> Нова доставка
+                    </button>
+                  }
+                />
+              </div>
             )}
             {deliveries.map((d) => (
               <details key={d.id} className="card p-4 group">

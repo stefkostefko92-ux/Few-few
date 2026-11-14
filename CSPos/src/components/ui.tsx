@@ -36,9 +36,12 @@ export function Modal({
       }}
     >
       <div
-        className={`card w-full ${wide ? "max-w-3xl" : "max-w-md"} max-h-[90vh] overflow-auto animate-scale-in shadow-pop`}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className={`card glass-strong w-full ${wide ? "max-w-3xl" : "max-w-md"} max-h-[90vh] overflow-auto animate-scale-in shadow-pop`}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-ink-800 sticky top-0 bg-ink-900 rounded-t-2xl z-10">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-black/[0.06] sticky top-0 z-10 rounded-t-[1.5rem] bg-white/[0.72] backdrop-blur-xl">
           <h2 className="text-lg font-bold">{title}</h2>
           <button onClick={onClose} className="btn-ghost !p-2" aria-label="Затвори">
             <X size={20} weight="bold" />
@@ -102,4 +105,40 @@ export async function apiJson<T>(res: Response): Promise<T> {
     throw new Error((json as { error?: string }).error ?? `Грешка ${res.status}`);
   }
   return json as T;
+}
+
+/**
+ * Празно състояние: какво липсва и какво да се направи — не само сив текст.
+ * `action` е бутон или връзка към следващата стъпка.
+ */
+export function EmptyState({
+  icon,
+  title,
+  hint,
+  action,
+  compact = false,
+}: {
+  icon: ReactNode;
+  title: string;
+  hint?: string;
+  action?: ReactNode;
+  compact?: boolean;
+}) {
+  return (
+    <div className={`flex flex-col items-center text-center ${compact ? "py-8" : "py-14"} px-6`}>
+      <div
+        className="size-14 rounded-2xl flex items-center justify-center text-brand-700 mb-4"
+        style={{
+          background: "linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.6))",
+          boxShadow: "inset 0 1px 1px #fff, 0 10px 26px -12px rgba(23,32,58,.35)",
+        }}
+        aria-hidden
+      >
+        {icon}
+      </div>
+      <p className="font-semibold text-ink-100">{title}</p>
+      {hint && <p className="text-sm text-ink-400 mt-1 max-w-sm">{hint}</p>}
+      {action && <div className="mt-5">{action}</div>}
+    </div>
+  );
 }

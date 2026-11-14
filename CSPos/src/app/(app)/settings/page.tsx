@@ -191,7 +191,7 @@ export default function SettingsPage() {
           </p>
         </div>
 
-        <h3 className="text-sm font-semibold text-ink-300 uppercase tracking-wide">Юридическо лице</h3>
+        <h3 className="text-[15px] font-semibold text-ink-200">Юридическо лице</h3>
         <div className="grid sm:grid-cols-2 gap-4">
           <Field label="Наименование (юридическо лице)">
             <input value={settings.store.name} onChange={(e) => set("store", { name: e.target.value })} className="input w-full" />
@@ -207,7 +207,7 @@ export default function SettingsPage() {
           </Field>
         </div>
 
-        <h3 className="text-sm font-semibold text-ink-300 uppercase tracking-wide pt-1">Търговски обект</h3>
+        <h3 className="text-[15px] font-semibold text-ink-200 pt-1">Търговски обект и работно място</h3>
         <div className="grid sm:grid-cols-2 gap-4">
           <Field label="Код на обекта (в справките по т. 18)">
             <input value={settings.store.code} onChange={(e) => set("store", { code: e.target.value })} className="input w-full font-mono" maxLength={10} />

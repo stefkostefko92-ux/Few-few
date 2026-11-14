@@ -14,8 +14,9 @@ import {
   FunnelSimple,
   ArrowCounterClockwise,
 } from "@phosphor-icons/react";
-import { Spinner, Badge, apiJson } from "@/components/ui";
+import { Spinner, Badge, EmptyState, apiJson } from "@/components/ui";
 import { AUDIT_ACTIONS, actionLabel } from "@/lib/audit-actions";
+import { formatEur } from "@/lib/money";
 
 interface Log {
   id: string;
@@ -61,6 +62,69 @@ function query(f: Filters, extra: Record<string, string> = {}): string {
   return p.toString();
 }
 
+// Имената на полетата в подробностите — на човешки език; непознатото остава както е записано
+// (записът е неизменим, затова показваме, не преписваме).
+const DETAIL_LABELS: Record<string, string> = {
+  unp: "УНП",
+  name: "име",
+  plu: "PLU",
+  error: "грешка",
+  reason: "причина",
+  totalCents: "сума",
+  amountCents: "сума",
+  priceCents: "цена",
+  discountCents: "отстъпка",
+  discountPermille: "отстъпка ‰",
+  cardCents: "с карта",
+  paidCard: "с карта",
+  openingCashCents: "начална наличност",
+  closingCashCents: "крайна наличност",
+  expectedCashCents: "очаквана наличност",
+  differenceCents: "разлика",
+  remainingCents: "остатък",
+  balanceCents: "салдо",
+  totalCostCents: "доставна стойност",
+  vatCents: "ДДС",
+  qtyMilli: "количество",
+  operatorCode: "код на оператор",
+  fiscalReceiptNo: "бон №",
+  receiptNumber: "бон №",
+  fiscalDeviceSn: "ИН на ФУ",
+  terminalRef: "терминал реф.",
+  cardChargedRef: "таксувана карта",
+  cardNumber: "карта",
+  docNumber: "документ №",
+  reportNumber: "отчет №",
+  saleNumber: "продажба №",
+  itemCount: "артикули",
+  lines: "редове",
+  rows: "редове",
+  resolution: "решение",
+  paymentType: "плащане",
+  driver: "драйвер",
+  terminal: "терминал",
+  role: "роля",
+  readOnly: "само четене",
+  pinChanged: "сменен ПИН",
+  changes: "промени",
+  eik: "ЕИК",
+  from: "от",
+  to: "до",
+  format: "формат",
+  report: "справка",
+  plan: "план",
+  seats: "места",
+  kind: "вид",
+  message: "съобщение",
+};
+
+function detailValue(k: string, v: unknown): string {
+  if (typeof v === "number" && /Cents$/.test(k)) return formatEur(v);
+  if (typeof v === "number" && k === "qtyMilli") return (v / 1000).toLocaleString("bg-BG", { maximumFractionDigits: 3 });
+  if (typeof v === "boolean") return v ? "да" : "не";
+  return typeof v === "object" ? JSON.stringify(v) : String(v);
+}
+
 function Detail({ raw }: { raw: string | null }) {
   if (!raw) return null;
   let parsed: unknown;
@@ -74,9 +138,9 @@ function Detail({ raw }: { raw: string | null }) {
   return (
     <span className="flex flex-wrap gap-x-3 gap-y-0.5">
       {entries.map(([k, v]) => (
-        <span key={k}>
-          <span className="text-ink-500">{k}:</span>{" "}
-          <span className="text-ink-300">{typeof v === "object" ? JSON.stringify(v) : String(v)}</span>
+        <span key={k} title={k}>
+          <span className="text-ink-500">{DETAIL_LABELS[k] ?? k}:</span>{" "}
+          <span className="text-ink-300 tabular-nums">{detailValue(k, v)}</span>
         </span>
       ))}
     </span>
@@ -153,7 +217,7 @@ export default function JournalPage() {
       </div>
 
       <form
-        className="card p-4 grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-6 items-end"
+        className="card p-4 grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-[repeat(5,minmax(0,1fr))_auto] items-end"
         onSubmit={(e) => {
           e.preventDefault();
           setPage(0);
@@ -208,10 +272,10 @@ export default function JournalPage() {
 
       {data && (
         <div className="card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="overflow-auto max-h-[64vh]">
+            <table className="data-table">
               <thead>
-                <tr className="text-ink-400 text-left border-b border-ink-800">
+                <tr>
                   <th className="py-3 px-4 font-medium w-44">Дата и час</th>
                   <th className="py-3 px-2 font-medium w-48">Оператор</th>
                   <th className="py-3 px-2 font-medium w-56">Действие</th>
@@ -221,7 +285,7 @@ export default function JournalPage() {
               </thead>
               <tbody>
                 {data.logs.map((l) => (
-                  <tr key={l.id} className="border-b border-ink-800/60 last:border-0 align-top">
+                  <tr key={l.id}>
                     <td className="py-2.5 px-4 text-ink-400 tabular-nums whitespace-nowrap selectable">
                       {new Date(l.createdAt).toLocaleDateString("bg-BG", { day: "2-digit", month: "2-digit", year: "numeric" })}
                       <span className="block text-xs">{new Date(l.createdAt).toLocaleTimeString("bg-BG")}</span>
@@ -230,7 +294,9 @@ export default function JournalPage() {
                       {l.user ? (
                         <>
                           {l.user.name}
-                          <span className="text-ink-500"> код {String(l.user.operatorCode).padStart(4, "0")}</span>
+                          <span className="block text-xs text-ink-500 tabular-nums">
+                            код {String(l.user.operatorCode).padStart(4, "0")}
+                          </span>
                         </>
                       ) : (
                         "—"
@@ -247,8 +313,13 @@ export default function JournalPage() {
                 ))}
                 {data.logs.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="py-10 text-center text-ink-500">
-                      Няма записи по тези филтри. Разширете периода или изчистете вида действие.
+                    <td colSpan={5}>
+                      <EmptyState
+                        compact
+                        icon={<FunnelSimple size={26} weight="duotone" />}
+                        title="Няма записи по тези филтри"
+                        hint="Разширете периода или изчистете вида действие и оператора."
+                      />
                     </td>
                   </tr>
                 )}

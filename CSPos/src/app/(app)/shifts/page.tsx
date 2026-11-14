@@ -5,7 +5,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Money, ArrowDown, ArrowUp, XCircle, Printer, FileText } from "@phosphor-icons/react";
-import { Modal, Field, Badge, Spinner, apiJson } from "@/components/ui";
+import Link from "next/link";
+import { Modal, Field, Badge, Spinner, EmptyState, apiJson } from "@/components/ui";
 import { ReconcilePanel } from "@/components/reconcile-panel";
 import { formatEur, parseCents } from "@/lib/money";
 import { STORNO_REASONS, PAYMENT_TYPES } from "@/lib/constants";
@@ -99,9 +100,17 @@ export default function ShiftsPage() {
       <ReconcilePanel onChanged={() => void load()} />
 
       {!data.shift ? (
-        <div className="card p-8 text-center text-ink-400">
-          <Money size={40} className="mx-auto mb-3 text-brand-700" weight="duotone" />
-          Нямате отворена смяна. Отворете я от екрана „Продажби“.
+        <div className="card">
+          <EmptyState
+            icon={<Money size={28} weight="duotone" />}
+            title="Нямате отворена смяна"
+            hint="Смяната се открива с началната наличност в касата — тя влиза като служебно въведена сума на ФУ."
+            action={
+              <Link href="/pos" className="btn-primary">
+                <Money size={18} /> Открий смяна
+              </Link>
+            }
+          />
         </div>
       ) : (
         <>

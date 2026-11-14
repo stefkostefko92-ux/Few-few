@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { CalendarBlank } from "@phosphor-icons/react";
 import { Spinner, apiJson } from "@/components/ui";
+import { ColumnChart, euroAxis, type ColumnDatum } from "@/components/charts";
 import { SuptoReports } from "@/components/supto-reports";
 import { formatEur } from "@/lib/money";
 import { VAT_GROUPS } from "@/lib/constants";
@@ -29,6 +30,46 @@ interface Report {
 
 function iso(d: Date): string {
   return d.toISOString().slice(0, 10);
+}
+
+function daysSpan(from: string, to: string): number {
+  return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000) + 1;
+}
+
+/** Всеки ден от периода (и дните без продажби — иначе празнините изчезват); над 62 дни — по месеци. */
+function turnoverSeries(byDay: Report["byDay"], from: string, to: string): ColumnDatum[] {
+  const map = new Map(byDay.map((d) => [d.day, d]));
+  const days: string[] = [];
+  for (let t = Date.parse(`${from}T00:00:00Z`); t <= Date.parse(`${to}T00:00:00Z`) && days.length < 3700; t += 86_400_000) {
+    days.push(new Date(t).toISOString().slice(0, 10));
+  }
+  const bounce = (n: number) => `${n} ${n === 1 ? "бон" : "бона"}`;
+  if (days.length <= 62) {
+    return days.map((day) => {
+      const d = map.get(day);
+      const [y, m, dd] = day.split("-");
+      return {
+        key: day,
+        label: `${dd}.${m}.${y}`,
+        short: `${dd}.${m}`,
+        value: d?.totalCents ?? 0,
+        detail: d ? bounce(d.count) : "без продажби",
+      };
+    });
+  }
+  const months = new Map<string, { value: number; count: number }>();
+  for (const day of days) {
+    const k = day.slice(0, 7);
+    const acc = months.get(k) ?? { value: 0, count: 0 };
+    const d = map.get(day);
+    acc.value += d?.totalCents ?? 0;
+    acc.count += d?.count ?? 0;
+    months.set(k, acc);
+  }
+  return [...months.entries()].map(([k, v]) => {
+    const [y, m] = k.split("-");
+    return { key: k, label: `${m}.${y}`, short: `${m}.${y?.slice(2)}`, value: v.value, detail: bounce(v.count) };
+  });
 }
 
 export default function ReportsPage() {
@@ -85,7 +126,6 @@ function TurnoverReports() {
     void load(iso(f), iso(t));
   }
 
-  const maxDay = Math.max(1, ...(report?.byDay.map((d) => d.totalCents) ?? [1]));
 
   return (
     <div className="space-y-6">
@@ -123,51 +163,46 @@ function TurnoverReports() {
       {report && !loading && (
         <>
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-            {[
-              ["Оборот", formatEur(report.totals.revenueCents)],
-              ["Бонове", `${report.totals.salesCount} (сторно ${report.totals.stornoCount})`],
-              [
-                "Брой / карта / вересия",
-                `${formatEur(report.totals.cashCents)} / ${formatEur(report.totals.cardCents)} / ${formatEur(report.totals.creditCents)}`,
-              ],
-              ["Отстъпки", formatEur(report.totals.discountCents)],
-            ].map(([label, value]) => (
-              <div key={label} className="card p-5">
-                <div className="text-sm text-ink-400 font-medium">{label}</div>
-                <div className={`text-xl font-black mt-1 tabular-nums ${label === "Оборот" ? "gradient-num" : ""}`}>
-                  {value}
-                </div>
-              </div>
-            ))}
+            <div className="card p-5">
+              <div className="text-sm text-ink-400 font-medium">Оборот</div>
+              <div className="text-2xl font-black mt-1 tabular-nums gradient-num">{formatEur(report.totals.revenueCents)}</div>
+            </div>
+            <div className="card p-5">
+              <div className="text-sm text-ink-400 font-medium">Бонове</div>
+              <div className="text-2xl font-black mt-1 tabular-nums">{report.totals.salesCount}</div>
+              <div className="text-xs text-ink-400 mt-0.5 tabular-nums">сторно {report.totals.stornoCount}</div>
+            </div>
+            <div className="card p-5">
+              <div className="text-sm text-ink-400 font-medium">Плащания</div>
+              <dl className="mt-1.5 space-y-0.5 text-sm">
+                {(
+                  [
+                    ["В брой", report.totals.cashCents],
+                    ["С карта", report.totals.cardCents],
+                    ["На вересия", report.totals.creditCents],
+                  ] as const
+                ).map(([k, v]) => (
+                  <div key={k} className="flex items-baseline justify-between gap-3">
+                    <dt className="text-ink-400">{k}</dt>
+                    <dd className="font-bold tabular-nums text-ink-100">{formatEur(v)}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+            <div className="card p-5">
+              <div className="text-sm text-ink-400 font-medium">Отстъпки</div>
+              <div className="text-2xl font-black mt-1 tabular-nums">{formatEur(report.totals.discountCents)}</div>
+            </div>
           </div>
 
-          {/* Оборот по дни — хоризонтални барове, една серия (един цвят), директни етикети */}
-          <section className="card p-5">
-            <h2 className="font-bold mb-4">Оборот по дни</h2>
-            {report.byDay.length === 0 && (
-              <p className="text-ink-500 text-sm">Няма продажби в периода.</p>
-            )}
-            <div className="space-y-2">
-              {report.byDay.map((d) => (
-                <div key={d.day} className="flex items-center gap-3 text-sm">
-                  <span className="w-24 shrink-0 text-ink-400 tabular-nums">
-                    {new Date(d.day).toLocaleDateString("bg-BG", { day: "2-digit", month: "2-digit" })}
-                  </span>
-                  <div className="flex-1 h-6 bg-ink-850 rounded-md overflow-hidden relative">
-                    <div
-                      className="h-full bg-brand-600/90 rounded-r-md"
-                      style={{ width: `${Math.max(2, (d.totalCents / maxDay) * 100)}%` }}
-                      title={`${d.day}: ${formatEur(d.totalCents)} от ${d.count} бона`}
-                    />
-                  </div>
-                  <span className="w-24 text-right font-bold tabular-nums">
-                    {formatEur(d.totalCents)}
-                  </span>
-                  <span className="w-16 text-right text-ink-500 tabular-nums">{d.count} б.</span>
-                </div>
-              ))}
-            </div>
-          </section>
+          <ColumnChart
+            title={daysSpan(from, to) > 62 ? "Оборот по месеци" : "Оборот по дни"}
+            description="Приключени продажби за периода; сторното е отделно в таблицата"
+            data={turnoverSeries(report.byDay, from, to)}
+            formatValue={formatEur}
+            formatAxis={euroAxis}
+            emptyText="Няма продажби в периода."
+          />
 
           <div className="grid lg:grid-cols-2 gap-5">
             <section className="card p-5">

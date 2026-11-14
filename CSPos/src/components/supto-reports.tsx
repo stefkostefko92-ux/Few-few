@@ -5,7 +5,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { DownloadSimple, FileXls, CaretLeft, CaretRight, FunnelSimple } from "@phosphor-icons/react";
-import { Spinner, apiJson } from "@/components/ui";
+import { Spinner, EmptyState, apiJson } from "@/components/ui";
 import { SUPTO_TABLES } from "@/lib/supto-export";
 
 interface Preview {
@@ -137,11 +137,11 @@ export function SuptoReports() {
       {data && !loading && (
         <div className="card overflow-hidden">
           <div className="overflow-x-auto max-h-[60vh]">
-            <table className="w-max min-w-full text-xs">
-              <thead className="sticky top-0 bg-ink-900/95 backdrop-blur">
-                <tr className="text-ink-400 text-left border-b border-ink-800">
+            <table className="data-table !w-max min-w-full !text-xs">
+              <thead>
+                <tr>
                   {data.table.headers.map((h, i) => (
-                    <th key={h} className={`py-2.5 px-3 font-medium whitespace-nowrap ${data.table.kinds[i] === "text" ? "" : "text-right"}`}>
+                    <th key={h} className={data.table.kinds[i] === "text" ? "" : "!text-right"}>
                       {h}
                     </th>
                   ))}
@@ -149,9 +149,9 @@ export function SuptoReports() {
               </thead>
               <tbody>
                 {data.rows.map((r, ri) => (
-                  <tr key={ri} className="border-b border-ink-800/60 last:border-0">
+                  <tr key={ri}>
                     {r.map((v, ci) => (
-                      <td key={ci} className={`py-2 px-3 whitespace-nowrap selectable ${data.table.kinds[ci] === "text" ? "" : "text-right tabular-nums"}`}>
+                      <td key={ci} className={`whitespace-nowrap selectable ${data.table.kinds[ci] === "text" ? "" : "text-right tabular-nums"}`}>
                         {v}
                       </td>
                     ))}
@@ -159,8 +159,13 @@ export function SuptoReports() {
                 ))}
                 {data.rows.length === 0 && (
                   <tr>
-                    <td colSpan={data.table.headers.length} className="py-10 text-center text-ink-500">
-                      Няма данни за избрания период и филтри.
+                    <td colSpan={data.table.headers.length}>
+                      <EmptyState
+                        compact
+                        icon={<FunnelSimple size={26} weight="duotone" />}
+                        title="Няма данни за избрания период"
+                        hint="Проверете периода и филтрите — справката показва само записи в тях."
+                      />
                     </td>
                   </tr>
                 )}

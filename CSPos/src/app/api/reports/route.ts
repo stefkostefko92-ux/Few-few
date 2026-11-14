@@ -6,6 +6,12 @@ import { guard, jsonError, requireRead } from "@/lib/auth";
 import { vatBreakdown } from "@/lib/vat";
 import { SERVICE_PLU_MIN } from "@/lib/constants";
 
+// Денят и часът — по българско време, не по UTC: продажба в 01:30 ч. е от днес, не от вчера.
+const DAY = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Sofia", year: "numeric", month: "2-digit", day: "2-digit" });
+const HOUR = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Sofia", hour: "2-digit", hourCycle: "h23" });
+const localDay = (d: Date) => DAY.format(d);
+const localHour = (d: Date) => Number(HOUR.format(d));
+
 export async function GET(req: Request) {
   return guard(async () => {
     await requireRead("MANAGER");
@@ -31,15 +37,21 @@ export async function GET(req: Request) {
 
     // по дни
     const byDay = new Map<string, { totalCents: number; count: number; stornoCents: number }>();
+    const byHour = Array.from({ length: 24 }, (_, hour) => ({ hour, totalCents: 0, count: 0 }));
     for (const s of completed) {
-      const day = s.createdAt.toISOString().slice(0, 10);
+      const h = byHour[localHour(s.createdAt)]!;
+      h.totalCents += s.totalCents;
+      h.count += 1;
+    }
+    for (const s of completed) {
+      const day = localDay(s.createdAt);
       const acc = byDay.get(day) ?? { totalCents: 0, count: 0, stornoCents: 0 };
       acc.totalCents += s.totalCents;
       acc.count += 1;
       byDay.set(day, acc);
     }
     for (const s of stornos) {
-      const day = s.createdAt.toISOString().slice(0, 10);
+      const day = localDay(s.createdAt);
       const acc = byDay.get(day) ?? { totalCents: 0, count: 0, stornoCents: 0 };
       acc.stornoCents += s.totalCents;
       byDay.set(day, acc);
@@ -109,6 +121,7 @@ export async function GET(req: Request) {
     return Response.json({
       totals,
       byDay: [...byDay.entries()].map(([day, v]) => ({ day, ...v })),
+      byHour,
       vat,
       topProducts,
       byCashier: [...byCashier.entries()].map(([name, v]) => ({ name, ...v })),
