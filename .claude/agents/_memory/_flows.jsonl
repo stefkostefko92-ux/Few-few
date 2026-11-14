@@ -544,3 +544,6 @@
 {"t":"handoff","ts":"2026-11-14T10:30:11.510Z","id":"r3f8442cc","from":"kodadjiyata","to":"razbivacha","status":"има бележки","run":"ca69ee15"}
 {"t":"start","ts":"2026-11-14T10:30:21.798Z","id":"r08d4ba7a","flow":"авто","lead":"razbivacha","auto":true}
 {"t":"handoff","ts":"2026-11-14T10:30:21.799Z","id":"r08d4ba7a","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"d1341dc7"}
+{"t":"handoff","ts":"2026-11-14T10:40:43.986Z","id":"r08d4ba7a","from":"pravniyat-razbirach","to":"kodadjiyata","status":"има бележки","run":"e2a08a6d"}
+{"t":"start","ts":"2026-11-14T10:41:44.361Z","id":"r39e49f88","flow":"авто","lead":"razbivacha","auto":true}
+{"t":"handoff","ts":"2026-11-14T10:41:44.361Z","id":"r39e49f88","from":"razbivacha","to":"kodadjiyata","status":"има бележки","run":"b14666d2"}
