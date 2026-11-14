@@ -38,7 +38,7 @@ npx tsx scripts/preview-site.ts   # витрината с примерни да�
 src/
   einvoice/      ЯДРОТО (без база, без мрежа): decimal.ts (пари без float, half-up) · model.ts (входът по
                  BT/BG на EN 16931, zod) · calculate.ts (редове, отстъпки, ДДС по категории, тотали, ДДС в
-                 евро) · rules.ts (EN 16931 + Peppol + ЗДДС: BG-01…BG-09) · ubl.ts / cii.ts (сериализатори,
+                 евро) · rules.ts (EN 16931 + Peppol + ЗДДС: BG-01…BG-09) · ubl.ts / cii.ts (+ ubl-parts, cii-parts) (сериализатори,
                  редът на елементите е по XSD) · notes.ts (бележката BT-22) · bg-ids.ts (ЕИК, ДДС номер) ·
                  codes.ts · xml.ts · index.ts (`buildEInvoice` — целият път)
   documents/     issue.ts (издаване в транзакция: заключване на фирмата → номер от серията → ядро →

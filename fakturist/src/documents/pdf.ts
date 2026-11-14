@@ -17,13 +17,8 @@ import {
 import { drawDates, drawHeader, INK, METRICS, RULE, SOFT, tint, type Frame } from './pdf-layout.js';
 import type { ResolvedPdfStyle } from './pdf-style.js';
 import { drawFooters } from './pdf-footer.js';
-import {
-  englishOf,
-  issuedViaText,
-  labeler,
-  PROFORMA_NOT_TAX,
-  type PdfLanguage,
-} from './pdf-labels.js';
+import { englishOf, issuedViaText, labeler, PROFORMA_NOT_TAX } from './pdf-labels.js';
+import type { PdfMeta } from './pdf-meta.js';
 export { bgAmount } from './pdf-format.js';
 
 /**
@@ -32,19 +27,7 @@ export { bgAmount } from './pdf-format.js';
  * цвят, лого) е на фирмата (pdf-style.ts); съдържанието — реквизитите, сумите, пълномощното и подписът
  * на продукта в долния ред на всяка страница — е едно и също във всеки изглед.
  */
-export interface PdfMeta {
-  number: string;
-  chainIndex: bigint | null;
-  sha256: string | null;
-  signature: string | undefined;
-  /** Кантората и пълномощното, когато документът е издаден от името на фирмата. */
-  issuedVia: { firm: string; mandateRef: string } | null;
-  annulled?: string | null; // „АНУЛИРАН …“ горе на всяка страница (чл. 116 ЗДДС, pdf-stamp.ts)
-  /** Български или двуезичен (pdf-labels.ts); липсва — български. */
-  language?: PdfLanguage;
-  /** Проформа (src/proforma/): заглавие „ПРОФОРМА ФАКТУРА“, без дата на данъчно събитие, с бележка, че не е данъчен документ. */
-  proforma?: boolean;
-}
+export type { PdfMeta };
 
 export function renderPdf(
   input: InvoiceInput,
