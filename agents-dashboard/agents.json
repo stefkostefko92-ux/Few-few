@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 667
+        "lessons": 668
       },
       "evolution": [
         {
@@ -2043,9 +2043,20 @@
           "date": "2026-11-14",
           "event": "v60.7 — учене",
           "detail": "Научи: В SQLite пресъздаване на таблица (CREATE new, INSERT SELECT, DROP old, RENAME) минава в… (+1 още)"
+        },
+        {
+          "version": "60.8.0",
+          "date": "2026-11-14",
+          "event": "v60.8 — учене",
+          "detail": "Научи: Салдо на вземане, смятано от документи минус записани плащания, остава фантомно за всек…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-14",
+          "type": "learning",
+          "summary": "Научи: „Салдо на вземане, смятано от документи минус записани плащания, остава фантомно за всек…\""
+        },
         {
           "date": "2026-11-14",
           "type": "learning",
