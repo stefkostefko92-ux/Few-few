@@ -10,7 +10,10 @@
     "admin": "Admin",
     "profile": "Profilo",
     "logout": "Esci",
-    "menu": "Menu"
+    "menu": "Menu",
+    "responsible": "Gioco responsabile",
+    "account": "Account",
+    "levelProgress": "Livello {{level}} · {{into}}/{{needed}} XP"
   },
   "friends": {
     "title": "Amici",
@@ -430,7 +433,8 @@
     "botsSoon": "Se non arrivano giocatori, i bot entreranno a breve.",
     "leaveConfirm": "Sicuro? (abbandono)",
     "backToRoom": "Torna alla stanza",
-    "finalPlace": "Posizione: {{n}} su {{total}}"
+    "finalPlace": "Posizione: {{n}} su {{total}}",
+    "botName": "Bot {{n}}"
   },
   "santase": {
     "trump": "Briscola",
@@ -492,7 +496,14 @@
     "valat": "Cappotto!",
     "inside": "Dentro",
     "redeal": "Nuova smazzata",
-    "noBidYet": "Nessuno ha ancora dichiarato la briscola."
+    "noBidYet": "Nessuno ha ancora dichiarato la briscola.",
+    "beloteCall": "Belote!",
+    "rebelote": "Rebelote",
+    "belotePrompt": "Belote",
+    "beloteHint": "Hai re e donna di {{suit}} (atout) — dichiari belote? Vale 20 punti.",
+    "announceBelote": "Dichiara belote (+20)",
+    "noAnnounce": "Non dichiarare",
+    "otherCard": "Altra carta"
   },
   "shop": {
     "payButton": "Acquista e paga · {{price}}",
@@ -571,7 +582,10 @@
     "done": "Completata",
     "empty": "Nessuna missione attiva.",
     "error": "Impossibile caricare le missioni.",
-    "retry": "Riprova"
+    "retry": "Riprova",
+    "show": "Mostra",
+    "hide": "Nascondi",
+    "summary": "{{done}}/{{total}} completate"
   },
   "leaderboard": {
     "empty": "Ancora nessun giocatore in classifica."

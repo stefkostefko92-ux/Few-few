@@ -4,6 +4,7 @@ import { useAuthStore } from "../../../lib/store";
 import { Button } from "../../../ui";
 import { playCue } from "../../../lib/sound";
 import { PlayingCard } from "../cards/PlayingCard";
+import { sortSantase } from "../cards/sortHand";
 import { TrumpIndicator } from "../cards/TrumpIndicator";
 import { type SuitChar } from "../cards/suits";
 import { FeltTable, Seat } from "../table/FeltTable";
@@ -14,6 +15,7 @@ import { useTrickDisplay, TrickCardSlot } from "../anim/useTrickDisplay";
 import { useMatch } from "../useMatch";
 import { Scene, ScorePill, HandCard } from "../scene/SceneShell";
 import { DecisionPrompt } from "../scene/DecisionPrompt";
+import { useClearOfDecision } from "../scene/useClearOfDecision";
 
 interface Play {
   seat: number;
@@ -101,6 +103,10 @@ export function SantaseView({ title }: { title: string }) {
   });
 
   const myTurn = !!state && state.turn === seat && legal.length > 0;
+  // Ръката: козът първи, после A T K Q J 9 (само показване).
+  const dealtHand = state?.hands[seat];
+  const trumpSuit = state?.trump;
+  const myHand = useMemo(() => sortSantase(dealtHand ?? [], trumpSuit), [dealtHand, trumpSuit]);
 
   // Prefer the marriage variant of a card when offered — unless the player has
   // armed "play quietly" (tactically legal: keep the announce for later).
@@ -149,6 +155,14 @@ export function SantaseView({ title }: { title: string }) {
     phase === "playing" && onLead && (!!exchangeAction || marriagePlays.length > 0 || declareReady.length > 0);
   const [skippedLead, setSkippedLead] = useState<string | null>(null);
   const callsInPrompt = leadPrompt && skippedLead !== leadKey;
+  // Прозорецът с обявите е горе; превъртяната страница вдига ръката под него —
+  // тогава я сваляме точно под прозореца (решението е за картите в нея).
+  useClearOfDecision(
+    () => document.querySelector<HTMLElement>('[data-zone="hand"]'),
+    callsInPrompt,
+    leadKey,
+    "below",
+  );
   const smallCalls =
     onLead && !callsInPrompt && (!!closeAction || hasMarriageChoice || declareActions.length > 0 || !!exchangeAction);
 
@@ -352,14 +366,14 @@ export function SantaseView({ title }: { title: string }) {
                 badge={<span className="tnum">{state.points[seat] ?? 0}</span>}
               >
                 <div className="aso-myhand" data-zone="hand" style={{ display: "flex" }}>
-                  {(state.hands[seat] ?? []).map((card, i) => (
+                  {myHand.map((card, i) => (
                     // keyed by the card (unique in a hand): an index key remounted
                     // every card right of a played one and replayed its deal-in
                     <HandCard
                       key={card}
                       card={card}
                       index={i}
-                      count={(state.hands[seat] ?? []).length}
+                      count={myHand.length}
                       playable={myTurn && playFor.has(card)}
                       onPlay={onPlay}
                     />
@@ -417,10 +431,10 @@ export function SantaseView({ title }: { title: string }) {
               suit: SUIT_GLYPH[state.trump] ?? "",
               count: state.stock.length,
             })}
-            // On my lead the trick is empty: the middle of the felt is free on
-            // a laptop. A phone's popup spans the felt and would cover the
-            // talon on the left rail — there it goes to the top third.
-            placement={narrow ? "top" : "center"}
+            // Горе, над гърбовете на противника: с няколко обяви (две двойки
+            // 20/40 + „Затвори“ + „Имам 66…“) прозорецът става висок и в
+            // средата покриваше ръката ми; на телефон — и талона на левия ръб.
+            placement="top"
             optional={{ label: t("decision.notNow"), onSkip: () => setSkippedLead(leadKey) }}
             testId="santase-lead"
           >

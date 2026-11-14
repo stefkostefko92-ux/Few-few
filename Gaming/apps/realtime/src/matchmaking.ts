@@ -20,6 +20,7 @@ import { redis } from "./redis.js";
 import { env } from "./env.js";
 import { logger } from "./logger.js";
 import { notifyBlocked, playBlockedAmong } from "./responsible.js";
+import { botName } from "./lobby.js";
 
 /** Резултат от влизане в опашка. */
 export type JoinQueueResult = "joined" | "no_engine" | "self_excluded" | "daily_limit";
@@ -429,7 +430,7 @@ export class Matchmaker {
         seat,
         userId: null,
         isBot: true,
-        displayName: "АСО Бот",
+        displayName: botName(b + 1),
         bot: new RandomBot(`${seed}:bot:${seat}`, difficulty),
       });
     }

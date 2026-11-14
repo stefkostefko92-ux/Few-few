@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../../lib/store";
 import { playCue } from "../../../lib/sound";
 import { PlayingCard } from "../cards/PlayingCard";
+import { sortByRank } from "../cards/sortHand";
 import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useCardFlight } from "../anim/useCardFlight";
@@ -40,7 +41,7 @@ export function GoFishView({ title }: { title: string }) {
   const m = useMatch<GoFishState, GoFishAction>("GOFISH");
   const { state, legal, seat, phase, result, players } = m;
 
-  // Three bots share the name „АСО Бот“ — number them, or the ask buttons
+  // Same-named seats get an ordinal (bots arrive as „Бот 1, 2, 3“), or the ask buttons
   // can't say WHOM you are asking.
   const names = useMemo(() => seatNames(players), [players]);
   const nameFor = (s: number) => names(s) ?? `#${s}`;
@@ -105,6 +106,9 @@ export function GoFishView({ title }: { title: string }) {
   const [target, setTarget] = useState<number | null>(null);
 
   const myTurn = !!state && state.turn === seat && legal.length > 0;
+  // По ранг (A K Q … 2), в ранга по боя — комплектите са по ранг (само показване).
+  const dealtHand = state?.hands[seat];
+  const myHand = useMemo(() => sortByRank(dealtHand ?? []), [dealtHand]);
 
   // Ranks I can ask, and which targets are valid for each.
   const asks = useMemo(() => legal.filter((a) => a.type === "ASK"), [legal]);
@@ -173,12 +177,12 @@ export function GoFishView({ title }: { title: string }) {
                 badge={<span className="tnum">📚 {state.books[seat] ?? 0}</span>}
               >
                 <div className="aso-myhand" style={{ display: "flex" }}>
-                  {(state.hands[seat] ?? []).map((card, i) => (
+                  {myHand.map((card, i) => (
                     <PlayingCard
                       key={`${card}-${i}`}
                       card={card}
                       size="md"
-                      style={{ marginLeft: i ? -fitOverlap((state.hands[seat] ?? []).length, "md") : 0 }}
+                      style={{ marginLeft: i ? -fitOverlap(myHand.length, "md") : 0 }}
                     />
                   ))}
                 </div>
