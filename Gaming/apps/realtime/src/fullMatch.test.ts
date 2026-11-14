@@ -149,3 +149,32 @@ describe("пълен мач през GameRoom — човек + ботове, в�
     }, 120_000);
   }
 });
+
+describe("GameRoom — предаване в отборна игра", () => {
+  it("Белот: предалият и партньорът му губят, противниците печелят", async () => {
+    vi.useFakeTimers();
+    const log: Emit[] = [];
+    const room = new GameRoom(fakeIo(log), "bf", "BELOTE", Array.from({ length: 4 }, (_, seat) => ({ seat, userId: `u${seat}`, isBot: false, displayName: `P${seat}` })), "seed");
+    room.start();
+    room.resign("u0");
+    await vi.advanceTimersByTimeAsync(50);
+    const over = log.find((e) => e.event === SOCKET_EVENTS.GAME_OVER)!.payload as {
+      score: Array<{ seat: number; result: string }>;
+    };
+    const res = Object.fromEntries(over.score.map((s) => [s.seat, s.result]));
+    expect(res).toEqual({ 0: "loss", 2: "loss", 1: "win", 3: "win" });
+  });
+
+  it("игра без отбори (Човече): само предалият губи", async () => {
+    vi.useFakeTimers();
+    const log: Emit[] = [];
+    const room = new GameRoom(fakeIo(log), "lf", "LUDO", Array.from({ length: 4 }, (_, seat) => ({ seat, userId: `u${seat}`, isBot: false, displayName: `P${seat}` })), "seed");
+    room.start();
+    room.resign("u2");
+    await vi.advanceTimersByTimeAsync(50);
+    const over = log.find((e) => e.event === SOCKET_EVENTS.GAME_OVER)!.payload as {
+      score: Array<{ seat: number; result: string }>;
+    };
+    expect(over.score.filter((s) => s.result === "loss").map((s) => s.seat)).toEqual([2]);
+  });
+});

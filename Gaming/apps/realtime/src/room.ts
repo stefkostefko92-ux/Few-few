@@ -5,6 +5,7 @@ import {
   isBettingGame,
   SOCKET_EVENTS,
   TIMEOUT_STRIKES_FOR_TAKEOVER,
+  teamOfSeat,
   turnSecondsFor,
   type GameKey,
   type MatchFoundMsg,
@@ -498,11 +499,18 @@ export class GameRoom {
   private onGrace(seat: number): void {
     if (this.done || !this.disconnected.has(seat)) return;
     logger.info({ matchId: this.matchId, seat }, "seat abandoned — forfeiting");
-    const score: SeatScore[] = this.seats.map((s) => ({
+    void this.finish(this.withLivePoints(this.forfeitScore(seat)));
+  }
+
+  /** A forfeit by `seat`: that seat — and in partnership games (Белот, Бридж,
+   *  Кент) its partner too — loses; everyone else wins. The partner used to be
+   *  scored as a winner of the match their own teammate abandoned. */
+  private forfeitScore(seat: number): SeatScore[] {
+    const loserTeam = teamOfSeat(this.game, seat);
+    return this.seats.map((s) => ({
       seat: s.seat,
-      result: s.seat === seat ? "loss" : "win",
+      result: teamOfSeat(this.game, s.seat) === loserTeam ? "loss" : "win",
     }));
-    void this.finish(this.withLivePoints(score));
   }
 
   /** Explicit abandon (the player queued for a new match while seated here):
@@ -511,11 +519,7 @@ export class GameRoom {
     const seat = this.seatOf(userId);
     if (!seat || seat.isBot || this.done) return;
     logger.info({ matchId: this.matchId, seat: seat.seat }, "seat resigned (re-queued elsewhere)");
-    const score: SeatScore[] = this.seats.map((s) => ({
-      seat: s.seat,
-      result: s.seat === seat.seat ? "loss" : "win",
-    }));
-    void this.finish(this.withLivePoints(score));
+    void this.finish(this.withLivePoints(this.forfeitScore(seat.seat)));
   }
 
   /**
