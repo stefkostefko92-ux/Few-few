@@ -73,7 +73,7 @@ export default function ShiftsPage() {
   return (
     <div className="space-y-5 animate-fade-up">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-black">Смяна</h1>
+        <h1 className="text-2xl font-black">Смени и наличност</h1>
         {data.shift && (
           <div className="flex gap-2">
             <button onClick={() => setCashModal("IN")} className="btn-ghost text-sm">
@@ -83,7 +83,7 @@ export default function ShiftsPage() {
               <ArrowUp size={18} /> Служебно извеждане
             </button>
             <button onClick={() => setCloseModal(true)} className="btn-danger text-sm">
-              Закрий смяната (Z-отчет)
+              Закрий смяната
             </button>
           </div>
         )}
@@ -336,12 +336,14 @@ function CloseModal({
   onDone: (message: string, receiptText: string | null) => void;
 }) {
   const [counted, setCounted] = useState("");
+  const [report, setReport] = useState<"Z" | "X">("Z");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (open) {
       setCounted("");
+      setReport("Z");
       setError(null);
     }
   }, [open]);
@@ -358,7 +360,7 @@ function CloseModal({
         await fetch("/api/shifts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "close", closingCashCents: countedCents }),
+          body: JSON.stringify({ action: "close", closingCashCents: countedCents, report }),
         })
       );
       onDone(
@@ -380,8 +382,30 @@ function CloseModal({
         <p className="text-ink-400 text-sm">
           Очаквана касова наличност по системата:{" "}
           <b className="text-ink-100">{formatEur(expected)}</b>. Пребройте касата и въведете
-          реалната сума — след потвърждение ФУ ще пусне дневен финансов отчет (Z).
+          реалната сума. Z отчетът е дневен (чл. 39 Н-18) — при смяна посред деня изберете X.
         </p>
+        <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Отчет при закриване">
+          {(
+            [
+              ["Z", "Край на деня", "Дневен отчет с нулиране (Z)"],
+              ["X", "Смяна посред деня", "Отчет без нулиране (X)"],
+            ] as const
+          ).map(([key, title, hint]) => (
+            <button
+              key={key}
+              type="button"
+              role="radio"
+              aria-checked={report === key}
+              onClick={() => setReport(key)}
+              className={`rounded-2xl px-3 py-2.5 text-left border transition-colors ${
+                report === key ? "bg-white/[0.9] border-brand-500/50 shadow-card" : "border-ink-800 text-ink-300"
+              }`}
+            >
+              <span className="block font-semibold text-sm">{title}</span>
+              <span className="block text-xs text-ink-500">{hint}</span>
+            </button>
+          ))}
+        </div>
         <Field label="Преброена наличност (EUR)">
           <input
             autoFocus
@@ -399,7 +423,7 @@ function CloseModal({
         )}
         {error && <p className="text-coral-600 text-sm">{error}</p>}
         <button onClick={close} disabled={busy} className="btn-danger w-full h-12">
-          {busy ? "Пуска се Z-отчет…" : "Закрий смяната"}
+          {busy ? `Пуска се ${report} отчет…` : "Закрий смяната"}
         </button>
       </div>
     </Modal>

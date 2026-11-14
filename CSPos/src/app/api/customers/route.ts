@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { audit } from "@/lib/audit";
 import { guard, jsonError, requireRole, requireSession } from "@/lib/auth";
 
 export async function GET(req: Request) {
@@ -31,7 +32,7 @@ const schema = z.object({
 
 export async function POST(req: Request) {
   return guard(async () => {
-    await requireRole("MANAGER");
+    const s = await requireRole("MANAGER");
     const parsed = schema.safeParse(await req.json());
     if (!parsed.success) throw jsonError(400, "Невалидни данни за клиент.");
     const { marketingConsent, ...rest } = parsed.data;
@@ -42,6 +43,11 @@ export async function POST(req: Request) {
         // документираме момента на съгласието (GDPR чл. 7 — доказуемост)
         consentAt: marketingConsent ? new Date() : null,
       },
+    });
+    // без име/телефон в дневника — минимизация (GDPR); номерът на картата е достатъчен
+    await audit(s.userId, "CUSTOMER_CREATE", "Customer", customer.id, {
+      cardNumber: customer.cardNumber,
+      discountPermille: customer.discountPermille,
     });
     return Response.json({ customer }, { status: 201 });
   });

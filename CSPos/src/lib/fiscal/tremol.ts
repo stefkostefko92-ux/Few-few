@@ -135,9 +135,9 @@ export class TremolFiscalDriver implements FiscalDriver {
     return this.cmd("CloseReceipt");
   }
 
-  async cashInOut(amountCents: number): Promise<FiscalResult> {
+  async cashInOut(amountCents: number, operatorCode?: number): Promise<FiscalResult> {
     return this.cmd("ReceivedOnAccount_PaidOut", {
-      OperNum: "1",
+      OperNum: String(operatorCode ?? 1),
       OperPass: this.cfg.operatorPassword ?? "0",
       Amount: (amountCents / 100).toFixed(2),
     });

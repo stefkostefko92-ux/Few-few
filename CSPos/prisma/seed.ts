@@ -103,22 +103,30 @@ const PRODUCTS: SeedProduct[] = [
 
 async function main() {
   // Потребители: ПИН по подразбиране — СМЕНЕТЕ ГИ след първия вход!
+  // Прил. № 29, т. 6: поне две имена и период на активност за ролята;
+  // т. 19: конфигуриран одиторски профил — като администраторския, но само за четене.
   const users = [
-    { name: "Админ", operatorCode: 1, pin: "9999", role: "ADMIN" },
-    { name: "Мария Управител", operatorCode: 2, pin: "5555", role: "MANAGER" },
-    { name: "Иван Касиер", operatorCode: 3, pin: "1111", role: "CASHIER" },
+    { name: "Георги Петров", operatorCode: 1, pin: "9999", role: "ADMIN", readOnly: false },
+    { name: "Мария Иванова", operatorCode: 2, pin: "5555", role: "MANAGER", readOnly: false },
+    { name: "Иван Димитров", operatorCode: 3, pin: "1111", role: "CASHIER", readOnly: false },
+    { name: "Одитор НАП", operatorCode: 99, pin: "2929", role: "ADMIN", readOnly: true },
   ];
   for (const u of users) {
-    await prisma.user.upsert({
+    const user = await prisma.user.upsert({
       where: { operatorCode: u.operatorCode },
       create: {
         name: u.name,
         operatorCode: u.operatorCode,
         pinHash: await bcrypt.hash(u.pin, 10),
         role: u.role,
+        readOnly: u.readOnly,
       },
-      update: { name: u.name, role: u.role },
+      update: { name: u.name, role: u.role, readOnly: u.readOnly },
     });
+    const grant = await prisma.userRoleGrant.findFirst({ where: { userId: user.id, validTo: null } });
+    if (!grant) {
+      await prisma.userRoleGrant.create({ data: { userId: user.id, role: u.role, readOnly: u.readOnly } });
+    }
   }
 
   for (const c of CATEGORIES) {
@@ -213,9 +221,9 @@ async function main() {
     }
   }
 
-  console.log("Сийдът приключи: 3 потребители, 10 категории, "
+  console.log("Сийдът приключи: 4 потребители (вкл. одиторски профил), 10 категории, "
     + `${PRODUCTS.length} стоки, ${suppliers.length} доставчици, ${demoPromos.length} промоции.`);
-  console.log("ПИН кодове (сменете ги!): Админ 9999, Управител 5555, Касиер 1111");
+  console.log("ПИН кодове (сменете ги!): администратор 9999, управител 5555, касиер 1111, одитор (код 99) 2929");
 }
 
 main()

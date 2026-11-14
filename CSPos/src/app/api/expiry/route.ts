@@ -4,11 +4,11 @@
 // сигнал „провери рафта“, не точен остатък по партида.
 
 import { prisma } from "@/lib/db";
-import { guard, requireRole } from "@/lib/auth";
+import { guard, requireRead } from "@/lib/auth";
 
 export async function GET(req: Request) {
   return guard(async () => {
-    await requireRole("MANAGER");
+    await requireRead("MANAGER");
     const days = Math.min(
       Math.max(parseInt(new URL(req.url).searchParams.get("days") ?? "14", 10), 1),
       365

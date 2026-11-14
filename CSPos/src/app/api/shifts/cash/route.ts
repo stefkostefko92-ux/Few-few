@@ -3,7 +3,7 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { guard, jsonError, requireSession } from "@/lib/auth";
+import { guard, jsonError, requireRole } from "@/lib/auth";
 import { audit } from "@/lib/audit";
 import { getFiscalDriver } from "@/lib/fiscal";
 
@@ -15,7 +15,7 @@ const schema = z.object({
 
 export async function POST(req: Request) {
   return guard(async () => {
-    const s = await requireSession();
+    const s = await requireRole("CASHIER");
     const parsed = schema.safeParse(await req.json());
     if (!parsed.success) throw jsonError(400, "Невалидни данни.");
     const { type, amountCents, reason } = parsed.data;
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     if (!shift) throw jsonError(409, "Няма отворена смяна.");
 
     const fiscal = await getFiscalDriver();
-    const r = await fiscal.cashInOut(type === "IN" ? amountCents : -amountCents);
+    const r = await fiscal.cashInOut(type === "IN" ? amountCents : -amountCents, s.operatorCode);
     if (!r.ok) throw jsonError(502, r.error ?? "ФУ отказа операцията.");
 
     const movement = await prisma.cashMovement.create({

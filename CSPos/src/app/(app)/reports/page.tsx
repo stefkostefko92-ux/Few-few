@@ -1,11 +1,12 @@
 "use client";
 
-// Отчети за период: обороти по дни (барове с директни етикети + табличен
-// характер), ДДС по групи, топ стоки, касиери, експорт CSV за НАП.
+// Справки: (1) по Прил. № 29, т. 18 — деветте таблици за НАП с филтри и експорт;
+// (2) оборотни — обороти по дни, ДДС по групи, топ стоки, касиери.
 
 import { useCallback, useEffect, useState } from "react";
-import { DownloadSimple, CalendarBlank } from "@phosphor-icons/react";
+import { CalendarBlank } from "@phosphor-icons/react";
 import { Spinner, apiJson } from "@/components/ui";
+import { SuptoReports } from "@/components/supto-reports";
 import { formatEur } from "@/lib/money";
 import { VAT_GROUPS } from "@/lib/constants";
 
@@ -31,6 +32,26 @@ function iso(d: Date): string {
 }
 
 export default function ReportsPage() {
+  const [tab, setTab] = useState<"supto" | "turnover">("supto");
+  return (
+    <div className="space-y-6 animate-fade-up">
+      <div className="flex flex-wrap items-center gap-3 justify-between">
+        <h1 className="text-2xl font-black">Справки</h1>
+        <div className="flex gap-2" role="tablist" aria-label="Вид справки">
+          <button role="tab" aria-selected={tab === "supto"} className={`chip ${tab === "supto" ? "chip-active" : ""}`} onClick={() => setTab("supto")}>
+            По Прил. № 29 (НАП)
+          </button>
+          <button role="tab" aria-selected={tab === "turnover"} className={`chip ${tab === "turnover" ? "chip-active" : ""}`} onClick={() => setTab("turnover")}>
+            Оборот и анализ
+          </button>
+        </div>
+      </div>
+      {tab === "supto" ? <SuptoReports /> : <TurnoverReports />}
+    </div>
+  );
+}
+
+function TurnoverReports() {
   const today = iso(new Date());
   const [from, setFrom] = useState(today);
   const [to, setTo] = useState(today);
@@ -67,18 +88,7 @@ export default function ReportsPage() {
   const maxDay = Math.max(1, ...(report?.byDay.map((d) => d.totalCents) ?? [1]));
 
   return (
-    <div className="space-y-6 animate-fade-up">
-      <div className="flex flex-wrap items-center gap-3 justify-between">
-        <h1 className="text-2xl font-black">Отчети</h1>
-        <a
-          href={`/api/export/nap?from=${from}&to=${to}`}
-          className="btn-ghost text-sm"
-          download
-        >
-          <DownloadSimple size={18} /> Експорт CSV (НАП одит)
-        </a>
-      </div>
-
+    <div className="space-y-6">
       {/* Филтри — един ред над графиките */}
       <div className="card p-4 flex flex-wrap items-end gap-3">
         <label className="space-y-1">

@@ -3,12 +3,12 @@
 // Целта е да не се разпродава / презапасява — на база минималния праг.
 
 import { prisma } from "@/lib/db";
-import { guard, requireRole } from "@/lib/auth";
+import { guard, requireRead } from "@/lib/auth";
 import { SERVICE_PLU_MIN } from "@/lib/constants";
 
 export async function GET() {
   return guard(async () => {
-    await requireRole("MANAGER");
+    await requireRead("MANAGER");
 
     // стоки с зададен минимум, паднали на/под него (без служебните артикули)
     const products = await prisma.product.findMany({

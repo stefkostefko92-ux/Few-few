@@ -43,6 +43,8 @@ export interface FiscalResult {
   ok: boolean;
   receiptNumber?: string;
   deviceSerial?: string;
+  /** Час на ФУ, ако устройството/мостът го връща. */
+  deviceDateTime?: string;
   /** Пълен текст на бона (демо/преглед). */
   receiptText?: string;
   error?: string;
@@ -51,7 +53,10 @@ export interface FiscalResult {
 export interface FiscalStatus {
   ok: boolean;
   driver: string;
+  /** Индивидуален номер на ФУ, върнат от устройството (за УНП — т. 8, т. 9). */
   deviceSerial?: string;
+  /** Час на ФУ (местно време, ISO без зона) — за сверката по т. 5. */
+  deviceDateTime?: string;
   detail: string;
 }
 
@@ -61,8 +66,8 @@ export interface FiscalDriver {
   status(): Promise<FiscalStatus>;
   printReceipt(data: FiscalReceiptData): Promise<FiscalResult>;
   printStorno(data: StornoData): Promise<FiscalResult>;
-  /** Служебно въведени (+) / изведени (−) суми — със служебен бон. */
-  cashInOut(amountCents: number): Promise<FiscalResult>;
+  /** Служебно въведени (+) / изведени (−) суми — със служебен бон на оператора. */
+  cashInOut(amountCents: number, operatorCode?: number): Promise<FiscalResult>;
   xReport(): Promise<FiscalResult>;
   zReport(): Promise<FiscalResult>;
 }

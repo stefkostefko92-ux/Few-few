@@ -154,7 +154,7 @@ export default function ProductsPage() {
   return (
     <div className="space-y-5 animate-fade-up">
       <div className="flex flex-wrap items-center gap-3 justify-between">
-        <h1 className="text-2xl font-black">Стоки</h1>
+        <h1 className="text-2xl font-black">Номенклатура</h1>
         <div className="flex gap-3">
           <input
             value={q}

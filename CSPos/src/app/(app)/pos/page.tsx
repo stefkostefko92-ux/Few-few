@@ -53,8 +53,11 @@ interface Category {
 }
 
 interface CartLine {
+  /** Идентификатор на реда — сървърът по него разпознава анулиранията (т. 12). */
+  uid: string;
   product: Product;
   qtyMilli: number;
+  /** Ръчна отстъпка от екрана; отстъпката от картата се прилага на сървъра. */
   discountPermille: number;
   priceLockedCents?: number;
 }
@@ -67,11 +70,30 @@ interface Customer {
   balanceCents: number;
 }
 
-/** Редова сума с промоциите (PERCENT/PRICE сменят цената, MxN дава отстъпка). */
-function lineTotal(l: CartLine, promos: ActivePromotion[]): number {
-  if (l.priceLockedCents !== undefined) return applyDiscount(l.priceLockedCents, l.discountPermille);
+interface Draft {
+  id: string;
+  unp: string;
+  openedAt: string;
+}
+
+interface ServerDraft extends Draft {
+  state: "OPEN" | "HELD" | "PAYING";
+  heldAt: string | null;
+  customerCard: string | null;
+  lines: Array<{ uid: string; productId: string; qtyMilli: number; discountPermille: number; priceLockedCents: number | null }>;
+}
+
+const newUid = () =>
+  typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+
+/** Редова сума с промоциите (PERCENT/PRICE сменят цената, MxN дава отстъпка). Информативно. */
+function lineTotal(l: CartLine, promos: ActivePromotion[], customerPermille = 0): number {
+  const manual = Math.max(l.discountPermille, customerPermille);
+  if (l.priceLockedCents !== undefined) return applyDiscount(l.priceLockedCents, manual);
   const promo = bestPromotion(l.product, l.qtyMilli, promos, new Date());
-  const discount = Math.max(l.discountPermille, promo.discountPermille);
+  const discount = Math.max(manual, promo.discountPermille);
   return applyDiscount(lineTotalCents(promo.unitCents, l.qtyMilli), discount);
 }
 
@@ -87,9 +109,15 @@ export default function PosPage() {
   const [promos, setPromos] = useState<ActivePromotion[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  // Прил. № 29: откритата продажба живее в базата (т. 9.1), ФУ се проверява при старт (т. 8)
+  const [draft, setDraft] = useState<Draft | null>(null);
+  const [fiscal, setFiscal] = useState<{ ok: boolean; detail: string } | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [held, setHeld] = useState<ServerDraft[]>([]);
+  const [paying, setPaying] = useState<ServerDraft[]>([]);
+
   const [weighing, setWeighing] = useState<Product | null>(null);
   const [editingQty, setEditingQty] = useState<number | null>(null); // индекс на ред в бона
-  const [heldCarts, setHeldCarts] = useState<Array<{ id: string; label: string; lines: CartLine[] }>>([]);
   const [recallOpen, setRecallOpen] = useState(false);
   const [discountOpen, setDiscountOpen] = useState(false);
   const [freeSaleOpen, setFreeSaleOpen] = useState(false);
@@ -100,7 +128,51 @@ export default function PosPage() {
   const scanRef = useRef<HTMLInputElement>(null);
   const [scanValue, setScanValue] = useState("");
 
-  // първоначално зареждане
+  // последното състояние, потвърдено от сървъра — при отказ екранът се връща към него
+  const cartRef = useRef<CartLine[]>([]);
+  const confirmedRef = useRef<CartLine[]>([]);
+  const draftRef = useRef<Draft | null>(null);
+  const customerRef = useRef<Customer | null>(null);
+  const queueRef = useRef<Promise<unknown>>(Promise.resolve());
+  const openingRef = useRef<Promise<Draft> | null>(null);
+  const productsRef = useRef<Product[]>([]);
+
+  const setCartBoth = (next: CartLine[]) => {
+    cartRef.current = next;
+    setCart(next);
+  };
+  const setDraftBoth = (d: Draft | null) => {
+    draftRef.current = d;
+    setDraft(d);
+  };
+
+  const checkFiscal = useCallback(async () => {
+    try {
+      const r = await apiJson<{ fiscal: { ok: boolean; detail: string } }>(await fetch("/api/fiscal", { cache: "no-store" }));
+      setFiscal({ ok: r.fiscal.ok, detail: r.fiscal.detail });
+    } catch (e) {
+      setFiscal({ ok: false, detail: e instanceof Error ? e.message : "няма връзка" });
+    }
+  }, []);
+
+  const toCartLines = useCallback((lines: ServerDraft["lines"]): CartLine[] => {
+    const byId = new Map(productsRef.current.map((p) => [p.id, p]));
+    return lines.flatMap((l) => {
+      const product = byId.get(l.productId);
+      return product
+        ? [{ uid: l.uid, product, qtyMilli: l.qtyMilli, discountPermille: l.discountPermille, priceLockedCents: l.priceLockedCents ?? undefined }]
+        : [];
+    });
+  }, []);
+
+  const loadDrafts = useCallback(async () => {
+    const r = await apiJson<{ drafts: ServerDraft[] }>(await fetch("/api/sales/open", { cache: "no-store" }));
+    setHeld(r.drafts.filter((d) => d.state === "HELD"));
+    setPaying(r.drafts.filter((d) => d.state === "PAYING"));
+    return r.drafts;
+  }, []);
+
+  // първоначално зареждане + т. 8: проверка на ФУ при старт на работното място
   useEffect(() => {
     void (async () => {
       try {
@@ -108,58 +180,157 @@ export default function PosPage() {
           apiJson<{ products: Product[] }>(await fetch("/api/products")),
           apiJson<{ categories: Category[] }>(await fetch("/api/categories")),
           apiJson<{ shift: unknown }>(await fetch("/api/shifts")),
-          apiJson<{ display: { dualDisplay: boolean } }>(await fetch("/api/settings")).catch(
-            () => ({ display: { dualDisplay: true } })
-          ),
-          apiJson<{ promotions: ActivePromotion[] }>(await fetch("/api/promotions/active")).catch(
-            () => ({ promotions: [] })
-          ),
+          apiJson<{ display: { dualDisplay: boolean } }>(await fetch("/api/settings")).catch(() => ({ display: { dualDisplay: true } })),
+          apiJson<{ promotions: ActivePromotion[] }>(await fetch("/api/promotions/active")).catch(() => ({ promotions: [] })),
         ]);
+        productsRef.current = p.products;
         setProducts(p.products);
         setCategories(c.categories);
         setHasShift(Boolean(sh.shift));
         setDualDisplay(st.display.dualDisplay);
         setPromos(pr.promotions);
+        // открита продажба отпреди презареждането се възстановява с нейния УНП
+        const drafts = await loadDrafts();
+        const open = drafts.find((d) => d.state === "OPEN" && d.lines.length > 0);
+        if (open) {
+          const lines = toCartLines(open.lines);
+          confirmedRef.current = lines;
+          setCartBoth(lines);
+          setDraftBoth({ id: open.id, unp: open.unp, openedAt: open.openedAt });
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : "Грешка при зареждане.");
       }
     })();
-  }, []);
+    void checkFiscal();
+  }, [checkFiscal, loadDrafts, toCartLines]);
 
-  // задържани бонове — пазят се локално на касата (преживяват презареждане)
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("cspos.heldCarts");
-      if (raw) setHeldCarts(JSON.parse(raw));
-    } catch {
-      /* повреден запис — игнорирай */
+  const ensureDraft = useCallback(async (): Promise<Draft> => {
+    if (draftRef.current) return draftRef.current;
+    if (!openingRef.current) {
+      openingRef.current = (async () => {
+        const r = await apiJson<{ draft: Draft }>(await fetch("/api/sales/open", { method: "POST" }));
+        setDraftBoth({ id: r.draft.id, unp: r.draft.unp, openedAt: r.draft.openedAt });
+        return r.draft;
+      })().finally(() => {
+        openingRef.current = null;
+      });
     }
+    return openingRef.current;
   }, []);
-  useEffect(() => {
-    localStorage.setItem("cspos.heldCarts", JSON.stringify(heldCarts));
-  }, [heldCarts]);
 
-  const holdCart = useCallback(() => {
-    if (cart.length === 0) return;
-    const totalNow = cart.reduce((a, l) => a + lineTotal(l, promos), 0);
-    setHeldCarts((prev) => [
-      ...prev,
-      {
-        id: String(Date.now()),
-        label: `${new Date().toLocaleTimeString("bg-BG")} · ${cart.length} арт. · ${formatEur(totalNow)}`,
-        lines: cart,
-      },
-    ]);
-    setCart([]);
+  /** Записва редовете на сървъра по ред на промените; при отказ връща екрана към потвърденото. */
+  const enqueueSync = useCallback((lines: CartLine[]) => {
+    const job = queueRef.current.then(async () => {
+      const d = draftRef.current;
+      if (!d) return;
+      setSaving(true);
+      try {
+        await apiJson(
+          await fetch(`/api/sales/open/${d.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              lines: lines.map((l) => ({
+                uid: l.uid,
+                productId: l.product.id,
+                qtyMilli: l.qtyMilli,
+                discountPermille: l.discountPermille,
+                priceLockedCents: l.priceLockedCents ?? null,
+              })),
+              customerCard: customerRef.current?.cardNumber ?? null,
+            }),
+          })
+        );
+        confirmedRef.current = lines;
+      } catch (e) {
+        setCartBoth(confirmedRef.current);
+        setError(e instanceof Error ? e.message : "Промяната не е записана.");
+      } finally {
+        setSaving(false);
+      }
+    });
+    queueRef.current = job.catch(() => undefined);
+    return job;
+  }, []);
+
+  /** Всяка промяна на бона минава оттук: открива продажбата при първия ред (т. 8, 9.1). */
+  const applyCart = useCallback(
+    async (updater: (prev: CartLine[]) => CartLine[]) => {
+      if (!draftRef.current && updater(cartRef.current).length > 0) {
+        try {
+          await ensureDraft();
+        } catch (e) {
+          setError(e instanceof Error ? e.message : "Продажбата не може да бъде открита.");
+          void checkFiscal();
+          return;
+        }
+      }
+      // новото състояние се смята СЛЕД изчакването — два бързи скана по време на откриването
+      // иначе биха тръгнали от едно и също старо състояние и вторият би „анулирал“ първия
+      const prev = cartRef.current;
+      const next = updater(prev);
+      if (next === prev) return;
+      setError(null);
+      setCartBoth(next);
+      void enqueueSync(next);
+    },
+    [checkFiscal, ensureDraft, enqueueSync]
+  );
+
+  const resetSale = useCallback(() => {
+    setDraftBoth(null);
+    confirmedRef.current = [];
+    setCartBoth([]);
+    customerRef.current = null;
     setCustomer(null);
-  }, [cart, promos]);
+  }, []);
+
+  const draftAction = useCallback(
+    async (id: string, action: "cancel" | "hold" | "resume") =>
+      apiJson<{ draft?: ServerDraft }>(
+        await fetch(`/api/sales/open/${id}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action }),
+        })
+      ),
+    []
+  );
+
+  const holdCart = useCallback(async () => {
+    const d = draftRef.current;
+    if (!d || cartRef.current.length === 0) return;
+    await queueRef.current;
+    try {
+      await draftAction(d.id, "hold");
+      resetSale();
+      await loadDrafts();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Бонът не е задържан.");
+    }
+  }, [draftAction, loadDrafts, resetSale]);
+
+  const clearCart = useCallback(async () => {
+    const d = draftRef.current;
+    await queueRef.current;
+    if (d) {
+      try {
+        // т. 12: пълно анулиране — всички редове остават в базата като анулирани
+        await draftAction(d.id, "cancel");
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Анулирането не е записано.");
+        return;
+      }
+    }
+    resetSale();
+  }, [draftAction, resetSale]);
 
   // фокусът се връща на скан полето
   useEffect(() => {
     const t = setInterval(() => {
       const active = document.activeElement;
-      const isTyping =
-        active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement;
+      const isTyping = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement;
       if (!isTyping && !payOpen && !weighing && !receiptText && !cardModal) {
         scanRef.current?.focus();
       }
@@ -167,39 +338,35 @@ export default function PosPage() {
     return () => clearInterval(t);
   }, [payOpen, weighing, receiptText, cardModal]);
 
-  const addToCart = useCallback((product: Product, qtyMilli: number, priceLockedCents?: number) => {
-    setCart((prev) => {
-      // еднакви стоки на брой се сумират; тегловните и заключените цени — отделни редове
-      if (product.unit === "PCS" && priceLockedCents === undefined) {
-        const idx = prev.findIndex(
-          (l) => l.product.id === product.id && l.priceLockedCents === undefined
-        );
-        if (idx >= 0) {
-          const next = [...prev];
-          next[idx] = { ...next[idx]!, qtyMilli: next[idx]!.qtyMilli + qtyMilli };
-          return next;
+  const addToCart = useCallback(
+    (product: Product, qtyMilli: number, priceLockedCents?: number) =>
+      applyCart((prev) => {
+        // еднакви стоки на брой се сумират; тегловните и заключените цени — отделни редове
+        if (product.unit === "PCS" && priceLockedCents === undefined) {
+          const idx = prev.findIndex((l) => l.product.id === product.id && l.priceLockedCents === undefined);
+          if (idx >= 0) {
+            const next = [...prev];
+            next[idx] = { ...next[idx]!, qtyMilli: next[idx]!.qtyMilli + qtyMilli };
+            return next;
+          }
         }
-      }
-      return [...prev, { product, qtyMilli, discountPermille: 0, priceLockedCents }];
-    });
-    setError(null);
-  }, []);
+        return [...prev, { uid: newUid(), product, qtyMilli, discountPermille: 0, priceLockedCents }];
+      }),
+    [applyCart]
+  );
 
   const handleScan = useCallback(
     async (code: string) => {
       if (!code.trim()) return;
       setScanValue("");
       try {
-        const r = await apiJson<{
-          product: Product;
-          qtyMilli: number;
-          priceLockedCents?: number;
-        }>(await fetch(`/api/scan?code=${encodeURIComponent(code.trim())}`));
+        const r = await apiJson<{ product: Product; qtyMilli: number; priceLockedCents?: number }>(
+          await fetch(`/api/scan?code=${encodeURIComponent(code.trim())}`)
+        );
         if (r.product.unit === "KG" && r.qtyMilli === 1000 && r.priceLockedCents === undefined) {
-          // тегловна стока без тегло в баркода → искаме тегло
-          setWeighing(r.product);
+          setWeighing(r.product); // тегловна стока без тегло в баркода → искаме тегло
         } else {
-          addToCart(r.product, r.qtyMilli, r.priceLockedCents);
+          void addToCart(r.product, r.qtyMilli, r.priceLockedCents);
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : "Кодът не е намерен.");
@@ -208,22 +375,26 @@ export default function PosPage() {
     [addToCart]
   );
 
-  const total = useMemo(() => cart.reduce((a, l) => a + lineTotal(l, promos), 0), [cart, promos]);
+  const customerPermille = customer?.discountPermille ?? 0;
+  const total = useMemo(() => cart.reduce((a, l) => a + lineTotal(l, promos, customerPermille), 0), [cart, promos, customerPermille]);
   const vatTotal = useMemo(() => {
     // информативно на екрана; сървърът смята официално
     return cart.reduce((a, l) => {
       const rate = VAT_GROUPS[l.product.vatGroup].defaultRatePermille;
-      const t = lineTotal(l, promos);
+      const t = lineTotal(l, promos, customerPermille);
       return a + Math.round((t * rate) / (1000 + rate));
     }, 0);
-  }, [cart, promos]);
+  }, [cart, promos, customerPermille]);
+
+  const fiscalBlocked = fiscal !== null && !fiscal.ok;
+  const canPayNow = cart.length > 0 && !saving && !fiscalBlocked && draft !== null;
 
   // клавишни комбинации
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "F9") {
         e.preventDefault();
-        if (cart.length > 0) setPayOpen(true);
+        if (canPayNow) setPayOpen(true);
       } else if (e.key === "F8") {
         e.preventDefault();
         setCardModal(true);
@@ -231,7 +402,7 @@ export default function PosPage() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [cart.length]);
+  }, [canPayNow]);
 
   const visibleProducts = useMemo(() => {
     // служебните артикули (свободна продажба) не се показват в каталога —
@@ -239,9 +410,7 @@ export default function PosPage() {
     let list = products.filter((p) => p.plu < SERVICE_PLU_MIN);
     if (search.trim()) {
       const q = search.trim().toLowerCase();
-      list = list.filter(
-        (p) => p.name.toLowerCase().includes(q) || String(p.plu).includes(q)
-      );
+      list = list.filter((p) => p.name.toLowerCase().includes(q) || String(p.plu).includes(q));
     } else if (activeCategory === "fav") {
       list = list.filter((p) => p.favorite);
     } else {
@@ -250,25 +419,29 @@ export default function PosPage() {
     return list.slice(0, 60);
   }, [products, search, activeCategory]);
 
-  // анулирането преди фискализация се одитира (както в Mistral/СУПТО практиката)
-  const logCancel = useCallback((action: "LINE_CANCELED" | "CART_CLEARED", detail: object) => {
-    void fetch("/api/audit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, detail }),
-    }).catch(() => undefined);
-  }, []);
-
-  const applyCustomer = useCallback((c: Customer | null) => {
-    setCustomer(c);
-    setCart((prev) =>
-      prev.map((l) => ({ ...l, discountPermille: c?.discountPermille ?? 0 }))
-    );
-  }, []);
+  const applyCustomer = useCallback(
+    (c: Customer | null) => {
+      customerRef.current = c;
+      setCustomer(c);
+      // отстъпката от картата се прилага на сървъра — тук само записваме картата в продажбата
+      if (draftRef.current) void enqueueSync(cartRef.current);
+    },
+    [enqueueSync]
+  );
 
   if (hasShift === false) {
     return <OpenShiftGate onOpened={() => setHasShift(true)} />;
   }
+
+  const heldView = held.map((h) => {
+    const lines = toCartLines(h.lines);
+    const t = lines.reduce((a, l) => a + lineTotal(l, promos), 0);
+    return {
+      id: h.id,
+      label: `${h.unp} · ${new Date(h.heldAt ?? h.openedAt).toLocaleTimeString("bg-BG", { hour: "2-digit", minute: "2-digit" })} · ${lines.length} арт. · ${formatEur(t)}`,
+      lines,
+    };
+  });
 
   return (
     <div className="flex gap-5 h-[calc(100vh-7rem)] -m-2 p-2">
@@ -306,6 +479,23 @@ export default function PosPage() {
           </div>
         </div>
 
+        {fiscalBlocked && (
+          <div role="alert" className="flex items-center gap-3 text-coral-600 bg-coral-600/10 border border-coral-600/30 rounded-xl px-4 py-3 text-sm font-medium">
+            <WarningCircle size={20} className="shrink-0" />
+            <span className="flex-1">
+              Фискалното устройство не е готово — откриването на продажби и плащането са блокирани. {fiscal?.detail}
+            </span>
+            <button className="btn-ghost !py-1.5 !px-3 text-xs" onClick={() => void checkFiscal()}>
+              Провери отново
+            </button>
+          </div>
+        )}
+        {paying.length > 0 && (
+          <div role="alert" className="flex items-center gap-2 text-brand-700 bg-brand-600/10 border border-brand-600/30 rounded-xl px-4 py-2.5 text-sm font-medium">
+            <WarningCircle size={18} className="shrink-0" />
+            Продажба {paying.map((p) => p.unp).join(", ")} е прекъсната по време на плащане. Проверете последния бон на ФУ и уведомете управителя.
+          </div>
+        )}
         {error && (
           <div className="flex items-center gap-2 text-coral-600 bg-coral-600/10 border border-coral-600/30 rounded-xl px-4 py-2.5 text-sm font-medium animate-fade-up">
             <WarningCircle size={18} /> {error}
@@ -351,7 +541,8 @@ export default function PosPage() {
             return (
               <button
                 key={p.id}
-                onClick={() => (p.unit === "KG" ? setWeighing(p) : addToCart(p, 1000))}
+                onClick={() => (p.unit === "KG" ? setWeighing(p) : void addToCart(p, 1000))}
+                disabled={fiscalBlocked && !draft}
                 className="card glass-lift !rounded-2xl p-3.5 text-left hover:bg-white/[0.9] group relative overflow-hidden"
               >
                 {mxn ? (
@@ -412,12 +603,13 @@ export default function PosPage() {
 
       {/* ДЯСНО: количка */}
       <section className="w-[380px] xl:w-[420px] shrink-0 card flex flex-col">
-        <div className="px-4 py-3 border-b border-ink-800 flex items-center justify-between">
-          <h2 className="font-bold text-lg">Бон</h2>
+        <div className="px-4 pt-3 pb-2 border-b border-ink-800">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="font-bold text-lg leading-tight">Бон</h2>
           <div className="flex items-center gap-1.5">
             <button
-              onClick={holdCart}
-              disabled={cart.length === 0}
+              onClick={() => void holdCart()}
+              disabled={cart.length === 0 || !draft || saving}
               className="btn-ghost !px-2 !py-1.5 text-xs"
               title="Задръж бона (обслужи друг клиент)"
             >
@@ -425,14 +617,14 @@ export default function PosPage() {
             </button>
             <button
               onClick={() => setRecallOpen(true)}
-              disabled={heldCarts.length === 0}
+              disabled={held.length === 0}
               className="btn-ghost !px-2 !py-1.5 text-xs relative"
               title="Върни задържан бон"
             >
               <ArrowCounterClockwise size={16} />
-              {heldCarts.length > 0 && (
+              {held.length > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 size-4 rounded-full bg-brand-600 text-[#231a05] text-[10px] font-bold flex items-center justify-center">
-                  {heldCarts.length}
+                  {held.length}
                 </span>
               )}
             </button>
@@ -460,20 +652,21 @@ export default function PosPage() {
               {customer ? customer.name : "Карта"}
             </button>
             <button
-              onClick={() => {
-                if (cart.length > 0) {
-                  logCancel("CART_CLEARED", {
-                    items: cart.map((l) => ({ name: l.product.name, qtyMilli: l.qtyMilli })),
-                  });
-                }
-                setCart([]);
-                applyCustomer(null);
-              }}
-              disabled={cart.length === 0}
+              onClick={() => void clearCart()}
+              disabled={cart.length === 0 && !draft}
               className="btn-ghost !px-2.5 !py-1.5 text-xs"
+              title="Анулира цялата продажба — остава записана като анулирана"
             >
-              <Trash size={16} /> Изчисти
+              <Trash size={16} /> Анулирай
             </button>
+          </div>
+        </div>
+          <div
+            className={`mt-1 text-xs tabular-nums selectable ${draft ? "text-ink-300 font-semibold" : "text-ink-500"}`}
+            title="Уникален номер на продажбата (Прил. № 29, т. 9)"
+          >
+            {draft ? `УНП ${draft.unp}` : "УНП се генерира при първия артикул"}
+            {saving && <span className="ml-2 font-normal text-ink-500">записва се…</span>}
           </div>
         </div>
 
@@ -485,7 +678,7 @@ export default function PosPage() {
             </div>
           )}
           {cart.map((l, i) => (
-            <div key={i} className="px-4 py-2.5 flex items-center gap-2 animate-fade-up">
+            <div key={l.uid} className="px-4 py-2.5 flex items-center gap-2 animate-fade-up">
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">{l.product.name}</div>
                 <div className="text-xs text-ink-400">
@@ -504,8 +697,8 @@ export default function PosPage() {
                       × {formatCents(l.product.priceCents)}
                     </>
                   )}
-                  {l.discountPermille > 0 && (
-                    <span className="text-mint-600"> −{(l.discountPermille / 10).toFixed(1)}%</span>
+                  {Math.max(l.discountPermille, customerPermille) > 0 && (
+                    <span className="text-mint-600"> −{(Math.max(l.discountPermille, customerPermille) / 10).toFixed(1)}%</span>
                   )}
                   <span className="ml-1 text-ink-600">
                     [{VAT_GROUPS[l.product.vatGroup].letter}]
@@ -516,12 +709,11 @@ export default function PosPage() {
                 <div className="flex items-center gap-1">
                   <button
                     className="btn-ghost !p-1.5"
+                    aria-label="Намали количеството"
                     onClick={() =>
-                      setCart((prev) =>
+                      void applyCart((prev) =>
                         prev
-                          .map((x, xi) =>
-                            xi === i ? { ...x, qtyMilli: x.qtyMilli - 1000 } : x
-                          )
+                          .map((x) => (x.uid === l.uid ? { ...x, qtyMilli: x.qtyMilli - 1000 } : x))
                           .filter((x) => x.qtyMilli > 0)
                       )
                     }
@@ -530,12 +722,9 @@ export default function PosPage() {
                   </button>
                   <button
                     className="btn-ghost !p-1.5"
+                    aria-label="Увеличи количеството"
                     onClick={() =>
-                      setCart((prev) =>
-                        prev.map((x, xi) =>
-                          xi === i ? { ...x, qtyMilli: x.qtyMilli + 1000 } : x
-                        )
-                      )
+                      void applyCart((prev) => prev.map((x) => (x.uid === l.uid ? { ...x, qtyMilli: x.qtyMilli + 1000 } : x)))
                     }
                   >
                     <Plus size={14} weight="bold" />
@@ -543,22 +732,15 @@ export default function PosPage() {
                 </div>
               )}
               <div className="w-24 text-right tabular-nums leading-tight">
-                <div className="font-bold">{formatEur(lineTotal(l, promos))}</div>
+                <div className="font-bold">{formatEur(lineTotal(l, promos, customerPermille))}</div>
                 {dualDisplay && (
-                  <div className="text-[11px] text-ink-500">{formatBgnFromEur(lineTotal(l, promos))}</div>
+                  <div className="text-[11px] text-ink-500">{formatBgnFromEur(lineTotal(l, promos, customerPermille))}</div>
                 )}
               </div>
               <button
                 className="text-ink-500 hover:text-coral-600 p-1"
-                onClick={() => {
-                  logCancel("LINE_CANCELED", {
-                    name: l.product.name,
-                    qtyMilli: l.qtyMilli,
-                    totalCents: lineTotal(l, promos),
-                  });
-                  setCart((prev) => prev.filter((_, xi) => xi !== i));
-                }}
-                aria-label="Премахни"
+                onClick={() => void applyCart((prev) => prev.filter((x) => x.uid !== l.uid))}
+                aria-label="Анулирай реда"
               >
                 <Trash size={16} />
               </button>
@@ -586,10 +768,10 @@ export default function PosPage() {
           </div>
           <button
             onClick={() => setPayOpen(true)}
-            disabled={cart.length === 0}
+            disabled={!canPayNow}
             className="btn-primary w-full h-14 text-xl"
           >
-            <Wallet size={26} weight="duotone" /> Плащане (F9)
+            <Wallet size={26} weight="duotone" /> {saving ? "Записва се…" : "Плащане (F9)"}
           </button>
         </div>
       </section>
@@ -597,24 +779,44 @@ export default function PosPage() {
       {/* Модали */}
       <RecallModal
         open={recallOpen}
-        held={heldCarts}
+        held={heldView}
         cartEmpty={cart.length === 0}
         onClose={() => setRecallOpen(false)}
-        onRecall={(id) => {
-          const h = heldCarts.find((x) => x.id === id);
-          if (!h) return;
-          setCart(h.lines);
-          setHeldCarts((prev) => prev.filter((x) => x.id !== id));
-          setRecallOpen(false);
-        }}
-        onDrop={(id) => setHeldCarts((prev) => prev.filter((x) => x.id !== id))}
+        onRecall={(id) =>
+          void (async () => {
+            try {
+              // ако текущата продажба е празна, но открита — анулира се, за да не виси
+              if (draftRef.current) await draftAction(draftRef.current.id, "cancel");
+              const r = await draftAction(id, "resume");
+              if (!r.draft) return;
+              const lines = toCartLines(r.draft.lines);
+              confirmedRef.current = lines;
+              setCartBoth(lines);
+              setDraftBoth({ id: r.draft.id, unp: r.draft.unp, openedAt: r.draft.openedAt });
+              setRecallOpen(false);
+              await loadDrafts();
+            } catch (e) {
+              setError(e instanceof Error ? e.message : "Бонът не е върнат.");
+            }
+          })()
+        }
+        onDrop={(id) =>
+          void (async () => {
+            try {
+              await draftAction(id, "cancel");
+              await loadDrafts();
+            } catch (e) {
+              setError(e instanceof Error ? e.message : "Анулирането не е записано.");
+            }
+          })()
+        }
       />
       <DiscountModal
         open={discountOpen}
         totalCents={total}
         onClose={() => setDiscountOpen(false)}
         onApply={(permille) => {
-          setCart((prev) => prev.map((l) => ({ ...l, discountPermille: permille })));
+          void applyCart((prev) => prev.map((l) => ({ ...l, discountPermille: permille })));
           setDiscountOpen(false);
         }}
       />
@@ -623,7 +825,7 @@ export default function PosPage() {
         products={products}
         onClose={() => setFreeSaleOpen(false)}
         onAdd={(product, amountCents) => {
-          addToCart(product, 1000, amountCents);
+          void addToCart(product, 1000, amountCents);
           setFreeSaleOpen(false);
         }}
       />
@@ -631,10 +833,9 @@ export default function PosPage() {
         line={editingQty !== null ? cart[editingQty] ?? null : null}
         onClose={() => setEditingQty(null)}
         onConfirm={(qtyMilli) => {
-          setCart((prev) =>
-            prev
-              .map((x, xi) => (xi === editingQty ? { ...x, qtyMilli } : x))
-              .filter((x) => x.qtyMilli > 0)
+          const target = editingQty !== null ? cart[editingQty]?.uid : undefined;
+          void applyCart((prev) =>
+            prev.map((x) => (x.uid === target ? { ...x, qtyMilli } : x)).filter((x) => x.qtyMilli > 0)
           );
           setEditingQty(null);
         }}
@@ -643,7 +844,7 @@ export default function PosPage() {
         product={weighing}
         onClose={() => setWeighing(null)}
         onConfirm={(p, qty) => {
-          addToCart(p, qty);
+          void addToCart(p, qty);
           setWeighing(null);
         }}
       />
@@ -652,12 +853,12 @@ export default function PosPage() {
         totalCents={total}
         dualDisplay={dualDisplay}
         onClose={() => setPayOpen(false)}
-        cart={cart}
+        draftId={draft?.id ?? null}
+        beforePay={() => queueRef.current}
         customer={customer}
         onDone={(text) => {
           setPayOpen(false);
-          setCart([]);
-          applyCustomer(null);
+          resetSale();
           setReceiptText(text);
           void fetch("/api/products")
             .then((r) => r.json())
@@ -680,7 +881,7 @@ export default function PosPage() {
       <Modal
         open={receiptText !== null}
         onClose={() => setReceiptText(null)}
-        title="Фискален бон"
+        title="Издаден бон"
       >
         <pre className="font-mono text-[13px] leading-relaxed bg-ink-950 rounded-xl p-4 overflow-x-auto whitespace-pre">
           {receiptText}
@@ -863,7 +1064,8 @@ function PaymentModal({
   open,
   totalCents,
   dualDisplay,
-  cart,
+  draftId,
+  beforePay,
   customer,
   onClose,
   onDone,
@@ -871,7 +1073,9 @@ function PaymentModal({
   open: boolean;
   totalCents: number;
   dualDisplay: boolean;
-  cart: CartLine[];
+  draftId: string | null;
+  /** Изчаква записа на последните промени по бона — плаща се записаното. */
+  beforePay: () => Promise<unknown>;
   customer: Customer | null;
   onClose: () => void;
   onDone: (receiptText: string | null) => void;
@@ -908,28 +1112,22 @@ function PaymentModal({
     (mode === "MIXED" && cardCents > 0 && cardCents < totalCents && givenCents >= cashDue);
 
   async function pay() {
+    if (!draftId) return;
     setBusy(true);
     setError(null);
     try {
+      await beforePay();
       const r = await apiJson<{ receiptText: string | null }>(
         await fetch("/api/sales", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            items: cart.map((l) => ({
-              productId: l.product.id,
-              qtyMilli: l.qtyMilli,
-              discountPermille: l.discountPermille,
-              ...(l.priceLockedCents !== undefined
-                ? { priceLockedCents: l.priceLockedCents }
-                : {}),
-            })),
+            draftId,
             payment: {
               type: mode,
               cashCents: mode === "CARD" || mode === "CREDIT" ? 0 : givenCents,
               cardCents: mode === "CREDIT" ? 0 : cardCents,
             },
-            ...(customer ? { customerCard: customer.cardNumber } : {}),
           }),
         })
       );
@@ -1046,7 +1244,7 @@ function PaymentModal({
           (customer ? (
             <p className="text-center text-ink-400 text-sm">
               Задължението се записва на <b className="text-ink-100">{customer.name}</b> (карта{" "}
-              {customer.cardNumber}). Издава се фискален бон с плащане „отложено плащане“.
+              {customer.cardNumber}). Бонът се издава с плащане „отложено плащане“.
             </p>
           ) : (
             <p className="text-center text-coral-600 text-sm font-medium">

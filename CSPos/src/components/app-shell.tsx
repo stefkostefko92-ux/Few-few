@@ -1,48 +1,36 @@
 "use client";
 
-// Обвивка на приложението: странична навигация (по роля), часовник,
-// статус на фискалното устройство, изход.
+// Обвивка на приложението: групирано странично меню (по роля и одиторски профил),
+// лента със състоянието на касата (ФУ, терминал, смяна, СУПТО, лиценз), търсачка
+// на командите (Ctrl+K), преки пътища Alt+1…9 и „За програмата“.
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Storefront,
-  CashRegister,
-  SquaresFour,
-  Package,
-  Truck,
-  ChartBar,
-  ClockCounterClockwise,
-  GearSix,
   SignOut,
   Circle,
-  ListMagnifyingGlass,
-  Tag,
   MagnifyingGlass,
+  Info,
+  SidebarSimple,
+  ShieldCheck,
+  ShieldWarning,
+  Eye,
+  CreditCard,
+  Coins,
+  Seal,
+  WifiSlash,
 } from "@phosphor-icons/react";
 import type { SessionData } from "@/lib/auth";
-import { BGN_PER_EUR, ROLES, type RoleKey } from "@/lib/constants";
+import { BGN_PER_EUR, DUAL_DISPLAY_END, ROLES } from "@/lib/constants";
+import { activeHref, flatNav, visibleNav } from "@/lib/nav";
+import { NavGlyph } from "./nav-glyph";
+import { CommandPalette } from "./command-palette";
+import { AboutDialog } from "./about-dialog";
+import { useShellStatus, type ShellStatus } from "./shell-status";
 
-const NAV: Array<{
-  href: string;
-  label: string;
-  icon: React.ReactNode;
-  minRole: RoleKey;
-}> = [
-  { href: "/pos", label: "Продажби", icon: <CashRegister size={22} weight="duotone" />, minRole: "CASHIER" },
-  { href: "/check", label: "Проверка цена", icon: <MagnifyingGlass size={22} weight="duotone" />, minRole: "CASHIER" },
-  { href: "/dashboard", label: "Табло", icon: <SquaresFour size={22} weight="duotone" />, minRole: "MANAGER" },
-  { href: "/products", label: "Стоки", icon: <Package size={22} weight="duotone" />, minRole: "MANAGER" },
-  { href: "/promotions", label: "Промоции", icon: <Tag size={22} weight="duotone" />, minRole: "MANAGER" },
-  { href: "/inventory", label: "Склад", icon: <Truck size={22} weight="duotone" />, minRole: "MANAGER" },
-  { href: "/shifts", label: "Смени", icon: <ClockCounterClockwise size={22} weight="duotone" />, minRole: "CASHIER" },
-  { href: "/reports", label: "Отчети", icon: <ChartBar size={22} weight="duotone" />, minRole: "MANAGER" },
-  { href: "/journal", label: "Дневник", icon: <ListMagnifyingGlass size={22} weight="duotone" />, minRole: "MANAGER" },
-  { href: "/settings", label: "Настройки", icon: <GearSix size={22} weight="duotone" />, minRole: "ADMIN" },
-];
-
-const ROLE_ORDER: Record<RoleKey, number> = { CASHIER: 0, MANAGER: 1, ADMIN: 2 };
+const COLLAPSE_KEY = "cspos.navCollapsed";
 
 function Clock() {
   const [now, setNow] = useState<Date | null>(null);
@@ -53,10 +41,8 @@ function Clock() {
   }, []);
   if (!now) return null;
   return (
-    <div className="text-right leading-tight">
-      <div className="font-mono font-bold text-lg tabular-nums">
-        {now.toLocaleTimeString("bg-BG")}
-      </div>
+    <div className="text-right leading-tight hidden sm:block">
+      <div className="font-bold text-lg tabular-nums">{now.toLocaleTimeString("bg-BG")}</div>
       <div className="text-xs text-ink-400">
         {now.toLocaleDateString("bg-BG", { weekday: "long", day: "numeric", month: "long" })}
       </div>
@@ -64,113 +50,416 @@ function Clock() {
   );
 }
 
-function FiscalDot() {
-  const [status, setStatus] = useState<{ ok: boolean; detail: string } | null>(null);
-  useEffect(() => {
-    let mounted = true;
-    const load = () =>
-      fetch("/api/fiscal")
-        .then((r) => r.json())
-        .then((j) => mounted && setStatus(j.fiscal ?? null))
-        .catch(() => mounted && setStatus({ ok: false, detail: "няма връзка" }));
-    load();
-    const t = setInterval(load, 60_000);
-    return () => {
-      mounted = false;
-      clearInterval(t);
-    };
-  }, []);
-  return (
-    <div
-      className="flex items-center gap-1.5 text-xs text-ink-400"
-      title={status?.detail ?? "проверка…"}
-    >
-      <Circle
-        size={10}
-        weight="fill"
-        className={status ? (status.ok ? "text-mint-500" : "text-coral-500") : "text-ink-600"}
-      />
-      ФУ
-    </div>
+type Tone = "ok" | "warn" | "bad" | "idle";
+const DOT: Record<Tone, string> = {
+  ok: "text-mint-500",
+  warn: "text-brand-600",
+  bad: "text-coral-500",
+  idle: "text-ink-600",
+};
+
+function Pill({
+  tone,
+  icon,
+  label,
+  short,
+  detail,
+  href,
+}: {
+  tone: Tone;
+  icon: React.ReactNode;
+  label: string;
+  /** Кратък етикет за по-тесни екрани — пълният е в подсказката. */
+  short?: string;
+  detail?: string;
+  href?: string;
+}) {
+  const body = (
+    <>
+      <span className={`relative flex ${DOT[tone]}`}>
+        {icon}
+        <Circle size={8} weight="fill" className="absolute -right-0.5 -bottom-0.5" />
+      </span>
+      {short ? (
+        <>
+          <span className="hidden lg:inline 2xl:hidden">{short}</span>
+          <span className="hidden 2xl:inline">{label}</span>
+        </>
+      ) : (
+        <span className="hidden lg:inline">{label}</span>
+      )}
+    </>
+  );
+  const cls = `chip !py-1.5 !px-3 text-xs font-semibold whitespace-nowrap ${tone === "bad" ? "!text-coral-600" : ""}`;
+  return href ? (
+    <Link href={href} className={cls} title={detail ?? label} aria-label={detail ?? label}>
+      {body}
+    </Link>
+  ) : (
+    <span className={`${cls} pointer-events-none`} title={detail ?? label} aria-label={detail ?? label}>
+      {body}
+    </span>
   );
 }
 
-export function AppShell({
+function StatusBar({
+  status,
+  offline,
   session,
-  children,
 }: {
+  status: ShellStatus | null;
+  offline: boolean;
   session: SessionData;
-  children: React.ReactNode;
 }) {
+  if (offline) {
+    return (
+      <Pill tone="bad" icon={<WifiSlash size={18} />} label="Няма връзка със сървъра на касата" />
+    );
+  }
+  if (!status) return <Pill tone="idle" icon={<Circle size={18} />} label="Проверка на устройствата…" />;
+
+  const isAdmin = session.role === "ADMIN" && !session.readOnly;
+  const pills: React.ReactNode[] = [];
+  pills.push(
+    <Pill
+      key="fu"
+      tone={status.fiscal.ok ? "ok" : "bad"}
+      icon={<Seal size={18} weight="duotone" />}
+      label={status.fiscal.ok ? `ФУ ${status.fiscal.serial}` : "ФУ без връзка"}
+      short="ФУ"
+      detail={`Фискално устройство: ${status.fiscal.detail}`}
+      href={isAdmin ? "/settings" : undefined}
+    />
+  );
+  if (status.terminal) {
+    pills.push(
+      <Pill
+        key="pos"
+        tone={status.terminal.ok ? "ok" : "bad"}
+        icon={<CreditCard size={18} weight="duotone" />}
+        label={status.terminal.ok ? "ПОС терминал" : "ПОС без връзка"}
+        short="ПОС"
+        detail={`ПОС терминал: ${status.terminal.detail}`}
+      />
+    );
+  }
+  if (!session.readOnly) {
+    const opened = status.shift ? new Date(status.shift.openedAt) : null;
+    pills.push(
+      <Pill
+        key="shift"
+        tone={opened ? "ok" : "warn"}
+        icon={<Coins size={18} weight="duotone" />}
+        label={
+          opened
+            ? `Смяна от ${opened.toLocaleTimeString("bg-BG", { hour: "2-digit", minute: "2-digit" })}`
+            : "Няма открита смяна"
+        }
+        short={opened ? opened.toLocaleTimeString("bg-BG", { hour: "2-digit", minute: "2-digit" }) : "Без смяна"}
+        href="/shifts"
+      />
+    );
+  }
+  pills.push(
+    <Pill
+      key="supto"
+      tone={status.supto.mode ? "ok" : "warn"}
+      icon={status.supto.mode ? <ShieldCheck size={18} weight="duotone" /> : <ShieldWarning size={18} weight="duotone" />}
+      label={status.supto.mode ? "СУПТО" : "СУПТО изключен"}
+      short="СУПТО"
+      detail={
+        status.supto.mode
+          ? "Режим СУПТО: всяка продажба носи УНП, данните не се изтриват"
+          : "Режим СУПТО е изключен — УНП не се печата на бона"
+      }
+      href={isAdmin ? "/settings" : undefined}
+    />
+  );
+  if (status.license.status !== "active" && session.role === "ADMIN") {
+    const text = { none: "Без лиценз", expired: "Лицензът изтече", invalid: "Невалиден лиценз" }[status.license.status];
+    pills.push(
+      <Pill
+        key="lic"
+        tone={status.license.status === "none" ? "warn" : "bad"}
+        icon={<Info size={18} weight="duotone" />}
+        label={text}
+        short="Лиценз"
+        href={isAdmin ? "/settings" : undefined}
+      />
+    );
+  }
+  return <div className="flex items-center gap-2 min-w-0">{pills}</div>;
+}
+
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toLocaleUpperCase("bg-BG") || "?";
+}
+
+export function AppShell({ session, children }: { session: SessionData; children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const items = NAV.filter((n) => ROLE_ORDER[session.role] >= ROLE_ORDER[n.minRole]);
+  const readOnly = Boolean(session.readOnly);
+  const groups = useMemo(() => visibleNav(session.role, readOnly), [session.role, readOnly]);
+  const items = useMemo(() => flatNav(groups), [groups]);
+  const current = activeHref(pathname, items);
+  const currentGroup = groups.find((g) => g.items.some((i) => i.href === current));
+  const currentItem = items.find((i) => i.href === current);
 
-  async function logout() {
+  const [collapsed, setCollapsed] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const { status, offline } = useShellStatus();
+  const dualDisplay = new Date().toISOString().slice(0, 10) <= DUAL_DISPLAY_END;
+
+  useEffect(() => {
+    try {
+      setCollapsed(localStorage.getItem(COLLAPSE_KEY) === "1");
+    } catch {
+      // няма достъп до хранилището — менюто остава разгърнато
+    }
+  }, []);
+  const toggleCollapsed = () => {
+    setCollapsed((c) => {
+      try {
+        localStorage.setItem(COLLAPSE_KEY, c ? "0" : "1");
+      } catch {
+        // само удобство — без хранилище просто не се помни
+      }
+      return !c;
+    });
+  };
+
+  const logout = useCallback(async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
     router.refresh();
-  }
+  }, [router]);
+
+  // Клавиатура: Ctrl/⌘+K — търсачка; Alt+1…9 — пряк преход по реда в менюто.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((o) => !o);
+        return;
+      }
+      if (e.altKey && !e.ctrlKey && !e.metaKey && /^Digit[1-9]$/.test(e.code)) {
+        const target = items[Number(e.code.slice(5)) - 1];
+        if (target) {
+          e.preventDefault();
+          router.push(target.href);
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [items, router]);
+
+  // „Лещата“ — стъклото зад активния елемент се плъзга към новия при преход.
+  const linkRefs = useRef(new Map<string, HTMLAnchorElement>());
+  const [lens, setLens] = useState<{ top: number; height: number } | null>(null);
+  useLayoutEffect(() => {
+    const place = () => {
+      const el = current ? linkRefs.current.get(current) : undefined;
+      setLens(el ? { top: el.offsetTop, height: el.offsetHeight } : null);
+    };
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [current, collapsed, groups]);
+
+  const wide = !collapsed;
+  const label = wide ? "hidden xl:block" : "hidden";
 
   return (
     <div className="flex min-h-screen">
-      <aside className="w-20 xl:w-56 shrink-0 border-r border-black/[0.06] bg-white/[0.55] backdrop-blur-2xl flex flex-col sticky top-0 h-screen">
-        <div className="flex items-center gap-2.5 px-3 xl:px-5 h-16 border-b border-black/[0.06]">
-          <div className="size-9 rounded-2xl text-[#231a05] flex items-center justify-center shrink-0" style={{ background: "linear-gradient(180deg,#ffd166,#f5a623)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.45), 0 6px 18px -6px rgba(245,166,35,.6)" }}>
+      <aside
+        className={`shrink-0 border-r border-black/[0.06] bg-white/[0.55] backdrop-blur-2xl flex flex-col sticky top-0 h-screen z-30 transition-[width] duration-300 w-[84px] ${
+          wide ? "xl:w-[272px]" : ""
+        }`}
+        aria-label="Главно меню"
+      >
+        <button
+          type="button"
+          onClick={() => setAboutOpen(true)}
+          className="flex items-center gap-3 px-[22px] h-16 border-b border-black/[0.06] text-left shrink-0"
+          title="За програмата"
+        >
+          <span
+            className="size-10 rounded-2xl text-[#231a05] flex items-center justify-center shrink-0"
+            style={{
+              background: "linear-gradient(180deg,#ffd166,#f5a623)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,.45), 0 6px 18px -6px rgba(245,166,35,.6)",
+            }}
+          >
             <Storefront size={22} weight="fill" />
-          </div>
-          <span className="hidden xl:flex flex-col leading-none">
-            <span className="font-black text-[15px] tracking-tight">Carbon Stealth</span>
-            <span className="text-[10px] font-bold tracking-[0.22em] text-brand-600 mt-0.5">POS</span>
           </span>
-        </div>
+          <span className={`${wide ? "hidden xl:flex" : "hidden"} flex-col leading-none`}>
+            <span className="font-black text-[16px] tracking-tight">Carbon Stealth</span>
+            <span className="text-[11px] font-bold text-brand-700 mt-1">POS {status?.app.version ?? ""}</span>
+          </span>
+        </button>
 
-        <nav className="flex-1 py-4 space-y-1 px-2 xl:px-3 overflow-y-auto">
-          {items.map((n) => {
-            const active = pathname.startsWith(n.href);
-            return (
-              <Link
-                key={n.href}
-                href={n.href}
-                className={`flex items-center gap-3 rounded-2xl px-3 py-3 font-medium transition-all ${
-                  active
-                    ? "bg-white/[0.9] text-brand-700 shadow-[inset_0_1px_0_rgba(255,255,255,.9),0_6px_18px_-8px_rgba(23,32,58,.25)] border border-black/[0.07]"
-                    : "text-ink-300 border border-transparent hover:bg-white/[0.6] hover:text-ink-100"
-                }`}
-              >
-                {n.icon}
-                <span className="hidden xl:block">{n.label}</span>
-              </Link>
-            );
-          })}
+        <nav className="relative flex-1 py-3 px-3 overflow-y-auto overflow-x-hidden">
+          {lens && (
+            <span
+              aria-hidden
+              className="nav-lens"
+              style={{ transform: `translateY(${lens.top}px)`, height: lens.height }}
+            />
+          )}
+          {groups.map((g, gi) => (
+            <div key={g.id} className={gi > 0 ? "mt-3" : ""} role="group" aria-label={g.label}>
+              {wide ? (
+                <div className="hidden xl:block px-3 pt-1 pb-1.5 text-[12px] font-semibold text-ink-500">
+                  {g.label}
+                </div>
+              ) : null}
+              {gi > 0 && <div className={`${wide ? "xl:hidden" : ""} mx-3 mb-3 h-px bg-black/[0.07]`} />}
+              <ul className="space-y-1">
+                {g.items.map((n) => {
+                  const shortcut = items.indexOf(n) + 1;
+                  const active = n.href === current;
+                  return (
+                    <li key={n.href}>
+                      <Link
+                        href={n.href}
+                        ref={(el) => {
+                          if (el) linkRefs.current.set(n.href, el);
+                          else linkRefs.current.delete(n.href);
+                        }}
+                        aria-current={active ? "page" : undefined}
+                        title={`${n.label} — ${n.hint}`}
+                        aria-label={n.label}
+                        className={`relative z-[1] flex items-center gap-3 rounded-2xl px-[17px] min-h-[52px] font-semibold transition-colors outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 ${
+                          active ? "text-ink-100" : "text-ink-300 hover:text-ink-100 hover:bg-white/[0.45]"
+                        }`}
+                      >
+                        <span className={active ? "text-brand-700" : ""}>
+                          <NavGlyph icon={n.icon} active={active} />
+                        </span>
+                        <span className={`${label} flex-1 truncate`}>{n.label}</span>
+                        {shortcut <= 9 && (
+                          <span className={`${wide ? "hidden 2xl:inline" : "hidden"} text-[11px] font-medium text-ink-500 tabular-nums`}>
+                            Alt {shortcut}
+                          </span>
+                        )}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
         </nav>
 
-        <div className="p-3 border-t border-black/[0.06] space-y-2">
-          <div className="hidden xl:block px-2">
-            <div className="font-semibold truncate">{session.name}</div>
-            <div className="text-xs text-ink-400">
-              {ROLES[session.role]} · код {session.operatorCode}
-            </div>
+        <div className="p-3 border-t border-black/[0.06] space-y-1.5 shrink-0">
+          <div className="flex items-center gap-3 px-[10px] py-1.5">
+            <span
+              className={`size-10 shrink-0 rounded-full flex items-center justify-center font-bold text-sm ${
+                readOnly ? "bg-sky2-500/15 text-sky2-500" : "bg-white/[0.8] text-ink-200"
+              } shadow-[inset_0_1px_0_rgba(255,255,255,.9),0_2px_8px_-3px_rgba(23,32,58,.2)]`}
+              aria-hidden
+            >
+              {initials(session.name)}
+            </span>
+            <span className={`${label} min-w-0`}>
+              <span className="block font-semibold truncate">{session.name}</span>
+              <span className="block text-xs text-ink-400">
+                {readOnly ? "Одитор, само четене" : ROLES[session.role]}, код {String(session.operatorCode).padStart(4, "0")}
+              </span>
+            </span>
           </div>
-          <button onClick={logout} className="btn-ghost w-full !justify-start !px-3">
-            <SignOut size={20} />
-            <span className="hidden xl:block">Изход</span>
-          </button>
+          <div className={`flex ${wide ? "flex-col xl:flex-row" : "flex-col"} gap-1.5`}>
+            <button
+              type="button"
+              onClick={() => setPaletteOpen(true)}
+              className="btn-ghost flex-1 !px-3 min-h-[44px]"
+              title="Търсене (Ctrl+K)"
+              aria-label="Търсене"
+            >
+              <MagnifyingGlass size={20} />
+            </button>
+            <button
+              type="button"
+              onClick={toggleCollapsed}
+              className="btn-ghost flex-1 !px-3 min-h-[44px] hidden xl:inline-flex"
+              title={collapsed ? "Разгъни менюто" : "Свий менюто"}
+              aria-label={collapsed ? "Разгъни менюто" : "Свий менюто"}
+              aria-pressed={collapsed}
+            >
+              <SidebarSimple size={20} />
+            </button>
+            <button
+              type="button"
+              onClick={logout}
+              className="btn-ghost flex-1 !px-3 min-h-[44px]"
+              title="Изход"
+              aria-label="Изход"
+            >
+              <SignOut size={20} />
+            </button>
+          </div>
         </div>
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 border-b border-black/[0.06] bg-white/[0.5] backdrop-blur-2xl flex items-center justify-between px-6 sticky top-0 z-40">
-          <div className="flex items-center gap-4">
-            <FiscalDot />
-            <span className="chip !py-1.5 !px-3.5 text-xs font-semibold tabular-nums pointer-events-none">
-              1 € = {BGN_PER_EUR.toFixed(5).replace(".", ",")} лв.
-            </span>
+        <header className="h-16 border-b border-black/[0.06] bg-white/[0.5] backdrop-blur-2xl flex items-center justify-between gap-4 px-4 md:px-6 sticky top-0 z-40">
+          <div className="flex items-center gap-3 min-w-0">
+            {currentItem && (
+              <>
+                <span className="text-brand-700 hidden md:flex">
+                  <NavGlyph icon={currentItem.icon} active />
+                </span>
+                <div className="min-w-0 leading-tight">
+                  <div className="text-xs text-ink-400 hidden md:block">{currentGroup?.label}</div>
+                  <p className="font-bold text-ink-100 truncate">{currentItem.label}</p>
+                </div>
+              </>
+            )}
           </div>
-          <Clock />
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <StatusBar status={status} offline={offline} session={session} />
+            <button
+              type="button"
+              onClick={() => setPaletteOpen(true)}
+              className="chip !py-1.5 !px-3 text-xs font-semibold hidden md:inline-flex"
+              aria-label="Търсене на екран (Ctrl+K)"
+            >
+              <MagnifyingGlass size={16} />
+              <span className="hidden xl:inline">Търсене</span>
+              <kbd className="hidden xl:inline text-[11px] text-ink-400">Ctrl K</kbd>
+            </button>
+            {dualDisplay && (
+              <span className="chip !py-1.5 !px-3 text-xs font-semibold tabular-nums pointer-events-none hidden 2xl:inline-flex">
+                1 € = {BGN_PER_EUR.toFixed(5).replace(".", ",")} лв.
+              </span>
+            )}
+            <Clock />
+          </div>
         </header>
-        <main className="flex-1 p-6">{children}</main>
+        {readOnly && (
+          <div
+            role="status"
+            className="flex items-center gap-2 px-6 py-2 text-sm font-medium text-sky2-500 bg-sky2-500/10 border-b border-sky2-500/20"
+          >
+            <Eye size={18} weight="duotone" />
+            Одиторски профил: можете да преглеждате и изнасяте данните, но не и да ги променяте.
+          </div>
+        )}
+        <main className="flex-1 p-4 md:p-6">{children}</main>
       </div>
+
+      <CommandPalette
+        open={paletteOpen}
+        items={items}
+        onClose={() => setPaletteOpen(false)}
+        onNavigate={(href) => router.push(href)}
+        onAbout={() => setAboutOpen(true)}
+        onLogout={logout}
+      />
+      <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} status={status} />
     </div>
   );
 }

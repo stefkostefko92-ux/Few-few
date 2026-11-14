@@ -119,7 +119,7 @@ export default function InventoryPage() {
   return (
     <div className="space-y-5 animate-fade-up">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-black">Склад</h1>
+        <h1 className="text-2xl font-black">Склад и доставки</h1>
         <div className="flex gap-2">
           <button onClick={() => setModal("deliveries")} className="btn-primary text-sm">
             <Truck size={18} /> Нова доставка

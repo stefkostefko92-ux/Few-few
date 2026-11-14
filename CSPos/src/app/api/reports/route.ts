@@ -2,13 +2,13 @@
 // по касиери + изчерпващи се наличности.
 
 import { prisma } from "@/lib/db";
-import { guard, jsonError, requireRole } from "@/lib/auth";
+import { guard, jsonError, requireRead } from "@/lib/auth";
 import { vatBreakdown } from "@/lib/vat";
 import { SERVICE_PLU_MIN } from "@/lib/constants";
 
 export async function GET(req: Request) {
   return guard(async () => {
-    await requireRole("MANAGER");
+    await requireRead("MANAGER");
     const url = new URL(req.url);
     const from = url.searchParams.get("from");
     const to = url.searchParams.get("to");

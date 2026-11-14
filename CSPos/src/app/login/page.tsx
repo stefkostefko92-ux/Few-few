@@ -134,7 +134,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-ink-500 text-xs mt-6">
-          Демо: администратор 1/9999 · управител 2/5555 · касиер 3/1111
+          Демо: администратор 1/9999 · управител 2/5555 · касиер 3/1111 · одитор 99/2929
         </p>
       </div>
     </main>

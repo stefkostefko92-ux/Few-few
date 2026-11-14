@@ -1,45 +1,44 @@
-// Одиторски дневник — четене за одиторския профил (Прил. 29 т. 19) +
-// записване на касови събития от POS екрана (анулиране на ред/бон с причина).
+// Одиторски дневник — преглед с филтри (Прил. № 29, т. 16): период, оператор, вид действие,
+// УНП; със страниране — достъп до всички записи (т. 17). Четящ маршрут → одиторският профил
+// го вижда (т. 19). Записи от екрана НЕ се приемат: всяко анулиране се записва на сървъра,
+// в потока на самата операция — клиентът не може да подправи дневника.
 
-import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { audit } from "@/lib/audit";
-import { guard, jsonError, requireRead, requireSession } from "@/lib/auth";
+import { guard, requireRead } from "@/lib/auth";
 
 export async function GET(req: Request) {
   return guard(async () => {
-    // ЧЕТЯЩ маршрут → `requireRead`, за да го вижда и одиторският профил.
-    // Дотук стоеше зад `requireRole("MANAGER")`, тоест дневникът беше достъпен само за роля,
-    // която и ПИШЕ (цени, стоки, настройки) — това не е „аналог на администраторския, но само
-    // за четене“ по Прил. № 29, т. 19.
     await requireRead("MANAGER");
     const url = new URL(req.url);
-    const take = Math.min(parseInt(url.searchParams.get("take") ?? "100", 10), 500);
-    const action = url.searchParams.get("action") ?? undefined;
+    const take = Math.min(Math.max(parseInt(url.searchParams.get("take") ?? "100", 10) || 100, 1), 500);
+    const skip = Math.max(parseInt(url.searchParams.get("skip") ?? "0", 10) || 0, 0);
+    const action = url.searchParams.get("action") || undefined;
+    const operator = url.searchParams.get("operator");
+    const unp = url.searchParams.get("unp")?.trim() || undefined;
+    const from = url.searchParams.get("from");
+    const to = url.searchParams.get("to");
 
-    const logs = await prisma.auditLog.findMany({
-      where: action ? { action } : {},
-      include: { user: { select: { name: true, operatorCode: true } } },
-      orderBy: { createdAt: "desc" },
-      take,
-    });
-    return Response.json({ logs });
-  });
-}
-
-// Анулиране ПРЕДИ фискализация (маркиран ред/бон, който не се приключва) —
-// записва се с причина, както изисква одиторската практика по Прил. 29.
-const eventSchema = z.object({
-  action: z.enum(["LINE_CANCELED", "CART_CLEARED"]),
-  detail: z.record(z.string(), z.unknown()).optional(),
-});
-
-export async function POST(req: Request) {
-  return guard(async () => {
-    const s = await requireSession();
-    const parsed = eventSchema.safeParse(await req.json());
-    if (!parsed.success) throw jsonError(400, "Невалидно събитие.");
-    await audit(s.userId, parsed.data.action, "Cart", undefined, parsed.data.detail);
-    return Response.json({ ok: true }, { status: 201 });
+    const where = {
+      ...(action && { action }),
+      ...(unp && { unp: { contains: unp } }),
+      ...(operator && /^\d{1,4}$/.test(operator) && { user: { operatorCode: Number(operator) } }),
+      ...((from || to) && {
+        createdAt: {
+          ...(from && { gte: new Date(`${from}T00:00:00`) }),
+          ...(to && { lte: new Date(`${to}T23:59:59.999`) }),
+        },
+      }),
+    };
+    const [logs, total] = await Promise.all([
+      prisma.auditLog.findMany({
+        where,
+        include: { user: { select: { name: true, operatorCode: true } } },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        skip,
+        take,
+      }),
+      prisma.auditLog.count({ where }),
+    ]);
+    return Response.json({ logs, total });
   });
 }

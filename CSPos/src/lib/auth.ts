@@ -4,6 +4,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { SESSION_COOKIE, SESSION_TTL_HOURS, type RoleKey } from "./constants";
+import { ensureDbGuards } from "./integrity";
 
 export interface SessionData {
   userId: string;
@@ -106,6 +107,8 @@ export function jsonError(status: number, message: string): Response {
 /** Обвива API handler: превръща хвърлени Response в отговор, друго — в 500. */
 export async function guard(fn: () => Promise<Response>): Promise<Response> {
   try {
+    // тригерите против изтриване (Прил. № 29, т. 13) — веднъж на процес, преди първата заявка
+    await ensureDbGuards();
     return await fn();
   } catch (e) {
     if (e instanceof Response) return e;

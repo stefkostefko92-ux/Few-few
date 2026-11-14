@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { audit } from "@/lib/audit";
 import { guard, jsonError, requireRole, requireSession } from "@/lib/auth";
 
 export async function GET() {
@@ -22,10 +23,11 @@ const schema = z.object({
 
 export async function POST(req: Request) {
   return guard(async () => {
-    await requireRole("MANAGER");
+    const s = await requireRole("MANAGER");
     const parsed = schema.safeParse(await req.json());
     if (!parsed.success) throw jsonError(400, "Невалидни данни за категория.");
     const category = await prisma.category.create({ data: parsed.data });
+    await audit(s.userId, "CATEGORY_CREATE", "Category", category.id, { name: category.name });
     return Response.json({ category }, { status: 201 });
   });
 }

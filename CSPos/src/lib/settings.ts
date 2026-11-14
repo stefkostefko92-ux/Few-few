@@ -10,6 +10,7 @@ export interface StoreInfo {
   eik: string;
   vatNumber: string; // ЗДДС номер (или празно, ако няма регистрация)
   mol: string; // МОЛ / представляващ — „Съставил“ на фактурата (чл. 114 ЗДДС)
+  code: string; // код на търговския обект (т. 18.1, 18.9)
   storeName: string; // име на търговския обект
   address: string; // адрес на обекта
   city: string;
@@ -26,8 +27,13 @@ export interface FiscalConfig {
   host: string; // ErpNet.FP / ZFPLab / устройство по LAN
   port: number;
   printerId: string; // за ErpNet.FP
-  /** Деклариран СУПТО режим (доброволен) — печата УНП на бона, заключва изтриване. */
+  /**
+   * Режим СУПТО (Прил. № 29): УНП на всеки бон, без демо драйвери (т. 20). Веднъж включен,
+   * не може да се изключи (т. 10). Нова инсталация е в демонстрация — режимът е изключен.
+   */
   suptoMode: boolean;
+  /** Кога е включен режимът СУПТО (ISO) — за „За програмата“ и декларацията. */
+  suptoSince?: string | null;
 }
 
 export interface TerminalConfig {
@@ -37,6 +43,26 @@ export interface TerminalConfig {
   apiKey: string; // SumUp
   merchantCode: string;
   readerId: string;
+}
+
+export interface WorkplaceConfig {
+  /** Код на работното място (т. 18.1, 18.9) — една инсталация = едно работно място. */
+  code: string;
+  name: string;
+}
+
+export interface PosPolicy {
+  /** Ръчна отстъпка, която касиер може да даде без управител (промили; 100 = 10 %). */
+  maxCashierDiscountPermille: number;
+}
+
+/** Последна успешна връзка с ФУ (т. 8) и сверка на часа (т. 5). */
+export interface FiscalLinkState {
+  serial: string;
+  okAt: string | null;
+  detail: string;
+  offsetMs: number | null;
+  syncedAt: string | null;
 }
 
 export interface DisplayConfig {
@@ -51,6 +77,7 @@ const DEFAULTS = {
     eik: "000000000",
     vatNumber: "BG000000000",
     mol: "Иван Иванов",
+    code: "1",
     storeName: "Хранителен магазин „Касата“",
     address: "ул. „Демо“ № 1",
     city: "София",
@@ -64,7 +91,8 @@ const DEFAULTS = {
     host: "127.0.0.1",
     port: 8001,
     printerId: "1",
-    suptoMode: true,
+    suptoMode: false,
+    suptoSince: null,
   } as FiscalConfig,
   terminal: {
     driver: "demo",
@@ -78,6 +106,9 @@ const DEFAULTS = {
     dualDisplay: true,
     dualDisplayEnd: DUAL_DISPLAY_END,
   } satisfies DisplayConfig,
+  workplace: { code: "1", name: "Каса 1" } satisfies WorkplaceConfig,
+  pos: { maxCashierDiscountPermille: 100 } satisfies PosPolicy,
+  fiscalLink: { serial: "", okAt: null, detail: "", offsetMs: null, syncedAt: null } as FiscalLinkState,
   vatRates: DEFAULT_VAT_RATES,
   barcodeMasks: DEFAULT_MASK_RULES,
   /** Лиценз на тази каса: ключ + подписан офлайн blob + локален deviceId. */

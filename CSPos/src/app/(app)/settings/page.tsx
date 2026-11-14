@@ -1,10 +1,11 @@
 "use client";
 
-// Настройки (само администратор): търговец, фискално устройство, ПОС терминал,
-// двойно обозначаване, ДДС ставки, тегловни баркодове и потребители.
+// Настройки (само администратор; одиторът ги вижда само за четене — Прил. № 29, т. 19):
+// търговец и обект, работно място, фискално устройство и режим СУПТО, ПОС терминал,
+// правила на касата, евро и ДДС, лиценз, оператори с роли и периоди на активност.
 
 import { useEffect, useState } from "react";
-import { CheckCircle, XCircle, Plus, Receipt, FileText } from "@phosphor-icons/react";
+import { CheckCircle, XCircle, Plus, Receipt, FileText, ShieldCheck, Warning } from "@phosphor-icons/react";
 import { Modal, Field, Badge, Spinner, apiJson } from "@/components/ui";
 import { ROLES } from "@/lib/constants";
 
@@ -14,6 +15,7 @@ interface Settings {
     eik: string;
     vatNumber: string;
     mol: string;
+    code: string;
     storeName: string;
     address: string;
     city: string;
@@ -28,6 +30,7 @@ interface Settings {
     port: number;
     printerId: string;
     suptoMode: boolean;
+    suptoSince?: string | null;
   };
   terminal: {
     driver: string;
@@ -39,8 +42,17 @@ interface Settings {
   };
   display: { dualDisplay: boolean; dualDisplayEnd: string };
   vatRates: { A: number; B: number; C: number; D: number };
+  workplace: { code: string; name: string };
+  pos: { maxCashierDiscountPermille: number };
   fiscalDrivers: Array<{ id: string; label: string }>;
   terminalDrivers: Array<{ id: string; label: string }>;
+}
+
+interface RoleGrant {
+  role: keyof typeof ROLES;
+  readOnly: boolean;
+  validFrom: string;
+  validTo: string | null;
 }
 
 interface User {
@@ -48,8 +60,13 @@ interface User {
   name: string;
   operatorCode: number;
   role: keyof typeof ROLES;
+  readOnly: boolean;
   active: boolean;
+  deactivatedAt: string | null;
+  roleGrants: RoleGrant[];
 }
+
+const roleName = (role: keyof typeof ROLES, readOnly: boolean) => (readOnly ? "Одитор (само четене)" : ROLES[role]);
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -64,6 +81,8 @@ export default function SettingsPage() {
   const [userModal, setUserModal] = useState<User | "new" | null>(null);
   const [previewBusy, setPreviewBusy] = useState(false);
   const [previewDoc, setPreviewDoc] = useState<{ title: string; text: string } | null>(null);
+  const [serverSupto, setServerSupto] = useState(false);
+  const [suptoConfirm, setSuptoConfirm] = useState(false);
 
   async function load() {
     const [st, us, fs] = await Promise.all([
@@ -75,6 +94,7 @@ export default function SettingsPage() {
       }>(await fetch("/api/fiscal")),
     ]);
     setSettings(st);
+    setServerSupto(st.fiscal.suptoMode);
     setUsers(us.users);
     setStatus(fs);
   }
@@ -83,8 +103,9 @@ export default function SettingsPage() {
     load().catch((e) => setError(e.message));
   }, []);
 
-  async function save() {
+  async function save(override?: Partial<Pick<Settings, "fiscal">>) {
     if (!settings) return;
+    const values = { ...settings, ...override };
     setBusy(true);
     setError(null);
     setMessage(null);
@@ -94,11 +115,13 @@ export default function SettingsPage() {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            store: settings.store,
-            fiscal: settings.fiscal,
-            terminal: settings.terminal,
-            display: settings.display,
-            vatRates: settings.vatRates,
+            store: values.store,
+            fiscal: values.fiscal,
+            terminal: values.terminal,
+            display: values.display,
+            vatRates: values.vatRates,
+            workplace: values.workplace,
+            pos: values.pos,
           }),
         })
       );
@@ -142,7 +165,7 @@ export default function SettingsPage() {
     <div className="space-y-6 animate-fade-up max-w-4xl">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-black">Настройки</h1>
-        <button onClick={save} disabled={busy} className="btn-primary">
+        <button onClick={() => void save()} disabled={busy} className="btn-primary">
           {busy ? "Записва се…" : "Запази всички"}
         </button>
       </div>
@@ -186,6 +209,15 @@ export default function SettingsPage() {
 
         <h3 className="text-sm font-semibold text-ink-300 uppercase tracking-wide pt-1">Търговски обект</h3>
         <div className="grid sm:grid-cols-2 gap-4">
+          <Field label="Код на обекта (в справките по т. 18)">
+            <input value={settings.store.code} onChange={(e) => set("store", { code: e.target.value })} className="input w-full font-mono" maxLength={10} />
+          </Field>
+          <Field label="Работно място: код и име">
+            <div className="flex gap-2">
+              <input value={settings.workplace.code} onChange={(e) => set("workplace", { code: e.target.value })} className="input w-24 font-mono" maxLength={10} aria-label="Код на работното място" />
+              <input value={settings.workplace.name} onChange={(e) => set("workplace", { name: e.target.value })} className="input flex-1" maxLength={60} aria-label="Име на работното място" />
+            </div>
+          </Field>
           <Field label="Име на обекта">
             <input value={settings.store.storeName} onChange={(e) => set("store", { storeName: e.target.value })} className="input w-full" />
           </Field>
@@ -266,18 +298,57 @@ export default function SettingsPage() {
             <input value={settings.fiscal.printerId} onChange={(e) => set("fiscal", { printerId: e.target.value })} className="input w-full font-mono" />
           </Field>
         </div>
-        <label className="flex items-center gap-2.5">
-          <input
-            type="checkbox"
-            checked={settings.fiscal.suptoMode}
-            onChange={(e) => set("fiscal", { suptoMode: e.target.checked })}
-            className="size-5 accent-brand-500"
-          />
-          <span className="font-medium">
-            СУПТО режим (доброволен) — печата УНП на бона и заключва изтриването
-          </span>
-        </label>
+        {serverSupto ? (
+          <div className="flex items-start gap-3 rounded-2xl bg-mint-600/10 border border-mint-600/30 px-4 py-3">
+            <ShieldCheck size={22} weight="duotone" className="text-mint-600 shrink-0 mt-0.5" />
+            <div className="text-sm">
+              <div className="font-semibold text-ink-100">
+                Режим СУПТО е включен
+                {settings.fiscal.suptoSince ? ` от ${new Date(settings.fiscal.suptoSince).toLocaleDateString("bg-BG")}` : ""}
+              </div>
+              <div className="text-ink-400">
+                Всеки бон носи УНП, демо устройствата са забранени, а режимът не може да се изключи (Прил. № 29, т. 10 и 20).
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-brand-600/10 border border-brand-600/30 px-4 py-3">
+            <Warning size={22} weight="duotone" className="text-brand-700 shrink-0" />
+            <div className="text-sm flex-1 min-w-[16rem]">
+              <div className="font-semibold text-ink-100">Демонстрация: режимът СУПТО е изключен</div>
+              <div className="text-ink-400">Включете го, когато касата работи с истинско фискално устройство.</div>
+            </div>
+            <button className="btn-primary text-sm" onClick={() => setSuptoConfirm(true)}>
+              Включи режим СУПТО
+            </button>
+          </div>
+        )}
       </section>
+
+      <Modal open={suptoConfirm} onClose={() => setSuptoConfirm(false)} title="Включване на режим СУПТО">
+        <div className="space-y-4 text-sm">
+          <p>След включване касата работи по Приложение № 29 на Наредба № Н-18:</p>
+          <ul className="list-disc pl-5 space-y-1.5 text-ink-300">
+            <li>всеки бон и всяко сторно носят уникален номер на продажбата (УНП);</li>
+            <li>демо фискално устройство и демо терминал не могат да се ползват;</li>
+            <li>режимът <b className="text-ink-100">не може да се изключи</b> по-късно.</li>
+          </ul>
+          <p className="text-ink-400">
+            Текущ драйвер на ФУ: <b className="text-ink-100">{settings.fiscalDrivers.find((d) => d.id === settings.fiscal.driver)?.label}</b>.
+            Незаписаните промени по страницата се записват заедно с режима.
+          </p>
+          <button
+            className="btn-primary w-full h-12"
+            disabled={busy}
+            onClick={() => {
+              setSuptoConfirm(false);
+              void save({ fiscal: { ...settings.fiscal, suptoMode: true } });
+            }}
+          >
+            Включи режим СУПТО
+          </button>
+        </div>
+      </Modal>
 
       {/* Терминал */}
       <section className="card p-5 space-y-4">
@@ -327,6 +398,24 @@ export default function SettingsPage() {
         </div>
       </section>
 
+      {/* Правила на касата */}
+      <section className="card p-5 space-y-4">
+        <h2 className="font-bold text-lg">Правила на касата</h2>
+        <Field label="Най-голяма ръчна отстъпка, която касиер дава без управител (%)">
+          <input
+            value={String(settings.pos.maxCashierDiscountPermille / 10)}
+            onChange={(e) =>
+              set("pos", { maxCashierDiscountPermille: Math.min(999, Math.max(0, Math.round((parseFloat(e.target.value.replace(",", ".")) || 0) * 10))) })
+            }
+            className="input w-40 text-center font-mono"
+            inputMode="decimal"
+          />
+        </Field>
+        <p className="text-xs text-ink-500">
+          По-голяма отстъпка се отказва на сървъра и иска вход на управител. Отстъпката от клиентска карта не се брои.
+        </p>
+      </section>
+
       {/* Евро / ДДС */}
       <section className="card p-5 space-y-4">
         <h2 className="font-bold text-lg">Евро и ДДС</h2>
@@ -374,25 +463,36 @@ export default function SettingsPage() {
       {/* Потребители */}
       <section className="card p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-bold text-lg">Потребители</h2>
-          <button onClick={() => setUserModal("new")} className="btn-ghost text-sm">
-            <Plus size={16} /> Нов потребител
+          <div>
+            <h2 className="font-bold text-lg">Оператори</h2>
+            <p className="text-xs text-ink-500 mt-0.5">
+              Уникален код, две имена, роля с период на активност (Прил. № 29, т. 6). Одиторският профил вижда всичко, но не пише (т. 19).
+            </p>
+          </div>
+          <button onClick={() => setUserModal("new")} className="btn-ghost text-sm shrink-0">
+            <Plus size={16} /> Нов оператор
           </button>
         </div>
         <table className="w-full text-sm">
           <tbody>
             {users.map((u) => (
               <tr key={u.id} className="border-b border-ink-800/60 last:border-0">
-                <td className="py-2.5 font-mono text-ink-400 w-16">{u.operatorCode}</td>
+                <td className="py-2.5 font-mono text-ink-400 w-16">{String(u.operatorCode).padStart(4, "0")}</td>
                 <td className="py-2.5 font-medium">{u.name}</td>
                 <td className="py-2.5">
-                  <Badge tone={u.role === "ADMIN" ? "warning" : u.role === "MANAGER" ? "info" : "neutral"}>
-                    {ROLES[u.role]}
+                  <Badge tone={u.readOnly ? "info" : u.role === "ADMIN" ? "warning" : u.role === "MANAGER" ? "info" : "neutral"}>
+                    {roleName(u.role, u.readOnly)}
                   </Badge>
+                  {(() => {
+                    const g = u.roleGrants.find((x) => x.validTo === null);
+                    return g ? (
+                      <span className="block text-[11px] text-ink-500 mt-0.5">от {new Date(g.validFrom).toLocaleDateString("bg-BG")}</span>
+                    ) : null;
+                  })()}
                 </td>
                 <td className="py-2.5">
                   <Badge tone={u.active ? "success" : "danger"}>
-                    {u.active ? "активен" : "спрян"}
+                    {u.active ? "активен" : `спрян${u.deactivatedAt ? ` от ${new Date(u.deactivatedAt).toLocaleDateString("bg-BG")}` : ""}`}
                   </Badge>
                 </td>
                 <td className="py-2.5 text-right">
@@ -417,7 +517,7 @@ export default function SettingsPage() {
 
       <Modal open={!!previewDoc} onClose={() => setPreviewDoc(null)} title={previewDoc?.title ?? ""}>
         <p className="text-xs text-ink-500 mb-3">
-          Примерен документ с текущите данни. Демонстрационен — не е реален фискален бон.
+          Примерен документ с текущите данни — не е касов бон и не се печата на ФУ.
         </p>
         <pre className="bg-white text-[#17203a] rounded-2xl p-4 text-xs leading-tight font-mono overflow-x-auto shadow-inner whitespace-pre">
           {previewDoc?.text}
@@ -441,6 +541,7 @@ function UserModal({
     operatorCode: "",
     pin: "",
     role: "CASHIER" as keyof typeof ROLES,
+    readOnly: false,
     active: true,
   });
   const [error, setError] = useState<string | null>(null);
@@ -448,13 +549,14 @@ function UserModal({
 
   useEffect(() => {
     if (target === "new") {
-      setForm({ name: "", operatorCode: "", pin: "", role: "CASHIER", active: true });
+      setForm({ name: "", operatorCode: "", pin: "", role: "CASHIER", readOnly: false, active: true });
     } else if (target) {
       setForm({
         name: target.name,
         operatorCode: String(target.operatorCode),
         pin: "",
         role: target.role,
+        readOnly: target.readOnly,
         active: target.active,
       });
     }
@@ -477,6 +579,7 @@ function UserModal({
               operatorCode: parseInt(form.operatorCode, 10),
               pin: form.pin,
               role: form.role,
+              readOnly: form.readOnly,
             }),
           })
         );
@@ -489,6 +592,7 @@ function UserModal({
               id: (target as User).id,
               name: form.name.trim(),
               role: form.role,
+              readOnly: form.readOnly,
               active: form.active,
               ...(form.pin ? { pin: form.pin } : {}),
             }),
@@ -504,9 +608,9 @@ function UserModal({
   }
 
   return (
-    <Modal open onClose={onClose} title={target === "new" ? "Нов потребител" : "Редакция на потребител"}>
+    <Modal open onClose={onClose} title={target === "new" ? "Нов оператор" : "Редакция на оператор"}>
       <div className="space-y-4">
-        <Field label="Име">
+        <Field label="Име и фамилия (поне две имена)">
           <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className="input w-full" />
         </Field>
         <Field label="Код на оператор (1–9999, влиза в УНП)">
@@ -540,6 +644,18 @@ function UserModal({
             ))}
           </select>
         </Field>
+        <label className="flex items-start gap-2.5">
+          <input
+            type="checkbox"
+            checked={form.readOnly}
+            onChange={(e) => setForm((f) => ({ ...f, readOnly: e.target.checked }))}
+            className="size-5 accent-brand-500 mt-0.5"
+          />
+          <span>
+            <span className="font-medium block">Одиторски профил — само четене</span>
+            <span className="text-xs text-ink-500">За проверка от НАП (Прил. № 29, т. 19): вижда справките, дневника и настройките според ролята, но не може да променя нищо.</span>
+          </span>
+        </label>
         {target !== "new" && (
           <label className="flex items-center gap-2.5">
             <input
