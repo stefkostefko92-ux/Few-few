@@ -8,6 +8,8 @@ import { IncomingError } from '../incoming/check.js';
 import { IncomingRegisterError, setIncomingStatus, uploadIncoming } from '../incoming/register.js';
 import { HOUR, sofiaToday } from '../time.js';
 import { param } from './app-shared.js';
+import { money } from '../http/view.js';
+import { afterDate, PAGE_SIZE, pageOf, pagerLinks, readCursor } from '../http/pagination.js';
 
 /**
  * „Входящи“ (SPEC 55): регистърът — качените UBL/CII файлове и доставените в шкафчето; качване с
@@ -31,15 +33,20 @@ export function appIncomingRouter(): Router {
 
   router.get('/app/o/:orgId/vhodyashti', async (req, res) => {
     const access = await requireOrg(req, 'documents.read');
+    // Един регистър от две таблици: всяка дава до страница след курсора, сливат се по (дата, id).
+    const cursor = readCursor(req.query['predi']);
     const [org, uploads, inbox] = await Promise.all([
       prisma.organization.findUniqueOrThrow({
         where: { id: access.organizationId },
         select: { id: true, legalName: true },
       }),
       prisma.incomingInvoice.findMany({
-        where: { organizationId: access.organizationId },
-        orderBy: { createdAt: 'desc' },
-        take: 100,
+        where: {
+          organizationId: access.organizationId,
+          ...afterDate('createdAt', cursor, 'desc'),
+        },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: PAGE_SIZE + 1,
         select: {
           id: true,
           supplierName: true,
@@ -55,9 +62,12 @@ export function appIncomingRouter(): Router {
         },
       }),
       prisma.inboxEntry.findMany({
-        where: { recipientOrgId: access.organizationId },
-        orderBy: { deliveredAt: 'desc' },
-        take: 100,
+        where: {
+          recipientOrgId: access.organizationId,
+          ...afterDate('deliveredAt', cursor, 'desc'),
+        },
+        orderBy: [{ deliveredAt: 'desc' }, { id: 'desc' }],
+        take: PAGE_SIZE + 1,
         select: {
           id: true,
           status: true,
@@ -105,10 +115,13 @@ export function appIncomingRouter(): Router {
         valid: true,
         at: e.deliveredAt,
       })),
-    ].sort((a, b) => b.at.getTime() - a.at.getTime());
+    ].sort((a, b) => b.at.getTime() - a.at.getTime() || (a.id < b.id ? 1 : a.id > b.id ? -1 : 0));
+    const page = pageOf(rows, PAGE_SIZE, (row) => row.at);
     res.render('app/incoming', {
       org,
-      rows,
+      rows: page.items,
+      pager: pagerLinks(req, `/app/o/${org.id}/vhodyashti`, 'predi', [], page.next),
+      money: (cents: bigint, currency: string) => money(cents, currency, res.locals.lang),
       canWrite: roleCan(access.role, 'documents.issue'),
       ok: code(req.query['ok']),
       err: code(req.query['err']),

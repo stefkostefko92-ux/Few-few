@@ -2,9 +2,9 @@ import type { Request, Response } from 'express';
 import type { Prisma } from '@prisma/client';
 import { HttpError } from '../auth/guards.js';
 import { documentPdf } from '../documents/render.js';
+import { ID } from '../ids.js';
 
 /** Общото за маршрутите на приложението: проверка на идентификатор от адреса и изтегляне на документ. */
-export const ID = /^[a-z0-9]{20,40}$/;
 
 export function param(req: Request, name: string): string {
   const value = req.params[name];

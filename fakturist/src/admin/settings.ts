@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { prisma } from '../db.js';
 import { MINUTE } from '../time.js';
 import { BRAND } from '../brand.js';
+import { ID, ID_PATTERN } from '../ids.js';
 
 /**
  * Глобалните настройки, които мастър акаунтът сменя без деплой. ЕДИНСТВЕНИЯТ списък: панелът рисува
@@ -70,7 +71,7 @@ export const SETTINGS = {
     },
   },
   'billing.supplierOrgId': {
-    schema: z.union([z.literal(''), z.string().regex(/^[a-z0-9]{20,40}$/)]),
+    schema: z.union([z.literal(''), z.string().regex(ID)]),
     default: '',
     label: {
       bg: 'Фирмата, която издава фактурите за плановете',
@@ -82,7 +83,10 @@ export const SETTINGS = {
     },
   },
   'peppol.pilotOrgIds': {
-    schema: z.union([z.literal(''), z.string().regex(/^[a-z0-9]{20,40}(,[a-z0-9]{20,40}){0,9}$/)]),
+    schema: z.union([
+      z.literal(''),
+      z.string().regex(new RegExp(`^${ID_PATTERN}(,${ID_PATTERN}){0,9}$`)),
+    ]),
     default: '',
     label: {
       bg: 'Фирми за пробата на Peppol (преди пускането)',

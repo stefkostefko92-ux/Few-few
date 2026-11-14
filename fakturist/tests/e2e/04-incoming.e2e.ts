@@ -57,8 +57,9 @@ for (const profile of PROFILES) {
         await page.getByRole('heading', { level: 1, name: domestic.number }).waitFor();
         const facts = await page.locator('dl.facts').first().innerText();
         assert.ok(facts.includes(domestic.seller.name), 'доставчикът');
-        assert.match(facts, /114,69 EUR/);
-        assert.match(facts, /18,20 EUR/);
+        // Сумите — през общия точен форматер (Intl, „€“), както навсякъде в приложението.
+        assert.match(facts, /114,69\s€/);
+        assert.match(facts, /18,20\s€/);
         await page
           .locator('dl.facts')
           .getByText(tr('app.incoming.statuses.RECEIVED'), { exact: true })

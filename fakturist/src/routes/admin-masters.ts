@@ -5,6 +5,7 @@ import { HttpError } from '../auth/guards.js';
 import { HOUR } from '../time.js';
 import { kickOutbox } from '../mail/outbox.js';
 import { grantMaster, listMasters, MasterError, revokeMaster } from '../accounts/masters.js';
+import { isId } from '../ids.js';
 
 /**
  * „Мастъри“ в панела (под requireMaster — src/routes/admin.ts): списък, даване по имейл, отнемане.
@@ -71,7 +72,7 @@ export function adminMastersRouter(): Router {
     const parsed = CodeSchema.safeParse(req.body);
     if (!parsed.success) return res.redirect(303, '/admin/mastari?err=badCode');
     const userId = String(req.params['id']);
-    if (!/^[a-z0-9]{20,40}$/.test(userId)) throw new HttpError(404);
+    if (!isId(userId)) throw new HttpError(404);
     try {
       await revokeMaster({ actorId: actor(req), userId, code: parsed.data.code });
       kickOutbox();

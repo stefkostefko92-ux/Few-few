@@ -1,6 +1,7 @@
 import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import type { ItemInput, PartyInput } from './schemas.js';
+import { afterText, PAGE_SIZE, pageOf, type Cursor } from '../http/pagination.js';
 
 /**
  * Контрагентите и артикулите на фирмата (SPEC 42–43). Документът пази свое копие на данните в момента
@@ -169,13 +170,19 @@ export async function setItemArchived(input: {
   });
 }
 
-/** Търсене по име, ЕИК или ДДС номер (без значение главни/малки), до 200 реда. */
-export function searchParties(organizationId: string, query: string, archived: boolean) {
+/** Търсене по име, ЕИК или ДДС номер (без значение главни/малки); страници по (име, id). */
+export async function searchParties(
+  organizationId: string,
+  query: string,
+  archived: boolean,
+  cursor: Cursor | null = null,
+) {
   const q = query.trim().slice(0, 100);
-  return prisma.party.findMany({
+  const rows = await prisma.party.findMany({
     where: {
       organizationId,
       archivedAt: archived ? { not: null } : null,
+      AND: [afterText('name', cursor, 'asc')],
       ...(q
         ? {
             OR: [
@@ -186,20 +193,28 @@ export function searchParties(organizationId: string, query: string, archived: b
           }
         : {}),
     },
-    orderBy: { name: 'asc' },
-    take: 200,
+    orderBy: [{ name: 'asc' }, { id: 'asc' }],
+    take: PAGE_SIZE + 1,
   });
+  return pageOf(rows, PAGE_SIZE, (row) => row.name);
 }
 
-export function searchItems(organizationId: string, query: string, archived: boolean) {
+export async function searchItems(
+  organizationId: string,
+  query: string,
+  archived: boolean,
+  cursor: Cursor | null = null,
+) {
   const q = query.trim().slice(0, 100);
-  return prisma.item.findMany({
+  const rows = await prisma.item.findMany({
     where: {
       organizationId,
       archivedAt: archived ? { not: null } : null,
       ...(q ? { name: { contains: q, mode: 'insensitive' as const } } : {}),
+      ...afterText('name', cursor, 'asc'),
     },
-    orderBy: { name: 'asc' },
-    take: 200,
+    orderBy: [{ name: 'asc' }, { id: 'asc' }],
+    take: PAGE_SIZE + 1,
   });
+  return pageOf(rows, PAGE_SIZE, (row) => row.name);
 }

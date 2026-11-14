@@ -453,6 +453,7 @@ model Document {
   @@index([organizationId, paymentState, dueDate])
   @@index([organizationId, issueDate])
   @@index([organizationId, status])
+  @@index([organizationId, createdAt])
   @@index([seriesId])
   @@index([issuedById])
   @@index([cancelledById])
@@ -949,6 +950,7 @@ model IncomingInvoice {
 
   @@unique([organizationId, sha256])
   @@index([organizationId, status, dueDate])
+  @@index([organizationId, createdAt])
   @@index([createdById])
 }
 
@@ -997,6 +999,7 @@ model BankLine {
 
   @@unique([organizationId, uniqueKey])
   @@index([organizationId, status])
+  @@index([organizationId, status, bookingDate])
   @@index([statementId])
 }
 

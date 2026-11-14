@@ -26,13 +26,14 @@ import {
   SeriesExhausted,
   sellerOf,
 } from './issue-parts.js';
+import { ID } from '../ids.js';
 
 /**
  * Това, което издаващият подава: всичко без номера и без доставчика. Доставчикът идва от данните на
  * фирмата в базата (никога от формата), номерът — от серията в транзакцията.
  */
 export const IssueRequestSchema = InvoiceInputSchema.omit({ number: true, seller: true }).extend({
-  seriesId: z.string().regex(/^[a-z0-9]{20,40}$/),
+  seriesId: z.string().regex(ID),
 });
 export type IssueRequest = z.infer<typeof IssueRequestSchema>;
 

@@ -18,6 +18,7 @@ import {
   undoLine,
 } from '../bank/reconcile.js';
 import { param } from './app-shared.js';
+import { afterDate, PAGE_SIZE, pageOf, pagerLinks, readCursor } from '../http/pagination.js';
 
 /**
  * „Банка“ (SPEC 54): качване на извлечение (camt.053/CSV), новите постъпления с предложение за
@@ -52,20 +53,31 @@ export function appBankRouter(): Router {
 
   router.get('/app/o/:orgId/banka', async (req, res) => {
     const access = await requireOrg(req, 'documents.read');
-    const [org, fresh, done, statements, feature] = await Promise.all([
+    // Два списъка с отделни страници: „За свързване“ (`novi`) и „Обработени“ (`gotovi`).
+    const freshCursor = readCursor(req.query['novi']);
+    const doneCursor = readCursor(req.query['gotovi']);
+    const [org, freshRows, doneRows, statements, feature] = await Promise.all([
       prisma.organization.findUniqueOrThrow({
         where: { id: access.organizationId },
         select: { id: true, legalName: true },
       }),
       prisma.bankLine.findMany({
-        where: { organizationId: access.organizationId, status: 'NEW' },
-        orderBy: [{ bookingDate: 'desc' }, { id: 'asc' }],
-        take: 100,
+        where: {
+          organizationId: access.organizationId,
+          status: 'NEW',
+          ...afterDate('bookingDate', freshCursor, 'desc'),
+        },
+        orderBy: [{ bookingDate: 'desc' }, { id: 'desc' }],
+        take: PAGE_SIZE + 1,
       }),
       prisma.bankLine.findMany({
-        where: { organizationId: access.organizationId, status: { not: 'NEW' } },
-        orderBy: { bookingDate: 'desc' },
-        take: 30,
+        where: {
+          organizationId: access.organizationId,
+          status: { not: 'NEW' },
+          ...afterDate('bookingDate', doneCursor, 'desc'),
+        },
+        orderBy: [{ bookingDate: 'desc' }, { id: 'desc' }],
+        take: PAGE_SIZE + 1,
         include: {
           documentPayment: { select: { document: { select: { id: true, number: true } } } },
         },
@@ -77,11 +89,16 @@ export function appBankRouter(): Router {
       }),
       orgHasFeature(access.organizationId, 'bank-matching', { viaFirmId: access.viaFirmId }),
     ]);
-    const suggestions = await suggestMany(access.organizationId, fresh);
+    const fresh = pageOf(freshRows, PAGE_SIZE, (line) => line.bookingDate);
+    const done = pageOf(doneRows, PAGE_SIZE, (line) => line.bookingDate);
+    const suggestions = await suggestMany(access.organizationId, fresh.items);
+    const path = `/app/o/${org.id}/banka`;
     res.render('app/bank', {
       org,
-      lines: fresh.map((line, i) => ({ line, suggestion: suggestions[i] })),
-      done,
+      lines: fresh.items.map((line, i) => ({ line, suggestion: suggestions[i] })),
+      done: done.items,
+      freshPager: pagerLinks(req, path, 'novi', ['gotovi'], fresh.next),
+      donePager: pagerLinks(req, path, 'gotovi', ['novi'], done.next),
       statements,
       feature,
       canWrite: roleCan(access.role, 'documents.issue'),

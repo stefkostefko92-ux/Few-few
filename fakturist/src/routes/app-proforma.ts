@@ -10,6 +10,7 @@ import { cancelProforma, sendProforma } from '../proforma/proforma.js';
 import { ProformaError } from '../proforma/link.js';
 import { proformaDocumentPdf } from '../proforma/render.js';
 import { param } from './app-shared.js';
+import { afterDate, PAGE_SIZE, pageOf, pagerLinks, readCursor } from '../http/pagination.js';
 
 /**
  * „Проформи“: списъкът, страницата на проформата, PDF, изпращане по имейл, отказ. Създаването е от
@@ -35,17 +36,19 @@ export function appProformaRouter(): Router {
 
   router.get('/app/o/:orgId/proformi', async (req, res) => {
     const access = await requireOrg(req, 'documents.read');
-    const [org, proformas] = await Promise.all([
+    const cursor = readCursor(req.query['predi']);
+    const [org, rows] = await Promise.all([
       prisma.organization.findUniqueOrThrow({
         where: { id: access.organizationId },
         select: { id: true, legalName: true },
       }),
       prisma.proforma.findMany({
-        where: { organizationId: access.organizationId },
-        orderBy: { createdAt: 'desc' },
-        take: 100,
+        where: { organizationId: access.organizationId, ...afterDate('createdAt', cursor, 'desc') },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: PAGE_SIZE + 1,
         select: {
           id: true,
+          createdAt: true,
           number: true,
           status: true,
           issueDate: true,
@@ -57,9 +60,11 @@ export function appProformaRouter(): Router {
         },
       }),
     ]);
+    const page = pageOf(rows, PAGE_SIZE, (row) => row.createdAt);
     res.render('app/proformas', {
       org,
-      proformas,
+      proformas: page.items,
+      pager: pagerLinks(req, `/app/o/${org.id}/proformi`, 'predi', [], page.next),
       canWrite: roleCan(access.role, 'documents.issue'),
     });
   });

@@ -22,10 +22,10 @@ import { param } from './app-shared.js';
 import {
   ANNUL_MESSAGES,
   bodyString,
-  ID,
   PROFORMA_MESSAGES,
   renderNewDocument,
 } from './app-issue-view.js';
+import { ID } from '../ids.js';
 import { sofiaToday } from '../time.js';
 
 const PEPPOL_NOT_ACTIVE = {

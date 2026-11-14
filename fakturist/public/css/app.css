@@ -768,6 +768,32 @@ dd {
   align-items: center;
   margin-top: 1rem;
 }
+
+/* Търсенето в документите: на телефон — едно под друго, на широк екран — един ред, който се пренася. */
+.doc-filter {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.6rem 0.75rem;
+  align-items: end;
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+.doc-filter-q {
+  grid-column: 1 / -1;
+}
+.doc-filter-actions {
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+}
+@media (min-width: 60rem) {
+  .doc-filter-q {
+    grid-column: span 2;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;

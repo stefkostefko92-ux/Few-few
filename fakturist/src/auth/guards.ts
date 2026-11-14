@@ -3,6 +3,7 @@ import { config } from '../config.js';
 import { safeEqual } from '../crypto.js';
 import { prisma } from '../db.js';
 import { effectiveRole, roleCan, type Capability, type MemberRole } from './roles.js';
+import { ID_PATTERN, isId } from '../ids.js';
 
 export const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
@@ -21,9 +22,9 @@ export class HttpError extends Error {
  * csrf(), затова токенът се проверява след разчитането (src/http/upload.ts). Всеки друг multipart — 403.
  */
 const MULTIPART_PATHS = [
-  /^\/app\/o\/[a-z0-9]{20,40}\/nastroyki\/logo$/,
-  /^\/app\/o\/[a-z0-9]{20,40}\/vhodyashti$/,
-  /^\/app\/o\/[a-z0-9]{20,40}\/banka$/,
+  new RegExp(`^/app/o/${ID_PATTERN}/nastroyki/logo$`),
+  new RegExp(`^/app/o/${ID_PATTERN}/vhodyashti$`),
+  new RegExp(`^/app/o/${ID_PATTERN}/banka$`),
 ];
 
 /**
@@ -116,7 +117,7 @@ export async function orgAccess(req: Request, organizationId: string): Promise<O
 /** Достъп + способност или 404 (не издаваме, че фирмата съществува). */
 export async function requireOrg(req: Request, capability: Capability): Promise<OrgAccess> {
   const orgId = req.params['orgId'];
-  if (typeof orgId !== 'string' || !/^[a-z0-9]{20,40}$/.test(orgId)) throw new HttpError(404);
+  if (!isId(orgId)) throw new HttpError(404);
   const access = await orgAccess(req, orgId);
   if (!access || !roleCan(access.role, capability)) throw new HttpError(404);
   return access;

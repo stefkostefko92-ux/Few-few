@@ -2,6 +2,7 @@ import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { errorMessage, logger } from '../logger.js';
 import { PartyForm } from './schemas.js';
+import { isId } from '../ids.js';
 
 /**
  * Каталогът във формата за нов документ (SPEC 42–43): избраният контрагент попълва получателя, а
@@ -13,7 +14,7 @@ export async function buyerFromParty(
   organizationId: string,
   partyId: unknown,
 ): Promise<Record<string, string> | null> {
-  if (typeof partyId !== 'string' || !/^[a-z0-9]{20,40}$/.test(partyId)) return null;
+  if (!isId(partyId)) return null;
   const party = await prisma.party.findFirst({
     where: { id: partyId, organizationId, archivedAt: null },
   });

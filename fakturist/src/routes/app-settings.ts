@@ -20,6 +20,7 @@ import {
   PDF_TEMPLATES,
 } from '../documents/pdf-style.js';
 import { logoUpload, uploadStatus } from '../http/upload.js';
+import { isId } from '../ids.js';
 
 /**
  * Настройките на фирмата: изгледът на PDF копието (лого, шрифт, шаблон, цвят). Сменя ги собственикът или
@@ -83,10 +84,7 @@ const uploadLimiter = rateLimit({
   keyGenerator: (req) => req.principal?.user.id ?? requestRateKey(req),
   handler: (req, res) => {
     const orgId = String(req.params['orgId'] ?? '');
-    res.redirect(
-      303,
-      /^[a-z0-9]{20,40}$/.test(orgId) ? `/app/o/${orgId}/nastroyki?greshka=logoTooMany` : '/app',
-    );
+    res.redirect(303, isId(orgId) ? `/app/o/${orgId}/nastroyki?greshka=logoTooMany` : '/app');
   },
 });
 

@@ -1,6 +1,6 @@
 <%- include('../partials/app-head', { title: t('app.bank.title') }) %>
 <% const day = (d) => d.toISOString().slice(0, 10).split('-').reverse().join('.'); %>
-<% const eur = (c, cur) => (Number(c) / 100).toFixed(2).replace('.', lang === 'bg' ? ',' : '.') + ' ' + cur; %>
+<% const eur = (c, cur) => money(c, cur); %>
 <p><a href="/app/o/<%= org.id %>">← <%= org.legalName %></a></p>
 <h1><%= t('app.bank.title') %></h1>
 <% if (ok) { %><p class="ok" role="status"><%= ok === 'imported' ? t('app.bank.ok.imported', { total: counts.total, created: counts.created }) + (counts.skipped ? ' ' + t('app.bank.skipped', { count: counts.skipped }) : '') : tOr('app.bank.ok.' + ok, t('app.catalog.saved.updated')) %></p><% } %>
@@ -40,6 +40,7 @@
   <% }) %>
   </tbody>
 </table></div>
+<%- include('../partials/pager', { pager: freshPager }) %>
 <% } %>
 <% if (done.length) { %>
 <h2><%= t('app.bank.done') %></h2>
@@ -51,6 +52,7 @@
     </li>
   <% }) %>
 </ul>
+<%- include('../partials/pager', { pager: donePager }) %>
 <% } %>
 <% if (statements.length) { %>
 <h2><%= t('app.bank.statements') %></h2>

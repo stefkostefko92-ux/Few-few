@@ -22,6 +22,9 @@ export function appLocals() {
       res.locals.tOr = (key: string, fallback: string): string =>
         hasKey(locale, key) ? translator(locale)(key) : fallback;
       res.locals.icon = icon;
+      // Сума за показ във всеки изглед — точна (низ, не float); маршрутът може да подаде своя.
+      res.locals.money = (cents: bigint | number, currency: string): string =>
+        money(cents, currency, locale);
       res.locals.brand = BRAND;
       res.locals.company = COMPANY;
       res.locals.currentUser = req.principal?.user ?? null;
@@ -40,11 +43,20 @@ export function appLocals() {
   };
 }
 
-/** Сума в центове за показ (никога през float за смятане — само за изгледа). */
+/** Центовете като точен десетичен низ („-1234.05“) — без float, и за суми над 2^53. */
+export function centsDecimal(cents: bigint | number): string {
+  const value = typeof cents === 'bigint' ? cents : BigInt(Math.trunc(cents));
+  const sign = value < 0n ? '-' : '';
+  const abs = value < 0n ? -value : value;
+  return `${sign}${abs / 100n}.${(abs % 100n).toString().padStart(2, '0')}`;
+}
+
+/** Сума в центове за показ: Intl форматира десетичния низ точно (без float). */
 export function money(cents: bigint | number, currency: string, locale: Locale): string {
-  const value = typeof cents === 'bigint' ? Number(cents) / 100 : cents / 100;
-  return new Intl.NumberFormat(locale === 'bg' ? 'bg-BG' : 'en-GB', {
+  // Intl приема десетичен низ (NumberFormat v3); типът на TS още е само number | bigint.
+  const format = new Intl.NumberFormat(locale === 'bg' ? 'bg-BG' : 'en-GB', {
     style: 'currency',
     currency,
-  }).format(value);
+  }).format as (value: string) => string;
+  return format(centsDecimal(cents));
 }

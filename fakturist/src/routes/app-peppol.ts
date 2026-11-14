@@ -12,6 +12,7 @@ import { disableOrganization, enrollOrganization, PeppolError } from '../peppol/
 import { queueTransmission } from '../peppol/transmissions.js';
 import { InvoiceInputSchema } from '../einvoice/model.js';
 import { param } from './app-shared.js';
+import { afterDate, PAGE_SIZE, pageOf, pagerLinks, readCursor } from '../http/pagination.js';
 
 /**
  * „Peppol“ на фирмата (SPEC 57–58): адресът, регистрацията за получаване (OWNER/ADMIN — `org.settings`,
@@ -34,25 +35,28 @@ export function appPeppolRouter(): Router {
 
   router.get('/app/o/:orgId/peppol', async (req, res) => {
     const access = await requireOrg(req, 'documents.read');
-    const [org, participant, transmissions, configured, available] = await Promise.all([
+    const cursor = readCursor(req.query['predi']);
+    const [org, participant, rows, configured, available] = await Promise.all([
       prisma.organization.findUniqueOrThrow({
         where: { id: access.organizationId },
         select: { id: true, legalName: true, vatNumber: true, verifiedAt: true },
       }),
       prisma.peppolParticipant.findUnique({ where: { organizationId: access.organizationId } }),
       prisma.peppolTransmission.findMany({
-        where: { organizationId: access.organizationId },
-        orderBy: { createdAt: 'desc' },
-        take: 50,
+        where: { organizationId: access.organizationId, ...afterDate('createdAt', cursor, 'desc') },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: PAGE_SIZE + 1,
         include: { document: { select: { id: true, number: true, buyerName: true } } },
       }),
       accessPoint().then((ap) => ap !== null),
       peppolAllowed(access.organizationId, { viaFirmId: access.viaFirmId }),
     ]);
+    const page = pageOf(rows, PAGE_SIZE, (row) => row.createdAt);
     res.render('app/peppol', {
       org,
       participant,
-      transmissions,
+      transmissions: page.items,
+      pager: pagerLinks(req, `/app/o/${org.id}/peppol`, 'predi', [], page.next),
       configured,
       available,
       verified: org.verifiedAt !== null,

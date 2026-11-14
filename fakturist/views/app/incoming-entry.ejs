@@ -1,6 +1,6 @@
 <%- include('../partials/app-head', { title: entry.supplierName + ' ' + entry.number }) %>
 <% const day = (d) => d ? d.toISOString().slice(0, 10).split('-').reverse().join('.') : '—'; %>
-<% const amount = (c) => (Number(c) / 100).toFixed(2).replace('.', lang === 'bg' ? ',' : '.') + ' ' + entry.currency; %>
+<% const amount = (c) => money(c, entry.currency); %>
 <p><a href="/app/o/<%= orgId %>/vhodyashti">← <%= t('app.incoming.title') %></a></p>
 <h1 class="mono"><%= entry.number %></h1>
 <% if (ok) { %><p class="ok" role="status"><%= tOr('app.incoming.ok.' + ok, t('app.catalog.saved.updated')) %></p><% } %>

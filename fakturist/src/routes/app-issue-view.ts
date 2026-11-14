@@ -7,6 +7,7 @@ import { catalogForForm } from '../catalog/document-prefill.js';
 import { accessPoint, peppolAllowed } from '../peppol/settings.js';
 import { newSubmissionToken, submissionToken } from '../documents/submission.js';
 import { sofiaToday } from '../time.js';
+import { ID } from '../ids.js';
 
 /** Формата за документ (views/app/document-new.ejs) — изгледът и съобщенията на маршрутите в app-issue.ts. */
 export type Issue = { rule: string; path: string; message: { bg: string; en: string } };
@@ -25,8 +26,6 @@ export const PROFORMA_MESSAGES: Record<'notOpen' | 'type' | 'buyer', { bg: strin
     en: 'A pro forma invoice becomes an invoice or a prepayment invoice.',
   },
 };
-
-export const ID = /^[a-z0-9]{20,40}$/;
 
 export const ANNUL_MESSAGES: Record<AnnulError['code'], { bg: string; en: string }> = {
   notFound: {

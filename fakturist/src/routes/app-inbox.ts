@@ -6,6 +6,7 @@ import { HttpError, requireOrg } from '../auth/guards.js';
 import { roleCan } from '../auth/roles.js';
 import { money } from '../http/view.js';
 import { DOWNLOAD_SELECT, param, sendDocumentFile } from './app-shared.js';
+import { afterDate, PAGE_SIZE, pageOf, pagerLinks, readCursor } from '../http/pagination.js';
 
 /** Записът в шкафчето САМО на тази фирма — чужд запис е 404, а получателят не вижда други документи на изпращача. */
 async function inboxEntryFor(recipientOrgId: string, entryId: string) {
@@ -40,12 +41,16 @@ export function appInboxRouter(): Router {
   // --- Шкафче: документи от други фирми във Фактурист --------------------------------------------------
   router.get('/app/o/:orgId/shkafche', async (req, res) => {
     const access = await requireOrg(req, 'documents.read');
-    const [org, entries] = await Promise.all([
+    const cursor = readCursor(req.query['predi']);
+    const [org, rows] = await Promise.all([
       prisma.organization.findUniqueOrThrow({ where: { id: access.organizationId } }),
       prisma.inboxEntry.findMany({
-        where: { recipientOrgId: access.organizationId },
-        orderBy: { deliveredAt: 'desc' },
-        take: 200,
+        where: {
+          recipientOrgId: access.organizationId,
+          ...afterDate('deliveredAt', cursor, 'desc'),
+        },
+        orderBy: [{ deliveredAt: 'desc' }, { id: 'desc' }],
+        take: PAGE_SIZE + 1,
         include: {
           senderOrg: { select: { legalName: true, eik: true, verifiedAt: true } },
           document: {
@@ -61,9 +66,11 @@ export function appInboxRouter(): Router {
         },
       }),
     ]);
+    const page = pageOf(rows, PAGE_SIZE, (row) => row.deliveredAt);
     res.render('app/inbox', {
       org,
-      entries,
+      entries: page.items,
+      pager: pagerLinks(req, `/app/o/${org.id}/shkafche`, 'predi', [], page.next),
       money: (cents: bigint, currency: string) => money(cents, currency, res.locals.lang),
     });
   });

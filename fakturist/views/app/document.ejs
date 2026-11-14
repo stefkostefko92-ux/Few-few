@@ -30,7 +30,7 @@
   <div><dt><%= t('app.org.buyer') %></dt><dd><%= document.buyerName %><% if (document.buyerEik) { %> <span class="mono muted"><%= document.buyerEik %></span><% } %></dd></div>
   <div><dt><%= t('app.view.net') %></dt><dd class="mono"><%= money(document.taxExclusiveCents) %></dd></div>
   <div><dt><%= t('app.view.vat') %></dt><dd class="mono"><%= money(document.vatCents) %></dd></div>
-  <% if (document.vatEurCents !== null) { %><div><dt><%= t('app.view.vatEur') %></dt><dd class="mono"><%= (Number(document.vatEurCents) / 100).toFixed(2) %> EUR</dd></div><% } %>
+  <% if (document.vatEurCents !== null) { %><div><dt><%= t('app.view.vatEur') %></dt><dd class="mono"><%= eur(document.vatEurCents) %></dd></div><% } %>
   <div><dt><%= t('app.view.payable') %></dt><dd class="mono strong"><%= money(document.payableCents) %></dd></div>
   <% if (document.issuedBy) { %><div><dt><%= t('app.view.issuedBy') %></dt><dd><%= document.issuedBy.name %></dd></div><% } %>
   <% if (document.firm) { %><div><dt><%= t('app.view.viaFirm') %></dt><dd><%= document.firm.legalName %><% if (document.mandate) { %> · <span class="muted"><%= document.mandate.documentRef %></span><% } %></dd></div><% } %>

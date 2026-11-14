@@ -11,6 +11,7 @@ import { isIsoDate } from '../recurring/schedule.js';
 import { authenticateApiKey, type ApiPrincipal, type ApiScope } from './keys.js';
 import { DOCUMENT_ROW_SELECT, documentJson } from './serialize.js';
 import { issueHandler } from './issue.js';
+import { ID } from '../ids.js';
 
 /**
  * REST API v1 (SPEC 53): `Authorization: Bearer fkt_…`, JSON, без бисквитки и без CSRF (няма сесия).
@@ -23,8 +24,6 @@ declare module 'express-serve-static-core' {
     api?: ApiPrincipal;
   }
 }
-
-const ID = /^[a-z0-9]{20,40}$/;
 
 function fail(res: Response, status: number, error: string, extra: object = {}): void {
   res.status(status).json({ error, ...extra });

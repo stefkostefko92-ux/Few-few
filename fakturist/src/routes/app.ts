@@ -22,7 +22,18 @@ import { appProformaRouter } from './app-proforma.js';
 import { appIncomingRouter } from './app-incoming.js';
 import { PAYABLE_TYPES } from '../documents/payments.js';
 import { sofiaToday } from '../time.js';
+import {
+  DOCUMENT_FILTER_PARAMS,
+  isFiltered,
+  listDocuments,
+  LIST_PAYMENTS,
+  LIST_STATUSES,
+  LIST_TYPES,
+  readDocumentFilter,
+} from '../documents/list.js';
+import { pagerLinks, readCursor } from '../http/pagination.js';
 import { appCatalogRouter } from './app-catalog.js';
+import { appSeriesRouter } from './app-series.js';
 import { appMembersRouter } from './app-members.js';
 import { appIssueRouter } from './app-issue.js';
 import { appExportRouter } from './app-export.js';
@@ -122,6 +133,7 @@ export function appRouter(): Router {
   router.use('/app/o/:orgId', orgNavLocals());
   router.use(appSecurityRouter());
   router.use(appCatalogRouter());
+  router.use(appSeriesRouter());
   router.use(appMembersRouter());
   router.use(appIssueRouter());
   router.use(appExportRouter());
@@ -180,30 +192,22 @@ export function appRouter(): Router {
   // --- Фирма: документи ----------------------------------------------------------------------------
   router.get('/app/o/:orgId', async (req, res) => {
     const access = await requireOrg(req, 'documents.read');
-    const [org, documents, usage] = await Promise.all([
+    const filter = readDocumentFilter(req.query);
+    const [org, list, usage] = await Promise.all([
       prisma.organization.findUniqueOrThrow({ where: { id: access.organizationId } }),
-      prisma.document.findMany({
-        where: { organizationId: access.organizationId },
-        orderBy: { createdAt: 'desc' },
-        take: 100,
-        select: {
-          id: true,
-          number: true,
-          typeCode: true,
-          status: true,
-          issueDate: true,
-          buyerName: true,
-          payableCents: true,
-          currency: true,
-        },
-      }),
+      listDocuments(access.organizationId, filter, readCursor(req.query['predi'])),
       monthUsage(access.organizationId),
     ]);
     // Разделите на фирмата (unread, пълномощни, права) са в `orgNav` — orgNavLocals по-долу.
     res.render('app/org', {
       org,
       access,
-      documents,
+      documents: list.items,
+      total: list.total,
+      filter,
+      filtered: isFiltered(filter),
+      pager: pagerLinks(req, `/app/o/${org.id}`, 'predi', DOCUMENT_FILTER_PARAMS, list.next),
+      lists: { types: LIST_TYPES, statuses: LIST_STATUSES, payments: LIST_PAYMENTS },
       usage: { ...usage, ...softLimitState(usage.limit, usage.issued) },
       canIssue: roleCan(access.role, 'documents.issue'),
       money: (cents: bigint, currency: string) => money(cents, currency, res.locals.lang),
@@ -252,6 +256,7 @@ export function appRouter(): Router {
           : '',
       today: sofiaToday(),
       money: (cents: bigint) => money(cents, document.currency, res.locals.lang),
+      eur: (cents: bigint) => money(cents, 'EUR', res.locals.lang),
       issued: req.query['issued'] === '1',
       peppolResult:
         typeof req.query['peppol'] === 'string' && /^[a-zA-Z]{2,20}$/.test(req.query['peppol'])

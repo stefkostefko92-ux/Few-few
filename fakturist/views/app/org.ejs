@@ -10,23 +10,47 @@
 <p class="muted"><%= t('app.org.usage', { issued: usage.issued }) %></p>
 <% if (usage.overLimit) { %><p class="callout"><%= t('app.org.limit', { limit: usage.limit }) %></p><% } %>
 <h2><%= t('app.org.documents') %></h2>
-<% if (documents.length === 0) { %><p class="muted"><%= t('app.org.none') %></p><% } else { %>
-<div class="table-wrap"><table>
+<form method="get" class="doc-filter" role="search" aria-label="<%= t('app.org.filter.label') %>">
+  <label class="doc-filter-q"><span><%= t('app.org.filter.q') %></span><input type="search" name="q" value="<%= filter.q %>" maxlength="100" placeholder="<%= t('app.org.filter.qHint') %>"></label>
+  <label><span><%= t('app.org.type') %></span><select name="vid">
+    <option value=""><%= t('app.org.filter.all') %></option>
+    <% lists.types.forEach((code) => { %><option value="<%= code %>"<%= filter.type === code ? ' selected' : '' %>><%= t('app.types.' + code) %></option><% }) %>
+  </select></label>
+  <label><span><%= t('app.org.filter.status') %></span><select name="sastoyanie">
+    <option value=""><%= t('app.org.filter.all') %></option>
+    <% lists.statuses.forEach((code) => { %><option value="<%= code %>"<%= filter.status === code ? ' selected' : '' %>><%= t('app.statuses.' + code) %></option><% }) %>
+  </select></label>
+  <label><span><%= t('app.org.filter.payment') %></span><select name="plashtane">
+    <option value=""><%= t('app.org.filter.all') %></option>
+    <% lists.payments.forEach((code) => { %><option value="<%= code %>"<%= filter.payment === code ? ' selected' : '' %>><%= t('app.org.filter.payments.' + code) %></option><% }) %>
+  </select></label>
+  <label><span><%= t('app.org.filter.from') %></span><input type="date" name="ot" value="<%= filter.from %>"></label>
+  <label><span><%= t('app.org.filter.to') %></span><input type="date" name="do" value="<%= filter.to %>"></label>
+  <div class="doc-filter-actions">
+    <button type="submit"><%= t('app.org.filter.apply') %></button>
+    <% if (filtered) { %><a href="/app/o/<%= org.id %>"><%= t('app.org.filter.clear') %></a><% } %>
+  </div>
+</form>
+<% if (total > 0) { %><p class="muted" role="status"><%= t(filtered ? 'app.org.filter.found' : 'app.org.filter.total', { count: total }) %></p><% } %>
+<% if (documents.length === 0) { %><p class="muted"><%= t(filtered ? 'app.org.filter.none' : 'app.org.none') %></p><% } else { %>
+<div class="table-wrap"><table class="stack-table">
   <thead><tr>
     <th scope="col"><%= t('app.org.number') %></th><th scope="col"><%= t('app.org.type') %></th><th scope="col"><%= t('app.org.date') %></th>
-    <th scope="col"><%= t('app.org.buyer') %></th><th scope="col" class="num"><%= t('app.org.total') %></th>
+    <th scope="col"><%= t('app.org.buyer') %></th><th scope="col" class="num"><%= t('app.org.total') %></th><th scope="col"><%= t('app.payment.title') %></th>
   </tr></thead>
   <tbody>
   <% documents.forEach((d) => { %>
     <tr>
-      <td class="mono"><a href="/app/o/<%= org.id %>/d/<%= d.id %>"><%= d.number || '—' %></a></td>
-      <td><%= t('app.types.' + d.typeCode) %><% if (d.status !== 'ISSUED') { %> · <%= t('app.statuses.' + d.status) %><% } %></td>
-      <td class="mono"><%= d.issueDate.toISOString().slice(0, 10) %></td>
-      <td><%= d.buyerName %></td>
-      <td class="num mono"><%= money(d.payableCents, d.currency) %></td>
+      <td data-label="<%= t('app.org.number') %>" class="mono"><a href="/app/o/<%= org.id %>/d/<%= d.id %>"><%= d.number || '—' %></a></td>
+      <td data-label="<%= t('app.org.type') %>"><%= t('app.types.' + d.typeCode) %><% if (d.status !== 'ISSUED') { %> · <%= t('app.statuses.' + d.status) %><% } %></td>
+      <td data-label="<%= t('app.org.date') %>" class="mono"><%= d.issueDate.toISOString().slice(0, 10) %></td>
+      <td data-label="<%= t('app.org.buyer') %>"><%= d.buyerName %></td>
+      <td data-label="<%= t('app.org.total') %>" class="num mono"><%= money(d.payableCents, d.currency) %></td>
+      <td data-label="<%= t('app.payment.title') %>"><% if (d.badge) { %><span class="tag<%= d.badge === 'overdue' ? ' tag-pending' : d.badge === 'PAID' ? ' tag-active' : '' %>"><%= d.badge === 'overdue' ? t('app.org.filter.overdue') : t('app.payment.states.' + d.badge) %></span><% } else { %>—<% } %></td>
     </tr>
   <% }) %>
   </tbody>
 </table></div>
+<%- include('../partials/pager', { pager }) %>
 <% } %>
 <%- include('../partials/app-foot') %>

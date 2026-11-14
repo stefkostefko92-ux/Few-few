@@ -62,7 +62,28 @@
     "total": "Amount due",
     "usage": "This month: {issued} documents",
     "limit": "The free plan includes {limit} documents a month. Above that documents are still issued — consider a paid plan.",
-    "via": "Access through an accounting firm's authorisation"
+    "via": "Access through an accounting firm's authorisation",
+    "filter": {
+      "label": "Search documents",
+      "q": "Search",
+      "qHint": "Number, buyer or EIK",
+      "all": "All",
+      "status": "Status",
+      "payment": "Payment",
+      "from": "From date",
+      "to": "To date",
+      "apply": "Show",
+      "clear": "Clear",
+      "found": "Found: {count}",
+      "total": "Documents in total: {count}",
+      "none": "No documents match these filters.",
+      "overdue": "overdue",
+      "payments": {
+        "neplateni": "Unpaid",
+        "prosrocheni": "Overdue",
+        "plateni": "Paid"
+      }
+    }
   },
   "types": {
     "380": "Invoice",
@@ -879,5 +900,12 @@
       "notActive": "The company is not registered in Peppol.",
       "notAvailable": "Peppol is not available for this company yet."
     }
+  },
+  "pager": {
+    "label": "Pages",
+    "older": "Older",
+    "newest": "Back to the newest",
+    "next": "Next",
+    "start": "Back to the start"
   }
 }

@@ -1,0 +1,7 @@
+<%# Страниците по ключ (src/http/pagination.ts): „По-стари“ / „Към най-новите“; по азбука — „Следващи“ / „Към началото“. %>
+<% if (pager && (pager.next || pager.first)) { const alpha = locals.alpha === true; %>
+<nav class="pager" aria-label="<%= t('app.pager.label') %>">
+  <% if (pager.first) { %><a href="<%= pager.first %>">← <%= t(alpha ? 'app.pager.start' : 'app.pager.newest') %></a><% } %>
+  <% if (pager.next) { %><a href="<%= pager.next %>" rel="next"><%= t(alpha ? 'app.pager.next' : 'app.pager.older') %> →</a><% } %>
+</nav>
+<% } %>
