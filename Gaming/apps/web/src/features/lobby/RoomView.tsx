@@ -10,6 +10,7 @@ import { BACKGAMMON_MATCH_TARGETS, resolveBackgammonMatchTo } from "@aso/game-co
 import { Badge, Button, Panel } from "../../ui";
 import { api, type FriendEntry } from "../../lib/api";
 import { useAuthStore } from "../../lib/store";
+import { localizeBots } from "../../lib/botNames";
 import { gameTitle } from "./games";
 import { lobbyActions } from "./lobbyActions";
 
@@ -21,6 +22,10 @@ export function RoomView({ lobby }: { lobby: LobbySnapshot }) {
   const hasTeams = lobby.teams > 1;
   const teamName = (team: number) => t("room.teamName", { num: team + 1 });
   const filled = lobby.seats.filter((s) => s.userId || s.isBot).length;
+  // „Бот 1“, „Бот 2“… на езика на играча.
+  const botLabels = new Map(
+    localizeBots(lobby.seats.filter((s) => s.isBot)).map((s) => [s.seat, s.displayName] as const),
+  );
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -65,7 +70,7 @@ export function RoomView({ lobby }: { lobby: LobbySnapshot }) {
                           ) : (
                             <>
                               {s.isBot ? "🤖 " : ""}
-                              {s.displayName || t("room.player")}
+                              {(s.isBot ? botLabels.get(s.seat) : s.displayName) || t("room.player")}
                               {meSeat ? ` ${t("room.you")}` : ""}
                             </>
                           )}
