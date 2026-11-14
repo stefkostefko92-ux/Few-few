@@ -1,9 +1,12 @@
-import type { ProductView } from "@aso/shared";
+import { prisma, type Product } from "@aso/db";
+import type { ProductView, VipTier } from "@aso/shared";
 
 /**
- * Product catalog. Prices/SKUs mirror what exists in Stripe (§11.3); in real
- * deployment the authoritative amount comes from the Stripe price, this is the
- * display + grant mapping. Chips bought here are virtual and never cashed out.
+ * НАЧАЛЕН каталог (seed). Източникът на истината е таблицата `Product` —
+ * админ редакторът я управлява (цена, награда, активност, нови SKU). Този
+ * списък само създава липсващите редове при първо пускане (`seedProducts`) и
+ * дава показваното заглавие за познатите SKU. Никога не се ползва за цена
+ * или начисляване. Чиповете са виртуални и никога не се обменят в пари.
  */
 export const CATALOG: ProductView[] = [
   { sku: "gems_small", kind: "GEMS", title: "Шепа скъпоценни камъни", priceCents: 199, grantGems: 100 },
@@ -17,6 +20,45 @@ export const CATALOG: ProductView[] = [
   { sku: "vip_platinum", kind: "VIP_SUB", title: "VIP Platinum", priceCents: 1999, vipTier: "PLATINUM" },
 ];
 
-const BY_SKU = new Map(CATALOG.map((p) => [p.sku, p]));
+const SEED_BY_SKU = new Map(CATALOG.map((p) => [p.sku, p]));
 
-export const productBySku = (sku: string): ProductView | undefined => BY_SKU.get(sku);
+/** Seed запис по SKU (само за заглавие/seed — НЕ за цена или награда). */
+export const productBySku = (sku: string): ProductView | undefined => SEED_BY_SKU.get(sku);
+
+/**
+ * VIP нивото на абонаментен SKU: `vip_gold`, `vip_gold_promo` → GOLD. Нов VIP
+ * SKU от админа трябва да започва с `vip_<ниво>`, иначе checkout го отказва
+ * (fail closed — без ниво webhook-ът не знае какво да даде).
+ */
+export function vipTierForSku(sku: string): Exclude<VipTier, "NONE"> | undefined {
+  const m = /^vip_(bronze|silver|gold|platinum)(?:_|$)/i.exec(sku);
+  return m ? (m[1]!.toUpperCase() as Exclude<VipTier, "NONE">) : undefined;
+}
+
+/** Ред от `Product` → изгледът, който клиентът вижда. */
+export function toProductView(row: Pick<Product, "sku" | "kind" | "priceCents" | "gems" | "chips" | "cosmeticId">): ProductView {
+  const seed = SEED_BY_SKU.get(row.sku);
+  const view: ProductView = {
+    sku: row.sku,
+    kind: row.kind,
+    title: seed?.title ?? row.sku,
+    priceCents: row.priceCents,
+  };
+  if (row.gems) view.grantGems = row.gems;
+  if (row.chips) view.grantChips = row.chips;
+  if (row.cosmeticId) view.cosmeticId = row.cosmeticId;
+  if (row.kind === "VIP_SUB") {
+    const tier = vipTierForSku(row.sku);
+    if (tier) view.vipTier = tier;
+  }
+  return view;
+}
+
+/** Публичният каталог: само активните продукти от таблицата `Product`. */
+export async function listActiveProducts(): Promise<ProductView[]> {
+  const rows = await prisma.product.findMany({
+    where: { active: true },
+    orderBy: [{ kind: "asc" }, { priceCents: "asc" }],
+  });
+  return rows.map(toProductView);
+}

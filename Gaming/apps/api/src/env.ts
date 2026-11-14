@@ -1,6 +1,25 @@
 import { z } from "zod";
 
 /**
+ * Булев флаг от env. `z.coerce.boolean()` превръща ВСЕКИ непразен низ в true —
+ * и "false", и "0" — затова `SMTP_SECURE=false` пускаше TLS на порт 587 и нито
+ * едно писмо не излизаше. Тук истина са само изричните "true/1/yes/on".
+ */
+export const envBool = (fallback: boolean) =>
+  z
+    .union([z.boolean(), z.string()])
+    .optional()
+    .transform((v, ctx) => {
+      if (typeof v === "boolean") return v;
+      const s = (v ?? "").trim().toLowerCase();
+      if (s === "") return fallback;
+      if (["true", "1", "yes", "on"].includes(s)) return true;
+      if (["false", "0", "no", "off"].includes(s)) return false;
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `невалидна булева стойност: ${v}` });
+      return z.NEVER;
+    });
+
+/**
  * Zod-validated environment. The process refuses to boot with an invalid
  * config — secrets are never read ad-hoc elsewhere (S14 / S21).
  */
@@ -33,7 +52,11 @@ const envSchema = z.object({
   // Dashboard (Settings → Public details). Enables the hosted-page ToS checkbox
   // (consent_collection); until then Checkout relies on the always-shown
   // custom_text notice + the in-app consent checkbox, so it never errors.
-  STRIPE_TOS_CONFIGURED: z.coerce.boolean().default(false),
+  STRIPE_TOS_CONFIGURED: envBool(false),
+  // Stripe Tax: true САМО след като Stripe Tax е активиран в таблото (и има
+  // регистрация за ДДС/OSS). Тогава Checkout смята ДДС по държавата на купувача
+  // (automatic_tax) и събира адрес за фактуриране; иначе цените остават както са.
+  STRIPE_AUTOMATIC_TAX: envBool(false),
   // Where Stripe redirects after Checkout / Billing Portal, and where email
   // links / OAuth success redirects send the player.
   PUBLIC_WEB_URL: z.string().url().default("http://localhost:4502"),
@@ -50,7 +73,8 @@ const envSchema = z.object({
   SMTP_PORT: z.coerce.number().int().positive().default(587),
   SMTP_USER: z.string().optional().default(""),
   SMTP_PASSWORD: z.string().optional().default(""),
-  SMTP_SECURE: z.coerce.boolean().default(false),
+  // true = TLS от първия байт (порт 465); false = STARTTLS (порт 587).
+  SMTP_SECURE: envBool(false),
   EMAIL_FROM: z.string().default("АСО <no-reply@gaming.carbonstealth.eu>"),
 
   // OAuth (optional, env-gated). A provider is enabled only when BOTH its id

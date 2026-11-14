@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { Server } from "socket.io";
 import {
+  SELF_EXCLUDED_CODE,
   SOCKET_EVENTS,
   seatRange,
   teamsFor,
@@ -220,12 +221,28 @@ export interface LobbyLauncher {
  */
 export class LobbyManager {
   private readonly lobbies = new Map<string, Lobby>();
-  /** Resolves a userId → display name; injected to avoid a DB import here. */
+  /** Resolves a userId → display name; injected to avoid a DB import here.
+   *  `selfExcluded` (отговорна игра) връща активно самоизключените сред ids —
+   *  също инжектирано (по подразбиране никой, напр. в тестове на седенето). */
   constructor(
     private readonly io: Server,
     private readonly launcher: LobbyLauncher,
     private readonly nameOf: (userId: string) => Promise<string>,
+    private readonly selfExcluded: (userIds: string[]) => Promise<Map<string, Date>> = async () => new Map(),
   ) {}
+
+  /** Отговорна игра: самоизключен играч не влиза в стая. Уведомява го и връща true. */
+  private async refuseSelfExcluded(userId: string): Promise<boolean> {
+    const ex = await this.selfExcluded([userId]);
+    const until = ex.get(userId);
+    if (!until) return false;
+    this.io.to(userRoom(userId)).emit(SOCKET_EVENTS.ERROR, {
+      code: SELF_EXCLUDED_CODE,
+      message: "Самоизключването е активно — масите са недостъпни до изтичането му",
+      until: until.toISOString(),
+    });
+    return true;
+  }
 
   get(id: string): Lobby | undefined {
     return this.lobbies.get(id);
@@ -267,7 +284,8 @@ export class LobbyManager {
     mode: string,
     visibility: LobbyVisibility,
     config: unknown,
-  ): Promise<Lobby> {
+  ): Promise<Lobby | null> {
+    if (await this.refuseSelfExcluded(userId)) return null;
     // One lobby per host: leaving any prior one first.
     const prev = this.lobbyForUser(userId);
     if (prev) this.leave(userId);
@@ -278,10 +296,12 @@ export class LobbyManager {
     return lobby;
   }
 
-  async join(userId: string, lobbyId: string): Promise<Lobby | null> {
+  /** null = стаята е недостъпна; false = отказ заради самоизключване (вече уведомен). */
+  async join(userId: string, lobbyId: string): Promise<Lobby | null | false> {
     const lobby = this.lobbies.get(lobbyId);
     if (!lobby || lobby.closed) return null;
     if (!lobby.has(userId)) {
+      if (await this.refuseSelfExcluded(userId)) return false;
       const name = await this.nameOf(userId);
       if (!lobby.join(userId, name)) return null;
     }
@@ -375,8 +395,11 @@ export class LobbyManager {
   async regroup(info: LobbyReturnInfo): Promise<void> {
     const humans = info.members.filter((m) => !m.isBot && m.userId !== null);
     const alive = new Set<string>();
+    // Самоизключил се по време на мача → не го връщаме в стаята.
+    const excluded = await this.selfExcluded(humans.map((m) => m.userId!)).catch(() => new Map<string, Date>());
     for (const m of humans) {
       const id = m.userId!;
+      if (excluded.has(id)) continue;
       if (this.lobbyForUser(id)) continue; // already parked in another room
       const online = await redis.exists(`presence:online:${id}`).catch(() => 0);
       if (online !== 1) continue; // disconnected during/after the match

@@ -254,6 +254,8 @@ const stmts = {
   clearLoginAttempt:  db.prepare(`DELETE FROM login_attempts WHERE ip = ?`),
   cleanupLoginAttempts: db.prepare(`DELETE FROM login_attempts WHERE last_at < datetime('now', '-1 day')`),
   pruneOldMessages: db.prepare(`DELETE FROM messages WHERE created_at < datetime('now', '-24 months')`),
+  // L'IP serve solo contro gli abusi del modulo: dopo 30 giorni si cancella, il messaggio resta (informativa privacy).
+  clearOldMessageIps: db.prepare(`UPDATE messages SET ip_address = NULL WHERE ip_address IS NOT NULL AND created_at < datetime('now', '-30 days')`),
 };
 
 // ── High-level API ────────────────────────────────────────────
@@ -357,6 +359,7 @@ const api = {
   clearLoginAttempt(ip) { return stmts.clearLoginAttempt.run(ip).changes; },
   cleanupLoginAttempts() { return stmts.cleanupLoginAttempts.run().changes; },
   pruneOldMessages()      { return stmts.pruneOldMessages.run().changes; },
+  clearOldMessageIps()    { return stmts.clearOldMessageIps.run().changes; },
 
   // Raw db handle if needed
   raw: db,

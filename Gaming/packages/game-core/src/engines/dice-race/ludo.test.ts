@@ -60,8 +60,47 @@ describe("ludo basics", () => {
     expect(state.winner).toBe(0);
     expect(events).toContainEqual({ type: "WIN", seat: 0 });
     expect(ludoEngine.score(state)).toEqual([
-      { seat: 0, result: "win", points: 1 },
-      { seat: 1, result: "loss", points: 0 },
+      { seat: 0, result: "win", points: 1, rank: 1 },
+      { seat: 1, result: "loss", points: 0, rank: 2 },
+    ]);
+  });
+});
+
+describe("ludo — класиране при 3–4 играчи", () => {
+  const home = [44, 44, 44, 44];
+  it("първият финиширал НЕ слага край: играта продължава за 2-ро място", () => {
+    const s = at([[43, 44, 44, 44], [0, -1, -1, -1], [5, -1, -1, -1], [7, -1, -1, -1]], { die: 1, attempts: 1 });
+    const { state, events } = ludoEngine.reduce(s, { type: "MOVE", token: 0 }, rig(1));
+    expect(events).toContainEqual({ type: "FINISH", seat: 0, place: 1 });
+    expect(events.some((e) => e.type === "WIN")).toBe(false);
+    expect(state.done).toBe(false);
+    expect(state.finished).toEqual([0]);
+    expect(state.turn).toBe(1);
+  });
+
+  it("финиширалият се прескача, дори шестица не му дава ново хвърляне", () => {
+    const s = at([[38, 44, 44, 44], [0, -1, -1, -1], [5, -1, -1, -1]], { die: 6, rolledSix: true, attempts: 1 });
+    const { state } = ludoEngine.reduce(s, { type: "MOVE", token: 0 }, rig(1));
+    expect(state.finished).toEqual([0]);
+    expect(state.turn).toBe(1);
+    // seat 2 приключва хода си → следващият е seat 1 (0 е финиширал)
+    const s2: typeof state = { ...state, turn: 2, die: 1, attempts: 1 };
+    const { state: s3 } = ludoEngine.reduce(s2, { type: "MOVE", token: 0 }, rig(1));
+    expect(s3.turn).toBe(1);
+  });
+
+  it("при 4 играчи мачът свършва с 3-тия финиширал; последният е 4-ти", () => {
+    const s = at([home, [43, 44, 44, 44], home, [3, -1, -1, -1]], { die: 1, attempts: 1, turn: 1, finished: [2, 0] });
+    const { state, events } = ludoEngine.reduce(s, { type: "MOVE", token: 0 }, rig(1));
+    expect(events).toContainEqual({ type: "FINISH", seat: 1, place: 3 });
+    expect(events).toContainEqual({ type: "WIN", seat: 2 });
+    expect(state.done).toBe(true);
+    expect(state.winner).toBe(2); // победител остава първият финиширал
+    expect(ludoEngine.score(state)).toEqual([
+      { seat: 0, result: "loss", points: 0, rank: 2 },
+      { seat: 1, result: "loss", points: 0, rank: 3 },
+      { seat: 2, result: "win", points: 1, rank: 1 },
+      { seat: 3, result: "loss", points: 0, rank: 4 },
     ]);
   });
 });
@@ -220,6 +259,11 @@ describe("ludo playouts", () => {
       expect(terminal).toBe(true);
       expect(state.winner).not.toBeNull();
       expect(state.progress[state.winner!]!.every((p) => p >= 44)).toBe(true);
+      // Всички освен последния са финиширали; класирането е пермутация на местата.
+      expect(state.finished).toHaveLength(seats - 1);
+      expect(state.finished[0]).toBe(state.winner);
+      const ranks = ludoEngine.score(state).map((x) => x.rank).sort();
+      expect(ranks).toEqual(Array.from({ length: seats }, (_, i) => i + 1));
     }
   });
 });

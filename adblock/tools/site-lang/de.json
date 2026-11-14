@@ -19,7 +19,7 @@
     ["YouTube-Werbung an der Quelle", "Video-, Feed- und Suchanzeigen werden aus den Daten des Players entfernt, bevor er sie liest – Videos laufen einfach."],
     ["Filterlisten für Ihre Sprache", "EasyList, EasyPrivacy und die uBlock-Origin-Filter sind eingebaut, dazu 31 regionale Listen; die für Ihre Sprache schaltet sich selbst ein."],
     ["Gesponserte Beiträge", "Ausgeblendet in den Feeds von Facebook, Instagram und Threads; die Beiträge Ihrer Freunde bleiben."],
-    ["Cookie-Banner", "Drückt für Sie „Ablehnen“, entfernt zurückgebliebene Unschärfe und Scroll-Sperren und drückt nie eine Anmelde-, OAuth- oder Zahlungsschaltfläche."],
+    ["Cookie-Banner", "Drückt „Ablehnen“, wenn das Banner es anbietet, und „Akzeptieren“ nur, wenn es sich anders nicht schließen lässt; entfernt zurückgebliebene Unschärfe und Scroll-Sperren und drückt nie eine Anmelde-, OAuth- oder Zahlungsschaltfläche."],
     ["Tracker und Pop-under", "Tracker, Tracking-Parameter in Links und Werbe-Pop-ups werden blockiert; Anti-Adblock-Sperren werden neutralisiert."],
     ["Fokusmodus", "Blendet Chat-Blasen, Newsletter-Pop-ups, Benachrichtigungs-Aufforderungen, KI-Pop-ups und YouTube Shorts aus – nur wenn Sie wollen."],
     ["Global Privacy Control", "Jede Website, die Sie besuchen, wird gebeten, Ihre Daten nicht zu verkaufen oder weiterzugeben."],

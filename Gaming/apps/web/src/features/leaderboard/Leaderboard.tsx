@@ -7,6 +7,9 @@ import { GAME_CATALOG, gameTitle } from "../lobby/games";
 
 const READY_GAMES = GAME_CATALOG.filter((g) => g.ready);
 
+/** Активен VIP (сървърът вече връща NONE за изтекъл абонамент). */
+const isVip = (e: LeaderboardEntry): boolean => Boolean(e.vipTier && e.vipTier !== "NONE");
+
 export function Leaderboard() {
   const { t } = useTranslation();
   const [game, setGame] = useState(READY_GAMES[0]?.key ?? "CHESS");
@@ -58,7 +61,14 @@ export function Leaderboard() {
                   <Badge tone={e.rank <= 3 ? "brass" : "felt"} className="tnum w-8 shrink-0 justify-center">
                     {e.rank}
                   </Badge>
-                  <span className="min-w-0 truncate text-ink-100">{e.displayName}</span>
+                  <span className={cn("min-w-0 truncate", isVip(e) ? "text-vip" : "text-ink-100")}>
+                    {e.displayName}
+                  </span>
+                  {isVip(e) ? (
+                    <Badge tone="vip" className="shrink-0">
+                      VIP
+                    </Badge>
+                  ) : null}
                 </div>
                 <span className="tnum shrink-0 pl-3 text-brass-300">{e.rating}</span>
               </li>

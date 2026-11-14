@@ -25,3 +25,11 @@ setInterval(() => {
   for (const [k, v] of ticketChannelCache) if (v.expiresAt <= now) ticketChannelCache.delete(k);
   for (const [k, v] of stickyCache) if (v.expiresAt <= now) stickyCache.delete(k);
 }, CACHE_TTL).unref();
+
+// Т15: кешът „канал → тикет“ се чисти при затваряне и отваряне наново.
+// `by-channel` не връща затворени тикети, затова след close каналът се кешира
+// като „не е тикет“ (null) за 10 мин — и след reopen съобщенията не се логваха,
+// а `lastActivityAt` не се вдигаше до изтичането. Викай при close И при reopen.
+export function invalidateTicketChannel(channelId) {
+  if (channelId) ticketChannelCache.delete(String(channelId));
+}

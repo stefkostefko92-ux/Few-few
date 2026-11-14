@@ -39,8 +39,9 @@
 sudo PROJECTS="vizitka" bash /root/few-few-*/deploy/autodeploy.sh
 ```
 
-**Ако включиш `www`:** nginx конфигът вече пренасочва `www` към голия домейн, но
-сертификатът трябва да покрива и двете имена:
+**`www` (задължително — DNS-ът на `www` вече сочи сървъра):** nginx конфигът
+пренасочва `www` към голия домейн и по HTTP, и по HTTPS, но сертификатът трябва да
+покрива и двете имена (иначе `https://www.vizitka-bg.com` пада на TLS):
 
 ```bash
 certbot --nginx -d vizitka-bg.com -d www.vizitka-bg.com
@@ -95,7 +96,7 @@ cat > /etc/vizitka/vizitka.env <<'EOF'
 NODE_ENV=production
 PORT=3105
 PUBLIC_BASE_URL=https://vizitka-bg.com
-ADMIN_EMAILS=stefan.kostadinov16@gmail.com
+ADMIN_EMAILS=admin@example.com
 MASTILKO_URL=https://mastilko-bg.com
 
 # Задължителна в продукция — подписва печатния handoff токен към Мастилко.

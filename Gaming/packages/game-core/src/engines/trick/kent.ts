@@ -22,6 +22,8 @@ import { RANKS_52 } from "../cards.js";
  *    стигне — раздава се наново (`REDEAL`), с таван на кръговете за терминиране.
  *  - Цел: 4 еднакви ранга в ръката („каре"). Тогава притежателят тайно дава знак
  *    на партньора си (`SIGNAL`) — виждан САМО от партньора (redact + redactEvent).
+ *    Знакът НЕ е ход: ходът остава у него (после SWAP/PASS), за да не изтече
+ *    по страничен канал (преместен ход без промяна по масата).
  *    Партньорът, щом види знака, вика „Купе!" (`CALL_KUPE`). Противник, който
  *    подозира, може да викне „Стоп!" (`CALL_STOP`).
  *  - Точкуване: коректен вик → точка за отбора на викащия; грешен вик → точка за
@@ -30,7 +32,7 @@ import { RANKS_52 } from "../cards.js";
  * ── Room-модел / инвариант (§8.3) ──────────────────────────────────────────────
  * Точно ЕДНО място има непразни legalActions по всяко време: това е `turn`.
  * Всички специални викове са ГЕЙТНАТИ към хода на съответното място:
- *   • `SIGNAL`   — само притежателят на каре, на своя ход (веднъж на кръг).
+ *   • `SIGNAL`   — само притежателят на каре, на своя ход (веднъж на кръг); не мести хода.
  *   • `CALL_KUPE`— само ако ПАРТНЬОРЪТ е сигнализирал (т.е. „видях знака"), на своя ход.
  *   • `CALL_STOP`— гамбит срещу противниците, на своя ход. Тъй като тайният сигнал
  *     ТРЯБВА да остане скрит (redact), не можем да изведем „подозрение" на противника
@@ -85,7 +87,7 @@ export type KentEvent =
   | { type: "STOP_KENT"; caller: Seat; correct: boolean; winningTeam: number }
   | { type: "ROUND"; winningTeam: number; matchScore: [number, number] }
   | { type: "REDEAL"; round: number }
-  | { type: "RESULT"; team: number };
+  | { type: "RESULT"; team: number | null };
 
 const next4 = (s: Seat): Seat => ((s + 1) % 4) as Seat;
 const team = (s: Seat): number => s % 2;
@@ -122,8 +124,10 @@ function freshRound(state: KentState, rng: SeededRng, round: number): void {
 }
 
 function endMatch(state: KentState, events: KentEvent[]): void {
-  // Решаващ край: при равенство печели отбор 0 (гарантирано 2 победители).
-  state.winningTeam = state.matchScore[0] >= state.matchScore[1] ? 0 : 1;
+  // Край при таван (MAX_ROUNDS/MAX_MOVES): при равен резултат няма победител —
+  // `winningTeam = null` и `score` връща „draw" за всички (не облагодетелства отбор 0).
+  const [a, b] = state.matchScore;
+  state.winningTeam = a === b ? null : a > b ? 0 : 1;
   state.done = true;
   events.push({ type: "RESULT", team: state.winningTeam });
 }
@@ -195,6 +199,23 @@ export const kentEngine: GameEngine<KentState, KentAction, KentEvent> = {
       matchScore: [state.matchScore[0], state.matchScore[1]],
     };
     const events: KentEvent[] = [];
+
+    if (action.type === "SIGNAL") {
+      // Тайният знак е „тих" страничен ефект, НЕ ход: ходът остава у сигнализиращия,
+      // `moves`/`passStreak`/`center` не се пипат. Иначе противникът би видял
+      // преместен ход без промяна по масата (+ празен пакет събития) = знакът изтича
+      // и „Стоп!" печели винаги. Изгледът на противника (redact + redactEvent) е
+      // байт-идентичен преди и след SIGNAL. Терминирането е гарантирано: най-много
+      // един знак на място на кръг.
+      const s = action.seat;
+      if (s !== state.turn) throw new IllegalActionError("Not your turn");
+      if (!isKent(next.hands[s]!)) throw new IllegalActionError("No Kent to signal");
+      if (next.signaled[s]) throw new IllegalActionError("Already signaled");
+      next.signaled[s] = true;
+      events.push({ type: "SIGNAL", seat: s });
+      return { state: next, events };
+    }
+
     next.moves += 1;
 
     if (action.type === "CALL_KUPE") {
@@ -218,18 +239,6 @@ export const kentEngine: GameEngine<KentState, KentAction, KentEvent> = {
       next.lastRound = { caller, kind: "STOP", correct, winningTeam };
       events.push({ type: "STOP_KENT", caller, correct, winningTeam });
       settleRound(next, winningTeam, events, rng);
-      return { state: next, events };
-    }
-
-    if (action.type === "SIGNAL") {
-      const s = action.seat;
-      if (s !== state.turn) throw new IllegalActionError("Not your turn");
-      if (!isKent(next.hands[s]!)) throw new IllegalActionError("No Kent to signal");
-      if (next.signaled[s]) throw new IllegalActionError("Already signaled");
-      next.signaled[s] = true;
-      events.push({ type: "SIGNAL", seat: s });
-      next.turn = next4(s as Seat);
-      if (next.moves >= MAX_MOVES) endMatch(next, events);
       return { state: next, events };
     }
 
@@ -296,7 +305,11 @@ export const kentEngine: GameEngine<KentState, KentAction, KentEvent> = {
   isTerminal: (s) => s.done,
 
   score(state): SeatScore[] {
-    const winTeam = state.winningTeam ?? 0;
+    const winTeam = state.winningTeam;
+    // Равенство при таван → „draw" за всички, без точки.
+    if (winTeam === null) {
+      return [0, 1, 2, 3].map((seat) => ({ seat: seat as Seat, result: "draw" as const, points: 0 }));
+    }
     return [0, 1, 2, 3].map((seat) => ({
       seat: seat as Seat,
       result: team(seat as Seat) === winTeam ? "win" : "loss",

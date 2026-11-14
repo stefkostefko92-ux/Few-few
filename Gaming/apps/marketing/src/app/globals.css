@@ -1,11 +1,24 @@
-/* Marketing layer — Premium Nocturnal Tabletop, mirrored from the app tokens
-   (§3.2) but self-contained so the SSG build has no Vite/Tailwind dependency. */
+/* Marketing layer — Рейвънхолд: залата на замъка от игрите (камък, факли, дъб,
+   месинг). Самостоятелно, за да няма SSG билдът зависимост от Vite/Tailwind. */
 :root {
-  /* Deep cosmos indigo — mirrors apps/web/src/styles/tokens.css */
-  --felt-900: #0b0f24;
-  --felt-800: #141a38;
-  --felt-700: #1e2750;
-  --charcoal-900: #070a18;
+  /* Топъл камък и дъб — същият свят като масите в apps/web */
+  --felt-900: #120d09;
+  --felt-800: #1d150e;
+  --felt-700: #2b1f14;
+  --charcoal-900: #0a0705;
+  --ember-300: #ffb066;
+  /* Рейвънхолд (лендинг и общи): опушен дъб, пергамент, месинг, сукно */
+  --oak-950: #15110d;
+  --oak-900: #211912;
+  --parchment: #ecdfc4;
+  --muted: #b1a184;
+  --brass: #c8a15a;
+  --brass-soft: #e2c68c;
+  --felt: #1f4d39;
+  --line: rgba(200, 161, 90, 0.28);
+  --line-soft: rgba(200, 161, 90, 0.12);
+  --font-display: "Alegreya", "Georgia", "Times New Roman", serif;
+  --font-body: "Alegreya Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
   --brass-400: #d9b25f;
   --brass-300: #e7c87b;
   --brass-100: #f4e3b6;
@@ -25,9 +38,10 @@
 }
 
 body {
-  background-color: var(--charcoal-900);
-  color: var(--ink-100);
-  font-family: "Manrope", system-ui, -apple-system, sans-serif;
+  background-color: var(--oak-950);
+  color: var(--parchment);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
   line-height: 1.6;
   min-height: 100vh;
 }
@@ -40,22 +54,24 @@ body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
+  /* изпечен дялан камък (същата текстура като сградите в Магнат), притъмнен,
+     с топъл отблясък от факли горе */
   background-image:
-    radial-gradient(120% 80% at 12% -10%, rgba(231, 200, 123, 0.08), transparent 60%),
-    radial-gradient(120% 80% at 100% 110%, rgba(154, 134, 224, 0.16), transparent 55%),
-    linear-gradient(180deg, rgba(7, 10, 24, 0.86), rgba(7, 10, 24, 0.93)),
-    url("/bg-cosmos.webp");
-  background-size: auto, auto, auto, cover;
+    radial-gradient(90% 60% at 50% -10%, rgba(255, 150, 60, 0.1), transparent 60%),
+    linear-gradient(180deg, rgba(10, 7, 5, 0.88), rgba(10, 7, 5, 0.95)),
+    url("/stone.webp");
+  background-size: auto, auto, 360px;
   background-position: center;
-  background-repeat: no-repeat;
+  background-repeat: no-repeat, no-repeat, repeat;
 }
 
 h1,
 h2,
 h3 {
-  font-family: "Playfair Display", "PT Serif", Georgia, serif;
-  color: var(--brass-300);
-  line-height: 1.2;
+  font-family: var(--font-display);
+  color: var(--parchment);
+  line-height: 1.15;
+  text-wrap: balance;
 }
 
 a {
@@ -73,7 +89,7 @@ a:hover {
 }
 
 .panel {
-  background: rgba(20, 26, 56, 0.8);
+  background: rgba(26, 19, 13, 0.85);
   border: 1px solid rgba(217, 178, 95, 0.15);
   border-radius: var(--r-panel);
   padding: 1.5rem;
@@ -84,8 +100,8 @@ a:hover {
   background: linear-gradient(to bottom, var(--brass-300), var(--brass-400));
   color: var(--charcoal-900);
   font-weight: 700;
-  padding: 0.75rem 1.5rem;
-  border-radius: 14px;
+  padding: 0.7rem 1.4rem;
+  border-radius: 6px;
 }
 .cta:hover {
   color: var(--charcoal-900);
@@ -107,7 +123,57 @@ a:hover {
   border-color: rgba(217, 178, 95, 0.1);
 }
 .site-header {
-  border-bottom: 1px solid rgba(217, 178, 95, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid rgba(217, 178, 95, 0.14);
+  background: rgba(12, 8, 5, 0.78);
+  backdrop-filter: blur(10px);
+}
+.hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  padding: 0.85rem 1.25rem;
+  flex-wrap: wrap;
+}
+.hdr-brand {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.6rem;
+  color: var(--brass-300);
+}
+.hdr-nav {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+}
+.hdr-links {
+  display: flex;
+  gap: 1.25rem;
+}
+.hdr-links a {
+  color: var(--ink-300);
+}
+.hdr-links a:hover {
+  color: var(--brass-100);
+}
+/* тесен екран: марка + език + бутон на първия ред, връзките — на втори */
+@media (max-width: 640px) {
+  .hdr-nav {
+    gap: 0.75rem;
+  }
+  .hdr-links {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    gap: 1.5rem;
+    font-size: 0.95rem;
+  }
+  .hdr .cta {
+    padding: 0.55rem 1rem;
+  }
 }
 .site-footer {
   border-top: 1px solid rgba(217, 178, 95, 0.1);

@@ -71,7 +71,7 @@ export async function grantCompanion(serverId, userId, companionId, { stage = 1,
 
 /**
  * Нулиране на играта на сървър.
- *  • "progress" — нива, XP, искри, спътници, размени и появи; настройките,
+ *  • "progress" — нива, XP, искри, спътници, размени, битки и появи; настройките,
  *    магазинът и куестовете остават.
  *  • "all"      — и магазинът, куестовете, trivia и настройките (играта
  *    изключена, по подразбиране).
@@ -87,6 +87,7 @@ export async function resetServerGame(serverId, scope) {
     prisma.memberCompanion.deleteMany({ where: { serverId } }),
     prisma.gameXpGrant.deleteMany({ where: { serverId } }),
     prisma.memberProgress.deleteMany({ where: { serverId } }),
+    prisma.companionBattle.deleteMany({ where: { serverId } }),
   ];
   if (scope === "all") {
     ops.push(
@@ -97,7 +98,7 @@ export async function resetServerGame(serverId, scope) {
     );
   }
   const results = await prisma.$transaction(ops);
-  const names = ["trades", "spawns", "companions", "xpGrants", "members", "triviaRounds", "quests", "shopItems", "settings"];
+  const names = ["trades", "spawns", "companions", "xpGrants", "members", "battles", "triviaRounds", "quests", "shopItems", "settings"];
   const counts = Object.fromEntries(results.map((r, i) => [names[i], r.count]));
   return { ok: true, scope, counts };
 }

@@ -48,22 +48,21 @@ export function Header() {
   const t = useT();
   return (
     <header className="site-header">
-      <div
-        className="container"
-        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem 1.25rem" }}
-      >
-        <Link href="/" style={{ fontFamily: "Playfair Display, serif", fontSize: "1.5rem", color: "var(--brass-300)" }}>
+      <div className="container hdr">
+        <Link href="/" className="hdr-brand">
           {SITE.name}
         </Link>
-        <nav style={{ display: "flex", gap: "1.25rem", alignItems: "center" }}>
+        <nav className="hdr-links" aria-label={t.nav.games}>
           <Link href="/games/">{t.nav.games}</Link>
           <Link href="/faq/">{t.nav.faq}</Link>
           <Link href="/about/">{t.nav.about}</Link>
+        </nav>
+        <div className="hdr-nav">
           <LangSwitcher />
           <a className="cta" href={SITE.playUrl}>
             {t.nav.play}
           </a>
-        </nav>
+        </div>
       </div>
     </header>
   );
@@ -86,6 +85,7 @@ export function Footer() {
           <Link href="/privacy/">{t.footer.privacy}</Link>
           <Link href="/cookies/">{t.footer.cookies}</Link>
           <Link href="/responsible/">{t.footer.responsible}</Link>
+          <Link href="/accessibility/">{t.footer.accessibility}</Link>
         </nav>
         <p>{t.footer.disclaimer}</p>
         <address

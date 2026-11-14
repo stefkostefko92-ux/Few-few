@@ -1,0 +1,50 @@
+<%
+  // „Chiavi API“ (routes/impostazioni-api.ts): новият ключ — веднъж, после списъкът с отмяна; как се ползва.
+  const vive = chiaviApi.filter((c) => !c.revocataAt && c.scadeAt.getTime() > Date.now());
+  const statoDi = (c) => c.revocataAt ? t('api.stato.revocata', { data: fmt.dayRoma(c.revocataAt) }) : c.scadeAt.getTime() <= Date.now() ? t('api.stato.scaduta') : t('api.stato.attiva', { data: fmt.dayRoma(c.scadeAt) });
+%><section aria-labelledby="h-api">
+  <h2 class="section__title" id="h-api"><%= t('impostazioni.pagine.api.titolo') %></h2>
+  <p><%= t('api.intro') %></p>
+  <% if (chiaveNuova) { %>
+  <div class="notice api-nuova" role="status">
+    <p><strong><%= t('api.nuova.titolo') %></strong></p>
+    <label class="field__label" for="api-chiave"><%= t('api.nuova.label') %></label>
+    <input class="input api-chiave" id="api-chiave" type="text" readonly value="<%= chiaveNuova %>" autocomplete="off" spellcheck="false">
+    <p class="field__hint"><%= t('api.nuova.hint') %></p>
+  </div>
+  <% } %>
+  <form class="form" method="post" action="/impostazioni/api" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="azienda" value="<%= azienda.id %>">
+    <div class="field">
+      <label class="field__label" for="api-nome"><%= t('api.nome') %></label>
+      <input class="input" id="api-nome" name="nome" type="text" maxlength="80" autocomplete="off" aria-describedby="api-nome-hint<%= erroreChiave ? ' api-nome-err' : '' %>"<% if (erroreChiave) { %> aria-invalid="true"<% } %>>
+      <p class="field__hint" id="api-nome-hint"><%= t('api.nomeHint') %></p>
+      <% if (erroreChiave) { %><p class="field__error" id="api-nome-err"><%= t('api.errore.' + erroreChiave) %></p><% } %>
+    </div>
+    <div class="toolbar"><button class="btn btn--primary" type="submit"<% if (vive.length >= 10) { %> disabled<% } %>><%- include('../partials/icon', { name: 'key' }) %><%= t('api.crea') %></button></div>
+  </form>
+  <% if (chiaviApi.length) { %>
+  <div class="table-scorre">
+  <table class="table table--stack">
+    <caption class="visually-hidden"><%= t('impostazioni.pagine.api.titolo') %></caption>
+    <thead><tr><th scope="col"><%= t('api.colonna.nome') %></th><th scope="col"><%= t('api.colonna.prefisso') %></th><th scope="col"><%= t('api.colonna.usata') %></th><th scope="col"><%= t('api.colonna.stato') %></th><th scope="col"><span class="visually-hidden"><%= t('api.revoca') %></span></th></tr></thead>
+    <tbody>
+      <% for (const c of chiaviApi) { %><tr>
+        <th scope="row" data-label="<%= t('api.colonna.nome') %>"><%= c.nome %></th>
+        <td data-label="<%= t('api.colonna.prefisso') %>"><code>rk_<%= c.prefisso %>_…</code></td>
+        <td data-label="<%= t('api.colonna.usata') %>"><%= c.usataAt ? fmt.dateTime(c.usataAt) : t('api.mai') %></td>
+        <td data-label="<%= t('api.colonna.stato') %>"><%= statoDi(c) %></td>
+        <td><% if (!c.revocataAt && c.scadeAt.getTime() > Date.now()) { %><form method="post" action="/impostazioni/api/<%= c.id %>/revoca"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="azienda" value="<%= azienda.id %>"><button class="btn btn--sm btn--danger" type="submit"><%= t('api.revoca') %><span class="visually-hidden">: <%= c.nome %></span></button></form><% } %></td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+  </div>
+  <% } %>
+  <h3><%= t('api.uso.titolo') %></h3>
+  <p><%= t('api.uso.testo') %></p>
+  <pre class="api-esempio"><code>curl -H "Authorization: Bearer rk_…" <%= publicBase %>/api/v1/schede?q=via%20roma
+curl -H "Authorization: Bearer rk_…" <%= publicBase %>/api/v1/schede/&lt;id&gt;</code></pre>
+  <p class="field__hint"><%= t('api.uso.limiti') %></p>
+</section>

@@ -5,12 +5,24 @@ import { asyncHandler, badRequest, conflict } from "../http.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { onlineStatus } from "../social/presence.js";
 import { notify } from "./notifications.js";
+import { effectiveVipTier, levelFromXp } from "@aso/shared";
 
 export const friendsRouter: Router = Router();
 
 friendsRouter.use(requireAuth);
 
-const lite = { id: true, displayName: true, level: true, vipTier: true } as const;
+const lite = { id: true, displayName: true, xp: true, vipTier: true, vipUntil: true } as const;
+
+/** Публичният изглед на приятел: нивото от xp (колоната `level` беше неточна) и само
+ *  реално активен VIP — изтекъл абонамент не носи значка. */
+function toLite(u: { id: string; displayName: string; xp: number; vipTier: string; vipUntil: Date | null }) {
+  return {
+    id: u.id,
+    displayName: u.displayName,
+    level: levelFromXp(u.xp).level,
+    vipTier: effectiveVipTier(u.vipTier, u.vipUntil),
+  };
+}
 
 /** GET /api/friends — accepted friends (with presence) + pending in/out. */
 friendsRouter.get(
@@ -29,14 +41,14 @@ friendsRouter.get(
     res.json({
       friends: accepted.map((r) => {
         const u = r.requesterId === me ? r.addressee : r.requester;
-        return { friendshipId: r.id, ...u, online: presence[u.id] ?? false };
+        return { friendshipId: r.id, ...toLite(u), online: presence[u.id] ?? false };
       }),
       incoming: rows
         .filter((r) => r.status === "PENDING" && r.addresseeId === me)
-        .map((r) => ({ friendshipId: r.id, ...r.requester })),
+        .map((r) => ({ friendshipId: r.id, ...toLite(r.requester) })),
       outgoing: rows
         .filter((r) => r.status === "PENDING" && r.requesterId === me)
-        .map((r) => ({ friendshipId: r.id, ...r.addressee })),
+        .map((r) => ({ friendshipId: r.id, ...toLite(r.addressee) })),
     });
   }),
 );
@@ -72,7 +84,7 @@ friendsRouter.get(
       select: lite,
       take: 10,
     });
-    res.json({ users });
+    res.json({ users: users.map(toLite) });
   }),
 );
 

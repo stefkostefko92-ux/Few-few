@@ -1,0 +1,47 @@
+<%
+  // Заявките за достъп (само MASTER): раздели по състояние с броя им, най-новите отгоре.
+  const pagerBase = '/richieste?stato=' + filter;
+  const teamLabel = (size) => size ? t('site.request.team.' + size) : '—';
+  const badgeClass = { NEW: ' badge--on', ACCEPTED: '', REJECTED: ' badge--off' };
+%><%- include('../partials/top', { titleKey: 'requests.title' }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('requests.title') %></h1>
+    <p class="page-head__sub"><%= t('requests.subtitle') %></p>
+  </div>
+</div>
+<nav class="tabs" aria-label="<%= t('requests.filter.label') %>">
+  <% for (const item of filters) { %><a href="/richieste?stato=<%= item %>"<% if (item === filter) { %> aria-current="page"<% } %>><%= t('requests.filter.' + item) %><% if (item !== 'ALL') { %><span class="tabs__n"><%= list.counts[item] %></span><% } %></a>
+  <% } %>
+</nav>
+<% if (list.rows.length === 0) { %>
+<div class="empty">
+  <%- include('../partials/empty-art') %>
+  <p><strong><%= t(filter === 'NEW' ? 'requests.empty.NEW' : 'requests.empty.other') %></strong></p>
+</div>
+<% } else { %>
+<table class="table table--stack">
+  <caption class="visually-hidden"><%= t('requests.count', { n: list.total }) %></caption>
+  <thead><tr>
+    <th scope="col"><%= t('requests.col.company') %></th>
+    <th scope="col"><%= t('requests.col.name') %></th>
+    <th scope="col"><%= t('requests.col.city') %></th>
+    <th scope="col"><%= t('requests.col.teamSize') %></th>
+    <th scope="col"><%= t('requests.col.status') %></th>
+    <th scope="col"><%= t('requests.col.received') %></th>
+  </tr></thead>
+  <tbody>
+    <% for (const row of list.rows) { %><tr>
+      <td class="wide" data-label="<%= t('requests.col.company') %>"><a class="row-link" href="/richieste/<%= row.id %>" aria-label="<%= t('requests.open', { company: row.company }) %>"><%= row.company %></a></td>
+      <td data-label="<%= t('requests.col.name') %>"><%= row.name %><br><span class="muted"><%= row.email %></span></td>
+      <td data-label="<%= t('requests.col.city') %>"><%= row.city || '—' %></td>
+      <td data-label="<%= t('requests.col.teamSize') %>"><%= teamLabel(row.teamSize) %></td>
+      <td data-label="<%= t('requests.col.status') %>"><span class="badge<%= badgeClass[row.status] %>"><%= t('requests.status.' + row.status) %></span></td>
+      <td data-label="<%= t('requests.col.received') %>"><%= fmt.dateTime(row.createdAt) %></td>
+    </tr>
+    <% } %>
+  </tbody>
+</table>
+<%- include('../partials/pager', { base: pagerBase, page: list.page, pages: list.pages }) %>
+<% } %>
+<%- include('../partials/bottom') %>

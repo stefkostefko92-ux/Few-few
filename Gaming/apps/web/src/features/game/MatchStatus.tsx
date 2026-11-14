@@ -4,8 +4,9 @@ import { useMatchStore } from "../../lib/store";
 
 /**
  * Universal live-match status (mounted once in GameView, so it shows in every
- * game): a turn countdown when it's your move and a banner when an opponent
- * disconnects and the bot takes over.
+ * game): the per-game turn countdown (with a bar for the full clock) when it's
+ * your move, a warning after a timed-out turn (one more and a bot takes the
+ * seat), and a banner when an opponent disconnects and the bot takes over.
  */
 export function MatchStatus() {
   const { t } = useTranslation();
@@ -13,6 +14,9 @@ export function MatchStatus() {
   const mySeat = useMatchStore((s) => s.seat);
   const turn = useMatchStore((s) => s.turn);
   const turnEndsAt = useMatchStore((s) => s.turnEndsAt);
+  const turnMs = useMatchStore((s) => s.turnMs);
+  const strikes = useMatchStore((s) => s.timeoutStrikes);
+  const substituted = useMatchStore((s) => s.substituted);
   const players = useMatchStore((s) => s.players);
   const disconnected = useMatchStore((s) => s.disconnected);
 
@@ -32,6 +36,8 @@ export function MatchStatus() {
   if (phase !== "playing") return null;
 
   const secsLeft = Math.max(0, Math.ceil((turnEndsAt - now) / 1000));
+  const share = turnMs > 0 ? Math.min(1, Math.max(0, (turnEndsAt - now) / turnMs)) : 0;
+  const warned = strikes > 0 && !substituted.includes(mySeat);
   const droppedOpponents = disconnected.filter((seat) => seat !== mySeat);
 
   return (
@@ -58,13 +64,34 @@ export function MatchStatus() {
         </div>
       ) : null}
 
-      {myTurn && secsLeft <= 15 ? (
+      {warned ? (
         <div
-          className={`rounded-full px-4 py-1.5 text-sm font-semibold shadow-lift backdrop-blur ${
-            secsLeft <= 5 ? "bg-loss text-white" : "bg-felt-900/90 text-brass-300 border border-brass-400/30"
+          role="status"
+          className="rounded-full border border-loss/40 bg-felt-900/90 px-4 py-1.5 text-sm text-ink-100 shadow-lift backdrop-blur"
+        >
+          ⚠ {t("live.timeoutWarning")}
+        </div>
+      ) : null}
+
+      {myTurn ? (
+        <div
+          className={`relative overflow-hidden rounded-full px-4 py-1.5 text-sm shadow-lift backdrop-blur ${
+            secsLeft <= 5
+              ? "bg-loss font-semibold text-white"
+              : secsLeft <= 10
+                ? "border border-brass-400/30 bg-felt-900/90 font-semibold text-brass-300"
+                : "border border-brass-400/20 bg-felt-900/80 text-ink-100"
           }`}
+          aria-live={secsLeft <= 10 ? "polite" : "off"}
         >
           ⏱ {t("live.yourTurnTimer", { s: secsLeft })}
+          {share > 0 ? (
+            <span
+              aria-hidden
+              className="absolute inset-x-0 bottom-0 h-0.5 origin-left bg-brass-300/70 transition-transform duration-200 motion-reduce:transition-none"
+              style={{ transform: `scaleX(${share})` }}
+            />
+          ) : null}
         </div>
       ) : null}
     </div>

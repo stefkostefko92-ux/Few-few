@@ -1,0 +1,145 @@
+<%
+  // Конзолата на MASTER (routes/master.ts): числата на портала, дейността по седмици (SVG, без JavaScript;
+  // числата — и в таблица за четеца), най-активните фирми, здравето на системата като светлини на табло,
+  // инструментите, последните изтеглени изчисления и последните действия.
+  const tile = (key, value, nota, href) => ({ key, value, nota, href });
+  const tiles = [
+    tile('aziende', dati.aziende.attive, t('master.console.aziendeNota', { spente: dati.aziende.disattivate, senzaFirma: dati.aziende.senzaFirma }), '/aziende'),
+    tile('utenti', dati.utenti.attivi, t('master.console.utentiNota', { attivi30: dati.utenti.attivi30, dueFattori: dati.utenti.dueFattori }), '/utenti'),
+    tile('schede', dati.schede.totale, t('master.console.schedeNota', { ultimi30: dati.schede.ultimi30, cestino: dati.schede.cestino }), '/schede'),
+    tile('documenti', dati.documenti.interventi + dati.documenti.verbali + dati.documenti.cartelli, t('master.console.documentiNota', dati.documenti), '/interventi'),
+    tile('calcoli', dati.calcoli.argano + dati.calcoli.limitatore, t('master.console.calcoliNota', { argano: dati.calcoli.argano, limitatore: dati.calcoli.limitatore, emissioni: dati.calcoli.emissioni30 }), '/calcolo-argano'),
+    tile('richieste', dati.richieste, t('master.console.richiesteNota'), '/richieste'),
+  ];
+  // Графиката: 12 стълба, всеки — трите вида един върху друг; височината — спрямо най-голямата седмица.
+  const W = 720, H = 220, PAD = 28, gap = 12;
+  const bw = (W - gap * (dati.settimane.length - 1)) / dati.settimane.length;
+  const scala = (n) => (n / massimo) * (H - PAD);
+  const strumenti = [
+    { href: '/master/contratti', icon: 'seal', key: 'contratti', label: t('nav.contratti') },
+    { href: '/master/comunicazioni', icon: 'megaphone', key: 'comunicazioni', label: t('nav.comunicazioni') },
+    { href: '/master/verifica', icon: 'shield', key: 'verifica', label: t('nav.verifica') },
+    { href: '/aziende', icon: 'building', key: 'aziende', label: t('nav.aziende') },
+  ];
+%><%- include('../partials/top', { titleKey: 'master.console.title', scripts: [] }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('master.console.title') %></h1>
+    <p class="page-head__sub"><%= t('master.console.sub') %></p>
+  </div>
+</div>
+<div class="console">
+  <section class="console__numeri" aria-labelledby="console-numeri">
+    <h2 class="visually-hidden" id="console-numeri"><%= t('master.console.numeri') %></h2>
+    <ul class="cifre">
+      <% for (const c of tiles) { %><li class="cifra<%= c.key === 'richieste' && c.value > 0 ? ' cifra--evidente' : '' %>">
+        <a href="<%= c.href %>">
+          <span class="cifra__nome"><%= t('master.console.' + c.key) %></span>
+          <span class="cifra__valore"><%= fmt.num(c.value) %></span>
+          <span class="cifra__nota"><%= c.nota %></span>
+        </a>
+      </li>
+      <% } %>
+    </ul>
+  </section>
+
+  <section class="console__pannello console__attivita" aria-labelledby="console-attivita">
+    <h2 id="console-attivita"><%= t('master.console.attivita') %></h2>
+    <p class="muted"><%= t('master.console.attivitaDesc') %></p>
+    <ul class="legenda" aria-hidden="true">
+      <% for (const k of serie) { %><li><span class="legenda__campione grafico__<%= k %>"></span><%= t('master.console.serie.' + k) %></li><% } %>
+    </ul>
+    <svg class="grafico" viewBox="0 0 <%= W %> <%= H + 22 %>" role="img" aria-labelledby="console-attivita" focusable="false">
+      <defs>
+        <pattern id="tratteggio" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" class="grafico__trama"/></pattern>
+      </defs>
+      <line class="grafico__base" x1="0" x2="<%= W %>" y1="<%= H %>" y2="<%= H %>"/>
+      <% dati.settimane.forEach((s, i) => { const x = i * (bw + gap); let y = H; %><g>
+        <title><%= t('master.console.settimanaDel', { data: fmt.day(s.da) }) %>: <%= serie.map((k) => t('master.console.serie.' + k) + ' ' + s.valori[k]).join(', ') %></title>
+        <% for (const k of serie) { const h = scala(s.valori[k]); if (h <= 0) continue; y -= h; %><rect class="grafico__<%= k %>" x="<%= x.toFixed(1) %>" y="<%= y.toFixed(1) %>" width="<%= bw.toFixed(1) %>" height="<%= h.toFixed(1) %>"/><% } %>
+        <% if (s.totale > 0) { %><text class="grafico__totale" x="<%= (x + bw / 2).toFixed(1) %>" y="<%= (y - 6).toFixed(1) %>" text-anchor="middle"><%= s.totale %></text><% } %>
+        <text class="grafico__data" x="<%= (x + bw / 2).toFixed(1) %>" y="<%= H + 16 %>" text-anchor="middle"><%= fmt.day(s.da).slice(0, 5) %></text>
+      </g><% }) %>
+    </svg>
+    <details class="console__dettagli">
+      <summary><%= t('master.console.tabellaAttivita') %></summary>
+      <div class="table-scorre">
+      <table class="table">
+        <thead><tr><th scope="col"><%= t('master.console.settimanaDel', { data: '' }).trim() %></th><% for (const k of serie) { %><th scope="col"><%= t('master.console.serie.' + k) %></th><% } %><th scope="col"><%= t('master.console.totale') %></th></tr></thead>
+        <tbody>
+          <% for (const s of dati.settimane) { %><tr><th scope="row"><%= fmt.day(s.da) %></th><% for (const k of serie) { %><td><%= s.valori[k] %></td><% } %><td><%= s.totale %></td></tr>
+          <% } %>
+        </tbody>
+      </table>
+      </div>
+    </details>
+  </section>
+
+  <section class="console__pannello console__sistema" aria-labelledby="console-sistema">
+    <h2 id="console-sistema"><%= t('master.sistema.titolo') %></h2>
+    <ul class="spie">
+      <% for (const s of sistema) { %><li class="spia spia--<%= s.esito %>">
+        <span class="spia__luce" aria-hidden="true"></span>
+        <span class="spia__testo">
+          <span class="spia__nome"><%= t('master.sistema.voci.' + s.chiave) %></span>
+          <span class="spia__valore"><%= s.valore.startsWith('master.') ? t(s.valore) : s.valore %> <span class="visually-hidden">— <%= t('master.sistema.esito.' + s.esito) %></span></span>
+          <span class="spia__nota"><%= t('master.sistema.nota.' + s.chiave, s.nota || {}) %></span>
+        </span>
+      </li>
+      <% } %>
+    </ul>
+  </section>
+
+  <section class="console__pannello" aria-labelledby="console-attive">
+    <h2 id="console-attive"><%= t('master.console.piuAttive') %></h2>
+    <% if (dati.piuAttive.length === 0) { %><p class="muted"><%= t('master.console.piuAttiveVuoto') %></p><% } else { const top = dati.piuAttive[0].n; %>
+    <ol class="classifica">
+      <% for (const a of dati.piuAttive) { %><li>
+        <a href="/aziende/<%= a.id %>"><%= a.name %></a>
+        <svg class="classifica__barra" viewBox="0 0 100 6" preserveAspectRatio="none" aria-hidden="true" focusable="false"><rect width="<%= Math.max(2, Math.round((a.n / top) * 100)) %>" height="6" rx="3"/></svg>
+        <span class="classifica__n"><%= t('master.console.azioni', { n: a.n }) %></span>
+      </li>
+      <% } %>
+    </ol><% } %>
+  </section>
+
+  <section class="console__pannello" aria-labelledby="console-strumenti">
+    <h2 id="console-strumenti"><%= t('master.console.strumenti') %></h2>
+    <ul class="strumenti">
+      <% for (const s of strumenti) { %><li><a class="impostazioni-carta" href="<%= s.href %>">
+        <span class="impostazioni-carta__icona"><%- include('../partials/icon', { name: s.icon }) %></span>
+        <span class="impostazioni-carta__testo">
+          <span class="impostazioni-carta__titolo"><%= s.label %></span>
+          <span class="impostazioni-carta__desc"><%= t('master.console.strumentiDesc.' + s.key) %></span>
+        </span>
+        <%- include('../partials/icon', { name: 'chevron' }) %>
+      </a></li>
+      <% } %>
+    </ul>
+  </section>
+
+  <section class="console__pannello" aria-labelledby="console-emissioni">
+    <h2 id="console-emissioni"><%= t('master.console.emissioni') %></h2>
+    <% if (emissioni.length === 0) { %><p class="muted"><%= t('master.console.emissioniVuoto') %></p><% } else { %>
+    <ul class="registro-breve">
+      <% for (const e of emissioni) { %><li>
+        <span class="registro-breve__cosa"><%= t('master.verifica.tipo.emissione', { calcolo: t('master.verifica.calcolo.' + e.calcolo) }) %>, <%= e.azienda %></span>
+        <span class="registro-breve__meta"><time datetime="<%= e.at.toISOString() %>"><%= fmt.dateTime(e.at) %></time> · Rif. <span class="codice"><%= e.impronta %></span> · <span class="<%= e.integro ? '' : 'testo-errore' %>"><%= t(e.integro ? 'master.console.sigilloOk' : 'master.console.sigilloKo') %></span></span>
+      </li>
+      <% } %>
+    </ul><% } %>
+  </section>
+
+  <section class="console__pannello" aria-labelledby="console-registro">
+    <h2 id="console-registro"><%= t('master.console.registro') %></h2>
+    <ul class="registro-breve">
+      <% for (const r of registro) { %><li>
+        <span class="registro-breve__cosa"><%= t('audit.action.' + r.action) %></span>
+        <span class="registro-breve__meta"><time datetime="<%= r.at.toISOString() %>"><%= fmt.dateTime(r.at) %></time><% if (r.actor) { %> · <%= r.actor.name %><% } %><% if (r.azienda) { %> · <%= r.azienda.name %><% } %></span>
+      </li>
+      <% } %>
+    </ul>
+    <p><a href="/registro"><%= t('master.console.registroTutto') %></a></p>
+  </section>
+</div>
+<%- include('../partials/bottom') %>

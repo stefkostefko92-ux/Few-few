@@ -7,6 +7,7 @@ import { getSocket } from "../../../lib/socket";
 import { useLobbyStore, useMatchStore } from "../../../lib/store";
 import { WinConfetti } from "./WinConfetti";
 import { PlayingCard } from "../cards/PlayingCard";
+import { RulesButton } from "../GameHelp";
 import { SOCKET_EVENTS, type GameOverMsg, type MatchFoundMsg } from "@aso/shared";
 import "../cards/cards.css";
 
@@ -25,8 +26,10 @@ export function SceneHeader({ title }: { title: string }) {
   }, [armed]);
   const live = useMatchStore.getState().phase === "playing";
   return (
-    <div className="mb-4 flex items-center justify-between">
+    <div className="mb-4 flex items-center justify-between gap-3">
       <h1 className="text-3xl text-brass-300">{title}</h1>
+      <div className="flex items-center gap-2">
+      <RulesButton />
       <Button
         variant="ghost"
         className={armed ? "!text-loss" : undefined}
@@ -46,6 +49,7 @@ export function SceneHeader({ title }: { title: string }) {
       >
         {armed ? t("game.leaveConfirm") : t("game.leave")}
       </Button>
+      </div>
     </div>
   );
 }
@@ -74,6 +78,8 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
   const { t } = useTranslation();
   const navigate = useNavigate();
   const mine = result.score.find((s) => s.seat === seat)?.result;
+  // Games that rank every seat (Не се сърди човече) report the final place.
+  const rank = result.score.find((s) => s.seat === seat)?.rank;
   const delta = result.ratingDeltas[seat] ?? 0;
   const reward = result.rewards?.[seat];
   const won = mine === "win";
@@ -81,9 +87,10 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
   // not swallow the "play again" button).
   const game = useMatchStore((s) => s.game);
   const lobbyWaiting = useLobbyStore((s) => s.lobby !== null && s.lobby.game === game);
+  // Реми (равен резултат, winner null) не е загуба — неутрален звук, не „загубил си“.
   useEffect(() => {
-    playCue(won ? "win" : "loss");
-  }, [won]);
+    playCue(won ? "win" : mine === "loss" ? "loss" : "deal");
+  }, [won, mine]);
   return (
     <div className="cine-over" role="dialog" aria-modal="true">
       {won ? <WinConfetti /> : null}
@@ -99,6 +106,9 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
         <h2 className="cine-over__verdict">
           {won ? t("game.youWin") : mine === "loss" ? t("game.youLose") : t("game.draw")}
         </h2>
+        {rank ? (
+          <p className="cine-over__kicker tnum">{t("game.finalPlace", { n: rank, total: result.score.length })}</p>
+        ) : null}
         <p className="cine-over__mmr tnum">
           MMR {delta >= 0 ? "+" : ""}
           {delta}

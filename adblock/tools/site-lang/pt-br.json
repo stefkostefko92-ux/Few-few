@@ -19,7 +19,7 @@
     ["Anúncios do YouTube na origem", "Anúncios em vídeo, no feed e na busca são removidos dos dados do player antes que ele os leia: os vídeos simplesmente começam."],
     ["Listas de filtros para o seu idioma", "EasyList, EasyPrivacy e os filtros do uBlock Origin vêm integrados, mais 31 listas regionais; a do seu idioma é ativada sozinha."],
     ["Publicações patrocinadas", "Ocultadas nos feeds do Facebook, Instagram e Threads; as publicações dos seus amigos ficam."],
-    ["Avisos de cookies", "Clica em “Rejeitar” por você, remove o desfoque e o bloqueio de rolagem que sobram e nunca clica em um botão de login, OAuth ou pagamento."],
+    ["Avisos de cookies", "Clica em “Rejeitar” quando o aviso oferece essa opção, e em “Aceitar” só se não houver outro jeito de fechá-lo; remove o desfoque e o bloqueio de rolagem que sobram e nunca clica em um botão de login, OAuth ou pagamento."],
     ["Rastreadores e pop-unders", "Rastreadores, parâmetros de rastreamento nos links e janelas de anúncio são bloqueados; os muros anti-adblock são neutralizados."],
     ["Modo Foco", "Oculta bolhas de chat, pop-ups de newsletter, pedidos de notificação, pop-ups de IA e YouTube Shorts, só se você quiser."],
     ["Global Privacy Control", "Cada site que você visita recebe o pedido de não vender nem compartilhar seus dados."],

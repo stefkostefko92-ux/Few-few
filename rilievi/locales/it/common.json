@@ -1,0 +1,201 @@
+{
+  "app": {
+    "product": "Rilievi Impianti",
+    "logo": "Rilievi Impianti, piattaforma tecnica ascensori"
+  },
+  "meta": {
+    "description": "Portale riservato Carbon Stealth VCC per le schede di rilievo degli impianti: compilazione, ricerca, stampa e PDF.",
+    "keywords": "Carbon Stealth, rilievi impianti, scheda rilievo ascensore, matricola impianto, manutenzione ascensori, portale ascensori"
+  },
+  "nav": {
+    "label": "Navigazione principale",
+    "skip": "Vai al contenuto",
+    "schede": "Schede",
+    "utenti": "Utenti",
+    "cestino": "Cestino",
+    "registro": "Registro",
+    "account": "Il tuo account",
+    "aziende": "Aziende",
+    "aziendeCount": {
+      "one": "{n} azienda",
+      "other": "{n} aziende"
+    },
+    "impostazioni": "Impostazioni",
+    "interventi": "Interventi",
+    "cartelli": "Cartelli fermo impianto",
+    "verbali": "Verbali di cantiere",
+    "buoni": "Buoni di lavoro",
+    "preventivi": "Preventivi",
+    "calcoloArgano": "Calcolo argano",
+    "calcoloLimitatore": "Calcolo limitatore",
+    "open": "Apri il menu",
+    "close": "Chiudi il menu",
+    "group": {
+      "impianti": "Impianti",
+      "calcoli": "Calcoli",
+      "documenti": "Documenti",
+      "amministrazione": "Amministrazione",
+      "master": "Master"
+    },
+    "console": "Console",
+    "contratti": "Contratti",
+    "comunicazioni": "Comunicazioni",
+    "verifica": "Verifica documenti",
+    "nuovo": "Nuovo",
+    "cerca": "Cerca",
+    "menu": "Menu",
+    "rapida": "Navigazione rapida",
+    "trattamenti": "Registro trattamenti",
+    "violazioni": "Violazioni dei dati",
+    "ordini": "Ordini ai fornitori",
+    "approvazioni": "Da approvare",
+    "stato": "Stato del servizio",
+    "posta": "Email del portale",
+    "allarmi": "Allarmi",
+    "segnalazioni": "Segnalazioni",
+    "pagamenti": "Pagamenti"
+  },
+  "common": {
+    "yes": "Sì",
+    "no": "No",
+    "cancel": "Annulla",
+    "actions": "Azioni"
+  },
+  "switch": {
+    "theme": "Tema"
+  },
+  "theme": {
+    "auto": "Automatico",
+    "light": "Chiaro",
+    "dark": "Scuro",
+    "custom": "Personalizzato"
+  },
+  "pager": {
+    "label": "Pagine",
+    "prev": "Precedente",
+    "next": "Successiva",
+    "status": "Pagina {page} di {pages}"
+  },
+  "role": {
+    "MASTER": "Master",
+    "ADMIN": "Amministratore",
+    "DIREZIONE": "Direzione",
+    "RESPONSABILE": "Responsabile",
+    "TECNICO": "Tecnico",
+    "OPERATORE": "Operatore",
+    "CLIENTE": "Cliente (sola lettura)"
+  },
+  "error": {
+    "code": "Errore {status}",
+    "title": "Richiesta non valida",
+    "badInput": "I dati inviati non sono leggibili. Ricarica la pagina e riprova.",
+    "tooLarge": "Il testo inviato è troppo lungo. Accorcia le note e riprova.",
+    "forbiddenTitle": "Accesso negato",
+    "forbidden": "Il tuo ruolo non permette questa operazione. Se ti serve, chiedi a chi ti ha invitato.",
+    "csrf": "La pagina era scaduta. Ricaricala e ripeti l'operazione.",
+    "notFoundTitle": "Pagina non trovata",
+    "notFound": "Questa pagina non esiste o la scheda è stata eliminata.",
+    "internalTitle": "Qualcosa non ha funzionato",
+    "internal": "Errore del server: l'operazione non è stata salvata. Riprova tra un momento.",
+    "tooManyTitle": "Troppe richieste",
+    "tooMany": "Troppe richieste in poco tempo. Attendi un minuto e riprova.",
+    "loginNeeded": "Sessione scaduta: accedi di nuovo.",
+    "toSchede": "Torna alle schede"
+  },
+  "flash": {
+    "loggedOut": "Uscita effettuata.",
+    "welcome": "Account attivato: ti diamo il benvenuto.",
+    "mustChangePassword": "Prima di continuare, scegli una nuova password.",
+    "passwordChanged": "Password aggiornata. Le altre sessioni sono state chiuse.",
+    "dueFattoriAzzerata": "Verifica in due passaggi disattivata. La persona riceverà un'email.",
+    "bloccatoSessione": "Troppi tentativi errati: per sicurezza abbiamo chiuso tutte le tue sessioni e bloccato l'accesso. Nella pagina di accesso vedi tra quanto puoi riprovare.",
+    "codiceRecupero": {
+      "one": "Hai usato un codice di recupero: ne resta {n}. Creane di nuovi dal tuo account.",
+      "other": "Hai usato un codice di recupero: ne restano {n}. Creane di nuovi dal tuo account quando stanno per finire."
+    },
+    "passwordReset": "Password aggiornata. Accedi con la nuova password.",
+    "profileSaved": "Nome aggiornato.",
+    "roleChanged": "Ruolo aggiornato.",
+    "userDeactivated": "Account disattivato: le sue sessioni sono state chiuse.",
+    "userReactivated": "Account riattivato.",
+    "inviteRevoked": "Invito revocato: il link non funziona più.",
+    "notAllowed": "Operazione non consentita per il tuo ruolo.",
+    "schedaCreated": "Scheda salvata.",
+    "schedaSaved": "Modifiche salvate.",
+    "schedaTrashed": "Scheda spostata nel cestino.",
+    "schedaRestored": "Scheda ripristinata.",
+    "schedaPurged": "Scheda eliminata definitivamente.",
+    "aziendaCreated": "Azienda creata.",
+    "aziendaSaved": "Nome dell'azienda aggiornato.",
+    "logoSaved": "Logo aggiornato.",
+    "logoRemoved": "Logo tolto.",
+    "aziendaEliminata": "Azienda eliminata definitivamente con tutti i suoi dati.",
+    "aziendaDeactivated": "Azienda disattivata: chi lavorava solo per questa azienda non può più accedere, gli altri continuano nelle loro aziende.",
+    "aziendaReactivated": "Azienda riattivata.",
+    "accountSaved": "Nome ed email salvati.",
+    "membershipAdded": "Account aggiunto all'azienda.",
+    "membershipExists": "L'account è già in questa azienda.",
+    "membershipAzienda": "Scegli un'azienda attiva.",
+    "membershipRemoved": "Account tolto dall'azienda.",
+    "membershipLast": "È l'unica azienda dell'account e non si può togliere: per togliere l'accesso, disattivalo.",
+    "sezioniSaved": "Ordine delle sezioni salvato.",
+    "sezioniReset": "Ripristinato l'ordine predefinito delle sezioni.",
+    "datiSaved": "Dati societari salvati.",
+    "cartelloSaved": "Modello del cartello salvato.",
+    "ruoliSaved": "Ruoli e permessi salvati.",
+    "coloriSaved": "Colori salvati: il tema è ora «Personalizzato».",
+    "coloriReset": "Tornati ai colori del portale.",
+    "cambio": {
+      "ok": "Cambio di fornitore richiesto. Il portale continua a funzionare fino alla fine del periodo di transizione; agli amministratori è arrivata un'email.",
+      "gia": "Per questa azienda c'è già una richiesta di cambio di fornitore.",
+      "prorogato": "Periodo di transizione prorogato.",
+      "nonProrogabile": "Il periodo di transizione non si può più prorogare: la proroga è una sola, ed è possibile solo finché il periodo è in corso.",
+      "annullato": "Richiesta di cambio di fornitore annullata. Il servizio continua come prima.",
+      "nessuno": "Non c'è nessuna richiesta di cambio di fornitore in corso.",
+      "esito": "Scelta sui dati aggiornata."
+    },
+    "informativaSalvata": "Informativa salvata.",
+    "informativaModello": "L'informativa torna al modello predefinito.",
+    "riattivaLimite": "L'azienda ha raggiunto il numero massimo di persone previsto dal suo abbonamento: per riattivare questa persona disattivane un'altra o scegli un livello superiore in Impostazioni → Abbonamento.",
+    "riattivaScaduto": "L'abbonamento dell'azienda è scaduto: non si possono riattivare persone. Rinnova l'abbonamento in Impostazioni → Abbonamento."
+  },
+  "pdfApp": {
+    "attesa": "Preparo il PDF…",
+    "pronto": "PDF pronto: tocca di nuovo per aprirlo, salvarlo o stamparlo.",
+    "errore": "Il PDF non si è aperto: controlla la connessione e riprova.",
+    "nonSupportato": "In questa versione di iOS il PDF dall'app non si apre: apri il portale in Safari per scaricarlo."
+  },
+  "bozze": {
+    "titolo": "Documenti salvati su questo dispositivo, non ancora inviati",
+    "testo": "Erano stati inviati senza rete: sono qui così com'erano. Inviali ora, oppure eliminali se non servono più. Restano al massimo 7 giorni e si cancellano quando esci dall'account.",
+    "nuovo": "nuovo",
+    "modifica": "modifica",
+    "salvata": "salvato il {quando}",
+    "invia": "Invia ora",
+    "elimina": "Elimina",
+    "conferma": "Eliminare il documento salvato su questo dispositivo? Quello che contiene non è sul portale e andrà perso.",
+    "invio": "Invio in corso…",
+    "ancoraOffline": "Ancora nessuna connessione: il documento resta salvato. Riprova quando torna la rete.",
+    "accedi": "Accedi di nuovo e poi premi «Invia ora»: il documento resta salvato.",
+    "errore": "Il portale non ha potuto salvare il documento: resta salvato qui. Riprova tra qualche minuto.",
+    "eliminata": "Documento eliminato da questo dispositivo.",
+    "tornata": "La rete è tornata: puoi inviare i documenti salvati.",
+    "tipo": {
+      "schede": "Scheda di rilievo",
+      "interventi": "Foglio di intervento",
+      "buoni": "Buono di lavoro",
+      "verbali": "Verbale di chiusura cantiere",
+      "cartelli": "Cartello di fermo impianto",
+      "preventivi": "Preventivo"
+    }
+  },
+  "csv": {
+    "aggiornata": "Ultima modifica",
+    "totaleEuro": "Totale (€)",
+    "scarica": "Scarica in Excel (CSV)"
+  },
+  "versione": {
+    "piede": "Versione {versione}",
+    "titolo": "Versione del portale"
+  }
+}

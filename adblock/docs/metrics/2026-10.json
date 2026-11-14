@@ -1,0 +1,35 @@
+{
+  "month": "2026-10",
+  "recordedAt": "2026-10-23",
+  "note": "Първи запис. Публичните числа са от страницата на листинга в CWS на 23.10.2026; полетата от Stats (табло на разработчика) попълва собственикът.",
+  "public": {
+    "users": 40,
+    "ratingAverage": 4.2,
+    "ratingCount": 5
+  },
+  "stats": {
+    "weeklyUsers": null,
+    "installs28d": null,
+    "uninstalls28d": null,
+    "impressions": null,
+    "pageViews": null,
+    "pageViewsByUtmSource": {},
+    "usersByLanguage": {}
+  },
+  "ratings": {
+    "distribution": { "1": null, "2": null, "3": null, "4": null, "5": null },
+    "answered": null,
+    "medianHoursToAnswer": null
+  },
+  "releases": [
+    { "version": "5.1.3", "date": "2026-10-05" },
+    { "version": "5.1.4", "date": "2026-10-06" },
+    { "version": "5.1.5", "date": "2026-10-07" },
+    { "version": "5.1.6", "date": "2026-10-08" },
+    { "version": "5.1.7", "date": "2026-10-10" },
+    { "version": "5.1.8", "date": "2026-10-12" },
+    { "version": "5.5.0", "date": "2026-10-16" },
+    { "version": "5.5.1", "date": "2026-10-23" }
+  ],
+  "otherStores": { "edge": null, "firefox": null }
+}

@@ -1,0 +1,91 @@
+<%
+  // „Verifica in due passaggi“ (routes/account-2fa.ts): състоянието и включването; настройката (QR,
+  // ключът на ръка, кодът); резервните кодове — показани веднъж; нови кодове и изключване.
+  const k = (key, params) => t('account.dueFattori.' + key, params);
+%><%- include('../partials/top', { titleKey: 'account.dueFattori.title', narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <a href="/account"><%= k('indietro') %></a>
+    <h1><%= k('title') %></h1>
+    <p class="page-head__sub"><%= k('intro') %></p>
+  </div>
+</div>
+<div class="stack-gap due-fattori">
+  <% if (error) { %><div class="errors" role="alert" id="form-error"><h2><%= t(error) %></h2></div><% } %>
+
+  <% if (modo === 'configura') { %>
+  <section class="section" aria-labelledby="h-passo1">
+    <h2 class="section__title" id="h-passo1"><%= k('configura.passo1') %></h2>
+    <div class="due-fattori__collega">
+      <figure class="due-fattori__qr" aria-label="<%= k('configura.qr') %>"><%- setup.qrSvg %></figure>
+      <div class="due-fattori__istruzioni">
+        <p><%= k('configura.qr') %></p>
+        <p><a href="<%= setup.url %>"><%= k('configura.link') %></a></p>
+        <p><%= k('configura.chiave') %></p>
+        <p class="due-fattori__chiave"><strong><%= setup.segreto %></strong></p>
+      </div>
+    </div>
+  </section>
+  <section class="section" aria-labelledby="h-passo2">
+    <h2 class="section__title" id="h-passo2"><%= k('configura.passo2') %></h2>
+    <form class="form" method="post" action="/account/2fa/conferma" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="bozza" value="<%= bozza %>">
+      <div class="field">
+        <label class="field__label" for="codice"><%= k('configura.codice') %></label>
+        <input class="input input--codice" id="codice" name="codice" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" required aria-describedby="codice-hint<%= error ? ' form-error' : '' %>"<% if (error) { %> aria-invalid="true"<% } %>>
+        <p class="field__hint" id="codice-hint"><%= k('configura.scade') %></p>
+      </div>
+      <div class="toolbar"><button class="btn btn--primary" type="submit"><%= k('configura.submit') %></button><a class="btn btn--ghost" href="/account/2fa"><%= t('common.cancel') %></a></div>
+    </form>
+  </section>
+
+  <% } else if (modo === 'codici') { %>
+  <section class="section" aria-labelledby="h-codici">
+    <h2 class="section__title" id="h-codici"><%= k('codici.titolo') %></h2>
+    <p><%= k('codici.testo') %></p>
+    <ol class="due-fattori__codici">
+      <% for (const c of codici) { %><li><%= c %></li>
+      <% } %>
+    </ol>
+    <div class="toolbar"><a class="btn btn--primary" href="/account/2fa"><%= k('codici.fatto') %></a></div>
+  </section>
+
+  <% } else if (!stato.attiva) { %>
+  <p><strong><%= k('statoSpenta') %></strong></p>
+  <section class="section" aria-labelledby="h-attiva">
+    <h2 class="section__title" id="h-attiva"><%= k('attiva.titolo') %></h2>
+    <p class="muted"><%= k('attiva.testo') %></p>
+    <form class="form" method="post" action="/account/2fa/avvia" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <label class="field__label" for="password"><%= k('campo.password') %></label>
+        <input class="input" id="password" name="password" type="password" autocomplete="current-password" required<% if (error) { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+      </div>
+      <div class="toolbar"><button class="btn btn--primary" type="submit"><%= k('attiva.submit') %></button></div>
+    </form>
+  </section>
+
+  <% } else { %>
+  <p><strong><%= k('statoAttiva', { data: fmt.day(stato.dal) }) %></strong> <%= k('codiciRimasti', { n: stato.codiciRimasti }) %><% if (stato.codiciRimasti <= 3) { %> <%= k('codiciPochi') %><% } %></p>
+  <% for (const azione of ['codici', 'disattiva']) { const titolo = azione === 'codici' ? k('codici.nuovi') : k('disattiva.titolo'); %>
+  <details class="<%= azione === 'disattiva' ? 'danger-zone' : 'section due-fattori__azione' %>"<% if (error) { %> open<% } %>>
+    <summary><%= titolo %></summary>
+    <p class="muted"><%= azione === 'codici' ? k('codici.nuoviTesto') : k('disattiva.testo') %></p>
+    <form class="form" method="post" action="/account/2fa/<%= azione %>" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <label class="field__label" for="password-<%= azione %>"><%= k('campo.password') %></label>
+        <input class="input" id="password-<%= azione %>" name="password" type="password" autocomplete="current-password" required>
+      </div>
+      <div class="field">
+        <label class="field__label" for="codice-<%= azione %>"><%= k('campo.codice') %></label>
+        <input class="input input--codice" id="codice-<%= azione %>" name="codice" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="20" required>
+      </div>
+      <div class="toolbar"><button class="btn <%= azione === 'disattiva' ? 'btn--danger' : 'btn--primary' %>" type="submit"><%= azione === 'codici' ? k('codici.nuoviSubmit') : k('disattiva.submit') %></button></div>
+    </form>
+  </details>
+  <% } %>
+  <% } %>
+</div>
+<%- include('../partials/bottom') %>

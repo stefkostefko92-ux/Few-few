@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "ទប់ស្កាត់ពាណិជ្ជកម្មវីដេអូ YouTube បដា ផ្ទាំងលោត កម្មវិធីតាមដាន និងផ្ទាំងខូគី។"
+    "message": "កម្មវិធីទប់ស្កាត់ពាណិជ្ជកម្ម YouTube និងវេប៖ ពាណិជ្ជកម្មវីដេអូ បដា ផ្ទាំងលោត កម្មវិធីតាមដាន បដាខូគី និងជញ្ជាំង anti-adblock។"
   },
   "byCarbon": {
     "message": "ដោយ Carbon Stealth"
@@ -647,6 +647,12 @@
     "message": "ចុចរូបតំណាងបំណែកល្បែងផ្គុំរូបនៅក្បែររបារអាសយដ្ឋាន ហើយខ្ទាស់ Supreme AdBlock។ បន្ទាប់មក ការចុចតែម្ដងនឹងបង្ហាញអ្វីដែលត្រូវបានទប់ស្កាត់នៅលើទំព័រ។",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "កម្មវិធីបន្ថែមត្រូវបានខ្ទាស់នៅលើរបារឧបករណ៍ហើយ"
+  },
+  "welPinnedText": {
+    "message": "ការចុចរូបតំណាងរបស់វាតែម្ដង នឹងបង្ហាញអ្វីដែលត្រូវបានទប់ស្កាត់នៅលើទំព័រ។"
+  },
   "welBrokenTitle": {
     "message": "ប្រសិនបើគេហទំព័រមើលទៅខូច",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -793,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "ចំណុះច្បាប់"
+  },
+  "helpTitle": {
+    "message": "គេហទំព័រខូចឬ?"
+  },
+  "helpText": {
+    "message": "ម្ដងមួយគេហទំព័រគឺគ្រប់គ្រាន់ហើយ៖ អនុញ្ញាតពាណិជ្ជកម្មរបស់វារយៈពេល 1 ម៉ោង ឬបិទការលាក់ធាតុតែនៅទីនោះ។ ប្រសិនបើអ្នកប្រាប់យើង យើងនឹងជួសជុលវាសម្រាប់អ្នកទាំងអស់គ្នា។"
+  },
+  "helpFix": {
+    "message": "ជួសជុលគេហទំព័រនេះ"
+  },
+  "cardNever": {
+    "message": "កុំបង្ហាញម្ដងទៀត"
+  },
+  "cardClose": {
+    "message": "បិទ"
+  },
+  "receiptTitle": {
+    "message": "30 ថ្ងៃចុងក្រោយរបស់អ្នក"
+  },
+  "receiptText": {
+    "message": "បានទប់ស្កាត់សំណើ $1 · បានឆ្លើយបដាខូគី $2 · សន្សំទិន្នន័យបានប្រហែល $3 (ការប៉ាន់ស្មាន)"
+  },
+  "share": {
+    "message": "ចែករំលែក"
+  },
+  "shareTitle": {
+    "message": "ចម្លងតំណទៅ Supreme AdBlock នៅលើ Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "បានចម្លងតំណ"
+  },
+  "rep_fixed_q": {
+    "message": "តើវាបានជួសជុលគេហទំព័រហើយឬនៅ?"
+  },
+  "rep_fixed_yes": {
+    "message": "មែន ដំណើរការហើយ"
+  },
+  "rep_fixed_no": {
+    "message": "ទេ នៅតែខូច"
+  },
+  "rep_fixed_yes_note": {
+    "message": "រីករាយដែលវាដំណើរការ។ ប្រសិនបើអ្នកប្រាប់យើងខាងក្រោម របាយការណ៍នឹងបង្ហាញថាការជួសជុលមួយណាដែលមានប្រសិទ្ធភាព ដូច្នេះយើងអាចជួសជុលគេហទំព័រនេះសម្រាប់អ្នកទាំងអស់គ្នា។"
+  },
+  "rep_fixed_next": {
+    "message": "សាកល្បងមួយបន្ទាប់៖ $1"
+  },
+  "rep_fixed_none": {
+    "message": "ដូច្នេះ សូមប្រាប់យើងខាងក្រោម៖ យើងនឹងពិនិត្យមើលគេហទំព័រនេះ។"
+  },
+  "rep_webmail": {
+    "message": "មិនមានកម្មវិធីអ៊ីមែលទេ? ចម្លងរបាយការណ៍ ហើយផ្ញើវាទៅ $1 ពីអ៊ីមែលលើបណ្ដាញរបស់អ្នក។"
+  },
+  "blk_mistake": {
+    "message": "គិតថានេះជាកំហុសឬ? ប្រាប់យើង"
+  },
+  "welTest": {
+    "message": "មើលវាដំណើរការនៅលើទំព័រសាកល្បង"
   }
 }

@@ -13,6 +13,7 @@ import {
 } from "@aso/shared";
 import { asyncHandler, badRequest, conflict, forbidden, unauthorized } from "../http.js";
 import { requireAuth } from "../middleware/requireAuth.js";
+import { assertNotSelfExcluded } from "../account/responsible.js";
 
 export const cosmeticsRouter: Router = Router();
 
@@ -76,6 +77,8 @@ cosmeticsRouter.post(
     const userId = req.user!.sub;
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw unauthorized();
+    // Отговорна игра: самоизключеният не купува и с камъни.
+    assertNotSelfExcluded(user);
 
     if (cosmetic.vipExclusive && !canUseExclusive(user.vipTier as VipTier)) {
       throw forbidden("Този артикул е само за VIP (Silver и нагоре)");

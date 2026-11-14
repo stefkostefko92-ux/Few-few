@@ -29,9 +29,21 @@ function fakeSession() {
   return s;
 }
 let USER;
+let SNAPSHOT = false;
+// RACE: бариера — и двете заявки стигат до записа, преди която и да е да запише
+// (иначе supertest ги пуска една след друга и надпреварата не се случва).
+let RACE = null;
+function raceGate() {
+  if (!RACE) return Promise.resolve();
+  RACE.n += 1;
+  if (RACE.n >= 2) RACE.release();
+  return RACE.wait;
+}
+function startRace() { let release; const wait = new Promise((r) => { release = r; }); RACE = { n: 0, release, wait }; }
 vi.mock("../middleware/auth.js", () => ({
   requireAuth: (req, _res, next) => { req.session = SESSION; next(); },
-  loadUser: (req, _res, next) => { req.user = USER; next(); },
+  // SNAPSHOT: всяка заявка получава СВОЕ копие на реда — като истинската база при надпревара.
+  loadUser: (req, _res, next) => { req.user = SNAPSHOT ? { ...USER } : USER; next(); },
   requireServerAdmin: (_req, _res, next) => next(),
   requireSuperUser: (req, res, next) => (["MAIN_OWNER", "SUPER_USER"].includes(req.user?.globalRole) ? next() : res.status(403).json({ error: "no" })),
   requireMainOwner: (_req, _res, next) => next(),
@@ -53,7 +65,16 @@ app.delete("/api/admin/boom", (req, _res, next) => { req.session = SESSION; req.
 
 // Прилага update-ите на prisma върху USER, за да е ДЪРЖАВНО реалистичен цикълът.
 function applyUpdates() {
-  prismaMock.user.update.mockImplementation(async ({ data }) => { Object.assign(USER, data); return USER; });
+  prismaMock.user.update.mockImplementation(async ({ data }) => { await raceGate(); Object.assign(USER, data); return USER; });
+  // Условните записи (сравни-и-смени) на втория фактор — като базата: минава само ако условието важи.
+  prismaMock.user.updateMany.mockImplementation(async ({ where, data }) => {
+    await raceGate();
+    const stepOk = !where.OR || USER.mfaLastUsedStep === null || where.OR.some((c) => c.mfaLastUsedStep?.lt !== undefined && USER.mfaLastUsedStep < c.mfaLastUsedStep.lt);
+    const codesOk = where.mfaBackupCodes === undefined || where.mfaBackupCodes === USER.mfaBackupCodes;
+    if (where.id !== USER.id || !stepOk || !codesOk) return { count: 0 };
+    Object.assign(USER, data);
+    return { count: 1 };
+  });
   prismaMock.auditLog.create.mockResolvedValue({});
   prismaMock.user.findUnique.mockImplementation(async () => USER);
 }
@@ -136,6 +157,33 @@ describe("цикъл setup → enable → verify", () => {
     r = await request(app).post("/api/auth/mfa/verify").send({ code: backupCodes[0] });
     expect(r.status).toBe(400);
     expect(prismaMock.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ action: "MFA_BACKUP_CODE_USED" }) }));
+  });
+
+  it("надпревара: един резервен код в две едновременни заявки → минава точно едната", async () => {
+    const { backupCodes } = await enroll();
+    SNAPSHOT = true;
+    startRace();
+    try {
+      const send = () => { SESSION = fakeSession(); return request(app).post("/api/auth/mfa/verify").send({ code: backupCodes[1] }); };
+      const [a, b] = await Promise.all([send(), send()]);
+      expect([a.status, b.status].sort()).toEqual([200, 400]);
+      expect(JSON.parse(USER.mfaBackupCodes)).toHaveLength(9);
+    } finally { SNAPSHOT = false; RACE = null; }
+  });
+
+  it("надпревара: един TOTP код в две едновременни заявки → минава точно едната", async () => {
+    const { secret } = await enroll();
+    const nextStep = USER.mfaLastUsedStep + 1;
+    const code = totp(secret, { nowMs: nextStep * 30 * 1000 });
+    vi.useFakeTimers({ now: nextStep * 30 * 1000, toFake: ["Date"] });
+    SNAPSHOT = true;
+    startRace();
+    try {
+      const send = () => { SESSION = fakeSession(); return request(app).post("/api/auth/mfa/verify").send({ code }); };
+      const [a, b] = await Promise.all([send(), send()]);
+      expect([a.status, b.status].sort()).toEqual([200, 400]);
+      expect(USER.mfaLastUsedStep).toBe(nextStep);
+    } finally { SNAPSHOT = false; RACE = null; vi.useRealTimers(); }
   });
 
   it("disable иска валиден код и чисти всичко; после staff е MFA_ENROLL_REQUIRED", async () => {

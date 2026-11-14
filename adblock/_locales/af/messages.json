@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokkeer oral advertensies, ook op YouTube, plus baniere, opspringers, spoorsnyers, koekiemeldings en anti-adblokmure."
+    "message": "Advertensieblokker vir YouTube en die web: videoadvertensies, baniere, opspringers, spoorsnyers, koekiebaniere en anti-adblokmure."
   },
   "byCarbon": {
     "message": "deur Carbon Stealth"
@@ -647,6 +647,12 @@
     "message": "Klik op die legkaartstuk-ikoon langs die adresbalk en speld Supreme AdBlock vas. Een klik wys dan wat op die bladsy geblokkeer is.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Aan die nutsbalk vasgespeld"
+  },
+  "welPinnedText": {
+    "message": "Een klik op die ikoon wys wat op die bladsy geblokkeer is."
+  },
   "welBrokenTitle": {
     "message": "As ’n werf stukkend lyk",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -793,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Reëlkapasiteit"
+  },
+  "helpTitle": {
+    "message": "Werwe stukkend?"
+  },
+  "helpText": {
+    "message": "Een werf op 'n slag is genoeg: laat sy advertensies vir 'n uur toe, of skakel elementversteking net daar af. As u ons laat weet, herstel ons dit vir almal."
+  },
+  "helpFix": {
+    "message": "Herstel hierdie werf"
+  },
+  "cardNever": {
+    "message": "Moenie dit weer wys nie"
+  },
+  "cardClose": {
+    "message": "Maak toe"
+  },
+  "receiptTitle": {
+    "message": "U laaste 30 dae"
+  },
+  "receiptText": {
+    "message": "$1 versoeke geblokkeer · $2 koekiebaniere beantwoord · sowat $3 data bespaar ('n skatting)"
+  },
+  "share": {
+    "message": "Deel"
+  },
+  "shareTitle": {
+    "message": "Kopieer die Chrome Web Store-skakel na Supreme AdBlock"
+  },
+  "shareCopied": {
+    "message": "Skakel gekopieer"
+  },
+  "rep_fixed_q": {
+    "message": "Het dit die werf herstel?"
+  },
+  "rep_fixed_yes": {
+    "message": "Ja, dit werk"
+  },
+  "rep_fixed_no": {
+    "message": "Nee, steeds stukkend"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Bly dit werk. As u ons hieronder laat weet, sê die verslag watter oplossing gewerk het, sodat ons die werf vir almal kan herstel."
+  },
+  "rep_fixed_next": {
+    "message": "Probeer die volgende: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Laat weet ons dan asseblief hieronder: ons sal na die werf kyk."
+  },
+  "rep_webmail": {
+    "message": "Geen e-posprogram nie? Kopieer die verslag en stuur dit vanaf u webpos na $1."
+  },
+  "blk_mistake": {
+    "message": "Dink u dis 'n fout? Laat weet ons"
+  },
+  "welTest": {
+    "message": "Sien hoe dit werk op 'n toetsbladsy"
   }
 }

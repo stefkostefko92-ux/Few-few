@@ -174,8 +174,10 @@ const DEFAULTS = {
   // Слуша само на 127.0.0.1 и се вижда единствено през панела, тоест зад
   // неговия вход и 2FA. `composeFile` празно = търси се в текущия release.
   desktop: { port: 3010, composeFile: '' },
-  // Качване на архиви от браузъра (за деплой).
+  // Качване на архиви от браузъра (за деплой) и на файлове (файловият мениджър).
   uploads: { maxBytes: 3 * 1024 * 1024 * 1024 },
+  // Кошчето на файловия мениджър: колко дни стои изтритото, преди да се чисти само.
+  files: { trashDays: 7 },
   // Продуктови health проверки (име + локален URL). Съвпадат с autodeploy.sh.
   healthChecks: [
     { name: 'zabobovdol', url: 'http://127.0.0.1:80/' },
@@ -186,6 +188,8 @@ const DEFAULTS = {
     { name: 'supreme', url: 'http://127.0.0.1:8080/' },
     { name: 'eternaltouch', url: 'http://127.0.0.1:4300/healthz' },
     { name: 'ospedali', url: 'http://127.0.0.1:8788/healthz' },
+    // АСО (gaming): api на портала; /health/ready проверява и базата.
+    { name: 'gaming', url: 'http://127.0.0.1:4500/health/ready' },
     // Статичен сайт зад Caddy (root /var/www/adblock) — няма собствен процес,
     // затова проверката минава през самия Caddy с правилния Host.
     { name: 'adblock', url: 'http://127.0.0.1/', host: 'adblock.carbonstealth.eu' },
