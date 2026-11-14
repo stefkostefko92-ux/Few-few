@@ -2,6 +2,10 @@
 
 Касата — касова (POS) система за хранителни магазини. BG. Евро-готова.
 
+Производител (декларацията за СУПТО, „За програмата“, Общите условия): „Карбон Стелт“ ЕДПК /
+Carbon Stealth VCC · ЕИК 208725180 · ЗДДС № BG208725180 · гр. Бобов дол 2670, ул. „Самуил“ № 3 ·
+info@carbonstealth.eu — в кода: `MANUFACTURER` в `src/lib/constants.ts`.
+
 ## Стек и команди
 
 Next.js 15 App Router · React 19 · TS strict · Prisma + **SQLite** (offline-first)
