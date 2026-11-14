@@ -80,7 +80,8 @@ function mountHinges(ctx, o, door, carcassPanel, { onPartition, zEnd, hingeSides
   // our own rule (the hinge makers give no minimum width): the cup stays in the hinge half of the door and leaves the
   // other half to the handle; such doors are reported together in model.js
   door.narrowForCup = Wd < 2 * (sol.c + sys.cup.d);
-  const mass = (Wd / 1000) * (Hd / 1000) * (door.T / 1000) * DENSITY + HANDLE_KG;
+  // a mirror glued on the door (bathroom.js) weighs per square metre: o.frontKgM2
+  const mass = (Wd / 1000) * (Hd / 1000) * ((door.T / 1000) * DENSITY + (o.frontKgM2 ?? 0)) + HANDLE_KG;
   const lim = hingeLimits(sys);
   const cnt = hingeCount(mass, Hd, sys);
   if (mass > lim.maxMassKg || Hd > lim.maxHeight) ctx.warn('error', ctx.t('w.doorHeavy', { door: door.name, h: Math.round(Hd), kg: ctx.t.num(mass), maxH: lim.maxHeight, maxKg: ctx.t.num(lim.maxMassKg) }));

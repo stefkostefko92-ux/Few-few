@@ -6,9 +6,9 @@ import { engine, type Spec, type TypeParam } from './engine.js';
  * `furniture.group.<ключ>`, а името на вида е `furniture.<id>`. Размерите идват от формата на двигателя,
  * за да не се разминават с това, което редакторът позволява.
  */
-export type FurnitureGroup = 'kitchen' | 'bedroom' | 'living' | 'custom' | 'other';
+export type FurnitureGroup = 'kitchen' | 'bedroom' | 'living' | 'bathroom' | 'custom' | 'other';
 
-const GROUPS: readonly string[] = ['kitchen', 'bedroom', 'living', 'custom'];
+const GROUPS: readonly string[] = ['kitchen', 'bedroom', 'living', 'bathroom', 'custom'];
 const isGroup = (value: string): value is FurnitureGroup => GROUPS.includes(value);
 
 function furnitureGroup(type: string): FurnitureGroup {
