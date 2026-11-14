@@ -42,8 +42,9 @@ export default async function AdminSignaliPage({
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Сигнали до общината</h1>
         <p className="text-slate-600">
-          Получените сигнали се препращат към {MUNICIPALITY_EMAIL}. Ако SMTP не е
-          конфигуриран, препратете ръчно с бутона и отбележете статуса.
+          Получените сигнали се препращат към {MUNICIPALITY_EMAIL}. Ако пощата не е
+          настроена (<Link href="/admin/poshta" className="text-brand-700 underline">Поща (Brevo)</Link>),
+          препратете ръчно с бутона и отбележете статуса.
         </p>
       </div>
 

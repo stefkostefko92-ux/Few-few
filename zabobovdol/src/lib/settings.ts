@@ -28,6 +28,16 @@ export const SETTING_KEYS = {
   androidPackage: "android_package",
   androidFingerprints: "android_fingerprints",
   playStoreUrl: "play_store_url",
+  // Пощата на сайта (Brevo SMTP) — /admin/poshta; ключът е шифрован (mail-config-core.ts).
+  mailEnabled: "mail_enabled",
+  mailHost: "mail_host",
+  mailPort: "mail_port",
+  mailUser: "mail_user",
+  mailKeyEnc: "mail_key_enc",
+  mailFromName: "mail_from_name",
+  mailFromEmail: "mail_from_email",
+  mailUpdatedBy: "mail_updated_by",
+  mailUpdatedAt: "mail_updated_at",
 } as const;
 
 // Връзка към приложението в Google Play (показва се в сайта, ако е зададена).

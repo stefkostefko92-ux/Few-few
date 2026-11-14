@@ -64,6 +64,13 @@ print/, public/      print assets and static files
 - **SEO/GEO/AEO** is first-class: structured JSON-LD graph in `@/lib/seo`, plus
   `robots.txt`, `sitemap.xml`, `llms.txt`, IndexNow.
 - **Escape all user-generated content** (see `markdown.ts`, `linkify.ts`).
+- **Mail (Brevo SMTP) from the admin panel** — `/admin/poshta` (ADMIN only), modelled on rilievi #32:
+  `src/lib/mail-config-core.ts` (pure: strict form — hostname only in production, ports 587/2525/465,
+  no control chars/header injection; AES-256-GCM key sealed with an HKDF key from `AUTH_SECRET`;
+  resolution panel → `SMTP_*` env → off), `mail-config.ts` (SiteSetting `mail_*`, 20 s cache),
+  `admin/mail-actions.ts` (save needs the admin's own password; key write-only, never shown/audited;
+  test mail to the admin, only the error code). Rotating `AUTH_SECRET` makes the stored key unreadable →
+  mail falls back to `.env` and the page asks for the key again. Tests: `mail-config.test.ts`.
 - **React #418 patch:** `npm run build`/`dev` first run `scripts/patch-react-replay.mjs`
   (React 19.3 hydration-replay fix inserted into Next's bundled react-dom; fails the build
   if the spot is missing). Remove it once Next ships React ≥ 19.3.
