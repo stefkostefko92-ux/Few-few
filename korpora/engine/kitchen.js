@@ -10,8 +10,10 @@
 // corner gap in front of the back wall's cabinets. The gap is the room two fronts with handles need: a door of the side
 // wall hinged at the corner lies, opened, in front of the back wall's fronts and their handles, and the corner door
 // swings out beside the fronts and handles of the side wall (tests/engine/kitchen-corner.test.mjs opens every door in
-// the room). The wall cabinets do the same over the base cabinets, door over door. The corner cabinets have no shelf:
-// over 1 m wide, a shelf of 18 mm board sags past 0,5 % of its span under the kitchen load (model.js).
+// the room, as far as the hinges go). Past 90° a door hinged at the corner would swing back onto the back wall's
+// fronts, so the base module of a side wall next to the corner has drawers (наш избор). The wall cabinets do the same
+// over the base cabinets, door over door. The corner cabinets have no shelf: over 1 m wide, a shelf of 18 mm board sags
+// past 0,5 % of its span under the kitchen load (model.js).
 import { buildCarcass } from './carcass.js';
 import { STOCK, frontStock } from './materials.js';
 import { FRONT_GAP_Z } from './joinery.js';
@@ -27,6 +29,9 @@ const LEGS = 100;
 const WALL_DEPTH = 320;
 const WORKTOP_T = 38;
 const WORKTOP_OVERHANG = 20; // past the closed fronts: 20–29 mm, in whole centimetres
+// The longest worktop in one piece: EGGER's 38 mm worktops are 4100 × 600 mm (EGGER EDC24 Worktops Collection
+// brochure, the formats table); a longer wall needs one more joint.
+const WORKTOP_STOCK = 4100;
 const SIDE_WALLS = { line: [], left: ['B'], right: ['C'], u: ['B', 'C'] };
 const WALLS = { A: 'А', B: 'Б, лява', C: 'В, дясна' };
 
@@ -42,20 +47,29 @@ export function worktopDepth(s) {
 // The corner gap: a door of the side wall opened at the corner lies in front of the back wall's fronts — its own
 // thickness, the 1 mm front gap, the back wall's front and its handle, and a margin — in whole centimetres, at least
 // 50 mm. The handle stands out by its catalogue height.
-export function cornerGap(s) {
-  const fT = STOCK[frontStock(s).stock].thickness;
+const handleProjection = (s) => {
   const h = handleModel(s.handle);
-  const proj = !h || FLAT_HANDLES.has(h.type) ? 0 : h.height ?? HANDLE_PROJECTION;
-  return Math.max(MIN_CORNER_GAP, Math.ceil((FRONT_GAP_Z + 2 * fT + proj + GAP_MARGIN) / 10) * 10);
+  return !h || FLAT_HANDLES.has(h.type) ? 0 : h.height ?? HANDLE_PROJECTION;
+};
+const frontT = (s) => STOCK[frontStock(s).stock].thickness;
+export function cornerGap(s) {
+  return Math.max(MIN_CORNER_GAP, Math.ceil((FRONT_GAP_Z + 2 * frontT(s) + handleProjection(s) + GAP_MARGIN) / 10) * 10);
 }
+// How far a handle may stand out of its front with this corner gap (the drawing's notes say it).
+export const cornerHandleRoom = (s) => cornerGap(s) - FRONT_GAP_Z - 2 * frontT(s) - GAP_MARGIN;
+
+// The modules of a side wall counted from the corner: drawers next to it, then the rule of kitchenModules.
+const sideModules = (s, n) =>
+  Array.from({ length: n }, (_, i) => (i % 3 === 0 ? { drawers: true, width: s.drawerModuleWidth } : { drawers: false, width: s.moduleWidth }));
 
 // The walls with their modules from the left; the back wall with a blind corner cabinet at each corner it shares.
 export function kitchenWalls(s) {
   const sides = SIDE_WALLS[s.shape] ?? [];
   const corner = (side) => ({ blind: side, width: s.depth + cornerGap(s) + CORNER_DOOR });
   const walls = [{ id: 'A', modules: [...(sides.includes('B') ? [corner('left')] : []), ...kitchenModules(s), ...(sides.includes('C') ? [corner('right')] : [])] }];
-  if (sides.includes('B')) walls.push({ id: 'B', modules: kitchenModules(s, s.modulesLeft) });
-  if (sides.includes('C')) walls.push({ id: 'C', modules: kitchenModules(s, s.modulesRight) });
+  // from the left as one faces the wall: the left wall ends at the corner, the right one starts there
+  if (sides.includes('B')) walls.push({ id: 'B', modules: sideModules(s, s.modulesLeft).reverse() });
+  if (sides.includes('C')) walls.push({ id: 'C', modules: sideModules(s, s.modulesRight) });
   return walls.map((w) => ({ ...w, length: w.modules.reduce((a, m) => a + m.width, 0) }));
 }
 
@@ -117,6 +131,7 @@ export function buildKitchen(ctx, s, c) {
     buildWall(ctx, s, c, walls[0], 1);
     ctx.hw('worktop', { name: `Работен плот ${WORKTOP_T} mm, ${length} × ${wd} mm (поръчка)`, qty: 1, unit: 'бр.', group: 'Покупни' });
     ctx.symbols.push({ type: 'worktop', x0: 0, x1: length, y: s.height, z0: 0, z1: wd, t: WORKTOP_T });
+    longWorktop(ctx, length, '');
     return;
   }
   // the side walls start the corner gap in front of the back wall's base cabinets; the worktop of the back wall runs
@@ -138,7 +153,14 @@ export function buildKitchen(ctx, s, c) {
       ctx.symbols.push({ type: 'worktop', x0, x1, y: s.height, z0: 0, z1: wd, t: WORKTOP_T });
     });
     ctx.hw(wall.id === 'A' ? 'worktop' : `worktop:${wall.id}`, { name: `Работен плот ${WORKTOP_T} mm, ${x1 - x0} × ${wd} mm (поръчка) — стена ${WALLS[wall.id]}`, qty: 1, unit: 'бр.', group: 'Покупни' });
+    longWorktop(ctx, x1 - x0, ` на стена ${WALLS[wall.id]}`);
     n += wall.modules.length;
   }
   ctx.hw('worktopBolts', { name: 'Болт за плот (връзка в ъгъла, гнездата се фрезоват по шаблон)', qty: 2 * (walls.length - 1), unit: 'бр.', group: 'Крепежи' });
+}
+
+// A worktop longer than the longest one in one piece: one more joint with bolts, said as a note.
+function longWorktop(ctx, length, where) {
+  if (length > WORKTOP_STOCK)
+    ctx.warn('info', `Плотът${where} е ${length} mm — по-дълъг от ${WORKTOP_STOCK} mm на стандартния плот: предвидете още една фуга с болтове.`);
 }

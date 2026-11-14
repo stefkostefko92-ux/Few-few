@@ -17,7 +17,7 @@ const S = (key, label, options) => ({ key, label, type: 'seg', options });
 
 // The modules of a side wall: a range the form shows only for the shapes that have that wall (when).
 const sideWall = (key, label, shapes) => ({ ...R(key, label, 1, 6, 1, ''), when: { shape: shapes } });
-const SHAPE_LABELS = { line: 'Права', left: 'Г, вляво', right: 'Г, вдясно', u: 'П' };
+const SHAPE_LABELS = { line: 'Права', left: 'Г, крило вляво', right: 'Г, крило вдясно', u: 'П' };
 const FRONTS = S('fronts', 'Фронт', [['doors', 'Врати'], ['drawers', 'Чекмеджета'], ['mixed', 'Чекмедже + врати']]);
 const DOORS = S('doors', 'Врати', [[1, '1'], [2, '2']]);
 
@@ -45,7 +45,7 @@ export const TYPES = {
   // cabinets (kitchen.js)
   kitchen: {
     label: 'Кухня', group: 'Кухня и шкафове',
-    params: [S('shape', 'Форма', SHAPES.map((v) => [v, SHAPE_LABELS[v]])), R('modules', 'Модули', 2, 6, 1, ''), sideWall('modulesLeft', 'Модули на лявата стена', ['left', 'u']), sideWall('modulesRight', 'Модули на дясната стена', ['right', 'u']), R('moduleWidth', 'Ширина на модул с врати', 400, 900, 10), R('drawerModuleWidth', 'Ширина на модул с чекмеджета', 400, 900, 10), R('height', 'Долни шкафове с крачетата', 820, 900, 1), R('depth', 'Дълбочина долни', 500, 600, 1), R('wallHeight', 'Горни шкафове', 500, 900, 10), R('mount', 'Горни от пода', 1350, 1700, 10)],
+    params: [S('shape', 'Форма', SHAPES.map((v) => [v, SHAPE_LABELS[v]])), R('modules', 'Модули на задната стена (А)', 2, 6, 1, ''), sideWall('modulesLeft', 'Модули на лявата стена (Б)', ['left', 'u']), sideWall('modulesRight', 'Модули на дясната стена (В)', ['right', 'u']), R('moduleWidth', 'Ширина на модул с врати', 400, 900, 10), R('drawerModuleWidth', 'Ширина на модул с чекмеджета', 400, 900, 10), R('height', 'Долни шкафове с крачетата', 820, 900, 1), R('depth', 'Дълбочина долни', 500, 600, 1), R('wallHeight', 'Горни шкафове', 500, 900, 10), R('mount', 'Горни от пода', 1350, 1700, 10)],
     // the drawer module narrower than the door modules: with GTV H45 in a 560 mm carcass (NL 500) a drawer of a 600 mm
     // module would be wider than its slide (drawers.js); 500 keeps the box at 438,6 mm
     defaults: { shape: 'line', modules: 4, modulesLeft: 2, modulesRight: 2, moduleWidth: 600, drawerModuleWidth: 500, height: 860, depth: 560, wallHeight: 720, mount: 1450 },

@@ -14,7 +14,7 @@ const meta = { product: 'Korpora', hash: 'a'.repeat(64), owner: 'Carbon Stealth 
 // every rectangle, line and polyline of the views (not the frame, not the title block)
 function viewCoords(svg) {
   const out = [];
-  for (const m of svg.matchAll(/<(rect|line|polyline) class="d-(vis|front|hid|out|open|gnd|wall)[^"]*"([^>]*)>/g)) {
+  for (const m of svg.matchAll(/<(rect|line|polyline) class="d-(vis|front|hid|out|open|gnd|wall|swing|leaf)[^"]*"([^>]*)>/g)) {
     const a = m[3];
     const num = (k) => Number(a.match(new RegExp(` ${k}="([-\\d.]+)"`))?.[1]);
     if (m[1] === 'rect') out.push([num('x'), num('y')], [num('x') + num('width'), num('y') + num('height')]);
@@ -35,7 +35,9 @@ for (const [shape, walls] of [['left', ['Стена А', 'Стена Б, ляв�
       assert.ok(!svg.includes('Разрез A–A'), `${shape}: no section`);
       assert.match(svg, shape === 'u' ? /П-образна кухня/ : /Г-образна кухня/);
       const baseDoors = m.parts.filter((p) => p.role === 'door' && p.module.startsWith('М')).length;
-      assert.equal((svg.match(/d-swing/g) ?? []).length, baseDoors, `${shape}: the swing of every base door`);
+      // one dotted swing per base door, and the legend's sample
+      assert.equal((svg.match(/<polyline class="d-swing"/g) ?? []).length, baseDoors, `${shape}: the swing of every base door`);
+      assert.match(svg, />отваряне на вратите</);
       assert.equal((svg.match(/class="d-wall"/g) ?? []).length, walls.length, `${shape}: the walls of the room`);
       for (const [x, y] of viewCoords(svg)) {
         assert.ok(x >= 22 && x <= 408 && y >= 12 && y <= 250, `${shape}: ${x},${y} outside the drawing area`);

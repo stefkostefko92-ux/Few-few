@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { slideModel, slideSystemOf } from '../engine/hardware.js';
 import { S } from './viewer-hw.js';
+import { panelAt } from './viewer-find.js';
 
 function rail(w, h, len, material) {
   const m = new THREE.Mesh(
@@ -17,15 +18,10 @@ function rail(w, h, len, material) {
   return m;
 }
 
-// The carcass side (or partition) whose inner face is at x (mm), to carry the fixed member through the explode.
-function carcassAt(model, meshOf, x, y) {
-  const p = model.parts.find(
-    (q) =>
-      (q.role === 'side' || q.role === 'partition') &&
-      (Math.abs(q.box.max[0] - x) < 1 || Math.abs(q.box.min[0] - x) < 1) &&
-      y >= q.box.min[1] &&
-      y <= q.box.max[1],
-  );
+// The carcass side (or partition) of the drawer's own wall whose inner face is at x (mm), to carry the fixed member
+// through the explode.
+function carcassAt(model, meshOf, x, y, run) {
+  const p = panelAt(model, x, y, run);
   return p ? meshOf.get(p.id) : null;
 }
 
@@ -53,7 +49,7 @@ export function addSlides(viewer, model, meshOf, drawerHolders) {
       if (sys.mount === 'side') {
         const gap = sys.sideClearance;
         const y = sd.box.min[1] + sys.axisAboveBox;
-        const carcass = carcassAt(model, meshOf, out + dir * gap, y);
+        const carcass = carcassAt(model, meshOf, out + dir * gap, y, run);
         place(
           viewer,
           carcass,
@@ -77,7 +73,7 @@ export function addSlides(viewer, model, meshOf, drawerHolders) {
       } else if (bottom) {
         const x = out - dir * 9;
         const y = bottom.box.min[1] - 9;
-        const carcass = carcassAt(model, meshOf, out + dir * 5, y);
+        const carcass = carcassAt(model, meshOf, out + dir * 5, y, run);
         place(viewer, carcass, rail(13, 18, len * 0.97, steel), [x, y, zc], run);
       }
     }

@@ -14,11 +14,12 @@ import { esc } from './util.js';
 
 // Sheet mm. The views between x and right, from y (the plan's top; its length dimension over it) down to bottom (over
 // the notes); under a wall's view its module names, chain, overall width and name, over it the wall cabinets' chain.
-const AREA = { x: 46, y: 32, right: 402, bottom: 246 };
+const AREA = { x: 46, y: 32, right: 402, bottom: 244 }; // the notes of a Г or П kitchen may start at 249,6
 const GAP_X = 30; // between two views of a row: the height dimension of the right one
 const UNDER = 31;
 const OVER = 12;
 const CHAR = 1.75; // the width of a digit of the dimension text (2,9 px JetBrains Mono)
+const ROOM_WALL = 150; // the walls of the room in the plan: a hatched band this thick (model mm)
 const TITLES = { left: 'Г-образна кухня', right: 'Г-образна кухня', u: 'П-образна кухня' };
 const LETTERS = { A: 'А', B: 'Б', C: 'В' };
 const ROLE_OUT = new Set([...FRONTS, 'back']);
@@ -84,7 +85,7 @@ function plan(model, all, room, { x: px, y: py, k }) {
   for (const p of world) if (FRONTS.has(p.role) && base(p.module)) g += rect('d-front', p.box);
   for (const t of tops) g += rect('d-out', t.box);
   for (const [name, b] of modules) if (!base(name)) g += rect('d-hid', b);
-  // the swing of every base door: its free edge from closed to 90°, and the door opened
+  // the swing of every base door: its free edge from closed to 90° dotted, the door opened solid
   const byId = new Map(model.parts.map((p) => [p.id, p]));
   for (const d of model.groups.filter((gr) => gr.type === 'door')) {
     const door = byId.get(d.id);
@@ -99,22 +100,35 @@ function plan(model, all, room, { x: px, y: py, k }) {
       return `${X(wx)},${Y(wz)}`;
     };
     const [hx, , hz] = turnPoint([d.axisX, 0, d.axisZ], run);
-    g += `<polyline class="d-open d-swing" points="${[0, 15, 30, 45, 60, 75, 90].map(at).join(' ')}"/><polyline class="d-open" points="${X(hx)},${Y(hz)} ${at(90)}"/>`;
+    g += `<polyline class="d-swing" points="${[0, 15, 30, 45, 60, 75, 90].map(at).join(' ')}"/><polyline class="d-leaf" points="${X(hx)},${Y(hz)} ${at(90)}"/>`;
   }
-  // the walls of the room, their letters outside them, the back wall's length over it, each side wall's reach beside it
-  const runs = new Set(model.runs.map((r) => r.id));
-  const reach = (side) => Math.max(...all.filter((p) => p.run === side).map((p) => p.box.max[2]));
-  g += `<line class="d-wall" x1="${X(0)}" y1="${Y(0)}" x2="${X(room.W)}" y2="${Y(0)}"/>`;
-  g += `<text class="d-vt" x="${X(room.W / 2)}" y="${r2(Y(0) - 2)}" text-anchor="middle">${LETTERS.A}</text>`;
-  g += dimH(X(0), X(room.W), r2(Y(0) - 8), fmt(room.W), { ext: [[X(0), Y(0)], [X(room.W), Y(0)]] });
+  // the walls of the room as hatched bands, their letters outside them, the back wall's length over it; beside each
+  // side wall the corner gap and the length of its cabinets, as its own view gives it
+  const runs = new Map(model.runs.map((r) => [r.id, r]));
+  const band = (x0, z0, x1, z1) => `<rect class="d-wall" fill="url(#HATCH)" x="${X(x0)}" y="${Y(z0)}" width="${r2((x1 - x0) * k)}" height="${r2((z1 - z0) * k)}"/>`;
+  const wl = runs.has('B') ? -ROOM_WALL : 0;
+  const wr = runs.has('C') ? room.W + ROOM_WALL : room.W;
+  g += band(wl, -ROOM_WALL, wr, 0);
+  g += `<text class="d-vt" x="${X(room.W / 2)}" y="${r2(Y(-ROOM_WALL) - 2)}" text-anchor="middle">${LETTERS.A}</text>`;
+  g += dimH(X(0), X(room.W), r2(Y(-ROOM_WALL) - 8), fmt(room.W), { ext: [[X(0), Y(0)], [X(room.W), Y(0)]] });
   for (const [side, wx, out] of [['B', 0, -1], ['C', room.W, 1]]) {
-    if (!runs.has(side)) continue;
-    const z1 = reach(side);
-    g += `<line class="d-wall" x1="${X(wx)}" y1="${Y(0)}" x2="${X(wx)}" y2="${Y(z1)}"/>`;
-    g += `<text class="d-vt" x="${r2(X(wx) + out * 3)}" y="${Y(z1 / 2)}" text-anchor="${out < 0 ? 'end' : 'start'}">${LETTERS[side]}</text>`;
-    g += dimV(Y(0), Y(z1), r2(X(wx) + out * 9), fmt(z1), { ext: [[X(wx), Y(z1)]] });
+    const run = runs.get(side);
+    if (!run) continue;
+    const z1 = Math.max(...all.filter((p) => p.run === side).map((p) => p.box.max[2]));
+    const z0 = z1 - run.length;
+    g += out < 0 ? band(-ROOM_WALL, 0, 0, z1) : band(room.W, 0, room.W + ROOM_WALL, z1);
+    const xo = wx + out * ROOM_WALL;
+    g += `<text class="d-vt" x="${r2(X(xo) + out * 3)}" y="${Y(z1 / 2)}" text-anchor="${out < 0 ? 'end' : 'start'}">${LETTERS[side]}</text>`;
+    const dx = r2(X(xo) + out * 9);
+    g += dimV(Y(0), Y(z0), dx, fmt(z0), { ext: [[X(wx), Y(z0)]] });
+    g += dimV(Y(z0), Y(z1), dx, fmt(run.length), { ext: [[X(wx), Y(z1)]] });
   }
-  g += `<text class="d-vt" x="${X(room.W / 2)}" y="${r2(Y(room.D) + 8)}" text-anchor="middle">План</text>`;
+  const yt = r2(Y(room.D) + 8);
+  g += `<text class="d-vt" x="${X(room.W / 2)}" y="${yt}" text-anchor="middle">План</text>`;
+  // what the two broken lines mean
+  const lx = X(0);
+  g += `<line class="d-hid" x1="${lx}" y1="${r2(yt + 4)}" x2="${r2(lx + 8)}" y2="${r2(yt + 4)}"/><text class="d-small" x="${r2(lx + 10)}" y="${r2(yt + 4.8)}">горни шкафове</text>`;
+  g += `<line class="d-swing" x1="${r2(lx + 42)}" y1="${r2(yt + 4)}" x2="${r2(lx + 50)}" y2="${r2(yt + 4)}"/><text class="d-small" x="${r2(lx + 52)}" y="${r2(yt + 4.8)}">отваряне на вратите</text>`;
   return g;
 }
 
@@ -125,18 +139,20 @@ function elevation({ run, parts, symbols, ext }, { x: ex, ground, k, height }) {
   const Y = (y) => r2(ground - y * k);
   let g = frontView(parts, symbols, X, Y, k);
   g += `<line class="d-gnd" x1="${X(ext.x0) - 6}" y1="${Y(0)}" x2="${X(ext.x1) + 6}" y2="${Y(0)}"/>`;
-  g += dimH(X(ext.x0), X(ext.x1), Y(0) + 20, fmt(ext.x1 - ext.x0), { ext: [[X(ext.x0), Y(0)], [X(ext.x1), Y(0)]] });
+  // the length of the wall's cabinets (the worktop of a side wall reaches past them to the back wall's)
+  const cab = extents(parts, []);
+  g += dimH(X(cab.x0), X(cab.x1), Y(0) + 20, fmt(cab.x1 - cab.x0), { ext: [[X(cab.x0), Y(0)], [X(cab.x1), Y(0)]] });
   if (height) g += dimV(Y(0), Y(ext.y1), X(ext.x0) - 10, fmt(ext.y1), { ext: [[X(ext.x0), Y(ext.y1)], [X(ext.x0), Y(0)]] });
   for (const m of moduleRanges(parts)) {
     const w = fmt(m.x1 - m.x0);
-    const label = w.length * CHAR <= (m.x1 - m.x0) * k - 1 ? w : '';
+    const label = w.length * CHAR <= (m.x1 - m.x0) * k - 2.5 ? w : '';
     const xc = X((m.x0 + m.x1) / 2);
     if (m.row) {
       g += dimH(X(m.x0), X(m.x1), Y(ext.y1) - 9, label, { ext: [[X(m.x0), Y(m.y1)], [X(m.x1), Y(m.y1)]] });
-      g += `<text class="d-small" x="${xc}" y="${r2(Y(m.y1) - 2)}" text-anchor="middle">${esc(m.name)}</text>`;
+      g += `<text class="d-mod" x="${xc}" y="${r2(Y(m.y1) - 2)}" text-anchor="middle">${esc(m.name)}</text>`;
     } else {
       g += dimH(X(m.x0), X(m.x1), Y(0) + 12, label, { ext: [[X(m.x0), Y(m.y0)], [X(m.x1), Y(m.y0)]] });
-      g += `<text class="d-small" x="${xc}" y="${r2(Y(0) + 5.5)}" text-anchor="middle">${esc(m.name)}</text>`;
+      g += `<text class="d-mod" x="${xc}" y="${r2(Y(0) + 5.8)}" text-anchor="middle">${esc(m.name)}</text>`;
     }
   }
   g += `<text class="d-vt" x="${X((ext.x0 + ext.x1) / 2)}" y="${Y(0) + 29}" text-anchor="middle">${esc(run.name)} — изглед</text>`;

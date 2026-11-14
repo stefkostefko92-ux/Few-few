@@ -155,10 +155,19 @@ export function writeForm(form, spec, writeFocused = false) {
     const v = spec[out.dataset.for];
     out.textContent = `${String(v).replace('.', ',')}${out.dataset.unit ? ` ${out.dataset.unit}` : ''}`;
   }
+  // the fields of another choice (a side wall of the kitchen): a screen reader hears what came and went, not the first time
+  const changed = [];
   for (const el of $$('[data-when]', form)) {
     const [key, values] = el.dataset.when.split(':');
-    el.hidden = !values.split(',').includes(String(spec[key]));
+    const hidden = !values.split(',').includes(String(spec[key]));
+    if (el.dataset.whenSeen && el.hidden !== hidden)
+      changed.push(
+        `${hidden ? 'Скрито' : 'Показано'} поле: ${el.querySelector('label')?.textContent ?? ''}`,
+      );
+    el.hidden = hidden;
+    el.dataset.whenSeen = '1';
   }
+  if (changed.length) $('#param-when').textContent = `${changed.join('. ')}.`;
   const ral = spec.frontMaterial === 'ral';
   $('#row-frontDecor').hidden = ral;
   $('#row-frontRal').hidden = !ral;

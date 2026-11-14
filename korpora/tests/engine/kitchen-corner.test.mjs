@@ -26,6 +26,8 @@ const variants = SHAPES.flatMap((shape) => [
   ...[['modulesLeft', 1], ['modulesLeft', 6], ['modulesRight', 1], ['modulesRight', 6], ['modules', 2], ['modules', 6], ['moduleWidth', 400], ['moduleWidth', 900], ['depth', 500], ['depth', 600], ['handle', 'none'], ['handle', 'fx:knob'], ['wallHeight', 900], ['mount', 1350], ['hinge', 'fx:hettich']].map(([k, v]) => ({ type: 'kitchen', shape, [k]: v })),
 ]);
 const label = (s) => Object.entries(s).slice(1).map(([k, v]) => `${k}=${v}`).join(' ');
+// the hinges of the catalogue open to 107–110° (engine/data/hinge-systems.js)
+const HINGE_OPEN = 110;
 
 // The handle of a front as a box in its run: on the face, standing out of it by its projection.
 function handleBox(h) {
@@ -108,7 +110,7 @@ test('every wall has its back to its own wall of the room and its fronts to the 
   }
 });
 
-test('each door opened to 90° and each drawer pulled out clears the other walls — their fronts, handles and worktop', () => {
+test('each door opened as far as its hinges go and each drawer pulled out clears the other walls — fronts, handles, worktop', () => {
   for (const spec of variants) {
     const m = buildModel(spec);
     const others = obstacles(m);
@@ -119,7 +121,7 @@ test('each door opened to 90° and each drawer pulled out clears the other walls
       if (g.type === 'door') {
         const door = byId.get(g.id);
         const proj = m.symbols.find((s) => s.type === 'handle' && s.partId === door.id)?.model?.height ?? 0;
-        for (let deg = 0; deg <= 90; deg += 5) {
+        for (let deg = 0; deg <= HINGE_OPEN; deg += 5) {
           const outline = doorOutline(door, g, run, (deg * Math.PI) / 180, proj);
           const hit = free.find((o) => yMeet(door.box, o.box) && crosses(outline, rect(o.box)));
           assert.ok(!hit, `${label(spec)}: ${door.name} at ${deg}° runs into ${hit?.what}`);
@@ -171,6 +173,25 @@ test('the blind corner cabinet: blind front where the side wall stands, the door
       }
     }
   }
+});
+
+test('next to the corner a side wall has drawers: no door of it swings onto the back wall', () => {
+  for (const spec of variants) {
+    const m = buildModel(spec);
+    for (const r of m.runs.filter((x) => x.id !== 'A')) {
+      const bases = m.parts.filter((p) => p.run === r.id && p.role === 'side' && p.module.startsWith('М'));
+      const atCorner = r.id === 'B' ? Math.max(...bases.map((p) => p.box.max[0])) : Math.min(...bases.map((p) => p.box.min[0]));
+      const mod = bases.find((p) => (r.id === 'B' ? p.box.max[0] : p.box.min[0]) === atCorner).module;
+      assert.ok(m.parts.some((p) => p.module === mod && p.role === 'drawer-front'), `${label(spec)} ${r.id}: ${mod} has drawers`);
+      assert.ok(!m.parts.some((p) => p.module === mod && p.role === 'door'), `${label(spec)} ${r.id}: ${mod} has no door`);
+    }
+  }
+});
+
+test('a worktop longer than the standard 4100 mm gets the note of one more joint', () => {
+  const long = buildModel({ type: 'kitchen', shape: 'u', modules: 6, moduleWidth: 900 });
+  assert.ok(long.warnings.some((w) => w.level === 'info' && /Плотът на стена А е \d+ mm — по-дълъг от 4100 mm/.test(w.text)));
+  assert.ok(!buildModel({ type: 'kitchen', shape: 'left' }).warnings.some((w) => /4100/.test(w.text)));
 });
 
 test('the blind front is a front: front board, banded all round, fixed with brackets, no hinge, no shelf in the corner', () => {

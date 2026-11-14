@@ -4,6 +4,7 @@ import { fmt, errorAlert } from './drawing-kit.js';
 import { decorName, STOCK } from './materials.js';
 import { GROOVE, HDF_T } from './joinery.js';
 import { esc } from './util.js';
+import { cornerGap, cornerHandleRoom } from './kitchen.js';
 
 const HW_KIND = [['hinge:', 'панта'], ['slide:', 'водач'], ['handle:', 'дръжка']];
 const VARIANT_NOTE = { full: ', покрит кант', half: ', полупокрит кант', inset: ', открит кант' };
@@ -14,6 +15,7 @@ export function materialLine(parts) {
 }
 
 export function notes(model) {
+  const corner = Boolean(model.runs?.length);
   const { parts, spec, hardware } = model;
   const front = parts.find((p) => p.role === 'door' || p.role === 'drawer-front' || p.role === 'bed-head');
   const carcass = parts.find((p) => p.role === 'side' || p.role === 'bed-rail');
@@ -31,10 +33,11 @@ export function notes(model) {
   if (has((p) => p.role === 'drawer-bottom')) joints.push(`дъна на чекмеджетата HDF ${HDF_T} mm в канал`);
   if (has((p) => p.role === 'bed-ledger')) joints.push('летви с винтове 4×30, връзки за легло по шаблона на обкова');
   if (kinds.has('stack-pilot')) joints.push('горният корпус — с винтове 4×30 към долния');
-  if (kinds.has('blind-fix')) joints.push('слепите фронтове — с ъглови планки отвътре, винтовете на място');
-  if (hardware.some((h) => h.key === 'worktopBolts')) joints.push('плотът — на парчета по стените, с болтове в ъглите');
   if (spec.type === 'desk') joints.push('плотът — с метални ъгълчета към страниците');
   if (joints.length) lines.push(`Съединения: ${joints.join(', ')}.`);
+  // a Г or П kitchen: what the corner needs on site
+  if (corner)
+    lines.push(`Ъгъл: лайсна ${fmt(cornerGap(spec))} mm — дръжките до ${fmt(cornerHandleRoom(spec))} mm над фронта; слепият фронт — първо планките на гърба му по маркировките, после винтовете в дъното и траверсата; плотът — по парче на стена, задното минава през ъгъла, гнездата за болтовете се фрезоват отдолу по шаблон.`);
   // hinges, slides and handles in short: the article where the shop gives one; everything is in hardware.csv
   const named = hardware
     .map((h) => ({ h, kind: HW_KIND.find(([prefix]) => h.key.startsWith(prefix))?.[1] }))
@@ -45,8 +48,12 @@ export function notes(model) {
     });
   if (named.length) lines.push(`Обков: ${named.join('; ')} — пълният списък е в hardware.csv.`);
   const rows = lines.flatMap((t) => wrap(t));
-  if (rows.length > 6) rows.splice(5, rows.length - 5, `${rows[5].slice(0, 120)}…`);
-  return rows.map((t, i) => `<text class="d-note" x="30" y="${258 + i * 4.2}">${esc(t)}</text>`).join('') + errorAlert(model, 30, 258 + rows.length * 4.2);
+  // a Г or П kitchen has one more line: the space under its plan and views allows it
+  const max = corner ? 8 : 6;
+  if (rows.length > max) rows.splice(max - 1, rows.length - max + 1, `${rows[max - 1].slice(0, 120)}…`);
+  // past six rows the notes start higher (the views of a Г or П kitchen end over them, drawing-walls.js)
+  const top = 258 - 4.2 * Math.max(0, rows.length - 6);
+  return rows.map((t, i) => `<text class="d-note" x="30" y="${top + i * 4.2}">${esc(t)}</text>`).join('') + errorAlert(model, 30, top + rows.length * 4.2);
 }
 
 // A note longer than the space left of the title block goes on to the next line, broken after a comma.

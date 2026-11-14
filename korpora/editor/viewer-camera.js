@@ -16,9 +16,15 @@ export function frameCamera(camera, controls, ext, explode) {
   const radius = Math.hypot(W, H, D) * 0.5;
   const vHalf = THREE.MathUtils.degToRad(camera.fov / 2);
   const hHalf = Math.atan(Math.tan(vHalf) * Math.max(camera.aspect, 0.2));
-  const dist = (radius / Math.sin(Math.min(vHalf, hHalf))) * 1.06 * explodeZoom(explode);
   const dir = new THREE.Vector3(0.62, 0.42, 1).normalize();
   controls.target.set(0, y0 + H / 2, 0);
+  // the sphere around the furniture, and every corner of its box in view: the wing of a Г or П kitchen nearest the
+  // camera is larger in perspective than the sphere allows for
+  const fit = Math.max(
+    radius / Math.sin(Math.min(vHalf, hHalf)),
+    boxDistance(W, H, D, dir, vHalf, hHalf),
+  );
+  const dist = fit * 1.06 * explodeZoom(explode);
   camera.position.copy(controls.target).addScaledVector(dir, dist);
   camera.near = dist / 60;
   camera.far = dist * 20;
@@ -26,6 +32,28 @@ export function frameCamera(camera, controls, ext, explode) {
   controls.minDistance = radius * 0.5;
   controls.maxDistance = dist * 3;
   controls.update();
+}
+
+// The least distance along dir from the box's centre at which all its corners are inside the view: a corner v (from the
+// centre) stands at depth d − v·dir in front of the camera and must be within its half-angles there.
+function boxDistance(W, H, D, dir, vHalf, hHalf) {
+  const right = new THREE.Vector3()
+    .crossVectors(dir.clone().negate(), new THREE.Vector3(0, 1, 0))
+    .normalize();
+  const up = new THREE.Vector3().crossVectors(right, dir.clone().negate());
+  let d = 0;
+  for (const x of [-W / 2, W / 2])
+    for (const y of [-H / 2, H / 2])
+      for (const z of [-D / 2, D / 2]) {
+        const v = new THREE.Vector3(x, y, z);
+        const ahead = v.dot(dir);
+        d = Math.max(
+          d,
+          ahead + Math.abs(v.dot(right)) / Math.tan(hHalf),
+          ahead + Math.abs(v.dot(up)) / Math.tan(vHalf),
+        );
+      }
+  return d;
 }
 
 // From one explode to another the camera keeps its direction and steps back or in with the assembly.
