@@ -14,13 +14,13 @@ test.describe("lobby/room flow", () => {
     const guest = await guestCtx.newPage();
 
     // Host creates a public Chess room.
-    await host.goto("/rooms");
+    await host.goto("rooms");
     await host.getByRole("combobox").first().selectOption("CHESS");
     await host.getByRole("button", { name: "Създай" }).click();
     await expect(host.getByRole("heading", { name: /стая/ })).toBeVisible();
 
     // Guest browses the public list and joins.
-    await guest.goto("/rooms");
+    await guest.goto("rooms");
     await guest.getByRole("button", { name: "Влез" }).first().click();
     await expect(guest.getByRole("heading", { name: /стая/ })).toBeVisible();
 
@@ -42,7 +42,7 @@ test.describe("lobby/room flow", () => {
     const host = await hostCtx.newPage();
 
     // Магнат rooms allow 2–6 seats; the host adds a bot to reach the minimum.
-    await host.goto("/rooms");
+    await host.goto("rooms");
     await host.getByRole("combobox").first().selectOption("MAGNAT");
     await host.getByRole("button", { name: "Създай" }).click();
     await expect(host.getByRole("heading", { name: /стая/ })).toBeVisible();

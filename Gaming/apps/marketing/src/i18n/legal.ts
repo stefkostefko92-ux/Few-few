@@ -285,7 +285,7 @@ export const LEGAL: Record<Locale, LegalDict> = {
           type: "ul",
           items: [
             "**Напомняне за време в играта** — на всеки 30, 60 или 120 минути (или изключено) ти показваме „Играете от X мин“ с бутони „Почивка“ и „Продължи“.",
-            "**Дневен лимит на сесията** — по избор; когато го достигнеш, ти напомняме, че е добър момент за почивка.",
+            "**Дневен лимит за игра** — по избор (30 мин до 6 ч). Броим минутите в мачове; щом стигнеш лимита, нови маси и опашки се затварят до полунощ (софийско време), а започнатият мач се доиграва. По-нисък лимит важи веднага, а по-висок или махането му — след 24 часа.",
             "**Самоизключване** — за 24 часа, 7 дни, 30 дни или 6 месеца. През това време не можеш да сядаш на маса, да влизаш в опашка или да купуваш в магазина. Самоизключването не може да се отмени преди изтичане — това е умишлено, за да е истинска пауза.",
           ],
         },
@@ -549,7 +549,7 @@ export const LEGAL: Record<Locale, LegalDict> = {
           type: "ul",
           items: [
             "**Play-time reminder** — every 30, 60 or 120 minutes (or off) we show “You've been playing for X min” with “Take a break” and “Continue” buttons.",
-            "**Daily session limit** — optional; when you reach it, we remind you that it's a good moment for a break.",
+            "**Daily play limit** — optional (30 min to 6 h). We count your minutes in matches; once you reach the limit, new tables and queues close until midnight (Sofia time), and a match you've started is played out. A lower limit applies at once; a higher one or removing it takes effect after 24 hours.",
             "**Self-exclusion** — for 24 hours, 7 days, 30 days or 6 months. During that time you can't sit at a table, join a queue or buy in the shop. Self-exclusion can't be undone before it ends — on purpose, so the pause is real.",
           ],
         },
@@ -814,7 +814,7 @@ export const LEGAL: Record<Locale, LegalDict> = {
           type: "ul",
           items: [
             "**Promemoria del tempo di gioco** — ogni 30, 60 o 120 minuti (o disattivato) mostriamo «Stai giocando da X min» con i pulsanti «Pausa» e «Continua».",
-            "**Limite giornaliero di sessione** — facoltativo; quando lo raggiungi, ti ricordiamo che è un buon momento per una pausa.",
+            "**Limite di gioco giornaliero** — facoltativo (da 30 min a 6 h). Contiamo i minuti in partita; raggiunto il limite, nuovi tavoli e code si chiudono fino a mezzanotte (ora di Sofia) e la partita già iniziata si porta a termine. Un limite più basso vale subito; uno più alto o la sua rimozione dopo 24 ore.",
             "**Autoesclusione** — per 24 ore, 7 giorni, 30 giorni o 6 mesi. In questo periodo non puoi sederti a un tavolo, entrare in coda né acquistare nel negozio. L'autoesclusione non può essere annullata prima della scadenza — di proposito, perché la pausa sia vera.",
           ],
         },

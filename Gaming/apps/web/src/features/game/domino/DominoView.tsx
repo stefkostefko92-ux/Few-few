@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../../lib/store";
-import { Button, cn } from "../../../ui";
+import { Button } from "../../../ui";
 import { playCue } from "../../../lib/sound";
 import { useMatch } from "../useMatch";
+import { useSendOnce } from "../useSendOnce";
+import { seatNames } from "../seatNames";
 import { useGameEvents } from "../useGameEvents";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene, ScorePill } from "../scene/SceneShell";
+import { DecisionPrompt } from "../scene/DecisionPrompt";
 import { FeltTable } from "../table/FeltTable";
 import { DominoTile } from "./DominoTile";
 import "./domino.css";
@@ -83,7 +86,12 @@ export function DominoView({ title }: { title: string }) {
   const m = useMatch<DominoState, DominoAction>("DOMINO");
   const { state, legal, seat, phase, result, players } = m;
 
-  const nameFor = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
+  // Three bots share the name „АСО Бот“ — number them so the table reads.
+  const names = useMemo(() => seatNames(players), [players]);
+  const nameFor = (s: number) => names(s) ?? `#${s}`;
+  // One move per state: a double click on a tile/„Тегли“ sent a second action
+  // that the server refused („Невалиден ход“).
+  const send = useSendOnce(state, m.send);
 
   // Opponent-visible action announcements.
   const { banners } = useGameAnnouncements({
@@ -112,7 +120,10 @@ export function DominoView({ title }: { title: string }) {
       return null;
     },
   });
-  const [side, setSide] = useState<"L" | "R">("R");
+  // Плочка, която пасва и в двата края → прозорец „В кой край?“ (`ask` прави
+  // всяко ново питане ново решение, дори за същата плочка след „Друга плочка“).
+  const [pendingTile, setPendingTile] = useState<string | null>(null);
+  const [ask, setAsk] = useState(0);
 
   // Round-end pause: GAME_EVENTS arrive before the redealt state, so on ROUND
   // we snapshot the finished table (plus the winning tile) and keep showing it
@@ -170,20 +181,42 @@ export function DominoView({ title }: { title: string }) {
   // Orientation of the played line ([left,right] pips per tile).
   const oriented = useMemo(() => orientLine(view?.line ?? []), [view?.line]);
 
+  function playOn(tile: string, side: "L" | "R") {
+    setPendingTile(null);
+    if (send({ type: "PLAY", tile, side })) playCue("flip");
+  }
   function playTile(tile: string) {
     const sides = playsByTile.get(tile);
     if (!sides) return;
-    const chosen = sides.has(side) ? side : [...sides][0]!;
-    playCue("flip");
-    m.send({ type: "PLAY", tile, side: chosen });
+    const ends = view?.ends;
+    // Изборът има смисъл само при два различни края; при еднакви резултатът е
+    // един и същ, а при един възможен край — няма какво да се пита.
+    if (sides.size > 1 && ends && ends[0] !== ends[1]) {
+      setAsk((n) => n + 1);
+      setPendingTile(tile);
+      return;
+    }
+    playOn(tile, sides.has("R") ? "R" : [...sides][0]!);
   }
+  // Ходът мина (или часовникът изигра вместо мен) → старото питане отпада.
+  useEffect(() => {
+    if (!myTurn) setPendingTile(null);
+  }, [myTurn]);
+  const sideOpen = myTurn && pendingTile !== null && (playsByTile.get(pendingTile)?.size ?? 0) > 1;
+  const stuck = myTurn && playsByTile.size === 0 && (!!drawAction || !!passAction);
 
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
       <Announcements banners={banners} fixed />
       {view ? (
         <FeltTable crest="🁫" feltColor="#1f5a3e" feltDark="#0c2c1f">
-        <div className="dom-layout">
+        <div
+          className="dom-layout"
+          data-testid="domino-table"
+          data-frozen={frozen ? "true" : "false"}
+          data-round={view.roundNo ?? 1}
+          data-boneyard={view.boneyard.length}
+        >
           {/* Opponents (tile counts). */}
           <div className="flex flex-wrap justify-center gap-3">
             {[0, 1, 2, 3]
@@ -200,7 +233,7 @@ export function DominoView({ title }: { title: string }) {
 
           {/* The played line, oriented so touching halves match (doubles sit
               crosswise, as on a real table). */}
-          <div className="dom-line">
+          <div className="dom-line" data-testid="domino-line" data-ends={view.ends ? view.ends.join(" ") : ""}>
             {view.line.length === 0 ? (
               <span className="text-sm text-ink-muted">{t("domino.empty")}</span>
             ) : (
@@ -220,45 +253,14 @@ export function DominoView({ title }: { title: string }) {
             )}
           </div>
 
-          {/* Side selector + draw/pass (hidden while the round-end table is frozen). */}
-          <div className="dom-controls">
-            {view.ends && !frozen ? (
-              <div className="dom-side-toggle" role="group" aria-label={t("domino.side")}>
-                <button
-                  type="button"
-                  className={cn("dom-side-btn", side === "L" && "dom-side-btn--on")}
-                  onClick={() => setSide("L")}
-                >
-                  ◀ {view.ends[0]}
-                </button>
-                <button
-                  type="button"
-                  className={cn("dom-side-btn", side === "R" && "dom-side-btn--on")}
-                  onClick={() => setSide("R")}
-                >
-                  {view.ends[1]} ▶
-                </button>
-              </div>
-            ) : null}
-            {drawAction && !frozen ? (
-              <Button variant="felt" disabled={!myTurn} onClick={() => { playCue("flip"); m.send(drawAction); }}>
-                {t("domino.draw")} ({view.boneyard.length})
-              </Button>
-            ) : null}
-            {passAction && !frozen ? (
-              <Button variant="ghost" disabled={!myTurn} onClick={() => m.send(passAction)}>
-                {t("domino.pass")}
-              </Button>
-            ) : null}
-          </div>
-
           {/* My hand. */}
-          <div className="dom-hand">
+          <div className="dom-hand" data-testid="domino-hand">
             {(view.hands[seat] ?? []).map((tile) => (
               <DominoTile
                 key={tile}
                 tile={tile}
                 vertical
+                data-sides={myTurn ? [...(playsByTile.get(tile) ?? [])].join(" ") : ""}
                 playable={myTurn && playsByTile.has(tile)}
                 onClick={myTurn && playsByTile.has(tile) ? () => playTile(tile) : undefined}
               />
@@ -296,6 +298,65 @@ export function DominoView({ title }: { title: string }) {
         </div>
         </FeltTable>
       ) : null}
+
+      {/* В кой край — само когато плочката пасва и в двата (различни) края. */}
+      <DecisionPrompt
+        open={sideOpen && phase === "playing"}
+        promptKey={`side-${ask}-${pendingTile ?? ""}`}
+        title={t("domino.whichEnd")}
+        hint={
+          pendingTile ? (
+            <span className="dom-decide-hint">
+              <DominoTile tile={pendingTile} />
+              <span>{t("domino.fitsBoth")}</span>
+            </span>
+          ) : null
+        }
+        placement="top"
+        optional={{ label: t("domino.otherTile"), onSkip: () => setPendingTile(null) }}
+        testId="domino-side"
+      >
+        {pendingTile && view?.ends ? (
+          <div className="dom-ends" role="group" aria-label={t("domino.side")}>
+            <button type="button" className="dom-end-btn" data-side="L" onClick={() => playOn(pendingTile, "L")}>
+              <span aria-hidden="true">◀</span> {t("domino.leftEnd")} <b className="tnum">{view.ends[0]}</b>
+            </button>
+            <button type="button" className="dom-end-btn" data-side="R" onClick={() => playOn(pendingTile, "R")}>
+              {t("domino.rightEnd")} <b className="tnum">{view.ends[1]}</b> <span aria-hidden="true">▶</span>
+            </button>
+          </div>
+        ) : null}
+      </DecisionPrompt>
+
+      {/* Нищо не пасва: теглене от казана, а при празен казан — пас. */}
+      <DecisionPrompt
+        open={stuck && phase === "playing"}
+        promptKey={`stuck-${view?.roundNo ?? 1}-${view?.line.length ?? 0}-${view?.hands[seat]?.length ?? 0}-${view?.boneyard.length ?? 0}`}
+        title={t("domino.nothingFits")}
+        hint={
+          drawAction
+            ? t("domino.drawHint", { left: view?.ends?.[0] ?? "", right: view?.ends?.[1] ?? "", n: view?.boneyard.length ?? 0 })
+            : t("domino.passHint")
+        }
+        placement="top"
+        testId="domino-stuck"
+      >
+        {drawAction ? (
+          <Button
+            data-domino-action="DRAW"
+            onClick={() => {
+              if (send(drawAction)) playCue("flip");
+            }}
+          >
+            {t("domino.draw")} ({view?.boneyard.length ?? 0})
+          </Button>
+        ) : null}
+        {passAction ? (
+          <Button data-domino-action="PASS" onClick={() => send(passAction)}>
+            {t("domino.pass")}
+          </Button>
+        ) : null}
+      </DecisionPrompt>
     </Scene>
   );
 }

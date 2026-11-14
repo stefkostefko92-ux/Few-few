@@ -24,12 +24,13 @@ const kFactor = (games: number): number => (games < 30 ? 40 : 20);
 const numericResult = (r: SeatScore["result"]): number =>
   r === "win" ? 1 : r === "draw" ? 0.5 : 0;
 
-/** Base flat reward, then scaled by result magnitude for games that report one
- *  (backgammon gammon=2 / backgammon=3, belote capot, etc.) so a bigger win
- *  actually pays more. `points` is clamped to a sane 1–3× so it can never blow
- *  up the economy. Betting games settle a wallet stake instead (see below). */
-const rewards = (r: SeatScore["result"], points?: number): { chips: bigint; xp: number } => {
-  const mult = r === "win" ? Math.min(Math.max(Math.round(points ?? 1), 1), 3) : 1;
+/** Base flat reward, scaled only by an engine's explicit win `margin` (1–3×).
+ *  It used to read `points`, which is each game's OWN score (Сантасе match
+ *  points, Домино's 100+, Риба's books, snooker frame points…): a win in those
+ *  games always paid ×3, in chess or belote ×1. Betting games settle a wallet
+ *  stake instead (see below). */
+export const rewards = (r: SeatScore["result"], margin?: number): { chips: bigint; xp: number } => {
+  const mult = r === "win" ? Math.min(Math.max(Math.round(margin ?? 1), 1), 3) : 1;
   return r === "win"
     ? { chips: BigInt(25 * mult), xp: 10 * mult }
     : r === "draw"
@@ -82,6 +83,7 @@ export async function finalizeMatch(opts: {
 
   const betting = isBettingGame(game);
   const pointsBySeat = new Map<number, number>(score.map((s) => [s.seat, s.points ?? 0]));
+  const marginBySeat = new Map<number, number | undefined>(score.map((s) => [s.seat, s.margin]));
 
   await prisma.$transaction(async (tx) => {
     // Idempotency: atomically claim the match by stamping endedAt only if it
@@ -149,7 +151,7 @@ export async function finalizeMatch(opts: {
         chipsDelta = BigInt(walletDelta);
         xp = result === "win" ? 12 : 6; // wagering a table earns more base XP
       } else {
-        const reward = rewards(result, pointsBySeat.get(seat.seat));
+        const reward = rewards(result, marginBySeat.get(seat.seat));
         chipsDelta = reward.chips;
         xp = reward.xp;
       }

@@ -37,6 +37,8 @@ import {
 import { BOARD, GROUP_COLORS, BOARD_SIZE, type MagnatState } from "@aso/shared";
 import { RenderCore } from "../gl/render.js";
 import { defaultGfxParams } from "../gl/gfxRegistry.js";
+import { magnatGfx } from "./gfx.js";
+import { advanceWalk, frameDt } from "./anim.js";
 
 /** Recursively free a subtree's GPU resources (geometries, materials, textures). */
 function disposeObject(root: Object3D): void {
@@ -65,7 +67,6 @@ const T = 2; // tile pitch
 const H = 5 * T; // board half-size
 const RING_DEPTH = T * 1.7;
 const SCENE_RATIO = 0.66;
-const HOP_MS = 145; // per-tile token hop
 const HOP_H = 0.7; // hop arc height
 const DICE_MS = 760; // dice tumble
 const POP_MS = 340; // house build pop-in
@@ -430,8 +431,10 @@ export class MagnatScene {
   // Рейвънхолд: средновековните сгради (buildings.ts) делят едни материали за цялата сцена.
   private kit = new BuildingKit(() => this.core?.invalidate());
   private houseKey: string[] = new Array(BOARD_SIZE).fill("");
+  private readonly canvasEl: HTMLCanvasElement;
 
   constructor(canvas: HTMLCanvasElement, width: number) {
+    this.canvasEl = canvas;
     this.maxAniso = 8; // per-device cap is applied automatically by the renderer
     this.reduceMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
     // opaque felt background (post-processing doesn't carry CSS transparency)
@@ -463,12 +466,7 @@ export class MagnatScene {
 
     this.build();
 
-    const params = defaultGfxParams();
-    params.exposure = 1.08;
-    // 1.35 sits just above the lit ivory tiles' HDR luminance (~1.3) — below it
-    // the whole ring washes out. Windows at emissive 2.2 still burn through.
-    params.bloom = { enabled: true, strength: 0.06, radius: 0.45, threshold: 1.35 };
-    params.ao = { enabled: true, radius: 0.6, intensity: 1.0 };
+    const params = magnatGfx(defaultGfxParams());
     this.core = new RenderCore({
       canvas,
       scene: this.scene,
@@ -483,7 +481,7 @@ export class MagnatScene {
   /** Per-frame hook from RenderCore: token hops, dice tumble, house pop-ins. */
   private frame(): boolean {
     const now = performance.now();
-    const dt = this.lastFrame ? Math.min(now - this.lastFrame, 50) : 16;
+    const dt = frameDt(now, this.lastFrame); // по стенния часовник (anim.ts)
     this.lastFrame = now;
     let active = false;
 
@@ -492,20 +490,16 @@ export class MagnatScene {
       if (!w) {
         const target = this.tokenTarget[seat];
         if (target && g.position.distanceToSquared(target) > 1e-5) {
-          g.position.lerp(target, 0.2);
+          g.position.lerp(target, 1 - 0.8 ** (dt / 16)); // 0.2 на кадър при 60 fps
           active = true;
         }
         return;
       }
       active = true;
-      w.t += dt / HOP_MS;
-      while (w.t >= 1 && w.seg < w.pts.length - 1) {
-        w.seg += 1;
-        w.t -= 1;
-      }
+      const done = advanceWalk(w, w.pts.length, dt);
       const to = w.pts[w.seg]!;
       const from = w.seg === 0 ? w.from : w.pts[w.seg - 1]!;
-      if (w.seg >= w.pts.length - 1 && w.t >= 1) {
+      if (done) {
         g.position.copy(to);
         this.walks[seat] = null;
       } else {
@@ -856,6 +850,21 @@ export class MagnatScene {
 
   resize(width: number): void {
     this.core.setSize(width);
+  }
+
+  /** Къде на платното (клиентски координати) е пулът на `seat` — за тестовата
+   *  кука `window.__asoE2E.magnat` (само под автоматизиран браузър). */
+  tokenClientPos(seat: number): { x: number; y: number } | null {
+    const g = this.tokens[seat];
+    if (!g || !g.visible) return null;
+    const v = g.position.clone().project(this.camera);
+    const r = this.canvasEl.getBoundingClientRect();
+    return { x: r.left + ((v.x + 1) / 2) * r.width, y: r.top + ((1 - v.y) / 2) * r.height };
+  }
+
+  /** Зарове или пулове още се движат. */
+  isAnimating(): boolean {
+    return this.diceAnim !== null || this.walks.some((w) => w !== null) || this.housePops.length > 0;
   }
 
   destroy(): void {

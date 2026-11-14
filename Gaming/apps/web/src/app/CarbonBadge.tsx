@@ -1,3 +1,4 @@
+import { useLocation } from "react-router-dom";
 import { BRAND } from "@aso/shared";
 
 /**
@@ -5,6 +6,10 @@ import { BRAND } from "@aso/shared";
  * Sits above all content but stays unobtrusive; opens in a new tab.
  */
 export function CarbonBadge() {
+  // A game fills the screen: a floating layer over it would cover the hand or
+  // the controls (and swallow their clicks). The footer still carries both.
+  const onTable = useLocation().pathname.startsWith("/play/");
+  if (onTable) return null;
   return (
     <a
       href={BRAND.attributionUrl}

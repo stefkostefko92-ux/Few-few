@@ -14,6 +14,10 @@ export interface PlayingCardProps {
   selected?: boolean;
   dimmed?: boolean;
   onClick?: () => void;
+  /** Stay a <button> (disabled while there is no onClick) — for cards whose
+   *  playability flips every turn. Switching between <div> and <button>
+   *  remounted the card and replayed its deal-in hop at every turn change. */
+  interactive?: boolean;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -56,6 +60,7 @@ export const PlayingCard = memo(function PlayingCard({
   selected,
   dimmed,
   onClick,
+  interactive,
   className,
   style,
 }: PlayingCardProps) {
@@ -69,7 +74,8 @@ export const PlayingCard = memo(function PlayingCard({
   const suit = (card[card.length - 1] ?? "S") as SuitChar;
   const rank = card.slice(0, card.length - 1);
   const color = faceDown ? "transparent" : SUIT_COLOR[suit];
-  const Tag = onClick ? "button" : "div";
+  const isButton = !!onClick || !!interactive;
+  const Tag = isButton ? "button" : "div";
 
   const isCourt = rank === "J" || rank === "Q" || rank === "K";
   const isAce = rank === "A";
@@ -77,7 +83,8 @@ export const PlayingCard = memo(function PlayingCard({
 
   return (
     <Tag
-      type={onClick ? "button" : undefined}
+      type={isButton ? "button" : undefined}
+      disabled={isButton && !onClick ? true : undefined}
       onClick={onClick}
       aria-label={faceDown ? t("a11y.card") : `${RANK_LABEL[rank]}${suit}`}
       className={cn("aso-card", selected && "aso-card--selected", className)}
@@ -88,6 +95,10 @@ export const PlayingCard = memo(function PlayingCard({
       }}
       data-size={size}
       data-dimmed={dimmed ? "true" : undefined}
+      // Stable hooks for tests/tooling: the card id (never for a face-down card)
+      // and whether it is clickable right now.
+      data-card={faceDown ? undefined : card}
+      data-playable={onClick ? "true" : undefined}
     >
       {faceDown ? (
         <span

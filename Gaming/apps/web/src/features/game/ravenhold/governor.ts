@@ -64,6 +64,77 @@ export function createGovernor({
   };
 }
 
+/**
+ * Безнадеждно бавно рисуване (софтуерен WebGL, претоварен GPU): `frames`
+ * поредни кадъра, всеки по-бавен от `slowMs`, след загряване `warmupMs` — или
+ * два поредни кадъра над `hopelessMs` още в загряването (смяната на раздела е
+ * един дълъг кадър, не два).
+ * Управителят по-горе нарочно пропуска кадри над 250 ms (смяна на раздела),
+ * затова при постоянно бавен рендер не реагираше никога — а анимираната зала и
+ * празното прерисуване на 3D дъските замразяваха цялата страница (всеки клик
+ * чакаше секунди и часовникът на хода изтичаше). Решението е лепкаво.
+ */
+export interface StallDetector {
+  readonly stalled: boolean;
+  reset(nowMs: number): void;
+  /** Подай момента на кадъра; връща true, щом рисуването е обявено за безнадеждно. */
+  tick(nowMs: number): boolean;
+}
+
+export function createStallDetector({
+  slowMs = 250,
+  frames = 6,
+  warmupMs = 3000,
+  hopelessMs = 1000,
+}: { slowMs?: number; frames?: number; warmupMs?: number; hopelessMs?: number } = {}): StallDetector {
+  let since = 0;
+  let last = 0;
+  let run = 0;
+  let hopeless = 0;
+  let stalled = false;
+  return {
+    get stalled() {
+      return stalled;
+    },
+    reset(nowMs) {
+      since = nowMs;
+      last = 0;
+      run = 0;
+      hopeless = 0;
+      stalled = false;
+    },
+    tick(nowMs) {
+      if (stalled) return true;
+      const dt = last ? nowMs - last : 0;
+      last = nowMs;
+      hopeless = dt > hopelessMs ? hopeless + 1 : 0;
+      if (hopeless >= 2) stalled = true;
+      if (stalled || nowMs - since < warmupMs) return stalled;
+      run = dt > slowMs ? run + 1 : 0;
+      if (run >= frames) stalled = true;
+      return stalled;
+    },
+  };
+}
+
+/**
+ * Да рисува ли 3D ядрото този кадър. Нормално: при движение или промяна веднага,
+ * иначе на празен ход през `idleMs`. При безнадеждно бавен рендер — само при
+ * промяна и не по-често от max(1 s, 2× цената на последния кадър): иначе ходовете
+ * на ботовете (по-чести от един кадър) държаха главната нишка заета без край.
+ */
+export function shouldRender(o: {
+  now: number;
+  lastAt: number;
+  lastCost: number;
+  force: boolean;
+  stalled: boolean;
+  idleMs: number;
+}): boolean {
+  if (!o.stalled) return o.force || o.now - o.lastAt >= o.idleMs;
+  return o.force && o.now - o.lastAt >= Math.max(1000, 2 * o.lastCost);
+}
+
 /** Phones and small screens start light; the governor refines from there. */
 export function initialPixelCap(coarsePointer: boolean, shortestSide: number): number {
   return coarsePointer || shortestSide < 700 ? 0.5 : 0.75;
