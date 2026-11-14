@@ -15,6 +15,7 @@ import {
   withdrawalOutcomeOf,
 } from '../../plans/withdrawal.js';
 import { UNVERIFIED_RETENTION_DAYS } from '../../retention.js';
+import { auditLines } from '../../services/admin-audit-view.js';
 import { createAccount } from '../../services/admin-create.js';
 import { rejectRequest } from '../../services/admin-plan.js';
 import { buildExport, contentDisposition } from '../../services/exports.js';
@@ -112,8 +113,10 @@ manageRouter.get('/admin/audit', requireStaff('audit:view'), async (req, res) =>
     // един ред отгоре — така се знае дали има следваща страница, без празна страница накрая
     take: AUDIT_PAGE + 1,
   });
+  const page = rows.slice(0, AUDIT_PAGE);
   res.render('admin/audit', {
-    rows: rows.slice(0, AUDIT_PAGE),
+    // думи вместо кодове, имейли вместо id — само за показ (services/admin-audit-view.ts)
+    rows: await auditLines(page, res.locals.t, res.locals.fmt),
     hasMore: rows.length > AUDIT_PAGE,
     chain: await verifyAuditChain(),
     action,

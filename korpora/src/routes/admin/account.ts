@@ -2,18 +2,21 @@ import { Router } from 'express';
 import { renderError, requireStaff } from '../../auth/guards.js';
 import { assignableRoles, can, outranks } from '../../auth/rbac.js';
 import { remainingRecoveryCodes } from '../../auth/recovery.js';
-import { idParam, stringField } from '../../http/meta.js';
+import { idParam, rawField, requestMeta, stringField } from '../../http/meta.js';
+import { BAN_WARNING_DAYS } from '../../plans/ban.js';
 import { planView } from '../../plans/plan.js';
 import { optionPriceCents, priceTable } from '../../plans/pricing.js';
 import { paidStartAllowedFrom } from '../../plans/withdrawal.js';
+import { ordersKeptText } from '../../retention.js';
 import { accountDetail } from '../../services/admin-accounts.js';
+import { auditLines } from '../../services/admin-audit-view.js';
 import {
   accountAudit,
   accountIpSummary,
   accountLogins,
   linkedAccounts,
 } from '../../services/admin-insights.js';
-import { changeRole, editAccount } from '../../services/admin-actions.js';
+import { changeRole, editAccount, grantOwner } from '../../services/admin-actions.js';
 import { ADMIN_LIMITS } from '../../services/admin-limits.js';
 import { changePlan } from '../../services/admin-plan.js';
 import {
@@ -54,7 +57,7 @@ accountAdminRouter.get('/admin/accounts/:id', requireStaff('accounts:view'), asy
     logins,
     ips,
     linked,
-    audit,
+    audit: await auditLines(audit, res.locals.t, res.locals.fmt),
     recoveryLeft,
     showLogins,
     request,
@@ -62,6 +65,12 @@ accountAdminRouter.get('/admin/accounts/:id', requireStaff('accounts:view'), asy
     lifetimeCents: optionPriceCents('lifetime'),
     manageable: account.id !== actor.id && outranks(actor.role, account.role),
     roles: assignableRoles(actor.role),
+    // ролята „Собственик“ дава само собственик — с паролата и кода си (grantOwner)
+    canGrantOwner: actor.role === 'OWNER',
+    // срокът за поръчките на изтрития акаунт — от кода, както в политиката (решение 6 на собственика)
+    ordersKept: ordersKeptText(res.locals.t),
+    // предупреждението преди блокиране за поправимо нарушение — срокът от общите условия (plans/ban.ts)
+    banWarning: res.locals.t('common.days', { n: BAN_WARNING_DAYS }),
     now: new Date(),
   });
 });
@@ -94,6 +103,21 @@ accountAdminRouter.post(
       'flash.roleChanged',
       path(id),
     );
+  },
+);
+
+accountAdminRouter.post(
+  '/admin/accounts/:id/owner',
+  requireStaff('staff:manage'),
+  async (req, res) => {
+    const id = idParam(req);
+    const result = await grantOwner(
+      staffActor(req),
+      id,
+      { password: rawField(req.body, 'password'), code: stringField(req.body, 'code', 20) },
+      requestMeta(req),
+    );
+    finish(res, result, 'flash.roleChanged', path(id));
   },
 );
 
@@ -149,6 +173,7 @@ accountAdminRouter.post(
       res,
       await unbanAccount(staffActor(req), id, {
         note: stringField(req.body, 'note', ADMIN_LIMITS.noteMax),
+        mistake: bool(req.body, 'mistake'),
       }),
       'flash.unbanned',
       path(id),

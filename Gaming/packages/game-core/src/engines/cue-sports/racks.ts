@@ -74,7 +74,7 @@ export const SNOOKER_SPOTS: Record<number, [number, number]> = {
 };
 
 export function rackSnooker(): Ball[] {
-  const out: Ball[] = [ball(0, 0.42, MID_Y - 0.18)]; // cue starts in the "D"
+  const out: Ball[] = [ball(0, 0.38, MID_Y - 0.12)]; // бялата започва вътре в „D“ (разбиване от ръка)
   for (const id of SNOOKER_COLOURS) {
     const [x, y] = SNOOKER_SPOTS[id]!;
     out.push(ball(id, x, y));

@@ -43,6 +43,8 @@ export interface LineupItem {
   x0: number;
   width: number;
   height: number;
+  /** Къде в изгледа (от горния ръб на реда) започва този предмет — по-ниските се изрязват отгоре, без празно място. */
+  top: number;
 }
 
 export interface LineupGroup {
@@ -142,6 +144,7 @@ export function furnitureLineup(): LineupGroup[] {
         x0: ext.x0,
         width: ext.x1 - ext.x0,
         height: ext.y1 - ext.y0,
+        top: rowHeight - ext.y1,
       })),
     };
   });

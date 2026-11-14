@@ -33,6 +33,7 @@ import {
 } from '@/app/actions/referral';
 import {
   canWithdraw,
+  payoutProgressPercent,
   REFERRAL_MIN_PAYOUT_CENTS,
 } from '@/lib/referral';
 import {
@@ -2291,13 +2292,8 @@ export default async function DashboardPage({
                       credit: `€${(user.referralCreditCents / 100).toFixed(2)}`,
                     }}
                     payout={{
-                      progressPercent: Math.min(
-                        100,
-                        Math.round(
-                          (user.referralCreditCents /
-                            REFERRAL_MIN_PAYOUT_CENTS) *
-                            100,
-                        ),
+                      progressPercent: payoutProgressPercent(
+                        user.referralCreditCents,
                       ),
                       progressLabel: canWithdraw(user.referralCreditCents)
                         ? t('referralPayoutReady')

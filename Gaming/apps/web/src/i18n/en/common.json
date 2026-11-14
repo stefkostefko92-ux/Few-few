@@ -9,10 +9,12 @@
     "friends": "Friends",
     "admin": "Admin",
     "profile": "Profile",
-    "logout": "Log out"
+    "logout": "Log out",
+    "menu": "Menu"
   },
   "friends": {
     "title": "Friends",
+    "noResults": "No players found with that name.",
     "search": "Search a player by name",
     "searchBtn": "Search",
     "add": "Add",
@@ -34,7 +36,8 @@
     "friendRequest": "New friend request",
     "friendAccepted": "Friend request accepted",
     "system": "System notice",
-    "achievement": "Achievement unlocked 🏆"
+    "achievement": "Achievement unlocked 🏆",
+    "paymentFailed": "A payment didn't go through — check your payment method in the shop"
   },
   "invite": {
     "received": "{{name}} invited you to {{game}}",
@@ -195,7 +198,80 @@
     "annActive": "Active",
     "annInactive": "Inactive",
     "annActivate": "Enable",
-    "annDeactivate": "Disable"
+    "annDeactivate": "Disable",
+    "seasons": "Seasons",
+    "seasonNew": "New season",
+    "seasonIndex": "Number",
+    "seasonStarts": "Start",
+    "seasonEnds": "End",
+    "seasonHint": "A new season stays inactive until you activate it. Only one season can be active.",
+    "seasonCreate": "Create season",
+    "seasonsEmpty": "No seasons.",
+    "seasonLabel": "Season",
+    "seasonActive": "Active",
+    "seasonCurrent": "Current period",
+    "seasonEnded": "Ended",
+    "seasonActivate": "Activate",
+    "delete": "Delete",
+    "deleted": "Deleted.",
+    "confirmQuestion": "Are you sure?",
+    "confirmYes": "Yes",
+    "annDeleteQ": "Delete this announcement permanently?",
+    "productDeleteQ": "Delete this product permanently?",
+    "matchesTab": "Matches",
+    "matchGame": "Game",
+    "allGames": "All games",
+    "matchUserId": "Player ID",
+    "matchMode": "Mode",
+    "matchPlayers": "Players",
+    "matchStarted": "Start",
+    "matchStatus": "Status",
+    "matchEnded": "Ended",
+    "matchLive": "In progress",
+    "details": "Details",
+    "matchEndedAt": "End",
+    "matchSeedHidden": "hidden while the match is in progress",
+    "matchResult": "Result",
+    "secInventory": "Inventory",
+    "secAchievements": "Achievements",
+    "secQuests": "Quests",
+    "secNotification": "Notification",
+    "secSubscription": "Subscription",
+    "invEmpty": "No cosmetics.",
+    "invEquipped": "Equipped",
+    "invCosmetic": "Cosmetic",
+    "invPick": "Choose a cosmetic…",
+    "revoke": "Revoke",
+    "grant": "Grant",
+    "achEmpty": "No unlocked achievements.",
+    "achPick": "Choose an achievement…",
+    "achUnlock": "Unlock",
+    "achHint": "A manual unlock does not grant the gem reward. A revoked achievement whose condition is still met is unlocked again after the next match.",
+    "questsEmpty": "No quests.",
+    "questReset": "Reset",
+    "questHint": "A reset quest is recreated with progress 0; a completed quest can be completed and rewarded again.",
+    "ratingsEmpty": "No ratings.",
+    "ratingReset": "Reset",
+    "ratingResetQ": "MMR 1200, 0 games, 0 wins?",
+    "ratingSet": "Set MMR",
+    "notifTitle": "Title",
+    "notifBody": "Text",
+    "notifSent": "The notification has been sent.",
+    "notifRecent": "Recent notifications",
+    "notifEmpty": "No notifications.",
+    "notifRead": "read",
+    "subNone": "No subscription.",
+    "subTier": "Tier",
+    "subPeriodEnd": "Current period until",
+    "eraseOpen": "Delete account",
+    "eraseTitle": "Irreversible account deletion",
+    "eraseWarning": "The account will be anonymised under the GDPR: email, name, password, Google/Facebook sign-ins, friendships and notifications are deleted, the VIP subscription is cancelled and all sessions are ended. Purchases are kept only in anonymised form. This action cannot be undone.",
+    "eraseConfirmLabel": "Enter the player's email to confirm",
+    "eraseConfirm": "Delete permanently",
+    "eraseDone": "The account has been deleted (anonymised).",
+    "selfExcludedShort": "SELF-EXCL.",
+    "selfExcludedUntil": "Self-excluded until",
+    "selfExcludedNote": "The player's choice — it can't be lifted before it ends."
   },
   "auth": {
     "loginTitle": "Sign in",
@@ -227,7 +303,15 @@
     "oauthConsent": "By continuing with Google or Facebook, you declare that you are 18+ and accept the",
     "errorBanned": "This account is blocked.",
     "banReason": "Reason: {{reason}}.",
-    "banAppeal": "To appeal, email legal@carbonstealth.eu."
+    "banAppeal": "To appeal, email legal@carbonstealth.eu.",
+    "banUntil": "The block lasts until {{until}}.",
+    "errorValidation": "Please check the highlighted fields.",
+    "rulesDisplayName": "2 to 32 characters.",
+    "rulesEmail": "A valid email address, e.g. name@example.com.",
+    "rulesPassword": "At least 8 characters.",
+    "errDisplayName": "The name must be 2 to 32 characters long.",
+    "errEmail": "Enter a valid email address.",
+    "errPassword": "The password must be at least 8 characters long."
   },
   "account": {
     "title": "Account",
@@ -252,7 +336,8 @@
   "live": {
     "opponentDropped": "{{name}} dropped — bot is covering",
     "yourTurnTimer": "Your turn: {{s}}s",
-    "opponentTurnTimer": "{{name}} thinking · {{s}}s"
+    "opponentTurnTimer": "{{name}} thinking · {{s}}s",
+    "timeoutWarning": "Your time ran out — the bot played this move for you. Miss one more turn and the bot takes your seat."
   },
   "verify": {
     "title": "Email verification",
@@ -303,7 +388,8 @@
     "playAgain": "Play again",
     "botsSoon": "If no players join, bots will fill in shortly.",
     "leaveConfirm": "Sure? (forfeit)",
-    "backToRoom": "Back to the room"
+    "backToRoom": "Back to the room",
+    "finalPlace": "Place: {{n}} of {{total}}"
   },
   "santase": {
     "trump": "Trump",
@@ -322,7 +408,12 @@
     "closedBy": "{{name}} closes the talon",
     "exchangedBy": "{{name}} exchanges the trump nine",
     "dealEnd": "{{name}} takes the deal (+{{n}})",
-    "closedTag": "Talon closed"
+    "closedTag": "Talon closed",
+    "declare": "I have 66 — going out",
+    "declareWith": "66 with {{n}} {{suit}}",
+    "declareHint": "Declare only if you really have 66 — a false declaration gives your opponent 3 points.",
+    "declaredOk": "{{name}} goes out with {{n}}!",
+    "declaredFalse": "{{name}} declared 66 with only {{n}} — 3 points to the opponent"
   },
   "belote": {
     "yourTeam": "Your team",
@@ -360,6 +451,7 @@
     "level": "Level {{level}}"
   },
   "shop": {
+    "payButton": "Buy and pay · {{price}}",
     "disclaimer": "Money buys only cosmetics, comfort, and entry chips. Chips are never cashed back out.",
     "purchaseSuccess": "Thank you! Purchase complete.",
     "purchaseCancel": "Purchase cancelled.",
@@ -373,13 +465,32 @@
     "consentImmediate": "I agree the content is supplied immediately and confirm that I lose my 14-day right of withdrawal.",
     "consentSubscription": "I agree to the subscription and its monthly automatic renewal until cancelled; I keep my 14-day right of withdrawal with a proportional deduction.",
     "consentRequired": "Tick the consent box to continue.",
+    "productUnavailable": "This product is no longer available.",
+    "sub": {
+      "title": "Your VIP subscription",
+      "status": "Status: {{status}}",
+      "periodEnd": "current period ends {{date}}",
+      "manage": "Manage or cancel subscription",
+      "manageHint": "Change your card, view invoices or cancel your subscription — in Stripe's secure portal.",
+      "manageFromPanel": "You're already subscribed — change or cancel via “Manage or cancel subscription” above.",
+      "current": "Current plan",
+      "alreadySubscribed": "You already have an active VIP subscription. Change or cancel it via “Manage or cancel subscription” in the shop or your account.",
+      "portalError": "The subscription portal didn't open. Please try again.",
+      "state": {
+        "active": "active",
+        "trialing": "trial",
+        "past_due": "payment failed — update your card",
+        "unpaid": "unpaid",
+        "paused": "paused"
+      }
+    },
     "perk": {
       "xp": "+{{p}}% XP",
       "daily": "+{{p}}% daily bonus",
       "gems": "{{n}} 💎 per month",
       "cosmetics": "Exclusive cosmetics",
-      "quests": "{{n}} quest slots",
-      "badge": "VIP badge & coloured name"
+      "quests": "+{{n}} daily quests",
+      "badge": "VIP badge on your profile, leaderboards and friends list"
     },
     "kind": {
       "VIP_SUB": "VIP subscription",
@@ -394,6 +505,29 @@
     "already": "Today's bonus claimed.",
     "claimed": "+{{chips}} chips, +{{gems}} gems!",
     "claim": "Claim"
+  },
+  "quests": {
+    "title": "Quests",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "resets": {
+      "daily": "new every day (UTC)",
+      "weekly": "new every Monday (UTC)"
+    },
+    "play_one": "Play {{count}} match",
+    "play_other": "Play {{count}} matches",
+    "playGame_one": "Play {{count}} match of {{game}}",
+    "playGame_other": "Play {{count}} matches of {{game}}",
+    "win_one": "Win {{count}} match",
+    "win_other": "Win {{count}} matches",
+    "winGame_one": "Win {{count}} match of {{game}}",
+    "winGame_other": "Win {{count}} matches of {{game}}",
+    "progress": "{{progress}} / {{target}}",
+    "reward": "Reward: +{{chips}} chips · +{{xp}} XP",
+    "done": "Completed",
+    "empty": "No active quests.",
+    "error": "Couldn't load quests.",
+    "retry": "Try again"
   },
   "leaderboard": {
     "empty": "No ranked players yet."
@@ -496,7 +630,19 @@
     "winsPot": "{{name}} wins the pot ({{pot}})",
     "raisesTo": "{{name}} raises to {{to}}",
     "joins": "{{name}} joins the svara ({{fee}})",
-    "newHand": "Hand {{n}}"
+    "newHand": "Hand {{n}}",
+    "allIn": "All-in",
+    "allInAmount": "All-in ({{n}})",
+    "allInBanner": "{{name}} is all-in ({{to}})",
+    "raiseTo": "Raise to {{to}}",
+    "raiseSize": "Raise size",
+    "raiseMin": "Min",
+    "raiseHalfPot": "½ pot",
+    "raisePot": "Pot",
+    "mainPot": "Main pot",
+    "sidePot": "Side pot {{n}}",
+    "winsSidePot": "{{name}} wins a side pot ({{pot}})",
+    "splitsPot": "{{name}} splits the side pot ({{pot}})"
   },
   "bridge": {
     "dummyHand": "Dummy's hand",
@@ -514,7 +660,11 @@
     "vulnerable": "Vulnerable!",
     "lastDeal": "Last",
     "made": "made",
-    "defeated": "down"
+    "defeated": "down",
+    "honors": "honours {{n}} ({{side}})",
+    "honorsBanner": "Honours: {{name}} +{{n}}",
+    "us": "us",
+    "them": "them"
   },
   "war": {
     "flip": "Flip",
@@ -532,26 +682,42 @@
   },
   "rummy": {
     "stock": "Stock",
-    "discard": "Discard",
+    "discard": "Discard pile",
     "phase": "Phase",
     "drawPhase": "Draw",
-    "discardPhase": "Discard",
-    "knock": "Knock",
-    "discardHint": "Pick a card to discard",
-    "drawHint": "Draw from stock or discard",
-    "cancelKnock": "Cancel knock",
-    "knockHint": "Pick the card to knock with",
-    "match": "Match",
-    "dealNo": "Deal",
-    "toHundred": "to 100 pts",
-    "knockBanner": "{{name}} knocks at {{pts}}",
-    "ginBanner": "Gin! {{name}} goes out with zero deadwood",
-    "undercutBanner": "Undercut! {{name}} beats the knocker",
-    "dealWonBanner": "{{name}} wins the deal: +{{pts}}",
-    "deadHandBanner": "Dead hand — nobody scores",
+    "playPhase": "Meld & discard",
+    "drawHint": "Draw from the stock or take the top discard (only if you use it right away)",
+    "playHint": "Select cards: lay down a meld, add to the table (click a meld) or discard one card",
+    "mustUseHint": "The card you took must be used before you discard",
+    "mustOpenHint": "You haven't opened — the taken card must be part of your opening (51+ pts)",
+    "selected": "Selected: {{count}} · {{pts}} pts",
+    "notMeld": "Not a meld",
+    "addToOpening": "Add to opening",
+    "openingTotal": "Opening: {{pts}} / {{min}} pts",
+    "open": "Open ({{pts}} pts)",
+    "clearOpening": "Clear",
+    "meld": "Lay down meld",
+    "discardBtn": "Discard",
+    "sort": "Sort",
+    "opened": "Opened",
+    "notOpened": "Not opened",
+    "score": "Penalty points",
+    "limit": "to {{limit}} pts",
+    "round": "Round",
+    "table": "Table",
+    "emptyTable": "Nobody has opened yet",
+    "layoffHere": "Add here",
+    "swapHere": "Swap the joker",
+    "joker": "Joker",
+    "keepOne": "You must keep at least one card to discard",
+    "openBanner": "{{name}} opened with {{pts}} pts",
+    "outBanner": "{{name}} went out!",
+    "handBanner": "\"Ръка\"! {{name}} went out in one go — penalties are doubled",
+    "exhaustedBanner": "The stock ran out — the round ends",
     "matchBanner": "{{name}} wins the match",
-    "deadwood": "Deadwood",
-    "layoffs": "Lay-offs",
+    "roundReport": "End of round {{n}}",
+    "penalty": "Penalty",
+    "total": "Total",
     "continue": "Continue"
   },
   "gofish": {
@@ -566,23 +732,39 @@
     "off": "Off",
     "bearOff": "Bear off",
     "noMoves": "No legal moves — pass",
-    "gammon": "Gammon!",
-    "backgammon": "Backgammon!",
+    "gammon": "Mars!",
     "openingRoll": "Opening roll",
     "white": "White",
     "black": "Black",
-    "cube": "Cube",
-    "double": "Double",
-    "take": "Take",
-    "drop": "Drop",
-    "waitingDouble": "Waiting for the double response",
-    "doubleOffered": "Double to ×{{value}}",
-    "doubleTaken": "The double was taken",
-    "doubleDropped": "The double was dropped"
+    "matchLength": "Match length",
+    "matchTo": "Match to {{target}}",
+    "matchToShort": "to {{target}}",
+    "matchHint": "A plain win = 1 point, a mars (gammon) = 2 points. No doubling cube.",
+    "game": "Game",
+    "newGame": "Game {{game}} — the winner rolls first",
+    "gameWon": "You won the game! +1 point",
+    "gameLost": "Opponent won the game (+1)",
+    "marsWon": "Mars! +2 points",
+    "marsLost": "Mars — opponent took 2 points",
+    "matchWon": "You won the match {{score}}",
+    "matchLost": "You lost the match {{score}}"
+  },
+  "draughts": {
+    "variant": "Russian draughts"
   },
   "battleship": {
     "enemy": "Opponent: {{name}}",
-    "yourFleet": "Your fleet"
+    "yourFleet": "Your fleet",
+    "placeTitle": "Place your fleet",
+    "placeHint": "Drag the ships (or select a ship and click a cell); “Rotate” or the R key turns them. Ships may not touch, not even diagonally.",
+    "waitingOpp": "Your fleet is ready — waiting for your opponent…",
+    "oppReady": "Your opponent is ready.",
+    "oppPlacing": "Your opponent is placing their fleet.",
+    "rotate": "Rotate",
+    "random": "Random",
+    "ready": "Ready",
+    "invalid": "Red ships overlap or touch — move them.",
+    "start": "Both fleets are in position — fire!"
   },
   "dice": {
     "roll": "Roll",
@@ -616,7 +798,17 @@
     "yourCard": "Your card",
     "bingo": "BINGO!",
     "winner": "{{name}} got a bingo!",
-    "bestLine": "line {{n}}/5"
+    "bestLine": "line {{n}}/5",
+    "call": "BINGO!",
+    "autoMark": "Auto-mark",
+    "penalty": "False “Bingo!” — you sit out {{n}} more draws.",
+    "markHint": "Click a drawn number on your card to mark it; with a full line, call “Bingo!”.",
+    "falseYou": "False “Bingo!” — you sit out {{n}} draws",
+    "falseOther": "{{name}} called a false “Bingo!”",
+    "noWinner": "The drum is empty — no winner",
+    "closing": "Bingo! Last chance for more calls…",
+    "serverDraws": "Numbers are drawn automatically every 4 seconds.",
+    "free": "Free space"
   },
   "words": {
     "nextLetter": "Next letter",
@@ -630,7 +822,8 @@
     "passBanner": "{{name}} passed (−1 life)",
     "wrongBanner": "{{name}} got a word wrong (−1 life)",
     "reseed": "New word: {{word}}",
-    "out": "out"
+    "out": "out",
+    "skipHint": "(“{{tail}}” is skipped)"
   },
   "ludo": {
     "base": "base",
@@ -640,7 +833,9 @@
     "noMoveRetry": "No move — roll again",
     "noMoveOther": "{{name}} has no move",
     "safeSquare": "Safe square",
-    "blockade": "Blockade"
+    "blockade": "Blockade",
+    "place": "place {{n}}",
+    "finishedBanner": "{{name}} finished — place {{n}}"
   },
   "domino": {
     "empty": "Place the first domino",
@@ -688,7 +883,11 @@
       "wrongPot": "Foul: wrong ball potted.",
       "cleared": "Table cleared!",
       "respotBlack": "Tie — the black is re-spotted.",
-      "threeFoul": "Three consecutive fouls — loss of rack."
+      "threeFoul": "Three consecutive fouls — loss of rack.",
+      "illegalBreak": "Foul: illegal break — no ball potted and fewer than four balls to a rail.",
+      "playAgain": "The offender plays again.",
+      "missReplay": "Foul and a miss — balls replaced, the offender plays again.",
+      "eightWrongPocket": "The 8 dropped in an uncalled pocket — loss."
     },
     "pushOut": "Push-out",
     "pushPass": "Pass back",
@@ -696,7 +895,33 @@
     "expectFreeColour": "target: colour of choice",
     "expectBall": "target: ball",
     "placeHintD": "inside the \"D\" only",
-    "placeHintBreak": "behind the head string"
+    "placeHintBreak": "behind the head string",
+    "twoFouls": "Warning: two consecutive fouls — a third loses the rack.",
+    "twoFoulsOpp": "Your opponent is on two consecutive fouls.",
+    "miss": "foul and a miss",
+    "foulChoice": "Opponent fouled — play on or make them play again.",
+    "playAgain": "Make them play again",
+    "replay": "Replace the balls",
+    "spin": "Spin",
+    "spinRole": "cue-ball contact point",
+    "spinTop": "top",
+    "spinBottom": "bottom",
+    "spinLeft": "left",
+    "spinRight": "right",
+    "spinCenter": "centre",
+    "spinReset": "No spin",
+    "spinHelp": "Choose where the cue strikes the cue ball: top — it keeps rolling after contact (follow), bottom — it comes back (draw), side — it changes the rebound off the rail. Arrow keys to move, Shift for finer steps, Home to centre.",
+    "callPocket": "Pocket for the 8",
+    "callPocketHint": "You're on the 8 — call a pocket (click next to it or use the buttons)",
+    "calledPocket": "called pocket",
+    "pockets": {
+      "0": "top left",
+      "1": "top middle",
+      "2": "top right",
+      "3": "bottom left",
+      "4": "bottom middle",
+      "5": "bottom right"
+    }
   },
   "net": {
     "reconnecting": "Connection lost — reconnecting…"
@@ -893,15 +1118,25 @@
     "auctionLeader": "leading: {{name}} {{amount}}",
     "potPill": "Parking jackpot: {{amount}}",
     "gojfCard": "Get-out-of-jail card",
-    "tradeWaiting": "Waiting for {{name}} to respond…"
+    "tradeWaiting": "Waiting for {{name}} to respond…",
+    "bank": "the bank",
+    "debtBanner": "{{name}} owes {{amount}} — choosing what to sell",
+    "debtBannerYou": "You owe {{amount}} — sell or mortgage",
+    "debtWaiting": "{{name}} owes {{amount}} to {{to}} and is choosing what to sell or mortgage…",
+    "debtTitle": "You owe {{amount}} to {{to}}",
+    "debtCash": "Cash: {{cash}}",
+    "debtHint": "Sell buildings (houses first, evenly) or mortgage properties from the list below, then pay. If time runs out, the bank liquidates automatically.",
+    "payDebt": "Pay {{amount}}"
   },
   "errors": {
     "generic": "Something went wrong",
+    "insufficient_chips": "Someone at the table doesn't have enough chips to join",
     "lobby_full": "The room is full or unavailable",
     "no_engine": "This game is currently unavailable",
     "illegal_action": "Illegal move",
     "chat_rate": "Too fast. Wait a moment.",
-    "rate_limited": "Too many attempts — wait."
+    "rate_limited": "Too many attempts — wait.",
+    "self_excluded": "Self-exclusion is active — tables and purchases are unavailable until it ends"
   },
   "games": {
     "CHESS": "Chess",
@@ -1005,12 +1240,51 @@
     "open": "Rules",
     "title": "How to play",
     "steps": "Steps",
-    "tips": "Tips"
+    "tips": "Tips",
+    "clockTitle": "Turn time",
+    "clock": "You have {{s}} seconds per turn.",
+    "timeout": "If your time runs out, the bot plays just that move for you — the seat stays yours.",
+    "timeoutWords": "If your time runs out, it counts as a pass — you lose a life (the bot never says a word for you).",
+    "takeover": "After two missed turns in a row (or a dropped connection) the bot takes your seat until you press “Return to the game”."
   },
   "difficulty": {
     "label": "Bot difficulty",
     "easy": "Easy",
     "normal": "Normal",
     "hard": "Hard"
+  },
+  "responsible": {
+    "title": "Responsible play",
+    "hint": "Tools that help you keep track of your time on АСО. The game is for fun — with virtual chips.",
+    "realityLabel": "Play-time reminder",
+    "realityHint": "We show “You've been playing for X min” at the chosen interval.",
+    "off": "Off",
+    "everyMin": "Every {{n}} min",
+    "limitLabel": "Daily session limit",
+    "limitHint": "You've played {{n}} min today. When you reach the limit we'll remind you to take a break.",
+    "noLimit": "No limit",
+    "minutes": "{{n}} min",
+    "excludeLabel": "Self-exclusion",
+    "excludeHint": "A temporary pause: tables, queues and shop purchases are locked. It can't be undone before it ends.",
+    "excludeCta": "Exclude me",
+    "excludedBadge": "Self-excluded",
+    "excludedUntil": "You're self-excluded until {{date}}. Tables, queues and purchases are unavailable until then.",
+    "period": {
+      "24h": "24 hours",
+      "7d": "7 days",
+      "30d": "30 days",
+      "6m": "6 months"
+    },
+    "confirmTitle": "Confirm self-exclusion",
+    "confirmBody": "For {{period}} you won't be able to sit at a table, join a queue or buy in the shop. Self-exclusion CANNOT be undone before it ends. Continue?",
+    "confirmCta": "Yes, exclude me",
+    "learnMore": "Learn more about responsible play",
+    "realityTitle": "Time for a break?",
+    "realityBody": "You've been playing for {{n}} min. Would you like to take a break?",
+    "takeBreak": "Take a break",
+    "keepPlaying": "Continue",
+    "limitTitle": "Daily limit reached",
+    "limitBody": "You've played the {{n}} min limit you set for today. A good moment for a break.",
+    "understood": "Got it"
   }
 }

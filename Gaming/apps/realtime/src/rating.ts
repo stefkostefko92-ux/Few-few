@@ -1,6 +1,14 @@
 import { prisma, type GameKey } from "@aso/db";
 import type { SeatScore } from "@aso/game-core";
-import { STARTING_MMR, isBettingGame, settleStake, type SeatReward } from "@aso/shared";
+import {
+  STARTING_MMR,
+  applyXpMultiplier,
+  isBettingGame,
+  levelFromXp,
+  settleStake,
+  vipPerksFor,
+  type SeatReward,
+} from "@aso/shared";
 
 export interface SeatInfo {
   seat: number;
@@ -126,11 +134,16 @@ export async function finalizeMatch(opts: {
       // are clamped to the player's available wallet so it can never go negative.
       let chipsDelta: bigint;
       let xp: number;
+      // VIP предимствата се четат в транзакцията; изтекъл абонамент = без множител.
+      const profile = await tx.user.findUnique({
+        where: { id: userId },
+        select: { chips: true, vipTier: true, vipUntil: true },
+      });
+      const perks = vipPerksFor(profile?.vipTier, profile?.vipUntil);
       if (betting) {
         let walletDelta = settleStake(game, pointsBySeat.get(seat.seat) ?? 0);
         if (walletDelta < 0) {
-          const u = await tx.user.findUnique({ where: { id: userId }, select: { chips: true } });
-          const wallet = Number(u?.chips ?? 0n);
+          const wallet = Number(profile?.chips ?? 0n);
           walletDelta = Math.max(walletDelta, -wallet);
         }
         chipsDelta = BigInt(walletDelta);
@@ -140,15 +153,23 @@ export async function finalizeMatch(opts: {
         chipsDelta = reward.chips;
         xp = reward.xp;
       }
+      xp = applyXpMultiplier(xp, perks);
       rewardBySeat[seat.seat] = { chips: Number(chipsDelta), xp };
 
       await tx.matchPlayer.create({
         data: { matchId, userId, seat: seat.seat, result, mmrDelta: delta, chipsDelta },
       });
-      await tx.user.update({
+      // Атомарен инкремент (заключва реда до края на транзакцията), после
+      // нивото от реалния нов xp — колоната `level` вече не остава „1“.
+      const after = await tx.user.update({
         where: { id: userId },
         data: { chips: { increment: chipsDelta }, xp: { increment: xp } },
+        select: { xp: true, level: true },
       });
+      const level = levelFromXp(after.xp).level;
+      if (level !== after.level) {
+        await tx.user.update({ where: { id: userId }, data: { level } });
+      }
     }
   });
 

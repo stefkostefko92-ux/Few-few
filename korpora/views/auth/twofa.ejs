@@ -8,7 +8,7 @@
   <input type="hidden" name="next" value="<%= next %>">
   <div class="field">
     <label for="code"><%= t('auth.twofaCode') %></label>
-    <input id="code" name="code" type="text" class="code-input" autocomplete="one-time-code" inputmode="numeric" required maxlength="20" autofocus<% if (error) { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+    <input id="code" name="code" type="text" class="code-input" autocomplete="one-time-code" autocapitalize="off" autocorrect="off" spellcheck="false" required maxlength="20" autofocus<% if (error) { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
     <p class="hint"><%= t('auth.twofaRecoveryHint') %></p>
   </div>
   <button class="btn btn-primary btn-wide" type="submit"><%= t('auth.twofaButton') %></button>

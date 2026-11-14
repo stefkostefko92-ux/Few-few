@@ -115,6 +115,20 @@ try {
     ok(n.local?.id === 'peer-a', 'локалният възел е в списъка');
   }
 
+  // ── 1б. Съседът отказва жетона: НЕ бива да изглежда като изтекла НАША сесия ──
+  // Открито на живо: 401 от съседа се подаваше нагоре и интерфейсът показваше
+  // входа — безкраен цикъл, в който „правилният код не минава".
+  {
+    peerMode = 'badtoken';
+    const r = await fetch(BASE + '/api/nodes/peer-b/api/overview', { headers: H });
+    const body = await r.json().catch(() => ({}));
+    ok(r.status !== 401, 'отказ на съседа не се подава като 401 към браузъра', `статус ${r.status}`);
+    ok(body.peerAuth === true && /жетона/.test(body.error || ''), 'отговорът казва, че съседът е отказал жетона', JSON.stringify(body));
+    const local = await fetch(BASE + '/api/overview', { headers: H });
+    ok(local.status === 200, 'нашата сесия остава жива след отказа на съседа');
+    peerMode = 'ok';
+  }
+
   // ── 2. Мъртъв съсед: панелът остава ЖИВ и КАЗВА защо ───────────────────────
   {
     const dead = http.createServer(() => {});

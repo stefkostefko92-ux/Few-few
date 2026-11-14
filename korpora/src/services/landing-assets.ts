@@ -1,41 +1,13 @@
 import { sha256Hex } from '../crypto.js';
-import { engine, type DrawingMeta, type EngineModel, type EngineSheet } from './engine.js';
+import { engine, type DrawingMeta, type EngineModel } from './engine.js';
+import { sheetArt, type SheetLike } from './landing-sheet.js';
 
 /**
- * Истинските изходи на двигателя за витрината. Всичко идва от един проект — кухня от четири модула:
+ * Истинските изходи на двигателя за витрината. Всичко идва от един проект — кухнята по подразбиране:
  * първият лист от разкроя с пътя на фрезата, откъс от списъка с детайлите, началото на G-кода и чертежът
  * на една врата с картата за пробиване. Нищо не е рисувано на ръка: ако двигателят се промени, се
  * променя и витрината. Смята се веднъж, при първа нужда.
  */
-interface Move {
-  type: string;
-  tool?: string;
-  at?: [number, number];
-  from?: { X: number; Y: number; Z: number };
-  to?: { X: number; Y: number; Z: number };
-  center?: [number, number];
-}
-
-interface Tool {
-  id: string;
-  kind: string;
-  d: number;
-}
-
-interface Placement {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  partId: string;
-}
-
-interface SheetLike extends EngineSheet {
-  w: number;
-  h: number;
-  placements: Placement[];
-}
-
 interface BomRow {
   id: string;
   key: string;
@@ -92,8 +64,18 @@ export interface StoryNumbers {
   firstMove: string;
 }
 
+/** Примерната кухня в числа за текстовете: модулите с врати и с чекмеджета и ширините им. */
+export interface ExampleKitchen {
+  modules: number;
+  doorModules: number;
+  moduleWidth: number;
+  drawerModules: number;
+  drawerModuleWidth: number;
+  parts: number;
+}
+
 export interface LandingAssets {
-  example: { modules: number; moduleWidth: number; parts: number };
+  example: ExampleKitchen;
   story: StoryNumbers;
   sheet: {
     svg: string;
@@ -118,75 +100,19 @@ export interface LandingAssets {
   dxfLayers: string[];
 }
 
-/** Примерният проект на витрината — и за живата 3D сцена (landing/story.js го строи в браузъра). */
-export const EXAMPLE = { type: 'kitchen', modules: 4, moduleWidth: 600 } as const;
+/**
+ * Примерният проект на витрината — и за живата 3D сцена (landing/story.js го строи в браузъра). Това е кухнята по
+ * подразбиране на двигателя (тестът го пази): три модула с врати по 600 мм и един с чекмеджета, 500 мм.
+ */
+export const EXAMPLE = {
+  type: 'kitchen',
+  modules: 4,
+  moduleWidth: 600,
+  drawerModuleWidth: 500,
+} as const;
 const EXAMPLE_DATE = '2026-10-02';
-/** Пътят на фрезата се изрисува на вълни в реда на рязане (класовете w1…w6 в site.css). */
-const WAVES = 6;
 
 let cached: LandingAssets | null = null;
-
-/** Инструментът по вид — същото правило като в редактора: фрезата за каналите е `GROOVE_MILL` на двигателя. */
-function toolClass(tool: Tool | undefined): 'tdrill' | 'tgroove' | 'tcontour' {
-  if (!tool || tool.kind === 'drill') return 'tdrill';
-  return tool.id === engine().grooveToolId ? 'tgroove' : 'tcontour';
-}
-
-function sheetArt(model: EngineModel, sheet: SheetLike, meta: DrawingMeta) {
-  const g = engine().toGcode(model, sheet, meta) as unknown as {
-    text: string;
-    moves: Move[];
-    tools: Tool[];
-  };
-  const tools = new Map(g.tools.map((t) => [t.id, t]));
-  const fy = (y: number) => sheet.h - y;
-  const cuts: string[] = [];
-  let drills = '';
-  let holes = 0;
-  for (const m of g.moves) {
-    const tool = m.tool ? tools.get(m.tool) : undefined;
-    if (m.type === 'drill' && m.at) {
-      holes += 1;
-      drills += `<circle cx="${m.at[0]}" cy="${fy(m.at[1])}" r="${Math.max((tool?.d ?? 5) / 2, 5)}" class="hole ${toolClass(tool)}"/>`;
-      continue;
-    }
-    if (m.type === 'rapid' || !m.from || !m.to || !tool) continue;
-    if (m.from.X === m.to.X && m.from.Y === m.to.Y) continue;
-    const r = m.center ? Math.hypot(m.from.X - m.center[0], m.from.Y - m.center[1]) : 0;
-    const d =
-      m.type === 'arc' && m.center
-        ? `M${m.from.X} ${fy(m.from.Y)}A${r} ${r} 0 0 1 ${m.to.X} ${fy(m.to.Y)}`
-        : `M${m.from.X} ${fy(m.from.Y)}L${m.to.X} ${fy(m.to.Y)}`;
-    cuts.push(`<path d="${d}" pathLength="1" class="cut ${toolClass(tool)} w{wave}"/>`);
-  }
-  const paths = cuts
-    .map((path, i) => path.replace('{wave}', String(Math.floor((i * WAVES) / cuts.length) + 1)))
-    .join('');
-  let parts = '';
-  for (const p of sheet.placements) {
-    const y = fy(p.y + p.h);
-    const size = Math.min(110, Math.max(44, Math.min(p.w, p.h) * 0.36));
-    parts += `<rect x="${p.x}" y="${y}" width="${p.w}" height="${p.h}" class="part"/><text x="${p.x + 24}" y="${y + size + 12}" font-size="${size}" class="pid">${p.partId}</text>`;
-  }
-  const svg = `<svg viewBox="-30 -30 ${sheet.w + 60} ${sheet.h + 60}" class="sheet-art" aria-hidden="true" focusable="false"><rect x="10" y="22" width="${sheet.w}" height="${sheet.h}" class="board-shadow"/><rect x="0" y="0" width="${sheet.w}" height="${sheet.h}" class="board"/>${parts}<g class="paths">${paths}</g><g>${drills}</g></svg>`;
-  const used = new Set(
-    g.moves.map((m) => m.tool).filter((id): id is string => typeof id === 'string'),
-  );
-  const usedTools = g.tools.filter((t) => used.has(t.id));
-  const lines = g.text.split('\n');
-  return {
-    svg,
-    holes,
-    gcode: lines.slice(0, 16),
-    // движение, не настройка: същото правило като реда с G-кода в landing/story.js
-    firstMove: lines.find((line) => /^(G[0-3]|G8[0-9])\b/.test(line)) ?? '',
-    tools: {
-      contour: usedTools.find((t) => toolClass(t) === 'tcontour')?.d ?? null,
-      groove: usedTools.find((t) => toolClass(t) === 'tgroove')?.d ?? null,
-      drills: usedTools.filter((t) => t.kind === 'drill').map((t) => t.d),
-    },
-  };
-}
 
 /** Целият лист, когато няма какво да се изреже: размерът идва от viewBox на чертежа (двигателят рисува A3). */
 function wholeSheet(svg: string, scale: number): DrawingView {
@@ -267,10 +193,14 @@ export function landingAssets(): LandingAssets {
     EngineModel['parts'][number] & { stock: string; decor: string }
   >;
   const sheets = nesting.sheets as Array<SheetLike & { yield: number }>;
+  const modules = api.kitchenModules(model.spec);
   cached = {
     example: {
-      modules: EXAMPLE.modules,
+      modules: modules.length,
+      doorModules: modules.filter((m) => !m.drawers).length,
       moduleWidth: EXAMPLE.moduleWidth,
+      drawerModules: modules.filter((m) => m.drawers).length,
+      drawerModuleWidth: EXAMPLE.drawerModuleWidth,
       parts: model.parts.length,
     },
     story: {

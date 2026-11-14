@@ -8,6 +8,7 @@ import { request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
 import fs from 'node:fs';
 import path from 'node:path';
+import { verifyPeer } from './nodes.js';
 
 export class AuditShipper {
   constructor({ cfg, audit }) {
@@ -71,6 +72,10 @@ export class AuditShipper {
     const batch = this.audit.since(cursor, 300);
     if (!batch.entries.length) return { peer: peer.id, ok: true, sent: 0 };
 
+    // Копие на одита на СЪЩАТА машина не пази от нищо: който вземе root тук,
+    // взема и него. Затова съседът се потвърждава преди всяко пращане.
+    const who = await verifyPeer(peer);
+    if (!who.ok) return { peer: peer.id, ok: false, error: who.error };
     const res = await postJson(peer, '/api/audit/mirror', {
       node: this.cfg.nodeId,
       entries: batch.entries,

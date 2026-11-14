@@ -10,6 +10,7 @@
 
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, extname } from "node:path";
+import { isMain } from "../lib/is-main.mjs";
 
 // Оценява едно shell съдържание. Чиста функция — тестваема.
 export function lintShell(src, rel) {
@@ -126,39 +127,43 @@ export function lintShell(src, rel) {
   //
   // Ловим само subshell, който ИЗПЪЛНЯВА нещо съществено (`bash …`/`npm …`), не
   // всяко `( cd … && ls )`; и само когато скриптът наистина е под `set -e`.
+  //
+  // ПОКРИТИЕ НА ЦЕЛИЯ ФАЙЛ (одит 25.09.2026): първата версия ловеше многоредовата
+  // форма с мързелив регекс `\( cd … [\s\S]*? ^\)` — той започваше от ЕДНОРЕДОВ
+  // subshell (`( cd "$x" && … ) \`) и се „разтягаше“ до първия ред, започващ с `)`,
+  // стотици редове по-надолу. С флаг `g` търсенето продължаваше СЛЕД това, тоест
+  // всичко между тях беше невидимо: в autodeploy.sh три слепи участъка (≈225–390,
+  // 415–921, 991–1284), а в един от тях стоеше истинско нарушение — неохраненият
+  // билд на mastilko. Сега краят на всеки subshell се намира с брояч на скоби,
+  // който знае за кавички, `$( … )` и коментари, и ВСЕКИ `( cd` се оценява поотделно.
   if (/set\s+-[a-z]*e/.test(src)) {
     const unguarded = [];
-    // Две форми: многоредова (затварящата скоба е в начало на ред) и едноредова.
-    // И в двата случая гледаме какво следва СЛЕД затварящата скоба.
-    const FORMS = [
-      /^[ \t]*\(\s*cd\s[\s\S]*?^[ \t]*\)(.*)$/gm,   // ( cd …\n  bash …\n)
-      /^[ \t]*\(\s*cd\s[^)\n]*\)(.*)$/gm,           // ( cd … && bash … )
-    ];
-    for (const re of FORMS) {
-      let m;
-      while ((m = re.exec(src)) !== null) {
-        const body = m[0];
-        let after = m[1] || "";
-        if (!/\b(bash|sh|npm|pnpm|yarn|docker)\b/.test(body)) continue;  // тривиален subshell
-        // Гардът често е пренесен на следващ ред: `) \` + `  || { … }`.
-        // Първата версия на това правило не следваше пренасянето и обяви пет
-        // напълно защитени блока за нарушители — синтаксис, не съдържание.
-        let tail = src.slice(m.index + m[0].length);
-        while (/\\\s*$/.test(after)) {
-          const nl = tail.indexOf("\n");
-          if (nl === -1) break;
-          const next = tail.slice(nl + 1, tail.indexOf("\n", nl + 1) === -1 ? undefined : tail.indexOf("\n", nl + 1));
-          after = next;
-          tail = tail.slice(nl + 1);
-        }
-        if (/\|\||&&\s*\{|;\s*then/.test(after)) continue;               // има гард
-        const head = body.split("\n")[0].trim();
-        if (!unguarded.includes(head)) unguarded.push(head);
+    const RX = /^[ \t]*\(\s*cd\s/gm;
+    let m;
+    while ((m = RX.exec(src)) !== null) {
+      const open = src.indexOf("(", m.index);
+      const close = subshellEnd(src, open);
+      if (close === -1) continue;                                       // незатворен — не гадаем
+      const body = src.slice(open, close + 1);
+      if (!/\b(bash|sh|npm|pnpm|yarn|docker)\b/.test(body)) continue;  // тривиален subshell
+      const eol = src.indexOf("\n", close);
+      let after = src.slice(close + 1, eol === -1 ? undefined : eol);
+      // Гардът често е пренесен на следващ ред: `) \` + `  || { … }`.
+      // Първата версия на това правило не следваше пренасянето и обяви пет
+      // напълно защитени блока за нарушители — синтаксис, не съдържание.
+      let pos = eol;
+      while (/\\\s*$/.test(after) && pos !== -1) {
+        const nextEol = src.indexOf("\n", pos + 1);
+        after = src.slice(pos + 1, nextEol === -1 ? undefined : nextEol);
+        pos = nextEol;
       }
+      if (/\|\||&&\s*\{|;\s*then/.test(after)) continue;               // има гард
+      const n = src.slice(0, m.index).split("\n").length;
+      unguarded.push(`${n}: ${src.slice(m.index, src.indexOf("\n", m.index)).trim().slice(0, 60)}`);
     }
     if (unguarded.length)
       add("HIGH", "unguarded-subshell",
-        `Subshell с деплой команда без \`|| { … }\` при \`set -e\` (${unguarded.length} бр.) — провалът на един продукт прекратява целия autodeploy и оставя следващите неразгърнати. Добави \`|| { warn …; deploy_failed=1; return; }\`.`);
+        `Subshell с деплой команда без \`|| { … }\` при \`set -e\` (${unguarded.length} бр.) — провалът на един продукт прекратява целия autodeploy и оставя следващите неразгърнати. Добави \`|| { warn …; deploy_failed=1; return; }\`. Места: ${unguarded.join(" · ")}`);
   }
 
   // ── Чистене с `ls <шаблон>` при `set -euo pipefail` ─────────────────────────
@@ -237,7 +242,66 @@ export function lintShell(src, rel) {
         `(stderr е заглушен). Добави \`|| true\` вътре в \`$( … )\`. Места: ${bad.join(" · ")}`);
   }
 
+  // ── Извикана, но недефинирана функция ────────────────────────────────────
+  //
+  // ЗАЩО (червен екип, 08.09.2026): при сливане с main autodeploy.sh беше
+  // пресглобен от три парчета и `fivem_indexnow()` — четвъртото — остана
+  // навън. `deploy_fivem` я вика на пътя на УСПЕХА; под `set -e` недефинирана
+  // функция е exit 127 и деплоят умираше СЛЕД зелената здравна проба: `current`
+  // не се мести, старите релийзи не се чистят. `bash -n` минава — той проверява
+  // синтаксис, не дали името сочи към нещо. Сензорът: всяко голо извикване на
+  // име с долна черта (нашата конвенция за помощни функции — `deploy_x`,
+  // `x_indexnow`, `x_ping_y`) трябва да има `име() {` в същия файл. Външни
+  // команди с долна черта не ползваме, а вградените са без нея.
+  {
+    const defined = new Set([...src.matchAll(/^[ \t]*([A-Za-z_][A-Za-z0-9_]*)\s*\(\)\s*\{/gm)].map((m) => m[1]));
+    const missing = new Map();
+    const CALL = /^[ \t]*([a-z][a-z0-9]*_[a-z0-9_]+)\b(?![=(])/gm;
+    let m;
+    while ((m = CALL.exec(src)) !== null) {
+      const name = m[1];
+      if (defined.has(name)) continue;
+      const n = src.slice(0, m.index).split("\n").length;
+      if (!missing.has(name)) missing.set(name, n);
+    }
+    if (missing.size)
+      add("HIGH", "undefined-function",
+        `Извикана функция без дефиниция в същия файл (${missing.size} бр.) — под \`set -e\` това е exit 127 и скриптът умира там, където я вика; \`bash -n\` НЕ го лови. ` +
+        `Места: ${[...missing].map(([k, v]) => `${v}: ${k}`).join(" · ")}`);
+  }
+
   return out;
+}
+
+// Индексът на `)`, която затваря subshell-а, отворен с `(` на позиция `open`; -1 ако
+// няма. Минимален shell лексер: единични кавички (буквални), двойни (с `$( … )` вътре),
+// `\` екраниране, `#` коментар в началото на дума. `case` шаблони (`x)`) вътре в
+// subshell не се различават — приемлива евристика за деплой скриптове.
+export function subshellEnd(src, open) {
+  const stack = ["N"];
+  for (let i = open + 1; i < src.length; i++) {
+    const c = src[i];
+    const top = stack[stack.length - 1];
+    if (top === "S") { if (c === "'") stack.pop(); continue; }
+    if (c === "\\") { i++; continue; }
+    if (top === "D") {
+      if (c === '"') stack.pop();
+      else if (c === "$" && src[i + 1] === "(") { stack.push("N"); i++; }
+      continue;
+    }
+    // top === "N"
+    if (c === "#" && (i === 0 || /[\s;(]/.test(src[i - 1]))) {
+      const nl = src.indexOf("\n", i);
+      if (nl === -1) return -1;
+      i = nl - 1;
+      continue;
+    }
+    if (c === "'") stack.push("S");
+    else if (c === '"') stack.push("D");
+    else if (c === "(") stack.push("N");
+    else if (c === ")") { stack.pop(); if (!stack.length) return i; }
+  }
+  return -1;
 }
 
 function walk(dir, acc = []) {
@@ -276,4 +340,4 @@ function runCli() {
   process.exit(findings.some((f) => f.sev === "HIGH") ? 1 : 0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) runCli();
+if (isMain(import.meta.url)) runCli();

@@ -5,6 +5,7 @@ import { prisma } from '../db.js';
 import { outranks } from '../auth/rbac.js';
 import { destroyAllSessions } from '../auth/sessions.js';
 import { revokeEmailTokens } from '../auth/tokens.js';
+import type { RequestMeta } from '../http/meta.js';
 import { accountLocale, isLocale } from '../i18n.js';
 import { greetingName, mailEmailChangedByStaff } from '../mail/templates.js';
 import { trialStart } from '../plans/plan.js';
@@ -17,6 +18,7 @@ import {
   type ActionResult,
   type StaffActor,
 } from './admin-common.js';
+import { reauthCode, reauthPassword } from './reauth.js';
 
 /* ----------------------------------- редакция ----------------------------------- */
 
@@ -116,6 +118,42 @@ export async function changeRole(
       targetType: 'user',
       targetId: id,
       detail: { from: target.role, to: parsed.data },
+    },
+  );
+  return { ok: true };
+}
+
+/**
+ * Ролята „Собственик“ за друг човек — иначе последният собственик не може да предаде продукта и да
+ * изтрие акаунта си. Дава я само собственик, след повторно удостоверяване с паролата и кода си: никой в
+ * панела не може после да я отнеме (равен ранг), затова грешка тук не се поправя с клик.
+ */
+export async function grantOwner(
+  actor: StaffActor,
+  id: string,
+  input: { password: string; code: string },
+  meta: RequestMeta,
+): Promise<ActionResult> {
+  if (actor.role !== 'OWNER') return fail('admin.errors.rank');
+  const target = await targetFor(actor, id, 'staff:manage');
+  if (isResult(target)) return target;
+  const self = await prisma.user.findUnique({ where: { id: actor.id } });
+  if (!self) return fail('error.noCapability');
+  const denied =
+    (await reauthPassword(self, input.password, meta)) ??
+    (await reauthCode(self, input.code, meta));
+  if (denied) return fail(denied);
+  await audited(
+    actor,
+    async (tx) => {
+      await tx.user.update({ where: { id }, data: { role: 'OWNER' } });
+      await destroyAllSessions(id, undefined, tx);
+    },
+    {
+      action: 'admin.role.changed',
+      targetType: 'user',
+      targetId: id,
+      detail: { from: target.role, to: 'OWNER', reauth: true },
     },
   );
   return { ok: true };

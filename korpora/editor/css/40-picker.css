@@ -13,7 +13,7 @@ dialog.picker::backdrop {
 }
 .pk {
   display: grid;
-  grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
   max-height: calc(100vh - 34px);
 }
 .pk header {
@@ -125,6 +125,13 @@ dialog.picker::backdrop {
 }
 .more {
   justify-self: start;
+}
+/* „Покажи още“ under the list, outside the listbox (a listbox holds options only) */
+.pk-more {
+  padding: 0 16px 14px;
+}
+.pk-more:empty {
+  display: none;
 }
 .cat-tools {
   display: grid;

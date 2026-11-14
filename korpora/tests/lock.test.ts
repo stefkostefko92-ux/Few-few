@@ -10,7 +10,7 @@ test('a lock holds only until lockedUntil', () => {
   assert.equal(isLocked({ lockedUntil: new Date(now - 1000) }, now), false);
 });
 
-test('the lock minutes in the texts are the ones the code uses', () => {
-  assert.equal(LOCK_MINUTES * 60_000, LOCK_MS);
-  assert.ok(Number.isInteger(LOCK_MINUTES));
+test('the lock lasts 15 minutes — the figure the texts promise', () => {
+  assert.equal(LOCK_MS, 15 * 60_000);
+  assert.equal(LOCK_MINUTES, 15);
 });

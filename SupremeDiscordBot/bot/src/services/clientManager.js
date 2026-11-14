@@ -7,6 +7,7 @@
 // and directly loads event modules into white-label clients, the same way
 // the main client does. This is robust across Discord.js internal changes.
 
+import { memberCacheWarmer } from "../utils/memberCacheWarm.js";
 import {
   Client,
   GatewayIntentBits,
@@ -118,7 +119,7 @@ async function createConfiguredClient(mainClient, boundServerId) {
     // Message + Reaction + User partials: Reaction Roles (v33) върху некеширани
     // съобщения/потребители — виж същия коментар в bot/src/index.js
     // (Partials.User е нужен, за да се емитва messageReactionRemove).
-    partials: [Partials.Channel, Partials.Message, Partials.Reaction, Partials.User],
+    partials: [Partials.Channel, Partials.Message, Partials.Reaction, Partials.User, Partials.GuildMember],
   });
 
   // Share command collection (it's read-only after startup)
@@ -218,6 +219,9 @@ export async function bootCustomClient(serverId, mainClient, { force = false } =
       // Брандиране: само името при вдигане. Аватарът иска изрична промяна —
       // виж applyBranding защо (лимит ~2 смени/час и невъзможно сравнение).
       await applyBranding(client, serverId, { withAvatar: false });
+
+      // В5: кеш на членовете за сървъра на бранд бота — само при включено запазване на роли.
+      memberCacheWarmer.warmAll(client).catch(() => {});
     });
 
     await client.login(data.token);

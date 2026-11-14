@@ -1,6 +1,7 @@
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { forgetMailTo, mailTo, prisma, STAFF_INBOX, startApp, stopApp } from './harness.js';
+import { orderNo } from '../../src/plans/order-number.js';
 import { placeOrder, sessionCsrf, staff, withdraw } from './people.js';
 
 before(startApp);
@@ -32,9 +33,12 @@ test('a new order replaces the open one: the customer and the team are told whic
     ],
   );
   const confirmation = await mailTo(email, /Потвърждение на поръчката/);
-  assert.match(confirmation.text, new RegExp(`заменя поръчка № ${first.id}, която е отменена`));
+  assert.match(
+    confirmation.text,
+    new RegExp(`заменя поръчка № ${orderNo(first)}, която е отменена`),
+  );
   const notice = await mailTo(STAFF_INBOX, /Нова поръчка в Korpora: Premium за 3 месеца/);
-  assert.match(notice.text, new RegExp(`Заменя поръчка № ${first.id} \\(отменена\\)`));
+  assert.match(notice.text, new RegExp(`Заменя поръчка № ${orderNo(first)} \\(отменена\\)`));
 
   // a durable medium: the accepted terms come as a file, not only as a link to the live page
   const [terms, ...others] = confirmation.attachments ?? [];
@@ -68,8 +72,11 @@ test('a confirmation that did not go out is resent still naming the order it rep
   forgetMailTo(email);
   assert.ok((await resendOrderMail()) >= 1);
   const confirmation = await mailTo(email, /Потвърждение на поръчката/);
-  assert.match(confirmation.text, new RegExp(`№ ${replacing.id}`));
-  assert.match(confirmation.text, new RegExp(`заменя поръчка № ${first.id}, която е отменена`));
+  assert.match(confirmation.text, new RegExp(`№ ${orderNo(replacing)}`));
+  assert.match(
+    confirmation.text,
+    new RegExp(`заменя поръчка № ${orderNo(first)}, която е отменена`),
+  );
 });
 
 test('a receipt that did not go out is resent with the outcome stored at the withdrawal', async () => {

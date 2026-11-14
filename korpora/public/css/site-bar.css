@@ -1,0 +1,126 @@
+/* Korpora public page — the top bar. One row from 1180 px up; below it the section links take their own row; on a phone
+   they fold into a menu that opens without script (<details>), so the bar is two short rows and the product starts
+   within the first screen. */
+
+.site-bar {
+  position: relative;
+  z-index: 10;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+}
+.site-bar .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 26px;
+  padding-block: 12px;
+}
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 18px;
+  font-size: 0.95rem;
+}
+.site-nav a,
+.site-menu nav a {
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.site-nav a:hover,
+.site-menu nav a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+.site-bar-end {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px 14px;
+  flex-wrap: wrap;
+}
+.site-bar-end .login {
+  color: var(--ink);
+  font-weight: 550;
+}
+/* the beta tag next to the name in the top bar */
+.beta-tag {
+  margin-left: -16px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--gold);
+  color: var(--gold-ink);
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.site-menu {
+  display: none;
+}
+/* narrower than the one-row bar: the section links take their own row and wrap; a scroll strip would cut the last
+   word in half */
+@media (max-width: 1179px) {
+  .site-nav {
+    order: 3;
+    width: 100%;
+    gap: 0 18px;
+  }
+  .site-nav a {
+    padding-block: 5px;
+    white-space: nowrap;
+  }
+}
+@media (max-width: 700px) {
+  .site-nav {
+    display: none;
+  }
+  .site-menu {
+    display: block;
+    order: 2;
+    margin-left: auto;
+  }
+  .site-menu summary {
+    display: flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 14px;
+    border: 1px solid var(--rule-strong);
+    border-radius: var(--radius);
+    color: var(--ink);
+    font-size: 0.9rem;
+    font-weight: 550;
+    cursor: pointer;
+    list-style: none;
+  }
+  .site-menu summary::-webkit-details-marker {
+    display: none;
+  }
+  .site-menu[open] summary {
+    background: var(--panel-2);
+  }
+  /* the open menu lies over the page, the width of the bar */
+  .site-menu nav {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    display: grid;
+    padding: 6px var(--gutter) 12px;
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+  }
+  .site-menu nav a {
+    padding: 11px 0;
+    font-size: 1rem;
+    border-top: 1px solid var(--rule);
+  }
+  .site-menu nav a:first-child {
+    border-top: 0;
+  }
+  .site-bar-end {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+    justify-content: space-between;
+  }
+}

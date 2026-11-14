@@ -8,6 +8,7 @@ import { page, kpi, badge, lineChart, barChart, hbars, siteUrl } from '../lib/si
 import { tipoEnte, postiLettoEnte, ricoveriEnte, CE_INDICATORS, SP_INDICATORS, CE_FORENSICS } from '../lib/dataset.js';
 import { ultimoCe, briciole, collezioneLd, FOR_LABEL, isDetailLine, isTopLevelSp } from '../lib/site-shared.js';
 import { appaltiBlock, contrattiBlock } from './appalti.js';
+import { keywordsPerPercorso } from '../lib/seo.js';
 
 /** @typedef {import('../lib/dataset.js').Ente} Ente */
 /** @typedef {import('../lib/dataset.js').Anagrafica} Anagrafica */
@@ -480,6 +481,7 @@ ${spBlock}
     active: 'strutture.html',
     rel: '../',
     canonical: percorso,
+    keywords: keywordsPerPercorso(percorso, ente.denominazione),
     jsonld,
     body,
   });

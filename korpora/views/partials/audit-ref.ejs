@@ -1,0 +1,5 @@
+<%# Кой / обект в одита (services/admin-audit-view.ts): видът отгоре, после имейлът с връзка или началото на id-то. %>
+<% if (ref) { %>
+<% if (ref.kind) { %><span class="ref-kind"><%= ref.kind %></span><% } %>
+<% if (ref.href) { %><a href="<%= ref.href %>"><%= ref.text %></a><% } else { %><span<% if (ref.mono) { %> class="mono-sm"<% } %><% if (ref.title) { %> title="<%= ref.title %>"<% } %>><%= ref.text %></span><% } %>
+<% } %>

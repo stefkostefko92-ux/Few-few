@@ -1,0 +1,244 @@
+{
+  "scheda": {
+    "section": {
+      "impianto": "Impianto",
+      "ubicazione": "Ubicazione e accesso",
+      "tipologia": "Tipologia",
+      "quadro": "Quadro",
+      "argano": "Argano",
+      "centralina": "Centralina",
+      "funi": "Funi e tiranti",
+      "limitatore": "Limitatore",
+      "cavi": "Cavi",
+      "serrature": "Serrature, sospensioni o operatore",
+      "allarme": "Allarme e telesoccorso",
+      "bottoniere": "Bottoniere",
+      "note": "Note e lavori"
+    },
+    "field": {
+      "data": "Data",
+      "indirizzo": "Indirizzo",
+      "marca": "Marca impianto",
+      "matricola": "Matricola",
+      "numeroImpianto": "N° impianto",
+      "buonoLavoro": "Buono di lavoro",
+      "portataKg": "Portata",
+      "capienzaPersone": "Capienza",
+      "fermate": "Fermate",
+      "ubicazioneMacchina": "Ubicazione macchina",
+      "noteLocaleMacchina": "Note locale macchina",
+      "ubicazioneCassettina": "Ubicazione cassettina",
+      "parcheggio": "Parcheggio",
+      "tipoImpianto": "Tipo impianto",
+      "tipoPorte": "Tipo porte",
+      "doppioAccesso": "Accessi",
+      "serrature": "Serrature da cambiare",
+      "serratureNumero": "Numero serrature",
+      "serratureTipo": "Tipo serrature",
+      "pattinoRetrattile": "Pattino retrattile da cambiare",
+      "pattinoRetrattileTipo": "Tipo di pattino retrattile",
+      "contattiAntine": "Contatti antine da sostituire?",
+      "bloccaPortineDaInstallare": "Blocca portine da installare?",
+      "operatore": "Operatore da cambiare",
+      "operatoreOrdine": "Modulo d'ordine operatore",
+      "operatoreModulo": "Modulo d'ordine",
+      "operatoreModuloAltro": "Altro modulo d'ordine",
+      "sospensioni": "Sospensioni da cambiare",
+      "sospensioniNumero": "Numero sospensioni",
+      "serratureNote": "Note serrature e sospensioni",
+      "luceVanoSostituire": "Luce vano da sostituire",
+      "luceVanoNote": "Note luce vano",
+      "funiDiametroMm": "Diametro funi",
+      "funiTrefoli": "Trefoli funi",
+      "funiNumero": "Numero funi",
+      "funiDx": "Quantità funi DX",
+      "funiSx": "Quantità funi SX",
+      "funiLunghezzaM": "Lunghezza funi",
+      "tirantiCabinaNumero": "Quantità tiranti cabina",
+      "tirantiCabinaTipo": "Tipo tiranti cabina",
+      "tirantiContrappesoNumero": "Quantità tiranti contrappeso",
+      "tirantiContrappesoTipo": "Tipo tiranti contrappeso",
+      "tirantiFossaNumero": "Quantità tiranti in fossa",
+      "tirantiFossaTipo": "Tipo tiranti in fossa",
+      "limitatoreTipo": "Tipo limitatore",
+      "funicellaDiametroMm": "Diametro funicella",
+      "funicellaLunghezzaM": "Lunghezza funicella",
+      "tenditore": "Tenditore",
+      "caviNumero": "Numero cavi",
+      "caviConduttori": "Conduttori cavi",
+      "caviLunghezzaM": "Lunghezza cavi",
+      "allarmePortineria": "Allarme in portineria",
+      "displayPortineria": "Display in portineria",
+      "noteQuadretto": "Note quadretto elettrico",
+      "noteImpianto": "Note impianto",
+      "ubicazioneNote": "Note ubicazione e accesso",
+      "tipologiaNote": "Note tipologia",
+      "funiNote": "Note funi, tiranti e contrappeso",
+      "limitatoreNote": "Note limitatore, tenditore, funicella",
+      "allarmeNote": "Note allarme e telesoccorso",
+      "noteBottoniere": "Note bottoniere in opera",
+      "bottoniereSostituire": "Bottoniere da sostituire",
+      "bottoniereOrdine": "Scheda ordine bottoniere DMG",
+      "bottoniereNote": "Note bottoniere",
+      "bottoniereMisure": "Misure bottoniere vecchie",
+      "lavoriExtra": "Lavori extra (buono di lavoro)",
+      "azienda": "Azienda",
+      "quadroSostituire": "Quadro di manovra da sostituire",
+      "quadroMarca": "Marca quadro",
+      "quadroMarcaAltro": "Altra marca quadro",
+      "quadroOrdine": "Scheda per l'ordine quadro",
+      "quadroNote": "Note quadro",
+      "arganoPreventivo": "Argano da sostituire",
+      "quadroModello": "Tipologia quadro",
+      "fossaRidotta": "Fossa ridotta",
+      "testataRidotta": "Testata ridotta",
+      "testataInterventi": "Testata ridotta: soluzioni",
+      "fossaInterventi": "Fossa ridotta: soluzioni",
+      "grembiuleNote": "Note grembiule retrattile",
+      "arganoTipo": "Tipo argano esistente",
+      "kitControlloGanasce": "Kit controllo ganasce da installare?",
+      "kitControlloGanasceTipo": "Tipo controllo ganasce",
+      "controlloQuadro": "Controllo su quadro manovra da installare?",
+      "controlloQuadroTipo": "Tipo controllo",
+      "stopArgano": "Stop argano da installare?",
+      "arganoNote": "Note argano",
+      "centralinaDaFare": "Centralina da sostituire",
+      "centralinaMarca": "Marca e modello centralina",
+      "centralinaMotoreV": "Motore: alimentazione",
+      "centralinaMotoreHp": "Motore: potenza",
+      "centralinaPompaLMin": "Pompa",
+      "centralinaAvvio": "Avviamento",
+      "centralinaTensioneValvole": "Tensione elettrovalvole",
+      "centralinaDiametroTubazione": "Diametro tubazione",
+      "centralinaMarcaPistone": "Marca pistone",
+      "centralinaDiametroStelo": "Diametro stelo",
+      "centralinaCorsaImpianto": "Corsa impianto",
+      "centralinaTipoPistone": "Tipo pistone",
+      "centralinaLitriOlio": "Litri olio totali",
+      "emendamentoA3": "Kit A3 da installare",
+      "centralinaInOpera": "Tipo centralina in opera",
+      "kitA3Hydronic": "Kit A3 Hydronic",
+      "kitA3TensioneBobine": "Tensione bobine",
+      "kitA3Valvola": "Valvola kit A3",
+      "kitA3Altro": "Kit A3",
+      "kitA3Saracinesca": "Saracinesca 0611/HM-SV/AXI",
+      "tuboFlessibile": "Installare tubo flessibile",
+      "tuboFlessibileDiametroMm": "Diametro tubo flessibile",
+      "tuboFlessibileLunghezzaM": "Lunghezza tubo flessibile",
+      "tuboFlessibileNote": "Note tubo flessibile",
+      "centralinaNoteRaccordi": "Note raccordi e tubazioni",
+      "centralinaNote": "Note centralina",
+      "telesoccorsoInstallare": "Telesoccorso da installare",
+      "perifericaInstallare": "Periferica sotto cabina da installare",
+      "cornettaInstallare": "Cornetta nel locale da installare"
+    },
+    "question": {
+      "bottoniereMisure": "Vuoi inserire le misure delle bottoniere vecchie?",
+      "quadroOrdine": "Vuoi compilare la scheda per l'ordine quadro?",
+      "arganoPreventivo": "Argano da sostituire?",
+      "operatore": "Vuoi cambiare operatore?",
+      "operatoreOrdine": "Vuoi compilare modulo d'ordine?",
+      "sospensioni": "Sospensioni da cambiare?",
+      "quadroSostituire": "Quadro di manovra da sostituire?",
+      "bottoniereSostituire": "Bottoniere da sostituire?",
+      "bottoniereOrdine": "Vuoi compilare la scheda ordine bottoniere DMG?",
+      "centralinaDaFare": "Centralina da sostituire?",
+      "testataRidotta": "Testata ridotta?",
+      "fossaRidotta": "Fossa ridotta?",
+      "emendamentoA3": "Installare kit A3?"
+    },
+    "option": {
+      "ubicazioneMacchina": {
+        "ALTO": "Alto",
+        "BASSO": "Basso"
+      },
+      "tipoImpianto": {
+        "ELETTRICO": "Elettrico",
+        "IDRAULICO": "Idraulico",
+        "GEARLESS": "MRL"
+      },
+      "tipoPorte": {
+        "AUTOMATICHE": "Automatiche",
+        "SEMIAUTOMATICHE": "Semiautomatiche",
+        "MANUALI": "Manuali"
+      },
+      "doppioAccesso": {
+        "no": "1",
+        "si": "2"
+      },
+      "quadroMarca": {
+        "PELAZZA": "Pelazza",
+        "MOVILIFT": "Movilift",
+        "DMG": "DMG",
+        "MASTECH": "Mastech",
+        "ELETTROQUADRI": "Elettroquadri",
+        "GEAT": "GEAT",
+        "ALTRO": "Altro"
+      },
+      "quadroModello": {
+        "NG120": "NG120",
+        "QI_TOUCH": "QI Touch"
+      },
+      "testataInterventi": {
+        "PUNTONI_WW": "W+W puntoni tetto cabina",
+        "AMI100_RTBS": "AMI 100 Mono RTBS (scheda da compilare)",
+        "SEMAFORO": "Semaforo tetto cabina",
+        "PUNTONE_OKATT": "Puntone OKATT contrappeso"
+      },
+      "fossaInterventi": {
+        "AMI100_RTBS": "AMI 100 Mono RTBS (scheda da compilare)",
+        "SEMAFORO": "Semaforo fondo fossa",
+        "GREMBIULE_3_STADI": "Grembiule retrattile 3 stadi",
+        "PUNTONE_OKATT": "Puntone OKATT"
+      },
+      "centralinaAvvio": {
+        "DIRETTO": "Diretto",
+        "STELLA_TRIANGOLO": "Stella-triangolo"
+      },
+      "centralinaTipoPistone": {
+        "IN_TAGLIA": "In taglia",
+        "DIRETTO": "Diretto"
+      },
+      "centralinaInOpera": {
+        "HYDRONIC": "Hydronic",
+        "ALTRO": "Altro"
+      },
+      "kitA3Hydronic": {
+        "HSV_150_440_BIS": "HSV-150/440 BIS",
+        "PRESSOSTATO": "Pressostato",
+        "CONNETTORE": "Connettore"
+      },
+      "kitA3Valvola": {
+        "HSV_150_BIS": "HSV-150 BIS (da 55 a 150 l/min)",
+        "HSV_440_BIS": "HSV-440 BIS (da 151 a 440 l/min)"
+      },
+      "kitA3Altro": {
+        "BOBINA_48_12": "Bobina 48 V + 12 V con connettori",
+        "SARACINESCA": "Saracinesca 0611/HM-SV/AXI",
+        "RACCORDO_MISTO": "Raccordo misto 5319/92",
+        "PRESSOSTATO": "Pressostato"
+      },
+      "kitA3Saracinesca": {
+        "ASS_2": "ASS/2 (1\" 1/4)",
+        "ASS_3": "ASS/3 (1\" 1/2)"
+      },
+      "operatoreModulo": {
+        "MODULO_2SG": "2SG",
+        "ALTRO": "Altro"
+      }
+    },
+    "unit": {
+      "kg": "kg",
+      "persone": {
+        "one": "persona",
+        "other": "persone"
+      },
+      "mm": "mm",
+      "m": "m",
+      "volt": "V",
+      "hp": "HP",
+      "lmin": "l/min",
+      "litri": "l"
+    }
+  }
+}

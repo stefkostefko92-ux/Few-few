@@ -47,7 +47,7 @@
   --navy-3: #24408c;
   --navy-deep: #101d49;
   --ink: #1a2340;
-  --muted: #667298;
+  --muted: #5a6690;  /* каталожното #667298 е 4,38:1 върху --tint — под WCAG AA 4,5:1; същият тон, по-тъмен */
   --steel: #878786;
   --bg: #ffffff;
   --tint: #f4f6f9;
@@ -55,8 +55,8 @@
   --line: #e2e6ea;
   --flag-green: #008c45;
   --flag-red: #cd212a;
-  --radius: 10px;
-  --shadow: 0 1px 2px rgba(22, 40, 98, .06), 0 8px 28px rgba(22, 40, 98, .08);
+  --radius: 12px;  /* повърхности (карти, таблици); бутоните и полетата са 8px */
+  --shadow: 0 1px 2px rgba(22, 40, 98, .05), 0 6px 18px rgba(22, 40, 98, .06);
   --wrap: 1160px;
   --dur: .25s;
 }
@@ -82,11 +82,11 @@ body {
 img, picture { max-width: 100%; height: auto; display: block; }
 a { color: var(--navy-2); text-decoration-thickness: 1px; text-underline-offset: 2px; }
 a:hover { color: var(--navy-3); }
-h1, h2, h3 { color: var(--navy); line-height: 1.15; letter-spacing: -.015em; margin: 0 0 .5em; font-weight: 700; }
+h1, h2, h3 { color: var(--navy); line-height: 1.15; letter-spacing: -.015em; margin: 0 0 .5em; font-weight: 700; text-wrap: balance; }
 h1 { font-size: clamp(2rem, 4.6vw, 3.15rem); }
 h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); }
 h3 { font-size: 1.15rem; }
-p { margin: 0 0 1em; }
+p { margin: 0 0 1em; text-wrap: pretty; }
 .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 22px; }
 .center { text-align: center; }
 .mt { margin-top: 2.2rem; }
@@ -101,10 +101,12 @@ p { margin: 0 0 1em; }
 }
 .skip-link:focus { left: 0; color: #fff; }
 :focus-visible { outline: 2px solid var(--navy-3); outline-offset: 2px; }
+/* Върху тъмните блокове тъмносиният контур е 1,3:1 — там фокусът е бял. */
+:is(.hero, .page-head, .sec-cover, .section-navy, .highlight-card, .site-footer) :focus-visible { outline-color: #fff; outline-offset: 3px; }
 
 /* ── Типографски елементи от каталога ── */
 .kicker {
-  font-size: .72rem; font-weight: 600; letter-spacing: .22em; text-transform: uppercase;
+  font-size: .75rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase;
   color: var(--muted); margin: 0 0 .9rem;
   display: inline-flex; align-items: center; gap: .7rem;
 }
@@ -123,8 +125,9 @@ p { margin: 0 0 1em; }
 .callout {
   border-left: 4px solid var(--navy-2); background: var(--card);
   padding: .95rem 1.2rem; border-radius: 0 var(--radius) var(--radius) 0;
-  color: var(--ink); max-width: 62rem; margin: 1.6rem 0 0;
+  color: var(--ink); margin: 1.6rem 0 0;
 }
+.cta-row { margin: 1.6rem 0 0; }
 .note { color: var(--muted); font-size: .86rem; max-width: 62rem; margin-top: 1.2rem; }
 
 /* ── Бутони ── */
@@ -138,8 +141,8 @@ p { margin: 0 0 1em; }
 .btn-primary { background: var(--navy-2); color: #fff; }
 .btn-primary:hover { background: var(--navy-3); color: #fff; }
 .btn-white, .hero a.btn-white, .sec-cover a.btn-white, .page-head a.btn-white,
-.section-navy a.btn-white { background: #fff; color: var(--navy); }
-.btn-white:hover, .hero a.btn-white:hover, .page-head a.btn-white:hover { background: var(--card); color: var(--navy); }
+.section-navy a.btn-white, .highlight-card a.btn-white { background: #fff; color: var(--navy); }
+.btn-white:hover, .hero a.btn-white:hover, .page-head a.btn-white:hover, .highlight-card a.btn-white:hover { background: var(--card); color: var(--navy); }
 .btn-outline { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .55); }
 .btn-outline:hover { border-color: #fff; color: #fff; background: rgba(255, 255, 255, .08); }
 .btn-ghost { background: transparent; color: var(--navy-2); border-color: var(--line); }
@@ -164,8 +167,9 @@ p { margin: 0 0 1em; }
 .header-tools { display: flex; align-items: center; gap: .9rem; }
 .lang-switch { display: flex; gap: .15rem; border: 1px solid var(--line); border-radius: 999px; padding: .18rem; }
 .lang-switch a, .lang-switch span {
-  font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-decoration: none;
-  padding: .28rem .55rem; border-radius: 999px; color: var(--muted);
+  font-size: .74rem; font-weight: 700; letter-spacing: .06em; text-decoration: none;
+  min-width: 36px; min-height: 34px; padding: 0 .5rem; border-radius: 999px; color: var(--muted);
+  display: inline-flex; align-items: center; justify-content: center;
 }
 .lang-switch span[aria-current] { background: var(--navy-2); color: #fff; }
 .lang-switch a:hover { color: var(--navy-2); }
@@ -254,8 +258,12 @@ p { margin: 0 0 1em; }
 .stats-band {
   position: relative;
   display: grid; grid-template-columns: repeat(4, 1fr);
-  border-top: 1px solid rgba(255, 255, 255, .18);
   padding-top: 1.6rem; padding-bottom: 2.6rem; gap: 1rem;
+}
+/* Линията е по ръба на текста, не на кутията с нейния отстъп. */
+.stats-band::before, .footer-bottom::before {
+  content: ''; position: absolute; top: 0; left: 22px; right: 22px;
+  border-top: 1px solid rgba(255, 255, 255, .18);
 }
 .stat { position: relative; padding-left: 1rem; }
 .stat::before {
@@ -273,11 +281,12 @@ p { margin: 0 0 1em; }
 
 /* Гигантска цифра на секцията — като в каталога */
 .sec-cover .wrap { padding-top: 3.2rem; padding-bottom: 2.8rem; }
+.sec-cover :is(h2, .sec-lead) { max-width: min(46rem, 64%); }
 .sec-num {
   position: absolute; right: 0; top: 50%; transform: translateY(-50%);
   font-size: clamp(9rem, 22vw, 17rem); font-weight: 800; line-height: 1;
-  color: rgba(255, 255, 255, .09); letter-spacing: -.04em; margin: 0;
-  -webkit-text-stroke: 1px rgba(255, 255, 255, .06);
+  color: rgba(255, 255, 255, .07); letter-spacing: -.04em; margin: 0;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, .05);
   user-select: none;
 }
 
@@ -303,13 +312,12 @@ p { margin: 0 0 1em; }
 /* Приложения */
 .app-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; margin-top: 1.8rem; }
 .app-card {
-  background: #fff; border: 1px solid var(--line); border-top: 4px solid var(--navy-2);
-  border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+  background: #fff; border: 1px solid var(--line);
+  border-radius: var(--radius); overflow: hidden;
 }
 .app-card picture { background: #fff; border-bottom: 1px solid var(--line); aspect-ratio: 4 / 3; }
 .app-card img { object-fit: contain; width: 100%; height: 100%; padding: 10px; }
 .app-body { padding: 1.2rem 1.3rem .6rem; }
-.app-num { font-size: .78rem; font-weight: 700; letter-spacing: .2em; color: var(--steel); margin: 0 0 .4rem; }
 
 /* Продуктови фамилии (начало) */
 .fam-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.3rem; margin: 1.8rem 0 2rem; }
@@ -317,21 +325,11 @@ p { margin: 0 0 1em; }
   background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
   overflow: hidden; text-decoration: none; color: inherit; box-shadow: var(--shadow);
   display: flex; flex-direction: column; position: relative;
-  transition: border-color var(--dur), transform var(--dur), box-shadow var(--dur);
+  transition: border-color var(--dur);
 }
-.fam-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: var(--navy-2); transform: scaleX(0); transform-origin: left;
-  transition: transform var(--dur);
-}
-.fam-card:hover {
-  border-color: var(--navy-2); transform: translateY(-4px);
-  box-shadow: 0 4px 10px rgba(22, 40, 98, .1), 0 18px 34px rgba(22, 40, 98, .14);
-}
-.fam-card:hover::before { transform: scaleX(1); }
+.fam-card:hover, .fam-card:focus-visible { border-color: var(--navy-2); }
 .fam-card picture { aspect-ratio: 4 / 3; background: #fff; border-bottom: 1px solid var(--line); overflow: hidden; }
-.fam-card img { object-fit: contain; width: 100%; height: 100%; padding: 10px; transition: transform var(--dur) ease; }
-.fam-card:hover img { transform: scale(1.035); }
+.fam-card img { object-fit: contain; width: 100%; height: 100%; padding: 10px; }
 .fam-body { padding: 1.1rem 1.2rem; display: flex; flex-direction: column; gap: .2rem; flex: 1; }
 .fam-body h3 { transition: color var(--dur); }
 .fam-card:hover .fam-body h3 { color: var(--navy-2); }
@@ -361,20 +359,14 @@ p { margin: 0 0 1em; }
 /* Стъпки за поръчка */
 .steps {
   list-style: none; padding: 0; margin: 2rem 0;
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.3rem;
-  counter-reset: step;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
 }
-.step {
-  background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
-  padding: 1.4rem 1.4rem 1rem; box-shadow: var(--shadow); position: relative;
-  transition: box-shadow var(--dur), transform var(--dur);
-}
-.step:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(22, 40, 98, .08), 0 16px 30px rgba(22, 40, 98, .1); }
+/* Трите стъпки са поредица: числото води, без кутии — колони, разделени с линия. */
+.step { padding: .2rem 1.8rem 0; border-left: 1px solid var(--line); }
+.step:first-child { padding-left: 0; border-left: 0; }
 .step-num {
-  font-size: 2.6rem; font-weight: 800; color: var(--card); line-height: 1;
-  margin: 0 0 .5rem; padding-bottom: .5rem;
-  border-bottom: 1px solid var(--line);
-  -webkit-text-stroke: 1px var(--navy-2);
+  font-size: 2rem; font-weight: 700; color: var(--navy-2); line-height: 1;
+  font-variant-numeric: tabular-nums; margin: 0 0 .9rem;
 }
 .step h3 { margin-bottom: .4rem; }
 .step p { font-size: .93rem; color: var(--muted); }
@@ -388,8 +380,8 @@ table { border-collapse: collapse; width: 100%; font-size: .93rem; background: #
 caption { text-align: left; }
 th, td { text-align: left; padding: .72rem .95rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
 thead th {
-  background: var(--navy); color: #fff; font-size: .74rem; font-weight: 600;
-  letter-spacing: .12em; text-transform: uppercase; white-space: nowrap;
+  background: var(--navy); color: #fff; font-size: .8rem; font-weight: 600;
+  letter-spacing: .01em; white-space: nowrap;
   padding-top: .85rem; padding-bottom: .85rem;
   border-bottom: 2px solid var(--navy-deep);
 }
@@ -401,7 +393,7 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
 .act { text-align: right; width: 1%; white-space: nowrap; }
 .code {
   font-weight: 700; color: var(--navy); white-space: nowrap;
-  font-variant-numeric: tabular-nums; letter-spacing: .01em;
+  font-variant-numeric: tabular-nums;
 }
 .price { color: var(--navy); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .price-quote { color: var(--muted); font-style: normal; font-size: .85rem; white-space: nowrap; }
@@ -416,7 +408,14 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
 
 /* Продуктови карти */
 .sys-list { display: grid; gap: 1.5rem; }
-.sys-list-2 { grid-template-columns: repeat(2, 1fr); }
+.sys-list-2 { grid-template-columns: repeat(3, 1fr); }
+/* Конфигурациите са по три на ред и картата е стълб: рендерът цял (4:3) над таблицата, както на
+   телефон. В две колони със снимка отстрани рендерът се режеше до водача. */
+@media (min-width: 1201px) {
+  .sys-list-2 .sys-card { grid-template-columns: 1fr; align-content: start; }
+  .sys-list-2 .sys-media { border-right: 0; border-bottom: 1px solid var(--line); aspect-ratio: 4 / 3; }
+  .sys-list-2 .sys-body { padding: 1.2rem 1.05rem 1.3rem; }
+}
 .sys-card {
   background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
   box-shadow: var(--shadow); overflow: hidden;
@@ -432,17 +431,20 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
 .sys-media img { object-fit: contain; max-height: 260px; width: auto; }
 .sys-body { padding: 1.3rem 1.4rem 1.5rem; min-width: 0; }
 .sys-specs {
-  display: flex; flex-wrap: wrap; gap: 1.4rem; font-size: .8rem;
-  letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+  display: flex; flex-wrap: wrap; gap: 1.4rem; font-size: .88rem; color: var(--muted);
 }
 .sys-specs strong { color: var(--navy); }
+/* 69 еднакви действия на страница: текст с „+“, без рамка — рамката идва при посочване и фокус. */
 .add-btn {
-  font: inherit; font-size: .78rem; font-weight: 600; color: var(--navy-2);
-  background: #fff; border: 1px solid var(--line); border-radius: 6px;
-  padding: .38rem .8rem; cursor: pointer; white-space: nowrap;
-  transition: background var(--dur), color var(--dur), border-color var(--dur), box-shadow var(--dur);
+  font: inherit; font-size: .82rem; font-weight: 600; color: var(--navy-2);
+  background: transparent; border: 1px solid transparent; border-radius: 8px;
+  padding: .38rem .7rem; cursor: pointer; white-space: nowrap;
+  transition: background var(--dur), color var(--dur), border-color var(--dur);
 }
-.add-btn:hover { border-color: var(--navy-2); background: var(--card); box-shadow: 0 1px 0 rgba(22, 40, 98, .04); }
+.add-btn::before { content: '+'; margin-right: .4em; font-weight: 700; }
+.add-btn:hover, tbody tr:hover .add-btn { border-color: var(--line); background: #fff; }
+.add-btn:hover { border-color: var(--navy-2); }
+@media (pointer: coarse) { .add-btn { min-height: 44px; min-width: 44px; } }
 .add-btn.is-added { background: var(--navy-2); border-color: var(--navy-2); color: #fff; }
 .add-btn.is-added:hover { background: var(--navy-3); border-color: var(--navy-3); }
 
@@ -459,18 +461,13 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
   padding: 1.5rem 1.6rem; box-shadow: var(--shadow); position: sticky; top: 92px;
 }
 .catalog-toc ol {
-  padding-left: 0; list-style: none; margin: 0 0 1.2rem; counter-reset: toc;
+  padding-left: 0; list-style: none; margin: 0 0 1.2rem;
 }
 .catalog-toc li {
   padding: .55rem 0; border-bottom: 1px solid var(--line);
   font-size: .92rem; font-weight: 600; color: var(--navy);
-  counter-increment: toc; display: flex; align-items: baseline; gap: .7rem;
 }
-.catalog-toc li::before {
-  content: counter(toc, decimal-leading-zero);
-  font-size: .74rem; font-weight: 700; letter-spacing: .06em;
-  color: var(--steel);
-}
+/* Номерът на секцията е в самия текст („01 · …“), като в каталога — без втори брояч. */
 .catalog-toc li:last-child { border-bottom: 0; }
 .catalog-toc .btn { width: 100%; text-align: center; }
 .preview-strip {
@@ -504,13 +501,13 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
 .contact-form label { font-size: .88rem; font-weight: 600; color: var(--navy); display: flex; flex-direction: column; gap: .35rem; }
 .contact-form input:not([type="checkbox"]), .contact-form textarea {
   font: inherit; font-size: .95rem; color: var(--ink);
-  border: 1px solid var(--line); border-radius: 8px; padding: .7rem .9rem;
+  border: 1px solid var(--steel); border-radius: 8px; padding: .7rem .9rem;
   background: #fff; width: 100%;
 }
 .contact-form input:focus, .contact-form textarea:focus { outline: 2px solid var(--navy-3); outline-offset: 0; border-color: var(--navy-3); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .check { flex-direction: row !important; align-items: flex-start; gap: .6rem !important; font-weight: 400 !important; color: var(--ink) !important; font-size: .85rem !important; }
-.check input { margin-top: .25rem; }
+.check input { margin-top: .12rem; width: 1.15rem; height: 1.15rem; flex: none; accent-color: var(--navy-2); }
 .hp { position: absolute; left: -5000px; opacity: 0; height: 0; }
 .form-status { min-height: 1.4em; font-weight: 600; margin: 0; }
 .form-status.ok { color: #1c6b3c; }
@@ -535,7 +532,7 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
 .order-head h2 { margin: 0; font-size: 1.25rem; }
 .order-close {
   font-size: 1.6rem; line-height: 1; background: none; border: 0;
-  color: var(--muted); cursor: pointer; padding: .2rem .5rem;
+  color: var(--muted); cursor: pointer; width: 44px; height: 44px; margin-right: -.6rem;
 }
 .order-close:hover { color: var(--navy); }
 .order-empty { color: var(--muted); }
@@ -549,16 +546,16 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
 .order-items .oi-controls { display: flex; align-items: center; gap: .5rem; grid-column: 1 / -1; }
 .order-items .oi-price { font-weight: 600; color: var(--navy); align-self: center; }
 .order-items input[type="number"] {
-  width: 4.2rem; font: inherit; padding: .3rem .45rem;
-  border: 1px solid var(--line); border-radius: 6px;
+  width: 4.2rem; font: inherit; padding: .45rem .5rem;
+  border: 1px solid var(--steel); border-radius: 8px;
 }
 .order-items select {
-  font: inherit; font-size: .85rem; padding: .3rem .4rem;
-  border: 1px solid var(--line); border-radius: 6px; background: #fff;
+  font: inherit; font-size: .85rem; padding: .45rem .4rem;
+  border: 1px solid var(--steel); border-radius: 8px; background: #fff;
 }
 .oi-remove {
   margin-left: auto; background: none; border: 0; color: var(--muted);
-  font-size: .8rem; cursor: pointer; text-decoration: underline;
+  font-size: .8rem; cursor: pointer; text-decoration: underline; min-height: 36px; padding: 0 .3rem;
 }
 .oi-remove:hover { color: var(--flag-red); }
 .order-foot { margin-top: auto; border-top: 2px solid var(--navy); padding-top: 1rem; display: flex; flex-direction: column; gap: .7rem; }
@@ -574,7 +571,8 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
   gap: 2.4rem; padding-top: 3.4rem; padding-bottom: 2.4rem;
 }
 .site-footer h2 { color: #fff; font-size: .8rem; letter-spacing: .18em; text-transform: uppercase; margin-bottom: 1rem; }
-.site-footer ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .45rem; font-size: .9rem; }
+.site-footer ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .1rem; font-size: .9rem; }
+.site-footer li a { display: inline-block; padding: .28rem 0; }
 .site-footer a { color: rgba(255, 255, 255, .85); text-decoration: none; }
 .site-footer a:hover { color: #fff; text-decoration: underline; }
 /* Логото е тъмносиньо и на тъмен фон се губи: в бяла табелка, както в каталога. */
@@ -590,18 +588,12 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
 .footer-flag span:nth-child(2) { background: #fff; margin-left: -6px; }
 .footer-flag span:nth-child(3) { background: var(--flag-red); margin-left: -6px; margin-right: .3rem; }
 .footer-bottom {
-  border-top: 1px solid rgba(255, 255, 255, .14);
+  position: relative;
   display: flex; justify-content: space-between; flex-wrap: wrap; gap: .6rem;
   padding-top: 1.3rem; padding-bottom: 1.6rem; font-size: .82rem;
   color: rgba(255, 255, 255, .55);
 }
 .footer-bottom a { color: rgba(255, 255, 255, .75); text-decoration: underline; }
-
-/* ── Появяване при скрол (изключено при reduced-motion) ── */
-@media (prefers-reduced-motion: no-preference) {
-  .reveal { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }
-  .reveal.is-visible { opacity: 1; transform: none; }
-}
 
 /* ── Отзивчивост ── */
 @media (max-width: 1020px) {
@@ -647,9 +639,30 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
   .sys-media { border-right: 0; border-bottom: 1px solid var(--line); }
   .sys-media img { max-height: 200px; }
   .footer-grid { grid-template-columns: 1fr; }
+  /* Телефоните не показват PDF в страницата (Android дава празна кутия, iOS само първата страница):
+     остават бутоните горе, съдържанието и лентата със страници. */
+  .catalog-viewer { display: none; }
+  /* Етикетът над стойността: телефонът и имейлът не се чупят на два реда. */
+  .spec-row { grid-template-columns: 1fr; gap: .2rem; }
+  .spec-row dt { align-self: start; }
   .section { padding: 2.8rem 0; }
   .hero-grid { padding-top: 2.8rem; }
   .sec-num { font-size: 8rem; opacity: .8; }
+  .sec-cover :is(h2, .sec-lead) { max-width: none; }
+  /* Планката, която се регулира, е доводът на страницата: веднага след заглавието, преди текста. */
+  .hero-grid, .page-head-grid { gap: 0; }
+  .hero-copy, .page-head-copy { display: contents; }
+  :is(.hero-copy, .page-head-copy) > :is(.crumbs, .kicker) { order: 1; }
+  :is(.hero-copy, .page-head-copy) > h1 { order: 2; }
+  .hero-visual, .page-head-grid > :is(.regola, .hero-still) { order: 3; margin-top: .4rem; margin-bottom: 1.8rem; }
+  :is(.hero-copy, .page-head-copy) > :is(.hero-lead, .sec-lead, .chips, .hero-cta, .patent-badge) { order: 4; }
+  /* Семействата: снимката вляво, текстът вдясно — четири карти на един екран, не на четири. */
+  .fam-card { flex-direction: row; }
+  .fam-card picture { flex: 0 0 38%; aspect-ratio: auto; border-bottom: 0; border-right: 1px solid var(--line); }
+  .fam-card img { padding: 4px; }
+  .fam-body { padding: .9rem 1rem; }
+  .step { padding: 1.2rem 0 0; border-left: 0; border-top: 1px solid var(--line); margin-top: 1.2rem; }
+  .step:first-child { padding-top: 0; border-top: 0; margin-top: 0; }
 }
 
 /* ── Печат ── */
@@ -669,7 +682,7 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
 .faq-list { max-width: 52rem; margin-top: 1.8rem; }
 .faq-item {
   background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
-  margin-bottom: .8rem; box-shadow: var(--shadow); overflow: hidden;
+  margin-bottom: .8rem; overflow: hidden;
 }
 .faq-item summary {
   cursor: pointer; padding: 1.05rem 3rem 1.05rem 1.4rem; list-style: none;
@@ -691,3 +704,39 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
 
 /* Непрекъсваеми низове (имейл, URL, дълъг код) да не разпъват решетките */
 .spec-row dd, .contact-mail, .legal-body { overflow-wrap: anywhere; }
+
+/* Пътеката на страниците по семейства (видима; същата е в JSON-LD BreadcrumbList) */
+.crumbs { margin: 0 0 1rem; font-size: .86rem; color: rgba(255, 255, 255, .72); }
+.crumbs a { color: rgba(255, 255, 255, .86); text-decoration: underline; text-underline-offset: 3px; }
+.crumbs [aria-current] { color: #fff; }
+
+/* Линковете към страниците по семейства (листата, долу на всяко семейство) */
+.fam-links ul { list-style: none; margin: 1.4rem 0; padding: 0; display: flex; flex-wrap: wrap; gap: .6rem; }
+.fam-links a { display: inline-block; padding: .55rem 1rem; border: 1px solid var(--line); border-radius: 999px; color: var(--navy); font-weight: 600; text-decoration: none; }
+.fam-links a:hover, .fam-links a:focus-visible { border-color: var(--navy); background: var(--tint); }
+.sec-more { margin: 1.2rem 0 0; }
+.sec-more a { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Заглавие на секция без тъмна корица (страниците по семейства: тъмният блок е само горе) */
+.sec-head { padding-top: 3.4rem; scroll-margin-top: 84px; }
+.sec-head h2 { margin-bottom: .35em; }
+.sec-head .lead { margin-bottom: 0; }
+.sec-head .chips { margin-bottom: 0; }
+.sec-head + .section { padding-top: 1.8rem; }
+
+/* 404 — една страница за трите езика */
+.nf-page { min-height: 100vh; min-height: 100svh; display: flex; align-items: center; }
+.nf-page .wrap { width: 100%; padding-top: 3rem; padding-bottom: 3rem; }
+.nf-logo { display: block; width: fit-content; margin-bottom: 2.6rem; padding: 12px 16px; background: #fff; border-radius: 10px; }
+.nf-logo img { width: 180px; }
+.nf-page h1 span { display: block; }
+.nf-page h1 span + span { font-size: .55em; font-weight: 600; letter-spacing: 0; color: rgba(255, 255, 255, .78); margin-top: .5em; }
+.nf-credit { margin: 3rem 0 0; font-size: .82rem; color: rgba(255, 255, 255, .6); }
+
+/* Кирилица: главните с разредка са тежки и широки (етикетите на числата се пренасяха на два реда) —
+   на български малките надписи са с обикновени букви. */
+html[lang="bg"] :is(.kicker, .chip, .stat span, .spec-row dt, .site-footer h2, .footer-flag) {
+  text-transform: none; letter-spacing: .02em;
+}
+html[lang="bg"] :is(.kicker, .chip, .stat span, .spec-row dt) { font-size: .82rem; }
+html[lang="bg"] .site-footer h2 { font-size: .95rem; }

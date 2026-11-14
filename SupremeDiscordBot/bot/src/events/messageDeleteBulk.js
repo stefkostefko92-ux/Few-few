@@ -6,7 +6,7 @@
 
 import { logServerEvent, isEventCategoryEnabled } from "../utils/serverEventLog.js";
 import { AuditLogEvent } from "discord.js";
-import { markTicketMessage } from "../utils/api.js";
+import api, { markTicketMessage } from "../utils/api.js";
 
 export default {
   name: "messageDeleteBulk",
@@ -28,6 +28,14 @@ export default {
       // (Разбивача, 07.08.2026)
       for (const id of (messages?.keys?.() ?? [])) {
         markTicketMessage(id, "delete").catch(() => {});
+      }
+
+      // З9: изтрито съобщение с роли по реакция (ботско) → непубликувано в таблото. Само ботски/
+      // неизвестни автори (на практика ≤ няколко от до 100) — човешките съобщения не струват заявка.
+      for (const [id, m] of (messages?.entries?.() ?? [])) {
+        if (m?.author?.bot || m?.partial || !m?.author) {
+          api.post(`/bot/reaction-roles/message/${id}/deleted`, { serverId: guild.id }).catch(() => {});
+        }
       }
 
       // Гейт ПРЕДИ скъпия audit fetch (виж messageDelete.js).

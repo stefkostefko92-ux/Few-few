@@ -6,16 +6,19 @@
   gap: 12px;
   min-width: 0;
 }
-.fs-btn[aria-pressed='true'] {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-ink);
-}
 .zoombar {
   display: none;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
+}
+/* as tall as the sheet list and the buttons on their line; − and + are square-ish targets */
+.zoombar > .btn {
+  align-self: stretch;
+}
+.zoombar > .btn[aria-label] {
+  min-width: 44px;
+  padding: 0;
 }
 .zoomhint {
   font-size: 12px;
@@ -75,6 +78,11 @@ html.fs-lock body {
   flex: 1 1 auto;
   min-height: 0;
 }
+/* on the page a click on a drawing opens it on full screen, zoomed in on that spot (fullscreen.js) */
+.zoom-in:not(.pz),
+.sheetcard:not(.pz) > svg {
+  cursor: zoom-in;
+}
 .pz {
   cursor: grab;
   touch-action: none;
@@ -87,8 +95,30 @@ html.fs-lock body {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
 }
+/* the sheet list is as wide as its longest sheet name, up to 420 px, and the buttons stay beside it. Its own width,
+   not the 100 % every field gets (controls.css): a percentage of the row it sits in counts as nothing while the row
+   measures itself, so the row came out too narrow and „Full screen“ fell to a line of its own. Where the row is
+   short the list gives way first (down to 240 px), then the buttons go under it */
+.row .acts select.pick {
+  flex: 1 1 240px;
+  width: auto;
+  max-width: 420px;
+}
 @media (max-width: 640px) {
   .zoomhint {
     display: none;
+  }
+  /* phone: the sheet gets the screen — the heading and the copy button wait on the page; the sheet list takes
+     one row, „Close“ and the zoom buttons the next */
+  .is-full > .row > h2,
+  .is-full #copy-svg {
+    display: none;
+  }
+  .is-full > .row .acts {
+    width: 100%;
+  }
+  .is-full > .row .acts select.pick {
+    flex: 1 1 100%;
+    max-width: none;
   }
 }

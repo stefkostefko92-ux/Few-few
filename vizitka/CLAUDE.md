@@ -50,7 +50,9 @@ src/guides.js        наръчник (SEO/GEO/AEO): по една страни�
                      визитка · визитка с QR код · фирмена визитка · vCard (.vcf) · как да
                      си направя. ЕДИН масив храни маршрутите, sitemap, llms.txt и IndexNow
 src/seo.js           COMPANY (импресум + structured address/geo Бобов дол), robots
-                     (AI-ботове без /p/; /api /b /print disallow), sitemap (lastmod),
+                     (AI-ботове без /p/; disallow само за не-страници /api /b /v1 /mcp
+                     /p/*/wallet — личните страници са noindex, НЕ Disallow), sitemap
+                     (lastmod по страница — PAGE_UPDATED),
                      llms.txt, FAQ, JSON-LD (сайт: WebSite + Organization/LocalBusiness
                      с geo+areaServed=BG + WebApplication offer:0 + FAQPage; визитка:
                      Person/Organization + BreadcrumbList)

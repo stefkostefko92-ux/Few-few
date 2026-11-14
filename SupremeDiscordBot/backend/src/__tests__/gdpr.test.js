@@ -15,7 +15,7 @@ vi.mock("../lib/prisma.js", () => ({ prisma: prismaMock }));
 
 // Автентикацията не е предмет на тези тестове — вкарваме познат потребител.
 const USER = {
-  id: "u1",
+  id: "100000000000000001",
   username: "stefan",
   discriminator: "0",
   avatar: "abc",
@@ -79,7 +79,7 @@ describe("GET /api/gdpr/export — чл. 15", () => {
 
   it("носи идентификация на субекта и на платформата", async () => {
     const res = await request(app()).get("/api/gdpr/export");
-    expect(res.body.subject).toMatchObject({ id: "u1", type: "user" });
+    expect(res.body.subject).toMatchObject({ id: "100000000000000001", type: "user" });
     expect(res.body.platform).toBe("Supreme Bot");
   });
 
@@ -91,7 +91,7 @@ describe("GET /api/gdpr/export — чл. 15", () => {
   it("тегли одита и където субектът е ОБЕКТ (targetId), не само автор", async () => {
     await request(app()).get("/api/gdpr/export");
     const call = prismaMock.auditLog.findMany.mock.calls.at(-1);
-    expect(call[0].where).toEqual({ OR: [{ actorId: "u1" }, { targetId: "u1" }] });
+    expect(call[0].where).toEqual({ OR: [{ actorId: "100000000000000001" }, { targetId: "100000000000000001" }] });
   });
 
   it("НЕ изнася чужди лични данни: тикет-транскрипта и таен архив-токен (чл. 15(4))", async () => {
@@ -106,31 +106,31 @@ describe("GET /api/gdpr/export — чл. 15", () => {
 
 describe("POST /api/gdpr/delete-account — чл. 17", () => {
   it("занулява имейла (иначе преживява „изтриването“)", async () => {
-    await request(app()).post("/api/gdpr/delete-account").send({ confirmDiscordId: "u1" });
+    await request(app()).post("/api/gdpr/delete-account").send({ confirmDiscordId: "100000000000000001" });
     const call = prismaMock.user.update.mock.calls.at(-1);
     expect(call, "user.update изобщо не е викан").toBeTruthy();
     expect(call[0].data).toHaveProperty("email", null);
   });
 
   it("анонимизира профила и маха аватара", async () => {
-    await request(app()).post("/api/gdpr/delete-account").send({ confirmDiscordId: "u1" });
+    await request(app()).post("/api/gdpr/delete-account").send({ confirmDiscordId: "100000000000000001" });
     const data = prismaMock.user.update.mock.calls.at(-1)[0].data;
     expect(data.username).toMatch(/^\[deleted-user-/);
     expect(data.avatar).toBeNull();
   });
 
   it("трие сесиите — OAuth токените живеят там", async () => {
-    await request(app()).post("/api/gdpr/delete-account").send({ confirmDiscordId: "u1" });
+    await request(app()).post("/api/gdpr/delete-account").send({ confirmDiscordId: "100000000000000001" });
     expect(prismaMock.session.deleteMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ userId: "u1" }) }),
+      expect.objectContaining({ where: expect.objectContaining({ userId: "100000000000000001" }) }),
     );
   });
 
   it("псевдонимизира authorTag в тикет-съобщенията (пряко идентифициращ подпис)", async () => {
-    await request(app()).post("/api/gdpr/delete-account").send({ confirmDiscordId: "u1" });
+    await request(app()).post("/api/gdpr/delete-account").send({ confirmDiscordId: "100000000000000001" });
     const call = prismaMock.ticketMessage.updateMany.mock.calls.at(-1);
     expect(call, "ticketMessage.updateMany не е викан").toBeTruthy();
-    expect(call[0].where).toMatchObject({ authorId: "u1" });
+    expect(call[0].where).toMatchObject({ authorId: "100000000000000001" });
     expect(call[0].data.authorTag).toMatch(/^\[deleted-user-/);
   });
 });
@@ -138,7 +138,7 @@ describe("POST /api/gdpr/delete-account — чл. 17", () => {
 describe("POST /api/gdpr/delete-account — гардове преди изтриването", () => {
   it("отказва при активен Premium абонамент (иначе клиентът плаща за изтрит акаунт)", async () => {
     prismaMock.server.count.mockResolvedValue(1);
-    const res = await request(app()).post("/api/gdpr/delete-account").send({ confirmDiscordId: "u1" });
+    const res = await request(app()).post("/api/gdpr/delete-account").send({ confirmDiscordId: "100000000000000001" });
     expect(res.status).toBe(400);
     expect(res.body.code).toBe("ACTIVE_SUBSCRIPTIONS");
     expect(prismaMock.user.update).not.toHaveBeenCalled();
@@ -146,7 +146,7 @@ describe("POST /api/gdpr/delete-account — гардове преди изтри
 
   it("отказва при активна Agency — тя не виси на сървър, затова е отделна проверка", async () => {
     prismaMock.agency.count.mockResolvedValue(1);
-    const res = await request(app()).post("/api/gdpr/delete-account").send({ confirmDiscordId: "u1" });
+    const res = await request(app()).post("/api/gdpr/delete-account").send({ confirmDiscordId: "100000000000000001" });
     expect(res.status).toBe(400);
     expect(res.body.code).toBe("ACTIVE_SUBSCRIPTIONS");
   });

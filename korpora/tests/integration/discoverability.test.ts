@@ -55,8 +55,8 @@ test('the raster icons are real ICO and PNG files in the sizes they declare', as
     assert.equal(pngSize(png), `${size}x${size}`, `ICO entry ${size}`);
     sizes.push(size);
   }
-  // браузърите взимат 16 и 32; Google Search препоръчва иконка, по-голяма от 48×48 — затова и 192
-  assert.deepEqual(sizes, [16, 32, 48, 192]);
+  // браузърите взимат 16 и 32; иконата над 48×48 за Google Search е отделният PNG (192), а не запис в ICO
+  assert.deepEqual(sizes, [16, 32, 48]);
 
   const touch = await bytes('/apple-touch-icon.png');
   assert.equal(touch.res.headers.get('content-type'), 'image/png');
@@ -85,11 +85,16 @@ test('every page links the icons, the manifest and its logo, and the links resol
     const page = await html(path);
     const head = /<head>([\s\S]*?)<\/head>/.exec(page)?.[1] ?? '';
     for (const link of [
-      '<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48 192x192">',
+      '<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">',
       '<link rel="apple-touch-icon" href="/apple-touch-icon.png">',
       '<link rel="manifest" href="/site.webmanifest">',
     ])
       assert.ok(head.includes(link), `${path}: ${link}`);
+    const png = /<link rel="icon" type="image\/png" sizes="192x192" href="([^"]+)">/.exec(
+      head,
+    )?.[1];
+    assert.ok(png, `${path}: the 192 px icon`);
+    assert.equal(pngSize((await bytes(png)).buf), '192x192', png);
     // the logo in the top bar: every width of its srcset is a real WebP
     const srcset = /<img class="logo"[^>]* srcset="([^"]+)"/.exec(page)?.[1];
     assert.ok(srcset, `${path}: logo`);
@@ -205,6 +210,36 @@ test('LocalBusiness is the one company node, with the geo of the meta tags and t
     String(ofType(graph(await html('/')), 'LocalBusiness').priceRange),
     /^30\s€ – 900\s€$/,
   );
+});
+
+test('the company node says what it knows about and carries the Korpora brand with its logo', async () => {
+  for (const [locale, path] of [...LANDINGS, ['en', '/en/privacy'] as const]) {
+    const org = ofType(graph(await html(path)), 'Organization');
+    const topics = org.knowsAbout as string[];
+    assert.ok(Array.isArray(topics) && topics.length >= 5, `${path}: knowsAbout`);
+    assert.deepEqual(
+      topics,
+      translate(locale, 'company.knowsAbout')
+        .split(',')
+        .map((topic) => topic.trim()),
+      `${path}: in the language of the page`,
+    );
+    const brand = org.brand as Record<string, string>;
+    assert.deepEqual(
+      [brand['@type'], brand.name, brand.logo],
+      ['Brand', 'Korpora', `${BASE}/static/img/brand/logo.png`],
+      path,
+    );
+    // only the profiles the owner named
+    assert.deepEqual(
+      org.sameAs,
+      ['https://www.youtube.com/@CarbonStealth', 'https://www.tiktok.com/@zerofucksgiiven'],
+      `${path}: sameAs`,
+    );
+  }
+  const logo = await get('/static/img/brand/logo.png');
+  assert.equal(logo.status, 200);
+  assert.equal(logo.headers.get('content-type'), 'image/png');
 });
 
 test('Speakable points at text that is on the page', async () => {

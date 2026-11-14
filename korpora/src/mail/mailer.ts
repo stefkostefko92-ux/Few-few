@@ -12,7 +12,9 @@ export interface MailAttachment {
 export interface MailMessage {
   to: string;
   subject: string;
+  /** Обикновеният текст — винаги; HTML с марката — до него (mail/html.ts). */
   text: string;
+  html?: string;
   attachments?: MailAttachment[];
 }
 

@@ -11,7 +11,11 @@ const DIM = '#2c6a10';
 // the paper; whatever frames a drawing on a page matches it (--drawing-paper in public/css/base.css and
 // print/brochure.css)
 export const PAPER = '#fbfcf9';
-export const STYLE = `svg.rdw{font-family:'Geologica','IBM Plex Sans',Inter,system-ui,sans-serif}
+// The faces the site loads (public/css/base.css, the brochure): Geologica for text, JetBrains Mono for numbers; a
+// drawing opened on its own falls back to the system's. The Bulgarian localized letterforms (OpenType locl) are off,
+// as everywhere in the product; the font shorthand resets font-feature-settings, so it follows every font.
+const LOCL = "font-feature-settings:'locl' 0";
+export const STYLE = `svg.rdw{font-family:'Geologica',Inter,system-ui,sans-serif;${LOCL}}
 svg.rdw .d-paper{fill:${PAPER}}
 svg.rdw .d-frm,svg.rdw .d-tb rect,svg.rdw .d-tb line{fill:none;stroke:${INK};stroke-width:.5}
 svg.rdw .d-vis{fill:${PAPER};stroke:${INK};stroke-width:.35}
@@ -22,25 +26,27 @@ svg.rdw .d-cut{stroke:${INK};stroke-width:.35}
 svg.rdw .d-hl{stroke:${INK};stroke-width:.16}
 svg.rdw .d-dim,svg.rdw .d-ext{fill:none;stroke:${DIM};stroke-width:.18}
 svg.rdw .d-arwh{fill:${DIM}}
-svg.rdw .d-dt{font:500 2.9px 'IBM Plex Mono',ui-monospace,monospace;fill:${DIM}}
-svg.rdw .d-vt{font:600 3.6px 'IBM Plex Sans',system-ui,sans-serif;fill:${INK}}
-svg.rdw .d-note{font:400 2.6px 'IBM Plex Sans',system-ui,sans-serif;fill:#2b3527}
-svg.rdw .d-small{font:400 2.2px 'IBM Plex Sans',system-ui,sans-serif;fill:#2b3527}
-svg.rdw .d-tag{font:700 2.4px 'IBM Plex Mono',ui-monospace,monospace;fill:${INK}}
-svg.rdw .d-tl{font:400 2.1px 'IBM Plex Sans',system-ui,sans-serif;fill:#5b6656}
-svg.rdw .d-tv{font:500 3px 'IBM Plex Mono',ui-monospace,monospace;fill:${INK}}
-svg.rdw .d-tv.d-big{font:600 3.6px 'IBM Plex Sans',system-ui,sans-serif}
+svg.rdw .d-dt{font:500 2.9px 'JetBrains Mono',ui-monospace,monospace;${LOCL};fill:${DIM}}
+svg.rdw .d-vt{font:600 3.6px 'Geologica',system-ui,sans-serif;${LOCL};fill:${INK}}
+svg.rdw .d-note{font:400 2.6px 'Geologica',system-ui,sans-serif;${LOCL};fill:#2b3527}
+svg.rdw .d-small{font:400 2.2px 'Geologica',system-ui,sans-serif;${LOCL};fill:#2b3527}
+svg.rdw .d-tag{font:700 2.4px 'JetBrains Mono',ui-monospace,monospace;${LOCL};fill:${INK}}
+svg.rdw .d-tl{font:400 2.1px 'Geologica',system-ui,sans-serif;${LOCL};fill:#5b6656}
+svg.rdw .d-tv{font:500 3px 'JetBrains Mono',ui-monospace,monospace;${LOCL};fill:${INK}}
+svg.rdw .d-tvs{font:500 2.4px 'JetBrains Mono',ui-monospace,monospace;${LOCL};fill:${INK}}
+svg.rdw .d-tv.d-big{font:600 3.6px 'Geologica',system-ui,sans-serif;${LOCL}}
 svg.rdw .d-open{fill:none;stroke:${INK};stroke-width:.16;stroke-dasharray:1.2 1}
 svg.rdw .d-gnd{stroke:${INK};stroke-width:.35}
 svg.rdw .d-cpl{stroke:${INK};stroke-width:.25;stroke-dasharray:6 1 1 1}
 svg.rdw .d-cplt{stroke:${INK};stroke-width:.7}
 svg.rdw .d-cpa{stroke:${INK};stroke-width:.25}
 svg.rdw .d-cpah{fill:${INK}}
-svg.rdw .d-alert{font:600 2.8px 'IBM Plex Sans',system-ui,sans-serif;fill:#b42318}
+svg.rdw .d-alert{font:600 2.8px 'Geologica',system-ui,sans-serif;${LOCL};fill:#b42318}
 svg.rdw .d-cl{stroke:${INK};stroke-width:.16;stroke-dasharray:1.5 .6 .3 .6}
 svg.rdw .d-hole{fill:none;stroke:${INK};stroke-width:.22}
 svg.rdw .d-thru{fill:rgba(24,32,15,.18);stroke:${INK};stroke-width:.22}
-svg.rdw .d-key{fill:rgba(196,98,24,.16);stroke:#a8510f;stroke-width:.3}
+svg.rdw .d-key{fill:none;stroke:#a8510f;stroke-width:.3}
+svg.rdw .d-key.d-thru{fill:rgba(196,98,24,.16)}
 svg.rdw .d-mark{fill:none;stroke:#a8510f;stroke-width:.25}
 svg.rdw .d-edgeop{fill:none;stroke:#3b5bdb;stroke-width:.3}
 svg.rdw .d-groove{fill:rgba(24,32,15,.12);stroke:${INK};stroke-width:.2}
@@ -94,6 +100,34 @@ function projectionSymbol(x, y) {
   return `<g class="d-proj" transform="translate(${x} ${y})"><path d="M0 -2.4 L6 -3.6 L6 3.6 L0 2.4 Z"/><line x1="-1" y1="0" x2="7" y2="0" class="d-cl"/><circle cx="12" cy="0" r="3.6"/><circle cx="12" cy="0" r="2.4"/><line x1="7.6" y1="0" x2="16.4" y2="0" class="d-cl"/></g>`;
 }
 
+// A title-block value cut to what its cell holds: a 60 mm cell takes 30 characters of the 3 px monospace.
+export const fit = (text, n) => {
+  const s = String(text ?? '');
+  return s.length > n ? `${s.slice(0, n - 1)}…` : s;
+};
+
+// Text in two lines of up to n characters each, broken between words where it can be; what is left past the second
+// line is cut with „…“.
+export function twoLines(text, n) {
+  const s = String(text ?? '');
+  if (s.length <= n) return [s];
+  const head = s.slice(0, n + 1);
+  const at = head.lastIndexOf(' ');
+  const cut = at > n / 2 ? at : n;
+  return [s.slice(0, cut).trimEnd(), fit(s.slice(cut).trimStart(), n)];
+}
+
+// The material cell: one line of the title-block size when it holds it (30 characters), else one or two smaller
+// lines (40 each) — a decor's full name, as „Egger H1145 Дъб Бардолино натур“, is what the workshop orders by.
+function materialCell(x, y, material) {
+  const s = String(material ?? '');
+  const label = `<text class="d-tl" x="${x + 2}" y="${y + 3.6}">Материал</text>`;
+  if (s.length <= 30) return `${label}<text class="d-tv" x="${x + 2}" y="${y + 9.2}">${esc(s)}</text>`;
+  const lines = twoLines(s, 40);
+  const top = lines.length === 1 ? 9.2 : 7.4;
+  return `${label}${lines.map((line, i) => `<text class="d-tvs" x="${x + 2}" y="${y + top + i * 3.2}">${esc(line)}</text>`).join('')}`;
+}
+
 // Frame (20 mm binding margin left, 10 mm elsewhere) and a 180 × 36 title block at the bottom right. sheetNo null:
 // a part without a sheet of its own (its drilling map only) — the drawing number has no sheet and the sheet is „—“.
 export function frame(title, meta, scale, sheetNo, sheetCount, material) {
@@ -105,10 +139,10 @@ export function frame(title, meta, scale, sheetNo, sheetCount, material) {
 <g class="d-tb"><rect x="${x}" y="${y}" width="180" height="36"/>
 <line x1="${x}" y1="${y + 12}" x2="${x + 180}" y2="${y + 12}"/><line x1="${x}" y1="${y + 24}" x2="${x + 180}" y2="${y + 24}"/>
 <line x1="${x + 60}" y1="${y + 12}" x2="${x + 60}" y2="${y + 36}"/><line x1="${x + 110}" y1="${y + 12}" x2="${x + 110}" y2="${y + 36}"/><line x1="${x + 145}" y1="${y + 12}" x2="${x + 145}" y2="${y + 36}"/>
-${cell(x, y, 'Наименование', title.length > 58 ? `${title.slice(0, 57)}…` : title, 'd-tv d-big')}
-${cell(x, y + 12, 'Собственик', meta.owner)}${cell(x + 60, y + 12, 'Чертеж №', drawingNo)}
+${cell(x, y, 'Наименование', fit(title, 58), 'd-tv d-big')}
+${cell(x, y + 12, 'Собственик', fit(meta.owner, 30))}${cell(x + 60, y + 12, 'Чертеж №', drawingNo)}
 ${cell(x + 110, y + 12, 'Мащаб', `1:${scale}`)}${cell(x + 145, y + 12, 'Лист', sheetNo == null ? '—' : `${sheetNo}/${sheetCount}`)}
-${cell(x, y + 24, 'Материал', material.length > 30 ? `${material.slice(0, 29)}…` : material)}${cell(x + 60, y + 24, 'Дата', meta.date)}
+${materialCell(x, y + 24, material)}${cell(x + 60, y + 24, 'Дата', meta.date)}
 ${cell(x + 110, y + 24, 'Размери', 'mm')}<text class="d-tl" x="${x + 147}" y="${y + 27.6}">Проекция</text>${projectionSymbol(x + 158, y + 31.2)}</g>`;
 }
 

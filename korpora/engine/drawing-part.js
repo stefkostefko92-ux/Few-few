@@ -100,7 +100,8 @@ export function drawingPart(model, meta, partId) {
       continue;
     }
     const r = Math.max(0.55, (h.d / 2) * k);
-    g += `<circle class="${KEY.has(h.kind) ? 'd-key' : h.through ? 'd-thru' : 'd-hole'}" cx="${x}" cy="${y}" r="${r}"/>`;
+    // filled = through, whatever the colour (orange = hardware); the legend below says so
+    g += `<circle class="${KEY.has(h.kind) ? `d-key${h.through ? ' d-thru' : ''}` : h.through ? 'd-thru' : 'd-hole'}" cx="${x}" cy="${y}" r="${r}"/>`;
     const rowKey = `${h.letter}|${h.v}`;
     if (h.kind !== 'cup-dowel' && (h.kind !== 'system' || !taggedRows.has(rowKey))) {
       taggedRows.add(rowKey);
@@ -161,7 +162,7 @@ export function drawingPart(model, meta, partId) {
   const bandsTxt = Object.values(p.bands).filter(Boolean);
   g += `<text class="d-note" x="30" y="262">Готов размер ${fmt(p.L)} × ${fmt(p.W)} × ${fmt(p.T)}; разкрой ${fmt(cut.L)} × ${fmt(cut.W)}${model.spec.bandCompensation ? ' (компенсиран кант)' : ''}.</text>`;
   g += `<text class="d-note" x="30" y="267">Кант: ${bandsTxt.length ? `${bandsTxt.map(fmt).join(' / ')} mm ABS — дебелата линия` : 'няма'}. Хоризонталните отвори „Ч“ не са в G-кода.</text>`;
-  g += `<text class="d-note" x="30" y="272">Отворите с буква A… са пробиване отгоре; пълните кръгове са проходни.</text>`;
+  g += `<text class="d-note" x="30" y="272">Отворите с буква A… са пробиване отгоре; пълните кръгове са проходни, оранжевите са за обков.</text>`;
   const material = `${STOCK[p.stock].name} ${fmt(p.T)} · ${decorName(p.decor)}`;
   return svgDoc(g + frame(`${p.id} ${p.name} ${fmt(p.L)}×${fmt(p.W)}`, meta, scale, no, count, material), `Чертеж с карта за пробиване: ${p.id} ${p.name}`, p.id);
 }

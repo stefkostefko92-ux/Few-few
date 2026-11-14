@@ -1,5 +1,6 @@
 // Всички API маршрути + защитите: сесия/Bearer, CSRF маркер, одит.
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import { Router, sendJson, sendError, readJson, parseCookies, openSse, clientIp } from './httpd.js';
 import {
   hashPassword,
@@ -21,6 +22,7 @@ import * as reclaim from './reclaim.js';
 import * as coverage from './coverage.js';
 import * as deploy from './deploy.js';
 import * as agents from './agents.js';
+import * as proposals from './proposals.js';
 import * as files from './files.js';
 import * as nodes from './nodes.js';
 import * as upload from './upload.js';
@@ -43,6 +45,9 @@ import * as cronedit from './cronedit.js';
 import * as domains from './domains.js';
 import { readRaw, handleGithub } from './webhook.js';
 import * as posture from './posture.js';
+import * as selfcheck from './selfcheck.js';
+import * as fileops from './fileops.js';
+import * as machine from './machine.js';
 import * as investigate from './investigate.js';
 import { AccessLogReader, discoverLogs } from './accesslog.js';
 import { drillSpec, backupAge } from './drill.js';
@@ -82,7 +87,7 @@ const cookieName = (c) => (c?.trustProxy ? COOKIE_HOST : COOKIE_BASE);
 // Версията се показва в подножието на панела и се праща на съседа при `/api/ping`.
 // 1.0.0: всичките 37 секции работят, гейтът е 14 проверки, а шестте кръга одит
 // (числа · необратими действия · известия · съсед · обеми · документи) са затворени.
-export const VERSION = '1.9.2';
+export const VERSION = '1.17.1';
 
 // Маршрути, които peer НИКОГА не пипа при обхват „read" (дори с GET) — това са
 // входовете, които биха дали контрол над машината на компрометиран съсед.
@@ -90,7 +95,7 @@ export const PEER_DENY = [
   /^\/api\/terminal\//,
   /^\/api\/pty(\/|$)/,
   /^\/api\/power$/,
-  /^\/api\/files\/(read|write)$/,
+  /^\/api\/files(\/|$)/, // файловете на машината — не на съседа (дори списъкът носи имена)
   /^\/api\/deploy\//,
   /^\/api\/firewall\//,
   /^\/api\/webserver\/site$/,
@@ -131,6 +136,10 @@ export const PEER_DENY = [
   // ни възли с ТЕХНИТЕ токени, които ние пазим (confused deputy). Може и да
   // верижи: /api/nodes/B/api/nodes/C/…
   /^\/api\/nodes\//,
+  // Предложенията на агентите се одобряват САМО от човек на ТОЗИ възел.
+  // Съсед, който одобрява наши поправки, би бил root по заобиколен път.
+  /^\/api\/proposals\//,
+  /^\/api\/agent\//,
   // Изходът на задачите е ковертен канал около защитата на тайните: ако някой
   // е пуснал дъмп или `cat` в терминала, тайната стои в изхода на задачата.
   /^\/api\/jobs(\/|$)/,
@@ -141,7 +150,48 @@ export const PEER_DENY = [
 // Копието на бекъпа СЕ ПРАЩА от съседа по дизайн — точно като огледалото на
 // одита. Останалите `/api/backups/*` мутации му остават забранени (той не пипа
 // нашия график и не пуска нашите бекъпи).
+// Агентският ключ (`Authorization: CSD-Agent <ключ>`) стига САМО дотук: четене
+// на състоянието и подаване на предложение. Изпълнение — никога; то е бутонът
+// „Одобри", зад паролата на човека. Логовете влизат само като МАСКИРАНИ групи
+// (`/api/logs/analyze`): суровият журнал съдържа тайни и чужди адреси, а
+// агентът работи в облака — тоест това би било изнасяне на данни.
+// `.env`, файлове, одит, сесии, терминал: никога.
+export const AGENT_ALLOW = [
+  ['GET', /^\/api\/overview$/],
+  ['GET', /^\/api\/kernel$/],
+  ['GET', /^\/api\/forecast$/],
+  ['GET', /^\/api\/alerts$/],
+  ['GET', /^\/api\/services$/],
+  ['GET', /^\/api\/docker$/],
+  ['GET', /^\/api\/compose$/],
+  ['GET', /^\/api\/health\/products$/],
+  ['GET', /^\/api\/updates$/],
+  ['GET', /^\/api\/updates\/health$/],
+  ['GET', /^\/api\/reclaim$/],
+  ['GET', /^\/api\/deploy\/state$/],
+  ['GET', /^\/api\/logs\/analyze$/],
+  ['GET', /^\/api\/security\/posture$/],
+  ['GET', /^\/api\/selfcheck$/],
+  ['GET', /^\/api\/agent\/actions$/],
+  ['GET', /^\/api\/agent\/proposals(\/[0-9a-f]{16})?$/],
+  ['POST', /^\/api\/agent\/proposals$/],
+];
+
 export const PEER_ALLOW = [/^\/api\/audit\/mirror$/, /^\/api\/backups\/offsite\/receive$/];
+
+// Затворено за съседа ВИНАГИ, дори при „peerScope": "full". Пълният обхват дава
+// контрол над ТАЗИ машина, не право да я ползваш като прокси към трети възел с
+// НЕГОВИЯ жетон (confused deputy, верижи /api/nodes/B/api/nodes/C/…), нито да
+// решаваш колко ти се доверява тя — обхватът е решение на човека ТУК.
+// SSH ключовете са смяна на ДОВЕРИЕТО като peer настройката: ключ, добавен през
+// съседа, е root достъп тук, даден от машина, а не от човек пред тази.
+export const PEER_NEVER = [/^\/api\/nodes(\/|$)/, /^\/api\/settings\/peer$/, /^\/api\/machine\/ssh-keys(\/|$)/];
+
+// Кой човек стои зад заявка от съседа. Проксито на другия възел го слага като
+// `потребител@възел`, след като е проверило НЕГОВАТА сесия и sudo; тук само го
+// вписваме в одита. Заглавката се приема единствено с верен peerToken — иначе
+// всеки би си написал чуждо име.
+const ACTOR_RX = /^[A-Za-z0-9._-]{1,64}@[A-Za-z0-9._-]{1,64}$/;
 
 // Единственото изключение от списъка с разрешени адреси: GitHub чука отвън и
 // адресите му не са наши. Маршрутът носи защитата си сам (HMAC подпис).
@@ -238,9 +288,22 @@ export function buildRouter(ctx) {
   // ── Помощници ──────────────────────────────────────────────────────────────
   const auth = (req) => {
     // 1) Federation: Bearer peerToken (другият VPS / прокси).
-    const bearer = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    //
+    // САМО схемата `Bearer` е жетон. Преди `replace` махаше префикса, ако го
+    // има, и всяка ДРУГА заглавка оставаше цяла и минаваше за грешен жетон —
+    // а браузърът праща `Authorization: Basic …` към целия произход, щом човек
+    // въведе паролата на ДЕСКТОПА (вторият му слой). Резултатът: вписаният
+    // собственик получаваше 401 с `X-Frame-Options: DENY` → сива икона в
+    // рамката; всеки опит влизаше в одита като налучкване на жетон, а след 10 —
+    // 429 за собствения му адрес. Видяно на живо. `Basic` не е наш — пада към
+    // бисквитката (и проксито на десктопа го препраща нагоре, виж forwardAuth).
+    const m = /^Bearer\s+(.+)$/i.exec(req.headers.authorization || '');
+    const bearer = m ? m[1].trim() : '';
     if (bearer && cfg.peerToken) {
-      if (tokenEqual(bearer, cfg.peerToken)) return { user: 'peer', peer: true };
+      if (tokenEqual(bearer, cfg.peerToken)) {
+        const actor = String(req.headers['x-csd-actor'] || '');
+        return { user: ACTOR_RX.test(actor) ? `peer:${actor}` : 'peer', peer: true };
+      }
       // Грешен Bearer беше безплатен опит: без брояч, без ред в одита, без
       // аларма — тоест налучкването на токена, който дава пълен достъп, беше
       // не просто възможно, а НЕВИДИМО.
@@ -256,6 +319,22 @@ export function buildRouter(ctx) {
         // Открито от активния тест (`attack.test.js`), не от четене на кода:
         // 25 грешни токена минаха с 401, нито един с 429. Лимит, който не
         // отказва, е брояч, не защита.
+        req._bearerThrottled = true;
+      }
+      return null;
+    }
+    // 1б) Агент: `CSD-Agent <ключ>`. Отделна схема и отделен ключ от peerToken —
+    // агентът е в облака, съседът е наш сървър; двата не бива да се заместват.
+    // Грешният ключ се брои в СЪЩИЯ лимитер като грешния жетон.
+    const am = /^CSD-Agent\s+(.+)$/i.exec(req.headers.authorization || '');
+    if (am) {
+      const key = am[1].trim();
+      if (cfg.agentKey && key && tokenEqual(key, cfg.agentKey)) return { user: 'agent', agent: true };
+      const aip = clientIp(req, cfg.trustProxy);
+      if (bearerAllowed(aip)) {
+        bearerFailed(aip);
+        audit.log({ action: 'auth.agentFail', ip: aip });
+      } else {
         req._bearerThrottled = true;
       }
       return null;
@@ -296,6 +375,7 @@ export function buildRouter(ctx) {
   // втори VPS иначе получава root shell на първия през /api/nodes/<id>/…
   // Разрешава се изрично с "peerScope": "full" в конфига.
   const peerAllowed = (req, url) => {
+    if (PEER_NEVER.some((rx) => rx.test(url.pathname))) return false;
     if (PEER_ALLOW.some((rx) => rx.test(url.pathname))) return true;
     if ((cfg.peerScope || 'read') === 'full') return true;
     if (req.method !== 'GET') return false;
@@ -305,7 +385,7 @@ export function buildRouter(ctx) {
   // CSRF за мутации: SameSite=Strict куки + задължителен custom header (не може
   // да се прати cross-site) + Origin проверка, когато браузърът го праща.
   const csrfOk = (req, who) => {
-    if (who?.peer) return true;
+    if (who?.peer || who?.agent) return true;
     if (req.headers['x-csd'] !== '1') return false;
     const origin = req.headers.origin;
     if (origin) {
@@ -326,20 +406,28 @@ export function buildRouter(ctx) {
         if (req._bearerThrottled) return sendError(res, 429, 'Твърде много опити с жетон — изчакай.');
         return sendError(res, 401, 'Не си вписан.');
       }
+      if (who.agent && !AGENT_ALLOW.some(([m, rx]) => m === req.method && rx.test(url.pathname))) {
+        audit.log({ action: 'agent.denied', path: url.pathname, method: req.method });
+        return sendError(res, 403, 'Агентският ключ стига само до четене и предложения.');
+      }
       if (mutating && !csrfOk(req, who)) return sendError(res, 403, 'Отхвърлена заявка (CSRF).');
       if (who.peer && !peerAllowed(req, url)) {
-        audit.log({ action: 'peer.denied', path: url.pathname, method: req.method });
-        return sendError(res, 403, 'Peer-ът има само достъп за четене (peerScope).');
+        audit.log({ action: 'peer.denied', path: url.pathname, method: req.method, user: who.user });
+        if (PEER_NEVER.some((rx) => rx.test(url.pathname))) {
+          return sendError(res, 403, 'Това съседът не прави дори при пълен достъп (верига към трети възел или обхвата на доверието).');
+        }
+        return sendError(res, 403, 'Съседът има само достъп за четене. За пълен контрол: в панела на ТОЗИ възел „Достъп по IP“ → „Достъп на съседа“ → „пълен контрол“.');
       }
       // Режим „sudo": повторна автентикация точно преди необратимото. Открадната
       // сесия вече не е достатъчна за изтрит продукт или изключен сървър.
       // Peer-ът е изключен — той няма браузър, който да покаже диалога, а
       // достъпът му и без това е ограничен от peerScope.
-      if (!who.peer && needsSudo(url.pathname, cfg, { mutating }) && !sudo.has(who.sess?.jti)) {
+      if (!who.peer && !who.agent && needsSudo(url.pathname, cfg, { mutating }) && !sudo.has(who.sess?.jti)) {
         audit.log({ action: 'sudo.required', path: url.pathname, user: who.user });
         return sendError(res, 428, 'Това действие иска повторно потвърждаване с парола.');
       }
       req.user = who.user;
+      req.agent = Boolean(who.agent);
       req.jti = who.sess?.jti || null;
       // „Последно видяна" се пишеше САМО при вход и се четеше само за
       // подредбата — тоест колоната показваше времето на ВХОД и две сесии,
@@ -398,7 +486,7 @@ export function buildRouter(ctx) {
   r.get('/api/ping', (req, res) => {
     const who = auth(req);
     if (!who) return sendError(res, 401, 'unauthorized');
-    sendJson(res, 200, { ok: true, nodeId: cfg.nodeId, nodeName: cfg.nodeName, version: VERSION });
+    sendJson(res, 200, { ok: true, nodeId: cfg.nodeId, nodeName: cfg.nodeName, version: VERSION, instance: nodes.INSTANCE });
   });
 
   r.post('/api/login', async (req, res) => {
@@ -1159,7 +1247,7 @@ export function buildRouter(ctx) {
         const fresh = await reclaim.reclaimable(cfg);
         const item = fresh.items.find((i) => i.id === b.id);
         if (!item) throw Object.assign(new Error('Няма такава категория (или вече е чиста).'), { status: 400 });
-        return jobs.start(reclaim.reclaimSpec(item.id, item), { user: req.user });
+        return jobs.start(reclaim.reclaimSpec(item.id, item, cfg), { user: req.user });
       }),
       { mutating: true }
     )
@@ -1223,11 +1311,52 @@ export function buildRouter(ctx) {
   r.get('/api/backups', guard(J(() => system.backupsInfo(cfg))));
   r.get('/api/cron', guard(J(() => system.cronInfo())));
 
-  // ── Файлове (само четене) ──────────────────────────────────────────────────
-  r.get('/api/files', guard(J((req, res, p, url) => files.listDir(url.searchParams.get('path')))));
+  // ── Файлове ────────────────────────────────────────────────────────────────
+  // Четене: списък, преглед, инфо, размер, търсене. Промени: всяка иска sudo
+  // (SUDO_ON_WRITE) и влиза в одита; правилата за пътищата са в fileops.js.
+  r.get(
+    '/api/files',
+    guard(
+      J((req, res, p, url) => {
+        const out = files.listDir(url.searchParams.get('path'), { owners: fileops.owners() });
+        const hidden = fileops.sandboxNote(out.path);
+        return hidden ? { ...out, sandboxHidden: hidden } : out;
+      })
+    )
+  );
   r.get(
     '/api/files/read',
     guard(J((req, res, p, url) => files.readFilePreview(url.searchParams.get('path'), audit, req.user)))
+  );
+  r.get('/api/files/info', guard(J((req, res, p, url) => fileops.info(url.searchParams.get('path'), { hash: url.searchParams.get('hash') === '1' }))));
+  r.get('/api/files/du', guard(J((req, res, p, url) => fileops.dirSize(url.searchParams.get('path')))));
+  r.get('/api/files/search', guard(J((req, res, p, url) => fileops.search(url.searchParams.get('root'), url.searchParams.get('q')))));
+  r.get(
+    '/api/files/big',
+    guard(
+      J((req, res, p, url) => {
+        const q = url.searchParams;
+        return fileops.bigFiles(q.get('root') || '/', { minMb: Number(q.get('minMb') || 100), days: Number(q.get('days') ?? 30) }, cfg);
+      })
+    )
+  );
+  r.get('/api/files/trash', guard(J(() => fileops.trashList(cfg))));
+  // Сваляне: в SUDO_ALWAYS (като четенето — root чете всичко). `check=1` е
+  // същият път без тялото: интерфейсът първо отключва sudo по него, после отваря
+  // връзката (навигацията на браузъра не може да покаже диалога за парола).
+  r.get(
+    '/api/files/download',
+    guard((req, res, params, url) => {
+      const p = url.searchParams.get('path');
+      try {
+        const plan = fileops.downloadPlan(p, { isSensitive: files.isSensitive, secretDirs: files.secretDirs() });
+        if (url.searchParams.get('check') === '1') return sendJson(res, 200, { ok: true, dir: plan.dir, sizeBytes: plan.sizeBytes ?? null });
+        fileops.streamDownload(plan, res);
+        audit.log({ action: 'file.download', path: plan.path, dir: plan.dir, excluded: plan.excludes?.length ? plan.excludes : undefined, user: req.user });
+      } catch (e) {
+        return sendError(res, e.status || (e.code === 'ENOENT' ? 404 : 400), e.message);
+      }
+    })
   );
 
   r.post(
@@ -1235,7 +1364,85 @@ export function buildRouter(ctx) {
     guard(
       J(async (req) => {
         const b = await readJson(req);
+        if (b.create) fileops.assertCreatable(b.path, cfg);
         return files.writeFile(b.path, b.content, { create: Boolean(b.create) }, audit, req.user);
+      }),
+      { mutating: true }
+    )
+  );
+  r.post('/api/files/mkdir', guard(J(async (req) => fileops.mkdir((await readJson(req)).path, cfg, audit, req.user)), { mutating: true }));
+  r.post(
+    '/api/files/upload',
+    guard(
+      J((req, res, p, url) => fileops.receiveUpload(req, cfg, url.searchParams.get('dir'), url.searchParams.get('name'), { overwrite: url.searchParams.get('overwrite') === '1' }, audit, req.user)),
+      { mutating: true }
+    )
+  );
+  r.post('/api/files/rename', guard(J(async (req) => { const b = await readJson(req); return fileops.rename(b.from, b.to, cfg, audit, req.user); }), { mutating: true }));
+  r.post(
+    '/api/files/copy',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const spec = fileops.copySpec(b.from, b.to, cfg);
+        audit.log({ action: 'file.copy', from: b.from, to: spec.args[3], user: req.user });
+        return jobs.start(spec, { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/files/delete',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const paths = (Array.isArray(b.paths) ? b.paths : [b.path]).slice(0, 200);
+        const done = [];
+        const failed = [];
+        for (const p of paths) {
+          try {
+            done.push(await fileops.toTrash(p, cfg, audit, req.user));
+          } catch (e) {
+            failed.push({ path: p, error: e.message });
+          }
+        }
+        return { trashed: done, failed };
+      }),
+      { mutating: true }
+    )
+  );
+  r.post('/api/files/delete-forever', guard(J(async (req) => fileops.removeForever((await readJson(req)).path, cfg, audit, req.user)), { mutating: true }));
+  r.post('/api/files/trash/restore', guard(J(async (req) => fileops.trashRestore((await readJson(req)).id, cfg, audit, req.user)), { mutating: true }));
+  r.post('/api/files/trash/purge', guard(J(async (req) => fileops.trashPurge((await readJson(req)).id, cfg, audit, req.user)), { mutating: true }));
+  r.post(
+    '/api/files/chmod',
+    guard(J(async (req) => { const b = await readJson(req); return fileops.chmod(b.path, b.mode, { recursive: Boolean(b.recursive) }, cfg, audit, req.user); }), { mutating: true })
+  );
+  r.post(
+    '/api/files/chown',
+    guard(J(async (req) => { const b = await readJson(req); return fileops.chown(b.path, b.owner, b.group, { recursive: Boolean(b.recursive) }, cfg, audit, req.user); }), { mutating: true })
+  );
+  r.post(
+    '/api/files/archive',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const spec = fileops.archiveSpec(b.paths, cfg);
+        audit.log({ action: 'file.archive', dest: spec.dest, count: spec.args.length - 5, user: req.user });
+        return { ...jobs.start(spec, { user: req.user }), dest: spec.dest };
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/files/extract',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const spec = fileops.extractSpec(b.path, cfg);
+        if (spec.mkdirFirst) fs.mkdirSync(spec.dest, { recursive: true });
+        audit.log({ action: 'file.extract', archive: b.path, dest: spec.dest, user: req.user });
+        return { ...jobs.start(spec, { user: req.user }), dest: spec.dest };
       }),
       { mutating: true }
     )
@@ -1481,6 +1688,122 @@ export function buildRouter(ctx) {
   );
 
   // ── Агентски флот + инструменти ────────────────────────────────────────────
+  // ── Предложения от агентите (агентът предлага → човекът одобрява) ─────────
+  const proposalStore = new proposals.ProposalStore(cfg.paths.stateDir);
+  const humanOnly = (req) => {
+    if (req.agent) throw Object.assign(new Error('Само човек одобрява.'), { status: 403 });
+  };
+  r.get(
+    '/api/agent/actions',
+    guard(J(() => ({
+      actions: Object.entries(proposals.PROPOSAL_ACTIONS).map(([type, a]) => ({
+        type, title: a.title, cls: a.cls, params: Object.keys(a.params),
+      })),
+      limits: proposals.LIMITS,
+    })))
+  );
+  r.get('/api/agent/proposals', guard(J(() => ({ proposals: proposalStore.list() }))));
+  r.get(
+    '/api/agent/proposals/:id',
+    guard(J((req, res, p) => {
+      const item = proposalStore.get(p.id);
+      if (!item) throw Object.assign(new Error('Няма такова предложение.'), { status: 404 });
+      return item;
+    }))
+  );
+  r.post(
+    '/api/agent/proposals',
+    guard(
+      J(async (req) => {
+        if (!req.agent) throw Object.assign(new Error('Предложения подава само агентският ключ.'), { status: 403 });
+        const valid = proposals.validateProposal(await readJson(req));
+        const item = proposalStore.add(valid);
+        audit.log({ action: 'proposal.created', id: item.id, agent: item.agent, type: item.action.type });
+        // Известие към собственика: предложение, което никой не вижда, чака вечно.
+        ctx.alerts?.event({
+          severity: 'warning',
+          key: `proposal:${item.id}`,
+          title: `Агент предлага поправка: ${item.title}`,
+          body: `${item.agent} · ${proposals.PROPOSAL_ACTIONS[item.action.type].title} — чака одобрение в „Одобрения"`,
+        }).catch(() => {});
+        return { id: item.id, status: item.status };
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/proposals/:id/approve',
+    guard(
+      J(async (req, res, p) => {
+        humanOnly(req);
+        const item = proposalStore.get(p.id);
+        if (!item) throw Object.assign(new Error('Няма такова предложение.'), { status: 404 });
+        if (item.status !== 'pending') {
+          throw Object.assign(new Error(`Предложението вече не чака (${item.status}).`), { status: 409 });
+        }
+        // Статусът се сменя ПРЕДИ изпълнението: двоен клик не пуска действието два пъти.
+        proposalStore.update(item.id, { status: 'running', decidedBy: req.user, decidedAt: Date.now() });
+        audit.log({ action: 'proposal.approved', id: item.id, agent: item.agent, type: item.action.type, params: item.action.params, user: req.user });
+        try {
+          const out = await proposals.executeAction(item.action, {
+            cfg, jobs, audit, user: req.user, services, docker, compose, reclaim, apthealth, system, deploy,
+          });
+          if (out.job) {
+            proposalStore.update(item.id, { status: 'started', jobId: out.job.id });
+            return { ok: true, job: out.job };
+          }
+          proposalStore.update(item.id, { status: 'done', result: JSON.stringify(out.result).slice(0, 500) });
+          return { ok: true, result: out.result };
+        } catch (err) {
+          proposalStore.update(item.id, { status: 'failed', error: String(err?.message || err).slice(0, 300) });
+          throw err;
+        }
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/proposals/:id/reject',
+    guard(
+      J(async (req, res, p) => {
+        humanOnly(req);
+        const b = await readJson(req).catch(() => ({}));
+        const item = proposalStore.get(p.id);
+        if (!item) throw Object.assign(new Error('Няма такова предложение.'), { status: 404 });
+        if (item.status !== 'pending') {
+          throw Object.assign(new Error(`Предложението вече не чака (${item.status}).`), { status: 409 });
+        }
+        const note = typeof b?.note === 'string' ? b.note.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 300) : '';
+        proposalStore.update(item.id, { status: 'rejected', decidedBy: req.user, decidedAt: Date.now(), note });
+        audit.log({ action: 'proposal.rejected', id: item.id, agent: item.agent, type: item.action.type, user: req.user });
+        return { ok: true };
+      }),
+      { mutating: true }
+    )
+  );
+  // Ключът на агентите: състоянието се вижда, стойността — само веднъж, при създаване.
+  r.get('/api/agent/key', guard(J((req) => { humanOnly(req); return { enabled: Boolean(cfg.agentKey) }; })));
+  r.post(
+    '/api/agent/key',
+    guard(
+      J(async (req) => {
+        humanOnly(req);
+        const b = await readJson(req);
+        if (b.action === 'disable') {
+          saveConfig(cfg, { agentKey: '' });
+          audit.log({ action: 'agent.keyDisable', user: req.user });
+          return { enabled: false };
+        }
+        if (b.action !== 'rotate') throw Object.assign(new Error('Очаква се action: rotate или disable.'), { status: 400 });
+        const key = proposals.newAgentKey();
+        saveConfig(cfg, { agentKey: key });
+        audit.log({ action: 'agent.keyRotate', user: req.user }); // стойността НЕ влиза в одита
+        return { enabled: true, key };
+      }),
+      { mutating: true }
+    )
+  );
+
   r.get('/api/agents/fleet', guard(J(() => agents.agentsFleet(cfg))));
   // Отговорът вече Е `{ root, rootExists, tools }` — не го обвивай втори път.
   r.get('/api/agents/tools', guard(J(() => agents.listAgentTools(cfg))));
@@ -2237,6 +2560,64 @@ export function buildRouter(ctx) {
     )
   );
 
+  // ── Колко се доверява ТОЗИ възел на съседа ─────────────────────────────────
+  // „read" (подразбиране): съседът чете и не пипа нищо опасно. „full": съседът
+  // прави всичко, което можеш тук — терминал, деплой, файлове, одобрения. Тогава
+  // паролата и 2FA се искат от ДРУГИЯ панел (проксито), а в одита тук стои
+  // `peer:<човек>@<възел>`. Цената: компрометиран съсед = root и тук. Затова е
+  // решение на човека НА ТОЗИ възел, зад sudo, и съседът не може да го пипне
+  // (`PEER_NEVER`).
+  r.get('/api/settings/peer', guard(J(() => ({
+    scope: cfg.peerScope === 'full' ? 'full' : 'read',
+    peers: (cfg.peers || []).map((p) => {
+      let host = null;
+      try {
+        host = new URL(p.url).host;
+      } catch {
+        /* невалиден адрес — показва се като липсващ */
+      }
+      return { id: p.id, name: p.name, host };
+    }),
+    tokenSet: Boolean(cfg.peerToken),
+  }))));
+  // Три отделни действия, по ЕДНО на заявка — одитът казва точно кое:
+  //   {scope}       колко се доверява този възел на съседа;
+  //   {removePeer}  махане на съсед от НАШИЯ списък (ние спираме да го викаме,
+  //                 да му пращаме бекъп и одит). Нужно, когато машината я няма —
+  //                 иначе стар DNS запис може да сочи към чужд или към нас самите;
+  //   {inbound:'off'} изтрива входящия жетон: никой не вика този панел с Bearer.
+  //                 Връща и обхвата на „read" — пълен контрол без жетон е празно
+  //                 обещание, което после се включва тихо с нов жетон.
+  r.post(
+    '/api/settings/peer',
+    guard(
+      J(async (req) => {
+        humanOnly(req);
+        const b = await readJson(req);
+        if (typeof b.removePeer === 'string') {
+          const list = cfg.peers || [];
+          if (!list.some((p) => p.id === b.removePeer)) throw Object.assign(new Error('Няма такъв съсед.'), { status: 404 });
+          const rest = list.filter((p) => p.id !== b.removePeer);
+          saveConfig(cfg, { peers: rest });
+          audit.log({ action: 'settings.peerRemove', peer: b.removePeer, left: rest.length, user: req.user });
+          return { ok: true, peers: rest.length };
+        }
+        if (b.inbound === 'off') {
+          saveConfig(cfg, { peerToken: '', peerScope: 'read' });
+          audit.log({ action: 'settings.peerInboundOff', user: req.user });
+          return { ok: true, tokenSet: false, scope: 'read' };
+        }
+        if (b.scope !== 'read' && b.scope !== 'full') {
+          throw Object.assign(new Error('Обхватът е „read" или „full".'), { status: 400 });
+        }
+        saveConfig(cfg, { peerScope: b.scope });
+        audit.log({ action: 'settings.peerScope', scope: b.scope, user: req.user });
+        return { ok: true, scope: b.scope };
+      }),
+      { mutating: true }
+    )
+  );
+
   // ── Webhook от GitHub (БЕЗ сесия — носи защитата си сам) ────────────────────
   // Единственият маршрут без guard(). Подписът е автентикацията; тялото е ДАННИ.
   r.post('/api/webhook/github', async (req, res) => {
@@ -2328,6 +2709,49 @@ export function buildRouter(ctx) {
   );
 
   // ── Federation ─────────────────────────────────────────────────────────────
+  // Проверка на панела срещу машината — след местене конфигът помни СТАРАТА.
+  r.get('/api/selfcheck', guard(J((req) => selfcheck.selfCheck(cfg, { audit, drill: ctx.drill }, req))));
+
+  // ── Машина: SSH ключове, пакети, swap, часовник ─────────────────────────────
+  r.get(
+    '/api/machine',
+    guard(
+      J(async () => {
+        const [ssh, sshd, time] = await Promise.all([machine.listKeys(), machine.sshdState(), machine.timeInfo()]);
+        return { ssh: { ...ssh, sshd }, swap: machine.swapInfo(), time };
+      })
+    )
+  );
+  r.get('/api/machine/packages', guard(J((req, res, p, url) => machine.listPackages(url.searchParams.get('q') || ''))));
+  r.get('/api/machine/packages/search', guard(J((req, res, p, url) => machine.searchAvailable(url.searchParams.get('q')))));
+  r.get('/api/machine/packages/remove-plan', guard(J((req, res, p, url) => machine.removePlan(url.searchParams.get('name')))));
+  r.get(
+    '/api/machine/timezones',
+    guard(
+      J(async () => {
+        const timezones = await machine.listTimezones();
+        return { available: Boolean(timezones), timezones: timezones || [] };
+      })
+    )
+  );
+  r.post('/api/machine/ssh-keys/add', guard(J(async (req) => machine.addKey((await readJson(req)).key, cfg, audit, req.user)), { mutating: true }));
+  r.post('/api/machine/ssh-keys/remove', guard(J(async (req) => machine.removeKey((await readJson(req)).fingerprint, cfg, audit, req.user)), { mutating: true }));
+  r.post('/api/machine/packages/install', guard(J(async (req) => jobs.start(machine.installSpec((await readJson(req)).name), { user: req.user })), { mutating: true }));
+  r.post(
+    '/api/machine/packages/remove',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return jobs.start(await machine.removeSpec(b.name, b.expect), { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+  r.post('/api/machine/swap/create', guard(J(async (req) => jobs.start(machine.createSwapSpec((await readJson(req)).sizeMb), { user: req.user })), { mutating: true }));
+  r.post('/api/machine/swap/remove', guard(J(async (req) => jobs.start(machine.removeSwapSpec(), { user: req.user })), { mutating: true }));
+  r.post('/api/machine/swap/swappiness', guard(J(async (req) => machine.setSwappiness((await readJson(req)).value, audit, req.user)), { mutating: true }));
+  r.post('/api/machine/time', guard(J(async (req) => machine.setTime(await readJson(req), audit, req.user)), { mutating: true }));
+  r.post('/api/machine/daemon-reload', guard(J((req) => machine.daemonReload(audit, req.user)), { mutating: true }));
   r.get('/api/nodes', guard(J(() => nodes.nodesStatus(cfg))));
   r.on(
     '*',
@@ -2336,9 +2760,29 @@ export function buildRouter(ctx) {
       (req, res, params, url) => {
         const peer = nodes.findPeer(cfg, params.id);
         if (!peer) return sendError(res, 404, 'Непознат възел');
+        const mutating = req.method !== 'GET';
         // Мутациите към peer също изискват CSRF маркера локално.
-        if (req.method !== 'GET' && !csrfOk(req, null)) return sendError(res, 403, 'Отхвърлена заявка (CSRF).');
-        nodes.proxyToPeer(peer, req, res, params.rest, url.search);
+        if (mutating && !csrfOk(req, null)) return sendError(res, 403, 'Отхвърлена заявка (CSRF).');
+        // Пътят ОТ ДРУГАТА СТРАНА. Съседът пропуска sudo за заявки с жетон (няма
+        // браузър, който да покаже диалога), значи паролата се иска ТУК, срещу
+        // НЕГОВИЯ път. Без това `/api/nodes/vps2/terminal/run` минаваше покрай
+        // `needsSudo` (той вижда `/api/nodes/…`, не `/api/terminal/…`) — при
+        // пълен обхват на съседа това е root shell там с открадната сесия тук.
+        const rest = String(params.rest || '');
+        if (!rest || rest.startsWith('/') || rest.includes('//') || rest.includes('\\')) {
+          return sendError(res, 400, 'Невалиден път към съседа.');
+        }
+        const inner = `/api/${rest}`;
+        if (PEER_NEVER.some((rx) => rx.test(inner)) || /^\/api\/(sudo|login|logout)(\/|$)/.test(inner)) {
+          return sendError(res, 403, 'Това се прави на ТОЗИ възел, не през съседа.');
+        }
+        if (needsSudo(inner, cfg, { mutating }) && !sudo.has(req.jti)) {
+          audit.log({ action: 'sudo.required', path: url.pathname, user: req.user });
+          return sendError(res, 428, 'Това действие иска повторно потвърждаване с парола.');
+        }
+        // Следа и ТУК: одитът на съседа е негов, а откраднатата сесия е наша.
+        if (mutating) audit.log({ action: 'peer.proxy', node: peer.id, method: req.method, path: inner, user: req.user });
+        nodes.proxyToPeer(peer, req, res, rest, url.search, { actor: `${req.user}@${cfg.nodeId || 'local'}` });
       }
     )
   );

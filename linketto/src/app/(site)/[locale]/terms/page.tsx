@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
 import { LegalDoc } from '@/components/LegalDoc';
 import type { Locale } from '@/i18n/locales';
+import { REFERRAL_MIN_PAYOUT_CENTS, REFERRAL_PERCENT } from '@/lib/referral';
 
 export default async function TermsPage({
   params,
@@ -13,7 +14,14 @@ export default async function TermsPage({
   return (
     <>
       <SiteHeader locale={locale as Locale} />
-      <LegalDoc title={t('termsTitle')} body={t('termsBody')} />
+      {/* Програмата за покани (Т2) чете процента и прага от кода — текстът не може да се размине с него. */}
+      <LegalDoc
+        title={t('termsTitle')}
+        body={t('termsBody', {
+          percent: REFERRAL_PERCENT,
+          minPayout: REFERRAL_MIN_PAYOUT_CENTS / 100,
+        })}
+      />
       <SiteFooter locale={locale as Locale} currentPath="/terms" />
     </>
   );

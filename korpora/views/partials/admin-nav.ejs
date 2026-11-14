@@ -1,7 +1,8 @@
-<nav class="subnav" aria-label="<%= t('nav.admin') %>">
+<%# на телефон петте раздела стоят на един ред: „Нов акаунт“ става само знакът плюс (името остава за четеца) %>
+<nav class="subnav subnav-admin" aria-label="<%= t('nav.admin') %>">
   <a href="/admin" aria-current="<%= path === '/admin' ? 'page' : 'false' %>"><%- include('icon', { name: 'gauge' }) %><%= t('admin.nav.dashboard') %></a>
   <a href="/admin/accounts" aria-current="<%= path.startsWith('/admin/accounts') && path !== '/admin/accounts-new' ? 'page' : 'false' %>"><%- include('icon', { name: 'users' }) %><%= t('admin.nav.accounts') %></a>
   <a href="/admin/requests" aria-current="<%= path.startsWith('/admin/requests') ? 'page' : 'false' %>"><%- include('icon', { name: 'receipt' }) %><%= t('admin.nav.requests') %></a>
   <% if (can('audit:view')) { %><a href="/admin/audit" aria-current="<%= path.startsWith('/admin/audit') ? 'page' : 'false' %>"><%- include('icon', { name: 'history' }) %><%= t('admin.nav.audit') %></a><% } %>
-  <% if (can('accounts:create')) { %><a href="/admin/accounts-new" aria-current="<%= path === '/admin/accounts-new' ? 'page' : 'false' %>"><%- include('icon', { name: 'plus' }) %><%= t('admin.nav.newAccount') %></a><% } %>
+  <% if (can('accounts:create')) { %><a class="subnav-new" href="/admin/accounts-new" aria-current="<%= path === '/admin/accounts-new' ? 'page' : 'false' %>"><%- include('icon', { name: 'plus' }) %><span class="subnav-label"><%= t('admin.nav.newAccount') %></span></a><% } %>
 </nav>

@@ -4,9 +4,10 @@
 import { panel, groove, edgeHoles } from './panel.js';
 import { r1, dimTxt } from './util.js';
 import { slideModel, slideSystemOf, slideLength } from './hardware.js';
-import { GROOVE, HDF_T, CONFIRMAT, FRONT_GAP_Z, confirmat, addHoleOnce, hasHole } from './joinery.js';
+import { GROOVE, HDF_T, CONFIRMAT, FRONT_GAP_Z, MIN_WEB, confirmat, addHoleOnce, hasHole } from './joinery.js';
 import { mountHandle } from './fronts.js';
 import { STOCK } from './materials.js';
+import { sideStabiliser } from './stabiliser.js';
 
 const TOP_GAP = 28; // box top below the front top, room for the slide and the drawer above
 const MIN_BOX = 60; // lowest drawer box the generator makes
@@ -17,13 +18,15 @@ export function buildDrawers(ctx, o, a) {
   const family = slideModel(o.slide);
   const sys = slideSystemOf(family);
   const { i, n, xa, xb, fl, fr, c, dzH, drawers, gap, zEnd, backFront, T, fs, frontGrain, bf, fT, nm, key, mod } = a;
+  const dz0 = a.dz0 ?? c; // bottom of the drawer zone: the carcass bottom, or the top of the doors below it
   if (!family || !sys) {
     ctx.warn('error', 'Няма избран водач с данни за пробиване.');
     return;
   }
-  const NL = slideLength(sys, zEnd - backFront);
+  const depth = zEnd - backFront;
+  const NL = slideLength(sys, depth);
   if (!NL) {
-    ctx.warn('error', `${nm(`Колона ${i + 1}`)}: ${sys.name} няма дължина за вътрешна дълбочина ${Math.round(zEnd - backFront)} mm.`);
+    ctx.warn('error', `${nm(`Колона ${i + 1}`)}: ${sys.name} няма дължина за вътрешна дълбочина ${Math.round(depth)} mm.`);
     return;
   }
   const boxStock = BOX_STOCKS.find((st) => st.thickness === sys.boxSide);
@@ -40,13 +43,34 @@ export function buildDrawers(ctx, o, a) {
     ctx.warn('error', `${nm(`Колона ${i + 1}`)}: колоната е твърде тясна за чекмедже.`);
     return;
   }
+  // the slide makers' limits on the width (engine/data/slide-systems.js): a GTV H45 drawer no wider than its NL; a Blum
+  // side stabilisation set for wide drawers on short slides (engine/stabiliser.js), made only up to the cabinet width KB
+  // (the column's inner width and the two panels it stands between). Recommendations for the drawer to run well.
+  const boxW = r1(xr - xl);
+  // a narrower drawer: another column only where the furniture type has a columns parameter
+  const narrower = o.columnsParam ? 'Добавете колона или стеснете мебела' : 'Стеснете мебела';
+  if (sys.maxWidth && boxW > sys.maxWidth(NL)) {
+    ctx.warn('warn', `${nm(`Колона ${i + 1}`)}: чекмеджето (${dimTxt(boxW)} mm) не бива да е по-широко от водача (NL ${NL} mm) — изискване на ${sys.brand} за правилната му работа. ${narrower}, задълбочете шкафа за по-дълъг водач или изберете скрит водач.`);
+  }
+  const stab = sideStabiliser(ctx, sys, { where: nm(`Колона ${i + 1}`), KB: r1(xb - xa + 2 * T), LW: xb - xa, NL, depth: r1(depth), handle: o.handle, narrower });
+  // room under the lowest box, over the carcass bottom: a side-mount slide's lower edge is the box's, 6 mm over it (наш
+  // избор); a concealed runner reaches clearBelow under the drawer bottom (Blum: „min 27.5“), more with a stabiliser
+  const floor = sys.mount === 'under' ? sys.clearBelow + (stab?.below ?? 0) - sys.bottomUp : 6;
   const L = sys.drawerLength(NL);
   const fh = r1((dzH - drawers * gap) / drawers);
-  const box = { stock: boxStock.id, decor: 'demo:white', grain: false, module: mod };
+  // the top edges of the box sides, front and back show whenever the drawer is open: banded like the carcass
+  const box = { stock: boxStock.id, decor: 'demo:white', grain: false, module: mod, bands: { '+y': o.bands?.carcass ?? 1 } };
   const product = family.products?.[NL] ?? null;
   const label = product ? `${product.brand ?? family.brand} ${product.sku ?? ''}`.trim() : `${family.brand} ${NL} mm`;
+  // height of the slide's screw axis for a box starting at yb
+  const slideY = (yb) => r1(sys.mount === 'under' ? yb + sys.bottomUp + sys.axisAboveBottom : yb + sys.axisAboveBox);
+  // The slides on the two faces of a partition share its through holes. Where this drawer's pilots would come closer
+  // than MIN_WEB to the pilots the column on the other face has drilled there, its box starts sys.hole.d + MIN_WEB
+  // higher: the box gets that much lower, the front and the room above the box (TOP_GAP) stay.
+  const otherSlides = a.left?.role === 'partition' ? a.left.features.filter((f) => f.kind === 'slide') : [];
+  const meets = (ys) => sys.holes[NL].some((zf2) => otherSlides.some((f) => Math.hypot(f.world[1] - ys, f.world[2] - (zEnd - zf2)) < (f.d + sys.hole.d) / 2 + MIN_WEB - 0.01));
   for (let k = 0; k < drawers; k++) {
-    const y0 = c + gap / 2 + k * (fh + gap);
+    const y0 = dz0 + gap / 2 + k * (fh + gap);
     const y1 = y0 + fh;
     const dkey = key(`c${i + 1}dr${k + 1}`);
     const front = panel(ctx, {
@@ -56,7 +80,8 @@ export function buildDrawers(ctx, o, a) {
       bands: bf ? { '+x': bf, '-x': bf, '+y': bf, '-y': bf } : {}, explode: [0, 0, 2.2],
     });
     mountHandle(ctx, o, front, { orientation: 'horizontal', kind: o.kind });
-    const yb = Math.max(y0 + 12, c + T + 6);
+    const yb0 = Math.max(y0 + 12, dz0 + T + floor);
+    const yb = meets(slideY(yb0)) ? yb0 + sys.hole.d + MIN_WEB : yb0;
     const yt = y1 - TOP_GAP;
     const hb = r1(yt - yb);
     if (hb < MIN_BOX) {
@@ -94,7 +119,7 @@ export function buildDrawers(ctx, o, a) {
     }
     // carcass holes on the panels' inner faces; partitions get through holes so both faces work. A slide hole already
     // drilled there belongs to the slide on the other face: the screws from both faces would meet in it (fail closed)
-    const ys = r1(sys.mount === 'under' ? bottomY + sys.axisAboveBottom : yb + sys.axisAboveBox);
+    const ys = slideY(yb);
     for (const [cp, fx] of [[a.left, xa], [a.right, xb]]) {
       const through = cp.role === 'partition';
       for (const zf2 of sys.holes[NL]) {
@@ -110,6 +135,7 @@ export function buildDrawers(ctx, o, a) {
       name: product ? product.name : `${family.name}, NL ${NL} mm (няма в каталога, поръчайте отделно)`,
       qty: 1, unit: 'компл.', group: 'Обков', sku: product?.sku, brand: product?.brand ?? family.brand, price: product?.price, currency: product?.currency, url: product?.url, shop: product?.shop,
     });
+    if (stab) ctx.hw(stab.line.key, stab.line);
     ctx.groups.push({ type: 'drawer', id: front.id, partIds: [front.id, sideA.id, sideB.id, bfront.id, bback.id, bottom.id], travel: L * (sys.extension === 'full' ? 0.95 : 0.75) });
   }
 }

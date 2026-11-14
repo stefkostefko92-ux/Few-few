@@ -1,6 +1,6 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import { ACCESS_COOKIE, type AccessTokenClaims } from "@aso/shared";
-import { verifyAccessToken } from "../auth/tokens.js";
+import { verifyAccessToken, type VerifiedAccessClaims } from "../auth/tokens.js";
 import { isRevoked } from "../auth/revocation.js";
 import { env } from "../env.js";
 import { logger } from "../logger.js";
@@ -23,14 +23,14 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction): v
     next(unauthorized("Missing access token"));
     return;
   }
-  let claims: AccessTokenClaims;
+  let claims: VerifiedAccessClaims;
   try {
     claims = verifyAccessToken(token);
   } catch {
     next(unauthorized("Invalid or expired token"));
     return;
   }
-  isRevoked(claims.sub)
+  isRevoked(claims.sub, claims.iat)
     .then((revoked) => {
       if (revoked) {
         next(unauthorized("Session revoked"));

@@ -10,7 +10,13 @@
     const meta = typeof pageMeta !== 'undefined' && pageMeta ? pageMeta : null;
     const pageTitle = title ? `${title} · Vizitka` : 'Дигитална визитка с QR код — безплатно · Vizitka';
     const pageDesc = meta?.description || 'Безплатна дигитална визитка с постоянен QR код: профил с контактите ти, който винаги е актуален. Готова за 5 минути, без приложение.';
-    const canonical = meta?.url || siteBase + (currentPath === '/' ? '/' : currentPath);
+    // Canonical без наклонена в края и в малки букви (Express не прави разлика в
+    // регистъра за статичните маршрути → `/Privacy` е 200). Визитките и наръчникът
+    // подават точния си адрес през pageMeta.url.
+    const canonical = meta?.url || siteBase + (currentPath === '/' ? '/' : currentPath.replace(/\/+$/, '').toLowerCase());
+    const noindexPage = (typeof noindex !== 'undefined' && noindex) ||
+      /^\/(dashboard|login|register|logout|profile|admin|forgot|reset|settings)(\/|$)/i.test(currentPath) ||
+      /\/print$/.test(currentPath);
   %>
   <meta name="description" content="<%= pageDesc %>">
   <meta name="keywords" content="<%= meta?.keywords || 'Vizitka, Carbon Stealth, дигитална визитка, QR визитка, електронна визитна картичка, QR код визитка, vCard, професионален профил, фирмена визитка, дигитална визитна картичка, България' %>">
@@ -23,7 +29,7 @@
   <meta property="og:image" content="<%= meta?.image || siteBase + '/og-default.png' %>">
   <meta property="og:locale" content="bg_BG">
   <meta name="twitter:card" content="summary_large_image">
-  <% if (/^\/(dashboard|login|register|forgot|reset)/.test(currentPath) || /\/print$/.test(currentPath)) { %>
+  <% if (noindexPage) { %>
     <meta name="robots" content="noindex,nofollow">
   <% } else { %>
     <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">

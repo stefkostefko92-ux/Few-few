@@ -19,7 +19,9 @@ async function main(): Promise<void> {
   const problem = await newPasswordProblem(password, [email.data, name.data]);
   if (problem) throw new Error(`Паролата не минава проверката: ${problem}`);
   if ((await prisma.user.count({ where: { role: 'OWNER' } })) > 0)
-    throw new Error('Вече има собственик — нов се дава от панела.');
+    throw new Error(
+      'Вече има собственик — друг човек получава ролята от него в панела: страницата на акаунта му, „Профил“ (с паролата и кода на собственика).',
+    );
   if (await prisma.user.findUnique({ where: { email: email.data } }))
     throw new Error('Този имейл вече има акаунт.');
   const now = new Date();

@@ -1,6 +1,6 @@
 // DNR правила + manifest: структурна валидност, никой block не достига main_frame,
 // бюджет, RULESET_IDS ↔ manifest синхрон, service worker санитизация.
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { ROOT, ok, done, loadBackground } from "./_harness.mjs";
 
@@ -58,6 +58,34 @@ ok("notices: THIRD_PARTY_NOTICES.txt names every bundled list with its licence",
   const files = [...notices.matchAll(/licenses\/[\w.-]+\.txt/g)].map((m) => m[0]);
   ok("notices: every licence text it points to ships in licenses/ (GPL/CC BY-SA/MPL/Apache/MIT ask for it)", files.length > 10 && files.every((f) => existsSync(join(ROOT, f))));
   ok("notices: says what was changed and where the unmodified source is", /What we changed/.test(notices) && /SHA-256/.test(notices) && !/content otherwise unchanged/.test(notices));
+  // GPL/AGPL §6(d), MPL-2.0 §3.2: the exact text each bundled list was compiled from is published
+  // (server/sources/<sha256>.txt.gz, copied by the deploy without --delete) — not just "on request".
+  const { gunzipSync } = await import("node:zlib");
+  const { createHash } = await import("node:crypto");
+  // URLhaus is data under abuse.ch's own terms (no source to provide, republishing restricted): never archived.
+  const allBlocks = notices.split("\n\n").map((b) => b.replace(/^\n+/, "")).filter((b) => /\n  Retrieved /.test(b));
+  const urlhaus = allBlocks.find((b) => b.startsWith("URLhaus (abuse.ch)\n"));
+  ok("notices: URLhaus is listed, never republished from our site", !!urlhaus && !/Exact copy/.test(urlhaus));
+  const blocks = allBlocks.filter((b) => b !== urlhaus);
+  const srcDir = join(ROOT, "server", "sources");
+  const archived = existsSync(srcDir) ? readdirSync(srcDir).filter((f) => f.endsWith(".txt.gz")) : [];
+  const bad = [];
+  for (const b of blocks) {
+    const sha = (b.match(/SHA-256[^:]*: ([0-9a-f]{64})/) || [])[1];
+    const url = (b.match(/Exact copy of that text \(gzip\): (\S+)/) || [])[1];
+    if (!sha || url !== `https://adblock.carbonstealth.eu/sources/${sha}.txt.gz`) { bad.push(b.split("\n")[0] + ": no exact copy"); continue; }
+    const f = join(srcDir, sha + ".txt.gz");
+    if (!existsSync(f)) { bad.push(b.split("\n")[0] + ": file missing"); continue; }
+    if (createHash("sha256").update(gunzipSync(readFileSync(f))).digest("hex") !== sha) bad.push(b.split("\n")[0] + ": archived text differs from its SHA-256");
+  }
+  ok(`notices: every bundled list has its exact source text published by SHA-256 (${blocks.length} lists${bad.length ? "; " + bad.slice(0, 4).join(" | ") : ""})`, blocks.length >= 30 && bad.length === 0);
+  const named = new Set(blocks.map((b) => (b.match(/sources\/([0-9a-f]{64}\.txt\.gz)/) || [])[1]));
+  ok(`server/sources holds only the texts this version names (${archived.length} files)`, archived.length > 0 && archived.every((f) => named.has(f)));
+  ok("notices: every bundled list points to a licence text or the author's recorded terms", blocks.every((b) => /full text: licenses\//.test(b)));
+  ok("notices: Peter Lowe's list carries the author's terms; EasyList Thailand its copyright line (Apache-2.0 §4(c))",
+    /Peter Lowe's ad and tracking server list\n  Licence: [^\n]*licenses\/PeterLowe-terms\.txt/.test(notices) && /EasyList Thailand\n  Licence: Apache-2\.0[^\n]*\n  Copyright: Copyright 2016-2017 EasyList Thailand/.test(notices));
+  const deploy = readFileSync(join(ROOT, "..", "deploy", "autodeploy.sh"), "utf8");
+  ok("deploy copies server/sources/ to the site without --delete (older versions' texts stay)", /rsync -a "\$d\/sources\/" "\$ADBLOCK_WWW\/sources\/"/.test(deploy) && !/rsync[^\n]*--delete[^\n]*sources/.test(deploy));
 }
 {
   const slots = catalog.filter((e) => e.delivery === "remote").map((e) => e.slot);

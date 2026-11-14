@@ -38,11 +38,15 @@ test('the terms copy is the full, self-contained terms page of the language', as
     );
     assert.ok(copy.content.includes('contact@korpora.example'), `${locale}: contact`);
     assert.doesNotMatch(copy.content, /<script|<link /, `${locale}: nothing loads from outside`);
+    // the label from the drawings stays Bulgarian in the other languages, and says so (WCAG 3.1.2)
+    if (locale !== 'bg')
+      assert.ok(copy.content.includes('<span lang="bg">наш избор</span>'), `${locale}: label lang`);
   }
 });
 
 const order = {
   id: 'order-terms-copy',
+  number: 42,
   option: 'm12',
   months: 12,
   listPriceCents: 25_500,
@@ -86,9 +90,11 @@ test('terms changed since the order: no copy of other terms, only the link as be
 });
 
 test('a replaced order is named in the confirmation', async () => {
-  await sendOrderConfirmation(order, customer, ['order-replaced']);
+  await sendOrderConfirmation(order, customer, [
+    { number: 41, createdAt: new Date('2026-10-01T12:00:00Z') },
+  ]);
   assert.match(
     outbox.at(-1)!.text,
-    /Тази поръчка заменя поръчка № order-replaced, която е отменена\./,
+    /Тази поръчка заменя поръчка № KP-2026-000041, която е отменена\./,
   );
 });

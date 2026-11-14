@@ -19,10 +19,18 @@ const ONION = 0.3; // skin left by the first contour pass, mm
 const drillFor = (d) => DRILLS.find((t) => Math.abs(t.d - d) < 0.01) ?? null;
 const contourTool = (d) => ({ ...CONTOUR_MILL, d, label: `COMPRESSION D${d}` });
 
+// GRBL drives light hobby routers: milling goes down in levels of at most stepDown (mm) and no feed exceeds maxFeed
+// (mm/min). These are conservative defaults; the project sets its own (spec grblStepDown, grblMaxFeed, within the
+// ranges below) and the G-code header prints them. ISO keeps the full-depth passes of an industrial nesting machine.
 export const POSTS = {
   iso: { id: 'iso', name: 'ISO / Fanuc-стил (G81, G43, смяна T…M6)', version: 'iso-2.1' },
-  grbl: { id: 'grbl', name: 'GRBL (хоби, ръчна смяна на инструмента)', version: 'grbl-2.1' },
+  grbl: { id: 'grbl', name: 'GRBL (хоби, ръчна смяна на инструмента)', version: 'grbl-2.2', stepDown: 3, maxFeed: 2000 },
 };
+export const STEP_DOWN_RANGE = [0.5, 20];
+export const MAX_FEED_RANGE = [300, 10000];
+
+// The name of a sheet's CNC file — one rule for cnc.zip, project.zip (under cnc/) and the CNC tab: sheet-01.nc.
+export const cncFileName = (index, ext) => `sheet-${String(index).padStart(2, '0')}.${ext}`;
 
 // Finished-part (u, v) → cut-part offset (edge band) → placement on the sheet (with rotation).
 function placer(part, pl, compensate) {
@@ -143,6 +151,8 @@ export function toGcode(model, sheet, meta) {
   const { T } = ops;
   const safe = 20;
   const iso = post.id === 'iso';
+  const stepDown = iso ? Infinity : model.spec.grblStepDown ?? post.stepDown;
+  const maxFeed = iso ? Infinity : model.spec.grblMaxFeed ?? post.maxFeed;
   const L = [];
   const moves = [];
   let pos = { X: 0, Y: 0, Z: 50 };
@@ -151,8 +161,8 @@ export function toGcode(model, sheet, meta) {
   const go = (type, X, Y, Z, F, tool) => {
     const w = words(X, Y, Z);
     if (F !== undefined) {
-      w.push(`F${Math.round(F)}`);
-      curF = F;
+      curF = Math.min(F, maxFeed);
+      w.push(`F${Math.round(curF)}`);
     }
     L.push(`${type === 'rapid' ? 'G0' : 'G1'} ${w.join(' ')}`);
     const nxt = { X: X ?? pos.X, Y: Y ?? pos.Y, Z: Z ?? pos.Z };
@@ -174,6 +184,7 @@ export function toGcode(model, sheet, meta) {
   else L.push(`(${title})`);
   L.push(`(SPEC SHA256 ${meta.hash.slice(0, 16)} - POST ${post.version})`);
   L.push(`(STOCK ${sheet.stock.toUpperCase()} ${sheet.w}X${sheet.h}X${T} - Z0 TOP OF SHEET - XY0 LOWER LEFT)`);
+  if (!iso) L.push(`(STEP DOWN ${num(stepDown).replace(/\.$/, '')} MM - MAX FEED ${Math.round(maxFeed)} MM/MIN - SET IN THE PROJECT)`);
   L.push('(SIMULATE AND DRY RUN BEFORE CUTTING)');
   if (ops.manual.length) L.push(`(${ops.manual.length} HOLES WITHOUT A TOOL IN THE LIBRARY - DRILL BY HAND)`);
   L.push(iso ? 'G21 G17 G90 G94 G40 G49 G80' : 'G21 G17 G90 G94');
@@ -202,7 +213,7 @@ export function toGcode(model, sheet, meta) {
     if (iso) {
       // canned cycle; the depth differs per hole, so Z and R are on every line
       holes.forEach((h, i) => {
-        moves.push({ type: 'rapid', from: pos, to: { X: h.X, Y: h.Y, Z: safe } }, { type: 'drill', at: [h.X, h.Y], depth: h.depth, tool: tool.id });
+        moves.push({ type: 'rapid', from: pos, to: { X: h.X, Y: h.Y, Z: safe } }, { type: 'drill', at: [h.X, h.Y], depth: h.depth, tool: tool.id, F: Math.min(tool.feed, maxFeed) });
         pos = { X: h.X, Y: h.Y, Z: safe };
         L.push(`${i === 0 ? 'G98 G81 ' : ''}X${num(h.X)} Y${num(h.Y)} Z${num(-h.depth)} R${num(CLEAR)}${i === 0 ? ` F${tool.feed}` : ''}`);
       });
@@ -212,7 +223,7 @@ export function toGcode(model, sheet, meta) {
         rapid(h.X, h.Y);
         rapid(undefined, undefined, CLEAR);
         feed(undefined, undefined, -h.depth, tool.feed, tool.id);
-        moves.push({ type: 'drill', at: [h.X, h.Y], depth: h.depth, tool: tool.id });
+        moves.push({ type: 'drill', at: [h.X, h.Y], depth: h.depth, tool: tool.id, F: Math.min(tool.feed, maxFeed) });
         rapid(undefined, undefined, CLEAR);
       }
     }
@@ -224,7 +235,7 @@ export function toGcode(model, sheet, meta) {
     const F = tool.rpm * tool.flutes * tool.fz;
     startTool(tool, `${ops.grooves.length} GROOVES`);
     for (const g of ops.grooves) {
-      const passes = Math.ceil(g.depth / 4);
+      const passes = Math.ceil(g.depth / Math.min(4, stepDown));
       rapid(g.X1, g.Y1);
       rapid(undefined, undefined, CLEAR);
       let atStart = true;
@@ -245,7 +256,11 @@ export function toGcode(model, sheet, meta) {
   const passes = model.spec.onion && T > 6 ? [-(T - ONION), -(T + SPOIL)] : [-(T + SPOIL)];
   startTool(tool, `${ops.contours.length} PROFILES${passes.length > 1 ? ' - ONION SKIN' : ''}`);
   passes.forEach((z, pi) => {
-    L.push(`(PROFILE PASS ${pi + 1}/${passes.length} Z${num(z)})`);
+    // the levels of this pass, evenly from the bottom of the pass before, none deeper than stepDown (one with ISO)
+    const top = pi ? passes[pi - 1] : 0;
+    const n = Math.max(1, Math.ceil((top - z) / stepDown - 1e-9));
+    const levels = Array.from({ length: n }, (_, i) => (i === n - 1 ? z : top - ((top - z) * (i + 1)) / n));
+    L.push(`(PROFILE PASS ${pi + 1}/${passes.length} Z${num(z)}${n > 1 ? ` - ${n} LEVELS` : ''})`);
     for (const c of ops.contours) {
       const path = profilePath(c, r);
       const first = path[0];
@@ -253,18 +268,20 @@ export function toGcode(model, sheet, meta) {
       rapid(first.from[0], first.from[1]);
       rapid(undefined, undefined, CLEAR);
       const rampLen = Math.min(80, Math.abs(first.to[1] - first.from[1]));
-      if (pi === 0) {
-        feed(undefined, undefined, 0, tool.plunge, tool.id);
-        feed(first.from[0], first.from[1] + rampLen, z, tool.plunge, tool.id); // ramp entry
-      } else {
-        feed(undefined, undefined, z, tool.plunge, tool.id);
-      }
-      feed(first.to[0], first.to[1], undefined, Fc, tool.id);
-      for (const seg of path.slice(1)) {
-        if (seg.kind === 'line') feed(seg.to[0], seg.to[1], undefined, undefined, tool.id);
-        else arc(seg, z, tool.id);
-      }
-      if (pi === 0) feed(first.from[0], first.from[1] + rampLen, undefined, undefined, tool.id); // clean the ramp wedge
+      levels.forEach((zl, li) => {
+        // a level below another goes back to the start through the slot already cut and ramps down from there
+        const ramp = pi === 0 || li > 0;
+        if (li > 0) feed(first.from[0], first.from[1], undefined, Fc, tool.id);
+        else if (ramp) feed(undefined, undefined, 0, tool.plunge, tool.id);
+        if (ramp) feed(first.from[0], first.from[1] + rampLen, zl, tool.plunge, tool.id); // ramp entry
+        else feed(undefined, undefined, zl, tool.plunge, tool.id);
+        feed(first.to[0], first.to[1], undefined, Fc, tool.id);
+        for (const seg of path.slice(1)) {
+          if (seg.kind === 'line') feed(seg.to[0], seg.to[1], undefined, undefined, tool.id);
+          else arc(seg, zl, tool.id);
+        }
+        if (ramp) feed(first.from[0], first.from[1] + rampLen, undefined, undefined, tool.id); // clean the ramp wedge
+      });
       rapid(undefined, undefined, CLEAR);
     }
   });

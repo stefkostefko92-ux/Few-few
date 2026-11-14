@@ -169,6 +169,56 @@ test("без `set -e` правилото не важи — там subshell не 
   assert.ok(!codes(f).has("unguarded-subshell"));
 });
 
+// ─── Покритие на ЦЕЛИЯ файл (одит 25.09.2026, H2) ───────────────────────────
+// Мързеливият регекс тръгваше от ЕДНОРЕДОВ `( cd … ) \` и се разтягаше до първия
+// ред, започващ с `)`, стотици редове по-надолу → всичко между тях беше невидимо.
+// Така неохраненият билд на mastilko в autodeploy.sh мина незабелязан.
+test("нарушение в средата на дълъг файл се хваща (между охранени subshell-и)", () => {
+  const filler = (n, tag) => Array.from({ length: n }, (_, i) => `  echo "${tag} ${i}"`).join("\n");
+  const src = [
+    "#!/usr/bin/env bash", "set -euo pipefail",
+    'a() {\n  ( cd "$x" && npm ci --omit=dev ) \\\n    || { warn "a"; deploy_failed=1; return; }',
+    filler(300, "a"), "}",
+    // нарушителят — многоредов, без гард, в средата
+    'm() {\n  ( cd "$M" \\\n    && npm ci \\\n    && npm run build )',
+    filler(300, "m"), "}",
+    // охранен многоредов блок по-надолу: затварящото му `)` в начало на ред беше
+    // котвата, до която старият регекс „прескачаше“
+    'z() {\n  ( cd "$d"\n    bash deploy.sh\n  ) || { warn "z"; deploy_failed=1; return; }\n}',
+  ].join("\n");
+  const f = lintShell(src, "long.sh").find((x) => x.code === "unguarded-subshell");
+  assert.ok(f, "нарушението в средата е хванато");
+  assert.match(f.msg, /\(1 бр\.\)/);
+  const line = src.split("\n").findIndex((l) => l.includes('( cd "$M"')) + 1;
+  assert.match(f.msg, new RegExp(`${line}: \\( cd "\\$M"`), "съобщението сочи точния ред");
+});
+
+test("subshellEnd: кавички, $( … ) и коментари не объркват края", async () => {
+  const { subshellEnd } = await import("./deploy-check.mjs");
+  const s = '( cd "$(dirname "$P")" # коментар с )\n  echo \'буквално )\' "текст ( без край"\n) || x';
+  assert.equal(subshellEnd(s, 0), s.lastIndexOf(")"));
+});
+
+test("всеки `( cd` в реалния autodeploy.sh има намерен край (нищо не е прескочено)", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { join, dirname } = await import("node:path");
+  const { fileURLToPath } = await import("node:url");
+  const { subshellEnd } = await import("./deploy-check.mjs");
+  const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+  const src = readFileSync(join(root, "deploy", "autodeploy.sh"), "utf-8");
+  const re = /^[ \t]*\(\s*cd\s/gm;
+  let m, n = 0;
+  while ((m = re.exec(src)) !== null) {
+    const open = src.indexOf("(", m.index);
+    const close = subshellEnd(src, open);
+    assert.ok(close > open, `край за ред ${src.slice(0, m.index).split("\n").length}`);
+    // Нито един subshell в деплой скрипта не е по-дълъг от 40 реда — по-дълъг значи прескок.
+    assert.ok(src.slice(open, close).split("\n").length <= 40, "разумна дължина");
+    n++;
+  }
+  assert.ok(n >= 15, `обходени са всички (${n})`);
+});
+
 test("реалният autodeploy.sh минава правилото", async () => {
   const { readFileSync } = await import("node:fs");
   const { join, dirname } = await import("node:path");
@@ -286,4 +336,26 @@ test(">&2 вътре във файлова група ОЩЕ е лог", () => {
 test("функция `f() {` с тайна след нея не се освобождава", () => {
   const f = lintShell('set -euo pipefail\nf() {\n  echo "SECRET=$s"\n} > "$log"', "setup.sh");
   assert.ok(codes(f).has("secret-echo"));
+});
+
+// ── undefined-function: извикана помощна функция без дефиниция ───────────────
+// Регресия от червения екип (08.09.2026): `fivem_indexnow` беше изпусната при
+// сливане, `bash -n` минаваше, а деплоят умираше след зелената здравна проба.
+test("извикана функция без дефиниция → HIGH undefined-function", () => {
+  const src = `#!/usr/bin/env bash\nset -euo pipefail\ndeploy_x() {\n  health "$U" x\n  x_indexnow\n}\ndeploy_x\n`;
+  const f = lintShell(src, "s.sh").find((x) => x.code === "undefined-function");
+  assert.ok(f, "очаквах undefined-function");
+  assert.equal(f.sev, "HIGH");
+  assert.match(f.msg, /x_indexnow/);
+  assert.doesNotMatch(f.msg, /deploy_x/, "дефинираната не бива да се брои");
+});
+
+test("същата функция, дефинирана по-долу → без undefined-function", () => {
+  const src = `#!/usr/bin/env bash\nset -euo pipefail\ndeploy_x() {\n  x_indexnow\n}\nx_indexnow() {\n  echo ping\n}\ndeploy_x\n`;
+  assert.equal(lintShell(src, "s.sh").some((x) => x.code === "undefined-function"), false);
+});
+
+test("присвояване и външни команди без долна черта не се броят", () => {
+  const src = `#!/usr/bin/env bash\nset -euo pipefail\nmy_var=1\ndeploy_failed=1\nnpm ci --omit=dev\ndocker compose up -d\n`;
+  assert.equal(lintShell(src, "s.sh").some((x) => x.code === "undefined-function"), false);
 });
