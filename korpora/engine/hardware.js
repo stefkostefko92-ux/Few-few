@@ -3,6 +3,7 @@
 // whose drilling pattern comes from the manufacturer's documentation (engine/data/*.js: the documents in each
 // system's `sources`/`source`, the pages in the notes next to the values).
 import { clamp, r1 } from './util.js';
+import { translator } from './i18n.js';
 
 const systems = new Map(); // hinge drilling systems by id
 const hingeProducts = new Map();
@@ -50,9 +51,9 @@ export function handleModel(id) {
 }
 // The holes a handle gets, one rule for the drilling (fronts.js) and every label: a pair needs two holes AND their
 // spacing; anything else gets one hole in the middle.
-export function handleHoles(h) {
+export function handleHoles(h, t = translator('bg')) {
   const pair = h.holes === 2 && h.spacing > 0;
-  return { pair, label: pair ? `${h.spacing} mm` : '1 отвор' };
+  return { pair, label: pair ? `${h.spacing} mm` : t('lbl.oneHole') };
 }
 export function slideModel(id) {
   return slides.get(id) ?? slides.values().next().value ?? null;

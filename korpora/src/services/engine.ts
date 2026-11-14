@@ -80,17 +80,31 @@ export interface TypeParam {
   when?: Readonly<Record<string, readonly unknown[]>>;
 }
 
+/** Думите на двигателя на един език (`engine/i18n.js`): частите, проверките, таблиците, чертежите. */
+export interface EngineWords {
+  (key: string, params?: Record<string, unknown>): string;
+  lang: string;
+}
+
+/** Формата на вида на езика на думите: името, етикетите на полетата и на изборите. */
+export interface TypeForm {
+  label: string;
+  params: readonly TypeParam[];
+}
+
 interface EngineApi {
-  buildModel(spec: Spec): EngineModel;
+  /** Моделът на езика `lang` (непознат — на български): имената на детайлите, проверките, изходите. */
+  buildModel(spec: Spec, opts?: { lang?: string }): EngineModel;
   normalizeSpec(spec: Spec): Spec;
   /** Изборите от каталога в запазената спецификация, които двигателят е сменил, защото вече ги няма там. */
   catalogDrift(saved: Spec, model: EngineModel): string[];
-  typeLabel(type: string): string;
+  translator(lang: string): EngineWords;
+  typeText(type: string, words: EngineWords): TypeForm;
   typeDims(type: string, spec: Spec): { W: number; H: number; D: number };
   /** Модулите на кухнята отляво надясно: ширината и дали са с чекмеджета. */
   kitchenModules(spec: Spec): Array<{ drawers: boolean; width: number }>;
   /** Габаритът така, както го пише заглавната лента на редактора. */
-  dimsText(type: string, spec: Spec): string;
+  dimsText(type: string, spec: Spec, words?: EngineWords): string;
   typeOrder: readonly string[];
   /** Видовете, които екраните предлагат (без `unlisted` в двигателя). */
   listedTypes: readonly string[];
@@ -191,7 +205,7 @@ let catalogEtag = '""';
  * на процеса и четат само файла. Сървърът (без аргумент) чете и шифрования каталог с CATALOG_KEY.
  */
 export async function loadEngine(catalogPath?: string): Promise<void> {
-  const [model, types, bom, drill, nest, cam, dxf, assembly, part, util, catalog] =
+  const [model, types, bom, drill, nest, cam, dxf, assembly, part, util, catalog, i18n] =
     await Promise.all([
       load('model.js'),
       load('types.js'),
@@ -204,6 +218,7 @@ export async function loadEngine(catalogPath?: string): Promise<void> {
       load('drawing-part.js'),
       load('util.js'),
       load('catalog.js'),
+      load('i18n.js'),
     ]);
   const registerCatalog = fn<(data: unknown) => unknown>(catalog, 'registerCatalog');
   const baseCatalogData = fn<() => unknown>(catalog, 'baseCatalogData');
@@ -243,7 +258,8 @@ export async function loadEngine(catalogPath?: string): Promise<void> {
     buildModel: fn(model, 'buildModel'),
     normalizeSpec: fn(model, 'normalizeSpec'),
     catalogDrift: fn(model, 'catalogDrift'),
-    typeLabel: fn(model, 'typeLabel'),
+    translator: fn(i18n, 'translator'),
+    typeText: fn(types, 'typeText'),
     typeDims: fn(types, 'typeDims'),
     kitchenModules: fn(types, 'kitchenModules'),
     dimsText: fn(types, 'dimsText'),

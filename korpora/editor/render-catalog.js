@@ -2,32 +2,35 @@
 // and JSON copies of the filtered view. Products without drilling data are listed but cannot be fitted.
 import { $, esc, externalLink, fmt, money, swatchStyle, copyText, setHtml } from './dom.js';
 import { toCsv } from '../engine/bom.js';
-import { CATEGORY_BG, HANDLE_TYPE_BG } from './pickers.js';
+import { categoryName, handleTypeName } from './pickers.js';
+import { tx } from './text.js';
 
 const PAGE = 300;
-const yes = (v) => (v === true ? 'да' : v === false ? 'не' : '—');
+const yes = (v) => (v === true ? tx('yes') : v === false ? tx('no') : '—');
+const cols = (...names) => names.map((n) => tx(`col.${n}`));
 
 const VIEWS = {
   handles: {
-    label: 'Дръжки',
-    cols: [
-      'Име',
-      'Марка',
-      'Код',
-      'Вид',
-      'Отвори',
-      'Междуосие',
-      'Дължина',
-      'Покритие',
-      'Цена',
-      'Магазин',
-      'За пробиване',
-    ],
+    label: () => tx('cat.handles'),
+    cols: () =>
+      cols(
+        'name',
+        'brand',
+        'code',
+        'kind',
+        'holes',
+        'spacing',
+        'length',
+        'finish',
+        'price',
+        'shop',
+        'drillable',
+      ),
     row: (h) => [
       h.name,
       h.brand ?? '',
       h.sku ?? '',
-      HANDLE_TYPE_BG[h.type] ?? h.type ?? '',
+      handleTypeName(h.type) ?? '',
       h.holes ?? '',
       h.spacing ?? '',
       h.length ?? '',
@@ -37,23 +40,24 @@ const VIEWS = {
       yes(h.drillable),
     ],
     html: (h) =>
-      `<td>${externalLink(h.url, h.name)}</td><td>${esc(h.brand ?? '—')}</td><td class="num">${esc(h.sku ?? '—')}</td><td>${esc(HANDLE_TYPE_BG[h.type] ?? h.type ?? '—')}</td><td class="num">${h.holes ?? '—'}</td><td class="num">${h.spacing ? `${h.spacing} mm` : '—'}</td><td class="num">${h.length ? `${h.length} mm` : '—'}</td><td>${esc(h.finish ?? '—')}</td><td class="num">${money(h.price, h.currency)}</td><td>${esc(h.shop ?? '—')}</td><td class="c">${h.drillable ? '✓' : '—'}</td>`,
+      `<td>${externalLink(h.url, h.name)}</td><td>${esc(h.brand ?? '—')}</td><td class="num">${esc(h.sku ?? '—')}</td><td>${esc(handleTypeName(h.type) ?? '—')}</td><td class="num">${h.holes ?? '—'}</td><td class="num">${h.spacing ? `${h.spacing} mm` : '—'}</td><td class="num">${h.length ? `${h.length} mm` : '—'}</td><td>${esc(h.finish ?? '—')}</td><td class="num">${money(h.price, h.currency)}</td><td>${esc(h.shop ?? '—')}</td><td class="c">${h.drillable ? '✓' : '—'}</td>`,
     text: (h) => `${h.name} ${h.brand ?? ''} ${h.sku ?? ''} ${h.finish ?? ''} ${h.shop ?? ''}`,
   },
   hinges: {
-    label: 'Панти',
-    cols: [
-      'Име',
-      'Марка',
-      'Код на производителя',
-      'Система',
-      'Ъгъл',
-      'Наслагване',
-      'Плавно затваряне',
-      'Цена',
-      'Магазин',
-      'За пробиване',
-    ],
+    label: () => tx('cat.hinges'),
+    cols: () =>
+      cols(
+        'name',
+        'brand',
+        'mfrCode',
+        'system',
+        'angle',
+        'overlay',
+        'softClose',
+        'price',
+        'shop',
+        'drillable',
+      ),
     row: (h) => [
       h.name,
       h.brand ?? '',
@@ -72,18 +76,9 @@ const VIEWS = {
       `${h.name} ${h.brand ?? ''} ${h.mfrSku ?? ''} ${h.sku ?? ''} ${h.systemName ?? ''} ${h.shop ?? ''}`,
   },
   slides: {
-    label: 'Водачи',
-    cols: [
-      'Име',
-      'Марка',
-      'Код',
-      'Вид',
-      'Дължини',
-      'Натоварване',
-      'Цена',
-      'Магазин',
-      'За пробиване',
-    ],
+    label: () => tx('cat.slides'),
+    cols: () =>
+      cols('name', 'brand', 'code', 'kind', 'lengths', 'load', 'price', 'shop', 'drillable'),
     row: (s) => [
       s.name,
       s.brand ?? '',
@@ -100,8 +95,8 @@ const VIEWS = {
     text: (s) => `${s.name} ${s.brand ?? ''} ${s.sku ?? ''} ${s.kind ?? ''} ${s.shop ?? ''}`,
   },
   bed: {
-    label: 'Обков за легла',
-    cols: ['Име', 'Марка', 'Код', 'Вид', 'Цена', 'Магазин'],
+    label: () => tx('cat.bed'),
+    cols: () => cols('name', 'brand', 'code', 'kind', 'price', 'shop'),
     row: (b) => [
       b.name,
       b.brand ?? '',
@@ -115,24 +110,24 @@ const VIEWS = {
     text: (b) => `${b.name} ${b.brand ?? ''} ${b.sku ?? ''} ${b.kind ?? ''} ${b.shop ?? ''}`,
   },
   decors: {
-    label: 'Декори',
-    cols: ['Производител', 'Код', 'Име', 'Вид', 'Гланц', 'HEX (приблизителен)', 'Наличен в BG'],
+    label: () => tx('cat.decors'),
+    cols: () => cols('manufacturer', 'code', 'name', 'kind', 'gloss', 'hex', 'availableBg'),
     row: (d) => [
       d.manufacturer,
       d.code,
       d.name,
-      CATEGORY_BG[d.category] ?? d.category,
+      categoryName(d.category),
       d.finish ?? '',
       d.hex,
       yes(d.availableBg),
     ],
     html: (d) =>
-      `<td><i class="sw" data-css="${esc(swatchStyle(d))}"></i> ${esc(d.manufacturer)}</td><td class="num">${externalLink(d.url, d.code)}</td><td>${esc(d.name)}</td><td>${esc(CATEGORY_BG[d.category] ?? d.category)}</td><td>${esc(d.finish ?? '—')}</td><td class="num">${esc(d.hex)}</td><td class="c">${yes(d.availableBg)}</td>`,
+      `<td><i class="sw" data-css="${esc(swatchStyle(d))}"></i> ${esc(d.manufacturer)}</td><td class="num">${externalLink(d.url, d.code)}</td><td>${esc(d.name)}</td><td>${esc(categoryName(d.category))}</td><td>${esc(d.finish ?? '—')}</td><td class="num">${esc(d.hex)}</td><td class="c">${yes(d.availableBg)}</td>`,
     text: (d) => `${d.manufacturer} ${d.code} ${d.name} ${d.nameEn ?? ''}`,
   },
   ral: {
-    label: 'RAL',
-    cols: ['Код', 'Име (EN)', 'Име (DE)', 'HEX (приблизителен)'],
+    label: () => 'RAL',
+    cols: () => cols('code', 'nameEn', 'nameDe', 'hex'),
     row: (r) => [r.code, r.name, r.nameDe ?? '', r.hex],
     html: (r) =>
       `<td><i class="sw" data-css="${esc(`background:${r.hex}`)}"></i> <span class="num">${esc(r.code)}</span></td><td>${esc(r.name)}</td><td>${esc(r.nameDe ?? '—')}</td><td class="num">${esc(r.hex)}</td>`,
@@ -147,7 +142,7 @@ export function renderCatalog(catalog) {
   $('#cat-views').innerHTML = Object.entries(VIEWS)
     .map(
       ([k, v]) =>
-        `<button type="button" class="chip" data-view="${k}" aria-pressed="${k === ui.view}">${esc(v.label)} <small>${fmt(counts[k])}</small></button>`,
+        `<button type="button" class="chip" data-view="${k}" aria-pressed="${k === ui.view}">${esc(v.label())} <small>${fmt(counts[k])}</small></button>`,
     )
     .join('');
   const v = VIEWS[ui.view];
@@ -156,9 +151,12 @@ export function renderCatalog(catalog) {
   );
   const src = catalog.meta?.[ui.view];
   $('#cat-meta').innerHTML = src
-    ? `${fmt(items.length)} от ${fmt(counts[ui.view])} · ${esc(src.summary)}`
-    : `${fmt(items.length)} от ${fmt(counts[ui.view])}`;
-  $('#cat-table thead').innerHTML = `<tr>${v.cols.map((c) => `<th>${esc(c)}</th>`).join('')}</tr>`;
+    ? `${tx('of', { a: fmt(items.length), b: fmt(counts[ui.view]) })} · ${esc(src.summary)}`
+    : tx('of', { a: fmt(items.length), b: fmt(counts[ui.view]) });
+  $('#cat-table thead').innerHTML = `<tr>${v
+    .cols()
+    .map((c) => `<th>${esc(c)}</th>`)
+    .join('')}</tr>`;
   setHtml(
     $('#cat-table tbody'),
     items
@@ -167,7 +165,7 @@ export function renderCatalog(catalog) {
       .join(''),
   );
   $('#cat-more').hidden = items.length <= ui.shown;
-  $('#cat-more').textContent = `Покажи още ${fmt(Math.min(PAGE, items.length - ui.shown))}`;
+  $('#cat-more').textContent = tx('more', { n: fmt(Math.min(PAGE, items.length - ui.shown)) });
   ui.items = items;
 }
 
@@ -189,7 +187,7 @@ export function bindCatalog(catalog) {
     renderCatalog(catalog);
   });
   $('#cat-csv').addEventListener('click', (ev) =>
-    copyText(toCsv([VIEWS[ui.view].cols, ...ui.items.map(VIEWS[ui.view].row)]), ev.currentTarget),
+    copyText(toCsv([VIEWS[ui.view].cols(), ...ui.items.map(VIEWS[ui.view].row)]), ev.currentTarget),
   );
   $('#cat-json').addEventListener('click', (ev) =>
     copyText(JSON.stringify(ui.items, null, 1), ev.currentTarget),

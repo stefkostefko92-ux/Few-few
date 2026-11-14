@@ -5,6 +5,7 @@
 import { baseCatalogData } from '../engine/catalog.js';
 import { buildModel, catalogDrift } from '../engine/model.js';
 import { $, $$, esc } from './dom.js';
+import { lang } from './text.js';
 
 // A request with no answer at all is given up after this long; a slow but running download of the body is not cut.
 const ANSWER_TIMEOUT_MS = 20000;
@@ -33,7 +34,7 @@ export async function loadCatalog() {
 // CNC for the saved project). An engine error is left to the first recompute, which reports it.
 export function driftOf(saved, spec) {
   try {
-    return catalogDrift(saved ?? {}, buildModel(spec));
+    return catalogDrift(saved ?? {}, buildModel(spec, { lang: lang() }));
   } catch {
     return [];
   }

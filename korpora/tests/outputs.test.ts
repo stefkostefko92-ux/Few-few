@@ -54,6 +54,42 @@ test('a hinge that has left the catalog blocks CNC instead of drilling for anoth
   assert.equal(sheetOf(utf8(zip['drawings/01-assembly.svg']))?.split('/')[0], '1');
 });
 
+test('the downloads speak the language of the screen: English and Italian files carry no Bulgarian word', () => {
+  const english = {
+    ...project({ type: 'kitchen', shape: 'left', hinge: 'shop:gone' }),
+    name: 'Kitchen',
+  };
+  for (const locale of ['en', 'it'] as const) {
+    const zip = files(buildExport(english, 'Test', 'project.zip', locale).body);
+    for (const [name, bytes] of Object.entries(zip)) {
+      const text = utf8(bytes);
+      assert.ok(
+        !/[\u0400-\u04FF]/.test(text),
+        `${locale} ${name}: ${/.{0,40}[\u0400-\u04FF]+.{0,40}/.exec(text)?.[0]}`,
+      );
+    }
+    const readme = utf8(zip['README.txt']);
+    assert.match(
+      readme,
+      locale === 'en' ? /NOT ISSUED[\s\S]*shop:gone/ : /NON RILASCIATA[\s\S]*shop:gone/,
+    );
+    assert.ok(
+      readme.split('\n').every((line) => line.length <= 100 || !line.includes(' ')),
+      'README lines wrap at 100',
+    );
+  }
+  const csv = utf8(buildExport(english, 'Test', 'cut-list.csv', 'en').body);
+  assert.match(csv.split('\n')[0] ?? '', /^\uFEFFNo\.?;Part;/);
+  // the CNC files are the same programme in every language
+  const cnc = (locale: 'bg' | 'en') =>
+    files(buildExport(project({ type: 'base' }), 'Test', 'cnc.zip', locale).body);
+  const [bg, en] = [cnc('bg'), cnc('en')];
+  for (const name of Object.keys(bg).filter((n) => n.endsWith('.nc'))) {
+    const moves = (bytes: Uint8Array | undefined) => utf8(bytes).replace(/\(.*?\)/g, '');
+    assert.equal(moves(en[name]), moves(bg[name]), name);
+  }
+});
+
 test('the landing example is the default kitchen: three door modules of 600 mm and a drawer module of 500 mm', () => {
   const api = engine();
   assert.deepEqual(api.normalizeSpec(EXAMPLE), api.normalizeSpec({ type: 'kitchen' }));

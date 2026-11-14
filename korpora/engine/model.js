@@ -1,11 +1,12 @@
 // Model: normalized spec → parts, hardware, movable groups and symbols, then the checks that need the whole model
 // (shelf sag, sheet fit, small parts, holes against each other, grooves and edge bores, confirmat caps, horizontal holes).
 import { createCtx, cutSize } from './panel.js';
-import { TYPES, BUILDERS, normalizeParams } from './types.js';
+import { TYPES, BUILDERS, normalizeParams, typeText } from './types.js';
 import { normalizeLayout } from './layout.js';
 import { STOCK, hasDecor, hasRal, decorName } from './materials.js';
+import { translator } from './i18n.js';
 import { hingeList, handleList, slideList, bedFittingList } from './hardware.js';
-import { clamp, plural, dimTxt, r1 } from './util.js';
+import { clamp, r1 } from './util.js';
 import { purposeOf, edgePurposeOf } from './drill.js';
 import { MIN_WEB, toSegment, edgeBores, boreWeb } from './joinery.js';
 import { POSTS, STEP_DOWN_RANGE, MAX_FEED_RANGE } from './cam.js';
@@ -102,31 +103,34 @@ const FRONT_ROLES = new Set(['door', 'drawer-front', 'blind', 'plinth', 'bed-hea
 const usesFronts = (model) => model.parts.some((p) => FRONT_ROLES.has(p.role));
 const usesFrontDecor = (model) => usesFronts(model) || model.parts.some((p) => p.key === 'deskTop');
 const CATALOG_FIELDS = [
-  ['hinge', 'панта', (m) => usesHw(m, 'hinge')],
-  ['handle', 'дръжка', (m) => usesHw(m, 'handle')],
-  ['slide', 'водач', (m) => usesHw(m, 'slide')],
-  ['bedFitting', 'връзка за легло', (m) => m.spec.type === 'bed'],
-  ['carcassDecor', 'декор на корпуса', (m) => usesDecor(m, m.spec.carcassDecor)],
-  ['frontDecor', 'декор на фронтовете', (m) => m.spec.frontMaterial === 'decor' && usesFrontDecor(m)],
-  ['frontRal', 'цвят RAL на фронтовете', (m, input) => input.frontMaterial === 'ral' && usesFronts(m)],
+  ['hinge', (m) => usesHw(m, 'hinge')],
+  ['handle', (m) => usesHw(m, 'handle')],
+  ['slide', (m) => usesHw(m, 'slide')],
+  ['bedFitting', (m) => m.spec.type === 'bed'],
+  ['carcassDecor', (m) => usesDecor(m, m.spec.carcassDecor)],
+  ['frontDecor', (m) => m.spec.frontMaterial === 'decor' && usesFrontDecor(m)],
+  ['frontRal', (m, input) => input.frontMaterial === 'ral' && usesFronts(m)],
 ];
 
 export function catalogDrift(input, model) {
+  const t = translator(model.lang);
   const out = [];
-  for (const [key, label, used] of CATALOG_FIELDS) {
+  for (const [key, used] of CATALOG_FIELDS) {
     const saved = input?.[key];
     if (typeof saved !== 'string' || saved === model.spec[key] || !used(model, input)) continue;
-    out.push(`Вече не е в каталога: ${label} „${saved}“ (заместител: „${model.spec[key] || '—'}“). Изберете наново в редактора и запазете проекта.`);
+    out.push(t('w.drift', { what: t(`drift.${key}`), saved, now: model.spec[key] || '—' }));
   }
   return out;
 }
 
-export function buildModel(input) {
+// opts.lang: the language of the texts of the model and of everything made from it (i18n.js); Bulgarian when unknown
+export function buildModel(input, opts = {}) {
   const spec = normalizeSpec(input);
-  const ctx = createCtx();
+  const ctx = createCtx(opts.lang);
   BUILDERS[spec.type](ctx, spec);
   checkModel(ctx, spec);
   return {
+    lang: ctx.lang,
     spec,
     parts: ctx.parts,
     warnings: ctx.warnings,
@@ -150,12 +154,13 @@ function shelfSag(spanMm, depthMm, tMm, loadKg) {
 }
 
 function checkModel(ctx, spec) {
+  const { t } = ctx;
   const { parts } = ctx;
   // shelves, the fixed ones of a free carcass too (simply supported, as the adjustable ones: on the safe side)
   for (const p of parts.filter((x) => x.role === 'shelf' || x.role === 'divider')) {
     const loadKg = ((p.L / 100) * (p.W / 100)) * spec.shelfLoad;
     const sag = shelfSag(p.L, p.W, p.T, loadKg);
-    if (sag.ratio > 1) ctx.warn('warn', `${p.name}: провисване ≈ ${dimTxt(sag.mm)} mm при ${Math.round(loadKg)} kg (${dimTxt(spec.shelfLoad)} kg/dm²) — над 0,5 % от разстоянието между опорите (${dimTxt(sag.limit)} mm). Добавете делител или стеснете колоната.`);
+    if (sag.ratio > 1) ctx.warn('warn', t('w.sag', { part: p.name, mm: t.num(sag.mm), kg: Math.round(loadKg), load: t.num(spec.shelfLoad), limit: t.num(sag.limit) }));
   }
   // sheet fit and small parts
   let small = 0;
@@ -165,24 +170,24 @@ function checkModel(ctx, spec) {
     const fw = SW - 2 * SHEET_TRIM;
     const fh = SH - 2 * SHEET_TRIM;
     const fits = (cut.L <= fw && cut.W <= fh) || (!p.grain && cut.L <= fh && cut.W <= fw);
-    if (!fits) ctx.warn('error', `${p.name}: ${cut.L} × ${cut.W} mm не се побира в лист ${SW} × ${SH} mm${p.grain ? ' по посоката на шарката' : ''}${p.fitHint ? ` — ${p.fitHint}` : ''}.`);
+    if (!fits) ctx.warn('error', t(p.grain ? 'w.sheetFitGrain' : 'w.sheetFit', { part: p.name, L: cut.L, W: cut.W, SW, SH, hint: p.fitHint ? ` — ${p.fitHint}` : '' }));
     if (cut.W < SMALL_PART.w || (cut.L * cut.W) / 1e6 < SMALL_PART.area) small += 1;
   }
-  if (small) ctx.warn('info', `${plural(small, 'малък детайл', 'малки детайла')} — режат се с тънка кора (onion skin) или табове; проверете вакуума.`);
+  if (small) ctx.warn('info', t.count(small, 'w.small'));
   // holes inside the board (the cut part, without its edge band), apart from each other and from the grooves
   for (const p of parts) checkHoles(ctx, p, spec);
   // hinge spread (Blum Inc. note) — reported for fronts wider than they are tall, where it matters
   const short = parts.filter((p) => p.hingeSpreadShort && p.box.max[0] - p.box.min[0] > p.box.max[1] - p.box.min[1]);
-  if (short.length) ctx.warn('info', `${plural(short.length, 'широка ниска врата', 'широки ниски врати')}: разстоянието между крайните панти е по-малко от ширината (бележка в каталога на Blum Inc.) — помислете за 2 врати или подемен механизъм.`);
+  if (short.length) ctx.warn('info', t.count(short.length, 'w.spread'));
   // doors too narrow for their own hinge cup (fronts.js)
   const narrow = parts.filter((p) => p.narrowForCup);
   if (narrow.length) {
     const minW = Math.min(...narrow.map((p) => p.box.max[0] - p.box.min[0]));
-    ctx.warn('warn', `${plural(narrow.length, 'тясна врата', 'тесни врати')} (най-тясната ${dimTxt(minW)} mm): чашката на пантата заема повече от половината от ширината — намалете броя на колоните или на вратите.`);
+    ctx.warn('warn', t.count(narrow.length, 'w.narrowDoors', { min: t.num(minW) }));
   }
   // horizontal holes are not cut by the 3-axis router
   const edge = parts.reduce((a, p) => a + p.edgeOps.reduce((b, e) => b + e.count, 0), 0);
-  if (edge) ctx.warn('info', `${plural(edge, 'хоризонтален отвор', 'хоризонтални отвора')} в челата — пробиват се на хоризонтална машина или с шаблон, не са в G-кода.`);
+  if (edge) ctx.warn('info', t.count(edge, 'w.edgeHoles'));
   // confirmat heads on visible faces get caps in the colour of the panel: by the role of the panel, or marked where
   // they are made (the heads of a fixed shelf's confirmats in the next column, cells.js)
   const caps = new Map();
@@ -191,10 +196,11 @@ function checkModel(ctx, spec) {
     const n = p.features.filter((f) => f.type === 'hole' && f.kind === 'confirmat' && (byRole || f.cap)).length;
     if (n) caps.set(p.decor, (caps.get(p.decor) ?? 0) + n);
   }
-  for (const [decor, qty] of caps) ctx.hw(`caps:${decor}`, { name: `Капачка за конфирмат, ${decorName(decor)}`, qty, unit: 'бр.', group: 'Крепежи' });
+  for (const [decor, qty] of caps) ctx.hw(`caps:${decor}`, { name: t('hw.caps', { decor: decorName(decor, t) }), qty, unit: t('u.pcs'), group: t('g.fasteners') });
 }
 
 export function checkHoles(ctx, p, spec) {
+  const { t } = ctx;
   const holes = p.features.filter((f) => f.type === 'hole');
   const grooves = p.features.filter((f) => f.type === 'groove');
   const bores = edgeBores(p);
@@ -202,17 +208,17 @@ export function checkHoles(ctx, p, spec) {
   for (const h of holes) {
     // the board itself: the edge band adds no material to drill into
     const rim = Math.min(h.u - cut.du0, cut.du0 + cut.L - h.u, h.v - cut.dv0, cut.dv0 + cut.W - h.v) - h.d / 2;
-    if (rim < 0) ctx.warn('error', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ излиза извън детайла — u ${dimTxt(h.u)}, v ${dimTxt(h.v)}.`);
-    else if (rim < MIN_WEB) ctx.warn('warn', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ е на ${dimTxt(rim)} mm от ръба.`);
+    if (rim < 0) ctx.warn('error', t('w.holeOut', { part: p.name, d: t.num(h.d), purpose: purposeOf(h.kind, t), u: t.num(h.u), v: t.num(h.v) }));
+    else if (rim < MIN_WEB) ctx.warn('warn', t('w.holeEdge', { part: p.name, d: t.num(h.d), purpose: purposeOf(h.kind, t), rim: t.num(rim) }));
     for (const g of grooves) {
       const web = toSegment(h.u, h.v, g) - (g.w + h.d) / 2;
-      if (web < MIN_WEB) ctx.warn('warn', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ е на ${dimTxt(Math.max(0, web))} mm от канала — преместете отвора.`);
+      if (web < MIN_WEB) ctx.warn('warn', t('w.holeGroove', { part: p.name, d: t.num(h.d), purpose: purposeOf(h.kind, t), web: t.num(Math.max(0, web)) }));
     }
     // a bore from the edge (the thread of a confirmat from the joining panel, a slide hook): the drill or the screw
     // would break into it, so the part is not cut (fail closed)
     for (const b of bores) {
       const web = boreWeb(h, b);
-      if (web < MIN_WEB) ctx.warn('error', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ при u ${dimTxt(h.u)}, v ${dimTxt(h.v)} е на ${dimTxt(Math.max(0, web))} mm от хоризонталния отвор Ø${dimTxt(b.d)} „${edgePurposeOf(b.kind)}“ в челото — преместете единия.`);
+      if (web < MIN_WEB) ctx.warn('error', t('w.holeBore', { part: p.name, d: t.num(h.d), purpose: purposeOf(h.kind, t), u: t.num(h.u), v: t.num(h.v), web: t.num(Math.max(0, web)), bd: t.num(b.d), bore: edgePurposeOf(b.kind, t) }));
     }
   }
   for (let i = 0; i < holes.length; i++) {
@@ -224,10 +230,10 @@ export function checkHoles(ctx, p, spec) {
       // holes exactly MIN_WEB apart are fine: 1e-6 absorbs the floating-point error of positions on the 0,1 mm grid
       if (dist - (a.d + b.d) / 2 < MIN_WEB - 1e-6) {
         // the drill would break into the other hole, or two screws meet in it: the CNC files are withheld (fail closed)
-        ctx.warn('error', `${p.name}: отворите Ø${dimTxt(a.d)} „${purposeOf(a.kind)}“ и Ø${dimTxt(b.d)} „${purposeOf(b.kind)}“ при u ${dimTxt(a.u)}, v ${dimTxt(a.v)} се застъпват — преместете единия.`);
+        ctx.warn('error', t('w.holesMeet', { part: p.name, ad: t.num(a.d), a: purposeOf(a.kind, t), bd: t.num(b.d), b: purposeOf(b.kind, t), u: t.num(a.u), v: t.num(a.v) }));
       }
     }
   }
 }
 
-export const typeLabel = (type) => TYPES[type]?.label ?? type;
+export const typeLabel = (type, t) => (TYPES[type] ? typeText(type, t).label : type);

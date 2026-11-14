@@ -118,10 +118,10 @@
     <% if (door) { %>
     <figure class="sheet-paper">
       <div class="drill-views">
-        <img src="/media/door-elevation.svg" width="<%= door.elevation.width %>" height="<%= door.elevation.height %>" loading="lazy" decoding="async" alt="<%= t('landing.drilling.imageAlt', { h: mm(door.height), w: mm(door.width) }) %>">
-        <img src="/media/door-cup.svg" width="<%= door.cup.width %>" height="<%= door.cup.height %>" loading="lazy" decoding="async" alt="<%= t('landing.drilling.cupAlt', { c: mm(door.c) }) %>">
+        <img src="<%= media('door-elevation') %>" width="<%= door.elevation.width %>" height="<%= door.elevation.height %>" loading="lazy" decoding="async" alt="<%= t('landing.drilling.imageAlt', { h: mm(door.height), w: mm(door.width) }) %>">
+        <img src="<%= media('door-cup') %>" width="<%= door.cup.width %>" height="<%= door.cup.height %>" loading="lazy" decoding="async" alt="<%= t('landing.drilling.cupAlt', { c: mm(door.c) }) %>">
       </div>
-      <figcaption><%= t('landing.drilling.caption', { h: mm(door.height), w: mm(door.width) }) %> <a href="/media/door-drawing.svg" target="_blank" rel="noopener"><%= t('landing.drilling.open') %></a></figcaption>
+      <figcaption><%= t('landing.drilling.caption', { h: mm(door.height), w: mm(door.width) }) %> <a href="<%= media('door-drawing') %>" target="_blank" rel="noopener"><%= t('landing.drilling.open') %></a></figcaption>
     </figure>
     <% } %>
   </div>

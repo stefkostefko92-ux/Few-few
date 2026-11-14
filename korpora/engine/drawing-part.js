@@ -1,11 +1,12 @@
 // Part drawing with its drilling map: face A up exactly as the part lies on the CNC table, every hole tagged with a
 // letter (one letter per kind, Ø and depth), ordinate dimensions for hinge, handle, plate, slide and joint holes,
 // horizontal edge holes as hidden lines, a grouped hole table and enlarged details of the hardware holes.
-import { pickScale, dimH, dimV, ordinates, frame, svgDoc, fmt, errorAlert } from './drawing-kit.js';
+import { pickScale, dimH, dimV, ordinates, frame, svgDoc, errorAlert } from './drawing-kit.js';
 import { hingeDetail, plateDetail, handleDetail, slideDetail } from './drawing-details.js';
 import { partHoles, edgeOpName } from './drill.js';
 import { edgeLabels, cutSize } from './panel.js';
-import { STOCK, decorName } from './materials.js';
+import { stockName, decorName } from './materials.js';
+import { translator } from './i18n.js';
 import { esc, neg } from './util.js';
 
 const KEY = new Set(['cup', 'cup-dowel', 'plate', 'handle', 'slide', 'confirmat', 'dowel', 'pilot', 'screw']);
@@ -38,9 +39,10 @@ export function drawingPart(model, meta, partId) {
   const p = model.parts.find((x) => x.id === partId) ?? model.parts[0];
   const { count, parts } = drawingSheets(model);
   const no = parts.find((s) => s.part === p)?.no ?? null;
-  const holes = partHoles(p);
+  const t = translator(model.lang);
+  const holes = partHoles(p, t);
   const groups = holeLetters(holes);
-  const edges = edgeLabels(p);
+  const edges = edgeLabels(p, t);
   // two layouts: long parts get the full width (details below), compact parts get a taller view (details right)
   const wide = { area: { x: 30, y: 30, w: 372, h: 136 }, slots: [{ x: 234, y: 170, w: 86, h: 78 }, { x: 322, y: 170, w: 86, h: 78 }], table: { x: 30, y: 176, rows: 11 } };
   const tall = { area: { x: 30, y: 30, w: 270, h: 172 }, slots: [{ x: 304, y: 30, w: 104, h: 72 }, { x: 304, y: 104, w: 104, h: 72 }, { x: 304, y: 178, w: 104, h: 70 }], table: { x: 30, y: 210, rows: 7 } };
@@ -54,8 +56,8 @@ export function drawingPart(model, meta, partId) {
   const oy = area.y + area.h - 22 - (area.h - 40 - p.W * k) / 2;
   const U = (u) => ox + u * k;
   const V = (v) => oy - v * k;
-  let g = `<text class="d-vt" x="30" y="19">${esc(`${p.id} · ${p.name}`)} — лице А нагоре (обработваната страна)</text>`;
-  g += `<text class="d-note" x="30" y="24.5">Координати от ъгъла u = 0 (ръб „${esc(edges.u0)}“), v = 0 (ръб „${esc(edges.v0)}“), от готовия ръб; CNC ги отмества с дебелината на канта.</text>`;
+  let g = `<text class="d-vt" x="30" y="19">${esc(t('drw.partHead', { part: `${p.id} · ${p.name}` }))}</text>`;
+  g += `<text class="d-note" x="30" y="24.5">${esc(t('drw.coords', { u0: edges.u0, v0: edges.v0 }))}</text>`;
   g += errorAlert(model, 30, 28.6);
   g += `<rect class="d-out" x="${U(0)}" y="${V(p.W)}" width="${p.L * k}" height="${p.W * k}"/>`;
   // edge banding: thick line just outside every banded edge
@@ -66,10 +68,10 @@ export function drawingPart(model, meta, partId) {
   if (b(neg(p.frame.eu))) g += `<line class="d-band" x1="${U(0) - off}" y1="${V(0)}" x2="${U(0) - off}" y2="${V(p.W)}"/>`;
   if (b(p.frame.eu)) g += `<line class="d-band" x1="${U(p.L) + off}" y1="${V(0)}" x2="${U(p.L) + off}" y2="${V(p.W)}"/>`;
   // edge names
-  g += `<text class="d-small" x="${U(p.L / 2)}" y="${V(p.W) - 2.2}" text-anchor="middle">ръб: ${esc(edges.v1)}</text>`;
-  g += `<text class="d-small" x="${U(p.L / 2)}" y="${V(0) + 3.6}" text-anchor="middle">ръб: ${esc(edges.v0)}</text>`;
-  g += `<text class="d-small" x="${U(0) - 2}" y="${V(p.W / 2)}" text-anchor="middle" transform="rotate(-90 ${U(0) - 2} ${V(p.W / 2)})">ръб: ${esc(edges.u0)}</text>`;
-  g += `<text class="d-small" x="${U(p.L) + 3.4}" y="${V(p.W / 2)}" text-anchor="middle" transform="rotate(90 ${U(p.L) + 3.4} ${V(p.W / 2)})">ръб: ${esc(edges.u1)}</text>`;
+  g += `<text class="d-small" x="${U(p.L / 2)}" y="${V(p.W) - 2.2}" text-anchor="middle">${esc(t('drw.edge', { edge: edges.v1 }))}</text>`;
+  g += `<text class="d-small" x="${U(p.L / 2)}" y="${V(0) + 3.6}" text-anchor="middle">${esc(t('drw.edge', { edge: edges.v0 }))}</text>`;
+  g += `<text class="d-small" x="${U(0) - 2}" y="${V(p.W / 2)}" text-anchor="middle" transform="rotate(-90 ${U(0) - 2} ${V(p.W / 2)})">${esc(t('drw.edge', { edge: edges.u0 }))}</text>`;
+  g += `<text class="d-small" x="${U(p.L) + 3.4}" y="${V(p.W / 2)}" text-anchor="middle" transform="rotate(90 ${U(p.L) + 3.4} ${V(p.W / 2)})">${esc(t('drw.edge', { edge: edges.u1 }))}</text>`;
   // grooves
   for (const gr of p.features.filter((f) => f.type === 'groove')) {
     const alongU = Math.abs(gr.v1 - gr.v2) < 0.01;
@@ -112,8 +114,8 @@ export function drawingPart(model, meta, partId) {
   const ordU = new Map();
   const ordV = new Map();
   const addOrd = (u, v) => {
-    if (!ordU.has(u)) ordU.set(u, { at: U(u), from: V(v), label: fmt(u) });
-    if (!ordV.has(v)) ordV.set(v, { at: V(v), from: U(u), label: fmt(v) });
+    if (!ordU.has(u)) ordU.set(u, { at: U(u), from: V(v), label: t.num(u) });
+    if (!ordV.has(v)) ordV.set(v, { at: V(v), from: U(u), label: t.num(v) });
   };
   for (const h of holes) if (KEY.has(h.kind) && !h.mark && h.kind !== 'cup-dowel') addOrd(h.u, h.v);
   for (const op of p.edgeOps) for (const [u, v] of op.at) addOrd(u, v);
@@ -128,65 +130,65 @@ export function drawingPart(model, meta, partId) {
   g += ordinates([...ordU.values()], { axis: 'x', base: V(0) + 1.5, line: V(0) + 9, dir: 1 });
   g += ordinates([...ordV.values()], { axis: 'y', base: U(0) - 1.5, line: U(0) - 9, dir: -1 });
   g += `<text class="d-dt" x="${U(0) - 1}" y="${V(0) + 3}" text-anchor="end">0</text>`;
-  g += dimH(U(0), U(p.L), V(p.W) - 7, fmt(p.L), { ext: [[U(0), V(p.W)], [U(p.L), V(p.W)]] });
-  g += dimV(V(0), V(p.W), U(p.L) + 11, fmt(p.W), { ext: [[U(p.L), V(0)], [U(p.L), V(p.W)]] });
+  g += dimH(U(0), U(p.L), V(p.W) - 7, t.num(p.L), { ext: [[U(0), V(p.W)], [U(p.L), V(p.W)]] });
+  g += dimV(V(0), V(p.W), U(p.L) + 11, t.num(p.W), { ext: [[U(p.L), V(0)], [U(p.L), V(p.W)]] });
   if (p.grain) {
     const ay = V(p.W / 2);
-    g += `<line class="d-grain" x1="${U(p.L * 0.42)}" y1="${ay}" x2="${U(p.L * 0.58)}" y2="${ay}" marker-start="url(#ARW)" marker-end="url(#ARW)"/><text class="d-small" x="${U(p.L / 2)}" y="${ay - 1.2}" text-anchor="middle">шарка</text>`;
+    g += `<line class="d-grain" x1="${U(p.L * 0.42)}" y1="${ay}" x2="${U(p.L * 0.58)}" y2="${ay}" marker-start="url(#ARW)" marker-end="url(#ARW)"/><text class="d-small" x="${U(p.L / 2)}" y="${ay - 1.2}" text-anchor="middle">${t('drw.grain')}</text>`;
   }
 
   // grouped hole table
   const tx = lay.table.x;
   let ty = lay.table.y;
-  g += `<text class="d-vt" x="${tx}" y="${ty}">Отвори</text>`;
+  g += `<text class="d-vt" x="${tx}" y="${ty}">${t('drw.holes')}</text>`;
   ty += 5;
-  g += `<text class="d-tl" x="${tx}" y="${ty}">Бук.</text><text class="d-tl" x="${tx + 9}" y="${ty}">Ø × дълбочина</text><text class="d-tl" x="${tx + 42}" y="${ty}">Бр.</text><text class="d-tl" x="${tx + 52}" y="${ty}">Предназначение · обков</text>`;
-  const rows = [...groups.map((gr) => [gr.letter, gr.mark ? 'без отвор' : `Ø${fmt(gr.d)} × ${gr.through ? `${fmt(gr.depth)} (проходен)` : fmt(gr.depth)}`, gr.count, `${gr.purpose}${gr.label ? ` · ${gr.label}` : ''}`])];
-  for (const op of p.edgeOps) rows.push(['Ч', `Ø${fmt(op.d)} × ${fmt(op.depth)}`, op.count, `хоризонтален в ръб „${edgeOpName(p, edges, op.edge)}“`]);
+  g += `<text class="d-tl" x="${tx}" y="${ty}">${t('drw.th.letter')}</text><text class="d-tl" x="${tx + 9}" y="${ty}">${t('drw.th.size')}</text><text class="d-tl" x="${tx + 42}" y="${ty}">${t('drw.th.qty')}</text><text class="d-tl" x="${tx + 52}" y="${ty}">${t('drw.th.purpose')}</text>`;
+  const rows = [...groups.map((gr) => [gr.letter, gr.mark ? t('drw.noHole') : `Ø${t.num(gr.d)} × ${gr.through ? t('drw.depthThrough', { d: t.num(gr.depth) }) : t.num(gr.depth)}`, gr.count, `${gr.purpose}${gr.label ? ` · ${gr.label}` : ''}`])];
+  for (const op of p.edgeOps) rows.push([t('drw.edgeLetter'), `Ø${t.num(op.d)} × ${t.num(op.depth)}`, op.count, t('drw.edgeHole', { edge: edgeOpName(p, edges, op.edge) })]);
   for (const gr of p.features.filter((f) => f.type === 'groove')) {
     const alongU = Math.abs(gr.v1 - gr.v2) < 0.01;
-    const at = alongU ? `${fmt(gr.v1 - gr.w / 2)} от ръб „${edges.v0}“` : `${fmt(gr.u1 - gr.w / 2)} от ръб „${edges.u0}“`;
-    rows.push(['—', `канал ${fmt(gr.w)} × ${fmt(gr.depth)}`, 1, `L = ${fmt(Math.hypot(gr.u2 - gr.u1, gr.v2 - gr.v1))}, на ${at}`]);
+    const at = alongU ? t('drw.from', { d: t.num(gr.v1 - gr.w / 2), edge: edges.v0 }) : t('drw.from', { d: t.num(gr.u1 - gr.w / 2), edge: edges.u0 });
+    rows.push(['—', t('drw.groove', { w: t.num(gr.w), d: t.num(gr.depth) }), 1, t('drw.grooveAt', { L: t.num(Math.hypot(gr.u2 - gr.u1, gr.v2 - gr.v1)), at })]);
   }
   const maxRows = lay.table.rows;
   rows.slice(0, maxRows).forEach((r, i) => {
     const y = ty + 5 + i * 4.6;
     g += `<text class="d-tag" x="${tx}" y="${y}">${esc(r[0])}</text><text class="d-note" x="${tx + 9}" y="${y}">${esc(r[1])}</text><text class="d-note" x="${tx + 42}" y="${y}">${r[2]}</text><text class="d-note" x="${tx + 52}" y="${y}">${esc(String(r[3]).slice(0, 62))}</text>`;
   });
-  if (rows.length > maxRows) g += `<text class="d-small" x="${tx}" y="${ty + 5 + maxRows * 4.6}">още ${rows.length - maxRows} реда — пълната таблица е в раздел „Пробиване“ и в CSV.</text>`;
+  if (rows.length > maxRows) g += `<text class="d-small" x="${tx}" y="${ty + 5 + maxRows * 4.6}">${esc(t('drw.moreRows', { n: rows.length - maxRows }))}</text>`;
   // details
-  pickDetails(p, holes, edges).slice(0, lay.slots.length).forEach((d, i) => {
+  pickDetails(p, holes, edges, t).slice(0, lay.slots.length).forEach((d, i) => {
     g += d(lay.slots[i]);
   });
   const cut = cutSize(p, model.spec.bandCompensation);
   const bandsTxt = Object.values(p.bands).filter(Boolean);
-  g += `<text class="d-note" x="30" y="262">Готов размер ${fmt(p.L)} × ${fmt(p.W)} × ${fmt(p.T)}; разкрой ${fmt(cut.L)} × ${fmt(cut.W)}${model.spec.bandCompensation ? ' (компенсиран кант)' : ''}.</text>`;
-  g += `<text class="d-note" x="30" y="267">Кант: ${bandsTxt.length ? `${bandsTxt.map(fmt).join(' / ')} mm ABS — дебелата линия` : 'няма'}. Хоризонталните отвори „Ч“ не са в G-кода.</text>`;
-  g += `<text class="d-note" x="30" y="272">Отворите с буква A… са пробиване отгоре; пълните кръгове са проходни, оранжевите са за обков.</text>`;
-  const material = `${STOCK[p.stock].name} ${fmt(p.T)} · ${decorName(p.decor)}`;
-  return svgDoc(g + frame(`${p.id} ${p.name} ${fmt(p.L)}×${fmt(p.W)}`, meta, scale, no, count, material), `Чертеж с карта за пробиване: ${p.id} ${p.name}`, p.id);
+  g += `<text class="d-note" x="30" y="262">${esc(t(model.spec.bandCompensation ? 'drw.sizesComp' : 'drw.sizes', { L: t.num(p.L), W: t.num(p.W), T: t.num(p.T), cL: t.num(cut.L), cW: t.num(cut.W) }))}</text>`;
+  g += `<text class="d-note" x="30" y="267">${esc(bandsTxt.length ? t('drw.bands', { list: bandsTxt.map(t.num).join(' / ') }) : t('drw.noBands'))}</text>`;
+  g += `<text class="d-note" x="30" y="272">${esc(t('drw.legend'))}</text>`;
+  const material = `${stockName(p.stock, t)} ${t.num(p.T)} · ${decorName(p.decor, t)}`;
+  return svgDoc(g + frame(`${p.id} ${p.name} ${t.num(p.L)}×${t.num(p.W)}`, meta, scale, no, count, material, t), t('drw.partOf', { part: `${p.id} ${p.name}` }), p.id);
 }
 
 // Which enlarged details the part needs, most useful first.
-function pickDetails(p, holes, edges) {
+function pickDetails(p, holes, edges, t) {
   const out = [];
   const cup = holes.find((h) => h.kind === 'cup');
   if (cup) {
     const fix = holes.filter((h) => (h.kind === 'cup-dowel' || h.kind === 'cup-screw') && Math.abs(h.u - cup.u) < 40);
-    out.push((b) => hingeDetail(p, cup, fix, b));
+    out.push((b) => hingeDetail(p, cup, fix, b, t));
   }
   const hand = holes.filter((h) => h.kind === 'handle');
-  if (hand.length) out.push((b) => handleDetail(p, hand, edges, b));
+  if (hand.length) out.push((b) => handleDetail(p, hand, edges, b, t));
   const front = p.role === 'side' || p.role === 'partition' ? frontEdgeV(p) : null;
   const plates = holes.filter((h) => h.kind === 'plate');
   if (plates.length >= 2 && front !== null) {
     const first = plates.sort((a, c) => a.u - c.u).slice(0, 2);
-    out.push((b) => plateDetail(first, front, b));
+    out.push((b) => plateDetail(first, front, b, t));
   }
   const slides = holes.filter((h) => h.kind === 'slide');
   if (slides.length && front !== null) {
     const u0 = Math.min(...slides.map((h) => h.u));
-    out.push((b) => slideDetail(slides.filter((h) => h.u === u0), front, b));
+    out.push((b) => slideDetail(slides.filter((h) => h.u === u0), front, b, t));
   }
   return out;
 }

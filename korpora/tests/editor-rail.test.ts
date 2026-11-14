@@ -9,7 +9,8 @@ import ejs from 'ejs';
 import { ROOT } from '../src/paths.js';
 import { engine, loadEngine, type TypeParam } from '../src/services/engine.js';
 import { editorRail } from '../src/services/furniture.js';
-import { browserModule } from './editor-modules.js';
+import { LOCALES, translatorFor } from '../src/i18n.js';
+import { browserModule, editorWords } from './editor-modules.js';
 
 interface ParamsModule {
   paramsHtml(params: readonly TypeParam[]): string;
@@ -38,15 +39,21 @@ const shape = (html: string) =>
     .replace(/>\s+</g, '><')
     .trim();
 
-test('the server draws the size fields of every type as the editor does', async () => {
+test('the server draws the size fields of every type as the editor does, in every language', async () => {
   const { paramsHtml } = await browserModule<ParamsModule>('editor/params-html.js', ['paramsHtml']);
-  for (const type of engine().typeOrder) {
-    const rail = editorRail({ type });
-    assert.ok(rail, type);
-    const server = await ejs.renderFile(join(ROOT, 'views', 'app', 'editor-params.ejs'), {
-      fields: rail.fields,
-    });
-    assert.equal(shape(server), shape(paramsHtml(engine().typeParams[type] ?? [])), type);
+  const api = engine();
+  for (const locale of LOCALES) {
+    await editorWords(locale);
+    for (const type of api.typeOrder) {
+      const rail = editorRail({ type }, locale);
+      assert.ok(rail, type);
+      const server = await ejs.renderFile(join(ROOT, 'views', 'app', 'editor-params.ejs'), {
+        fields: rail.fields,
+        te: translatorFor(locale),
+      });
+      const editor = paramsHtml(api.typeText(type, api.translator(locale)).params);
+      assert.equal(shape(server), shape(editor), `${locale} ${type}`);
+    }
   }
 });
 
@@ -54,6 +61,14 @@ test('the server writes the project values and the title line of the editor', ()
   const rail = editorRail({ type: 'base', width: 750, fronts: 'drawers' });
   assert.ok(rail);
   assert.equal(rail.title, 'Долен шкаф, 750 × 820 × 560 mm');
+  assert.equal(
+    editorRail({ type: 'base', width: 750 }, 'en')?.title,
+    'Base cabinet, 750 × 820 × 560 mm',
+  );
+  assert.equal(
+    editorRail({ type: 'kitchen', shape: 'u' }, 'it')?.fields[0]?.options[3]?.label,
+    'A U',
+  );
   assert.equal(rail.fields.find((f) => f.key === 'width')?.value, '750');
   assert.equal(rail.fields.find((f) => f.key === 'fronts')?.value, 'drawers');
   // an unknown type opens as the engine normalizes it, a broken one is left to the editor

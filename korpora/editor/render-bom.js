@@ -1,9 +1,9 @@
 // Разкрой tab: totals, the cut list, boards and edge band, hardware with prices and shop links.
-import { $, esc, externalLink, fmt, mm, money, stat } from './dom.js';
+import { $, esc, externalLink, fmt, mm, money, num, stat } from './dom.js';
 import { STOCK } from '../engine/materials.js';
+import { tx, txCount } from './text.js';
 
-const edgeText = (arr) =>
-  arr.length ? arr.map((t) => String(t).replace('.', ',')).join(' + ') : '—';
+const edgeText = (arr) => (arr.length ? arr.map(num).join(' + ') : '—');
 
 export function renderBom(state) {
   const { bom, nesting, spec } = state;
@@ -15,11 +15,11 @@ export function renderBom(state) {
       .map(([cur, v]) => money(v, cur))
       .join(' + ') || '—';
   $('#bom-summary').innerHTML = [
-    stat('Детайли', fmt(rows.length)),
-    stat('Листове', fmt(nesting.sheets.length)),
-    stat('Кант', `${fmt(bandM, 1)} m`),
-    stat('Обков', `${fmt(pieces)} бр.`),
-    stat('Обков, цена', totals),
+    stat(tx('bom.parts'), fmt(rows.length)),
+    stat(tx('bom.sheets'), fmt(nesting.sheets.length)),
+    stat(tx('bom.band'), `${fmt(bandM, 1)} m`),
+    stat(tx('bom.hardware'), esc(tx('bom.pieces', { n: fmt(pieces) }))),
+    stat(tx('bom.price'), totals),
   ].join('');
   $('#bom-parts tbody').innerHTML = rows
     .map(
@@ -28,7 +28,7 @@ export function renderBom(state) {
 <td class="num${spec.bandCompensation ? ' hl' : ''}">${mm(r.cutL)} × ${mm(r.cutW)}</td>
 <td>${esc(r.stockName)} · ${esc(r.decorName)}</td>
 <td class="num">${edgeText(r.edgesL)}</td><td class="num">${edgeText(r.edgesW)}</td>
-<td class="c">${r.grain ? '<span title="Шарката е по дължината">⟷</span>' : '—'}</td>
+<td class="c">${r.grain ? `<span title="${esc(tx('bom.grain'))}">⟷</span>` : '—'}</td>
 <td class="num">${r.holes || '—'}</td><td class="num">${r.edgeHoles || '—'}</td></tr>`,
     )
     .join('');
@@ -42,10 +42,10 @@ export function renderBom(state) {
     bands
       .map(
         (b) =>
-          `<li><span>Кант ${String(b.thickness).replace('.', ',')} mm · ${esc(b.decorName)}</span><span class="num">${fmt(b.metres, 1)} m</span></li>`,
+          `<li><span>${esc(tx('bom.bandLine', { t: num(b.thickness), decor: b.decorName }))}</span><span class="num">${fmt(b.metres, 1)} m</span></li>`,
       )
       .join('') +
-    '<li class="hint">Кантът е по точни дължини, без надбавка за подрязване.</li>';
+    `<li class="hint">${esc(tx('bom.bandHint'))}</li>`;
   $('#bom-hardware').innerHTML =
     hardware
       .map((h) => {
@@ -54,11 +54,9 @@ export function renderBom(state) {
         return `<li><span>${name}${sub ? `<small>${esc(sub)}</small>` : ''}</span><span class="num">${h.qty} ${esc(h.unit)}${Number.isFinite(h.price) ? `<small>${money(h.price * h.qty, h.currency)}</small>` : ''}</span></li>`;
       })
       .join('') +
-    (unpriced
-      ? `<li class="hint">${unpriced} позиции без цена — крепежи и обща фурнитура.</li>`
-      : '');
+    (unpriced ? `<li class="hint">${esc(txCount(unpriced, 'bom.unpriced'))}</li>` : '');
   const edgeRows = rows.filter((r) => r.edgeHoles);
   $('#bom-edgeops').innerHTML = edgeRows.length
-    ? `${edgeRows.map((r) => `<li><span>${r.id} ${esc(r.name)}</span><span class="num">${r.edgeHoles} бр.</span></li>`).join('')}<li class="hint">Хоризонталните отвори в челата не се правят на 3-осна машина: пробивна машина или шаблон.</li>`
-    : '<li class="hint">Няма операции извън CNC.</li>';
+    ? `${edgeRows.map((r) => `<li><span>${r.id} ${esc(r.name)}</span><span class="num">${esc(tx('bom.pieces', { n: r.edgeHoles }))}</span></li>`).join('')}<li class="hint">${esc(tx('bom.edgeHint'))}</li>`
+    : `<li class="hint">${esc(tx('bom.noEdgeOps'))}</li>`;
 }

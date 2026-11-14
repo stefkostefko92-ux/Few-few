@@ -199,3 +199,22 @@ test('the generated files without a nonce keep their ETag and answer a condition
   assert.equal(page.status, 200);
   assert.equal(page.headers.get('etag'), null);
 });
+
+test('the door drawing of the landing speaks the language of its page', async () => {
+  for (const [locale, suffix] of [
+    ['bg', ''],
+    ['en', '.en'],
+    ['it', '.it'],
+  ] as const) {
+    const res = await get(`/media/door-drawing${suffix}.svg`);
+    assert.equal(res.status, 200, locale);
+    const svg = await res.text();
+    assert.equal(/[Ѐ-ӿ]/.test(svg), locale === 'bg', `${locale}: the words of the drawing`);
+    const page = await (await get(locale === 'bg' ? '/' : `/${locale}/`)).text();
+    assert.ok(
+      page.includes(`/media/door-elevation${suffix}.svg`),
+      `${locale}: the page shows its own drawing`,
+    );
+  }
+  assert.equal((await get('/media/door-drawing.xx.svg')).status, 404);
+});

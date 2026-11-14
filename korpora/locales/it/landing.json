@@ -87,7 +87,7 @@
       "checks": "Se una cerniera, una guida o un foro esce dalla tabella del produttore, il programma dice cosa cambiare. Dove il documento non dice nulla, il programma sceglie da sé e indica il valore come «{mark}» (nostra scelta).",
       "imageAlt": "Disegno di un'anta {h} × {w} mm con misure, bordo e mappa di foratura delle tazze delle cerniere",
       "cupAlt": "Dettaglio della tazza della cerniera in scala 1:1: Ø35 a {c} mm dal bordo",
-      "caption": "L'anta sinistra del primo mobile base, {h} × {w} mm: misure, bordo e mappa di foratura. Le etichette del disegno sono in bulgaro.",
+      "caption": "L'anta sinistra del primo mobile base, {h} × {w} mm: misure, bordo e mappa di foratura.",
       "open": "Apri tutto il disegno"
     },
     "kinds": {
@@ -175,7 +175,7 @@
       },
       "languages": {
         "q": "In che lingua è il programma?",
-        "a": "Il sito, l'account e l'amministrazione sono in bulgaro, inglese e italiano. L'editor, i disegni e le tabelle per ora sono in bulgaro."
+        "a": "In bulgaro, inglese e italiano: il sito, l'account, l'editor e tutto ciò che il programma produce, cioè la distinta di taglio, le tabelle di ferramenta e foratura, i disegni e le note nei file CNC. La lingua si cambia dal selettore in alto; i file scaricati sono nella lingua dello schermo."
       },
       "twofa": {
         "q": "Posso attivare la protezione a due fattori?",
@@ -219,6 +219,7 @@
     },
     "beta": {
       "tag": "beta"
-    }
+    },
+    "exampleOwner": "Progetto di esempio"
   }
 }

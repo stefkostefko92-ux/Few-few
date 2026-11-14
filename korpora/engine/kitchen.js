@@ -33,7 +33,7 @@ const WORKTOP_OVERHANG = 20; // past the closed fronts: 20–29 mm, in whole cen
 // brochure, the formats table); a longer wall needs one more joint.
 const WORKTOP_STOCK = 4100;
 const SIDE_WALLS = { line: [], left: ['B'], right: ['C'], u: ['B', 'C'] };
-const WALLS = { A: 'А', B: 'Б, лява', C: 'В, дясна' };
+// the walls: wall.A, wall.B, wall.C in the catalogue
 
 // Kitchen modules from the left: every third one from the second has the drawers and its own width, the others doors.
 export const kitchenModules = (s, n = s.modules) =>
@@ -99,8 +99,8 @@ export function wallCabinet(ctx, s, c, at = {}, column = {}) {
 function buildWall(ctx, s, c, wall, n) {
   let x0 = 0;
   wall.modules.forEach((m, i) => {
-    const at = { module: `М${n + i}`, x0 };
-    const up = { module: `Г${n + i}`, x0, y0: s.mount };
+    const at = { module: ctx.t('mod.base', { n: n + i }), x0 };
+    const up = { module: ctx.t('mod.wall', { n: n + i }), x0, y0: s.mount };
     if (m.blind) {
       const column = { blind: { side: m.blind, width: s.depth + cornerGap(s) }, hingeSide: m.blind === 'left' ? 'right' : 'left' };
       baseCabinet(ctx, { ...s, width: m.width, legs: LEGS, fronts: 'doors', doors: 1, shelves: 0 }, c, at, column);
@@ -129,7 +129,7 @@ export function buildKitchen(ctx, s, c) {
   if (walls.length === 1) {
     const [{ length }] = walls;
     buildWall(ctx, s, c, walls[0], 1);
-    ctx.hw('worktop', { name: `Работен плот ${WORKTOP_T} mm, ${length} × ${wd} mm (поръчка)`, qty: 1, unit: 'бр.', group: 'Покупни' });
+    ctx.hw('worktop', { name: ctx.t('hw.worktop', { t: WORKTOP_T, L: length, D: wd }), qty: 1, unit: ctx.t('u.pcs'), group: ctx.t('g.purchased') });
     ctx.symbols.push({ type: 'worktop', x0: 0, x1: length, y: s.height, z0: 0, z1: wd, t: WORKTOP_T });
     longWorktop(ctx, length, '');
     return;
@@ -145,22 +145,22 @@ export function buildKitchen(ctx, s, c) {
       B: { turn: 1, dx: 0, dz: start + wall.length },
       C: { turn: 3, dx: back, dz: start },
     }[wall.id];
-    ctx.runs.push({ id: wall.id, name: `Стена ${WALLS[wall.id]}`, ...run, length: wall.length });
+    ctx.runs.push({ id: wall.id, name: ctx.t('wall.name', { wall: ctx.t(`wall.${wall.id}`) }), ...run, length: wall.length });
     // the worktop of a side wall in its own coordinates: from its open end to the back wall's worktop
     const [x0, x1] = { A: [0, wall.length], B: [0, start + wall.length - wd], C: [wd - start, wall.length] }[wall.id];
     inRun(ctx, wall.id, () => {
       buildWall(ctx, s, c, wall, n);
       ctx.symbols.push({ type: 'worktop', x0, x1, y: s.height, z0: 0, z1: wd, t: WORKTOP_T });
     });
-    ctx.hw(wall.id === 'A' ? 'worktop' : `worktop:${wall.id}`, { name: `Работен плот ${WORKTOP_T} mm, ${x1 - x0} × ${wd} mm (поръчка) — стена ${WALLS[wall.id]}`, qty: 1, unit: 'бр.', group: 'Покупни' });
-    longWorktop(ctx, x1 - x0, ` на стена ${WALLS[wall.id]}`);
+    const where = ctx.t(`wall.${wall.id}`);
+    ctx.hw(wall.id === 'A' ? 'worktop' : `worktop:${wall.id}`, { name: ctx.t('hw.worktopWall', { t: WORKTOP_T, L: x1 - x0, D: wd, wall: where }), qty: 1, unit: ctx.t('u.pcs'), group: ctx.t('g.purchased') });
+    longWorktop(ctx, x1 - x0, where);
     n += wall.modules.length;
   }
-  ctx.hw('worktopBolts', { name: 'Болт за плот (връзка в ъгъла, гнездата се фрезоват по шаблон)', qty: 2 * (walls.length - 1), unit: 'бр.', group: 'Крепежи' });
+  ctx.hw('worktopBolts', { name: ctx.t('hw.worktopBolts'), qty: 2 * (walls.length - 1), unit: ctx.t('u.pcs'), group: ctx.t('g.fasteners') });
 }
 
-// A worktop longer than the longest one in one piece: one more joint with bolts, said as a note.
-function longWorktop(ctx, length, where) {
-  if (length > WORKTOP_STOCK)
-    ctx.warn('info', `Плотът${where} е ${length} mm — по-дълъг от ${WORKTOP_STOCK} mm на стандартния плот: предвидете още една фуга с болтове.`);
+// A worktop longer than the longest one in one piece: one more joint with bolts, said as a note. wall: on which wall.
+function longWorktop(ctx, length, wall) {
+  if (length > WORKTOP_STOCK) ctx.warn('info', ctx.t(wall ? 'w.longWorktopWall' : 'w.longWorktop', { L: length, max: WORKTOP_STOCK, wall }));
 }

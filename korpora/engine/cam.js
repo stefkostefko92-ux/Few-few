@@ -3,6 +3,7 @@
 import { cutSize, THROUGH_EXTRA } from './panel.js';
 import { STOCK } from './materials.js';
 import { r1, asciiName, dimTxt } from './util.js';
+import { translator } from './i18n.js';
 
 const DRILL_SET = [[1, 5], [2, 7], [3, 35], [6, 8], [7, 3], [8, 10], [9, 15], [10, 20], [11, 26], [12, 12], [13, 6], [14, 4.5], [15, 4], [16, 25], [17, 30], [18, 40]];
 const DRILLS = DRILL_SET.map(([h, d]) => ({
@@ -53,7 +54,7 @@ function strayHoles(model, sheet) {
       if (f.type !== 'hole') continue;
       const [X, Y] = map(f.u, f.v);
       const r = f.d / 2 - 0.05;
-      if (X - r < pl.x || X + r > pl.x + pl.w || Y - r < pl.y || Y + r > pl.y + pl.h) out.push(`${part.name}: отвор Ø${dimTxt(f.d)} би излязъл извън детайла на лист ${sheet.index}.`);
+      if (X - r < pl.x || X + r > pl.x + pl.w || Y - r < pl.y || Y + r > pl.y + pl.h) out.push(translator(model.lang)('w.strayHole', { part: part.name, d: translator(model.lang).num(f.d), sheet: sheet.index }));
     }
   }
   return out;
