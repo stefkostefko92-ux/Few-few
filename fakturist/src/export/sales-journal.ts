@@ -65,11 +65,11 @@ export interface JournalResult {
   manual: Array<{ number: string; reason: ManualReason }>;
 }
 
-const text = (value: string, length: number) =>
-  value
-    .replace(/[\r\n\t]+/g, ' ')
-    .slice(0, length)
-    .padEnd(length, ' ');
+/** По знаци (code points), не по UTF-16 единици: знак извън BMP е един байт в cp1251 („?“), не два. */
+const text = (value: string, length: number) => {
+  const chars = [...value.replace(/[\r\n\t]+/g, ' ')].slice(0, length);
+  return chars.join('') + ' '.repeat(length - chars.length);
+};
 const digits = (value: number | bigint | string, length: number) =>
   String(value).padStart(length, ' ');
 
@@ -223,7 +223,9 @@ export function salesJournal(input: {
       fields,
       text('', 2),
     ].join('');
-    if (record.length !== RECORD_LENGTH) throw new Error(`Запис с дължина ${record.length}`);
+    // Дължината — по знаци (= байтовете в cp1251), не по UTF-16 единици.
+    const size = [...record].length;
+    if (size !== RECORD_LENGTH) throw new Error(`Запис с дължина ${size}`);
     lines.push(record);
   }
   return {

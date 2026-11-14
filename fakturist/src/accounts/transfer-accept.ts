@@ -35,7 +35,9 @@ export async function findOpenInvite(token: string, now = new Date()): Promise<O
   const invite = await prisma.transferInvite.findUnique({
     where: { tokenHash: sha256Hex(token) },
     include: {
-      organization: { select: { id: true, legalName: true, eik: true, deletedAt: true } },
+      organization: {
+        select: { id: true, legalName: true, eik: true, deletedAt: true, terminatedAt: true },
+      },
       mandate: {
         select: {
           id: true,
@@ -47,10 +49,11 @@ export async function findOpenInvite(token: string, now = new Date()): Promise<O
       },
     },
   });
-  if (!invite || !isOpen(invite, now) || invite.organization.deletedAt) return null;
+  if (!invite || !isOpen(invite, now)) return null;
+  if (invite.organization.deletedAt || invite.organization.terminatedAt) return null;
   if ((await ownerCount(prisma, invite.organizationId)) > 0) return null;
   const existingUser = (await prisma.user.count({ where: { email: invite.email } })) > 0;
-  const { deletedAt: _deleted, ...organization } = invite.organization;
+  const { deletedAt: _deleted, terminatedAt: _terminated, ...organization } = invite.organization;
   return {
     id: invite.id,
     email: invite.email,
@@ -103,9 +106,11 @@ export async function acceptTransferInvite(input: {
       await lockOrganization(tx, invite.organizationId);
       const org = await tx.organization.findUniqueOrThrow({
         where: { id: invite.organizationId },
-        select: { deletedAt: true },
+        select: { deletedAt: true, terminatedAt: true },
       });
-      if (!isOpen(invite, now) || org.deletedAt) throw new TransferError('invalid');
+      if (!isOpen(invite, now) || org.deletedAt || org.terminatedAt) {
+        throw new TransferError('invalid');
+      }
       // Покана на кантора по пълномощно, което вече е оттеглено, не дава собственост.
       if (
         invite.mandateId &&

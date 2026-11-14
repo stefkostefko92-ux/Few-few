@@ -93,6 +93,22 @@ export async function deductAdvance(
       'This advance is already deducted in another invoice.',
     );
   }
+  // Аванс, коригиран с известие: основата му вече не е тази от авансовата фактура — без автоматично
+  // приспадане (редът се въвежда ръчно по сумите след известието).
+  const notes = await tx.document.count({
+    where: {
+      organizationId,
+      precedingId: found.id,
+      typeCode: { in: ['381', '383'] },
+      status: 'ISSUED',
+    },
+  });
+  if (notes > 0) {
+    reject(
+      'Към авансовата фактура има издадено известие — приспадането не се смята автоматично; въведете реда за приспадане ръчно.',
+      'The prepayment invoice has an issued note — the deduction is not computed automatically; enter the deduction line by hand.',
+    );
+  }
   const input = InvoiceInputSchema.parse(found.input);
   if (input.currency !== request.currency) {
     reject(

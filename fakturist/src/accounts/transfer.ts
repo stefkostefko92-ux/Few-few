@@ -53,9 +53,10 @@ async function inviteOwnerTx(
   await lockOrganization(tx, input.organizationId);
   const org = await tx.organization.findUniqueOrThrow({
     where: { id: input.organizationId },
-    select: { deletedAt: true },
+    select: { deletedAt: true, terminatedAt: true },
   });
-  if (org.deletedAt) throw new TransferError('notFound');
+  // Прекратена фирма не получава собственик: новият би отменил прекратяването, заявено от мастъра.
+  if (org.deletedAt || org.terminatedAt) throw new TransferError('notFound');
   if ((await ownerCount(tx, input.organizationId)) > 0) throw new TransferError('hasOwner');
   // Кантората заменя само своя покана; поканата на мастъра или на друга кантора остава.
   if (input.mandateId !== null) {

@@ -81,8 +81,9 @@ export function recoverBgFields(input: Record<string, unknown>, declared: Declar
   }
 }
 
-export function checkIncoming(xml: string): IncomingCheck {
-  if (Buffer.byteLength(xml, 'utf8') > MAX_INCOMING_BYTES) throw new IncomingError('tooLarge');
+/** `limit` — таванът на качения файл; копието от шкафчето (наш, вече проверен XML) минава без него. */
+export function checkIncoming(xml: string, limit = MAX_INCOMING_BYTES): IncomingCheck {
+  if (Buffer.byteLength(xml, 'utf8') > limit) throw new IncomingError('tooLarge');
   let read: ReadResult;
   try {
     const root = parseXml(xml);

@@ -34,10 +34,13 @@ function daysBetween(fromIso: string, toIso: string): number {
 const PAGE = 200;
 const MAX_PAGES = 50;
 
-/** Фирмите с включени напомняния и план с `reminders`. */
+/**
+ * Фирмите с включени напомняния и план с `reminders`. Прекратена фирма не праща писма от свое име (и не
+ * може да изключи напомнянията — записът ѝ е 409), изтритата — също.
+ */
 async function allowedOrganizations(): Promise<string[]> {
   const orgs = await prisma.organization.findMany({
-    where: { remindersEnabled: true },
+    where: { remindersEnabled: true, terminatedAt: null, deletedAt: null },
     select: { id: true },
   });
   const allowed: string[] = [];

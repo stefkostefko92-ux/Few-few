@@ -20,6 +20,8 @@ const { requestTermination, cancelTermination, TerminationError, TERMINATION_GRA
   await import('../../src/accounts/termination.js');
 const { purgeTerminated, KEPT_AFTER_PURGE } =
   await import('../../src/accounts/termination-purge.js');
+const { runReminders } = await import('../../src/documents/reminders.js');
+const { createTransferInvite, TransferError } = await import('../../src/accounts/transfer.js');
 
 /**
  * Прекратяване на фирма (SPEC 65–67; общите условия т. 11, договорът за обработване т. 11): заявка →
@@ -41,6 +43,7 @@ const ids = {
 };
 let masterSecret = '';
 let deliveredNumber = '';
+let replacementNumber = '';
 
 const base = {
   password: PASSWORD,
@@ -152,7 +155,7 @@ const isCode = (code: string) => (error: unknown) =>
   error instanceof TerminationError && error.code === code;
 const ownerActor = () => ({ userId: ids.aOwner, master: false });
 
-async function issueToB(): Promise<Response> {
+async function issueToB(extra: Record<string, string> = {}): Promise<Response> {
   const seriesId = (
     await prisma.documentSeries.findFirstOrThrow({ where: { organizationId: ids.a } })
   ).id;
@@ -165,6 +168,7 @@ async function issueToB(): Promise<Response> {
     currency: 'EUR',
     'buyer[name]': 'Сладкарница Роза ЕООД',
     'buyer[legalId]': '121604974',
+    'buyer[email]': 'roza@example.test',
     'buyer[street]': 'ул. „Шипка“ 1',
     'buyer[city]': 'София',
     'buyer[postalCode]': '1000',
@@ -175,6 +179,7 @@ async function issueToB(): Promise<Response> {
     'lines[0][netPrice]': '1.25',
     'lines[0][category]': 'S',
     'lines[0][rate]': '20',
+    ...extra,
   });
 }
 
@@ -307,6 +312,18 @@ test('отмяна — собственикът с паролата, до сро
   assert.equal(org.terminatedAt, null);
   assert.equal(org.purgeAfter, null);
   assert.equal((await issueToB()).status, 303, 'издава отново');
+  // „Анулирай и издай нов“ на доставения до Роза: при изтриването анулираният не става неин входящ.
+  const delivered = await prisma.document.findFirstOrThrow({
+    where: { organizationId: ids.a, number: deliveredNumber },
+  });
+  const replaced = await issueToB({ replaces: delivered.id, annulReason: 'requisite' });
+  assert.equal(replaced.status, 303);
+  replacementNumber = (
+    await prisma.document.findFirstOrThrow({
+      where: { organizationId: ids.a, status: 'ISSUED' },
+      orderBy: { createdAt: 'desc' },
+    })
+  ).number!;
   await assert.rejects(
     cancelTermination({ organizationId: ids.a, actor: ownerActor(), password: PASSWORD }),
     isCode('notTerminated'),
@@ -367,6 +384,27 @@ test('откази: доставчикът на плановете, кантор
   });
 });
 
+test('прекратена фирма: без напомняния от нейно име и без покана за собственик', async () => {
+  // Зора е прекратена; напомнянията ѝ са включени и има просрочен документ с имейл на получателя.
+  await prisma.organization.update({ where: { id: ids.a }, data: { remindersEnabled: true } });
+  await prisma.document.updateMany({
+    where: { organizationId: ids.a, status: 'ISSUED' },
+    data: { dueDate: new Date('2026-01-01T00:00:00Z') },
+  });
+  const sent = await runReminders(new Date());
+  assert.equal(sent, 0);
+  assert.equal(await prisma.notification.count({ where: { kind: 'document.reminder' } }), 0);
+  // Фирма-клиент, прекратена от мастъра: нов собственик би отменил прекратяването.
+  await assert.rejects(
+    createTransferInvite({
+      organizationId: ids.client,
+      email: 'nov-sobstvenik@example.test',
+      actorId: ids.master,
+    }),
+    (error: unknown) => error instanceof TransferError && error.code === 'notFound',
+  );
+});
+
 /** Всяко поле към Organization във всеки модел (по схемата) — за проверката „нищо не остава“. */
 function organizationReferences(): Array<{ model: string; field: string }> {
   const refs: Array<{ model: string; field: string }> = [];
@@ -390,8 +428,15 @@ test('след 30 дни: доставените — при получателя
 
   // Документът, доставен на Роза, е вече в нейните „Входящи“ — XML-ът, както е издаден.
   const kept = await prisma.incomingInvoice.findFirstOrThrow({
-    where: { organizationId: ids.b, number: deliveredNumber },
+    where: { organizationId: ids.b, number: replacementNumber },
   });
+  assert.equal(
+    await prisma.incomingInvoice.count({
+      where: { organizationId: ids.b, number: deliveredNumber },
+    }),
+    0,
+    'анулираният не става валиден входящ',
+  );
   assert.equal(kept.source, 'INBOX');
   assert.match(kept.xml, /<cbc:ID>/);
 

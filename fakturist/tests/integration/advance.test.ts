@@ -168,3 +168,38 @@ test('„Анулирай и издай нов“ на окончателнат�
     'CANCELLED',
   );
 });
+
+test('аванс с известие — без автоматично приспадане; известие към приспаднат аванс — отказ', async () => {
+  // Приспаднатият аванс (първият) не се коригира с известие — поправката е към окончателната.
+  const toDeducted = await issue({
+    typeCode: '381',
+    'preceding[number]': advance.number,
+    'preceding[reason]': 'грешна сума на аванса',
+    'lines[0][netPrice]': '10.00',
+  });
+  assert.equal(toDeducted.status, 400);
+  assert.match(await toDeducted.text(), /вече е приспаднат/);
+
+  // Нов аванс, намален с кредитно известие — окончателната не го приспада наслуки.
+  assert.equal(
+    (
+      await issue({
+        typeCode: '386',
+        'lines[0][name]': 'Аванс № 8',
+        'lines[0][netPrice]': '1000.00',
+      })
+    ).status,
+    303,
+  );
+  const second = await latest();
+  const credit = await issue({
+    typeCode: '381',
+    'preceding[number]': second.number!,
+    'preceding[reason]': 'намален аванс',
+    'lines[0][netPrice]': '400.00',
+  });
+  assert.equal(credit.status, 303);
+  const final = await issue({ 'advance[number]': second.number! });
+  assert.equal(final.status, 400);
+  assert.match(await final.text(), /има издадено известие/);
+});

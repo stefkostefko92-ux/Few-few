@@ -39,10 +39,12 @@ async function archiveDelivered(organizationId: string): Promise<number> {
       senderOrgId: organizationId,
       recipientOrgId: { not: organizationId },
       recipientOrg: { deletedAt: null },
+      // Анулираният е заменен от нов документ (той също е в шкафчето) — като входящ би изглеждал валиден.
+      document: { status: 'ISSUED' },
     },
     select: {
       recipientOrgId: true,
-      document: { select: { number: true, ublXml: true } },
+      document: { select: { id: true, number: true, ublXml: true } },
     },
   });
   let archived = 0;
@@ -60,7 +62,11 @@ async function archiveDelivered(organizationId: string): Promise<number> {
       archived += 1;
     } catch (error) {
       if (error instanceof IncomingRegisterError && error.code === 'duplicate') continue;
-      throw error;
+      // Един документ не спира изтриването (срокът по договора за обработване); остава в лога.
+      logger.error(
+        { err: errorMessage(error), organizationId, documentId: entry.document.id },
+        'документ от шкафчето не мина към входящите на получателя',
+      );
     }
   }
   return archived;

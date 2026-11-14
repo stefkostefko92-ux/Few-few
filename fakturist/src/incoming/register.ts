@@ -68,7 +68,7 @@ export async function registerIncoming(input: {
   }
   // 0x00 минава UTF-8 декодера, но PostgreSQL го отказва в TEXT (22021) — грешка на файла, не 500.
   if (xml.includes('\u0000')) throw new IncomingRegisterError('encoding');
-  const check = checkIncoming(xml);
+  const check = checkIncoming(xml, input.source === 'INBOX' ? Infinity : undefined);
   const raw = check.input;
   const seller = (raw['seller'] ?? {}) as Record<string, unknown>;
   const buyer = (raw['buyer'] ?? {}) as Record<string, unknown>;

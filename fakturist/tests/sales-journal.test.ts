@@ -135,3 +135,16 @@ test('валута — суми в евро; нулева ставка — 02-14
     'AE и O — полето зависи от основанието',
   );
 });
+
+test('знак извън BMP (емоджи) в името: един байт „?“, записът остава 424 байта', () => {
+  const emoji = { ...domestic, buyer: { ...domestic.buyer, name: 'Пекарна 😀 Зора ЕООД' } };
+  const result = salesJournal({
+    vatNumber: 'BG208725180',
+    period: '202611',
+    documents: [doc(emoji)],
+  });
+  assert.equal(result.file.length, RECORD_LENGTH + 2);
+  const record = decode(result.file).slice(0, RECORD_LENGTH);
+  assert.equal(at(record, 88, 137), 'Пекарна ? Зора ЕООД'.padEnd(50), '02-08 на мястото си');
+  assert.equal(amount(record, 2), '86.50'.padStart(15), '02-11 не е отместено');
+});

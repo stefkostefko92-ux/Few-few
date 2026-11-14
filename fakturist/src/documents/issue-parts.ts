@@ -121,6 +121,26 @@ export async function precedingDocument(
         },
       ]);
     }
+    if (isNote && own?.typeCode === '386') {
+      // Приспаднатият аванс не се коригира с известие: окончателната фактура вече е приспаднала цялата
+      // му основа (src/documents/advance.ts) — поправката е известие към окончателната.
+      const deducted = await tx.document.count({
+        where: { organizationId, precedingId: own.id, typeCode: '380', status: 'ISSUED' },
+      });
+      if (deducted > 0) {
+        throw new IssueRejected([
+          {
+            rule: 'BG-06',
+            severity: 'fatal',
+            path,
+            message: {
+              bg: 'Авансът вече е приспаднат в окончателна фактура — издайте известието към нея.',
+              en: 'The advance is already deducted in a final invoice — issue the note against that invoice.',
+            },
+          },
+        ]);
+      }
+    }
     if (isNote && !own) {
       warnings.push({
         rule: 'BG-06',
