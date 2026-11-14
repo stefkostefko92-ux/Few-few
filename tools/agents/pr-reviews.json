@@ -245,6 +245,10 @@
       "ai-djiyata",
       "goladjiyata",
       "kodadjiyata"
+    ],
+    "e2decf54d51e239c7a63b90d0f6b5681058f7e6d": [
+      "kodadjiyata",
+      "prodavacha"
     ]
   },
   "runs": [
@@ -1231,6 +1235,22 @@
       "verdict": "поправки",
       "costUsd": 0.85,
       "date": "2026-10-27"
+    },
+    {
+      "pr": 296,
+      "sha": "e2decf54d51e239c7a63b90d0f6b5681058f7e6d",
+      "agent": "kodadjiyata",
+      "verdict": "поправки",
+      "costUsd": 2.31,
+      "date": "2026-11-14"
+    },
+    {
+      "pr": 296,
+      "sha": "e2decf54d51e239c7a63b90d0f6b5681058f7e6d",
+      "agent": "prodavacha",
+      "verdict": "поправки",
+      "costUsd": 1.84,
+      "date": "2026-11-14"
     }
   ]
 }

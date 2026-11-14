@@ -1,19 +1,19 @@
-// Планове и комисиони — търговското ядро на Linketto.
-// Комисионата е НАМАЛЕНА спрямо пазара, но не сме на загуба:
-// Free 8% (срещу 12% при Linktree), Pro 4% (срещу 9% при Linktree
-// Starter/Pro), а 0% имат само горните два плана — Business и Founder.
+// Плановете — търговското ядро на Linketto. Без комисиона: продажбите на
+// създателите вървят през техния собствен линк за плащане (решение О-1,
+// docs/revolut-migration-spec.md). Плановете се плащат предплатено през
+// Revolut (lib/plan-orders.ts). Сравнения с конкуренти — САМО през
+// lib/comparisons.ts (с източник и дата).
+
+import { RETENTION_DAYS } from '@/lib/retention-days';
 
 export type PlanId = 'FREE' | 'PRO' | 'BUSINESS' | 'FOUNDER';
 
-// Членствата (recurring абонаменти) са изградени, но изчакват правния пакет
-// (авто-подновяване/отказ по Дир. 2011/83 + Billing Portal + waiver по тип +
-// webhook на живо). До тогава са скрити при създаване. Пускане = този флаг true.
-export const MEMBERSHIPS_ENABLED = false;
+// Срок за съхранение на аналитичните събития = 13 месеца (политиката за
+// поверителност). Платените планове показват цялата тази история.
+export const CLICK_RETENTION_DAYS = RETENTION_DAYS.clickEvent;
 
 export interface PlanDef {
   id: PlanId;
-  /** Комисиона върху продажби, в проценти. */
-  feePercent: number;
   /** Месечна цена в евроцентове (Founder е еднократна). */
   priceCents: number;
   oneTime: boolean;
@@ -21,52 +21,55 @@ export interface PlanDef {
   maxLocales: number | null;
   /** Максимален брой профили на акаунт (екипи/марки — Business). */
   maxProfiles: number;
-  /** Дни история на аналитиката (null = без лимит). */
+  /** Дни история на аналитиката (null = без лимит). Платените: 396 дни = 13
+   *  месеца — срокът в политиката за поверителност (src/lib/retention.ts). */
   analyticsDays: number | null;
-  /** env променлива със Stripe Price ID. */
-  stripePriceEnv: string | null;
+  /** Собствен домейн за профила. */
+  customDomain: boolean;
+  /** Скриване на Linketto баджа. */
+  hideBadge: boolean;
 }
 
 export const PLANS: Record<PlanId, PlanDef> = {
   FREE: {
     id: 'FREE',
-    feePercent: 8,
     priceCents: 0,
     oneTime: false,
     maxLocales: 2,
     maxProfiles: 1,
     analyticsDays: 90,
-    stripePriceEnv: null,
+    customDomain: false,
+    hideBadge: false,
   },
   PRO: {
     id: 'PRO',
-    feePercent: 4,
     priceCents: 400,
     oneTime: false,
     maxLocales: null,
     maxProfiles: 1,
-    analyticsDays: null,
-    stripePriceEnv: 'STRIPE_PRICE_PRO',
+    analyticsDays: CLICK_RETENTION_DAYS,
+    customDomain: true,
+    hideBadge: true,
   },
   BUSINESS: {
     id: 'BUSINESS',
-    feePercent: 0,
     priceCents: 900,
     oneTime: false,
     maxLocales: null,
     maxProfiles: 5,
-    analyticsDays: null,
-    stripePriceEnv: 'STRIPE_PRICE_BUSINESS',
+    analyticsDays: CLICK_RETENTION_DAYS,
+    customDomain: true,
+    hideBadge: true,
   },
   FOUNDER: {
     id: 'FOUNDER',
-    feePercent: 0,
     priceCents: 4900,
     oneTime: true,
     maxLocales: null,
     maxProfiles: 5,
-    analyticsDays: null,
-    stripePriceEnv: 'STRIPE_PRICE_FOUNDER',
+    analyticsDays: CLICK_RETENTION_DAYS,
+    customDomain: true,
+    hideBadge: true,
   },
 };
 
@@ -75,8 +78,8 @@ export function planFor(plan: string): PlanDef {
 }
 
 // ── Периоди на плащане с намаления (за абонаментните планове) ─────────
-// Колкото по-дълъг ангажимент, толкова по-голяма отстъпка. Цената се
-// таксува авансово за целия период. Founder е еднократен — без период.
+// Колкото по-дълъг предплатен период, толкова по-голяма отстъпка. Плаща се
+// веднъж за целия период, без автоматично подновяване. Founder е завинаги.
 
 export type BillingIntervalId =
   | 'monthly'
@@ -124,53 +127,4 @@ export function effectiveMonthlyCents(
 ): number {
   const interval = intervalFor(intervalId);
   return Math.round(intervalPriceCents(planId, intervalId) / interval.months);
-}
-
-/** Env име на Stripe Price ID за план + период (напр. STRIPE_PRICE_PRO_ANNUAL). */
-export function stripePriceEnvFor(
-  planId: PlanId,
-  intervalId: BillingIntervalId,
-): string {
-  return `STRIPE_PRICE_${planId}_${intervalId.toUpperCase()}`;
-}
-
-/** Комисиона в евроцентове върху сума в евроцентове, закръглена надолу. */
-export function commissionCents(amountCents: number, plan: PlanId): number {
-  if (!Number.isInteger(amountCents) || amountCents <= 0) return 0;
-  return Math.floor((amountCents * PLANS[plan].feePercent) / 100);
-}
-
-// Такса за обработка на плащането — носи я продавачът (индустриален
-// стандарт). Покрива таксата на Stripe за европейски карти (~1.5% + €0.25)
-// с малък буфер; така „0% комисиона“ на горните планове остава вярно за
-// НАШАТА комисиона, без да сме на загуба по Stripe таксите.
-export const PROCESSING_FEE = { percent: 1.9, fixedCents: 30 } as const;
-
-/** Минимална цена на продукт — под нея фиксираните такси изяждат всичко. */
-export const MIN_PRODUCT_PRICE_EUR = 3;
-
-/** Такса обработка в евроцентове, закръглена нагоре (в наша полза). */
-export function processingFeeCents(amountCents: number): number {
-  if (!Number.isInteger(amountCents) || amountCents <= 0) return 0;
-  return (
-    Math.ceil((amountCents * PROCESSING_FEE.percent) / 100) +
-    PROCESSING_FEE.fixedCents
-  );
-}
-
-/** Пълната application_fee за checkout: комисиона по плана + обработка. */
-export function totalFeeCents(amountCents: number, plan: PlanId): number {
-  if (!Number.isInteger(amountCents) || amountCents <= 0) return 0;
-  return commissionCents(amountCents, plan) + processingFeeCents(amountCents);
-}
-
-// За абонаменти (членства) Stripe иска процент (application_fee_percent),
-// без фиксирана част — ползваме комисионата по плана + процента обработка.
-export function membershipFeePercent(plan: PlanId): number {
-  return Math.round((PLANS[plan].feePercent + PROCESSING_FEE.percent) * 100) / 100;
-}
-
-/** Валиден интервал за членство. */
-export function membershipInterval(value: string | null | undefined): 'month' | 'year' {
-  return value === 'year' ? 'year' : 'month';
 }

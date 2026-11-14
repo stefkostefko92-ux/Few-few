@@ -1,0 +1,70 @@
+# Linketto — продукционният стек (db + app). Тайните НЕ влизат тук: идват от
+# `.env` до този файл — на сървъра симлинк към /opt/few-few/shared/linketto/.env
+# (mode 600), слаган от deploy/autodeploy.sh.
+#
+# Името на проекта е ФИКСИРАНО: иначе Compose го взима от името на папката, а
+# всеки release е в нова папка — тогава откатът и cron-ът (deploy/linketto-cron.sh)
+# трябва да познават от коя папка е вдигнат стекът. Така томът е винаги
+# `linketto_db`, а контейнерите — `linketto-db-1` / `linketto-app-1`.
+name: linketto
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    # Без env_file: базата получава САМО паролата си (интерполация от `.env`),
+    # не и ключовете на Revolut/Brevo/Gemini — най-малка привилегия.
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?липсва POSTGRES_PASSWORD в .env}
+      POSTGRES_USER: linketto
+      POSTGRES_DB: linketto
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U linketto -d linketto']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      # В контейнера DATA_DIR е винаги /data — истинското място е томът по-долу.
+      DATA_DIR: /data
+    # Само loopback: навън се излиза през nginx на хоста с TLS (deploy/nginx.conf).
+    ports:
+      - '127.0.0.1:4340:3000'
+    # Качените аватари/фонове живеят на СТАБИЛЕН път извън release-а (DEPLOY.md §2):
+    # нов release = нова папка, а снимките трябва да оцелеят. Собственик 1001:1001
+    # (потребителят `nextjs` в образа) — autodeploy създава папката с тези права.
+    volumes:
+      - ${LINKETTO_DATA_HOST:-/opt/few-few/shared/linketto/data}:/data
+    # Процесът не иска никакви capabilities (порт 3000 > 1024, без chown/setuid).
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    # Споделен VPS: без таван OOM killer-ът избира жертва глобално по хоста и може
+    # да свали чужд продукт заради нас (sharp върху снимка до 8 MB е най-тежкото).
+    mem_limit: 1g
+    healthcheck:
+      # Образът е node:22-slim — без wget/curl; пита се със самия node.
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  db:

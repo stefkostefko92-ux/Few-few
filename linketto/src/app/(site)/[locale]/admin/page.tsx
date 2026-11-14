@@ -9,14 +9,15 @@ import {
   adminDeleteUserAction,
   adminForceLogoutAction,
   adminMarkPayoutPaidAction,
-  adminRefundPurchaseAction,
-  adminRetryPayoutAction,
+  adminRefundPlanOrderAction,
   adminResolveReportAction,
   adminSetPasswordAction,
   adminSetPublishedAction,
   adminUpdateUserAction,
   setProfileBanAction,
 } from '@/app/actions/admin';
+
+import { BAN_CATEGORIES } from '@/lib/dsa-notice';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,15 +42,16 @@ export default async function AdminPage({
     userCount,
     profileCount,
     clickCount,
-    purchaseTotals,
+    orderTotals,
     openReports,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.profile.count(),
     prisma.clickEvent.count(),
-    prisma.purchase.aggregate({
+    prisma.planOrder.aggregate({
+      where: { state: 'completed' },
       _count: { _all: true },
-      _sum: { amountCents: true, feeCents: true },
+      _sum: { amountCents: true, vatCents: true },
     }),
     prisma.report.findMany({
       where: { resolvedAt: null },
@@ -66,15 +68,24 @@ export default async function AdminPage({
     include: { user: { select: { email: true } } },
   });
 
-  const recentPurchases = await prisma.purchase.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 30,
-    include: {
-      product: {
-        include: { translations: true, profile: { select: { slug: true } } },
-      },
-    },
-  });
+  // Поръчки на планове (Revolut): платените (вкл. неприложени и чакащи
+  // връщане) отделно от висящите/неуспешните — изоставени checkout-и не бива
+  // да изместват платените от списъка (иначе няма бутон за връщане).
+  const [paidOrders, otherOrders] = await Promise.all([
+    prisma.planOrder.findMany({
+      where: { state: { in: ['completed', 'conflict', 'refund_pending', 'refunded'] } },
+      orderBy: [{ completedAt: 'desc' }, { createdAt: 'desc' }],
+      take: 60,
+      include: { user: { select: { email: true } } },
+    }),
+    prisma.planOrder.findMany({
+      where: { state: { in: ['pending', 'failed', 'cancelled'] } },
+      orderBy: { createdAt: 'desc' },
+      take: 15,
+      include: { user: { select: { email: true } } },
+    }),
+  ]);
+  const recentOrders = [...paidOrders, ...otherOrders];
 
   const query = (q ?? '').trim().toLowerCase();
   const users = await prisma.user.findMany({
@@ -96,6 +107,11 @@ export default async function AdminPage({
           slug: true,
           published: true,
           bannedAt: true,
+          bannedCategory: true,
+          bannedReason: true,
+          banNoticeSentAt: true,
+          warnedAt: true,
+          warnedCategory: true,
           customDomain: true,
         },
       },
@@ -110,8 +126,8 @@ export default async function AdminPage({
   return (
     <>
       <SiteHeader locale={locale as Locale} />
-      <main className="mx-auto max-w-5xl space-y-6 px-6 py-10">
-        <h1 className="text-2xl font-bold">{t('title')}</h1>
+      <main className="dash mx-auto max-w-5xl space-y-6 px-6 py-10">
+        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">{t('title')}</h1>
         {ok && (
           <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
             {t('saved')}
@@ -125,7 +141,17 @@ export default async function AdminPage({
                 ? t('errorPassword')
                 : error === 'refund'
                   ? t('errorRefund')
-                  : t('errorInput')}
+                  : error === 'refund-order'
+                    ? t('errorRefundOrder')
+                    : error === 'ban'
+                      ? t('errorBan')
+                      : error === 'ban-warn'
+                        ? t('errorBanWarn')
+                        : error === 'ban-ground'
+                          ? t('errorBanGround')
+                          : error === 'ban-notice'
+                            ? t('errorBanNotice')
+                            : t('errorInput')}
           </p>
         )}
 
@@ -136,14 +162,14 @@ export default async function AdminPage({
               [userCount, t('statsUsers')],
               [profileCount, t('statsProfiles')],
               [clickCount, t('statsClicks')],
-              [purchaseTotals._count._all, t('statsPurchases')],
+              [orderTotals._count._all, t('statsOrders')],
               [
-                `€${((purchaseTotals._sum.amountCents ?? 0) / 100).toFixed(2)}`,
+                `€${((orderTotals._sum.amountCents ?? 0) / 100).toFixed(2)}`,
                 t('statsRevenue'),
               ],
               [
-                `€${((purchaseTotals._sum.feeCents ?? 0) / 100).toFixed(2)}`,
-                t('statsFees'),
+                `€${((orderTotals._sum.vatCents ?? 0) / 100).toFixed(2)}`,
+                t('statsVat'),
               ],
             ] as const
           ).map(([value, label]) => (
@@ -165,7 +191,7 @@ export default async function AdminPage({
             {t('reportsTitle', { count: openReports.length })}
           </h2>
           {openReports.length === 0 ? (
-            <p className="mt-2 text-sm text-slate-400">{t('reportsEmpty')}</p>
+            <p className="mt-2 text-sm text-slate-500">{t('reportsEmpty')}</p>
           ) : (
             <ul className="mt-4 space-y-3">
               {openReports.map((report) => (
@@ -182,7 +208,7 @@ export default async function AdminPage({
                         /u/{report.profile.slug}
                       </a>{' '}
                       · <span className="font-medium">{report.category}</span>{' '}
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-slate-500">
                         {report.createdAt.toISOString().slice(0, 16).replace('T', ' ')}
                       </span>
                     </p>
@@ -207,84 +233,51 @@ export default async function AdminPage({
           )}
         </section>
 
-        {/* Последни продажби + връщане на пари */}
+        {/* Поръчки на планове (Revolut) + пълно връщане на пари */}
         <section className="rounded-2xl border border-slate-200 bg-white p-6">
-          <h2 className="font-semibold">{t('purchasesTitle')}</h2>
-          {recentPurchases.length === 0 ? (
-            <p className="mt-2 text-sm text-slate-400">{t('purchasesEmpty')}</p>
+          <h2 className="font-semibold">{t('ordersTitle')}</h2>
+          {recentOrders.length === 0 ? (
+            <p className="mt-2 text-sm text-slate-500">{t('ordersEmpty')}</p>
           ) : (
             <ul className="mt-4 space-y-2 text-sm">
-              {recentPurchases.map((purchase) => (
+              {recentOrders.map((order) => (
                 <li
-                  key={purchase.id}
+                  key={order.id}
                   className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-2"
                 >
                   <span className="min-w-0">
-                    <a
-                      href={`/u/${purchase.product.profile.slug}`}
-                      className="font-medium text-linketto-700 hover:underline"
-                    >
-                      /u/{purchase.product.profile.slug}
-                    </a>{' '}
-                    · {purchase.product.translations[0]?.title ?? '—'} ·{' '}
+                    <span className="font-medium">{order.user.email}</span> ·{' '}
+                    {order.plan} · {t(`interval.${order.interval}`)} ·{' '}
                     <span className="font-semibold">
-                      €{(purchase.amountCents / 100).toFixed(2)}
+                      €{(order.amountCents / 100).toFixed(2)}
                     </span>{' '}
-                    <span className="text-xs text-slate-400">
-                      ({t('feeShort')} €{(purchase.feeCents / 100).toFixed(2)})
+                    <span className="text-xs text-slate-500">
+                      ({t('vatShort')} €{(order.vatCents / 100).toFixed(2)}
+                      {order.buyerCountry ?? order.cardCountry
+                        ? ` · ${order.buyerCountry ?? order.cardCountry}`
+                        : ''}
+                      {' · '}
+                      {order.createdAt.toISOString().slice(0, 16).replace('T', ' ')})
                     </span>
-                    {purchase.buyerEmail ? (
-                      <span className="text-xs text-slate-400">
-                        {' '}
-                        · {purchase.buyerEmail}
-                      </span>
-                    ) : null}
-                    {purchase.disputedAt && (
+                    {order.withdrawalRequestedAt && (
                       <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs font-semibold text-red-700">
-                        {t('disputed')}
+                        {t('withdrawalRequested', {
+                          date: order.withdrawalRequestedAt.toISOString().slice(0, 16).replace('T', ' '),
+                        })}
                       </span>
-                    )}
-                    {!purchase.deliveredAt && !purchase.refundedAt && (
-                      <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-700">
-                        {t('notDelivered')}
-                      </span>
-                    )}
-                    {/* Провален превод към продавача → видим + ретрайваем */}
-                    {purchase.payoutFailedAt && !purchase.stripeTransferId && (
-                      <form
-                        action={adminRetryPayoutAction}
-                        className="ml-2 inline-flex items-center gap-1"
-                      >
-                        <span className="rounded bg-red-100 px-1.5 py-0.5 text-xs font-semibold text-red-700">
-                          {t('payoutFailed')}
-                        </span>
-                        <input type="hidden" name="uiLocale" value={locale} />
-                        <input
-                          type="hidden"
-                          name="purchaseId"
-                          value={purchase.id}
-                        />
-                        <button
-                          type="submit"
-                          className="rounded-full border border-slate-300 px-2 py-0.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
-                        >
-                          {t('payoutRetry')}
-                        </button>
-                      </form>
                     )}
                   </span>
-                  {purchase.refundedAt ? (
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
-                      {t('refunded')}
-                    </span>
-                  ) : (
-                    <form action={adminRefundPurchaseAction}>
+                  {order.state === 'completed' ||
+                  order.state === 'conflict' ||
+                  (order.state === 'refund_pending' && !order.refundOrderId) ? (
+                    <form action={adminRefundPlanOrderAction}>
                       <input type="hidden" name="uiLocale" value={locale} />
-                      <input
-                        type="hidden"
-                        name="purchaseId"
-                        value={purchase.id}
-                      />
+                      <input type="hidden" name="planOrderId" value={order.id} />
+                      {order.state === 'conflict' && (
+                        <span className="mr-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-700">
+                          {t('orderState.conflict')}
+                        </span>
+                      )}
                       <button
                         type="submit"
                         className="rounded-full border border-red-500 px-4 py-1 text-xs font-semibold text-red-600 hover:bg-red-50"
@@ -292,6 +285,10 @@ export default async function AdminPage({
                         {t('refund')}
                       </button>
                     </form>
+                  ) : (
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+                      {t(`orderState.${order.state}`)}
+                    </span>
                   )}
                 </li>
               ))}
@@ -305,7 +302,7 @@ export default async function AdminPage({
             {t('payoutsTitle', { count: pendingPayouts.length })}
           </h2>
           {pendingPayouts.length === 0 ? (
-            <p className="mt-2 text-sm text-slate-400">{t('payoutsEmpty')}</p>
+            <p className="mt-2 text-sm text-slate-500">{t('payoutsEmpty')}</p>
           ) : (
             <ul className="mt-4 space-y-3">
               {pendingPayouts.map((p) => (
@@ -319,7 +316,7 @@ export default async function AdminPage({
                     </span>{' '}
                     · {p.user.email} ·{' '}
                     <span className="font-mono text-xs">{p.method}</span>{' '}
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-500">
                       {p.requestedAt.toISOString().slice(0, 10)}
                     </span>
                   </span>
@@ -370,7 +367,9 @@ export default async function AdminPage({
                   <p className="text-xs text-slate-500">
                     {user.name ?? '—'} · {user.plan} ·{' '}
                     {user.createdAt.toISOString().slice(0, 10)}
-                    {user.stripeAccountId ? ' · Stripe Connect' : ''}
+                    {user.planExpiresAt
+                      ? ` · ${t('planUntil', { date: user.planExpiresAt.toISOString().slice(0, 10) })}`
+                      : ''}
                     {user.referralCreditCents > 0
                       ? ` · ${t('referralCredit')}: €${(user.referralCreditCents / 100).toFixed(2)}`
                       : ''}
@@ -405,13 +404,13 @@ export default async function AdminPage({
                   {t('loginIps', { count: user._count.loginEvents })}
                 </h3>
                 {user.loginEvents.length === 0 ? (
-                  <p className="mt-1 text-sm text-slate-400">—</p>
+                  <p className="mt-1 text-sm text-slate-500">—</p>
                 ) : (
                   <ul className="mt-1 flex flex-wrap gap-x-6 gap-y-1 font-mono text-sm text-slate-700">
                     {user.loginEvents.map((event) => (
                       <li key={event.id}>
                         {event.ip}
-                        <span className="ml-2 font-sans text-xs text-slate-400">
+                        <span className="ml-2 font-sans text-xs text-slate-500">
                           {event.createdAt.toISOString().slice(0, 16).replace('T', ' ')}
                         </span>
                       </li>
@@ -485,7 +484,7 @@ export default async function AdminPage({
                       autoComplete="new-password"
                       className={inputClass}
                     />
-                    <p className="text-xs text-slate-400">{t('passwordHint')}</p>
+                    <p className="text-xs text-slate-500">{t('passwordHint')}</p>
                     <button
                       type="submit"
                       className="rounded-full border border-amber-600 px-4 py-1.5 font-semibold text-amber-700 hover:bg-amber-50"
@@ -496,31 +495,94 @@ export default async function AdminPage({
 
                   {user.profiles.map((profile) => (
                     <div key={profile.id} className="flex flex-wrap gap-2">
-                      <form action={setProfileBanAction}>
-                        <input type="hidden" name="uiLocale" value={locale} />
-                        <input
-                          type="hidden"
-                          name="profileId"
-                          value={profile.id}
-                        />
-                        <input
-                          type="hidden"
-                          name="ban"
-                          value={profile.bannedAt ? '0' : '1'}
-                        />
-                        <button
-                          type="submit"
-                          className={`rounded-full px-4 py-1.5 font-semibold ${
-                            profile.bannedAt
-                              ? 'border border-green-600 text-green-700 hover:bg-green-50'
-                              : 'border border-red-600 text-red-700 hover:bg-red-50'
-                          }`}
-                        >
-                          {profile.bannedAt
-                            ? t('unbanProfile', { slug: profile.slug })
-                            : t('banProfile', { slug: profile.slug })}
-                        </button>
-                      </form>
+                      {profile.bannedAt ? (
+                        <form action={setProfileBanAction} className="flex flex-wrap items-center gap-2">
+                          <input type="hidden" name="uiLocale" value={locale} />
+                          <input type="hidden" name="profileId" value={profile.id} />
+                          <input type="hidden" name="ban" value="0" />
+                          <button
+                            type="submit"
+                            className="rounded-full border border-green-600 px-4 py-1.5 font-semibold text-green-700 hover:bg-green-50"
+                          >
+                            {t('unbanProfile', { slug: profile.slug })}
+                          </button>
+                          {profile.bannedCategory && (
+                            <span className="text-xs text-slate-500">
+                              {t(`banCategory.${profile.bannedCategory}`)} · {profile.bannedReason}
+                              {profile.banNoticeSentAt ? '' : ` · ${t('banNoticeNotSent')}`}
+                            </span>
+                          )}
+                        </form>
+                      ) : (
+                        /* DSA чл. 17: бан само с категория и обосновка — собственикът
+                           получава изложение на мотивите по имейл. */
+                        <details className="w-full rounded-xl border border-red-200 p-3">
+                          <summary className="cursor-pointer font-semibold text-red-700">
+                            {t('banProfile', { slug: profile.slug })}
+                            {profile.warnedAt && (
+                              <span className="ml-2 text-xs font-normal text-amber-700">
+                                {t('warnedOn', {
+                                  date: profile.warnedAt.toISOString().slice(0, 10),
+                                  category: t(`banCategory.${profile.warnedCategory ?? 'other'}`),
+                                })}
+                              </span>
+                            )}
+                          </summary>
+                          <form action={setProfileBanAction} className="mt-3 space-y-2">
+                            <input type="hidden" name="uiLocale" value={locale} />
+                            <input type="hidden" name="profileId" value={profile.id} />
+                            <input type="hidden" name="ban" value="1" />
+                            <label className="block">
+                              {t('banCategoryLabel')}
+                              <select name="category" required className={inputClass}>
+                                {BAN_CATEGORIES.map((c) => (
+                                  <option key={c} value={c}>
+                                    {t(`banCategory.${c}`)}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            <label className="block">
+                              {t('banReasonLabel')}
+                              <textarea
+                                name="reason"
+                                required
+                                minLength={10}
+                                maxLength={2000}
+                                rows={3}
+                                className={inputClass}
+                              />
+                            </label>
+                            <label className="block">
+                              {t('banLegalGroundLabel')}
+                              <input type="text" name="legalGround" maxLength={300} className={inputClass} />
+                            </label>
+                            <label className="flex items-center gap-2 text-xs text-slate-600">
+                              <input type="checkbox" name="fromReport" className="h-3.5 w-3.5" />
+                              {t('banFromReport')}
+                            </label>
+                            <p className="text-xs text-slate-500">{t('banNoticeHint')}</p>
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                type="submit"
+                                name="mode"
+                                value="warn"
+                                className="rounded-full border border-amber-600 px-4 py-1.5 font-semibold text-amber-700 hover:bg-amber-50"
+                              >
+                                {t('warnConfirm')}
+                              </button>
+                              <button
+                                type="submit"
+                                name="mode"
+                                value="ban"
+                                className="rounded-full bg-red-600 px-4 py-1.5 font-semibold text-white hover:bg-red-700"
+                              >
+                                {t('banConfirm')}
+                              </button>
+                            </div>
+                          </form>
+                        </details>
+                      )}
                       <form action={adminSetPublishedAction}>
                         <input type="hidden" name="uiLocale" value={locale} />
                         <input

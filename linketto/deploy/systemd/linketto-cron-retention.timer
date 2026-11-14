@@ -1,0 +1,12 @@
+[Unit]
+# Дневно: сроковете за съхранение от политиката (src/lib/retention-days.ts).
+Description=Linketto — сроковете за съхранение (дневно, 03:40)
+
+[Timer]
+OnCalendar=*-*-* 03:40:00
+Persistent=true
+RandomizedDelaySec=300
+Unit=linketto-cron@retention.service
+
+[Install]
+WantedBy=timers.target

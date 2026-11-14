@@ -56,11 +56,11 @@ export default async function MediaKitPage({
   const since = new Date(Date.now() - WINDOW_DAYS * 86_400_000);
   const where = { profileId: profile.id, createdAt: { gte: since } };
   const [views, clicks, byCountry] = await Promise.all([
-    prisma.clickEvent.count({ where: { ...where, linkId: null } }),
-    prisma.clickEvent.count({ where: { ...where, linkId: { not: null } } }),
+    prisma.clickEvent.count({ where: { ...where, linkId: null, productId: null } }),
+    prisma.clickEvent.count({ where: { ...where, OR: [{ linkId: { not: null } }, { productId: { not: null } }] } }),
     prisma.clickEvent.groupBy({
       by: ['country'],
-      where: { ...where, linkId: null, country: { not: null } },
+      where: { ...where, linkId: null, productId: null, country: { not: null } },
       _count: { _all: true },
       orderBy: { _count: { country: 'desc' } },
       take: 40,

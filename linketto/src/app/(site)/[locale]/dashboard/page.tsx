@@ -8,8 +8,8 @@ import {
   BILLING_INTERVALS,
   effectiveMonthlyCents,
   intervalPriceCents,
-  MEMBERSHIPS_ENABLED,
   planFor,
+  PLANS,
 } from '@/lib/plans';
 import {
   addLinkAction,
@@ -17,13 +17,18 @@ import {
   deleteLinkAction,
   updateProfileAction,
   updateStyleAction,
+  verifyDomainAction,
+  applyTemplateAction,
   uploadImageAction,
   upsertLinkTranslationAction,
   upsertProfileTranslationAction,
 } from '@/app/actions/profile';
-import { parseStyle } from '@/lib/style';
+import { backgroundCss, buttonCss, parseStyle } from '@/lib/style';
+import { profileUrl } from '@/lib/profile-url';
+import { NICHE_TEMPLATES, TEMPLATE_IDS } from '@/lib/templates';
 import { languageDemand } from '@/lib/language-gap';
 import { ReferralCard } from '@/components/ReferralCard';
+import { TimeZoneField } from '@/components/TimeZoneField';
 import {
   ensureReferralCodeAction,
   requestPayoutAction,
@@ -32,6 +37,7 @@ import {
   canWithdraw,
   payoutProgressPercent,
   REFERRAL_MIN_PAYOUT_CENTS,
+  REFERRAL_PERCENT,
 } from '@/lib/referral';
 import {
   ChartColumnIcon,
@@ -41,11 +47,13 @@ import {
   SparklesIcon,
 } from '@/components/icons';
 import Link from 'next/link';
-import {
-  openBillingPortalAction,
-  startCheckoutAction,
-} from '@/app/actions/billing';
+import { startCheckoutAction } from '@/app/actions/billing';
+import { checkPurchase } from '@/lib/plan-orders';
+import { canWithdraw as canWithdrawPlan } from '@/lib/withdrawal';
+import { domainTxtName, domainTxtValue } from '@/lib/domain-verify';
 import { aiGenerateBioAction, aiTranslateAction } from '@/app/actions/ai';
+import { importLinktreeAction } from '@/app/actions/import';
+import { setDigestAction } from '@/app/actions/digest';
 import { sendBroadcastAction } from '@/app/actions/newsletter';
 import { resolveBookingAction } from '@/app/actions/booking';
 import {
@@ -53,14 +61,8 @@ import {
   deleteShortLinkAction,
 } from '@/app/actions/shortlink';
 import {
-  addCouponAction,
-  addLessonAction,
   addProductAction,
-  connectStripeAction,
-  deleteCouponAction,
-  deleteLessonAction,
   deleteProductAction,
-  sellerRefundAction,
   setTraderStatusAction,
   updateProductAction,
   upsertProductTranslationAction,
@@ -69,6 +71,28 @@ import {
 export const dynamic = 'force-dynamic';
 
 const THEMES = ['aurora', 'mono', 'dusk'] as const;
+
+// ?error=<код> → ключ на съобщението (непознат код → общата грешка).
+const DASHBOARD_ERRORS: Record<string, string> = {
+  slug: 'errorSlugTaken',
+  limit: 'errorLimit',
+  block: 'errorBlock',
+  domain: 'errorDomain',
+  ai: 'errorAi',
+  aikey: 'errorAiKey',
+  product: 'errorProduct',
+  style: 'errorStyle',
+  upload: 'errorUpload',
+  payout: 'errorPayout',
+  broadcast: 'errorBroadcast',
+  shortlink: 'errorShortlink',
+  profiles: 'errorProfiles',
+  payments: 'errorPayments',
+  withdraw: 'errorWithdraw',
+  domainVerify: 'errorDomainVerify',
+  plan: 'errorPlan',
+  import: 'errorImport',
+};
 
 export default async function DashboardPage({
   params,
@@ -79,15 +103,28 @@ export default async function DashboardPage({
     error?: string;
     translated?: string;
     generated?: string;
-    connected?: string;
     payout?: string;
     broadcast?: string;
+    upgraded?: string;
+    withdrawn?: string;
+    domainVerified?: string;
+    imported?: string;
     p?: string;
   }>;
 }) {
   const { locale } = await params;
-  const { error, translated, generated, connected, payout, broadcast, p } =
-    await searchParams;
+  const {
+    error,
+    translated,
+    generated,
+    payout,
+    broadcast,
+    upgraded,
+    withdrawn,
+    domainVerified,
+    imported,
+    p,
+  } = await searchParams;
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
   const t = await getTranslations('dashboard');
@@ -144,11 +181,21 @@ export default async function DashboardPage({
   const clickWhere = profile
     ? { profileId: profile.id, ...(since ? { createdAt: { gte: since } } : {}) }
     : null;
+  // Кликове по продукт (към линка за плащане) в прозореца на плана.
+  const productClickRows = clickWhere
+    ? await prisma.clickEvent.groupBy({
+        by: ['productId'],
+        where: { ...clickWhere, productId: { not: null } },
+        _count: { _all: true },
+      })
+    : [];
+  const productClicksOf = (id: string) =>
+    productClickRows.find((row) => row.productId === id)?._count._all ?? 0;
   const [views, clicks, byLink, byLocale, byCountry, gapCountries] = clickWhere
     ? await Promise.all([
-        prisma.clickEvent.count({ where: { ...clickWhere, linkId: null } }),
+        prisma.clickEvent.count({ where: { ...clickWhere, linkId: null, productId: null } }),
         prisma.clickEvent.count({
-          where: { ...clickWhere, linkId: { not: null } },
+          where: { ...clickWhere, OR: [{ linkId: { not: null } }, { productId: { not: null } }] },
         }),
         prisma.clickEvent.groupBy({
           by: ['linkId'],
@@ -175,7 +222,7 @@ export default async function DashboardPage({
         // без лимит на 6 — за да покрием реалното езиково търсене.
         prisma.clickEvent.groupBy({
           by: ['country'],
-          where: { ...clickWhere, linkId: null, country: { not: null } },
+          where: { ...clickWhere, linkId: null, productId: null, country: { not: null } },
           _count: { _all: true },
           orderBy: { _count: { country: 'desc' } },
           take: 40,
@@ -186,17 +233,7 @@ export default async function DashboardPage({
     ? await prisma.product.findMany({
         where: { profileId: profile.id },
         orderBy: { position: 'asc' },
-        include: {
-          translations: true,
-          lessons: { orderBy: { position: 'asc' } },
-          _count: { select: { entitlements: { where: { active: true } } } },
-        },
-      })
-    : [];
-  const coupons = profile
-    ? await prisma.coupon.findMany({
-        where: { profileId: profile.id },
-        orderBy: { createdAt: 'desc' },
+        include: { translations: true },
       })
     : [];
   const [subConfirmed, subPending] = profile
@@ -217,31 +254,39 @@ export default async function DashboardPage({
         }),
       ])
     : [0, 0];
-  const purchaseTotals = profile
-    ? await prisma.purchase.aggregate({
-        where: { profileId: profile.id },
-        _count: { _all: true },
-        _sum: { amountCents: true },
-      })
-    : null;
-
   // Реферална програма: брой поканени регистрации и успешни (платили) реферали.
   const [referredSignups, successfulReferrals] = await Promise.all([
     prisma.user.count({ where: { referredById: user.id } }),
     prisma.referral.count({ where: { referrerId: user.id } }),
   ]);
+  // Функцията за отказ (чл. 11а Дир. 2011/83): платените поръчки от последните
+  // 15 дни — допустимите показват „Откажете се от договора тук“, а подадените —
+  // кога е получено изявлението.
+  const recentPaidOrders = await prisma.planOrder.findMany({
+    where: {
+      userId: user.id,
+      completedAt: { gte: new Date(Date.now() - 16 * 86_400_000) },
+    },
+    orderBy: { completedAt: 'desc' },
+    select: {
+      id: true,
+      plan: true,
+      interval: true,
+      amountCents: true,
+      state: true,
+      applied: true,
+      completedAt: true,
+      withdrawalRequestedAt: true,
+    },
+  });
+  const nowForWithdrawal = new Date();
+  const withdrawable = recentPaidOrders.filter((o) => canWithdrawPlan({ ...o, now: nowForWithdrawal }));
+  const withdrawalsRequested = recentPaidOrders.filter((o) => o.withdrawalRequestedAt);
+
   const referralBase = process.env.PUBLIC_BASE_URL ?? '';
   const referralUrl = user.referralCode
     ? `${referralBase}/${locale}/register?ref=${user.referralCode}`
     : null;
-  const recentPurchases = profile
-    ? await prisma.purchase.findMany({
-        where: { profileId: profile.id },
-        orderBy: { createdAt: 'desc' },
-        take: 10,
-        include: { product: { include: { translations: true } } },
-      })
-    : [];
 
   const linkTitle = (linkId: string | null) => {
     const link = profile?.links.find((item) => item.id === linkId);
@@ -268,41 +313,100 @@ export default async function DashboardPage({
   return (
     <>
       <SiteHeader locale={locale as Locale} />
-      <main className="mx-auto max-w-3xl space-y-10 px-6 py-10">
-        <h1 className="text-2xl font-bold">{t('title')}</h1>
+      <main className="dash mx-auto max-w-3xl space-y-10 px-6 py-10">
+        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+          {t('title')}
+        </h1>
+        {profile && (
+          <nav
+            aria-label={t('title')}
+            className="dash-nav sticky top-[4.1rem] z-30 -mx-6 !mt-4 overflow-x-auto bg-slate-50/95 px-6 py-2.5 backdrop-blur-md lg:-mx-20 lg:px-0"
+          >
+            <ul className="mx-auto flex w-max gap-2">
+              {(
+                [
+                  ['profile', t('profileSection')],
+                  ['style', t('styleSection')],
+                  ['languages', t('translationsSection')],
+                  ['links', t('linksSection')],
+                  ['stats', t('statsSection')],
+                  ['shop', t('shopSection')],
+                  ['referral', t('referralSection')],
+                  ['plan', t('planSection')],
+                ] as const
+              ).map(([id, label]) => (
+                <li key={id}>
+                  <a
+                    href={`#${id}`}
+                    className="block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[13px] font-medium text-slate-600 shadow-sm transition hover:border-linketto-500 hover:text-linketto-700"
+                  >
+                    {label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
         {error && (
           <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
-            {error === 'slug'
-              ? t('errorSlugTaken')
-              : error === 'limit'
-                ? t('errorLimit')
-                : error === 'block'
-                  ? t('errorBlock')
-                  : error === 'domain'
-                    ? t('errorDomain')
-                    : error === 'ai'
-                      ? t('errorAi')
-                      : error === 'aikey'
-                        ? t('errorAiKey')
-                        : error === 'product'
-                          ? t('errorProduct')
-                          : error === 'style'
-                            ? t('errorStyle')
-                            : error === 'upload'
-                              ? t('errorUpload')
-                              : error === 'refund'
-                                ? t('errorRefund')
-                                : error === 'payout'
-                                  ? t('errorPayout')
-                                  : error === 'coupon'
-                                    ? t('errorCoupon')
-                                    : error === 'broadcast'
-                                      ? t('errorBroadcast')
-                                      : error === 'shortlink'
-                                        ? t('errorShortlink')
-                                        : error === 'profiles'
-                                          ? t('errorProfiles')
-                                          : t('errorGeneric')}
+            {t(Object.hasOwn(DASHBOARD_ERRORS, error) ? DASHBOARD_ERRORS[error] : 'errorGeneric')}
+          </p>
+        )}
+        {domainVerified && (
+          <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
+            {t('domainVerifiedOk')}
+          </p>
+        )}
+        {/* DSA чл. 17: мотивите за спиране/предупреждението — и в таблото, не
+            само по имейл (видимо само за собственика, никога публично). */}
+        {profile?.bannedAt && (
+          <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+            <p className="font-semibold">
+              {t('moderationBanned', {
+                slug: profile.slug,
+                date: new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(profile.bannedAt),
+              })}
+            </p>
+            {profile.bannedCategory && (
+              <p className="mt-1">
+                {t(`moderationCategory.${profile.bannedCategory}`)}
+                {profile.bannedReason ? ` — ${profile.bannedReason}` : ''}
+              </p>
+            )}
+            <p className="mt-1">{t('moderationAppeal')}</p>
+          </div>
+        )}
+        {profile && !profile.bannedAt && profile.warnedAt &&
+          profile.warnedAt.getTime() > Date.now() - 30 * 86_400_000 && (
+          <div role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            <p className="font-semibold">
+              {t('moderationWarned', {
+                slug: profile.slug,
+                date: new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(
+                  new Date(profile.warnedAt.getTime() + 7 * 86_400_000),
+                ),
+              })}
+            </p>
+            {profile.warnedCategory && (
+              <p className="mt-1">
+                {t(`moderationCategory.${profile.warnedCategory}`)}
+                {profile.warnedReason ? ` — ${profile.warnedReason}` : ''}
+              </p>
+            )}
+            <p className="mt-1">{t('moderationAppeal')}</p>
+          </div>
+        )}
+        {withdrawn && (
+          <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
+            {t('withdrawDone')}
+          </p>
+        )}
+        {upgraded && plan.id === 'FREE' && (
+          <p
+            role="status"
+            className="rounded-lg bg-sky-50 p-3 text-sm text-sky-800"
+          >
+            {t('upgradedProcessing')}
           </p>
         )}
         {translated && (
@@ -321,14 +425,6 @@ export default async function DashboardPage({
             {t('generatedOk')}
           </p>
         )}
-        {connected && (
-          <p
-            role="status"
-            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
-          >
-            {t('connectedOk')}
-          </p>
-        )}
         {payout && (
           <p
             role="status"
@@ -343,6 +439,17 @@ export default async function DashboardPage({
             className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
           >
             {t('broadcastSent', { count: broadcast })}
+          </p>
+        )}
+        {imported && (
+          <p
+            role="status"
+            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
+          >
+            {t('importedOk', { count: Number(imported) || 0 })}{' '}
+            <a href="#languages" className="font-semibold underline">
+              {t('importedTranslate')}
+            </a>
           </p>
         )}
 
@@ -396,9 +503,9 @@ export default async function DashboardPage({
         )}
 
         {!profile ? (
-          <section className="rounded-2xl border border-slate-200 bg-white p-6">
+          <section className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
             <p className="font-medium">{t('noProfile')}</p>
-            <form action={createProfileAction} className="mt-4 flex gap-3">
+            <form action={createProfileAction} className="mt-4 flex flex-wrap gap-3">
               <input type="hidden" name="uiLocale" value={locale} />
               <input
                 type="text"
@@ -413,6 +520,19 @@ export default async function DashboardPage({
                 placeholder={t('displayName')}
                 className="flex-1 rounded-lg border border-slate-300 px-3 py-2"
               />
+              <select
+                name="template"
+                defaultValue=""
+                aria-label={t('templatesTitle')}
+                className="rounded-lg border border-slate-300 px-3 py-2"
+              >
+                <option value="">{t('templateNone')}</option>
+                {TEMPLATE_IDS.map((id) => (
+                  <option key={id} value={id}>
+                    {t(`template_${id}`)}
+                  </option>
+                ))}
+              </select>
               <button
                 type="submit"
                 className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700"
@@ -423,14 +543,15 @@ export default async function DashboardPage({
           </section>
         ) : (
           <>
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <div className="flex items-center justify-between">
-                <h2 className="font-semibold">{t('profileSection')}</h2>
+            <section id="profile" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+                <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('profileSection')}</h2>
                 <a
-                  href={`/u/${profile.slug}`}
+                  href={profileUrl(profile.slug)}
                   className="text-sm font-medium text-linketto-700 hover:underline"
                 >
-                  {t('viewPublic')} → /u/{profile.slug}
+                  {t('viewPublic')} →{' '}
+                  {profileUrl(profile.slug).replace(/^https?:\/\//, '')}
                 </a>
               </div>
               <form
@@ -507,11 +628,90 @@ export default async function DashboardPage({
                   {t('save')}
                 </button>
               </form>
+              {/* Собствен домейн: TXT проверка на собствеността — публично се
+                  показва едва след нея (lib/domain-verify.ts). */}
+              {profile.customDomain && profile.domainToken && (
+                <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
+                  {profile.domainVerifiedAt ? (
+                    <p className="inline-flex items-center gap-1.5 font-medium text-green-700">
+                      <CheckIcon className="h-4 w-4" />
+                      {t('domainVerified', { domain: profile.customDomain })}
+                    </p>
+                  ) : (
+                    <form action={verifyDomainAction} className="space-y-2">
+                      <input type="hidden" name="uiLocale" value={locale} />
+                      <input type="hidden" name="profileId" value={profile.id} />
+                      <p className="font-medium text-amber-700">
+                        {t('domainUnverified', { domain: profile.customDomain })}
+                      </p>
+                      <p className="text-slate-600">{t('domainTxtHint')}</p>
+                      <dl className="grid gap-1 font-mono text-xs sm:grid-cols-[5rem_1fr]">
+                        <dt className="text-slate-500">TXT</dt>
+                        <dd className="break-all text-slate-900">{domainTxtName(profile.customDomain)}</dd>
+                        <dt className="text-slate-500">{t('domainTxtValueLabel')}</dt>
+                        <dd className="break-all text-slate-900">{domainTxtValue(profile.domainToken)}</dd>
+                      </dl>
+                      <button
+                        type="submit"
+                        className="rounded-full border border-linketto-600 px-4 py-1.5 font-semibold text-linketto-700 hover:bg-linketto-50"
+                      >
+                        {t('domainVerifyButton')}
+                      </button>
+                    </form>
+                  )}
+                </div>
+              )}
             </section>
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('styleSection')}</h2>
+            <section id="style" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('styleSection')}</h2>
               <p className="mt-1 text-sm text-slate-500">{t('styleHint')}</p>
+              {/* Шаблони по ниша — готов вид за 1 клик (съдържанието се пази) */}
+              <div className="mt-4">
+                <p className="text-sm font-semibold text-slate-700">
+                  {t('templatesTitle')}
+                </p>
+                <ul className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                  {TEMPLATE_IDS.map((id) => {
+                    const preset = NICHE_TEMPLATES[id];
+                    const look = parseStyle(preset.style);
+                    return (
+                      <li key={id}>
+                        <form action={applyTemplateAction}>
+                          <input type="hidden" name="uiLocale" value={locale} />
+                          <input type="hidden" name="profileId" value={profile.id} />
+                          <input type="hidden" name="template" value={id} />
+                          <button
+                            type="submit"
+                            className="group w-full rounded-xl border border-slate-200 p-1.5 text-left transition hover:-translate-y-0.5 hover:border-linketto-400 hover:shadow-md"
+                          >
+                            <span
+                              aria-hidden="true"
+                              className="flex h-20 flex-col items-center justify-center gap-1.5 rounded-lg px-3"
+                              style={{
+                                ...backgroundCss(look),
+                                color: look.textColor ?? '#ffffff',
+                              }}
+                            >
+                              <span
+                                className={`h-3 w-full border-2 ${look.buttonShape === 'square' ? '' : 'rounded-full'}`}
+                                style={buttonCss(look, preset.accent)}
+                              />
+                              <span
+                                className={`h-3 w-full border-2 ${look.buttonShape === 'square' ? '' : 'rounded-full'}`}
+                                style={buttonCss(look, preset.accent)}
+                              />
+                            </span>
+                            <span className="mt-1.5 block px-1 text-xs font-semibold text-slate-700 group-hover:text-linketto-700">
+                              {t(`template_${id}`)}
+                            </span>
+                          </button>
+                        </form>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
               {(() => {
                 const styleCfg = parseStyle(profile.style);
                 const selectClass =
@@ -808,9 +1008,9 @@ export default async function DashboardPage({
               </div>
             </section>
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+            <section id="languages" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="font-semibold">{t('translationsSection')}</h2>
+                <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('translationsSection')}</h2>
                 <form action={aiTranslateAction}>
                   <input type="hidden" name="uiLocale" value={locale} />
                   <input type="hidden" name="profileId" value={profile.id} />
@@ -852,54 +1052,115 @@ export default async function DashboardPage({
                 </button>
               </form>
               <div className="mt-4 space-y-4">
-                {LOCALES.map((loc) => {
-                  const translation = profile.translations.find(
-                    (item) => item.locale === loc,
-                  );
-                  return (
-                    <form
-                      key={loc}
-                      action={upsertProfileTranslationAction}
-                      className="grid items-end gap-3 sm:grid-cols-[6rem_1fr_1fr_auto]"
-                    >
-                      <input type="hidden" name="uiLocale" value={locale} />
-                      <input type="hidden" name="profileId" value={profile.id} />
-                      <input type="hidden" name="locale" value={loc} />
-                      <span className="text-sm font-semibold">
-                        {LOCALE_NAMES[loc]}
-                      </span>
-                      <label className="block text-sm">
-                        {t('displayName')}
-                        <input
-                          type="text"
-                          name="displayName"
-                          defaultValue={translation?.displayName ?? ''}
-                          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
-                        />
-                      </label>
-                      <label className="block text-sm">
-                        {t('bio')}
-                        <input
-                          type="text"
-                          name="bio"
-                          defaultValue={translation?.bio ?? ''}
-                          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
-                        />
-                      </label>
-                      <button
-                        type="submit"
-                        className="rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                {(() => {
+                  const row = (loc: (typeof LOCALES)[number]) => {
+                    const translation = profile.translations.find(
+                      (item) => item.locale === loc,
+                    );
+                    return (
+                      <form
+                        key={loc}
+                        action={upsertProfileTranslationAction}
+                        className="grid items-end gap-3 sm:grid-cols-[6rem_1fr_1fr_auto]"
                       >
-                        {t('save')}
-                      </button>
-                    </form>
+                        <input type="hidden" name="uiLocale" value={locale} />
+                        <input
+                          type="hidden"
+                          name="profileId"
+                          value={profile.id}
+                        />
+                        <input type="hidden" name="locale" value={loc} />
+                        <span className="text-sm font-semibold">
+                          {LOCALE_NAMES[loc]}
+                        </span>
+                        <label className="block text-sm">
+                          {t('displayName')}
+                          <input
+                            type="text"
+                            name="displayName"
+                            defaultValue={translation?.displayName ?? ''}
+                            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                          />
+                        </label>
+                        <label className="block text-sm">
+                          {t('bio')}
+                          <input
+                            type="text"
+                            name="bio"
+                            defaultValue={translation?.bio ?? ''}
+                            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                          />
+                        </label>
+                        <button
+                          type="submit"
+                          className="rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                        >
+                          {t('save')}
+                        </button>
+                      </form>
+                    );
+                  };
+                  const hasTranslation = (loc: string) =>
+                    profile.translations.some((item) => item.locale === loc);
+                  const filled = LOCALES.filter(hasTranslation);
+                  const empty = LOCALES.filter((loc) => !hasTranslation(loc));
+                  return (
+                    <>
+                      {filled.map(row)}
+                      {empty.length > 0 && (
+                        <details className="faq-item rounded-xl border border-dashed border-slate-300 px-4 py-3 open:border-solid open:bg-slate-50/60">
+                          <summary className="cursor-pointer list-none text-sm font-semibold text-linketto-700">
+                            <span>{t('moreLanguages', { count: empty.length })}</span>
+                            <span aria-hidden className="faq-plus" />
+                          </summary>
+                          <div className="mt-4 space-y-4">
+                            {empty.map(row)}
+                          </div>
+                        </details>
+                      )}
+                    </>
                   );
-                })}
+                })()}
               </div>
             </section>
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('linksSection')}</h2>
+            <section id="links" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('linksSection')}</h2>
+              {/* Пренасяне от Linktree за минута — най-ниската бариера за смяна */}
+              <details
+                className="group mt-4 rounded-xl border border-dashed border-linketto-300 bg-linketto-50/60 p-4"
+                open={profile.links.length === 0}
+              >
+                <summary className="cursor-pointer text-sm font-semibold text-linketto-800">
+                  {t('importTitle')}
+                </summary>
+                <p className="mt-2 text-sm text-slate-600">{t('importHint')}</p>
+                <form
+                  action={importLinktreeAction}
+                  className="mt-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center"
+                >
+                  <input type="hidden" name="uiLocale" value={locale} />
+                  <input type="hidden" name="profileId" value={profile.id} />
+                  <input
+                    type="text"
+                    name="source"
+                    required
+                    placeholder="linktr.ee/maria"
+                    aria-label={t('importTitle')}
+                    className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                  />
+                  <label className="flex items-center gap-2 text-sm text-slate-700">
+                    <input type="checkbox" name="own" required />
+                    {t('importOwn')}
+                  </label>
+                  <button
+                    type="submit"
+                    className="rounded-full bg-linketto-600 px-5 py-2 text-sm font-semibold text-white hover:bg-linketto-700"
+                  >
+                    {t('importCta')}
+                  </button>
+                </form>
+              </details>
               <div className="mt-4 space-y-6">
                 {profile.links.map((link) => (
                   <div
@@ -924,7 +1185,7 @@ export default async function DashboardPage({
                         <input type="hidden" name="linkId" value={link.id} />
                         <button
                           type="submit"
-                          className="text-sm text-red-600 hover:underline"
+                          className="shrink-0 text-sm font-medium text-red-700 hover:underline"
                         >
                           {t('delete')}
                         </button>
@@ -952,7 +1213,7 @@ export default async function DashboardPage({
                               name="locale"
                               value={translation.locale}
                             />
-                            <span className="w-8 text-xs font-semibold uppercase text-slate-400">
+                            <span className="w-8 text-xs font-semibold uppercase text-slate-500">
                               {translation.locale}
                             </span>
                             <input
@@ -960,11 +1221,11 @@ export default async function DashboardPage({
                               name="title"
                               defaultValue={linkTitle?.title ?? ''}
                               placeholder={t('linkTitle')}
-                              className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                              className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
                             />
                             <button
                               type="submit"
-                              className="text-sm font-medium text-linketto-700 hover:underline"
+                              className="shrink-0 rounded-full border border-linketto-600 px-3 py-1 text-xs font-semibold text-linketto-700 hover:bg-linketto-50"
                             >
                               {t('save')}
                             </button>
@@ -1056,6 +1317,7 @@ export default async function DashboardPage({
                     className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
                   />
                 </label>
+                <TimeZoneField />
                 <label className="block text-sm font-medium">
                   {t('scheduleFromLabel')}
                   <input
@@ -1100,8 +1362,8 @@ export default async function DashboardPage({
               </form>
             </section>
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('qrSection')}</h2>
+            <section id="qr" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('qrSection')}</h2>
               <p className="mt-1 text-sm text-slate-500">{t('qrHint')}</p>
               <div className="mt-4 flex items-center gap-6">
                 {/* eslint-disable-next-line @next/next/no-img-element -- динамичен SVG route */}
@@ -1135,8 +1397,8 @@ export default async function DashboardPage({
             </section>
 
             {/* Съкратени линкове с брояч на кликове */}
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('shortLinksSection')}</h2>
+            <section id="short" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('shortLinksSection')}</h2>
               <p className="mt-1 text-sm text-slate-500">
                 {t('shortLinksHint')}
               </p>
@@ -1215,9 +1477,9 @@ export default async function DashboardPage({
               </form>
             </section>
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+            <section id="stats" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="font-semibold">{t('statsSection')}</h2>
+                <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('statsSection')}</h2>
                 <Link
                   href={`/${locale}/dashboard/analytics?p=${profile.id}`}
                   className="inline-flex items-center gap-1.5 rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
@@ -1263,7 +1525,7 @@ export default async function DashboardPage({
                       </li>
                     ))}
                     {byLink.length === 0 && (
-                      <li className="text-slate-400">—</li>
+                      <li className="text-slate-500">—</li>
                     )}
                   </ul>
                 </div>
@@ -1284,7 +1546,7 @@ export default async function DashboardPage({
                       </li>
                     ))}
                     {byLocale.length === 0 && (
-                      <li className="text-slate-400">—</li>
+                      <li className="text-slate-500">—</li>
                     )}
                   </ul>
                 </div>
@@ -1305,7 +1567,7 @@ export default async function DashboardPage({
                       </li>
                     ))}
                     {byCountry.length === 0 && (
-                      <li className="text-slate-400">—</li>
+                      <li className="text-slate-500">—</li>
                     )}
                   </ul>
                 </div>
@@ -1314,14 +1576,35 @@ export default async function DashboardPage({
 
             {/* Езикова дупка — уникалната ни функция: аудиторията по език
                 срещу наличните преводи, с подкана за AI превод. */}
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+            <section id="gap" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
               <div className="flex items-center gap-2">
                 <SparklesIcon className="h-5 w-5 text-linketto-600" />
-                <h2 className="font-semibold">{t('gapSection')}</h2>
+                <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('gapSection')}</h2>
               </div>
               <p className="mt-1 text-sm text-slate-500">{t('gapHint')}</p>
+              {/* Седмичният отчет по имейл — отказ с 1 клик и тук, и от имейла */}
+              <form
+                action={setDigestAction}
+                className="mt-3 flex flex-wrap items-center gap-3 rounded-xl bg-slate-50 px-4 py-3"
+              >
+                <input type="hidden" name="uiLocale" value={locale} />
+                <label className="flex flex-1 items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    name="digest"
+                    defaultChecked={!user.digestOptOut}
+                  />
+                  {t('digestToggle')}
+                </label>
+                <button
+                  type="submit"
+                  className="rounded-full border border-slate-300 px-4 py-1.5 text-xs font-semibold text-slate-700 hover:bg-white"
+                >
+                  {t('save')}
+                </button>
+              </form>
               {!gap || gap.mappedVisitors === 0 ? (
-                <p className="mt-4 text-sm text-slate-400">{t('gapNoData')}</p>
+                <p className="mt-4 text-sm text-slate-500">{t('gapNoData')}</p>
               ) : (
                 <>
                   <ul className="mt-4 space-y-2">
@@ -1395,8 +1678,8 @@ export default async function DashboardPage({
               )}
             </section>
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('messagesSection')}</h2>
+            <section id="messages" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('messagesSection')}</h2>
               {messages.length === 0 ? (
                 <p className="mt-2 text-sm text-slate-500">{t('noMessages')}</p>
               ) : (
@@ -1407,7 +1690,7 @@ export default async function DashboardPage({
                       className="rounded-xl border border-slate-100 p-3 text-sm"
                     >
                       <p className="text-slate-700">{message.message}</p>
-                      <p className="mt-1 text-xs text-slate-400">
+                      <p className="mt-1 text-xs text-slate-500">
                         {[message.name, message.email]
                           .filter(Boolean)
                           .join(' · ')}{' '}
@@ -1420,8 +1703,8 @@ export default async function DashboardPage({
             </section>
 
             {/* Заявки за час (BOOKING блок) */}
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('bookingsSection')}</h2>
+            <section id="bookings" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('bookingsSection')}</h2>
               {bookings.length === 0 ? (
                 <p className="mt-2 text-sm text-slate-500">{t('noBookings')}</p>
               ) : (
@@ -1481,8 +1764,8 @@ export default async function DashboardPage({
             </section>
 
             {/* Аудитория — бюлетин (email capture), износ и разпращане */}
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('audienceSection')}</h2>
+            <section id="audience" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('audienceSection')}</h2>
               <p className="mt-1 text-sm text-slate-500">{t('audienceHint')}</p>
               <div className="mt-4 flex flex-wrap items-center gap-4">
                 <div className="rounded-xl bg-slate-50 px-5 py-3 text-center">
@@ -1494,7 +1777,7 @@ export default async function DashboardPage({
                   </p>
                 </div>
                 <div className="rounded-xl bg-slate-50 px-5 py-3 text-center">
-                  <p className="text-2xl font-extrabold text-slate-400">
+                  <p className="text-2xl font-extrabold text-slate-500">
                     {subPending}
                   </p>
                   <p className="text-xs text-slate-500">
@@ -1546,526 +1829,191 @@ export default async function DashboardPage({
               </form>
             </section>
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('shopSection')}</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                {t('feeNote', { fee: plan.feePercent })}
-              </p>
-              {!user.stripeAccountId || !user.stripeChargesEnabled ? (
-                <form action={connectStripeAction} className="mt-4">
-                  <input type="hidden" name="uiLocale" value={locale} />
-                  {user.stripeAccountId && (
-                    <p className="mb-2 text-sm text-amber-600">
-                      {t('stripePending')}
-                    </p>
-                  )}
-                  <button
-                    type="submit"
-                    className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700"
-                  >
-                    {t('connectStripe')}
-                  </button>
-                </form>
-              ) : (
-                <>
-                  <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-green-700">
-                    <CheckIcon className="h-4 w-4" />
-                    {t('stripeConnected')}
-                  </p>
-                  {/* Дир. 2011/83 чл. 6а: деклариран статут на продавача */}
-                  <form action={setTraderStatusAction} className="mt-3">
-                    <input type="hidden" name="uiLocale" value={locale} />
-                    <label className="flex items-start gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        name="isTrader"
-                        defaultChecked={user.isTrader}
-                        className="mt-0.5 h-4 w-4"
-                      />
-                      {t('traderLabel')}
-                    </label>
-                    <button
-                      type="submit"
-                      className="mt-2 rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+            <section id="shop" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('shopSection')}</h2>
+              {/* Решение О-1: продажбите НЕ минават през Linketto — продуктът е
+                  витрина с линк към собственото плащане на създателя. */}
+              <p className="mt-1 text-sm text-slate-500">{t('shopExternalNote')}</p>
+              {/* Дир. 2011/83 чл. 6а: деклариран статут на продавача */}
+              <form action={setTraderStatusAction} className="mt-3">
+                <input type="hidden" name="uiLocale" value={locale} />
+                <label className="flex items-start gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    name="isTrader"
+                    defaultChecked={user.isTrader}
+                    className="mt-0.5 h-4 w-4"
+                  />
+                  {t('traderLabel')}
+                </label>
+                <button
+                  type="submit"
+                  className="mt-2 rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                >
+                  {t('save')}
+                </button>
+              </form>
+              <div className="mt-4 space-y-4">
+                {products.map((product) => (
+                  <div key={product.id} className="rounded-xl border border-slate-100 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="truncate text-sm text-slate-500">
+                        <span className="mr-2 font-semibold text-slate-700">
+                          €{(product.priceCents / 100).toFixed(2)}
+                        </span>
+                        {product.active ? '' : `(${t('productInactive')}) `}
+                        {product.externalUrl ? (
+                          <span className="mr-2 text-xs font-semibold text-linketto-700">
+                            {t('productClicks', { count: productClicksOf(product.id) })}
+                          </span>
+                        ) : null}
+                        {product.externalUrl ?? t('productNoPayUrl')}
+                      </p>
+                      <form action={deleteProductAction}>
+                        <input type="hidden" name="uiLocale" value={locale} />
+                        <input type="hidden" name="productId" value={product.id} />
+                        <button type="submit" className="text-sm text-red-600 hover:underline">
+                          {t('delete')}
+                        </button>
+                      </form>
+                    </div>
+                    {/* Редакция на цена, линк за плащане и активност */}
+                    <form
+                      action={updateProductAction}
+                      className="mt-3 grid items-end gap-2 sm:grid-cols-[8rem_1fr_auto_auto]"
                     >
-                      {t('save')}
-                    </button>
-                  </form>
-                  <div className="mt-4 space-y-4">
-                    {products.map((product) => (
-                      <div
-                        key={product.id}
-                        className="rounded-xl border border-slate-100 p-4"
+                      <input type="hidden" name="uiLocale" value={locale} />
+                      <input type="hidden" name="productId" value={product.id} />
+                      <label className="block text-xs font-medium text-slate-500">
+                        {t('productPrice')}
+                        <input
+                          type="number"
+                          name="priceEur"
+                          required
+                          min="0"
+                          step="0.01"
+                          defaultValue={(product.priceCents / 100).toFixed(2)}
+                          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                        />
+                      </label>
+                      <label className="block text-xs font-medium text-slate-500">
+                        {t('productPayUrl')}
+                        <input
+                          type="url"
+                          name="externalUrl"
+                          required
+                          pattern="https://.*"
+                          defaultValue={product.externalUrl ?? ''}
+                          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                        />
+                      </label>
+                      <label className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                        <input
+                          type="checkbox"
+                          name="active"
+                          defaultChecked={product.active}
+                          className="h-3.5 w-3.5"
+                        />
+                        {t('productActive')}
+                      </label>
+                      <button
+                        type="submit"
+                        className="rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
                       >
-                        <div className="flex items-center justify-between gap-3">
-                          <p className="truncate text-sm text-slate-500">
-                            <span className="mr-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-semibold text-slate-600">
-                              {t(`productType_${product.type}`)}
-                            </span>
-                            <span className="mr-2 font-semibold text-slate-700">
-                              €{(product.priceCents / 100).toFixed(2)}
-                              {product.type === 'MEMBERSHIP'
-                                ? `/${t(product.interval === 'year' ? 'intervalYearShort' : 'intervalMonthShort')}`
-                                : ''}
-                            </span>
-                            {product.active ? '' : `(${t('productInactive')}) `}
-                            {product.type !== 'DIGITAL'
-                              ? `· ${product._count.entitlements} ${t('membersLabel')}`
-                              : (product.deliveryUrl ?? '')}
-                          </p>
-                          <form action={deleteProductAction}>
-                            <input
-                              type="hidden"
-                              name="uiLocale"
-                              value={locale}
-                            />
-                            <input
-                              type="hidden"
-                              name="productId"
-                              value={product.id}
-                            />
-                            <button
-                              type="submit"
-                              className="text-sm text-red-600 hover:underline"
-                            >
-                              {t('delete')}
-                            </button>
-                          </form>
-                        </div>
-                        {/* Редакция на цена, линк за доставка и активност */}
-                        <form
-                          action={updateProductAction}
-                          className="mt-3 grid items-end gap-2 sm:grid-cols-[8rem_1fr_auto_auto]"
-                        >
-                          <input type="hidden" name="uiLocale" value={locale} />
-                          <input
-                            type="hidden"
-                            name="productId"
-                            value={product.id}
-                          />
-                          <label className="block text-xs font-medium text-slate-500">
-                            {t('productPrice')}
-                            <input
-                              type="number"
-                              name="priceEur"
-                              required
-                              min="3"
-                              step="0.01"
-                              defaultValue={(product.priceCents / 100).toFixed(2)}
-                              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-                            />
-                          </label>
-                          <label className="block text-xs font-medium text-slate-500">
-                            {t('deliveryUrl')}
-                            <input
-                              type="url"
-                              name="deliveryUrl"
-                              defaultValue={product.deliveryUrl ?? ''}
-                              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-                            />
-                          </label>
-                          <label className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
-                            <input
-                              type="checkbox"
-                              name="active"
-                              defaultChecked={product.active}
-                              className="h-3.5 w-3.5"
-                            />
-                            {t('productActive')}
-                          </label>
-                          <button
-                            type="submit"
-                            className="rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                        {t('save')}
+                      </button>
+                    </form>
+                    <div className="mt-3 space-y-2">
+                      {profile.translations.map((translation) => {
+                        const productTr = product.translations.find(
+                          (item) => item.locale === translation.locale,
+                        );
+                        return (
+                          <form
+                            key={translation.locale}
+                            action={upsertProductTranslationAction}
+                            className="flex items-start gap-2"
                           >
-                            {t('save')}
-                          </button>
-                        </form>
-                        <div className="mt-3 space-y-2">
-                          {profile.translations.map((translation) => {
-                            const productTr = product.translations.find(
-                              (item) => item.locale === translation.locale,
-                            );
-                            return (
-                              <form
-                                key={translation.locale}
-                                action={upsertProductTranslationAction}
-                                className="flex items-start gap-2"
-                              >
-                                <input
-                                  type="hidden"
-                                  name="uiLocale"
-                                  value={locale}
-                                />
-                                <input
-                                  type="hidden"
-                                  name="productId"
-                                  value={product.id}
-                                />
-                                <input
-                                  type="hidden"
-                                  name="locale"
-                                  value={translation.locale}
-                                />
-                                <span className="mt-2 w-8 text-xs font-semibold uppercase text-slate-400">
-                                  {translation.locale}
-                                </span>
-                                <div className="flex-1 space-y-1">
-                                  <input
-                                    type="text"
-                                    name="title"
-                                    defaultValue={productTr?.title ?? ''}
-                                    placeholder={t('productTitle')}
-                                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-                                  />
-                                  <textarea
-                                    name="description"
-                                    rows={2}
-                                    defaultValue={productTr?.description ?? ''}
-                                    placeholder={t('productDescription')}
-                                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-                                  />
-                                </div>
-                                <button
-                                  type="submit"
-                                  className="mt-2 text-sm font-medium text-linketto-700 hover:underline"
-                                >
-                                  {t('save')}
-                                </button>
-                              </form>
-                            );
-                          })}
-                        </div>
-                        {/* Уроци (за курсове/членства) + линк към заключената страница */}
-                        {product.type !== 'DIGITAL' && (
-                          <div className="mt-3 border-t border-slate-100 pt-3">
-                            <div className="flex items-center justify-between">
-                              <h4 className="text-xs font-semibold text-slate-600">
-                                {t('lessonsSection')}
-                              </h4>
-                              <a
-                                href={`/u/${profile.slug}/learn/${product.id}`}
-                                className="text-xs font-medium text-linketto-700 hover:underline"
-                              >
-                                {t('lessonsView')} →
-                              </a>
-                            </div>
-                            {product.lessons.length > 0 && (
-                              <ul className="mt-2 space-y-1 text-sm">
-                                {product.lessons.map((lesson, i) => (
-                                  <li
-                                    key={lesson.id}
-                                    className="flex items-center justify-between gap-2"
-                                  >
-                                    <span className="truncate">
-                                      {i + 1}. {lesson.title}
-                                    </span>
-                                    <form action={deleteLessonAction}>
-                                      <input
-                                        type="hidden"
-                                        name="uiLocale"
-                                        value={locale}
-                                      />
-                                      <input
-                                        type="hidden"
-                                        name="lessonId"
-                                        value={lesson.id}
-                                      />
-                                      <button
-                                        type="submit"
-                                        className="text-xs text-red-600 hover:underline"
-                                      >
-                                        {t('delete')}
-                                      </button>
-                                    </form>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                            <form
-                              action={addLessonAction}
-                              className="mt-2 grid gap-2 sm:grid-cols-[1fr_1fr_auto]"
-                            >
-                              <input
-                                type="hidden"
-                                name="uiLocale"
-                                value={locale}
-                              />
-                              <input
-                                type="hidden"
-                                name="productId"
-                                value={product.id}
-                              />
+                            <input type="hidden" name="uiLocale" value={locale} />
+                            <input type="hidden" name="productId" value={product.id} />
+                            <input type="hidden" name="locale" value={translation.locale} />
+                            <span className="mt-2 w-8 text-xs font-semibold uppercase text-slate-500">
+                              {translation.locale}
+                            </span>
+                            <div className="flex-1 space-y-1">
                               <input
                                 type="text"
                                 name="title"
-                                required
-                                placeholder={t('lessonTitle')}
-                                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                                defaultValue={productTr?.title ?? ''}
+                                placeholder={t('productTitle')}
+                                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
                               />
-                              <input
-                                type="url"
-                                name="videoUrl"
-                                placeholder={t('lessonVideo')}
-                                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-                              />
-                              <button
-                                type="submit"
-                                className="rounded-full border border-linketto-600 px-3 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
-                              >
-                                {t('addLesson')}
-                              </button>
                               <textarea
-                                name="body"
+                                name="description"
                                 rows={2}
-                                placeholder={t('lessonBody')}
-                                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm sm:col-span-3"
+                                defaultValue={productTr?.description ?? ''}
+                                placeholder={t('productDescription')}
+                                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
                               />
-                            </form>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <form
-                    action={addProductAction}
-                    className="mt-6 grid gap-3 sm:grid-cols-2"
-                  >
-                    <input type="hidden" name="uiLocale" value={locale} />
-                    <input type="hidden" name="profileId" value={profile.id} />
-                    <input
-                      type="text"
-                      name="title"
-                      required
-                      placeholder={t('productTitle')}
-                      className="rounded-lg border border-slate-300 px-3 py-2"
-                    />
-                    <input
-                      type="number"
-                      name="priceEur"
-                      required
-                      min="3"
-                      step="0.01"
-                      placeholder="9.99"
-                      className="rounded-lg border border-slate-300 px-3 py-2"
-                    />
-                    <label className="block text-xs font-medium text-slate-500">
-                      {t('productType')}
-                      <select
-                        name="type"
-                        defaultValue="DIGITAL"
-                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                      >
-                        {(
-                          [
-                            'DIGITAL',
-                            'COURSE',
-                            ...(MEMBERSHIPS_ENABLED
-                              ? (['MEMBERSHIP'] as const)
-                              : []),
-                          ] as const
-                        ).map((pt) => (
-                          <option key={pt} value={pt}>
-                            {t(`productType_${pt}`)}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="block text-xs font-medium text-slate-500">
-                      {t('productInterval')}
-                      <select
-                        name="interval"
-                        defaultValue="month"
-                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                      >
-                        <option value="month">{t('intervalMonth')}</option>
-                        <option value="year">{t('intervalYear')}</option>
-                      </select>
-                    </label>
-                    <input
-                      type="url"
-                      name="deliveryUrl"
-                      placeholder={t('deliveryUrlDigital')}
-                      className="rounded-lg border border-slate-300 px-3 py-2 sm:col-span-2"
-                    />
-                    <button
-                      type="submit"
-                      className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700 sm:col-span-2 sm:justify-self-start"
-                    >
-                      {t('addProduct')}
-                    </button>
-                  </form>
-
-                  {/* Промо кодове */}
-                  <h3 className="mt-8 text-sm font-semibold text-slate-600">
-                    {t('couponsSection')}
-                  </h3>
-                  <p className="mt-1 text-xs text-slate-500">
-                    {t('couponsHint')}
-                  </p>
-                  {coupons.length > 0 && (
-                    <ul className="mt-3 space-y-1 text-sm">
-                      {coupons.map((coupon) => (
-                        <li
-                          key={coupon.id}
-                          className="flex items-center justify-between gap-2 text-slate-600"
-                        >
-                          <span className="min-w-0 truncate">
-                            <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs font-semibold text-slate-700">
-                              {coupon.code}
-                            </span>{' '}
-                            −{coupon.percentOff}%
-                            {coupon.maxRedemptions
-                              ? ` · ${coupon.timesRedeemed}/${coupon.maxRedemptions}`
-                              : ` · ${coupon.timesRedeemed}×`}
-                            {coupon.expiresAt
-                              ? ` · ${t('couponUntil')} ${coupon.expiresAt.toISOString().slice(0, 10)}`
-                              : ''}
-                          </span>
-                          <form action={deleteCouponAction}>
-                            <input
-                              type="hidden"
-                              name="uiLocale"
-                              value={locale}
-                            />
-                            <input
-                              type="hidden"
-                              name="couponId"
-                              value={coupon.id}
-                            />
+                            </div>
                             <button
                               type="submit"
-                              className="text-xs font-medium text-red-600 hover:underline"
+                              className="mt-2 text-sm font-medium text-linketto-700 hover:underline"
                             >
-                              {t('delete')}
+                              {t('save')}
                             </button>
                           </form>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  <form
-                    action={addCouponAction}
-                    className="mt-3 grid items-end gap-2 sm:grid-cols-[1fr_6rem_6rem_1fr_auto]"
-                  >
-                    <input type="hidden" name="uiLocale" value={locale} />
-                    <input type="hidden" name="profileId" value={profile.id} />
-                    <label className="block text-xs font-medium text-slate-500">
-                      {t('couponCode')}
-                      <input
-                        type="text"
-                        name="code"
-                        required
-                        placeholder="SUMMER"
-                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm uppercase"
-                      />
-                    </label>
-                    <label className="block text-xs font-medium text-slate-500">
-                      {t('couponPercent')}
-                      <input
-                        type="number"
-                        name="percentOff"
-                        required
-                        min="1"
-                        max="90"
-                        placeholder="20"
-                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-                      />
-                    </label>
-                    <label className="block text-xs font-medium text-slate-500">
-                      {t('couponMax')}
-                      <input
-                        type="number"
-                        name="maxRedemptions"
-                        min="1"
-                        placeholder="∞"
-                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-                      />
-                    </label>
-                    <label className="block text-xs font-medium text-slate-500">
-                      {t('couponExpires')}
-                      <input
-                        type="date"
-                        name="expiresAt"
-                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-                      />
-                    </label>
-                    <button
-                      type="submit"
-                      className="rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
-                    >
-                      {t('addCoupon')}
-                    </button>
-                  </form>
-
-                  <h3 className="mt-8 text-sm font-semibold text-slate-600">
-                    {t('purchasesSection')}
-                  </h3>
-                  {purchaseTotals && purchaseTotals._count._all > 0 ? (
-                    <>
-                      <p className="mt-1 text-sm text-slate-600">
-                        {purchaseTotals._count._all} · {t('revenue')}: €
-                        {((purchaseTotals._sum.amountCents ?? 0) / 100).toFixed(
-                          2,
-                        )}
-                      </p>
-                      <ul className="mt-3 space-y-1 text-sm">
-                        {recentPurchases.map((purchase) => (
-                          <li
-                            key={purchase.id}
-                            className="flex items-center justify-between gap-2 text-slate-600"
-                          >
-                            <span className="min-w-0 truncate">
-                              {purchase.product.translations[0]?.title ?? '—'}
-                              {purchase.buyerEmail
-                                ? ` · ${purchase.buyerEmail}`
-                                : ''}
-                            </span>
-                            <span className="flex shrink-0 items-center gap-3">
-                              <span className="font-semibold">
-                                €{(purchase.amountCents / 100).toFixed(2)}
-                              </span>
-                              {purchase.refundedAt ? (
-                                <span className="text-xs text-slate-400">
-                                  {t('refunded')}
-                                </span>
-                              ) : (
-                                <form action={sellerRefundAction}>
-                                  <input
-                                    type="hidden"
-                                    name="uiLocale"
-                                    value={locale}
-                                  />
-                                  <input
-                                    type="hidden"
-                                    name="purchaseId"
-                                    value={purchase.id}
-                                  />
-                                  <button
-                                    type="submit"
-                                    className="text-xs font-medium text-red-600 hover:underline"
-                                  >
-                                    {t('sellerRefund')}
-                                  </button>
-                                </form>
-                              )}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </>
-                  ) : (
-                    <p className="mt-1 text-sm text-slate-400">
-                      {t('noPurchases')}
-                    </p>
-                  )}
-                </>
-              )}
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <form action={addProductAction} className="mt-6 grid gap-3 sm:grid-cols-2">
+                <input type="hidden" name="uiLocale" value={locale} />
+                <input type="hidden" name="profileId" value={profile.id} />
+                <input
+                  type="text"
+                  name="title"
+                  required
+                  placeholder={t('productTitle')}
+                  className="rounded-lg border border-slate-300 px-3 py-2"
+                />
+                <input
+                  type="number"
+                  name="priceEur"
+                  required
+                  min="0"
+                  step="0.01"
+                  placeholder="9.99"
+                  aria-label={t('productPrice')}
+                  className="rounded-lg border border-slate-300 px-3 py-2"
+                />
+                <input
+                  type="url"
+                  name="externalUrl"
+                  required
+                  pattern="https://.*"
+                  placeholder={t('productPayUrlPlaceholder')}
+                  aria-label={t('productPayUrl')}
+                  className="rounded-lg border border-slate-300 px-3 py-2 sm:col-span-2"
+                />
+                <button
+                  type="submit"
+                  className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700 sm:col-span-2 sm:justify-self-start"
+                >
+                  {t('addProduct')}
+                </button>
+              </form>
             </section>
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('referralSection')}</h2>
+            <section id="referral" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('referralSection')}</h2>
               <p className="mt-1 text-sm text-slate-500">
-                {t('referralReward')}
+                {t('referralReward', {
+                  percent: REFERRAL_PERCENT,
+                  minPayout: REFERRAL_MIN_PAYOUT_CENTS / 100,
+                })}
               </p>
               {referralUrl ? (
                 <div className="mt-4">
@@ -2135,72 +2083,127 @@ export default async function DashboardPage({
               )}
             </section>
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('planSection')}</h2>
+            <section id="plan" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('planSection')}</h2>
               <p className="mt-2 text-sm text-slate-600">
                 {t('currentPlan')}: <strong>{plan.id}</strong>
+                {plan.id === 'FOUNDER'
+                  ? ` · ${t('planForever')}`
+                  : user.planExpiresAt && plan.id !== 'FREE'
+                    ? ` · ${t('planPaidUntil', {
+                        date: new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(
+                          user.planExpiresAt,
+                        ),
+                      })}`
+                    : ''}
               </p>
-              {plan.id === 'FREE' && (
+              {(withdrawable.length > 0 || withdrawalsRequested.length > 0) && (
+                <div className="mt-4 space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
+                  {withdrawable.map((o) => (
+                    <div key={o.id} className="flex flex-wrap items-center justify-between gap-3">
+                      <span className="text-slate-700">
+                        Linketto {o.plan} · €{(o.amountCents / 100).toFixed(2)} ·{' '}
+                        {t('withdrawPaidOn', {
+                          date: new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone: 'UTC' }).format(
+                            o.completedAt as Date,
+                          ),
+                        })}
+                      </span>
+                      <a
+                        href={`/${locale}/dashboard/withdraw?order=${o.id}`}
+                        className="rounded-full border border-red-500 px-4 py-1.5 text-sm font-semibold text-red-600 hover:bg-red-50"
+                      >
+                        {t('withdrawTitle')}
+                      </a>
+                    </div>
+                  ))}
+                  {withdrawalsRequested.map((o) => (
+                    <p key={o.id} className="text-slate-600">
+                      {t('withdrawReceived', {
+                        date: new Intl.DateTimeFormat(locale, {
+                          dateStyle: 'medium',
+                          timeStyle: 'short',
+                          timeZone: 'UTC',
+                        }).format(o.withdrawalRequestedAt as Date),
+                      })}
+                    </p>
+                  ))}
+                </div>
+              )}
+              {/* Предплатени периоди (решение О-2): еднократно плащане, без
+                  абонамент и без автоматично таксуване; напомняне по имейл 7 дни
+                  и 1 ден преди края. Същият план = удължаване от края; по-висок
+                  план = оставащите дни се прехвърлят пропорционално по цена. */}
+              {!(upgraded && plan.id === 'FREE') && plan.id !== 'FOUNDER' && (
                 <div className="mt-4 space-y-4">
-                  {/* Абонаментни планове с избор на период (с намаления) */}
+                  <p className="text-sm text-slate-500">{t('prepaidNote')}</p>
+                  {/* Преддоговорна информация (чл. 6(1)(е),(h) Дир. 2011/83): крайна
+                      цена с ДДС, незабавен старт, 14 дни отказ с пълно връщане. */}
+                  <p className="text-sm text-slate-600">
+                    {t.rich('precontractNote', {
+                      terms: (chunks) => (
+                        <a href={`/${locale}/terms`} className="font-medium text-linketto-700 underline">
+                          {chunks}
+                        </a>
+                      ),
+                    })}
+                  </p>
                   {(
                     [
-                      ['PRO', t('upgradePro')],
-                      ['BUSINESS', t('upgradeBusiness')],
+                      ['PRO', plan.id === 'PRO' ? t('renewPro') : t('upgradePro')],
+                      ['BUSINESS', plan.id === 'BUSINESS' ? t('renewBusiness') : t('upgradeBusiness')],
                     ] as const
-                  ).map(([planId, label]) => (
-                    <form
-                      key={planId}
-                      action={startCheckoutAction}
-                      className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-100 p-4"
-                    >
-                      <input type="hidden" name="uiLocale" value={locale} />
-                      <input type="hidden" name="plan" value={planId} />
-                      <span className="font-semibold text-slate-700">
-                        {label}
-                      </span>
-                      <label className="text-sm">
-                        <span className="mb-1 block text-xs text-slate-500">
-                          {t('billingPeriod')}
-                        </span>
-                        <select
-                          name="interval"
-                          defaultValue="monthly"
-                          className="rounded-lg border border-slate-300 px-3 py-2"
-                        >
-                          {BILLING_INTERVALS.map((interval) => {
-                            const price = intervalPriceCents(
-                              planId,
-                              interval.id,
-                            );
-                            const monthly = effectiveMonthlyCents(
-                              planId,
-                              interval.id,
-                            );
-                            return (
-                              <option key={interval.id} value={interval.id}>
-                                {t(`interval_${interval.id}`)} — €
-                                {(price / 100).toFixed(2)} (€
-                                {(monthly / 100).toFixed(2)}/
-                                {t('perMonthShort')}
-                                {interval.discountPercent > 0
-                                  ? `, −${interval.discountPercent}%`
-                                  : ''}
-                                )
-                              </option>
-                            );
-                          })}
-                        </select>
-                      </label>
-                      <button
-                        type="submit"
-                        className="rounded-full bg-linketto-600 px-5 py-2 text-sm font-semibold text-white hover:bg-linketto-700"
+                  )
+                    .filter(
+                      ([planId]) =>
+                        checkPurchase({
+                          plan: plan.id,
+                          expiresAt: user.planExpiresAt,
+                          want: planId,
+                          now: new Date(),
+                        }) === 'ok',
+                    )
+                    .map(([planId, label]) => (
+                      <form
+                        key={planId}
+                        action={startCheckoutAction}
+                        className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-100 p-4"
                       >
-                        {t('choose')}
-                      </button>
-                    </form>
-                  ))}
-                  {/* Founder — еднократно, без период */}
+                        <input type="hidden" name="uiLocale" value={locale} />
+                        <input type="hidden" name="plan" value={planId} />
+                        <span className="font-semibold text-slate-700">{label}</span>
+                        <label className="text-sm">
+                          <span className="mb-1 block text-xs text-slate-500">{t('billingPeriod')}</span>
+                          <select
+                            name="interval"
+                            defaultValue="monthly"
+                            className="rounded-lg border border-slate-300 px-3 py-2"
+                          >
+                            {BILLING_INTERVALS.map((interval) => {
+                              const price = intervalPriceCents(planId, interval.id);
+                              const monthly = effectiveMonthlyCents(planId, interval.id);
+                              return (
+                                <option key={interval.id} value={interval.id}>
+                                  {t(`interval_${interval.id}`)} — €{(price / 100).toFixed(2)} (€
+                                  {(monthly / 100).toFixed(2)}/{t('perMonthShort')}
+                                  {interval.discountPercent > 0 ? `, −${interval.discountPercent}%` : ''})
+                                </option>
+                              );
+                            })}
+                          </select>
+                        </label>
+                        <button
+                          type="submit"
+                          className="rounded-full bg-linketto-600 px-5 py-2 text-sm font-semibold text-white hover:bg-linketto-700"
+                        >
+                          {t('toPayment')}
+                        </button>
+                        {planId !== plan.id && plan.id !== 'FREE' && (
+                          <p className="w-full text-xs text-slate-500">{t('upgradeCarryNote')}</p>
+                        )}
+                      </form>
+                    ))}
+                  {/* Founder — еднократно, завинаги */}
                   <form
                     action={startCheckoutAction}
                     className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-100 p-4"
@@ -2211,24 +2214,10 @@ export default async function DashboardPage({
                       type="submit"
                       className="rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
                     >
-                      {t('buyFounder')}
+                      {t('buyFounder', { price: `€${(PLANS.FOUNDER.priceCents / 100).toFixed(0)}` })}
                     </button>
                   </form>
                 </div>
-              )}
-              {/* Активен абонамент → Customer Portal: смяна на план/период,
-                  начин на плащане, фактури и ОТМЯНА (лесен отказ от
-                  авто-подновяване). Founder е еднократен — няма какво да отменя. */}
-              {plan.id !== 'FREE' && !plan.oneTime && (
-                <form action={openBillingPortalAction} className="mt-4">
-                  <input type="hidden" name="uiLocale" value={locale} />
-                  <button
-                    type="submit"
-                    className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                  >
-                    {t('manageBilling')}
-                  </button>
-                </form>
               )}
             </section>
           </>

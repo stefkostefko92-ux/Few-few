@@ -20,5 +20,9 @@ test('валидира slug', () => {
   assert.ok(!isValidSlug('trail-'));
   assert.ok(!isValidSlug('admin'));
   assert.ok(!isValidSlug('u'));
+  // кратък хост: slug в корена не бива да съвпада с маршрут или език
+  assert.ok(!isValidSlug('tools'));
+  assert.ok(!isValidSlug('bg'));
+  assert.ok(!isValidSlug('nap'));
   assert.ok(!isValidSlug(''));
 });

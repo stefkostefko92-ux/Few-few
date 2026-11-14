@@ -21,7 +21,11 @@ export async function GET(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: 'no profile' }, { status: 404 });
   }
   const subscribers = await prisma.subscriber.findMany({
-    where: { profileId: profile.id, unsubscribedAt: null },
+    where: {
+      profileId: profile.id,
+      unsubscribedAt: null,
+      confirmedAt: { not: null },
+    },
     orderBy: { createdAt: 'desc' },
     select: { email: true, locale: true, confirmedAt: true, createdAt: true },
   });
