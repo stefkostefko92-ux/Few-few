@@ -492,7 +492,14 @@
     "valat": "Cappotto!",
     "inside": "Dentro",
     "redeal": "Nuova smazzata",
-    "noBidYet": "Nessuno ha ancora dichiarato la briscola."
+    "noBidYet": "Nessuno ha ancora dichiarato la briscola.",
+    "beloteCall": "Belote!",
+    "rebelote": "Rebelote",
+    "belotePrompt": "Belote",
+    "beloteHint": "Hai re e donna di {{suit}} (atout) — dichiari belote? Vale 20 punti.",
+    "announceBelote": "Dichiara belote (+20)",
+    "noAnnounce": "Non dichiarare",
+    "otherCard": "Altra carta"
   },
   "shop": {
     "payButton": "Acquista e paga · {{price}}",

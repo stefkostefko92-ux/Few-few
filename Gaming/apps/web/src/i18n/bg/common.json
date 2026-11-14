@@ -492,7 +492,14 @@
     "valat": "Валат!",
     "inside": "Вътре",
     "redeal": "Ново раздаване",
-    "noBidYet": "Още никой не е обявил коз."
+    "noBidYet": "Още никой не е обявил коз.",
+    "beloteCall": "Белот!",
+    "rebelote": "Ребелот",
+    "belotePrompt": "Белот",
+    "beloteHint": "Имаш поп и дама {{suit}} коз — обявяваш ли белот? Носи 20 точки.",
+    "announceBelote": "Обяви белот (+20)",
+    "noAnnounce": "Без обява",
+    "otherCard": "Друга карта"
   },
   "wallet": {
     "chips": "Чипове",

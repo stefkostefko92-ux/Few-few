@@ -42,6 +42,23 @@ async function scoreAttr(page: Page, name: string): Promise<string> {
   return (await page.locator('[data-zone="score"]').getAttribute(name)) ?? "";
 }
 
+/** Ако картата е първата фигура от белот, излиза прозорец „Белот“ — обявяваме
+ *  с бутона му и всички на масата виждат „<име>: Белот! … +20“. */
+const beloteCalls = { n: 0 };
+async function answerBelote(page: Page): Promise<void> {
+  const prompt = page.getByTestId("belote-belote");
+  const shown = await prompt
+    .waitFor({ state: "visible", timeout: 1_200 })
+    .then(() => true)
+    .catch(() => false);
+  if (!shown) return;
+  await expect(prompt).toContainText("обявяваш ли белот");
+  await expect(page.locator('[data-action="belote-announce"]')).toBeInViewport();
+  await act(page, page.locator('[data-action="belote-announce"]'));
+  await expectBanner(page, /Белот! .{1,2} \+20/);
+  beloteCalls.n++;
+}
+
 async function takeTurn(
   page: Page,
   done: Record<Step, number>,
@@ -86,7 +103,7 @@ async function takeTurn(
     await page.waitForTimeout(600);
     expect(await stateVersion(page), "a blocked card sent a move").toBe(before);
   }
-  await playCard(page, "hand", hand.find((c) => c.playable)!.card);
+  await playCard(page, "hand", hand.find((c) => c.playable)!.card, answerBelote);
   return "play";
 }
 
@@ -183,6 +200,50 @@ test("белот на телефон 390×844: странични места, в
   await snap(page, testInfo, "belote-390x844");
   await playCard(page, "hand", "QD");
   await expectNotReloaded(page);
+  expectNoErrors(t);
+  await t.ctx.close();
+});
+
+/**
+ * „Белот“ (поп и дама коз в една ръка): при първата фигура излиза прозорец —
+ * „Друга карта“ го затваря без ход, „Обяви белот (+20)“ пуска картата, всички
+ * виждат „<име>: Белот! … +20“, а до масата стои чипът „Белот … +20“.
+ * Със seed-а на стека човекът, който пасува на всичко срещу „Нормално“, получава
+ * Q♣ и K♣ при „Всичко коз“ още в първото раздаване.
+ */
+test("белот: поп и дама коз → прозорец „Белот“, обява, банер и +20", async ({ browser, baseURL }, testInfo) => {
+  test.setTimeout(300_000);
+  const t = await openTable(browser, baseURL!, "BELOTE", { difficulty: "NORMAL" });
+  const { page } = t;
+  let found = false;
+  for (let turn = 0; turn < 120 && !found; turn++) {
+    if (!(await waitMyTurn(page, 120_000))) break;
+    if ((await scoreAttr(page, "data-phase")) === "BID") {
+      if ((await action(page, "pass").count()) > 0) await act(page, action(page, "pass"));
+      else await act(page, page.locator('[data-action="bid"]:enabled').first());
+      continue;
+    }
+    const card = (await cardsIn(page, "hand")).find((c) => c.playable)!.card;
+    await playCard(page, "hand", card, async (p) => {
+      const prompt = p.getByTestId("belote-belote");
+      if (!(await prompt.waitFor({ state: "visible", timeout: 1_200 }).then(() => true).catch(() => false))) return;
+      found = true;
+      await expect(prompt).toContainText("обявяваш ли белот? Носи 20 точки");
+      await snap(p, testInfo, "belote-belote-1366x768");
+      // „Друга карта“: прозорецът се затваря, ход не тръгва; пак кликвам картата.
+      const before = await stateVersion(p);
+      await p.locator('[data-action="belote-cancel"]').click();
+      await expect(prompt).toBeHidden();
+      await p.waitForTimeout(400);
+      expect(await stateVersion(p), "„Друга карта“ прати ход").toBe(before);
+      await p.locator(`[data-zone="hand"] [data-card="${card}"]`).click({ position: { x: 8, y: 34 } });
+      await expect(prompt).toBeVisible();
+      await act(p, p.locator('[data-action="belote-announce"]'));
+      await expectBanner(p, /Белот! .{1,2} \+20/);
+      await expect(p.locator('[data-zone="belote-calls"]')).toContainText("+20");
+    });
+  }
+  expect(found, "в раздаването не се падна белот за човека — seed-ът на стека е сменен?").toBe(true);
   expectNoErrors(t);
   await t.ctx.close();
 });

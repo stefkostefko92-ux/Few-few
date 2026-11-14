@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../../ui";
 import { useAuthStore } from "../../../lib/store";
@@ -51,6 +51,8 @@ interface BeloteState {
   teamPoints: [number, number];
   declPoints: [number, number];
   declarations: Decl[];
+  /** Обявените белоти в раздаването (публично): кой, в коя боя, изиграни фигури. */
+  belotePairs?: { seat: number; suit: string; played: number }[];
   matchPoints: [number, number];
   hanging: number;
   dealNo: number;
@@ -61,7 +63,7 @@ type BeloteAction =
   | { type: "BID"; contract: Contract }
   | { type: "CONTRA" }
   | { type: "RECONTRA" }
-  | { type: "PLAY"; card: string };
+  | { type: "PLAY"; card: string; belote?: boolean };
 
 const SUIT_GLYPH: Record<string, string> = { S: "♠", H: "♥", D: "♦", C: "♣" };
 /** Bid ladder for the auction panel (♣ < ♦ < ♥ < ♠ < БК < ВК). */
@@ -121,6 +123,12 @@ export function BeloteView({ title }: { title: string }) {
         const decls = (ev.declarations as Array<{ kind: string; value: number }>) ?? [];
         return decls.map((d) => ({ text: `${t(`belote.decl.${d.kind}`)} +${d.value}`, tone: "brass" as const }));
       }
+      if (ev.type === "BELOTE" && typeof ev.seat === "number") {
+        const suit = SUIT_GLYPH[String(ev.suit)] ?? "";
+        return ev.half === "rebelote"
+          ? { text: `${nameFor(ev.seat)}: ${t("belote.rebelote")} ${suit}`, tone: "brass" }
+          : { text: `${nameFor(ev.seat)}: ${t("belote.beloteCall")} ${suit} +20`, tone: "win" };
+      }
       if (ev.type === "CONTRA") return { text: t("belote.contra") + "!", tone: "loss" };
       if (ev.type === "RECONTRA") return { text: t("belote.recontra") + "!", tone: "win" };
       if (ev.type === "DEAL_END") {
@@ -140,7 +148,11 @@ export function BeloteView({ title }: { title: string }) {
   const playMap = useMemo(
     () =>
       new Map(
-        legal.filter((a) => a.type === "PLAY").map((a) => [(a as { card: string }).card, a]),
+        // Обикновеният ход на картата (= с обява на белот, ако е първата фигура);
+        // вариантът „Без обява“ (`belote: false`) се праща само от прозореца.
+        legal
+          .filter((a) => a.type === "PLAY" && (a as { belote?: boolean }).belote === undefined)
+          .map((a) => [(a as { card: string }).card, a]),
       ),
     [legal],
   );
@@ -164,6 +176,13 @@ export function BeloteView({ title }: { title: string }) {
   // centre of the table — no hunting for a bar under the table.
   const bidding = !!state && state.phase === "BID" && myTurn;
 
+  // „Белот“: първата фигура (поп или дама) коз, докато другата е в ръката ми →
+  // прозорец „Обявяваш ли белот?“ (както наддаването), не тихо начисляване.
+  const [beloteCard, setBeloteCard] = useState<{ card: string; node: HTMLElement | null; key: string } | null>(null);
+  useEffect(() => {
+    if (!myTurn) setBeloteCard(null);
+  }, [myTurn]);
+
   if (!state) {
     return <SearchingOrOver title={title} phase={phase} seat={seat} result={result} />;
   }
@@ -171,13 +190,40 @@ export function BeloteView({ title }: { title: string }) {
   const myTeam = seat % 2;
   const seats = [0, 1, 2, 3];
 
-  function onPlay(card: string, node: HTMLElement | null) {
-    const action = playMap.get(card);
+  /** Първата фигура от белот (K/Q коз с другата в ръката, още необявен) — иска избор. */
+  function beloteChoice(card: string): boolean {
+    // Сървърът изброява „Без обява“ точно за първата фигура от белот (K/Q коз с
+    // другата в ръката, още необявен) — същото правило, един източник.
+    return legal.some((a) => a.type === "PLAY" && a.card === card && a.belote === false);
+  }
+
+  function send(card: string, node: HTMLElement | null, belote?: boolean) {
+    // „Без обява“ е отделен позволен ход; „Обяви“ и обикновената карта са едно и също.
+    const action =
+      belote === false
+        ? legal.find((a) => a.type === "PLAY" && a.card === card && a.belote === false)
+        : playMap.get(card);
     if (!action) return;
     // the card will fly from this exact hand node when my PLAY event lands
     registerHandOrigin(card, node);
     playCue("flip");
     m.send(action);
+  }
+
+  function onPlay(card: string, node: HTMLElement | null) {
+    if (!playMap.has(card)) return;
+    if (beloteChoice(card)) {
+      setBeloteCard({ card, node, key: `belote-${state!.dealNo}-${card}` });
+      return;
+    }
+    send(card, node);
+  }
+
+  function answerBelote(announce: boolean) {
+    if (!beloteCard) return;
+    const { card, node } = beloteCard;
+    setBeloteCard(null);
+    send(card, node, announce);
   }
 
   return (
@@ -314,6 +360,46 @@ export function BeloteView({ title }: { title: string }) {
           ))}
         </div>
       ) : null}
+
+      {(state.belotePairs ?? []).length > 0 ? (
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-2" data-zone="belote-calls">
+          {(state.belotePairs ?? []).map((p) => (
+            <span
+              key={`${p.seat}-${p.suit}`}
+              className="rounded-full border px-3 py-1 text-xs"
+              style={{
+                borderColor: p.seat % 2 === myTeam ? "var(--brass-300)" : "rgba(217,178,95,.2)",
+                background: "rgba(11,14,13,.5)",
+                color: p.seat % 2 === myTeam ? "var(--brass-100)" : "var(--ink-muted)",
+              }}
+            >
+              {t("belote.decl.belote")} {SUIT_GLYPH[p.suit] ?? ""} +20 · {nameFor(p.seat)}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      {/* „Белот“: избор при първата фигура — обяви (+20) или не. */}
+      <DecisionPrompt
+        open={!!beloteCard && myTurn && phase === "playing"}
+        promptKey={beloteCard?.key ?? "belote"}
+        title={t("belote.belotePrompt")}
+        hint={t("belote.beloteHint", { suit: beloteCard ? (SUIT_GLYPH[beloteCard.card[1]!] ?? "") : "" })}
+        testId="belote-belote"
+        placement="top"
+      >
+        <div data-zone="belote-choice" className="flex flex-wrap items-center justify-center gap-2">
+          <Button className="!py-2" data-action="belote-announce" onClick={() => answerBelote(true)}>
+            {t("belote.announceBelote")}
+          </Button>
+          <Button variant="ghost" className="!py-2" data-action="belote-skip" onClick={() => answerBelote(false)}>
+            {t("belote.noAnnounce")}
+          </Button>
+          <Button variant="ghost" className="!py-2" data-action="belote-cancel" onClick={() => setBeloteCard(null)}>
+            {t("belote.otherCard")}
+          </Button>
+        </div>
+      </DecisionPrompt>
 
       {/* The auction: a popup the moment it is my call. */}
       <DecisionPrompt

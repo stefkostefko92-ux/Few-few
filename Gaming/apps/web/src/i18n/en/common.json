@@ -492,7 +492,14 @@
     "valat": "Capot!",
     "inside": "Inside",
     "redeal": "New deal",
-    "noBidYet": "Nobody has named trumps yet."
+    "noBidYet": "Nobody has named trumps yet.",
+    "beloteCall": "Belote!",
+    "rebelote": "Rebelote",
+    "belotePrompt": "Belote",
+    "beloteHint": "You hold the king and queen of {{suit}} trumps — announce belote? It's worth 20 points.",
+    "announceBelote": "Announce belote (+20)",
+    "noAnnounce": "Don't announce",
+    "otherCard": "Another card"
   },
   "wallet": {
     "chips": "Chips",
