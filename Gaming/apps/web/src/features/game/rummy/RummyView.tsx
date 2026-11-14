@@ -8,6 +8,7 @@ import {
   isJoker,
   jokerSwapIndex,
   penaltyValue,
+  rummyEngine,
   rummyFace,
   rummyRank,
   rummySuit,
@@ -26,7 +27,11 @@ import { useCardFlight } from "../anim/useCardFlight";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { useGameEvents } from "../useGameEvents";
 import { useMatch } from "../useMatch";
+import { useSendOnce } from "../useSendOnce";
+import { useRevealOnTurn } from "../useRevealOnTurn";
 import { Scene, ScorePill, fitOverlap } from "../scene/SceneShell";
+import { DecisionPrompt } from "../scene/DecisionPrompt";
+import { useClearOfDecision } from "../scene/useClearOfDecision";
 
 /**
  * Българско реми (виж engines/draw-discard/rummy.ts). Сървърът е източникът на
@@ -106,6 +111,14 @@ function RummyCard({
   );
 }
 
+const SUIT_GLYPH: Record<string, string> = { S: "♠", H: "♥", D: "♦", C: "♣" };
+/** „10♥“, „🃏“ — a card as text in a decision popup. */
+function cardText(c: string): string {
+  if (isJoker(c)) return "🃏";
+  const r = rummyRank(c);
+  return `${r === "T" ? "10" : r}${SUIT_GLYPH[rummySuit(c)] ?? ""}`;
+}
+
 function sortHand(hand: string[]): string[] {
   const key = (c: string) =>
     isJoker(c) ? 999 : SUIT_ORDER.indexOf(rummySuit(c)) * 20 + RANK_ORDER.indexOf(rummyRank(c));
@@ -174,6 +187,9 @@ export function RummyView({ title }: { title: string }) {
   const hand = useMemo(() => state?.hands[seat] ?? [], [state, seat]);
   const opened = !!state?.opened[seat];
   const inPlay = myTurn && state?.phase === "PLAY";
+  // Meld/discard controls sit under the table — below the fold on a laptop.
+  const controlsRef = useRef<HTMLDivElement>(null);
+  useRevealOnTurn(controlsRef, inPlay);
 
   // Изчисти избора, ако картите вече не са в ръката (след ход / нов рунд).
   useEffect(() => {
@@ -223,46 +239,94 @@ export function RummyView({ title }: { title: string }) {
   const leavesOne = (n: number) => hand.length - n >= 1;
   const pending = state?.mustUse.filter((c) => hand.includes(c)) ?? [];
 
+  /** The server's own check, run on our (redacted) view — it only needs my
+   *  hand and the table. The table offers a meld / layoff / joker swap /
+   *  opening only when the server will accept it: a swap whose joker could not
+   *  be used, or a layoff that strands the card taken from the pile, used to be
+   *  offered and then refused („Невалиден ход“). */
+  const accepts = (a: RummyAction): boolean => !!state && (rummyEngine.validate?.(state, seat, a) ?? false);
+
   const drawA = legal.find((a) => a.type === "DRAW");
   const takeA = legal.find((a) => a.type === "TAKE");
   const discardOk = inPlay && pending.length === 0 && selected.length === 1 && staged.length === 0;
-  const meldOk = inPlay && opened && !!selMeld && leavesOne(selected.length);
+  const meldOk =
+    inPlay && opened && !!selMeld && leavesOne(selected.length) && accepts({ type: "MELD", cards: selected });
   const stageOk = inPlay && !opened && !!selMeld && leavesOne(stagedCards.length + selected.length);
   const openOk =
-    inPlay && !opened && stagedPts >= RUMMY_OPEN_MIN && leavesOne(stagedCards.length) && pending.every((c) => stagedCards.includes(c));
+    inPlay &&
+    !opened &&
+    stagedPts >= RUMMY_OPEN_MIN &&
+    leavesOne(stagedCards.length) &&
+    pending.every((c) => stagedCards.includes(c)) &&
+    accepts({ type: "OPEN", melds: staged });
+
+  // Решенията като прозорец (по желание): отварянето, щом натрупаното стигне
+  // 51 т., и смяната на жокер, щом избраната карта може да замени жокер на
+  // масата. „Не сега“ ги връща на старото място — бутона „Отвори“ и клика по
+  // комбинацията — до следващата промяна.
+  const [skipped, setSkipped] = useState<string | null>(null);
+  const openKey = `open-${state?.round ?? 0}-${staged.map((g) => g.join(",")).join("|")}`;
+  const openPrompt = openOk && phase === "playing";
+  const openInPrompt = openPrompt && skipped !== openKey;
+  const only = selected.length === 1 ? selected[0] : undefined;
+  const swapTargets =
+    inPlay && opened && only && hand.length >= 2 && state
+      ? state.melds.filter(
+          (meld) => jokerSwapIndex(meld, only) >= 0 && accepts({ type: "SWAP", meldId: meld.id, card: only }),
+        )
+      : [];
+  const swapKey = `swap-${state?.round ?? 0}-${only ?? ""}-${swapTargets.map((x) => x.id).join(".")}`;
+  const swapPrompt = swapTargets.length > 0 && phase === "playing";
+  const swapInPrompt = swapPrompt && skipped !== swapKey;
+  // The popup is fixed to the screen; in the play phase the page is scrolled to
+  // the controls under the table — keep my hand (what I decide by) clear of it.
+  const handEl = () => tableRef.current?.querySelector<HTMLElement>(".aso-myhand");
+  useClearOfDecision(handEl, openInPrompt, openKey);
+  useClearOfDecision(handEl, swapInPrompt, swapKey);
 
   const toggle = (c: string) => {
     if (!inPlay) return;
     setSelected((s) => (s.includes(c) ? s.filter((x) => x !== c) : [...s, c]));
   };
 
-  const send = (a: RummyAction) => {
+  // One move per state: a double click on the stock or a meld used to send a
+  // second action that the server refused („Невалиден ход“).
+  const sendOnce = useSendOnce(state, m.send);
+  const send = (a: RummyAction): boolean => {
+    if (!sendOnce(a)) return false;
     playCue("flip");
-    m.send(a);
+    return true;
   };
 
   function onDraw(action: RummyAction, from: HTMLElement | null) {
-    flyGhost(from, "bottom");
-    send(action);
+    if (send(action)) flyGhost(from, "bottom");
   }
 
   function onDiscard() {
     const card = selected[0];
     if (!discardOk || !card) return;
+    if (!send({ type: "DISCARD", card })) return;
     flyGhost(document.querySelector<HTMLElement>(`[data-rcard="${card}"]`), discardRef.current);
     setSelected([]);
-    send({ type: "DISCARD", card });
   }
 
-  /** Натиснат е комбинация на масата: долепване на избраните или смяна на жокер. */
+  /** Натиснат е комбинация на масата: долепване на избраните или смяна на
+   *  жокер (смяната — оттук само след „Не сега“ на прозореца за нея). */
   function meldAction(meld: RummyMeld): RummyAction | null {
     if (!inPlay || !opened || selected.length === 0) return null;
-    if (leavesOne(selected.length) && extendMeld(meld, selected)) return { type: "LAYOFF", meldId: meld.id, cards: selected };
-    const only = selected[0];
-    if (selected.length === 1 && only && hand.length >= 2 && jokerSwapIndex(meld, only) >= 0) {
-      return { type: "SWAP", meldId: meld.id, card: only };
+    const layoff: RummyAction = { type: "LAYOFF", meldId: meld.id, cards: selected };
+    if (leavesOne(selected.length) && extendMeld(meld, selected) && accepts(layoff)) return layoff;
+    if (!swapInPrompt && only && hand.length >= 2 && jokerSwapIndex(meld, only) >= 0) {
+      const swap: RummyAction = { type: "SWAP", meldId: meld.id, card: only };
+      if (accepts(swap)) return swap;
     }
     return null;
+  }
+
+  function doOpen() {
+    if (!openOk || !send({ type: "OPEN", melds: staged })) return;
+    setStaged([]);
+    setSelected([]);
   }
 
   const top = state?.discard[state.discard.length - 1];
@@ -274,7 +338,19 @@ export function RummyView({ title }: { title: string }) {
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result} wide>
       {state ? (
         <>
-          <div ref={tableRef} style={{ position: "relative" }}>
+          <div
+            ref={tableRef}
+            style={{ position: "relative" }}
+            data-testid="rummy-table"
+            data-seats={state.seats}
+            data-hand={hand.join(" ")}
+            data-rummy-phase={state.phase}
+            data-my-turn={myTurn ? "true" : "false"}
+            data-opened={opened ? "true" : "false"}
+            data-pending={pending.join(" ")}
+            data-round={state.round}
+            data-stock={state.stock.length}
+          >
             <Announcements banners={banners} />
             <FeltTable crest="🃏" feltColor="#163a2c" feltDark="#0a1d15">
               {[...positions.entries()].map(([s, pos]) => (
@@ -300,7 +376,12 @@ export function RummyView({ title }: { title: string }) {
 
               <TableCenter>
                 <div style={{ display: "flex", gap: 18, alignItems: "center", justifyContent: "center" }}>
-                  <div ref={stockRef} style={{ textAlign: "center" }}>
+                  <div
+                    ref={stockRef}
+                    style={{ textAlign: "center" }}
+                    data-testid="rummy-stock"
+                    data-drawable={drawA ? "true" : "false"}
+                  >
                     <PlayingCard
                       card="?"
                       size="md"
@@ -310,7 +391,13 @@ export function RummyView({ title }: { title: string }) {
                       {t("rummy.stock")}: <span className="tnum">{state.stock.length}</span>
                     </p>
                   </div>
-                  <div ref={discardRef} style={{ textAlign: "center" }}>
+                  <div
+                    ref={discardRef}
+                    style={{ textAlign: "center" }}
+                    data-testid="rummy-discard"
+                    data-top={top ?? ""}
+                    data-takeable={takeA ? "true" : "false"}
+                  >
                     {top ? (
                       <RummyCard
                         key={`${top}-${state.discard.length}`}
@@ -339,7 +426,12 @@ export function RummyView({ title }: { title: string }) {
               >
                 <div className="aso-myhand" style={{ display: "flex", paddingTop: 16 }}>
                   {shown.map((card, i) => (
-                    <div key={card} data-rcard={card} style={{ marginLeft: i ? -overlap : 0 }}>
+                    <div
+                      key={card}
+                      data-rcard={card}
+                      data-selected={selected.includes(card) ? "true" : "false"}
+                      style={{ marginLeft: i ? -overlap : 0 }}
+                    >
                       <RummyCard
                         card={card}
                         label={jokerLabel}
@@ -357,6 +449,7 @@ export function RummyView({ title }: { title: string }) {
             {report ? (
               <div
                 role="dialog"
+                data-testid="rummy-report"
                 aria-label={t("rummy.roundReport", { n: report.round })}
                 style={{
                   position: "absolute",
@@ -395,7 +488,7 @@ export function RummyView({ title }: { title: string }) {
                     </div>
                   ))}
                   <div className="mt-3 text-center">
-                    <Button variant="brass" onClick={() => setReport(null)}>
+                    <Button variant="brass" data-rummy-btn="report-continue" onClick={() => setReport(null)}>
                       {t("rummy.continue")}
                     </Button>
                   </div>
@@ -418,10 +511,14 @@ export function RummyView({ title }: { title: string }) {
                       key={meld.id}
                       type="button"
                       disabled={!a}
+                      data-meld-id={meld.id}
+                      data-meld-owner={meld.owner}
+                      data-meld-kind={meld.kind}
+                      data-meld-cards={meld.cards.join(" ")}
+                      data-meld-action={a?.type ?? ""}
                       onClick={() => {
-                        if (!a) return;
+                        if (!a || !send(a)) return;
                         setSelected([]);
-                        send(a);
                       }}
                       title={a ? (a.type === "SWAP" ? t("rummy.swapHere") : t("rummy.layoffHere")) : nameFor(meld.owner)}
                       aria-label={`${nameFor(meld.owner)}: ${meld.cards.map((c) => (isJoker(c) ? jokerLabel : rummyFace(c))).join(" ")}`}
@@ -445,9 +542,9 @@ export function RummyView({ title }: { title: string }) {
 
           {/* Натрупано отваряне (неотворен играч). */}
           {staged.length > 0 ? (
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-3" data-testid="rummy-staged">
               {staged.map((g, i) => (
-                <div key={i} style={{ display: "flex" }}>
+                <div key={i} style={{ display: "flex" }} data-staged={g.join(" ")}>
                   {(arrangeMeld(g)?.cards ?? g).map((c, j) => (
                     <RummyCard key={c} card={c} size="sm" label={jokerLabel} style={{ marginLeft: j ? -36 : 0 }} />
                   ))}
@@ -473,8 +570,8 @@ export function RummyView({ title }: { title: string }) {
           </div>
 
           {inPlay ? (
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-              <span className="tnum text-xs text-ink-300">
+            <div ref={controlsRef} className="mt-3 flex flex-wrap items-center justify-center gap-2" data-testid="rummy-controls">
+              <span className="tnum text-xs text-ink-300" data-testid="rummy-selected" data-pts={selMeld ? selMeld.value : selPts}>
                 {t("rummy.selected", { count: selected.length, pts: selMeld ? selMeld.value : selPts })}
                 {selected.length >= 3 && !selMeld ? ` · ${t("rummy.notMeld")}` : ""}
               </span>
@@ -483,6 +580,7 @@ export function RummyView({ title }: { title: string }) {
                   <Button
                     variant="felt"
                     disabled={!stageOk}
+                    data-rummy-btn="stage"
                     onClick={() => {
                       setStaged((s) => [...s, selected]);
                       setSelected([]);
@@ -490,22 +588,17 @@ export function RummyView({ title }: { title: string }) {
                   >
                     {t("rummy.addToOpening")}
                   </Button>
-                  <span className="tnum text-xs text-brass-200">
+                  <span className="tnum text-xs text-brass-200" data-testid="rummy-opening" data-pts={stagedPts}>
                     {t("rummy.openingTotal", { pts: stagedPts, min: RUMMY_OPEN_MIN })}
                   </span>
-                  <Button
-                    variant="brass"
-                    disabled={!openOk}
-                    onClick={() => {
-                      send({ type: "OPEN", melds: staged });
-                      setStaged([]);
-                      setSelected([]);
-                    }}
-                  >
-                    {t("rummy.open", { pts: stagedPts })}
-                  </Button>
+                  {/* Готовото отваряне е в прозореца; тук — брояч до 51 или след „Не сега“. */}
+                  {!openInPrompt ? (
+                    <Button variant="brass" disabled={!openOk} data-rummy-btn="open" onClick={doOpen}>
+                      {t("rummy.open", { pts: stagedPts })}
+                    </Button>
+                  ) : null}
                   {staged.length > 0 ? (
-                    <Button variant="felt" onClick={() => setStaged([])}>
+                    <Button variant="felt" data-rummy-btn="clear" onClick={() => setStaged([])}>
                       {t("rummy.clearOpening")}
                     </Button>
                   ) : null}
@@ -514,22 +607,75 @@ export function RummyView({ title }: { title: string }) {
                 <Button
                   variant="brass"
                   disabled={!meldOk}
+                  data-rummy-btn="meld"
                   onClick={() => {
-                    send({ type: "MELD", cards: selected });
+                    if (!send({ type: "MELD", cards: selected })) return;
                     setSelected([]);
                   }}
                 >
                   {t("rummy.meld")}
                 </Button>
               )}
-              <Button variant="brass" disabled={!discardOk} onClick={onDiscard}>
+              <Button variant="brass" disabled={!discardOk} data-rummy-btn="discard" onClick={onDiscard}>
                 {t("rummy.discardBtn")}
               </Button>
-              <Button variant="felt" onClick={() => setSorted((v) => !v)}>
+              <Button variant="felt" data-rummy-btn="sort" aria-pressed={sorted} onClick={() => setSorted((v) => !v)}>
                 {t("rummy.sort")}
               </Button>
             </div>
           ) : null}
+
+          {/* Low popups in the top third (one line of text per meld, not card
+              faces) — over the stock and the pile, not needed while I play. In
+              the play phase the page sits scrolled to the controls under the
+              table; useClearOfDecision then brings my hand below the popup. */}
+          <DecisionPrompt
+            open={openPrompt}
+            promptKey={openKey}
+            title={t("rummy.openTitle")}
+            hint={
+              <>
+                {t("rummy.openHint", { pts: stagedPts, min: RUMMY_OPEN_MIN })}{" "}
+                <span className="tnum font-semibold text-brass-100" data-zone="opening-melds">
+                  {staged.map((g) => (arrangeMeld(g)?.cards ?? g).map(cardText).join(" ")).join(" · ")}
+                </span>
+              </>
+            }
+            placement="top"
+            optional={{ label: t("decision.notNow"), onSkip: () => setSkipped(openKey) }}
+            testId="rummy-open"
+          >
+            <Button variant="brass" className="!py-2" data-rummy-btn="open" onClick={doOpen}>
+              {t("rummy.open", { pts: stagedPts })}
+            </Button>
+          </DecisionPrompt>
+
+          <DecisionPrompt
+            open={swapPrompt}
+            promptKey={swapKey}
+            title={t("rummy.swapTitle")}
+            hint={only ? t("rummy.swapHint", { card: cardText(only) }) : undefined}
+            placement="top"
+            optional={{ label: t("decision.notNow"), onSkip: () => setSkipped(swapKey) }}
+            testId="rummy-swap"
+          >
+            {swapTargets.map((meld) => (
+              <Button
+                key={meld.id}
+                variant="brass"
+                className="!py-2"
+                data-rummy-btn="swap"
+                data-swap-meld={meld.id}
+                onClick={() => {
+                  if (!only || !send({ type: "SWAP", meldId: meld.id, card: only })) return;
+                  setSelected([]);
+                }}
+              >
+                {t("rummy.swapHere")}: <span className="tnum">{meld.cards.map(cardText).join(" ")}</span>
+                <span className="text-xs font-normal">({nameFor(meld.owner)})</span>
+              </Button>
+            ))}
+          </DecisionPrompt>
 
           {myTurn ? (
             <p className="mt-2 text-center text-xs text-ink-muted">

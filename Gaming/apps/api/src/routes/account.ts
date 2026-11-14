@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { prisma } from "@aso/db";
 import {
+  effectiveDailyLimit,
+  requestDailyLimit,
   responsibleSettingsSchema,
   selfExcludeSchema,
   selfExclusionActive,
@@ -11,6 +13,7 @@ import { asyncHandler, unauthorized } from "../http.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { clearAuthCookies } from "../auth/tokens.js";
 import { eraseUser } from "../account/erase.js";
+import { playedTodayMinutes } from "../account/responsible.js";
 
 export const accountRouter: Router = Router();
 
@@ -76,17 +79,29 @@ const RESPONSIBLE_SELECT = {
   deletedAt: true,
   realityCheckMinutes: true,
   dailyLimitMinutes: true,
+  dailyLimitPendingMinutes: true,
+  dailyLimitPendingAt: true,
   selfExcludedUntil: true,
 } as const;
 
-function toResponsibleView(u: {
+interface ResponsibleRow {
   realityCheckMinutes: number;
   dailyLimitMinutes: number | null;
+  dailyLimitPendingMinutes: number | null;
+  dailyLimitPendingAt: Date | null;
   selfExcludedUntil: Date | null;
-}): ResponsibleSettingsView {
+}
+
+function toResponsibleView(u: ResponsibleRow, playedToday: number, now = Date.now()): ResponsibleSettingsView {
+  const pendingDue = !!u.dailyLimitPendingAt && u.dailyLimitPendingAt.getTime() <= now;
   return {
     realityCheckMinutes: u.realityCheckMinutes,
-    dailyLimitMinutes: u.dailyLimitMinutes,
+    dailyLimitMinutes: effectiveDailyLimit(u, now),
+    dailyLimitPending:
+      u.dailyLimitPendingAt && !pendingDue
+        ? { minutes: u.dailyLimitPendingMinutes, effectiveAt: u.dailyLimitPendingAt.toISOString() }
+        : null,
+    playedTodayMinutes: playedToday,
     // Изтеклото самоизключване се показва като „няма“ (лениво, без cron).
     selfExcludedUntil: selfExclusionActive(u.selfExcludedUntil) ? u.selfExcludedUntil!.toISOString() : null,
   };
@@ -96,15 +111,17 @@ function toResponsibleView(u: {
 accountRouter.get(
   "/responsible",
   asyncHandler(async (req, res) => {
-    const user = await prisma.user.findUnique({ where: { id: req.user!.sub }, select: RESPONSIBLE_SELECT });
+    const id = req.user!.sub;
+    const user = await prisma.user.findUnique({ where: { id }, select: RESPONSIBLE_SELECT });
     if (!user || user.deletedAt) throw unauthorized();
-    res.json(toResponsibleView(user));
+    res.json(toResponsibleView(user, await playedTodayMinutes(id)));
   }),
 );
 
 /**
  * PUT /api/account/responsible — напомняне за време (0/30/60/120 мин) и дневен
- * лимит на сесията (null = без). Само позволените стойности (Zod, strict).
+ * лимит (null = без). Само позволените стойности (Zod, strict). Лимитът се
+ * налага от сървъра; по-строг важи веднага, а вдигане или махане — след 24 ч.
  */
 accountRouter.put(
   "/responsible",
@@ -113,15 +130,16 @@ accountRouter.put(
     const id = req.user!.sub;
     const user = await prisma.user.findUnique({ where: { id }, select: RESPONSIBLE_SELECT });
     if (!user || user.deletedAt) throw unauthorized();
+    const limit = input.dailyLimitMinutes !== undefined ? requestDailyLimit(user, input.dailyLimitMinutes) : {};
     const updated = await prisma.user.update({
       where: { id },
       data: {
         ...(input.realityCheckMinutes !== undefined ? { realityCheckMinutes: input.realityCheckMinutes } : {}),
-        ...(input.dailyLimitMinutes !== undefined ? { dailyLimitMinutes: input.dailyLimitMinutes } : {}),
+        ...limit,
       },
       select: RESPONSIBLE_SELECT,
     });
-    res.json(toResponsibleView(updated));
+    res.json(toResponsibleView(updated, await playedTodayMinutes(id)));
   }),
 );
 
@@ -145,6 +163,6 @@ accountRouter.post(
       data: { selfExcludedUntil: until, selfExcludedAt: new Date() },
       select: RESPONSIBLE_SELECT,
     });
-    res.json(toResponsibleView(updated));
+    res.json(toResponsibleView(updated, await playedTodayMinutes(id)));
   }),
 );

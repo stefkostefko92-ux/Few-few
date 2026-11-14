@@ -36,3 +36,7 @@ apps/web/blob-report/
 
 # Claude Code agent worktrees (transient)
 .claude/worktrees/
+
+# Ръководството за игрите — PDF и временният HTML се генерират (docs/gameflow/build.mjs).
+docs/gameflow/aso-gameflow.pdf
+docs/gameflow/aso-gameflow.html

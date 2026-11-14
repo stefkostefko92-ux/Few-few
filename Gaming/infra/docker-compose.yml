@@ -68,6 +68,8 @@ services:
       # Transactional email (verify / password reset). Unset SMTP_HOST => emails
       # are logged, not sent. SMTP_PORT must stay a positive int (never empty).
       EMAIL_FROM: "${EMAIL_FROM:-АСО <no-reply@gaming.carbonstealth.eu>}"
+      # Пощата може да се настрои и от админ панела (Brevo) — ключът ѝ се шифрова с това.
+      SETTINGS_SECRET_KEY: ${SETTINGS_SECRET_KEY:-}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER:-}
