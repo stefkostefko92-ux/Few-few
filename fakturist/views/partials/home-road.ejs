@@ -1,0 +1,25 @@
+<%# Пътят до 01.07.2028: линия, задвижвана от скрола (public/js/site-home.js). Срокът — само по внесения текст на законопроекта. Параметри: days (число или null), more (адресът на ръководството). -%>
+<section class="section section-tint road" aria-labelledby="why-h">
+  <div class="wrap split">
+    <div class="split-head" data-rv>
+      <h2 id="why-h"><%= t('site.home.why.title') %></h2>
+      <p><%= t('site.home.why.p1') %></p>
+      <p><%= t('site.home.why.p2') %></p>
+      <p><a class="link" href="<%= more %>"><%= t('site.home.why.more') %></a></p>
+    </div>
+    <div class="road-main">
+      <p class="timeline-label"><%= t('site.home.why.timelineLabel') %></p>
+      <ol class="road-list" data-road>
+        <li class="road-rail" aria-hidden="true"><span class="road-fill" data-fill></span></li>
+<% for (const k of [1, 2, 3, 4]) { -%>
+        <li class="rd" data-rd>
+          <p class="tl-date"><%= t('site.home.why.t' + k + '.date') %></p>
+          <p class="tl-title"><%= t('site.home.why.t' + k + '.title') %></p>
+          <p class="tl-text"><%= t('site.home.why.t' + k + '.text') %></p>
+        </li>
+<% } -%>
+      </ol>
+      <p class="road-count"><%= days !== null ? t('landing.road.countdown', { days: t('landing.road.days.' + (days === 1 ? 'one' : 'other'), { n: days }) }) : t('landing.road.flat') %></p>
+    </div>
+  </div>
+</section>

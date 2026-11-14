@@ -1,0 +1,42 @@
+<%- include('../partials/app-head', { title: t('app.recurring.title') }) %>
+<% const day = (d) => d ? d.toISOString().slice(0, 10).split('-').reverse().join('.') : '—'; %>
+<p><a href="/app/o/<%= org.id %>">← <%= org.legalName %></a></p>
+<h1><%= t('app.recurring.title') %></h1>
+<% if (ok) { %><p class="ok" role="status"><%= tOr('app.recurring.ok.' + ok, t('app.catalog.saved.updated')) %></p><% } %>
+<% if (err) { %><p class="error" role="alert"><%= tOr('app.recurring.err.' + err, t('auth.errors.invalid')) %></p><% } %>
+<% if (!features.recurring) { %><p class="callout"><%= t('app.recurring.needsPlan') %> <a href="/app/o/<%= org.id %>/plan"><%= t('app.plan.title') %></a></p><% } %>
+<p class="muted"><%= t('app.recurring.how') %></p>
+<% if (templates.length === 0) { %><p class="muted"><%= t('app.recurring.none') %></p><% } else { %>
+<div class="table-wrap"><table class="stack-table">
+  <thead><tr><th scope="col"><%= t('app.recurring.name') %></th><th scope="col"><%= t('app.recurring.frequency') %></th><th scope="col"><%= t('app.recurring.next') %></th><th scope="col"><%= t('app.recurring.status') %></th><th scope="col" class="num"><%= t('app.recurring.issuedCount') %></th><th scope="col"><span class="sr-only"><%= t('app.catalog.actions') %></span></th></tr></thead>
+  <tbody>
+  <% templates.forEach((r) => { %>
+    <tr>
+      <td data-label="<%= t('app.recurring.name') %>"><% if (canIssue) { %><a href="/app/o/<%= org.id %>/povtaryashti/<%= r.id %>"><%= r.name %></a><% } else { %><%= r.name %><% } %><% if (r.lastError) { %><br><span class="hint"><%= tOr('app.recurring.errors.' + r.lastError, r.lastError) %></span><% } %></td>
+      <td data-label="<%= t('app.recurring.frequency') %>"><%= t('app.recurring.frequencies.' + r.frequency) %></td>
+      <td data-label="<%= t('app.recurring.next') %>" class="mono"><%= r.status === 'ENDED' ? '—' : day(r.nextRunOn) %></td>
+      <td data-label="<%= t('app.recurring.status') %>"><span class="tag<%= r.status === 'ACTIVE' ? ' tag-active' : r.status === 'PAUSED' ? ' tag-pending' : '' %>"><%= t('app.recurring.statuses.' + r.status) %></span></td>
+      <td data-label="<%= t('app.recurring.issuedCount') %>" class="num mono"><%= r._count.documents %></td>
+      <td class="actions">
+        <% if (canIssue && r.status === 'ACTIVE') { %><form method="post" action="/app/o/<%= org.id %>/povtaryashti/<%= r.id %>/pause"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="link"><%= t('app.recurring.actions.pause') %></button></form><% } %>
+        <% if (canIssue && r.status === 'PAUSED') { %><form method="post" action="/app/o/<%= org.id %>/povtaryashti/<%= r.id %>/resume"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="link"><%= t('app.recurring.actions.resume') %></button></form><% } %>
+      </td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+
+<section class="panel">
+  <h2><%= t('app.recurring.remindersTitle') %></h2>
+  <p class="hint"><%= t('app.recurring.remindersHelp') %></p>
+  <% if (!features.reminders) { %><p class="callout"><%= t('app.recurring.needsPlan') %> <a href="/app/o/<%= org.id %>/plan"><%= t('app.plan.title') %></a></p><% } %>
+  <% if (canSettings) { %>
+  <form method="post" action="/app/o/<%= org.id %>/napomnyaniya" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label class="check"><input type="checkbox" name="enabled"<%= org.remindersEnabled ? ' checked' : '' %><%= features.reminders || org.remindersEnabled ? '' : ' disabled' %>> <%= t('app.recurring.remindersToggle') %></label>
+    <div><button type="submit" class="button-secondary"<%= features.reminders || org.remindersEnabled ? '' : ' disabled' %>><%= t('app.catalog.save') %></button></div>
+  </form>
+  <% } else { %><p><%= org.remindersEnabled ? t('app.recurring.remindersOn') : t('app.recurring.remindersOffState') %></p><% } %>
+</section>
+<%- include('../partials/app-foot') %>

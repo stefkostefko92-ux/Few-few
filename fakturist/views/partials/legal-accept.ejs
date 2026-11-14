@@ -1,0 +1,22 @@
+<%#
+  Отметката за правните документи (SPEC 35): общите условия и договорът за обработване — приети от името
+  на фирмата, политиката — прочетена. Преводът се екранира парче по парче, а {terms}/{dpa}/{privacy}
+  стават връзки (нов раздел). Никога не идва отметната.
+%>
+<%
+  const esc = (text) => String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const legalLink = (id, label) => '<a href="' + esc(legalUrl(id)) + '" target="_blank" rel="noopener">' + esc(label) + '</a>';
+  const withLinks = (text, links) => text.split(/(\{\w+\})/).map((part) => {
+    const name = /^\{(\w+)\}$/.exec(part);
+    return name && Object.hasOwn(links, name[1]) ? links[name[1]] : esc(part);
+  }).join('');
+  // Член на фирма приема само общите условия за себе си (договорът за обработване е на фирмата).
+  const acceptLabel = locals.memberOnly ? withLinks(t('auth.legalAcceptMember'), {
+    terms: legalLink('terms', t('auth.legalTerms')),
+  }) + ' ' + withLinks(t('auth.legalPrivacy'), { privacy: legalLink('privacy', t('auth.legalPrivacyLink')) }) : withLinks(t('auth.legalAccept'), {
+    terms: legalLink('terms', t('auth.legalTerms')),
+    dpa: legalLink('dpa', t('auth.legalDpa')),
+    org: esc(locals.orgName || t('auth.legalOrg')),
+  }) + ' ' + withLinks(t('auth.legalPrivacy'), { privacy: legalLink('privacy', t('auth.legalPrivacyLink')) });
+%>
+<label class="check<%= locals.invalid ? ' has-error' : '' %>"><input type="checkbox" name="acceptTerms" required<%= locals.invalid ? ' aria-invalid="true"' : '' %>> <span><%- acceptLabel %></span></label>

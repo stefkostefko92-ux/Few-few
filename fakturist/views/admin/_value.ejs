@@ -1,0 +1,9 @@
+<%
+  const show = (value) => {
+    if (value === null || value === undefined) return '—';
+    if (value instanceof Date) return value.toISOString().replace('T', ' ').slice(0, 19);
+    if (typeof value === 'bigint') return value.toString();
+    if (typeof value === 'object') return JSON.stringify(value, (k, x) => (typeof x === 'bigint' ? x.toString() : x));
+    return String(value);
+  };
+%><%= show(value) %>

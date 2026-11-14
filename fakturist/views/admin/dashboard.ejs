@@ -1,0 +1,50 @@
+<%- include('../partials/app-head', { title: t('admin.title') }) %>
+<h1><%= t('admin.title') %></h1>
+<%- include('_nav') %>
+<% if (staleTransfers > 0) { %><p class="callout" role="status"><%= t('admin.staleTransfers', { count: staleTransfers }) %> <a href="/admin/r/payments"><%= t('admin.open') %></a></p><% } %>
+<dl class="kpis">
+  <div><dt><%= t('admin.kpi.issued') %></dt><dd class="mono"><%= issuedThisMonth %></dd></div>
+  <div><dt><%= t('admin.kpi.companies') %></dt><dd class="mono"><%= companies %></dd></div>
+  <div><dt><%= t('admin.kpi.firms') %></dt><dd class="mono"><%= firms %></dd></div>
+  <div><dt><%= t('admin.kpi.revenue') %></dt><dd class="mono"><%= revenue %></dd></div>
+</dl>
+<% if (review.total > 0) { %>
+<section aria-labelledby="h-review">
+  <h2 id="h-review"><%= t('admin.ownership.reviewTitle') %> <span class="tag tag-pending"><%= review.total %></span></h2>
+  <p class="muted"><%= t('admin.ownership.reviewHelp') %></p>
+  <div class="table-wrap"><table class="stack-table">
+    <thead><tr><th scope="col"><%= t('auth.legalName') %></th><th scope="col"><%= t('auth.eik') %></th><th scope="col"><%= t('admin.ownership.firm') %></th><th scope="col"><%= t('admin.ownership.acceptedAt') %></th></tr></thead>
+    <tbody>
+    <% review.items.forEach((item) => { %>
+      <tr>
+        <td data-label="<%= t('auth.legalName') %>"><a href="/admin/r/organizations/<%= item.organizationId %>"><%= item.legalName %></a></td>
+        <td class="mono" data-label="<%= t('auth.eik') %>"><%= item.eik || '—' %></td>
+        <td data-label="<%= t('admin.ownership.firm') %>"><%= item.firmName %></td>
+        <td class="mono" data-label="<%= t('admin.ownership.acceptedAt') %>"><%= item.acceptedAt.toISOString().slice(0, 16).replace('T', ' ') %></td>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table></div>
+</section>
+<% } %>
+<% ['accounts', 'documents', 'billing', 'platform'].forEach((group) => { %>
+<section>
+  <h2><%= t('admin.groups.' + group) %></h2>
+  <ul class="tiles">
+    <% counts.filter((c) => c.resource.group === group).forEach((c) => { %>
+      <li><a href="/admin/r/<%= c.resource.slug %>"><span><%= c.resource.label[lang] %></span><span class="mono"><%= c.count %></span></a></li>
+    <% }) %>
+  </ul>
+</section>
+<% }) %>
+<section>
+  <h2><%= t('admin.recent') %></h2>
+  <div class="table-wrap"><table>
+    <tbody>
+    <% recent.forEach((e) => { %>
+      <tr><td class="mono muted"><%= e.at.toISOString().replace('T', ' ').slice(0, 19) %></td><td class="mono"><%= e.action %></td><td class="mono muted"><%= e.targetType || '' %> <%= e.targetId || '' %></td></tr>
+    <% }) %>
+    </tbody>
+  </table></div>
+</section>
+<%- include('../partials/app-foot') %>

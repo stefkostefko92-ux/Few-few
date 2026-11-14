@@ -1,32 +1,17 @@
 {
-  "date": "2026-11-04",
-  "ref": "bbfcd03a4be1ccae88fb71685094c7f106539ca7",
-  "cli": "2.1.318 (Claude Code)",
-  "summary": "проба 4/4 · оценки 7/7 · pass^k 3/3 · verifier ✓",
-  "costUsd": 12.83,
+  "date": "2026-11-13",
+  "ref": "517b300a1b80489391243759e4680ab556adb947",
+  "cli": "2.1.323 (Claude Code)",
+  "summary": "проба 1/1 · оценки 7/7 · pass^k 3/3 · verifier ✓",
+  "costUsd": 11.82,
   "probe": [
     {
-      "agent": "seo",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "kodadjiyata",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "dizayner",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "razbivacha",
+      "agent": "vps-adjiyata",
       "ok": true,
       "problems": []
     }
   ],
-  "inputsHash": "f7eb863997134df5f584f64c3e1f705540f04034bad96c0b86cdadb788fd0e2d",
+  "inputsHash": "860caf829cd39c602ffad94f6ed6f3bf14ca4d71498e46f5db841e5c52b92e5d",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "df03642aee24f3b2365e8cc3590ce2ca3505933e16eceb75cf854947ef6e41cd",
@@ -62,7 +47,7 @@
     ".claude/agents/socialdjiyata.md": "25a8094782e70041d8c13bb1e46f5e340365d9b694e175df208192b3f6e4a2d0",
     ".claude/agents/tayniyat-agent.md": "22ce18f5fe48538cabcb4216005823861c2708047438e6c5fcf11e1162b5a617",
     ".claude/agents/treydara.md": "0047d1976157ad45f4483f8a65c458d462d594770502f27afe3a7b79bc7cb1e0",
-    ".claude/agents/vps-adjiyata.md": "7947e6bc3970319572114170d1adf40790d33aa06fe72191351ada0de15fe642",
+    ".claude/agents/vps-adjiyata.md": "dd496ba19d1d457dd49bab15d776e9a1214770f6e5480ebd039c3f9f3575bb10",
     ".claude/hooks/agent-cap.mjs": "1e8dc510561658ee1bfb28e8916ae4f0d98a14a375f8377d7b2b758c3f64f64c",
     ".claude/hooks/agent-return.mjs": "e9b76f4e211ad024fc6bf02c6f088f6474ef7232dea8401841efcd17d54615f8",
     ".claude/hooks/artifact-sync.mjs": "1d33833db1a0a73eb3e818bb4360dddd3f807abe8b848adae684e48c77add80a",

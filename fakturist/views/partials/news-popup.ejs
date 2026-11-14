@@ -1,0 +1,29 @@
+<%
+  // „Какво ново“ след обновяване (src/news/popup.ts): отворен и без JavaScript — тогава не е модален, а
+  // „Разбрах“ праща формата и връща на същата страница. С news.js е модален и всяко затваряне (бутонът,
+  // Esc, „Всички новости“) отбелязва новините като прочетени във фонов режим.
+  const first = newsPopup.entries[0];
+  const day = (d) => new Intl.DateTimeFormat(lang === 'bg' ? 'bg-BG' : 'en-GB', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(d + 'T00:00:00Z'));
+%><dialog class="news" data-news open aria-labelledby="news-title">
+  <h2 class="news__title" id="news-title"><%= t('news.popup.title') %></h2>
+  <p class="news__lead"><%= t('news.popup.lead') %></p>
+  <div class="news__body" tabindex="0" role="region" aria-labelledby="news-title">
+  <ul class="news__list">
+    <% for (const entry of newsPopup.entries) { %><li class="news__item">
+      <h3 class="news__name"><%= t('news.entries.' + entry.id + '.title') %></h3>
+      <p class="news__area"><%= t('news.entries.' + entry.id + '.area') %>, <time datetime="<%= entry.date %>"><%= day(entry.date) %></time></p>
+      <p><%= t('news.entries.' + entry.id + '.text') %></p>
+    </li>
+    <% } %>
+  </ul>
+  <% if (newsPopup.more > 0) { %><p class="news__more"><%= t('news.popup.more', { n: newsPopup.more }) %></p><% } %>
+  </div>
+  <div class="news__actions">
+    <form method="post" action="/app/kakvo-novo/procheteni" data-news-form>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="back" value="<%= newsPopup.back %>">
+      <button type="submit" autofocus><%= t('news.popup.ok') %></button>
+    </form>
+    <a class="button-secondary" href="<%= lang === 'en' ? '/en/whats-new' : '/kakvo-novo' %>#<%= first.id %>" data-news-all target="_blank" rel="noopener"><%= t('news.popup.all') %></a>
+  </div>
+</dialog>

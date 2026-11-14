@@ -1,0 +1,96 @@
+<p>These terms govern the use of Fakturist — an online service for issuing invoices and notes, with the data also saved as structured XML under the European standard EN&nbsp;16931. By creating an account you accept them on behalf of the company you register. The Bulgarian text prevails.</p>
+
+<h2 id="provider">1. Who provides the service</h2>
+<p><%= company.name %> (<%= company.nameBg %>), registered in the Commercial Register and Register of Non-Profit Legal Entities at the Bulgarian Registry Agency under EIK&nbsp;<%= company.eik %>, VAT&nbsp;no.&nbsp;<%= company.vat %>, <%= company.street.en %>, <%= company.postalCode %> <%= company.city.en %>, <%= company.region.en %>, Bulgaria, tel.&nbsp;<a href="<%= company.phoneHref %>"><%= company.phone %></a>, <a href="mailto:<%= contactEmail %>"><%= contactEmail %></a>. Hereafter “we”.</p>
+
+<h2 id="audience">2. Who the service is for</h2>
+<p>Fakturist is for traders, legal entities, freelancers and accounting firms — for their professional activity. It is not intended for consumers within the meaning of the Bulgarian Consumer Protection Act. Whoever registers a company declares that they may represent it or are authorised by it, and accepts these terms and the <a href="<%= legalUrl('dpa') %>">data processing agreement</a> on its behalf.</p>
+
+<h2 id="account">3. The account</h2>
+<ul>
+  <li>The data you give at registration must be true and kept up to date — it becomes the particulars of your documents.</li>
+  <li>You keep your password safe and do not share your account. We recommend two-factor sign-in under “Security”. Actions from your account are deemed yours.</li>
+  <li>If you suspect someone else has access, change your password at once and write to us.</li>
+  <li>You confirm your email address with the link we send you: password links and document notices are sent to it.</li>
+</ul>
+
+<h2 id="service">4. What the service does</h2>
+<ul>
+  <li>It issues invoices, credit and debit notes and other documents under the Bulgarian VAT Act, numbered without gaps or repeats in the series you choose.</li>
+  <li>Every document is also saved as structured XML (UBL&nbsp;2.1 and CII under EN&nbsp;16931) and can be downloaded as PDF.</li>
+  <li>On issue it checks the rules of the standard and basic requirements of the VAT Act and stops a document with an error. The check is an aid — it is not tax or legal advice and does not replace your accountant.</li>
+  <li>It delivers the document to the recipient's “inbox” if the recipient is registered in Fakturist with the same EIK (section&nbsp;7).</li>
+  <li>It lets an accounting firm issue on behalf of a client company under a mandate (section&nbsp;8).</li>
+  <li>Pro forma invoices — a request for payment with its own numbering; they are not tax documents and take no number from the invoice series. “Issue invoice” turns a pro forma into an invoice.</li>
+  <li>Depending on the plan: recurring invoices from a template, recording payments and reminders of overdue payments, matching with a bank statement (camt.053 or CSV), a register of incoming electronic invoices and an API (section&nbsp;8a). The company enables and stops them.</li>
+  <li>Peppol (by plan, once available): registers a company with a VAT number on the Peppol network through a certified access point, sends your documents as XML under Peppol BIS 3 and receives e-invoices addressed to you into the incoming register. The company's name, address and electronic address become public in the network directory. Delivery also depends on the recipient's access point; you see the transmission status in your account.</li>
+</ul>
+<p>Fakturist is not approved, certified or registered by the Bulgarian National Revenue Agency (NRA). A bill amending the Bulgarian VAT Act provides for structured electronic invoices to become mandatory from 2028. It has not been adopted yet and the requirements may change; once they are adopted, we will adapt the service and let you know. Features marked as “planned” are not available yet.</p>
+
+<h2 id="documents">5. Responsibility for the content of documents</h2>
+<p>You are the issuer of the documents and are responsible for the accuracy of their data — recipient, goods and services, prices, VAT rates and grounds, exchange rate, dates — and for sending them where the law requires the recipient's consent to electronic invoices. We are responsible for the service working as described here and on the website.</p>
+<p>An issued document is not changed or deleted: each one is in a chain of fingerprints that reveals any change. A mistake is corrected with a credit or debit note.</p>
+<p>Recurring invoices are issued automatically on your behalf, with the rights of the template's creator. If the creator loses their rights, if the plan does not include the function, or after three consecutive errors, the template stops, and missed periods are not caught up — the obligation to issue an invoice within the statutory period remains yours. Emails to recipients outside Fakturist (recurring invoices, pro forma invoices and reminders) are limited to 200 per day per company; above the limit the document is issued but the email is not sent, and you see this in the account. You are responsible for having a basis to send these emails and reminders and for the claim being due.</p>
+<p>Every document carries the last line “<%= brand.signature %>” — in the PDF copy and in the note of the XML. You accept this line as part of the service.</p>
+
+<h2 id="payment">6. Plans, prices and payment</h2>
+<ul>
+  <li>The plans, their prices and what each includes are on the <a href="<%= lang === 'bg' ? '/ceni' : '/en/pricing' %>">Pricing</a> page. Prices are in euro, excluding VAT.</li>
+  <li>The free plan has a soft monthly document limit: above it we offer a paid plan, but issuing does not stop.</li>
+  <li>The company owner orders a paid plan from the “Plan” page in the account (or by writing to <a href="mailto:<%= contactEmail %>"><%= contactEmail %></a>). The price including VAT is shown before ordering. It is paid by card on Revolut’s secure page (card details never pass through us) or by bank transfer using the pro forma and its reference. The plan starts when Revolut confirms the card payment or when the transfer arrives; the invoice's tax point date is the payment date, and it arrives in the company inbox and by email. By accepting these terms you agree that our invoices are issued and received electronically.</li>
+  <li>A new payment for the same plan and period extends the paid period from its end. A change of plan or period starts from the payment, and the unused time of the old paid plan is credited: the unused part of the last paid price excl. VAT, in proportion to the time left, is deducted from the price of the new plan — the “Plan” page shows it before the order, and the invoice shows it as an allowance. A cheaper plan whose price is fully covered by the unused time is ordered after the paid period ends.</li>
+  <li>A payment that does not match an order (a different amount, an order replaced by another plan already activated, or a credit from a plan that is no longer active) does not activate a plan; we refund it by the same method within 14 days.</li>
+  <li>No automatic renewal: if a paid period ends without a new payment, the company moves to the free plan. Issued documents stay available.</li>
+  <li>Price changes are announced by email at least 30 days in advance and apply from the next paid period.</li>
+</ul>
+
+<h2 id="inbox">7. The inbox</h2>
+<p>When you issue a document to a company registered in Fakturist with the same EIK (or VAT number), the document is delivered to its account and by email — with PDF and XML — to its owner, administrators and accountants, and to the members of its accounting firm with an active mandate (owner, administrators, accountants). By issuing such a document you agree to this delivery. The recipient sees only the delivered document and whether the sender is a verified company.</p>
+
+<h2 id="firms">8. Accounting firms and mandates</h2>
+<ul>
+  <li>An accounting firm issues on behalf of a client company only with an active mandate — confirmed by the company's owner or by us after a document is presented. The firm is responsible for holding the written mandate referenced in the account.</li>
+  <li>The company belongs to its owner, even if the accounting firm added it. The firm is at most an accountant: it does not manage the company's members, plan or mandates.</li>
+  <li>In a dispute over ownership we may suspend access to the company until representation is proven.</li>
+</ul>
+
+<h2 id="api">8a. API</h2>
+<p>The company's owner or an administrator creates an API key with a “read” or “issue” scope. The key is shown once; keep it like a password. Documents issued with it are in the name of the company and of the key's creator, with the creator's rights at that time. The key stops working when its creator is no longer a member, when you revoke it, or when the plan no longer includes the API. Limits: 120 requests per minute per key and 30 issues per minute. The API may change with notice under section&nbsp;15.</p>
+
+<h2 id="data">9. Your data</h2>
+<p>The data you enter and your documents are yours. For personal data in documents we are a processor under the <a href="<%= legalUrl('dpa') %>">data processing agreement</a>; for account data — a controller under the <a href="<%= legalUrl('privacy') %>">privacy policy</a>. You can download every document as PDF and XML at any time. Keeping your documents for the periods set by the Accountancy Act and the VAT Act is your obligation — so download and archive them.</p>
+
+<h2 id="prohibited">10. What is not allowed</h2>
+<ul>
+  <li>Issuing documents without a real supply or with someone else's data without the right to do so.</li>
+  <li>Use for unlawful activity or in breach of others' rights.</li>
+  <li>Attempts at unauthorised access, at circumventing limits or at excessive automated load on the service.</li>
+  <li>Reselling access to the service without our written consent.</li>
+</ul>
+<p>Report illegal content (e.g. a document issued with someone else's data without right) to <a href="mailto:<%= contactEmail %>"><%= contactEmail %></a> with a description and link. We respond without delay; if we restrict an account we state the reason and how to contest it. This is also our point of contact for authorities under Art.&nbsp;11–12 of Regulation (EU) 2022/2065.</p>
+
+<h2 id="termination">11. Suspension and termination</h2>
+<ul>
+  <li>You may stop using the service at any time by writing to <a href="mailto:<%= contactEmail %>"><%= contactEmail %></a>. A paid period is not refunded unless we have breached these terms. If we discontinue the service, or you stop using it because of a change under section&nbsp;15 or an objection to a new sub-processor under the data processing agreement, we refund the amount paid for the unused period.</li>
+  <li>We may suspend an account for a breach of section&nbsp;10 or a risk to the security of other users — after notifying you and, where possible, giving you time to remedy the breach.</li>
+  <li>We may discontinue the service entirely with at least 60 days' notice.</li>
+  <li>After termination you have 30 days to download your documents (on request we send you an archive of all of them); then we delete them under the data processing agreement. We also remove the company from the Peppol network.</li>
+</ul>
+
+<h2 id="availability">12. Operation of the service</h2>
+<p>We aim for the service to run without interruption but do not guarantee it: maintenance, updates and failures are possible. We announce planned downtime on the website where possible. We back up the database every day and before every update.</p>
+
+<h2 id="liability">13. Liability</h2>
+<p>To the extent permitted by applicable law, we are liable only for direct and foreseeable damage caused by a breach of our obligations, and in total up to the greater of the amount the company paid for the service in the last 12 months or 100&nbsp;euro. We are not liable for lost profits, for consequences of data entered by you, or for tax consequences of the content of documents. These limits do not apply to intent or gross negligence, nor wherever the law does not allow liability to be limited.</p>
+
+<h2 id="ip">14. Rights in the software</h2>
+<p>Fakturist, its code, design and brand are ours. You receive a non-exclusive right to use the service for the life of the account, for your own business or — for accounting firms — for the business of your clients.</p>
+
+<h2 id="changes">15. Changes to the terms</h2>
+<p>We notify you of a material change by email at least 30 days before it takes effect. If you disagree, you may stop using the service before then, without penalty. The version date is at the top of the page.</p>
+
+<h2 id="law">16. Governing law and disputes</h2>
+<p>Bulgarian law applies. We first try to settle disputes by talking; if we cannot agree — before the competent Bulgarian court.</p>
+
+<h2 id="contact">17. Contact</h2>
+<p><a href="mailto:<%= contactEmail %>"><%= contactEmail %></a>, tel.&nbsp;<a href="<%= company.phoneHref %>"><%= company.phone %></a>. For personal data — <a href="mailto:<%= privacyEmail %>"><%= privacyEmail %></a>.</p>

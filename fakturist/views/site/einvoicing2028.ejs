@@ -1,0 +1,98 @@
+<%
+  const [cy, cm, cd] = contentUpdated.split('-');
+  const updatedText = lang === 'bg' ? `${cd}.${cm}.${cy}` : `${Number(cd)} ${['January','February','March','April','May','June','July','August','September','October','November','December'][Number(cm) - 1]} ${cy}`;
+  // Само предстоящите (status: 'planned') — налична функция тук би била „(undefined)“.
+  const planned = features.filter((f) => f.status === 'planned').map((f) => `${t('features.' + f.code + '.name')} (${f.target})`).join('; ');
+  const toc = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8'];
+-%>
+<%- include('../partials/site-head') %>
+<main id="main">
+
+<article class="article" aria-labelledby="h1">
+  <header class="page-head">
+    <div class="wrap">
+      <h1 id="h1"><%= t('site.einvoicing2028.title') %></h1>
+      <p class="byline">
+        <span><%= t('site.einvoicing2028.byline.author') %>: <a href="<%= company.url %>" rel="author"><%= company.name %></a></span>
+        <span><%= t('site.einvoicing2028.byline.updated') %>: <time datetime="<%= contentUpdated %>"><%= updatedText %></time></span>
+      </p>
+    </div>
+  </header>
+
+  <div class="wrap article-grid">
+    <aside class="toc" aria-label="<%= t('site.einvoicing2028.toc') %>">
+      <p class="toc-title"><%= t('site.einvoicing2028.toc') %></p>
+      <ol>
+<% for (const q of toc) { -%>
+        <li><a href="#<%= q %>"><%= t('site.einvoicing2028.' + q + '.title') %></a></li>
+<% } -%>
+      </ol>
+    </aside>
+
+    <div class="prose">
+      <p class="summary" data-speakable><%= t('site.einvoicing2028.summary') %></p>
+
+      <h2 id="q1"><%= t('site.einvoicing2028.q1.title') %></h2>
+      <p><%= t('site.einvoicing2028.q1.p1') %></p>
+      <p><%= t('site.einvoicing2028.q1.p2') %></p>
+
+      <h2 id="q2"><%= t('site.einvoicing2028.q2.title') %></h2>
+      <p><%= t('site.einvoicing2028.q2.p1') %></p>
+      <ol class="timeline">
+<% for (const n of [1, 2, 3, 4]) { -%>
+        <li>
+          <p class="tl-date"><%= t('site.home.why.t' + n + '.date') %></p>
+          <p class="tl-title"><%= t('site.home.why.t' + n + '.title') %></p>
+          <p class="tl-text"><%= t('site.home.why.t' + n + '.text') %></p>
+        </li>
+<% } -%>
+      </ol>
+
+      <h2 id="q3"><%= t('site.einvoicing2028.q3.title') %></h2>
+      <p><%= t('site.einvoicing2028.q3.p1') %></p>
+      <p><%= t('site.einvoicing2028.q3.p2') %></p>
+      <%- include('../partials/site-xml', { caption: false }) %>
+      <table class="codes">
+        <caption class="sr"><%= t('site.einvoicing2028.q3.colField') %></caption>
+        <thead><tr><th scope="col"><%= t('site.einvoicing2028.q3.colCode') %></th><th scope="col"><%= t('site.einvoicing2028.q3.colField') %></th></tr></thead>
+        <tbody>
+<% for (const c of ['bt1', 'bt2', 'bt3', 'bt5', 'bt110', 'bt115']) { -%>
+          <tr><th scope="row"><span class="bt"><%= c.replace('bt', 'BT-') %></span></th><td><%= t('site.einvoicing2028.q3.' + c) %></td></tr>
+<% } -%>
+        </tbody>
+      </table>
+
+      <h2 id="q4"><%= t('site.einvoicing2028.q4.title') %></h2>
+      <p><%= t('site.einvoicing2028.q4.p1') %></p>
+
+      <h2 id="q5"><%= t('site.einvoicing2028.q5.title') %></h2>
+      <p><%= t('site.einvoicing2028.q5.p1') %></p>
+
+      <h2 id="q6"><%= t('site.einvoicing2028.q6.title') %></h2>
+      <p><%= t('site.einvoicing2028.q6.p1') %></p>
+
+      <h2 id="q7"><%= t('site.einvoicing2028.q7.title') %></h2>
+      <ul class="check">
+<% for (const n of [1, 2, 3, 4]) { -%>
+        <li><%= t('site.einvoicing2028.q7.' + n) %></li>
+<% } -%>
+      </ul>
+
+      <h2 id="q8"><%= t('site.einvoicing2028.q8.title') %></h2>
+      <p><%= t('site.einvoicing2028.q8.p1', { planned }) %></p>
+      <p><a class="link" href="<%= urls.pricing %>"><%= t('site.einvoicing2028.q8.link') %></a></p>
+
+      <h2 id="src"><%= t('site.einvoicing2028.sources.title') %></h2>
+      <p><%= t('site.einvoicing2028.sources.p1') %></p>
+      <ul class="sources">
+        <li><a class="link" href="https://www.parliament.bg/bg/bills/ID/167624" target="_blank" rel="noopener"><%= t('site.einvoicing2028.sources.parliament') %></a></li>
+        <li><a class="link" href="https://www.strategy.bg/bg/public-consultations/12733" target="_blank" rel="noopener"><%= t('site.einvoicing2028.sources.strategy') %></a></li>
+      </ul>
+    </div>
+  </div>
+</article>
+
+<%- include('../partials/site-faq') %>
+<%- include('../partials/site-cta') %>
+</main>
+<%- include('../partials/site-foot') %>

@@ -1,0 +1,173 @@
+<%- include('../partials/app-head', { title: t('app.doc.title') }) %>
+<%
+  const val = (path, fallback) => {
+    let cur = values;
+    for (const part of path.split('.')) { if (cur && typeof cur === 'object') cur = cur[part]; else { cur = undefined; break; } }
+    return typeof cur === 'string' ? cur : (fallback || '');
+  };
+  const sel = (path, option, fallback) => (val(path, fallback) === option ? ' selected' : '');
+  // Банков превод по подразбиране само ако фирмата има IBAN (иначе BR-61 спира издаването).
+  const means = org.iban ? '30' : '';
+%>
+<p><a href="/app/o/<%= org.id %>">← <%= org.legalName %></a></p>
+<h1><%= t('app.doc.title') %></h1>
+<p class="muted"><%= t('app.doc.issueHelp') %></p>
+<% if (issues && issues.length) { %>
+  <div class="error-box" role="alert">
+    <p><strong><%= t('app.doc.problems') %></strong></p>
+    <ul><% issues.forEach((issue) => { %><li><span class="mono"><%= issue.rule %></span> · <%= issue.message[lang] %> <span class="muted mono"><%= issue.path %></span></li><% }) %></ul>
+  </div>
+<% } %>
+<% if (parties.length) { %>
+<form method="get" action="/app/o/<%= org.id %>/nov" class="search-row" data-party-picker>
+  <label><%= t('app.catalog.pickParty') %><select name="party" data-party-select>
+    <option value=""><%= t('app.catalog.pickPartyNone') %></option>
+    <% parties.forEach((p) => { %><option value="<%= p.id %>" data-name="<%= p.name %>" data-legal-id="<%= p.eik || '' %>" data-vat-id="<%= p.vatNumber || '' %>" data-street="<%= p.addressStreet %>" data-city="<%= p.addressCity %>" data-postal-code="<%= p.postalCode %>" data-country-code="<%= p.countryCode %>" data-email="<%= p.email || '' %>"<%= val('buyer.name') === p.name ? ' selected' : '' %>><%= p.name %><%= p.eik ? ' · ' + p.eik : '' %></option><% }) %>
+  </select></label>
+  <button type="submit" class="button-secondary" data-party-fill><%= t('app.catalog.fill') %></button>
+</form>
+<% } %>
+<% if (items.length) { %>
+<datalist id="catalog-items">
+  <% items.forEach((i) => { %><option value="<%= i.name %>" data-unit="<%= i.unitCode %>" data-price="<%= i.netPrice %>" data-category="<%= i.vatCategory %>" data-rate="<%= i.vatRate %>"></option><% }) %>
+</datalist>
+<% } %>
+<form method="post" action="/app/o/<%= org.id %>/nov" class="doc-form" data-once>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="hidden" name="issueToken" value="<%= issueToken %>">
+  <% if (proforma) { %>
+  <p class="callout"><%= t('app.proforma.invoiceFrom', { number: proforma.number }) %></p>
+  <input type="hidden" name="fromProforma" value="<%= proforma.id %>">
+  <% } %>
+  <% if (replacing) { %>
+  <fieldset class="callout annul-box">
+    <legend><%= t('app.annul.title') %></legend>
+    <p><%= t('app.annul.lead', { number: replacing.number, date: replacing.issueDate.toISOString().slice(0, 10).split('-').reverse().join('.') }) %></p>
+    <input type="hidden" name="replaces" value="<%= replacing.id %>">
+    <input type="hidden" name="typeCode" value="<%= replacing.typeCode %>">
+    <label><%= t('app.annul.reason') %><select name="annulReason" required>
+      <option value=""><%= t('app.annul.choose') %></option>
+      <% annulReasons.forEach((r) => { %><option value="<%= r %>"<%= val('annulReason') === r ? ' selected' : '' %>><%= t('app.annul.reasons.' + r) %></option><% }) %>
+    </select></label>
+    <p class="hint"><%= t('app.annul.hint') %></p>
+  </fieldset>
+  <% } %>
+  <fieldset class="grid-4">
+    <label><%= t('app.doc.type') %><select name="typeCode"<%= replacing ? ' disabled' : '' %>>
+      <% (proforma ? ['380','386'] : ['380','381','383','386']).forEach((code) => { %><option value="<%= code %>"<%= sel('typeCode', code, '380') %>><%= t('app.types.' + code) %></option><% }) %>
+      <% if (!replacing && !proforma) { %><option value="proforma"<%= sel('typeCode', 'proforma', '380') %>><%= t('app.types.proforma') %></option><% } %>
+    </select><% if (!replacing && !proforma) { %><span class="hint"><%= t('app.proforma.typeHint') %></span><% } %></label>
+    <label><%= t('app.doc.series') %><select name="seriesId">
+      <% series.forEach((s) => { %><option value="<%= s.id %>"<%= sel('seriesId', s.id, series.find((x) => x.isDefault)?.id) %>><%= s.name %> (<%= String(s.nextNumber).padStart(10, '0') %>)</option><% }) %>
+    </select></label>
+    <label><%= t('app.doc.issueDate') %><input type="date" name="issueDate" required value="<%= val('issueDate', today) %>"></label>
+    <label><%= t('app.doc.taxPointDate') %><input type="date" name="taxPointDate" value="<%= val('taxPointDate', today) %>"></label>
+    <label><%= t('app.doc.dueDate') %><input type="date" name="dueDate" value="<%= val('dueDate') %>"></label>
+    <label><%= t('app.doc.currency') %><input name="currency" maxlength="3" class="mono" value="<%= val('currency', 'EUR') %>"></label>
+    <label><%= t('app.doc.pdfLanguage') %><select name="pdfLanguage" data-pdf-language>
+      <option value="bg"<%= sel('pdfLanguage', 'bg', 'bg') %>><%= t('app.doc.pdfLanguages.bg') %></option>
+      <option value="bg-en"<%= sel('pdfLanguage', 'bg-en', 'bg') %>><%= t('app.doc.pdfLanguages.bg-en') %></option>
+    </select><span class="hint"><%= t('app.doc.pdfLanguageHint') %></span></label>
+    <label><%= t('app.doc.rate') %><input name="eurExchangeRate" inputmode="decimal" class="mono" value="<%= val('eurExchangeRate') %>"><span class="hint"><%= t('app.doc.rateHelp') %></span></label>
+  </fieldset>
+
+  <fieldset>
+    <legend><%= t('app.doc.buyer') %></legend>
+    <div class="grid-3">
+      <label class="span-2"><%= t('app.doc.buyerName') %><input name="buyer[name]" required value="<%= val('buyer.name') %>"></label>
+      <label><%= t('app.doc.buyerEik') %><input name="buyer[legalId]" class="mono" value="<%= val('buyer.legalId') %>"></label>
+      <label><%= t('app.doc.buyerVat') %><input name="buyer[vatId]" class="mono" value="<%= val('buyer.vatId') %>"></label>
+      <label class="span-2"><%= t('app.doc.street') %><input name="buyer[street]" required value="<%= val('buyer.street') %>"></label>
+      <label><%= t('app.doc.city') %><input name="buyer[city]" required value="<%= val('buyer.city') %>"></label>
+      <label><%= t('app.doc.postalCode') %><input name="buyer[postalCode]" class="mono" value="<%= val('buyer.postalCode') %>"></label>
+      <label><%= t('app.doc.country') %><input name="buyer[countryCode]" maxlength="2" class="mono" value="<%= val('buyer.countryCode', 'BG') %>"></label>
+      <label class="span-2"><%= t('app.doc.buyerEmail') %><input type="email" name="buyer[email]" maxlength="200" autocomplete="off" value="<%= val('buyer.email') %>"><span class="hint"><%= t('app.doc.buyerEmailHint') %></span></label>
+      <label><%= t('app.peppol.eScheme') %><input name="buyer[eScheme]" maxlength="4" inputmode="numeric" class="mono" value="<%= val('buyer.eScheme') %>" placeholder="9926"></label>
+      <label class="span-2"><%= t('app.peppol.eValue') %><input name="buyer[eValue]" maxlength="100" class="mono" autocomplete="off" value="<%= val('buyer.eValue') %>" placeholder="BG123456789"><span class="hint"><%= t('app.peppol.eHint') %></span></label>
+      <label class="check span-2"><input type="checkbox" name="saveBuyer"<%= val('saveBuyer') === 'on' ? ' checked' : '' %>> <%= t('app.catalog.saveBuyer') %></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend><%= t('app.doc.lines') %></legend>
+    <p class="hint"><%= t('app.doc.linesHelp') %></p>
+    <% if (items.length) { %>
+    <label class="line-picker" data-item-picker hidden><%= t('app.doc.addItem') %>
+      <select data-item-select>
+        <option value=""><%= t('app.doc.addItemChoose') %></option>
+        <% items.forEach((i) => { %><option value="<%= i.name %>"><%= i.name %> · <%= i.netPrice %></option><% }) %>
+      </select>
+    </label>
+    <% } else { %>
+    <p class="hint"><%= t('app.doc.noItems') %> <a href="/app/o/<%= org.id %>/artikuli"><%= t('app.catalog.items') %></a></p>
+    <% } %>
+    <div class="table-wrap"><table class="lines">
+      <thead><tr>
+        <th scope="col">#</th><th scope="col"><%= t('app.doc.lineName') %></th><th scope="col"><%= t('app.doc.quantity') %></th><th scope="col"><%= t('app.doc.unit') %></th>
+        <th scope="col"><%= t('app.doc.price') %></th><th scope="col"><%= t('app.doc.category') %></th><th scope="col"><%= t('app.doc.vatRate') %></th><th scope="col"><%= t('app.doc.discount') %></th>
+      </tr></thead>
+      <tbody data-lines>
+      <% for (let i = 0; i < lineCount; i++) { %>
+        <tr>
+          <td class="mono muted"><%= i + 1 %></td>
+          <td><input name="lines[<%= i %>][name]" aria-label="<%= t('app.doc.lineName') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.name') %>"<%= items.length ? ' list="catalog-items"' : '' %> data-line="<%= i %>"></td>
+          <td><input name="lines[<%= i %>][quantity]" inputmode="decimal" class="mono s" aria-label="<%= t('app.doc.quantity') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.quantity') %>"></td>
+          <td><select name="lines[<%= i %>][unitCode]" aria-label="<%= t('app.doc.unit') %> <%= i + 1 %>"><% units.forEach((u) => { %><option<%= sel('lines.' + i + '.unitCode', u, 'C62') %>><%= u %></option><% }) %></select></td>
+          <td><input name="lines[<%= i %>][netPrice]" inputmode="decimal" class="mono s" aria-label="<%= t('app.doc.price') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.netPrice') %>"></td>
+          <td><select name="lines[<%= i %>][category]" aria-label="<%= t('app.doc.category') %> <%= i + 1 %>"><% categories.forEach((c) => { %><option<%= sel('lines.' + i + '.category', c, 'S') %>><%= c %></option><% }) %></select></td>
+          <td><input name="lines[<%= i %>][rate]" inputmode="decimal" class="mono xs" aria-label="<%= t('app.doc.vatRate') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.rate', '20') %>"></td>
+          <td><input name="lines[<%= i %>][discount]" inputmode="decimal" class="mono xs" aria-label="<%= t('app.doc.discount') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.discount') %>"></td>
+        </tr>
+      <% } %>
+      </tbody>
+    </table></div>
+    <p><button type="button" class="button-secondary" data-add-line hidden><%= t('app.doc.addLine') %></button></p>
+  </fieldset>
+
+  <div class="grid-2">
+    <fieldset>
+      <legend><%= t('app.doc.payment') %></legend>
+      <label><%= t('app.doc.means') %><select name="payment[meansCode]">
+        <option value=""<%= sel('payment.meansCode', '', means) %>>—</option>
+        <option value="30"<%= sel('payment.meansCode', '30', means) %>>30 · <%= lang === 'bg' ? 'банков превод' : 'credit transfer' %></option>
+        <option value="10"<%= sel('payment.meansCode', '10', means) %>>10 · <%= lang === 'bg' ? 'в брой' : 'cash' %></option>
+        <option value="48"<%= sel('payment.meansCode', '48', means) %>>48 · <%= lang === 'bg' ? 'карта' : 'card' %></option>
+      </select></label>
+      <label><%= t('app.doc.iban') %><input name="payment[accountId]" class="mono" value="<%= val('payment.accountId', org.iban || '') %>"></label>
+      <label><%= t('app.doc.bic') %><input name="payment[bic]" class="mono" value="<%= val('payment.bic', org.bic || '') %>"></label>
+      <label><%= t('app.doc.terms') %><input name="paymentTerms" value="<%= val('paymentTerms') %>"></label>
+    </fieldset>
+    <fieldset>
+      <legend><%= t('app.doc.exemption') %></legend>
+      <label><%= t('app.doc.exemptionCategory') %><select name="exemption[category]">
+        <option value="">—</option>
+        <% ['Z','E','AE','K','G','O'].forEach((c) => { %><option<%= sel('exemption.category', c) %>><%= c %></option><% }) %>
+      </select></label>
+      <label><%= t('app.doc.exemptionReason') %><input name="exemption[reason]" list="exemption-presets" value="<%= val('exemption.reason') %>" aria-describedby="exemption-hint"><span class="hint" id="exemption-hint"><%= t('app.doc.exemptionHint') %></span></label>
+      <datalist id="exemption-presets"><% exemptionPresets.forEach((p) => { %><option value="<%= p.text %>"><%= p.category %></option><% }) %></datalist>
+      <label><%= t('app.doc.exemptionCode') %><input name="exemption[code]" class="mono" value="<%= val('exemption.code') %>"></label>
+    </fieldset>
+  </div>
+
+  <div class="grid-2">
+    <fieldset>
+      <legend><%= t('app.doc.preceding') %></legend>
+      <label><%= t('app.doc.precedingNumber') %><input name="preceding[number]" class="mono" value="<%= val('preceding.number') %>"></label>
+      <label><%= t('app.doc.precedingDate') %><input type="date" name="preceding[issueDate]" value="<%= val('preceding.issueDate') %>"></label>
+      <label><%= t('app.doc.noteReason') %><input name="preceding[reason]" maxlength="300" value="<%= val('preceding.reason') %>"><span class="hint"><%= t('app.doc.noteReasonHint') %></span></label>
+      <label><%= t('app.doc.advanceNumber') %><input name="advance[number]" class="mono" inputmode="numeric" pattern="[0-9]{1,10}" maxlength="10" value="<%= val('advance.number') %>"><span class="hint"><%= t('app.doc.advanceHint') %></span></label>
+    </fieldset>
+    <fieldset>
+      <legend><%= t('app.doc.references') %></legend>
+      <label><%= t('app.doc.buyerReference') %><input name="buyerReference" value="<%= val('buyerReference') %>"></label>
+      <label><%= t('app.doc.orderReference') %><input name="orderReference" value="<%= val('orderReference') %>"></label>
+      <label><%= t('app.doc.note') %><textarea name="note" rows="2"><%= val('note') %></textarea></label>
+    </fieldset>
+  </div>
+  <% if (locals.peppolReady) { %>
+  <label class="check"><input type="checkbox" name="sendPeppol"<%= val('sendPeppol') === 'on' ? ' checked' : '' %>> <%= t('app.peppol.sendOnIssue') %></label>
+  <p class="hint"><%= t('app.peppol.sendOnIssueHint') %></p>
+  <% } %>
+  <button type="submit" class="big"><%= t('app.doc.issue') %></button>
+</form>
+<%- include('../partials/app-foot') %>

@@ -1,0 +1,33 @@
+<%- include('../partials/app-head', { title: party ? t('app.catalog.editParty') : t('app.catalog.newParty') }) %>
+<%
+  const v = (name) => (values && values[name] !== undefined && values[name] !== null ? String(values[name]) : '');
+  const err = (name) => (errors[name] ? tOr('app.catalog.errors.' + errors[name], tOr('auth.errors.' + errors[name], t('auth.errors.invalid'))) : '');
+  const invalid = (name) => (errors[name] ? ' aria-invalid="true" aria-describedby="e-' + name + '"' : '');
+%>
+<p><a href="/app/o/<%= org.id %>/kontragenti">← <%= t('app.catalog.parties') %></a></p>
+<section class="narrow wide-ish">
+  <h1><%= party ? t('app.catalog.editParty') : t('app.catalog.newParty') %></h1>
+  <% if (party) { %><p class="muted"><%= t('app.catalog.copyNote') %></p><% } %>
+  <form method="post" class="stack" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <fieldset class="choice">
+      <legend><%= t('app.catalog.kind') %></legend>
+      <label class="radio"><input type="radio" name="kind" value="CUSTOMER"<%= v('kind') !== 'SUPPLIER' ? ' checked' : '' %>> <%= t('app.catalog.customer') %></label>
+      <label class="radio"><input type="radio" name="kind" value="SUPPLIER"<%= v('kind') === 'SUPPLIER' ? ' checked' : '' %>> <%= t('app.catalog.supplier') %></label>
+    </fieldset>
+    <% for (const [name, label, attrs] of [
+      ['name', t('app.catalog.name'), 'required autocomplete="organization"'],
+      ['eik', t('app.catalog.eikOptional'), 'inputmode="numeric" class="mono"'],
+      ['vatNumber', t('app.catalog.vatOptional'), 'class="mono"'],
+      ['addressStreet', t('auth.addressStreet'), 'required'],
+      ['addressCity', t('auth.addressCity'), 'required'],
+      ['postalCode', t('auth.postalCode'), 'class="mono"'],
+      ['countryCode', t('app.catalog.country'), 'maxlength="2" class="mono" required'],
+      ['email', t('app.catalog.emailOptional'), 'type="email" autocomplete="off"'],
+    ]) { %>
+      <label<%= errors[name] ? ' class="has-error"' : '' %>><%= label %><input name="<%= name %>" value="<%= v(name) %>" <%- attrs %><%- invalid(name) %>><% if (errors[name]) { %><span class="field-error" id="e-<%= name %>"><%= err(name) %></span><% } %></label>
+    <% } %>
+    <button type="submit"><%= t('app.catalog.save') %></button>
+  </form>
+</section>
+<%- include('../partials/app-foot') %>

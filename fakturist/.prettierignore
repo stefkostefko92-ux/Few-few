@@ -1,0 +1,9 @@
+node_modules
+dist
+public/fonts
+prisma/migrations
+package-lock.json
+views
+tests/fixtures/*.xml
+scripts/conformance/.cache
+samples

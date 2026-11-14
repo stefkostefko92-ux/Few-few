@@ -1,0 +1,34 @@
+<%- include('../partials/app-head', { title: t('app.catalog.parties') }) %>
+<p><a href="/app/o/<%= org.id %>">← <%= org.legalName %></a></p>
+<div class="head-row">
+  <h1><%= t('app.catalog.parties') %></h1>
+  <a class="button" href="/app/o/<%= org.id %>/kontragenti/nov"><%= t('app.catalog.newParty') %></a>
+</div>
+<% if (saved) { %><p class="ok" role="status"><%= t('app.catalog.saved.' + saved) %></p><% } %>
+<form method="get" class="search-row" role="search">
+  <label><span class="sr-only"><%= t('app.catalog.search') %></span><input type="search" name="q" value="<%= q %>" placeholder="<%= t('app.catalog.searchParties') %>"></label>
+  <% if (archived) { %><input type="hidden" name="arhiv" value="1"><% } %>
+  <button type="submit" class="button-secondary"><%= t('app.catalog.search') %></button>
+</form>
+<p><a href="/app/o/<%= org.id %>/kontragenti<%= archived ? '' : '?arhiv=1' %>"><%= archived ? t('app.catalog.showActive') : t('app.catalog.showArchived') %></a></p>
+<% if (parties.length === 0) { %><p class="muted"><%= t('app.catalog.noneParties') %></p><% } else { %>
+<div class="table-wrap"><table class="stack-table">
+  <thead><tr><th scope="col"><%= t('app.catalog.name') %></th><th scope="col"><%= t('auth.eik') %></th><th scope="col"><%= t('app.catalog.vat') %></th><th scope="col"><%= t('app.catalog.city') %></th><th scope="col"><span class="sr-only"><%= t('app.catalog.actions') %></span></th></tr></thead>
+  <tbody>
+  <% parties.forEach((p) => { %>
+    <tr>
+      <td data-label="<%= t('app.catalog.name') %>"><a href="/app/o/<%= org.id %>/kontragenti/<%= p.id %>"><%= p.name %></a></td>
+      <td data-label="<%= t('auth.eik') %>" class="mono"><%= p.eik || '—' %></td>
+      <td data-label="<%= t('app.catalog.vat') %>" class="mono"><%= p.vatNumber || '—' %></td>
+      <td data-label="<%= t('app.catalog.city') %>"><%= p.addressCity %></td>
+      <td class="actions">
+        <a class="button-secondary" href="/app/o/<%= org.id %>/nov?party=<%= p.id %>"><%= t('app.catalog.issueTo') %></a>
+        <form method="post" action="/app/o/<%= org.id %>/kontragenti/<%= p.id %>/arhiv"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="archived" value="<%= archived ? '0' : '1' %>"><button type="submit" class="link"><%= archived ? t('app.catalog.restore') : t('app.catalog.archive') %></button></form>
+      </td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<%- include('../partials/pager', { pager, alpha: true }) %>
+<% } %>
+<%- include('../partials/app-foot') %>

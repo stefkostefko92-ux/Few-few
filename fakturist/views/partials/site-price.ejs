@@ -1,0 +1,2 @@
+<%# Цена без и със ДДС 20%, смятана от центовете и закръглена до цент. Параметри: cents, unit (по желание). -%>
+<span class="price"><span class="price-net"><%= formatEuro(cents) %></span><% if (locals.unit) { %> <span class="price-unit"><%= unit %></span><% } %><br><span class="price-gross"><%= formatEuro(Math.round(cents * 1.2)) %> <%= t('site.vat.gross') %></span></span>

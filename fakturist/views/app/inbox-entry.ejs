@@ -1,0 +1,45 @@
+<%- include('../partials/app-head', { title: t('app.types.' + document.typeCode) + ' ' + document.number }) %>
+<p><a href="/app/o/<%= entry.recipientOrgId %>/shkafche">← <%= t('app.inbox.title') %></a></p>
+<% if (document.status === 'CANCELLED') { %>
+  <p class="callout annulled" role="note"><strong><%= t('app.annul.isAnnulled', { date: document.cancelledAt ? document.cancelledAt.toISOString().slice(0, 10).split('-').reverse().join('.') : '' }) %></strong><% if (document.replacedBy && document.replacedBy.number) { %> · <%= t('app.annul.replacedBy') %> <span class="mono"><%= document.replacedBy.number %></span><% } %></p>
+<% } %>
+<div class="head-row">
+  <div>
+    <p class="muted"><%= t('app.types.' + document.typeCode) %> · <%= t('app.inbox.status.' + entry.status) %></p>
+    <h1 class="mono"><%= document.number %></h1>
+  </div>
+  <div class="actions">
+    <a class="button" href="/app/o/<%= entry.recipientOrgId %>/shkafche/<%= entry.id %>/pdf" target="_blank" rel="noopener"><%= t('app.view.download') %> PDF</a>
+    <a class="button-secondary" href="/app/o/<%= entry.recipientOrgId %>/shkafche/<%= entry.id %>/ubl.xml" target="_blank" rel="noopener"><%= t('app.view.download') %> <%= t('app.view.ubl') %></a>
+    <a class="button-secondary" href="/app/o/<%= entry.recipientOrgId %>/shkafche/<%= entry.id %>/cii.xml" target="_blank" rel="noopener"><%= t('app.view.download') %> <%= t('app.view.cii') %></a>
+  </div>
+</div>
+<p class="<%= entry.senderOrg.verifiedAt ? 'ok' : 'callout' %>"><%= entry.senderOrg.verifiedAt ? t('app.inbox.verified') : t('app.inbox.unverifiedHelp') %></p>
+<dl class="facts">
+  <div><dt><%= t('app.inbox.from') %></dt><dd><%= entry.senderOrg.legalName %> <span class="mono muted"><%= entry.senderOrg.eik %></span></dd></div>
+  <div><dt><%= t('app.doc.issueDate') %></dt><dd class="mono"><%= document.issueDate.toISOString().slice(0, 10) %></dd></div>
+  <% if (document.dueDate) { %><div><dt><%= t('app.doc.dueDate') %></dt><dd class="mono"><%= document.dueDate.toISOString().slice(0, 10) %></dd></div><% } %>
+  <div><dt><%= t('app.view.net') %></dt><dd class="mono"><%= money(document.taxExclusiveCents) %></dd></div>
+  <div><dt><%= t('app.view.vat') %></dt><dd class="mono"><%= money(document.vatCents) %></dd></div>
+  <div><dt><%= t('app.view.payable') %></dt><dd class="mono strong"><%= money(document.payableCents) %></dd></div>
+  <div><dt><%= t('app.inbox.deliveredAt') %></dt><dd class="mono"><%= entry.deliveredAt.toISOString().replace('T', ' ').slice(0, 16) %></dd></div>
+  <% if (entry.decidedAt) { %><div><dt><%= t('app.inbox.decided') %></dt><dd><%= entry.decidedBy ? entry.decidedBy.name : '—' %><% if (entry.rejectReason) { %> · <%= entry.rejectReason %><% } %></dd></div><% } %>
+</dl>
+<% if (journalOk) { %><p class="ok" role="status"><%= t('app.incoming.ok.journal') %></p><% } %>
+<% if (journalErr) { %><p class="error" role="alert"><%= tOr('app.incoming.err.' + journalErr, t('auth.errors.invalid')) %></p><% } %>
+<% if (entry.status !== 'REJECTED') { %><%- include('../partials/journal-credit', { journalAction: '/app/o/' + entry.recipientOrgId + '/shkafche/' + entry.id + '/dnevnik', journalCredit: entry.vatCredit }) %><% } %>
+<% if (canDecide && entry.status === 'RECEIVED') { %>
+<div class="grid-2">
+  <form method="post" action="/app/o/<%= entry.recipientOrgId %>/shkafche/<%= entry.id %>/priemi" class="stack panel">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <p><%= t('app.inbox.acceptHelp') %></p>
+    <button type="submit"><%= t('app.inbox.accept') %></button>
+  </form>
+  <form method="post" action="/app/o/<%= entry.recipientOrgId %>/shkafche/<%= entry.id %>/otkazhi" class="stack panel">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label><%= t('app.inbox.reason') %><input name="reason" maxlength="200"></label>
+    <button type="submit" class="button-secondary"><%= t('app.inbox.reject') %></button>
+  </form>
+</div>
+<% } %>
+<%- include('../partials/app-foot') %>

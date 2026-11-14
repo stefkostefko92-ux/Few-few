@@ -1,0 +1,103 @@
+{
+  "groups": {
+    "documents": "Documents",
+    "automation": "Automation",
+    "team": "Team and security",
+    "accountants": "For accounting firms",
+    "einvoicing": "E-invoicing 2028",
+    "support": "Support"
+  },
+  "planned": "Coming · {target}",
+  "invoices": {
+    "name": "Invoices with every field the Bulgarian VAT Act requires",
+    "description": "Art. 114 of the VAT Act is checked on issue: number, exemption basis, tax point."
+  },
+  "credit-debit-notes": {
+    "name": "Credit and debit notes",
+    "description": "Always referencing the invoice, as Art. 115 of the VAT Act requires."
+  },
+  "en16931-xml": {
+    "name": "Structured XML under EN 16931",
+    "description": "Every document is also issued as UBL 2.1 and CII — the formats of the 2028 e-invoices."
+  },
+  "eur-vat-bg": {
+    "name": "VAT in euro for any currency",
+    "description": "For an invoice in dollars or francs, the base and VAT are also computed in euro at the ECB rate."
+  },
+  "tamper-evident-ledger": {
+    "name": "Tamper-evident document ledger",
+    "description": "Every issued document sits in a sealed hash chain; any change after issue shows."
+  },
+  "unlimited-documents": {
+    "name": "Unlimited documents",
+    "description": "No cap on issued invoices and notes."
+  },
+  "multi-series": {
+    "name": "Several number series",
+    "description": "Separate ten-digit ranges for sites or tills, with no gaps in numbering."
+  },
+  "pdf": {
+    "name": "PDF for your customer",
+    "description": "The readable copy, generated from the same XML, with Cyrillic and your logo."
+  },
+  "recurring": {
+    "name": "Recurring invoices",
+    "description": "Subscriptions and rents are issued automatically on the chosen date — one invoice per period, optionally emailed to the client."
+  },
+  "reminders": {
+    "name": "Payment reminders",
+    "description": "An email to the client 3 and 10 days after the due date if the invoice is unpaid — with the PDF and the balance."
+  },
+  "bank-matching": {
+    "name": "Bank payment matching",
+    "description": "Payments from the statement are linked to the invoices."
+  },
+  "api": {
+    "name": "API",
+    "description": "Issue and read documents from your own software or online shop."
+  },
+  "roles": {
+    "name": "Roles and permissions",
+    "description": "Owner, administrator, accountant, issuer and viewer — each sees what is theirs."
+  },
+  "audit-log": {
+    "name": "Audit trail",
+    "description": "Who did what and when, in a chain that cannot be rewritten."
+  },
+  "two-factor": {
+    "name": "Two-factor sign-in",
+    "description": "A code from an authenticator app on every sign-in."
+  },
+  "accountant-workspace": {
+    "name": "One dashboard for every client company",
+    "description": "The firm sees and issues for each company from one place, without separate accounts."
+  },
+  "mandates": {
+    "name": "Authorisations under Art. 113(7) of the VAT Act",
+    "description": "Every document the firm issues carries the authorisation it was issued under."
+  },
+  "peppol": {
+    "name": "Sending and receiving over the e-invoicing network",
+    "description": "Over the Peppol network (AS4); we will check conformity with the regulation under the 2028 bill once it is published."
+  },
+  "nra-reporting": {
+    "name": "Reporting to the National Revenue Agency",
+    "description": "Data for every document sent to the NRA system once the ordinance is out."
+  },
+  "saf-t": {
+    "name": "Data for SAF-T",
+    "description": "A month's sales as files under the NRA schema (version 1.0.3) — for the accounting software that submits SAF-T."
+  },
+  "priority-support": {
+    "name": "Priority support",
+    "description": "An answer within the working day."
+  },
+  "inbox": {
+    "name": "Inbox between Fakturist companies",
+    "description": "An invoice to a company registered with us lands in its inbox on its own, with an email carrying the PDF and XML."
+  },
+  "proforma": {
+    "name": "Pro forma invoices",
+    "description": "A payment request with its own numbering, PDF and sending by email; “Issue invoice” turns it into an invoice."
+  }
+}

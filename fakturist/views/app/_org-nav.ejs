@@ -1,0 +1,67 @@
+<%#
+  Разделите на фирмата, подредени по смисъл. Данните идват от `orgNav` (src/routes/app.ts → orgNavLocals): правата са
+  същите като преди — връзка, която човекът не може да отвори, не се рисува. Активният раздел е по адреса.
+  Един `<details>`: на телефон се свива до текущия раздел, на широк екран е винаги отворен (app.css).
+-%>
+<%
+  const n = orgNav;
+  const base = '/app/o/' + n.org.id;
+  const can = n.can;
+  const groups = [
+    { id: 'documents', items: [
+      { slug: 'shkafche', icon: 'inbox', label: t('app.inbox.title'), badge: n.unread > 0 ? t('app.inbox.unread', { count: n.unread }) : '', show: true },
+      { slug: 'vhodyashti', icon: 'incoming', label: t('app.incoming.title'), show: true },
+      { slug: 'proformi', icon: 'proforma', label: t('app.proforma.title'), show: true },
+      { slug: 'peppol', icon: 'network', label: t('app.peppol.title'), show: true },
+      { slug: 'dnevnik', icon: 'documents', label: t('app.journal.title'), show: true },
+      { slug: 'saf-t', icon: 'documents', label: t('app.saft.title'), show: true },
+    ] },
+    { id: 'catalog', items: [
+      { slug: 'kontragenti', icon: 'parties', label: t('app.catalog.parties'), show: can.parties },
+      { slug: 'artikuli', icon: 'items', label: t('app.catalog.items'), show: can.items },
+      { slug: 'serii', icon: 'series', label: t('app.catalog.series'), show: can.series },
+    ] },
+    { id: 'payments', items: [
+      { slug: 'banka', icon: 'bank', label: t('app.bank.title'), show: true },
+      { slug: 'plan', icon: 'plan', label: t('app.plan.title'), show: can.billing },
+    ] },
+    { id: 'automation', items: [
+      { slug: 'povtaryashti', icon: 'recurring', label: t('app.recurring.title'), show: true },
+      { slug: 'api', icon: 'api', label: t('app.api.title'), show: can.settings },
+      { slug: 'iznos.zip', icon: 'export', label: t('app.export.link'), show: can.settings, download: true },
+    ] },
+    { id: 'team', items: [
+      { slug: 'chlenove', icon: 'members', label: t('app.members.title'), show: can.members },
+      { slug: 'palnomoshtni', icon: 'mandates', label: t('app.mandates.title'), badge: n.pendingMandates > 0 ? String(n.pendingMandates) : '', pending: true, show: can.mandates && n.org.kind === 'COMPANY' },
+      { slug: 'nastroyki', icon: 'settings', label: t('app.settings.title'), show: can.settings },
+      { slug: 'prekratyavane', icon: 'close', label: t('app.termination.title'), show: can.billing || Boolean(n.org.terminatedAt) },
+    ] },
+  ];
+  const overviewActive = path === '/app/o/' + n.org.id || path === '/app/o/' + n.org.id + '/';
+  let current = null;
+  groups.forEach((g) => g.items.forEach((i) => { if (!i.download && path.startsWith(base + '/' + i.slug)) current = i; }));
+  const isCurrent = (i) => current === i;
+  const currentLabel = overviewActive ? t('app.orgNav.overview') : (current ? current.label : t('app.orgNav.menu'));
+-%>
+<nav class="org-nav" aria-label="<%= t('app.orgNav.label') %>">
+  <details class="org-menu"<%= n.open ? ' open' : '' %>>
+    <summary>
+      <%- icon('menu') %>
+      <span class="org-menu-name"><span class="org-menu-hint"><%= t('app.orgNav.menu') %></span><span><%= currentLabel %></span></span>
+      <%- icon('chevron') %>
+    </summary>
+    <div class="org-groups">
+      <a class="org-top" href="<%= base %>"<%- overviewActive ? ' aria-current="page"' : '' %>><%- icon('overview') %><span><%= t('app.orgNav.overview') %></span></a>
+<% groups.forEach((g) => { const items = g.items.filter((i) => i.show); if (items.length === 0) return; -%>
+      <div class="org-group">
+        <p class="org-group-title" id="og-<%= g.id %>"><%= t('app.orgNav.groups.' + g.id) %></p>
+        <ul aria-labelledby="og-<%= g.id %>">
+<% items.forEach((i) => { -%>
+          <li><a href="<%= base %>/<%= i.slug %>"<%- isCurrent(i) ? ' aria-current="page"' : '' %><%- i.download ? ' download target="_blank" rel="noopener"' : '' %>><%- icon(i.icon) %><span><%= i.label %></span><% if (i.badge) { %> <span class="tag <%= i.pending ? 'tag-pending' : 'tag-active' %>"><%= i.badge %></span><% } %></a></li>
+<% }) -%>
+        </ul>
+      </div>
+<% }) -%>
+    </div>
+  </details>
+</nav>

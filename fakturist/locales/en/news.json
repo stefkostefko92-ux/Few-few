@@ -1,0 +1,97 @@
+{
+  "popup": {
+    "title": "What’s new since your last visit",
+    "lead": "We have updated Fakturist. Here is what changed:",
+    "more": "And {n} more — see them all on the “What’s new” page.",
+    "all": "All updates",
+    "ok": "Got it"
+  },
+  "entries": {
+    "2026-11-14-versiya-1-2-pokupki": {
+      "area": "VAT",
+      "title": "Purchase ledger (version 1.2)",
+      "text": "Besides PRODAGBI.TXT you can now download POKUPKI.TXT — from “Incoming” and “Inbox”. On each incoming invoice the accountant chooses the right to deduct (full, partial, none) and the ledger month. VAT exemption bases come from a ready list, and reverse charge under Art. 21(2) and supplies under Art. 69(2) now go into the ledger and the SAF-T data automatically."
+    },
+    "2026-11-14-versiya-1-1-saf-t": {
+      "area": "VAT",
+      "title": "SAF-T data (version 1.1)",
+      "text": "Each month you can download your sales as files under the NRA SAF-T schema (version 1.0.3): invoices, customers, products, tax codes and units of measure — for import into the accounting software that builds and submits the monthly file. The accountant picks the receivables and revenue accounts and marks related parties. Codes follow the NRA nomenclatures; documents with reverse charge or out-of-scope supplies are listed separately for the accountant."
+    },
+    "2026-11-14-versiya-1-0": {
+      "area": "Fakturist",
+      "title": "Version 1.0",
+      "text": "The first complete version of Fakturist. From now on every update appears on this page, and the first time you sign in after it Fakturist shows you briefly what is new."
+    },
+    "2026-11-14-tarsene": {
+      "area": "Documents",
+      "title": "Search and filters for documents",
+      "text": "Find a document by number, buyer or EIK and filter by type, status, payment (unpaid, overdue, paid) and date. The lists show every document in pages, no longer only the last 100, and the “Payment” column shows what is overdue."
+    },
+    "2026-11-14-dnevnik": {
+      "area": "VAT",
+      "title": "Sales VAT journal for the NRA",
+      "text": "For each month you download the PRODAGBI.TXT file as described in Annex 12 to the VAT Act Regulations — to import into the NRA program or your accounting software. Documents whose field depends on the legal basis (reverse charge, out-of-scope supplies) are listed separately for the accountant."
+    },
+    "2026-11-14-avans": {
+      "area": "Documents",
+      "title": "Deducting an advance in the final invoice",
+      "text": "Enter the number of the prepayment invoice and the final invoice deducts the advance with a minus line at the same rate and a reference to the prepayment invoice. VAT is charged only on the remainder, and an advance is deducted only once."
+    },
+    "2026-11-14-prekratyavane": {
+      "area": "Account",
+      "title": "Ending the service",
+      "text": "The owner ends the service for the company under “Termination”. For 30 days the data stays available to view and download the archive, and the termination can be undone; then it is deleted. Documents sent to other companies on Fakturist stay with them."
+    },
+    "2026-11-13-proforma": {
+      "area": "Documents",
+      "title": "Pro forma invoices",
+      "text": "Issue a pro forma invoice and turn it into an invoice or a prepayment invoice for the same buyer with one button. The pro forma has its own numbering and is not a tax document."
+    },
+    "2026-11-13-povtaryashti": {
+      "area": "Automation",
+      "title": "Recurring invoices and payment reminders",
+      "text": "On paid plans subscriptions and rents issue themselves — every month, quarter or year, with the period in the line text. Turn on reminders and the buyer of an unpaid invoice gets an email 3 and 10 days after the due date."
+    },
+    "2026-11-13-banka": {
+      "area": "Payments",
+      "title": "Bank statement matching",
+      "text": "On the Business and Accounting firm plans you upload a statement (CAMT.053 or CSV) and Fakturist suggests which invoice is paid — by the number in the reference or by the exact amount. You confirm, and the payment is recorded on the invoice."
+    },
+    "2026-11-13-vhodyashti": {
+      "area": "Documents",
+      "title": "Incoming e-invoices",
+      "text": "Upload an e-invoice you received (UBL or CII): Fakturist checks it against the EN 16931 and VAT Act rules, reconciles the amounts and records it in the incoming register. Documents from other companies on Fakturist arrive there by themselves."
+    },
+    "2026-11-13-ezik": {
+      "area": "PDF",
+      "title": "Your logo on the PDF, in two languages",
+      "text": "Add your logo and pick the font, layout and colour of the PDF. The document is in Bulgarian or bilingual — Bulgarian and English — for customers abroad; the XML is the same."
+    },
+    "2026-11-13-api": {
+      "area": "Automation",
+      "title": "An API for your shop or software",
+      "text": "On the Business and Accounting firm plans you connect your shop or accounting software: a key that can read or issue, and a REST API for documents, PDF and XML."
+    },
+    "2026-11-13-prilozhenie": {
+      "area": "Fakturist",
+      "title": "An app on your phone",
+      "text": "Add Fakturist to the home screen of your phone or computer and open it like an app — the steps are on the “App” page."
+    },
+    "2026-11-12-e-fakturi": {
+      "area": "Documents",
+      "title": "Every invoice also as an e-invoice",
+      "text": "Besides the PDF every document is also issued as structured XML under the European standard EN 16931 (UBL 2.1 and CII) — the format that bill No. 52-602-01-60 foresees for mandatory e-invoices from 1 July 2028."
+    },
+    "2026-11-12-shkafche": {
+      "area": "Documents",
+      "title": "Document inbox",
+      "text": "An invoice to a company that is registered and verified on Fakturist arrives in its inbox at once — with PDF and XML, no emails and no retyping."
+    },
+    "2026-11-12-kantori": {
+      "area": "Accounting firms",
+      "title": "For accounting firms",
+      "text": "The firm issues its clients’ documents from its own account under a mandate (Art. 113(7) of the VAT Act), and the company owner confirms the mandate and sees everything."
+    }
+  },
+  "footer": "What’s new · version {version}"
+}

@@ -1,0 +1,97 @@
+name: fakturist
+
+on:
+  push:
+    paths:
+      - 'fakturist/**'
+      - '.github/workflows/fakturist.yml'
+  pull_request:
+    paths:
+      - 'fakturist/**'
+      - '.github/workflows/fakturist.yml'
+
+concurrency:
+  group: fakturist-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: fakturist
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: fakturist/package-lock.json
+      # Шрифтовете на PDF-а (в образа са fonts-dejavu-core и fonts-liberation); poppler-utils (pdftotext) —
+      # тестът проверява, че реквизитите са във всеки шаблон.
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends fonts-dejavu-core fonts-liberation poppler-utils
+      - run: npm ci
+      # prisma generate, prettier, типове, unit тестове (ядро EN 16931, правила ЗДДС, PDF, регистър), билд.
+      - run: npm run check
+
+  # Официалната проверка: XSD на UBL 2.1 / CII D16B + Schematron на EN 16931 и Peppol BIS 3.
+  conformance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: fakturist
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: fakturist/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends libxml2-utils
+      - run: npm ci
+      - run: npm run test:conformance
+
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: fakturist
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: fakturist
+          POSTGRES_PASSWORD: fakturist
+          POSTGRES_DB: fakturist_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fakturist"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      # Името завършва на _test: тестовете трият таблиците и отказват всяка друга база.
+      TEST_DATABASE_URL: postgresql://fakturist:fakturist@127.0.0.1:5432/fakturist_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: fakturist/package-lock.json
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends fonts-dejavu-core fonts-liberation
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run test:integration

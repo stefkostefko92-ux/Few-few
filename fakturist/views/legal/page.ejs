@@ -1,0 +1,23 @@
+<%- include('../partials/site-head') %>
+<%#
+  Правен документ: текстът е в `views/legal/<документ>/<език>.ejs`, версията — в src/legal/documents.ts.
+%>
+<main id="main" class="legal-main">
+  <article class="legal wrap">
+    <header class="legal-head">
+      <h1><%= t('legal.' + docId + '.title') %></h1>
+      <p class="legal-meta"><%= t('legal.version', { date: versionLabel, version: version }) %></p>
+    </header>
+    <div class="legal-body">
+      <%- include(docId + '/' + lang) %>
+    </div>
+    <nav class="legal-others" aria-label="<%= t('legal.navLabel') %>">
+      <h2><%= t('legal.othersTitle') %></h2>
+      <ul>
+        <% for (const other of others) { %><li><a href="<%= legalUrl(other) %>"><%= t('legal.' + other + '.title') %></a></li>
+        <% } %>
+      </ul>
+    </nav>
+  </article>
+</main>
+<%- include('../partials/site-foot') %>

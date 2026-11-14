@@ -1,0 +1,228 @@
+/* „Какво вижда програмата на получателя“ и „Пътят до 01.07.2028“. */
+
+.recv-head {
+  max-width: 44rem;
+  margin-bottom: 2rem;
+}
+
+.recv-head p {
+  margin: 0.75rem 0 0;
+}
+
+.recv-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 56rem) {
+  .recv-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gap);
+  }
+}
+
+.rc {
+  padding: 1.25rem;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.rc h3 {
+  margin-top: 1.25rem;
+}
+
+.rc h3 + p {
+  margin: 0.5rem 0 0;
+  color: var(--ink-2);
+  font-size: var(--step--1);
+}
+
+.rc-file {
+  margin: 0 0 0.9rem;
+  color: var(--ink-2);
+  font-size: 0.78rem;
+}
+
+.rc-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+
+.page {
+  position: relative;
+  flex: none;
+  overflow: hidden;
+  width: 15rem;
+  max-width: 100%;
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  box-shadow: 0 10px 24px -14px rgb(12 25 41 / 0.4);
+}
+
+.page svg {
+  width: 100%;
+  height: auto;
+}
+
+.pg-d {
+  fill: #2a3544;
+}
+
+.pg-l {
+  fill: #c3ccd6;
+}
+
+.pg-s {
+  fill: none;
+  stroke: #05a699;
+  stroke-width: 2;
+}
+
+.scan {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: var(--brand);
+  opacity: 0;
+}
+
+.guess,
+.parsed {
+  flex: 1;
+  min-width: 11rem;
+}
+
+.guess > div,
+.pf {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.2rem 1rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: var(--step--1);
+}
+
+.guess dt,
+.pf dt {
+  color: var(--ink-2);
+}
+
+.q {
+  display: inline-grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.4rem;
+  border: 1px dashed var(--ink-2);
+  border-radius: var(--radius);
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.guess dd {
+  color: var(--ink-2);
+}
+
+.pf dd {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.pf-ok {
+  color: var(--accent);
+}
+
+/* Пътят до 01.07.2028 */
+
+.road-main {
+  min-width: 0;
+}
+
+.road-list {
+  position: relative;
+  padding-left: 2.25rem;
+  list-style: none;
+}
+
+.road-rail {
+  position: absolute;
+  top: 0.4rem;
+  bottom: 0.4rem;
+  left: 0.45rem;
+  width: 2px;
+  background: var(--rule);
+}
+
+.road-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform: scaleY(var(--p, 1));
+  transform-origin: top;
+}
+
+.rd {
+  position: relative;
+  padding-bottom: 1.75rem;
+}
+
+.rd p {
+  margin: 0;
+}
+
+.rd::before,
+.rd::after {
+  content: '';
+  position: absolute;
+  top: 0.3rem;
+  left: calc(-2.25rem + 1px);
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 50%;
+}
+
+.rd::before {
+  background: var(--tint);
+  border: 2px solid var(--ink-2);
+}
+
+.rd::after {
+  background: var(--accent);
+  border: 2px solid var(--accent);
+}
+
+.road-live .rd::after {
+  opacity: 0;
+}
+
+.road-live .rd.is-on::after {
+  opacity: 1;
+}
+
+.rd:last-child {
+  padding-bottom: 0;
+}
+
+.rd:last-child .tl-date {
+  font-size: clamp(1.5rem, 1rem + 2vw, 2.1rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.road-count {
+  max-width: 56ch;
+  margin: 1.75rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-2);
+  font-size: var(--step--1);
+}

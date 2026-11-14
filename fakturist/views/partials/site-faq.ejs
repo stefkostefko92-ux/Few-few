@@ -1,0 +1,15 @@
+<% if (faq.length > 0) { -%>
+<section class="section faq" aria-labelledby="faq-h">
+  <div class="wrap split">
+    <h2 id="faq-h"><%= t('site.' + page + '.faq.title') %></h2>
+    <div class="faq-list">
+<% for (const item of faq) { -%>
+      <details>
+        <summary><%= item.q %></summary>
+        <p><%= item.a %></p>
+      </details>
+<% } -%>
+    </div>
+  </div>
+</section>
+<% } -%>

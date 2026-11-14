@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="<%= htmlLang %>">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<% if (locals.refreshSeconds) { %><meta http-equiv="refresh" content="<%= Number(locals.refreshSeconds) %>"><% } %>
+<title><%= title %> · <%= lang === 'bg' ? brand.name : brand.nameLatin %></title>
+<%- include('pwa-head') %>
+<link rel="stylesheet" href="/fonts/fonts.css?v=<%= v %>">
+<link rel="stylesheet" href="/css/app.css?v=<%= v %>">
+<script src="/js/app.js?v=<%= v %>" defer></script>
+<% if (locals.newsPopup) { %><script src="/js/news.js?v=<%= v %>" defer></script>
+<% } %><% for (const script of (locals.scripts || [])) { %><script src="/js/<%= script %>.js?v=<%= v %>" defer></script>
+<% } %></head>
+<body class="app">
+<a class="skip" href="#main"><%= t('app.nav.skip') %></a>
+<header class="bar">
+  <a class="mark" href="<%= currentUser ? '/app' : '/' %>"><%- include('logo', { height: 32 }) %></a>
+  <% if (currentUser) { %>
+  <nav class="bar-nav" aria-label="<%= t('app.nav.main') %>">
+    <a href="/app"<%= path === '/app' ? ' aria-current="page"' : '' %>><%- icon('building') %><span><%= t('app.nav.companies') %></span></a>
+    <a href="/app/sigurnost"<%= path.startsWith('/app/sigurnost') ? ' aria-current="page"' : '' %>><%- icon('shield') %><span><%= t('app.nav.security') %></span></a>
+    <% if (currentUser.platformRole === 'MASTER') { %><a href="/admin"<%= path.startsWith('/admin') ? ' aria-current="page"' : '' %>><%- icon('shieldCheck') %><span><%= t('app.nav.admin') %></span></a><% } %>
+    <a href="/prilozhenie" data-install-link<%= path === '/prilozhenie' ? ' aria-current="page"' : '' %>><%- icon('install') %><span><%= t('install.nav') %></span></a>
+  </nav>
+  <form method="post" action="/izhod" class="logout">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <span class="who"><%= currentUser.name %></span>
+    <button type="submit" class="link"><%- icon('logout') %><span><%= t('auth.logout') %></span></button>
+  </form>
+  <% } %>
+</header>
+<% if (locals.notice) { %><p class="notice" role="status"><%= notice %></p><% } %>
+<%- include('verify-bar') %>
+<% if (locals.orgNav && orgNav.org.terminatedAt) { %>
+<div class="verify-bar" role="status"><p><%= t('app.termination.bar', { date: new Intl.DateTimeFormat(lang === 'bg' ? 'bg-BG' : 'en-GB', { dateStyle: 'long', timeZone: 'Europe/Sofia' }).format(orgNav.org.purgeAfter) }) %> <a href="/app/o/<%= orgNav.org.id %>/prekratyavane"><%= t('app.termination.details') %></a></p></div>
+<% } %>
+<main id="main" class="wrap">
+<% if (locals.newsPopup) { %><%- include('news-popup') %><% } %>
+<% if (locals.orgNav) { %><%- include('../app/_org-nav') %>
+<% } %>

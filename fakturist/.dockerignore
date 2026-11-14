@@ -1,0 +1,14 @@
+node_modules
+dist
+public/fonts
+.env
+.env.*
+!.env.example
+*.log
+tests
+samples
+scripts/conformance/.cache
+.git
+Dockerfile
+docker-compose.yml
+deploy

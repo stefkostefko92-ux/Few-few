@@ -1,0 +1,11 @@
+<%- include('../partials/app-head', { title: t('admin.transfer.sentTitle') }) %>
+<p><a href="/admin/r/organizations/<%= org.id %>">← <%= org.legalName %></a></p>
+<h1><%= t('admin.transfer.sentTitle') %></h1>
+<%- include('_nav') %>
+<section class="stack wide-ish">
+  <p class="ok" role="status"><%= t('admin.transfer.sent', { email, company: org.legalName, date: expiresAt.toISOString().slice(0, 10) }) %></p>
+  <p><%= mailReady ? t('admin.transfer.mailQueued') : t('admin.transfer.mailNotReady') %></p>
+  <label><%= t('admin.transfer.link') %><input class="mono" value="<%= link %>" readonly spellcheck="false"></label>
+  <p class="hint"><%= t('admin.transfer.linkOnce') %></p>
+</section>
+<%- include('../partials/app-foot') %>
