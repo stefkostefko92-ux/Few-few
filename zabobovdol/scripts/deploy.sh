@@ -163,10 +163,19 @@ fi
 bold "1/3 Строя и вдигам стека (приложение, база, бекъп, nginx)…"
 $DC up -d --build
 
+# Приложението върви като nextjs (1001), а томът със снимките може да е създаден още
+# когато вървеше като root → качването пада с EACCES. Идемпотентно и бързо.
+if ! $DC exec -T -u 0 app sh -c 'chown -R 1001:1001 /app/uploads' >/dev/null 2>&1; then
+  warn "Не успях да оправя собственика на /app/uploads — проверете качването на снимки."
+fi
+
 bold "2/3 Изчаквам приложението и базата да са готови…"
 ready=0
 for i in $(seq 1 40); do
-  if $DC exec -T app node -e "const{PrismaClient}=require('@prisma/client');new PrismaClient().\$queryRaw\`SELECT 1\`.then(()=>process.exit(0)).catch(()=>process.exit(1))" >/dev/null 2>&1; then
+  # Готово = СХЕМАТА е приложена (таблицата User съществува), не само „базата отговаря“:
+  # входният скрипт на app пуска миграциите след старта на контейнера и при нова база
+  # SELECT 1 минаваше преди тях → сийдът падаше с „table User does not exist“.
+  if $DC exec -T app node -e "const{PrismaClient}=require('@prisma/client');new PrismaClient().user.count().then(()=>process.exit(0)).catch(()=>process.exit(1))" >/dev/null 2>&1; then
     ready=1; break
   fi
   sleep 3
@@ -178,8 +187,18 @@ fi
 ok "Приложението и базата са готови."
 
 # Има ли вече администратор (тоест заредена ли е базата)?
-USERS=$($DC exec -T app node -e "const{PrismaClient}=require('@prisma/client');const p=new PrismaClient();p.user.count().then(n=>{process.stdout.write(String(n));return p.\$disconnect()}).catch(()=>process.stdout.write('0'))" 2>/dev/null || echo "0")
-USERS=$(printf '%s' "$USERS" | tr -dc '0-9'); USERS=${USERS:-0}
+# Грешка при броенето НЕ е „0 потребителя“: иначе временен проблем пуска пълния сийд
+# върху жива база и презаписва редакциите от админ панела. Fail closed.
+if ! USERS=$($DC exec -T app node -e "const{PrismaClient}=require('@prisma/client');const p=new PrismaClient();p.user.count().then(n=>{process.stdout.write(String(n));return p.\$disconnect()}).catch(()=>process.exit(1))" 2>/dev/null); then
+  warn "Не успях да преброя потребителите — НЕ зареждам данни (за да не презапиша нищо)."
+  warn "  Вижте логовете:  $DC logs app"
+  exit 1
+fi
+USERS=$(printf '%s' "$USERS" | tr -dc '0-9')
+if [ -z "$USERS" ]; then
+  warn "Неясен брой потребители — НЕ зареждам данни."
+  exit 1
+fi
 
 if [ "$FORCE_SEED" = "1" ] || [ "$USERS" = "0" ]; then
   bold "3/3 Зареждам данните (администратор, услуги, ръководства, транспорт…)…"
