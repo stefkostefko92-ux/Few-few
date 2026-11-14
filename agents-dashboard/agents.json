@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 673
+        "lessons": 674
       },
       "evolution": [
         {
@@ -2037,9 +2037,20 @@
           "date": "2026-11-14",
           "event": "v61.3 — учене",
           "detail": "Научи: В CSPos ensureDbGuards и upgradeSchema се викат само от guard() в API маршрутите; Serve… (+52 още)"
+        },
+        {
+          "version": "61.4.0",
+          "date": "2026-11-14",
+          "event": "v61.4 — учене",
+          "detail": "Научи: Запис с фиксирана ширина, сглобен с String.padStart, не реже стойност, по-дълга от поле…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-14",
+          "type": "learning",
+          "summary": "Научи: „Запис с фиксирана ширина, сглобен с String.padStart, не реже стойност, по-дълга от поле…\""
+        },
         {
           "date": "2026-11-14",
           "type": "learning",
