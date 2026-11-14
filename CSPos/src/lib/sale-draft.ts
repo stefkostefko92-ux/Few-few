@@ -3,18 +3,23 @@
 // • Откриване: УНП с пореден № от отделен брояч за ИН на ФУ — в една транзакция с записа,
 //   иначе отказ след инкремента би оставил дупка в номерацията.
 // • Синхронизация: екранът праща пълния списък редове; сървърът сравнява с записания и
-//   записва всяко намаление/премахване като анулиране със сървърна стойност.
-// • Плащане: OPEN → PAYING е атомарен UPDATE с условие — второ плащане получава 0 реда.
+//   записва всяко намаление/премахване като анулиране със сървърна стойност — в СЪЩАТА
+//   транзакция с промяната на редовете (иначе провал по средата губи следата).
+// • Всеки преход на състоянието е условен UPDATE (очакваното състояние е в where):
+//   проверка-после-запис би позволил задържане по време на плащане и втори бон.
+// • Заключена цена (ценови баркод, свободна продажба) не се приема на доверие: сървърът я
+//   изважда от баркода или я допуска само за служебен PLU.
 
 import { prisma } from "./db";
 import { jsonError } from "./auth";
 import { audit } from "./audit";
 import { buildUnp } from "./unp";
 import { diffCancellations } from "./draft";
+import { parseEmbeddedBarcode } from "./barcode";
 import { lineDiscountCents, priceLine, type PricedLine, type PricingContext, type ProductLike } from "./pricing";
 import { fetchActivePromotions } from "./promotions-db";
-import { getSetting, getVatRates } from "./settings";
-import type { RoleKey } from "./constants";
+import { getBarcodeMasks, getSetting, getVatRates } from "./settings";
+import { SERVICE_PLU_MIN, type RoleKey } from "./constants";
 
 export interface Operator {
   userId: string;
@@ -29,16 +34,26 @@ export interface SyncLine {
   qtyMilli: number;
   discountPermille: number;
   priceLockedCents?: number | null;
+  /** Ценовият баркод, от който идва заключената цена. */
+  lockBarcode?: string | null;
 }
 
-export async function pricingContext(customerCard: string | null | undefined, now = new Date()): Promise<{
+/** Намерение за плащане — пази се при заключването, за да може прекъснато плащане да се свери. */
+export interface PaymentIntent {
+  type: "CASH" | "CARD" | "MIXED" | "CREDIT";
+  paidCashDue: number;
+  paidCard: number;
+  change: number;
+  totalCents: number;
+}
+
+export async function pricingContext(customerCard: string | null | undefined, now = new Date(), opts: { lenient?: boolean } = {}): Promise<{
   ctx: PricingContext;
   customer: { id: string; discountPermille: number; balanceCents: number; creditLimitCents: number; name: string } | null;
 }> {
-  const customer = customerCard
-    ? await prisma.customer.findUnique({ where: { cardNumber: customerCard } })
-    : null;
-  if (customerCard && (!customer || !customer.active)) throw jsonError(404, "Клиентската карта не е намерена.");
+  const found = customerCard ? await prisma.customer.findUnique({ where: { cardNumber: customerCard } }) : null;
+  if (customerCard && (!found || !found.active) && !opts.lenient) throw jsonError(404, "Клиентската карта не е намерена.");
+  const customer = found && (found.active || opts.lenient) ? found : null;
   const [vatRates, promos] = await Promise.all([getVatRates(), fetchActivePromotions(now)]);
   return {
     ctx: { promos, now, customerDiscountPermille: customer?.discountPermille ?? 0, vatRates },
@@ -46,15 +61,46 @@ export async function pricingContext(customerCard: string | null | undefined, no
   };
 }
 
-export async function priceLines(lines: SyncLine[], ctx: PricingContext): Promise<PricedLine[]> {
+/**
+ * Остойностява редове на сървъра. `allowInactive` — за анулиране и сверка: стока,
+ * деактивирана междувременно, пак трябва да остави следа със стойност.
+ */
+export async function priceLines(
+  lines: SyncLine[],
+  ctx: PricingContext,
+  opts: { allowInactive?: boolean } = {}
+): Promise<PricedLine[]> {
   const ids = [...new Set(lines.map((l) => l.productId))];
   const products = await prisma.product.findMany({ where: { id: { in: ids } } });
   const byId = new Map(products.map((p) => [p.id, p as ProductLike & { active: boolean }]));
   return lines.map((l) => {
     const p = byId.get(l.productId);
-    if (!p || !p.active) throw jsonError(404, "Стока от бона не е намерена или е деактивирана.");
+    if (!p || (!p.active && !opts.allowInactive)) throw jsonError(404, "Стока от бона не е намерена или е деактивирана.");
     return priceLine(l, p, ctx);
   });
+}
+
+/**
+ * Заключена цена се приема само ако (1) стоката е служебна (свободна продажба, PLU ≥ 990)
+ * или (2) идва от валиден ценови баркод на СЪЩАТА стока със СЪЩАТА сума.
+ */
+export async function assertLocks(lines: SyncLine[]): Promise<void> {
+  const locked = lines.filter((l) => l.priceLockedCents !== undefined && l.priceLockedCents !== null);
+  if (locked.length === 0) return;
+  const [products, masks] = await Promise.all([
+    prisma.product.findMany({ where: { id: { in: locked.map((l) => l.productId) } }, select: { id: true, plu: true } }),
+    getBarcodeMasks(),
+  ]);
+  const pluOf = new Map(products.map((p) => [p.id, p.plu]));
+  for (const l of locked) {
+    const plu = pluOf.get(l.productId);
+    if (plu === undefined) throw jsonError(404, "Стока от бона не е намерена.");
+    if (plu >= SERVICE_PLU_MIN) continue;
+    const parsed = l.lockBarcode ? parseEmbeddedBarcode(l.lockBarcode, masks) : null;
+    if (!parsed || parsed.kind !== "price" || parsed.plu !== plu || parsed.value !== l.priceLockedCents) {
+      throw jsonError(400, "Ръчна цена се приема само от ценови баркод на стоката или при свободна продажба.");
+    }
+  }
 }
 
 /** Атомарен пореден № за УНП — отделен за всеки ИН на ФУ (т. 9). */
@@ -97,18 +143,20 @@ async function ownDraft(draftId: string, userId: string, states: string[] = ["OP
   return d;
 }
 
-type DraftLineRow = { uid: string; productId: string; qtyMilli: number; discountPermille: number; priceLockedCents: number | null };
+type DraftLineRow = {
+  uid: string;
+  productId: string;
+  qtyMilli: number;
+  discountPermille: number;
+  priceLockedCents: number | null;
+};
 
-async function recordCancellations(
-  draft: { id: string; unp: string; openedAt: Date },
-  op: Pick<Operator, "userId" | "operatorCode">,
+async function priceCancellations(
   cancelled: Array<{ line: DraftLineRow; qtyMilli: number }>,
-  kind: "LINE" | "FULL",
-  ctx: PricingContext,
-  at: Date
-): Promise<void> {
-  if (cancelled.length === 0) return;
-  const priced = await priceLines(
+  ctx: PricingContext
+): Promise<PricedLine[]> {
+  if (cancelled.length === 0) return [];
+  return priceLines(
     cancelled.map((c) => ({
       uid: c.line.uid,
       productId: c.line.productId,
@@ -116,32 +164,48 @@ async function recordCancellations(
       discountPermille: c.line.discountPermille,
       priceLockedCents: c.line.priceLockedCents,
     })),
-    ctx
+    ctx,
+    { allowInactive: true }
   );
-  await prisma.cancelledItem.createMany({
-    data: priced.map((p) => ({
-      draftId: draft.id,
-      unp: draft.unp,
-      productId: p.product.id,
-      plu: p.product.plu,
-      name: p.product.name,
-      qtyMilli: p.qtyMilli,
-      unitPriceCents: p.unitCents,
-      discountCents: lineDiscountCents(p),
-      vatGroup: p.product.vatGroup,
-      vatRatePermille: p.vatRatePermille,
-      vatCents: p.vatCents,
-      totalCents: p.totalCents,
-      kind,
-      userId: op.userId,
-      operatorCode: op.operatorCode,
-      openedAt: draft.openedAt,
-      cancelledAt: at,
-    })),
-  });
+}
+
+function cancelledRows(
+  draft: { id: string; unp: string; openedAt: Date },
+  op: Pick<Operator, "userId" | "operatorCode">,
+  priced: PricedLine[],
+  kind: "LINE" | "FULL",
+  at: Date
+) {
+  return priced.map((p) => ({
+    draftId: draft.id,
+    unp: draft.unp,
+    productId: p.product.id,
+    plu: p.product.plu,
+    name: p.product.name,
+    qtyMilli: p.qtyMilli,
+    unitPriceCents: p.unitCents,
+    discountCents: lineDiscountCents(p),
+    vatGroup: p.product.vatGroup,
+    vatRatePermille: p.vatRatePermille,
+    vatCents: p.vatCents,
+    totalCents: p.totalCents,
+    kind,
+    userId: op.userId,
+    operatorCode: op.operatorCode,
+    openedAt: draft.openedAt,
+    cancelledAt: at,
+  }));
+}
+
+async function auditCancellations(
+  draft: { id: string; unp: string },
+  userId: string,
+  priced: PricedLine[],
+  kind: "LINE" | "FULL"
+): Promise<void> {
   for (const p of priced) {
     await audit(
-      op.userId,
+      userId,
       kind === "FULL" ? "SALE_ANNULLED_ITEM" : "SALE_ITEM_ANNULLED",
       "SaleDraft",
       draft.id,
@@ -161,17 +225,42 @@ export async function syncDraft(
   const draft = await ownDraft(draftId, op.userId);
   const customerCard = opts.customerCard === undefined ? draft.customerCard : opts.customerCard;
   const { ctx } = await pricingContext(customerCard);
-  // цените на новото състояние се проверяват ПРЕДИ записа (несъществуваща стока → 404)
+  // новото състояние се проверява ПРЕДИ записа: несъществуваща стока → 404, чужда цена → 400
+  await assertLocks(lines);
   const priced = await priceLines(lines, ctx);
 
   const prevByUid = new Map(draft.lines.map((l) => [l.uid, l]));
-  const cancelled = diffCancellations(draft.lines, lines).map((c) => ({
-    line: prevByUid.get(c.uid)!,
-    qtyMilli: c.qtyMilli,
-  }));
+  // смяна на заключената цена на същия ред = анулиране на стария ред (цената не се „сваля“ тихо)
+  const relocked = new Set(
+    lines
+      .filter((l) => {
+        const prev = prevByUid.get(l.uid);
+        return prev && prev.productId === l.productId && (prev.priceLockedCents ?? null) !== (l.priceLockedCents ?? null);
+      })
+      .map((l) => l.uid)
+  );
+  const cancelled = [
+    ...diffCancellations(
+      draft.lines.filter((l) => !relocked.has(l.uid)),
+      lines
+    ).map((c) => ({ line: prevByUid.get(c.uid)!, qtyMilli: c.qtyMilli })),
+    ...[...relocked].map((uid) => ({ line: prevByUid.get(uid)!, qtyMilli: prevByUid.get(uid)!.qtyMilli })),
+  ];
+  const discountChanges = lines
+    .map((l) => ({ l, prev: prevByUid.get(l.uid) }))
+    .filter(({ l, prev }) => prev && prev.discountPermille !== l.discountPermille)
+    .map(({ l, prev }) => ({ uid: l.uid, from: prev!.discountPermille, to: l.discountPermille }));
+  const cancelledPriced = await priceCancellations(cancelled, ctx);
   const keep = new Set(lines.map((l) => l.uid));
+  const at = new Date();
 
   await prisma.$transaction(async (tx) => {
+    // условие за състоянието в самия запис: задържана/плащана междувременно продажба не се пипа
+    const own = await tx.saleDraft.updateMany({
+      where: { id: draftId, userId: op.userId, state: "OPEN" },
+      data: { customerCard: customerCard ?? null },
+    });
+    if (own.count !== 1) throw jsonError(409, "Продажбата вече не е открита.");
     await tx.saleDraftLine.deleteMany({ where: { draftId, uid: { notIn: [...keep] } } });
     for (const [position, l] of lines.entries()) {
       const data = {
@@ -180,6 +269,7 @@ export async function syncDraft(
         qtyMilli: l.qtyMilli,
         discountPermille: l.discountPermille,
         priceLockedCents: l.priceLockedCents ?? null,
+        lockBarcode: l.priceLockedCents !== undefined && l.priceLockedCents !== null ? l.lockBarcode ?? null : null,
       };
       await tx.saleDraftLine.upsert({
         where: { draftId_uid: { draftId, uid: l.uid } },
@@ -187,59 +277,97 @@ export async function syncDraft(
         update: data,
       });
     }
-    if (customerCard !== draft.customerCard) {
-      await tx.saleDraft.update({ where: { id: draftId }, data: { customerCard: customerCard ?? null } });
+    if (cancelledPriced.length > 0) {
+      await tx.cancelledItem.createMany({ data: cancelledRows(draft, op, cancelledPriced, "LINE", at) });
     }
   });
-  await recordCancellations(draft, op, cancelled, "LINE", ctx, new Date());
+  await auditCancellations(draft, op.userId, cancelledPriced, "LINE");
+  if (discountChanges.length > 0) {
+    await audit(op.userId, "SALE_DISCOUNT_CHANGED", "SaleDraft", draft.id, { changes: discountChanges }, { unp: draft.unp });
+  }
 
   return { draft: { id: draft.id, unp: draft.unp, openedAt: draft.openedAt }, priced };
 }
 
-/** Пълно анулиране на откритата продажба („Изчисти“): всичко остава в базата. */
+/** Пълно анулиране на откритата продажба („Анулирай“): всичко остава в базата. */
 export async function cancelDraft(draftId: string, op: Pick<Operator, "userId" | "operatorCode">) {
   const draft = await ownDraft(draftId, op.userId, ["OPEN", "HELD"]);
-  const { ctx } = await pricingContext(draft.customerCard).catch(() => pricingContext(null));
-  const changed = await prisma.saleDraft.updateMany({
-    where: { id: draftId, state: { in: ["OPEN", "HELD"] } },
-    data: { state: "CANCELLED", closedAt: new Date() },
-  });
-  if (changed.count === 0) throw jsonError(409, "Продажбата вече не е открита.");
-  await recordCancellations(
-    draft,
-    op,
+  const { ctx } = await pricingContext(draft.customerCard, new Date(), { lenient: true });
+  const priced = await priceCancellations(
     draft.lines.map((l) => ({ line: l, qtyMilli: l.qtyMilli })),
-    "FULL",
-    ctx,
-    new Date()
+    ctx
   );
+  const at = new Date();
+  await prisma.$transaction(async (tx) => {
+    const changed = await tx.saleDraft.updateMany({
+      where: { id: draftId, userId: op.userId, state: { in: ["OPEN", "HELD"] } },
+      data: { state: "CANCELLED", closedAt: at },
+    });
+    if (changed.count !== 1) throw jsonError(409, "Продажбата вече не е открита.");
+    if (priced.length > 0) await tx.cancelledItem.createMany({ data: cancelledRows(draft, op, priced, "FULL", at) });
+  });
+  await auditCancellations(draft, op.userId, priced, "FULL");
   await audit(op.userId, "SALE_ANNULLED", "SaleDraft", draft.id, { lines: draft.lines.length }, { unp: draft.unp });
 }
 
 /** OPEN → PAYING атомарно; false = вече се плаща/приключена (второ натискане, втора каса). */
-export async function lockDraftForPayment(draftId: string, userId: string): Promise<boolean> {
+export async function lockDraftForPayment(draftId: string, userId: string, intent?: PaymentIntent): Promise<boolean> {
   const r = await prisma.saleDraft.updateMany({
     where: { id: draftId, userId, state: "OPEN" },
-    data: { state: "PAYING" },
+    data: {
+      state: "PAYING",
+      payingAt: new Date(),
+      paymentJson: intent ? JSON.stringify(intent) : null,
+      fiscalReceiptNo: null,
+      fiscalDeviceSn: null,
+      terminalRef: null,
+    },
   });
   return r.count === 1;
 }
 
-/** Връщане в OPEN след отказ на ФУ/терминала (продажбата не е приключила). */
+/** Терминалът одобри картата — референцията се пази веднага (за връщане при сверка). */
+export async function markCardCharged(draftId: string, terminalRef: string | null): Promise<void> {
+  await prisma.saleDraft.updateMany({ where: { id: draftId, state: "PAYING" }, data: { terminalRef } });
+}
+
+/** ФУ издаде бона — номерът се пази веднага, преди записа на продажбата. */
+export async function markPrinted(draftId: string, receiptNo: string | null, deviceSn: string | null): Promise<void> {
+  await prisma.saleDraft.updateMany({
+    where: { id: draftId, state: "PAYING" },
+    data: { fiscalReceiptNo: receiptNo ?? "(без номер)", fiscalDeviceSn: deviceSn },
+  });
+}
+
+/** Бонът е издаден, записът не успя: продажбата чака сверка от управител. */
+export async function markReconcile(draftId: string): Promise<void> {
+  await prisma.saleDraft.updateMany({ where: { id: draftId, state: "PAYING" }, data: { state: "RECONCILE" } });
+}
+
+/** Връщане в OPEN след отказ на ФУ/терминала (продажбата не е приключила, бон няма). */
 export async function releaseDraft(draftId: string): Promise<void> {
-  await prisma.saleDraft.updateMany({ where: { id: draftId, state: "PAYING" }, data: { state: "OPEN" } });
+  await prisma.saleDraft.updateMany({
+    where: { id: draftId, state: "PAYING", fiscalReceiptNo: null },
+    data: { state: "OPEN", payingAt: null, paymentJson: null, terminalRef: null },
+  });
 }
 
 export async function holdDraft(draftId: string, op: Pick<Operator, "userId">): Promise<void> {
-  await ownDraft(draftId, op.userId);
-  await prisma.saleDraft.update({ where: { id: draftId }, data: { state: "HELD", heldAt: new Date() } });
+  const r = await prisma.saleDraft.updateMany({
+    where: { id: draftId, userId: op.userId, state: "OPEN" },
+    data: { state: "HELD", heldAt: new Date() },
+  });
+  if (r.count !== 1) throw jsonError(409, "Само открита продажба може да бъде задържана.");
 }
 
 export async function resumeDraft(draftId: string, op: Pick<Operator, "userId">) {
-  await ownDraft(draftId, op.userId, ["HELD"]);
-  return prisma.saleDraft.update({
-    where: { id: draftId },
+  const r = await prisma.saleDraft.updateMany({
+    where: { id: draftId, userId: op.userId, state: "HELD" },
     data: { state: "OPEN", heldAt: null },
+  });
+  if (r.count !== 1) throw jsonError(409, "Продажбата не е задържана.");
+  return prisma.saleDraft.findUniqueOrThrow({
+    where: { id: draftId },
     include: { lines: { orderBy: { position: "asc" } } },
   });
 }
@@ -247,7 +375,7 @@ export async function resumeDraft(draftId: string, op: Pick<Operator, "userId">)
 /** Откритите и задържаните продажби на оператора (след презареждане екранът ги възстановява). */
 export function listDrafts(userId: string) {
   return prisma.saleDraft.findMany({
-    where: { userId, state: { in: ["OPEN", "HELD", "PAYING"] } },
+    where: { userId, state: { in: ["OPEN", "HELD", "PAYING", "RECONCILE"] } },
     include: { lines: { orderBy: { position: "asc" } } },
     orderBy: { openedAt: "asc" },
   });

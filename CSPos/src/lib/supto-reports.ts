@@ -83,6 +83,11 @@ async function rows181(f: ReportFilters): Promise<Row[]> {
   });
   return sales.map((s) => {
     const vat = s.items.reduce((a, i) => a + i.vatCents, 0);
+    // отстъпката = сбор от отстъпките по редове — същото определение като в 18.3
+    const discount = s.items.reduce(
+      (a, i) => a + lineDiscountCents({ lockedCents: i.priceLockedCents, unitCents: i.unitPriceCents, qtyMilli: i.qtyMilli, totalCents: i.totalCents }),
+      0
+    );
     const opened = s.openedAt ?? s.createdAt;
     return [
       s.unp,
@@ -94,7 +99,7 @@ async function rows181(f: ReportFilters): Promise<Row[]> {
       s.workplaceCode,
       op4(s.user.operatorCode),
       euro(s.totalCents - vat),
-      euro(s.discountCents),
+      euro(discount),
       euro(vat),
       euro(s.totalCents),
       s.invoice ? String(s.invoice.number).padStart(10, "0") : "",

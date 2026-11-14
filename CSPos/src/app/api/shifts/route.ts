@@ -102,10 +102,10 @@ export async function POST(req: Request) {
     if (!current) throw jsonError(409, "Няма отворена смяна.");
     // открита продажба не остава „висяща“ в затворена смяна (т. 2, т. 12)
     const pending = await prisma.saleDraft.count({
-      where: { userId: s.userId, state: { in: ["OPEN", "HELD", "PAYING"] }, lines: { some: {} } },
+      where: { userId: s.userId, state: { in: ["OPEN", "HELD", "PAYING", "RECONCILE"] }, lines: { some: {} } },
     });
     if (pending > 0) {
-      throw jsonError(409, `Имате ${pending} открити или задържани продажби — приключете ги или ги анулирайте преди закриване.`);
+      throw jsonError(409, `Имате ${pending} открити, задържани или прекъснати продажби — приключете или анулирайте откритите, а прекъснатите плащания се сверяват от управител (Смени и наличност → Сверка).`);
     }
 
     const agg = await prisma.sale.aggregate({

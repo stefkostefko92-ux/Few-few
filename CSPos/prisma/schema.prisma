@@ -468,26 +468,32 @@ model AuditLog {
 // оператор. Редовете се записват при всяка промяна; всяко намаление/премахване оставя
 // CancelledItem. Плащането я превежда OPEN → PAYING → COMPLETED (Sale) атомарно.
 model SaleDraft {
-  id            String          @id @default(cuid())
-  unp           String          @unique
-  unpSeq        Int // 7-разрядният пореден № — отделен брояч за всеки ИН на ФУ
-  fiscalSerial  String // ИН на ФУ, получен при последната успешна връзка (т. 8)
-  userId        String
-  user          User            @relation(fields: [userId], references: [id])
-  operatorCode  Int
-  shiftId       String
-  storeCode     String          @default("1")
-  workplaceCode String          @default("1")
-  state         String          @default("OPEN") // OPEN | HELD | PAYING | COMPLETED | CANCELLED
-  customerCard  String?
-  heldAt        DateTime?
-  openedAt      DateTime
-  closedAt      DateTime?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  lines         SaleDraftLine[]
-  cancelled     CancelledItem[]
-  sale          Sale?
+  id              String          @id @default(cuid())
+  unp             String          @unique
+  unpSeq          Int // 7-разрядният пореден № — отделен брояч за всеки ИН на ФУ
+  fiscalSerial    String // ИН на ФУ, получен при последната успешна връзка (т. 8)
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  operatorCode    Int
+  shiftId         String
+  storeCode       String          @default("1")
+  workplaceCode   String          @default("1")
+  state           String          @default("OPEN") // OPEN | HELD | PAYING | RECONCILE | COMPLETED | CANCELLED
+  // намерение за плащане и резултат от ФУ — пазят се, за да може прекъснато плащане да се свери
+  paymentJson     String?
+  payingAt        DateTime?
+  fiscalReceiptNo String?
+  fiscalDeviceSn  String?
+  terminalRef     String?
+  customerCard    String?
+  heldAt          DateTime?
+  openedAt        DateTime
+  closedAt        DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  lines           SaleDraftLine[]
+  cancelled       CancelledItem[]
+  sale            Sale?
 
   @@unique([fiscalSerial, unpSeq])
   @@index([userId, state])
@@ -504,6 +510,7 @@ model SaleDraftLine {
   qtyMilli         Int
   discountPermille Int       @default(0)
   priceLockedCents Int? // ценови баркод / свободна продажба
+  lockBarcode      String? // ценовият баркод, от който идва заключената цена (сървърът го проверява)
 
   @@unique([draftId, uid])
 }

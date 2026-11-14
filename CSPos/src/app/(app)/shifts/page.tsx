@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Money, ArrowDown, ArrowUp, XCircle, Printer, FileText } from "@phosphor-icons/react";
 import { Modal, Field, Badge, Spinner, apiJson } from "@/components/ui";
+import { ReconcilePanel } from "@/components/reconcile-panel";
 import { formatEur, parseCents } from "@/lib/money";
 import { STORNO_REASONS, PAYMENT_TYPES } from "@/lib/constants";
 
@@ -94,6 +95,8 @@ export default function ShiftsPage() {
           {message}
         </div>
       )}
+
+      <ReconcilePanel onChanged={() => void load()} />
 
       {!data.shift ? (
         <div className="card p-8 text-center text-ink-400">

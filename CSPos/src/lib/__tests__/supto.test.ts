@@ -10,6 +10,7 @@ import { SUPTO_TABLES, netAndVat, vatLetter, periodCurrencyError, euro } from ".
 import { buildReceiptText } from "../fiscal/receipt-text";
 import { buildInvoiceText } from "../invoice-text";
 import { DEFAULT_VAT_RATES } from "../vat";
+import { csvCell } from "../csv";
 
 // ── т. 8: свързаност с ФУ ────────────────────────────────────────────────────────
 test("т. 8: ИН на ФУ е годен до 2 часа след последната успешна връзка", () => {
@@ -128,4 +129,14 @@ test("т. 14: примерният бон и фактурата не съдър�
   assert.doesNotMatch(receipt, /фискал/i);
   const invoice = buildInvoiceText(store, { name: "Купувач ООД" }, [{ name: "Вода", qtyMilli: 1000, unitLabel: "бр.", unitPriceCents: 199, vatGroup: "B", vatRatePermille: 200, totalCents: 199, vatCents: 33 }], { number: 1, date: new Date(), fiscalReceiptNo: "0000001", dualDisplay: false });
   assert.doesNotMatch(invoice, /фискал/i);
+});
+
+// ── ревю L1: CSV/формула инжекция ────────────────────────────────────────────────
+test("CSV: текст, започващ с формула, се неутрализира; числата остават числа", () => {
+  assert.equal(csvCell("=HYPERLINK(\"x\")"), `"'=HYPERLINK(""x"")"`);
+  assert.equal(csvCell("+359 88"), "'+359 88");
+  assert.equal(csvCell("@SUM(A1)"), "'@SUM(A1)");
+  assert.equal(csvCell("-0.05"), "-0.05");
+  assert.equal(csvCell("-12"), "-12");
+  assert.equal(csvCell("Хляб"), "Хляб");
 });

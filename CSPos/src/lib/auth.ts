@@ -5,6 +5,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { SESSION_COOKIE, SESSION_TTL_HOURS, type RoleKey } from "./constants";
 import { ensureDbGuards } from "./integrity";
+import { prisma } from "./db";
 
 export interface SessionData {
   userId: string;
@@ -64,9 +65,25 @@ export async function destroySession(): Promise<void> {
   jar.delete(SESSION_COOKIE);
 }
 
+/**
+ * Сесията, сверена с базата: ролята, „само четене“ и активността идват от User при ВСЯКА
+ * заявка. Иначе смяна на ролята, одиторски профил или деактивиране биха важали чак след
+ * изтичане на бисквитката (до 14 ч.) — а периодът в UserRoleGrant вече е затворен (т. 6, т. 19).
+ */
+export async function getLiveSession(): Promise<SessionData | null> {
+  const s = await getSession();
+  if (!s) return null;
+  const u = await prisma.user.findUnique({
+    where: { id: s.userId },
+    select: { active: true, role: true, readOnly: true, name: true, operatorCode: true },
+  });
+  if (!u || !u.active) return null;
+  return { ...s, name: u.name, operatorCode: u.operatorCode, role: u.role as RoleKey, readOnly: u.readOnly };
+}
+
 /** Изисква сесия; хвърля Response 401 за API маршрути. */
 export async function requireSession(): Promise<SessionData> {
-  const s = await getSession();
+  const s = await getLiveSession();
   if (!s) throw jsonError(401, "Изисква се вход в системата.");
   return s;
 }

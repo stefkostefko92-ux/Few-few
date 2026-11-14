@@ -74,6 +74,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     const stornoCardCents = noCashMove ? 0 : original.cardCents;
 
     const fiscal = await getFiscalDriver();
+    const releaseLock = () => prisma.setting.delete({ where: { key: lockKey } }).catch(() => undefined);
+    // драйвер, който ХВЪРЛЯ вместо да върне ok:false, не бива да оставя резервацията завинаги
     const receipt = await fiscal.printStorno({
       // УНП е номер на ПРОДАЖБАТА: сторно бонът носи УНП на сторнираната (т. 10)
       unp: fiscalCfg.suptoMode ? original.unp : null,
@@ -108,81 +110,103 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       reason,
       originalReceiptNo: original.fiscalReceiptNo ?? String(original.number),
       originalReceiptDate: original.createdAt.toISOString(),
+    }).catch(async (e: unknown) => {
+      await releaseLock();
+      throw e;
     });
     if (!receipt.ok) {
       // нищо не е отпечатано — резервацията се освобождава, може да се опита отново
-      await prisma.setting.delete({ where: { key: lockKey } }).catch(() => undefined);
+      await releaseLock();
       await audit(s.userId, "STORNO_FISCAL_FAILED", "Sale", id, { error: receipt.error }, { unp: original.unp });
       throw jsonError(502, receipt.error ?? "Фискалното устройство отказа сторно бона.");
     }
 
     const returnStock = reason !== "TAX_BASE_CUT";
     const at = await fiscalNow();
-    const number = await nextSaleNumber();
-    const storno = await prisma.$transaction(async (tx) => {
-      const created = await tx.sale.create({
-        data: {
-          // УНП е на продажбата; редът на сторно документа пази препратка, не нов УНП (т. 9)
-          unp: `СТОРНО-${original.unp}`,
-          number,
-          status: "STORNO",
-          shiftId: shift.id,
-          userId: s.userId,
-          customerId: original.customerId,
-          storeCode: original.storeCode,
-          workplaceCode: original.workplaceCode,
-          openedAt: at,
-          subtotalCents: original.subtotalCents,
-          discountCents: original.discountCents,
-          totalCents: original.totalCents,
-          totalBgnCents: eurCentsToBgnCents(original.totalCents),
-          paymentType: original.paymentType,
-          cashCents: stornoCashCents,
-          cardCents: stornoCardCents,
-          terminalRef: original.terminalRef,
-          fiscalReceiptNo: receipt.receiptNumber ?? null,
-          fiscalDeviceSn: receipt.deviceSerial ?? original.fiscalDeviceSn ?? fiscalCfg.deviceSerial,
-          stornoOfId: original.id,
-          stornoReason: reason,
-          createdAt: at,
-          items: {
-            create: original.items.map((it) => ({
-              productId: it.productId,
-              pluSnapshot: it.pluSnapshot || it.product.plu,
-              nameSnapshot: it.nameSnapshot,
-              unitPriceCents: it.unitPriceCents,
-              qtyMilli: it.qtyMilli,
-              vatGroup: it.vatGroup,
-              vatRatePermille: it.vatRatePermille,
-              discountPermille: it.discountPermille,
-              discountCents: it.discountCents,
-              priceLockedCents: it.priceLockedCents,
-              totalCents: it.totalCents,
-              vatCents: it.vatCents,
-            })),
+    let storno: Awaited<ReturnType<typeof prisma.sale.create>>;
+    try {
+      const number = await nextSaleNumber();
+      storno = await prisma.$transaction(async (tx) => {
+        const created = await tx.sale.create({
+          data: {
+            // УНП е на продажбата; редът на сторно документа пази препратка, не нов УНП (т. 9)
+            unp: `СТОРНО-${original.unp}`,
+            number,
+            status: "STORNO",
+            shiftId: shift.id,
+            userId: s.userId,
+            customerId: original.customerId,
+            storeCode: original.storeCode,
+            workplaceCode: original.workplaceCode,
+            openedAt: at,
+            subtotalCents: original.subtotalCents,
+            discountCents: original.discountCents,
+            totalCents: original.totalCents,
+            totalBgnCents: eurCentsToBgnCents(original.totalCents),
+            paymentType: original.paymentType,
+            cashCents: stornoCashCents,
+            cardCents: stornoCardCents,
+            terminalRef: original.terminalRef,
+            fiscalReceiptNo: receipt.receiptNumber ?? null,
+            fiscalDeviceSn: receipt.deviceSerial ?? original.fiscalDeviceSn ?? fiscalCfg.deviceSerial,
+            stornoOfId: original.id,
+            stornoReason: reason,
+            createdAt: at,
+            items: {
+              create: original.items.map((it) => ({
+                productId: it.productId,
+                pluSnapshot: it.pluSnapshot || it.product.plu,
+                nameSnapshot: it.nameSnapshot,
+                unitPriceCents: it.unitPriceCents,
+                qtyMilli: it.qtyMilli,
+                vatGroup: it.vatGroup,
+                vatRatePermille: it.vatRatePermille,
+                discountPermille: it.discountPermille,
+                discountCents: it.discountCents,
+                priceLockedCents: it.priceLockedCents,
+                totalCents: it.totalCents,
+                vatCents: it.vatCents,
+              })),
+            },
           },
-        },
-      });
-      if (original.paymentType === "CREDIT" && original.customerId) {
-        await tx.customer.update({
-          where: { id: original.customerId },
-          data: { balanceCents: { decrement: original.totalCents } },
         });
-      }
-      if (returnStock) {
-        for (const it of original.items) {
-          await tx.product.update({ where: { id: it.productId }, data: { stockMilli: { increment: it.qtyMilli } } });
-          await tx.stockMovement.create({
-            data: { productId: it.productId, type: "STORNO", qtyMilliDelta: it.qtyMilli, refId: created.id },
+        if (original.paymentType === "CREDIT" && original.customerId) {
+          await tx.customer.update({
+            where: { id: original.customerId },
+            data: { balanceCents: { decrement: original.totalCents } },
           });
         }
-      }
-      await tx.setting.update({
-        where: { key: lockKey },
-        data: { value: JSON.stringify({ by: s.userId, at: at.toISOString(), state: "DONE", stornoId: created.id }) },
+        if (returnStock) {
+          for (const it of original.items) {
+            await tx.product.update({ where: { id: it.productId }, data: { stockMilli: { increment: it.qtyMilli } } });
+            await tx.stockMovement.create({
+              data: { productId: it.productId, type: "STORNO", qtyMilliDelta: it.qtyMilli, refId: created.id },
+            });
+          }
+        }
+        await tx.setting.update({
+          where: { key: lockKey },
+          data: { value: JSON.stringify({ by: s.userId, at: at.toISOString(), state: "DONE", stornoId: created.id }) },
+        });
+        return created;
       });
-      return created;
-    });
+    } catch (e) {
+      // сторно бонът е издаден (парите са изплатени), записът не успя: резервацията остава
+      // (второ сторно е невъзможно), а следата с номера на бона е за ръчна сверка
+      await prisma.setting
+        .update({
+          where: { key: lockKey },
+          data: { value: JSON.stringify({ by: s.userId, at: at.toISOString(), state: "RECONCILE", receiptNo: receipt.receiptNumber ?? null }) },
+        })
+        .catch(() => undefined);
+      await audit(s.userId, "STORNO_RECORD_FAILED", "Sale", original.id, {
+        reason,
+        totalCents: original.totalCents,
+        fiscalReceiptNo: receipt.receiptNumber ?? null,
+        error: e instanceof Error ? e.message : String(e),
+      }, { unp: original.unp }).catch(() => undefined);
+      throw jsonError(500, `Сторно бонът е издаден, но записът не успя. Продажба ${original.unp} е маркирана за сверка — уведомете управителя.`);
+    }
 
     await audit(
       s.userId,

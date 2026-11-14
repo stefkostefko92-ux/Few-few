@@ -17,7 +17,8 @@ const syncSchema = z.object({
         productId: z.string().min(1),
         qtyMilli: z.number().int().min(1).max(1_000_000_000),
         discountPermille: z.number().int().min(0).max(999).default(0),
-        priceLockedCents: z.number().int().min(0).nullable().optional(),
+        priceLockedCents: z.number().int().min(1).max(10_000_000).nullable().optional(),
+        lockBarcode: z.string().regex(/^\d{13}$/).nullable().optional(),
       })
     )
     .max(500),

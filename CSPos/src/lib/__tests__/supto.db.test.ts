@@ -20,11 +20,24 @@ type Lib = {
   lockDraftForPayment: typeof import("../sale-draft").lockDraftForPayment;
   audit: typeof import("../audit").audit;
   verifyAuditChain: typeof import("../audit").verifyAuditChain;
+  draft: typeof import("../sale-draft");
+  record: typeof import("../sale-record");
 };
 let L: Lib;
 let userId = "";
 let shiftId = "";
 let productId = "";
+let freeId = "";
+
+/** Ценови баркод 29 + PLU(5) + цена(5, ст.) + контролна цифра. */
+function priceBarcode(plu: number, cents: number): string {
+  const body = `29${String(plu).padStart(5, "0")}${String(cents).padStart(5, "0")}`;
+  let sum = 0;
+  for (let i = 0; i < body.length; i++) sum += Number(body[body.length - 1 - i]) * (i % 2 === 0 ? 3 : 1);
+  return body + String((10 - (sum % 10)) % 10);
+}
+
+const status = (code: number) => (e: unknown) => e instanceof Response && e.status === code;
 
 before(async () => {
   execFileSync("npx", ["prisma", "db", "push", "--skip-generate", "--accept-data-loss"], {
@@ -44,6 +57,8 @@ before(async () => {
     lockDraftForPayment: draft.lockDraftForPayment,
     audit: audit.audit,
     verifyAuditChain: audit.verifyAuditChain,
+    draft,
+    record: await import("../sale-record"),
   };
   await L.ensureDbGuards();
   const u = await L.prisma.user.create({
@@ -57,6 +72,10 @@ before(async () => {
     data: { plu: 102, name: "Вода 0,5 л", categoryId: cat.id, vatGroup: "B", priceCents: 199 },
   });
   productId = p.id;
+  const free = await L.prisma.product.create({
+    data: { plu: 990, name: "Свободна продажба 20%", categoryId: cat.id, vatGroup: "B", priceCents: 0 },
+  });
+  freeId = free.id;
 });
 
 after(async () => {
@@ -138,6 +157,95 @@ test("т. 13: продажби и дневник не се изтриват; д�
   for (const t of ["supto_no_delete_Sale", "supto_no_update_Sale", "supto_no_delete_SaleItem", "supto_no_delete_AuditLog", "supto_no_update_AuditLog"]) {
     assert.ok(names.some((n) => n.name === t), `липсва тригер ${t}`);
   }
+});
+
+test("ревю H1: ръчна цена без ценови баркод се отказва; баркод и свободна продажба минават", async () => {
+  const d = await L.openDraft(op(), "DT000001");
+  await assert.rejects(
+    L.syncDraft(d.id, op(), [{ uid: "x1", productId, qtyMilli: 1000, discountPermille: 0, priceLockedCents: 1 }]),
+    status(400)
+  );
+  const code = priceBarcode(102, 517);
+  await L.syncDraft(d.id, op(), [{ uid: "x1", productId, qtyMilli: 2598, discountPermille: 0, priceLockedCents: 517, lockBarcode: code }]);
+  await assert.rejects(
+    L.syncDraft(d.id, op(), [{ uid: "x1", productId, qtyMilli: 2598, discountPermille: 0, priceLockedCents: 100, lockBarcode: code }]),
+    status(400),
+    "сумата трябва да съвпада с баркода"
+  );
+  await L.syncDraft(d.id, op(), [
+    { uid: "x1", productId, qtyMilli: 2598, discountPermille: 0, priceLockedCents: 517, lockBarcode: code },
+    { uid: "x2", productId: freeId, qtyMilli: 1000, discountPermille: 0, priceLockedCents: 250 },
+  ]);
+  const lines = await L.prisma.saleDraftLine.findMany({ where: { draftId: d.id } });
+  assert.equal(lines.length, 2);
+});
+
+test("ревю H1: смяна на заключената цена на същия ред = анулиране на стария ред", async () => {
+  const d = await L.openDraft(op(), "DT000001");
+  await L.syncDraft(d.id, op(), [{ uid: "f", productId: freeId, qtyMilli: 1000, discountPermille: 0, priceLockedCents: 900 }]);
+  await L.syncDraft(d.id, op(), [{ uid: "f", productId: freeId, qtyMilli: 1000, discountPermille: 0, priceLockedCents: 100 }]);
+  const c = await L.prisma.cancelledItem.findMany({ where: { draftId: d.id } });
+  assert.equal(c.length, 1);
+  assert.equal(c[0]!.totalCents, 900);
+});
+
+test("ревю M1: анулиране на деактивирана стока пак оставя следа със стойност", async () => {
+  const d = await L.openDraft(op(), "DT000001");
+  await L.syncDraft(d.id, op(), [{ uid: "z", productId, qtyMilli: 1000, discountPermille: 0 }]);
+  await L.prisma.product.update({ where: { id: productId }, data: { active: false } });
+  try {
+    await L.cancelDraft(d.id, op());
+    const c = await L.prisma.cancelledItem.findMany({ where: { draftId: d.id } });
+    assert.equal(c.length, 1);
+    assert.equal(c[0]!.totalCents, 199);
+    assert.ok(await L.prisma.auditLog.findFirst({ where: { action: "SALE_ANNULLED", unp: d.unp } }));
+  } finally {
+    await L.prisma.product.update({ where: { id: productId }, data: { active: true } });
+  }
+});
+
+test("ревю M2: по време на плащане продажбата не може да се задържи или промени", async () => {
+  const d = await L.openDraft(op(), "DT000001");
+  await L.syncDraft(d.id, op(), [{ uid: "p", productId, qtyMilli: 1000, discountPermille: 0 }]);
+  assert.equal(await L.lockDraftForPayment(d.id, userId), true);
+  await assert.rejects(L.draft.holdDraft(d.id, { userId }), status(409));
+  await assert.rejects(L.syncDraft(d.id, op(), []), status(409));
+  assert.equal(await L.prisma.cancelledItem.count({ where: { draftId: d.id } }), 0, "няма фалшиви анулирания");
+});
+
+test("ревю H2: прекъснато плащане с издаден бон се записва при сверка, без бон — връща се", async () => {
+  const d = await L.openDraft(op(), "DT000001");
+  await L.syncDraft(d.id, op(), [{ uid: "r", productId, qtyMilli: 2000, discountPermille: 0 }]);
+  const intent = { type: "CASH" as const, paidCashDue: 398, paidCard: 0, change: 2, totalCents: 398 };
+  assert.equal(await L.lockDraftForPayment(d.id, userId, intent), true);
+  await L.draft.markPrinted(d.id, "0000042", "DT000001");
+  await L.draft.releaseDraft(d.id);
+  assert.equal((await L.prisma.saleDraft.findUnique({ where: { id: d.id } }))!.state, "PAYING", "с издаден бон не се връща");
+  await L.draft.markReconcile(d.id);
+
+  const row = await L.prisma.saleDraft.findUniqueOrThrow({ where: { id: d.id }, include: { lines: true } });
+  const { ctx } = await L.draft.pricingContext(null);
+  const lines = await L.draft.priceLines(row.lines, ctx, { allowInactive: true });
+  const sale = await L.record.recordSale({
+    draft: row,
+    lines,
+    customerId: null,
+    payment: intent,
+    receipt: { receiptNumber: row.fiscalReceiptNo, deviceSerial: row.fiscalDeviceSn },
+    terminalRef: null,
+    closedAt: new Date(),
+    fromStates: ["PAYING", "RECONCILE"],
+  });
+  assert.equal(sale.unp, d.unp);
+  assert.equal(sale.totalCents, 398);
+  assert.equal(sale.fiscalReceiptNo, "0000042");
+  assert.equal((await L.prisma.saleDraft.findUnique({ where: { id: d.id } }))!.state, "COMPLETED");
+
+  const d2 = await L.openDraft(op(), "DT000001");
+  await L.syncDraft(d2.id, op(), [{ uid: "q", productId, qtyMilli: 1000, discountPermille: 0 }]);
+  await L.lockDraftForPayment(d2.id, userId, { ...intent, totalCents: 199, paidCashDue: 199, change: 0 });
+  await L.draft.releaseDraft(d2.id);
+  assert.equal((await L.prisma.saleDraft.findUnique({ where: { id: d2.id } }))!.state, "OPEN", "без бон — обратно за плащане");
 });
 
 test("хеш веригата на дневника е цяла и открива подмяна", async () => {

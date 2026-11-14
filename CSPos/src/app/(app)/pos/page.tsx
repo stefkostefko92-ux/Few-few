@@ -60,6 +60,8 @@ interface CartLine {
   /** Ръчна отстъпка от екрана; отстъпката от картата се прилага на сървъра. */
   discountPermille: number;
   priceLockedCents?: number;
+  /** Ценовият баркод, от който е заключената цена — сървърът я проверява по него. */
+  lockBarcode?: string;
 }
 
 interface Customer {
@@ -77,10 +79,17 @@ interface Draft {
 }
 
 interface ServerDraft extends Draft {
-  state: "OPEN" | "HELD" | "PAYING";
+  state: "OPEN" | "HELD" | "PAYING" | "RECONCILE";
   heldAt: string | null;
   customerCard: string | null;
-  lines: Array<{ uid: string; productId: string; qtyMilli: number; discountPermille: number; priceLockedCents: number | null }>;
+  lines: Array<{
+    uid: string;
+    productId: string;
+    qtyMilli: number;
+    discountPermille: number;
+    priceLockedCents: number | null;
+    lockBarcode: string | null;
+  }>;
 }
 
 const newUid = () =>
@@ -160,7 +169,16 @@ export default function PosPage() {
     return lines.flatMap((l) => {
       const product = byId.get(l.productId);
       return product
-        ? [{ uid: l.uid, product, qtyMilli: l.qtyMilli, discountPermille: l.discountPermille, priceLockedCents: l.priceLockedCents ?? undefined }]
+        ? [
+            {
+              uid: l.uid,
+              product,
+              qtyMilli: l.qtyMilli,
+              discountPermille: l.discountPermille,
+              priceLockedCents: l.priceLockedCents ?? undefined,
+              lockBarcode: l.lockBarcode ?? undefined,
+            },
+          ]
         : [];
     });
   }, []);
@@ -168,7 +186,7 @@ export default function PosPage() {
   const loadDrafts = useCallback(async () => {
     const r = await apiJson<{ drafts: ServerDraft[] }>(await fetch("/api/sales/open", { cache: "no-store" }));
     setHeld(r.drafts.filter((d) => d.state === "HELD"));
-    setPaying(r.drafts.filter((d) => d.state === "PAYING"));
+    setPaying(r.drafts.filter((d) => d.state === "PAYING" || d.state === "RECONCILE"));
     return r.drafts;
   }, []);
 
@@ -237,6 +255,7 @@ export default function PosPage() {
                 qtyMilli: l.qtyMilli,
                 discountPermille: l.discountPermille,
                 priceLockedCents: l.priceLockedCents ?? null,
+                lockBarcode: l.lockBarcode ?? null,
               })),
               customerCard: customerRef.current?.cardNumber ?? null,
             }),
@@ -339,7 +358,7 @@ export default function PosPage() {
   }, [payOpen, weighing, receiptText, cardModal]);
 
   const addToCart = useCallback(
-    (product: Product, qtyMilli: number, priceLockedCents?: number) =>
+    (product: Product, qtyMilli: number, priceLockedCents?: number, lockBarcode?: string) =>
       applyCart((prev) => {
         // еднакви стоки на брой се сумират; тегловните и заключените цени — отделни редове
         if (product.unit === "PCS" && priceLockedCents === undefined) {
@@ -350,7 +369,7 @@ export default function PosPage() {
             return next;
           }
         }
-        return [...prev, { uid: newUid(), product, qtyMilli, discountPermille: 0, priceLockedCents }];
+        return [...prev, { uid: newUid(), product, qtyMilli, discountPermille: 0, priceLockedCents, lockBarcode }];
       }),
     [applyCart]
   );
@@ -366,7 +385,7 @@ export default function PosPage() {
         if (r.product.unit === "KG" && r.qtyMilli === 1000 && r.priceLockedCents === undefined) {
           setWeighing(r.product); // тегловна стока без тегло в баркода → искаме тегло
         } else {
-          void addToCart(r.product, r.qtyMilli, r.priceLockedCents);
+          void addToCart(r.product, r.qtyMilli, r.priceLockedCents, r.priceLockedCents !== undefined ? code.trim() : undefined);
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : "Кодът не е намерен.");
@@ -493,7 +512,7 @@ export default function PosPage() {
         {paying.length > 0 && (
           <div role="alert" className="flex items-center gap-2 text-brand-700 bg-brand-600/10 border border-brand-600/30 rounded-xl px-4 py-2.5 text-sm font-medium">
             <WarningCircle size={18} className="shrink-0" />
-            Продажба {paying.map((p) => p.unp).join(", ")} е прекъсната по време на плащане. Проверете последния бон на ФУ и уведомете управителя.
+            Продажба {paying.map((p) => p.unp).join(", ")} е прекъсната по време на плащане. Управителят я сверява в „Смени и наличност“ по последния бон на ФУ.
           </div>
         )}
         {error && (
@@ -530,7 +549,7 @@ export default function PosPage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3 overflow-y-auto content-start flex-1 pr-1">
+        <div className="grid grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-max gap-3 overflow-y-auto content-start flex-1 min-h-0 pr-1">
           {visibleProducts.map((p) => {
             const cat = categories.find((c) => c.id === p.categoryId);
             const low = p.stockMilli <= 0;
@@ -602,7 +621,7 @@ export default function PosPage() {
       </section>
 
       {/* ДЯСНО: количка */}
-      <section className="w-[380px] xl:w-[420px] shrink-0 card flex flex-col">
+      <section className="w-[360px] xl:w-[420px] shrink-0 card flex flex-col">
         <div className="px-4 pt-3 pb-2 border-b border-ink-800">
         <div className="flex items-center justify-between gap-2">
           <h2 className="font-bold text-lg leading-tight">Бон</h2>
@@ -647,17 +666,19 @@ export default function PosPage() {
               onClick={() => setCardModal(true)}
               className={`btn !px-2.5 !py-1.5 text-xs ${customer ? "bg-mint-600/20 text-mint-600" : "bg-ink-800 text-ink-300"}`}
               title="Клиентска карта (F8)"
+              aria-label="Клиентска карта (F8)"
             >
               <IdentificationCard size={16} />
-              {customer ? customer.name : "Карта"}
+              <span className={customer ? "max-w-[7rem] truncate" : "hidden xl:inline"}>{customer ? customer.name : "Карта"}</span>
             </button>
             <button
               onClick={() => void clearCart()}
               disabled={cart.length === 0 && !draft}
               className="btn-ghost !px-2.5 !py-1.5 text-xs"
               title="Анулира цялата продажба — остава записана като анулирана"
+              aria-label="Анулирай продажбата"
             >
-              <Trash size={16} /> Анулирай
+              <Trash size={16} /> <span className="hidden xl:inline">Анулирай</span>
             </button>
           </div>
         </div>

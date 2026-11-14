@@ -82,3 +82,12 @@ test("администраторът може да създаде одиторс
   const users = readFileSync(join(API, "users", "route.ts"), "utf8");
   assert.match(users, /readOnly:\s*z\.boolean\(\)/, "POST/PATCH на users трябва да приемат readOnly");
 });
+
+test("ревю M3: ролята и „само четене“ се четат от базата при всяка заявка", () => {
+  const auth = readFileSync(join(API, "..", "..", "lib", "auth.ts"), "utf8");
+  const live = auth.slice(auth.indexOf("export async function getLiveSession"));
+  assert.match(live.slice(0, 900), /prisma\.user\.findUnique/, "getLiveSession трябва да чете User");
+  assert.match(live.slice(0, 900), /!u\.active/, "деактивиран профил губи сесията веднага");
+  const req = auth.slice(auth.indexOf("export async function requireSession"));
+  assert.match(req.slice(0, 300), /getLiveSession\(\)/, "requireSession минава през базата");
+});
