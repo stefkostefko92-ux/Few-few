@@ -29,8 +29,6 @@ export default async function PublicProfilePage({
     hl?: string;
     sent?: string;
     formError?: string;
-    shopError?: string;
-    couponError?: string;
     subscribed?: string;
     subError?: string;
     unsub?: string;
@@ -44,8 +42,6 @@ export default async function PublicProfilePage({
     hl,
     sent,
     formError,
-    shopError,
-    couponError,
     subscribed,
     subError,
     unsub,
@@ -68,8 +64,6 @@ export default async function PublicProfilePage({
       hl={hl}
       sent={sent}
       formError={formError}
-      shopError={shopError}
-      couponError={couponError}
       subscribed={subscribed}
       subError={subError}
       unsub={unsub}

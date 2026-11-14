@@ -67,11 +67,34 @@ test('P4: резултатът от поръчката — състояние, �
       { state: 'failed', payment_method: { card_country_code: 'DE' } },
       {
         state: 'completed',
-        payment_method: { card_country_code: 'it', billing_address: { country_code: 'IT' } },
+        // Payment-v3: billing_address е на ПЛАЩАНЕТО, не в payment_method (merchant.yaml).
+        payment_method: { card_country_code: 'it' },
+        billing_address: { country_code: 'fr' },
       },
     ],
   });
-  assert.deepEqual(o, { state: 'completed', amountCents: 400, currency: 'EUR', cardCountry: 'IT', billingCountry: 'IT' });
+  assert.deepEqual(o, { state: 'completed', amountCents: 400, currency: 'EUR', cardCountry: 'IT', billingCountry: 'FR' });
+  // адрес, сложен под payment_method, не е по схемата → не се чете
+  const wrong = orderOutcome({
+    state: 'completed',
+    amount: 400,
+    currency: 'EUR',
+    payments: [{ state: 'completed', payment_method: { billing_address: { country_code: 'IT' } } }],
+  });
+  assert.equal(wrong.billingCountry, null);
   assert.equal(orderOutcome({ state: 'weird' }).state, 'unknown');
   assert.equal(orderOutcome(null).state, 'unknown');
+});
+
+// Единицата на Revolut-Request-Timestamp не е потвърдена от първоизточник
+// (Д8) — приемаме и секунди, и милисекунди, със същия толеранс.
+test('P3: timestamp в секунди също се приема; извън толеранса — не', () => {
+  const body = '{"event":"ORDER_COMPLETED","order_id":"o1"}';
+  const seconds = '1794650400';
+  const now = Number(seconds) * 1000 + 2000;
+  assert.equal(verifyRevolutSignature({ rawBody: body, timestamp: seconds, signature: sign(seconds, body), secret: SECRET, now }), true);
+  assert.equal(
+    verifyRevolutSignature({ rawBody: body, timestamp: seconds, signature: sign(seconds, body), secret: SECRET, now: now + 6 * 60_000 }),
+    false,
+  );
 });

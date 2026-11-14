@@ -19,7 +19,7 @@
     "multilingual",
     "nextjs",
     "prisma",
-    "stripe",
+    "revolut",
     "creator-economy"
   ],
   "scripts": {
@@ -43,7 +43,6 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sharp": "^0.35.5",
-    "stripe": "^17.5.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

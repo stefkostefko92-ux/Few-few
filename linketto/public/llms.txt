@@ -3,7 +3,7 @@
 > Linketto is the multilingual "link in bio" page: all your links, products
 > and contacts on one page that speaks every visitor's language (27 interface
 > locales: all 24 official EU languages plus Neapolitan, Sicilian and Lombard dialects, chosen manually). EU-hosted,
-> GDPR by default, cookie-free analytics, sales commissions 8/4/0/0% by plan.
+> GDPR by default, cookie-free analytics, no commission on creators' sales.
 > A product of Carbon Stealth VCC (Bulgaria, EU) — https://carbonstealth.eu.
 
 ## Main pages
@@ -17,11 +17,11 @@
 
 ## Facts
 
-- Plans: Free €0 (8% commission), Pro €4/mo (4%), Business €9/mo (0%), Founder €49 one-time (0% forever)
-- Sellers additionally pay a 1.9% + €0.30 payment processing fee per sale
+- Plans: Free €0, Pro €4/mo, Business €9/mo, Founder €49 one-time (Pro forever, up to 5 profiles)
+- Paid plans are prepaid for 1, 3, 6 or 12 months (−0/10/15/20%) via Revolut — no subscription, no automatic charges
 - Analytics without cookies: no IP addresses, no user agents, no personal data
 - Public profiles: https://linketto.carbonstealth.eu/u/<name>, automatic visitor-language selection
-- Digital product shop via Stripe Connect; delivery only after confirmed payment
+- Products link to the creator's own payment page (Revolut, PayPal, Gumroad…); Linketto takes no commission and does not handle the money
 
 ## Free tools and comparisons
 

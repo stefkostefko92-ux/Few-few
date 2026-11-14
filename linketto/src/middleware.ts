@@ -54,14 +54,9 @@ export default function middleware(request: NextRequest): NextResponse {
           });
     const url = request.nextUrl.clone();
     url.pathname = `/${preferred}${pathname === '/' ? '' : pathname}`;
-    const response = NextResponse.redirect(url);
-    // Запомняме избора, за да е консистентен и да уважи ръчно превключване.
-    response.cookies.set('NEXT_LOCALE', preferred, {
-      path: '/',
-      maxAge: 60 * 60 * 24 * 365,
-      sameSite: 'lax',
-    });
-    return response;
+    // Автоматичният избор НЕ записва бисквитка — NEXT_LOCALE идва само от
+    // ръчен избор (components/LocaleChoice.tsx).
+    return NextResponse.redirect(url);
   }
 
   return intl(request);
@@ -78,9 +73,9 @@ function primaryHost(): string | null {
 }
 
 export const config = {
-  // Публичните профили (/u, /d), съкратените линкове (/s), buyer verify,
+  // Публичните профили (/u, /d), съкратените линкове (/s),
   // API и статичните файлове са извън локализирания рутинг.
   // „api/“ и „api“ точно — не префиксът „api“: иначе slug като „apicoltura“
   // на краткия хост (PROFILE_HOST) не стига до пренаписването → 404.
-  matcher: ['/((?!api/|api$|u/|d/|s/|buyer/|_next|_vercel|.*\\..*).*)'],
+  matcher: ['/((?!api/|api$|u/|d/|s/|_next|_vercel|.*\\..*).*)'],
 };

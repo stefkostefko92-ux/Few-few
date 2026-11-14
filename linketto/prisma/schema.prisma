@@ -19,35 +19,38 @@ enum Plan {
 }
 
 model User {
-  id                   String    @id @default(cuid())
-  email                String    @unique
-  passwordHash         String
-  name                 String?
-  locale               String    @default("bg") // език на админа за този потребител
-  plan                 Plan      @default(FREE)
-  stripeCustomerId     String?   @unique
-  stripeAccountId      String?   @unique // Stripe Connect (Express) акаунт за магазина
-  stripeChargesEnabled Boolean   @default(false) // обновява се от account.updated webhook
-  isTrader             Boolean   @default(false) // Дир.2011/83 чл.6а: търговец (по декларация на продавача)
-  referralCode         String?   @unique // личен реферален код (за поканите)
-  referredById         String?   // кой е поканил този потребител
-  referralCreditCents  Int       @default(0) // натрупан бонус от рефералите (може < 0: дълг след сторно)
+  id                          String           @id @default(cuid())
+  email                       String           @unique
+  passwordHash                String
+  name                        String?
+  locale                      String           @default("bg") // език на админа за този потребител
+  plan                        Plan             @default(FREE)
+  stripeCustomerId            String?          @unique
+  stripeAccountId             String?          @unique // Stripe Connect (Express) акаунт за магазина
+  stripeChargesEnabled        Boolean          @default(false) // обновява се от account.updated webhook
+  isTrader                    Boolean          @default(false) // Дир.2011/83 чл.6а: търговец (по декларация на продавача)
+  referralCode                String?          @unique // личен реферален код (за поканите)
+  referredById                String? // кой е поканил този потребител
+  referralCreditCents         Int              @default(0) // натрупан бонус от рефералите (може < 0: дълг след сторно)
   // Връзка план ↔ плащане (billing-sync): плащане се свързва с план само по
   // записан ключ, никога по customer. FOUNDER → PaymentIntent; PRO/BUSINESS → абонамент.
-  planPaymentIntentId  String?   @unique
-  planSubscriptionId   String?   @unique
-  planRevokedAt        DateTime?
-  planRevokedReason    String? // refund | dispute
+  planPaymentIntentId         String?          @unique
+  planSubscriptionId          String?          @unique
+  planRevokedAt               DateTime?
+  planRevokedReason           String? // refund | dispute
   planDisputedPaymentIntentId String? // оспореното плащане по плановия абонамент (resume/restore само по него)
-  digestOptOut         Boolean   @default(false) // отказ от седмичния отчет („езикова дупка“)
-  lastDigestAt         DateTime? // кога cron-ът на отчета е обработил потребителя последно (въртене на партидата)
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
-  sessions             Session[]
-  profiles             Profile[]
-  loginEvents          LoginEvent[]
-  referralsMade        Referral[]   @relation("ReferralsMade")
-  payouts              ReferralPayout[] @relation("Payouts")
+  digestOptOut                Boolean          @default(false) // отказ от седмичния отчет („езикова дупка“)
+  planExpiresAt               DateTime? // предплатен PRO/BUSINESS — до кога (FOUNDER/FREE: null)
+  planReminded                Int? // последно напомняне за текущия период: 7 или 1 (дни преди изтичане)
+  lastDigestAt                DateTime? // кога cron-ът на отчета е обработил потребителя последно (въртене на партидата)
+  createdAt                   DateTime         @default(now())
+  updatedAt                   DateTime         @updatedAt
+  sessions                    Session[]
+  profiles                    Profile[]
+  loginEvents                 LoginEvent[]
+  referralsMade               Referral[]       @relation("ReferralsMade")
+  planOrders                  PlanOrder[]
+  payouts                     ReferralPayout[] @relation("Payouts")
 }
 
 // Сигурност на входа: IP при успешен вход/регистрация (пази се 90 дни;
@@ -65,15 +68,16 @@ model LoginEvent {
 // Реферална програма: един ред при УСПЕШЕН реферал (поканеният си купи
 // платен план). Уникален по referredUserId → един бонус на поканен.
 model Referral {
-  id             String   @id @default(cuid())
-  referrerId     String
-  referrer       User     @relation("ReferralsMade", fields: [referrerId], references: [id], onDelete: Cascade)
-  referredUserId String   @unique
-  plan           Plan
-  rewardCents    Int
-  createdAt      DateTime @default(now())
+  id                    String    @id @default(cuid())
+  referrerId            String
+  referrer              User      @relation("ReferralsMade", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredUserId        String    @unique
+  plan                  Plan
+  rewardCents           Int
+  createdAt             DateTime  @default(now())
   // Плащането, породило наградата (сторно при refund/спор, billing-sync).
   stripePaymentIntentId String?   @unique
+  planOrderId           String?   @unique // Revolut: поръчката, породила наградата (сторно при refund)
   reversedAt            DateTime?
   reversalReason        String? // refund | dispute
   clawbackPayoutId      String? // одитна следа: ReferralPayout, в който е влязла наградата (без релация)
@@ -188,16 +192,16 @@ model Subscriber {
 // Промо код за магазина: процентна отстъпка върху продукт. Дефинира се от
 // създателя; прилага се при checkout (сумата се преизчислява на сървъра).
 model Coupon {
-  id             String    @id @default(cuid())
+  id             String              @id @default(cuid())
   profileId      String
-  profile        Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profile        Profile             @relation(fields: [profileId], references: [id], onDelete: Cascade)
   code           String // нормализиран (главни букви), уникален в рамките на профила
   percentOff     Int // 1..90
-  active         Boolean   @default(true)
+  active         Boolean             @default(true)
   maxRedemptions Int? // null = без лимит
-  timesRedeemed  Int       @default(0)
+  timesRedeemed  Int                 @default(0)
   expiresAt      DateTime? // null = без срок
-  createdAt      DateTime  @default(now())
+  createdAt      DateTime            @default(now())
   reservations   CouponReservation[]
 
   @@unique([profileId, code])
@@ -302,6 +306,7 @@ model Product {
   type         ProductType          @default(DIGITAL)
   interval     String? // MEMBERSHIP: 'month' | 'year'
   deliveryUrl  String? // DIGITAL: таен линк (COURSE/MEMBERSHIP ползват уроци)
+  externalUrl  String? // линк за плащане ПРИ създателя (Revolut, PayPal…) — Linketto не пипа парите
   active       Boolean              @default(true)
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
@@ -371,9 +376,9 @@ model BuyerSession {
 }
 
 model ProductTranslation {
-  id        String  @id @default(cuid())
-  productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id          String  @id @default(cuid())
+  productId   String
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   locale      String
   title       String
   description String?
@@ -383,30 +388,30 @@ model ProductTranslation {
 
 // Записва се само от подписания Stripe webhook (checkout.session.completed).
 model Purchase {
-  id              String   @id @default(cuid())
-  productId       String
-  product         Product  @relation(fields: [productId], references: [id], onDelete: Restrict) // фискални/OSS записи — пазят се 10 г.
-  profileId       String
-  stripeSessionId String   @unique
-  stripePaymentIntentId String?  @unique // за refund/dispute проследяване
-  amountCents     Int // брутна платена сума (с вкл. ДДС, когато се дължи)
-  feeCents        Int // нашата комисиона към момента на продажбата
+  id                    String    @id @default(cuid())
+  productId             String
+  product               Product   @relation(fields: [productId], references: [id], onDelete: Restrict) // фискални/OSS записи — пазят се 10 г.
+  profileId             String
+  stripeSessionId       String    @unique
+  stripePaymentIntentId String?   @unique // за refund/dispute проследяване
+  amountCents           Int // брутна платена сума (с вкл. ДДС, когато се дължи)
+  feeCents              Int // нашата комисиона към момента на продажбата
   // ДДС слой (deemed supplier по чл. 9а Регл. 282/2011 — виж TAX.md):
   // платформата дължи ДДС по държавата на купувача; пазим OSS записите.
-  vatAmountCents  Int      @default(0) // ДДС от Stripe Tax (0 без данъчен слой)
-  netAmountCents  Int? // amountCents - vatAmountCents (базата за комисионата)
-  buyerCountry    String? // държава на купувача (billing адрес от Stripe)
-  stripeTransferId String? // преводът към продавача (separate charges & transfers)
-  payoutFailedAt  DateTime? // преводът се провали → админът вижда и ретрайва
-  chargedOn       String   @default("platform") // "platform" (separate) | "destination" (заварени)
-  receiptNumber   Int      @default(autoincrement()) @unique // непрекъсната номерация (Н-18)
-  buyerEmail      String?
-  locale          String? // език на купувача — за имейла на неговия език
-  couponCode      String? // приложен промо код (ако е ползван)
-  deliveredAt     DateTime? // кога е изпратен имейлът с доставката
-  refundedAt      DateTime?
-  disputedAt      DateTime?
-  createdAt       DateTime @default(now())
+  vatAmountCents        Int       @default(0) // ДДС от Stripe Tax (0 без данъчен слой)
+  netAmountCents        Int? // amountCents - vatAmountCents (базата за комисионата)
+  buyerCountry          String? // държава на купувача (billing адрес от Stripe)
+  stripeTransferId      String? // преводът към продавача (separate charges & transfers)
+  payoutFailedAt        DateTime? // преводът се провали → админът вижда и ретрайва
+  chargedOn             String    @default("platform") // "platform" (separate) | "destination" (заварени)
+  receiptNumber         Int       @unique @default(autoincrement()) // непрекъсната номерация (Н-18)
+  buyerEmail            String?
+  locale                String? // език на купувача — за имейла на неговия език
+  couponCode            String? // приложен промо код (ако е ползван)
+  deliveredAt           DateTime? // кога е изпратен имейлът с доставката
+  refundedAt            DateTime?
+  disputedAt            DateTime?
+  createdAt             DateTime  @default(now())
 
   @@index([profileId, createdAt])
 }
@@ -464,4 +469,44 @@ model ClickEvent {
 
   @@index([profileId, createdAt])
   @@index([linkId, createdAt])
+}
+
+// Предплатен план, платен през Revolut Merchant (docs/revolut-migration-spec.md
+// §7). Сумата и ДДС се решават на сървъра при checkout; правото се дава само
+// след прочетена от API-то поръчка в `completed` (CAS pending → completed).
+model PlanOrder {
+  id                 String    @id @default(cuid())
+  userId             String
+  user               User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  plan               Plan
+  interval           String // monthly | quarterly | semiannual | annual (FOUNDER: lifetime)
+  amountCents        Int // с ДДС, EUR
+  vatRateBp          Int // ставка в базисни точки (2000 = 20%)
+  vatCents           Int
+  netCents           Int
+  vatCountry         String // мястото на доставка (под прага: BG)
+  state              String    @default("pending") // pending | completed | conflict | refund_pending | refunded | failed | cancelled
+  revolutOrderId     String?   @unique
+  buyerCountry       String? // от адреса за таксуване при Revolut (доказателство 1)
+  cardCountry        String? // държава на картата (доказателство 2)
+  completedAt        DateTime?
+  refundedAt         DateTime?
+  // Снимка на плана отпреди поръчката — при отказ/връщане се възстановява
+  // (отнема се само платеното с тази поръчка, P10′).
+  prevPlan           Plan?
+  prevExpiresAt      DateTime?
+  // Потвърждението на траен носител (чл. 8(7) Дир. 2011/83) е изпратено.
+  confirmationSentAt DateTime?
+  // Правото е дадено с тази поръчка (false за conflict — платена, неприложена).
+  applied            Boolean   @default(false)
+  // Опит за връщане (Idempotency-Key = `<id>-<опит>`: повторен клик в същия
+  // опит не връща два пъти, а нов опит след неуспешен refund не взима стария отговор).
+  refundAttempts     Int       @default(0)
+  // Refund поръчката при Revolut (асинхронна, до 2 дни) — state refund_pending.
+  refundOrderId      String?   @unique
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([state, createdAt])
 }

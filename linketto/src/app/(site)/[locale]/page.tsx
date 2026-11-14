@@ -145,7 +145,7 @@ export default async function HomePage({
   const TRUST = [
     [ServerIcon, t('trustEu')],
     [ShieldCheckIcon, t('trustGdpr')],
-    [LockIcon, t('trustStripe')],
+    [LockIcon, t('trustPayments')],
     [CookieIcon, t('trustCookies')],
   ] as const;
 
@@ -463,7 +463,7 @@ export default async function HomePage({
             {tPricing('title')}
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-slate-500">
-            {tPricing('processingNote')} {tPricing('vatNote')}
+            {tPricing('prepaidNote')} {tPricing('vatNote')}
           </p>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {PLAN_ORDER.map((planKey, index) => {
@@ -502,9 +502,6 @@ export default async function HomePage({
                         ? ` ${tPricing('oneTime')}`
                         : tPricing('perMonth')}
                     </span>
-                  </p>
-                  <p className="mt-1.5 text-sm font-medium text-linketto-600">
-                    {tPricing(`${planKey}.fee`)} {tPricing('commission')}
                   </p>
                   {!def.oneTime && def.priceCents > 0 && (
                     <p className="mt-1 text-xs font-semibold text-emerald-700">

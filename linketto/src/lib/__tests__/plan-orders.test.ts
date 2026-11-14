@@ -4,6 +4,7 @@ import {
   applyPaidOrder,
   checkPurchase,
   expiryAction,
+  planAfterRefund,
   planOrderAmountCents,
 } from '../plan-orders';
 
@@ -63,4 +64,41 @@ test('P8: напомняне на 7 дни и на 1 ден — по веднъ�
   assert.deepEqual(expiryAction({ plan: 'PRO', expiresAt: at(0.5), reminded: 7, now: NOW }), { downgrade: false, remind: 1 });
   assert.deepEqual(expiryAction({ plan: 'PRO', expiresAt: at(0.5), reminded: 1, now: NOW }), { downgrade: false });
   assert.deepEqual(expiryAction({ plan: 'PRO', expiresAt: at(20), reminded: null, now: NOW }), { downgrade: false });
+});
+
+// P10′ (правен преглед 2026-11-14): отказът/връщането отнема САМО платеното с
+// върнатата поръчка — планът и срокът отпреди нея се възстановяват.
+test('planAfterRefund: възстановява плана отпреди поръчката', () => {
+  const now = new Date('2026-11-14T12:00:00Z');
+  const later = new Date('2027-03-01T00:00:00Z');
+  assert.deepEqual(planAfterRefund({ prevPlan: null, prevExpiresAt: null, now }), { plan: 'FREE', expiresAt: null });
+  assert.deepEqual(planAfterRefund({ prevPlan: 'FREE', prevExpiresAt: null, now }), { plan: 'FREE', expiresAt: null });
+  assert.deepEqual(planAfterRefund({ prevPlan: 'PRO', prevExpiresAt: later, now }), { plan: 'PRO', expiresAt: later });
+  assert.deepEqual(planAfterRefund({ prevPlan: 'BUSINESS', prevExpiresAt: later, now }), { plan: 'BUSINESS', expiresAt: later });
+  // подарък от админа без срок остава без срок
+  assert.deepEqual(planAfterRefund({ prevPlan: 'PRO', prevExpiresAt: null, now }), { plan: 'PRO', expiresAt: null });
+  assert.deepEqual(planAfterRefund({ prevPlan: 'FOUNDER', prevExpiresAt: null, now }), { plan: 'FOUNDER', expiresAt: null });
+});
+
+test('planAfterRefund: изтекъл предишен срок → FREE', () => {
+  const now = new Date('2026-11-14T12:00:00Z');
+  assert.deepEqual(
+    planAfterRefund({ prevPlan: 'PRO', prevExpiresAt: new Date('2026-11-14T12:00:00Z'), now }),
+    { plan: 'FREE', expiresAt: null },
+  );
+  assert.deepEqual(
+    planAfterRefund({ prevPlan: 'BUSINESS', prevExpiresAt: new Date('2026-10-01T00:00:00Z'), now }),
+    { plan: 'FREE', expiresAt: null },
+  );
+});
+
+// Ревю 2026-11-14: подарък от админа (PRO/BUSINESS без срок) е безсрочен —
+// същият или по-нисък план не се купува (иначе подаръкът става 1 месец).
+test('checkPurchase: безсрочен подарък блокира същия/по-нисък план, по-висок — да', () => {
+  assert.equal(checkPurchase({ plan: 'PRO', expiresAt: null, want: 'PRO', now: NOW }), 'gift');
+  assert.equal(checkPurchase({ plan: 'BUSINESS', expiresAt: null, want: 'PRO', now: NOW }), 'gift');
+  assert.equal(checkPurchase({ plan: 'BUSINESS', expiresAt: null, want: 'BUSINESS', now: NOW }), 'gift');
+  assert.equal(checkPurchase({ plan: 'PRO', expiresAt: null, want: 'BUSINESS', now: NOW }), 'ok');
+  assert.equal(checkPurchase({ plan: 'PRO', expiresAt: null, want: 'FOUNDER', now: NOW }), 'ok');
+  assert.equal(checkPurchase({ plan: 'FREE', expiresAt: null, want: 'PRO', now: NOW }), 'ok');
 });

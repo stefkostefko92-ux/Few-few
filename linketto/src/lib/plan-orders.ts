@@ -34,14 +34,26 @@ function hasActivePeriod(plan: PlanId, expiresAt: Date | null, now: Date): boole
   return (plan === 'PRO' || plan === 'BUSINESS') && !!expiresAt && expiresAt > now;
 }
 
-/** P6: може ли потребителят да купи `want` сега. */
+/**
+ * P6: може ли потребителят да купи `want` сега. Вика се и при checkout, и
+ * ОТНОВО при уреждане на платената поръчка (стара висяща поръчка не бива да
+ * свали по-висок план, купен междувременно). PRO/BUSINESS без срок = подарък
+ * от админа (безсрочен): същият или по-нисък план не се купува.
+ */
 export function checkPurchase(input: {
   plan: PlanId;
   expiresAt: Date | null;
   want: PaidPlanId;
   now: Date;
-}): 'ok' | 'founder' | 'downgrade-active' {
+}): 'ok' | 'founder' | 'downgrade-active' | 'gift' {
   if (input.plan === 'FOUNDER') return 'founder';
+  if (
+    (input.plan === 'PRO' || input.plan === 'BUSINESS') &&
+    input.expiresAt === null &&
+    RANK[input.want] <= RANK[input.plan]
+  ) {
+    return 'gift';
+  }
   if (
     hasActivePeriod(input.plan, input.expiresAt, input.now) &&
     RANK[input.want] < RANK[input.plan]
@@ -108,4 +120,21 @@ export function expiryAction(input: {
   if (left <= DAY_MS) return input.reminded === 1 ? { downgrade: false } : { downgrade: false, remind: 1 };
   if (left <= 7 * DAY_MS) return input.reminded === null ? { downgrade: false, remind: 7 } : { downgrade: false };
   return { downgrade: false };
+}
+
+/**
+ * P10′: какъв план остава след пълно връщане на поръчка — този отпреди нея
+ * (снимка в PlanOrder.prevPlan/prevExpiresAt). Изтекъл предишен срок → FREE;
+ * без снимка → FREE. Отказът отнема само платеното с върнатата поръчка.
+ */
+export function planAfterRefund(input: {
+  prevPlan: PlanId | null;
+  prevExpiresAt: Date | null;
+  now: Date;
+}): { plan: PlanId; expiresAt: Date | null } {
+  const { prevPlan, prevExpiresAt, now } = input;
+  if (!prevPlan || prevPlan === 'FREE') return { plan: 'FREE', expiresAt: null };
+  if (prevPlan === 'FOUNDER') return { plan: 'FOUNDER', expiresAt: null };
+  if (prevExpiresAt && prevExpiresAt.getTime() <= now.getTime()) return { plan: 'FREE', expiresAt: null };
+  return { plan: prevPlan, expiresAt: prevExpiresAt };
 }

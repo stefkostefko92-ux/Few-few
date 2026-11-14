@@ -30,11 +30,10 @@ export default async function CustomDomainPage({
     hl?: string;
     sent?: string;
     formError?: string;
-    shopError?: string;
   }>;
 }) {
   const { domain } = await params;
-  const { hl, sent, formError, shopError } = await searchParams;
+  const { hl, sent, formError } = await searchParams;
   const profile = await loadProfileBy({ customDomain: domain.toLowerCase() });
   if (
     !profile ||
@@ -50,7 +49,6 @@ export default async function CustomDomainPage({
       hl={hl}
       sent={sent}
       formError={formError}
-      shopError={shopError}
     />
   );
 }

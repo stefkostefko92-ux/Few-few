@@ -1,50 +1,27 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { brevoPayload, deliveryEmailHtml, deliverySubject, parseSender } from '../email';
+import { brevoPayload, broadcastHtml, parseSender, subscribeConfirmHtml } from '../email';
 
-test('имейлът за доставка е на езика на купувача', () => {
-  const en = deliveryEmailHtml({
-    productTitle: 'E-book',
-    deliveryUrl: 'https://example.com/x',
-    amountCents: 1200,
-    locale: 'en',
-  });
-  assert.ok(en.includes('Thank you for buying'));
-  assert.ok(en.includes('€12.00'));
-  assert.ok(en.includes('14-day right of withdrawal'));
-
-  const it = deliveryEmailHtml({
-    productTitle: 'E-book',
-    deliveryUrl: 'https://example.com/x',
-    amountCents: 500,
-    locale: 'it',
-  });
-  assert.ok(it.includes('Grazie per aver acquistato'));
-});
-
-test('липсващ/непознат език пада към bg (източник)', () => {
-  const fallback = deliveryEmailHtml({
-    productTitle: 'X',
-    deliveryUrl: 'https://example.com/x',
-    amountCents: 300,
-  });
-  assert.ok(fallback.includes('Благодарим за покупката'));
-});
-
-test('темата на имейла носи заглавието и езика', () => {
-  assert.equal(deliverySubject('Курс', 'bg'), 'Linketto — Покупка: Курс');
-  assert.equal(deliverySubject('Course', 'en'), 'Linketto — Purchase: Course');
+test('потвърждението за бюлетин е на езика на абоната; непознат → en', () => {
+  const it = subscribeConfirmHtml({ sellerName: 'Ana', confirmUrl: 'https://example.com/c', locale: 'it' });
+  assert.ok(it.includes('Conferma la tua email'));
+  const fallback = subscribeConfirmHtml({ sellerName: 'Ana', confirmUrl: 'https://example.com/c', locale: 'xx' });
+  assert.ok(fallback.includes('Please confirm your email'));
 });
 
 test('HTML-ът екранира потребителския вход (без инжекция)', () => {
-  const html = deliveryEmailHtml({
-    productTitle: '<script>alert(1)</script>',
-    deliveryUrl: 'https://example.com/"x',
-    amountCents: 300,
+  const html = broadcastHtml({
+    sellerName: '<img src=x onerror=alert(1)>',
+    subject: '<script>alert(1)</script>',
+    body: 'ред 1\n<b>ред 2</b>',
+    unsubscribeUrl: 'https://example.com/"x',
     locale: 'en',
   });
   assert.ok(!html.includes('<script>alert(1)</script>'));
+  assert.ok(!html.includes('<img src=x'));
   assert.ok(html.includes('&lt;script&gt;'));
+  assert.ok(html.includes('ред 1<br>&lt;b&gt;'));
+  assert.ok(html.includes('&quot;x'));
 });
 
 test('parseSender: „Име <адрес>“ и само адрес; невалидно → null', () => {

@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { LOCALES, LOCALE_NAMES, type Locale } from '@/i18n/locales';
 import { getSessionUser } from '@/lib/auth';
 import { logoutAction } from '@/app/actions/auth';
+import { LocaleChoice } from '@/components/LocaleChoice';
 
 export async function SiteHeader({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: 'nav' });
@@ -87,18 +88,18 @@ export async function SiteFooter({
           aria-label="Language"
         >
           {LOCALES.map((loc) => (
-            <a
+            <LocaleChoice
               key={loc}
+              locale={loc}
               href={`/${loc}${currentPath}`}
               className={
                 loc === locale
                   ? 'font-semibold text-white'
                   : 'rounded transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300'
               }
-              hrefLang={loc}
             >
               {LOCALE_NAMES[loc]}
-            </a>
+            </LocaleChoice>
           ))}
         </nav>
         <div className="flex flex-col items-start gap-2.5">

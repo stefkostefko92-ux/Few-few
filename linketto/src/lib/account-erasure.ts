@@ -13,9 +13,9 @@ import { parseStyle } from '@/lib/style';
 // Покупките (OSS/Н-18: ДДС, държава, непрекъсната номерация) се пазят 10 г.
 // по ЗСч/ЗДДС (чл. 17(3)(б) ОРЗД позволява задържането им). Затова:
 //  · няма покупки → истинско каскадно изтриване;
-//  · има покупки → АНОНИМИЗИРАНЕ: личните данни и съдържанието се махат,
-//    профилите се свалят, а продуктите + покупките + платеният достъп на
-//    купувачите остават (FK-овете са Restrict).
+//  · има покупки/поръчки на план → АНОНИМИЗИРАНЕ: личните данни и
+//    съдържанието се махат, профилите се свалят, а счетоводните записи
+//    остават (FK-овете са Restrict).
 
 export type ErasureResult = 'deleted' | 'anonymized';
 
@@ -24,12 +24,15 @@ export async function eraseUser(userId: string): Promise<ErasureResult> {
   // (членствата са Entitlement БЕЗ Purchase) — и двата FK са Restrict.
   // Изплатените/заявени реферални бонуси са разход в счетоводството (10 г.) —
   // ReferralPayout е Cascade към User, затова при тях акаунтът се анонимизира.
-  const [purchases, entitlements, payouts] = await Promise.all([
+  // Поръчките на планове (Revolut) са счетоводни записи с ДДС (10 г.) —
+  // PlanOrder е Restrict към User, затова акаунт с поръчки се анонимизира.
+  const [purchases, entitlements, payouts, planOrders] = await Promise.all([
     prisma.purchase.count({ where: { product: { profile: { userId } } } }),
     prisma.entitlement.count({ where: { product: { profile: { userId } } } }),
     prisma.referralPayout.count({ where: { userId } }),
+    prisma.planOrder.count({ where: { userId } }),
   ]);
-  if (purchases + entitlements + payouts === 0) {
+  if (purchases + entitlements + payouts + planOrders === 0) {
     await prisma.user.delete({ where: { id: userId } });
     return 'deleted';
   }
@@ -94,6 +97,10 @@ export async function eraseUser(userId: string): Promise<ErasureResult> {
         stripeCustomerId: null,
         stripeChargesEnabled: false,
         digestOptOut: true,
+        // Платеният план не се пренася върху анонимен акаунт.
+        plan: 'FREE',
+        planExpiresAt: null,
+        planReminded: null,
       },
     }),
   ]);

@@ -3,7 +3,7 @@
 // био в Instagram/TikTok, по-рядък QR и без чужд бранд в средата на URL-а.
 // middleware.ts пренаписва /<slug> на този хост към /u/<slug>.
 // Без PROFILE_HOST — <PUBLIC_BASE_URL>/u/<slug> (както досега).
-// Canonical/sitemap/Stripe/имейл линковете остават на основния домейн.
+// Canonical/sitemap/плащане/имейл линковете остават на основния домейн.
 
 import { SITE_URL } from '@/lib/seo';
 

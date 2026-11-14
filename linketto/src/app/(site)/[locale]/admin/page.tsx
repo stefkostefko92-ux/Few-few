@@ -9,8 +9,7 @@ import {
   adminDeleteUserAction,
   adminForceLogoutAction,
   adminMarkPayoutPaidAction,
-  adminRefundPurchaseAction,
-  adminRetryPayoutAction,
+  adminRefundPlanOrderAction,
   adminResolveReportAction,
   adminSetPasswordAction,
   adminSetPublishedAction,
@@ -41,15 +40,16 @@ export default async function AdminPage({
     userCount,
     profileCount,
     clickCount,
-    purchaseTotals,
+    orderTotals,
     openReports,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.profile.count(),
     prisma.clickEvent.count(),
-    prisma.purchase.aggregate({
+    prisma.planOrder.aggregate({
+      where: { state: 'completed' },
       _count: { _all: true },
-      _sum: { amountCents: true, feeCents: true },
+      _sum: { amountCents: true, vatCents: true },
     }),
     prisma.report.findMany({
       where: { resolvedAt: null },
@@ -66,15 +66,24 @@ export default async function AdminPage({
     include: { user: { select: { email: true } } },
   });
 
-  const recentPurchases = await prisma.purchase.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 30,
-    include: {
-      product: {
-        include: { translations: true, profile: { select: { slug: true } } },
-      },
-    },
-  });
+  // Поръчки на планове (Revolut): платените (вкл. неприложени и чакащи
+  // връщане) отделно от висящите/неуспешните — изоставени checkout-и не бива
+  // да изместват платените от списъка (иначе няма бутон за връщане).
+  const [paidOrders, otherOrders] = await Promise.all([
+    prisma.planOrder.findMany({
+      where: { state: { in: ['completed', 'conflict', 'refund_pending', 'refunded'] } },
+      orderBy: [{ completedAt: 'desc' }, { createdAt: 'desc' }],
+      take: 60,
+      include: { user: { select: { email: true } } },
+    }),
+    prisma.planOrder.findMany({
+      where: { state: { in: ['pending', 'failed', 'cancelled'] } },
+      orderBy: { createdAt: 'desc' },
+      take: 15,
+      include: { user: { select: { email: true } } },
+    }),
+  ]);
+  const recentOrders = [...paidOrders, ...otherOrders];
 
   const query = (q ?? '').trim().toLowerCase();
   const users = await prisma.user.findMany({
@@ -125,7 +134,9 @@ export default async function AdminPage({
                 ? t('errorPassword')
                 : error === 'refund'
                   ? t('errorRefund')
-                  : t('errorInput')}
+                  : error === 'refund-order'
+                    ? t('errorRefundOrder')
+                    : t('errorInput')}
           </p>
         )}
 
@@ -136,14 +147,14 @@ export default async function AdminPage({
               [userCount, t('statsUsers')],
               [profileCount, t('statsProfiles')],
               [clickCount, t('statsClicks')],
-              [purchaseTotals._count._all, t('statsPurchases')],
+              [orderTotals._count._all, t('statsOrders')],
               [
-                `€${((purchaseTotals._sum.amountCents ?? 0) / 100).toFixed(2)}`,
+                `€${((orderTotals._sum.amountCents ?? 0) / 100).toFixed(2)}`,
                 t('statsRevenue'),
               ],
               [
-                `€${((purchaseTotals._sum.feeCents ?? 0) / 100).toFixed(2)}`,
-                t('statsFees'),
+                `€${((orderTotals._sum.vatCents ?? 0) / 100).toFixed(2)}`,
+                t('statsVat'),
               ],
             ] as const
           ).map(([value, label]) => (
@@ -207,84 +218,44 @@ export default async function AdminPage({
           )}
         </section>
 
-        {/* Последни продажби + връщане на пари */}
+        {/* Поръчки на планове (Revolut) + пълно връщане на пари */}
         <section className="rounded-2xl border border-slate-200 bg-white p-6">
-          <h2 className="font-semibold">{t('purchasesTitle')}</h2>
-          {recentPurchases.length === 0 ? (
-            <p className="mt-2 text-sm text-slate-500">{t('purchasesEmpty')}</p>
+          <h2 className="font-semibold">{t('ordersTitle')}</h2>
+          {recentOrders.length === 0 ? (
+            <p className="mt-2 text-sm text-slate-500">{t('ordersEmpty')}</p>
           ) : (
             <ul className="mt-4 space-y-2 text-sm">
-              {recentPurchases.map((purchase) => (
+              {recentOrders.map((order) => (
                 <li
-                  key={purchase.id}
+                  key={order.id}
                   className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-2"
                 >
                   <span className="min-w-0">
-                    <a
-                      href={`/u/${purchase.product.profile.slug}`}
-                      className="font-medium text-linketto-700 hover:underline"
-                    >
-                      /u/{purchase.product.profile.slug}
-                    </a>{' '}
-                    · {purchase.product.translations[0]?.title ?? '—'} ·{' '}
+                    <span className="font-medium">{order.user.email}</span> ·{' '}
+                    {order.plan} · {t(`interval.${order.interval}`)} ·{' '}
                     <span className="font-semibold">
-                      €{(purchase.amountCents / 100).toFixed(2)}
+                      €{(order.amountCents / 100).toFixed(2)}
                     </span>{' '}
                     <span className="text-xs text-slate-500">
-                      ({t('feeShort')} €{(purchase.feeCents / 100).toFixed(2)})
+                      ({t('vatShort')} €{(order.vatCents / 100).toFixed(2)}
+                      {order.buyerCountry ?? order.cardCountry
+                        ? ` · ${order.buyerCountry ?? order.cardCountry}`
+                        : ''}
+                      {' · '}
+                      {order.createdAt.toISOString().slice(0, 16).replace('T', ' ')})
                     </span>
-                    {purchase.buyerEmail ? (
-                      <span className="text-xs text-slate-500">
-                        {' '}
-                        · {purchase.buyerEmail}
-                      </span>
-                    ) : null}
-                    {purchase.disputedAt && (
-                      <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs font-semibold text-red-700">
-                        {t('disputed')}
-                      </span>
-                    )}
-                    {!purchase.deliveredAt && !purchase.refundedAt && (
-                      <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-700">
-                        {t('notDelivered')}
-                      </span>
-                    )}
-                    {/* Провален превод към продавача → видим + ретрайваем */}
-                    {purchase.payoutFailedAt && !purchase.stripeTransferId && (
-                      <form
-                        action={adminRetryPayoutAction}
-                        className="ml-2 inline-flex items-center gap-1"
-                      >
-                        <span className="rounded bg-red-100 px-1.5 py-0.5 text-xs font-semibold text-red-700">
-                          {t('payoutFailed')}
-                        </span>
-                        <input type="hidden" name="uiLocale" value={locale} />
-                        <input
-                          type="hidden"
-                          name="purchaseId"
-                          value={purchase.id}
-                        />
-                        <button
-                          type="submit"
-                          className="rounded-full border border-slate-300 px-2 py-0.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
-                        >
-                          {t('payoutRetry')}
-                        </button>
-                      </form>
-                    )}
                   </span>
-                  {purchase.refundedAt ? (
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
-                      {t('refunded')}
-                    </span>
-                  ) : (
-                    <form action={adminRefundPurchaseAction}>
+                  {order.state === 'completed' ||
+                  order.state === 'conflict' ||
+                  (order.state === 'refund_pending' && !order.refundOrderId) ? (
+                    <form action={adminRefundPlanOrderAction}>
                       <input type="hidden" name="uiLocale" value={locale} />
-                      <input
-                        type="hidden"
-                        name="purchaseId"
-                        value={purchase.id}
-                      />
+                      <input type="hidden" name="planOrderId" value={order.id} />
+                      {order.state === 'conflict' && (
+                        <span className="mr-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-700">
+                          {t('orderState.conflict')}
+                        </span>
+                      )}
                       <button
                         type="submit"
                         className="rounded-full border border-red-500 px-4 py-1 text-xs font-semibold text-red-600 hover:bg-red-50"
@@ -292,6 +263,10 @@ export default async function AdminPage({
                         {t('refund')}
                       </button>
                     </form>
+                  ) : (
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+                      {t(`orderState.${order.state}`)}
+                    </span>
                   )}
                 </li>
               ))}
@@ -370,7 +345,9 @@ export default async function AdminPage({
                   <p className="text-xs text-slate-500">
                     {user.name ?? '—'} · {user.plan} ·{' '}
                     {user.createdAt.toISOString().slice(0, 10)}
-                    {user.stripeAccountId ? ' · Stripe Connect' : ''}
+                    {user.planExpiresAt
+                      ? ` · ${t('planUntil', { date: user.planExpiresAt.toISOString().slice(0, 10) })}`
+                      : ''}
                     {user.referralCreditCents > 0
                       ? ` · ${t('referralCredit')}: €${(user.referralCreditCents / 100).toFixed(2)}`
                       : ''}

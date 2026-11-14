@@ -51,16 +51,12 @@ export default async function VersusPage({
     switch (value.t) {
       case 'price':
         return t('cellPrice', { amount: value.amount, plan: value.plan });
-      case 'percent':
-        return t('cellPercent', { value: value.value, plan: value.plan });
       case 'days':
         return t('cellDays', { value: value.value, plan: value.plan });
       case 'yesFrom':
         return t('cellYesFrom', { amount: value.amount, plan: value.plan });
       case 'no':
         return t('cellNo');
-      case 'freeOnly':
-        return t('cellFreeOnly');
     }
   };
 

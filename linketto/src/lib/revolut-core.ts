@@ -10,7 +10,9 @@ const SIGNATURE_TOLERANCE_MS = 5 * 60_000;
 /**
  * P3: `Revolut-Signature` = `v1=` + HMAC-SHA256 hex на `v1.{timestamp}.{сурово тяло}`.
  * При ротация на тайната хедърът носи няколко подписа, разделени със запетая.
- * `Revolut-Request-Timestamp` е UNIX време в милисекунди.
+ * `Revolut-Request-Timestamp` е UNIX време — по вторични източници в
+ * милисекунди; първоизточникът не го потвърждава (Д8), затова стойност под
+ * 10^12 се тълкува като секунди. Толерансът (5 мин.) е наша политика.
  */
 export function verifyRevolutSignature(input: {
   rawBody: string;
@@ -20,8 +22,9 @@ export function verifyRevolutSignature(input: {
   now: number;
 }): boolean {
   if (!input.secret || !input.timestamp || !input.signature) return false;
-  const ts = Number(input.timestamp);
-  if (!Number.isFinite(ts) || Math.abs(input.now - ts) > SIGNATURE_TOLERANCE_MS) return false;
+  const raw = Number(input.timestamp);
+  const ts = raw < 1e12 ? raw * 1000 : raw;
+  if (!Number.isFinite(ts) || ts <= 0 || Math.abs(input.now - ts) > SIGNATURE_TOLERANCE_MS) return false;
   const expected = Buffer.from(
     `v1=${createHmac('sha256', input.secret).update(`v1.${input.timestamp}.${input.rawBody}`).digest('hex')}`,
   );
@@ -61,7 +64,9 @@ const country = (value: unknown): string | null =>
 
 /**
  * P4: какво казва поръчката от `GET /api/orders/{id}` (външни данни — валидират
- * се). Държавите идват от успешното плащане: на картата и от адреса за таксуване.
+ * се). Държавите идват от успешното плащане (Payment-v3): на картата
+ * (`payment_method.card_country_code`) и от адреса за таксуване на плащането
+ * (`billing_address.country_code`).
  */
 export function orderOutcome(order: unknown): {
   state: OrderState;
@@ -85,6 +90,6 @@ export function orderOutcome(order: unknown): {
     amountCents: Number.isInteger(o.amount) ? (o.amount as number) : null,
     currency: typeof o.currency === 'string' ? o.currency : null,
     cardCountry: country(method.card_country_code),
-    billingCountry: country(rec(method.billing_address).country_code),
+    billingCountry: country(rec(paid.billing_address).country_code),
   };
 }

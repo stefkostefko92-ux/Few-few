@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { headers } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 import type { Prisma } from '@prisma/client';
@@ -43,7 +42,6 @@ import {
   UserRoundPlusIcon,
 } from '@/components/icons';
 import { submitContactAction } from '@/app/actions/contact';
-import { startProductPurchaseAction } from '@/app/actions/shop';
 import { subscribeAction } from '@/app/actions/newsletter';
 import { votePollAction } from '@/app/actions/poll';
 import { submitBookingAction } from '@/app/actions/booking';
@@ -92,15 +90,14 @@ export async function loadProfileBy(where: Prisma.ProfileWhereUniqueInput) {
         orderBy: { position: 'asc' },
         include: { translations: true },
       },
+      // Само продукти с линк за плащане на създателя (решение О-1).
       products: {
-        where: { active: true },
+        where: { active: true, externalUrl: { not: null } },
         orderBy: { position: 'asc' },
         include: { translations: true },
       },
       user: {
         select: {
-          stripeAccountId: true,
-          stripeChargesEnabled: true,
           isTrader: true,
           // Баджът „Създай своя“ носи реферала на собственика (вирусна верига).
           referralCode: true,
@@ -170,8 +167,6 @@ export async function ProfileScreen({
   hl,
   sent,
   formError,
-  shopError,
-  couponError,
   subscribed,
   subError,
   unsub,
@@ -183,8 +178,6 @@ export async function ProfileScreen({
   hl?: string;
   sent?: string;
   formError?: string;
-  shopError?: string;
-  couponError?: string;
   subscribed?: string;
   subError?: string;
   unsub?: string;
@@ -349,10 +342,7 @@ export async function ProfileScreen({
     },
   };
   // Магазин активен → структуриран списък с продуктите (GEO/AI цитиране).
-  const shopLive =
-    profile.user.stripeAccountId &&
-    profile.user.stripeChargesEnabled &&
-    profile.products.length > 0;
+  const shopLive = profile.products.length > 0;
   const productListJsonLd = shopLive
     ? {
         '@context': 'https://schema.org',
@@ -1075,122 +1065,51 @@ export async function ProfileScreen({
           })}
         </ul>
 
-        {profile.user.stripeAccountId &&
-          profile.user.stripeChargesEnabled &&
-          profile.products.length > 0 && (
-            <section className="mt-10 text-start">
-              <h2 className="flex items-center justify-center gap-2 text-center text-sm font-semibold uppercase tracking-wide opacity-70">
-                <ShoppingBagIcon className="h-4 w-4" />
-                {t('shopTitle')}
-              </h2>
-              {shopError && (
-                <p className={`mt-2 text-center text-sm ${isLightBg ? 'text-red-700' : 'text-red-300'}`}>
-                  {t('shopError')}
-                </p>
-              )}
-              {couponError && (
-                <p className={`mt-2 text-center text-sm ${isLightBg ? 'text-red-700' : 'text-red-300'}`}>
-                  {t('shopCouponError')}
-                </p>
-              )}
-              {/* Дир. 2011/83 чл. 6а: роля на платформата + статут на продавача.
-                  ЗЗП/Omnibus: цените са крайни (с вкл. ДДС — Stripe Tax, TAX.md). */}
-              <p className="mt-2 text-center text-[11px] leading-snug opacity-80">
-                {t('shopSellerNote')}{' '}
-                {profile.user.isTrader
-                  ? t('sellerTrader')
-                  : t('sellerPrivate')}
-                . {t('shopVatIncluded')}
-              </p>
-              <ul className="mt-4 space-y-5">
-                {profile.products.map((product) => {
-                  const productTr =
-                    product.translations.find((tr) => tr.locale === viewLocale) ??
-                    product.translations.find(
-                      (tr) => tr.locale === profile.defaultLocale,
-                    ) ??
-                    product.translations[0];
-                  const productTitle = productTr?.title;
-                  if (!productTitle) return null;
-                  return (
-                    <li key={product.id} className="pf-product">
-                      <form action={startProductPurchaseAction}>
-                        <input type="hidden" name="slug" value={slug} />
-                        <input type="hidden" name="hl" value={viewLocale} />
-                        <input
-                          type="hidden"
-                          name="productId"
-                          value={product.id}
-                        />
-                        <button
-                          type="submit"
-                          className={`flex w-full items-center justify-between gap-3 border px-6 py-3.5 text-start transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl ${shapeClass} ${shadowClass}`}
-                          style={buttonStyle}
-                        >
-                          <span className="min-w-0">
-                            <span className="block font-semibold">
-                              {productTitle}
-                            </span>
-                            {productTr?.description && (
-                              <span className="mt-0.5 block text-xs font-normal opacity-75">
-                                {productTr.description}
-                              </span>
-                            )}
-                          </span>
-                          <span className="shrink-0 font-bold">
-                            €{(product.priceCents / 100).toFixed(2)}
-                            {product.type === 'MEMBERSHIP'
-                              ? product.interval === 'year'
-                                ? t('shopPerYear')
-                                : t('shopPerMonth')
-                              : ''}
-                          </span>
-                        </button>
-                        {product.type !== 'DIGITAL' && (
-                          <span className="mt-1 block text-center text-[10px] font-semibold uppercase tracking-wide opacity-75">
-                            {product.type === 'MEMBERSHIP'
-                              ? t('shopMembership')
-                              : t('shopCourse')}
+        {shopLive && (
+          <section className="mt-10 text-start">
+            <h2 className="flex items-center justify-center gap-2 text-center text-sm font-semibold uppercase tracking-wide opacity-70">
+              <ShoppingBagIcon className="h-4 w-4" />
+              {t('shopTitle')}
+            </h2>
+            {/* Дир. 2011/83 чл. 6а: продавачът е създателят (статут), Linketto
+                не е страна по покупката — плащането е при него (решение О-1). */}
+            <p className="mt-2 text-center text-[11px] leading-snug opacity-80">
+              {t('shopSellerNote')} {profile.user.isTrader ? t('sellerTrader') : t('sellerPrivate')}.{' '}
+              {t('shopExternalNote')}
+            </p>
+            <ul className="mt-4 space-y-5">
+              {profile.products.map((product) => {
+                const productTr =
+                  product.translations.find((tr) => tr.locale === viewLocale) ??
+                  product.translations.find((tr) => tr.locale === profile.defaultLocale) ??
+                  product.translations[0];
+                const productTitle = productTr?.title;
+                if (!productTitle || !product.externalUrl) return null;
+                return (
+                  <li key={product.id} className="pf-product">
+                    <a
+                      href={product.externalUrl}
+                      target="_blank"
+                      rel="nofollow noopener noreferrer ugc"
+                      className={`flex w-full items-center justify-between gap-3 border px-6 py-3.5 text-start transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl ${shapeClass} ${shadowClass}`}
+                      style={buttonStyle}
+                    >
+                      <span className="min-w-0">
+                        <span className="block font-semibold">{productTitle}</span>
+                        {productTr?.description && (
+                          <span className="mt-0.5 block text-xs font-normal opacity-75">
+                            {productTr.description}
                           </span>
                         )}
-                        {/* Промо код — не важи за членства (периодична цена) */}
-                        {product.type !== 'MEMBERSHIP' && (
-                          <input
-                            type="text"
-                            name="coupon"
-                            autoComplete="off"
-                            aria-label={t('shopCouponPlaceholder')}
-                            placeholder={t('shopCouponPlaceholder')}
-                            className="pf-field mt-1.5 !py-1.5 text-xs uppercase tracking-wide placeholder:normal-case"
-                          />
-                        )}
-                        {/* ЗЗП чл. 57, т. 13 / Дир. 2011/83 чл. 16(м):
-                            изрично съгласие за незабавна доставка =
-                            загуба на 14-дневния отказ */}
-                        <label className="mt-1.5 flex items-start gap-2 text-xs leading-snug opacity-80">
-                          <input
-                            type="checkbox"
-                            name="waiver"
-                            required
-                            className="mt-0.5 h-4 w-4 shrink-0"
-                          />
-                          {t('shopWaiver')}
-                        </label>
-                        {product.type !== 'DIGITAL' && (
-                          <Link
-                            href={`/u/${slug}/learn/${product.id}`}
-                            className="mt-1 block text-center text-[11px] underline opacity-70"
-                          >
-                            {t('shopAccess')}
-                          </Link>
-                        )}
-                      </form>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          )}
+                      </span>
+                      <span className="shrink-0 font-bold">€{(product.priceCents / 100).toFixed(2)}</span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
 
         {/* Вирусната верига: посетител → своя безплатна страница, с реферала
             на собственика (бонус при платен план). Абсолютен URL — работи и
