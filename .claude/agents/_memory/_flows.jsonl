@@ -572,3 +572,5 @@
 {"t":"handoff","ts":"2026-11-13T11:25:31.883Z","id":"r848d2add","from":"dizayner","to":"kodadjiyata","status":"има бележки","run":"6319c7db"}
 {"t":"start","ts":"2026-11-13T13:58:53.577Z","id":"rb2200970","flow":"авто","lead":"dizayner","auto":true}
 {"t":"handoff","ts":"2026-11-13T13:58:53.577Z","id":"rb2200970","from":"dizayner","to":"kodadjiyata","status":"блокер (находка 1: 4 проблясъка/s върху >25% от поле 10° при in/out на курсора; качването да почака корекцията)","run":"3ab61b08"}
+{"t":"start","ts":"2026-11-14T10:15:56.960Z","id":"r168b82cc","flow":"авто","lead":"vps-adjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-14T10:15:56.960Z","id":"r168b82cc","from":"vps-adjiyata","to":"човек","status":"има бележки","run":"63453b74"}
