@@ -271,3 +271,6 @@
 {"t":"handoff","ts":"2026-11-14T06:21:19.211Z","id":"rd1bae2c4","from":"letopisetsa","to":"човек","status":"има бележки","run":"05c0ce94"}
 {"t":"start","ts":"2026-11-14T06:22:27.137Z","id":"r6b548e3c","flow":"авто","lead":"letopisetsa","auto":true}
 {"t":"handoff","ts":"2026-11-14T06:22:27.137Z","id":"r6b548e3c","from":"letopisetsa","to":"ai-djiyata","status":"има бележки","run":"e65d255c"}
+{"t":"start","ts":"2026-11-14T08:55:59.492Z","id":"r79faaffe","flow":"авто","lead":"izpitatelya","auto":true}
+{"t":"handoff","ts":"2026-11-14T08:55:59.492Z","id":"r79faaffe","from":"izpitatelya","to":"ai-djiyata","status":"има бележки","run":"a14eec8b"}
+{"t":"handoff","ts":"2026-11-14T09:00:41.614Z","id":"r79faaffe","from":"letopisetsa","to":"konveyera","status":"има бележки","run":"2f59ccc5"}
