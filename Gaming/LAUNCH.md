@@ -106,7 +106,7 @@
   Портес до 3/5/7 с марс, Свара с all-in и странични потове, билярд с ефект и
   обявен джоб, ръчно подреждане в Морски бой, истинско Бинго, обявяване на 66.
 - **Тестове**: game-core 545, api 203, realtime 95, web 100, shared 41,
-  marketing 8, worker 25 (общо 1017). CI: root `.github/workflows/gaming.yml`
+  marketing 13, worker 25 (общо 1022). CI: root `.github/workflows/gaming.yml`
   (lint + typecheck + test + build) и `.github/workflows/gaming-e2e.yml`
   (Playwright срещу пълния стек, games-2d + rooms на 3 shard-а, при PR и в `main`).
 - **API документация**: `apps/api/openapi.yaml` (OpenAPI 3.1); тестът
