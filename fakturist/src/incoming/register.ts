@@ -56,7 +56,8 @@ export async function registerIncoming(input: {
   actorId: string | null;
   fileName: string | null;
   buffer: Buffer;
-  source: 'UPLOAD' | 'PEPPOL';
+  /** INBOX — копие на документ от шкафчето, когато изпращачът е изтрит след прекратяване. */
+  source: 'UPLOAD' | 'PEPPOL' | 'INBOX';
 }): Promise<{ id: string; valid: boolean; issues: Issue[] }> {
   const { buffer } = input;
   let xml: string;
@@ -129,7 +130,12 @@ export async function registerIncoming(input: {
       await audit(tx, {
         actorId: input.actorId,
         organizationId: input.organizationId,
-        action: input.source === 'PEPPOL' ? 'incoming.peppol' : 'incoming.uploaded',
+        action:
+          input.source === 'PEPPOL'
+            ? 'incoming.peppol'
+            : input.source === 'INBOX'
+              ? 'incoming.archived'
+              : 'incoming.uploaded',
         targetType: 'IncomingInvoice',
         targetId: created.id,
         details: { format: check.format, valid },

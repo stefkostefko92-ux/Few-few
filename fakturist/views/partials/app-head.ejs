@@ -32,6 +32,9 @@
 </header>
 <% if (locals.notice) { %><p class="notice" role="status"><%= notice %></p><% } %>
 <%- include('verify-bar') %>
+<% if (locals.orgNav && orgNav.org.terminatedAt) { %>
+<div class="verify-bar" role="status"><p><%= t('app.termination.bar', { date: new Intl.DateTimeFormat(lang === 'bg' ? 'bg-BG' : 'en-GB', { dateStyle: 'long', timeZone: 'Europe/Sofia' }).format(orgNav.org.purgeAfter) }) %> <a href="/app/o/<%= orgNav.org.id %>/prekratyavane"><%= t('app.termination.details') %></a></p></div>
+<% } %>
 <main id="main" class="wrap">
 <% if (locals.orgNav) { %><%- include('../app/_org-nav') %>
 <% } %>

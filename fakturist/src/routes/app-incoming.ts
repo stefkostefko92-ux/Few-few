@@ -58,6 +58,7 @@ export function appIncomingRouter(): Router {
           payableCents: true,
           status: true,
           valid: true,
+          source: true,
           createdAt: true,
         },
       }),
@@ -89,6 +90,7 @@ export function appIncomingRouter(): Router {
     const rows = [
       ...uploads.map((u) => ({
         kind: 'upload' as const,
+        origin: u.source === 'PEPPOL' ? 'peppol' : u.source === 'INBOX' ? 'archived' : 'upload',
         id: u.id,
         supplier: u.supplierName,
         eik: u.supplierEik,
@@ -103,6 +105,7 @@ export function appIncomingRouter(): Router {
       })),
       ...inbox.map((e) => ({
         kind: 'inbox' as const,
+        origin: 'inbox',
         id: e.id,
         supplier: e.senderOrg.legalName,
         eik: e.senderOrg.eik,

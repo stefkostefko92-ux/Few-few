@@ -1,6 +1,7 @@
 import { peppolSettings } from '../admin/integrations.js';
 import { setting } from '../admin/settings.js';
 import { orgHasFeature } from '../billing/entitlements.js';
+import { prisma } from '../db.js';
 import type { Prisma } from '@prisma/client';
 import type { AccessPoint } from './access-point.js';
 import { EConnectAccessPoint, type FetchLike } from './econnect.js';
@@ -29,6 +30,12 @@ export async function peppolAllowed(
   organizationId: string,
   options: { viaFirmId?: string | null; db?: Prisma.TransactionClient } = {},
 ): Promise<boolean> {
+  // Прекратена фирма не праща (общите условия т. 11 — изключваме я от мрежата).
+  const org = await (options.db ?? prisma).organization.findUnique({
+    where: { id: organizationId },
+    select: { terminatedAt: true, deletedAt: true },
+  });
+  if (!org || org.terminatedAt || org.deletedAt) return false;
   if (await orgHasFeature(organizationId, 'peppol', options)) return true;
   const pilots = (await setting('peppol.pilotOrgIds')).split(',').filter(Boolean);
   if (!pilots.includes(organizationId)) return false;

@@ -32,6 +32,7 @@
       { slug: 'chlenove', icon: 'members', label: t('app.members.title'), show: can.members },
       { slug: 'palnomoshtni', icon: 'mandates', label: t('app.mandates.title'), badge: n.pendingMandates > 0 ? String(n.pendingMandates) : '', pending: true, show: can.mandates && n.org.kind === 'COMPANY' },
       { slug: 'nastroyki', icon: 'settings', label: t('app.settings.title'), show: can.settings },
+      { slug: 'prekratyavane', icon: 'close', label: t('app.termination.title'), show: can.billing || Boolean(n.org.terminatedAt) },
     ] },
   ];
   const overviewActive = path === '/app/o/' + n.org.id || path === '/app/o/' + n.org.id + '/';

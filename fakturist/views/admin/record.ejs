@@ -2,7 +2,8 @@
 <p><a href="/admin/r/<%= resource.slug %>">← <%= resource.label[lang] %></a></p>
 <h1><%= resource.label[lang] %></h1>
 <%- include('_nav') %>
-<% if (error) { %><p class="error" role="alert"><%= tOr('admin.transfer.errors.' + error, tOr('admin.ownership.errors.' + error, t('auth.errors.invalid'))) %></p><% } %>
+<% if (error) { %><p class="error" role="alert"><%= tOr('admin.transfer.errors.' + error, tOr('admin.ownership.errors.' + error, tOr('app.termination.err.' + error, t('auth.errors.invalid')))) %></p><% } %>
+<% if (locals.terminationDone) { %><p class="ok" role="status"><%= t('admin.termination.done') %></p><% } %>
 <% if (revoked) { %><p class="ok" role="status"><%= t('admin.ownership.done') %></p><% } %>
 <dl class="record">
   <% Object.entries(row).forEach(([key, value]) => { %>
@@ -69,5 +70,26 @@
   <label><%= t('admin.paidOn') %><input type="date" name="paidOn" required value="<%= today %>"><span class="hint"><%= t('admin.paidOnHelp') %></span></label>
   <button type="submit"><%= t('admin.confirmPayment') %></button>
 </form>
+<% } %>
+<% if (resource.model === 'Organization' && !row.deletedAt) { %>
+<section class="panel stack narrow-form" aria-labelledby="h-terminate">
+  <h2 id="h-terminate"><%= t('admin.termination.title') %></h2>
+  <% if (row.terminatedAt) { %>
+  <p class="callout"><%= t('admin.termination.state', { date: new Date(row.purgeAfter).toISOString().slice(0, 10) }) %></p>
+  <form method="post" action="/admin/firmi/<%= row.id %>/otmeni-prekratyavane" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label><%= t('admin.termination.code') %><input name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required></label>
+    <button type="submit"><%= t('admin.termination.cancel') %></button>
+  </form>
+  <% } else { %>
+  <p><%= t('admin.termination.intro') %></p>
+  <form method="post" action="/admin/firmi/<%= row.id %>/prekrati" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label class="check"><input type="checkbox" name="understood" required> <%= t('admin.termination.understood') %></label>
+    <label><%= t('admin.termination.code') %><input name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required></label>
+    <button type="submit" class="button-danger"><%= t('admin.termination.button') %></button>
+  </form>
+  <% } %>
+</section>
 <% } %>
 <%- include('../partials/app-foot') %>

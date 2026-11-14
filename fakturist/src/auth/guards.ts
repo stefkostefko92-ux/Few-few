@@ -114,11 +114,36 @@ export async function orgAccess(req: Request, organizationId: string): Promise<O
   return null;
 }
 
+/** Адресите, които минават и при прекратена фирма: отмяната на прекратяването. */
+const WHILE_TERMINATED = [new RegExp(`^/app/o/${ID_PATTERN}/prekratyavane/otmeni$`)];
+
+/**
+ * Прекратяването (SPEC 66): изтрита фирма — 404 за всички; прекратена фирма или прекратена кантора, през
+ * която е достъпът — само преглед и изтегляне (GET), всеки запис е 409 „terminated“.
+ */
+async function checkOrgState(req: Request, access: OrgAccess): Promise<void> {
+  const ids = access.viaFirmId
+    ? [access.organizationId, access.viaFirmId]
+    : [access.organizationId];
+  const orgs = await prisma.organization.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, terminatedAt: true, deletedAt: true },
+  });
+  const own = orgs.find((org) => org.id === access.organizationId);
+  if (!own || own.deletedAt) throw new HttpError(404);
+  if (req.method === 'GET' || req.method === 'HEAD') return;
+  if (WHILE_TERMINATED.some((path) => path.test(req.path))) return;
+  if (orgs.some((org) => org.terminatedAt || org.deletedAt)) {
+    throw new HttpError(409, 'terminated');
+  }
+}
+
 /** Достъп + способност или 404 (не издаваме, че фирмата съществува). */
 export async function requireOrg(req: Request, capability: Capability): Promise<OrgAccess> {
   const orgId = req.params['orgId'];
   if (!isId(orgId)) throw new HttpError(404);
   const access = await orgAccess(req, orgId);
   if (!access || !roleCan(access.role, capability)) throw new HttpError(404);
+  await checkOrgState(req, access);
   return access;
 }

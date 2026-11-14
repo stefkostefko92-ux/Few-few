@@ -11,6 +11,14 @@ export async function recheckAccess(
   access: OrgAccess,
   actorId: string,
 ): Promise<void> {
+  // Прекратена фирма (или кантора, през която се издава) — нищо ново, и при заявка, започнала преди това.
+  const ids = access.viaFirmId
+    ? [access.organizationId, access.viaFirmId]
+    : [access.organizationId];
+  const stopped = await tx.organization.count({
+    where: { id: { in: ids }, OR: [{ terminatedAt: { not: null } }, { deletedAt: { not: null } }] },
+  });
+  if (stopped > 0) throw new HttpError(409, 'terminated');
   if (access.viaFirmId === null) {
     const member = await tx.membership.findUnique({
       where: { userId_organizationId: { userId: actorId, organizationId: access.organizationId } },

@@ -758,7 +758,9 @@
     },
     "sources": {
       "upload": "uploaded",
-      "inbox": "from the inbox"
+      "inbox": "from the inbox",
+      "peppol": "via Peppol",
+      "archived": "from the inbox (copy — the sender has left)"
     },
     "hasIssues": "with errors",
     "download": "Download XML",
@@ -907,5 +909,49 @@
     "newest": "Back to the newest",
     "next": "Next",
     "start": "Back to the start"
+  },
+  "termination": {
+    "title": "Termination",
+    "intro": "Terminating stops Fakturist for this company. You have {days} days to download your documents; after that we delete them — under the terms (s. 11) and the processing agreement (s. 11).",
+    "what": {
+      "readOnly": "Right away: nobody issues, edits or invites in the company — only viewing and downloading remain.",
+      "export": "The company archive (PDF and XML of every document, parties, items, incoming invoices, payments) can be downloaded from “Export (ZIP)” until deletion.",
+      "inbox": "Documents you sent to other companies on Fakturist stay with them — as incoming invoices.",
+      "peppol": "We remove the company from the Peppol network; API keys are revoked and recurring invoices stop.",
+      "purge": "After {days} days we delete everything of the company. Only its name, the audit trail, the accepted terms and the plan invoices remain — they are our accounting records too.",
+      "kept": "Keeping your invoices under the Accountancy Act remains your duty — download the archive."
+    },
+    "confirm": "I understand that after the period all data of “{name}” is deleted irreversibly.",
+    "password": "Your password",
+    "submit": "Terminate the company",
+    "ownerOnly": "Only the owner of the company can terminate it.",
+    "stateTerminated": "The company was terminated on {date}",
+    "statePurge": "Its data will be deleted on {date} — until then you can view and download it.",
+    "download": "Download the company archive",
+    "cancelTitle": "Undo",
+    "cancelText": "While the period runs you can undo the termination. API keys stay revoked and recurring invoices paused; turn them on again if you need them.",
+    "cancel": "Undo the termination",
+    "bar": "The company is terminated — view and download only. The data is deleted on {date}",
+    "details": "Details",
+    "back": "Back to the company",
+    "blockedTitle": "The company is terminated",
+    "blockedText": "Until its data is deleted you can only view and download it. The owner can undo the termination under “Termination”.",
+    "ok": {
+      "terminated": "The company is terminated. We emailed its owners and administrators.",
+      "cancelled": "The termination is undone."
+    },
+    "err": {
+      "confirm": "Tick that you understand the consequences and enter your password.",
+      "password": "Wrong password.",
+      "notOwner": "Only the owner of the company can do this.",
+      "already": "The company is already terminated.",
+      "notTerminated": "The company is not terminated.",
+      "expired": "The period for undoing has passed.",
+      "supplier": "This company issues the plan invoices and cannot be terminated here.",
+      "ownerlessClients": "The firm has client companies it added that still have no owner. Invite their owners first or contact us.",
+      "notFound": "Company not found.",
+      "code": "Wrong code."
+    },
+    "tag": "terminated"
   }
 }

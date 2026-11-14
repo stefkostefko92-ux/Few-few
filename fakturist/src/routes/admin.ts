@@ -20,6 +20,7 @@ import { adminSettingsRouter } from './admin-settings.js';
 import { adminActionsRouter } from './admin-actions.js';
 import { adminMastersRouter } from './admin-masters.js';
 import { PlanForm } from '../admin/plan-form.js';
+import { adminTerminationRouter } from './admin-termination.js';
 
 /**
  * Регистърът по групи за менюто на панела (views/admin/_nav.ejs). „Планове“ са отделна връзка в главните,
@@ -43,6 +44,7 @@ export function adminRouter(): Router {
   router.use(adminSettingsRouter());
   router.use(adminActionsRouter());
   router.use(adminMastersRouter());
+  router.use(adminTerminationRouter());
 
   router.get('/admin', async (_req, res) => {
     const monthStart = new Date();
@@ -125,6 +127,7 @@ export function adminRouter(): Router {
       row,
       transfer,
       revoked: req.query['otneta'] === '1',
+      terminationDone: req.query['prekratyavane'] === '1',
       error: error && /^[a-zA-Z.]{1,40}$/.test(error) ? error : null,
       check:
         typeof req.query['proverka'] === 'string' && /^[a-zA-Z-]{1,40}$/.test(req.query['proverka'])

@@ -23,7 +23,7 @@
       <td data-label="<%= t('app.incoming.date') %>" class="mono"><%= day(r.issueDate) %></td>
       <td data-label="<%= t('app.incoming.due') %>" class="mono"><%= day(r.dueDate) %></td>
       <td data-label="<%= t('app.incoming.amount') %>" class="num mono"><%= money(r.payableCents, r.currency) %></td>
-      <td data-label="<%= t('app.incoming.status') %>"><span class="tag"><%= r.kind === 'upload' ? t('app.incoming.statuses.' + r.status) : t('app.inbox.status.' + r.status) %></span><% if (!r.valid) { %> <span class="tag tag-pending"><%= t('app.incoming.hasIssues') %></span><% } %><br><span class="hint"><%= t('app.incoming.sources.' + r.kind) %></span></td>
+      <td data-label="<%= t('app.incoming.status') %>"><span class="tag"><%= r.kind === 'upload' ? t('app.incoming.statuses.' + r.status) : t('app.inbox.status.' + r.status) %></span><% if (!r.valid) { %> <span class="tag tag-pending"><%= t('app.incoming.hasIssues') %></span><% } %><br><span class="hint"><%= t('app.incoming.sources.' + r.origin) %></span></td>
     </tr>
   <% }) %>
   </tbody>

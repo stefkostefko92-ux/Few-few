@@ -207,5 +207,15 @@
     "chain": "Ledger chain",
     "chainHint": "Checked from a company record",
     "main": "Manage"
+  },
+  "termination": {
+    "title": "Terminate the company",
+    "intro": "Only on the owner’s written request or at the end of the contract (terms, s. 11). The company becomes view-only; after 30 days its data is deleted. The owners and administrators are emailed.",
+    "understood": "I checked the grounds; I understand the data is deleted irreversibly after 30 days.",
+    "code": "Code from the two-factor app",
+    "button": "Terminate the company",
+    "state": "The company is terminated; its data is deleted on {date}.",
+    "cancel": "Undo the termination",
+    "done": "Done — recorded in the audit trail, the emails are queued."
   }
 }

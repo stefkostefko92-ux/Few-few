@@ -37,6 +37,7 @@ import { appSeriesRouter } from './app-series.js';
 import { appMembersRouter } from './app-members.js';
 import { appIssueRouter } from './app-issue.js';
 import { appExportRouter } from './app-export.js';
+import { appTerminationRouter, terminatedErrorPage } from './app-termination.js';
 
 /** Документите, издадени от фирмата през текущия месец — за мекия лимит на безплатния план. */
 async function monthUsage(
@@ -74,6 +75,7 @@ const ORG_NAV_SECTIONS = new Set([
   'chlenove',
   'palnomoshtni',
   'nastroyki',
+  'prekratyavane',
 ]);
 
 /**
@@ -97,7 +99,7 @@ function orgNavLocals() {
       const [org, unread, pendingMandates] = await Promise.all([
         prisma.organization.findUniqueOrThrow({
           where: { id: access.organizationId },
-          select: { id: true, kind: true },
+          select: { id: true, kind: true, terminatedAt: true, purgeAfter: true },
         }),
         prisma.inboxEntry.count({ where: { recipientOrgId: access.organizationId, readAt: null } }),
         prisma.clientMandate.count({
@@ -148,6 +150,7 @@ export function appRouter(): Router {
   router.use(appProformaRouter());
   router.use(appPeppolRouter());
   router.use(appIncomingRouter());
+  router.use(appTerminationRouter());
 
   router.get('/app', async (req, res) => {
     const user = req.principal!.user;
@@ -209,7 +212,8 @@ export function appRouter(): Router {
       pager: pagerLinks(req, `/app/o/${org.id}`, 'predi', DOCUMENT_FILTER_PARAMS, list.next),
       lists: { types: LIST_TYPES, statuses: LIST_STATUSES, payments: LIST_PAYMENTS },
       usage: { ...usage, ...softLimitState(usage.limit, usage.issued) },
-      canIssue: roleCan(access.role, 'documents.issue'),
+      // Прекратена фирма — само преглед (SPEC 66): без „Нов документ“.
+      canIssue: roleCan(access.role, 'documents.issue') && !org.terminatedAt,
       money: (cents: bigint, currency: string) => money(cents, currency, res.locals.lang),
     });
   });
@@ -291,5 +295,6 @@ export function appRouter(): Router {
     await sendDocumentFile(res, document, String(req.params['format']));
   });
 
+  router.use(terminatedErrorPage);
   return router;
 }

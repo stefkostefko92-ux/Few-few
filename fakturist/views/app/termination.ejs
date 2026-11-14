@@ -1,0 +1,40 @@
+<%- include('../partials/app-head', { title: t('app.termination.title') }) %>
+<% const day = (d) => d ? new Intl.DateTimeFormat(lang === 'bg' ? 'bg-BG' : 'en-GB', { dateStyle: 'long', timeZone: 'Europe/Sofia' }).format(d) : ''; %>
+<h1><%= t('app.termination.title') %></h1>
+<% if (ok) { %><p class="ok" role="status"><%= t('app.termination.ok.' + ok) %></p><% } %>
+<% if (error) { %><p class="error" role="alert"><%= tOr('app.termination.err.' + error, t('auth.errors.invalid')) %></p><% } %>
+<% if (org.terminatedAt) { %>
+<div class="callout">
+  <p><strong><%= t('app.termination.stateTerminated', { date: day(org.terminatedAt) }) %></strong></p>
+  <p><%= t('app.termination.statePurge', { date: day(org.purgeAfter) }) %></p>
+</div>
+<% if (canExport) { %><p><a class="button" href="/app/o/<%= org.id %>/iznos.zip" target="_blank" rel="noopener"><%= t('app.termination.download') %></a></p><% } %>
+<% if (canManage) { %>
+<h2><%= t('app.termination.cancelTitle') %></h2>
+<p><%= t('app.termination.cancelText') %></p>
+<form method="post" action="/app/o/<%= org.id %>/prekratyavane/otmeni" class="panel stack narrow-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <label><%= t('app.termination.password') %><input type="password" name="password" autocomplete="current-password" required></label>
+  <div><button type="submit"><%= t('app.termination.cancel') %></button></div>
+</form>
+<% } %>
+<% } else { %>
+<p><%= t('app.termination.intro', { days: graceDays }) %></p>
+<ul>
+  <li><%= t('app.termination.what.readOnly') %></li>
+  <li><%= t('app.termination.what.export') %></li>
+  <li><%= t('app.termination.what.inbox') %></li>
+  <li><%= t('app.termination.what.peppol') %></li>
+  <li><%= t('app.termination.what.purge', { days: graceDays }) %></li>
+  <li><%= t('app.termination.what.kept') %></li>
+</ul>
+<% if (canManage) { %>
+<form method="post" action="/app/o/<%= org.id %>/prekratyavane" class="panel stack narrow-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <label class="check"><input type="checkbox" name="confirm" required><span><%= t('app.termination.confirm', { name: org.legalName }) %></span></label>
+  <label><%= t('app.termination.password') %><input type="password" name="password" autocomplete="current-password" required></label>
+  <div><button type="submit" class="button-danger"><%= t('app.termination.submit') %></button></div>
+</form>
+<% } else { %><p class="muted"><%= t('app.termination.ownerOnly') %></p><% } %>
+<% } %>
+<%- include('../partials/app-foot') %>

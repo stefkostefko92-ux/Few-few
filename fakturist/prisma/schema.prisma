@@ -212,7 +212,11 @@ model Organization {
   eAddressValue        String?
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
+  /// Изтрита след прекратяване (src/accounts/termination-purge.ts): остава само надгробието — наименованието.
   deletedAt            DateTime?
+  /// Заявено прекратяване (SPEC 65): до `purgeAfter` — само преглед и изтегляне; после всичко се изтрива.
+  terminatedAt         DateTime?
+  purgeAfter           DateTime?
   /// Мастър акаунтът е проверил, че фирмата е тази, за която се представя (пълномощно, документ за
   /// представителство). Получателят в шкафчето вижда дали изпращачът е потвърден.
   verifiedAt           DateTime?
@@ -263,6 +267,7 @@ model Organization {
   @@index([legalName])
   @@index([createdByFirmId])
   @@index([ownerReviewPendingAt])
+  @@index([purgeAfter])
 }
 
 model Membership {
@@ -941,7 +946,8 @@ model IncomingInvoice {
   issues         Json
   valid          Boolean
   status         IncomingStatus @default(RECEIVED)
-  /// UPLOAD (качен файл) или PEPPOL (получен през точката за достъп).
+  /// UPLOAD (качен файл), PEPPOL (получен през точката за достъп) или INBOX (от шкафчето — изпращачът е
+  /// изтрит след прекратяване, XML-ът е както е издаден).
   source         String         @default("UPLOAD")
   paidAt         DateTime?      @db.Date
   createdById    String?

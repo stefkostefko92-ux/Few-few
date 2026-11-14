@@ -7,7 +7,7 @@
   <ul class="cards">
     <% own.forEach((org) => { %>
     <li>
-      <a href="/app/o/<%= org.id %>" class="card-link"><strong><%= org.legalName %></strong></a>
+      <a href="/app/o/<%= org.id %>" class="card-link"><strong><%= org.legalName %></strong></a><% if (org.terminatedAt) { %> <span class="tag tag-pending"><%= t('app.termination.tag') %></span><% } %>
       <span class="mono muted"><%= lang === 'bg' ? 'ЕИК' : 'EIK' %> <%= org.eik %></span>
       <span class="tag"><%= t('app.roles.' + org.role) %></span>
       <% if (org.kind === 'ACCOUNTING_FIRM' && (org.role === 'OWNER' || org.role === 'ADMIN')) { %>
@@ -26,7 +26,7 @@
     <tbody>
     <% clients.forEach((m) => { %>
       <tr>
-        <td data-label="<%= t('auth.legalName') %>"><% if (m.status === 'ACTIVE') { %><a href="/app/o/<%= m.client.id %>"><%= m.client.legalName %></a><% } else { %><%= m.client.legalName %><% } %></td>
+        <td data-label="<%= t('auth.legalName') %>"><% if (m.status === 'ACTIVE') { %><a href="/app/o/<%= m.client.id %>"><%= m.client.legalName %></a><% } else { %><%= m.client.legalName %><% } %><% if (m.client.terminatedAt) { %> <span class="tag tag-pending"><%= t('app.termination.tag') %></span><% } %></td>
         <td class="mono" data-label="<%= t('auth.eik') %>"><%= m.client.eik %></td>
         <td data-label="<%= t('app.home.mandate') %>"><span class="tag tag-<%= m.status.toLowerCase() %>"><%= t('app.home.status.' + m.status) %></span> <span class="muted"><%= m.documentRef %></span></td>
         <td data-label="<%= t('app.home.owner') %>">

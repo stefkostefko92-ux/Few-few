@@ -16,6 +16,7 @@ import { composeAnnulledMail } from './annul-mail.js';
 import { composeDocumentSentMail, composeReminderMail } from './document-mail.js';
 import { composeProformaSentMail } from '../proforma/mail.js';
 import { composeMasterMail, MASTER_MAIL_KINDS } from './master-mail.js';
+import { composeOrgMail, ORG_MAIL_KINDS } from './org-mail.js';
 import { MINUTE } from '../time.js';
 
 /** Опитите на едно писмо; паузата расте: 1, 5, 15, 60, 240 минути. */
@@ -160,6 +161,9 @@ async function compose(kind: string, toEmail: string, payload: unknown): Promise
   if (kind === 'document.sent') return composeDocumentSentMail(toEmail, payload);
   if (kind === 'document.reminder') return composeReminderMail(toEmail, payload);
   if (kind === 'proforma.sent') return composeProformaSentMail(toEmail, payload);
+  if ((ORG_MAIL_KINDS as readonly string[]).includes(kind)) {
+    return composeOrgMail(kind, toEmail, payload);
+  }
   if ((MASTER_MAIL_KINDS as readonly string[]).includes(kind)) {
     return composeMasterMail(kind, toEmail, payload);
   }

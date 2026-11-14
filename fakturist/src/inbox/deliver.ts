@@ -45,6 +45,7 @@ export async function deliverToInbox(
     select: {
       id: true,
       deletedAt: true,
+      terminatedAt: true,
       verifiedAt: true,
       memberships: {
         where: { role: { in: [...NOTIFY_ROLES] }, user: { disabledAt: null } },
@@ -65,7 +66,9 @@ export async function deliverToInbox(
       },
     },
   });
-  if (!recipient || recipient.deletedAt || recipient.id === input.senderOrgId) return null;
+  // Прекратена фирма не получава: данните ѝ се изтриват, а изпращачът пази своя документ.
+  if (!recipient || recipient.deletedAt || recipient.terminatedAt) return null;
+  if (recipient.id === input.senderOrgId) return null;
   // Само до потвърдена фирма: ЕИК е публичен и всеки може да регистрира чужд — без потвърждение от мастъра
   // (или пълномощно, потвърдено от него) фактурите до истинската фирма биха стигали до натрапника.
   if (!recipient.verifiedAt && recipient.id !== input.knownRecipientOrgId) return null;
