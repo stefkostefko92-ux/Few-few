@@ -17,6 +17,7 @@ import {
   deleteLinkAction,
   updateProfileAction,
   updateStyleAction,
+  verifyDomainAction,
   applyTemplateAction,
   uploadImageAction,
   upsertLinkTranslationAction,
@@ -27,6 +28,7 @@ import { profileUrl } from '@/lib/profile-url';
 import { NICHE_TEMPLATES, TEMPLATE_IDS } from '@/lib/templates';
 import { languageDemand } from '@/lib/language-gap';
 import { ReferralCard } from '@/components/ReferralCard';
+import { TimeZoneField } from '@/components/TimeZoneField';
 import {
   ensureReferralCodeAction,
   requestPayoutAction,
@@ -47,6 +49,8 @@ import {
 import Link from 'next/link';
 import { startCheckoutAction } from '@/app/actions/billing';
 import { checkPurchase } from '@/lib/plan-orders';
+import { canWithdraw as canWithdrawPlan } from '@/lib/withdrawal';
+import { domainTxtName, domainTxtValue } from '@/lib/domain-verify';
 import { aiGenerateBioAction, aiTranslateAction } from '@/app/actions/ai';
 import { importLinktreeAction } from '@/app/actions/import';
 import { setDigestAction } from '@/app/actions/digest';
@@ -84,6 +88,8 @@ const DASHBOARD_ERRORS: Record<string, string> = {
   shortlink: 'errorShortlink',
   profiles: 'errorProfiles',
   payments: 'errorPayments',
+  withdraw: 'errorWithdraw',
+  domainVerify: 'errorDomainVerify',
   plan: 'errorPlan',
   import: 'errorImport',
 };
@@ -100,6 +106,8 @@ export default async function DashboardPage({
     payout?: string;
     broadcast?: string;
     upgraded?: string;
+    withdrawn?: string;
+    domainVerified?: string;
     imported?: string;
     p?: string;
   }>;
@@ -112,6 +120,8 @@ export default async function DashboardPage({
     payout,
     broadcast,
     upgraded,
+    withdrawn,
+    domainVerified,
     imported,
     p,
   } = await searchParams;
@@ -171,11 +181,21 @@ export default async function DashboardPage({
   const clickWhere = profile
     ? { profileId: profile.id, ...(since ? { createdAt: { gte: since } } : {}) }
     : null;
+  // Кликове по продукт (към линка за плащане) в прозореца на плана.
+  const productClickRows = clickWhere
+    ? await prisma.clickEvent.groupBy({
+        by: ['productId'],
+        where: { ...clickWhere, productId: { not: null } },
+        _count: { _all: true },
+      })
+    : [];
+  const productClicksOf = (id: string) =>
+    productClickRows.find((row) => row.productId === id)?._count._all ?? 0;
   const [views, clicks, byLink, byLocale, byCountry, gapCountries] = clickWhere
     ? await Promise.all([
-        prisma.clickEvent.count({ where: { ...clickWhere, linkId: null } }),
+        prisma.clickEvent.count({ where: { ...clickWhere, linkId: null, productId: null } }),
         prisma.clickEvent.count({
-          where: { ...clickWhere, linkId: { not: null } },
+          where: { ...clickWhere, OR: [{ linkId: { not: null } }, { productId: { not: null } }] },
         }),
         prisma.clickEvent.groupBy({
           by: ['linkId'],
@@ -202,7 +222,7 @@ export default async function DashboardPage({
         // без лимит на 6 — за да покрием реалното езиково търсене.
         prisma.clickEvent.groupBy({
           by: ['country'],
-          where: { ...clickWhere, linkId: null, country: { not: null } },
+          where: { ...clickWhere, linkId: null, productId: null, country: { not: null } },
           _count: { _all: true },
           orderBy: { _count: { country: 'desc' } },
           take: 40,
@@ -239,6 +259,31 @@ export default async function DashboardPage({
     prisma.user.count({ where: { referredById: user.id } }),
     prisma.referral.count({ where: { referrerId: user.id } }),
   ]);
+  // Функцията за отказ (чл. 11а Дир. 2011/83): платените поръчки от последните
+  // 15 дни — допустимите показват „Откажи се от договора тук“, а подадените —
+  // кога е получено изявлението.
+  const recentPaidOrders = await prisma.planOrder.findMany({
+    where: {
+      userId: user.id,
+      applied: true,
+      completedAt: { gte: new Date(Date.now() - 16 * 86_400_000) },
+    },
+    orderBy: { completedAt: 'desc' },
+    select: {
+      id: true,
+      plan: true,
+      interval: true,
+      amountCents: true,
+      state: true,
+      applied: true,
+      completedAt: true,
+      withdrawalRequestedAt: true,
+    },
+  });
+  const nowForWithdrawal = new Date();
+  const withdrawable = recentPaidOrders.filter((o) => canWithdrawPlan({ ...o, now: nowForWithdrawal }));
+  const withdrawalsRequested = recentPaidOrders.filter((o) => o.withdrawalRequestedAt);
+
   const referralBase = process.env.PUBLIC_BASE_URL ?? '';
   const referralUrl = user.referralCode
     ? `${referralBase}/${locale}/register?ref=${user.referralCode}`
@@ -306,6 +351,16 @@ export default async function DashboardPage({
         {error && (
           <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
             {t(Object.hasOwn(DASHBOARD_ERRORS, error) ? DASHBOARD_ERRORS[error] : 'errorGeneric')}
+          </p>
+        )}
+        {domainVerified && (
+          <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
+            {t('domainVerifiedOk')}
+          </p>
+        )}
+        {withdrawn && (
+          <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
+            {t('withdrawDone')}
           </p>
         )}
         {upgraded && plan.id === 'FREE' && (
@@ -535,6 +590,39 @@ export default async function DashboardPage({
                   {t('save')}
                 </button>
               </form>
+              {/* Собствен домейн: TXT проверка на собствеността — публично се
+                  показва едва след нея (lib/domain-verify.ts). */}
+              {profile.customDomain && profile.domainToken && (
+                <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
+                  {profile.domainVerifiedAt ? (
+                    <p className="inline-flex items-center gap-1.5 font-medium text-green-700">
+                      <CheckIcon className="h-4 w-4" />
+                      {t('domainVerified', { domain: profile.customDomain })}
+                    </p>
+                  ) : (
+                    <form action={verifyDomainAction} className="space-y-2">
+                      <input type="hidden" name="uiLocale" value={locale} />
+                      <input type="hidden" name="profileId" value={profile.id} />
+                      <p className="font-medium text-amber-700">
+                        {t('domainUnverified', { domain: profile.customDomain })}
+                      </p>
+                      <p className="text-slate-600">{t('domainTxtHint')}</p>
+                      <dl className="grid gap-1 font-mono text-xs sm:grid-cols-[5rem_1fr]">
+                        <dt className="text-slate-500">TXT</dt>
+                        <dd className="break-all text-slate-900">{domainTxtName(profile.customDomain)}</dd>
+                        <dt className="text-slate-500">{t('domainTxtValueLabel')}</dt>
+                        <dd className="break-all text-slate-900">{domainTxtValue(profile.domainToken)}</dd>
+                      </dl>
+                      <button
+                        type="submit"
+                        className="rounded-full border border-linketto-600 px-4 py-1.5 font-semibold text-linketto-700 hover:bg-linketto-50"
+                      >
+                        {t('domainVerifyButton')}
+                      </button>
+                    </form>
+                  )}
+                </div>
+              )}
             </section>
 
             <section id="style" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
@@ -1191,6 +1279,7 @@ export default async function DashboardPage({
                     className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
                   />
                 </label>
+                <TimeZoneField />
                 <label className="block text-sm font-medium">
                   {t('scheduleFromLabel')}
                   <input
@@ -1735,6 +1824,11 @@ export default async function DashboardPage({
                           €{(product.priceCents / 100).toFixed(2)}
                         </span>
                         {product.active ? '' : `(${t('productInactive')}) `}
+                        {product.externalUrl ? (
+                          <span className="mr-2 text-xs font-semibold text-linketto-700">
+                            {t('productClicks', { count: productClicksOf(product.id) })}
+                          </span>
+                        ) : null}
                         {product.externalUrl ?? t('productNoPayUrl')}
                       </p>
                       <form action={deleteProductAction}>
@@ -1965,6 +2059,39 @@ export default async function DashboardPage({
                       })}`
                     : ''}
               </p>
+              {(withdrawable.length > 0 || withdrawalsRequested.length > 0) && (
+                <div className="mt-4 space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
+                  {withdrawable.map((o) => (
+                    <div key={o.id} className="flex flex-wrap items-center justify-between gap-3">
+                      <span className="text-slate-700">
+                        Linketto {o.plan} · €{(o.amountCents / 100).toFixed(2)} ·{' '}
+                        {t('withdrawPaidOn', {
+                          date: new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone: 'UTC' }).format(
+                            o.completedAt as Date,
+                          ),
+                        })}
+                      </span>
+                      <a
+                        href={`/${locale}/dashboard/withdraw?order=${o.id}`}
+                        className="rounded-full border border-red-500 px-4 py-1.5 text-sm font-semibold text-red-600 hover:bg-red-50"
+                      >
+                        {t('withdrawTitle')}
+                      </a>
+                    </div>
+                  ))}
+                  {withdrawalsRequested.map((o) => (
+                    <p key={o.id} className="text-slate-600">
+                      {t('withdrawReceived', {
+                        date: new Intl.DateTimeFormat(locale, {
+                          dateStyle: 'medium',
+                          timeStyle: 'short',
+                          timeZone: 'UTC',
+                        }).format(o.withdrawalRequestedAt as Date),
+                      })}
+                    </p>
+                  ))}
+                </div>
+              )}
               {/* Предплатени периоди (решение О-2): еднократно плащане, без
                   абонамент и без автоматично таксуване; напомняне по имейл 7 дни
                   и 1 ден преди края. Същият план = удължаване от края; по-висок

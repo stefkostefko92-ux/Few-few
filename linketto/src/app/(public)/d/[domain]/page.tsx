@@ -7,7 +7,8 @@ import {
 } from '@/components/ProfileScreen';
 
 // Собствен домейн (платени планове): middleware пренаписва заявките към
-// чужди хостове до /d/<host>, а тук домейнът се резолвира до профил.
+// чужди хостове до /d/<host>, а тук домейнът се резолвира до профил — само ако
+// собствеността е проверена с TXT запис (lib/domain-verify.ts).
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
@@ -16,9 +17,8 @@ export async function generateMetadata({
   params: Promise<{ domain: string }>;
 }): Promise<Metadata> {
   const { domain } = await params;
-  return profileMetadata(
-    await loadProfileBy({ customDomain: domain.toLowerCase() }),
-  );
+  const profile = await loadProfileBy({ customDomain: domain.toLowerCase() });
+  return profileMetadata(profile?.domainVerifiedAt ? profile : null);
 }
 
 export default async function CustomDomainPage({
@@ -37,6 +37,8 @@ export default async function CustomDomainPage({
   const profile = await loadProfileBy({ customDomain: domain.toLowerCase() });
   if (
     !profile ||
+    // Само проверен домейн (TXT) — иначе „зает“ чужд домейн би показвал профил.
+    !profile.domainVerifiedAt ||
     !profile.published ||
     profile.bannedAt ||
     profile.translations.length === 0

@@ -25,6 +25,9 @@ npm test                    # node:test през tsx (чисти функции,
 npm run build               # prisma generate + next build
 
 npm run prisma:migrate:dev  # миграции (изисква PostgreSQL)
+
+# Интеграционни тестове на плащанията (реален Postgres; без променливата се пропускат):
+DATABASE_URL_TEST=postgresql://…/linketto_test npx tsx --test src/lib/__tests__/plan-order-service.int.test.ts
 ```
 
 Env: виж `.env.example`. Ключовете на Revolut/Brevo са на Carbon Stealth VCC —
@@ -160,9 +163,21 @@ languageDemand, localeForCountry в locales.ts) кръстосва държав�
 посетителите с наличните преводи → подкана за AI превод на липсващите. И
 двете четат само ClickEvent (без бисквитки).
 
+Ядро на поръчките: `lib/plan-order-core.ts` (фабрика с инжектирани db/Revolut/имейл/аларми —
+тества се срещу реален Postgres) + server-only обвивка `lib/plan-order-service.ts`.
+Функция за отказ (чл. 11а Дир. 2011/83, изм. 2023/2673): `lib/withdrawal.ts` (срок, допустимост,
+потвърждение на траен носител) + `actions/withdrawal.ts` + `/[locale]/dashboard/withdraw` (втората
+стъпка „Потвърди отказа“); бутонът „Откажи се от договора тук“ е в секция „План“ през целия срок.
+DSA чл. 17: `lib/dsa-notice.ts` — банът иска категория + обосновка и праща изложение на мотивите.
+Собствен домейн: `lib/domain-verify.ts` — TXT `_linketto.<домейн>` = `linketto-verify=<токен>`;
+/d/<домейн> показва само проверен. Аларми до админите: `lib/admin-alert.ts` (ADMIN_EMAILS).
+Насрочване: `lib/zoned-time.ts` + `TimeZoneField` (часовата зона на браузъра).
+
 Продукти (решение О-1, 2026-11-14): витрина без плащане през нас — Product.externalUrl
 (само https, lib/external-url.ts) + цена + многоезично заглавие/описание; на профила е
-`<a rel="nofollow noopener noreferrer ugc">`, показват се само активни с линк. CRUD в
+`<a rel="nofollow noopener noreferrer ugc">` през `/u/<slug>/p/<id>` (анонимен ClickEvent с
+`productId` → 302 към линка), показват се само активни с линк. Прегледите = ClickEvent без linkId И
+без productId; кликовете = с linkId ИЛИ productId. CRUD в
 actions/shop.ts (по userId); статут търговец/частно лице (Дир. 2011/83 чл. 6а). Старите
 модели Purchase/Entitlement/Lesson/Coupon остават в схемата празни (адитивно).
 

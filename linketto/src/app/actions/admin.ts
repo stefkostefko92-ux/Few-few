@@ -6,6 +6,8 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
 import { requestPlanRefund, type RefundRequest } from '@/lib/plan-order-service';
+import { banNoticeEmail, isBanCategory } from '@/lib/dsa-notice';
+import { emailConfigured, sendEmail } from '@/lib/email';
 import { eraseUser } from '@/lib/account-erasure';
 import { applyPlanLimits } from '@/lib/plan-limits';
 import { isLocale } from '@/i18n/locales';
@@ -26,10 +28,41 @@ export async function setProfileBanAction(formData: FormData): Promise<void> {
   await requireAdmin(uiLocale);
   const profileId = String(formData.get('profileId') ?? '');
   const ban = formData.get('ban') === '1';
-  await prisma.profile.updateMany({
+  if (!ban) {
+    await prisma.profile.updateMany({
+      where: { id: profileId },
+      data: { bannedAt: null, bannedCategory: null, bannedReason: null },
+    });
+    redirect(`/${uiLocale}/admin?ok=1`);
+  }
+  // DSA чл. 17: без категория и обосновка няма бан — собственикът получава
+  // изложение на мотивите с възможностите за обжалване.
+  const category = String(formData.get('category') ?? '');
+  const reason = String(formData.get('reason') ?? '').trim();
+  if (!isBanCategory(category) || reason.length < 10 || reason.length > 2000) {
+    redirect(`/${uiLocale}/admin?error=ban`);
+  }
+  const decidedAt = new Date();
+  const profile = await prisma.profile.findUnique({
     where: { id: profileId },
-    data: { bannedAt: ban ? new Date() : null },
+    select: { slug: true, bannedAt: true, user: { select: { email: true, locale: true } } },
   });
+  if (!profile) redirect(`/${uiLocale}/admin?error=input`);
+  await prisma.profile.update({
+    where: { id: profileId },
+    data: { bannedAt: decidedAt, bannedCategory: category, bannedReason: reason },
+  });
+  if (emailConfigured()) {
+    const { subject, html } = banNoticeEmail({
+      locale: profile.user.locale,
+      slug: profile.slug,
+      category,
+      reason,
+      decidedAt,
+      fromReport: formData.get('fromReport') === 'on',
+    });
+    await sendEmail({ to: profile.user.email, subject, html, tag: 'dsa-notice' }).catch(() => false);
+  }
   redirect(`/${uiLocale}/admin?ok=1`);
 }
 
@@ -141,7 +174,7 @@ export async function adminClearDomainAction(
   const profileId = String(formData.get('profileId') ?? '');
   await prisma.profile.updateMany({
     where: { id: profileId },
-    data: { customDomain: null },
+    data: { customDomain: null, domainToken: null, domainVerifiedAt: null },
   });
   redirect(`/${uiLocale}/admin?ok=1`);
 }

@@ -8,6 +8,7 @@ import { expiryAction } from '@/lib/plan-orders';
 import { planReminderEmail } from '@/lib/plan-reminder';
 import { sendPlanConfirmation, settlePlanOrder, settlePlanRefund } from '@/lib/plan-order-service';
 import { revolutConfigured } from '@/lib/revolut';
+import { notifyAdmins } from '@/lib/admin-alert';
 import type { PlanId } from '@/lib/plans';
 
 // Cron за предплатените планове (spec §7.1 P7–P10, P14), POST с
@@ -158,6 +159,13 @@ export async function POST(request: Request): Promise<NextResponse> {
     } catch {
       report.errors += 1;
     }
+  }
+  if (report.errors) {
+    await notifyAdmins('Cron на плановете: грешки', [
+      `Грешки: ${report.errors}`,
+      `Уредени: ${report.reconciled}, refund-и: ${report.refunds}, потвърждения: ${report.confirmed}, свалени: ${report.downgraded}, напомняния: ${report.reminded}`,
+      'Подробности — в журнала на сървъра ([plan-order]).',
+    ]).catch(() => undefined);
   }
   return NextResponse.json(report, { status: report.errors ? 500 : 200 });
 }

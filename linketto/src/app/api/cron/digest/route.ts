@@ -75,7 +75,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         by: ['profileId', 'country'],
         where: {
           profileId: { in: profileIds },
-          linkId: null,
+          linkId: null, productId: null,
           createdAt: { gte: since },
         },
         _count: { _all: true },

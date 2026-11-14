@@ -1,5 +1,7 @@
 'use server';
 
+import { randomBytes } from 'node:crypto';
+import { Resolver } from 'node:dns/promises';
 import { redirect } from 'next/navigation';
 import { dash } from '@/lib/dashboard-url';
 import { z } from 'zod';
@@ -12,6 +14,9 @@ import { parseBlockInput } from '@/lib/blocks';
 import { parseStyle, styleSchema } from '@/lib/style';
 import { saveUploadedImage } from '@/lib/media';
 import { applyTemplate, isTemplateId, NICHE_TEMPLATES } from '@/lib/templates';
+import { domainChange, domainTxtName, txtMatches } from '@/lib/domain-verify';
+import { rateLimit } from '@/lib/rate-limit';
+import { zonedLocalToUtc } from '@/lib/zoned-time';
 import type { Prisma } from '@prisma/client';
 
 const THEMES = ['aurora', 'mono', 'dusk'] as const;
@@ -134,6 +139,20 @@ export async function updateProfileAction(formData: FormData): Promise<void> {
     }
   }
 
+  // Нов/сменен домейн → нов токен и непроверен (TXT проверка на собствеността).
+  const current = await prisma.profile.findFirst({
+    where: { id: profileId, userId: user.id },
+    select: { customDomain: true },
+  });
+  if (!current) redirect(await dash(uiLocale, '?error=generic'));
+  const change = domainChange({ current: current.customDomain, next: customDomain });
+  const domainFields =
+    change.kind === 'reset'
+      ? { domainToken: randomBytes(16).toString('hex'), domainVerifiedAt: null }
+      : change.kind === 'clear'
+        ? { domainToken: null, domainVerifiedAt: null }
+        : {};
+
   try {
     const { count } = await prisma.profile.updateMany({
       where: { id: profileId, userId: user.id },
@@ -143,6 +162,7 @@ export async function updateProfileAction(formData: FormData): Promise<void> {
         defaultLocale: parsed.data.defaultLocale,
         published: parsed.data.published,
         customDomain,
+        ...domainFields,
       },
     });
     if (count === 0) redirect(await dash(uiLocale, '?error=generic'));
@@ -314,8 +334,8 @@ export async function addLinkAction(formData: FormData): Promise<void> {
       url: input.url,
       meta: input.meta ? (input.meta as Prisma.InputJsonValue) : undefined,
       position: profile._count.links,
-      showFrom: parseDateInput(formData.get('showFrom')),
-      showUntil: parseDateInput(formData.get('showUntil')),
+      showFrom: parseDateInput(formData.get('showFrom'), formData.get('tz')),
+      showUntil: parseDateInput(formData.get('showUntil'), formData.get('tz')),
       translations: {
         create: { locale: profile.defaultLocale, title },
       },
@@ -324,12 +344,10 @@ export async function addLinkAction(formData: FormData): Promise<void> {
   redirect(await dash(uiLocale));
 }
 
-// datetime-local → Date (или null при празно/невалидно)
-function parseDateInput(value: FormDataEntryValue | null): Date | null {
-  const raw = String(value ?? '').trim();
-  if (!raw) return null;
-  const date = new Date(raw);
-  return Number.isNaN(date.getTime()) ? null : date;
+// datetime-local („стенен“ час) в зоната на браузъра → Date (или null при
+// празно/невалидно). Без зона (няма JS) → UTC, не зоната на сървъра.
+function parseDateInput(value: FormDataEntryValue | null, tz: FormDataEntryValue | null): Date | null {
+  return zonedLocalToUtc(String(value ?? ''), String(tz ?? ''));
 }
 
 export async function deleteLinkAction(formData: FormData): Promise<void> {
@@ -372,4 +390,39 @@ export async function upsertLinkTranslationAction(
     update: { title },
   });
   redirect(await dash(uiLocale));
+}
+
+/**
+ * Проверка на собствения домейн: TXT `_linketto.<домейн>` трябва да носи
+ * `linketto-verify=<токен>`. Едва тогава /d/<домейн> показва профила.
+ */
+export async function verifyDomainAction(formData: FormData): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  const user = await requireUser(uiLocale);
+  const profileId = String(formData.get('profileId') ?? '');
+  const profile = await prisma.profile.findFirst({
+    where: { id: profileId, userId: user.id },
+    select: { id: true, customDomain: true, domainToken: true },
+  });
+  if (!profile?.customDomain || !profile.domainToken || !planFor(user.plan).customDomain) {
+    redirect(await dash(uiLocale, '?error=domainVerify'));
+  }
+  if (!rateLimit(`domain-verify:${user.id}`, 10, 10 * 60_000)) {
+    redirect(await dash(uiLocale, '?error=domainVerify'));
+  }
+  let records: string[][] = [];
+  try {
+    const resolver = new Resolver({ timeout: 5000, tries: 2 });
+    records = await resolver.resolveTxt(domainTxtName(profile.customDomain));
+  } catch {
+    records = [];
+  }
+  if (!txtMatches(records, profile.domainToken)) {
+    redirect(await dash(uiLocale, '?error=domainVerify'));
+  }
+  await prisma.profile.updateMany({
+    where: { id: profile.id, userId: user.id, customDomain: profile.customDomain, domainToken: profile.domainToken },
+    data: { domainVerifiedAt: new Date() },
+  });
+  redirect(await dash(uiLocale, '?domainVerified=1'));
 }

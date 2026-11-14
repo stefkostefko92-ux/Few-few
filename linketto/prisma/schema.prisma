@@ -112,29 +112,37 @@ model Session {
 }
 
 model Profile {
-  id            String               @id @default(cuid())
-  userId        String
-  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  slug          String               @unique
-  customDomain  String?              @unique // собствен домейн (платени планове)
-  defaultLocale String               @default("bg")
-  theme         String               @default("aurora")
-  accent        String? // hex цвят, валидиран в кода
-  style         Json? // стилов енджин (src/lib/style.ts) — фон, шрифт, бутони, layout…
-  bannedAt      DateTime? // модерация: баннат = невидим публично (без публичен банер)
-  published     Boolean              @default(true)
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
-  translations  ProfileTranslation[]
-  links         Link[]
-  clicks        ClickEvent[]
-  messages      ContactMessage[]
-  reports       Report[]
-  products      Product[]
-  coupons       Coupon[]
-  subscribers   Subscriber[]
-  bookings      Booking[]
-  shortLinks    ShortLink[]
+  id               String               @id @default(cuid())
+  userId           String
+  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug             String               @unique
+  customDomain     String?              @unique // собствен домейн (платени планове)
+  defaultLocale    String               @default("bg")
+  theme            String               @default("aurora")
+  accent           String? // hex цвят, валидиран в кода
+  style            Json? // стилов енджин (src/lib/style.ts) — фон, шрифт, бутони, layout…
+  bannedAt         DateTime? // модерация: баннат = невидим публично (без публичен банер)
+  // DSA чл. 17: изложение на мотивите — категория (lib/report.ts) и обосновка;
+  // пращат се на собственика при бана.
+  bannedCategory   String?
+  bannedReason     String?
+  // Собствен домейн: TXT `_linketto.<домейн>` = `linketto-verify=<токен>`;
+  // публично се сервира само проверен домейн (без „заемане“ на чужд).
+  domainToken      String?
+  domainVerifiedAt DateTime?
+  published        Boolean              @default(true)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  translations     ProfileTranslation[]
+  links            Link[]
+  clicks           ClickEvent[]
+  messages         ContactMessage[]
+  reports          Report[]
+  products         Product[]
+  coupons          Coupon[]
+  subscribers      Subscriber[]
+  bookings         Booking[]
+  shortLinks       ShortLink[]
 
   @@index([userId])
 }
@@ -314,6 +322,7 @@ model Product {
   purchases    Purchase[]
   lessons      Lesson[]
   entitlements Entitlement[]
+  clicks       ClickEvent[]
 
   @@index([profileId, position])
 }
@@ -462,6 +471,8 @@ model ClickEvent {
   profile      Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
   linkId       String?
   link         Link?    @relation(fields: [linkId], references: [id], onDelete: SetNull)
+  productId    String? // клик по продукт (/u/<slug>/p/<id>) — към линка за плащане
+  product      Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
   locale       String? // на кой език е гледан профилът
   referrerHost String? // само хостът, без пълния URL
   country      String? // от CDN хедър, ако има (напр. CF-IPCountry)
@@ -469,43 +480,48 @@ model ClickEvent {
 
   @@index([profileId, createdAt])
   @@index([linkId, createdAt])
+  @@index([productId, createdAt])
 }
 
 // Предплатен план, платен през Revolut Merchant (docs/revolut-migration-spec.md
 // §7). Сумата и ДДС се решават на сървъра при checkout; правото се дава само
 // след прочетена от API-то поръчка в `completed` (CAS pending → completed).
 model PlanOrder {
-  id                 String    @id @default(cuid())
-  userId             String
-  user               User      @relation(fields: [userId], references: [id], onDelete: Restrict)
-  plan               Plan
-  interval           String // monthly | quarterly | semiannual | annual (FOUNDER: lifetime)
-  amountCents        Int // с ДДС, EUR
-  vatRateBp          Int // ставка в базисни точки (2000 = 20%)
-  vatCents           Int
-  netCents           Int
-  vatCountry         String // мястото на доставка (под прага: BG)
-  state              String    @default("pending") // pending | completed | conflict | refund_pending | refunded | failed | cancelled
-  revolutOrderId     String?   @unique
-  buyerCountry       String? // от адреса за таксуване при Revolut (доказателство 1)
-  cardCountry        String? // държава на картата (доказателство 2)
-  completedAt        DateTime?
-  refundedAt         DateTime?
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  plan                  Plan
+  interval              String // monthly | quarterly | semiannual | annual (FOUNDER: lifetime)
+  amountCents           Int // с ДДС, EUR
+  vatRateBp             Int // ставка в базисни точки (2000 = 20%)
+  vatCents              Int
+  netCents              Int
+  vatCountry            String // мястото на доставка (под прага: BG)
+  state                 String    @default("pending") // pending | completed | conflict | refund_pending | refunded | failed | cancelled
+  revolutOrderId        String?   @unique
+  buyerCountry          String? // от адреса за таксуване при Revolut (доказателство 1)
+  cardCountry           String? // държава на картата (доказателство 2)
+  completedAt           DateTime?
+  refundedAt            DateTime?
   // Снимка на плана отпреди поръчката — при отказ/връщане се възстановява
   // (отнема се само платеното с тази поръчка, P10′).
-  prevPlan           Plan?
-  prevExpiresAt      DateTime?
+  prevPlan              Plan?
+  prevExpiresAt         DateTime?
   // Потвърждението на траен носител (чл. 8(7) Дир. 2011/83) е изпратено.
-  confirmationSentAt DateTime?
+  confirmationSentAt    DateTime?
   // Правото е дадено с тази поръчка (false за conflict — платена, неприложена).
-  applied            Boolean   @default(false)
+  applied               Boolean   @default(false)
+  // Чл. 11а Дир. 2011/83 (изм. 2023/2673): изявление за отказ през функцията
+  // „Откажи се от договора тук“ — кога и с какво име; връщането го прави админът.
+  withdrawalRequestedAt DateTime?
+  withdrawalName        String?
   // Опит за връщане (Idempotency-Key = `<id>-<опит>`: повторен клик в същия
   // опит не връща два пъти, а нов опит след неуспешен refund не взима стария отговор).
-  refundAttempts     Int       @default(0)
+  refundAttempts        Int       @default(0)
   // Refund поръчката при Revolut (асинхронна, до 2 дни) — state refund_pending.
-  refundOrderId      String?   @unique
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  refundOrderId         String?   @unique
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   @@index([userId, createdAt])
   @@index([state, createdAt])

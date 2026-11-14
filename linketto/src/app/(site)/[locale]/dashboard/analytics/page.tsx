@@ -7,7 +7,6 @@ import { getSessionUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { planFor } from '@/lib/plans';
 import {
-  conversionRate,
   ctr,
   fillDailySeries,
   seriesMax,
@@ -62,10 +61,10 @@ export default async function AnalyticsPage({
     byCountry,
     byReferrer,
     dailyRaw,
-    sales,
+    byProduct,
   ] = await Promise.all([
-    prisma.clickEvent.count({ where: { ...where, linkId: null } }),
-    prisma.clickEvent.count({ where: { ...where, linkId: { not: null } } }),
+    prisma.clickEvent.count({ where: { ...where, linkId: null, productId: null } }),
+    prisma.clickEvent.count({ where: { ...where, OR: [{ linkId: { not: null } }, { productId: { not: null } }] } }),
     prisma.clickEvent.groupBy({
       by: ['linkId'],
       where: { ...where, linkId: { not: null } },
@@ -82,33 +81,40 @@ export default async function AnalyticsPage({
     }),
     prisma.clickEvent.groupBy({
       by: ['country'],
-      where: { ...where, linkId: null, country: { not: null } },
+      where: { ...where, linkId: null, productId: null, country: { not: null } },
       _count: { _all: true },
       orderBy: { _count: { country: 'desc' } },
       take: 40,
     }),
     prisma.clickEvent.groupBy({
       by: ['referrerHost'],
-      where: { ...where, linkId: null },
+      where: { ...where, linkId: null, productId: null },
       _count: { _all: true },
       orderBy: { _count: { referrerHost: 'desc' } },
       take: 12,
     }),
     prisma.$queryRaw<{ day: Date; views: bigint; clicks: bigint }[]>`
       SELECT date_trunc('day', "createdAt") AS day,
-        count(*) FILTER (WHERE "linkId" IS NULL) AS views,
-        count(*) FILTER (WHERE "linkId" IS NOT NULL) AS clicks
+        count(*) FILTER (WHERE "linkId" IS NULL AND "productId" IS NULL) AS views,
+        count(*) FILTER (WHERE "linkId" IS NOT NULL OR "productId" IS NOT NULL) AS clicks
       FROM "ClickEvent"
       WHERE "profileId" = ${profile.id} AND "createdAt" >= ${chartSince}
       GROUP BY 1 ORDER BY 1
     `,
-    prisma.purchase.aggregate({
-      // Върнати/оспорени покупки не са приход — извън продажбите/конверсията.
-      where: { profileId: profile.id, refundedAt: null, disputedAt: null },
+    // Продуктите водят към линка за плащане на създателя (решение О-1) —
+    // продажбите не минават през нас, затова мерим интереса: кликове по продукт.
+    prisma.clickEvent.groupBy({
+      by: ['productId'],
+      where: { ...where, productId: { not: null } },
       _count: { _all: true },
-      _sum: { amountCents: true },
+      orderBy: { _count: { productId: 'desc' } },
+      take: 15,
     }),
   ]);
+  const productTitles = await prisma.productTranslation.findMany({
+    where: { product: { profileId: profile.id } },
+    select: { productId: true, locale: true, title: true },
+  });
 
   const series = fillDailySeries(
     dailyRaw.map(
@@ -126,8 +132,15 @@ export default async function AnalyticsPage({
     byCountry.map((row) => ({ country: row.country, count: row._count._all })),
     profile.translations.map((tr) => tr.locale),
   );
-  const salesCount = sales._count._all;
-  const revenueCents = sales._sum.amountCents ?? 0;
+  const productClicks = byProduct.reduce((sum, row) => sum + row._count._all, 0);
+  const productTitle = (productId: string | null) => {
+    const titles = productTitles.filter((tr) => tr.productId === productId);
+    return (
+      titles.find((tr) => tr.locale === locale)?.title ??
+      titles[0]?.title ??
+      '—'
+    );
+  };
 
   const linkTitle = (linkId: string | null) => {
     const link = profile.links.find((item) => item.id === linkId);
@@ -220,11 +233,7 @@ export default async function AnalyticsPage({
             value={`${ctr(views, clicks)}%`}
             label={t('analyticsCtr')}
           />
-          <StatTile
-            raised
-            value={`${conversionRate(views, salesCount)}%`}
-            label={t('analyticsConversion')}
-          />
+          <StatTile raised value={String(productClicks)} label={t('analyticsProductClicks')} />
         </section>
 
         {/* Тренд по дни */}
@@ -337,20 +346,23 @@ export default async function AnalyticsPage({
           )}
         </section>
 
-        {/* Продажби */}
+        {/* Интерес към продуктите (кликове към линка за плащане) */}
         <section className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-          <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('analyticsSales')}</h2>
-          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
-            <StatTile value={String(salesCount)} label={t('analyticsSales')} />
-            <StatTile
-              value={`€${(revenueCents / 100).toFixed(2)}`}
-              label={t('analyticsRevenue')}
-            />
-            <StatTile
-              value={`${conversionRate(views, salesCount)}%`}
-              label={t('analyticsConversion')}
-            />
-          </div>
+          <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('analyticsProducts')}</h2>
+          {byProduct.length === 0 ? (
+            <p className="mt-2 text-sm text-slate-500">{t('analyticsNoProductClicks')}</p>
+          ) : (
+            <ul className="mt-4 space-y-2 text-sm">
+              {byProduct.map((row) => (
+                <li key={row.productId} className="flex items-center justify-between gap-3">
+                  <span className="min-w-0 truncate text-slate-700">{productTitle(row.productId)}</span>
+                  <span className="shrink-0 font-semibold text-slate-900">
+                    {row._count._all} · {ctr(views, row._count._all)}%
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       </main>
     </>

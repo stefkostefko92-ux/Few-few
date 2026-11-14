@@ -17,6 +17,8 @@ import {
   setProfileBanAction,
 } from '@/app/actions/admin';
 
+import { BAN_CATEGORIES } from '@/lib/dsa-notice';
+
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = { robots: { index: false } };
@@ -105,6 +107,8 @@ export default async function AdminPage({
           slug: true,
           published: true,
           bannedAt: true,
+          bannedCategory: true,
+          bannedReason: true,
           customDomain: true,
         },
       },
@@ -136,7 +140,9 @@ export default async function AdminPage({
                   ? t('errorRefund')
                   : error === 'refund-order'
                     ? t('errorRefundOrder')
-                    : t('errorInput')}
+                    : error === 'ban'
+                      ? t('errorBan')
+                      : t('errorInput')}
           </p>
         )}
 
@@ -244,6 +250,13 @@ export default async function AdminPage({
                       {' · '}
                       {order.createdAt.toISOString().slice(0, 16).replace('T', ' ')})
                     </span>
+                    {order.withdrawalRequestedAt && (
+                      <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs font-semibold text-red-700">
+                        {t('withdrawalRequested', {
+                          date: order.withdrawalRequestedAt.toISOString().slice(0, 16).replace('T', ' '),
+                        })}
+                      </span>
+                    )}
                   </span>
                   {order.state === 'completed' ||
                   order.state === 'conflict' ||
@@ -473,31 +486,69 @@ export default async function AdminPage({
 
                   {user.profiles.map((profile) => (
                     <div key={profile.id} className="flex flex-wrap gap-2">
-                      <form action={setProfileBanAction}>
-                        <input type="hidden" name="uiLocale" value={locale} />
-                        <input
-                          type="hidden"
-                          name="profileId"
-                          value={profile.id}
-                        />
-                        <input
-                          type="hidden"
-                          name="ban"
-                          value={profile.bannedAt ? '0' : '1'}
-                        />
-                        <button
-                          type="submit"
-                          className={`rounded-full px-4 py-1.5 font-semibold ${
-                            profile.bannedAt
-                              ? 'border border-green-600 text-green-700 hover:bg-green-50'
-                              : 'border border-red-600 text-red-700 hover:bg-red-50'
-                          }`}
-                        >
-                          {profile.bannedAt
-                            ? t('unbanProfile', { slug: profile.slug })
-                            : t('banProfile', { slug: profile.slug })}
-                        </button>
-                      </form>
+                      {profile.bannedAt ? (
+                        <form action={setProfileBanAction} className="flex flex-wrap items-center gap-2">
+                          <input type="hidden" name="uiLocale" value={locale} />
+                          <input type="hidden" name="profileId" value={profile.id} />
+                          <input type="hidden" name="ban" value="0" />
+                          <button
+                            type="submit"
+                            className="rounded-full border border-green-600 px-4 py-1.5 font-semibold text-green-700 hover:bg-green-50"
+                          >
+                            {t('unbanProfile', { slug: profile.slug })}
+                          </button>
+                          {profile.bannedCategory && (
+                            <span className="text-xs text-slate-500">
+                              {t(`banCategory.${profile.bannedCategory}`)} · {profile.bannedReason}
+                            </span>
+                          )}
+                        </form>
+                      ) : (
+                        /* DSA чл. 17: бан само с категория и обосновка — собственикът
+                           получава изложение на мотивите по имейл. */
+                        <details className="w-full rounded-xl border border-red-200 p-3">
+                          <summary className="cursor-pointer font-semibold text-red-700">
+                            {t('banProfile', { slug: profile.slug })}
+                          </summary>
+                          <form action={setProfileBanAction} className="mt-3 space-y-2">
+                            <input type="hidden" name="uiLocale" value={locale} />
+                            <input type="hidden" name="profileId" value={profile.id} />
+                            <input type="hidden" name="ban" value="1" />
+                            <label className="block">
+                              {t('banCategoryLabel')}
+                              <select name="category" required className={inputClass}>
+                                {BAN_CATEGORIES.map((c) => (
+                                  <option key={c} value={c}>
+                                    {t(`banCategory.${c}`)}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            <label className="block">
+                              {t('banReasonLabel')}
+                              <textarea
+                                name="reason"
+                                required
+                                minLength={10}
+                                maxLength={2000}
+                                rows={3}
+                                className={inputClass}
+                              />
+                            </label>
+                            <label className="flex items-center gap-2 text-xs text-slate-600">
+                              <input type="checkbox" name="fromReport" className="h-3.5 w-3.5" />
+                              {t('banFromReport')}
+                            </label>
+                            <p className="text-xs text-slate-500">{t('banNoticeHint')}</p>
+                            <button
+                              type="submit"
+                              className="rounded-full bg-red-600 px-4 py-1.5 font-semibold text-white hover:bg-red-700"
+                            >
+                              {t('banConfirm')}
+                            </button>
+                          </form>
+                        </details>
+                      )}
                       <form action={adminSetPublishedAction}>
                         <input type="hidden" name="uiLocale" value={locale} />
                         <input

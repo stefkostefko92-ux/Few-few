@@ -281,7 +281,7 @@ export async function ProfileScreen({
     monthViews = await prisma.clickEvent.count({
       where: {
         profileId: profile.id,
-        linkId: null,
+        linkId: null, productId: null,
         createdAt: { gte: monthStart },
       },
     });
@@ -1088,7 +1088,7 @@ export async function ProfileScreen({
                 return (
                   <li key={product.id} className="pf-product">
                     <a
-                      href={product.externalUrl}
+                      href={`/u/${slug}/p/${product.id}?hl=${viewLocale}`}
                       target="_blank"
                       rel="nofollow noopener noreferrer ugc"
                       className={`flex w-full items-center justify-between gap-3 border px-6 py-3.5 text-start transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl ${shapeClass} ${shadowClass}`}
