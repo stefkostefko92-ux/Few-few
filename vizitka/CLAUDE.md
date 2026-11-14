@@ -64,6 +64,10 @@ src/routes/account.js /settings — парола, 2FA (TOTP + 10 резервн�
                      изтегляне на данните (ZIP: JSON+vCard+снимки, чл. 15/20), изтриване (чл. 17)
 src/totp.js          TOTP по RFC 6238 (без зависимости) + шифроване на тайната (AES-256-GCM)
 src/twofactor.js     verifySecondFactor: TOTP (без повторение) ИЛИ резервен код (еднократен)
+src/pwa.js           инсталируемо приложение: манифест, deviceOf (User-Agent), Samsung → Chrome
+src/routes/pwa.js    /manifest.webmanifest + /sw.js (преди статиката, no-cache) · /app (стъпки)
+public/sw.js         service worker-ът (виж „Инсталируемо приложение“ по-долу)
+public/icons/        икони 192/512 (any + maskable) + apple-touch-icon 180
 src/stats.js         дневна статистика (profile_views_daily) + SVG графика за таблото
 src/routes/dashboard.js  /dashboard, /profile (редакция+тема), /profile/photo (multer)
 src/routes/public.js /p/:slug (views), qr.png, vizitka.vcf, /p/:slug/print, /api/print/:token, /photo/:file
@@ -224,4 +228,14 @@ medqr — rsync без `data/`, npm ci, снимка на базата, health c
   тестът ги търси в байтовете на архива.
 - **Дневна статистика:** `profile_views_daily` (само брой на ден, 400 дни, чисти се при старт
   и дневно) → SVG графика в таблото без JavaScript; 7/30 дни и посока спрямо предната седмица.
+- **Инсталируемо приложение (PWA, моделът на rilievi):** манифест (`standalone`, start `/dashboard`,
+  икони any+maskable, бързи връзки), `/sw.js` от корена (монтиран ПРЕДИ `express.static`, `no-cache`),
+  страница `/app` (noindex, `Vary: User-Agent`) — бутонът на Chrome/Edge (`beforeinstallprompt`) и
+  стъпките за iPhone/iPad, Android, компютър и Mac; Samsung Internet → „Отвори в Chrome“. Работникът
+  **пази нещо само в инсталираното приложение** (страницата в `display-mode: standalone` му праща
+  `installed`): статиката и до 30 отворени ПУБЛИЧНИ визитки + снимките им (офлайн, network-first;
+  404/410 ги маха). Табло, настройки, вход — **никога**. Изход и изтриване на акаунта изпразват кеша
+  преди заявката. В обикновен раздел — само „Няма връзка“, нищо на устройството; на `/p/…` за
+  посетител работникът **не се регистрира** (ePrivacy чл. 5(3)). Иконите се правят от `favicon.svg`
+  (Chromium, `omitBackground` за `any`).
 - Roadmap (не е имплементирано): няколко визитки на акаунт.

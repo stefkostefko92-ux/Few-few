@@ -1628,3 +1628,60 @@ body.card-theme {
   gap: 0.6rem;
   margin-top: 2rem;
 }
+
+/* ── Инсталируемо приложение: /app ─────────────────────────────────────────── */
+.app-page {
+  max-width: 720px;
+  margin: 0 auto;
+}
+.app-page h2 {
+  margin-top: 2rem;
+}
+.install-ready {
+  margin: 1rem 0;
+  padding: 1rem 1.25rem;
+  background: var(--card);
+  border: 1px solid var(--brand);
+  border-radius: var(--radius);
+}
+.install-ready p {
+  margin: 0 0 0.75rem;
+}
+.install-ready .btn .ico {
+  vertical-align: -4px;
+}
+.install-list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.25rem 0 0.75rem;
+}
+.install-os {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.25rem 1.25rem;
+}
+.install-os summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.install-os ol {
+  margin: 0.25rem 0 1rem;
+  padding-left: 1.25rem;
+}
+.install-os li + li {
+  margin-top: 0.35rem;
+}
+.install-why li + li {
+  margin-top: 0.35rem;
+}
+/* Атрибутът hidden печели и над display: от класовете по-горе. */
+[data-install] [hidden],
+[data-app-hint][hidden] {
+  display: none !important;
+}

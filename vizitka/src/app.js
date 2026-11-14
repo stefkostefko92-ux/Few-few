@@ -22,6 +22,7 @@ import adminRoutes from './routes/admin.js';
 import walletRoutes from './routes/wallet.js';
 import mcpRoutes from './routes/mcp.js';
 import accountRoutes from './routes/account.js';
+import pwaRoutes, { installPage } from './routes/pwa.js';
 
 seedAdmins(); // маркира конфигурираните ADMIN_EMAILS акаунти като админ
 
@@ -120,6 +121,8 @@ app.use((req, res, next) => {
 
 app.use(express.urlencoded({ extended: false, limit: '64kb', parameterLimit: 100 }));
 app.use(cookieParser());
+// Приложението (манифест + service worker) — преди статиката: /sw.js не бива да се кешира 7 дни.
+app.use(pwaRoutes(assetVer));
 app.use(express.static(join(__dirname, '..', 'public'), { maxAge: prod ? '7d' : 0 }));
 
 // Автентикираните страници не се кешират никъде.
@@ -215,6 +218,7 @@ app.use(mcpRoutes);
 app.use(authRoutes);
 app.use(dashboardRoutes);
 app.use(accountRoutes);
+app.use(installPage());
 app.use(adminRoutes);
 app.use(walletRoutes);
 app.use(publicRoutes);

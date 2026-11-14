@@ -97,4 +97,104 @@
       if (i + 1 >= Number(addLink.getAttribute('data-max'))) addLink.disabled = true;
     });
   }
+
+  // ── Инсталируемо приложение (src/pwa.js, public/sw.js) ─────────────────────────
+  const installed =
+    window.matchMedia(
+      '(display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui), (display-mode: window-controls-overlay)'
+    ).matches || window.navigator.standalone === true;
+
+  // Работникът (public/sw.js) не се регистрира за посетител на чужда визитка (/p/…) — той не е
+  // поискал приложение; в инсталираното приложение — навсякъде, и му казва, че е приложение
+  // (едва тогава пази визитки за офлайн).
+  if (
+    'serviceWorker' in navigator &&
+    window.isSecureContext &&
+    (installed || !/^\/p\//.test(location.pathname))
+  ) {
+    navigator.serviceWorker
+      .register('/sw.js')
+      .then(function () {
+        return installed ? navigator.serviceWorker.ready : null;
+      })
+      .then(function (reg) {
+        if (reg && reg.active) reg.active.postMessage({ type: 'installed' });
+      })
+      .catch(function () {});
+  }
+
+  // В инсталираното приложение подсказката „Инсталирай“ в таблото е излишна.
+  if (installed) {
+    document.querySelectorAll('[data-app-hint]').forEach(function (el) {
+      el.hidden = true;
+    });
+  }
+
+  // Страницата /app: бутонът на браузъра (Chrome, Edge) и стъпките на устройството.
+  const root = document.querySelector('[data-install]');
+  if (!root) return;
+  const show = function (selector, on) {
+    const el = root.querySelector(selector);
+    if (el) el.hidden = !on;
+  };
+  show('[data-install-installed]', installed);
+
+  // Устройството — същото правило като deviceOf() в src/pwa.js; iPad с User-Agent на компютър
+  // се познава по докосването.
+  const ua = navigator.userAgent;
+  const ios = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  const os = ios
+    ? 'ios'
+    : /Android/i.test(ua)
+      ? 'android'
+      : /Macintosh/.test(ua) &&
+          /Safari\//.test(ua) &&
+          !/Chrome\/|Chromium\/|Edg\/|Firefox\//.test(ua)
+        ? 'mac'
+        : 'pc';
+  root.querySelectorAll('details[data-os]').forEach(function (d) {
+    const mine = d.getAttribute('data-os') === os;
+    d.open = mine;
+    const badge = d.querySelector('[data-install-yours]');
+    if (badge) badge.hidden = !mine;
+  });
+
+  show('[data-install-ios]', os === 'ios' && !installed);
+  const iosSteps = root.querySelector('[data-install-ios-steps]');
+  if (iosSteps) {
+    iosSteps.addEventListener('click', function () {
+      const d = root.querySelector('details[data-os="ios"]');
+      if (!d) return;
+      d.open = true;
+      d.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      const summary = d.querySelector('summary');
+      if (summary) summary.focus({ preventScroll: true });
+    });
+  }
+
+  const samsung = /SamsungBrowser\//.test(ua);
+  let offer = null;
+  window.addEventListener('beforeinstallprompt', function (event) {
+    event.preventDefault();
+    offer = event;
+    if (!installed && !samsung) show('[data-install-ready]', true);
+  });
+  window.addEventListener('appinstalled', function () {
+    offer = null;
+    show('[data-install-ready]', false);
+    show('[data-install-done]', true);
+  });
+  const now = root.querySelector('[data-install-now]');
+  if (now) {
+    now.addEventListener('click', function () {
+      if (!offer) return;
+      const asked = offer;
+      offer = null;
+      asked.prompt();
+      asked.userChoice.then(function (choice) {
+        show('[data-install-ready]', false);
+        if (choice.outcome === 'accepted') show('[data-install-done]', true);
+      });
+    });
+  }
 })();

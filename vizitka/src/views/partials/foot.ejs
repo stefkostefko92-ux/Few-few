@@ -5,7 +5,7 @@
   <nav class="footer-guides" aria-label="Наръчник">
     <% for (const g of (typeof guides !== 'undefined' ? guides : [])) { %><a href="/<%= g.slug %>"><%= g.navTitle %></a><% } %>
   </nav>
-  <p><a href="/privacy">Поверителност</a> · <a href="/terms">Общи условия</a> · <a href="/terms#impresum">Импресум</a></p>
+  <p><a href="/privacy">Поверителност</a> · <a href="/terms">Общи условия</a> · <a href="/terms#impresum">Импресум</a> · <a href="/app">Приложение</a></p>
 </footer>
 <script src="/app.js?v=<%= typeof assetVer !== 'undefined' ? assetVer : '' %>" defer></script>
 </body>
