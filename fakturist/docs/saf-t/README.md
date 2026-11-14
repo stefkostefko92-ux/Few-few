@@ -30,5 +30,18 @@ Customers, Products, TaxTable, UOMTable; всеки е глобален елем
 xmllint (`scripts/saft-samples.ts`). Подмяна с официалния файл = нов отпечатък в
 `scripts/conformance/run.mjs` (`SAFT_XSD_SHA256`) и пускане на проверката.
 
-Номенклатурите (Приложение 2 — `SAF-T_BG_Structure_Definition.xlsx`) не са в XSD-то. Кодовете, които
-ползваме, и източникът на всеки са в `src/export/saft/codes.ts`; останалите категории отиват „за ръчно“.
+## Официалните документи (качени от собственика, 14.11.2026)
+
+- `SAF-T_BG_Structure_Definition_V_1.0.3.xlsx` — Приложение № 2 (структурата и номенклатурите: TAX-IMP,
+  Nom_Invoice_Types, VAT_TaxType, Unit_Of_Measure, NC8_TARIC…), версия 1.0.3 от 13.10.2026 по листа Hist.
+  SHA-256 `e5ca32b5757c3b609694f53e32d541e1fc634404161ed1c9c9e6e18d0fc3a2a8`.
+- `SAF-T_Vaprosi_i_otgovori_v2_2026-03.pdf` — „Въпроси и отговори“, документ за съдействие на ЦУ на НАП,
+  март 2026 (100 стр., „Публична информация“ — TLP-WHITE). SHA-256
+  `0716e3310cb6f7514543663506e09ca60bf9655464d84d7a561bc2b2bd676b30`.
+- `nomenclatures-1.0.3.json` — извадка от xlsx-а: кодовете по ДДС от TAX-IMP (дословните описания),
+  Nom_Invoice_Types, VAT_TaxType и кодовете от Unit_Of_Measure. Тестът `tests/saft.test.ts` сверява всеки
+  код в `src/export/saft/codes.ts` с нея. Нова версия на приложението → нов xlsx тук, нова извадка, тестът
+  показва разликите.
+
+XSD-то (Приложение № 1, RAR архивът) още е копието от saftcheck.bg по-горе — сверката на отпечатъка с
+официалния архив остава.

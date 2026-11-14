@@ -196,7 +196,8 @@ test('месецът: две фактури, кредитно известие �
   // Вземане: 15.00 + 6.00 − 3.00 (с ДДС) − 5.00 платени = 13.00; началото на месеца — 0.
   assert.match(customers, /<OpeningDebitBalance>0\.00<\/OpeningDebitBalance>/);
   assert.match(customers, /<ClosingDebitBalance>13\.00<\/ClosingDebitBalance>/);
-  assert.match(read('UOMTable.xml'), /<UnitOfMeasure>H87<\/UnitOfMeasure>/);
+  // C62 е в Unit_Of_Measure („единица“) — остава C62.
+  assert.match(read('UOMTable.xml'), /<UnitOfMeasure>C62<\/UnitOfMeasure>/);
   assert.match(read('README.txt'), /Сметки: вземания от клиенти 4111, приходи 702/);
   assert.equal(await prisma.auditLog.count({ where: { action: 'saft.exported' } }), 1);
 

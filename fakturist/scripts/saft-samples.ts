@@ -11,6 +11,7 @@ import {
   finalWithAdvance,
   foreignCurrency,
   reverseCharge,
+  zeroRated,
 } from '../tests/fixtures/einvoice-samples.js';
 
 const documents: SaftDocument[] = [
@@ -18,6 +19,7 @@ const documents: SaftDocument[] = [
   foreignCurrency,
   creditNote,
   finalWithAdvance,
+  zeroRated,
   reverseCharge,
 ].map((input) => ({ number: input.number, typeCode: input.typeCode, status: 'ISSUED', input }));
 const bundle = saftBundle({

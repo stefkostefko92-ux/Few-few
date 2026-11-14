@@ -59,6 +59,7 @@ export function saftBundle(input: {
         unitCode: line.unitCode,
         category: line.category,
         rate: line.rate,
+        exemption: line.exemption,
       };
       if (!products.has(line.code)) products.set(line.code, product);
       groups.push(product);

@@ -38,8 +38,10 @@ export interface SaftBalance {
 export interface SaftCodes {
   /** TaxType за ДДС. */
   vatTaxType: string;
-  /** TaxCode по категорията и ставката; null — няма сверен код (документът — за ръчно). */
-  vatTaxCode(category: VatCategory, rate: Dec | null): string | null;
+  /** TaxRegistration/TaxType на клиент с ДДС номер (номенклатура VAT_TaxType). */
+  vatRegistrationType: string;
+  /** TaxCode по категорията, ставката и основанието; null — зависи от основанието (документът — за ръчно). */
+  vatTaxCode(category: VatCategory, rate: Dec | null, exemptionReason?: string): string | null;
   /** Описанието на TaxCode за TaxTable. */
   vatTaxDescription(taxCode: string): string;
   /** InvoiceType (Nom_Invoice_Types) по вида на документа; null — видът не влиза в продажбите. */

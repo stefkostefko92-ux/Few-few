@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
+import { COMMON_UNITS } from '../src/einvoice/codes.js';
+import { dec } from '../src/einvoice/decimal.js';
 import { renderXml } from '../src/einvoice/xml.js';
 import type { InvoiceInput, PartyInput } from '../src/einvoice/model.js';
 import { customerBalances } from '../src/export/saft/balances.js';
 import { saftBundle } from '../src/export/saft/bundle.js';
-import { NRA_CODES, nraCustomerId } from '../src/export/saft/codes.js';
+import { NRA_CODES, nraCustomerId, VAT_SALES_CODES } from '../src/export/saft/codes.js';
 import type { SaftDocument } from '../src/export/saft/model.js';
 import { saftReadme } from '../src/export/saft/readme.js';
 import { salesInvoices } from '../src/export/saft/sales.js';
@@ -49,7 +52,8 @@ test('фактура в евро: вид 01, клиент 10+ЕИК, редов�
   assert.deepEqual(values(xml, 'TransactionID'), ['0000000124']);
   assert.deepEqual(values(xml, 'DebitCreditIndicator'), ['D', 'D', 'D', 'C']);
   assert.deepEqual(values(xml, 'ProductCode').at(-1), 'FKT-DISCOUNT');
-  assert.deepEqual(values(xml, 'InvoiceUOM'), ['H87', 'HUR', 'H87', 'H87']);
+  // Отстъпката на документа е с мярка C62 („единица“ в Unit_Of_Measure).
+  assert.deepEqual(values(xml, 'InvoiceUOM'), ['H87', 'HUR', 'H87', 'C62']);
   assert.deepEqual(values(xml, 'TaxPointDate'), Array(4).fill('2026-11-10'));
   // Редовете: 37.50, 54.00 (след отстъпката на реда), 9.99; отстъпката на документа 5.00.
   assert.deepEqual(
@@ -93,9 +97,9 @@ test('приспаднат аванс: редът с минус е C с поло
   assert.equal(values(xml, 'Reference').length, 0, 'BG-3 към аванса не е кредитно известие');
 });
 
-test('чужда валута: сумата в евро по курса, валутата и курсът до нея; C62 → H87', () => {
+test('чужда валута: сумата в евро по курса, валутата и курсът до нея; C62 остава C62', () => {
   const xml = sales(foreignCurrency);
-  assert.deepEqual(values(xml, 'InvoiceUOM'), ['H87']);
+  assert.deepEqual(values(xml, 'InvoiceUOM'), ['C62']);
   assert.deepEqual(values(xml, 'CurrencyCode'), ['USD', 'USD', 'USD']);
   assert.deepEqual(values(xml, 'ExchangeRate'), ['1.0842', '1.0842', '1.0842']);
   // 100.00 USD / 1.0842 = 92.23 EUR; ДДС 20.00 USD = 18.45 EUR.
@@ -105,17 +109,66 @@ test('чужда валута: сумата в евро по курса, вал�
   assert.deepEqual(values(xml, 'GrossTotal'), ['110.68']);
 });
 
-test('без сверен код — за ръчно: обратно начисляване, 0 %, извън обхвата, анулиран', () => {
+test('за ръчно: обратно начисляване и извън обхвата (зависят от основанието), анулиран; 0 % по чл. 30 — 100214', () => {
   const result = salesInvoices({
     documents: [doc(reverseCharge), doc(zeroRated), doc(notRegistered), doc(domestic, 'CANCELLED')],
     accounts,
     codes: NRA_CODES,
   });
-  assert.equal(result.included.length, 0);
+  assert.deepEqual(
+    result.included.map((d) => d.number),
+    [zeroRated.number],
+  );
   assert.deepEqual(
     result.manual.map((m) => m.reason),
-    ['category', 'category', 'category', 'cancelled'],
+    ['category', 'category', 'cancelled'],
   );
+  const xml = renderXml(result.xml);
+  assert.deepEqual([...new Set(values(xml, 'TaxCode'))], ['100214']);
+  assert.match(xml, /<TaxPercentage>0\.00<\/TaxPercentage>/);
+});
+
+test('TaxCode по категорията — точно по лист TAX-IMP на Приложение 2 (v1.0.3)', () => {
+  const official = JSON.parse(
+    readFileSync(new URL('../docs/saf-t/nomenclatures-1.0.3.json', import.meta.url), 'utf8'),
+  ) as {
+    vatTaxType: string;
+    taxImpVat: Array<{ code: string; description: string }>;
+    invoiceTypes: Array<{ code: string }>;
+    vatRegistrationTypes: Array<{ code: string; description: string }>;
+    unitsOfMeasure: Array<{ code: string }>;
+  };
+  const tax = new Map(official.taxImpVat.map((t) => [t.code, t.description]));
+  for (const [code, description] of Object.entries(VAT_SALES_CODES)) {
+    assert.equal(tax.get(code), description, code);
+  }
+  const code = (
+    category: Parameters<typeof NRA_CODES.vatTaxCode>[0],
+    rate?: string,
+    reason?: string,
+  ) => NRA_CODES.vatTaxCode(category, rate === undefined ? null : dec(rate), reason);
+  assert.equal(code('S', '20'), '100211');
+  assert.equal(code('S', '9'), '100213');
+  assert.equal(code('S', '15'), null, 'друга ставка — за ръчно');
+  assert.equal(code('Z', '0', 'Международен превоз, чл. 30 ЗДДС'), '100214');
+  assert.equal(code('Z', '0', 'Доставка по чл. 173, ал. 1 ЗДДС'), '100216');
+  assert.equal(code('G', '0'), '100214');
+  assert.equal(code('K', '0'), '100215');
+  assert.equal(code('E', '0'), '100219');
+  assert.equal(code('AE', '0'), null);
+  assert.equal(code('O'), null);
+  assert.equal(official.vatTaxType, NRA_CODES.vatTaxType);
+  assert.equal(
+    official.vatRegistrationTypes.find((t) => t.code === NRA_CODES.vatRegistrationType)
+      ?.description,
+    'Данъчно задължено лице, регистрирано за целите на ДДС',
+  );
+  const types = new Set(official.invoiceTypes.map((t) => t.code));
+  for (const t of ['380', '381', '383', '386']) assert.ok(types.has(NRA_CODES.invoiceType(t)!), t);
+  // Всяка мярка от формата за документ е в Unit_Of_Measure след замяната (E48 → C62).
+  const units = new Set(official.unitsOfMeasure.map((u) => u.code));
+  for (const unit of COMMON_UNITS) assert.ok(units.has(NRA_CODES.unitOfMeasure(unit)), unit);
+  assert.equal(NRA_CODES.unitOfMeasure('E48'), 'C62');
 });
 
 test('CustomerID: 10 ЕИК, 13 ЕГН, 11 ДДС номер от ЕС, 12 извън ЕС, 14/15 собствен код', () => {
@@ -133,6 +186,10 @@ test('CustomerID: 10 ЕИК, 13 ЕГН, 11 ДДС номер от ЕС, 12 из�
   assert.equal(nraCustomerId(party({ legalId: '98-7654321' }, 'US')), '12US98-7654321');
   assert.match(nraCustomerId(party({})), /^15[0-9A-F]{16}$/);
   assert.match(nraCustomerId(party({}, 'DE')), /^14DE[0-9A-F]{16}$/);
+  // Гърция — с префикса EL (пример „11EL123456789“ в MF.C.3), и когато номерът е без него.
+  assert.equal(nraCustomerId(party({ vatId: '123456789' }, 'GR')), '11EL123456789');
+  // Лице от ЕС без ДДС номер — 14 + държава + собствен код (не регистровият номер).
+  assert.match(nraCustomerId(party({ legalId: 'HRB 12345' }, 'DE')), /^14DE[0-9A-F]{16}$/);
   assert.equal(
     nraCustomerId(party({})),
     nraCustomerId(party({})),
@@ -276,9 +333,12 @@ test('пакетът: пет файла, свързано лице Y, артик
   assert.equal(values(products, 'ProductCode').length, 5);
   assert.deepEqual(values(products, 'ProductCommodityCode'), ['0', '00000000', '0', '0', '0']);
   assert.deepEqual(values(file('TaxTable.xml'), 'TaxCode'), ['100211', '100213']);
-  assert.deepEqual(values(file('UOMTable.xml'), 'UnitOfMeasure'), ['H87', 'HUR']);
+  assert.deepEqual(values(file('UOMTable.xml'), 'UnitOfMeasure'), ['H87', 'HUR', 'C62']);
+  // UOMBase = UOMStandard → коефициент 1 (MF.P.10); TaxType на регистрацията — VAT_TaxType 100010.
+  assert.deepEqual(values(products, 'UOMBase'), values(products, 'UOMStandard'));
+  assert.deepEqual(values(customers, 'TaxType'), ['100010']);
   const readme = saftReadme({ orgName: 'Карбон Стелт ЕДПК', period: '2026-11', accounts, bundle });
-  assert.match(readme, /0000000126 — категория на ДДС без сверен код/);
+  assert.match(readme, /0000000126 — обратно начисляване, извън обхвата или друга ставка/);
   assert.match(readme, /\r\n$/);
 });
 

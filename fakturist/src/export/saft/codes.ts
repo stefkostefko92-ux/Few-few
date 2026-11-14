@@ -1,31 +1,31 @@
 import { toFixed } from '../../einvoice/decimal.js';
 import type { PartyInput } from '../../einvoice/model.js';
+import { ZERO_RATE_SPECIAL } from '../sales-journal.js';
 import { shortHash, clip } from './keys.js';
 import type { SaftCodes } from './model.js';
 
 /**
- * Кодовете от номенклатурите на НАП, които Фактурист ползва. Официалното Приложение 2 (xlsx) и
- * „Въпроси и отговори“ (ВиО) в. 2 не се отварят от nra.bg извън България — затова тук е САМО каквото е
- * сверено (Данъчника, 14.11.2026; не е данъчен съвет). Всичко останало връща null → документът е в
- * списъка „за ръчно“, никога наслуки. Сверка с официалния xlsx — задача на собственика (`docs/saf-t/`).
+ * Кодовете от номенклатурите на НАП — по Приложение № 2 към заповедта за SAF-T
+ * (`docs/saf-t/SAF-T_BG_Structure_Definition_V_1.0.3.xlsx`, версия 1.0.3 от 13.10.2026 по листа Hist;
+ * извадката е в `docs/saf-t/nomenclatures-1.0.3.json`, тестът сверява всеки код тук с нея) и „Въпроси и
+ * отговори“ в. 2 (март 2026, `docs/saf-t/`). Не е данъчен съвет.
  *
- * - TaxCode 100211 (основа 20 %) и 100213 (основа 9 %): ВиО в. 2, S.TI.1 (дословно в
- *   saftcheck.bg/nap-otgovaria). TaxType „100“ — примерът в официален отговор на НАП за покупките
- *   („TaxType: 100 TaxCode: 100331“, пак там) и saft-bridge.com („35 кода от вид 100“).
- * - Z, K, G, E, AE: кодовете не са изписани никъде. НАП казва само, че кодовете по ЗДДС са „на база
- *   кодовете, посочени в Приложение №12 към ППЗДДС“ и за продажбите са от 100211 до 100233 — без
- *   таблицата (лист TAX-IMP) съответствието не се гадае. O („извън обхвата“ = 000/000000 по ВиО) не е еднозначно —
- *   във Фактурист „O“ е и мястото на изпълнение извън страната (колона 02-17/02-18 на дневника).
- * - InvoiceType 01/02/03: Nom_Invoice_Types е „на база видовете документи по ППЗДДС“ (Приложение 3,
- *   стр. 8); 02 = дебитно известие — ВиО в. 2, S.I.9; 01/03 — Приложение 12 към ППЗДДС. Авансовата
- *   фактура няма свой вид в ППЗДДС → 01 (както в дневника).
- * - CustomerID: 10 + ЕИК, 11 + ДДС номер от ЕС (с префикса на държавата), 12 + държава + регистров номер
- *   извън ЕС, 13 + ЕГН, 14 + държава + собствен код, 15 + собствен код; без „BG“ след 10
- *   (saftix.bg/errors.html; docs.erp.net — SAF-T Bulgaria, CustomerId).
- * - ProductCommodityCode (NC8_TARIC): „00000000“ — общият код за услуги, „0“ — неприложимост (ВиО в. 2,
- *   III.7 по safty.bg). Единица за време или „услуга“ (E48) → услуга (наемът също е услуга — чл. 9 ЗДДС).
- * - Мерни единици: H87 (брой) и HUR са в номенклатурата (ВиО MF.UOM.2; intrastat.bg: „бр.“ → H87);
- *   C62 не е намерен → H87. Останалите са кодове по UN/ECE Rec. 20 и минават както са.
+ * - TaxType 100 + TaxCode от лист TAX-IMP. Кодовете за продажбите са полетата на дневника за продажбите
+ *   (Приложение № 12 към ППЗДДС; ВиО в. 2, S.TI.1), затова разпределението е същото като в PRODAGBI.TXT
+ *   (`sales-journal.ts`): S 20 % → 100211, S 9 % → 100213, Z по глава трета и G (износ, чл. 28) → 100214,
+ *   K (ВОД) → 100215, Z по чл. 140, 146, 173 → 100216, E → 100219. AE (обратно начисляване — чл. 21, ал. 2,
+ *   чл. 69, ал. 2 или чл. 163а: 100217/100218/100227/100228) и O (извън обхвата) зависят от основанието —
+ *   null, документът е „за ръчно“.
+ * - TaxRegistration/TaxType — номенклатурата VAT_TaxType: 100010 „регистрирано за целите на ДДС“.
+ * - InvoiceType — Nom_Invoice_Types: 01 фактура (и авансова — ППЗДДС няма отделен вид), 02 дебитно,
+ *   03 кредитно известие.
+ * - CustomerID — MF.C.3: 10 + ЕИК; 11 + ДДС номер от ЕС с префикса (Гърция — EL: „11EL123456789“);
+ *   12 + държава + номер извън ЕС; 13 + ЕГН/ЛНЧ; 14 + държава + собствен код; 15 + собствен код (и за
+ *   лице, което не дава данни — ВиО в. 2).
+ * - ProductCommodityCode — NC8_TARIC: КН8, „00000000“ — общата категория за услуги, „0“ — когато кодът по
+ *   КН не е приложим. Единица за време и E48 → услуга (наемът също е услуга — чл. 9 ЗДДС).
+ * - Мерни единици — Unit_Of_Measure: всички от интерфейса са в номенклатурата (C62 — „единица“) освен
+ *   E48 („услуга“) → C62.
  */
 const EU_OTHER = new Set([
   'AT',
@@ -56,10 +56,17 @@ const EU_OTHER = new Set([
   'SK',
 ]);
 
-const TAX_CODES: Record<string, { code: string; description: string }> = {
-  '20.00': { code: '100211', description: 'Облагаеми доставки със ставка 20 %' },
-  '9.00': { code: '100213', description: 'Облагаеми доставки със ставка 9 %' },
+/** Описанията — дословно от лист TAX-IMP. */
+export const VAT_SALES_CODES: Record<string, string> = {
+  '100211': 'Данъчна основа на облагаемите доставки със ставка 20 %',
+  '100213': 'ДО на облагаемите доставки със ставка 9 %',
+  '100214': 'ДО на доставките със ставка 0 % по глава трета от ЗДДС',
+  '100215': 'ДО на ВОД на стоки',
+  '100216': 'Доставки по чл. 140, 146, 173, ал. 1 и 4 от ЗДДС',
+  '100219': 'ДО на освободени доставки и освободените ВОП',
 };
+
+const STANDARD_RATES: Record<string, string> = { '20.00': '100211', '9.00': '100213' };
 
 const INVOICE_TYPES: Record<string, string> = {
   '380': '01',
@@ -69,6 +76,8 @@ const INVOICE_TYPES: Record<string, string> = {
 };
 
 const SERVICE_UNITS = new Set(['HUR', 'DAY', 'WEE', 'MON', 'ANN', 'MIN', 'E48']);
+/** Мерните единици на интерфейса, които ги няма в Unit_Of_Measure. */
+const UNIT_REPLACEMENTS: Record<string, string> = { E48: 'C62' };
 
 const compact = (value: string | undefined) =>
   value?.replace(/\s+/g, '').toUpperCase() || undefined;
@@ -76,12 +85,15 @@ const compact = (value: string | undefined) =>
 /** Собствен код на лице без идентификатор — един и същ за едно и също име и държава. */
 const ownCode = (party: PartyInput) => shortHash(`${party.name}|${party.address.countryCode}`);
 
-/** ЕИК (9 или 13 цифри) или ЕГН (10) на българско лице — от BT-47/BT-46, иначе от ДДС номера без „BG“. */
+/** ЕИК (9 или 13 цифри) или ЕГН/ЛНЧ (10) на българско лице — от BT-47/BT-46, иначе от ДДС номера без „BG“. */
 function bulgarianId(party: PartyInput): string | undefined {
   const id =
     compact(party.legalId) ?? compact(party.identifier) ?? compact(party.vatId)?.replace(/^BG/, '');
   return id && /^(\d{9}|\d{10}|\d{13})$/.test(id) ? id : undefined;
 }
+
+/** Префиксът на ДДС номера в ЕС (ISO 3166-1, освен Гърция — EL). */
+const vatPrefix = (country: string) => (country === 'GR' ? 'EL' : country);
 
 export function nraCustomerId(party: PartyInput): string {
   const country = party.address.countryCode;
@@ -91,23 +103,34 @@ export function nraCustomerId(party: PartyInput): string {
     return `15${ownCode(party)}`;
   }
   const vat = compact(party.vatId);
-  if (EU_OTHER.has(country) && vat)
-    return clip(`11${/^[A-Z]{2}/.test(vat) ? vat : country + vat}`, 35);
-  const registry = compact(party.legalId) ?? compact(party.identifier);
-  if (!EU_OTHER.has(country) && (registry ?? vat))
-    return clip(`12${country}${registry ?? vat}`, 35);
-  return clip(`14${country}${registry ?? ownCode(party)}`, 35);
+  if (EU_OTHER.has(country)) {
+    if (vat) return clip(`11${/^[A-Z]{2}/.test(vat) ? vat : vatPrefix(country) + vat}`, 35);
+    return clip(`14${country}${ownCode(party)}`, 35);
+  }
+  const registry = compact(party.legalId) ?? compact(party.identifier) ?? vat;
+  return clip(registry ? `12${country}${registry}` : `14${country}${ownCode(party)}`, 35);
 }
 
 export const NRA_CODES: SaftCodes = {
   vatTaxType: '100',
-  vatTaxCode(category, rate) {
-    if (category !== 'S' || rate === null) return null;
-    return TAX_CODES[toFixed(rate, 2)]?.code ?? null;
+  vatRegistrationType: '100010',
+  vatTaxCode(category, rate, exemptionReason) {
+    switch (category) {
+      case 'S':
+        return rate === null ? null : (STANDARD_RATES[toFixed(rate, 2)] ?? null);
+      case 'Z':
+        return ZERO_RATE_SPECIAL.test(exemptionReason ?? '') ? '100216' : '100214';
+      case 'G':
+        return '100214';
+      case 'K':
+        return '100215';
+      case 'E':
+        return '100219';
+      default:
+        return null;
+    }
   },
-  vatTaxDescription(taxCode) {
-    return Object.values(TAX_CODES).find((t) => t.code === taxCode)?.description ?? taxCode;
-  },
+  vatTaxDescription: (taxCode) => VAT_SALES_CODES[taxCode] ?? taxCode,
   invoiceType: (typeCode) => INVOICE_TYPES[typeCode] ?? null,
   customerId: nraCustomerId,
   registrationNumber(party) {
@@ -122,5 +145,5 @@ export const NRA_CODES: SaftCodes = {
     const cn = hsCode?.replace(/\s+/g, '');
     return cn && /^\d{8}$/.test(cn) ? cn : '0';
   },
-  unitOfMeasure: (unitCode) => (unitCode === 'C62' ? 'H87' : unitCode),
+  unitOfMeasure: (unitCode) => UNIT_REPLACEMENTS[unitCode] ?? unitCode,
 };

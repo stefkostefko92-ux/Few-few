@@ -10,7 +10,7 @@
     "2026-11-14-versiya-1-1-saf-t": {
       "area": "VAT",
       "title": "SAF-T data (version 1.1)",
-      "text": "Each month you can download your sales as files under the NRA SAF-T schema (version 1.0.3): invoices, customers, products, tax codes and units of measure — for import into the accounting software that builds and submits the monthly file. The accountant picks the receivables and revenue accounts and marks related parties. Documents without a verified code in the NRA nomenclature are listed separately."
+      "text": "Each month you can download your sales as files under the NRA SAF-T schema (version 1.0.3): invoices, customers, products, tax codes and units of measure — for import into the accounting software that builds and submits the monthly file. The accountant picks the receivables and revenue accounts and marks related parties. Codes follow the NRA nomenclatures; documents with reverse charge or out-of-scope supplies are listed separately for the accountant."
     },
     "2026-11-14-versiya-1-0": {
       "area": "Fakturist",

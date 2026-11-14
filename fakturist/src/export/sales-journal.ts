@@ -16,6 +16,9 @@ import { encodeCp1251 } from './cp1251.js';
  * гадае: документът излиза в списъка „за ръчно вписване“.
  */
 export const RECORD_LENGTH = 424;
+
+/** Нулевата ставка по чл. 140, 146, ал. 1 и 173 ЗДДС — своето поле (02-16) и свой код в SAF-T (100216). */
+export const ZERO_RATE_SPECIAL = /чл\.\s*(140|146|173)\b/;
 const NO_ID = '999999999999999';
 
 /** Полетата по реда на таблицата в Приложение № 12 (код, дължина). */
@@ -115,7 +118,7 @@ function amounts(
       put('02-14', base);
     } else if (group.category === 'Z') {
       // Нулевата ставка по чл. 140, 146, ал. 1 и 173 има свое поле; другата по глава трета — 02-14.
-      put(/чл\.\s*(140|146|173)\b/.test(group.exemptionReason ?? '') ? '02-16' : '02-14', base);
+      put(ZERO_RATE_SPECIAL.test(group.exemptionReason ?? '') ? '02-16' : '02-14', base);
     } else if (group.category === 'E') {
       put('02-19', base);
     } else {

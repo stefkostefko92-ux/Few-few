@@ -1007,7 +1007,7 @@
     "manualTitle": "To enter manually",
     "manualIntro": "These documents are not in the files — the accountant enters them according to their legal basis.",
     "reasons": {
-      "category": "VAT category without a verified code in the NRA nomenclature (0 %, exempt supply, reverse charge, out of scope)",
+      "category": "reverse charge, out-of-scope supply or a rate other than 20 % and 9 % — the tax code depends on the legal basis",
       "type": "document type that does not belong to sales",
       "cancelled": "cancelled document — recorded as the accountant directs"
     },
@@ -1029,7 +1029,7 @@
     "notes": {
       "schema": "Each file is a separate element of the NRA schema (SalesInvoices, Customers, Products, TaxTable, UOMTable) and is validated against it. Amounts are in euro and, for a document in another currency, also in that currency at the document's rate.",
       "direction": "Line direction follows the NRA Q&A (S.I.47): D increases the receivable; C reduces it (credit note, discount, deducted advance).",
-      "codes": "Codes from the NRA nomenclatures (tax type, tax code, document type, customer identifier) are checked against the NRA's published answers — check them against Annex 2 as well. If they differ, the NRA nomenclature prevails.",
+      "codes": "Codes (tax type, tax code, document type, customer identifier, units of measure) follow Annex 2 to the NRA SAF-T order (version 1.0.3). When the nomenclature is updated, the new one prevails.",
       "balances": "Customer balances reflect only the documents and payments in Fakturist. The accounting software computes them from the general ledger, and its figures prevail.",
       "transaction": "The ledger transaction identifier (TransactionID) is the document number — use the same one when you post it.",
       "check": "Check the monthly file with the NRA validator before submitting it. Fakturist submits nothing to the NRA on your behalf."

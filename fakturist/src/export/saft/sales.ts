@@ -1,4 +1,4 @@
-import { calculate, type Calculated, type VatBreakdown } from '../../einvoice/calculate.js';
+import { calculate, type Calculated } from '../../einvoice/calculate.js';
 import type { VatCategory } from '../../einvoice/codes.js';
 import { add, isNegative, neg, toFixed, toPlain, ZERO, type Dec } from '../../einvoice/decimal.js';
 import { el, leaf, type XmlElement } from '../../einvoice/xml.js';
@@ -25,18 +25,6 @@ export interface SalesResult {
 
 const abs = (value: Dec): Dec => (isNegative(value) ? neg(value) : value);
 
-function groupOf(
-  calc: Calculated,
-  category: VatCategory,
-  rate: Dec | null,
-): VatBreakdown | undefined {
-  return calc.breakdown.find(
-    (g) =>
-      g.category === category &&
-      (g.rate === null ? rate === null : rate !== null && toFixed(g.rate, 2) === toFixed(rate, 2)),
-  );
-}
-
 interface Money {
   currency: string;
   rate: Dec | null;
@@ -55,8 +43,9 @@ function taxInformation(
     name,
     null,
     leaf('TaxType', codes.vatTaxType),
-    leaf('TaxCode', codes.vatTaxCode(group.category, group.rate)),
-    group.rate ? leaf('TaxPercentage', toFixed(group.rate, 2)) : null,
+    leaf('TaxCode', codes.vatTaxCode(group.category, group.rate, group.exemption)),
+    // Ставката е по избор; за освободените (E) в TAX-IMP е „Н/П“.
+    group.rate && group.category !== 'E' ? leaf('TaxPercentage', toFixed(group.rate, 2)) : null,
     leaf('TaxBase', money(base)),
     el(
       'TaxAmount',
@@ -102,7 +91,6 @@ function invoiceXml(
     const netEur = toEur(net, m.currency, m.rate);
     if (indicator === 'D') sums.debit = add(sums.debit, netEur);
     else sums.credit = add(sums.credit, netEur);
-    const group = groupOf(calc, line.category, line.rate);
     return el(
       'InvoiceLine',
       null,
@@ -132,7 +120,7 @@ function invoiceXml(
       taxInformation(
         'TaxInformation',
         codes,
-        { category: line.category, rate: line.rate, exemption: group?.exemptionReason },
+        { category: line.category, rate: line.rate, exemption: line.exemption },
         netEur,
         lineVat(net, line.rate),
         null,
@@ -213,9 +201,9 @@ export function salesInvoices(input: {
     }
     const calc = calculate(doc.input);
     const lines = saftLines(doc.input, calc);
-    const unmapped = [...lines, ...calc.breakdown].some(
-      (x) => codes.vatTaxCode(x.category, x.rate) === null,
-    );
+    const unmapped =
+      lines.some((x) => codes.vatTaxCode(x.category, x.rate, x.exemption) === null) ||
+      calc.breakdown.some((g) => codes.vatTaxCode(g.category, g.rate, g.exemptionReason) === null);
     if (unmapped) {
       manual.push({ number: doc.number, reason: 'category' });
       continue;

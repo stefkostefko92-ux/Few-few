@@ -1,6 +1,6 @@
-import type { Calculated } from '../../einvoice/calculate.js';
+import type { Calculated, VatBreakdown } from '../../einvoice/calculate.js';
 import type { VatCategory } from '../../einvoice/codes.js';
-import { dec, divRound, neg, type Dec } from '../../einvoice/decimal.js';
+import { dec, divRound, neg, toFixed, type Dec } from '../../einvoice/decimal.js';
 import { el, leaf, type XmlElement } from '../../einvoice/xml.js';
 import type { AddressInput, InvoiceInput } from '../../einvoice/model.js';
 import { clip, DOCUMENT_ALLOWANCE, DOCUMENT_CHARGE, productCode } from './keys.js';
@@ -30,6 +30,21 @@ export interface SaftLine {
   net: Dec;
   category: VatCategory;
   rate: Dec | null;
+  /** Основанието за нулева ставка или освобождаване (BT-120) от разбивката по ДДС. */
+  exemption: string | undefined;
+}
+
+/** Групата от разбивката по ДДС за категорията и ставката на реда. */
+export function breakdownGroup(
+  calc: Calculated,
+  category: VatCategory,
+  rate: Dec | null,
+): VatBreakdown | undefined {
+  return calc.breakdown.find(
+    (g) =>
+      g.category === category &&
+      (g.rate === null ? rate === null : rate !== null && toFixed(g.rate, 2) === toFixed(rate, 2)),
+  );
 }
 
 /** Редовете на документа + отстъпката/надбавката на ниво документ като отделни редове. */
@@ -48,6 +63,7 @@ export function saftLines(input: InvoiceInput, calc: Calculated): SaftLine[] {
       net: computed.net,
       category: computed.category,
       rate: computed.rate,
+      exemption: breakdownGroup(calc, computed.category, computed.rate)?.exemptionReason,
     };
   });
   for (const ac of calc.allowanceCharges) {
@@ -62,6 +78,7 @@ export function saftLines(input: InvoiceInput, calc: Calculated): SaftLine[] {
       net: ac.isCharge ? ac.amount : neg(ac.amount),
       category: ac.category,
       rate: ac.rate,
+      exemption: breakdownGroup(calc, ac.category, ac.rate)?.exemptionReason,
     });
   }
   return lines;

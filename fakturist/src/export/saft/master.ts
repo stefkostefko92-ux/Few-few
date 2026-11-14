@@ -28,6 +28,7 @@ export interface SaftProduct {
   unitCode: string;
   category: VatCategory;
   rate: Dec | null;
+  exemption: string | undefined;
 }
 
 const root = (name: string, children: Array<XmlElement | null>): XmlElement | null => {
@@ -64,7 +65,7 @@ export function customersXml(
                 'TaxRegistration',
                 null,
                 leaf('TaxRegistrationNumber', clip(c.party.vatId.replace(/\s+/g, ''), 35)),
-                leaf('TaxType', codes.vatTaxType),
+                leaf('TaxType', codes.vatRegistrationType),
               )
             : null,
           leaf('RelatedParty', c.related ? 'Y' : 'N'),
@@ -88,15 +89,16 @@ export function productsXml(products: readonly SaftProduct[], codes: SaftCodes):
         leaf('ProductCode', p.code),
         leaf('Description', clip(p.description, 256)),
         leaf('ProductCommodityCode', codes.commodityCode(p.unitCode, p.commodityCode)),
-        // UOMBase — единицата във Фактурист („бр.“), UOMStandard — по номенклатурата (H87).
-        leaf('UOMBase', clip(UNITS[p.unitCode] ?? p.unitCode, 35)),
+        // Мярката във Фактурист е кодът по UN/ECE Rec. 20 — UOMBase и UOMStandard са един и същ код, а
+        // тогава коефициентът е 1 (MF.P.10: различни единици с коефициент 1 не се приемат).
+        leaf('UOMBase', codes.unitOfMeasure(p.unitCode)),
         leaf('UOMStandard', codes.unitOfMeasure(p.unitCode)),
         leaf('UOMToUOMBaseConversionFactor', '1'),
         el(
           'Tax',
           null,
           leaf('TaxType', codes.vatTaxType),
-          leaf('TaxCode', codes.vatTaxCode(p.category, p.rate)),
+          leaf('TaxCode', codes.vatTaxCode(p.category, p.rate, p.exemption)),
         ),
       ),
     ),
@@ -104,19 +106,19 @@ export function productsXml(products: readonly SaftProduct[], codes: SaftCodes):
 }
 
 export function taxTableXml(
-  groups: ReadonlyArray<{ category: VatCategory; rate: Dec | null }>,
+  groups: ReadonlyArray<{ category: VatCategory; rate: Dec | null; exemption: string | undefined }>,
   codes: SaftCodes,
 ): XmlElement | null {
   const seen = new Map<string, XmlElement>();
   for (const g of groups) {
-    const code = codes.vatTaxCode(g.category, g.rate);
+    const code = codes.vatTaxCode(g.category, g.rate, g.exemption);
     if (!code || seen.has(code)) continue;
     const details = el(
       'TaxCodeDetails',
       null,
       leaf('TaxCode', code),
       leaf('Description', clip(codes.vatTaxDescription(code), 256)),
-      g.rate ? leaf('TaxPercentage', toFixed(g.rate, 2)) : null,
+      g.rate && g.category !== 'E' ? leaf('TaxPercentage', toFixed(g.rate, 2)) : null,
       leaf('Country', 'BG'),
     );
     if (details) seen.set(code, details);
