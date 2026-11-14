@@ -608,3 +608,5 @@
 {"t":"handoff","ts":"2026-11-14T17:18:35.386Z","id":"r2f214c3c","from":"pravniyat-razbirach","to":"човек","status":"има бележки","run":"d05d9701"}
 {"t":"start","ts":"2026-11-14T17:19:11.024Z","id":"r3809b44b","flow":"авто","lead":"razbivacha","auto":true}
 {"t":"handoff","ts":"2026-11-14T17:19:11.024Z","id":"r3809b44b","from":"razbivacha","to":"letopisetsa","status":"има бележки","run":"e4b1f956"}
+{"t":"start","ts":"2026-11-14T19:56:26.242Z","id":"r195d2c09","flow":"авто","lead":"dizayner","auto":true}
+{"t":"handoff","ts":"2026-11-14T19:56:26.242Z","id":"r195d2c09","from":"dizayner","to":"човек","status":"има бележки","run":"173b4112"}
