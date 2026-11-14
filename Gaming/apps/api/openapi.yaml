@@ -1,0 +1,2506 @@
+openapi: 3.1.0
+info:
+  title: АСО — REST API
+  version: 0.0.0
+  summary: REST API на браузърния игрови портал АСО (Carbon Stealth VCC).
+  description: |
+    Reference документация (Diátaxis) на `apps/api` (Express 5). Игровата логика в реално
+    време върви през Socket.IO (`apps/realtime`) и **не** е описана тук.
+
+    **Синхронност с кода.** Тестът `src/openapi.test.ts` сверява всеки регистриран маршрут
+    с `paths` в този файл и обратно. Нов маршрут без запис тук (или запис без маршрут)
+    чупи теста. Схемите на входа следват Zod схемите в `packages/shared/src` и
+    `apps/api/src/routes/*.ts`.
+
+    **Сесия.** Автентикацията е с `httpOnly` бисквитки: `aso_at` (access JWT, път `/`) и
+    `aso_rt` (refresh, път `/api/auth`), издавани от `POST /api/auth/login|register|refresh`.
+    Токени в `localStorage` или заглавия не се ползват.
+
+    **Грешки.** Всяка грешка е плик `{ "error": { "code", "message", ... } }`. Невалиден
+    вход (Zod) = `400 validation_error` с `issues`. Непознат път = `404 not_found`.
+    Необработена грешка = `500 internal_error` (без вътрешни детайли).
+
+    **CSRF.** Всяка не-безопасна заявка (`POST|PUT|PATCH|DELETE`) към `/api/*` с `Origin`
+    или `Referer` извън разрешените CORS origins получава `403 csrf_origin`. Заявки без
+    двата заглавия (не-браузърни клиенти) минават.
+
+    **Лимити.** Глобален лимит 300 заявки/мин. на IP (всичко след `/health*`, `/metrics`
+    и уебхука). Кредитните маршрути в `/api/auth` имат допълнителен по-строг лимит
+    (`429 rate_limited`).
+
+    **Роли.** Ролите са `GUEST, PLAYER, VIP_PLAYER, MODERATOR, SUPPORT, ADMIN, OWNER`.
+    Изискваните роли са в разширението `x-required-roles` на операцията.
+  license:
+    name: Proprietary
+    identifier: LicenseRef-Proprietary
+servers:
+  - url: https://gaming.carbonstealth.eu
+    description: Продукция
+
+tags:
+  - name: Системни
+    description: Здраве, метрики, уебхукове (не изискват сесия).
+  - name: Автентикация
+  - name: Акаунт
+    description: GDPR и инструменти за отговорна игра.
+  - name: Приятели
+  - name: Известия
+  - name: Магазин
+  - name: Козметики
+  - name: Прогресия
+  - name: Обяви
+  - name: Админ
+    description: Само за персонал. Целият `/api/admin/*` изисква сесия с роля MODERATOR, SUPPORT, ADMIN или OWNER; записите са стеснени по операция.
+
+security:
+  - cookieAuth: []
+
+paths:
+  # ── Системни ──────────────────────────────────────────────────────────────
+  /health:
+    get:
+      operationId: healthLive
+      tags: [Системни]
+      summary: Liveness — винаги 200, ако процесът работи (Docker HEALTHCHECK, nginx).
+      security: []
+      responses:
+        "200":
+          description: Процесът е жив.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, service, ts]
+                properties:
+                  status: { type: string, const: ok }
+                  service: { type: string, const: api }
+                  ts: { type: string, format: date-time }
+  /health/ready:
+    get:
+      operationId: healthReady
+      tags: [Системни]
+      summary: Readiness — проверява PostgreSQL и Redis.
+      security: []
+      responses:
+        "200":
+          description: И двете зависимости отговарят.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Readiness" }
+        "503":
+          description: Поне една зависимост е недостъпна (`status` = `degraded`).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Readiness" }
+  /metrics:
+    get:
+      operationId: metricsPrometheus
+      tags: [Системни]
+      summary: Prometheus scrape (ВЪТРЕШЕН — ограничи на мониторинг мрежата, не е публичен API).
+      description: |
+        Текст в Prometheus формат. Вътрешен: достъпът се ограничава от nginx/файъруол.
+        Ако е зададен `METRICS_TOKEN`, се изисква `Authorization: Bearer <токен>`, иначе е отворен.
+      x-internal: true
+      security:
+        - metricsBearer: []
+        - {}
+      responses:
+        "200":
+          description: Метрики (`text/plain`, Prometheus exposition).
+          content:
+            text/plain:
+              schema: { type: string }
+        "401":
+          description: Зададен е `METRICS_TOKEN`, а токенът липсва или е грешен (празно тяло).
+  /webhooks/stripe:
+    post:
+      operationId: stripeWebhook
+      tags: [Системни]
+      summary: Stripe уебхук — единственото място, където плащане става кредит/VIP.
+      description: |
+        Тялото е суров JSON (без парсване), подписът се проверява със `Stripe-Signature`.
+        Идемпотентно по `event.id` (`ProcessedEvent`). Не минава през CSRF и лимитерите.
+        Обработвани събития: `checkout.session.completed|async_payment_succeeded|async_payment_failed`,
+        `invoice.paid`, `invoice.payment_failed`, `customer.subscription.updated|deleted`,
+        `charge.dispute.created`, `charge.refunded`; останалите се потвърждават и записват.
+        Само Stripe го вика — не е за клиентски код.
+      x-internal: true
+      security:
+        - stripeSignature: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Stripe Event обект (виж документацията на Stripe).
+              additionalProperties: true
+      responses:
+        "200":
+          description: "Събитието е прието (`duplicate: true`, ако вече е обработвано)."
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [received]
+                properties:
+                  received: { type: boolean }
+                  duplicate: { type: boolean }
+        "400":
+          description: Липсва `Stripe-Signature` или подписът е невалиден (тяло — обикновен текст).
+          content:
+            text/plain:
+              schema: { type: string }
+        "500":
+          description: Обработката се провали; събитието НЕ е отбелязано и Stripe ще опита пак (празно тяло).
+        "503":
+          description: "Няма конфигуриран `STRIPE_WEBHOOK_SECRET`. Тялото е `{ \"error\": \"stripe_not_configured\" }` (низ, не плик)."
+
+  # ── Автентикация ──────────────────────────────────────────────────────────
+  /api/auth/register:
+    post:
+      operationId: authRegister
+      tags: [Автентикация]
+      summary: Регистрация; влиза веднага (сетва бисквитките), имейлът се потвърждава по желание.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RegisterInput" }
+      responses:
+        "201":
+          description: Акаунтът е създаден и сесията е започната (`Set-Cookie` aso_at, aso_rt).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserEnvelope" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "409":
+          description: "`email_taken` — имейлът вече е регистриран."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /api/auth/login:
+    post:
+      operationId: authLogin
+      tags: [Автентикация]
+      summary: Вход с имейл и парола.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginInput" }
+      responses:
+        "200":
+          description: Сесията е започната (`Set-Cookie` aso_at, aso_rt).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserEnvelope" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401":
+          description: Грешен имейл или парола (един и същ отговор — без изброяване на акаунти).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "403": { $ref: "#/components/responses/Banned" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /api/auth/refresh:
+    post:
+      operationId: authRefresh
+      tags: [Автентикация]
+      summary: Нов access токен от refresh бисквитката (`aso_rt`); ротира двойката.
+      security:
+        - refreshCookie: []
+      responses:
+        "200":
+          description: Нова сесия (`Set-Cookie`).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserEnvelope" }
+        "401":
+          description: Липсва/невалиден refresh токен, изтрит потребител или изтекла версия на сесиите (бисквитките се чистят).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "403": { $ref: "#/components/responses/Banned" }
+  /api/auth/logout:
+    post:
+      operationId: authLogout
+      tags: [Автентикация]
+      summary: Изход — чисти бисквитките.
+      security: []
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+  /api/auth/me:
+    get:
+      operationId: authMe
+      tags: [Автентикация]
+      summary: Текущият потребител (възстановяване на сесията).
+      responses:
+        "200":
+          description: Публичният изглед на потребителя.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserEnvelope" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Banned" }
+  /api/auth/verify-email:
+    post:
+      operationId: authVerifyEmail
+      tags: [Автентикация]
+      summary: Потвърждава имейл с токена от писмото (валиден 24 ч.).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TokenInput" }
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "400":
+          description: "`validation_error` или `invalid_token` (невалиден/изтекъл линк)."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/auth/resend-verification:
+    post:
+      operationId: authResendVerification
+      tags: [Автентикация]
+      summary: Изпраща ново писмо за потвърждение. Винаги 200 (не разкрива кои имейли съществуват).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EmailInput" }
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /api/auth/forgot-password:
+    post:
+      operationId: authForgotPassword
+      tags: [Автентикация]
+      summary: Изпраща линк за нова парола (валиден 1 ч.). Винаги 200.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EmailInput" }
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /api/auth/reset-password:
+    post:
+      operationId: authResetPassword
+      tags: [Автентикация]
+      summary: Задава нова парола с токен; прекратява сесиите на всички други устройства.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password]
+              additionalProperties: false
+              properties:
+                token: { type: string, minLength: 10, maxLength: 512 }
+                password: { type: string, minLength: 8, maxLength: 200 }
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "400":
+          description: "`validation_error` или `invalid_token` (невалиден/изтекъл линк)."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /api/auth/oauth/providers:
+    get:
+      operationId: authOauthProviders
+      tags: [Автентикация]
+      summary: Кои OAuth доставчици са включени на сървъра.
+      security: []
+      responses:
+        "200":
+          description: Флаг за всеки доставчик.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [google, facebook]
+                properties:
+                  google: { type: boolean }
+                  facebook: { type: boolean }
+  /api/auth/oauth/{provider}/start:
+    parameters:
+      - { name: provider, in: path, required: true, schema: { type: string, enum: [google, facebook] } }
+    get:
+      operationId: authOauthStart
+      tags: [Автентикация]
+      summary: Пренасочва браузъра към доставчика (сетва бисквитка `aso_oauth_state`, 10 мин.).
+      description: Браузърен поток, не е за fetch. При непознат/изключен доставчик пренасочва към `/login?error=oauth_unavailable`.
+      security: []
+      responses:
+        "302":
+          description: Пренасочване към доставчика (или към страницата за вход при грешка).
+          headers:
+            Location: { schema: { type: string } }
+  /api/auth/oauth/{provider}/callback:
+    parameters:
+      - { name: provider, in: path, required: true, schema: { type: string, enum: [google, facebook] } }
+    get:
+      operationId: authOauthCallback
+      tags: [Автентикация]
+      summary: Връщане от доставчика — обменя кода, започва сесия, пренасочва към приложението.
+      description: |
+        Винаги отговаря с пренасочване. Резултатът е в адреса към `/login?error=…`:
+        `oauth_unavailable`, `oauth_state`, `oauth_no_email`, `banned`, `oauth_failed`;
+        при успех — към началото на приложението със сетнати бисквитки.
+      security: []
+      parameters:
+        - { name: code, in: query, schema: { type: string } }
+        - { name: state, in: query, schema: { type: string } }
+      responses:
+        "302":
+          description: Пренасочване към приложението (успех или `?error=`).
+          headers:
+            Location: { schema: { type: string } }
+
+  # ── Акаунт ────────────────────────────────────────────────────────────────
+  /api/account/export:
+    get:
+      operationId: accountExport
+      tags: [Акаунт]
+      summary: GDPR преносимост — всичко, което пазим за играча, като JSON файл за сваляне.
+      responses:
+        "200":
+          description: Документ с `exportedAt` и `account` (без хеша на паролата; `chips` е низ).
+          headers:
+            Content-Disposition: { schema: { type: string }, description: "attachment; filename=\"aso-data-<id>.json\"" }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [exportedAt, account]
+                properties:
+                  exportedAt: { type: string, format: date-time }
+                  account: { type: object, additionalProperties: true }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /api/account/delete:
+    post:
+      operationId: accountDelete
+      tags: [Акаунт]
+      summary: GDPR изтриване — анонимизира акаунта и чисти бисквитките.
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /api/account/responsible:
+    get:
+      operationId: accountResponsibleGet
+      tags: [Акаунт]
+      summary: Настройки за отговорна игра на играча.
+      responses:
+        "200":
+          description: Текущите настройки.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ResponsibleView" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    put:
+      operationId: accountResponsiblePut
+      tags: [Акаунт]
+      summary: Напомняне за време и дневен лимит (частична промяна).
+      description: >-
+        Дневният лимит се налага от сървъра (realtime отказва нови маси, опашки и стаи с код
+        `daily_limit` до полунощ софийско време). По-строг лимит важи веднага; по-свободен
+        или махнат — след 24 ч (`dailyLimitPending`).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                realityCheckMinutes: { type: integer, enum: [0, 30, 60, 120], description: "0 = изключено." }
+                dailyLimitMinutes:
+                  type: [integer, "null"]
+                  enum: [30, 60, 120, 180, 240, 360, null]
+                  description: "null = без лимит."
+      responses:
+        "200":
+          description: Обновените настройки.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ResponsibleView" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /api/account/self-exclude:
+    post:
+      operationId: accountSelfExclude
+      tags: [Акаунт]
+      summary: Самоизключване (необратимо до изтичане). Само удължава вече активно, никога не го скъсява.
+      description: Докато трае, realtime отказва маси и опашки, а магазинът и покупките с камъни — покупки.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [period, confirm]
+              additionalProperties: false
+              properties:
+                period: { type: string, enum: ["24h", "7d", "30d", "6m"] }
+                confirm: { type: boolean, const: true }
+      responses:
+        "200":
+          description: Настройките с нов `selfExcludedUntil`.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ResponsibleView" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  # ── Приятели ──────────────────────────────────────────────────────────────
+  /api/friends:
+    get:
+      operationId: friendsList
+      tags: [Приятели]
+      summary: Приятели (с онлайн статус), входящи и изходящи заявки.
+      responses:
+        "200":
+          description: Три списъка.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [friends, incoming, outgoing]
+                properties:
+                  friends:
+                    type: array
+                    items:
+                      allOf:
+                        - { $ref: "#/components/schemas/FriendLite" }
+                        - type: object
+                          properties:
+                            online: { type: boolean }
+                  incoming: { type: array, items: { $ref: "#/components/schemas/FriendLite" } }
+                  outgoing: { type: array, items: { $ref: "#/components/schemas/FriendLite" } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /api/friends/search:
+    get:
+      operationId: friendsSearch
+      tags: [Приятели]
+      summary: Търси играчи по име (до 10; изключва вече свързаните). По имейл не се търси.
+      parameters:
+        - { name: q, in: query, required: true, description: "Под 2 знака връща празен списък.", schema: { type: string } }
+      responses:
+        "200":
+          description: Намерените играчи.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [users]
+                properties:
+                  users: { type: array, items: { $ref: "#/components/schemas/FriendLite" } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /api/friends/request:
+    post:
+      operationId: friendsRequest
+      tags: [Приятели]
+      summary: Изпраща заявка; ако насрещната вече чака — я приема.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId: { type: string, minLength: 1, maxLength: 64 }
+      responses:
+        "200":
+          description: Насрещната заявка е приета (или връзката вече е приета).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FriendStatus" }
+        "201":
+          description: Заявката е създадена.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FriendStatus" }
+        "400":
+          description: "`validation_error`, `self` (себе си) или `not_found` (няма такъв играч)."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409":
+          description: "`exists` — вече има заявка или приятелство."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/friends/{id}/accept:
+    parameters:
+      - { name: id, in: path, required: true, description: "friendshipId.", schema: { type: string } }
+    post:
+      operationId: friendsAccept
+      tags: [Приятели]
+      summary: Приема входяща заявка.
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "400":
+          description: "`invalid` — няма такава чакаща заявка към теб."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /api/friends/{id}/decline:
+    parameters:
+      - { name: id, in: path, required: true, description: "friendshipId.", schema: { type: string } }
+    post:
+      operationId: friendsDecline
+      tags: [Приятели]
+      summary: Отказва (изтрива) входяща заявка.
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "400":
+          description: "`invalid` — няма такава заявка към теб."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /api/friends/{userId}:
+    parameters:
+      - { name: userId, in: path, required: true, schema: { type: string } }
+    delete:
+      operationId: friendsRemove
+      tags: [Приятели]
+      summary: Премахва приятел (в двете посоки). Идемпотентно — 200 и при липсваща връзка.
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  # ── Известия ──────────────────────────────────────────────────────────────
+  /api/notifications:
+    get:
+      operationId: notificationsList
+      tags: [Известия]
+      summary: Последните 30 известия и брой непрочетени.
+      responses:
+        "200":
+          description: Известията (`data` е разпарсиран JSON).
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, unread]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+                      properties:
+                        id: { type: string }
+                        type: { type: string }
+                        data: { type: object, additionalProperties: true }
+                        readAt: { type: [string, "null"], format: date-time }
+                        createdAt: { type: string, format: date-time }
+                  unread: { type: integer }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /api/notifications/read:
+    post:
+      operationId: notificationsRead
+      tags: [Известия]
+      summary: Отбелязва всички като прочетени.
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  # ── Магазин ───────────────────────────────────────────────────────────────
+  /api/shop/catalog:
+    get:
+      operationId: shopCatalog
+      tags: [Магазин]
+      summary: Публичен каталог (само активните продукти) и таблица с VIP преимущества.
+      description: "`billingEnabled: false` = Stripe не е конфигуриран, клиентът показва каталога като „скоро“."
+      security: []
+      responses:
+        "200":
+          description: Каталогът.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [products, vipPerks, billingEnabled]
+                properties:
+                  products: { type: array, items: { $ref: "#/components/schemas/ProductView" } }
+                  vipPerks: { type: object, additionalProperties: true, description: "По VIP ниво." }
+                  billingEnabled: { type: boolean }
+  /api/shop/checkout:
+    post:
+      operationId: shopCheckout
+      tags: [Магазин]
+      summary: Създава Stripe Checkout сесия за SKU. Кредит се дава само от подписания уебхук.
+      description: Цената и наградата идват от реда `Product` на сървъра, никога от клиента.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sku]
+              properties:
+                sku: { type: string, minLength: 1, maxLength: 64 }
+      responses:
+        "200":
+          description: Адрес на Stripe Checkout, към който да се пренасочи клиентът.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [url]
+                properties:
+                  url: { type: [string, "null"], format: uri }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403":
+          description: "Активно самоизключване (отговорна игра)."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "404":
+          description: "`unknown_sku`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "409":
+          description: "`product_unavailable` (неактивен/без цена) или `already_subscribed` (жив VIP абонамент)."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "503":
+          description: "`stripe_unavailable` — плащанията не са конфигурирани."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/shop/portal:
+    post:
+      operationId: shopPortal
+      tags: [Магазин]
+      summary: Stripe Customer Portal — карта, фактури и отказ от VIP абонамент.
+      responses:
+        "200":
+          description: Адрес на портала.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [url]
+                properties:
+                  url: { type: string, format: uri }
+        "400":
+          description: "`no_subscription` — няма клиент в Stripe и няма абонамент."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "503":
+          description: "`stripe_unavailable`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/shop/vip:
+    get:
+      operationId: shopVip
+      tags: [Магазин]
+      summary: Реалният VIP статус (изтекъл = NONE), преимущества и абонамент.
+      responses:
+        "200":
+          description: VIP статус.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [tier, vipUntil, perks, subscription, canManageBilling]
+                properties:
+                  tier: { $ref: "#/components/schemas/VipTier" }
+                  vipUntil: { type: [string, "null"], format: date-time }
+                  perks: { type: object, additionalProperties: true }
+                  subscription:
+                    type: [object, "null"]
+                    properties:
+                      status: { type: string }
+                      tier: { type: string }
+                      currentPeriodEnd: { type: string, format: date-time }
+                  canManageBilling: { type: boolean }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  # ── Козметики ─────────────────────────────────────────────────────────────
+  /api/cosmetics:
+    get:
+      operationId: cosmeticsList
+      tags: [Козметики]
+      summary: Каталог за игра с флагове притежавана/екипирана/заключена.
+      parameters:
+        - { name: game, in: query, required: true, description: "Ключ на играта (регистърът не е от значение).", schema: { $ref: "#/components/schemas/GameKey" } }
+      responses:
+        "200":
+          description: Козметиките за играта.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [game, gems, vipTier, items]
+                properties:
+                  game: { $ref: "#/components/schemas/GameKey" }
+                  gems: { type: integer }
+                  vipTier: { type: string }
+                  items: { type: array, items: { $ref: "#/components/schemas/CosmeticItem" } }
+        "400":
+          description: "`bad_game` — непозната игра."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /api/cosmetics/equipped:
+    get:
+      operationId: cosmeticsEquipped
+      tags: [Козметики]
+      summary: Всички екипирани козметики на играча.
+      responses:
+        "200": { $ref: "#/components/responses/EquippedList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /api/cosmetics/buy:
+    post:
+      operationId: cosmeticsBuy
+      tags: [Козметики]
+      summary: Купува козметика с камъни (атомарно дебитиране + даряване).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CosmeticIdInput" }
+      responses:
+        "201":
+          description: Купено.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [gems, ownedId]
+                properties:
+                  gems: { type: integer, description: "Остатъкът." }
+                  ownedId: { type: string }
+        "400":
+          description: "`validation_error`, `unknown_cosmetic` или `insufficient_gems`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403":
+          description: Само за VIP (Silver+) или активно самоизключване.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "409":
+          description: "`already_owned`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/cosmetics/equip:
+    post:
+      operationId: cosmeticsEquip
+      tags: [Козметики]
+      summary: Екипира притежавана козметика (сваля другата от същия слот).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CosmeticIdInput" }
+      responses:
+        "200": { $ref: "#/components/responses/EquippedList" }
+        "400":
+          description: "`validation_error`, `unknown_cosmetic` или `not_owned`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /api/cosmetics/equip-custom:
+    post:
+      operationId: cosmeticsEquipCustom
+      tags: [Козметики]
+      summary: VIP (Silver+) — екипира собствена цветова палитра (без покупка и без качване).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CosmeticIdInput" }
+      responses:
+        "201": { $ref: "#/components/responses/EquippedList" }
+        "400":
+          description: "`validation_error` или `bad_custom` (невалиден формат на палитра)."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403":
+          description: Нужен е VIP Silver или по-висок.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  # ── Прогресия ─────────────────────────────────────────────────────────────
+  /api/progression/leaderboard/{game}:
+    parameters:
+      - { name: game, in: path, required: true, schema: { $ref: "#/components/schemas/GameKey" } }
+    get:
+      operationId: progressionLeaderboard
+      tags: [Прогресия]
+      summary: Публична топ-20 класация за игра.
+      security: []
+      responses:
+        "200":
+          description: Класацията.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [game, entries]
+                properties:
+                  game: { $ref: "#/components/schemas/GameKey" }
+                  entries:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        rank: { type: integer }
+                        userId: { type: string }
+                        displayName: { type: string }
+                        rating: { type: number }
+                        vipTier: { $ref: "#/components/schemas/VipTier" }
+        "400":
+          description: "`unknown_game`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/progression/internal/match:
+    post:
+      operationId: progressionInternalMatch
+      tags: [Прогресия]
+      summary: ВЪТРЕШЕН — realtime докладва резултат от мач (мисии, класации). Service-to-service.
+      description: Автентикира се със споделена тайна в `x-internal-secret`, не с потребителска сесия.
+      x-internal: true
+      security:
+        - internalSecret: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [matchId, userId, game, won, rating, displayName]
+              properties:
+                matchId: { type: string, minLength: 1 }
+                userId: { type: string, minLength: 1 }
+                game: { $ref: "#/components/schemas/GameKey" }
+                won: { type: boolean }
+                rating: { type: integer }
+                displayName: { type: string, minLength: 1 }
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "400":
+          description: "`validation_error` или `unknown_game`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "403":
+          description: Грешна вътрешна тайна.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/progression/daily:
+    post:
+      operationId: progressionDaily
+      tags: [Прогресия]
+      summary: Взима дневната награда за вход (атомарно — само първата заявка за деня печели).
+      responses:
+        "200":
+          description: Резултат.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [claimed, streak, chips, gems]
+                properties:
+                  claimed: { type: boolean, description: "false = вече взета днес." }
+                  streak: { type: integer }
+                  chips: { type: integer }
+                  gems: { type: integer }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /api/progression/quests:
+    get:
+      operationId: progressionQuests
+      tags: [Прогресия]
+      summary: Мисиите на играча за текущия период (създава липсващите).
+      responses:
+        "200":
+          description: Мисиите.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [quests]
+                properties:
+                  quests: { type: array, items: { type: object, additionalProperties: true } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /api/progression/me:
+    get:
+      operationId: progressionMe
+      tags: [Прогресия]
+      summary: Ниво и напредък по XP.
+      responses:
+        "200":
+          description: "`xp` плюс полетата на `levelFromXp` (нивото и напредъка към следващото)."
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [xp]
+                additionalProperties: true
+                properties:
+                  xp: { type: integer }
+                  level: { type: integer }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /api/progression/achievements:
+    get:
+      operationId: progressionAchievements
+      tags: [Прогресия]
+      summary: Всички постижения със статус на отключване.
+      responses:
+        "200":
+          description: Постиженията.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [achievements]
+                properties:
+                  achievements:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        key: { type: string }
+                        title: { type: string }
+                        description: { type: string }
+                        icon: { type: string }
+                        tier: { type: string }
+                        rewardGems: { type: integer }
+                        unlocked: { type: boolean }
+                        unlockedAt: { type: [string, "null"], format: date-time }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  # ── Обяви ─────────────────────────────────────────────────────────────────
+  /api/announcements:
+    get:
+      operationId: announcementsList
+      tags: [Обяви]
+      summary: Активните неизтекли обяви за играчите (до 10, най-новите първо).
+      responses:
+        "200":
+          description: Обявите.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        title: { type: string }
+                        body: { type: string }
+                        createdAt: { type: string, format: date-time }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  # ── Метрики за персонал ───────────────────────────────────────────────────
+  /api/metrics:
+    get:
+      operationId: staffMetrics
+      tags: [Админ]
+      summary: Операционен снимок (потребители, мачове, отворени флагове, абонаменти).
+      x-required-roles: [MODERATOR, ADMIN, OWNER]
+      responses:
+        "200":
+          description: Снимката.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uptimeSeconds: { type: integer }
+                  memoryRssMb: { type: integer }
+                  users: { type: integer }
+                  matchesTotal: { type: integer }
+                  matches24h: { type: integer }
+                  openFlags: { type: integer }
+                  activeSubs: { type: integer }
+                  ts: { type: string, format: date-time }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  # ── Админ: табло, потребители ─────────────────────────────────────────────
+  /api/admin/stats:
+    get:
+      operationId: adminStats
+      tags: [Админ]
+      summary: Табло — потребители, блокирани, приходи (евроценти), VIP разбивка, мачове днес, последни одит записи.
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      responses:
+        "200":
+          description: Метриките.
+          content:
+            application/json:
+              schema: { type: object, additionalProperties: true }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /api/admin/stats/timeseries:
+    get:
+      operationId: adminStatsTimeseries
+      tags: [Админ]
+      summary: Времеви редове по UTC дни — DAU, регистрации, мачове, покупки, приход; топ игри.
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      parameters:
+        - { name: days, in: query, description: "1..90 (ограничава се), по подразбиране 14.", schema: { type: integer, default: 14, minimum: 1, maximum: 90 } }
+      responses:
+        "200":
+          description: Редовете.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  days: { type: integer }
+                  series: { type: array, items: { type: object, additionalProperties: true } }
+                  topGames: { type: array, items: { type: object, properties: { game: { type: string }, matches: { type: integer } } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /api/admin/users:
+    get:
+      operationId: adminUsersList
+      tags: [Админ]
+      summary: Търсене на играчи с филтри и курсорна пагинация.
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      parameters:
+        - { name: q, in: query, description: "Част от имейл или име.", schema: { type: string } }
+        - { name: role, in: query, schema: { $ref: "#/components/schemas/Role" } }
+        - { name: vip, in: query, schema: { $ref: "#/components/schemas/VipTier" } }
+        - { name: banned, in: query, schema: { type: string, enum: ["1", "true", "0", "false"] } }
+        - { name: selfExcluded, in: query, description: "`1`/`true` = само активно самоизключените.", schema: { type: string } }
+        - { $ref: "#/components/parameters/Take" }
+        - { $ref: "#/components/parameters/Cursor" }
+      responses:
+        "200":
+          description: Страница играчи.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users: { type: array, items: { type: object, additionalProperties: true } }
+                  nextCursor: { type: [string, "null"] }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /api/admin/users/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: adminUserGet
+      tags: [Админ]
+      summary: Пълен детайл на играч (покупки, рейтинги, одит).
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      responses:
+        "200":
+          description: Играчът (без хеш на парола) и последните одит записи.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { type: object, additionalProperties: true }
+                  audits: { type: array, items: { type: object, additionalProperties: true } }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    patch:
+      operationId: adminUserPatch
+      tags: [Админ]
+      summary: Роля, VIP, блокиране, начисляване на чипове/камъни.
+      description: |
+        Правила: не може да даваш роля с ранг ≥ твоя (OWNER само от OWNER); не можеш да
+        променяш акаунт с равен/по-висок ранг; не можеш да сменяш собствената си роля или
+        да си начисляваш валута; |сума| > 10 000 изисква `note` (≥ 3 знака); `banned: true`
+        изисква `banReason` и бъдещ `banUntil` (или безсрочно).
+      x-required-roles: [ADMIN, OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                role: { $ref: "#/components/schemas/Role" }
+                vipTier: { $ref: "#/components/schemas/VipTier" }
+                banned: { type: boolean }
+                banReason: { type: string, minLength: 1, maxLength: 500 }
+                banUntil: { type: [string, "null"], format: date-time }
+                grantChips: { type: integer, minimum: -1000000000, maximum: 1000000000 }
+                grantGems: { type: integer, minimum: -1000000, maximum: 1000000 }
+                note: { type: string, maxLength: 300 }
+      responses:
+        "200":
+          description: Обновеният играч.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { type: object, additionalProperties: true }
+        "400":
+          description: "`validation_error`, `not_found`, `grant_note_required`, `ban_reason_required`, `ban_until_past`, `noop` (няма промени)."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    delete:
+      operationId: adminUserErase
+      tags: [Админ]
+      summary: GDPR изтриване (анонимизация) на акаунт. Само OWNER; изисква имейла за потвърждение.
+      description: Не може себе си, нито OWNER акаунт. Одитът не пази имейл/име.
+      x-required-roles: [OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [confirmEmail]
+              properties:
+                confirmEmail: { type: string, minLength: 3, maxLength: 320 }
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "400":
+          description: "`validation_error` или `email_mismatch`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: "`already_deleted`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/admin/users/{id}/matches:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: adminUserMatches
+      tags: [Админ]
+      summary: История на мачовете на играча (курсор).
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      parameters:
+        - { name: take, in: query, description: "1..50, по подразбиране 20.", schema: { type: integer, default: 20, minimum: 1, maximum: 50 } }
+        - { $ref: "#/components/parameters/Cursor" }
+      responses:
+        "200": { $ref: "#/components/responses/ItemsPage" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /api/admin/users/{id}/inventory:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: adminUserInventoryList
+      tags: [Админ]
+      summary: Притежавани козметики на играча.
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      responses:
+        "200": { $ref: "#/components/responses/ItemsList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    post:
+      operationId: adminUserInventoryGrant
+      tags: [Админ]
+      summary: Подарява козметика от каталога.
+      x-required-roles: [ADMIN, OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [cosmeticId]
+              properties:
+                cosmeticId: { type: string, minLength: 3, maxLength: 64, description: "Трябва да е в каталога." }
+      responses:
+        "200":
+          description: Създаденият предмет.
+          content:
+            application/json:
+              schema: { type: object, properties: { item: { type: object, additionalProperties: true } } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: "`already_owned`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/admin/users/{id}/inventory/{itemId}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: itemId, in: path, required: true, schema: { type: string } }
+    delete:
+      operationId: adminUserInventoryRevoke
+      tags: [Админ]
+      summary: Отнема козметика.
+      x-required-roles: [ADMIN, OWNER]
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /api/admin/users/{id}/achievements:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: adminUserAchievementsList
+      tags: [Админ]
+      summary: Отключените постижения на играча.
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      responses:
+        "200": { $ref: "#/components/responses/ItemsList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    post:
+      operationId: adminUserAchievementGrant
+      tags: [Админ]
+      summary: Отключва постижение (само значката, без награда в камъни).
+      x-required-roles: [ADMIN, OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key]
+              properties:
+                key: { type: string, minLength: 1, maxLength: 64, description: "Ключ на известно постижение." }
+      responses:
+        "200":
+          description: Създаденото постижение.
+          content:
+            application/json:
+              schema: { type: object, properties: { achievement: { type: object, additionalProperties: true } } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: "`already_unlocked`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/admin/users/{id}/achievements/{key}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: key, in: path, required: true, schema: { type: string } }
+    delete:
+      operationId: adminUserAchievementRevoke
+      tags: [Админ]
+      summary: Отнема постижение (следващ мач може да го отключи пак, ако условието е изпълнено).
+      x-required-roles: [ADMIN, OWNER]
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /api/admin/users/{id}/quests:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: adminUserQuestsList
+      tags: [Админ]
+      summary: Мисиите на играча (последните 100 реда).
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      responses:
+        "200": { $ref: "#/components/responses/ItemsList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /api/admin/users/{id}/quests/{questId}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: questId, in: path, required: true, schema: { type: string } }
+    delete:
+      operationId: adminUserQuestReset
+      tags: [Админ]
+      summary: Нулира мисия (редът се пресъздава с прогрес 0; завършена може да се награди пак).
+      x-required-roles: [ADMIN, OWNER]
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /api/admin/users/{id}/ratings:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: adminUserRatingsList
+      tags: [Админ]
+      summary: MMR на играча по игри.
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      responses:
+        "200": { $ref: "#/components/responses/ItemsList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /api/admin/users/{id}/ratings/{game}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: game, in: path, required: true, schema: { $ref: "#/components/schemas/GameKey" } }
+    patch:
+      operationId: adminUserRatingPatch
+      tags: [Админ]
+      summary: Задава MMR или го нулира (1200, 0 игри, 0 победи); опреснява класацията в Redis.
+      x-required-roles: [ADMIN, OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [mmr]
+                  additionalProperties: false
+                  properties:
+                    mmr: { type: integer, minimum: 0, maximum: 4000 }
+                - type: object
+                  required: [reset]
+                  additionalProperties: false
+                  properties:
+                    reset: { type: boolean, const: true }
+      responses:
+        "200":
+          description: Рейтингът.
+          content:
+            application/json:
+              schema: { type: object, properties: { rating: { type: object, additionalProperties: true } } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /api/admin/users/{id}/notifications:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: adminUserNotificationsList
+      tags: [Админ]
+      summary: Последните 30 известия на играча.
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      responses:
+        "200": { $ref: "#/components/responses/ItemsList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    post:
+      operationId: adminUserNotificationSend
+      tags: [Админ]
+      summary: Изпраща системно известие до играча.
+      x-required-roles: [ADMIN, OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, body]
+              properties:
+                title: { type: string, minLength: 1, maxLength: 120 }
+                body: { type: string, minLength: 1, maxLength: 1000 }
+      responses:
+        "200":
+          description: Създаденото известие.
+          content:
+            application/json:
+              schema: { type: object, properties: { notification: { type: object, additionalProperties: true } } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /api/admin/users/{id}/subscription:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: adminUserSubscription
+      tags: [Админ]
+      summary: VIP абонаментът на играча (или null).
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      responses:
+        "200":
+          description: Абонаментът.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscription: { type: [object, "null"], additionalProperties: true }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ── Админ: модерация ──────────────────────────────────────────────────────
+  /api/admin/flags:
+    get:
+      operationId: adminFlagsList
+      tags: [Админ]
+      summary: Флагове за колюзия за преглед (по score, курсор).
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [OPEN, REVIEWING, DISMISSED, CONFIRMED], default: OPEN }, description: "Непозната стойност = без филтър." }
+        - { $ref: "#/components/parameters/Take" }
+        - { $ref: "#/components/parameters/Cursor" }
+      responses:
+        "200":
+          description: Страница флагове.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  flags: { type: array, items: { type: object, additionalProperties: true } }
+                  nextCursor: { type: [string, "null"] }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /api/admin/flags/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    patch:
+      operationId: adminFlagReview
+      tags: [Админ]
+      summary: Преглед на флаг (никога автоматичен бан).
+      x-required-roles: [MODERATOR, ADMIN, OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [REVIEWING, DISMISSED, CONFIRMED] }
+      responses:
+        "200":
+          description: Обновеният флаг.
+          content:
+            application/json:
+              schema: { type: object, properties: { flag: { type: object, additionalProperties: true } } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /api/admin/mail:
+    get:
+      operationId: adminMailGet
+      tags: [Админ]
+      summary: Пощата на портала (Brevo SMTP) — записаното без ключа и откъде тръгват писмата сега.
+      description: >-
+        По модела на Rilievi Impianti. Настройката от панела (ключът — шифрован с
+        SETTINGS_SECRET_KEY, AES-256-GCM) има предимство пред SMTP_* от .env, докато е включена.
+      x-required-roles: [OWNER]
+      responses:
+        "200":
+          description: Изгледът на настройката.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MailSettingsView" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    put:
+      operationId: adminMailPut
+      tags: [Админ]
+      summary: Записва и включва настройката на пощата (иска паролата на акаунта).
+      description: >-
+        Празен `password` пази записания ключ — освен при друг сървър или логин
+        (`password_new_server`). В продукция `host` е име на хост (не IP, не localhost).
+      x-required-roles: [OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [host, port, username, password, fromName, fromEmail, accountPassword]
+              properties:
+                host: { type: string, maxLength: 253, example: smtp-relay.brevo.com }
+                port: { type: integer, enum: [587, 2525, 465] }
+                username: { type: string, maxLength: 254, description: SMTP логинът от Brevo. }
+                password: { type: string, maxLength: 512, description: "SMTP ключът; празно = остава записаният. Никога не се връща." }
+                fromName: { type: string, maxLength: 80 }
+                fromEmail: { type: string, format: email, maxLength: 254 }
+                accountPassword: { type: string, description: Паролата на собственика (потвърждение). }
+      responses:
+        "200":
+          description: Обновеният изглед.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MailSettingsView" }
+        "400":
+          description: "`validation_error`, `invalid_host`, `password_required` или `password_new_server`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403":
+          description: "`forbidden` (не е OWNER) или `wrong_password`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503":
+          description: "`settings_key_missing` — на сървъра няма SETTINGS_SECRET_KEY."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/admin/mail/test:
+    post:
+      operationId: adminMailTest
+      tags: [Админ]
+      summary: Пробно писмо до самия собственик (verify + изпращане).
+      x-required-roles: [OWNER]
+      responses:
+        "200":
+          description: "Резултатът: `sent`, `disabled` (няма поща) или `error` със SMTP кода (EAUTH, ECONNECTION…)."
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [result]
+                properties:
+                  result: { type: string, enum: [sent, disabled, error] }
+                  to: { type: string, format: email }
+                  code: { type: string }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /api/admin/mail/disable:
+    post:
+      operationId: adminMailDisable
+      tags: [Админ]
+      summary: Изключва настройката от панела (остава записана; пак важи .env).
+      x-required-roles: [OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [accountPassword]
+              properties:
+                accountPassword: { type: string }
+      responses:
+        "200":
+          description: Обновеният изглед.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MailSettingsView" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403":
+          description: "`forbidden` или `wrong_password`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /api/admin/reports:
+    get:
+      operationId: adminReportsList
+      tags: [Админ]
+      summary: Опашка с докладвани чат съобщения (курсор).
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [OPEN, RESOLVED, DISMISSED], default: OPEN }, description: "Непозната стойност = без филтър." }
+        - { $ref: "#/components/parameters/Take" }
+        - { $ref: "#/components/parameters/Cursor" }
+      responses:
+        "200": { $ref: "#/components/responses/ItemsPage" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /api/admin/reports/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    patch:
+      operationId: adminReportResolve
+      tags: [Админ]
+      summary: Решава, отхвърля или отваря наново доклад.
+      x-required-roles: [MODERATOR, ADMIN, OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [OPEN, RESOLVED, DISMISSED] }
+      responses:
+        "200":
+          description: Обновеният доклад.
+          content:
+            application/json:
+              schema: { type: object, properties: { report: { type: object, additionalProperties: true } } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /api/admin/audit:
+    get:
+      operationId: adminAudit
+      tags: [Админ]
+      summary: Одит на действията на персонала (най-новите първо, курсор).
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      parameters:
+        - { name: action, in: query, description: "Точно съвпадение.", schema: { type: string } }
+        - { name: actor, in: query, description: "Част от името или точен id.", schema: { type: string } }
+        - { name: targetId, in: query, schema: { type: string } }
+        - { name: from, in: query, schema: { type: string, format: date-time } }
+        - { name: to, in: query, schema: { type: string, format: date-time } }
+        - { $ref: "#/components/parameters/Take" }
+        - { $ref: "#/components/parameters/Cursor" }
+      responses:
+        "200": { $ref: "#/components/responses/ItemsPage" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /api/admin/rooms:
+    get:
+      operationId: adminRooms
+      tags: [Админ]
+      summary: Живи маси (чете се от realtime възела; `reachable:false` при недостъпност, пак 200).
+      description: Покрива само възела, който отговаря (при няколко realtime възела — непълно).
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      responses:
+        "200":
+          description: Масите.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [rooms, reachable]
+                properties:
+                  rooms:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        matchId: { type: string }
+                        game: { type: string }
+                        ply: { type: integer }
+                        ageMs: { type: integer }
+                        turn: { type: [integer, "null"] }
+                        seats:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              seat: { type: integer }
+                              displayName: { type: string }
+                              isBot: { type: boolean }
+                              connected: { type: boolean }
+                              substituted: { type: boolean }
+                  reachable: { type: boolean }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /api/admin/matches:
+    get:
+      operationId: adminMatchesList
+      tags: [Админ]
+      summary: Всички мачове с филтри (курсор).
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      parameters:
+        - { name: game, in: query, schema: { $ref: "#/components/schemas/GameKey" } }
+        - { name: userId, in: query, schema: { type: string, maxLength: 64 } }
+        - { name: from, in: query, schema: { type: string, format: date-time } }
+        - { name: to, in: query, schema: { type: string, format: date-time } }
+        - { $ref: "#/components/parameters/Take" }
+        - { $ref: "#/components/parameters/Cursor" }
+      responses:
+        "200": { $ref: "#/components/responses/ItemsPage" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /api/admin/matches/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: adminMatchGet
+      tags: [Админ]
+      summary: Детайл на мач с играчите. Seed-ът се вижда само за приключил мач (`seedHidden`).
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      responses:
+        "200":
+          description: Мачът.
+          content:
+            application/json:
+              schema: { type: object, properties: { match: { type: object, additionalProperties: true } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ── Админ: Discord, магазин, поръчки, обяви ───────────────────────────────
+  /api/admin/discord:
+    get:
+      operationId: adminDiscordGet
+      tags: [Админ]
+      summary: Конфигурация на Discord уебхука (за MODERATOR/SUPPORT URL-ът е маскиран, `masked:true`).
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      responses:
+        "200":
+          description: Конфигурацията.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DiscordConfig" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    put:
+      operationId: adminDiscordPut
+      tags: [Админ]
+      summary: Обновява конфигурацията на Discord уебхука.
+      x-required-roles: [ADMIN, OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                webhookUrl:
+                  type: string
+                  maxLength: 400
+                  description: "Празно = изчиства; иначе https Discord webhook адрес (`…discord.com/api/webhooks/…`)."
+                webhookName: { type: string, minLength: 1, maxLength: 80 }
+                enabled: { type: boolean }
+                events:
+                  type: object
+                  properties:
+                    registration: { type: boolean }
+                    purchase: { type: boolean }
+                    vip: { type: boolean }
+                    flag: { type: boolean }
+                    adminAction: { type: boolean }
+                    broadcast: { type: boolean }
+      responses:
+        "200":
+          description: Новата конфигурация.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DiscordConfig" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /api/admin/discord/test:
+    post:
+      operationId: adminDiscordTest
+      tags: [Админ]
+      summary: Изпраща тестово съобщение в Discord.
+      x-required-roles: [ADMIN, OWNER]
+      responses:
+        "200":
+          description: Резултат.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sent: { type: boolean }
+                  enabled: { type: boolean }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /api/admin/broadcast:
+    post:
+      operationId: adminBroadcast
+      tags: [Админ]
+      summary: Изпраща съобщение в Discord (не е обява в приложението).
+      x-required-roles: [ADMIN, OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message: { type: string, minLength: 1, maxLength: 1800 }
+      responses:
+        "200":
+          description: "`sent` е false, ако Discord е изключен."
+          content:
+            application/json:
+              schema: { type: object, properties: { sent: { type: boolean } } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /api/admin/products:
+    get:
+      operationId: adminProductsList
+      tags: [Админ]
+      summary: Целият каталог (активни и неактивни).
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      responses:
+        "200":
+          description: Продуктите.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products: { type: array, items: { $ref: "#/components/schemas/AdminProduct" } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      operationId: adminProductCreate
+      tags: [Админ]
+      summary: Добавя продукт.
+      x-required-roles: [ADMIN, OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sku, kind, priceCents]
+              properties:
+                sku: { type: string, minLength: 1, maxLength: 64, pattern: "^[a-zA-Z0-9_]+$" }
+                kind: { $ref: "#/components/schemas/ProductKind" }
+                priceCents: { type: integer, minimum: 0, maximum: 1000000 }
+                gems: { type: [integer, "null"], minimum: 0, maximum: 1000000 }
+                chips: { type: [integer, "null"], minimum: 0, maximum: 1000000000 }
+                cosmeticId: { type: [string, "null"], maxLength: 120 }
+                active: { type: boolean }
+      responses:
+        "200":
+          description: Създаденият продукт.
+          content:
+            application/json:
+              schema: { type: object, properties: { product: { $ref: "#/components/schemas/AdminProduct" } } }
+        "400":
+          description: "`validation_error` или `sku_taken`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /api/admin/products/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    patch:
+      operationId: adminProductPatch
+      tags: [Админ]
+      summary: Променя цена/награда/активност (без hard delete — деактивирай).
+      x-required-roles: [ADMIN, OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                priceCents: { type: integer, minimum: 0, maximum: 1000000 }
+                gems: { type: [integer, "null"], minimum: 0, maximum: 1000000 }
+                chips: { type: [integer, "null"], minimum: 0, maximum: 1000000000 }
+                cosmeticId: { type: [string, "null"], maxLength: 120 }
+                active: { type: boolean }
+      responses:
+        "200":
+          description: Обновеният продукт.
+          content:
+            application/json:
+              schema: { type: object, properties: { product: { $ref: "#/components/schemas/AdminProduct" } } }
+        "400":
+          description: "`validation_error`, `not_found` или `noop`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    delete:
+      operationId: adminProductDelete
+      tags: [Админ]
+      summary: Изтрива продукт без покупки (иначе 409 — деактивирай го).
+      x-required-roles: [ADMIN, OWNER]
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: "`product_has_purchases`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/admin/orders:
+    get:
+      operationId: adminOrdersList
+      tags: [Админ]
+      summary: Всички покупки със сума, платена към момента на покупката (курсор).
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [completed, refunded] }, description: "Непозната стойност = без филтър." }
+        - { $ref: "#/components/parameters/Take" }
+        - { $ref: "#/components/parameters/Cursor" }
+      responses:
+        "200": { $ref: "#/components/responses/ItemsPage" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /api/admin/orders/{id}/refund:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      operationId: adminOrderRefund
+      tags: [Админ]
+      summary: Връща еднократна покупка през Stripe; по избор взима обратно наградата (до наличното).
+      description: Абонаментни фактури не се връщат оттук (портал/Stripe табло). Виртуалната валута не се взима автоматично.
+      x-required-roles: [ADMIN, OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                clawback: { type: boolean, description: "Взима обратно начислените камъни/чипове, не под нула." }
+      responses:
+        "200":
+          description: Върнато.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  clawedGems: { type: integer }
+                  clawedChips: { type: integer }
+        "400":
+          description: "`validation_error`, `not_found`, `already_refunded`, `not_refundable`, `stripe_lookup_failed`, `refund_failed`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "503":
+          description: "`stripe_not_configured`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/admin/announcements:
+    get:
+      operationId: adminAnnouncementsList
+      tags: [Админ]
+      summary: Всички обяви (активни и неактивни, до 100).
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      responses:
+        "200": { $ref: "#/components/responses/ItemsList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      operationId: adminAnnouncementCreate
+      tags: [Админ]
+      summary: Публикува обява за играчите.
+      x-required-roles: [ADMIN, OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, body]
+              properties:
+                title: { type: string, minLength: 1, maxLength: 120 }
+                body: { type: string, minLength: 1, maxLength: 2000 }
+                expiresAt: { type: [string, "null"], format: date-time, description: "Трябва да е в бъдещето." }
+      responses:
+        "200":
+          description: Създадената обява.
+          content:
+            application/json:
+              schema: { type: object, properties: { announcement: { type: object, additionalProperties: true } } }
+        "400":
+          description: "`validation_error` или `expiry_past`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /api/admin/announcements/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    patch:
+      operationId: adminAnnouncementPatch
+      tags: [Админ]
+      summary: Активира или деактивира обява.
+      x-required-roles: [ADMIN, OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [active]
+              properties:
+                active: { type: boolean }
+      responses:
+        "200":
+          description: Обновената обява.
+          content:
+            application/json:
+              schema: { type: object, properties: { announcement: { type: object, additionalProperties: true } } }
+        "400":
+          description: "`validation_error` или `not_found`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    delete:
+      operationId: adminAnnouncementDelete
+      tags: [Админ]
+      summary: Изтрива обява завинаги.
+      x-required-roles: [ADMIN, OWNER]
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ── Админ: сезони ─────────────────────────────────────────────────────────
+  /api/admin/seasons:
+    get:
+      operationId: adminSeasonsList
+      tags: [Админ]
+      summary: Всички сезони (най-новите първо, до 200).
+      x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
+      responses:
+        "200": { $ref: "#/components/responses/ItemsList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      operationId: adminSeasonCreate
+      tags: [Админ]
+      summary: Нов (неактивен) сезон; активира се отделно.
+      x-required-roles: [ADMIN, OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [index, startsAt, endsAt]
+              properties:
+                index: { type: integer, minimum: 1, maximum: 100000 }
+                startsAt: { type: string, format: date-time }
+                endsAt: { type: string, format: date-time, description: "След `startsAt`." }
+      responses:
+        "200":
+          description: Създаденият сезон.
+          content:
+            application/json:
+              schema: { type: object, properties: { season: { type: object, additionalProperties: true } } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409":
+          description: "`season_index_taken`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/admin/seasons/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    patch:
+      operationId: adminSeasonPatch
+      tags: [Админ]
+      summary: Сменя датите (краят остава след началото).
+      x-required-roles: [ADMIN, OWNER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              minProperties: 1
+              properties:
+                startsAt: { type: string, format: date-time }
+                endsAt: { type: string, format: date-time }
+      responses:
+        "200":
+          description: Обновеният сезон.
+          content:
+            application/json:
+              schema: { type: object, properties: { season: { type: object, additionalProperties: true } } }
+        "400":
+          description: "`validation_error` или `season_dates_invalid`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    delete:
+      operationId: adminSeasonDelete
+      tags: [Админ]
+      summary: Изтрива неактивен сезон, който не тече в момента.
+      x-required-roles: [ADMIN, OWNER]
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: "`season_active` или `season_current`."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /api/admin/seasons/{id}/activate:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      operationId: adminSeasonActivate
+      tags: [Админ]
+      summary: Прави сезона единствен активен (транзакция).
+      x-required-roles: [ADMIN, OWNER]
+      responses:
+        "200":
+          description: Активираният сезон.
+          content:
+            application/json:
+              schema: { type: object, properties: { season: { type: object, additionalProperties: true } } }
+        "400":
+          description: "`season_ended` — сезонът вече е приключил."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: aso_at
+      description: httpOnly access JWT, издаден от login/register/refresh. Ревокирани (блокирани/изтрити) сесии получават 401.
+    refreshCookie:
+      type: apiKey
+      in: cookie
+      name: aso_rt
+      description: httpOnly refresh токен; изпраща се само към `/api/auth/*`.
+    internalSecret:
+      type: apiKey
+      in: header
+      name: x-internal-secret
+      description: Споделена тайна между услугите (service-to-service). Не е за клиенти.
+    stripeSignature:
+      type: apiKey
+      in: header
+      name: Stripe-Signature
+      description: Подпис на Stripe, проверен със webhook secret върху суровото тяло.
+    metricsBearer:
+      type: http
+      scheme: bearer
+      description: Изисква се само ако на сървъра е зададен `METRICS_TOKEN`.
+
+  parameters:
+    Take:
+      name: take
+      in: query
+      description: Размер на страницата, 1..100 (по подразбиране 50); извън обхвата се ограничава. Нечислова стойност в `/api/admin/matches` дава 400 `validation_error`.
+      schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+    Cursor:
+      name: cursor
+      in: query
+      description: "`nextCursor` от предишната страница."
+      schema: { type: string }
+
+  responses:
+    Ok:
+      description: Успех.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Ok" }
+    ValidationError:
+      description: "`validation_error` — входът не минава Zod схемата (`issues` е `ZodError.flatten()`) или друга домейн грешка 400."
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Unauthorized:
+      description: "`unauthorized` — липсваща, невалидна, изтекла или ревокирана сесия."
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Forbidden:
+      description: "`forbidden` (недостатъчна роля или правило за ранг) или `csrf_origin`."
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Banned:
+      description: "`banned` — акаунтът е блокиран; `message` е причината, `until` е краят (ISO, null = безсрочно)."
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: object
+                properties:
+                  code: { type: string, const: banned }
+                  message: { type: string }
+                  until: { type: [string, "null"], format: date-time }
+    NotFound:
+      description: "`not_found` — няма такъв обект."
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    RateLimited:
+      description: "`rate_limited` — твърде много опити (лимитер по IP и по акаунт)."
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    EquippedList:
+      description: Идентификаторите на всички екипирани козметики.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [equipped]
+            properties:
+              equipped: { type: array, items: { type: string } }
+    ItemsList:
+      description: Списък `items`.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [items]
+            properties:
+              items: { type: array, items: { type: object, additionalProperties: true } }
+    ItemsPage:
+      description: Страница `items` с курсор.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [items]
+            properties:
+              items: { type: array, items: { type: object, additionalProperties: true } }
+              nextCursor: { type: [string, "null"] }
+
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string, description: "Стабилен машинен код, напр. `validation_error`, `unauthorized`, `not_found`." }
+            message: { type: string }
+            issues: { type: object, additionalProperties: true, description: "Само при `validation_error`." }
+    Ok:
+      type: object
+      required: [ok]
+      properties:
+        ok: { type: boolean, const: true }
+    Readiness:
+      type: object
+      required: [status, db, redis]
+      properties:
+        status: { type: string, enum: [ready, degraded] }
+        db: { type: boolean }
+        redis: { type: boolean }
+    Role:
+      type: string
+      enum: [GUEST, PLAYER, VIP_PLAYER, MODERATOR, SUPPORT, ADMIN, OWNER]
+    VipTier:
+      type: string
+      enum: [NONE, BRONZE, SILVER, GOLD, PLATINUM]
+    ProductKind:
+      type: string
+      enum: [GEMS, COSMETIC, VIP_SUB, CHIP_PACK]
+    GameKey:
+      type: string
+      enum: [BELOTE, SANTASE, SVARA, WAR, GOFISH, KENT, CHESS, BACKGAMMON, DRAUGHTS, LUDO, RUMMY, DOMINO, BRIDGE, BATTLESHIP, DICE, BINGO, WORDS, EIGHTBALL, NINEBALL, SNOOKER, MAGNAT]
+    PublicUser:
+      type: object
+      required: [id, email, emailVerified, displayName, role, locale, chips, gems, xp, level, vipTier]
+      properties:
+        id: { type: string }
+        email: { type: string, format: email }
+        emailVerified: { type: boolean }
+        displayName: { type: string }
+        role: { $ref: "#/components/schemas/Role" }
+        locale: { type: string, enum: [bg, it, en] }
+        chips: { type: string, description: "BigInt, сериализиран като низ." }
+        gems: { type: integer }
+        xp: { type: integer }
+        level: { type: integer, description: "Смята се от `xp`." }
+        vipTier: { $ref: "#/components/schemas/VipTier" }
+    UserEnvelope:
+      type: object
+      required: [user]
+      properties:
+        user: { $ref: "#/components/schemas/PublicUser" }
+    RegisterInput:
+      type: object
+      required: [email, password, displayName, acceptedTerms]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        password: { type: string, minLength: 8, maxLength: 200 }
+        displayName: { type: string, minLength: 2, maxLength: 32 }
+        locale: { type: string, enum: [bg, it, en] }
+        acceptedTerms: { type: boolean, const: true, description: "18+ и Условия/Поверителност — изрично `true` (GDPR)." }
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        password: { type: string, minLength: 1, maxLength: 200 }
+    EmailInput:
+      type: object
+      required: [email]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+    TokenInput:
+      type: object
+      required: [token]
+      properties:
+        token: { type: string, minLength: 10, maxLength: 512 }
+    ResponsibleView:
+      type: object
+      required: [realityCheckMinutes, dailyLimitMinutes, dailyLimitPending, playedTodayMinutes, selfExcludedUntil]
+      properties:
+        realityCheckMinutes: { type: integer }
+        dailyLimitMinutes:
+          type: [integer, "null"]
+          description: Действащият дневен лимит (минути в мачове за игровия ден по софийско време); null = без.
+        dailyLimitPending:
+          description: Чакащо вдигане или махане на лимита — влиза в сила в effectiveAt (24 ч след заявката).
+          oneOf:
+            - type: "null"
+            - type: object
+              required: [minutes, effectiveAt]
+              properties:
+                minutes: { type: [integer, "null"], description: "null = лимитът отпада." }
+                effectiveAt: { type: string, format: date-time }
+        playedTodayMinutes: { type: integer, description: Изиграни минути в мачове днес (сървърно преброени). }
+        selfExcludedUntil: { type: [string, "null"], format: date-time }
+    MailSettingsView:
+      type: object
+      required: [settings, hasPassword, source, keyReady]
+      properties:
+        settings:
+          oneOf:
+            - type: "null"
+            - type: object
+              properties:
+                host: { type: string }
+                port: { type: integer }
+                username: { type: string }
+                fromName: { type: string }
+                fromEmail: { type: string, format: email }
+                active: { type: boolean }
+                updatedAt: { type: string, format: date-time }
+                updatedBy: { type: [string, "null"] }
+        hasPassword: { type: boolean, description: Има ли записан ключ (самият ключ никога не излиза). }
+        source: { type: [string, "null"], enum: [console, env, null], description: Откъде тръгват писмата сега. }
+        keyReady: { type: boolean, description: Има ли SETTINGS_SECRET_KEY на сървъра. }
+    FriendLite:
+      type: object
+      properties:
+        friendshipId: { type: string, description: "Само в `/api/friends` (не и в търсенето)." }
+        id: { type: string }
+        displayName: { type: string }
+        level: { type: integer }
+        vipTier: { $ref: "#/components/schemas/VipTier" }
+    FriendStatus:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [PENDING, ACCEPTED] }
+    ProductView:
+      type: object
+      required: [sku, kind, title, priceCents]
+      properties:
+        sku: { type: string }
+        kind: { $ref: "#/components/schemas/ProductKind" }
+        title: { type: string }
+        priceCents: { type: integer, description: "Евроценти, с включен ДДС." }
+        grantGems: { type: integer }
+        grantChips: { type: integer }
+        cosmeticId: { type: string }
+        vipTier: { $ref: "#/components/schemas/VipTier" }
+    AdminProduct:
+      type: object
+      properties:
+        id: { type: string }
+        kind: { $ref: "#/components/schemas/ProductKind" }
+        sku: { type: string }
+        priceCents: { type: integer }
+        gems: { type: [integer, "null"] }
+        chips: { type: [integer, "null"] }
+        cosmeticId: { type: [string, "null"] }
+        active: { type: boolean }
+    CosmeticItem:
+      type: object
+      properties:
+        id: { type: string, description: "Формат `ИГРА.ТИП.вариант`." }
+        game: { $ref: "#/components/schemas/GameKey" }
+        type: { type: string, enum: [FELT, CARDBACK, BOARD, CUE, ESTATE] }
+        name: { type: string }
+        gemPrice: { type: integer }
+        vipExclusive: { type: boolean }
+        colors: { type: object, properties: { a: { type: string }, b: { type: string } } }
+        owned: { type: boolean }
+        equipped: { type: boolean }
+        locked: { type: boolean, description: "VIP-ексклузивна, а играчът няма Silver+." }
+    CosmeticIdInput:
+      type: object
+      required: [id]
+      properties:
+        id: { type: string, minLength: 3, maxLength: 64 }
+    DiscordConfig:
+      type: object
+      additionalProperties: true
+      properties:
+        webhookUrl: { type: string, description: "Пълен за ADMIN/OWNER, маскиран за останалите." }
+        webhookName: { type: string }
+        enabled: { type: boolean }
+        events: { type: object, additionalProperties: { type: boolean } }
+        masked: { type: boolean }

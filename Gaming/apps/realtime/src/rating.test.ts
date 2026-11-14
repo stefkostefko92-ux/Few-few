@@ -99,3 +99,18 @@ describe("finalizeMatch — опит, ниво и VIP", () => {
     expect(users.get("a")!.xp).toBe(10);
   });
 });
+
+describe("наградата не зависи от собствените точки на играта", () => {
+  it("победа с много точки (Сантасе 11, Домино 104, снукър 70) носи стандартните 25 чипа / 10 XP", async () => {
+    const { rewards } = await import("./rating.js");
+    expect(rewards("win")).toEqual({ chips: 25n, xp: 10 });
+    expect(rewards("win", undefined)).toEqual({ chips: 25n, xp: 10 });
+  });
+  it("само изричен margin увеличава наградата (до ×3)", async () => {
+    const { rewards } = await import("./rating.js");
+    expect(rewards("win", 2)).toEqual({ chips: 50n, xp: 20 });
+    expect(rewards("win", 9)).toEqual({ chips: 75n, xp: 30 });
+    expect(rewards("draw", 3)).toEqual({ chips: 10n, xp: 5 });
+    expect(rewards("loss", 3)).toEqual({ chips: 0n, xp: 3 });
+  });
+});

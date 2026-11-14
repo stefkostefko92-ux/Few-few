@@ -271,7 +271,47 @@
     "eraseDone": "L'account è stato eliminato (anonimizzato).",
     "selfExcludedShort": "AUTOESCL.",
     "selfExcludedUntil": "Autoescluso fino al",
-    "selfExcludedNote": "Scelta del giocatore — non può essere revocata prima della scadenza."
+    "selfExcludedNote": "Scelta del giocatore — non può essere revocata prima della scadenza.",
+    "mail": {
+      "tab": "Email (Brevo)",
+      "title": "Email del portale",
+      "hint": "Da qui partono tutte le email di АСО — conferma dell'email e nuova password. Questa impostazione ha la precedenza sull'SMTP del server.",
+      "sourceConsole": "Le email partono da qui",
+      "sourceEnv": "Le email partono dall'SMTP del server (.env)",
+      "sourceNone": "Email non configurata — i messaggi finiscono solo nel log",
+      "updated": "Ultima modifica: {{date}} · {{who}}",
+      "inactive": "disattivata",
+      "keyMissing": "Sul server manca SETTINGS_SECRET_KEY — il prossimo deploy la crea. Fino ad allora il salvataggio è disattivato.",
+      "host": "Server SMTP",
+      "port": "Porta",
+      "port587": "587 — STARTTLS (consigliata)",
+      "port2525": "2525 — STARTTLS (se la 587 è bloccata)",
+      "port465": "465 — TLS",
+      "username": "Login SMTP",
+      "password": "Chiave SMTP",
+      "passwordKeep": "salvata — lascia vuoto per mantenerla",
+      "fromName": "Nome del mittente",
+      "fromEmail": "Email del mittente",
+      "brevoHelp": "Brevo: Settings → SMTP & API → SMTP — il server è smtp-relay.brevo.com, il login è nella stessa pagina, la chiave è la «SMTP key» (non la chiave API). L'email del mittente deve essere verificata in Brevo (Senders & IP) per un dominio con SPF e DKIM.",
+      "accountPassword": "La tua password (conferma)",
+      "save": "Salva e attiva",
+      "test": "Email di prova a me",
+      "disable": "Disattiva",
+      "saved": "Salvato — ora le email partono da qui.",
+      "disabled": "Disattivato — le email partono dall'SMTP del server, se c'è.",
+      "testSent": "L'email di prova è partita verso {{email}}.",
+      "testDisabled": "Email non configurata — non c'è da dove inviare.",
+      "testError": "L'email non è partita — codice {{code}} (EAUTH = login o chiave errati; ECONNECTION/ESOCKET/ETIMEDOUT = il server non risponde).",
+      "err": {
+        "wrong_password": "Password dell'account errata.",
+        "password_required": "Inserisci la chiave SMTP.",
+        "password_new_server": "Server o login cambiati — inserisci di nuovo la chiave SMTP.",
+        "invalid_host": "Server SMTP non valido (nome host).",
+        "settings_key_missing": "Sul server manca SETTINGS_SECRET_KEY.",
+        "validation_error": "Controlla i campi.",
+        "rate_limited": "Troppi tentativi — aspetta un po'."
+      }
+    }
   },
   "auth": {
     "loginTitle": "Accedi",
@@ -337,6 +377,7 @@
     "opponentDropped": "{{name}} si è disconnesso — il bot subentra",
     "yourTurnTimer": "Il tuo turno: {{s}}s",
     "opponentTurnTimer": "{{name}} sta pensando · {{s}}s",
+    "timeoutWarningWords": "Tempo scaduto — vale come passo e costa 1 vita.",
     "timeoutWarning": "Tempo scaduto — il bot ha giocato questa mossa per te. Salta un altro turno e il bot prende il tuo posto."
   },
   "verify": {
@@ -413,7 +454,14 @@
     "declareWith": "66 con {{n}} {{suit}}",
     "declareHint": "Dichiara solo se hai davvero 66 — una dichiarazione falsa dà 3 punti all'avversario.",
     "declaredOk": "{{name}} chiude con {{n}}!",
-    "declaredFalse": "{{name}} ha dichiarato 66 con solo {{n}} — 3 punti all'avversario"
+    "declaredFalse": "{{name}} ha dichiarato 66 con solo {{n}} — 3 punti all'avversario",
+    "leadTitle": "Sei di mano — annunci?",
+    "have66Title": "Hai 66!",
+    "leadHint": "Punti: {{pts}} · Briscola {{suit}} · Mazzo: {{count}}",
+    "announceKing": "Annuncia {{n}} {{suit}} — gioca il re",
+    "announceQueen": "Annuncia {{n}} {{suit}} — gioca la donna",
+    "exchangeWith": "Cambia briscola ({{nine}} ↔ {{card}})",
+    "quietHint": "Attivo: il re o la donna di una coppia cliccati in mano si giocano senza annuncio."
   },
   "belote": {
     "yourTeam": "La tua squadra",
@@ -443,7 +491,8 @@
     "lastDeal": "Mano",
     "valat": "Cappotto!",
     "inside": "Dentro",
-    "redeal": "Nuova smazzata"
+    "redeal": "Nuova smazzata",
+    "noBidYet": "Nessuno ha ancora dichiarato la briscola."
   },
   "shop": {
     "payButton": "Acquista e paga · {{price}}",
@@ -568,6 +617,13 @@
     "free": "I gettoni si guadagnano anche gratis — bonus giornaliero e vittorie.",
     "topUp": "Compra gettoni"
   },
+  "playPaused": {
+    "limitTitle": "Pausa fino a domani",
+    "limitBody": "Hai raggiunto il tuo limite di gioco giornaliero. Nuovi tavoli e code riaprono il {{date}}.",
+    "excludedTitle": "Autoesclusione attiva",
+    "excludedBody": "I tavoli sono chiusi per te fino al {{date}}. È stata una tua scelta e non può essere annullata prima.",
+    "settings": "Impostazioni di gioco responsabile"
+  },
   "store": {
     "title": "Negozio rapido",
     "topUp": "Ricarica saldo",
@@ -596,7 +652,8 @@
   },
   "common": {
     "loading": "Caricamento…",
-    "dismiss": "Chiudi"
+    "dismiss": "Chiudi",
+    "close": "Chiudi"
   },
   "a11y": {
     "skipToContent": "Vai al contenuto",
@@ -642,7 +699,9 @@
     "mainPot": "Piatto principale",
     "sidePot": "Piatto laterale {{n}}",
     "winsSidePot": "{{name}} vince un piatto laterale ({{pot}})",
-    "splitsPot": "{{name}} divide il piatto laterale ({{pot}})"
+    "splitsPot": "{{name}} divide il piatto laterale ({{pot}})",
+    "yourBet": "La tua puntata",
+    "showdownTitle": "Carte scoperte"
   },
   "bridge": {
     "dummyHand": "Mano del morto",
@@ -664,7 +723,8 @@
     "honors": "onori {{n}} ({{side}})",
     "honorsBanner": "Onori: {{name}} +{{n}}",
     "us": "noi",
-    "them": "loro"
+    "them": "loro",
+    "noBidYet": "Nessuno ha ancora dichiarato."
   },
   "war": {
     "flip": "Gira",
@@ -718,12 +778,18 @@
     "roundReport": "Fine della mano {{n}}",
     "penalty": "Penalità",
     "total": "Totale",
-    "continue": "Continua"
+    "continue": "Continua",
+    "openTitle": "Apri adesso?",
+    "openHint": "L'apertura preparata vale {{pts}} punti (ne servono {{min}}):",
+    "swapTitle": "Scambio del jolly",
+    "swapHint": "{{card}} può sostituire un jolly sul tavolo — prendi il jolly (da usare in questo turno)."
   },
   "gofish": {
     "ocean": "Oceano",
     "askFrom": "Chiedi",
-    "books": "Gruppi"
+    "books": "Gruppi",
+    "askTitle": "A chi chiedi, e cosa?",
+    "askFor": "Per quale valore"
   },
   "backgammon": {
     "roll": "Lancia",
@@ -747,7 +813,9 @@
     "marsWon": "Mars! +2 punti",
     "marsLost": "Mars — l'avversario prende 2 punti",
     "matchWon": "Hai vinto la partita {{score}}",
-    "matchLost": "Hai perso la partita {{score}}"
+    "matchLost": "Hai perso la partita {{score}}",
+    "noMovesTitle": "Nessuna mossa possibile",
+    "noMovesHint": "I dadi {{dice}} non si possono giocare: passi."
   },
   "draughts": {
     "variant": "Dama russa"
@@ -790,7 +858,9 @@
     },
     "upper": "Somma 1–6",
     "bonus": "Bonus (63+)",
-    "pickCategory": "Scegli una categoria"
+    "scoreTitle": "Registra il punteggio",
+    "scoreHint": "Scegli una categoria: la migliore è evidenziata.",
+    "earlyScoreHint": "oppure registra nella tabella"
   },
   "bingo": {
     "draw": "Estrai",
@@ -848,12 +918,20 @@
     "blocked": "bloccato",
     "pass": "Passo",
     "boneyard": "Pozzo",
-    "tie": "parità"
+    "tie": "parità",
+    "whichEnd": "Su quale lato?",
+    "fitsBoth": "La tessera va bene su entrambi i lati.",
+    "otherTile": "Altra tessera",
+    "leftEnd": "Lato sinistro",
+    "rightEnd": "Lato destro",
+    "nothingFits": "Nessuna tessera va bene",
+    "drawHint": "Le estremità sono {{left}} e {{right}}: pesca dal pozzo (ne restano {{n}}).",
+    "passHint": "Il pozzo è vuoto: passi."
   },
   "cue": {
     "power": "Potenza",
     "shoot": "Tira",
-    "yourTurn": "Mira e tira",
+    "yourTurn": "Clicca o trascina sul tavolo per mirare, poi tira",
     "yourTurnBih": "Palla in mano — posiziona e tira",
     "placeCue": "Posiziona la bianca",
     "placeHint": "Clicca per posizionare la bianca",
@@ -899,7 +977,7 @@
     "twoFouls": "Attenzione: due falli consecutivi — il terzo fa perdere il frame.",
     "twoFoulsOpp": "L'avversario è a due falli consecutivi.",
     "miss": "fallo e mancato",
-    "foulChoice": "Fallo dell'avversario — gioca o fallo rigiocare.",
+    "foulChoice": "Giochi da qui o lo fai rigiocare?",
     "playAgain": "Fallo rigiocare",
     "replay": "Riposiziona le palle",
     "spin": "Effetto",
@@ -912,8 +990,22 @@
     "spinReset": "Senza effetto",
     "spinHelp": "Scegli dove la stecca colpisce la bianca: in alto — prosegue dopo l'impatto (a seguire), in basso — torna indietro (a rientrare), di lato — cambia il rimbalzo sulla sponda. Frecce per spostare, Maiusc per passi più fini, Home per il centro.",
     "callPocket": "Buca per la 8",
-    "callPocketHint": "Sei sulla 8 — dichiara la buca (clic vicino alla buca o sui pulsanti)",
-    "calledPocket": "buca dichiarata",
+    "callPocketHint": "Sei sulla 8 — dichiara la sua buca.",
+    "calledPocket": "Buca dichiarata",
+    "callTitle": "Dichiara la buca per la 8",
+    "callHint": "Tocca la buca qui — o la buca stessa sul tavolo.",
+    "callPocketOpen": "Dichiara",
+    "changePocket": "Cambia",
+    "pushTitle": "Push-out?",
+    "pushHint": "Non devi colpire la palla più bassa — poi l'avversario sceglie chi gioca.",
+    "pushNo": "Tiro normale",
+    "pushArmed": "il tiro è un push-out",
+    "pushCancel": "Annulla push-out",
+    "pushReplyTitle": "L'avversario ha giocato un push-out",
+    "pushReplyHint": "Giochi da questa posizione o gli restituisci il tiro?",
+    "playMyself": "Gioco io",
+    "foulChoiceTitle": "Fallo dell'avversario",
+    "foulChoiceMiss": "Giochi da qui, lo fai rigiocare — o riposizioni le palle e lui ripete il tiro?",
     "pockets": {
       "0": "in alto a sinistra",
       "1": "in alto al centro",
@@ -939,7 +1031,7 @@
     "pickToPass": "In attesa",
     "signaled": "Segnale!",
     "chosen": "scelto",
-    "youHaveKent": "Hai KENT! Segnala al compagno o chiama Kupe.",
+    "youHaveKent": "Hai KENT! Segnala al compagno: è lui a chiamare «Kupe!».",
     "signal": "Segnala",
     "callKupe": "Kupe!",
     "target": "a",
@@ -952,7 +1044,10 @@
     "deckLeft": "Mazzo",
     "pass": "Passo",
     "pickHandCard": "Scegli la tua carta da scambiare",
-    "pickCenterCard": "Scegli una carta centrale"
+    "pickCenterCard": "Scegli una carta centrale",
+    "haveKentTitle": "Hai Kent!",
+    "partnerSignaledTitle": "Il compagno ti ha fatto il segnale!",
+    "kupeHint": "{{name}} ti ha fatto il segnale segreto — chiama «Kupe!» per vincere il round."
   },
   "chess": {
     "check": "Scacco!",
@@ -978,7 +1073,17 @@
     "drawThreefold": "Patta — triplice ripetizione",
     "drawAgreement": "Patta per accordo",
     "drawFifty": "Patta — regola delle 50 mosse",
-    "drawMaterial": "Patta — materiale insufficiente"
+    "drawMaterial": "Patta — materiale insufficiente",
+    "promoteHeading": "Promozione del pedone",
+    "promoteHint": "Il pedone raggiunge l’ultima traversa: scegli in cosa si trasforma.",
+    "otherMove": "Altra mossa",
+    "drawOfferHint": "Accetta la patta, oppure rifiuta e gioca la tua mossa.",
+    "declineDraw": "Rifiuta (continua)",
+    "resignQ": "Vuoi abbandonare?",
+    "resignHint": "La partita è persa subito.",
+    "offerDrawQ": "Offrire la patta?",
+    "offerDrawHint": "Poi gioca la tua mossa. L’avversario può accettare al suo turno: se invece muove, l’offerta decade.",
+    "keepPlaying": "No, continua"
   },
   "fx": {
     "hit": "Colpito!",
@@ -1069,17 +1174,14 @@
     "boardTitle": "Tabellone Magnat",
     "gameOver": "Partita finita.",
     "turnOf": "Turno: {{name}}.",
-    "noWebGL": "Il tabellone 3D richiede WebGL, non disponibile in questo browser. Puoi giocare dal pannello a destra.",
+    "noWebGL": "Il tabellone 3D richiede WebGL, non disponibile in questo browser — mostriamo un tabellone 2D semplificato; le mosse sono nel pannello.",
     "jailCard": "Carta uscita di prigione",
     "payBail": "Paga cauzione (50)",
     "roll": "Lancia i dadi",
-    "buy": "Compra {{name}} ({{price}})",
     "decline": "Rifiuta",
-    "auctionFor": "Asta: {{name}} · offerta attuale",
     "auctionNone": "nessuna",
     "bid": "Offri {{amount}}",
     "pass": "Passo",
-    "tradeOffer": "{{name}} ti propone uno scambio:",
     "give": "Dai:",
     "get": "Ricevi:",
     "accept": "Accetta",
@@ -1125,8 +1227,24 @@
     "debtWaiting": "{{name}} deve {{amount}} a {{to}} e sceglie cosa vendere o ipotecare…",
     "debtTitle": "Devi {{amount}} a {{to}}",
     "debtCash": "Contanti: {{cash}}",
-    "debtHint": "Vendi edifici (prima le case, in modo uniforme) o ipoteca proprietà dalla lista qui sotto, poi paga. Allo scadere del tempo la banca liquida automaticamente.",
-    "payDebt": "Paga {{amount}}"
+    "payDebt": "Paga {{amount}}",
+    "decideInPrompt": "Tocca a te: la scelta è nella finestra.",
+    "jailTitle": "Sei in prigione",
+    "jailHint": "Tentativo {{attempt}} di 3: tira per un doppio, oppure esci subito.",
+    "jailRoll": "Tira per un doppio",
+    "buyTitle": "Compri {{name}}?",
+    "buyHint": "Prezzo {{price}} · contanti {{cash}}.",
+    "declineAuction": "Rifiuta (asta)",
+    "auctionTitle": "Asta: {{name}}",
+    "auctionNoBids": "Ancora nessuna offerta",
+    "bidAmount": "Importo dell’offerta",
+    "tradeOfferTitle": "{{name}} ti propone uno scambio",
+    "debtPromptHint": "Vendi edifici o ipoteca, poi paga. Allo scadere del tempo la banca liquida automaticamente.",
+    "sellHouse": "Vendi una casa: {{name}} (+{{amount}})",
+    "sellHotel": "Vendi l’albergo: {{name}}",
+    "mortgageFor": "Ipoteca {{name}} (+{{amount}})",
+    "buyFor": "Compra per {{price}}",
+    "buyShort": "Non bastano: ipoteca una proprietà o rifiuta."
   },
   "errors": {
     "generic": "Qualcosa è andato storto",
@@ -1136,7 +1254,9 @@
     "illegal_action": "Mossa non valida",
     "chat_rate": "Troppo veloce. Attendi un momento.",
     "rate_limited": "Troppi tentativi — attendi.",
-    "self_excluded": "L'autoesclusione è attiva — tavoli e acquisti non sono disponibili fino alla scadenza"
+    "self_excluded": "L'autoesclusione è attiva — tavoli e acquisti non sono disponibili fino alla scadenza",
+    "daily_limit": "Hai raggiunto il tuo limite di gioco giornaliero — nuovi tavoli e code domani.",
+    "member_unavailable": "Un giocatore del gruppo non può sedersi a un tavolo ora."
   },
   "games": {
     "CHESS": "Scacchi",
@@ -1245,7 +1365,10 @@
     "clock": "Hai {{s}} secondi per turno.",
     "timeout": "Se il tempo scade, il bot gioca solo quella mossa per te — il posto resta tuo.",
     "timeoutWords": "Se il tempo scade, vale come passo — perdi una vita (il bot non dice mai una parola al posto tuo).",
-    "takeover": "Dopo due turni saltati di fila (o una connessione persa) il bot prende il tuo posto finché non premi «Torna in gioco»."
+    "clockBingo": "Qui non ci sono turni né timer: ogni {{s}} secondi viene estratto un nuovo numero. Segna quando vuoi e chiama «Bingo!» appena hai una linea completa.",
+    "takeoverBingo": "Se la connessione cade, il bot segna la tua cartella finché non torni.",
+    "takeover": "Dopo due turni saltati di fila (o una connessione persa) il bot prende il tuo posto finché non premi «Torna in gioco».",
+    "gotIt": "Ho capito — al tavolo"
   },
   "difficulty": {
     "label": "Difficoltà dei bot",
@@ -1260,8 +1383,11 @@
     "realityHint": "Mostriamo «Stai giocando da X min» all'intervallo scelto.",
     "off": "Disattivato",
     "everyMin": "Ogni {{n}} min",
-    "limitLabel": "Limite giornaliero di sessione",
-    "limitHint": "Oggi hai giocato {{n}} min. Al raggiungimento del limite ti ricorderemo di fare una pausa.",
+    "limitLabel": "Limite di gioco giornaliero",
+    "limitHint": "Oggi hai giocato {{n}} min in partita.",
+    "limitRule": "Raggiunto il limite, nuovi tavoli e code si chiudono fino a mezzanotte (ora di Sofia); la partita già iniziata si porta a termine. Un limite più basso vale subito, uno più alto o «Nessun limite» dopo 24 ore.",
+    "limitPending": "Il nuovo limite di {{n}} min entra in vigore il {{date}}.",
+    "limitPendingOff": "Il limite viene rimosso il {{date}}.",
     "noLimit": "Nessun limite",
     "minutes": "{{n}} min",
     "excludeLabel": "Autoesclusione",
@@ -1284,7 +1410,12 @@
     "takeBreak": "Pausa",
     "keepPlaying": "Continua",
     "limitTitle": "Limite giornaliero raggiunto",
-    "limitBody": "Oggi hai giocato il limite di {{n}} min che hai scelto. Un buon momento per una pausa.",
+    "limitBody": "Oggi hai giocato il limite di {{n}} min che hai scelto. Nuovi tavoli e code riaprono domani — un buon momento per una pausa.",
     "understood": "Ho capito"
+  },
+  "decision": {
+    "minimize": "Mostra il tavolo",
+    "sec": "s",
+    "notNow": "Non ora"
   }
 }

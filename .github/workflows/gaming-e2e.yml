@@ -1,0 +1,75 @@
+name: gaming-e2e
+
+# Браузърни e2e на игрите (Playwright срещу пълен стек). Отделен от gaming.yml,
+# защото е бавен (~15 мин games-2d) и иска Docker (Postgres + Redis).
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Gaming/**'
+      - '.github/workflows/gaming-e2e.yml'
+  pull_request:
+    paths:
+      - 'Gaming/**'
+      - '.github/workflows/gaming-e2e.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: gaming-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: само чете кода. Тайните на стека са тестови (в infra/e2e-games.sh).
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: e2e games-2d + rooms (shard ${{ matrix.shard }}/3)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    defaults:
+      run:
+        working-directory: Gaming
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      # БЕЗ cache: pnpm — вж. обяснението в gaming.yml (setup-node брои store от корена на монорепото).
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      # Скриптът стартира от dist/ — първо билдваме трите приложения (без NODE_ENV=production
+      # в средата, за да не изреже devDependencies/сменя vite base).
+      - run: env -u NODE_ENV pnpm turbo run build --filter=@aso/api --filter=@aso/realtime --filter=@aso/web
+      - run: pnpm --filter @aso/web exec playwright install --with-deps chromium
+      - name: Вдигане на e2e стека (Postgres + Redis + api/realtime/web)
+        run: bash infra/e2e-games.sh up 1
+      - name: Playwright (games-2d + rooms)
+        env:
+          E2E_BASE_URL: http://127.0.0.1:4612/app/
+        run: >
+          pnpm --filter @aso/web exec playwright test
+          --project=games-2d --project=rooms
+          --shard=${{ matrix.shard }}/3 --workers=2 --trace off --reporter=line,html
+      - name: Логове на стека (при провал)
+        if: failure()
+        run: tail -n 60 /tmp/aso-e2e-1/*.log || true
+      - name: Спиране на стека
+        if: always()
+        run: bash infra/e2e-games.sh down 1
+      - name: Playwright отчет (само при провал)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-shard-${{ matrix.shard }}
+          path: |
+            Gaming/apps/web/playwright-report
+            Gaming/apps/web/test-results
+          retention-days: 3
+          if-no-files-found: ignore

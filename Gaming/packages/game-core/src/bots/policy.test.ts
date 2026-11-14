@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { GameEngine, GameEvent } from "../kernel/contract.js";
 import { SeededRng } from "../kernel/rng.js";
-import { chooseBotAction } from "./policy.js";
+import { chooseBotAction, determinizer } from "./policy.js";
+import { santaseEngine } from "../engines/trick/santase.js";
+import { battleshipEngine } from "../engines/grid-guess/battleship.js";
 
 /**
  * Tiny two-seat race engine for testing the generic policy: on your turn you add
@@ -145,5 +147,73 @@ describe("ботовете не се предават и не предлагат
       legalActions: () => [{ type: "MOVE" }, { type: "RESIGN" }],
     };
     expect(botCandidates(mixed, null, 0)).toEqual([{ type: "MOVE" }]);
+  });
+});
+
+/**
+ * Скрита информация: ботът на „Трудно“ търси само в това, което неговото място
+ * вижда. Преди се симулираше истинското състояние — виждаше чуждите карти и
+ * реда на тестето (и в Морски бой — къде са корабите).
+ */
+describe("HARD не вижда скритото", () => {
+  it("determinizer: своята ръка и публичното остават, скритите карти се раздават наново", () => {
+    const rng = new SeededRng("det");
+    const s = santaseEngine.init({ seats: 2 }, rng);
+    const sample = determinizer(santaseEngine, s, 0)!;
+    expect(sample).not.toBeNull();
+    const unseen = [...s.hands[1]!, ...s.stock].sort();
+    let differs = false;
+    for (let i = 0; i < 8; i++) {
+      const w = sample(rng);
+      expect(w.hands[0]).toEqual(s.hands[0]);
+      expect(w.hands[1]!.length).toBe(s.hands[1]!.length);
+      expect(w.stock.length).toBe(s.stock.length);
+      expect([...w.hands[1]!, ...w.stock].sort()).toEqual(unseen);
+      if (w.hands[1]!.join() !== s.hands[1]!.join()) differs = true;
+    }
+    expect(differs).toBe(true);
+  });
+
+  it("ботът не познава скрита карта по-добре от случайността", () => {
+    // Противникът държи „A“ или „B“ (скрито); другата е в тестето. Позна ли —
+    // печелиш. Бот, който вижда истинското състояние, познава винаги.
+    interface G {
+      opp: string[];
+      deck: string[];
+      guess: string | null;
+    }
+    const guessEngine: GameEngine<G, string, GameEvent> = {
+      init: () => ({ opp: ["A"], deck: ["B"], guess: null }),
+      legalActions: (g, seat) => (seat === 0 && g.guess === null ? ["A", "B"] : []),
+      reduce: (g, a) => ({ state: { ...g, guess: a }, events: [] }),
+      isTerminal: (g) => g.guess !== null,
+      score: (g) => [
+        { seat: 0, result: g.guess === g.opp[0] ? ("win" as const) : ("loss" as const) },
+        { seat: 1, result: g.guess === g.opp[0] ? ("loss" as const) : ("win" as const) },
+      ],
+      redact: (g, seat) => (seat === 0 ? { ...g, opp: g.opp.map(() => "?"), deck: g.deck.map(() => "?") } : g),
+    };
+    const rng = new SeededRng("guess");
+    let right = 0;
+    for (let i = 0; i < 40; i++) {
+      const held = rng.next() < 0.5 ? "A" : "B";
+      const g: G = { opp: [held], deck: [held === "A" ? "B" : "A"], guess: null };
+      if (chooseBotAction(guessEngine, g, 0, "HARD", rng) === held) right++;
+    }
+    expect(right).toBeLessThan(40);
+    expect(right).toBeGreaterThan(5);
+  });
+
+  it("Морски бой: корабите не могат да се „измислят“ — HARD играе честната евристика", () => {
+    const rng = new SeededRng("bs");
+    let s = battleshipEngine.init({ seats: 2 }, rng);
+    for (const seat of [0, 1]) {
+      const a = battleshipEngine.legalActions(s, seat).find((x) => x.type === "PLACE_RANDOM");
+      if (a) s = battleshipEngine.reduce(s, a, rng).state;
+    }
+    expect(s.phase).toBe("FIRE");
+    expect(determinizer(battleshipEngine, s, s.turn)).toBeNull();
+    const move = chooseBotAction(battleshipEngine, s, s.turn, "HARD", rng);
+    expect(move).toMatchObject({ type: "FIRE" });
   });
 });

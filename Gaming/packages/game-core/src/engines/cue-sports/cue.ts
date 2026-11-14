@@ -947,6 +947,8 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueStateX, CueAct
         return variant === "SNOOKER" && state.foulChoice === true && !!state.missReplay;
       }
       if (action.type !== "SHOOT") return false;
+      // Удар за стара маса (двоен клик, буфериран при прекъсване) — отхвърля се.
+      if (action.shotNo !== undefined && action.shotNo !== state.shotNo) return false;
       if (typeof action.angle !== "number" || !Number.isFinite(action.angle)) return false;
       if (typeof action.power !== "number" || !(action.power > 0) || action.power > 1) return false;
       // Ефект: числа в [-1, 1], в единичния диск (сървърна граница).

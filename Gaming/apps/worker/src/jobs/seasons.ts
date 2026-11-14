@@ -12,7 +12,10 @@ export async function rolloverSeasons(): Promise<void> {
   const active = await prisma.season.findFirst({ where: { active: true } });
 
   if (!active) {
-    await openSeason(1, now);
+    // Няма активен сезон (първо пускане или прекъсната смяна): продължаваме СЛЕД
+    // последния, а не от 1 — иначе upsert би презаписал архивирания сезон 1.
+    const latest = await prisma.season.findFirst({ orderBy: { index: "desc" } });
+    await openSeason((latest?.index ?? 0) + 1, now);
     return;
   }
 
