@@ -102,6 +102,10 @@ export interface RailField {
   unit: string;
   options: Array<{ value: string; label: string }>;
   value: string;
+  /** `ключ:стойност,стойност` — полето е за тези стойности на друго поле; празно — винаги. */
+  when: string;
+  /** Видимо ли е при стойностите на проекта. */
+  shown: boolean;
 }
 
 export interface EditorRail {
@@ -150,6 +154,10 @@ export function editorRail(saved: Spec): EditorRail | null {
         label: optionLabel,
       })),
       value: text(spec[p.key]),
+      when: Object.entries(p.when ?? {})
+        .map(([k, vs]) => `${k}:${vs.map(text).join(',')}`)
+        .join(''),
+      shown: Object.entries(p.when ?? {}).every(([k, vs]) => vs.map(text).includes(text(spec[k]))),
     })),
   };
 }

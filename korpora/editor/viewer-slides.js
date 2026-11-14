@@ -29,10 +29,10 @@ function carcassAt(model, meshOf, x, y) {
   return p ? meshOf.get(p.id) : null;
 }
 
-function place(viewer, parent, mesh, at) {
+function place(viewer, parent, mesh, at, run) {
   const p = viewer.P(...at);
   mesh.position.copy(parent?.userData.centre ? p.sub(parent.userData.centre) : p);
-  (parent ?? viewer.root).add(mesh);
+  (parent ?? viewer.parentOf(run)).add(mesh);
 }
 
 export function addSlides(viewer, model, meshOf, drawerHolders) {
@@ -43,6 +43,7 @@ export function addSlides(viewer, model, meshOf, drawerHolders) {
     const holder = drawerHolders.get(g.id);
     const parts = model.parts.filter((p) => g.partIds.includes(p.id));
     const bottom = parts.find((p) => p.role === 'drawer-bottom');
+    const run = parts[0]?.run; // the wall of a Г or П kitchen the drawer is in
     for (const sd of parts.filter((p) => p.role === 'drawer-side')) {
       const left = sd.frame.n === '+x';
       const out = left ? sd.box.min[0] : sd.box.max[0];
@@ -53,11 +54,17 @@ export function addSlides(viewer, model, meshOf, drawerHolders) {
         const gap = sys.sideClearance;
         const y = sd.box.min[1] + sys.axisAboveBox;
         const carcass = carcassAt(model, meshOf, out + dir * gap, y);
-        place(viewer, carcass, rail(gap * 0.36, 45, len, steel), [out + dir * gap * 0.8, y, zc]);
+        place(
+          viewer,
+          carcass,
+          rail(gap * 0.36, 45, len, steel),
+          [out + dir * gap * 0.8, y, zc],
+          run,
+        );
         const mid = new THREE.Group();
         mid.add(rail(gap * 0.3, 40, len * 0.98, steel));
         mid.children[0].position.copy(viewer.P(out + dir * gap * 0.47, y, zc));
-        viewer.root.add(mid);
+        viewer.parentOf(run).add(mid);
         viewer.items.push({
           kind: 'slide',
           holder: mid,
@@ -66,12 +73,12 @@ export function addSlides(viewer, model, meshOf, drawerHolders) {
         });
         const inner = rail(gap * 0.22, 34, len * 0.96, steel);
         inner.position.copy(viewer.P(out + dir * gap * 0.13, y, zc));
-        (holder ?? viewer.root).add(inner);
+        (holder ?? viewer.parentOf(run)).add(inner);
       } else if (bottom) {
         const x = out - dir * 9;
         const y = bottom.box.min[1] - 9;
         const carcass = carcassAt(model, meshOf, out + dir * 5, y);
-        place(viewer, carcass, rail(13, 18, len * 0.97, steel), [x, y, zc]);
+        place(viewer, carcass, rail(13, 18, len * 0.97, steel), [x, y, zc], run);
       }
     }
   }

@@ -155,6 +155,10 @@ export function writeForm(form, spec, writeFocused = false) {
     const v = spec[out.dataset.for];
     out.textContent = `${String(v).replace('.', ',')}${out.dataset.unit ? ` ${out.dataset.unit}` : ''}`;
   }
+  for (const el of $$('[data-when]', form)) {
+    const [key, values] = el.dataset.when.split(':');
+    el.hidden = !values.split(',').includes(String(spec[key]));
+  }
   const ral = spec.frontMaterial === 'ral';
   $('#row-frontDecor').hidden = ral;
   $('#row-frontRal').hidden = !ral;

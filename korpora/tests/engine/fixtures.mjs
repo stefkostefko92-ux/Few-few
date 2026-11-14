@@ -47,6 +47,9 @@ export const OUTPUT_SPECS = [
   { type: 'wardrobe', width: 3000, post: 'grbl', tool: 8, onion: false, hinge: 'fx:hettich' },
   { type: 'bed', mattressW: 900, footHeight: 0 },
   { type: 'kitchen', modules: 6, bandCompensation: false, hinge: 'fx:gtv' },
+  // Г and П kitchens: the walls in their own coordinates, the blind fronts, the worktop in pieces (kitchen.js)
+  { type: 'kitchen', shape: 'left', handle: 'fx:knob' },
+  { type: 'kitchen', shape: 'u', post: 'grbl', tool: 8 },
   { type: 'wardrobe', hinge: 'fx:salice' },
   { type: 'bookcase', columns: 3, hinge: 'fx:gtv' },
   // a free carcass that uses every kind of cell and front, wider than one carcass, on GRBL

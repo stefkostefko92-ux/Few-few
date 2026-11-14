@@ -37,6 +37,7 @@ svg.rdw .d-tvs{font:500 2.4px 'JetBrains Mono',ui-monospace,monospace;${LOCL};fi
 svg.rdw .d-tv.d-big{font:600 3.6px 'Geologica',system-ui,sans-serif;${LOCL}}
 svg.rdw .d-open{fill:none;stroke:${INK};stroke-width:.16;stroke-dasharray:1.2 1}
 svg.rdw .d-gnd{stroke:${INK};stroke-width:.35}
+svg.rdw .d-wall{stroke:${INK};stroke-width:1.1;stroke-linecap:square}
 svg.rdw .d-cpl{stroke:${INK};stroke-width:.25;stroke-dasharray:6 1 1 1}
 svg.rdw .d-cplt{stroke:${INK};stroke-width:.7}
 svg.rdw .d-cpa{stroke:${INK};stroke-width:.25}

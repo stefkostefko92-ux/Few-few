@@ -4,16 +4,20 @@ import { buildCarcass } from './carcass.js';
 import { buildBed, bedOuter } from './bed.js';
 import { buildDesk } from './desk.js';
 import { buildCustom } from './custom.js';
+import { buildKitchen, baseCabinet, wallCabinet, kitchenDims, SHAPES } from './kitchen.js';
 import { holeThrough, mark } from './panel.js';
-import { STOCK, frontStock } from './materials.js';
+import { STOCK } from './materials.js';
 import { HINGE_LIMITS } from './hardware.js';
-import { CONFIRMAT, FRONT_GAP_Z } from './joinery.js';
+import { CONFIRMAT } from './joinery.js';
 import { MAX_CARCASS_W } from './layout.js'; // wider wardrobes and free carcasses are split into several carcasses
 import { clamp, r1 } from './util.js';
 
 const R = (key, label, min, max, step, unit = 'mm') => ({ key, label, type: 'range', min, max, step, unit });
 const S = (key, label, options) => ({ key, label, type: 'seg', options });
 
+// The modules of a side wall: a range the form shows only for the shapes that have that wall (when).
+const sideWall = (key, label, shapes) => ({ ...R(key, label, 1, 6, 1, ''), when: { shape: shapes } });
+const SHAPE_LABELS = { line: 'Права', left: 'Г, вляво', right: 'Г, вдясно', u: 'П' };
 const FRONTS = S('fronts', 'Фронт', [['doors', 'Врати'], ['drawers', 'Чекмеджета'], ['mixed', 'Чекмедже + врати']]);
 const DOORS = S('doors', 'Врати', [[1, '1'], [2, '2']]);
 
@@ -37,12 +41,14 @@ export const TYPES = {
     params: [R('width', 'Ширина', 300, 1200, 1), R('height', 'Височина с крачетата', 1200, 2500, 1), R('depth', 'Дълбочина', 300, 650, 1), R('legs', 'Крачета', 0, 150, 5), DOORS, R('drawers', 'Чекмеджета отдолу', 0, 4, 1, ''), R('shelves', 'Рафтове', 0, 8, 1, '')],
     defaults: { width: 600, height: 2100, depth: 580, legs: 100, doors: 1, drawers: 0, shelves: 4 },
   },
+  // straight, Г (the side wall on the left or on the right) or П; the modules of the back wall do not count its corner
+  // cabinets (kitchen.js)
   kitchen: {
-    label: 'Кухня (ред)', group: 'Кухня и шкафове',
-    params: [R('modules', 'Модули', 2, 6, 1, ''), R('moduleWidth', 'Ширина на модул с врати', 400, 900, 10), R('drawerModuleWidth', 'Ширина на модул с чекмеджета', 400, 900, 10), R('height', 'Долни шкафове с крачетата', 820, 900, 1), R('depth', 'Дълбочина долни', 500, 600, 1), R('wallHeight', 'Горни шкафове', 500, 900, 10), R('mount', 'Горни от пода', 1350, 1700, 10)],
+    label: 'Кухня', group: 'Кухня и шкафове',
+    params: [S('shape', 'Форма', SHAPES.map((v) => [v, SHAPE_LABELS[v]])), R('modules', 'Модули', 2, 6, 1, ''), sideWall('modulesLeft', 'Модули на лявата стена', ['left', 'u']), sideWall('modulesRight', 'Модули на дясната стена', ['right', 'u']), R('moduleWidth', 'Ширина на модул с врати', 400, 900, 10), R('drawerModuleWidth', 'Ширина на модул с чекмеджета', 400, 900, 10), R('height', 'Долни шкафове с крачетата', 820, 900, 1), R('depth', 'Дълбочина долни', 500, 600, 1), R('wallHeight', 'Горни шкафове', 500, 900, 10), R('mount', 'Горни от пода', 1350, 1700, 10)],
     // the drawer module narrower than the door modules: with GTV H45 in a 560 mm carcass (NL 500) a drawer of a 600 mm
     // module would be wider than its slide (drawers.js); 500 keeps the box at 438,6 mm
-    defaults: { modules: 4, moduleWidth: 600, drawerModuleWidth: 500, height: 860, depth: 560, wallHeight: 720, mount: 1450 },
+    defaults: { shape: 'line', modules: 4, modulesLeft: 2, modulesRight: 2, moduleWidth: 600, drawerModuleWidth: 500, height: 860, depth: 560, wallHeight: 720, mount: 1450 },
     // a kitchen saved before drawerModuleWidth had all its modules moduleWidth wide: it opens as it was saved (the
     // GTV check then says what to change), never silently with a narrower drawer module than the customer drew
     legacy: { drawerModuleWidth: 'moduleWidth' },
@@ -139,36 +145,11 @@ const common = (s) => ({
   columnsParam: s.type === 'custom' || (TYPES[s.type]?.params.some((p) => p.key === 'columns') ?? false),
 });
 
-function baseCabinet(ctx, s, at = {}) {
-  const fronts = s.fronts;
-  const col = { shelves: fronts === 'drawers' ? 0 : s.shelves, doors: fronts === 'drawers' ? 0 : s.doors };
-  if (fronts === 'drawers') Object.assign(col, { drawers: s.drawers, drawerZone: s.height - s.legs });
-  // a base cabinet with a drawer and a door: the drawer at the top, under the worktop
-  if (fronts === 'mixed') Object.assign(col, { drawers: 1, drawerZone: 180, drawersOnTop: true });
-  return buildCarcass(ctx, { ...common(s), ...at, W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'rails', columns: [col] });
-}
-
-function wallCabinet(ctx, s, at = {}) {
-  return buildCarcass(ctx, { ...common(s), kind: 'wall', ...at, W: s.width, H: s.height, D: s.depth, y0: at.y0 ?? s.mount, plinth: { type: 'none', h: 0 }, top: 'between', mount: 'wall', columns: [{ shelves: s.shelves, doors: s.doors }] });
-}
-
 export const BUILDERS = {
-  base: (ctx, s) => baseCabinet(ctx, s),
-  wall: (ctx, s) => wallCabinet(ctx, s),
+  base: (ctx, s) => baseCabinet(ctx, s, common(s)),
+  wall: (ctx, s) => wallCabinet(ctx, s, common(s)),
   tall: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'between', visibleTop: true, columns: [{ shelves: s.shelves, doors: s.doors, drawers: s.drawers }] }),
-  kitchen: (ctx, s) => {
-    // each base module with the wall cabinet of the same width above it
-    let x0 = 0;
-    kitchenModules(s).forEach(({ width: w, drawers }, i) => {
-      const doors = w > 500 ? 2 : 1;
-      baseCabinet(ctx, { ...s, width: w, legs: 100, fronts: drawers ? 'drawers' : 'doors', doors, drawers: 3, shelves: 1 }, { module: `М${i + 1}`, x0 });
-      wallCabinet(ctx, { ...s, width: w, height: s.wallHeight, depth: 320, doors, shelves: 2 }, { module: `Г${i + 1}`, x0, y0: s.mount });
-      x0 += w;
-    });
-    const wd = worktopDepth(s);
-    ctx.hw('worktop', { name: `Работен плот 38 mm, ${x0} × ${wd} mm (поръчка)`, qty: 1, unit: 'бр.', group: 'Покупни' });
-    ctx.symbols.push({ type: 'worktop', x0: 0, x1: x0, y: s.height, z0: 0, z1: wd, t: 38 });
-  },
+  kitchen: (ctx, s) => buildKitchen(ctx, s, common(s)),
   wardrobe: (ctx, s) => {
     // wide wardrobes become several carcasses side by side (transportable, tops and bottoms fit the sheet); the columns
     // are shared out exactly as asked and every carcass is as wide as its columns
@@ -263,17 +244,11 @@ function joinStacked(ctx, lower, upper) {
   ctx.hw('stackScrews', { name: 'Винт за ПДЧ 4×30 (горен към долен корпус)', qty: pts.length, unit: 'бр.', group: 'Крепежи' });
 }
 
-// Kitchen modules from the left: every third one from the second has the drawers and its own width, the others doors.
-export const kitchenModules = (s) => Array.from({ length: s.modules }, (_, i) => (i % 3 === 1 ? { drawers: true, width: s.drawerModuleWidth } : { drawers: false, width: s.moduleWidth }));
-
-// The kitchen worktop reaches 20–29 mm past the closed fronts (carcass, 1 mm gap, front), in whole centimetres.
-const WORKTOP_OVERHANG = 20;
-function worktopDepth(s) {
-  return Math.ceil((s.depth + FRONT_GAP_Z + STOCK[frontStock(s).stock].thickness + WORKTOP_OVERHANG) / 10) * 10;
-}
+export { kitchenModules } from './kitchen.js';
 
 // The overall size people read (title bar, drawing frame, project list): a wall cabinet shows its own height, not its
-// top edge above the floor; a kitchen, from the floor to the top of its wall cabinets. Numbers only — every caller adds
+// top edge above the floor; a kitchen, from the floor to the top of its wall cabinets, and as deep as its worktop or
+// its longest side wall. Numbers only — every caller adds
 // its own words.
 export function typeDims(type, s) {
   switch (type) {
@@ -282,7 +257,7 @@ export function typeDims(type, s) {
       return { W, H: s.headHeight, D };
     }
     case 'kitchen':
-      return { W: kitchenModules(s).reduce((a, m) => a + m.width, 0), H: s.mount + s.wallHeight, D: worktopDepth(s) };
+      return kitchenDims(s);
     default:
       return { W: s.width, H: s.height, D: s.depth };
   }

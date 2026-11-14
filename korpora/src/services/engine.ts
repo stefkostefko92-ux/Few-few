@@ -76,6 +76,8 @@ export interface TypeParam {
   /** Мерната единица до етикета на полето (`mm`); празна при брой. */
   unit?: string;
   options?: ReadonlyArray<readonly [unknown, string]>;
+  /** Полето се показва само при тези стойности на друго поле (модулите на страничните стени на кухнята). */
+  when?: Readonly<Record<string, readonly unknown[]>>;
 }
 
 interface EngineApi {
