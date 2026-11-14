@@ -111,6 +111,18 @@ ZIP отпреди месец.
   Health на `127.0.0.1:8788/healthz`. Еднократно: DNS A запис, `.env` с
   `OSPEDALI_ADMIN_PASSWORD`+`OSPEDALI_SESSION_SECRET`, Nginx vhost + certbot →
   `ospedalitrasparenti/deploy/DEPLOY.md`.
+- **fivem** (Thraex PVP): Docker Compose модел като zabobovdol. Пренася `FiveM/.env`
+  (при пръв деплой го **генерира** с random `POSTGRES_PASSWORD` и random админ парола —
+  паролата се показва ВЕДНЪЖ в изхода, в `.env` стои само scrypt хешът ѝ), симлинква
+  `FiveM/backups` към `/opt/few-few/shared/fivem/backups`, после `FiveM/scripts/deploy.sh`:
+  `pg_dump` бекъп **преди** миграцията (празен бекъп = спиране), `up -d --build`, чакане на
+  базата, `prisma migrate deploy`, и първоначално напълване от публичния списък на Cfx.re
+  **само при празна таблица**. Health на `127.0.0.1:3010/api/health`; при успех — IndexNow
+  ping през `tools/seo/indexnow.mjs` (директорията се мени при всяко откриване).
+  Еднократно: DNS A запис, Nginx vhost от `FiveM/deploy/nginx.conf` (**стрипва
+  `CF-Connecting-IP`/`X-Forwarded-For` — това е защита, не настройка**) + certbot, и
+  `RESEND_API_KEY` в `.env`, иначе уведомленията по чл. 16/17 DSA не тръгват →
+  `FiveM/DEPLOY.md`.
 - **panev** (Panev Ascensori): systemd модел като medqr/vizitka. `rsync panev/ → /opt/panev`
   (изключва `data/` — SQLite базата, `node_modules/`, `.env`), `npm ci --omit=dev`,
   сийд **само при липсваща база** (админ + каталог за `/admin`), снимка на базата преди
@@ -150,6 +162,13 @@ ZIP отпреди месец.
   същото, затова откат няма; скриптът сочи последния дъмп и вика човек → `korpora/DEPLOY.md`:
   обикновено `migrate resolve --rolled-back` (PostgreSQL е върнал миграцията цялата), а
   възстановяване от дъмпа — само ако данните трябва да се върнат.
+- **rilievi** (схемите за оглед на асансьори): моделът на korpora — Docker Compose (db + app на
+  `127.0.0.1:4330`), стъпките са в `rilievi/deploy/deploy.sh`: тайните от
+  `/opt/few-few/shared/rilievi/.env` (прави ги веднъж `rilievi/deploy/setup-env.sh`; без тях rilievi
+  се пропуска като „още ненастроен“), `pg_dump` преди смяната, сонда с маркер `"app":"rilievi"`,
+  дневен бекъп (`rilievi-backup.timer`), vhost-ът от репото щом има сертификат. Откатът е към
+  `RILIEVI_LAST_GOOD` с `RILIEVI_SKIP_BACKUP=1`; при провалена миграция — човек → `rilievi/DEPLOY.md`.
+  Първият MASTER — веднъж с `rilievi/deploy/create-master.sh`; останалите само с покана.
 - **vpsdash** (VPS таблото): systemd модел. `rsync` към `/opt/vps-dashboard` (конфигът
   `/etc/vps-dashboard/config.json` и state `/var/lib/vps-dashboard` са извън release-а и оцеляват;
   `deploy/desktop/desktop.env` се пази), бекъп на кода, рестарт, health на `/api/ping` (401 = жив,
@@ -163,7 +182,9 @@ ZIP отпреди месец.
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fivem` | кои проекти да се разгръщат тук |
+| `FIVEM_HEALTH_URL` | `http://127.0.0.1:3010/api/health` | health на fivem |
+| `FIVEM_DOMAIN` | `thraex.carbonstealth.eu` | домейн на fivem (за `.env` и IndexNow) |
 | `PANEV_DIR` | `/opt/panev` | път на panev (systemd) |
 | `PANEV_ENV` | `/etc/panev/panev.env` | тайните на panev (600, `EnvironmentFile`) |
 | `PANEV_HEALTH_URL` | `http://127.0.0.1:4102/api/health` | health на panev |
@@ -174,6 +195,7 @@ ZIP отпреди месец.
 | `PIUMA_ENV` / `PIUMA_HEALTH_URL` | `/opt/few-few/shared/piuma/.env` · `http://127.0.0.1:4310/health` (портът се чете от `HTTP_PORT` в `.env`) | тайните и health на piuma |
 | `KORPORA_LAST_GOOD` | `/opt/few-few/shared/korpora/last-good` | пътят на последния release на korpora, който е отговорил — към него е откатът |
 | `KORPORA_SHARED` · `KORPORA_HEALTH_WAIT` · `KORPORA_INDEXNOW` | `/opt/few-few/shared/korpora` · `90` · `1` | тайни/бекъпи/данни (и за `autodeploy.sh`: къде са дъмповете), секунди за сондата, IndexNow |
+| `RILIEVI_SHARED` · `RILIEVI_LAST_GOOD` · `RILIEVI_HEALTH_WAIT` | `/opt/few-few/shared/rilievi` · `…/last-good` · `90` | тайни и бекъпи на rilievi, последният работещ release (целта на отката), секунди за сондата |
 | `VPSDASH_DIR` / `VPSDASH_SERVICE` / `VPSDASH_HEALTH_URL` | `/opt/vps-dashboard` · `vps-dashboard` · `http://127.0.0.1:7700/api/ping` | път, systemd услуга и health на VPS таблото |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
 | `FORCE_SEED` | `0` | принудителен сийд на zabobovdol |

@@ -32,9 +32,18 @@ function fixtureProject() {
   return root;
 }
 
-function runCapture(root, learnBlock) {
+// Агентът е отворил източниците си (31.10.2026: „verified“ иска източник, отворен в рън-а —
+// source-provenance.mjs). `opened: false` моделира агент, който цитира, без да е чел.
+function openers(learnBlock) {
+  return [...learnBlock.matchAll(/^\s*source:\s*(.+)$/gm)].map((m) => m[1].trim()).map((src) =>
+    JSON.stringify({ type: "assistant", message: { role: "assistant", content: [/^https?:/.test(src)
+      ? { type: "tool_use", name: "WebFetch", input: { url: src } }
+      : { type: "tool_use", name: "Read", input: { file_path: src.replace(/:\d.*$/, "") } }] } }));
+}
+function runCapture(root, learnBlock, { opened = true } = {}) {
   const transcript = join(root, "t.jsonl");
-  writeFileSync(transcript, JSON.stringify({ type: "assistant", message: { role: "assistant", content: [{ type: "text", text: learnBlock }] } }) + "\n");
+  const lines = [...(opened ? openers(learnBlock) : []), JSON.stringify({ type: "assistant", message: { role: "assistant", content: [{ type: "text", text: learnBlock }] } })];
+  writeFileSync(transcript, lines.join("\n") + "\n");
   return spawnSync(process.execPath, [HOOK], {
     input: JSON.stringify({ transcript_path: transcript }),
     encoding: "utf8", timeout: 20000,
@@ -57,6 +66,17 @@ test("verified поука с реален източник СЕ ЗАПИСВА �
     const dash = JSON.parse(readFileSync(join(root, "agents-dashboard", "agents.json"), "utf8"));
     const evo = dash.agents[0].evolution;
     assert.notEqual(evo[evo.length - 1].version, "0.1.0", "проверено учене трябва да вдига версията");
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test("«verified» с правдоподобен, но НЕотворен източник пада в Карантина (31.10.2026)", () => {
+  const root = fixtureProject();
+  try {
+    const r = runCapture(root, BLOCK("verified", "https://web.dev/articles/lcp"), { opened: false });
+    assert.equal(r.status, 0, r.stderr);
+    const [proven, quarantine = ""] = readFileSync(join(root, ".claude", "agents", "_memory", "testagent.md"), "utf8").split("## Карантина");
+    assert.doesNotMatch(proven, /тестова поука за регресията/, "сглобен, непрочетен адрес не е проверен източник");
+    assert.match(quarantine, /тестова поука за регресията/, "поуката не се губи — отива в Карантина");
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 

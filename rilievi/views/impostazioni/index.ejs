@@ -1,0 +1,26 @@
+<%
+  // Настройките на фирмата — картите на разделите със състоянието им (routes/impostazioni.ts); всеки
+  // раздел е своя страница.
+%><%- include('../partials/top', { titleKey: 'impostazioni.title' }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('impostazioni.title') %></h1>
+    <p class="page-head__sub"><%= azienda.name %></p>
+  </div>
+</div>
+<div class="stack-gap">
+  <%- include('_scelta', { azione: '/impostazioni' }) %>
+  <ul class="impostazioni-hub">
+    <% for (const s of sezioni) { %><li><a class="impostazioni-carta" href="<%= pathSezione(s, azienda.id) %>">
+      <span class="impostazioni-carta__icona"><%- include('../partials/icon', { name: icone[s] }) %></span>
+      <span class="impostazioni-carta__testo">
+        <span class="impostazioni-carta__titolo"><%= t('impostazioni.pagine.' + s + '.titolo') %></span>
+        <span class="impostazioni-carta__desc"><%= t('impostazioni.pagine.' + s + '.desc') %></span>
+        <span class="impostazioni-carta__stato"><%= riepilogo[s] %></span>
+      </span>
+      <%- include('../partials/icon', { name: 'chevron' }) %>
+    </a></li>
+    <% } %>
+  </ul>
+</div>
+<%- include('../partials/bottom') %>

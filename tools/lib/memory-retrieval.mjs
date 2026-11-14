@@ -20,7 +20,7 @@
 import { readFileSync, openSync, readSync, fstatSync, closeSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { classify } from "../agents/memory-freshness.mjs";
-import { sectionLessons } from "./memory-core.mjs";
+import { sectionBlocks } from "./memory-core.mjs";
 
 // ─── думи ─────────────────────────────────────────────────────────────────────────────────────
 // Кратки служебни думи са отрязани по дължина (>2); тук са по-дългите, които не носят смисъл.
@@ -135,7 +135,7 @@ export function crossAgentPicks(memDir, selfId, task, { k = 3, top = 12, budget 
   for (const f of files) {
     const agent = f.replace(/\.md$/, "");
     let txt = ""; try { txt = readFileSync(join(memDir, f), "utf8"); } catch { continue; }
-    for (const line of sectionLessons(txt, "verified")) corpus.push({ agent, line });
+    for (const line of sectionBlocks(txt, "verified")) corpus.push({ agent, line }); // цели поуки, не само първия ред
   }
   if (!corpus.length) return [];
   const ranked = rank(corpus.map((c) => c.line), task, { today });

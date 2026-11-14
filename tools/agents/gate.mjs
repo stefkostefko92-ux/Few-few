@@ -27,11 +27,16 @@ const SERIAL = argv.includes("--serial");
 const CHECKS = [
   // Пръв по ред: ако наш файл не се парсва, всички следващи проверки падат по объркваща причина.
   { id: "syntax", desc: "всеки наш .mjs се парсва (права кавичка в „ … “ чупи низа)", cmd: ["tools/lib/syntax-check.mjs"] },
+  // 2026-10-27: агентите 3 месеца не виждаха паметта и процедурата при зелени тестове — те мереха какво
+  // връща куката, не какво вижда агентът. Промяна по агентския слой минава само с жива проверка.
+  { id: "live-fresh", desc: "агентският слой е проверен НА ЖИВО след последната си промяна (live-gate.mjs: проба на контекста + pass^k)", cmd: ["tools/agents/live-gate.mjs", "--check"] },
+  { id: "doctrine-skill", desc: "умението agent-doctrine е байт в байт _memory/SECURITY.md + PROCEDURE.md (то носи доктрината до агентите)", cmd: ["tools/agents/doctrine-skill.mjs"] },
   { id: "oversee", desc: "надзор над екипа (цялост дефиниция↔памет↔agents.json↔settings)", cmd: ["tools/agents/oversee.mjs"] },
   { id: "deep-audit", desc: "дупки: регистър↔дефиниция · инжекции · счупени препратки · продукти", cmd: ["tools/agents/deep-audit.mjs", "--check"] },
   { id: "drift-lint", desc: "счупени референции + бройка/ростер consistency", cmd: ["tools/agents/drift-lint.mjs"] },
   { id: "eval-check", desc: "структурна валидност на golden spec-овете (без агент)", cmd: ["tools/agents/evals/eval.mjs", "--check"] },
   { id: "invariant-check", desc: "критичните method/safety котви на домейн-собствениците са в материала (детерм. behavioral слой)", cmd: ["tools/agents/invariant-check.mjs", "--check"] },
+  { id: "teams", desc: "екипите: всеки агент в точно един екип, поток ≤3 стъпки с човешка точка, 45 тестови задачи рутират вярно, _teams.md свеж", cmd: ["tools/agents/teams.mjs", "--check"] },
   { id: "coverage", desc: "покритие на домейни (картата не сочи несъществуващи агенти)", cmd: ["tools/agents/coverage.mjs", "--json"], quiet: true },
   { id: "skills-lint", desc: "skills frontmatter/name/тяло + правилата от наръчника на Anthropic", cmd: ["tools/skills/lint.mjs"] },
   { id: "skill-triggers", desc: "всяко умение има тригер-случаи и описание, което ги „чува“", cmd: ["tools/skills/trigger-check.mjs", "--check"] },
@@ -59,7 +64,7 @@ const CHECKS = [
   // числови противоречия, застаряване) е ~11s O(n²) и иска ЧОВЕШКО решение — не влиза в пътя на PR.
   // 2026-09-23: изборът при старт гледаше само първите 40 реда → 27–32% от проверените поуки изобщо
   // можеха да стигнат до агента; никой не го мереше. Гейтва ДОСТИЖИМОСТТА (задача = самата поука).
-  { id: "memory-recall", desc: "всяка проверена поука може да стигне до агента (достижимост ≥95%)", cmd: ["tools/agents/memory-recall.mjs", "--check"] },
+  { id: "memory-recall", desc: "всяка проверена поука може да стигне до агента (достижимост ≥95%; само по обхвата ≥90%)", cmd: ["tools/agents/memory-recall.mjs", "--check"] },
   { id: "memory-curate", desc: "паметта няма ТОЧНИ дубли (една поука, записана два пъти)", cmd: ["tools/memory/curate.mjs", "--check"] },
   // Кръг 13: `quarantine-review.mjs` съществуваше и НЕ беше пускан нито веднъж — затова беше
   // невидимо, че 343 от 514 карантинирани поуки (67%) носят източник, който ДНЕС минава проверката
@@ -83,6 +88,9 @@ const CHECKS = [
   // по-бързо, отколкото CI приключва. Сега main сам се лекува през `docs-sync.yml` (регенерира и
   // комитва), а тук пазим само видимостта. Не го връщай на задължителен, без да махнеш авто-синхрона.
   { id: "docs-fresh", desc: "docs.js (таблото) отразява реалните CLAUDE.md — main се лекува сам чрез docs-sync.yml", cmd: ["tools/docs/collect-claude-md.mjs", "--check"], required: false },
+  // Съветващо (31.10.2026): оценка на тавана не различава по-добро от по-лошо (claude.dev, 28.09.2026).
+  { id: "headroom", desc: "оценките имат запас (не всички spec-ове са на 100% от записи насам)", cmd: ["tools/agents/evals/headroom.mjs", "--strict"], required: false },
+  { id: "fold-audit", desc: "няма двойка агенти, която почти винаги върви заедно (кандидат за сливане)", cmd: ["tools/agents/fold-audit.mjs"], required: false },
 ];
 
 if (LIST) {

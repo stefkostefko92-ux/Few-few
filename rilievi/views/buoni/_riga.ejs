@@ -1,0 +1,46 @@
+<%
+  // Ред с работа (`seq-<i>-…`): описание, изход OK / NON OK, ден, доставчик и подпис по избор. Подписаният
+  // ред се чете само (стойностите пътуват скрити) — за промяна подписът се маха първо. В <template> за
+  // „Aggiungi una sequenza“ — `i` и `n` са „__i__“ и „__n__“ (public/js/buoni.js ги сменя).
+  const p = 'seq-' + i + '-';
+  const v = (k) => typeof values[p + k] === 'string' ? values[p + k] : '';
+  const id = v('id');
+  const err = (k) => errors[p + k] ? messageOf(p + k) : '';
+  const aria = (k) => errors[p + k] ? ' aria-invalid="true" aria-describedby="err-' + p + k + '"' : '';
+  const esitoLabel = (e) => e === 'ok' ? t('buoni.esito.ok') : e === 'nonOk' ? t('buoni.esito.nonOk') : '—';
+%><fieldset class="buono-riga<%= firmata ? ' buono-riga--firmata' : '' %>" id="<%= id ? 'riga-' + id : 'seq-' + i %>" data-buono-riga>
+  <legend class="buono-riga__titolo"><%= t('buoni.riga.titolo', { n }) %></legend>
+  <% if (id) { %><input type="hidden" name="<%= p %>id" value="<%= id %>"><% } %>
+  <% if (firmata) { %>
+  <% for (const k of ['descrizione', 'esito', 'data', 'fornitore']) { %><input type="hidden" name="<%= p + k %>" value="<%= v(k) %>">
+  <% } %>
+  <dl class="buono-letta">
+    <div class="buono-letta__wide"><dt><%= t('buoni.riga.descrizione') %></dt><dd><%= v('descrizione') || '—' %></dd></div>
+    <div><dt><%= t('buoni.riga.esito') %></dt><dd><%= esitoLabel(v('esito')) %></dd></div>
+    <div><dt><%= t('buoni.riga.data') %></dt><dd><%= v('data') ? fmt.day(new Date(v('data') + 'T00:00:00Z')) : '—' %></dd></div>
+    <div><dt><%= t('buoni.riga.fornitore') %></dt><dd><%= v('fornitore') || '—' %></dd></div>
+  </dl>
+  <p class="field__hint"><%= t('buoni.firma.bloccata') %></p>
+  <%- include('_firma-fatta', { stato: firmata, name: p + 'firma', posto: 's-' + id, label: t('buoni.riga.firma'), puoTogliere: true, errore: err('firma') }) %>
+  <% } else { %>
+  <div class="grid buono-riga__campi">
+    <div class="field field--wide">
+      <label class="field__label" for="f-<%= p %>descrizione"><%= t('buoni.riga.descrizione') %></label>
+      <textarea class="textarea" id="f-<%= p %>descrizione" name="<%= p %>descrizione" rows="2" maxlength="<%= max.descrizione %>"<%- aria('descrizione') %>><%= v('descrizione') %></textarea>
+      <% if (err('descrizione')) { %><p class="field__error" id="err-<%= p %>descrizione"><%= err('descrizione') %></p><% } %>
+    </div>
+    <%- include('_scelta', { name: p + 'esito', legend: t('buoni.riga.esito'), opzioni: [{ value: 'ok', label: t('buoni.esito.ok') }, { value: 'nonOk', label: t('buoni.esito.nonOk') }], message: err('esito') }) %>
+    <div class="field">
+      <label class="field__label" for="f-<%= p %>data"><%= t('buoni.riga.data') %></label>
+      <input class="input" id="f-<%= p %>data" name="<%= p %>data" type="date" min="1950-01-01" max="2099-12-31" value="<%= v('data') %>"<%- aria('data') %>>
+      <% if (err('data')) { %><p class="field__error" id="err-<%= p %>data"><%= err('data') %></p><% } %>
+    </div>
+    <div class="field">
+      <label class="field__label" for="f-<%= p %>fornitore"><%= t('buoni.riga.fornitore') %></label>
+      <input class="input" id="f-<%= p %>fornitore" name="<%= p %>fornitore" type="text" maxlength="<%= max.fornitore %>" autocomplete="off" value="<%= v('fornitore') %>"<%- aria('fornitore') %>>
+      <% if (err('fornitore')) { %><p class="field__error" id="err-<%= p %>fornitore"><%= err('fornitore') %></p><% } %>
+    </div>
+  </div>
+  <%- include('_firma-pad', { name: p + 'firma', label: t('buoni.riga.firma'), value: v('firma'), errore: err('firma') }) %>
+  <% } %>
+</fieldset>

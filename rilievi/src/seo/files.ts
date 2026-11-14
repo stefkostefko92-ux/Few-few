@@ -1,0 +1,149 @@
+import { testiAggiornati } from '../legale/versioni.js';
+import {
+  COMPANY,
+  CONTENT_UPDATED,
+  ESPORTAZIONE_UPDATED,
+  PREZZI_UPDATED,
+  PRIVACY_UPDATED,
+  SEGNALAZIONI_UPDATED,
+} from '../company.js';
+import { DEFAULT_LOCALE, translate } from '../i18n.js';
+import { INVITE_DAYS } from '../services/invites.js';
+import { vociAttive } from '../novita/attive.js';
+import { ULTIMO_AGGIORNAMENTO } from '../novita/voci.js';
+import { FAQ_IDS, SERVIZI, sheetCounts, sheetLegend } from '../site/landing.js';
+import { VERSIONE_SOFTWARE } from '../versione.js';
+import {
+  CONDIZIONI_PATH,
+  CONDIZIONI_PDF_PATH,
+  ESPORTAZIONE_PATH,
+  FEED_NOVITA_PATH,
+  HOME_PATH,
+  NOVITA_PATH,
+  PREZZI_PATH,
+  PRIVACY_PATH,
+  PUBLIC_PATHS,
+  SEGNALAZIONI_PATH,
+  STATO_PATH,
+  type PublicPath,
+} from './paths.js';
+
+/**
+ * robots.txt, sitemap.xml и llms.txt — чисти функции от публичния адрес, без сървъра (тестват се сами).
+ */
+
+/**
+ * Обхождат се само публичните страници. Входът, „забравена парола“ и `/app` са разрешени, за да види
+ * търсачката техния `noindex` (забранена страница пак може да излезе като гол адрес); всичко останало
+ * е частно. `$` значи „точно този адрес“ — `/accesso?next=…` вече не е разрешен.
+ */
+export function robotsTxt(base: string, indexNowKey: string): string {
+  return [
+    'User-agent: *',
+    ...PUBLIC_PATHS.map((path) => `Allow: ${path}$`),
+    'Allow: /accesso$',
+    `Allow: ${STATO_PATH}$`,
+    'Allow: /password-dimenticata$',
+    // „Installa l'app“ е публична с `noindex` — роботът трябва да влезе, за да го види.
+    'Allow: /app$',
+    // Емисията на новините (RSS) — за читателите на емисии и за търсачките.
+    `Allow: ${FEED_NOVITA_PATH}`,
+    // Условията като PDF — за запазване преди приемането.
+    `Allow: ${CONDIZIONI_PDF_PATH}$`,
+    'Allow: /static/',
+    'Allow: /favicon.ico',
+    'Allow: /sitemap.xml',
+    'Allow: /llms.txt',
+    'Allow: /indexnow-key.txt',
+    `Allow: /${indexNowKey}.txt`,
+    'Disallow: /',
+    '',
+    `Sitemap: ${base}/sitemap.xml`,
+    '',
+  ].join('\n');
+}
+
+const PAGE_META: Record<PublicPath, { priority: string; freq: string; updated: string }> = {
+  [HOME_PATH]: { priority: '1.0', freq: 'monthly', updated: CONTENT_UPDATED },
+  [PRIVACY_PATH]: { priority: '0.3', freq: 'yearly', updated: PRIVACY_UPDATED },
+  [NOVITA_PATH]: { priority: '0.6', freq: 'weekly', updated: ULTIMO_AGGIORNAMENTO },
+  // Getter: новата версия на условията влиза сама в полунощ (legale/versioni.ts).
+  [CONDIZIONI_PATH]: {
+    priority: '0.3',
+    freq: 'yearly',
+    get updated() {
+      return testiAggiornati();
+    },
+  },
+  [ESPORTAZIONE_PATH]: { priority: '0.4', freq: 'monthly', updated: ESPORTAZIONE_UPDATED },
+  [PREZZI_PATH]: { priority: '0.8', freq: 'monthly', updated: PREZZI_UPDATED },
+  [SEGNALAZIONI_PATH]: { priority: '0.2', freq: 'yearly', updated: SEGNALAZIONI_UPDATED },
+};
+
+/** Всяка публична страница — един адрес, без езикови варианти. */
+export function sitemapXml(base: string): string {
+  const urls = PUBLIC_PATHS.map((path) => {
+    const meta = PAGE_META[path];
+    return `  <url>\n    <loc>${base}${path}</loc>\n    <lastmod>${meta.updated}</lastmod>\n    <changefreq>${meta.freq}</changefreq>\n    <priority>${meta.priority}</priority>\n  </url>`;
+  });
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`;
+}
+
+/** llms.txt — кратко описание за AI търсачките на езика на сайта, само с факти, които казва и страницата. */
+export function llmsTxt(base: string, contactEmail: string): string {
+  const it = (key: string, params: Record<string, string | number> = {}) =>
+    translate(DEFAULT_LOCALE, key, params);
+  const counts = sheetCounts();
+  const sections = sheetLegend((key) => it(key))
+    .map((section) => section.title)
+    .join(', ');
+  const roles = ['ADMIN', 'DIREZIONE', 'RESPONSABILE', 'TECNICO', 'OPERATORE', 'CLIENTE']
+    .map((role) => it(`role.${role}`))
+    .join(', ');
+  return [
+    '# Rilievi Impianti by Carbon Stealth',
+    '',
+    `> Rilievi Impianti è un portale web in cui le aziende di ascensori compilano la scheda di rilievo di un impianto esistente, la ritrovano e la stampano. ${it('site.hero.note')}`,
+    '',
+    `${it('versione.titolo')}: ${VERSIONE_SOFTWARE}. Ultimo aggiornamento: ${CONTENT_UPDATED}.`,
+    'Lingua: solo italiano. Accesso: su richiesta. Prova: un mese gratuito.',
+    '',
+    '## Pagine',
+    `- [Rilievi Impianti](${base}${HOME_PATH}): ${it('site.meta.description')}`,
+    `- [${it('prezzi.titolo')}](${base}${PREZZI_PATH}): ${it('prezzi.meta.description')}`,
+    `- [${it('novita.titolo')}](${base}${NOVITA_PATH}): ${it('novita.meta.description')}`,
+    `- [${it('privacy.title')}](${base}${PRIVACY_PATH})`,
+    `- [${it('legale.pagina.title')}](${base}${CONDIZIONI_PATH}): ${it('legale.pagina.metaDescription')}`,
+    `- [${it('esportazione.pagina.titolo')}](${base}${ESPORTAZIONE_PATH}): ${it('esportazione.pagina.meta.description')}`,
+    `- [${it('segnalazioni.titolo')}](${base}${SEGNALAZIONI_PATH}): ${it('segnalazioni.meta.description')}`,
+    `- [${it('stato.nav')}](${base}${STATO_PATH})`,
+    `- [${it('novita.titolo')} (RSS)](${base}${FEED_NOVITA_PATH})`,
+    '',
+    '## Fatti',
+    `- La scheda: ${counts.fields} campi in ${counts.sections} sezioni, nell'ordine della scheda di carta: ${sections}.`,
+    `- ${it('site.features.search.text')}`,
+    `- ${it('site.features.print.text')}`,
+    `- ${it('site.features.orders.text')}`,
+    `- ${it('site.features.misure.text')}`,
+    ...SERVIZI.map((id) => `- ${it(`site.servizi.${id}.title`)}: ${it(`site.servizi.${id}.text`)}`),
+    `- ${it('site.roles.lead')} Ruoli: ${roles}. ${it('site.roles.note')}`,
+    `- ${it('site.steps.s3.title')}. ${it('site.steps.s3.text', { days: INVITE_DAYS })}`,
+    `- ${it('esportazione.pagina.lead')} ${it('esportazione.pagina.costi.testo')}`,
+    `- ${it('prezzi.lead')} ${it('prezzi.come.rinnovo')}`,
+    '',
+    `## ${it('novita.titolo')}`,
+    ...vociAttive()
+      .slice(0, 5)
+      .map(
+        (v) =>
+          `- ${v.data}, ${it(`novita.voci.${v.id}.area`)}: ${it(`novita.voci.${v.id}.titolo`)}. ${it(`novita.voci.${v.id}.testo`)}`,
+      ),
+    '',
+    `## ${it('site.faq.title')}`,
+    ...FAQ_IDS.map((id) => `- ${it(`site.faq.${id}.q`)} ${it(`site.faq.${id}.a`)}`),
+    '',
+    '## Azienda',
+    `- [${COMPANY.name}](${COMPANY.url}), ${it('company.legalForm')}, ${it('company.eikLabel')} ${COMPANY.eik}, ${it('company.vatLabel')} ${COMPANY.vat}; ${it('company.street')}, ${COMPANY.postalCode} ${it('company.city')}, ${it('company.country')}; ${it('company.phoneLabel')} ${COMPANY.phones.map((p) => p.number).join(', ')}; ${contactEmail}`,
+    '',
+  ].join('\n');
+}

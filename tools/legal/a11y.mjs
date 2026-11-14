@@ -13,6 +13,7 @@
 
 import { launchChromium } from "../lib/browser.mjs";
 import { finish } from "../lib/emit.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 const IMPACT_ORDER = { critical: 0, serious: 1, moderate: 2, minor: 3 };
 
@@ -71,4 +72,4 @@ async function main() {
 }
 
 // CLI guard — тестът внася verdict(); код на върха на модула би убил тест-рънъра при import.
-if (import.meta.url === `file://${process.argv[1]}`) await main();
+if (isMain(import.meta.url)) await main();

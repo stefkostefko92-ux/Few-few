@@ -3,7 +3,7 @@
 export default {
   privacyPage: {
     title: 'Privacy notice',
-    updated: 'Last updated: July 2026',
+    updated: 'Last updated: November 2026',
     intro: 'Notice provided under Articles 13–14 of Regulation (EU) 2016/679 (“GDPR”) for users of panevascensori.it.',
     sections: [
       {
@@ -20,7 +20,7 @@ export default {
       },
       {
         h: 'Retention',
-        p: 'Messages are kept for a maximum of 24 months from the enquiry; in case of an order, commercial and tax documentation is kept for the statutory periods (10 years).',
+        p: 'Messages are kept for a maximum of 24 months from the enquiry; the IP address recorded with a message is deleted after 30 days; in case of an order, commercial and tax documentation is kept for the statutory periods (10 years).',
       },
       {
         h: 'Recipients',
@@ -46,7 +46,7 @@ export default {
       },
       {
         h: 'Shipping',
-        p: 'Free across Italy for orders above € 500 (excl. VAT); below that threshold shipping costs are borne by the customer and are stated in the order confirmation. Standard delivery 2 – 5 working days; express 24 – 48 h on request.',
+        p: 'Free across Italy for orders above € 500 (excl. VAT); below that threshold shipping costs are borne by the customer and are stated in the order confirmation. Standard delivery in about 2 – 3 working weeks; express in 1 week on request.',
       },
       {
         h: 'Payment',

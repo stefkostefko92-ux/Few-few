@@ -1,0 +1,13 @@
+<%- include('top', { bare: true }) %>
+<div class="auth">
+  <aside class="auth__panel" aria-label="Carbon Stealth VCC">
+    <div class="auth__brand">
+      <a class="auth__home" href="<%= landingPath %>"><%- include('logo', { classe: 'auth__logo', sizes: '(max-width: 899px) min(calc(100vw - 32px), 340px), 400px' }) %></a>
+      <p class="auth__by"><%= t('site.by') %></p>
+    </div>
+    <div class="auth__drawing"><%- include('../site/_shaft', { markers: false }) %></div>
+    <p class="auth__rule"><%= t('auth.inviteOnly') %></p>
+  </aside>
+  <div class="auth__main">
+    <%- include('flash') %>
+    <div class="auth__box">

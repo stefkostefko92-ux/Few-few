@@ -1,0 +1,72 @@
+<%
+  // Менюто (src/http/menu.ts — единственият списък; собственикът, 10 ноември 2026 — проучването на менюто):
+  // групите Impianti · Calcoli · Documenti · Amministrazione · Master, над тях търсенето на уредба (Ctrl K —
+  // public/js/cerca.js) и един „Nuovo“ за всичко, което човекът може да създаде (`<details>` — и без
+  // JavaScript). На компютър (от 1100 px) лентата стои вляво; на таблет — колона с иконите на главното; на
+  // телефон — лента долу (до четири места и „Menu“), която отстъпва на страниците с черната лента „Salva“;
+  // „Menu“ (и ☰ горе, когато лентата долу я няма) отваря цялата лента отляво (public/js/menu.js). Без
+  // JavaScript лентата е над съдържанието, отворена.
+  const menu = menuPer(can, typeof newRequests !== 'undefined' ? newRequests : 0);
+  const currentHref = correnteDi(menu.gruppi.flatMap((g) => g.voci.map((v) => v.href)), path);
+  const rapido = rapidoCorrente(menu, path);
+  // На страница от „Nuovo“ тя е „page“ в списъка му, а точката на групата ѝ — „true“ (там сме, но не на нея).
+  const correnteGruppo = menu.nuovo.some((v) => v.href === path) ? 'true' : 'page';
+  // Под името: Master; ролята и фирмата при една фирма; броят на фирмите при няколко.
+  const only = currentUser.memberships.length === 1 ? currentUser.memberships[0] : null;
+  const roleLine = currentUser.master
+    ? t('role.MASTER')
+    : only
+      ? ruolo(only.role, only.aziendaId) + ', ' + only.aziendaName
+      : t('nav.aziendeCount', { n: currentUser.memberships.length });
+%><header class="appbar">
+  <button type="button" class="appbar__menu" aria-controls="sidenav" aria-expanded="false" data-nav-open><%- include('icon', { name: 'menu' }) %><span class="visually-hidden"><%= t('nav.open') %></span></button>
+  <a class="brand" href="/schede"><%- include('brandmark') %><span class="brand__text"><span class="brand__name">Carbon Stealth VCC</span><span class="brand__product"><%= t('app.product') %></span></span></a>
+  <a class="btn btn--bar btn--sm appbar__account" href="/account" aria-label="<%= t('nav.account') %>"><%- include('icon', { name: 'user' }) %></a>
+</header>
+<div class="sidenav__backdrop" data-nav-close hidden></div>
+<div class="sidenav" id="sidenav" data-sidenav>
+  <div class="sidenav__head">
+    <a class="brand" href="/schede"><%- include('brandmark') %><span class="brand__text"><span class="brand__name">Carbon Stealth VCC</span><span class="brand__product"><%= t('app.product') %></span></span></a>
+    <button type="button" class="sidenav__close" data-nav-close><%- include('icon', { name: 'close' }) %><span class="visually-hidden"><%= t('nav.close') %></span></button>
+  </div>
+  <div class="sidenav__azioni">
+    <form class="sidecerca" method="get" action="/cerca" role="search">
+      <label class="visually-hidden" for="nav-cerca"><%= t('cerca.label') %></label>
+      <span class="sidecerca__box"><%- include('icon', { name: 'search' }) %><input class="sidecerca__campo" id="nav-cerca" name="q" type="search" placeholder="<%= t('cerca.label') %>" autocomplete="off" enterkeyhint="search" data-cerca-campo><kbd class="sidecerca__kbd" aria-hidden="true" data-cerca-kbd>Ctrl K</kbd></span>
+    </form>
+    <% if (menu.nuovo.length > 0) { %><details class="nuovo" data-nuovo>
+      <summary class="nuovo__btn"><%- include('icon', { name: 'plus' }) %><span><%= t('nav.nuovo') %></span><%- include('icon', { name: 'chevron' }) %></summary>
+      <ul class="nuovo__lista">
+        <% for (const voce of menu.nuovo) { %><li><a href="<%= voce.href %>"<% if (voce.href === path) { %> aria-current="page"<% } %>><%- include('icon', { name: voce.icon }) %><span><%= t(voce.key) %></span></a></li>
+        <% } %>
+      </ul>
+    </details><% } %>
+  </div>
+  <nav class="sidenav__nav" aria-label="<%= t('nav.label') %>">
+    <% for (const group of menu.gruppi) { %><p class="sidenav__group" id="nav-<%= group.key %>"><%= t('nav.group.' + group.key) %></p>
+    <ul aria-labelledby="nav-<%= group.key %>">
+      <% for (const item of group.voci) { %><li><a href="<%= item.href %>"<% if (item.href === currentHref) { %> aria-current="<%= correnteGruppo %>"<% } %>><%- include('icon', { name: item.icon }) %><span><%= t(item.key) %></span><% if (item.count) { %><span class="nav__count"><%= item.count %></span><% } %></a></li>
+      <% } %>
+    </ul>
+    <% } %>
+    <%# Приложението на началния екран (/app): скрито, когато порталът вече е отворен като приложение. %>
+    <ul class="sidenav__app" data-installa-link>
+      <li><a href="/app"<% if (path === '/app') { %> aria-current="page"<% } %>><%- include('icon', { name: 'download' }) %><span><%= t('installa.nav') %></span></a></li>
+    </ul>
+  </nav>
+  <a class="who" href="/account"<% if (path === '/account') { %> aria-current="page"<% } %>><%- include('icon', { name: 'user' }) %><span class="who__text"><span class="who__name"><%= currentUser.name %></span><span class="who__role"><%= roleLine %></span></span></a>
+</div>
+<nav class="rapida" aria-label="<%= t('nav.rapida') %>">
+  <ul>
+    <% for (const voce of menu.rapidi) { %><li><a class="rapida__voce<%= voce.href === '/nuovo' ? ' rapida__voce--nuovo' : '' %>" href="<%= voce.href %>"<% if (voce.href === rapido) { %> aria-current="page"<% } %>><%- include('icon', { name: voce.icon }) %><span><%= t(voce.key) %></span></a></li>
+    <% } %><li><a class="rapida__voce" href="#sidenav" aria-controls="sidenav" data-nav-open><%- include('icon', { name: 'menu' }) %><span><%= t('nav.menu') %></span></a></li>
+  </ul>
+</nav>
+<dialog class="palette" data-palette aria-labelledby="palette-titolo">
+  <form class="palette__form" method="get" action="/cerca" role="search">
+    <h2 class="visually-hidden" id="palette-titolo"><%= t('cerca.palette') %></h2>
+    <span class="palette__box"><%- include('icon', { name: 'search' }) %><input class="palette__campo" name="q" type="search" placeholder="<%= t('cerca.placeholder') %>" autocomplete="off" enterkeyhint="search" aria-label="<%= t('cerca.label') %>" aria-describedby="palette-aiuto" data-palette-campo><button class="palette__chiudi" type="button" data-palette-chiudi><kbd aria-hidden="true">Esc</kbd><span class="visually-hidden"><%= t('cerca.chiudi') %></span></button></span>
+  </form>
+  <div class="palette__risultati cerca" data-palette-risultati></div>
+  <p class="palette__aiuto" id="palette-aiuto"><%= t('cerca.aiuto') %></p>
+</dialog>

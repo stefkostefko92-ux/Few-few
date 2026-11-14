@@ -98,7 +98,6 @@
     "processingNote": "Na prodaje u trgovini obračunava se i naknada za obradu plaćanja: 1,9 % + €0,30 (pokriva kartičnog operatera).",
     "mostPopular": "Najpopularniji",
     "annualOffer": "Uštedi {percent} % uz godišnji plan",
-    "referralPercentNote": "Pozovi prijatelje i zaradi {percent} % od svake njihove uplate.",
     "vatNote": "Cijene su konačne — PDV je uključen gdje se primjenjuje."
   },
   "auth": {
@@ -374,7 +373,7 @@
   },
   "footer": {
     "company": "Proizvod tvrtke Carbon Stealth VCC",
-    "legalLine": "OIB BG208725180 · ul. Samuil 3, 2670 Bobov Dol, Bugarska",
+    "legalLine": "Matični broj (EIK) 208725180, PDV ID broj BG208725180 · ul. Samuil 3, 2670 Bobov Dol, Bugarska",
     "privacy": "Privatnost",
     "terms": "Uvjeti",
     "contact": "info@carbonstealth.eu",

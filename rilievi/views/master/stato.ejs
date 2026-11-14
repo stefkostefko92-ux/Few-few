@@ -1,0 +1,70 @@
+<%
+  // Съобщенията на /stato (routes/stato.ts): нова или промяна отгоре, после всички (най-новите отгоре).
+  // Прекъсване — краят е празен, докато трае; поддръжка — с начало и край. Часовете — по Рим.
+  const m = 'stato.master.';
+  const err = (k) => errors[k] ? t(m + 'errore.' + errors[k], { max: k === 'titolo' ? maxTitolo : maxTesto }) : '';
+  const aria = (k) => errors[k] ? ' aria-invalid="true" aria-describedby="err-' + k + '"' : '';
+%><%- include('../partials/top', { titleKey: 'stato.master.titolo' }) %>
+<div class="page-head">
+  <div>
+    <a href="/master"><%= t('master.console.title') %></a>
+    <h1><%= t(m + 'titolo') %></h1>
+    <p class="page-head__sub"><%= t(m + 'sub') %> <a href="/stato" target="_blank" rel="noopener"><%= t(m + 'apri') %></a></p>
+  </div>
+</div>
+<div class="stack-gap">
+  <form class="panel form" method="post" action="<%= id ? '/master/stato/' + id : '/master/stato' %>" novalidate>
+    <h2 class="section__title"><%= t(id ? m + 'modifica' : m + 'nuovo') %></h2>
+    <% if (Object.keys(errors).length) { %><div class="errors" role="alert" tabindex="-1"><h2><%= t(m + 'errore.titolo') %></h2></div><% } %>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <fieldset class="field">
+      <legend class="field__label"><%= t(m + 'tipo') %></legend>
+      <% for (const tipo of tipi) { %><label class="tick"><input type="radio" name="tipo" value="<%= tipo %>"<% if (values.tipo === tipo) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('stato.tipo.' + tipo) %></span></label>
+      <% } %>
+    </fieldset>
+    <div class="grid grid--righe">
+      <div class="field field--wide">
+        <label class="field__label" for="f-titolo"><%= t(m + 'campo.titolo') %></label>
+        <input class="input" id="f-titolo" name="titolo" type="text" maxlength="<%= maxTitolo %>" value="<%= values.titolo %>"<%- aria('titolo') %>>
+        <div class="field__piede"><% if (err('titolo')) { %><p class="field__error" id="err-titolo"><%= err('titolo') %></p><% } %></div>
+      </div>
+      <div class="field field--wide">
+        <label class="field__label" for="f-testo"><%= t(m + 'campo.testo') %></label>
+        <textarea class="textarea" id="f-testo" name="testo" rows="4" maxlength="<%= maxTesto %>"<%- aria('testo') %>><%= values.testo %></textarea>
+        <div class="field__piede"><p class="field__hint"><%= t(m + 'hint.testo') %></p><% if (err('testo')) { %><p class="field__error" id="err-testo"><%= err('testo') %></p><% } %></div>
+      </div>
+      <div class="field">
+        <label class="field__label" for="f-inizio"><%= t(m + 'campo.inizio') %></label>
+        <input class="input" id="f-inizio" name="inizio" type="datetime-local" value="<%= values.inizio %>"<%- aria('inizio') %>>
+        <div class="field__piede"><% if (err('inizio')) { %><p class="field__error" id="err-inizio"><%= err('inizio') %></p><% } %></div>
+      </div>
+      <div class="field">
+        <label class="field__label" for="f-fine"><%= t(m + 'campo.fine') %></label>
+        <input class="input" id="f-fine" name="fine" type="datetime-local" value="<%= values.fine %>"<%- aria('fine') %>>
+        <div class="field__piede"><p class="field__hint"><%= t(m + 'hint.fine') %></p><% if (err('fine')) { %><p class="field__error" id="err-fine"><%= err('fine') %></p><% } %></div>
+      </div>
+    </div>
+    <div class="toolbar">
+      <button class="btn btn--primary" type="submit"><%= t(m + 'salva') %></button>
+      <% if (id) { %><a class="btn" href="/master/stato"><%= t('common.cancel') %></a><% } %>
+    </div>
+  </form>
+  <% if (avvisi.length === 0) { %><p class="muted"><%= t(m + 'nessuno') %></p><% } else { %>
+  <div class="table-scorre">
+  <table class="table table--stack">
+    <caption class="visually-hidden"><%= t(m + 'titolo') %></caption>
+    <thead><tr><th scope="col"><%= t(m + 'colonna.quando') %></th><th scope="col"><%= t(m + 'colonna.tipo') %></th><th scope="col"><%= t(m + 'colonna.titolo') %></th><th scope="col"><%= t(m + 'colonna.stato') %></th></tr></thead>
+    <tbody>
+      <% const ora = Date.now(); for (const a of avvisi) { %><tr>
+        <td data-label="<%= t(m + 'colonna.quando') %>"><%= fmt.dateTime(a.inizio) %><% if (a.fine) { %> – <%= fmt.dateTime(a.fine) %><% } %></td>
+        <td data-label="<%= t(m + 'colonna.tipo') %>"><%= t('stato.tipo.' + a.tipo) %></td>
+        <th scope="row" data-label="<%= t(m + 'colonna.titolo') %>"><a href="/master/stato/<%= a.id %>"><%= a.titolo %></a></th>
+        <td data-label="<%= t(m + 'colonna.stato') %>"><%= t(m + (a.inizio.getTime() > ora ? 'stati.programmato' : !a.fine || a.fine.getTime() > ora ? 'stati.inCorso' : 'stati.concluso')) %></td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+  </div>
+  <% } %>
+</div>
+<%- include('../partials/bottom') %>

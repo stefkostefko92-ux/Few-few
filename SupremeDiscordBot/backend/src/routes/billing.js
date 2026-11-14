@@ -17,7 +17,7 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
-import { getServerTier } from "../lib/premium.js";
+import { getServerTier, exportWindowUntil } from "../lib/premium.js";
 import { billingConfig, discordSkuUrl } from "../lib/billing.js";
 import { discordSubscriptionLabel } from "../lib/discordSubscription.js";
 
@@ -42,6 +42,8 @@ router.get("/:serverId", requireAuth, loadUser, requireServerAdmin, async (req, 
         stripeSubscriptionId: true, stripeStatus: true, stripeCustomerId: true,
         // Гратис след отмяна (v40)
         accessUntil: true, gracePlan: true,
+        // Котвите на 30-дневния прозорец за експорт (v55: край на абонамент през Discord).
+        paidAccessEndedAt: true, trialEndsAt: true,
         // Агенция (легаси — вече не се продава)
         agencyId: true,
         agency: { select: { plan: true, active: true, ownerUserId: true } },
@@ -75,6 +77,10 @@ router.get("/:serverId", requireAuth, loadUser, requireServerAdmin, async (req, 
       graceActive,
       accessUntil: server.accessUntil,
       gracePlan: server.gracePlan,
+      // До кога данните могат да се свалят след края на платения период (ISO или
+      // null). Таблото показва експорта по това поле, не по `isPremium`: иначе
+      // правото на експорт остава на хартия точно когато е нужно (А1).
+      exportUntil: exportWindowUntil(server),
       agencyCovered,
       agencyOwnedByMe: agencyCovered && server.agency.ownerUserId === req.user.id,
       discord: {
