@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "@aso/db";
 import { PRODUCT_KINDS, ROLES, VIP_TIERS, levelFromXp, selfExclusionActive, type Role, type VipTier } from "@aso/shared";
-import { asyncHandler, badRequest, forbidden, HttpError } from "../http.js";
+import { asyncHandler, badRequest, forbidden, HttpError, intQuery, notFoundError } from "../http.js";
 import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 import { revokeUser, unrevokeUser } from "../auth/revocation.js";
 import { discordEnabled, notifyBroadcast, sendTest } from "../integrations/discord.js";
@@ -128,7 +128,7 @@ interface DayCount {
 adminRouter.get(
   "/stats/timeseries",
   asyncHandler(async (req, res) => {
-    const days = Math.min(Math.max(Number(req.query.days ?? 14), 1), 90);
+    const days = intQuery(req.query.days, 14, 1, 90);
     const start = new Date();
     start.setUTCHours(0, 0, 0, 0);
     start.setUTCDate(start.getUTCDate() - (days - 1));
@@ -191,7 +191,7 @@ adminRouter.get(
   asyncHandler(async (req, res) => {
     await liftExpiredBans();
     const q = String(req.query.q ?? "").trim();
-    const take = Math.min(Math.max(Number(req.query.take ?? 50), 1), 100);
+    const take = intQuery(req.query.take, 50, 1, 100);
     const cursor = typeof req.query.cursor === "string" && req.query.cursor ? req.query.cursor : undefined;
     const roleQ = String(req.query.role ?? "");
     const role = (ROLES as readonly string[]).includes(roleQ) ? (roleQ as Role) : undefined;
@@ -252,7 +252,7 @@ adminRouter.get(
         _count: { select: { inventory: true, matches: true } },
       },
     });
-    if (!user) throw badRequest("not_found", "Няма такъв играч");
+    if (!user) throw notFoundError("Няма такъв играч");
     const audits = await prisma.adminAudit.findMany({
       where: { targetId: id }, orderBy: { createdAt: "desc" }, take: 20,
     });
@@ -275,7 +275,7 @@ adminRouter.get(
   "/users/:id/matches",
   asyncHandler(async (req, res) => {
     const id = String(req.params.id ?? "");
-    const take = Math.min(Math.max(Number(req.query.take ?? 20), 1), 50);
+    const take = intQuery(req.query.take, 20, 1, 50);
     const cursor = typeof req.query.cursor === "string" && req.query.cursor ? req.query.cursor : undefined;
     const rows = await prisma.matchPlayer.findMany({
       where: { userId: id },
@@ -362,7 +362,7 @@ adminRouter.patch(
     }
 
     const target = await prisma.user.findUnique({ where: { id } });
-    if (!target) throw badRequest("not_found", "Няма такъв играч");
+    if (!target) throw notFoundError("Няма такъв играч");
 
     // No staff member may ban/demote/modify an account of equal-or-higher rank
     // (prevents an ADMIN from decapitating the OWNER or another ADMIN). Self-edit
@@ -450,7 +450,7 @@ adminRouter.get(
   asyncHandler(async (req, res) => {
     const status = String(req.query.status ?? "OPEN").toUpperCase();
     const valid = ["OPEN", "REVIEWING", "DISMISSED", "CONFIRMED"];
-    const take = Math.min(Math.max(Number(req.query.take ?? 50), 1), 100);
+    const take = intQuery(req.query.take, 50, 1, 100);
     const cursor = typeof req.query.cursor === "string" && req.query.cursor ? req.query.cursor : undefined;
     const rows = await prisma.collusionFlag.findMany({
       where: valid.includes(status) ? { status: status as "OPEN" } : {},
@@ -493,7 +493,7 @@ adminRouter.get(
   "/reports",
   asyncHandler(async (req, res) => {
     const status = String(req.query.status ?? "OPEN").toUpperCase();
-    const take = Math.min(Math.max(Number(req.query.take ?? 50), 1), 100);
+    const take = intQuery(req.query.take, 50, 1, 100);
     const cursor = typeof req.query.cursor === "string" && req.query.cursor ? req.query.cursor : undefined;
     const rows = await prisma.chatReport.findMany({
       where: (REPORT_STATUSES as readonly string[]).includes(status) ? { status: status as "OPEN" } : {},
@@ -555,7 +555,7 @@ function parseDateParam(v: unknown): Date | undefined {
 adminRouter.get(
   "/audit",
   asyncHandler(async (req, res) => {
-    const take = Math.min(Math.max(Number(req.query.take ?? 50), 1), 100);
+    const take = intQuery(req.query.take, 50, 1, 100);
     const cursor = typeof req.query.cursor === "string" && req.query.cursor ? req.query.cursor : undefined;
     const action = String(req.query.action ?? "").trim();
     const actor = String(req.query.actor ?? "").trim();
@@ -810,7 +810,7 @@ adminRouter.patch(
     const id = String(req.params.id ?? "");
     const input = productUpdateSchema.parse(req.body);
     const existing = await prisma.product.findUnique({ where: { id } });
-    if (!existing) throw badRequest("not_found", "Няма такъв продукт");
+    if (!existing) throw notFoundError("Няма такъв продукт");
     const data: Record<string, unknown> = {};
     if (input.priceCents !== undefined) data.priceCents = input.priceCents;
     if (input.gems !== undefined) data.gems = input.gems;
@@ -836,7 +836,7 @@ adminRouter.get(
   asyncHandler(async (req, res) => {
     const statusQ = String(req.query.status ?? "").trim();
     const status = (ORDER_STATUSES as readonly string[]).includes(statusQ) ? statusQ : undefined;
-    const take = Math.min(Math.max(Number(req.query.take ?? 50), 1), 100);
+    const take = intQuery(req.query.take, 50, 1, 100);
     const cursor = typeof req.query.cursor === "string" && req.query.cursor ? req.query.cursor : undefined;
     const rows = await prisma.purchase.findMany({
       where: status ? { status } : {},
@@ -886,7 +886,7 @@ adminRouter.post(
     const id = String(req.params.id ?? "");
     const { clawback } = refundSchema.parse(req.body);
     const purchase = await prisma.purchase.findUnique({ where: { id }, include: { product: true } });
-    if (!purchase) throw badRequest("not_found", "Няма такава поръчка");
+    if (!purchase) throw notFoundError("Няма такава поръчка");
     if (purchase.status === "refunded") throw badRequest("already_refunded", "Поръчката вече е върната");
     if (purchase.status !== "completed") throw badRequest("not_refundable", "Само завършени поръчки могат да се връщат");
     if (!stripeEnabled()) throw new HttpError(503, "stripe_not_configured", "Stripe не е конфигуриран");
@@ -1000,7 +1000,7 @@ adminRouter.patch(
     const id = String(req.params.id ?? "");
     const { active } = announcementPatchSchema.parse(req.body);
     const existing = await prisma.announcement.findUnique({ where: { id } });
-    if (!existing) throw badRequest("not_found", "Няма такава обява");
+    if (!existing) throw notFoundError("Няма такава обява");
     const updated = await prisma.announcement.update({ where: { id }, data: { active } });
     const actorName = await resolveActorName(req.user!.sub);
     await audit(req.user!, actorName, active ? "announcement_activate" : "announcement_deactivate", id, {
