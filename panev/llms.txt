@@ -1,14 +1,14 @@
 # Panev Ascensori SAS — llms.txt
 # https://panevascensori.it/
 # Formato: https://llmstxt.org
-# Aggiornato: 2026-09-26
+# Aggiornato: 2026-11-11
 
 > Panev Ascensori SAS è un produttore italiano di staffe brevettate (Modello di Utilità UIBM N. 202023000002112) per il fissaggio regolabile di porte di piano e guide del contrappeso di ascensori e montacarichi. Vendita B2B a listino, ordini via email a info@panevascensori.it. Sito in italiano, inglese e bulgaro.
 
 ## Azienda
 
 - **Ragione sociale:** Panev Ascensori SAS
-- **P.IVA / C.F.:** IT09346970966
+- **P.IVA:** IT09346970966 · **C.F.:** 09346970966
 - **REA:** MI - 2084376 (Registro Imprese di Milano Monza Brianza Lodi)
 - **Sede legale:** Via Madonna del Salvatore 6, 20010 Vittuone (MI), Italia
 - **Sede operativa:** Via Milano 7, Cornaredo (MI), Italia
@@ -25,7 +25,7 @@
 - **Staffe guida SG fisse:** larghezze 50 / 60 / 80 mm, lunghezze 130 – 220 mm, da 8,60 €
 - **Soluzioni speciali:** misure su disegno esecutivo e fissaggio a parete con braccio rigido, a preventivo
 - Tutte le staffe: acciaio UNI EN 10025 zincato, sistema ambidestro (DX / SX), conformi UNI EN 81, idonee al collaudo UNI 10411
-- Spedizione gratuita in Italia sopra 500 €; consegna 2 – 5 giorni lavorativi; garanzia 2 anni
+- Spedizione gratuita in Italia sopra 500 €; consegna in circa 2 – 3 settimane lavorative (express 1 settimana su richiesta); garanzia 2 anni
 
 ## Brevetto
 
@@ -37,11 +37,23 @@
 
 - [Home (IT)](https://panevascensori.it/): panoramica del sistema brevettato
 - [Prodotti e listino (IT)](https://panevascensori.it/prodotti): tutti i codici con prezzi
+- [Staffe per porte di piano A / B](https://panevascensori.it/staffe-porte-di-piano): piastre A e staffe B, serie 37 / 45 / 65 mm, prezzi e FAQ — [EN](https://panevascensori.it/en/landing-door-brackets) · [BG](https://panevascensori.it/bg/planki-etazhni-vrati)
+- [Supporti per guide del contrappeso SU · SD · SC + SG](https://panevascensori.it/supporti-guide-contrappeso): 17 configurazioni, corsa 45 – 235 mm — [EN](https://panevascensori.it/en/counterweight-guide-rail-supports) · [BG](https://panevascensori.it/bg/opori-vodachi-protivotezhest)
+- [Staffe guida SG fisse](https://panevascensori.it/staffe-guida-sg): 15 codici, larghezze 50 / 60 / 80 mm — [EN](https://panevascensori.it/en/sg-guide-brackets) · [BG](https://panevascensori.it/bg/planki-sg)
+- [Staffe su misura e fissaggio a parete](https://panevascensori.it/staffe-su-misura): SC 50 170, SG 225 50, SN, braccio rigido, a preventivo — [EN](https://panevascensori.it/en/custom-brackets) · [BG](https://panevascensori.it/bg/planki-po-poruchka)
 - [Catalogo PDF (IT)](https://panevascensori.it/catalogo): catalogo tecnico 2026, 72 pagine con le viste 3D e il riepilogo della gamma, scaricabile
 - [Vista 3D (IT)](https://panevascensori.it/staffe-3d): i 48 articoli del catalogo in 3D, da ruotare, montare (DX / SX, con la regolazione) e fotografare; modelli generati dalle quote del catalogo — [EN](https://panevascensori.it/en/brackets-3d) · [BG](https://panevascensori.it/bg/planki-3d)
 - [Contatti e ordini (IT)](https://panevascensori.it/contatti): ordine via email, dati aziendali
 - [English](https://panevascensori.it/en/) · [Български](https://panevascensori.it/bg/)
 - [Catalogo PDF diretto](https://panevascensori.it/docs/catalogo-staffe-panev-2026.pdf)
+
+## English
+
+Panev Ascensori SAS is an Italian manufacturer of patented brackets (utility model UIBM No. 202023000002112) for the adjustable fixing of landing doors and counterweight guide rails of lifts and goods lifts. B2B sales from a price list (excl. VAT), orders by email to info@panevascensori.it. Main pages: [home](https://panevascensori.it/en/), [price list](https://panevascensori.it/en/products), [catalogue](https://panevascensori.it/en/catalogue), [3D view](https://panevascensori.it/en/brackets-3d), [contacts](https://panevascensori.it/en/contacts).
+
+## Български
+
+Panev Ascensori SAS е италиански производител на патентовани планки (полезен модел UIBM № 202023000002112) за регулируемо закрепване на етажни врати и водачи на противотежестта на асансьори и товарни асансьори. Продажба B2B по ценоразпис (без ДДС), поръчки по имейл на info@panevascensori.it. Основни страници: [начало](https://panevascensori.it/bg/), [ценоразпис](https://panevascensori.it/bg/produkti), [каталог](https://panevascensori.it/bg/katalog), [3D изглед](https://panevascensori.it/bg/planki-3d), [контакти](https://panevascensori.it/bg/kontakti).
 
 ## AI Policy
 

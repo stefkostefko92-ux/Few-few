@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { Panel } from "./Panel";
 
@@ -7,14 +8,29 @@ interface ModalProps {
   onClose: () => void;
   title?: string;
   children: ReactNode;
+  /** Pinned under the scrolling body — always on screen (primary action). */
+  footer?: ReactNode;
 }
+
+/** Open dialogs, oldest first: only the top-most one handles Escape and Tab,
+ *  so Escape closes the dialog the player is looking at — not every dialog. */
+const openStack: string[] = [];
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
 
-/** Accessible dialog: backdrop click + Escape to close, with a real focus trap
- *  (focus moves in on open, Tab cycles within, focus restores on close). */
-export function Modal({ open, onClose, title, children }: ModalProps) {
+/** Accessible dialog: a visible close button, backdrop click and Escape to
+ *  close, with a real focus trap (focus moves in on open, Tab cycles within,
+ *  focus restores on close).
+ *
+ *  Rendered through a portal on <body>: a `position: fixed` overlay inside a
+ *  transformed or z-indexed ancestor (the game stage's entrance animation)
+ *  is positioned against THAT box, not the viewport — the dialog ended up
+ *  half off-screen with its title hidden and a backdrop that no longer
+ *  covered the page, so nothing could close it with the mouse. The panel is
+ *  capped to the viewport height and scrolls inside, so the close button is
+ *  always on screen. */
+export function Modal({ open, onClose, title, children, footer }: ModalProps) {
   const { t } = useTranslation();
   const panelRef = useRef<HTMLDivElement>(null);
   const restoreRef = useRef<HTMLElement | null>(null);
@@ -28,6 +44,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
 
   useEffect(() => {
     if (!open) return;
+    openStack.push(titleId);
     restoreRef.current = document.activeElement as HTMLElement | null;
     // Move focus into the dialog (first focusable, else the panel).
     const panel = panelRef.current;
@@ -35,6 +52,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
     (first ?? panel)?.focus();
 
     const onKey = (e: KeyboardEvent) => {
+      if (openStack[openStack.length - 1] !== titleId) return;
       if (e.key === "Escape") {
         onCloseRef.current();
         return;
@@ -62,15 +80,17 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
     document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("keydown", onKey);
+      const at = openStack.lastIndexOf(titleId);
+      if (at !== -1) openStack.splice(at, 1);
       restoreRef.current?.focus?.();
     };
-  }, [open]);
+  }, [open, titleId]);
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-charcoal-900/70 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[66] flex items-center justify-center bg-charcoal-900/70 p-4 backdrop-blur-sm"
       onClick={onClose}
       role="presentation"
     >
@@ -81,16 +101,32 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         aria-label={title ? undefined : t("a11y.dialog")}
-        className="w-full max-w-md focus:outline-none"
+        className="relative flex max-h-[calc(100dvh-2rem)] w-full max-w-md flex-col overflow-hidden !p-0 focus:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
-        {title ? (
-          <h2 id={titleId} className="mb-4 text-2xl text-brass-300">
-            {title}
-          </h2>
-        ) : null}
-        {children}
+        <div className="flex shrink-0 items-start justify-between gap-3 px-6 pb-2 pt-5">
+          {title ? (
+            <h2 id={titleId} className="text-2xl text-brass-300">
+              {title}
+            </h2>
+          ) : (
+            <span />
+          )}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t("common.close")}
+            title={t("common.close")}
+            data-modal-close=""
+            className="-mr-2 -mt-1 grid size-9 shrink-0 place-items-center rounded-full text-xl leading-none text-ink-300 transition hover:bg-felt-700/60 hover:text-brass-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brass-300"
+          >
+            <span aria-hidden>×</span>
+          </button>
+        </div>
+        <div className={`min-h-0 overflow-y-auto overscroll-contain px-6 pt-2 ${footer ? "pb-4" : "pb-6"}`}>{children}</div>
+        {footer ? <div className="shrink-0 border-t border-brass-400/15 px-6 py-4">{footer}</div> : null}
       </Panel>
-    </div>
+    </div>,
+    document.body,
   );
 }

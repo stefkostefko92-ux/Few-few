@@ -41,6 +41,10 @@ model User {
   // Не може да се съкрати/отмени преди изтичане (само удължаване).
   realityCheckMinutes Int       @default(0)
   dailyLimitMinutes   Int?
+  // Вдигане/махане на дневния лимит чака 24 ч (свалянето важи веднага):
+  // от `dailyLimitPendingAt` нататък действа `dailyLimitPendingMinutes` (null = без лимит).
+  dailyLimitPendingMinutes Int?
+  dailyLimitPendingAt      DateTime?
   selfExcludedUntil   DateTime?
   selfExcludedAt      DateTime?
   createdAt     DateTime  @default(now())
@@ -417,3 +421,20 @@ model Setting {
   value     String   @db.Text
   updatedAt DateTime @updatedAt
 }
+
+/// Пощата на портала, настроена от собственика (OWNER) в админ панела — Brevo SMTP.
+/// Един ред (id = "mail"). Ключът е шифрован (AES-256-GCM, SETTINGS_SECRET_KEY) и
+/// никога не излиза от сървъра. Докато е включена, има предимство пред SMTP_* от .env.
+model MailSettings {
+  id           String   @id @default("mail") @db.VarChar(10)
+  host         String   @db.VarChar(253)
+  port         Int
+  username     String   @db.VarChar(254)
+  passwordEnc  String
+  fromName     String   @db.VarChar(80)
+  fromEmail    String   @db.VarChar(254)
+  active       Boolean  @default(true)
+  updatedAt    DateTime @updatedAt
+  updatedById  String?
+}
+

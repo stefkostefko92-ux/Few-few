@@ -91,16 +91,30 @@ describe('the access request form', () => {
 });
 
 describe('the public addresses', () => {
-  it('are one Italian site: the home at the root, the policy, no language prefixes', () => {
+  it('are one Italian site: the home at the root, the policy, the updates, no language prefixes', () => {
     assert.equal(HOME_PATH, '/');
     assert.equal(PRIVACY_PATH, '/privacy');
     assert.equal(SENT_PATH, '/richiesta-inviata');
-    assert.deepEqual([...PUBLIC_PATHS], ['/', '/privacy']);
+    assert.deepEqual(
+      [...PUBLIC_PATHS],
+      ['/', '/prezzi', '/privacy', '/novita', '/condizioni', '/esportazione', '/segnalazioni'],
+    );
   });
 
   it('let robots crawl only the public pages, the sign-in page and the static files', () => {
     const robots = robotsTxt(BASE, 'abc123');
-    for (const path of ['/', '/privacy']) assert.ok(robots.includes(`Allow: ${path}$\n`), path);
+    for (const path of [
+      '/',
+      '/privacy',
+      '/novita',
+      '/condizioni',
+      '/condizioni.pdf',
+      '/esportazione',
+      // Version 4.0: the prices and the page to report illegal content (art. 16 of Regulation (EU) 2022/2065).
+      '/prezzi',
+      '/segnalazioni',
+    ])
+      assert.ok(robots.includes(`Allow: ${path}$\n`), path);
     assert.doesNotMatch(robots, /\/bg\/|\/en\//);
     assert.match(robots, /Allow: \/accesso\$\n/);
     // "Installa l'app" is public and noindex: a robot must be allowed in to read the noindex.
@@ -113,7 +127,10 @@ describe('the public addresses', () => {
 
   it('list every public page once in the sitemap, without language alternates', () => {
     const xml = sitemapXml(BASE);
-    assert.equal(xml.match(/<url>/g)?.length, 2);
+    assert.equal(xml.match(/<url>/g)?.length, 7);
+    assert.match(xml, /<loc>https:\/\/rilievi\.example\.test\/prezzi<\/loc>/);
+    assert.match(xml, /<loc>https:\/\/rilievi\.example\.test\/segnalazioni<\/loc>/);
+    assert.match(xml, /<loc>https:\/\/rilievi\.example\.test\/esportazione<\/loc>/);
     assert.match(xml, /<loc>https:\/\/rilievi\.example\.test\/<\/loc>/);
     assert.match(xml, /<loc>https:\/\/rilievi\.example\.test\/privacy<\/loc>/);
     assert.match(xml, /<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/);
@@ -128,6 +145,7 @@ describe('the public addresses', () => {
     assert.match(text, /valido 7 giorni/);
     assert.match(text, /\n- Posso registrarmi da solo\? No\. /);
     assert.match(text, new RegExp(`\\(${BASE}/privacy\\)`));
+    assert.match(text, new RegExp(`\\(${BASE}/esportazione\\): Scarica tutti i dati`));
     assert.doesNotMatch(text, /\{\w+\}/);
     assert.doesNotMatch(text, /[\u0400-\u04FF]/);
   });

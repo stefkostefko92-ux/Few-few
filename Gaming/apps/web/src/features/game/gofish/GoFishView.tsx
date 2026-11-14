@@ -8,8 +8,12 @@ import { useCardAnimations } from "../anim/useCardAnimations";
 import { useCardFlight } from "../anim/useCardFlight";
 import { useGameEvents } from "../useGameEvents";
 import { useMatch } from "../useMatch";
+import { useSendOnce } from "../useSendOnce";
+import { seatNames } from "../seatNames";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene, ScorePill, fitOverlap } from "../scene/SceneShell";
+import { DecisionPrompt } from "../scene/DecisionPrompt";
+import "./gofish.css";
 
 interface GoFishState {
   hands: string[][];
@@ -36,7 +40,13 @@ export function GoFishView({ title }: { title: string }) {
   const m = useMatch<GoFishState, GoFishAction>("GOFISH");
   const { state, legal, seat, phase, result, players } = m;
 
-  const nameFor = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
+  // Three bots share the name „АСО Бот“ — number them, or the ask buttons
+  // can't say WHOM you are asking.
+  const names = useMemo(() => seatNames(players), [players]);
+  const nameFor = (s: number) => names(s) ?? `#${s}`;
+  // One ASK per state: a double click used to ask twice (the repeat usually
+  // went fishing and passed the turn) or was refused as out of turn.
+  const send = useSendOnce(state, m.send);
 
   // Opponent-visible action announcements: every ask, catch and fish is called
   // out by name — remembering who asked for what is the core of the game.
@@ -124,9 +134,15 @@ export function GoFishView({ title }: { title: string }) {
       <Announcements banners={banners} fixed />
       {state ? (
         <>
-          <div ref={tableRef}>
+          <div
+            ref={tableRef}
+            data-testid="gofish-table"
+            data-gofish-books={state.books[seat] ?? 0}
+            data-gofish-hand={state.hands[seat]?.length ?? 0}
+            data-gofish-ocean={state.ocean.length}
+          >
             {/* Aquarium — lighter blue-green felt (§4.5). */}
-            <FeltTable crest="🐟" feltColor="#15455a" feltDark="#0a2330">
+            <FeltTable className="gofish-table" crest="🐟" feltColor="#15455a" feltDark="#0a2330">
               {[...positionsFor(state.seats, seat).entries()].map(([s, pos]) => (
                 <Seat
                   key={s}
@@ -170,41 +186,65 @@ export function GoFishView({ title }: { title: string }) {
             </FeltTable>
           </div>
 
-          {/* Ask controls. */}
-          {myTurn ? (
-            <div className="mt-4 rounded-panel border border-brass-400/20 bg-felt-800/70 p-3">
-              <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-                <span className="text-sm text-ink-300">{t("gofish.askFrom")}:</span>
+          {/* Кого и за какво питам — прозорец, щом е мой ред (единственият ход).
+              Горе и нисък: средата е морето, отстрани са съперниците; бутонът
+              за всеки съперник носи и комплектите му (табелата на горния може
+              да остане под прозореца на 768px лаптоп). */}
+          <DecisionPrompt
+            open={myTurn && phase === "playing"}
+            promptKey={`ask-${state.ocean.length}-${state.hands.map((h) => h.length).join(".")}-${state.books.join(".")}`}
+            title={t("gofish.askTitle")}
+            placement="top"
+            testId="gofish-decision"
+          >
+            <div className="w-full" data-testid="gofish-ask">
+              {/* the title asks „whom and for what“ — no row labels: one row of
+                  opponents fits, and the popup stays clear of the felt */}
+              <div
+                className="mb-2 flex flex-wrap items-center justify-center gap-2"
+                role="group"
+                aria-label={t("gofish.askFrom")}
+              >
                 {targets.map((tg) => (
                   <button
                     key={tg}
                     type="button"
                     onClick={() => setTarget(tg)}
+                    data-gofish-target={tg}
+                    aria-pressed={tg === target}
                     className="rounded-full px-3 py-1 text-sm"
                     style={{
                       background: tg === target ? "var(--brass-400)" : "var(--felt-700)",
                       color: tg === target ? "var(--charcoal-900)" : "var(--ink-300)",
                     }}
                   >
-                    {nameFor(tg)}
+                    {nameFor(tg)} <span className="tnum">📚 {state.books[tg] ?? 0}</span>
                   </button>
                 ))}
               </div>
-              <div className="flex flex-wrap items-center justify-center gap-2">
+              {/* one row of ranks on a laptop (up to 13: narrower tiles past 10) */}
+              <div
+                className="flex flex-wrap items-center justify-center gap-1"
+                role="group"
+                aria-label={t("gofish.askFor")}
+              >
                 {ranksForTarget.map((a) => (
                   <button
                     key={a.rank}
                     type="button"
                     className="aso-bid"
-                    style={{ width: 44, height: 44, fontSize: "1.1rem" }}
-                    onClick={() => { playCue("flip"); m.send(a); }}
+                    data-gofish-rank={a.rank}
+                    style={{ width: ranksForTarget.length > 10 ? 30 : 38, height: 40, fontSize: "1.05rem" }}
+                    onClick={() => {
+                      if (send(a)) playCue("flip");
+                    }}
                   >
                     {RANK_LABEL[a.rank] ?? a.rank}
                   </button>
                 ))}
               </div>
             </div>
-          ) : null}
+          </DecisionPrompt>
 
           <div className="mt-4 flex items-center justify-center gap-3">
             <ScorePill label={t("gofish.books")} value={state.books[seat] ?? 0} highlight />

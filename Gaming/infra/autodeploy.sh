@@ -100,7 +100,7 @@ harvest_legacy_env() {
     docker inspect "$pg" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -E '^POSTGRES_(USER|PASSWORD|DB)=' || true
     if [ -n "$api" ]; then
       docker inspect "$api" --format '{{range .Config.Env}}{{println .}}{{end}}' |
-        grep -E '^(JWT_SECRET|JWT_REFRESH_SECRET|INTERNAL_API_SECRET|CORS_ORIGINS|PUBLIC_WEB_URL|PUBLIC_API_URL|WEB_BASE_PATH|COOKIE_DOMAIN|BOOTSTRAP_OWNER_EMAIL|STRIPE_[A-Z_]+|SMTP_[A-Z_]+|GOOGLE_CLIENT_[A-Z]+|FACEBOOK_APP_[A-Z]+|DISCORD_WEBHOOK_URL|SENTRY_DSN)=' || true
+        grep -E '^(JWT_SECRET|JWT_REFRESH_SECRET|INTERNAL_API_SECRET|SETTINGS_SECRET_KEY|CORS_ORIGINS|PUBLIC_WEB_URL|PUBLIC_API_URL|WEB_BASE_PATH|COOKIE_DOMAIN|BOOTSTRAP_OWNER_EMAIL|STRIPE_[A-Z_]+|SMTP_[A-Z_]+|GOOGLE_CLIENT_[A-Z]+|FACEBOOK_APP_[A-Z]+|DISCORD_WEBHOOK_URL|SENTRY_DSN)=' || true
     fi
   } > "$out"
   umask "$old_umask"
@@ -108,7 +108,7 @@ harvest_legacy_env() {
   # попълни липсващото (никога не пипа наличните стойности)
   for kv in "POSTGRES_USER=aso" "POSTGRES_DB=aso" \
             "JWT_SECRET=$(openssl rand -hex 32)" "JWT_REFRESH_SECRET=$(openssl rand -hex 32)" \
-            "INTERNAL_API_SECRET=$(openssl rand -hex 24)" \
+            "INTERNAL_API_SECRET=$(openssl rand -hex 24)" "SETTINGS_SECRET_KEY=$(openssl rand -hex 32)" \
             "CORS_ORIGINS=https://${DOMAIN}" "PUBLIC_WEB_URL=https://${DOMAIN}" "WEB_BASE_PATH=/app" \
             "PUBLIC_API_URL=https://${DOMAIN}" "BOOTSTRAP_OWNER_EMAIL=${OWNER_EMAIL}" \
             "STRIPE_TOS_CONFIGURED=false"; do
@@ -140,6 +140,24 @@ if [ -f .env ]; then
   step ".env вече съществува — пазя тайните (базата остава)"
   chmod 600 .env
   ok "запазен"
+  # Нова тайна от по-нова версия: само се добавя, наличните стойности не се пипат.
+  settings_key="$(grep -E '^SETTINGS_SECRET_KEY=' .env | tail -n1 || true)"
+  settings_key="${settings_key#SETTINGS_SECRET_KEY=}"
+  settings_key="$(printf '%s' "$settings_key" | tr -d '[:space:]"'"'"'')"
+  if [ -z "$settings_key" ]; then
+    command -v openssl >/dev/null || die "openssl липсва (нужен за SETTINGS_SECRET_KEY)."
+    sed -i '/^SETTINGS_SECRET_KEY=[[:space:]"'"'"']*$/d' .env
+    # Файл без краен нов ред (ръчна редакция): иначе новият ред се залепва към
+    # последната стойност и тихо я поврежда (compose чете „…# коментар“ като стойност).
+    [ -z "$(tail -c1 .env)" ] || echo >> .env
+    printf '%s\n' "# Шифрова тайните от админ панела (Brevo SMTP) — добавено $(date -u +%F). НЕ го сменяй." \
+      "SETTINGS_SECRET_KEY=$(openssl rand -hex 32)" >> .env
+    ok "добавен SETTINGS_SECRET_KEY (за пощата от админ панела)"
+  elif ! printf '%s' "$settings_key" | grep -Eq '^[0-9a-fA-F]{64}$'; then
+    # Спираме ПРЕДИ билда — старата версия остава жива. Не я подменяме сами: ако пощата
+    # вече е записана с този ключ, нов ключ би я направил неразчетима.
+    die "SETTINGS_SECRET_KEY в $DEPLOY_DIR/.env не е 64 hex знака — api не би тръгнал. Поправи стойността (openssl rand -hex 32, ако пощата още не е записана)."
+  fi
 else
   step "Няма .env — генерирам истински тайни"
   command -v openssl >/dev/null || die "openssl липсва (нужен за тайните)."
@@ -151,6 +169,9 @@ POSTGRES_DB=aso
 JWT_SECRET=$(openssl rand -hex 32)
 JWT_REFRESH_SECRET=$(openssl rand -hex 32)
 INTERNAL_API_SECRET=$(openssl rand -hex 24)
+# Шифрова тайните от админ панела (ключът за Brevo SMTP). НЕ го сменяй: без него
+# записаната поща не се разшифрова (тогава важи SMTP_* оттук, ако е попълнено).
+SETTINGS_SECRET_KEY=$(openssl rand -hex 32)
 CORS_ORIGINS=https://${DOMAIN}
 # Конвенция: PUBLIC_WEB_URL = само origin, WEB_BASE_PATH = пътят на SPA-то.
 # (Стар .env с PUBLIC_WEB_URL=…/app продължава да работи — API-то не дублира /app.)

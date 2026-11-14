@@ -1,0 +1,50 @@
+/* Входът с Microsoft / Google (D1). На страницата за вход (views/auth/_esterni.ejs): разделителят „oppure“
+   и бутоните един под друг, по цялата ширина на формата. В „Account“ и в настройките (`.esterni`): разделът
+   на редове с въздух, всеки доставчик — свой блок под тънка линия. */
+.auth__esterni {
+  display: grid;
+  gap: 10px;
+}
+
+.auth__oppure {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  color: var(--muted);
+}
+
+.auth__oppure::before,
+.auth__oppure::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--line);
+}
+
+.auth__esterni form {
+  display: grid;
+}
+
+.esterni {
+  display: grid;
+  gap: 16px;
+}
+
+.esterni h3 {
+  margin: 0;
+}
+
+.esterni__voce {
+  display: grid;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.esterni__voce .toolbar {
+  margin: 0;
+}
+
+.esterni ol {
+  margin: 0;
+}

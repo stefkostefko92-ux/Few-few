@@ -228,7 +228,9 @@
   if (document.fonts) document.fonts.addEventListener('loadingdone', () => ed.refresh());
 
   document.addEventListener('rilievi:schizzo-apri', async (event) => {
-    const { foglio, n, chiuso } = event.detail;
+    const { foglio, n, chiuso, sfondo, titolo } = event.detail;
+    // A photo under the sheet (annotations, annotazioni.js) — or the white paper of a sketch.
+    window.rilieviSchizzo.sfondo.immagine = sfondo || null;
     const list = Array.isArray(foglio.e) ? foglio.e.filter((el) => ed.regole.valido(el)) : [];
     ed.reset(list);
     // Nothing of the sheet before: the selection, a tool half way (switchTool below).
@@ -238,7 +240,7 @@
     closed = chiuso;
     polylineOpen = false;
     startWaiting = false;
-    title.textContent = (texts.titolo || '').replace('{n}', () => String(n));
+    title.textContent = titolo || (texts.titolo || '').replace('{n}', () => String(n));
     ed.error('');
     dialog.showModal();
     switchTool();

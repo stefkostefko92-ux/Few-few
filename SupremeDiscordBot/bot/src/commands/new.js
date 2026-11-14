@@ -2,13 +2,13 @@
 // Command-style ticket opening — TicketTool's $new/$ticket equivalent.
 // Opens a ticket on behalf of the invoker (or another user with a reason).
 
-import { MessageFlags, SlashCommandBuilder, ChannelType } from "discord.js";
+import { MessageFlags, SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
 import { checkCooldown } from "../utils/cooldowns.js";
 import { friendlyError } from "../utils/friendlyError.js";
-import { BRAND } from "../utils/colors.js";
-import { priorityField } from "../utils/priority.js";
-import { t, resolveLang } from "../i18n/index.js";
+import { loadPanel } from "../utils/panelCache.js";
+import { runFormSession } from "../utils/formSession.js";
+import { t, resolveLang, resolveLangSync } from "../i18n/index.js";
 import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 const COOLDOWN_SECONDS = 10;
@@ -44,107 +44,75 @@ export default {
   async execute(interaction) {
     const remaining = checkCooldown("new", interaction.user.id, COOLDOWN_SECONDS);
     if (remaining > 0) {
-      const lang = await resolveLang(interaction);
+      const lang = resolveLangSync(interaction); // пред първия отговор — без мрежа
       return interaction.reply({ content: t("cooldown.newTicket", lang, { seconds: remaining }), flags: MessageFlags.Ephemeral });
     }
 
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    const lang = await resolveLang(interaction);
 
     const panelIdOrName = interaction.options.getString("panel");
     const reason = interaction.options.getString("reason") || "";
     const onBehalfOf = interaction.options.getUser("on_behalf_of");
 
-    // Look up panel — by ID first, fall back to name
-    let panel;
+    // Look up panel — by ID first, fall back to name.
+    // Т8: непознат панел → ОТКАЗ. Преди: тихо `panels[0]` — тикетът излизаше в
+    // грешния панел, с грешния екип. Без аргумент се приема само единственият панел.
+    let summary;
     try {
       const { data: panels } = await api.get(`/bot/guild/${interaction.guildId}/panels`);
-      panel = panels.find((p) => p.id === panelIdOrName)
-           || panels.find((p) => p.name.toLowerCase() === (panelIdOrName || "").toLowerCase())
-           || panels[0]; // fallback: first panel
+      if (!panels?.length) return interaction.editReply(t("tkt.noPanels", lang));
+      if (panelIdOrName) {
+        const needle = panelIdOrName.toLowerCase();
+        summary = panels.find((p) => p.id === panelIdOrName)
+               || panels.find((p) => p.name.toLowerCase() === needle);
+        if (!summary) return interaction.editReply(t("tkt.panelUnknown", lang));
+      } else if (panels.length === 1) {
+        summary = panels[0];
+      } else {
+        return interaction.editReply(t("tkt.panelRequired", lang));
+      }
     } catch (err) {
-      return interaction.editReply(friendlyError(err, interaction, `Could not load panels: ${err.message}`));
+      return interaction.editReply(friendlyError(err, interaction));
     }
 
-    if (!panel) return interaction.editReply("❌ No panels are configured for this server. Ask an admin to create one via the dashboard.");
+    // Пълният панел (бутони, приветствие, наблюдатели, режим нишка, врата, формуляр).
+    let panel;
+    try {
+      panel = await loadPanel(summary.id, interaction.guildId);
+    } catch (err) {
+      return interaction.editReply(friendlyError(err, interaction, t("tkt.panelGone", lang)));
+    }
 
-    // on_behalf_of requires staff
-    let creator = interaction.user;
+    // on_behalf_of requires staff — проверка СЪРВЪРНО (роли от Gateway кеша).
     if (onBehalfOf) {
       const isStaff = (panel.supportRoleIds || []).some((r) => interaction.member.roles.cache.has(r))
                       || interaction.member.permissions.has("ManageGuild");
-      if (!isStaff) {
-        return interaction.editReply("❌ Only staff can open tickets on behalf of other users.");
-      }
-      creator = onBehalfOf;
+      if (!isStaff) return interaction.editReply(t("tkt.onBehalfStaffOnly", lang));
     }
 
-    // Delegate to the standard panel flow — import and call the helper
-    // We re-use the same logic by invoking the bot endpoint directly
+    const ic = await import("../events/interactionCreate.js");
+
+    // Задължителен формуляр (всеки бутон на панела е с формуляр): /new не може да
+    // покаже модал след defer → DM сесията като при бутона; при няколко различни
+    // формуляра не познаваме кой е нужен — насочваме към бутона на панела.
+    const buttons = panel.buttons || [];
+    if (buttons.length && buttons.every((b) => b.formId && b.form)) {
+      const forms = [...new Map(buttons.map((b) => [b.form.id, b.form])).values()];
+      if (forms.length !== 1) return interaction.editReply(t("tkt.useButtonForForm", lang));
+      const gate = ic.checkVerificationGate(interaction, panel);
+      if (!gate.allowed) return interaction.editReply({ content: gate.message });
+      await interaction.editReply(t("form.dmCheck", lang));
+      return runFormSession(interaction, forms[0], panel);
+    }
+
+    // Т8: ЕДИНЕН път — същият като бутон: Close/Claim/Transcript, приветствие,
+    // наблюдатели, режим нишка, верификационна врата, лимит преди канал, лог.
     try {
-      const guild = interaction.guild;
-      const openCategory = panel.categoryOpenId || panel.categoryId;
-
-      if (!openCategory) {
-        return interaction.editReply("❌ This panel has no category configured. Open the panel via a button first or configure it in the dashboard.");
-      }
-
-      const channelPrefix = (panel.channelNamePrefix || "ticket").toLowerCase().replace(/[^a-z0-9-]/g, "");
-      const tempName = `${channelPrefix}-new-${Date.now().toString().slice(-5)}`;
-
-      const channel = await guild.channels.create({
-        name: tempName,
-        parent: openCategory,
-        type: ChannelType.GuildText,
-        permissionOverwrites: [
-          { id: guild.id, deny: ["ViewChannel"] },
-          { id: creator.id, allow: ["ViewChannel", "SendMessages", "ReadMessageHistory", "AttachFiles"] },
-          ...(panel.supportRoleIds || []).map((r) => ({
-            id: r, allow: ["ViewChannel", "SendMessages", "ReadMessageHistory", "ManageMessages"],
-          })),
-        ],
+      await ic.createTicketFromPanel(interaction, panel, null, {
+        onBehalfOf: onBehalfOf || undefined,
+        reason: reason || undefined,
       });
-
-      let ticketResult;
-      try {
-        ticketResult = await api.post("/bot/ticket/create", {
-          serverId: guild.id,
-          panelId: panel.id,
-          creatorId: creator.id,
-          channelId: channel.id,
-          firstMessage: reason,
-        });
-      } catch (err) {
-        // Limit errors come back as HTTP 429/403, so axios throws — clean up
-        // the just-created channel instead of orphaning it.
-        await channel.delete().catch(() => {});
-        if (err?.response?.data?.code) {
-          return interaction.editReply(`⚠️ ${err.response.data.error}`);
-        }
-        throw err;
-      }
-
-      const number = ticketResult?.data?.number;
-      const padding = panel.counterPadding || 4;
-      if (number != null) {
-        await channel.setName(`${channelPrefix}-${String(number).padStart(padding, "0")}-${creator.username.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 30)}`).catch(() => {});
-      }
-
-      const openField = priorityField(ticketResult?.data?.priority);
-
-      await channel.send({
-        embeds: [{
-          title: `🎫 Ticket #${String(number ?? "").padStart(padding, "0")}`,
-          description: [
-            `Opened by <@${interaction.user.id}>${onBehalfOf ? ` on behalf of <@${creator.id}>` : ""}.`,
-            reason && `**Reason**: ${reason}`,
-          ].filter(Boolean).join("\n"),
-          color: BRAND,
-          fields: openField ? [openField] : undefined,
-          timestamp: new Date().toISOString(),
-        }],
-      });
-
-      await interaction.editReply(`✅ Ticket opened: ${channel}`);
     } catch (err) {
       await interaction.editReply(friendlyError(err, interaction));
     }

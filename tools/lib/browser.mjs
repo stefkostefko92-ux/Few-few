@@ -7,17 +7,32 @@
 // НИКОГА не сваля браузър (виж средата: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD).
 
 import { existsSync, readdirSync } from "node:fs";
-import { join } from "node:path";
 import { createRequire } from "node:module";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 
 /**
- * Зарежда пакет първо през ESM import, после през require. ESM import НЕ чете NODE_PATH, а средата
- * държи Playwright глобално (NODE_PATH) — без require-пътя одитите казваха „няма playwright“, докато
- * `require('playwright')` работи от всяка папка (2026-11-02, Скоростника не можа да мери kebab).
+ * Зарежда пакет от ТРИ места, по ред:
+ *  1. ESM import оттук (`tools/lib/` нагоре до корена);
+ *  2. require (чете NODE_PATH) — средата държи Playwright глобално, а ESM import
+ *     NODE_PATH не чете (2026-11-02, Скоростника не можа да мери kebab);
+ *  3. от `process.cwd()` — продукт, пуснал инструмента от своята папка
+ *     (`FiveM/scripts/authz-probe.mjs`): резолвът от `tools/lib/` НИКОГА не
+ *     поглежда `FiveM/node_modules`, и съветът „npm i -D playwright-core“ беше
+ *     неизпълним.
  */
-export async function loadPkg(name, { importer = (n) => import(n), requirer = createRequire(import.meta.url) } = {}) {
+export async function loadPkg(
+  name,
+  { importer = (n) => import(n), requirer = createRequire(import.meta.url), cwd = process.cwd() } = {},
+) {
   try { return await importer(name); } catch { /* пробваме require (NODE_PATH) */ }
-  try { return requirer(name); } catch { return null; }
+  try { return requirer(name); } catch { /* пробваме от папката на викащия */ }
+  try {
+    const req = createRequire(join(cwd, "package.json"));
+    return await importer(pathToFileURL(req.resolve(name)).href);
+  } catch {
+    return null;
+  }
 }
 
 export function findChromium(base = process.env.PLAYWRIGHT_BROWSERS_PATH || "/opt/pw-browsers") {
@@ -34,6 +49,21 @@ const safeList = (d) => { try { return readdirSync(d); } catch { return []; } };
 const isDir = (p) => { try { return readdirSync(p) && true; } catch { return false; } };
 
 /**
+ * Вади `chromium` от внесен модул, независимо по кой път е дошъл.
+ *
+ * `?? mod?.default?.chromium` НЕ е предпазливост от учтивост: резервният път в
+ * `importFrom` внася по ФАЙЛОВ адрес, а това заобикаля картата `exports` на
+ * пакета — тогава Node вижда САМО `default` (измерено: `Object.keys` върху
+ * внесения по път `playwright` дава точно `default`, а `mod.chromium` е
+ * `undefined`). Без този ред резервният път резолвва пакета успешно и пак
+ * докладва „няма playwright" — най-лошият вид провал: поправка, която изглежда
+ * приложена, но не работи.
+ */
+export function pickChromium(mod) {
+  return mod?.chromium ?? mod?.default?.chromium ?? null;
+}
+
+/**
  * Пуска headless Chromium или казва ЗАЩО не може — връща { browser } ИЛИ { error }.
  * Никога не хвърля и никога не мълчи: викащият е длъжен да третира error като
  * „неизмерено" (изход 2), НЕ като „чисто". Зеленото без измерване е лъжа.
@@ -41,10 +71,10 @@ const isDir = (p) => { try { return readdirSync(p) && true; } catch { return fal
 export async function launchChromium(extra = {}) {
   let chromium = null, how = null;
   for (const name of ["playwright", "playwright-core"]) {
-    const mod = await loadPkg(name);
-    if (mod?.chromium) { chromium = mod.chromium; how = name; break; }
+    chromium = pickChromium(await loadPkg(name));
+    if (chromium) { how = name; break; }
   }
-  if (!chromium) return { error: "няма нито playwright, нито playwright-core (npm i -D playwright-core)" };
+  if (!chromium) return { error: "няма нито playwright, нито playwright-core (npm i -D playwright-core в папката, от която пускаш инструмента)" };
 
   const opts = { headless: true, args: ["--no-sandbox"], ...extra };
   if (how === "playwright-core") {

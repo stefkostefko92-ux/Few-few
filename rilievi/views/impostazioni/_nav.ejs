@@ -1,0 +1,7 @@
+<%# Местната навигация на настройките: един раздел на страница, текущият — отбелязан. %><nav class="sottonav" aria-label="<%= t('impostazioni.sottonav') %>">
+  <ul>
+    <li><a href="/impostazioni?azienda=<%= encodeURIComponent(azienda.id) %>"><%- include('../partials/icon', { name: 'grid' }) %><span><%= t('impostazioni.panoramica') %></span></a></li>
+    <% for (const s of sezioni) { %><li><a href="/impostazioni/<%= s %>?azienda=<%= encodeURIComponent(azienda.id) %>"<% if (s === sezione) { %> aria-current="page"<% } %>><%- include('../partials/icon', { name: icone[s] }) %><span><%= t('impostazioni.pagine.' + s + '.titolo') %></span></a></li>
+    <% } %>
+  </ul>
+</nav>

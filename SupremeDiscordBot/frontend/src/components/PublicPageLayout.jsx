@@ -5,8 +5,9 @@
 // footer with the Carbon Stealth attribution and legal links), pulled into
 // one place so it does not drift across four near-identical pages.
 import SupremeLogo, { SupremeWordmark } from "./SupremeLogo";
+import { botInviteUrl } from "../lib/invite";
 
-const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814416&scope=bot+applications.commands`;
+const BOT_INVITE_URL = botInviteUrl();
 
 export default function PublicPageLayout({ crumb, children, maxWidth = "max-w-4xl" }) {
   return (
@@ -18,15 +19,15 @@ export default function PublicPageLayout({ crumb, children, maxWidth = "max-w-4x
             <div className="flex flex-col leading-tight">
               <SupremeWordmark className="text-base" />
               {crumb && (
-                <span className="text-cs-dim text-[10px] font-mono uppercase tracking-[0.2em]">
+                <span className="text-cs-dim text-xs">
                   / {crumb}
                 </span>
               )}
             </div>
           </a>
-          <div className="flex items-center gap-4 font-mono text-xs text-cs-dim">
-            <a href={BOT_INVITE_URL} className="hover:text-cs-cyan transition-colors">INVITE</a>
-            <a href="/dashboard" className="hover:text-cs-cyan transition-colors">DASHBOARD</a>
+          <div className="flex items-center gap-2">
+            <a href={BOT_INVITE_URL} className="cs-btn-secondary cs-btn-sm no-underline">Invite</a>
+            <a href="/dashboard" className="cs-btn-primary cs-btn-sm no-underline">Dashboard</a>
           </div>
         </div>
 
@@ -39,7 +40,7 @@ export default function PublicPageLayout({ crumb, children, maxWidth = "max-w-4x
             <SupremeLogo size={28} />
             <div className="flex flex-col leading-tight">
               <SupremeWordmark className="text-sm" />
-              <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-cs-dim">
+              <span className="text-xs text-cs-dim">
                 Created and Designed by{" "}
                 <a
                   href="https://carbonstealth.eu"
@@ -52,9 +53,10 @@ export default function PublicPageLayout({ crumb, children, maxWidth = "max-w-4x
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-4 text-[10px] font-mono uppercase tracking-widest text-cs-dim">
+          <div className="flex items-center gap-4 text-xs text-cs-dim">
             <a href="/"          className="hover:text-cs-cyan transition-colors">Home</a>
             <a href="/features"  className="hover:text-cs-cyan transition-colors">Features</a>
+            <a href="/docs"      className="hover:text-cs-cyan transition-colors">Docs</a>
             <a href="/commands"  className="hover:text-cs-cyan transition-colors">Commands</a>
             <a href="/terms"     className="hover:text-cs-cyan transition-colors">Terms</a>
             <a href="/privacy"   className="hover:text-cs-cyan transition-colors">Privacy</a>

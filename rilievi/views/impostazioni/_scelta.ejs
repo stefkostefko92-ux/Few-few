@@ -1,0 +1,10 @@
+<%# Фирмата, чиито настройки се гледат — само при няколко (MASTER, човек в няколко фирми). %><% if (aziende.length > 1) { %><form class="filter" method="get" action="<%= azione %>">
+  <label class="field__label" for="azienda-scelta"><%= t('scheda.field.azienda') %></label>
+  <div class="filter__row">
+    <select class="select" id="azienda-scelta" name="azienda">
+      <% for (const item of aziende) { %><option value="<%= item.id %>"<% if (item.id === azienda.id) { %> selected<% } %>><%= item.name %></option>
+      <% } %>
+    </select>
+    <button class="btn" type="submit"><%= t('impostazioni.choose') %></button>
+  </div>
+</form><% } %>

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
+import { VERSIONE } from '../../src/legale/versioni.js';
 import {
   Browser,
   linkFrom,
@@ -33,7 +34,10 @@ describe('invitations', () => {
       role: 'TECNICO',
     });
     assert.equal(reply.status, 200);
-    assert.match(reply.body, /L&#39;invio di email non è attivo|L'invio di email non è attivo/);
+    assert.match(
+      reply.body,
+      /L&#39;invio delle email non è attivo|L'invio delle email non è attivo/,
+    );
     const path = linkFrom(reply.body);
     assert.match(path, /^\/invito\/[A-Za-z0-9_-]{43}$/);
     const stored = await prisma.invite.findFirst({
@@ -157,6 +161,17 @@ describe('invitations', () => {
     });
     assert.equal(done.status, 302);
     assert.equal(done.location, '/schede');
+    // A new person accepts the rules of use first (src/legale/), then the portal opens.
+    const gate = await guest.get('/schede');
+    assert.equal(gate.status, 303);
+    assert.equal(gate.location, '/condizioni/accetta?next=%2Fschede');
+    const rules = await guest.submit('/condizioni/accetta', '/condizioni/accetta', {
+      versioneCondizioni: VERSIONE.CONDIZIONI,
+      versioneRegole: VERSIONE.REGOLE,
+      regole: 'si',
+      next: '/schede',
+    });
+    assert.equal(rules.status, 303);
     assert.equal((await guest.get('/schede')).status, 200);
     const user = await prisma.user.findUniqueOrThrow({
       where: { email: 'tecnico.due@rilievi.test' },

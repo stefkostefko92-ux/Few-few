@@ -2,6 +2,7 @@ import { Router, type Request, type Response } from 'express';
 import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
 import { canIn } from '../auth/scope.js';
 import { setFlash } from '../http/flash.js';
+import { copiaLimiter } from '../http/limits.js';
 import {
   confermaIntervento,
   parseConferma,
@@ -13,6 +14,8 @@ import { numeroModulo, type InterventoFull } from '../interventi/service.js';
 import { improntaContenuto, improntaLeggibile } from '../interventi/sigillo.js';
 import { codiceVoce, GRUPPI_VOCI, valoriVoci } from '../interventi/voci.js';
 import { loadIntervento, scope } from './interventi.js';
+import { copiaEmailSchema } from '../legale/informativa.js';
+import { copiaIntervento, informativaDi } from './firma-copia.js';
 import { notFound } from './schede-shared.js';
 
 /**
@@ -26,13 +29,22 @@ export const interventiFirmaRouter: Router = Router();
 const write = requireCapability('interventi:write');
 
 interface FirmaView {
+  /** Имейлът за копието (по избор) и грешката му — връщат се с формата. */
+  copiaEmail?: string;
+  erroreCopia?: boolean;
   values: Record<CampoFirma, string>;
   errors: ErroriConferma;
   conflict?: boolean;
 }
 
-function renderFirma(res: Response, status: number, row: InterventoFull, view: FirmaView): void {
+async function renderFirma(
+  res: Response,
+  status: number,
+  row: InterventoFull,
+  view: FirmaView,
+): Promise<void> {
   const numero = numeroModulo(row.numero);
+  const informativa = await informativaDi(row.aziendaId);
   const impronta = improntaContenuto(row);
   res.status(status).render('interventi/firma', {
     titleKey: 'interventi.conferma.titolo',
@@ -48,6 +60,9 @@ function renderFirma(res: Response, status: number, row: InterventoFull, view: F
     base: row.updatedAt.toISOString(),
     improntaHex: impronta,
     improntaTesto: improntaLeggibile(impronta),
+    informativa,
+    copiaEmail: '',
+    erroreCopia: false,
     ...view,
   });
 }
@@ -78,56 +93,93 @@ async function bozzaDaFirmare(req: Request, res: Response): Promise<InterventoFu
 interventiFirmaRouter.get('/interventi/:id/firma', write, async (req, res) => {
   const row = await bozzaDaFirmare(req, res);
   if (!row) return;
-  renderFirma(res, 200, row, { values: valoriVuoti(req), errors: {} });
+  await renderFirma(res, 200, row, { values: valoriVuoti(req), errors: {} });
 });
 
-interventiFirmaRouter.post('/interventi/:id/conferma', write, requireCsrf, async (req, res) => {
-  const row = await bozzaDaFirmare(req, res);
-  if (!row) return;
-  const body = req.body as Record<string, unknown>;
-  const vista = {
-    base: typeof body.base === 'string' ? body.base : '',
-    impronta: typeof body.impronta === 'string' ? body.impronta : '',
-  };
-  // Подписаното не е това, което е в базата: листът наново, подписите — празни, имената остават.
-  const cambiato = (current: InterventoFull) =>
-    renderFirma(res, 409, current, {
-      values: { ...valoriFirmaDalBody(body), firmaTecnico: '', firmaCliente: '' },
-      errors: {},
-      conflict: true,
-    });
-  if (vista.base !== row.updatedAt.toISOString() || vista.impronta !== improntaContenuto(row))
-    return cambiato(row);
-  const parsed = parseConferma(body);
-  if (!parsed.ok)
-    return renderFirma(res, 422, row, { values: valoriFirmaDalBody(body), errors: parsed.errors });
-  const esito = await confermaIntervento(
-    scope(req, 'interventi:write'),
-    row.id,
-    vista,
-    parsed.data,
-    principalOf(req).user.id,
-  );
-  if (esito === 'missing') return notFound(req, res);
-  if (esito === 'conflict') {
-    const current = await bozzaDaFirmare(req, res);
-    if (current) cambiato(current);
-    return;
-  }
-  if (typeof esito === 'object') {
-    // Щрихи, които вече стоят на друг лист: подписът се рисува наново, на ръка; другият остава.
-    const values = valoriFirmaDalBody(body);
-    const errors: ErroriConferma = {};
-    for (const campo of esito.ripetute) {
-      values[campo] = '';
-      errors[campo] = 'ripetuta';
+interventiFirmaRouter.post(
+  '/interventi/:id/conferma',
+  write,
+  requireCsrf,
+  copiaLimiter,
+  async (req, res) => {
+    const row = await bozzaDaFirmare(req, res);
+    if (!row) return;
+    const body = req.body as Record<string, unknown>;
+    // По избор: имейлът за копието (legale/informativa.ts) — само адрес или нищо; не се пази.
+    const copiaEmail = typeof body.copiaEmail === 'string' ? body.copiaEmail.slice(0, 254) : '';
+    const copia = copiaEmailSchema.safeParse(copiaEmail);
+    const vista = {
+      base: typeof body.base === 'string' ? body.base : '',
+      impronta: typeof body.impronta === 'string' ? body.impronta : '',
+    };
+    // Подписаното не е това, което е в базата: листът наново, подписите — празни, имената остават.
+    const cambiato = (current: InterventoFull) =>
+      renderFirma(res, 409, current, {
+        values: { ...valoriFirmaDalBody(body), firmaTecnico: '', firmaCliente: '' },
+        errors: {},
+        conflict: true,
+        copiaEmail,
+      });
+    if (vista.base !== row.updatedAt.toISOString() || vista.impronta !== improntaContenuto(row))
+      return cambiato(row);
+    if (!copia.success)
+      return renderFirma(res, 422, row, {
+        values: valoriFirmaDalBody(body),
+        errors: {},
+        copiaEmail,
+        erroreCopia: true,
+      });
+    const parsed = parseConferma(body);
+    if (!parsed.ok)
+      return renderFirma(res, 422, row, {
+        values: valoriFirmaDalBody(body),
+        errors: parsed.errors,
+        copiaEmail,
+      });
+    const esito = await confermaIntervento(
+      scope(req, 'interventi:write'),
+      row.id,
+      vista,
+      parsed.data,
+      principalOf(req).user.id,
+    );
+    if (esito === 'missing') return notFound(req, res);
+    if (esito === 'conflict') {
+      const current = await bozzaDaFirmare(req, res);
+      if (current) await cambiato(current);
+      return;
     }
-    return renderFirma(res, 422, row, { values, errors });
-  }
-  setFlash(
-    res,
-    esito === 'ok' ? 'ok' : 'info',
-    esito === 'ok' ? 'interventi.flash.confermato' : 'interventi.chiuso',
-  );
-  res.redirect(303, `/interventi/${row.id}`);
-});
+    if (typeof esito === 'object') {
+      // Щрихи, които вече стоят на друг лист: подписът се рисува наново, на ръка; другият остава.
+      const values = valoriFirmaDalBody(body);
+      const errors: ErroriConferma = {};
+      for (const campo of esito.ripetute) {
+        values[campo] = '';
+        errors[campo] = 'ripetuta';
+      }
+      return renderFirma(res, 422, row, { values, errors, copiaEmail });
+    }
+    if (esito === 'ok' && copia.data) {
+      // Копието за подписалия — от потвърдения документ, с проверката на печата.
+      const confermato = await loadIntervento(req);
+      const inviata = confermato
+        ? await copiaIntervento(res, confermato, copia.data, principalOf(req).user.id)
+        : 'failed';
+      setFlash(
+        res,
+        inviata === 'sent' ? 'ok' : 'error',
+        inviata === 'sent'
+          ? 'interventi.flash.confermatoCopia'
+          : 'interventi.flash.confermatoCopiaNo',
+      );
+      res.redirect(303, `/interventi/${row.id}`);
+      return;
+    }
+    setFlash(
+      res,
+      esito === 'ok' ? 'ok' : 'info',
+      esito === 'ok' ? 'interventi.flash.confermato' : 'interventi.chiuso',
+    );
+    res.redirect(303, `/interventi/${row.id}`);
+  },
+);
