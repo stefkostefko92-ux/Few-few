@@ -87,7 +87,7 @@
       "checks": "If a hinge, slide or hole falls outside the manufacturer's table, the program tells you what to change. Where the document says nothing, the program decides and marks the value “{mark}” (our choice).",
       "imageAlt": "Drawing of a {h} × {w} mm door with sizes, edge banding and the drilling map for the hinge cups",
       "cupAlt": "Hinge cup detail at 1:1 scale: Ø35 at {c} mm from the edge",
-      "caption": "The left door of the first base unit, {h} × {w} mm: sizes, edge banding and drilling map. Drawing labels are in Bulgarian.",
+      "caption": "The left door of the first base unit, {h} × {w} mm: sizes, edge banding and drilling map.",
       "open": "Open the whole drawing"
     },
     "kinds": {
@@ -175,7 +175,7 @@
       },
       "languages": {
         "q": "Which languages is the program in?",
-        "a": "The website, account and admin pages are in Bulgarian, English and Italian. The editor, drawings and tables are in Bulgarian for now."
+        "a": "In Bulgarian, English and Italian — the website, the account, the editor and everything the program makes: the cut list, the hardware and drilling tables, the drawings and the notes in the CNC files. Switch the language at the top; downloaded files are in the language on screen."
       },
       "twofa": {
         "q": "Can I turn on two-factor protection?",
@@ -219,6 +219,7 @@
     },
     "beta": {
       "tag": "beta"
-    }
+    },
+    "exampleOwner": "Sample project"
   }
 }

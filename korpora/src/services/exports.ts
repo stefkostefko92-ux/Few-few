@@ -1,5 +1,6 @@
 import type { Project } from '@prisma/client';
 import { zipSync, type Zippable } from 'fflate';
+import { DEFAULT_LOCALE, translatorFor, type Locale, type Translator } from '../i18n.js';
 import {
   engine,
   specOf,
@@ -11,6 +12,8 @@ import {
 /**
  * Изходите на проекта се смятат на СЪРВЪРА от ЗАПАЗЕНАТА спецификация — затова изтекъл акаунт
  * изтегля точно това, което е направил, но не и нещо ново. Нищо от клиента не влиза в изхода.
+ * Езикът (имената на детайлите, проверките, заглавията на CSV, чертежите, README) е езикът на екрана;
+ * числата, отворите и CNC програмите са едни и същи на всеки език.
  */
 export type ExportFile = { name: string; mime: string; body: Buffer };
 
@@ -26,12 +29,13 @@ export class CncBlockedError extends Error {
 }
 
 const CSV = 'text/csv; charset=utf-8';
-const BOM = '\uFEFF'; // Excel разпознава UTF-8 (кирилицата) само с BOM
+const BOM = '\uFEFF'; // Excel разпознава UTF-8 (кирилицата, „€“, „×“) само с BOM
 
 interface Built {
   model: EngineModel;
   meta: DrawingMeta;
   base: string;
+  t: Translator;
 }
 
 interface Machining {
@@ -39,10 +43,10 @@ interface Machining {
   blockers: string[];
 }
 
-function build(project: Project, owner: string): Built {
+function build(project: Project, owner: string, locale: Locale): Built {
   const api = engine();
   const spec = specOf(project.spec);
-  const model = api.buildModel(spec);
+  const model = api.buildModel(spec, { lang: locale });
   // Обков или декор, който вече го няма в каталога, двигателят тихо сменя с първия от списъка. Като грешка в
   // проверките това спира CNC, а чертежите и README го показват: изходът не е за избраното от клиента.
   for (const reason of api.catalogDrift(spec, model)) {
@@ -65,6 +69,7 @@ function build(project: Project, owner: string): Built {
     model,
     meta,
     base: `korpora-${slug}-${project.specHash.slice(0, 8)}`,
+    t: translatorFor(locale),
   };
 }
 
@@ -143,8 +148,13 @@ export function isExportKind(value: unknown): value is ExportKind {
   return typeof value === 'string' && (EXPORT_KINDS as readonly string[]).includes(value);
 }
 
-export function buildExport(project: Project, owner: string, kind: ExportKind): ExportFile {
-  const b = build(project, owner);
+export function buildExport(
+  project: Project,
+  owner: string,
+  kind: ExportKind,
+  locale: Locale = DEFAULT_LOCALE,
+): ExportFile {
+  const b = build(project, owner, locale);
   switch (kind) {
     case 'cut-list.csv':
     case 'hardware.csv':
@@ -187,37 +197,56 @@ export function buildExport(project: Project, owner: string, kind: ExportKind): 
   }
 }
 
-const LEVEL: Record<string, string> = { error: 'грешка', warn: 'внимание', info: 'бележка' };
+const README_WIDTH = 100;
+const COLUMN = 15;
+
+/** Пренася текста на думи до README_WIDTH; продължението е отместено с `indent` интервала. */
+function wrap(text: string, first: string, indent: number): string[] {
+  const lines: string[] = [];
+  let line = first;
+  for (const word of text.split(/\s+/).filter(Boolean)) {
+    const head = line.trim() === '' || line === first;
+    if (!head && line.length + 1 + word.length > README_WIDTH) {
+      lines.push(line);
+      line = ' '.repeat(indent) + word;
+    } else line = head && line === first ? `${first}${word}` : `${line} ${word}`;
+  }
+  lines.push(line);
+  return lines;
+}
+
+/** Ред „файл   какво е“: името в първата колона, описанието пренесено под себе си. */
+const entry = (name: string, text: string): string[] => wrap(text, name.padEnd(COLUMN), COLUMN);
 
 function readme(project: Project, b: Built, blockers: string[]): string {
-  const warnings =
-    b.model.warnings.map((w) => `- [${LEVEL[w.level] ?? w.level}] ${w.text}`).join('\n') ||
-    '- няма';
+  const { t } = b;
+  const warnings = b.model.warnings.length
+    ? b.model.warnings.flatMap((w) => wrap(w.text, `- [${t(`exports.level.${w.level}`)}] `, 2))
+    : [`- ${t('exports.none')}`];
   const cnc = blockers.length
     ? [
-        'cnc/           НЕ Е ИЗДАДЕНА: проверките намериха грешки, а G-code и DXF не бива никога да са',
-        '               грешни. Поправете в редактора и изтеглете отново:',
-        ...blockers.map((r) => `               - ${r}`),
+        ...entry('cnc/', t('exports.cncBlocked')),
+        ...blockers.flatMap((r) => wrap(r, `${' '.repeat(COLUMN)}- `, COLUMN + 2)),
       ]
-    : ['cnc/           DXF със слоеве и G-code за всеки лист от разкроя'];
+    : entry('cnc/', t('exports.cnc'));
   return [
     `Korpora — ${project.name}`,
-    `Спецификация SHA-256: ${project.specHash}`,
-    `Запазена: ${project.updatedAt.toISOString()}`,
+    t('exports.hash', { hash: project.specHash }),
+    t('exports.saved', { at: project.updatedAt.toISOString() }),
     '',
-    'cut-list.csv   детайлите за разкрой (размери за рязане, кант, декор)',
-    'hardware.csv   обковът и крепежите',
-    'drilling.csv   всеки отвор: детайл, лице, координати, диаметър, дълбочина',
-    'drawings/      сглобен чертеж и чертеж на всеки детайл с карта за пробиване (SVG, A3); номерът в',
-    `               името е номерът на листа (${sheetFile(ASSEMBLY_SHEET, 'assembly')} е сглобеният чертеж)`,
+    ...entry('cut-list.csv', t('exports.cutList')),
+    ...entry('hardware.csv', t('exports.hardware')),
+    ...entry('drilling.csv', t('exports.drilling')),
+    ...entry(
+      'drawings/',
+      t('exports.drawings', { assembly: sheetFile(ASSEMBLY_SHEET, 'assembly') }),
+    ),
     ...cnc,
     '',
-    'Проверки на конструкцията:',
-    warnings,
+    t('exports.checks'),
+    ...warnings,
     '',
-    'G-code е за примерен профил на машина (номера на инструментите, нулева точка в долния ляв ъгъл',
-    'на листа, Z0 на горната повърхност). Преди рязане: симулирайте в софтуера на машината и пуснете',
-    'на празен ход.',
+    ...wrap(t('exports.machine'), '', 0),
     '',
   ].join('\n');
 }

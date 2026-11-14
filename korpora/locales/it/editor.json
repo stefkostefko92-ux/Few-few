@@ -30,7 +30,6 @@
     "save": "Salva",
     "download": "Scarica",
     "readOnlyState": "Sola lettura",
-    "languageNote": "Per ora l'editor, i disegni e le tabelle sono solo in bulgaro.",
     "export": {
       "project": "Tutto il progetto (ZIP)",
       "cutlist": "Distinta di taglio (CSV)",
@@ -154,10 +153,10 @@
     "search": "Cerca…",
     "results": "Risultati",
     "build": {
-      "personalize": "Personalizza",
-      "startFree": "Inizia un mobile su misura",
-      "templateText": "«{type}» è un modello: le sue colonne seguono una regola. Personalizzalo e ogni colonna e ogni vano diventano tuoi — larghezze, altezze, ripiani, cassetti, aste e ante uno per uno. Dimensioni, materiali e ferramenta restano.",
-      "otherText": "«{type}» non si personalizza ancora. Inizia un mobile su misura con gli stessi materiali e la stessa ferramenta e componilo colonna per colonna.",
+      "personalize": "Personalizzate",
+      "startFree": "Iniziate un mobile su misura",
+      "templateText": "«{type}» è un modello: le sue colonne seguono una regola. Personalizzatelo e ogni colonna e ogni vano diventano vostri — larghezze, altezze, ripiani, cassetti, aste e ante uno per uno. Dimensioni, materiali e ferramenta restano.",
+      "otherText": "«{type}» non si personalizza ancora. Iniziate un mobile su misura con gli stessi materiali e la stessa ferramenta e componetelo colonna per colonna.",
       "toolbar": "Configuratore",
       "undo": "Annulla",
       "redo": "Ripeti",
@@ -196,10 +195,248 @@
       "hingeLeft": "A sinistra",
       "hingeRight": "A destra",
       "drawersOwn": "I cassetti hanno i loro frontali: sopra non va un'anta.",
-      "frontOther": "Qui un'anta copre i vani {from}–{to}. Selezionali insieme per cambiarla, o metti un nuovo frontale solo qui.",
+      "frontOther": "Qui un'anta copre i vani {from}–{to}. Selezionateli insieme per cambiarla, o mettete un nuovo frontale solo qui.",
       "hint": "Un clic seleziona un vano, Maiusc+clic più vani uno sopra l'altro per un'anta sola; le frecce spostano la selezione. I confini tra le colonne e i ripiani fissi si trascinano con il mouse o con il dito, e con le frecce quando hanno il focus (Maiusc: 10 mm). Ctrl+Z e Ctrl+Maiusc+Z annullano e ripetono.",
       "pickName": "Colonna {c}, vano {k}",
       "toBuild": "Modifica nel configuratore"
+    },
+    "ui": {
+      "currency": {
+        "BGN": "BGN"
+      },
+      "copy": {
+        "done": "Copiato",
+        "selected": "Selezionato — Ctrl+C",
+        "failed": "Copia non riuscita"
+      },
+      "level": {
+        "error": "Errore",
+        "warn": "Attenzione",
+        "info": "Nota"
+      },
+      "checks": {
+        "errors": {
+          "one": "{n} errore",
+          "other": "{n} errori"
+        },
+        "warns": "{n} da verificare",
+        "ok": "Controlli superati",
+        "none": "Nessuna osservazione sulla costruzione."
+      },
+      "decor": {
+        "uni": "Tinta unita",
+        "wood": "Legno",
+        "stone": "Pietra",
+        "concrete": "Cemento",
+        "metal": "Metallo",
+        "fantasy": "Fantasia",
+        "textile": "Tessuto",
+        "paint": "Vernice",
+        "other": "Altri"
+      },
+      "handleType": {
+        "bar": "A ponte",
+        "knob": "Pomolo",
+        "profile": "Profilo",
+        "edge": "Sul bordo",
+        "shell": "A conchiglia",
+        "recessed": "Incassata",
+        "gola": "Profilo gola",
+        "ring": "Ad anello",
+        "other": "Altra"
+      },
+      "ralGroup": {
+        "1": "Gialli",
+        "2": "Arancioni",
+        "3": "Rossi",
+        "4": "Viola",
+        "5": "Blu",
+        "6": "Verdi",
+        "7": "Grigi",
+        "8": "Marroni",
+        "9": "Bianchi e neri"
+      },
+      "pick": {
+        "decor": "Decorativo",
+        "ral": "Colore RAL (MDF laccato)",
+        "handle": "Maniglia",
+        "all": "Tutti",
+        "allKinds": "Tutti i tipi",
+        "onOrder": "su ordinazione",
+        "anySpacing": "Qualsiasi interasse"
+      },
+      "handle": {
+        "none": "Senza maniglia",
+        "noneNote": "TIP-ON o profilo — non incluso",
+        "noneFronts": "i frontali si aprono con TIP-ON o un profilo — non incluso"
+      },
+      "of": "{a} di {b}",
+      "more": "Mostra altri {n}",
+      "from": "da {price}",
+      "hinges": "Cerniere",
+      "noHinges": "Nessuna cerniera con dati di foratura",
+      "noSlides": "Nessuna guida con dati di foratura",
+      "noBedFittings": "Nessun raccordo nel catalogo",
+      "field": {
+        "hidden": "Campo nascosto: {label}",
+        "shown": "Campo mostrato: {label}"
+      },
+      "paintedMdf": "MDF laccato",
+      "slider": "{label}, cursore",
+      "yes": "sì",
+      "no": "no",
+      "cat": {
+        "handles": "Maniglie",
+        "hinges": "Cerniere",
+        "slides": "Guide",
+        "bed": "Ferramenta per letti",
+        "decors": "Decorativi"
+      },
+      "col": {
+        "name": "Nome",
+        "brand": "Marca",
+        "code": "Codice",
+        "kind": "Tipo",
+        "holes": "Fori",
+        "spacing": "Interasse",
+        "length": "Lunghezza",
+        "finish": "Finitura",
+        "price": "Prezzo",
+        "shop": "Negozio",
+        "drillable": "Forabile",
+        "mfrCode": "Codice del produttore",
+        "system": "Sistema",
+        "angle": "Angolo",
+        "overlay": "Sovrapposizione",
+        "softClose": "Chiusura ammortizzata",
+        "lengths": "Lunghezze",
+        "load": "Portata",
+        "manufacturer": "Produttore",
+        "gloss": "Lucentezza",
+        "hex": "HEX (approssimativo)",
+        "availableBg": "Disponibile in BG",
+        "nameEn": "Nome (EN)",
+        "nameDe": "Nome (DE)"
+      },
+      "drill": {
+        "group": {
+          "door": "Ante",
+          "drawer-front": "Frontali dei cassetti",
+          "side": "Fianchi",
+          "partition": "Divisori",
+          "other": "Altri pezzi"
+        },
+        "top": "Fori dall'alto",
+        "cups": "Tazze delle cerniere",
+        "plates": "Basette",
+        "handles": "Maniglie",
+        "slides": "Guide",
+        "inEdges": "In testa",
+        "noHardware": "Questo modello non ha cerniere, maniglie né guide.",
+        "card": {
+          "hinge": "Cerniera",
+          "handle": "Maniglia",
+          "slide": "Guida"
+        },
+        "cup": {
+          "left": "tazza Ø{d} × {depth}, a {boring} mm dal bordo delle cerniere (centro a {centre}); bordo sinistro",
+          "right": "tazza Ø{d} × {depth}, a {boring} mm dal bordo delle cerniere (centro a {centre}); bordo destro"
+        },
+        "heightsFrom": "altezze dal bordo «{edge}»",
+        "byTemplate": "con la dima del produttore — nessun foro nel G-code",
+        "handleThrough": "{n} × Ø{d} passante",
+        "spacing": "interasse {s}",
+        "uvFrom": "u ; v dall'angolo «{u0}» / «{v0}»",
+        "pilots": {
+          "through": "{n} fori pilota Ø{d} passanti",
+          "blind": "{n} fori pilota Ø{d} × {depth}"
+        },
+        "plateHoles": {
+          "through": "{n} fori per la basetta Ø{d} passanti",
+          "blind": "{n} fori per la basetta Ø{d} × {depth}"
+        },
+        "heightsFull": "altezze dal bordo «{edge}» — l'elenco completo è nella mappa e nel CSV",
+        "axes": "X (u) dal bordo «{u0}» verso «{u1}» · Y (v) dal bordo «{v0}» verso «{v1}» · faccia A in alto",
+        "noHole": "senza foro",
+        "throughDepth": "{d} (passante)",
+        "horizontal": "{d} orizzontale",
+        "inEdge": "nella costa «{edge}»"
+      },
+      "sheetOf": "Pannello {n} — {title}",
+      "cnc": {
+        "tools": "Utensili",
+        "holes": "Fori",
+        "cut": "Taglio",
+        "rapid": "Movimenti rapidi",
+        "time": "Tempo (stima)",
+        "minutes": "≈ {n} min",
+        "drill": "punta Ø{d}",
+        "grooveMill": "fresa Ø{d}, canali",
+        "contourMill": "fresa Ø{d}, contorno",
+        "manual": {
+          "one": "{n} foro senza punta nella libreria: {list} — si fora a mano.",
+          "other": "{n} fori senza punta nella libreria: {list} — si forano a mano."
+        },
+        "lines": "{n} righe",
+        "layers": "{n} layer",
+        "simulate": "Simula",
+        "pause": "Pausa"
+      },
+      "post": {
+        "iso": "Stile ISO / Fanuc (G81, G43, cambio T…M6)",
+        "grbl": "GRBL (hobby, cambio utensile manuale)"
+      },
+      "bom": {
+        "parts": "Pezzi",
+        "sheets": "Pannelli",
+        "band": "Bordo",
+        "hardware": "Ferramenta",
+        "price": "Ferramenta, prezzo",
+        "pieces": "{n} pz",
+        "grain": "La venatura segue la lunghezza",
+        "bandLine": "Bordo {t} mm · {decor}",
+        "bandHint": "Il bordo è indicato in lunghezze esatte, senza sovrappiù per la rifilatura.",
+        "unpriced": {
+          "one": "{n} voce senza prezzo — minuteria o ferramenta generica.",
+          "other": "{n} voci senza prezzo — minuteria e ferramenta generica."
+        },
+        "edgeHint": "I fori orizzontali nelle coste non si fanno su una macchina a 3 assi: foratrice o dima.",
+        "noEdgeOps": "Nessuna lavorazione fuori dal CNC."
+      },
+      "nest": {
+        "sheetAria": "Pannello {n}: {parts} pezzi",
+        "offcut": "Avanzo {w} × {h}",
+        "white": "bianco",
+        "yield": "Resa",
+        "spacing": "Distanza",
+        "compensated": "Bordo compensato",
+        "parts": "{n} pz"
+      },
+      "sheet": "Pannello {n}",
+      "draw": {
+        "assembly": "disegno d'assieme"
+      },
+      "viewer": {
+        "label": "Vista 3D del mobile: trascinate o usate le frecce — rotazione, rotellina o + e − — zoom, 0 — il mobile intero"
+      }
     }
+  },
+  "exports": {
+    "level": {
+      "error": "errore",
+      "warn": "attenzione",
+      "info": "nota"
+    },
+    "none": "nessuno",
+    "hash": "Specifica SHA-256: {hash}",
+    "saved": "Salvato: {at}",
+    "cutList": "i pezzi da tagliare (misure di taglio, bordo, decorativo)",
+    "hardware": "la ferramenta e la minuteria",
+    "drilling": "ogni foro: pezzo, faccia, coordinate, diametro, profondità",
+    "drawings": "disegno d'assieme e disegno di ogni pezzo con la mappa di foratura (SVG, A3); il numero nel nome è il numero del foglio ({assembly} è il disegno d'assieme)",
+    "cnc": "DXF a layer e G-code per ogni pannello del nesting",
+    "cncBlocked": "NON RILASCIATA: i controlli hanno trovato errori, e G-code e DXF non devono mai essere sbagliati. Correggete nell'editor e scaricate di nuovo:",
+    "checks": "Controlli della costruzione:",
+    "machine": "Il G-code è per un profilo di macchina di esempio (numeri degli utensili, zero nell'angolo in basso a sinistra del pannello, Z0 sulla superficie superiore). Prima di tagliare: simulatelo nel software della macchina e fate una prova a vuoto."
   }
 }

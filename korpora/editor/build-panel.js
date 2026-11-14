@@ -10,7 +10,8 @@ import {
   mergeUp,
   dragBoundary,
 } from '../engine/layout-edit.js';
-import { TYPES } from '../engine/types.js';
+import { typeText } from '../engine/types.js';
+import { words } from './text.js';
 import { $ } from './dom.js';
 import { frontSvg, builtColumns } from './build-svg.js';
 import { bindDrag } from './build-drag.js';
@@ -233,7 +234,7 @@ export function bindBuilder({ panel, isReadOnly, steps, onSelect = () => {} }) {
         const convertible = CONVERTIBLE.includes(spec.type);
         $('#bld-template-text', panel).textContent = (
           convertible ? t.templateText : t.otherText
-        ).replace('{type}', TYPES[spec.type].label);
+        ).replace('{type}', typeText(spec.type, words()).label);
         $('#bld-personalize', panel).textContent = convertible ? t.personalize : t.startFree;
         $('#bld-personalize', panel).disabled = isReadOnly();
         return;

@@ -1,10 +1,13 @@
 // DOM and formatting helpers shared by the app modules.
 import { esc } from '../engine/util.js';
+import { langTag, tx, words } from './text.js';
 
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 export const fmt = (v, d = 0) =>
-  Number(v).toLocaleString('bg-BG', { minimumFractionDigits: d, maximumFractionDigits: d });
+  Number(v).toLocaleString(langTag(), { minimumFractionDigits: d, maximumFractionDigits: d });
+// a size as the engine writes it (a decimal comma in Bulgarian and Italian, a point in English): 0,8 / 0.8
+export const num = (v) => words().num(v);
 
 // CSP forbids style attributes in markup; inline values are written as data-css and applied through the CSSOM.
 function hydrateStyles(root) {
@@ -26,12 +29,12 @@ export const mm = (v) => {
   return fmt(x, Number.isInteger(x) ? 0 : 1);
 };
 export { esc };
-// a percentage keeps its sign on the same line (U+00A0 before %), as in every Bulgarian text of the product
+// a percentage keeps its sign on the same line (U+00A0 before %), as in every text of the product
 export const pct = (v, d = 0) => `${fmt(v, d)}\u00a0%`;
 // amount and currency are kept on one line (U+00A0), as in every text of the product
 export const money = (v, cur) =>
   Number.isFinite(v)
-    ? `${fmt(v, 2)}\u00a0${cur === 'EUR' ? '€' : cur === 'BGN' ? 'лв.' : (cur ?? '')}`.trim()
+    ? `${fmt(v, 2)}\u00a0${cur === 'EUR' ? '€' : cur === 'BGN' ? tx('currency.BGN') : (cur ?? '')}`.trim()
     : '—';
 export const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -46,7 +49,7 @@ export async function copyText(text, btn, fallback) {
   btn.dataset.label ??= btn.textContent;
   try {
     await navigator.clipboard.writeText(text);
-    btn.textContent = 'Копирано';
+    btn.textContent = tx('copy.done');
   } catch {
     if (fallback) {
       const range = document.createRange();
@@ -55,7 +58,7 @@ export async function copyText(text, btn, fallback) {
       sel.removeAllRanges();
       sel.addRange(range);
     }
-    btn.textContent = fallback ? 'Маркирано — Ctrl+C' : 'Копирането не успя';
+    btn.textContent = tx(fallback ? 'copy.selected' : 'copy.failed');
   }
   window.clearTimeout(Number(btn.dataset.timer));
   btn.dataset.timer = String(

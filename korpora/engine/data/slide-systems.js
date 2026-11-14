@@ -9,6 +9,8 @@ export const SLIDE_SYSTEMS = [
   {
     id: 'gtv_h45',
     name: 'GTV H45 PRESTIGE — сачмен, страничен монтаж, 45 mm',
+    name_en: 'GTV H45 PRESTIGE — ball-bearing, side mounted, 45 mm',
+    name_it: 'GTV H45 PRESTIGE — a sfere, montaggio laterale, 45 mm',
     brand: 'GTV',
     mount: 'side',
     sideClearance: 12.7,
@@ -31,6 +33,8 @@ export const SLIDE_SYSTEMS = [
   {
     id: 'blum_tandem_560h',
     name: 'Blum TANDEM 560H — скрит водач, страница на чекмеджето 16 mm',
+    name_en: 'Blum TANDEM 560H — concealed slide, drawer side 16 mm',
+    name_it: 'Blum TANDEM 560H — guida nascosta, fianco del cassetto 16 mm',
     brand: 'Blum',
     mount: 'under',
     innerWidthMinus: 42, // SKW = LW − 42
@@ -48,7 +52,7 @@ export const SLIDE_SYSTEMS = [
     // 750 ZST.750TV“, „Suitable for cabinet width KB 1400 mm“, рязане „LW - 254 mm“ (вал) и „NL + 12 mm“ (зъбна рейка);
     // с него „NL + 3*“ … „* Additional +12 mm“ и „* +3 mm with side stabilisation“ под водача (стр. 5); „Not compatible with
     // TIP-ON“ (стр. 21). Кога се слага — engine/stabiliser.js.
-    stabiliser: { maxKB: 1400, kits: [[410, 'ZST.410TV'], [600, 'ZST.600TV'], [750, 'ZST.750TV']], shaftMinus: 254, rackPlus: 12, depthPlus: 12, belowPlus: 3, noTipOn: 'Blum TD-127/3, стр. 21', doc: 'TD-127/3, стр. 4–5' },
+    stabiliser: { maxKB: 1400, kits: [[410, 'ZST.410TV'], [600, 'ZST.600TV'], [750, 'ZST.750TV']], shaftMinus: 254, rackPlus: 12, depthPlus: 12, belowPlus: 3, noTipOn: 'Blum TD-127/3, стр. 21', noTipOn_en: 'Blum TD-127/3, p. 21', noTipOn_it: 'Blum TD-127/3, pag. 21', doc: 'TD-127/3, стр. 4–5', doc_en: 'TD-127/3, pp. 4–5', doc_it: 'TD-127/3, pagg. 4–5' },
     loadKg: 30,
     extension: 'full',
     source: { title: 'Blum TD-127/3 EN/07.23 TANDEM 16 mm — Technical data sheet, стр. 4, 5, 21 и 24', url: 'https://d2.blum.com/services/BEC003/me12694698_td_dok_bau_$sen_$aof_$v3.pdf' },
@@ -56,6 +60,8 @@ export const SLIDE_SYSTEMS = [
   {
     id: 'blum_movento_760h',
     name: 'Blum MOVENTO 760H — скрит водач, NL 600',
+    name_en: 'Blum MOVENTO 760H — concealed slide, NL 600',
+    name_it: 'Blum MOVENTO 760H — guida nascosta, NL 600',
     brand: 'Blum',
     mount: 'under',
     innerWidthMinus: 42,
@@ -73,7 +79,7 @@ export const SLIDE_SYSTEMS = [
     // 1400 mm“, „Shaft cutting dimensions: Internal cabinet width (LW) – 315 mm“, „Gear rack cutting: NL + 10 mm“; „NL + 3*“
     // … „* Additional +12 mm with side stabiliser“ (стр. 5), без добавка под водача. Съвместим с TIP-ON: „Compatible with
     // all MOVENTO motion technologies“ (каталог Blum 2024/2025, стр. 422, https://publications.blum.com/2024/catalogue/en/422/).
-    stabiliser: { maxKB: 1400, kits: [[400, 'ZS7M400MU'], [600, 'ZS7M600MU'], [750, 'ZS7M750MU']], shaftMinus: 315, rackPlus: 10, depthPlus: 12, belowPlus: 0, doc: 'TD-132/1, стр. 4–5' },
+    stabiliser: { maxKB: 1400, kits: [[400, 'ZS7M400MU'], [600, 'ZS7M600MU'], [750, 'ZS7M750MU']], shaftMinus: 315, rackPlus: 10, depthPlus: 12, belowPlus: 0, doc: 'TD-132/1, стр. 4–5', doc_en: 'TD-132/1, pp. 4–5', doc_it: 'TD-132/1, pagg. 4–5' },
     loadKg: 40,
     extension: 'full',
     source: { title: 'Blum TD-132/1 EN/06.22 MOVENTO — Technical data sheet, стр. 4, 5, 13 и 19 (отворите — само за NL 600)', url: 'https://d2.blum.com/services/BEC003/me13029704_td_dok_bau_$sen_$aof_$v1.pdf' },

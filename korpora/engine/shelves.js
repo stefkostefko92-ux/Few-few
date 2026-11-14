@@ -30,7 +30,7 @@ export function shelvesInZone(ctx, a) {
 function placeShelves(ctx, a) {
   const { col, i, n, shelves, holeYs, rows, zoneBottom, zoneTop, T, backFront, zEnd, bc, carc, key, nm } = a;
   const tag = a.tag ?? '';
-  const label = a.label ?? ((k) => (n > 1 ? `Рафт ${i + 1}.${k}` : `Рафт ${k}`));
+  const label = a.label ?? ((k) => (n > 1 ? ctx.t('part.shelfIn', { col: i + 1, k }) : ctx.t('part.shelf', { k })));
   const hingeYs = a.hingeYs ?? col.hingeYs;
   // pins only go into plain system holes (a hole taken by a hinge plate screw, from either face, is not usable)
   const usable = holeYs.filter((y) => rows.every((z) => hasHole(col.left, [col.xa, y, z], SYSTEM.d, 'system') && hasHole(col.right, [col.xb, y, z], SYSTEM.d, 'system')));
@@ -45,12 +45,12 @@ function placeShelves(ctx, a) {
       if (best === null || Math.abs(y + PIN_RISE - target) < Math.abs(best + PIN_RISE - target)) best = y;
     }
     if (best === null) {
-      ctx.warn('warn', `${nm(`Колона ${i + 1}`)}: няма място за рафт ${k}.`);
+      ctx.warn('warn', ctx.t('w.noShelfRoom', { where: nm(ctx.t('part.column', { n: i + 1 })), k }));
       continue;
     }
     used.push(best);
     const y = best + PIN_RISE;
     panel(ctx, { ...carc, key: key(`c${i + 1}${tag}shelf${k}`), name: nm(label(k)), role: 'shelf', box: { min: [col.xa + 1, y, backFront + 1], max: [col.xb - 1, y + T, zEnd - 20] }, n: '+y', L: 'x', bands: { '+z': bc }, explode: [0, 0, 0.9], pinY: best });
-    ctx.hw('pins', { name: 'Рафтоносач Ø5', qty: 4, unit: 'бр.', group: 'Обков' });
+    ctx.hw('pins', { name: ctx.t('hw.pin'), qty: 4, unit: ctx.t('u.pcs'), group: ctx.t('g.hardware') });
   }
 }

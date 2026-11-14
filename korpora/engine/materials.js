@@ -1,3 +1,5 @@
+import { translator } from './i18n.js';
+
 // Board stock, commercial decors and RAL colours. Catalog data is registered at runtime (registerDecors/registerRal);
 // the four built-in decors keep the engine usable without a catalog.
 
@@ -57,10 +59,13 @@ export const ralList = () => [...rals.values()];
 export const hasGrain = (id) => decor(id).category === 'wood';
 // one of the built-in decors: their code is only a short name, not a catalog code
 export const isBaseDecor = (d) => d?.manufacturer === BASE_MANUFACTURER;
-export const decorName = (id) => {
+// t: the model's language (i18n.js); the built-in decors and the stock are named in it, the catalogue's as the shop has them
+export const decorName = (id, t = translator('bg')) => {
   const d = decor(id);
-  return isBaseDecor(d) || d.manufacturer === 'RAL' ? d.name : `${d.manufacturer} ${d.code} ${d.name}`;
+  if (isBaseDecor(d)) return t(`decor.${d.id}`);
+  return d.manufacturer === 'RAL' ? d.name : `${d.manufacturer} ${d.code} ${d.name}`;
 };
+export const stockName = (id, t = translator('bg')) => t(`stock.${id}`);
 
 // Front material: laminated board in a decor (edge banded) or MDF lacquered in a RAL colour (no edge band).
 export function frontStock(spec) {

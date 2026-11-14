@@ -143,6 +143,21 @@ export function translate(
   return locale === 'it' ? elideItalian(text) : text;
 }
 
+/**
+ * Клон от речника за скрипт на страницата: ключовете под `prefix`, без него (`editor.ui.bom.parts` →
+ * `bom.parts`). Липсващ на езика ключ идва от българския — както при `translate`.
+ */
+export function textsUnder(locale: Locale, prefix: string): Record<string, string> {
+  const dicts = dictionaries();
+  const out: Record<string, string> = {};
+  for (const source of [dicts[DEFAULT_LOCALE], dicts[locale]]) {
+    for (const [key, value] of Object.entries(source)) {
+      if (key.startsWith(prefix)) out[key.slice(prefix.length)] = value;
+    }
+  }
+  return out;
+}
+
 export type Translator = (key: string, params?: Record<string, string | number>) => string;
 
 export function translatorFor(locale: Locale): Translator {

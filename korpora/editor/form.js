@@ -1,6 +1,6 @@
 // The parameter rail: furniture type cards, schema-driven size fields, materials and colours, hardware and
 // machine settings. Every control carries data-field; the rail reports changes and the pipeline re-normalizes.
-import { TYPES, LISTED_TYPES } from '../engine/types.js';
+import { LISTED_TYPES, TYPES, typeText } from '../engine/types.js';
 import { decor, decorName, ralList, isBaseDecor } from '../engine/materials.js';
 import {
   hingeList,
@@ -18,21 +18,23 @@ import {
   TOOL_DIAMETERS,
 } from '../engine/model.js';
 import { STEP_DOWN_RANGE, MAX_FEED_RANGE } from '../engine/cam.js';
-import { $, $$, esc, money, swatchStyle, setHtml } from './dom.js';
+import { $, $$, esc, money, num, swatchStyle, setHtml } from './dom.js';
+import { tx, words } from './text.js';
 import { typeIcon, handleIcon } from './icons.js';
 import { paramsHtml } from './params-html.js';
 
 export function renderTypes(host) {
   const groups = [...new Set(LISTED_TYPES.map((t) => TYPES[t].group))];
+  const t = words();
   host.innerHTML = groups
     .map(
       (g) =>
-        `<p class="tgroup">${esc(g)}</p><div class="types">${LISTED_TYPES.filter(
-          (t) => TYPES[t].group === g,
+        `<p class="tgroup">${esc(tx(`group.${g}`))}</p><div class="types">${LISTED_TYPES.filter(
+          (type) => TYPES[type].group === g,
         )
           .map(
-            (t) =>
-              `<label class="tcard"><input type="radio" name="type" value="${t}" data-field="type"><span>${typeIcon(t)}<b>${esc(TYPES[t].label)}</b></span></label>`,
+            (type) =>
+              `<label class="tcard"><input type="radio" name="type" value="${type}" data-field="type"><span>${typeIcon(type)}<b>${esc(typeText(type, t).label)}</b></span></label>`,
           )
           .join('')}</div>`,
     )
@@ -43,14 +45,14 @@ export function renderTypes(host) {
 // the type the project opened with (data-type); they are drawn here again only for another type.
 export function renderParams(host, type) {
   if (host.dataset.type === type && host.firstElementChild) return;
-  host.innerHTML = paramsHtml(TYPES[type].params);
+  host.innerHTML = paramsHtml(typeText(type, words()).params);
   host.dataset.type = type;
 }
 
 // The chosen type on the closed „Furniture“ panel: its icon and name (the server writes the name first).
 export function showType(type) {
   $('#type-icon').innerHTML = typeIcon(type);
-  $('#type-name').textContent = TYPES[type].label;
+  $('#type-name').textContent = typeText(type, words()).label;
 }
 
 // The types are chosen once per project, so they stay folded under the chosen one. A click on a card folds them
@@ -71,39 +73,39 @@ export function renderHardwareOptions() {
     const ps = list.filter((p) => p && Number.isFinite(p.price));
     if (!ps.length) return '';
     const min = ps.reduce((a, p) => (p.price < a.price ? p : a));
-    return ` · от ${money(min.price, min.currency)}`;
+    return ` · ${tx('from', { price: money(min.price, min.currency) })}`;
   };
   $('#f-hinge').innerHTML = hinges.length
     ? groupOptions(
         hinges,
-        (h) => hingeSystemOf(h)?.name ?? h.brand ?? 'Панти',
-        (h) => `${h.name}${from(Object.values(h.variants ?? {}))}`,
+        (h) => (hingeSystemOf(h) ? words().of(hingeSystemOf(h)) : (h.brand ?? tx('hinges'))),
+        (h) => `${words().of(h)}${from(Object.values(h.variants ?? {}))}`,
       )
-    : '<option value="">Няма панти с данни за пробиване</option>';
+    : `<option value="">${esc(tx('noHinges'))}</option>`;
   const slides = slideList();
   $('#f-slide').innerHTML = slides.length
     ? slides
         .map(
           (s) =>
-            `<option value="${esc(s.id)}">${esc(`${s.name}${from(Object.values(s.products ?? {}))}`)}</option>`,
+            `<option value="${esc(s.id)}">${esc(`${words().of(s)}${from(Object.values(s.products ?? {}))}`)}</option>`,
         )
         .join('')
-    : '<option value="">Няма водачи с данни за пробиване</option>';
+    : `<option value="">${esc(tx('noSlides'))}</option>`;
   const fits = bedFittingList();
   $('#f-bedFitting').innerHTML = fits.length
     ? fits
         .map(
           (b) =>
-            `<option value="${esc(b.id)}">${esc(`${b.brand ?? ''} ${b.sku ?? ''} — ${b.name}${Number.isFinite(b.price) ? ` · ${money(b.price, b.currency)}` : ''}`)}</option>`,
+            `<option value="${esc(b.id)}">${esc(`${b.brand ?? ''} ${b.sku ?? ''} — ${words().of(b)}${Number.isFinite(b.price) ? ` · ${money(b.price, b.currency)}` : ''}`)}</option>`,
         )
         .join('')
-    : '<option value="">Няма връзки в каталога</option>';
+    : `<option value="">${esc(tx('noBedFittings'))}</option>`;
   $('#f-shelfLoad').innerHTML = SHELF_LOADS.map(
     (v) =>
-      `<label><input type="radio" name="shelfLoad" value="${v}" data-field="shelfLoad"><span>${String(v).replace('.', ',')} kg/dm²</span></label>`,
+      `<label><input type="radio" name="shelfLoad" value="${v}" data-field="shelfLoad"><span>${num(v)} kg/dm²</span></label>`,
   ).join('');
   // the values normalizeSpec accepts — the select can neither offer more nor miss one
-  const mm = (v) => `${String(v).replace('.', ',')} mm`;
+  const mm = (v) => `${num(v)} mm`;
   const band = $('#f-bandCarcass');
   band.innerHTML = BAND_CARCASS.map(
     (v) => `<option value="${v}">${esc(v === 0 ? band.dataset.none : mm(v))}</option>`,
@@ -153,7 +155,7 @@ export function writeForm(form, spec, writeFocused = false) {
   }
   for (const out of $$('output[data-for]', form)) {
     const v = spec[out.dataset.for];
-    out.textContent = `${String(v).replace('.', ',')}${out.dataset.unit ? ` ${out.dataset.unit}` : ''}`;
+    out.textContent = `${num(v)}${out.dataset.unit ? ` ${out.dataset.unit}` : ''}`;
   }
   // the fields of another choice (a side wall of the kitchen): a screen reader hears what came and went, not the first time
   const changed = [];
@@ -162,7 +164,9 @@ export function writeForm(form, spec, writeFocused = false) {
     const hidden = !values.split(',').includes(String(spec[key]));
     if (el.dataset.whenSeen && el.hidden !== hidden)
       changed.push(
-        `${hidden ? 'Скрито' : 'Показано'} поле: ${el.querySelector('label')?.textContent ?? ''}`,
+        tx(hidden ? 'field.hidden' : 'field.shown', {
+          label: el.querySelector('label')?.textContent ?? '',
+        }),
       );
     el.hidden = hidden;
     el.dataset.whenSeen = '1';
@@ -174,15 +178,15 @@ export function writeForm(form, spec, writeFocused = false) {
   $('#row-bedFitting').hidden = spec.type !== 'bed';
   for (const id of ['#row-grblStepDown', '#row-grblMaxFeed']) $(id).hidden = spec.post !== 'grbl';
   $('#f-frontMaterial-ral').disabled = !ralList().length;
-  pickButton('carcassDecor', decor(spec.carcassDecor), decorName(spec.carcassDecor));
-  pickButton('frontDecor', decor(spec.frontDecor), decorName(spec.frontDecor));
+  pickButton('carcassDecor', decor(spec.carcassDecor), decorName(spec.carcassDecor, words()));
+  pickButton('frontDecor', decor(spec.frontDecor), decorName(spec.frontDecor, words()));
   if (spec.frontRal)
     pickButton('frontRal', decor(spec.frontRal), `${spec.frontRal} — ${decor(spec.frontRal).name}`);
   const h = handleModel(spec.handle);
   const hb = $('[data-pick="handle"]');
   hb.innerHTML = h
-    ? `${handleIcon(h)}<span class="pv">${esc(h.name)}<small>${esc([h.brand, handleHoles(h).label, money(h.price, h.currency)].filter(Boolean).join(' · '))}</small></span>`
-    : `${handleIcon(null)}<span class="pv">Без дръжка<small>фронтовете се отварят с TIP-ON или профил — не е включен</small></span>`;
+    ? `${handleIcon(h)}<span class="pv">${esc(words().of(h))}<small>${esc([h.brand, handleHoles(h, words()).label, money(h.price, h.currency)].filter(Boolean).join(' · '))}</small></span>`
+    : `${handleIcon(null)}<span class="pv">${esc(tx('handle.none'))}<small>${esc(tx('handle.noneFronts'))}</small></span>`;
 }
 
 function pickButton(key, d, label) {
@@ -190,7 +194,7 @@ function pickButton(key, d, label) {
   if (!b) return;
   setHtml(
     b,
-    `<i class="sw" data-css="${esc(swatchStyle(d))}"></i><span class="pv">${esc(label)}<small>${esc(d.category === 'paint' ? 'МДФ, боядисан' : `${d.manufacturer}${d.code && !isBaseDecor(d) ? ` · ${d.code}` : ''}`)}</small></span>`,
+    `<i class="sw" data-css="${esc(swatchStyle(d))}"></i><span class="pv">${esc(label)}<small>${esc(d.category === 'paint' ? tx('paintedMdf') : `${d.manufacturer}${d.code && !isBaseDecor(d) ? ` · ${d.code}` : ''}`)}</small></span>`,
   );
 }
 

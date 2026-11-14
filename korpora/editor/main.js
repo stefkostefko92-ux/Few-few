@@ -7,6 +7,7 @@ import { nest } from '../engine/nest.js';
 import { cncBlockers } from '../engine/cam.js';
 import { canonicalJson } from '../engine/util.js';
 import { $, $$, sha256, localDate } from './dom.js';
+import { lang } from './text.js';
 import {
   renderTypes,
   renderParams,
@@ -132,7 +133,7 @@ async function recompute(writeFocused = false) {
   let bom;
   let blockers;
   try {
-    model = buildModel(spec);
+    model = buildModel(spec, { lang: lang() });
     // as on the server: the saved project drills and cuts for what it chose, not for the substitute on screen
     for (const reason of state.drift) model.warnings.push({ level: 'error', text: reason });
     nesting = nest(model);

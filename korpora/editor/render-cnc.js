@@ -1,5 +1,6 @@
 // CNC tab: per-sheet G-code and DXF, the tool table, time estimate and the toolpath simulation.
-import { $, esc, fmt, pct, stat, reduceMotion, setHtml } from './dom.js';
+import { $, esc, fmt, num, pct, stat, reduceMotion, setHtml } from './dom.js';
+import { tx, txCount } from './text.js';
 import { toGcode, POSTS, GROOVE_MILL, CLEAR, cncFileName } from '../engine/cam.js';
 import { toDxf } from '../engine/dxf.js';
 import { sheetSvg, sheetTitle } from './render-nest.js';
@@ -123,7 +124,8 @@ export function renderCnc(state, meta) {
   state.sheet = Math.min(state.sheet, sheets.length - 1);
   $('#cnc-sheet').innerHTML = sheets
     .map(
-      (sh) => `<option value="${sh.index - 1}">Лист ${sh.index} — ${esc(sheetTitle(sh))}</option>`,
+      (sh) =>
+        `<option value="${sh.index - 1}">${esc(tx('sheetOf', { n: sh.index, title: sheetTitle(sh) }))}</option>`,
     )
     .join('');
   $('#cnc-sheet').value = String(state.sheet);
@@ -145,31 +147,34 @@ export function renderCnc(state, meta) {
   state.progress = 1;
   const est = estimate(g);
   $('#cnc-stats').innerHTML = [
-    stat('Инструменти', fmt(g.tools.length)),
-    stat('Отвори', fmt(est.drills)),
-    stat('Рязане', `${fmt(est.cut / 1000, 1)} m`),
-    stat('Празен ход', `${fmt(est.rapid / 1000, 1)} m`),
-    stat('Време (оценка)', `≈ ${fmt(Math.max(1, Math.round(est.seconds / 60)))} мин`),
+    stat(tx('cnc.tools'), fmt(g.tools.length)),
+    stat(tx('cnc.holes'), fmt(est.drills)),
+    stat(tx('cnc.cut'), `${fmt(est.cut / 1000, 1)} m`),
+    stat(tx('cnc.rapid'), `${fmt(est.rapid / 1000, 1)} m`),
+    stat(
+      tx('cnc.time'),
+      esc(tx('cnc.minutes', { n: fmt(Math.max(1, Math.round(est.seconds / 60))) })),
+    ),
   ].join('');
   setHtml(
     $('#cnc-tools'),
     g.tools
       .map(
         (t) =>
-          `<span class="${g.color.get(t.id)}">${t.id} ${esc(t.kind === 'drill' ? `свредло Ø${String(t.d).replace('.', ',')}` : t.id === GROOVE_MILL.id ? `фреза Ø${t.d}, канали` : `фреза Ø${t.d}, контур`)}</span>`,
+          `<span class="${g.color.get(t.id)}">${t.id} ${esc(tx(t.kind === 'drill' ? 'cnc.drill' : t.id === GROOVE_MILL.id ? 'cnc.grooveMill' : 'cnc.contourMill', { d: num(t.d) }))}</span>`,
       )
       .join(''),
   );
   $('#cnc-manual').innerHTML = g.ops.manual.length
-    ? `<p class="err">${g.ops.manual.length} отвора без свредло в библиотеката: ${[...new Set(g.ops.manual.map((h) => `Ø${h.d}`))].join(', ')} — пробиват се ръчно.</p>`
+    ? `<p class="err">${esc(txCount(g.ops.manual.length, 'cnc.manual', { list: [...new Set(g.ops.manual.map((h) => `Ø${num(h.d)}`))].join(', ') }))}</p>`
     : '';
   $('#gcode').textContent = g.text;
   $('#dxf').textContent = dxf.text;
   // the names in cnc.zip (and under cnc/ in project.zip)
   $('#gcode-meta').textContent =
-    `${POSTS[state.spec.post].name} · ${g.text.split('\n').length - 1} реда · ${cncFileName(sh.index, 'nc')}`;
+    `${tx(`post.${POSTS[state.spec.post].id}`)} · ${tx('cnc.lines', { n: g.text.split('\n').length - 1 })} · ${cncFileName(sh.index, 'nc')}`;
   $('#dxf-meta').textContent =
-    `DXF R12 · ${dxf.layers.length} слоя · ${cncFileName(sh.index, 'dxf')}`;
+    `DXF R12 · ${tx('cnc.layers', { n: dxf.layers.length })} · ${cncFileName(sh.index, 'dxf')}`;
   $('#dxf-layers').innerHTML = dxf.layers.map((l) => `<code>${esc(l)}</code>`).join(' ');
   drawToolpath(state);
 }
@@ -188,7 +193,7 @@ export function stopSim() {
   cancelAnimationFrame(sim.raf);
   const b = $('#sim-play');
   if (b) {
-    b.textContent = 'Симулирай';
+    b.textContent = tx('cnc.simulate');
     b.setAttribute('aria-pressed', 'false');
   }
 }
@@ -204,7 +209,7 @@ export function toggleSim(state) {
     return;
   }
   sim = { playing: true, raf: 0 };
-  $('#sim-play').textContent = 'Пауза';
+  $('#sim-play').textContent = tx('cnc.pause');
   $('#sim-play').setAttribute('aria-pressed', 'true');
   if (state.progress >= 1) state.progress = 0;
   let last = performance.now();

@@ -13,7 +13,7 @@ import { hangRail, RAIL } from './rail.js';
 import { shelvesInZone } from './shelves.js';
 import { cellFronts, cellInteriors, joinCellShelves } from './cells.js';
 
-const WORKTOP_SCREW = { d: 5, label: 'винт за плота 4×30', bom: 'Винт за ПДЧ 4×30 (плот през траверсите)' };
+const WORKTOP_SCREW = { d: 5 }; // the worktop screws through the rails: lbl.worktopScrew, hw.worktopScrews
 const RAIL_W = 100; // top rails of base cabinets
 const RAIL_DROP = RAIL.topEdge + RAIL.h; // 90: no system holes or shelves above the lower edge of a hanging rail
 const MIN_PLINTH = 40; // lowest plinth board or legs the generator makes
@@ -30,8 +30,7 @@ export function buildCarcass(ctx, o) {
   const key = (s) => `${mod}${s}`;
   let plinth = o.plinth ?? { type: 'none', h: 0 };
   if ((plinth.type === 'panel' || plinth.type === 'legs') && plinth.h > 0 && plinth.h < MIN_PLINTH) {
-    const what = plinth.type === 'panel' ? `${nm('Цокъл')} под ${MIN_PLINTH} mm не се прави` : `${nm('Крачета')} под ${MIN_PLINTH} mm не се слагат`;
-    ctx.warn('info', `${what} — корпусът стъпва направо на пода.`);
+    ctx.warn('info', ctx.t(plinth.type === 'panel' ? 'w.plinthTooLow' : 'w.legsTooLow', { what: nm(ctx.t(plinth.type === 'panel' ? 'part.plinth' : 'part.legs')), min: MIN_PLINTH }));
     plinth = { type: 'none', h: 0 };
   }
   const plinthH = plinth.type !== 'none' ? plinth.h : 0;
@@ -47,9 +46,9 @@ export function buildCarcass(ctx, o) {
   const sideBands = { '+z': bc, ...(top === 'over' ? {} : { '+y': o.visibleTop ? bc : 0 }) };
   if (o.mount === 'wall') sideBands['-y'] = bc; // a wall cabinet is seen from below: the lower ends of its sides show
 
-  const sideL = panel(ctx, { ...carc, key: key('sideL'), name: nm('Страница лява'), role: 'side', box: { min: [x0, c, z0], max: [x0 + T, sideTop, zEnd] }, n: '+x', L: 'y', bands: sideBands, explode: [-1, 0, 0] });
-  const sideR = panel(ctx, { ...carc, key: key('sideR'), name: nm('Страница дясна'), role: 'side', box: { min: [x0 + W - T, c, z0], max: [x0 + W, sideTop, zEnd] }, n: '-x', L: 'y', bands: sideBands, explode: [1, 0, 0] });
-  const bottom = panel(ctx, { ...carc, key: key('bottom'), name: nm('Дъно'), role: 'bottom', box: { min: [x0 + T, c, z0], max: [x0 + W - T, c + T, zEnd] }, n: '+y', L: 'x', bands: { '+z': bc }, explode: [0, -0.6, 0] });
+  const sideL = panel(ctx, { ...carc, key: key('sideL'), name: nm(ctx.t('part.sideL')), role: 'side', box: { min: [x0, c, z0], max: [x0 + T, sideTop, zEnd] }, n: '+x', L: 'y', bands: sideBands, explode: [-1, 0, 0] });
+  const sideR = panel(ctx, { ...carc, key: key('sideR'), name: nm(ctx.t('part.sideR')), role: 'side', box: { min: [x0 + W - T, c, z0], max: [x0 + W, sideTop, zEnd] }, n: '-x', L: 'y', bands: sideBands, explode: [1, 0, 0] });
+  const bottom = panel(ctx, { ...carc, key: key('bottom'), name: nm(ctx.t('part.bottom')), role: 'bottom', box: { min: [x0 + T, c, z0], max: [x0 + W - T, c + T, zEnd] }, n: '+y', L: 'x', bands: { '+z': bc }, explode: [0, -0.6, 0] });
   out.panels = { sideL, sideR, bottom };
   const horizontals = [{ part: bottom, y: c + T / 2, zs: confirmatZs(z0 + 50, zEnd - 50) }];
 
@@ -58,15 +57,15 @@ export function buildCarcass(ctx, o) {
   if (top === 'between' || top === 'over') {
     const over = top === 'over';
     topPart = panel(ctx, {
-      ...carc, key: key('top'), name: nm(over ? 'Плот' : 'Таван'), role: 'top',
+      ...carc, key: key('top'), name: nm(ctx.t(over ? 'part.topOver' : 'part.top')), role: 'top',
       box: { min: [over ? x0 : x0 + T, c + Hc - T, z0], max: [over ? x0 + W : x0 + W - T, c + Hc, zEnd] },
       n: '-y', L: 'x', bands: over ? { '+z': bc, '-x': bc, '+x': bc } : { '+z': bc }, explode: [0, 1, 0],
     });
     if (!over) horizontals.push({ part: topPart, y: c + Hc - T / 2, zs: confirmatZs(z0 + 50, zEnd - 50) });
     out.panels.top = topPart;
   } else if (top === 'rails') {
-    const rf = panel(ctx, { ...carc, key: key('railF'), name: nm('Траверса предна'), role: 'rail', box: { min: [x0 + T, c + Hc - T, zEnd - RAIL_W], max: [x0 + W - T, c + Hc, zEnd] }, n: '-y', L: 'x', explode: [0, 1, 0.4] });
-    const rb = panel(ctx, { ...carc, key: key('railB'), name: nm('Траверса задна'), role: 'rail', box: { min: [x0 + T, c + Hc - T, backFront], max: [x0 + W - T, c + Hc, backFront + RAIL_W] }, n: '-y', L: 'x', explode: [0, 1, -0.4] });
+    const rf = panel(ctx, { ...carc, key: key('railF'), name: nm(ctx.t('part.railF')), role: 'rail', box: { min: [x0 + T, c + Hc - T, zEnd - RAIL_W], max: [x0 + W - T, c + Hc, zEnd] }, n: '-y', L: 'x', explode: [0, 1, 0.4] });
+    const rb = panel(ctx, { ...carc, key: key('railB'), name: nm(ctx.t('part.railB')), role: 'rail', box: { min: [x0 + T, c + Hc - T, backFront], max: [x0 + W - T, c + Hc, backFront + RAIL_W] }, n: '-y', L: 'x', explode: [0, 1, -0.4] });
     rails.push(rf, rb);
     horizontals.push({ part: rf, y: c + Hc - T / 2, zs: [zEnd - RAIL_W + 25, zEnd - 25] });
     horizontals.push({ part: rb, y: c + Hc - T / 2, zs: [backFront + 25, backFront + RAIL_W - 25] });
@@ -75,11 +74,11 @@ export function buildCarcass(ctx, o) {
     for (const r of rails) {
       const zc = (r.box.min[2] + r.box.max[2]) / 2;
       for (const sx of [x0 + T + 60, x0 + W - T - 60]) {
-        holeThrough(r, [sx, c + Hc - T, zc], WORKTOP_SCREW.d, 'screw', { hw: 'worktop', label: WORKTOP_SCREW.label });
+        holeThrough(r, [sx, c + Hc - T, zc], WORKTOP_SCREW.d, 'screw', { hw: 'worktop', label: ctx.t('lbl.worktopScrew') });
         out.topScrews.push([sx, c + Hc, zc]);
       }
     }
-    ctx.hw('worktopScrews', { name: WORKTOP_SCREW.bom, qty: out.topScrews.length, unit: 'бр.', group: 'Крепежи' });
+    ctx.hw('worktopScrews', { name: ctx.t('hw.worktopScrews'), qty: out.topScrews.length, unit: ctx.t('u.pcs'), group: ctx.t('g.fasteners') });
     Object.assign(out.panels, { railF: rf, railB: rb });
   }
   for (const h of horizontals) {
@@ -103,7 +102,7 @@ export function buildCarcass(ctx, o) {
     out.columns.push({ ...cw, index: i, xa: x, xb, left: i === 0 ? sideL : null, right: i === n - 1 ? sideR : null });
     x = xb;
     if (i < n - 1) {
-      const p = panel(ctx, { ...carc, key: key(`part${i + 1}`), name: nm(`Делител ${i + 1}`), role: 'partition', box: { min: [x, yInnerBottom, backFront], max: [x + T, yInnerTop, zEnd] }, n: '+x', L: 'y', bands: { '+z': bc }, explode: [0, 0, 0.35] });
+      const p = panel(ctx, { ...carc, key: key(`part${i + 1}`), name: nm(ctx.t('part.partition', { n: i + 1 })), role: 'partition', box: { min: [x, yInnerBottom, backFront], max: [x + T, yInnerTop, zEnd] }, n: '+x', L: 'y', bands: { '+z': bc }, explode: [0, 0, 0.35] });
       partitions.push(p);
       out.columns[i].right = p;
       x += T;
@@ -115,7 +114,7 @@ export function buildCarcass(ctx, o) {
 
   buildBacks(ctx, { x0, W, T, c, Hc, z0, sideTop, sideL, sideR, bottom, topPart, top, partitions, n, mod, key, nm });
   buildPlinth(ctx, { ...o, plinth }, { x0, y0, W, T, zEnd, plinthH, bc, mod, key, nm });
-  if (o.mount === 'wall') ctx.hw('hangers', { name: 'Окачвач за горен шкаф (чифт)', qty: 1, unit: 'чифт', group: 'Обков' });
+  if (o.mount === 'wall') ctx.hw('hangers', { name: ctx.t('hw.hangers'), qty: 1, unit: ctx.t('u.pair'), group: ctx.t('g.hardware') });
 
   // interiors, pass 1: drawers and doors (slide pilots and hinge plates claim their holes first)
   const gap = o.gap ?? 3;
@@ -202,10 +201,10 @@ function buildBacks(ctx, a) {
     const left = i === 0 ? x0 + T - into : partitions[i - 1].box.min[0] + T / 2 + 1;
     const right = i === n - 1 ? x0 + W - T + into : partitions[i].box.min[0] + T / 2 - 1;
     const zb = [z0 + GROOVE.inset, z0 + GROOVE.inset + HDF_T];
-    panel(ctx, { stock: 'hdf3', decor: 'demo:white', grain: false, module: mod, key: key(`back${i + 1}`), name: nm(n > 1 ? `Гръб HDF ${i + 1}` : 'Гръб HDF'), role: 'back', box: { min: [left, yb0, zb[0]], max: [right, yb1, zb[1]] }, n: '+z', L: 'y', explode: [0, 0, -1.2] });
+    panel(ctx, { stock: 'hdf3', decor: 'demo:white', grain: false, module: mod, key: key(`back${i + 1}`), name: nm(n > 1 ? ctx.t('part.backN', { n: i + 1 }) : ctx.t('part.back')), role: 'back', box: { min: [left, yb0, zb[0]], max: [right, yb1, zb[1]] }, n: '+z', L: 'y', explode: [0, 0, -1.2] });
     // backs of several columns meet behind a partition and are nailed to it every 150 mm; other edges sit in grooves
     const partitionEdges = (i > 0 ? 1 : 0) + (i < n - 1 ? 1 : 0);
-    if (partitionEdges) ctx.hw('nails', { name: 'Скоби/пирони за гръб HDF', qty: Math.ceil((partitionEdges * (yb1 - yb0)) / 150), unit: 'бр.', group: 'Крепежи' });
+    if (partitionEdges) ctx.hw('nails', { name: ctx.t('hw.nails'), qty: Math.ceil((partitionEdges * (yb1 - yb0)) / 150), unit: ctx.t('u.pcs'), group: ctx.t('g.fasteners') });
   }
 }
 
@@ -213,12 +212,12 @@ function buildPlinth(ctx, o, a) {
   const { x0, y0, W, T, zEnd, plinthH, bc, mod, key, nm } = a;
   if (o.plinth?.type !== 'legs' && o.plinth?.type !== 'panel') return;
   const xs = W > 900 ? [x0 + 60, x0 + W / 2, x0 + W - 60] : [x0 + 60, x0 + W - 60];
-  ctx.hw(`legs${plinthH}`, { name: `Краче регулируемо ${plinthH} mm`, qty: xs.length * 2, unit: 'бр.', group: 'Обков' });
+  ctx.hw(`legs${plinthH}`, { name: ctx.t('hw.legs', { h: plinthH }), qty: xs.length * 2, unit: ctx.t('u.pcs'), group: ctx.t('g.hardware') });
   for (const lx of xs) for (const lz of [(o.z0 ?? 0) + 60, zEnd - (o.plinth.type === 'panel' ? 90 : 70)]) ctx.symbols.push({ type: 'leg', x: lx, z: lz, y0, h: plinthH, module: mod });
   if (o.plinth.type === 'panel') {
     const fs = frontStock(o);
     // banded at the ends and along the floor (moisture); the top edge is hidden under the carcass
-    panel(ctx, { stock: fs.stock, decor: fs.decor, grain: hasGrain(fs.decor), module: mod, key: key('plinth'), name: nm('Цокъл'), role: 'plinth', box: { min: [x0, y0, zEnd - 50 - T], max: [x0 + W, y0 + plinthH - 3, zEnd - 50] }, n: '-z', L: 'x', bands: fs.banded ? { '+x': bc, '-x': bc, '-y': bc } : {}, explode: [0, -1, 1] });
-    ctx.hw('plinthClips', { name: 'Клипс за цокъл', qty: 4, unit: 'бр.', group: 'Обков' });
+    panel(ctx, { stock: fs.stock, decor: fs.decor, grain: hasGrain(fs.decor), module: mod, key: key('plinth'), name: nm(ctx.t('part.plinth')), role: 'plinth', box: { min: [x0, y0, zEnd - 50 - T], max: [x0 + W, y0 + plinthH - 3, zEnd - 50] }, n: '-z', L: 'x', bands: fs.banded ? { '+x': bc, '-x': bc, '-y': bc } : {}, explode: [0, -1, 1] });
+    ctx.hw('plinthClips', { name: ctx.t('hw.plinthClips'), qty: 4, unit: ctx.t('u.pcs'), group: ctx.t('g.hardware') });
   }
 }
