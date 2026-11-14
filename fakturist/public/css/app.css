@@ -932,12 +932,14 @@ tr.unread td:first-child a {
   border-radius: var(--radius);
   padding: 1rem;
 }
-/* Самостоятелните карти (интеграции, прехвърляне) не се долепват до съседа си. */
-section.panel {
+/* Самостоятелните карти (интеграции, прехвърляне) не се долепват до съседа си — и формата след тях. */
+section.panel,
+section.panel + .panel {
   margin-top: 1.5rem;
 }
 .panel > h2:first-child,
-.panel > h3:first-child {
+.panel > h3:first-child,
+.panel > input[type='hidden']:first-child + h2 {
   margin-top: 0;
 }
 .panel > .hint,
