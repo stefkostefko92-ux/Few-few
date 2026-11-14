@@ -154,6 +154,7 @@
       <label><%= t('app.doc.precedingNumber') %><input name="preceding[number]" class="mono" value="<%= val('preceding.number') %>"></label>
       <label><%= t('app.doc.precedingDate') %><input type="date" name="preceding[issueDate]" value="<%= val('preceding.issueDate') %>"></label>
       <label><%= t('app.doc.noteReason') %><input name="preceding[reason]" maxlength="300" value="<%= val('preceding.reason') %>"><span class="hint"><%= t('app.doc.noteReasonHint') %></span></label>
+      <label><%= t('app.doc.advanceNumber') %><input name="advance[number]" class="mono" inputmode="numeric" pattern="[0-9]{1,10}" maxlength="10" value="<%= val('advance.number') %>"><span class="hint"><%= t('app.doc.advanceHint') %></span></label>
     </fieldset>
     <fieldset>
       <legend><%= t('app.doc.references') %></legend>

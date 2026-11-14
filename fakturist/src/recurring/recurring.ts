@@ -7,6 +7,7 @@ import { orgHasFeature } from '../billing/entitlements.js';
 import { InvoiceInputSchema } from '../einvoice/index.js';
 import { sofiaToday } from '../time.js';
 import { addDays, isIsoDate, nextAfter } from './schedule.js';
+import { ADVANCE_LINE_PREFIX } from '../documents/advance.js';
 
 /**
  * Повтарящи се фактури (SPEC 51): шаблонът се прави от издадена фактура (380) — получателят, редовете,
@@ -79,6 +80,10 @@ export function templateOf(input: unknown): Prisma.InputJsonValue {
   } = parsed;
   return {
     ...rest,
+    // Приспаднатият аванс е на изходната фактура — не се повтаря всеки период (src/documents/advance.ts).
+    lines: rest.lines.filter(
+      (line) => !(line.quantity.startsWith('-') && line.name.startsWith(ADVANCE_LINE_PREFIX)),
+    ),
     ...(delivery?.address ? { delivery: { address: delivery.address } } : {}),
     precedingInvoices: [],
   } as unknown as Prisma.InputJsonValue;

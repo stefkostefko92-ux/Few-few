@@ -28,6 +28,13 @@ import {
 import { ID } from '../ids.js';
 import { sofiaToday } from '../time.js';
 
+/** „Приспадни аванс по фактура №“ (src/documents/advance.ts) — до 10 цифри или нищо. */
+function advanceOf(body: unknown): { advanceNumber?: string } {
+  const advance = (body as { advance?: { number?: unknown } } | null)?.advance;
+  const value = typeof advance?.number === 'string' ? advance.number.trim() : '';
+  return /^\d{1,10}$/.test(value) ? { advanceNumber: value } : {};
+}
+
 const PEPPOL_NOT_ACTIVE = {
   bg: 'Фирмата не е регистрирана за Peppol — включете я от „Peppol“.',
   en: 'The company is not registered for Peppol — enable it under “Peppol”.',
@@ -135,6 +142,7 @@ export function appIssueRouter(): Router {
         pdfLanguage: isPdfLanguage(language) ? language : 'bg',
         fromProforma,
         peppol: bodyString(req, 'sendPeppol') === 'on',
+        ...advanceOf(req.body),
         ...(token ? { submission: { userId, token } } : {}),
       });
       if (bodyString(req, 'saveBuyer') === 'on') {

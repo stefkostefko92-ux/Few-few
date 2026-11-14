@@ -256,6 +256,40 @@ export const prepaidCard: InvoiceInput = {
   ],
 };
 
+/**
+ * Окончателна фактура с приспаднат аванс (казусът — Данъчника, 14.11.2026): ред с количество −1 и
+ * положителна цена, същата категория и ставка; BG-3 сочи авансовата фактура.
+ * 1 × 300.00 (S 20) − 1 × 100.00 (S 20) → основа 200.00, ДДС 40.00, общо 240.00.
+ */
+export const finalWithAdvance: InvoiceInput = {
+  ...domestic,
+  number: '0000000131',
+  allowanceCharges: [],
+  precedingInvoices: [{ number: '0000000130', issueDate: '2026-11-02' }],
+  lines: [
+    {
+      id: '1',
+      quantity: '1',
+      unitCode: 'C62',
+      netPrice: '300.00',
+      name: 'Изработка на кухненски шкафове',
+      vat: { category: 'S', rate: '20' },
+      allowanceCharges: [],
+      attributes: [],
+    },
+    {
+      id: '2',
+      quantity: '-1',
+      unitCode: 'C62',
+      netPrice: '100.00',
+      name: 'Приспадане на аванс по фактура № 0000000130 от 02.11.2026',
+      vat: { category: 'S', rate: '20' },
+      allowanceCharges: [],
+      attributes: [],
+    },
+  ],
+};
+
 export const SAMPLES = {
   domestic,
   foreignCurrency,
@@ -264,4 +298,5 @@ export const SAMPLES = {
   notRegistered,
   zeroRated,
   prepaidCard,
+  finalWithAdvance,
 };

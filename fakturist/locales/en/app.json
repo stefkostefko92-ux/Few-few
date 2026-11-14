@@ -158,7 +158,9 @@
       "bg": "Bulgarian",
       "bg-en": "Bulgarian and English"
     },
-    "pdfLanguageHint": "The XML has no language. The document is always in Bulgarian; English goes alongside it (Accountancy Act, Art. 5)."
+    "pdfLanguageHint": "The XML has no language. The document is always in Bulgarian; English goes alongside it (Accountancy Act, Art. 5).",
+    "advanceNumber": "Deduct the advance from invoice no.",
+    "advanceHint": "Final invoices only: the number of the prepayment invoice (type 386) for the same buyer. Adds a minus line for the advance base at the same rate."
   },
   "view": {
     "issued": "The document has been issued.",
@@ -953,5 +955,43 @@
       "code": "Wrong code."
     },
     "tag": "terminated"
+  },
+  "journal": {
+    "title": "Sales VAT journal",
+    "intro": "The PRODAGBI.TXT file for a month — to import into the NRA program or your accounting software. You or your accountant file it together with the purchase journal and the VAT return.",
+    "noVat": "The company has no VAT number — no VAT sales journal is kept.",
+    "period": "Month",
+    "show": "Show",
+    "records": "Journal entries: {count}",
+    "download": "Download PRODAGBI.TXT",
+    "field": "Field",
+    "sum": "Amount",
+    "fields": {
+      "02_10": "Total taxable amounts",
+      "02_20": "Total VAT charged",
+      "02_11": "Taxable amount at 20%",
+      "02_21": "VAT charged at 20%",
+      "02_13": "Taxable amount at 9%",
+      "02_24": "VAT charged at 9%",
+      "02_14": "0% under Chapter Three",
+      "02_15": "0% intra-EU supplies",
+      "02_16": "0% under Art. 140, 146(1) and 173",
+      "02_19": "Exempt supplies"
+    },
+    "manualTitle": "To enter by hand",
+    "manualIntro": "These documents are not in the file: their field depends on the legal basis and the accountant decides it.",
+    "reasons": {
+      "category": "reverse charge or out-of-scope supply — the field depends on the basis (Art. 21(2), 69(2), 163a of the VAT Act…)",
+      "rate": "a rate other than 20% and 9%",
+      "type": "a document type that is not entered automatically",
+      "currency": "a foreign-currency document without a euro rate"
+    },
+    "notesTitle": "How it is built",
+    "notes": {
+      "format": "Per Annex 12 to Art. 113(4) of the VAT Act Regulations: windows-1251, one document per line, fixed-length fields.",
+      "euro": "Amounts are in euro (Euro Introduction Act, Art. 50). Credit notes carry a minus sign.",
+      "annul": "A document cancelled in the same month has no amounts; one cancelled later appears in the month of cancellation with the same amounts and the opposite sign.",
+      "check": "Check the file with the NRA program before filing. Fakturist files nothing with the NRA on your behalf."
+    }
   }
 }

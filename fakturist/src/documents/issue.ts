@@ -4,7 +4,7 @@ import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { annulInTx, type AnnulReason } from './annul.js';
 import { sealHmac } from '../auth/keys.js';
-import { setting } from '../admin/settings.js';
+import { issueSettings, type IssueSettings } from './issue-settings.js';
 import { buildEInvoice, InvoiceInputSchema, type Issue } from '../einvoice/index.js';
 import { toCents } from '../einvoice/decimal.js';
 import { entryHash, GENESIS, inputHash, sha256 } from '../ledger/chain.js';
@@ -27,6 +27,7 @@ import {
   sellerOf,
 } from './issue-parts.js';
 import { ID } from '../ids.js';
+import { deductAdvance } from './advance.js';
 
 /**
  * Това, което издаващият подава: всичко без номера и без доставчика. Доставчикът идва от данните на
@@ -50,6 +51,8 @@ export interface IssueOptions {
    * адреси) и предаването се записва в същата транзакция — без активна регистрация на фирмата е отказ.
    */
   peppol?: boolean;
+  /** Приспадане на аванс (src/documents/advance.ts): номерът на авансовата фактура 386. */
+  advanceNumber?: string;
   /**
    * Получателят е известен със сигурност (фактурата за плана — до фирмата, която е поръчала и платила):
    * шкафчето доставя до нея и когато още не е потвърдена от мастъра.
@@ -68,23 +71,7 @@ export { IssueRejected, SeriesExhausted, sellerOf };
  * 3. строи е-фактурата през ядрото (EN 16931 + ЗДДС); с фатална грешка — rollback;
  * 4. добавя звено във веригата (отпечатък + печат) и записва документа и одита.
  */
-export interface IssueSettings {
-  deadlineDays: number;
-  requireBankAccount: boolean;
-  profile: 'en16931' | 'peppol';
-  signature: string;
-}
-
-/** Настройките на издаването от мастър панела — четат се преди транзакцията. */
-export async function issueSettings(): Promise<IssueSettings> {
-  const [deadlineDays, requireBankAccount, profile, signature] = await Promise.all([
-    setting('issue.deadlineDays'),
-    setting('issue.requireBankAccount'),
-    setting('issue.profile'),
-    setting('documents.signature'),
-  ]);
-  return { deadlineDays, requireBankAccount, profile, signature };
-}
+export { issueSettings, type IssueSettings };
 
 export type IssueResult = {
   id: string;
@@ -132,7 +119,10 @@ export async function issueInTx(
   if (raw === undefined) throw new SeriesExhausted();
   const number = formatNumber(BigInt(raw));
 
-  const { seriesId: _series, ...rest } = request;
+  const effective = options.advanceNumber
+    ? await deductAdvance(tx, org.id, request, options.advanceNumber, options.replaces?.documentId)
+    : request;
+  const { seriesId: _series, ...rest } = effective;
   // „5“ и „0000000005“ са един и същ номер — в XML-а и във връзката отива десетразрядният.
   const precedingInvoices = rest.precedingInvoices.map(normalizePreceding);
   // Датата на данъчното събитие е реквизит (чл. 114, ал. 1, т. 10): без нея — датата на издаване, и

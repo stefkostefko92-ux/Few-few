@@ -1,0 +1,38 @@
+<%- include('../partials/app-head', { title: t('app.journal.title') }) %>
+<h1><%= t('app.journal.title') %></h1>
+<p class="muted"><%= t('app.journal.intro') %></p>
+<% if (!result) { %>
+<p class="callout"><%= t('app.journal.noVat') %></p>
+<% } else { %>
+<form method="get" class="search-row" aria-label="<%= t('app.journal.period') %>">
+  <label><span class="sr-only"><%= t('app.journal.period') %></span><input type="month" name="period" value="<%= period %>" max="<%= maxPeriod %>" required></label>
+  <button type="submit" class="button-secondary"><%= t('app.journal.show') %></button>
+</form>
+<p><%= t('app.journal.records', { count: result.records }) %></p>
+<% if (result.records > 0) { %>
+<p><a class="button" href="/app/o/<%= org.id %>/dnevnik/PRODAGBI.TXT?period=<%= period %>" download><%= t('app.journal.download') %></a></p>
+<div class="table-wrap"><table>
+  <thead><tr><th scope="col"><%= t('app.journal.field') %></th><th scope="col" class="num"><%= t('app.journal.sum') %></th></tr></thead>
+  <tbody>
+  <% ['02-10', '02-20', '02-11', '02-21', '02-13', '02-24', '02-14', '02-15', '02-16', '02-19'].forEach((code) => { %>
+    <tr><td><span class="mono"><%= code %></span> · <%= t('app.journal.fields.' + code.replace('-', '_')) %></td><td class="num mono"><%= money(result.totals[code], 'EUR') %></td></tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+<% if (result.manual.length) { %>
+<h2><%= t('app.journal.manualTitle') %></h2>
+<p><%= t('app.journal.manualIntro') %></p>
+<ul>
+  <% result.manual.forEach((m) => { %><li><span class="mono"><%= m.number %></span> — <%= t('app.journal.reasons.' + m.reason) %></li><% }) %>
+</ul>
+<% } %>
+<h2><%= t('app.journal.notesTitle') %></h2>
+<ul>
+  <li><%= t('app.journal.notes.format') %></li>
+  <li><%= t('app.journal.notes.euro') %></li>
+  <li><%= t('app.journal.notes.annul') %></li>
+  <li><%= t('app.journal.notes.check') %></li>
+</ul>
+<% } %>
+<%- include('../partials/app-foot') %>
