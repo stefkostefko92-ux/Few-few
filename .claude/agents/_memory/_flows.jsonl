@@ -598,3 +598,7 @@
 {"t":"handoff","ts":"2026-11-14T05:43:38.360Z","id":"r83641c2b","from":"danachnika","to":"човек","status":"има бележки","run":"4560470b"}
 {"t":"start","ts":"2026-11-14T06:33:49.055Z","id":"re2a3ef47","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-14T06:33:49.055Z","id":"re2a3ef47","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"95c35ad5"}
+{"t":"start","ts":"2026-11-14T07:29:36.216Z","id":"r388445ec","flow":"авто","lead":"danachnika","auto":true}
+{"t":"handoff","ts":"2026-11-14T07:29:36.216Z","id":"r388445ec","from":"danachnika","to":"човек","status":"има бележки","run":"a5008821"}
+{"t":"start","ts":"2026-11-14T07:49:15.586Z","id":"rd25a0f89","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-14T07:49:15.586Z","id":"rd25a0f89","from":"kodadjiyata","to":"друг","status":"има бележки","run":"6a5ce777","toRaw":"Изпитателя"}

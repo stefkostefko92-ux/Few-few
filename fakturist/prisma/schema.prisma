@@ -194,49 +194,55 @@ model Session {
 }
 
 model Organization {
-  id                   String           @id @default(cuid())
-  kind                 OrganizationKind
-  legalName            String
+  id                    String           @id @default(cuid())
+  kind                  OrganizationKind
+  legalName             String
   /// ЕИК/БУЛСТАТ (9 или 13 цифри) — проверен с контролната цифра (src/einvoice/bg-ids.ts).
-  eik                  String?          @unique
+  eik                   String?          @unique
   /// ДДС номер с префикса BG; null — лицето не е регистрирано по ЗДДС.
-  vatNumber            String?
-  addressStreet        String
-  addressCity          String
-  postalCode           String
-  countryCode          String           @default("BG")
-  email                String?
-  phone                String?
-  iban                 String?
-  bic                  String?
-  bankName             String?
+  vatNumber             String?
+  addressStreet         String
+  addressCity           String
+  postalCode            String
+  countryCode           String           @default("BG")
+  email                 String?
+  phone                 String?
+  iban                  String?
+  bic                   String?
+  bankName              String?
   /// Електронният адрес за получаване (чл. 120б от законопроекта) — схема и стойност, напр. 9926:BG123456789.
-  eAddressScheme       String?
-  eAddressValue        String?
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
+  eAddressScheme        String?
+  eAddressValue         String?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
   /// Изтрита след прекратяване (src/accounts/termination-purge.ts): остава само надгробието — наименованието.
-  deletedAt            DateTime?
+  deletedAt             DateTime?
   /// Заявено прекратяване (SPEC 65): до `purgeAfter` — само преглед и изтегляне; после всичко се изтрива.
-  terminatedAt         DateTime?
-  purgeAfter           DateTime?
+  terminatedAt          DateTime?
+  purgeAfter            DateTime?
   /// Мастър акаунтът е проверил, че фирмата е тази, за която се представя (пълномощно, документ за
   /// представителство). Получателят в шкафчето вижда дали изпращачът е потвърден.
-  verifiedAt           DateTime?
+  verifiedAt            DateTime?
   /// Кантората, която е създала фирмата (/klienti/nov). Само тя може да покани собственика; кантора,
   /// добавила вече съществуваща фирма, — не (иначе би я взела чрез свой втори имейл).
   /// Собственик, поканен от кантора, чака проверка от мастъра (таблото „за проверка“) — до „Собственикът
   /// е проверен“ или отнемане. Отделно от verifiedAt: потвърденото пълномощно не е проверен собственик.
-  ownerReviewPendingAt DateTime?
+  ownerReviewPendingAt  DateTime?
   /// След „Отнеми собствеността“: кантората не кани нов собственик — само мастърът, до приемане на поканата.
-  ownershipLockedAt    DateTime?
+  ownershipLockedAt     DateTime?
   /// Напомняния за просрочени фактури до получателя (SPEC 52) — включват се от настройките на фирмата.
-  remindersEnabled     Boolean          @default(false)
+  remindersEnabled      Boolean          @default(false)
   /// Следващият номер на проформа (своя номерация — проформата не е данъчен документ).
-  proformaNext         Int              @default(1)
-  createdByFirmId      String?
-  createdByFirm        Organization?    @relation("CreatedByFirm", fields: [createdByFirmId], references: [id], onDelete: SetNull)
-  createdClients       Organization[]   @relation("CreatedByFirm")
+  proformaNext          Int              @default(1)
+  /// SAF-T (src/export/saft/): сметките от сметкоплана на фирмата за данните за продажбите — избира ги
+  /// счетоводителят („Данни за SAF-T“); 3–5 цифри (SAFAccountType в XSD 1.0.3).
+  saftReceivableAccount String           @default("411")
+  saftRevenueAccount    String           @default("703")
+  /// SAF-T: ЕИК / ДДС номера на свързаните лица (RelatedParty = Y) — въвежда ги фирмата, Фактурист не ги знае.
+  saftRelatedParties    String[]         @default([])
+  createdByFirmId       String?
+  createdByFirm         Organization?    @relation("CreatedByFirm", fields: [createdByFirmId], references: [id], onDelete: SetNull)
+  createdClients        Organization[]   @relation("CreatedByFirm")
 
   memberships         Membership[]
   firmMandates        ClientMandate[]      @relation("Firm")

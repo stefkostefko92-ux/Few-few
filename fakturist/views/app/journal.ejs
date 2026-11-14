@@ -10,7 +10,7 @@
 </form>
 <p><%= t('app.journal.records', { count: result.records }) %></p>
 <% if (result.records > 0) { %>
-<p><a class="button" href="/app/o/<%= org.id %>/dnevnik/PRODAGBI.TXT?period=<%= period %>" download><%= t('app.journal.download') %></a></p>
+<p><a class="button" href="/app/o/<%= org.id %>/dnevnik/PRODAGBI.TXT?period=<%= period %>" target="_blank" rel="noopener"><%= t('app.journal.download') %></a></p>
 <div class="table-wrap"><table>
   <thead><tr><th scope="col"><%= t('app.journal.field') %></th><th scope="col" class="num"><%= t('app.journal.sum') %></th></tr></thead>
   <tbody>

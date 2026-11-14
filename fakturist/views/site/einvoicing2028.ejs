@@ -1,8 +1,8 @@
 <%
   const [cy, cm, cd] = contentUpdated.split('-');
   const updatedText = lang === 'bg' ? `${cd}.${cm}.${cy}` : `${Number(cd)} ${['January','February','March','April','May','June','July','August','September','October','November','December'][Number(cm) - 1]} ${cy}`;
-  const byCode = (code) => features.find((f) => f.code === code);
-  const planned = ['peppol', 'nra-reporting', 'saf-t', 'pdf'].map((code) => { const f = byCode(code); return `${t('features.' + code + '.name')} (${f.target})`; }).join('; ');
+  // Само предстоящите (status: 'planned') — налична функция тук би била „(undefined)“.
+  const planned = features.filter((f) => f.status === 'planned').map((f) => `${t('features.' + f.code + '.name')} (${f.target})`).join('; ');
   const toc = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8'];
 -%>
 <%- include('../partials/site-head') %>

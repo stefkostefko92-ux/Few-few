@@ -5,4 +5,4 @@
  * (`MAJOR.MINOR.0` — тестът `version.test.ts`), а новината в `src/news/entries.ts` казва какво е дошло.
  * Вижда се долу в приложението и на страницата „Какво ново“.
  */
-export const SOFTWARE_VERSION = '1.0';
+export const SOFTWARE_VERSION = '1.1';

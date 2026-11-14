@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { after, before, test } from 'node:test';
 import { prepareTestDatabase, truncateAll } from './harness.js';
 import { startHttp, type HttpClient, type Session } from './http.js';
@@ -73,7 +74,13 @@ test('обновяване: новина, излязла след регистр
   assert.equal(shown.status, 200);
   assert.match(shown.html, /<dialog class="news" data-news open/);
   assert.match(shown.html, /Какво ново от последното ви влизане/);
-  assert.match(shown.html, /Версия 1\.0/);
+  // Заглавието на най-новата новина (от речника — не се пише на ръка при всяко обновяване).
+  const newest = (
+    JSON.parse(readFileSync(new URL('../../locales/bg/news.json', import.meta.url), 'utf8')) as {
+      entries: Record<string, { title: string }>;
+    }
+  ).entries[NEWS[0]!.id]!.title;
+  assert.ok(shown.html.includes(newest), newest);
   // Само за браузър: PDF, XML и fetch не получават прозореца.
   assert.doesNotMatch((await page()).html, /data-news\b/);
 

@@ -42,6 +42,7 @@ import { orgNavLocals } from './app-org-nav.js';
 import { newsLocals } from '../news/popup.js';
 import { newsReadRouter } from './news.js';
 import { appJournalRouter } from './app-journal.js';
+import { appSaftRouter } from './app-saft.js';
 
 /** Документите, издадени от фирмата през текущия месец — за мекия лимит на безплатния план. */
 async function monthUsage(
@@ -89,6 +90,7 @@ export function appRouter(): Router {
   router.use(appIncomingRouter());
   router.use(appTerminationRouter());
   router.use(appJournalRouter());
+  router.use(appSaftRouter());
 
   router.get('/app', async (req, res) => {
     const user = req.principal!.user;

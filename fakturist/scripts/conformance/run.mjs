@@ -49,6 +49,9 @@ const ARTEFACTS = {
   },
 };
 
+/** SAF-T BG XSD 1.0.3 (docs/saf-t/README.md — произход и сверка с официалния архив). */
+const SAFT_XSD_SHA256 = 'a152c5d02f359d7d1c132121d82db63492eed23cf0475b85f27069a2074d188f';
+
 /** Версиите на правилата вътре в архивите. */
 const RULES = {
   en16931Ubl: 'external/schematron/1.3.17/ubl/EN16931-UBL-validation.xslt',
@@ -208,11 +211,26 @@ async function main() {
       }
     }
   }
+  // Данните за SAF-T — срещу XSD 1.0.3 на НАП от docs/saf-t/ (копие с проверен SHA-256 — виж README там).
+  const saftXsd = join(root, 'docs', 'saf-t', 'BG_SAFT_Schema_V_1.0.3.xsd');
+  const saftSha = createHash('sha256').update(readFileSync(saftXsd)).digest('hex');
+  if (saftSha !== SAFT_XSD_SHA256)
+    throw new Error(`docs/saf-t: SHA-256 ${saftSha} не е очакваният`);
+  execFileSync('npx', ['tsx', 'scripts/saft-samples.ts'], { cwd: root, stdio: 'inherit' });
+  const saftDir = join(root, 'samples', 'saft');
+  for (const name of readdirSync(saftDir).sort()) {
+    const fatal = xsd(saftXsd, join(saftDir, name));
+    if (fatal.length > 0) failures += 1;
+    console.log(`${fatal.length === 0 ? '✓' : '✗'} saft/${name} · XSD 1.0.3 (НАП)`);
+    for (const line of fatal) console.log(`    ✗ ${line}`);
+  }
   if (failures > 0) {
     console.error(`\n${failures} проверки се провалиха`);
     process.exit(1);
   }
-  console.log('\nВсички документи минават официалните XSD и Schematron правила.');
+  console.log(
+    '\nВсички документи минават официалните XSD и Schematron правила; данните за SAF-T — XSD 1.0.3.',
+  );
 }
 
 main().catch((error) => {

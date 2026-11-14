@@ -993,5 +993,46 @@
       "annul": "A document cancelled in the same month has no amounts; one cancelled later appears in the month of cancellation with the same amounts and the opposite sign.",
       "check": "Check the file with the NRA program before filing. Fakturist files nothing with the NRA on your behalf."
     }
+  },
+  "saft": {
+    "title": "SAF-T data",
+    "needsPlan": "SAF-T data is in the Business plan and above.",
+    "intro": "A month's sales as files under the Bulgarian NRA SAF-T schema (version 1.0.3) — for import into the accounting software that builds and submits the monthly file with the general ledger, purchases and balances. Fakturist does not submit SAF-T.",
+    "period": "Month",
+    "show": "Show",
+    "summary": "Documents: {documents} · customers: {customers} · products: {products}",
+    "download": "Download the data (ZIP)",
+    "files": "Included:",
+    "empty": "No documents in this month go into the data.",
+    "manualTitle": "To enter manually",
+    "manualIntro": "These documents are not in the files — the accountant enters them according to their legal basis.",
+    "reasons": {
+      "category": "VAT category without a verified code in the NRA nomenclature (0 %, exempt supply, reverse charge, out of scope)",
+      "type": "document type that does not belong to sales",
+      "cancelled": "cancelled document — recorded as the accountant directs"
+    },
+    "settingsTitle": "Accounts and related parties",
+    "settingsHelp": "Chosen by the accountant from the company's chart of accounts. They apply to every month.",
+    "receivable": "Receivables account",
+    "revenue": "Revenue account",
+    "accountHint": "3 to 5 digits, no leading zero (e.g. 411 and 703).",
+    "related": "Related parties",
+    "relatedHint": "Company or VAT numbers, one per line. Customers with these numbers are marked as related parties.",
+    "save": "Save",
+    "saved": "Saved.",
+    "errors": {
+      "plan": "This feature is in the Business plan and above.",
+      "account": "The account must have 3 to 5 digits, with no leading zero.",
+      "related": "Up to 200 related-party numbers — Latin letters and digits only."
+    },
+    "notesTitle": "How they are built",
+    "notes": {
+      "schema": "Each file is a separate element of the NRA schema (SalesInvoices, Customers, Products, TaxTable, UOMTable) and is validated against it. Amounts are in euro and, for a document in another currency, also in that currency at the document's rate.",
+      "direction": "Line direction follows the NRA Q&A (S.I.47): D increases the receivable; C reduces it (credit note, discount, deducted advance).",
+      "codes": "Codes from the NRA nomenclatures (tax type, tax code, document type, customer identifier) are checked against the NRA's published answers — check them against Annex 2 as well. If they differ, the NRA nomenclature prevails.",
+      "balances": "Customer balances reflect only the documents and payments in Fakturist. The accounting software computes them from the general ledger, and its figures prevail.",
+      "transaction": "The ledger transaction identifier (TransactionID) is the document number — use the same one when you post it.",
+      "check": "Check the monthly file with the NRA validator before submitting it. Fakturist submits nothing to the NRA on your behalf."
+    }
   }
 }

@@ -34,11 +34,13 @@ test('новините: уникални id-та с датата отпред, �
   assert.ok(NEWS.some((n) => n.id.includes(`versiya-${SOFTWARE_VERSION.replace('.', '-')}`)));
 });
 
-test('новините не обявяват функции, които още предстоят (Peppol, НАП, SAF-T)', () => {
+test('новините не обявяват функции, които още предстоят (по регистъра — Peppol, НАП…)', () => {
   const planned = FEATURES.filter((f) => f.status === 'planned').map((f) => f.code);
   assert.ok(planned.includes('peppol'));
   const all = NEWS.map((n) => n.id).join(' ');
-  assert.doesNotMatch(all, /peppol|saf-t|nap-otchitane/i);
+  for (const code of [...planned, 'nap-otchitane']) {
+    assert.doesNotMatch(all, new RegExp(code, 'i'), code);
+  }
 });
 
 test('регистрирането: нова инсталация — в деня на новината; обновяване — сега', () => {

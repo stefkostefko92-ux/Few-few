@@ -86,7 +86,7 @@
   },
   "saf-t": {
     "name": "Data for SAF-T",
-    "description": "Your invoices in the accounting Standard Audit File."
+    "description": "A month's sales as files under the NRA schema (version 1.0.3) — for the accounting software that submits SAF-T."
   },
   "priority-support": {
     "name": "Priority support",

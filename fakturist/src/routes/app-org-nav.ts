@@ -21,6 +21,7 @@ const ORG_NAV_SECTIONS = new Set([
   'nastroyki',
   'prekratyavane',
   'dnevnik',
+  'saf-t',
 ]);
 
 /**

@@ -28,7 +28,7 @@ export const FEATURES = [
   { code: 'mandates', group: 'accountants', status: 'live' },
   { code: 'peppol', group: 'einvoicing', status: 'planned', target: '2027-Q3' },
   { code: 'nra-reporting', group: 'einvoicing', status: 'planned', target: '2028-Q1' },
-  { code: 'saf-t', group: 'einvoicing', status: 'planned', target: '2027-Q4' },
+  { code: 'saf-t', group: 'einvoicing', status: 'live' },
   { code: 'priority-support', group: 'support', status: 'live' },
 ] as const satisfies ReadonlyArray<{
   code: string;

@@ -21,6 +21,8 @@ export const CAPABILITIES = [
   'billing.manage',
   'mandates.manage',
   'audit.read',
+  /** Счетоводните настройки (сметките и свързаните лица за SAF-T) — и счетоводителят по пълномощно. */
+  'accounting.manage',
 ] as const;
 export type Capability = (typeof CAPABILITIES)[number];
 
@@ -34,6 +36,7 @@ const MATRIX: Record<MemberRole, readonly Capability[]> = {
     'parties.manage',
     'items.manage',
     'audit.read',
+    'accounting.manage',
   ],
   ISSUER: ['documents.read', 'documents.issue', 'parties.manage', 'items.manage'],
   VIEWER: ['documents.read'],
