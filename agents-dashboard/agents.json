@@ -1212,7 +1212,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 676
+        "lessons": 678
       },
       "evolution": [
         {
@@ -2054,9 +2054,20 @@
           "date": "2026-11-14",
           "event": "v61.7 — учене",
           "detail": "Научи: Хукът guard-exfil блокира Bash команда, ако в grep шаблона има думата за променливите н…"
+        },
+        {
+          "version": "61.8.0",
+          "date": "2026-11-14",
+          "event": "v61.8 — учене",
+          "detail": "Научи: `typeof x?.y` НЕ пази от недеклариран идентификатор x — хвърля ReferenceError; само гол…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-14",
+          "type": "learning",
+          "summary": "Научи: „`typeof x?.y` НЕ пази от недеклариран идентификатор x — хвърля ReferenceError; само гол…\""
+        },
         {
           "date": "2026-11-14",
           "type": "learning",
