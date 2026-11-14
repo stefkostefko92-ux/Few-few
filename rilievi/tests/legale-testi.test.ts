@@ -42,6 +42,10 @@ const PUBBLICATI: Record<string, string> = {
   // Bulgarian VAT when the VAT number is not valid in VIES (12.1, 12.10), the credit note (12.9), 17.4 and the
   // statement of reasons when an account is suspended because of its content (25.6) — in force on its own day.
   'condizioni-2026-11-14': '0cb9938a6035f8443c1546134dae975a72cd0f12abcea917d2ee25a0fc2a3788',
+  // The customers registry and the contact person (A.2–A.4, B.7), quotes turned off — read and delete only
+  // (2.5, A.9), the notice at the end of the quote (15.3, 15.4), the export as it is (A.11, B.7–B.9), Brevo
+  // (S.1). Article 24 untouched. In force only announced (art. 18.1).
+  'condizioni-2026-12-14': '0b382bd9daa76966b1a486603bbdbc126eda204e3071b1713b7678f30e5b0909',
 };
 
 const tutto = (doc: TestoLegaleDoc): string => testoPiano(doc);

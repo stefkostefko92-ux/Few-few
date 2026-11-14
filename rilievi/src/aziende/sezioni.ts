@@ -40,6 +40,7 @@ export function aziendeImpostabili(user: SessionUser) {
       condizioniVersione: true,
       cambioFineAt: true,
       informativaFirme: true,
+      informativaPreventivi: true,
       buonoCodice: true,
       buonoClausola: true,
       approvazioneSchede: true,

@@ -18,7 +18,7 @@ import { preventivoMail } from '../mail/templates.js';
 import { nomeFilePreventivo, pdfDelPreventivo } from '../preventivi/documento.js';
 import type { PreventivoFull } from '../preventivi/elenco.js';
 import { cambiaStato, eliminaPreventivo, isStato, registraInvio } from '../preventivi/service.js';
-import { loadPreventivo, puoScrivere, puoTogliere } from './preventivi-vista.js';
+import { loadPreventivo, puoOperare, puoTogliere } from './preventivi-vista.js';
 import { notFound } from './schede-shared.js';
 
 /**
@@ -78,7 +78,7 @@ preventiviAzioniRouter.post(
   requireCsrf,
   async (req, res) => {
     const row = await loadPreventivo(req);
-    if (!row || !puoScrivere(req, row)) return notFound(req, res);
+    if (!row || !puoOperare(req, row)) return notFound(req, res);
     const parsed = invioSchema.safeParse(req.body);
     if (!parsed.success) {
       setFlash(res, 'error', 'preventivi.flash.emailNonValida');
@@ -116,7 +116,7 @@ preventiviAzioniRouter.post(
 
 preventiviAzioniRouter.post('/preventivi/:id/stato', write, requireCsrf, async (req, res) => {
   const row = await loadPreventivo(req);
-  if (!row || !puoScrivere(req, row)) return notFound(req, res);
+  if (!row || !puoOperare(req, row)) return notFound(req, res);
   const body = req.body as Record<string, unknown>;
   const a = body.stato;
   // Само върху видяната версия (одитът от 12 ноември 2026): колега е сменил офертата междувременно — не се
@@ -137,7 +137,7 @@ preventiviAzioniRouter.post('/preventivi/:id/stato', write, requireCsrf, async (
 
 preventiviAzioniRouter.post('/preventivi/:id/cliente', write, requireCsrf, async (req, res) => {
   const row = await loadPreventivo(req);
-  if (!row || !puoScrivere(req, row)) return notFound(req, res);
+  if (!row || !puoOperare(req, row)) return notFound(req, res);
   const esito = await clienteDalPreventivo(principalOf(req).user.id, row.aziendaId, row.id);
   if (esito.esito === 'missing') return notFound(req, res);
   if (esito.esito === 'pieno') setFlash(res, 'error', 'clienti.flash.pieno', { max: MAX_CLIENTI });

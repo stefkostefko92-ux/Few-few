@@ -91,7 +91,7 @@
         "sezioni": {
           "formato": "La versione del formato, oggi «{formato}». Se cambia in modo incompatibile, lo scriviamo qui.",
           "esportatoIl": "Data e ora dell'esportazione.",
-          "azienda": "L'azienda: nome, dati societari come inseriti, ordine delle sezioni della scheda, modello del cartello, nomi e permessi dei ruoli, informativa per chi firma, approvazione delle schede, codice e clausola del buono di lavoro, date; logo è il nome del file nell'archivio.",
+          "azienda": "L'azienda: nome, dati societari come inseriti, ordine delle sezioni della scheda, modello del cartello, nomi e permessi dei ruoli, informativa per chi firma e per i preventivi, approvazione delle schede, codice e clausola del buono di lavoro, attivazione, archivio, ultimo numero e condizioni dei preventivi, date; logo è il nome del file nell'archivio.",
           "persone": "Le persone dell'azienda con il loro ruolo (ADMIN, DIREZIONE, RESPONSABILE, TECNICO, OPERATORE, CLIENTE) e la data di ingresso.",
           "inviti": "Gli inviti non ancora accettati, senza il link di accesso.",
           "schede": "Le schede di rilievo, anche quelle nel cestino, con tutti i campi, i moduli d'ordine compilati, le scelte di stampa, lo stato di approvazione e la cronologia delle versioni.",

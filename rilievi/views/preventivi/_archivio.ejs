@@ -1,0 +1,6 @@
+<%
+  // Изключени оферти с данни (архив — auth/scope.ts): данните се четат и трият, но не се пишат. Бележката
+  // казва защо няма „Nuovo“ и „Modifica“. `archivio` — имената на фирмите (празно — нищо). На MASTER — че само
+  // поправя по писмено указание на фирмата (условията 2026-12-14, A.9; routes/preventivi-vista.ts, `puoOperare`).
+  const perMaster = locals.currentUser && locals.currentUser.master;
+%><% if (typeof archivio !== 'undefined' && archivio.length > 0) { %><p class="notice" data-preventivi-archivio role="status"><%= t(perMaster ? 'preventivi.archivio.master' : 'preventivi.archivio.avviso', { aziende: archivio.join(', ') }) %></p><% } %>

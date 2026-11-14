@@ -90,8 +90,11 @@ export async function importaListino(
 ): Promise<EsitoImport> {
   return prisma.$transaction(
     async (tx): Promise<EsitoImport> => {
+      // Само при включени оферти и активна фирма — под заключения ред (както `salvaVoce`).
       const azienda = await tx.$queryRaw<Array<{ id: string }>>`
-        SELECT "id" FROM "Azienda" WHERE "id" = ${aziendaId} FOR UPDATE`;
+        SELECT "id" FROM "Azienda"
+        WHERE "id" = ${aziendaId} AND "preventiviAttivi" AND "deactivatedAt" IS NULL
+        FOR UPDATE`;
       if (azienda.length === 0) return { esito: 'missing' };
       const { daAggiornare, daCreare } = await ripartisci(tx, aziendaId, righe);
       const presenti = await tx.voceListino.count({ where: { aziendaId } });

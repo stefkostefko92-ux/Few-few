@@ -6,11 +6,15 @@ import { queryTokens } from '../schede/search.js';
 
 /**
  * Четенето на офертите: цялата оферта (страницата, PDF-ът, износът), списъкът с търсенето и състоянието,
- * офертите на картата. Само във фирма с включени оферти — и за MASTER (`scope.all`), който иначе би видял
- * офертите на фирма, на която MASTER ги е изключил. Обхватът идва от маршрута.
+ * офертите на картата. Само във фирма с включени оферти или с архив (изключени, с данни — четене и изтриване;
+ * auth/scope.ts) — и за MASTER (`scope.all`), който иначе би видял и офертите на фирма, на която MASTER ги е
+ * изключил без данни. Обхватът идва от маршрута.
  */
 
-const ATTIVI = { azienda: { preventiviAttivi: true } } satisfies Prisma.PreventivoWhereInput;
+/** Фирмите с включени оферти и тези с архив (изключени, с данни) — кой какво вижда решава обхватът. */
+const ATTIVI = {
+  azienda: { OR: [{ preventiviAttivi: true }, { preventiviArchivio: true }] },
+} satisfies Prisma.PreventivoWhereInput;
 
 const INCLUDE = {
   azienda: {
@@ -23,6 +27,8 @@ const INCLUDE = {
       logoUpdatedAt: true,
       datiSocietari: true,
       preventivoCondizioni: true,
+      preventiviAttivi: true,
+      informativaPreventivi: true,
     },
   },
   scheda: { select: { id: true, matricola: true, numeroImpianto: true, deletedAt: true } },

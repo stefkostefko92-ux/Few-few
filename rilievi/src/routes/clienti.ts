@@ -29,7 +29,7 @@ import {
 import { setFlash } from '../http/flash.js';
 import { euro } from '../preventivi/importi.js';
 import { MAX_QUERY_LENGTH } from '../schede/search.js';
-import { aziendePerPreventivo } from './preventivi-vista.js';
+import { aziendeInArchivio, aziendePerPreventivo } from './preventivi-vista.js';
 import { aziendaFilterOf, aziendeOf, notFound } from './schede-shared.js';
 
 /**
@@ -69,6 +69,7 @@ clientiRouter.get('/clienti', read, async (req, res) => {
     aziendaFilter: azienda ?? '',
     query,
     numeriTelefono,
+    archivio: aziendeInArchivio(req),
   });
 });
 

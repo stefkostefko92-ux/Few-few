@@ -206,7 +206,7 @@
       "PREVENTIVO_CREATE": "Preventivo creato",
       "PREVENTIVO_UPDATE": "Preventivo modificato",
       "PREVENTIVO_STATO": "Stato di un preventivo aggiornato",
-      "PREVENTIVO_DELETE": "Bozza di preventivo eliminata",
+      "PREVENTIVO_DELETE": "Preventivo eliminato",
       "PREVENTIVO_EMAIL": "Preventivo inviato per email",
       "LISTINO_UPDATE": "Listino prezzi modificato",
       "AZIENDA_PREVENTIVI": "Preventivi attivati o disattivati per l'azienda",

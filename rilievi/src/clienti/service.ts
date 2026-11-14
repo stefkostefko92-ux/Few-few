@@ -8,8 +8,8 @@ import { searchTextCliente, type ClienteData } from './form.js';
 
 /**
  * Клиентите на фирмата (собственикът, 13 ноември 2026): регистър с профили, от който офертата взема клиента,
- * без да се пише наново. Живее с офертите — само във фирма, в която MASTER ги е включил (и за MASTER, който
- * иначе би видял клиентите на фирма с изключени оферти); чете `preventivi:read`, пише `preventivi:write`,
+ * без да се пише наново. Живее с офертите — само във фирма, в която MASTER ги е включил, или с архив
+ * (изключени оферти с данни: четене и изтриване — auth/scope.ts); чете `preventivi:read`, пише `preventivi:write`,
  * обхватът идва от маршрута. До 2000 на фирма — броят под заключен ред на фирмата. Промяна — само върху
  * отворената версия (`base` = updatedAt). Изтриването е окончателно; офертите на клиента остават с
  * написаното в тях (връзката им пада — `ON DELETE SET NULL`). Одитът — в същата транзакция, без лични данни.
@@ -18,7 +18,10 @@ import { searchTextCliente, type ClienteData } from './form.js';
 
 export const MAX_CLIENTI = 2000;
 
-const ATTIVI = { azienda: { preventiviAttivi: true } } satisfies Prisma.ClienteWhereInput;
+/** Фирмите с включени оферти и тези с архив (изключени, с данни) — кой какво вижда решава обхватът. */
+const ATTIVI = {
+  azienda: { OR: [{ preventiviAttivi: true }, { preventiviArchivio: true }] },
+} satisfies Prisma.ClienteWhereInput;
 
 const SELECT = {
   id: true,
@@ -32,7 +35,7 @@ const SELECT = {
   note: true,
   createdAt: true,
   updatedAt: true,
-  azienda: { select: { id: true, name: true } },
+  azienda: { select: { id: true, name: true, preventiviAttivi: true } },
 } satisfies Prisma.ClienteSelect;
 
 export type ClienteFull = Prisma.ClienteGetPayload<{ select: typeof SELECT }>;

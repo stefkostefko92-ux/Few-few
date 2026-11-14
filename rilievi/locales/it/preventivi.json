@@ -121,9 +121,9 @@
       "invia": "Invia il preventivo"
     },
     "elimina": {
-      "titolo": "Elimina la bozza",
-      "testo": "La bozza viene eliminata per sempre; il registro conserva il numero. Un preventivo inviato non si elimina.",
-      "btn": "Elimina la bozza"
+      "titolo": "Elimina il preventivo",
+      "testo": "Il preventivo viene eliminato per sempre, insieme ai dati del cliente riportati nel preventivo; il registro conserva solo il numero. Il cliente nell'anagrafica clienti resta. Un preventivo accettato non si può eliminare.",
+      "btn": "Elimina il preventivo"
     },
     "flash": {
       "creato": "Preventivo creato.",
@@ -136,8 +136,8 @@
       "nonInviato": "Invio non riuscito. Riprova tra qualche minuto.",
       "stato": "Stato del preventivo aggiornato.",
       "statoNo": "Cambio di stato non consentito: ricarica la pagina.",
-      "nonEliminabile": "Puoi eliminare solo le bozze.",
-      "eliminato": "Bozza del preventivo n. {n} eliminata.",
+      "nonEliminabile": "Un preventivo accettato non si può eliminare.",
+      "eliminato": "Preventivo n. {n} eliminato.",
       "condizioni": "Condizioni predefinite dei preventivi salvate."
     },
     "mail": {
@@ -181,7 +181,18 @@
       "salva": "Salva le condizioni",
       "listino": "Apri il listino prezzi",
       "hubSi": "Condizioni predefinite compilate",
-      "hubNo": "Nessuna condizione predefinita"
+      "hubNo": "Nessuna condizione predefinita",
+      "informativa": {
+        "titolo": "Informativa privacy nel preventivo",
+        "intro": "In fondo a ogni preventivo il portale riporta l'informativa per i clienti dell'azienda e i loro referenti (artt. 13 e 14 GDPR). Il titolare del trattamento è l'azienda: verifica e adatta il testo, in particolare la base giuridica e la conservazione.",
+        "propria": "Stai usando il testo dell'azienda.",
+        "modello": "Stai usando il modello predefinito, compilato con i dati dell'azienda.",
+        "etichetta": "Testo dell'informativa",
+        "hint": "Al massimo {max} caratteri. Compare in caratteri piccoli in fondo al PDF del preventivo.",
+        "errore": "Scrivi il testo dell'informativa (al massimo {max} caratteri).",
+        "salva": "Salva l'informativa",
+        "ripristina": "Torna al modello"
+      }
     },
     "listino": {
       "titolo": "Listino prezzi",
@@ -271,6 +282,14 @@
           "troppeColonne": "la riga ha più celle delle colonne: se un testo contiene «;», mettilo tra virgolette"
         }
       }
+    },
+    "archivio": {
+      "avviso": "I preventivi di {aziende} sono disattivati: puoi consultare e scaricare preventivi, clienti e listino prezzi ed eliminare i clienti e i preventivi non accettati, ma non crearne di nuovi né modificarli. Per riattivarli rivolgiti all'amministrazione del portale.",
+      "master": "I preventivi di {aziende} sono disattivati. Correggi i dati solo su istruzione scritta dell'azienda; invio, esito e nuovi preventivi non sono disponibili."
+    },
+    "informativa": {
+      "titolo": "Informativa sul trattamento dei dati personali (artt. 13 e 14 GDPR)",
+      "modello": "Titolare del trattamento: {azienda}{sede}. Contatto: {contatto}.\n\nQuali dati: nome o ragione sociale, indirizzo, partita IVA o codice fiscale, email e telefono del cliente; nome e recapiti del referente ed eventuale nota interna. I dati del referente li riceviamo dal cliente o dal referente stesso.\n\nPerché e su quale base: per preparare, inviare e gestire il preventivo e l'eventuale contratto (art. 6, par. 1, lett. b) GDPR); per contattare il referente, sulla base del legittimo interesse di {azienda} a comunicare con il cliente (lett. f)); per gli obblighi di legge (lett. c)). Senza i dati del cliente non possiamo preparare il preventivo.\n\nChi altro vede i dati: Carbon Stealth VCC (Bulgaria), che gestisce il portale per conto di {azienda} come responsabile del trattamento (art. 28 GDPR), con server in Germania (netcup GmbH) e invio delle email tramite Brevo (Francia). Eventuali trasferimenti fuori dall'Unione per l'invio delle email sono tutelati da clausole contrattuali tipo (art. 46 GDPR).\n\nConservazione: per il preventivo non accettato, fino a 2 anni dopo la fine della validità, per gestire eventuali richieste successive (legittimo interesse); per il preventivo accettato, 10 anni come documento del contratto e per far valere o difendere un diritto (artt. 2220 e 2946 c.c.); nell'anagrafica clienti, finché dura il rapporto o fino alla vostra opposizione.\n\nDiritti: accesso, rettifica, cancellazione, limitazione, portabilità e opposizione (artt. 15–22 GDPR), scrivendo a {contatto}. Potete proporre reclamo al Garante per la protezione dei dati personali (garanteprivacy.it) o all'autorità del vostro paese. Non ci sono decisioni automatizzate."
     }
   }
 }

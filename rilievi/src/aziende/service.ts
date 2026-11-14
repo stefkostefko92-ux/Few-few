@@ -27,6 +27,7 @@ const SUMMARY = {
   deactivatedAt: true,
   schizzi: true,
   preventiviAttivi: true,
+  preventiviArchivio: true,
   abbonamentoLivello: true,
   abbonamentoFino: true,
   abbonamentoProva: true,

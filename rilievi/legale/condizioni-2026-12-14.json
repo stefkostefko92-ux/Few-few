@@ -1,0 +1,576 @@
+{
+  "tipo": "CONDIZIONI",
+  "versione": "2026-12-14",
+  "titolo": "Condizioni generali di servizio di Rilievi Impianti",
+  "premessa": [
+    "Fornitore: Carbon Stealth VCC, società a capitale variabile (VCC) di diritto bulgaro, con sede in ul. Samuil 3, 2670 Bobov Dol (provincia di Kyustendil), Bulgaria, iscritta al Registro di commercio bulgaro (Agenzia delle iscrizioni), codice EIK 208725180, P. IVA BG208725180 (il «Fornitore»). I recapiti del Fornitore, compreso l'indirizzo email di contatto, sono indicati nell'informativa sulla privacy pubblicata su rilievi.carbonstealth.eu/privacy."
+  ],
+  "articoli": [
+    {
+      "numero": "1",
+      "titolo": "Definizioni",
+      "paragrafi": [
+        "1.1 «Portale» o «Servizio»: la piattaforma Rilievi Impianti accessibile su rilievi.carbonstealth.eu, con le funzioni disponibili tempo per tempo.",
+        "1.2 «Cliente»: l'impresa o il professionista che conclude il contratto per mezzo del proprio Amministratore.",
+        "1.3 «Amministratore»: la persona fisica, invitata dal Fornitore con il ruolo di amministratore dell'azienda, che accetta le presenti Condizioni per conto del Cliente.",
+        "1.4 «Utente»: ogni persona fisica che accede al Portale per conto del Cliente, compreso l'Amministratore.",
+        "1.5 «Dati del Cliente»: dati, testi, misure, foto, video, schizzi, firme e documenti inseriti o caricati nel Portale dal Cliente o dagli Utenti.",
+        "1.6 «Strumenti di calcolo»: le funzioni che elaborano Dati del Cliente con formule o metodi (tra cui il calcolo argano e il calcolo limitatore) e quelle che saranno aggiunte.",
+        "1.7 «Documenti generati»: stampe e file PDF prodotti dal Portale; «Risultati»: valori, esiti e indicazioni prodotti dagli Strumenti di calcolo.",
+        "1.8 «Tecnico abilitato»: persona fisica in possesso della competenza e, ove la legge lo richieda, dell'abilitazione o iscrizione necessarie per verificare e approvare l'intervento a cui il Documento generato si riferisce.",
+        "1.9 «Allegato A»: l'Accordo sul trattamento dei dati personali ai sensi dell'art. 28 del Regolamento (UE) 2016/679 («GDPR»), con le sue appendici, parte integrante delle presenti Condizioni.",
+        "1.10 «Allegato B»: le clausole sul cambio di fornitore e sull'esportazione dei dati ai sensi degli artt. 23–30 del Regolamento (UE) 2023/2854 («Data Act»), parte integrante delle presenti Condizioni.",
+        "1.11 «Piano»: il livello a pagamento del Servizio scelto dal Cliente in base al numero di Utenti (Premium fino a 10, fino a 25 oppure oltre 25 Utenti), con la sua durata e il suo prezzo."
+      ]
+    },
+    {
+      "numero": "2",
+      "titolo": "Oggetto e natura esclusivamente professionale",
+      "paragrafi": [
+        "2.1 Il Fornitore mette a disposizione del Cliente il Portale, in modalità software come servizio, per redigere e gestire schede di rilievo, moduli d'ordine, preventivi, fogli di intervento, verbali, buoni di lavoro, cartelli e calcoli relativi a impianti elevatori, per tenere il listino prezzi e l'anagrafica clienti del Cliente, e per inviare i documenti per email ai destinatari indicati dagli Utenti.",
+        "2.2 Il Servizio è riservato a imprese e professionisti che agiscono nell'esercizio della propria attività imprenditoriale o professionale e non è offerto a consumatori. Il Cliente dichiara di agire per scopi inerenti alla propria attività.",
+        "2.3 Le descrizioni del sito pubblico hanno carattere illustrativo: il contenuto del Servizio è quello effettivamente disponibile nel Portale.",
+        "2.4 Il Fornitore pubblica su rilievi.carbonstealth.eu/stato lo stato del Servizio, le interruzioni in corso, le manutenzioni programmate e i propri obiettivi di ripristino: perdita massima di dati pari all'intervallo tra due copie di sicurezza giornaliere (24 ore) e il tempo di ripristino indicato nella pagina. Gli obiettivi descrivono l'organizzazione del Fornitore e non costituiscono livelli di servizio né tempi di ripristino garantiti; resta fermo l'art. 8.",
+        "2.5 I preventivi, con il listino prezzi e l'anagrafica clienti, sono attivati dal Fornitore per il singolo Cliente, su richiesta del Cliente o secondo l'offerta. Il Fornitore li disattiva solo su richiesta del Cliente oppure ai sensi degli artt. 8.4 e 16. La disattivazione non cancella alcun dato: gli Utenti con i permessi per i preventivi possono consultare, stampare e scaricare i dati già inseriti in queste funzioni e cancellare quelli che il Portale consente di cancellare (tra cui i clienti dell'anagrafica e i preventivi non accettati), ma non possono creare nuovi dati né modificare quelli esistenti; la correzione è eseguita dal Fornitore ai sensi dell'art. A.9 dell'Allegato A. L'esportazione e il cambio di fornitore (Allegato B) restano sempre disponibili. Con la riattivazione tutte le funzioni tornano disponibili."
+      ]
+    },
+    {
+      "numero": "3",
+      "titolo": "Conclusione del contratto, poteri di rappresentanza, durata",
+      "paragrafi": [
+        "3.1 L'accesso avviene solo su invito del Fornitore, che è libero di non accogliere una richiesta di accesso. Il contratto si conclude quando l'Amministratore: (a) accetta le presenti Condizioni e gli Allegati A e B; (b) approva specificamente le clausole elencate all'art. 24; (c) conferma l'approvazione inserendo il codice monouso inviato al proprio indirizzo email, che costituisce firma elettronica ai sensi dell'art. 3, punto 10, del Regolamento (UE) 910/2014.",
+        "3.2 Prima della conclusione il testo delle Condizioni e degli Allegati A e B può essere letto, stampato e salvato. Subito dopo, il Fornitore invia all'email dell'Amministratore un PDF con le Condizioni, gli Allegati A e B e il riepilogo dell'accettazione (data e ora, versione, impronta del testo, clausole approvate) e lo rende scaricabile nel Portale.",
+        "3.3 L'Amministratore dichiara di avere il potere di rappresentare e obbligare il Cliente e ne indica correttamente ragione sociale, sede e partita IVA. Se ne è privo, risponde personalmente verso il Fornitore dei danni che ne derivano. L'uso del Servizio da parte del Cliente dopo la conclusione vale ratifica.",
+        "3.4 Il contratto è a tempo indeterminato, salvo quanto previsto dall'art. 17."
+      ]
+    },
+    {
+      "numero": "4",
+      "titolo": "Account, Utenti, ruoli e regole d'uso",
+      "paragrafi": [
+        "4.1 Il Cliente, tramite l'Amministratore, invita gli Utenti, assegna e modifica ruoli e permessi e revoca senza ritardo l'accesso di chi non è più autorizzato.",
+        "4.2 Il Cliente risponde della scelta degli Utenti, dei ruoli e permessi assegnati e delle attività compiute con le credenziali dei propri Utenti, salvo che derivino da una violazione delle misure di sicurezza imputabile al Fornitore.",
+        "4.3 Le credenziali sono personali e non cedibili. Ogni Utente custodisce password e codici. Il Cliente comunica senza ritardo al Fornitore ogni uso non autorizzato. Il Fornitore raccomanda di attivare la verifica in due passaggi.",
+        "4.4 Regole d'uso. Gli Utenti non possono: (a) caricare contenuti illeciti o che violano diritti di terzi; (b) tentare di accedere a dati di altre aziende o a funzioni non autorizzate; (c) compromettere il funzionamento del Portale, sovraccaricarlo o eseguire scansioni o test di sicurezza senza accordo scritto del Fornitore; (d) estrarre dati in modo automatizzato; (e) usare i Documenti generati in violazione dell'art. 6. Il Cliente fa rispettare le Regole d'uso ai propri Utenti e ne risponde.",
+        "4.5 Ogni Utente prende visione delle Regole d'uso e dell'avvertenza sui calcoli al primo accesso e a ogni loro modifica. La presa visione non sostituisce l'accettazione del Cliente.",
+        "4.6 Se il Cliente attiva l'accesso tramite un proprio fornitore di identità (tra cui Microsoft o Google), il fornitore di identità è scelto dal Cliente e opera in base al rapporto tra il Cliente e tale fornitore; il Fornitore non lo incarica e non è parte di quel rapporto. Il Cliente gestisce gli account presso il fornitore di identità e disattiva senza ritardo quelli non più autorizzati; agli accessi così effettuati si applicano gli artt. 4.1–4.3."
+      ]
+    },
+    {
+      "numero": "5",
+      "titolo": "Dati del Cliente",
+      "paragrafi": [
+        "5.1 Il Cliente è l'unico responsabile della correttezza, completezza, aggiornamento e liceità dei Dati del Cliente, comprese le misure e i dati rilevati sugli impianti, e del diritto di caricarli (immagini di persone, firme, marchi, moduli di terzi).",
+        "5.2 Il Fornitore non controlla nel merito i Dati del Cliente né la loro corrispondenza agli impianti reali. I valori proposti dalle funzioni di compilazione automatica e di collegamento tra campi devono essere controllati dall'Utente.",
+        "5.3 Il Cliente resta titolare dei Dati del Cliente e concede al Fornitore una licenza non esclusiva, limitata alla durata del contratto, per trattarli al solo fine di erogare il Servizio, prestare assistenza, garantirne la sicurezza ed eseguire le copie di sicurezza, oltre che per i Registri dell'art. 19.",
+        "5.4 Il Portale non è un sistema di conservazione documentale a norma (art. 44 del D.Lgs. 82/2005). Il formato PDF/A dei documenti confermati ne agevola la conservazione da parte del Cliente, ma non la sostituisce. Il Cliente conserva le copie dei Documenti generati che gli servono, anche per i propri obblighi di legge.",
+        "5.5 Le email inviate dal Portale su istruzione degli Utenti o secondo le impostazioni del Cliente (tra cui moduli d'ordine ai fornitori, preventivi e copia del foglio di intervento o del verbale firmato al firmatario che ha indicato il proprio indirizzo) sono inviate per conto del Cliente agli indirizzi da lui indicati. Il Cliente verifica destinatari e contenuto prima dell'invio e ne risponde; resta fermo l'art. 6.6."
+      ]
+    },
+    {
+      "numero": "6",
+      "titolo": "Strumenti di calcolo e Documenti generati",
+      "paragrafi": [
+        "6.1 Gli Strumenti di calcolo sono strumenti di ausilio al lavoro del tecnico. Elaborano i dati inseriti con le formule e i metodi indicati nella pagina di ciascuno strumento, anche se provenienti dal Cliente o da terzi.",
+        "6.2 I Risultati e i Documenti generati non costituiscono progetto, relazione tecnica, certificazione, verifica, collaudo, attestazione di conformità né parere professionale, anche ai sensi del D.P.R. 162/1999 e della normativa tecnica applicabile, e non sostituiscono il giudizio del Tecnico abilitato.",
+        "6.3 Prima di qualsiasi uso (tra cui ordini di materiali, interventi, tarature, modifiche, messa in servizio, presentazione a committenti, organismi o autorità) i dati di ingresso e i Risultati devono essere controllati, approvati e sottoscritti da un Tecnico abilitato designato dal Cliente, che ne assume la responsabilità professionale. In mancanza di tale verifica e firma il Documento non deve essere utilizzato, e il Cliente fa in modo che non lo sia.",
+        "6.4 I riferimenti a leggi e norme tecniche (UNI, EN, D.P.R. e altre) indicano la fonte dei metodi o dei limiti usati e l'edizione considerata. Non garantiscono che il Risultato o l'impianto sia conforme, che la norma citata sia quella applicabile al caso concreto o che sia l'edizione vigente. La scelta della norma, la verifica dei presupposti (tra cui data e regime di installazione e tipo di impianto) e il rispetto delle norme spettano al Cliente e al Tecnico abilitato.",
+        "6.5 Ogni Documento generato da uno Strumento di calcolo riporta su ogni pagina chi lo ha generato e quando, la build del software e un riferimento del calcolo, oltre all'avvertenza e allo spazio per la verifica e la firma del Tecnico abilitato. Il Cliente non rimuove, altera né nasconde tali indicazioni e non presenta i Documenti come elaborati del Fornitore.",
+        "6.6 I moduli d'ordine di fornitori terzi sono compilati con i Dati del Cliente. Il Fornitore non è parte dei rapporti con tali fornitori e non garantisce che i moduli siano aggiornati o accettati da essi.",
+        "6.7 Il Fornitore può correggere, aggiornare o ritirare uno Strumento di calcolo. Il calcolo già generato resta identificato dalla build e dal riferimento riportati. Se viene a conoscenza di un errore rilevante in uno Strumento di calcolo, il Fornitore ne informa gli Amministratori dei Clienti interessati, tramite il Portale o per email, entro un termine ragionevole."
+      ]
+    },
+    {
+      "numero": "7",
+      "titolo": "Esclusione di garanzie",
+      "paragrafi": [
+        "7.1 Nei limiti consentiti dalla legge applicabile, il Servizio, i Risultati e i Documenti generati sono forniti «così come sono» e «come disponibili». Salvo quanto espressamente previsto nelle presenti Condizioni, il Fornitore non garantisce che il Servizio sia privo di errori o di interruzioni né che sia idoneo a scopi particolari del Cliente.",
+        "7.2 Resta fermo l'art. 11."
+      ]
+    },
+    {
+      "numero": "8",
+      "titolo": "Disponibilità, manutenzione, copie di sicurezza",
+      "paragrafi": [
+        "8.1 Il Fornitore usa la diligenza professionale per mantenere il Servizio disponibile, ma non assume livelli di servizio né tempi di ripristino garantiti.",
+        "8.2 Il Servizio può essere interrotto per manutenzione, aggiornamenti, sicurezza o cause non imputabili al Fornitore. Le manutenzioni programmate sono annunciate nel Portale, quando possibile, con anticipo.",
+        "8.3 Il Fornitore esegue copie di sicurezza giornaliere come descritto nell'Allegato A. Esse servono a ripristinare il Servizio e non sostituiscono le copie del Cliente (art. 5.4).",
+        "8.4 Il Fornitore può modificare le funzioni del Servizio. Se elimina una funzione sostanziale, lo comunica con almeno 30 giorni di anticipo e il Cliente può recedere ai sensi dell'art. 17.1."
+      ]
+    },
+    {
+      "numero": "9",
+      "titolo": "Limitazione di responsabilità",
+      "paragrafi": [
+        "9.1 Nei limiti consentiti dalla legge applicabile e fermo l'art. 11, il Fornitore risponde verso il Cliente solo dei danni diretti, prevedibili al momento della conclusione del contratto, derivanti da un proprio inadempimento.",
+        "9.2 Fermo l'art. 11, il Fornitore non risponde: (a) di mancato guadagno, perdita di affari, clientela, opportunità o avviamento e di danni d'immagine; (b) di danni indiretti o consequenziali; (c) dei danni derivanti dall'uso di Risultati o Documenti generati senza la verifica e la firma previste dall'art. 6.3 o comunque in violazione dell'art. 6; (d) dei danni derivanti da Dati del Cliente inesatti o incompleti, o dalla scelta di norme, parametri e opzioni da parte degli Utenti; (e) dei danni derivanti da operazioni compiute con le credenziali degli Utenti, salvo quanto previsto all'art. 4.2; (f) delle interruzioni del Servizio previste dall'art. 8; (g) della perdita di dati di cui il Cliente non abbia conservato copia ai sensi dell'art. 5.4, fermo l'obbligo del Fornitore di ripristinare l'ultima copia di sicurezza disponibile.",
+        "9.3 Fermo l'art. 11, la responsabilità complessiva del Fornitore verso il Cliente per tutti i fatti verificatisi in un anno contrattuale non supera il maggiore tra: (i) i corrispettivi pagati dal Cliente nei dodici mesi precedenti il fatto; (ii) 1.000 euro."
+      ]
+    },
+    {
+      "numero": "10",
+      "titolo": "Manleva e ripartizione interna",
+      "paragrafi": [
+        "10.1 Il Cliente tiene indenne e manleva il Fornitore da pretese, azioni, danni, costi e spese, comprese le ragionevoli spese legali, fatti valere da terzi (tra cui committenti, proprietari, condomini, utenti degli impianti, organismi di verifica, autorità, fornitori e Utenti del Cliente) e derivanti da: (a) uso di Risultati o Documenti generati senza la verifica e la firma previste dall'art. 6.3 o comunque in violazione dell'art. 6; (b) Dati del Cliente inesatti, incompleti o illeciti; (c) violazione delle presenti Condizioni da parte del Cliente o degli Utenti; (d) lavori, ordini, tarature e interventi eseguiti dal Cliente o per suo conto.",
+        "10.2 Se il Fornitore e il Cliente sono tenuti in solido verso un danneggiato, nei loro rapporti interni il danno grava sul Cliente nella misura in cui deriva dalle circostanze indicate all'art. 10.1, nei limiti consentiti dalla legge.",
+        "10.3 La manleva e la ripartizione interna non si applicano nella misura in cui il danno sia imputabile a dolo o colpa grave del Fornitore.",
+        "10.4 Il Fornitore informa senza ritardo il Cliente della pretesa, gli consente di partecipare alla difesa e non conclude transazioni che riconoscano una responsabilità del Cliente senza il suo consenso.",
+        "10.5 Il presente articolo non limita i diritti dei danneggiati (art. 11)."
+      ]
+    },
+    {
+      "numero": "11",
+      "titolo": "Responsabilità che restano ferme",
+      "paragrafi": [
+        "Nessuna clausola delle presenti Condizioni esclude o limita: (a) la responsabilità per dolo o colpa grave (art. 1229 del codice civile italiano; art. 94 della legge bulgara sulle obbligazioni e i contratti, ZZD); (b) la responsabilità per morte o lesioni personali, nella misura in cui la legge applicabile non consenta di limitarla; (c) la responsabilità verso le persone danneggiate per danno da prodotti difettosi, compresa quella prevista dalla Direttiva (UE) 2024/2853 e dalle norme nazionali di recepimento; (d) gli obblighi e le responsabilità che il GDPR pone in capo al Fornitore e i diritti degli interessati; (e) ogni altra responsabilità che per legge non può essere esclusa o limitata."
+      ]
+    },
+    {
+      "numero": "12",
+      "titolo": "Prova gratuita, Piani e corrispettivi",
+      "paragrafi": [
+        "12.1 I Piani, la loro durata, il numero di Utenti compresi e il prezzo sono quelli dell'offerta che l'Amministratore accetta nel Portale prima del pagamento, con la spunta registrata nel Registro delle accettazioni (art. 19.1, lett. a)), oppure che il Cliente accetta per iscritto. L'offerta prevale sulle presenti Condizioni per gli aspetti economici; le modifiche dei prezzi non cambiano le offerte già accettate. I prezzi si intendono IVA esclusa. Per i Clienti stabiliti in un altro Stato membro l'IVA si applica secondo l'art. 12.10.",
+        "12.2 Prova gratuita. Il Cliente che conclude il contratto a partire dall'entrata in vigore della presente versione ha una prova gratuita di un mese, con tutte le funzioni del Servizio: dalla conclusione del contratto (art. 3.1) fino alla mezzanotte (ora di Roma) dello stesso giorno del mese successivo o, se quel giorno manca, dell'ultimo giorno di quel mese. La prova non richiede dati di pagamento, non si trasforma da sola in un Piano e non obbliga a pagare.",
+        "12.3 Piani a pagamento. Ogni Piano si paga in anticipo, per tutta la durata scelta, con carta sulla pagina di pagamento del servizio indicato nel Portale oppure con bonifico o altro mezzo concordato per iscritto. Il Piano non si rinnova automaticamente: alla scadenza non viene addebitato nulla. Il Piano inizia alla conferma del pagamento oppure, per i pagamenti con altro mezzo, quando il Fornitore lo attiva; se è in corso la prova o un altro Piano, inizia alla loro scadenza. Termina alla mezzanotte (ora di Roma) del giorno indicato nell'offerta e nel Portale.",
+        "12.4 Numero di Utenti. Il Piano si sceglie in base al numero di Utenti al momento dell'acquisto. Si contano gli Utenti con accesso attivo all'azienda, compreso l'Amministratore, e gli inviti non ancora accettati; non si contano gli account disattivati né il personale del Fornitore. Raggiunto il limite, si possono invitare altri Utenti solo passando a un Piano superiore con una nuova offerta, che indica come si tiene conto dei giorni già pagati. Il Fornitore non addebita nulla in automatico.",
+        "12.5 Sola lettura. Alla scadenza della prova o del Piano, senza un nuovo Piano, il contratto continua e il Servizio passa in sola lettura per tutti gli Utenti del Cliente: si possono vedere, stampare e scaricare i Dati del Cliente e i Documenti generati già presenti, ma non si possono creare nuovi dati né modificare quelli esistenti. Restano sempre disponibili: (a) l'esportazione e il cambio di fornitore (Allegato B); (b) la gestione del proprio account, della password e della verifica in due passaggi, la revoca dei ruoli e la disattivazione degli Utenti (art. 4.1); (c) la cancellazione dei dati e, per la loro correzione, l'assistenza del Fornitore prevista dall'art. A.9 dell'Allegato A; (d) l'accettazione delle Condizioni e l'acquisto di un Piano. La sola lettura non è una sospensione ai sensi dell'art. 16 e non cancella alcun dato. Con un nuovo Piano tutte le funzioni tornano disponibili.",
+        "12.6 Avvisi. Il Fornitore avvisa gli Amministratori nel Portale e per email 14 giorni e 3 giorni prima della scadenza della prova o del Piano e il giorno della scadenza, indicando la data, le conseguenze dell'art. 12.5 e come acquistare un Piano. La scadenza resta quella indicata nell'offerta o nel Portale.",
+        "12.7 Cambio di fornitore. Se la prova o il Piano scade durante il periodo transitorio dell'art. 17.3, compresa la proroga, la sola lettura non si applica: fino alla fine di quel periodo il Servizio prosegue senza limitazioni e senza costi (art. B.4 dell'Allegato B).",
+        "12.8 Clienti già attivi. Per i Clienti che hanno concluso il contratto prima dell'entrata in vigore della presente versione il Servizio resta gratuito, con tutte le funzioni e senza scadenza, finché il Fornitore non comunica nel Portale e per email, con almeno 30 giorni di anticipo, la data da cui si applicano la prova o i Piani. Il Cliente può recedere senza oneri prima di quella data.",
+        "12.9 Rimborsi. Se il contratto cessa per qualsiasi causa prima della fine di un Piano pagato, il Fornitore rimborsa la parte del prezzo pagato che corrisponde ai giorni interi non goduti dopo la cessazione, in proporzione alla durata del Piano, entro 30 giorni dalla cessazione. Lo stesso vale, per intero, per un Piano pagato e non ancora iniziato. Il rimborso, totale o parziale, è eseguito sullo stesso mezzo di pagamento usato per il Piano; solo se ciò non è possibile, con bonifico sul conto indicato dal Cliente. Se il Cliente contesta il pagamento presso la propria banca (chargeback), il Fornitore esamina la contestazione e ne comunica l'esito; la somma già restituita al Cliente con la contestazione si detrae dal rimborso. Per ogni rimborso, totale o parziale, e per ogni contestazione definita a favore del Cliente, il Fornitore emette una nota di credito sulla fattura del Piano, per l'importo restituito e con l'eventuale IVA, nel termine dell'art. 115 della legge bulgara sull'IVA (ZDDS), e la invia per email all'indirizzo a cui ha inviato la fattura. L'offerta non può prevedere un rimborso minore.",
+        "12.10 Partita IVA e IVA. Per il Cliente stabilito in un altro Stato membro il Portale verifica la partita IVA nel sistema VIES della Commissione europea prima del pagamento e conserva con il pagamento l'esito e il numero di consultazione rilasciato dal VIES. (a) Se la partita IVA risulta valida, si applica l'inversione contabile (art. 196 della Direttiva 2006/112/CE; art. 18, par. 1, lett. a), del Regolamento di esecuzione (UE) n. 282/2011). (b) Se la partita IVA non risulta valida, manca la conferma richiesta dall'art. 18, par. 1, lett. a), del Regolamento n. 282/2011 e il Fornitore, ai soli fini dell'IVA, tratta il Cliente come persona che non è soggetto passivo. Finché il Fornitore non supera la soglia di 10.000 euro dell'art. 59 quater della Direttiva 2006/112/CE, al prezzo si aggiunge l'IVA bulgara del 20 %. Il Portale mostra di nuovo l'offerta con l'IVA e il totale, e l'acquisto si conclude solo se l'Amministratore accetta questa nuova offerta. Superata la soglia, l'acquisto nel Portale con quella partita IVA non si conclude e il Cliente può scrivere al Fornitore. (c) Se il VIES non risponde, l'acquisto nel Portale non si conclude e non viene addebitato nulla. In ogni caso il Cliente può controllare i dati dichiarati (art. 3.3) e riprovare, oppure scrivere al Fornitore all'indirizzo indicato nell'informativa sulla privacy."
+      ]
+    },
+    {
+      "numero": "13",
+      "titolo": "Proprietà intellettuale",
+      "paragrafi": [
+        "13.1 Il Portale, il software, le banche dati, le interfacce, l'impaginazione dei documenti, i modelli e i moduli redatti dal Fornitore e i segni «Rilievi Impianti» e «Carbon Stealth» appartengono al Fornitore o ai suoi licenzianti. Il Cliente riceve, per la durata del contratto, un diritto non esclusivo, non trasferibile e non sublicenziabile di usare il Servizio per la propria attività.",
+        "13.2 È vietato copiare, decompilare, modificare o rivendere il software, salvo i limiti inderogabili di legge.",
+        "13.3 Il Cliente può usare, stampare e trasmettere i Documenti generati per la propria attività, nel rispetto dell'art. 6.",
+        "13.4 I nomi e i marchi di produttori e fornitori citati nel Portale (tra cui Pelazza, MoviLift, DMG, Mastech, Elettroquadri, 2SG, AMI) appartengono ai rispettivi titolari e sono usati a solo scopo descrittivo. Il loro uso non indica affiliazione, autorizzazione o approvazione.",
+        "13.5 Il Portale indica le norme tecniche solo con sigla, edizione e punto. I testi delle norme sono protetti e il Cliente deve procurarseli presso gli enti di normazione."
+      ]
+    },
+    {
+      "numero": "14",
+      "titolo": "Riservatezza",
+      "paragrafi": [
+        "14.1 Ciascuna parte mantiene riservate le informazioni non pubbliche dell'altra apprese in esecuzione del contratto e le usa solo a tale scopo, durante il contratto e per cinque anni dalla sua cessazione. Sono escluse le informazioni pubbliche, già note o da comunicare per obbligo di legge o ordine dell'autorità.",
+        "14.2 Il personale autorizzato del Fornitore accede ai Dati del Cliente solo per erogare il Servizio, prestare l'assistenza richiesta, garantirne la sicurezza o adempiere obblighi di legge, ed è vincolato alla riservatezza."
+      ]
+    },
+    {
+      "numero": "15",
+      "titolo": "Protezione dei dati personali",
+      "paragrafi": [
+        "15.1 Per i dati personali contenuti nei Dati del Cliente il Cliente è titolare e il Fornitore è responsabile del trattamento, secondo l'Allegato A.",
+        "15.2 Il Fornitore è titolare autonomo per le richieste di accesso, per la sicurezza degli account, per le comunicazioni contrattuali, per la fatturazione e i pagamenti, compresa la verifica della partita IVA nel VIES, per le segnalazioni e le decisioni dell'art. 25 e per i Registri dell'art. 19, come descritto nell'informativa pubblicata su rilievi.carbonstealth.eu/privacy.",
+        "15.3 Il Cliente informa i propri Utenti e gli altri interessati (tra cui i clienti che firmano i fogli di intervento, nonché i clienti e i loro referenti registrati nell'anagrafica clienti o indicati nei preventivi) e assicura una base giuridica per i trattamenti di cui è titolare. L'informativa riportata dal Portale (art. 15.4) non sostituisce quella dovuta agli interessati che non ricevono il preventivo né firmano nel Portale.",
+        "15.4 Sulla pagina della firma dei fogli di intervento e dei verbali il Portale mostra l'informativa resa dal Cliente ai firmatari (art. 13 GDPR). In fondo al PDF di ogni preventivo il Portale riporta l'informativa resa dal Cliente ai suoi clienti e ai loro referenti (artt. 13 e 14 GDPR). Per entrambe il Fornitore propone un modello compilato con i dati del Cliente, che il Cliente può sostituire con un proprio testo nelle impostazioni; il Cliente, in qualità di titolare, ne verifica e adatta il contenuto e ne risponde."
+      ]
+    },
+    {
+      "numero": "16",
+      "titolo": "Sospensione",
+      "paragrafi": [
+        "16.1 Il Fornitore può sospendere il Servizio, in tutto o per singoli Utenti, anche senza preavviso, se necessario per: (a) rischi o incidenti di sicurezza; (b) gravi violazioni degli artt. 4.4 o 6.5; (c) ordini dell'autorità; (d) mancato pagamento di somme dovute, protratto per 15 giorni dopo un sollecito scritto. La scadenza della prova o di un Piano pagato in anticipo non è un mancato pagamento né una sospensione: si applica l'art. 12.5.",
+        "16.2 La sospensione è limitata a quanto necessario, è motivata per iscritto e cessa con la sua causa. Durante la sospensione i Dati del Cliente non vengono cancellati."
+      ]
+    },
+    {
+      "numero": "17",
+      "titolo": "Recesso, risoluzione, fine del servizio",
+      "paragrafi": [
+        "17.1 Il Cliente può recedere in qualsiasi momento con comunicazione scritta, anche per email, salvo quanto diversamente previsto nell'offerta per i periodi già pagati.",
+        "17.2 Il Fornitore può recedere con preavviso scritto di almeno 60 giorni. Può risolvere il contratto con effetto immediato, mediante comunicazione scritta, in caso di grave violazione degli artt. 4.4, 6.3 o 6.5, di mancato pagamento ai sensi dell'art. 16.1(d) protratto oltre 30 giorni, o di insolvenza del Cliente.",
+        "17.3 Il Cliente può chiedere in qualsiasi momento, tramite un Amministratore nel Portale o per iscritto, il cambio di fornitore, il trasferimento dei dati su un'infrastruttura propria o la cessazione con cancellazione dei dati, secondo l'Allegato B. Dalla richiesta decorre un periodo transitorio di 30 giorni, prorogabile una volta, durante il quale il Servizio prosegue senza limitazioni e la richiesta può essere revocata. Il recesso ai sensi dell'art. 17.1 vale come tale richiesta. Alla fine del periodo transitorio, o alla cessazione del contratto per altra causa, l'azienda del Cliente viene disattivata: gli Utenti non accedono più al Portale, salvo gli Amministratori, che per 90 giorni possono accedere alla sola pagina di esportazione e scaricare gratuitamente tutti i Dati esportabili (Allegato B, art. B.7). Dopo tale termine i Dati del Cliente sono cancellati definitivamente, e le copie di sicurezza scadono entro i successivi 14 giorni. Restano esclusi i dati indicati all'art. A.11 dell'Allegato A, tra cui i Registri dell'art. 19.",
+        "17.4 Restano in vigore dopo la cessazione gli artt. 6, 9, 10, 11, 13, 14, 19, 20, 21 e 22, l'art. 25 per i contenuti, le segnalazioni, le decisioni e gli ordini delle autorità relativi al periodo anteriore alla cessazione o ai Dati del Cliente ancora conservati e, fino alla cancellazione dei dati, l'art. 17.3 e l'Allegato B."
+      ]
+    },
+    {
+      "numero": "18",
+      "titolo": "Modifiche delle Condizioni",
+      "paragrafi": [
+        "18.1 Il Fornitore può modificare le presenti Condizioni per giustificati motivi (tra cui modifiche di legge, nuove funzioni, sicurezza, chiarimenti). Le modifiche sono comunicate nel Portale e per email agli Amministratori, evidenziate, almeno 30 giorni prima dell'entrata in vigore; quelle imposte dalla legge o urgenti per la sicurezza possono avere effetto prima.",
+        "18.2 La nuova versione deve essere accettata da un Amministratore. Se modifica le clausole elencate all'art. 24 o ne aggiunge di nuove, richiede una nuova approvazione specifica con la procedura dell'art. 3.1.",
+        "18.3 Fino all'accettazione vale la versione precedente. Dopo l'entrata in vigore, in mancanza di accettazione, l'accesso può essere limitato all'esportazione dei dati finché il Cliente non accetta o recede. Il Cliente può recedere senza oneri prima dell'entrata in vigore.",
+        "18.4 Le modifiche non hanno effetto sui Documenti generati in precedenza."
+      ]
+    },
+    {
+      "numero": "19",
+      "titolo": "Registri probatori e firma elettronica",
+      "paragrafi": [
+        "19.1 Il Fornitore tiene, con impronta e sigillo crittografico che rendono rilevabile ogni alterazione: (a) il Registro delle accettazioni: identità dell'Amministratore e dati del Cliente dichiarati; data e ora; versione e impronta del testo accettato; clausole approvate specificamente; invio e verifica del codice monouso; indirizzo IP e tipo di browser; impronta della copia inviata. Vi sono registrate anche la presa visione degli Utenti (art. 4.5) e l'accettazione delle offerte (art. 12.1): Amministratore, Cliente, Piano, durata, prezzo, testo e impronta dell'offerta, data e ora, indirizzo IP e tipo di browser, riferimento del pagamento; (b) il Registro dei calcoli emessi: per ogni Documento generato da uno Strumento di calcolo, l'Utente, il Cliente, data e ora, tipo di calcolo, build del software, dati di ingresso, risultati riportati, riferimento del calcolo e impronta del file.",
+        "19.2 Il Fornitore conserva i Registri come titolare autonomo (art. 6, par. 1, lett. f) e art. 17, par. 3, lett. e) GDPR): il registro (a) per la durata del contratto e i dieci anni successivi alla sua cessazione; il registro (b) per dieci anni dalla generazione del Documento; in caso di contestazione, fino alla sua definizione.",
+        "19.3 Le parti riconoscono che l'accettazione con codice monouso costituisce firma elettronica ai sensi del Regolamento (UE) 910/2014 e soddisfa la forma scritta. Ai sensi dell'art. 13, comma 4, della legge bulgara sul documento elettronico e sui servizi fiduciari (ZEDEUU), le parti convengono che tale firma ha la stessa efficacia della firma autografa. Ove si applichi la legge italiana, resta fermo l'art. 20, comma 1-bis, del D.Lgs. 82/2005.",
+        "19.4 Le registrazioni costituiscono prova di quanto vi è indicato, salvo prova contraria. Il Cliente può chiederne copia per quanto lo riguarda."
+      ]
+    },
+    {
+      "numero": "20",
+      "titolo": "Reclami e termini",
+      "paragrafi": [
+        "20.1 Fermo l'art. 11, il Cliente comunica per iscritto al Fornitore, all'indirizzo email indicato nell'informativa sulla privacy, i disservizi e gli errori del Servizio, a pena di decadenza, entro 90 giorni da quando li ha scoperti o avrebbe potuto scoprirli con l'ordinaria diligenza.",
+        "20.2 Il Cliente informa senza ritardo il Fornitore delle pretese di terzi che possono riguardarlo."
+      ]
+    },
+    {
+      "numero": "21",
+      "titolo": "Legge applicabile",
+      "paragrafi": [
+        "Il contratto è regolato dalla legge della Repubblica di Bulgaria. È esclusa l'applicazione della Convenzione di Vienna dell'11 aprile 1980 sulla vendita internazionale di beni mobili."
+      ]
+    },
+    {
+      "numero": "22",
+      "titolo": "Foro competente",
+      "paragrafi": [
+        "22.1 Per ogni controversia relativa al contratto sono competenti in via esclusiva i giudici di Sofia, Bulgaria (art. 25 del Regolamento (UE) 1215/2012).",
+        "22.2 Il Fornitore può anche convenire il Cliente davanti ai giudici dello Stato membro in cui il Cliente ha sede, competenti secondo il Regolamento (UE) 1215/2012, e chiedere ovunque provvedimenti cautelari."
+      ]
+    },
+    {
+      "numero": "23",
+      "titolo": "Disposizioni finali",
+      "paragrafi": [
+        "23.1 Le presenti Condizioni, gli Allegati A e B e l'eventuale offerta costituiscono l'intero accordo. In caso di contrasto prevalgono, nell'ordine: l'Allegato A per il trattamento dei dati personali; l'Allegato B per il cambio di fornitore e l'esportazione dei dati, anche rispetto all'offerta; l'offerta per gli altri aspetti economici; le presenti Condizioni.",
+        "23.2 L'invalidità di una clausola non comporta l'invalidità delle altre. La clausola invalida si intende sostituita da quella valida più vicina al suo scopo.",
+        "23.3 La tolleranza di un inadempimento non vale come rinuncia.",
+        "23.4 Il Cliente non può cedere il contratto senza consenso scritto del Fornitore. Il Fornitore può cederlo, con preavviso, a chi gli succede nell'attività.",
+        "23.5 Le comunicazioni si fanno per email agli indirizzi dell'Amministratore e del Fornitore. La lingua del contratto è l'italiano.",
+        "23.6 Nessuna parte risponde dei ritardi causati da eventi fuori dal suo ragionevole controllo."
+      ]
+    },
+    {
+      "numero": "24",
+      "titolo": "Clausole approvate specificamente",
+      "paragrafi": [
+        "Ai sensi degli artt. 1341 e 1342 c.c. sono oggetto di approvazione specifica: art. 6 (Strumenti di calcolo e Documenti generati: nessun valore di progetto o certificazione, verifica e firma obbligatorie del Tecnico abilitato, ripartizione delle responsabilità); art. 7 (Esclusione di garanzie); art. 8 (Disponibilità senza livelli di servizio garantiti e modifica delle funzioni); art. 9 (Limitazione di responsabilità e massimale); art. 10 (Manleva e ripartizione interna); art. 12.5 (Sola lettura alla scadenza della prova o del Piano); art. 16 (Sospensione); art. 17.2 (Recesso del Fornitore e risoluzione); art. 18 (Modifiche delle Condizioni); art. 20.1 (Termine di decadenza per i reclami); art. 21 (Legge applicabile bulgara); art. 22 (Foro esclusivo in Bulgaria)."
+      ]
+    },
+    {
+      "numero": "25",
+      "titolo": "Contenuti illegali, segnalazioni e moderazione (Regolamento (UE) 2022/2065)",
+      "paragrafi": [
+        "25.1 Servizio di memorizzazione. Il Fornitore memorizza i Dati del Cliente su sua richiesta ed è un prestatore di servizi di memorizzazione di informazioni ai sensi del Regolamento (UE) 2022/2065 («DSA»). Il Portale è accessibile solo su invito e non diffonde i Dati del Cliente al pubblico. Il Fornitore non è tenuto a sorvegliare i Dati del Cliente né a ricercare attivamente contenuti illegali (art. 8 DSA).",
+        "25.2 Punto di contatto. Il punto di contatto unico per le autorità degli Stati membri, la Commissione europea e il Comitato europeo per i servizi digitali (art. 11 DSA) e per gli Utenti e gli altri destinatari del Servizio (art. 12 DSA) è l'indirizzo email indicato su rilievi.carbonstealth.eu/segnalazioni e nell'informativa sulla privacy. Le lingue accettate sono l'italiano, il bulgaro e l'inglese. Le comunicazioni sono trattate da persone e non solo con strumenti automatizzati.",
+        "25.3 Restrizioni (art. 14 DSA). Il Fornitore adotta misure solo su contenuti illegali ai sensi del diritto dell'Unione o di uno Stato membro o contrari all'art. 4.4, lett. a). Le misure possibili sono la rimozione del contenuto o la disabilitazione dell'accesso al contenuto per tutti gli Utenti. Le misure sugli account o sull'intero Servizio restano disciplinate dall'art. 16. Ogni misura riguarda solo il contenuto interessato ed è proporzionata, tenendo conto dei diritti e degli interessi legittimi di tutte le parti, compresi i diritti fondamentali.",
+        "25.4 Chi decide. Le segnalazioni sono esaminate e le decisioni sono prese da una persona, il responsabile della moderazione di Carbon Stealth VCC. Il Fornitore non usa strumenti automatizzati né algoritmi per individuare i contenuti o per decidere.",
+        "25.5 Segnalazioni (art. 16 DSA). Chiunque può segnalare un contenuto che ritiene illegale con il modulo su rilievi.carbonstealth.eu/segnalazioni o per email al punto di contatto, indicando: dove si trova il contenuto, con l'indirizzo della pagina o una descrizione precisa; perché lo ritiene illegale; il proprio nome e indirizzo email, salvo che la segnalazione riguardi uno dei reati previsti dagli artt. 3–7 della Direttiva 2011/93/UE; la dichiarazione di buona fede sulla precisione e completezza delle informazioni. Il Fornitore conferma la ricezione per email senza ritardo, esamina la segnalazione in modo tempestivo, diligente, non arbitrario e obiettivo e comunica la decisione al segnalante, con i motivi e i mezzi di ricorso.",
+        "25.6 Motivazione (art. 17 DSA). Se rimuove un contenuto o ne disabilita l'accesso, il Fornitore lo comunica agli Amministratori del Cliente al più tardi quando la misura ha effetto, con una motivazione chiara e specifica che indica: la misura adottata, il suo ambito e la sua durata; i fatti e le circostanze su cui si basa, compreso se la decisione deriva da una segnalazione o da una verifica di propria iniziativa e, solo se strettamente necessario, l'identità del segnalante; che non sono stati usati mezzi automatizzati; il fondamento giuridico e perché il contenuto è illegale, oppure la clausola delle presenti Condizioni e perché il contenuto vi è contrario; i mezzi di ricorso dell'art. 25.7. La stessa motivazione è data quando il Fornitore sospende o cessa, in tutto o in parte, il Servizio o l'account di un Utente (artt. 16 e 17.2) perché i Dati del Cliente sono illegali o contrari alle presenti Condizioni (art. 17, par. 1, lett. c) e d), DSA).",
+        "25.7 Riesame e ricorsi. Il Cliente e il segnalante possono chiedere per email al punto di contatto il riesame della decisione, spiegandone i motivi. Il riesame è gratuito ed è svolto da una persona. Se la richiesta è fondata, il Fornitore revoca o modifica la misura senza ritardo. In ogni caso comunica l'esito con i motivi. Restano salvi il ricorso al giudice competente, per il Cliente secondo l'art. 22, e il reclamo al Coordinatore dei servizi digitali (art. 53 DSA).",
+        "25.8 Contenuti rimossi. Il contenuto rimosso non è più accessibile agli Utenti. Il Fornitore può conservarne una copia, senza accesso per gli Utenti, solo per il tempo necessario al riesame dell'art. 25.7, a un ordine o a una richiesta dell'autorità o alla comunicazione dell'art. 25.9; poi la cancella.",
+        "25.9 Reati gravi (art. 18 DSA). Se viene a conoscenza di informazioni che fanno sospettare un reato che comporta una minaccia per la vita o la sicurezza di una o più persone, il Fornitore ne informa prontamente le autorità di contrasto o giudiziarie dello Stato membro interessato oppure, se questo non è individuabile, quelle della Bulgaria o Europol, e fornisce tutte le informazioni pertinenti disponibili.",
+        "25.10 Ordini delle autorità (artt. 9 e 10 DSA). Il Fornitore dà seguito agli ordini delle autorità giudiziarie o amministrative di agire contro contenuti illegali o di fornire informazioni. Ne informa il Cliente al più tardi quando vi dà seguito oppure nel momento indicato dall'autorità.",
+        "25.11 Rapporto con l'Allegato A. Le misure del presente articolo sono adottate per obblighi di legge del Fornitore (art. 28, par. 3, lett. a), GDPR). Il Fornitore ne informa il Cliente come previsto dall'art. 25.6, salvo che la legge lo vieti."
+      ]
+    }
+  ],
+  "allegati": [
+    {
+      "id": "dpa",
+      "titolo": "Allegato A – Accordo sul trattamento dei dati personali (art. 28 GDPR)",
+      "articoli": [
+        {
+          "numero": "A.1",
+          "titolo": "Parti e oggetto",
+          "paragrafi": [
+            "Il Cliente (titolare) incarica Carbon Stealth VCC (responsabile) di trattare per suo conto i dati personali contenuti nei Dati del Cliente al solo fine di fornire il Portale Rilievi Impianti. Il trattamento dura quanto il contratto, più il periodo previsto all'art. A.11."
+          ]
+        },
+        {
+          "numero": "A.2",
+          "titolo": "Natura e finalità",
+          "paragrafi": [
+            "Il trattamento consiste in raccolta tramite il Portale, registrazione, conservazione, consultazione, elaborazione (compresi i calcoli e la generazione di PDF, anche in formato PDF/A, con l'informativa del Cliente in fondo ai preventivi), compressione di foto e video, autenticazione degli Utenti, anche tramite il fornitore di identità scelto dal Cliente, tenuta dell'anagrafica clienti e del listino prezzi del Cliente e collegamento dei preventivi ai profili dell'anagrafica, invio di email su richiesta degli Utenti o secondo le impostazioni del Cliente (tra cui moduli d'ordine ai fornitori, schede, buoni di lavoro, preventivi e copia dei documenti firmati ai firmatari), copia di sicurezza, esportazione, assistenza al cambio di fornitore e cancellazione. La finalità è la gestione dei rilievi, degli ordini, dei preventivi, dell'assistenza e del cantiere sugli impianti del Cliente e dei rapporti con i suoi clienti."
+          ]
+        },
+        {
+          "numero": "A.3",
+          "titolo": "Tipi di dati",
+          "paragrafi": [
+            "Dati degli account (nome, email, aziende e ruoli, hash della password, eventuale chiave cifrata della verifica in due passaggi, eventuale identificativo dell'account presso il fornitore di identità del Cliente, sessioni, ultimo accesso). Inviti. Dati di lavoro (indirizzi e dati tecnici degli impianti, nomi di chi compila). Moduli d'ordine. Preventivi (nome o ragione sociale, indirizzo, partita IVA o codice fiscale ed email del cliente; collegamento all'eventuale profilo dell'anagrafica clienti). Anagrafica clienti del Cliente (nome o ragione sociale, indirizzo, partita IVA o codice fiscale, email, fino a due numeri di telefono, nome del referente, nota interna). Rubrica dei fornitori del Cliente (nome ed email dei referenti) e ordini inviati. Fogli di intervento, verbali e buoni di lavoro (nomi dei tecnici, dei clienti, dei supervisori e degli altri firmatari, tracciati delle firme, impronte). Indirizzi email dei destinatari degli altri invii, usati solo per l'invio. Foto e video senza metadati. Registro delle attività. Non sono previsti dati delle categorie particolari (art. 9 GDPR) né dati relativi a condanne penali (art. 10 GDPR): il Cliente non li inserisce, neppure nella nota interna dell'anagrafica clienti."
+          ]
+        },
+        {
+          "numero": "A.4",
+          "titolo": "Categorie di interessati",
+          "paragrafi": [
+            "Utenti (dipendenti e collaboratori del Cliente); clienti del Cliente, anche potenziali, e loro rappresentanti e referenti che firmano, ricevono documenti o preventivi, sono indicati nei documenti o sono registrati nell'anagrafica clienti; fornitori del Cliente e loro referenti destinatari degli ordini; altre persone che firmano i documenti (tra cui i buoni di lavoro); persone eventualmente riprese in foto o video."
+          ]
+        },
+        {
+          "numero": "A.5",
+          "titolo": "Istruzioni (art. 28, par. 3, lett. a)",
+          "paragrafi": [
+            "Il Fornitore tratta i dati solo su istruzione documentata del Cliente, costituita dalle presenti Condizioni, dalle impostazioni e dalle azioni degli Utenti nel Portale e da richieste scritte, anche per i trasferimenti verso paesi terzi, salvo che lo richieda il diritto dell'Unione o di uno Stato membro. In tal caso il Fornitore informa il Cliente prima del trattamento, salvo divieto di legge. Il Fornitore informa immediatamente il Cliente se ritiene che un'istruzione violi il GDPR o altre norme sulla protezione dei dati."
+          ]
+        },
+        {
+          "numero": "A.6",
+          "titolo": "Riservatezza (lett. b)",
+          "paragrafi": [
+            "Il Fornitore autorizza al trattamento solo persone vincolate alla riservatezza, che accedono ai dati solo nella misura necessaria all'erogazione del Servizio, all'assistenza richiesta dal Cliente, alla sicurezza o all'adempimento di obblighi di legge."
+          ]
+        },
+        {
+          "numero": "A.7",
+          "titolo": "Sicurezza (lett. c; art. 32)",
+          "paragrafi": [
+            "Il Fornitore adotta le misure dell'Appendice 1 e le aggiorna secondo lo stato dell'arte, senza ridurne il livello complessivo."
+          ]
+        },
+        {
+          "numero": "A.8",
+          "titolo": "Sub-responsabili (lett. d; art. 28, parr. 2 e 4)",
+          "paragrafi": [
+            "Il Cliente autorizza in via generale i sub-responsabili dell'Appendice 2. Il Fornitore comunica agli Amministratori ogni aggiunta o sostituzione almeno 30 giorni prima. Il Cliente può opporsi per motivi ragionevoli legati alla protezione dei dati; se l'opposizione non è risolta, può recedere senza oneri prima della modifica. Il Fornitore impone a ogni sub-responsabile, per contratto, obblighi equivalenti a quelli del presente Allegato e resta responsabile verso il Cliente del loro adempimento."
+          ]
+        },
+        {
+          "numero": "A.9",
+          "titolo": "Diritti degli interessati (lett. e)",
+          "paragrafi": [
+            "Tenuto conto della natura del trattamento, il Fornitore assiste il Cliente con misure tecniche e organizzative adeguate per rispondere alle richieste degli interessati: il Portale consente di consultare, correggere, esportare e cancellare i dati. In sola lettura (art. 12.5 delle Condizioni) e, per i preventivi e l'anagrafica clienti, dopo la loro disattivazione (art. 2.5 delle Condizioni), il Portale consente di consultare, esportare e cancellare i dati; la correzione è eseguita dal Fornitore su istruzione scritta del Cliente, gratuitamente, senza ritardo e comunque entro 5 giorni lavorativi. I preventivi accettati non si cancellano nel Portale: la cancellazione o l'oscuramento dei dati personali che contengono sono eseguiti dal Fornitore su istruzione scritta del Cliente, negli stessi termini. Il Fornitore inoltra al Cliente senza ritardo le richieste ricevute direttamente e non vi risponde nel merito senza istruzioni."
+          ]
+        },
+        {
+          "numero": "A.10",
+          "titolo": "Assistenza per gli artt. 32–36 (lett. f)",
+          "paragrafi": [
+            "Il Fornitore assiste il Cliente nella sicurezza del trattamento, nella notifica e comunicazione delle violazioni e nelle valutazioni d'impatto e consultazioni preventive, tenuto conto delle informazioni a sua disposizione. Notifica al Cliente ogni violazione dei dati personali senza ingiustificato ritardo, e comunque entro 48 ore da quando ne viene a conoscenza, con le informazioni dell'art. 33, par. 3, GDPR disponibili, integrandole appena possibile."
+          ]
+        },
+        {
+          "numero": "A.11",
+          "titolo": "Fine del trattamento (lett. g)",
+          "paragrafi": [
+            "Alla cessazione del Servizio si applica l'Allegato B. L'azienda del Cliente viene disattivata e, per i 90 giorni successivi, il Cliente può ottenere tutti i propri dati in un unico file (dati in formato JSON, logo, foto e video, PDF/A dei documenti confermati, dei buoni di lavoro e dei preventivi; senza password, chiavi e codici), che ogni Amministratore scarica dalla pagina di esportazione o che il Fornitore consegna su richiesta scritta. Allo scadere dei 90 giorni il Fornitore cancella definitivamente i dati; prima, su richiesta scritta del Cliente, se l'azienda è già disattivata. Le copie di sicurezza giornaliere che li contengono scadono entro i successivi 14 giorni. Il Fornitore conferma la cancellazione per email agli Amministratori. Sono fatti salvi: la conservazione richiesta dal diritto dell'Unione o degli Stati membri; il registro anonimo dell'eliminazione (chi, quando, quanti elementi, senza dati personali); i Registri probatori dell'art. 19 delle Condizioni, che il Fornitore tratta come titolare autonomo, per le sole finalità e nei termini lì indicati, con i soli dati necessari."
+          ]
+        },
+        {
+          "numero": "A.12",
+          "titolo": "Informazioni e verifiche (lett. h)",
+          "paragrafi": [
+            "Il Fornitore mette a disposizione del Cliente le informazioni necessarie a dimostrare il rispetto dell'art. 28 GDPR e consente e contribuisce alle attività di revisione, comprese le ispezioni, svolte dal Cliente o da un revisore incaricato vincolato alla riservatezza. Le ispezioni sono concordate con almeno 30 giorni di preavviso, non più di una volta l'anno salvo violazione dei dati o richiesta di un'autorità di controllo, senza accesso ai dati di altri clienti e a spese del Cliente. Di norma la verifica si svolge prima per mezzo di documentazione e questionari."
+          ]
+        },
+        {
+          "numero": "A.13",
+          "titolo": "Trasferimenti",
+          "paragrafi": [
+            "Il Portale e i suoi dati sono ospitati nell'Unione europea. Brevo può affidare parte dell'invio delle email a propri sub-responsabili fuori dall'UE; in tal caso il trasferimento è tutelato da clausole contrattuali tipo (art. 46 GDPR). Il fornitore di identità eventualmente attivato dal Cliente (art. 4.6 delle Condizioni) non è sub-responsabile del Fornitore: i dati che il Portale scambia con esso per l'accesso sono trattati su istruzione del Cliente, che ne valuta gli eventuali trasferimenti nel rapporto con tale fornitore. La giurisdizione dell'infrastruttura e le misure contro l'accesso governativo internazionale ai dati (art. 28 Data Act) sono descritte su rilievi.carbonstealth.eu/esportazione#giurisdizione."
+          ]
+        },
+        {
+          "numero": "A.14",
+          "titolo": "Personale del Fornitore",
+          "paragrafi": [
+            "L'amministrazione del portale del Fornitore può accedere a tutte le aziende solo per le finalità dell'art. A.6. Ogni accesso è registrato."
+          ]
+        },
+        {
+          "numero": "A.15",
+          "titolo": "Responsabilità e prevalenza",
+          "paragrafi": [
+            "La responsabilità delle parti è regolata dall'art. 82 GDPR. Nei rapporti tra le parti si applicano gli artt. 9–11 delle Condizioni, nei limiti consentiti dalla legge e senza pregiudizio per i diritti degli interessati. Per il trattamento dei dati personali il presente Allegato prevale sulle Condizioni."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "misure",
+      "titolo": "Appendice 1 all'Allegato A – Misure tecniche e organizzative (art. 32 GDPR)",
+      "articoli": [
+        {
+          "numero": "M.1",
+          "titolo": "Misure adottate",
+          "paragrafi": [
+            "Connessione solo HTTPS con HSTS.",
+            "Password conservate come hash Argon2id; verifica in due passaggi TOTP facoltativa, con chiave cifrata AES-256-GCM e codici di recupero conservati come HMAC.",
+            "Sessioni sul server, terminate all'uscita, al cambio della password e alla disattivazione; cookie «__Host-», HttpOnly, SameSite; protezione CSRF e controllo dell'origine.",
+            "Limitazione dei tentativi di accesso per account e per rete, con blocchi progressivi.",
+            "Isolamento delle aziende e controllo dei permessi sul server per ogni richiesta; ruoli configurabili; registro delle attività in sola aggiunta.",
+            "Fogli di intervento e verbali firmati sigillati con impronta SHA-256 e HMAC.",
+            "Foto e video ricodificati senza metadati.",
+            "Log applicativi senza indirizzi IP né password.",
+            "Server e copie nell'Unione europea; copie di sicurezza giornaliere conservate 14 giorni, con prova di ripristino automatica.",
+            "Aggiornamenti con copia prima di ogni migrazione; principio del privilegio minimo; segreti fuori dal codice sorgente."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sub",
+      "titolo": "Appendice 2 all'Allegato A – Sub-responsabili autorizzati",
+      "articoli": [
+        {
+          "numero": "S.1",
+          "titolo": "Sub-responsabili",
+          "paragrafi": [
+            "netcup GmbH, Emmy-Noether-Straße 10, 76131 Karlsruhe, Germania: infrastruttura (server, database, copie di sicurezza), in data center in Germania.",
+            "Sendinblue SAS (Brevo), Francia: invio delle email (inviti, sicurezza degli account, codici di firma, copie delle condizioni, avvisi sul cambio di fornitore e sulla cancellazione dei dati; per conto del Cliente: fogli di intervento e verbali in PDF inviati dagli Utenti o in copia al firmatario che ha indicato il proprio indirizzo, schede di rilievo, buoni di lavoro, preventivi, moduli d'ordine inviati ai fornitori, con i relativi allegati PDF), nell'Unione europea; eventuali sub-responsabili fuori dall'UE con clausole contrattuali tipo.",
+            "Un eventuale servizio di copia di sicurezza esterna sarà indicato in questa appendice e comunicato agli Amministratori almeno 30 giorni prima dell'attivazione (art. A.8)."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cambio",
+      "titolo": "Allegato B – Cambio di fornitore ed esportazione dei dati (artt. 23–30 Regolamento (UE) 2023/2854)",
+      "articoli": [
+        {
+          "numero": "B.1",
+          "titolo": "Oggetto",
+          "paragrafi": [
+            "Il presente Allegato contiene le clausole sul cambio di fornitore previste dagli artt. 23–30 del Regolamento (UE) 2023/2854 («Data Act»). Disciplina l'esportazione dei Dati del Cliente durante il contratto e la procedura con cui il Cliente passa a un altro fornitore, trasferisce i dati su un'infrastruttura propria o chiede la cessazione con cancellazione dei dati. «Dati esportabili» sono i dati elencati all'art. B.7. La pagina rilievi.carbonstealth.eu/esportazione descrive procedura, formati e struttura dei dati (art. 26 Data Act)."
+          ]
+        },
+        {
+          "numero": "B.2",
+          "titolo": "Esportazione durante il contratto",
+          "paragrafi": [
+            "Ogni Amministratore può scaricare in qualsiasi momento dal Portale (Impostazioni → Esportazione e cambio fornitore), confermando la propria password, tutti i Dati esportabili in un unico file, quante volte vuole e gratuitamente. Ogni esportazione è registrata nel registro delle attività dell'azienda. Su richiesta scritta del Cliente il Fornitore esegue l'esportazione e la mette a disposizione degli Amministratori."
+          ]
+        },
+        {
+          "numero": "B.3",
+          "titolo": "Richiesta di cambio di fornitore o di cessazione",
+          "paragrafi": [
+            "Un Amministratore presenta la richiesta nel Portale (Impostazioni → Esportazione e cambio fornitore) o per iscritto all'indirizzo email del Fornitore. Non è previsto un periodo di preavviso: il periodo transitorio inizia il giorno della richiesta. Nella richiesta l'Amministratore sceglie (art. 25, par. 3, Data Act): (a) il passaggio a un altro fornitore; (b) il trasferimento dei dati su un'infrastruttura propria; (c) la cancellazione dei Dati esportabili. Fino alla fine del periodo transitorio può modificare la scelta. Il Fornitore conferma per email a tutti gli Amministratori la ricezione, la scelta e la data di fine del periodo transitorio. Il recesso del Cliente ai sensi dell'art. 17.1 delle Condizioni vale come richiesta con la scelta (c), salvo diversa indicazione."
+          ]
+        },
+        {
+          "numero": "B.4",
+          "titolo": "Periodo transitorio",
+          "paragrafi": [
+            "Il periodo transitorio dura 30 giorni di calendario dalla richiesta. Durante il periodo transitorio il contratto resta in vigore e il Fornitore (art. 25, par. 2, lett. a), Data Act): (a) continua a fornire il Servizio con tutte le funzioni previste dal contratto, a tutti gli Utenti, e agisce con la dovuta diligenza per la continuità operativa del Cliente; (b) presta ragionevole assistenza al Cliente e ai terzi da lui autorizzati nel processo di cambio (art. B.10); (c) informa il Cliente in modo chiaro dei rischi noti per la continuità del Servizio; (d) mantiene un elevato livello di sicurezza per tutto il processo, in particolare dei dati durante il loro trasferimento, e l'integrità dei dati."
+          ]
+        },
+        {
+          "numero": "B.5",
+          "titolo": "Proroga e impossibilità tecnica",
+          "paragrafi": [
+            "Un Amministratore può prorogare il periodo transitorio una sola volta, prima della sua scadenza, scegliendo nel Portale 30, 60 o 90 giorni, oppure chiedendo per iscritto un periodo diverso che ritiene più adeguato alle proprie esigenze (art. 25, par. 5, Data Act). Durante la proroga si applica l'art. B.4. Se il periodo di 30 giorni è tecnicamente impossibile, il Fornitore lo comunica agli Amministratori entro 14 giorni lavorativi dalla richiesta, motivandolo, e indica un periodo transitorio alternativo non superiore a sette mesi, durante il quale il Servizio prosegue alle condizioni dell'art. B.4 (art. 25, par. 4, Data Act)."
+          ]
+        },
+        {
+          "numero": "B.6",
+          "titolo": "Revoca",
+          "paragrafi": [
+            "Fino alla fine del periodo transitorio, compresa l'eventuale proroga, un Amministratore può revocare la richiesta nel Portale o per iscritto. Il contratto prosegue alle condizioni in vigore, senza oneri, e il Fornitore conferma la revoca per email agli Amministratori."
+          ]
+        },
+        {
+          "numero": "B.7",
+          "titolo": "Dati esportabili (elenco esaustivo)",
+          "paragrafi": [
+            "Il file di esportazione contiene tutti i Dati esportabili (art. 25, par. 2, lett. e), Data Act): (a) l'azienda: identificativo, nome, dati societari, ordine delle sezioni della scheda, impostazione degli schizzi, modello del cartello, nomi e permessi dei ruoli, approvazione delle schede, informative scritte dall'azienda per i firmatari e per i clienti dei preventivi, codice e clausola del buono di lavoro, attivazione, ultimo numero e condizioni predefinite dei preventivi, date di creazione e di disattivazione, logo; (b) le persone dell'azienda: identificativo, nome, email, ruolo nell'azienda e data di ingresso, date di creazione e di disattivazione dell'account, ultimo accesso, tema e colori scelti; (c) gli inviti non ancora accettati: email, nome, ruolo, scadenza e date; (d) le schede di rilievo, comprese quelle nel cestino, con tutti i loro campi, compresi i moduli d'ordine compilati, le scelte di stampa, le discrepanze confermate e lo stato di approvazione, con le misure delle bottoniere per fermata, i fogli dello schizzo e la cronologia delle versioni; (e) per ogni foto e video: sezione, tipo, stato di elaborazione, didascalia, annotazioni, nome del file caricato, scelta e posizione nella stampa, chi l'ha caricato e quando, e il file elaborato (foto JPEG, video MP4) se l'elaborazione è conclusa; (f) i fogli di intervento, con voci, orari, firme tracciate e nomi dei firmatari, impronta e sigillo e, per quelli confermati, il PDF/A; (g) i verbali di chiusura cantiere, con le stesse informazioni e, per quelli confermati, i PDF/A «Copia azienda» e «Copia installatore»; (h) i cartelli di fermo impianto; (i) i calcoli argano e limitatore, con o senza scheda, con i dati di ingresso; (j) i preventivi, con tutti i loro dati, compreso il collegamento al profilo dell'anagrafica clienti, e il PDF/A di ciascuno; (k) la rubrica dei fornitori per gli ordini e gli ordini inviati, con data, destinatario e stato; (l) il registro delle attività dell'azienda, per il periodo in cui è conservato: data e ora, autore, azione, oggetto e dettagli, senza il contenuto delle schede; (m) il listino prezzi: codice, descrizione, unità di misura, prezzo e aliquota IVA di ogni voce; (n) l'anagrafica clienti: per ogni cliente nome o ragione sociale, indirizzo, partita IVA o codice fiscale, email, fino a due numeri di telefono, nome del referente, nota interna, date di creazione e di modifica; (o) i buoni di lavoro, con tutti i loro dati, le firme tracciate con impronte e sigilli e il PDF/A di ciascuno. Su richiesta scritta, gratuitamente e fino alla fine del periodo di recupero, il Fornitore consegna inoltre copia delle voci dei Registri dell'art. 19 delle Condizioni che riguardano il Cliente."
+          ]
+        },
+        {
+          "numero": "B.8",
+          "titolo": "Dati esclusi (elenco esaustivo)",
+          "paragrafi": [
+            "Non fanno parte del file: (a) gli hash delle password, le chiavi della verifica in due passaggi, i codici di recupero e le relative impronte HMAC, le chiavi di accesso alle interfacce (API); (b) le sessioni, i token e i link monouso (inviti, nuova password, codici di firma), le sfide di accesso e i collegamenti degli account con il fornitore di identità; (c) i contatori dei tentativi errati, i blocchi e le impronte delle reti; (d) lo stato di lettura delle novità e delle comunicazioni del Fornitore; (e) le miniature e le anteprime di foto e video, ricavate dai file esportati; i file originali caricati, che il Portale non conserva dopo l'elaborazione; i file non elaborati o in errore, di cui è esportata la descrizione; (f) i PDF diversi da quelli dell'art. B.7, lett. f), g), j) e o), che gli Utenti possono scaricare dal Portale fino alla fine del periodo transitorio; (g) gli indirizzi email a cui gli Utenti inviano fogli di intervento, verbali, buoni di lavoro, schede di rilievo, preventivi e copie, che il Portale non conserva (la rubrica dei fornitori e l'anagrafica clienti sono esportate, art. B.7, lett. k) e n)); (h) il numeratore interno dei fogli di intervento e la versione delle Condizioni accettata, ricavabili da altri dati; (i) i Registri dell'art. 19, salvo la copia su richiesta dell'art. B.7. Le voci (a)–(c) sono elementi di sicurezza la cui consegna comprometterebbe la sicurezza del Servizio (art. 30, par. 6, Data Act); le altre non sono dati del Cliente o sono ricavabili dai dati esportati. L'esclusione non ostacola né ritarda il cambio di fornitore."
+          ]
+        },
+        {
+          "numero": "B.9",
+          "titolo": "Formati, struttura e limiti tecnici noti",
+          "paragrafi": [
+            "Il file è un archivio tar (ustar, POSIX.1-1988) non compresso, denominato rilievi-<identificativo>-<AAAA-MM-GG>.tar, che si apre con gli strumenti comuni (tar, 7-Zip, gli archivi di Windows e macOS). Contiene: dati.json (JSON, UTF-8; date e ore in ISO 8601, UTC; numeri decimali come testo; versione del formato nel campo «formato», oggi «rilievi-impianti/esportazione-1»); il logo (PNG o JPEG); le foto (JPEG) e i video (MP4, H.264/AAC) in allegati/<scheda>/<file>; la cronologia delle versioni di ogni scheda (JSON) in versioni/<scheda>.json; i PDF/A in documenti/ (interventi/, verbali/, buoni/, preventivi/). La struttura di dati.json, campo per campo, è pubblicata e mantenuta aggiornata su rilievi.carbonstealth.eu/esportazione (art. 26, lett. b), Data Act); una modifica incompatibile cambia il valore di «formato» ed è indicata nella pagina.",
+            "Limiti tecnici noti (art. 26, lett. a), Data Act): il file può essere grande se contiene molti video; i risultati dei calcoli non sono memorizzati, ma si ricavano dai dati di ingresso con i metodi indicati nella pagina di ciascuno strumento; il sigillo dei fogli di intervento e dei verbali si verifica solo con la chiave del Fornitore, che lo verifica su richiesta fino alla cancellazione dei dati; gli identificativi di persone non più presenti nell'azienda possono non trovare corrispondenza nell'elenco delle persone; il Portale non dispone di una funzione per importare dati da altri fornitori."
+          ]
+        },
+        {
+          "numero": "B.10",
+          "titolo": "Assistenza e strategia di uscita",
+          "paragrafi": [
+            "Il Fornitore sostiene la strategia di uscita del Cliente (art. 25, par. 2, lett. b), Data Act): fornisce le informazioni pertinenti, compresi il presente Allegato, la pagina /esportazione e i rischi noti per la continuità; risponde per email alle domande tecniche del Cliente e dei terzi da lui autorizzati sul formato e sul contenuto del file; esegue o ripete l'esportazione su richiesta. Il file si ottiene con una richiesta HTTPS autenticata all'indirizzo documentato nella pagina /esportazione, alle stesse condizioni per tutti i Clienti e gratuitamente (art. 30, par. 2, Data Act). Il Fornitore non è tenuto a sviluppare nuove tecnologie o servizi, né a consegnare elementi propri protetti da proprietà intellettuale o segreti commerciali, né a compromettere la sicurezza del Servizio (art. 30, par. 6, Data Act)."
+          ]
+        },
+        {
+          "numero": "B.11",
+          "titolo": "Gratuità",
+          "paragrafi": [
+            "L'esportazione, il cambio di fornitore, il trasferimento su infrastruttura propria, la proroga, la revoca e la cancellazione sono gratuiti: il Fornitore non applica oneri di cambio, oneri di estrazione dei dati né penali di recesso anticipato (art. 29 Data Act). Il presente articolo prevale anche sull'offerta."
+          ]
+        },
+        {
+          "numero": "B.12",
+          "titolo": "Fine del periodo transitorio e cessazione del contratto",
+          "paragrafi": [
+            "Alla fine del periodo transitorio, compresa l'eventuale proroga, il contratto cessa e il Fornitore lo notifica per email agli Amministratori (art. 25, par. 2, lett. c), Data Act). Se il trasferimento non è concluso, un Amministratore può prorogare il periodo transitorio ai sensi dell'art. B.5 prima della sua scadenza. Se è stata scelta la cancellazione (art. B.3, lett. c)), un Amministratore può chiedere in qualsiasi momento che il contratto cessi prima. Alla cessazione l'azienda del Cliente viene disattivata: gli Utenti non accedono più al Portale, salvo gli Amministratori ai sensi dell'art. B.13."
+          ]
+        },
+        {
+          "numero": "B.13",
+          "titolo": "Periodo di recupero e cancellazione",
+          "paragrafi": [
+            "Per 90 giorni dalla disattivazione (periodo di recupero, non inferiore ai 30 giorni previsti dall'art. 25, par. 2, lett. g), Data Act) ogni Amministratore può accedere alla sola pagina di esportazione e scaricare il file dell'art. B.7, gratuitamente; il Fornitore lo consegna anche su richiesta scritta. Allo scadere del periodo di recupero, o prima su richiesta scritta del Cliente, il Fornitore cancella definitivamente tutti i Dati esportabili e gli altri Dati del Cliente; le copie di sicurezza che li contengono scadono entro i successivi 14 giorni. Il Fornitore conferma per email agli Amministratori l'avvenuta cancellazione (art. 25, par. 2, lett. h), Data Act). Restano salvi soltanto i dati indicati all'art. A.11 dell'Allegato A."
+          ]
+        },
+        {
+          "numero": "B.14",
+          "titolo": "Giurisdizione e accesso governativo internazionale",
+          "paragrafi": [
+            "La giurisdizione a cui è soggetta l'infrastruttura del Servizio e la descrizione generale delle misure tecniche, organizzative e contrattuali adottate per impedire l'accesso governativo internazionale ai dati non personali detenuti nell'Unione, o il loro trasferimento, in contrasto con il diritto dell'Unione o dello Stato membro interessato, sono pubblicate su rilievi.carbonstealth.eu/esportazione#giurisdizione (artt. 28 e 32 Data Act). Prima di dare seguito a una richiesta di un'autorità di un paese terzo, il Fornitore ne informa il Cliente, salvo i casi previsti dall'art. 32, par. 5, Data Act."
+          ]
+        }
+      ]
+    }
+  ],
+  "clausoleSpecifiche": [
+    {
+      "numero": "6",
+      "descrizione": "Strumenti di calcolo e Documenti generati: nessun valore di progetto o certificazione, verifica e firma obbligatorie del Tecnico abilitato, ripartizione delle responsabilità"
+    },
+    {
+      "numero": "7",
+      "descrizione": "Esclusione di garanzie"
+    },
+    {
+      "numero": "8",
+      "descrizione": "Disponibilità senza livelli di servizio garantiti e modifica delle funzioni"
+    },
+    {
+      "numero": "9",
+      "descrizione": "Limitazione di responsabilità e massimale"
+    },
+    {
+      "numero": "10",
+      "descrizione": "Manleva e ripartizione interna"
+    },
+    {
+      "numero": "12.5",
+      "descrizione": "Sola lettura alla scadenza della prova o del Piano"
+    },
+    {
+      "numero": "16",
+      "descrizione": "Sospensione"
+    },
+    {
+      "numero": "17.2",
+      "descrizione": "Recesso del Fornitore e risoluzione"
+    },
+    {
+      "numero": "18",
+      "descrizione": "Modifiche delle Condizioni"
+    },
+    {
+      "numero": "20.1",
+      "descrizione": "Termine di decadenza per i reclami"
+    },
+    {
+      "numero": "21",
+      "descrizione": "Legge applicabile bulgara"
+    },
+    {
+      "numero": "22",
+      "descrizione": "Foro esclusivo in Bulgaria"
+    }
+  ]
+}

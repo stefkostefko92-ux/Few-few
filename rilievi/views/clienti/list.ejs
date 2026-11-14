@@ -16,6 +16,7 @@
     <% if (can('preventivi:write')) { %><a class="btn btn--primary" href="/clienti/nuovo<%= aziendaFilter ? '?azienda=' + encodeURIComponent(aziendaFilter) : '' %>"><%- include('../partials/icon', { name: 'plus' }) %><%= t('clienti.new') %></a><% } %>
   </div>
 </div>
+<%- include('../preventivi/_archivio') %>
 <form class="filter preventivi-cerca" method="get" action="/clienti" role="search">
   <% if (aziendaFilter) { %><input type="hidden" name="azienda" value="<%= aziendaFilter %>"><% } %>
   <label class="field__label" for="clienti-q"><%= t('clienti.cercaLabel') %></label>

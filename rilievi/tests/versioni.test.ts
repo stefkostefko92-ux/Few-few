@@ -51,8 +51,13 @@ describe('the versions of the legal texts', () => {
       annunciataAt: null,
     });
     assert.equal(versioneVigente('CONDIZIONI', new Date('2026-11-13T23:00:00Z')), '2026-11-14');
-    assert.equal(versioneProssima('CONDIZIONI', new Date('2026-11-14T10:00:00Z')), null);
-    // 2027-01-12 never comes in: its text is inside 2026-11-12.
+    // The next one, 2026-12-14, comes in only announced (art. 18.1): until then no day.
+    assert.deepEqual(versioneProssima('CONDIZIONI', new Date('2026-11-14T10:00:00Z')), {
+      versione: '2026-12-14',
+      dal: null,
+      annunciataAt: null,
+    });
+    // 2027-01-12 never comes in: its text is inside 2026-11-12; 2026-12-14 not without the announcement.
     assert.equal(versioneVigente('CONDIZIONI', new Date('2027-06-01T10:00:00Z')), '2026-11-14');
   });
 
@@ -60,13 +65,14 @@ describe('the versions of the legal texts', () => {
     // The existing companies were marked with 2026-11-14 the day before it came into force (the owner: active
     // without a signature while the mail is down): they are not asked on the 13th, nor again on the 14th.
     const prima = new Date('2026-11-13T10:00:00Z');
-    assert.deepEqual(versioniValide(prima), ['2026-11-13', '2026-11-14']);
+    // A later version counts too (accepted ahead): 2026-12-14 is in the history, not yet in force.
+    assert.deepEqual(versioniValide(prima), ['2026-11-13', '2026-11-14', '2026-12-14']);
     assert.equal(condizioniValide('2026-11-14', prima), true);
     assert.equal(condizioniValide('2026-11-13', prima), true);
     assert.equal(condizioniValide('2026-11-12', prima), false);
     assert.equal(condizioniValide(null, prima), false);
     const dopo = new Date('2026-11-13T23:00:00Z');
-    assert.deepEqual(versioniValide(dopo), ['2026-11-14']);
+    assert.deepEqual(versioniValide(dopo), ['2026-11-14', '2026-12-14']);
     assert.equal(condizioniValide('2026-11-13', dopo), false);
     assert.equal(condizioniValide('2026-11-14', dopo), true);
     assert.equal(

@@ -22,7 +22,7 @@ import {
   condizioniDi,
   fonteSchede,
   loadPreventivo,
-  puoScrivere,
+  puoOperare,
   renderPreventivoForm,
   type PreventivoFormView,
 } from './preventivi-vista.js';
@@ -64,7 +64,7 @@ preventiviNuovoRouter.get('/preventivi/nuovo', write, async (req, res) => {
 
   if (req.query.da !== undefined) {
     const row = await loadPreventivo(req, String(req.query.da));
-    if (!row || !puoScrivere(req, row)) return res.redirect(303, '/preventivi/nuovo');
+    if (!row || !puoOperare(req, row)) return res.redirect(303, '/preventivi/nuovo');
     return renderPreventivoForm(res, 200, {
       ...base,
       values: { ...valoriDaCopia(datiDi(row)), clienteId: row.clienteId ?? '' },
@@ -78,7 +78,7 @@ preventiviNuovoRouter.get('/preventivi/nuovo', write, async (req, res) => {
       scopeFor(principalOf(req).user, 'preventivi:read'),
       String(req.query.cliente),
     );
-    if (!cliente || !puoScrivere(req, cliente)) return res.redirect(303, '/preventivi/nuovo');
+    if (!cliente || !puoOperare(req, cliente)) return res.redirect(303, '/preventivi/nuovo');
     return renderPreventivoForm(res, 200, {
       ...base,
       values: {

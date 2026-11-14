@@ -25,6 +25,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-14-versione-5-2": {
+        "area": "Preventivi",
+        "titolo": "Versione 5.2: informativa nel preventivo, dati sempre accessibili",
+        "testo": "In fondo a ogni preventivo ora c'è l'informativa privacy per il cliente e il suo referente: il portale propone un modello con i dati dell'azienda, che l'amministratore può cambiare in Impostazioni → Preventivi. I preventivi non accettati (bozze, inviati, rifiutati) si possono eliminare; quelli accettati restano. Se l'amministrazione del portale disattiva i preventivi di un'azienda che li ha già usati, preventivi, clienti e listino restano consultabili e scaricabili, e si possono eliminare i clienti e i preventivi non accettati."
+      },
       "2026-11-14-versione-5-1": {
         "area": "Preventivi",
         "titolo": "Versione 5.1: due numeri di telefono per cliente",

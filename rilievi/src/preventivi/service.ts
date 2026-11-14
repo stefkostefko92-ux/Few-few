@@ -10,8 +10,8 @@ import type { PreventivoData } from './form.js';
  * транзакцията на новата оферта (UPDATE … RETURNING заключва реда на фирмата), САМО ако MASTER е
  * включил офертите и фирмата е активна. Сборовете се смятат тук от редовете (`colonneDi`), никога от
  * пратеното. Промяна — само върху отворената версия (`base` = updatedAt) и само в „Bozza“ или „Inviato“:
- * приетата или отказаната оферта е документ — за промяна първо се връща в „Inviato“. Изтрива се само
- * чернова. Одитът — в същата транзакция, без клиента и без сумите. `clienteId` — профилът от регистъра
+ * приетата или отказаната оферта е документ — за промяна първо се връща в „Inviato“. Изтрива се всяка
+ * неприета (`ELIMINABILI`). Одитът — в същата транзакция, без клиента и без сумите. `clienteId` — профилът от регистъра
  * на клиентите, с който е попълнена: пази се само ако е на същата фирма (`clienteDellAzienda`), иначе — нищо.
  */
 
@@ -163,19 +163,24 @@ export async function registraInvio(actorId: string, aziendaId: string, id: stri
   });
 }
 
-/** Изтрива черновата (одитът пази номера); приета/пратена оферта не се трие. */
+/**
+ * Изтрива неприетата оферта — чернова, пратена или отказана (собственикът, 14 ноември 2026: хората в нея
+ * могат да поискат изтриване, а неприетата оферта не е документ на договор; условията 2026-12-14, A.9).
+ * Приетата — никога в портала. Одитът пази номера: дупка в номерацията е допустима, офертата не е фискален
+ * документ.
+ */
+export const ELIMINABILI: readonly StatoPreventivo[] = ['BOZZA', 'INVIATO', 'RIFIUTATO'];
+
 export async function eliminaPreventivo(
   actorId: string,
   aziendaId: string,
   id: string,
 ): Promise<boolean> {
   return prisma.$transaction(async (tx) => {
-    const row = await tx.preventivo.findFirst({
-      where: { id, aziendaId, stato: 'BOZZA' },
-      select: { numero: true },
-    });
+    const eliminabile = { id, aziendaId, stato: { in: [...ELIMINABILI] } };
+    const row = await tx.preventivo.findFirst({ where: eliminabile, select: { numero: true } });
     if (!row) return false;
-    const deleted = await tx.preventivo.deleteMany({ where: { id, aziendaId, stato: 'BOZZA' } });
+    const deleted = await tx.preventivo.deleteMany({ where: eliminabile });
     if (deleted.count === 0) return false;
     await audit(tx, actorId, 'PREVENTIVO_DELETE', aziendaId, id, { numero: row.numero });
     return true;

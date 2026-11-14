@@ -1,5 +1,5 @@
 {
-  "versione": "2026-11-13",
+  "versione": "2026-11-14",
   "revisione": "Rivisto ogni 6 mesi e a ogni modifica dei sub-responsabili; tenuto in forma elettronica (art. 30, par. 3) e messo a disposizione dell'autorità di controllo su richiesta (art. 30, par. 4).",
   "rappresentante": "Non necessario: il responsabile e titolare è stabilito nell'Unione (art. 27).",
   "rpd": "Non designato: nessun monitoraggio regolare e sistematico degli interessati su larga scala e nessuna categoria particolare di dati (art. 37). Valutazione da confermare a ogni revisione.",
@@ -32,11 +32,11 @@
       },
       {
         "id": "T4",
-        "nome": "Invio di email per conto del Cliente (fogli di intervento, verbali, inviti, avvisi)",
-        "dati": "Nomi, firme tracciate nei PDF, email dei destinatari",
-        "interessati": "Quelli dell'art. A.4",
+        "nome": "Invio di email per conto del Cliente (inviti, fogli di intervento, verbali, buoni di lavoro, schede, preventivi, moduli d'ordine ai fornitori, copie ai firmatari)",
+        "dati": "Nomi, firme tracciate e contenuto dei PDF allegati (nei preventivi: nome o ragione sociale, indirizzo, partita IVA o codice fiscale ed email del cliente e l'informativa del Cliente); email dei destinatari",
+        "interessati": "Quelli dell'art. A.4 dell'Allegato A",
         "sub": "Sendinblue SAS (Brevo)",
-        "conservazione": "Gli indirizzi dei destinatari non sono conservati"
+        "conservazione": "Gli indirizzi dei destinatari non sono conservati, salvo la rubrica dei fornitori e gli ordini inviati (T1)"
       },
       {
         "id": "T5",

@@ -11,6 +11,7 @@
   </div>
 </div>
 <div class="stack-gap">
+<%- include('_archivio') %>
 <% if (aziende.length > 1) { %>
 <form class="filter" method="get" action="/preventivi/listino">
   <label class="field__label" for="listino-azienda"><%= t('scheda.field.azienda') %></label>

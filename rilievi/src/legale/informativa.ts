@@ -6,8 +6,11 @@ import { DEFAULT_LOCALE, translate } from '../i18n.js';
 /**
  * Информацията по чл. 13 GDPR за хората, които подписват на екрана (клиентът на листа за интервенция,
  * супервайзърът на протокола; собственикът, 12 ноември 2026 — точка D4; условията 15.4 от версия
- * 2026-11-12). Администраторът на данните е фирмата: тя пише текста в настройките (`Azienda.informativaFirme`);
- * докато не го е писала — моделът, попълнен с данните ѝ (наименование, седалище, имейл или телефон).
+ * 2026-11-12), и по чл. 13 и 14 — в края на всяка оферта, към клиента на фирмата и към референта му
+ * (собственикът, 14 ноември 2026; условията 15.4 от версия 2026-12-14). Администраторът на данните е фирмата:
+ * тя пише текста в настройките (`Azienda.informativaFirme`, `Azienda.informativaPreventivi`); докато не го е
+ * писала — моделът, попълнен с данните ѝ (наименование, седалище, имейл или телефон). Моделите — Правният
+ * Разбирач (не е правен съвет).
  */
 export const MAX_INFORMATIVA = 4000;
 
@@ -17,12 +20,23 @@ type AziendaInformativa = {
   informativaFirme: string | null;
 };
 
+type AziendaInformativaPreventivi = {
+  name: string;
+  datiSocietari: Prisma.JsonValue | null;
+  informativaPreventivi: string | null;
+};
+
 const it = (key: string, params: Record<string, string | number> = {}) =>
   translate(DEFAULT_LOCALE, key, params);
 
-/** Моделът с данните на фирмата — изходната точка в настройките и текстът, докато фирмата не пише свой. */
+/**
+ * Моделът с данните на фирмата — изходната точка в настройките и текстът, докато фирмата не пише свой.
+ * `chiave` — моделът за подписите (по подразбиране) или за офертите.
+ */
 export function modelloInformativa(
   azienda: Pick<AziendaInformativa, 'name' | 'datiSocietari'>,
+  chiave:
+    'legale.informativa.modello' | 'preventivi.informativa.modello' = 'legale.informativa.modello',
 ): string {
   const dati = datiSalvati(azienda.datiSocietari);
   const nome = dati?.ragioneSociale || azienda.name;
@@ -34,7 +48,7 @@ export function modelloInformativa(
     .filter((x) => x && x.trim() !== '')
     .join(', ');
   const contatto = dati?.email || dati?.telefono || it('legale.informativa.contattoMancante');
-  return it('legale.informativa.modello', {
+  return it(chiave, {
     azienda: nome,
     sede: sede ? `, ${sede}` : '',
     contatto,
@@ -44,6 +58,17 @@ export function modelloInformativa(
 /** Текстът на страницата на подписа: написаният от фирмата или моделът. */
 export const informativaPerFirma = (azienda: AziendaInformativa): string =>
   azienda.informativaFirme?.trim() ? azienda.informativaFirme : modelloInformativa(azienda);
+
+/** Моделът за офертите с данните на фирмата. */
+export const modelloInformativaPreventivi = (
+  azienda: Pick<AziendaInformativa, 'name' | 'datiSocietari'>,
+): string => modelloInformativa(azienda, 'preventivi.informativa.modello');
+
+/** Текстът в края на офертата: написаният от фирмата или моделът. */
+export const informativaPerPreventivo = (azienda: AziendaInformativaPreventivi): string =>
+  azienda.informativaPreventivi?.trim()
+    ? azienda.informativaPreventivi
+    : modelloInformativaPreventivi(azienda);
 
 /** Написаното в настройките: контролните знаци (без новия ред) → интервал, редовете — без интервали в края. */
 export const informativaSchema = z

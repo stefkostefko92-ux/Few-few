@@ -14,10 +14,11 @@
   </div>
   <% if (scrive) { %><div class="toolbar">
     <a class="btn" href="/clienti/<%= c.id %>/modifica"><%- include('../partials/icon', { name: 'edit' }) %><%= t('clienti.modifica') %></a>
-    <a class="btn btn--primary" href="/preventivi/nuovo?cliente=<%= c.id %>"><%- include('../partials/icon', { name: 'plus' }) %><%= t('clienti.nuovoPreventivo') %></a>
+    <% if (c.azienda.preventiviAttivi) { %><a class="btn btn--primary" href="/preventivi/nuovo?cliente=<%= c.id %>"><%- include('../partials/icon', { name: 'plus' }) %><%= t('clienti.nuovoPreventivo') %></a><% } %>
   </div><% } %>
 </div>
 <div class="stack-gap">
+<%- include('../preventivi/_archivio', { archivio: c.azienda.preventiviAttivi ? [] : [c.azienda.name] }) %>
 <p class="muted"><%= t('clienti.aggiunto', { data: fmt.day(c.createdAt) }) %><% if (c.updatedAt.getTime() !== c.createdAt.getTime()) { %> · <%= t('clienti.modificato', { data: fmt.day(c.updatedAt) }) %><% } %></p>
 
 <section class="panel" aria-labelledby="h-dati">

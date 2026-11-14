@@ -16,7 +16,7 @@ import { capacitaNascoste } from '../aziende/ruoli.js';
 import { MAX_CONDIZIONI } from '../preventivi/azienda.js';
 import type { aziendeImpostabili } from '../aziende/sezioni.js';
 import { MODELLI, MODELLI_ID, modelloDi } from '../cartelli/modelli.js';
-import { modelloInformativa } from '../legale/informativa.js';
+import { modelloInformativa, modelloInformativaPreventivi } from '../legale/informativa.js';
 import { misuraVista } from '../cartelli/vista.js';
 import type { SectionKey } from '../schede/fields.js';
 import { FISSE, ordineEffettivo, type Verso } from '../schede/ordine.js';
@@ -114,6 +114,8 @@ export interface VistaSezione {
   dati?: { values: Record<string, string>; errors: Partial<Record<string, string>> };
   ruoli?: { values: Record<string, string | string[]>; errors: Partial<Record<string, string>> };
   preventivi?: { valore: string; errore: boolean };
+  /** Раздел „Preventivi“ — информацията по чл. 13/14 в края на офертата (routes/impostazioni-preventivi.ts). */
+  informativaPreventivi?: { valore: string; propria: boolean; errore: boolean };
   /** Раздел „Listino prezzi“ — редовете, новият ред и внасянето (routes/listino-vista.ts, `datiListino`). */
   listino?: unknown;
   /** Раздел „Chiavi API“ — ключовете на фирмата и новият (показан веднъж). */
@@ -184,6 +186,11 @@ export function renderImpostazioni(res: Response, status: number, view: VistaSez
     informativa: {
       valore: azienda.informativaFirme ?? modelloInformativa(azienda),
       propria: azienda.informativaFirme !== null,
+      errore: false,
+    },
+    informativaPreventivi: {
+      valore: azienda.informativaPreventivi ?? modelloInformativaPreventivi(azienda),
+      propria: azienda.informativaPreventivi !== null,
       errore: false,
     },
     ...view,

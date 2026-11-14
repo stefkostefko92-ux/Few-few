@@ -2,13 +2,22 @@
 // master settings"): only in a company where the MASTER turned quotes on; there, by default from
 // RESPONSABILE up (prices are commercial information); the company's ADMIN can give or take them for the
 // roles under him, writing brings reading. A company that ended (export only) gives nothing. The MASTER
-// always can — the queries keep him to the companies with quotes on.
+// always can — the queries keep him to the companies with quotes on. Quotes turned off on a company that has
+// quotes, customers or a price list (the owner, 14 November 2026 — "направи го както трябва да бъде"): its
+// data stay readable and deletable for who had the rights (the rights of the people the data are about —
+// art. 15–17 GDPR; the terms, A.9), never written — like a company whose subscription ended.
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import type { Role } from '@prisma/client';
 import { activeMemberships } from '../src/auth/memberships.js';
 import { chiudi, permessiSalvati, predefiniti, RUOLI_CONFIGURABILI } from '../src/auth/permessi.js';
-import { canAnywhere, canIn, scopeFor } from '../src/auth/scope.js';
+import {
+  canAnywhere,
+  canAnywherePerTogliere,
+  canIn,
+  canInPerTogliere,
+  scopeFor,
+} from '../src/auth/scope.js';
 import { parseRuoli } from '../src/aziende/ruoli.js';
 import type { MembershipView } from '../src/types.js';
 
@@ -84,6 +93,42 @@ describe('quotes: who can', () => {
     assert.ok(b.permessi.RESPONSABILE?.includes('preventivi:read'));
   });
 
+  it('keeps the data of quotes turned off readable and deletable, never written', () => {
+    const archivio = (role: Role, extra: Partial<MembershipView> = {}) => ({
+      master: false,
+      memberships: [
+        { aziendaId: 'a1', aziendaName: 'A', role, preventiviArchivio: true as const, ...extra },
+      ],
+    });
+    for (const role of ['ADMIN', 'DIREZIONE', 'RESPONSABILE'] as const) {
+      assert.ok(canIn(archivio(role), 'preventivi:read', 'a1'), role);
+      assert.ok(canAnywhere(archivio(role), 'preventivi:read'), role);
+      assert.deepEqual(scopeFor(archivio(role), 'preventivi:read'), {
+        all: false,
+        aziendaIds: ['a1'],
+      });
+      // Nothing new and nothing changed…
+      assert.ok(!canIn(archivio(role), 'preventivi:write', 'a1'), role);
+      assert.ok(!canAnywhere(archivio(role), 'preventivi:write'), role);
+      // …but what is saved can be deleted (a customer, a draft).
+      assert.ok(canInPerTogliere(archivio(role), 'preventivi:write', 'a1'), role);
+      assert.ok(canAnywherePerTogliere(archivio(role), 'preventivi:write'), role);
+    }
+    // Only who had the rights: the roles of the company decide, as with quotes on.
+    assert.ok(!canIn(archivio('TECNICO'), 'preventivi:read', 'a1'));
+    assert.ok(!canInPerTogliere(archivio('TECNICO'), 'preventivi:write', 'a1'));
+    const lettura = permessiSalvati({ TECNICO: ['schede:read', 'preventivi:read'] });
+    assert.ok(canIn(archivio('TECNICO', { permessi: lettura }), 'preventivi:read', 'a1'));
+    assert.ok(
+      !canInPerTogliere(archivio('TECNICO', { permessi: lettura }), 'preventivi:write', 'a1'),
+    );
+    // A company that ended gives nothing, archive or not.
+    assert.ok(!canIn(archivio('ADMIN', { soloEsportazione: true }), 'preventivi:read', 'a1'));
+    assert.ok(
+      !canInPerTogliere(archivio('ADMIN', { soloEsportazione: true }), 'preventivi:write', 'a1'),
+    );
+  });
+
   it('reads the switch of the company into the session', () => {
     const [acceso, spento] = activeMemberships([
       {
@@ -99,5 +144,33 @@ describe('quotes: who can', () => {
     ]);
     assert.equal(acceso!.preventivi, true);
     assert.equal(spento!.preventivi, undefined);
+    assert.equal(spento!.preventiviArchivio, undefined);
+    // Off with saved data: the archive; on, the archive flag means nothing.
+    const [archivio, accesoConArchivio] = activeMemberships([
+      {
+        aziendaId: 'a1',
+        role: 'ADMIN',
+        azienda: {
+          name: 'A',
+          deactivatedAt: null,
+          preventiviAttivi: false,
+          preventiviArchivio: true,
+        },
+      },
+      {
+        aziendaId: 'a2',
+        role: 'ADMIN',
+        azienda: {
+          name: 'B',
+          deactivatedAt: null,
+          preventiviAttivi: true,
+          preventiviArchivio: true,
+        },
+      },
+    ]);
+    assert.equal(archivio!.preventivi, undefined);
+    assert.equal(archivio!.preventiviArchivio, true);
+    assert.equal(accesoConArchivio!.preventivi, true);
+    assert.equal(accesoConArchivio!.preventiviArchivio, undefined);
   });
 });

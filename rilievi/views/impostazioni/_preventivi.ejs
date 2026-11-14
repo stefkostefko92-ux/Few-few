@@ -1,7 +1,9 @@
 <%
   // Офертите (routes/impostazioni-preventivi.ts): условията, с които започва всяка нова оферта на фирмата.
-  // Ценоразписът е свой раздел на настройките („Listino prezzi“, _listino.ejs).
+  // Ценоразписът е свой раздел на настройките („Listino prezzi“, _listino.ejs). Втората форма —
+  // информацията по чл. 13 и 14 в края на офертата: текстът на фирмата или моделът с данните ѝ.
   const p = preventivi;
+  const inf = informativaPreventivi;
 %><section aria-labelledby="h-preventivi">
   <h2 class="section__title" id="h-preventivi"><%= t('impostazioni.pagine.preventivi.titolo') %></h2>
   <p><%= t('preventivi.impostazioni.intro') %></p>
@@ -17,6 +19,25 @@
     <div class="toolbar">
       <button class="btn btn--primary" type="submit"><%= t('preventivi.impostazioni.salva') %></button>
       <a class="btn" href="/impostazioni/listino?azienda=<%= encodeURIComponent(azienda.id) %>"><%- include('../partials/icon', { name: 'clipboard' }) %><%= t('preventivi.impostazioni.listino') %></a>
+    </div>
+  </form>
+</section>
+<section aria-labelledby="h-prev-informativa">
+  <h2 class="section__title" id="h-prev-informativa"><%= t('preventivi.impostazioni.informativa.titolo') %></h2>
+  <p><%= t('preventivi.impostazioni.informativa.intro') %></p>
+  <p class="muted"><%= t(inf.propria ? 'preventivi.impostazioni.informativa.propria' : 'preventivi.impostazioni.informativa.modello') %></p>
+  <form class="form" method="post" action="/impostazioni/preventivi/informativa" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="azienda" value="<%= azienda.id %>">
+    <div class="field field--wide">
+      <label class="field__label" for="f-prev-informativa"><%= t('preventivi.impostazioni.informativa.etichetta') %></label>
+      <textarea class="input" id="f-prev-informativa" name="testo" rows="16" maxlength="4000" aria-describedby="hint-prev-informativa<%= inf.errore ? ' err-prev-informativa' : '' %>"<% if (inf.errore) { %> aria-invalid="true"<% } %>><%= inf.valore %></textarea>
+      <p class="field__hint" id="hint-prev-informativa"><%= t('preventivi.impostazioni.informativa.hint', { max: 4000 }) %></p>
+      <% if (inf.errore) { %><p class="field__error" id="err-prev-informativa"><%= t('preventivi.impostazioni.informativa.errore', { max: 4000 }) %></p><% } %>
+    </div>
+    <div class="toolbar">
+      <button class="btn btn--primary" type="submit" name="azione" value="salva"><%= t('preventivi.impostazioni.informativa.salva') %></button>
+      <% if (inf.propria) { %><button class="btn" type="submit" name="azione" value="ripristina"><%= t('preventivi.impostazioni.informativa.ripristina') %></button><% } %>
     </div>
   </form>
 </section>

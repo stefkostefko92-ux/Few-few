@@ -11,6 +11,7 @@ import type { PianoImport } from '../preventivi/listino-import-salva.js';
 import { pageOf } from '../schede/list.js';
 import { MAX_QUERY_LENGTH } from '../schede/search.js';
 import { pathSezione, renderImpostazioni } from './impostazioni-vista.js';
+import { aziendeInArchivio } from './preventivi-vista.js';
 import { notFound } from './schede-shared.js';
 
 /**
@@ -143,6 +144,7 @@ export async function mostraListino(
     titleKey: 'preventivi.listino.titolo',
     aziende,
     azienda,
+    archivio: aziendeInArchivio(req, azienda.id),
     listino: await datiListino(req, azienda.id, view),
   });
 }

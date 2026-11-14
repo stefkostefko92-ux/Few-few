@@ -28,7 +28,9 @@ import {
 import { MAX_QUERY_LENGTH } from '../schede/search.js';
 import { aziendaFilterOf, aziendeOf, notFound } from './schede-shared.js';
 import {
+  aziendeInArchivio,
   loadPreventivo,
+  puoOperare,
   puoScrivere,
   puoTogliere,
   renderPreventivoForm,
@@ -63,6 +65,7 @@ preventiviRouter.get('/preventivi', read, async (req, res) => {
     stato: stato ?? '',
     stati: STATI,
     euro,
+    archivio: aziendeInArchivio(req),
   });
 });
 
@@ -71,6 +74,7 @@ preventiviRouter.get('/preventivi/:id', read, async (req, res) => {
   if (!row) return notFound(req, res);
   const dati = datiDi(row);
   const scrive = puoScrivere(req, row);
+  const opera = puoOperare(req, row);
   res.render('preventivi/show', {
     titleKey: 'preventivi.titolo',
     preventivo: row,
@@ -80,8 +84,9 @@ preventiviRouter.get('/preventivi/:id', read, async (req, res) => {
     validoFino: validaFino(dati.data, dati.validitaGiorni),
     modifica: scrive && MODIFICABILI.includes(row.stato),
     scrive,
+    opera,
     elimina: puoTogliere(req, row),
-    passaggi: scrive ? passaggiDa(row.stato) : [],
+    passaggi: opera ? passaggiDa(row.stato) : [],
     euro,
     quantitaTesto,
     scontoTesto,
