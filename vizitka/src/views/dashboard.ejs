@@ -3,6 +3,13 @@
   <h1>Моята визитка</h1>
   <% if (saved) { %><p class="alert alert-ok">Записано. Визитката ти е обновена.</p><% } %>
   <% if (error) { %><p class="alert alert-error" role="alert"><%= error %></p><% } %>
+  <% if (!user.email_verified_at) { %>
+    <p class="alert alert-warn" role="status" data-email-unverified>
+      Потвърди имейла си (<strong><%= user.email %></strong>) от писмото, което ти пратихме —
+      иначе „Забравена парола“ няма как да стигне до теб. Не е дошло?
+      <a href="/settings#imeil">Изпрати го пак</a>.
+    </p>
+  <% } %>
   <% if (profile.hidden_by_admin) { %>
     <p class="alert alert-warn" role="status">
       Визитката е <strong>скрита от администратор</strong>. Можеш да я редактираш, но

@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import QRCode from 'qrcode';
 import db, { UPLOADS_DIR } from '../db.js';
 import { requireAuth, verifyPassword, hashPassword, destroySession } from '../auth.js';
-import { csrfProtect } from '../csrf.js';
+import { csrfProtect, sameOriginOnly } from '../csrf.js';
 import { baseUrl } from '../config.js';
 import {
   generateSecret,
@@ -28,6 +28,19 @@ import { getLinks } from '../links.js';
 import { dailyViews } from '../stats.js';
 import { submitUrls } from '../indexnow.js';
 import { notifyWalletUpdate } from '../wallet/index.js';
+import { sendEmailChangeConfirm, sendVerifyEmail, notifySafely } from '../mailer.js';
+import {
+  issueToken,
+  findToken,
+  confirmVerify,
+  confirmChange,
+  changeError,
+  emailTaken,
+  normalizeEmail,
+  cancelPendingChange,
+  pendingChangeEmail,
+} from '../emailflow.js';
+import { isReservedAdminEmail } from '../auth.js';
 
 const router = Router();
 
@@ -69,6 +82,8 @@ function renderSettings(req, res, extra = {}) {
     title: 'Настройки на акаунта',
     account: {
       email: user.email,
+      emailVerified: Boolean(user.email_verified_at),
+      pendingEmail: pendingChangeEmail(user.id),
       createdAt: user.created_at,
       twoFactor: Boolean(user.totp_enabled),
       recoveryLeft: user.totp_enabled ? remainingRecoveryCodes(user.id) : 0,
@@ -92,6 +107,8 @@ router.get('/settings', requireAuth, (req, res) => {
     revoked: 'Сесията е прекратена.',
     others: 'Излезе от всички други устройства.',
     off: 'Двуфакторното влизане е изключено.',
+    sent: 'Изпратихме нова връзка за потвърждаване. Провери пощата си (и папката за спам).',
+    cancelled: 'Смяната на имейла е отказана — връзката вече не важи.',
   };
   renderSettings(req, res, { notice: notices[req.query.done] || null });
 });
@@ -113,6 +130,12 @@ router.post('/settings/password', requireAuth, csrfProtect, sensitiveLimiter, as
   );
   // Всички други сесии излизат — само текущата остава.
   db.prepare('DELETE FROM sessions WHERE user_id = ? AND id != ?').run(user.id, req.session.id);
+  cancelPendingChange(user.id); // висяща смяна на имейла може да е на нападателя
+  notifySafely(
+    user.email,
+    'Паролата за акаунта ти е сменена',
+    'Смяната е от „Настройки на акаунта“; другите устройства излязоха от акаунта.'
+  );
   res.redirect('/settings?done=pw');
 });
 
@@ -167,6 +190,11 @@ router.post(
       // Новата защита важи веднага: другите сесии (влезли само с парола) излизат.
       db.prepare('DELETE FROM sessions WHERE user_id = ? AND id != ?').run(user.id, req.session.id);
     })();
+    notifySafely(
+      user.email,
+      'Двуфакторното влизане е включено',
+      'Оттук нататък входът иска и код от приложението ти; другите устройства излязоха от акаунта.'
+    );
     renderSettings(req, res, {
       recoveryCodes: codes,
       notice: 'Двуфакторното влизане е включено. Запази резервните кодове — показват се само сега.',
@@ -204,6 +232,11 @@ router.post(
       ).run(user.id);
       db.prepare('DELETE FROM recovery_codes WHERE user_id = ?').run(user.id);
     })();
+    notifySafely(
+      user.email,
+      'Двуфакторното влизане е изключено',
+      'Входът вече иска само паролата.'
+    );
     res.redirect('/settings?done=off');
   }
 );
@@ -223,12 +256,148 @@ router.post(
       const ins = db.prepare('INSERT INTO recovery_codes (user_id, code_hash) VALUES (?, ?)');
       for (const c of codes) ins.run(user.id, hashRecoveryCode(c));
     })();
+    notifySafely(
+      user.email,
+      'Нови резервни кодове за двуфакторното влизане',
+      'Старите резервни кодове вече не важат.'
+    );
     renderSettings(req, res, {
       recoveryCodes: codes,
       notice: 'Новите резервни кодове заменят старите. Запази ги — показват се само сега.',
     });
   }
 );
+
+// ── Имейл: потвърждаване и смяна (src/emailflow.js) ─────────────────────────
+const maskEmail = (e) => e.replace(/^(.)[^@]*(@.*)$/, (_, a, d) => `${a}***${d}`);
+const message = (res, status, heading, msg) =>
+  res.status(status).render('message', { title: heading, heading, message: msg, ok: status < 400 });
+
+router.post('/settings/email/verify', requireAuth, csrfProtect, sensitiveLimiter, (req, res) => {
+  const user = getUser(req.user.id);
+  if (user.email_verified_at) return res.redirect('/settings');
+  const token = issueToken(user.id, 'verify', user.email);
+  sendVerifyEmail(user.email, `${baseUrl(req)}/verify-email?token=${token}`).catch((err) =>
+    console.error('Писмото за потвърждаване не беше изпратено:', err.message)
+  );
+  res.redirect('/settings?done=sent');
+});
+
+// Връзката от писмото — работи и без вход (отворена от пощата на телефона). GET само
+// показва бутон: скенерите на пощата (Safe Links и др.) отварят връзките сами и не бива да
+// потвърждават нищо. Действа POST — тайната е самият токен (без сесия, но same-origin).
+const invalidLink = (res) =>
+  message(
+    res,
+    400,
+    'Връзката не важи',
+    'Връзката е изтекла, вече е използвана или имейлът е сменен. Поискай нова от „Настройки на акаунта“.'
+  );
+const confirmPage = (res, action, token, heading, text, button) =>
+  res.render('email-confirm', { title: heading, heading, text, button, action, token });
+
+router.get('/verify-email', (req, res) => {
+  const t = findToken(req.query.token, 'verify');
+  if (!t) return invalidLink(res);
+  confirmPage(
+    res,
+    '/verify-email',
+    req.query.token,
+    'Потвърди имейла',
+    `Потвърди, че ${t.email} е твоят имейл.`,
+    'Потвърди имейла'
+  );
+});
+
+router.post('/verify-email', sameOriginOnly, sensitiveLimiter, (req, res) => {
+  if (!confirmVerify(req.body.token))
+    return message(
+      res,
+      400,
+      'Връзката не важи',
+      'Връзката е изтекла, вече е използвана или имейлът е сменен. Поискай нова от „Настройки на акаунта“.'
+    );
+  message(res, 200, 'Имейлът е потвърден', 'Готово — важните писма за акаунта ще стигат до теб.');
+});
+
+router.post('/settings/email', requireAuth, csrfProtect, sensitiveLimiter, async (req, res) => {
+  const user = getUser(req.user.id);
+  const next = normalizeEmail(req.body.new_email);
+  const err = changeError(user.email, next);
+  if (err) return renderSettings(req, res.status(400), { error: err });
+  if (!(await verifyPassword(String(req.body.password || ''), user.password_hash)))
+    return renderSettings(req, res.status(400), { error: 'Грешна парола.' });
+  if (user.totp_enabled && !verifySecondFactor(user, req.body.code))
+    return renderSettings(req, res.status(400), { error: 'Грешен или вече използван код.' });
+
+  // Зает адрес: същият отговор и никакво писмо — иначе формата казва чии са адресите.
+  if (!emailTaken(next)) {
+    const token = issueToken(user.id, 'change', next);
+    sendEmailChangeConfirm(next, `${baseUrl(req)}/settings/email/confirm?token=${token}`).catch(
+      (e) => console.error('Писмото за смяна на имейла не беше изпратено:', e.message)
+    );
+  }
+  notifySafely(
+    user.email,
+    'Заявена е смяна на имейла за вход',
+    `Новият адрес (${maskEmail(next)}) получи връзка за потвърждаване. Докато не бъде отворена, имейлът ти остава този.`
+  );
+  renderSettings(req, res, {
+    notice: `Изпратихме връзка на ${next}. Имейлът се сменя, когато я отвориш (важи 1 час). Ако не дойде, провери папката за спам — или адресът вече се ползва от друг акаунт.`,
+  });
+});
+
+const takenPage = (res) =>
+  message(
+    res,
+    409,
+    'Адресът е зает',
+    'Междувременно този имейл вече се ползва от друг акаунт. Имейлът ти не е сменен.'
+  );
+
+router.get('/settings/email/confirm', (req, res) => {
+  const t = findToken(req.query.token, 'change');
+  if (!t)
+    return message(
+      res,
+      400,
+      'Връзката не важи',
+      'Връзката е изтекла или вече е използвана. Заяви смяната отново от „Настройки на акаунта“.'
+    );
+  if (emailTaken(t.email) || isReservedAdminEmail(t.email)) return takenPage(res);
+  confirmPage(
+    res,
+    '/settings/email/confirm',
+    req.query.token,
+    'Смени имейла',
+    `Имейлът за вход във Vizitka ще стане ${t.email}.`,
+    'Потвърди смяната'
+  );
+});
+
+router.post('/settings/email/cancel', requireAuth, csrfProtect, (req, res) => {
+  cancelPendingChange(req.user.id);
+  res.redirect('/settings?done=cancelled');
+});
+
+router.post('/settings/email/confirm', sameOriginOnly, sensitiveLimiter, (req, res) => {
+  const r = confirmChange(req.body.token);
+  if (!r.ok)
+    return r.reason === 'taken'
+      ? takenPage(res)
+      : message(
+          res,
+          400,
+          'Връзката не важи',
+          'Връзката е изтекла или вече е използвана. Заяви смяната отново от „Настройки на акаунта“.'
+        );
+  notifySafely(
+    r.oldEmail,
+    'Имейлът за вход в акаунта ти е сменен',
+    `Новият имейл е ${maskEmail(r.newEmail)}. Писмата за акаунта вече отиват там.`
+  );
+  message(res, 200, 'Имейлът е сменен', `Отсега влизаш с ${r.newEmail}.`);
+});
 
 // ── Активни сесии ────────────────────────────────────────────────────────────
 router.post('/settings/sessions/revoke', requireAuth, csrfProtect, (req, res) => {
@@ -245,6 +414,7 @@ router.post('/settings/sessions/revoke', requireAuth, csrfProtect, (req, res) =>
 
 router.post('/settings/sessions/revoke-others', requireAuth, csrfProtect, (req, res) => {
   db.prepare('DELETE FROM sessions WHERE user_id = ? AND id != ?').run(req.user.id, req.session.id);
+  cancelPendingChange(req.user.id); // „възстанови контрола“ — и висящата смяна на имейла отпада
   res.redirect('/settings?done=others');
 });
 
@@ -272,6 +442,7 @@ router.get('/settings/export', requireAuth, (req, res) => {
     account: {
       email: user.email,
       created_at: user.created_at,
+      email_verified_at: user.email_verified_at || null,
       two_factor_enabled: Boolean(user.totp_enabled),
     },
     profile: {
@@ -377,6 +548,12 @@ router.post('/settings/delete', requireAuth, csrfProtect, sensitiveLimiter, asyn
   // Търсачките виждат 410 при следващото обхождане — подаваме адреса веднага.
   if (profile.is_public) submitUrls(base, [`${base}/p/${profile.slug}`]);
 
+  // Последното писмо до този адрес: потвърждение, че изтриването е станало (и сигнал, ако не е бил той).
+  notifySafely(
+    user.email,
+    'Акаунтът ти във Vizitka е изтрит',
+    'Визитката, снимките и всички данни на акаунта са изтрити. Адресът ѝ няма да бъде даден на друг. Това е последното ни писмо до теб.'
+  );
   destroySession(req, res);
   res.locals.user = null; // заглавката вече не е на влязъл потребител
   res.locals.isAdmin = false;

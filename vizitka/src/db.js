@@ -176,6 +176,10 @@ if (!userCols.has('totp_enabled'))
 // Последната ползвана 30-секундна стъпка — код от нея или по-стара се отказва (повторение).
 if (!userCols.has('totp_last_step'))
   db.exec('ALTER TABLE users ADD COLUMN totp_last_step INTEGER NOT NULL DEFAULT 0');
+// Кога човекът е натиснал връзката в писмото (NULL — още не е). Не спира нищо: само го
+// казваме в таблото — грешно написан имейл значи загубен акаунт при забравена парола.
+if (!userCols.has('email_verified_at'))
+  db.exec('ALTER TABLE users ADD COLUMN email_verified_at TEXT');
 
 const sessionCols = new Set(
   db
@@ -207,6 +211,19 @@ db.exec(`
     retired_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
+  -- Еднократни връзки по имейл: потвърждаване на адреса ('verify') и смяна ('change').
+  -- email е адресът, до който е пратена връзката (за 'change' — новият). Само sha256.
+  CREATE TABLE IF NOT EXISTS email_tokens (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    purpose TEXT NOT NULL CHECK (purpose IN ('verify', 'change')),
+    email TEXT NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE,
+    expires_at INTEGER NOT NULL,       -- unix ms
+    used_at TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_email_tokens_user ON email_tokens(user_id);
+
   -- Дневна статистика (без лични данни — само брой на ден). Стари редове се чистят.
   CREATE TABLE IF NOT EXISTS profile_views_daily (
     profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -222,6 +239,13 @@ export function purgeOldDailyViews() {
   db.prepare("DELETE FROM profile_views_daily WHERE day < date('now', ?)").run(
     `-${VIEWS_RETENTION_DAYS} days`
   );
+}
+
+// Изтекли/използвани връзки по имейл и нулирания на паролата — не се пазят (минимизация).
+export function purgeExpiredTokens() {
+  const now = Date.now();
+  db.prepare('DELETE FROM email_tokens WHERE expires_at < ? OR used_at IS NOT NULL').run(now);
+  db.prepare('DELETE FROM password_resets WHERE expires_at < ? OR used = 1').run(now);
 }
 
 // Периодично чистене на изтекли сесии.

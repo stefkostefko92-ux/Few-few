@@ -17,7 +17,8 @@ import {
 import { verifySecondFactor, remainingRecoveryCodes } from '../twofactor.js';
 import { csrfProtect, sameOriginOnly } from '../csrf.js';
 import { uniqueSlug } from '../slug.js';
-import { sendPasswordReset } from '../mailer.js';
+import { sendPasswordReset, sendVerifyEmail, notifySafely } from '../mailer.js';
+import { issueToken, cancelPendingChange } from '../emailflow.js';
 import { baseUrl } from '../config.js';
 
 const RESET_TTL_MS = 60 * 60 * 1000; // токенът за нулиране важи 1 час
@@ -116,6 +117,12 @@ router.post('/register', sameOriginOnly, authLimiter, async (req, res) => {
     ).run({ ...prefill, uid: info.lastInsertRowid });
   }
 
+  // Потвърждаване на имейла — по избор, не спира нищо (виж src/emailflow.js).
+  const verifyToken = issueToken(Number(info.lastInsertRowid), 'verify', email);
+  sendVerifyEmail(email, `${baseUrl(req)}/verify-email?token=${verifyToken}`).catch((err) =>
+    console.error('Писмото за потвърждаване не беше изпратено:', err.message)
+  );
+
   createSession(res, Number(info.lastInsertRowid), req);
   res.redirect(fromMastilko ? '/dashboard?welcome=mastilko' : '/dashboard');
 });
@@ -171,8 +178,15 @@ router.post('/login/2fa', sameOriginOnly, authLimiter, (req, res) => {
   createSession(res, user.id, req);
   // Влязъл с резервен код → насочваме към настройките: кодовете намаляват, а
   // телефонът вероятно е изгубен.
-  if (method === 'recovery')
-    return res.redirect(`/settings?recovery_used=${remainingRecoveryCodes(user.id)}`);
+  if (method === 'recovery') {
+    const left = remainingRecoveryCodes(user.id);
+    notifySafely(
+      user.email,
+      'Влизане в акаунта ти с резервен код',
+      `Използван е един от резервните кодове за двуфакторно влизане; остават ${left}.`
+    );
+    return res.redirect(`/settings?recovery_used=${left}`);
+  }
   res.redirect('/dashboard');
 });
 
@@ -241,8 +255,17 @@ router.post('/reset', sameOriginOnly, authLimiter, async (req, res) => {
     db.prepare('UPDATE password_resets SET used = 1 WHERE id = ?').run(reset.id);
     // Инвалидираме всички сесии на потребителя — новата парола е задължителна.
     db.prepare('DELETE FROM sessions WHERE user_id = ?').run(reset.user_id);
+    // Висяща смяна на имейла (може да е на нападателя) — също отпада.
+    cancelPendingChange(reset.user_id);
   });
   tx();
+  const owner = db.prepare('SELECT email FROM users WHERE id = ?').get(reset.user_id);
+  if (owner)
+    notifySafely(
+      owner.email,
+      'Паролата за акаунта ти е сменена',
+      'Смяната е през „Забравена парола“; всички устройства излязоха от акаунта.'
+    );
   res.render('login', {
     title: 'Вход',
     error: null,

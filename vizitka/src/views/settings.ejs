@@ -32,6 +32,47 @@
   <% } %>
 
   <div class="set-grid">
+    <%# ── Имейл: потвърждаване и смяна (src/emailflow.js) ─────────────────── %>
+    <div class="set-card" id="imeil">
+      <h2><%- icon('mail') %> Имейл за вход</h2>
+      <p><strong><%= account.email %></strong>
+        <% if (account.emailVerified) { %><span class="badge badge-on">Потвърден</span><% } else { %><span class="badge badge-off">Непотвърден</span><% } %>
+      </p>
+      <% if (!account.emailVerified) { %>
+        <form method="post" action="/settings/email/verify" class="set-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <p class="muted small">Потвърденият имейл е единственият път обратно при забравена парола.</p>
+          <button type="submit" class="btn btn-outline">Изпрати писмото за потвърждаване пак</button>
+        </form>
+      <% } %>
+      <% if (account.pendingEmail) { %>
+        <form method="post" action="/settings/email/cancel" class="set-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <p class="alert alert-warn" role="status">Чака потвърждаване: смяна към <strong><%= account.pendingEmail %></strong>. Ако не си я заявявал(а) ти, откажи я и смени паролата.</p>
+          <button type="submit" class="btn btn-outline">Откажи смяната</button>
+        </form>
+      <% } %>
+      <details class="set-details">
+        <summary>Смени имейла</summary>
+        <form method="post" action="/settings/email" class="set-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <label>Нов имейл
+            <input type="email" name="new_email" required maxlength="254" autocomplete="email">
+          </label>
+          <label>Парола
+            <input type="password" name="password" required autocomplete="current-password">
+          </label>
+          <% if (account.twoFactor) { %>
+          <label>Код от приложението или резервен код
+            <input type="text" name="code" required inputmode="text" autocomplete="one-time-code" maxlength="12">
+          </label>
+          <% } %>
+          <button type="submit" class="btn">Изпрати връзка на новия адрес</button>
+          <p class="muted small">Имейлът се сменя едва когато отвориш връзката от новия адрес. Старият получава известие.</p>
+        </form>
+      </details>
+    </div>
+
     <%# ── Парола ──────────────────────────────────────────────────────────── %>
     <div class="set-card">
       <h2><%- icon('key') %> Парола</h2>

@@ -154,7 +154,7 @@ export function attachUser(req, res, next) {
     .get(sha256(token), Date.now());
   if (!session) return next();
   const user = db
-    .prepare('SELECT id, email, is_admin, created_at FROM users WHERE id = ?')
+    .prepare('SELECT id, email, is_admin, created_at, email_verified_at FROM users WHERE id = ?')
     .get(session.user_id);
   if (user) {
     req.user = user;

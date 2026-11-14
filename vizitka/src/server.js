@@ -1,6 +1,6 @@
 import app from './app.js';
 import { indexNowKey, submitAllPublic } from './indexnow.js';
-import { purgeOldDailyViews } from './db.js';
+import { purgeOldDailyViews, purgeExpiredTokens } from './db.js';
 
 const port = Number(process.env.PORT || 3105);
 // Слушаме само на loopback — публичният вход е през nginx (reverse proxy).
@@ -13,6 +13,9 @@ app.listen(port, host, () => {
   // и веднъж дневно. Минимизация на данните (чл. 5(1)(в) ОРЗД), не само място.
   purgeOldDailyViews();
   setInterval(purgeOldDailyViews, 24 * 60 * 60 * 1000).unref();
+  // Изтеклите и използваните еднократни връзки (имейл, нулиране) — същия ритъм.
+  purgeExpiredTokens();
+  setInterval(purgeExpiredTokens, 24 * 60 * 60 * 1000).unref();
 
   // Напълно автоматично подаване към Bing/IndexNow: целият публичен набор при старт
   // (малко след вдигане) + веднъж дневно. Само в продукция с ключ и публичен домейн,

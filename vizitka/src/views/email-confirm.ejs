@@ -1,0 +1,11 @@
+<%- include('partials/head') %>
+<%# Връзка от писмо: GET показва само този бутон — скенерите на пощата не действат (POST). %>
+<section class="auth-card">
+  <h1><%= heading %></h1>
+  <p><%= text %></p>
+  <form method="post" action="<%= action %>">
+    <input type="hidden" name="token" value="<%= token %>">
+    <button type="submit" class="btn"><%= button %></button>
+  </form>
+</section>
+<%- include('partials/foot') %>

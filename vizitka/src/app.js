@@ -113,7 +113,7 @@ app.use((req, res, next) => {
 // (vCard файла с лични данни) и стига до Google, защото пътищата вече не са в
 // Disallow на robots.txt (Disallow скрива noindex от обхождащия).
 const NOINDEX_PATH =
-  /^\/(dashboard|login|register|logout|profile|admin|forgot|reset|settings)(\/|$)|^\/p\/[^/]+\/(print|vizitka\.vcf)$/;
+  /^\/(dashboard|login|register|logout|profile|admin|forgot|reset|settings|verify-email)(\/|$)|^\/p\/[^/]+\/(print|vizitka\.vcf)$/;
 app.use((req, res, next) => {
   if (NOINDEX_PATH.test(req.path)) res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   next();
@@ -127,7 +127,11 @@ app.use(express.static(join(__dirname, '..', 'public'), { maxAge: prod ? '7d' : 
 
 // Автентикираните страници не се кешират никъде.
 app.use((req, res, next) => {
-  if (/^\/(dashboard|login|register|logout|profile|admin|forgot|reset|settings)/.test(req.path))
+  if (
+    /^\/(dashboard|login|register|logout|profile|admin|forgot|reset|settings|verify-email)/.test(
+      req.path
+    )
+  )
     res.setHeader('Cache-Control', 'no-store');
   next();
 });
