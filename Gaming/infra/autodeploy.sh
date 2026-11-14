@@ -141,12 +141,22 @@ if [ -f .env ]; then
   chmod 600 .env
   ok "запазен"
   # Нова тайна от по-нова версия: само се добавя, наличните стойности не се пипат.
-  if ! grep -q '^SETTINGS_SECRET_KEY=..*' .env; then
+  settings_key="$(grep -E '^SETTINGS_SECRET_KEY=' .env | tail -n1 || true)"
+  settings_key="${settings_key#SETTINGS_SECRET_KEY=}"
+  settings_key="$(printf '%s' "$settings_key" | tr -d '[:space:]"'"'"'')"
+  if [ -z "$settings_key" ]; then
     command -v openssl >/dev/null || die "openssl липсва (нужен за SETTINGS_SECRET_KEY)."
-    sed -i '/^SETTINGS_SECRET_KEY=$/d' .env
+    sed -i '/^SETTINGS_SECRET_KEY=[[:space:]"'"'"']*$/d' .env
+    # Файл без краен нов ред (ръчна редакция): иначе новият ред се залепва към
+    # последната стойност и тихо я поврежда (compose чете „…# коментар“ като стойност).
+    [ -z "$(tail -c1 .env)" ] || echo >> .env
     printf '%s\n' "# Шифрова тайните от админ панела (Brevo SMTP) — добавено $(date -u +%F). НЕ го сменяй." \
       "SETTINGS_SECRET_KEY=$(openssl rand -hex 32)" >> .env
     ok "добавен SETTINGS_SECRET_KEY (за пощата от админ панела)"
+  elif ! printf '%s' "$settings_key" | grep -Eq '^[0-9a-fA-F]{64}$'; then
+    # Спираме ПРЕДИ билда — старата версия остава жива. Не я подменяме сами: ако пощата
+    # вече е записана с този ключ, нов ключ би я направил неразчетима.
+    die "SETTINGS_SECRET_KEY в $DEPLOY_DIR/.env не е 64 hex знака — api не би тръгнал. Поправи стойността (openssl rand -hex 32, ако пощата още не е записана)."
   fi
 else
   step "Няма .env — генерирам истински тайни"
