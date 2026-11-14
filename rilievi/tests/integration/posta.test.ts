@@ -1,9 +1,11 @@
 // The portal's email server from the MASTER console (#32 — Brevo SMTP): only MASTER; the key is written, stored
 // encrypted and never shown again (an empty field keeps it); the saved server replaces the environment at once
-// (the pages that depend on email change); a test email reports only an error code; switching it off goes back
-// to the environment. The audit never carries the key, the login or the server.
+// (the pages that depend on email change); a failed test email says which step failed and what the server
+// answered (the answer only on the page, never in the audit); a failed real email shows there too; switching it
+// off goes back to the environment. The audit never carries the key, the login or the server.
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
+import { smtpFinto } from '../smtp-finto.js';
 import { Browser, PASSWORD, prisma, signedIn, startApp, stopApp } from './harness.js';
 
 const { decifraSmtp } = await import('../../src/auth/chiavi.js');
@@ -105,16 +107,79 @@ describe('the portal email server', () => {
     assert.equal(nuovo.status, 303);
   });
 
-  it('reports a failed test with its code only, and switches off', async () => {
+  it('says which step of a failed test failed, in words and with the codes', async () => {
     const { browser } = await signedIn('MASTER');
     // Nothing answers on this port of this machine: the test fails at the connection.
     await browser.submit('/master/posta', '/master/posta', { ...form, porta: '465' });
+    assert.doesNotMatch((await browser.get('/master/posta')).body, /Ultima prova/);
     const prova = await browser.submit('/master/posta', '/master/posta/prova', {});
     assert.equal(prova.status, 303);
     const page = await browser.get('/master/posta');
-    assert.match(page.body, /Il server non ha accettato la prova \(codice [A-Z][A-Z0-9_]+\)/);
-    const audit = await prisma.auditLog.findFirstOrThrow({ where: { action: 'POSTA_PROVA' } });
-    assert.equal((audit.meta as { esito: string }).esito, 'errore');
+    assert.match(page.body, /L&#39;email di prova non è partita/);
+    assert.match(page.body, /Ultima prova/);
+    assert.match(page.body, /Invio non riuscito il /);
+    assert.match(page.body, /non riesce a collegarsi a 127\.0\.0\.1 sulla porta 465/);
+    assert.match(page.body, /Codice tecnico: ESOCKET \/ ECONNREFUSED/);
+    assert.doesNotMatch(page.body, /Risposta del server/);
+    const audit = await prisma.auditLog.findFirstOrThrow({
+      where: { action: 'POSTA_PROVA' },
+      orderBy: { at: 'desc' },
+    });
+    assert.deepEqual(audit.meta, {
+      esito: 'errore',
+      fase: 'connessione',
+      codice: 'ESOCKET',
+      origine: 'ECONNREFUSED',
+    });
+    // A new setting: the old test no longer describes it.
+    await browser.submit('/master/posta', '/master/posta', { ...form, porta: '587' });
+    assert.doesNotMatch((await browser.get('/master/posta')).body, /Ultima prova/);
+  });
+
+  it('shows the reply of the server on the page only, and a failed real email too', async () => {
+    const { browser, user } = await signedIn('MASTER');
+    // A server that answers but refuses STARTTLS (the portal never sends a key over plain text).
+    // On 2525 of this machine: the portal accepts only its own list of ports (and so does the database).
+    const finto = await smtpFinto({}, 2525);
+    try {
+      await browser.submit('/master/posta', '/master/posta', { ...form, porta: '2525' });
+      await browser.submit('/master/posta', '/master/posta/prova', {});
+      const page = await browser.get('/master/posta');
+      assert.match(page.body, /non ha accettato la connessione cifrata/);
+      assert.match(page.body, /Risposta del server:/);
+      assert.match(page.body, /502 5\.5\.1 STARTTLS non disponibile/);
+      assert.match(page.body, /Codice tecnico: ETLS \/ 502/);
+      assert.ok(!finto.comandi.includes('AUTH'), 'no credentials over an unencrypted connection');
+      const audit = await prisma.auditLog.findFirstOrThrow({
+        where: { action: 'POSTA_PROVA' },
+        orderBy: { at: 'desc' },
+      });
+      assert.deepEqual(audit.meta, { esito: 'errore', fase: 'tls', codice: 'ETLS', risposta: 502 });
+      assert.doesNotMatch(JSON.stringify(audit), /STARTTLS non disponibile/);
+
+      // A real email of the portal (the link for a new password) fails the same way: the page says so.
+      assert.doesNotMatch(page.body, /Ultima email del portale/);
+      const fuori = new Browser();
+      const chiesto = await fuori.submit('/password-dimenticata', '/password-dimenticata', {
+        email: user.email,
+      });
+      // The owner, 13 November 2026: the emails take minutes to arrive — the page says so.
+      assert.match(chiesto.body, /servono 5–10 minuti perché arrivi/);
+      const dopo = await browser.get('/master/posta');
+      assert.match(dopo.body, /Ultima email del portale/);
+      assert.match(dopo.body, /non ha accettato la connessione cifrata sulla porta 2525/);
+
+      // Another port is saved: what failed on 2525 is not shown as a failure of the new setting.
+      await browser.submit('/master/posta', '/master/posta', { ...form, porta: '587' });
+      const nuova = await browser.get('/master/posta');
+      assert.doesNotMatch(nuova.body, /Ultima email del portale|Ultima prova|sulla porta/);
+    } finally {
+      await finto.close();
+    }
+  });
+
+  it('switches off', async () => {
+    const { browser } = await signedIn('MASTER');
 
     const off = await browser.submit('/master/posta', '/master/posta/disattiva', {});
     assert.equal(off.status, 303);

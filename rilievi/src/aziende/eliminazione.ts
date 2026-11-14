@@ -54,6 +54,8 @@ export async function eliminaAzienda(aziendaId: string, actorId: string | null):
       // Офертите (Restrict към фирмата) и ценоразписът (Cascade — изрично, за реда на изтриването).
       await tx.preventivo.deleteMany({ where: { aziendaId } });
       await tx.voceListino.deleteMany({ where: { aziendaId } });
+      // Регистърът на клиентите (след офертите, които го сочат; Cascade — изрично, за реда на изтриването).
+      await tx.cliente.deleteMany({ where: { aziendaId } });
       await tx.calcoloArgano.deleteMany({ where: { aziendaId } });
       await tx.calcoloLimitatore.deleteMany({ where: { aziendaId } });
       // Снимките, скиците, мерките и изчислението на картата падат с нея (Cascade).

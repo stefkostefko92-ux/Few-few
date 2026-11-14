@@ -1,0 +1,17 @@
+<%
+  // Изходът от пробното или от последното истинско писмо (mail/diagnosi.ts): кога, тръгнало ли е, а при провал —
+  // стъпката с думи (със сървъра, с който е пращано — `server`), отговорът на SMTP сървъра (само тук, за MASTER)
+  // и кодовете за поддръжката.
+  const e = 'posta.esito.';
+  const d = diagnosi;
+%><div class="posta-esito">
+  <h3 class="posta-esito__titolo"><%= t(e + titolo) %></h3>
+  <p><strong><%= t(e + (riuscita ? 'riuscita' : 'nonRiuscita'), { data: fmt.dateTime(at) }) %></strong></p>
+  <% if (riuscita && consegna) { %><p class="muted"><%= t(e + 'consegna') %></p><% } %>
+  <% if (d) { %>
+  <p><%= t(e + 'fase.' + d.fase, { host: server ? server.host : '', porta: server ? server.porta : '', mittente: server ? server.mittente : '' }) %></p>
+  <% if (d.testo) { %><p class="posta-esito__risposta"><%= t(e + 'risposta') %> <q><%= d.testo %></q></p><% } %>
+  <p class="muted"><%= t(e + 'codice', { codice: d.codice + (d.origine ? ' / ' + d.origine : '') + (d.risposta !== null ? ' / ' + d.risposta : '') }) %></p>
+  <% } %>
+  <% if (falliti > 1) { %><p class="muted"><%= t(e + 'falliti', { n: falliti }) %></p><% } %>
+</div>

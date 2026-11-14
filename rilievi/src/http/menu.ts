@@ -64,6 +64,8 @@ const GRUPPI: ReadonlyArray<{ key: string; voci: readonly Definizione[] }> = [
     voci: [
       // В реда на собственика (12 ноември 2026): Preventivi, Buoni, Cartelli, Interventi, Verbali.
       { href: '/preventivi', key: 'nav.preventivi', icon: 'euro', cap: 'preventivi:read' },
+      // Регистърът на клиентите живее с офертите (собственикът, 13 ноември 2026) — до тях.
+      { href: '/clienti', key: 'nav.clienti', icon: 'contatti', cap: 'preventivi:read' },
       { href: '/buoni', key: 'nav.buoni', icon: 'buono', cap: 'interventi:read' },
       { href: '/cartelli', key: 'nav.cartelli', icon: 'stop', cap: 'interventi:read' },
       { href: '/interventi', key: 'nav.interventi', icon: 'wrench', cap: 'interventi:read' },
@@ -128,6 +130,13 @@ const NUOVO: readonly Definizione[] = [
     key: 'nuovo.preventivo',
     descKey: 'nuovo.preventivoDesc',
     icon: 'euro',
+    cap: 'preventivi:write',
+  },
+  {
+    href: '/clienti/nuovo',
+    key: 'nuovo.cliente',
+    descKey: 'nuovo.clienteDesc',
+    icon: 'contatti',
     cap: 'preventivi:write',
   },
   {

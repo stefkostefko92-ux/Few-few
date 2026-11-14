@@ -24,6 +24,7 @@ export const SEZIONI_DATI = [
   'buoni',
   'preventivi',
   'listino',
+  'clienti',
   'fornitori',
   'ordini',
   'registro',
@@ -42,10 +43,12 @@ export const SELECT_AZIENDA = {
   logo: true,
   logoType: true,
   informativaFirme: true,
+  informativaPreventivi: true,
   approvazioneSchede: true,
   buonoCodice: true,
   buonoClausola: true,
   preventiviAttivi: true,
+  preventiviArchivio: true,
   preventiviNumero: true,
   preventivoCondizioni: true,
   createdAt: true,
@@ -94,6 +97,20 @@ export const SELECT_FORNITORE = {
   email: true,
   createdAt: true,
 } as const satisfies Prisma.FornitoreSelect;
+
+/** Регистърът на клиентите — без копието за търсене (`searchText` е производно, не данни). */
+export const SELECT_CLIENTE = {
+  id: true,
+  nome: true,
+  indirizzo: true,
+  piva: true,
+  email: true,
+  telefono: true,
+  referente: true,
+  note: true,
+  createdAt: true,
+  updatedAt: true,
+} as const satisfies Prisma.ClienteSelect;
 
 export const SELECT_VERSIONE = {
   numero: true,
@@ -151,6 +168,7 @@ export function campiEsportati(): Record<SezioneDati, string[]> {
     buoni: [...campiDi('BuonoLavoro'), 'firme'],
     preventivi: campiDi('Preventivo'),
     listino: campiDi('VoceListino'),
+    clienti: chiavi(SELECT_CLIENTE),
     fornitori: chiavi(SELECT_FORNITORE),
     ordini: campiDi('OrdineFornitore'),
     registro: chiavi(SELECT_REGISTRO),

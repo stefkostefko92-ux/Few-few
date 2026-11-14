@@ -135,6 +135,9 @@ model Azienda {
   /// Информацията по чл. 13 GDPR на страницата на подписа (листът за интервенция, протоколът), както
   /// фирмата я е написала — тя е администраторът; null — моделът, попълнен с данните ѝ (legale/informativa.ts).
   informativaFirme         String?      @db.VarChar(4000)
+  /// Информацията по чл. 13 и 14 GDPR в края на всяка оферта — към клиента на фирмата и към референта му
+  /// (собственикът, 14 ноември 2026); null — моделът, попълнен с данните ѝ (legale/informativa.ts).
+  informativaPreventivi    String?      @db.VarChar(4000)
   /// Одобрението на две стъпки на картите (C7) — включва го администраторът ѝ; по подразбиране — не.
   approvazioneSchede       Boolean      @default(false)
   /// „Buono di lavoro“: кодът на модула горе вдясно („Mod. PO-05-3 Ed. 02 …“) и клаузата долу — както
@@ -143,6 +146,9 @@ model Azienda {
   buonoClausola            String?      @db.VarChar(1000)
   /// Офертите (C1) — включва ги САМО MASTER на страницата на фирмата; по подразбиране — не.
   preventiviAttivi         Boolean      @default(false)
+  /// Изключени оферти на фирма, която вече има оферти, клиенти или ценоразпис (src/preventivi/azienda.ts):
+  /// данните ѝ остават за четене и изтриване на хората с правата (auth/scope.ts) — никога за запис.
+  preventiviArchivio       Boolean      @default(false)
   /// Последният номер на оферта на фирмата (увеличава се в транзакцията на новата — без дупки и повторения).
   preventiviNumero         Int          @default(0)
   /// Условията за плащане по подразбиране на новата оферта (настройките на фирмата).
@@ -182,6 +188,7 @@ model Azienda {
   buoni             BuonoLavoro[]
   preventivi        Preventivo[]
   listino           VoceListino[]
+  clienti           Cliente[]
   audit             AuditLog[]
   accessRequests    AccessRequest[]
   chiaviApi         ChiaveApi[]
@@ -1578,6 +1585,10 @@ model Preventivo {
   stato            StatoPreventivo @default(BOZZA)
   statoAt          DateTime?
   searchText       String          @default("")
+  /// Клиентът от регистъра на фирмата, ако офертата е за него (`Cliente`). Данните на клиента в офертата са
+  /// нейни (копие към деня ѝ) — изтрит или променен клиент не я пипа.
+  clienteId        String?
+  clienteRegistro  Cliente?        @relation(fields: [clienteId], references: [id], onDelete: SetNull)
   createdById      String?
   createdBy        User?           @relation("PreventiviCreati", fields: [createdById], references: [id], onDelete: SetNull)
   updatedById      String?
@@ -1588,8 +1599,32 @@ model Preventivo {
   @@unique([aziendaId, numero])
   @@index([aziendaId, createdAt])
   @@index([schedaId])
+  @@index([clienteId])
   @@index([createdById])
   @@index([updatedById])
+}
+
+/// Клиент на фирмата (собственикът, 13 ноември 2026 — „да регистрират клиентите си с техни профили и да не
+/// трябва да ги пишат всеки път когато правят Preventivi“): името, адресът, P. IVA или данъчен код, имейл,
+/// телефон, лице за контакт и бележка. Лични данни на клиентите на фирмата — тя е администраторът им; вижда ги
+/// и ги пише, който вижда и пише офертите ѝ. До 2000 на фирма. Одитът — без данните.
+model Cliente {
+  id         String       @id @default(cuid())
+  aziendaId  String
+  azienda    Azienda      @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
+  nome       String       @db.VarChar(200)
+  indirizzo  String?      @db.VarChar(300)
+  piva       String?      @db.VarChar(20)
+  email      String?      @db.VarChar(254)
+  telefono   String?      @db.VarChar(40)
+  referente  String?      @db.VarChar(120)
+  note       String?      @db.VarChar(2000)
+  searchText String       @default("")
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  preventivi Preventivo[]
+
+  @@index([aziendaId, nome])
 }
 
 /// Ред от ценоразписа на фирмата (C1): цената в центове, ставката на ДДС; оттам се попълват редовете на

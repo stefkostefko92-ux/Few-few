@@ -28,6 +28,8 @@ export interface PreventivoPdfOptions {
   intestazione: IntestazioneAzienda;
   numero: number;
   generatoIl: Date;
+  /** Информацията по чл. 13 и 14 GDPR на фирмата към клиента — в края на офертата (legale/informativa.ts). */
+  informativa: string;
 }
 
 export type Doc = PDFKit.PDFDocument;
@@ -209,4 +211,44 @@ export function accettazione(p: Pagina): void {
   doc.text(o.t('preventivi.pdf.dataAccettazione'), M + 4, p.y + 3, { lineBreak: false });
   doc.text(o.t('preventivi.pdf.firmaCliente'), M + wData + 4, p.y + 3, { lineBreak: false });
   p.y += h + 6;
+}
+
+/**
+ * В края — информацията по чл. 13 и 14 GDPR на фирмата към клиента и референта му (собственикът, 14 ноември
+ * 2026; условията 2026-11-15, 15.4): заглавие и текстът с шрифт 7 pt (под него не се чете — чл. 12(1) GDPR,
+ * Правният Разбирач). Цялата — на една страница: ако не влиза под приемането, отива на следващата; по-дълга от
+ * страница — абзац по абзац.
+ */
+export function informativa(p: Pagina): void {
+  const { doc, o } = p;
+  const testo = o.informativa.trim();
+  const TESTO = { width: W, lineGap: 0.5 };
+  doc.font('Sans').fontSize(7);
+  const riga = doc.heightOfString('X', TESTO);
+  // Абзац, по-висок от цяла страница, не се среща (текстът е до 4000 знака), но не слиза под полето и тогава.
+  const righeMax = Math.floor((FONDO - M - 22) / riga);
+  const parte = (s: string) => {
+    doc.font('Sans').fontSize(7);
+    const cella = doc.heightOfString(s, TESTO) > righeMax * riga ? inRighe(doc, s, W, righeMax) : s;
+    return { s: cella, h: cella === '' ? riga : doc.heightOfString(cella, TESTO) };
+  };
+  // Цялата наведнъж, когато влиза в страница; по-дългата (текстът на фирмата — до 4000 знака и колкото
+  // реда иска) — абзац по абзац, всеки на страницата, където влиза (ревюто на Кодаджията, 14 ноември 2026:
+  // 180 кратки реда слизаха върху долния ред на страницата).
+  const parti = (
+    doc.heightOfString(testo, TESTO) + 22 <= FONDO - M ? [testo] : testo.split('\n')
+  ).map(parte);
+  p.spazio(parti[0]!.h + 22);
+  doc
+    .font('Sans-Bold')
+    .fontSize(7.5)
+    .fillColor(INK)
+    .text(o.t('preventivi.informativa.titolo'), M, p.y, { width: W, lineBreak: false });
+  p.y += 12;
+  parti.forEach(({ s, h }, i) => {
+    if (i > 0) p.spazio(h);
+    if (s !== '') doc.font('Sans').fontSize(7).fillColor(INK).text(s, M, p.y, TESTO);
+    p.y += h;
+  });
+  p.y += 6;
 }

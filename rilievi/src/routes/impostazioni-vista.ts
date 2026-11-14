@@ -16,7 +16,7 @@ import { capacitaNascoste } from '../aziende/ruoli.js';
 import { MAX_CONDIZIONI } from '../preventivi/azienda.js';
 import type { aziendeImpostabili } from '../aziende/sezioni.js';
 import { MODELLI, MODELLI_ID, modelloDi } from '../cartelli/modelli.js';
-import { modelloInformativa } from '../legale/informativa.js';
+import { modelloInformativa, modelloInformativaPreventivi } from '../legale/informativa.js';
 import { misuraVista } from '../cartelli/vista.js';
 import type { SectionKey } from '../schede/fields.js';
 import { FISSE, ordineEffettivo, type Verso } from '../schede/ordine.js';
@@ -33,6 +33,7 @@ export const SEZIONI_IMPOSTAZIONI = [
   'cartelli',
   'buoni',
   'preventivi',
+  'listino',
   'ruoli',
   'fornitori',
   'firme',
@@ -50,6 +51,7 @@ export const ICONE_SEZIONI: Readonly<Record<SezioneImpostazioni, string>> = {
   cartelli: 'stop',
   buoni: 'buono',
   preventivi: 'euro',
+  listino: 'clipboard',
   ruoli: 'users',
   fornitori: 'mail',
   firme: 'sign',
@@ -65,13 +67,13 @@ export const isSezione = (value: unknown): value is SezioneImpostazioni =>
 export type AziendaImpostabile = Awaited<ReturnType<typeof aziendeImpostabili>>[number];
 
 /**
- * Разделите на фирмата: „Preventivi“ — само когато MASTER е включил офертите ѝ; „Accesso con Microsoft o
+ * Разделите на фирмата: „Preventivi“ и „Listino prezzi“ — само когато MASTER е включил офертите ѝ; „Accesso con Microsoft o
  * Google“ — само когато порталът има регистрирано приложение при поне един доставчик (src/auth/oidc.ts).
  */
 export const sezioniDi = (azienda: { preventiviAttivi: boolean }): SezioneImpostazioni[] =>
   SEZIONI_IMPOSTAZIONI.filter(
     (s) =>
-      (s !== 'preventivi' || azienda.preventiviAttivi) &&
+      ((s !== 'preventivi' && s !== 'listino') || azienda.preventiviAttivi) &&
       (s !== 'accesso' || fornitoriConfigurati().length > 0),
   );
 
@@ -112,6 +114,10 @@ export interface VistaSezione {
   dati?: { values: Record<string, string>; errors: Partial<Record<string, string>> };
   ruoli?: { values: Record<string, string | string[]>; errors: Partial<Record<string, string>> };
   preventivi?: { valore: string; errore: boolean };
+  /** Раздел „Preventivi“ — информацията по чл. 13/14 в края на офертата (routes/impostazioni-preventivi.ts). */
+  informativaPreventivi?: { valore: string; propria: boolean; errore: boolean };
+  /** Раздел „Listino prezzi“ — редовете, новият ред и внасянето (routes/listino-vista.ts, `datiListino`). */
+  listino?: unknown;
   /** Раздел „Chiavi API“ — ключовете на фирмата и новият (показан веднъж). */
   chiaviApi?: unknown;
   chiaveNuova?: string | null;
@@ -163,6 +169,7 @@ export function renderImpostazioni(res: Response, status: number, view: VistaSez
       errors: {},
     },
     preventivi: { valore: azienda.preventivoCondizioni ?? '', errore: false },
+    listino: null,
     fornitoriEsterni: fornitoriConfigurati(),
     esterni: {
       values: { microsoft: azienda.accessoMicrosoft ?? '', google: azienda.accessoGoogle ?? '' },
@@ -179,6 +186,11 @@ export function renderImpostazioni(res: Response, status: number, view: VistaSez
     informativa: {
       valore: azienda.informativaFirme ?? modelloInformativa(azienda),
       propria: azienda.informativaFirme !== null,
+      errore: false,
+    },
+    informativaPreventivi: {
+      valore: azienda.informativaPreventivi ?? modelloInformativaPreventivi(azienda),
+      propria: azienda.informativaPreventivi !== null,
       errore: false,
     },
     ...view,

@@ -19,6 +19,7 @@
     <% if (can('preventivi:write')) { %><a class="btn btn--primary" href="/preventivi/nuovo"><%- include('../partials/icon', { name: 'plus' }) %><%= t('preventivi.new') %></a><% } %>
   </div>
 </div>
+<%- include('_archivio') %>
 <form class="filter preventivi-cerca" method="get" action="/preventivi" role="search">
   <% if (aziendaFilter) { %><input type="hidden" name="azienda" value="<%= aziendaFilter %>"><% } %>
   <label class="field__label" for="preventivi-q"><%= t('preventivi.cercaLabel') %></label>

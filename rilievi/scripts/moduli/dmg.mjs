@@ -864,6 +864,34 @@ async function pitagora() {
   };
 }
 
+/**
+ * The pictures with the widths of a model ("90 160 200") that the vendor left out of place. Each picture
+ * («NN-Dim.<model>-IMG») belongs in the row of its tick boxes («NN-Dim.<model>») and sits the same few
+ * points under their bottom everywhere — except four of section 2 (Flat standard, Silverlight, Luna, Cut),
+ * left 20–24 pt lower, over the title of section 3; the form's script only shows and hides them. Those get
+ * the height of their boxes plus the usual distance (`pulizia.sposta`).
+ */
+function immaginiFuoriPosto(campi, file) {
+  const mediana = (numeri) => [...numeri].sort((a, b) => a - b)[Math.floor(numeri.length / 2)];
+  const coppie = [...campi.keys()]
+    .filter((nome) => nome.endsWith('-IMG') && campi.has(nome.slice(0, -4)))
+    .map((campo) => {
+      const y = campi.get(campo).acroField.getWidgets()[0].getRectangle().y;
+      const caselle = mediana(
+        campi
+          .get(campo.slice(0, -4))
+          .acroField.getWidgets()
+          .map((w) => w.getRectangle().y),
+      );
+      return { campo, caselle, scarto: y - caselle };
+    });
+  const solito = mediana(coppie.map((c) => c.scarto));
+  const fuori = coppie.filter((c) => Math.abs(c.scarto - solito) > 1);
+  if (fuori.length * 3 > coppie.length)
+    throw new Error(`${file}: too many width pictures out of place to trust the rule`);
+  return fuori.map((c) => ({ campo: c.campo, y: Math.round((c.caselle + solito) * 1000) / 1000 }));
+}
+
 async function fixtures() {
   const file = 'dmg-fixtures.pdf';
   const { sha256, campi } = await leggi(file);
@@ -1228,7 +1256,7 @@ async function fixtures() {
     file,
     sha256,
     tipo: 'acroform',
-    pulizia: { nonStampare: ['-TOPPA$'] },
+    pulizia: { nonStampare: ['-TOPPA$'], sposta: immaginiFuoriPosto(campi, file) },
     gruppi,
   };
 }

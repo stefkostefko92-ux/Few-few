@@ -2,13 +2,16 @@
 // descriptions continue on the next pages (the table head again) and every page says its number. The
 // numbers are those of importi.ts — the same as the page and the saved totals.
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { describe, it } from 'node:test';
 import { PDFDocument } from 'pdf-lib';
 import { viewHelpers } from '../src/http/view.js';
 import { translatorFor } from '../src/i18n.js';
+import { modelloInformativaPreventivi } from '../src/legale/informativa.js';
 import { parsePreventivo } from '../src/preventivi/form.js';
 import { renderPreventivoPdf } from '../src/preventivi/pdf.js';
+import { FONDO } from '../src/preventivi/pdf-parti.js';
 import { pdfFontPaths } from '../src/schede/pdf.js';
 import { assertPdfA2b } from './pdfa.js';
 
@@ -30,6 +33,8 @@ const options = {
   },
   numero: 12,
   generatoIl: new Date('2026-11-16T10:00:00.000Z'),
+  // The notice at the end of every quote (GDPR art. 13 and 14): the model, as long as it comes.
+  informativa: modelloInformativaPreventivi({ name: 'Ascensori Prova', datiSocietari: null }),
 };
 
 function data(righe: number, descr = 'Quadro di manovra VVVF') {
@@ -56,9 +61,21 @@ function data(righe: number, descr = 'Quadro di manovra VVVF') {
 }
 
 const pages = async (pdf: Buffer) => (await PDFDocument.load(pdf)).getPageCount();
+const popplerHere = spawnSync('pdftotext', ['-v']).status === 0;
+
+/** The words of each page with their bottom edge (pdftotext -bbox, points from the top). */
+function parole(pdf: Buffer): Array<{ pagina: number; testo: string; yMax: number }> {
+  const html = spawnSync('pdftotext', ['-bbox', '-', '-'], { input: pdf }).stdout.toString();
+  const out: Array<{ pagina: number; testo: string; yMax: number }> = [];
+  html.split('<page ').forEach((pagina, i) => {
+    for (const m of pagina.matchAll(/yMax="([\d.]+)">([^<]*)<\/word>/g))
+      out.push({ pagina: i, testo: m[2]!, yMax: Number(m[1]) });
+  });
+  return out;
+}
 
 describe('the quote PDF', { skip: !fontsHere && 'DejaVu Sans is not installed' }, () => {
-  it('a usual quote is one PDF/A page', async () => {
+  it('a usual quote is one PDF/A page, with the notice at the end', async () => {
     const pdf = await renderPreventivoPdf(data(4), options);
     await assertPdfA2b(pdf);
     assert.equal(await pages(pdf), 1);
@@ -71,4 +88,23 @@ describe('the quote PDF', { skip: !fontsHere && 'DejaVu Sans is not installed' }
     await assertPdfA2b(pdf);
     assert.ok((await pages(pdf)) >= 4);
   });
+
+  it(
+    'a long notice of the company (180 short lines) goes on, never below the bottom margin',
+    { skip: !popplerHere && 'pdftotext is not installed' },
+    async () => {
+      // The review of Кодаджията, 14 November 2026: the text of the company is up to 4000 characters, and
+      // 180 lines of a few characters each ran over the footer of the page.
+      const righe = Array.from({ length: 180 }, (_, i) => `R${i + 1}x`);
+      const pdf = await renderPreventivoPdf(data(4), { ...options, informativa: righe.join('\n') });
+      await assertPdfA2b(pdf);
+      const scritte = parole(pdf).filter((w) => /^R\d+x$/.test(w.testo));
+      assert.deepEqual(
+        scritte.map((w) => w.testo),
+        righe,
+        'every line once, in order',
+      );
+      for (const w of scritte) assert.ok(w.yMax <= FONDO, `${w.testo} at ${w.yMax}`);
+    },
+  );
 });

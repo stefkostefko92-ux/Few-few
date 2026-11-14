@@ -8,6 +8,7 @@ import { conservaFinoDa } from './emissioni.js';
 import { verificaCodice, type Dichiarati, type EsitoCodice } from './firma.js';
 import { CAMPI_ACCETTAZIONE, sigilloDi, taglia } from './sigillo.js';
 import { hashTesto, leggiTesto, testoPiano, type TestoLegaleDoc } from './testi.js';
+import { versioneDaFirmare } from './versioni.js';
 import { avviaProva } from '../abbonamenti/servizio.js';
 
 /** Откъде е дошло приемането — пази се в регистъра (чл. 19.1 от условията). */
@@ -106,7 +107,7 @@ export async function firmaCondizioni(
   ctx: Contesto,
   copiaDi: (firmato: DatiCopia) => Promise<Buffer>,
 ): Promise<EsitoFirma> {
-  const doc = leggiTesto('CONDIZIONI');
+  const doc = leggiTesto('CONDIZIONI', versioneDaFirmare('CONDIZIONI'));
   return prisma.$transaction(
     async (tx) => {
       const esito = await verificaCodice(tx, user, codice);

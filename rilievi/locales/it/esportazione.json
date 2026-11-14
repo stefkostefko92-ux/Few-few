@@ -3,7 +3,7 @@
     "inCorso": "L'esportazione di questa azienda è già in corso. Attendi che finisca e riprova.",
     "scarica": {
       "titolo": "Scarica tutti i dati",
-      "testo": "Un unico file .tar con tutto quello che l'azienda ha nel portale. Dentro trovi il file dati.json, il logo, le foto e i video già elaborati e i documenti confermati in PDF/A. Il file dati.json contiene azienda, persone e ruoli, schede con misure e schizzi, fogli di intervento con firme e sigilli, cartelli, calcoli, verbali, buoni di lavoro, preventivi e listino, registro delle attività. Si apre con qualsiasi programma per archivi (7-Zip, Archivio di Windows e Mac, tar).",
+      "testo": "Un unico file .tar con tutto quello che l'azienda ha nel portale. Dentro trovi il file dati.json, il logo, le foto e i video già elaborati e i documenti confermati in PDF/A. Il file dati.json contiene azienda, persone e ruoli, schede con misure e schizzi, fogli di intervento con firme e sigilli, cartelli, calcoli, verbali, buoni di lavoro, preventivi, listino e anagrafica clienti, registro delle attività. Si apre con qualsiasi programma per archivi (7-Zip, Archivio di Windows e Mac, tar).",
       "esclusi": "Non contiene password, chiavi della verifica in due passaggi, link e codici di accesso: non sono dati dell'azienda, ma chiavi personali.",
       "bottone": "Scarica tutti i dati",
       "ultima": "Ultima esportazione: {data}, da {nome}.",
@@ -91,7 +91,7 @@
         "sezioni": {
           "formato": "La versione del formato, oggi «{formato}». Se cambia in modo incompatibile, lo scriviamo qui.",
           "esportatoIl": "Data e ora dell'esportazione.",
-          "azienda": "L'azienda: nome, dati societari come inseriti, ordine delle sezioni della scheda, modello del cartello, nomi e permessi dei ruoli, informativa per chi firma, approvazione delle schede, codice e clausola del buono di lavoro, date; logo è il nome del file nell'archivio.",
+          "azienda": "L'azienda: nome, dati societari come inseriti, ordine delle sezioni della scheda, modello del cartello, nomi e permessi dei ruoli, informativa per chi firma e per i preventivi, approvazione delle schede, codice e clausola del buono di lavoro, attivazione, archivio, ultimo numero e condizioni dei preventivi, date; logo è il nome del file nell'archivio.",
           "persone": "Le persone dell'azienda con il loro ruolo (ADMIN, DIREZIONE, RESPONSABILE, TECNICO, OPERATORE, CLIENTE) e la data di ingresso.",
           "inviti": "Gli inviti non ancora accettati, senza il link di accesso.",
           "schede": "Le schede di rilievo, anche quelle nel cestino, con tutti i campi, i moduli d'ordine compilati, le scelte di stampa, lo stato di approvazione e la cronologia delle versioni.",
@@ -104,6 +104,7 @@
           "registro": "Il registro delle attività dell'azienda, per il periodo in cui è conservato: chi, quando, che cosa, senza il contenuto delle schede. Le azioni dell'amministrazione del portale compaiono senza autore.",
           "preventivi": "I preventivi (anche se i preventivi sono disattivati): numero, data, validità, cliente, oggetto, impianto, righe (codice, descrizione, unità, quantità in millesimi, prezzo in centesimi, sconto in centesimi di punto, aliquota IVA), totali in centesimi, note, condizioni e stato.",
           "listino": "Il listino prezzi dell'azienda: codice, descrizione, unità, prezzo in centesimi e aliquota IVA.",
+          "clienti": "L'anagrafica clienti dell'azienda: nome o ragione sociale, indirizzo, partita IVA o codice fiscale, email, telefono, referente e note. Nei preventivi, «clienteId» indica il cliente dell'anagrafica collegato.",
           "fornitori": "La rubrica dei fornitori per gli ordini: nome ed email.",
           "ordini": "Gli ordini inviati ai fornitori dal portale: scheda, modulo, destinatario, messaggio, stato e date."
         },

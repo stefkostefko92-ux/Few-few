@@ -69,7 +69,8 @@
       "edit": "Modifica",
       "print": "Stampa",
       "pdf": "Scarica PDF",
-      "delete": "Elimina"
+      "delete": "Elimina",
+      "email": "Invia per email"
     },
     "misure": {
       "row": "Fermata {n}",
@@ -102,7 +103,26 @@
       "azienda": "Scegli l'azienda della scheda."
     },
     "compiledBy": "Compilata da",
-    "index": "Sezioni della scheda"
+    "index": "Sezioni della scheda",
+    "email": {
+      "titolo": "Invia la scheda per email",
+      "label": "Indirizzo email del destinatario",
+      "hint": "Alleghiamo il PDF della scheda, lo stesso che scarichi da questa pagina. Le risposte arrivano al tuo indirizzo email. L'indirizzo del destinatario non viene salvato.",
+      "messaggio": "Messaggio (facoltativo)",
+      "pulsante": "Invia",
+      "oggetto": "Scheda di rilievo — {impianto} — {azienda}",
+      "corpo": "Buongiorno,\n\nin allegato la scheda di rilievo: {impianto}.",
+      "indirizzo": "Indirizzo dell'impianto: {indirizzo}",
+      "firma": "Cordiali saluti,\n{mittente}\n{azienda}"
+    },
+    "flash": {
+      "inviata": "Scheda inviata a {email}. A volte servono 5–10 minuti perché l'email arrivi.",
+      "emailNonValida": "Scrivi un indirizzo email valido.",
+      "messaggioLungo": "Il messaggio è troppo lungo: al massimo 2000 caratteri.",
+      "mailDisattivata": "L'invio delle email non è attivo su questo portale: scarica il PDF e invialo tu.",
+      "nonInviata": "L'email non è partita. Riprova tra qualche minuto o scarica il PDF e invialo tu.",
+      "pdfTroppoGrande": "Il PDF pesa {mb} MB: è troppo grande per l'email (massimo {max} MB). Togli qualche foto dalla stampa oppure scarica il PDF e invialo tu."
+    }
   },
   "trash": {
     "title": "Cestino",

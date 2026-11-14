@@ -121,9 +121,9 @@
       "invia": "Invia il preventivo"
     },
     "elimina": {
-      "titolo": "Elimina la bozza",
-      "testo": "La bozza viene eliminata per sempre; il registro conserva il numero. Un preventivo inviato non si elimina.",
-      "btn": "Elimina la bozza"
+      "titolo": "Elimina il preventivo",
+      "testo": "Il preventivo viene eliminato per sempre, insieme ai dati del cliente riportati nel preventivo; il registro conserva solo il numero. Il cliente nell'anagrafica clienti resta. Un preventivo accettato non si può eliminare.",
+      "btn": "Elimina il preventivo"
     },
     "flash": {
       "creato": "Preventivo creato.",
@@ -136,8 +136,8 @@
       "nonInviato": "Invio non riuscito. Riprova tra qualche minuto.",
       "stato": "Stato del preventivo aggiornato.",
       "statoNo": "Cambio di stato non consentito: ricarica la pagina.",
-      "nonEliminabile": "Puoi eliminare solo le bozze.",
-      "eliminato": "Bozza del preventivo n. {n} eliminata.",
+      "nonEliminabile": "Un preventivo accettato non si può eliminare.",
+      "eliminato": "Preventivo n. {n} eliminato.",
       "condizioni": "Condizioni predefinite dei preventivi salvate."
     },
     "mail": {
@@ -181,7 +181,18 @@
       "salva": "Salva le condizioni",
       "listino": "Apri il listino prezzi",
       "hubSi": "Condizioni predefinite compilate",
-      "hubNo": "Nessuna condizione predefinita"
+      "hubNo": "Nessuna condizione predefinita",
+      "informativa": {
+        "titolo": "Informativa privacy nel preventivo",
+        "intro": "In fondo a ogni preventivo il portale riporta l'informativa per i clienti dell'azienda e i loro referenti (artt. 13 e 14 GDPR). Il titolare del trattamento è l'azienda: verifica e adatta il testo, in particolare la base giuridica e la conservazione.",
+        "propria": "Stai usando il testo dell'azienda.",
+        "modello": "Stai usando il modello predefinito, compilato con i dati dell'azienda.",
+        "etichetta": "Testo dell'informativa",
+        "hint": "Al massimo {max} caratteri. Compare in caratteri piccoli in fondo al PDF del preventivo.",
+        "errore": "Scrivi il testo dell'informativa (al massimo {max} caratteri).",
+        "salva": "Salva l'informativa",
+        "ripristina": "Torna al modello"
+      }
     },
     "listino": {
       "titolo": "Listino prezzi",
@@ -218,8 +229,67 @@
       "flash": {
         "aggiunta": "Voce aggiunta al listino.",
         "salvata": "Voce del listino salvata.",
-        "eliminata": "Voce eliminata dal listino."
+        "eliminata": "Voce eliminata dal listino.",
+        "importate": "Listino aggiornato. Voci nuove: {nuove}; voci aggiornate: {aggiornate}."
+      },
+      "hub0": "Listino vuoto",
+      "vuotoCome": "Aggiungi le voci una alla volta, oppure incollale tutte insieme con «Importa da Excel».",
+      "esporta": "Scarica in Excel (CSV)",
+      "vuotoForm": "Il listino prezzi di questa azienda è vuoto. Con il listino scegli una voce e la riga si compila da sola: codice, descrizione, unità, prezzo e IVA.",
+      "vuotoFormLink": "Compila il listino",
+      "importa": {
+        "titolo": "Importa da Excel",
+        "intro": "Copia le righe dal tuo foglio (Excel, LibreOffice, Fogli Google) e incollale qui sotto; va bene anche il contenuto di un file CSV. Prima controlli che cosa cambia, poi confermi.",
+        "testo": "Righe da importare",
+        "hint": "Se incolli anche la riga dei titoli, le colonne possono stare in qualsiasi ordine: bastano Descrizione e Prezzo. Senza titoli l'ordine è: Codice, Descrizione, Unità, Prezzo, IVA (l'IVA può mancare). Esempio di prezzo: 1.234,50.",
+        "unita": "Unità di misura, se manca nel foglio",
+        "iva": "IVA, se manca nel foglio",
+        "controlla": "Controlla le righe",
+        "conferma": "Conferma e importa",
+        "ricontrolla": "Controlla di nuovo",
+        "codiceNota": "Una riga con un codice già presente nel listino aggiorna quella voce. Le righe senza codice diventano voci nuove, a meno che nel listino ci sia già una voce identica.",
+        "riga": "Riga {riga}",
+        "altriErrori": {
+          "one": "…e un altro errore.",
+          "other": "…e altri {n} errori."
+        },
+        "anteprima": {
+          "titolo": "Controlla prima di importare",
+          "nuove": "Voci nuove: {n}",
+          "aggiornate": "Voci aggiornate (stesso codice): {n}",
+          "dopo": "Voci nel listino dopo l'importazione: {n}",
+          "prime": "Le prime {n} righe su {totale}",
+          "tutte": "Le righe da importare",
+          "uguali": "Righe senza codice già presenti nel listino, non aggiunte: {n}",
+          "cambiato": "Le righe sono cambiate dopo il controllo: questo è il nuovo riepilogo. Conferma di nuovo per importare."
+        },
+        "errore": {
+          "titolo": "Importazione non riuscita: nessuna voce è stata salvata.",
+          "vuoto": "Non ci sono righe da importare.",
+          "troppoLungo": "Il testo è troppo lungo: importa il listino in più parti.",
+          "troppe": "Troppe righe: al massimo {n} per volta.",
+          "colonne": "Colonne non riconosciute. Incolla anche la riga dei titoli (almeno Descrizione e Prezzo) oppure usa quest'ordine: Codice, Descrizione, Unità, Prezzo, IVA.",
+          "pieno": "Il listino può avere al massimo {n} voci: con queste righe diventerebbero {dopo}.",
+          "ambigue": "Due colonne per lo stesso dato: {colonne}. Lasciane una sola e incolla di nuovo."
+        },
+        "motivo": {
+          "required": "manca",
+          "tooLong": "troppi caratteri (massimo {max})",
+          "decimal": "non è un prezzo valido (esempio: 1.234,50)",
+          "option": "aliquota non prevista (22, 10 o 4)",
+          "duplicato": "compare anche in un'altra riga",
+          "numero": "è un numero: controlla l'ordine delle colonne",
+          "troppeColonne": "la riga ha più celle delle colonne: se un testo contiene «;», mettilo tra virgolette"
+        }
       }
+    },
+    "archivio": {
+      "avviso": "I preventivi di {aziende} sono disattivati: puoi consultare e scaricare preventivi, clienti e listino prezzi ed eliminare i clienti e i preventivi non accettati, ma non crearne di nuovi né modificarli. Per riattivarli rivolgiti all'amministrazione del portale.",
+      "master": "I preventivi di {aziende} sono disattivati. Correggi i dati solo su istruzione scritta dell'azienda; invio, esito e nuovi preventivi non sono disponibili."
+    },
+    "informativa": {
+      "titolo": "Informativa sul trattamento dei dati personali (artt. 13 e 14 GDPR)",
+      "modello": "Titolare del trattamento: {azienda}{sede}. Contatto: {contatto}.\n\nQuali dati: nome o ragione sociale, indirizzo, partita IVA o codice fiscale, email e telefono del cliente; nome e recapiti del referente ed eventuale nota interna. I dati del referente li riceviamo dal cliente o dal referente stesso.\n\nPerché e su quale base: per preparare, inviare e gestire il preventivo e l'eventuale contratto (art. 6, par. 1, lett. b) GDPR); per contattare il referente, sulla base del legittimo interesse di {azienda} a comunicare con il cliente (lett. f)); per gli obblighi di legge (lett. c)). Senza i dati del cliente non possiamo preparare il preventivo.\n\nChi altro vede i dati: Carbon Stealth VCC (Bulgaria), che gestisce il portale per conto di {azienda} come responsabile del trattamento (art. 28 GDPR), con server in Germania (netcup GmbH) e invio delle email tramite Brevo (Francia). Eventuali trasferimenti fuori dall'Unione per l'invio delle email sono tutelati da clausole contrattuali tipo (art. 46 GDPR).\n\nConservazione: per il preventivo non accettato, fino a 2 anni dopo la fine della validità, per gestire eventuali richieste successive (legittimo interesse); per il preventivo accettato, 10 anni come documento del contratto e per far valere o difendere un diritto (artt. 2220 e 2946 c.c.); nell'anagrafica clienti, finché dura il rapporto o fino alla vostra opposizione.\n\nDiritti: accesso, rettifica, cancellazione, limitazione, portabilità e opposizione (artt. 15–22 GDPR), scrivendo a {contatto}. Potete proporre reclamo al Garante per la protezione dei dati personali (garanteprivacy.it) o all'autorità del vostro paese. Non ci sono decisioni automatizzate."
     }
   }
 }

@@ -5,7 +5,6 @@ import { setFlash } from '../http/flash.js';
 import { elencoContratti, richiediFirma } from '../master/contratti.js';
 import { annunciaVersione, statoAnnuncio } from '../legale/annunci.js';
 import { PREAVVISO_GIORNI, VERSIONE } from '../legale/versioni.js';
-import { BUSINESS_TZ } from '../time.js';
 
 /**
  * „Contratti“ в конзолата на MASTER: договорът на всяка фирма (подписан с код, приет без подпис отпреди
@@ -38,16 +37,7 @@ masterContrattiRouter.post(
     const esito = await richiediFirma(principalOf(req).user, id);
     if (esito === 'missing')
       return sendError(req, res, 404, 'error.notFoundTitle', 'error.notFound');
-    if (typeof esito === 'object')
-      setFlash(res, 'info', 'master.contratti.flash.presto', {
-        data: new Intl.DateTimeFormat('it-IT', {
-          timeZone: BUSINESS_TZ,
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-        }).format(esito.presto),
-      });
-    else setFlash(res, esito === 'ok' ? 'ok' : 'error', `master.contratti.flash.${esito}`);
+    setFlash(res, esito === 'ok' ? 'ok' : 'error', `master.contratti.flash.${esito}`);
     res.redirect(303, '/master/contratti');
   },
 );

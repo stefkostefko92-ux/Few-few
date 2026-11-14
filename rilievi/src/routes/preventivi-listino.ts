@@ -1,89 +1,44 @@
 import { Router, type Request, type Response } from 'express';
 import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
-import { canIn, scopeFor } from '../auth/scope.js';
 import { prisma } from '../db.js';
 import { setFlash } from '../http/flash.js';
 import { MAX } from '../preventivi/form.js';
-import { ALIQUOTE, euro } from '../preventivi/importi.js';
+import { ALIQUOTE } from '../preventivi/importi.js';
 import {
   eliminaVoce,
   getVoce,
-  listListino,
-  MAX_VOCI,
   parseVoce,
   salvaVoce,
   tuttoIlListino,
   valoriVoce,
   type ErroriVoce,
 } from '../preventivi/listino.js';
-import { pageOf } from '../schede/list.js';
-import { MAX_QUERY_LENGTH } from '../schede/search.js';
+import {
+  aziendaScelta,
+  gestioneListino,
+  mostraListino,
+  provenienzaDi,
+  puoScrivere,
+  tornaA,
+  type Provenienza,
+} from './listino-vista.js';
 import { notFound } from './schede-shared.js';
 
 /**
  * Ценоразписът на фирмата (C1): `/preventivi/listino` — търсене, страници, нов ред; `/:id` — промяна;
  * изтриване. Вижда го, който вижда офертите във фирмата; пише — който ги пише. С много фирми — изборът
  * горе (`?azienda=`). `/preventivi/listino.json` — редовете и условията по подразбиране за формата на
- * офертата (подсказките; при смяна на фирмата).
+ * офертата (подсказките; при смяна на фирмата) и къде се управлява ценоразписът. Същото съдържание е и
+ * раздел „Listino prezzi“ на настройките (listino-vista.ts): `da=impostazioni` връща там. Внасянето наведнъж
+ * и износът — preventivi-listino-import.ts.
  */
 export const preventiviListinoRouter: Router = Router();
 
 const read = requireCapability('preventivi:read');
 const write = requireCapability('preventivi:write');
 
-/** Фирмите с видими оферти за човека (MASTER — всички активни с включени оферти). */
-async function aziendeListino(req: Request) {
-  const user = principalOf(req).user;
-  const s = scopeFor(user, 'preventivi:read');
-  if (s.all)
-    return prisma.azienda.findMany({
-      where: { deactivatedAt: null, preventiviAttivi: true },
-      orderBy: { name: 'asc' },
-      select: { id: true, name: true },
-    });
-  return user.memberships
-    .filter((m) => s.aziendaIds.includes(m.aziendaId))
-    .map((m) => ({ id: m.aziendaId, name: m.aziendaName }));
-}
-
-async function aziendaScelta(req: Request, raw: unknown) {
-  const aziende = await aziendeListino(req);
-  const azienda = aziende.find((a) => a.id === raw) ?? aziende[0] ?? null;
-  return { aziende, azienda };
-}
-
-const puoScrivere = (req: Request, aziendaId: string) =>
-  canIn(principalOf(req).user, 'preventivi:write', aziendaId);
-
-async function renderListino(
-  req: Request,
-  res: Response,
-  status: number,
-  view: { aziendaId: unknown; values?: Record<string, string>; errors?: ErroriVoce },
-) {
-  const { aziende, azienda } = await aziendaScelta(req, view.aziendaId);
-  if (!azienda) return notFound(req, res);
-  const query =
-    typeof req.query.q === 'string' ? req.query.q.trim().slice(0, MAX_QUERY_LENGTH) : '';
-  const page = await listListino(azienda.id, query, pageOf(req.query.p));
-  res.status(status).render('preventivi/listino', {
-    titleKey: 'preventivi.listino.titolo',
-    aziende,
-    azienda,
-    page,
-    query,
-    scrive: puoScrivere(req, azienda.id),
-    values: view.values ?? { iva: '22' },
-    errors: view.errors ?? {},
-    max: MAX,
-    maxVoci: MAX_VOCI,
-    aliquote: ALIQUOTE,
-    euro,
-  });
-}
-
 preventiviListinoRouter.get('/preventivi/listino', read, (req, res) =>
-  renderListino(req, res, 200, { aziendaId: req.query.azienda }),
+  mostraListino(req, res, 200, { aziendaId: req.query.azienda, da: 'preventivi' }),
 );
 
 preventiviListinoRouter.get('/preventivi/listino.json', write, async (req, res) => {
@@ -91,12 +46,14 @@ preventiviListinoRouter.get('/preventivi/listino.json', write, async (req, res) 
   const { azienda } = await aziendaScelta(req, aziendaId);
   if (!azienda || azienda.id !== aziendaId || !puoScrivere(req, aziendaId))
     return notFound(req, res);
-  const [voci, row] = await Promise.all([
+  const [voci, row, gestione] = await Promise.all([
     tuttoIlListino(aziendaId),
     prisma.azienda.findUnique({ where: { id: aziendaId }, select: { preventivoCondizioni: true } }),
+    gestioneListino(req, aziendaId),
   ]);
   res.set('Cache-Control', 'no-store').json({
     condizioni: row?.preventivoCondizioni ?? '',
+    gestione,
     voci: voci.map((v) => ({ ...valoriVoce(v), id: v.id })),
   });
 });
@@ -115,10 +72,12 @@ preventiviListinoRouter.post('/preventivi/listino', write, requireCsrf, async (r
   const { azienda } = await aziendaScelta(req, aziendaId);
   if (!azienda || azienda.id !== aziendaId || !puoScrivere(req, aziendaId))
     return notFound(req, res);
+  const da = await provenienzaDi(req, body.da, aziendaId);
   const parsed = parseVoce(body);
   if (!parsed.ok)
-    return renderListino(req, res, 422, {
+    return mostraListino(req, res, 422, {
       aziendaId,
+      da,
       values: valoriDalBody(body),
       errors: parsed.errors,
     });
@@ -127,19 +86,20 @@ preventiviListinoRouter.post('/preventivi/listino', write, requireCsrf, async (r
   if (esito !== 'ok') {
     const errors: ErroriVoce =
       esito === 'duplicato' ? { codice: 'duplicato' } : { descrizione: 'range' };
-    return renderListino(req, res, 422, { aziendaId, values: valoriDalBody(body), errors });
+    return mostraListino(req, res, 422, { aziendaId, da, values: valoriDalBody(body), errors });
   }
   setFlash(res, 'ok', 'preventivi.listino.flash.aggiunta');
-  res.redirect(303, `/preventivi/listino?azienda=${encodeURIComponent(aziendaId)}`);
+  res.redirect(303, tornaA(da, aziendaId));
 });
 
-/** Редът в обхвата за писане — по фирмата от адреса. */
+/** Редът в обхвата за писане — по фирмата от адреса; и откъде е дошъл човекът (`?da=`). */
 async function voceDa(req: Request) {
   const aziendaId = typeof req.query.azienda === 'string' ? req.query.azienda : '';
   const { azienda } = await aziendaScelta(req, aziendaId);
   if (!azienda || azienda.id !== aziendaId || !puoScrivere(req, aziendaId)) return null;
   const voce = await getVoce(aziendaId, String(req.params.id));
-  return voce ? { azienda, voce } : null;
+  if (!voce) return null;
+  return { azienda, voce, da: await provenienzaDi(req, req.query.da, aziendaId) };
 }
 
 const renderVoce = (
@@ -148,6 +108,7 @@ const renderVoce = (
   view: {
     azienda: { id: string; name: string };
     id: string;
+    da: Provenienza;
     values: Record<string, string>;
     errors: ErroriVoce;
   },
@@ -156,6 +117,7 @@ const renderVoce = (
     titleKey: 'preventivi.listino.modifica',
     max: MAX,
     aliquote: ALIQUOTE,
+    back: tornaA(view.da, view.azienda.id),
     ...view,
   });
 
@@ -165,6 +127,7 @@ preventiviListinoRouter.get('/preventivi/listino/:id', write, async (req, res) =
   renderVoce(res, 200, {
     azienda: found.azienda,
     id: found.voce.id,
+    da: found.da,
     values: valoriVoce(found.voce),
     errors: {},
   });
@@ -174,7 +137,12 @@ preventiviListinoRouter.post('/preventivi/listino/:id', write, requireCsrf, asyn
   const found = await voceDa(req);
   if (!found) return notFound(req, res);
   const body = req.body as Record<string, unknown>;
-  const view = { azienda: found.azienda, id: found.voce.id, values: valoriDalBody(body) };
+  const view = {
+    azienda: found.azienda,
+    id: found.voce.id,
+    da: found.da,
+    values: valoriDalBody(body),
+  };
   const parsed = parseVoce(body);
   if (!parsed.ok) return renderVoce(res, 422, { ...view, errors: parsed.errors });
   const esito = await salvaVoce(
@@ -187,7 +155,7 @@ preventiviListinoRouter.post('/preventivi/listino/:id', write, requireCsrf, asyn
   if (esito === 'duplicato')
     return renderVoce(res, 422, { ...view, errors: { codice: 'duplicato' } });
   setFlash(res, 'ok', 'preventivi.listino.flash.salvata');
-  res.redirect(303, `/preventivi/listino?azienda=${encodeURIComponent(found.azienda.id)}`);
+  res.redirect(303, tornaA(found.da, found.azienda.id));
 });
 
 preventiviListinoRouter.post(
@@ -199,6 +167,6 @@ preventiviListinoRouter.post(
     if (!found) return notFound(req, res);
     await eliminaVoce(principalOf(req).user.id, found.azienda.id, found.voce.id);
     setFlash(res, 'ok', 'preventivi.listino.flash.eliminata');
-    res.redirect(303, `/preventivi/listino?azienda=${encodeURIComponent(found.azienda.id)}`);
+    res.redirect(303, tornaA(found.da, found.azienda.id));
   },
 );

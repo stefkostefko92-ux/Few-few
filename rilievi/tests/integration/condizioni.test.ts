@@ -14,7 +14,7 @@ import { eliminaAzienda } from '../../src/aziende/eliminazione.js';
 import { runMaintenance } from '../../src/maintenance.js';
 import { CAMPI_ACCETTAZIONE, sigilloValido } from '../../src/legale/sigillo.js';
 import { clausoleSpecifiche, hashTesto, leggiTesto } from '../../src/legale/testi.js';
-import { VERSIONE } from '../../src/legale/versioni.js';
+import { versioneDaFirmare, VERSIONE } from '../../src/legale/versioni.js';
 import {
   Browser,
   makeAzienda,
@@ -31,7 +31,9 @@ after(stopApp);
 
 const ACCETTA = '/condizioni/accetta';
 const FIRMA = '/condizioni/firma';
-const versioni = { versioneCondizioni: VERSIONE.CONDIZIONI, versioneRegole: VERSIONE.REGOLE };
+// The terms are signed in the version that enters by itself, if one is days away (legale/versioni.ts).
+const DA_FIRMARE = versioneDaFirmare('CONDIZIONI');
+const versioni = { versioneCondizioni: DA_FIRMARE, versioneRegole: VERSIONE.REGOLE };
 const DICHIARATI = {
   ragioneSociale: 'Ascensori Prova S.r.l.',
   sede: 'Via Roma 12, 20121 Milano (MI)',
@@ -178,7 +180,7 @@ describe("the company's terms, concluded by its ADMIN", () => {
 
   it('signs the specific approval with the code on a page of its own, records it, sends the copy', async () => {
     const { azienda, browser, user, codice } = await adminAlCodice();
-    const doc = leggiTesto('CONDIZIONI');
+    const doc = leggiTesto('CONDIZIONI', DA_FIRMARE);
     const page = (await browser.get(`${FIRMA}?next=%2Fschede`)).body;
     for (const { numero, descrizione } of clausoleSpecifiche(doc))
       assert.ok(
@@ -212,7 +214,7 @@ describe("the company's terms, concluded by its ADMIN", () => {
     const riga = await prisma.accettazione.findFirstOrThrow({
       where: { userId: user.id, tipo: 'CONDIZIONI' },
     });
-    assert.equal(riga.versione, VERSIONE.CONDIZIONI);
+    assert.equal(riga.versione, DA_FIRMARE);
     assert.equal(riga.hash, hashTesto(doc));
     assert.deepEqual(
       riga.clausole,
@@ -233,7 +235,7 @@ describe("the company's terms, concluded by its ADMIN", () => {
       'the rules ticked in the first step',
     );
     const dopo = await prisma.azienda.findUniqueOrThrow({ where: { id: azienda.id } });
-    assert.equal(dopo.condizioniVersione, VERSIONE.CONDIZIONI);
+    assert.equal(dopo.condizioniVersione, DA_FIRMARE);
     assert.equal(
       await prisma.auditLog.count({
         where: { action: 'CONDIZIONI_ACCETTATE', aziendaId: azienda.id },
@@ -278,6 +280,36 @@ describe("the company's terms, concluded by its ADMIN", () => {
       (await tecnico.browser.get('/condizioni/copia')).status,
       404,
       'the copy is the ADMIN’s',
+    );
+  });
+
+  // The owner, 13 November 2026: the email with the code took five minutes to arrive — "Вдигни малко
+  // валидността на кода, нека бъде 30 минути".
+  it('keeps the code valid for 30 minutes, and says so in the email and on the page', async () => {
+    const { browser, user } = await adminAlCodice();
+    const sfida = await prisma.firmaCondizioni.findFirstOrThrow({ where: { userId: user.id } });
+    assert.equal(sfida.scadeAt.getTime() - sfida.inviatoAt.getTime(), 30 * 60_000);
+    const mail = outbox.filter((m) => m.to === user.email).at(-1);
+    assert.match(mail?.text ?? '', /30 minuti/);
+    const pagina = (await browser.get(`${FIRMA}?next=%2Fschede`)).body;
+    assert.match(pagina, /Il codice vale 30 minuti/);
+    // The email can be late: the page says so, and that only the last code counts.
+    assert.match(pagina, /servono 5–10 minuti perché l&#39;email con il codice arrivi/);
+    assert.match(pagina, /vale solo l&#39;ultimo/);
+    // Still good after 29 minutes, gone after 30.
+    await prisma.firmaCondizioni.update({
+      where: { id: sfida.id },
+      data: { scadeAt: new Date(Date.now() + 60_000) },
+    });
+    assert.equal((await browser.get(`${FIRMA}?next=%2Fschede`)).status, 200);
+    await prisma.firmaCondizioni.update({
+      where: { id: sfida.id },
+      data: { scadeAt: new Date(Date.now() - 1000) },
+    });
+    assert.equal(
+      (await browser.get(`${FIRMA}?next=%2Fschede`)).status,
+      303,
+      'a new code is needed',
     );
   });
 

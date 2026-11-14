@@ -92,6 +92,10 @@ export function pulisciFormulario(
 ): void {
   const regole = modulo.pulizia?.nonStampare.map((source) => new RegExp(source)) ?? [];
   togliJavaScript(form.doc);
+  // Поле, оставено от автора не на мястото си, отива на реда си (`sposta` в картата).
+  for (const { campo, y } of modulo.pulizia?.sposta ?? [])
+    for (const widget of form.getField(campo).acroField.getWidgets())
+      widget.setRectangle({ ...widget.getRectangle(), y });
   for (const field of form.getFields()) {
     const name = field.getName();
     if (regole.some((re) => re.test(name))) {

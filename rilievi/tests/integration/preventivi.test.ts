@@ -71,7 +71,11 @@ describe('quotes', () => {
       },
     );
     assert.equal(roles.status, 303);
-    assert.equal((await admin.get(`/preventivi/${id}`)).status, 403);
+    // Off with a quote saved: the archive — read, never written (preventivi-archivio.test.ts).
+    const archivio = await admin.get(`/preventivi/${id}`);
+    assert.equal(archivio.status, 200);
+    assert.doesNotMatch(archivio.body, new RegExp(`href="/preventivi/${id}/modifica"`));
+    assert.equal((await admin.get(`/preventivi/${id}/modifica`)).status, 403);
     assert.equal(await prisma.preventivo.count({ where: { id } }), 1);
     await accendi(master, azienda.id, true);
     const { browser: resp } = await signedIn('RESPONSABILE', azienda.id);
@@ -226,7 +230,7 @@ describe('quotes', () => {
       (await prisma.preventivo.findUniqueOrThrow({ where: { id } })).oggetto,
       'Oggetto nuovo',
     );
-    // Not a draft: not deleted.
+    // Accepted: not deleted (what was not accepted can be — preventivi-informativa.test.ts).
     await browser.submit(`/preventivi/${id}`, `/preventivi/${id}/elimina`, {});
     assert.equal(await prisma.preventivo.count({ where: { id } }), 1);
     await stato('INVIATO');

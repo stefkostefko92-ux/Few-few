@@ -8,6 +8,8 @@ import {
 } from '../auth/guards.js';
 import { intestazioneDi } from '../aziende/dati.js';
 import { aziendaLogo } from '../aziende/service.js';
+import { clienteDalPreventivo } from '../clienti/dal-preventivo.js';
+import { MAX_CLIENTI } from '../clienti/service.js';
 import { config } from '../config.js';
 import { setFlash } from '../http/flash.js';
 import { mailLimiter, pdfLimiter } from '../http/limits.js';
@@ -16,13 +18,14 @@ import { preventivoMail } from '../mail/templates.js';
 import { nomeFilePreventivo, pdfDelPreventivo } from '../preventivi/documento.js';
 import type { PreventivoFull } from '../preventivi/elenco.js';
 import { cambiaStato, eliminaPreventivo, isStato, registraInvio } from '../preventivi/service.js';
-import { loadPreventivo, puoScrivere, puoTogliere } from './preventivi-vista.js';
+import { loadPreventivo, puoOperare, puoTogliere } from './preventivi-vista.js';
 import { notFound } from './schede-shared.js';
 
 /**
  * Офертата навън: PDF/A-ът (всеки, който я вижда), писмото до клиента с PDF-а (пише офертите; отговорът
  * — до пратилия; адресът не се пази, одитът — без него; черновата става „Inviato“), смяната на състоянието
- * (само по позволен преход) и изтриването на чернова.
+ * (само по позволен преход) и изтриването на чернова. Клиентът на офертата към регистъра на клиентите —
+ * `POST /preventivi/:id/cliente` (веднъж: вече записаният клиент само се свързва).
  */
 export const preventiviAzioniRouter: Router = Router();
 
@@ -60,10 +63,11 @@ preventiviAzioniRouter.get('/preventivi/:id/pdf', read, pdfLimiter, async (req, 
 
 const invioSchema = z.object({
   email: z.string().trim().max(254).email(),
+  // Първо новите редове (браузърът праща CRLF, а в `maxlength` го брои за един знак), после дължината.
   messaggio: z
     .string()
-    .max(2000)
     .transform((v) => v.replace(/\r\n?/g, '\n').trim())
+    .pipe(z.string().max(2000))
     .optional(),
 });
 
@@ -74,7 +78,7 @@ preventiviAzioniRouter.post(
   requireCsrf,
   async (req, res) => {
     const row = await loadPreventivo(req);
-    if (!row || !puoScrivere(req, row)) return notFound(req, res);
+    if (!row || !puoOperare(req, row)) return notFound(req, res);
     const parsed = invioSchema.safeParse(req.body);
     if (!parsed.success) {
       setFlash(res, 'error', 'preventivi.flash.emailNonValida');
@@ -112,7 +116,7 @@ preventiviAzioniRouter.post(
 
 preventiviAzioniRouter.post('/preventivi/:id/stato', write, requireCsrf, async (req, res) => {
   const row = await loadPreventivo(req);
-  if (!row || !puoScrivere(req, row)) return notFound(req, res);
+  if (!row || !puoOperare(req, row)) return notFound(req, res);
   const body = req.body as Record<string, unknown>;
   const a = body.stato;
   // Само върху видяната версия (одитът от 12 ноември 2026): колега е сменил офертата междувременно — не се
@@ -128,6 +132,16 @@ preventiviAzioniRouter.post('/preventivi/:id/stato', write, requireCsrf, async (
       actorId: principalOf(req).user.id,
     }));
   setFlash(res, ok ? 'ok' : 'error', ok ? 'preventivi.flash.stato' : 'preventivi.flash.statoNo');
+  res.redirect(303, `/preventivi/${row.id}`);
+});
+
+preventiviAzioniRouter.post('/preventivi/:id/cliente', write, requireCsrf, async (req, res) => {
+  const row = await loadPreventivo(req);
+  if (!row || !puoOperare(req, row)) return notFound(req, res);
+  const esito = await clienteDalPreventivo(principalOf(req).user.id, row.aziendaId, row.id);
+  if (esito.esito === 'missing') return notFound(req, res);
+  if (esito.esito === 'pieno') setFlash(res, 'error', 'clienti.flash.pieno', { max: MAX_CLIENTI });
+  else setFlash(res, 'ok', esito.nuovo ? 'clienti.flash.dalPreventivo' : 'clienti.flash.collegato');
   res.redirect(303, `/preventivi/${row.id}`);
 });
 
