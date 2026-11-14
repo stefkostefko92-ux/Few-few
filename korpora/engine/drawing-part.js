@@ -170,6 +170,8 @@ export function drawingPart(model, meta, partId) {
   if (p.role === 'sliding-door') {
     const sys = SLIDING[model.spec.sliding] ?? SLIDING[DEFAULT_SLIDING];
     g += `<text class="d-note" x="30" y="277">${esc(t('drw.slidingGroove', { w: t.num(sys.bottomGroove.w), d: t.num(sys.bottomGroove.depth) }))}</text>`;
+    const bosses = holes.filter((h) => h.kind === 'planofit').map((h) => h.v);
+    if (bosses.length) g += `<text class="d-note" x="30" y="282">${esc(t('drw.planofitCut', { c: t.num(Math.max(...bosses) - Math.min(...bosses)) }))}</text>`;
   }
   const material = `${stockName(p.stock, t)} ${t.num(p.T)} · ${decorName(p.decor, t)}`;
   return svgDoc(g + frame(`${p.id} ${p.name} ${t.num(p.L)}×${t.num(p.W)}`, meta, scale, no, count, material, t), t('drw.partOf', { part: `${p.id} ${p.name}` }), p.id);

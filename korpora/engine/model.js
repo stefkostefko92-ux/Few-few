@@ -211,6 +211,7 @@ export function checkHoles(ctx, p, spec) {
     if (rim < 0) ctx.warn('error', t('w.holeOut', { part: p.name, d: t.num(h.d), purpose: purposeOf(h.kind, t), u: t.num(h.u), v: t.num(h.v) }));
     else if (rim < MIN_WEB) ctx.warn('warn', t('w.holeEdge', { part: p.name, d: t.num(h.d), purpose: purposeOf(h.kind, t), rim: t.num(rim) }));
     for (const g of grooves) {
+      if (h.fitting && h.fitting === g.fitting) continue; // one fitting: a Planofit groove ends in its own bosses
       const web = toSegment(h.u, h.v, g) - (g.w + h.d) / 2;
       if (web < MIN_WEB) ctx.warn('warn', t('w.holeGroove', { part: p.name, d: t.num(h.d), purpose: purposeOf(h.kind, t), web: t.num(Math.max(0, web)) }));
     }

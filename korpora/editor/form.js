@@ -165,7 +165,7 @@ export function writeForm(form, spec, writeFocused = false) {
     if (el.dataset.whenSeen && el.hidden !== hidden)
       changed.push(
         tx(hidden ? 'field.hidden' : 'field.shown', {
-          label: el.querySelector('label')?.textContent ?? '',
+          label: el.querySelector(':scope > label, :scope > .lbl')?.textContent ?? '',
         }),
       );
     el.hidden = hidden;

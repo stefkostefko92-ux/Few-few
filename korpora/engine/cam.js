@@ -81,6 +81,10 @@ export function cncBlockers(model, nesting) {
   const out = model.warnings.filter((w) => w.level === 'error').map((w) => w.text);
   out.push(...nesting.errors);
   for (const sheet of nesting.sheets) out.push(...strayHoles(model, sheet));
+  const t = translator(model.lang);
+  for (const p of model.parts)
+    for (const g of p.features.filter((f) => f.type === 'groove' && f.w < GROOVE_MILL.d - 0.01))
+      out.push(t('w.grooveNarrow', { part: p.name, w: t.num(g.w), d: t.num(GROOVE_MILL.d) }));
   return [...new Set(out)];
 }
 

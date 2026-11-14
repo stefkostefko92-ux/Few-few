@@ -148,7 +148,10 @@ test('the doors on the CNC: Planofit bores Ø35 × 12.5 and the 10 × 8 groove o
     for (const g of grooves) {
       assert.equal(g.w, 10);
       assert.equal(g.depth, 8);
+      // the groove ends in the centres of its own two bosses (p. 1.144) — one fitting, not a hole too close to a groove
+      assert.equal(bores.filter((b) => b.fitting === g.fitting && [g.u1, g.u2].includes(b.u) && b.v === g.v1).length, 2);
     }
+    assert.ok(!m.warnings.some((w) => w.text.includes(d.name) && w.text.includes('Planofit')), `${d.name}: no "move the hole" for its own Planofit`);
     // the running gear housings: where they go, not on the CNC (the pocket opens through the top edge)
     const gear = d.features.filter((f) => f.type === 'mark' && f.kind === 'sliding-gear');
     assert.equal(gear.length, 2, d.name);
@@ -190,4 +193,31 @@ test('the bill of materials: the doors are 16 mm boards in the front decor, band
     assert.equal(d.decor, 'demo:oak');
     assert.deepEqual(Object.keys(d.bands).sort(), ['+x', '+y', '-x', '-y'].sort());
   }
+});
+
+test('the top under the doors: a wide span between supports sags past the running gear — an error with the cure', () => {
+  // one column across 2364 mm of a carcass: the top spans it all
+  const wide = buildModel({ ...OK, width: 2400, columns: 2, layout: 'shelves' });
+  const sag = wide.warnings.find((w) => w.level === 'error' && /провисн/.test(w.text));
+  assert.ok(sag, JSON.stringify(wide.warnings.map((w) => w.text)));
+  assert.match(sag.text, /колона/);
+  // the default four columns: the partitions carry it
+  assert.ok(!buildModel(OK).warnings.some((w) => /провисн/.test(w.text)));
+});
+
+test('the track: one line per cut length (carcasses of different widths), the length written the local way', () => {
+  const m = buildModel({ ...OK, width: 3000, columns: 5 });
+  const tracks = m.hardware.filter((h) => h.sku === '402.30.652');
+  assert.equal(tracks.length, 2, JSON.stringify(tracks.map((h) => h.name)));
+  assert.notEqual(tracks[0].name, tracks[1].name);
+  assert.ok(tracks.every((h) => h.qty === 1 && /2,5 m/.test(h.name)));
+  const en = buildModel({ ...OK, width: 3000, columns: 5 }, { lang: 'en' });
+  assert.ok(en.hardware.filter((h) => h.sku === '402.30.652').every((h) => /2\.5 m/.test(h.name)));
+});
+
+test('a groove narrower than the cutter blocks the CNC files instead of being cut wider', () => {
+  const m = buildModel(OK);
+  const door = doorsOf(m)[0];
+  door.features.push({ type: 'groove', u1: 100, v1: 100, u2: 100, v2: 300, w: 3, depth: 5, kind: 'test' });
+  assert.ok(cncBlockers(m, nest(m)).some((b) => /3 mm/.test(b) && /Ø4/.test(b)));
 });
