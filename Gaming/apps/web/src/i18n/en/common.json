@@ -10,7 +10,10 @@
     "admin": "Admin",
     "profile": "Profile",
     "logout": "Log out",
-    "menu": "Menu"
+    "menu": "Menu",
+    "responsible": "Responsible play",
+    "account": "Account",
+    "levelProgress": "Level {{level}} · {{into}}/{{needed}} XP"
   },
   "friends": {
     "title": "Friends",
@@ -430,7 +433,8 @@
     "botsSoon": "If no players join, bots will fill in shortly.",
     "leaveConfirm": "Sure? (forfeit)",
     "backToRoom": "Back to the room",
-    "finalPlace": "Place: {{n}} of {{total}}"
+    "finalPlace": "Place: {{n}} of {{total}}",
+    "botName": "Bot {{n}}"
   },
   "santase": {
     "trump": "Trump",
@@ -583,7 +587,10 @@
     "done": "Completed",
     "empty": "No active quests.",
     "error": "Couldn't load quests.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "show": "Show",
+    "hide": "Hide",
+    "summary": "{{done}}/{{total}} done"
   },
   "leaderboard": {
     "empty": "No ranked players yet."

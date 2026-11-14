@@ -10,7 +10,10 @@
     "admin": "Админ",
     "profile": "Профил",
     "logout": "Изход",
-    "menu": "Меню"
+    "menu": "Меню",
+    "responsible": "Отговорна игра",
+    "account": "Акаунт",
+    "levelProgress": "Ниво {{level}} · {{into}}/{{needed}} XP"
   },
   "friends": {
     "title": "Приятели",
@@ -430,7 +433,8 @@
     "botsSoon": "Ако няма играчи, ботове ще се включат след няколко секунди.",
     "leaveConfirm": "Сигурен? (предаване)",
     "backToRoom": "Обратно в стаята",
-    "finalPlace": "Място: {{n}} от {{total}}"
+    "finalPlace": "Място: {{n}} от {{total}}",
+    "botName": "Бот {{n}}"
   },
   "santase": {
     "trump": "Коз",
@@ -583,7 +587,10 @@
     "done": "Изпълнена",
     "empty": "Няма активни задачи.",
     "error": "Задачите не се заредиха.",
-    "retry": "Опитай пак"
+    "retry": "Опитай пак",
+    "show": "Покажи",
+    "hide": "Скрий",
+    "summary": "{{done}}/{{total}} изпълнени"
   },
   "leaderboard": {
     "empty": "Все още няма класирани играчи."
