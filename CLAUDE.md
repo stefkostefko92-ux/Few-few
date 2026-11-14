@@ -132,7 +132,7 @@ Ours (BG, vetted; 59; metadata only until triggered): **агентски** — a
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
 razpit · skill-author · sapernik; **предпазители** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch ·
 db-readonly · owasp-review · wcag-audit · incident-breach; **SEO/perf** — indexnow · keywords-seo · i18n-parity ·
-web-vitals; plus uchitel; **домейн** — youtube-reddit · fivem-mlo · fivem-clothing · fivem-livery; **външни, адаптирани** — frontend-design · humanizer · test-driven-development · seo-geo · seo-hreflang · pricing · receiving-code-review · discernment-nudge · improve-codebase-architecture · ponytail-review · observability-and-instrumentation · deprecation-and-migration · ui-ux-pro-max; правни — dpa-review · dsar-response · pia-generation · aia-generation · vendor-ai-review · marketing-claims-review · use-case-triage · reg-gap-analysis · ai-inventory · saas-msa-review · nda-review · vendor-agreement-review · stakeholder-summary · oss-review · ip-clause-review. Gate: `tools/skills/lint.mjs` + `trigger-check.mjs --check`.
+web-vitals; plus uchitel; **домейн** — youtube-reddit · fivem-mlo · fivem-clothing · fivem-livery; **външни, адаптирани** (13) и **правни** (15) — ростерът е в `tools/agents/CLAUDE.md`, произходът в `.claude/skills/THIRD_PARTY_NOTICES.md`. Gate: `tools/skills/lint.mjs` + `trigger-check.mjs --check`.
 **Own BG skills; never import third-party wholesale**; външно — само с изрично „да“ от собственика (`tools/agents/CLAUDE.md`).
 
 **Guard hooks (6):** `guard-prompt` · `guard-dangerous` (only catastrophic Bash) · `guard-secrets` ·
