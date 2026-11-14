@@ -559,3 +559,6 @@
 {"t":"handoff","ts":"2026-11-13T11:25:31.883Z","id":"r848d2add","from":"dizayner","to":"kodadjiyata","status":"има бележки","run":"6319c7db"}
 {"t":"start","ts":"2026-11-13T13:58:53.577Z","id":"rb2200970","flow":"авто","lead":"dizayner","auto":true}
 {"t":"handoff","ts":"2026-11-13T13:58:53.577Z","id":"rb2200970","from":"dizayner","to":"kodadjiyata","status":"блокер (находка 1: 4 проблясъка/s върху >25% от поле 10° при in/out на курсора; качването да почака корекцията)","run":"3ab61b08"}
+{"t":"start","ts":"2026-11-14T07:08:46.135Z","id":"r6cbd2e4f","flow":"авто","lead":"kasadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-14T07:08:46.135Z","id":"r6cbd2e4f","from":"kasadjiyata","to":"човек","status":"има бележки","run":"45f792c6"}
+{"t":"handoff","ts":"2026-11-14T07:46:52.707Z","id":"r6cbd2e4f","from":"kodadjiyata","to":"човек","status":"блокер","run":"f0e79337"}
