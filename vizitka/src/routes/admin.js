@@ -5,7 +5,21 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { join } from 'node:path';
 import db, { UPLOADS_DIR } from '../db.js';
-import { requireAdmin } from '../auth.js';
+import { requireAdmin, verifyPassword } from '../auth.js';
+import rateLimit from 'express-rate-limit';
+import { verifySecondFactor } from '../twofactor.js';
+import {
+  DEFAULTS as MAIL_DEFAULTS,
+  PORTS as MAIL_PORTS,
+  mailStatus,
+  readMailForm,
+  saveMail,
+  disableMail,
+  auditMailTest,
+  publicHost,
+  MailConflictError,
+} from '../mailsettings.js';
+import { sendTestMail } from '../mailer.js';
 import { csrfProtect } from '../csrf.js';
 import { allBanners, getBanner } from '../banners.js';
 import { baseUrl } from '../config.js';
@@ -392,6 +406,121 @@ router.post('/admin/banners/:id/delete', requireAdmin, csrfProtect, (req, res) =
     db.prepare('DELETE FROM banners WHERE id = ?').run(banner.id);
   }
   res.redirect('/admin/reklami?saved=1');
+});
+
+// --- Поща на сайта (Brevo SMTP) — моделът на rilievi „Email del portale“ ---------------------
+
+// Пробните писма и записът — отделен таван: проверката на паролата е bcrypt, а пробата отваря
+// SMTP връзка.
+const mailLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: Number(process.env.AUTH_RATE_LIMIT) || 20,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: 'Твърде много опити. Опитай отново след 15 минути.',
+});
+
+const MAIL_NOTICES = {
+  saved: { ok: true, text: 'Пощата е записана: отсега писмата на сайта тръгват оттук.' },
+  off: { ok: true, text: 'Пощата от админ панела е изключена.' },
+  sent: { ok: true, text: 'Пробното писмо е изпратено до {email}.' },
+  notsent: { ok: false, text: 'Пощата не е включена: първо запиши сървър.' },
+};
+
+function renderMail(req, res, status = 200, extra = {}) {
+  const st = mailStatus();
+  const values =
+    extra.values ??
+    (st.row
+      ? {
+          host: st.row.host,
+          port: String(st.row.port),
+          username: st.row.username,
+          from_name: st.row.from_name,
+          from_email: st.row.from_email,
+        }
+      : MAIL_DEFAULTS);
+  let notice = MAIL_NOTICES[req.query.done] || null;
+  if (req.query.done === 'error')
+    notice = {
+      ok: false,
+      text: `Сървърът не прие пробата (код ${/^[A-Z][A-Z0-9_]{1,30}$/.test(String(req.query.code)) ? req.query.code : 'EERROR'}). Провери сървъра, порта, логина и ключа.`,
+    };
+  if (notice) notice = { ...notice, text: notice.text.replace('{email}', req.user.email) };
+  res.status(status).render('admin-mail', {
+    title: 'Админ · Поща',
+    adminTab: 'mail',
+    status: st,
+    values,
+    errors: extra.errors ?? {},
+    ports: MAIL_PORTS,
+    notice,
+    needsCode: Boolean(
+      db.prepare('SELECT totp_enabled FROM users WHERE id = ?').get(req.user.id)?.totp_enabled
+    ),
+  });
+}
+
+router.get('/admin/poshta', requireAdmin, (req, res) => renderMail(req, res));
+
+router.post('/admin/poshta', requireAdmin, csrfProtect, mailLimiter, async (req, res) => {
+  const form = readMailForm(req.body);
+  // С паролата на админа (+ код при 2FA): оттук тръгват ВСИЧКИ писма — връзките за нова парола,
+  // потвърждаването на имейла, писмата за сигурност.
+  const me = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+  const errors = form.ok ? {} : { ...form.errors };
+  if (form.ok && !(await publicHost(form.values.host)))
+    errors.host = 'Сървърът не се намира или сочи към вътрешен адрес.';
+  if (!(await verifyPassword(String(req.body.admin_password || ''), me.password_hash)))
+    errors.admin_password = 'Грешна парола.';
+  // Кодът (TOTP или резервен) е еднократен — проверява се само когато всичко друго е наред,
+  // иначе грешка в полето за сървъра би изгорила резервен код без запис.
+  else if (!Object.keys(errors).length && me.totp_enabled && !verifySecondFactor(me, req.body.code))
+    errors.code = 'Грешен или вече използван код.';
+  if (Object.keys(errors).length) {
+    // Ключът не се връща във формата — нито написаният, нито записаният.
+    const v = (k) => String(req.body[k] ?? '').slice(0, 300);
+    return renderMail(req, res, 422, {
+      values: {
+        host: v('host'),
+        port: v('port'),
+        username: v('username'),
+        from_name: v('from_name'),
+        from_email: v('from_email'),
+      },
+      errors,
+    });
+  }
+  try {
+    saveMail(req.user, form.values);
+  } catch (err) {
+    if (!(err instanceof MailConflictError)) throw err;
+    const v = (k) => String(req.body[k] ?? '').slice(0, 300);
+    return renderMail(req, res, 409, {
+      values: {
+        host: v('host'),
+        port: v('port'),
+        username: v('username'),
+        from_name: v('from_name'),
+        from_email: v('from_email'),
+      },
+      errors: { password: err.message },
+    });
+  }
+  res.redirect(303, '/admin/poshta?done=saved');
+});
+
+router.post('/admin/poshta/test', requireAdmin, csrfProtect, mailLimiter, async (req, res) => {
+  const r = await sendTestMail(req.user.email);
+  auditMailTest(req.user, r.result === 'error' ? `error ${r.code}` : r.result);
+  if (r.result === 'sent') return res.redirect(303, '/admin/poshta?done=sent');
+  if (r.result === 'off') return res.redirect(303, '/admin/poshta?done=notsent');
+  res.redirect(303, `/admin/poshta?done=error&code=${encodeURIComponent(r.code)}`);
+});
+
+router.post('/admin/poshta/disable', requireAdmin, csrfProtect, (req, res) => {
+  disableMail(req.user);
+  res.redirect(303, '/admin/poshta?done=off');
 });
 
 export default router;

@@ -1,28 +1,42 @@
 // Имейл (nodemailer) — нулиране на паролата, потвърждаване и смяна на имейла, писма за
 // сигурност. Огледален на medqr/src/mailer.js.
+import { isIP } from 'node:net';
 import nodemailer from 'nodemailer';
+import { mailParams, mailVersion, publicHost } from './mailsettings.js';
 
 const prod = process.env.NODE_ENV === 'production';
-const FROM = process.env.MAIL_FROM || 'Vizitka <no-reply@vizitka-bg.com>';
 
-// В продукция: реален SMTP (доставчик в ЕС). Без конфигурация: JSON транспорт —
-// писмата не се пращат, а се логват (за разработка/тест).
-let transport;
-if (process.env.SMTP_HOST) {
-  transport = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT || 587),
-    secure: process.env.SMTP_SECURE === 'true',
-    auth:
-      process.env.SMTP_USER && process.env.SMTP_PASS
-        ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-        : undefined,
+// Откъде тръгват писмата: настройката от админ панела (/admin/poshta, Brevo), иначе SMTP_* от
+// средата (src/mailsettings.js). Без нито едно — JSON транспорт: писмата не се пращат, а се логват
+// (разработка/тест).
+export function createTransport(p) {
+  // Винаги шифровано (STARTTLS или TLS) — освен локален тестов сървър извън продукция.
+  const local = !prod && (p.host === 'localhost' || isIP(p.host) !== 0);
+  return nodemailer.createTransport({
+    host: p.host,
+    port: p.port,
+    secure: p.secure,
+    requireTLS: !p.secure && !local,
+    ignoreTLS: local,
+    auth: p.user && p.pass ? { user: p.user, pass: p.pass } : undefined,
+    connectionTimeout: 15_000,
+    greetingTimeout: 15_000,
+    socketTimeout: 30_000,
   });
-} else {
-  transport = nodemailer.createTransport({ jsonTransport: true });
 }
 
-// Кутия за разработка/тест: последните писма, без реален SMTP. Празна в продукция.
+const json = nodemailer.createTransport({ jsonTransport: true });
+let current = null; // { key, t } — нов транспорт при всяка нова настройка
+function transportFor(p) {
+  if (!p) return json;
+  const key = `${mailVersion()}|${p.source}`;
+  if (current?.key === key) return current.t;
+  current?.t.close();
+  current = { key, t: createTransport(p) };
+  return current.t;
+}
+
+// Кутия за разработка/тест: последните писма. Празна в продукция.
 export const outbox = [];
 
 export async function sendMail({ to, subject, text, html }) {
@@ -33,7 +47,37 @@ export async function sendMail({ to, subject, text, html }) {
     if (outbox.length > 200) outbox.shift();
     if (process.env.NODE_ENV !== 'test') console.log(`[MAIL → ${to}] ${subject}\n${text}\n`);
   }
-  await transport.sendMail({ from: FROM, to, subject, text, html });
+  const p = mailParams();
+  // В продукция без SMTP писмото изчезва — поне да личи в лога (без адреса на получателя).
+  if (!p && prod) console.error(`[mail] няма включен SMTP — „${subject}“ не е изпратено`);
+  await transportFor(p).sendMail({ from: p?.from || FROM_FALLBACK, to, subject, text, html });
+}
+
+const FROM_FALLBACK = 'Vizitka <no-reply@vizitka-bg.com>';
+
+// Пробното писмо от админ панела: връзка + вход в сървъра (verify), после писмо до самия админ.
+// Връща само кода на грешката (EAUTH, ECONNECTION…) — текстът на сървъра може да цитира адреси.
+const CODE = /^[A-Z][A-Z0-9_]{1,30}$/;
+export async function sendTestMail(to) {
+  const p = mailParams();
+  if (!p) return { result: 'off' };
+  if (!(await publicHost(p.host))) return { result: 'error', code: 'EPRIVATE' };
+  const t = createTransport(p);
+  try {
+    await t.verify();
+    await t.sendMail({
+      from: p.from,
+      to,
+      subject: 'Пробно писмо · Vizitka',
+      text: `Здравей,\n\nтова е пробно писмо от админ панела на Vizitka: пощата работи.\n\n${SIGN}`,
+    });
+    return { result: 'sent' };
+  } catch (err) {
+    const code = err && typeof err.code === 'string' && CODE.test(err.code) ? err.code : 'EERROR';
+    return { result: 'error', code };
+  } finally {
+    t.close();
+  }
 }
 
 export function sendPasswordReset(to, link) {

@@ -1,0 +1,94 @@
+<%- include('partials/head') %>
+<%#
+  Пощата на сайта (src/routes/admin.js, src/mailsettings.js) — моделът на rilievi „Email del portale“:
+  откъде тръгват писмата сега, формата на Brevo SMTP (ключът само се пише), пробно писмо, изключване.
+  Грешките — под полето си.
+%>
+<%
+  const err = (k) => errors[k] || '';
+  const desc = (k, hint) => {
+    const ids = [hint ? 'hint-' + k : '', errors[k] ? 'err-' + k : ''].filter(Boolean).join(' ');
+    return (ids ? ' aria-describedby="' + ids + '"' : '') + (errors[k] ? ' aria-invalid="true"' : '');
+  };
+  const row = status.row;
+  const sourceText = {
+    admin: 'Писмата тръгват от сървъра, настроен тук.',
+    env: 'Писмата тръгват от сървъра в настройките на сървъра (SMTP_*). Ако запишеш сървър тук, сайтът ще ползва него.',
+  }[status.source] || 'Пощата не е включена: писмата не тръгват (на разработка отиват в dev кутията).';
+%>
+<section class="admin">
+  <h1>Поща на сайта</h1>
+  <%- include('partials/admin-nav') %>
+  <p class="muted">Сървърът, през който тръгват всички писма: потвърждаване на имейла, нова парола, известия за сигурност.</p>
+  <% if (notice) { %><p class="alert <%= notice.ok ? 'alert-ok' : 'alert-error' %>" role="<%= notice.ok ? 'status' : 'alert' %>"><%= notice.text %></p><% } %>
+
+  <div class="set-card">
+    <h2><%- icon('mail') %> Изпращане на писмата</h2>
+    <p><strong><%= sourceText %></strong></p>
+    <% if (row && !row.active) { %><p class="muted">Сървърът, настроен тук, е изключен.</p><% } %>
+    <% if (row) { %><p class="muted small">Последна промяна: <%= row.updated_at %> UTC<% if (row.updated_by_email) { %>, <%= row.updated_by_email %><% } %>.</p><% } %>
+    <div class="mail-actions">
+      <form method="post" action="/admin/poshta/test">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button class="btn btn-outline" type="submit"<% if (!status.source) { %> disabled<% } %>>Изпрати пробно писмо</button>
+      </form>
+      <% if (row && row.active) { %>
+      <form method="post" action="/admin/poshta/disable">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button class="btn btn-danger" type="submit">Изключи този сървър</button>
+      </form>
+      <% } %>
+    </div>
+    <p class="muted small">Пробата отива до <%= user.email %>.</p>
+  </div>
+
+  <form class="set-card set-form" method="post" action="/admin/poshta" novalidate>
+    <h2><%- icon('key') %> SMTP сървър (Brevo)</h2>
+    <% if (Object.keys(errors).length) { %><p class="alert alert-error" role="alert">Провери отбелязаните полета.</p><% } %>
+    <p class="muted">В акаунта си в Brevo, в раздел <strong>SMTP &amp; API</strong>, намираш сървъра, порта и логина; там създаваш и SMTP ключа. Подателят трябва да е адрес или домейн, потвърден в Brevo.</p>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <label for="m-host">SMTP сървър</label>
+    <input id="m-host" name="host" type="text" maxlength="253" autocomplete="off" autocapitalize="none" spellcheck="false" value="<%= values.host %>"<%- desc('host') %>>
+    <% if (err('host')) { %><p class="field-error" id="err-host"><%= err('host') %></p><% } %>
+
+    <label for="m-port">Порт</label>
+    <select id="m-port" name="port"<%- desc('port', true) %>>
+      <% for (const p of ports) { %><option value="<%= p %>"<% if (String(p) === String(values.port)) { %> selected<% } %>><%= p %></option>
+      <% } %>
+    </select>
+    <p class="muted small" id="hint-port">2525 минава и когато доставчикът на сървъра блокира 587. С 465 връзката е шифрована от самото начало.</p>
+    <% if (err('port')) { %><p class="field-error" id="err-port"><%= err('port') %></p><% } %>
+
+    <label for="m-user">Логин</label>
+    <input id="m-user" name="username" type="text" maxlength="254" autocomplete="off" autocapitalize="none" spellcheck="false" value="<%= values.username %>"<%- desc('username') %>>
+    <% if (err('username')) { %><p class="field-error" id="err-username"><%= err('username') %></p><% } %>
+
+    <label for="m-pass">SMTP ключ</label>
+    <input id="m-pass" name="password" type="password" maxlength="512" autocomplete="new-password" value=""<%- desc('password', true) %>>
+    <p class="muted small" id="hint-password"><%= row ? 'Има записан ключ: остави полето празно, за да го запазиш, или напиши нов.' : 'Ключът не се показва след записа.' %></p>
+    <% if (err('password')) { %><p class="field-error" id="err-password"><%= err('password') %></p><% } %>
+
+    <label for="m-name">Име на подателя</label>
+    <input id="m-name" name="from_name" type="text" maxlength="80" autocomplete="off" value="<%= values.from_name %>"<%- desc('from_name') %>>
+    <% if (err('from_name')) { %><p class="field-error" id="err-from_name"><%= err('from_name') %></p><% } %>
+
+    <label for="m-email">Имейл на подателя</label>
+    <input id="m-email" name="from_email" type="email" maxlength="254" autocomplete="off" autocapitalize="none" spellcheck="false" value="<%= values.from_email %>"<%- desc('from_email', true) %>>
+    <p class="muted small" id="hint-from_email">Адресът, от който тръгват писмата, например no-reply@vizitka-bg.com.</p>
+    <% if (err('from_email')) { %><p class="field-error" id="err-from_email"><%= err('from_email') %></p><% } %>
+
+    <label for="m-admin">Твоята парола</label>
+    <input id="m-admin" name="admin_password" type="password" maxlength="200" autocomplete="current-password" required<%- desc('admin_password', true) %>>
+    <p class="muted small" id="hint-admin_password">Нужна е за записа: оттук тръгват всички писма на сайта.</p>
+    <% if (err('admin_password')) { %><p class="field-error" id="err-admin_password"><%= err('admin_password') %></p><% } %>
+    <% if (needsCode) { %>
+    <label for="m-code">Код от приложението или резервен код</label>
+    <input id="m-code" name="code" type="text" maxlength="12" autocomplete="one-time-code" required<%- desc('code') %>>
+    <% if (err('code')) { %><p class="field-error" id="err-code"><%= err('code') %></p><% } %>
+    <% } %>
+
+    <button class="btn" type="submit">Запиши и ползвай този сървър</button>
+  </form>
+</section>
+<%- include('partials/foot') %>

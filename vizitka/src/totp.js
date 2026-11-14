@@ -9,6 +9,7 @@
 // PRINT_API_SECRET (задължителен в продукция). Шифротекстът носи етикет кой ключ е
 // ползван, затова по-късното добавяне на ACCOUNT_SECRET НЕ заключва вече включените 2FA.
 import crypto from 'node:crypto';
+import { seal, unseal, sealAvailable } from './seal.js';
 
 const STEP_SECONDS = 30;
 const DIGITS = 6;
@@ -119,40 +120,11 @@ export const normalizeRecoveryCode = (code) =>
 export const hashRecoveryCode = (code) =>
   crypto.createHash('sha256').update(normalizeRecoveryCode(code)).digest('hex');
 
-// ── Шифроване на тайната (AES-256-GCM, ключ през HKDF) ─────────────────────────
-function keyFor(tag) {
-  const source =
-    tag === 'a' ? process.env.ACCOUNT_SECRET : tag === 'p' ? process.env.PRINT_API_SECRET : null;
-  if (!source) return null;
-  return Buffer.from(crypto.hkdfSync('sha256', source, 'vizitka', 'vizitka/totp-at-rest/v1', 32));
-}
-const activeTag = () =>
-  process.env.ACCOUNT_SECRET ? 'a' : process.env.PRINT_API_SECRET ? 'p' : null;
-
-export function encryptSecret(plain) {
-  const tag = activeTag();
-  if (!tag) throw new Error('Няма ключ за шифроване (ACCOUNT_SECRET/PRINT_API_SECRET).');
-  const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv('aes-256-gcm', keyFor(tag), iv);
-  const enc = Buffer.concat([cipher.update(plain, 'utf8'), cipher.final()]);
-  return `v1${tag}:${Buffer.concat([iv, cipher.getAuthTag(), enc]).toString('base64url')}`;
-}
-
+// ── Шифроване на тайната (AES-256-GCM, ключ през HKDF — src/seal.js) ───────────
+// `info` е същият като преди изнасянето в seal.js — вече включените 2FA се четат без промяна.
+const TOTP_INFO = 'vizitka/totp-at-rest/v1';
+export const encryptSecret = (plain) => seal(TOTP_INFO, plain);
 // null при грешен/липсващ ключ — извикващият ОТКАЗВА входа (fail closed), никога
 // не го пропуска. Резервните кодове не зависят от ключа и остават изход.
-export function decryptSecret(stored) {
-  const m = /^v1([ap]):(.+)$/.exec(String(stored || ''));
-  if (!m) return null;
-  const key = keyFor(m[1]);
-  if (!key) return null;
-  try {
-    const raw = Buffer.from(m[2], 'base64url');
-    const decipher = crypto.createDecipheriv('aes-256-gcm', key, raw.subarray(0, 12));
-    decipher.setAuthTag(raw.subarray(12, 28));
-    return Buffer.concat([decipher.update(raw.subarray(28)), decipher.final()]).toString('utf8');
-  } catch {
-    return null;
-  }
-}
-
-export const totpAvailable = () => Boolean(activeTag());
+export const decryptSecret = (stored) => unseal(TOTP_INFO, stored);
+export const totpAvailable = sealAvailable;

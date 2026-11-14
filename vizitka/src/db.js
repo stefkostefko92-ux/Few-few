@@ -224,6 +224,22 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_email_tokens_user ON email_tokens(user_id);
 
+  -- Пощата на сайта, настроена от админ панела (/admin/poshta — Brevo SMTP, моделът на rilievi).
+  -- Един ред; ключът е ШИФРОВАН (src/seal.js) и никога не се показва. Изключена (active = 0)
+  -- остава записана, а писмата се връщат към SMTP_* от средата.
+  CREATE TABLE IF NOT EXISTS mail_settings (
+    id TEXT PRIMARY KEY CHECK (id = 'mail'),
+    host TEXT NOT NULL CHECK (length(trim(host)) > 0),
+    port INTEGER NOT NULL CHECK (port IN (465, 587, 2525)),
+    username TEXT NOT NULL CHECK (length(trim(username)) > 0),
+    pass_enc TEXT NOT NULL CHECK (length(pass_enc) > 0),
+    from_name TEXT NOT NULL CHECK (length(trim(from_name)) > 0),
+    from_email TEXT NOT NULL CHECK (length(trim(from_email)) > 0),
+    active INTEGER NOT NULL DEFAULT 1,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL
+  );
+
   -- Дневна статистика (без лични данни — само брой на ден). Стари редове се чистят.
   CREATE TABLE IF NOT EXISTS profile_views_daily (
     profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
