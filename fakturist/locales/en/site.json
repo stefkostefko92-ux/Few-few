@@ -8,7 +8,8 @@
     "home": "Home",
     "pricing": "Pricing",
     "accountants": "For accountants",
-    "einvoicing2028": "E-invoicing 2028"
+    "einvoicing2028": "E-invoicing 2028",
+    "news": "What’s new"
   },
   "cta": {
     "login": "Sign in",
@@ -452,5 +453,17 @@
   },
   "menu": {
     "label": "Menu"
+  },
+  "news": {
+    "meta": {
+      "title": "What’s new in Fakturist",
+      "description": "Every Fakturist update by day: new features for invoices, EN 16931 e-invoices, VAT and accounting firms — only what you see and use.",
+      "keywords": "Carbon Stealth, Fakturist updates, what’s new, invoicing software release notes, EN 16931 e-invoices, sales VAT journal"
+    },
+    "title": "What’s new in Fakturist",
+    "lead": "Every update that reaches you — what you can do and how. The newest is at the top.",
+    "version": "Version {version}",
+    "updated": "Last updated",
+    "feed": "Subscribe (RSS)"
   }
 }

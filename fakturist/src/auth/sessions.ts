@@ -132,6 +132,7 @@ export function attachSession() {
           mustChangePassword: user.mustChangePassword,
           totpEnabled: user.totpEnabledAt !== null,
           emailVerified: user.emailVerifiedAt !== null,
+          newsReadAt: user.newsReadAt,
           memberships: user.memberships.map((m) => ({
             organizationId: m.organizationId,
             role: m.role as MemberRole,

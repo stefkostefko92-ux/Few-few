@@ -141,6 +141,8 @@ model User {
   lockouts           Int          @default(0)
   lastLoginAt        DateTime?
   disabledAt         DateTime?
+  /// Последното „Разбрах“ в прозореца „Какво ново“ (src/news/) — новините, излезли след него, са непрочетени.
+  newsReadAt         DateTime     @default(now())
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
@@ -1189,4 +1191,11 @@ model Announcement {
 
   @@index([createdAt])
   @@index([createdById])
+}
+
+/// Кога е излязла всяка новина от `src/news/entries.ts` на този сървър (src/news/registry.ts): на нова
+/// инсталация — денят ѝ, иначе първото пускане с нея (обновяването). Без лични данни.
+model NewsEntry {
+  id          String   @id
+  publishedAt DateTime
 }

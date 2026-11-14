@@ -6,6 +6,7 @@
     <a href="<%= legalUrl('privacy') %>"><%= t('legal.privacy.short') %></a>
     <a href="<%= legalUrl('dpa') %>"><%= t('legal.dpa.short') %></a>
     <a href="/prilozhenie<%= lang === 'en' && !currentUser ? '?lang=en' : '' %>" data-install-link><%= t('install.nav') %></a>
+    <a href="<%= lang === 'en' ? '/en/whats-new' : '/kakvo-novo' %>"><%= t('news.footer', { version: softwareVersion }) %></a>
   </nav>
   <span>Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></span>
 </footer>

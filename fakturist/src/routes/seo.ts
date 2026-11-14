@@ -9,6 +9,7 @@ import { pageUrl, SITE_PAGES } from '../seo/pages.js';
 import { LEGAL_DOCUMENTS, LEGAL_DOCUMENT_IDS } from '../legal/documents.js';
 import { ROOT } from '../paths.js';
 import { DAY } from '../time.js';
+import { LAST_UPDATE } from '../news/entries.js';
 
 function xmlEscape(value: string): string {
   return value
@@ -33,7 +34,7 @@ export function sitemapXml(base: string): string {
         )
         .join('');
       urls.push(
-        `<url><loc>${xmlEscape(pageUrl(base, page.id, locale))}</loc><lastmod>${CONTENT_UPDATED}</lastmod>` +
+        `<url><loc>${xmlEscape(pageUrl(base, page.id, locale))}</loc><lastmod>${page.id === 'news' ? LAST_UPDATE : CONTENT_UPDATED}</lastmod>` +
           `<changefreq>${page.changefreq}</changefreq><priority>${page.priority.toFixed(1)}</priority>${links}</url>`,
       );
     }

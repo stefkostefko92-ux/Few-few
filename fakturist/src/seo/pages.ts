@@ -24,6 +24,12 @@ export const SITE_PAGES = [
     priority: 0.8,
     changefreq: 'weekly',
   },
+  {
+    id: 'news',
+    paths: { bg: '/kakvo-novo', en: '/en/whats-new' },
+    priority: 0.6,
+    changefreq: 'weekly',
+  },
 ] as const satisfies ReadonlyArray<{
   id: string;
   paths: Record<Locale, string>;

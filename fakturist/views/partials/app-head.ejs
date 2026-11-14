@@ -10,7 +10,8 @@
 <link rel="stylesheet" href="/fonts/fonts.css?v=<%= v %>">
 <link rel="stylesheet" href="/css/app.css?v=<%= v %>">
 <script src="/js/app.js?v=<%= v %>" defer></script>
-<% for (const script of (locals.scripts || [])) { %><script src="/js/<%= script %>.js?v=<%= v %>" defer></script>
+<% if (locals.newsPopup) { %><script src="/js/news.js?v=<%= v %>" defer></script>
+<% } %><% for (const script of (locals.scripts || [])) { %><script src="/js/<%= script %>.js?v=<%= v %>" defer></script>
 <% } %></head>
 <body class="app">
 <a class="skip" href="#main"><%= t('app.nav.skip') %></a>
@@ -36,5 +37,6 @@
 <div class="verify-bar" role="status"><p><%= t('app.termination.bar', { date: new Intl.DateTimeFormat(lang === 'bg' ? 'bg-BG' : 'en-GB', { dateStyle: 'long', timeZone: 'Europe/Sofia' }).format(orgNav.org.purgeAfter) }) %> <a href="/app/o/<%= orgNav.org.id %>/prekratyavane"><%= t('app.termination.details') %></a></p></div>
 <% } %>
 <main id="main" class="wrap">
+<% if (locals.newsPopup) { %><%- include('news-popup') %><% } %>
 <% if (locals.orgNav) { %><%- include('../app/_org-nav') %>
 <% } %>

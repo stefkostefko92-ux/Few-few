@@ -3,6 +3,7 @@ import { COMPANY, CONTENT_UPDATED } from '../company.js';
 import { hasKey, type Locale, type Translate } from '../i18n.js';
 import { pageUrl, type SitePageId } from './pages.js';
 import type { PublicPlan } from '../billing/public-plans.js';
+import { LAST_UPDATE } from '../news/entries.js';
 
 type Json = Record<string, unknown>;
 
@@ -130,7 +131,7 @@ export function structuredData(input: {
     name: t(`site.${page}.meta.title`),
     description: t(`site.${page}.meta.description`),
     inLanguage: locale,
-    dateModified: CONTENT_UPDATED,
+    dateModified: page === 'news' ? LAST_UPDATE : CONTENT_UPDATED,
     ...(page === 'einvoicing2028'
       ? {
           headline: t('site.einvoicing2028.meta.title'),

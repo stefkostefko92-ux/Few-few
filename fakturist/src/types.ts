@@ -10,6 +10,8 @@ export interface SessionUser {
   totpEnabled: boolean;
   /** Имейлът е потвърден (връзка от писмо) — иначе приложението показва лента „Потвърдете имейла“. */
   emailVerified: boolean;
+  /** Последното „Разбрах“ в прозореца „Какво ново“ (src/news/) — новините след него са непрочетени. */
+  newsReadAt: Date;
   memberships: Array<{ organizationId: string; role: MemberRole }>;
 }
 

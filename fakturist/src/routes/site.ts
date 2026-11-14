@@ -9,6 +9,9 @@ import { demoChain } from '../site-demo-chain.js';
 import { publicPlans } from '../billing/public-plans.js';
 import { pageUrl, SITE_PAGES, type SitePageId } from '../seo/pages.js';
 import { faqItems, structuredData } from '../seo/structured-data.js';
+import { byDay, LAST_UPDATE, NEWS } from '../news/entries.js';
+import { NEWS_FEED_PATHS } from '../news/feed.js';
+import { SOFTWARE_VERSION } from '../version.js';
 
 /** Сума в евроцентове за показване: „9,00 €“ / „€9.00“. */
 export function formatEuro(cents: number, locale: Locale): string {
@@ -47,6 +50,11 @@ async function renderSitePage(
   ) as Record<SitePageId, string>;
   res.locals.demoChain = demoChain();
   res.locals.registrationOpen = config().REGISTRATION_OPEN;
+  // „Какво ново“ (src/news/): дните с новините, датата на последната, емисията, версията.
+  res.locals.newsDays = byDay(NEWS);
+  res.locals.newsUpdated = LAST_UPDATE;
+  res.locals.newsFeed = NEWS_FEED_PATHS[locale];
+  res.locals.softwareVersion = SOFTWARE_VERSION;
   res.locals.seo = {
     title: t(`site.${id}.meta.title`),
     description: t(`site.${id}.meta.description`),

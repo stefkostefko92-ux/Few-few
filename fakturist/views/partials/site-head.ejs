@@ -21,6 +21,7 @@
 <meta name="keywords" content="<%= seo.keywords.join(', ') %>">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="<%= seo.canonical %>">
+<% if (locals.page === 'news') { %><link rel="alternate" type="application/rss+xml" title="<%= t('site.news.meta.title') %>" href="<%= newsFeed %>"><% } %>
 <link rel="alternate" hreflang="bg" href="<%= seo.alternates.bg %>">
 <link rel="alternate" hreflang="en" href="<%= seo.alternates.en %>">
 <link rel="alternate" hreflang="x-default" href="<%= seo.xDefault %>">

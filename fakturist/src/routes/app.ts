@@ -39,6 +39,8 @@ import { appIssueRouter } from './app-issue.js';
 import { appExportRouter } from './app-export.js';
 import { appTerminationRouter, terminatedErrorPage } from './app-termination.js';
 import { orgNavLocals } from './app-org-nav.js';
+import { newsLocals } from '../news/popup.js';
+import { newsReadRouter } from './news.js';
 import { appJournalRouter } from './app-journal.js';
 
 /** Документите, издадени от фирмата през текущия месец — за мекия лимит на безплатния план. */
@@ -64,6 +66,9 @@ async function monthUsage(
 export function appRouter(): Router {
   const router = Router();
   router.use('/app', requireUser());
+  // „Какво ново“ след обновяване (src/news/popup.ts) — на всяка цяла страница на приложението.
+  router.use('/app', newsLocals);
+  router.use(newsReadRouter());
   router.use('/app/o/:orgId', orgNavLocals());
   router.use(appSecurityRouter());
   router.use(appCatalogRouter());

@@ -19,6 +19,7 @@ import { siteRouter } from './routes/site.js';
 import { pwaRouter } from './routes/pwa.js';
 import { legalRouter } from './routes/legal.js';
 import { mountApp } from './routes/mount.js';
+import { newsFeedRouter } from './routes/news.js';
 
 /** Грешките на body-parser носят статус; останалите (и не-Error) са 500. */
 function errorStatus(error: unknown): number {
@@ -123,6 +124,7 @@ export function createServer(): Express {
   app.use(pwaRouter());
   app.use(seoRouter());
   app.use(siteRouter());
+  app.use(newsFeedRouter());
   app.use(legalRouter());
   mountApp(app);
 

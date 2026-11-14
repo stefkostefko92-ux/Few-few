@@ -1646,3 +1646,58 @@ figcaption {
     color: #000;
   }
 }
+
+/* „Какво ново“ (views/site/news.ejs): по дни, всяка новина с котва. */
+.news-days {
+  display: grid;
+  gap: 2.5rem;
+  max-width: 48rem;
+  padding-block: 2rem 3rem;
+}
+.news-day h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+  color: var(--ink-2);
+}
+.news-entries {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.news-entry {
+  padding: 1.1rem 1.25rem;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--brand);
+  border-radius: 3px;
+  scroll-margin-top: 6rem;
+}
+.news-entry:target {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+.news-entry h3 {
+  margin: 0.15rem 0 0.4rem;
+  font-size: 1.1rem;
+  line-height: 1.35;
+}
+.news-entry h3 a {
+  color: inherit;
+  text-decoration: none;
+}
+.news-entry h3 a:hover,
+.news-entry h3 a:focus-visible {
+  text-decoration: underline;
+}
+.news-entry p {
+  margin: 0;
+}
+.news-area {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}

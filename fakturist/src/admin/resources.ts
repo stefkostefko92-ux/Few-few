@@ -260,6 +260,16 @@ export const ADMIN_RESOURCES: AdminResource[] = [
     orderBy: { acceptedAt: 'desc' },
   },
   {
+    model: 'NewsEntry',
+    slug: 'news-entries',
+    group: 'platform',
+    label: { bg: 'Новини („Какво ново“)', en: 'Updates (“What’s new”)' },
+    columns: ['id', 'publishedAt'],
+    search: ['id'],
+    hidden: [],
+    orderBy: { publishedAt: 'desc' },
+  },
+  {
     model: 'Announcement',
     slug: 'announcements',
     group: 'accounts',

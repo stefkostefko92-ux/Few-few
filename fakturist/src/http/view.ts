@@ -4,6 +4,7 @@ import { COMPANY } from '../company.js';
 import { hasKey, translator, type Locale } from '../i18n.js';
 import { setting } from '../admin/settings.js';
 import { icon } from './icons.js';
+import { SOFTWARE_VERSION } from '../version.js';
 
 /** Езикът на приложението: избраният от човека, иначе от адреса (`?lang=en`), иначе български. */
 export function appLocale(req: Request): Locale {
@@ -22,6 +23,7 @@ export function appLocals() {
       res.locals.tOr = (key: string, fallback: string): string =>
         hasKey(locale, key) ? translator(locale)(key) : fallback;
       res.locals.icon = icon;
+      res.locals.softwareVersion = SOFTWARE_VERSION;
       // Сума за показ във всеки изглед — точна (низ, не float); маршрутът може да подаде своя.
       res.locals.money = (cents: bigint | number, currency: string): string =>
         money(cents, currency, locale);
