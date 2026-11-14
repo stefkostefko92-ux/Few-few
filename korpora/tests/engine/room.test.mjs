@@ -120,3 +120,44 @@ test('a saved room within limits: known types, its walls, whole millimetres, at 
   // another type does not carry the pieces
   assert.equal(normalizeSpec({ type: 'wardrobe', items: [] }).items, undefined);
 });
+
+test('a wall with nothing on it: the plan draws it, no view of it, no NaN on the sheet', () => {
+  for (const shape of ['left', 'right', 'u']) {
+    const m = buildModel({ type: 'room', shape });
+    const svg = drawingAssembly(m, meta);
+    assertWellFormed(svg, shape);
+    assert.ok(!/NaN|Infinity/.test(svg), `${shape}: NaN or Infinity on the sheet`);
+  }
+});
+
+test('an empty room is not a room: the engine takes the default pieces, the server refuses the empty list', () => {
+  assert.deepEqual(normalizeSpec({ type: 'room', items: [] }).items.map((it) => it.type), ['wardrobe', 'chest']);
+  assert.deepEqual(normalizeItems([{ type: 'spaceship', wall: 'A', x: 0, params: {} }], 'line').map((it) => it.type), ['wardrobe', 'chest']);
+});
+
+test('the plan of a room gives the room, not the furniture in it', () => {
+  const m = buildModel({ type: 'room', shape: 'left', roomWidth: 4100, roomDepth: 3300, items: [{ type: 'chest', wall: 'A', x: 0, params: {} }, { type: 'chest', wall: 'B', x: 900, params: {} }] });
+  const svg = drawingAssembly(m, meta);
+  assert.ok(/>4100</.test(svg), 'the back wall: the room’s width');
+  assert.ok(/>3300</.test(svg), 'the side wall: the room’s depth');
+});
+
+test('two basins of two widths are two lines to buy', () => {
+  const m = buildModel({ type: 'room', items: [{ type: 'vanity', wall: 'A', x: 0, params: { width: 600 } }, { type: 'vanity', wall: 'A', x: 700, params: { width: 1000 } }] });
+  const basins = m.hardware.filter((h) => h.key.startsWith('basin'));
+  assert.equal(basins.length, 2, JSON.stringify(basins));
+  assert.ok(basins.every((h) => h.qty === 1));
+});
+
+test('a kitchen cabinet in a room is loaded as in a kitchen, and every part’s warning names its piece', () => {
+  const sag = (m) => m.warnings.filter((w) => /kg\/dm²/.test(w.text));
+  const alone = sag(buildModel({ type: 'base', width: 1200 }));
+  assert.ok(alone.length && alone.every((w) => /1,5 kg\/dm²/.test(w.text)), JSON.stringify(alone));
+  const room = sag(buildModel({ type: 'room', items: [{ type: 'base', wall: 'A', x: 0, params: { width: 1200 } }, { type: 'base', wall: 'A', x: 1300, params: { width: 1200 } }] }));
+  assert.ok(room.length && room.every((w) => /1,5 kg\/dm²/.test(w.text)), JSON.stringify(room));
+  // the two cabinets' shelves are two warnings, each with its own piece in front
+  assert.ok(room.some((w) => w.text.startsWith('1. ')) && room.some((w) => w.text.startsWith('2. ')), JSON.stringify(room));
+  // a wardrobe in the same room keeps the room's own load
+  const ward = buildModel({ type: 'room', items: [{ type: 'base', wall: 'A', x: 0, params: { width: 1200 } }, { type: 'bookcase', wall: 'A', x: 1300, params: {} }] });
+  assert.ok(!sag(ward).some((w) => w.text.startsWith('2. ') && /1,5 kg\/dm²/.test(w.text)));
+});

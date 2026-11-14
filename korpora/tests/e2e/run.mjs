@@ -230,6 +230,22 @@ async function signIn(session) {
   await page.locator('#room-list .room-item').first().waitFor();
   await page.click('#room-add');
   await page.locator('#room-list .room-item').nth(2).waitFor();
+  // one choice of a piece's type is one step back, and the keyboard stays on the field the list draws again
+  await page.focus('#room-type-2');
+  await page.selectOption('#room-type-2', 'bookcase');
+  await page.waitForFunction(() =>
+    document.getElementById('room-list')?.dataset.sig?.includes('bookcase@'),
+  );
+  const kept = await page.evaluate(() => document.activeElement?.id);
+  if (kept !== 'room-type-2')
+    throw new Error(`the focus went to „${kept}“ when the list was drawn again`);
+  await page.evaluate(() => /** @type {HTMLElement} */ (document.activeElement).blur());
+  await page.keyboard.press('Control+z');
+  await page.waitForFunction(
+    () =>
+      /** @type {HTMLSelectElement} */ (document.getElementById('room-type-2'))?.value ===
+      'nightstand',
+  );
   await page.locator('#save-state[data-state="dirty"]').waitFor();
   await page.click('#save');
   await page.locator('#save-state[data-state="saved"]').waitFor();

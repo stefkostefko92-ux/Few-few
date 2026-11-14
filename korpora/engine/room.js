@@ -22,18 +22,28 @@ export const DEFAULT_ITEMS = [
 
 // The pieces of a saved room as the engine builds them: known types only, at most ROOM_LIMITS.items, on a wall the
 // shape has (else the back wall), at a whole millimetre from the corner, each with its type's normalized parameters.
+// A room with no piece left is a new room (the editor keeps the last piece, the server refuses an empty list).
 export function normalizeItems(input, shape) {
   const walls = roomWalls(shape);
-  const list = Array.isArray(input) ? input : DEFAULT_ITEMS;
-  return list
+  const known = (Array.isArray(input) ? input : [])
     .filter((it) => it && typeof it === 'object' && ROOM_TYPES.includes(it.type))
-    .slice(0, ROOM_LIMITS.items)
-    .map((it) => ({
+    .slice(0, ROOM_LIMITS.items);
+  return (known.length ? known : DEFAULT_ITEMS).map((it) => ({
       type: it.type,
       wall: walls.includes(it.wall) ? it.wall : 'A',
       x: Math.round(clamp(Number(it.x) || 0, ...ROOM_LIMITS.x)),
       params: normalizeParams(it.type, it.params && typeof it.params === 'object' ? it.params : {}),
     }));
+}
+
+// The piece of a room a part belongs to (its module is "n" or "n·…", buildRoom); none outside a room.
+export const roomItemOf = (spec, p) => (spec.type === 'room' ? spec.items[Number.parseInt(p.module, 10) - 1] : undefined);
+
+// A part's name in a warning: in a room its piece of furniture goes in front (two pieces have the same "Рафт 1").
+export function partName(spec, p, t) {
+  const it = roomItemOf(spec, p);
+  if (!it) return p.name;
+  return t('room.part', { item: t('room.item', { n: Number.parseInt(p.module, 10), type: typeText(it.type, t).label }), part: p.name });
 }
 
 // The width of a piece along its wall: its own width parameter (every room type has one).

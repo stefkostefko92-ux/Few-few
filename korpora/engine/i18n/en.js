@@ -518,6 +518,7 @@ export default {
   "p.mirror.shelves": "Shelves",
   "w.siphon": "The back has the place for the siphon marked ({w} mm wide) — it is cut on site to the siphon that comes.",
   "room.item": "{n}. {type}",
+  "room.part": "{item} — {part}",
   "w.roomOutside": "{item}: reaches {end} mm along wall {wall}, which is {len} mm — move it or make the wall longer.",
   "w.roomOverlap": "{a} and {b} take up the same place — move one of them along its wall.",
   "type.room": "Room",

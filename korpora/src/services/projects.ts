@@ -81,6 +81,7 @@ const itemsSchema = z
       })
       .strict(),
   )
+  .min(1)
   .max(8);
 
 const specSchema = z

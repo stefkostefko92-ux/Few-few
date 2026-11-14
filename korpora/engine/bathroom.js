@@ -38,7 +38,7 @@ export function buildVanity(ctx, s, common) {
       mark(back, [r1(xm + dx), c + y, z], 'siphon', { label: ctx.t('lbl.siphon') });
     }
   }
-  ctx.hw('basin', { name: ctx.t('hw.basin', { W: s.width, D: s.depth }), qty: 1, unit: ctx.t('u.pcs'), group: ctx.t('g.purchased') });
+  ctx.hw(`basin:${s.width}x${s.depth}`, { name: ctx.t('hw.basin', { W: s.width, D: s.depth }), qty: 1, unit: ctx.t('u.pcs'), group: ctx.t('g.purchased') });
   ctx.warn('info', ctx.t('w.bathroomBoard'));
   ctx.warn('info', ctx.t('w.siphon', { w: SIPHON.w }));
   return out;

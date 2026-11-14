@@ -518,6 +518,7 @@ export default {
   "p.mirror.shelves": "Ripiani",
   "w.siphon": "Lo schienale ha segnato il posto del sifone (largo {w} mm): si taglia in opera sul sifone che arriva.",
   "room.item": "{n}. {type}",
+  "room.part": "{item} — {part}",
   "w.roomOutside": "{item}: arriva a {end} mm lungo la parete {wall}, che è di {len} mm — spostatelo o allungate la parete.",
   "w.roomOverlap": "{a} e {b} occupano lo stesso posto — spostatene uno lungo la sua parete.",
   "type.room": "Stanza",

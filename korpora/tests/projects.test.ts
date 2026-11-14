@@ -43,6 +43,7 @@ test('a room takes its pieces in exactly their shape: flat parameters, at most e
   );
   assert.equal(normalizedSpec({ type: 'room', items: [{ ...piece, wall: 'D' }] }), null);
   assert.equal(normalizedSpec({ type: 'room', items: [{ ...piece, extra: true }] }), null);
+  assert.equal(normalizedSpec({ type: 'room', items: [] }), null, 'a room without a piece');
 });
 
 test('a stored spec that is not an object reads as an empty spec', () => {

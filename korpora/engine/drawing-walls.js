@@ -32,15 +32,22 @@ const roomShape = (shape, t) => typeText('room', t).params.find((p) => p.key ===
 export function drawingWalls(model, meta) {
   const { spec, runs } = model;
   const t = translator(model.lang);
-  const walls = runs.map((run) => {
-    const parts = model.parts.filter((p) => p.run === run.id);
-    const symbols = model.symbols.filter((s) => s.run === run.id);
-    return { run, parts, symbols, ext: extents(parts, symbols) };
-  });
+  // a view of every wall with something on it (a room's wall may stay empty: the plan still draws it)
+  const walls = runs
+    .map((run) => {
+      const parts = model.parts.filter((p) => p.run === run.id);
+      const symbols = model.symbols.filter((s) => s.run === run.id);
+      return { run, parts, symbols, ext: extents(parts, symbols) };
+    })
+    .filter((w) => w.parts.length);
   const world = worldParts(model);
   const tops = model.symbols.filter((s) => s.type === 'worktop').map((s) => ({ run: s.run, box: worldBox({ min: [s.x0, s.y, s.z0], max: [s.x1, s.y + s.t, s.z1] }, runOf(model, s.run)) }));
   const all = [...world, ...tops];
-  const room = { W: Math.max(...all.map((p) => p.box.max[0])), D: Math.max(...all.map((p) => p.box.max[2])) };
+  // a room has its own size; a kitchen's room is as large as the kitchen
+  const room =
+    spec.type === 'room'
+      ? { W: spec.roomWidth, D: spec.roomDepth }
+      : { W: Math.max(...all.map((p) => p.box.max[0])), D: Math.max(...all.map((p) => p.box.max[2])) };
   const H = Math.max(...walls.map((w) => w.ext.y1));
   const [back, ...sides] = walls;
   const width = (w) => w.ext.x1 - w.ext.x0;
