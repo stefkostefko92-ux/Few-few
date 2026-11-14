@@ -59,7 +59,8 @@ export async function POST(req: Request) {
     if (taken) throw jsonError(409, `Код ${data.operatorCode} вече е зает — кодът на оператора е уникален.`);
 
     const user = await prisma.$transaction(async (tx) => {
-      const u = await tx.user.create({ data: { ...data, pinHash: await bcrypt.hash(pin, 10) } });
+      // ПИН-ът е зададен от администратора → операторът го сменя при първия си вход (КП-П.2)
+      const u = await tx.user.create({ data: { ...data, pinHash: await bcrypt.hash(pin, 10), mustChangePin: true } });
       await tx.userRoleGrant.create({
         data: { userId: u.id, role: data.role, readOnly: data.readOnly, grantedById: s.userId },
       });
@@ -95,6 +96,10 @@ export async function PATCH(req: Request) {
     if (id === s.userId && (data.active === false || data.readOnly === true || (data.role && data.role !== "ADMIN"))) {
       throw jsonError(409, "Не можете да отнемете собствените си администраторски права.");
     }
+    // собственият ПИН — само през смяната със стария ПИН и политиката (КП-П.3)
+    if (pin && id === s.userId) {
+      throw jsonError(409, "Собствения си ПИН сменете от „Смяна на ПИН“ — със стария ПИН.");
+    }
 
     const now = new Date();
     const roleChanged =
@@ -124,7 +129,8 @@ export async function PATCH(req: Request) {
           ...data,
           ...(deactivated && { deactivatedAt: now }),
           ...(reactivated && { deactivatedAt: null }),
-          ...(pin ? { pinHash: await bcrypt.hash(pin, 10) } : {}),
+          // чужд ПИН, зададен от администратора, се сменя от оператора при следващия вход
+          ...(pin ? { pinHash: await bcrypt.hash(pin, 10), mustChangePin: true } : {}),
         },
         select: SELECT,
       });

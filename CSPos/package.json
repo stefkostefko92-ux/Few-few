@@ -35,7 +35,10 @@
     "prisma:migrate": "prisma migrate deploy",
     "prisma:migrate:dev": "prisma migrate dev",
     "db:push": "prisma db push",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:seed:template": "tsx prisma/seed-template.ts",
+    "db:doc": "node scripts/db-doc.mjs",
+    "db:schema-sql": "node scripts/gen-schema-sql.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

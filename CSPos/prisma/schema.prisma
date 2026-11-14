@@ -16,6 +16,7 @@ datasource db {
 
 // ─── Потребители и сесии ────────────────────────────────────────────────────
 
+// Оператор на касата: код за ФУ и УНП, ПИН (bcrypt), роля и одиторски профил (Прил. № 29, т. 6, т. 7, т. 19).
 model User {
   id            String    @id @default(cuid())
   name          String
@@ -29,6 +30,9 @@ model User {
   // MANAGER, или не вижда дневника. Флагът се наслагва ВЪРХУ ролята: MANAGER+readOnly вижда
   // каквото MANAGER вижда, но всеки пишещ маршрут го отказва.
   readOnly      Boolean   @default(false)
+  // Първи вход (шаблонната база) или ПИН, зададен от администратор: операторът вижда само
+  // екрана за смяна на ПИН, а API-то отказва всичко друго, докато не го смени (КП-П.2).
+  mustChangePin Boolean   @default(false)
   active        Boolean   @default(true)
   deactivatedAt DateTime? // т. 18.9: дата на деактивиране
   createdAt     DateTime  @default(now())
@@ -64,6 +68,7 @@ model UserRoleGrant {
 
 // ─── Номенклатура ───────────────────────────────────────────────────────────
 
+// Категория на стоките — за подредба в каталога на касата и за промоции по категория.
 model Category {
   id         String      @id @default(cuid())
   name       String      @unique
@@ -109,6 +114,7 @@ model Product {
   @@index([name])
 }
 
+// Баркод на стока (EAN-8/13 и др.); една стока може да има няколко.
 model Barcode {
   id        String  @id @default(cuid())
   code      String  @unique // EAN-13/EAN-8/произволен
@@ -159,6 +165,7 @@ model Promotion {
 
 // ─── Клиентски карти (лоялност) ────────────────────────────────────────────
 
+// Клиент с клиентска карта: отстъпка, вересия (кредитен лимит) и салдо.
 model Customer {
   id               String    @id @default(cuid())
   cardNumber       String    @unique
@@ -180,6 +187,7 @@ model Customer {
 
 // ─── Смени и каса ───────────────────────────────────────────────────────────
 
+// Смяна на оператора: начална и крайна наличност в брой, разлика при закриване.
 model Shift {
   id                String    @id @default(cuid())
   userId            String
@@ -199,6 +207,7 @@ model Shift {
   @@index([openedAt])
 }
 
+// Служебно въведени и изведени суми в смяната (с бон от ФУ).
 model CashMovement {
   id          String   @id @default(cuid())
   shiftId     String
@@ -216,6 +225,7 @@ model CashMovement {
 
 // ─── Продажби ───────────────────────────────────────────────────────────────
 
+// Приключена продажба или сторно документ: УНП, суми, плащане, номер на фискалния бон и ИН на ФУ (Прил. № 29, т. 2, т. 9, т. 10).
 model Sale {
   id     String @id @default(cuid())
   // УНП — уникален номер на продажбата: <инд. № ФУ>-<код оператор>-<7-цифрен пореден>
@@ -296,6 +306,7 @@ model Invoice {
   @@index([createdAt])
 }
 
+// Ред от приключена продажба със снимка на името, цената и ДДС групата към момента на продажбата.
 model SaleItem {
   id     String @id @default(cuid())
   saleId String
@@ -323,6 +334,7 @@ model SaleItem {
 
 // ─── Склад ──────────────────────────────────────────────────────────────────
 
+// Доставчик на стоки (ЕИК, ДДС номер, контакти).
 model Supplier {
   id            String     @id @default(cuid())
   name          String
@@ -338,6 +350,7 @@ model Supplier {
   deliveries    Delivery[]
 }
 
+// Доставка по документ от доставчик — увеличава наличностите.
 model Delivery {
   id             String         @id @default(cuid())
   supplierId     String
@@ -358,6 +371,7 @@ model Delivery {
   @@index([createdAt])
 }
 
+// Ред от доставка: количество, доставна цена, партида и срок на годност.
 model DeliveryItem {
   id            String    @id @default(cuid())
   deliveryId    String
@@ -374,6 +388,7 @@ model DeliveryItem {
   @@index([deliveryId])
 }
 
+// Ревизия (инвентаризация) на наличностите.
 model Stocktake {
   id          String          @id @default(cuid())
   userId      String
@@ -384,6 +399,7 @@ model Stocktake {
   items       StocktakeItem[]
 }
 
+// Ред от ревизия: очаквано и преброено количество.
 model StocktakeItem {
   id            String    @id @default(cuid())
   stocktakeId   String
@@ -396,6 +412,7 @@ model StocktakeItem {
   @@index([stocktakeId])
 }
 
+// Брак или липса — намалява наличностите с причина.
 model WriteOff {
   id        String         @id @default(cuid())
   userId    String
@@ -405,6 +422,7 @@ model WriteOff {
   items     WriteOffItem[]
 }
 
+// Ред от брак: количество и стойност.
 model WriteOffItem {
   id         String   @id @default(cuid())
   writeOffId String
@@ -499,6 +517,7 @@ model SaleDraft {
   @@index([userId, state])
 }
 
+// Ред от открита продажба — изчислява се отново на сървъра при всяка промяна.
 model SaleDraftLine {
   id               String    @id @default(cuid())
   draftId          String

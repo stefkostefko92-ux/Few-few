@@ -4,6 +4,7 @@
 // Командите тук следват ZFPLab REST конвенцията: /command?name=...&params...
 
 import { VAT_GROUPS } from "../constants";
+import { findDeviceSerial, parseDeviceDateTime } from "./device-time";
 import type {
   FiscalDriver,
   FiscalReceiptData,
@@ -35,7 +36,7 @@ export class TremolFiscalDriver implements FiscalDriver {
 
   constructor(private cfg: TremolConfig) {}
 
-  private async cmd(name: string, params: Record<string, string> = {}): Promise<FiscalResult> {
+  private async cmd(name: string, params: Record<string, string> = {}): Promise<FiscalResult & { text?: string }> {
     const qs = new URLSearchParams(params).toString();
     const url = `http://${this.cfg.host}:${this.cfg.port}/${name}${qs ? `?${qs}` : ""}`;
     try {
@@ -47,7 +48,7 @@ export class TremolFiscalDriver implements FiscalDriver {
       if (/error/i.test(text) && !/"error"\s*:\s*(null|"")/i.test(text)) {
         return { ok: false, error: `ZFPLab: ${text.slice(0, 200)}` };
       }
-      return { ok: true };
+      return { ok: true, text };
     } catch (e) {
       return {
         ok: false,
@@ -56,12 +57,26 @@ export class TremolFiscalDriver implements FiscalDriver {
     }
   }
 
+  /**
+   * т. 8 и т. 5: ИН на ФУ (ReadSerialAndFiscalNums) и часът му (ReadDateTime). Ако някое от
+   * двете липсва, проверката на връзката не минава — без ИН няма УНП, без час няма сверка.
+   */
   async status(): Promise<FiscalStatus> {
     const r = await this.cmd("ReadStatus");
+    if (!r.ok) return { ok: false, driver: this.id, detail: r.error ?? "Няма връзка." };
+    const [nums, time] = [await this.cmd("ReadSerialAndFiscalNums"), await this.cmd("ReadDateTime")];
+    const deviceSerial = nums.ok ? findDeviceSerial(nums.text ?? "") ?? undefined : undefined;
+    const deviceDateTime = time.ok ? parseDeviceDateTime(time.text ?? "") ?? undefined : undefined;
     return {
-      ok: r.ok,
+      ok: true,
       driver: this.id,
-      detail: r.ok ? "ZFPLabServer отговаря." : r.error ?? "Няма връзка.",
+      deviceSerial,
+      deviceDateTime,
+      detail: !deviceSerial
+        ? "ZFPLabServer отговаря, но не върна ИН на ФУ."
+        : !deviceDateTime
+          ? "ZFPLabServer отговаря, но не върна часа на ФУ."
+          : "ZFPLabServer отговаря.",
     };
   }
 

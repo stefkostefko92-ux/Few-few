@@ -15,7 +15,7 @@ export interface ShellStatus {
   fiscal: { ok: boolean; detail: string; driver: string; serial: string; fiscalMemory: string };
   terminal: { ok: boolean; detail: string } | null;
   shift: { openedAt: string } | null;
-  supto: { mode: boolean };
+  supto: { mode: boolean; integrity: "verified" | "unsigned" | "tampered" | "dev"; block: string | null };
   license: { status: "none" | "active" | "expired" | "invalid"; plan: string | null; expiresAt: number | null };
 }
 

@@ -5,7 +5,7 @@ import { prisma } from "../db";
 import { jsonError } from "../auth";
 import { getSetting } from "../settings";
 import { getFiscalDriver } from "./index";
-import { CLOCK_SYNC_MAX_AGE_MS, clockOffsetMs, isLinkFresh } from "./readiness";
+import { CLOCK_SYNC_MAX_AGE_MS, clockOffsetMs, integrityState, isLinkFresh, suptoSaleBlock } from "./readiness";
 
 export interface FiscalLink {
   serial: string;
@@ -49,14 +49,35 @@ export async function checkFiscal(): Promise<{ ok: boolean; link: FiscalLink }> 
   return { ok: true, link };
 }
 
+/** Цялост на компилацията (т. 4) — така, както Electron я е проверил преди старта. */
+export function buildIntegrity() {
+  return integrityState(process.env.CSPOS_INTEGRITY);
+}
+
+/** Режим СУПТО: без подпис (т. 4) или без сверен час (т. 5) продажбата спира с 503. */
+async function enforceSupto(link: FiscalLink, what: string): Promise<void> {
+  const fiscal = await getSetting("fiscal");
+  const block = suptoSaleBlock({
+    suptoMode: fiscal.suptoMode,
+    integrity: buildIntegrity(),
+    clockSyncedAt: link.syncedAt,
+    now: new Date(),
+  });
+  if (block) throw jsonError(503, `${what} е блокирано. ${block}`);
+}
+
 /** Откриване на продажба: ИН на ФУ от връзка до 2 часа назад, иначе нова проверка. */
 export async function requireFiscalForOpen(): Promise<string> {
   const link = await getSetting("fiscalLink");
-  if (link.serial && isLinkFresh(link.okAt, new Date())) return link.serial;
+  if (link.serial && isLinkFresh(link.okAt, new Date())) {
+    await enforceSupto(link, "Откриването на продажби");
+    return link.serial;
+  }
   const r = await checkFiscal();
   if (!r.ok) {
     throw jsonError(503, `Няма връзка с фискалното устройство — откриването на продажби е блокирано. ${r.link.detail}`);
   }
+  await enforceSupto(r.link, "Откриването на продажби");
   return r.link.serial;
 }
 
@@ -66,6 +87,17 @@ export async function requireFiscalForPayment(): Promise<string> {
   if (!r.ok) {
     throw jsonError(503, `Фискалното устройство не е готово — плащането е блокирано. ${r.link.detail}`);
   }
+  await enforceSupto(r.link, "Плащането");
+  return r.link.serial;
+}
+
+/** Сторно: проверка на живо преди печата на сторно бона. */
+export async function requireFiscalForStorno(): Promise<string> {
+  const r = await checkFiscal();
+  if (!r.ok) {
+    throw jsonError(503, `Фискалното устройство не е готово — сторното е блокирано. ${r.link.detail}`);
+  }
+  await enforceSupto(r.link, "Сторното");
   return r.link.serial;
 }
 

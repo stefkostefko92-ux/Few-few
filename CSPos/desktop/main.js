@@ -13,6 +13,7 @@ const fs = require("node:fs");
 const crypto = require("node:crypto");
 const net = require("node:net");
 const http = require("node:http");
+const { verifyFromDisk } = require("./integrity");
 
 const isDev = !app.isPackaged;
 
@@ -83,7 +84,25 @@ function waitForServer(port) {
   });
 }
 
+/**
+ * т. 4: подписът и хешовете на сървъра се проверяват ПРЕДИ той да тръгне. Променен, добавен или
+ * липсващ файл → отказ от старт. В разработка (неопакован) проверката се прескача („dev“).
+ */
+function checkIntegrity() {
+  if (isDev) return "";
+  const r = verifyFromDisk(serverRoot, path.join(__dirname, "integrity-public.pem"));
+  if (r.state === "tampered") {
+    const list = r.problems.slice(0, 8).join("\n");
+    throw new Error(
+      `Файловете на програмата са променени след подписа на производителя (Прил. № 29, т. 4):\n${list}\n\n` +
+        "Касата няма да стартира. Преинсталирайте от официалния инсталатор."
+    );
+  }
+  return r.state; // verified | unsigned
+}
+
 async function startServer() {
+  const integrityState = checkIntegrity();
   const cfg = loadOrCreateConfig();
   ensureDatabase();
   const port = await freePort();
@@ -105,6 +124,7 @@ async function startServer() {
       HOSTNAME: "127.0.0.1",
       DATABASE_URL: `file:${dbPath}`,
       SESSION_SECRET: cfg.sessionSecret,
+      ...(integrityState ? { CSPOS_INTEGRITY: integrityState } : {}),
       ...(fs.existsSync(engine) ? { PRISMA_QUERY_ENGINE_LIBRARY: engine } : {}),
     },
     stdio: ["ignore", "pipe", "pipe", "ipc"],

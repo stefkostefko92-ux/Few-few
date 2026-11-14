@@ -44,8 +44,9 @@ if (fs.existsSync(path.join(root, "public"))) {
   copyDir(path.join(root, "public"), path.join(server, "public"));
 }
 
-// 4) Заредена шаблонна база (template.db)
-log("Генерирам заредена шаблонна база template.db…");
+// 4) Шаблонна база (template.db) — БЕЗ демо стоки и демо ПИН кодове (КП-П.1): само
+//    администратор с начален ПИН и задължителна смяна, одиторски профил, свободна продажба.
+log("Генерирам шаблонна база template.db (без демо данни)…");
 const tpl = path.join(root, "prisma", "template.db");
 fs.rmSync(tpl, { force: true });
 // Prisma резолвва `file:` пътя спрямо папката на schema.prisma (prisma/),
@@ -53,7 +54,7 @@ fs.rmSync(tpl, { force: true });
 const dbEnv = { ...process.env, DATABASE_URL: "file:./template.db" };
 try {
   execSync("npx prisma db push --skip-generate", { cwd: root, env: dbEnv, stdio: "inherit" });
-  execSync("npm run db:seed", { cwd: root, env: dbEnv, stdio: "inherit" });
+  execSync("npm run db:seed:template", { cwd: root, env: dbEnv, stdio: "inherit" });
 } catch {
   die("Неуспешно генериране на template.db (prisma db push / seed).");
 }
@@ -74,4 +75,6 @@ const engineDstDir = path.join(server, "node_modules", ".prisma", "client");
 fs.mkdirSync(engineDstDir, { recursive: true });
 fs.copyFileSync(engineSrc, path.join(engineDstDir, engineName));
 
+// Манифестът и подписът (т. 4) НЕ се правят тук, а в after-pack.js — върху файловете точно
+// както electron-builder ги слага в инсталацията.
 log("Готово. Следва: electron-builder --win");

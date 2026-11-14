@@ -8,6 +8,7 @@
 
 import { Socket } from "net";
 import { VAT_GROUPS } from "../constants";
+import { findDeviceSerial, parseDeviceDateTime } from "./device-time";
 import type {
   FiscalDriver,
   FiscalReceiptData,
@@ -31,6 +32,8 @@ const CMD = {
   CASH_IN_OUT: 70,
   REPORT: 69, // X/Z отчети
   STATUS: 74,
+  DATE_TIME: 62, // четене на часа на ФУ (т. 5)
+  DIAGNOSTIC: 90, // диагностика — съдържа ИН на ФУ (т. 8)
 } as const;
 
 const VAT_LETTER: Record<keyof typeof VAT_GROUPS, string> = {
@@ -103,13 +106,13 @@ export class DatecsLanFiscalDriver implements FiscalDriver {
 
   constructor(private cfg: DatecsConfig) {}
 
-  private async run(cmd: number, data: string): Promise<FiscalResult> {
+  private async run(cmd: number, data: string): Promise<FiscalResult & { text?: string }> {
     try {
       const buf = await sendFrame(this.cfg, cmd, data);
       if (!frameOk(buf)) {
         return { ok: false, error: "Фискалното устройство отказа командата (NAK)." };
       }
-      return { ok: true };
+      return { ok: true, text: buf.toString("latin1") };
     } catch (e) {
       return {
         ok: false,
@@ -118,12 +121,24 @@ export class DatecsLanFiscalDriver implements FiscalDriver {
     }
   }
 
+  /** т. 8 и т. 5: ИН от диагностиката (90) и часът (62). Без тях връзката не се приема. */
   async status(): Promise<FiscalStatus> {
     const r = await this.run(CMD.STATUS, "");
+    if (!r.ok) return { ok: false, driver: this.id, detail: r.error ?? "Няма връзка." };
+    const diag = await this.run(CMD.DIAGNOSTIC, "");
+    const time = await this.run(CMD.DATE_TIME, "");
+    const deviceSerial = diag.ok ? findDeviceSerial(diag.text ?? "") ?? undefined : undefined;
+    const deviceDateTime = time.ok ? parseDeviceDateTime(time.text ?? "") ?? undefined : undefined;
     return {
-      ok: r.ok,
+      ok: true,
       driver: this.id,
-      detail: r.ok ? "Устройството отговаря." : r.error ?? "Няма връзка.",
+      deviceSerial,
+      deviceDateTime,
+      detail: !deviceSerial
+        ? "Устройството отговаря, но не върна ИН."
+        : !deviceDateTime
+          ? "Устройството отговаря, но не върна часа си."
+          : "Устройството отговаря.",
     };
   }
 

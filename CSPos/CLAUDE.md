@@ -15,6 +15,7 @@ Next.js 15 App Router · React 19 · TS strict · Prisma + **SQLite** (offline-f
 npm run dev / build / start
 npm run lint && npm run typecheck && npm test   # качествена порта (задължителна)
 npx prisma db push && npm run db:seed           # локална база + демо данни
+npm run db:schema-sql && npm run db:doc         # СЛЕД ВСЯКА промяна на schema.prisma (тест пада иначе)
 ```
 
 В пясъчници без директен интернет Prisma engines не се свалят от node fetch —
@@ -82,12 +83,20 @@ npx prisma db push && npm run db:seed           # локална база + де
 отстъпка в сума) · `src/lib/sale-draft.ts` (открита продажба) · `src/lib/fiscal/readiness.ts`
 (чисти правила т. 5/8/20) + `link.ts` (връзка на живо) · `src/lib/supto-export.ts` +
 `supto-reports.ts` + `xlsx.ts` (справки 18.1–18.9, XLSX без зависимости) ·
-`src/lib/audit-chain.ts` · `src/lib/nav.ts` (менюто по роли). Спецификация:
+`src/lib/audit-chain.ts` · `src/lib/nav.ts` (менюто по роли) · `src/lib/fiscal/device-time.ts`
+(час и ИН от отговора на ФУ) · `src/lib/pin-policy.ts` + `api/auth/change-pin` (задължителна смяна
+на ПИН: `User.mustChangePin`, проверка в `requireSession`) · `src/lib/schema-upgrade*.ts` (база на
+стара инсталация се обновява при старт САМО с добавяне; иначе отказ) · `desktop/integrity.js` +
+`after-pack.js` (т. 4: манифест SHA-256 + Ed25519 подпис, проверка преди старт; ключът е само в
+CI като `CSPOS_SIGNING_KEY`). Инсталаторът е с шаблонна база `prisma/seed-template.ts` — без
+демо данни; демо базата `prisma/seed.ts` е само за разработка. Спецификация:
 `docs/SUPTO-SPEC.md`; карта за декларацията: `docs/SUPTO-DECLARATION.md`.
 
 ## Документи
 
 `docs/COMPLIANCE.md` (правно проучване: Н-18, СУПТО, евро, ЗДДС, GDPR, ЗСч),
+`docs/USER-MANUAL.md` · `docs/DATABASE.md` (генериран) · `docs/VERSIONING.md` ·
+`docs/FISCAL-TEST-PROTOCOL.md` (документите към декларацията по чл. 52в),
 `docs/MARKET.md` (пазар: устройства, терминали, конкуренти),
 `docs/INTEGRATIONS.md` (технически бележки за ФУ/терминали/везни).
 При промяна на нормативно-обвързана логика — обнови и документа.

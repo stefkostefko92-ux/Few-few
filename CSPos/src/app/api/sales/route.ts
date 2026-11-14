@@ -49,8 +49,15 @@ export async function GET(req: Request) {
     const shiftId = url.searchParams.get("shiftId") ?? undefined;
     const from = url.searchParams.get("from");
     const to = url.searchParams.get("to");
+    // търсене на бон от предишна смяна (сторно при връщане): вътрешен №, УНП или № на фискалния бон
+    const q = (url.searchParams.get("q") ?? "").trim().slice(0, 40);
+    const qNum = /^\d{1,9}$/.test(q) ? Number(q) : null;
     const where = {
       ...(shiftId && { shiftId }),
+      // число → точен вътрешен № или № на бона от ФУ; текст (с тире) → част от УНП
+      ...(q && {
+        OR: qNum !== null ? [{ number: qNum }, { fiscalReceiptNo: q }] : [{ unp: { contains: q } }, { fiscalReceiptNo: q }],
+      }),
       ...((from || to) && {
         createdAt: {
           ...(from && { gte: new Date(`${from}T00:00:00`) }),

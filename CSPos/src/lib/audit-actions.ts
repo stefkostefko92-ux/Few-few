@@ -5,6 +5,7 @@ export const AUDIT_ACTIONS: Record<string, string> = {
   LOGIN: "Вход в системата",
   LOGIN_FAILED: "Неуспешен опит за вход",
   LOGOUT: "Изход от системата",
+  PIN_CHANGED: "Смяна на собствения ПИН",
   SALE_OPENED: "Откриване на продажба",
   SALE_COMPLETED: "Приключване на продажба",
   SALE_ITEM_ANNULLED: "Анулиране на артикул от открита продажба",

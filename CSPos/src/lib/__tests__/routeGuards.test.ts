@@ -14,7 +14,12 @@ import { fileURLToPath } from "node:url";
 const API = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "app", "api");
 
 /** Пишещи маршрути, които по природа не изискват роля (вход/изход). */
-const WRITE_EXEMPT = new Set(["auth/login/route.ts:POST", "auth/logout/route.ts:POST"]);
+const WRITE_EXEMPT = new Set([
+  "auth/login/route.ts:POST",
+  "auth/logout/route.ts:POST",
+  // собственият ПИН сменя всеки, и одиторът (КП-П.2); маршрутът иска сесия — проверено по-долу
+  "auth/change-pin/route.ts:POST",
+]);
 
 interface Handler {
   key: string;
@@ -88,6 +93,20 @@ test("ревю M3: ролята и „само четене“ се четат �
   const live = auth.slice(auth.indexOf("export async function getLiveSession"));
   assert.match(live.slice(0, 900), /prisma\.user\.findUnique/, "getLiveSession трябва да чете User");
   assert.match(live.slice(0, 900), /!u\.active/, "деактивиран профил губи сесията веднага");
-  const req = auth.slice(auth.indexOf("export async function requireSession"));
-  assert.match(req.slice(0, 300), /getLiveSession\(\)/, "requireSession минава през базата");
+  // страниците четат User без guard(): базата на стара инсталация се обновява преди заявката
+  const upgradeAt = live.indexOf("ensureDbGuards()");
+  assert.ok(upgradeAt > 0 && upgradeAt < live.indexOf("prisma.user.findUnique"), "ensureDbGuards преди четенето на User");
+  // requireSession → requireSessionForPinChange → getLiveSession (базата), плюс отказ при mustChangePin
+  const req = auth.slice(auth.indexOf("export async function requireSession(")).slice(0, 400);
+  assert.match(req, /requireSessionForPinChange\(\)/, "requireSession минава през базата");
+  assert.match(req, /mustChangePin/, "КП-П.2: без смяна на задължителния ПИН — 403");
+  const forPin = auth.slice(auth.indexOf("export async function requireSessionForPinChange("));
+  assert.match(forPin.slice(0, 300), /getLiveSession\(\)/, "и смяната на ПИН чете базата");
+});
+
+test("КП-П.2: смяната на ПИН иска сесия и стария ПИН", () => {
+  const src = readFileSync(join(API, "auth", "change-pin", "route.ts"), "utf8");
+  assert.match(src, /requireSessionForPinChange\(/);
+  assert.match(src, /bcrypt\.compare\(currentPin/);
+  assert.match(src, /pinPolicyError\(/);
 });

@@ -10,12 +10,15 @@ import { getTerminalDriver } from "@/lib/terminal";
 import { licenseState } from "@/lib/license";
 import type { FiscalStatus } from "@/lib/fiscal/types";
 import { APP_NAME, APP_VERSION, MANUFACTURER } from "@/lib/constants";
+import { suptoSaleBlock } from "@/lib/fiscal/readiness";
+import { buildIntegrity } from "@/lib/fiscal/link";
 
 export async function GET() {
   return guard(async () => {
     const s = await requireRead("CASHIER");
-    const [fiscalCfg, store, lic, fiscal, terminal, shift] = await Promise.all([
+    const [fiscalCfg, fiscalLink, store, lic, fiscal, terminal, shift] = await Promise.all([
       getSetting("fiscal"),
+      getSetting("fiscalLink"),
       getSetting("store"),
       getSetting("license"),
       getFiscalDriver(),
@@ -46,7 +49,17 @@ export async function GET() {
       },
       terminal: terminalStatus ? { ok: terminalStatus.ok, detail: terminalStatus.detail } : null,
       shift: shift ? { openedAt: shift.openedAt } : null,
-      supto: { mode: fiscalCfg.suptoMode },
+      supto: {
+        mode: fiscalCfg.suptoMode,
+        integrity: buildIntegrity(),
+        // защо режим СУПТО спира продажбите в момента (т. 4 подпис, т. 5 час) — null = не спира
+        block: suptoSaleBlock({
+          suptoMode: fiscalCfg.suptoMode,
+          integrity: buildIntegrity(),
+          clockSyncedAt: fiscalLink.syncedAt,
+          now: new Date(),
+        }),
+      },
       license: { status: license.status, plan: license.payload?.plan ?? null, expiresAt: license.payload?.expiresAt ?? null },
     });
   });

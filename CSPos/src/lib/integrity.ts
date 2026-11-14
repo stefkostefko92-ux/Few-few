@@ -4,6 +4,7 @@
 // първата заявка на процеса (идемпотентно — CREATE TRIGGER IF NOT EXISTS).
 
 import { prisma } from "./db";
+import { upgradeSchema } from "./schema-upgrade-db";
 
 /** Таблици, от които не се изтрива нищо. */
 const NO_DELETE = [
@@ -38,10 +39,15 @@ export const GUARD_STATEMENTS: string[] = [
 
 let installing: Promise<void> | null = null;
 
-/** Поставя тригерите веднъж на процес. Грешка не се кешира — следващата заявка опитва пак. */
+/**
+ * Веднъж на процес, преди първата заявка: обновява базата до схемата на версията (само добавяне,
+ * виж schema-upgrade.ts) и поставя тригерите. Грешка не се кешира — следващата заявка опитва пак.
+ */
 export function ensureDbGuards(): Promise<void> {
   if (!installing) {
     installing = (async () => {
+      const { applied } = await upgradeSchema(prisma);
+      if (applied.length > 0) console.info(`[cspos] базата е обновена: ${applied.length} промени (само добавяне)`);
       for (const sql of GUARD_STATEMENTS) await prisma.$executeRawUnsafe(sql);
     })().catch((e) => {
       installing = null;

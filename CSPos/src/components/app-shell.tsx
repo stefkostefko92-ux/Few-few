@@ -164,14 +164,20 @@ function StatusBar({
   pills.push(
     <Pill
       key="supto"
-      tone={status.supto.mode ? "ok" : "warn"}
-      icon={status.supto.mode ? <ShieldCheck size={18} weight="duotone" /> : <ShieldWarning size={18} weight="duotone" />}
-      label={status.supto.mode ? "СУПТО" : "СУПТО изключен"}
+      tone={!status.supto.mode ? "warn" : status.supto.block ? "bad" : "ok"}
+      icon={
+        status.supto.mode && !status.supto.block ? (
+          <ShieldCheck size={18} weight="duotone" />
+        ) : (
+          <ShieldWarning size={18} weight="duotone" />
+        )
+      }
+      label={!status.supto.mode ? "СУПТО изключен" : status.supto.block ? "СУПТО спира продажбите" : "СУПТО"}
       short="СУПТО"
       detail={
-        status.supto.mode
-          ? "Режим СУПТО: всяка продажба носи УНП, данните не се изтриват"
-          : "Режим СУПТО е изключен — УНП не се печата на бона"
+        !status.supto.mode
+          ? "Режим СУПТО е изключен — УНП не се печата на бона"
+          : status.supto.block ?? "Режим СУПТО: всяка продажба носи УНП, данните не се изтриват"
       }
       href={isAdmin ? "/settings" : undefined}
     />
@@ -375,15 +381,16 @@ export function AppShell({ session, children }: { session: SessionData; children
           }`}
         >
           <div className="flex items-center gap-3 min-w-0 xl:flex-1 px-1">
-            <span
-              title={`${session.name}, ${readOnly ? "одитор, само четене" : ROLES[session.role]}, код ${String(session.operatorCode).padStart(4, "0")}`}
+            <Link
+              href="/change-pin"
+              title={`${session.name}, ${readOnly ? "одитор, само четене" : ROLES[session.role]}, код ${String(session.operatorCode).padStart(4, "0")} — смяна на ПИН`}
               className={`size-10 shrink-0 rounded-full flex items-center justify-center font-bold text-sm ${
                 readOnly ? "bg-sky2-500/15 text-sky2-500" : "bg-white/[0.8] text-ink-200"
               } shadow-[inset_0_1px_0_rgba(255,255,255,.9),0_2px_8px_-3px_rgba(23,32,58,.2)]`}
-              aria-hidden
+              aria-label="Смяна на ПИН"
             >
               {initials(session.name)}
-            </span>
+            </Link>
             <span className={`${label} min-w-0`}>
               <span className="block font-semibold truncate leading-tight">{session.name}</span>
               <span

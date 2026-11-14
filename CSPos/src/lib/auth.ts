@@ -14,6 +14,8 @@ export interface SessionData {
   operatorCode: number;
   /** Одиторски профил: вижда като ролята си, но не може да пише (Прил. № 29, т. 19). */
   readOnly?: boolean;
+  /** Първи вход или ПИН от администратор: само смяна на ПИН, докато не го смени (КП-П.2). */
+  mustChangePin?: boolean;
 }
 
 function secretKey(): Uint8Array {
@@ -54,6 +56,7 @@ export async function getSession(): Promise<SessionData | null> {
       role: payload.role as RoleKey,
       operatorCode: Number(payload.operatorCode),
       readOnly: payload.readOnly === true,
+      mustChangePin: payload.mustChangePin === true,
     };
   } catch {
     return null;
@@ -73,16 +76,38 @@ export async function destroySession(): Promise<void> {
 export async function getLiveSession(): Promise<SessionData | null> {
   const s = await getSession();
   if (!s) return null;
+  // Страниците (layout) четат User без guard() — базата на стара инсталация трябва да е обновена
+  // ПРЕДИ заявка с нова колона, иначе P2022 и 500 до изтичане на бисквитката (ревю, High).
+  await ensureDbGuards();
   const u = await prisma.user.findUnique({
     where: { id: s.userId },
-    select: { active: true, role: true, readOnly: true, name: true, operatorCode: true },
+    select: { active: true, role: true, readOnly: true, name: true, operatorCode: true, mustChangePin: true },
   });
   if (!u || !u.active) return null;
-  return { ...s, name: u.name, operatorCode: u.operatorCode, role: u.role as RoleKey, readOnly: u.readOnly };
+  return {
+    ...s,
+    name: u.name,
+    operatorCode: u.operatorCode,
+    role: u.role as RoleKey,
+    readOnly: u.readOnly,
+    mustChangePin: u.mustChangePin,
+  };
 }
 
-/** Изисква сесия; хвърля Response 401 за API маршрути. */
+/**
+ * Изисква сесия; хвърля Response 401 за API маршрути. Оператор, който трябва да смени ПИН-а
+ * си, получава 403 навсякъде — флагът се чете от базата, не от бисквитката (КП-П.2).
+ */
 export async function requireSession(): Promise<SessionData> {
+  const s = await requireSessionForPinChange();
+  if (s.mustChangePin) {
+    throw jsonError(403, "Сменете ПИН кода си, преди да продължите.");
+  }
+  return s;
+}
+
+/** Само за смяната на ПИН (и изхода): сесия без проверката за задължителна смяна. */
+export async function requireSessionForPinChange(): Promise<SessionData> {
   const s = await getLiveSession();
   if (!s) throw jsonError(401, "Изисква се вход в системата.");
   return s;

@@ -4,7 +4,7 @@
 // последни бонове със сторно, закриване с преброяване и Z-отчет.
 
 import { useCallback, useEffect, useState } from "react";
-import { Money, ArrowDown, ArrowUp, XCircle, Printer, FileText } from "@phosphor-icons/react";
+import { Money, ArrowDown, ArrowUp, XCircle, Printer, FileText, MagnifyingGlass, X } from "@phosphor-icons/react";
 import Link from "next/link";
 import { Modal, Field, Badge, Spinner, EmptyState, apiJson } from "@/components/ui";
 import { ReconcilePanel } from "@/components/reconcile-panel";
@@ -49,9 +49,28 @@ export default function ShiftsPage() {
   const [cashModal, setCashModal] = useState<"IN" | "OUT" | null>(null);
   const [closeModal, setCloseModal] = useState(false);
   const [stornoSale, setStornoSale] = useState<Sale | null>(null);
+  // сторно на бон от предишна смяна (връщане, рекламация): търсене по №, УНП или фискален бон
+  const [query, setQuery] = useState("");
+  const [found, setFound] = useState<Sale[] | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [invoiceSale, setInvoiceSale] = useState<Sale | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<string | null>(null);
+
+  async function searchSales() {
+    const q = query.trim();
+    if (!q) {
+      setFound(null);
+      return;
+    }
+    setSearchError(null);
+    try {
+      const r = await apiJson<{ sales: Sale[] }>(await fetch(`/api/sales?q=${encodeURIComponent(q)}&take=20`, { cache: "no-store" }));
+      setFound(r.sales);
+    } catch (e) {
+      setSearchError(e instanceof Error ? e.message : "Търсенето не успя.");
+    }
+  }
 
   const load = useCallback(async () => {
     const d = await apiJson<ShiftData>(await fetch("/api/shifts"));
@@ -132,10 +151,45 @@ export default function ShiftsPage() {
           </div>
 
           <section className="card overflow-hidden">
-            <h2 className="font-bold px-5 py-4 border-b border-ink-800">Бонове в смяната</h2>
+            <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-ink-800">
+              <h2 className="font-bold">{found ? `Намерени бонове: ${found.length}` : "Бонове в смяната"}</h2>
+              <form
+                className="flex items-center gap-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void searchSales();
+                }}
+              >
+                <input
+                  className="input !py-2 w-64 text-sm"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="№ на бон, УНП или № от ФУ"
+                  aria-label="Търсене на бон от предишна смяна"
+                />
+                <button type="submit" className="btn-ghost !py-2 !px-3 text-sm">
+                  <MagnifyingGlass size={16} /> Намери
+                </button>
+                {found && (
+                  <button
+                    type="button"
+                    className="btn-ghost !py-2 !px-2.5 text-sm"
+                    title="Обратно към боновете в смяната"
+                    aria-label="Обратно към боновете в смяната"
+                    onClick={() => {
+                      setFound(null);
+                      setQuery("");
+                    }}
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </form>
+            </div>
+            {searchError && <p className="px-5 py-2 text-sm text-coral-600">{searchError}</p>}
             <table className="w-full text-sm">
               <tbody>
-                {sales.map((s) => (
+                {(found ?? sales).map((s) => (
                   <tr key={s.id} className="border-b border-ink-800/60 last:border-0 hover:bg-ink-850/50">
                     <td className="py-2.5 px-5 font-mono text-ink-400 w-20">№ {s.number}</td>
                     <td className="py-2.5 px-2">
@@ -147,7 +201,8 @@ export default function ShiftsPage() {
                         <Badge tone="success">{PAYMENT_TYPES[s.paymentType]}</Badge>
                       )}
                     </td>
-                    <td className="py-2.5 px-2 text-ink-400">
+                    <td className="py-2.5 px-2 text-ink-400 tabular-nums">
+                      {found && `${new Date(s.createdAt).toLocaleDateString("bg-BG")} `}
                       {new Date(s.createdAt).toLocaleTimeString("bg-BG")}
                     </td>
                     <td className="py-2.5 px-2 text-right font-bold tabular-nums">
@@ -179,10 +234,10 @@ export default function ShiftsPage() {
                     </td>
                   </tr>
                 ))}
-                {sales.length === 0 && (
+                {(found ?? sales).length === 0 && (
                   <tr>
                     <td className="py-8 text-center text-ink-500" colSpan={5}>
-                      Още няма бонове в тази смяна.
+                      {found ? "Няма бон с този номер или УНП." : "Още няма бонове в тази смяна."}
                     </td>
                   </tr>
                 )}
@@ -226,6 +281,7 @@ export default function ShiftsPage() {
           setMessage(msg);
           setReceipt(text);
           void load();
+          if (found) void searchSales();
         }}
       />
 

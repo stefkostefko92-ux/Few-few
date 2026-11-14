@@ -14,7 +14,7 @@ import { prisma } from "@/lib/db";
 import { guard, jsonError, requireRole } from "@/lib/auth";
 import { audit } from "@/lib/audit";
 import { getFiscalDriver } from "@/lib/fiscal";
-import { fiscalNow } from "@/lib/fiscal/link";
+import { fiscalNow, requireFiscalForStorno } from "@/lib/fiscal/link";
 import { getTerminalDriver } from "@/lib/terminal";
 import { nextSaleNumber } from "@/lib/counters";
 import { eurCentsToBgnCents } from "@/lib/money";
@@ -53,6 +53,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 
     const shift = await prisma.shift.findFirst({ where: { userId: s.userId, closedAt: null } });
     if (!shift) throw jsonError(409, "Няма отворена смяна.");
+    // т. 8 и режим СУПТО (т. 4, т. 5): ФУ на живо, подписана компилация и сверен час — преди печата
+    await requireFiscalForStorno();
 
     // резервация преди печата — Setting.key е първичен ключ, второто създаване пада с P2002
     const lockKey = `stornoLock:${original.id}`;
