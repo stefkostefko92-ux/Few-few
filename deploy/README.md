@@ -123,6 +123,15 @@ ZIP отпреди месец.
   `CF-Connecting-IP`/`X-Forwarded-For` — това е защита, не настройка**) + certbot, и
   `RESEND_API_KEY` в `.env`, иначе уведомленията по чл. 16/17 DSA не тръгват →
   `FiveM/DEPLOY.md`.
+- **linketto** (Linketto — „link in bio“): Docker Compose (db + app на `127.0.0.1:4340`, проект
+  `linketto`). Тайните, дъмповете и качените снимки са в `/opt/few-few/shared/linketto/` (`.env` 600 —
+  при пръв деплой се генерират САМО `POSTGRES_PASSWORD`/`DATABASE_URL`/`CRON_SECRET`, Revolut е в
+  `sandbox`; том `linketto_db` без `.env` = отказ, не нови тайни). `linketto/scripts/deploy.sh`:
+  `pg_dump` бекъп **преди** миграцията, билд докато старият app върви, `prisma migrate deploy` с новия
+  образ, смяна, сонда `/api/health` с маркер `"app":"linketto"`; при провал — откат на кода към
+  `last-good`. Инсталира systemd таймерите от DEPLOY.md §9 (планове всеки час, отчет, срокове) и
+  logrotate (7 дни); при успех — IndexNow ping. Еднократно: DNS, vhost от `linketto/deploy/nginx.conf`
+  + certbot, ръчните ключове в `.env` → `linketto/DEPLOY.md` §7.
 - **panev** (Panev Ascensori): systemd модел като medqr/vizitka. `rsync panev/ → /opt/panev`
   (изключва `data/` — SQLite базата, `node_modules/`, `.env`), `npm ci --omit=dev`,
   сийд **само при липсваща база** (админ + каталог за `/admin`), снимка на базата преди
@@ -182,9 +191,10 @@ ZIP отпреди месец.
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fivem` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fivem linketto` | кои проекти да се разгръщат тук |
 | `FIVEM_HEALTH_URL` | `http://127.0.0.1:3010/api/health` | health на fivem |
 | `FIVEM_DOMAIN` | `thraex.carbonstealth.eu` | домейн на fivem (за `.env` и IndexNow) |
+| `LINKETTO_HEALTH_URL` · `LINKETTO_DOMAIN` · `LINKETTO_STATE_DIR` · `LINKETTO_INDEXNOW` | `http://127.0.0.1:4340/api/health` · `linketto.carbonstealth.eu` · `/opt/few-few/shared/linketto` · `1` | сонда, домейн, тайни/бекъпи/снимки/last-good, IndexNow на linketto |
 | `PANEV_DIR` | `/opt/panev` | път на panev (systemd) |
 | `PANEV_ENV` | `/etc/panev/panev.env` | тайните на panev (600, `EnvironmentFile`) |
 | `PANEV_HEALTH_URL` | `http://127.0.0.1:4102/api/health` | health на panev |

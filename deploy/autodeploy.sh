@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fivem}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fivem linketto}"
 
 # fivem (Thraex PVP — Docker Compose модел) — web слуша само на
 # 127.0.0.1:3010, зад Nginx с TLS. Отделен `cron` контейнер върти пингването,
@@ -36,6 +36,17 @@ FIVEM_DOMAIN="${FIVEM_DOMAIN:-thraex.carbonstealth.eu}"
 # прекъснат пробег ги губи, а следващият генерира нова парола за база върху вече
 # инициализиран том — Postgres я игнорира и деплоят пада чак на миграцията.
 FIVEM_STATE_DIR="${FIVEM_STATE_DIR:-/opt/few-few/shared/fivem}"
+
+# linketto (Linketto — „link in bio“; Docker Compose: db + app, моделът на fivem). app слуша
+# само на 127.0.0.1:4340 зад Nginx с TLS. Стъпките са в linketto/scripts/deploy.sh (същият
+# скрипт и за ръчния деплой): бекъп → билд → миграции с НОВИЯ образ → смяна → сонда с маркер.
+# Тайните (.env), дъмповете и качените снимки живеят ИЗВЪН releases — в LINKETTO_STATE_DIR.
+# Откатът сочи последния release, който е отговорил (LINKETTO_LAST_GOOD; prune_releases го пази).
+LINKETTO_HEALTH_URL="${LINKETTO_HEALTH_URL:-http://127.0.0.1:4340/api/health}"
+LINKETTO_DOMAIN="${LINKETTO_DOMAIN:-linketto.carbonstealth.eu}"
+LINKETTO_STATE_DIR="${LINKETTO_STATE_DIR:-/opt/few-few/shared/linketto}"
+LINKETTO_LAST_GOOD="${LINKETTO_LAST_GOOD:-$LINKETTO_STATE_DIR/last-good}"
+LINKETTO_INDEXNOW="${LINKETTO_INDEXNOW:-1}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -2040,6 +2051,177 @@ EOF
   fi
 }
 
+# ── 3g'') linketto — Docker Compose ───────────────────────────────────────────
+# Продуктовата логика е в linketto/scripts/deploy.sh (кодове: 0 жив · 2 спрян преди смяната ·
+# 4 миграцията падна, работи старият код · 5 новият не отговаря). Тук: тайните на стабилен път,
+# бекъпите и снимките извън releases, дневниците на nginx, таймерите, откатът и IndexNow.
+linketto_indexnow() {
+  [ "$LINKETTO_INDEXNOW" = "1" ] || return 0
+  local keyfile="$SRC/linketto/public/indexnow-key.txt"
+  [ -f "$keyfile" ] || { warn "linketto: няма public/indexnow-key.txt — пропускам IndexNow."; return 0; }
+  command -v node >/dev/null 2>&1 || { warn "linketto: няма node на хоста — пропускам IndexNow."; return 0; }
+  if node "$SRC/tools/seo/indexnow.mjs" "https://$LINKETTO_DOMAIN" --key-file "$keyfile" >/dev/null 2>&1; then
+    ok "linketto: IndexNow уведоми Bing/Yandex/Seznam/Naver/Yep."
+  else
+    warn "linketto: IndexNow ping не мина (нормално преди DNS/TLS — сайтът трябва да е публичен с /indexnow-key.txt)."
+  fi
+}
+
+# Таймерите от DEPLOY.md §9 (планове на всеки час, отчет дневно, сроковете дневно). Идемпотентно:
+# всеки деплой презаписва скрипта и unit-ите от release-а. CRON_SECRET остава във файла с тайните.
+linketto_install_cron() {
+  local d="$1" t
+  command -v systemctl >/dev/null 2>&1 || { warn "linketto: няма systemd — таймерите НЕ са инсталирани (cron §9 не върви)."; return 0; }
+  [ -f "$d/deploy/linketto-cron.sh" ] || { warn "linketto: липсва deploy/linketto-cron.sh — таймерите НЕ са инсталирани."; return 0; }
+  install -m 700 "$d/deploy/linketto-cron.sh" /usr/local/sbin/linketto-cron
+  install -m 644 "$d/deploy/systemd/linketto-cron@.service" /etc/systemd/system/linketto-cron@.service
+  # Пътят до тайните следва LINKETTO_STATE_DIR, ако е сменен.
+  install -d -m 755 /etc/systemd/system/linketto-cron@.service.d
+  printf '[Service]\nEnvironment=LINKETTO_ENV=%s/.env\n' "$LINKETTO_STATE_DIR" \
+    > /etc/systemd/system/linketto-cron@.service.d/env.conf
+  for t in plans digest retention; do
+    install -m 644 "$d/deploy/systemd/linketto-cron-$t.timer" "/etc/systemd/system/linketto-cron-$t.timer"
+  done
+  systemctl daemon-reload >/dev/null 2>&1 \
+    || { warn "linketto: systemctl daemon-reload не мина — таймерите НЕ са активни (cron §9 не върви)."; return 0; }
+  local bad=0
+  for t in plans digest retention; do
+    systemctl enable --now "linketto-cron-$t.timer" >/dev/null 2>&1 \
+      || { bad=1; warn "linketto: linketto-cron-$t.timer не се активира — виж systemctl status linketto-cron-$t.timer"; }
+  done
+  [ "$bad" = "0" ] && ok "linketto: таймери активни (планове :17 всеки час · отчет 08:10 · срокове 03:40)."
+  return 0
+}
+
+# Откат САМО на кода към последния release, който е отговорил. Базата не се пипа — миграциите са
+# адитивни, старият код работи с новата схема. Без нов дъмп (не гори слот от ротацията).
+linketto_rollback() {
+  local failed prev
+  failed="$(readlink -f "$1" || true)"
+  prev="$(cat "$LINKETTO_LAST_GOOD" 2>/dev/null || true)"
+  if [ -z "$prev" ] || [ ! -f "$prev/docker-compose.yml" ] || [ "$(readlink -f "$prev" || true)" = "$failed" ]; then
+    warn "linketto: няма предишен работещ release за откат — нужен е човек (cd $1 && docker compose logs app)."
+    return 1
+  fi
+  warn "linketto: връщам предишния код ($prev)…"
+  if ( cd "$prev" && LINKETTO_DATA_HOST="$LINKETTO_STATE_DIR/data" docker compose up -d --build app ) \
+     && health "$LINKETTO_HEALTH_URL" "linketto (откат)" '"app":"linketto"'; then
+    ok "linketto: предишният код отговаря."
+  else
+    warn "linketto: откатът не тръгна — нужен е човек (cd $prev && docker compose logs app)."
+    return 1
+  fi
+}
+
+deploy_linketto() {
+  local d="$SRC/linketto" rc=0 k
+  [ -d "$d" ] || { warn "Няма linketto/ в архива — пропускам."; return; }
+  [ -f "$d/scripts/deploy.sh" ] || { warn "linketto: няма scripts/deploy.sh в архива — пропускам."; return; }
+  log "Разгръщам linketto (Docker Compose)…"
+
+  install -d -m 700 "$LINKETTO_STATE_DIR"
+
+  # Пръв деплой: генерирай САМО генерируемите тайни. Ключовете на Revolut/Brevo/Gemini и
+  # админ имейлите не се измислят — остават празни и се попълват ръчно (DEPLOY.md §7).
+  if [ ! -f "$LINKETTO_STATE_DIR/.env" ]; then
+    # Том без .env = загубени тайни, не пръв деплой: нова парола върху инициализиран PGDATA
+    # Postgres я игнорира и всичко пада чак на миграцията. Спираме, вместо да генерираме.
+    if command -v docker >/dev/null 2>&1 && docker volume ls -q 2>/dev/null | grep -qx 'linketto_db'; then
+      warn "linketto: томът linketto_db съществува, а $LINKETTO_STATE_DIR/.env липсва — НЕ генерирам нови тайни."
+      warn "  Върни .env от бекъп/предишен release (mode 600) и пусни деплоя пак."
+      deploy_failed=1
+      return
+    fi
+    warn "Няма $LINKETTO_STATE_DIR/.env — генерирам генерируемите тайни (пръв деплой)."
+    local dbp cron
+    # `|| true`: под `set -e` провал в командната замяна убива скрипта преди проверката.
+    # hex — без / ? # %, които чупят DATABASE_URL.
+    dbp="$(openssl rand -hex 24 || true)"
+    cron="$(openssl rand -hex 32 || true)"
+    [ "${#dbp}" -ge 32 ] && [ "${#cron}" -ge 24 ] \
+      || { warn "linketto: openssl не даде случайни стойности — спирам, вместо да пиша слаби тайни."; deploy_failed=1; return; }
+    # Празен файл с 600 ПРЕДИ съдържанието — иначе стои 644 в прозореца до chmod.
+    install -m 600 /dev/null "$LINKETTO_STATE_DIR/.env"
+    cat > "$LINKETTO_STATE_DIR/.env" <<EOF
+# Linketto — тайни (mode 600). Генериран от deploy/autodeploy.sh. Пълен списък: linketto/DEPLOY.md §2.
+POSTGRES_PASSWORD=${dbp}
+DATABASE_URL=postgresql://linketto:${dbp}@db:5432/linketto
+PUBLIC_BASE_URL=https://${LINKETTO_DOMAIN}
+# Път В КОНТЕЙНЕРА; на хоста е ${LINKETTO_STATE_DIR}/data (извън releases).
+DATA_DIR=/data
+CRON_SECRET=${cron}
+PROFILE_HOST=
+# sandbox НАРОЧНО: production едва след зеления приемен тест (DEPLOY.md §8).
+REVOLUT_ENV=sandbox
+REVOLUT_SECRET_KEY=
+REVOLUT_WEBHOOK_SECRET=
+BREVO_API_KEY=
+EMAIL_FROM=
+ADMIN_EMAILS=
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-2.5-flash
+# 1 само за ПЛАТЕН акаунт с DPA; празно = AI функциите са изключени (fail-closed).
+GEMINI_PAID_TIER=
+EOF
+    ok "linketto: $LINKETTO_STATE_DIR/.env създаден (600)."
+  fi
+  chmod 600 "$LINKETTO_STATE_DIR/.env" 2>/dev/null || true
+  # Празните ръчни ключове — напомняне при всеки деплой, докато не се попълнят (стойности не се печатат).
+  for k in ADMIN_EMAILS BREVO_API_KEY EMAIL_FROM REVOLUT_SECRET_KEY REVOLUT_WEBHOOK_SECRET; do
+    grep -qE "^${k}=.+" "$LINKETTO_STATE_DIR/.env" \
+      || warn "linketto: $k е празен в $LINKETTO_STATE_DIR/.env — попълни го (DEPLOY.md §2)."
+  done
+  grep -qE '^GEMINI_PAID_TIER=1' "$LINKETTO_STATE_DIR/.env" \
+    || warn "linketto: GEMINI_PAID_TIER не е 1 — AI функциите са изключени (само платен Gemini акаунт с DPA)."
+  grep -qE '^REVOLUT_ENV=production' "$LINKETTO_STATE_DIR/.env" \
+    || warn "linketto: REVOLUT_ENV не е production — плащанията са в Sandbox (нарочно до приемния тест, DEPLOY.md §8)."
+
+  # `-T`: ако `$d/.env` е директория, без него връзката се създава ВЪТРЕ в нея.
+  ln -sfnT "$LINKETTO_STATE_DIR/.env" "$d/.env"
+  install -d -m 700 "$LINKETTO_STATE_DIR/backups"
+  rm -rf "$d/backups"
+  ln -sfnT "$LINKETTO_STATE_DIR/backups" "$d/backups"
+  ok "linketto/.env и backups → $LINKETTO_STATE_DIR"
+
+  # Дневниците на nginx: подпапка (без сблъсък с /etc/logrotate.d/nginx) + 7-дневна ротация.
+  # Симлинк не се следва като root (CWE-59) — отказ и човек.
+  if [ -L /var/log/nginx/linketto ]; then
+    warn "/var/log/nginx/linketto е СИМЛИНК — отказвам да пипам правата му; провери ръчно."
+  else
+    install -d -o www-data -g adm -m 0755 /var/log/nginx/linketto 2>/dev/null \
+      || warn "не мога да създам /var/log/nginx/linketto — nginx няма да тръгне с vhost-а на linketto."
+  fi
+  if [ -f "$d/deploy/logrotate.conf" ]; then
+    install -m 0644 "$d/deploy/logrotate.conf" /etc/logrotate.d/linketto \
+      || warn "не мога да инсталирам /etc/logrotate.d/linketto — 7-те дни НЕ са гарантирани."
+  fi
+
+  # `|| rc=$?`: голо извикване под `set -e` би убило ЦЕЛИЯ autodeploy и продуктите след linketto.
+  LINKETTO_DATA_HOST="$LINKETTO_STATE_DIR/data" LINKETTO_HEALTH_URL="$LINKETTO_HEALTH_URL" \
+    bash "$d/scripts/deploy.sh" || rc=$?
+  case "$rc" in
+    0)
+      if health "$LINKETTO_HEALTH_URL" "linketto" '"app":"linketto"'; then
+        printf '%s\n' "$(readlink -f "$d")" > "$LINKETTO_LAST_GOOD.tmp" && mv -f "$LINKETTO_LAST_GOOD.tmp" "$LINKETTO_LAST_GOOD"
+        linketto_install_cron "$d" || warn "linketto: таймерите не се инсталираха — виж по-горе."
+        [ -e /etc/nginx/sites-enabled/linketto ] \
+          || warn "linketto: няма /etc/nginx/sites-enabled/linketto — сайтът върви само на 127.0.0.1:4340 (linketto/DEPLOY.md §7)."
+        linketto_indexnow
+      else
+        deploy_failed=1
+        linketto_rollback "$d" || true
+      fi
+      ;;
+    2) deploy_failed=1; warn "linketto: деплоят спря преди смяната на app — работи предишният код." ;;
+    4)
+      deploy_failed=1
+      warn "linketto: миграцията падна — работи предишният код. Бекъпът отпреди нея е в $LINKETTO_STATE_DIR/backups;"
+      warn "  процедурата — linketto/DEPLOY.md §7, „Провалена миграция“."
+      ;;
+    *) deploy_failed=1; warn "linketto: новият app не отговаря (код $rc)."; linketto_rollback "$d" || true ;;
+  esac
+}
+
 for p in $PROJECTS; do
   case "$p" in
     zabobovdol) deploy_zabobovdol ;;
@@ -2058,6 +2240,7 @@ for p in $PROJECTS; do
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     fivem|FiveM)          deploy_fivem ;;
+    linketto)   deploy_linketto ;;
     *)          warn "Непознат проект: $p" ;;
   esac
 done
@@ -2088,17 +2271,19 @@ fi
 # код, който никога не е разгръщан за Korpora. Същото за Rilievi (RILIEVI_LAST_GOOD): там е и
 # docker-compose.yml, от който тече дневният бекъп.
 prune_releases() {
-  local keep_rel live_rel lg_rel lg_ril old old_real keep protected
+  local keep_rel live_rel lg_rel lg_ril lg_lnk old old_real keep protected
   keep_rel="$(cd "$SRC" && pwd -P)"
   live_rel="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
   lg_rel="$(readlink -f "$(cat "$KORPORA_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
   lg_ril="$(readlink -f "$(cat "$RILIEVI_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
+  # Целта на отката на linketto: без нея деплоите на други продукти я изтриваха изпод отката.
+  lg_lnk="$(readlink -f "$(cat "$LINKETTO_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
   while read -r old; do
     [ -n "$old" ] || continue
     old_real="$(cd "$old" 2>/dev/null && pwd -P || true)"
     [ -n "$old_real" ] || continue
     keep=0
-    for protected in "$keep_rel" "$live_rel" "$lg_rel" "$lg_ril"; do
+    for protected in "$keep_rel" "$live_rel" "$lg_rel" "$lg_ril" "$lg_lnk"; do
       [ -n "$protected" ] || continue
       case "$protected" in
         "$old_real"|"$old_real"/*) keep=1 ;;

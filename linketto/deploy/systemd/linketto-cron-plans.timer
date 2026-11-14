@@ -1,0 +1,13 @@
+[Unit]
+# ЗАДЪЛЖИТЕЛНО на всеки час (DEPLOY.md §9): висящи поръчки при Revolut (изпуснат
+# уебхук), refund-и, потвърждения, изтичане на плановете, напомняния.
+Description=Linketto — предплатените планове (всеки час, :17)
+
+[Timer]
+OnCalendar=*-*-* *:17:00
+Persistent=true
+RandomizedDelaySec=60
+Unit=linketto-cron@plans.service
+
+[Install]
+WantedBy=timers.target

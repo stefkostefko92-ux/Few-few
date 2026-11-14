@@ -163,16 +163,56 @@ Refund или спор, пуснати **от таблото на Revolut**, Н�
 cookie `NEXT_LOCALE` и винаги печели пред IP. Без CDN хедър сайтът пак
 работи — просто без геолокация.
 
-## 7. Build & run
+## 7. Build & run (Docker Compose през `deploy/autodeploy.sh`)
+
+Стекът: `docker-compose.yml` (`db` postgres:16-alpine + `app` от `Dockerfile`, non-root uid 1001,
+само `127.0.0.1:4340`), Compose проект `linketto` (томът е `linketto_db`). На сървъра нищо не се
+строи на ръка — каноничният път е `deploy/fetch-deploy.sh` → `deploy/autodeploy.sh` (`deploy_linketto`):
 
 ```bash
-npm ci                   # с devDependencies — prisma/typescript/tailwind трябват за билда
-npm run build            # prisma generate + next build
-npm prune --omit=dev     # после махаме dev зависимостите от сървъра
-npm start                # или зад reverse proxy (Nginx) + systemd
+sudo REF=main PROJECTS="linketto" bash /opt/few-few/current/deploy/fetch-deploy.sh
 ```
 
-Health probe: `GET /api/health` → `{"status":"ok","db":"up"}` (503 при паднала база).
+Какво прави (`linketto/scripts/deploy.sh`, същият скрипт и за ръчен пробег от папката на release-а):
+`pg_dump | gzip` бекъп (празен/без схема = спиране) → `docker compose build app` (старият app
+продължава) → база → `prisma migrate deploy` с НОВИЯ образ → `up -d app` → сонда `/api/health`
+с маркер `"app":"linketto"`. Провал на сондата → автоматичен откат на кода към последния работещ
+release (`/opt/few-few/shared/linketto/last-good`); провал на миграцията → работи старият код.
+
+**Стабилни пътища (извън releases):** `/opt/few-few/shared/linketto/.env` (600, симлинк в release-а),
+`…/backups/` (последните 10 дъмпа отпреди деплой), `…/data/` (качените снимки, `DATA_DIR=/data` в
+контейнера, собственик 1001).
+
+**Пръв деплой:** autodeploy генерира `POSTGRES_PASSWORD`, `DATABASE_URL`, `CRON_SECRET`,
+`PUBLIC_BASE_URL`, `DATA_DIR`, `REVOLUT_ENV=sandbox` (нарочно — production едва след §8). Празни,
+попълват се ръчно (§2): `ADMIN_EMAILS`, `BREVO_API_KEY`, `EMAIL_FROM`, `REVOLUT_SECRET_KEY`,
+`REVOLUT_WEBHOOK_SECRET`, `GEMINI_API_KEY` + `GEMINI_PAID_TIER=1`, по избор `PROFILE_HOST`. След
+редакция: `cd "$(cat /opt/few-few/shared/linketto/last-good)" && sudo docker compose up -d app`
+(`env_file` се чете при пресъздаване на контейнера; `restart` не стига. `last-good`, не `current`:
+`current` се мести и при деплой на друг продукт, към release без симлинка `.env`).
+
+**Еднократно:** DNS A/AAAA → VPS, после vhost + TLS:
+
+```bash
+sudo install -m 644 /opt/few-few/current/linketto/deploy/nginx.conf /etc/nginx/sites-available/linketto
+sudo ln -sfn /etc/nginx/sites-available/linketto /etc/nginx/sites-enabled/linketto
+sudo nginx -t && sudo systemctl reload nginx
+sudo certbot --nginx -d linketto.carbonstealth.eu --redirect
+```
+
+**Cron (§9) — systemd таймери, инсталират се сами:** `linketto-cron-plans.timer` (всеки час :17),
+`linketto-cron-digest.timer` (08:10), `linketto-cron-retention.timer` (03:40, SQL сроковете от
+`retention-days.ts`). `CRON_SECRET` се чете от файла с тайните. Ръчно: `sudo systemctl start
+linketto-cron@plans`; дневник: `journalctl -u 'linketto-cron@*' -n 50`.
+
+**Провалена миграция:** приложението върви на стария код. Бекъпът е в
+`/opt/few-few/shared/linketto/backups/`; диагноза — `docker compose run --rm --no-deps app npx
+--no-install prisma migrate status`; оправяне на миграцията или `prisma migrate resolve` — човек.
+
+**Дневници на nginx:** `/var/log/nginx/linketto/` — access без IP (`log_format linketto_noip`),
+ротация 7 дни (`deploy/logrotate.conf` → `/etc/logrotate.d/linketto`).
+
+Health probe: `GET /api/health` → `{"status":"ok","db":"up","app":"linketto"}` (503 при паднала база).
 
 ## 8. Приемен тест преди реални пари (Revolut **Sandbox**)
 

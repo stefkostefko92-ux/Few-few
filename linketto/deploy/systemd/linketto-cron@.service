@@ -1,0 +1,45 @@
+[Unit]
+# Linketto — периодична задача (%i = plans | digest | retention), DEPLOY.md §9.
+# Пуска се от linketto-cron-%i.timer; инсталира се от deploy/autodeploy.sh.
+# Дневник: journalctl -u linketto-cron@%i -n 50
+# Провал (напр. 500 от /api/cron/plans при грешка в ред) = unit в „failed“ —
+# вижда се в `systemctl --failed` и в мониторинга.
+Description=Linketto — периодична задача %i
+Requires=docker.service
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/linketto-cron %i
+TimeoutStartSec=900
+Nice=10
+Environment=LINKETTO_ENV=/opt/few-few/shared/linketto/.env
+Environment=LINKETTO_LOCAL_URL=http://127.0.0.1:4340
+
+# --- Sandboxing ---
+# Върви като root: чете файла с тайните (600, root) и говори с docker сокета
+# (retention). Нищо не пише на диска.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+# tmpfs, не true: docker CLI търси ~/.docker и при „inaccessible“ /root шуми с WARNING.
+ProtectHome=tmpfs
+ReadWritePaths=-/run/docker.sock
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@mount @swap @reboot
+SystemCallErrorNumber=EPERM
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+CapabilityBoundingSet=
+UMask=0077
