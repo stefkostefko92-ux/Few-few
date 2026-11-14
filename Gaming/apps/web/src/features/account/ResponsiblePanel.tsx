@@ -12,7 +12,6 @@ import {
 import { Badge, Button, Modal, Panel } from "../../ui";
 import { api } from "../../lib/api";
 import { RESPONSIBLE_QUERY_KEY, useResponsibleSettings } from "./RealityCheck";
-import { readDaily } from "./playTime";
 
 const PERIODS = Object.keys(SELF_EXCLUSION_PERIODS) as SelfExclusionPeriod[];
 
@@ -37,7 +36,8 @@ export function ResponsiblePanel() {
   });
 
   const until = data?.selfExcludedUntil ? new Date(data.selfExcludedUntil) : null;
-  const todayMinutes = readDaily().minutes;
+  const todayMinutes = data?.playedTodayMinutes ?? 0;
+  const pending = data?.dailyLimitPending ?? null;
 
   return (
     <Panel className="mb-6" id="responsible">
@@ -96,6 +96,17 @@ export function ResponsiblePanel() {
           ))}
         </select>
       </label>
+      <p className="mt-1 text-xs text-ink-muted">{t("responsible.limitRule")}</p>
+      {pending ? (
+        <p className="mt-2 text-sm text-ink-300" role="status" data-testid="limit-pending">
+          {pending.minutes === null
+            ? t("responsible.limitPendingOff", { date: new Date(pending.effectiveAt).toLocaleString(i18n.language, { dateStyle: "medium", timeStyle: "short" }) })
+            : t("responsible.limitPending", {
+                n: pending.minutes,
+                date: new Date(pending.effectiveAt).toLocaleString(i18n.language, { dateStyle: "medium", timeStyle: "short" }),
+              })}
+        </p>
+      ) : null}
 
       {/* Самоизключване */}
       <div className="mt-6 border-t border-brass-400/10 pt-4">

@@ -25,7 +25,7 @@ import {
   MeshBasicMaterial,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
-  PerspectiveCamera,
+  type PerspectiveCamera,
   Plane,
   Raycaster,
   RingGeometry,
@@ -40,6 +40,7 @@ import { TABLE, type CueVariant } from "@aso/shared";
 import { upgradeMaterial } from "../gl/baked.js";
 import { clothNormal, disposeObject, woodNormal, woodTexture } from "../gl/helpers.js";
 import { RenderCore } from "../gl/render.js";
+import { makeCueCamera, RAIL, SCENE_RATIO } from "./cueCamera.js";
 
 export interface SceneBall {
   id: number;
@@ -58,9 +59,7 @@ export interface CueScene {
   called?: { x: number; y: number } | null;
 }
 
-const RAIL = 0.085; // rail thickness (world units) — also sets the canvas aspect
 const R = TABLE.ballR;
-const SCENE_RATIO = (TABLE.h + 2 * RAIL) / (TABLE.w + 2 * RAIL); // canvas h:w
 const POCKETS: [number, number][] = [
   [0, 0],
   [TABLE.w / 2, 0],
@@ -192,12 +191,7 @@ export class GLTable {
     this.fh = cssWidth / (TABLE.w + 2 * RAIL);
     this.scene.background = new Color("#0a0d1f");
 
-    this.camera = new PerspectiveCamera(34, (TABLE.w + 2 * RAIL) / (TABLE.h + 2 * RAIL), 0.05, 60);
-    // Closer + lower than before (drama: balls occupy real pixels, the phenolic
-    // clearcoat reads), gently tilted toward the near (−Z) long rail so the balls
-    // gain height/parallax while the whole table stays readable for aiming.
-    this.camera.position.set(0, 2.35, -1.5);
-    this.camera.lookAt(0, 0, 0.04);
+    this.camera = makeCueCamera();
 
     // lighting: soft fill + an overhead "billiard lamp" key for crisp shadows
     this.scene.add(new AmbientLight(0xffffff, 0.32));
@@ -266,6 +260,12 @@ export class GLTable {
     const hit = new Vector3();
     if (!this.ray.ray.intersectPlane(this.aimPlane, hit)) return { x: TABLE.w / 2, y: TABLE.h / 2 };
     return { x: hit.x + TABLE.w / 2, y: hit.z + TABLE.h / 2 };
+  }
+
+  /** Inverse of `toWorld`: a felt point on the ball plane → canvas client px. */
+  toClient(x: number, y: number, rect: DOMRect): { x: number; y: number } {
+    const v = new Vector3(wx(x), R, wz(y)).project(this.camera);
+    return { x: rect.left + ((v.x + 1) / 2) * rect.width, y: rect.top + ((1 - v.y) / 2) * rect.height };
   }
 
   /* ── static table geometry (rebuilt only when cloth/variant changes) ──────── */
@@ -522,7 +522,12 @@ export class GLTable {
     }
 
     this.renderBalls(scene);
-    this.core.render();
+    // Mark dirty; RenderCore's loop draws it on the next frame. A synchronous
+    // render here ran the whole post stack inside React's commit for EVERY
+    // re-render (one socket message alone causes several), on top of the
+    // loop's own frame — a slow GPU blocked the main thread for seconds, and
+    // the player's clock ran while the shot replay lagged.
+    this.core.invalidate();
   }
 
   /* ── potted-ball drop animation (driven by RenderCore's loop) ─────────────── */

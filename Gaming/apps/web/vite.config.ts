@@ -12,8 +12,9 @@ export default defineConfig({
     port: 4502,
     proxy: {
       // Proxy API + websocket to the backend in dev so cookies are same-origin.
-      "/api": { target: "http://localhost:4500", changeOrigin: true },
-      "/socket.io": { target: "http://localhost:4501", ws: true, changeOrigin: true },
+      // E2E stacks run side by side on other ports (infra/e2e-games.sh).
+      "/api": { target: process.env.E2E_API_TARGET ?? "http://localhost:4500", changeOrigin: true },
+      "/socket.io": { target: process.env.E2E_RT_TARGET ?? "http://localhost:4501", ws: true, changeOrigin: true },
     },
   },
   preview: { port: 4502 },
