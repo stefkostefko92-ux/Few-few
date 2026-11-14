@@ -34,7 +34,9 @@ import {
  * е избран seed-ът — офлайн реплика на стаята).
  */
 
-const SEEDED_FIRST_HAND = ["QC", "KH", "8S", "TH", "7S"];
+// Раздадено: QC KH 8S TH 7S. Ръката се показва подредена по боя и сила; в наддаването
+// няма договор → без коз, некозов ред (A T K Q J 9 8 7), бои ♠ ♥ ♣ ♦.
+const SEEDED_FIRST_HAND = ["8S", "7S", "TH", "KH", "QC"];
 
 type Step = "contra" | "recontra" | "bid" | "pass" | "play";
 

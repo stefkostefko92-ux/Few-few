@@ -4,6 +4,7 @@ import { useAuthStore } from "../../../lib/store";
 import { Button } from "../../../ui";
 import { playCue } from "../../../lib/sound";
 import { PlayingCard } from "../cards/PlayingCard";
+import { sortSantase } from "../cards/sortHand";
 import { TrumpIndicator } from "../cards/TrumpIndicator";
 import { type SuitChar } from "../cards/suits";
 import { FeltTable, Seat } from "../table/FeltTable";
@@ -101,6 +102,10 @@ export function SantaseView({ title }: { title: string }) {
   });
 
   const myTurn = !!state && state.turn === seat && legal.length > 0;
+  // Ръката: козът първи, после A T K Q J 9 (само показване).
+  const dealtHand = state?.hands[seat];
+  const trumpSuit = state?.trump;
+  const myHand = useMemo(() => sortSantase(dealtHand ?? [], trumpSuit), [dealtHand, trumpSuit]);
 
   // Prefer the marriage variant of a card when offered — unless the player has
   // armed "play quietly" (tactically legal: keep the announce for later).
@@ -352,14 +357,14 @@ export function SantaseView({ title }: { title: string }) {
                 badge={<span className="tnum">{state.points[seat] ?? 0}</span>}
               >
                 <div className="aso-myhand" data-zone="hand" style={{ display: "flex" }}>
-                  {(state.hands[seat] ?? []).map((card, i) => (
+                  {myHand.map((card, i) => (
                     // keyed by the card (unique in a hand): an index key remounted
                     // every card right of a played one and replayed its deal-in
                     <HandCard
                       key={card}
                       card={card}
                       index={i}
-                      count={(state.hands[seat] ?? []).length}
+                      count={myHand.length}
                       playable={myTurn && playFor.has(card)}
                       onPlay={onPlay}
                     />

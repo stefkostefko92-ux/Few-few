@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../../lib/store";
 import { playCue } from "../../../lib/sound";
 import { PlayingCard } from "../cards/PlayingCard";
+import { sortNatural } from "../cards/sortHand";
 import { FeltTable, Seat, type SeatPos } from "../table/FeltTable";
 import { useNarrowTable } from "../table/useNarrowTable";
 import { SeatCount } from "./SeatCount";
@@ -17,6 +18,8 @@ interface Play {
 }
 interface TrickState {
   hands: string[][];
+  /** Козова боя на договора (бридж; null = без коз/още няма договор). */
+  trump?: string | null;
   trick: Play[];
   turn: number;
 }
@@ -79,6 +82,10 @@ export function FourPlayerTrick({
   });
 
   const myTurn = state.turn === seat && playable.size > 0;
+  // Ръката по боя и сила (козът първи, A K Q … 2) — само показване.
+  const dealtHand = state.hands[seat];
+  const trump = state.trump;
+  const myHand = useMemo(() => sortNatural(dealtHand ?? [], trump), [dealtHand, trump]);
   const others = useMemo(() => [0, 1, 2, 3].filter((s) => s !== seat), [seat]);
 
   // A "deal" is any refill from empty — covers rubber deals 2..N, not just the first.
@@ -120,7 +127,7 @@ export function FourPlayerTrick({
                       show the real cards — uncapped, tighter overlap. */}
                   {(() => {
                     const revealed = cards.some((c) => c !== "?");
-                    const shown = revealed ? cards : cards.slice(0, 8);
+                    const shown = revealed ? sortNatural(cards, trump) : cards.slice(0, 8);
                     const overlap = revealed ? (narrow ? -50 : -44) : narrow ? -44 : -40;
                     return shown.map((card, i) => (
                       <PlayingCard
@@ -160,12 +167,12 @@ export function FourPlayerTrick({
           badge={seatBadge?.(seat)}
         >
           <div className="aso-myhand" data-zone="hand" style={{ display: "flex" }}>
-            {(state.hands[seat] ?? []).map((card, i) => (
+            {myHand.map((card, i) => (
               <HandCard
                 key={card}
                 card={card}
                 index={i}
-                count={(state.hands[seat] ?? []).length}
+                count={myHand.length}
                 playable={myTurn && playable.has(card)}
                 onPlay={handlePlay}
               />

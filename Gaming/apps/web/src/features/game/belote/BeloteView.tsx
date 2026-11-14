@@ -4,6 +4,7 @@ import { Button } from "../../../ui";
 import { useAuthStore } from "../../../lib/store";
 import { playCue } from "../../../lib/sound";
 import { PlayingCard } from "../cards/PlayingCard";
+import { sortBelote } from "../cards/sortHand";
 import { type SuitChar } from "../cards/suits";
 import { TrumpIndicator } from "../cards/TrumpIndicator";
 import { FeltTable, Seat } from "../table/FeltTable";
@@ -145,6 +146,11 @@ export function BeloteView({ title }: { title: string }) {
   });
 
   const myTurn = !!state && state.turn === seat && legal.length > 0;
+  // Ръката е подредена по боя и сила (само показване). Договорът е окончателен
+  // чак във фаза PLAY — по време на наддаването: без коз, некозов ред.
+  const dealtHand = state?.hands[seat];
+  const playContract = state?.phase === "PLAY" ? state.contract : null;
+  const myHand = useMemo(() => sortBelote(dealtHand ?? [], playContract), [dealtHand, playContract]);
   const playMap = useMemo(
     () =>
       new Map(
@@ -286,7 +292,7 @@ export function BeloteView({ title }: { title: string }) {
             badge={<TeamDot team={myTeam} myTeam={myTeam} />}
           >
             <div className="aso-myhand" data-zone="hand" style={{ display: "flex" }}>
-              {(state.hands[seat] ?? []).map((card, i) => {
+              {myHand.map((card, i) => {
                 const playable = myTurn && state.phase === "PLAY" && playMap.has(card);
                 return (
                   // key by the card alone (cards are unique) — an index key
@@ -294,7 +300,7 @@ export function BeloteView({ title }: { title: string }) {
                   <CardSlot
                     key={card}
                     index={i}
-                    count={(state.hands[seat] ?? []).length}
+                    count={myHand.length}
                     card={card}
                     playable={playable}
                     onPlay={onPlay}
