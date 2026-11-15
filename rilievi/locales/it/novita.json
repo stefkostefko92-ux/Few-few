@@ -25,6 +25,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-15-versione-4-2": {
+        "area": "Schede e cartelli",
+        "titolo": "Versione 5.3: anno, marcatura CE e fermo per pericolo",
+        "testo": "Nella scheda ci sono l'anno di installazione, la marcatura CE e gli altri dati della targa in cabina (soggetto delle verifiche, installatore, numero di fabbricazione). Con anno e CE la scheda indica il D.M. 23/07/2009 e la parte della UNI 10411 per le modifiche; se la scheda prevede la sostituzione del quadro, dell'argano o della centralina ricorda la verifica straordinaria. Sul cartello di fermo puoi segnare il fermo per pericolo e il giorno delle tre comunicazioni (D.P.R. 162/1999, art. 15 c. 7). La voce 90 del foglio di intervento nomina tutti i soggetti delle verifiche; i fogli già confermati restano con il testo di prima."
+      },
       "2026-11-14-versione-5-2": {
         "area": "Preventivi",
         "titolo": "Versione 5.2: informativa nel preventivo, dati sempre accessibili",

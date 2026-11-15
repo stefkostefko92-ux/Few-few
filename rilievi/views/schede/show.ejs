@@ -43,6 +43,13 @@
   </div>
   <% } %>
   <%- include('../partials/plate', { byKey }) %>
+  <%# Кое важи по годината на монтажа и CE, и извънредната проверка при modifica costruttiva (src/schede/regime.ts). %>
+  <section class="notice" aria-labelledby="h-normativa">
+    <h2 class="section__title" id="h-normativa"><%= t('normativa.titolo') %></h2>
+    <% if (normativa.modifica) { %><p><strong><%= t('normativa.modifica.titolo') %></strong><br><%= normativa.modifica %></p><% } %>
+    <ul><% for (const riga of normativa.righe) { %><li><%= riga %></li><% } %></ul>
+    <p class="muted"><%= t('normativa.nota') %></p>
+  </section>
   <% sections.forEach((section, index) => { %>
   <section class="sheet__section" id="s-<%= section.key %>" aria-labelledby="h-<%= section.key %>">
     <h2 class="sheet__title" id="h-<%= section.key %>"><span class="secnum" aria-hidden="true"><%= index + 1 %></span><%= section.title %></h2>

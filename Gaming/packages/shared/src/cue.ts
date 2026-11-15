@@ -5,6 +5,12 @@
  * re-runs `runShot` on the same pre-shot balls + shot to animate — landing on
  * exactly the same positions. Only the shot params travel over the wire.
  *
+ * "Identical" holds bit for bit only because the simulation uses nothing but
+ * + − × ÷, `Math.sqrt` (correctly rounded everywhere) and exact helpers
+ * (abs/min/max/round, `%`). `Math.sin/cos/atan2/hypot/…` are approximated
+ * differently by each engine — Node 22 and Chrome 153 disagree on the last bit
+ * of cos/sin for ~3 % of angles — so the shot direction uses `detCos/detSin`.
+ *
  * Units: a 2×1 table (cushion-to-cushion). Six pockets (4 corners + 2 mid-rail).
  */
 
@@ -121,6 +127,60 @@ export const POCKETS: ReadonlyArray<readonly [number, number]> = [
 const clone = (b: Ball): Ball => ({ ...b });
 const speed2 = (b: Ball): number => b.vx * b.vx + b.vy * b.vy;
 
+// ── Deterministic trigonometry ──────────────────────────────────────────────
+// fdlibm's sin/cos kernels on [−π/4, π/4] after a Cody–Waite reduction by π/2:
+// only operations IEEE 754 rounds exactly, so every JS engine returns the same
+// double (within 1 ulp of Math.sin/cos — measured over [−π, π]).
+
+const TWO_PI = 6.283185307179586;
+const INV_PIO2 = 6.36619772367581382433e-1;
+/** π/2 split: the first 33 bits (n × PIO2_1 is exact for |n| ≤ 4) + the rest. */
+const PIO2_1 = 1.57079632673412561417e0;
+const PIO2_1T = 6.07710050650619224932e-11;
+const S1 = -1.66666666666666324348e-1;
+const S2 = 8.33333333332248946124e-3;
+const S3 = -1.98412698298579493134e-4;
+const S4 = 2.75573137070700676789e-6;
+const S5 = -2.50507602534068634195e-8;
+const S6 = 1.58969099521155010221e-10;
+const C1 = 4.16666666666666019037e-2;
+const C2 = -1.38888888888741095749e-3;
+const C3 = 2.48015872894767294178e-5;
+const C4 = -2.75573143513906633035e-7;
+const C5 = 2.0875723212981748279e-9;
+const C6 = -1.13596475577881948265e-11;
+
+function kSin(x: number): number {
+  const z = x * x;
+  const r = S2 + z * (S3 + z * (S4 + z * (S5 + z * S6)));
+  return x + z * x * (S1 + z * r);
+}
+
+function kCos(x: number): number {
+  const z = x * x;
+  const r = z * (C1 + z * (C2 + z * (C3 + z * (C4 + z * (C5 + z * C6)))));
+  return 1 - (0.5 * z - z * r);
+}
+
+/** Quadrant (0..3) and remainder (|r| ≲ π/4). `%` is an exact IEEE remainder. */
+function quadrant(a: number): [number, number] {
+  const x = a % TWO_PI;
+  const n = Math.round(x * INV_PIO2);
+  return [(n + 4) % 4, x - n * PIO2_1 - n * PIO2_1T];
+}
+
+/** sin, bit-identical in every JS engine (see `quadrant`). */
+export function detSin(a: number): number {
+  const [q, r] = quadrant(a);
+  return q === 0 ? kSin(r) : q === 1 ? kCos(r) : q === 2 ? -kSin(r) : -kCos(r);
+}
+
+/** cos, bit-identical in every JS engine (see `quadrant`). */
+export function detCos(a: number): number {
+  const [q, r] = quadrant(a);
+  return q === 0 ? kCos(r) : q === 1 ? -kSin(r) : q === 2 ? -kCos(r) : kSin(r);
+}
+
 /** Индекс на джоба, в който е (x, y), или -1. */
 function pocketAt(x: number, y: number): number {
   for (let i = 0; i < POCKETS.length; i++) {
@@ -164,8 +224,10 @@ export function runShot(balls: readonly Ball[], shot: Shot): ShotResult {
   let side = 0;
   if (cue && !cue.potted) {
     const v0 = MAX_SPEED * power;
-    cue.vx = Math.cos(shot.angle) * v0;
-    cue.vy = Math.sin(shot.angle) * v0;
+    // detCos/detSin, not Math.cos/sin: the browser must launch the cue ball
+    // with the very same doubles as the server (see the header).
+    cue.vx = detCos(shot.angle) * v0;
+    cue.vy = detSin(shot.angle) * v0;
     roll = spinY * FOLLOW_GAIN * v0;
     // Удар вдясно от центъра (spinX > 0) завърта топката с ωz < 0 (x→y е по
     // часовника на екрана, y надолу): cross(отместване, посока) = −spinX.
@@ -300,7 +362,8 @@ export function runShot(balls: readonly Ball[], shot: Shot): ShotResult {
     // Friction (linear deceleration toward rest).
     for (const b of bs) {
       if (b.potted) continue;
-      const sp = Math.hypot(b.vx, b.vy);
+      // sqrt of the sum, not Math.hypot (engine-approximated; see the header).
+      const sp = Math.sqrt(speed2(b));
       if (sp <= REST_EPS) {
         b.vx = 0;
         b.vy = 0;
@@ -371,6 +434,11 @@ export interface CueAction {
   /** 8-ball: обявен джоб за осмицата (0..5, виж `POCKETS`) — задължителен,
    *  когато играчът е на осмицата. */
   pocket?: number;
+  /** `shotNo` на масата, към която играчът се е прицелил. Ако е подаден, трябва
+   *  да съвпада със сървърния: двоен клик или удар, задържан в буфера при
+   *  прекъсната връзка, не бива да изиграе втори удар от позиция, която
+   *  играчът не е видял. */
+  shotNo?: number;
 }
 
 export type CueEvent =

@@ -416,6 +416,15 @@ model Scheda {
   portataKg                    Int?
   capienzaPersone              Int?
   fermate                      Int?
+  /// Табелата в кабината (D.P.R. 162/1999, чл. 16, ал. 3 а) и б)): кой прави периодичните проверки,
+  /// монтажникът и фабричният номер (15 ноември 2026).
+  soggettoVerifiche            String?                  @db.VarChar(120)
+  installatore                 String?                  @db.VarChar(120)
+  numeroFabbricazione          String?                  @db.VarChar(40)
+  /// Годината на монтажа и CE маркировката — кое важи (D.M. 23/07/2009, чл. 1–2; src/schede/regime.ts).
+  /// CHECK `Scheda_annoInstallazione_check`: 1850–2100.
+  annoInstallazione            Int?
+  marcaturaCe                  Boolean?
   ubicazioneMacchina           UbicazioneMacchina[]
   /// Къде е кутийката — свободен текст (до октомври 2026 беше цяло число: етажът).
   ubicazioneCassettina         String?                  @db.VarChar(120)
@@ -1006,6 +1015,13 @@ model Cartello {
   citta       String?  @db.VarChar(80)
   ubicazione  String?  @db.VarChar(120)
   testo       String   @db.VarChar(600)
+  /// Спиране поради опасност (D.P.R. 162/1999, чл. 15, ал. 7): поддържащият спира асансьора и уведомява
+  /// собственика, проверяващия (soggetto delle verifiche periodiche) и общината — денят на всяко
+  /// уведомяване. Без `pericolo` датите са празни (CHECK `Cartello_pericolo_check`). 15 ноември 2026.
+  pericolo             Boolean   @default(false)
+  avvisoProprietarioAt DateTime? @db.Date
+  avvisoVerificatoreAt DateTime? @db.Date
+  avvisoComuneAt       DateTime? @db.Date
   /// Картата на уредбата, от която е попълнена (същата фирма — проверява се при записа). Окончателно
   /// изтритата карта оставя табелата без връзка; табела без карта е нормална.
   schedaId    String?

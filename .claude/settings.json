@@ -38,7 +38,7 @@
   "hooks": {
     "SubagentStart": [
       {
-        "matcher": "pravniyat-razbirach|kodadjiyata|geymara|seo|prevodach|siydara|vps-adjiyata|3d-maniac|socialdjiyata|prodavacha|mobildjiyata|printadjiyata|dizayner|hromadjiyata|diskordjiyata|treydara|kachestveniyat|ai-djiyata|kasadjiyata|tayniyat-agent|konveyera|izpitatelya|letopisetsa|nabludatelya|analizatora|razbivacha|goladjiyata|skorostnika|asansyorchika|frezadjiyata|igrodelets|danachnika",
+        "matcher": "pravniyat-razbirach|kodadjiyata|geymara|seo|prevodach|siydara|vps-adjiyata|3d-maniac|socialdjiyata|prodavacha|mobildjiyata|printadjiyata|dizayner|hromadjiyata|diskordjiyata|treydara|kachestveniyat|ai-djiyata|kasadjiyata|tayniyat-agent|konveyera|izpitatelya|letopisetsa|nabludatelya|analizatora|razbivacha|goladjiyata|skorostnika|asansyorchika|frezadjiyata|igrodelets|danachnika|pronikvacha|strazhata",
         "hooks": [
           {
             "type": "command",
@@ -55,7 +55,7 @@
     ],
     "SubagentStop": [
       {
-        "matcher": "pravniyat-razbirach|kodadjiyata|geymara|seo|prevodach|siydara|vps-adjiyata|3d-maniac|socialdjiyata|prodavacha|mobildjiyata|printadjiyata|dizayner|hromadjiyata|diskordjiyata|treydara|kachestveniyat|ai-djiyata|kasadjiyata|tayniyat-agent|konveyera|izpitatelya|letopisetsa|nabludatelya|analizatora|razbivacha|goladjiyata|skorostnika|asansyorchika|frezadjiyata|igrodelets|danachnika",
+        "matcher": "pravniyat-razbirach|kodadjiyata|geymara|seo|prevodach|siydara|vps-adjiyata|3d-maniac|socialdjiyata|prodavacha|mobildjiyata|printadjiyata|dizayner|hromadjiyata|diskordjiyata|treydara|kachestveniyat|ai-djiyata|kasadjiyata|tayniyat-agent|konveyera|izpitatelya|letopisetsa|nabludatelya|analizatora|razbivacha|goladjiyata|skorostnika|asansyorchika|frezadjiyata|igrodelets|danachnika|pronikvacha|strazhata",
         "hooks": [
           {
             "type": "command",
@@ -170,6 +170,17 @@
         ]
       },
       {
+        "matcher": "Bash|Monitor|WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-engagement.mjs\"",
+            "timeout": 10,
+            "onFailure": "block"
+          }
+        ]
+      },
+      {
         "matcher": "Agent|Task",
         "hooks": [
           {
@@ -198,6 +209,16 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-secrets.mjs\"",
             "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/format-on-edit.mjs\"",
+            "timeout": 20
           }
         ]
       }

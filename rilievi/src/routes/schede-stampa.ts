@@ -6,6 +6,7 @@ import { aziendaLogo } from '../aziende/service.js';
 import { config } from '../config.js';
 import { pdfLimiter } from '../http/limits.js';
 import { riepilogoModuli } from '../ordini/riepilogo.js';
+import { SOTTO_TARGA } from '../schede/fields.js';
 import { displaySections, schedaTitle } from '../schede/format.js';
 import { sezioniStampate } from '../schede/ordine.js';
 import { pdfFileName, renderSchedaPdf } from '../schede/pdf.js';
@@ -37,6 +38,8 @@ schedeStampaRouter.get('/schede/:id/stampa', read, async (req, res) => {
     // „Impianto“ е в заглавната лента и в табелата — не се печата втори път; изключените в картата —
     // никак.
     printed: sezioniStampate(sections, scheda.sezioniEscluse),
+    // Под табелата: останалото от табелата в кабината, годината, CE и „Note impianto“ (fields.ts).
+    sottoTarga: SOTTO_TARGA,
     // Попълненото в модулите — само в тези, които картата иска (`moduliStampati`).
     riepilogo: riepilogoModuli(scheda),
     // Листовете на скицника — при отметката на картата, след модулите и преди снимките.

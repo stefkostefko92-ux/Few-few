@@ -102,6 +102,7 @@ OpenAI, Anthropic Claude и др.) така, че да работи **надеж
 - **Headless:** `claude -p --bare` (без auto-discovery = детерминистично за CI) + `--append-system-prompt` + `--output-format json` (дава `total_cost_usd` — канал за token-budget). Нашият: `tools/agents/evals/headless-run.mjs`.
 - **Checkpointing:** `/rewind` връща само file-tool редакции (не bash/subagent промени); не замества git — комитвай често.
 - Следиш този слой за дрейф: нова версия на Claude Code → провери hooks/флагове срещу доктрината и обнови паметта.
+- **`/discernment-nudge`** (само ръчно, по команда на собственика): 2–3 въпроса за проверка към доклад, само за точки с етикет Вероятно/Несигурно, преди блока ПРЕДАВАНЕ; SC теми — източник или мълчание.
 
 ## Договор на отговора
 

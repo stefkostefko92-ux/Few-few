@@ -128,9 +128,14 @@ export const GRUPPI_VOCI: readonly GruppoVoci[] = [
       v(87, 'Cassetta portachiavi completa di chiavi'),
       v(88, 'Riordino libretto immatricolazione con aggiunta fascicolo'),
       v(89, 'Lucchetto yale alla porta locale ascensore'),
+      // На блока беше само „dell'Organismo Notificato“. Периодичната проверка правят ASL (или ARPA по
+      // регионалния закон), Direzione provinciale del lavoro (DPL) при промишлени и селскостопански обекти или
+      // organismo notificato — D.P.R. 162/1999, чл. 13, ал. 1; извънредната — същите (чл. 14, ал. 1 и 3)
+      // (research/norme-ascensori/leggi/dpr-162-1999.md:253-258, :272-279). Старият текст остава за листовете,
+      // потвърдени преди смяната (`CAMBI_TESTO_VOCI` долу).
       v(
         90,
-        "Assistenza Tecnica all'Ingegnere dell'Organismo Notificato durante l'esecuzione della Verifica Periodica/Straordinaria",
+        "Assistenza Tecnica all'Ingegnere del soggetto verificatore (ASL/ARPA, DPL o Organismo Notificato) durante la Verifica Periodica/Straordinaria",
       ),
       v(
         91,
@@ -147,6 +152,47 @@ export const GRUPPI_VOCI: readonly GruppoVoci[] = [
 ];
 
 export const VOCI: readonly Voce[] = GRUPPI_VOCI.flatMap((gruppo) => gruppo.voci);
+
+/**
+ * Сменените текстове на точките. Печатът на потвърдения лист пази само номерата и стойностите
+ * (sigillo.ts), а PDF-ът и страницата се рисуват наново оттук — затова листът, потвърден преди `dal`, се
+ * рисува със стария текст (`prima`) дословно, а потвърденият от `dal` нататък — с днешния от `GRUPPI_VOCI`.
+ * Неподписаният лист (формата, подписът) показва текста към момента (`gruppiVoci(new Date())`), така че
+ * подписаното и нарисуваното после съвпадат. `dal` е мигът, от който новият текст важи: деплойът с новия
+ * текст трябва да е преди него (иначе старата версия би показала стария текст на лист, който после се
+ * рисува с новия) — ако деплойът закъснее, `dal` се мести напред, никога назад.
+ */
+export const CAMBI_TESTO_VOCI: ReadonlyArray<{ n: number; dal: Date; prima: string }> = [
+  {
+    // Точка 90 — трите органа по чл. 13, ал. 1 на D.P.R. 162/1999 (версия 4.2, 15 ноември 2026);
+    // 00:00 в Рим (CET, UTC+1) на 16 ноември 2026.
+    n: 90,
+    dal: new Date('2026-11-16T00:00:00+01:00'),
+    prima:
+      "Assistenza Tecnica all'Ingegnere dell'Organismo Notificato durante l'esecuzione della Verifica Periodica/Straordinaria",
+  },
+];
+
+/**
+ * Точките на листа с текстовете, които важат в мига `al`: за потвърден лист — `confermatoAt`, за
+ * неподписан — сега. Номерата, групите и празните места не се менят — само текстът.
+ */
+export function gruppiVoci(al: Date): readonly GruppoVoci[] {
+  const vecchi = new Map(
+    CAMBI_TESTO_VOCI.filter((c) => al.getTime() < c.dal.getTime()).map((c) => [c.n, c.prima]),
+  );
+  if (vecchi.size === 0) return GRUPPI_VOCI;
+  return GRUPPI_VOCI.map((gruppo) =>
+    gruppo.voci.some((voce) => vecchi.has(voce.n))
+      ? {
+          ...gruppo,
+          voci: gruppo.voci.map((voce) =>
+            vecchi.has(voce.n) ? { ...voce, testo: vecchi.get(voce.n)! } : voce,
+          ),
+        }
+      : gruppo,
+  );
+}
 
 /** „05“ — номерът, както е на листа (две цифри); и ключът в записа. */
 export const codiceVoce = (n: number): string => String(n).padStart(2, '0');
