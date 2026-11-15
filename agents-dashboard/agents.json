@@ -16890,6 +16890,11 @@
         {
           "date": "2026-11-15",
           "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Stripe Tax връща нулев данък с taxability_reason not_collecting, когато няма активна ре…\" (+29)"
+        },
+        {
+          "date": "2026-11-15",
+          "type": "quarantine",
           "summary": "Хипотеза → карантина: „TU IVA чл. 82 (от 01.01.2027) = D.Lgs. 127/2015 чл. 2 — дневните corrispettivi се запис…\""
         },
         {
