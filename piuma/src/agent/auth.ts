@@ -36,7 +36,7 @@ export function agentAuth(nonceStore: NonceStore) {
     const signature = req.get(HEADER_SIGNATURE) ?? '';
 
     const reject = (status: number, reason: string): void => {
-      logger.warn({ keyId: keyId || null, ip: req.ip, reason }, 'отказана агентска заявка');
+      logger.warn({ keyId: keyId || null, reason }, 'отказана агентска заявка');
       res.status(status).json({ error: reason });
     };
 

@@ -1,4 +1,5 @@
 import { Worker } from 'bullmq';
+import { runAuditCheck } from '../audit.js';
 import { logger } from '../logger.js';
 import { purgeExpiredSessions } from '../auth/sessions.js';
 import { refreshExpiringTokens } from '../services/accounts.js';
@@ -7,6 +8,7 @@ import { syncAllInsights } from '../services/insights.js';
 import { publishPost } from '../services/publish.js';
 import { processPrivateReply, purgeOldReplies } from '../services/replies.js';
 import {
+  AUDIT_VERIFY_JOB,
   AUTOPILOT_JOB,
   INSIGHTS_JOB,
   PUBLISH_JOB,
@@ -14,6 +16,7 @@ import {
   REFRESH_JOB,
   REPLY_JOB,
   createRedis,
+  scheduleAuditVerify,
   scheduleManagement,
   scheduleTokenRefresh,
   type AutopilotJobData,
@@ -24,6 +27,7 @@ import {
 async function main(): Promise<void> {
   await scheduleTokenRefresh();
   await scheduleManagement();
+  await scheduleAuditVerify();
 
   const worker = new Worker(
     PUBLISH_QUEUE,
@@ -60,6 +64,11 @@ async function main(): Promise<void> {
           : await runAutopilot();
         logger.info({ outcomes }, 'цикъл на автопилота');
         return outcomes;
+      }
+      if (job.name === AUDIT_VERIFY_JOB) {
+        // Логът и одит записът при скъсване са в runAuditCheck — тук само резултатът.
+        const chain = await runAuditCheck();
+        return { ok: chain.ok, brokenAt: chain.brokenAt, count: chain.count };
       }
       throw new Error(`Непозната задача: ${job.name}`);
     },
