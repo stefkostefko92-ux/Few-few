@@ -165,3 +165,14 @@ test("runJobs: wtFor дава собствено копие на пускане 
   assert.deepEqual(seen.sort(), ["/tmp/own-a.1.txt", "/tmp/own-a.2.txt"]);
   assert.deepEqual(cleaned.sort(), seen, "всяко собствено копие се чисти");
 });
+
+test("makeWorktree: провал на git носи причината в грешката (не голо „код 128“)", async () => {
+  const { makeWorktree } = await import("./live-run.mjs");
+  assert.throws(() => makeWorktree("няма-такъв-ref-0000"), (e) => /invalid reference|not a valid|unknown revision|fatal/i.test(String(e.message)));
+});
+
+test("EVAL_ALLOWED пуска локалната търсачка на ui-ux-pro-max (иначе оценката мери Дизайнера без каталога)", async () => {
+  const { EVAL_ALLOWED } = await import("./live-run.mjs");
+  assert.ok(EVAL_ALLOWED.some((r) => r.startsWith("Bash(python3 -I -B .claude/skills/ui-ux-pro-max/scripts/search.py")));
+  assert.ok(!EVAL_ALLOWED.some((r) => /^Bash\(python3 \*\)$|^Bash\(python3\)$/.test(r)), "без общо разрешение за python3");
+});

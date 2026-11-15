@@ -7,6 +7,7 @@ import { logAudit } from "@/lib/audit";
 import { setSetting, SETTING_KEYS } from "@/lib/settings";
 import { submitToIndexNow } from "@/lib/indexnow";
 import { clearAiConfigCache } from "@/lib/ai-config";
+import { isViberUrl } from "@/lib/push-core";
 import { parseFingerprints, DEFAULT_ANDROID_PACKAGE } from "@/lib/assetlinks";
 
 // Кодове за потвърждаване на собствеността в Google Search Console / Bing.
@@ -88,6 +89,30 @@ export async function saveContactSettings(formData: FormData): Promise<void> {
     action: "UPDATE",
     entity: "SiteSetting",
     summary: "Промяна на връзка към Facebook",
+  });
+
+  revalidatePath("/", "layout");
+  redirect("/admin/nastroyki?saved=1");
+}
+
+// Viber канал за известия. Празно = скрит. Само https към Viber.
+export async function saveViberChannel(formData: FormData): Promise<void> {
+  const admin = await requireAdmin();
+  const url = String(formData.get("viberChannelUrl") ?? "").trim();
+
+  if (url && !isViberUrl(url)) {
+    redirect(
+      "/admin/nastroyki?error=" +
+        encodeURIComponent("Адресът трябва да започва с https://invite.viber.com/ (или vb.me, viber.com)."),
+    );
+  }
+
+  await setSetting(SETTING_KEYS.viberChannelUrl, url);
+
+  await logAudit(admin, {
+    action: "UPDATE",
+    entity: "SiteSetting",
+    summary: url ? "Зададен Viber канал" : "Премахнат Viber канал",
   });
 
   revalidatePath("/", "layout");

@@ -90,6 +90,8 @@ PANEV_HEALTH_URL="${PANEV_HEALTH_URL:-http://127.0.0.1:4102/api/health}"
 # (server/.state/) живеят на сървъра и се пренасят при всеки деплой.
 OSPEDALI_DIR="${OSPEDALI_DIR:-/opt/ospedali}"
 OSPEDALI_SERVICE="${OSPEDALI_SERVICE:-ospedali}"
+# Собствен системен потребител (не www-data на nginx) — съвпада с User= в ospedali.service.
+OSPEDALI_USER="${OSPEDALI_USER:-ospedali}"
 OSPEDALI_HEALTH_URL="${OSPEDALI_HEALTH_URL:-http://127.0.0.1:8788/healthz}"
 
 # Nexus Dominion — Docker Compose; expose the server on 127.0.0.1:4000
@@ -241,17 +243,27 @@ if [ -z "${RELEASE_DIR:-}" ]; then
   ARCHIVE_PATH="$(find_archive)"
   log "Архив: $ARCHIVE_PATH"
 
-  # ── 1б) Проверка на целостта (по избор) ─────────────────────────────────────
-  # Ако до архива има <архив>.sha256, верифицирай преди да разопаковаш. Така
-  # случайно повреден или подменен архив не стига до сървъра.
-  if [ -f "${ARCHIVE_PATH}.sha256" ]; then
+  # ── 1б) Проверка на целостта (ЗАДЪЛЖИТЕЛНА — fail-closed) ───────────────────
+  # До архива трябва да има <архив>.sha256 (fetch-deploy.sh го пише сам; при ръчно
+  # качване: `sha256sum архив > архив.sha256` на СВОЯТА машина и качи двата файла).
+  # Липсващ, невалиден или несъвпадащ хеш = спиране ПРЕДИ разопаковане. Хешът се чете
+  # от файла и се сравнява с архива — не `sha256sum -c`, който проверява името,
+  # записано във файла (друго име там = проверка на друг файл).
+  # Единственият изход без хеш е изричен: ALLOW_UNVERIFIED_ARCHIVE=1 (на твоя отговорност).
+  sum_file="${ARCHIVE_PATH}.sha256"
+  if [ -f "$sum_file" ]; then
     log "Проверявам sha256…"
-    ( cd "$(dirname "$ARCHIVE_PATH")" \
-      && sha256sum -c "$(basename "$ARCHIVE_PATH").sha256" ) \
-      || die "sha256 не съвпада — спирам (повреден или подменен архив)."
+    expected="$(awk 'NR==1 { print tolower($1) }' "$sum_file")"
+    [[ "$expected" =~ ^[0-9a-f]{64}$ ]] \
+      || die "${sum_file##*/} не съдържа валиден sha256 (64 шестнадесетични знака) — спирам."
+    actual="$(sha256sum "$ARCHIVE_PATH" | awk '{ print $1 }')"
+    [ "$actual" = "$expected" ] \
+      || die "sha256 НЕ съвпада — спирам (повреден или подменен архив). Очакван ${expected:0:12}…, получен ${actual:0:12}…"
     ok "sha256 е валиден."
+  elif [ "${ALLOW_UNVERIFIED_ARCHIVE:-0}" = "1" ]; then
+    warn "Няма ${sum_file##*/} — продължавам БЕЗ проверка на целостта, защото ALLOW_UNVERIFIED_ARCHIVE=1."
   else
-    warn "Няма ${ARCHIVE_PATH##*/}.sha256 — пропускам проверка на целостта (препоръчително я добави)."
+    die "Няма ${sum_file##*/} — спирам (целостта на архива е непроверима). Направи го на своята машина: sha256sum ${ARCHIVE_PATH##*/} > ${ARCHIVE_PATH##*/}.sha256 и го качи до архива. Изрично без проверка: ALLOW_UNVERIFIED_ARCHIVE=1."
   fi
 
   # ── 2) Разопаковай в нов release и нормализирай корена ─────────────────────
@@ -694,6 +706,20 @@ EOF
 # статичен сайт от site/ (вече в git) → само rsync на файловете + рестарт. Тайните
 # (server/.env) и рънтайм състоянието (server/.state/ — брояч + видимост + хеш на
 # админ паролата) се ИЗКЛЮЧВАТ от rsync → оцеляват между версиите. Health + rollback.
+# Права (кодът е на root, сервизът пише само в server/.state/): кодът root:root, само за
+# четене от сервиза; server/.state/ на ospedali (700); server/.env root:ospedali 640 —
+# systemd го чете като root (EnvironmentFile), приложението — best-effort през групата.
+# Идемпотентно; поправя и стари инсталации, където chown -R даваше всичко на сервиза.
+ospedali_perms() {
+  # .state/ се прескача (prune): иначе за миг е на root и живият сервиз получава EACCES.
+  find "$OSPEDALI_DIR" -path "$OSPEDALI_DIR/server/.state" -prune -o -exec chown -h root:root {} +
+  install -d -o "$OSPEDALI_USER" -g "$OSPEDALI_USER" -m 700 "$OSPEDALI_DIR/server/.state"
+  chown -R "$OSPEDALI_USER:$OSPEDALI_USER" "$OSPEDALI_DIR/server/.state"
+  if [ -f "$OSPEDALI_DIR/server/.env" ]; then
+    chown "root:$OSPEDALI_USER" "$OSPEDALI_DIR/server/.env"
+    chmod 640 "$OSPEDALI_DIR/server/.env"
+  fi
+}
 deploy_ospedali() {
   # Папката в репото е ospedalitrasparenti/ (преименувана); старото име ospedali/
   # се приема като fallback, за да работят и по-стари архиви. Деплой ключът,
@@ -704,8 +730,12 @@ deploy_ospedali() {
   log "Разгръщам ospedali (systemd, нула зависимости, без билд)…"
   command -v node >/dev/null || die "Липсва node — инсталирай Node.js ≥ 20."
   command -v rsync >/dev/null || { apt-get update -y && apt-get install -y rsync; }
-  # Сервизът върви като www-data (споделен уеб потребител, виж ospedali.service).
-  id www-data >/dev/null 2>&1 || die "Липсва системен потребител www-data."
+  # Сервизът върви като собствен системен потребител (виж ospedali.service), не като
+  # www-data на nginx. Самосъздаващ се, идемпотентно; --user-group изрично създава група
+  # ospedali (Group= в unit-а и групата на .env). Преходът от www-data е без ръчна
+  # стъпка: ospedali_perms долу минава и през изключените от rsync server/.env и server/.state/.
+  id "$OSPEDALI_USER" >/dev/null 2>&1 || useradd --system --user-group --home-dir "$OSPEDALI_DIR" \
+    --shell /usr/sbin/nologin "$OSPEDALI_USER"
   # Бекъп на текущия код (server/.env и server/.state/ се пазят — excludes долу).
   [ -d "$OSPEDALI_DIR" ] && cp -a "$OSPEDALI_DIR" "${OSPEDALI_DIR}.bak-$TS"
   mkdir -p "$OSPEDALI_DIR"
@@ -714,11 +744,10 @@ deploy_ospedali() {
     --exclude server/.env --exclude server/.state/ \
     --exclude node_modules/ --exclude data/raw/ --exclude data/contratti/ \
     "$d"/ "$OSPEDALI_DIR"/
-  chown -R www-data:www-data "$OSPEDALI_DIR"
   # .state/ трябва да съществува ПРЕДИ старт: ProtectSystem=strict прави всичко
   # извън ReadWritePaths само за четене, а config.js прави mkdir на .state само ако
-  # родителят е записваем. Създаваме го тук (идемпотентно).
-  install -d -o www-data -g www-data -m 700 "$OSPEDALI_DIR/server/.state"
+  # родителят е записваем. ospedali_perms го създава (идемпотентно).
+  ospedali_perms
   # systemd unit — самоинсталиращ се/обновяващ се при всеки деплой.
   install -m 644 "$OSPEDALI_DIR/deploy/systemd/ospedali.service" /etc/systemd/system/ospedali.service
   systemctl daemon-reload
@@ -744,7 +773,7 @@ deploy_ospedali() {
     if [ -d "${OSPEDALI_DIR}.bak-$TS" ]; then
       rsync -a --delete --exclude server/.env --exclude server/.state/ \
         "${OSPEDALI_DIR}.bak-$TS"/ "$OSPEDALI_DIR"/
-      chown -R www-data:www-data "$OSPEDALI_DIR"
+      ospedali_perms
       systemctl restart "$OSPEDALI_SERVICE" || warn "ospedali: и откатът не тръгна — иска ръчна намеса."
     fi
   fi

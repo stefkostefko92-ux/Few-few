@@ -1,5 +1,8 @@
 /**
- * Commit-reveal fairness (§13.2). Before a match the server generates a random
+ * Commit-reveal помощници (§13.2) — ВСЕ ОЩЕ НЕ СА ВЪРЗАНИ към realtime хоста:
+ * matchmaking пази seed-а в Match.seed и не публикува commitment при старта,
+ * нито разкрива seed-а на играчите в края (вижда го само админ). Докато не се
+ * вържат, не твърдим „provably fair“. Замисленият ред: before a match the server generates a random
  * `seed`, publishes `commitment(seed)` = SHA-256(seed); after the match it
  * reveals `seed` so players can verify the shuffle/dice were not manipulated.
  *

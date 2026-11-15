@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "@aso/db";
+import { credit, debitClamped } from "@aso/db/ledger";
 import { PRODUCT_KINDS, ROLES, VIP_TIERS, levelFromXp, selfExclusionActive, type Role, type VipTier } from "@aso/shared";
-import { asyncHandler, badRequest, forbidden, HttpError } from "../http.js";
+import { asyncHandler, badRequest, forbidden, HttpError, intQuery } from "../http.js";
 import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 import { revokeUser, unrevokeUser } from "../auth/revocation.js";
 import { discordEnabled, notifyBroadcast, sendTest } from "../integrations/discord.js";
@@ -10,8 +11,9 @@ import { getDiscordConfig, setDiscordConfig } from "../settings.js";
 import { getStripe, stripeEnabled } from "../economy/stripe.js";
 import { env } from "../env.js";
 import { logger } from "../logger.js";
-import { audit, resolveActorName } from "./adminShared.js";
+import { audit, notFoundError, resolveActorName } from "./adminShared.js";
 import { adminCrudRouter } from "./adminCrud.js";
+import { adminMailRouter } from "./adminMail.js";
 
 export const adminRouter: Router = Router();
 
@@ -128,7 +130,7 @@ interface DayCount {
 adminRouter.get(
   "/stats/timeseries",
   asyncHandler(async (req, res) => {
-    const days = Math.min(Math.max(Number(req.query.days ?? 14), 1), 90);
+    const days = intQuery(req.query.days, 14, 1, 90);
     const start = new Date();
     start.setUTCHours(0, 0, 0, 0);
     start.setUTCDate(start.getUTCDate() - (days - 1));
@@ -191,7 +193,7 @@ adminRouter.get(
   asyncHandler(async (req, res) => {
     await liftExpiredBans();
     const q = String(req.query.q ?? "").trim();
-    const take = Math.min(Math.max(Number(req.query.take ?? 50), 1), 100);
+    const take = intQuery(req.query.take, 50, 1, 100);
     const cursor = typeof req.query.cursor === "string" && req.query.cursor ? req.query.cursor : undefined;
     const roleQ = String(req.query.role ?? "");
     const role = (ROLES as readonly string[]).includes(roleQ) ? (roleQ as Role) : undefined;
@@ -252,7 +254,7 @@ adminRouter.get(
         _count: { select: { inventory: true, matches: true } },
       },
     });
-    if (!user) throw badRequest("not_found", "Няма такъв играч");
+    if (!user) throw notFoundError("Няма такъв играч");
     const audits = await prisma.adminAudit.findMany({
       where: { targetId: id }, orderBy: { createdAt: "desc" }, take: 20,
     });
@@ -275,7 +277,7 @@ adminRouter.get(
   "/users/:id/matches",
   asyncHandler(async (req, res) => {
     const id = String(req.params.id ?? "");
-    const take = Math.min(Math.max(Number(req.query.take ?? 20), 1), 50);
+    const take = intQuery(req.query.take, 20, 1, 50);
     const cursor = typeof req.query.cursor === "string" && req.query.cursor ? req.query.cursor : undefined;
     const rows = await prisma.matchPlayer.findMany({
       where: { userId: id },
@@ -362,7 +364,7 @@ adminRouter.patch(
     }
 
     const target = await prisma.user.findUnique({ where: { id } });
-    if (!target) throw badRequest("not_found", "Няма такъв играч");
+    if (!target) throw notFoundError("Няма такъв играч");
 
     // No staff member may ban/demote/modify an account of equal-or-higher rank
     // (prevents an ADMIN from decapitating the OWNER or another ADMIN). Self-edit
@@ -390,27 +392,31 @@ adminRouter.patch(
       data.banReason = null;
       data.banUntil = null;
     }
-    // Credits use an ATOMIC increment so concurrent grants (or a grant racing a
-    // webhook credit / daily claim) can't lose an update. Debits keep the
-    // read-then-clamp (rare, staff-serialized) so the balance can't go negative.
-    if (typeof input.grantChips === "number" && input.grantChips !== 0) {
-      data.chips =
-        input.grantChips > 0
-          ? { increment: BigInt(input.grantChips) }
-          : (() => {
-              const next = target.chips + BigInt(input.grantChips);
-              return next < 0n ? 0n : next;
-            })();
+    // Валутата НЕ се пише като абсолютна стойност от прочетения `target` (губеше
+    // конкурентен кредит — webhook, дневен бонус). Кредит = атомарен increment;
+    // дебит = условен decrement с пазач „не под 0“ (недостигът отива в регистъра).
+    // Всичко + редовете в регистъра — в една транзакция.
+    const grantChips = input.grantChips ?? 0;
+    const grantGems = input.grantGems ?? 0;
+    if (Object.keys(data).length === 0 && grantChips === 0 && grantGems === 0) {
+      throw badRequest("noop", "Няма промени");
     }
-    if (typeof input.grantGems === "number" && input.grantGems !== 0) {
-      data.gems = input.grantGems > 0 ? { increment: input.grantGems } : Math.max(0, target.gems + input.grantGems);
-    }
-
-    if (Object.keys(data).length === 0) throw badRequest("noop", "Няма промени");
 
     // Сравняваме ПРЕДИ записа (обектът `target` не бива да се чете след update).
     const roleChanged = Boolean(input.role) && input.role !== target.role;
-    const updated = await prisma.user.update({ where: { id }, data });
+    const ledgerRef = `admin:${req.user!.sub}`;
+    let chipsShortfall = 0n;
+    let gemsShortfall = 0n;
+    const updated = await prisma.$transaction(async (tx) => {
+      if (Object.keys(data).length > 0) await tx.user.update({ where: { id }, data });
+      if (grantChips > 0) await credit(tx, id, "CHIPS", grantChips, "ADMIN", ledgerRef);
+      if (grantChips < 0) chipsShortfall = (await debitClamped(tx, id, "CHIPS", -grantChips, "ADMIN", ledgerRef)).shortfall;
+      if (grantGems > 0) await credit(tx, id, "GEMS", grantGems, "ADMIN", ledgerRef);
+      if (grantGems < 0) gemsShortfall = (await debitClamped(tx, id, "GEMS", -grantGems, "ADMIN", ledgerRef)).shortfall;
+      const fresh = await tx.user.findUnique({ where: { id } });
+      if (!fresh) throw notFoundError("Няма такъв играч");
+      return fresh;
+    });
     // Make a ban take effect immediately (revoke live access tokens); lift it
     // on unban.
     if (input.banned === true) await revokeUser(id);
@@ -423,6 +429,9 @@ adminRouter.patch(
     await audit(req.user!, actorName, "update_user", id, {
       target: target.displayName,
       ...input,
+      // Колко от дебита не е взето, защото балансът е спрял на 0.
+      ...(chipsShortfall > 0n ? { chipsShortfall: chipsShortfall.toString() } : {}),
+      ...(gemsShortfall > 0n ? { gemsShortfall: gemsShortfall.toString() } : {}),
     });
 
     res.json({ user: { ...toAdminUser(updated) } });
@@ -450,7 +459,7 @@ adminRouter.get(
   asyncHandler(async (req, res) => {
     const status = String(req.query.status ?? "OPEN").toUpperCase();
     const valid = ["OPEN", "REVIEWING", "DISMISSED", "CONFIRMED"];
-    const take = Math.min(Math.max(Number(req.query.take ?? 50), 1), 100);
+    const take = intQuery(req.query.take, 50, 1, 100);
     const cursor = typeof req.query.cursor === "string" && req.query.cursor ? req.query.cursor : undefined;
     const rows = await prisma.collusionFlag.findMany({
       where: valid.includes(status) ? { status: status as "OPEN" } : {},
@@ -493,7 +502,7 @@ adminRouter.get(
   "/reports",
   asyncHandler(async (req, res) => {
     const status = String(req.query.status ?? "OPEN").toUpperCase();
-    const take = Math.min(Math.max(Number(req.query.take ?? 50), 1), 100);
+    const take = intQuery(req.query.take, 50, 1, 100);
     const cursor = typeof req.query.cursor === "string" && req.query.cursor ? req.query.cursor : undefined;
     const rows = await prisma.chatReport.findMany({
       where: (REPORT_STATUSES as readonly string[]).includes(status) ? { status: status as "OPEN" } : {},
@@ -555,7 +564,7 @@ function parseDateParam(v: unknown): Date | undefined {
 adminRouter.get(
   "/audit",
   asyncHandler(async (req, res) => {
-    const take = Math.min(Math.max(Number(req.query.take ?? 50), 1), 100);
+    const take = intQuery(req.query.take, 50, 1, 100);
     const cursor = typeof req.query.cursor === "string" && req.query.cursor ? req.query.cursor : undefined;
     const action = String(req.query.action ?? "").trim();
     const actor = String(req.query.actor ?? "").trim();
@@ -810,7 +819,7 @@ adminRouter.patch(
     const id = String(req.params.id ?? "");
     const input = productUpdateSchema.parse(req.body);
     const existing = await prisma.product.findUnique({ where: { id } });
-    if (!existing) throw badRequest("not_found", "Няма такъв продукт");
+    if (!existing) throw notFoundError("Няма такъв продукт");
     const data: Record<string, unknown> = {};
     if (input.priceCents !== undefined) data.priceCents = input.priceCents;
     if (input.gems !== undefined) data.gems = input.gems;
@@ -827,7 +836,8 @@ adminRouter.patch(
 
 // ── Orders / refunds (read: staff; refund: ADMIN/OWNER) ──────────────────────
 
-const ORDER_STATUSES = ["completed", "refunded"] as const;
+// „refunding“ — видимо, за да се довърши заседнало връщане (виж refund маршрута).
+const ORDER_STATUSES = ["completed", "refunding", "refunded"] as const;
 
 /** GET /api/admin/orders?status=&take=&cursor= — global purchase list with the
  *  buyer + product joined, cursor-paginated like the other queues. */
@@ -836,7 +846,7 @@ adminRouter.get(
   asyncHandler(async (req, res) => {
     const statusQ = String(req.query.status ?? "").trim();
     const status = (ORDER_STATUSES as readonly string[]).includes(statusQ) ? statusQ : undefined;
-    const take = Math.min(Math.max(Number(req.query.take ?? 50), 1), 100);
+    const take = intQuery(req.query.take, 50, 1, 100);
     const cursor = typeof req.query.cursor === "string" && req.query.cursor ? req.query.cursor : undefined;
     const rows = await prisma.purchase.findMany({
       where: status ? { status } : {},
@@ -857,7 +867,8 @@ adminRouter.get(
       userId: p.userId,
       userName: p.user?.displayName ?? null,
       userEmail: p.user?.email ?? null,
-      sku: p.product?.sku ?? null,
+      // Без ред в Product (productId = null) — снимката на SKU от сесията.
+      sku: p.product?.sku ?? p.sku ?? null,
       kind: p.product?.kind ?? null,
       // Платената сума към момента на покупката — не текущата цена на продукта.
       priceCents: p.amountCents ?? p.product?.priceCents ?? 0,
@@ -867,17 +878,21 @@ adminRouter.get(
 );
 
 const refundSchema = z.object({
-  // Optional, non-automatic clawback of the credited gems/chips. Clamped to the
-  // player's available balance — a refund never drives a balance negative.
+  // Clawback of the credited gems/chips. Clamped to the player's available
+  // balance — a refund never drives a balance negative.
   clawback: z.boolean().optional(),
 });
 
 /**
  * POST /api/admin/orders/:id/refund — refund a purchase via Stripe (ADMIN/OWNER).
  * Returns a clear 503 when Stripe isn't configured (dev/test) instead of
- * throwing. Virtual currency is NOT clawed back automatically (matches the
- * webhook's charge.refunded policy); pass `clawback:true` to deduct the granted
- * gems/chips, clamped to what the player still holds.
+ * throwing. Тук clawback-ът е по избор (`clawback:true`); външен refund от
+ * таблото на Stripe се взема обратно автоматично от webhook-а (charge.refunded).
+ *
+ * Заседнало „refunding“ (срив/DB грешка след успешния `refunds.create`) се
+ * довършва със същия маршрут: claim-ът се прескача, `refunds.create` се вика пак
+ * със същия Idempotency-Key (Stripe връща записания отговор), после финалът.
+ * Условният преход `refunding|completed → refunded` пази един clawback.
  */
 adminRouter.post(
   "/orders/:id/refund",
@@ -886,10 +901,28 @@ adminRouter.post(
     const id = String(req.params.id ?? "");
     const { clawback } = refundSchema.parse(req.body);
     const purchase = await prisma.purchase.findUnique({ where: { id }, include: { product: true } });
-    if (!purchase) throw badRequest("not_found", "Няма такава поръчка");
+    if (!purchase) throw notFoundError("Няма такава поръчка");
     if (purchase.status === "refunded") throw badRequest("already_refunded", "Поръчката вече е върната");
-    if (purchase.status !== "completed") throw badRequest("not_refundable", "Само завършени поръчки могат да се връщат");
+    const resuming = purchase.status === "refunding";
+    if (!resuming && purchase.status !== "completed") {
+      throw badRequest("not_refundable", "Само завършени поръчки могат да се връщат");
+    }
     if (!stripeEnabled()) throw new HttpError(503, "stripe_not_configured", "Stripe не е конфигуриран");
+
+    // Claim: completed → refunding (атомарно). Докато е „refunding“, webhook-ът
+    // charge.refunded не пипа покупката (той взема обратно само от „completed“),
+    // така че изборът на админа за clawback важи детерминистично, а два паралелни
+    // refund-а не минават. При довършване claim-ът вече е направен.
+    if (!resuming) {
+      const claimed = await prisma.purchase.updateMany({
+        where: { id, status: "completed" },
+        data: { status: "refunding" },
+      });
+      if (claimed.count !== 1) throw badRequest("not_refundable", "Само завършени поръчки могат да се връщат");
+    }
+    // Връщане към „completed“ — САМО когато е сигурно, че Stripe не е върнал парите.
+    const release = () =>
+      prisma.purchase.updateMany({ where: { id, status: "refunding" }, data: { status: "completed" } });
 
     const stripe = getStripe();
     // Purchase.stripeId is the Checkout Session id; resolve its PaymentIntent to
@@ -903,9 +936,15 @@ adminRouter.post(
         : session.payment_intent?.id ?? null;
     } catch (err) {
       logger.warn({ err: (err as Error).message, id }, "refund: could not retrieve checkout session");
+      // При довършване предишен опит може вече да е върнал парите → остава „refunding“.
+      if (!resuming) await release();
       throw badRequest("stripe_lookup_failed", "Плащането не може да бъде намерено в Stripe");
     }
-    if (!paymentIntentId) throw badRequest("not_refundable", "Няма плащане за връщане (напр. абонамент)");
+    if (!paymentIntentId) {
+      // Без PaymentIntent няма как да е имало refund → безопасно обратно.
+      await release();
+      throw badRequest("not_refundable", "Няма плащане за връщане (напр. абонамент)");
+    }
 
     try {
       await stripe.refunds.create(
@@ -913,39 +952,46 @@ adminRouter.post(
         { idempotencyKey: `refund:${purchase.id}` },
       );
     } catch (err) {
-      logger.error({ err: (err as Error).message, id }, "refund: Stripe refund failed");
-      throw badRequest("refund_failed", "Stripe отказа връщането");
+      const e = err as { message?: string; type?: string; code?: string };
+      // Stripe пази idempotency ключа ≥24 ч, после повторът е нова заявка → при вече
+      // върнато плащане идва `charge_already_refunded` (docs.stripe.com/api/idempotent_requests,
+      // docs.stripe.com/error-codes) — това е успех за нас, продължаваме към финала.
+      if (e.code !== "charge_already_refunded") {
+        logger.error({ err: e.message, type: e.type, code: e.code, id }, "refund: Stripe refund failed");
+        // Категоричен отказ (невалидна заявка/спорно плащане) → парите не са върнати,
+        // връщаме към „completed“. Връзка/5xx/лимит → изходът е неизвестен: остава
+        // „refunding“ и се довършва с повторен опит (същият ключ).
+        if (e.type === "StripeInvalidRequestError" || e.type === "StripeCardError") {
+          await release();
+          throw badRequest("refund_failed", "Stripe отказа връщането");
+        }
+        throw new HttpError(502, "refund_pending", "Връщането не е потвърдено от Stripe — опитай пак");
+      }
     }
 
-    // Mark refunded locally + optional clamped clawback, in one transaction.
+    // refunding → refunded + незадължителен clawback, в една транзакция. Взема се
+    // реално начисленото по покупката (не текущата награда на продукта), с пазач
+    // „не под 0“ — недостигът се записва в регистъра (CLAWBACK).
     let clawedGems = 0;
     let clawedChips = 0;
     await prisma.$transaction(async (tx) => {
-      await tx.purchase.update({ where: { id }, data: { status: "refunded" } });
+      const done = await tx.purchase.updateMany({
+        where: { id, status: { in: ["refunding", "completed"] } },
+        data: { status: "refunded" },
+      });
+      if (done.count !== 1) return; // вече приключена по друг път — без втори clawback
       if (clawback) {
-        const gems = purchase.product?.gems ?? 0;
-        const chips = purchase.product?.chips ?? 0;
-        if (gems > 0 || chips > 0) {
-          const u = await tx.user.findUnique({ where: { id: purchase.userId }, select: { gems: true, chips: true } });
-          if (u) {
-            clawedGems = Math.min(gems, u.gems);
-            clawedChips = Number(u.chips < BigInt(chips) ? u.chips : BigInt(chips));
-            await tx.user.update({
-              where: { id: purchase.userId },
-              data: {
-                ...(clawedGems > 0 ? { gems: { decrement: clawedGems } } : {}),
-                ...(clawedChips > 0 ? { chips: { decrement: BigInt(clawedChips) } } : {}),
-              },
-            });
-          }
-        }
+        const gems = await debitClamped(tx, purchase.userId, "GEMS", purchase.grantedGems, "CLAWBACK", purchase.id);
+        const chips = await debitClamped(tx, purchase.userId, "CHIPS", purchase.grantedChips, "CLAWBACK", purchase.id);
+        clawedGems = Number(gems.taken);
+        clawedChips = Number(chips.taken);
       }
     });
 
     const actorName = await resolveActorName(req.user!.sub);
     await audit(req.user!, actorName, "order_refund", purchase.userId, {
       purchaseId: id,
-      sku: purchase.product?.sku ?? null,
+      sku: purchase.product?.sku ?? purchase.sku ?? null,
       clawback: Boolean(clawback),
       clawedGems,
       clawedChips,
@@ -1000,7 +1046,7 @@ adminRouter.patch(
     const id = String(req.params.id ?? "");
     const { active } = announcementPatchSchema.parse(req.body);
     const existing = await prisma.announcement.findUnique({ where: { id } });
-    if (!existing) throw badRequest("not_found", "Няма такава обява");
+    if (!existing) throw notFoundError("Няма такава обява");
     const updated = await prisma.announcement.update({ where: { id }, data: { active } });
     const actorName = await resolveActorName(req.user!.sub);
     await audit(req.user!, actorName, active ? "announcement_activate" : "announcement_deactivate", id, {
@@ -1015,3 +1061,5 @@ adminRouter.patch(
 // Под-рутерът наследява requireAuth + staff RBAC от горния `use`; записите са
 // гейтнати поотделно вътре (ADMIN+; изтриване на акаунт — само OWNER).
 adminRouter.use(adminCrudRouter);
+// Пощата на портала (Brevo) — само OWNER, по модела на Rilievi.
+adminRouter.use(adminMailRouter);

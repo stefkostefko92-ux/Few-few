@@ -60,9 +60,23 @@ describe("grantProduct", () => {
       product: { findUnique: async () => product },
       user: { findUnique: async () => owner, update: vi.fn(async () => ({})) },
       inventoryItem: { upsert: vi.fn(async () => ({})) },
+      currencyLedger: { create: vi.fn(async () => ({})) },
     };
   }
   type Tx = Parameters<typeof grantProduct>[0];
+
+  it("връща реално начисленото и пише PURCHASE ред в регистъра (в същата транзакция)", async () => {
+    const tx = fakeTx(null);
+    const got = await grantProduct(tx as unknown as Tx, "u1", "chips_big", { kind: "CHIP_PACK", gems: 0, chips: 5000, cosmeticId: null }, "cs_1");
+    expect(got).toEqual({ gems: 0, chips: 5000, cosmeticId: null });
+    expect(tx.currencyLedger.create).toHaveBeenCalledWith({
+      data: { userId: "u1", currency: "CHIPS", delta: 5000n, reason: "PURCHASE", refId: "cs_1", shortfall: 0n },
+    });
+    // Нищо не е начислено (непознат SKU) → null, без ред в регистъра.
+    const none = fakeTx(null);
+    expect(await grantProduct(none as unknown as Tx, "u1", "ghost")).toBeNull();
+    expect(none.currencyLedger.create).not.toHaveBeenCalled();
+  });
 
   it("без снимка чете реда в Product (и деактивиран) — не статичния CATALOG", async () => {
     const tx = fakeTx({ kind: "GEMS", gems: 555, chips: null, cosmeticId: null, active: false });

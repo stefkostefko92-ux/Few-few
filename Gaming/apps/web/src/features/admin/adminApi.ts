@@ -1,3 +1,4 @@
+import type { MailSettingsInput, MailSettingsView, MailTestResult } from "@aso/shared";
 import { ApiError, type AdminAuditEntry } from "../../lib/api";
 
 /**
@@ -365,6 +366,13 @@ export const adminApi = {
     }),
 
   // In-app announcements
+  // Пощата на портала (Brevo) — само OWNER.
+  mail: () => request<MailSettingsView>("/admin/mail"),
+  saveMail: (input: MailSettingsInput) =>
+    request<MailSettingsView>("/admin/mail", { method: "PUT", body: JSON.stringify(input) }),
+  testMail: () => request<MailTestResult>("/admin/mail/test", { method: "POST", body: "{}" }),
+  disableMail: (accountPassword: string) =>
+    request<MailSettingsView>("/admin/mail/disable", { method: "POST", body: JSON.stringify({ accountPassword }) }),
   announcements: () => request<{ items: AdminAnnouncement[] }>("/admin/announcements"),
   createAnnouncement: (input: { title: string; body: string; expiresAt?: string | null }) =>
     request<{ announcement: AdminAnnouncement }>("/admin/announcements", {

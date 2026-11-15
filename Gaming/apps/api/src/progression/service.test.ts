@@ -24,6 +24,9 @@ interface FakeQuest {
 const users = new Map<string, FakeUser>();
 const quests: FakeQuest[] = [];
 const kv = new Map<string, string>();
+// Уникалният (userId, day) на DailyClaim — като PK в Postgres.
+const dailyClaims = new Set<string>();
+const ledgerRows: Array<Record<string, unknown>> = [];
 let qSeq = 0;
 
 type Data = Record<string, unknown>;
@@ -84,7 +87,31 @@ vi.mock("@aso/db", () => {
     ratingPerGame: { findMany: vi.fn(async () => []) },
     achievement: { findMany: vi.fn(async () => []), create: vi.fn(async () => ({})) },
     notification: { create: vi.fn(async () => ({})) },
-    $transaction: vi.fn(async (fn: (tx: unknown) => unknown) => fn(prisma)),
+    currencyLedger: {
+      create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
+        ledgerRows.push(data);
+        return data;
+      }),
+    },
+    dailyClaim: {
+      create: vi.fn(async ({ data }: { data: { userId: string; day: string } }) => {
+        const k = `${data.userId}:${data.day}`;
+        if (dailyClaims.has(k)) throw Object.assign(new Error("Unique constraint failed"), { code: "P2002" });
+        dailyClaims.add(k);
+        return data;
+      }),
+    },
+    // Грешка в транзакцията → дневният запис се отменя (rollback като в Postgres).
+    $transaction: vi.fn(async (fn: (tx: unknown) => unknown) => {
+      const saved = new Set(dailyClaims);
+      try {
+        return await fn(prisma);
+      } catch (err) {
+        dailyClaims.clear();
+        for (const k of saved) dailyClaims.add(k);
+        throw err;
+      }
+    }),
   };
   return { prisma };
 });
@@ -97,6 +124,7 @@ vi.mock("../redis.js", () => ({
       return "OK";
     }),
     get: vi.fn(async (key: string) => kv.get(key) ?? null),
+    del: vi.fn(async (key: string) => (kv.delete(key) ? 1 : 0)),
     incr: vi.fn(async (key: string) => {
       const n = Number(kv.get(key) ?? 0) + 1;
       kv.set(key, String(n));
@@ -122,6 +150,60 @@ beforeEach(() => {
   users.clear();
   quests.length = 0;
   kv.clear();
+  ledgerRows.length = 0;
+  dailyClaims.clear();
+});
+
+describe("дневен бонус — устойчивост и регистър", () => {
+  it("грешка в базата не „изгаря“ деня: следващият опит взема наградата", async () => {
+    seed();
+    const { prisma } = await import("@aso/db");
+    vi.mocked(prisma.user.update).mockRejectedValueOnce(new Error("db down"));
+    await expect(claimDaily("u1")).rejects.toThrow(/db down/);
+    expect(users.get("u1")!.chips).toBe(0n);
+
+    const retry = await claimDaily("u1");
+    expect(retry.claimed).toBe(true);
+    expect(users.get("u1")!.chips).toBe(BigInt(dailyReward(1).chips));
+  });
+
+  it("двусмислен commit (записано, но потвърждението е изгубено) → повторният опит НЕ дава втори бонус", async () => {
+    seed();
+    const { prisma } = await import("@aso/db");
+    vi.mocked(prisma.$transaction).mockImplementationOnce((async (fn: (tx: unknown) => unknown) => {
+      await fn(prisma); // базата е комитнала…
+      throw new Error("connection lost after commit"); // …но отговорът не стига до нас
+    }) as never);
+    await expect(claimDaily("u1")).rejects.toThrow(/connection lost/);
+    expect(users.get("u1")!.chips).toBe(BigInt(dailyReward(1).chips));
+
+    const retry = await claimDaily("u1");
+    expect(retry.claimed).toBe(false);
+    expect(users.get("u1")!.chips).toBe(BigInt(dailyReward(1).chips));
+  });
+
+  it("паралелни заявки за един ден → наградата се дава веднъж", async () => {
+    seed();
+    const [a, b] = await Promise.all([claimDaily("u1"), claimDaily("u1")]);
+    expect([a.claimed, b.claimed].filter(Boolean)).toHaveLength(1);
+    expect(users.get("u1")!.chips).toBe(BigInt(dailyReward(1).chips));
+  });
+
+  it("записва ред DAILY в регистъра", async () => {
+    seed();
+    await claimDaily("u1");
+    expect(ledgerRows).toContainEqual(
+      expect.objectContaining({ userId: "u1", currency: "CHIPS", delta: BigInt(dailyReward(1).chips), reason: "DAILY" }),
+    );
+  });
+
+  it("наградата за мисия се записва като QUEST", async () => {
+    seed();
+    await recordMatchResult({ matchId: "mq", userId: "u1", game: "CHESS", won: true, rating: 1200, displayName: "Иван" });
+    const quest = ledgerRows.filter((r) => r.reason === "QUEST");
+    expect(quest.length).toBeGreaterThan(0);
+    expect(quest.reduce((s, r) => s + (r.delta as bigint), 0n)).toBe(users.get("u1")!.chips);
+  });
 });
 
 describe("дневен бонус × VIP", () => {

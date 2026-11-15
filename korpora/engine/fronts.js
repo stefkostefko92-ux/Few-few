@@ -5,8 +5,8 @@ import { r1, clamp, dimTxt, plural } from './util.js';
 import { hingeCount, hingeProduct, hingeSystemOf, handleModel, handleHoles, hingeLimits, solveOverlay, HINGE_LIMITS } from './hardware.js';
 import { SYSTEM, MIN_WEB, FRONT_GAP_Z, addHoleOnce, snapHingeY, taken } from './joinery.js';
 import { HINGE_CLEAR } from './shelves.js';
+import { STOCK } from './materials.js';
 
-const DENSITY = 650; // kg/m³, assumption for the door-weight estimate
 const HANDLE_KG = 0.3; // assumption
 const HANDLE_MARGIN = 20; // the handle stays this far inside the edges of its front
 const BODY_PAST_HOLES = 20; // assumption when the shop gives no length: the body ends 20 mm past each hole
@@ -50,11 +50,24 @@ export function buildDoors(ctx, o, a) {
 
 const VARIANT_BG = { full: 'покрит кант', half: 'полупокрит кант', inset: 'открит кант' };
 
+// Distance of the mounting plate's hole row from the carcass front edge. An inset door sits inside the carcass, so its
+// plate goes back by the door thickness and the maker's extra (sys.plate.insetExtra); without that number: null, and
+// nothing is drilled from a guess. No door is inset today — ready for when one is.
+export function plateSetback(sys, variant, doorT) {
+  if (variant !== 'inset') return sys.plate.setback;
+  return Number.isFinite(sys.plate.insetExtra) ? sys.plate.setback + doorT + sys.plate.insetExtra : null;
+}
+
 function mountHinges(ctx, o, door, carcassPanel, { onPartition, zEnd, hingeSides, c, avoid }) {
   const family = hingeProduct(o.hinge);
   const sys = hingeSystemOf(family);
   if (!family || !sys) {
     ctx.warn('error', 'Няма избрана панта с данни за пробиване.');
+    return;
+  }
+  // the hinge is made for a range of door thickness: outside it the cup and the arm do not fit (fail closed)
+  if (sys.door && (door.T < sys.door.min || door.T > sys.door.max)) {
+    ctx.warn('error', `${door.name}: ${dimTxt(door.T)} mm — ${sys.name} е за врати ${dimTxt(sys.door.min)}–${dimTxt(sys.door.max)} mm. Изберете друга панта.`);
     return;
   }
   const [x0, y0] = door.box.min;
@@ -80,13 +93,19 @@ function mountHinges(ctx, o, door, carcassPanel, { onPartition, zEnd, hingeSides
   // our own rule (the hinge makers give no minimum width): the cup stays in the hinge half of the door and leaves the
   // other half to the handle; such doors are reported together in model.js
   door.narrowForCup = Wd < 2 * (sol.c + sys.cup.d);
-  const mass = (Wd / 1000) * (Hd / 1000) * (door.T / 1000) * DENSITY + HANDLE_KG;
+  const mass = (Wd / 1000) * (Hd / 1000) * (door.T / 1000) * STOCK[door.stock].density + HANDLE_KG;
+  door.massKg = Math.round(mass * 100) / 100;
   const lim = hingeLimits(sys);
   const cnt = hingeCount(mass, Hd, sys);
   if (mass > lim.maxMassKg || Hd > lim.maxHeight) ctx.warn('error', `${door.name}: ${Math.round(Hd)} mm, ≈ ${dimTxt(mass)} kg — извън таблицата на производителя (до ${lim.maxHeight} mm и ${dimTxt(lim.maxMassKg)} kg).`);
   const others = hingeSides.filter((h) => h.panel === carcassPanel && h.door !== door && h.door.hingeYs).flatMap((h) => h.door.hingeYs);
+  // where the plate's holes go: an inset door without the maker's number gets nothing drilled from a guess
+  const pz = zEnd - plateSetback(sys, variant, door.T);
+  if (!Number.isFinite(pz)) {
+    ctx.warn('error', `${door.name}: ${sys.name} — няма данни за мястото на планката при ${VARIANT_BG[variant]}.`);
+    return;
+  }
   // the plate holes keep MIN_WEB to the holes already in the panel (the slide pilots of the drawers on either face)
-  const pz = zEnd - sys.plate.setback;
   const clear = (y) => sys.plate.holes.every((dy) => !taken(carcassPanel, [faceX, y + dy, pz], sys.plate.d));
   // the manufacturer's range from the edges first; when the hinges on the other face of a partition leave no room in
   // it, the nearest place outside the range, with a warning (the plate holes must never meet)
@@ -103,24 +122,31 @@ function mountHinges(ctx, o, door, carcassPanel, { onPartition, zEnd, hingeSides
   const minSpacing = sys.positions?.minSpacing;
   const tight = ys.slice(1).map((y, k) => y - ys[k]).filter((d) => minSpacing && d < minSpacing);
   if (tight.length) ctx.warn('error', `${door.name}: пантите са на ${dimTxt(Math.min(...tight))} mm една от друга — ${sys.brand} изисква поне ${minSpacing} mm. Изберете друга система панти или по-висока врата.`);
+  // a plate without system screws is fixed with chipboard screws: no Ø5 × 12 holes for it (Blum: only D 0 and 3 come
+  // with system screws, catalogue p. 153) — and no CNC file until another plate or hinge is chosen
+  const systemScrews = !sys.plate.systemScrewPlates || sys.plate.systemScrewPlates.includes(sol.plate);
+  if (!systemScrews) ctx.warn('error', `${door.name}: планка ${dimTxt(sol.plate)} mm на ${sys.brand} не идва със системни винтове Ø5 (само ${sys.plate.systemScrewPlates.map(dimTxt).join(' и ')} mm) — отворите Ø${dimTxt(sys.plate.d)} × ${dimTxt(sys.plate.depth)} за нея не се пробиват. Изберете друга панта или разпределение.`);
   door.hingeYs = ys;
   door.hingePanel = carcassPanel.id;
-  door.plateHoles = sys.plate.holes.length;
+  door.plateHoles = systemScrews ? sys.plate.holes.length : 0;
   door.hingeSpreadShort = ys.length > 1 && ys.at(-1) - ys[0] <= Wd; // Blum Inc. note, aggregated in model.js
   const product = family.variants?.[variant] ?? null;
   const label = product ? `${product.brand ?? family.brand} ${product.mfrSku ?? product.sku ?? ''}`.trim() : `${family.brand} ${VARIANT_BG[variant]}`;
   const cupX = edgeX + sgn * (sol.c + sys.cup.d / 2);
   const f = sys.fixings;
-  const dowel = family.fixing === 'dowel' && f.dowel;
+  // the cup's own fixings: pressed-in dowels (Ø × depth by the system), Hettich quick-fit Fix (its own Ø10 × 6), or
+  // screws set by the hinge's template (marked, not drilled)
+  const dowel = family.fixing === 'fix' ? f.fix : family.fixing === 'dowel' && f.dowel;
+  if (family.fixing === 'fix' && !f.fix) ctx.warn('error', `${family.name}: ${sys.name} няма данни за пробиване за бърз монтаж Fix.`);
   for (const y of ys) {
     const meta = { hw: 'hinge', ref: family.id, refName: family.name, label, hingeY: y }; // hingeY: the cup and its own fixings
     hole(door, [cupX, y, zBack], sys.cup.d, sys.cup.depth, 'cup', meta);
     for (const dy of [-f.spacing / 2, f.spacing / 2]) {
       const w = [cupX + sgn * f.offset, y + dy, zBack];
-      if (dowel) hole(door, w, f.dowel.d, f.dowel.depth, 'cup-dowel', meta);
+      if (dowel) hole(door, w, dowel.d, dowel.depth, 'cup-dowel', meta);
       else mark(door, w, 'cup-screw', { note: f.screw, ...meta });
     }
-    for (const dy of sys.plate.holes) addHoleOnce(carcassPanel, [faceX, y + dy, pz], sys.plate.d, sys.plate.depth, 'plate', { hw: 'plate', ref: family.id, refName: family.name, label: `${sys.brand} планка` }, onPartition);
+    if (systemScrews) for (const dy of sys.plate.holes) addHoleOnce(carcassPanel, [faceX, y + dy, pz], sys.plate.d, sys.plate.depth, 'plate', { hw: 'plate', ref: family.id, refName: family.name, label: `${sys.brand} планка` }, onPartition);
   }
   ctx.hw(`hinge:${family.id}:${variant}`, {
     name: product ? product.name : `${family.name} — ${VARIANT_BG[variant]} (няма в каталога, поръчайте отделно)`,
