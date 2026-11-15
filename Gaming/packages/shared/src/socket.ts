@@ -36,6 +36,8 @@ export const SOCKET_EVENTS = {
   CHAT_MESSAGE: "chat:message",
   PRESENCE: "game:presence",
   ERROR: "game:error",
+  /** Токенът на сокета изтече, но достъпът е валиден: клиентът обновява бисквитката, без да се прекъсва. */
+  AUTH_REAUTH: "auth:reauth",
   // lobby: server -> client
   LOBBY_STATE: "lobby:state",
   LOBBY_LIST_RESULT: "lobby:listResult",

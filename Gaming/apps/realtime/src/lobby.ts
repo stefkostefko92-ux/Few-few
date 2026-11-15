@@ -19,7 +19,9 @@ import { logger } from "./logger.js";
 import { blockedMessage, type PlayBlock } from "./responsible.js";
 
 const userRoom = (userId: string): string => `u:${userId}`;
-const BOT_NAME = "АСО Бот";
+const BOT_NAME = "Бот";
+/** Ботовете са номерирани по реда на местата: „Бот 1“, „Бот 2“… (клиентът го превежда). */
+export const botName = (n: number): string => `${BOT_NAME} ${n}`;
 
 interface Slot {
   userId: string | null;
@@ -142,10 +144,11 @@ export class Lobby {
   }
 
   toSeats(): LobbySeat[] {
+    let bots = 0;
     return this.slots.map((s, seat) => ({
       seat,
       userId: s.userId,
-      displayName: s.userId === null && !s.isBot ? "" : s.displayName,
+      displayName: s.isBot ? botName(++bots) : s.userId === null ? "" : s.displayName,
       isBot: s.isBot,
       isHost: s.userId !== null && s.userId === this.hostUserId,
       team: teamOfSeat(this.game, seat),
@@ -183,13 +186,14 @@ export class Lobby {
   /** Build the authoritative room seating from the occupied slots, compacted to
    *  a contiguous 0..n-1 range (variable-seat games may have left gaps). */
   toRoomSeats(seed: string): RoomSeat[] {
+    let bots = 0;
     return this.slots
       .filter((s) => s.userId !== null || s.isBot)
       .map((s, seat) => ({
         seat,
         userId: s.isBot ? null : s.userId,
         isBot: s.isBot,
-        displayName: s.isBot ? BOT_NAME : s.displayName || "Играч",
+        displayName: s.isBot ? botName(++bots) : s.displayName || "Играч",
         bot: s.isBot ? new RandomBot(`${seed}:bot:${seat}`) : undefined,
       }));
   }

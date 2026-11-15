@@ -14,16 +14,21 @@ concurrency:
   group: adblock-lists
   cancel-in-progress: false
 
-# Least-privilege: пише само клон + PR през вградения GITHUB_TOKEN (без трети-страни actions).
+# Least-privilege: по подразбиране само четене; правата за запис са при job-а, който ги ползва.
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Пише само клон + PR през вградения GITHUB_TOKEN (без трети-страни actions).
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
+      # persist-credentials остава по подразбиране (true) НАРОЧНО: стъпката „PR при промяна"
+      # прави `git push -f` с токена от checkout. Единствен job с push в този файл.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -54,12 +59,12 @@ jobs:
           git commit -m "chore(adblock): седмичен ребилд на EasyList/EasyPrivacy/URLhaus ($(date -u +%Y-%m-%d))" \
             -m "Автоматичен ребилд (adblock-lists workflow). Гейт зелен: 0 block правила към main_frame, бюджет <30k, npm test, mv3-lint."
           git push -f -u origin "$branch"
+          # Тялото е ВЪТРЕ в блоковия скалар (преди беше на колона 0 → невалиден YAML, workflow-ът не се зареждаше).
+          body="Автоматичен седмичен ребилд на EasyList/EasyPrivacy/URLhaus → DNR правила, popup hosts и scriptlets/main.js."
+          body+=$'\n\n'"Гейтът в CI е зелен (0 block правила към main_frame, бюджет <30k статични правила, npm test, mv3-lint). Прегледай counts.json диф-а и слей."
+          body+=$'\n\n'"🤖 Generated with [Claude Code](https://claude.com/claude-code)"
           if gh pr list --head "$branch" --state open --json number --jq 'length' | grep -q '^0$'; then
             gh pr create --title "chore(adblock): седмичен ребилд на филтър-листите $(date -u +%Y-%m-%d)" \
-              --body "Автоматичен седмичен ребилд на EasyList/EasyPrivacy/URLhaus → DNR правила, popup hosts и scriptlets/main.js.
-
-Гейтът в CI е зелен (0 block правила към main_frame, бюджет <30k статични правила, npm test, mv3-lint). Прегледай counts.json диф-а и слей.
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)" \
+              --body "$body" \
               --base main --head "$branch"
           fi

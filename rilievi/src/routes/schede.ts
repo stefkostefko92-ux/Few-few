@@ -21,6 +21,7 @@ import {
 } from '../schede/format.js';
 import { fogliDi } from '../schizzi/service.js';
 import { listSchede } from '../schede/list.js';
+import { riferimentiNormativi } from '../schede/regime.js';
 import { highlight } from '../schede/search.js';
 import { createScheda, getScheda, trashScheda, updateScheda } from '../schede/service.js';
 import { formValuesFromBody, parseScheda, type FieldErrors } from '../schede/validation.js';
@@ -168,6 +169,8 @@ schedeRouter.get('/schede/:id', read, async (req, res) => {
     showAzienda: spansAziende(scope(req, 'schede:read')),
     ident: schedaTitle(scheda, res.locals.t),
     sections: displaySections(scheda, res.locals.t, res.locals.fmt, scheda.azienda.ordineSezioni),
+    // Кое важи по годината и CE (D.M. 23/07/2009) и напомнянето за извънредната проверка (D.P.R. 162/1999).
+    normativa: riferimentiNormativi(scheda as unknown as Record<string, unknown>, res.locals.t),
     // Записани с потвърждение (или отпреди проверката) — да се виждат и след записа.
     discrepanze: discrepanzeDi(formValuesFromScheda(scheda, res.locals.fmt), res.locals.t),
     // Листовете на скицника — и когато фирмата вече го е изключила (нарисуваното остава).

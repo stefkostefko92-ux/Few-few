@@ -5,7 +5,7 @@
   const action = isEdit ? '/cartelli/' + cartello.id : '/cartelli';
   const errorKeys = Object.keys(errors);
   const maxOf = { indirizzo: 200, citta: 80, ubicazione: 120, testo: maxTesto };
-  const required = { data: 'cartelli.error.dataMancante', testo: 'cartelli.error.testoMancante' };
+  const required = { data: 'cartelli.error.dataMancante', testo: 'cartelli.error.testoMancante', pericolo: 'cartelli.error.pericoloMancante' };
   const labelOf = (key) => key === 'azienda' ? t('scheda.field.azienda') : key === 'scheda' ? t('cartelli.daScheda.titolo') : t('cartelli.campo.' + key);
   const messageOf = (key) => key === 'azienda' ? t('scheda.error.azienda') : key === 'scheda' ? t('cartelli.daScheda.nonDisponibile') : errors[key] === 'required' && required[key] ? t(required[key]) : t('scheda.error.' + errors[key], { maxLength: maxOf[key] });
   // Табелата, попълнена от картата: при редакцията връзката само се показва.
@@ -33,6 +33,7 @@
   </div>
 <% } %>
 <% if (!isEdit && (puoCercare || scheda)) { %><%- include('_da-scheda') %><% } %>
+<% if (typeof modifica !== 'undefined' && modifica) { %><div class="notice" role="note"><p><strong><%= t('normativa.modifica.titolo') %></strong></p><p><%= modifica %></p></div><% } %>
 <% if (collegata) { %><p class="muted"><%= t('cartelli.daScheda.collegato', { nome: [collegata.matricola ? t('cartelli.daScheda.matricola', { m: collegata.matricola }) : '', collegata.numeroImpianto ? t('cartelli.daScheda.numero', { n: collegata.numeroImpianto }) : ''].filter(Boolean).join(' · ') || '—' }) %></p><% } %>
 <form class="form" method="post" action="<%= action %>" novalidate>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -58,6 +59,20 @@
       <%- campo('citta', 'text', { autocomplete: 'address-level2' }) %>
       <%- campo('ubicazione', 'text', { hint: t('cartelli.hint.ubicazione') }) %>
       <%- campo('testo', 'textarea', { wide: true, hint: proposto ? t('cartelli.daScheda.proposto') : t('cartelli.hint.testo') }) %>
+    </div>
+  </fieldset>
+  <%# Спиране поради опасност — D.P.R. 162/1999, чл. 15, ал. 7: трите уведомявания (src/cartelli/form.ts). %>
+  <fieldset class="section">
+    <legend class="section__title"><%= t('cartelli.pericolo.titolo') %></legend>
+    <div class="field field--wide">
+      <label class="tick"><input type="checkbox" id="f-pericolo" name="pericolo" value="si"<% if (errors.pericolo) { %> aria-invalid="true" aria-describedby="hint-pericolo err-pericolo"<% } else { %> aria-describedby="hint-pericolo"<% } %><% if (values.pericolo === 'si') { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('cartelli.campo.pericolo') %></span></label>
+      <p class="field__hint" id="hint-pericolo"><%= t('cartelli.pericolo.hint') %></p>
+      <% if (errors.pericolo) { %><p class="field__error" id="err-pericolo"><%= messageOf('pericolo') %></p><% } %>
+    </div>
+    <div class="grid grid--cartello">
+      <%- campo('avvisoProprietarioAt', 'date', { facoltativo: true }) %>
+      <%- campo('avvisoVerificatoreAt', 'date', { facoltativo: true }) %>
+      <%- campo('avvisoComuneAt', 'date', { facoltativo: true }) %>
     </div>
   </fieldset>
   <div class="toolbar">

@@ -27,7 +27,7 @@ import {
 /**
  * Кент срещу трима ботове — само истински кликове по масата.
  *
- * Стекът раздава с фиксиран seed (KENT=e2e-kent-411, infra/e2e-games.sh):
+ * Стекът раздава с фиксиран seed (KENT=e2e-kent-6809, infra/e2e-games.sh):
  *  1. кръг: „Пас“ (нищо полезно в борсата; преди това избирам карта и я
  *     отказвам с втори клик), после смени „моя карта → карта от борсата“, докато
  *     събера каре аса → „Дай знак“ (тайно — ходът остава у мен). Партньорът
@@ -41,8 +41,9 @@ import {
  * е избран seed-ът — офлайн реплика на стаята).
  */
 
-const SEEDED_FIRST_HAND = ["2C", "TS", "AC", "2S"];
-const SEEDED_FIRST_CENTER = ["9H", "7D", "4H", "9C"];
+// Раздадено: 4S KC 8C 4C. Показва се подредена: ♠ преди ♣, в боята A K Q J T … 2.
+const SEEDED_FIRST_HAND = ["4S", "KC", "8C", "4C"];
+const SEEDED_FIRST_CENTER = ["JH", "2D", "TH", "AD"];
 
 type Step = "swap" | "pass" | "signal" | "kupe" | "stop";
 
@@ -150,7 +151,8 @@ async function takeTurn(page: Page, done: Record<Step, number>): Promise<Step> {
   await expect(handCard(page, swap.handIndex)).toHaveClass(/aso-card--selected/);
   const taken = center[swap.centerIndex]!;
   await act(page, centerCard(page, swap.centerIndex));
-  expect((await view(page)).hand[swap.handIndex]).toBe(taken);
+  // ръката се подрежда наново по боя и сила — новата карта е в нея, не непременно на същото място
+  expect((await view(page)).hand).toContain(taken);
   return "swap";
 }
 

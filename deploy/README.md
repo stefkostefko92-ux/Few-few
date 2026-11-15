@@ -1,5 +1,8 @@
 # Автоматизиран деплой (`deploy/autodeploy.sh`)
 
+**Сървърът е при netcup (ЕС/Германия), не при Hetzner** (собственикът, 13.11.2026). IP адресът — от DNS,
+никога по памет: `getent hosts rilievi.carbonstealth.eu`.
+
 Деплой на монорепото до жив сървър — едно действие.
 
 ## Работен поток (репото е публично — сървърът си взема архива сам)
@@ -40,8 +43,12 @@ ZIP отпреди месец.
 Когато сървърът няма изходяща мрежа към GitHub:
 
 1. В GitHub → **Code → Download ZIP** (или `tar.gz` от Releases).
-2. Качи архива в **`/root`** (напр. `scp Few-few.zip root@СЪРВЪР:/root/`).
-3. ```bash
+2. На СВОЯТА машина: `sha256sum Few-few.zip > Few-few.zip.sha256` — без този файл до архива
+   `autodeploy.sh` спира (проверката е задължителна; изрично без нея: `ALLOW_UNVERIFIED_ARCHIVE=1`).
+   `fetch-deploy.sh` го пише сам.
+3. Качи двата файла. След втвърдяването от `tools/vps/ansible/site.yml` root по SSH не влиза:
+   `scp Few-few.zip Few-few.zip.sha256 deploy@СЪРВЪР:` → на сървъра `sudo mv ~/Few-few.zip* /root/`.
+4. ```bash
    cd /root && unzip -o Few-few.zip >/dev/null   # само за да стигнеш до скрипта
    sudo bash /root/few-few-*/deploy/autodeploy.sh
    ```
@@ -255,7 +262,8 @@ ZIP отпреди месец.
 | `RILIEVI_SHARED` · `RILIEVI_LAST_GOOD` · `RILIEVI_HEALTH_WAIT` | `/opt/few-few/shared/rilievi` · `…/last-good` · `90` | тайни и бекъпи на rilievi, последният работещ release (целта на отката), секунди за сондата |
 | `FAKTURIST_SHARED` · `FAKTURIST_LAST_GOOD` · `FAKTURIST_HEALTH_WAIT` | `/opt/few-few/shared/fakturist` · `…/last-good` · `90` | тайни, бекъпи и отпечатък на `LEDGER_SEAL_KEY` на fakturist, последният работещ release (целта на отката), секунди за сондата |
 | `VPSDASH_DIR` / `VPSDASH_SERVICE` / `VPSDASH_HEALTH_URL` | `/opt/vps-dashboard` · `vps-dashboard` · `http://127.0.0.1:7700/api/ping` | път, systemd услуга и health на VPS таблото |
-| `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
+| `ARCHIVE` | (най-новият в `/root`) | конкретен архив (до него задължително `<архив>.sha256`) |
+| `ALLOW_UNVERIFIED_ARCHIVE` | `0` | `1` = деплой без `.sha256` (изрично, на твоя отговорност) |
 | `FORCE_SEED` | `0` | принудителен сийд на zabobovdol |
 | `ZBD_ENV` | `/opt/few-few/shared/zabobovdol/.env` | стабилният дом на тайните на zabobovdol (600) |
 | `ZBD_HEALTH_URL` | `http://127.0.0.1:<HTTP_PORT>/api/health` | сонда на zabobovdol (с базата) |

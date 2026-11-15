@@ -18,7 +18,7 @@ import {
 } from './pdf-parti.js';
 import { numeroModulo, type InterventoFull } from './service.js';
 import { improntaLeggibile } from './sigillo.js';
-import { GRUPPI_VOCI, valoriVoci } from './voci.js';
+import { gruppiVoci, valoriVoci } from './voci.js';
 import { OPZIONI_PDFA } from '../legale/pdfa.js';
 
 /**
@@ -52,10 +52,11 @@ const SIZES = [FS, 6.6, 6.2, 5.8, 5.4];
 function dimensioneDa(doc: PDFKit.PDFDocument, row: InterventoFull, end: number): number {
   if (end <= FONDO_PAGINA) return FS;
   const voci = valoriVoci(row.voci);
+  const gruppi = gruppiVoci(row.confermatoAt ?? new Date());
   const colonne = (fs: number) =>
     Math.max(
-      misuraColonna(doc, GRUPPI_VOCI.slice(0, 3), voci, W / 2, fs),
-      misuraColonna(doc, GRUPPI_VOCI.slice(3), voci, W / 2, fs),
+      misuraColonna(doc, gruppi.slice(0, 3), voci, W / 2, fs),
+      misuraColonna(doc, gruppi.slice(3), voci, W / 2, fs),
     );
   const base = end - colonne(FS);
   return SIZES.find((size) => base + colonne(size) <= FONDO_PAGINA) ?? SIZES.at(-1)!;
@@ -220,10 +221,12 @@ function disegnaFoglio(
   y += 13;
 
   // Двете колони като на блока: табло, кабина, врати вляво; шахта, машинно отделение вдясно.
+  // Текстът на точките — от деня на потвърждаването (voci.ts, `CAMBI_TESTO_VOCI`).
   const voci = valoriVoci(row.voci);
+  const gruppi = gruppiVoci(row.confermatoAt ?? new Date());
   const colW = W / 2;
-  const leftEnd = drawColonna(doc, GRUPPI_VOCI.slice(0, 3), voci, M, y, colW, fs);
-  const rightEnd = drawColonna(doc, GRUPPI_VOCI.slice(3), voci, M + colW, y, colW, fs);
+  const leftEnd = drawColonna(doc, gruppi.slice(0, 3), voci, M, y, colW, fs);
+  const rightEnd = drawColonna(doc, gruppi.slice(3), voci, M + colW, y, colW, fs);
   y = Math.max(leftEnd, rightEnd) + 6;
 
   // „Altro“ — кутийката и текстът върху два пунктирни реда.
