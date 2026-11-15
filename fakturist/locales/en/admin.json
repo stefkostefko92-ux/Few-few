@@ -286,7 +286,8 @@
       "paidActive": "The organisation has a running paid period — tick that it ends.",
       "terminated": "The organisation is terminated — no plan can be granted.",
       "deleted": "The organisation has been deleted.",
-      "notGranted": "The current plan was not granted manually — it is not ended from here."
+      "notGranted": "The current plan was not granted manually — it is not ended from here.",
+      "conflict": "The organisation’s plan changed at the same moment (a payment or expiry) — reload the card and try again."
     }
   }
 }

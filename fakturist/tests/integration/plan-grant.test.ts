@@ -344,3 +344,77 @@ test('мастърът прекратява дадения план → нача
     `/admin/r/organizations/${companyId}?greshka=grant.notGranted`,
   );
 });
+
+test('едновременна замяна на абонамента (плащане/cron) → разбираем отказ „conflict“, не 500 и не deadlock', async () => {
+  // Даден план, после външна транзакция като activatePayment: отменя действащия, а grantPlan започва
+  // точно между отмяната и новия абонамент.
+  await grantPlan({
+    organizationId: companyId,
+    actorId: masterId,
+    planCode: 'pro',
+    months: 1,
+    note: 'Начало',
+    replacePaid: false,
+  });
+  let releaseOuter!: () => void;
+  const gate = new Promise<void>((resolve) => (releaseOuter = resolve));
+  let cancelled!: () => void;
+  const cancelledDone = new Promise<void>((resolve) => (cancelled = resolve));
+  const outer = prisma.$transaction(
+    async (tx) => {
+      await tx.subscription.updateMany({
+        where: { organizationId: companyId, status: 'ACTIVE' },
+        data: { status: 'CANCELLED' },
+      });
+      cancelled();
+      await gate;
+      await tx.subscription.create({
+        data: {
+          organizationId: companyId,
+          planCode: 'business',
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: new Date(Date.now() + 30 * DAY),
+          provider: 'REVOLUT',
+        },
+      });
+    },
+    { timeout: 20_000, maxWait: 20_000 },
+  );
+  await cancelledDone;
+  const granting = grantPlan({
+    organizationId: companyId,
+    actorId: masterId,
+    planCode: 'business',
+    months: 3,
+    note: 'Едновременно',
+    replacePaid: true,
+  }).then(
+    () => null,
+    (error: unknown) => error,
+  );
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  releaseOuter();
+  await outer;
+  const error = await granting;
+  assert.ok(error instanceof GrantError, `GrantError, не ${String(error)}`);
+  assert.equal(error.code, 'conflict');
+  assert.equal(
+    await prisma.subscription.count({ where: { organizationId: companyId, status: 'ACTIVE' } }),
+    1,
+    'един действащ абонамент',
+  );
+  assert.equal((await active(companyId)).provider, 'REVOLUT', 'плащането не е загубено');
+});
+
+test('изтрита фирма → 404 (SPEC 71), не пренасочване', async () => {
+  await prisma.organization.update({ where: { id: firmId }, data: { deletedAt: new Date() } });
+  const res = await http.post(master, `/admin/firmi/${firmId}/plan`, {
+    planCode: 'firm',
+    months: '1',
+    note: 'Изтрита',
+  });
+  assert.equal(res.status, 404);
+  const end = await http.post(master, `/admin/firmi/${firmId}/plan/prekrati`, {});
+  assert.equal(end.status, 404);
+  await prisma.organization.update({ where: { id: firmId }, data: { deletedAt: null } });
+});

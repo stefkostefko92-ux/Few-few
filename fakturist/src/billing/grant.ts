@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { FALLBACK_YEARS, farEnd, startPlanFor } from './expiry.js';
@@ -24,7 +25,8 @@ export type GrantErrorCode =
   | 'months'
   | 'note'
   | 'paidActive'
-  | 'notGranted';
+  | 'notGranted'
+  | 'conflict';
 
 export class GrantError extends Error {
   constructor(readonly code: GrantErrorCode) {
@@ -82,10 +84,32 @@ export const grantEnd = (now: Date, months: GrantMonths): Date =>
 
 type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 
-/** Фирмата под заключване (FOR UPDATE) — едно действие по плана ѝ наведнъж (и спрямо активирането). */
+/**
+ * Транзакцията на действие по плана: плащане или cron, сменили абонамента в същия миг (уникалният индекс
+ * „един действащ“ — P2002), или прекъсната сериализация (P2034) → `conflict`, мастърът опитва пак. Не 500.
+ */
+async function inTx<T>(run: (tx: Tx) => Promise<T>): Promise<T> {
+  try {
+    return await prisma.$transaction(run);
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      (error.code === 'P2002' || error.code === 'P2034')
+    ) {
+      throw new GrantError('conflict');
+    }
+    throw error;
+  }
+}
+
+/**
+ * Фирмата под заключване — едно действие по плана ѝ наведнъж. FOR NO KEY UPDATE (както createOrder): FOR UPDATE
+ * би спрял проверката на външния ключ при activatePayment/expireOne (subscription.create → FOR KEY SHARE на
+ * фирмата) — deadlock. Едновременната им замяна на абонамента стига дотук като P2002 → `conflict` (`inTx`).
+ */
 async function lockedOrganization(tx: Tx, organizationId: string) {
   const rows = await tx.$queryRaw<Array<{ id: string }>>`
-    SELECT "id" FROM "Organization" WHERE "id" = ${organizationId} FOR UPDATE`;
+    SELECT "id" FROM "Organization" WHERE "id" = ${organizationId} FOR NO KEY UPDATE`;
   if (rows.length !== 1) throw new GrantError('notFound');
   const org = await tx.organization.findUniqueOrThrow({
     where: { id: organizationId },
@@ -119,7 +143,7 @@ export async function grantPlan(
       throw new GrantError('months');
     }
   }
-  return prisma.$transaction(async (tx) => {
+  return inTx(async (tx) => {
     const org = await lockedOrganization(tx, input.organizationId);
     const plan = await tx.plan.findUnique({
       where: { code: input.planCode },
@@ -178,7 +202,7 @@ export async function endGrant(input: {
   now?: Date;
 }): Promise<void> {
   const now = input.now ?? new Date();
-  await prisma.$transaction(async (tx) => {
+  await inTx(async (tx) => {
     const org = await lockedOrganization(tx, input.organizationId);
     const current = await activeSubscription(tx, input.organizationId);
     if (!current || !current.granted) throw new GrantError('notGranted');

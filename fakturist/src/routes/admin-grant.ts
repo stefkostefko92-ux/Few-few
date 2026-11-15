@@ -30,7 +30,7 @@ export function adminGrantRouter(): Router {
       await grantPlan({ organizationId: id, actorId: req.principal!.user.id, ...parsed.value });
     } catch (error) {
       if (!(error instanceof GrantError)) throw error;
-      if (error.code === 'notFound') throw new HttpError(404);
+      if (error.code === 'notFound' || error.code === 'deleted') throw new HttpError(404);
       return res.redirect(303, `${back}?greshka=grant.${error.code}`);
     }
     res.redirect(303, `${back}?plan=ok`);
@@ -44,7 +44,7 @@ export function adminGrantRouter(): Router {
       await endGrant({ organizationId: id, actorId: req.principal!.user.id });
     } catch (error) {
       if (!(error instanceof GrantError)) throw error;
-      if (error.code === 'notFound') throw new HttpError(404);
+      if (error.code === 'notFound' || error.code === 'deleted') throw new HttpError(404);
       return res.redirect(303, `${back}?greshka=grant.${error.code}`);
     }
     res.redirect(303, `${back}?plan=ended`);
