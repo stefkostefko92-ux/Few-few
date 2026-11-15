@@ -16568,7 +16568,7 @@
           "korpora/CLAUDE.md — правилото „CNC никога не е грешен“ (cncBlockers, 422)",
           "GRBL v1.1 — списък на поддържаните G-кодове (github.com/gnea/grbl, README и wiki)"
         ],
-        "lessons": 60
+        "lessons": 84
       },
       "evolution": [
         {
@@ -16612,9 +16612,20 @@
           "date": "2026-11-15",
           "event": "v6.0 — учене",
           "detail": "Научи: При врата с открит кант планката на Blum се изтегля навътре с дебелината на фронта FD +… (+2 още)"
+        },
+        {
+          "version": "8.4.0",
+          "date": "2026-11-15",
+          "event": "v8.4 — учене",
+          "detail": "Научи: $ACADVER стойности по Autodesk — AC1009 = R11 и R12, AC1012 = R13, AC1014 = R14, AC1015… (+23 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „$ACADVER стойности по Autodesk — AC1009 = R11 и R12, AC1012 = R13, AC1014 = R14, AC1015…\" (+23 още) · 3 в карантина"
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
