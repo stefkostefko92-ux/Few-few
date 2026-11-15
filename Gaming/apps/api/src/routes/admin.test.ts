@@ -173,6 +173,20 @@ function applyCursor<T extends { id: string }>(
 }
 
 vi.mock("@aso/db", () => {
+  // increment/decrement като в Prisma (останалите полета — директно).
+  const applyCurrencyData = (row: FakeUser, data: Where): void => {
+    for (const [k, v] of Object.entries(data)) {
+      const rec = row as unknown as Record<string, unknown>;
+      if (v && typeof v === "object" && ("increment" in v || "decrement" in v)) {
+        const cur = rec[k];
+        const inc = v.increment ?? 0;
+        const dec = v.decrement ?? 0;
+        rec[k] = typeof cur === "bigint" ? cur + BigInt(inc) - BigInt(dec) : (cur as number) + Number(inc) - Number(dec);
+      } else {
+        rec[k] = v;
+      }
+    }
+  };
   const userDelegate = {
     findUnique: vi.fn(async ({ where }: { where: Where }) => {
       if (where.id) return users.get(where.id) ?? null;
@@ -205,13 +219,22 @@ vi.mock("@aso/db", () => {
     update: vi.fn(async ({ where, data }: { where: Where; data: Where }) => {
       const user = users.get(where.id);
       if (!user) throw new Error("user not found");
-      Object.assign(user, data);
+      applyCurrencyData(user, data);
       return { ...user };
     }),
     updateMany: vi.fn(async ({ where, data }: { where: Where; data: Where }) => {
       let count = 0;
       const now = (v: unknown) => (v instanceof Date ? v : new Date(String(v)));
       for (const u of users.values()) {
+        if (where.id && u.id !== where.id) continue;
+        // Условен дебит на валутата (gte / точна стойност) + increment/decrement.
+        let skip = false;
+        for (const f of ["chips", "gems"] as const) {
+          const c = where[f];
+          if (c === undefined) continue;
+          if (typeof c === "object" && c !== null && "gte" in c ? u[f] < c.gte : u[f] !== c) skip = true;
+        }
+        if (skip) continue;
         if (where.email && u.email !== where.email) continue;
         if (where.role?.not && u.role === where.role.not) continue;
         if (typeof where.banned === "boolean" && u.banned !== where.banned) continue;
@@ -220,7 +243,7 @@ vi.mock("@aso/db", () => {
           if (where.banUntil.lte && !(u.banUntil && u.banUntil.getTime() <= now(where.banUntil.lte).getTime()))
             continue;
         }
-        Object.assign(u, data);
+        applyCurrencyData(u, data);
         count++;
       }
       return { count };
@@ -390,23 +413,27 @@ vi.mock("@aso/db", () => {
     }
   }
 
-  return {
-    prisma: {
-      user: userDelegate,
-      adminAudit,
-      chatReport,
-      matchPlayer,
-      match,
-      collusionFlag: {
-        count: vi.fn(async () => 0),
-        findMany: vi.fn(async () => []),
-        update: vi.fn(async () => ({})),
-      },
-      purchase,
-      product,
-      announcement,
-      $queryRaw,
+  const client: Record<string, unknown> = {
+    user: userDelegate,
+    adminAudit,
+    chatReport,
+    matchPlayer,
+    match,
+    collusionFlag: {
+      count: vi.fn(async () => 0),
+      findMany: vi.fn(async () => []),
+      update: vi.fn(async () => ({})),
     },
+    purchase,
+    product,
+    announcement,
+    currencyLedger: { create: vi.fn(async ({ data }: { data: Where }) => data) },
+    $queryRaw,
+  };
+  client.$transaction = vi.fn(async (fn: (tx: unknown) => unknown) => fn(client));
+
+  return {
+    prisma: client,
     Prisma: { PrismaClientKnownRequestError: FakeKnownRequestError },
     AuthTokenType: { EMAIL_VERIFY: "EMAIL_VERIFY", PASSWORD_RESET: "PASSWORD_RESET" },
     OAuthProvider: { GOOGLE: "GOOGLE", FACEBOOK: "FACEBOOK" },
@@ -1064,6 +1091,17 @@ describe("admin orders", () => {
     expect(res.status).toBe(200);
     expect(res.body.items).toHaveLength(1);
     expect(res.body.items[0]).toMatchObject({ status: "completed", sku: "gems_small", userName: "Купувач" });
+  });
+
+  it("филтърът показва заседналите в „refunding“ (за довършване)", async () => {
+    addPurchase({ status: "completed" });
+    addPurchase({ status: "refunding" });
+    const res = await request(app)
+      .get("/api/admin/orders?status=refunding")
+      .set("Cookie", asRole("s", "SUPPORT"));
+    expect(res.status).toBe(200);
+    expect(res.body.items).toHaveLength(1);
+    expect(res.body.items[0]).toMatchObject({ status: "refunding" });
   });
 
   it("blocks refund below ADMIN", async () => {

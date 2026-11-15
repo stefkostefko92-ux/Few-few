@@ -168,7 +168,8 @@ export const GAME_TURN_SECONDS: Record<GameKey, number> = {
   EIGHTBALL: 45,
   NINEBALL: 45,
   SNOOKER: 45,
-  MAGNAT: 40,
+  // = DEFAULT_MAGNAT_CONFIG.turnSeconds (стаята може да зададе свое).
+  MAGNAT: 30,
 };
 
 export const turnSecondsFor = (game: GameKey): number => GAME_TURN_SECONDS[game];
