@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 695
+        "lessons": 696
       },
       "evolution": [
         {
@@ -2061,9 +2061,20 @@
           "date": "2026-11-15",
           "event": "v63.6 — учене",
           "detail": "Научи: В rilievi PDF-ът на листа за интервенция се рисува при всяка заявка от текущия GRUPPI_V… (+1 още)"
+        },
+        {
+          "version": "63.7.0",
+          "date": "2026-11-15",
+          "event": "v63.7 — учене",
+          "detail": "Научи: Stripe API v1 при повторен Idempotency-Key връща запазения първи отговор (до изчистване…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „Stripe API v1 при повторен Idempotency-Key връща запазения първи отговор (до изчистване…\""
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
