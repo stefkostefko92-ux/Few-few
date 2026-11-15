@@ -613,3 +613,7 @@
 {"t":"start","ts":"2026-11-15T08:21:50.168Z","id":"r42e5c5df","flow":"авто","lead":"pravniyat-razbirach","auto":true}
 {"t":"handoff","ts":"2026-11-15T08:21:50.168Z","id":"r42e5c5df","from":"pravniyat-razbirach","to":"човек","status":"наред","run":"4da52921"}
 {"t":"handoff","ts":"2026-11-15T08:40:17.816Z","id":"r42e5c5df","from":"razbivacha","to":"kodadjiyata","status":"има бележки (3 блокера — fail-open в ядрото на оградата, ПРЕДИ да важи)","run":"77c5f0c2"}
+{"t":"start","ts":"2026-11-14T10:15:56.960Z","id":"r168b82cc","flow":"авто","lead":"vps-adjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-14T10:15:56.960Z","id":"r168b82cc","from":"vps-adjiyata","to":"човек","status":"има бележки","run":"63453b74"}
+{"t":"start","ts":"2026-11-14T17:33:53.571Z","id":"r69df3882","flow":"авто","lead":"igrodelets","auto":true}
+{"t":"handoff","ts":"2026-11-14T17:33:53.571Z","id":"r69df3882","from":"igrodelets","to":"kodadjiyata","status":"наред","run":"01c7867f"}

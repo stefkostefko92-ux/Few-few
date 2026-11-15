@@ -36,20 +36,13 @@ import {
  * Всеки ход се решава само по това, което показва масата.
  */
 
+// Раздадено: 2S 5D QH AS 4H 5H 2H JD TC 9H KS JH 6S. Показва се подредена по боя и сила
+// (♠ ♥ ♣ ♦, A K Q J T 9 … 2); в наддаването няма коз.
 const SEEDED_FIRST_HAND = [
-  "2S",
-  "5D",
-  "QH",
-  "AS",
-  "4H",
-  "5H",
-  "2H",
-  "JD",
+  "AS", "KS", "6S", "2S",
+  "QH", "JH", "9H", "5H", "4H", "2H",
   "TC",
-  "9H",
-  "KS",
-  "JH",
-  "6S",
+  "JD", "5D",
 ];
 
 type Step = "double" | "redouble" | "bid" | "pass" | "play" | "dummy";
@@ -76,7 +69,7 @@ async function takeTurn(
     if ((await action(page, "double").count()) > 0 && !done.double) {
       // I see what I am doubling: the opponents' standing bid and who made it
       await expect(page.locator('[data-zone="standing-bid"]')).toContainText(
-        /Договор: \d(♣|♦|♥|♠|NT) · АСО Бот/,
+        /Договор: \d(♣|♦|♥|♠|NT) · Бот \d/,
       );
       await act(page, action(page, "double"));
       await expectBanner(page, /^Контра!$/);

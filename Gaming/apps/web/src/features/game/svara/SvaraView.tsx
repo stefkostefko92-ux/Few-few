@@ -7,6 +7,7 @@ import { useSettings } from "../../../lib/settings";
 import { Button } from "../../../ui";
 import { playCue } from "../../../lib/sound";
 import { PlayingCard } from "../cards/PlayingCard";
+import { sortNatural } from "../cards/sortHand";
 import { FeltTable, Seat, TableCenter } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useMatch } from "../useMatch";
@@ -115,7 +116,7 @@ export function SvaraView({ title }: { title: string }) {
   const m = useMatch<SvaraState, SvaraAction>("SVARA");
   const { state, legal, seat, phase, result, players } = m;
 
-  // Three bots share the name „АСО Бот“ — number them so the banners say who.
+  // Same-named seats get an ordinal (bots arrive as „Бот 1, 2, 3“) so the banners say who.
   const names = useMemo(() => seatNames(players), [players]);
   const nameFor = (s: number) => names(s) ?? `#${s}`;
   // One move per state: a double click on „Плащам“/„Продължи“ sent a second
@@ -276,7 +277,9 @@ export function SvaraView({ title }: { title: string }) {
 
   /** Ръката на едно място: реални карти при showdown, гърбове иначе. */
   const seatCards = (s: number, size: "sm" | "md", overlap: number) => {
-    const hand = view?.hands[s] ?? [];
+    const dealt = view?.hands[s] ?? [];
+    // Собствената ръка — подредена по боя и сила (A K Q J T 9 8 7); чуждите — както са.
+    const hand = s === seat ? sortNatural(dealt) : dealt;
     return hand.map((card, i) => (
       <PlayingCard key={`${card}-${i}`} card={card} size={size} style={{ marginLeft: i ? overlap : 0 }} />
     ));
