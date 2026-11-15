@@ -13,6 +13,7 @@
 
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, extname } from "node:path";
+import { isMain } from "../lib/is-main.mjs";
 
 // Лимити на дължина (символи) по платформа — консервативни, публично известни.
 const LIMIT = { x: 280, twitter: 280, threads: 500, mastodon: 500, instagram: 2200, tiktok: 2200, facebook: 63206, linkedin: 3000 };
@@ -102,4 +103,4 @@ function runCli() {
   process.exit(findings.some((f) => f.sev === "HIGH") ? 1 : 0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) runCli();
+if (isMain(import.meta.url)) runCli();

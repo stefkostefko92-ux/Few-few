@@ -98,7 +98,6 @@
     "processingNote": "A bolti eladásokra fizetésfeldolgozási díj is felszámításra kerül: 1,9% + 0,30 € (a kártyafeldolgozót fedezi).",
     "mostPopular": "Legnépszerűbb",
     "annualOffer": "Spórolj {percent}%-ot éves csomaggal",
-    "referralPercentNote": "Hívj meg barátokat, és keress {percent}%-ot minden befizetésük után.",
     "vatNote": "Az árak véglegesek — az áfát tartalmazzák, ahol fizetendő."
   },
   "auth": {
@@ -374,7 +373,7 @@
   },
   "footer": {
     "company": "A Carbon Stealth VCC terméke",
-    "legalLine": "Cégazonosító BG208725180 · Samuil u. 3, 2670 Bobov Dol, Bulgária",
+    "legalLine": "Cégazonosító (EIK) 208725180, közösségi adószám BG208725180 · Samuil u. 3, 2670 Bobov Dol, Bulgária",
     "privacy": "Adatvédelem",
     "terms": "Feltételek",
     "contact": "info@carbonstealth.eu",

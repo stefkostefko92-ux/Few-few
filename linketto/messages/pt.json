@@ -98,7 +98,6 @@
     "processingNote": "As vendas na loja incluem também uma taxa de processamento de pagamento de 1,9 % + €0,30 (cobre o operador do cartão).",
     "mostPopular": "Mais popular",
     "annualOffer": "Poupa {percent}% com um plano anual",
-    "referralPercentNote": "Convida amigos e ganha {percent}% de cada pagamento que fizerem.",
     "vatNote": "Os preços são finais — IVA incluído quando devido."
   },
   "auth": {
@@ -374,7 +373,7 @@
   },
   "footer": {
     "company": "Um produto da Carbon Stealth VCC",
-    "legalLine": "N.º de registo BG208725180 · ul. Samuil 3, 2670 Bobov Dol, Bulgária",
+    "legalLine": "N.º de registo (EIK) 208725180, n.º de IVA BG208725180 · ul. Samuil 3, 2670 Bobov Dol, Bulgária",
     "privacy": "Privacidade",
     "terms": "Termos",
     "contact": "info@carbonstealth.eu",

@@ -25,6 +25,7 @@ async function getRuleCounts() {
 // Dynamic-rule id ranges, kept clear of the static rulesets.
 const YT_BYPASS_RULE_ID = 70000; // YouTube session bypass (allowAllRequests); below every sync range
 const PAUSE_RULE_ID = 69999;      // off / paused: one allowAllRequests rule above everything (dynamic rules too)
+const FAKE_GV_RULE_ID = 69998;    // YouTube's fake googlevideo request (expire time in the past) — see fakeGvRule
 const DANGER_RULE_BASE = 69000;   // malware sites: the navigation goes to the warning page (≤ 50 rules)
 const DANGER_RULE_END = 69050;
 const SITE_BLOCK_BASE = 60000;    // "Connections on this page" → blocked on that site (one rule per site)
@@ -39,6 +40,11 @@ const LIVE_RULE_BASE = 100000;   // block domains from the live filter update
 // Update this JSON on the server and every install refreshes itself, no
 // Web Store re-review needed. MV3 forbids remote CODE, not remote data.
 const CONFIG_URL = "https://adblock.carbonstealth.eu/filters.json";
+// След деинсталиране браузърът отваря тази статична страница: помощ, повторна инсталация, имейл.
+// Адресът е фиксиран — без параметри (нито версия, нито причина, нито id), сайтът няма access логове.
+// Само за инсталация от Chrome Web Store (fromChromeStore): страницата води към неговия листинг, а
+// Edge Add-ons / AMO не допускат препратка към друг магазин — там няма страница („“ я маха).
+const UNINSTALL_URL = "https://adblock.carbonstealth.eu/bye";
 // 20k live domains fit comfortably: block rules with requestDomains are "safe"
 // dynamic rules (30k cap) and are chunked 1000 per rule (see domainBlockRules),
 // so the store holds 20 rules, not 20 000.
@@ -189,16 +195,19 @@ const SYNC_KEYS = ["features", "theme", "allowlist", "userFilters", "subscriptio
 // „Оставете отзив“, ★ или „Не питай повече“ я спират завинаги. reviewAsk:false (Настройки) маха и
 // картата, и ★ в долната лента. Нищо не се праща никъде — линкът само отваря страницата в магазина.
 const REVIEW_URL = "https://chromewebstore.google.com/detail/supreme-adblock/chbjbiabkgocfbbfhednpbhfeipjcclk/reviews";
+const STORE_LISTING_URL = "https://chromewebstore.google.com/detail/supreme-adblock/chbjbiabkgocfbbfhednpbhfeipjcclk";
 const REVIEW = { minDays: 7, minBlocked: 1000, gapDays: 60, maxAsks: 2 };
 const DAY_MS = 86400000;
 
 // Само магазинът, от който сме инсталирани, има нашата страница: инсталацията от Chrome Web Store
 // носи неговия update_url; разархивираният (dev) пакет няма такъв и също получава линка (за тестове);
 // Edge Add-ons, Firefox (AMO) и всичко друго — без линк, вместо грешен.
+function fromChromeStore(m) {
+  if (!m || m.browser_specific_settings) return false;
+  return !m.update_url || /^https:\/\/clients2\.google\.com\//.test(m.update_url);
+}
 function reviewUrl(m) {
-  if (!m || m.browser_specific_settings) return null;
-  if (m.update_url && !/^https:\/\/clients2\.google\.com\//.test(m.update_url)) return null;
-  return REVIEW_URL;
+  return fromChromeStore(m) ? REVIEW_URL : null;
 }
 
 function reviewDue(st, now) {
@@ -207,6 +216,48 @@ function reviewDue(st, now) {
   if (!(st.installedAt > 0) || now - st.installedAt < REVIEW.minDays * DAY_MS) return false;
   if ((st.blockedTotal || 0) < REVIEW.minBlocked) return false;
   return !(r.last > 0) || now - r.last >= REVIEW.gapDays * DAY_MS;
+}
+
+// 5.6: две редки карти в popup-а — „Сайтовете се чупят?“ (веднъж, когато има признаци: ≥ 3 разрешени
+// сайта, скриване изключено на ≥ 2 сайта или ≥ 3 паузи за 7 дни) и месечната „разписка“ (веднъж на
+// календарен месец, от дневните броячи). Най-много една карта на отваряне и никога пред картата за
+// отзив: reviewDue не се пипа и не зависи от тези признаци (без филтър по мнение — CWS spam policy).
+const HELP = { allowed: 3, noCosmetics: 2, pauses: 3 };
+const recentPauses = (log, now) => (Array.isArray(log) ? log : []).filter((t) => typeof t === "number" && t <= now && now - t < 7 * DAY_MS);
+function helpDue(st, now) {
+  const h = st.helpCard && typeof st.helpCard === "object" ? st.helpCard : {};
+  if (h.shown || h.never) return false;
+  return (Array.isArray(st.allowlist) ? st.allowlist.length : 0) >= HELP.allowed ||
+    (Array.isArray(st.noCosmetics) ? st.noCosmetics.length : 0) >= HELP.noCosmetics ||
+    recentPauses(st.pauseLog, now).length >= HELP.pauses;
+}
+const monthKey = (t) => dayKey(t).slice(0, 7);
+// последните 30 дни от дневните броячи: блокирани заявки, отказани банери и ПРИБЛИЗИТЕЛНО спестени MB
+// (размерът на блокирана заявка не се знае — средното от общите броячи, popup-ът пише „около“)
+function receiptOf(st, now) {
+  const r = st.receipt && typeof st.receipt === "object" ? st.receipt : {};
+  const from = dayKey(now - 29 * DAY_MS);
+  const days = Object.entries(st.daily && typeof st.daily === "object" ? st.daily : {})
+    .filter(([k, v]) => /^\d{4}-\d{2}-\d{2}$/.test(k) && k >= from && v && typeof v === "object");
+  const blocked = days.reduce((n, [, v]) => n + (Number(v.b) || 0), 0);
+  const cookies = days.reduce((n, [, v]) => n + (Number(v.c) || 0), 0);
+  const perRequest = (st.blockedTotal || 0) > 0 ? (st.savedBytes || 0) / st.blockedTotal : 0;
+  const due = !r.never && r.month !== monthKey(now) && st.installedAt > 0 && now - st.installedAt >= 25 * DAY_MS &&
+    days.length >= 7 && blocked >= 100;
+  return { due, blocked, cookies, mb: (blocked * perRequest) / (1024 * 1024) };
+}
+let cardChain = Promise.resolve();
+function recordCard(card, action) {
+  cardChain = cardChain.then(async () => {
+    const key = card === "help" ? "helpCard" : "receipt";
+    const cur = (await chrome.storage.local.get(key))[key];
+    const c = cur && typeof cur === "object" ? cur : {};
+    const next = action === "never" ? { ...c, never: true } : card === "help" ? { ...c, shown: true } : { ...c, month: monthKey(Date.now()) };
+    await chrome.storage.local.set({ [key]: next });
+    // the pause times exist only for the help card: once it was shown or refused they serve nothing
+    if (card === "help") await chrome.storage.local.remove("pauseLog");
+  }).catch(() => {});
+  return cardChain;
 }
 
 // „показана“ и „край“ идват един след друг от същия popup — едно след друго, за да не изтрие
@@ -235,6 +286,11 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   if (details && details.reason === "install") {
     try { chrome.tabs.create({ url: chrome.runtime.getURL("welcome/welcome.html") }); } catch {}
   }
+  // при всяка инсталация и ъпдейт (браузърът го пази, но по-стара версия може да е без него)
+  try {
+    const url = fromChromeStore(chrome.runtime.getManifest()) ? UNINSTALL_URL : "";
+    Promise.resolve(chrome.runtime.setUninstallURL(url)).catch(() => {});
+  } catch {}
   const stored = await chrome.storage.local.get([...Object.keys(DEFAULTS), "installedAt"]);
   const patch = {};
   for (const [k, v] of Object.entries(DEFAULTS)) {
@@ -372,8 +428,12 @@ async function restorePause(pausedUntil) {
 
 // temporary pause, auto-resumes via alarm
 async function pauseFor(minutes) {
-  const until = Date.now() + minutes * 60000;
-  await chrome.storage.local.set({ enabled: false, pausedUntil: until });
+  const now = Date.now();
+  const until = now + minutes * 60000;
+  // само кога (без сайт): 3 паузи за 7 дни са признак, че сайтове се чупят — картата „Сайтовете се чупят?“
+  const { pauseLog, helpCard } = await chrome.storage.local.get(["pauseLog", "helpCard"]);
+  const helpDone = helpCard && typeof helpCard === "object" && (helpCard.shown || helpCard.never);
+  await chrome.storage.local.set({ enabled: false, pausedUntil: until, ...(helpDone ? {} : { pauseLog: recentPauses(pauseLog, now).concat(now).slice(-10) }) });
   await applyState();
   chrome.alarms.create("resume", { when: until });
 }
@@ -455,7 +515,7 @@ chrome.commands?.onCommand.addListener((command, tab) => { runCommand(command, t
 chrome.alarms.onAlarm.addListener((a) => {
   if (a.name === "resume") resumeNow();
   if (a.name === "allow-expire") expireAllows();
-  if (a.name === "config-update") fetchLiveConfig();
+  if (a.name === "config-update") { fetchLiveConfig(); syncFakeGvRule(); }
   if (a.name === "scriptlets-retry") syncScriptlets();
   if (a.name === "subs-refresh") { refreshAllSubscriptions(); syncRemoteLists(undefined, true); }
   if (a.name === "yt-bypass-expire") chrome.storage.local.remove("ytBypassUntil").then(() => setYtBypassRule(false)).then(() => syncScriptlets());
@@ -515,6 +575,7 @@ async function applyState() {
     } catch (e2) { console.warn("core ruleset toggle failed", e2); }
   }
   await setPauseRule(!on);
+  await syncFakeGvRule(ytOn);
   await syncDangerRedirect(on && f.malware === true);
   syncRemoteLists(on).catch(() => {});
   await syncScriptlets(on);
@@ -541,6 +602,14 @@ const GPC_SCRIPT_ID = "sa-gpc";
 // Off while the YouTube feature is off, the extension is off, or a YouTube session
 // bypass is active (YouTube hard-blocked us: then nothing of ours runs in its pages).
 const YT_MAIN_SCRIPT_ID = "sa-youtube";
+// youtube_ads.css (the ad-hiding rules) follows the same switches: during a bypass no stylesheet
+// of ours hides anything on YouTube, so no attribute on <html> is needed to switch it off.
+const YT_CSS_ID = "sa-youtube-css";
+// twitch_main.js (5.7): MAIN world, document_start, *.twitch.tv — the player's worker gets our
+// playlist code in front of its own (Twitch stitches its ads into the stream). Off while the
+// extension is off/paused or Twitch is an allowed site; `features.twitch: false` turns it off too.
+const TW_MAIN_SCRIPT_ID = "sa-twitch";
+const TW_PATTERNS = ["*://*.twitch.tv/*"];
 const YT_PATTERNS = ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"];
 
 // Serialise register/unregister so a fast on/off/on burst (alarm + message
@@ -561,7 +630,7 @@ async function doSyncScriptlets(on) {
   // Always clear first so a re-register can't throw "already registered".
   try {
     const existing = (await chrome.scripting.getRegisteredContentScripts())
-      .map((c) => c.id).filter((id) => id === SCRIPTLET_SCRIPT_ID || id === YT_MAIN_SCRIPT_ID || id === GPC_SCRIPT_ID || id.startsWith(UBO_CHUNK_PREFIX));
+      .map((c) => c.id).filter((id) => id === SCRIPTLET_SCRIPT_ID || id === YT_MAIN_SCRIPT_ID || id === YT_CSS_ID || id === TW_MAIN_SCRIPT_ID || id === GPC_SCRIPT_ID || id.startsWith(UBO_CHUNK_PREFIX));
     if (existing.length) await chrome.scripting.unregisterContentScripts({ ids: existing });
   } catch (e) {}
   if (!on) return;
@@ -632,6 +701,17 @@ async function doSyncScriptlets(on) {
   if (features.youtube !== false && !ytBypass) {
     all.push({
       id: YT_MAIN_SCRIPT_ID, matches: YT_PATTERNS, js: ["youtube_main.js"], runAt: "document_start",
+      allFrames: true, world: "MAIN", persistAcrossSessions: true,
+      ...(excludeMatches.length ? { excludeMatches } : {}),
+    }, {
+      id: YT_CSS_ID, matches: YT_PATTERNS, css: ["youtube_ads.css"], runAt: "document_start",
+      allFrames: true, persistAcrossSessions: true,
+      ...(excludeMatches.length ? { excludeMatches } : {}),
+    });
+  }
+  if (features.twitch !== false) {
+    all.push({
+      id: TW_MAIN_SCRIPT_ID, matches: TW_PATTERNS, js: ["twitch_main.js"], runAt: "document_start",
       allFrames: true, world: "MAIN", persistAcrossSessions: true,
       ...(excludeMatches.length ? { excludeMatches } : {}),
     });
@@ -770,6 +850,57 @@ async function setYtBypassRule(active) {
   }
 }
 
+// A flagged YouTube client gets an artificial delay that waits on a "videoplayback"
+// request whose expire time lies years in the past (1605819180 = 2020) — a request no
+// player needs; the uBO maintainers block it ("fake googlevideo"). Their filter is a
+// fixed regex on the number, which would start catching REAL requests once the clock
+// reaches it (January 2027). Ours is rebuilt from today's date: only expire times more
+// than a day in the past. Real playback URLs expire hours ahead and never match, so the
+// rule "never block googlevideo.com" still holds for every request a player uses.
+function belowRegex(n) {
+  const s = String(Math.max(10, Math.floor(n)));
+  const alts = s.length > 1 ? ["\\d{1," + (s.length - 1) + "}"] : [];
+  for (let i = 0; i < s.length; i++) {
+    const d = Number(s[i]), lo = i === 0 ? 1 : 0, rest = s.length - i - 1;
+    if (d <= lo) continue;
+    alts.push(s.slice(0, i) + (d - 1 === lo ? String(lo) : "[" + lo + "-" + (d - 1) + "]") + (rest ? "\\d{" + rest + "}" : ""));
+  }
+  return "(?:" + alts.join("|") + ")";
+}
+function fakeGvRule(nowMs) {
+  // Chrome compiles a regexFilter into at most 2 KB (RE2): an exact "below this second" regex
+  // does not fit. Compare the leading digits instead — expire < head × 10^6, i.e. the cut-off
+  // is up to ~11.6 days earlier than a day ago. The fake is years old; nothing is lost.
+  const TAIL = 6;
+  const head = Math.floor((Math.floor(nowMs / 1000) - 86400) / 10 ** TAIL);
+  const expire = "(?:\\d{1," + TAIL + "}|" + belowRegex(head) + "\\d{" + TAIL + "})";
+  return {
+    id: FAKE_GV_RULE_ID,
+    priority: 2, // like youtube_rules: an allowed site, the YouTube bypass and a pause are above it
+    action: { type: "block" },
+    condition: {
+      regexFilter: "^https?://[^/]+\\.googlevideo\\.com/videoplayback\\?expire=" + expire + "&",
+      initiatorDomains: ["www.youtube.com"], domainType: "thirdParty",
+      resourceTypes: ["xmlhttprequest"], requestMethods: ["get"],
+    },
+  };
+}
+// With the YouTube ruleset (on + YouTube feature), refreshed with the live update (12 h).
+async function syncFakeGvRule(on) {
+  if (on === undefined) {
+    const { enabled, features } = await chrome.storage.local.get(["enabled", "features"]);
+    on = enabled !== false && (features || DEFAULTS.features).youtube !== false;
+  }
+  try {
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      removeRuleIds: [FAKE_GV_RULE_ID],
+      addRules: on ? [fakeGvRule(Date.now())] : [],
+    });
+  } catch (e) {
+    console.warn("fake googlevideo rule update failed", e);
+  }
+}
+
 // Reconcile the persisted YouTube bypass with its expiry. Dynamic rules and
 // storage survive restarts/updates but alarms do not, so both onStartup AND
 // onInstalled must call this — otherwise an in-flight bypass can outlive its
@@ -844,6 +975,10 @@ function sanitizeConfig(cfg) {
       adRenderers: strArr(yt.adRenderers, 100).filter(
         (f) => /^[a-zA-Z][a-zA-Z0-9]*$/.test(f) && !PROTECTED_YT_FIELDS.has(f)
       ),
+      // Аварийни стопове за 5.7 (само булеви, логиката е в пакета): формите на
+      // player заявката след отказ и скокът над реклама, вшита в потока (SSAP).
+      noShapes: yt.noShapes === true,
+      noSsapJump: yt.noSsapJump === true,
     },
   };
 }
@@ -1436,6 +1571,7 @@ function logListKey(rule) {
   const rs = rule.rulesetId, id = rule.ruleId;
   if (rs === "_dynamic") {
     if (id === YT_BYPASS_RULE_ID || id === PAUSE_RULE_ID || (id >= ALLOW_RULE_BASE && id < LIVE_RULE_BASE)) return null;
+    if (id === FAKE_GV_RULE_ID) return "youtube";
     if (id >= DANGER_RULE_BASE && id < DANGER_RULE_END) return "malware";
     if (id >= REMOTE_RULE_BASE) return "lists";
     if (id >= LIVE_RULE_BASE) return "live";
@@ -1624,7 +1760,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "getStats":
       chrome.storage.local.get(
-        ["enabled", "blockedTotal", "savedBytes", "smartBlocked", "allowlist", "features", "theme", "sync", "pausedUntil", "autoUpdate", "liveConfig", "liveUpdated", "noCosmetics", "cookieRejections", "reviewAsk", "review", "installedAt", "daily", "customHidden", "allowUntil", "siteBlocks"],
+        ["enabled", "blockedTotal", "savedBytes", "smartBlocked", "allowlist", "features", "theme", "sync", "pausedUntil", "autoUpdate", "liveConfig", "liveUpdated", "noCosmetics", "cookieRejections", "reviewAsk", "review", "installedAt", "daily", "customHidden", "allowUntil", "siteBlocks", "helpCard", "receipt", "pauseLog"],
         async (data) => {
           let host = null;
           let allowed = false;
@@ -1654,6 +1790,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           const reviewOn = data.reviewAsk !== false;
           const onSite = /^https?:\/\//i.test(msg.tabUrl || "");
           const reviewAsk = !!storeUrl && onSite && data.enabled !== false && !((data.pausedUntil || 0) > now) && !allowed && reviewDue(data, now);
+          const rec = receiptOf(data, now);
+          // pause times older than 7 days go when they are read, not only at the next pause
+          if (Array.isArray(data.pauseLog) && recentPauses(data.pauseLog, now).length !== data.pauseLog.length) {
+            chrome.storage.local.set({ pauseLog: recentPauses(data.pauseLog, now) });
+          }
           sendResponse({
             enabled: data.enabled !== false,
             blockedTotal,
@@ -1677,6 +1818,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             allowed,
             noCosmetics,
             review: { url: storeUrl, on: reviewOn, ask: reviewAsk },
+            // „Сайтовете се чупят?“ — само на уебсайт (бутонът отваря поправките за него)
+            help: { ask: onSite && helpDue(data, now) },
+            receipt: { ask: rec.due, blocked: rec.blocked, cookies: rec.cookies, mb: rec.mb },
+            // „Сподели“ — чистият адрес на листинга (без параметри), само при инсталация от Chrome Web Store
+            shareUrl: storeUrl ? STORE_LISTING_URL : null,
           });
         }
       );
@@ -1684,6 +1830,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "setReviewAsk":
       chrome.storage.local.set({ reviewAsk: !!msg.on }, () => sendResponse({ ok: true }));
+      return true;
+
+    case "card":
+      // popup: „Сайтовете се чупят?“ / месечната разписка — показана или „Не показвай повече“
+      if ((msg.card !== "help" && msg.card !== "receipt") || (msg.action !== "shown" && msg.action !== "never")) return false;
+      recordCard(msg.card, msg.action).then(() => sendResponse({ ok: true }));
       return true;
 
     case "review":
@@ -1873,7 +2025,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "resetStats":
       chrome.storage.local.set(
-        { blockedTotal: 0, savedBytes: 0, smartBlocked: 0, smartLog: [], daily: {} },
+        { blockedTotal: 0, savedBytes: 0, smartBlocked: 0, smartLog: [], daily: {}, pauseLog: [] },
         () => sendResponse({ ok: true })
       );
       return true;

@@ -1,8 +1,9 @@
 import { useTranslation } from "react-i18next";
 import { Panel } from "../../ui";
-import { GAME_CATALOG } from "../lobby/games";
 import { adminApi } from "./adminApi";
 import { ErrorPanel, useLoad } from "./load";
+import type { GameKey } from "@aso/shared";
+import { gameTitle as sharedGameTitle } from "../lobby/games";
 
 const eur = (cents: number) => `€${(cents / 100).toFixed(2)}`;
 const DAYS = 14;
@@ -79,7 +80,7 @@ export function AdminEconomy() {
             {data.topGames.map((g) => (
               <li key={g.game} className="flex items-center justify-between">
                 <span className="text-ink-200">
-                  {GAME_CATALOG.find((c) => c.key === g.game)?.title ?? g.game}
+                  {sharedGameTitle(t, g.game as GameKey)}
                 </span>
                 <span className="tnum text-brass-300">{g.matches}</span>
               </li>

@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Bloqueia anúncios (também no YouTube), banners, pop-ups, rastreadores, avisos de cookies e barreiras anti-adblock."
+    "message": "Bloqueador de anúncios para o YouTube e a web: vídeo, banners, pop-ups, rastreadores, avisos de cookies e barreiras anti-adblock."
   },
   "byCarbon": {
     "message": "por Carbon Stealth"
@@ -647,6 +647,12 @@
     "message": "Clique no ícone em forma de peça de puzzle junto à barra de endereço e afixe o Supreme AdBlock. Depois, com um clique vê o que foi bloqueado na página.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Afixada na barra de ferramentas"
+  },
+  "welPinnedText": {
+    "message": "Com um clique no ícone, vê o que foi bloqueado na página."
+  },
   "welBrokenTitle": {
     "message": "Se um site parecer ter problemas",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -793,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Capacidade de regras"
+  },
+  "helpTitle": {
+    "message": "Sites com problemas?"
+  },
+  "helpText": {
+    "message": "Basta um site de cada vez: permita os anúncios desse site durante uma hora ou desative a ocultação de elementos apenas aí. Se nos avisar, corrigimos para todos."
+  },
+  "helpFix": {
+    "message": "Corrigir este site"
+  },
+  "cardNever": {
+    "message": "Não voltar a mostrar"
+  },
+  "cardClose": {
+    "message": "Fechar"
+  },
+  "receiptTitle": {
+    "message": "Os seus últimos 30 dias"
+  },
+  "receiptText": {
+    "message": "$1 pedidos bloqueados · $2 avisos de cookies respondidos · cerca de $3 de dados poupados (uma estimativa)"
+  },
+  "share": {
+    "message": "Partilhar"
+  },
+  "shareTitle": {
+    "message": "Copiar a ligação do Supreme AdBlock na Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Ligação copiada"
+  },
+  "rep_fixed_q": {
+    "message": "O site ficou corrigido?"
+  },
+  "rep_fixed_yes": {
+    "message": "Sim, funciona"
+  },
+  "rep_fixed_no": {
+    "message": "Não, ainda com problemas"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Ainda bem que funciona. Se nos avisar abaixo, o relatório indica que correção resultou, para podermos corrigir o site para todos."
+  },
+  "rep_fixed_next": {
+    "message": "Experimente a seguinte: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Então avise-nos abaixo: vamos analisar o site."
+  },
+  "rep_webmail": {
+    "message": "Não tem aplicação de e-mail? Copie o relatório e envie-o para $1 a partir do seu webmail."
+  },
+  "blk_mistake": {
+    "message": "Acha que é um erro? Avise-nos"
+  },
+  "welTest": {
+    "message": "Veja-o a funcionar numa página de teste"
   }
 }

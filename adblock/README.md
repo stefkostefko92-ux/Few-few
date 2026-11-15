@@ -1,25 +1,28 @@
 # 🛡️ Supreme AdBlock
 
-A fast, private Chrome extension (Manifest V3) that blocks **every kind of ad**
-everywhere, **YouTube video ads** (pre-roll / mid-roll), banners, pop-ups,
-native "recommended" ads, **Facebook, Instagram & Threads sponsored posts**, trackers,
-cookie prompts and anti-adblock walls.
+A private ad blocker for Chrome, Edge and Brave (Manifest V3): **YouTube video ads**
+(pre-roll / mid-roll), banners, pop-ups, native "recommended" ads, **Facebook,
+Instagram & Threads sponsored posts**, trackers, cookie prompts and anti-adblock walls.
 
 Free for everyone. No account, no telemetry, no data collection, everything
 stays on your device.
 
+**Install:** [Chrome Web Store](https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=github&utm_medium=readme)
+(Chrome, Edge, Brave) · site and support: <https://adblock.carbonstealth.eu>
+
 ## Features
 
 - **Network-level blocking** (`declarativeNetRequest`) with **EasyList and
-  EasyPrivacy built in** (~12,600 compiled rules covering tens of thousands of
-  source filters via merged domain rules) plus a curated in-house set. Requests
-  are stopped before they load, so pages are lighter and faster.
-- **YouTube video ads**, three MAIN-world lines of defence: the player
-  request carries ad-suppressing flags (`isInlinePlaybackNoAd`, which also
-  avoids YouTube's "fake buffering" delay), the player response loses its ad
-  payloads (`adPlacements`, `playerAds`, `adSlots`, `adConfig`) and the
-  feed/search responses lose their ad renderers, so promoted results never
-  render. An auto-skip fallback handles anything that slips through.
+  EasyPrivacy built in**, plus the uBlock Origin filters and 31 regional lists
+  (60,000+ compiled rules) and a curated in-house set. Requests are stopped
+  before they load, so pages are lighter.
+- **YouTube video ads**, removed at the source: a MAIN-world script
+  (registered by the service worker) takes the ad entries (`adPlacements`,
+  `playerAds`, `adSlots`) out of the player response as text, before the page
+  parses it, and the feed/search responses lose their ad renderers. No request
+  flags by default (one on a watch page is a signal YouTube reads). A fallback
+  mutes and presses YouTube's own Skip for anything that slips through; if
+  YouTube refuses anyway, the extension steps aside there for six hours.
 - **Meta sponsored posts**, hides "Sponsored" posts in the Facebook, Instagram
   and Threads feeds (toggleable), from the label a screen reader announces: in
   ~70 languages, through `aria-labelledby`, SVG `<use>` and shuffled letters.
@@ -55,8 +58,9 @@ stays on your device.
   (pause), the picker unassigned; change them at `chrome://extensions/shortcuts`.
 - **Per-site allowlist**, allow ads on sites you want to support.
 - **Curated built-in filters**, EasyList + EasyPrivacy + in-house rules
-  bundled with the extension, plus an optional daily **signed** (Ed25519)
-  data-only filter update. No remote code, ever.
+  bundled with the extension, plus a **signed** (Ed25519), data-only filter
+  update about twice a day (on by default, can be switched off). No remote
+  code, ever.
 - **Live stats**, ads blocked, data saved and time saved.
 - **Carbon Stealth theme**, matte carbon dark theme with a light option.
 
@@ -92,24 +96,28 @@ tools/                  Rule/icon generators and the packaging script
 ## How YouTube blocking works
 
 YouTube serves ads from the **same servers** as the video, so domain blocking
-can't be used (it would break playback). Three layers handle it:
+can't be used (it would break playback). The layers:
 
-1. **Request flags** (`youtube_main.js`, MAIN world): the `/youtubei/v1/player`
-   request body gets `isInlinePlaybackNoAd: true`, so YouTube skips ad delivery
-   at the source, together with the server-side "fake buffering" backoff it
-   applies when ads are blocked client-side.
-2. **Response sanitising** (same script) clears the ad fields from the player
-   response and prunes ad renderers from `/browse`, `/search` and `/next`, so
-   neither the player nor the feed ever sees an ad.
+1. **Response sanitising** (`youtube_main.js`, MAIN world, registered by the
+   service worker): the ad fields (`adPlacements`, `adSlots`, `playerAds`) are
+   taken out of the player response **as text, before the page parses it**, and
+   ad renderers are pruned from `/browse`, `/search` and `/next`, so neither the
+   player nor the feed ever sees an ad. Every wrapped function stringifies like
+   the native one.
+2. **No request flags by default.** `isInlinePlaybackNoAd` on a watch page is a
+   server-side signal; the signed `filters.json` can turn flags on, with a plain
+   retry if YouTube answers "unplayable".
 3. **Endpoint blocking** (`rules/youtube_rules.json`) drops `/pagead/`,
-   `/ptracking`, `/api/stats/ads` etc., without breaking the video stream.
-4. **Auto-skip** (`youtube_skip.js`) fast-forwards or skips anything that still
-   starts.
+   `/api/stats/ads`, mid-roll and ad-break requests. The video stream
+   (`googlevideo.com`) and the playback pings (`/ptracking`, `/api/stats/atr`) are
+   never blocked: a player that stops reporting is what YouTube looks for.
+4. **Fallback** (`youtube_skip.js`): mutes and presses YouTube's own Skip for
+   anything that still starts (never speeds the video up). If YouTube refuses ad
+   blockers anyway, the extension steps aside on YouTube for six hours.
 
-Every list above is remotely tunable through the signed data-only
-`filters.json` (extra ad fields, renderers, request flags, an emergency
-kill-switch), so YouTube-side changes are fixed server-side the same day, no
-re-review needed.
+The ad field names, renderers, request flags and an emergency kill-switch are
+data in the signed `filters.json`, so YouTube-side changes are fixed the same day
+without a store review. No code comes from the network.
 
 ## Building the store package
 
@@ -129,9 +137,9 @@ python3 tools/generate_icons.py   # regenerate icons/ + store art from store/bra
   downloaded, so its true byte size can't be measured (uBlock/AdGuard estimate
   the same way).
 - Blocking rules ship inside the extension. Additionally, a small `filters.json`
-  is fetched daily (data only: block domains + CSS selectors), verified against
-  an Ed25519 signature when configured, so the extension keeps working as sites
-  change without a Web Store re-review. No code is ever fetched or executed
+  is fetched about twice a day (data only: block domains, CSS selectors, YouTube
+  field names) and must carry a valid Ed25519 signature (Chrome 137+), so the
+  extension keeps working as sites change without a Web Store re-review. No code is ever fetched or executed
   remotely. See `server/README.md`.
 - Bundled third-party filter lists: EasyList & EasyPrivacy (GPLv3 / CC BY-SA
   3.0) and the URLhaus malware list by abuse.ch (CC0). See

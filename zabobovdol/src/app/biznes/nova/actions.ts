@@ -8,18 +8,13 @@ import { sendMail } from "@/lib/mail";
 import { SITE } from "@/lib/site";
 import { BUSINESS_CATEGORY_LABELS, labelFor } from "@/lib/categories";
 import { rateLimit, clientKey, RATE_LIMIT_MESSAGE } from "@/lib/ratelimit";
-import { PUBLIC_FIELDS, screenBusinessSubmission, toBusinessData, type BusinessInput } from "./schema";
+import type { FormState } from "@/lib/form-state";
+import { businessChanges, screenBusinessSubmission, toBusinessData, type BusinessInput } from "./schema";
 
 export type BusinessFormValues = Record<string, string>;
 
-export type BusinessFormState = {
-  ok: boolean;
+export type BusinessFormState = FormState & {
   mode?: "new" | "fix";
-  error?: string;
-  /** Въведеното до момента — за да не се губи при грешка. */
-  values?: BusinessFormValues;
-  /** Брояч на опитите — сменя ключа на формата, за да покаже `values`. */
-  attempt?: number;
 };
 
 const TEXT_FIELDS = [
@@ -141,30 +136,8 @@ async function createFix(
     return { ok: false, error: "Не намерихме този бизнес в каталога. Подайте го като нов." };
   }
 
-  const next = toBusinessData(d);
-  const before: Record<string, string> = {
-    name: existing.name,
-    category: existing.category,
-    description: existing.description,
-    address: existing.address,
-    phone: existing.phone,
-    hours: existing.hours,
-    websiteUrl: existing.website,
-    facebook: existing.facebook,
-  };
-  const after: Record<string, string> = {
-    name: next.name,
-    category: next.category,
-    description: next.description,
-    address: next.address,
-    phone: next.phone,
-    hours: next.hours,
-    websiteUrl: next.website,
-    facebook: next.facebook,
-  };
-
-  const changes = PUBLIC_FIELDS.filter(([key]) => (before[key] ?? "").trim() !== (after[key] ?? "").trim()).map(
-    ([key, label]) => `${label}: „${shown(key, before[key])}“ → „${shown(key, after[key])}“`,
+  const changes = businessChanges(existing, toBusinessData(d)).map(
+    ({ key, label, before, after }) => `${label}: „${shown(key, before)}“ → „${shown(key, after)}“`,
   );
   if (changes.length === 0 && !d.note) {
     return {
@@ -212,7 +185,10 @@ export async function submitBusiness(
     async () => rateLimit(await clientKey("biznes")),
   );
   if (screen.status === "honeypot") return fail("Невалидни данни.");
-  if (screen.status === "invalid") return fail(screen.error);
+  // Грешките по поле — под всяко поле и в обобщението най-горе.
+  if (screen.status === "invalid") {
+    return { ok: false, mode, values, attempt, fieldErrors: screen.fieldErrors };
+  }
   if (screen.status === "limited") return fail(RATE_LIMIT_MESSAGE);
   const d = screen.data;
 

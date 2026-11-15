@@ -1,0 +1,48 @@
+<%
+  // «Invia al fornitore» (routes/ordini-invio.ts): il modulo della scheda, il fornitore dalla rubrica o
+  // scritto a mano, il messaggio. Le risposte arrivano a chi invia.
+%><%- include('../partials/top', { title: t('flusso.invio.titolo') + ' — ' + (ident.length > 40 ? ident.slice(0, 39) + '…' : ident), narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <a href="/schede/<%= scheda.id %>"><%= t('flusso.versioni.torna') %></a>
+    <h1><%= t('flusso.invio.titolo') %></h1>
+    <p class="page-head__sub"><%= ident %></p>
+  </div>
+</div>
+<% if (errore) { %><div class="errors" id="form-error" role="alert"><h2><%= t('flusso.invio.errore') %></h2></div><% } %>
+<form class="form" method="post" action="/schede/<%= scheda.id %>/ordini/invia" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="field">
+    <label class="field__label" for="f-modulo"><%= t('flusso.invio.modulo') %></label>
+    <select class="select" id="f-modulo" name="modulo">
+      <% for (const m of moduli) { %><option value="<%= m.path %>"<% if (m.path === valori.modulo) { %> selected<% } %>><%= m.titolo %></option>
+      <% } %>
+    </select>
+  </div>
+  <div class="field">
+    <label class="field__label" for="f-fornitore"><%= t('flusso.invio.fornitore') %></label>
+    <select class="select" id="f-fornitore" name="fornitore" aria-describedby="hint-fornitore">
+      <option value=""><%= t('flusso.invio.nessunoRubrica') %></option>
+      <% for (const f of fornitori) { %><option value="<%= f.id %>"<% if (f.id === valori.fornitore) { %> selected<% } %>><%= f.nome %> — <%= f.email %></option>
+      <% } %>
+    </select>
+    <p class="field__hint" id="hint-fornitore"><%= t('flusso.invio.rubrica') %></p>
+  </div>
+  <div class="grid">
+    <div class="field">
+      <label class="field__label" for="f-nome"><%= t('flusso.invio.nome') %></label>
+      <input class="input" id="f-nome" name="nome" type="text" maxlength="120" autocomplete="organization" value="<%= valori.nome %>">
+    </div>
+    <div class="field">
+      <label class="field__label" for="f-email"><%= t('flusso.invio.email') %></label>
+      <input class="input" id="f-email" name="email" type="email" maxlength="254" autocomplete="email" value="<%= valori.email %>">
+    </div>
+  </div>
+  <div class="field">
+    <label class="field__label" for="f-messaggio"><%= t('flusso.invio.messaggio') %></label>
+    <textarea class="input" id="f-messaggio" name="messaggio" rows="4" maxlength="2000" aria-describedby="hint-messaggio"><%= valori.messaggio %></textarea>
+    <p class="field__hint" id="hint-messaggio"><%= t('flusso.invio.messaggioHint') %></p>
+  </div>
+  <div class="toolbar"><button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'mail' }) %><%= t('flusso.invio.invia') %></button></div>
+</form>
+<%- include('../partials/bottom') %>

@@ -98,7 +98,6 @@
     "processingNote": "Butikssalg har også et behandlingsgebyr for betalingen på 1,9 % + 0,30 € (dækker kortudbyderen).",
     "mostPopular": "Mest populær",
     "annualOffer": "Spar {percent} % med en årsplan",
-    "referralPercentNote": "Inviter venner og tjen {percent} % af hver betaling, de foretager.",
     "vatNote": "Priserne er endelige — inkl. moms hvor det er relevant."
   },
   "auth": {
@@ -374,7 +373,7 @@
   },
   "footer": {
     "company": "Et produkt fra Carbon Stealth VCC",
-    "legalLine": "CVR BG208725180 · Samuil 3, 2670 Bobov Dol, Bulgarien",
+    "legalLine": "Virksomheds-ID (EIK) 208725180, momsnr. BG208725180 · Samuil 3, 2670 Bobov Dol, Bulgarien",
     "privacy": "Privatliv",
     "terms": "Vilkår",
     "contact": "info@carbonstealth.eu",

@@ -3,25 +3,31 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
-import { PageHero, Prose } from "@/components/ui";
+import { ArticleActions, PageHero, PageMeta, Prose, SectionHeader, StepList } from "@/components/ui";
+import { ChevronRight, ExternalLink } from "@/components/icons";
 import { JsonLd } from "@/components/JsonLd";
+import { PrintSourceLine } from "@/components/PrintSourceLine";
 import { buildMetadata, faqPageLd, howToLd, webPageLd, canonical } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
-import { PrintButton } from "@/components/PrintButton";
-import { ShareButton } from "@/components/ShareButton";
-import { HelpfulWidget } from "@/components/HelpfulWidget";
+import { isoDate } from "@/lib/format-date";
+import { STEP_LINKIFY } from "@/lib/linkify";
 import { getIllustrations } from "@/lib/howto-illustrations";
 import { getGuideIndex } from "@/lib/howto-index";
+import { euroTodayNote, isEuroTopic } from "@/lib/howto-euro";
+import { EuroTodayNotice, EuroWrittenBeforeNotice } from "@/components/EuroNotice";
 import {
-  CATEGORY_TOPIC_PAGES,
+  canonicalCategory,
   categoryPath,
   categorySlug,
-  formatBgDate,
-  isoDay,
   parseTags,
   splitLead,
+  topicPageFor,
+  topicSectionOf,
 } from "@/lib/howto";
 import { prevNext, relatedGuides } from "@/lib/related";
+import { GuideCard } from "../_components/GuideList";
+import { Linkified, LocalNote } from "../_components/LocalNote";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -48,10 +54,11 @@ export async function generateMetadata({
     keywords: [
       faq.question.replace(/[?]$/, ""),
       ...parseTags(faq.tags).slice(0, 4),
-      faq.category,
+      canonicalCategory(faq.category),
       "Как да",
       "стъпка по стъпка",
       "Бобов дол",
+      "Carbon Stealth",
     ],
   });
 }
@@ -93,6 +100,8 @@ export default async function FaqPage({
   const restMd = split ? split.rest : faq.answer;
   const localNote = faq.localNote.trim();
   const reviewed = faq.reviewedAt;
+  // reviewedAt е стенно време от админа (datetime-local) — показва се както е въведено.
+  const reviewedIso = reviewed ? isoDate(reviewed, { wall: true }) : "";
 
   const illustrations = getIllustrations(faq.slug);
 
@@ -106,10 +115,19 @@ export default async function FaqPage({
     tags: faq.tags,
     order: faq.order,
   };
-  const related = relatedGuides(current, index.guides);
   const { prev, next } = category ? prevNext(current, category.items) : { prev: null, next: null };
-  const topic = CATEGORY_TOPIC_PAGES[faq.category];
+  // „Предишно/Следващо“ стоят отдолу — не ги повтаряме и в „Сродни“.
+  const related = relatedGuides(
+    current,
+    index.guides.filter((g) => g.id !== prev?.id && g.id !== next?.id),
+  );
+  const topic = topicPageFor(faq.category);
+  const section = topicSectionOf(faq.category);
   const path = `/kak-da/${faq.slug}`;
+  // Темата „Еврото“ е писана преди 1.01.2026 — бележка най-отгоре: с „какво
+  // важи днес“ при изтекъл срок, иначе общата (src/lib/howto-euro.ts).
+  const euro = isEuroTopic(faq.category);
+  const euroStale = euro && euroTodayNote(faq.slug) !== null;
 
   return (
     <>
@@ -122,7 +140,7 @@ export default async function FaqPage({
             name: faq.question,
             description: plainText(split?.lead ?? faq.answer, 160),
             path,
-            ...(reviewed ? { lastReviewed: isoDay(reviewed) } : {}),
+            ...(reviewed ? { lastReviewed: reviewedIso } : {}),
           }),
           steps.length > 0
             ? howToLd({
@@ -130,7 +148,7 @@ export default async function FaqPage({
                 description: plainText(faq.answer, 200),
                 steps,
                 url: canonical(path),
-                ...(reviewed ? { reviewedAt: isoDay(reviewed) } : {}),
+                ...(reviewed ? { reviewedAt: reviewedIso } : {}),
               })
             : faqPageLd([
                 { question: faq.question, answerText: plainText(faq.answer, 600) },
@@ -138,44 +156,33 @@ export default async function FaqPage({
         ]}
       />
       <PageHero
+        eyebrow={section?.title ?? SECTION.guides}
         title={faq.question}
         crumbs={[
           { name: "Как да…", path: "/kak-da" },
           ...(category ? [{ name: category.name, path: categoryPath(category.slug) }] : []),
           { name: faq.question, path },
         ]}
+        meta={<PageMeta reviewed={reviewed} updated={faq.updatedAt} wall />}
       />
-      <article className="container-content grid gap-8 py-10 lg:grid-cols-[1fr,18rem]">
-        <div>
+      <article className="container-content grid gap-10 py-10 lg:grid-cols-[minmax(0,1fr),18rem]">
+        <div className="min-w-0 max-w-3xl">
+          {euroStale ? (
+            <EuroTodayNotice slug={faq.slug} withLink className="mb-6" />
+          ) : (
+            euro && <EuroWrittenBeforeNotice className="mb-6" />
+          )}
           {split && (
-            <div className="rounded-xl border-l-4 border-gold-400 bg-gold-50 p-5">
-              <p className="text-sm font-bold uppercase tracking-wide text-slate-700">Накратко</p>
+            <div className="callout-note">
+              <p className="label-caps">Накратко</p>
               <div
                 className="prose-content mt-1 text-lg font-semibold leading-relaxed text-slate-900"
                 dangerouslySetInnerHTML={{ __html: renderMarkdown(split.lead) }}
               />
             </div>
           )}
-          {reviewed && (
-            <p className="mt-3 text-base text-slate-600">
-              Проверено на <time dateTime={isoDay(reviewed)}>{formatBgDate(reviewed)}</time>
-            </p>
-          )}
 
-          {localNote && (
-            <section
-              aria-labelledby="v-bobov-dol"
-              className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-5"
-            >
-              <h2 id="v-bobov-dol" className="text-xl font-bold text-slate-900">
-                В Бобов дол:
-              </h2>
-              <div
-                className="prose-content mt-2 text-slate-800"
-                dangerouslySetInnerHTML={{ __html: renderMarkdown(localNote) }}
-              />
-            </section>
-          )}
+          {localNote && <LocalNote note={localNote} className={split ? "mt-6" : ""} />}
 
           {restMd.trim() && (
             <div className={split || localNote ? "mt-6" : ""}>
@@ -183,94 +190,96 @@ export default async function FaqPage({
             </div>
           )}
 
-          {illustrations.length > 0 && (
-            <figure className="mt-8">
-              <figcaption className="text-xl font-bold text-slate-900">
-                Как изглежда на телефона
-              </figcaption>
-              <div className="mt-3 flex flex-wrap gap-5">
-                {illustrations.map((img) => (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    key={img.src}
-                    src={img.src}
-                    alt={img.alt}
-                    width={390}
-                    height={720}
-                    loading="lazy"
-                    className="w-full max-w-[300px] rounded-2xl border border-slate-200 shadow-sm"
+          {/* Стъпките са главното; снимката на телефона само ги пояснява — на
+              компютър е вдясно от тях, на телефон след тях. */}
+          {(steps.length > 0 || illustrations.length > 0) && (
+            <div
+              className={`mt-10 gap-8 ${
+                steps.length > 0 && illustrations.length > 0
+                  ? "lg:grid lg:grid-cols-[minmax(0,1fr),13rem]"
+                  : ""
+              }`}
+            >
+              {steps.length > 0 && (
+                <section aria-labelledby="stapki" className="min-w-0">
+                  <h2 id="stapki" className="text-2xl font-bold text-slate-900">
+                    Стъпки
+                  </h2>
+                  <StepList
+                    steps={steps.map((t, i) => (
+                      <Linkified key={i} text={t} options={STEP_LINKIFY} />
+                    ))}
+                    className="mt-4"
                   />
-                ))}
-              </div>
-              <p className="mt-2 text-sm text-slate-600">
-                Примерна снимка за онагледяване. Реалният екран може да изглежда
-                малко по-различно според телефона и версията на приложението.
-              </p>
-            </figure>
-          )}
-
-          {steps.length > 0 && (
-            <div className="mt-8">
-              <h2 className="text-xl font-bold text-slate-900">Стъпки</h2>
-              <ol className="mt-3 space-y-3">
-                {steps.map((s, i) => (
-                  <li key={i} className="flex gap-3">
-                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand-700 text-sm font-bold text-white">
-                      {i + 1}
-                    </span>
-                    <span className="pt-0.5 text-slate-700">{s}</span>
-                  </li>
-                ))}
-              </ol>
+                </section>
+              )}
+              {illustrations.length > 0 && (
+                <figure className={steps.length > 0 ? "mt-8 lg:mt-1" : ""}>
+                  <figcaption className="font-sans text-lg font-semibold text-slate-900">
+                    Как изглежда на телефона
+                  </figcaption>
+                  <div className="mt-3 flex flex-wrap justify-center gap-5 sm:justify-start lg:flex-col">
+                    {illustrations.map((img) => (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        key={img.src}
+                        src={img.src}
+                        alt={img.alt}
+                        width={390}
+                        height={720}
+                        loading="lazy"
+                        className="w-full max-w-[240px] rounded-2xl border border-slate-200 shadow-sm print:max-w-[45mm]"
+                      />
+                    ))}
+                  </div>
+                  <p className="mt-2 text-base text-slate-600">
+                    Примерна снимка за онагледяване. Реалният екран може да изглежда
+                    малко по-различно според телефона и версията на приложението.
+                  </p>
+                </figure>
+              )}
             </div>
           )}
 
           {links.length > 0 && (
-            <div className="mt-8">
-              <h2 className="text-xl font-bold text-slate-900">Полезни връзки</h2>
-              <ul className="mt-3 space-y-2">
+            <section aria-labelledby="vrazki" className="mt-10">
+              <h2 id="vrazki" className="text-2xl font-bold text-slate-900">
+                Полезни връзки
+              </h2>
+              <ul role="list" className="mt-3 space-y-1">
                 {links.map((l) => (
                   <li key={l.url}>
                     <a
                       href={l.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-brand-700 underline hover:decoration-2"
+                      className="link inline-flex min-h-tap items-center gap-1.5 text-base [overflow-wrap:anywhere]"
                     >
                       {l.label}
+                      <ExternalLink className="h-4 w-4 shrink-0" aria-hidden />
+                      <span className="sr-only"> (отваря се в нов прозорец)</span>
                     </a>
                   </li>
                 ))}
               </ul>
-            </div>
+            </section>
           )}
 
-          <div className="mt-8 space-y-4 border-t border-slate-200 pt-5">
-            <HelpfulWidget />
-            <div className="flex flex-wrap items-start gap-3">
-              <ShareButton
-                title={faq.question}
-                text={`${faq.question} — обяснено стъпка по стъпка`}
-                path={path}
-              />
-              <PrintButton variant="secondary" label="Принтирай това обяснение" />
-            </div>
-          </div>
+          <ArticleActions
+            className="mt-10"
+            shareTitle={faq.question}
+            shareText={`${faq.question} — обяснено стъпка по стъпка`}
+            sharePath={path}
+          />
+          <PrintSourceLine path={path} />
 
           {related.length > 0 && (
-            <section aria-labelledby="srodni" className="no-print mt-10">
-              <h2 id="srodni" className="section-title">
-                Сродни ръководства
-              </h2>
-              <ul className="mt-5 grid gap-3 md:grid-cols-2">
+            <section aria-labelledby="srodni" className="no-print mt-12">
+              <SectionHeader id="srodni" title="Сродни ръководства" />
+              <ul role="list" className="grid gap-4 md:grid-cols-2">
                 {related.map((g) => (
                   <li key={g.id}>
-                    <Link
-                      href={`/kak-da/${g.slug}`}
-                      className="card flex min-h-[44px] items-center text-base font-semibold text-slate-900"
-                    >
-                      {g.question}
-                    </Link>
+                    <GuideCard guide={g} as="h3" />
                   </li>
                 ))}
               </ul>
@@ -280,74 +289,74 @@ export default async function FaqPage({
           {(prev || next) && category && (
             <nav
               aria-label={`Още в темата „${category.name}“`}
-              className="no-print mt-8 grid gap-3 sm:grid-cols-2"
+              className="no-print mt-8 grid gap-4 sm:grid-cols-2"
             >
               {prev ? (
-                <Link href={`/kak-da/${prev.slug}`} rel="prev" className="btn-secondary justify-start text-left">
-                  <span aria-hidden>←</span>
-                  <span>
-                    <span className="block text-sm font-normal text-slate-600">Предишно</span>
-                    {prev.question}
+                <Link
+                  href={`/kak-da/${prev.slug}`}
+                  rel="prev"
+                  className="card group flex h-full items-center gap-3"
+                >
+                  <ChevronRight className="h-6 w-6 shrink-0 rotate-180 text-brand-600" aria-hidden />
+                  <span className="min-w-0">
+                    <span className="text-meta block">Предишно</span>
+                    <span className="h-card block text-brand-800">{prev.question}</span>
                   </span>
                 </Link>
               ) : (
-                <span />
+                <span className="hidden sm:block" />
               )}
               {next && (
-                <Link href={`/kak-da/${next.slug}`} rel="next" className="btn-secondary justify-end text-right">
-                  <span>
-                    <span className="block text-sm font-normal text-slate-600">Следващо</span>
-                    {next.question}
+                <Link
+                  href={`/kak-da/${next.slug}`}
+                  rel="next"
+                  className="card group flex h-full items-center gap-3"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="text-meta block">Следващо</span>
+                    <span className="h-card block text-brand-800">{next.question}</span>
                   </span>
-                  <span aria-hidden>→</span>
+                  <ChevronRight className="h-6 w-6 shrink-0 text-brand-600" aria-hidden />
                 </Link>
               )}
             </nav>
           )}
         </div>
 
-        <aside className="space-y-4 no-print">
-          <div className="card bg-brand-50">
-            <h2 className="text-base font-semibold text-slate-900">
-              Нужна ви е още помощ?
-            </h2>
-            <p className="mt-1 text-sm text-slate-700">
-              Питайте дигиталния помощник долу вдясно или ни пишете — безплатно.
+        <aside className="no-print space-y-4">
+          <div className="callout-info">
+            <h2 className="h-card">Нужна ви е още помощ?</h2>
+            <p className="mt-1 text-base text-slate-700">
+              Попитайте дигиталния помощник (бутона долу вдясно) или ни пишете — безплатно е.
             </p>
             <Link href="/kontakti" className="btn-primary mt-3 w-full">
               Свържете се с нас
             </Link>
           </div>
           {category && (
-            <div className="rounded-2xl border border-slate-200 bg-white p-5">
-              <h2 className="text-base font-semibold text-slate-900">Тема</h2>
+            <div className="panel">
+              <h2 className="label-caps">Тема</h2>
               <Link
                 href={categoryPath(category.slug)}
-                className="mt-1 flex min-h-[44px] items-center font-semibold text-brand-700 underline hover:decoration-2"
+                className="link mt-1 flex min-h-tap items-center text-base"
               >
                 {category.name} ({category.count})
               </Link>
               {topic && (
-                <Link
-                  href={topic.href}
-                  className="flex min-h-[44px] items-center text-brand-700 underline hover:decoration-2"
-                >
-                  Вижте и: {topic.label}
+                <Link href={topic.href} className="link flex min-h-tap items-center text-base">
+                  Вижте и „{topic.label}“
                 </Link>
               )}
             </div>
           )}
           {tags.length > 0 && (
-            <div>
-              <h2 className="text-base font-semibold text-slate-900">Етикети</h2>
-              <ul className="mt-2 flex flex-wrap gap-2">
+            <div className="panel">
+              <h2 className="label-caps">Етикети</h2>
+              <ul role="list" className="mt-3 flex flex-wrap gap-2">
                 {tags.map((t) => (
                   <li key={t}>
-                    <Link
-                      href={`/kak-da?tag=${encodeURIComponent(t)}`}
-                      className="badge a11y-btn px-3 hover:underline"
-                    >
-                      #{t}
+                    <Link href={`/kak-da?tag=${encodeURIComponent(t)}`} className="chip">
+                      {t}
                     </Link>
                   </li>
                 ))}

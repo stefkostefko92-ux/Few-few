@@ -5,9 +5,14 @@
 //
 // Роля на Linketto (TAX.md): договорът е между купувача и създателя, но
 // за целите на ДДС платформата е доставчик по презумпция (чл. 9а Регл.
-// 282/2011) — начислява и отчита ДДС по държавата на купувача. Това е и
+// 282/2011) — начислява и отчита дължимия ДДС. Това е и
 // „документ за регистриране на продажбата" (Н-18, непрекъсната номерация)
 // на траен носител — НЕ данъчна фактура.
+// Сверено 2026-11-15: vatNote съответства на сегашния модел (separate
+// charges на платформата, доставка през /delivery и /learn, наши Общи
+// условия → чл. 9а). Дали документът трябва да е фактура при OSS — за
+// консултант (TAX.md, отворена точка 2б). „По държавата на купувача“ е
+// махнато от vatNote: вярно е само над микропрага / в OSS (TAX.md 2б).
 
 export interface ReceiptStrings {
   title: string;
@@ -44,7 +49,7 @@ const STRINGS: Record<string, ReceiptStrings> = {
     net: 'Нето (без ДДС)',
     discount: 'Приложен промо код',
     vatNote:
-      'Договорът за покупка се сключва между теб и създателя (продавача). За целите на ДДС Linketto (Carbon Stealth VCC) действа като доставчик по чл. 9а от Регламент за изпълнение (ЕС) 282/2011 и начислява и отчита дължимия ДДС по държавата на купувача. Показаната сума е крайната платена цена с включен ДДС, когато такъв се дължи. Този документ е потвърждение за покупка, не данъчна фактура.',
+      'Договорът за покупка се сключва между теб и създателя (продавача). За целите на ДДС Linketto (Carbon Stealth VCC) действа като доставчик по чл. 9а от Регламент за изпълнение (ЕС) 282/2011 и начислява и отчита дължимия ДДС. Показаната сума е крайната платена цена с включен ДДС, когато такъв се дължи. Този документ е потвърждение за покупка, не данъчна фактура.',
     traderYes: 'Продавачът е декларирал статут: търговец.',
     traderNo: 'Продавачът е декларирал статут: частно лице (непрофесионален продавач).',
     print: 'Принтирай / Запази като PDF',
@@ -65,7 +70,7 @@ const STRINGS: Record<string, ReceiptStrings> = {
     net: 'Net (excl. VAT)',
     discount: 'Promo code applied',
     vatNote:
-      "The purchase contract is concluded between you and the creator (seller). For VAT purposes Linketto (Carbon Stealth VCC) acts as the deemed supplier under Article 9a of Implementing Regulation (EU) 282/2011 and charges and accounts for the VAT due based on the buyer's country. The amount shown is the final price paid, VAT included where due. This document is a purchase confirmation, not a tax invoice.",
+      "The purchase contract is concluded between you and the creator (seller). For VAT purposes Linketto (Carbon Stealth VCC) acts as the deemed supplier under Article 9a of Implementing Regulation (EU) 282/2011 and charges and accounts for the VAT due. The amount shown is the final price paid, VAT included where due. This document is a purchase confirmation, not a tax invoice.",
     traderYes: 'The seller has declared their status: trader.',
     traderNo: 'The seller has declared their status: private individual (non-professional seller).',
     print: 'Print / Save as PDF',
@@ -86,7 +91,7 @@ const STRINGS: Record<string, ReceiptStrings> = {
     net: 'Netto (IVA esclusa)',
     discount: 'Codice promozionale applicato',
     vatNote:
-      "Il contratto di acquisto si conclude tra te e il creator (venditore). Ai fini IVA, Linketto (Carbon Stealth VCC) agisce come fornitore presunto ai sensi dell'articolo 9 bis del regolamento di esecuzione (UE) n. 282/2011 e applica e versa l'IVA dovuta in base al Paese dell'acquirente. L'importo indicato è il prezzo finale pagato, IVA inclusa ove dovuta. Questo documento è una conferma di acquisto, non una fattura fiscale.",
+      "Il contratto di acquisto si conclude tra te e il creator (venditore). Ai fini IVA, Linketto (Carbon Stealth VCC) agisce come fornitore presunto ai sensi dell'articolo 9 bis del regolamento di esecuzione (UE) n. 282/2011 e applica e versa l'IVA dovuta. L'importo indicato è il prezzo finale pagato, IVA inclusa ove dovuta. Questo documento è una conferma di acquisto, non una fattura fiscale.",
     traderYes: 'Il venditore ha dichiarato il proprio status: professionista.',
     traderNo: 'Il venditore ha dichiarato il proprio status: privato (venditore non professionale).',
     print: 'Stampa / Salva come PDF',
@@ -107,7 +112,7 @@ const STRINGS: Record<string, ReceiptStrings> = {
     net: 'Neto (sin IVA)',
     discount: 'Código promocional aplicado',
     vatNote:
-      'El contrato de compra se celebra entre tú y el creador (vendedor). A efectos del IVA, Linketto (Carbon Stealth VCC) actúa como proveedor presunto según el artículo 9 bis del Reglamento de Ejecución (UE) n.º 282/2011 y repercute y declara el IVA debido según el país del comprador. El importe mostrado es el precio final pagado, con el IVA incluido cuando corresponda. Este documento es una confirmación de compra, no una factura fiscal.',
+      'El contrato de compra se celebra entre tú y el creador (vendedor). A efectos del IVA, Linketto (Carbon Stealth VCC) actúa como proveedor presunto según el artículo 9 bis del Reglamento de Ejecución (UE) n.º 282/2011 y repercute y declara el IVA debido. El importe mostrado es el precio final pagado, con el IVA incluido cuando corresponda. Este documento es una confirmación de compra, no una factura fiscal.',
     traderYes: 'El vendedor ha declarado su condición: profesional.',
     traderNo: 'El vendedor ha declarado su condición: particular (vendedor no profesional).',
     print: 'Imprimir / Guardar como PDF',
@@ -128,7 +133,7 @@ const STRINGS: Record<string, ReceiptStrings> = {
     net: 'Netto (ohne USt.)',
     discount: 'Angewendeter Gutscheincode',
     vatNote:
-      'Der Kaufvertrag kommt zwischen dir und dem Creator (Verkäufer) zustande. Für Umsatzsteuerzwecke handelt Linketto (Carbon Stealth VCC) als fingierter Leistungserbringer nach Artikel 9a der Durchführungsverordnung (EU) Nr. 282/2011 und berechnet und führt die geschuldete Umsatzsteuer nach dem Land des Käufers ab. Der angezeigte Betrag ist der final gezahlte Preis, inklusive Umsatzsteuer, soweit diese anfällt. Dieses Dokument ist eine Kaufbestätigung, keine Steuerrechnung.',
+      'Der Kaufvertrag kommt zwischen dir und dem Creator (Verkäufer) zustande. Für Umsatzsteuerzwecke handelt Linketto (Carbon Stealth VCC) als fingierter Leistungserbringer nach Artikel 9a der Durchführungsverordnung (EU) Nr. 282/2011 und berechnet und führt die geschuldete Umsatzsteuer ab. Der angezeigte Betrag ist der final gezahlte Preis, inklusive Umsatzsteuer, soweit diese anfällt. Dieses Dokument ist eine Kaufbestätigung, keine Steuerrechnung.',
     traderYes: 'Der Verkäufer hat seinen Status angegeben: Unternehmer.',
     traderNo: 'Der Verkäufer hat seinen Status angegeben: Privatperson (nicht gewerblicher Verkäufer).',
     print: 'Drucken / Als PDF speichern',
@@ -149,7 +154,7 @@ const STRINGS: Record<string, ReceiptStrings> = {
     net: 'Net (hors TVA)',
     discount: 'Code promo appliqué',
     vatNote:
-      "Le contrat d'achat est conclu entre vous et le créateur (vendeur). Aux fins de la TVA, Linketto (Carbon Stealth VCC) agit en qualité de fournisseur présumé au titre de l'article 9 bis du règlement d'exécution (UE) n° 282/2011 et facture et reverse la TVA due selon le pays de l'acheteur. Le montant indiqué est le prix final payé, TVA comprise le cas échéant. Ce document est une confirmation d'achat, non une facture fiscale.",
+      "Le contrat d'achat est conclu entre vous et le créateur (vendeur). Aux fins de la TVA, Linketto (Carbon Stealth VCC) agit en qualité de fournisseur présumé au titre de l'article 9 bis du règlement d'exécution (UE) n° 282/2011 et facture et reverse la TVA due. Le montant indiqué est le prix final payé, TVA comprise le cas échéant. Ce document est une confirmation d'achat, non une facture fiscale.",
     traderYes: 'Le vendeur a déclaré son statut : professionnel.',
     traderNo: 'Le vendeur a déclaré son statut : particulier (vendeur non professionnel).',
     print: 'Imprimer / Enregistrer en PDF',

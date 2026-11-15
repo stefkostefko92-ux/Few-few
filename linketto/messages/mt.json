@@ -98,7 +98,6 @@
     "processingNote": "Il-bejgħ mill-ħanut iġorr ukoll tariffa ta' pproċessar tal-ħlas ta' 1.9% + €0.30 (tkopri l-proċessur tal-karta).",
     "mostPopular": "L-aktar popolari",
     "annualOffer": "Iffranka {percent}% b'pjan annwali",
-    "referralPercentNote": "Stieden lill-ħbieb u aqla' {percent}% ta' kull ħlas li jagħmlu.",
     "vatNote": "Il-prezzijiet huma finali — inkluża l-VAT fejn tkun dovuta."
   },
   "auth": {
@@ -374,7 +373,7 @@
   },
   "footer": {
     "company": "Prodott ta' Carbon Stealth VCC",
-    "legalLine": "ID tal-kumpanija BG208725180 · ul. Samuil 3, 2670 Bobov Dol, Bulgarija",
+    "legalLine": "ID tal-kumpanija (EIK) 208725180, numru tal-VAT BG208725180 · ul. Samuil 3, 2670 Bobov Dol, Bulgarija",
     "privacy": "Privatezza",
     "terms": "Termini",
     "contact": "info@carbonstealth.eu",

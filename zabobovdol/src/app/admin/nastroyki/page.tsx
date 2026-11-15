@@ -156,7 +156,7 @@ export default async function AdminSettingsPage({
       <form action={saveChurchServices} className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
         <h2 className="text-lg font-semibold text-slate-900">Църковни служби</h2>
         <p className="text-sm text-slate-600">
-          Този текст се показва в раздел „Религиозен живот“ на страница „Опознай
+          Този текст се показва в раздел „Религиозен живот“ на страница „Опознайте
           Бобов дол“. Попълнете часовете на службите и празниците. Оставете
           празно, за да го скриете.
         </p>

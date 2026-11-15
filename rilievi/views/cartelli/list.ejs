@@ -1,0 +1,45 @@
+<%
+  // Табелите „Avviso di fermo impianto“ на фирмата — най-новите отгоре.
+  const showAzienda = aziende.length > 0;
+  const base = '/cartelli' + (aziendaFilter ? '?azienda=' + encodeURIComponent(aziendaFilter) : '');
+  const luogo = (row) => [row.indirizzo, row.citta].filter(Boolean).join(', ');
+%><%- include('../partials/top', { titleKey: 'cartelli.list' }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('cartelli.list') %></h1>
+    <p class="page-head__sub"><%= t('cartelli.listSub') %></p>
+  </div>
+  <% if (can('interventi:write')) { %><a class="btn btn--primary" href="/cartelli/nuovo"><%- include('../partials/icon', { name: 'plus' }) %><%= t('cartelli.new') %></a><% } %>
+</div>
+<% if (showAzienda) { %><%- include('../partials/azienda-filter', { action: '/cartelli' }) %><% } %>
+<% if (page.rows.length === 0) { %>
+<div class="empty">
+  <p><strong><%= t('cartelli.empty') %></strong></p>
+  <% if (can('interventi:write')) { %><p class="muted"><%= t('cartelli.emptyHint') %></p><% } %>
+</div>
+<% } else { %>
+<table class="table table--stack">
+  <caption class="visually-hidden"><%= t('cartelli.list') %></caption>
+  <thead>
+    <tr>
+      <th scope="col"><%= t('cartelli.colonna.data') %></th>
+      <th scope="col"><%= t('cartelli.colonna.luogo') %></th>
+      <th scope="col"><%= t('cartelli.colonna.ubicazione') %></th>
+      <th scope="col"><%= t('cartelli.colonna.autore') %></th>
+      <% if (showAzienda) { %><th scope="col"><%= t('scheda.field.azienda') %></th><% } %>
+    </tr>
+  </thead>
+  <tbody>
+    <% for (const row of page.rows) { %><tr>
+      <td class="date" data-label="<%= t('cartelli.colonna.data') %>"><a class="row-link" href="/cartelli/<%= row.id %>"><%= fmt.day(row.data) %></a></td>
+      <td class="wide" data-label="<%= t('cartelli.colonna.luogo') %>"><%= luogo(row) || '—' %><% if (row.scheda && row.scheda.matricola) { %><br><span class="muted"><%= t('cartelli.daScheda.matricola', { m: row.scheda.matricola }) %></span><% } %></td>
+      <td data-label="<%= t('cartelli.colonna.ubicazione') %>"><%= row.ubicazione || '—' %></td>
+      <td data-label="<%= t('cartelli.colonna.autore') %>"><%= row.createdBy ? row.createdBy.name : '—' %></td>
+      <% if (showAzienda) { %><td data-label="<%= t('scheda.field.azienda') %>"><%= row.azienda.name %></td><% } %>
+    </tr>
+    <% } %>
+  </tbody>
+</table>
+<%- include('../partials/pager', { base, page: page.page, pages: page.pages }) %>
+<% } %>
+<%- include('../partials/bottom') %>

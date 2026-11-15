@@ -267,12 +267,30 @@ export function panelFindings(cfg = {}) {
   return findings;
 }
 
+// Копие ИЗВЪН машината. Дълго то идваше даром от втория VPS (изнасяне към съседа)
+// — и при смяната на двата сървъра с един изчезна БЕЗ нито една аларма: нощният
+// дъмп продължава да минава, възрастта е наред, всичко е зелено, а умре ли дискът
+// (или вземе ли някой root), бекъпът си отива заедно с данните. Чиста функция:
+// `restic` е отделен вход, за да се тества без файловата система.
+export function offsiteFindings(cfg = {}, { restic = false } = {}) {
+  const viaPeer = (cfg.peers || []).length > 0 && Boolean(cfg.backups?.offsite?.enabled);
+  if (viaPeer || restic) return [];
+  return [{
+    id: 'backup-no-offsite',
+    severity: 'high',
+    title: 'Бекъпите живеят само на тази машина',
+    why: 'Няма нито съсед, към който да се изнася копие, нито restic хранилище. Умре ли дискът — или вземе ли някой root — бекъпът си отива заедно с данните. 3-2-1 иска поне едно копие ИЗВЪН машината.',
+    fix: 'Хранилище в ЕС (напр. Hetzner Storage Box) + restic: `RESTIC_REPOSITORY` и `RESTIC_PASSWORD` в /etc/vps-dashboard/restic.env (mode 600), после „Бекъпи“ → restic бекъп и проверка. Или втори сървър като съсед с включено изнасяне.',
+  }];
+}
+
 export async function posture(cfg = {}) {
   const findings = [];
   const add = (f) => findings.push(f);
 
   // Самият панел ПЪРВИ: най-правата услуга на машината.
   for (const f of panelFindings(cfg)) add(f);
+  for (const f of offsiteFindings(cfg, { restic: fs.existsSync('/etc/vps-dashboard/restic.env') })) add(f);
 
   const [sshd, ufw, unattended, listen, f2b, sudoers, passwd] = await Promise.all([
     run('sshd', ['-T'], { timeout: 10000 }),
@@ -331,7 +349,10 @@ export async function posture(cfg = {}) {
       id: 'exposed-ports',
       severity: 'high',
       title: `${plural(notExpected.length, 'услуга', 'услуги')} слушат на всички интерфейси`,
-      why: `${notExpected.map((e) => `${e.proc} на ${e.local}`).join(', ')}. Приложение, вързано на 0.0.0.0, е достъпно отвън дори да мислиш, че е зад Nginx.`,
+      // Данните (процес на адрес) са ОТДЕЛНО поле: слепени с изречението, те правят
+      // шаблон, който се мени с всяка машина, и преводът не съвпада никога.
+      why: 'Приложение, вързано на 0.0.0.0, е достъпно отвън дори да мислиш, че е зад Nginx.',
+      where: notExpected.map((e) => `${e.proc} на ${e.local}`).join(', '),
       fix: 'Върни ги на 127.0.0.1 (в конфига на приложението/compose: „127.0.0.1:3000:3000") и ги пускай само през reverse proxy.',
     });
   }
@@ -411,7 +432,10 @@ export async function posture(cfg = {}) {
 // Не е откриване на прониквания (root може да пренапише и базата). Целта е
 // друга и много по-честа: „вчера работеше, днес не" — кой файл е мръднал.
 const BASELINE_FILE = 'etc-baseline.json';
-const WATCHED = [
+// Отпечатъци, направени ПРЕДИ разширяването на списъка, нямат `watched` — за тях
+// важи този. Иначе всеки файл под новите пътища изглежда „добавен" и самият ъпдейт
+// вдига аларма за дрейф на здрав сървър.
+const LEGACY_WATCHED = [
   '/etc/ssh/sshd_config',
   '/etc/sudoers',
   '/etc/passwd',
@@ -425,6 +449,56 @@ const WATCHED = [
   '/etc/nginx/sites-enabled',
   '/etc/cron.d',
 ];
+// Добавени след проверка в лабораторията:
+// - sshd_config.d — ТАМ панелът сам съветва да се сложи защитата на SSH, а Ubuntu
+//   24.04 носи там 50-cloud-init.conf. Един файл в тази папка връща паролите, а
+//   отпечатъкът го пропускаше;
+// - ld.so.preload — класическото място за руткит (зарежда се във ВСЕКИ процес);
+// - nginx/conf.d — включва се в http контекста като sites-enabled;
+// - ключовете на root — нов ред там е постоянен вход, без парола и без лог за вход.
+// - ключовете на всеки потребител и личните crontab-и — същият постоянен вход като
+//   ключовете на root, само през друг акаунт (`*` е точно един сегмент от пътя).
+const WATCHED = [
+  ...LEGACY_WATCHED,
+  '/etc/ssh/sshd_config.d',
+  '/etc/ld.so.preload',
+  '/etc/nginx/conf.d',
+  '/root/.ssh/authorized_keys',
+  '/home/*/.ssh/authorized_keys',
+  '/var/spool/cron/crontabs',
+];
+
+// `*` в следен път = един сегмент (име на потребител). Разгъва се при всеки отпечатък,
+// затова нов потребител с ключ излиза като „добавен", не като „нов за наблюдението".
+export function expandWatched(pattern) {
+  if (!pattern.includes('*')) return [pattern];
+  const parts = pattern.split('/');
+  let paths = [''];
+  for (const part of parts.slice(1)) {
+    const next = [];
+    for (const base of paths) {
+      if (part !== '*') {
+        next.push(`${base}/${part}`);
+        continue;
+      }
+      let names = [];
+      try {
+        names = fs.readdirSync(base || '/');
+      } catch {
+        /* нечетима папка — нищо за разгъване */
+      }
+      for (const n of names) next.push(`${base}/${n}`);
+    }
+    paths = next;
+  }
+  return paths;
+}
+
+export function rootCovers(root, p) {
+  if (!root.includes('*')) return p === root || p.startsWith(root + '/');
+  const re = new RegExp('^' + root.split('*').map((s) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('[^/]+') + '(/.*)?$');
+  return re.test(p);
+}
 const MAX_FILES = 2000;
 
 function hashFile(p) {
@@ -469,8 +543,8 @@ function walk(target, out, depth = 0) {
 
 export function snapshotEtc() {
   const files = new Map();
-  for (const t of WATCHED) walk(t, files);
-  return { takenAt: new Date().toISOString(), files: Object.fromEntries(files) };
+  for (const t of WATCHED) for (const p of expandWatched(t)) walk(p, files);
+  return { takenAt: new Date().toISOString(), watched: [...WATCHED], files: Object.fromEntries(files) };
 }
 
 export function saveBaseline(stateDir, snap) {
@@ -494,9 +568,16 @@ export function diffEtc(stateDir) {
   const added = [];
   const removed = [];
   const changed = [];
+  // Файл под път, който отпечатъкът изобщо НЕ е следял, не е „добавен" — той е
+  // нов за наблюдението. Казва се отделно и не вдига аларма; влиза при следващия
+  // отпечатък.
+  const roots = Array.isArray(base.watched) ? base.watched : LEGACY_WATCHED;
+  const covered = (p) => roots.some((r) => rootCovers(r, p));
+  const newlyTracked = [];
   for (const [p, h] of Object.entries(now.files)) {
     const b = base.files[p];
-    if (!b) added.push({ path: p, mode: h.mode });
+    if (!b && !covered(p)) newlyTracked.push(p);
+    else if (!b) added.push({ path: p, mode: h.mode });
     else if (b.sha256 !== h.sha256) changed.push({ path: p, sizeBefore: b.size, sizeAfter: h.size });
     else if (b.mode !== h.mode) changed.push({ path: p, modeBefore: b.mode, modeAfter: h.mode, onlyMode: true });
   }
@@ -508,6 +589,7 @@ export function diffEtc(stateDir) {
     added,
     removed,
     changed,
+    newlyTracked,
     clean: !added.length && !removed.length && !changed.length,
   };
 }

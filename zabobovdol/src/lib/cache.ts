@@ -48,6 +48,22 @@ export const getEmergencyServices = cached(
   REVALIDATE.content,
 );
 
+// Брой публикувани услуги по категория — чиповете „Услуги по категории“ на
+// началната показват само непразните, с бройката (както /uslugi).
+export const getServiceCategoryCounts = cached(
+  "service-category-counts",
+  async () =>
+    (
+      await prisma.service.groupBy({
+        by: ["category"],
+        where: { published: true },
+        _count: { _all: true },
+      })
+    ).map((c) => ({ category: c.category as string, count: c._count._all })),
+  [CACHE_TAGS.service],
+  REVALIDATE.content,
+);
+
 export const getUpcomingEvents = cached(
   "upcoming-events",
   () =>

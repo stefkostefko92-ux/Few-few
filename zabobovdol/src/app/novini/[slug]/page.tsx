@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { PageHero, Prose } from "@/components/ui";
+import { DetailActions, PageHero, Prose, safeHttpUrl } from "@/components/ui";
 import { buildMetadata, newsArticleLd, canonical } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { JsonLd } from "@/components/JsonLd";
-import { PrintButton } from "@/components/PrintButton";
-import { ShareButton } from "@/components/ShareButton";
 import { newsDate } from "@/lib/news";
+import { formatDate, isoDate } from "@/lib/format-date";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +27,13 @@ export async function generateMetadata({
     description: p.seoDescription || p.excerpt || plainText(p.content, 155),
     path: `/novini/${p.slug}`,
     type: "article",
+    keywords: [
+      "новини Бобов дол",
+      "Бобов дол днес",
+      "съобщения Бобов дол",
+      p.source ? `${p.source} съобщение` : "За Бобов дол новини",
+      "граждански портал Бобов дол",
+    ],
   });
 }
 
@@ -39,6 +45,8 @@ export default async function PostPage({
   const { slug } = await params;
   const p = await getPost(slug);
   if (!p) notFound();
+  const d = newsDate(p);
+  const sourceUrl = safeHttpUrl(p.sourceUrl);
 
   return (
     <>
@@ -59,50 +67,45 @@ export default async function PostPage({
           { name: p.title, path: `/novini/${p.slug}` },
         ]}
       />
-      <article className="container-content max-w-3xl py-10">
-        <div className="text-sm text-slate-600">
-          {/* Внесена новина → източникът ѝ; иначе — нашата редакция. */}
-          {p.source ? `Източник: ${p.source}` : "Редакция „За Бобов дол“"}
-          {" · "}
-          <time dateTime={newsDate(p).toISOString()}>
-            {new Intl.DateTimeFormat("bg-BG", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-              timeZone: "Europe/Sofia",
-            }).format(newsDate(p))}
-          </time>
-        </div>
-        <div className="mt-4">
-          <Prose html={renderMarkdown(p.content)} />
-        </div>
-        {p.source && (
-          <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-            Източник: <strong>{p.source}</strong>
-            {p.sourceUrl && (
-              <>
-                {" — "}
-                <a
-                  href={p.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-brand-700 underline"
-                >
-                  прочетете оригинала
-                </a>
-              </>
-            )}
+      {/* Статията започва от лявата линия на H1 (не центрирана), колона ~70 знака. */}
+      <div className="container-content py-10">
+        <article className="max-w-3xl">
+          <p className="text-meta">
+            {/* Внесена новина → източникът ѝ; иначе — нашата редакция. */}
+            {p.source ? `Източник: ${p.source}` : "Редакция „За Бобов дол“"}
+            {"\u00a0· "}
+            <time dateTime={isoDate(d)}>{formatDate(d)}</time>
+          </p>
+          <div className="mt-4">
+            <Prose html={renderMarkdown(p.content)} />
           </div>
-        )}
-        <div className="mt-8 flex flex-wrap items-start gap-3 border-t border-slate-200 pt-5">
-          <ShareButton
-            title={p.title}
-            text={`${p.title} — „За Бобов дол“`}
-            path={`/novini/${p.slug}`}
+          {p.source && (
+            <p className="mt-8 border-t border-slate-200 pt-5 text-base text-slate-700">
+              Източник: <strong className="font-semibold text-slate-900">{p.source}</strong>
+              {sourceUrl && (
+                <>
+                  {" — "}
+                  <a
+                    href={sourceUrl.toString()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="link"
+                  >
+                    прочетете оригинала
+                    <span className="sr-only"> (отваря се в нов раздел)</span>
+                  </a>
+                </>
+              )}
+            </p>
+          )}
+          <DetailActions
+            shareTitle={p.title}
+            shareText={`${p.title} — „За Бобов дол“`}
+            sharePath={`/novini/${p.slug}`}
+            printLabel="Отпечатайте новината"
           />
-          <PrintButton variant="secondary" label="Принтирай новината" />
-        </div>
-      </article>
+        </article>
+      </div>
     </>
   );
 }

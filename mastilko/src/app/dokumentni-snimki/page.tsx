@@ -3,6 +3,7 @@ import Image from "next/image";
 import PhotoStudio from "@/components/studios/PhotoStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import RelatedTools from "@/components/RelatedTools";
+import ToolGuide from "@/components/ToolGuide";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатни снимки за документи (35×45 mm)";
@@ -64,6 +65,7 @@ export default function DokumentniSnimkiPage() {
         </p>
       </header>
       <PhotoStudio />
+      <ToolGuide current="/dokumentni-snimki" howTo={HOWTO} />
       <ToolFaq items={FAQ} />
       <RelatedTools current="/dokumentni-snimki" />
       <script

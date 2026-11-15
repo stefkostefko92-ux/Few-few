@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokkolja a hirdetéseket mindenhol: YouTube-videóreklámok, bannerek, felugró ablakok, nyomkövetők, cookie-sávok és adblock-falak."
+    "message": "Reklámblokkoló YouTube-hoz és a webhez: videóreklámok, bannerek, felugrók, nyomkövetők, cookie-sávok és adblock-falak."
   },
   "byCarbon": {
     "message": "készítette: Carbon Stealth"
@@ -647,6 +647,12 @@
     "message": "Kattintson a címsor melletti puzzle-darab ikonra, és rögzítse a Supreme AdBlockot. Ezután egy kattintással láthatja, mit blokkolt a bővítmény az oldalon.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Rögzítve az eszköztáron"
+  },
+  "welPinnedText": {
+    "message": "Egy kattintás az ikonjára megmutatja, mit blokkolt a bővítmény az oldalon."
+  },
   "welBrokenTitle": {
     "message": "Ha egy webhely hibásan jelenik meg",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -793,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Szabálykapacitás"
+  },
+  "helpTitle": {
+    "message": "Hibásak a webhelyek?"
+  },
+  "helpText": {
+    "message": "Elég egyszerre egy webhellyel foglalkozni: engedélyezze ott a hirdetéseket egy órára, vagy kapcsolja ki az elemek elrejtését csak ott. Ha szól nekünk, mindenkinek kijavítjuk."
+  },
+  "helpFix": {
+    "message": "Webhely javítása"
+  },
+  "cardNever": {
+    "message": "Ne jelenjen meg újra"
+  },
+  "cardClose": {
+    "message": "Bezárás"
+  },
+  "receiptTitle": {
+    "message": "Az Ön elmúlt 30 napja"
+  },
+  "receiptText": {
+    "message": "$1 blokkolt kérés · $2 megválaszolt cookie-sáv · körülbelül $3 megtakarított adat (becslés)"
+  },
+  "share": {
+    "message": "Megosztás"
+  },
+  "shareTitle": {
+    "message": "A Supreme AdBlock Chrome Web Store-hivatkozásának másolása"
+  },
+  "shareCopied": {
+    "message": "Hivatkozás másolva"
+  },
+  "rep_fixed_q": {
+    "message": "Megjavult a webhely?"
+  },
+  "rep_fixed_yes": {
+    "message": "Igen, működik"
+  },
+  "rep_fixed_no": {
+    "message": "Nem, még mindig hibás"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Örülünk, hogy működik. Ha lent szól nekünk, a jelentésből kiderül, melyik javítás segített, így mindenkinek kijavíthatjuk a webhelyet."
+  },
+  "rep_fixed_next": {
+    "message": "Próbálja a következőt: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Akkor kérjük, szóljon nekünk lent: megnézzük a webhelyet."
+  },
+  "rep_webmail": {
+    "message": "Nincs levelezőprogramja? Másolja a jelentést, és küldje el a webes levelezőjéből erre a címre: $1."
+  },
+  "blk_mistake": {
+    "message": "Úgy gondolja, hogy ez tévedés? Szóljon nekünk"
+  },
+  "welTest": {
+    "message": "Nézze meg működés közben egy tesztoldalon"
   }
 }

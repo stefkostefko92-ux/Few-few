@@ -72,9 +72,15 @@ test("fmtDutyDay: денят на дежурството не се измест�
   assert.equal(fmtDutyDay(new Date("2026-10-26T00:00:00Z")), "Понеделник, 26 октомври");
 });
 
-test("fmtGenerated: дата и час по София", () => {
-  assert.equal(fmtGenerated(new Date("2026-10-23T16:45:00Z")), "23.10.2026 г., 19:45 ч.");
-  assert.equal(fmtGenerated(new Date("2026-12-01T07:05:00Z")), "01.12.2026 г., 09:05 ч.");
+test("fmtGenerated: дата и час по София (с неразделими интервали)", () => {
+  assert.equal(
+    fmtGenerated(new Date("2026-10-23T16:45:00Z")),
+    "23\u00a0октомври 2026\u00a0г., 19:45\u00a0ч.",
+  );
+  assert.equal(
+    fmtGenerated(new Date("2026-12-01T07:05:00Z")),
+    "1\u00a0декември 2026\u00a0г., 09:05\u00a0ч.",
+  );
 });
 
 test("capFirst и shorten", () => {

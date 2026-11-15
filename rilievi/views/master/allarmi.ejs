@@ -1,0 +1,53 @@
+<%
+  // „Allarmi“ (routes/master-allarmi.ts, allarmi/servizio.ts): алармите на портала към Discord — състоянието,
+  // пробното съобщение и формата (адресът на webhook-а само се пише).
+  const a = 'allarmi.pagina.';
+%><%- include('../partials/top', { titleKey: 'allarmi.pagina.titolo', narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <a href="/master"><%= t('master.console.title') %></a>
+    <h1><%= t(a + 'titolo') %></h1>
+    <p class="page-head__sub"><%= t(a + 'sub') %></p>
+  </div>
+</div>
+<div class="stack-gap">
+  <section class="panel" aria-labelledby="h-allarmi-stato">
+    <h2 class="section__title" id="h-allarmi-stato"><%= t(a + 'statoTitolo') %></h2>
+    <p><strong><%= t(stato.attivo ? a + 'attivi' : a + 'spenti') %></strong></p>
+    <% if (stato.updatedAt && stato.updatedBy) { %><p class="muted"><%= t(a + 'modifica', { data: fmt.dateTime(stato.updatedAt), nome: stato.updatedBy }) %></p><% } %>
+    <form method="post" action="/master/allarmi/prova"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><div class="toolbar"><button class="btn" type="submit"<% if (!stato.attivo) { %> disabled<% } %>><%- include('../partials/icon', { name: 'bell' }) %><span><%= t(a + 'prova') %></span></button></div></form>
+  </section>
+
+  <section class="panel" aria-labelledby="h-allarmi-cosa">
+    <h2 class="section__title" id="h-allarmi-cosa"><%= t(a + 'cosaTitolo') %></h2>
+    <ul>
+      <% for (const k of ['manutenzione', 'pagamento', 'contestazione', 'rimborso', 'posta', 'segnalazione']) { %><li><%= t(a + 'cosa.' + k) %></li>
+      <% } %>
+    </ul>
+    <p class="muted"><%= t(a + 'senzaDati') %></p>
+    <p class="muted"><%= t(a + 'limite') %></p>
+  </section>
+
+  <form class="panel form" method="post" action="/master/allarmi" novalidate>
+    <h2 class="section__title"><%= t(a + 'formTitolo') %></h2>
+    <% if (errore) { %><div class="errors" id="form-error" role="alert" tabindex="-1"><h2><%= t(errore) %></h2></div><% } %>
+    <p><%= t(a + 'come') %></p>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <fieldset class="choice">
+      <legend><%= t(a + 'attivoTitolo') %></legend>
+      <div class="choice__opts"><label class="tick"><input type="checkbox" name="attivo" value="1"<% if (stato.attivo) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t(a + 'attivo') %></span></label></div>
+    </fieldset>
+    <div class="field field--wide">
+      <label class="field__label" for="al-url"><%= t(a + 'url') %></label>
+      <input class="input" id="al-url" name="url" type="password" autocomplete="off" maxlength="400" spellcheck="false" value="" aria-describedby="al-url-hint">
+      <p class="field__hint" id="al-url-hint"><%= t(stato.haUrl ? a + 'urlHint' : a + 'urlHintNuovo') %></p>
+    </div>
+    <div class="field field--wide">
+      <label class="field__label" for="al-password"><%= t(a + 'password') %></label>
+      <input class="input" id="al-password" name="password" type="password" autocomplete="current-password" maxlength="256" required value="" aria-describedby="al-password-hint">
+      <p class="field__hint" id="al-password-hint"><%= t(a + 'passwordHint') %></p>
+    </div>
+    <div class="toolbar"><button class="btn btn--primary" type="submit"><%= t(a + 'salva') %></button></div>
+  </form>
+</div>
+<%- include('../partials/bottom') %>

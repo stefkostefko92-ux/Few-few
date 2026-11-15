@@ -192,6 +192,46 @@ PIUMA_ENV_FILE=/etc/piuma/agent.env node tools/social/piuma.mjs insights --brand
 
 ---
 
+## 6а. „Отговор по ключова дума“ (по избор — изключено по подразбиране)
+
+Коментар с обявена дума под наш пост → **едно** лично съобщение с одобрен текст (официален
+Private Replies API). Пълната спецификация, правното основание и абзацът за политиката:
+`docs/private-replies.md`. Включва се само ако всичко по-долу е готово:
+
+1. **Meta:**
+   - приложението е **Live**;
+   - App Review е одобрил `instagram_business_manage_comments`;
+   - полето `comments` е с **Advanced Access**.
+2. **Политиката за поверителност** с абзаца от спецификацията е публикувана, а адресът ѝ е
+   записан в App Dashboard.
+3. **`.env` на сървъра:**
+
+   ```ini
+   IG_SCOPES=instagram_business_basic,instagram_business_content_publish,instagram_business_manage_insights,instagram_business_manage_comments
+   IG_WEBHOOK_VERIFY_TOKEN=<openssl rand -hex 24>
+   REPLY_PRIVACY_URL=<адресът на политиката>
+   REPLY_CONTACT_EMAIL=info@carbonstealth.eu
+   PRIVATE_REPLIES_RETENTION_DAYS=9   # до 30 — решение на собственика (жалби)
+   ```
+
+4. **Деплой**, после в App Dashboard → Webhooks → Instagram:
+   - Callback URL `https://piuma.carbonstealth.eu/webhooks/instagram`;
+   - Verify Token = същият низ;
+   - абонамент за полето `comments`.
+
+   nginx-ът вече пуска всичко под `/` към приложението, затова нов `location` не трябва.
+
+5. **В панела:**
+   - **Акаунти** → свържи акаунта отново (за новото право) → „Отговори“ → „Включи
+     известията за коментари“;
+   - правило за конкретен пост, чийто надпис обявява думата;
+   - одобрение от **втори** човек.
+
+Проверка: `curl -s "https://piuma.carbonstealth.eu/webhooks/instagram?hub.mode=subscribe&hub.verify_token=<токена>&hub.challenge=42"`
+връща `42`. Грешен токен → 403. Без `IG_WEBHOOK_VERIFY_TOKEN` → 404.
+
+---
+
 ## 7. Проверка, че наистина работи
 
 ```bash
@@ -228,3 +268,48 @@ sudo RELEASE_DIR=/opt/few-few/releases/<по-стар> PROJECTS="piuma" \
 
 Връщането назад връща **кода**, не схемата. Миграция, която маха колона, не се отменя от
 стар образ — затова бекъпът преди миграция не е формалност.
+
+---
+
+## 8а. Одит-веригата: котвата и преходът v1 → v2
+
+Одитът е верига от записи; от v2 всеки хеш е HMAC с ключ, изведен от `TOKEN_ENC_KEY`.
+Главата на веригата (номер + хеш) живее и **извън базата** — в котвата
+`/var/lib/piuma/audit/audit-head.json` (права 600) на именувания том `piuma_audit-anchor`,
+общ за `app` и `worker`. Без нея който пише само в базата, може да изреже края на веригата
+или да свали цялата v2 опашка до v1 без ключ — затова в продукция `AUDIT_ANCHOR_DIR` е
+**задължителна** (compose я задава сам; без нея процесът не тръгва).
+
+Котвата се мести напред само ако записът на нейния номер е в базата със същия хеш.
+Изрязан край или пренаписана опашка → котвата **стои**, а в лога и в одита излиза
+`audit.chain.broken` (по веднъж на място на скъсване). Проверка на ръка: панелът →
+„Одит“ → „Провери веригата“.
+
+**Последният v1 номер.** Старите записи (v1) са без ключ, затова се приемат само до
+номер, закован извън базата:
+
+- автоматично — при първия запис с котва новият код записва в нея `v1MaxId` (последния
+  v1 номер в този момент) и после не го сменя;
+- или на ръка (има предимство) — `AUDIT_V1_MAX_ID` в `.env`, прочетено **преди**
+  миграцията към v2:
+
+  ```bash
+  cd /opt/few-few/current/piuma
+  sudo docker compose exec -T db psql -U piuma -d piuma -tAc 'SELECT coalesce(max(id), 0) FROM "AuditLog"'
+  ```
+
+**Деплоят на прехода към v2 — спри работника първо.** Старият работник пише v1 записи;
+тръгне ли нов v2 запис преди него, всеки следващ негов запис е v1 над закования номер,
+тоест веригата се отчита като скъсана. Затова:
+
+```bash
+cd /opt/few-few/current/piuma
+sudo docker compose stop worker              # старият работник спира да пише
+sudo PROJECTS="piuma" bash /opt/few-few/current/deploy/fetch-deploy.sh
+sudo docker compose -f /opt/few-few/current/piuma/docker-compose.yml ps worker   # новият тича
+```
+
+**Възстановена база от бекъп.** Котвата тогава е напред от базата и проверката вика
+„скъсано“ — точно както при изрязан край. Едва след като си сигурен, че това е твоето
+връщане, а не намеса: **не трий** стария файл — премести го встрани като доказателство
+(`audit-head.json.<дата>`), и следващият запис създава нова котва.

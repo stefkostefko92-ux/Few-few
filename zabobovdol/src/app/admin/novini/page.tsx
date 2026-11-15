@@ -2,6 +2,7 @@ import Link from "next/link";
 import { RefreshCw } from "@/components/icons";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { formatDateNumeric } from "@/lib/format-date";
 import { deleteNotNewsDrafts, runNewsImport } from "@/lib/admin/news-actions";
 import { togglePublish, deleteRecord } from "@/lib/admin/actions";
 import { DeleteButton } from "@/components/admin/DeleteButton";
@@ -23,11 +24,8 @@ function safeHref(u: string): string | null {
   return /^https?:\/\//i.test(u) ? u : null;
 }
 
-const dateFmt = new Intl.DateTimeFormat("bg-BG", {
-  day: "2-digit",
-  month: "2-digit",
-  year: "numeric",
-});
+// Датата от източника е истински момент → по софийско време.
+const dateFmt = { format: (d: Date) => formatDateNumeric(d) };
 
 export default async function AdminNewsImportPage({
   searchParams,

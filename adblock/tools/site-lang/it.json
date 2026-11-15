@@ -19,7 +19,7 @@
     ["La pubblicità di YouTube alla fonte", "Gli annunci video, nel feed e nella ricerca vengono tolti dai dati del player prima che li legga: i video partono e basta."],
     ["Liste di filtri per la tua lingua", "EasyList, EasyPrivacy e i filtri di uBlock Origin sono integrati, più 31 liste regionali; quella per la tua lingua si attiva da sola."],
     ["Post sponsorizzati", "Nascosti nei feed di Facebook, Instagram e Threads; i post dei tuoi amici restano."],
-    ["Banner dei cookie", "Preme «Rifiuta» al posto tuo, toglie la sfocatura e il blocco dello scorrimento rimasti e non preme mai un pulsante di accesso, OAuth o pagamento."],
+    ["Banner dei cookie", "Preme «Rifiuta» quando il banner lo offre, e «Accetta» solo se non c'è altro modo per chiuderlo; toglie la sfocatura e il blocco dello scorrimento rimasti e non preme mai un pulsante di accesso, OAuth o pagamento."],
     ["Tracker e pop-under", "Tracker, parametri di tracciamento nei link e finestre pubblicitarie vengono bloccati; i muri anti-adblock vengono neutralizzati."],
     ["Modalità Focus", "Nasconde bolle di chat, pop-up delle newsletter, richieste di notifiche, pop-up IA e YouTube Shorts, solo se lo vuoi."],
     ["Global Privacy Control", "A ogni sito che visiti viene chiesto di non vendere né condividere i tuoi dati."],

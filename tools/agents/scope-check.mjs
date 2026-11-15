@@ -14,8 +14,12 @@
 // Изход: 0 = един продукт (или само инфра); 1 = scope creep. Инфра+1 продукт е ОК (CI на продукта).
 
 import { execSync } from "node:child_process";
+import { isMain } from "../lib/is-main.mjs";
 
-const INFRA = new Set(["tools", ".claude", ".github", ".githooks", "agents-dashboard", "deploy", "docs"]);
+// `research/` е документация (пазарни проучвания), не продукт: няма deps, няма CI, няма ред в
+// продуктовата таблица на кореновия CLAUDE.md. Без него гейтът броеше проучването и продукта,
+// който то обосновава, за „два продукта" и хващаше несъществуващ scope-creep (PR #163).
+const INFRA = new Set(["tools", ".claude", ".github", ".githooks", "agents-dashboard", "deploy", "docs", "research"]);
 
 // Чиста логика — тестваема: списък файлове → {products:[…], infra:bool, ok}.
 // `root` (по избор): репо-коренът — АБСОЛЮТНИТЕ пътища се релативизират спрямо него, преди да се
@@ -92,4 +96,4 @@ function runCli() {
   process.exit(1);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) runCli();
+if (isMain(import.meta.url)) runCli();

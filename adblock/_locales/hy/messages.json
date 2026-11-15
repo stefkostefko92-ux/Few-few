@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Արգելափակում է գովազդն ամենուր՝ YouTube-ի տեսագովազդներ, բաններներ, ելնող պատուհաններ, հետագծիչներ, քուքիների հարցումներ։"
+    "message": "Գովազդի արգելափակիչ (YouTube, վեբ)՝ տեսագովազդներ, բաններներ, ելնող պատուհաններ, հետագծիչներ, քուքիների բաններներ, հակաադբլոկ պատեր։"
   },
   "byCarbon": {
     "message": "Carbon Stealth-ից"
@@ -647,6 +647,12 @@
     "message": "Սեղմեք հասցեագոտու կողքի գլուխկոտրուկի կտորի պատկերակը և ամրացրեք Supreme AdBlock-ը։ Այնուհետև մեկ սեղմումով կտեսնեք, թե ինչ է արգելափակվել էջում։",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Ամրացված է գործիքագոտում"
+  },
+  "welPinnedText": {
+    "message": "Դրա պատկերակին մեկ սեղմումը ցույց է տալիս, թե ինչ է արգելափակվել էջում։"
+  },
   "welBrokenTitle": {
     "message": "Եթե կայքը սխալ է ցուցադրվում",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -793,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Կանոնների տարողություն"
+  },
+  "helpTitle": {
+    "message": "Կայքերը փչանո՞ւմ են"
+  },
+  "helpText": {
+    "message": "Բավական է ամեն անգամ մեկ կայք. թույլատրեք գովազդն այնտեղ մեկ ժամով կամ անջատեք տարրերի թաքցումը միայն այնտեղ։ Եթե տեղեկացնեք մեզ, մենք կշտկենք կայքը բոլորի համար։"
+  },
+  "helpFix": {
+    "message": "Շտկել այս կայքը"
+  },
+  "cardNever": {
+    "message": "Այլևս չցուցադրել"
+  },
+  "cardClose": {
+    "message": "Փակել"
+  },
+  "receiptTitle": {
+    "message": "Ձեր վերջին 30 օրը"
+  },
+  "receiptText": {
+    "message": "$1 հարցում արգելափակվեց · $2 քուքիների բաններին պատասխան տրվեց · խնայվեց մոտ $3 տվյալ (մոտավոր գնահատական)"
+  },
+  "share": {
+    "message": "Կիսվել"
+  },
+  "shareTitle": {
+    "message": "Պատճենել Supreme AdBlock-ի հղումը Chrome Web Store-ում"
+  },
+  "shareCopied": {
+    "message": "Հղումը պատճենվեց"
+  },
+  "rep_fixed_q": {
+    "message": "Կայքը շտկվե՞ց"
+  },
+  "rep_fixed_yes": {
+    "message": "Այո, աշխատում է"
+  },
+  "rep_fixed_no": {
+    "message": "Ոչ, դեռ փչացած է"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Ուրախ ենք, որ աշխատում է։ Եթե ներքևում տեղեկացնեք մեզ, զեկույցում կնշվի, թե որ շտկումն օգնեց, և մենք կշտկենք կայքը բոլորի համար։"
+  },
+  "rep_fixed_next": {
+    "message": "Փորձեք հաջորդը՝ $1"
+  },
+  "rep_fixed_none": {
+    "message": "Այդ դեպքում խնդրում ենք տեղեկացնել մեզ ներքևում. մենք կուսումնասիրենք կայքը։"
+  },
+  "rep_webmail": {
+    "message": "Էլփոստի հավելված չունե՞ք։ Պատճենեք զեկույցը և ուղարկեք այն $1 հասցեին ձեր վեբփոստից։"
+  },
+  "blk_mistake": {
+    "message": "Կարծում եք՝ սա սխա՞լ է։ Տեղեկացրեք մեզ"
+  },
+  "welTest": {
+    "message": "Տեսնել, թե ինչպես է այն աշխատում փորձնական էջում"
   }
 }

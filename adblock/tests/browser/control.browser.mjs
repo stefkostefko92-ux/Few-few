@@ -171,6 +171,13 @@ try {
   ok("welcome: the shortcuts with a key are listed", (await w.evaluate(() => !document.getElementById("keysCard").hidden && document.querySelectorAll("#keysList li").length === 2)));
   await w.click('[data-feature="cookies"]');
   await w.waitForTimeout(500);
+  const pin = await w.getAttribute("#pinStep", "data-pin");
+  ok(`welcome: the pin tip is highlighted while the icon isn't on the toolbar (data-pin=${pin})`, pin === "todo" && (await shown(w, "#pinStep .ic-todo")) && !(await shown(w, "#pinStep .ic-done")));
+  // the browser reports the icon as pinned (what onUserSettingsChanged hands over) → the same tip, ticked, announced
+  await w.evaluate(() => showPin({ isOnToolbar: true }, true));
+  ok(`…and ticked + announced once the browser says it is pinned (${await w.textContent("#pinTitle")} / ${await w.textContent("#pinLive")})`, (await w.getAttribute("#pinStep", "data-pin")) === "done" &&
+    (await w.textContent("#pinTitle")) === "Pinned to the toolbar" && (await w.textContent("#pinLive")) === "Pinned to the toolbar" &&
+    (await shown(w, "#pinStep .ic-done")) && !(await shown(w, "#pinStep .ic-todo")));
   await w.close();
 
   // ---- high contrast: the popup's switch is redrawn with system colours ----

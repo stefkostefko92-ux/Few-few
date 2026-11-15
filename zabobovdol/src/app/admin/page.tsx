@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { formatDateTimeNumeric } from "@/lib/format-date";
 import { getAiConfig, PROVIDER_LABELS } from "@/lib/ai-config";
 import { sofiaDay } from "@/lib/stats-core";
 import { weekStart } from "@/lib/analytics-core";
@@ -352,12 +353,7 @@ export default async function AdminDashboard({
                 recentAudit.map((a) => (
                   <tr key={a.id}>
                     <td className="whitespace-nowrap p-3 text-slate-600">
-                      {new Intl.DateTimeFormat("bg-BG", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }).format(a.createdAt)}
+                      {formatDateTimeNumeric(a.createdAt)}
                     </td>
                     <td className="p-3 text-slate-700">{a.summary}</td>
                     <td className="p-3 text-right text-slate-600">{a.userEmail}</td>

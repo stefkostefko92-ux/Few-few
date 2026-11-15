@@ -63,6 +63,17 @@ src/build-site.js        dataset + segnalazioni + forensics + appalti + aggiudic
                          (main() + home/strutture/struttura/segnalazioni/metodologia; старите
                          тежки render-и са изнесени в src/render/*.js — appalti, fornitori,
                          regioni, inchiesta, legal)
+src/seo-site.js          ФИНАЛЕН проход върху site/ (част от `npm run site`; сам: `npm run seo`):
+                         тънки профили на изпълнители → noindex, keywords/self-canonical ако липсват,
+                         различител при еднакви <title>, връзки за сираци, sitemap.xml = ИНДЕКС →
+                         sitemap-{pagine,strutture,fornitori}.xml (само индексируеми самоканонични),
+                         реален lastmod от data/sitemap-lastmod.json (отпечатък на <main>), robots.txt
+src/shell-site.js        подменя ОБВИВКАТА (CSS, горна лента, мега-меню, footer, скриптове) на всяка
+                         страница в site/ с текущата от lib/site-ui.js; <main>/title/meta не пипа.
+                         Идемпотентен (част от `npm run site`; сам: `npm run shell`). Нов дизайн БЕЗ
+                         сурови данни: `npm run shell && npm run seo` върху комитнатия site/
+src/lib/seo.js           ЕДИНСТВЕН източник на SEO политиката: SOGLIA_FORNITORE (≥10 договора И ≥3
+                         възложители → индекс), keywordsPagina (≥5 + „Carbon Stealth"), sitemap XML
 src/render/              изнесени render модули (виж по-горе); всеки връща HTML стринг
 src/lib/                 http (retry/кеш/curl + ZIP magic-byte валидация), csv, dataset,
                          format, site-ui, site-shared (споделени helpers/константи +
@@ -93,6 +104,13 @@ src/lib/                 http (retry/кеш/curl + ZIP magic-byte валидац
   Обработва се поточно (readline над `unzip -p`); филтрирането по health-CIG прави
   разбитите от вградени нови редове фрагменти безобидни (не съвпадат). Иска
   `--max-old-space-size=4096` (виж npm script).
+- **Дизайн система „Conto pubblico“** (`lib/site-ui.js`): навигацията е `NAV_GROUPS` (4 групи с
+  описания → мега-меню на desktop, акордеон в чекмеджето под 1080px, колоните на footer-а) —
+  нова страница в менюто се добавя САМО там (тест: всяка връзка съществува в site/). Заглавия
+  h1/h2 в системен сериф (`--serif`), без ALL CAPS етикети; CSS се минимизира (`minCss`, без
+  коментари към браузъра); CSS само за началната страница е `CSS_HOME` през `page({ css })`.
+  Началните агрегати („Il conto“) са само структурите с ПЪЛЕН CE за `ultimoAnnoCe` (не смесвай
+  години); редовете се събират след закръгляне до 0,1 mld.
 - Сайтът е **на италиански**, self-contained (inline CSS/SVG/JS, нула външни ресурси —
   добро за CSP/Netlify), theme-aware (light/dark). Publish dir = `site/`.
 - `config.json → siteUrl` включва откриваемостта: canonical + OG/Twitter meta,
@@ -100,10 +118,15 @@ src/lib/                 http (retry/кеш/curl + ZIP magic-byte валидац
   релативни адреси). `page()` приема `canonical`/`jsonld`; подстраниците
   (struttura/regione/fornitore) подават свой `canonical`. `setSiteUrl()` в `site-ui.js`.
 - **IndexNow:** `config.indexNowKey` → `build-site` генерира `site/<key>.txt`;
-  `src/indexnow.js` (`npm run indexnow`) чете `sitemap.xml` и POST-ва URL-ите към
-  `api.indexnow.org` (Bing/Yandex/Seznam). Вградено в `deploy_ospedali` — тича ВИНАГИ
-  след деплой. Google не поддържа IndexNow → пасивно (sitemap+robots) + еднократна
-  верификация в Search Console от собственика (виж `deploy/DEPLOY.md`).
+  `src/indexnow.js` (`npm run indexnow`) чете sitemap индекса + секциите и POST-ва към
+  `api.indexnow.org` САМО новите/променените (lastmod) и излезлите адреси — състояние в
+  `server/.state/indexnow.json`. Вградено в `deploy_ospedali` — тича след всеки деплой.
+- **Индексиране (GSC 2026-10):** ~4900 тънки профила на изпълнители в sitemap → „Crawled –
+  not indexed" и срив на целия сайт. Не връщай всички профили в sitemap; прагът е в
+  `lib/seo.js`. Пълният ETL иска сурови данни извън git → политиката се прилага и върху
+  комитнатия site/ с `npm run seo` (идемпотентно).
+- Google не поддържа IndexNow → пасивно (sitemap+robots) + еднократна верификация в
+  Search Console от собственика (виж `deploy/DEPLOY.md`).
 - Профили на изпълнителите: `pIvaValida` (11 цифри, не всички еднакви, контролна
   цифра) пази от боклучави CF; физически лица (16 знака) НЕ се профилират (GDPR).
 - Регионите: `REGIONI` в `build-site.js` (ключ=файл; `istat`=код за картата;

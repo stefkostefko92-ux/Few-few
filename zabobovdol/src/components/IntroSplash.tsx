@@ -101,25 +101,26 @@ export function IntroSplash() {
       aria-modal="true"
       aria-label="Добре дошли"
       className={
-        "no-print fixed inset-0 z-[100] flex flex-col items-center justify-center bg-gradient-to-b from-brand-800 to-brand-900 px-6 text-center text-white transition-opacity duration-500 " +
+        "on-dark no-print fixed inset-0 z-[100] flex flex-col items-center justify-center bg-gradient-to-b from-brand-800 to-brand-900 px-6 text-center text-white transition-opacity duration-500 " +
         (leaving ? "pointer-events-none opacity-0" : "opacity-100")
       }
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/brand/bobov-dol-grb.png"
+        src="/brand/bobov-dol-grb-mark.png"
         alt="Герб на Бобов дол"
         width={150}
         height={216}
-        className="splash-crest h-36 w-auto rounded-2xl bg-white p-3 shadow-2xl sm:h-44"
+        className="splash-crest h-32 w-auto drop-shadow-xl sm:h-40"
       />
       {/* Не е <h1> нарочно: това е временен надпис, а истинският <h1> е на
           страницата отдолу — иначе на началната страница биха станали два. */}
-      <p className="splash-text mt-7 max-w-2xl text-4xl font-extrabold leading-tight sm:text-5xl">
+      <p className="splash-text mt-7 max-w-2xl text-balance font-display text-4xl font-bold leading-tight sm:text-5xl">
         {SITE.intro.headline}
       </p>
-      <p className="splash-text mt-3 text-base text-brand-100">
-        {SITE.name} · {SITE.geo.city}
+      <div aria-hidden className="splash-text mt-4 h-1 w-14 rounded-full bg-gold-400" />
+      <p className="splash-text mt-4 text-lg text-brand-100">
+        {SITE.tagline} · {SITE.geo.city}
       </p>
 
       {/* Брояч на посещенията. Брои ВСЯКО зареждане (и презарежданията),
@@ -151,9 +152,10 @@ export function IntroSplash() {
         ref={skipRef}
         type="button"
         onClick={skip}
-        className="mt-6 inline-flex min-h-[44px] items-center rounded-full border-2 border-white/60 px-6 py-2.5 text-base font-semibold text-white transition hover:bg-white/15"
+        className="mt-6 inline-flex min-h-tap items-center gap-2 rounded-xl border-2 border-white/60 px-6 py-2.5 text-base font-semibold text-white transition-colors hover:bg-white/15"
       >
-        Прескочи →
+        Продължете към сайта
+        <span aria-hidden="true">→</span>
       </button>
     </div>
   );

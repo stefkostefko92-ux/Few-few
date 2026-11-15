@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "YouTube વીડિયો જાહેરાતો, બૅનર, પૉપ-અપ, ટ્રૅકર, કુકી સંદેશા અને ઍન્ટિ-ઍડબ્લૉક દીવાલો દરેક જગ્યાએ બ્લૉક કરો."
+    "message": "જાહેરાત બ્લૉકર, YouTube અને વેબ માટે: વીડિયો જાહેરાતો, બૅનર, પૉપ-અપ, ટ્રૅકર, કુકી બૅનર અને ઍન્ટિ-ઍડબ્લૉક દીવાલો."
   },
   "byCarbon": {
     "message": "Carbon Stealth દ્વારા"
@@ -647,6 +647,12 @@
     "message": "ઍડ્રેસ બારની બાજુમાં કોયડાના ટુકડાના આઇકન પર ક્લિક કરો અને Supreme AdBlock પિન કરો. પછી એક ક્લિકમાં દેખાશે કે પેજ પર શું બ્લૉક થયું.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "એક્સટેન્શન ટૂલબાર પર પિન કરેલું છે"
+  },
+  "welPinnedText": {
+    "message": "તેના આઇકન પર એક ક્લિકમાં દેખાય છે કે પેજ પર શું બ્લૉક થયું."
+  },
   "welBrokenTitle": {
     "message": "જો કોઈ સાઇટ બરાબર ન દેખાય",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -793,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "નિયમોની ક્ષમતા"
+  },
+  "helpTitle": {
+    "message": "સાઇટ્સ બરાબર નથી ચાલતી?"
+  },
+  "helpText": {
+    "message": "એક વખતે એક સાઇટ પૂરતી છે: ત્યાં એક કલાક માટે જાહેરાતોને મંજૂરી આપો, અથવા ફક્ત ત્યાં જ ઘટકો છુપાવવાનું બંધ કરો. અમને જણાવવાથી તે બધા માટે ઠીક થઈ જાય છે."
+  },
+  "helpFix": {
+    "message": "આ સાઇટ ઠીક કરો"
+  },
+  "cardNever": {
+    "message": "આ ફરી બતાવશો નહીં"
+  },
+  "cardClose": {
+    "message": "બંધ કરો"
+  },
+  "receiptTitle": {
+    "message": "તમારા છેલ્લા 30 દિવસ"
+  },
+  "receiptText": {
+    "message": "$1 વિનંતીઓ બ્લૉક થઈ · $2 કુકી બૅનરનો જવાબ અપાયો · આશરે $3 ડેટા બચ્યો (અંદાજ)"
+  },
+  "share": {
+    "message": "શેર કરો"
+  },
+  "shareTitle": {
+    "message": "Chrome Web Store પર Supreme AdBlock ની લિંક કૉપિ કરો"
+  },
+  "shareCopied": {
+    "message": "લિંક કૉપિ થઈ"
+  },
+  "rep_fixed_q": {
+    "message": "શું સાઇટ ઠીક થઈ?"
+  },
+  "rep_fixed_yes": {
+    "message": "હા, તે ચાલે છે"
+  },
+  "rep_fixed_no": {
+    "message": "ના, હજુ બરાબર નથી"
+  },
+  "rep_fixed_yes_note": {
+    "message": "તે ચાલે છે એ જાણીને આનંદ થયો. જો તમે નીચે અમને જણાવો, તો રિપોર્ટમાં લખાશે કે કયો ઉપાય કામ આવ્યો, જેથી અમે બધા માટે સાઇટ ઠીક કરી શકીએ."
+  },
+  "rep_fixed_next": {
+    "message": "આગલો ઉપાય અજમાવો: $1"
+  },
+  "rep_fixed_none": {
+    "message": "તો કૃપા કરીને નીચે અમને જણાવો: અમે સાઇટ તપાસીશું."
+  },
+  "rep_webmail": {
+    "message": "ઇમેઇલ ઍપ નથી? રિપોર્ટ કૉપિ કરો અને તમારા વેબમેઇલથી $1 પર મોકલો."
+  },
+  "blk_mistake": {
+    "message": "આ ભૂલ લાગે છે? અમને જણાવો"
+  },
+  "welTest": {
+    "message": "તેને એક ટેસ્ટ પેજ પર કામ કરતું જુઓ"
   }
 }

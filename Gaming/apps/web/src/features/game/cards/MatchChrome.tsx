@@ -1,10 +1,9 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
-import { Badge, Button, Panel } from "../../../ui";
-import { useLobbyStore, useMatchStore } from "../../../lib/store";
+import { Badge, Panel } from "../../../ui";
 import type { GameOverMsg } from "@aso/shared";
 import type { MatchPhase } from "../useMatch";
+import { GameOverPanel, SceneHeader } from "../scene/SceneShell";
 
 interface Props {
   title: string;
@@ -17,22 +16,12 @@ interface Props {
 /** Shared header, searching spinner, and game-over panel for all game views. */
 export function MatchChrome({ title, phase, seat, result, children }: Props) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-
-  const myResult = result?.score.find((s) => s.seat === seat)?.result;
-  const myDelta = result?.ratingDeltas[seat] ?? 0;
-  // A regrouped party room for THIS game waits (an unrelated parked lobby must
-  // not swallow the "play again" button) — mirrors GameOverPanel.
-  const game = useMatchStore((s) => s.game);
-  const lobbyWaiting = useLobbyStore((s) => s.lobby !== null && s.lobby.game === game);
 
   return (
     <div className="mx-auto flex w-full max-w-[min(94vw,1240px)] flex-col items-center gap-6">
-      <div className="flex w-full items-center justify-between">
-        <h1 className="text-3xl text-brass-300">{title}</h1>
-        <Button variant="ghost" onClick={() => navigate("/")}>
-          {t("game.leave")}
-        </Button>
+      {/* Shared header: leaving mid-match resigns the seat (no bot finishing for us). */}
+      <div className="w-full">
+        <SceneHeader title={title} />
       </div>
 
       {phase === "searching" ? (
@@ -44,33 +33,9 @@ export function MatchChrome({ title, phase, seat, result, children }: Props) {
         children
       )}
 
-      {phase === "over" && myResult ? (
-        <Panel className="w-full max-w-sm text-center">
-          <h2 className="mb-2 text-3xl text-brass-300">
-            {myResult === "win"
-              ? t("game.youWin")
-              : myResult === "loss"
-                ? t("game.youLose")
-                : t("game.draw")}
-          </h2>
-          <p className="tnum text-ink-300">
-            MMR {myDelta >= 0 ? "+" : ""}
-            {myDelta}
-          </p>
-          {lobbyWaiting ? (
-            <Button className="mt-6 w-full" onClick={() => navigate("/rooms")}>
-              {t("game.backToRoom")}
-            </Button>
-          ) : (
-            <Button className="mt-6 w-full" onClick={() => useMatchStore.getState().playAgain()}>
-              {t("game.playAgain")}
-            </Button>
-          )}
-          <Button variant="ghost" className="mt-2 w-full" onClick={() => navigate("/")}>
-            {t("game.backToLobby")}
-          </Button>
-        </Panel>
-      ) : null}
+      {/* The shared verdict overlay (on <body>, always in view) — the inline
+          panel used to land below the board, off-screen on a laptop. */}
+      {phase === "over" && result ? <GameOverPanel seat={seat} result={result} /> : null}
     </div>
   );
 }

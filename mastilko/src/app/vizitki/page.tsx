@@ -3,6 +3,7 @@ import Image from "next/image";
 import CardStudio from "@/components/studios/CardStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import RelatedTools from "@/components/RelatedTools";
+import ToolGuide from "@/components/ToolGuide";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатни визитки за печат онлайн (90 × 54 mm)";
@@ -72,6 +73,7 @@ export default function VizitkiPage() {
         </p>
       </header>
       <CardStudio />
+      <ToolGuide current="/vizitki" howTo={HOWTO} />
       <ToolFaq items={FAQ} />
       <RelatedTools current="/vizitki" />
       <script

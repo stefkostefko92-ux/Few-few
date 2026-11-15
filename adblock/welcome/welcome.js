@@ -17,10 +17,31 @@ $("done").addEventListener("click", () => {
   });
 });
 
+// ---- is the icon pinned? ----
+// Само отговорът на браузъра за тази лента (getUserSettings от Chrome 91, промяната на живо —
+// onUserSettingsChanged от Chrome 130). Без API-то стъпката остава обикновен съвет.
+function showPin(s, live) {
+  const pinned = !!(s && s.isOnToolbar);
+  $("pinStep").dataset.pin = pinned ? "done" : "todo";
+  $("pinTitle").textContent = pinned ? L("welPinnedTitle", "Pinned to the toolbar") : L("welPinTitle", "Pin it to the toolbar");
+  $("pinText").textContent = pinned
+    ? L("welPinnedText", "One click on its icon shows what was blocked on the page.")
+    : L("welPinText", "Click the puzzle-piece icon next to the address bar and pin Supreme AdBlock. One click then shows what was blocked on the page.");
+  if (live && pinned) $("pinLive").textContent = L("welPinnedTitle", "Pinned to the toolbar");
+}
+try {
+  if (chrome.action && chrome.action.getUserSettings) {
+    Promise.resolve(chrome.action.getUserSettings()).then((s) => showPin(s, false), () => {});
+    if (chrome.action.onUserSettingsChanged) chrome.action.onUserSettingsChanged.addListener((s) => showPin(s, true));
+  }
+} catch {}
+
 // ---- quick choices ----
 (async () => {
   const [stats, lists] = await Promise.all([send({ type: "getStats" }), send({ type: "getLists" })]);
   const features = (stats && stats.features) || {};
+  // the test page links to the Chrome Web Store: only for an install from there (like Share in the popup)
+  $("testLink").hidden = !(stats && stats.shareUrl);
   const on = new Map(((lists && lists.lists) || []).map((e) => [e.id, !!e.on]));
   for (const box of document.querySelectorAll(".quick input[type=checkbox]")) {
     const f = box.dataset.feature, id = box.dataset.list;

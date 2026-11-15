@@ -85,8 +85,8 @@ md = f"""# Supreme AdBlock {ver} — Chrome Web Store: всичко за copy/pa
 
 ## 1. Store listing → Product details
 
-**Title**
-{block("Supreme AdBlock")}
+**Title** — идва от manifest-а (`extName`), в таблото само провери, че се вижда новото име:
+{block("Supreme AdBlock – Ad Blocker")}
 **Summary (132 max)**
 {block(summary)}
 **Description**
@@ -121,7 +121,7 @@ md = f"""# Supreme AdBlock {ver} — Chrome Web Store: всичко за copy/pa
 
 **При всеки език: Description + петте му скрийншота** (Google препоръчва скрийншоти по езици, когато разширението е многоезично). В dashboard-а горе избери езика → постави описанието → Graphic assets → Screenshots: изтрий старите и качи `store-screenshots/<код>/screenshot-1…5.jpg` в този ред. Език без свои скрийншоти показва английските.
 
-Готово описание за всеки от {len(LOCALES)}-те локала ({LANGS} езика — es/es_419, pt_BR/pt_PT и zh_CN/zh_TW са варианти) е в `listing/<код>.txt` (кодът = папката в `_locales`). В dashboard-а: **Add language** → избери езика → постави съдържанието на файла в Description. Магазинът показва {len(LOCALES) - len(CWS_UNLISTED)} от тях („{len(LOCALES) - len(CWS_UNLISTED)} languages“ в Details): {", ".join(CWS_UNLISTED)} не са в неговия списък — ако ги няма в Add language, пропусни ги; разширението пак е на тези езици за хората с Chrome на тях. Title остава „Supreme AdBlock“; Summary идва от manifest-а (`extDescription` е преведен). Преводите извън en/bg/it/de са машинно подпомогнати — и описанията, и надписите на скрийншотите (`store/screenshots/i18n.json`); popup-ът и панелите на скрийншотите са истинските низове на разширението. Ако имаш носител на езика, дай му ги да ги прегледа преди да ги поставиш (Преводача отбеляза за преглед: am, kn, ta, ne, bn, si, eu, te, ml, ur, ar, ko, pa, sw, hy, ka, vi, az, gu, mr, uz).
+Готово описание за всеки от {len(LOCALES)}-те локала ({LANGS} езика — es/es_419, pt_BR/pt_PT и zh_CN/zh_TW са варианти) е в `listing/<код>.txt` (кодът = папката в `_locales`). В dashboard-а: **Add language** → избери езика → постави съдържанието на файла в Description. Магазинът показва {len(LOCALES) - len(CWS_UNLISTED)} от тях („{len(LOCALES) - len(CWS_UNLISTED)} languages“ в Details): {", ".join(CWS_UNLISTED)} не са в неговия списък — ако ги няма в Add language, пропусни ги; разширението пак е на тези езици за хората с Chrome на тях. Title и Summary идват от manifest-а (`extName`/`extDescription`, не са поле в таблото): en „Supreme AdBlock – Ad Blocker“, bg/de/it с родова дума, другите езици — „Supreme AdBlock“. Преводите извън en/bg/it/de са машинно подпомогнати — и описанията, и надписите на скрийншотите (`store/screenshots/i18n.json`); popup-ът и панелите на скрийншотите са истинските низове на разширението. Ако имаш носител на езика, дай му ги да ги прегледа преди да ги поставиш (Преводача отбеляза за преглед: am, kn, ta, ne, bn, si, eu, te, ml, ur, ar, ko, pa, sw, hy, ka, vi, az, gu, mr, uz).
 
 Пълните bg/it/de описания (от `docs/STORE_LISTING.md`):
 
@@ -131,7 +131,7 @@ md = f"""# Supreme AdBlock {ver} — Chrome Web Store: всичко за copy/pa
 {block(it)}
 **German (Deutsch) — Description**
 {block(de)}
-Title и Summary за другите езици: същите като английските (името е бранд; summary може и на съответния език — manifest-ът вече носи локализирано кратко описание).
+Title и Summary за другите езици идват от manifest-а: името е „Supreme AdBlock“ (родова дума само в en/bg/de/it), summary е локализираното `extDescription`.
 
 ## 4. Privacy → Single purpose
 
@@ -212,7 +212,7 @@ Partner Center → https://partner.microsoft.com/dashboard/microsoftedge/ → Cr
 
 ## 11. Firefox Add-ons (AMO)
 
-https://addons.mozilla.org/developers/ → Submit a New Add-on → On this site → качи `supreme-adblock-{ver}-firefox.zip`. `web-ext lint` дава 0 грешки; предупрежденията са за `getMatchedRules` (няма го във Firefox — popup-ът скрива дневника там) и „coin miner“ в EasyPrivacy/AdGuard French — това са правила, които БЛОКИРАТ майнъри; кажи го в бележката. Изходният код е ЗАДЪЛЖИТЕЛЕН (генерирани файлове): качи `supreme-adblock-{ver}-source.zip` от кита; бележка: `node tools/build_scriptlets.mjs` възпроизвежда main.js и ubo/* байт по байт, а rules/*.json са записан снимка на листите (източници, дати и SHA-256 в THIRD_PARTY_NOTICES.txt). Описание за AMO — от `listing/en.txt` (без абзаца за Manifest V3, той е за Chrome). Data collection: none.
+https://addons.mozilla.org/developers/ → Submit a New Add-on → On this site → качи `supreme-adblock-{ver}-firefox.zip`. `web-ext lint` дава 0 грешки; предупрежденията (getMatchedRules/onRuleMatchedDebug/onUserSettingsChanged — проверяват се преди употреба; DANGEROUS_EVAL — рутините noeval ПОДМЕНЯТ window.eval на страницата; coin miner — правила, които БЛОКИРАТ майнъри) и бележката за ревюъра са в `docs/AMO.md` — постави я дословно. Изходният код е ЗАДЪЛЖИТЕЛЕН (генерирани файлове): качи `supreme-adblock-{ver}-source.zip` от кита; бележка: `node tools/build_scriptlets.mjs` възпроизвежда main.js и ubo/* байт по байт, а rules/*.json са записан снимка на листите (източници, дати и SHA-256 в THIRD_PARTY_NOTICES.txt). Описание за AMO — от `listing/en.txt` (без абзаца за Manifest V3, той е за Chrome). Data collection: none.
 """
 
 KIT.mkdir(parents=True, exist_ok=True)

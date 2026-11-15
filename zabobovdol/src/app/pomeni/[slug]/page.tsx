@@ -2,18 +2,17 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Breadcrumbs, Prose } from "@/components/ui";
-import { Mail, Phone } from "@/components/icons";
+import { Mail } from "@/components/icons";
+import { PhoneButton } from "@/components/PhoneButton";
 import { PrintButton } from "@/components/PrintButton";
 import { ShareButton } from "@/components/ShareButton";
 import { ReportContent } from "@/components/ReportContent";
 import { buildMetadata } from "@/lib/seo";
 import { renderMarkdown } from "@/lib/markdown";
 import { SITE } from "@/lib/site";
+import { formatDate, formatDateTime, isoDate, isoDateTime } from "@/lib/format-date";
 import {
   ceremonyLine,
-  formatDateBg,
-  formatDateTimeBg,
-  friendlyPhone,
   kindInfo,
   relativeDayLabel,
   safePhotoUrl,
@@ -22,6 +21,9 @@ import {
 import { getPublishedObituary, purgeExpiredObituaryContacts } from "@/lib/obituary-store";
 
 export const dynamic = "force-dynamic";
+
+// Датите са въведени от близките/админа като стенно софийско време.
+const WALL = { wall: true } as const;
 
 type Params = Promise<{ slug: string }>;
 
@@ -73,7 +75,6 @@ export default async function ObituaryPage({ params }: { params: Params }) {
   const years = yearsLabel(o.birthYear, o.deathDate);
   const when = relativeDayLabel(o.ceremonyAt, new Date());
   const photo = safePhotoUrl(o.photoUrl);
-  const phone = friendlyPhone(SITE.contact.phone);
   const path = `/pomeni/${o.slug}`;
   const removeMail = `mailto:${SITE.contact.email}?subject=${encodeURIComponent(
     `Молба за поправка или сваляне: ${o.fullName}`,
@@ -103,14 +104,17 @@ export default async function ObituaryPage({ params }: { params: Params }) {
           <img
             src={photo}
             alt={`Снимка на ${o.fullName}`}
-            className="mx-auto mt-6 h-56 w-44 rounded-lg border border-slate-200 object-cover"
+            className="mx-auto mt-6 h-56 w-44 rounded-xl border border-slate-200 object-cover"
           />
         )}
 
         <h1 className="mt-6 text-3xl font-bold text-slate-900 sm:text-4xl">{o.fullName}</h1>
         {years && <p className="mt-2 text-xl text-slate-700">{years}</p>}
         {o.deathDate && (
-          <p className="mt-3 text-lg text-slate-700">Почина на {formatDateBg(o.deathDate)}</p>
+          <p className="mt-3 text-lg text-slate-700">
+            Почина на{" "}
+            <time dateTime={isoDate(o.deathDate, WALL)}>{formatDate(o.deathDate, WALL)}</time>
+          </p>
         )}
 
         {o.text && (
@@ -131,7 +135,9 @@ export default async function ObituaryPage({ params }: { params: Params }) {
             </p>
             {o.ceremonyAt && (
               <p className="mt-1 text-lg font-semibold text-slate-900">
-                {formatDateTimeBg(o.ceremonyAt)}
+                <time dateTime={isoDateTime(o.ceremonyAt, WALL)}>
+                  {formatDateTime(o.ceremonyAt, WALL)}
+                </time>
               </p>
             )}
             {o.ceremonyPlace && <p className="mt-1 text-lg text-slate-800">{o.ceremonyPlace}</p>}
@@ -141,37 +147,36 @@ export default async function ObituaryPage({ params }: { params: Params }) {
         {o.fromFamily && <p className="mt-6 text-lg italic text-slate-700">{o.fromFamily}</p>}
       </article>
 
-      <div className="no-print mx-auto mt-6 flex max-w-2xl flex-wrap items-start justify-center gap-3">
-        <PrintButton variant="secondary" label="Принтирай (А4)" />
+      <div className="no-print mx-auto mt-6 flex max-w-2xl flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-center [&>*]:w-full sm:[&>*]:w-auto [&>div>button]:w-full sm:[&>div>button]:w-auto">
         <ShareButton
           title={`${info.heading}: ${o.fullName}`}
           text={`${info.heading}: ${o.fullName}`}
           path={path}
         />
+        <PrintButton variant="secondary" label="Отпечатайте (А4)" />
       </div>
 
-      <aside className="no-print mx-auto mt-8 max-w-2xl rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-6">
-        <h2 className="text-lg font-semibold text-slate-900">Вие сте от близките?</h2>
+      <aside
+        aria-labelledby="blizki-zaglavie"
+        className="panel no-print mx-auto mt-8 max-w-2xl bg-slate-50 sm:p-6"
+      >
+        <h2 id="blizki-zaglavie" className="h-card">
+          Вие сте от близките?
+        </h2>
         <p className="mt-2 text-base text-slate-700">
           Ако искате да поправим нещо или да свалим тази обява — обадете се или пишете.
           Сваляме я до 72 часа.
         </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <a href={`tel:${SITE.contact.phone}`} className="btn-secondary">
-            <Phone className="h-5 w-5" aria-hidden />
-            {phone}
-          </a>
-          <a href={removeMail} className="btn-secondary">
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <PhoneButton phone={SITE.contact.phone} />
+          <a href={removeMail} className="btn-secondary w-full sm:w-auto">
             <Mail className="h-5 w-5" aria-hidden />
             Пишете ни
           </a>
         </div>
         <p className="mt-4">
-          <Link
-            href="/pomeni"
-            className="inline-flex min-h-[44px] items-center font-semibold text-brand-700 underline underline-offset-2"
-          >
-            ← Всички некролози и помени
+          <Link href="/pomeni" className="link-more">
+            <span aria-hidden="true">←</span> Всички некролози и помени
           </Link>
         </p>
         <ReportContent subject={`${info.heading}: ${o.fullName}`} path={path} />

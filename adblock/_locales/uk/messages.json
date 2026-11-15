@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Блокує рекламу скрізь: відеорекламу на YouTube, банери, спливаючі вікна, трекери, cookie-банери та антиадблок-стіни."
+    "message": "Блокувальник реклами для YouTube і вебу: відеореклама, банери, спливаючі вікна, трекери, банери cookie і антиадблок-стіни."
   },
   "byCarbon": {
     "message": "від Carbon Stealth"
@@ -647,6 +647,12 @@
     "message": "Натисніть значок пазла поруч з адресним рядком і закріпіть Supreme AdBlock. Тоді одним натисканням ви побачите, що було заблоковано на сторінці.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Розширення закріплено на панелі інструментів"
+  },
+  "welPinnedText": {
+    "message": "Одним натисканням на його значок ви побачите, що було заблоковано на сторінці."
+  },
   "welBrokenTitle": {
     "message": "Якщо сайт відображається неправильно",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -793,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Ліміт правил"
+  },
+  "helpTitle": {
+    "message": "Сайти ламаються?"
+  },
+  "helpText": {
+    "message": "Достатньо виправляти по одному сайту: дозвольте на ньому рекламу на годину або вимкніть приховування елементів лише там. Якщо повідомите нам, ми виправимо це для всіх."
+  },
+  "helpFix": {
+    "message": "Виправити цей сайт"
+  },
+  "cardNever": {
+    "message": "Більше не показувати"
+  },
+  "cardClose": {
+    "message": "Закрити"
+  },
+  "receiptTitle": {
+    "message": "Ваші останні 30 днів"
+  },
+  "receiptText": {
+    "message": "Заблоковано запитів: $1 · відповідей на банери cookie: $2 · заощаджено даних: близько $3 (оцінка)"
+  },
+  "share": {
+    "message": "Поділитися"
+  },
+  "shareTitle": {
+    "message": "Скопіювати посилання на Supreme AdBlock у Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Посилання скопійовано"
+  },
+  "rep_fixed_q": {
+    "message": "Сайт запрацював?"
+  },
+  "rep_fixed_yes": {
+    "message": "Так, працює"
+  },
+  "rep_fixed_no": {
+    "message": "Ні, досі не працює"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Чудово, сайт працює. Якщо повідомите нам нижче, у звіті буде зазначено, яке виправлення допомогло, і ми виправимо сайт для всіх."
+  },
+  "rep_fixed_next": {
+    "message": "Спробуйте наступне: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Тоді, будь ласка, повідомте нам нижче: ми переглянемо сайт."
+  },
+  "rep_webmail": {
+    "message": "Немає поштової програми? Скопіюйте звіт і надішліть його на $1 через вебпошту."
+  },
+  "blk_mistake": {
+    "message": "Вважаєте, що це помилка? Повідомте нам"
+  },
+  "welTest": {
+    "message": "Подивитися, як це працює, на тестовій сторінці"
   }
 }

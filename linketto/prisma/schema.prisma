@@ -31,7 +31,14 @@ model User {
   isTrader             Boolean   @default(false) // Дир.2011/83 чл.6а: търговец (по декларация на продавача)
   referralCode         String?   @unique // личен реферален код (за поканите)
   referredById         String?   // кой е поканил този потребител
-  referralCreditCents  Int       @default(0) // натрупан бонус от рефералите
+  referralCreditCents  Int       @default(0) // натрупан бонус от рефералите (може < 0: дълг след сторно)
+  // Връзка план ↔ плащане (billing-sync): плащане се свързва с план само по
+  // записан ключ, никога по customer. FOUNDER → PaymentIntent; PRO/BUSINESS → абонамент.
+  planPaymentIntentId  String?   @unique
+  planSubscriptionId   String?   @unique
+  planRevokedAt        DateTime?
+  planRevokedReason    String? // refund | dispute
+  planDisputedPaymentIntentId String? // оспореното плащане по плановия абонамент (resume/restore само по него)
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
   sessions             Session[]
@@ -63,6 +70,11 @@ model Referral {
   plan           Plan
   rewardCents    Int
   createdAt      DateTime @default(now())
+  // Плащането, породило наградата (сторно при refund/спор, billing-sync).
+  stripePaymentIntentId String?   @unique
+  reversedAt            DateTime?
+  reversalReason        String? // refund | dispute
+  clawbackPayoutId      String? // одитна следа: ReferralPayout, в който е влязла наградата (без релация)
 
   @@index([referrerId, createdAt])
 }
@@ -182,9 +194,28 @@ model Coupon {
   timesRedeemed  Int       @default(0)
   expiresAt      DateTime? // null = без срок
   createdAt      DateTime  @default(now())
+  reservations   CouponReservation[]
 
   @@unique([profileId, code])
   @@index([profileId])
+}
+
+// Резервация на ползване при старт на checkout (timesRedeemed вече е вдигнат).
+// Статусът се сменя само с условен запис (CAS) → повторено събитие не
+// освобождава/брои два пъти. id-то пътува в metadata.couponReservationId.
+model CouponReservation {
+  id              String    @id @default(cuid())
+  couponId        String
+  coupon          Coupon    @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  status          String    @default("HELD") // HELD | CONSUMED | RELEASED
+  stripeSessionId String?   @unique // записва се веднага след създаването на сесията
+  clientKey       String? // HMAC(IP, код) за тавана на клиента; нулира се при уреждане (без суров IP)
+  createdAt       DateTime  @default(now())
+  settledAt       DateTime?
+
+  @@index([couponId])
+  @@index([status, createdAt])
+  @@index([couponId, clientKey, status])
 }
 
 model ProfileTranslation {

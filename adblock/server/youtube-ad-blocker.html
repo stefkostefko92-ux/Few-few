@@ -45,7 +45,7 @@
       "breadcrumb": { "@id": "https://adblock.carbonstealth.eu/youtube-ad-blocker#breadcrumb" },
       "primaryImageOfPage": "https://adblock.carbonstealth.eu/og.png",
       "datePublished": "2026-10-16",
-      "dateModified": "2026-10-16"
+      "dateModified": "2026-10-23"
     },
     {
       "@type": "BreadcrumbList",
@@ -211,13 +211,13 @@
       <div class="wrap">
         <div>
           <h1>YouTube ad blocker for Chrome</h1>
-          <p class="lead">Supreme AdBlock removes YouTube's ads <b>before the player reads them</b>. Video ads never start, the feed and search results lose their sponsored slots, and the video you chose loads as usual.</p>
+          <p class="lead">Supreme AdBlock removes YouTube's ads <b>before the player reads them</b>. Most video ads never start, the feed and search results lose their sponsored slots, and the video you chose loads as usual.</p>
           <p class="where">Works on youtube.com and in YouTube players embedded on other sites, in Chrome, Edge and Brave.</p>
           <div class="cta">
-            <a class="btn primary" href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 4 13.2h6.1L9 22l10.5-11.6h-6.4z"/></svg>Add to Chrome — free</a>
+            <a class="btn primary" href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=youtube" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 4 13.2h6.1L9 22l10.5-11.6h-6.4z"/></svg>Add to Chrome — free</a>
             <a class="btn ghost" href="#how">How it works</a>
           </div>
-          <a class="verified" href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk" target="_blank" rel="noopener">
+          <a class="verified" href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=youtube" target="_blank" rel="noopener">
             <svg class="seal" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12.00,0.80 14.43,2.92 17.60,2.30 18.65,5.35 21.70,6.40 21.08,9.57 23.20,12.00 21.08,14.43 21.70,17.60 18.65,18.65 17.60,21.70 14.43,21.08 12.00,23.20 9.57,21.08 6.40,21.70 5.35,18.65 2.30,17.60 2.92,14.43 0.80,12.00 2.92,9.57 2.30,6.40 5.35,5.35 6.40,2.30 9.57,2.92"/><path d="M7.7 12.3l2.8 2.8 5.8-6"/></svg>
             <span class="vt"><b>Established Publisher</b> <small>Verified on the Chrome Web Store, no history of violations</small></span>
             <svg class="ext" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3h7v7M13 3 4 12"/></svg>
@@ -256,7 +256,7 @@
         <h2>Why videos keep playing</h2>
         <p>Many ways of blocking YouTube ads stop requests, or skip an ad once it has started, and YouTube watches for exactly that. Supreme AdBlock avoids the signals it looks for:</p>
         <ul class="dots">
-          <li><b>The video servers are never blocked</b>, and neither are the reports a normal player sends while you watch. A player that goes silent is one of the things YouTube counts against you.</li>
+          <li><b>The video servers are never blocked</b>, and neither are the playback reports a normal player sends while you watch; only the report about the ad's state is answered on your device. A player that goes silent is one of the things YouTube counts against you.</li>
           <li><b>The ads are renamed, not cut out.</b> The change is made to the player's data as text, before the player reads it, so everything else arrives exactly as YouTube sent it.</li>
           <li><b>Nothing in the page gives it away.</b> The browser functions it works through still describe themselves as the browser's own.</li>
           <li><b>No tricks that YouTube counts.</b> If an ad still slips through, the extension mutes it and presses YouTube's own Skip button. It never plays an ad at 16× speed.</li>
@@ -265,11 +265,33 @@
       </div>
     </section>
 
-    <section class="blk" id="refused">
+    <section class="blk" id="detected">
       <div class="wrap prose">
-        <h2>If YouTube still says no</h2>
-        <p>On some accounts YouTube shows an “ad blockers are not allowed” message and stops playing videos. When that happens, Supreme AdBlock steps aside on YouTube for six hours and reloads the page, so the video plays, with ads, instead of leaving you with a dead player. Settings shows <b>YouTube bypass: ACTIVE</b> until the six hours are over; then blocking resumes by itself.</p>
-        <p>You can also switch <b>YouTube ad blocking</b> off in Settings at any time. The rest of the protection keeps working.</p>
+        <h2>“Ad blockers are not allowed on YouTube”: what happens</h2>
+        <p><b>Updated 23 October 2026.</b> Supreme AdBlock steps aside on YouTube for six hours, reloads the page, and the video plays with ads. Blocking resumes by itself six hours after the last time it stepped aside.</p>
+        <p>It acts when the page shows YouTube's blocker warning, or when the player shows a “Playback ID” error that stays on screen for 8 seconds. It does this at most twice per tab in six hours, never twice within 90 seconds, so a page never reloads in a loop. During the six hours Settings shows <b>YouTube bypass: ACTIVE</b>.</p>
+        <p>What you can do: wait for the six hours to pass, switch <b>YouTube ad blocking</b> off in Settings at any time (the rest of the protection keeps working), or turn off any second ad blocker on YouTube. While blocking is on, Supreme AdBlock hides that warning and the dark layer over the page; if it cannot step aside, it shows YouTube's warning again so you can act on it. It cannot promise that YouTube will never show it. YouTube decides that, not the extension.</p>
+      </div>
+    </section>
+
+    <section class="blk" id="stalls">
+      <div class="wrap prose">
+        <h2>The video stops or buffers after a few videos</h2>
+        <p><b>Updated 23 October 2026.</b> One known cause is a player that YouTube sees behaving differently from a normal one. Supreme AdBlock is built not to cause that, but it cannot rule it out.</p>
+        <ul class="dots">
+          <li>It does <b>not</b> block <code>googlevideo.com</code>, the video servers, or the playback reports <code>/ptracking</code>. Of the <code>/api/stats/atr</code> reports, only the one that carries the ad's state is answered on your device; the rest reach YouTube as usual. A player that stops reporting is a signal YouTube counts.</li>
+          <li>It does <b>not</b> add special request flags to the player by default.</li>
+          <li>If a clip never starts (no progress for about 25 seconds), it reloads the page once as a plain client; if the stall returns within three minutes, it steps aside for six hours, as above.</li>
+        </ul>
+        <p>Buffering in the middle of a video on a slow connection is not something the extension fixes. If it keeps happening, reload the page, turn off any other ad blocker, and follow the steps on the <a href="/support#youtube">support page</a>.</p>
+      </div>
+    </section>
+
+    <section class="blk" id="apps">
+      <div class="wrap prose">
+        <h2>Why it cannot work in the YouTube app on phones and TVs</h2>
+        <p><b>Updated 23 October 2026.</b> The YouTube apps on phones and TVs cannot run browser extensions. Supreme AdBlock is a browser extension, so it has nothing to attach to there.</p>
+        <p>It works on youtube.com in a desktop browser that supports Chrome extensions: Chrome, Edge and Brave. On a phone or TV, YouTube Premium is YouTube's own way to remove ads.</p>
       </div>
     </section>
 
@@ -294,7 +316,7 @@
       <div class="wrap prose">
         <h2>Block YouTube ads in Chrome in three steps</h2>
         <ol class="steps">
-          <li>Open Supreme AdBlock on the <a href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk" target="_blank" rel="noopener">Chrome Web Store</a> and choose <b>Add to Chrome</b>. It works the same way in Edge and Brave.</li>
+          <li>Open Supreme AdBlock on the <a href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=youtube" target="_blank" rel="noopener">Chrome Web Store</a> and choose <b>Add to Chrome</b>. It works the same way in Edge and Brave.</li>
           <li>Reload any YouTube tab that was already open, so the extension can start in it.</li>
           <li>Play a video. The popup shows how many requests were blocked on the page.</li>
         </ol>
@@ -323,7 +345,7 @@
       <h2>Watch what you came for</h2>
       <p>Supreme AdBlock also blocks trackers and pop-unders and <a href="/cookie-banner-blocker">answers cookie banners for you</a>. Free on the Chrome Web Store, for Chrome, Edge and Brave.</p>
       <div class="cta">
-        <a class="btn primary" href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 4 13.2h6.1L9 22l10.5-11.6h-6.4z"/></svg>Add to Chrome — free</a>
+        <a class="btn primary" href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=youtube" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 4 13.2h6.1L9 22l10.5-11.6h-6.4z"/></svg>Add to Chrome — free</a>
         <a class="btn ghost" href="/#features">See every feature</a>
       </div>
     </div>
@@ -344,7 +366,7 @@
         <a href="/cookie-banner-blocker">Cookie banner blocker</a>
         <a href="/support">Support</a>
         <a href="/privacy">Privacy</a>
-        <a href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk" target="_blank" rel="noopener">Chrome Web Store</a>
+        <a href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=youtube" target="_blank" rel="noopener">Chrome Web Store</a>
       </nav>
     </div>
   </footer>

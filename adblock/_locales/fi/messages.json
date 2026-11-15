@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Estää mainokset kaikkialla: YouTuben videomainokset, bannerit, ponnahdusikkunat, seurannan, evästekyselyt ja mainosestomuurit."
+    "message": "Mainosesto YouTubeen ja verkkoon: videomainokset, bannerit, ponnahdusikkunat, seuranta, evästebannerit ja anti-adblock-muurit."
   },
   "byCarbon": {
     "message": "tekijä: Carbon Stealth"
@@ -647,6 +647,12 @@
     "message": "Napsauta osoitepalkin vieressä olevaa palapelin palan kuvaketta ja kiinnitä Supreme AdBlock. Sen jälkeen näet yhdellä napsautuksella, mitä sivulla estettiin.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Kiinnitetty työkalupalkkiin"
+  },
+  "welPinnedText": {
+    "message": "Napsauta sen kuvaketta kerran, niin näet, mitä sivulla estettiin."
+  },
   "welBrokenTitle": {
     "message": "Jos sivusto näyttää rikkinäiseltä",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -793,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Sääntökapasiteetti"
+  },
+  "helpTitle": {
+    "message": "Eivätkö sivustot toimi?"
+  },
+  "helpText": {
+    "message": "Yksi sivusto kerrallaan riittää: salli sen mainokset tunniksi tai poista elementtien piilotus käytöstä vain siellä. Kun kerrot meille, korjaamme sen kaikille."
+  },
+  "helpFix": {
+    "message": "Korjaa tämä sivusto"
+  },
+  "cardNever": {
+    "message": "Älä näytä tätä uudelleen"
+  },
+  "cardClose": {
+    "message": "Sulje"
+  },
+  "receiptTitle": {
+    "message": "Viimeiset 30 päivää"
+  },
+  "receiptText": {
+    "message": "$1 pyyntöä estetty · $2 evästebanneriin vastattu · noin $3 dataa säästetty (arvio)"
+  },
+  "share": {
+    "message": "Jaa"
+  },
+  "shareTitle": {
+    "message": "Kopioi Supreme AdBlockin Chrome Web Store -linkki"
+  },
+  "shareCopied": {
+    "message": "Linkki kopioitu"
+  },
+  "rep_fixed_q": {
+    "message": "Korjaantuiko sivusto?"
+  },
+  "rep_fixed_yes": {
+    "message": "Kyllä, toimii"
+  },
+  "rep_fixed_no": {
+    "message": "Ei, yhä rikki"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Hienoa, että se toimii. Kun kerrot meille alla, raportista näkyy, mikä korjaus auttoi, joten voimme korjata sivuston kaikille."
+  },
+  "rep_fixed_next": {
+    "message": "Kokeile seuraavaa: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Kerro siis meille alla: tutkimme sivuston."
+  },
+  "rep_webmail": {
+    "message": "Eikö sinulla ole sähköpostisovellusta? Kopioi raportti ja lähetä se osoitteeseen $1 verkkosähköpostistasi."
+  },
+  "blk_mistake": {
+    "message": "Onko tämä mielestäsi virhe? Kerro meille"
+  },
+  "welTest": {
+    "message": "Katso, miten se toimii testisivulla"
   }
 }

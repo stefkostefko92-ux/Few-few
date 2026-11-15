@@ -1,0 +1,171 @@
+/* „Verbale di chiusura cantiere“: формата (редът — текст и вдясно „Certificato“ SÌ/NO) и протоколът като
+   на хартия (views/verbali/_foglio.ejs) — върху листа за интервенция (foglio.css). */
+
+.verbale-riga {
+  display: grid;
+  gap: 4px 16px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+
+.verbale-riga:first-of-type {
+  border-top: 0;
+}
+
+@media (min-width: 640px) {
+  .verbale-riga--cert {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+}
+
+.verbale-sn {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.verbale-sn legend {
+  margin-bottom: 4px;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.verbale-foglio {
+  font-family: 'DejaVu Serif', Georgia, 'Times New Roman', serif;
+  outline: 1px solid #000000;
+  outline-offset: -5mm;
+}
+
+.verbale-foglio .foglio__head {
+  justify-content: center;
+}
+
+.verbale-foglio__titolo {
+  margin: 14px 0 12px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* „Indirizzo“ — ред през цялата ширина; под него адресът вляво и „N° buono“ вдясно (като на листа). */
+.verbale-foglio__testa {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 0 0 18px;
+  border: 1px solid #000000;
+}
+
+.verbale-foglio__testa p {
+  margin: 0;
+  padding: 2px 6px;
+  overflow-wrap: anywhere;
+}
+
+.verbale-foglio__indirizzo-k {
+  grid-column: 1 / -1;
+  border-bottom: 1px solid #000000;
+}
+
+.verbale-foglio__indirizzo,
+.verbale-foglio__buono {
+  min-height: 2.6em;
+}
+
+.verbale-foglio__buono {
+  border-left: 1px solid #000000;
+}
+
+.verbale-foglio__tab {
+  width: 100%;
+  margin: 0 0 18px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.verbale-foglio__tab th,
+.verbale-foglio__tab td {
+  padding: 3px 6px;
+  border: 1px solid #000000;
+  vertical-align: top;
+}
+
+.verbale-foglio__tab thead th {
+  font-weight: 400;
+  text-align: center;
+}
+
+.verbale-foglio__testo {
+  height: 2.4em;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.verbale-foglio__tab .is-varie .verbale-foglio__testo {
+  height: 4.8em;
+}
+
+.verbale-foglio__tab .verbale-foglio__cert {
+  width: 7.5em;
+  font-size: 0.75rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.verbale-foglio__cert-k {
+  display: block;
+}
+
+.verbale-foglio__sn + .verbale-foglio__sn {
+  margin-left: 10px;
+}
+
+.verbale-foglio__positivo {
+  margin: 26px 0 0;
+  font-weight: 700;
+  text-align: center;
+}
+
+.verbale-foglio__positivo strong {
+  margin-right: 28px;
+}
+
+.verbale-foglio__positivo .verbale-foglio__sn + .verbale-foglio__sn {
+  margin-left: 40px;
+}
+
+.verbale-foglio__firme {
+  gap: 15%;
+  margin-top: 22px;
+  padding: 0 4%;
+}
+
+.verbale-foglio__firme figcaption {
+  text-align: center;
+}
+
+.verbale-foglio__firme .foglio__firma {
+  border: 0;
+  border-bottom: 1px solid #000000;
+}
+
+.verbale-foglio__nome {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.verbale-foglio__data {
+  margin: 24px 0 0;
+}
+
+@media (max-width: 480px) {
+  .verbale-foglio__tab .verbale-foglio__cert {
+    width: 6.2em;
+  }
+
+  .verbale-foglio__firme {
+    gap: 8%;
+    padding: 0;
+  }
+}

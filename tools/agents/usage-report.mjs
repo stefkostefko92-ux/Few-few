@@ -13,7 +13,7 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
-import { summarizeTranscript, parseLedger, aggregate, loadPrices, costParts, USAGE_PATH, costOf, USAGE_RECORD_V } from "../lib/usage.mjs";
+import { summarizeTranscript, parseLedger, aggregate, loadPrices, costParts, USAGE_PATH, costOf, USAGE_RECORD_V, priceOf } from "../lib/usage.mjs";
 import { LOCAL_REF, REMOTE_REF, pendingUsagePath, appendPendingUsage } from "../lib/memory-branch.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -29,9 +29,54 @@ export function loadRecords(root = ROOT) {
   return parseLedger(...texts);
 }
 
+/**
+ * Пусканията без цена, разделени (02.11.2026): запис без модел (празен — няма какво да се поцени) срещу модел
+ * без ред в prices.json (липсва цена — добави ред с източник). Единственото „без цена“ беше празен запис от
+ * 30.07; да му „добавиш цена“ значи да излъжеш таблото.
+ */
+export function unpricedSplit(recs, prices) {
+  const out = { noModel: 0, noPrice: 0, models: [] };
+  for (const r of recs) {
+    if (priceOf(r.model, prices)) continue;
+    if (!String(r.model || "").trim()) { out.noModel++; continue; }
+    out.noPrice++;
+    if (!out.models.includes(r.model)) out.models.push(r.model);
+  }
+  return out;
+}
+
 function pricesAge(prices) {
   if (!prices?.checkedAt) return Infinity;
   return Math.round((Date.parse(TODAY) - Date.parse(prices.checkedAt)) / 864e5);
+}
+
+/** effort във frontmatter на всеки наш агент (agents/*.md) → { id: "high" | … }. */
+export function definedEfforts(dir = join(ROOT, ".claude", "agents")) {
+  const out = {};
+  for (const f of readdirSync(dir).filter((f) => /^[a-z0-9-]+\.md$/.test(f) && f !== "README.md")) {
+    const fm = readFileSync(join(dir, f), "utf8").split("---")[1] || "";
+    const m = fm.match(/^effort:\s*([a-z]+)\s*$/m);
+    if (m) out[f.slice(0, -3)] = m[1];
+  }
+  return out;
+}
+
+/**
+ * Разминаване между усилието, с което агентът РЕАЛНО е тичал (записът носи payload.effort.level от
+ * SubagentStop), и това в дефиницията му. Съветващо: оркестраторът може законно да подаде effort при
+ * извикването (v2.1.292+). Ловим тихата подмяна (2026-11-02: въпросът „env medium надделява ли high“).
+ */
+export function effortDrift(recs, defs, { since = "", sinceBy = {} } = {}) {
+  const by = {};
+  for (const r of recs) {
+    const want = defs[r.agent];
+    const from = [since, sinceBy[r.agent] || ""].sort().pop(); // по-късното: прозорецът или последната смяна на дефиницията
+    if (!want || !r.effort || r.eval || (from && String(r.ts || "") < from)) continue;
+    const x = (by[r.agent] ??= { want, runs: 0, off: 0, seen: {} });
+    x.runs++;
+    if (r.effort !== want) { x.off++; x.seen[r.effort] = (x.seen[r.effort] || 0) + 1; }
+  }
+  return Object.entries(by).filter(([, x]) => x.off).map(([agent, x]) => ({ agent, ...x }));
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
@@ -66,12 +111,20 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   // --check (съветващо, в гейта): само сигналите, без пълния доклад; винаги exit 0.
   if (args.includes("--check")) {
     const stale = all.filter((r) => (r.v || 1) < USAGE_RECORD_V).length;
-    const unpriced = recs.length - a.priced;
+    const un = unpricedSplit(recs, prices);
     const notes = [];
     if (!recs.length) notes.push("НЕИЗМЕРЕНО — няма записи за пускания");
     if (stale) notes.push(`${stale} записа от стара версия (надути) — пусни --backfill <папка с транскриптите>`);
-    if (unpriced) notes.push(`${unpriced} пускания без цена в prices.json`);
+    if (un.noPrice) notes.push(`${un.noPrice} пускания без цена в prices.json (${un.models.join(", ")}) — добави ред с източник`);
+    if (un.noModel) notes.push(`${un.noModel} празни записа без модел (не са за цена; от 30.07 summarizeTranscript връща null при 0 хода)`);
     if (age > (prices?.ttlDays || 45)) notes.push(`цените са сверени преди ${age} дни (срок ${prices?.ttlDays})`);
+    const since = new Date(Date.now() - 14 * 864e5).toISOString().slice(0, 16);
+    const defs = definedEfforts();
+    // Пускане отпреди последната смяна на дефиницията е тичало по старата — не е разминаване (UTC, като ts).
+    const sinceBy = Object.fromEntries(Object.keys(defs).map((id) => [id,
+      new Date(git(["log", "-1", "--format=%cI", "--", `.claude/agents/${id}.md`]).trim() || 0).toISOString().slice(0, 16)]));
+    for (const d of effortDrift(recs, defs, { since, sinceBy }))
+      notes.push(`${d.agent}: ${d.off}/${d.runs} пускания не на „${d.want}“ (${Object.entries(d.seen).map(([k, v]) => `${k}×${v}`).join(", ")})`);
     console.log(notes.length ? `▲ usage: ${notes.join(" · ")}` : `✓ usage: ${recs.length} пускания, всички поценени, цени на ${age} дни`);
     process.exit(0);
   }
@@ -89,6 +142,22 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   console.log("   най-скъпи агенти:");
   for (const [ag, v] of Object.entries(a.byAgent).sort((x, y) => y[1].usd - x[1].usd).slice(0, 8))
     console.log(`     ${ag.padEnd(22)} ${String(v.runs).padStart(3)} пуск. · ~$${v.usd.toFixed(0).padStart(4)} · ср. ${Math.round(v.turns / v.runs)} хода`);
+  const tb = new Map(); let tbRuns = 0;
+  for (const r of recs) if (r.toolBytes) { tbRuns++; for (const [k, v] of Object.entries(r.toolBytes)) tb.set(k, (tb.get(k) || 0) + v); }
+  if (tbRuns) {
+    const total = [...tb.values()].reduce((x, y) => x + y, 0) || 1;
+    console.log(`   резултати по инструмент (${tbRuns} пускания с разбивка; те са почти целият кеш-запис):`);
+    for (const [k, v] of [...tb].sort((x, y) => y[1] - x[1]).slice(0, 6))
+      console.log(`     ${k.padEnd(22)} ${(v / 1e6).toFixed(1).padStart(6)} MB · ${Math.round(100 * v / total)}%`);
+  }
+  const rr = recs.filter((r) => r.rereads);
+  if (rr.length) {
+    const by = {};
+    for (const r of rr) { const x = (by[r.agent] ??= { runs: 0, n: 0, bytes: 0 }); x.runs++; x.n += r.rereads; x.bytes += r.rereadBytes || 0; }
+    const top = Object.entries(by).sort((x, y) => y[1].bytes - x[1].bytes).slice(0, 4);
+    console.log(`   повторни четения на същия файл: ${rr.length} пускания · ${(rr.reduce((s, r) => s + (r.rereadBytes || 0), 0) / 1e6).toFixed(1)} MB` +
+      ` — най-много: ${top.map(([k, v]) => `${k} ${v.n}× (${(v.bytes / 1e6).toFixed(1)} MB)`).join(", ")}`);
+  }
   if (evals.length) {
     console.log("   живи проверки (извън цифрите горе):");
     const by = {};

@@ -98,7 +98,6 @@
     "processingNote": "Butiksförsäljning har även en behandlingsavgift för betalningen på 1,9 % + 0,30 € (täcker kortoperatören).",
     "mostPopular": "Populärast",
     "annualOffer": "Spara {percent} % med en årsplan",
-    "referralPercentNote": "Bjud in vänner och tjäna {percent} % av varje betalning de gör.",
     "vatNote": "Priserna är slutliga — inklusive moms där sådan tas ut."
   },
   "auth": {
@@ -374,7 +373,7 @@
   },
   "footer": {
     "company": "En produkt från Carbon Stealth VCC",
-    "legalLine": "Org.nr BG208725180 · Samuil 3, 2670 Bobov Dol, Bulgarien",
+    "legalLine": "Org.nr (EIK) 208725180, momsreg.nr BG208725180 · Samuil 3, 2670 Bobov Dol, Bulgarien",
     "privacy": "Integritet",
     "terms": "Villkor",
     "contact": "info@carbonstealth.eu",

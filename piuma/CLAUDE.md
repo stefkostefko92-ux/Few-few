@@ -23,7 +23,7 @@ npm test                 # unit (node:test през tsx) — без база
 npm run build            # prisma generate + tsc
 npm run test:integration # иска жива PostgreSQL (DATABASE_URL) И Redis (REDIS_TEST_URL) — панел + агент + публикуване + опашка
 npm run dev              # локален сървър (панел на /admin)
-npm run worker           # BullMQ работник (публикуване · токени · сесии · Insights 04:30 · автопилот пн 06:00)
+npm run worker           # BullMQ работник (публикуване · токени · сесии · Insights 04:30 · автопилот пн 06:00 · одит-верига всеки час)
 npm run owner:create     # първият собственик — от средата на сървъра, еднократно
 ```
 
@@ -72,12 +72,17 @@ src/
   icons.ts             чете `public/icons/*.svg` веднъж → един `<symbol>` спрайт (виж ICONS.md)
   i18n.ts              речниците bg/en/it, `t()`, избор по Accept-Language
   crypto.ts            AES-256-GCM за тайни в покой, HMAC подпис на OAuth state
-  audit.ts             одит с верига от хешове (подправен стар запис чупи веригата)
+  audit.ts             одит с верига v2 (HMAC с ключ от TOKEN_ENC_KEY, HMAC на IP) + почасова пълна проверка
+  audit-chain.ts       чистата логика на веригата (v1 стари записи / v2) · audit-anchor.ts — котвата извън базата (AUDIT_ANCHOR_DIR)
   auth/                rbac (7 нива) · password (Argon2id) · totp · sessions (в базата) · guards (login/CSRF/права)
   agent/               signature (HMAC) · nonce-store (Redis, fail-closed) · auth · routes (/agent/v1)
   admin/               маршрути на панела по домейни (auth · dashboard · brands · manage (представяне/автопилот) · accounts · posts · users · keys · audit)
                        + presenters (състояние → ключ за превод, икона, тон) · locale (езикът на заявката) · sparkline (тренд-линия без библиотека)
   instagram/           client · oauth · publish (контейнер → публикуване) · insights (метрики на медия/акаунт)
+                       · messages (Private Reply · subscribed_apps · живият надпис на медия)
+  replies/             „Отговор по ключова дума“ (docs/private-replies.md): signature (X-Hub-Signature-256) ·
+                       events (разчитане, без името на човека) · match · decide (решение без странични
+                       ефекти) · compose (бележката отдолу) · webhook-routes (ПРЕДИ общия JSON парсер)
   content/             lint (HIGH блокира) · plan (планът на страницата, zod) · prompt (контекст: план + Insights) · schedule (чиста логика на автопилота) · generate
   services/            accounts · posts · publish · insights (синхронизация + представяне) · autopilot — инвариантите живеят тук, не в маршрутите
   queue/               BullMQ опашка и работник
@@ -143,6 +148,21 @@ DEPLOY.md              еднократните стъпки, които скр�
     2 кофи И ≥15% преднина пред медианата на полето; иначе `best` е `null`. Мярката е
     ангажираност/обхват (обхватът расте с акаунта), медиана, не средно (един вирусен пост
     дърпа средното). `tests/learn.test.ts` е самото правило — всеки праг е мутационно проверен.
+
+17. **Лично съобщение = едно на коментар, само след обява и втори човек.**
+    „Отговор по ключова дума“ (`docs/private-replies.md`, PR1–PR22) работи така:
+    - правило има само за конкретен наш пост, чийто надпис обявява думата;
+    - одобрява друг човек, който потвърждава съдържанието;
+    - изпращането минава през CAS `QUEUED → SENDING`, а неясен изход никога не се
+      повтаря;
+    - името, IGSID-ът и текстът на коментара не се пишат никъде;
+    - `commentId` живее `PRIVATE_REPLIES_RETENTION_DAYS` (9–30) и не влиза в одита.
+
+    Без `IG_WEBHOOK_VERIFY_TOKEN` маршрутът го няма. Тестовете (`tests/replies.test.ts`,
+    `tests/integration/replies-flow.test.ts`) са самата спецификация: 20/20 мутанта са убити.
+
+18. **Празна променлива = липсваща** (`loadConfig`). Compose подава незадължителните като
+    `${X:-}`. Без това правило `''` чупеше старта при „по избор“ ключ.
 
 ## Външни зависимости, които остаряват
 

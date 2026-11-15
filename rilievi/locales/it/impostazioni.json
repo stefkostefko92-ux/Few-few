@@ -1,0 +1,103 @@
+{
+  "impostazioni": {
+    "sottonav": "Sezioni delle impostazioni",
+    "panoramica": "Panoramica",
+    "pagine": {
+      "azienda": {
+        "titolo": "Dati dell'azienda",
+        "desc": "Ragione sociale, indirizzo e contatti: vanno sul cartello accanto al logo e nei moduli d'ordine."
+      },
+      "abbonamento": {
+        "titolo": "Abbonamento",
+        "desc": "La prova gratuita, il livello in base al numero di persone e la scadenza."
+      },
+      "scheda": {
+        "titolo": "Scheda",
+        "desc": "L'ordine delle sezioni (nel modulo della scheda, nella sua pagina, nella stampa e nel PDF) e l'approvazione delle schede."
+      },
+      "cartelli": {
+        "titolo": "Cartello di fermo impianto",
+        "desc": "L'aspetto del cartello da affiggere, con il logo e i dati dell'azienda."
+      },
+      "buoni": {
+        "titolo": "Buono di lavoro",
+        "desc": "Il codice del modulo in alto a destra e la clausola in fondo al buono di lavoro."
+      },
+      "preventivi": {
+        "titolo": "Preventivi",
+        "desc": "Le condizioni con cui parte ogni nuovo preventivo e il listino prezzi."
+      },
+      "ruoli": {
+        "titolo": "Ruoli e permessi",
+        "desc": "Il nome di ogni ruolo nell'azienda e cosa può fare chi lo ha."
+      },
+      "condizioni": {
+        "titolo": "Condizioni di servizio",
+        "desc": "La versione in vigore, chi l'ha firmata e quante persone hanno accettato le regole d'uso."
+      },
+      "esportazione": {
+        "titolo": "Esportazione e cambio fornitore",
+        "desc": "Scarica tutti i dati dell'azienda in un unico file, quando vuoi. Da qui si chiede anche il cambio di fornitore."
+      },
+      "firme": {
+        "titolo": "Informativa per chi firma",
+        "desc": "Il testo sul trattamento dei dati (art. 13 GDPR) che il cliente legge prima di firmare il foglio di intervento o il verbale."
+      },
+      "fornitori": {
+        "titolo": "Fornitori",
+        "desc": "La rubrica dei fornitori a cui inviare i moduli d'ordine dal portale."
+      },
+      "accesso": {
+        "titolo": "Accesso con Microsoft o Google",
+        "desc": "Entrare con l'account di lavoro invece che con la password del portale."
+      },
+      "api": {
+        "titolo": "Chiavi API",
+        "desc": "Chiavi per leggere le schede dell'azienda da un altro programma, in sola lettura."
+      }
+    },
+    "hub": {
+      "datiSi": "Dati compilati",
+      "datiNo": "Dati da compilare",
+      "logoSi": "con logo",
+      "logoNo": "senza logo",
+      "ordineSuo": "Ordine personalizzato",
+      "ordineBase": "Ordine predefinito",
+      "modello": "Modello: {nome}",
+      "ruoliSuoi": "Nomi o permessi personalizzati",
+      "ruoliBase": "Ruoli predefiniti",
+      "firmate": "Firmate con codice il {data}",
+      "esistente": "Accettate (azienda precedente alle condizioni)",
+      "attesa": "Da accettare: l'amministratore deve firmarle",
+      "esportazioneMai": "Nessuna esportazione finora",
+      "esportazioneUltima": "Ultima esportazione il {data}",
+      "cambioInCorso": "Cambio di fornitore in corso: servizio fino al {data}",
+      "informativaPropria": "Testo dell'azienda",
+      "informativaModello": "Modello predefinito",
+      "buonoSi": "Codice o clausola compilati",
+      "buonoNo": "Solo logo e nome dell'azienda"
+    },
+    "condizioni": {
+      "vigente": "Versione in vigore",
+      "stato": "Stato",
+      "firmate": "Firmate",
+      "accettate": "Accettate",
+      "attesa": "In attesa",
+      "daChi": "da {nome} il {quando}, con il codice inviato per email.",
+      "esistente": "L'azienda era nel portale prima delle condizioni: non c'è una firma con codice.",
+      "attesaTesto": "Al prossimo accesso l'amministratore le accetta e le firma con il codice.",
+      "regole": "Regole d'uso",
+      "regoleN": "{n} persone su {totale} le hanno accettate"
+    },
+    "firme": {
+      "intro": "Chi firma sullo schermo (il cliente sul foglio di intervento, il supervisore sul verbale) legge questo testo prima della firma. Il titolare del trattamento è l'azienda: verifica e adatta il testo alla tua realtà, in particolare la base giuridica e la conservazione.",
+      "modello": "Il testo qui sotto è il modello, già compilato con i dati dell'azienda. Finché non lo salvi, sulla pagina della firma compare il modello aggiornato con i dati di quel momento.",
+      "propria": "Sulla pagina della firma compare il testo salvato dall'azienda.",
+      "etichetta": "Testo dell'informativa",
+      "hint": "Fino a {max} caratteri; i ritorni a capo restano.",
+      "errore": "Scrivi il testo dell'informativa (al massimo {max} caratteri).",
+      "salva": "Salva l'informativa",
+      "ripristina": "Torna al modello"
+    }
+  }
+}

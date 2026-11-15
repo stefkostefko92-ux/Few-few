@@ -1,0 +1,32 @@
+<%
+  // Данните на фирмата за главата на табелата „Avviso di fermo impianto“ (src/aziende/dati.ts). Всяко
+  // поле е по желание; празното име — името на фирмата в портала.
+  const MAX = { ragioneSociale: 160, indirizzo: 200, cap: 10, citta: 80, provincia: 2, telefono: 40, email: 160, partitaIva: 20, sito: 160 };
+  const WIDE = ['ragioneSociale', 'indirizzo'];
+  const AUTO = { ragioneSociale: 'organization', indirizzo: 'street-address', cap: 'postal-code', citta: 'address-level2', provincia: 'address-level1', telefono: 'tel', email: 'email', sito: 'url' };
+  const HINT = ['ragioneSociale'];
+%><section aria-labelledby="h-dati">
+  <h2 class="section__title" id="h-dati"><%= t('impostazioni.dati.title') %></h2>
+  <p class="muted"><%= t('impostazioni.dati.text') %> <%= t(azienda.logoType ? 'impostazioni.dati.logoSi' : 'impostazioni.dati.logoNo') %></p>
+  <form class="form" method="post" action="/impostazioni/dati" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="azienda" value="<%= azienda.id %>">
+    <div class="grid">
+      <% for (const key of campiDati) {
+           const id = 'd-' + key;
+           const error = dati.errors[key];
+           const hint = HINT.includes(key);
+           const describedBy = [hint ? 'hint-' + id : null, error ? 'err-' + id : null].filter(Boolean).join(' '); %>
+      <div class="field<%= WIDE.includes(key) ? ' field--wide' : '' %>">
+        <label class="field__label" for="<%= id %>"><%= t('impostazioni.dati.campo.' + key) %></label>
+        <input class="input" id="<%= id %>" name="<%= key %>" type="<%= key === 'email' ? 'email' : key === 'telefono' ? 'tel' : 'text' %>" maxlength="<%= MAX[key] %>" autocomplete="<%= AUTO[key] || 'off' %>" value="<%= dati.values[key] || '' %>"<% if (key === 'provincia') { %> autocapitalize="characters" size="3"<% } %><% if (error) { %> aria-invalid="true"<% } %><% if (describedBy) { %> aria-describedby="<%= describedBy %>"<% } %>>
+        <% if (hint) { %><p class="field__hint" id="hint-<%= id %>"><%= t('impostazioni.dati.hint.' + key) %></p><% } %>
+        <% if (error) { %><p class="field__error" id="err-<%= id %>"><%= t('impostazioni.dati.error.' + error, { maxLength: MAX[key] }) %></p><% } %>
+      </div>
+      <% } %>
+    </div>
+    <div class="toolbar">
+      <button class="btn btn--primary" type="submit"><%= t('impostazioni.dati.save') %></button>
+    </div>
+  </form>
+</section>

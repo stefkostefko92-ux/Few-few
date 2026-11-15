@@ -11,9 +11,47 @@ import {
   type PlanId,
 } from '@/lib/plans';
 import { isLocale } from '@/i18n/locales';
+import { prisma } from '@/lib/db';
+import { buildPlanPriceMap, paymentReversal } from '@/lib/billing-sync';
+import { ensurePortalConfiguration, portalSessionParams } from '@/lib/billing-portal';
+import { createPortalStripePorts } from '@/lib/billing-portal-stripe';
+import { loadPaymentState } from '@/lib/stripe-state';
+import { createPlanStripePorts } from '@/lib/plan-checkout-stripe';
+import {
+  customerClaimWhere,
+  planCheckoutSessionParams,
+  preparePlanCheckout,
+  type PlanCheckoutPorts,
+} from '@/lib/plan-checkout';
+import type Stripe from 'stripe';
 
 function baseUrl(): string {
   return process.env.PUBLIC_BASE_URL ?? 'http://localhost:3000';
+}
+
+// Адаптери на PlanCheckoutPorts (чистата логика: lib/plan-checkout.ts;
+// Stripe частта: lib/plan-checkout-stripe.ts).
+function planCheckoutPorts(stripe: Stripe): PlanCheckoutPorts {
+  return {
+    ...createPlanStripePorts(stripe),
+    async claimCustomer(userId, customerId) {
+      // CAS: записва само ако още е null; загубена надпревара → записания.
+      await prisma.user.updateMany({
+        where: customerClaimWhere(userId),
+        data: { stripeCustomerId: customerId },
+      });
+      const row = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { stripeCustomerId: true },
+      });
+      if (!row?.stripeCustomerId) throw new Error('stripeCustomerId not stored');
+      return row.stripeCustomerId;
+    },
+    async isPaymentReversed(paymentIntentId) {
+      const state = await loadPaymentState(stripe, paymentIntentId);
+      return paymentReversal(state.charge, state.disputeStatuses) !== null;
+    },
+  };
 }
 
 export async function startCheckoutAction(formData: FormData): Promise<void> {
@@ -24,9 +62,10 @@ export async function startCheckoutAction(formData: FormData): Promise<void> {
 
   const planId = String(formData.get('plan') ?? '') as PlanId;
   const plan = PLANS[planId];
-  if (!plan) {
+  if (!plan || plan.id === 'FREE') {
     redirect(`/${uiLocale}/dashboard?error=generic`);
   }
+  const paidPlanId = plan.id;
 
   // Сървърен гейт (UI-то също крие бутоните): нов checkout само от FREE —
   // иначе втори активен абонамент върху същия customer (двойно таксуване).
@@ -53,43 +92,53 @@ export async function startCheckoutAction(formData: FormData): Promise<void> {
     redirect(`/${uiLocale}/dashboard?error=stripe`);
   }
 
-  const session = await stripe.checkout.sessions.create({
-    mode: plan.oneTime ? 'payment' : 'subscription',
-    line_items: [{ price: priceId, quantity: 1 }],
-    customer: user.stripeCustomerId ?? undefined,
-    customer_email: user.stripeCustomerId ? undefined : user.email,
-    // ДДС (TAX.md): плановете са наша електронна услуга. Stripe Tax смята
-    // ДДС по държавата на клиента (OSS); tax_id_collection взима и валидира
-    // (VIES) ДДС номер → B2B reverse charge автоматично. Env Price ID-тата
-    // трябва да са tax-inclusive (DEPLOY.md §2а).
-    ...(stripeTaxEnabled()
-      ? {
-          automatic_tax: { enabled: true },
-          tax_id_collection: { enabled: true },
-          billing_address_collection: 'required' as const,
-          ...(user.stripeCustomerId
-            ? {
-                customer_update: {
-                  address: 'auto' as const,
-                  name: 'auto' as const,
-                },
-              }
-            : {}),
-        }
-      : {}),
-    // Планът се дава само през проверения webhook, не през redirect-а.
-    metadata: { userId: user.id, plan: plan.id },
-    locale: 'auto',
-    success_url: `${baseUrl()}/${uiLocale}/dashboard?upgraded=1`,
-    cancel_url: `${baseUrl()}/${uiLocale}/dashboard`,
-  });
+  // Един Stripe Customer на потребител + живото състояние в Stripe (базата
+  // може още да казва FREE, ако webhook-ът не е дошъл): втори абонамент или
+  // втори „Основател“ → error=plan; другите отворени plan сесии се изтичат.
+  let prepared: Awaited<ReturnType<typeof preparePlanCheckout>>;
+  try {
+    prepared = await preparePlanCheckout(
+      {
+        id: user.id,
+        email: user.email,
+        stripeCustomerId: user.stripeCustomerId,
+        planPaymentIntentId: user.planPaymentIntentId,
+      },
+      planCheckoutPorts(stripe),
+    );
+  } catch (error) {
+    console.error(
+      '[billing] plan checkout prepare failed:',
+      error instanceof Error ? error.message : 'unknown error',
+    );
+    redirect(`/${uiLocale}/dashboard?error=stripe`);
+  }
+  if (!prepared.ok) {
+    redirect(`/${uiLocale}/dashboard?error=plan`);
+  }
+
+  const session = await stripe.checkout.sessions.create(
+    planCheckoutSessionParams({
+      customerId: prepared.customerId,
+      userId: user.id,
+      plan: paidPlanId,
+      priceId,
+      oneTime: Boolean(plan.oneTime),
+      taxEnabled: stripeTaxEnabled(),
+      successUrl: `${baseUrl()}/${uiLocale}/dashboard?upgraded=1`,
+      cancelUrl: `${baseUrl()}/${uiLocale}/dashboard`,
+    }),
+  );
   redirect(session.url ?? `/${uiLocale}/dashboard?error=stripe`);
 }
 
 // Stripe Customer Portal: самостоятелно управление на абонамента (смяна на
 // план/период, начин на плащане, фактури, ОТМЯНА — изискване на Дир. 2011/83
-// за лесен отказ от авто-подновяване). Порталът се конфигурира еднократно в
-// Stripe Dashboard → Settings → Billing → Customer portal.
+// за лесен отказ от авто-подновяване). Конфигурацията е от кода
+// (lib/billing-portal.ts): БЕЗ редакция на ДДС номер — иначе `pending` номер
+// дава 0% ДДС при подновяване. Създава се веднъж; кешът е за процеса.
+const portalConfigCache = { marker: null as string | null, id: null as string | null };
+
 export async function openBillingPortalAction(
   formData: FormData,
 ): Promise<void> {
@@ -101,9 +150,27 @@ export async function openBillingPortalAction(
   if (!stripe || !user.stripeCustomerId) {
     redirect(`/${uiLocale}/dashboard?error=stripe`);
   }
-  const session = await stripe.billingPortal.sessions.create({
-    customer: user.stripeCustomerId,
-    return_url: `${baseUrl()}/${uiLocale}/dashboard`,
-  });
-  redirect(session.url);
+  let url: string;
+  try {
+    const configurationId = await ensurePortalConfiguration(
+      createPortalStripePorts(stripe),
+      [...buildPlanPriceMap(process.env).keys()],
+      portalConfigCache,
+    );
+    const session = await stripe.billingPortal.sessions.create(
+      portalSessionParams({
+        customerId: user.stripeCustomerId,
+        configurationId,
+        returnUrl: `${baseUrl()}/${uiLocale}/dashboard`,
+      }),
+    );
+    url = session.url;
+  } catch (error) {
+    console.error(
+      '[billing] portal failed:',
+      error instanceof Error ? error.message : 'unknown error',
+    );
+    redirect(`/${uiLocale}/dashboard?error=stripe`);
+  }
+  redirect(url);
 }

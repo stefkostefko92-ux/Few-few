@@ -1,0 +1,49 @@
+<%
+  // Листовете за интервенция на фирмата — най-новите отгоре; номерът е на фирмата (шест цифри).
+  const showAzienda = aziende.length > 0;
+  const base = '/interventi' + (aziendaFilter ? '?azienda=' + encodeURIComponent(aziendaFilter) : '');
+  const luogo = (row) => [row.indirizzo, row.citta].filter(Boolean).join(', ');
+%><%- include('../partials/top', { titleKey: 'interventi.list' }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('interventi.list') %></h1>
+    <p class="page-head__sub"><%= t('interventi.listSub') %></p>
+  </div>
+  <% if (can('interventi:write')) { %><a class="btn btn--primary" href="/interventi/nuovo"><%- include('../partials/icon', { name: 'plus' }) %><%= t('interventi.new') %></a><% } %>
+</div>
+<% if (showAzienda) { %><%- include('../partials/azienda-filter', { action: '/interventi' }) %><% } %>
+<% if (page.rows.length === 0) { %>
+<div class="empty">
+  <p><strong><%= t('interventi.empty') %></strong></p>
+  <% if (can('interventi:write')) { %><p class="muted"><%= t('interventi.emptyHint') %></p><% } %>
+</div>
+<% } else { %>
+<table class="table table--stack">
+  <caption class="visually-hidden"><%= t('interventi.list') %></caption>
+  <thead>
+    <tr>
+      <th scope="col"><%= t('interventi.colonna.numero') %></th>
+      <th scope="col"><%= t('interventi.colonna.data') %></th>
+      <th scope="col"><%= t('interventi.colonna.luogo') %></th>
+      <th scope="col"><%= t('interventi.colonna.matricola') %></th>
+      <th scope="col"><%= t('interventi.colonna.tecnici') %></th>
+      <% if (showAzienda) { %><th scope="col"><%= t('scheda.field.azienda') %></th><% } %>
+      <th scope="col"><%= t('interventi.stato.label') %></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% for (const row of page.rows) { %><tr>
+      <td class="num" data-label="<%= t('interventi.colonna.numero') %>"><a class="row-link" href="/interventi/<%= row.id %>"><%= numero(row.numero) %></a></td>
+      <td class="date" data-label="<%= t('interventi.colonna.data') %>"><%= fmt.day(row.data) %></td>
+      <td class="wide" data-label="<%= t('interventi.colonna.luogo') %>"><%= luogo(row) || '—' %></td>
+      <td class="num" data-label="<%= t('interventi.colonna.matricola') %>"><%= row.matricola || '—' %></td>
+      <td data-label="<%= t('interventi.colonna.tecnici') %>"><%= row.tecnici || '—' %></td>
+      <% if (showAzienda) { %><td data-label="<%= t('scheda.field.azienda') %>"><%= row.azienda.name %></td><% } %>
+      <td data-label="<%= t('interventi.stato.label') %>"><span class="stato<%= row.confermatoAt ? ' stato--chiuso' : '' %>"><%= t(row.confermatoAt ? 'interventi.stato.chiuso' : 'interventi.stato.bozza') %></span></td>
+    </tr>
+    <% } %>
+  </tbody>
+</table>
+<%- include('../partials/pager', { base, page: page.page, pages: page.pages }) %>
+<% } %>
+<%- include('../partials/bottom') %>
