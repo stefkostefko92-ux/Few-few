@@ -1,8 +1,16 @@
 <%- include('partials/head', { title: t('sos.title') + ' — MedQR', user }) %>
+<%
+  const sosHearing = profile.hearing_status && profile.hearing_status !== 'Без слухови проблеми';
+  const sosNoSpeak = profile.can_speak === 'Не мога да говоря' || profile.can_speak === 'Говоря ограничено';
+  const bystanderKey = sosHearing && sosNoSpeak ? 'sos.bystander'
+    : sosHearing ? 'sos.bystander_h' : sosNoSpeak ? 'sos.bystander_s' : 'sos.bystander_none';
+%>
 
 <div class="sos" id="sos"
      data-contact-phone="<%= profile.emergency_contact_phone || '' %>"
-     data-name="<%= profile.full_name %>">
+     data-name="<%= profile.full_name %>"
+     data-hearing="<%= sosHearing ? '1' : '' %>"
+     data-speech="<%= sosNoSpeak ? '1' : '' %>">
   <div class="sos-flash" id="sos-flash" aria-hidden="true"></div>
 
   <h1 class="sos-title"><%- include('partials/icon', { name: 'alert', cls: 'icon-lg' }) %> <%= t('sos.title') %></h1>
@@ -11,14 +19,14 @@
   <div class="sos-bystander">
     <p class="sos-big">
       <%= t('sos.i_am') %> <strong><%= name(profile.full_name) %></strong>.<br>
-      <%= t('sos.bystander') %>
+      <%= t(bystanderKey) %>
     </p>
     <a class="btn sos-call" href="tel:112">
       <%- include('partials/icon', { name: 'phone' }) %> <%= t('sos.call112') %>
     </a>
 
     <dl class="sos-info">
-      <% if (profile.blood_type) { %><dt><%= t('emerg.blood') %></dt><dd><%= profile.blood_type %></dd><% } %>
+      <% if (profile.blood_type) { %><dt><%= t('emerg.blood') %></dt><dd><%= clin(profile.blood_type) %></dd><% } %>
       <% const sosAllergy = [allergyLabels(profile.allergy_keys).join(', '), profile.allergies].filter(Boolean).join(' · '); %>
       <% if (sosAllergy) { %><dt><%= t('emerg.allergies') %></dt><dd><%= sosAllergy %></dd><% } %>
       <% const sosCond = [conditionLabels(profile.condition_keys).join(', '), profile.chronic_conditions].filter(Boolean).join(' · '); %>

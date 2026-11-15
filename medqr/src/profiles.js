@@ -38,11 +38,9 @@ function decryptRow(row) {
 }
 
 export function createForUser(userId, fullName) {
-  db.prepare('INSERT INTO profiles (user_id, emergency_token, full_name) VALUES (?, ?, ?)').run(
-    userId,
-    randomToken(24),
-    encrypt(fullName)
-  );
+  db.prepare(
+    'INSERT INTO profiles (user_id, emergency_token, full_name, notify_on_scan) VALUES (?, ?, ?, 0)'
+  ).run(userId, randomToken(24), encrypt(fullName));
 }
 
 export function getByUserId(userId) {

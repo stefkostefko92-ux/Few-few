@@ -23,7 +23,9 @@ export function saveChallenge(userId, challenge) {
 export function takeChallenge(id) {
   if (!id) return null;
   const row = db
-    .prepare("SELECT * FROM webauthn_challenges WHERE id = ? AND expires_at > datetime('now')")
+    .prepare(
+      "SELECT * FROM webauthn_challenges WHERE id = ? AND expires_at > strftime('%Y-%m-%dT%H:%M:%fZ','now')"
+    )
     .get(id);
   db.prepare('DELETE FROM webauthn_challenges WHERE id = ?').run(id);
   return row || null;

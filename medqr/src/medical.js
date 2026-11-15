@@ -46,6 +46,65 @@ export const ALLERGIES = [
   { key: 'mold', bg: 'Плесени', en: 'Mould' },
 ];
 
+// Категории за показване във формата (само подредба — ключовете остават същите).
+export const ALLERGY_GROUPS = [
+  {
+    id: 'drug',
+    bg: 'Лекарства',
+    en: 'Medications',
+    keys: [
+      'penicillin',
+      'cephalosporins',
+      'sulfonamides',
+      'tetracyclines',
+      'macrolides',
+      'quinolones',
+      'nsaid',
+      'aspirin',
+      'codeine',
+      'opioids',
+      'anesthetics',
+      'lidocaine',
+      'insulin',
+      'heparin',
+      'anticonvulsants',
+      'chemo',
+      'iodine',
+      'chlorhexidine',
+    ],
+  },
+  {
+    id: 'contact',
+    bg: 'Контакт и материали',
+    en: 'Contact and materials',
+    keys: ['latex', 'adhesive', 'nickel'],
+  },
+  {
+    id: 'food',
+    bg: 'Храни',
+    en: 'Foods',
+    keys: [
+      'peanuts',
+      'nuts',
+      'sesame',
+      'soy',
+      'shellfish',
+      'fish',
+      'eggs',
+      'milk',
+      'gluten',
+      'wheat',
+      'gelatin',
+    ],
+  },
+  {
+    id: 'env',
+    bg: 'Околна среда и ужилвания',
+    en: 'Environment and stings',
+    keys: ['bee', 'pollen', 'dust_mites', 'animal_dander', 'mold'],
+  },
+];
+
 export const CONDITIONS = [
   { key: 'diabetes_t1', bg: 'Диабет тип 1', en: 'Type 1 diabetes' },
   { key: 'diabetes_t2', bg: 'Диабет тип 2', en: 'Type 2 diabetes' },

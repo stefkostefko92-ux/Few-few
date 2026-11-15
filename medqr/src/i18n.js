@@ -77,6 +77,15 @@ export function transliterate(str) {
   return out;
 }
 // Име за показване: транслитерирано на латиница при английски режим.
+// Свободен текст (напр. „писмено“): в EN показваме оригинала И транслитерацията —
+// чуждият екип поне може да го прочете/произнесе, без да налучква значение.
+// Съзнателно НЕ превеждаме (машинен превод на медицински текст е опасен).
+export function withTransliteration(value, lang) {
+  const v = String(value ?? '');
+  if (lang !== 'en' || !/[\u0400-\u04FF]/.test(v)) return v;
+  return `${v} (${transliterate(v)})`;
+}
+
 export function displayName(value, lang) {
   return lang === 'en' ? transliterate(value) : value;
 }
@@ -137,8 +146,8 @@ const DICT = {
   },
   'home.f3_h': { bg: 'Максимална защита', en: 'Maximum protection' },
   'home.f3_p': {
-    bg: 'Данните се криптират, връзката е защитена, достъпът се записва. Незадължителен PIN, двуфакторна автентикация и обезсилване на изгубен код.',
-    en: 'Data is encrypted, the connection is secure, access is logged. Optional PIN, two-factor authentication and invalidation of a lost code.',
+    bg: 'Медицинските данни се криптират в покой, връзката е защитена, достъпът се записва. Незадължителен PIN, двуфакторна автентикация и обезсилване на изгубен код.',
+    en: 'Medical data is encrypted at rest, the connection is secure, access is logged. Optional PIN, two-factor authentication and invalidation of a lost code.',
   },
   'home.f4_h': { bg: 'Носи го навсякъде', en: 'Carry it anywhere' },
   'home.f4_p': {
@@ -172,8 +181,8 @@ const DICT = {
   },
   'faq.q4': { bg: 'Кой може да види данните ми?', en: 'Who can see my data?' },
   'faq.a4': {
-    bg: 'Само човек, който сканира вашия QR код (например спешен екип). За по-чувствителни профили можете да добавите PIN. Не продаваме данни и не ги споделяме с трети страни.',
-    en: 'Only someone who scans your QR code (e.g. a responder). For more sensitive profiles you can add a PIN. We do not sell data or share it with third parties.',
+    bg: 'Спешния изглед вижда всеки, който сканира вашия QR код (например спешен екип); за по-чувствителни профили добавете PIN. Посоченият от вас близък получава имейл без медицински данни при SOS или — ако сте го включили — при отваряне на профила. Не продаваме данни и не ги ползваме за реклама.',
+    en: 'Anyone who scans your QR code (e.g. a responder) sees the emergency view; add a PIN for more sensitive profiles. The contact you list gets an email without medical data on SOS or — if you enabled it — when the profile is opened. We do not sell data or use it for advertising.',
   },
   'faq.q5': { bg: 'Спазва ли MedQR GDPR?', en: 'Is MedQR GDPR-compliant?' },
   'faq.a5': {
@@ -314,9 +323,23 @@ const DICT = {
 
   // SOS
   'sos.title': { bg: 'Спешна помощ', en: 'Emergency help' },
+  // Текстът към минувача следва профила: за слух/говор се казва само каквото е вярно
+  // (иначе човек, който чува, би „съобщил“ невярна медицинска информация).
   'sos.bystander': {
     bg: 'Имам спешен медицински проблем и не чувам/не говоря. Моля, обадете се на 112 за мен.',
     en: 'I have a medical emergency and cannot hear/speak. Please call 112 for me.',
+  },
+  'sos.bystander_h': {
+    bg: 'Имам спешен медицински проблем и не чувам добре. Моля, обадете се на 112 за мен.',
+    en: 'I have a medical emergency and cannot hear well. Please call 112 for me.',
+  },
+  'sos.bystander_s': {
+    bg: 'Имам спешен медицински проблем и не мога да говоря (или говоря трудно). Моля, обадете се на 112 за мен.',
+    en: 'I have a medical emergency and cannot speak (or speak with difficulty). Please call 112 for me.',
+  },
+  'sos.bystander_none': {
+    bg: 'Имам спешен медицински проблем. Моля, обадете се на 112 за мен.',
+    en: 'I have a medical emergency. Please call 112 for me.',
   },
   'sos.i_am': { bg: 'Аз съм', en: 'I am' },
   'sos.call112': { bg: 'Обадете се на 112', en: 'Call 112' },
@@ -611,6 +634,7 @@ const DICT = {
     bg: '1. Сканирайте кода с приложение за автентикация или въведете ключа ръчно.',
     en: '1. Scan the code with an authenticator app, or enter the key manually.',
   },
+  'tfa.manual_key': { bg: 'Ключ за ръчно въвеждане:', en: 'Key for manual entry:' },
   'tfa.qr_alt': { bg: 'QR код за настройка на 2FA', en: 'QR code for 2FA setup' },
   'tfa.pending2': {
     bg: '2. Въведете генерирания 6-цифрен код, за да потвърдите.',
@@ -625,8 +649,8 @@ const DICT = {
   'tfa.start': { bg: 'Започни настройка', en: 'Start setup' },
   'tfa.verify_title': { bg: 'Двуфакторна проверка', en: 'Two-factor verification' },
   'tfa.verify_intro': {
-    bg: 'Въведете 6-цифрения код от приложението ви за автентикация (напр. Google Authenticator, Authy).',
-    en: 'Enter the 6-digit code from your authenticator app (e.g. Google Authenticator, Authy).',
+    bg: 'Въведете 6-цифрения код от приложението ви за автентикация (напр. Google Authenticator, Authy) или един от резервните си кодове.',
+    en: 'Enter the 6-digit code from your authenticator app (e.g. Google Authenticator, Authy) or one of your backup codes.',
   },
   'tfa.confirm': { bg: 'Потвърди', en: 'Confirm' },
 
@@ -707,6 +731,10 @@ const DICT = {
   'msg.csrf': {
     bg: 'Невалидна или изтекла заявка (CSRF). Презаредете страницата и опитайте пак.',
     en: 'Invalid or expired request (CSRF). Reload the page and try again.',
+  },
+  'msg.pin_required': {
+    bg: 'Първо въведете PIN, за да споделите местоположение.',
+    en: 'Enter the PIN first to share your location.',
   },
   'msg.emerg_invalid': { bg: 'Невалиден или изтекъл код.', en: 'Invalid or expired code.' },
   // Грешки при вход/регистрация/2FA
