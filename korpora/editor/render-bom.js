@@ -9,6 +9,7 @@ export function renderBom(state) {
   const { bom, nesting, spec } = state;
   const { rows, bands, boards, hardware, hardwareTotals, unpriced } = bom;
   const bandM = bands.reduce((a, b) => a + b.metres, 0);
+  const kg = boards.reduce((a, b) => a + b.kg, 0);
   const pieces = hardware.reduce((a, h) => a + h.qty, 0);
   const totals =
     Object.entries(hardwareTotals)
@@ -18,6 +19,7 @@ export function renderBom(state) {
     stat('Детайли', fmt(rows.length)),
     stat('Листове', fmt(nesting.sheets.length)),
     stat('Кант', `${fmt(bandM, 1)} m`),
+    stat('Плочи, тегло', `≈ ${fmt(kg, 1)} kg`),
     stat('Обков', `${fmt(pieces)} бр.`),
     stat('Обков, цена', totals),
   ].join('');
@@ -36,16 +38,16 @@ export function renderBom(state) {
     boards
       .map(
         (b) =>
-          `<li><span>${esc(STOCK[b.stock].name)} ${b.thickness} mm · ${esc(b.decorName)}</span><span class="num">${fmt(b.area, 2)} m²</span></li>`,
+          `<li><span>${esc(STOCK[b.stock].name)} ${b.thickness} mm, ${esc(b.grade)} · ${esc(b.decorName)}</span><span class="num">${fmt(b.area, 2)} m²<small>≈ ${fmt(b.kg, 1)} kg</small></span></li>`,
       )
       .join('') +
     bands
       .map(
         (b) =>
-          `<li><span>Кант ${String(b.thickness).replace('.', ',')} mm · ${esc(b.decorName)}</span><span class="num">${fmt(b.metres, 1)} m</span></li>`,
+          `<li><span>Кант ${String(b.thickness).replace('.', ',')} × ${b.width} mm за плоча ${b.boardT} mm, лепило ${esc(b.glue)} · ${esc(b.decorName)}</span><span class="num">${fmt(b.metres, 1)} m</span></li>`,
       )
       .join('') +
-    '<li class="hint">Кантът е по точни дължини, без надбавка за подрязване.</li>';
+    '<li class="hint">Кантът е по точни дължини, без надбавка за подрязване. Теглото е по плътността на плочата. Шкаф под мивка: плоча P3 и кант с PUR лепило.</li>';
   $('#bom-hardware').innerHTML =
     hardware
       .map((h) => {

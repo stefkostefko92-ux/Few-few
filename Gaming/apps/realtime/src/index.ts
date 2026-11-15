@@ -16,7 +16,7 @@ import {
 import { env } from "./env.js";
 import { logger } from "./logger.js";
 import { pubClient, redis, subClient } from "./redis.js";
-import { verifyHandshake } from "./auth.js";
+import { scheduleExpiryDisconnect, verifyHandshake, type VerifiedClaims } from "./auth.js";
 import { Matchmaker } from "./matchmaking.js";
 import { LobbyManager } from "./lobby.js";
 import { metricsText, registerRealtimeGauges } from "./prometheus.js";
@@ -162,6 +162,29 @@ async function main(): Promise<void> {
   );
   io.adapter(createAdapter(pubClient, subClient));
 
+  /** Проверка на достъпа (revoked / бан / изтрит) — за ръкостискането и за повторна
+   *  проверка в exp. Хвърля при инфраструктурна грешка (Redis И БД недостъпни). */
+  const checkAccess = async (claims: VerifiedClaims): Promise<"ok" | "denied"> => {
+    const [revokedRaw, user] = await Promise.all([
+      redis.get(`revoked:${claims.sub}`).catch(() => null),
+      prisma.user.findUnique({
+        where: { id: claims.sub },
+        select: { banned: true, banUntil: true, deletedAt: true },
+      }),
+    ]);
+    // Денилистът пази МОМЕНТА на отмяната (unix сек.; легаси „1“ = всичко):
+    // отхвърляме само токени, издадени до него — нов токен след смяна на роля
+    // или изтекъл бан минава (същото правило като API-то).
+    const revokedAt = revokedRaw === null ? null : Number(revokedRaw);
+    const iat = claims.iat;
+    const revoked =
+      revokedAt !== null &&
+      (!Number.isFinite(revokedAt) || revokedAt < 1_000_000_000 || typeof iat !== "number" || iat <= revokedAt);
+    // Временен бан с изтекъл срок не се брои (вдига го API-то при вход/refresh).
+    const banActive = !!user?.banned && (!user.banUntil || user.banUntil.getTime() > Date.now());
+    return revoked || !user || banActive || user.deletedAt ? "denied" : "ok";
+  };
+
   // Authenticate the httpOnly access cookie at the handshake (§8.3), and reject
   // banned / erased / revoked users so a still-valid access token can't be used
   // to keep playing/chatting after a ban (mirrors the API's requireAuth).
@@ -173,25 +196,7 @@ async function main(): Promise<void> {
     }
     void (async () => {
       try {
-        const [revokedRaw, user] = await Promise.all([
-          redis.get(`revoked:${claims.sub}`).catch(() => null),
-          prisma.user.findUnique({
-            where: { id: claims.sub },
-            select: { banned: true, banUntil: true, deletedAt: true },
-          }),
-        ]);
-        // Денилистът пази МОМЕНТА на отмяната (unix сек.; легаси „1“ = всичко):
-        // отхвърляме само токени, издадени до него — нов токен след смяна на роля
-        // или изтекъл бан минава (същото правило като API-то).
-        const revokedAt = revokedRaw === null ? null : Number(revokedRaw);
-        const iat = (claims as { iat?: number }).iat;
-        const revoked =
-          revokedAt !== null &&
-          (!Number.isFinite(revokedAt) || revokedAt < 1_000_000_000 || typeof iat !== "number" || iat <= revokedAt);
-        // Временен бан с изтекъл срок не се брои (вдига го API-то при вход/refresh).
-        const banActive =
-          !!user?.banned && (!user.banUntil || user.banUntil.getTime() > Date.now());
-        if (revoked || !user || banActive || user.deletedAt) {
+        if ((await checkAccess(claims)) === "denied") {
           next(new Error("forbidden"));
           return;
         }
@@ -205,6 +210,9 @@ async function main(): Promise<void> {
         }
       }
       (socket.data as { claims: AccessTokenClaims }).claims = claims;
+      // В exp сокетът не се прекъсва сляпо (бот-заместник на активен играч):
+      // проверката се повтаря, а достъпът отнет → disconnect (виж auth.ts).
+      scheduleExpiryDisconnect(socket, claims.exp, () => checkAccess(claims));
       next();
     })();
   });

@@ -12,7 +12,9 @@ import {
 } from '@/lib/plans';
 import { isLocale } from '@/i18n/locales';
 import { prisma } from '@/lib/db';
-import { paymentReversal } from '@/lib/billing-sync';
+import { buildPlanPriceMap, paymentReversal } from '@/lib/billing-sync';
+import { ensurePortalConfiguration, portalSessionParams } from '@/lib/billing-portal';
+import { createPortalStripePorts } from '@/lib/billing-portal-stripe';
 import { loadPaymentState } from '@/lib/stripe-state';
 import { createPlanStripePorts } from '@/lib/plan-checkout-stripe';
 import {
@@ -132,8 +134,11 @@ export async function startCheckoutAction(formData: FormData): Promise<void> {
 
 // Stripe Customer Portal: самостоятелно управление на абонамента (смяна на
 // план/период, начин на плащане, фактури, ОТМЯНА — изискване на Дир. 2011/83
-// за лесен отказ от авто-подновяване). Порталът се конфигурира еднократно в
-// Stripe Dashboard → Settings → Billing → Customer portal.
+// за лесен отказ от авто-подновяване). Конфигурацията е от кода
+// (lib/billing-portal.ts): БЕЗ редакция на ДДС номер — иначе `pending` номер
+// дава 0% ДДС при подновяване. Създава се веднъж; кешът е за процеса.
+const portalConfigCache = { marker: null as string | null, id: null as string | null };
+
 export async function openBillingPortalAction(
   formData: FormData,
 ): Promise<void> {
@@ -145,9 +150,27 @@ export async function openBillingPortalAction(
   if (!stripe || !user.stripeCustomerId) {
     redirect(`/${uiLocale}/dashboard?error=stripe`);
   }
-  const session = await stripe.billingPortal.sessions.create({
-    customer: user.stripeCustomerId,
-    return_url: `${baseUrl()}/${uiLocale}/dashboard`,
-  });
-  redirect(session.url);
+  let url: string;
+  try {
+    const configurationId = await ensurePortalConfiguration(
+      createPortalStripePorts(stripe),
+      [...buildPlanPriceMap(process.env).keys()],
+      portalConfigCache,
+    );
+    const session = await stripe.billingPortal.sessions.create(
+      portalSessionParams({
+        customerId: user.stripeCustomerId,
+        configurationId,
+        returnUrl: `${baseUrl()}/${uiLocale}/dashboard`,
+      }),
+    );
+    url = session.url;
+  } catch (error) {
+    console.error(
+      '[billing] portal failed:',
+      error instanceof Error ? error.message : 'unknown error',
+    );
+    redirect(`/${uiLocale}/dashboard?error=stripe`);
+  }
+  redirect(url);
 }

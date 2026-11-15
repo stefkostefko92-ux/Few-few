@@ -294,3 +294,32 @@ describe("GameRoom — Думи: прекъсната връзка не изто
     expect(lastState(log, "u1").turn).toBe(1);
   });
 });
+
+describe("GameRoom — отхвърлено действие не маха покритието и часовника", () => {
+  it("1-ви таймаут + незаконно действие в паузата на бота: ботът пак изиграва хода", async () => {
+    vi.useFakeTimers();
+    const log: Emit[] = [];
+    const room = new GameRoom(fakeIo(log), "rj1", "CHESS", humans(2), "seed");
+    room.start();
+    await vi.advanceTimersByTimeAsync(60_000 + 10); // таймаут; ботът чака 350 ms
+    room.handleAction("u0", { type: "MOVE", from: "a1", to: "a8" }); // незаконно
+    await vi.advanceTimersByTimeAsync(400);
+    expect(log.some((e) => e.event === SOCKET_EVENTS.ERROR)).toBe(true);
+    // Покритието е останало: ботът е играл белия ход и черното е на часовник.
+    expect(lastState(log, "u0").turn).toBe(1);
+    expect(lastState(log, "u0").turnEndsAt).toBeGreaterThan(0);
+  });
+
+  it("заместено място: незаконно действие не го връща и масата не остава без часовник", async () => {
+    vi.useFakeTimers();
+    const log: Emit[] = [];
+    const room = new GameRoom(fakeIo(log), "rj2", "CHESS", humans(2), "seed");
+    room.start();
+    room.setConnected("u0", false); // веднага бот-заместник
+    room.handleAction("u0", "junk");
+    await vi.advanceTimersByTimeAsync(400);
+    expect(lastState(log, "u1").substituted).toEqual([0]);
+    expect(lastState(log, "u1").turn).toBe(1); // ботът е изиграл белия ход
+    expect(lastState(log, "u1").turnEndsAt).toBeGreaterThan(0);
+  });
+});
