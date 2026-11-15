@@ -5,6 +5,7 @@ import { Writable } from 'node:stream';
 import test from 'node:test';
 import pino from 'pino';
 import { pinoHttp } from 'pino-http';
+import * as loggerModule from '../src/logger.js';
 import { REDACT, httpLogOptions, stripQuery } from '../src/logger.js';
 
 /* Регресия (Наблюдателя, 2026-09-24): pino-http логваше сесийната бисквитка на админа, Set-Cookie
@@ -79,6 +80,37 @@ test('req.id е UUID, а безопасен входящ X-Request-Id се за�
       '{}',
   );
   assert.match(String(c.req?.id), /^[0-9a-f-]{36}$/, 'опасен входящ id се подменя');
+});
+
+/* Регресия (Стражата, 2026-11-15): x-forwarded-for и x-real-ip бяха в позитивния списък — IP адресът
+   на всеки посетител влизаше в лога (лични данни, ОРЗД), а времето беше в милисекунди от epoch. */
+
+test('IP хедърите (x-forwarded-for, x-real-ip) не стигат до лога', async () => {
+  const line = await logLineFor('/x', {
+    'x-forwarded-for': '203.0.113.77, 10.0.0.1',
+    'x-real-ip': '198.51.100.42',
+  });
+  for (const ip of ['203.0.113.77', '198.51.100.42']) {
+    assert.ok(!line.includes(ip), `${ip} изтече в лога`);
+  }
+  const rec = JSON.parse(line.trim().split('\n').pop() ?? '{}');
+  assert.equal(rec.req?.remoteAddress, undefined, 'адресът на връзката (pino-http) също е IP');
+});
+
+test('времето в лога е ISO 8601 (UTC), не милисекунди от epoch', () => {
+  let out = '';
+  const sink = new Writable({
+    write(chunk, _enc, cb) {
+      out += chunk.toString();
+      cb();
+    },
+  });
+  const options = (loggerModule as Record<string, unknown>).logOptions as pino.LoggerOptions;
+  assert.ok(options, 'logOptions липсва — logger-ът и тестът трябва да делят едни и същи опции');
+  pino({ ...options, level: 'info' }, sink).info('проба');
+  const rec = JSON.parse(out.trim()) as { time: unknown };
+  assert.equal(typeof rec.time, 'string');
+  assert.match(String(rec.time), /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
 });
 
 test('stripQuery маха само query низа', () => {

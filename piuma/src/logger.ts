@@ -31,7 +31,17 @@ export const REDACT = {
   censor: '[скрито]',
 };
 
-export const logger = pino({ level: process.env.LOG_LEVEL ?? 'info', redact: REDACT });
+/**
+ * Опциите на logger-а — изнесени, за да се тестват (tests/logger.test.ts). Времето е ISO 8601 в UTC:
+ * без `timestamp` pino пише милисекунди от epoch, които човек и SIEM разчитат с превод.
+ */
+export const logOptions: pino.LoggerOptions = {
+  level: process.env.LOG_LEVEL ?? 'info',
+  redact: REDACT,
+  timestamp: pino.stdTimeFunctions.isoTime,
+};
+
+export const logger = pino(logOptions);
 
 /**
  * Опциите на pino-http — тук, до redact-а, за да се тестват заедно (tests/logger.test.ts).
@@ -48,7 +58,13 @@ export const httpLogOptions = {
   serializers: {
     req: (req: { url?: unknown; headers?: unknown }) => {
       // query се пропуска: пътят стига за разбор, а параметрите носят code/token.
-      const { query: _query, ...rest } = req as Record<string, unknown>;
+      // remoteAddress/remotePort (pino-http ги добавя сам) — IP на връзката, личен данен.
+      const {
+        query: _query,
+        remoteAddress: _remoteAddress,
+        remotePort: _remotePort,
+        ...rest
+      } = req as Record<string, unknown>;
       return { ...rest, url: stripQuery(req.url), headers: pickHeaders(req.headers, REQ_HEADERS) };
     },
     res: (res: { headers?: unknown }) => {
@@ -72,9 +88,10 @@ const REQ_HEADERS = [
   'accept',
   'accept-language',
   'x-request-id',
-  'x-forwarded-for',
-  'x-real-ip',
 ];
+// x-forwarded-for и x-real-ip НЕ са тук: IP адресът е личен данен (ОРЗД), а логът се пази и
+// се чете по-широко от одита (Стражата, 2026-11-15). За сигурността адресът е в одита — суров
+// (заличим по срок) и като HMAC етикет във веригата (src/audit-chain.ts), не в лога.
 const RES_HEADERS = ['content-type', 'content-length', 'location', 'x-request-id', 'cache-control'];
 
 export function pickHeaders(headers: unknown, allow: readonly string[]): Record<string, unknown> {

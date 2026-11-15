@@ -52,6 +52,13 @@ const schema = z.object({
 
   TOKEN_ENC_KEY: z.string().regex(/^[0-9a-fA-F]{64}$/, 'TOKEN_ENC_KEY трябва да е 32 байта в hex'),
 
+  /**
+   * Папка на сървъра (извън базата) за котвата на одит-веригата — `audit-head.json`, права 600.
+   * Панелът и работникът трябва да виждат ЕДНА И СЪЩА папка. Без нея котвата е изключена:
+   * подмяната се хваща от HMAC веригата, но изрязан край — не.
+   */
+  AUDIT_ANCHOR_DIR: z.string().min(1).optional(),
+
   /** Име на издателя в приложението за TOTP кодове. */
   TOTP_ISSUER: z.string().min(1).default('Piuma'),
 

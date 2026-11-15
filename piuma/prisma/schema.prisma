@@ -246,9 +246,14 @@ model AuditLog {
   targetType String?
   targetId   String?
   detail     Json?
+  /// Суровият адрес — може да се заличи по срок (ОРЗД); във v2 веригата влиза само ipTag.
   ip         String?
+  /// HMAC(IP) с ключ извън базата (src/audit-chain.ts) — само за v2.
+  ipTag      String?
   prevHash   String
   hash       String
+  /// Версия на веригата: 1 — SHA-256 без ключ (записите отпреди 2026-11), 2 — HMAC-SHA-256.
+  v          Int      @default(1)
 
   @@index([at])
   @@index([actorId])
