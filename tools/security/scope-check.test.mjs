@@ -72,8 +72,8 @@ test("без активен ангажимент: нормалната рабо�
 
 // ── РЕШЕНИЕТО: с активен ангажимент (пентест тече) ────────────────────────────────────────────
 test("активен ангажимент: цел в обхвата — allow; извън обхвата — блок (всеки мрежов verb)", () => {
-  assert.equal(scopeCheck(bash("nmap -sV api.acme.example"), [eng()], T0).decision, "allow");
-  assert.equal(scopeCheck(bash("sqlmap -u https://acme.example/x"), [eng()], T0).decision, "allow");
+  assert.equal(scopeCheck(bash("nmap --max-rate 5 -sV api.acme.example"), [eng()], T0).decision, "allow");
+  assert.equal(scopeCheck(bash("sqlmap --delay 0.2 -u https://acme.example/x"), [eng()], T0).decision, "allow");
   assert.equal(scopeCheck(fetch("https://acme.example/login"), [eng()], T0).decision, "allow");
   assert.equal(scopeCheck(bash("curl https://github.com/a"), [eng()], T0).decision, "allow", "регистрите остават");
   const out = scopeCheck(bash("curl https://other.example/"), [eng()], T0);
@@ -127,4 +127,44 @@ test("F3 — активен ангажимент: извлечена външн�
   assert.equal(scopeCheck(bash("python3 -c 'import urllib.request as u; u.urlopen(\"http://other.example/\")'"), [eng()], T0).decision, "block", "python клиент извън списъка, но целта е извлечена");
   assert.equal(scopeCheck(bash("ls -la"), [eng()], T0).decision, "allow", "без цел — нормалната работа минава");
   assert.equal(scopeCheck(bash("python3 -c 'u.urlopen(\"https://acme.example/\")'"), [eng()], T0).decision, "allow", "цел в обхвата минава");
+});
+
+// ── находки от учебните сесии на Прониквача (15.11.2026) — регресии ─────────────────────────
+test("isOffensiveTool: commix, tplmap, dalfox, xsstrike, arjun са тежка артилерия", () => {
+  for (const c of ["commix --url http://acme.example/?id=1", "tplmap -u http://acme.example/x", "dalfox url http://acme.example", "xsstrike -u http://acme.example", "arjun -u http://acme.example"])
+    assert.equal(isOffensiveTool(c), true, c);
+});
+test("isOffensiveTool: инструмент в кавички след bash -c / sh -c и в $( ) се разпознава; споменаване в echo — не", () => {
+  assert.equal(isOffensiveTool(`bash -c "nmap -p- acme.example"`), true);
+  assert.equal(isOffensiveTool(`sh -c 'sqlmap -u http://acme.example'`), true);
+  assert.equal(isOffensiveTool("x=$(nmap acme.example)"), true);
+  assert.equal(isOffensiveTool(`echo "nmap е скенер"`), false, "споменаване ≠ изпълнение");
+});
+test("CIDR в allowlist-а: IP в диапазона минава, извън него — блок", () => {
+  const e = [eng({ hosts: ["10.20.0.0/24"] })];
+  assert.equal(scopeCheck(bash("nmap --max-rate 5 -p 443 10.20.0.7"), e, T0).decision, "allow");
+  assert.equal(scopeCheck(bash("nmap --max-rate 5 -p 443 10.20.1.7"), e, T0).decision, "block");
+  assert.equal(scopeCheck(bash("nmap --max-rate 5 -p 443 10.20.0.7"), [eng({ hosts: ["10.20.0.0/33"] })], T0).decision, "block", "невалиден CIDR не оторизира");
+});
+test("офанзивен инструмент срещу DEV хост (github.com, cdnjs) не минава като „вътрешен“", () => {
+  assert.equal(scopeCheck(bash("sqlmap -u https://github.com/x?id=1"), [], T0).decision, "block");
+  assert.equal(scopeCheck(bash("nikto -h cdnjs.cloudflare.com"), [eng()], T0).decision, "block");
+  assert.equal(scopeCheck(bash("curl -s https://registry.npmjs.org/react"), [eng()], T0).decision, "allow", "обикновената работа с регистрите остава");
+  assert.equal(scopeCheck(bash("nmap -p 80 127.0.0.1"), [], T0).decision, "allow", "loopback остава наш");
+});
+test("изключеният път е по граница „/“: /admin изключва /admin и /admin/x, но не /administrator", () => {
+  const e = [eng()];
+  assert.equal(scopeCheck(fetch("https://acme.example/admin"), e, T0).decision, "block");
+  assert.equal(scopeCheck(fetch("https://acme.example/admin/users"), e, T0).decision, "block");
+  assert.equal(scopeCheck(fetch("https://acme.example/administrator"), e, T0).decision, "allow");
+});
+test("rateLimit се налага: офанзивен инструмент без/над лимита на ангажимента → блок", () => {
+  const e = [eng({ rateLimit: 5 })];
+  assert.equal(scopeCheck(bash("nmap -p 443 acme.example"), e, T0).decision, "block", "без --max-rate");
+  assert.equal(scopeCheck(bash("nmap --max-rate 50 -p 443 acme.example"), e, T0).decision, "block", "над лимита");
+  assert.equal(scopeCheck(bash("nmap --max-rate 5 -p 443 acme.example"), e, T0).decision, "allow");
+  assert.equal(scopeCheck(bash("ffuf -rate 4 -u https://acme.example/FUZZ -w w.txt"), e, T0).decision, "allow");
+  assert.equal(scopeCheck(bash("nuclei -rl 20 -u https://acme.example"), e, T0).decision, "block");
+  assert.equal(scopeCheck(bash("sqlmap --delay 0.2 -u https://acme.example/?id=1"), e, T0).decision, "allow", "delay 0.2 s = 5 rps");
+  assert.equal(scopeCheck(bash("sqlmap -u https://acme.example/?id=1"), e, T0).decision, "block", "без --delay");
 });

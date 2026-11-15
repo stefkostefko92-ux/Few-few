@@ -700,3 +700,31 @@
 {"t":"handoff","ts":"2026-11-15T13:14:08.229Z","id":"r6d018bec","from":"igrodelets","to":"kodadjiyata","status":"има бележки","run":"8c0269ae"}
 {"t":"handoff","ts":"2026-11-15T13:14:21.725Z","id":"r6d018bec","from":"igrodelets","to":"kodadjiyata","status":"има бележки","run":"9b28fd6d"}
 {"t":"handoff","ts":"2026-11-15T13:17:42.181Z","id":"r6d018bec","from":"frezadjiyata","to":"kodadjiyata","status":"има бележки","run":"2264700c"}
+{"t":"start","ts":"2026-11-15T14:50:14.903Z","id":"r1ec74cca","flow":"авто","lead":"konveyera","auto":true}
+{"t":"handoff","ts":"2026-11-15T14:50:14.903Z","id":"r1ec74cca","from":"konveyera","to":"kodadjiyata","status":"има бележки","run":"84130582"}
+{"t":"start","ts":"2026-11-15T15:25:13.112Z","id":"r7a7ffd43","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-15T15:25:13.112Z","id":"r7a7ffd43","from":"kodadjiyata","to":"prodavacha","status":"има бележки","run":"ea8c16b6"}
+{"t":"handoff","ts":"2026-11-15T15:28:41.688Z","id":"r7a7ffd43","from":"kodadjiyata","to":"izpitatelya","status":"блокер","run":"647a3ce2"}
+{"t":"handoff","ts":"2026-11-15T15:30:46.998Z","id":"r7a7ffd43","from":"kodadjiyata","to":"frezadjiyata","status":"има бележки","run":"9850c95d"}
+{"t":"handoff","ts":"2026-11-15T15:30:54.117Z","id":"r7a7ffd43","from":"strazhata","to":"vps-adjiyata","status":"има бележки","run":"7965423e"}
+{"t":"handoff","ts":"2026-11-15T15:30:56.601Z","id":"r7a7ffd43","from":"igrodelets","to":"човек","status":"блокер","run":"4e7e48a7"}
+{"t":"handoff","ts":"2026-11-15T15:35:47.059Z","id":"r7a7ffd43","from":"prodavacha","to":"kodadjiyata","status":"има бележки","run":"fb61b4d4"}
+{"t":"handoff","ts":"2026-11-15T15:39:18.383Z","id":"r7a7ffd43","from":"kodadjiyata","to":"prodavacha","status":"има бележки","run":"fb6599df"}
+{"t":"handoff","ts":"2026-11-15T15:41:43.050Z","id":"r7a7ffd43","from":"strazhata","to":"друг","status":"има бележки","run":"4b68ea99","toRaw":"kodadzhiyata"}
+{"t":"handoff","ts":"2026-11-15T15:42:37.236Z","id":"r7a7ffd43","from":"danachnika","to":"prodavacha","status":"има бележки","run":"8d599ddd"}
+{"t":"handoff","ts":"2026-11-15T15:44:45.946Z","id":"r7a7ffd43","from":"prodavacha","to":"kodadjiyata","status":"има бележки","run":"40e804d3"}
+{"t":"handoff","ts":"2026-11-15T15:45:19.702Z","id":"r7a7ffd43","from":"asansyorchika","to":"kodadjiyata","status":"има бележки","run":"8fd543fb"}
+{"t":"handoff","ts":"2026-11-15T15:48:23.736Z","id":"r7a7ffd43","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"2081d3f6"}
+{"t":"handoff","ts":"2026-11-15T15:49:43.521Z","id":"r7a7ffd43","from":"vps-adjiyata","to":"човек","status":"има бележки","run":"da904d8d"}
+{"t":"handoff","ts":"2026-11-15T15:49:49.923Z","id":"r7a7ffd43","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"0f20f231"}
+{"t":"handoff","ts":"2026-11-15T15:52:01.683Z","id":"r7a7ffd43","from":"prodavacha","to":"kodadjiyata","status":"има бележки","run":"1773f81d"}
+{"t":"handoff","ts":"2026-11-15T15:52:47.562Z","id":"r7a7ffd43","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"646520e6"}
+{"t":"handoff","ts":"2026-11-15T15:58:46.864Z","id":"r7a7ffd43","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"b83558eb"}
+{"t":"handoff","ts":"2026-11-15T16:01:19.540Z","id":"r7a7ffd43","from":"igrodelets","to":"kodadjiyata","status":"има бележки","run":"bc7539a7"}
+{"t":"handoff","ts":"2026-11-15T16:01:41.093Z","id":"r7a7ffd43","from":"prodavacha","to":"kodadjiyata","status":"има бележки","run":"a86603dc"}
+{"t":"handoff","ts":"2026-11-15T16:02:22.841Z","id":"r7a7ffd43","from":"strazhata","to":"kodadjiyata","status":"има бележки","run":"2b3baada"}
+{"t":"handoff","ts":"2026-11-15T16:07:15.448Z","id":"r7a7ffd43","from":"strazhata","to":"kodadjiyata","status":"има бележки","run":"295b0c2b"}
+{"t":"handoff","ts":"2026-11-15T16:43:09.547Z","id":"r7a7ffd43","from":"asansyorchika","to":"kodadjiyata","status":"има бележки","run":"3fac3c52"}
+{"t":"start","ts":"2026-11-15T17:31:04.188Z","id":"r25933ed1","flow":"авто","lead":"prodavacha","auto":true}
+{"t":"handoff","ts":"2026-11-15T17:31:04.188Z","id":"r25933ed1","from":"prodavacha","to":"kodadjiyata","status":"наред","run":"ea366cda"}
+{"t":"handoff","ts":"2026-11-15T17:31:13.655Z","id":"r25933ed1","from":"vps-adjiyata","to":"strazhata","status":"има бележки","run":"12acd558"}

@@ -19,9 +19,29 @@ import { emitJson } from "../lib/emit.mjs";
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 export const ENGAGEMENTS_DIR = join(ROOT, ".security", "engagements");
 export const PUBKEY_PATH = join(ROOT, ".security", "pubkey.ed25519.pem");
-// Полетата, без които ангажиментът НЕ оторизира (Правния, раздел 1 — критичните за fail-closed).
+// Полетата, без които ангажиментът НЕ оторизира — всичките 14 от умението `pentest-engagement`
+// (стъпка 0, т. 2). Дотогава се проверяваха 10 и `verified:true` не доказваше доказателството за
+// власт, хеша на разрешението, третите облаци, DPA, разкриването, контактите и abort (находка на
+// Прониквача, 15.11.2026).
 export const REQUIRED = ["engagement_id", "status", "client_legal_identity", "authorizing_signatory",
-  "authorization_ref", "scope_allowlist", "out_of_scope", "time_window", "limits", "governing_law"];
+  "authorization_ref", "scope_allowlist", "out_of_scope", "time_window", "limits",
+  "third_party_cloud_notice", "data_handling", "disclosure_terms", "emergency_contacts", "abort_procedure",
+  "governing_law"];
+const DOC_HASH_RE = /^sha256:[0-9a-f]{64}$/i;
+const nonEmpty = (v) => typeof v === "string" ? v.trim().length > 0 : v != null;
+
+/** Вложените изисквания, които самото присъствие на полето не доказва. Празен масив = пълен. */
+export function contentGaps(obj) {
+  const gaps = [];
+  if (!nonEmpty(obj.authorizing_signatory?.authority_proof)) gaps.push("подписалият е без доказателство за власт (authority_proof)");
+  if (!DOC_HASH_RE.test(String(obj.authorization_ref?.doc_hash || ""))) gaps.push("authorization_ref.doc_hash не е sha256:<64 hex>");
+  if (!nonEmpty(obj.data_handling?.role) || !nonEmpty(obj.data_handling?.dpa_ref)) gaps.push("data_handling без роля или DPA (dpa_ref)");
+  if (!Array.isArray(obj.emergency_contacts) || obj.emergency_contacts.length === 0) gaps.push("няма контакти за спешност");
+  if (!nonEmpty(obj.abort_procedure)) gaps.push("няма abort процедура");
+  if (typeof obj.disclosure_terms !== "object" || obj.disclosure_terms === null) gaps.push("няма условия за разкриване");
+  if (typeof obj.third_party_cloud_notice !== "object" || obj.third_party_cloud_notice === null) gaps.push("няма данни за трети облаци");
+  return gaps;
+}
 
 /** Стабилна каноникализация (сортирани ключове, без signature/verified) за подпис/проверка. */
 export function canonicalize(obj) {
@@ -45,6 +65,8 @@ export function verifyEngagement(obj, publicKeyPem) {
   try {
     if (!obj || typeof obj !== "object") return out;
     for (const f of REQUIRED) if (obj[f] == null) { out.warnings.push(`липсва ${f}`); }
+    if (out.warnings.length) return out;
+    out.warnings.push(...contentGaps(obj));
     if (out.warnings.length) return out;
     if (obj.status !== "active") { out.warnings.push(`статус ${obj.status} != active`); return out; }
     if (!obj.signature) { out.warnings.push("няма подпис"); return out; }
