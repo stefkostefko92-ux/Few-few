@@ -67,7 +67,7 @@
     "post": "Post-processor",
     "grblStepDown": "Step down, mm",
     "grblMaxFeed": "Maximum feed, mm/min",
-    "onion": "Onion skin 0.3 mm — small parts do not move",
+    "onion": "Onion skin 0.5 mm — small parts do not move",
     "compensation": "Cut sizes compensate for the edge banding",
     "shelfLoad": "Shelf load (check: deflection up to 0.5% of the span between supports)",
     "reset": "Restore the defaults",
@@ -398,14 +398,15 @@
         "price": "Hardware, price",
         "pieces": "{n} pcs",
         "grain": "The grain runs along the length",
-        "bandLine": "Edge banding {t} mm · {decor}",
-        "bandHint": "Edge banding is given in exact lengths, with no trimming allowance.",
+        "bandLine": "Edge banding {t} × {w} mm for a {boardT} mm board, {glue} glue · {decor}",
+        "bandHint": "Edge banding is given in exact lengths, with no trimming allowance. The weight follows the density of the board. Cabinet under a sink: a P3 board and edge banding with PUR glue.",
         "unpriced": {
           "one": "{n} item without a price — a fastener or general fitting.",
           "other": "{n} items without a price — fasteners and general fittings."
         },
         "edgeHint": "Horizontal holes in the edges are not made on a 3-axis machine: use a boring machine or a jig.",
-        "noEdgeOps": "No operations outside the CNC."
+        "noEdgeOps": "No operations outside the CNC.",
+        "weight": "Boards, weight"
       },
       "nest": {
         "sheetAria": "Sheet {n}: {parts} parts",
@@ -441,6 +442,7 @@
     "cnc": "DXF with layers and G-code for every nesting sheet",
     "cncBlocked": "NOT ISSUED: the checks found errors, and G-code and DXF must never be wrong. Fix them in the editor and download again:",
     "checks": "Construction checks:",
-    "machine": "The G-code is for a sample machine profile (tool numbers, zero point at the bottom left corner of the sheet, Z0 on the top surface). Before cutting: simulate it in the machine software and do a dry run."
+    "machine": "The G-code is for a sample machine profile (tool numbers, zero point at the bottom left corner of the sheet, Z0 on the top surface). Before cutting: simulate it in the machine software and do a dry run.",
+    "cncMm": "The DXF is in MILLIMETRES (R12 has no units field — import it into CAM as mm, or the parts come out 25.4 times larger). In the layer names “P” is the decimal point (Z-18P6 = −18.6 mm); the holes to drill by hand are on the MANUAL_DRILL_… layers."
   }
 }

@@ -12,12 +12,29 @@
   margin: -2rem -1rem -2rem;
   padding: 2.5rem 1rem 3rem;
   min-height: calc(100dvh - 64px);
+  /* `clip`, not just `hidden`: the film grain overhangs the room by 50% on
+     every side, which made a `hidden` box SCROLLABLE — any scrollIntoView
+     (keyboard focus, find-in-page, a test runner's retry) scrolled the room
+     itself and shoved the whole table half a screen up-left, with no
+     scrollbar to bring it back. A clip box can't scroll; it also lets the
+     in-scene action bars stick to the viewport. `hidden` stays as the
+     fallback for engines without `clip` (see @supports below). */
   overflow: hidden;
+  /* `clip`, not just `hidden`: a hidden box is still a scroll container, and
+     the grain layer (inset −50%) gives it room to scroll — any edge-aligned
+     scrollIntoView (keyboard focus, find-in-page) shoved the whole table
+     sideways and left it there, with no scrollbar to undo it. */
+  overflow: clip;
   /* The dark room itself: charcoal with a faint warm floor. */
   background:
     radial-gradient(140% 90% at 50% -10%, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.55) 100%),
     radial-gradient(80% 60% at 50% 120%, rgba(217, 178, 95, 0.05), transparent 60%),
     linear-gradient(180deg, #060807 0%, #0a0d0c 55%, #050706 100%);
+}
+@supports (overflow: clip) {
+  .cine {
+    overflow: clip;
+  }
 }
 
 /* The live WebGL hall sits at the very back of the stage. */
@@ -88,6 +105,12 @@
 .cine__stage {
   position: relative;
   z-index: 2;
+  /* Always the containing block for in-scene `fixed` layers (banners, the
+     turn clock): the entrance animation leaves a transform on the stage, so
+     without this the same layer sat against the stage in one mode and against
+     the viewport under reduced motion. True overlays (dialogs, game over,
+     chat) are portaled to <body> instead. */
+  transform: translateZ(0);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -305,14 +328,23 @@
   transition: background-position 600ms ease;
 }
 /* Sweep the sheen across the player's own (interactive) cards on hover. */
-.cine button.aso-card:hover .aso-card__face::after {
+.cine button.aso-card:not(:disabled):hover .aso-card__face::after {
   background-position: 8% 0;
   opacity: 0.85;
 }
 
-/* Subtle static sheen band on board pieces + checkers for a glazed look. */
-.cine .aso-piece,
-.cine .bg-checker,
-.cine .ludo-pawn {
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 45%);
+/* Subtle static sheen band on board pieces + checkers for a glazed look.
+   A layer ON TOP of the piece (::before) — never `background-image` on the
+   piece itself: that replaced the white/black gradients of .aso-piece--w/b
+   and .bg-checker--w/b, so in the 2D boards every man and checker turned
+   transparent (the square showed through) and the two sides looked the same. */
+.cine .aso-piece::before,
+.cine .bg-checker::before,
+.cine .ludo-pawn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 45%);
 }
