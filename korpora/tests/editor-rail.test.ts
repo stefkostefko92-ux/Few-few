@@ -25,13 +25,15 @@ const ENTITIES: Record<string, string> = {
   '&#34;': '"',
   '&#39;': "'",
 };
-// the same elements: values aside (the server writes the project's), whitespace between tags and entity spelling
+// the same elements: values and visibility aside (the server writes the project's), whitespace between tags and entity
+// spelling
 const shape = (html: string) =>
   html
     .replace(/<%#[\s\S]*?%>/g, '')
     .replace(/ value="[^"]*"( data-field)/g, '$1')
     .replace(/ value="[^"]*">/g, '>')
     .replace(/ checked/g, '')
+    .replace(/ hidden/g, '')
     .replace(/&(amp|lt|gt|quot|#34|#39);/g, (m) => ENTITIES[m] ?? m)
     .replace(/>\s+</g, '><')
     .trim();

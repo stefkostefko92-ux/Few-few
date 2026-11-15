@@ -20,6 +20,7 @@ const PURPOSE = {
   screw: 'Винт (проходен)',
   bedfit: 'Връзка за легло — само място',
   'stack-pilot': 'Пилот Ø3 — на място, през отвора на горния корпус',
+  'blind-fix': 'Ъглова планка на сляп фронт — винт на място, без отвор',
   dowel: 'Шкант Ø8 (през плочата)',
 };
 export const purposeOf = (kind) => PURPOSE[kind] ?? kind;

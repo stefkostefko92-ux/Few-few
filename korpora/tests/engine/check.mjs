@@ -1,8 +1,9 @@
-// Shared model checks: positive sizes, holes inside parts, no overlapping boards, hinge/handle counts, plate holes;
+// Shared model checks: positive sizes, holes inside parts, no overlapping boards (in the room), hinge/handle counts, plate holes;
 // and the parameter variants every engine test walks through.
 import assert from 'node:assert/strict';
 import { TYPES } from '../../engine/types.js';
 import { MIN_WEB, CONFIRMAT } from '../../engine/joinery.js';
+import { worldParts } from '../../engine/transform.js';
 
 // A type at its defaults, at the min and max of every range and at every option of the others: [label, spec].
 export function paramVariants(type) {
@@ -93,10 +94,12 @@ export function checkModel(m, label) {
       if (f.type === 'hole') assert.ok(f.d > 0 && f.depth > 0, `${label}: ${p.name} bad hole ${JSON.stringify(f)}`);
     }
   }
-  for (let i = 0; i < parts.length; i++) {
-    for (let j = i + 1; j < parts.length; j++) {
-      const v = overlap(parts[i], parts[j]);
-      if (v > 0 && !allowed(parts[i], parts[j])) assert.fail(`${label}: ${parts[i].id} ${parts[i].name} overlaps ${parts[j].id} ${parts[j].name} (${Math.round(v)} mm³)`);
+  // in the room: the walls of a Г or П kitchen each in their own coordinates (transform.js)
+  const world = worldParts(m);
+  for (let i = 0; i < world.length; i++) {
+    for (let j = i + 1; j < world.length; j++) {
+      const v = overlap(world[i], world[j]);
+      if (v > 0 && !allowed(world[i], world[j])) assert.fail(`${label}: ${world[i].id} ${world[i].name} overlaps ${world[j].id} ${world[j].name} (${Math.round(v)} mm³)`);
     }
   }
   for (const d of parts.filter((p) => p.role === 'door')) {
@@ -119,4 +122,20 @@ export function checkModel(m, label) {
   for (const sh of parts.filter((p) => p.role === 'shelf')) assert.ok(Number.isFinite(sh.pinY), `${label}: ${sh.name} without pin height`);
   const errors = m.warnings.filter((w) => w.level === 'error');
   return errors;
+}
+
+/** A small well-formedness check: every opened tag is closed in order (no XML parser in Node). */
+export function assertWellFormed(svg, label) {
+  assert.match(svg, /^<svg[\s>]/, `${label}: does not start with <svg`);
+  assert.ok(svg.trimEnd().endsWith('</svg>'), `${label}: does not end with </svg>`);
+  assert.ok(!/NaN|undefined|Infinity/.test(svg), `${label}: broken number`);
+  const body = svg.replace(/<style>[\s\S]*?<\/style>/g, '').replace(/<!--[\s\S]*?-->/g, '');
+  const stack = [];
+  for (const m of body.matchAll(/<(\/?)([a-zA-Z][\w:-]*)[^>]*?(\/?)>/g)) {
+    const [, closing, name, selfClosing] = m;
+    if (selfClosing) continue;
+    if (closing) assert.equal(stack.pop(), name, `${label}: </${name}> closes the wrong tag`);
+    else stack.push(name);
+  }
+  assert.equal(stack.length, 0, `${label}: unclosed tags ${stack.join(',')}`);
 }

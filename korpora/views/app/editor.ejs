@@ -58,7 +58,7 @@
           </details>
           <button type="button" class="btn btn-small bld-go" id="personalize" hidden><%= te('editor.build.personalize') %></button>
         </div>
-        <div class="group"><h2><%= te('editor.sizes') %></h2><div id="param-fields" class="group group-flat"<% if (rail) { %> data-type="<%= rail.type %>"<% } %>><% if (rail) { %><%- include('editor-params', { fields: rail.fields }) %><% } %></div></div>
+        <div class="group"><h2><%= te('editor.sizes') %></h2><div id="param-fields" class="group group-flat"<% if (rail) { %> data-type="<%= rail.type %>"<% } %>><% if (rail) { %><%- include('editor-params', { fields: rail.fields }) %><% } %></div><p class="sr-only" id="param-when" role="status"></p></div>
         <div class="group">
           <h2><%= te('editor.materials') %></h2>
           <span class="lbl" id="l-carcass"><%= te('editor.carcass') %></span>

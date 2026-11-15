@@ -7,6 +7,7 @@ import { r1, clamp } from './util.js';
 import { hasGrain, frontStock, STOCK } from './materials.js';
 import { GROOVE, HDF_T, confirmat, confirmatZs, boreClear, systemRows } from './joinery.js';
 import { buildDoors } from './fronts.js';
+import { blindFront } from './blind.js';
 import { buildDrawers } from './drawers.js';
 import { hangRail, RAIL } from './rail.js';
 import { shelvesInZone } from './shelves.js';
@@ -137,7 +138,10 @@ export function buildCarcass(ctx, o) {
     const a = { i, n, col, xa: col.xa, xb: col.xb, fl: col.fl, fr: col.fr, c, zEnd, backFront, T, nm, key, mod, left: col.left, right: col.right, ...front };
     if (col.drawers) buildDrawers(ctx, o, { ...a, dz0: col.dz0, dzH: col.dzH, drawers: col.drawers });
     const doorZone = col.drawersOnTop ? [c, col.dz0] : [c + col.dzH, c + Hc];
-    col.hingeYs = col.doors ? buildDoors(ctx, o, { ...a, dy0: doorZone[0] + gap / 2, dy1: doorZone[1] - gap / 2, hingeSides }) : [];
+    const dy = { dy0: doorZone[0] + gap / 2, dy1: doorZone[1] - gap / 2 };
+    // a blind corner cabinet (kitchen.js): the blind front first, the doors on the rest of the column
+    const span = col.blind ? blindFront(ctx, { ...a, ...dy, yTop: c + Hc - T }) : {};
+    col.hingeYs = col.doors ? buildDoors(ctx, o, { ...a, ...span, ...dy, hingeSides }) : [];
   }
   // pass 2: system holes where they do not clash, shelves on holes present on both sides, hanging rails
   const rows = systemRows(zEnd, backFront);

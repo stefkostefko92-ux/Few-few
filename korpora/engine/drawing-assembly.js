@@ -1,21 +1,18 @@
-// Assembly drawing for any furniture type: front view (painter's order, fronts closed, shelves and partitions behind
-// them as hidden lines) and section A–A seen from the left (first-angle projection: placed to the right), with
-// overall and module dimensions and the material, joint and hardware notes.
-import { pickScale, dimH, dimV, frame, svgDoc, fmt, errorAlert } from './drawing-kit.js';
-import { decorName, STOCK } from './materials.js';
-import { handleHoles } from './hardware.js';
-import { GROOVE, HDF_T } from './joinery.js';
+// Assembly drawing for any furniture type: front view (drawing-front.js: painter's order, fronts closed, shelves and
+// partitions behind them as hidden lines) and section A–A seen from the left (first-angle projection: placed to the
+// right), with overall and module dimensions and the material, joint and hardware notes (drawing-notes.js). A Г or П
+// kitchen gets the plan of the room and a view of every wall instead (drawing-walls.js).
+import { pickScale, dimH, dimV, frame, svgDoc, fmt } from './drawing-kit.js';
 import { typeLabel } from './model.js';
 import { dimsText } from './types.js';
-import { esc } from './util.js';
 import { drawingSheets } from './drawing-part.js';
-
-const FRONTS = new Set(['door', 'drawer-front']);
-const HW_KIND = [['hinge:', 'панта'], ['slide:', 'водач'], ['handle:', 'дръжка']];
-const VARIANT_NOTE = { full: ', покрит кант', half: ', полупокрит кант', inset: ', открит кант' };
+import { frontView, extents, moduleRanges } from './drawing-front.js';
+import { notes, materialLine } from './drawing-notes.js';
+import { drawingWalls } from './drawing-walls.js';
 
 // Sheet 1 of the drawing set (drawingSheets).
 export function drawingAssembly(model, meta) {
+  if (model.runs?.length) return drawingWalls(model, meta);
   const { parts, symbols, spec } = model;
   const ext = extents(parts, symbols);
   const W = ext.x1 - ext.x0;
@@ -27,38 +24,8 @@ export function drawingAssembly(model, meta) {
   const fy = 28 + Math.max(0, (200 - H * k) / 2);
   const X = (x) => fx + (x - ext.x0) * k;
   const Y = (y) => fy + (H - y) * k;
-  let g = '';
   // FRONT VIEW
-  for (const s of symbols.filter((sy) => sy.type === 'leg')) g += `<rect class="d-vis" x="${X(s.x - 15)}" y="${Y(s.y0 + s.h)}" width="${30 * k}" height="${s.h * k}"/>`;
-  for (const p of [...parts].sort((a, b) => a.box.max[2] - b.box.max[2])) {
-    g += `<rect class="${FRONTS.has(p.role) ? 'd-front' : 'd-vis'}" x="${X(p.box.min[0])}" y="${Y(p.box.max[1])}" width="${(p.box.max[0] - p.box.min[0]) * k}" height="${(p.box.max[1] - p.box.min[1]) * k}"/>`;
-  }
-  const fronts = parts.filter((p) => FRONTS.has(p.role));
-  // hidden when every sample point of the part (inset 2 mm) sits behind some closed front
-  const behind = (x, y, z) => fronts.some((f) => f.box.min[2] >= z - 0.1 && x >= f.box.min[0] && x <= f.box.max[0] && y >= f.box.min[1] && y <= f.box.max[1]);
-  const covered = (p) => {
-    const xs = [p.box.min[0] + 2, p.box.max[0] - 2];
-    const ys = [p.box.min[1] + 2, (p.box.min[1] + p.box.max[1]) / 2, p.box.max[1] - 2];
-    return xs.every((x) => ys.every((y) => behind(x, y, p.box.max[2])));
-  };
-  for (const p of parts.filter((q) => (q.role === 'shelf' || q.role === 'partition' || q.role === 'divider') && covered(q))) {
-    g += `<rect class="d-hid" x="${X(p.box.min[0])}" y="${Y(p.box.max[1])}" width="${(p.box.max[0] - p.box.min[0]) * k}" height="${(p.box.max[1] - p.box.min[1]) * k}"/>`;
-  }
-  for (const d of parts.filter((p) => p.role === 'door')) {
-    const [x0, y0] = d.box.min;
-    const [x1, y1] = d.box.max;
-    const apex = d.hingeSide === 'left' ? X(x0) : X(x1);
-    const free = d.hingeSide === 'left' ? X(x1) : X(x0);
-    g += `<polyline class="d-open" points="${free},${Y(y1)} ${apex},${Y((y0 + y1) / 2)} ${free},${Y(y0)}"/>`;
-  }
-  for (const s of symbols.filter((sy) => sy.type === 'handle')) {
-    const len = s.model.length ?? (handleHoles(s.model).pair ? s.model.spacing + 40 : 24);
-    g += s.horizontal ? `<line class="d-out" x1="${X(s.x - len / 2)}" y1="${Y(s.y)}" x2="${X(s.x + len / 2)}" y2="${Y(s.y)}"/>` : `<line class="d-out" x1="${X(s.x)}" y1="${Y(s.y - len / 2)}" x2="${X(s.x)}" y2="${Y(s.y + len / 2)}"/>`;
-  }
-  for (const s of symbols.filter((sy) => sy.type === 'worktop')) {
-    g += `<rect class="d-vis" x="${X(s.x0)}" y="${Y(s.y + s.t)}" width="${(s.x1 - s.x0) * k}" height="${s.t * k}"/><text class="d-small" x="${X(s.x1) - 2}" y="${Y(s.y + s.t) - 1}" text-anchor="end">плот (покупен)</text>`;
-  }
-  for (const s of symbols.filter((sy) => sy.type === 'mattress')) g += `<rect class="d-hid" x="${X(s.x0)}" y="${Y(s.y + s.h)}" width="${(s.x1 - s.x0) * k}" height="${s.h * k}" rx="1"/>`;
+  let g = frontView(parts, symbols, X, Y, k);
   g += `<line class="d-gnd" x1="${X(ext.x0) - 6}" y1="${Y(0)}" x2="${X(ext.x1) + 6}" y2="${Y(0)}"/>`;
   const mods = moduleRanges(parts);
   const chain = mods.length > 1;
@@ -102,50 +69,10 @@ export function drawingAssembly(model, meta) {
   return svgDoc(g + frame(`${typeLabel(spec.type)} ${dimsText(spec.type, spec)}`, meta, scale, 1, drawingSheets(model).count, material), `Сглобен чертеж: ${typeLabel(spec.type)}`, 'assembly');
 }
 
-function extents(parts, symbols) {
-  const e = { x0: Infinity, x1: -Infinity, y1: 0, z0: Infinity, z1: -Infinity };
-  for (const p of parts) {
-    e.x0 = Math.min(e.x0, p.box.min[0]);
-    e.x1 = Math.max(e.x1, p.box.max[0]);
-    e.y1 = Math.max(e.y1, p.box.max[1]);
-    e.z0 = Math.min(e.z0, p.box.min[2]);
-    e.z1 = Math.max(e.z1, p.box.max[2]);
-  }
-  for (const s of symbols.filter((sy) => sy.type === 'worktop')) {
-    e.y1 = Math.max(e.y1, s.y + s.t);
-    e.z1 = Math.max(e.z1, s.z1);
-  }
-  return e;
-}
-
-function moduleRanges(parts) {
-  const m = new Map();
-  for (const p of parts) {
-    if (!p.module) continue;
-    const r = m.get(p.module) ?? { name: p.module, x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity };
-    r.x0 = Math.min(r.x0, p.box.min[0]);
-    r.x1 = Math.max(r.x1, p.box.max[0]);
-    r.y0 = Math.min(r.y0, p.box.min[1]);
-    r.y1 = Math.max(r.y1, p.box.max[1]);
-    m.set(p.module, r);
-  }
-  // modules stacked over the same x range get a second dimension row
-  const list = [...m.values()].sort((a, b) => a.x0 - b.x0 || a.y0 - b.y0);
-  list.forEach((r, i) => {
-    r.row = list.slice(0, i).some((q) => q.x0 < r.x1 - 1 && q.x1 > r.x0 + 1) ? 1 : 0;
-  });
-  return list;
-}
-
 function cutPlane(parts, spec, ext) {
   if (spec.type === 'bed') return ext.x0 + (ext.x1 - ext.x0) / 4;
   const p = parts.find((q) => q.role === 'shelf') ?? parts.find((q) => q.role === 'door' || q.role === 'drawer-front');
   return p ? (p.box.min[0] + p.box.max[0]) / 2 + 0.5 : (ext.x0 + ext.x1) / 2 + 0.5;
-}
-
-function materialLine(parts) {
-  const main = parts.find((p) => p.role === 'side' || p.role === 'bed-rail') ?? parts[0];
-  return `${STOCK[main.stock].name} ${fmt(main.T)} · ${decorName(main.decor)}`;
 }
 
 // Section plane (ISO 128-44): a thin chain line, thick at its ends, with arrows towards the viewing direction — the
@@ -158,54 +85,4 @@ function sectionPlane(x, top, bottom) {
     s += `<text class="d-vt" x="${x + 6.8}" y="${y + 1.3}">A</text>`;
   }
   return s;
-}
-
-// Notes from what the model really has: materials, the joints in use, the named hardware, and the warning line
-// when the checks found errors.
-function notes(model) {
-  const { parts, spec, hardware } = model;
-  const front = parts.find((p) => p.role === 'door' || p.role === 'drawer-front' || p.role === 'bed-head');
-  const carcass = parts.find((p) => p.role === 'side' || p.role === 'bed-rail');
-  const has = (test) => parts.some(test);
-  const kinds = new Set(parts.flatMap((p) => p.features.map((f) => f.kind)));
-  const lines = [];
-  if (carcass) lines.push(`Корпус: ${STOCK[carcass.stock].name} ${fmt(carcass.T)} mm, ${decorName(carcass.decor)}; кант ${fmt(spec.bandCarcass)} mm.`);
-  if (front) lines.push(`Фронт: ${STOCK[front.stock].name} ${fmt(front.T)} mm, ${decorName(front.decor)}${STOCK[front.stock].painted ? ' (боядисан, без кант)' : `; кант ${fmt(spec.bandFront)} mm`}. Фуга ${fmt(spec.gap)} mm.`);
-  const joints = [];
-  if (kinds.has('confirmat')) joints.push('конфирмат 7×50');
-  // a fixed shelf doweled over the screw heads of the one on the other face of a partition (cells.js): the order matters
-  if (kinds.has('dowel')) joints.push('неподвижен рафт срещу друг от другата страна на делител — на шкантове 8×35 с лепило, след като другият е завит с конфирматите си');
-  if (has((p) => p.role === 'shelf')) joints.push('рафтоносачи по системата 32 mm');
-  if (has((p) => p.role === 'back')) joints.push(kinds.has('back-groove') ? `гръб HDF ${HDF_T} mm в канал ${GROOVE.width}×${GROOVE.depth} mm на ${GROOVE.inset} mm от гърба` : `гръб HDF ${HDF_T} mm, прикован отзад`);
-  if (has((p) => p.role === 'drawer-bottom')) joints.push(`дъна на чекмеджетата HDF ${HDF_T} mm в канал`);
-  if (has((p) => p.role === 'bed-ledger')) joints.push('летви с винтове 4×30, връзки за легло по шаблона на обкова');
-  if (kinds.has('stack-pilot')) joints.push('горният корпус — с винтове 4×30 към долния');
-  if (spec.type === 'desk') joints.push('плотът — с метални ъгълчета към страниците');
-  if (joints.length) lines.push(`Съединения: ${joints.join(', ')}.`);
-  // hinges, slides and handles in short: the article where the shop gives one; everything is in hardware.csv
-  const named = hardware
-    .map((h) => ({ h, kind: HW_KIND.find(([prefix]) => h.key.startsWith(prefix))?.[1] }))
-    .filter(({ kind }) => kind)
-    .map(({ h, kind }) => {
-      const what = h.sku ? `${h.brand ?? ''} ${h.sku}` : kind === 'дръжка' ? h.name.replace(/\s*\([^()]*\)\s*$/, '') : `${kind} ${h.brand ?? ''}`;
-      return `${what}${VARIANT_NOTE[h.variant] ?? ''} × ${h.qty}`.replace(/\s+/g, ' ').trim();
-    });
-  if (named.length) lines.push(`Обков: ${named.join('; ')} — пълният списък е в hardware.csv.`);
-  const rows = lines.flatMap((t) => wrap(t));
-  if (rows.length > 6) rows.splice(5, rows.length - 5, `${rows[5].slice(0, 120)}…`);
-  return rows.map((t, i) => `<text class="d-note" x="30" y="${258 + i * 4.2}">${esc(t)}</text>`).join('') + errorAlert(model, 30, 258 + rows.length * 4.2);
-}
-
-// A note longer than the space left of the title block goes on to the next line, broken after a comma.
-function wrap(text, max = 130) {
-  const out = [];
-  let rest = text;
-  while (rest.length > max) {
-    const cut = Math.max(rest.lastIndexOf(', ', max), rest.lastIndexOf('; ', max));
-    const at = cut > 40 ? cut + 1 : max;
-    out.push(rest.slice(0, at).trimEnd());
-    rest = `   ${rest.slice(at).trimStart()}`;
-  }
-  out.push(rest);
-  return out;
 }

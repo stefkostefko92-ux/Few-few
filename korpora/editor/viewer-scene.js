@@ -1,6 +1,7 @@
-// Scene helpers for the 3D view: model extents and the purchased items around the boards.
+// Scene helpers for the 3D view: model extents, the walls of a Г or П kitchen and the purchased items around the boards.
 import * as THREE from 'three';
 import { boardTopDecor } from '../engine/materials.js';
+import { worldParts, worldBox, runOf } from '../engine/transform.js';
 import { S, legMesh, railMesh, slatsMesh, mattressMesh, worktopMesh } from './viewer-hw.js';
 import { handleMesh } from './viewer-handles.js';
 
@@ -17,9 +18,12 @@ function frontOf(part, s) {
   return out;
 }
 
+const UP = new THREE.Vector3(0, 1, 0);
+
+// The model's extents in the room (mm): a Г or П kitchen with its walls turned into place.
 export function extents(model) {
   const e = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: 0, z0: Infinity, z1: -Infinity };
-  for (const p of model.parts) {
+  for (const p of worldParts(model)) {
     e.x0 = Math.min(e.x0, p.box.min[0]);
     e.y0 = Math.min(e.y0, Math.max(0, p.box.min[1]));
     e.x1 = Math.max(e.x1, p.box.max[0]);
@@ -27,13 +31,44 @@ export function extents(model) {
     e.z0 = Math.min(e.z0, p.box.min[2]);
     e.z1 = Math.max(e.z1, p.box.max[2]);
   }
-  for (const s of model.symbols) if (s.type === 'worktop') e.y1 = Math.max(e.y1, s.y + s.t);
+  for (const s of model.symbols) {
+    if (s.type !== 'worktop') continue;
+    e.y1 = Math.max(e.y1, s.y + s.t);
+    // the side walls' worktops reach the furthest into the room
+    if (s.run !== undefined)
+      e.z1 = Math.max(
+        e.z1,
+        worldBox({ min: [s.x0, s.y, s.z0], max: [s.x1, s.y, s.z1] }, runOf(model, s.run)).max[2],
+      );
+  }
   if (!Number.isFinite(e.y0)) e.y0 = 0;
   return e;
 }
 
+// The walls of a Г or П kitchen (engine/transform.js): a group per run, turned and moved into the room. Its children
+// are placed with v.P like everything else (centred on the footprint), so the group takes the centring back before
+// it turns and gives it again after.
+export function runGroups(v, model) {
+  const out = new Map();
+  for (const r of model.runs ?? []) {
+    const g = new THREE.Group();
+    g.rotation.y = (r.turn * Math.PI) / 2;
+    const off = new THREE.Vector3(v.off[0], 0, v.off[2]).applyAxisAngle(UP, g.rotation.y);
+    g.position.set((r.dx + v.off[0] - off.x) * S, 0, (r.dz + v.off[2] - off.z) * S);
+    v.root.add(g);
+    out.set(r.id, g);
+  }
+  return out;
+}
+
 export function addSymbols(v, model, meshOf) {
-  const statics = new THREE.Group();
+  // the legs, rails and worktop of each wall move with it in the exploded view; a model without walls has one group
+  const statics = new Map();
+  const into = (run) => {
+    if (!statics.has(run)) statics.set(run, new THREE.Group());
+    return statics.get(run);
+  };
+  into(undefined);
   // a symbol's footprint (mm) moved like the boards, centred on the furniture
   const centred = (s) => ({
     ...s,
@@ -52,29 +87,26 @@ export function addSymbols(v, model, meshOf) {
     } else if (s.type === 'leg') {
       const g = legMesh(v.mats, s.h);
       g.position.copy(v.P(s.x, s.y0, s.z));
-      statics.add(g);
+      into(s.run).add(g);
     } else if (s.type === 'rail') {
       const g = railMesh(v.mats, s.x1 - s.x0);
       g.position.copy(v.P((s.x0 + s.x1) / 2, s.y, s.z));
-      statics.add(g);
+      into(s.run).add(g);
     } else if (s.type === 'slats') {
       const g = slatsMesh(v.mats, {
         ...centred(s),
         split: s.split === null ? null : s.split + v.off[0],
       });
-      statics.add(g);
+      into(s.run).add(g);
     } else if (s.type === 'mattress') {
-      statics.add(mattressMesh(v.mats, centred(s)));
+      into(s.run).add(mattressMesh(v.mats, centred(s)));
     } else if (s.type === 'worktop') {
       const mat = v.mats.board(boardTopDecor(model.spec));
-      statics.add(worktopMesh(v.mats, centred(s), mat));
+      into(s.run).add(worktopMesh(v.mats, centred(s), mat));
     }
   }
-  v.root.add(statics);
-  v.items.push({
-    kind: 'static',
-    holder: statics,
-    base: new THREE.Vector3(),
-    explode: [0, -0.2, 0],
-  });
+  for (const [run, holder] of statics) {
+    v.parentOf(run).add(holder);
+    v.items.push({ kind: 'static', holder, base: new THREE.Vector3(), explode: [0, -0.2, 0] });
+  }
 }
