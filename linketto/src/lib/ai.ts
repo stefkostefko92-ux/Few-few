@@ -1,5 +1,5 @@
 import 'server-only';
-import { cleanBio } from './ai-text';
+import { cleanBio, geminiAllowed } from './ai-text';
 
 // AI превод на профила с един клик — Gemini Flash (същият подход като
 // mastilko): ключът е САМО server-side env, клиентът никога не говори с
@@ -22,8 +22,12 @@ export type TranslatedByLocale = Record<
   }
 >;
 
+// Fail-closed без платен tier (условията на Gemini API за ЕИП) — ai-text.ts.
 export function aiConfigured(): boolean {
-  return Boolean(process.env.GEMINI_API_KEY);
+  return geminiAllowed({
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    GEMINI_PAID_TIER: process.env.GEMINI_PAID_TIER,
+  });
 }
 
 const GEMINI_URL = (model: string) =>
@@ -39,7 +43,7 @@ export async function generateBio(input: {
   locale: string;
 }): Promise<string | null> {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return null;
+  if (!apiKey || !aiConfigured()) return null;
   const keywords = input.keywords.trim().slice(0, 300);
   if (!keywords) return null;
   const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
@@ -60,7 +64,11 @@ export async function generateBio(input: {
       },
       body: JSON.stringify({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 400 },
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 400,
+          ...noThinking(model),
+        },
       }),
       signal: AbortSignal.timeout(30_000),
     });
@@ -74,7 +82,36 @@ export async function generateBio(input: {
   }
 }
 
+// gemini-2.5-flash брои токените за „мислене“ в maxOutputTokens — при малък
+// таван отговорът излиза празен/отрязан (одит M10). За flash моделите
+// мисленето се изключва; pro моделите не позволяват 0, затова не се пипат.
+function noThinking(model: string): Record<string, unknown> {
+  return /flash/i.test(model) ? { thinkingConfig: { thinkingBudget: 0 } } : {};
+}
+
+// Преводът върви на партиди по ≤5 езика: един отговор за 26 езика +
+// линкове + продукти не се събира в токените и JSON-ът се реже.
+const TRANSLATE_BATCH = 5;
+
 export async function translateProfileContent(
+  source: TranslatableContent,
+  fromLocale: string,
+  toLocales: string[],
+): Promise<TranslatedByLocale | null> {
+  if (!aiConfigured() || toLocales.length === 0) return null;
+  const merged: TranslatedByLocale = {};
+  for (let i = 0; i < toLocales.length; i += TRANSLATE_BATCH) {
+    const part = await translateBatch(
+      source,
+      fromLocale,
+      toLocales.slice(i, i + TRANSLATE_BATCH),
+    );
+    if (part) Object.assign(merged, part);
+  }
+  return Object.keys(merged).length > 0 ? merged : null;
+}
+
+async function translateBatch(
   source: TranslatableContent,
   fromLocale: string,
   toLocales: string[],
@@ -125,13 +162,14 @@ export async function translateProfileContent(
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig: {
         temperature: 0.2,
-        maxOutputTokens: 4000,
+        maxOutputTokens: 8000,
         responseMimeType: 'application/json',
+        ...noThinking(model),
       },
     }),
     signal: AbortSignal.timeout(30_000),
-  });
-  if (!res.ok) return null;
+  }).catch(() => null);
+  if (!res || !res.ok) return null;
 
   const data: unknown = await res.json();
   const text = extractText(data);

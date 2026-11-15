@@ -12,7 +12,7 @@ const DIR = join(__dirname, '..', '..', '..', 'messages');
 const LEGAL_LOCALES = ['bg', 'en', 'it', 'es', 'de', 'fr'] as const;
 const load = (l: string) =>
   JSON.parse(readFileSync(join(DIR, `${l}.json`), 'utf8')) as {
-    legal: { termsBody: string; privacyBody: string };
+    legal: { termsBody: string; privacyBody: string; cookiesBody: string };
     pricing?: Record<string, string>;
   };
 
@@ -31,7 +31,7 @@ test('termsBody: Т2 носи {percent} и {minPayout} и се форматир�
   }
 });
 
-test('privacyBody: чл. 22 вече не казва „не прилагаме“ — има автоматично спиране при спор', () => {
+test('privacyBody: чл. 22(2)(а) — автоматично отпадане на платеното при пълно връщане', () => {
   const bg = load('bg').legal.privacyBody;
   assert.ok(!bg.includes('Не прилагаме автоматизирано вземане на решения по чл. 22'));
   assert.match(bg, /чл\. 22\(2\)\(а\)/);
@@ -42,4 +42,19 @@ test('никой локал не обещава бонус „от всяко п
   for (const f of readdirSync(DIR).filter((x) => x.endsWith('.json'))) {
     assert.equal(load(f.replace('.json', '')).pricing?.referralPercentNote, undefined, f);
   }
+});
+
+// Revolut вместо Stripe (2026-11-14): правните текстове на всички 6 родни езика
+// не споменават Stripe и носят 14-дневния отказ със стандартния формуляр.
+test('legal: без Stripe; ОУ носят 14-дневен отказ и стандартен формуляр', () => {
+  for (const l of LEGAL_LOCALES) {
+    const legal = load(l).legal;
+    for (const k of ['termsBody', 'privacyBody', 'cookiesBody'] as const) {
+      assert.ok(typeof legal[k] === 'string' && !/stripe/i.test(legal[k]), `${l}.${k}: без Stripe`);
+    }
+    assert.match(legal.termsBody, /14/, `${l}: 14 дни`);
+    assert.ok(legal.termsBody.includes('info@carbonstealth.eu'), `${l}: адрес за отказа`);
+  }
+  assert.match(load('bg').legal.termsBody, /Стандартен формуляр за отказ/);
+  assert.match(load('en').legal.termsBody, /Model withdrawal form/);
 });
