@@ -6,7 +6,7 @@
 // the side walls under them; the notes and the title block as on every assembly sheet.
 import { SCALES, dimH, dimV, frame, svgDoc } from './drawing-kit.js';
 import { translator } from './i18n.js';
-import { dimsText } from './types.js';
+import { dimsText, typeText } from './types.js';
 import { drawingSheets } from './drawing-part.js';
 import { frontView, extents, moduleRanges, FRONTS } from './drawing-front.js';
 import { notes, materialLine } from './drawing-notes.js';
@@ -26,18 +26,28 @@ const ROLE_OUT = new Set([...FRONTS, 'back']);
 
 const r2 = (v) => Math.round(v * 100) / 100;
 
+// the walls of a room in the language (the form's own label for the shape: engine/types.js)
+const roomShape = (shape, t) => typeText('room', t).params.find((p) => p.key === 'shape').options.find(([v]) => v === shape)?.[1] ?? '';
+
 export function drawingWalls(model, meta) {
   const { spec, runs } = model;
   const t = translator(model.lang);
-  const walls = runs.map((run) => {
-    const parts = model.parts.filter((p) => p.run === run.id);
-    const symbols = model.symbols.filter((s) => s.run === run.id);
-    return { run, parts, symbols, ext: extents(parts, symbols) };
-  });
+  // a view of every wall with something on it (a room's wall may stay empty: the plan still draws it)
+  const walls = runs
+    .map((run) => {
+      const parts = model.parts.filter((p) => p.run === run.id);
+      const symbols = model.symbols.filter((s) => s.run === run.id);
+      return { run, parts, symbols, ext: extents(parts, symbols) };
+    })
+    .filter((w) => w.parts.length);
   const world = worldParts(model);
   const tops = model.symbols.filter((s) => s.type === 'worktop').map((s) => ({ run: s.run, box: worldBox({ min: [s.x0, s.y, s.z0], max: [s.x1, s.y + s.t, s.z1] }, runOf(model, s.run)) }));
   const all = [...world, ...tops];
-  const room = { W: Math.max(...all.map((p) => p.box.max[0])), D: Math.max(...all.map((p) => p.box.max[2])) };
+  // a room has its own size; a kitchen's room is as large as the kitchen
+  const room =
+    spec.type === 'room'
+      ? { W: spec.roomWidth, D: spec.roomDepth }
+      : { W: Math.max(...all.map((p) => p.box.max[0])), D: Math.max(...all.map((p) => p.box.max[2])) };
   const H = Math.max(...walls.map((w) => w.ext.y1));
   const [back, ...sides] = walls;
   const width = (w) => w.ext.x1 - w.ext.x0;
@@ -58,7 +68,8 @@ export function drawingWalls(model, meta) {
     x += width(w) * k + GAP_X;
   }
   g += notes(model);
-  const title = t(`drw.kitchen.${spec.shape}`);
+  // a room is named as a room (its walls and the type), a kitchen by its shape
+  const title = spec.type === 'room' ? t('drw.room', { walls: roomShape(spec.shape, t) }) : t(`drw.kitchen.${spec.shape}`);
   return svgDoc(g + frame(`${title} ${dimsText(spec.type, spec, t)}`, meta, scale, 1, drawingSheets(model).count, materialLine(model.parts, t), t), t('drw.assemblyOf', { what: title }), 'assembly');
 }
 
@@ -81,7 +92,8 @@ function plan(model, all, room, { x: px, y: py, k }, t) {
     modules.set(p.module, b);
   }
   // a base cabinet stands under the wall cabinets' mounting height (whatever its module is called in the language)
-  const base = (box) => box.min[1] < model.spec.mount;
+  // (a room has no such height: what starts above a metre hangs on the wall — our choice)
+  const base = (box) => box.min[1] < (model.spec.mount ?? 1000);
   let g = '';
   for (const b of modules.values()) if (base(b)) g += rect('d-vis', b);
   for (const p of world) if (FRONTS.has(p.role) && base(p.box)) g += rect('d-front', p.box);
@@ -116,13 +128,16 @@ function plan(model, all, room, { x: px, y: py, k }, t) {
   for (const [side, wx, out] of [['B', 0, -1], ['C', room.W, 1]]) {
     const run = runs.get(side);
     if (!run) continue;
-    const z1 = Math.max(...all.filter((p) => p.run === side).map((p) => p.box.max[2]));
-    const z0 = z1 - run.length;
+    // a kitchen's side wall carries its cabinets from the corner gap on; a room's wall is the room's whole side
+    const room1 = model.spec.type === 'room';
+    const z1 = room1 ? run.length : Math.max(...all.filter((p) => p.run === side).map((p) => p.box.max[2]));
+    const z0 = room1 ? 0 : z1 - run.length;
     g += out < 0 ? band(-ROOM_WALL, 0, 0, z1) : band(room.W, 0, room.W + ROOM_WALL, z1);
     const xo = wx + out * ROOM_WALL;
     g += `<text class="d-vt" x="${r2(X(xo) + out * 3)}" y="${Y(z1 / 2)}" text-anchor="${out < 0 ? 'end' : 'start'}">${t(`drw.letter.${side}`)}</text>`;
     const dx = r2(X(xo) + out * 9);
-    g += dimV(Y(0), Y(z0), dx, t.num(z0), { ext: [[X(wx), Y(z0)]] });
+    // the corner gap of a kitchen's side wall (a room's wall starts in the corner: nothing to give)
+    if (z0 > 0) g += dimV(Y(0), Y(z0), dx, t.num(z0), { ext: [[X(wx), Y(z0)]] });
     g += dimV(Y(z0), Y(z1), dx, t.num(run.length), { ext: [[X(wx), Y(z1)]] });
   }
   const yt = r2(Y(room.D) + 8);

@@ -246,3 +246,26 @@ td .sw {
 .rail .segfield[hidden] {
   display: none;
 }
+
+/* the pieces of a room (room-items.js): number, type, wall, distance, width, remove */
+.room-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.room-item {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr auto;
+  gap: 6px 8px;
+  align-items: end;
+}
+.room-item .room-n {
+  align-self: center;
+  font-weight: 600;
+}
+.room-item [data-room-remove] {
+  grid-column: 4;
+  grid-row: 1;
+}

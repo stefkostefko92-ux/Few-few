@@ -10,6 +10,7 @@ import { clamp, r1 } from './util.js';
 import { purposeOf, edgePurposeOf } from './drill.js';
 import { MIN_WEB, toSegment, edgeBores, boreWeb } from './joinery.js';
 import { POSTS, STEP_DOWN_RANGE, MAX_FEED_RANGE, SPOIL, CUT_LENGTH } from './cam.js';
+import { normalizeItems, partName, roomItemOf } from './room.js';
 
 const SPEC_VERSION = 2;
 export const SHEET_TRIM = 10; // sheet edge trim for nesting, mm
@@ -39,6 +40,7 @@ const SPEC_DEFAULTS = {
 // is EN 16121:2013 level 2, which the 2023 edition lowered to 1.5 (CATAS, "Non-domestic furniture", January 2024) —
 // kept as the heavier option.
 const KITCHEN_TYPES = new Set(['base', 'wall', 'tall', 'kitchen']);
+const KITCHEN_LOAD = 1.5;
 export const SHELF_LOADS = [1, 1.5, 2];
 const SHELF_SAG_LIMIT = 0.005;
 // Edge bands, front gap and router diameters that normalizeSpec accepts; the editor builds its controls from these.
@@ -62,6 +64,8 @@ export function normalizeSpec(raw = {}) {
   const s = { v: SPEC_VERSION, type, ...normalizeParams(type, input) };
   // the columns, cells and fronts of a free carcass (layout.js); no other type has one
   if (type === 'custom') s.grid = normalizeLayout(input.grid);
+  // the pieces of furniture of a room (room.js)
+  if (type === 'room') s.items = normalizeItems(input.items, s.shape);
   s.carcassDecor = hasDecor(input.carcassDecor) ? input.carcassDecor : d.carcassDecor;
   s.frontDecor = hasDecor(input.frontDecor) ? input.frontDecor : d.frontDecor;
   s.frontRal = hasRal(input.frontRal) ? input.frontRal : hasRal(d.frontRal) ? d.frontRal : null;
@@ -80,7 +84,7 @@ export function normalizeSpec(raw = {}) {
   // GRBL limits of the machine (POSTS.grbl has the defaults); kept with ISO too, so a switch back finds them
   s.grblStepDown = r1(clamp(Number(input.grblStepDown) || POSTS.grbl.stepDown, ...STEP_DOWN_RANGE));
   s.grblMaxFeed = Math.round(clamp(Number(input.grblMaxFeed) || POSTS.grbl.maxFeed, ...MAX_FEED_RANGE) / 10) * 10;
-  s.shelfLoad = SHELF_LOADS.includes(Number(input.shelfLoad)) ? Number(input.shelfLoad) : KITCHEN_TYPES.has(type) ? 1.5 : 1;
+  s.shelfLoad = SHELF_LOADS.includes(Number(input.shelfLoad)) ? Number(input.shelfLoad) : KITCHEN_TYPES.has(type) ? KITCHEN_LOAD : 1;
   return s;
 }
 
@@ -154,15 +158,21 @@ function shelfSag(spanMm, depthMm, tMm, loadKg, E) {
   return { mm, limit, ratio: limit > 0 ? mm / limit : 0 };
 }
 
+// The test load of a shelf: the spec's; a kitchen cabinet in a room takes at least a kitchen's, as it would alone.
+function shelfLoadOf(spec, p) {
+  const it = roomItemOf(spec, p);
+  return it && KITCHEN_TYPES.has(it.type) ? Math.max(spec.shelfLoad, KITCHEN_LOAD) : spec.shelfLoad;
+}
+
 function checkModel(ctx, spec) {
   const { t } = ctx;
   const { parts } = ctx;
   // shelves, the fixed ones of a free carcass too (simply supported, as the adjustable ones: on the safe side)
   for (const p of parts.filter((x) => x.role === 'shelf' || x.role === 'divider')) {
-    const loadKg = ((p.L / 100) * (p.W / 100)) * spec.shelfLoad;
-    const load = spec.shelfLoad;
+    const load = shelfLoadOf(spec, p);
+    const loadKg = ((p.L / 100) * (p.W / 100)) * load;
     const sag = shelfSag(p.L, p.W, p.T, loadKg, STOCK[p.stock].E ?? 1500);
-    if (sag.ratio > 1) ctx.warn('warn', t('w.sag', { part: p.name, mm: t.num(sag.mm), kg: Math.round(loadKg), load: t.num(load), limit: t.num(sag.limit) }));
+    if (sag.ratio > 1) ctx.warn('warn', t('w.sag', { part: partName(spec, p, t), mm: t.num(sag.mm), kg: Math.round(loadKg), load: t.num(load), limit: t.num(sag.limit) }));
   }
   // sheet fit and small parts: with the onion skin the vacuum holds them until the last pass; without it (switched off,
   // or a board of ONION_MIN_T mm or less) the cutter can throw them — the engine makes no tabs
@@ -174,8 +184,8 @@ function checkModel(ctx, spec) {
     const fw = SW - 2 * SHEET_TRIM;
     const fh = SH - 2 * SHEET_TRIM;
     const fits = (cut.L <= fw && cut.W <= fh) || (!p.grain && cut.L <= fh && cut.W <= fw);
-    if (!fits) ctx.warn('error', t(p.grain ? 'w.sheetFitGrain' : 'w.sheetFit', { part: p.name, L: cut.L, W: cut.W, SW, SH, hint: p.fitHint ? ` — ${p.fitHint}` : '' }));
-    if (cut.W < SMALL_PART.w || (cut.L * cut.W) / 1e6 < SMALL_PART.area) (spec.onion && p.T > ONION_MIN_T ? small : loose).push(p.name);
+    if (!fits) ctx.warn('error', t(p.grain ? 'w.sheetFitGrain' : 'w.sheetFit', { part: partName(spec, p, t), L: cut.L, W: cut.W, SW, SH, hint: p.fitHint ? ` — ${p.fitHint}` : '' }));
+    if (cut.W < SMALL_PART.w || (cut.L * cut.W) / 1e6 < SMALL_PART.area) (spec.onion && p.T > ONION_MIN_T ? small : loose).push(partName(spec, p, t));
   }
   if (small.length) ctx.warn('warn', t.count(small.length, 'w.small'));
   if (loose.length) ctx.warn('error', t.count(loose.length, 'w.loose', { list: `${loose.slice(0, 3).join(', ')}${loose.length > 3 ? '…' : ''}`, min: ONION_MIN_T }));
@@ -189,7 +199,8 @@ function checkModel(ctx, spec) {
     ctx.warn('error', t('w.cutLength', { tool: spec.tool, cel, stock: t(`stock.${stock}`), T: thickness, depth: t.num(depth), hint: ok ? t('w.cutLengthHint', { d: ok }) : '' }));
   }
   // the model does not know which base cabinet stands under the sink: a note (the defaults carry no warning)
-  if (SINK_TYPES.has(spec.type)) ctx.warn('info', t('w.sinkBoard', { stock: t('stock.pb18'), grade: STOCK.pb18.grade }));
+  const sink = SINK_TYPES.has(spec.type) || (spec.type === 'room' && spec.items.some((it) => SINK_TYPES.has(it.type)));
+  if (sink) ctx.warn('info', t('w.sinkBoard', { stock: t('stock.pb18'), grade: STOCK.pb18.grade }));
   // holes inside the board (the cut part, without its edge band), apart from each other and from the grooves
   for (const p of parts) checkHoles(ctx, p, spec);
   // hinge spread (Blum Inc. note) — reported for fronts wider than they are tall, where it matters
@@ -221,23 +232,24 @@ export function checkHoles(ctx, p, spec) {
   const grooves = p.features.filter((f) => f.type === 'groove');
   const bores = edgeBores(p);
   const cut = cutSize(p, spec.bandCompensation);
+  const name = partName(spec, p, t);
   for (const h of holes) {
     // the board itself: the edge band adds no material to drill into
     const rim = Math.min(h.u - cut.du0, cut.du0 + cut.L - h.u, h.v - cut.dv0, cut.dv0 + cut.W - h.v) - h.d / 2;
-    if (rim < 0) ctx.warn('error', t('w.holeOut', { part: p.name, d: t.num(h.d), purpose: purposeOf(h.kind, t), u: t.num(h.u), v: t.num(h.v) }));
-    else if (rim < MIN_WEB - 1e-6) ctx.warn('error', t('w.holeEdge', { part: p.name, d: t.num(h.d), purpose: purposeOf(h.kind, t), rim: t.num(rim), min: MIN_WEB }));
+    if (rim < 0) ctx.warn('error', t('w.holeOut', { part: name, d: t.num(h.d), purpose: purposeOf(h.kind, t), u: t.num(h.u), v: t.num(h.v) }));
+    else if (rim < MIN_WEB - 1e-6) ctx.warn('error', t('w.holeEdge', { part: name, d: t.num(h.d), purpose: purposeOf(h.kind, t), rim: t.num(rim), min: MIN_WEB }));
     // a blind hole keeps MIN_WEB of board under it; a deeper one would break out of the other face
-    if (!h.through && h.depth > p.T - MIN_WEB + 1e-6) ctx.warn('error', t('w.holeBlind', { part: p.name, d: t.num(h.d), purpose: purposeOf(h.kind, t), depth: t.num(h.depth), T: t.num(p.T), min: MIN_WEB }));
+    if (!h.through && h.depth > p.T - MIN_WEB + 1e-6) ctx.warn('error', t('w.holeBlind', { part: name, d: t.num(h.d), purpose: purposeOf(h.kind, t), depth: t.num(h.depth), T: t.num(p.T), min: MIN_WEB }));
     for (const g of grooves) {
       if (h.fitting && h.fitting === g.fitting) continue; // one fitting: a Planofit groove ends in its own bosses
       const web = toSegment(h.u, h.v, g) - (g.w + h.d) / 2;
-      if (web < MIN_WEB - 1e-6) ctx.warn('error', t('w.holeGroove', { part: p.name, d: t.num(h.d), purpose: purposeOf(h.kind, t), web: t.num(Math.max(0, web)) }));
+      if (web < MIN_WEB - 1e-6) ctx.warn('error', t('w.holeGroove', { part: name, d: t.num(h.d), purpose: purposeOf(h.kind, t), web: t.num(Math.max(0, web)) }));
     }
     // a bore from the edge (the thread of a confirmat from the joining panel, a slide hook): the drill or the screw
     // would break into it, so the part is not cut (fail closed)
     for (const b of bores) {
       const web = boreWeb(h, b);
-      if (web < MIN_WEB) ctx.warn('error', t('w.holeBore', { part: p.name, d: t.num(h.d), purpose: purposeOf(h.kind, t), u: t.num(h.u), v: t.num(h.v), web: t.num(Math.max(0, web)), bd: t.num(b.d), bore: edgePurposeOf(b.kind, t) }));
+      if (web < MIN_WEB) ctx.warn('error', t('w.holeBore', { part: name, d: t.num(h.d), purpose: purposeOf(h.kind, t), u: t.num(h.u), v: t.num(h.v), web: t.num(Math.max(0, web)), bd: t.num(b.d), bore: edgePurposeOf(b.kind, t) }));
     }
   }
   for (let i = 0; i < holes.length; i++) {
@@ -249,7 +261,7 @@ export function checkHoles(ctx, p, spec) {
       // holes exactly MIN_WEB apart are fine: 1e-6 absorbs the floating-point error of positions on the 0,1 mm grid
       if (dist - (a.d + b.d) / 2 < MIN_WEB - 1e-6) {
         // the drill would break into the other hole, or two screws meet in it: the CNC files are withheld (fail closed)
-        ctx.warn('error', t('w.holesMeet', { part: p.name, ad: t.num(a.d), a: purposeOf(a.kind, t), bd: t.num(b.d), b: purposeOf(b.kind, t), u: t.num(a.u), v: t.num(a.v) }));
+        ctx.warn('error', t('w.holesMeet', { part: name, ad: t.num(a.d), a: purposeOf(a.kind, t), bd: t.num(b.d), b: purposeOf(b.kind, t), u: t.num(a.u), v: t.num(a.v) }));
       }
     }
   }

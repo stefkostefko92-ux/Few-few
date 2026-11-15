@@ -52,6 +52,9 @@ export const OUTPUT_SPECS = [
   { type: 'kitchen', shape: 'left', handle: 'fx:knob' },
   { type: 'kitchen', shape: 'u', post: 'grbl', tool: 8 },
   { type: 'wardrobe', hinge: 'fx:salice' },
+  // rooms (room.js): the default one wall; a П room with pieces on all three walls, on GRBL
+  { type: 'room' },
+  { type: 'room', shape: 'u', roomWidth: 5000, roomDepth: 3500, post: 'grbl', items: [{ type: 'wardrobe', wall: 'A', x: 700, params: { width: 2400 } }, { type: 'nightstand', wall: 'B', x: 800, params: {} }, { type: 'tv', wall: 'C', x: 800, params: {} }] },
   // sliding doors (sliding.js): two carcasses, Planofit grooves wider than the cutter, on ISO and on GRBL
   { type: 'wardrobe', doorType: 'sliding', height: 2200, width: 3000, columns: 4 },
   { type: 'wardrobe', doorType: 'sliding', height: 2100, layout: 'hanging', post: 'grbl', tool: 8 },

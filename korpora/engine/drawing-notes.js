@@ -17,7 +17,9 @@ export function materialLine(parts, t = translator('bg')) {
 
 export function notes(model) {
   const t = translator(model.lang);
-  const corner = Boolean(model.runs?.length);
+  // the views of several walls end over the notes (drawing-walls.js); the corner note is the kitchen's
+  const walls = Boolean(model.runs?.length);
+  const corner = walls && model.spec.type === 'kitchen';
   const { parts, spec, hardware } = model;
   const front = parts.find((p) => ['door', 'drawer-front', 'sliding-door', 'bed-head'].includes(p.role));
   const carcass = parts.find((p) => p.role === 'side' || p.role === 'bed-rail');
@@ -57,7 +59,7 @@ export function notes(model) {
   }
   const rows = lines.flatMap((t) => wrap(t));
   // a Г or П kitchen has one more line: the space under its plan and views allows it
-  const max = corner ? 8 : 6;
+  const max = walls ? 8 : 6;
   if (rows.length > max) rows.splice(max - 1, rows.length - max + 1, `${rows[max - 1].slice(0, 120)}…`);
   // past six rows the notes start higher (the views of a Г or П kitchen end over them, drawing-walls.js)
   const top = 258 - 4.2 * Math.max(0, rows.length - 6);

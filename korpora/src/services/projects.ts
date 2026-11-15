@@ -27,9 +27,9 @@ const nameSchema = z
   .refine((value) => !hasUnsafeChars(value));
 
 /**
- * Спецификацията от редактора е плосък обект от прости стойности — с едно изключение: `grid`, колоните,
+ * Спецификацията от редактора е плосък обект от прости стойности — с две изключения: `grid`, колоните,
  * отделенията и фронтовете на свободния корпус, в точно тази форма и в границите на двигателя
- * (engine/layout.js, LAYOUT_LIMITS). Всичко друго вложено се отхвърля още тук; после двигателят я нормализира
+ * (engine/layout.js, LAYOUT_LIMITS), и `items`, мебелите на стаята (engine/room.js, ROOM_LIMITS). Всичко друго вложено се отхвърля още тук; после двигателят я нормализира
  * (граници на размерите, познати стойности) — запазва се нормализираната.
  */
 const flatValue = z.union([z.string().max(200), z.number().finite(), z.boolean(), z.null()]);
@@ -69,8 +69,23 @@ const gridSchema = z
   })
   .strict();
 
+// the pieces of a room (engine/room.js, ROOM_LIMITS): a type, a wall, the distance from the corner, flat parameters
+const itemsSchema = z
+  .array(
+    z
+      .object({
+        type: z.string().max(20),
+        wall: z.enum(['A', 'B', 'C']),
+        x: z.number().finite(),
+        params: z.record(z.string().max(40), flatValue).refine((p) => Object.keys(p).length <= 30),
+      })
+      .strict(),
+  )
+  .min(1)
+  .max(8);
+
 const specSchema = z
-  .object({ grid: gridSchema.optional() })
+  .object({ grid: gridSchema.optional(), items: itemsSchema.optional() })
   .catchall(flatValue)
   .refine((value) => Object.keys(value).length <= 80, 'твърде много полета')
   .refine((value) => isFurnitureType(value.type), 'непознат тип мебел');

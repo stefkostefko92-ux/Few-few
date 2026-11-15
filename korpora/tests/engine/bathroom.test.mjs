@@ -44,7 +44,7 @@ test('under the sink: rails instead of a top, no shelf, the siphon marked on the
     const us = siphon.map((f) => f.u);
     const vs = siphon.map((f) => f.v);
     assert.ok(Math.abs(Math.max(...us, ...vs) - Math.min(...us, ...vs)) >= SIPHON.w - 0.01, label(s));
-    assert.ok(m.hardware.some((h) => h.key === 'basin'), label(s));
+    assert.ok(m.hardware.some((h) => h.key.startsWith('basin:')), label(s));
     // hung: the lower edge at `floor`, no legs; on legs: standing on them
     const wall = (s.mount ?? 'wall') === 'wall';
     const side = m.parts.find((p) => p.role === 'side');
