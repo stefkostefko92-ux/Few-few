@@ -228,6 +228,12 @@
 {"t":"handoff","ts":"2026-10-16T10:04:51.167Z","id":"r2b0124e5","from":"prevodach","to":"човек","status":"има бележки","run":"7f92f57b"}
 {"t":"handoff","ts":"2026-10-16T10:06:09.173Z","id":"r2b0124e5","from":"prevodach","to":"ai-djiyata","status":"има бележки","run":"5c083696"}
 {"t":"handoff","ts":"2026-10-16T10:06:48.066Z","id":"r2b0124e5","from":"prevodach","to":"ai-djiyata","status":"има бележки","run":"d1d809b1"}
+{"t":"handoff","ts":"2026-09-25T07:56:57.150Z","id":"auto","from":"pravniyat-razbirach","to":"kodadjiyata","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T07:56:58.835Z","id":"auto","from":"diskordjiyata","to":"ai-djiyata","status":"наред (одит завършен, без промени по файлове/комити/push)"}
+{"t":"handoff","ts":"2026-09-25T07:57:23.617Z","id":"auto","from":"hromadjiyata","to":"човек","status":"наред"}
+{"t":"handoff","ts":"2026-09-25T07:57:24.437Z","id":"auto","from":"kodadjiyata","to":"човек","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T07:58:55.920Z","id":"auto","from":"vps-adjiyata","to":"kodadjiyata","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T08:02:43.550Z","id":"auto","from":"kodadjiyata","to":"човек","status":"има бележки"}
 {"t":"start","ts":"2026-10-09T12:36:50.213Z","id":"r05b11bfa","flow":"авто","lead":"ai-djiyata","auto":true}
 {"t":"handoff","ts":"2026-10-09T12:36:50.213Z","id":"r05b11bfa","from":"ai-djiyata","to":"оркестратор","status":"наред","run":"7f8c8d23"}
 {"t":"start","ts":"2026-10-09T12:45:58.539Z","id":"r1190f408","flow":"авто","lead":"pravniyat-razbirach","auto":true}
