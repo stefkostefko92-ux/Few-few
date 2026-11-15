@@ -16568,7 +16568,7 @@
           "korpora/CLAUDE.md — правилото „CNC никога не е грешен“ (cncBlockers, 422)",
           "GRBL v1.1 — списък на поддържаните G-кодове (github.com/gnea/grbl, README и wiki)"
         ],
-        "lessons": 152
+        "lessons": 159
       },
       "evolution": [
         {
@@ -16648,9 +16648,20 @@
           "date": "2026-11-15",
           "event": "v15.2 — учене",
           "detail": "Научи: cncBlockers в Korpora спира CNC само при warnings с level 'error', грешки от разкроя (n… (+29 още)"
+        },
+        {
+          "version": "15.9.0",
+          "date": "2026-11-15",
+          "event": "v15.9 — учене",
+          "detail": "Научи: Korpora смята провисването на рафт с E = 1600 за всяка дебелина, което по листа на P2 е… (+6 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „Korpora смята провисването на рафт с E = 1600 за всяка дебелина, което по листа на P2 е…\" (+6 още) · 19 в карантина"
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
