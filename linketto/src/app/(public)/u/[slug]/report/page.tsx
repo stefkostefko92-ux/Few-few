@@ -35,9 +35,10 @@ export default async function ReportPage({
   return (
     <main
       lang={locale}
-      className="mx-auto flex min-h-screen max-w-lg flex-col justify-center px-6 py-16 font-ui text-slate-900"
+      className="dash flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10 font-ui text-slate-900 sm:px-6"
     >
-      <h1 className="text-2xl font-bold text-slate-900">
+      <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.2)] sm:p-9">
+      <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
         {t('title', { name: slug })}
       </h1>
       <p className="mt-2 text-sm leading-relaxed text-slate-600">
@@ -106,7 +107,7 @@ export default async function ReportPage({
           <div className="flex items-center gap-4">
             <button
               type="submit"
-              className="rounded-full bg-linketto-600 px-6 py-2.5 font-semibold text-white hover:bg-linketto-700"
+              className="rounded-full bg-linketto-600 px-6 py-2.5 font-semibold text-white shadow-md shadow-linketto-600/20 hover:bg-linketto-700"
             >
               {t('send')}
             </button>
@@ -119,6 +120,7 @@ export default async function ReportPage({
           </div>
         </form>
       )}
+      </div>
     </main>
   );
 }

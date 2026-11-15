@@ -12,3 +12,4 @@ Supreme AdBlock blocca la pubblicità ovunque — annunci video di YouTube, bann
 • Sito rotto? Un clic lo sistema, oppure segnalacelo: nulla viene inviato senza che tu lo veda prima.
 • Passi da uBlock Origin, AdGuard o Adblock Plus? Porta con te i siti consentiti e i tuoi filtri con un solo file.
 • Vedi a quali altri siti si collega una pagina e bloccane uno solo lì con un clic.
+• Livello di protezione: Base · Standard · Rigorosa
