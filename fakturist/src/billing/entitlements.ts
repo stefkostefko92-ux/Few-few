@@ -36,7 +36,10 @@ export interface PlanLimits {
   maxUsers: number | null;
   /** Фирми-клиенти на кантора без платен абонамент; null — без таван. */
   includedClientCompanies: number | null;
-  /** Абонаментът е платен (има завършено плащане) — допълнителните фирми-клиенти се таксуват. */
+  /**
+   * Абонаментът е платен (има завършено плащане) или даден от мастъра (SPEC 72) — допълнителните
+   * фирми-клиенти се таксуват / не се ограничават.
+   */
   paid: boolean;
 }
 
@@ -49,6 +52,7 @@ export async function planLimits(db: Db, organizationId: string): Promise<PlanLi
     where: { organizationId, status: 'ACTIVE' },
     orderBy: { createdAt: 'desc' },
     select: {
+      granted: true,
       plan: { select: { maxUsers: true, includedClientCompanies: true } },
       payments: { where: { status: 'COMPLETED' }, select: { id: true }, take: 1 },
     },
@@ -57,7 +61,7 @@ export async function planLimits(db: Db, organizationId: string): Promise<PlanLi
   return {
     maxUsers: subscription.plan.maxUsers,
     includedClientCompanies: subscription.plan.includedClientCompanies,
-    paid: subscription.payments.length > 0,
+    paid: subscription.granted || subscription.payments.length > 0,
   };
 }
 

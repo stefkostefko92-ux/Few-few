@@ -21,6 +21,8 @@ import { adminActionsRouter } from './admin-actions.js';
 import { adminMastersRouter } from './admin-masters.js';
 import { PlanForm } from '../admin/plan-form.js';
 import { adminTerminationRouter } from './admin-termination.js';
+import { adminGrantRouter } from './admin-grant.js';
+import { grantView } from '../billing/grant.js';
 import { adminAnnouncementsRouter } from './admin-announcements.js';
 
 /**
@@ -46,6 +48,7 @@ export function adminRouter(): Router {
   router.use(adminActionsRouter());
   router.use(adminMastersRouter());
   router.use(adminTerminationRouter());
+  router.use(adminGrantRouter());
   router.use(adminAnnouncementsRouter());
 
   router.get('/admin', async (_req, res) => {
@@ -122,12 +125,17 @@ export function adminRouter(): Router {
     // Фирма без собственик (добавена от кантора) — картата показва прехвърлянето.
     const transfer =
       resource.model === 'Organization' ? await transferStatus(String(row['id'])) : null;
+    // Картата на фирмата — и ръчно даденият план (SPEC 71).
+    const grant = resource.model === 'Organization' ? await grantView(String(row['id'])) : null;
+    const planFlash = req.query['plan'];
     const error = typeof req.query['greshka'] === 'string' ? req.query['greshka'] : null;
     res.render('admin/record', {
       today: sofiaToday(),
       resource,
       row,
       transfer,
+      grant,
+      planFlash: planFlash === 'ok' || planFlash === 'ended' ? planFlash : null,
       revoked: req.query['otneta'] === '1',
       terminationDone: req.query['prekratyavane'] === '1',
       error: error && /^[a-zA-Z.]{1,40}$/.test(error) ? error : null,

@@ -68,7 +68,8 @@ export type Translate = (key: string, params?: Params) => string;
 
 /**
  * Преводът с `{име}` заместване. Липсващ ключ е грешка в разработката (гърми веднага), а в продукция
- * показва самия ключ — страницата не пада заради един низ.
+ * показва самия ключ — страницата не пада заради един низ. Единствено число: при `count: 1` и ключ
+ * `<ключ>One` се взема той („1 документ“, не „1 документа“).
  */
 export function translator(
   locale: Locale,
@@ -76,7 +77,8 @@ export function translator(
 ): Translate {
   const dictionary = dictionaries()[locale];
   return (key, params) => {
-    const template = dictionary[key];
+    const one = params?.['count'] === 1 ? dictionary[`${key}One`] : undefined;
+    const template = one ?? dictionary[key];
     if (template === undefined) {
       if (strict) throw new Error(`Липсващ превод ${locale}:${key}`);
       return key;

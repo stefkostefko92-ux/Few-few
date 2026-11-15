@@ -7,7 +7,7 @@
   </div>
   <% if (canIssue) { %><a class="button" href="/app/o/<%= org.id %>/nov"><%= t('app.org.new') %></a><% } %>
 </div>
-<p class="muted"><%= t('app.org.usage', { issued: usage.issued }) %></p>
+<p class="muted"><%= t('app.org.usage', { count: usage.issued }) %></p>
 <% if (usage.overLimit) { %><p class="callout"><%= t('app.org.limit', { limit: usage.limit }) %></p><% } %>
 <h2><%= t('app.org.documents') %></h2>
 <form method="get" class="doc-filter" role="search" aria-label="<%= t('app.org.filter.label') %>">

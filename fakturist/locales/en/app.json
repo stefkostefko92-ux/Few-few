@@ -60,7 +60,8 @@
     "date": "Date",
     "buyer": "Buyer",
     "total": "Amount due",
-    "usage": "This month: {issued} documents",
+    "usage": "This month: {count} documents",
+    "usageOne": "This month: 1 document",
     "limit": "The free plan includes {limit} documents a month. Above that documents are still issued — consider a paid plan.",
     "via": "Access through an accounting firm's authorisation",
     "filter": {
@@ -231,6 +232,7 @@
     "state": "Status",
     "new": "new",
     "unread": "{count} new",
+    "unreadOne": "1 new",
     "unverified": "unverified",
     "verified": "The sender is a company verified by Fakturist.",
     "unverifiedHelp": "The sender has not been verified by Fakturist yet — check the details and the account before you pay.",
@@ -529,7 +531,9 @@
       "expired": "The payment page has expired (24 hours). Place a new order from the page",
       "downgrade": "The unused time covers the whole new period — order this plan after the paid period ends.",
       "creditStale": "This order deducts a plan that is no longer active. Please place a new order."
-    }
+    },
+    "granted": "granted until {date}",
+    "grantedForever": "granted, no end date"
   },
   "recurring": {
     "title": "Recurring",

@@ -372,3 +372,21 @@ test('писмото от кантора назовава кантората и 
   assert.ok(mail.text.includes('собствеността и достъпът остават ваши'));
   assert.ok(mail.html.includes('Кантора &lt;Баланс&gt;') && !mail.html.includes('<Баланс>'));
 });
+
+test('всяка опция на поле „избор“ в интеграциите има превод и на двата езика (иначе настройките падат с 500)', async () => {
+  const { INTEGRATIONS } = await import('../src/admin/integration-defs.js');
+  const { hasKey } = await import('../src/i18n.js');
+  for (const [code, def] of Object.entries(INTEGRATIONS)) {
+    const fields: ReadonlyArray<{ name: string; options?: readonly string[] }> = def.fields;
+    for (const field of fields) {
+      for (const option of field.options ?? []) {
+        for (const locale of ['bg', 'en'] as const) {
+          assert.ok(
+            hasKey(locale, `admin.integration.options.${option}`),
+            `${code}.${field.name}: ${locale} admin.integration.options.${option}`,
+          );
+        }
+      }
+    }
+  }
+});

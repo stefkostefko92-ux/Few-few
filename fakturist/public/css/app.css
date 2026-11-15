@@ -642,7 +642,13 @@ dd {
   color: var(--ink);
   line-height: 1.3;
   text-decoration: none;
-  overflow-wrap: anywhere;
+  /* Само дума, която не се побира на реда, се пречупва — „Шкафче“ до значка остава цяла. */
+  overflow-wrap: break-word;
+}
+.org-nav a .tag,
+.admin-nav a .tag {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .org-nav a .ico,
 .admin-nav a .ico {
@@ -1194,4 +1200,9 @@ input[type='color'] {
       transform: translateY(8px);
     }
   }
+}
+
+/* Дата или номер в таблица — без пречупване посредата („2026-/11-15“). */
+.nowrap {
+  white-space: nowrap;
 }

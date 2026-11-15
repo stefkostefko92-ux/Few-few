@@ -7,7 +7,18 @@ import { audit } from '../audit.js';
  * (безплатният за фирма, „Кантора“ за кантора — както при регистрация). Документите и данните не се
  * пипат; нов платен период идва само от нова поръчка. Безплатните абонаменти са със срок 100 години.
  */
-const FALLBACK_YEARS = 100;
+export const FALLBACK_YEARS = 100;
+
+/** Началният план по вида на фирмата — както при регистрация. */
+export const startPlanFor = (kind: string): 'firm' | 'free' =>
+  kind === 'ACCOUNTING_FIRM' ? 'firm' : 'free';
+
+/** Краят на безсрочен абонамент (безплатният, началният, даденият „безсрочно“). */
+export function farEnd(now: Date): Date {
+  const end = new Date(now);
+  end.setUTCFullYear(end.getUTCFullYear() + FALLBACK_YEARS);
+  return end;
+}
 
 export async function expireSubscriptions(now = new Date()): Promise<number> {
   const expired = await prisma.subscription.findMany({
@@ -45,15 +56,13 @@ async function expireOne(
         where: { id: subscription.organizationId },
         select: { kind: true },
       });
-      const end = new Date(now);
-      end.setUTCFullYear(end.getUTCFullYear() + FALLBACK_YEARS);
-      const planCode = org.kind === 'ACCOUNTING_FIRM' ? 'firm' : 'free';
+      const planCode = startPlanFor(org.kind);
       await tx.subscription.create({
         data: {
           organizationId: subscription.organizationId,
           planCode,
           currentPeriodStart: now,
-          currentPeriodEnd: end,
+          currentPeriodEnd: farEnd(now),
         },
       });
       await audit(tx, {
