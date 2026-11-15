@@ -2,6 +2,7 @@ import { prisma, type GameKey } from "@aso/db";
 import { recordLedger } from "@aso/db/ledger";
 import type { SeatScore } from "@aso/game-core";
 import {
+  MIN_MMR,
   STARTING_MMR,
   applyXpMultiplier,
   isBettingGame,
@@ -17,8 +18,22 @@ export interface SeatInfo {
   isBot: boolean;
 }
 
-const expectedScore = (rating: number, opponent: number): number =>
-  1 / (1 + 10 ** ((opponent - rating) / 400));
+/** Таван на разликата в рейтингите при сметката на очаквания резултат
+ *  (FIDE Rating Regulations 8.3.1: разлика над 400 т. се третира като 400). */
+const MAX_RATING_DIFF = 400;
+
+/**
+ * Очакван резултат по логистична крива с таван на разликата ±400 т.
+ * ЗАБЕЛЕЖКА: това НЕ е таблицата на FIDE (8.3.4 / нормалното разпределение) —
+ * ползваме логистичната формула на Elo, а K е 40 под 30 игри, иначе 20.
+ */
+export const expectedScore = (rating: number, opponent: number): number => {
+  const diff = Math.max(-MAX_RATING_DIFF, Math.min(MAX_RATING_DIFF, opponent - rating));
+  return 1 / (1 + 10 ** (diff / 400));
+};
+
+/** Закръгляне на .5 далеч от нулата (FIDE 8.3.4): −2.5 → −3, 2.5 → 3 (`Math.round(-2.5)` дава −2). */
+export const roundHalfAwayFromZero = (x: number): number => Math.sign(x) * Math.round(Math.abs(x));
 
 const kFactor = (games: number): number => (games < 30 ? 40 : 20);
 
@@ -64,8 +79,13 @@ export async function finalizeMatch(opts: {
   game: GameKey;
   seats: SeatInfo[];
   score: SeatScore[];
+  /** Неизиграна партия (оттегляне преди първия ход, FIDE 5.1): мачът се затваря,
+   *  но без рейтинг, награди и MatchPlayer редове. */
+  unrated?: boolean;
+  /** Отделни места без рейтинг/награди/MatchPlayer (оттегляне при ply 0 в маса, която продължава). */
+  unratedSeats?: number[];
 }): Promise<FinalizeResult> {
-  const { matchId, game, seats, score } = opts;
+  const { matchId, game, seats, score, unrated = false, unratedSeats = [] } = opts;
   const resultBySeat = new Map<number, SeatScore["result"]>(
     score.map((s) => [s.seat, s.result]),
   );
@@ -94,14 +114,14 @@ export async function finalizeMatch(opts: {
       where: { id: matchId, endedAt: null },
       data: { endedAt: new Date() },
     });
-    if (claimed.count !== 1) return;
+    if (claimed.count !== 1 || unrated) return;
 
     // Залогът (Свара) се урежда наведнъж за цялата маса: бот на масата → 0 за
     // всички; между хора — нулева сума, с ред MATCH в регистъра (виж stakes.ts).
     const stakes = betting ? await settleBettingStakes(tx, { matchId, game, seats, pointsBySeat }) : null;
 
     for (const seat of seats) {
-      if (seat.isBot || !seat.userId) continue;
+      if (seat.isBot || !seat.userId || unratedSeats.includes(seat.seat)) continue;
       const result = resultBySeat.get(seat.seat);
       if (!result) continue;
       const userId = seat.userId;
@@ -114,7 +134,10 @@ export async function finalizeMatch(opts: {
 
       const current = await ratingFor(userId, game);
       const k = kFactor(current.games);
-      const delta = Math.round(k * (numericResult(result) - expectedScore(myMmr, oppAvg)));
+      // Рейтингът не пада под MIN_MMR: делтата се реже, за да не потъва под пода —
+      // подът само ограничава загубата, никога не я превръща в печалба.
+      const rawDelta = roundHalfAwayFromZero(k * (numericResult(result) - expectedScore(myMmr, oppAvg)));
+      const delta = Math.max(rawDelta, Math.min(0, MIN_MMR - current.mmr));
       deltas[seat.seat] = delta;
 
       const updated = await tx.ratingPerGame.upsert({
@@ -122,7 +145,7 @@ export async function finalizeMatch(opts: {
         create: {
           userId,
           game,
-          mmr: STARTING_MMR + delta,
+          mmr: Math.max(MIN_MMR, STARTING_MMR + delta),
           games: 1,
           wins: result === "win" ? 1 : 0,
         },
