@@ -37,7 +37,7 @@ function configFor(q: QueueDesc): unknown {
 }
 
 /** Fresh match seed: cryptographically random — except the e2e stack's fixed
- *  per-game seed (E2E_SEEDS, never honoured in production). */
+ *  per-game seed (E2E_SEEDS, honoured ONLY with NODE_ENV=test). */
 const matchSeed = (game: GameKey): string => env.e2eSeeds.get(game) ?? generateSeed();
 
 const queueKey = (q: QueueDesc): string => `mm:${q.game}:${q.mode}`;
@@ -123,10 +123,11 @@ export class Matchmaker {
     return out.sort((a, b) => b.ageMs - a.ageMs);
   }
 
-  /** The active (unfinished) room a user is seated in ON THIS NODE, if any. */
+  /** The active (unfinished) room a user is seated in ON THIS NODE, if any.
+   *  Стая, където мястото му е оттеглено (бот го замества без връщане), не се брои. */
   activeRoomForUser(userId: string): GameRoom | undefined {
     for (const room of this.rooms.values()) {
-      if (!room.isDone && room.seats.some((s) => s.userId === userId)) return room;
+      if (!room.isDone && room.hasLiveSeat(userId)) return room;
     }
     return undefined;
   }

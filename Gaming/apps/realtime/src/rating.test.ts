@@ -114,3 +114,61 @@ describe("наградата не зависи от собствените то�
     expect(rewards("loss", 3)).toEqual({ chips: 0n, xp: 3 });
   });
 });
+
+describe("Elo: таван на разликата, закръгляне, долна граница", () => {
+  it("разлика над 400 т. се третира като 400 (FIDE 8.3.1)", async () => {
+    const { expectedScore } = await import("./rating.js");
+    expect(expectedScore(1200, 1200 + 1000)).toBeCloseTo(expectedScore(1200, 1200 + 400), 12);
+    expect(expectedScore(1200, 1200 - 900)).toBeCloseTo(expectedScore(1200, 1200 - 400), 12);
+    expect(expectedScore(1200, 1200)).toBeCloseTo(0.5, 12);
+  });
+
+  it(".5 се закръгля далеч от нулата (FIDE 8.3.4): −2.5 → −3, 2.5 → 3", async () => {
+    const { roundHalfAwayFromZero } = await import("./rating.js");
+    expect(roundHalfAwayFromZero(-2.5)).toBe(-3);
+    expect(roundHalfAwayFromZero(2.5)).toBe(3);
+    expect(roundHalfAwayFromZero(-2.4)).toBe(-2);
+    expect(roundHalfAwayFromZero(0)).toBe(0);
+  });
+
+  it("рейтингът не пада под MIN_MMR", async () => {
+    const { prisma } = await import("@aso/db");
+    const { MIN_MMR } = await import("@aso/shared");
+    users.set("a", { chips: 0n, xp: 0, level: 1, vipTier: "NONE", vipUntil: null });
+    vi.mocked(prisma.ratingPerGame.findUnique).mockResolvedValue({ mmr: MIN_MMR + 3, games: 5 } as never);
+    const r = await finalizeMatch({
+      matchId: "floor",
+      game: "CHESS",
+      seats,
+      score: [
+        { seat: 0, result: "loss" },
+        { seat: 1, result: "win" },
+      ],
+    });
+    expect(r.deltas[0]).toBe(-3); // K=40 би дал ≈ −20, но подът е 100
+    vi.mocked(prisma.ratingPerGame.findUnique).mockResolvedValue(null as never);
+  });
+
+  it("под пода печеливш никога не получава отрицателна делта (F9)", async () => {
+    const { prisma } = await import("@aso/db");
+    const { MIN_MMR } = await import("@aso/shared");
+    users.set("a", { chips: 0n, xp: 0, level: 1, vipTier: "NONE", vipUntil: null });
+    // Текущ mmr под пода (напр. смъкнат ръчно): MIN_MMR - current = +20 би превърнало загубата в печалба
+    vi.mocked(prisma.ratingPerGame.findUnique).mockResolvedValue({ mmr: MIN_MMR - 20, games: 5 } as never);
+    const lose = await finalizeMatch({
+      matchId: "floor-lose",
+      game: "CHESS",
+      seats,
+      score: [
+        { seat: 0, result: "loss" },
+        { seat: 1, result: "win" },
+      ],
+    });
+    expect(lose.deltas[0]).toBeLessThanOrEqual(0); // загуба не носи точки
+    matchOpen = true;
+    vi.mocked(prisma.ratingPerGame.findUnique).mockResolvedValue({ mmr: MIN_MMR - 20, games: 5 } as never);
+    const won = await finalizeMatch({ matchId: "floor-win", game: "CHESS", seats, score: [{ seat: 0, result: "win" }, { seat: 1, result: "loss" }] });
+    expect(won.deltas[0]).toBeGreaterThan(0);
+    vi.mocked(prisma.ratingPerGame.findUnique).mockResolvedValue(null as never);
+  });
+});

@@ -255,7 +255,8 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
       phase: "AUCTION",
       hands,
       dealer,
-      turn: next4(dealer),
+      // WBF Law 17B: първото обаждане е на раздаващия.
+      turn: dealer,
       leader: next4(dealer),
       trick: [],
       bidLevel: 0,
@@ -341,6 +342,16 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
         return { state: next, events };
       }
       if (action.type === "BID") {
+        // Суров вход: ниво 1–7 (цяло число) и позната деноминация — иначе
+        // `8NT` или `1.5S` минаваха и пречупваха наддаването.
+        if (
+          !Number.isInteger(action.level) ||
+          action.level < 1 ||
+          action.level > 7 ||
+          !(STRAINS as readonly unknown[]).includes(action.strain)
+        ) {
+          throw new IllegalActionError("Invalid bid");
+        }
         const floor = next.bidLevel === 0 ? 0 : bidValue(next.bidLevel, next.bidStrain!);
         if (bidValue(action.level, action.strain) <= floor) {
           throw new IllegalActionError("Bid must be higher");
@@ -542,9 +553,11 @@ function settleDeal(state: BridgeState, events: BridgeEvent[], rng: SeededRng): 
  *  passed-out (all-pass) path and the post-scoring path. */
 function redealOrEnd(state: BridgeState, events: BridgeEvent[], rng: SeededRng): void {
   if (state.dealNo >= MAX_DEALS_BRIDGE) {
-    // Law 77 (недовършен робер): отбор с един спечелен гейм получава 300, а
-    // отбор с частичен резултат в недовършения гейм — 100. `belowLine` се нулира
-    // при всеки спечелен гейм, значи > 0 = частичен резултат в текущия гейм.
+    // Рубер конвенция за недовършен робер (НЕ е Law 77 — тя е таблицата на
+    // дубликата): отбор с един спечелен гейм получава 300, а отбор с частичен
+    // резултат в недовършения гейм — 100. `belowLine` се нулира при всеки
+    // спечелен гейм, значи > 0 = частичен резултат в текущия гейм. Вариант на АСО:
+    // мачът е ограничен до MAX_DEALS_BRIDGE раздавания.
     for (const t of [0, 1] as const) {
       if (state.gamesWon[t] === 1) state.matchPoints[t] += 300;
       if (state.belowLine[t] > 0) state.matchPoints[t] += 100;
@@ -563,7 +576,7 @@ function redealOrEnd(state: BridgeState, events: BridgeEvent[], rng: SeededRng):
   state.hands = [deck.slice(0, 13), deck.slice(13, 26), deck.slice(26, 39), deck.slice(39, 52)];
   state.dealer = next4(state.dealer);
   state.phase = "AUCTION";
-  state.turn = next4(state.dealer);
+  state.turn = state.dealer; // Law 17B: наддаването почва раздаващият
   state.leader = next4(state.dealer);
   state.trick = [];
   state.bidLevel = 0;

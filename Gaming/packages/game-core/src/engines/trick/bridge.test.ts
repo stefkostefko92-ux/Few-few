@@ -27,10 +27,38 @@ function advance(s: BridgeState, stop: (s: BridgeState) => boolean, cap = 400): 
   return s;
 }
 
+describe("bridge — наддаване: раздаващият първи, валидна заявка", () => {
+  it("първото обаждане е на раздаващия (WBF Law 17B), и при следващото раздаване", () => {
+    const s: BridgeState = init();
+    expect(s.turn).toBe(s.dealer);
+    expect(actor(s)).toBe(s.dealer);
+    let t = s;
+    for (let i = 0; i < 4; i++) t = bridgeEngine.reduce(t, { type: "PASS" }, rng).state; // пасуван раздаване
+    expect(t.dealer).toBe(1);
+    expect(t.turn).toBe(1);
+  });
+
+  it("reduce отказва BID 8NT, 0, 1.5 и непозната деноминация", () => {
+    const s: BridgeState = init();
+    const bad = [
+      { level: 8, strain: "NT" },
+      { level: 0, strain: "C" },
+      { level: 1.5, strain: "S" },
+      { level: -1, strain: "S" },
+      { level: 1, strain: "X" },
+      { level: Number.NaN, strain: "H" },
+    ];
+    for (const b of bad) {
+      expect(() => bridgeEngine.reduce(s, { type: "BID", ...b } as unknown as BridgeAction, rng)).toThrow();
+    }
+    expect(() => bridgeEngine.reduce(s, { type: "BID", level: 7, strain: "NT" }, rng)).not.toThrow();
+  });
+});
+
 describe("bridge doubling", () => {
   it("an opponent can DOUBLE a standing contract; bidder's side can REDOUBLE", () => {
     let s: BridgeState = init();
-    // seat 0 (dealer) -> first to act is seat 1.
+    // Law 17B: първото обаждане е на раздаващия (seat 0).
     const first = s.turn;
     // seat `first` bids 1NT
     s = bridgeEngine.reduce(s, { type: "BID", level: 1, strain: "NT" }, rng).state;
@@ -105,6 +133,7 @@ describe("bridge doubling", () => {
 /** Auction where seat 1 names H first and its partner seat 3 makes the last bid. */
 function heartsPartnerContract(): BridgeState {
   let s = init();
+  s = bridgeEngine.reduce(s, { type: "PASS" }, rng).state; // seat 0 (раздаващ, Law 17B)
   s = bridgeEngine.reduce(s, { type: "BID", level: 1, strain: "H" }, rng).state; // seat 1
   s = bridgeEngine.reduce(s, { type: "PASS" }, rng).state; // seat 2
   s = bridgeEngine.reduce(s, { type: "BID", level: 2, strain: "H" }, rng).state; // seat 3 (partner)
@@ -208,17 +237,17 @@ describe("bridge rubber scoring", () => {
       if (s.gamesWon[0] + s.gamesWon[1] > 0) sawGameWin = true;
     }
     expect(bridgeEngine.isTerminal(s)).toBe(true);
-    // Law 77 при тавана: 300 за един спечелен гейм + 100 за частичен резултат.
+    // рубер конвенция (недовършен робер) при тавана: 300 за един спечелен гейм + 100 за частичен резултат.
     const law77 = (t: 0 | 1): number =>
       s.gamesWon[0] >= 2 || s.gamesWon[1] >= 2
         ? 0
         : (s.gamesWon[t] === 1 ? 300 : 0) + (s.belowLine[t] > 0 ? 100 : 0);
     const winner = s.winningTeam!;
     const loser = (1 - winner) as 0 | 1;
-    // Defenders never receive a hidden bonus — their total is the sum (+ Law 77).
+    // Defenders never receive a hidden bonus — their total is the sum (+ рубер конвенция (недовършен робер)).
     expect(s.matchPoints[loser]).toBe(summed[loser] + law77(loser));
     // The winner's ONLY extra over the per-deal sum is the rubber bonus when the
-    // rubber was decided by two games; at the cap it is exactly Law 77.
+    // rubber was decided by two games; at the cap it is exactly рубер конвенция (недовършен робер).
     const extra = s.matchPoints[winner as 0 | 1] - summed[winner as 0 | 1];
     if (s.gamesWon[winner as 0 | 1] >= 2) {
       expect([500, 700]).toContain(extra);
@@ -256,7 +285,7 @@ describe("bridge таван от 16 раздавания (недовършен �
     matchPoints: [100, 150],
   });
 
-  it("Law 77: +300 за един гейм, +100 за частичен резултат — преди сравнението", () => {
+  it("рубер конвенция (недовършен робер): +300 за един гейм, +100 за частичен резултат — преди сравнението", () => {
     // Отбор 1 изпълнява 1♣ +1: 20 под линията + 20 надвзятка → 150 + 40 = 190,
     // плюс 100 за частичния резултат = 290. Отбор 0: 100 + 300 за гейма = 400.
     const s = advance(lastTrickOfDeal16(), (x) => x.done);
