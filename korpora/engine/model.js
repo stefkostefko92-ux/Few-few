@@ -7,11 +7,13 @@ import { hingeList, handleList, slideList, bedFittingList } from './hardware.js'
 import { clamp, plural, dimTxt, r1 } from './util.js';
 import { purposeOf, edgePurposeOf } from './drill.js';
 import { MIN_WEB, toSegment, edgeBores, boreWeb } from './joinery.js';
-import { POSTS, STEP_DOWN_RANGE, MAX_FEED_RANGE } from './cam.js';
+import { POSTS, STEP_DOWN_RANGE, MAX_FEED_RANGE, SPOIL, CUT_LENGTH } from './cam.js';
 
 const SPEC_VERSION = 2;
 export const SHEET_TRIM = 10; // sheet edge trim for nesting, mm
 const SMALL_PART = { w: 50, area: 0.02 }; // narrower or smaller parts are hard to hold on a vacuum table
+const ONION_MIN_T = 6; // the contour leaves an onion skin only on boards thicker than this, mm (gcode.js)
+const SINK_TYPES = new Set(['base', 'kitchen']); // furniture with a base cabinet that may stand under a sink
 const CAP_ROLES = new Set(['side', 'top', 'bed-head', 'bed-foot']);
 const CAP_KEYS = new Set(['footRail']); // a bed without a footboard: the foot rail's outer face shows the confirmat heads
 
@@ -134,9 +136,8 @@ export function buildModel(input) {
 }
 
 // Short-term deflection of a simply supported shelf under a uniform load (no creep), against 0.5 % of the span.
-// E = 1600 N/mm² is the EN 312 P2 minimum for 13–20 mm particleboard (manufacturer data sheet, report source [43]).
-function shelfSag(spanMm, depthMm, tMm, loadKg) {
-  const E = 1600;
+// E (N/mm²) is the board's own (materials.js: the EN 312 P2 minimum by thickness, 1600 for >13–20 mm, 1500 for >20–25).
+function shelfSag(spanMm, depthMm, tMm, loadKg, E) {
   const I = (depthMm * tMm ** 3) / 12;
   const w = (loadKg * 9.81) / spanMm;
   const mm = (5 * w * spanMm ** 4) / (384 * E * I);
@@ -149,11 +150,13 @@ function checkModel(ctx, spec) {
   // shelves
   for (const p of parts.filter((x) => x.role === 'shelf')) {
     const loadKg = ((p.L / 100) * (p.W / 100)) * spec.shelfLoad;
-    const sag = shelfSag(p.L, p.W, p.T, loadKg);
+    const sag = shelfSag(p.L, p.W, p.T, loadKg, STOCK[p.stock].E ?? 1500);
     if (sag.ratio > 1) ctx.warn('warn', `${p.name}: провисване ≈ ${dimTxt(sag.mm)} mm при ${Math.round(loadKg)} kg (${dimTxt(spec.shelfLoad)} kg/dm²) — над 0,5 % от разстоянието между опорите (${dimTxt(sag.limit)} mm). Добавете делител или стеснете колоната.`);
   }
-  // sheet fit and small parts
-  let small = 0;
+  // sheet fit and small parts: with the onion skin the vacuum holds them until the last pass; without it (switched off,
+  // or a board of ONION_MIN_T mm or less) the cutter can throw them — the engine makes no tabs
+  const small = [];
+  const loose = [];
   for (const p of parts) {
     const cut = cutSize(p, spec.bandCompensation);
     const [SW, SH] = STOCK[p.stock].sheet;
@@ -161,9 +164,21 @@ function checkModel(ctx, spec) {
     const fh = SH - 2 * SHEET_TRIM;
     const fits = (cut.L <= fw && cut.W <= fh) || (!p.grain && cut.L <= fh && cut.W <= fw);
     if (!fits) ctx.warn('error', `${p.name}: ${cut.L} × ${cut.W} mm не се побира в лист ${SW} × ${SH} mm${p.grain ? ' по посоката на шарката' : ''}${p.fitHint ? ` — ${p.fitHint}` : ''}.`);
-    if (cut.W < SMALL_PART.w || (cut.L * cut.W) / 1e6 < SMALL_PART.area) small += 1;
+    if (cut.W < SMALL_PART.w || (cut.L * cut.W) / 1e6 < SMALL_PART.area) (spec.onion && p.T > ONION_MIN_T ? small : loose).push(p.name);
   }
-  if (small) ctx.warn('info', `${plural(small, 'малък детайл', 'малки детайла')} — режат се с тънка кора (onion skin) или табове; проверете вакуума.`);
+  if (small.length) ctx.warn('warn', `${plural(small.length, 'малък детайл', 'малки детайла')} — режат се с тънка кора (onion skin), но последният пас ги прорязва и тогава ги държи само вакуумът: проверете го, при нужда ги закрепете ръчно.`);
+  if (loose.length) ctx.warn('error', `${plural(loose.length, 'малък детайл', 'малки детайла')} без тънка кора (onion skin): ${loose.slice(0, 3).join(', ')}${loose.length > 3 ? '…' : ''} — вакуумът не ги държи при прорязването и фрезата може да ги изхвърли. Включете onion skin (за плочи над ${ONION_MIN_T} mm) или ги изрежете извън CNC.`);
+  // the contour goes T + SPOIL deep: no deeper than the cutting length of the cutter (tooling.js)
+  const cel = CUT_LENGTH[spec.tool];
+  for (const stock of new Set(parts.map((p) => p.stock))) {
+    const { name, thickness } = STOCK[stock];
+    const depth = thickness + SPOIL;
+    if (depth <= cel) continue;
+    const ok = TOOL_DIAMETERS.find((d) => CUT_LENGTH[d] >= depth);
+    ctx.warn('error', `Фреза Ø${spec.tool}: режещата дължина е ${cel} mm, а контурът в ${name} ${thickness} mm е ${dimTxt(depth)} mm дълбок${ok ? ` — изберете фреза Ø${ok} или по-голяма` : ''}.`);
+  }
+  // the model does not know which base cabinet stands under the sink: a note (the defaults carry no warning)
+  if (SINK_TYPES.has(spec.type)) ctx.warn('info', `Шкафът под мивката: ${STOCK.pb18.name} е клас ${STOCK.pb18.grade} (EN 312, сухи условия) — за него поръчайте ${STOCK.pb18.name} P3 (влажни условия) и кант с PUR лепило.`);
   // holes inside the board (the cut part, without its edge band), apart from each other and from the grooves
   for (const p of parts) checkHoles(ctx, p, spec);
   // hinge spread (Blum Inc. note) — reported for fronts wider than they are tall, where it matters
@@ -197,10 +212,12 @@ function checkHoles(ctx, p, spec) {
     // the board itself: the edge band adds no material to drill into
     const rim = Math.min(h.u - cut.du0, cut.du0 + cut.L - h.u, h.v - cut.dv0, cut.dv0 + cut.W - h.v) - h.d / 2;
     if (rim < 0) ctx.warn('error', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ излиза извън детайла — u ${dimTxt(h.u)}, v ${dimTxt(h.v)}.`);
-    else if (rim < MIN_WEB) ctx.warn('warn', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ е на ${dimTxt(rim)} mm от ръба.`);
+    else if (rim < MIN_WEB - 1e-6) ctx.warn('error', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ е на ${dimTxt(rim)} mm от ръба (под ${MIN_WEB} mm) — ръбът ще се спука, преместете отвора.`);
+    // a blind hole keeps MIN_WEB of board under it; a deeper one would break out of the other face
+    if (!h.through && h.depth > p.T - MIN_WEB + 1e-6) ctx.warn('error', `${p.name}: глух отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ е ${dimTxt(h.depth)} mm дълбок в плоча ${dimTxt(p.T)} mm — под него остават по-малко от ${MIN_WEB} mm и свредлото ще излезе от другата страна.`);
     for (const g of grooves) {
       const web = toSegment(h.u, h.v, g) - (g.w + h.d) / 2;
-      if (web < MIN_WEB) ctx.warn('warn', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ е на ${dimTxt(Math.max(0, web))} mm от канала — преместете отвора.`);
+      if (web < MIN_WEB - 1e-6) ctx.warn('error', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ е на ${dimTxt(Math.max(0, web))} mm от канала — преместете отвора.`);
     }
     // a bore from the edge (the thread of a confirmat from the joining panel, a slide hook): the drill or the screw
     // would break into it, so the part is not cut (fail closed)
@@ -217,7 +234,7 @@ function checkHoles(ctx, p, spec) {
       const dist = Math.hypot(a.u - b.u, a.v - b.v);
       // holes exactly MIN_WEB apart are fine: 1e-6 absorbs the floating-point error of positions on the 0,1 mm grid
       if (dist - (a.d + b.d) / 2 < MIN_WEB - 1e-6) {
-        ctx.warn(a.kind === 'cup' && b.kind === 'cup' ? 'error' : 'warn', `${p.name}: отворите Ø${dimTxt(a.d)} „${purposeOf(a.kind)}“ и Ø${dimTxt(b.d)} „${purposeOf(b.kind)}“ при u ${dimTxt(a.u)}, v ${dimTxt(a.v)} се застъпват — преместете единия.`);
+        ctx.warn('error', `${p.name}: отворите Ø${dimTxt(a.d)} „${purposeOf(a.kind)}“ и Ø${dimTxt(b.d)} „${purposeOf(b.kind)}“ при u ${dimTxt(a.u)}, v ${dimTxt(a.v)} се застъпват — преместете единия.`);
       }
     }
   }

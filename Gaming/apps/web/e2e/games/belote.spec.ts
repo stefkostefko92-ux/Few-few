@@ -24,22 +24,40 @@ import {
  *
  * Ботовете са на „Лесно“ (избрано в лобито, както го прави играч): само тогава
  * бот понякога казва „Контра“ — без това „Реконтра“ на човека е недостижима.
- * Стекът раздава с фиксиран seed (BELOTE=e2e-belote-36, infra/e2e-games.sh):
- *  1. раздаване: противникът обявява ♦ → „Контра“; после ВК от другия
- *     противник → „Пас“; 8 взятки (първата — само Q♦ е позволена: отговаряш
+ * Стекът раздава с фиксиран seed (BELOTE=e2e-belote-20510, infra/e2e-games.sh):
+ *  1. раздаване: противникът обявява ВК → „Контра“; после „Пас“; 8 взятки (първата — само Q♦ е позволена: отговаряш
  *     на боята, останалите карти не се кликват).
- *  2. раздаване: обявявам ВК, противник контрира → „Реконтра“ (x4); 8 взятки
- *     → 164:0 → „Край“ → „Нова игра“ сяда в нов мач.
+ *  2. раздаване: обявявам ♠, противник контрира → „Реконтра“ (x4); 8 взятки
+ *     → край на мача → „Край“ → „Нова игра“ сяда в нов мач.
  * Всеки ход се решава само по това, което показва масата (по същото правило
  * е избран seed-ът — офлайн реплика на стаята).
  */
 
-const SEEDED_FIRST_HAND = ["QC", "KH", "8S", "TH", "7S"];
+// Раздадено: AS KS KH 8H KC. Ръката се показва подредена по боя и сила; в наддаването
+// (договорът още не е известен) → некозов ред (A T K Q J 9 8 7), бои ♠ ♥ ♣ ♦.
+const SEEDED_FIRST_HAND = ["AS", "KS", "KH", "8H", "KC"];
 
 type Step = "contra" | "recontra" | "bid" | "pass" | "play";
 
 async function scoreAttr(page: Page, name: string): Promise<string> {
   return (await page.locator('[data-zone="score"]').getAttribute(name)) ?? "";
+}
+
+/** Ако картата е първата фигура от белот, излиза прозорец „Белот“ — обявяваме
+ *  с бутона му и всички на масата виждат „<име>: Белот! … +20“. */
+const beloteCalls = { n: 0 };
+async function answerBelote(page: Page): Promise<void> {
+  const prompt = page.getByTestId("belote-belote");
+  const shown = await prompt
+    .waitFor({ state: "visible", timeout: 1_200 })
+    .then(() => true)
+    .catch(() => false);
+  if (!shown) return;
+  await expect(prompt).toContainText("обявяваш ли белот");
+  await expect(page.locator('[data-action="belote-announce"]')).toBeInViewport();
+  await act(page, page.locator('[data-action="belote-announce"]'));
+  await expectBanner(page, /Белот! .{1,2} \+20/);
+  beloteCalls.n++;
 }
 
 async function takeTurn(
@@ -86,7 +104,7 @@ async function takeTurn(
     await page.waitForTimeout(600);
     expect(await stateVersion(page), "a blocked card sent a move").toBe(before);
   }
-  await playCard(page, "hand", hand.find((c) => c.playable)!.card);
+  await playCard(page, "hand", hand.find((c) => c.playable)!.card, answerBelote);
   return "play";
 }
 
@@ -183,6 +201,50 @@ test("белот на телефон 390×844: странични места, в
   await snap(page, testInfo, "belote-390x844");
   await playCard(page, "hand", "QD");
   await expectNotReloaded(page);
+  expectNoErrors(t);
+  await t.ctx.close();
+});
+
+/**
+ * „Белот“ (поп и дама коз в една ръка): при първата фигура излиза прозорец —
+ * „Друга карта“ го затваря без ход, „Обяви белот (+20)“ пуска картата, всички
+ * виждат „<име>: Белот! … +20“, а до масата стои чипът „Белот … +20“.
+ * Със seed-а на стека човекът, който пасува на всичко срещу „Нормално“, получава
+ * Q♣ и K♣ при „Всичко коз“ още в първото раздаване.
+ */
+test("белот: поп и дама коз → прозорец „Белот“, обява, банер и +20", async ({ browser, baseURL }, testInfo) => {
+  test.setTimeout(300_000);
+  const t = await openTable(browser, baseURL!, "BELOTE", { difficulty: "NORMAL" });
+  const { page } = t;
+  let found = false;
+  for (let turn = 0; turn < 120 && !found; turn++) {
+    if (!(await waitMyTurn(page, 120_000))) break;
+    if ((await scoreAttr(page, "data-phase")) === "BID") {
+      if ((await action(page, "pass").count()) > 0) await act(page, action(page, "pass"));
+      else await act(page, page.locator('[data-action="bid"]:enabled').first());
+      continue;
+    }
+    const card = (await cardsIn(page, "hand")).find((c) => c.playable)!.card;
+    await playCard(page, "hand", card, async (p) => {
+      const prompt = p.getByTestId("belote-belote");
+      if (!(await prompt.waitFor({ state: "visible", timeout: 1_200 }).then(() => true).catch(() => false))) return;
+      found = true;
+      await expect(prompt).toContainText("обявяваш ли белот? Носи 20 точки");
+      await snap(p, testInfo, "belote-belote-1366x768");
+      // „Друга карта“: прозорецът се затваря, ход не тръгва; пак кликвам картата.
+      const before = await stateVersion(p);
+      await p.locator('[data-action="belote-cancel"]').click();
+      await expect(prompt).toBeHidden();
+      await p.waitForTimeout(400);
+      expect(await stateVersion(p), "„Друга карта“ прати ход").toBe(before);
+      await p.locator(`[data-zone="hand"] [data-card="${card}"]`).click({ position: { x: 8, y: 34 } });
+      await expect(prompt).toBeVisible();
+      await act(p, p.locator('[data-action="belote-announce"]'));
+      await expectBanner(p, /Белот! .{1,2} \+20/);
+      await expect(p.locator('[data-zone="belote-calls"]')).toContainText("+20");
+    });
+  }
+  expect(found, "в раздаването не се падна белот за човека — seed-ът на стека е сменен?").toBe(true);
   expectNoErrors(t);
   await t.ctx.close();
 });

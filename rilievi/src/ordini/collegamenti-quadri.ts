@@ -230,6 +230,8 @@ export const QUADRI: readonly Collegamento[] = [
     ['eo', 'norma8173'],
     ['gt', 'en8173'],
   ]),
+  // Само отметката „DM 236 / Legge 13“ между модулите — мерките на D.M. 236/1989, т. 8.1.12 (кабина, врата,
+  // площадка, времената на вратите, бутониерите) са в src/schede/dm236.ts.
   spunta('legge13', [
     ['oq', 'normaLegge13'],
     ['om', 'legge13'],

@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
 import { PDFDocument } from 'pdf-lib';
 import { improntaLeggibile } from '../../src/interventi/sigillo.js';
+import { CAMBI_TESTO_VOCI } from '../../src/interventi/voci.js';
 import { makeAzienda, outbox, prisma, signedIn, startApp, stopApp } from './harness.js';
 import { create, firma, FORM } from './interventi-helpers.js';
 
@@ -44,6 +45,25 @@ describe('the intervention forms', () => {
     const list = await tecnicoA.browser.get('/interventi');
     assert.match(list.body, />000002<\/a>/);
     assert.doesNotMatch(list.body, new RegExp(ids[2]!), 'the other company is not listed');
+  });
+
+  it('draw item 90 of a confirmed sheet with the words of the day it was confirmed', async () => {
+    const { browser } = await signedIn('TECNICO');
+    const id = await create(browser, FORM);
+    assert.equal((await firma(browser, id)).status, 303);
+    const cambio = CAMBI_TESTO_VOCI.find((c) => c.n === 90)!;
+    const html = (testo: string) => testo.replaceAll("'", '&#39;');
+    await prisma.intervento.update({
+      where: { id },
+      data: { confermatoAt: new Date(cambio.dal.getTime() - 60_000) },
+    });
+    const prima = (await browser.get(`/interventi/${id}`)).body;
+    assert.ok(prima.includes(html(cambio.prima)), 'the old words before the change');
+    assert.ok(!prima.includes('soggetto verificatore'));
+    await prisma.intervento.update({ where: { id }, data: { confermatoAt: cambio.dal } });
+    const dopo = (await browser.get(`/interventi/${id}`)).body;
+    assert.ok(!dopo.includes(html(cambio.prima)));
+    assert.ok(dopo.includes('soggetto verificatore'), 'the new words from the change on');
   });
 
   it('after the confirmation: no change by any way — only the PDF and the email', async () => {

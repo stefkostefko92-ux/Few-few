@@ -8,7 +8,13 @@ import {
 import { canIn, canInPerTogliere, scopePerTogliere } from '../auth/scope.js';
 import { datiSalvati } from '../aziende/dati.js';
 import { testataDi } from '../aziende/intestazione.js';
-import { formValuesDalBody, formValuesFromCartello, parseCartello } from '../cartelli/form.js';
+import {
+  COMUNICAZIONI_FERMO,
+  comunicazioniMancanti,
+  formValuesDalBody,
+  formValuesFromCartello,
+  parseCartello,
+} from '../cartelli/form.js';
 import { modelloDi } from '../cartelli/modelli.js';
 import { renderCartello, type DatiCartello } from '../cartelli/pdf.js';
 import {
@@ -72,6 +78,12 @@ cartelliRouter.get('/cartelli/:id', read, async (req, res) => {
     titleKey: 'cartelli.titolo',
     cartello: row,
     modello: { id: modello.id, titolo: modello.titolo, ...misuraVista(modello) },
+    // Спиране поради опасност (D.P.R. 162/1999, чл. 15, ал. 7): трите уведомявания и кои още нямат ден.
+    // Не `comunicazioni` — това са съобщенията на портала (views/partials/comunicazioni.ejs).
+    avvisiFermo: {
+      campi: COMUNICAZIONI_FERMO.map(([chi, campo]) => ({ chi, campo, giorno: row[campo] })),
+      mancanti: comunicazioniMancanti(row),
+    },
     // Без лого или без данни главата на табелата е непълна — страницата казва какво липсва и кой го слага.
     manca: {
       logo: !row.azienda.logoType,

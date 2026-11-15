@@ -1,0 +1,20 @@
+{
+  "_comment": "ПРИМЕР — неподписан, фалшиви стойности, НЕ е активен ангажимент. Показва схемата (Правния Разбирач, 2026-11-15). Реалните живеят само на сървъра, подписани, в .gitignore. loadEngagements нарочно пропуска файла example.json.",
+  "engagement_id": "cs-2026-example",
+  "status": "draft",
+  "client_legal_identity": { "name": "Пример ЕООД", "vat": "BG000000000", "seat": "София, България" },
+  "authorizing_signatory": { "name": "Име Фамилия", "role": "CTO", "authority_proof": "решение на СД № …" },
+  "authorization_ref": { "doc_hash": "sha256:…", "signed_at": "2026-01-01", "method": "квалифициран електронен подпис" },
+  "scope_allowlist": { "hosts": ["app.example", "api.example"], "cidr": [], "endpoints": ["https://api.example/v1"] },
+  "out_of_scope": { "hosts": ["billing.example"], "paths": ["/admin", "/export"], "actions": ["no-dos", "no-exfil-beyond-poc", "no-social-engineering", "no-third-party"] },
+  "time_window": { "not_before": "2026-01-10T06:00:00Z", "not_after": "2026-01-17T20:00:00Z", "hours": "06:00-20:00 Europe/Sofia" },
+  "limits": { "rate_rps": 10, "max_concurrency": 8 },
+  "third_party_cloud_notice": { "provider": "aws", "notified": false, "ref": "AWS simulated-event form …" },
+  "data_handling": { "role": "processor", "dpa_ref": "DPA-2026-…", "on_personal_data": "stop-minimize-report", "art9_special": "stop-and-notify" },
+  "disclosure_terms": { "framework": "ISO/IEC 29147", "embargo_days": 90 },
+  "emergency_contacts": [{ "name": "SOC на клиента", "email": "soc@example", "phone": "+359…" }],
+  "abort_procedure": "При сигнал за щета или оттегляне на съгласието — спри незабавно, запази доказателствата, уведоми контакта.",
+  "governing_law": "BG",
+  "fail_closed": true,
+  "signature": null
+}

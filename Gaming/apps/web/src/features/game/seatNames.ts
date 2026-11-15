@@ -1,11 +1,10 @@
 import type { MatchPlayerInfo } from "@aso/shared";
 
 /**
- * Display names that tell the seats apart. Every bot is called „АСО Бот“, so
- * at a 4-seat table the three opponents were indistinguishable — in Риба the
- * ask buttons all read the same name, so you could not choose WHOM to ask.
- * Names shared by several seats get an ordinal by seat order („АСО Бот 1“,
- * „АСО Бот 2“…); unique names stay as they are.
+ * Display names that tell the seats apart. Bots already arrive numbered
+ * („Бот 1“, „Бот 2“… — server + localizeBots), but two humans may share a
+ * name: names shared by several seats get an ordinal by seat order; unique
+ * names stay as they are.
  */
 export function seatNames(players: readonly MatchPlayerInfo[]): (seat: number) => string | undefined {
   const bySeat = [...players].sort((a, b) => a.seat - b.seat);

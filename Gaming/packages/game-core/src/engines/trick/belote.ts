@@ -121,7 +121,10 @@ export type BeloteAction =
   | { type: "CALL"; suit: Suit } // legacy alias of BID for plain suits
   | { type: "CONTRA" }
   | { type: "RECONTRA" }
-  | { type: "PLAY"; card: Card };
+  /** `belote` — обявява ли „Белот“ с тази карта (само първата фигура K/Q коз, когато
+   *  другата е в ръката). Без флаг = обявява (ботове, изтекло време, стари клиенти);
+   *  `false` = „Без обява“ — нито точки, нито ребелот. */
+  | { type: "PLAY"; card: Card; belote?: boolean };
 
 export type BeloteEvent =
   | { type: "BID"; seat: Seat; contract: Contract }
@@ -400,6 +403,18 @@ function bidStrength(hand: Card[], contract: Contract): number {
   return s;
 }
 
+/** K или Q коз, чиято двойка е в ръката на играча и още не е обявена — ходът, с
+ *  който се обявява (или не) „Белот“. */
+export function beloteFirstFigure(state: BeloteState, seat: Seat, card: Card): boolean {
+  const r = rankOf(card);
+  if (r !== "K" && r !== "Q") return false;
+  const suit = suitOf(card);
+  const c = state.contract;
+  if (!(c === "AT" || (c !== null && c !== "NT" && suit === c))) return false;
+  if (!state.hands[seat]?.includes(`${r === "K" ? "Q" : "K"}${suit}` as Card)) return false;
+  return !state.belotePairs.some((p) => p.seat === seat && p.suit === suit);
+}
+
 export const beloteEngine: GameEngine<BeloteState, BeloteAction, BeloteEvent> = {
   init(_opts: InitOpts, rng: SeededRng): BeloteState {
     const dealer: Seat = 0;
@@ -447,7 +462,14 @@ export const beloteEngine: GameEngine<BeloteState, BeloteAction, BeloteEvent> = 
       }
       return actions;
     }
-    return legalCards(state, seat).map((card) => ({ type: "PLAY", card }));
+    const out: BeloteAction[] = [];
+    for (const card of legalCards(state, seat)) {
+      out.push({ type: "PLAY", card });
+      // Първата фигура от белот: и вариантът „Без обява“ е позволен ход (сървърът
+      // сверява хода буквално със списъка). Обикновеният ход = обява.
+      if (beloteFirstFigure(state, seat, card)) out.push({ type: "PLAY", card, belote: false });
+    }
+    return out;
   },
 
   reduce(state, action, rng) {
@@ -527,10 +549,12 @@ export const beloteEngine: GameEngine<BeloteState, BeloteAction, BeloteEvent> = 
     // PLAY
     if (action.type !== "PLAY") throw new IllegalActionError("Expected play action");
 
-    // Belote-rebelote: „белот" при изиграване на ПЪРВАТА фигура (K или Q коз) от
-    // играч, който държи и двете; „ребелот" на втората → +20 за неговия отбор.
-    // Проверката става ПРЕДИ картата да напусне ръката и записва двойката едва
-    // след публичното изиграване на първата фигура (не издава скрити карти).
+    // Belote-rebelote (§4.1): „Белот" се обявява при изиграване на ПЪРВАТА фигура
+    // (K или Q коз) от играч, който държи и двете, и носи 20 точки веднага, с
+    // обявата; „ребелот" на втората само потвърждава. Обявата е по избор
+    // (`belote: false` = „Без обява" — без точки и без ребелот). Проверката е
+    // ПРЕДИ картата да напусне ръката; двойката се записва едва след публичното
+    // изиграване на първата фигура (не издава скрити карти).
     const figR = rankOf(action.card);
     if (figR === "K" || figR === "Q") {
       const fSuit = suitOf(action.card);
@@ -540,13 +564,13 @@ export const beloteEngine: GameEngine<BeloteState, BeloteAction, BeloteEvent> = 
         const pair = next.belotePairs.find((p) => p.seat === seat && p.suit === fSuit);
         if (pair) {
           pair.played = 2;
-          const wt = team(seat);
-          next.teamPoints[wt] = at2(next.teamPoints, wt) + 20;
           events.push({ type: "BELOTE", seat, suit: fSuit, half: "rebelote" });
         } else {
           const partner = `${figR === "K" ? "Q" : "K"}${fSuit}`;
-          if (next.hands[seat]!.includes(partner)) {
+          if (next.hands[seat]!.includes(partner) && action.belote !== false) {
             next.belotePairs.push({ seat, suit: fSuit, played: 1 });
+            const wt = team(seat);
+            next.teamPoints[wt] = at2(next.teamPoints, wt) + 20;
             events.push({ type: "BELOTE", seat, suit: fSuit, half: "belote" });
           }
         }

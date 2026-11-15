@@ -20,7 +20,21 @@
       "indirizzo": "Indirizzo",
       "citta": "Città",
       "ubicazione": "Ubicazione impianto",
-      "testo": "Informazione agli utenti"
+      "testo": "Informazione agli utenti",
+      "pericolo": "Fermo per pericolo in atto",
+      "avvisoProprietarioAt": "Proprietario informato il",
+      "avvisoVerificatoreAt": "Soggetto delle verifiche periodiche informato il",
+      "avvisoComuneAt": "Comune informato il"
+    },
+    "pericolo": {
+      "titolo": "Fermo per pericolo (D.P.R. 162/1999, art. 15 c. 7)",
+      "hint": "Se il manutentore rileva un pericolo in atto ferma l'impianto fino alla riparazione e informa subito il proprietario, il soggetto delle verifiche periodiche e il Comune. Segna il giorno di ogni comunicazione.",
+      "comunicazioni": "Comunicazioni per il fermo (art. 15 c. 7)",
+      "daFare": "Da comunicare",
+      "manca": {
+        "one": "Manca ancora una comunicazione dell'art. 15 c. 7.",
+        "other": "Mancano ancora {n} comunicazioni dell'art. 15 c. 7."
+      }
     },
     "hint": {
       "ubicazione": "Ad esempio: Scala B, ascensore di sinistra.",
@@ -28,7 +42,8 @@
     },
     "error": {
       "dataMancante": "Indica la data del cartello.",
-      "testoMancante": "Scrivi l'informazione per gli utenti."
+      "testoMancante": "Scrivi l'informazione per gli utenti.",
+      "pericoloMancante": "Hai segnato il giorno di una comunicazione: spunta «Fermo per pericolo in atto» oppure cancella le date."
     },
     "modello": "Modello «{titolo}»",
     "modelloTesto": "Il PDF usa il modello scelto nelle impostazioni dell'azienda, con il logo e i dati societari in alto.",

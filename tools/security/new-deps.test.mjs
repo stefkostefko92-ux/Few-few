@@ -41,3 +41,33 @@ test("pnpm-lock: имената се четат и с scope", () => {
   assert.ok(m.has("@prisma/client") && m.has("expres"));
   assert.equal(analyze("", "packages:\n  expres@1.0.0:\n", "x/pnpm-lock.yaml")[0].kind, "typosquat");
 });
+
+test("pnpm-lock: версиите се четат (и peer суфиксът се реже)", () => {
+  const m = parseLock("packages:\n\n  '@prisma/client@6.1.0(prisma@6.1.0)':\n    resolution: {}\n  expres@1.0.0:\n  expres@1.2.0:\n", "x/pnpm-lock.yaml");
+  assert.deepEqual([...m.get("expres").versions], ["1.0.0", "1.2.0"]);
+  assert.deepEqual([...m.get("@prisma/client").versions], ["6.1.0"]);
+});
+
+test("pnpm-lock: git/tarball зависимост (URL като версия) вече се вижда като non-registry", () => {
+  const head = "packages:\n  express@4.0.0:\n  'evil-lib@https://codeload.github.com/x/y/tar.gz/abc':\n    resolution: {}\n";
+  const f = analyze("packages:\n  express@4.0.0:\n", head, "x/pnpm-lock.yaml");
+  assert.deepEqual(f.filter((x) => x.kind === "non-registry").map((x) => x.name), ["evil-lib"]);
+});
+
+test("pnpm-lock: нова git версия на ПОЗНАТО име не се губи", () => {
+  const f = analyze("packages:\n  express@4.0.0:\n", "packages:\n  express@4.0.0:\n  express@https://evil.example/e.tgz:\n", "x/pnpm-lock.yaml");
+  assert.deepEqual(f.map((x) => [x.name, x.kind]), [["express", "non-registry"]]);
+  assert.deepEqual(analyze("packages:\n  express@4.0.0:\n", "packages:\n  express@4.0.0:\n  express@4.1.0:\n", "x/pnpm-lock.yaml"), [], "нормален bump не е сигнал");
+});
+
+test("yarn.lock v1 и berry: имена, версии, resolved", () => {
+  const v1 = '# yarn lockfile v1\n\nexpres@^1.0.0, expres@^1.1.0:\n  version "1.1.0"\n  resolved "https://registry.yarnpkg.com/expres/-/expres-1.1.0.tgz#abc"\n  integrity sha512-x\n\n"@scope/pkg@^2":\n  version "2.0.0"\n  resolved "https://evil.example/pkg.tgz"\n';
+  const m = parseLock(v1, "app/yarn.lock");
+  assert.deepEqual([...m.get("expres").versions], ["1.1.0"]);
+  assert.ok(m.has("@scope/pkg"));
+  const f = analyze("", v1, "app/yarn.lock");
+  assert.deepEqual(f.filter((x) => x.gate).map((x) => x.name), ["expres"]);
+  assert.deepEqual(f.filter((x) => x.kind === "non-registry").map((x) => x.name), ["@scope/pkg"]);
+  const berry = '__metadata:\n  version: 8\n\n"expres@npm:^1.0.0":\n  version: 1.0.0\n  resolution: "expres@npm:1.0.0"\n';
+  assert.deepEqual([...parseLock(berry, "a/yarn.lock").get("expres").versions], ["1.0.0"]);
+});

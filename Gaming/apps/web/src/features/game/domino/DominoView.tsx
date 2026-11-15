@@ -86,7 +86,7 @@ export function DominoView({ title }: { title: string }) {
   const m = useMatch<DominoState, DominoAction>("DOMINO");
   const { state, legal, seat, phase, result, players } = m;
 
-  // Three bots share the name „АСО Бот“ — number them so the table reads.
+  // Same-named seats get an ordinal (bots already arrive as „Бот 1, 2, 3“).
   const names = useMemo(() => seatNames(players), [players]);
   const nameFor = (s: number) => names(s) ?? `#${s}`;
   // One move per state: a double click on a tile/„Тегли“ sent a second action
