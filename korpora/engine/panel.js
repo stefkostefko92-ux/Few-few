@@ -13,6 +13,7 @@ export function createCtx() {
     warnings: [],
     groups: [], // movable groups for 3D: doors (swing) and drawers (slide)
     symbols: [], // non-board items drawn in 3D/drawings: handles, rails, mattress, slats, legs
+    cells: [], // the cells of a free carcass as built (cells.js): what the constructor draws and selects
     nextId() {
       const id = `P${String(n).padStart(2, '0')}`;
       n += 1;

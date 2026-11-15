@@ -50,6 +50,18 @@ export const OUTPUT_SPECS = [
   { type: 'kitchen', modules: 6, bandCompensation: false, hinge: 'fx:gtv' },
   { type: 'wardrobe', hinge: 'fx:salice' },
   { type: 'bookcase', columns: 3, hinge: 'fx:gtv' },
+  // a free carcass that uses every kind of cell and front, wider than one carcass, on GRBL
+  {
+    type: 'custom', width: 3000, height: 2200, depth: 600, post: 'grbl', hinge: 'fx:hettich',
+    grid: {
+      columns: [
+        { w: 450, cells: [{ h: 540, fill: 'drawers', n: 3 }, { h: null, fill: 'rail', n: 0 }], fronts: [{ from: 1, to: 1, kind: 'door', hinge: 'left' }] },
+        { w: null, cells: [{ h: 900, fill: 'shelves', n: 2 }, { h: null, fill: 'shelves', n: 3 }], fronts: [{ from: 0, to: 1, kind: 'doors2' }] },
+        { w: null, cells: [{ h: 400, fill: 'open', n: 0 }, { h: null, fill: 'shelves', n: 3 }], fronts: [{ from: 1, to: 1, kind: 'door', hinge: 'right' }] },
+        { w: 450, cells: [{ h: 300, fill: 'drawers', n: 2 }, { h: 300, fill: 'drawers', n: 1 }, { h: null, fill: 'rail', n: 0 }], fronts: [{ from: 2, to: 2, kind: 'door' }] },
+      ],
+    },
+  },
 ];
 
 // A project with small parts (the drawer fronts and backs of the narrowest chest are under 0,02 m²): with the onion skin

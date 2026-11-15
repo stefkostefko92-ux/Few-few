@@ -3,7 +3,8 @@
 import { panel, hole, holeThrough, mark } from './panel.js';
 import { r1, clamp, dimTxt, plural } from './util.js';
 import { hingeCount, hingeProduct, hingeSystemOf, handleModel, handleHoles, hingeLimits, solveOverlay, HINGE_LIMITS } from './hardware.js';
-import { SYSTEM, MIN_WEB, FRONT_GAP_Z, addHoleOnce, snapHingeY } from './joinery.js';
+import { SYSTEM, MIN_WEB, FRONT_GAP_Z, addHoleOnce, snapHingeY, taken } from './joinery.js';
+import { HINGE_CLEAR } from './shelves.js';
 import { STOCK } from './materials.js';
 
 const HANDLE_KG = 0.3; // assumption
@@ -39,7 +40,7 @@ export function buildDoors(ctx, o, a) {
     });
     const carcassPanel = dd.hinge === 'left' ? col.left : col.right;
     hingeSides.push({ panel: carcassPanel, door });
-    mountHinges(ctx, o, door, carcassPanel, { onPartition: carcassPanel.role === 'partition', zEnd, hingeSides, c });
+    mountHinges(ctx, o, door, carcassPanel, { onPartition: carcassPanel.role === 'partition', zEnd, hingeSides, c, avoid: a.avoidYs ?? [] });
     ys.push(...(door.hingeYs ?? []));
     mountHandle(ctx, o, door, { orientation: 'vertical', kind: o.kind });
     ctx.groups.push({ type: 'door', id: door.id, partIds: [door.id], hinge: dd.hinge, axisX: dd.hinge === 'left' ? dd.x0 : dd.x0 + dd.w, axisZ: zD });
@@ -57,7 +58,7 @@ export function plateSetback(sys, variant, doorT) {
   return Number.isFinite(sys.plate.insetExtra) ? sys.plate.setback + doorT + sys.plate.insetExtra : null;
 }
 
-function mountHinges(ctx, o, door, carcassPanel, { onPartition, zEnd, hingeSides, c }) {
+function mountHinges(ctx, o, door, carcassPanel, { onPartition, zEnd, hingeSides, c, avoid }) {
   const family = hingeProduct(o.hinge);
   const sys = hingeSystemOf(family);
   if (!family || !sys) {
@@ -98,12 +99,20 @@ function mountHinges(ctx, o, door, carcassPanel, { onPartition, zEnd, hingeSides
   const cnt = hingeCount(mass, Hd, sys);
   if (mass > lim.maxMassKg || Hd > lim.maxHeight) ctx.warn('error', `${door.name}: ${Math.round(Hd)} mm, ≈ ${dimTxt(mass)} kg — извън таблицата на производителя (до ${lim.maxHeight} mm и ${dimTxt(lim.maxMassKg)} kg).`);
   const others = hingeSides.filter((h) => h.panel === carcassPanel && h.door !== door && h.door.hingeYs).flatMap((h) => h.door.hingeYs);
+  // where the plate's holes go: an inset door without the maker's number gets nothing drilled from a guess
+  const pz = zEnd - plateSetback(sys, variant, door.T);
+  if (!Number.isFinite(pz)) {
+    ctx.warn('error', `${door.name}: ${sys.name} — няма данни за мястото на планката при ${VARIANT_BG[variant]}.`);
+    return;
+  }
+  // the plate holes keep MIN_WEB to the holes already in the panel (the slide pilots of the drawers on either face)
+  const clear = (y) => sys.plate.holes.every((dy) => !taken(carcassPanel, [faceX, y + dy, pz], sys.plate.d));
   // the manufacturer's range from the edges first; when the hinges on the other face of a partition leave no room in
   // it, the nearest place outside the range, with a warning (the plate holes must never meet)
-  let ys = hingeHeights(door, sys, cnt, { c, others, keepRange: true });
+  let ys = hingeHeights(door, sys, cnt, { c, others, avoid, clear, keepRange: true });
   const range = sys.positions?.edgeRange;
   if (!ys && range) {
-    ys = hingeHeights(door, sys, cnt, { c, others, keepRange: false });
+    ys = hingeHeights(door, sys, cnt, { c, others, avoid, clear, keepRange: false });
     if (ys) ctx.warn('warn', `${door.name}: крайните панти са на ${dimTxt(ys[0] - y0)} и ${dimTxt(y1 - ys.at(-1))} mm от ръбовете — ${sys.brand} препоръчва ${range[0]}–${range[1]} mm, но пантите от другата страна на делителя заемат тези места.`);
   }
   if (!ys) {
@@ -117,11 +126,6 @@ function mountHinges(ctx, o, door, carcassPanel, { onPartition, zEnd, hingeSides
   // with system screws, catalogue p. 153) — and no CNC file until another plate or hinge is chosen
   const systemScrews = !sys.plate.systemScrewPlates || sys.plate.systemScrewPlates.includes(sol.plate);
   if (!systemScrews) ctx.warn('error', `${door.name}: планка ${dimTxt(sol.plate)} mm на ${sys.brand} не идва със системни винтове Ø5 (само ${sys.plate.systemScrewPlates.map(dimTxt).join(' и ')} mm) — отворите Ø${dimTxt(sys.plate.d)} × ${dimTxt(sys.plate.depth)} за нея не се пробиват. Изберете друга панта или разпределение.`);
-  const pz = zEnd - plateSetback(sys, variant, door.T);
-  if (!Number.isFinite(pz)) {
-    ctx.warn('error', `${door.name}: ${sys.name} — няма данни за мястото на планката при ${VARIANT_BG[variant]}.`);
-    return;
-  }
   door.hingeYs = ys;
   door.hingePanel = carcassPanel.id;
   door.plateHoles = systemScrews ? sys.plate.holes.length : 0;
@@ -158,7 +162,7 @@ function mountHinges(ctx, o, door, carcassPanel, { onPartition, zEnd, hingeSides
 // the other face of a partition, stay whole pitches apart with no plate hole in common (the screws from both faces
 // would meet) and no cups touching. Each hinge takes the nearest free grid place, towards the middle first; null
 // when that many hinges do not fit.
-function hingeHeights(door, sys, cnt, { c, others, keepRange }) {
+function hingeHeights(door, sys, cnt, { c, others, avoid = [], clear = () => true, keepRange }) {
   const y0 = door.box.min[1];
   const y1 = door.box.max[1];
   const pos = sys.positions ?? {};
@@ -177,7 +181,9 @@ function hingeHeights(door, sys, cnt, { c, others, keepRange }) {
   const mid = (y0 + y1) / 2;
   const steps = Math.ceil((y1 - y0) / SYSTEM.pitch) + 1;
   const placed = [];
-  const free = (y, [lo, hi]) => y >= lo - 0.01 && y <= hi + 0.01 && others.every((o) => Math.abs(o - y) > span + 0.01) && placed.every((p) => Math.abs(p - y) >= apart - 0.01);
+  // `avoid`: the middles of the fixed shelves of a free carcass the door spans — a hinge keeps HINGE_CLEAR from them, as a
+  // shelf keeps it from a hinge (shelves.js)
+  const free = (y, [lo, hi]) => y >= lo - 0.01 && y <= hi + 0.01 && others.every((o) => Math.abs(o - y) > span + 0.01) && placed.every((p) => Math.abs(p - y) >= apart - 0.01) && avoid.every((m) => Math.abs(m - y) >= HINGE_CLEAR) && clear(y);
   // the outer hinges first: they carry the door
   const order = ideal.map((y, k) => ({ y, k })).sort((a, b) => Math.abs(b.y - mid) - Math.abs(a.y - mid));
   for (const { y, k } of order) {

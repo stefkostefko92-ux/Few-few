@@ -41,7 +41,7 @@ export function drawingAssembly(model, meta) {
     const ys = [p.box.min[1] + 2, (p.box.min[1] + p.box.max[1]) / 2, p.box.max[1] - 2];
     return xs.every((x) => ys.every((y) => behind(x, y, p.box.max[2])));
   };
-  for (const p of parts.filter((q) => (q.role === 'shelf' || q.role === 'partition') && covered(q))) {
+  for (const p of parts.filter((q) => (q.role === 'shelf' || q.role === 'partition' || q.role === 'divider') && covered(q))) {
     g += `<rect class="d-hid" x="${X(p.box.min[0])}" y="${Y(p.box.max[1])}" width="${(p.box.max[0] - p.box.min[0]) * k}" height="${(p.box.max[1] - p.box.min[1]) * k}"/>`;
   }
   for (const d of parts.filter((p) => p.role === 'door')) {
@@ -91,7 +91,7 @@ export function drawingAssembly(model, meta) {
   const both = side && side.box.max[2] < ext.z1 - 0.5;
   if (both) g += dimH(Z(side.box.min[2]), Z(side.box.max[2]), Y(0) + 11, fmt(side.box.max[2] - side.box.min[2]), { ext: [[Z(side.box.min[2]), Y(0)], [Z(side.box.max[2]), Y(0)]] });
   g += dimH(Z(ext.z0), Z(ext.z1), Y(0) + (both ? 18 : 11), fmt(D), { ext: [[Z(ext.z0), Y(0)], [Z(ext.z1), Y(0)]] });
-  const shelves = parts.filter((p) => p.role === 'shelf' && p.box.min[0] <= xc && p.box.max[0] >= xc).sort((a, b) => a.box.min[1] - b.box.min[1]);
+  const shelves = parts.filter((p) => (p.role === 'shelf' || p.role === 'divider') && p.box.min[0] <= xc && p.box.max[0] >= xc).sort((a, b) => a.box.min[1] - b.box.min[1]);
   shelves.forEach((sh, i) => {
     const y = sh.box.max[1];
     g += dimV(Y(0), Y(y), Z(ext.z1) + 8 + 6 * i, fmt(y), { ext: [[Z(sh.box.max[2]), Y(y)]] });
@@ -173,6 +173,8 @@ function notes(model) {
   if (front) lines.push(`Фронт: ${STOCK[front.stock].name} ${fmt(front.T)} mm, ${decorName(front.decor)}${STOCK[front.stock].painted ? ' (боядисан, без кант)' : `; кант ${fmt(spec.bandFront)} mm`}. Фуга ${fmt(spec.gap)} mm.`);
   const joints = [];
   if (kinds.has('confirmat')) joints.push('конфирмат 7×50');
+  // a fixed shelf doweled over the screw heads of the one on the other face of a partition (cells.js): the order matters
+  if (kinds.has('dowel')) joints.push('неподвижен рафт срещу друг от другата страна на делител — на шкантове 8×35 с лепило, след като другият е завит с конфирматите си');
   if (has((p) => p.role === 'shelf')) joints.push('рафтоносачи по системата 32 mm');
   if (has((p) => p.role === 'back')) joints.push(kinds.has('back-groove') ? `гръб HDF ${HDF_T} mm в канал ${GROOVE.width}×${GROOVE.depth} mm на ${GROOVE.inset} mm от гърба` : `гръб HDF ${HDF_T} mm, прикован отзад`);
   if (has((p) => p.role === 'drawer-bottom')) joints.push(`дъна на чекмеджетата HDF ${HDF_T} mm в канал`);

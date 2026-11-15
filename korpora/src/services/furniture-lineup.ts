@@ -124,12 +124,9 @@ function extents(model: Model): { x0: number; x1: number; y0: number; y1: number
   };
 }
 
-let cached: LineupGroup[] | null = null;
-
-export function furnitureLineup(): LineupGroup[] {
-  if (cached) return cached;
+function lineupOf(groups: Array<{ group: FurnitureGroup; kinds: FurnitureKind[] }>): LineupGroup[] {
   const api = engine();
-  cached = furnitureByGroup().map(({ group, kinds }) => {
+  return groups.map(({ group, kinds }) => {
     const built = kinds.map((kind) => {
       const model = api.buildModel({ type: kind.id }) as unknown as Model;
       return { kind, model, ext: extents(model) };
@@ -148,5 +145,26 @@ export function furnitureLineup(): LineupGroup[] {
       })),
     };
   });
+}
+
+let cached: LineupGroup[] | null = null;
+
+export function furnitureLineup(): LineupGroup[] {
+  cached ??= lineupOf(furnitureByGroup());
   return cached;
+}
+
+/**
+ * За брошурата: свободният корпус застава в края на предишния ред — собствен ред не се побира на листа
+ * (витрината в сайта го показва като отделна група).
+ */
+export function brochureLineup(): LineupGroup[] {
+  const groups = furnitureByGroup();
+  const at = groups.findIndex((g) => g.group === 'custom');
+  if (at < 1) return lineupOf(groups);
+  const folded = groups.filter((_, i) => i !== at);
+  const before = folded[at - 1];
+  if (before)
+    folded[at - 1] = { group: before.group, kinds: [...before.kinds, ...groups[at]!.kinds] };
+  return lineupOf(folded);
 }

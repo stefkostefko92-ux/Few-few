@@ -3,13 +3,23 @@
 // tabs still work.
 import { $, esc, localDate, pct, reduceMotion } from './dom.js';
 import { Viewer } from './viewer.js';
+import { createCellPick } from './viewer-pick.js';
 
-export function createViewer(text) {
+// onPick({ column, cell }): a click on a part of a free carcass (its cell is then named under the view, with the way
+// to the constructor)
+export function createViewer(text, onPick = () => {}) {
   let viewer = null;
   try {
     const probe = document.createElement('canvas');
     if (!(probe.getContext('webgl2') || probe.getContext('webgl'))) throw new Error('no webgl');
     const view = new Viewer($('#stage'));
+    view.pick = createCellPick(view, (p) => {
+      onPick(p);
+      $('#pick-name').textContent = text.pickName
+        .replace('{c}', String(p.column + 1))
+        .replace('{k}', String(p.cell + 1));
+      $('#pick').hidden = false;
+    });
     // on a phone the form is under the view: while the view is scrolled out of sight it draws nothing, so the GPU
     // and the page are free for typing; it draws the changes once it is back
     new IntersectionObserver(([entry]) => {

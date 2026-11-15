@@ -5,17 +5,17 @@
 import { panel, groove, holeThrough } from './panel.js';
 import { r1, clamp } from './util.js';
 import { hasGrain, frontStock, STOCK } from './materials.js';
-import { GROOVE, HDF_T, SYSTEM, confirmat, confirmatZs, addHoleOnce, hasHole, clashes, boreClear, systemRows } from './joinery.js';
+import { GROOVE, HDF_T, confirmat, confirmatZs, boreClear, systemRows } from './joinery.js';
 import { buildDoors } from './fronts.js';
 import { buildDrawers } from './drawers.js';
 import { hangRail, RAIL } from './rail.js';
+import { shelvesInZone } from './shelves.js';
+import { cellFronts, cellInteriors, joinCellShelves } from './cells.js';
 
 const WORKTOP_SCREW = { d: 5, label: 'винт за плота 4×30', bom: 'Винт за ПДЧ 4×30 (плот през траверсите)' };
 const RAIL_W = 100; // top rails of base cabinets
-const HINGE_CLEAR = 45; // shelves keep this distance (centre to centre) from hinges and their plates
 const RAIL_DROP = RAIL.topEdge + RAIL.h; // 90: no system holes or shelves above the lower edge of a hanging rail
 const MIN_PLINTH = 40; // lowest plinth board or legs the generator makes
-const PIN_RISE = 4; // a shelf rests on its pins, this far above the axis of the pin holes
 const CARCASS = STOCK.pb18; // every carcass board; the back is HDF in grooves
 
 export function buildCarcass(ctx, o) {
@@ -124,6 +124,11 @@ export function buildCarcass(ctx, o) {
   for (const [i, col] of out.columns.entries()) {
     col.fl = i === 0 ? x0 : partitions[i - 1].box.min[0] + T / 2;
     col.fr = i === n - 1 ? x0 + W : partitions[i].box.min[0] + T / 2;
+    if (col.cells) {
+      // a free carcass column (layout.js): its fixed shelves, then the drawers and doors of its cells
+      cellFronts(ctx, o, { i, n, col, xa: col.xa, xb: col.xb, fl: col.fl, fr: col.fr, c, Hc, yInnerTop, zEnd, backFront, T, nm, key, mod, left: col.left, right: col.right, bc, carc, hingeSides, ...front });
+      continue;
+    }
     col.drawers = Math.max(0, col.drawers ?? 0);
     col.dzH = col.drawers ? clamp(col.drawerZone ?? col.drawers * 180, 100, Hc) : 0;
     col.doors = col.drawers && col.dzH >= Hc - 1 ? 0 : col.doors ?? 0;
@@ -137,23 +142,17 @@ export function buildCarcass(ctx, o) {
   // pass 2: system holes where they do not clash, shelves on holes present on both sides, hanging rails
   const rows = systemRows(zEnd, backFront);
   for (const [i, col] of out.columns.entries()) {
+    if (col.cells) {
+      cellInteriors(ctx, { i, n, col, c, yInnerTop, rows, T, backFront, zEnd, bc, carc, key, nm, mod });
+      continue;
+    }
     const zoneBottom = col.drawersOnTop ? c + T : c + col.dzH + (col.drawers ? 0 : T);
     const zoneTop = col.drawersOnTop ? col.dz0 : yInnerTop - (col.rail ? RAIL_DROP : 0);
-    const holeYs = [];
-    for (let y = c + SYSTEM.start; y <= yInnerTop - SYSTEM.start + 0.01; y += SYSTEM.pitch) if (y >= zoneBottom + 30 && y <= zoneTop) holeYs.push(r1(y));
-    const shelves = Math.max(0, col.shelves ?? 0);
-    if (shelves) {
-      for (const y of holeYs) {
-        for (const z of rows) {
-          for (const [p, fx] of [[col.left, col.xa], [col.right, col.xb]]) {
-            if (!clashes(p, [fx, y, z], SYSTEM.d)) addHoleOnce(p, [fx, y, z], SYSTEM.d, SYSTEM.depth, 'system', { hw: 'system' }, p.role === 'partition');
-          }
-        }
-      }
-    }
-    placeShelves(ctx, { col, i, n, shelves, holeYs, rows, zoneBottom, zoneTop, T, backFront, zEnd, bc, carc, key, nm });
+    shelvesInZone(ctx, { col, i, n, shelves: col.shelves, c, yInnerTop, zoneBottom, zoneTop, rows, T, backFront, zEnd, bc, carc, key, nm });
     if (col.rail) hangRail(ctx, { col, i, yInnerTop, backFront, zEnd, mod, nm });
   }
+  // the confirmats of the fixed shelves of free carcass columns, clear of every hole the panels have by now
+  for (const col of out.columns) if (col.cells) joinCellShelves(ctx, { col, backFront, zEnd, z0, T });
   joinEdges(ctx, { x0, W, T, c, Hc, z0, zEnd, backFront, top, topPart, rails, sideL, sideR, bottom, partitions });
   return out;
 }
@@ -179,31 +178,6 @@ function joinEdges(ctx, a) {
     joint(bottom, p, '-y', pc, c + T, zStart);
     if (topPart) joint(topPart, p, '+y', pc, yTop, zStart);
     else for (const r of rails) confirmat(ctx, r, p, '+y', [[pc, yTop, (r.box.min[2] + r.box.max[2]) / 2]]);
-  }
-}
-
-function placeShelves(ctx, a) {
-  const { col, i, n, shelves, holeYs, rows, zoneBottom, zoneTop, T, backFront, zEnd, bc, carc, key, nm } = a;
-  // pins only go into plain system holes (a hole taken by a hinge plate screw, from either face, is not usable)
-  const usable = holeYs.filter((y) => rows.every((z) => hasHole(col.left, [col.xa, y, z], SYSTEM.d, 'system') && hasHole(col.right, [col.xb, y, z], SYSTEM.d, 'system')));
-  const used = [];
-  for (let k = 1; k <= shelves; k++) {
-    const target = zoneBottom + ((zoneTop - zoneBottom) * k) / (shelves + 1) - T / 2;
-    let best = null;
-    for (const y of usable) {
-      if (y + PIN_RISE + T > zoneTop - 40 || y < zoneBottom + 40) continue;
-      if (used.some((u) => Math.abs(u - y) < T + 60)) continue;
-      if (col.hingeYs.some((hy) => Math.abs(y + PIN_RISE + T / 2 - hy) < HINGE_CLEAR)) continue;
-      if (best === null || Math.abs(y + PIN_RISE - target) < Math.abs(best + PIN_RISE - target)) best = y;
-    }
-    if (best === null) {
-      ctx.warn('warn', `${nm(`Колона ${i + 1}`)}: няма място за рафт ${k}.`);
-      continue;
-    }
-    used.push(best);
-    const y = best + PIN_RISE;
-    panel(ctx, { ...carc, key: key(`c${i + 1}shelf${k}`), name: nm(n > 1 ? `Рафт ${i + 1}.${k}` : `Рафт ${k}`), role: 'shelf', box: { min: [col.xa + 1, y, backFront + 1], max: [col.xb - 1, y + T, zEnd - 20] }, n: '+y', L: 'x', bands: { '+z': bc }, explode: [0, 0, 0.9], pinY: best });
-    ctx.hw('pins', { name: 'Рафтоносач Ø5', qty: 4, unit: 'бр.', group: 'Обков' });
   }
 }
 

@@ -13,6 +13,9 @@ const P = {
   tv: 'M3 17h26v9H3zM11 17v9M21 17v9M5 21.5h4M23 21.5h4M9 4h14v10H9zM16 14v3',
   desk: 'M3 11h26M5 11v16M19 11v16h8V11M19 16h8M19 21h8M22 13.5h2M22 18.5h2M22 23.5h2',
   wallunit: 'M3 4h7v24H3zM22 4h7v24h-7zM10 20h12v8H10zM10 9h12v4H10zM12 13v-1M14 23.5h4',
+  // a free carcass: columns of their own widths, cells of their own heights
+  custom:
+    'M4 3h24v26H4zM13 3v26M21 3v26M4 11h9M13 19h8M21 9h7M21 15h7M16 23.5h2M24 22v4M4 29v1M28 29v1',
 };
 
 export function typeIcon(type) {

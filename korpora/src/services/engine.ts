@@ -90,6 +90,8 @@ interface EngineApi {
   /** Габаритът така, както го пише заглавната лента на редактора. */
   dimsText(type: string, spec: Spec): string;
   typeOrder: readonly string[];
+  /** Видовете, които екраните предлагат (без `unlisted` в двигателя). */
+  listedTypes: readonly string[];
   typeGroups: Record<string, string>;
   typeParams: Record<string, readonly TypeParam[]>;
   buildBom(model: EngineModel): unknown;
@@ -229,7 +231,8 @@ export async function loadEngine(catalogPath?: string): Promise<void> {
   }
   catalogEtag = `"${createHash('sha256').update(catalogJson).digest('base64url').slice(0, 27)}"`;
   const TYPES = types.TYPES as
-    Record<string, { label: string; group: string; params?: TypeParam[] }> | undefined;
+    | Record<string, { label: string; group: string; params?: TypeParam[]; unlisted?: boolean }>
+    | undefined;
   const ORDER = types.TYPE_ORDER as readonly string[] | undefined;
   if (!TYPES || !ORDER) throw new Error('двигателят няма TYPES/TYPE_ORDER');
   const grooveMill = cam.GROOVE_MILL as { id?: unknown } | undefined;
@@ -243,6 +246,7 @@ export async function loadEngine(catalogPath?: string): Promise<void> {
     kitchenModules: fn(types, 'kitchenModules'),
     dimsText: fn(types, 'dimsText'),
     typeOrder: ORDER,
+    listedTypes: ORDER.filter((id) => !TYPES[id]?.unlisted),
     typeGroups: Object.fromEntries(ORDER.map((id) => [id, TYPES[id]?.group ?? ''])),
     typeParams: Object.fromEntries(ORDER.map((id) => [id, TYPES[id]?.params ?? []])),
     buildBom: fn(bom, 'buildBom'),

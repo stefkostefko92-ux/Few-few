@@ -159,10 +159,12 @@
     "tv": "Mobile TV",
     "desk": "Scrivania",
     "wallunit": "Parete attrezzata",
+    "custom": "Mobile su misura",
     "group": {
       "kitchen": "Cucina e contenitori",
       "bedroom": "Camera da letto",
       "living": "Soggiorno e studio",
+      "custom": "Configuratore",
       "other": "Altro"
     }
   }

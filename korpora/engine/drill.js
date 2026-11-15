@@ -20,10 +20,11 @@ const PURPOSE = {
   screw: 'Винт (проходен)',
   bedfit: 'Връзка за легло — само място',
   'stack-pilot': 'Пилот Ø3 — на място, през отвора на горния корпус',
+  dowel: 'Шкант Ø8 (през плочата)',
 };
 export const purposeOf = (kind) => PURPOSE[kind] ?? kind;
 // A horizontal hole in an edge is the other half of the joint: PURPOSE describes the hole through the face.
-const EDGE_PURPOSE = { confirmat: 'Конфирмат, за резбата' };
+const EDGE_PURPOSE = { confirmat: 'Конфирмат, за резбата', dowel: 'Шкант Ø8, с лепило' };
 export const edgePurposeOf = (kind) => EDGE_PURPOSE[kind] ?? purposeOf(kind);
 const byPos = (a, b) => a.u - b.u || a.v - b.v;
 
