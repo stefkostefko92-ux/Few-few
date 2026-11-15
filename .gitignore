@@ -15,3 +15,9 @@ dist/
 # Кешът на turbo: при worktree-и turbo го пише в корена на общото репо.
 .turbo/
 __pycache__/
+
+# Оторизиран пентест: реалните ангажименти носят цели/клиенти/тайни → само на сървъра.
+.security/engagements/*.json
+!.security/engagements/example.json
+.security/*.key
+*.ed25519.key
