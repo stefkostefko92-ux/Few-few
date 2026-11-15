@@ -719,3 +719,12 @@
 {"t":"handoff","ts":"2026-11-15T15:49:49.923Z","id":"r7a7ffd43","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"0f20f231"}
 {"t":"handoff","ts":"2026-11-15T15:52:01.683Z","id":"r7a7ffd43","from":"prodavacha","to":"kodadjiyata","status":"има бележки","run":"1773f81d"}
 {"t":"handoff","ts":"2026-11-15T15:52:47.562Z","id":"r7a7ffd43","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"646520e6"}
+{"t":"handoff","ts":"2026-11-15T15:58:46.864Z","id":"r7a7ffd43","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"b83558eb"}
+{"t":"handoff","ts":"2026-11-15T16:01:19.540Z","id":"r7a7ffd43","from":"igrodelets","to":"kodadjiyata","status":"има бележки","run":"bc7539a7"}
+{"t":"handoff","ts":"2026-11-15T16:01:41.093Z","id":"r7a7ffd43","from":"prodavacha","to":"kodadjiyata","status":"има бележки","run":"a86603dc"}
+{"t":"handoff","ts":"2026-11-15T16:02:22.841Z","id":"r7a7ffd43","from":"strazhata","to":"kodadjiyata","status":"има бележки","run":"2b3baada"}
+{"t":"handoff","ts":"2026-11-15T16:07:15.448Z","id":"r7a7ffd43","from":"strazhata","to":"kodadjiyata","status":"има бележки","run":"295b0c2b"}
+{"t":"handoff","ts":"2026-11-15T16:43:09.547Z","id":"r7a7ffd43","from":"asansyorchika","to":"kodadjiyata","status":"има бележки","run":"3fac3c52"}
+{"t":"start","ts":"2026-11-15T17:31:04.188Z","id":"r25933ed1","flow":"авто","lead":"prodavacha","auto":true}
+{"t":"handoff","ts":"2026-11-15T17:31:04.188Z","id":"r25933ed1","from":"prodavacha","to":"kodadjiyata","status":"наред","run":"ea366cda"}
+{"t":"handoff","ts":"2026-11-15T17:31:13.655Z","id":"r25933ed1","from":"vps-adjiyata","to":"strazhata","status":"има бележки","run":"12acd558"}
