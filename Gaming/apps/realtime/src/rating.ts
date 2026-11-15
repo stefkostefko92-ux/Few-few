@@ -1,4 +1,5 @@
 import { prisma, type GameKey } from "@aso/db";
+import { recordLedger } from "@aso/db/ledger";
 import type { SeatScore } from "@aso/game-core";
 import {
   MIN_MMR,
@@ -6,10 +7,10 @@ import {
   applyXpMultiplier,
   isBettingGame,
   levelFromXp,
-  settleStake,
   vipPerksFor,
   type SeatReward,
 } from "@aso/shared";
+import { settleBettingStakes } from "./stakes.js";
 
 export interface SeatInfo {
   seat: number;
@@ -115,6 +116,10 @@ export async function finalizeMatch(opts: {
     });
     if (claimed.count !== 1 || unrated) return;
 
+    // Залогът (Свара) се урежда наведнъж за цялата маса: бот на масата → 0 за
+    // всички; между хора — нулева сума, с ред MATCH в регистъра (виж stakes.ts).
+    const stakes = betting ? await settleBettingStakes(tx, { matchId, game, seats, pointsBySeat }) : null;
+
     for (const seat of seats) {
       if (seat.isBot || !seat.userId || unratedSeats.includes(seat.seat)) continue;
       const result = resultBySeat.get(seat.seat);
@@ -154,24 +159,18 @@ export async function finalizeMatch(opts: {
       // pre-read snapshot (correct under concurrent updates).
       newRatings[seat.seat] = updated.mmr;
 
-      // Betting games (Свара) settle a real WALLET stake from the final internal
-      // chip count: doubling your stack wins a buy-in, busting loses it. Losses
-      // are clamped to the player's available wallet so it can never go negative.
+      // Betting games (Свара): залогът вече е уреден по-горе (нулева сума, „не под
+      // 0“, без залог срещу бот) — тук само показваме приложения chipsΔ.
       let chipsDelta: bigint;
       let xp: number;
       // VIP предимствата се четат в транзакцията; изтекъл абонамент = без множител.
       const profile = await tx.user.findUnique({
         where: { id: userId },
-        select: { chips: true, vipTier: true, vipUntil: true },
+        select: { vipTier: true, vipUntil: true },
       });
       const perks = vipPerksFor(profile?.vipTier, profile?.vipUntil);
       if (betting) {
-        let walletDelta = settleStake(game, pointsBySeat.get(seat.seat) ?? 0);
-        if (walletDelta < 0) {
-          const wallet = Number(profile?.chips ?? 0n);
-          walletDelta = Math.max(walletDelta, -wallet);
-        }
-        chipsDelta = BigInt(walletDelta);
+        chipsDelta = stakes?.get(seat.seat) ?? 0n;
         xp = result === "win" ? 12 : 6; // wagering a table earns more base XP
       } else {
         const reward = rewards(result, marginBySeat.get(seat.seat));
@@ -186,11 +185,14 @@ export async function finalizeMatch(opts: {
       });
       // Атомарен инкремент (заключва реда до края на транзакцията), после
       // нивото от реалния нов xp — колоната `level` вече не остава „1“.
+      // Залогът е приложен в settleBettingStakes — тук не се добавя втори път.
+      const walletDelta = betting ? 0n : chipsDelta;
       const after = await tx.user.update({
         where: { id: userId },
-        data: { chips: { increment: chipsDelta }, xp: { increment: xp } },
+        data: { ...(walletDelta !== 0n ? { chips: { increment: walletDelta } } : {}), xp: { increment: xp } },
         select: { xp: true, level: true },
       });
+      await recordLedger(tx, { userId, currency: "CHIPS", delta: walletDelta, reason: "MATCH", refId: matchId });
       const level = levelFromXp(after.xp).level;
       if (level !== after.level) {
         await tx.user.update({ where: { id: userId }, data: { level } });

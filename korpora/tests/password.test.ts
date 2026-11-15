@@ -24,6 +24,13 @@ test('predictable passwords are refused', () => {
   assert.equal(passwordProblem('qwerty123456'), 'common');
 });
 
+test('the local list covers the common-password corpus, not 16 words (ASVS 5.0 v6.2.4: at least 3000)', () => {
+  // 2026-11-15, Прониквача: with HIBP down only the local list protects, and it had 16 words.
+  assert.equal(passwordProblem('football2026!'), 'common');
+  assert.equal(passwordProblem('sunshine-1234'), 'common');
+  assert.equal(passwordProblem('princess.2026'), 'common');
+});
+
 test('the person’s own name or email is refused', () => {
   assert.equal(passwordProblem('ivanov-kitchen-7', ['ivanov@example.test']), 'personal');
   assert.equal(passwordProblem('дърводелски-цех-7', ['Иван Дърводелски']), 'personal');

@@ -60,6 +60,7 @@ export const SLIDE_SYSTEMS = [
     mount: 'under',
     innerWidthMinus: 42,
     lengths: [600],
+    // Задното укрепване (rear fixing) на NL 600 не е пробито: нямаме размер за него от документ на Blum — само тези отвори.
     holes: { 600: [18, 37, 69, 261, 293] },
     hole: { d: 5, depth: 13, note: 'за системен винт Ø6 × 14,5 (Blum 661.1450.HG); Ø5 × 13 — наш избор по системата 32 mm' },
     axisAboveBottom: 9.5, // 38 − 28,5 (TD-132/1 стр. 5)

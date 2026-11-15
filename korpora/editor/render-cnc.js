@@ -1,12 +1,12 @@
 // CNC tab: per-sheet G-code and DXF, the tool table, time estimate and the toolpath simulation.
 import { $, esc, fmt, pct, stat, reduceMotion, setHtml } from './dom.js';
-import { toGcode, POSTS, GROOVE_MILL, CLEAR, cncFileName } from '../engine/cam.js';
+import { toGcode, POSTS, GROOVE_MILL, cncFileName } from '../engine/cam.js';
 import { toDxf } from '../engine/dxf.js';
 import { sheetSvg, sheetTitle } from './render-nest.js';
 
 const RAPID_MM_MIN = 30000; // assumption for the time estimate
-const TOOL_CHANGE_S = 15; // assumption for the time estimate
-const HOLE_EXTRA_S = 0.4; // assumption for the time estimate: positioning and dwell per hole
+const TOOL_CHANGE_S = { iso: 15 + 5, grbl: 60 + 2 }; // assumption: automatic change / by hand with the Z0 touch-off (M0), plus the spindle dwell
+const HOLE_EXTRA_S = 0.4; // assumption for the time estimate: positioning per hole
 // simulation pace: a hole counts as this many mm of path, a rapid at this share of its length; the whole run takes SIM_MS
 const SIM_HOLE_MM = 30;
 const SIM_RAPID_SHARE = 0.25;
@@ -23,7 +23,10 @@ function moveLength(m) {
   return Math.hypot(m.to.X - m.from.X, m.to.Y - m.from.Y, m.to.Z - m.from.Z);
 }
 
-function estimate(g) {
+// The run time of one sheet's G-code. A drill move carries its own path (gcode.js): `cut` mm at the drill's feed,
+// `slow` mm at half of it (the end of a through hole), `retract` mm of rapids the canned cycle makes inside the control
+// (G98: back to the initial level, G83: up to R after each peck).
+export function estimate(g) {
   let cut = 0;
   let rapid = 0;
   let seconds = 0;
@@ -38,14 +41,22 @@ function estimate(g) {
       seconds += (len / RAPID_MM_MIN) * 60;
     } else if (m.type === 'drill') {
       drills += 1;
-      // in from the R plane and back out, at the drill's feed (GRBL: under the project's feed cap)
-      seconds += (((m.depth + CLEAR) * 2) / (m.F || drillFeed.get(m.tool))) * 60 + HOLE_EXTRA_S;
+      const F = m.F || drillFeed.get(m.tool);
+      rapid += m.retract || 0;
+      seconds +=
+        ((m.cut || 0) / F + (m.slow || 0) / (F / 2) + (m.retract || 0) / RAPID_MM_MIN) * 60 +
+        HOLE_EXTRA_S;
     } else {
       cut += len;
       seconds += (len / (m.F || 3000)) * 60;
     }
   }
-  return { cut, rapid, seconds: seconds + g.tools.length * TOOL_CHANGE_S, drills };
+  return {
+    cut,
+    rapid,
+    seconds: seconds + g.tools.length * (TOOL_CHANGE_S[g.post] ?? TOOL_CHANGE_S.iso),
+    drills,
+  };
 }
 
 function pointOn(m, frac) {
