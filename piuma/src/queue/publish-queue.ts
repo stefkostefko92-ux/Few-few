@@ -11,6 +11,8 @@ export const PUBLISH_JOB = 'publish-post';
 export const INSIGHTS_JOB = 'sync-insights';
 export const AUTOPILOT_JOB = 'autopilot';
 export const REPLY_JOB = 'private-reply';
+export const AUDIT_VERIFY_JOB = 'verify-audit';
+export const AUDIT_VERIFY_JOB_ID = 'audit-verify-hourly';
 
 /**
  * Идентификаторите на задачите са с тире, не с двоеточие: BullMQ отказва custom id с „:“
@@ -109,6 +111,23 @@ export async function scheduleManagement(): Promise<void> {
     AUTOPILOT_JOB,
     {},
     { repeat: { pattern: '0 6 * * 1' }, jobId: 'autopilot-weekly' },
+  );
+}
+
+/**
+ * Пълна проверка на одит-веригата всеки час (в :17 — далеч от 03:00 и 04:30). Скъсване → грешка в
+ * лога + одит запис; цяла верига → главата отива в котвата извън базата (src/audit.ts).
+ */
+export async function scheduleAuditVerify(): Promise<void> {
+  await publishQueue().add(
+    AUDIT_VERIFY_JOB,
+    {},
+    {
+      repeat: { pattern: '17 * * * *' },
+      jobId: AUDIT_VERIFY_JOB_ID,
+      attempts: 1,
+      removeOnComplete: { age: 7 * 24 * 3600, count: 200 },
+    },
   );
 }
 

@@ -22,6 +22,9 @@ function Half({ value }: { value: number }) {
   );
 }
 
+/** `data-*` hooks (stable selectors for tests/tooling) passed straight to the tile. */
+type DataAttrs = { [key: `data-${string}`]: string | number | boolean | undefined };
+
 /** A domino tile "a-b". Vertical orientation for hand display (and for
  *  crosswise doubles on the line); `flip` swaps the halves so the line can
  *  render each tile with its left-facing pip first. */
@@ -31,13 +34,14 @@ export function DominoTile({
   flip,
   playable,
   onClick,
+  ...data
 }: {
   tile: string;
   vertical?: boolean;
   flip?: boolean;
   playable?: boolean;
   onClick?: () => void;
-}) {
+} & DataAttrs) {
   const { t } = useTranslation();
   if (tile === "?") return <span className="dom-tile dom-tile--back" aria-hidden />;
   const [a, b] = tile.split("-").map(Number) as [number, number];
@@ -49,6 +53,8 @@ export function DominoTile({
       onClick={onClick}
       aria-label={t("a11y.domino", { a, b })}
       className={cn("dom-tile", vertical && "dom-tile--v", playable && "dom-tile--playable")}
+      data-tile={tile}
+      {...data}
     >
       <Half value={first} />
       <Half value={second} />

@@ -67,7 +67,7 @@
     "post": "Post-processore",
     "grblStepDown": "Profondità di passata, mm",
     "grblMaxFeed": "Avanzamento massimo, mm/min",
-    "onion": "Onion skin 0,3 mm: i pezzi piccoli non si spostano",
+    "onion": "Onion skin 0,5 mm: i pezzi piccoli non si spostano",
     "compensation": "Le misure di taglio compensano il bordo",
     "shelfLoad": "Carico sul ripiano (verifica: freccia fino allo 0,5% della luce tra gli appoggi)",
     "reset": "Ripristina i valori predefiniti",
@@ -394,14 +394,15 @@
         "price": "Ferramenta, prezzo",
         "pieces": "{n} pz",
         "grain": "La venatura segue la lunghezza",
-        "bandLine": "Bordo {t} mm · {decor}",
-        "bandHint": "Il bordo è indicato in lunghezze esatte, senza sovrappiù per la rifilatura.",
+        "bandLine": "Bordo {t} × {w} mm per pannello da {boardT} mm, colla {glue} · {decor}",
+        "bandHint": "Il bordo è indicato in lunghezze esatte, senza sovrappiù per la rifilatura. Il peso segue la densità del pannello. Mobile sotto il lavello: pannello P3 e bordo con colla PUR.",
         "unpriced": {
           "one": "{n} voce senza prezzo — minuteria o ferramenta generica.",
           "other": "{n} voci senza prezzo — minuteria e ferramenta generica."
         },
         "edgeHint": "I fori orizzontali nelle coste non si fanno su una macchina a 3 assi: foratrice o dima.",
-        "noEdgeOps": "Nessuna lavorazione fuori dal CNC."
+        "noEdgeOps": "Nessuna lavorazione fuori dal CNC.",
+        "weight": "Pannelli, peso"
       },
       "nest": {
         "sheetAria": "Pannello {n}: {parts} pezzi",
@@ -437,6 +438,7 @@
     "cnc": "DXF a layer e G-code per ogni pannello del nesting",
     "cncBlocked": "NON RILASCIATA: i controlli hanno trovato errori, e G-code e DXF non devono mai essere sbagliati. Correggete nell'editor e scaricate di nuovo:",
     "checks": "Controlli della costruzione:",
-    "machine": "Il G-code è per un profilo di macchina di esempio (numeri degli utensili, zero nell'angolo in basso a sinistra del pannello, Z0 sulla superficie superiore). Prima di tagliare: simulatelo nel software della macchina e fate una prova a vuoto."
+    "machine": "Il G-code è per un profilo di macchina di esempio (numeri degli utensili, zero nell'angolo in basso a sinistra del pannello, Z0 sulla superficie superiore). Prima di tagliare: simulatelo nel software della macchina e fate una prova a vuoto.",
+    "cncMm": "Il DXF è in MILLIMETRI (R12 non ha un campo per le unità — importatelo nel CAM in mm, altrimenti i pezzi escono 25,4 volte più grandi). Nei nomi dei layer «P» è il separatore decimale (Z-18P6 = −18,6 mm); i fori da eseguire a mano sono nei layer MANUAL_DRILL_…"
   }
 }

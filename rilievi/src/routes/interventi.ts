@@ -21,7 +21,7 @@ import {
   type InterventoFull,
 } from '../interventi/service.js';
 import { improntaLeggibile } from '../interventi/sigillo.js';
-import { codiceVoce, GRUPPI_VOCI, MAX_CAMPO, valoriVoci } from '../interventi/voci.js';
+import { codiceVoce, gruppiVoci, MAX_CAMPO, valoriVoci } from '../interventi/voci.js';
 import type { FieldErrors, FormValues } from '../schede/field-parsers.js';
 import { businessDay } from '../time.js';
 import { aziendaFilterOf, aziendeOf, notFound } from './schede-shared.js';
@@ -73,7 +73,7 @@ function renderForm(res: Response, status: number, view: FormView): void {
     titleKey: 'interventi.new',
     title: numero ? res.locals.t('interventi.numero', { n: numero }) : undefined,
     scripts: [],
-    gruppi: GRUPPI_VOCI,
+    gruppi: gruppiVoci(new Date()),
     codice: codiceVoce,
     maxCampo: MAX_CAMPO,
     turni: TURNI,
@@ -146,7 +146,8 @@ interventiRouter.get('/interventi/:id', read, async (req, res) => {
     title: res.locals.t('interventi.numero', { n: numeroModulo(row.numero) }),
     intervento: row,
     numero: numeroModulo(row.numero),
-    gruppi: GRUPPI_VOCI,
+    // Текстът на точките — от деня на потвърждаването (voci.ts, `CAMBI_TESTO_VOCI`).
+    gruppi: gruppiVoci(row.confermatoAt ?? new Date()),
     codice: codiceVoce,
     voci: valoriVoci(row.voci),
     firme: {

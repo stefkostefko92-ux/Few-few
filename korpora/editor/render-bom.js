@@ -9,6 +9,7 @@ export function renderBom(state) {
   const { bom, nesting, spec } = state;
   const { rows, bands, boards, hardware, hardwareTotals, unpriced } = bom;
   const bandM = bands.reduce((a, b) => a + b.metres, 0);
+  const kg = boards.reduce((a, b) => a + b.kg, 0);
   const pieces = hardware.reduce((a, h) => a + h.qty, 0);
   const totals =
     Object.entries(hardwareTotals)
@@ -18,6 +19,7 @@ export function renderBom(state) {
     stat(tx('bom.parts'), fmt(rows.length)),
     stat(tx('bom.sheets'), fmt(nesting.sheets.length)),
     stat(tx('bom.band'), `${fmt(bandM, 1)} m`),
+    stat(tx('bom.weight'), `≈ ${fmt(kg, 1)} kg`),
     stat(tx('bom.hardware'), esc(tx('bom.pieces', { n: fmt(pieces) }))),
     stat(tx('bom.price'), totals),
   ].join('');
@@ -36,13 +38,13 @@ export function renderBom(state) {
     boards
       .map(
         (b) =>
-          `<li><span>${esc(STOCK[b.stock].name)} ${b.thickness} mm · ${esc(b.decorName)}</span><span class="num">${fmt(b.area, 2)} m²</span></li>`,
+          `<li><span>${esc(b.stockName)} ${b.thickness} mm, ${esc(b.grade)} · ${esc(b.decorName)}</span><span class="num">${fmt(b.area, 2)} m²<small>≈ ${fmt(b.kg, 1)} kg</small></span></li>`,
       )
       .join('') +
     bands
       .map(
         (b) =>
-          `<li><span>${esc(tx('bom.bandLine', { t: num(b.thickness), decor: b.decorName }))}</span><span class="num">${fmt(b.metres, 1)} m</span></li>`,
+          `<li><span>${esc(tx('bom.bandLine', { t: num(b.thickness), w: b.width, boardT: b.boardT, glue: b.glue, decor: b.decorName }))}</span><span class="num">${fmt(b.metres, 1)} m</span></li>`,
       )
       .join('') +
     `<li class="hint">${esc(tx('bom.bandHint'))}</li>`;
