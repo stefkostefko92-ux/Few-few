@@ -6843,7 +6843,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 294
+        "lessons": 296
       },
       "evolution": [
         {
@@ -7259,9 +7259,20 @@
           "date": "2026-11-15",
           "event": "v26.5 — учене",
           "detail": "Научи: nginx 1.24.0 от пакета на Ubuntu 24.04 не познава директивата \"http2 on;\" — на такъв хо… (+19 още)"
+        },
+        {
+          "version": "26.7.0",
+          "date": "2026-11-15",
+          "event": "v26.7 — учене",
+          "detail": "Научи: Директивата `http2 on;` в nginx съществува от 1.25.1; nginx 1.24 (Ubuntu 24.04 apt) дав… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „Директивата `http2 on;` в nginx съществува от 1.25.1; nginx 1.24 (Ubuntu 24.04 apt) дав…\" (+1 още)"
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
