@@ -1,4 +1,5 @@
 import { prisma } from "@aso/db";
+import { credit, recordLedger } from "@aso/db/ledger";
 import {
   ACHIEVEMENT_DEFS,
   activeQuests,
@@ -59,8 +60,9 @@ export async function grantXpAndChips(
 
 /**
  * Daily-login claim: increments the streak (resets if a day was missed), grants
- * the streak reward once per UTC day. Idempotent per day via lastSeenAt marker
- * stored in Redis (`daily:<userId>` = yyyy-mm-dd).
+ * the streak reward once per UTC day. Idempotent per day in the DATABASE
+ * (`DailyClaim` PK userId+day, same transaction as the credit); the Redis
+ * SET NX key is only a fast path against concurrent POSTs.
  */
 export async function claimDaily(userId: string): Promise<{
   claimed: boolean;
@@ -74,23 +76,45 @@ export async function claimDaily(userId: string): Promise<{
 
   // Atomic claim: only the first request for today's key wins, so concurrent
   // POSTs can't double-credit. SET NX returns null if the key already existed.
-  const won = await redis.set(`daily:claim:${userId}:${today}`, "1", "EX", 60 * 60 * 48, "NX");
+  const claimKey = `daily:claim:${userId}:${today}`;
+  const won = await redis.set(claimKey, "1", "EX", 60 * 60 * 48, "NX");
   if (won === null) {
     const streak = Number((await redis.get(streakKey)) ?? 1);
     return { claimed: false, streak, chips: 0, gems: 0 };
   }
 
-  const yesterday = dayKey(new Date(Date.now() - 86_400_000));
-  const last = await redis.get(lastKey);
-  const prevStreak = Number((await redis.get(streakKey)) ?? 0);
-  const streak = last === yesterday ? Math.min(prevStreak + 1, 7) : 1;
+  let streak = 1; // пресмята се в try; 1 = стойност по подразбиране
+  let reward: { chips: number; gems: number };
+  try {
+    const yesterday = dayKey(new Date(Date.now() - 86_400_000));
+    const last = await redis.get(lastKey);
+    const prevStreak = Number((await redis.get(streakKey)) ?? 0);
+    streak = last === yesterday ? Math.min(prevStreak + 1, 7) : 1;
 
-  // VIP множителят се прилага върху чиповете само при активен абонамент.
-  const reward = vipDailyReward(streak, await perksOf(userId));
-  await prisma.user.update({
-    where: { id: userId },
-    data: { chips: { increment: BigInt(reward.chips) }, gems: { increment: reward.gems } },
-  });
+    // VIP множителят се прилага върху чиповете само при активен абонамент.
+    reward = vipDailyReward(streak, await perksOf(userId));
+    // Денят (уникален userId+day) + кредит + ред DAILY в регистъра — атомарно.
+    // Идемпотентността е в базата: Redis ключът е само бърз път.
+    await prisma.$transaction(async (tx) => {
+      await tx.dailyClaim.create({ data: { userId, day: today } });
+      await credit(tx, userId, "CHIPS", reward.chips, "DAILY", `daily:${today}`);
+      await credit(tx, userId, "GEMS", reward.gems, "DAILY", `daily:${today}`);
+    });
+  } catch (err) {
+    const week = 60 * 60 * 24 * 8;
+    if ((err as { code?: string }).code === "P2002") {
+      // Денят вече е записан в базата (напр. предишен опит е комитнал, но
+      // потвърждението се е изгубило) → без втори бонус; Redis ключът остава.
+      await redis.set(lastKey, today, "EX", week);
+      await redis.set(streakKey, String(streak), "EX", week);
+      return { claimed: false, streak, chips: 0, gems: 0 };
+    }
+    // Друга грешка → освобождаваме деня, иначе ключът остава „заявен“ 48 ч и
+    // наградата е изгубена. Ако commit-ът все пак е минал (двусмислен), следващият
+    // опит удря уникалния ключ в базата — двоен бонус няма.
+    await redis.del(claimKey).catch((e: unknown) => logger.error({ err: e, userId }, "daily: claim release failed"));
+    throw err;
+  }
   const week = 60 * 60 * 24 * 8;
   await redis.set(lastKey, today, "EX", week);
   await redis.set(streakKey, String(streak), "EX", week);
@@ -181,7 +205,10 @@ export async function recordMatchResult(opts: {
     });
     if (completed) {
       const xp = applyXpMultiplier(def.rewardXp, perks);
-      await prisma.$transaction((tx) => grantXpAndChips(tx, userId, xp, BigInt(def.rewardChips)));
+      await prisma.$transaction(async (tx) => {
+        await grantXpAndChips(tx, userId, xp, BigInt(def.rewardChips));
+        await recordLedger(tx, { userId, currency: "CHIPS", delta: def.rewardChips, reason: "QUEST", refId: row.id });
+      });
     }
   }
 
@@ -244,9 +271,7 @@ async function evaluateAchievements(userId: string, _game: GameKey, won: boolean
       // create and rolls back, so gems are never double-granted).
       await prisma.$transaction(async (tx) => {
         await tx.achievement.create({ data: { userId, key: def.key } });
-        if (def.rewardGems > 0) {
-          await tx.user.update({ where: { id: userId }, data: { gems: { increment: def.rewardGems } } });
-        }
+        await credit(tx, userId, "GEMS", def.rewardGems, "ACHIEVEMENT", def.key);
         await tx.notification.create({
           data: { userId, type: "achievement", data: JSON.stringify({ key: def.key, title: def.title }) },
         });
