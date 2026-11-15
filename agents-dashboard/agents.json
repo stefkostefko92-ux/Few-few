@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 689
+        "lessons": 690
       },
       "evolution": [
         {
@@ -2037,9 +2037,20 @@
           "date": "2026-11-15",
           "event": "v63.0 — учене",
           "detail": "Научи: В Korpora README на репото не стига до клиента; README в project.zip се сглобява от rea… (+69 още)"
+        },
+        {
+          "version": "63.1.0",
+          "date": "2026-11-15",
+          "event": "v63.1 — учене",
+          "detail": "Научи: В linketto preparePlanCheckout връща error=plan при жив абонамент преди всяка следваща …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „В linketto preparePlanCheckout връща error=plan при жив абонамент преди всяка следваща …\""
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
