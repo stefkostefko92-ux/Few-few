@@ -27,6 +27,8 @@ export const REDACT = {
     'res.headers["set-cookie"]',
     'req.headers["x-agent-signature"]',
     'req.headers["x-piuma-signature"]',
+    // IP адресът е лична данна (ОРЗД) и не стига до лога; извикващите не го подават, това е вторият пласт.
+    'ip',
   ],
   censor: '[скрито]',
 };

@@ -79,20 +79,6 @@ export function matchTotpStep(
   return null;
 }
 
-export function verifyTotp(
-  secretBase32: string,
-  code: string,
-  nowSeconds: number = Math.floor(Date.now() / 1000),
-): boolean {
-  const given = code.replace(/\s+/g, '');
-  if (!/^\d{6}$/.test(given)) return false;
-  for (const drift of [-1, 0, 1]) {
-    const expected = totpCode(secretBase32, nowSeconds + drift * TOTP_STEP_SECONDS);
-    if (timingSafeEqual(Buffer.from(expected), Buffer.from(given))) return true;
-  }
-  return false;
-}
-
 export function otpauthUrl(issuer: string, account: string, secretBase32: string): string {
   const label = encodeURIComponent(`${issuer}:${account}`);
   const params = new URLSearchParams({

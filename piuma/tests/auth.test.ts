@@ -8,8 +8,8 @@ import {
   matchTotpStep,
   otpauthUrl,
   totpCode,
-  verifyTotp,
 } from '../src/auth/totp.js';
+import { loginSchema } from '../src/admin/auth-routes.js';
 import { consumeTotpStep, type TotpStepStore } from '../src/auth/totp-replay.js';
 
 /**
@@ -109,15 +109,6 @@ test('TOTP съвпада с RFC 6238 тестовите вектори', () => 
   assert.equal(totpCode(secret, 2000000000), '279037');
 });
 
-test('проверката приема ±1 стъпка и отхвърля друг код', () => {
-  const secret = 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ';
-  assert.equal(verifyTotp(secret, '287082', 59), true);
-  assert.equal(verifyTotp(secret, '287082', 59 + 30), true);
-  assert.equal(verifyTotp(secret, '287082', 59 + 90), false);
-  assert.equal(verifyTotp(secret, '000000', 59), false);
-  assert.equal(verifyTotp(secret, 'abc', 59), false);
-});
-
 /* ---------- TOTP: един код = едно ползване (ASVS 5.0 v6.5.1, находка на Прониквача 2026-11-15) ---------- */
 
 test('matchTotpStep връща стъпката на съвпадението в прозореца ±1, иначе null', () => {
@@ -125,7 +116,17 @@ test('matchTotpStep връща стъпката на съвпадението в
   assert.equal(matchTotpStep(secret, '287082', 59), 1);
   assert.equal(matchTotpStep(secret, '287082', 89), 1, 'дрейф −1 връща същата стъпка');
   assert.equal(matchTotpStep(secret, '287082', 149), null);
+  assert.equal(matchTotpStep(secret, '000000', 59), null, 'друг код');
   assert.equal(matchTotpStep(secret, 'abc', 59), null);
+});
+
+/* Регресия (ревю, 2026-11-15): входът пускаше пароли до 200 знака, а политиката — до 256; парола
+   201–256 знака се приемаше при смяна и после никога не влизаше. */
+test('входът приема паролата до тавана на политиката и не над него', () => {
+  const email = 'owner@example.com';
+  const at = (n: number) => loginSchema.safeParse({ email, password: 'a'.repeat(n) }).success;
+  assert.equal(at(PASSWORD_MAX_LENGTH), true);
+  assert.equal(at(PASSWORD_MAX_LENGTH + 1), false);
 });
 
 test('consumeTotpStep: същият код втори път е отказ (повторение), по-стара стъпка — отказ, по-нова — минава', async () => {

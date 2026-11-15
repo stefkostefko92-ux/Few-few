@@ -7,7 +7,12 @@ import { config } from '../config.js';
 import { decryptSecret, encryptSecret } from '../crypto.js';
 import { prisma } from '../db.js';
 import { humanPrincipal, requireCsrf, requireLogin } from '../auth/guards.js';
-import { hashPassword, passwordPolicyError, verifyPassword } from '../auth/password.js';
+import {
+  PASSWORD_MAX_LENGTH,
+  hashPassword,
+  passwordPolicyError,
+  verifyPassword,
+} from '../auth/password.js';
 import {
   createSession,
   destroyAllSessions,
@@ -36,7 +41,11 @@ const totpLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1).max(200) });
+/** Таванът е този на политиката — иначе парола, приета при смяна, после не би влязла. */
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1).max(PASSWORD_MAX_LENGTH),
+});
 
 export const authRouter: Router = Router();
 

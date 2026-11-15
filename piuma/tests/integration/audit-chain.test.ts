@@ -87,10 +87,14 @@ test('одит-веригата v2 по целия път през базата'
     assert.notEqual(row.ipTag, row.ip);
   }
   const last = rows.at(-1)!;
-  assert.deepEqual(readAnchor(join(anchorDir, ANCHOR_FILE)), { id: last.id, hash: last.hash });
+  const anchorFile = join(anchorDir, ANCHOR_FILE);
+  // първият v2 запис заковава последния v1 номер в котвата — извън базата
+  const v1MaxId = rows.filter((r) => r.v === 1).at(-1)!.id;
+  assert.deepEqual(readAnchor(anchorFile), { id: last.id, hash: last.hash, v1MaxId });
   assert.deepEqual(await verifyAuditChain(), {
     ok: true,
     brokenAt: null,
+    breaks: [],
     count: 5,
     head: { id: last.id, hash: last.hash },
   });
@@ -125,17 +129,39 @@ test('одит-веригата v2 по целия път през базата'
   let restore = await downgradeFrom(v2[1]!.id);
   assert.equal((await verifyAuditChain()).brokenAt, v2[1]!.id, 'частично сваляне до v1');
   await restore();
-  // цялата v2 опашка свалена до v1: веригата в базата е валидна v1 — издава я само котвата
+  // цялата v2 опашка свалена до v1: v1 над закования номер — скъсано на първия подменен запис
   restore = await downgradeFrom(v2[0]!.id);
-  assert.equal((await verifyAuditChain()).brokenAt, last.id, 'пълно сваляне — котвата');
+  const downgraded = await verifyAuditChain();
+  assert.equal(downgraded.brokenAt, v2[0]!.id, 'пълно сваляне — закованият v1 номер');
+  assert.ok(downgraded.breaks.includes(last.id), 'котвата също го вижда');
   await restore();
+  assert.equal((await verifyAuditChain()).ok, true, 'възстановено');
+
+  // две отделни подмени без преизчисляване — отчитат се и двете, не само първата
+  await prisma.auditLog.update({ where: { id: v2[0]!.id }, data: { action: 'post.reject' } });
+  await prisma.auditLog.update({ where: { id: v2[2]!.id }, data: { action: 'post.reject' } });
+  assert.deepEqual((await verifyAuditChain()).breaks, [v2[0]!.id, v2[2]!.id]);
+  for (const row of [v2[0]!, v2[2]!]) {
+    await prisma.auditLog.update({ where: { id: row.id }, data: { action: row.action } });
+  }
   assert.equal((await verifyAuditChain()).ok, true, 'възстановено');
 
   // изрязан край: последният запис изтрит — веригата в базата е цяла, котвата не е
   await prisma.auditLog.delete({ where: { id: last.id } });
   assert.equal((await verifyAuditChain()).brokenAt, last.id, 'котвата издава изрязания край');
 
-  // планираната проверка записва скъсването в одита — веднъж на място на скъсване
+  // Регресия (ревю, 2026-11-15): първият запис след изрязването местеше котвата напред по номер —
+  // „поправяше“ я и следата изчезваше. Сега котвата стои, а записът сам вдига аларма.
+  await audit(
+    { type: 'HUMAN', id: 'u6', label: 'Нов 6', ip: '203.0.113.6' },
+    { action: 'post.approve', targetType: 'Post', targetId: 'p6' },
+  );
+  const afterWrite = await verifyAuditChain();
+  assert.equal(afterWrite.ok, false, 'изрязване → нов запис → пак скъсано');
+  assert.equal(afterWrite.brokenAt, last.id);
+  assert.deepEqual(readAnchor(anchorFile), { id: last.id, hash: last.hash, v1MaxId });
+
+  // записът и планираната проверка вдигат аларма в одита — веднъж на място на скъсване
   await runAuditCheck();
   await runAuditCheck();
   const alarms = await prisma.auditLog.findMany({ where: { action: 'audit.chain.broken' } });

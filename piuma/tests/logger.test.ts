@@ -97,6 +97,20 @@ test('IP хедърите (x-forwarded-for, x-real-ip) не стигат до л
   assert.equal(rec.req?.remoteAddress, undefined, 'адресът на връзката (pino-http) също е IP');
 });
 
+/* Регресия (ревю, 2026-11-15): `logger.warn({ ip: req.ip }, …)` при отказан webhook/агентска заявка
+   пишеше IP адреса в лога. Махнато в извикващите; REDACT е вторият пласт за следващия, който го добави. */
+test('поле `ip` в лог запис се заличава', () => {
+  let out = '';
+  const sink = new Writable({
+    write(chunk, _enc, cb) {
+      out += chunk.toString();
+      cb();
+    },
+  });
+  pino({ redact: REDACT }, sink).warn({ ip: '203.0.113.5', reason: 'x' }, 'отказ');
+  assert.ok(!out.includes('203.0.113.5'), 'IP изтече в лога');
+});
+
 test('времето в лога е ISO 8601 (UTC), не милисекунди от epoch', () => {
   let out = '';
   const sink = new Writable({

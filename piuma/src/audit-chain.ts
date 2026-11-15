@@ -121,37 +121,50 @@ export interface ChainCursor {
   count: number;
   /** видян ли е вече запис v2 — след него v1 е връщане към версия без ключ */
   sawV2: boolean;
+  /** предишният запис е скъсан — следващото скъсване е същата отсечка, не ново място */
+  inBreak: boolean;
 }
 
-export const CHAIN_START: ChainCursor = { prevHash: '', lastId: 0, count: 0, sawV2: false };
+export const CHAIN_START: ChainCursor = {
+  prevHash: '',
+  lastId: 0,
+  count: 0,
+  sawV2: false,
+  inBreak: false,
+};
 
 /**
  * Проверява поредица записи (подредени по id) от `cursor` нататък. Хваща подменен запис, пропуснат
- * запис, непозната версия, v1 след v2 (пресметнато наново със SHA-256 без ключ) и подменен суров IP
- * във v2 (етикетът не съвпада). Заличен IP (null) е позволен — той не е във v2 хеша.
+ * запис, непозната версия, v1 след v2 или над `v1MaxId` (закования извън базата последен v1 номер)
+ * и подменен суров IP във v2 (етикетът не съвпада). Заличен IP (null) е позволен — не е във v2 хеша.
+ *
+ * Не спира на първото скъсване: продължава от записания хеш на скъсания запис, за да види и
+ * следващите подмени. Връща началото на всяка скъсана отсечка (поредица скъсани записи = едно място).
  */
 export function verifyRows(
   cursor: ChainCursor,
   rows: Iterable<ChainRow>,
   keys: ChainKeys,
-): { cursor: ChainCursor; brokenAt: number | null } {
-  let { prevHash, lastId, count, sawV2 } = cursor;
+  v1MaxId: number | null = null,
+): { cursor: ChainCursor; breaks: number[] } {
+  let { prevHash, lastId, count, sawV2, inBreak } = cursor;
+  const breaks: number[] = [];
   for (const row of rows) {
     const known = row.v === 1 || row.v === AUDIT_VERSION;
     const ipOk = row.v === 1 || row.ip === null || row.ipTag === ipTag(row.ip, keys);
-    if (
-      !known ||
-      (sawV2 && row.v === 1) ||
-      row.prevHash !== prevHash ||
-      row.hash !== rowHash(prevHash, row, row.v, keys) ||
-      !ipOk
-    ) {
-      return { cursor: { prevHash, lastId, count, sawV2 }, brokenAt: row.id };
-    }
+    const v1Ok = row.v !== 1 || (!sawV2 && (v1MaxId === null || row.id <= v1MaxId));
+    const ok =
+      known &&
+      v1Ok &&
+      ipOk &&
+      row.prevHash === prevHash &&
+      row.hash === rowHash(prevHash, row, row.v, keys);
+    if (!ok && !inBreak) breaks.push(row.id);
+    inBreak = !ok;
     sawV2 ||= row.v === AUDIT_VERSION;
     prevHash = row.hash;
     lastId = row.id;
     count += 1;
   }
-  return { cursor: { prevHash, lastId, count, sawV2 }, brokenAt: null };
+  return { cursor: { prevHash, lastId, count, sawV2, inBreak }, breaks };
 }
