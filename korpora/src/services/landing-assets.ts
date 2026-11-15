@@ -1,4 +1,5 @@
 import { sha256Hex } from '../crypto.js';
+import { DEFAULT_LOCALE, translate, type Locale } from '../i18n.js';
 import { engine, type DrawingMeta, type EngineModel } from './engine.js';
 import { sheetArt, type SheetLike } from './landing-sheet.js';
 
@@ -6,7 +7,7 @@ import { sheetArt, type SheetLike } from './landing-sheet.js';
  * Истинските изходи на двигателя за витрината. Всичко идва от един проект — кухнята по подразбиране:
  * първият лист от разкроя с пътя на фрезата, откъс от списъка с детайлите, началото на G-кода и чертежът
  * на една врата с картата за пробиване. Нищо не е рисувано на ръка: ако двигателят се промени, се
- * променя и витрината. Смята се веднъж, при първа нужда.
+ * променя и витрината. Смята се веднъж за всеки език, при първа нужда.
  */
 interface BomRow {
   id: string;
@@ -112,7 +113,7 @@ export const EXAMPLE = {
 } as const;
 const EXAMPLE_DATE = '2026-10-02';
 
-let cached: LandingAssets | null = null;
+const cached = new Map<Locale, LandingAssets>();
 
 /** Целият лист, когато няма какво да се изреже: размерът идва от viewBox на чертежа (двигателят рисува A3). */
 function wholeSheet(svg: string, scale: number): DrawingView {
@@ -165,14 +166,16 @@ function cutRows(model: EngineModel): CutRow[] {
     }));
 }
 
-export function landingAssets(): LandingAssets {
-  if (cached) return cached;
+/** Примерът на езика на страницата: имената на детайлите в таблицата, надписите на чертежа и на листа. */
+export function landingAssets(locale: Locale = DEFAULT_LOCALE): LandingAssets {
+  const known = cached.get(locale);
+  if (known) return known;
   const api = engine();
-  const model = api.buildModel(EXAMPLE);
+  const model = api.buildModel(EXAMPLE, { lang: locale });
   const meta: DrawingMeta = {
     product: 'Korpora',
     hash: sha256Hex(api.canonicalJson(model.spec)),
-    owner: 'Примерен проект',
+    owner: translate(locale, 'landing.exampleOwner'),
     date: EXAMPLE_DATE,
   };
   const nesting = api.nest(model);
@@ -194,7 +197,7 @@ export function landingAssets(): LandingAssets {
   >;
   const sheets = nesting.sheets as Array<SheetLike & { yield: number }>;
   const modules = api.kitchenModules(model.spec);
-  cached = {
+  const assets: LandingAssets = {
     example: {
       modules: modules.length,
       doorModules: modules.filter((m) => !m.drawers).length,
@@ -240,5 +243,6 @@ export function landingAssets(): LandingAssets {
     gcode: art.gcode,
     dxfLayers: dxf.layers.filter((layer) => layer !== 'SHEET' && layer !== 'LABELS'),
   };
-  return cached;
+  cached.set(locale, assets);
+  return assets;
 }

@@ -16,7 +16,7 @@ import { toDxf } from '../../engine/dxf.js';
 import * as fronts from '../../engine/fronts.js';
 
 // namespace imports: a name the engine does not export yet fails its own test, not the whole file
-const { toGcode, cncBlockers, GROOVE_MILL, CUT_LENGTH } = cam;
+const { toGcode, cncBlockers, GROOVE_MILL, CUT_LENGTH, grooveLines } = cam;
 const { plateSetback } = fronts;
 
 registerFixtures();
@@ -137,13 +137,19 @@ test('a door thicker or thinner than the hinge system takes is a blocker', () =>
   assertBlocks(buildModel({ type: 'base', hinge: 'fx:thin' }), /Врата: 18 mm — .* е за врати 15–17 mm/);
 });
 
-test('the groove mill is as wide as the groove; a groove of another width is a blocker', () => {
+test('the groove mill is as wide as the back groove; a narrower groove is a blocker, a wider one is cut in passes', () => {
   assert.equal(GROOVE.width, GROOVE_MILL.d);
   const m = buildModel({ type: 'base' });
   const part = m.parts.find((p) => p.features.some((f) => f.type === 'groove'));
   assert.ok(m.parts.every((p) => p.features.every((f) => f.type !== 'groove' || f.w === GROOVE_MILL.d)));
-  part.features.find((f) => f.type === 'groove').w = 6;
-  assert.ok(cncBlockers(m, nest(m)).some((b) => b.startsWith(`${part.name}: канал 6 mm`)));
+  const groove = part.features.find((f) => f.type === 'groove');
+  groove.w = 3;
+  assert.ok(cncBlockers(m, nest(m)).some((b) => b.startsWith(`${part.name}: канал 3 mm`)));
+  // a 6 mm groove with the Ø4 mill: two passes, its edges at ±1 mm from the middle — the groove is 6 mm wide
+  groove.w = 6;
+  assert.ok(!cncBlockers(m, nest(m)).some((b) => b.startsWith(`${part.name}: канал`)));
+  const lines = grooveLines({ X1: 0, Y1: 0, X2: 100, Y2: 0, w: 6 }, GROOVE_MILL);
+  assert.deepEqual(lines.map((l) => l.Y1), [-1, 1]);
 });
 
 test('hinge data: no Ø5 system holes for a Blum plate above 3 mm; Hettich Fix dowels Ø10 × 6; the inset plate setback', () => {

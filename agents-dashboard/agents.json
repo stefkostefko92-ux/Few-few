@@ -2033,28 +2033,17 @@
           "detail": "Научи: sharp 0.35 с limitInputPixels не пази паметта при прогресивен JPEG (208 Mpx, 4:4:4, фай… (+1 още)"
         },
         {
-          "version": "63.7.0",
-          "date": "2026-11-15",
-          "event": "v63.7 — учене",
-          "detail": "Научи: Stripe API v1 при повторен Idempotency-Key връща запазения първи отговор (до изчистване… (+76 още)"
-        },
-        {
           "version": "63.8.0",
           "date": "2026-11-15",
           "event": "v63.8 — учене",
-          "detail": "Научи: SELECT … FOR UPDATE на родителски ред влиза в deadlock с транзакция, която първо UPDATE…"
+          "detail": "Научи: SELECT … FOR UPDATE на родителски ред влиза в deadlock с транзакция, която първо UPDATE… (+77 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-15",
           "type": "learning",
-          "summary": "Научи: „SELECT … FOR UPDATE на родителски ред влиза в deadlock с транзакция, която първо UPDATE…\""
-        },
-        {
-          "date": "2026-11-15",
-          "type": "learning",
-          "summary": "Научи: „Stripe API v1 при повторен Idempotency-Key връща запазения първи отговор (до изчистване…\" (+76 още) · 9 в карантина"
+          "summary": "Научи: „SELECT … FOR UPDATE на родителски ред влиза в deadlock с транзакция, която първо UPDATE…\" (+77 още) · 9 в карантина"
         },
         {
           "date": "2026-11-04",

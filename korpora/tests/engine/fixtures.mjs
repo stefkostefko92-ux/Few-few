@@ -48,8 +48,29 @@ export const OUTPUT_SPECS = [
   { type: 'wardrobe', width: 3000, post: 'grbl', tool: 8, onion: false, hinge: 'fx:hettich' },
   { type: 'bed', mattressW: 900, footHeight: 0 },
   { type: 'kitchen', modules: 6, bandCompensation: false, hinge: 'fx:gtv' },
+  // Г and П kitchens: the walls in their own coordinates, the blind fronts, the worktop in pieces (kitchen.js)
+  { type: 'kitchen', shape: 'left', handle: 'fx:knob' },
+  { type: 'kitchen', shape: 'u', post: 'grbl', tool: 8 },
   { type: 'wardrobe', hinge: 'fx:salice' },
+  // rooms (room.js): the default one wall; a П room with pieces on all three walls, on GRBL
+  { type: 'room' },
+  { type: 'room', shape: 'u', roomWidth: 5000, roomDepth: 3500, post: 'grbl', items: [{ type: 'wardrobe', wall: 'A', x: 700, params: { width: 2400 } }, { type: 'nightstand', wall: 'B', x: 800, params: {} }, { type: 'tv', wall: 'C', x: 800, params: {} }] },
+  // sliding doors (sliding.js): two carcasses, Planofit grooves wider than the cutter, on ISO and on GRBL
+  { type: 'wardrobe', doorType: 'sliding', height: 2200, width: 3000, columns: 4 },
+  { type: 'wardrobe', doorType: 'sliding', height: 2100, layout: 'hanging', post: 'grbl', tool: 8 },
   { type: 'bookcase', columns: 3, hinge: 'fx:gtv' },
+  // a free carcass that uses every kind of cell and front, wider than one carcass, on GRBL
+  {
+    type: 'custom', width: 3000, height: 2200, depth: 600, post: 'grbl', hinge: 'fx:hettich',
+    grid: {
+      columns: [
+        { w: 450, cells: [{ h: 540, fill: 'drawers', n: 3 }, { h: null, fill: 'rail', n: 0 }], fronts: [{ from: 1, to: 1, kind: 'door', hinge: 'left' }] },
+        { w: null, cells: [{ h: 900, fill: 'shelves', n: 2 }, { h: null, fill: 'shelves', n: 3 }], fronts: [{ from: 0, to: 1, kind: 'doors2' }] },
+        { w: null, cells: [{ h: 400, fill: 'open', n: 0 }, { h: null, fill: 'shelves', n: 3 }], fronts: [{ from: 1, to: 1, kind: 'door', hinge: 'right' }] },
+        { w: 450, cells: [{ h: 300, fill: 'drawers', n: 2 }, { h: 300, fill: 'drawers', n: 1 }, { h: null, fill: 'rail', n: 0 }], fronts: [{ from: 2, to: 2, kind: 'door' }] },
+      ],
+    },
+  },
 ];
 
 // A project with small parts (the drawer fronts and backs of the narrowest chest are under 0,02 m²): with the onion skin
