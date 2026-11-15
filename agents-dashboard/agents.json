@@ -6865,7 +6865,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 289
+        "lessons": 293
       },
       "evolution": [
         {
@@ -7281,9 +7281,20 @@
           "date": "2026-11-15",
           "event": "v26.0 — учене",
           "detail": "Научи: Prisma 6.19.3 при PRISMA_ENGINES_MIRROR иска <name>.gz.sha256 (sha256 на самия gz файл)… (+14 още)"
+        },
+        {
+          "version": "26.4.0",
+          "date": "2026-11-15",
+          "event": "v26.4 — учене",
+          "detail": "Научи: pkey_alloc/pkey_free/pkey_mprotect са само в групата @pkey — не са в @system-service, н… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „pkey_alloc/pkey_free/pkey_mprotect са само в групата @pkey — не са в @system-service, н…\" (+3 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
