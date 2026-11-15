@@ -29,14 +29,14 @@ function errorStatus(error: unknown): number {
   return 500;
 }
 
-/** Езикът на страницата за грешка — по пътя (`/en/...` → английски). */
+/** Езикът на страницата за грешка — на влезлия човек (приложение, панел), иначе по пътя (`/en/...`). */
 function localeOfPath(path: string): Locale {
   return path === '/en' || path.startsWith('/en/') ? 'en' : 'bg';
 }
 
 function renderError(req: Request, res: Response, status: 404 | 500): void {
   if (res.headersSent) return;
-  const locale = localeOfPath(req.path);
+  const locale = req.principal?.user.locale ?? localeOfPath(req.path);
   res.locals.lang = locale;
   res.locals.htmlLang = locale;
   res.locals.t = translator(locale, false);

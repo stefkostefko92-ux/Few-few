@@ -17,6 +17,7 @@
     "revenue": "Paid this month"
   },
   "records": "{count} records",
+  "recordsOne": "1 record",
   "recent": "Latest audit events",
   "staleTransfers": "Bank transfers for plans have been waiting for confirmation for more than 3 days: {count}. Check the statement — the invoice is due within 5 days of receiving the payment (Art. 113(4) VAT Act).",
   "search": "Search",
@@ -29,6 +30,7 @@
   "saved": "Saved.",
   "chain": "Verify the chain",
   "chainOk": "The chain is intact: {count} documents, every fingerprint and seal matches.",
+  "chainOkOne": "The chain is intact: 1 document, its fingerprint and seal match.",
   "chainBroken": "The chain breaks at link no. {at} ({kind}).",
   "confirmPayment": "Confirm the payment",
   "planFields": {
@@ -86,7 +88,8 @@
     },
     "options": {
       "sandbox": "Sandbox (testing)",
-      "production": "Production"
+      "production": "Production",
+      "acceptance": "Acceptance (testing)"
     },
     "secretSet": "Saved: {hint}. Empty — no change.",
     "secretEmpty": "Not saved.",
@@ -222,6 +225,7 @@
   "announcements": {
     "title": "Notices to customers",
     "help": "An email to the owners and administrators of every company ({count} addresses), one per address. The record here is the proof of when and to how many addresses it went.",
+    "helpOne": "An email to the owners and administrators of every company (1 address), one per address. The record here is the proof of when and to how many addresses it went.",
     "new": "New notice",
     "kind": "Kind",
     "kinds": {
@@ -235,8 +239,10 @@
     "effectiveOn": "Effective from",
     "effectiveHint": "Only for a change to the terms: {date} at the earliest (30 days’ notice, terms s. 15).",
     "confirm": "I checked the text; send it to {count} addresses.",
+    "confirmOne": "I checked the text; send it to 1 address.",
     "send": "Send",
     "ok": "Sent to {count} addresses — the emails are queued.",
+    "okOne": "Sent to 1 address — the email is queued.",
     "err": {
       "invalid": "Fill in the kind, subject, text, the tick and the code.",
       "code": "Wrong code.",
@@ -248,5 +254,39 @@
     "date": "Date",
     "recipients": "Addresses",
     "from": "effective {date}"
+  },
+  "grant": {
+    "title": "Plan",
+    "current": "Now",
+    "until": "until {date}",
+    "forever": "no end date",
+    "kindGranted": "granted manually",
+    "kindPaid": "paid",
+    "kindStart": "starting plan",
+    "noteShown": "Reason: {note}",
+    "intro": "Grant a plan manually — no payment and no invoice. Active subscriptions end; after the term the organisation returns to its starting plan. Recorded in the audit log.",
+    "terminated": "The organisation is terminated — no plan can be granted.",
+    "plan": "Plan",
+    "months": "Term",
+    "monthsOne": "1 month",
+    "monthsMany": "{count} months",
+    "foreverOption": "No end date",
+    "note": "Reason",
+    "noteHint": "3 to 200 characters, no personal data — e.g. “partner”, “award”, “trial period”.",
+    "replacePaid": "I understand that the paid period until {date} ends and is not restored.",
+    "button": "Grant plan",
+    "end": "End the granted plan",
+    "done": "The plan has been granted.",
+    "ended": "The granted plan has ended — the organisation is on its starting plan.",
+    "errors": {
+      "plan": "Choose an existing, active plan.",
+      "audience": "This plan is for the other kind of organisation (company or accounting firm).",
+      "months": "The term is 1 to 120 months, or no end date.",
+      "note": "Enter a reason of 3 to 200 characters.",
+      "paidActive": "The organisation has a running paid period — tick that it ends.",
+      "terminated": "The organisation is terminated — no plan can be granted.",
+      "deleted": "The organisation has been deleted.",
+      "notGranted": "The current plan was not granted manually — it is not ended from here."
+    }
   }
 }

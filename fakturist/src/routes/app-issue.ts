@@ -1,3 +1,4 @@
+import { inputMessage } from '../einvoice/input-messages.js';
 import { isSubmissionClash, issuedWithToken, submissionToken } from '../documents/submission.js';
 import { Router, type Request, type Response } from 'express';
 import { prisma } from '../db.js';
@@ -123,7 +124,7 @@ export function appIssueRouter(): Router {
       const issues = request.error.issues.map((issue) => ({
         rule: 'INPUT',
         path: issue.path.join('.'),
-        message: { bg: issue.message, en: issue.message },
+        message: inputMessage(issue.message),
       }));
       return renderNewDocument(req, res, access.organizationId, issues, req.body, 400);
     }
@@ -263,7 +264,7 @@ async function createProformaFromForm(req: Request, res: Response, access: OrgAc
     const issues = parsed.error.issues.map((issue) => ({
       rule: 'INPUT',
       path: issue.path.join('.'),
-      message: { bg: issue.message, en: issue.message },
+      message: inputMessage(issue.message),
     }));
     return renderNewDocument(req, res, access.organizationId, issues, req.body, 400);
   }

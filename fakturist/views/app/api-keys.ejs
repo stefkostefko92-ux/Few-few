@@ -56,7 +56,7 @@ curl -X POST <%= base %>/api/v1/documents \
   -H "Idempotency-Key: poruchka-2026-0001" \
   -d '{"seriesId":"…","typeCode":"380","issueDate":"2026-11-13","currency":"EUR",
        "buyer":{"name":"…","legalId":"…","address":{"street":"…","city":"…","postalCode":"…","countryCode":"BG"}},
-       "lines":[{"id":"1","name":"Услуга","quantity":"1","unitCode":"C62","netPrice":"100.00",
+       "lines":[{"id":"1","name":"<%= lang === 'bg' ? 'Услуга' : 'Service' %>","quantity":"1","unitCode":"C62","netPrice":"100.00",
                  "vat":{"category":"S","rate":"20"},"allowanceCharges":[],"attributes":[]}],
        "notes":[],"precedingInvoices":[],"allowanceCharges":[],"vatExemptions":[]}'</code></pre>
   <ul class="install-list">
