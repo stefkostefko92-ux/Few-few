@@ -26,6 +26,7 @@ jobs:
           # извън main, и иска историята на main (иначе курираните поуки изглеждат заседнали).
           # При плитък checkout тя честно казва „НЕИЗМЕРЕНО" — седмичният sweep е мястото, където мери.
           fetch-depth: 0
+          persist-credentials: false
       - name: Node версия (zero-dep)
         run: node --version
       # Един източник с agents.yml (tools/agents/gate.mjs). Дотук sweep-ът преписваше СВОЙ списък и
