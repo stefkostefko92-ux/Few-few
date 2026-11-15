@@ -9391,7 +9391,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 296
+        "lessons": 297
       },
       "evolution": [
         {
@@ -9759,9 +9759,20 @@
           "date": "2026-11-15",
           "event": "v28.0 — учене",
           "detail": "Научи: Stripe праща charge.dispute.closed само при status lost, warning_closed или won; inquir… (+2 още)"
+        },
+        {
+          "version": "28.1.0",
+          "date": "2026-11-15",
+          "event": "v28.1 — учене",
+          "detail": "Научи: Stripe Customer Portal конфигурацията (billingPortal.configurations.create) разрешава р…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „Stripe Customer Portal конфигурацията (billingPortal.configurations.create) разрешава р…\""
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
