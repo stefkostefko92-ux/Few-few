@@ -687,3 +687,11 @@
 {"t":"handoff","ts":"2026-11-15T13:04:09.443Z","id":"rc818a4a9","from":"danachnika","to":"човек","status":"има бележки","run":"3402dca3"}
 {"t":"start","ts":"2026-11-15T13:05:26.807Z","id":"rac3f5e24","flow":"авто","lead":"igrodelets","auto":true}
 {"t":"handoff","ts":"2026-11-15T13:05:26.807Z","id":"rac3f5e24","from":"igrodelets","to":"kodadjiyata","status":"има бележки","run":"5df71f58"}
+{"t":"start","ts":"2026-11-15T13:06:44.549Z","id":"r6b5039aa","flow":"авто","lead":"igrodelets","auto":true}
+{"t":"handoff","ts":"2026-11-15T13:06:44.549Z","id":"r6b5039aa","from":"igrodelets","to":"kodadjiyata","status":"има бележки","run":"c2446bbf"}
+{"t":"handoff","ts":"2026-11-15T13:06:46.695Z","id":"r6b5039aa","from":"frezadjiyata","to":"kodadjiyata","status":"има бележки","run":"1e9a53b5"}
+{"t":"handoff","ts":"2026-11-15T13:06:52.160Z","id":"r6b5039aa","from":"frezadjiyata","to":"kodadjiyata","status":"има бележки","run":"3441e8d3"}
+{"t":"handoff","ts":"2026-11-15T13:09:17.384Z","id":"r6b5039aa","from":"igrodelets","to":"kodadjiyata","status":"има бележки","run":"4d25b814"}
+{"t":"handoff","ts":"2026-11-15T13:11:15.568Z","id":"r6b5039aa","from":"frezadjiyata","to":"kodadjiyata","status":"има бележки","run":"a6213556"}
+{"t":"start","ts":"2026-11-15T13:11:45.191Z","id":"r1c820337","flow":"авто","lead":"igrodelets","auto":true}
+{"t":"handoff","ts":"2026-11-15T13:11:45.191Z","id":"r1c820337","from":"igrodelets","to":"kodadjiyata","status":"има бележки","run":"8ecf8a67"}
