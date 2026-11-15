@@ -284,6 +284,36 @@ test("3д. дедуп от едната страна не връща дубъл�
   assert.deepEqual(v, [VA], "theirs махна дубъла B → остава само A");
 });
 
+// Прегледът на AI-джията (#387): пазителят трябва да остави варианта НА МЯСТОТО му (редът в паметта е
+// хронологията), да важи и в Карантина, и да не съживява опровергана поука.
+const X = "- **2026-09-01:** първа съседна поука за подредбата _(global; verified; tools/x.mjs:1)_";
+const Y = "- **2026-09-30:** последна съседна поука за подредбата _(global; verified; tools/y.mjs:1)_";
+const DOCQ = (v, q) => `## Проверени поуки (verified)\n${v.join("\n")}${v.length ? "\n" : ""}\n## Карантина\n${q.join("\n")}${q.length ? "\n" : ""}`;
+const R = "- **2026-09-24:** ОПРОВЕРГАНА 2026-11-10 (вече не е вярно — гейтът пада и с node_modules) — CSPos гейтът падаше само заради липсващ node_modules _(global; verified; npm ci)_";
+
+test("3е. пазителят оставя варианта НА МЯСТОТО му, не го качва най-горе в раздела", async () => {
+  const { mergeLessons3, sectionLessons } = await import(pathToFileURL(join(REPO, "tools", "lib", "memory-core.mjs")).href);
+  const v = sectionLessons(mergeLessons3(DOC([X, VA, VB, Y]), DOC([X, VB, Y]), DOC([X, VA, Y])), "verified");
+  assert.deepEqual(v, [X, VB, Y], "B стои между X и Y, както в паметта");
+});
+
+test("3ж. същото правило в Карантина: различни варианти → точно един, в Карантина", async () => {
+  const { mergeLessons3, sectionLessons } = await import(pathToFileURL(join(REPO, "tools", "lib", "memory-core.mjs")).href);
+  const out = mergeLessons3(DOCQ([], [VA, VB]), DOCQ([], [VB]), DOCQ([], [VA]));
+  assert.deepEqual(sectionLessons(out, "quarantine"), [VB], "вариантът на паметта остава в Карантина");
+  assert.equal(sectionLessons(out, "verified").length, 0, "нищо не изскача в проверените");
+});
+
+test("3з. опровергана поука не се съживява от неопровергания вариант на другата страна", async () => {
+  const { mergeLessons3, sectionLessons, bodyKey } = await import(pathToFileURL(join(REPO, "tools", "lib", "memory-core.mjs")).href);
+  assert.equal(bodyKey(R), bodyKey(VA), "предпоставка: маркерът не е част от тялото");
+  const all = (t) => [...sectionLessons(t, "verified"), ...sectionLessons(t, "quarantine")];
+  assert.deepEqual(all(mergeLessons3(DOC([VA]), DOC([R]), DOC([VA]))), [R], "паметта опроверга, main не пипа → опровергана");
+  assert.deepEqual(all(mergeLessons3(DOC([VA]), DOC([VA]), DOC([R]))), [R], "main опроверга, паметта не пипа → опровергана");
+  assert.deepEqual(all(mergeLessons3(DOC([VA]), DOC([R]), DOC([VB]))), [R], "паметта опроверга, main смени обхвата → опровергана");
+  assert.deepEqual(all(mergeLessons3(DOC([VA]), DOC([VB]), DOC([R]))), [R], "main опроверга, паметта смени обхвата → опровергана");
+});
+
 test("4. кука → клон на паметта → следващият агент я вижда; клонът на задачата остава чист", async () => {
   const f = fixture();
   try {
