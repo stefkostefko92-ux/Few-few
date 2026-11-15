@@ -6,6 +6,18 @@ body {
   @apply antialiased;
 }
 
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid #3b82c4;
+    outline-offset: 2px;
+  }
+}
+
 /* ── Вайбът на landing-а: живи, но дисциплинирани CSS анимации ────────── */
 
 @keyframes aurora-drift {
@@ -441,7 +453,11 @@ body {
 
 /* Marquee лентата спира учтиво под мишката */
 .marquee-band:hover .animate-marquee,
-.marquee-band:hover .animate-marquee-reverse {
+.marquee-band:hover .animate-marquee-reverse,
+.marquee-wrap:has(#marquee-pause:checked) .animate-marquee,
+.marquee-wrap:has(#marquee-pause:checked) .animate-marquee-reverse,
+.marquee-wrap:focus-within .animate-marquee,
+.marquee-wrap:focus-within .animate-marquee-reverse {
   animation-play-state: paused;
 }
 
@@ -643,4 +659,255 @@ body {
 .pf-sheen:hover::after {
   transform: translateX(130%);
   transition: transform 0.8s ease;
+}
+
+
+/* ── Премиум полировка: полета, фокус, секции ─────────────────────────── */
+
+@layer components {
+  /* Полета в публичния профил. Рамка/фон идват от currentColor (работи и на
+     светли, и на тъмни теми), фокусът е в акцента на профила (--aura). */
+  .pf-field {
+    width: 100%;
+    border-radius: 0.75rem;
+    border: 1px solid color-mix(in srgb, currentColor 32%, transparent);
+    background: color-mix(in srgb, currentColor 7%, transparent);
+    padding: 0.55rem 0.8rem;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      background-color 0.2s ease;
+  }
+  .pf-field::placeholder {
+    color: currentColor;
+    opacity: 0.62;
+  }
+  .pf-field:hover {
+    border-color: color-mix(in srgb, currentColor 55%, transparent);
+  }
+  .pf-field:focus-visible {
+    outline: none;
+    border-color: var(--aura, currentColor);
+    background: color-mix(in srgb, currentColor 11%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--aura, #38bdf8) 45%, transparent);
+  }
+  .pf-dark .pf-field {
+    color-scheme: dark;
+  }
+  .pf-card-aura input[type='checkbox'] {
+    accent-color: var(--aura, #38bdf8);
+  }
+  .pf-card-aura a:focus-visible,
+  .pf-card-aura button:focus-visible {
+    outline: 2px solid var(--aura, #38bdf8);
+    outline-offset: 3px;
+  }
+
+  /* Анкета: опция + запълваща се лента (преди бяха „мъртви“ current/NN) */
+  .pf-poll-opt {
+    border: 1px solid color-mix(in srgb, currentColor 32%, transparent);
+    transition:
+      border-color 0.2s ease,
+      transform 0.2s ease;
+  }
+  .pf-poll-opt:hover {
+    border-color: currentColor;
+    transform: translateY(-1px);
+  }
+  .pf-poll-bar {
+    background: color-mix(in srgb, var(--aura, currentColor) 38%, transparent);
+    transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .pf-note {
+    border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+    background: color-mix(in srgb, currentColor 6%, transparent);
+  }
+
+  /* Продуктите в магазина — всеки е отделна група, не слято меню */
+  .pf-product + .pf-product {
+    padding-top: 1.25rem;
+    border-top: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  }
+
+  /* Табло/админ/аналитика: единни контроли */
+  .dash select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 1rem;
+    padding-right: 2.2rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+  }
+  .dash input:not([type='checkbox']):not([type='radio']):not([type='color']):not([type='file']):not([type='hidden']),
+  .dash select,
+  .dash textarea {
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+  .dash input:not([type='checkbox']):not([type='radio']):not([type='color']):not([type='file']):not([type='hidden']):hover,
+  .dash select:hover,
+  .dash textarea:hover {
+    border-color: #94a3b8;
+  }
+  .dash input:focus-visible,
+  .dash select:focus-visible,
+  .dash textarea:focus-visible {
+    outline: none;
+    border-color: #2b6cab;
+    box-shadow: 0 0 0 3px rgba(59, 130, 196, 0.28);
+  }
+  .dash input[type='checkbox'],
+  .dash input[type='radio'] {
+    accent-color: #2b6cab;
+  }
+  .dash input[type='color'] {
+    cursor: pointer;
+    border-radius: 0.5rem;
+    background: #fff;
+  }
+  .dash button,
+  .dash a[class*='rounded-full'] {
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease,
+      box-shadow 0.2s ease,
+      transform 0.15s ease;
+  }
+  .dash button:active {
+    transform: translateY(1px);
+  }
+  .dash button:focus-visible,
+  .dash a:focus-visible,
+  .dash summary:focus-visible {
+    outline: 2px solid #2b6cab;
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+  }
+  .dash button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  /* Секции на таблото: фин подем, котва без залепване под менюто */
+  .dash-card {
+    scroll-margin-top: 8.5rem;
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.04),
+      0 8px 24px -16px rgba(15, 23, 42, 0.12);
+  }
+
+  /* Лепнещо меню на таблото (само котви, нула JS) */
+  .dash-nav {
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    mask-image: linear-gradient(90deg, transparent, #000 1.25rem, #000 calc(100% - 1.25rem), transparent);
+  }
+  .dash-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Уиджет „как се отваря“ на ЧЗВ — плюс, който се завърта в крос */
+  .faq-item summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq-item .faq-plus {
+    position: relative;
+    flex: none;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 9999px;
+    background: #eef4fa;
+    transition:
+      background-color 0.25s ease,
+      transform 0.3s ease;
+  }
+  .faq-item .faq-plus::before,
+  .faq-item .faq-plus::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0.7rem;
+    height: 2px;
+    border-radius: 2px;
+    background: #2b6cab;
+    transform: translate(-50%, -50%);
+  }
+  .faq-item .faq-plus::after {
+    transform: translate(-50%, -50%) rotate(90deg);
+    transition: transform 0.3s ease;
+  }
+  .faq-item[open] .faq-plus {
+    background: #2b6cab;
+  }
+  .faq-item[open] .faq-plus::before,
+  .faq-item[open] .faq-plus::after {
+    background: #fff;
+  }
+  .faq-item[open] .faq-plus::after {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  .faq-item summary:focus-visible {
+    outline: 2px solid #2b6cab;
+    outline-offset: 6px;
+    border-radius: 0.75rem;
+  }
+
+  /* Вход/регистрация: тъмна аврора като hero-то, стъклена светла карта */
+  .auth-stage {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: linear-gradient(180deg, #0b1230 0%, #0a0f26 55%, #070a1a 100%);
+  }
+  .auth-card {
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.6) inset,
+      0 30px 80px -30px rgba(2, 6, 23, 0.8),
+      0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
+  .auth-field {
+    width: 100%;
+    margin-top: 0.375rem;
+    border-radius: 0.75rem;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.95rem;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+  .auth-field:hover {
+    border-color: #94a3b8;
+  }
+  .auth-field:focus-visible {
+    outline: none;
+    border-color: #2b6cab;
+    box-shadow: 0 0 0 4px rgba(59, 130, 196, 0.25);
+  }
+  .auth-field:user-invalid {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.14);
+  }
+
+  /* Правни текстове: четим рядък текст, заглавията на раздели се отличават */
+  .legal-doc {
+    max-width: 66ch;
+  }
+  .legal-doc p {
+    line-height: 1.8;
+  }
 }

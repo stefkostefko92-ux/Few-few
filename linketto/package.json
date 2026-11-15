@@ -19,7 +19,7 @@
     "multilingual",
     "nextjs",
     "prisma",
-    "stripe",
+    "revolut",
     "creator-economy"
   ],
   "scripts": {
@@ -37,13 +37,13 @@
     "@prisma/client": "^6.2.1",
     "@types/qrcode": "^1.5.6",
     "bcryptjs": "^2.4.3",
-    "next": "^15.5.24",
+    "next": "^15.5.29",
     "next-intl": "^3.26.3",
+    "prisma": "^6.2.1",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "sharp": "^0.35.3",
-    "stripe": "^17.5.0",
+    "sharp": "^0.35.5",
     "zod": "^3.24.1"
   },
   "devDependencies": {
@@ -57,7 +57,6 @@
     "eslint": "^9.39.4",
     "eslint-config-next": "^15.5.19",
     "postcss": "^8.4.49",
-    "prisma": "^6.2.1",
     "simple-icons": "^16.25.0",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.19.2",

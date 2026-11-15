@@ -28,7 +28,7 @@ file holds only what is true across all products. Keep it that way.
 | `CSPos/` | Carbon Stealth POS — касова система за хранителни магазини | Next.js 15 · React 19 · TS · Prisma · SQLite · Tailwind · Electron (.exe) | BG · Н-18/СУПТО/евро · фискални у-ва + ПОС терминали · тъч |
 | `vizitka/` | Vizitka — винаги актуална дигитална визитка (QR профил) | Express · EJS · SQLite · plain JS ESM | BG · vizitka-bg.com |
 | `mastilko/` | Мастилко — безплатни етикети, визитки и CV за печат | Next.js 16 · React 19 · TS · Tailwind · Gemini Flash | BG · без база (localStorage) · mastilko-bg.com |
-| `linketto/` | Linketto — многоезичен „link in bio“ (конкурент на Linktree) | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind · next-intl · Stripe | 27 локала (24 ЕС езика + nap/scn/lmo диалекти) · комисиони 8/4/0% · linketto.carbonstealth.eu |
+| `linketto/` | Linketto — многоезичен „link in bio“ (конкурент на Linktree) | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind · next-intl · Revolut Business · Brevo · Docker | 27 локала (24 ЕС езика + nap/scn/lmo диалекти) · предплатени планове, без комисиони (продуктите водят към собствения линк на създателя) · linketto.carbonstealth.eu (порт 4340) |
 | `eternaltouch/` | Eternal Touch — атѐлие за ръчни гипсови декорации (витрина/каталог) | Express · EJS · Prisma · PostgreSQL · Docker · plain JS ESM | IT/BG/EN · eternaltouch.it · витрина, **не** e-commerce |
 | `evanitasport/` | Evanita Sport — дамско студио за Kangoo Jumps и силови тренировки (Дупница) | static HTML/CSS/JS · Nginx | BG · evanita-bg.com |
 | `adblock/` | Supreme AdBlock — блокира реклами, тракери и anti-adblock стени | Chrome MV3 · vanilla JS (без билд) · `declarativeNetRequest` | EN UI · Chrome Web Store |
@@ -78,7 +78,7 @@ hooks, skills).
   **IndexNow** (Bing, Yandex, Seznam, Naver, Yep — one call reaches all):
   `node tools/seo/indexnow.mjs https://<live-domain>` (needs the site deployed with
   its `indexnow-key.txt` at web root). `deploy/autodeploy.sh` pings after a healthy release for
-  zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock and korpora (details: `deploy/README.md`);
+  zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock, korpora and linketto (details: `deploy/README.md`);
   for the rest run the command yourself. **Google does NOT
   support IndexNow** (sitemap ping retired 2023) — for Google keep the sitemap fresh
   (auto-discovered) and use Search Console (`tools/seo/gsc.mjs`).
