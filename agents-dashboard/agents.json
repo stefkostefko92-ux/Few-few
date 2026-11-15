@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 684
+        "lessons": 686
       },
       "evolution": [
         {
@@ -2037,9 +2037,20 @@
           "date": "2026-11-15",
           "event": "v62.5 — учене",
           "detail": "Научи: В mergedMemoryFiles на memory-branch.mjs mergeLessons3 се вика като (since, other, base… (+64 още)"
+        },
+        {
+          "version": "62.7.0",
+          "date": "2026-11-15",
+          "event": "v62.7 — учене",
+          "detail": "Научи: jsonwebtoken 9 verify() приема подписан токен без exp (няма опция, която прави exp задъ… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „jsonwebtoken 9 verify() приема подписан токен без exp (няма опция, която прави exp задъ…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-15",
           "type": "quarantine",
