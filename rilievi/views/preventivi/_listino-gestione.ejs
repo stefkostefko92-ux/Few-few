@@ -1,0 +1,72 @@
+<%
+  // Общата част на ценоразписа (routes/listino-vista.ts): нов ред, внасяне наведнъж, търсене, редовете с
+  // промяна, износ. Стои на две места със същото съдържание — раздел „Listino prezzi“ на настройките
+  // (`da: 'impostazioni'`) и `/preventivi/listino` (`da: 'preventivi'`); записите са под /preventivi/listino….
+  // `L` — `datiListino`; `base` — адресът на страницата за търсенето и страниците.
+  const params = new URLSearchParams();
+  params.set('azienda', azienda.id);
+  if (L.query) params.set('q', L.query);
+  const pagine = base + '?' + params.toString();
+  const errorKeys = Object.keys(L.errors);
+  const daImpostazioni = da === 'impostazioni';
+  const voceUrl = (id) => '/preventivi/listino/' + id + '?azienda=' + encodeURIComponent(azienda.id) + (daImpostazioni ? '&da=impostazioni' : '');
+  // Двата инструмента са прибрани, щом има редове — списъкът е първото, което се вижда; отворени са при празен
+  // ценоразпис и когато носят нещо (грешка в новия ред, преглед или грешки на внасянето).
+  const vuoto = L.page.total === 0 && !L.query;
+  const apriNuova = errorKeys.length > 0 || (vuoto && !L.importa);
+%><p class="muted"><%= t('preventivi.listino.intro', { n: L.maxVoci }) %></p>
+<% if (L.scrive) { %>
+<details class="panel listino-strumento"<% if (apriNuova) { %> open<% } %>>
+  <summary><h2 class="listino-strumento__titolo"><%= t('preventivi.listino.nuova') %></h2></summary>
+  <form class="form" method="post" action="/preventivi/listino" novalidate>
+    <% if (errorKeys.length) { %><div class="errors" role="alert" tabindex="-1"><h2><%= t('preventivi.listino.errore.titolo') %></h2></div><% } %>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="azienda" value="<%= azienda.id %>">
+    <% if (daImpostazioni) { %><input type="hidden" name="da" value="impostazioni"><% } %>
+    <%- include('_voce-campi', { values: L.values, errors: L.errors, max: L.max, maxVoci: L.maxVoci, aliquote: L.aliquote }) %>
+    <div class="toolbar"><button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'plus' }) %><%= t('preventivi.listino.aggiungiVoce') %></button></div>
+  </form>
+</details>
+<%- include('_listino-importa', { aperto: Boolean(L.importa) || vuoto }) %>
+<% } %>
+<form class="filter" method="get" action="<%= base %>" role="search">
+  <input type="hidden" name="azienda" value="<%= azienda.id %>">
+  <label class="field__label" for="listino-q"><%= t('preventivi.listino.cercaLabel') %></label>
+  <div class="filter__row">
+    <input class="input" id="listino-q" name="q" type="search" maxlength="100" value="<%= L.query %>">
+    <button class="btn" type="submit"><%- include('../partials/icon', { name: 'search' }) %><%= t('preventivi.cercaBtn') %></button>
+  </div>
+</form>
+<% if (L.page.rows.length === 0) { %>
+<div class="empty"><p><strong><%= L.query ? t('preventivi.listino.vuotoCerca') : t('preventivi.listino.vuoto') %></strong></p><% if (!L.query && L.scrive) { %><p><%= t('preventivi.listino.vuotoCome') %></p><% } %></div>
+<% } else { %>
+<div class="toolbar">
+  <p class="muted"><%= t('preventivi.listino.voci', { n: L.page.total }) %></p>
+  <a class="btn" href="/preventivi/listino.csv?azienda=<%= encodeURIComponent(azienda.id) %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('preventivi.listino.esporta') %></a>
+</div>
+<table class="table table--stack">
+  <caption class="visually-hidden"><%= t('preventivi.listino.titolo') %></caption>
+  <thead>
+    <tr>
+      <th scope="col"><%= t('preventivi.colonna.codice') %></th>
+      <th scope="col"><%= t('preventivi.colonna.descrizione') %></th>
+      <th scope="col"><%= t('preventivi.colonna.unita') %></th>
+      <th scope="col" class="importo"><%= t('preventivi.colonna.prezzoEuro') %></th>
+      <th scope="col" class="importo"><%= t('preventivi.colonna.ivaPercento') %></th>
+      <% if (L.scrive) { %><th scope="col"><span class="visually-hidden"><%= t('preventivi.listino.azioni') %></span></th><% } %>
+    </tr>
+  </thead>
+  <tbody>
+    <% for (const v of L.page.rows) { %><tr>
+      <td data-label="<%= t('preventivi.colonna.codice') %>"><%= v.codice || '—' %></td>
+      <td class="wide" data-label="<%= t('preventivi.colonna.descrizione') %>"><%= v.descrizione %></td>
+      <td data-label="<%= t('preventivi.colonna.unita') %>"><%= v.unita %></td>
+      <td class="importo" data-label="<%= t('preventivi.colonna.prezzoEuro') %>"><%= L.euro(v.prezzo) %></td>
+      <td class="importo" data-label="<%= t('preventivi.colonna.ivaPercento') %>"><%= v.iva %></td>
+      <% if (L.scrive) { %><td><a href="<%= voceUrl(v.id) %>"><%= t('preventivi.listino.modificaVoce') %><span class="visually-hidden"> <%= v.descrizione %></span></a></td><% } %>
+    </tr>
+    <% } %>
+  </tbody>
+</table>
+<%- include('../partials/pager', { base: pagine, page: L.page.page, pages: L.page.pages }) %>
+<% } %>

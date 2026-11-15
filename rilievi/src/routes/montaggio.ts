@@ -8,6 +8,7 @@ import { aziendeFineRouter } from './aziende-fine.js';
 import { cartelliNuovoRouter } from './cartelli-nuovo.js';
 import { cartelliRouter } from './cartelli.js';
 import { cestinoRouter } from './cestino.js';
+import { clientiRouter } from './clienti.js';
 import { ordiniRouter } from './ordini.js';
 import { installaRouter } from './installa.js';
 import { impostazioniRouter } from './impostazioni.js';
@@ -37,12 +38,14 @@ import { buoniRouter } from './buoni.js';
 import { impostazioniPreventiviRouter } from './impostazioni-preventivi.js';
 import { preventiviAzioniRouter } from './preventivi-azioni.js';
 import { preventiviListinoRouter } from './preventivi-listino.js';
+import { preventiviListinoImportRouter } from './preventivi-listino-import.js';
 import { preventiviNuovoRouter } from './preventivi-nuovo.js';
 import { preventiviRouter } from './preventivi.js';
 import { impostazioniBuonoRouter } from './impostazioni-buono.js';
 import { interventiInvioRouter } from './interventi-invio.js';
 import { requestsRouter } from './requests.js';
 import { schedeRouter } from './schede.js';
+import { schedeInvioRouter } from './schede-invio.js';
 import { schedeStampaRouter } from './schede-stampa.js';
 import { schedeEtichettaRouter } from './schede-etichetta.js';
 import { siteRouter } from './site.js';
@@ -105,6 +108,7 @@ export function montaRouter(app: Express): void {
   app.use(esportaCsvRouter);
   app.use(schedeRouter);
   app.use(schedeStampaRouter);
+  app.use(schedeInvioRouter);
   app.use(schedeEtichettaRouter);
   app.use(schedeApprovazioneRouter);
   app.use(schedeVersioniRouter);
@@ -129,11 +133,16 @@ export function montaRouter(app: Express): void {
   app.use(buoniNuovoRouter);
   app.use(buoniRouter);
   app.use(buoniFirmeRouter);
-  // Преди preventiviRouter: `/preventivi/listino` и `/preventivi/nuovo` са преди `/preventivi/:id`.
+  // Преди preventiviRouter: `/preventivi/listino` и `/preventivi/nuovo` са преди `/preventivi/:id`; внасянето
+  // и износът на ценоразписа — преди `/preventivi/listino/:id`.
+  app.use(preventiviListinoImportRouter);
   app.use(preventiviListinoRouter);
   app.use(preventiviNuovoRouter);
   app.use(preventiviRouter);
   app.use(preventiviAzioniRouter);
+  // Регистърът на клиентите на фирмата (живее с офертите): `/clienti/nuovo` и `/clienti/elenco.json` са
+  // преди `/clienti/:id` в самия рутер.
+  app.use(clientiRouter);
   app.use(impostazioniPreventiviRouter);
   app.use(impostazioniApiRouter);
   app.use(impostazioniAccessoRouter);
