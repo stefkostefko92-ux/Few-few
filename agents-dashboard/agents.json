@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 681
+        "lessons": 682
       },
       "evolution": [
         {
@@ -2037,9 +2037,20 @@
           "date": "2026-11-15",
           "event": "v62.4 — учене",
           "detail": "Научи: В Korpora extents() от drawing-front.js върху празни масиви връща x0=Infinity, x1=-Infi… (+63 още)"
+        },
+        {
+          "version": "62.5.0",
+          "date": "2026-11-15",
+          "event": "v62.5 — учене",
+          "detail": "Научи: В mergedMemoryFiles на memory-branch.mjs mergeLessons3 се вика като (since, other, base…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „В mergedMemoryFiles на memory-branch.mjs mergeLessons3 се вика като (since, other, base…\""
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
