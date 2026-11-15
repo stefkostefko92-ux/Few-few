@@ -699,3 +699,4 @@
 {"t":"start","ts":"2026-11-15T13:14:08.228Z","id":"r6d018bec","flow":"авто","lead":"igrodelets","auto":true}
 {"t":"handoff","ts":"2026-11-15T13:14:08.229Z","id":"r6d018bec","from":"igrodelets","to":"kodadjiyata","status":"има бележки","run":"8c0269ae"}
 {"t":"handoff","ts":"2026-11-15T13:14:21.725Z","id":"r6d018bec","from":"igrodelets","to":"kodadjiyata","status":"има бележки","run":"9b28fd6d"}
+{"t":"handoff","ts":"2026-11-15T13:17:42.181Z","id":"r6d018bec","from":"frezadjiyata","to":"kodadjiyata","status":"има бележки","run":"2264700c"}
