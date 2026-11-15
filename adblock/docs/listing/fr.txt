@@ -12,3 +12,4 @@ Supreme AdBlock bloque les publicités partout — pubs vidéo YouTube, bannièr
 • Site cassé ? Un clic le corrige, ou prévenez-nous — rien n’est envoyé sans que vous l’ayez vu d’abord.
 • Vous venez d’uBlock Origin, d’AdGuard ou d’Adblock Plus ? Récupérez vos sites autorisés et vos filtres en un seul fichier.
 • Voyez à quels autres sites une page se connecte, et bloquez l’un d’eux sur ce site seulement, d’un clic.
+• Niveau de protection : Basique · Standard · Strict

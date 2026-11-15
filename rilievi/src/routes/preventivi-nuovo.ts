@@ -1,11 +1,18 @@
 import { Router, type Request, type Response } from 'express';
 import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
-import { spansAziende } from '../auth/scope.js';
+import { scopeFor, spansAziende } from '../auth/scope.js';
 import { cercaSchede, schedaPerCartello } from '../cartelli/scheda.js';
+import { valoriPreventivoDa } from '../clienti/form.js';
+import { getCliente } from '../clienti/service.js';
 import { setFlash } from '../http/flash.js';
 import { datiDi } from '../preventivi/dati.js';
 import { valoriDaCopia, valoriDaScheda } from '../preventivi/da-scheda.js';
-import { formValuesDalBody, parsePreventivo, type ErroriPreventivo } from '../preventivi/form.js';
+import {
+  clienteIdDa,
+  formValuesDalBody,
+  parsePreventivo,
+  type ErroriPreventivo,
+} from '../preventivi/form.js';
 import { createPreventivo } from '../preventivi/service.js';
 import { highlight, MAX_QUERY_LENGTH } from '../schede/search.js';
 import { businessDay } from '../time.js';
@@ -15,7 +22,7 @@ import {
   condizioniDi,
   fonteSchede,
   loadPreventivo,
-  puoScrivere,
+  puoOperare,
   renderPreventivoForm,
   type PreventivoFormView,
 } from './preventivi-vista.js';
@@ -24,6 +31,8 @@ import {
  * Новата оферта — от картата на уредбата, като копие на друга оферта или празна:
  * - `?scheda=<id>`: уредбата, предметът и по ред за всяка работа от картата (без цени); фирмата — на картата.
  * - `?da=<id>`: „Duplica“ — всичко от видимата оферта, днешен ден; нов номер и „Bozza“.
+ * - `?cliente=<id>`: от профила на клиент в регистъра — клиентът е написан (име, адрес, P. IVA, имейл) и
+ *   офертата помни профила (`clienteId`); фирмата — на клиента.
  * - `?cerca=<думи>`: търсенето на карта; една намерена — направо попълнената форма.
  * Условията идват от настройките на фирмата, когато тя е известна (иначе — от браузъра при избора й).
  */
@@ -55,11 +64,29 @@ preventiviNuovoRouter.get('/preventivi/nuovo', write, async (req, res) => {
 
   if (req.query.da !== undefined) {
     const row = await loadPreventivo(req, String(req.query.da));
-    if (!row || !puoScrivere(req, row)) return res.redirect(303, '/preventivi/nuovo');
+    if (!row || !puoOperare(req, row)) return res.redirect(303, '/preventivi/nuovo');
     return renderPreventivoForm(res, 200, {
       ...base,
-      values: valoriDaCopia(datiDi(row)),
+      values: { ...valoriDaCopia(datiDi(row)), clienteId: row.clienteId ?? '' },
       azienda: row.aziendaId,
+      aziende: [],
+    });
+  }
+
+  if (req.query.cliente !== undefined) {
+    const cliente = await getCliente(
+      scopeFor(principalOf(req).user, 'preventivi:read'),
+      String(req.query.cliente),
+    );
+    if (!cliente || !puoOperare(req, cliente)) return res.redirect(303, '/preventivi/nuovo');
+    return renderPreventivoForm(res, 200, {
+      ...base,
+      values: {
+        ...base.values,
+        condizioni: (await condizioniDi(cliente.aziendaId)) ?? '',
+        ...valoriPreventivoDa(cliente),
+      },
+      azienda: cliente.aziendaId,
       aziende: [],
     });
   }
@@ -132,6 +159,7 @@ async function creaDalBody(req: Request, res: Response): Promise<void> {
     actorId: principalOf(req).user.id,
     aziendaId: azienda.id,
     schedaId: scheda?.id ?? null,
+    clienteId: clienteIdDa(body),
   });
   if (esito.esito === 'spento') return again({ azienda: 'invalid' });
   if (esito.esito !== 'ok') return again({ scheda: 'invalid' });

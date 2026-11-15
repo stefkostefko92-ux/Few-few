@@ -45,6 +45,59 @@ validate_ref() {
 }
 validate_ref "$REF" || die "Невалиден REF — позволени са само A-Z a-z 0-9 . _ / - (до 200 знака), без „..“ и без водещо „-“."
 
+# ── Пазач на ref-а по продукт (fail-closed) ──────────────────────────────────
+# Урок 2026-11-15: zabobovdol вървеше от неслят клон, а деплой с REF=main по
+# подразбиране върна стария сайт — не за първи път. Правилото „провери къде е кодът“
+# беше само текст. Сега сървърът помни от кой ref е разгърнат всеки продукт и друг
+# ref за същия продукт спира ПРЕДИ свалянето. Смяната е съзнателна: ALLOW_REF_SWITCH=1.
+# Без PROJECTS (деплой на всички) се проверяват всички запомнени продукти.
+# Тест: tools/vps/fetch-deploy-refguard.test.mjs.
+REF_STATE_DIR="${REF_STATE_DIR:-/opt/few-few/shared/deploy-refs}"
+
+ref_key() {
+  # Едно име за всичките псевдоними в autodeploy.sh; само безопасни знаци (името е файл).
+  local k
+  k="$(printf '%s' "$1" | tr 'A-Z' 'a-z')"
+  case "$k" in
+    aso) k=gaming ;;
+    vps-dashboard|vpsdashboard) k=vpsdash ;;
+  esac
+  printf '%s' "$k" | tr -c 'a-z0-9._-' '_'
+}
+
+ref_guard_check() {
+  [ "${ALLOW_REF_SWITCH:-0}" = "1" ] && return 0
+  local names p k f prev when clash=""
+  if [ -n "${PROJECTS:-}" ]; then names="$PROJECTS"
+  else names="$(ls -1 "$REF_STATE_DIR" 2>/dev/null || true)"; fi
+  for p in $names; do
+    k="$(ref_key "$p")"; f="$REF_STATE_DIR/$k"
+    [ -f "$f" ] || continue
+    read -r prev when < "$f" || true
+    if [ -n "${prev:-}" ] && [ "$prev" != "$REF" ]; then
+      clash="${clash}  ${k}: последно разгърнат от „${prev}“ (${when:-?})"$'\n'
+    fi
+  done
+  [ -z "$clash" ] && return 0
+  printf '\033[31m✘ REF=%s би сменил ref-а на продукт, разгърнат от друг ref:\033[0m\n%s' "$REF" "$clash" >&2
+  printf '  Слей онзи клон в main (препоръчано) или подай REF=<онзи ref>.\n' >&2
+  printf '  Клонът вече е слят в REF, или наистина искаш смяната: ALLOW_REF_SWITCH=1 веднъж (записът се обновява след успешен деплой).\n' >&2
+  exit 1
+}
+
+ref_guard_record() {
+  # $1 = autodeploy.sh от архива — оттам е списъкът по подразбиране, когато няма PROJECTS.
+  local names p
+  if [ -n "${PROJECTS:-}" ]; then names="$PROJECTS"
+  else names="$(sed -n 's/^PROJECTS="\${PROJECTS:-\(.*\)}"$/\1/p' "$1" | head -1)"; fi
+  install -d -m 700 "$REF_STATE_DIR"
+  for p in $names; do
+    printf '%s %s\n' "$REF" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$REF_STATE_DIR/$(ref_key "$p")"
+  done
+}
+
+ref_guard_check
+
 [ "$(id -u)" = "0" ] || die "Пусни като root (sudo)."
 command -v curl >/dev/null || die "Липсва curl."
 command -v tar  >/dev/null || die "Липсва tar."
@@ -102,3 +155,7 @@ log "Предавам на autodeploy.sh…"
 # качен ZIP отпреди месец може да изпревари този, който току-що свалихме.
 # Без `exec` — иначе trap-ът не се изпълнява и временната папка остава.
 ARCHIVE="$ARCHIVE_PATH" bash "$WORK/deploy/autodeploy.sh"
+
+# Само след успешен autodeploy (set -e: провал спира по-горе) — от кой ref върви всеки продукт.
+ref_guard_record "$WORK/deploy/autodeploy.sh"
+ok "Запомнено: ${PROJECTS:-всички продукти} ← ${REF} (${REF_STATE_DIR})"

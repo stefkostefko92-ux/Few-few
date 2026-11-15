@@ -1,0 +1,1197 @@
+/* Приложението и мастър панелът — същите шрифтове и палитра като витрината (site.css), по-плътна мрежа
+   за работа с документи. Без inline стилове (CSP style-src-attr 'none'). */
+:root {
+  /* Палитра от логото: navy #0c1929, тюркоаз #05a699 (само линии — 3,03:1 върху бяло). Текстът и
+     бутоните на светла тема са #03756c (5,15:1 върху хартията), на тъмна — #2cc5b5 върху navy. */
+  --paper: #f4f6f8;
+  --sheet: #ffffff;
+  --tint: #e8edf2;
+  --ink: #0c1929;
+  --ink-2: #44546a;
+  --rule: #cdd5de;
+  --field-line: #718096;
+  --brand: #05a699;
+  --accent: #03756c;
+  --accent-ink: #ffffff;
+  --accent-soft: #dff3f0;
+  --warn-bg: #fdf3e1;
+  --warn-ink: #6b4300;
+  --bad-bg: #fbe7e5;
+  --bad-ink: #8a1c13;
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --radius: 3px;
+  --gap: 1.25rem;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0c1929;
+    --sheet: #111e2e;
+    --tint: #0f1c2c;
+    --ink: #e9eff5;
+    --ink-2: #a3b3c4;
+    --rule: #26374b;
+    --field-line: #6f8399;
+    --brand: #2cc5b5;
+    --accent: #2cc5b5;
+    --accent-ink: #0c1929;
+    --accent-soft: #0f2e36;
+    --warn-bg: #33270f;
+    --warn-ink: #f0cf8e;
+    --bad-bg: #3a1714;
+    --bad-ink: #ffb4ab;
+    color-scheme: dark;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+body.app {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 1rem/1.55 var(--font-sans);
+}
+a {
+  color: var(--accent);
+  text-underline-offset: 0.2em;
+}
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+h1,
+h2 {
+  line-height: 1.2;
+  text-wrap: balance;
+}
+h1 {
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 2rem 0 0.75rem;
+}
+.mono,
+code {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.muted,
+.hint {
+  color: var(--ink-2);
+}
+.hint {
+  display: block;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+.strong {
+  font-weight: 600;
+}
+.skip {
+  position: absolute;
+  left: -999px;
+}
+.skip:focus {
+  left: 1rem;
+  top: 1rem;
+  background: var(--sheet);
+  padding: 0.5rem 1rem;
+  z-index: 10;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Лентата */
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+  padding: 0.75rem max(16px, env(safe-area-inset-right, 0px)) 0.75rem
+    max(16px, env(safe-area-inset-left, 0px));
+  background: var(--sheet);
+  border-top: 3px solid var(--brand);
+  border-bottom: 1px solid var(--rule);
+}
+.mark {
+  color: var(--ink);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+.logo {
+  display: block;
+  min-width: 0;
+}
+.logo img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.bar-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  order: 3;
+  width: 100%;
+}
+.bar-nav a,
+.logout button.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  padding: 0 0.7rem;
+  border-radius: var(--radius);
+  color: var(--ink-2);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+.bar-nav a:hover,
+.logout button.link:hover {
+  background: var(--tint);
+  color: var(--ink);
+}
+.bar-nav a[aria-current='page'] {
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+.ico {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+.logout {
+  margin-left: auto;
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+.who {
+  display: none;
+  color: var(--ink-2);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+@media (min-width: 52rem) {
+  .bar-nav {
+    order: 0;
+    width: auto;
+  }
+  .who {
+    display: inline;
+  }
+}
+.notice {
+  margin: 0;
+  padding: 0.6rem max(16px, env(safe-area-inset-left, 0px));
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+}
+
+/* Лентата „Потвърдете имейла“ (views/partials/verify-bar.ejs): дългият имейл се пренася. */
+.verify-bar {
+  padding: 0.6rem max(16px, env(safe-area-inset-left, 0px));
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+  border-bottom: 1px solid var(--rule);
+}
+.verify-bar form {
+  margin: 0;
+}
+.verify-bar p {
+  max-width: 72rem;
+  margin: 0 auto;
+  overflow-wrap: anywhere;
+}
+.verify-bar button.link {
+  color: inherit;
+  font-weight: 600;
+}
+
+.wrap {
+  flex: 1;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2rem max(16px, env(safe-area-inset-right, 0px)) 3rem
+    max(16px, env(safe-area-inset-left, 0px));
+}
+.narrow {
+  max-width: 26rem;
+}
+.wide-ish {
+  max-width: 40rem;
+}
+.narrow-form {
+  max-width: 28rem;
+}
+.foot {
+  border-top: 1px solid var(--brand);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  padding: 1rem max(16px, env(safe-area-inset-left, 0px));
+  color: var(--ink-2);
+  font-size: 0.85rem;
+}
+.foot-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1rem 1.1rem;
+}
+.foot-links a,
+.foot a {
+  padding: 0.25rem 0;
+}
+
+/* Форми */
+.stack,
+.doc-form {
+  display: grid;
+  gap: var(--gap);
+}
+fieldset {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin: 0;
+  background: var(--sheet);
+  display: grid;
+  gap: 0.85rem;
+  min-width: 0;
+}
+legend {
+  font-weight: 600;
+  padding: 0 0.4rem;
+}
+label {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.92rem;
+  min-width: 0;
+}
+input,
+select,
+textarea {
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--field-line);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.6rem;
+  min-width: 0;
+  width: 100%;
+}
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  border-color: var(--accent);
+}
+input.mono {
+  font-family: var(--font-mono);
+}
+.check,
+.radio {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+.radio,
+.check:not(:has(.hint)) {
+  flex-wrap: nowrap;
+}
+.check input,
+.radio input {
+  width: auto;
+  flex: none;
+  accent-color: var(--accent);
+}
+.check .hint {
+  flex-basis: 100%;
+}
+.row,
+.grid-2,
+.grid-3,
+.grid-4 {
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+}
+.grid-2 {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+}
+.grid-3 {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+}
+.grid-3 .span-2 {
+  grid-column: span 2;
+}
+@media (max-width: 40rem) {
+  .grid-3 .span-2 {
+    grid-column: auto;
+  }
+}
+.has-error input {
+  border-color: var(--bad-ink);
+}
+.field-error {
+  color: var(--bad-ink);
+  font-size: 0.85rem;
+}
+
+button,
+.button,
+.button-secondary {
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: var(--radius);
+  padding: 0.55rem 1.1rem;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+  text-decoration: none;
+  display: inline-block;
+  justify-self: start;
+}
+.button-secondary,
+button.link {
+  background: transparent;
+  color: var(--accent);
+}
+button.link {
+  border: 0;
+  padding: 0;
+  text-decoration: underline;
+}
+button.big {
+  padding: 0.75rem 1.6rem;
+}
+
+/* Съобщения */
+.error,
+.ok,
+.callout,
+.error-box {
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius);
+  border-left: 4px solid currentColor;
+  margin: 0 0 1rem;
+}
+.ok {
+  border-left-color: var(--brand);
+}
+.error,
+.error-box {
+  background: var(--bad-bg);
+  color: var(--bad-ink);
+}
+.error-box ul {
+  margin: 0.25rem 0 0;
+  padding-left: 1.1rem;
+}
+.ok {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+.callout {
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+}
+
+/* Таблици и списъци */
+.table-wrap {
+  position: relative; /* .sr-only в клетка (абсолютен) иначе излиза от прокрутката и ражда скрол на страницата */
+  overflow-x: auto;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+th,
+td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+th {
+  font-weight: 600;
+  background: var(--tint);
+  white-space: nowrap;
+}
+tr:last-child td {
+  border-bottom: 0;
+}
+.num {
+  text-align: right;
+}
+table.lines input,
+table.lines select {
+  padding: 0.35rem 0.45rem;
+}
+table.lines input.s {
+  width: 7rem;
+}
+table.lines input.xs {
+  width: 4.5rem;
+}
+table.lines td:nth-child(2) input {
+  min-width: 14rem;
+}
+.cards {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.cards li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+}
+.card-link {
+  color: var(--ink);
+}
+.tag {
+  font-size: 0.8rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--tint);
+  color: var(--ink-2);
+}
+.tag-active {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+.tag-pending {
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+}
+.head-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.facts,
+.record,
+.kpis {
+  display: grid;
+  gap: 0.5rem 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  margin: 1.5rem 0;
+}
+.facts div,
+.record div,
+.kpis div {
+  border-top: 1px solid var(--rule);
+  padding-top: 0.5rem;
+  min-width: 0;
+}
+dt {
+  color: var(--ink-2);
+  font-size: 0.85rem;
+}
+dd {
+  margin: 0.15rem 0 0;
+  overflow-wrap: anywhere;
+}
+.kpis dd {
+  font-size: 1.6rem;
+  font-weight: 500;
+}
+.chain {
+  color: var(--ink-2);
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+.qr svg {
+  width: 200px;
+  height: 200px;
+  background: #fff;
+  padding: 8px;
+}
+/* Страничните менюта: на фирмата (views/app/_org-nav.ejs) и на мастър панела (views/admin/_nav.ejs).
+   Един <details>: на телефон се свива до текущия раздел, от 60rem е лява колона, винаги отворена. */
+.org-nav,
+.admin-nav {
+  margin: 0 0 1.5rem;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+.org-nav summary,
+.admin-nav summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3rem;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  list-style: none;
+  color: var(--ink);
+  font-weight: 600;
+}
+.org-nav summary::-webkit-details-marker,
+.admin-nav summary::-webkit-details-marker {
+  display: none;
+}
+.org-menu-name {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.25;
+}
+.org-menu-hint {
+  color: var(--ink-2);
+  font-size: 0.78rem;
+  font-weight: 400;
+}
+.org-nav summary .ico:last-child,
+.admin-nav summary .ico:last-child {
+  transition: transform 0.15s ease;
+}
+.org-nav details[open] summary .ico:last-child,
+.admin-nav details[open] summary .ico:last-child {
+  transform: rotate(180deg);
+}
+.org-groups,
+.admin-menu-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.75rem 1rem;
+  padding: 0.25rem 0.5rem 0.9rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 0.75rem;
+}
+.org-top {
+  grid-column: 1 / -1;
+}
+.org-group ul,
+.an-group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.org-group-title,
+.an-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.2rem;
+  padding: 0 0.5rem;
+  color: var(--ink-2);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.org-nav a,
+.admin-nav a {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.75rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: var(--radius);
+  color: var(--ink);
+  line-height: 1.3;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.org-nav a .ico,
+.admin-nav a .ico {
+  color: var(--ink-2);
+}
+.org-nav a:hover,
+.admin-nav a:hover {
+  background: var(--tint);
+}
+.org-nav a[aria-current='page'],
+.admin-nav a[aria-current='page'] {
+  background: var(--accent-soft);
+  box-shadow: inset 3px 0 0 var(--accent);
+  font-weight: 600;
+}
+.org-nav a[aria-current='page'] .ico,
+.admin-nav a[aria-current='page'] .ico {
+  color: var(--accent);
+}
+.admin-nav small {
+  display: block;
+  color: var(--ink-2);
+  font-size: 0.78rem;
+  font-weight: 400;
+}
+.an-group + .an-group .an-title {
+  margin-top: 0.25rem;
+}
+/* Таблиците на регистъра нямат икона — текстът се подравнява с текста на главните връзки. */
+.admin-nav a.an-plain {
+  min-height: 2.5rem;
+  padding-left: 2.35rem;
+}
+@media (min-width: 60rem) {
+  main.wrap:has(> .org-nav),
+  main.wrap:has(> .admin-nav) {
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    column-gap: 2rem;
+    align-content: start;
+    max-width: 82rem;
+  }
+  main.wrap:has(> .org-nav) > *,
+  main.wrap:has(> .admin-nav) > * {
+    grid-column: 2;
+  }
+  main.wrap:has(> .org-nav) > .org-nav,
+  main.wrap:has(> .admin-nav) > .admin-nav {
+    grid-column: 1;
+    grid-row: 1 / span 40;
+    position: sticky;
+    top: 1rem;
+    align-self: start;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    margin: 0;
+  }
+  .org-groups,
+  .admin-menu-body {
+    display: block;
+    border-top: 0;
+    padding: 0.5rem 0.5rem 0.75rem;
+  }
+  .org-group,
+  .an-group {
+    margin-top: 0.6rem;
+  }
+  .org-nav a,
+  .admin-nav a {
+    min-height: 2.25rem;
+  }
+  .admin-nav a.an-plain {
+    min-height: 2rem;
+  }
+  .org-nav summary,
+  .admin-nav summary {
+    cursor: default;
+  }
+}
+@media (min-width: 60rem) {
+  @supports selector(::details-content) {
+    .org-nav summary,
+    .admin-nav summary {
+      display: none;
+    }
+    .org-menu::details-content,
+    .admin-menu::details-content {
+      content-visibility: visible;
+    }
+  }
+}
+.tiles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+}
+.tiles a {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.7rem 0.85rem;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  color: var(--ink);
+  text-decoration: none;
+}
+.tiles a:hover {
+  border-color: var(--accent);
+}
+.search-row {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 32rem;
+  margin-bottom: 0.75rem;
+}
+.pager {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+/* Търсенето в документите: на телефон — едно под друго, на широк екран — един ред, който се пренася. */
+.doc-filter {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.6rem 0.75rem;
+  align-items: end;
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+.doc-filter-q {
+  grid-column: 1 / -1;
+}
+.doc-filter-actions {
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+}
+@media (min-width: 60rem) {
+  .doc-filter-q {
+    grid-column: span 2;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Вход, регистрация, нова парола: една спретната карта по средата */
+main > section.narrow {
+  width: 100%;
+  margin: clamp(0rem, 3vw, 1.5rem) auto 0;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--brand);
+  border-radius: var(--radius);
+}
+main > section.narrow h1 {
+  margin-bottom: 1.25rem;
+}
+main > section.narrow > p:last-child {
+  margin: 1.5rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+}
+main > section.narrow fieldset {
+  background: transparent;
+}
+main > section.narrow button[type='submit'] {
+  justify-self: stretch;
+  padding: 0.7rem 1.1rem;
+  text-align: center;
+}
+main > section.narrow .check input {
+  flex: none;
+}
+.has-error input {
+  border-width: 2px;
+}
+
+/* Страницата „Инсталирай приложението“ */
+.install {
+  max-width: 44rem;
+}
+.install .lead {
+  max-width: 60ch;
+  margin: 0 0 1.5rem;
+  font-size: 1.1rem;
+  line-height: 1.55;
+}
+.install-ready {
+  display: grid;
+  gap: 0.6rem;
+  justify-items: start;
+  background: var(--accent-soft);
+  color: var(--ink);
+  border-left-color: var(--brand);
+}
+.install-ready[hidden],
+.install [hidden] {
+  display: none;
+}
+.install-ready p {
+  margin: 0;
+}
+.install-list {
+  display: grid;
+  gap: 0.6rem;
+  margin: 1.5rem 0;
+}
+details.install-os {
+  padding: 0;
+}
+details.install-os summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+  padding: 0.85rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+details.install-os summary::-webkit-details-marker {
+  display: none;
+}
+details.install-os summary::after {
+  content: '+';
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+details.install-os[open] summary::after {
+  content: '\2212';
+}
+details.install-os[open] summary {
+  border-bottom: 1px solid var(--rule);
+}
+details.install-os ol {
+  margin: 0;
+  padding: 0.85rem 1rem 1rem 2.6rem;
+  display: grid;
+  gap: 0.5rem;
+}
+details.install-os li::marker {
+  color: var(--accent);
+  font-weight: 600;
+}
+.badge {
+  display: inline-block;
+  padding: 0.05rem 0.55rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+.install .panel ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+.install .panel li {
+  padding: 0.15rem 0;
+}
+
+/* Шкафче и пълномощни */
+tr.unread td:first-child a {
+  font-weight: 600;
+}
+.panel {
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+/* Самостоятелните карти (интеграции, прехвърляне) не се долепват до съседа си — и формата след тях. */
+section.panel,
+section.panel + .panel {
+  margin-top: 1.5rem;
+}
+.panel > h2:first-child,
+.panel > h3:first-child,
+.panel > input[type='hidden']:first-child + h2 {
+  margin-top: 0;
+}
+.panel > .hint,
+.panel > p {
+  margin: 0;
+}
+td.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Поканата към собственика в таблицата с клиенти на кантората: поле и бутон на един ред, на телефон — един под друг. */
+.invite-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  margin: 0;
+}
+.invite-row input[type='email'] {
+  flex: 1 1 12rem;
+  width: auto;
+}
+
+/* Таблица, която на телефон става карти: всеки ред е блок, а заглавието на колоната е над стойността. */
+@media (max-width: 40rem) {
+  .stack-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  .stack-table,
+  .stack-table tbody,
+  .stack-table tr,
+  .stack-table td {
+    display: block;
+    width: 100%;
+  }
+  .stack-table tr {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .stack-table td {
+    border: 0;
+    padding: 0.25rem 0.75rem;
+  }
+  .stack-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.78rem;
+    color: var(--ink-2);
+  }
+}
+
+/* Необратимо действие на мастъра (отнемане на собственост): различно от основния бутон. */
+button.button-danger {
+  background: var(--bad-bg);
+  color: var(--bad-ink);
+  border: 1px solid var(--bad-ink);
+}
+
+/* Прегледът на логото в настройките на фирмата: на светло поле, без разтягане. */
+.logo-preview {
+  display: block;
+  max-width: min(100%, 320px);
+  max-height: 120px;
+  height: auto;
+  padding: 0.5rem;
+  background: #ffffff;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+/* Полето за цвят: видима мостра с размер на бутон, не тънка черта. */
+input[type='color'] {
+  width: 5.5rem;
+  height: 2.75rem;
+  padding: 0.2rem;
+  cursor: pointer;
+}
+/* Радио с описание: бутонът до текста, текстът заема останалото място. */
+.choice .radio > span {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Членове (views/app/members.ejs): смяна на роля в реда и чакащите покани. */
+.inline-form {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+.inline-form label {
+  margin: 0;
+}
+.invite-list {
+  list-style: none;
+  margin: 0 0 var(--gap);
+  padding: 0;
+}
+.invite-list li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--rule);
+  overflow-wrap: anywhere;
+}
+
+/* Анулиран документ (SPEC 47): червената рамка — същият цвят като грешките, с контраст ≥ 4,5:1. */
+.callout.annulled {
+  border-color: var(--bad-ink);
+  background: var(--bad-bg);
+  color: var(--bad-ink);
+}
+.callout.annulled a {
+  color: inherit;
+}
+.annul-box select {
+  max-width: 100%;
+}
+.tag-revoked {
+  background: var(--bad-bg);
+  color: var(--bad-ink);
+}
+
+/* План (views/app/plan-order.ejs): „Откажи поръчката“ не се лепи за панела. */
+.plan-cancel {
+  margin-top: var(--gap);
+}
+
+/* API ключове (views/app/api-keys.ejs): ключът за копиране и примерите — без излизане извън екрана. */
+.key-once {
+  display: block;
+  padding: 0.6rem 0.75rem;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.code-block {
+  margin: 0;
+  padding: 0.75rem;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow-x: auto;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+/* Формата за документ: „Добави от артикулите“ — над редовете, не на цялата ширина. */
+.line-picker {
+  max-width: 28rem;
+  margin-bottom: 0.75rem;
+}
+
+/* „Какво ново“ след обновяване (views/partials/news-popup.ejs). Без JavaScript е отворен на страницата
+   (не модален); с news.js — модален. Превърта се само списъкът. */
+.news {
+  width: min(38rem, calc(100vw - 32px));
+  max-height: min(86vh, 52rem);
+  max-height: min(86dvh, 52rem);
+  overflow: hidden;
+  padding: 1.5rem clamp(1.1rem, 4vw, 2rem) 1.25rem;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--brand);
+  border-radius: var(--radius);
+}
+.news[open] {
+  display: flex;
+  flex-direction: column;
+}
+.news[open]:not(:modal) {
+  position: fixed;
+  inset: 16px 0 auto;
+  z-index: 50;
+  margin: 0 auto;
+}
+.news::backdrop {
+  background: rgb(0 0 0 / 0.55);
+}
+.news__title {
+  margin: 0;
+  font-size: 1.4rem;
+  line-height: 1.25;
+}
+.news__lead {
+  margin: 0.35rem 0 0;
+  color: var(--ink-2);
+}
+.news__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: 1rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-top: 1px solid var(--rule);
+}
+.news__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.news__item {
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--rule);
+}
+.news__item:first-child {
+  border-top: 0;
+}
+.news__name {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+.news__area {
+  margin: 0.15rem 0 0.4rem;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+.news__item p:last-child {
+  margin: 0;
+}
+.news__more {
+  margin: 0 0 0.75rem;
+  font-weight: 600;
+}
+.news__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+}
+.news__actions form {
+  margin: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .news[open]:modal {
+    animation: news-in 0.18s ease-out;
+  }
+  @keyframes news-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+}

@@ -103,3 +103,14 @@ test("файлови команди: временна цел минава, ре�
     "cp a /tmp/x && rm src/b", "cp -t /tmp src/a", "touch src/new.ts", `cp a ${sc}/../../../home/x`, "chmod +x src/run.sh", "rm"])
     assert.match(mutationReason(c, { scratch: sc }), /пише\/трие/, c);
 });
+
+// Регресия 2026-11-15 (учебна сесия 7 на Прониквача): цел в кавички — `cp "…/tool-results/x.pdf" "<scratch>/dl/"` —
+// се спираше, защото кавичките оставаха в аргумента и пътят не започваше със scratchpad-а. Кавичките се махат;
+// неразгърната променлива в кавички и „..“ остават спрени.
+test("файлови команди: цел в кавички към scratchpad/tmp минава, към репото — не", () => {
+  const sc = "/tmp/claude-0/x/scratchpad";
+  for (const c of [`cp "/root/.claude/projects/p/tool-results/x.pdf" "${sc}/dl/"`, `cp a.pdf '/tmp/dl/a.pdf'`])
+    assert.equal(mutationReason(c, { scratch: sc }), "", c);
+  for (const c of [`cp /tmp/a "src/a.ts"`, `cp a "$TARGET"`, `cp a "${sc}/../../../home/x"`])
+    assert.match(mutationReason(c, { scratch: sc }), /пише\/трие/, c);
+});

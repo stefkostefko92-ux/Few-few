@@ -4,14 +4,22 @@ import { isProduction } from '../config.js';
 import { setFlash } from '../http/flash.js';
 import { mailLimiter } from '../http/limits.js';
 import { leggiFormPosta, PORTE_SMTP, type CampoPosta } from '../mail/posta-form.js';
-import { disattivaPosta, passwordSalvata, salvaPosta, statoPosta } from '../mail/posta.js';
-import { provaPosta } from '../mail/prova.js';
+import { ultimoEsitoPosta } from '../mail/mailer.js';
+import {
+  disattivaPosta,
+  passwordSalvata,
+  salvaPosta,
+  statoPosta,
+  versionePosta,
+} from '../mail/posta.js';
+import { provaPosta, ultimaProva } from '../mail/prova.js';
 import { confermaPassword } from './conferma-password.js';
 
 /**
  * „Email del portale“ в конзолата на MASTER (#32 — Brevo SMTP): сървърът, портът, логинът, ключът (само се пише —
  * никога не се показва; празно — остава записаният), подателят; пробно писмо до самия MASTER; изключване (пак
- * важи средата). Само `aziende:manage`.
+ * важи средата). Страницата казва и защо не е тръгнало последното пробно и последното истинско писмо
+ * (mail/diagnosi.ts — стъпката с думи и отговорът на сървъра). Само `aziende:manage`.
  */
 export const masterPostaRouter: Router = Router();
 const manage = requireCapability('aziende:manage');
@@ -46,11 +54,16 @@ async function vista(
           mittenteEmail: stato.riga.mittenteEmail,
         }
       : PREDEFINITI);
+  // Последното неуспешно истинско писмо — само ако е пращано със СЕГАШНАТА настройка (иначе описва старата);
+  // пробата се сверява сама (`ultimaProva`). Двете носят сървъра, с който са пращани.
+  const invio = ultimoEsitoPosta();
   res.status(status).render('master/posta', {
     stato,
     valori,
     errori: extra.errori ?? {},
     porte: PORTE_SMTP,
+    prova: ultimaProva(),
+    invio: invio && !invio.riuscito && invio.versione === versionePosta() ? invio : null,
   });
 }
 
@@ -108,7 +121,7 @@ masterPostaRouter.post(
     if (esito.esito === 'inviata')
       setFlash(res, 'ok', 'posta.flash.provaInviata', { email: user.email });
     else if (esito.esito === 'spenta') setFlash(res, 'error', 'posta.flash.provaSpenta');
-    else setFlash(res, 'error', 'posta.flash.provaErrore', { codice: esito.codice });
+    else setFlash(res, 'error', 'posta.flash.provaErrore');
     res.redirect(303, '/master/posta');
   },
 );

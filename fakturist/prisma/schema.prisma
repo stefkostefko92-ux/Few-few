@@ -1,0 +1,1224 @@
+// Фактурист — схемата на данните. Всяка таблица тук ТРЯБВА да има запис в мастър панела
+// (src/admin/registry.ts); tests/admin-registry.test.ts пада, ако модел няма. Индекс на всеки външен ключ.
+// Сумите в документите са в центове (BigInt) — фактура на голяма фирма надхвърля 2^31 цента.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Ролята в платформата (над фирмите). MASTER — собственикът: вижда и управлява всичко през мастър панела.
+/// SUPPORT — поддръжка: чете, не пише по документи. NONE — обикновен потребител.
+enum PlatformRole {
+  NONE
+  SUPPORT
+  MASTER
+}
+
+/// Ролята във фирма или кантора — от най-силната към най-слабата (заедно с двете роли в платформата — 7 нива).
+enum MemberRole {
+  OWNER
+  ADMIN
+  ACCOUNTANT
+  ISSUER
+  VIEWER
+}
+
+enum OrganizationKind {
+  COMPANY
+  ACCOUNTING_FIRM
+}
+
+enum MandateStatus {
+  PENDING
+  ACTIVE
+  REVOKED
+}
+
+enum DocumentStatus {
+  DRAFT
+  ISSUED
+  CANCELLED
+}
+
+enum RecurringFrequency {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum RecurringStatus {
+  ACTIVE
+  PAUSED
+  ENDED
+}
+
+/// Плащането по издаден документ (SPEC 52): по ръчно отбелязаните и сверените плащания.
+enum DocumentPaymentState {
+  UNPAID
+  PARTIAL
+  PAID
+}
+
+enum DocumentPaymentSource {
+  MANUAL
+  BANK
+}
+
+/// Входяща е-фактура (SPEC 55), качена като файл: получена → платена или отказана.
+enum IncomingStatus {
+  RECEIVED
+  PAID
+  REJECTED
+}
+
+/// Правото на данъчен кредит по входящата фактура (чл. 69–73 ЗДДС) — за дневника за покупките.
+enum VatCredit {
+  FULL
+  PARTIAL
+  NONE
+}
+
+/// Ред от банково извлечение (SPEC 54): нов → свързан с плащане по документ или пропуснат.
+enum BankLineStatus {
+  NEW
+  MATCHED
+  IGNORED
+}
+
+enum PartyKind {
+  CUSTOMER
+  SUPPLIER
+}
+
+enum PlanAudience {
+  COMPANY
+  ACCOUNTANT
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+}
+
+enum BillingInterval {
+  MONTH
+  YEAR
+}
+
+enum PaymentProvider {
+  MANUAL
+  REVOLUT
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  /// Заменена от по-нова поръчка или отказана от клиента — ако все пак се плати, се активира.
+  CANCELLED
+}
+
+model User {
+  id                 String       @id @default(cuid())
+  /// Винаги с малки букви (src/auth/email.ts).
+  email              String       @unique
+  name               String
+  passwordHash       String
+  locale             String       @default("bg")
+  platformRole       PlatformRole @default(NONE)
+  /// Мастър акаунтът от `owner:create` сменя паролата при първия вход.
+  mustChangePassword Boolean      @default(false)
+  /// TOTP тайната — AES-256-GCM с ключ, изведен от LEDGER_SEAL_KEY (src/auth/keys.ts); никога в явен вид.
+  totpSecretEnc      String?
+  totpEnabledAt      DateTime?
+  /// Последната приета стъпка на TOTP — повторен код в същия прозорец не минава (и след рестарт).
+  totpLastStep       Int?
+  emailVerifiedAt    DateTime?
+  /// Грешните пароли подред (SPEC 46): при 5 профилът се заключва до `lockedUntil`; всяко поредно
+  /// заключване е по-дълго (`lockouts`: 15 мин → 1 ч → 4 ч → 24 ч). Успешен вход или нова парола нулират.
+  failedLogins       Int          @default(0)
+  lockedUntil        DateTime?
+  lockouts           Int          @default(0)
+  lastLoginAt        DateTime?
+  disabledAt         DateTime?
+  /// Последното „Разбрах“ в прозореца „Какво ново“ (src/news/) — новините, излезли след него, са непрочетени.
+  newsReadAt         DateTime     @default(now())
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  sessions              Session[]
+  memberships           Membership[]
+  issuedDocuments       Document[]         @relation("IssuedBy")
+  cancelledDocuments    Document[]         @relation("CancelledBy")
+  paymentsCreated       Payment[]          @relation("PaymentCreatedBy")
+  recurringCreated      RecurringInvoice[]
+  proformasCreated      Proforma[]         @relation("ProformaCreatedBy")
+  apiKeysCreated        ApiKey[]
+  incomingCreated       IncomingInvoice[]  @relation("IncomingCreatedBy")
+  bankStatements        BankStatement[]    @relation("BankStatementCreatedBy")
+  documentPayments      DocumentPayment[]
+  paymentsConfirmed     Payment[]          @relation("PaymentConfirmedBy")
+  auditEntries          AuditLog[]
+  inboxDecisions        InboxEntry[]
+  mandatesCreated       ClientMandate[]
+  settingsChanged       Setting[]
+  flagsChanged          FeatureFlag[]
+  integrations          Integration[]
+  invitesCreated        TransferInvite[]   @relation("InviteCreatedBy")
+  invitesAccepted       TransferInvite[]   @relation("InviteAcceptedBy")
+  pdfStylesChanged      PdfStyle[]
+  tokens                UserToken[]
+  legalAcceptances      LegalAcceptance[]
+  announcements         Announcement[]     @relation("AnnouncementBy")
+  memberInvitesCreated  MemberInvite[]     @relation("MemberInviteCreatedBy")
+  memberInvitesAccepted MemberInvite[]     @relation("MemberInviteAcceptedBy")
+
+  @@index([platformRole])
+}
+
+model Session {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  csrfToken   String
+  /// Сесията е минала втория фактор (или акаунтът няма 2FA).
+  verified    Boolean  @default(false)
+  /// Грешни кодове за втория фактор в тази сесия; при 5 сесията се трие (src/routes/auth.ts).
+  failedCodes Int      @default(0)
+  createdAt   DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+  expiresAt   DateTime
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Organization {
+  id                    String           @id @default(cuid())
+  kind                  OrganizationKind
+  legalName             String
+  /// ЕИК/БУЛСТАТ (9 или 13 цифри) — проверен с контролната цифра (src/einvoice/bg-ids.ts).
+  eik                   String?          @unique
+  /// ДДС номер с префикса BG; null — лицето не е регистрирано по ЗДДС.
+  vatNumber             String?
+  addressStreet         String
+  addressCity           String
+  postalCode            String
+  countryCode           String           @default("BG")
+  email                 String?
+  phone                 String?
+  iban                  String?
+  bic                   String?
+  bankName              String?
+  /// Електронният адрес за получаване (чл. 120б от законопроекта) — схема и стойност, напр. 9926:BG123456789.
+  eAddressScheme        String?
+  eAddressValue         String?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  /// Изтрита след прекратяване (src/accounts/termination-purge.ts): остава само надгробието — наименованието.
+  deletedAt             DateTime?
+  /// Заявено прекратяване (SPEC 65): до `purgeAfter` — само преглед и изтегляне; после всичко се изтрива.
+  terminatedAt          DateTime?
+  purgeAfter            DateTime?
+  /// Мастър акаунтът е проверил, че фирмата е тази, за която се представя (пълномощно, документ за
+  /// представителство). Получателят в шкафчето вижда дали изпращачът е потвърден.
+  verifiedAt            DateTime?
+  /// Кантората, която е създала фирмата (/klienti/nov). Само тя може да покани собственика; кантора,
+  /// добавила вече съществуваща фирма, — не (иначе би я взела чрез свой втори имейл).
+  /// Собственик, поканен от кантора, чака проверка от мастъра (таблото „за проверка“) — до „Собственикът
+  /// е проверен“ или отнемане. Отделно от verifiedAt: потвърденото пълномощно не е проверен собственик.
+  ownerReviewPendingAt  DateTime?
+  /// След „Отнеми собствеността“: кантората не кани нов собственик — само мастърът, до приемане на поканата.
+  ownershipLockedAt     DateTime?
+  /// Напомняния за просрочени фактури до получателя (SPEC 52) — включват се от настройките на фирмата.
+  remindersEnabled      Boolean          @default(false)
+  /// Следващият номер на проформа (своя номерация — проформата не е данъчен документ).
+  proformaNext          Int              @default(1)
+  /// SAF-T (src/export/saft/): сметките от сметкоплана на фирмата за данните за продажбите — избира ги
+  /// счетоводителят („Данни за SAF-T“); 3–5 цифри (SAFAccountType в XSD 1.0.3).
+  saftReceivableAccount String           @default("411")
+  saftRevenueAccount    String           @default("703")
+  /// SAF-T: ЕИК / ДДС номера на свързаните лица (RelatedParty = Y) — въвежда ги фирмата, Фактурист не ги знае.
+  saftRelatedParties    String[]         @default([])
+  createdByFirmId       String?
+  createdByFirm         Organization?    @relation("CreatedByFirm", fields: [createdByFirmId], references: [id], onDelete: SetNull)
+  createdClients        Organization[]   @relation("CreatedByFirm")
+
+  memberships         Membership[]
+  firmMandates        ClientMandate[]      @relation("Firm")
+  clientMandates      ClientMandate[]      @relation("Client")
+  parties             Party[]
+  items               Item[]
+  series              DocumentSeries[]
+  documents           Document[]           @relation("DocumentOwner")
+  documentsAsFirm     Document[]           @relation("DocumentFirm")
+  subscriptions       Subscription[]
+  payments            Payment[]
+  auditEntries        AuditLog[]
+  inboxReceived       InboxEntry[]         @relation("InboxRecipient")
+  inboxSent           InboxEntry[]         @relation("InboxSender")
+  notifications       Notification[]
+  transferInvites     TransferInvite[]
+  pdfStyle            PdfStyle?
+  memberInvites       MemberInvite[]
+  legalAcceptances    LegalAcceptance[]
+  recurring           RecurringInvoice[]
+  recurringAsFirm     RecurringInvoice[]   @relation("RecurringFirm")
+  proformas           Proforma[]
+  peppolParticipant   PeppolParticipant?
+  peppolTransmissions PeppolTransmission[]
+  apiKeys             ApiKey[]
+  incoming            IncomingInvoice[]
+  bankStatements      BankStatement[]
+  bankLines           BankLine[]
+
+  @@index([kind])
+  @@index([legalName])
+  @@index([createdByFirmId])
+  @@index([ownerReviewPendingAt])
+  @@index([purgeAfter])
+}
+
+model Membership {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role           MemberRole
+  createdAt      DateTime     @default(now())
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+}
+
+/// Пълномощното на кантора да издава от името на фирма-клиент (чл. 113, ал. 7 ЗДДС — писмено упълномощаване).
+model ClientMandate {
+  id          String           @id @default(cuid())
+  firmId      String
+  firm        Organization     @relation("Firm", fields: [firmId], references: [id], onDelete: Cascade)
+  clientId    String
+  client      Organization     @relation("Client", fields: [clientId], references: [id], onDelete: Cascade)
+  status      MandateStatus    @default(PENDING)
+  /// Номер и дата на писменото пълномощно — пазят се като доказателство при проверка.
+  documentRef String
+  validFrom   DateTime
+  validTo     DateTime?
+  createdById String?
+  createdBy   User?            @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime         @default(now())
+  revokedAt   DateTime?
+  documents   Document[]
+  /// Поканите към собственика, изпратени от кантората по това пълномощно.
+  invites     TransferInvite[]
+
+  @@unique([firmId, clientId])
+  @@index([clientId])
+  @@index([createdById])
+}
+
+/// Контрагент (клиент или доставчик) на фирма.
+model Party {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  kind           PartyKind    @default(CUSTOMER)
+  name           String
+  eik            String?
+  vatNumber      String?
+  countryCode    String       @default("BG")
+  addressStreet  String
+  addressCity    String
+  postalCode     String
+  email          String?
+  eAddressScheme String?
+  eAddressValue  String?
+  /// Архивиран — не се предлага при издаване; издадените документи пазят свое копие на данните.
+  archivedAt     DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, name])
+  @@index([organizationId, eik])
+}
+
+/// Артикул или услуга от номенклатурата на фирмата.
+model Item {
+  id                   String       @id @default(cuid())
+  organizationId       String
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name                 String
+  /// UN/ECE Rec. 20 (C62 брой, HUR час, KGM кг…).
+  unitCode             String       @default("C62")
+  /// Единичната цена без ДДС като десетичен текст (до 6 знака след запетаята) — без float.
+  netPrice             String
+  vatCategory          String       @default("S")
+  vatRate              String       @default("20")
+  sellerItemId         String?
+  classificationCode   String?
+  classificationScheme String?
+  archivedAt           DateTime?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@index([organizationId, name])
+}
+
+/// Серия номера на фирмата — непрекъснат десетразряден диапазон (чл. 114, ал. 1, т. 2 ЗДДС).
+model DocumentSeries {
+  id             String             @id @default(cuid())
+  organizationId String
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  rangeStart     BigInt
+  rangeEnd       BigInt
+  /// Следващият свободен номер; увеличава се в транзакцията на издаването — rollback = без пропуск.
+  nextNumber     BigInt
+  isDefault      Boolean            @default(false)
+  createdAt      DateTime           @default(now())
+  documents      Document[]
+  recurring      RecurringInvoice[]
+
+  @@unique([organizationId, name])
+}
+
+model Document {
+  id                 String               @id @default(cuid())
+  organizationId     String
+  organization       Organization         @relation("DocumentOwner", fields: [organizationId], references: [id], onDelete: Restrict)
+  seriesId           String?
+  series             DocumentSeries?      @relation(fields: [seriesId], references: [id], onDelete: Restrict)
+  status             DocumentStatus       @default(DRAFT)
+  /// UNTDID 1001: 380 фактура, 381 кредитно, 383 дебитно известие, 389 самофактура.
+  typeCode           String
+  /// Десетразрядният номер — само при издаване.
+  number             String?
+  issueDate          DateTime             @db.Date
+  taxPointDate       DateTime?            @db.Date
+  dueDate            DateTime?            @db.Date
+  currency           String               @default("EUR")
+  /// Езикът на PDF копието: „bg“ или „bg-en“ (двуезичен) — XML-ът е без език (src/documents/pdf-labels.ts).
+  pdfLanguage        String               @default("bg")
+  /// Входът по семантичния модел на EN 16931 (src/einvoice/model.ts) — източникът на XML-а.
+  input              Json
+  buyerName          String
+  buyerEik           String?
+  lineExtensionCents BigInt               @default(0)
+  taxExclusiveCents  BigInt               @default(0)
+  vatCents           BigInt               @default(0)
+  taxInclusiveCents  BigInt               @default(0)
+  payableCents       BigInt               @default(0)
+  /// ДДС в евро (чл. 114, ал. 5 ЗДДС) — при фактура в друга валута.
+  vatEurCents        BigInt?
+  ublXml             String?
+  ciiXml             String?
+  /// Веригата: SHA-256 на каноничното съдържание, предишният отпечатък и HMAC печатът (src/ledger/).
+  chainIndex         BigInt?
+  sha256             String?
+  prevHash           String?
+  seal               String?
+  issuedById         String?
+  issuedBy           User?                @relation("IssuedBy", fields: [issuedById], references: [id], onDelete: SetNull)
+  /// Кантората, издала документа по пълномощно (null — издаден от самата фирма).
+  firmId             String?
+  firm               Organization?        @relation("DocumentFirm", fields: [firmId], references: [id], onDelete: SetNull)
+  mandateId          String?
+  mandate            ClientMandate?       @relation(fields: [mandateId], references: [id], onDelete: SetNull)
+  precedingId        String?
+  preceding          Document?            @relation("Preceding", fields: [precedingId], references: [id], onDelete: Restrict)
+  followers          Document[]           @relation("Preceding")
+  inboxEntries       InboxEntry[]
+  issuedAt           DateTime?
+  cancelledAt        DateTime?
+  /// Кодът на причината за анулиране (src/documents/annul.ts — затворен списък по чл. 116 ЗДДС).
+  cancelReason       String?
+  /// Новият документ, издаден на мястото на анулирания (чл. 116, ал. 1 — анулира се и се издава нов).
+  replacedById       String?              @unique
+  replacedBy         Document?            @relation("Replacement", fields: [replacedById], references: [id], onDelete: Restrict)
+  replaces           Document?            @relation("Replacement")
+  cancelledById      String?
+  cancelledBy        User?                @relation("CancelledBy", fields: [cancelledById], references: [id], onDelete: SetNull)
+  /// Плащането на план, за което е тази фактура (документите на Карбон Стелт за абонаментите).
+  paymentFor         Payment?             @relation("PaymentInvoice")
+  /// Издаден от повтаряща се фактура — за кой период („2026-11“, „2026-Q4“, „2026“); двойката е уникална:
+  /// работникът не издава два документа за един период (SPEC 51).
+  recurringId        String?
+  recurring          RecurringInvoice?    @relation(fields: [recurringId], references: [id], onDelete: SetNull)
+  recurringPeriod    String?
+  /// Плащането (SPEC 52): сборът на записаните плащания (центове) и състоянието спрямо `payableCents`.
+  paymentState       DocumentPaymentState @default(UNPAID)
+  paidCents          BigInt               @default(0)
+  paidAt             DateTime?            @db.Date
+  payments           DocumentPayment[]
+  proforma           Proforma?
+  peppolTransmission PeppolTransmission?
+  nraReports         NraReport[]
+  issueSubmission    IssueSubmission?
+  /// Отпечатъкът на входа (от който се рисува PDF-ът) — в звеното на веригата (v2); null — звено v1.
+  inputSha256        String?
+  reminders          PaymentReminder[]
+  apiRequests        ApiIdempotency[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  @@unique([organizationId, number])
+  @@unique([organizationId, chainIndex])
+  @@unique([recurringId, recurringPeriod])
+  @@index([organizationId, paymentState, dueDate])
+  @@index([organizationId, issueDate])
+  @@index([organizationId, status])
+  @@index([organizationId, createdAt])
+  @@index([seriesId])
+  @@index([issuedById])
+  @@index([cancelledById])
+  @@index([firmId])
+  @@index([mandateId])
+  @@index([precedingId])
+}
+
+/// Одитът — верига от отпечатъци (всеки ред носи хеша на предишния). Без лични данни в `details`.
+model AuditLog {
+  id             BigInt        @id @default(autoincrement())
+  at             DateTime      @default(now())
+  actorId        String?
+  actor          User?         @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  action         String
+  targetType     String?
+  targetId       String?
+  details        Json?
+  prevHash       String
+  hash           String        @unique
+
+  @@index([organizationId, at])
+  @@index([actorId])
+  @@index([action])
+}
+
+model Plan {
+  id                       String         @id @default(cuid())
+  code                     String         @unique
+  audience                 PlanAudience
+  nameBg                   String
+  nameEn                   String
+  /// Евроцентове БЕЗ ДДС; null — „по договор“.
+  priceMonthlyCents        Int?
+  priceYearlyCents         Int?
+  perClientCompanyCents    Int?
+  includedClientCompanies  Int?
+  maxUsers                 Int?
+  maxCompanies             Int?
+  monthlyDocumentSoftLimit Int?
+  /// Кодове от регистъра src/features.ts.
+  features                 String[]
+  highlighted              Boolean        @default(false)
+  isPublic                 Boolean        @default(true)
+  isActive                 Boolean        @default(true)
+  sortOrder                Int            @default(0)
+  updatedAt                DateTime       @updatedAt
+  subscriptions            Subscription[]
+}
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  organizationId     String
+  organization       Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  planCode           String
+  plan               Plan               @relation(fields: [planCode], references: [code], onDelete: Restrict)
+  status             SubscriptionStatus @default(ACTIVE)
+  interval           BillingInterval    @default(MONTH)
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  provider           PaymentProvider    @default(MANUAL)
+  providerRef        String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  payments           Payment[]
+
+  @@index([organizationId])
+  @@index([planCode])
+}
+
+model Payment {
+  id                   String           @id @default(cuid())
+  organizationId       String
+  organization         Organization     @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  subscriptionId       String?
+  subscription         Subscription?    @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  /// Сумата за плащане С ДДС (евроцентове) — изчислена на сървъра (src/billing/orders.ts).
+  amountCents          Int
+  currency             String           @default("EUR")
+  provider             PaymentProvider
+  /// Идентификаторът на поръчката при Revolut — уникален (идемпотентност на webhook-а).
+  providerOrderId      String?          @unique
+  /// Страницата за плащане с карта (Revolut) — пренасочването след поръчката.
+  checkoutUrl          String?
+  status               PaymentStatus    @default(PENDING)
+  paidAt               DateTime?
+  /// Поръчаният план и периодът (SPEC 49) — null при плащания отпреди поръчките от профила.
+  planCode             String?
+  interval             BillingInterval?
+  /// Основата и ДДС-ът (евроцентове), от които е `amountCents`; ставката към момента на поръчката.
+  netCents             Int              @default(0)
+  vatCents             Int              @default(0)
+  /// Прихванатата неизползвана част от предишния платен план (основа, евроцентове) — вече извадена от netCents.
+  creditCents          Int              @default(0)
+  /// Абонаментът, от който е прихванатото (creditCents) — при активиране трябва още да е действащият.
+  creditSubscriptionId String?
+  vatRate              String           @default("20")
+  /// Основанието за банков превод („FKT-XXXXXXXX“) — по него се сверява преводът.
+  reference            String?          @unique
+  /// Фактурата за плащането, издадена от Карбон Стелт в транзакцията на активирането (SPEC 50).
+  invoiceDocumentId    String?          @unique
+  invoiceDocument      Document?        @relation("PaymentInvoice", fields: [invoiceDocumentId], references: [id], onDelete: Restrict)
+  createdById          String?
+  createdBy            User?            @relation("PaymentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  /// Кой е потвърдил банковия превод в панела (null — webhook на Revolut).
+  confirmedById        String?
+  confirmedBy          User?            @relation("PaymentConfirmedBy", fields: [confirmedById], references: [id], onDelete: SetNull)
+  createdAt            DateTime         @default(now())
+
+  @@index([organizationId])
+  @@index([subscriptionId])
+  @@index([status, provider])
+  @@index([createdById])
+  @@index([confirmedById])
+}
+
+/// Получените webhook събития — всяко се обработва точно веднъж (уникален eventKey).
+model WebhookEvent {
+  id          String          @id @default(cuid())
+  provider    PaymentProvider
+  eventKey    String          @unique
+  type        String
+  payloadHash String
+  receivedAt  DateTime        @default(now())
+  processedAt DateTime?
+}
+
+/// Глобалните настройки, които мастър акаунтът сменя без деплой (src/admin/settings.ts е схемата им).
+model Setting {
+  key         String   @id
+  value       Json
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+  updatedBy   User?    @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([updatedById])
+}
+
+/// Глобалното включване на функция от регистъра src/features.ts (липсващ ред = включена).
+model FeatureFlag {
+  code        String   @id
+  enabled     Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+  updatedBy   User?    @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([updatedById])
+}
+
+enum InboxStatus {
+  RECEIVED
+  ACCEPTED
+  REJECTED
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+/// Шкафчето: документ, доставен автоматично на фирма-получател, регистрирана във Фактурист (съвпадение
+/// по ЕИК при издаването — src/inbox/deliver.ts). Получателят вижда само този документ, не и другите на
+/// изпращача.
+model InboxEntry {
+  id             String       @id @default(cuid())
+  documentId     String
+  document       Document     @relation(fields: [documentId], references: [id], onDelete: Restrict)
+  recipientOrgId String
+  recipientOrg   Organization @relation("InboxRecipient", fields: [recipientOrgId], references: [id], onDelete: Cascade)
+  senderOrgId    String
+  senderOrg      Organization @relation("InboxSender", fields: [senderOrgId], references: [id], onDelete: Cascade)
+  status         InboxStatus  @default(RECEIVED)
+  deliveredAt    DateTime     @default(now())
+  readAt         DateTime?
+  decidedAt      DateTime?
+  decidedById    String?
+  decidedBy      User?        @relation(fields: [decidedById], references: [id], onDelete: SetNull)
+  /// Причината при отказ („не е за нас“, „грешна сума“) — без лични данни.
+  rejectReason   String?
+  /// Дневник за покупките на получателя — както при входящите (SPEC 68).
+  vatCredit      VatCredit    @default(FULL)
+  journalPeriod  String?
+
+  @@unique([documentId, recipientOrgId])
+  @@index([recipientOrgId, deliveredAt])
+  @@index([recipientOrgId, journalPeriod])
+  @@index([senderOrgId])
+  @@index([decidedById])
+}
+
+/// Изходящите писма — опашка с повторения (src/mail/outbox.ts). Писмото се записва в транзакцията на
+/// действието и се праща след нея; провалено се опитва пак до 6 пъти.
+model Notification {
+  id             String             @id @default(cuid())
+  organizationId String?
+  organization   Organization?      @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  kind           String
+  /// Получателят — имейл на член на фирмата; не се показва в списъка на панела.
+  toEmail        String
+  /// Данните за шаблона (идентификатори, не съдържание на фактура).
+  payload        Json
+  status         NotificationStatus @default(PENDING)
+  attempts       Int                @default(0)
+  lastError      String?
+  nextAttemptAt  DateTime           @default(now())
+  sentAt         DateTime?
+  createdAt      DateTime           @default(now())
+
+  @@index([status, nextAttemptAt])
+  @@index([organizationId])
+}
+
+/// Външните услуги (Brevo SMTP, Revolut Merchant API), настроени от мастър панела. Схемата им е в
+/// src/admin/integrations.ts. Тайните са шифровани (AES-256-GCM, вързани с кода) и никога не се показват
+/// обратно — само последните 4 знака (`secretHints`). Панелът има предимство пред `.env`.
+model Integration {
+  code           String    @id
+  /// Нетайните настройки (хост, порт, подател, среда).
+  config         Json
+  secretsEnc     String?
+  secretHints    Json?
+  lastCheckAt    DateTime?
+  lastCheckOk    Boolean?
+  /// Грешката от последната проверка — без адреси и без тайни.
+  lastCheckError String?
+  updatedAt      DateTime  @updatedAt
+  updatedById    String?
+  updatedBy      User?     @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([updatedById])
+}
+
+/// Прехвърлянето на фирма, добавена от кантора, към собственика ѝ (src/accounts/transfer.ts). Мастърът
+/// изпраща еднократна покана до имейла на собственика; в базата е само SHA-256 на токена.
+model TransferInvite {
+  id             String         @id @default(cuid())
+  organizationId String
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  /// Имейлът, с който поканата се приема (малки букви).
+  email          String
+  tokenHash      String         @unique
+  createdById    String?
+  createdBy      User?          @relation("InviteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt      DateTime       @default(now())
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  acceptedById   String?
+  acceptedBy     User?          @relation("InviteAcceptedBy", fields: [acceptedById], references: [id], onDelete: SetNull)
+  revokedAt      DateTime?
+  /// Поканата е от кантората по това пълномощно (null — от мастъра). Приелият я може да потвърди
+  /// пълномощното с една отметка.
+  mandateId      String?
+  mandate        ClientMandate? @relation(fields: [mandateId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([createdById])
+  @@index([acceptedById])
+  @@index([mandateId])
+}
+
+/// Изгледът на PDF копието на фирмата (настройките на фирмата → „Изглед на документите“). Само външният
+/// вид: реквизитите, сумите и подписът на продукта са едни и същи във всеки изглед (src/documents/pdf.ts).
+model PdfStyle {
+  organizationId String       @id
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  /// Логото — винаги прекодирано (sharp): PNG или JPEG, до 1200×600, без метаданни.
+  logo           Bytes?
+  logoType       String?
+  logoWidth      Int?
+  logoHeight     Int?
+  /// Ключ от PDF_FONTS (src/documents/pdf-style.ts).
+  font           String       @default("dejavu-sans")
+  /// classic | band | compact
+  template       String       @default("classic")
+  /// #rrggbb, с достатъчен контраст върху бяло (WCAG 4.5:1).
+  accent         String       @default("#03756c")
+  /// left | right
+  logoPosition   String       @default("left")
+  updatedAt      DateTime     @updatedAt
+  updatedById    String?
+  updatedBy      User?        @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([updatedById])
+}
+
+enum UserTokenPurpose {
+  PASSWORD_RESET
+  EMAIL_VERIFY
+}
+
+/// Еднократните връзки по имейл — нова парола и потвърждение на имейла (src/accounts/tokens.ts). В базата е
+/// само SHA-256 на токена; самият токен е в писмото (в опашката — шифрован и вързан с id-то).
+model UserToken {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose   UserTokenPurpose
+  tokenHash String           @unique
+  /// Адресът, до който е пратена връзката: потвърждението важи само докато профилът е със същия имейл.
+  email     String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, purpose, createdAt])
+}
+
+/// Приетите правни документи (src/legal/documents.ts) — само добавяне: кой, кой документ, коя версия,
+/// кога и за коя фирма. Остава и след изтриване на профила или фирмата (доказателство).
+model LegalAcceptance {
+  id             String        @id @default(cuid())
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  /// terms | privacy | dpa
+  document       String
+  /// Датата на версията (`LEGAL_DOCUMENTS[document].version`).
+  version        String
+  acceptedAt     DateTime      @default(now())
+
+  @@index([userId])
+  @@index([organizationId])
+}
+
+/// Покана за член на фирмата (SPEC 45): еднократна връзка 7 дни, в базата само SHA-256 на токена (в
+/// опашката с писма — шифрован). Ролята е под тази на поканилия; OWNER не се кани.
+model MemberInvite {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  role           MemberRole
+  tokenHash      String       @unique
+  createdById    String?
+  createdBy      User?        @relation("MemberInviteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  acceptedById   String?
+  acceptedBy     User?        @relation("MemberInviteAcceptedBy", fields: [acceptedById], references: [id], onDelete: SetNull)
+  revokedAt      DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([createdById])
+  @@index([acceptedById])
+}
+
+/// Повтаряща се фактура (SPEC 51): шаблон от издаден документ — входът му (получател, редове, бележки,
+/// плащане), серията и честотата. Работникът издава по един документ за период (уникалната двойка в
+/// Document), от името на създателя — с правата му към момента на издаването.
+model RecurringInvoice {
+  id               String             @id @default(cuid())
+  organizationId   String
+  organization     Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  seriesId         String
+  series           DocumentSeries     @relation(fields: [seriesId], references: [id], onDelete: Restrict)
+  /// Документът, от който е направен шаблонът (само за справка).
+  sourceDocumentId String?
+  name             String
+  /// Входът по EN 16931 без номер, дати и доставчик — сървърът ги слага при всяко издаване.
+  template         Json
+  frequency        RecurringFrequency
+  /// Денят от месеца, към който се връща графикът (31 → последният ден на по-късия месец).
+  anchorDay        Int
+  nextRunOn        DateTime           @db.Date
+  endOn            DateTime?          @db.Date
+  /// Падеж — дни след датата на издаване; null — без падеж.
+  dueDays          Int?
+  /// Писмо с PDF и XML до този адрес при всяко издаване (по избор).
+  sendTo           String?
+  /// Езикът на PDF-а на издадените документи (от документа-източник).
+  pdfLanguage      String             @default("bg")
+  status           RecurringStatus    @default(ACTIVE)
+  lastIssuedOn     DateTime?          @db.Date
+  /// Последната грешка при издаване (без лични данни) и броят поредни грешки — след 3 шаблонът спира.
+  lastError        String?
+  failures         Int                @default(0)
+  createdById      String?
+  createdBy        User?              @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  /// Кантората, ако шаблонът е създаден по пълномощно — издаването минава през него (проверено наново).
+  viaFirmId        String?
+  viaFirm          Organization?      @relation("RecurringFirm", fields: [viaFirmId], references: [id], onDelete: SetNull)
+  documents        Document[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([status, nextRunOn])
+  @@index([organizationId])
+  @@index([seriesId])
+  @@index([createdById])
+  @@index([viaFirmId])
+}
+
+/// Плащане по документ (SPEC 52): ръчно отбелязано или от сверката с банката (SPEC 54).
+model DocumentPayment {
+  id          String                @id @default(cuid())
+  documentId  String
+  document    Document              @relation(fields: [documentId], references: [id], onDelete: Restrict)
+  amountCents BigInt
+  paidOn      DateTime              @db.Date
+  source      DocumentPaymentSource @default(MANUAL)
+  note        String?
+  createdById String?
+  createdBy   User?                 @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  bankLine    BankLine?
+  createdAt   DateTime              @default(now())
+
+  @@index([documentId])
+  @@index([createdById])
+}
+
+/// Изпратено напомняне за просрочена фактура — по едно за стъпка (+3, +10 дни), никога повторно.
+model PaymentReminder {
+  id         String   @id @default(cuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  step       Int
+  sentOn     DateTime @db.Date
+  createdAt  DateTime @default(now())
+
+  @@unique([documentId, step])
+}
+
+/// API ключ на фирма (SPEC 53): показва се веднъж; в базата е само SHA-256 и началото за разпознаване.
+/// Издава от името на създателя (правото му се проверява наново при всяко издаване).
+model ApiKey {
+  id             String           @id @default(cuid())
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  /// „fkt_“ + първите 8 знака — за списъка, не стига за вход.
+  prefix         String
+  keyHash        String           @unique
+  /// „read“ (четене) и/или „issue“ (издаване).
+  scopes         String[]
+  createdById    String?
+  createdBy      User?            @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  lastUsedAt     DateTime?
+  revokedAt      DateTime?
+  createdAt      DateTime         @default(now())
+  idempotency    ApiIdempotency[]
+
+  @@index([organizationId])
+  @@index([createdById])
+}
+
+/// Повторена заявка за издаване със същия Idempotency-Key връща същия документ, не издава втори.
+model ApiIdempotency {
+  id          String   @id @default(cuid())
+  apiKeyId    String
+  apiKey      ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  key         String
+  /// SHA-256 на тялото — същият ключ с друго тяло е грешка (422), не втори документ.
+  requestHash String
+  documentId  String
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Restrict)
+  createdAt   DateTime @default(now())
+
+  @@unique([apiKeyId, key])
+  @@index([documentId])
+}
+
+/// Входяща е-фактура, качена като UBL 2.1 или CII (SPEC 55). Доставените в шкафчето са в InboxEntry —
+/// регистърът показва и двете. XML-ът се пази както е получен; разчетените полета са за списъка.
+model IncomingInvoice {
+  id             String         @id @default(cuid())
+  organizationId String
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  /// UBL или CII
+  format         String
+  fileName       String?
+  xml            String
+  sha256         String
+  supplierName   String
+  supplierEik    String?
+  supplierVat    String?
+  number         String
+  typeCode       String
+  issueDate      DateTime?      @db.Date
+  dueDate        DateTime?      @db.Date
+  currency       String
+  payableCents   BigInt
+  vatCents       BigInt
+  /// Резултатът от проверката по правилата (кодове и текстове, без лични данни).
+  issues         Json
+  valid          Boolean
+  status         IncomingStatus @default(RECEIVED)
+  /// UPLOAD (качен файл), PEPPOL (получен през точката за достъп) или INBOX (от шкафчето — изпращачът е
+  /// изтрит след прекратяване, XML-ът е както е издаден).
+  source         String         @default("UPLOAD")
+  paidAt         DateTime?      @db.Date
+  /// Дневник за покупките: правото на кредит (по подразбиране пълно) и месецът на включване (ГГГГ-ММ;
+  /// null — месецът на издаване). Избира ги счетоводителят (`accounting.manage`).
+  vatCredit      VatCredit      @default(FULL)
+  journalPeriod  String?
+  createdById    String?
+  createdBy      User?          @relation("IncomingCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt      DateTime       @default(now())
+
+  @@unique([organizationId, sha256])
+  @@index([organizationId, status, dueDate])
+  @@index([organizationId, createdAt])
+  @@index([organizationId, journalPeriod])
+  @@index([organizationId, issueDate])
+  @@index([createdById])
+}
+
+/// Качено банково извлечение (CAMT.053 или CSV) — повторно качване на същия файл не прави нищо.
+model BankStatement {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  /// CAMT053 или CSV
+  format         String
+  fileName       String?
+  sha256         String
+  lineCount      Int
+  newLines       Int
+  createdById    String?
+  createdBy      User?        @relation("BankStatementCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt      DateTime     @default(now())
+  lines          BankLine[]
+
+  @@unique([organizationId, sha256])
+  @@index([createdById])
+}
+
+/// Постъпление по сметката (само кредит — разходите не се пазят). `uniqueKey` не дублира ред от
+/// застъпващи се извлечения.
+model BankLine {
+  id                String           @id @default(cuid())
+  organizationId    String
+  organization      Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  statementId       String
+  statement         BankStatement    @relation(fields: [statementId], references: [id], onDelete: Cascade)
+  bookingDate       DateTime         @db.Date
+  amountCents       BigInt
+  currency          String
+  counterparty      String?
+  counterpartyIban  String?
+  remittance        String
+  bankRef           String?
+  uniqueKey         String
+  status            BankLineStatus   @default(NEW)
+  /// Кога редът е свързан или пропуснат — от него тече срокът за заличаване на наредителя (90 дни).
+  decidedAt         DateTime?
+  documentPaymentId String?          @unique
+  documentPayment   DocumentPayment? @relation(fields: [documentPaymentId], references: [id], onDelete: SetNull)
+  createdAt         DateTime         @default(now())
+
+  @@unique([organizationId, uniqueKey])
+  @@index([organizationId, status])
+  @@index([organizationId, status, bookingDate])
+  @@index([statementId])
+}
+
+enum ProformaStatus {
+  OPEN
+  INVOICED
+  CANCELLED
+}
+
+/// Проформа фактура (UNTDID 325): НЕ е данъчен документ — своя номерация „ПФ-…“, без серията на
+/// фактурите, без веригата, дневниците, напомнянията и банката. Входът е като на фактура (380), за да
+/// минава същите проверки; „Издай фактура“ я свързва с издадената фактура в същата транзакция.
+model Proforma {
+  id                String         @id @default(cuid())
+  organizationId    String
+  organization      Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  number            String
+  status            ProformaStatus @default(OPEN)
+  issueDate         DateTime
+  validUntil        DateTime?
+  currency          String
+  input             Json
+  buyerName         String
+  buyerEik          String?
+  buyerEmail        String?
+  taxExclusiveCents BigInt
+  vatCents          BigInt
+  payableCents      BigInt
+  pdfLanguage       String         @default("bg")
+  createdById       String?
+  createdBy         User?          @relation("ProformaCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  /// Кантората, ако е създадена по пълномощно.
+  firmId            String?
+  invoiceDocumentId String?        @unique
+  invoiceDocument   Document?      @relation(fields: [invoiceDocumentId], references: [id], onDelete: SetNull)
+  invoicedAt        DateTime?
+  cancelledAt       DateTime?
+  sentAt            DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@unique([organizationId, number])
+  @@index([organizationId, createdAt])
+  @@index([createdById])
+  @@index([firmId])
+}
+
+enum PeppolParticipantStatus {
+  PENDING
+  ACTIVE
+  FAILED
+  REMOVED
+}
+
+/// Фирмата като получател в мрежата Peppol (SPEC 57): адрес `9926:BG…`, регистрацията при точката за
+/// достъп и тайната на известията ѝ (шифрована, AAD = id-то на фирмата).
+model PeppolParticipant {
+  id             String                  @id @default(cuid())
+  organizationId String                  @unique
+  organization   Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  partyId        String                  @unique
+  status         PeppolParticipantStatus @default(PENDING)
+  hookSecretEnc  String?
+  lastError      String?
+  enrolledAt     DateTime?
+  createdById    String?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+}
+
+enum PeppolTransmissionStatus {
+  QUEUED
+  ACCEPTED
+  SENT
+  RETRYING
+  FAILED
+}
+
+/// Изпращане на документ през Peppol (SPEC 58): записва се в транзакцията на издаването, праща го
+/// работникът; `providerDocumentId` е нашият UUID към точката за достъп — повторение не дублира.
+model PeppolTransmission {
+  id                 String                   @id @default(cuid())
+  organizationId     String
+  organization       Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  documentId         String                   @unique
+  document           Document                 @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  senderPartyId      String
+  receiverPartyId    String
+  providerDocumentId String                   @unique
+  status             PeppolTransmissionStatus @default(QUEUED)
+  attempts           Int                      @default(0)
+  nextAttemptAt      DateTime                 @default(now())
+  lastError          String?
+  sentAt             DateTime?
+  createdById        String?
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+
+  @@index([status, nextAttemptAt])
+  @@index([organizationId, createdAt])
+}
+
+/// Получените известия от точката за достъп — веднъж по `deliveryId` (повторено известие не прави нищо).
+model PeppolEvent {
+  id          String    @id @default(cuid())
+  deliveryId  String    @unique
+  topic       String
+  partyId     String
+  documentId  String?
+  receivedAt  DateTime  @default(now())
+  processedAt DateTime?
+  error       String?
+
+  @@index([receivedAt])
+}
+
+enum NraReportStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+/// Опашката за отчитане към НАП (SPEC 63; чл. 120д от законопроект № 52-602-01-60 — данните се
+/// предават „в момента на издаване“): ред за всеки издаден данъчен документ, записан в транзакцията на
+/// издаването. Не се праща нищо, докато няма API на НАП (наредбата по чл. 120а, ал. 9 — срок 01.07.2027);
+/// `ublSha256` е отпечатъкът на точно издадения XML.
+model NraReport {
+  id             String          @id @default(cuid())
+  organizationId String
+  documentId     String
+  document       Document        @relation(fields: [documentId], references: [id], onDelete: Restrict)
+  typeCode       String
+  /// ISSUED (издаден) или CANCELLED (анулиран) — src/nra/queue.ts.
+  event          String          @default("ISSUED")
+  /// Разбивката по категория и ставка в евроцентове (низове) — данните за API-то на НАП.
+  breakdown      Json?
+  ublSha256      String
+  status         NraReportStatus @default(PENDING)
+  attempts       Int             @default(0)
+  lastError      String?
+  sentAt         DateTime?
+  createdAt      DateTime        @default(now())
+
+  @@unique([documentId, event])
+  @@index([status, createdAt])
+  @@index([organizationId, createdAt])
+}
+
+/// Еднократният ключ на формата „Издай“ (одитът от 13.11.2026): двоен клик или повторно изпращане на
+/// формата не издава втори документ — уникален (userId, token), записан в транзакцията на издаването.
+/// Пази се 30 дни (src/maintenance.ts).
+model IssueSubmission {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  token          String
+  documentId     String   @unique
+  document       Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+
+  @@unique([userId, token])
+  @@index([organizationId])
+  @@index([createdAt])
+}
+
+/// Съобщение до клиентите от мастъра (src/admin/announcements.ts): промяна в условията (30 дни
+/// предизвестие), инцидент, обявление. Доказателството кога и до колко адреса е пратено — писмата в
+/// опашката се трият след 90 дни. Без адресите.
+model Announcement {
+  id          String    @id @default(cuid())
+  /// legal | incident | service
+  kind        String
+  subject     String
+  body        String
+  effectiveOn DateTime? @db.Date
+  recipients  Int
+  createdById String?
+  createdBy   User?     @relation("AnnouncementBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+
+  @@index([createdAt])
+  @@index([createdById])
+}
+
+/// Кога е излязла всяка новина от `src/news/entries.ts` на този сървър (src/news/registry.ts): на нова
+/// инсталация — денят ѝ, иначе първото пускане с нея (обновяването). Без лични данни.
+model NewsEntry {
+  id          String   @id
+  publishedAt DateTime
+}

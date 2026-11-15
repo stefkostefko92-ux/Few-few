@@ -14,11 +14,12 @@
   </div>
   <div class="toolbar">
     <% if (modifica) { %><a class="btn" href="/preventivi/<%= p.id %>/modifica"><%- include('../partials/icon', { name: 'edit' }) %><%= t('preventivi.modifica') %></a><% } %>
-    <% if (scrive) { %><a class="btn" href="/preventivi/nuovo?da=<%= p.id %>"><%- include('../partials/icon', { name: 'copy' }) %><%= t('preventivi.duplica') %></a><% } %>
+    <% if (opera) { %><a class="btn" href="/preventivi/nuovo?da=<%= p.id %>"><%- include('../partials/icon', { name: 'copy' }) %><%= t('preventivi.duplica') %></a><% } %>
     <a class="btn btn--primary" data-pdf href="/preventivi/<%= p.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('preventivi.scaricaPdf') %></a>
   </div>
 </div>
 <div class="stack-gap">
+<%- include('_archivio', { archivio: p.azienda.preventiviAttivi ? [] : [p.azienda.name] }) %>
 <% if (scrive && !modifica) { %><p class="notice"><%= t('preventivi.bloccatoNota') %></p><% } %>
 <p class="muted"><%= t('preventivi.creato', { nome: p.createdBy ? p.createdBy.name : '—', data: fmt.dateTime(p.createdAt) }) %><% if (p.updatedAt.getTime() !== p.createdAt.getTime()) { %> · <%= t('preventivi.modificato', { nome: p.updatedBy ? p.updatedBy.name : '—', data: fmt.dateTime(p.updatedAt) }) %><% } %></p>
 
@@ -26,6 +27,12 @@
   <div>
     <h2 class="section__title" id="h-cliente"><%= t('preventivi.sezione.cliente') %></h2>
     <p><strong><%= d.cliente %></strong><% for (const riga of [d.clienteIndirizzo, d.clientePiva ? t('preventivi.pdf.piva', { piva: d.clientePiva }) : null, d.clienteEmail]) { if (riga) { %><br><%= riga %><% } } %></p>
+    <%# Profilat v registara na klientite, ili — za pisheshtite — butonat, koyto go zapisva tam. %>
+    <% if (p.clienteRegistro) { %><p class="preventivo-cliente-registro"><a href="/clienti/<%= p.clienteRegistro.id %>"><%= t('clienti.preventivo.profilo') %></a></p>
+    <% } else if (opera) { %><form class="preventivo-cliente-registro" method="post" action="/preventivi/<%= p.id %>/cliente">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn btn--sm" type="submit"><%- include('../partials/icon', { name: 'plus' }) %><%= t('clienti.preventivo.aggiungi') %></button>
+    </form><% } %>
   </div>
   <dl class="preventivo-dati">
     <div><dt><%= t('preventivi.campo.data') %></dt><dd><%= giorno(d.data) %></dd></div>
@@ -81,7 +88,8 @@
 <% if (d.note) { %><section aria-labelledby="h-note"><h2 class="section__title" id="h-note"><%= t('preventivi.campo.note') %></h2><p class="testo-libero"><%= d.note %></p></section><% } %>
 <% if (d.condizioni) { %><section aria-labelledby="h-condizioni"><h2 class="section__title" id="h-condizioni"><%= t('preventivi.campo.condizioni') %></h2><p class="testo-libero"><%= d.condizioni %></p></section><% } %>
 
-<% if (scrive) { %>
+<%# V arhiva MASTER samo popravya zapisanoto (A.9): bez izhod, pismo, Duplica i anagrafika — routes/preventivi-vista.ts, puoOperare. %>
+<% if (opera) { %>
 <section class="panel" aria-labelledby="h-stato">
   <h2 class="section__title" id="h-stato"><%= t('preventivi.sezione.stato') %></h2>
   <p><%= t('preventivi.statoAttuale', { stato: t('preventivi.stato.' + p.stato) }) %><% if (p.statoAt) { %> · <%= fmt.dateTime(p.statoAt) %><% } %></p>
@@ -111,9 +119,9 @@
   <div class="toolbar"><button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'mail' }) %><%= t('preventivi.email.invia') %></button></div>
 </form>
 <% } %>
-<%# Iztrivaneto na chernova ostava i pri iztekal abonament (usloviyata, chl. 12.5 c). %>
+<%# Iztrivaneto na neprieta oferta (chernova, izpratena, otkazana) ostava i pri iztekal abonament i pri arhiv. %>
 <% if (locals.elimina) { %>
-<% if (p.stato === 'BOZZA') { %>
+<% if (p.stato !== 'ACCETTATO') { %>
 <details class="panel buono-elimina">
   <summary><%= t('preventivi.elimina.titolo') %></summary>
   <form method="post" action="/preventivi/<%= p.id %>/elimina">

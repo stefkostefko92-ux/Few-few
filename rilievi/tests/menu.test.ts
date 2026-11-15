@@ -27,11 +27,12 @@ describe('the menu', () => {
       '/verbali',
     ]);
     // The documents in the owner's order (12 November 2026): Preventivi, Buoni, Cartelli, Interventi, Verbali.
+    // The customers registry lives with the quotes (13 November 2026) and stands next to them.
     assert.deepEqual(
       per('ADMIN')
         .gruppi.find((g) => g.key === 'documenti')!
         .voci.map((v) => v.href),
-      ['/preventivi', '/buoni', '/cartelli', '/interventi', '/verbali'],
+      ['/preventivi', '/clienti', '/buoni', '/cartelli', '/interventi', '/verbali'],
     );
     assert.deepEqual(hrefs('ADMIN').slice(-4), [
       '/utenti',
@@ -62,9 +63,10 @@ describe('the menu', () => {
     assert.deepEqual(
       per('ADMIN')
         .nuovo.map((v) => v.href)
-        .slice(1, 6),
+        .slice(1, 7),
       [
         '/preventivi/nuovo',
+        '/clienti/nuovo',
         '/buoni/nuovo',
         '/cartelli/nuovo',
         '/interventi/nuovo',

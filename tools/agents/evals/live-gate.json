@@ -1,48 +1,18 @@
 {
   "date": "2026-11-15",
-  "ref": "d6a9e2f01ff65b7f0d59cdda25250721981b2f1c",
+  "ref": "cfe6b9d070378b65b2ef8e76e0272d01dfa3efea",
   "cli": "2.1.325 (Claude Code)",
-  "summary": "проба 7/7 · оценки 10/10 · pass^k 6/6 · verifier ✓",
-  "costUsd": 17.94,
+  "summary": "проба 1/1 · оценки 1/1 · verifier ✓ · критичните пропуснати (входовете им са непроменени; минаха на 2026-11-15)",
+  "costUsd": 1.55,
   "criticalAt": "2026-11-15",
   "probe": [
     {
-      "agent": "seo",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "kodadjiyata",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "dizayner",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "nabludatelya",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "pronikvacha",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "razbivacha",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "strazhata",
+      "agent": "vps-adjiyata",
       "ok": true,
       "problems": []
     }
   ],
-  "inputsHash": "3184ff051fe050a1b58c4bbf15e7f5fabfe7112318b34145a48e2338fd527562",
+  "inputsHash": "64ca38c7531c838e67a4799ef89fc6cacb9b6b7c137935a041e756272b3ea9f8",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
@@ -77,10 +47,10 @@
     ".claude/agents/siydara.md": "af3fd19f820426163706daf6a2a423577e994b8bb4e35e2cb67f62f61ace3899",
     ".claude/agents/skorostnika.md": "0ad5b9114475b291ef17eaf1efcd2806af42f39a35f490ce67da0608fbdc2881",
     ".claude/agents/socialdjiyata.md": "9d476569003d9d71fb512f17687af1818e3f8fc31d89a3a12bb3b67bcc249713",
-    ".claude/agents/strazhata.md": "c878e43e9288014ee6fc7ffaa416c3982f8e7d6fcc81dbadce0570de24bffe8e",
+    ".claude/agents/strazhata.md": "5a4d84031095f62a273abd4bb5e3ad399cb89a3e3c30fe21c4df20422703086a",
     ".claude/agents/tayniyat-agent.md": "22ce18f5fe48538cabcb4216005823861c2708047438e6c5fcf11e1162b5a617",
     ".claude/agents/treydara.md": "0047d1976157ad45f4483f8a65c458d462d594770502f27afe3a7b79bc7cb1e0",
-    ".claude/agents/vps-adjiyata.md": "2e7862eaa91636b4be370956df95dcb584a3b1054a1b2dc8154f3172fe1dd86f",
+    ".claude/agents/vps-adjiyata.md": "fdd89489d2ce45f85218d6d7dd4b530753b4bad9aaa1d022074e2ddb8dbe7db6",
     ".claude/hooks/agent-cap.mjs": "1e8dc510561658ee1bfb28e8916ae4f0d98a14a375f8377d7b2b758c3f64f64c",
     ".claude/hooks/agent-return.mjs": "e9b76f4e211ad024fc6bf02c6f088f6474ef7232dea8401841efcd17d54615f8",
     ".claude/hooks/artifact-sync.mjs": "1d33833db1a0a73eb3e818bb4360dddd3f807abe8b848adae684e48c77add80a",
@@ -91,7 +61,7 @@
     ".claude/hooks/guard-engagement.mjs": "0706e7055fe799f7e0f5fd9c1a87314a0cc63905da2108c61830e52ee201dc37",
     ".claude/hooks/guard-exfil.mjs": "9d3ea25d3fabdc77ec017ebbf2ce63554aa3bc9c8d4dfd4c4c91173e18c2b656",
     ".claude/hooks/guard-prompt.mjs": "d9d1f3de98903425d16405ac261d505786af824e9ba4b9a666c522b92f0d58b2",
-    ".claude/hooks/guard-readonly.mjs": "0b8f8d6be353d49e266514b5b3ef3bf0de83467a70776451f3271f7104f97411",
+    ".claude/hooks/guard-readonly.mjs": "bdad8882930e3d1466e02e1786dc82466a24f080195dca54df46bfe5dbed0282",
     ".claude/hooks/guard-secrets.mjs": "7e0e1ac04fab4fd8c5749fc7dc95791868561e05ef67400827c4bd900c8bced2",
     ".claude/hooks/memory-capture.mjs": "4d306e6be02b975e15509d3c7dd9d0e9f29afc14305001dcb871c2d5a6fc8448",
     ".claude/hooks/memory-preload.mjs": "72f1682b3552179dcecc10214c7fce93f1c90d6186655b6c97630c1ca9ae57d7",

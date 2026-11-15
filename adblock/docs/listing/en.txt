@@ -12,3 +12,4 @@ Supreme AdBlock blocks ads everywhere — YouTube video ads, banners, pop-ups an
 • Site broken? One click fixes it, or tell us — nothing is sent without you seeing it first.
 • Switching from uBlock Origin, AdGuard or Adblock Plus? Bring your allowed sites and filters with one file.
 • See which other sites a page connects to, and block one just there with a click.
+• Protection level: Basic · Standard · Strict
