@@ -89,6 +89,8 @@ const PAYLOADS = {
   "agent-cap.mjs": { session_id: "liveness", tool_name: "Agent", tool_input: { subagent_type: "kodadjiyata" } },
   // 11.11.2026: файл без продукт с prettier → куката мълчи с 0 (удобство, не защита).
   "format-on-edit.mjs": { hook_event_name: "PostToolUse", tool_name: "Edit", tool_input: { file_path: "src/app.ts" } },
+  // 15.11.2026: оградата на пентеста — безопасна локална команда без мрежова цел → 0 (не блок).
+  "guard-engagement.mjs": { tool_name: "Bash", tool_input: { command: "git status --short" } },
 };
 
 const hooks = registeredHooks();

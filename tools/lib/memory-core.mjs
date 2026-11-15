@@ -183,7 +183,20 @@ export function mergeLessons3(baseTxt, oursTxt, theirsTxt) {
     verified: sectionLessons(theirsTxt, "verified").filter((l) => !baseSet.has(l.trimEnd())),
     quarantine: sectionLessons(theirsTxt, "quarantine").filter((l) => !baseSet.has(l.trimEnd())),
   };
-  return addLessons(out, added).txt;
+  const merged = addLessons(out, added).txt;
+  // Пазител „последен вариант“ (инцидент 2026-11-15, сгъване след PR #359 — 6 изгубени поуки): base имал
+  // почти-дубли A и B; theirs махнал дубъла B (пази A), ours махнал A (пази B с нов обхват). „Махнато от
+  // theirs“ = B, а A не е „добавено“ (бил е в base) → поуката изчезваше от ДВЕТЕ страни. Щом и двете страни
+  // още държат вариант със същото тяло (bodyKey — идентичността на дедупа), никой не я е изтрил: пазим
+  // варианта на ours. Изтриване на ВСИЧКИ варианти от едната страна остава изтриване (тестове 3в–3д).
+  const theirsBodies = new Set(lines(theirsTxt).map(bodyKey).filter(Boolean));
+  const have = lessonIndex(merged);
+  const keep = { verified: [], quarantine: [] };
+  for (const which of ["verified", "quarantine"]) for (const l of sectionLessons(oursTxt, which)) {
+    const b = bodyKey(l);
+    if (b && theirsBodies.has(b) && !have.bodies.has(b)) { keep[which].push(l); have.bodies.add(b); }
+  }
+  return keep.verified.length || keep.quarantine.length ? addLessons(merged, keep).txt : merged;
 }
 
 // ─── Таблото: версии и еволюция ────────────────────────────────────────────────────────────

@@ -256,6 +256,34 @@ test("3бм. МУТАЦИЯ: старото сгъване (файлът на ma
   assert.match(old.split("## Карантина")[1], /2026-02-01/, "мутантът връща промотираната в Карантина");
 });
 
+// Инцидент 2026-11-15 (сгъване на main след PR #359): предшественикът имаше почти-дубли A и B на една
+// поука; клонът на задачата махна дублите и запази A, паметта — B (с нов обхват). „Махнато от theirs“ = B,
+// а A не е „добавено“ (беше в предшественика) → поуката изчезна от двете страни. 6 поуки (Изпитателя 4,
+// Кодаджията 2). Правило: щом и двете страни още държат вариант на поуката, резултатът пази поне един.
+const DOC = (v) => `## Проверени поуки (verified)\n${v.join("\n")}${v.length ? "\n" : ""}\n## Карантина\n`;
+const VA = "- **2026-09-24:** CSPos гейтът падаше само заради липсващ node_modules _(global; verified; npm ci)_";
+const VB = "- **2026-09-24:** CSPos гейтът падаше само заради липсващ node_modules _(при червен продуктов гейт в пясъчница; verified; npm ci)_";
+
+test("3в. почти-дубли: всяка страна пази РАЗЛИЧЕН вариант → поуката оцелява (точно един, на паметта)", async () => {
+  const { mergeLessons3, sectionLessons } = await import(pathToFileURL(join(REPO, "tools", "lib", "memory-core.mjs")).href);
+  const out = mergeLessons3(DOC([VA, VB]), DOC([VB]), DOC([VA]));
+  const v = sectionLessons(out, "verified");
+  assert.equal(v.length, 1, `точно един вариант, получих ${v.length}: ${v.join(" | ")}`);
+  assert.equal(v[0], VB, "вариантът на паметта (ours — по-новият обхват) печели");
+});
+
+test("3г. умишленото изтриване на ВСИЧКИ варианти остава изтриване (пазителят не връща курирано)", async () => {
+  const { mergeLessons3, sectionLessons } = await import(pathToFileURL(join(REPO, "tools", "lib", "memory-core.mjs")).href);
+  assert.equal(sectionLessons(mergeLessons3(DOC([VA]), DOC([VA]), DOC([])), "verified").length, 0, "theirs изтри поуката → няма я");
+  assert.equal(sectionLessons(mergeLessons3(DOC([VA]), DOC([]), DOC([VA])), "verified").length, 0, "ours изтри поуката → няма я");
+});
+
+test("3д. дедуп от едната страна не връща дубъла, когато другата държи и двата варианта", async () => {
+  const { mergeLessons3, sectionLessons } = await import(pathToFileURL(join(REPO, "tools", "lib", "memory-core.mjs")).href);
+  const v = sectionLessons(mergeLessons3(DOC([VA, VB]), DOC([VA, VB]), DOC([VA])), "verified");
+  assert.deepEqual(v, [VA], "theirs махна дубъла B → остава само A");
+});
+
 test("4. кука → клон на паметта → следващият агент я вижда; клонът на задачата остава чист", async () => {
   const f = fixture();
   try {
