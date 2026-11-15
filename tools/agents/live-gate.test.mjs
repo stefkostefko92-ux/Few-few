@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { inputFiles, fileHashes, inputsHash, changedSince, planFor, quoteMatches, followText, judgeProbe, firstJson, words, CANARIES, probeTask } from "./live-gate.mjs";
+import { inputFiles, fileHashes, inputsHash, changedSince, planFor, lastCriticalAt, quoteMatches, followText, judgeProbe, firstJson, words, CANARIES, probeTask } from "./live-gate.mjs";
 import { stripOrchestratorStop, expandJobs, wrapperPrompt, parseResult } from "./evals/live-run.mjs";
 
 function fakeRoot() {
@@ -49,6 +49,36 @@ test("план: смяна в куките → канарчетата + крит
   const def = planFor([".claude/agents/treydara.md"], all);
   assert.deepEqual(def.probe, ["treydara"]);
   assert.ok(def.evals.includes("treydara:treydara"));
+});
+
+test("критичните: пропускат се САМО когато входовете им са доказано непроменени и проверката им е прясна", () => {
+  const all = ["seo", "kodadjiyata", "dizayner", "kasadjiyata", "prodavacha", "letopisetsa"];
+  const fresh = { lastCriticalAt: "2026-11-14", today: "2026-11-15", cliChanged: false };
+  const hasCrit = (p) => p.evals.includes("kasadjiyata:kasadjiyata:3") && p.evals.includes("prodavacha:prodavacha:3");
+  // Само дефиниция на некритичен агент: тя не стига до контекста на критичните (картата чете само собствения .md).
+  const onlyDef = planFor([".claude/agents/letopisetsa.md"], all, fresh);
+  assert.ok(!hasCrit(onlyDef), "критичните не носят нова информация — входовете им са байт по байт същите");
+  assert.deepEqual(onlyDef.evals, ["letopisetsa:letopisetsa"]);
+  assert.equal(onlyDef.critical.need, false);
+  assert.match(onlyDef.critical.why, /2026-11-14/, "причината казва кога са минали за последно");
+  // Всеки от тези случаи пак ги пуска:
+  assert.ok(hasCrit(planFor([".claude/hooks/memory-preload.mjs"], all, fresh)), "общ вход (водопровод)");
+  assert.ok(hasCrit(planFor([".claude/agents/_memory/PROCEDURE.md"], all, fresh)), "доктрината/процедурата");
+  assert.ok(hasCrit(planFor([".claude/agents/prodavacha.md"], all, fresh)), "собствената им дефиниция");
+  assert.ok(hasCrit(planFor([".claude/agents/letopisetsa.md"], all, { ...fresh, cliChanged: true })), "нова версия на CLI");
+  assert.ok(hasCrit(planFor([".claude/agents/letopisetsa.md"], all, { ...fresh, today: "2026-11-21" })), "7 дни — таван на свежестта");
+  assert.ok(hasCrit(planFor([".claude/agents/letopisetsa.md"], all, { ...fresh, today: "2026-11-20" })) === false, "6 дни — още свежо");
+  assert.ok(hasCrit(planFor(["(първа проверка)"], all, fresh)), "първа проверка");
+  assert.ok(hasCrit(planFor([], all, fresh)), "ръчна повторна проверка без промени — пълна");
+  // Без контекст (стар извикващ, липсващ печат) — затваря се: пуска ги.
+  assert.ok(hasCrit(planFor([".claude/agents/letopisetsa.md"], all)), "fail closed без данни за последната проверка");
+  assert.ok(hasCrit(planFor([".claude/agents/letopisetsa.md"], all, { today: "2026-11-15" })), "fail closed без lastCriticalAt");
+});
+
+test("последната проверка на критичните: стар печат (без criticalAt) винаги ги е пускал → датата му", () => {
+  assert.equal(lastCriticalAt({ date: "2026-11-14" }), "2026-11-14");
+  assert.equal(lastCriticalAt({ date: "2026-11-14", criticalAt: "2026-11-10" }), "2026-11-10");
+  assert.equal(lastCriticalAt(null), null);
 });
 
 test("цитатът: поне 4 думи, точно като в източника; пунктуацията не пречи, преразказът — да", () => {
