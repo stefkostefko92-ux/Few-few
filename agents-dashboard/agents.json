@@ -9374,7 +9374,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 290
+        "lessons": 293
       },
       "evolution": [
         {
@@ -9742,9 +9742,20 @@
           "date": "2026-11-15",
           "event": "v27.4 — учене",
           "detail": "Научи: Stripe праща charge.refunded и при частично връщане; полето Charge.refunded е true само… (+2 още)"
+        },
+        {
+          "version": "27.7.0",
+          "date": "2026-11-15",
+          "event": "v27.7 — учене",
+          "detail": "Научи: Stripe Tax прилага обратно начисляване (B2B) по ФОРМАТА на ДДС номера, независимо от VI… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „Stripe Tax прилага обратно начисляване (B2B) по ФОРМАТА на ДДС номера, независимо от VI…\" (+2 още)"
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
