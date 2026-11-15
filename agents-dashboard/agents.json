@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 691
+        "lessons": 693
       },
       "evolution": [
         {
@@ -2049,9 +2049,20 @@
           "date": "2026-11-15",
           "event": "v63.2 — учене",
           "detail": "Научи: Обектът Stripe Dispute има статуси appeal_needs_response и appeal_under_review, затова …"
+        },
+        {
+          "version": "63.4.0",
+          "date": "2026-11-15",
+          "event": "v63.4 — учене",
+          "detail": "Научи: Котва на хеш-верига извън базата, която се мести напред само по номер (id), без да пров… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „Котва на хеш-верига извън базата, която се мести напред само по номер (id), без да пров…\" (+1 още)"
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
