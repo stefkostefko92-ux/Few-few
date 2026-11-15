@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { inputFiles, fileHashes, inputsHash, changedSince, planFor, lastCriticalAt, quoteMatches, followText, judgeProbe, firstJson, words, CANARIES, probeTask } from "./live-gate.mjs";
+import { inputFiles, fileHashes, inputsHash, changedSince, planFor, lastCriticalAt, quoteMatches, followText, judgeProbe, firstJson, words, CANARIES, probeTask, agentsProjection } from "./live-gate.mjs";
 import { stripOrchestratorStop, expandJobs, wrapperPrompt, parseResult } from "./evals/live-run.mjs";
 
 function fakeRoot() {
@@ -39,6 +39,16 @@ test("всяка промяна на вход сменя хеша, а памет
     assert.notEqual(inputsHash(fileHashes(r)), h1);
     assert.deepEqual(changedSince({ files: fileHashes(r) }, { ...fileHashes(r), ".claude/settings.json": "x" }), [".claude/settings.json"]);
   } finally { rmSync(r, { recursive: true, force: true }); }
+});
+
+test("пропуск 1 (вълна 5): проекцията на картата лови име/модел/усилие, НЕ брой поуки", () => {
+  const base = [{ id: "a", name: "А", model: "opus", effort: "high", knowledge: { lessons: 1 } }];
+  const moreLessons = [{ ...base[0], knowledge: { lessons: 99 } }];
+  const renamed = [{ ...base[0], name: "Б" }];
+  const downgraded = [{ ...base[0], effort: "medium" }];
+  assert.equal(agentsProjection(base), agentsProjection(moreLessons), "броят поуки не е в проекцията");
+  assert.notEqual(agentsProjection(base), agentsProjection(renamed), "смяна на име обезсилва печата");
+  assert.notEqual(agentsProjection(base), agentsProjection(downgraded), "смяна на усилие обезсилва печата");
 });
 
 test("план: смяна в куките → канарчетата + критичните; смяна на дефиниция → този агент + неговият spec", () => {

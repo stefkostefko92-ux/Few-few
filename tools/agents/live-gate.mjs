@@ -51,8 +51,19 @@ export function inputFiles(root = ROOT) {
 }
 
 const sha = (s) => createHash("sha256").update(s).digest("hex");
+// Пропуск 1 (вълна 5): картата на агента носи ИМЕНАТА/модела/усилието на съотборниците от agents.json
+// (teams.mjs#cardFor → names()), а те не са файл-вход. Хешираме само тази ПРОЕКЦИЯ, не целия файл —
+// knowledge.lessons/activity растат при всяко учене и иначе биха обезсилвали печата без промяна в контекста.
+// Пропуск 2 (скил-описания отвъд agent-doctrine): те стигат до агент със `Skill`, но се менят често и
+// носят нисък риск за ФИДЕЛНОСТТА (менюто от умения, не поведението) — пазят се от skills lint +
+// trigger-check, не оттук; да се пренесе тук при доказан дрейф-инцидент.
+export function agentsProjection(agents) {
+  return (agents || []).map((a) => `${a.id}:${a.name}:${a.model}:${a.effort}`).sort().join("\n");
+}
 export function fileHashes(root = ROOT, files = inputFiles(root)) {
-  return Object.fromEntries(files.map((f) => [f, sha(readFileSync(join(root, f)))]));
+  const h = Object.fromEntries(files.map((f) => [f, sha(readFileSync(join(root, f)))]));
+  try { h["agents-dashboard/agents.json#card"] = sha(agentsProjection(JSON.parse(readFileSync(join(root, "agents-dashboard", "agents.json"), "utf8")).agents)); } catch { /* таблото се проверява от oversee */ }
+  return h;
 }
 export function inputsHash(hashes) {
   return sha(Object.entries(hashes).sort(([a], [b]) => a.localeCompare(b)).map(([f, h]) => `${f}\n${h}`).join("\n"));
