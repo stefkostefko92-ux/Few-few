@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 697
+        "lessons": 698
       },
       "evolution": [
         {
@@ -2037,9 +2037,20 @@
           "date": "2026-11-15",
           "event": "v63.7 — учене",
           "detail": "Научи: Stripe API v1 при повторен Idempotency-Key връща запазения първи отговор (до изчистване… (+76 още)"
+        },
+        {
+          "version": "63.8.0",
+          "date": "2026-11-15",
+          "event": "v63.8 — учене",
+          "detail": "Научи: SELECT … FOR UPDATE на родителски ред влиза в deadlock с транзакция, която първо UPDATE…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „SELECT … FOR UPDATE на родителски ред влиза в deadlock с транзакция, която първо UPDATE…\""
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
