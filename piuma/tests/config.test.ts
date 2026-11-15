@@ -10,7 +10,28 @@ const base = {
   IG_APP_SECRET: 'app-secret',
   IG_REDIRECT_URI: 'https://piuma.example.com/auth/instagram/callback',
   TOKEN_ENC_KEY: 'a'.repeat(64),
+  AUDIT_ANCHOR_DIR: '/var/lib/piuma/audit',
 };
+
+/* Регресия (ревю, 2026-11-15): без котва цялата v2 опашка се подменя с v1 записи без ключ, а
+   каноничният docker деплой тръгваше без котва. В продукция котвата е задължителна. */
+test('в продукция без AUDIT_ANCHOR_DIR процесът не тръгва', () => {
+  const { AUDIT_ANCHOR_DIR: _dir, ...withoutAnchor } = base;
+  assert.throws(
+    () => loadConfig({ ...withoutAnchor, NODE_ENV: 'production' } as NodeJS.ProcessEnv),
+    /AUDIT_ANCHOR_DIR/,
+  );
+  assert.equal(
+    loadConfig({ ...withoutAnchor, NODE_ENV: 'test' } as NodeJS.ProcessEnv).AUDIT_ANCHOR_DIR,
+    undefined,
+  );
+  const cfg = loadConfig({ ...base, AUDIT_V1_MAX_ID: '41' } as NodeJS.ProcessEnv);
+  assert.equal(cfg.AUDIT_V1_MAX_ID, 41);
+  assert.throws(
+    () => loadConfig({ ...base, AUDIT_V1_MAX_ID: '-1' } as NodeJS.ProcessEnv),
+    /AUDIT_V1_MAX_ID/,
+  );
+});
 
 /**
  * Compose подава незадължителните като `${X:-}` — празен низ, не липса. Без това правило

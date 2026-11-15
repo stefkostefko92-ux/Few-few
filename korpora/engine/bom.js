@@ -5,6 +5,13 @@ import { STOCK, decorName } from './materials.js';
 import { axisOf, dimTxt } from './util.js';
 
 const GROUP_ORDER = ['Обков', 'Крепежи', 'Покупни'];
+// Edge band rolls come in these widths, mm (the usual commercial ones); a board takes the narrowest that overhangs it by
+// at least 1,5 mm on each face (our rule). Glue: EVA hot melt; PUR is for wet zones — the model does not know which
+// cabinet stands under the sink (model.js notes it), so every line says EVA.
+const BAND_WIDTHS = [19, 22, 23, 28, 33, 43];
+const BAND_OVERHANG = 1.5;
+const bandWidth = (boardT) => BAND_WIDTHS.find((w) => w >= boardT + 2 * BAND_OVERHANG) ?? Math.ceil(boardT + 2 * BAND_OVERHANG);
+const kg2 = (v) => Math.round(v * 100) / 100;
 
 // A text cell that starts like a formula (= + - @, tab, CR) gets a leading ' so a spreadsheet shows it as
 // text instead of running it; plain numbers such as -12 or -3,5 stay numbers.
@@ -25,6 +32,7 @@ export function buildBom(model) {
   const rows = parts.map((p) => {
     const cut = cutSize(p, spec.bandCompensation);
     const e = edgeSummary(p);
+    const stock = STOCK[p.stock];
     return {
       id: p.id,
       key: p.key,
@@ -37,7 +45,9 @@ export function buildBom(model) {
       cutL: cut.L,
       cutW: cut.W,
       stock: p.stock,
-      stockName: STOCK[p.stock].name,
+      stockName: stock.name,
+      grade: stock.grade,
+      kg: kg2(((cut.L * cut.W * p.T) / 1e9) * stock.density), // the cut board, kg
       decor: p.decor,
       decorName: decorName(p.decor),
       grain: Boolean(p.grain),
@@ -54,8 +64,8 @@ export function buildBom(model) {
     for (const [dir, t] of Object.entries(p.bands)) {
       if (!t) continue;
       const len = axisOf(dir) === axisOf(p.frame.eu) ? p.W : p.L;
-      const k = `${t}|${p.decor}`;
-      const cur = bands.get(k) ?? { thickness: t, decor: p.decor, decorName: decorName(p.decor), metres: 0 };
+      const k = `${t}|${p.decor}|${p.T}`;
+      const cur = bands.get(k) ?? { thickness: t, boardT: p.T, width: bandWidth(p.T), glue: 'EVA', decor: p.decor, decorName: decorName(p.decor), metres: 0 };
       cur.metres += len / 1000;
       bands.set(k, cur);
     }
@@ -64,9 +74,10 @@ export function buildBom(model) {
   const boards = new Map();
   for (const r of rows) {
     const k = `${r.stock}|${r.decor}`;
-    const cur = boards.get(k) ?? { stock: r.stock, stockName: r.stockName, thickness: r.T, decor: r.decor, decorName: r.decorName, parts: 0, area: 0 };
+    const cur = boards.get(k) ?? { stock: r.stock, stockName: r.stockName, grade: r.grade, thickness: r.T, decor: r.decor, decorName: r.decorName, parts: 0, area: 0, kg: 0 };
     cur.parts += 1;
     cur.area += (r.cutL * r.cutW) / 1e6;
+    cur.kg = kg2(cur.kg + r.kg);
     boards.set(k, cur);
   }
   const hardware = [...model.hardware].sort((a, b) => GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group) || a.name.localeCompare(b.name, 'bg'));
@@ -79,8 +90,8 @@ export function buildBom(model) {
 }
 
 export function cutListCsv(bom) {
-  const head = ['№', 'Детайл', 'Модул', 'Материал', 'Декор', 'Дебелина', 'Дължина', 'Ширина', 'Дължина за разкрой', 'Ширина за разкрой', 'Бр.', 'Шарка по дължината', 'Кант по дължината', 'Кант по ширината', 'Отвори', 'Канали', 'Хоризонтални отвори'];
-  return toCsv([head, ...bom.rows.map((r) => [r.id, r.name, r.module, r.stockName, r.decorName, r.T, dimTxt(r.L), dimTxt(r.W), dimTxt(r.cutL), dimTxt(r.cutW), r.qty, r.grain ? 'да' : 'не', r.edgesL.map(dimTxt).join('+'), r.edgesW.map(dimTxt).join('+'), r.holes, r.grooves, r.edgeHoles])]);
+  const head = ['№', 'Детайл', 'Модул', 'Материал', 'Декор', 'Дебелина', 'Дължина', 'Ширина', 'Дължина за разкрой', 'Ширина за разкрой', 'Бр.', 'Шарка по дължината', 'Кант по дължината', 'Кант по ширината', 'Отвори', 'Канали', 'Хоризонтални отвори', 'Тегло, kg', 'Клас'];
+  return toCsv([head, ...bom.rows.map((r) => [r.id, r.name, r.module, r.stockName, r.decorName, r.T, dimTxt(r.L), dimTxt(r.W), dimTxt(r.cutL), dimTxt(r.cutW), r.qty, r.grain ? 'да' : 'не', r.edgesL.map(dimTxt).join('+'), r.edgesW.map(dimTxt).join('+'), r.holes, r.grooves, r.edgeHoles, r.kg.toFixed(2).replace('.', ','), r.grade])]);
 }
 
 export function hardwareCsv(bom) {

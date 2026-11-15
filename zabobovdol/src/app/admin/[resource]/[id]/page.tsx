@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser, requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -37,11 +38,41 @@ export default async function ResourceEditPage({
   const initial = buildInitial(resource, record);
   const action = saveRecord.bind(null, resource.key, isNew ? null : id);
 
+  // „Сгрешени номера“: показваме името на услугата и връзка към нея (PhoneReport
+  // пази само serviceId, без релация).
+  const reportedServiceId =
+    resource.key === "greshni-nomera" && record ? String(record.serviceId ?? "") : "";
+  const reportedService = reportedServiceId
+    ? await prisma.service.findUnique({
+        where: { id: reportedServiceId },
+        select: { id: true, name: true },
+      })
+    : null;
+
   return (
     <div className="space-y-4">
       {error && (
         <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
+        </div>
+      )}
+      {reportedServiceId && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+          {reportedService ? (
+            <>
+              <span>
+                Сигналът е за услугата: <strong className="text-slate-900">{reportedService.name}</strong>
+              </span>
+              <Link
+                href={`/admin/services/${encodeURIComponent(reportedService.id)}`}
+                className="btn-secondary min-h-11"
+              >
+                Отвори услугата <span aria-hidden>→</span>
+              </Link>
+            </>
+          ) : (
+            <span>Услугата от сигнала вече я няма ({reportedServiceId}).</span>
+          )}
         </div>
       )}
       <AdminForm

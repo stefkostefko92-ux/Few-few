@@ -12,7 +12,7 @@
   "navigationDividerColor": "#212f8a",
   "navigationDividerColorDark": "#0f172a",
   "backgroundColor": "#1a2575",
-  "enableNotifications": false,
+  "enableNotifications": true,
   "startUrl": "/",
   "iconUrl": "https://zabobovdol.carbonstealth.eu/icon-512.png",
   "maskableIconUrl": "https://zabobovdol.carbonstealth.eu/icon-512-maskable.png",
@@ -22,7 +22,7 @@
     "alias": "android"
   },
   "appVersionName": "1.0.0",
-  "appVersionCode": 1,
+  "appVersionCode": 2,
   "shortcuts": [
     {
       "name": "Дежурна аптека",

@@ -80,11 +80,51 @@ export function typosquatOf(name) {
   return null;
 }
 
-/** package-lock v2/v3 → Map(име → {integrity, resolved, hasInstallScript}). pnpm-lock → само имена. */
+/** Разделя ключ „име@версия“ (pnpm/yarn) на име и версия; „@“ на scope-а в началото не е разделител. */
+function splitSpec(spec) {
+  const s = spec.replace(/^\//, "");
+  const at = s.indexOf("@", 1);
+  if (at < 1) return null;
+  return { name: s.slice(0, at), ver: s.slice(at + 1).replace(/\(.*$/, "") }; // без peer суфикса „(react@18)“
+}
+
+const isRegistryVer = (v) => /^\d/.test(v) || /^npm:/.test(v);
+
+/** Добавя име+версия; „версия“, която не е semver (git/tarball URL), се води като резолвната. */
+function addVersion(out, name, ver) {
+  const e = out.get(name) || { versions: new Set() };
+  e.versions.add(ver);
+  if (!isRegistryVer(ver)) e.resolved = e.resolved || ver;
+  out.set(name, e);
+}
+
+const REGISTRY = /^https:\/\/registry\.(npmjs\.org|yarnpkg\.com)\//;
+
+/** package-lock v2/v3 → Map(име → {integrity, resolved, hasInstallScript}). pnpm-lock / yarn.lock → име + версии. */
 export function parseLock(text, file) {
   const out = new Map();
   if (/pnpm-lock\.yaml$/.test(file)) {
-    for (const m of String(text).matchAll(/^ {2}'?\/?((?:@[^/@\s']+\/)?[^@\s'/:]+)@[^:\s']+'?:\s*$/gm)) out.set(m[1], {});
+    // Ключ на 2 отстъпа, евентуално в кавички: `  '@scope/n@1.0.0(peer@2)':`, `  n@https://host/x.tgz:`.
+    for (const m of String(text).matchAll(/^ {2}(['"]?)(\/?(?:@[^/@\s'"]+\/)?[^@\s'"/]+@[^\s'"]+?)\1:\s*$/gm)) {
+      const p = splitSpec(m[2]);
+      if (p) addVersion(out, p.name, p.ver);
+    }
+    return out;
+  }
+  if (/yarn\.lock$/.test(file)) {
+    // v1: `"a@^1", "a@^1.1":` + `version "1.2.3"` + `resolved "..."`; berry: `"a@npm:^1":` + `version: 1.2.3`.
+    let cur = null;
+    for (const line of String(text).split("\n")) {
+      if (line && !/^\s/.test(line) && line.endsWith(":") && !line.startsWith("#") && line !== "__metadata:") {
+        cur = splitSpec(line.slice(0, -1).split(",")[0].trim().replace(/^["']|["']$/g, ""));
+        continue;
+      }
+      if (!cur) continue;
+      const v = line.match(/^ {2}version:?\s+"?([^"\s]+)"?\s*$/);
+      if (v) { addVersion(out, cur.name, v[1]); continue; }
+      const r = line.match(/^ {2}resolved:?\s+"?([^"\s]+)"?\s*$/);
+      if (r && out.has(cur.name)) out.get(cur.name).resolved = r[1];
+    }
     return out;
   }
   let j;
@@ -103,12 +143,17 @@ export function analyze(baseText, headText, file) {
   const after = parseLock(headText, file);
   const findings = [];
   for (const [name, meta] of after) {
-    if (before.has(name)) continue;
+    if (before.has(name)) {
+      // Познато име, нова версия: pnpm/yarn пазят версията в ключа — нова git/tarball версия е сигнал.
+      const old = before.get(name).versions;
+      if (meta.versions && old) for (const v of meta.versions) if (!old.has(v) && !isRegistryVer(v)) findings.push({ file, name, kind: "non-registry", detail: v, gate: false });
+      continue;
+    }
     const squat = typosquatOf(name);
     if (squat) findings.push({ file, name, kind: "typosquat", detail: `прилича на „${squat}“`, gate: true });
     if (meta.link) continue; // workspace връзка — не е от регистъра по дизайн
     if (meta.hasInstallScript) findings.push({ file, name, kind: "install-script", detail: "пуска скрипт при инсталиране", gate: false });
-    if (meta.resolved && !/^https:\/\/registry\.npmjs\.org\//.test(meta.resolved)) findings.push({ file, name, kind: "non-registry", detail: meta.resolved, gate: false });
+    if (meta.resolved && !REGISTRY.test(meta.resolved)) findings.push({ file, name, kind: "non-registry", detail: meta.resolved, gate: false });
     if (/package-lock\.json$/.test(file) && meta.resolved && !meta.integrity) findings.push({ file, name, kind: "no-integrity", detail: "липсва integrity хеш", gate: false });
   }
   return findings;
@@ -122,7 +167,7 @@ async function runCli() {
   const base = bi >= 0 ? argv[bi + 1] : "origin/main";
   let files;
   try {
-    files = git(["diff", "--name-only", `${base}...HEAD`, "--", "*package-lock.json", "*pnpm-lock.yaml"]).split("\n").filter(Boolean);
+    files = git(["diff", "--name-only", `${base}...HEAD`, "--", "*package-lock.json", "*pnpm-lock.yaml", "*yarn.lock"]).split("\n").filter(Boolean);
   } catch (e) { console.error(`new-deps: не мога да сравня с ${base}: ${e.message.split("\n")[0]}`); process.exit(2); }
   const findings = [];
   for (const f of files) {

@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Type, Contrast, Hand, Info, Moon, ChevronDown } from "@/components/icons";
+import { READING_BAR } from "@/lib/ui-labels";
 
 // Нива на уголемяване на шрифта → размер на корена (html). Понеже всичко е в
 // rem, целият сайт (текст и отстояния) се мащабира пропорционално.
@@ -38,12 +39,22 @@ export function AccessibilityBar() {
       const c = localStorage.getItem("a11y-contrast") === "1";
       const t = localStorage.getItem("a11y-bigtouch") === "1";
       const d = localStorage.getItem("a11y-dark") === "1";
-      const hidden = localStorage.getItem("a11y-collapsed") === "1";
       setFont(f);
       setContrast(c);
       setBigTouch(t);
       setDark(d);
-      setCollapsed(hidden);
+      // Дали лентата е свита, се решава ПРЕДИ първото рисуване от вградения
+      // скрипт в layout.tsx (клас `a11y-min` на <html>) — иначе на телефон тя
+      // се рисуваше разгърната и после се свиваше, а страницата подскачаше.
+      // Тук правилото се изчислява ОТНОВО (същото като във вградения скрипт),
+      // а не се чете от класа: ако React пререндира корена (грешка #418 при
+      // хидратация), класовете на <html> се връщат към сървърните и
+      // `a11y-min` изчезва — тогава лентата се разгъваше сама. Честата причина
+      // за #418 е кърпена (scripts/patch-react-replay.mjs); това остава защита.
+      const k = localStorage.getItem("a11y-collapsed");
+      const min = k === "1" || (k === null && window.matchMedia("(max-width: 767px)").matches);
+      document.documentElement.classList.toggle("a11y-min", min);
+      setCollapsed(min);
       applyFont(f);
       applyContrast(c);
       applyBigTouch(t);
@@ -56,6 +67,8 @@ export function AccessibilityBar() {
   const toggleCollapsed = useCallback(() => {
     setCollapsed((prev) => {
       const next = !prev;
+      // С изрично true/false е идемпотентно — StrictMode вика тази функция два пъти.
+      document.documentElement.classList.toggle("a11y-min", next);
       try {
         localStorage.setItem("a11y-collapsed", next ? "1" : "0");
       } catch {
@@ -128,19 +141,20 @@ export function AccessibilityBar() {
   // Скрий лентата в админ зоната.
   if (pathname?.startsWith("/admin")) return null;
 
+  // Бутоните в панела: бял с рамка; включеният е запълнен в синьо. Надписът
+  // е постоянен — състоянието казва aria-pressed (WCAG 4.1.2).
+  const toggleCls = (on: boolean) =>
+    "a11y-btn inline-flex items-center justify-center gap-1.5 rounded-lg border px-3 py-1.5 text-base font-semibold leading-tight transition-colors " +
+    (on
+      ? "border-brand-700 bg-brand-700 text-white"
+      : "border-slate-300 bg-white text-slate-800 hover:border-brand-300 hover:bg-brand-50");
+
   const fontBtn = (level: string, label: string, cls: string) => (
     <button
       type="button"
       onClick={() => chooseFont(level)}
       aria-pressed={font === level}
-      className={
-        "a11y-btn inline-flex min-w-[44px] items-center justify-center rounded px-3 py-1.5 font-bold leading-none transition " +
-        cls +
-        " " +
-        (font === level
-          ? "bg-brand-700 text-white"
-          : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100")
-      }
+      className={toggleCls(font === level) + " min-w-[44px] flex-1 font-bold leading-none sm:flex-none " + cls}
       title={`Размер на текста: ${label}`}
       aria-label={`Размер на текста: ${label}`}
     >
@@ -149,100 +163,110 @@ export function AccessibilityBar() {
   );
 
   return (
-    <div className="border-b-2 border-red-300 bg-red-100 no-print">
-      <div className="container-content flex flex-wrap items-center gap-x-3 gap-y-2 py-2 text-sm">
-        <span className="flex items-center gap-1.5 font-bold text-red-700">
-          <Type className="h-4 w-4" aria-hidden />
-          Достъпност:
-        </span>
+    <div className="a11y-bar no-print border-b border-slate-200 bg-paper-muted">
+      {/* Тънката лента: вляво — честно, че сайтът е независим (не е на
+          общината); вдясно — настройките за четене. */}
+      <div className="container-content flex min-h-12 items-center justify-between gap-3 py-0.5">
+        <p className="min-w-0 text-sm leading-snug text-slate-700 lg:text-base">
+          {/* На таблет (640–819px) редът се пренася — само след „—“, без да
+              се разкъсва името на града („Бобов“ / „дол“). */}
+          <span className="hidden sm:inline">
+            Независим граждански портал —{" "}
+            <span className="whitespace-nowrap">не е сайтът на Община Бобов дол</span>
+          </span>
+          <span className="sm:hidden">
+            <span className="block">Независим портал</span>
+            <span className="sr-only"> — </span>
+            <span className="block">не е общината</span>
+          </span>
+        </p>
 
+        {/* Стрелката се обръща от CSS според класа `a11y-min`, поставен преди
+            първото рисуване — затова няма примигване. „Аа“ е украса; името
+            на бутона е „Настройки за четене“ (на телефон „за четене“ е само
+            за екранния четец, за да се събере редът). */}
         <button
           type="button"
           onClick={toggleCollapsed}
           aria-expanded={!collapsed}
           aria-controls="a11y-controls"
-          className="a11y-btn inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium text-red-700 ring-1 ring-red-300 transition hover:bg-red-200"
-          title={collapsed ? "Покажи настройките за достъпност" : "Скрий настройките за достъпност"}
+          className="a11y-btn inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 text-base font-semibold text-brand-800 transition-colors hover:border-brand-300 hover:bg-brand-50"
         >
-          <ChevronDown
-            className={"h-4 w-4 transition-transform " + (collapsed ? "" : "rotate-180")}
-            aria-hidden
-          />
-          {collapsed ? "Покажи" : "Скрий"}
+          <span aria-hidden className="font-display text-lg font-bold leading-none max-[359px]:hidden">
+            {READING_BAR.mark}
+          </span>
+          <span>
+            {READING_BAR.short}
+            <span className="max-[639px]:sr-only">{READING_BAR.rest}</span>
+          </span>
+          <ChevronDown className="a11y-chevron h-5 w-5 rotate-180 transition-transform" aria-hidden />
         </button>
+      </div>
 
-        {!collapsed && (
-        <>
-        <div
-          id="a11y-controls"
-          className="flex items-center gap-1.5"
-          role="group"
-          aria-label="Размер на текста"
-        >
-          <span className="mr-0.5 text-slate-600">Текст</span>
-          {fontBtn("1", "нормален", "text-sm")}
-          {fontBtn("2", "голям", "text-base")}
-          {fontBtn("3", "много голям", "text-lg")}
+      {/* Контролите стоят в DOM винаги (aria-controls трябва да сочи към
+          съществуващ елемент); CSS ги скрива, когато лентата е свита.
+          Телефон: мрежа 2 колони (трите „А“ на един ред, превключвателите по
+          два); компютър: един ред. Всяка цел е ≥44px. */}
+      <div id="a11y-controls" className="a11y-controls border-t border-slate-200">
+        <div className="container-content grid grid-cols-2 gap-2 py-2 sm:flex sm:flex-wrap sm:items-center sm:gap-x-3">
+          <div
+            className="col-span-2 flex items-center gap-2"
+            role="group"
+            aria-label="Размер на текста"
+          >
+            <span className="text-base text-slate-700" aria-hidden>
+              <Type className="mr-1 inline h-5 w-5 align-[-0.2em] text-brand-700" />
+              Текст
+            </span>
+            {fontBtn("1", "нормален", "text-sm")}
+            {fontBtn("2", "голям", "text-base")}
+            {fontBtn("3", "много голям", "text-lg")}
+          </div>
+
+          <button
+            type="button"
+            onClick={toggleContrast}
+            aria-pressed={contrast}
+            className={toggleCls(contrast)}
+            title="Висок контраст за по-добра четимост"
+          >
+            <Contrast className="h-5 w-5 shrink-0" aria-hidden />
+            Контраст
+          </button>
+
+          <button
+            type="button"
+            onClick={toggleDark}
+            aria-pressed={dark}
+            className={toggleCls(dark)}
+            title="Тъмен режим (по-щадящ за очите на тъмно)"
+          >
+            <Moon className="h-5 w-5 shrink-0" aria-hidden />
+            Тъмен режим
+          </button>
+
+          <button
+            type="button"
+            onClick={toggleBigTouch}
+            aria-pressed={bigTouch}
+            className={toggleCls(bigTouch)}
+            title="По-големи бутони и връзки за по-лесно натискане"
+          >
+            <Hand className="h-5 w-5 shrink-0" aria-hidden />
+            По-лесно докосване
+          </button>
+
+          <Link
+            href="/dostapnost"
+            className="a11y-btn inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-base font-semibold leading-tight text-brand-700 underline decoration-slate-300 underline-offset-4 hover:decoration-brand-700 sm:ml-auto"
+            title="Помощ за достъпността и връзка без обаждане"
+          >
+            <Info className="h-5 w-5 shrink-0" aria-hidden />
+            <span>
+              Помощ<span className="max-[639px]:sr-only"> за достъпността</span>
+            </span>
+          </Link>
         </div>
-
-        <button
-          type="button"
-          onClick={toggleContrast}
-          aria-pressed={contrast}
-          className={
-            "a11y-btn inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium transition " +
-            (contrast
-              ? "bg-brand-700 text-white"
-              : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100")
-          }
-          title="Висок контраст за по-добра четимост"
-        >
-          <Contrast className="h-4 w-4" aria-hidden />
-          Контраст
-        </button>
-
-        <button
-          type="button"
-          onClick={toggleDark}
-          aria-pressed={dark}
-          className={
-            "a11y-btn inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium transition " +
-            (dark
-              ? "bg-brand-700 text-white"
-              : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100")
-          }
-          title="Тъмен режим (по-щадящ за очите на тъмно)"
-        >
-          <Moon className="h-4 w-4" aria-hidden />
-          {dark ? "Светъл режим" : "Тъмен режим"}
-        </button>
-
-        <button
-          type="button"
-          onClick={toggleBigTouch}
-          aria-pressed={bigTouch}
-          className={
-            "a11y-btn inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium transition " +
-            (bigTouch
-              ? "bg-brand-700 text-white"
-              : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100")
-          }
-          title="По-големи бутони и връзки за по-лесно натискане"
-        >
-          <Hand className="h-4 w-4" aria-hidden />
-          По-лесно докосване
-        </button>
-
-        <Link
-          href="/dostapnost"
-          className="a11y-btn ml-auto inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium text-brand-700 underline-offset-2 hover:underline"
-          title="Помощ за достъпността и връзка без обаждане"
-        >
-          <Info className="h-4 w-4" aria-hidden />
-          Помощ за достъпността
-        </Link>
-        </>
-        )}
       </div>
     </div>
   );

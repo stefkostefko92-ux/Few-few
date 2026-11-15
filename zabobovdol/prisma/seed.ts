@@ -166,6 +166,8 @@ async function main() {
       phone: "000 000 000",
       featured: true,
       order: 1,
+      // Примерите служат само за формата — не се показват на посетителите.
+      published: false,
     },
     {
       slug: "primerno-zavedenie",
@@ -174,6 +176,7 @@ async function main() {
       description: "Домашна кухня и кафе." + NOTE,
       address: "гр. Бобов дол (пример)",
       order: 2,
+      published: false,
     },
   ];
   for (const b of businesses) {
@@ -194,7 +197,8 @@ async function main() {
       description: "Това е примерно събитие, за да видите как изглежда страницата." + NOTE,
       location: "Читалище, гр. Бобов дол (пример)",
       startAt,
-      published: true,
+      // Само пример за формата — не се показва на посетителите.
+      published: false,
     },
   });
   console.log("✔ Събитие: 1");
@@ -211,7 +215,7 @@ async function main() {
         "Това е първата публикация в портала **За Бобов дол**.\n\n" +
         "Тук ще намирате важни телефони, обяснения как да ползвате е-услуги, " +
         "събития и обяви. Заменете тази публикация със своя от админ панела.",
-      published: true,
+      published: false,
       publishedAt: new Date(),
     },
   });

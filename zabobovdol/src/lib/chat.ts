@@ -3,6 +3,7 @@ import { search, recordMiss } from "@/lib/search";
 import { plainText } from "@/lib/markdown";
 import { SITE } from "@/lib/site";
 import { getAiConfig, type AiConfig } from "@/lib/ai-config";
+import { formatDateTime } from "@/lib/format-date";
 
 export type ChatSource = { title: string; url: string };
 export type ChatTurn = { role: "user" | "bot"; text: string };
@@ -118,9 +119,8 @@ async function hydrate(hits: Hit[], n = 6): Promise<Ctx[]> {
         select: { title: true, description: true, location: true, startAt: true },
       });
       if (e) {
-        const when = new Intl.DateTimeFormat("bg-BG", {
-          dateStyle: "long", timeStyle: "short",
-        }).format(e.startAt);
+        // Стенно софийско време от админ полето (виж lib/format-date.ts).
+        const when = formatDateTime(e.startAt, { wall: true });
         out.push({
           title: e.title,
           url: h.url,
