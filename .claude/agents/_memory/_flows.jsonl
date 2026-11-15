@@ -636,3 +636,18 @@
 {"t":"start","ts":"2026-11-15T12:25:51.083Z","id":"rc0b06180","flow":"авто","lead":"igrodelets","auto":true}
 {"t":"handoff","ts":"2026-11-15T12:25:51.083Z","id":"rc0b06180","from":"igrodelets","to":"kodadjiyata","status":"има бележки","run":"e0f8c4c3"}
 {"t":"handoff","ts":"2026-11-15T12:25:51.388Z","id":"rc0b06180","from":"strazhata","to":"човек","status":"има бележки","run":"5f08d187"}
+{"t":"start","ts":"2026-11-15T12:29:16.333Z","id":"rbb5db8f9","flow":"авто","lead":"danachnika","auto":true}
+{"t":"handoff","ts":"2026-11-15T12:29:16.334Z","id":"rbb5db8f9","from":"danachnika","to":"prodavacha","status":"има бележки","run":"f21e016c"}
+{"t":"start","ts":"2026-11-15T12:31:03.232Z","id":"rc67e9f1e","flow":"авто","lead":"strazhata","auto":true}
+{"t":"handoff","ts":"2026-11-15T12:31:03.232Z","id":"rc67e9f1e","from":"strazhata","to":"човек","status":"има бележки","run":"a6c1b592"}
+{"t":"start","ts":"2026-11-15T12:31:38.066Z","id":"rbe53f75e","flow":"авто","lead":"frezadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-15T12:31:38.066Z","id":"rbe53f75e","from":"frezadjiyata","to":"kodadjiyata","status":"има бележки","run":"900161b8"}
+{"t":"handoff","ts":"2026-11-15T12:32:32.647Z","id":"rbe53f75e","from":"pronikvacha","to":"човек","status":"наред","run":"5b4b369a"}
+{"t":"start","ts":"2026-11-15T12:32:41.198Z","id":"r73deddad","flow":"авто","lead":"frezadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-15T12:32:41.198Z","id":"r73deddad","from":"frezadjiyata","to":"kodadjiyata","status":"има бележки","run":"900161b8"}
+{"t":"handoff","ts":"2026-11-15T12:34:21.874Z","id":"r73deddad","from":"igrodelets","to":"kodadjiyata","status":"има бележки","run":"d18c68ab"}
+{"t":"start","ts":"2026-11-15T12:36:22.995Z","id":"r78549913","flow":"авто","lead":"strazhata","auto":true}
+{"t":"handoff","ts":"2026-11-15T12:36:22.995Z","id":"r78549913","from":"strazhata","to":"vps-adjiyata","status":"има бележки","run":"0d2b4295"}
+{"t":"handoff","ts":"2026-11-15T12:36:42.562Z","id":"r78549913","from":"danachnika","to":"prodavacha","status":"има бележки","run":"95960c6c"}
+{"t":"start","ts":"2026-11-15T12:37:36.915Z","id":"r6b7bb55a","flow":"авто","lead":"strazhata","auto":true}
+{"t":"handoff","ts":"2026-11-15T12:37:36.915Z","id":"r6b7bb55a","from":"strazhata","to":"vps-adjiyata","status":"има бележки","run":"0d2b4295"}
