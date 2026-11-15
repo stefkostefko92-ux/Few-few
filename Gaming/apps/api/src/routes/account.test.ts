@@ -7,10 +7,14 @@ interface FakeUser {
   deletedAt: Date | null;
   realityCheckMinutes: number;
   dailyLimitMinutes: number | null;
+  dailyLimitPendingMinutes: number | null;
+  dailyLimitPendingAt: Date | null;
   selfExcludedUntil: Date | null;
   selfExcludedAt: Date | null;
 }
 const users = new Map<string, FakeUser>();
+/** Мачовете на играча за днешното преброяване (начало/край). */
+let played: Array<{ startedAt: Date; endedAt: Date | null }> = [];
 
 function pick(u: FakeUser, select?: Record<string, boolean>): Partial<FakeUser> {
   if (!select) return { ...u };
@@ -33,6 +37,9 @@ vi.mock("@aso/db", () => ({
           return pick(u, select);
         },
       ),
+    },
+    matchPlayer: {
+      findMany: vi.fn(async () => played.map((match) => ({ match }))),
     },
   },
 }));
@@ -63,9 +70,12 @@ beforeEach(() => {
     deletedAt: null,
     realityCheckMinutes: 0,
     dailyLimitMinutes: null,
+    dailyLimitPendingMinutes: null,
+    dailyLimitPendingAt: null,
     selfExcludedUntil: null,
     selfExcludedAt: null,
   });
+  played = [];
 });
 afterEach(() => vi.clearAllMocks());
 
@@ -83,7 +93,13 @@ describe("GET/PUT /api/account/responsible", () => {
   it("връща настройките по подразбиране (изключено, без лимит, без самоизключване)", async () => {
     const res = await request(app).get("/api/account/responsible").set("Cookie", cookie());
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ realityCheckMinutes: 0, dailyLimitMinutes: null, selfExcludedUntil: null });
+    expect(res.body).toEqual({
+      realityCheckMinutes: 0,
+      dailyLimitMinutes: null,
+      dailyLimitPending: null,
+      playedTodayMinutes: 0,
+      selfExcludedUntil: null,
+    });
   });
 
   it("записва напомняне на 60 мин и дневен лимит 120 мин", async () => {
@@ -92,9 +108,44 @@ describe("GET/PUT /api/account/responsible", () => {
     expect(res.body).toMatchObject({ realityCheckMinutes: 60, dailyLimitMinutes: 120 });
     expect(users.get("user_1")).toMatchObject({ realityCheckMinutes: 60, dailyLimitMinutes: 120 });
 
+    // Махането на лимита не е веднага: 24 ч изчакване, дотогава важи 120.
     const off = await put({ dailyLimitMinutes: null });
     expect(off.status).toBe(200);
-    expect(off.body).toMatchObject({ realityCheckMinutes: 60, dailyLimitMinutes: null });
+    expect(off.body).toMatchObject({ realityCheckMinutes: 60, dailyLimitMinutes: 120 });
+    expect(off.body.dailyLimitPending.minutes).toBeNull();
+    expect(Date.parse(off.body.dailyLimitPending.effectiveAt as string)).toBeGreaterThan(Date.now() + DAY - 60_000);
+  });
+
+  it("по-строг лимит важи веднага, по-свободен — след 24 ч; чакащото се показва", async () => {
+    await put({ dailyLimitMinutes: 120 });
+    const down = await put({ dailyLimitMinutes: 60 });
+    expect(down.body).toMatchObject({ dailyLimitMinutes: 60, dailyLimitPending: null });
+    const up = await put({ dailyLimitMinutes: 240 });
+    expect(up.body).toMatchObject({ dailyLimitMinutes: 60, dailyLimitPending: { minutes: 240 } });
+    expect(users.get("user_1")).toMatchObject({ dailyLimitMinutes: 60, dailyLimitPendingMinutes: 240 });
+  });
+
+  it("чакащото вдигане влиза в сила, щом времето му дойде", async () => {
+    Object.assign(users.get("user_1")!, {
+      dailyLimitMinutes: 60,
+      dailyLimitPendingMinutes: 240,
+      dailyLimitPendingAt: new Date(Date.now() - 1000),
+    });
+    const res = await request(app).get("/api/account/responsible").set("Cookie", cookie());
+    expect(res.body).toMatchObject({ dailyLimitMinutes: 240, dailyLimitPending: null });
+  });
+
+  it("показва изиграните днес минути от мачовете", async () => {
+    // Пладне в София — да не зависи от това дали тестът върви точно след полунощ.
+    vi.useFakeTimers({ now: Date.parse("2026-05-10T09:00:00Z"), toFake: ["Date"] });
+    try {
+      const now = Date.now();
+      played = [{ startedAt: new Date(now - 30 * 60_000), endedAt: new Date(now - 5 * 60_000) }];
+      const res = await request(app).get("/api/account/responsible").set("Cookie", cookie());
+      expect(res.body.playedTodayMinutes).toBe(25);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("Zod: отхвърля непозволени стойности и чужди полета", async () => {

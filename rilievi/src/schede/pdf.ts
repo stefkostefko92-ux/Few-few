@@ -4,6 +4,7 @@ import PDFDocument from 'pdfkit';
 import type { Translator } from '../i18n.js';
 import type { ViewHelpers } from '../http/view.js';
 import { riepilogoModuli, type RiepilogoGruppo } from '../ordini/riepilogo.js';
+import { SOTTO_TARGA } from './fields.js';
 import { displaySections, type DisplayField } from './format.js';
 import { sezioniStampate } from './ordine.js';
 import type { GruppoFotoPdf } from '../allegati/stampa.js';
@@ -111,9 +112,12 @@ export function renderSchedaPdf(scheda: SchedaFull, options: PdfOptions): Promis
   });
 
   drawPlate(ctx, scheda, byKey);
-  // „Note impianto“ е в раздела Impianto, който не се печата отделно: под табелата, само попълнена.
-  const notaImpianto = byKey.get('noteImpianto');
-  if (notaImpianto?.value) drawFields(ctx, [notaImpianto]);
+  // Разделът Impianto не се печата отделно: под табелата — останалото от табелата в кабината (D.P.R.
+  // 162/1999, чл. 16, ал. 3), годината, CE и „Note impianto“, само попълненото.
+  const sottoTarga = SOTTO_TARGA.map((key) => byKey.get(key)).filter(
+    (field): field is DisplayField => Boolean(field?.value),
+  );
+  if (sottoTarga.length) drawFields(ctx, sottoTarga);
   // „Impianto“ е вече в заглавната лента и в табелата; изключените в картата не влизат.
   for (const section of sezioniStampate(sections, scheda.sezioniEscluse)) {
     drawSectionTitle(ctx, section.title);

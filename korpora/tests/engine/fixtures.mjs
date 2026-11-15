@@ -16,6 +16,7 @@ export const FIXTURE = {
       variants: { full: { name: 'Панта покрит кант (тест)', brand: 'Test', mfrSku: 'FX-5', price: 2, currency: 'EUR' }, half: { name: 'Панта полупокрит кант (тест)', brand: 'Test', mfrSku: 'FX-6', price: 2, currency: 'EUR' } },
     },
     { id: 'fx:hettich', system: 'hettich_sensys', name: 'Панта (тест), Hettich система', brand: 'Test', fixing: 'screw', variants: { full: null, half: null } },
+    { id: 'fx:hettich-fix', system: 'hettich_sensys', name: 'Панта (тест), Hettich бърз монтаж Fix', brand: 'Test', fixing: 'fix', variants: {} },
     { id: 'fx:gtv', system: 'gtv_euro35', name: 'Панта (тест), GTV система', brand: 'Test', fixing: 'screw', variants: {} },
     { id: 'fx:salice', system: 'salice_series200', name: 'Панта (тест), Salice система', brand: 'Test', fixing: 'screw', variants: {} },
   ],
@@ -51,4 +52,8 @@ export const OUTPUT_SPECS = [
   { type: 'bookcase', columns: 3, hinge: 'fx:gtv' },
 ];
 
-export const outputMeta = (model) => ({ product: 'Korpora', hash: createHash('sha256').update(canonicalJson(model.spec)).digest('hex'), owner: 'Carbon Stealth VCC', date: '2026-10-02' });
+// A project with small parts (the drawer fronts and backs of the narrowest chest are under 0,02 m²): with the onion skin
+// they are a warning, without it a blocker.
+export const SMALL_PART_SPEC = { type: 'chest', width: 400 };
+
+export const outputMeta =(model) => ({ product: 'Korpora', hash: createHash('sha256').update(canonicalJson(model.spec)).digest('hex'), owner: 'Carbon Stealth VCC', date: '2026-10-02' });

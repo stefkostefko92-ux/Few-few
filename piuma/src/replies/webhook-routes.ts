@@ -36,7 +36,7 @@ export function webhookRouter(options: WebhookOptions): Router {
   router.get(WEBHOOK_PATH, limiter, (req, res) => {
     const challenge = challengeResponse(req.query as Record<string, unknown>, verifyToken);
     if (challenge === null) {
-      logger.warn({ ip: req.ip }, 'отказана проверка на webhook-а (mode/токен/вид)');
+      logger.warn('отказана проверка на webhook-а (mode/токен/вид)');
       res.status(403).type('text/plain').send('forbidden');
       return;
     }
@@ -50,7 +50,7 @@ export function webhookRouter(options: WebhookOptions): Router {
     async (req, res) => {
       const raw = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
       if (!verifyWebhookSignature(options.appSecret, raw, req.get(SIGNATURE_HEADER))) {
-        logger.warn({ ip: req.ip, bytes: raw.length }, 'webhook с невалиден подпис — отказан');
+        logger.warn({ bytes: raw.length }, 'webhook с невалиден подпис — отказан');
         res.status(401).end();
         return;
       }

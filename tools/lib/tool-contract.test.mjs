@@ -116,6 +116,24 @@ test("trader-lint не пада върху реалния treydar (париче�
   assert.ok(((r.stdout || "") + (r.stderr || "")).trim().length > 0);
 });
 
+// Регресия (2026-11-15): `.claude/worktrees/*` са пълни копия на репото — обходени, удвояваха
+// находките с чужд код и бавеха `motion-a11y .` над тавана от 90 s (тестът горе „увисна“).
+test("motion-a11y не обхожда агентските работни копия (.claude/worktrees)", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ma-wt-"));
+  try {
+    mkdirSync(join(dir, ".claude", "worktrees", "x"), { recursive: true });
+    writeFileSync(join(dir, ".claude", "worktrees", "x", "a.css"), ".a{animation: spin 1s infinite}\n");
+    const r = run("tools/design/motion-a11y.mjs", [dir]);
+    assert.equal(r.status, 0, `находка от чуждо работно копие:\n${(r.stdout || "").slice(0, 300)}`);
+    // Същият файл ИЗВЪН .claude/worktrees остава видим — пропускът е тесен, не сляпо петно.
+    mkdirSync(join(dir, "worktrees"), { recursive: true });
+    writeFileSync(join(dir, "worktrees", "a.css"), ".a{animation: spin 1s infinite}\n");
+    assert.equal(run("tools/design/motion-a11y.mjs", [dir]).status, 1);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("quarantine-review не променя нищо (докладва, не промотира)", () => {
   const before = run("tools/memory/quarantine-review.mjs", ["--json"]);
   const after = run("tools/memory/quarantine-review.mjs", ["--json"]);

@@ -65,7 +65,7 @@ if [ "$OURS_UP" = "0" ] && port_in_use "$HTTP_PORT"; then
   bold "Изберете едно от двете:"
   echo "  1) Ако нищо друго не е уебсайт — спрете услугата на порт $HTTP_PORT и пуснете пак."
   echo "  2) Ако има друг сайт/панел (напр. Minecraft панел) на 80/443 — НЕ го пипайте."
-  echo "     Сложете в .env:   HTTP_PORT=8080"
+  echo "     Сложете в .env:   HTTP_BIND=127.0.0.1   HTTP_PORT=8080"
   echo "     и в съществуващото reverse proxy насочете zabobovdol.carbonstealth.eu"
   echo "     към http://127.0.0.1:8080 (HTTPS се поема от него; пропуснете init-letsencrypt)."
   echo "     После пуснете отново: ./scripts/deploy.sh"

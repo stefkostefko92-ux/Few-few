@@ -8,11 +8,27 @@ x-logging: &default-logging
     max-size: "10m"
     max-file: "3"
 
+# Втвърдяване (образец: korpora/docker-compose.yml): никой контейнер не придобива права
+# (no-new-privileges), всички започват без Linux capabilities и получават обратно само нужните.
+# Приложението върви като nextjs (Dockerfile: USER) — не иска нищо. След промяна:
+# `up -d` → health → логовете за EACCES/EROFS/„Operation not permitted".
+x-no-new-privileges: &nnp
+  security_opt:
+    - no-new-privileges:true
+
 services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
     logging: *default-logging
+    <<: *nnp
+    # Entrypoint-ът на образа сменя собственика на данните и минава на потребителя postgres.
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    read_only: true
+    tmpfs:
+      - /var/run/postgresql:size=4m
+      - /tmp:size=64m
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-zabobovdol}
       # Без стойност по подразбиране — деплоят спира с ясна грешка, ако .env
@@ -32,6 +48,8 @@ services:
     build: .
     restart: unless-stopped
     logging: *default-logging
+    <<: *nnp
+    cap_drop: [ALL]
     depends_on:
       db:
         condition: service_healthy
@@ -94,6 +112,11 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     logging: *default-logging
+    <<: *nnp
+    # Върви като root: backup-entrypoint.sh прави `apk add` (разопакова пакети, слага собственик и
+    # права) и пише в ./backups. Без read_only — apk пише в /usr и /lib.
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER]
     depends_on:
       db:
         condition: service_healthy
@@ -121,16 +144,20 @@ services:
     image: nginx:1.27-alpine
     restart: unless-stopped
     logging: *default-logging
+    <<: *nnp
+    # Master-ът заема порт 80 като root, създава кеш папките за потребителя nginx и пуска workers под него.
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, NET_BIND_SERVICE, SETGID, SETUID]
     depends_on:
       - app
     ports:
-      # Портовете на хоста са сменяеми. На споделен сървър (където 80/443 вече
-      # са заети от друг nginx/панел) задайте в .env:
-      #   HTTP_BIND=127.0.0.1   HTTP_PORT=8080
-      # и проксирайте домейна от съществуващото reverse proxy към 127.0.0.1:8080.
-      - "${HTTP_BIND:-0.0.0.0}:${HTTP_PORT:-80}:80"
+      # По подразбиране само на loopback: на нашия VPS отпред стои nginx-ът на хоста (TLS), а
+      # Docker публикува портове през DNAT ПРЕДИ ufw — 0.0.0.0 значи публичен порт покрай стената.
+      # Споделен сървър (80/443 са заети): в .env HTTP_BIND=127.0.0.1 HTTP_PORT=8080 и проксирай
+      # домейна към http://127.0.0.1:8080. Собствен сървър, без друг reverse proxy: HTTP_BIND=0.0.0.0.
+      - "${HTTP_BIND:-127.0.0.1}:${HTTP_PORT:-80}:80"
       # За HTTPS на собствен сървър разкоментирайте (виж DEPLOY.md):
-      # - "${HTTP_BIND:-0.0.0.0}:${HTTPS_PORT:-443}:443"
+      # - "${HTTP_BIND:-127.0.0.1}:${HTTPS_PORT:-443}:443"
     volumes:
       # ZBD_RUNTIME_DIR: неизменимо копие извън release-а (виж scripts/deploy.sh).
       - ${ZBD_RUNTIME_DIR:-.}/nginx/zabobovdol.conf:/etc/nginx/conf.d/default.conf:ro
