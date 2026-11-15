@@ -228,7 +228,7 @@ function readme(project: Project, b: Built, blockers: string[]): string {
         ...entry('cnc/', t('exports.cncBlocked')),
         ...blockers.flatMap((r) => wrap(r, `${' '.repeat(COLUMN)}- `, COLUMN + 2)),
       ]
-    : entry('cnc/', t('exports.cnc'));
+    : [...entry('cnc/', t('exports.cnc')), ...wrap(t('exports.cncMm'), ' '.repeat(COLUMN), COLUMN)];
   return [
     `Korpora — ${project.name}`,
     t('exports.hash', { hash: project.specHash }),

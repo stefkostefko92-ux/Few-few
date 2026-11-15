@@ -48,7 +48,10 @@ export const EVAL_ALLOWED = [...ALLOWED, "Skill",
   "Bash(node *)", "Bash(npm test*)", "Bash(npm run *)", "Bash(bash tools/*)",
   "Bash(npx tsx *)", "Bash(npx tsc *)", "Bash(npx vitest *)", "Bash(npx playwright *)",
   "Bash(git diff *)", "Bash(git log *)", "Bash(git show *)", "Bash(git status*)",
-  "Bash(ffprobe *)", "Bash(mkdir -p /tmp/*)"];
+  "Bash(ffprobe *)", "Bash(mkdir -p /tmp/*)",
+  // 14.11.2026: локалната търсачка на ui-ux-pro-max (само stdlib, без мрежа) — без нея оценката мереше
+  // Дизайнера без каталога, защото командата искаше одобрение (в сесия го дава собственикът).
+  "Bash(python3 -I -B .claude/skills/ui-ux-pro-max/scripts/search.py *)"];
 
 /** Обвивката за главната сесия: пусни агента със задачата дословно, върни дословно отговора. */
 export function wrapperPrompt(agent, task) {
@@ -158,16 +161,18 @@ export function claudeAvailable() {
 /** Изолирано копие на ref-а с махнати Stop куки на оркестратора. Връща пътя и функция за почистване.
  *  overlay: {from, paths} — тези пътища идват от друг ref (преглед на стар PR с ТЕКУЩИЯ агентски слой).
  *  measure: true (по подразбиране) — eval режим в копието: паметта се чете, но нищо не се записва. */
+// stderr на git остава в грешката (14.11.2026): с „ignore“ пълен диск изглеждаше като голо „код 128“.
+const GIT_STDIO = ["ignore", "ignore", "pipe"];
 export function makeWorktree(ref = "HEAD", overlay = null, { measure = true, sparse = null, memory = "on" } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "live-run-"));
   rmSync(dir, { recursive: true, force: true });
   if (sparse?.length) {
     // Частично копие (31.10.2026): файловете в корена + агентският слой + подадените папки — 12 MB вместо
     // 2,1 GB за преглед на PR по един продукт (code.claude.com/docs/en/large-codebases, sparse worktree).
-    execFileSync("git", ["-C", ROOT, "worktree", "add", "--no-checkout", "--detach", dir, ref], { stdio: "ignore" });
+    execFileSync("git", ["-C", ROOT, "worktree", "add", "--no-checkout", "--detach", dir, ref], { stdio: GIT_STDIO });
     execFileSync("git", ["-C", dir, "sparse-checkout", "set", "--no-cone", ...sparsePatterns(sparse)], { stdio: "ignore" });
     execFileSync("git", ["-C", dir, "checkout", "-q", "--detach", ref], { stdio: "ignore" });
-  } else execFileSync("git", ["-C", ROOT, "worktree", "add", "--detach", dir, ref], { stdio: "ignore" });
+  } else execFileSync("git", ["-C", ROOT, "worktree", "add", "--detach", dir, ref], { stdio: GIT_STDIO });
   if (overlay) execFileSync("git", ["-C", dir, "checkout", overlay.from, "--", ...overlay.paths], { stdio: "ignore" });
   // memory: "off" — рамо „без поуките“ за A/B на паметта (31.10.2026): memory-preload не подава личната памет.
   if (measure) setEvalMode(dir, { label: "live-run", memory: memory === "off" ? "off" : "on", minutes: 180 });

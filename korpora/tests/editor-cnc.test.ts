@@ -86,3 +86,36 @@ test('the CNC tab names each sheet’s G-code and DXF as cnc.zip does', () => {
     );
   });
 });
+
+interface EstimateModule {
+  estimate(g: Record<string, unknown>): { seconds: number; rapid: number; drills: number };
+}
+
+test('the time estimate: a GRBL tool change by hand takes a minute, the canned cycle retracts at rapid', async () => {
+  const { estimate } = await editorModule<EstimateModule>('render-cnc.js', ['estimate']);
+  const tools = [{ id: 'T1', kind: 'drill', d: 5, feed: 2000 }];
+  // one Ø5 × 12 hole with G98 G81: 15 mm in at F2000, 17 + 32 mm of rapids inside the control
+  const drill = {
+    type: 'drill',
+    at: [0, 0],
+    depth: 12,
+    tool: 'T1',
+    F: 2000,
+    cut: 15,
+    slow: 0,
+    retract: 49,
+  };
+  const iso = estimate({ tools, moves: [drill], post: 'iso' });
+  assert.ok(
+    Math.abs(iso.seconds - (0.45 + (49 / 30000) * 60 + 0.4 + 20)) < 1e-9,
+    String(iso.seconds),
+  );
+  assert.equal(iso.rapid, 49);
+  // GRBL: the plunge is a G1 of its own; the drill move counts it, and the manual change with the Z0 touch-off
+  const grbl = estimate({
+    tools,
+    moves: [{ ...drill, retract: 0, slow: 2, cut: 13 }],
+    post: 'grbl',
+  });
+  assert.ok(Math.abs(grbl.seconds - (0.39 + 0.12 + 0.4 + 62)) < 1e-9, String(grbl.seconds));
+});

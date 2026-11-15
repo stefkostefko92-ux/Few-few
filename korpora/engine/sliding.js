@@ -6,12 +6,11 @@
 // groove that runs on the guides (an edge, not a face).
 import { panel, hole, mark, groove } from './panel.js';
 import { r1 } from './util.js';
-import { hasGrain } from './materials.js';
+import { hasGrain, STOCK } from './materials.js';
 import { SLIDING_SYSTEMS, PLANOFIT } from './data/sliding-systems.js';
 
 export const SLIDING = SLIDING_SYSTEMS;
 export const DEFAULT_SLIDING = 'hafele_fline21_40c';
-const DENSITY = 650; // kg/m³, the estimate fronts.js uses for hinged doors
 
 // Door width and height from the clear inner width and height of the carcass: two doors overlapping in the middle,
 // the height less the track and the gap under the door (B = A − 23.5 with the screw-fixed track).
@@ -34,7 +33,7 @@ export function buildSlidingDoors(ctx, o, d) {
   if (size.W > sys.maxW || size.W < sys.minW) {
     ctx.warn('error', ctx.t('w.slidingWidth', { where, w: ctx.t.num(size.W), min: sys.minW, max: sys.maxW, sys: sys.name }));
   }
-  const kg = (size.W / 1000) * (size.H / 1000) * (sys.door.T / 1000) * DENSITY;
+  const kg = (size.W / 1000) * (size.H / 1000) * (sys.door.T / 1000) * STOCK[sys.door.stock].density; // by the board's density, as fronts.js weighs hinged doors
   if (kg > sys.maxKg) ctx.warn('error', ctx.t('w.slidingHeavy', { where, kg: ctx.t.num(r1(kg)), max: sys.maxKg, sys: sys.name }));
 
   // no handle on the face (it would hit the other door) and no painted MDF (the system's sizes are for 16–19 mm boards)

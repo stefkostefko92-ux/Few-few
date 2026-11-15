@@ -14,6 +14,7 @@ import { AdminOrders } from "./AdminOrders";
 import { AdminAnnouncements } from "./AdminAnnouncements";
 import { AdminSeasons } from "./AdminSeasons";
 import { AdminMatches } from "./AdminMatches";
+import { AdminMail } from "./AdminMail";
 import { ErrorPanel, errorMessage, useLoad } from "./load";
 import { gameTitle } from "../lobby/games";
 import type { GameKey } from "@aso/shared";
@@ -31,11 +32,14 @@ type Tab =
   | "reports"
   | "announcements"
   | "discord"
+  | "mail"
   | "audit";
 
 export function AdminPanel() {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>("dashboard");
+  // Пощата на портала (Brevo) настройва само собственикът.
+  const isOwner = useAuthStore((s) => s.user?.role) === "OWNER";
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "dashboard", label: t("admin.dashboard") },
@@ -50,6 +54,7 @@ export function AdminPanel() {
     { key: "reports", label: t("admin.reports", "Доклади") },
     { key: "announcements", label: t("admin.announcements", "Обяви") },
     { key: "discord", label: "Discord" },
+    ...(isOwner ? [{ key: "mail" as const, label: t("admin.mail.tab") }] : []),
     { key: "audit", label: t("admin.audit") },
   ];
 
@@ -88,6 +93,7 @@ export function AdminPanel() {
       {tab === "reports" ? <AdminReports /> : null}
       {tab === "announcements" ? <AdminAnnouncements /> : null}
       {tab === "discord" ? <Discord /> : null}
+      {tab === "mail" && isOwner ? <AdminMail /> : null}
       {tab === "audit" ? <Audit /> : null}
     </div>
   );
