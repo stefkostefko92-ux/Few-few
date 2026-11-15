@@ -6876,7 +6876,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 293
+        "lessons": 294
       },
       "evolution": [
         {
@@ -7298,9 +7298,20 @@
           "date": "2026-11-15",
           "event": "v26.4 — учене",
           "detail": "Научи: pkey_alloc/pkey_free/pkey_mprotect са само в групата @pkey — не са в @system-service, н… (+3 още)"
+        },
+        {
+          "version": "26.5.0",
+          "date": "2026-11-15",
+          "event": "v26.5 — учене",
+          "detail": "Научи: nginx 1.24.0 от пакета на Ubuntu 24.04 не познава директивата \"http2 on;\" — на такъв хо…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „nginx 1.24.0 от пакета на Ubuntu 24.04 не познава директивата \"http2 on;\" — на такъв хо…\" · 1 в карантина"
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
