@@ -201,6 +201,33 @@ describe('the stop signs', () => {
     assert.equal(await prisma.cartello.count({ where: { aziendaId: azienda.id } }), 0);
   });
 
+  it('show the notices of a stop for danger still to do, and refuse a day without the tick', async () => {
+    const azienda = await makeAzienda();
+    const { browser } = await signedIn('TECNICO', azienda.id);
+    const id = await create(browser, {
+      ...CARTELLO,
+      pericolo: 'si',
+      avvisoProprietarioAt: '2026-11-03',
+      avvisoVerificatoreAt: '',
+      avvisoComuneAt: '',
+    });
+    const page = (await browser.get(`/cartelli/${id}`)).body;
+    assert.match(page, /Comunicazioni per il fermo \(art\. 15 c\. 7\)/);
+    assert.match(page, /Proprietario informato il<\/dt><dd>03\/11\/2026<\/dd>/);
+    assert.equal(page.match(/Da comunicare/g)?.length, 2);
+    assert.match(page, /Mancano ancora 2 comunicazioni dell&#39;art\. 15 c\. 7\./);
+
+    const senza = await browser.submit('/cartelli/nuovo', '/cartelli', {
+      ...CARTELLO,
+      avvisoComuneAt: '2026-11-04',
+    });
+    assert.equal(senza.status, 422);
+    assert.match(senza.body, /href="#f-pericolo"/);
+    assert.match(senza.body, /id="f-pericolo"[^>]*aria-invalid="true"/);
+    assert.match(senza.body, /value="2026-11-04"/);
+    assert.equal(await prisma.cartello.count({ where: { aziendaId: azienda.id } }), 1);
+  });
+
   it('save a change only over the version that was opened, and delete for good', async () => {
     const azienda = await makeAzienda();
     const { browser } = await signedIn('TECNICO', azienda.id);
