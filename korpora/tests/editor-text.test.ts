@@ -64,7 +64,7 @@ test('the keys the editor builds at run time have every member of their family',
       for (const m of members) assert.ok(`${prefix}${m}` in text, `${locale}: ${prefix}${m}`);
     }
     // the furniture groups of the type picker come from common.json (furniture.group.*)
-    for (const g of ['kitchen', 'bedroom', 'living', 'custom']) {
+    for (const g of ['kitchen', 'bedroom', 'living', 'bathroom', 'custom']) {
       assert.ok(g in textsUnder(locale, 'furniture.group.'), `${locale}: furniture.group.${g}`);
     }
   }

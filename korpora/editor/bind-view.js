@@ -1,9 +1,11 @@
 // The 3D view and its controls: open the fronts, explode the assembly (animated unless reduced motion is on),
-// show the drilled holes, put the furniture in a room, the photorealistic view and its PNG. Without WebGL the other
+// show the drilled holes, put the furniture in a room, the photorealistic view and its PNG, AR on a phone
+// (viewer-ar.js). Without WebGL the other
 // tabs still work.
 import { $, esc, localDate, pct, reduceMotion } from './dom.js';
 import { Viewer } from './viewer.js';
 import { createCellPick } from './viewer-pick.js';
+import { bindAr } from './viewer-ar.js';
 
 // onPick({ column, cell }): a click on a part of a free carcass (its cell is then named under the view, with the way
 // to the constructor)
@@ -56,6 +58,7 @@ export function createViewer(text, onPick = () => {}) {
   for (const el of [$('#ops'), $('#room')])
     if (el.checked !== el.defaultChecked) el.dispatchEvent(new Event('change'));
   bindPhoto(viewer, text);
+  void bindAr(viewer, text);
   $('#explode-play').addEventListener('click', () => {
     const el = $('#explode');
     const target = Number(el.value) > 50 ? 0 : 100;

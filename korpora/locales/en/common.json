@@ -159,11 +159,14 @@
     "tv": "TV unit",
     "desk": "Desk",
     "wallunit": "Living-room wall unit",
+    "vanity": "Vanity unit",
+    "mirror": "Mirror cabinet",
     "custom": "Free-form cabinet",
     "group": {
       "kitchen": "Kitchen and cabinets",
       "bedroom": "Bedroom",
       "living": "Living room and study",
+      "bathroom": "Bathroom",
       "custom": "Builder",
       "other": "Other"
     }

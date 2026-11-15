@@ -159,11 +159,14 @@
     "tv": "Mobile TV",
     "desk": "Scrivania",
     "wallunit": "Parete attrezzata",
+    "vanity": "Mobile sottolavabo",
+    "mirror": "Pensile a specchio",
     "custom": "Mobile su misura",
     "group": {
       "kitchen": "Cucina e contenitori",
       "bedroom": "Camera da letto",
       "living": "Soggiorno e studio",
+      "bathroom": "Bagno",
       "custom": "Configuratore",
       "other": "Altro"
     }
