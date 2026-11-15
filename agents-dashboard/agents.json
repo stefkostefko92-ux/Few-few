@@ -16779,7 +16779,7 @@
           "Gaming/apps/realtime/src/room.ts — handleAction, часовник и ботове",
           "Gaming/docs/microtransactions.md — §1 „Not gambling“"
         ],
-        "lessons": 166
+        "lessons": 187
       },
       "evolution": [
         {
@@ -16841,9 +16841,20 @@
           "date": "2026-11-15",
           "event": "v16.6 — учене",
           "detail": "Научи: Морски шах: противникът вижда в GAME_STATE само потопените кораби; при частично попаден… (+26 още)"
+        },
+        {
+          "version": "18.7.0",
+          "date": "2026-11-15",
+          "event": "v18.7 — учене",
+          "detail": "Научи: socketRateOk е плъзгащ прозорец на сокет и кофа; при 45 бързи действия в кофа \"action\" … (+20 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „socketRateOk е плъзгащ прозорец на сокет и кофа; при 45 бързи действия в кофа \"action\" …\" (+20 още) · 6 в карантина"
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
