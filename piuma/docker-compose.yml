@@ -9,7 +9,8 @@
 # Задължителни: POSTGRES_PASSWORD · TOKEN_ENC_KEY · IG_APP_ID · IG_APP_SECRET ·
 # IG_REDIRECT_URI · PUBLIC_BASE_URL. По избор: ANTHROPIC_API_KEY (без него автопилотът
 # не пише чернови), HTTP_PORT (по подразбиране 4310), IG_WEBHOOK_VERIFY_TOKEN +
-# REPLY_PRIVACY_URL („Отговор по ключова дума“ — DEPLOY.md §6а). Празно = липсва.
+# REPLY_PRIVACY_URL („Отговор по ключова дума“ — DEPLOY.md §6а), AUDIT_V1_MAX_ID
+# (последният v1 номер на одита — DEPLOY.md §8а). Празно = липсва.
 name: piuma
 
 x-logging: &logging
@@ -54,11 +55,24 @@ x-app-env: &app-env
   # Опасност няма: портът е вързан за 127.0.0.1, значи единственият, който може да стигне
   # дотук, е nginx-ът на хоста.
   TRUST_PROXY: ${TRUST_PROXY:-uniquelocal}
+  # Котвата на одит-веригата — главата извън базата (DEPLOY.md §8а). Задължителна в продукция:
+  # app и worker пишат в ЕДИН И СЪЩ том `audit-anchor`. AUDIT_V1_MAX_ID — по избор, от човека.
+  AUDIT_ANCHOR_DIR: /var/lib/piuma/audit
+  AUDIT_V1_MAX_ID: ${AUDIT_V1_MAX_ID:-}
 
 services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
+    # Втвърдяване (образец: korpora/docker-compose.yml): entrypoint-ът на образа сменя собственика на
+    # данните и минава на потребителя postgres — само тези capability; файловата система е само за четене.
+    read_only: true
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    tmpfs:
+      - /var/run/postgresql:size=4m
+      - /tmp:size=64m
     environment:
       POSTGRES_USER: piuma
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?липсва POSTGRES_PASSWORD}
@@ -75,6 +89,11 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    # Entrypoint-ът на образа като root дава /data на потребителя redis (chown) и минава на него (su-exec).
+    # Без read_only: не е проверено с образа.
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, SETGID, SETUID]
     # Nonce складът за агента е fail-closed: рестарт без persistence отваря наново
     # прозореца за повторение, а опашката губи чакащи публикации.
     command: ['redis-server', '--appendonly', 'yes']
@@ -90,12 +109,17 @@ services:
   app:
     build: .
     restart: unless-stopped
+    # Върви като node (Dockerfile: USER) — capability не му трябва.
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
     environment:
       <<: *app-env
       PORT: '4310'
     ports:
       # Само на loopback — навън се стига единствено през nginx-а на хоста.
       - '127.0.0.1:${HTTP_PORT:-4310}:4310'
+    volumes:
+      - audit-anchor:/var/lib/piuma/audit
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -104,9 +128,13 @@ services:
   worker:
     build: .
     restart: unless-stopped
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
     environment: *app-env
     # Публикуване · подновяване на токени · чистене на сесии · Insights 04:30 · автопилот.
     command: ['npm', 'run', 'worker']
+    volumes:
+      - audit-anchor:/var/lib/piuma/audit
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -116,3 +144,4 @@ services:
 volumes:
   db-data:
   redis-data:
+  audit-anchor:

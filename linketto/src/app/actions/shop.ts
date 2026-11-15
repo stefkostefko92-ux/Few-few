@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
 import { getStripe, stripeTaxEnabled } from '@/lib/stripe';
+import { shopOneOffTaxParams } from '@/lib/shop-checkout-tax';
 import { isLocale } from '@/i18n/locales';
 import {
   membershipFeePercent,
@@ -190,6 +191,7 @@ export async function startProductPurchaseAction(
     // Преводът на неговия дял (нето − комисиона) се създава от webhook-а,
     // когато Stripe Tax вече е сметнал ДДС по държавата на купувача.
     // Цената е КРАЙНА (tax-inclusive) — купувачът плаща точно показаното.
+    const tax = shopOneOffTaxParams(product.type, stripeTaxEnabled());
     const createOneOff = (reservationId: string | null) =>
       stripe.checkout.sessions.create({
         mode: 'payment',
@@ -199,12 +201,12 @@ export async function startProductPurchaseAction(
             price_data: {
               currency: 'eur',
               unit_amount: unitAmount,
-              ...(stripeTaxEnabled() ? { tax_behavior: 'inclusive' } : {}),
-              product_data: productName,
+              ...tax.price,
+              product_data: { ...productName, ...tax.product },
             },
           },
         ],
-        ...(stripeTaxEnabled() ? { automatic_tax: { enabled: true } } : {}),
+        ...tax.session,
         // planId е снапшот за webhook-а — комисионата се смята върху нетото
         // там, по плана на продавача към момента на продажбата.
         metadata: {

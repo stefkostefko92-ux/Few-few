@@ -77,6 +77,13 @@ grep -qE '^[^/]+/deploy/autodeploy\.sh$' "$WORK/listing.txt" \
   || die "Архивът не прилича на това репо (липсва deploy/autodeploy.sh)."
 ok "Свален: $ARCHIVE_PATH ($(du -h "$ARCHIVE_PATH" | cut -f1))"
 
+# autodeploy.sh спира без <архив>.sha256 (fail-closed). GitHub не публикува хеш на
+# codeload архивите, затова го пишем веднага след свалянето по TLS: пази файла от
+# повреда/подмяна между свалянето и разопаковането, не доказва произхода сам по себе
+# си — произходът е TLS към codeload + проверката по-горе, че е нашето репо.
+( cd "$ARCHIVE_DIR" && sha256sum "${ARCHIVE_PATH##*/}" > "${ARCHIVE_PATH##*/}.sha256" )
+chmod 600 "$ARCHIVE_PATH.sha256"
+
 # Вадим САМО deploy/ — autodeploy.sh не зависи от собственото си местоположение и
 # сам разопакова пълния архив в нов release. Няма смисъл 250 MB да се разпакова два пъти.
 tar -xzf "$ARCHIVE_PATH" -C "$WORK" --strip-components=1 --wildcards '*/deploy/*'
@@ -85,8 +92,10 @@ tar -xzf "$ARCHIVE_PATH" -C "$WORK" --strip-components=1 --wildcards '*/deploy/*
 # Пази последните KEEP_ARCHIVES свалени архива (ръчно качените не се пипат — друго име).
 # `find … -printf` вместо `ls -t | tail`: под `pipefail` празен `ls` (код 2) би убил
 # скрипта; find с нула съвпадения връща 0.
+# Заедно с архива отива и неговият .sha256.
 find "$ARCHIVE_DIR" -maxdepth 1 -name 'few-few-*-*.tar.gz' -printf '%T@ %p\n' \
-  | sort -rn | tail -n "+$((KEEP_ARCHIVES + 1))" | cut -d' ' -f2- | xargs -r rm -f
+  | sort -rn | tail -n "+$((KEEP_ARCHIVES + 1))" | cut -d' ' -f2- \
+  | while IFS= read -r old; do rm -f -- "$old" "$old.sha256"; done
 
 log "Предавам на autodeploy.sh…"
 # ARCHIVE е изрично: иначе autodeploy избира „най-новия архив в /root", тоест ръчно

@@ -213,6 +213,16 @@
   .grid--testa > [data-campo='numeroImpianto'] {
     grid-column: 3 / 5;
   }
+
+  /* Табелата в кабината (D.P.R. 162/1999, чл. 16, ал. 3): проверяващият и монтажникът — по половин ред,
+     после фабричният номер, годината и CE. */
+  .grid--testa > [data-campo='soggettoVerifiche'] {
+    grid-column: 1 / 3;
+  }
+
+  .grid--testa > [data-campo='installatore'] {
+    grid-column: 3 / 5;
+  }
 }
 
 /* Въпрос „Sì/No“ с полето за вида до него — всеки на свой ред (собственикът, октомври 2026):

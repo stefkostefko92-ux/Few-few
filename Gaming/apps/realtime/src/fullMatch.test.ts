@@ -165,16 +165,15 @@ describe("GameRoom — предаване в отборна игра", () => {
     expect(res).toEqual({ 0: "loss", 2: "loss", 1: "win", 3: "win" });
   });
 
-  it("игра без отбори (Човече): само предалият губи", async () => {
+  it("игра без отбори (Човече): предалият е заместен от бот, масата продължава (никой не печели по пропуск)", async () => {
     vi.useFakeTimers();
     const log: Emit[] = [];
     const room = new GameRoom(fakeIo(log), "lf", "LUDO", Array.from({ length: 4 }, (_, seat) => ({ seat, userId: `u${seat}`, isBot: false, displayName: `P${seat}` })), "seed");
     room.start();
     room.resign("u2");
     await vi.advanceTimersByTimeAsync(50);
-    const over = log.find((e) => e.event === SOCKET_EVENTS.GAME_OVER)!.payload as {
-      score: Array<{ seat: number; result: string }>;
-    };
-    expect(over.score.filter((s) => s.result === "loss").map((s) => s.seat)).toEqual([2]);
+    expect(room.isDone).toBe(false);
+    expect(room.snapshot().seats[2]!.substituted).toBe(true);
+    expect(log.some((e) => e.event === SOCKET_EVENTS.GAME_OVER)).toBe(false);
   });
 });

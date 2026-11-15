@@ -12,7 +12,7 @@
 %><div class="field field--<%= key %><%= typeof wide !== 'undefined' && wide ? ' field--wide' : '' %>">
   <label class="field__label" for="<%= id %>"><%= label %></label>
   <% if (kind === 'textarea') { %><textarea class="textarea" id="<%= id %>" name="<%= key %>" rows="5" maxlength="<%= maxLength %>" required<%- aria %>><%= text %></textarea>
-  <% } else if (kind === 'date') { %><input class="input" id="<%= id %>" name="<%= key %>" type="date" required min="1950-01-01" max="2099-12-31" value="<%= text %>"<%- aria %>>
+  <% } else if (kind === 'date') { %><input class="input" id="<%= id %>" name="<%= key %>" type="date"<%= typeof facoltativo !== 'undefined' && facoltativo ? '' : ' required' %> min="1950-01-01" max="2099-12-31" value="<%= text %>"<%- aria %>>
   <% } else { %><input class="input" id="<%= id %>" name="<%= key %>" type="text" maxlength="<%= maxLength %>" autocomplete="<%= typeof autocomplete !== 'undefined' ? autocomplete : 'off' %>" value="<%= text %>"<%- aria %>>
   <% } %>
   <% if (typeof hint !== 'undefined' && hint) { %><p class="field__hint" id="<%= hintId %>"><%= hint %></p><% } %>

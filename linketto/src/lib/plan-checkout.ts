@@ -73,6 +73,26 @@ export interface PlanCheckoutUser {
   planPaymentIntentId: string | null;
 }
 
+/** Минималният изглед на Stripe TaxId (реалният го покрива структурно). */
+export interface CustomerTaxIdView {
+  id: string;
+  type: string;
+  verification: { status: string } | null;
+}
+
+/**
+ * ДДС номерата, които НЕ бива да стоят върху customer-а при изчисляване на
+ * данъка: Stripe Tax прилага обратно начисляване по ФОРМАТА на номера,
+ * „regardless of the government verification result“
+ * (docs.stripe.com/billing/customer/tax-ids). Обратно начисляване само при
+ * VIES статус `verified`; pending/unverified/unavailable/null → с ДДС.
+ */
+export function unverifiedVatTaxIds(taxIds: readonly CustomerTaxIdView[]): string[] {
+  return taxIds
+    .filter((t) => t.type === 'eu_vat' && t.verification?.status !== 'verified')
+    .map((t) => t.id);
+}
+
 export interface PlanCheckoutPorts {
   createCustomer(input: { userId: string; email: string }, idempotencyKey: string): Promise<string>;
   /** Записва customer само ако полето още е null; връща записания (победителя). */
@@ -85,6 +105,8 @@ export interface PlanCheckoutPorts {
   isPaymentReversed(paymentIntentId: string): Promise<boolean>;
   listOpenPlanSessionIds(customerId: string): Promise<string[]>;
   expireSession(sessionId: string): Promise<void>;
+  listCustomerTaxIds(customerId: string): Promise<CustomerTaxIdView[]>;
+  deleteCustomerTaxId(customerId: string, taxId: string): Promise<void>;
 }
 
 export async function ensureStripeCustomer(
@@ -134,6 +156,12 @@ export async function preparePlanCheckout(
       if (!FOUNDER_PENDING_DEAD_PI_STATUSES.has(status)) return { ok: false, error: 'plan' };
     }
   }
+  // ДДС: непроверен номер върху customer-а = обратно начисляване по формат
+  // в новата сесия → махаме го (клиентът плаща с ДДС). Само когато сесия
+  // наистина ще има; провал → грешка (fail-closed, без сесия).
+  for (const taxId of unverifiedVatTaxIds(await ports.listCustomerTaxIds(customerId))) {
+    await ports.deleteCustomerTaxId(customerId, taxId);
+  }
   return { ok: true, customerId };
 }
 
@@ -157,14 +185,17 @@ export function planCheckoutSessionParams(
     line_items: [{ price: input.priceId, quantity: 1 }],
     customer: input.customerId,
     // ДДС (TAX.md): плановете са наша електронна услуга. Stripe Tax смята
-    // ДДС по държавата на клиента (OSS); tax_id_collection взима и валидира
-    // (VIES) ДДС номер → B2B reverse charge автоматично. Env Price ID-тата
-    // трябва да са tax-inclusive (DEPLOY.md §2а). С подаден customer
-    // customer_update пише събрания адрес/име върху него (docs.stripe.com/tax/checkout/page).
+    // ДДС по държавата на клиента (OSS). БЕЗ tax_id_collection: Stripe Tax
+    // прилага обратно начисляване по ФОРМАТА на номера, преди/независимо от
+    // VIES (docs.stripe.com/billing/customer/tax-ids) → въведен в Checkout
+    // номер би дал 0% ДДС без проверка. Обратно начисляване има само при
+    // VIES-проверен номер, вече записан върху customer-а (непроверените се
+    // махат в preparePlanCheckout). Env Price ID-тата трябва да са
+    // tax-inclusive (DEPLOY.md §2а). С подаден customer customer_update пише
+    // събрания адрес/име върху него (docs.stripe.com/tax/checkout/page).
     ...(input.taxEnabled
       ? {
           automatic_tax: { enabled: true },
-          tax_id_collection: { enabled: true },
           billing_address_collection: 'required' as const,
           customer_update: { address: 'auto' as const, name: 'auto' as const },
         }
