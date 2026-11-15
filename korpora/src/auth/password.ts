@@ -1,4 +1,5 @@
 import * as argon2 from 'argon2';
+import { COMMON_PASSWORDS } from './common-passwords.js';
 
 /**
  * Argon2id по втората препоръка на RFC 9106: m = 64 MiB, t = 3. При вход старият хеш се
@@ -14,8 +15,12 @@ const OPTIONS = {
 export const PASSWORD_MIN_LENGTH = 12;
 export const PASSWORD_MAX_LENGTH = 256;
 
-/** Пароли, които всеки речник пробва първи. Изтеклите бази се проверяват отделно (breached.ts). */
-const COMMON = [
+/**
+ * Пароли, които всеки речник пробва първи: наш кратък списък (марката, български думи) + корпусът
+ * на SecLists (`common-passwords.ts`, ~7700 думи ≥ 6 знака). До 2026-11-15 бяха само 16 думи, а при
+ * недостъпен HIBP (breached.ts връща null) пазеше само този списък — ASVS 5.0 v6.2.4 иска поне 3000.
+ */
+const OWN = [
   'password',
   'parola',
   'qwerty',
@@ -33,6 +38,7 @@ const COMMON = [
   '1q2w3e4r',
   'abc123',
 ];
+const COMMON = [...new Set([...OWN, ...COMMON_PASSWORDS])];
 
 export type PasswordProblem = 'tooShort' | 'tooLong' | 'common' | 'personal' | 'repetitive';
 
@@ -49,11 +55,8 @@ export function passwordProblem(
   const lower = password.toLowerCase();
   if (new Set(password).size < 4) return 'repetitive';
   const squashed = lower.replace(/[^a-zа-я0-9]/g, '');
-  // Обща дума, която е половината от паролата или повече („password2026“, „qwerty123456“).
-  if (COMMON.some((word) => squashed.includes(word) && word.length * 2 >= squashed.length)) {
-    return 'common';
-  }
   // Части от имейла или името (поне 4 знака) — първото, което пробва човек, който те познава.
+  // Проверява се преди общия списък: причината е по-конкретна за човека (списъкът вече има ~7700 думи).
   for (const item of personal) {
     const words =
       (item ?? '')
@@ -61,6 +64,10 @@ export function passwordProblem(
         .split('@')[0]
         ?.split(/[^a-zа-я0-9]+/) ?? [];
     if (words.some((word) => word.length >= 4 && squashed.includes(word))) return 'personal';
+  }
+  // Обща дума, която е половината от паролата или повече („password2026“, „qwerty123456“).
+  if (COMMON.some((word) => squashed.includes(word) && word.length * 2 >= squashed.length)) {
+    return 'common';
   }
   return null;
 }
