@@ -3,7 +3,8 @@
 // real installation reads them from the machine's tool library), the G-code posts in gcode.js.
 import { cutSize, THROUGH_EXTRA } from './panel.js';
 import { STOCK } from './materials.js';
-import { r1, dimTxt } from './util.js';
+import { r1, asciiName, dimTxt } from './util.js';
+import { translator } from './i18n.js';
 import { DRILLS, drillFor, GROOVE_MILL } from './tooling.js';
 
 export { GROOVE_MILL, CUT_LENGTH, contourTool } from './tooling.js';
@@ -49,11 +50,11 @@ function sheetFaults(model, sheet) {
     const part = byId.get(pl.partId);
     const map = placer(part, pl, model.spec.bandCompensation);
     for (const f of part.features) {
-      if (f.type === 'groove' && Math.abs(f.w - GROOVE_MILL.d) > 0.01) out.push(`${part.name}: канал ${dimTxt(f.w)} mm, а фрезата за канали е Ø${dimTxt(GROOVE_MILL.d)} — каналът би излязъл с друга ширина.`);
+      if (f.type === 'groove' && Math.abs(f.w - GROOVE_MILL.d) > 0.01) out.push(translator(model.lang)('w.grooveTool', { part: part.name, w: translator(model.lang).num(f.w), d: translator(model.lang).num(GROOVE_MILL.d) }));
       if (f.type !== 'hole') continue;
       const [X, Y] = map(f.u, f.v);
       const r = f.d / 2 - 0.05;
-      if (X - r < pl.x || X + r > pl.x + pl.w || Y - r < pl.y || Y + r > pl.y + pl.h) out.push(`${part.name}: отвор Ø${dimTxt(f.d)} би излязъл извън детайла на лист ${sheet.index}.`);
+      if (X - r < pl.x || X + r > pl.x + pl.w || Y - r < pl.y || Y + r > pl.y + pl.h) out.push(translator(model.lang)('w.strayHole', { part: part.name, d: translator(model.lang).num(f.d), sheet: sheet.index }));
     }
   }
   return out;

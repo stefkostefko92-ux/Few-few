@@ -6,7 +6,7 @@
 // confirmats, or glued dowels where the head of a confirmat would end under the fixed shelf on the other face of a
 // partition. Every part made here knows its place (carcass, column, cell), so the editor can select it.
 import { panel } from './panel.js';
-import { r1, dimTxt } from './util.js';
+import { r1 } from './util.js';
 import { CONFIRMAT, DOWEL, MIN_WEB, confirmat, confirmatZs, dowels, taken } from './joinery.js';
 import { buildDrawers } from './drawers.js';
 import { buildDoors } from './fronts.js';
@@ -27,13 +27,13 @@ function placed(ctx, place, fn) {
 // Pass 1: the fixed shelves, the drawers and the doors of one column.
 export function cellFronts(ctx, o, a) {
   const { i, n, col, c, Hc, yInnerTop, zEnd, backFront, T, nm, key, bc, carc, gap, hingeSides } = a;
-  const where = nm(n > 1 ? `Колона ${i + 1}` : 'Шкаф');
+  const where = nm(n > 1 ? ctx.t('part.column', { n: i + 1 }) : ctx.t('part.cabinet'));
   const inner0 = c + T;
   // the cells that fit at their minimum height, bottom up; the others (and the fronts over them) are not built — an error
   const room = (k) => yInnerTop - inner0 - (k - 1) * T;
   const fit = fitCount(col.cells.length, room, LAYOUT_LIMITS.minCell);
   if (fit < col.cells.length) {
-    ctx.warn('error', `${where}: ${dimTxt(r1(room(1)))} mm не стигат за ${col.cells.length} отделения по поне ${LAYOUT_LIMITS.minCell} mm с неподвижните рафтове между тях — построени са долните ${fit}. Махнете отделения или увеличете височината.`);
+    ctx.warn('error', ctx.t('w.cellsNoFit', { where, h: ctx.t.num(r1(room(1))), n: col.cells.length, min: LAYOUT_LIMITS.minCell, fit }));
     col.cells = col.cells.slice(0, fit);
     col.fronts = col.fronts.filter((f) => f.to < fit);
   }
@@ -41,7 +41,7 @@ export function cellFronts(ctx, o, a) {
   const last = cells.length - 1;
   const avail = room(cells.length);
   const res = resolveSizes(cells.map((x) => x.h), avail, LAYOUT_LIMITS.minCell);
-  if (res.over) ctx.warn('warn', `${where}: зададените височини на отделенията (${dimTxt(r1(cells.reduce((s, x) => s + (x.h ?? LAYOUT_LIMITS.minCell), 0)))} mm) не се побират в ${dimTxt(r1(avail))} mm — разпределени са пропорционално.`);
+  if (res.over) ctx.warn('warn', ctx.t('w.cellsOver', { where, sum: ctx.t.num(r1(cells.reduce((s, x) => s + (x.h ?? LAYOUT_LIMITS.minCell), 0))), h: ctx.t.num(r1(avail)) }));
   const placeOf = (k) => ({ carcass: col.carcassIndex ?? 0, column: col.layoutIndex ?? i, cell: k });
   // the clear inside of every cell, and a fixed shelf over each but the last
   col.bounds = [];
@@ -53,7 +53,7 @@ export function cellFronts(ctx, o, a) {
     ctx.cells.push({ ...placeOf(k), x0: col.xa, x1: col.xb, y0: y, y1: hi, fill: cell.fill, n: cell.n, auto: cell.h === null });
     if (k < last) {
       const part = placed(ctx, placeOf(k), () => panel(ctx, {
-        ...carc, key: key(`c${i + 1}div${k + 1}`), name: nm(n > 1 ? `Неподвижен рафт ${i + 1}.${k + 1}` : `Неподвижен рафт ${k + 1}`),
+        ...carc, key: key(`c${i + 1}div${k + 1}`), name: nm(n > 1 ? ctx.t('part.dividerIn', { col: i + 1, k: k + 1 }) : ctx.t('part.divider', { k: k + 1 })),
         role: 'divider', box: { min: [col.xa, hi, backFront], max: [col.xb, hi + T, zEnd] }, n: '+y', L: 'x', bands: { '+z': bc }, explode: [0, 0, 0.6],
       }));
       col.dividers.push(part);
@@ -71,7 +71,7 @@ export function cellFronts(ctx, o, a) {
   col.hingeYs = [];
   col.fronts.forEach((f, si) => {
     const span = f.to > f.from ? `${f.from + 1}–${f.to + 1}` : `${f.from + 1}`;
-    const name = (s) => nm(col.fronts.length > 1 ? `${s} (отд. ${span})` : s);
+    const name = (s) => nm(col.fronts.length > 1 ? ctx.t('part.inCells', { name: s, span }) : s);
     const door = { ...col, doors: f.kind === 'doors2' ? 2 : 1, hingeSide: f.hinge ?? undefined };
     const ys = placed(ctx, placeOf(f.from), () => buildDoors(ctx, o, {
       ...a, col: door, dy0: lower(f.from) + gap / 2, dy1: upper(f.to) - gap / 2, hingeSides, avoidYs: middles,
@@ -88,7 +88,7 @@ export function cellInteriors(ctx, a) {
   col.cells.forEach((cell, k) => {
     const { lo, hi } = col.bounds[k];
     if (cell.fill === 'shelves') {
-      const label = (s) => (n > 1 ? `Рафт ${i + 1}.${k + 1}.${s}` : `Рафт ${k + 1}.${s}`);
+      const label = (s) => (n > 1 ? ctx.t('part.shelfInCellIn', { col: i + 1, cell: k + 1, k: s }) : ctx.t('part.shelfInCell', { cell: k + 1, k: s }));
       placed(ctx, placeOf(k), () => shelvesInZone(ctx, {
         col, i, n, shelves: cell.n, c, yInnerTop, zoneBottom: lo, zoneTop: hi, holeTop: k === col.cells.length - 1 ? hi : hi - SHELF_HOLE_MARGIN,
         rows, T, backFront, zEnd, bc, carc, key, nm, tag: `k${k + 1}`, label, hingeYs: col.hingeYs,
@@ -124,14 +124,14 @@ export function joinCellShelves(ctx, a) {
         .map((o) => ({ dy: Math.abs(o.box.min[1] + T / 2 - y), screwed: face.features.some((f) => f.kind === 'confirmat' && f.world[0] === across && Math.abs(f.world[1] - (o.box.min[1] + T / 2)) < 0.01) }));
       const doweled = near.some((o) => o.screwed);
       if (doweled && near.some((o) => o.screwed && o.dy > DOWEL_HIDDEN)) {
-        ctx.warn('error', `${d.name}: неподвижният рафт от другата страна на ${face.name} е на ${dimTxt(r1(Math.max(...near.map((o) => o.dy))))} mm по височина — главите на конфирматите биха останали под него, а отворите за шкантове не се скриват зад него. Изравнете двата рафта или ги раздалечете на поне ${dimTxt(r1(SCREW_CLEAR))} mm.`);
+        ctx.warn('error', ctx.t('w.dividerNear', { divider: d.name, face: face.name, dy: ctx.t.num(r1(Math.max(...near.map((o) => o.dy)))), min: ctx.t.num(r1(SCREW_CLEAR)) }));
         continue;
       }
       const hole = doweled ? DOWEL.d : CONFIRMAT.face;
       const free = (z) => !taken(face, [x, y, z], hole);
       const zs = confirmatZs(zStart, zEnd - 50, free);
       if (!zs.every(free)) {
-        ctx.warn('error', `${d.name}: ${doweled ? 'шкантовете' : 'конфирматите'} към ${face.name} нямат място покрай отворите в нея на тази височина — преместете рафта с няколко сантиметра.`);
+        ctx.warn('error', ctx.t(doweled ? 'w.dowelsNoRoom' : 'w.confirmatsNoRoom', { divider: d.name, face: face.name }));
         continue;
       }
       const points = zs.map((z) => [x, y, z]);

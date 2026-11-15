@@ -12,6 +12,7 @@ import { addSlides } from './viewer-slides.js';
 import { frameCamera, explodeCamera, bindCameraKeys } from './viewer-camera.js';
 import { pixelRatio } from './viewer-device.js';
 import { reduceMotion } from './dom.js';
+import { tx } from './text.js';
 import {
   addHinges,
   addHingeArms,
@@ -34,10 +35,7 @@ export class Viewer {
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     host.appendChild(this.renderer.domElement);
     this.renderer.domElement.setAttribute('role', 'img');
-    this.renderer.domElement.setAttribute(
-      'aria-label',
-      '3D изглед на мебелта: влачене или стрелки — въртене, колелце или + и − — мащаб, 0 — цялата мебел',
-    );
+    this.renderer.domElement.setAttribute('aria-label', tx('viewer.label'));
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(32, 1, 0.01, 60);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);

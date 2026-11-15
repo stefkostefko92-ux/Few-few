@@ -1,6 +1,7 @@
 // Drawing kit: A3 landscape sheet (mm), frame and title block, first-angle projection symbol, linear and ordinate
 // dimensions, scale choice and the self-contained SVG wrapper (styles inside, prefixed so they never touch the page).
 import { esc, dimTxt } from './util.js';
+import { translator } from './i18n.js';
 
 // ISO 5455: the recommended scales only (1:25 and 1:4 are not in the series)
 export const SCALES = [1, 2, 5, 10, 20, 50, 100];
@@ -123,9 +124,9 @@ export function twoLines(text, n) {
 
 // The material cell: one line of the title-block size when it holds it (30 characters), else one or two smaller
 // lines (40 each) — a decor's full name, as „Egger H1145 Дъб Бардолино натур“, is what the workshop orders by.
-function materialCell(x, y, material) {
+function materialCell(x, y, material, t) {
   const s = String(material ?? '');
-  const label = `<text class="d-tl" x="${x + 2}" y="${y + 3.6}">Материал</text>`;
+  const label = `<text class="d-tl" x="${x + 2}" y="${y + 3.6}">${t('drw.material')}</text>`;
   if (s.length <= 30) return `${label}<text class="d-tv" x="${x + 2}" y="${y + 9.2}">${esc(s)}</text>`;
   const lines = twoLines(s, 40);
   const top = lines.length === 1 ? 9.2 : 7.4;
@@ -134,7 +135,8 @@ function materialCell(x, y, material) {
 
 // Frame (20 mm binding margin left, 10 mm elsewhere) and a 180 × 36 title block at the bottom right. sheetNo null:
 // a part without a sheet of its own (its drilling map only) — the drawing number has no sheet and the sheet is „—“.
-export function frame(title, meta, scale, sheetNo, sheetCount, material) {
+// t: the model's language (i18n.js)
+export function frame(title, meta, scale, sheetNo, sheetCount, material, t = translator('bg')) {
   const x = 230;
   const y = 251;
   const drawingNo = meta.hash.slice(0, 8).toUpperCase() + (sheetNo == null ? '' : `-${sheetNo}`);
@@ -143,11 +145,11 @@ export function frame(title, meta, scale, sheetNo, sheetCount, material) {
 <g class="d-tb"><rect x="${x}" y="${y}" width="180" height="36"/>
 <line x1="${x}" y1="${y + 12}" x2="${x + 180}" y2="${y + 12}"/><line x1="${x}" y1="${y + 24}" x2="${x + 180}" y2="${y + 24}"/>
 <line x1="${x + 60}" y1="${y + 12}" x2="${x + 60}" y2="${y + 36}"/><line x1="${x + 110}" y1="${y + 12}" x2="${x + 110}" y2="${y + 36}"/><line x1="${x + 145}" y1="${y + 12}" x2="${x + 145}" y2="${y + 36}"/>
-${cell(x, y, 'Наименование', fit(title, 58), 'd-tv d-big')}
-${cell(x, y + 12, 'Собственик', fit(meta.owner, 30))}${cell(x + 60, y + 12, 'Чертеж №', drawingNo)}
-${cell(x + 110, y + 12, 'Мащаб', `1:${scale}`)}${cell(x + 145, y + 12, 'Лист', sheetNo == null ? '—' : `${sheetNo}/${sheetCount}`)}
-${materialCell(x, y + 24, material)}${cell(x + 60, y + 24, 'Дата', meta.date)}
-${cell(x + 110, y + 24, 'Размери', 'mm')}<text class="d-tl" x="${x + 147}" y="${y + 27.6}">Проекция</text>${projectionSymbol(x + 158, y + 31.2)}</g>`;
+${cell(x, y, t('drw.title'), fit(title, 58), 'd-tv d-big')}
+${cell(x, y + 12, t('drw.owner'), fit(meta.owner, 30))}${cell(x + 60, y + 12, t('drw.number'), drawingNo)}
+${cell(x + 110, y + 12, t('drw.scale'), `1:${scale}`)}${cell(x + 145, y + 12, t('drw.sheet'), sheetNo == null ? '—' : `${sheetNo}/${sheetCount}`)}
+${materialCell(x, y + 24, material, t)}${cell(x + 60, y + 24, t('drw.date'), meta.date)}
+${cell(x + 110, y + 24, t('drw.units'), 'mm')}<text class="d-tl" x="${x + 147}" y="${y + 27.6}">${t('drw.projection')}</text>${projectionSymbol(x + 158, y + 31.2)}</g>`;
 }
 
 let seq = 0;
@@ -167,5 +169,5 @@ export const fmt = dimTxt;
 export function errorAlert(model, x, y) {
   const n = model.warnings.filter((w) => w.level === 'error').length;
   if (!n) return '';
-  return `<text class="d-alert" x="${x}" y="${y}">ВНИМАНИЕ: ${n === 1 ? '1 грешка' : `${n} грешки`} в проверките на конструкцията — не е за производство; файловете за CNC не се издават.</text>`;
+  return `<text class="d-alert" x="${x}" y="${y}">${esc(translator(model.lang).count(n, 'drw.alert'))}</text>`;
 }

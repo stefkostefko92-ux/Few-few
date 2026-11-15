@@ -3,6 +3,7 @@
 import { cutSize } from './panel.js';
 import { STOCK } from './materials.js';
 import { SHEET_TRIM } from './model.js';
+import { translator } from './i18n.js';
 
 const intersects = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 const contains = (a, b) => b.x >= a.x && b.y >= a.y && b.x + b.w <= a.x + a.w && b.y + b.h <= a.y + a.h;
@@ -32,7 +33,7 @@ export function nest(model) {
       if (!sh) {
         sh = { stock: stockId, decor, w: SW, h: SH, free: [{ x: 0, y: 0, w: binW, h: binH }], placements: [] };
         if (!findPosition(sh.free, w, h, it.canRotate)) {
-          errors.push(`${it.part.name} (${it.w} × ${it.h}) не се побира в лист ${SW} × ${SH}.`);
+          errors.push(translator(model.lang)('w.nestNoFit', { part: it.part.name, w: it.w, h: it.h, SW, SH }));
           continue;
         }
         local.push(sh);

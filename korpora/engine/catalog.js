@@ -4,6 +4,7 @@
 // built-in decors, one family per documented hinge and slide system without a shop product, and handles by
 // standard hole spacing. Drilling always comes from the manufacturers' documents (./data/*).
 import { HINGE_SYSTEMS } from './data/hinge-systems.js';
+import { translator, ENGINE_LANGS } from './i18n.js';
 import { SLIDE_SYSTEMS } from './data/slide-systems.js';
 import { registerDecors, registerRal, hasDecor } from './materials.js';
 import { registerHingeSystems, registerHinges, registerHandles, registerSlideSystems, registerSlides, registerBedFittings } from './hardware.js';
@@ -17,6 +18,17 @@ const rank = (id) => (FAMILY_ORDER.includes(id) ? FAMILY_ORDER.indexOf(id) : FAM
 const BASE_SLIDE_SYSTEMS = ['gtv_h45', 'blum_tandem_560h'];
 const BASE_SPACINGS = [96, 128, 160, 192, 224, 256, 320];
 
+// The name of a base item in every language (name, name_en, name_it): a standard size or system, „any article“.
+function anyArticle(key, p = {}) {
+  const out = {};
+  for (const lang of ENGINE_LANGS) {
+    const t = translator(lang);
+    const name = p[lang === 'bg' ? 'name' : `name_${lang}`] ?? p.name;
+    out[lang === 'bg' ? 'name' : `name_${lang}`] = t(key, { ...p, name });
+  }
+  return out;
+}
+
 // The catalog without shop data: every value here is a standard size or a manufacturer system, not a product.
 export function baseCatalogData() {
   return {
@@ -24,13 +36,13 @@ export function baseCatalogData() {
     decors: [],
     ral: [],
     handles: [
-      ...BASE_SPACINGS.map((s) => ({ id: `base:bar-${s}`, name: `Лайсна ${s} mm (артикул по избор)`, type: 'bar', holes: 2, spacing: s, length: s + 24, width: 12, height: 32, drill: 5, drillable: true })),
-      { id: 'base:knob', name: 'Топка, един отвор (артикул по избор)', type: 'knob', holes: 1, width: 30, drill: 5, drillable: true },
+      ...BASE_SPACINGS.map((s) => ({ id: `base:bar-${s}`, ...anyArticle(`base.bar`, { s }), type: 'bar', holes: 2, spacing: s, length: s + 24, width: 12, height: 32, drill: 5, drillable: true })),
+      { id: 'base:knob', ...anyArticle('base.knob'), type: 'knob', holes: 1, width: 30, drill: 5, drillable: true },
     ],
     hinges: [],
-    hingeFamilies: HINGE_SYSTEMS.map((s) => ({ id: `base:${s.id}`, system: s.id, brand: s.brand, name: `${s.name} (артикул по избор)`, fixing: 'screw', softClose: true, variants: {} })),
+    hingeFamilies: HINGE_SYSTEMS.map((s) => ({ id: `base:${s.id}`, system: s.id, brand: s.brand, ...anyArticle('base.family', { name: s.name, name_en: s.name_en ?? s.name, name_it: s.name_it ?? s.name }), fixing: 'screw', softClose: true, variants: {} })),
     slides: [],
-    slideFamilies: SLIDE_SYSTEMS.filter((s) => BASE_SLIDE_SYSTEMS.includes(s.id)).map((s) => ({ id: `base:${s.id}`, system: s.id, brand: s.brand, name: `${s.name} (артикул по избор)`, products: {} })),
+    slideFamilies: SLIDE_SYSTEMS.filter((s) => BASE_SLIDE_SYSTEMS.includes(s.id)).map((s) => ({ id: `base:${s.id}`, system: s.id, brand: s.brand, ...anyArticle('base.family', { name: s.name, name_en: s.name_en ?? s.name, name_it: s.name_it ?? s.name }), products: {} })),
     bed: [],
   };
 }

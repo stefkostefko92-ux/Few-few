@@ -2,11 +2,12 @@
 // parts in painter's order with the fronts closed, shelves and partitions behind them as hidden lines, the opening of
 // the doors, the handles, the worktop and the mattress — and the module ranges the dimension chains follow.
 import { handleHoles } from './hardware.js';
+import { translator } from './i18n.js';
 
 export const FRONTS = new Set(['door', 'drawer-front', 'blind']);
 
-// X and Y: model mm to sheet mm; k: the scale (sheet mm per model mm).
-export function frontView(parts, symbols, X, Y, k) {
+// X and Y: model mm to sheet mm; k: the scale (sheet mm per model mm); t: the model's language.
+export function frontView(parts, symbols, X, Y, k, t = translator('bg')) {
   let g = '';
   for (const s of symbols.filter((sy) => sy.type === 'leg')) g += `<rect class="d-vis" x="${X(s.x - 15)}" y="${Y(s.y0 + s.h)}" width="${30 * k}" height="${s.h * k}"/>`;
   for (const p of [...parts].sort((a, b) => a.box.max[2] - b.box.max[2])) {
@@ -35,7 +36,7 @@ export function frontView(parts, symbols, X, Y, k) {
     g += s.horizontal ? `<line class="d-out" x1="${X(s.x - len / 2)}" y1="${Y(s.y)}" x2="${X(s.x + len / 2)}" y2="${Y(s.y)}"/>` : `<line class="d-out" x1="${X(s.x)}" y1="${Y(s.y - len / 2)}" x2="${X(s.x)}" y2="${Y(s.y + len / 2)}"/>`;
   }
   for (const s of symbols.filter((sy) => sy.type === 'worktop')) {
-    g += `<rect class="d-vis" x="${X(s.x0)}" y="${Y(s.y + s.t)}" width="${(s.x1 - s.x0) * k}" height="${s.t * k}"/><text class="d-small" x="${X(s.x1) - 2}" y="${Y(s.y + s.t) - 1}" text-anchor="end">плот (покупен)</text>`;
+    g += `<rect class="d-vis" x="${X(s.x0)}" y="${Y(s.y + s.t)}" width="${(s.x1 - s.x0) * k}" height="${s.t * k}"/><text class="d-small" x="${X(s.x1) - 2}" y="${Y(s.y + s.t) - 1}" text-anchor="end">${t('drw.worktop')}</text>`;
   }
   for (const s of symbols.filter((sy) => sy.type === 'mattress')) g += `<rect class="d-hid" x="${X(s.x0)}" y="${Y(s.y + s.h)}" width="${(s.x1 - s.x0) * k}" height="${s.h * k}" rx="1"/>`;
   return g;

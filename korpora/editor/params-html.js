@@ -3,6 +3,7 @@
 // compares the two), so the rail does not jump when the editor starts; this is used when the type changes. A field with
 // `when` (the modules of a kitchen's side wall) carries the choice it belongs to; writeForm (form.js) shows it then.
 import { esc } from '../engine/util.js';
+import { tx } from './text.js';
 
 const whenAttr = (p) =>
   p.when
@@ -18,7 +19,7 @@ export function paramsHtml(params) {
         const unit = p.unit ? `, ${p.unit}` : '';
         return `<div class="field"${whenAttr(p)}><label for="p-${p.key}">${esc(p.label)}${unit}</label>
 <input type="number" id="p-${p.key}" data-field="${p.key}" min="${p.min}" max="${p.max}" step="${p.step}" inputmode="numeric">
-<input type="range" data-field="${p.key}" min="${p.min}" max="${p.max}" step="${p.step}" aria-label="${esc(p.label)}, плъзгач"></div>`;
+<input type="range" data-field="${p.key}" min="${p.min}" max="${p.max}" step="${p.step}" aria-label="${esc(tx('slider', { label: p.label }))}"></div>`;
       }
       return `<span class="lbl" id="l-${p.key}">${esc(p.label)}</span><div class="seg" role="radiogroup" aria-labelledby="l-${p.key}">${p.options
         .map(

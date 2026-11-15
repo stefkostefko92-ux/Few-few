@@ -1,20 +1,21 @@
 // The notes of an assembly sheet, from what the model really has: materials, the joints in use, the named hardware,
 // and the warning line when the checks found errors; and the material line of the title block.
-import { fmt, errorAlert } from './drawing-kit.js';
-import { decorName, STOCK } from './materials.js';
+import { errorAlert } from './drawing-kit.js';
+import { decorName, stockName, STOCK } from './materials.js';
+import { translator } from './i18n.js';
 import { GROOVE, HDF_T } from './joinery.js';
 import { esc } from './util.js';
 import { cornerGap, cornerHandleRoom } from './kitchen.js';
 
-const HW_KIND = [['hinge:', 'панта'], ['slide:', 'водач'], ['handle:', 'дръжка']];
-const VARIANT_NOTE = { full: ', покрит кант', half: ', полупокрит кант', inset: ', открит кант' };
+const HW_KIND = [['hinge:', 'hinge'], ['slide:', 'slide'], ['handle:', 'handle']];
 
-export function materialLine(parts) {
+export function materialLine(parts, t = translator('bg')) {
   const main = parts.find((p) => p.role === 'side' || p.role === 'bed-rail') ?? parts[0];
-  return `${STOCK[main.stock].name} ${fmt(main.T)} · ${decorName(main.decor)}`;
+  return `${stockName(main.stock, t)} ${t.num(main.T)} · ${decorName(main.decor, t)}`;
 }
 
 export function notes(model) {
+  const t = translator(model.lang);
   const corner = Boolean(model.runs?.length);
   const { parts, spec, hardware } = model;
   const front = parts.find((p) => p.role === 'door' || p.role === 'drawer-front' || p.role === 'bed-head');
@@ -22,31 +23,31 @@ export function notes(model) {
   const has = (test) => parts.some(test);
   const kinds = new Set(parts.flatMap((p) => p.features.map((f) => f.kind)));
   const lines = [];
-  if (carcass) lines.push(`Корпус: ${STOCK[carcass.stock].name} ${fmt(carcass.T)} mm, ${decorName(carcass.decor)}; кант ${fmt(spec.bandCarcass)} mm.`);
-  if (front) lines.push(`Фронт: ${STOCK[front.stock].name} ${fmt(front.T)} mm, ${decorName(front.decor)}${STOCK[front.stock].painted ? ' (боядисан, без кант)' : `; кант ${fmt(spec.bandFront)} mm`}. Фуга ${fmt(spec.gap)} mm.`);
+  if (carcass) lines.push(t('note.carcass', { stock: stockName(carcass.stock, t), T: t.num(carcass.T), decor: decorName(carcass.decor, t), band: t.num(spec.bandCarcass) }));
+  if (front) lines.push(t(STOCK[front.stock].painted ? 'note.frontPainted' : 'note.front', { stock: stockName(front.stock, t), T: t.num(front.T), decor: decorName(front.decor, t), band: t.num(spec.bandFront), gap: t.num(spec.gap) }));
   const joints = [];
-  if (kinds.has('confirmat')) joints.push('конфирмат 7×50');
+  if (kinds.has('confirmat')) joints.push(t('note.j.confirmat'));
   // a fixed shelf doweled over the screw heads of the one on the other face of a partition (cells.js): the order matters
-  if (kinds.has('dowel')) joints.push('неподвижен рафт срещу друг от другата страна на делител — на шкантове 8×35 с лепило, след като другият е завит с конфирматите си');
-  if (has((p) => p.role === 'shelf')) joints.push('рафтоносачи по системата 32 mm');
-  if (has((p) => p.role === 'back')) joints.push(kinds.has('back-groove') ? `гръб HDF ${HDF_T} mm в канал ${GROOVE.width}×${GROOVE.depth} mm на ${GROOVE.inset} mm от гърба` : `гръб HDF ${HDF_T} mm, прикован отзад`);
-  if (has((p) => p.role === 'drawer-bottom')) joints.push(`дъна на чекмеджетата HDF ${HDF_T} mm в канал`);
-  if (has((p) => p.role === 'bed-ledger')) joints.push('летви с винтове 4×30, връзки за легло по шаблона на обкова');
-  if (kinds.has('stack-pilot')) joints.push('горният корпус — с винтове 4×30 към долния');
-  if (spec.type === 'desk') joints.push('плотът — с метални ъгълчета към страниците');
-  if (joints.length) lines.push(`Съединения: ${joints.join(', ')}.`);
+  if (kinds.has('dowel')) joints.push(t('note.j.dowel'));
+  if (has((p) => p.role === 'shelf')) joints.push(t('note.j.shelves'));
+  if (has((p) => p.role === 'back')) joints.push(kinds.has('back-groove') ? t('note.j.backGroove', { t: HDF_T, w: GROOVE.width, d: GROOVE.depth, inset: GROOVE.inset }) : t('note.j.backNailed', { t: HDF_T }));
+  if (has((p) => p.role === 'drawer-bottom')) joints.push(t('note.j.drawerBottoms', { t: HDF_T }));
+  if (has((p) => p.role === 'bed-ledger')) joints.push(t('note.j.ledgers'));
+  if (kinds.has('stack-pilot')) joints.push(t('note.j.stack'));
+  if (spec.type === 'desk') joints.push(t('note.j.desk'));
+  if (joints.length) lines.push(t('note.joints', { list: joints.join(', ') }));
   // a Г or П kitchen: what the corner needs on site
   if (corner)
-    lines.push(`Ъгъл: лайсна ${fmt(cornerGap(spec))} mm — дръжките до ${fmt(cornerHandleRoom(spec))} mm над фронта; слепият фронт — първо планките на гърба му по маркировките, после винтовете в дъното и траверсата; плотът — по парче на стена, задното минава през ъгъла, гнездата за болтовете се фрезоват отдолу по шаблон.`);
+    lines.push(t('note.corner', { gap: t.num(cornerGap(spec)), room: t.num(cornerHandleRoom(spec)) }));
   // hinges, slides and handles in short: the article where the shop gives one; everything is in hardware.csv
   const named = hardware
     .map((h) => ({ h, kind: HW_KIND.find(([prefix]) => h.key.startsWith(prefix))?.[1] }))
     .filter(({ kind }) => kind)
     .map(({ h, kind }) => {
-      const what = h.sku ? `${h.brand ?? ''} ${h.sku}` : kind === 'дръжка' ? h.name.replace(/\s*\([^()]*\)\s*$/, '') : `${kind} ${h.brand ?? ''}`;
-      return `${what}${VARIANT_NOTE[h.variant] ?? ''} × ${h.qty}`.replace(/\s+/g, ' ').trim();
+      const what = h.sku ? `${h.brand ?? ''} ${h.sku}` : kind === 'handle' ? h.name.replace(/\s*\([^()]*\)\s*$/, '') : `${t(`note.kind.${kind}`)} ${h.brand ?? ''}`;
+      return `${what}${h.variant ? `, ${t(`variant.${h.variant}`)}` : ''} × ${h.qty}`.replace(/\s+/g, ' ').trim();
     });
-  if (named.length) lines.push(`Обков: ${named.join('; ')} — пълният списък е в hardware.csv.`);
+  if (named.length) lines.push(t('note.hardware', { list: named.join('; ') }));
   const rows = lines.flatMap((t) => wrap(t));
   // a Г or П kitchen has one more line: the space under its plan and views allows it
   const max = corner ? 8 : 6;

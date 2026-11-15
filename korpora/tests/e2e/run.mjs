@@ -87,6 +87,15 @@ async function check(browser, storageState, path, locale, scheme, viewport) {
       violations.push(...(await sentEmpty(page, locale)));
       for (const v of await axe(page, null)) violations.push(`after an empty submit: ${v}`);
     }
+    // an English or Italian editor speaks its language: the title line, the checks and the type are the engine's
+    // words in the page's language (engine/i18n.js), not Bulgarian
+    if (editor && locale !== 'bg') {
+      const shown = await page
+        .locator('#title-spec, #dfm-chip, #dfm-list, #type-name')
+        .allTextContents();
+      const word = shown.join(' ').match(/[\u0400-\u04FF]+/);
+      if (word) violations.push(`Bulgarian in the ${locale} editor: ${word[0]}`);
+    }
     // the editor's picker (a listbox of hundreds of decors) is a dialog: checked open, on its own
     if (editor) {
       await page.click('#pick-carcass');

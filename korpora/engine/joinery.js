@@ -50,16 +50,16 @@ export function confirmatZs(z0, z1, clear = null) {
 // (cap: the head shows on a face that is not counted by its role, model.js).
 export function confirmat(ctx, face, end, edgeDir, points, meta = {}) {
   for (const p of points) holeThrough(face, p, CONFIRMAT.face, 'confirmat', { hw: 'confirmat', ...meta });
-  edgeHoles(end, edgeDir, points, CONFIRMAT.edge, CONFIRMAT.edgeDepth, 'confirmat', { label: 'конфирмат 7×50, за резбата' });
-  ctx.hw('confirmat', { name: 'Конфирмат 7×50', qty: points.length, unit: 'бр.', group: 'Крепежи' });
+  edgeHoles(end, edgeDir, points, CONFIRMAT.edge, CONFIRMAT.edgeDepth, 'confirmat', { label: ctx.t('lbl.confirmatEdge') });
+  ctx.hw('confirmat', { name: ctx.t('hw.confirmat'), qty: points.length, unit: ctx.t('u.pcs'), group: ctx.t('g.fasteners') });
 }
 
 // Glued dowels 8×35: Ø8 through the face of `face` (a partition: drilled through, as all its holes), Ø8 into the end
 // (`edgeDir`) of `end`.
 export function dowels(ctx, face, end, edgeDir, points) {
   for (const p of points) holeThrough(face, p, DOWEL.d, 'dowel', { hw: 'dowel' });
-  edgeHoles(end, edgeDir, points, DOWEL.d, DOWEL.edgeDepth, 'dowel', { label: 'шкант 8×35, с лепило' });
-  ctx.hw('dowel', { name: 'Шкант 8×35 (с лепило за дърво)', qty: points.length, unit: 'бр.', group: 'Крепежи' });
+  edgeHoles(end, edgeDir, points, DOWEL.d, DOWEL.edgeDepth, 'dowel', { label: ctx.t('lbl.dowelEdge') });
+  ctx.hw('dowel', { name: ctx.t('hw.dowel'), qty: points.length, unit: ctx.t('u.pcs'), group: ctx.t('g.fasteners') });
 }
 
 const sameSpot = (f, u, v, d) => f.type === 'hole' && f.u === u && f.v === v && f.d === d;

@@ -17,12 +17,12 @@ export function blindFront(ctx, a) {
   const x1 = left ? fl + col.blind.width - gap / 2 : fr - gap / 2;
   const zD = zEnd + FRONT_GAP_Z;
   const blind = panel(ctx, {
-    stock: fs.stock, decor: fs.decor, grain: frontGrain, module: mod, key: key('blind'), name: nm('Сляп фронт'), role: 'blind',
+    stock: fs.stock, decor: fs.decor, grain: frontGrain, module: mod, key: key('blind'), name: nm(ctx.t('part.blind')), role: 'blind',
     box: { min: [x0, dy0, zD], max: [x1, dy1, zD + fT] }, n: '-z', L: 'y',
     bands: bf ? { '+x': bf, '-x': bf, '+y': bf, '-y': bf } : {}, explode: [left ? -0.3 : 0.3, 0, 1.8],
   });
   const pts = [[x0 + (x1 - x0) / 4, c + T + BRACKET_UP], [x0 + (3 * (x1 - x0)) / 4, c + T + BRACKET_UP], [(x0 + x1) / 2, yTop - BRACKET_UP]];
-  for (const [x, y] of pts) mark(blind, [x, y, zD], 'blind-fix', { hw: 'blindBracket', label: 'ъглова планка, винт 3,5×16' });
-  ctx.hw('blindBrackets', { name: 'Ъглова планка за сляп фронт, с винтове 3,5×16', qty: pts.length, unit: 'бр.', group: 'Обков' });
+  for (const [x, y] of pts) mark(blind, [x, y, zD], 'blind-fix', { hw: 'blindBracket', label: ctx.t('lbl.blindBracket') });
+  ctx.hw('blindBrackets', { name: ctx.t('hw.blindBrackets'), qty: pts.length, unit: ctx.t('u.pcs'), group: ctx.t('g.hardware') });
   return left ? { fl: fl + col.blind.width, fr } : { fl, fr: fr - col.blind.width };
 }

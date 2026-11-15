@@ -1,7 +1,7 @@
 // Hinged doors and handles. Doors are full overlay on outer sides and half overlay on partitions; hinge cups are
 // drilled in the door back, mounting plates on the carcass panel on the 32 mm grid, handles through the front.
 import { panel, hole, holeThrough, mark } from './panel.js';
-import { r1, clamp, dimTxt, plural } from './util.js';
+import { r1, clamp } from './util.js';
 import { hingeCount, hingeProduct, hingeSystemOf, handleModel, handleHoles, hingeLimits, solveOverlay, HINGE_LIMITS } from './hardware.js';
 import { SYSTEM, MIN_WEB, FRONT_GAP_Z, addHoleOnce, snapHingeY, taken } from './joinery.js';
 import { HINGE_CLEAR } from './shelves.js';
@@ -18,14 +18,14 @@ const TEMPLATE_HANDLES = new Set(['edge', 'profile', 'gola', 'recessed']);
 export function buildDoors(ctx, o, a) {
   const { i, n, col, fl, fr, dy0, dy1, gap, zEnd, c, fs, frontGrain, bf, fT, nm, key, mod, hingeSides } = a;
   const spanW = fr - fl;
-  const where = nm(n > 1 ? `Колона ${i + 1}` : 'Шкаф');
+  const where = nm(n > 1 ? ctx.t('part.column', { n: i + 1 }) : ctx.t('part.cabinet'));
   let doors = col.doors;
   if (doors === 1 && spanW - gap > HINGE_LIMITS.maxWidth) {
     doors = 2;
-    ctx.warn('info', `${where}: една врата би била ${Math.round(spanW - gap)} mm (над ${HINGE_LIMITS.maxWidth} mm) — направени са 2 врати.`);
+    ctx.warn('info', ctx.t('w.twoDoors', { where, w: Math.round(spanW - gap), max: HINGE_LIMITS.maxWidth }));
   }
   const half = (spanW - 2 * gap) / 2;
-  if (doors === 2 && half > HINGE_LIMITS.maxWidth) ctx.warn('error', `${where}: и при 2 врати всяка е ${Math.round(half)} mm — над ${HINGE_LIMITS.maxWidth} mm, които производителят на пантите допуска. Добавете колона или стеснете мебела.`);
+  if (doors === 2 && half > HINGE_LIMITS.maxWidth) ctx.warn('error', ctx.t('w.doorsTooWide', { where, w: Math.round(half), max: HINGE_LIMITS.maxWidth }));
   const defs = doors === 1
     ? [{ x0: fl + gap / 2, w: spanW - gap, hinge: col.hingeSide ?? (i % 2 === 0 ? 'left' : 'right') }]
     : [{ x0: fl + gap / 2, w: half, hinge: 'left' }, { x0: fl + gap / 2 + half + gap, w: half, hinge: 'right' }];
@@ -34,7 +34,7 @@ export function buildDoors(ctx, o, a) {
     const zD = zEnd + FRONT_GAP_Z;
     const door = panel(ctx, {
       stock: fs.stock, decor: fs.decor, grain: frontGrain, module: mod, key: key(`c${i + 1}door${k + 1}`),
-      name: nm(doors === 1 ? (n > 1 ? `Врата ${i + 1}` : 'Врата') : `Врата ${n > 1 ? `${i + 1}.` : ''}${dd.hinge === 'left' ? 'лява' : 'дясна'}`),
+      name: nm(doors === 1 ? (n > 1 ? ctx.t('part.doorN', { n: i + 1 }) : ctx.t('part.door')) : ctx.t(`part.door${dd.hinge === 'left' ? 'Left' : 'Right'}${n > 1 ? 'In' : ''}`, { n: i + 1 })),
       role: 'door', box: { min: [dd.x0, dy0, zD], max: [dd.x0 + dd.w, dy1, zD + fT] }, n: '-z', L: 'y',
       bands: bf ? { '+x': bf, '-x': bf, '+y': bf, '-y': bf } : {}, explode: [dd.hinge === 'left' ? -0.3 : 0.3, 0, 1.8], hingeSide: dd.hinge,
     });
@@ -48,7 +48,7 @@ export function buildDoors(ctx, o, a) {
   return ys;
 }
 
-const VARIANT_BG = { full: 'покрит кант', half: 'полупокрит кант', inset: 'открит кант' };
+// the crank variants of a hinge: variant.<v> in the catalogue
 
 // Distance of the mounting plate's hole row from the carcass front edge. An inset door sits inside the carcass, so its
 // plate goes back by the door thickness and the maker's extra (sys.plate.insetExtra); without that number: null, and
@@ -62,12 +62,12 @@ function mountHinges(ctx, o, door, carcassPanel, { onPartition, zEnd, hingeSides
   const family = hingeProduct(o.hinge);
   const sys = hingeSystemOf(family);
   if (!family || !sys) {
-    ctx.warn('error', 'Няма избрана панта с данни за пробиване.');
+    ctx.warn('error', ctx.t('w.noHinge'));
     return;
   }
   // the hinge is made for a range of door thickness: outside it the cup and the arm do not fit (fail closed)
   if (sys.door && (door.T < sys.door.min || door.T > sys.door.max)) {
-    ctx.warn('error', `${door.name}: ${dimTxt(door.T)} mm — ${sys.name} е за врати ${dimTxt(sys.door.min)}–${dimTxt(sys.door.max)} mm. Изберете друга панта.`);
+    ctx.warn('error', ctx.t('w.hingeDoorT', { door: door.name, T: ctx.t.num(door.T), system: ctx.t.of(sys), min: ctx.t.num(sys.door.min), max: ctx.t.num(sys.door.max) }));
     return;
   }
   const [x0, y0] = door.box.min;
@@ -85,10 +85,10 @@ function mountHinges(ctx, o, door, carcassPanel, { onPartition, zEnd, hingeSides
   // the cup keeps MIN_WEB of board to the cut edge, under the edge band of the hinge edge
   const sol = solveOverlay(sys, variant, wanted, (door.bands[left ? '-x' : '+x'] || 0) + MIN_WEB);
   if (!sol) {
-    ctx.warn('error', `${sys.name}: няма вариант за ${VARIANT_BG[variant]}.`);
+    ctx.warn('error', ctx.t('w.noVariant', { sys: ctx.t.of(sys), variant: ctx.t(`variant.${variant}`) }));
     return;
   }
-  if (!sol.exact) ctx.warn('warn', `${door.name}: наслагване ${dimTxt(wanted)} mm е извън обхвата на ${sys.name} — реално ${dimTxt(sol.overlay)} mm (C = ${dimTxt(sol.c)}, планка ${dimTxt(sol.plate)} mm).`);
+  if (!sol.exact) ctx.warn('warn', ctx.t('w.overlay', { door: door.name, wanted: ctx.t.num(wanted), sys: ctx.t.of(sys), real: ctx.t.num(sol.overlay), c: ctx.t.num(sol.c), plate: ctx.t.num(sol.plate) }));
   door.hinge = { variant, c: sol.c, plate: sol.plate, overlay: sol.overlay, wanted, system: sys.id };
   // our own rule (the hinge makers give no minimum width): the cup stays in the hinge half of the door and leaves the
   // other half to the handle; such doors are reported together in model.js
@@ -97,12 +97,12 @@ function mountHinges(ctx, o, door, carcassPanel, { onPartition, zEnd, hingeSides
   door.massKg = Math.round(mass * 100) / 100;
   const lim = hingeLimits(sys);
   const cnt = hingeCount(mass, Hd, sys);
-  if (mass > lim.maxMassKg || Hd > lim.maxHeight) ctx.warn('error', `${door.name}: ${Math.round(Hd)} mm, ≈ ${dimTxt(mass)} kg — извън таблицата на производителя (до ${lim.maxHeight} mm и ${dimTxt(lim.maxMassKg)} kg).`);
+  if (mass > lim.maxMassKg || Hd > lim.maxHeight) ctx.warn('error', ctx.t('w.doorHeavy', { door: door.name, h: Math.round(Hd), kg: ctx.t.num(mass), maxH: lim.maxHeight, maxKg: ctx.t.num(lim.maxMassKg) }));
   const others = hingeSides.filter((h) => h.panel === carcassPanel && h.door !== door && h.door.hingeYs).flatMap((h) => h.door.hingeYs);
   // where the plate's holes go: an inset door without the maker's number gets nothing drilled from a guess
   const pz = zEnd - plateSetback(sys, variant, door.T);
   if (!Number.isFinite(pz)) {
-    ctx.warn('error', `${door.name}: ${sys.name} — няма данни за мястото на планката при ${VARIANT_BG[variant]}.`);
+    ctx.warn('error', ctx.t('w.plateUnknown', { door: door.name, system: ctx.t.of(sys), variant: ctx.t(`variant.${variant}`) }));
     return;
   }
   // the plate holes keep MIN_WEB to the holes already in the panel (the slide pilots of the drawers on either face)
@@ -113,47 +113,47 @@ function mountHinges(ctx, o, door, carcassPanel, { onPartition, zEnd, hingeSides
   const range = sys.positions?.edgeRange;
   if (!ys && range) {
     ys = hingeHeights(door, sys, cnt, { c, others, avoid, clear, keepRange: false });
-    if (ys) ctx.warn('warn', `${door.name}: крайните панти са на ${dimTxt(ys[0] - y0)} и ${dimTxt(y1 - ys.at(-1))} mm от ръбовете — ${sys.brand} препоръчва ${range[0]}–${range[1]} mm, но пантите от другата страна на делителя заемат тези места.`);
+    if (ys) ctx.warn('warn', ctx.t('w.hingeRange', { door: door.name, a: ctx.t.num(ys[0] - y0), b: ctx.t.num(y1 - ys.at(-1)), brand: sys.brand, from: range[0], to: range[1] }));
   }
   if (!ys) {
-    ctx.warn('error', `${door.name}: ${plural(cnt, 'панта не се побира', 'панти не се побират')} по височината ${Math.round(Hd)} mm${onPartition ? ' покрай пантите от другата страна на делителя' : ''} — увеличете вратата или сменете разпределението.`);
+    ctx.warn('error', ctx.t.count(cnt, onPartition ? 'w.hingesNoFitPartition' : 'w.hingesNoFit', { door: door.name, h: Math.round(Hd) }));
     return;
   }
   const minSpacing = sys.positions?.minSpacing;
   const tight = ys.slice(1).map((y, k) => y - ys[k]).filter((d) => minSpacing && d < minSpacing);
-  if (tight.length) ctx.warn('error', `${door.name}: пантите са на ${dimTxt(Math.min(...tight))} mm една от друга — ${sys.brand} изисква поне ${minSpacing} mm. Изберете друга система панти или по-висока врата.`);
+  if (tight.length) ctx.warn('error', ctx.t('w.hingesTight', { door: door.name, d: ctx.t.num(Math.min(...tight)), brand: sys.brand, min: minSpacing }));
   // a plate without system screws is fixed with chipboard screws: no Ø5 × 12 holes for it (Blum: only D 0 and 3 come
   // with system screws, catalogue p. 153) — and no CNC file until another plate or hinge is chosen
   const systemScrews = !sys.plate.systemScrewPlates || sys.plate.systemScrewPlates.includes(sol.plate);
-  if (!systemScrews) ctx.warn('error', `${door.name}: планка ${dimTxt(sol.plate)} mm на ${sys.brand} не идва със системни винтове Ø5 (само ${sys.plate.systemScrewPlates.map(dimTxt).join(' и ')} mm) — отворите Ø${dimTxt(sys.plate.d)} × ${dimTxt(sys.plate.depth)} за нея не се пробиват. Изберете друга панта или разпределение.`);
+  if (!systemScrews) ctx.warn('error', ctx.t('w.plateNoScrews', { door: door.name, plate: ctx.t.num(sol.plate), brand: sys.brand, plates: sys.plate.systemScrewPlates.map(ctx.t.num).join(ctx.t('w.and')), d: ctx.t.num(sys.plate.d), depth: ctx.t.num(sys.plate.depth) }));
   door.hingeYs = ys;
   door.hingePanel = carcassPanel.id;
   door.plateHoles = systemScrews ? sys.plate.holes.length : 0;
   door.hingeSpreadShort = ys.length > 1 && ys.at(-1) - ys[0] <= Wd; // Blum Inc. note, aggregated in model.js
   const product = family.variants?.[variant] ?? null;
-  const label = product ? `${product.brand ?? family.brand} ${product.mfrSku ?? product.sku ?? ''}`.trim() : `${family.brand} ${VARIANT_BG[variant]}`;
+  const label = product ? `${product.brand ?? family.brand} ${product.mfrSku ?? product.sku ?? ''}`.trim() : `${family.brand} ${ctx.t(`variant.${variant}`)}`;
   const cupX = edgeX + sgn * (sol.c + sys.cup.d / 2);
   const f = sys.fixings;
   // the cup's own fixings: pressed-in dowels (Ø × depth by the system), Hettich quick-fit Fix (its own Ø10 × 6), or
   // screws set by the hinge's template (marked, not drilled)
   const dowel = family.fixing === 'fix' ? f.fix : family.fixing === 'dowel' && f.dowel;
-  if (family.fixing === 'fix' && !f.fix) ctx.warn('error', `${family.name}: ${sys.name} няма данни за пробиване за бърз монтаж Fix.`);
+  if (family.fixing === 'fix' && !f.fix) ctx.warn('error', ctx.t('w.fixUnknown', { family: ctx.t.of(family), system: ctx.t.of(sys) }));
   for (const y of ys) {
-    const meta = { hw: 'hinge', ref: family.id, refName: family.name, label, hingeY: y }; // hingeY: the cup and its own fixings
+    const meta = { hw: 'hinge', ref: family.id, refName: ctx.t.of(family), label, hingeY: y }; // hingeY: the cup and its own fixings
     hole(door, [cupX, y, zBack], sys.cup.d, sys.cup.depth, 'cup', meta);
     for (const dy of [-f.spacing / 2, f.spacing / 2]) {
       const w = [cupX + sgn * f.offset, y + dy, zBack];
       if (dowel) hole(door, w, dowel.d, dowel.depth, 'cup-dowel', meta);
-      else mark(door, w, 'cup-screw', { note: f.screw, ...meta });
+      else mark(door, w, 'cup-screw', { note: ctx.t.of(f, 'screw'), ...meta });
     }
-    if (systemScrews) for (const dy of sys.plate.holes) addHoleOnce(carcassPanel, [faceX, y + dy, pz], sys.plate.d, sys.plate.depth, 'plate', { hw: 'plate', ref: family.id, refName: family.name, label: `${sys.brand} планка` }, onPartition);
+    if (systemScrews) for (const dy of sys.plate.holes) addHoleOnce(carcassPanel, [faceX, y + dy, pz], sys.plate.d, sys.plate.depth, 'plate', { hw: 'plate', ref: family.id, refName: ctx.t.of(family), label: ctx.t('lbl.plate', { brand: sys.brand }) }, onPartition);
   }
   ctx.hw(`hinge:${family.id}:${variant}`, {
-    name: product ? product.name : `${family.name} — ${VARIANT_BG[variant]} (няма в каталога, поръчайте отделно)`,
-    qty: ys.length, unit: 'бр.', group: 'Обков', variant,
+    name: product ? product.name : ctx.t('hw.hingeMissing', { family: ctx.t.of(family), variant: ctx.t(`variant.${variant}`) }),
+    qty: ys.length, unit: ctx.t('u.pcs'), group: ctx.t('g.hardware'), variant,
     sku: product?.mfrSku ?? product?.sku, brand: product?.brand ?? family.brand, price: product?.price, currency: product?.currency, url: product?.url, shop: product?.shop,
   });
-  ctx.hw(`plate:${sys.id}:${sol.plate}`, { name: `${sys.plate.productName}, ${dimTxt(sol.plate)} mm`, qty: ys.length, unit: 'бр.', group: 'Обков' });
+  ctx.hw(`plate:${sys.id}:${sol.plate}`, { name: `${ctx.t.of(sys.plate, 'productName')}, ${ctx.t.num(sol.plate)} mm`, qty: ys.length, unit: ctx.t('u.pcs'), group: ctx.t('g.hardware') });
 }
 
 // Hinge heights on the 32 mm grid, spread as far apart as the system allows (Blum and Hettich: as far apart as
@@ -232,7 +232,7 @@ export function mountHandle(ctx, o, front, { orientation, kind }) {
   const reach = Math.max(body, pair ? h.spacing + (h.drill ?? 5) : 0) / 2 + HANDLE_MARGIN;
   const along = horizontal ? w : hgt;
   if (2 * reach > along) {
-    ctx.warn('warn', `${front.name}: дръжка ${Math.round(body)} mm не се побира на фронт ${Math.round(along)} mm — изберете по-къса.`);
+    ctx.warn('warn', ctx.t('w.handleLong', { front: front.name, body: Math.round(body), along: Math.round(along) }));
     return;
   }
   if (horizontal) cx = clamp(cx, min[0] + reach, max[0] - reach);
@@ -245,14 +245,14 @@ export function mountHandle(ctx, o, front, { orientation, kind }) {
   } else {
     pts.push([cx, cy, zIn]);
   }
-  const label = h.brand && h.sku ? `${h.brand} ${h.sku}` : h.name;
-  const meta = { hw: 'handle', ref: h.id, refName: h.name, label };
+  const label = h.brand && h.sku ? `${h.brand} ${h.sku}` : ctx.t.of(h);
+  const meta = { hw: 'handle', ref: h.id, refName: ctx.t.of(h), label };
   if (TEMPLATE_HANDLES.has(h.type)) {
-    for (const p of pts) mark(front, p, 'handle-mark', { ...meta, note: 'по шаблона на производителя' });
-    ctx.warn('warn', `${h.name}: монтира се по шаблона на производителя — мястото е отбелязано в чертежите, отвори за нея в G-кода няма.`);
+    for (const p of pts) mark(front, p, 'handle-mark', { ...meta, note: ctx.t('lbl.byTemplate') });
+    ctx.warn('warn', ctx.t('w.handleTemplate', { handle: ctx.t.of(h) }));
   } else {
     for (const p of pts) holeThrough(front, p, h.drill ?? 5, 'handle', meta);
   }
   ctx.symbols.push({ type: 'handle', partId: front.id, x: cx, y: cy, z: max[2], horizontal, model: h, module: front.module });
-  ctx.hw(`handle:${h.id}`, { name: h.name, qty: 1, unit: 'бр.', group: 'Обков', sku: h.sku, brand: h.brand, price: h.price, currency: h.currency, url: h.url, shop: h.shop });
+  ctx.hw(`handle:${h.id}`, { name: ctx.t.of(h), qty: 1, unit: ctx.t('u.pcs'), group: ctx.t('g.hardware'), sku: h.sku, brand: h.brand, price: h.price, currency: h.currency, url: h.url, shop: h.shop });
 }

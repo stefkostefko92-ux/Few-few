@@ -3,35 +3,21 @@
 // holes each hinge, handle and slide needs and where.
 import { edgeLabels } from './panel.js';
 import { toCsv } from './bom.js';
-import { r1, neg, dimTxt } from './util.js';
+import { r1, neg } from './util.js';
+import { translator } from './i18n.js';
 
-const PURPOSE = {
-  system: 'Система 32 mm (рафтоносачи)',
-  cup: 'Чашка на панта',
-  'cup-dowel': 'Дюбел на панта',
-  'cup-screw': 'Винт на панта — без отвор',
-  plate: 'Планка на панта',
-  handle: 'Дръжка',
-  'handle-mark': 'Дръжка — по шаблона на производителя, без отвор',
-  confirmat: 'Конфирмат (през плочата)',
-  slide: 'Водач (пилотен)',
-  'slide-hook': 'Водач — заден отвор за закачване',
-  pilot: 'Пилотен отвор',
-  screw: 'Винт (проходен)',
-  bedfit: 'Връзка за легло — само място',
-  'stack-pilot': 'Пилот Ø3 — на място, през отвора на горния корпус',
-  'blind-fix': 'Ъглова планка на сляп фронт — винт на място, без отвор',
-  dowel: 'Шкант Ø8 (през плочата)',
-};
-export const purposeOf = (kind) => PURPOSE[kind] ?? kind;
+// the kinds of holes, in the order of the drilling table (their names: purpose.<kind> in the catalogue)
+const PURPOSE = ['system', 'cup', 'cup-dowel', 'cup-screw', 'plate', 'handle', 'handle-mark', 'confirmat', 'slide', 'slide-hook', 'pilot', 'screw', 'bedfit', 'stack-pilot', 'blind-fix', 'dowel'];
+const BG = translator('bg');
+export const purposeOf = (kind, t = BG) => (PURPOSE.includes(kind) ? t(`purpose.${kind}`) : kind);
 // A horizontal hole in an edge is the other half of the joint: PURPOSE describes the hole through the face.
-const EDGE_PURPOSE = { confirmat: 'Конфирмат, за резбата', dowel: 'Шкант Ø8, с лепило' };
-export const edgePurposeOf = (kind) => EDGE_PURPOSE[kind] ?? purposeOf(kind);
+const EDGE_PURPOSE = ['confirmat', 'dowel'];
+export const edgePurposeOf = (kind, t = BG) => (EDGE_PURPOSE.includes(kind) ? t(`purpose.edge.${kind}`) : purposeOf(kind, t));
 const byPos = (a, b) => a.u - b.u || a.v - b.v;
 
 // Holes of a part numbered 1…n in a stable order (by purpose, then position); marks (no drilling) come last.
-export function partHoles(part) {
-  const order = Object.keys(PURPOSE);
+export function partHoles(part, t = BG) {
+  const order = PURPOSE;
   const holes = part.features
     .filter((f) => f.type === 'hole' || f.type === 'mark')
     .slice()
@@ -44,7 +30,7 @@ export function partHoles(part) {
     depth: f.depth ?? null,
     through: Boolean(f.through),
     kind: f.kind,
-    purpose: purposeOf(f.kind),
+    purpose: purposeOf(f.kind, t),
     label: f.label ?? '',
     ref: f.ref ?? null,
     refName: f.refName ?? null,
@@ -60,18 +46,20 @@ export function edgeOpName(part, labels, dir) {
   return labels.v0;
 }
 
+const DRILL_HEAD = ['partNo', 'part', 'module', 'holeNo', 'x', 'y', 'd', 'depth', 'through', 'purpose', 'hardware', 'edgeU0', 'edgeV0'];
+
 export function drillCsv(model) {
-  const head = ['Детайл №', 'Детайл', 'Модул', '№ отвор', 'X (u)', 'Y (v)', 'Ø', 'Дълбочина', 'Проходен', 'Предназначение', 'Обков', 'Ръб u=0', 'Ръб v=0'];
-  const rows = [head];
+  const t = translator(model.lang);
+  const rows = [DRILL_HEAD.map((k) => t(`csv.drill.${k}`))];
   for (const p of model.parts) {
-    const e = edgeLabels(p);
-    for (const h of partHoles(p)) {
+    const e = edgeLabels(p, t);
+    for (const h of partHoles(p, t)) {
       if (h.mark) continue;
-      rows.push([p.id, p.name, p.module ?? '', h.no, dimTxt(h.u), dimTxt(h.v), dimTxt(h.d), dimTxt(h.depth), h.through ? 'да' : 'не', h.purpose, h.label, e.u0, e.v0]);
+      rows.push([p.id, p.name, p.module ?? '', h.no, t.num(h.u), t.num(h.v), t.num(h.d), t.num(h.depth), h.through ? t('yes') : t('no'), h.purpose, h.label, e.u0, e.v0]);
     }
     let ch = 0; // Ч1…Чn run over all the edges of the part, so a number names one hole
     for (const op of p.edgeOps) {
-      for (const [u, v] of op.at) rows.push([p.id, p.name, p.module ?? '', `Ч${++ch}`, dimTxt(u), dimTxt(v), dimTxt(op.d), dimTxt(op.depth), 'не', `Хоризонтален в чело „${edgeOpName(p, e, op.edge)}“ (${edgePurposeOf(op.kind)})`, op.label ?? '', e.u0, e.v0]);
+      for (const [u, v] of op.at) rows.push([p.id, p.name, p.module ?? '', t('drill.edgeNo', { n: ++ch }), t.num(u), t.num(v), t.num(op.d), t.num(op.depth), t('no'), t('drill.edgeHole', { edge: edgeOpName(p, e, op.edge), purpose: edgePurposeOf(op.kind, t) }), op.label ?? '', e.u0, e.v0]);
     }
   }
   return toCsv(rows);
@@ -79,6 +67,7 @@ export function drillCsv(model) {
 
 // Hardware cards: for every hinge, handle and slide product the holes it needs on each part.
 export function hardwareCards(model) {
+  const t = translator(model.lang);
   const cards = new Map();
   const card = (ref, type, label) => {
     if (!cards.has(ref)) cards.set(ref, { ref, type, label, parts: [] });
@@ -86,7 +75,7 @@ export function hardwareCards(model) {
   };
   for (const p of model.parts) {
     const byRef = new Map();
-    for (const h of partHoles(p)) {
+    for (const h of partHoles(p, t)) {
       if (!h.ref || !['cup', 'cup-dowel', 'cup-screw', 'plate', 'handle', 'handle-mark', 'slide'].includes(h.kind)) continue;
       if (!byRef.has(h.ref)) byRef.set(h.ref, []);
       byRef.get(h.ref).push(h);
@@ -95,7 +84,7 @@ export function hardwareCards(model) {
       const k0 = holes[0].kind;
       const type = k0 === 'handle' || k0 === 'handle-mark' ? 'handle' : k0 === 'slide' ? 'slide' : 'hinge';
       const c = card(ref, type, holes.find((h) => h.refName)?.refName ?? holes[0].label);
-      const entry = { partId: p.id, name: p.name, L: p.L, W: p.W, edges: edgeLabels(p), holes };
+      const entry = { partId: p.id, name: p.name, L: p.L, W: p.W, edges: edgeLabels(p, t), holes };
       if (p.role === 'door') {
         const cups = holes.filter((h) => h.kind === 'cup');
         if (cups.length) {

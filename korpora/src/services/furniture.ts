@@ -1,21 +1,19 @@
+import { DEFAULT_LOCALE, type Locale } from '../i18n.js';
 import { engine, type Spec, type TypeParam } from './engine.js';
 
 /**
- * Видовете мебели за екраните. Двигателят пази имената на групите на български; тук те стават ключове
- * за превода (`furniture.group.<ключ>`), а името на всеки вид е `furniture.<id>`. Размерите идват от
- * формата на двигателя, за да не се разминават с това, което редакторът позволява.
+ * Видовете мебели за екраните. Групата на всеки вид е ключ от двигателя (`kitchen`…) — името ѝ е
+ * `furniture.group.<ключ>`, а името на вида е `furniture.<id>`. Размерите идват от формата на двигателя,
+ * за да не се разминават с това, което редакторът позволява.
  */
 export type FurnitureGroup = 'kitchen' | 'bedroom' | 'living' | 'custom' | 'other';
 
-const GROUP_KEY: Record<string, FurnitureGroup> = {
-  'Кухня и шкафове': 'kitchen',
-  Спалня: 'bedroom',
-  'Хол и кабинет': 'living',
-  Конструктор: 'custom',
-};
+const GROUPS: readonly string[] = ['kitchen', 'bedroom', 'living', 'custom'];
+const isGroup = (value: string): value is FurnitureGroup => GROUPS.includes(value);
 
 function furnitureGroup(type: string): FurnitureGroup {
-  return GROUP_KEY[engine().typeGroups[type] ?? ''] ?? 'other';
+  const group = engine().typeGroups[type] ?? '';
+  return isGroup(group) ? group : 'other';
 }
 
 export type FurnitureRange =
@@ -110,7 +108,7 @@ export interface RailField {
 
 export interface EditorRail {
   type: string;
-  /** Името на вида така, както го пише редакторът (на български, от двигателя). */
+  /** Името на вида така, както го пише редакторът (от формата на двигателя, на езика на екрана). */
   label: string;
   /** Редът под името на проекта: вид и габарит. */
   title: string;
@@ -122,11 +120,11 @@ const text = (value: unknown): string =>
 
 /**
  * Каквото редакторът показва най-горе още преди скрипта си: вида мебел, реда с габарита и полетата за
- * размерите — същите елементи, които после рисува `editor/params-html.js` (тестът ги сверява). Така
- * страницата не подскача, когато редакторът тръгне. Спецификация, която двигателят не приема, дава
- * null: тогава редакторът рисува всичко сам, както преди.
+ * размерите — същите елементи, които после рисува `editor/params-html.js` (тестът ги сверява), на езика
+ * на екрана. Така страницата не подскача, когато редакторът тръгне. Спецификация, която двигателят не
+ * приема, дава null: тогава редакторът рисува всичко сам, както преди.
  */
-export function editorRail(saved: Spec): EditorRail | null {
+export function editorRail(saved: Spec, locale: Locale = DEFAULT_LOCALE): EditorRail | null {
   const api = engine();
   let spec: Spec;
   try {
@@ -136,12 +134,13 @@ export function editorRail(saved: Spec): EditorRail | null {
   }
   const type = text(spec.type);
   if (!api.typeOrder.includes(type)) return null;
-  const label = api.typeLabel(type);
+  const words = api.translator(locale);
+  const form = api.typeText(type, words);
   return {
     type,
-    label,
-    title: `${label}, ${api.dimsText(type, spec)}`,
-    fields: (api.typeParams[type] ?? []).map((p) => ({
+    label: form.label,
+    title: `${form.label}, ${api.dimsText(type, spec, words)}`,
+    fields: form.params.map((p) => ({
       key: p.key,
       label: p.label,
       kind: p.type === 'range' ? 'range' : 'seg',
