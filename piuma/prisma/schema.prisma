@@ -177,6 +177,8 @@ model User {
   /// TOTP тайна (base32), криптирана в покой с TOKEN_ENC_KEY. null = без 2FA.
   totpSecretEnc String?
   totpEnabledAt DateTime?
+  /// Последната използвана TOTP стъпка (floor(unix/30)): код се приема само за по-нова стъпка — без повторение.
+  totpLastStep  Int?
   failedLogins  Int       @default(0)
   lockedUntil   DateTime?
   lastLoginAt   DateTime?
