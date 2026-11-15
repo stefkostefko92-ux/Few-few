@@ -3,6 +3,7 @@ import { DIALECT_LOCALES, HREFLANG_LOCALES } from '@/i18n/locales';
 import { prisma } from '@/lib/db';
 import { isSensitiveUrl } from '@/lib/brands';
 import { SITE_URL } from '@/lib/seo';
+import { COMPETITOR_IDS } from '@/lib/comparisons';
 
 // Динамичен: включва публикуваните профили към момента на заявката.
 export const dynamic = 'force-dynamic';
@@ -16,11 +17,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ),
     'x-default': `${base}/en${path}`,
   });
-  const staticPages: MetadataRoute.Sitemap = ['', '/privacy', '/terms', '/cookies'].map(
+  const staticPages: MetadataRoute.Sitemap = [
+    '',
+    '/tools',
+    '/tools/qr',
+    '/tools/bio',
+    ...COMPETITOR_IDS.map((id) => `/vs/${id}`),
+    '/privacy',
+    '/terms',
+    '/cookies',
+  ].map(
     (path) => ({
       url: `${base}/en${path}`,
       lastModified: new Date(),
-      changeFrequency: path === '' ? ('weekly' as const) : ('monthly' as const),
+      changeFrequency:
+        path === '' || path.startsWith('/vs/')
+          ? ('weekly' as const)
+          : ('monthly' as const),
       alternates: { languages: languagesFor(path) },
     }),
   );

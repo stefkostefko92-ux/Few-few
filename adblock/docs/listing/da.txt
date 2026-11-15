@@ -12,3 +12,4 @@ Supreme AdBlock blokerer annoncer overalt — YouTube-videoannoncer, bannere, po
 • Virker webstedet ikke? Ét klik retter det, eller giv os besked — intet sendes, uden at du ser det først.
 • Skifter du fra uBlock Origin, AdGuard eller Adblock Plus? Tag dine tilladte websteder og filtre med i én fil.
 • Se, hvilke andre websteder en side forbinder til, og bloker ét af dem netop dér med et klik.
+• Beskyttelsesniveau: Basis · Standard · Streng
