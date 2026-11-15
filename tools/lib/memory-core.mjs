@@ -170,19 +170,42 @@ const BULLET = /^\s*-\s+\*\*/;
  *
  * Защо: сгъването на main взимаше дървото на main и пренасяше само ДОБАВЕНИТЕ в клона на паметта редове —
  * всяка редакция в agents/memory се губеше. Измерено: от 1177 нови обхвата във върха бяха останали 9.
- * Симетрично е за поуките: редакция от която и да е страна оцелява; при редакция и от двете страни на един
- * ред печели `ours` (другата версия е със същото тяло и дедупът я отхвърля).
+ * Редакция от която и да е страна оцелява; при редакция и от двете страни на една поука печели `ours`
+ * (другата версия е със същото тяло и дедупът я отхвърля) — с две изключения, и двете към по-безопасното:
+ * изваждане (маркер ОПРОВЕРГАНА/ДУБЪЛ/ПРЕМЕСТЕНА) от `theirs` бие неотбелязан вариант на `ours`, а поука,
+ * която и двете страни още държат, не изчезва (пазител „последен вариант“). Тестове 3б–3з.
  */
 export function mergeLessons3(baseTxt, oursTxt, theirsTxt) {
   const lines = (t) => String(t || "").split("\n").filter((l) => BULLET.test(l)).map((l) => l.trimEnd());
   const baseSet = new Set(lines(baseTxt));
   const theirsSet = new Set(lines(theirsTxt));
   const removed = new Set([...baseSet].filter((l) => !theirsSet.has(l)));
-  let out = String(oursTxt || "").split("\n").filter((l) => !(BULLET.test(l) && removed.has(l.trimEnd()))).join("\n");
   const added = {
     verified: sectionLessons(theirsTxt, "verified").filter((l) => !baseSet.has(l.trimEnd())),
     quarantine: sectionLessons(theirsTxt, "quarantine").filter((l) => !baseSet.has(l.trimEnd())),
   };
+  const addedAll = [...added.verified, ...added.quarantine];
+  // Изваждане от theirs бие неотбелязания вариант на ours (main опроверга, паметта смени обхвата): иначе
+  // дедупът по тяло пазеше ours и опровергана поука се връщаше като факт.
+  const retired = (l) => stripMarkers(lessonText(l)) !== lessonText(l);
+  const retiredBodies = new Set(addedAll.filter(retired).map(bodyKey).filter(Boolean));
+  const drop = (l) => removed.has(l) || (!retired(l) && retiredBodies.has(bodyKey(l)));
+  // Пазител „последен вариант“ (инцидент 2026-11-15, сгъване след PR #359 — 6 изгубени поуки): base имал
+  // почти-дубли A и B; theirs махнал дубъла B (пази A), ours махнал A (пази B с нов обхват). „Махнато от
+  // theirs“ = B, а A не е „добавено“ (бил е в base) → поуката изчезваше от ДВЕТЕ страни. Щом theirs още
+  // държи вариант със същото тяло (bodyKey — идентичността на дедупа), а нищо друго не би го носило след
+  // сливането, вариантът на ours НЕ се маха — остава на мястото си (редът в паметта е хронологията).
+  // Изтриване на ВСИЧКИ варианти от едната страна остава изтриване.
+  const theirsBodies = new Set(lines(theirsTxt).map(bodyKey).filter(Boolean));
+  const oursBullets = lines(oursTxt);
+  const survive = new Set([...oursBullets.filter((l) => !drop(l)), ...addedAll].map(bodyKey).filter(Boolean));
+  const spare = new Set();
+  for (const l of oursBullets) {
+    const b = bodyKey(l);
+    if (drop(l) && b && theirsBodies.has(b) && !survive.has(b)) { spare.add(l); survive.add(b); }
+  }
+  const out = String(oursTxt || "").split("\n")
+    .filter((l) => !(BULLET.test(l) && drop(l.trimEnd()) && !spare.has(l.trimEnd()))).join("\n");
   return addLessons(out, added).txt;
 }
 
