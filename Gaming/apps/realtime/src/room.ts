@@ -6,6 +6,7 @@ import {
   SOCKET_EVENTS,
   TIMEOUT_STRIKES_FOR_TAKEOVER,
   teamOfSeat,
+  teamsFor,
   turnSecondsFor,
   type GameKey,
   type MatchFoundMsg,
@@ -110,6 +111,14 @@ export class GameRoom {
   private readonly disconnected = new Set<number>(); // human seats currently offline
   private readonly substituted = new Set<number>(); // human seats a bot is covering
   private readonly graceTimers = new Map<string, NodeJS.Timeout>(); // by userId
+  /** Места без отбор (FFA), чийто играч се е оттеглил, а масата продължава с бот:
+   *  край-резултатът им е „loss“, местата не се връщат на играча. */
+  private readonly forfeited = new Set<number>();
+  /** Свара FFA: стекът на оттеглилия се в МОМЕНТА на оттеглянето. Ботът-заместник
+   *  продължава да играе мястото, но играчът се урежда по този замразен стек. */
+  private readonly frozenPoints = new Map<number, number>();
+  /** Места, оттеглени при ply 0 в продължаваща FFA маса: без рейтинг и награди. */
+  private readonly unratedSeats = new Set<number>();
 
   constructor(
     private readonly io: Server,
@@ -123,6 +132,12 @@ export class GameRoom {
     this.rng = new SeededRng(seed);
     this.state = this.engine.init({ seats: seats.length, config }, this.rng);
     this.fallbackBot = new RandomBot(`${seed}:fallback`);
+  }
+
+  /** Има ли потребителят жива седалка: седи тук и не се е оттеглил. */
+  hasLiveSeat(userId: string): boolean {
+    const seat = this.seatOf(userId);
+    return !!seat && !this.forfeited.has(seat.seat);
   }
 
   private seatOf(userId: string): RoomSeat | undefined {
@@ -263,13 +278,7 @@ export class GameRoom {
   handleAction(userId: string, action: unknown): void {
     if (this.done) return;
     const seat = this.seatOf(userId);
-    if (!seat) return;
-    // Acting on your own seat reclaims it from a bot substitute.
-    if (this.substituted.has(seat.seat)) {
-      this.substituted.delete(seat.seat);
-      this.emitPresence(seat.seat, true);
-    }
-    if (this.turnCover === seat.seat) this.turnCover = null;
+    if (!seat || this.forfeited.has(seat.seat)) return; // оттеглилият се няма ход
     // Free-form engines (e.g. cue sports) validate continuous actions directly;
     // everyone else matches against the enumerated legal set. The action is
     // untrusted client input: bound its shape first, and never let a throwing
@@ -294,6 +303,14 @@ export class GameRoom {
       });
       return;
     }
+    // Законен ход на собственото място връща мястото от бот-заместник. Чак СЛЕД
+    // проверката: отхвърлено действие не бива да сваля покритието — иначе
+    // местото остава без бот и без часовник (никой не го изважда от хода).
+    if (this.substituted.has(seat.seat)) {
+      this.substituted.delete(seat.seat);
+      this.emitPresence(seat.seat, true);
+    }
+    if (this.turnCover === seat.seat) this.turnCover = null;
     // Keep the running deadline: a hidden move (e.g. Кент's SIGNAL) must not
     // visibly reset the clock that the other seats see.
     const prevEndsAt = this.turnEndsAt;
@@ -413,7 +430,7 @@ export class GameRoom {
   /** A player takes their seat back from the bot substitute. */
   reclaim(userId: string): void {
     const seat = this.seatOf(userId);
-    if (!seat || seat.isBot || this.done) return;
+    if (!seat || seat.isBot || this.done || this.forfeited.has(seat.seat)) return;
     if (!this.substituted.has(seat.seat)) return;
     this.substituted.delete(seat.seat);
     this.strikes.delete(seat.seat);
@@ -433,7 +450,7 @@ export class GameRoom {
    *  match starts a forfeit grace timer, and shortens that seat's turn clock. */
   setConnected(userId: string, connected: boolean): void {
     const seat = this.seatOf(userId);
-    if (!seat || seat.isBot || this.done) return;
+    if (!seat || seat.isBot || this.done || this.forfeited.has(seat.seat)) return;
 
     if (connected) {
       if (!this.disconnected.has(seat.seat)) return;
@@ -500,7 +517,7 @@ export class GameRoom {
   private onGrace(seat: number): void {
     if (this.done || !this.disconnected.has(seat)) return;
     logger.info({ matchId: this.matchId, seat }, "seat abandoned — forfeiting");
-    void this.finish(this.withLivePoints(this.forfeitScore(seat)));
+    this.forfeit(seat);
   }
 
   /** A forfeit by `seat`: that seat — and in partnership games (Белот, Бридж,
@@ -520,7 +537,54 @@ export class GameRoom {
     const seat = this.seatOf(userId);
     if (!seat || seat.isBot || this.done) return;
     logger.info({ matchId: this.matchId, seat: seat.seat }, "seat resigned (re-queued elsewhere)");
-    void this.finish(this.withLivePoints(this.forfeitScore(seat.seat)));
+    this.forfeit(seat.seat);
+  }
+
+  /**
+   * Оттегляне/напускане на `seat`.
+   *  - Преди първия ход (ply 0) партията не е изиграна (FIDE 5.1): краят е без
+   *    рейтинг, награди и MatchPlayer редове.
+   *  - Отборна игра (Белот, Бридж, Кент) или маса на двама: отборът на напусналия
+   *    губи, останалият отбор печели.
+   *  - Игра без отбори и ≥3 места (Ludo, Свара…): „win“ получава само последният
+   *    останал. Ако остават ≥2, напусналият е „loss“, а масата продължава — мястото
+   *    му се поема от бот-заместник и не се връща; другите печелят/губят по играта.
+   *    Ако не остане човек, който да играе, мачът се затваря: напусналите са „loss“,
+   *    останалите (само ботове) „draw“ — никой не получава победа по пропуск.
+   */
+  private forfeit(seat: number): void {
+    if (this.done) return;
+    const unrated = this.ply === 0;
+    if (teamsFor(this.game) > 1 || this.seats.length === 2) {
+      void this.finish(this.withLivePoints(this.forfeitScore(seat)), unrated);
+      return;
+    }
+    this.forfeited.add(seat);
+    const alive = this.seats.filter((s) => !this.forfeited.has(s.seat));
+    if (alive.length <= 1 || alive.every((s) => s.isBot || !s.userId)) {
+      const score: SeatScore[] = this.seats.map((s) => ({
+        seat: s.seat,
+        result: this.forfeited.has(s.seat) ? "loss" : alive.length === 1 ? "win" : "draw",
+      }));
+      void this.finish(this.withLivePoints(score), unrated);
+      return;
+    }
+    // Масата продължава: бот-заместник без връщане, часовникът не чака мястото.
+    // Играчът се урежда по стека си от този момент, не по това, което ботът направи с него.
+    if (isBettingGame(this.game)) {
+      const live = this.withLivePoints([{ seat, result: "loss" }]).find((s) => s.seat === seat);
+      if (live?.points !== undefined) this.frozenPoints.set(seat, live.points);
+    }
+    if (unrated) this.unratedSeats.add(seat);
+    const wasTurn = this.currentSeat()?.seat === seat;
+    if (!this.substituted.has(seat)) {
+      this.substituted.add(seat);
+      this.emitPresence(seat, false);
+    }
+    this.disconnected.add(seat);
+    if (wasTurn) this.clearTurnTimer();
+    this.broadcastState();
+    void this.runBots();
   }
 
   /**
@@ -688,7 +752,7 @@ export class GameRoom {
     return this.firstLegal(seat.seat);
   }
 
-  private async finish(scoreOverride?: SeatScore[]): Promise<void> {
+  private async finish(scoreOverride?: SeatScore[], unrated = false): Promise<void> {
     if (this.done) return;
     this.done = true;
     this.clearTurnTimer();
@@ -698,7 +762,15 @@ export class GameRoom {
     this.autoTimer = undefined;
     for (const g of this.graceTimers.values()) clearTimeout(g);
     this.graceTimers.clear();
-    const score = scoreOverride ?? (this.engine.score(this.state) as SeatScore[]);
+    const score = (scoreOverride ?? (this.engine.score(this.state) as SeatScore[])).map((s) =>
+      this.forfeited.has(s.seat)
+        ? {
+            ...s,
+            result: "loss" as const,
+            ...(this.frozenPoints.has(s.seat) ? { points: this.frozenPoints.get(s.seat)! } : {}),
+          }
+        : s,
+    );
     const seatInfos: SeatInfo[] = this.seats.map((s) => ({
       seat: s.seat,
       userId: s.userId,
@@ -714,6 +786,8 @@ export class GameRoom {
         game: this.game,
         seats: seatInfos,
         score,
+        unrated,
+        unratedSeats: [...this.unratedSeats],
       });
       ratingDeltas = result.deltas;
       newRatings = result.newRatings;

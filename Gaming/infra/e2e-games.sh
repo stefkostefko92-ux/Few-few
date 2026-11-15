@@ -78,8 +78,11 @@ common_env() {
   # трябва да стигнат до всяко действие — сценарият на всеки seed е описан в
   # spec-а (Реми: първият ход позволява отваряне със смяна на жокер; Табла: пул
   # на бара и 6-6 срещу затворено поле → „Няма възможен ход“). В продукция
-  # realtime ги игнорира. `E2E_SEEDS= bash … up N` = напълно случайни раздавания.
-  export E2E_SEEDS="${E2E_SEEDS-SANTASE=e2e-santase-5159,BELOTE=e2e-belote-36,BRIDGE=e2e-bridge-110,KENT=e2e-kent-411,RUMMY=e2e-rummy-69,BACKGAMMON=e2e-backgammon-111}"
+  # realtime ги чете само с NODE_ENV=test (по-долу). `E2E_SEEDS= bash … up N` = напълно случайни раздавания.
+  # BRIDGE няма seed: сценарият на bridge.spec.ts (контра + реконтра + аз разиграващ)
+  # не се среща в 1,8 млн. seed-а при политиката на spec-а — трябва да се смени самата
+  # политика; докато е така bridge.spec.ts е за преработка (виж ПРЕДАВАНЕ).
+  export E2E_SEEDS="${E2E_SEEDS-SANTASE=e2e-santase-2645,BELOTE=e2e-belote-20510,KENT=e2e-kent-6809,RUMMY=e2e-rummy-56,BACKGAMMON=e2e-backgammon-194}"
 }
 
 up() {
@@ -90,7 +93,7 @@ up() {
   pnpm --filter @aso/db exec prisma migrate deploy >"$STATE_DIR/migrate.log" 2>&1 \
     || { cat "$STATE_DIR/migrate.log" >&2; exit 1; }
   (cd apps/api && exec node dist/index.js) >"$STATE_DIR/api.log" 2>&1 & echo $! > "$STATE_DIR/pids"
-  (cd apps/realtime && exec node dist/index.js) >"$STATE_DIR/realtime.log" 2>&1 & echo $! >> "$STATE_DIR/pids"
+  (cd apps/realtime && NODE_ENV=test exec node dist/index.js) >"$STATE_DIR/realtime.log" 2>&1 & echo $! >> "$STATE_DIR/pids"
   # NODE_ENV=production: vite.config избира base /app/ по него — билдът е под /app/.
   (cd apps/web && NODE_ENV=production E2E_API_TARGET="http://127.0.0.1:${API}" E2E_RT_TARGET="http://127.0.0.1:${RT}" \
     exec npx vite preview --port "$WEB" --host 127.0.0.1 --strictPort) >"$STATE_DIR/web.log" 2>&1 & echo $! >> "$STATE_DIR/pids"

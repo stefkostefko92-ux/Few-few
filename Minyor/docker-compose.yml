@@ -1,9 +1,21 @@
 # Продукционен стек: Next.js приложение + PostgreSQL.
 # Стартиране: `docker compose up -d --build`
+#
+# Втвърдяване (образец: korpora/docker-compose.yml): без придобиване на права (no-new-privileges), без
+# Linux capabilities — базата пази само нужните ѝ, за да смени собственика на данните и потребителя
+# (CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID), и е само за четене с tmpfs за сокета и /tmp.
+# Приложението върви като nextjs (Dockerfile: USER) — capability не му трябва.
 services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
+    read_only: true
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    tmpfs:
+      - /var/run/postgresql:size=4m
+      - /tmp:size=64m
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-minyor}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Задайте POSTGRES_PASSWORD в .env}
@@ -20,6 +32,8 @@ services:
   app:
     build: .
     restart: unless-stopped
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
     depends_on:
       db:
         condition: service_healthy
@@ -33,7 +47,9 @@ services:
       ADMIN_NAME: ${ADMIN_NAME:-Администратор}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://minyor.carbonstealth.eu}
     ports:
-      - "${HTTP_PORT:-3000}:3000"
+      # Само на loopback — навън се стига единствено през reverse proxy-то на хоста (TLS). Docker
+      # публикува портове през DNAT ПРЕДИ ufw: 0.0.0.0 тук значи публичен порт покрай защитната стена.
+      - "127.0.0.1:${HTTP_PORT:-3000}:3000"
 
 volumes:
   db-data:

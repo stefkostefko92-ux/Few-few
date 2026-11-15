@@ -36,8 +36,8 @@ function load() {
     console.error("❌ INTERNAL_API_SECRET must be set in production (still the dev default).");
     process.exit(1);
   }
-  if (parsed.data.NODE_ENV === "production" && parsed.data.E2E_SEEDS) {
-    console.warn("⚠ E2E_SEEDS is ignored in production — match seeds stay random.");
+  if (parsed.data.NODE_ENV !== "test" && parsed.data.E2E_SEEDS) {
+    console.warn("⚠ E2E_SEEDS is ignored outside NODE_ENV=test — match seeds stay random.");
   }
   return parsed.data;
 }
@@ -47,7 +47,7 @@ const raw = load();
 export const env = {
   ...raw,
   isProd: raw.NODE_ENV === "production",
-  e2eSeeds: parseE2eSeeds(raw.E2E_SEEDS, raw.NODE_ENV === "production"),
+  e2eSeeds: parseE2eSeeds(raw.E2E_SEEDS, raw.NODE_ENV),
   corsOrigins: raw.CORS_ORIGINS.split(",")
     .map((s) => s.trim())
     .filter(Boolean),
