@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 686
+        "lessons": 687
       },
       "evolution": [
         {
@@ -2043,9 +2043,20 @@
           "date": "2026-11-15",
           "event": "v62.7 — учене",
           "detail": "Научи: jsonwebtoken 9 verify() приема подписан токен без exp (няма опция, която прави exp задъ… (+1 още)"
+        },
+        {
+          "version": "62.8.0",
+          "date": "2026-11-15",
+          "event": "v62.8 — учене",
+          "detail": "Научи: jsonwebtoken 9 verify() приема подписан токен без exp, затова изискване за exp трябва д…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „jsonwebtoken 9 verify() приема подписан токен без exp, затова изискване за exp трябва д…\" · 1 в карантина"
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
