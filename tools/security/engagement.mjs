@@ -14,6 +14,7 @@ import { verify as edVerify, sign as edSign } from "node:crypto";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { isMain } from "../lib/is-main.mjs";
+import { emitJson } from "../lib/emit.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 export const ENGAGEMENTS_DIR = join(ROOT, ".security", "engagements");
@@ -93,7 +94,7 @@ if (isMain(import.meta.url)) {
   } else if (cmd === "sign") {
     if (!a || !b) { console.error("употреба: engagement.mjs sign <файл.json> <private.pem>"); process.exit(2); }
     const obj = JSON.parse(readFileSync(a, "utf8")); delete obj.signature;
-    console.log(JSON.stringify({ ...obj, signature: signPayload(obj, readFileSync(b, "utf8")) }, null, 2));
+    emitJson({ ...obj, signature: signPayload(obj, readFileSync(b, "utf8")) }); // не console.log+exit: тръбата реже на 64 KiB
   } else {
     console.error("употреба: engagement.mjs verify|list|sign …"); process.exit(2);
   }
