@@ -11,7 +11,7 @@ import {
 import { assertOutboundUrl, sanitizeNotify } from '../src/routes.js';
 import { failUrl } from '../src/notify.js';
 import { safePath } from '../src/accesslog.js';
-import { snapshotEtc, saveBaseline, diffEtc } from '../src/posture.js';
+import { snapshotEtc, saveBaseline, diffEtc, expandWatched, rootCovers } from '../src/posture.js';
 import { hashPassword } from '../src/auth.js';
 import { IP_ALLOWLIST_EXEMPT, ipGateAllows } from '../src/routes.js';
 
@@ -507,4 +507,21 @@ test('posture: един сървър без restic = бекъпите са са�
   // Всяко от двете истински копия стига.
   assert.deepEqual(ids({ peers: [{ id: 'b' }], backups: { offsite: { enabled: true } } }), []);
   assert.deepEqual(ids({ peers: [] }, { restic: true }), []);
+});
+
+test('отпечатък: `*` е точно един сегмент — ключовете на всеки потребител, не повече', () => {
+  const pat = '/home/*/.ssh/authorized_keys';
+  assert.equal(rootCovers(pat, '/home/deploy/.ssh/authorized_keys'), true);
+  assert.equal(rootCovers(pat, '/home/a/b/.ssh/authorized_keys'), false);
+  assert.equal(rootCovers(pat, '/home/deploy/.ssh/authorized_keys.bak'), false);
+  assert.equal(rootCovers('/var/spool/cron/crontabs', '/var/spool/cron/crontabs/root'), true);
+  assert.equal(rootCovers('/var/spool/cron/crontabs', '/var/spool/cron/crontabsX'), false);
+
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-glob-'));
+  for (const u of ['alice', 'bob']) fs.mkdirSync(path.join(dir, u, '.ssh'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'alice', '.ssh', 'authorized_keys'), 'ssh-ed25519 AAAA test');
+  const got = expandWatched(`${dir}/*/.ssh/authorized_keys`).sort();
+  assert.deepEqual(got, [`${dir}/alice/.ssh/authorized_keys`, `${dir}/bob/.ssh/authorized_keys`]);
+  assert.deepEqual(expandWatched('/etc/hosts'), ['/etc/hosts']);
+  assert.deepEqual(expandWatched(`${dir}/няма/*/x`), []);
 });
