@@ -617,3 +617,17 @@
 {"t":"handoff","ts":"2026-11-14T10:15:56.960Z","id":"r168b82cc","from":"vps-adjiyata","to":"човек","status":"има бележки","run":"63453b74"}
 {"t":"start","ts":"2026-11-14T17:33:53.571Z","id":"r69df3882","flow":"авто","lead":"igrodelets","auto":true}
 {"t":"handoff","ts":"2026-11-14T17:33:53.571Z","id":"r69df3882","from":"igrodelets","to":"kodadjiyata","status":"наред","run":"01c7867f"}
+{"t":"start","ts":"2026-11-15T12:13:19.384Z","id":"r96b28489","flow":"авто","lead":"strazhata","auto":true}
+{"t":"handoff","ts":"2026-11-15T12:13:19.384Z","id":"r96b28489","from":"strazhata","to":"vps-adjiyata","status":"има бележки","run":"3dc8c69a"}
+{"t":"start","ts":"2026-11-15T12:15:16.147Z","id":"r327e4fb6","flow":"авто","lead":"pronikvacha","auto":true}
+{"t":"handoff","ts":"2026-11-15T12:15:16.147Z","id":"r327e4fb6","from":"pronikvacha","to":"оркестратор","status":"наред","run":"18117eed"}
+{"t":"handoff","ts":"2026-11-15T12:15:17.414Z","id":"r327e4fb6","from":"igrodelets","to":"mobildjiyata","status":"има бележки","run":"70ee5488"}
+{"t":"start","ts":"2026-11-15T12:15:55.871Z","id":"r65944dce","flow":"авто","lead":"danachnika","auto":true}
+{"t":"handoff","ts":"2026-11-15T12:15:55.871Z","id":"r65944dce","from":"danachnika","to":"prodavacha","status":"има бележки","run":"73e961a0"}
+{"t":"handoff","ts":"2026-11-15T12:15:58.577Z","id":"r65944dce","from":"asansyorchika","to":"kodadjiyata","status":"има бележки","run":"fedecd72"}
+{"t":"handoff","ts":"2026-11-15T12:16:18.418Z","id":"r65944dce","from":"pronikvacha","to":"човек","status":"наред","run":"18117eed"}
+{"t":"start","ts":"2026-11-15T12:16:57.424Z","id":"r14440f43","flow":"авто","lead":"asansyorchika","auto":true}
+{"t":"handoff","ts":"2026-11-15T12:16:57.424Z","id":"r14440f43","from":"asansyorchika","to":"човек","status":"има бележки","run":"fedecd72"}
+{"t":"start","ts":"2026-11-15T12:17:04.984Z","id":"re1c9a67b","flow":"авто","lead":"danachnika","auto":true}
+{"t":"handoff","ts":"2026-11-15T12:17:04.984Z","id":"re1c9a67b","from":"danachnika","to":"човек","status":"има бележки","run":"73e961a0"}
+{"t":"handoff","ts":"2026-11-15T12:17:20.693Z","id":"re1c9a67b","from":"frezadjiyata","to":"kodadjiyata","status":"има бележки","run":"170f416b"}
