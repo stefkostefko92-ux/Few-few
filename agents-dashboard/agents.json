@@ -16826,7 +16826,7 @@
           "Правната рамка: Правния Разбирач (оторизация, обхват на съгласие, NIS2/ОРЗД)",
           "Границата: Разбивача (вътрешен red-team на наши системи), Кодаджията (white-box код)"
         ],
-        "lessons": 61
+        "lessons": 63
       },
       "evolution": [
         {
@@ -16846,9 +16846,20 @@
           "date": "2026-11-15",
           "event": "v6.1 — учене",
           "detail": "Научи: В WSTG v4.2 ATHZ е 01-04, SESS е 01-09, ERRH е 01-02 и CRYP е 01-04; ERRH-02 (Stack Tra… (+29 още)"
+        },
+        {
+          "version": "6.3.0",
+          "date": "2026-11-15",
+          "event": "v6.3 — учене",
+          "detail": "Научи: WSTG-CRYP-03 (Sensitive Info over Unencrypted Channels) - находка, ако чувствителни дан… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „WSTG-CRYP-03 (Sensitive Info over Unencrypted Channels) - находка, ако чувствителни дан…\" (+1 още)"
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
