@@ -610,3 +610,6 @@
 {"t":"handoff","ts":"2026-11-14T17:19:11.024Z","id":"r3809b44b","from":"razbivacha","to":"letopisetsa","status":"има бележки","run":"e4b1f956"}
 {"t":"start","ts":"2026-11-14T19:56:26.242Z","id":"r195d2c09","flow":"авто","lead":"dizayner","auto":true}
 {"t":"handoff","ts":"2026-11-14T19:56:26.242Z","id":"r195d2c09","from":"dizayner","to":"човек","status":"има бележки","run":"173b4112"}
+{"t":"start","ts":"2026-11-15T08:21:50.168Z","id":"r42e5c5df","flow":"авто","lead":"pravniyat-razbirach","auto":true}
+{"t":"handoff","ts":"2026-11-15T08:21:50.168Z","id":"r42e5c5df","from":"pravniyat-razbirach","to":"човек","status":"наред","run":"4da52921"}
+{"t":"handoff","ts":"2026-11-15T08:40:17.816Z","id":"r42e5c5df","from":"razbivacha","to":"kodadjiyata","status":"има бележки (3 блокера — fail-open в ядрото на оградата, ПРЕДИ да важи)","run":"77c5f0c2"}

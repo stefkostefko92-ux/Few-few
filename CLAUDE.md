@@ -95,7 +95,7 @@ hooks, skills).
 
 ## Custom agents — `.claude/agents/`
 
-32 purpose-built subagents (BG system prompt, least-privilege `tools`, `maxTurns` checkpoint), each with
+34 purpose-built subagents (BG system prompt, least-privilege `tools`, `maxTurns` checkpoint), each with
 **durable verified memory** and a **hook-enforced self-learning loop**: lessons land in their own branch
 `agents/memory` (never the task branch; one standing PR brings them to `main`) and are retrieved at start
 by relevance to the actual task. Every agent preloads the **security doctrine + procedure** as the
@@ -103,7 +103,7 @@ by relevance to the actual task. Every agent preloads the **security doctrine + 
 secrets/PII, fail closed. Agents start without this file (`omitClaudeMd: true`; its cross-cutting rules reach them via `_shared.md`).
 Invoke via the Agent tool (*„пусни Кодаджията върху промените“*); a hook puts
 each agent's HANDOFF (next agent · blocker · human decision) in front of the orchestrator. **AI-джията**
-is the lead. **Teams:** 9 lean teams (`.claude/agents/_teams.json` → `_teams.md`), each agent in exactly one, with lead · ≤3-step flow · human checkpoint; start with `node tools/agents/teams.mjs --route "<task>"`. Run `node tools/agents/oversee.mjs` after any change to the agent layer, then **prove it live**
+is the lead. **Teams:** 10 lean teams (`.claude/agents/_teams.json` → `_teams.md`), each agent in exactly one, with lead · ≤3-step flow · human checkpoint; start with `node tools/agents/teams.mjs --route "<task>"`. Run `node tools/agents/oversee.mjs` after any change to the agent layer, then **prove it live**
 (`node tools/agents/live-gate.mjs`; gate check `live-fresh`), and the full gate `node tools/agents/gate.mjs` before calling it done. **Cost lives in the tool loop, not the prompt**
 (measured: >90%) — keep agent runs short and targeted; generic agents also start heavier (they see
 every MCP tool); real spend: `node tools/agents/usage-report.mjs`.
@@ -128,10 +128,10 @@ Shared glossary `ф:р · PI · LT · QG · RM · SC · ИоМ` — internal not
 
 ## Skills — `.claude/skills/`
 
-Ours (BG, vetted; 60; metadata only until triggered): **агентски** — agent-doctrine; **процедури** — deploy · prisma-migrate · quality-gate · verify ·
+Ours (BG, vetted; 61; metadata only until triggered): **агентски** — agent-doctrine; **процедури** — deploy · prisma-migrate · quality-gate · verify ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
 razpit · skill-author · sapernik; **предпазители** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch ·
-db-readonly · owasp-review · wcag-audit · incident-breach; **SEO/perf** — indexnow · keywords-seo · i18n-parity ·
+db-readonly · owasp-review · wcag-audit · incident-breach · pentest-engagement; **SEO/perf** — indexnow · keywords-seo · i18n-parity ·
 web-vitals; plus uchitel; **домейн** — youtube-reddit · fivem-mlo · fivem-clothing · fivem-livery; **външни, адаптирани** (14, вкл. archify-diagrams) и **правни** (15) — ростерът е в `tools/agents/CLAUDE.md`, произходът в `.claude/skills/THIRD_PARTY_NOTICES.md`. Gate: `tools/skills/lint.mjs` + `trigger-check.mjs --check`.
 **Own BG skills; never import third-party wholesale**; външно — само с изрично „да“ от собственика (`tools/agents/CLAUDE.md`).
 

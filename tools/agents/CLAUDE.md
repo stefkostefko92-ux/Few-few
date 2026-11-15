@@ -8,7 +8,7 @@ A/B 27.10.2026 на 5 агента: без него 9/9 и pass^k 5/5 срещу
 
 ## Агентите — `.claude/agents/`
 
-32 purpose-built subagents (BG system prompt, least-privilege `tools`), each with
+34 purpose-built subagents (BG system prompt, least-privilege `tools`), each with
 **durable verified memory** + a **hook-enforced self-learning loop**
 (`SubagentStart`/`SubagentStop` → `_memory/<id>.md`; verified-only,
 source-or-nothing, secrets hard-dropped). Every agent also preloads the **security
@@ -30,7 +30,7 @@ that file **and** `agents-dashboard/agents.json` in sync when you change an agen
 fail-closed) and orchestrates by Anthropic's agent canon. Run `oversee.mjs` after any change to the agent layer.
 
 **Екипи (`.claude/agents/_teams.json` → `_teams.md`, `teams.mjs`).** Екипът дава входна точка вместо
-плосък ростер и държи веригите къси (всяка стъпка плаща префикса наново). Всеки агент е в **точно един** от 9 екипа; екипът има водач, основен поток **≤3 стъпки** с гейт
+плосък ростер и държи веригите къси (всяка стъпка плаща префикса наново). Всеки агент е в **точно един** от 10 екипа; екипът има водач, основен поток **≤3 стъпки** с гейт
 между тях и **човешка точка**, 5 тестови задачи, 3 вероятни провала и метрики, сочещи реални наши
 инструменти. Картата на агента (екип · тръгва при · получава · връща · предава на · човек) се инжектира
 при старт **след** статичния префикс — кешът остава общ. `teams.mjs --check` (в `gate.mjs`) гейтва
@@ -236,11 +236,11 @@ On-demand **workflow packages** (`SKILL.md` = YAML frontmatter + imperative body
 `scripts/`/`references/`). Only metadata (~100 tokens) loads until a skill triggers — so they
 capture repeating procedures **without** bloating every session. Different from agents (a *who*
 you delegate to) and MCP/tools (*how* to connect): a skill is *what to do, in what order, with what
-guardrails*. Ours (BG, vetted; 60): **агентски** — agent-doctrine (генериран, във всеки агент през `skills:`); **процедури** — deploy · prisma-migrate · quality-gate · verify ·
+guardrails*. Ours (BG, vetted; 61): **агентски** — agent-doctrine (генериран, във всеки агент през `skills:`); **процедури** — deploy · prisma-migrate · quality-gate · verify ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
 razpit · skill-author · sapernik;
 **предпазители/сигурност** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch · db-readonly ·
-owasp-review · wcag-audit · incident-breach; **SEO/perf** — indexnow · keywords-seo · i18n-parity · web-vitals;
+owasp-review · wcag-audit · incident-breach · pentest-engagement; **SEO/perf** — indexnow · keywords-seo · i18n-parity · web-vitals;
 plus uchitel; **домейн** — youtube-reddit · fivem-mlo · fivem-clothing · fivem-livery; **дизайн** — frontend-design (Anthropic, Apache 2.0; Дизайнера го зарежда винаги през `skills:`); **външни, адаптирани** (2026-10-28) —
 dpa-review · dsar-response · pia-generation · aia-generation · vendor-ai-review · marketing-claims-review ·
 humanizer · test-driven-development · seo-geo · seo-hreflang · pricing; (2026-11-08) — receiving-code-review ·
