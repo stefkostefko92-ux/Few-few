@@ -16746,7 +16746,7 @@
           "Gaming/apps/realtime/src/room.ts — handleAction, часовник и ботове",
           "Gaming/docs/microtransactions.md — §1 „Not gambling“"
         ],
-        "lessons": 222
+        "lessons": 223
       },
       "evolution": [
         {
@@ -16760,9 +16760,20 @@
           "date": "2026-11-15",
           "event": "v22.2 — учене",
           "detail": "Научи: При пълен диск на тома на /tmp/claude-0 всяка Bash команда пропада и губи изхода си, а … (+220 още)"
+        },
+        {
+          "version": "22.3.0",
+          "date": "2026-11-15",
+          "event": "v22.3 — учене",
+          "detail": "Научи: Офлайн реплика на стаята за избор на e2e seed се прави така - init с `SeededRng(seed)`,…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „Офлайн реплика на стаята за избор на e2e seed се прави така - init с `SeededRng(seed)`,…\" · 2 в карантина"
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
