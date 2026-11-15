@@ -2,6 +2,7 @@ import { Prisma, type Role } from '@prisma/client';
 import type { SessionUser } from '../types.js';
 import { puo } from './permessi.js';
 import { can, isPrivileged, ROLE_LEVEL, type Capability } from './roles.js';
+import { CAPACITA_IN_SOLA_LETTURA } from '../abbonamenti/regole.js';
 
 /**
  * Обхватът на човека за една способност. Ролята е различна за всяка фирма (членствата), затова
@@ -21,8 +22,63 @@ export function roleIn(user: AccessUser, aziendaId: string | null): Role | null 
 }
 
 type Membro = AccessUser['memberships'][number];
+/**
+ * Свършила фирма (`soloEsportazione`) не дава нищо — износът има своя проверка (routes/impostazioni-esportazione.ts).
+ * Офертите — само във фирма, в която MASTER ги е включил (`preventivi`). Изтекъл абонамент (`solaLettura`) —
+ * само четенето (src/abbonamenti/regole.ts).
+ */
 const puoMembro = (m: Membro, capability: Capability): boolean =>
+  !m.soloEsportazione &&
+  (!m.solaLettura || CAPACITA_IN_SOLA_LETTURA.has(capability)) &&
+  (!capability.startsWith('preventivi:') || m.preventivi === true) &&
   puo(m.role, capability, m.permessi);
+
+/**
+ * Изтриването на данни и отнемането на достъп остават и при изтекъл абонамент (условията 2026-11-12, чл. 12.5 в)
+ * и A.9; чл. 4.1): за тях важи правото, което ролята има по принцип — без „само четене“. САМО за маршрути, които
+ * трият или отнемат; никога за запис.
+ */
+const puoTogliere = (m: Membro, capability: Capability): boolean =>
+  !m.soloEsportazione &&
+  (!capability.startsWith('preventivi:') || m.preventivi === true) &&
+  puo(m.role, capability, m.permessi);
+
+/** Способността за изтриване във фирмата на записа — и при изтекъл абонамент. */
+export function canInPerTogliere(
+  user: AccessUser,
+  capability: Capability,
+  aziendaId: string | null,
+): boolean {
+  if (user.master) return can('MASTER', capability);
+  const m = aziendaId ? user.memberships.find((x) => x.aziendaId === aziendaId) : undefined;
+  return m !== undefined && puoTogliere(m, capability);
+}
+
+export function canAnywherePerTogliere(user: AccessUser, capability: Capability): boolean {
+  if (user.master) return can('MASTER', capability);
+  return user.memberships.some((m) => puoTogliere(m, capability));
+}
+
+export function scopePerTogliere(user: AccessUser, capability: Capability): Scope {
+  if (user.master) return { all: true };
+  return {
+    all: false,
+    aziendaIds: user.memberships.filter((m) => puoTogliere(m, capability)).map((m) => m.aziendaId),
+  };
+}
+
+/** Фирмата на записа е само за четене за този човек (изтекъл абонамент); MASTER — никога. */
+export function inSolaLettura(user: AccessUser, aziendaId: string | null): boolean {
+  if (user.master || !aziendaId) return false;
+  return user.memberships.some((m) => m.aziendaId === aziendaId && m.solaLettura === true);
+}
+
+/** Фирмите, в които човекът е ADMIN (и не само за износа) — за действията по роля, не по способност. */
+export function aziendeDaAdmin(user: AccessUser): string[] {
+  return user.memberships
+    .filter((m) => m.role === 'ADMIN' && !m.soloEsportazione)
+    .map((m) => m.aziendaId);
+}
 
 /** Способността във фирмата на конкретен запис (карта, покана, човек). */
 export function canIn(user: AccessUser, capability: Capability, aziendaId: string | null): boolean {

@@ -1,4 +1,4 @@
-// Italiano — Страниците „Каталог“ и „Контакти“.
+// Italiano — Страниците “Каталог” и “Контакти”.
 
 export default {
   catalogPage: {
@@ -21,7 +21,6 @@ export default {
       '06 · Soluzioni speciali e su misura',
     ],
     interactiveNote: 'Indice interattivo: nella versione digitale tutte le voci sono cliccabili.',
-    previewKicker: 'Anteprima',
     previewTitle: 'Alcune pagine dal catalogo',
   },
   contactsPage: {
@@ -42,7 +41,7 @@ export default {
     },
     shippingTitle: 'Spedizione & garanzia',
     shipping: [
-      'Consegna standard 2 – 5 giorni lavorativi; express 24 – 48 ore su richiesta.',
+      'Consegna standard in circa 2 – 3 settimane lavorative; express in 1 settimana su richiesta.',
       'Spedizione gratuita in tutta Italia per ordini superiori a 500 € (IVA esclusa).',
       'Garanzia 2 anni sui difetti di fabbricazione: vizi apparenti entro 15 giorni dalla consegna, vizi occulti entro 15 giorni dalla scoperta (e 24 mesi dalla consegna).',
       'Pagamento: bonifico bancario anticipato, RIBA per clienti abituali con fido commerciale, carta di credito. Fattura elettronica via SdI.',

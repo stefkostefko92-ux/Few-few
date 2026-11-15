@@ -3,7 +3,7 @@
 export default {
   privacyPage: {
     title: 'Informativa sul trattamento dei dati personali',
-    updated: 'Ultimo aggiornamento: luglio 2026',
+    updated: 'Ultimo aggiornamento: novembre 2026',
     intro: 'Informativa resa ai sensi degli artt. 13–14 del Regolamento (UE) 2016/679 (“GDPR”) per gli utenti del sito panevascensori.it.',
     sections: [
       {
@@ -12,7 +12,7 @@ export default {
       },
       {
         h: 'Dati trattati e finalità',
-        p: 'Trattiamo esclusivamente i dati che ci invii volontariamente tramite il modulo di contatto o via email (nome, azienda, email, telefono, contenuto del messaggio) al solo fine di rispondere alla tua richiesta, gestire ordini e preventivi e adempiere agli obblighi contrattuali, contabili e fiscali. Registriamo inoltre l’indirizzo IP e la data/ora dell’invio per prevenzione degli abusi e sicurezza del modulo (art. 6.1.f GDPR — legittimo interesse). Base giuridica: misure precontrattuali ed esecuzione del contratto (art. 6.1.b GDPR) e obblighi legali (art. 6.1.c GDPR). Il conferimento dei dati è facoltativo, ma necessario per ricevere risposta. Dopo l’invio ricevi un’email automatica di conferma. Non è presente alcun processo decisionale automatizzato né profilazione. La lista d’ordine è salvata solo nel tuo browser (localStorage), non viene trasmessa finché non invii tu la richiesta e si cancella con „Svuota la lista“.',
+        p: 'Trattiamo esclusivamente i dati che ci invii volontariamente tramite il modulo di contatto o via email (nome, azienda, email, telefono, contenuto del messaggio) al solo fine di rispondere alla tua richiesta, gestire ordini e preventivi e adempiere agli obblighi contrattuali, contabili e fiscali. Registriamo inoltre l’indirizzo IP e la data/ora dell’invio per prevenzione degli abusi e sicurezza del modulo (art. 6.1.f GDPR — legittimo interesse). Base giuridica: misure precontrattuali ed esecuzione del contratto (art. 6.1.b GDPR) e obblighi legali (art. 6.1.c GDPR). Il conferimento dei dati è facoltativo, ma necessario per ricevere risposta. Dopo l’invio ricevi un’email automatica di conferma. Non è presente alcun processo decisionale automatizzato né profilazione. La lista d’ordine è salvata solo nel tuo browser (localStorage), non viene trasmessa finché non invii tu la richiesta e si cancella con “Svuota la lista”.',
       },
       {
         h: 'Cookie e tracciamento',
@@ -20,7 +20,7 @@ export default {
       },
       {
         h: 'Conservazione',
-        p: 'I messaggi sono conservati per un massimo di 24 mesi dalla richiesta; in caso di ordine, la documentazione commerciale e fiscale è conservata per i termini di legge (10 anni).',
+        p: 'I messaggi sono conservati per un massimo di 24 mesi dalla richiesta; l’indirizzo IP registrato con il messaggio è cancellato dopo 30 giorni; in caso di ordine, la documentazione commerciale e fiscale è conservata per i termini di legge (10 anni).',
       },
       {
         h: 'Destinatari',
@@ -46,7 +46,7 @@ export default {
       },
       {
         h: 'Spedizione',
-        p: 'Gratuita in tutta Italia per ordini superiori a 500 € (IVA esclusa); sotto tale soglia le spese di trasporto sono a carico del cliente e vengono indicate nella conferma d’ordine. Consegna standard 2 – 5 giorni lavorativi; express 24 – 48 ore su richiesta.',
+        p: 'Gratuita in tutta Italia per ordini superiori a 500 € (IVA esclusa); sotto tale soglia le spese di trasporto sono a carico del cliente e vengono indicate nella conferma d’ordine. Consegna standard in circa 2 – 3 settimane lavorative; express in 1 settimana su richiesta.',
       },
       {
         h: 'Pagamento',

@@ -6,12 +6,12 @@
     "empty": "Ancora nessuna azienda. Crea la prima, poi invita il suo amministratore.",
     "name": "Nome dell'azienda",
     "logo": "Logo",
-    "logoHint": "PNG, JPEG o WebP, al massimo {kb} KB. Sfondo trasparente o bianco: va in cima alla scheda stampata e al PDF.",
+    "logoHint": "PNG, JPEG o WebP, al massimo 1 MB. Sfondo trasparente o bianco: va in cima alla scheda stampata e al PDF.",
     "logoNone": "Nessun logo: sulla scheda stampata compare il nome dell'azienda.",
     "logoAlt": "Logo di {name}",
     "logoUpload": "Carica logo",
     "logoReplace": "Sostituisci logo",
-    "logoRemove": "Rimuovi logo",
+    "logoRemove": "Togli il logo",
     "create": "Crea azienda",
     "rename": "Salva nome",
     "users": "Persone",
@@ -29,7 +29,7 @@
       "esportaText": "Tutti i dati dell'azienda in un unico file .tar: schede con misure e schizzi, foto e video, fogli di intervento con le firme, cartelli, calcoli dell'argano, persone e registro (dati.json). Password e chiavi non ci sono.",
       "esporta": "Scarica tutti i dati",
       "eliminaIl": "Il {date} l'azienda viene eliminata definitivamente.",
-      "eliminaText": "Con lei spariscono tutti i suoi dati e gli account di chi lavora solo qui; chi lavora anche in altre aziende resta lì. Riattivandola prima, non succede nulla. Le copie di sicurezza la conservano ancora 14 giorni.",
+      "eliminaText": "Con l'azienda spariscono tutti i suoi dati e gli account di chi lavora solo qui; chi lavora anche in altre aziende resta lì. Riattivandola prima, non succede nulla. Le copie di sicurezza la conservano ancora 14 giorni.",
       "conferma": "Per eliminarla adesso scrivi il nome dell'azienda: {name}",
       "elimina": "Elimina adesso, definitivamente",
       "soloDisattivata": "Un'azienda disattivata viene eliminata definitivamente con tutti i suoi dati dopo {days} giorni, oppure prima, da qui."
@@ -38,24 +38,25 @@
     "reactivateText": "Le persone dell'azienda potranno accedere di nuovo.",
     "deactivate": "Disattiva azienda",
     "reactivate": "Riattiva azienda",
-    "funzioniTitle": "Funzioni",
-    "schizzi": "Schizzi a mano libera",
-    "schizziText": "Alla fine della scheda, fogli da disegnare a mano — penna, linee, rettangoli e testo, su carta a quadretti. Gli schizzi entrano nella stampa e nel PDF.",
-    "schizziStato": "Ora: {stato}.",
-    "schizziAttivi": "attivi",
-    "schizziSpenti": "spenti",
-    "schizziSpegniText": "Se li spegni, il campo sparisce dalla scheda; gli schizzi già fatti restano e si stampano.",
-    "schizziAttiva": "Attiva gli schizzi",
-    "schizziDisattiva": "Disattiva gli schizzi",
     "error": {
       "name": "Inserisci il nome dell'azienda (da 2 a 120 caratteri).",
       "nameTaken": "Esiste già un'azienda con questo nome.",
       "logoType": "Il logo deve essere un'immagine PNG, JPEG o WebP.",
       "logoTooLarge": "Il logo supera 1 MB: riducilo e riprova.",
-      "logoCorrupt": "Non riesco a leggere questa immagine. Salvala di nuovo come PNG o JPEG e riprova.",
+      "logoCorrupt": "Immagine non leggibile: salvala di nuovo come PNG o JPEG e riprova.",
       "logoMissing": "Scegli un file per il logo.",
       "eliminaAttiva": "Un'azienda attiva non si elimina: prima disattivala.",
       "eliminaNome": "Per confermare scrivi il nome dell'azienda esattamente com'è."
+    },
+    "preventivi": {
+      "title": "Preventivi",
+      "attivi": "Preventivi attivi per questa azienda.",
+      "spenti": "Preventivi non attivi per questa azienda.",
+      "text": "Con i preventivi attivi, l'azienda prepara preventivi numerati con listino prezzi, PDF e invio al cliente per email. Disattivandoli non si cancella nulla: preventivi e listino restano nell'esportazione e tornano visibili se li riattivi.",
+      "attiva": "Attiva i preventivi",
+      "disattiva": "Disattiva i preventivi",
+      "flashOn": "Preventivi attivati per l'azienda.",
+      "flashOff": "Preventivi disattivati per l'azienda. Nulla è stato cancellato."
     }
   },
   "impostazioni": {
@@ -65,7 +66,7 @@
       "title": "Dati societari",
       "text": "Vanno in alto sul cartello di fermo impianto, accanto al logo. Compila solo quello che vuoi mostrare.",
       "logoSi": "Il logo dell'azienda va accanto ai dati.",
-      "logoNo": "L'azienda non ha un logo: il cartello mostra solo i dati. Il logo lo carica il Master del portale.",
+      "logoNo": "L'azienda non ha un logo: il cartello mostra solo i dati. Il logo lo carica l'amministrazione del portale.",
       "save": "Salva dati societari",
       "campo": {
         "ragioneSociale": "Ragione sociale",
@@ -99,7 +100,7 @@
     },
     "ruoli": {
       "title": "Ruoli e permessi",
-      "text": "Rinomina i ruoli dell'azienda e scegli cosa può fare ognuno. Valgono per tutti i suoi utenti dal clic successivo. Invitare e gestire gli utenti e queste impostazioni restano solo all'amministratore.",
+      "text": "Rinomina i ruoli dell'azienda e scegli cosa può fare ognuno. Le modifiche valgono subito per tutte le persone dell'azienda. Solo l'amministratore può invitare e gestire le persone e cambiare queste impostazioni.",
       "nome": "Nome nell'azienda",
       "nomeHint": "Vuoto: «{nome}».",
       "permessiDi": "Permessi di «{nome}»",
@@ -112,9 +113,12 @@
         "schede_write": "Compilare e modificare le schede",
         "schede_delete": "Spostare le schede nel cestino",
         "schede_trash": "Aprire il cestino: ripristinare ed eliminare per sempre",
-        "interventi_read": "Vedere interventi e cartelli",
-        "interventi_write": "Compilare interventi e cartelli",
-        "audit_view": "Vedere il registro: le proprie azioni e quelle dei ruoli sotto il proprio"
+        "interventi_read": "Vedere fogli di intervento e cartelli",
+        "interventi_write": "Compilare fogli di intervento e cartelli",
+        "audit_view": "Vedere il registro: le proprie azioni e quelle dei ruoli sotto il proprio",
+        "schede_approve": "Approvare le schede (se l'azienda usa l'approvazione)",
+        "preventivi_read": "Vedere preventivi e listino",
+        "preventivi_write": "Compilare preventivi e modificare il listino"
       },
       "error": {
         "tooLong": "Massimo 40 caratteri.",
@@ -125,7 +129,7 @@
     "error": "L'ordine inviato non è valido. Ecco quello salvato: riprova.",
     "sezioni": {
       "title": "Ordine delle sezioni della scheda",
-      "text": "Vale per tutte le schede dell'azienda: modulo, pagina della scheda, stampa e PDF.",
+      "text": "Vale per tutte le schede dell'azienda: modulo della scheda, pagina, stampa e PDF.",
       "fixed": "Sempre in cima",
       "hint": "Sposta una sezione con le frecce, poi salva. Impianto resta in cima: identifica l'impianto.",
       "up": "Sposta su «{name}»",

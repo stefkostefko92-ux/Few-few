@@ -207,7 +207,7 @@
 
   <url>
     <loc>https://supremebot.carbonstealth.eu/cookies</loc>
-    <lastmod>2026-08-07</lastmod>
+    <lastmod>2026-10-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
@@ -254,6 +254,13 @@
   <url>
     <loc>https://supremebot.carbonstealth.eu/features/discord-verification-bot</loc>
     <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/features/discord-anti-spam-bait-channel</loc>
+    <lastmod>2026-10-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -315,7 +322,100 @@
   </url>
   <url>
     <loc>https://supremebot.carbonstealth.eu/features/discord-leveling-game</loc>
-    <lastmod>2026-09-18</lastmod>
+    <lastmod>2026-10-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- ─── Ръководства за клиенти (/docs/*) — данни: src/data/docsPages.js ───────── -->
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/docs</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/docs/getting-started</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/docs/permissions</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/docs/tickets</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/docs/verification-and-bait</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/docs/applications</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/docs/premium</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/docs/privacy-and-data</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/docs/welcome-and-roles</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/docs/server-season</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/docs/messages-and-engagement</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/docs/webhooks-and-api</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/docs/troubleshooting</loc>
+    <lastmod>2026-11-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

@@ -62,7 +62,7 @@ export const SEZIONE_QUADRO = {
       // Марките с модул за поръчка (src/ordini/registry.ts — тестът пази съвпадението).
       when: {
         field: 'quadroMarca',
-        values: ['PELAZZA', 'MOVILIFT', 'DMG', 'MASTECH', 'ELETTROQUADRI'],
+        values: ['PELAZZA', 'MOVILIFT', 'DMG', 'MASTECH', 'ELETTROQUADRI', 'GEAT'],
       },
     },
     { key: 'quadroNote', kind: 'textarea', maxLength: 4000, wide: true },

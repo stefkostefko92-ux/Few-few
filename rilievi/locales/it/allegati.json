@@ -2,12 +2,13 @@
   "allegati": {
     "titolo": "Foto e video",
     "aggiungi": "Aggiungi foto o video",
+    "scatta": "Scatta foto",
     "dopoSalvataggio": "Foto e video si aggiungono dopo il primo salvataggio della scheda.",
     "scegli": "Foto o video",
     "scegliHint": "Fino a {file} file per volta: foto fino a {foto} MB, video fino a {video} MB e {minuti} minuti. Vengono compressi in automatico per occupare meno spazio.",
     "didascalia": "Didascalia",
     "didascaliaHint": "Facoltativa, vale per tutti i file caricati insieme (es. «quadro, lato sinistro»).",
-    "didascaliaPlaceholder": "Aggiungi una didascalia",
+    "didascaliaPlaceholder": "Didascalia",
     "carica": "Carica",
     "preparazione": "Preparazione delle foto…",
     "caricamento": "Caricamento in corso… {pct}%",
@@ -38,7 +39,7 @@
       "caricamento": "Il caricamento si è interrotto. Riprova.",
       "nessuno": "Scegli almeno una foto o un video.",
       "limite": "La scheda ha già il numero massimo di file ({max}).",
-      "spazio": "Spazio esaurito sul server: il caricamento è sospeso. Avvisa l'amministratore del portale.",
+      "spazio": "Spazio esaurito sul server: il caricamento è sospeso. Avvisa l'amministrazione del portale.",
       "illeggibile": "il file non si legge come foto o video.",
       "senzaVideo": "il file non contiene un video.",
       "troppoLungo": "il video supera {minuti} minuti.",
@@ -48,13 +49,35 @@
     },
     "stampa": {
       "legenda": "Foto da stampare",
-      "hint": "Le foto selezionate vanno in fondo alla stampa e al PDF, sezione per sezione, anche quelle di una sezione non stampata; i video restano nel portale.",
+      "hint": "Le foto selezionate vanno in fondo alla stampa e al PDF, nell'ordine e nella dimensione scelti, anche quelle di una sezione non stampata; i video restano nel portale.",
       "nessuna": "Nessuna foto pronta: si aggiungono nelle sezioni della scheda.",
       "tutte": "Seleziona tutte",
       "nessunaAzione": "Deseleziona tutte",
       "conteggio": "{n} di {totale} selezionate",
       "esclusa": "sezione non stampata",
-      "titolo": "Foto"
+      "titolo": "Foto",
+      "dimensione": "Dimensione delle foto",
+      "dimensioni": {
+        "PICCOLE": "Piccole",
+        "MEDIE": "Medie",
+        "GRANDI": "Grandi",
+        "UNA": "Una per riga"
+      },
+      "ordine": "Ordine nella stampa",
+      "ordineVuoto": "Seleziona le foto qui sopra: qui scegli in che ordine vanno stampate.",
+      "prima": "Sposta prima: {titolo}",
+      "dopo": "Sposta dopo: {titolo}",
+      "spostata": "{titolo}: posizione {n} di {totale}.",
+      "anteprima": "Anteprima",
+      "anteprimaHint": "Indicativa: nel PDF e nella stampa le foto continuano sotto la scheda."
+    },
+    "annotazioni": {
+      "annota": "Annota",
+      "modifica": "Modifica le annotazioni",
+      "titolo": "Annotazioni sulla foto",
+      "salvate": "Annotazioni salvate: compaiono anche nella stampa e nel PDF.",
+      "tolte": "Annotazioni tolte dalla foto.",
+      "errore": "Annotazioni non salvate: controlla la connessione e riprova."
     }
   }
 }

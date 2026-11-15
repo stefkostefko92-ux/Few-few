@@ -1,0 +1,121 @@
+/* Етикетите с QR (views/schede/etichetta.ejs): A4 без полета, 3 колони × 8 реда по 70 × 37 mm (листовете
+   с 24 етикета); на екрана — същото, умалено до ширината. Само черно и бяло. */
+@page {
+  size: A4;
+  margin: 0;
+}
+
+.etichetta-body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.etichetta-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 12px 16px;
+}
+
+.etichetta-bar__titolo {
+  font-size: 1.125rem;
+  margin: 0 12px 0 0;
+}
+
+.etichetta-bar__scelta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.etichetta-bar__nota {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.etichette {
+  display: grid;
+  grid-template-columns: repeat(3, 70mm);
+  grid-auto-rows: 37mm;
+  width: 210mm;
+  margin: 0 auto;
+  background: #fff;
+  color: #000;
+}
+
+.etichetta {
+  display: flex;
+  gap: 2.5mm;
+  align-items: center;
+  padding: 2.5mm 3mm;
+  overflow: hidden;
+  border: 0.2mm dashed #bbb;
+  font-family: 'Fira Sans', sans-serif;
+}
+
+.etichetta__qr {
+  flex: none;
+  width: 30mm;
+  height: 30mm;
+}
+
+.etichetta__qr svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.etichetta__testo {
+  min-width: 0;
+  font-size: 7.5pt;
+  line-height: 1.2;
+}
+
+.etichetta__testo p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.etichetta__azienda {
+  font-weight: 700;
+  font-size: 8pt;
+  margin-bottom: 1mm !important;
+}
+
+.etichetta__dato strong {
+  font-size: 9pt;
+}
+
+.etichetta__indirizzo {
+  margin-top: 1mm !important;
+}
+
+.etichetta__piede {
+  margin-top: 1mm !important;
+  font-size: 6pt;
+  color: #333;
+}
+
+@media screen and (max-width: 840px) {
+  .etichette {
+    width: 100%;
+    grid-template-columns: repeat(auto-fill, minmax(70mm, 1fr));
+  }
+}
+
+@media print {
+  .etichetta-bar {
+    display: none;
+  }
+
+  .etichetta-body {
+    background: #fff;
+  }
+
+  .etichetta {
+    border: 0;
+  }
+}

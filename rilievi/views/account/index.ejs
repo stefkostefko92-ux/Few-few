@@ -8,7 +8,7 @@
 </div>
 <div class="stack-gap">
   <% if (currentUser.mustChangePassword) { %><div class="notice" role="alert"><p><strong><%= t('account.mustChange') %></strong></p></div><% } %>
-  <% if (error) { %><div class="errors" role="alert" id="form-error"><h2><%= t(error) %></h2></div><% } %>
+  <% if (error) { %><div class="errors" role="alert" id="form-error"><h2><%= t(error, locals.errorParams || {}) %></h2></div><% } %>
   <% if (currentUser.memberships.length > 0) { %>
   <section aria-labelledby="h-aziende">
     <h2 class="section__title" id="h-aziende"><%= t('account.aziendeTitle') %></h2>
@@ -16,6 +16,16 @@
       <% for (const m of currentUser.memberships) { %><div class="kv__item"><dt><%= m.aziendaName %></dt><dd><%= ruolo(m.role, m.aziendaId) %></dd></div>
       <% } %>
     </dl>
+  </section>
+  <% } %>
+  <% if (!currentUser.master) { const m = currentUser.memberships[0]; const giorno = (v) => fmt.day(new Date(v + 'T00:00:00Z')); %><section aria-labelledby="h-condizioni">
+    <h2 class="section__title" id="h-condizioni"><%= t('legale.account.titolo') %></h2>
+    <% if (m && m.condizioniVersione) { %><p><%= t('legale.account.versione', { versione: giorno(m.condizioniVersione) }) %></p><% } %>
+    <% if (currentUser.regoleVersione) { %><p><%= t('legale.account.regole', { versione: giorno(currentUser.regoleVersione) }) %></p><% } %>
+    <div class="toolbar">
+      <a class="btn" href="/condizioni"><%= t('legale.account.pagina') %></a>
+      <% for (const a of currentUser.memberships.filter((x) => x.role === 'ADMIN' && x.condizioniVersione)) { %><a class="btn" data-pdf href="/condizioni/copia?azienda=<%= encodeURIComponent(a.aziendaId) %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('legale.copia.scarica') %><%= currentUser.memberships.length > 1 ? ' — ' + a.aziendaName : '' %></a><% } %>
+    </div>
   </section>
   <% } %>
   <section aria-labelledby="h-password">
@@ -39,7 +49,8 @@
     </form>
   </section>
   <% if (!currentUser.mustChangePassword) { %>
-  <%# Двуфакторният вход — по избор; състоянието идва само от GET /account (формите с грешка не го носят). %>
+  <%- include('_esterni') %>
+  <%# Двуфакторният вход — по избор. %>
   <section aria-labelledby="h-2fa">
     <h2 class="section__title" id="h-2fa"><%= t('account.dueFattori.title') %></h2>
     <% const df = typeof dueFattori !== 'undefined' ? dueFattori : null; %>

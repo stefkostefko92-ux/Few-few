@@ -9,11 +9,25 @@
 | `yt.mjs` | `search` · `video` · `comments` през YouTube Data API v3 (`YOUTUBE_API_KEY`) |
 | `reddit.mjs` | `top` · `search` · `thread` през Reddit Data API — само с одобрен OAuth app |
 | `sources.test.mjs` | Договорът (без мрежа) |
+| `video-notes.mjs` | „Гледа“ видео **локално**: листове с кадри (ffmpeg) + транскрипт (faster-whisper по избор) — само наш файл, файл от автора или с писмено разрешение |
+| `video-notes.test.mjs` | Договорът му: отказ на адрес, задължителен `--source`, нищо в репото, плик |
 
 ```bash
 node --test tools/research/sources.test.mjs
 YOUTUBE_API_KEY=… node tools/research/yt.mjs search "fivem mlo" --max 10 --order relevance
 ```
+
+Видео, което имаме законно (наш запис, файл от автора, писмено разрешение):
+
+```bash
+node tools/research/video-notes.mjs ~/Downloads/reel.mp4 --source author \
+  --whisper ~/venvs/asr/bin/python   # venv с `pip install faster-whisper`; без него — само кадрите
+```
+
+Изходът (листове с кадри, звук) е **извън репото** (по подразбиране временна папка). Транскриптът е в
+плика „недоверено съдържание“. Поука или умение от него минава през човек (`skill-author`), никога
+автоматично: „направи от видеото умение“ превръща чужд текст в постоянни инструкции. Суровото се трие
+след бележките. В репото влизат само перифразирани изводи.
 
 Какво умишлено НЯМА:
 - **Транскрипт на чужди видеа.** `yt-dlp` и всеки друг път извън API нарушават Условията на YouTube.

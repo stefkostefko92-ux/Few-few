@@ -68,7 +68,70 @@ export function hmacRecupero(code: string): string {
   return createHmac('sha256', derived('recovery-code-v1')).update(code).digest('hex');
 }
 
+/** HMAC на доказателствата (src/legale/sigillo.ts): приемания и изтеглени изчисления. */
+export function hmacProva(contenuto: string): string {
+  return createHmac('sha256', derived('prove-legali-v1')).update(contenuto, 'utf8').digest('hex');
+}
+
+/** HMAC на кода за подписа на условията, вързан за своя опит — в базата не стои самият код. */
+export function hmacCodiceFirma(sfidaId: string, codice: string): string {
+  return createHmac('sha256', derived('firma-condizioni-v1'))
+    .update(`${sfidaId}:${codice}`, 'utf8')
+    .digest('hex');
+}
+
 /** HMAC на мрежата на грешен вход — броят се опитите, без да се пази адресът. */
 export function hmacRete(rete: string): string {
   return createHmac('sha256', derived('login-net-v1')).update(rete).digest('hex');
+}
+
+/** HMAC на тайната част на API ключ (src/api/chiavi.ts), вързан за префикса му — в базата не стои ключът. */
+export function hmacChiaveApi(prefisso: string, segreto: string): string {
+  return createHmac('sha256', derived('api-key-v1'))
+    .update(`${prefisso}:${segreto}`, 'utf8')
+    .digest('hex');
+}
+
+/**
+ * Състоянието на входа с доставчика на самоличност (D1) — в бисквитка, шифровано със свой ключ (base64url):
+ * state, nonce и PKCE verifier не се виждат и не се подменят от браузъра; подправеното не се чете.
+ */
+export const cifraStatoOidc = (plaintext: string): string =>
+  Buffer.from(cifra('oidc-state-v1', plaintext), 'base64').toString('base64url');
+export function decifraStatoOidc(payload: string): string | null {
+  try {
+    return decifra('oidc-state-v1', Buffer.from(payload, 'base64url').toString('base64'));
+  } catch {
+    return null;
+  }
+}
+
+/** Ключът на SMTP сървъра на портала (#32), настроен от MASTER — в базата шифрован, никога показан. */
+export const cifraSmtp = (plaintext: string): string => cifra('smtp-pass-v1', plaintext);
+export function decifraSmtp(payload: string): string | null {
+  try {
+    return decifra('smtp-pass-v1', payload);
+  } catch {
+    return null;
+  }
+}
+
+/** Ключът на Revolut Merchant API и signing secret-ът на webhook-а (#31) — в базата шифровани, никога показани. */
+export const cifraRevolut = (plaintext: string): string => cifra('revolut-v1', plaintext);
+export function decifraRevolut(payload: string): string | null {
+  try {
+    return decifra('revolut-v1', payload);
+  } catch {
+    return null;
+  }
+}
+
+/** Адресът на webhook-а за алармите в Discord (съдържа токена му) — в базата шифрован, никога показан. */
+export const cifraAllarmi = (plaintext: string): string => cifra('discord-webhook-v1', plaintext);
+export function decifraAllarmi(payload: string): string | null {
+  try {
+    return decifra('discord-webhook-v1', payload);
+  } catch {
+    return null;
+  }
 }

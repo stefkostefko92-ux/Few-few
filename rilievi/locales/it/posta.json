@@ -1,0 +1,61 @@
+{
+  "posta": {
+    "titolo": "Email del portale",
+    "sub": "Il server che invia inviti, link per la nuova password, documenti e avvisi.",
+    "stato": {
+      "titolo": "Invio delle email",
+      "portale": "Le email partono dal server impostato in questa pagina.",
+      "ambiente": "Le email partono dal server indicato nella configurazione del server. Se salvi un server qui, il portale usa questo.",
+      "spenta": "L'invio delle email non è attivo: inviti e link per la nuova password si copiano dallo schermo.",
+      "disattivata": "Il server impostato qui è disattivato.",
+      "modifica": "Ultima modifica: {data}, {nome}.",
+      "modificaSenza": "Ultima modifica: {data}."
+    },
+    "form": {
+      "titolo": "Server SMTP (Brevo)",
+      "intro": "Nel tuo account Brevo, nella sezione SMTP, trovi server, porta e login; lì crei anche la chiave SMTP. Il mittente deve essere un indirizzo o un dominio verificato in Brevo."
+    },
+    "campo": {
+      "host": "Server SMTP",
+      "porta": "Porta",
+      "utente": "Login",
+      "password": "Chiave SMTP",
+      "mittenteNome": "Nome del mittente",
+      "mittenteEmail": "Email del mittente",
+      "passwordAccount": "La password del tuo account"
+    },
+    "hint": {
+      "porta": "2525 funziona anche quando il fornitore del server blocca la 587. Con 465 la connessione è cifrata fin dall'inizio.",
+      "password": "La chiave non viene mai mostrata dopo il salvataggio.",
+      "passwordSalvata": "C'è già una chiave salvata: lascia il campo vuoto per tenerla, oppure scrivine una nuova.",
+      "mittenteEmail": "L'indirizzo da cui partono le email, per esempio no-reply@carbonstealth.eu.",
+      "passwordAccount": "Serve per salvare: da questo server partono tutte le email del portale."
+    },
+    "errore": {
+      "titolo": "Controlla i campi evidenziati.",
+      "host": "Scrivi il nome del server, per esempio smtp-relay.brevo.com.",
+      "porta": "Scegli una delle porte dell'elenco.",
+      "utente": "Scrivi il login SMTP, senza spazi.",
+      "password": "Scrivi la chiave SMTP.",
+      "mittenteNome": "Scrivi un nome di massimo 80 caratteri, senza i segni < > e virgolette.",
+      "mittenteEmail": "Scrivi un indirizzo email valido.",
+      "passwordAccount": "Password non corretta.",
+      "passwordNuovoServer": "Hai cambiato server o login: scrivi di nuovo la chiave SMTP."
+    },
+    "salva": "Salva e usa questo server",
+    "disattiva": "Disattiva questo server",
+    "prova": {
+      "pulsante": "Invia un'email di prova",
+      "hint": "La prova arriva a {email}.",
+      "oggetto": "Email di prova — Rilievi Impianti",
+      "testo": "Ciao,\n\nquesta è un'email di prova inviata dalla console del portale Rilievi Impianti: il server delle email funziona.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+    },
+    "flash": {
+      "salvata": "Server email salvato: da ora le email partono da qui.",
+      "disattivata": "Server email disattivato.",
+      "provaInviata": "Email di prova inviata a {email}.",
+      "provaSpenta": "L'invio delle email non è attivo: salva prima un server.",
+      "provaErrore": "Il server non ha accettato la prova (codice {codice}). Controlla server, porta, login e chiave."
+    }
+  }
+}

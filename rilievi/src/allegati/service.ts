@@ -30,6 +30,8 @@ export type AllegatoVista = Pick<
   | 'durataMs'
   | 'errore'
   | 'inStampa'
+  | 'ordineStampa'
+  | 'annotazioni'
   | 'createdAt'
 >;
 
@@ -45,6 +47,8 @@ const VISTA = {
   durataMs: true,
   errore: true,
   inStampa: true,
+  ordineStampa: true,
+  annotazioni: true,
   createdAt: true,
 } as const;
 

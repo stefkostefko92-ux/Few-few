@@ -16,6 +16,8 @@ import { errorMessage, logger } from './logger.js';
  */
 
 export const BATTITO = join(tmpdir(), 'rilievi-worker.alive');
+/** Най-дългото време за един файл (клип от 10 минути: до ~90 минути с тавана на ffmpeg) с резерв. */
+const MAX_SENZA_GIRO_MS = 2 * 60 * 60_000;
 
 async function main(): Promise<void> {
   mediaConfig();
@@ -31,10 +33,20 @@ async function main(): Promise<void> {
   process.on('SIGINT', () => stop('SIGINT'));
   const strumenti = await verificaStrumenti(controller.signal);
   await prisma.$connect();
-  const battito = (): void => {
+  // „Жив съм“ следва РАБОТАТА (одитът от 12 ноември 2026: часовник, който пишеше файла и при зациклил цикъл,
+  // не казваше нищо): цикълът го обновява на всяко завъртане; докато върви дълъг файл (клип), сигналът
+  // продължава, но най-много `MAX_SENZA_GIRO_MS` — после контейнерът излиза „unhealthy“.
+  let ultimoGiro = Date.now();
+  const scrivi = (): void => {
     writeFile(BATTITO, String(Date.now())).catch(() => undefined);
   };
-  const timer = setInterval(battito, 15_000);
+  const battito = (): void => {
+    ultimoGiro = Date.now();
+    scrivi();
+  };
+  const timer = setInterval(() => {
+    if (Date.now() - ultimoGiro < MAX_SENZA_GIRO_MS) scrivi();
+  }, 15_000);
   logger.info({ zscale: strumenti.zscale }, 'allegati: обработката тръгна');
   try {
     await lavora(strumenti, controller.signal, battito);

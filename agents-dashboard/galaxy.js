@@ -188,11 +188,12 @@ vec2 hash22(vec2 p){ return vec2(hash21(p), hash21(p+19.19)); }
 float noise(vec2 p){ vec2 i=floor(p),f=fract(p); f=f*f*(3.-2.*f); float a=hash(i),b=hash(i+vec2(1,0)),c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1)); return mix(mix(a,b,f.x),mix(c,d,f.x),f.y); }
 float fbm(vec2 p, int oct){ float v=0.,a=.5; for(int i=0;i<8;i++){ if(i>=oct) break; v+=a*noise(p); p=p*2.02+vec2(1.7,9.2); a*=.52; } return v; }
 float ridge(vec2 p, int oct){ float v=0.,a=.5; for(int i=0;i<8;i++){ if(i>=oct) break; float n=1.0-abs(noise(p)*2.0-1.0); v+=a*n*n; p=p*2.05+vec2(3.1,-2.7); a*=.5; } return v; }
-// Планк-приближение (blackbody): t=0 топло жарава (~3000K), t=0.5 бяло-жълто (~5800K, Слънцето),
-// t=1 сини-бели (~12000K+, О/B звезди) — не произволен градиент, следва реалната цветова
-// последователност на звезден спектър, каквато се вижда и в HDR снимки на Хъбъл/JWST.
+// Планк-приближение (blackbody): t=0 топло жарава (~3000K), t=0.5 платинено-бяло (леко студено,
+// за обсидиановата тема — вместо жълтото на Слънцето), t=1 сини-бели (~12000K+, О/B звезди).
+// Следва реалната цветова последователност на звезден спектър, с платинен наклон на средата, за да
+// четат звездите като платина, не жълто — в тон с обсидиан+платина грейда.
 vec3 blackbody(float t){
-  vec3 warm=vec3(1.0,0.55,0.22), mid=vec3(1.0,0.93,0.82), hot=vec3(0.66,0.76,1.0);
+  vec3 warm=vec3(1.0,0.62,0.34), mid=vec3(0.92,0.95,1.0), hot=vec3(0.62,0.74,1.0);
   vec3 c = mix(warm, mid, smoothstep(0.0,0.5,t));
   return mix(c, hot, smoothstep(0.5,1.0,t));
 }
@@ -303,11 +304,14 @@ void main(){
   vec2 q = vec2(fbm(p1+vec2(0.,uT*0.012), uOct), fbm(p1+vec2(5.2,1.3)-uT*0.010, uOct));
   float f = fbm(p1 + q*2.1 + uT*0.03, uOct);
   float dust = ridge(p1*1.7 + q*1.4, max(3, uOct-2));
-  vec3 nebCol = mix(vec3(0.015,0.02,0.05), vec3(0.34,0.10,0.46), smoothstep(0.15,0.85,f));
-  nebCol = mix(nebCol, vec3(0.02,0.42,0.55), pow(max(f,0.0),3.0)*0.75);
-  nebCol += vec3(0.30,0.10,0.42) * pow(max(f,0.0),4.0);
-  nebCol *= mix(1.0, 0.22, smoothstep(0.35,0.85,dust));
-  float nebA = smoothstep(0.30,0.92,f) * 0.85;
+  // Обсидиан + платина (собственика, 2026-11-14): грейдът напуска виолет→тюркоаз→магента и минава
+  // в сдържан студен диапазон — обсидианова основа, дълбоко шистово-синьо, студен тюркоаз на
+  // плътните възли и ЕДИН акцент (леден циан) само на върховете. По-тъмно и по-контрастно, не пъстро.
+  vec3 nebCol = mix(vec3(0.010,0.014,0.024), vec3(0.055,0.110,0.185), smoothstep(0.15,0.85,f));
+  nebCol = mix(nebCol, vec3(0.070,0.260,0.345), pow(max(f,0.0),3.0)*0.80);
+  nebCol += vec3(0.160,0.440,0.560) * pow(max(f,0.0),4.0) * 0.70;
+  nebCol *= mix(1.0, 0.20, smoothstep(0.35,0.85,dust));
+  float nebA = smoothstep(0.33,0.95,f) * 0.72;
   vec3 nebEmit = nebCol * nebA;
 
   vec3 starsEmit = starLayer(pc + par*0.02, 11.0, 46.0, uT, ${SPIKE_BRIGHT_THRESHOLD.toFixed(2)}) * 0.9;
@@ -585,14 +589,15 @@ function buildDustField(seed = 1, count = 320) {
   }));
 }
 
-// Амбиентни цветни мъглявини (лека фонова окраска — синьо-виолетово-тюркоазено-розово, в тон
-// с blackbody/HII/емисионната палитра на WebGL слоя, не произволни хекс стойности).
+// Амбиентни мъглявини — обсидиан+платина (собственика, 2026-11-14): студен сдържан диапазон
+// (дълбоко шистово-синьо и студен тюркоаз), в тон с новия WebGL грейд. Без виолет/магента/зелено —
+// един студен акцентен род, за да чете фонът като обсидиан, не като пъстра мъглявина.
 function buildAmbientNebulae() {
   return [
-    { nx: -0.42, ny: -0.3, r: 0.52, c: "#3a2b6e", ph: 0 },
-    { nx: 0.48, ny: 0.1, r: 0.6, c: "#0e3b52", ph: 1.7 },
-    { nx: 0.06, ny: 0.46, r: 0.46, c: "#5a2450", ph: 3.3 },
-    { nx: -0.3, ny: 0.36, r: 0.42, c: "#123f39", ph: 4.9 },
+    { nx: -0.42, ny: -0.3, r: 0.52, c: "#16233f", ph: 0 },
+    { nx: 0.48, ny: 0.1, r: 0.6, c: "#0d3346", ph: 1.7 },
+    { nx: 0.06, ny: 0.46, r: 0.46, c: "#1b2b47", ph: 3.3 },
+    { nx: -0.3, ny: 0.36, r: 0.42, c: "#0a3a42", ph: 4.9 },
   ];
 }
 
@@ -621,14 +626,32 @@ function drawGalaxyPhoto(ctx, W, H, cx, cy, R, img, cleanImg, ready, { zoom, gal
     ctx.save();
     ctx.translate(cx - (reducedMotion ? 0 : gx) * R * 0.045, cy - (reducedMotion ? 0 : gy) * R * 0.045);
     if (!reducedMotion) ctx.rotate(gal * 0.9);
+    // Обсидиан грейд на снимката (собственика, 2026-11-14): десатурация + притъмняване + контраст,
+    // за да напусне NGC 4414 своето виолетово-топло и да чете като студен обсидиан. ctx.filter е
+    // част от запазеното състояние — нулира се на restore(); ако средата не го поддържа, се пренебрегва.
+    ctx.filter = "saturate(0.5) brightness(0.84) contrast(1.08)";
     ctx.drawImage(src, -dw / 2, -dh / 2, dw, dh);
     ctx.restore();
   }
-  ctx.fillStyle = "rgba(0,2,10,.32)";
+  // Пренасочване на тона към студен обсидиан: blend „color" взема ХРОМАТА на запълването, но пази
+  // ЛУМИНАНЦИЯТА на снимката — така виолетово-топлото на NGC 4414 става студено синьо-тюркоазено,
+  // без да зависи от поддръжката на ctx.filter (по-надеждно от десатурацията по-горе). После воал
+  // и притъмняване за дълбочина.
+  ctx.globalCompositeOperation = "color";
+  ctx.globalAlpha = 0.62;
+  ctx.fillStyle = "#0b2a3e";
   ctx.fillRect(0, 0, W, H);
-  const v = ctx.createRadialGradient(cx, cy, R * 0.14, cx, cy, Math.max(W, H) * 0.72);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = "rgba(7,16,28,.26)";
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = "rgba(0,2,10,.42)";
+  ctx.fillRect(0, 0, W, H);
+  // Кинематографична виньетка (3 спирки) — по-дълбока и по-студена за обсидиановата рамка.
+  const v = ctx.createRadialGradient(cx, cy, R * 0.10, cx, cy, Math.max(W, H) * 0.74);
   v.addColorStop(0, "rgba(0,0,0,0)");
-  v.addColorStop(1, "rgba(0,1,6,.74)");
+  v.addColorStop(0.62, "rgba(1,3,10,.34)");
+  v.addColorStop(1, "rgba(0,1,7,.88)");
   ctx.fillStyle = v;
   ctx.fillRect(0, 0, W, H);
 }

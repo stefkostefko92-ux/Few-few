@@ -1,0 +1,44 @@
+<%
+  // Протоколите „Verbale di chiusura cantiere“ на фирмата — най-новите отгоре.
+  const showAzienda = aziende.length > 0;
+  const base = '/verbali' + (aziendaFilter ? '?azienda=' + encodeURIComponent(aziendaFilter) : '');
+%><%- include('../partials/top', { titleKey: 'verbali.list' }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('verbali.list') %></h1>
+    <p class="page-head__sub"><%= t('verbali.listSub') %></p>
+  </div>
+  <% if (can('interventi:write')) { %><a class="btn btn--primary" href="/verbali/nuovo"><%- include('../partials/icon', { name: 'plus' }) %><%= t('verbali.new') %></a><% } %>
+</div>
+<% if (showAzienda) { %><%- include('../partials/azienda-filter', { action: '/verbali' }) %><% } %>
+<% if (page.rows.length === 0) { %>
+<div class="empty">
+  <p><strong><%= t('verbali.empty') %></strong></p>
+  <% if (can('interventi:write')) { %><p class="muted"><%= t('verbali.emptyHint') %></p><% } %>
+</div>
+<% } else { %>
+<table class="table table--stack">
+  <caption class="visually-hidden"><%= t('verbali.list') %></caption>
+  <thead>
+    <tr>
+      <th scope="col"><%= t('verbali.colonna.data') %></th>
+      <th scope="col"><%= t('verbali.colonna.indirizzo') %></th>
+      <th scope="col"><%= t('verbali.colonna.buono') %></th>
+      <% if (showAzienda) { %><th scope="col"><%= t('scheda.field.azienda') %></th><% } %>
+      <th scope="col"><%= t('verbali.stato.label') %></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% for (const row of page.rows) { %><tr>
+      <td class="date" data-label="<%= t('verbali.colonna.data') %>"><a class="row-link" href="/verbali/<%= row.id %>"><%= fmt.day(row.data) %></a></td>
+      <td class="wide" data-label="<%= t('verbali.colonna.indirizzo') %>"><%= row.indirizzo || '—' %></td>
+      <td class="num" data-label="<%= t('verbali.colonna.buono') %>"><%= row.buono || '—' %></td>
+      <% if (showAzienda) { %><td data-label="<%= t('scheda.field.azienda') %>"><%= row.azienda.name %></td><% } %>
+      <td data-label="<%= t('verbali.stato.label') %>"><span class="stato<%= row.confermatoAt ? ' stato--chiuso' : '' %>"><%= t(row.confermatoAt ? 'verbali.stato.chiuso' : 'verbali.stato.bozza') %></span></td>
+    </tr>
+    <% } %>
+  </tbody>
+</table>
+<%- include('../partials/pager', { base, page: page.page, pages: page.pages }) %>
+<% } %>
+<%- include('../partials/bottom') %>

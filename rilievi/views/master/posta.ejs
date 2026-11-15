@@ -1,0 +1,77 @@
+<%
+  // „Email del portale“ (routes/master-posta.ts, mail/posta.ts): откъде тръгват писмата сега, формата на
+  // Brevo SMTP (ключът само се пише), пробното писмо и изключването. Грешките — под полето си.
+  const m = 'posta.';
+  const err = (k) => errori[k] ? t(errori[k]) : '';
+  const aria = (k, hint) => ' aria-describedby="' + (hint ? 'hint-' + k : '') + (errori[k] ? ' err-' + k : '') + '"' + (errori[k] ? ' aria-invalid="true"' : '');
+  const riga = stato.riga;
+  const fonte = stato.fonte;
+%><%- include('../partials/top', { titleKey: 'posta.titolo' }) %>
+<div class="page-head">
+  <div>
+    <a href="/master"><%= t('master.console.title') %></a>
+    <h1><%= t(m + 'titolo') %></h1>
+    <p class="page-head__sub"><%= t(m + 'sub') %></p>
+  </div>
+</div>
+<div class="stack-gap">
+  <section class="panel" aria-labelledby="h-posta-stato">
+    <h2 class="section__title" id="h-posta-stato"><%= t(m + 'stato.titolo') %></h2>
+    <p><strong><%= t(m + 'stato.' + (fonte || 'spenta')) %></strong></p>
+    <% if (riga && !riga.attiva) { %><p class="muted"><%= t(m + 'stato.disattivata') %></p><% } %>
+    <% if (riga) { %><p class="muted"><%= riga.updatedBy ? t(m + 'stato.modifica', { data: fmt.dateTime(riga.updatedAt), nome: riga.updatedBy.name }) : t(m + 'stato.modificaSenza', { data: fmt.dateTime(riga.updatedAt) }) %></p><% } %>
+    <div class="toolbar">
+      <form method="post" action="/master/posta/prova"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn" type="submit"<% if (!fonte) { %> disabled<% } %>><%- include('../partials/icon', { name: 'mail' }) %><%= t(m + 'prova.pulsante') %></button></form>
+      <% if (riga && riga.attiva) { %><form method="post" action="/master/posta/disattiva"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--danger" type="submit"><%= t(m + 'disattiva') %></button></form><% } %>
+    </div>
+    <p class="field__hint"><%= t(m + 'prova.hint', { email: currentUser.email }) %></p>
+  </section>
+  <form class="panel form" method="post" action="/master/posta" novalidate>
+    <h2 class="section__title"><%= t(m + 'form.titolo') %></h2>
+    <% if (Object.keys(errori).length) { %><div class="errors" role="alert" tabindex="-1"><h2><%= t(m + 'errore.titolo') %></h2></div><% } %>
+    <p><%= t(m + 'form.intro') %></p>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="grid grid--righe">
+      <div class="field field--wide">
+        <label class="field__label" for="p-host"><%= t(m + 'campo.host') %></label>
+        <input class="input" id="p-host" name="host" type="text" maxlength="253" autocomplete="off" autocapitalize="none" spellcheck="false" value="<%= valori.host %>"<%- aria('host', false) %>>
+        <div class="field__piede"><% if (err('host')) { %><p class="field__error" id="err-host"><%= err('host') %></p><% } %></div>
+      </div>
+      <div class="field field--wide">
+        <label class="field__label" for="p-porta"><%= t(m + 'campo.porta') %></label>
+        <select class="select" id="p-porta" name="porta"<%- aria('porta', true) %>>
+          <% for (const p of porte) { %><option value="<%= p %>"<% if (String(p) === valori.porta) { %> selected<% } %>><%= p %></option>
+          <% } %>
+        </select>
+        <div class="field__piede"><p class="field__hint" id="hint-porta"><%= t(m + 'hint.porta') %></p><% if (err('porta')) { %><p class="field__error" id="err-porta"><%= err('porta') %></p><% } %></div>
+      </div>
+      <div class="field field--wide">
+        <label class="field__label" for="p-utente"><%= t(m + 'campo.utente') %></label>
+        <input class="input" id="p-utente" name="utente" type="text" maxlength="254" autocomplete="off" autocapitalize="none" spellcheck="false" value="<%= valori.utente %>"<%- aria('utente', false) %>>
+        <div class="field__piede"><% if (err('utente')) { %><p class="field__error" id="err-utente"><%= err('utente') %></p><% } %></div>
+      </div>
+      <div class="field field--wide">
+        <label class="field__label" for="p-password"><%= t(m + 'campo.password') %></label>
+        <input class="input" id="p-password" name="password" type="password" maxlength="512" autocomplete="new-password" value=""<%- aria('password', true) %>>
+        <div class="field__piede"><p class="field__hint" id="hint-password"><%= t(riga ? m + 'hint.passwordSalvata' : m + 'hint.password') %></p><% if (err('password')) { %><p class="field__error" id="err-password"><%= err('password') %></p><% } %></div>
+      </div>
+      <div class="field field--wide">
+        <label class="field__label" for="p-nome"><%= t(m + 'campo.mittenteNome') %></label>
+        <input class="input" id="p-nome" name="mittenteNome" type="text" maxlength="80" autocomplete="off" value="<%= valori.mittenteNome %>"<%- aria('mittenteNome', false) %>>
+        <div class="field__piede"><% if (err('mittenteNome')) { %><p class="field__error" id="err-mittenteNome"><%= err('mittenteNome') %></p><% } %></div>
+      </div>
+      <div class="field field--wide">
+        <label class="field__label" for="p-email"><%= t(m + 'campo.mittenteEmail') %></label>
+        <input class="input" id="p-email" name="mittenteEmail" type="email" maxlength="254" autocomplete="off" autocapitalize="none" spellcheck="false" value="<%= valori.mittenteEmail %>"<%- aria('mittenteEmail', true) %>>
+        <div class="field__piede"><p class="field__hint" id="hint-mittenteEmail"><%= t(m + 'hint.mittenteEmail') %></p><% if (err('mittenteEmail')) { %><p class="field__error" id="err-mittenteEmail"><%= err('mittenteEmail') %></p><% } %></div>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field__label" for="p-account"><%= t(m + 'campo.passwordAccount') %></label>
+      <input class="input" id="p-account" name="passwordAccount" type="password" maxlength="200" autocomplete="current-password" required<%- aria('passwordAccount', true) %>>
+      <div class="field__piede"><p class="field__hint" id="hint-passwordAccount"><%= t(m + 'hint.passwordAccount') %></p><% if (err('passwordAccount')) { %><p class="field__error" id="err-passwordAccount"><%= err('passwordAccount') %></p><% } %></div>
+    </div>
+    <div class="toolbar"><button class="btn btn--primary" type="submit"><%= t(m + 'salva') %></button></div>
+  </form>
+</div>
+<%- include('../partials/bottom') %>

@@ -17,6 +17,9 @@ import { SeededRng } from "../kernel/rng.js";
  *            alone let a chess decision block the event loop ~17 s), and skipped for engines
  *            with a continuous action space (`validate` present, e.g. cue
  *            sports) where playouts are too costly — those fall back to NORMAL.
+ *            HARD plays fair: it searches only what its seat may see (see
+ *            `determinizer` — the hidden cards are dealt back at random), never
+ *            the real opponents' hands or the real order of the stock.
  */
 export type BotDifficulty = "EASY" | "NORMAL" | "HARD";
 
@@ -127,6 +130,67 @@ function rollout<S, A, E extends GameEvent>(
   return terminalUtility(engine, cur, seat);
 }
 
+type Path = (string | number)[];
+
+/**
+ * Hidden information: a bot may only use what its seat would see. Returns a
+ * sampler of "possible worlds" for HARD's playouts — the seat's redacted view
+ * with every masked card (a string leaf the view replaced, e.g. "?") dealt back
+ * at random from the pool of values the seat cannot see. Hand sizes, the stock
+ * size and everything public stay exactly as they are; only WHO holds which
+ * unseen card is re-drawn. Open-information engines (redact is a no-op) get the
+ * real state.
+ *
+ * Returns null when the view cannot be completed this way — the redaction
+ * removes items instead of masking them (Морски бой drops the unsunk ships,
+ * Бинго and Магнат empty the future draw order). HARD then plays the engine's
+ * fair heuristic instead of searching a world it would have to invent.
+ */
+export function determinizer<S, A, E extends GameEvent>(
+  engine: GameEngine<S, A, E>,
+  state: S,
+  seat: Seat,
+): ((rng: SeededRng) => S) | null {
+  const view = engine.redact(state, seat);
+  if (view === state) return () => state;
+  const paths: Path[] = [];
+  const hidden: string[] = [];
+  const walk = (full: unknown, seen: unknown, path: Path): boolean => {
+    if (full === seen) return true;
+    if (typeof full === "string" && typeof seen === "string") {
+      paths.push(path);
+      hidden.push(full);
+      return true;
+    }
+    if (Array.isArray(full) && Array.isArray(seen)) {
+      if (full.length !== seen.length) return false;
+      for (let i = 0; i < full.length; i++) if (!walk(full[i], seen[i], [...path, i])) return false;
+      return true;
+    }
+    if (full && seen && typeof full === "object" && typeof seen === "object" && !Array.isArray(full) && !Array.isArray(seen)) {
+      for (const k of Object.keys(full as object)) {
+        if (!walk((full as Record<string, unknown>)[k], (seen as Record<string, unknown>)[k], [...path, k])) return false;
+      }
+      return true;
+    }
+    // Any other difference (a flag or a value the view resets, e.g. Бридж
+    // онорите → null) keeps the view's value: the seat never sees the real one.
+    return true;
+  };
+  if (!walk(state, view, [])) return null;
+  if (paths.length === 0) return () => view;
+  return (rng) => {
+    const world = structuredClone(view) as unknown;
+    const deal = rng.shuffle(hidden);
+    paths.forEach((path, i) => {
+      let node = world as Record<string | number, unknown>;
+      for (let j = 0; j < path.length - 1; j++) node = node[path[j]!] as Record<string | number, unknown>;
+      node[path[path.length - 1]!] = deal[i];
+    });
+    return world as S;
+  };
+}
+
 function chooseHard<S, A, E extends GameEvent>(
   engine: GameEngine<S, A, E>,
   state: S,
@@ -140,13 +204,21 @@ function chooseHard<S, A, E extends GameEvent>(
   if (candidates.length === 0) return null;
   if (candidates.length === 1) return candidates[0]!;
 
-  // Take an immediate winning move if one exists (cheap 1-ply check).
-  for (const a of candidates) {
-    try {
-      const next = engine.reduce(state, a, rng).state;
-      if (engine.isTerminal(next) && terminalUtility(engine, next, seat) === 1) return a;
-    } catch {
-      /* skip illegal-in-simulation */
+  // Only what this seat may see — never the real hidden cards.
+  const world = determinizer(engine, state, seat);
+  if (!world) return engine.bot?.(state, seat, rng) ?? randomAction(engine, state, seat, rng);
+  const open = engine.redact(state, seat) === state;
+
+  // Take an immediate winning move if one exists (cheap 1-ply check) — only
+  // with open information; with hidden cards the playouts weigh it instead.
+  if (open) {
+    for (const a of candidates) {
+      try {
+        const next = engine.reduce(state, a, rng).state;
+        if (engine.isTerminal(next) && terminalUtility(engine, next, seat) === 1) return a;
+      } catch {
+        /* skip illegal-in-simulation */
+      }
     }
   }
 
@@ -161,10 +233,12 @@ function chooseHard<S, A, E extends GameEvent>(
   const total = new Array<number>(candidates.length).fill(0);
   const count = new Array<number>(candidates.length).fill(0);
   for (let p = 0; p < PLAYOUTS && !spent(budget); p++) {
+    // One sampled world per round, shared by every candidate (fair comparison).
+    const root = open ? state : world(rng);
     for (let i = 0; i < candidates.length && !spent(budget); i++) {
       let next: S;
       try {
-        next = engine.reduce(state, candidates[i]!, rng).state;
+        next = engine.reduce(root, candidates[i]!, rng).state;
       } catch {
         continue;
       }

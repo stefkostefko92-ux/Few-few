@@ -6,6 +6,8 @@ import { writeAudit } from '../audit.js';
 import { inScope, schedaScope, type Scope } from '../auth/scope.js';
 import { salvaSchizzi } from '../schizzi/service.js';
 import { searchTextOf } from './search.js';
+import { riapriApprovazione } from './approvazione.js';
+import { salvaVersione } from './versioni.js';
 import type { SceltaFoto } from './stampa.js';
 import type { SchedaData } from './validation.js';
 
@@ -20,6 +22,8 @@ const WITH_PEOPLE = {
   createdBy: { select: { name: true } },
   updatedBy: { select: { name: true } },
   deletedBy: { select: { name: true } },
+  approvazioneDa: { select: { name: true } },
+  _count: { select: { versioni: true } },
   azienda: {
     select: {
       id: true,
@@ -30,6 +34,8 @@ const WITH_PEOPLE = {
       logoUpdatedAt: true,
       ordineSezioni: true,
       schizzi: true,
+      approvazioneSchede: true,
+      preventiviAttivi: true,
     },
   },
 } satisfies Prisma.SchedaInclude;
@@ -96,6 +102,7 @@ export async function createScheda(
       },
     });
     if (data.schizzi) await salvaSchizzi(tx, scheda.id, data.schizzi);
+    await salvaVersione(tx, scheda.id, actorId);
     await writeAudit(
       { actorId, action: 'SCHEDA_CREATE', aziendaId, targetType: 'scheda', targetId: scheda.id },
       tx,
@@ -120,14 +127,31 @@ async function aziendaOf(
 /**
  * Снимките в печата (иконките в края на формата): само показаните — отметнатите влизат, другите не;
  * снимка, качена междувременно, остава каквато е. Само снимките на тази карта. `fotoStampate` следва
- * избора („поне една“) за предишния код — без да мести `updatedAt` на картата.
+ * избора („поне една“) за предишния код — без да мести `updatedAt` на картата. Редът (`ordine`):
+ * отметнатите взимат мястото си от 1, другите показани — празно; големината — на картата.
  */
 async function salvaFotoInStampa(
   tx: Prisma.TransactionClient,
   schedaId: string,
-  { mostrate, scelte }: SceltaFoto,
+  { mostrate, scelte, ordine, dimensione }: SceltaFoto,
 ): Promise<void> {
+  if (dimensione) {
+    await tx.$executeRaw`
+      UPDATE "Scheda" SET "fotoDimensione" = ${dimensione}::"FotoDimensione" WHERE id = ${schedaId}`;
+  }
   if (mostrate.length === 0) return;
+  if (ordine) {
+    await tx.allegato.updateMany({
+      where: { schedaId, id: { in: mostrate } },
+      data: { ordineStampa: null },
+    });
+    if (ordine.length > 0) {
+      await tx.$executeRaw`
+        UPDATE "Allegato" AS a SET "ordineStampa" = o.posto
+        FROM unnest(${ordine}::text[]) WITH ORDINALITY AS o(id, posto)
+        WHERE a.id = o.id AND a."schedaId" = ${schedaId} AND a.tipo = 'FOTO'`;
+    }
+  }
   await tx.allegato.updateMany({
     where: { schedaId, id: { in: mostrate } },
     data: { inStampa: false },
@@ -180,6 +204,9 @@ export async function updateScheda(
     }
     if (data.fotoInStampa) await salvaFotoInStampa(tx, id, data.fotoInStampa);
     if (data.schizzi) await salvaSchizzi(tx, id, data.schizzi);
+    // Променената одобрена карта иска ново одобрение (schede/approvazione.ts); версията — след всичко.
+    await riapriApprovazione(tx, id);
+    await salvaVersione(tx, id, actorId);
     await writeAudit(
       { actorId, action: 'SCHEDA_UPDATE', aziendaId, targetType: 'scheda', targetId: id },
       tx,

@@ -8,6 +8,12 @@
   justify-items: start;
 }
 
+/* Скритото остава скрито: `display: grid` горе иначе надделява атрибута `hidden` — бутонът „Installa“
+   излизаше и на iPhone, където не прави нищо (собственикът, 5 ноември 2026). */
+.installa__pronta[hidden] {
+  display: none;
+}
+
 .installa__os {
   border: 1px solid var(--line);
   border-radius: var(--radius);

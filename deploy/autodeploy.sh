@@ -21,7 +21,21 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fivem}"
+
+# fivem (Thraex PVP — Docker Compose модел) — web слуша само на
+# 127.0.0.1:3010, зад Nginx с TLS. Отделен `cron` контейнер върти пингването,
+# откриването на сървъри и стриймъри, и прочистването по срокове. Тайните живеят
+# в FiveM/.env на сървъра (mode 600) и се пренасят при всеки деплой.
+#
+# `PUBLIC_BASE_URL` ТРЯБВА да е `https://…`: под http сесийната бисквитка на
+# админ панела пада до слабата форма (без `__Host-`, без `secure`).
+FIVEM_HEALTH_URL="${FIVEM_HEALTH_URL:-http://127.0.0.1:3010/api/health}"
+FIVEM_DOMAIN="${FIVEM_DOMAIN:-thraex.carbonstealth.eu}"
+# Тайните и бекъпите живеят ИЗВЪН releases (моделът на nexus): в release папката
+# прекъснат пробег ги губи, а следващият генерира нова парола за база върху вече
+# инициализиран том — Postgres я игнорира и деплоят пада чак на миграцията.
+FIVEM_STATE_DIR="${FIVEM_STATE_DIR:-/opt/few-few/shared/fivem}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -76,6 +90,8 @@ PANEV_HEALTH_URL="${PANEV_HEALTH_URL:-http://127.0.0.1:4102/api/health}"
 # (server/.state/) живеят на сървъра и се пренасят при всеки деплой.
 OSPEDALI_DIR="${OSPEDALI_DIR:-/opt/ospedali}"
 OSPEDALI_SERVICE="${OSPEDALI_SERVICE:-ospedali}"
+# Собствен системен потребител (не www-data на nginx) — съвпада с User= в ospedali.service.
+OSPEDALI_USER="${OSPEDALI_USER:-ospedali}"
 OSPEDALI_HEALTH_URL="${OSPEDALI_HEALTH_URL:-http://127.0.0.1:8788/healthz}"
 
 # Nexus Dominion — Docker Compose; expose the server on 127.0.0.1:4000
@@ -227,17 +243,27 @@ if [ -z "${RELEASE_DIR:-}" ]; then
   ARCHIVE_PATH="$(find_archive)"
   log "Архив: $ARCHIVE_PATH"
 
-  # ── 1б) Проверка на целостта (по избор) ─────────────────────────────────────
-  # Ако до архива има <архив>.sha256, верифицирай преди да разопаковаш. Така
-  # случайно повреден или подменен архив не стига до сървъра.
-  if [ -f "${ARCHIVE_PATH}.sha256" ]; then
+  # ── 1б) Проверка на целостта (ЗАДЪЛЖИТЕЛНА — fail-closed) ───────────────────
+  # До архива трябва да има <архив>.sha256 (fetch-deploy.sh го пише сам; при ръчно
+  # качване: `sha256sum архив > архив.sha256` на СВОЯТА машина и качи двата файла).
+  # Липсващ, невалиден или несъвпадащ хеш = спиране ПРЕДИ разопаковане. Хешът се чете
+  # от файла и се сравнява с архива — не `sha256sum -c`, който проверява името,
+  # записано във файла (друго име там = проверка на друг файл).
+  # Единственият изход без хеш е изричен: ALLOW_UNVERIFIED_ARCHIVE=1 (на твоя отговорност).
+  sum_file="${ARCHIVE_PATH}.sha256"
+  if [ -f "$sum_file" ]; then
     log "Проверявам sha256…"
-    ( cd "$(dirname "$ARCHIVE_PATH")" \
-      && sha256sum -c "$(basename "$ARCHIVE_PATH").sha256" ) \
-      || die "sha256 не съвпада — спирам (повреден или подменен архив)."
+    expected="$(awk 'NR==1 { print tolower($1) }' "$sum_file")"
+    [[ "$expected" =~ ^[0-9a-f]{64}$ ]] \
+      || die "${sum_file##*/} не съдържа валиден sha256 (64 шестнадесетични знака) — спирам."
+    actual="$(sha256sum "$ARCHIVE_PATH" | awk '{ print $1 }')"
+    [ "$actual" = "$expected" ] \
+      || die "sha256 НЕ съвпада — спирам (повреден или подменен архив). Очакван ${expected:0:12}…, получен ${actual:0:12}…"
     ok "sha256 е валиден."
+  elif [ "${ALLOW_UNVERIFIED_ARCHIVE:-0}" = "1" ]; then
+    warn "Няма ${sum_file##*/} — продължавам БЕЗ проверка на целостта, защото ALLOW_UNVERIFIED_ARCHIVE=1."
   else
-    warn "Няма ${ARCHIVE_PATH##*/}.sha256 — пропускам проверка на целостта (препоръчително я добави)."
+    die "Няма ${sum_file##*/} — спирам (целостта на архива е непроверима). Направи го на своята машина: sha256sum ${ARCHIVE_PATH##*/} > ${ARCHIVE_PATH##*/}.sha256 и го качи до архива. Изрично без проверка: ALLOW_UNVERIFIED_ARCHIVE=1."
   fi
 
   # ── 2) Разопаковай в нов release и нормализирай корена ─────────────────────
@@ -680,6 +706,20 @@ EOF
 # статичен сайт от site/ (вече в git) → само rsync на файловете + рестарт. Тайните
 # (server/.env) и рънтайм състоянието (server/.state/ — брояч + видимост + хеш на
 # админ паролата) се ИЗКЛЮЧВАТ от rsync → оцеляват между версиите. Health + rollback.
+# Права (кодът е на root, сервизът пише само в server/.state/): кодът root:root, само за
+# четене от сервиза; server/.state/ на ospedali (700); server/.env root:ospedali 640 —
+# systemd го чете като root (EnvironmentFile), приложението — best-effort през групата.
+# Идемпотентно; поправя и стари инсталации, където chown -R даваше всичко на сервиза.
+ospedali_perms() {
+  # .state/ се прескача (prune): иначе за миг е на root и живият сервиз получава EACCES.
+  find "$OSPEDALI_DIR" -path "$OSPEDALI_DIR/server/.state" -prune -o -exec chown -h root:root {} +
+  install -d -o "$OSPEDALI_USER" -g "$OSPEDALI_USER" -m 700 "$OSPEDALI_DIR/server/.state"
+  chown -R "$OSPEDALI_USER:$OSPEDALI_USER" "$OSPEDALI_DIR/server/.state"
+  if [ -f "$OSPEDALI_DIR/server/.env" ]; then
+    chown "root:$OSPEDALI_USER" "$OSPEDALI_DIR/server/.env"
+    chmod 640 "$OSPEDALI_DIR/server/.env"
+  fi
+}
 deploy_ospedali() {
   # Папката в репото е ospedalitrasparenti/ (преименувана); старото име ospedali/
   # се приема като fallback, за да работят и по-стари архиви. Деплой ключът,
@@ -690,8 +730,12 @@ deploy_ospedali() {
   log "Разгръщам ospedali (systemd, нула зависимости, без билд)…"
   command -v node >/dev/null || die "Липсва node — инсталирай Node.js ≥ 20."
   command -v rsync >/dev/null || { apt-get update -y && apt-get install -y rsync; }
-  # Сервизът върви като www-data (споделен уеб потребител, виж ospedali.service).
-  id www-data >/dev/null 2>&1 || die "Липсва системен потребител www-data."
+  # Сервизът върви като собствен системен потребител (виж ospedali.service), не като
+  # www-data на nginx. Самосъздаващ се, идемпотентно; --user-group изрично създава група
+  # ospedali (Group= в unit-а и групата на .env). Преходът от www-data е без ръчна
+  # стъпка: ospedali_perms долу минава и през изключените от rsync server/.env и server/.state/.
+  id "$OSPEDALI_USER" >/dev/null 2>&1 || useradd --system --user-group --home-dir "$OSPEDALI_DIR" \
+    --shell /usr/sbin/nologin "$OSPEDALI_USER"
   # Бекъп на текущия код (server/.env и server/.state/ се пазят — excludes долу).
   [ -d "$OSPEDALI_DIR" ] && cp -a "$OSPEDALI_DIR" "${OSPEDALI_DIR}.bak-$TS"
   mkdir -p "$OSPEDALI_DIR"
@@ -700,11 +744,10 @@ deploy_ospedali() {
     --exclude server/.env --exclude server/.state/ \
     --exclude node_modules/ --exclude data/raw/ --exclude data/contratti/ \
     "$d"/ "$OSPEDALI_DIR"/
-  chown -R www-data:www-data "$OSPEDALI_DIR"
   # .state/ трябва да съществува ПРЕДИ старт: ProtectSystem=strict прави всичко
   # извън ReadWritePaths само за четене, а config.js прави mkdir на .state само ако
-  # родителят е записваем. Създаваме го тук (идемпотентно).
-  install -d -o www-data -g www-data -m 700 "$OSPEDALI_DIR/server/.state"
+  # родителят е записваем. ospedali_perms го създава (идемпотентно).
+  ospedali_perms
   # systemd unit — самоинсталиращ се/обновяващ се при всеки деплой.
   install -m 644 "$OSPEDALI_DIR/deploy/systemd/ospedali.service" /etc/systemd/system/ospedali.service
   systemctl daemon-reload
@@ -730,7 +773,7 @@ deploy_ospedali() {
     if [ -d "${OSPEDALI_DIR}.bak-$TS" ]; then
       rsync -a --delete --exclude server/.env --exclude server/.state/ \
         "${OSPEDALI_DIR}.bak-$TS"/ "$OSPEDALI_DIR"/
-      chown -R www-data:www-data "$OSPEDALI_DIR"
+      ospedali_perms
       systemctl restart "$OSPEDALI_SERVICE" || warn "ospedali: и откатът не тръгна — иска ръчна намеса."
     fi
   fi
@@ -1871,6 +1914,161 @@ indexnow_ping() {
 # `|| true`: съхраняването на тайни никога не проваля деплой на друг продукт.
 supreme_persist_env "$CURRENT_LINK/SupremeDiscordBot" || true
 
+# ── 3g') fivem — Docker Compose ───────────────────────────────────────────────
+# Продуктовата логика (бекъп → up → миграции → първоначално напълване) е в
+# FiveM/scripts/deploy.sh, за да живее при продукта. Тук е само това, което е
+# работа на оркестратора: пренасяне на .env, стабилен път за бекъпите и здраве.
+# IndexNow след зелена здравна проба. ИЗПУСНАТА при сливането с main
+# (пресглобих файла от три парчета и тази четвърта функция остана навън) —
+# `deploy_fivem` я вика на пътя на УСПЕХА, а под `set -e` недефинирана функция
+# е exit 127: деплоят умираше СЛЕД здравната проба, `current` не се местеше и
+# старите releases не се чистеха. Хванато от червения екип, не от `bash -n`
+# (той не лови липсваща функция). Затова и `command -v` спирач по-долу.
+fivem_indexnow() {
+  local keyfile="$SRC/FiveM/public/indexnow-key.txt"
+  [ -f "$keyfile" ] || { warn "fivem: няма public/indexnow-key.txt — пропускам IndexNow."; return 0; }
+  command -v node >/dev/null 2>&1 || { warn "fivem: няма node на хоста — пропускам IndexNow."; return 0; }
+  if node "$SRC/tools/seo/indexnow.mjs" "https://$FIVEM_DOMAIN" --key-file "$keyfile" >/dev/null 2>&1; then
+    ok "fivem: IndexNow уведоми Bing/Yandex/Seznam/Naver/Yep."
+  else
+    warn "fivem: IndexNow ping не мина (сайтът трябва да е публичен с /indexnow-key.txt)."
+  fi
+}
+
+deploy_fivem() {
+  local d="$SRC/FiveM"
+  [ -d "$d" ] || { warn "Няма FiveM/ в архива — пропускам."; return; }
+  log "Разгръщам fivem (Docker Compose)…"
+
+  # Тайните живеят на СТАБИЛЕН път извън releases и се симлинкват в release-а
+  # (моделът на nexus). Държани в самата release папка, те се губеха при
+  # прекъснат пробег: следващият генерираше НОВ `POSTGRES_PASSWORD` върху вече
+  # инициализиран том, а Postgres игнорира паролата при непразен PGDATA —
+  # `pg_isready` не се удостоверява, значи чакането светеше зелено и чак
+  # миграцията падаше с auth грешка.
+  mkdir -p "$FIVEM_STATE_DIR"
+  chmod 700 "$FIVEM_STATE_DIR"
+
+  # Еднократна миграция от стария модел: .env още в текущия release.
+  if [ ! -f "$FIVEM_STATE_DIR/.env" ] && [ -f "$CURRENT_LINK/FiveM/.env" ] && [ ! -L "$CURRENT_LINK/FiveM/.env" ]; then
+    cp -a "$CURRENT_LINK/FiveM/.env" "$FIVEM_STATE_DIR/.env"
+    chmod 600 "$FIVEM_STATE_DIR/.env"
+    ok "Преместих FiveM/.env в $FIVEM_STATE_DIR"
+  fi
+
+  # Пръв деплой: генерирай, каквото може да се генерира.
+  if [ ! -f "$FIVEM_STATE_DIR/.env" ]; then
+    warn "Няма FiveM/.env — генерирам с random тайни."
+    local dbp adp hash
+    # ВНИМАНИЕ: под `set -e` присвояване от командна замяна НАСЛЕДЯВА нейния
+    # изход и убива скрипта — проверката на следващия ред е недостижима.
+    # Затова всяко от тези присвоявания носи `|| true`.
+    dbp="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' || true)"
+    adp="$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' || true)"
+    [ -n "$dbp" ] && [ -n "$adp" ] || die "openssl не даде случайни стойности — спирам, вместо да пиша слаби тайни."
+
+    # Хешът се смята с ЧИСТ node, не с `npx tsx`: на този етап образът още не е
+    # строен, `node_modules` в release папката НЯМА, а `npx --yes` би дърпал от
+    # мрежата насред деплой. Паролата минава през ОКОЛНАТА СРЕДА, не през
+    # аргументи — argv се чете от всеки през `ps`.
+    hash=""
+    if command -v node >/dev/null 2>&1; then
+      hash="$(ADM="$adp" node -e '
+        const { randomBytes, scryptSync } = require("node:crypto");
+        const salt = randomBytes(16).toString("hex");
+        process.stdout.write(salt + ":" + scryptSync(process.env.ADM, salt, 64).toString("hex"));
+      ' 2>/dev/null || true)"
+    fi
+    if [ -z "$hash" ]; then
+      warn "Няма node на хоста — ADMIN_PASSWORD_HASH остава празен, панелът е ЗАТВОРЕН."
+      warn "Генерирай го после с: cd $d && npm run admin:hash -- \"дълга парола\""
+    fi
+
+    # Файлът се създава ПРАЗЕН и с права 600 ПРЕДИ да влезе съдържание —
+    # иначе стои 644 в прозореца между записа и `chmod`.
+    install -m 600 /dev/null "$FIVEM_STATE_DIR/.env"
+    cat > "$FIVEM_STATE_DIR/.env" <<EOF
+POSTGRES_PASSWORD=${dbp}
+DATABASE_URL=postgresql://fivem:${dbp}@db:5432/fivem
+PUBLIC_BASE_URL=https://${FIVEM_DOMAIN}
+ADMIN_PASSWORD_HASH=${hash}
+TRUST_PROXY_IP_HEADER=x-real-ip
+# Без RESEND_API_KEY уведомленията по чл. 16 и чл. 17 DSA НЕ тръгват —
+# липсата се логва, но обещанието остава неизпълнено. Попълни го.
+RESEND_API_KEY=
+EMAIL_FROM=Thraex PVP <no-reply@${FIVEM_DOMAIN}>
+# По избор — без тях съответната платформа просто се пропуска.
+TWITCH_CLIENT_ID=
+TWITCH_CLIENT_SECRET=
+KICK_CLIENT_ID=
+KICK_CLIENT_SECRET=
+KICK_CATEGORY_ID=
+YOUTUBE_API_KEY=
+FIVEM_PING_TIMEOUT_MS=4000
+FIVEM_PING_CONCURRENCY=6
+EOF
+    [ -n "$hash" ] && warn "Админ парола за FiveM: ${adp} — запиши я в password manager СЕГА, не се показва пак."
+    warn "Попълни RESEND_API_KEY в $FIVEM_STATE_DIR/.env, иначе решенията по DSA не се изпращат."
+  fi
+  chmod 600 "$FIVEM_STATE_DIR/.env" 2>/dev/null || true
+  # `-T`: без него, ако `$d/.env` вече е ДИРЕКТОРИЯ, връзката се създава ВЪТРЕ
+  # в нея (`.env/.env`) и приложението тръгва без тайни, без грешка.
+  ln -sfnT "$FIVEM_STATE_DIR/.env" "$d/.env"
+
+  # Бекъпите също са на стабилен път — иначе умират с прочистването на releases.
+  mkdir -p "$FIVEM_STATE_DIR/backups"
+  rm -rf "$d/backups"
+  ln -sfnT "$FIVEM_STATE_DIR/backups" "$d/backups"
+  ok "FiveM/.env и backups → $FIVEM_STATE_DIR"
+
+  # ── Дневниците на nginx: подпапка + ротация, ИДЕМПОТЕНТНО при всеки деплой ──
+  # Правният одит го извади: `/privacy` обявява 14 дни, а изпълнителят беше
+  # ръчна стъпка в DEPLOY.md. По-лошо — откакто дневниците са в подпапка
+  # (заради `duplicate log entry` с пакетния конфиг), глобът `/var/log/nginx/*.log`
+  # НЕ ги хваща, значи без нашия файл срокът е БЕЗКРАЕН, не „твърде дълъг“.
+  # Обявен срок по чл. 5, ал. 1, б. „д“ ОРЗД, който виси на памет, не е срок.
+  # `install -d` като root СЛЕДВА симлинк и сменя собственика на целта
+  # (CWE-59, възпроизведено от червения екип). Предусловието иска запис в
+  # `/var/log/nginx` (root:root 755), тоест е далечно — но отказът струва един
+  # ред, а тихият chown на чужда папка струва много повече.
+  if [ -L /var/log/nginx/fivembulgaria ]; then
+    warn "/var/log/nginx/fivembulgaria е СИМЛИНК — отказвам да пипам правата му; провери ръчно."
+  else
+    install -d -o www-data -g adm -m 0755 /var/log/nginx/fivembulgaria 2>/dev/null \
+      || warn "не мога да създам /var/log/nginx/fivembulgaria — nginx няма да тръгне с новия конфиг."
+  fi
+  if [ -f "$d/deploy/logrotate.conf" ]; then
+    install -m 0644 "$d/deploy/logrotate.conf" /etc/logrotate.d/fivembulgaria \
+      || warn "не мога да инсталирам /etc/logrotate.d/fivembulgaria — 14-те дни НЕ са гарантирани."
+    # `grep -c`, НЕ `grep -q`: с `-q` grep затваря рано, logrotate получава
+    # SIGPIPE (141) и под `pipefail` условието е лъжливо ТОЧНО когато има дубъл.
+    # Същият клас грешка вече ни спря деплоя веднъж (бекъп гардът).
+    if command -v logrotate >/dev/null 2>&1; then
+      local dups
+      dups="$(logrotate -d /etc/logrotate.conf 2>&1 | grep -ci 'duplicate log entry' || true)"
+      [ "${dups:-0}" -gt 0 ] \
+        && warn "logrotate: два конфига се бият за един дневник (duplicate log entry) — обявените 14 дни не са гарантирани."
+    fi
+  fi
+
+  # Гардът НЕ е стилов: под `set -e` провалът на този subshell прекратява ЦЕЛИЯ
+  # autodeploy, тоест всеки продукт СЛЕД fivem остава неразгърнат — при това
+  # мълчаливо, защото последното на екрана е нормален изход от предния продукт.
+  # `scripts/deploy.sh` спира нарочно при празен бекъп, значи този път се минава
+  # редовно, а не само при рядка авария.
+  ( cd "$d" && bash scripts/deploy.sh ) || {
+    warn "FiveM/scripts/deploy.sh се провали — продължавам с останалите продукти."
+    deploy_failed=1
+    return
+  }
+  if health "$FIVEM_HEALTH_URL" "fivem"; then
+    # Директорията се мени при всяко откриване → sitemap-ът остарява бързо.
+    fivem_indexnow
+  else
+    deploy_failed=1
+  fi
+}
+
 for p in $PROJECTS; do
   case "$p" in
     zabobovdol) deploy_zabobovdol ;;
@@ -1888,6 +2086,7 @@ for p in $PROJECTS; do
     rilievi)    deploy_rilievi ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
+    fivem|FiveM)          deploy_fivem ;;
     *)          warn "Непознат проект: $p" ;;
   esac
 done

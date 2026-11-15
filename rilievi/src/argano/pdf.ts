@@ -1,24 +1,29 @@
-import { readFileSync } from 'node:fs';
 import PDFDocument from 'pdfkit';
 import type { AziendaCartello } from '../cartelli/pdf.js';
 import type { Translator } from '../i18n.js';
-import { pdfFontPaths } from '../schede/pdf.js';
 import type { DatiArgano } from './dati.js';
 import { numero } from './formato.js';
+import {
+  disegnaAvvertenza,
+  disegnaPiede,
+  disegnaTestata,
+  fontsOf,
+  inBuffer,
+  INK,
+  M,
+  MUTED,
+  PAGE,
+  W,
+} from './pdf-testata.js';
 import type { SezioneRisultati } from './righe.js';
 import { nomeFune } from './righe.js';
 
 /**
  * PDF-ът на изчислението за аргано (A4, отделен от картата — собственикът, 31 октомври 2026): горе логото
  * и данните на фирмата, заглавието и уредбата, после входните данни и раздели с резултатите (стойност,
- * мярка, ОК/НЕ) и заключение на всеки, долу кога и от кого е записано. DejaVu Sans, вграден.
+ * мярка, ОК/НЕ) и заключение на всеки, предупреждението и полето за подпис на техника; долу на всяка
+ * страница кой и кога е генерирал листа и кога и от кого е записано. DejaVu Sans, вграден.
  */
-const M = 40;
-const PAGE = { width: 595.28, height: 841.89 };
-const W = PAGE.width - M * 2;
-const INK = '#000000';
-const MUTED = '#555555';
-const LOGO = { width: 170, height: 44 };
 
 export interface CalcoloPdfOptions {
   dati: DatiArgano;
@@ -26,20 +31,10 @@ export interface CalcoloPdfOptions {
   t: Translator;
   impianto: { indirizzo: string; matricola: string; numeroImpianto: string };
   salvato: { quando: string; autore: string };
+  /** Кой тегли PDF-а и кога — „Generato con Rilievi Impianti da …“ на всяка страница. */
+  generato: { quando: string; autore: string; build: string; impronta: string };
   testata: AziendaCartello;
   fontDir: string;
-}
-
-const fontCache = new Map<string, { regular: Buffer; bold: Buffer }>();
-
-function fontsOf(dir: string): { regular: Buffer; bold: Buffer } {
-  let fonts = fontCache.get(dir);
-  if (!fonts) {
-    const paths = pdfFontPaths(dir);
-    fonts = { regular: readFileSync(paths.regular), bold: readFileSync(paths.bold) };
-    fontCache.set(dir, fonts);
-  }
-  return fonts;
 }
 
 /** Входните данни като двойки „надпис — стойност“ (мерките са в надписа). */
@@ -94,24 +89,7 @@ export function renderCalcoloArgano(o: CalcoloPdfOptions): Promise<Buffer> {
   const { t } = o;
 
   // Логото вляво (без лого — името), данните на фирмата вдясно.
-  if (o.testata.logo) doc.image(o.testata.logo, M, M, { fit: [LOGO.width, LOGO.height] });
-  else
-    doc
-      .font('Sans-Bold')
-      .fontSize(13)
-      .fillColor(INK)
-      .text(o.testata.intestazione.nome, M, M, { width: LOGO.width + 40 });
-  const destra = { width: W - LOGO.width - 20, align: 'right' } as const;
-  doc
-    .font('Sans-Bold')
-    .fontSize(9)
-    .fillColor(INK)
-    .text(o.testata.intestazione.nome, M + LOGO.width + 20, M, destra);
-  doc.font('Sans').fontSize(7.5).fillColor(MUTED);
-  for (const riga of o.testata.intestazione.righe)
-    doc.text(riga, M + LOGO.width + 20, doc.y, destra);
-
-  let y = Math.max(M + LOGO.height, doc.y) + 14;
+  let y = disegnaTestata(doc, o.testata) + 14;
   doc.font('Sans-Bold').fontSize(16).fillColor(INK).text(t('argano.titolo'), M, y, { width: W });
   doc
     .font('Sans')
@@ -186,33 +164,8 @@ export function renderCalcoloArgano(o: CalcoloPdfOptions): Promise<Buffer> {
   }
   y += 8;
   doc.font('Sans').fontSize(7.5).fillColor(MUTED).text(t('argano.nota'), M, y, { width: W });
-
-  // Под последния ред на всяка страница: кога и от кого, и номерът на страницата.
-  const pagine = doc.bufferedPageRange();
-  for (let i = 0; i < pagine.count; i++) {
-    doc.switchToPage(pagine.start + i);
-    // Под долното поле: без това pdfkit отваря нова страница за реда.
-    doc.page.margins.bottom = 0;
-    const piede = [
-      t('argano.salvatoIl', { quando: o.salvato.quando, nome: o.salvato.autore || '—' }),
-      `${i + 1} / ${pagine.count}`,
-    ];
-    doc
-      .font('Sans')
-      .fontSize(7)
-      .fillColor(MUTED)
-      .text(piede.join('   ·   '), M, PAGE.height - M + 12, {
-        width: W,
-        align: 'right',
-        lineBreak: false,
-      });
-  }
-  const chunks: Buffer[] = [];
-  const done = new Promise<Buffer>((resolve, reject) => {
-    doc.on('data', (chunk: Buffer) => chunks.push(chunk));
-    doc.on('end', () => resolve(Buffer.concat(chunks)));
-    doc.on('error', reject);
-  });
-  doc.end();
-  return done;
+  // Предупреждението и полето за подпис на техника; долу на всяка страница — кой, кога, с какво.
+  disegnaAvvertenza(doc, t, doc.y + 12);
+  disegnaPiede(doc, t, { generato: o.generato, salvato: o.salvato });
+  return inBuffer(doc);
 }

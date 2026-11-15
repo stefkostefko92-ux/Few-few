@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Router, type Request, type Response } from 'express';
-import { COMPANY, PRIVACY_UPDATED } from '../company.js';
+import { COMPANY, PRIVACY_UPDATED, CONTENT_UPDATED } from '../company.js';
 import { config } from '../config.js';
 import { issuePreCsrf, PRE_CSRF_MAX_AGE_MS, requirePreAuthCsrf } from '../auth/guards.js';
 import { LOCK_MINUTES, MAX_FAILED_LOGINS } from '../auth/lockout.js';
@@ -21,7 +21,17 @@ import {
 } from '../requests/form.js';
 import { REQUEST_RETENTION_DAYS, submitAccessRequest } from '../requests/service.js';
 import { llmsTxt, robotsTxt, sitemapXml } from '../seo/files.js';
-import { HOME_PATH, PRIVACY_PATH, SENT_PATH } from '../seo/paths.js';
+import {
+  CONDIZIONI_PATH,
+  ESPORTAZIONE_PATH,
+  HOME_PATH,
+  NOVITA_PATH,
+  PREZZI_PATH,
+  PRIVACY_PATH,
+  SEGNALAZIONI_PATH,
+  SENT_PATH,
+  STATO_PATH,
+} from '../seo/paths.js';
 import { landingStructuredData, privacyStructuredData } from '../seo/structured-data.js';
 import { INVITE_DAYS, INVITI_SCADUTI_GIORNI } from '../services/invites.js';
 import { GIORNI_PRIMA_DELL_ELIMINAZIONE } from '../aziende/eliminazione.js';
@@ -75,17 +85,25 @@ siteRouter.get(['/indexnow-key.txt', `/${INDEXNOW_KEY}.txt`], (_req, res) => {
 });
 
 /** Общото за публичните страници; `path` е каноничният адрес (null — страница извън индекса). */
-function siteLocals(req: Request, path: string | null) {
+export function siteLocals(req: Request, path: string | null) {
   const base = config().PUBLIC_BASE_URL;
   return {
     publicBase: base,
     canonical: path ? `${base}${path}` : null,
     homePath: HOME_PATH,
     privacyPath: PRIVACY_PATH,
+    novitaPath: NOVITA_PATH,
+    condizioniPath: CONDIZIONI_PATH,
+    esportazionePath: ESPORTAZIONE_PATH,
+    prezziPath: PREZZI_PATH,
+    segnalazioniPath: SEGNALAZIONI_PATH,
+    statoPath: STATO_PATH,
     loginUrl: '/accesso',
     signedIn: Boolean(req.principal),
     company: COMPANY,
     contactEmail: config().CONTACT_EMAIL,
+    // Видимата дата на последната промяна на витрината (същата като `dateModified` в JSON-LD).
+    contentUpdated: CONTENT_UPDATED,
   };
 }
 
@@ -96,7 +114,7 @@ function siteLocals(req: Request, path: string | null) {
  * токена на бисквитка, която живее 2 часа — страница, върната от bfcache след това, би дала 403 и
  * написаното би се загубило.
  */
-function publicCache(req: Request, res: Response): void {
+export function publicCache(req: Request, res: Response): void {
   if (!req.principal) res.set('Cache-Control', 'private, no-cache');
 }
 

@@ -33,7 +33,7 @@ export function righeRisultato(
 ): SezioneRisultati[] {
   const v = r.velocita;
   const velocita: Riga[] = [
-    { etichetta: t('argano.r.vNuova'), valore: numero(v.nuova, 3), unita: 'm/s' },
+    { etichetta: t('argano.r.vNuova'), valore: numero(v.nuova, 2), unita: 'm/s' },
     { etichetta: t('argano.r.vPre'), valore: numero(v.preesistente, 2), unita: 'm/s' },
     { etichetta: t('argano.r.variazione'), valore: percentuale(v.variazione), ok: v.ok },
   ];

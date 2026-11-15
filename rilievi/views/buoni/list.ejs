@@ -1,0 +1,57 @@
+<%
+  // „Buono di lavoro“ на фирмата — най-новите отгоре, с търсене (номер, матрикула, място, поръчка…).
+  const showAzienda = aziende.length > 0;
+  const params = new URLSearchParams();
+  if (aziendaFilter) params.set('azienda', aziendaFilter);
+  if (query) params.set('q', query);
+  const base = '/buoni' + (params.toString() ? '?' + params.toString() : '');
+  const firmeDi = (n) => n === 0 ? t('buoni.firmeNessuna') : t('buoni.firmeN', { n });
+%><%- include('../partials/top', { titleKey: 'buoni.list' }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('buoni.list') %></h1>
+    <p class="page-head__sub"><%= t('buoni.listSub') %></p>
+  </div>
+  <% if (can('interventi:write')) { %><a class="btn btn--primary" href="/buoni/nuovo"><%- include('../partials/icon', { name: 'plus' }) %><%= t('buoni.new') %></a><% } %>
+</div>
+<form class="filter buoni-cerca" method="get" action="/buoni" role="search">
+  <% if (aziendaFilter) { %><input type="hidden" name="azienda" value="<%= aziendaFilter %>"><% } %>
+  <label class="field__label" for="buoni-q"><%= t('buoni.cercaLabel') %></label>
+  <div class="filter__row">
+    <input class="input" id="buoni-q" name="q" type="search" maxlength="100" placeholder="<%= t('buoni.cerca') %>" value="<%= query %>">
+    <button class="btn" type="submit"><%- include('../partials/icon', { name: 'search' }) %><%= t('buoni.cercaBtn') %></button>
+  </div>
+</form>
+<% if (showAzienda) { %><%- include('../partials/azienda-filter', { action: '/buoni', query }) %><% } %>
+<% if (query) { %><p class="muted" role="status"><%= t('buoni.risultati', { n: page.total }) %></p><% } %>
+<% if (page.rows.length === 0) { %>
+<div class="empty">
+  <p><strong><%= query ? t('buoni.emptyCerca') : t('buoni.empty') %></strong></p>
+  <% if (!query && can('interventi:write')) { %><p class="muted"><%= t('buoni.emptyHint') %></p><% } %>
+</div>
+<% } else { %>
+<table class="table table--stack">
+  <caption class="visually-hidden"><%= t('buoni.list') %></caption>
+  <thead>
+    <tr>
+      <th scope="col"><%= t('buoni.colonna.numero') %></th>
+      <th scope="col"><%= t('buoni.colonna.impianto') %></th>
+      <th scope="col"><%= t('buoni.colonna.conferma') %></th>
+      <% if (showAzienda) { %><th scope="col"><%= t('buoni.colonna.azienda') %></th><% } %>
+      <th scope="col"><%= t('buoni.colonna.firme') %></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% for (const row of page.rows) { %><tr>
+      <td data-label="<%= t('buoni.colonna.numero') %>"><a class="row-link" href="/buoni/<%= row.id %>"><%= row.numero || t('buoni.senzaNumero') %></a></td>
+      <td class="wide" data-label="<%= t('buoni.colonna.impianto') %>"><%= [row.matricola, row.ubicazione].filter(Boolean).join(' · ') || '—' %></td>
+      <td class="date" data-label="<%= t('buoni.colonna.conferma') %>"><%= row.dataConferma ? fmt.day(row.dataConferma) : '—' %></td>
+      <% if (showAzienda) { %><td data-label="<%= t('buoni.colonna.azienda') %>"><%= row.azienda.name %></td><% } %>
+      <td data-label="<%= t('buoni.colonna.firme') %>"><%= firmeDi(row._count.firme) %></td>
+    </tr>
+    <% } %>
+  </tbody>
+</table>
+<%- include('../partials/pager', { base, page: page.page, pages: page.pages }) %>
+<% } %>
+<%- include('../partials/bottom') %>

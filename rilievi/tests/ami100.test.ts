@@ -93,7 +93,7 @@ describe('the solutions for a reduced headroom or pit', () => {
       arganoPreventivo: null,
       preventivoArgano: null,
       sospensioni: null,
-      operatore: null,
+      operatoreModulo: null,
       ordineSospensioni: null,
       testataInterventi: [],
       fossaInterventi: ['SEMAFORO', 'AMI100_RTBS'] as ('SEMAFORO' | 'AMI100_RTBS')[],

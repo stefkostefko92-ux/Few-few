@@ -248,7 +248,7 @@ describe('where the DMG forms open', () => {
       arganoPreventivo: null,
       preventivoArgano: null,
       sospensioni: null,
-      operatore: null,
+      operatoreModulo: null,
       ordineSospensioni: null,
       testataInterventi: [],
       fossaInterventi: [],

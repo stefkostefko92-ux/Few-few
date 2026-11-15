@@ -39,7 +39,76 @@ export async function signIn(page, base, who, secret) {
   await page.fill('#email', who);
   await page.fill('#password', secret);
   await page.click('form button[type=submit]');
-  await page.waitForURL(/\/(schede|account)/);
+  await page.waitForURL(/\/(schede|account|condizioni\/accetta)/);
+  await acceptTerms(page, who);
+  await readUpdates(page);
+}
+
+// The terms before the portal (src/legale/): the rules of use with a tick; for the company's ADMIN, the
+// company data and the acceptance, then — on a page of its own — the specific approval of the clauses
+// signed with the emailed code (here, without SMTP, the page shows it). Each page checked once with axe.
+const termsAudited = new Set();
+// As a tap on the label: the styled box over the input would take a pointer click.
+const spunta = (input) =>
+  input.evaluate((el) => {
+    if (!el.checked) el.click();
+  });
+export async function acceptTerms(page, who) {
+  if (!new URL(page.url()).pathname.startsWith('/condizioni/accetta')) return;
+  if (!termsAudited.has('accetta')) {
+    termsAudited.add('accetta');
+    await audit(page, 'terms acceptance');
+  }
+  const azienda = page.locator('input[name=condizioni]');
+  const regole = page.locator('input[name=regole]');
+  if (!(await azienda.count()) && !(await regole.count()))
+    return fail(`${who}: waits for the company's ADMIN to accept the terms`);
+  if (await azienda.count()) {
+    if (!(await page.inputValue('#f-sede')))
+      await page.fill('#f-sede', 'Via Roma 1, 20121 Milano (MI)');
+    if (!(await page.inputValue('#f-partitaIva'))) await page.fill('#f-partitaIva', '01234567890');
+    await spunta(azienda);
+  }
+  if (await regole.count()) await spunta(regole);
+  await Promise.all([page.waitForEvent('load'), page.click('form.form button[type=submit]')]);
+  if (new URL(page.url()).pathname.startsWith('/condizioni/firma')) {
+    if (!termsAudited.has('firma')) {
+      termsAudited.add('firma');
+      await audit(page, 'terms signature');
+    }
+    const codice = /\b(\d{6})\b/.exec((await page.locator('.flash').textContent()) ?? '')?.[1];
+    if (!codice) return fail(`${who}: no code on the signature page (SMTP set on a test server?)`);
+    await spunta(page.locator('input[name=clausole]'));
+    await page.fill('#f-codice', codice);
+    await Promise.all([page.waitForEvent('load'), page.click('form.form button[type=submit]')]);
+  }
+  if (new URL(page.url()).pathname.startsWith('/condizioni/'))
+    fail(`${who}: still on the terms (${page.url()})`);
+}
+
+// The popup of the updates (views/partials/novita.ejs, novita.js) comes on the first page after an
+// update: modal, checked once with axe, read with "Ho capito" in the background — it closes and does not
+// come back on the next page. A new account has nothing to read: no popup.
+let updatesAudited = false;
+export async function readUpdates(page) {
+  const dialog = page.locator('dialog[data-novita]');
+  if (!(await dialog.count())) return;
+  await page.waitForFunction(() =>
+    document.querySelector('dialog[data-novita]')?.matches(':modal'),
+  );
+  if (!updatesAudited) {
+    updatesAudited = true;
+    await audit(page, 'updates popup');
+    if (!(await dialog.locator('li[data-voce]').count())) fail('updates popup without updates');
+  }
+  const read = page.waitForResponse(
+    (r) => r.url().endsWith('/novita/lette') && r.request().method() === 'POST',
+  );
+  await dialog.locator('button[type=submit]').click();
+  if ((await read).status() !== 204) fail('updates popup: "Ho capito" not saved');
+  if (await dialog.evaluate((d) => d.open)) fail('updates popup still open after "Ho capito"');
+  await page.reload();
+  if (await page.locator('dialog[data-novita]').count()) fail('updates popup back after reading');
 }
 
 // The real input sits under its label (visually a tick box); a DOM click is what a tap on the label does,

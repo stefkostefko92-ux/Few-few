@@ -2,21 +2,33 @@
 // schermo intero"). In a real Chromium: Chrome itself says the portal is installable (no installability
 // errors, the manifest parsed with its icons), the service worker runs and keeps nothing, a page opened
 // offline says so instead of the browser's error, and "Installa l'app" shows the steps of this device.
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { chromium } from 'playwright';
+import { checkBozze } from './bozze.mjs';
 import { audit, fail, signIn } from './helpers.mjs';
 
 /**
  * In a context of its own: Playwright sees what a service worker fetches (and takes it offline) only
  * with this flag, read when the worker attaches — the rest of the run keeps the default.
+ * A profile on disk, not `browser.newContext()`: that one is an incognito window, where Chrome answers
+ * "in-incognito" to the question whether the app can be installed — an error of the test, not of the portal
+ * (the audit of 12 November 2026).
  */
-export async function checkInstallableApp(browser, { base, shots, scheme, email, password }) {
+export async function checkInstallableApp(_browser, { base, shots, scheme, email, password }) {
   const flag = process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS;
   process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS = '1';
-  const context = await browser.newContext({ colorScheme: scheme });
+  const profilo = await mkdtemp(join(tmpdir(), 'rilievi-e2e-app-'));
+  const context = await chromium.launchPersistentContext(profilo, {
+    colorScheme: scheme,
+    ...(process.env.E2E_CHROMIUM ? { executablePath: process.env.E2E_CHROMIUM } : {}),
+  });
   try {
     await installable(context, { base, shots, scheme, email, password });
   } finally {
     await context.close();
+    await rm(profilo, { recursive: true, force: true });
     if (flag === undefined) delete process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS;
     else process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS = flag;
   }
@@ -72,6 +84,7 @@ async function installable(context, { base, shots, scheme, email, password }) {
   await page.goto(`${base}/schede/nuova`);
   if ((await page.textContent('h1'))?.trim() === 'Nessuna connessione')
     fail(`${scheme} app: still offline once the network is back`);
+  await checkBozze(page, context, { base, scheme });
 
   // "Installa l'app": on a computer the computer's steps are open, the others closed.
   await page.goto(`${base}/app`);
@@ -110,7 +123,48 @@ export async function checkInstallPhone(browser, { base, shots, scheme }) {
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
   );
   if (sideways) fail(`${scheme} app: "Installa l'app" scrolls sideways at 360 px`);
+  if (await page.locator('[data-installa-ios]').isVisible())
+    fail(`${scheme} app: the iPhone note shows on Android`);
   await audit(page, `${scheme} app install phone`);
   await page.screenshot({ path: join(shots, `${scheme}-installa-telefono.png`), fullPage: true });
   await context.close();
+  await checkInstallOther(browser, { base, shots, scheme });
+}
+
+/**
+ * iPhone and Samsung Internet (the owner, 5 November 2026): no install button where it cannot work — iOS
+ * has no install call, and what Samsung Internet installs Android marks as "non sicura". The button was
+ * hidden only by the `hidden` attribute, which `display: grid` overrode, so it showed everywhere.
+ */
+async function checkInstallOther(browser, { base, shots, scheme }) {
+  const devices = {
+    iphone:
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1',
+    samsung:
+      'Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/25.0 Chrome/121.0.0.0 Mobile Safari/537.36',
+  };
+  for (const [name, userAgent] of Object.entries(devices)) {
+    const context = await browser.newContext({
+      colorScheme: scheme,
+      viewport: { width: 390, height: 844 },
+      isMobile: true,
+      hasTouch: true,
+      userAgent,
+    });
+    const page = await context.newPage();
+    await page.goto(`${base}/app`);
+    await page.waitForTimeout(500);
+    if (await page.locator('[data-installa-pronta]').isVisible())
+      fail(`${scheme} app (${name}): an install button that cannot install`);
+    const note = name === 'iphone' ? '[data-installa-ios]' : '[data-installa-samsung]';
+    const other = name === 'iphone' ? '[data-installa-samsung]' : '[data-installa-ios]';
+    if (!(await page.locator(note).isVisible())) fail(`${scheme} app (${name}): no note for it`);
+    if (await page.locator(other).isVisible())
+      fail(`${scheme} app (${name}): the other note shows`);
+    if (name === 'samsung' && !(await page.locator('a[href^="intent://"]').isVisible()))
+      fail(`${scheme} app (samsung): no "Apri in Chrome"`);
+    await audit(page, `${scheme} app install ${name}`);
+    await page.screenshot({ path: join(shots, `${scheme}-installa-${name}.png`), fullPage: true });
+    await context.close();
+  }
 }

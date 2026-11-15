@@ -72,7 +72,7 @@ function dxfEntities(text) {
   }
   return out;
 }
-const layerNum = (s) => Number(s.replace('_', '.'));
+const layerNum = (s) => Number(s.replace('P', '.'));
 
 for (const [ci, input] of OUTPUT_SPECS.entries()) {
   test(`CNC geometry ${ci + 1}: ${input.type}${Object.keys(input).length > 1 ? ' variant' : ''}`, () => {
@@ -122,7 +122,7 @@ for (const [ci, input] of OUTPUT_SPECS.entries()) {
         for (const row of csv.filter((c) => c[0] === pl.partId)) {
           const [u, v] = [csvNum(row[4]) - cut.du0, csvNum(row[5]) - cut.dv0];
           const [X, Y] = pl.rot ? [pl.x + cut.W - v, pl.y + u] : [pl.x + u, pl.y + v];
-          expected.push({ X, Y, d: csvNum(row[6]), depth: r1(Math.min(csvNum(row[7]), T + THROUGH_EXTRA)), what: `${pl.name} hole ${row[3]}` });
+          expected.push({ X, Y, d: csvNum(row[6]), depth: r1(Math.min(csvNum(row[7]), T + THROUGH_EXTRA)), what: `${pl.name} hole ${row[3]}` }); // a blind hole is never deeper than T − 2
         }
       }
       assert.equal(holesAll.length, expected.length, `${where}: holes in the G-code and manual vs drilling.csv`);
@@ -139,7 +139,7 @@ for (const [ci, input] of OUTPUT_SPECS.entries()) {
       assert.equal(circles.length, holesAll.length, `${where}: DXF circles vs holes`);
       const holes = [...holesAll];
       for (const c of circles) {
-        const m = /^DRILL_D(\d+(?:_\d+)?)_Z-(\d+(?:_\d+)?)$/.exec(c.layer);
+        const m = /^(?:MANUAL_)?DRILL_D(\d+(?:P\d+)?)_Z-(\d+(?:P\d+)?)$/.exec(c.layer);
         assert.ok(m, `${where}: circle on layer ${c.layer}`);
         const [d, depth] = [layerNum(m[1]), layerNum(m[2])];
         assert.ok(near(c[40], d / 2, 0.001), `${where}: circle radius ${c[40]} on ${c.layer}`);
@@ -147,7 +147,7 @@ for (const [ci, input] of OUTPUT_SPECS.entries()) {
         assert.ok(i >= 0, `${where}: DXF circle ${c[10]}, ${c[20]} on ${c.layer} is not a hole of the G-code or a manual one`);
         holes.splice(i, 1);
       }
-      const contourLayer = `CONTOUR_D${model.spec.tool}_Z-${String(r1(T + SPOIL)).replace('.', '_')}`;
+      const contourLayer = `CONTOUR_D${model.spec.tool}_Z-${String(r1(T + SPOIL)).replace('.', 'P')}`;
       const rects = ents.filter((e) => e.type === 'POLYLINE' && e.layer === contourLayer).map((e) => e.vertices.map((v) => [v[10], v[20]]));
       assert.equal(rects.length, sheet.placements.length, `${where}: DXF contours on ${contourLayer} vs placements`);
       for (const pl of sheet.placements) {

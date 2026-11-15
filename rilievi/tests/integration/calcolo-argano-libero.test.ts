@@ -146,8 +146,11 @@ describe('a calculation without a scheda', () => {
     const page = (await browser.get(`/calcolo-argano/${id}`)).body;
     assert.match(page, /Via Dante 2, 20121 Milano \(MI\)/);
     assert.match(page, /id="f-matricola"[^>]*value="0/);
-    assert.match(page, /0,733 m\/s/);
-    assert.match(page, /Aderenza verificata nei due casi/);
+    assert.match(page, /0,73 m\/s/);
+    assert.match(
+      page,
+      /Verifica di calcolo soddisfatta con i dati inseriti: aderenza nei due casi/,
+    );
     assert.ok(!/[А-яЁё]/.test(page), 'no Cyrillic in the page');
 
     const pdf = await browser.get(`/calcolo-argano/${id}/pdf`);
@@ -168,15 +171,17 @@ describe('a calculation without a scheda', () => {
     const prima = await prisma.calcoloArgano.count({ where: { aziendaId: azienda.id } });
     const reply = await nuovo(browser, {
       indirizzo: '   ',
-      matricola: '12A',
-      numeroImpianto: '1'.repeat(21),
+      // The matricola is free text up to 40 since 10 November 2026; the number stays digits only.
+      matricola: 'M'.repeat(41),
+      numeroImpianto: '12A',
       velocita: '12',
     });
     assert.equal(reply.status, 422);
     assert.match(reply.body, /Correggi 4 campi/);
     assert.match(reply.body, /Indica l&#39;indirizzo dell&#39;impianto/);
     assert.match(reply.body, /Solo cifre, senza lettere o simboli/);
-    assert.match(reply.body, /id="f-matricola"[^>]*value="12A"/);
+    assert.match(reply.body, /massimo 40/i);
+    assert.match(reply.body, /id="f-numeroImpianto"[^>]*value="12A"/);
     assert.equal(await prisma.calcoloArgano.count({ where: { aziendaId: azienda.id } }), prima);
   });
 

@@ -40,8 +40,12 @@ ZIP отпреди месец.
 Когато сървърът няма изходяща мрежа към GitHub:
 
 1. В GitHub → **Code → Download ZIP** (или `tar.gz` от Releases).
-2. Качи архива в **`/root`** (напр. `scp Few-few.zip root@СЪРВЪР:/root/`).
-3. ```bash
+2. На СВОЯТА машина: `sha256sum Few-few.zip > Few-few.zip.sha256` — без този файл до архива
+   `autodeploy.sh` спира (проверката е задължителна; изрично без нея: `ALLOW_UNVERIFIED_ARCHIVE=1`).
+   `fetch-deploy.sh` го пише сам.
+3. Качи двата файла. След втвърдяването от `tools/vps/ansible/site.yml` root по SSH не влиза:
+   `scp Few-few.zip Few-few.zip.sha256 deploy@СЪРВЪР:` → на сървъра `sudo mv ~/Few-few.zip* /root/`.
+4. ```bash
    cd /root && unzip -o Few-few.zip >/dev/null   # само за да стигнеш до скрипта
    sudo bash /root/few-few-*/deploy/autodeploy.sh
    ```
@@ -111,6 +115,18 @@ ZIP отпреди месец.
   Health на `127.0.0.1:8788/healthz`. Еднократно: DNS A запис, `.env` с
   `OSPEDALI_ADMIN_PASSWORD`+`OSPEDALI_SESSION_SECRET`, Nginx vhost + certbot →
   `ospedalitrasparenti/deploy/DEPLOY.md`.
+- **fivem** (Thraex PVP): Docker Compose модел като zabobovdol. Пренася `FiveM/.env`
+  (при пръв деплой го **генерира** с random `POSTGRES_PASSWORD` и random админ парола —
+  паролата се показва ВЕДНЪЖ в изхода, в `.env` стои само scrypt хешът ѝ), симлинква
+  `FiveM/backups` към `/opt/few-few/shared/fivem/backups`, после `FiveM/scripts/deploy.sh`:
+  `pg_dump` бекъп **преди** миграцията (празен бекъп = спиране), `up -d --build`, чакане на
+  базата, `prisma migrate deploy`, и първоначално напълване от публичния списък на Cfx.re
+  **само при празна таблица**. Health на `127.0.0.1:3010/api/health`; при успех — IndexNow
+  ping през `tools/seo/indexnow.mjs` (директорията се мени при всяко откриване).
+  Еднократно: DNS A запис, Nginx vhost от `FiveM/deploy/nginx.conf` (**стрипва
+  `CF-Connecting-IP`/`X-Forwarded-For` — това е защита, не настройка**) + certbot, и
+  `RESEND_API_KEY` в `.env`, иначе уведомленията по чл. 16/17 DSA не тръгват →
+  `FiveM/DEPLOY.md`.
 - **panev** (Panev Ascensori): systemd модел като medqr/vizitka. `rsync panev/ → /opt/panev`
   (изключва `data/` — SQLite базата, `node_modules/`, `.env`), `npm ci --omit=dev`,
   сийд **само при липсваща база** (админ + каталог за `/admin`), снимка на базата преди
@@ -170,7 +186,9 @@ ZIP отпреди месец.
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fivem` | кои проекти да се разгръщат тук |
+| `FIVEM_HEALTH_URL` | `http://127.0.0.1:3010/api/health` | health на fivem |
+| `FIVEM_DOMAIN` | `thraex.carbonstealth.eu` | домейн на fivem (за `.env` и IndexNow) |
 | `PANEV_DIR` | `/opt/panev` | път на panev (systemd) |
 | `PANEV_ENV` | `/etc/panev/panev.env` | тайните на panev (600, `EnvironmentFile`) |
 | `PANEV_HEALTH_URL` | `http://127.0.0.1:4102/api/health` | health на panev |
@@ -183,7 +201,8 @@ ZIP отпреди месец.
 | `KORPORA_SHARED` · `KORPORA_HEALTH_WAIT` · `KORPORA_INDEXNOW` | `/opt/few-few/shared/korpora` · `90` · `1` | тайни/бекъпи/данни (и за `autodeploy.sh`: къде са дъмповете), секунди за сондата, IndexNow |
 | `RILIEVI_SHARED` · `RILIEVI_LAST_GOOD` · `RILIEVI_HEALTH_WAIT` | `/opt/few-few/shared/rilievi` · `…/last-good` · `90` | тайни и бекъпи на rilievi, последният работещ release (целта на отката), секунди за сондата |
 | `VPSDASH_DIR` / `VPSDASH_SERVICE` / `VPSDASH_HEALTH_URL` | `/opt/vps-dashboard` · `vps-dashboard` · `http://127.0.0.1:7700/api/ping` | път, systemd услуга и health на VPS таблото |
-| `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
+| `ARCHIVE` | (най-новият в `/root`) | конкретен архив (до него задължително `<архив>.sha256`) |
+| `ALLOW_UNVERIFIED_ARCHIVE` | `0` | `1` = деплой без `.sha256` (изрично, на твоя отговорност) |
 | `FORCE_SEED` | `0` | принудителен сийд на zabobovdol |
 | `ZBD_ENV` | `/opt/few-few/shared/zabobovdol/.env` | стабилният дом на тайните на zabobovdol (600) |
 | `ZBD_HEALTH_URL` | `http://127.0.0.1:<HTTP_PORT>/api/health` | сонда на zabobovdol (с базата) |

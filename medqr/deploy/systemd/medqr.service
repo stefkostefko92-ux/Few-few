@@ -34,10 +34,20 @@ RestrictNamespaces=true
 RestrictRealtime=true
 RestrictSUIDSGID=true
 LockPersonality=true
-MemoryDenyWriteExecute=true
+# MemoryDenyWriteExecute е несъвместим с V8 JIT на Node — процесът иска изпълнима
+# памет и seccomp го убива със SIGSYS (status=31). Затова остава изключен (като panev/ospedali).
+MemoryDenyWriteExecute=false
 SystemCallArchitectures=native
 SystemCallFilter=@system-service
 SystemCallFilter=~@privileged @resources
+# V8 в Node 20 ползва memory protection keys (PKU) за JIT кода си — при старт вика
+# pkey_alloc(2). Трите pkey_* са в групата @pkey, която НЕ е част от @system-service
+# (нито от @resources) — allowlist-ът горе ги отказва. Добавяме точно тези три (те са
+# самата хардуерна защита на паметта, не права). Провери: systemd-analyze syscall-filter @pkey
+SystemCallFilter=pkey_alloc pkey_free pkey_mprotect
+# Забраненото връща грешка вместо да убива: Node ≥20 (libuv) пробва io_uring и при
+# отказ пада обратно на epoll — без това услугата crash-loop-ва със status=31/SYS.
+SystemCallErrorNumber=EPERM
 CapabilityBoundingSet=
 AmbientCapabilities=
 RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
