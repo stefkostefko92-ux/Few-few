@@ -11,6 +11,8 @@
     "buonoDesc": "Il cantiere passo per passo: sequenze di lavoro, controlli, resoconto e firme.",
     "preventivo": "Preventivo",
     "preventivoDesc": "Righe dal listino, IVA per aliquota, PDF e invio al cliente.",
+    "cliente": "Cliente",
+    "clienteDesc": "Nome, indirizzo e P. IVA salvati una volta: nel preventivo scegli il cliente e i dati si compilano da soli.",
     "verbale": "Verbale di cantiere",
     "verbaleDesc": "Il verbale di chiusura cantiere, con copia azienda e copia installatore.",
     "cartello": "Cartello fermo impianto",
