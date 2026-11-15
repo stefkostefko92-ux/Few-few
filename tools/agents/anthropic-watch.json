@@ -1,6 +1,6 @@
 {
-  "checkedAt": "2026-10-31",
-  "changelogVersion": "2.1.316",
+  "checkedAt": "2026-11-08",
+  "changelogVersion": "2.1.319",
   "docs": [
     {
       "url": "https://code.claude.com/docs/en/overview.md",
@@ -929,6 +929,10 @@
       "title": "Read more"
     },
     {
+      "slug": "components-of-agent-memory",
+      "title": "The components of agent memory"
+    },
+    {
       "slug": "how-we-contain-claude",
       "title": "How we contain Claude across products"
     },
@@ -1007,10 +1011,103 @@
     {
       "slug": "claude-code-best-practices",
       "title": "Claude Code: Best practices for agentic coding"
+    }
+  ],
+  "skills": [
+    {
+      "id": "document-skills/xlsx",
+      "plugin": "document-skills",
+      "skill": "xlsx"
     },
     {
-      "slug": "claude-think-tool",
-      "title": "The \"think\" tool: Enabling Claude to stop and think in complex tool use situations"
+      "id": "document-skills/docx",
+      "plugin": "document-skills",
+      "skill": "docx"
+    },
+    {
+      "id": "document-skills/pptx",
+      "plugin": "document-skills",
+      "skill": "pptx"
+    },
+    {
+      "id": "document-skills/pdf",
+      "plugin": "document-skills",
+      "skill": "pdf"
+    },
+    {
+      "id": "example-skills/algorithmic-art",
+      "plugin": "example-skills",
+      "skill": "algorithmic-art"
+    },
+    {
+      "id": "example-skills/brand-guidelines",
+      "plugin": "example-skills",
+      "skill": "brand-guidelines"
+    },
+    {
+      "id": "example-skills/canvas-design",
+      "plugin": "example-skills",
+      "skill": "canvas-design"
+    },
+    {
+      "id": "example-skills/doc-coauthoring",
+      "plugin": "example-skills",
+      "skill": "doc-coauthoring"
+    },
+    {
+      "id": "example-skills/frontend-design",
+      "plugin": "example-skills",
+      "skill": "frontend-design"
+    },
+    {
+      "id": "example-skills/internal-comms",
+      "plugin": "example-skills",
+      "skill": "internal-comms"
+    },
+    {
+      "id": "example-skills/mcp-builder",
+      "plugin": "example-skills",
+      "skill": "mcp-builder"
+    },
+    {
+      "id": "example-skills/skill-creator",
+      "plugin": "example-skills",
+      "skill": "skill-creator"
+    },
+    {
+      "id": "example-skills/slack-gif-creator",
+      "plugin": "example-skills",
+      "skill": "slack-gif-creator"
+    },
+    {
+      "id": "example-skills/theme-factory",
+      "plugin": "example-skills",
+      "skill": "theme-factory"
+    },
+    {
+      "id": "example-skills/web-artifacts-builder",
+      "plugin": "example-skills",
+      "skill": "web-artifacts-builder"
+    },
+    {
+      "id": "example-skills/webapp-testing",
+      "plugin": "example-skills",
+      "skill": "webapp-testing"
+    },
+    {
+      "id": "claude-api/claude-api",
+      "plugin": "claude-api",
+      "skill": "claude-api"
+    },
+    {
+      "id": "academy-guide/academy-guide",
+      "plugin": "academy-guide",
+      "skill": "academy-guide"
+    },
+    {
+      "id": "discernment-nudge/discernment-nudge",
+      "plugin": "discernment-nudge",
+      "skill": "discernment-nudge"
     }
   ]
 }

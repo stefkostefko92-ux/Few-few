@@ -10,6 +10,7 @@ import { createCartello, type CartelloFull } from '../cartelli/service.js';
 import { setFlash } from '../http/flash.js';
 import type { FieldErrors, FormValues } from '../schede/field-parsers.js';
 import type { SchedaRow } from '../schede/list.js';
+import { riferimentiNormativi } from '../schede/regime.js';
 import { highlight, MAX_QUERY_LENGTH } from '../schede/search.js';
 import { businessDay } from '../time.js';
 import { scope } from './interventi.js';
@@ -75,6 +76,8 @@ export interface FormView {
   ricerca?: Ricerca | null;
   puoCercare?: boolean;
   proposto?: boolean;
+  /** Смяна на табло, аргано или централа по картата — напомнянето за извънредната проверка. */
+  modifica?: string | null;
 }
 
 export function renderForm(res: Response, status: number, view: FormView): void {
@@ -85,6 +88,7 @@ export function renderForm(res: Response, status: number, view: FormView): void 
     ricerca: null,
     puoCercare: false,
     proposto: false,
+    modifica: null,
     ...view,
   });
 }
@@ -100,6 +104,11 @@ export function schedaScelta(
     indirizzo: row.indirizzo,
     aziendaName: aziende.find((a) => a.id === row.aziendaId)?.name ?? null,
   };
+}
+
+/** Напомнянето за извънредната проверка при смяна на табло, аргано или централа по картата (regime.ts). */
+function modificaDi(row: Scheda, res: Response): string | null {
+  return riferimentiNormativi(row as unknown as Record<string, unknown>, res.locals.t).modifica;
 }
 
 cartelliNuovoRouter.get('/cartelli/nuovo', write, async (req, res) => {
@@ -127,6 +136,7 @@ cartelliNuovoRouter.get('/cartelli/nuovo', write, async (req, res) => {
       azienda: row.aziendaId,
       scheda: schedaScelta(row, spansAziende(fonte) ? [...choices, ...(only ? [only] : [])] : []),
       proposto: values.testo !== '',
+      modifica: modificaDi(row, res),
     });
   }
 
@@ -182,6 +192,8 @@ cartelliNuovoRouter.post('/cartelli', write, requireCsrf, async (req, res) => {
         conScheda?.aziendaId ?? only?.id ?? (typeof body.azienda === 'string' ? body.azienda : ''),
       scheda: conScheda ? schedaScelta(conScheda, spansAziende(fonte) ? tutte : []) : null,
       puoCercare: fonte.all || fonte.aziendaIds.length > 0,
+      // Напомнянето за modifica costruttiva остава и при грешка във формата.
+      modifica: conScheda ? modificaDi(conScheda, res) : null,
     });
   const errori = parsed.ok ? {} : parsed.errors;
   // Пратената карта вече я няма за човека (в кошчето, чужда, подправена, фирмата ѝ е спряна) —

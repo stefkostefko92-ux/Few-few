@@ -21,6 +21,7 @@ import { useAuthStore } from "../../../lib/store";
 import { Button } from "../../../ui";
 import { playCue } from "../../../lib/sound";
 import { PlayingCard } from "../cards/PlayingCard";
+import { sortRummy } from "../cards/sortHand";
 import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useCardFlight } from "../anim/useCardFlight";
@@ -40,8 +41,6 @@ import { useClearOfDecision } from "../scene/useClearOfDecision";
  */
 
 const SIZES = { sm: { w: 60, h: 84 }, md: { w: 88, h: 124 } } as const;
-const SUIT_ORDER = "SHDC";
-const RANK_ORDER = "A23456789TJQK";
 
 function positionsFor(count: number, mySeat: number): Map<number, SeatPos> {
   const order: SeatPos[] = count === 2 ? ["top"] : count === 3 ? ["left", "right"] : ["left", "top", "right"];
@@ -117,12 +116,6 @@ function cardText(c: string): string {
   if (isJoker(c)) return "🃏";
   const r = rummyRank(c);
   return `${r === "T" ? "10" : r}${SUIT_GLYPH[rummySuit(c)] ?? ""}`;
-}
-
-function sortHand(hand: string[]): string[] {
-  const key = (c: string) =>
-    isJoker(c) ? 999 : SUIT_ORDER.indexOf(rummySuit(c)) * 20 + RANK_ORDER.indexOf(rummyRank(c));
-  return [...hand].sort((a, b) => key(a) - key(b));
 }
 
 export function RummyView({ title }: { title: string }) {
@@ -232,7 +225,7 @@ export function RummyView({ title }: { title: string }) {
 
   const stagedCards = staged.flat();
   const free = hand.filter((c) => !stagedCards.includes(c));
-  const shown = sorted ? sortHand(free) : free;
+  const shown = sorted ? sortRummy(free) : free;
   const selMeld = selected.length >= 3 ? arrangeMeld(selected) : null;
   const selPts = selected.reduce((a, c) => a + (isJoker(c) ? 0 : penaltyValue(c)), 0);
   const stagedPts = staged.reduce((a, g) => a + (arrangeMeld(g)?.value ?? 0), 0);

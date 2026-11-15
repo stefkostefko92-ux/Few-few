@@ -8,6 +8,7 @@ import { Scene, ScorePill } from "../scene/SceneShell";
 import { DecisionPrompt } from "../scene/DecisionPrompt";
 import { FourPlayerTrick } from "../trick/FourPlayerTrick";
 import { PlayingCard } from "../cards/PlayingCard";
+import { sortNatural } from "../cards/sortHand";
 import { TrumpIndicator } from "../cards/TrumpIndicator";
 import { type SuitChar } from "../cards/suits";
 import "./bridge.css";
@@ -97,7 +98,10 @@ export function BridgeView({ title }: { title: string }) {
   const dummy = state && state.declarer !== null ? (state.declarer + 2) % 4 : null;
   const isDeclarer = !!state && state.declarer === seat;
   const dummyTurn = !!state && state.phase === "PLAY" && dummy !== null && state.turn === dummy;
-  const dummyHand = dummy !== null && state ? state.hands[dummy] ?? [] : [];
+  const dummyDealt = dummy !== null && state ? state.hands[dummy] : undefined;
+  const dummyTrump = state?.trump;
+  // Дъми ръката — по боя и сила (козът първи); открита за всички, играе я деклараторът.
+  const dummyHand = useMemo(() => sortNatural(dummyDealt ?? [], dummyTrump), [dummyDealt, dummyTrump]);
   // Revealed once the opening lead is out (redact stops hiding it → no "?").
   // When I AM the dummy my cards are already on screen as my hand — the panel
   // would only repeat them.

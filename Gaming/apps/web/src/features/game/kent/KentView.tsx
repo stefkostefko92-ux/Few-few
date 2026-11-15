@@ -7,6 +7,7 @@ import { useTableFx, Announcements } from "../anim/useTableFx";
 import { playCue } from "../../../lib/sound";
 import { Button } from "../../../ui";
 import { PlayingCard } from "../cards/PlayingCard";
+import { sortNatural } from "../cards/sortHand";
 import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
 import { useNarrowTable } from "../table/useNarrowTable";
 import { SeatCount } from "../trick/SeatCount";
@@ -61,6 +62,13 @@ export function KentView({ title }: { title: string }) {
   // Всяка валидна смяна (handIndex→centerIndex) от изброените legalActions.
   const swaps = useMemo(() => legal.filter((a) => a.type === "SWAP") as Extract<KentAction, { type: "SWAP" }>[], [legal]);
   const swappableHand = useMemo(() => new Set(swaps.map((a) => a.handIndex)), [swaps]);
+  // Подредена ръка за показване (боя, A K Q … 2). SWAP.handIndex остава индексът в
+  // раздадения ред, затова всяка карта носи оригиналния си индекс.
+  const dealtHand = state?.hands[seat];
+  const handView = useMemo(() => {
+    const dealt = dealtHand ?? [];
+    return sortNatural(dealt).map((card) => ({ card, dealtIdx: dealt.indexOf(card) }));
+  }, [dealtHand]);
   const passAction = legal.find((a) => a.type === "PASS");
   const stopAction = legal.find((a) => a.type === "CALL_STOP");
 
@@ -253,17 +261,17 @@ export function KentView({ title }: { title: string }) {
             badge={<TeamDot team={myTeam} myTeam={myTeam} />}
           >
             <div className="aso-myhand" data-zone="hand" style={{ display: "flex" }}>
-              {myHand.map((card, i) => {
-                const canPick = myTurn && swappableHand.has(i);
+              {handView.map(({ card, dealtIdx }, i) => {
+                const canPick = myTurn && swappableHand.has(dealtIdx);
                 return (
                   <div key={`${card}-${i}`} style={{ marginLeft: i ? -fitOverlap(myHand.length, "md") : 0 }}>
                     <PlayingCard
                       card={card}
                       size="md"
-                      selected={pickedHand === i}
+                      selected={pickedHand === dealtIdx}
                       dimmed={!canPick}
                       interactive
-                      onClick={canPick ? () => setPickedHand(pickedHand === i ? null : i) : undefined}
+                      onClick={canPick ? () => setPickedHand(pickedHand === dealtIdx ? null : dealtIdx) : undefined}
                     />
                   </div>
                 );

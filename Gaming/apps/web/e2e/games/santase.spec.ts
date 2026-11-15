@@ -35,7 +35,7 @@ import {
  * „Затвори“ и „Имам 66“ без 66 са в прозореца, щом е отворен, иначе са малки
  * бутони под масата. „Не сега“ скрива прозореца до следващото водене.
  *
- * Стекът раздава с фиксиран seed (SANTASE=e2e-santase-5159 в
+ * Стекът раздава с фиксиран seed (SANTASE=e2e-santase-2645 в
  * infra/e2e-games.sh), затова сценарият е известен и минава през всяко
  * действие на играча:
  *  1. раздаване (коз ♣): водя Q♣ при K♣ в ръка → 40 с анонс; „Смени коза“
@@ -49,7 +49,10 @@ import {
  * правило (по него е избран и seed-ът — офлайн реплика на стаята).
  */
 
-const SEEDED_FIRST_HAND = ["QC", "9C", "QH", "9H", "KS", "KC"];
+// Раздадено: QC KC JD QH 9S 9C (коз ♣, на масата J♣). Редът на показване зависи от кози (козът е първи), затова
+// ръката се сверява като множество, не по ред.
+const SEEDED_FIRST_HAND = ["9C", "9S", "JD", "KC", "QC", "QH"];
+const asSet = (cards: string[]): string[] => [...cards].sort();
 
 type Step =
   | "exchange"
@@ -236,7 +239,7 @@ test("сантасе: всяко действие с истински клико
   expect(await waitMyTurn(page)).toBe(true);
   await expect(page.locator('[data-zone="hand"] [data-playable="true"]').first()).toBeVisible();
   expect(
-    (await cardsIn(page, "hand")).map((c) => c.card),
+    asSet((await cardsIn(page, "hand")).map((c) => c.card)),
     "стекът не раздава със seed-а на теста — пусни го с infra/e2e-games.sh (E2E_SEEDS)",
   ).toEqual(SEEDED_FIRST_HAND);
   // following suit is NOT required while the stock is open: every card is live
@@ -291,7 +294,7 @@ test("сантасе: всяко действие с истински клико
   expect(await waitMyTurn(page)).toBe(true);
   await expect(page.locator('[data-zone="score"]')).toHaveAttribute("data-match", "0:0");
   await expect
-    .poll(async () => (await cardsIn(page, "hand")).map((c) => c.card))
+    .poll(async () => asSet((await cardsIn(page, "hand")).map((c) => c.card)))
     .toEqual(SEEDED_FIRST_HAND);
   await playCard(page, "hand", "QC");
 

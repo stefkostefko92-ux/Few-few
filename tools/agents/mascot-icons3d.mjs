@@ -10,9 +10,10 @@
 //
 // Иска Playwright + Chromium (/opt/pw-browsers) и мрежа до cdn.jsdelivr.net (three). Не е в CI:
 // изходът се комитва, а стойностите не зависят от часовника (статичен кадър, reducedMotion).
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const DASH = join(ROOT, "agents-dashboard");
@@ -21,10 +22,23 @@ const PORTRAIT = process.argv.includes("--portrait");
 const SIZE = PORTRAIT ? 464 : 128;
 const RENDER = PORTRAIT ? 464 : 256; // иконата: рендер 2× и смаляване — по-чист ръб
 const SUFFIX = PORTRAIT ? "portrait3d" : "icon3d";
-const CHROME = process.env.CHROME_PATH || "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
+// Chromium: изричен CHROME_PATH → стабилната връзка на средата → браузърът на самия Playwright.
+// Твърд път с номер на билда (старият сочеше chromium-<номер>/chrome-linux) остарява при всяко
+// обновяване на средата — 2026-11-14 вече го нямаше и изпичането падаше.
+const STABLE_CHROME = "/opt/pw-browsers/chromium";
+const CHROME = process.env.CHROME_PATH || (existsSync(STABLE_CHROME) ? STABLE_CHROME : undefined);
 const THREE_VER = JSON.parse(readFileSync(join(ROOT, "mascot", "cinematic", "package.json"), "utf8")).devDependencies.three.replace(/^[^\d]*/, "");
 
-const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || "playwright");
+// ESM `import("playwright")` не вижда глобално инсталиран пакет (NODE_PATH важи само за require),
+// затова при липса падаме на require от същото място — така инструментът тръгва и извън пакет.
+async function loadPlaywright() {
+  if (process.env.PLAYWRIGHT_MODULE) return import(process.env.PLAYWRIGHT_MODULE);
+  try { return await import("playwright"); } catch (e) {
+    if (e.code !== "ERR_MODULE_NOT_FOUND") throw e;
+    return createRequire(import.meta.url)("playwright");
+  }
+}
+const { chromium } = await loadPlaywright();
 const agents = JSON.parse(readFileSync(join(DASH, "agents.json"), "utf8")).agents;
 const only = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 const list = only.length ? agents.filter((a) => only.includes(a.id)) : agents;
@@ -40,7 +54,9 @@ const browser = await chromium.launch({
   proxy: process.env.HTTPS_PROXY ? { server: process.env.HTTPS_PROXY } : undefined,
   args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"],
 });
-const ctx = await browser.newContext({ viewport: { width: RENDER, height: RENDER }, ignoreHTTPSErrors: true });
+// deviceScaleFactor 2 = суперсемплинг: кадърът се снима в двойна разделителна способност и се смалява
+// до SIZE (иконата 4×, портретът 2×) — по-чист ръб на очилата и лещите, без ресни.
+const ctx = await browser.newContext({ viewport: { width: RENDER, height: RENDER }, deviceScaleFactor: 2, ignoreHTTPSErrors: true });
 const page = await ctx.newPage();
 if (process.env.DEBUG) { page.on("pageerror", (e) => console.error("PAGE", e.message)); page.on("console", (m) => console.error("CON", m.text().slice(0, 200))); page.on("requestfailed", (r) => console.error("FAIL", r.url(), r.failure()?.errorText)); }
 // Chromium през проксито на средата понякога реже CDN-а (ERR_TOO_MANY_RETRIES) — curl минава. Само тук, не в продукта.
@@ -63,11 +79,13 @@ for (let i = 1; ; i++) {
 }
 
 for (const a of list) {
-  await page.evaluate(({ accent }) => {
+  await page.evaluate(({ accent, framing }) => {
     window.inst?.dispose();
-    window.inst = window.M.mount(document.getElementById("m"), { accent, quality: "high", reducedMotion: true });
-  }, { accent: a.accent });
-  await page.waitForTimeout(2500); // PMREM + няколко кадъра на поста
+    // framing: иконата е близка рамка (глава + шапка + папийонка), за да се чете на 128 px;
+    // quality "ultra": печеният кадър е офлайн, затова MSAA 4 и пълен DOF — без бюджет за FPS.
+    window.inst = window.M.mount(document.getElementById("m"), { accent, framing, quality: "ultra", reducedMotion: true });
+  }, { accent: a.accent, framing: PORTRAIT ? "portrait" : "icon" });
+  await page.waitForTimeout(6000); // PMREM + пост; ultra в 2× под swiftshader е няколко пъти по-бавен от high
   const png = await page.locator("#m").screenshot({ omitBackground: PORTRAIT });
   const webp = await page.evaluate(async ({ b64, size }) => {
     const img = new Image(); img.src = `data:image/png;base64,${b64}`; await img.decode();

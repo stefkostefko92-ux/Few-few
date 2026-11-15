@@ -9,15 +9,17 @@ import { isGameKey, type GameKey } from "@aso/shared";
  * действие на играта — размяна на коза, контра/реконтра, тайния знак в Кент —
  * вместо да разчита на късмета на раздаването.
  *
- * В продукция се игнорира ВИНАГИ: там seed-ът е криптографски случаен и е част
- * от доказуемата честност на раздаването.
+ * Fail-closed: включени са САМО при NODE_ENV === "test" (e2e стекът го задава за
+ * realtime процеса). При production, staging, development или липсваща стойност
+ * се игнорират — иначе един забравен E2E_SEEDS на staging прави раздаванията
+ * предвидими. Извън теста seed-ът е криптографски случаен (generateSeed).
  */
 export function parseE2eSeeds(
   raw: string | undefined,
-  isProd: boolean,
+  nodeEnv: string | undefined,
 ): ReadonlyMap<GameKey, string> {
   const seeds = new Map<GameKey, string>();
-  if (!raw || isProd) return seeds;
+  if (!raw || nodeEnv !== "test") return seeds;
   for (const part of raw.split(",")) {
     const eq = part.indexOf("=");
     if (eq <= 0) continue;

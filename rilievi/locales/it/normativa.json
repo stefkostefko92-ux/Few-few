@@ -1,0 +1,26 @@
+{
+  "normativa": {
+    "titolo": "Riferimenti normativi",
+    "nota": "Indicazione per il tecnico: la conformità del singolo impianto la valutano il progettista e il soggetto delle verifiche.",
+    "datiMancanti": "Indica l'anno di installazione e la marcatura CE: servono per sapere quali regole si applicano all'impianto.",
+    "incoerente": "Marcatura CE con anno di installazione {anno}, prima del D.P.R. 162/1999: i due dati non tornano. Controlla anno e marcatura CE.",
+    "dm2009": {
+      "ce": "Impianto con marcatura CE: il D.M. 23/07/2009 non si applica (riguarda gli ascensori installati prima del D.P.R. 162/1999, art. 1 c. 1).",
+      "anteriore": "Impianto senza marcatura CE installato nel {anno}: si applica il D.M. 23/07/2009 (art. 1 c. 1). La verifica straordinaria per l'analisi dei rischi andava programmata entro {anni} anni dall'entrata in vigore del decreto (art. 2 c. 2).",
+      "confine": "Il {anno} è a cavallo di due scadenze dell'art. 2 c. 2: decide il giorno di installazione.",
+      "forseDopo": "Se installato dopo il 24/06/1999, l'impianto non rientra nel D.M. 23/07/2009: controlla la dichiarazione di conformità.",
+      "dopoDpr162": "Installato nel {anno} senza marcatura CE: il D.M. 23/07/2009 riguarda solo gli impianti installati prima del 24/06/1999 (art. 2 c. 2). Controlla anno e marcatura CE."
+    },
+    "anni": "{a} o {b}",
+    "modifiche": "Modifiche all'impianto esistente: {norma}.",
+    "modifica": {
+      "titolo": "Modifica costruttiva: serve la verifica straordinaria",
+      "testo": "La scheda prevede la sostituzione {parti}. Per il D.P.R. 162/1999 è una modifica costruttiva (art. 2 c. 1 lett. i) n. 5): il proprietario adegua l'impianto e rinnova la comunicazione al Comune e al soggetto delle verifiche periodiche (art. 12 c. 4); serve la verifica straordinaria (art. 14 c. 3). Senza comunicazione aggiornata l'impianto non può essere tenuto in esercizio (art. 12 c. 5).",
+      "parte": {
+        "quadro": "del quadro elettrico",
+        "argano": "del macchinario (argano)",
+        "centralina": "del macchinario (centralina)"
+      }
+    }
+  }
+}
