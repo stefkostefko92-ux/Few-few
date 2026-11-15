@@ -16735,7 +16735,7 @@
           "Gaming/apps/realtime/src/room.ts — handleAction, часовник и ботове",
           "Gaming/docs/microtransactions.md — §1 „Not gambling“"
         ],
-        "lessons": 78
+        "lessons": 100
       },
       "evolution": [
         {
@@ -16773,9 +16773,20 @@
           "date": "2026-11-15",
           "event": "v7.8 — учене",
           "detail": "Научи: WPA 3.13 и 5.8/6.10: три поредни фала без законен удар са сериозен фал, който в 9-ball … (+24 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-11-15",
+          "event": "v10.0 — учене",
+          "detail": "Научи: Кодът за рейтинг е прост Elo с K и очакван резултат; Glicko-1/Glicko-2 не се ползват ни… (+21 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „Кодът за рейтинг е прост Elo с K и очакван резултат; Glicko-1/Glicko-2 не се ползват ни…\" (+21 още) · 5 в карантина"
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
