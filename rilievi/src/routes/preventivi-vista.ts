@@ -27,9 +27,35 @@ export const loadPreventivo = (req: Request, id: string = String(req.params.id))
 
 export const puoScrivere = (req: Request, row: { aziendaId: string }): boolean =>
   canIn(principalOf(req).user, 'preventivi:write', row.aziendaId);
+/**
+ * Кой работи с офертата — сменя изхода, праща я на клиента, дублира я, слага клиента в анаграфиката: пишещият
+ * във фирмата И фирмата с включени оферти. В архива (условията 2026-11-15, 2.5 и A.9) членовете не пишат изобщо
+ * (scope.ts), а MASTER само поправя записаното по писмено указание на фирмата — не праща, не сменя изхода и не
+ * създава нищо (ревюто на Кодаджията, 14 ноември 2026).
+ */
+export const puoOperare = (
+  req: Request,
+  row: { aziendaId: string; azienda: { preventiviAttivi: boolean } },
+): boolean => row.azienda.preventiviAttivi && puoScrivere(req, row);
 /** Изтриването на чернова остава и при изтекъл абонамент (условията, чл. 12.5 в) — auth/scope.ts. */
 export const puoTogliere = (req: Request, row: { aziendaId: string }): boolean =>
   canInPerTogliere(principalOf(req).user, 'preventivi:write', row.aziendaId);
+
+/**
+ * Фирмите на човека, в които офертите са изключени, а данните им остават за четене (архив — auth/scope.ts):
+ * бележката над страниците казва защо няма „Nuovo“ и „Modifica“. `aziendaId` — само тази фирма.
+ */
+export function aziendeInArchivio(req: Request, aziendaId?: string): string[] {
+  const user = principalOf(req).user;
+  return user.memberships
+    .filter(
+      (m) =>
+        m.preventiviArchivio === true &&
+        (aziendaId === undefined || m.aziendaId === aziendaId) &&
+        canIn(user, 'preventivi:read', m.aziendaId),
+    )
+    .map((m) => m.aziendaName);
+}
 
 /** Фирмите за нова оферта: MASTER — активните с включени оферти; другите — тези с право на запис. */
 export async function aziendePerPreventivo(req: Request) {
@@ -103,7 +129,7 @@ export function renderPreventivoForm(
     scheda: null,
     ricerca: null,
     puoCercare: false,
-    scripts: ['preventivo'],
+    scripts: ['preventivo', 'preventivo-cliente'],
     ...view,
   });
 }

@@ -1,0 +1,434 @@
+import assert from 'node:assert/strict';
+import { after, before, test } from 'node:test';
+import { prepareTestDatabase, truncateAll } from './harness.js';
+import { startHttp, type HttpClient, type Session } from './http.js';
+
+prepareTestDatabase();
+delete process.env['SMTP_HOST'];
+const { prisma } = await import('../../src/db.js');
+const { register } = await import('../../src/accounts/register.js');
+const { seedPlans } = await import('../../src/billing/seed-plans.js');
+const { createServer } = await import('../../src/server.js');
+const { calculate, toCii, toUbl } = await import('../../src/einvoice/index.js');
+const { sofiaToday } = await import('../../src/time.js');
+const { addDays } = await import('../../src/recurring/schedule.js');
+const { SAMPLES } = await import('../fixtures/einvoice-samples.js');
+const { CAMT053 } = await import('../fixtures/camt053.js');
+
+/** SPEC 54–55: сверка с банковото извлечение и регистър на входящите е-фактури. */
+const PASSWORD = 'дълга-и-трудна-парола-2026';
+let http: HttpClient;
+let owner: Session;
+let viewer: Session;
+let orgId = '';
+let seriesId = '';
+const today = sofiaToday();
+
+function upload(
+  session: Session,
+  path: string,
+  name: string,
+  content: string | Buffer,
+  type: string,
+) {
+  const form = new FormData();
+  form.append('_csrf', session.csrf);
+  form.append('file', new Blob([content], { type }), name);
+  return fetch(`${http.origin}${path}`, {
+    method: 'POST',
+    redirect: 'manual',
+    headers: { cookie: session.cookie },
+    body: form,
+  });
+}
+
+async function issue(amount: string): Promise<{ id: string; number: string }> {
+  const res = await http.post(owner, `/app/o/${orgId}/nov`, {
+    typeCode: '380',
+    seriesId,
+    issueDate: today,
+    taxPointDate: today,
+    dueDate: addDays(today, 14),
+    currency: 'EUR',
+    'buyer[name]': 'Сладкарница Роза ЕООД',
+    'buyer[legalId]': '121604974',
+    'buyer[street]': 'ул. „Шипка“ 1',
+    'buyer[city]': 'София',
+    'buyer[postalCode]': '1000',
+    'buyer[countryCode]': 'BG',
+    'lines[0][name]': 'Услуга',
+    'lines[0][quantity]': '1',
+    'lines[0][unitCode]': 'C62',
+    'lines[0][netPrice]': amount,
+    'lines[0][category]': 'S',
+    'lines[0][rate]': '20',
+  });
+  assert.equal(res.status, 303);
+  return prisma.document.findFirstOrThrow({
+    where: { organizationId: orgId },
+    orderBy: { createdAt: 'desc' },
+    select: { id: true, number: true },
+  }) as Promise<{ id: string; number: string }>;
+}
+
+before(async () => {
+  await truncateAll(prisma);
+  await prisma.$transaction((tx) => seedPlans(tx));
+  // Получателят на пробите в ядрото е НАП (ЕИК 131063188) — фирмата е с този ЕИК, за да е „наша“.
+  const seller = await register({
+    kind: 'company',
+    name: 'Иван Петров',
+    email: 'owner@example.test',
+    password: PASSWORD,
+    acceptTerms: 'on',
+    legalName: 'Пекарна Зора ЕООД',
+    eik: '131063188',
+    vatNumber: 'BG131063188',
+    addressStreet: 'ул. „Раковски“ 2',
+    addressCity: 'Перник',
+    postalCode: '2300',
+  });
+  orgId = seller.organizationId;
+  const viewerUser = await prisma.user.create({
+    data: {
+      email: 'viewer@example.test',
+      name: 'Само Гледа',
+      passwordHash: (await prisma.user.findUniqueOrThrow({ where: { id: seller.userId } }))
+        .passwordHash,
+    },
+  });
+  await prisma.membership.create({
+    data: { userId: viewerUser.id, organizationId: orgId, role: 'VIEWER' },
+  });
+  seriesId = (await prisma.documentSeries.findFirstOrThrow({ where: { organizationId: orgId } }))
+    .id;
+  http = await startHttp(createServer);
+  owner = await http.login('owner@example.test', PASSWORD);
+  viewer = await http.login('viewer@example.test', PASSWORD);
+});
+
+after(async () => {
+  await http.close();
+  await prisma.$disconnect();
+});
+
+test('входяща UBL и CII: проверени, в регистъра; същият файл втори път — отказ', async () => {
+  const input = SAMPLES.domestic;
+  const ubl = toUbl(input, calculate(input));
+  const res = await upload(owner, `/app/o/${orgId}/vhodyashti`, 'f.xml', ubl, 'application/xml');
+  assert.equal(res.status, 303);
+  assert.match(res.headers.get('location') ?? '', /ok=uploaded$/);
+  const row = await prisma.incomingInvoice.findFirstOrThrow({ where: { organizationId: orgId } });
+  assert.equal(row.format, 'UBL');
+  assert.equal(row.number, input.number);
+  assert.equal(row.supplierEik, input.seller.legalId);
+  assert.equal(row.payableCents, 11469n);
+  assert.equal(row.valid, true);
+  const again = await upload(owner, `/app/o/${orgId}/vhodyashti`, 'f.xml', ubl, 'application/xml');
+  assert.match(again.headers.get('location') ?? '', /err=duplicate/);
+
+  const cii = toCii(SAMPLES.reverseCharge, calculate(SAMPLES.reverseCharge));
+  const ciiRes = await upload(owner, `/app/o/${orgId}/vhodyashti`, 'r.xml', cii, 'application/xml');
+  assert.match(ciiRes.headers.get('location') ?? '', /ok=/);
+  const list = await (await http.get(owner, `/app/o/${orgId}/vhodyashti`)).text();
+  assert.ok(list.includes(input.number));
+  assert.ok(list.includes(SAMPLES.reverseCharge.number));
+  const page = await (await http.get(owner, `/app/o/${orgId}/vhodyashti/${row.id}`)).text();
+  assert.match(page, /минава проверките/);
+  const xml = await http.get(owner, `/app/o/${orgId}/vhodyashti/${row.id}/fail.xml`);
+  assert.equal(await xml.text(), ubl);
+});
+
+test('подправена сума — записва се с грешка TOTALS; DTD/XXE — отказ; зрителят не качва', async () => {
+  const input = SAMPLES.zeroRated;
+  const forged = toUbl(input, calculate(input)).replace(
+    /<cbc:PayableAmount currencyID="EUR">[^<]+</,
+    '<cbc:PayableAmount currencyID="EUR">1.00<',
+  );
+  const res = await upload(owner, `/app/o/${orgId}/vhodyashti`, 'z.xml', forged, 'application/xml');
+  assert.match(res.headers.get('location') ?? '', /ok=uploadedIssues/);
+  const row = await prisma.incomingInvoice.findFirstOrThrow({ where: { number: input.number } });
+  assert.equal(row.valid, false);
+  assert.ok((row.issues as Array<{ rule: string }>).some((i) => i.rule === 'TOTALS'));
+
+  const xxe =
+    '<?xml version="1.0"?><!DOCTYPE a [<!ENTITY x SYSTEM "file:///etc/passwd">]><Invoice>&x;</Invoice>';
+  const refused = await upload(
+    owner,
+    `/app/o/${orgId}/vhodyashti`,
+    'x.xml',
+    xxe,
+    'application/xml',
+  );
+  assert.match(refused.headers.get('location') ?? '', /err=dtd/);
+  const notInvoice = await upload(
+    owner,
+    `/app/o/${orgId}/vhodyashti`,
+    'o.xml',
+    '<Order/>',
+    'application/xml',
+  );
+  assert.match(notInvoice.headers.get('location') ?? '', /err=notInvoice/);
+  const denied = await upload(
+    viewer,
+    `/app/o/${orgId}/vhodyashti`,
+    'f.xml',
+    '<Invoice/>',
+    'application/xml',
+  );
+  assert.equal(denied.status, 404);
+  const big = await upload(
+    owner,
+    `/app/o/${orgId}/vhodyashti`,
+    'big.xml',
+    Buffer.alloc(2 * 1024 * 1024 + 10, 'a'),
+    'application/xml',
+  );
+  assert.match(big.headers.get('location') ?? '', /err=tooLarge/);
+});
+
+test('статус на входяща: платена с дата; в бъдещето — отказ', async () => {
+  const row = await prisma.incomingInvoice.findFirstOrThrow({
+    where: { number: SAMPLES.domestic.number },
+  });
+  const base = `/app/o/${orgId}/vhodyashti/${row.id}`;
+  const future = await http.post(owner, `${base}/status`, {
+    status: 'PAID',
+    paidOn: addDays(today, 2),
+  });
+  assert.match(future.headers.get('location') ?? '', /err=date/);
+  await http.post(owner, `${base}/status`, { status: 'PAID', paidOn: today });
+  const paid = await prisma.incomingInvoice.findUniqueOrThrow({ where: { id: row.id } });
+  assert.equal(paid.status, 'PAID');
+  assert.equal(paid.paidAt?.toISOString().slice(0, 10), today);
+});
+
+test('сверка: без план — отказ; camt.053 → предложение по номер → потвърждение → платена', async () => {
+  const blocked = await upload(owner, `/app/o/${orgId}/banka`, 's.xml', CAMT053, 'application/xml');
+  assert.match(blocked.headers.get('location') ?? '', /err=feature/);
+  await prisma.subscription.updateMany({
+    where: { organizationId: orgId, status: 'ACTIVE' },
+    data: { planCode: 'business' },
+  });
+  const first = await issue('100.00'); // 120.00 с ДДС — номер 0000000001
+  assert.equal(first.number, '0000000001');
+  const res = await upload(owner, `/app/o/${orgId}/banka`, 's.xml', CAMT053, 'application/xml');
+  assert.match(res.headers.get('location') ?? '', /ok=imported&total=3&created=3/);
+  const again = await upload(owner, `/app/o/${orgId}/banka`, 's.xml', CAMT053, 'application/xml');
+  assert.match(again.headers.get('location') ?? '', /err=duplicate/);
+  // Застъпващо се извлечение (друг файл, същите постъпления) не дублира редовете.
+  const overlap = await upload(
+    owner,
+    `/app/o/${orgId}/banka`,
+    's2.xml',
+    CAMT053.replace('STMT-1', 'STMT-1b'),
+    'application/xml',
+  );
+  assert.match(overlap.headers.get('location') ?? '', /created=0/);
+  assert.equal(await prisma.bankLine.count({ where: { organizationId: orgId } }), 3);
+
+  const page = await (await http.get(owner, `/app/o/${orgId}/banka`)).text();
+  assert.match(page, /value="0000000001"/);
+  assert.match(page, /по номера в основанието/);
+  const line = await prisma.bankLine.findFirstOrThrow({ where: { amountCents: 12000n } });
+  const linked = await http.post(owner, `/app/o/${orgId}/banka/${line.id}/svarzhi`, {
+    number: '0000000001',
+  });
+  assert.match(linked.headers.get('location') ?? '', /ok=svarzhi/);
+  const doc = await prisma.document.findUniqueOrThrow({ where: { id: first.id } });
+  assert.equal(doc.paymentState, 'PAID');
+  assert.equal(doc.paidAt?.toISOString().slice(0, 10), '2026-11-12', 'датата на постъплението');
+  const payment = await prisma.documentPayment.findFirstOrThrow({
+    where: { documentId: first.id },
+  });
+  assert.equal(payment.source, 'BANK');
+  // Втори път — редът вече е обработен.
+  const twice = await http.post(owner, `/app/o/${orgId}/banka/${line.id}/svarzhi`, {
+    number: '0000000001',
+  });
+  assert.match(twice.headers.get('location') ?? '', /err=state/);
+  // Ръчно не се маха плащане от сверката; отмяната го маха и редът е пак нов.
+  const manual = await http.post(
+    owner,
+    `/app/o/${orgId}/d/${first.id}/plashtane/${payment.id}/mahni`,
+    {},
+  );
+  assert.match(manual.headers.get('location') ?? '', /plashtane=source/);
+  await http.post(owner, `/app/o/${orgId}/banka/${line.id}/otmeni`, {});
+  assert.equal(
+    (await prisma.document.findUniqueOrThrow({ where: { id: first.id } })).paymentState,
+    'UNPAID',
+  );
+  assert.equal((await prisma.bankLine.findUniqueOrThrow({ where: { id: line.id } })).status, 'NEW');
+});
+
+test('сверка: частично, над остатъка — отказ, пропускане; по сума при единствена фактура', async () => {
+  const second = await issue('250.00'); // 300.00 — 0000000002
+  const partial = await prisma.bankLine.findFirstOrThrow({ where: { amountCents: 10000n } });
+  await http.post(owner, `/app/o/${orgId}/banka/${partial.id}/svarzhi`, { number: '2' });
+  assert.equal(
+    (await prisma.document.findUniqueOrThrow({ where: { id: second.id } })).paymentState,
+    'PARTIAL',
+  );
+  const big = await prisma.bankLine.findFirstOrThrow({ where: { amountCents: 20000n } });
+  // 200 > 120 остатък по фактура 1 → отказ (без надплащане).
+  const over = await http.post(owner, `/app/o/${orgId}/banka/${big.id}/svarzhi`, { number: '1' });
+  assert.match(over.headers.get('location') ?? '', /err=paymentAmount/);
+  await http.post(owner, `/app/o/${orgId}/banka/${big.id}/propusni`, {});
+  assert.equal(
+    (await prisma.bankLine.findUniqueOrThrow({ where: { id: big.id } })).status,
+    'IGNORED',
+  );
+  // Без номер в основанието — по сумата, ако фактурата с такъв остатък е една.
+  const { suggest } = await import('../../src/bank/reconcile.js');
+  const s = await suggest(orgId, { remittance: 'наем', amountCents: 20000n, currency: 'EUR' });
+  assert.equal(s?.number, '0000000002');
+  assert.equal(s?.reason, 'amount');
+  // Зрителят вижда, но не свързва.
+  assert.equal((await http.get(viewer, `/app/o/${orgId}/banka`)).status, 200);
+  const line = await prisma.bankLine.findFirstOrThrow({ where: { amountCents: 12000n } });
+  assert.equal(
+    (await http.post(viewer, `/app/o/${orgId}/banka/${line.id}/svarzhi`, { number: '1' })).status,
+    404,
+  );
+});
+
+test('сверка: CSV извлечение (windows-1251 е в unit теста на разчитането)', async () => {
+  const csv =
+    'Дата;Наредител;Основание;Кредит;Валута\r\n13.11.2026;Роза;ф-ра 0000000001;120,00;EUR\r\n';
+  const encoded = Buffer.from(csv, 'utf8');
+  const res = await upload(owner, `/app/o/${orgId}/banka`, 'izvlechenie.csv', encoded, 'text/csv');
+  assert.match(res.headers.get('location') ?? '', /ok=imported&total=1&created=1/);
+});
+
+test('ревю: два еднакви превода в един файл са два реда; 0x00 — грешка на файла, не 500', async () => {
+  const twice =
+    'Дата;Наредител;Основание;Кредит\r\n12.11.2026;Наемател;Наем;100,00\r\n12.11.2026;Наемател;Наем;100,00\r\n';
+  const res = await upload(owner, `/app/o/${orgId}/banka`, 'naem.csv', twice, 'text/csv');
+  assert.match(res.headers.get('location') ?? '', /ok=imported&total=2&created=2/);
+  // Същият файл с друго име (застъпване) — нищо ново.
+  const again = await upload(
+    owner,
+    `/app/o/${orgId}/banka`,
+    'naem2.csv',
+    `${twice}\r\n`,
+    'text/csv',
+  );
+  assert.match(again.headers.get('location') ?? '', /created=0/);
+  const nul = await upload(
+    owner,
+    `/app/o/${orgId}/banka`,
+    'nul.csv',
+    'Дата;Кредит\r\n13.11.2026;1\u0000\r\n',
+    'text/csv',
+  );
+  assert.match(nul.headers.get('location') ?? '', /err=encoding/);
+  const xml = await upload(
+    owner,
+    `/app/o/${orgId}/vhodyashti`,
+    'nul.xml',
+    '<Invoice><!-- \u0000 --></Invoice>',
+    'application/xml',
+  );
+  assert.match(xml.headers.get('location') ?? '', /err=encoding/);
+});
+
+test('ревю: без план „Бизнес“ свързването на вече внесен ред е отказано', async () => {
+  await prisma.subscription.updateMany({
+    where: { organizationId: orgId, status: 'ACTIVE' },
+    data: { planCode: 'free' },
+  });
+  const line = await prisma.bankLine.findFirstOrThrow({ where: { status: 'NEW' } });
+  const res = await http.post(owner, `/app/o/${orgId}/banka/${line.id}/svarzhi`, { number: '1' });
+  assert.match(res.headers.get('location') ?? '', /err=feature/);
+  await prisma.subscription.updateMany({
+    where: { organizationId: orgId, status: 'ACTIVE' },
+    data: { planCode: 'business' },
+  });
+});
+
+test('правен преглед: срокът — наредителят се заличава след 90 дни, несвързан ред — след 12 месеца; изтриване', async () => {
+  const { purgeBankData } = await import('../../src/bank/retention.js');
+  const decided = await prisma.bankLine.findFirstOrThrow({ where: { status: 'IGNORED' } });
+  const fresh = await prisma.bankLine.findFirstOrThrow({ where: { status: 'NEW' } });
+  const day = 24 * 60 * 60 * 1000;
+  await prisma.bankLine.update({
+    where: { id: decided.id },
+    data: {
+      decidedAt: new Date(Date.now() - 91 * day),
+      counterparty: 'Петър Петров',
+      counterpartyIban: 'BG18RZBB91550123456789',
+    },
+  });
+  await prisma.bankLine.update({
+    where: { id: fresh.id },
+    data: { bookingDate: new Date(Date.now() - 366 * day) },
+  });
+  const result = await purgeBankData();
+  assert.ok(result.erased >= 1);
+  assert.ok(result.deleted >= 1);
+  const erased = await prisma.bankLine.findUniqueOrThrow({ where: { id: decided.id } });
+  assert.deepEqual(
+    [erased.counterparty, erased.counterpartyIban, erased.remittance],
+    [null, null, ''],
+  );
+  assert.ok(erased.amountCents > 0n, 'сумата остава');
+  assert.equal(await prisma.bankLine.count({ where: { id: fresh.id } }), 0);
+  // Името на файла не се пази.
+  assert.equal(
+    await prisma.bankStatement.count({
+      where: { fileName: { not: null }, createdAt: { gt: new Date(Date.now() - 60_000) } },
+    }),
+    0,
+  );
+  // Изтриване на извлечение: несвързаните редове си отиват; свързаните остават без наредителя и
+  // основанието (ревюто на Кодаджията) — иначе повторният внос ги връща като нови и същият превод се
+  // свързва втори път. Плащанията по фактурите остават.
+  const statement = await prisma.bankStatement.findFirstOrThrow({
+    where: { organizationId: orgId, lines: { some: { status: 'MATCHED' } } },
+  });
+  const matched = await prisma.bankLine.findMany({
+    where: { statementId: statement.id, status: 'MATCHED' },
+    select: { id: true },
+  });
+  const payments = await prisma.documentPayment.count();
+  const res = await http.post(
+    owner,
+    `/app/o/${orgId}/banka/izvlechenie/${statement.id}/iztriy`,
+    {},
+  );
+  assert.match(res.headers.get('location') ?? '', /ok=deleted/);
+  const left = await prisma.bankLine.findMany({ where: { statementId: statement.id } });
+  assert.deepEqual(left.map((l) => l.id).sort(), matched.map((l) => l.id).sort());
+  assert.ok(
+    left.every(
+      (l) => l.counterparty === null && l.counterpartyIban === null && l.remittance === '',
+    ),
+    'наредителят и основанието са заличени',
+  );
+  assert.equal(await prisma.documentPayment.count(), payments);
+  const reimport = await upload(
+    owner,
+    `/app/o/${orgId}/banka`,
+    's.xml',
+    CAMT053,
+    'application/xml',
+  );
+  assert.match(reimport.headers.get('location') ?? '', /err=duplicate/, 'същият файл — отказ');
+  const overlapAgain = await upload(
+    owner,
+    `/app/o/${orgId}/banka`,
+    's3.xml',
+    CAMT053.replace('STMT-1', 'STMT-1c'),
+    'application/xml',
+  );
+  assert.match(overlapAgain.headers.get('location') ?? '', /ok=imported/);
+  for (const line of matched) {
+    const same = await prisma.bankLine.findUniqueOrThrow({ where: { id: line.id } });
+    assert.equal(same.status, 'MATCHED', 'свързаният ред не се връща като нов');
+  }
+  // Постъпление по-старо от 12 месеца не се внася наново.
+  const old = 'Дата;Основание;Кредит\r\n01.01.2025;стар;5,00\r\n';
+  const up = await upload(owner, `/app/o/${orgId}/banka`, 'old.csv', old, 'text/csv');
+  assert.match(up.headers.get('location') ?? '', /created=0&skipped=1/);
+});

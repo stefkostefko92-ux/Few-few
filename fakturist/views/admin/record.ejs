@@ -1,0 +1,95 @@
+<%- include('../partials/app-head', { title: resource.label[lang] }) %>
+<p><a href="/admin/r/<%= resource.slug %>">← <%= resource.label[lang] %></a></p>
+<h1><%= resource.label[lang] %></h1>
+<%- include('_nav') %>
+<% if (error) { %><p class="error" role="alert"><%= tOr('admin.transfer.errors.' + error, tOr('admin.ownership.errors.' + error, tOr('app.termination.err.' + error, t('auth.errors.invalid')))) %></p><% } %>
+<% if (locals.terminationDone) { %><p class="ok" role="status"><%= t('admin.termination.done') %></p><% } %>
+<% if (revoked) { %><p class="ok" role="status"><%= t('admin.ownership.done') %></p><% } %>
+<dl class="record">
+  <% Object.entries(row).forEach(([key, value]) => { %>
+    <div><dt class="mono"><%= key %></dt><dd class="mono"><%- include('_value', { value }) %></dd></div>
+  <% }) %>
+</dl>
+<% if (resource.model === 'Organization') { %>
+<div class="actions">
+  <a class="button-secondary" href="/admin/veriga/<%= row.id %>"><%= t('admin.chain') %></a>
+  <% if (!row.verifiedAt || row.ownerReviewPendingAt) { %><form method="post" action="/admin/firmi/<%= row.id %>/potvardi"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit"><%= row.ownerReviewPendingAt ? t('admin.ownership.confirmOwner') : t('admin.verifyOrg') %></button></form><% } %>
+</div>
+<% if (transfer && transfer.hasOwner && row.kind === 'COMPANY' && !row.deletedAt) { %>
+<section class="panel stack narrow-form" aria-labelledby="h-revoke">
+  <h2 id="h-revoke"><%= t('admin.ownership.title') %></h2>
+  <p><%= t('admin.ownership.intro') %></p>
+  <form method="post" action="/admin/firmi/<%= row.id %>/otnemi" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label><%= t('admin.ownership.reason') %><select name="reason" required><% ['disputed', 'mistake', 'other'].forEach((r) => { %><option value="<%= r %>"><%= t('admin.ownership.reasons.' + r) %></option><% }) %></select></label>
+    <label class="check"><input type="checkbox" name="understood" required> <%= t('admin.ownership.understood') %></label>
+    <button type="submit" class="button-danger"><%= t('admin.ownership.button') %></button>
+  </form>
+</section>
+<% } %>
+<% if (transfer && !transfer.hasOwner && !row.deletedAt) { %>
+<section class="panel stack narrow-form" aria-labelledby="h-transfer">
+  <h2 id="h-transfer"><%= t('admin.transfer.title') %></h2>
+  <p><%= t('admin.transfer.intro') %></p>
+  <% if (transfer.openInvite) { %>
+    <p class="callout"><%= t('admin.transfer.pending', { email: transfer.openInvite.email, date: transfer.openInvite.expiresAt.toISOString().slice(0, 10) }) %> <a href="/admin/r/transfers/<%= transfer.openInvite.id %>"><%= t('admin.open') %></a></p>
+  <% } %>
+  <form method="post" action="/admin/firmi/<%= row.id %>/prehvarli" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label><%= t('admin.transfer.email') %><input type="email" name="email" required maxlength="254" autocomplete="off" spellcheck="false"></label>
+    <label class="check"><input type="checkbox" name="representationChecked" required> <%= t('admin.transfer.checked') %></label>
+    <button type="submit"><%= transfer.openInvite ? t('admin.transfer.resend') : t('admin.transfer.button') %></button>
+  </form>
+</section>
+<% } %>
+<% } %>
+<% if (resource.model === 'TransferInvite' && !row.acceptedAt && !row.revokedAt) { %>
+<form method="post" action="/admin/pokani/<%= row.id %>/otmeni">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <button type="submit" class="button-secondary"><%= t('admin.transfer.revoke') %></button>
+</form>
+<% } %>
+<% if (resource.model === 'ClientMandate') { %>
+<div class="actions">
+  <% if (row.status === 'PENDING') { %><form method="post" action="/admin/palnomoshtni/<%= row.id %>/potvardi"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit"><%= t('admin.approveMandate') %></button></form><% } %>
+  <% if (row.status !== 'REVOKED') { %><form method="post" action="/admin/palnomoshtni/<%= row.id %>/ottegli"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="button-secondary"><%= t('admin.revokeMandate') %></button></form><% } %>
+</div>
+<% } %>
+<% if (resource.model === 'Payment' && row.status === 'FAILED' && row.paidAt) { %><p class="callout" role="status"><%= t('admin.paymentCheck.review') %></p><% } %>
+<% if (resource.model === 'Payment' && check) { %><p class="<%= check === 'activated' || check === 'already' ? 'ok' : 'error' %>" role="status"><%= tOr('admin.paymentCheck.' + check, t('admin.paymentCheck.error')) %></p><% } %>
+<% if (resource.model === 'Payment' && row.provider === 'REVOLUT' && row.providerOrderId && (row.status === 'PENDING' || row.status === 'CANCELLED')) { %>
+<form method="post" action="/admin/plashtaniya/<%= row.id %>/proveri" class="stack narrow-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <p class="hint"><%= t('admin.paymentCheck.help') %></p>
+  <button type="submit"><%= t('admin.paymentCheck.button') %></button>
+</form>
+<% } %>
+<% if (resource.model === 'Payment' && (row.status === 'PENDING' || row.status === 'CANCELLED') && (row.provider === 'MANUAL' || !row.planCode)) { %>
+<form method="post" action="/admin/plashtaniya/<%= row.id %>/potvardi" class="stack narrow-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <label><%= t('admin.paidOn') %><input type="date" name="paidOn" required value="<%= today %>"><span class="hint"><%= t('admin.paidOnHelp') %></span></label>
+  <button type="submit"><%= t('admin.confirmPayment') %></button>
+</form>
+<% } %>
+<% if (resource.model === 'Organization' && !row.deletedAt) { %>
+<section class="panel stack narrow-form" aria-labelledby="h-terminate">
+  <h2 id="h-terminate"><%= t('admin.termination.title') %></h2>
+  <% if (row.terminatedAt) { %>
+  <p class="callout"><%= t('admin.termination.state', { date: new Date(row.purgeAfter).toISOString().slice(0, 10) }) %></p>
+  <form method="post" action="/admin/firmi/<%= row.id %>/otmeni-prekratyavane" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label><%= t('admin.termination.code') %><input name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required></label>
+    <button type="submit"><%= t('admin.termination.cancel') %></button>
+  </form>
+  <% } else { %>
+  <p><%= t('admin.termination.intro') %></p>
+  <form method="post" action="/admin/firmi/<%= row.id %>/prekrati" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label class="check"><input type="checkbox" name="understood" required> <%= t('admin.termination.understood') %></label>
+    <label><%= t('admin.termination.code') %><input name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required></label>
+    <button type="submit" class="button-danger"><%= t('admin.termination.button') %></button>
+  </form>
+  <% } %>
+</section>
+<% } %>
+<%- include('../partials/app-foot') %>

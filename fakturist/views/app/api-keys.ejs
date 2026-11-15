@@ -1,0 +1,69 @@
+<%- include('../partials/app-head', { title: t('app.api.title') }) %>
+<% const day = (d) => d ? d.toISOString().slice(0, 10).split('-').reverse().join('.') : '—'; %>
+<p><a href="/app/o/<%= org.id %>">← <%= org.legalName %></a></p>
+<h1><%= t('app.api.title') %></h1>
+<% if (ok) { %><p class="ok" role="status"><%= tOr('app.api.ok.' + ok, t('app.catalog.saved.updated')) %></p><% } %>
+<% if (err) { %><p class="error" role="alert"><%= tOr('app.api.err.' + err, t('auth.errors.invalid')) %></p><% } %>
+<% if (!feature) { %><p class="callout"><%= t('app.api.needsPlan') %> <a href="/app/o/<%= org.id %>/plan"><%= t('app.plan.title') %></a></p><% } %>
+<% if (created) { %>
+<section class="panel" aria-labelledby="new-key">
+  <h2 id="new-key"><%= t('app.api.createdTitle', { name: created.name }) %></h2>
+  <p class="callout"><%= t('app.api.once') %></p>
+  <p><code class="mono key-once"><%= created.key %></code></p>
+</section>
+<% } %>
+<p class="muted"><%= t('app.api.intro') %></p>
+<% if (keys.length) { %>
+<div class="table-wrap"><table class="stack-table">
+  <thead><tr><th scope="col"><%= t('app.api.name') %></th><th scope="col"><%= t('app.api.key') %></th><th scope="col"><%= t('app.api.scopes') %></th><th scope="col"><%= t('app.api.lastUsed') %></th><th scope="col"><span class="sr-only"><%= t('app.catalog.actions') %></span></th></tr></thead>
+  <tbody>
+  <% keys.forEach((k) => { %>
+    <tr>
+      <td data-label="<%= t('app.api.name') %>"><%= k.name %><br><span class="hint"><%= t('app.api.by', { name: k.createdBy ? k.createdBy.name : '—', date: day(k.createdAt) }) %></span></td>
+      <td data-label="<%= t('app.api.key') %>" class="mono"><%= k.prefix %>…</td>
+      <td data-label="<%= t('app.api.scopes') %>"><%= k.scopes.map((s) => t('app.api.scope.' + s)).join(', ') %></td>
+      <td data-label="<%= t('app.api.lastUsed') %>" class="mono"><%= day(k.lastUsedAt) %></td>
+      <td class="actions"><% if (k.revokedAt) { %><span class="tag tag-revoked"><%= t('app.api.revoked') %></span><% } else { %><form method="post" action="/app/o/<%= org.id %>/api/<%= k.id %>/ottegli"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="link"><%= t('app.api.revoke') %></button></form><% } %></td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+<% if (feature) { %>
+<form method="post" action="/app/o/<%= org.id %>/api" class="panel stack narrow-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <h2><%= t('app.api.new') %></h2>
+  <label><%= t('app.api.name') %><input name="name" required maxlength="80" placeholder="<%= t('app.api.namePlaceholder') %>"></label>
+  <fieldset class="choice">
+    <legend><%= t('app.api.scopes') %></legend>
+    <label class="check"><input type="checkbox" name="scopes" value="read" checked> <span><%= t('app.api.scope.read') %> <span class="hint"><%= t('app.api.scopeHelp.read') %></span></span></label>
+    <label class="check"><input type="checkbox" name="scopes" value="issue"> <span><%= t('app.api.scope.issue') %> <span class="hint"><%= t('app.api.scopeHelp.issue') %></span></span></label>
+  </fieldset>
+  <p class="hint"><%= t('app.api.limit', { max }) %></p>
+  <div><button type="submit"><%= t('app.api.create') %></button></div>
+</form>
+<% } %>
+<section class="panel">
+  <h2><%= t('app.api.docsTitle') %></h2>
+  <p class="hint"><%= t('app.api.docsIntro') %></p>
+<pre class="mono code-block"><code>curl -H "Authorization: Bearer fkt_…" <%= base %>/api/v1/documents?limit=20
+curl -H "Authorization: Bearer fkt_…" <%= base %>/api/v1/documents/&lt;id&gt;/pdf -o faktura.pdf
+curl -H "Authorization: Bearer fkt_…" <%= base %>/api/v1/series
+
+curl -X POST <%= base %>/api/v1/documents \
+  -H "Authorization: Bearer fkt_…" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: poruchka-2026-0001" \
+  -d '{"seriesId":"…","typeCode":"380","issueDate":"2026-11-13","currency":"EUR",
+       "buyer":{"name":"…","legalId":"…","address":{"street":"…","city":"…","postalCode":"…","countryCode":"BG"}},
+       "lines":[{"id":"1","name":"Услуга","quantity":"1","unitCode":"C62","netPrice":"100.00",
+                 "vat":{"category":"S","rate":"20"},"allowanceCharges":[],"attributes":[]}],
+       "notes":[],"precedingInvoices":[],"allowanceCharges":[],"vatExemptions":[]}'</code></pre>
+  <ul class="install-list">
+    <li><%= t('app.api.docs.amounts') %></li>
+    <li><%= t('app.api.docs.idempotency') %></li>
+    <li><%= t('app.api.docs.errors') %></li>
+    <li><%= t('app.api.docs.limits') %></li>
+  </ul>
+</section>
+<%- include('../partials/app-foot') %>

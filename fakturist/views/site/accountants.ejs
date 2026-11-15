@@ -1,0 +1,117 @@
+<%
+  const app = locals.appUrls || { register: '/registraciya', login: '/vhod' };
+  const plural = (key, n) => t('site.units.' + key + (n === 1 ? '.one' : '.other'), { n });
+  const firm = plans ? plans.find((p) => p.audience === 'accountant') : null;
+  const priced = firm && firm.perClientCompanyCents !== null && firm.includedClientCompanies !== null;
+  const counts = [3, 10, 25, 50, 100];
+  const monthly = (n) => (firm.priceMonthlyCents || 0) + Math.max(0, n - firm.includedClientCompanies) * firm.perClientCompanyCents;
+-%>
+<%- include('../partials/site-head') %>
+<main id="main">
+
+<section class="page-head">
+  <div class="wrap">
+    <h1 id="h1"><%= t('site.accountants.title') %></h1>
+    <p class="lead"><%= t('site.accountants.lead') %></p>
+    <div class="actions">
+<% if (registrationOpen) { -%>
+      <a class="btn" href="<%= app.register %>"><%= t('site.cta.registerFree') %></a>
+<% } else { -%>
+      <p class="muted"><%= t('site.cta.closed') %></p>
+<% } -%>
+      <a class="btn btn-ghost" href="<%= urls.pricing %>"><%= t('site.home.pricing.link') %></a>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="flow-h">
+  <div class="wrap split">
+    <h2 id="flow-h"><%= t('site.accountants.flow.title') %></h2>
+    <ol class="steps">
+<% for (const n of [1, 2, 3, 4]) { -%>
+      <li>
+        <h3><%= t('site.accountants.flow.' + n + '.title') %></h3>
+        <p><%= t('site.accountants.flow.' + n + '.text') %></p>
+      </li>
+<% } -%>
+    </ol>
+  </div>
+</section>
+
+<section class="section section-tint" aria-labelledby="mandate-h">
+  <div class="wrap split">
+    <div class="split-head">
+      <h2 id="mandate-h"><%= t('site.accountants.mandate.title') %></h2>
+      <p><%= t('site.accountants.mandate.text') %></p>
+    </div>
+    <div>
+      <h3 class="h-quiet"><%= t('site.accountants.roles.title') %></h3>
+      <dl class="roles">
+<% for (const r of ['owner', 'admin', 'accountant', 'issuer', 'viewer']) { -%>
+        <div><dt><%= t('site.accountants.roles.' + r + '.name') %></dt><dd><%= t('site.accountants.roles.' + r + '.text') %></dd></div>
+<% } -%>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="price-h">
+  <div class="wrap split">
+    <div class="split-head">
+      <h2 id="price-h"><%= t('site.accountants.price.title') %></h2>
+<% if (priced) { -%>
+      <p><%= t('site.accountants.price.lead', { included: plural('clients', firm.includedClientCompanies), price: formatEuro(firm.perClientCompanyCents) }) %></p>
+<% } -%>
+    </div>
+<% if (priced) { -%>
+    <table class="calc">
+      <caption class="sr"><%= t('site.accountants.price.caption') %></caption>
+      <thead>
+        <tr>
+          <th scope="col"><%= t('site.accountants.price.clients') %></th>
+          <th scope="col" class="num"><%= t('site.accountants.price.net') %></th>
+          <th scope="col" class="num"><%= t('site.accountants.price.gross') %></th>
+        </tr>
+      </thead>
+      <tbody>
+<% for (const n of counts) { const cents = monthly(n); -%>
+        <tr>
+          <th scope="row"><%= n %></th>
+          <td class="num"><%= cents === 0 ? t('site.accountants.price.free') : formatEuro(cents) %></td>
+          <td class="num"><%= cents === 0 ? t('site.accountants.price.free') : formatEuro(Math.round(cents * 1.2)) %></td>
+        </tr>
+<% } -%>
+      </tbody>
+    </table>
+<% } else { -%>
+    <p class="notice" role="status"><%= t('site.accountants.price.unavailable', { email: company.email }) %></p>
+<% } -%>
+  </div>
+</section>
+
+<% if (firm) { -%>
+<section class="section section-tint" aria-labelledby="inc-h">
+  <div class="wrap split">
+    <div class="split-head">
+      <h2 id="inc-h"><%= t('site.accountants.included.title') %></h2>
+      <p class="muted"><%= t('site.accountants.included.lead') %></p>
+    </div>
+    <ul class="feat">
+<% for (const f of features) { if (!firm.features.includes(f.code)) continue; -%>
+      <li>
+        <span class="f-name"><%= t('features.' + f.code + '.name') %></span>
+<% if (f.status === 'planned') { -%>
+        <span class="tag-planned"><%= t('features.planned', { target: f.target }) %></span>
+<% } -%>
+        <span class="f-desc"><%= t('features.' + f.code + '.description') %></span>
+      </li>
+<% } -%>
+    </ul>
+  </div>
+</section>
+<% } -%>
+
+<%- include('../partials/site-faq') %>
+<%- include('../partials/site-cta') %>
+</main>
+<%- include('../partials/site-foot') %>

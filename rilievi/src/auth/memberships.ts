@@ -19,6 +19,7 @@ export const MEMBERSHIP_SELECT = {
       nomiRuoli: true,
       condizioniVersione: true,
       preventiviAttivi: true,
+      preventiviArchivio: true,
       abbonamentoFino: true,
       abbonamentoProva: true,
       abbonamentoCambioAt: true,
@@ -37,6 +38,7 @@ interface MembershipRow {
     nomiRuoli?: Prisma.JsonValue;
     condizioniVersione?: string | null;
     preventiviAttivi?: boolean;
+    preventiviArchivio?: boolean;
     abbonamentoFino?: Date | null;
     abbonamentoProva?: boolean;
     abbonamentoCambioAt?: Date | null;
@@ -68,6 +70,10 @@ export function activeMemberships(
       nomiRuoli: nomiSalvati(row.azienda.nomiRuoli),
       condizioniVersione: row.azienda.condizioniVersione ?? null,
       ...(row.azienda.preventiviAttivi === true ? { preventivi: true as const } : {}),
+      // Изключени оферти с данни: само четене и изтриване (auth/scope.ts).
+      ...(row.azienda.preventiviAttivi !== true && row.azienda.preventiviArchivio === true
+        ? { preventiviArchivio: true as const }
+        : {}),
       ...(row.azienda.deactivatedAt === null ? {} : { soloEsportazione: true as const }),
       // Абонаментът е изтекъл: фирмата само чете (auth/scope.ts); краят — за лентата над страниците.
       ...(row.azienda.abbonamentoFino ? { abbonamentoFino: row.azienda.abbonamentoFino } : {}),

@@ -25,7 +25,11 @@
       },
       "preventivi": {
         "titolo": "Preventivi",
-        "desc": "Le condizioni con cui parte ogni nuovo preventivo e il listino prezzi."
+        "desc": "Le condizioni con cui parte ogni nuovo preventivo."
+      },
+      "listino": {
+        "titolo": "Listino prezzi",
+        "desc": "Le voci con unità, prezzo e IVA che compilano le righe dei preventivi. Si importano anche da Excel."
       },
       "ruoli": {
         "titolo": "Ruoli e permessi",

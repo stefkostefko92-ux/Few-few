@@ -1,0 +1,27 @@
+<%- include('../partials/app-head', { title: t('app.mandates.title') }) %>
+<p><a href="/app/o/<%= org.id %>">← <%= org.legalName %></a></p>
+<h1><%= t('app.mandates.title') %></h1>
+<p class="muted"><%= t('app.mandates.help') %></p>
+<% if (mandates.length === 0) { %><p class="muted"><%= t('app.mandates.none') %></p><% } else { %>
+<div class="table-wrap"><table>
+  <thead><tr><th scope="col"><%= t('app.mandates.firm') %></th><th scope="col"><%= t('app.home.mandate') %></th><th scope="col"><%= t('app.inbox.state') %></th><th scope="col"><span class="sr-only"><%= t('app.mandates.actions') %></span></th></tr></thead>
+  <tbody>
+  <% mandates.forEach((m) => { %>
+    <tr>
+      <td><%= m.firm.legalName %> <span class="mono muted"><%= m.firm.eik %></span></td>
+      <td><%= m.documentRef %></td>
+      <td><span class="tag tag-<%= m.status.toLowerCase() %>"><%= t('app.home.status.' + m.status) %></span></td>
+      <td class="actions">
+        <% if (m.status === 'PENDING') { %>
+          <form method="post" action="/app/o/<%= org.id %>/palnomoshtni/<%= m.id %>/potvardi"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit"><%= t('app.mandates.approve') %></button></form>
+        <% } %>
+        <% if (m.status !== 'REVOKED') { %>
+          <form method="post" action="/app/o/<%= org.id %>/palnomoshtni/<%= m.id %>/ottegli"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="button-secondary"><%= t('app.mandates.revoke') %></button></form>
+        <% } %>
+      </td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+<%- include('../partials/app-foot') %>

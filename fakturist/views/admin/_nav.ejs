@@ -1,0 +1,52 @@
+<%#
+  Навигацията на мастър панела: главните страници + регистърът по групи (res.locals.adminNav ← src/routes/admin.ts).
+  Един `<details>`: на телефон е свит до текущата страница, на широк екран е лява колона, винаги отворена (app.css).
+-%>
+<%
+  const startsAny = (...prefixes) => prefixes.some((p) => path === p || path.startsWith(p + '/'));
+  const main = [
+    { href: '/admin', icon: 'overview', label: t('admin.dashboard'), active: path === '/admin' },
+    { href: '/admin/nastroyki', icon: 'settings', label: t('admin.settings'), active: startsAny('/admin/nastroyki') },
+    { href: '/admin/funktsii', icon: 'features', label: t('admin.features'), active: startsAny('/admin/funktsii') },
+    { href: '/admin/r/plans', icon: 'tag', label: t('admin.plans'), active: startsAny('/admin/r/plans', '/admin/planove') },
+    { href: '/admin/r/organizations', icon: 'chain', label: t('admin.nav.chain'), hint: t('admin.nav.chainHint'), active: startsAny('/admin/veriga') },
+    { href: '/admin/mastari', icon: 'crown', label: t('admin.nav.masters'), active: path.startsWith('/admin/mastari') },
+    { href: '/admin/saobshteniya', icon: 'inbox', label: t('admin.nav.announcements'), active: path.startsWith('/admin/saobshteniya') },
+  ];
+  let current = main.find((i) => i.active) || null;
+  if (!current) {
+    for (const g of adminNav) {
+      const r = g.items.find((i) => startsAny('/admin/r/' + i.slug));
+      if (r) { current = { label: r.label[lang] }; break; }
+    }
+  }
+-%>
+<nav class="admin-nav" aria-label="<%= t('admin.title') %>">
+  <details class="admin-menu">
+    <summary>
+      <%- icon('menu') %>
+      <span class="org-menu-name"><span class="org-menu-hint"><%= t('admin.nav.menu') %></span><span><%= current ? current.label : t('admin.title') %></span></span>
+      <%- icon('chevron') %>
+    </summary>
+    <div class="admin-menu-body">
+      <div class="an-group">
+        <p class="an-title" id="an-main"><%= t('admin.nav.main') %></p>
+        <ul aria-labelledby="an-main">
+<% main.forEach((i) => { -%>
+          <li><a href="<%= i.href %>"<%- i.active ? ' aria-current="page"' : '' %>><%- icon(i.icon) %><span><%= i.label %><% if (i.hint) { %><small><%= i.hint %></small><% } %></span></a></li>
+<% }) -%>
+        </ul>
+      </div>
+<% adminNav.forEach((g) => { -%>
+      <div class="an-group">
+        <p class="an-title" id="an-<%= g.id %>"><%- icon(g.id) %><span><%= t('admin.groups.' + g.id) %></span></p>
+        <ul aria-labelledby="an-<%= g.id %>">
+<% g.items.forEach((r) => { -%>
+          <li><a class="an-plain" href="/admin/r/<%= r.slug %>"<%- startsAny('/admin/r/' + r.slug) ? ' aria-current="page"' : '' %>><span><%= r.label[lang] %></span></a></li>
+<% }) -%>
+        </ul>
+      </div>
+<% }) -%>
+    </div>
+  </details>
+</nav>

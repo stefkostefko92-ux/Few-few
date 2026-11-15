@@ -119,8 +119,7 @@
       "richiediDesc": "L'azienda diventa cliente: il suo amministratore firma davvero, con il codice via email.",
       "flash": {
         "ok": "Firma richiesta: l'amministratore la vedrà al prossimo accesso.",
-        "stato": "La firma si chiede solo a un'azienda che ha le condizioni accettate senza firma.",
-        "presto": "La versione delle condizioni di questa azienda entra in vigore il {data}: chiedi la firma da quel giorno, così l'amministratore firma una volta sola."
+        "stato": "La firma si chiede solo a un'azienda che ha le condizioni accettate senza firma."
       },
       "esistenteNota": "Accettate senza firma: aziende create prima delle condizioni di servizio, segnate come accettate senza una riga nel registro. Quando un'azienda diventa cliente, chiedi la firma.",
       "prossima": {
@@ -138,7 +137,7 @@
           "gia": "Questa versione è già stata annunciata.",
           "nessuna": "Non c'è una nuova versione da annunciare."
         },
-        "daSola": "Entra in vigore da sola, senza annuncio: non devi fare nulla. Le aziende già segnate con questa versione continuano a lavorare; da quel giorno puoi chiedere la firma."
+        "daSola": "Entra in vigore da sola, senza annuncio: non devi fare nulla. Le aziende che hanno già questa versione continuano a lavorare. Se chiedi la firma adesso, l'amministratore dell'azienda firma direttamente questa versione, una volta sola."
       }
     },
     "verifica": {
