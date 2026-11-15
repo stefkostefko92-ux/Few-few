@@ -3,6 +3,7 @@
 import {
   founderSessionPayment,
   isPlanSession,
+  type CustomerTaxIdView,
   type FounderSessionPayment,
   type FounderSessionView,
   type PlanCheckoutPorts,
@@ -19,6 +20,8 @@ export interface PlanStripeClient {
       params: { email: string; metadata: Record<string, string> },
       options: { idempotencyKey: string },
     ): PromiseLike<{ id: string }>;
+    listTaxIds(customerId: string, params: { limit: number }): AsyncIterable<CustomerTaxIdView>;
+    deleteTaxId(customerId: string, id: string): PromiseLike<unknown>;
   };
   subscriptions: {
     list(params: { customer: string; status: 'all'; limit: number }): AsyncIterable<{
@@ -48,6 +51,8 @@ export type PlanStripePorts = Pick<
   | 'paymentIntentStatus'
   | 'listOpenPlanSessionIds'
   | 'expireSession'
+  | 'listCustomerTaxIds'
+  | 'deleteCustomerTaxId'
 >;
 
 export function createPlanStripePorts(stripe: PlanStripeClient): PlanStripePorts {
@@ -98,6 +103,20 @@ export function createPlanStripePorts(stripe: PlanStripeClient): PlanStripePorts
     },
     async expireSession(sessionId) {
       await stripe.checkout.sessions.expire(sessionId);
+    },
+    async listCustomerTaxIds(customerId) {
+      const taxIds: CustomerTaxIdView[] = [];
+      for await (const t of stripe.customers.listTaxIds(customerId, { limit: 100 })) {
+        taxIds.push({
+          id: t.id,
+          type: t.type,
+          verification: t.verification ? { status: t.verification.status } : null,
+        });
+      }
+      return taxIds;
+    },
+    async deleteCustomerTaxId(customerId, taxId) {
+      await stripe.customers.deleteTaxId(customerId, taxId);
     },
   };
 }
