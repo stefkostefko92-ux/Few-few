@@ -1,6 +1,6 @@
 {
   "date": "2026-11-15",
-  "ref": "92521a0f14e0745ad3e7adb2616ce2b2173446a1",
+  "ref": "cfe6b9d070378b65b2ef8e76e0272d01dfa3efea",
   "cli": "2.1.325 (Claude Code)",
   "summary": "проба 1/1 · оценки 1/1 · verifier ✓ · критичните пропуснати (входовете им са непроменени; минаха на 2026-11-15)",
   "costUsd": 1.55,
@@ -12,7 +12,7 @@
       "problems": []
     }
   ],
-  "inputsHash": "638e2ac2dfc4cf0c013d2bada9d28a8ec6c9c206091a6d79cbc03a9be410ad11",
+  "inputsHash": "64ca38c7531c838e67a4799ef89fc6cacb9b6b7c137935a041e756272b3ea9f8",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
@@ -50,7 +50,7 @@
     ".claude/agents/strazhata.md": "5a4d84031095f62a273abd4bb5e3ad399cb89a3e3c30fe21c4df20422703086a",
     ".claude/agents/tayniyat-agent.md": "22ce18f5fe48538cabcb4216005823861c2708047438e6c5fcf11e1162b5a617",
     ".claude/agents/treydara.md": "0047d1976157ad45f4483f8a65c458d462d594770502f27afe3a7b79bc7cb1e0",
-    ".claude/agents/vps-adjiyata.md": "84dcb7b7ffa659f0f1542e44432958a7d3c56d3b2c63af50fafc047c3e79fbd9",
+    ".claude/agents/vps-adjiyata.md": "fdd89489d2ce45f85218d6d7dd4b530753b4bad9aaa1d022074e2ddb8dbe7db6",
     ".claude/hooks/agent-cap.mjs": "1e8dc510561658ee1bfb28e8916ae4f0d98a14a375f8377d7b2b758c3f64f64c",
     ".claude/hooks/agent-return.mjs": "e9b76f4e211ad024fc6bf02c6f088f6474ef7232dea8401841efcd17d54615f8",
     ".claude/hooks/artifact-sync.mjs": "1d33833db1a0a73eb3e818bb4360dddd3f807abe8b848adae684e48c77add80a",
