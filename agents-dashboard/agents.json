@@ -16881,7 +16881,7 @@
           "Правната рамка: Правния Разбирач (оторизация, обхват на съгласие, NIS2/ОРЗД)",
           "Границата: Разбивача (вътрешен red-team на наши системи), Кодаджията (white-box код)"
         ],
-        "lessons": 65
+        "lessons": 93
       },
       "evolution": [
         {
@@ -16913,9 +16913,20 @@
           "date": "2026-11-15",
           "event": "v6.5 — учене",
           "detail": "Научи: В WSTG v4.2 категорията INPV има тестове 01-19; INPV-03 (HTTP Verb Tampering) е празна … (+1 още)"
+        },
+        {
+          "version": "9.3.0",
+          "date": "2026-11-15",
+          "event": "v9.3 — учене",
+          "detail": "Научи: ASVS 5.0.0 има 345 изисквания в 17 глави (V1 Encoding and Sanitization … V17 WebRTC) - … (+27 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „ASVS 5.0.0 има 345 изисквания в 17 глави (V1 Encoding and Sanitization … V17 WebRTC) - …\" (+27 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
