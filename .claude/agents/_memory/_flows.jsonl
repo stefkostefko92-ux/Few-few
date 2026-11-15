@@ -755,3 +755,5 @@
 {"t":"start","ts":"2026-11-15T17:31:04.188Z","id":"r25933ed1","flow":"авто","lead":"prodavacha","auto":true}
 {"t":"handoff","ts":"2026-11-15T17:31:04.188Z","id":"r25933ed1","from":"prodavacha","to":"kodadjiyata","status":"наред","run":"ea366cda"}
 {"t":"handoff","ts":"2026-11-15T17:31:13.655Z","id":"r25933ed1","from":"vps-adjiyata","to":"strazhata","status":"има бележки","run":"12acd558"}
+{"t":"start","ts":"2026-11-15T20:31:19.917Z","id":"rf53d3e19","flow":"авто","lead":"frezadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-15T20:31:19.917Z","id":"rf53d3e19","from":"frezadjiyata","to":"kodadjiyata","status":"има бележки","run":"a1233c07"}
