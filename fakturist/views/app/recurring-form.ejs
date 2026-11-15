@@ -1,0 +1,37 @@
+<%- include('../partials/app-head', { title: template ? template.name : t('app.recurring.newTitle') }) %>
+<% const day = (d) => d ? d.toISOString().slice(0, 10).split('-').reverse().join('.') : '—'; %>
+<p><a href="/app/o/<%= orgId %>/povtaryashti">← <%= t('app.recurring.title') %></a></p>
+<h1><%= template ? template.name : t('app.recurring.newTitle') %></h1>
+<% if (doc) { %><p class="muted"><%= t('app.recurring.fromDocument', { number: doc.number }) %></p><% } %>
+<% if (template) { %><p><span class="tag<%= template.status === 'ACTIVE' ? ' tag-active' : template.status === 'PAUSED' ? ' tag-pending' : '' %>"><%= t('app.recurring.statuses.' + template.status) %></span><% if (template.lastError) { %> <span class="hint"><%= tOr('app.recurring.errors.' + template.lastError, template.lastError) %></span><% } %></p><% } %>
+<% if (err) { %><p class="error" role="alert"><%= tOr('app.recurring.err.' + err, t('auth.errors.invalid')) %></p><% } %>
+<% if (!feature) { %><p class="callout"><%= t('app.recurring.needsPlan') %> <a href="/app/o/<%= orgId %>/plan"><%= t('app.plan.title') %></a></p><% } %>
+<% if (!template || template.status !== 'ENDED') { %>
+<form method="post" action="<%= template ? '/app/o/' + orgId + '/povtaryashti/' + template.id : '/app/o/' + orgId + '/d/' + doc.id + '/povtaryay' %>" class="stack narrow-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <label><%= t('app.recurring.name') %><input name="name" required maxlength="120" value="<%= values.name %>"></label>
+  <label><%= t('app.recurring.frequency') %><select name="frequency"><% ['MONTHLY', 'QUARTERLY', 'YEARLY'].forEach((f) => { %><option value="<%= f %>"<%= values.frequency === f ? ' selected' : '' %>><%= t('app.recurring.frequencies.' + f) %></option><% }) %></select></label>
+  <div class="grid-2">
+    <label><%= t('app.recurring.next') %><input type="date" name="nextRunOn" required value="<%= values.nextRunOn %>"><span class="hint"><%= t('app.recurring.nextHint') %></span></label>
+    <label><%= t('app.recurring.end') %><input type="date" name="endOn" value="<%= values.endOn %>"><span class="hint"><%= t('app.recurring.endHint') %></span></label>
+  </div>
+  <label><%= t('app.recurring.dueDays') %><input name="dueDays" inputmode="numeric" pattern="[0-9]{0,3}" value="<%= values.dueDays %>"><span class="hint"><%= t('app.recurring.dueDaysHint') %></span></label>
+  <label><%= t('app.recurring.sendTo') %><input type="email" name="sendTo" maxlength="200" value="<%= values.sendTo %>"><span class="hint"><%= t('app.recurring.sendToHint') %></span></label>
+  <fieldset>
+    <legend><%= t('app.recurring.lines') %></legend>
+    <p class="hint"><%= t('app.recurring.periodHint') %></p>
+    <% lines.forEach((line, i) => { %><label><%= t('app.recurring.line', { n: i + 1 }) %> <span class="muted mono">× <%= line.quantity %></span><input name="lineName" required maxlength="500" value="<%= line.name %>"></label><% }) %>
+  </fieldset>
+  <div><button type="submit"<%= feature ? '' : ' disabled' %>><%= template ? t('app.catalog.save') : t('app.recurring.create') %></button></div>
+</form>
+<% } %>
+<% if (template && template.status !== 'ENDED') { %>
+<form method="post" action="/app/o/<%= orgId %>/povtaryashti/<%= template.id %>/end" class="plan-cancel"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="link"><%= t('app.recurring.actions.end') %></button></form>
+<% } %>
+<% if (template && locals.documents && documents.length) { %>
+<h2><%= t('app.recurring.issued') %></h2>
+<ul class="invite-list">
+  <% documents.forEach((d) => { %><li><a class="mono" href="/app/o/<%= orgId %>/d/<%= d.id %>"><%= d.number %></a> · <%= day(d.issueDate) %> · <span class="mono"><%= d.recurringPeriod %></span> · <%= t('app.payment.states.' + d.paymentState) %></li><% }) %>
+</ul>
+<% } %>
+<%- include('../partials/app-foot') %>

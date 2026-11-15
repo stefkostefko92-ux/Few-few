@@ -1,0 +1,47 @@
+<%- include('../partials/app-head', { title: t('auth.invite.title') }) %>
+<%
+  const date = invite.expiresAt.toISOString().slice(0, 10).split('-').reverse().join('.');
+  const errorText = (code) => code.startsWith('password.')
+    ? tOr('auth.errors.' + code, t('auth.errors.invalid'))
+    : tOr('auth.invite.errors.' + code, t('auth.errors.invalid'));
+%>
+<section class="narrow wide-ish">
+  <h1><%= t('auth.invite.title') %></h1>
+  <p><%= t('auth.invite.intro', { company: invite.organization.legalName, eik: invite.organization.eik || '—' }) %></p>
+  <p class="muted"><%= t('auth.invite.forEmail', { email: invite.email, date }) %></p>
+  <% const m = invite.mandate; const mandateBox = m && m.status === 'PENDING'; %>
+  <% if (m) { %>
+    <p class="callout"><%= t('auth.invite.byFirm', { firm: m.firm.legalName, eik: m.firm.eik || '—', ref: m.documentRef, from: m.validFrom.toISOString().slice(0, 10).split('-').reverse().join('.') }) %></p>
+  <% } %>
+  <% if (errors.form) { %><p class="error" role="alert"><%= errorText(errors.form) %></p><% } %>
+  <% if (state === 'accept') { %>
+    <form method="post" action="/pokana/<%= token %>" class="stack">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <% if (mandateBox) { %><label class="check"><input type="checkbox" name="confirmMandate"> <%= t('auth.invite.confirmMandate', { firm: m.firm.legalName }) %><span class="hint"><%= t('auth.invite.confirmMandateHint') %></span></label><% } %>
+      <button type="submit"><%= t('auth.invite.accept') %></button>
+    </form>
+  <% } else if (state === 'wrongAccount') { %>
+    <p class="callout"><%= t('auth.invite.wrongAccount', { current: currentUser ? currentUser.email : '', email: invite.email }) %></p>
+    <form method="post" action="/izhod">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button type="submit" class="button-secondary"><%= t('auth.logout') %></button>
+    </form>
+  <% } else if (state === 'login') { %>
+    <p class="callout"><%= t('auth.invite.loginFirst') %></p>
+    <p><a class="button" href="/vhod?next=<%= encodeURIComponent('/pokana/' + token) %>"><%= t('auth.login') %></a></p>
+  <% } else { %>
+    <% if (Object.keys(errors).some((f) => f !== 'form')) { %>
+      <div class="error-box" role="alert"><ul><% Object.entries(errors).filter(([field]) => field !== 'form').forEach(([field, code]) => { %><li><%= errorText(code) %></li><% }) %></ul></div>
+    <% } %>
+    <form method="post" action="/pokana/<%= token %>" class="stack" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label<%= errors.name ? ' class="has-error"' : '' %>><%= t('auth.name') %><input name="name" value="<%= name %>" autocomplete="name" required<%= errors.name ? ' aria-invalid="true"' : '' %>></label>
+      <label><%= t('auth.email') %><input type="email" value="<%= invite.email %>" autocomplete="username" readonly></label>
+      <label<%= errors.password ? ' class="has-error"' : '' %>><%= t('auth.password') %><input type="password" name="password" autocomplete="new-password" minlength="12" required aria-describedby="pw-help"<%= errors.password ? ' aria-invalid="true"' : '' %>><span class="hint" id="pw-help"><%= t('auth.passwordHelp') %></span></label>
+      <% if (mandateBox) { %><label class="check"><input type="checkbox" name="confirmMandate"> <%= t('auth.invite.confirmMandate', { firm: m.firm.legalName }) %><span class="hint"><%= t('auth.invite.confirmMandateHint') %></span></label><% } %>
+      <%- include('../partials/legal-accept', { orgName: invite.organization.legalName, invalid: Boolean(errors.acceptTerms) }) %>
+      <button type="submit"><%= t('auth.invite.create') %></button>
+    </form>
+  <% } %>
+</section>
+<%- include('../partials/app-foot') %>

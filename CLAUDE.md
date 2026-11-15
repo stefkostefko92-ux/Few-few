@@ -39,7 +39,8 @@ file holds only what is true across all products. Keep it that way.
 | `vpsdash/` | Carbon Stealth VPS Dashboard — пълен контролен панел за сървъра (метрики, systemd, Docker, деплой, ъпдейти, сигурност, бекъпи, файлове, терминал, агентски флот) | Node ≥20 · `node:http` · vanilla ES modules · нула зависимости | BG · systemd на 127.0.0.1 зад Nginx+TLS · един сървър (federation по избор) · owner: VPS-аджията |
 | `piuma/` | Piuma — Instagram контент-двигател с админ панел (чернова → човешко одобрение → публикуване) + управлявани страници (автопилот по план + Instagram Insights) | Node 22 · TS strict (ESM) · Express 5 · EJS · Prisma · PostgreSQL · BullMQ + Redis · Argon2id + TOTP · Anthropic SDK | BG/EN/IT · официален Instagram Platform API · витрина на `/` (нула JS, SEO/AEO пълен набор) · панел `/admin` (7 роли, 2FA, одит-верига, три езика) · агентът влиза с HMAC-подписани заявки, само чернови · акаунти се създават **ръчно** (ToS на Meta) |
 | `agentgw/` | Агентски шлюз — нашите агенти от собствен ЕС сървър за сайтовете чрез агентски ключове (ключ = сайт → позволени агенти + домейни) | Node 22 · TS strict (ESM) · Express 5 · Zod · Prisma · PostgreSQL · `@anthropic-ai/vertex-sdk` · ванилов уиджет | BG/EN/IT · Claude **само през Vertex AI в ЕС** (`eu`) · публичните агенти са само разговорни (нула инструменти) · разговорите не се пазят · `cs_pk_`/`cs_sk_` ключове с месечен таван |
-| `korpora/` | Korpora — проектиране на корпусни мебели в браузъра (3D, разкрой, чертежи с карта за пробиване, DXF/G-code) с акаунти и админ панел | Node 22 · TS strict (ESM) · Express 5 · EJS · Prisma · PostgreSQL · zod · Argon2id + TOTP · three.js (esbuild, без CDN) · Docker | BG/EN/IT (редакторът засега BG) · korpora.carbonstealth.eu · 30 дни тест от потвърждаване на имейла · Premium 25 €/мес. без ДДС (−5/10/20 % за 3/6/12) · Lifetime 750 € · плановете се активират **ръчно** · каталогът от магазините е в репото **само шифрован** (ключът е само на сървъра) |
+| `korpora/` | Korpora — проектиране на корпусни мебели в браузъра (3D, разкрой, чертежи с карта за пробиване, DXF/G-code) с акаунти и админ панел | Node 22 · TS strict (ESM) · Express 5 · EJS · Prisma · PostgreSQL · zod · Argon2id + TOTP · three.js (esbuild, без CDN) · Docker | BG/EN/IT (редакторът засега BG) · korpora.carbonstealth.eu · 30 дни тест от потвърждаване на имейла · плановете (цени — `korpora/CLAUDE.md`) се активират **ръчно** · каталогът от магазините е в репото **само шифрован** (ключът е само на сървъра) |
+| `fakturist/` | Фактурист — фактуриране върху EN 16931 (UBL + CII) за фирми и кантори | Node 22 · TS strict · Express 5 · EJS · Prisma · PostgreSQL · Docker | BG/EN · fakturist.carbonstealth.eu |
 | `rilievi/` | Rilievi Impianti — портал за схемите за оглед на асансьори (карти, модули на доставчиците, листове за интервенция, табели, изчисление за аргано) | Node 22 · TS strict (ESM) · Express 5 · EJS · Prisma · PostgreSQL · Docker | IT · rilievi.carbonstealth.eu (порт 4330) · **само покана** · многофирмен, 7 роли · 2FA по избор |
 | `cs-revolution/` | Carbon Stealth — фирменият сайт (уеб агенция и софтуер) | Vite · React 18 SPA (началната) + ~400 статични страници от Python генератори · PHP API · живи сцени от Blender (`public/js/cs-live.js`) | IT/EN/BG · carbonstealth.eu · деплой от клон `deploy-live` с `deploy-all.sh` (**не** през autodeploy) · **логото не се променя** |
 
@@ -150,7 +151,7 @@ Details → `.claude/hooks/README.md`.
 non-technical-editor pain appears. **Never** put sensitive/transactional/fiscal data (medical Art. 9,
 Н-18/СУПТО, payments, accounts, inventory) in a hosted CMS. Full rationale → `docs/adr/0001-prisma-vs-sanity.md`.
 
-## Deployment — `deploy/`
+## Deployment — `deploy/` (netcup, EU/DE)
 
 Canonical flow: the server fetches an **immutable archive for an exact ref** from the
 public repo and hands it to `autodeploy.sh`. Still **no `git pull` on the box** (no working
@@ -173,12 +174,9 @@ sudo bash /root/few-few-*/deploy/autodeploy.sh   # idempotent, monorepo-aware
 ```
 
 `autodeploy.sh` (ships in the archive) unpacks a timestamped release under
-`/opt/few-few/releases/` and deploys each configured project — zabobovdol via
-Docker Compose (build + up + migrate, seed only on first run); medqr via rsync +
-`npm ci --omit=dev` + `systemctl restart medqr` (auto-rollback on health-check
-fail). Secrets stay on the server and carry over. Full flow + one-time hardening
-→ `deploy/README.md`, `zabobovdol/DEPLOY.md`, `medqr/deploy/DEPLOY.md`. The
-**VPS-аджията** agent owns this pipeline.
+`/opt/few-few/releases/` and deploys each configured project with a health-check and code
+rollback; secrets stay on the server. Per-product steps + hardening → `deploy/README.md`.
+The **VPS-аджията** agent owns this pipeline.
 
 <!-- Maintainer hygiene (stripped from context, costs no tokens):
  • Keep this root file <200 lines and CROSS-CUTTING only. Adherence drops as it grows.

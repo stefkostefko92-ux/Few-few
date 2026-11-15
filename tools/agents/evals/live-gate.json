@@ -1,33 +1,18 @@
 {
   "date": "2026-11-15",
-  "ref": "2b1994b1581f035130b59b70ea2aad164fce6811",
+  "ref": "92521a0f14e0745ad3e7adb2616ce2b2173446a1",
   "cli": "2.1.325 (Claude Code)",
-  "summary": "проба 4/4 · оценки 7/7 · pass^k 3/3 · verifier ✓",
-  "costUsd": 9.61,
+  "summary": "проба 1/1 · оценки 1/1 · verifier ✓ · критичните пропуснати (входовете им са непроменени; минаха на 2026-11-15)",
+  "costUsd": 1.55,
   "criticalAt": "2026-11-15",
   "probe": [
     {
-      "agent": "seo",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "kodadjiyata",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "dizayner",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "strazhata",
+      "agent": "vps-adjiyata",
       "ok": true,
       "problems": []
     }
   ],
-  "inputsHash": "9e5ad36848f751ad6757b252a466e2f7b1781af4fc01078e0c3c528e033936c7",
+  "inputsHash": "638e2ac2dfc4cf0c013d2bada9d28a8ec6c9c206091a6d79cbc03a9be410ad11",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
@@ -65,7 +50,7 @@
     ".claude/agents/strazhata.md": "5a4d84031095f62a273abd4bb5e3ad399cb89a3e3c30fe21c4df20422703086a",
     ".claude/agents/tayniyat-agent.md": "22ce18f5fe48538cabcb4216005823861c2708047438e6c5fcf11e1162b5a617",
     ".claude/agents/treydara.md": "0047d1976157ad45f4483f8a65c458d462d594770502f27afe3a7b79bc7cb1e0",
-    ".claude/agents/vps-adjiyata.md": "2e7862eaa91636b4be370956df95dcb584a3b1054a1b2dc8154f3172fe1dd86f",
+    ".claude/agents/vps-adjiyata.md": "84dcb7b7ffa659f0f1542e44432958a7d3c56d3b2c63af50fafc047c3e79fbd9",
     ".claude/hooks/agent-cap.mjs": "1e8dc510561658ee1bfb28e8916ae4f0d98a14a375f8377d7b2b758c3f64f64c",
     ".claude/hooks/agent-return.mjs": "e9b76f4e211ad024fc6bf02c6f088f6474ef7232dea8401841efcd17d54615f8",
     ".claude/hooks/artifact-sync.mjs": "1d33833db1a0a73eb3e818bb4360dddd3f807abe8b848adae684e48c77add80a",

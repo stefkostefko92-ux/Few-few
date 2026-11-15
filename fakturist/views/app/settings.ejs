@@ -1,0 +1,64 @@
+<%- include('../partials/app-head', { title: t('app.settings.title') }) %>
+<%
+  const v = (name) => (values && typeof values[name] === 'string' ? values[name] : '');
+  const err = (name) => errors[name] ? tOr('app.settings.errors.' + errors[name], t('auth.errors.invalid')) : '';
+%>
+<p><a href="/app/o/<%= org.id %>">← <%= org.legalName %></a></p>
+<h1><%= t('app.settings.title') %></h1>
+<% if (saved) { %><p class="ok" role="status"><%= t('app.settings.saved.' + saved) %></p><% } %>
+
+<section aria-labelledby="h-pdf" class="stack wide-ish">
+  <h2 id="h-pdf"><%= t('app.settings.pdfTitle') %></h2>
+  <p class="muted"><%= t('app.settings.pdfIntro') %></p>
+  <p><a class="button-secondary" href="/app/o/<%= org.id %>/nastroyki/obrazets.pdf" target="_blank" rel="noopener"><%= t('app.settings.preview') %></a></p>
+
+  <section class="panel stack" aria-labelledby="h-logo">
+    <h3 id="h-logo"><%= t('app.settings.logo') %></h3>
+    <% if (hasLogo) { %>
+      <img class="logo-preview" src="/app/o/<%= org.id %>/nastroyki/logo.png?v=<%= logoVersion %>" alt="<%= t('app.settings.logoAlt', { company: org.legalName }) %>">
+    <% } else { %>
+      <p class="muted"><%= t('app.settings.noLogo') %></p>
+    <% } %>
+    <% if (errors.logo) { %><p class="error" role="alert"><%= err('logo') %></p><% } %>
+    <form method="post" action="/app/o/<%= org.id %>/nastroyki/logo" enctype="multipart/form-data" class="stack">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label><%= hasLogo ? t('app.settings.replaceLogo') : t('app.settings.uploadLogo') %><input type="file" name="logo" accept="image/png,image/jpeg,image/webp" required aria-describedby="logo-help"><span class="hint" id="logo-help"><%= t('app.settings.logoHelp') %></span></label>
+      <button type="submit"><%= t('app.settings.uploadButton') %></button>
+    </form>
+    <% if (hasLogo) { %>
+      <form method="post" action="/app/o/<%= org.id %>/nastroyki/logo/mahni">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="button-secondary"><%= t('app.settings.removeLogo') %></button>
+      </form>
+    <% } %>
+  </section>
+
+  <form method="post" action="/app/o/<%= org.id %>/nastroyki/pdf" class="panel stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <h3><%= t('app.settings.look') %></h3>
+    <% if (Object.keys(errors).some((f) => f !== 'logo')) { %><div class="error-box" role="alert"><ul><% Object.entries(errors).filter(([f]) => f !== 'logo').forEach(([f]) => { %><li><%= t('app.settings.fields.' + f) %>: <%= err(f) %></li><% }) %></ul></div><% } %>
+    <fieldset class="choice">
+      <legend><%= t('app.settings.fields.template') %></legend>
+      <% templates.forEach((tpl) => { %>
+        <label class="radio"><input type="radio" name="template" value="<%= tpl %>"<%= v('template') === tpl ? ' checked' : '' %>> <span><strong><%= t('app.settings.templates.' + tpl + '.name') %></strong> <span class="hint"><%= t('app.settings.templates.' + tpl + '.help') %></span></span></label>
+      <% }) %>
+    </fieldset>
+    <label<%= errors.font ? ' class="has-error"' : '' %>><%= t('app.settings.fields.font') %>
+      <select name="font"><% fonts.forEach((f) => { %><option value="<%= f.key %>"<%= v('font') === f.key ? ' selected' : '' %>><%= f.label %> — <%= t('app.settings.fontKinds.' + f.key) %></option><% }) %></select>
+      <span class="hint"><%= t('app.settings.fontHelp') %></span>
+    </label>
+    <label<%= errors.accent ? ' class="has-error"' : '' %>><%= t('app.settings.fields.accent') %>
+      <input type="color" name="accent" value="<%= v('accent') || '#03756c' %>" aria-describedby="accent-help">
+      <span class="hint" id="accent-help"><%= t('app.settings.accentHelp') %></span>
+    </label>
+    <fieldset class="choice">
+      <legend><%= t('app.settings.fields.logoPosition') %></legend>
+      <% positions.forEach((p) => { %>
+        <label class="radio"><input type="radio" name="logoPosition" value="<%= p %>"<%= v('logoPosition') === p ? ' checked' : '' %>> <%= t('app.settings.positions.' + p) %></label>
+      <% }) %>
+    </fieldset>
+    <p class="hint"><%= t('app.settings.contentNote') %></p>
+    <button type="submit"><%= t('app.settings.save') %></button>
+  </form>
+</section>
+<%- include('../partials/app-foot') %>

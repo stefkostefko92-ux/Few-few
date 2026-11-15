@@ -1,0 +1,57 @@
+<%
+  const isErrF = !locals.seo;
+  const altBg = isErrF ? '/' : seo.alternates.bg;
+  const altEn = isErrF ? '/en/' : seo.alternates.en;
+  const appF = locals.appUrls || { register: '/registraciya', login: '/vhod' };
+  const navIdsF = ['home', 'pricing', 'accountants', 'einvoicing2028', 'news'];
+-%>
+<footer class="foot">
+  <div class="wrap foot-grid">
+    <div class="foot-id">
+      <p class="foot-name"><%= lang === 'bg' ? brand.name : brand.nameLatin %></p>
+      <p class="foot-tag"><%= brand.tagline[lang] %></p>
+      <address>
+        <strong><%= lang === 'bg' ? company.nameBg : company.name %></strong><br>
+        <%= t('site.foot.eik') %>&nbsp;<%= company.eik %>, <%= t('site.foot.vat') %>&nbsp;<%= company.vat %><br>
+        <%= company.postalCode %>&nbsp;<%= company.city[lang] %>, <%= company.region[lang] %>, <%= company.street[lang] %><br>
+        <%= t('site.foot.phone') %>&nbsp;<%= company.phone %><br>
+        <a href="mailto:<%= company.email %>"><%= company.email %></a>
+      </address>
+    </div>
+    <nav class="foot-nav" aria-label="<%= t('site.foot.nav') %>">
+      <ul>
+<% for (const id of navIdsF) { -%>
+        <li><a href="<%= urls[id] %>"><%= t('site.nav.' + id) %></a></li>
+<% } -%>
+<% if (locals.registrationOpen !== false) { -%>
+        <li><a href="<%= appF.register %>"><%= t('site.cta.register') %></a></li>
+<% } -%>
+        <li><a href="<%= appF.login %>"><%= t('site.cta.login') %></a></li>
+        <li><a href="/prilozhenie<%= lang === 'en' ? '?lang=en' : '' %>"><%= t('install.nav') %></a></li>
+      </ul>
+    </nav>
+    <nav class="foot-legal" aria-label="<%= t('legal.navLabel') %>">
+      <ul>
+        <li><a href="<%= legalUrl('terms') %>"><%= t('legal.terms.title') %></a></li>
+        <li><a href="<%= legalUrl('privacy') %>"><%= t('legal.privacy.title') %></a></li>
+        <li><a href="<%= legalUrl('dpa') %>"><%= t('legal.dpa.title') %></a></li>
+      </ul>
+    </nav>
+    <nav class="foot-lang" aria-label="<%= t('site.lang.label') %>">
+      <ul>
+        <li><a href="<%= altBg %>" hreflang="bg" lang="bg"<% if (lang === 'bg') { %> aria-current="true"<% } %>>Български</a></li>
+        <li><a href="<%= altEn %>" hreflang="en" lang="en"<% if (lang === 'en') { %> aria-current="true"<% } %>>English</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="wrap foot-base">
+    <p class="foot-note"><%= t('site.foot.note') %></p>
+    <p class="foot-credit">Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></p>
+  </div>
+</footer>
+<% if (locals.seo && page === 'home') { -%>
+<script src="/js/site-home.js?v=<%= v %>" defer nonce="<%= cspNonce %>"></script>
+<script src="/js/site-trial.js?v=<%= v %>" defer nonce="<%= cspNonce %>"></script>
+<% } -%>
+</body>
+</html>
