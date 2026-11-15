@@ -11,6 +11,8 @@ import {
   isPlanSession,
   planCheckoutSessionParams,
   preparePlanCheckout,
+  unverifiedVatTaxIds,
+  type CustomerTaxIdView,
   type PlanCheckoutPorts,
   type PlanCheckoutUser,
 } from '../plan-checkout';
@@ -27,6 +29,8 @@ interface FakeState {
   reversed: Set<string>;
   open: Record<string, { id: string; kind: 'plan' | 'shop' }[]>;
   expired: string[];
+  taxIds: Record<string, CustomerTaxIdView[]>;
+  deletedTaxIds: string[];
 }
 
 function fake(init: Partial<FakeState> = {}): { s: FakeState; ports: PlanCheckoutPorts } {
@@ -40,6 +44,8 @@ function fake(init: Partial<FakeState> = {}): { s: FakeState; ports: PlanCheckou
     reversed: new Set(),
     open: {},
     expired: [],
+    taxIds: {},
+    deletedTaxIds: [],
     ...init,
   };
   const ports: PlanCheckoutPorts = {
@@ -72,6 +78,12 @@ function fake(init: Partial<FakeState> = {}): { s: FakeState; ports: PlanCheckou
     },
     async expireSession(id) {
       s.expired.push(id);
+    },
+    async listCustomerTaxIds(customerId) {
+      return s.taxIds[customerId] ?? [];
+    },
+    async deleteCustomerTaxId(customerId, taxId) {
+      s.deletedTaxIds.push(`${customerId}/${taxId}`);
     },
   };
   return { s, ports };
@@ -140,7 +152,6 @@ test('PC5 съществуващ customer: без нов Customer; customer_upda
   const p = planCheckoutSessionParams({ ...BASE, customerId: 'cus_old', taxEnabled: true });
   assert.deepEqual(p.customer_update, { address: 'auto', name: 'auto' });
   assert.deepEqual(p.automatic_tax, { enabled: true });
-  assert.deepEqual(p.tax_id_collection, { enabled: true });
   assert.equal(p.billing_address_collection, 'required');
   const noTax = planCheckoutSessionParams({ ...BASE, customerId: 'cus_old', taxEnabled: false });
   assert.equal('customer_update' in noTax, false);
@@ -323,6 +334,17 @@ function mockStripe() {
         calls.push({ op: 'customers.create', args: [params, options] });
         return { id: 'cus_new' };
       },
+      listTaxIds: (customerId, params) => {
+        calls.push({ op: 'customers.listTaxIds', args: [customerId, params] });
+        return list([
+          { id: 'txi_ok', type: 'eu_vat', verification: { status: 'verified' } },
+          { id: 'txi_pend', type: 'eu_vat', verification: { status: 'pending' } },
+        ]);
+      },
+      deleteTaxId: async (customerId, id) => {
+        calls.push({ op: 'customers.deleteTaxId', args: [customerId, id] });
+        return {};
+      },
     },
     subscriptions: {
       list: (params) => {
@@ -372,4 +394,79 @@ test('PC9 Stripe адаптер: create с idempotency key; list-ове по cus
   await ports.expireSession('cs_plan');
   assert.deepEqual(calls.at(-1), { op: 'sessions.expire', args: ['cs_plan'] });
   assert.equal(await ports.paymentIntentStatus('pi_pend'), 'processing');
+});
+
+// ДДС (TAX.md): Stripe Tax прилага обратно начисляване по ФОРМАТА на ДДС
+// номера, независимо от VIES резултата (docs.stripe.com/billing/customer/tax-ids).
+// Обратно начисляване — само при VIES-проверен номер; иначе — с ДДС.
+test('PC10 Stripe Tax: Checkout НЕ събира ДДС номер (непроверен номер = обратно начисляване по формат)', () => {
+  for (const oneTime of [false, true]) {
+    const p = planCheckoutSessionParams({ ...BASE, oneTime, customerId: 'cus_1', taxEnabled: true });
+    assert.equal('tax_id_collection' in p, false);
+    assert.deepEqual(p.automatic_tax, { enabled: true });
+  }
+});
+
+test('PC11 unverifiedVatTaxIds: само eu_vat без статус verified (pending/unverified/unavailable/null)', () => {
+  const ids = unverifiedVatTaxIds([
+    { id: 'txi_ok', type: 'eu_vat', verification: { status: 'verified' } },
+    { id: 'txi_pend', type: 'eu_vat', verification: { status: 'pending' } },
+    { id: 'txi_bad', type: 'eu_vat', verification: { status: 'unverified' } },
+    { id: 'txi_na', type: 'eu_vat', verification: { status: 'unavailable' } },
+    { id: 'txi_null', type: 'eu_vat', verification: null },
+    { id: 'txi_uic', type: 'bg_uic', verification: null },
+  ]);
+  assert.deepEqual(ids, ['txi_pend', 'txi_bad', 'txi_na', 'txi_null']);
+});
+
+test('PC12 преди сесията непроверените ДДС номера се махат от customer-а; проверените остават', async () => {
+  const { s, ports } = fake({
+    taxIds: {
+      cus_old: [
+        { id: 'txi_ok', type: 'eu_vat', verification: { status: 'verified' } },
+        { id: 'txi_bad', type: 'eu_vat', verification: { status: 'unverified' } },
+        { id: 'txi_pend', type: 'eu_vat', verification: { status: 'pending' } },
+      ],
+    },
+  });
+  const r = await preparePlanCheckout(user({ stripeCustomerId: 'cus_old' }), ports);
+  assert.deepEqual(r, { ok: true, customerId: 'cus_old' });
+  assert.deepEqual(s.deletedTaxIds, ['cus_old/txi_bad', 'cus_old/txi_pend']);
+});
+
+test('PC12b блокиран checkout (жив абонамент) не пипа ДДС номерата', async () => {
+  const { s, ports } = fake({
+    subs: { cus_old: ['active'] },
+    taxIds: { cus_old: [{ id: 'txi_bad', type: 'eu_vat', verification: { status: 'unverified' } }] },
+  });
+  const r = await preparePlanCheckout(user({ stripeCustomerId: 'cus_old' }), ports);
+  assert.deepEqual(r, { ok: false, error: 'plan' });
+  assert.deepEqual(s.deletedTaxIds, []);
+});
+
+test('PC12c провалено махане на непроверен номер се пропагира (fail-closed, без сесия)', async () => {
+  const { ports } = fake({
+    taxIds: { cus_old: [{ id: 'txi_bad', type: 'eu_vat', verification: { status: 'unverified' } }] },
+  });
+  await assert.rejects(
+    preparePlanCheckout(user({ stripeCustomerId: 'cus_old' }), {
+      ...ports,
+      async deleteCustomerTaxId() {
+        throw new Error('stripe down');
+      },
+    }),
+    /stripe down/,
+  );
+});
+
+test('PC9b Stripe адаптер: ДДС номерата се четат и махат по customer', async () => {
+  const { client, calls } = mockStripe();
+  const ports = createPlanStripePorts(client);
+  assert.deepEqual(await ports.listCustomerTaxIds('cus_1'), [
+    { id: 'txi_ok', type: 'eu_vat', verification: { status: 'verified' } },
+    { id: 'txi_pend', type: 'eu_vat', verification: { status: 'pending' } },
+  ]);
+  assert.deepEqual(calls.at(-1), { op: 'customers.listTaxIds', args: ['cus_1', { limit: 100 }] });
+  await ports.deleteCustomerTaxId('cus_1', 'txi_pend');
+  assert.deepEqual(calls.at(-1), { op: 'customers.deleteTaxId', args: ['cus_1', 'txi_pend'] });
 });
