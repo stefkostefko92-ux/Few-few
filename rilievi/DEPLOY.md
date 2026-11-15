@@ -426,10 +426,35 @@ UTC`; без лични данни, пътища и адреси.
 **Версия 4.1 — какво прави деплоят и какво остава за теб.** Двете миграции само добавят; втората отбелязва
 всички съществуващи фирми като приели условията 2026-11-14 (без ред в регистъра на приеманията) — хората им
 влизат без страницата за подпис, докато пощата не работи. Когато Brevo тръгне (`/master/posta` → пробно писмо):
-MASTER → „Contratti“ → „Richiedi la firma“ за всяка фирма, **от 14 ноември 2026** (преди това конзолата казва от
-кой ден — версията 2026-11-14 влиза в сила в полунощ по Рим). В „Pagamenti“: раздел „IVA con partita IVA non
+MASTER → „Contratti“ → „Richiedi la firma“ за всяка фирма — от версия 4.2 веднага, и преди 14 ноември 2026
+(администраторът подписва версията 2026-11-14, която влиза в сила в полунощ по Рим; във версия 4.1 конзолата
+отказваше до този ден). В „Pagamenti“: раздел „IVA con partita IVA non
 valida nel VIES“ (ключът и продажбите извън портала за прага от 10 000 €) и „Note di credito“ (номер и ден на
 всяко издадено известие — срок 5 дни от връщането).
+
+**Пощата не тръгва** (13 ноември 2026: пробното писмо — `ETIMEDOUT` на порт 587). От версия 4.2 `/master/posta`
+казва стъпката с думи и отговора на SMTP сървъра („Ultima prova“, „Ultima email del portale“); в лога — само
+кодовете: `sudo docker compose logs --since 2h app | grep posta.fallita` (`fase`, `code`, `origine`,
+`responseCode`).
+
+- `connessione` (`ETIMEDOUT`, `ECONNREFUSED`): връзката не излиза от сървъра. netcup пуска новите сървъри със
+  защитна стена в SCP с политика „netcup Mail block“, която спира изходящите пощенски портове (по форума на
+  netcup — 25, 465, 587; официален списък няма). **Порт 2525** в `/master/posta` — Brevo го приема и не е
+  пощенски порт за стената. Ако и той не отговаря: SCP → сървърът → Firewall → „netcup Mail block“ → Löschen →
+  Speichern. Проба на портовете — от хоста и от контейнера на портала:
+
+  ```bash
+  for p in 2525 587 465; do timeout 6 bash -c "exec 3<>/dev/tcp/smtp-relay.brevo.com/$p" 2>/dev/null && echo "$p: aperta" || echo "$p: bloccata"; done
+  cd "$(sudo cat /opt/few-few/shared/rilievi/last-good)"
+  sudo docker compose exec -T app node -e "const net=require('node:net');for(const p of [2525,587,465]){const s=net.connect({host:'smtp-relay.brevo.com',port:p,timeout:6000});s.on('connect',()=>{console.log(p,'aperta');s.destroy()}).on('timeout',()=>{console.log(p,'nessuna risposta');s.destroy()}).on('error',e=>console.log(p,e.code))}"
+  ```
+
+  Отворен на хоста, а затворен от контейнера — правило на хоста за мрежата на Docker, не доставчикът.
+
+- `accesso` (535): логинът или SMTP ключът (не API ключът) — ключът се пише наново; 525: в Brevo е включено
+  блокирането на непознати IP адреси — адресът на сървъра се добавя в Security → Authorized IPs.
+- `mittente` (5xx на MAIL FROM): подателят или домейнът му не е проверен в Brevo.
+- „Inviata“, а писмото го няма: Brevo го е приел — гледа се в логовете на транзакционните писма в акаунта.
 
 **Външен монитор на `/health`** (`.github/workflows/rilievi-health.yml`; мъртъв сървър не може да се обади сам).
 GitHub Actions пита `https://rilievi.carbonstealth.eu/health` на всеки 10 минути (минути :07, :17 … UTC): здрав

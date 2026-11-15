@@ -1,8 +1,10 @@
 <%
-  // Едно поле на офертата: текст, имейл, ден, дни на валидност или бележка (`textarea`); `wide` — на целия ред.
+  // Едно поле на офертата: текст, имейл, ден, дни на валидност или бележка (`textarea`); `wide` — на целия ред;
+  // `doppia` — две колони от 720 px и само на реда на телефон (имейлът не се реже в тясна колона).
+  const largo = locals.doppia ? ' field--doppia field--riga-telefono' : '';
   const desc = [hint ? 'hint-' + key : '', errore ? 'err-' + key : ''].filter(Boolean).join(' ');
   const attrs = (errore ? ' aria-invalid="true"' : '') + (desc ? ' aria-describedby="' + desc + '"' : '');
-%><div class="field<%= wide ? ' field--wide' : '' %>">
+%><div class="field<%= wide ? ' field--wide' : '' %><%= largo %>">
   <label class="field__label" for="f-<%= key %>"><%= t('preventivi.campo.' + key) %></label>
   <% if (tipo === 'textarea') { %><textarea class="textarea" id="f-<%= key %>" name="<%= key %>" rows="4" maxlength="<%= maxLength %>"<%- attrs %>><%= valore %></textarea>
   <% } else if (tipo === 'date') { %><input class="input" id="f-<%= key %>" name="<%= key %>" type="date" min="2000-01-01" max="2099-12-31" value="<%= valore %>"<%- attrs %>>
