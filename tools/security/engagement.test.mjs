@@ -15,7 +15,8 @@ const base = () => ({
   engagement_id: "cs-2026-acme", status: "active",
   client_legal_identity: { name: "ACME EOOD", vat: "BG123", seat: "София" },
   authorizing_signatory: { name: "Иван Иванов", role: "CTO", authority_proof: "протокол-2026-07" },
-  authorization_ref: { doc_hash: "sha256:abcd", signed_at: "2026-11-14", method: "qes" },
+  authorization_ref: { doc_hash: "sha256:" + "c".repeat(64), signed_at: "2026-11-14", method: "qes" },
+  third_party_cloud_notice: { provider: "none", notified: true },
   scope_allowlist: { hosts: ["acme.example", "api.acme.example"], cidr: [], endpoints: [] },
   out_of_scope: { hosts: [], paths: ["/admin"], actions: ["no-dos", "no-exfil"] },
   time_window: { not_before: "2026-11-15T00:00:00Z", not_after: "2026-11-16T00:00:00Z" },
@@ -80,4 +81,28 @@ test("loadEngagements чете папка, проверява всеки, не �
     assert.equal(list.length, 3);
     assert.equal(list.filter((e) => e.verified).length, 1, "само подписаният е валиден");
   } finally { rmSync(d, { recursive: true, force: true }); }
+});
+
+// ── 14-те полета на pentest-engagement (находка на Прониквача, 15.11.2026) ───────────────────
+const HASH = "sha256:" + "a".repeat(64);
+const full = () => ({ ...base(), authorization_ref: { ...base().authorization_ref, doc_hash: HASH },
+  third_party_cloud_notice: { provider: "none", notified: true } });
+
+test("пълен ангажимент с всичките 14 полета → verified:true", () => {
+  assert.equal(verifyEngagement(signed(full()), PUB).verified, true);
+});
+test("без доказателство за власт, без хеш на разрешението, без трети облаци, DPA, разкриване, контакти или abort → verified:false", () => {
+  const cases = {
+    "authority_proof": (o) => { delete o.authorizing_signatory.authority_proof; },
+    "doc_hash празен": (o) => { o.authorization_ref.doc_hash = "sha256:…"; },
+    "third_party_cloud_notice": (o) => { delete o.third_party_cloud_notice; },
+    "data_handling.dpa_ref": (o) => { delete o.data_handling.dpa_ref; },
+    "disclosure_terms": (o) => { delete o.disclosure_terms; },
+    "emergency_contacts празен": (o) => { o.emergency_contacts = []; },
+    "abort_procedure празен": (o) => { o.abort_procedure = " "; },
+  };
+  for (const [name, mut] of Object.entries(cases)) {
+    const o = JSON.parse(JSON.stringify(full())); mut(o);
+    assert.equal(verifyEngagement(signed(o), PUB).verified, false, name);
+  }
 });

@@ -59,9 +59,14 @@ const WORD_RULES = BODIES.map(([b, why]) => [new RegExp("^" + b), why]);
 /** Махни съдържанието на кавичките — „> файл“ в текстов аргумент не е пренасочване. */
 const unquote = (s) => s.replace(/'[^']*'/g, "''").replace(/"(?:\\.|[^"\\])*"/g, '""');
 
-/** Временна цел: /tmp, $TMPDIR, /dev/null…, scratchpad-ът (буквален път). „..“ никога — /tmp/../repo е репото. */
-const tempTarget = (scratch) => (t) => !t.includes("..") &&
-  (/^(?:&\d|\/dev\/(?:null|stdout|stderr)|\/tmp\/|\$TMPDIR|\$\{TMPDIR\}|\/proc\/self\/fd)/.test(t) || Boolean(scratch && t.startsWith(scratch.replace(/\/?$/, "/"))));
+/** Временна цел: /tmp, $TMPDIR, /dev/null…, scratchpad-ът (буквален път). „..“ никога — /tmp/../repo е репото.
+ *  Една двойка обграждащи кавички се маха („"<scratch>/dl/"“ е същият път; 15.11.2026, фалшив позитив при Прониквача) —
+ *  неразгърната променлива в кавички („"$X"“) пак не е буквален временен път и остава спряна. */
+const tempTarget = (scratch) => (raw) => {
+  const t = String(raw).replace(/^(["'])(.*)\1$/, "$2");
+  return !t.includes("..") &&
+    (/^(?:&\d|\/dev\/(?:null|stdout|stderr)|\/tmp\/|\$TMPDIR|\$\{TMPDIR\}|\/proc\/self\/fd)/.test(t) || Boolean(scratch && t.startsWith(scratch.replace(/\/?$/, "/"))));
+};
 
 // Файлови команди (2026-11-02): досега се спираха ВИНАГИ, дори към /tmp и scratchpad-а, а съобщението казваше
 // „временни файлове пиши в scratchpad-а“ — Разбивача не можеше да подготви PoC (пилот за усилие, live-run).
@@ -76,6 +81,9 @@ function fileCmdReason(cmd, scratch) {
     const args = m[2].trim().split(/\s+/).filter((a) => a && !a.startsWith("-"));
     // chmod/chown: първият аргумент е режимът/собственикът, не път.
     const targets = DEST_ONLY.has(m[1]) ? args.slice(-1) : /^ch(?:mod|own)$/.test(m[1]) ? args.slice(1) : args;
+    // Цел в кавички тук е изпразнена от unquote („""“) — суровият ред не знае пътя. Съди я нивото по думи
+    // (wordReason → fileArgvReason), което разбира кавичките; иначе `cp x "<scratch>/dl/"` беше фалшив позитив.
+    if (targets.some((t) => /^(?:""|'')$/.test(t))) continue;
     if (!targets.length || !targets.every(ok)) return "команда, която пише/трие файлове извън /tmp и scratchpad-а";
   }
   return "";

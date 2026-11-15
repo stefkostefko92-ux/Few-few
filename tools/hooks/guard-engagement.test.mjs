@@ -44,14 +44,18 @@ test("с подписан активен ангажимент: в обхват a
     const obj = {
       engagement_id: "cs-test", status: "active",
       client_legal_identity: { name: "ACME" }, authorizing_signatory: { name: "x", role: "CTO", authority_proof: "p" },
-      authorization_ref: { doc_hash: "sha256:x" }, scope_allowlist: { hosts: ["acme.example"], cidr: [] },
+      authorization_ref: { doc_hash: "sha256:" + "b".repeat(64) }, scope_allowlist: { hosts: ["acme.example"], cidr: [] },
       out_of_scope: { paths: ["/admin"] }, time_window: win, limits: { rate_rps: 5 }, governing_law: "BG",
+      third_party_cloud_notice: { provider: "none", notified: true },
+      data_handling: { role: "processor", dpa_ref: "DPA-T" }, disclosure_terms: { framework: "ISO/IEC 29147" },
+      emergency_contacts: [{ name: "SOC", email: "soc@acme.example" }], abort_procedure: "kill-switch",
     };
     const signature = edSign(null, Buffer.from(canonicalize(obj)), kp.privateKey).toString("base64");
     writeFileSync(join(dir, "e.json"), JSON.stringify({ ...obj, signature }));
     const pub = kp.publicKey.export({ type: "spki", format: "pem" });
     const env = { SECURITY_ENGAGEMENTS_DIR: dir, ENGAGEMENT_PUBKEY: pub };
-    assert.equal(run("Bash", { command: "nmap -sV acme.example" }, env).status, 0, "в обхват");
+    assert.equal(run("Bash", { command: "nmap --max-rate 5 -sV acme.example" }, env).status, 0, "в обхват");
+    assert.equal(run("Bash", { command: "nmap -sV acme.example" }, env).status, 2, "в обхват, но без флаг за темпо при лимит от ROE");
     assert.equal(run("Bash", { command: "nmap other.example" }, env).status, 2, "извън обхват");
     assert.equal(run("Bash", { command: "curl https://other.example/" }, env).status, 2, "чужд хост по време на ангажимент");
     assert.equal(run("WebFetch", { url: "https://acme.example/admin/x" }, env).status, 2, "изключен път");
