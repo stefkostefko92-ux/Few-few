@@ -106,3 +106,25 @@ test("неизвестен/непарсваем вход при активен �
   assert.equal(r.decision, "block");
   assert.match(r.reason, /неясна|непарсваема|fail-closed|целта/i);
 });
+
+// ── ред-тейм на Разбивача (2026-11-15): три fail-open дупки, ред-бял артефакт ──────────────────
+test("F1 — loopback суфикс-измама: 127.<чужд> е ВЪНШЕН, не вътрешен", () => {
+  assert.equal(classifyHost("127.evil.example"), "external", "127. като ляв етикет на чужд домейн");
+  assert.equal(classifyHost("127.0.0.1.evil.test"), "external");
+  assert.equal(classifyHost("127.0.0.1"), "internal", "истински loopback остава вътрешен");
+  assert.equal(classifyHost("127.5.5.5"), "internal", "цялата 127.0.0.0/8 е loopback");
+  assert.equal(scopeCheck(bash("nmap -p- 127.evil.example"), [], T0).decision, "block");
+});
+test("F2 — офанзивен инструмент зад env/обвивка префикс се разпознава", () => {
+  for (const c of ["FOO=1 nmap acme.example", "time nmap acme.example", "env X=y sqlmap -u https://acme.example/a", "HTTPS_PROXY=x nmap acme.example", "sudo nmap acme.example"])
+    assert.equal(isOffensiveTool(c), true, c);
+  assert.equal(isOffensiveTool("echo nmap"), false, "спомената дума, не изпълнение");
+  assert.equal(isOffensiveTool("grep -r nmapx ."), false, "не е офанзивен");
+  assert.equal(scopeCheck(bash("FOO=1 nmap acme.example"), [], T0).decision, "block", "офанзивно зад префикс към чужд хост без ангажимент");
+});
+test("F3 — активен ангажимент: извлечена външна цел се проверява дори без разпознат verb", () => {
+  assert.equal(scopeCheck(bash("FOO=1 curl https://other.example/"), [eng()], T0).decision, "block");
+  assert.equal(scopeCheck(bash("python3 -c 'import urllib.request as u; u.urlopen(\"http://other.example/\")'"), [eng()], T0).decision, "block", "python клиент извън списъка, но целта е извлечена");
+  assert.equal(scopeCheck(bash("ls -la"), [eng()], T0).decision, "allow", "без цел — нормалната работа минава");
+  assert.equal(scopeCheck(bash("python3 -c 'u.urlopen(\"https://acme.example/\")'"), [eng()], T0).decision, "allow", "цел в обхвата минава");
+});

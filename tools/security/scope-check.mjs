@@ -30,7 +30,7 @@ export function classifyHost(host) {
   const h = String(host || "").trim().toLowerCase().replace(/^\[|\]$/g, "");
   if (!h) return "external";
   if (/[^\x00-\x7f]/.test(h)) return "external"; // хомоглиф/кирилица в хоста
-  if (LOOPBACK.has(h) || h.startsWith("127.")) return "internal";
+  if (LOOPBACK.has(h) || /^127(?:\.\d{1,3}){3}$/.test(h)) return "internal"; // цялата 127.0.0.0/8; строг IPv4, не префикс-низ (127.evil.example е чужд)
   for (const d of INTERNAL) if (h === d || h.endsWith("." + d)) return "internal";
   return "external";
 }
@@ -41,7 +41,9 @@ const IPV4_RE = /^(?:\d{1,3}\.){3}\d{1,3}$/;
 
 // Офанзивни инструменти (тежка артилерия) — само на командна позиция, не като аргумент/низ.
 const OFFENSIVE = "nmap|masscan|zmap|sqlmap|nikto|wpscan|hydra|medusa|ncrack|patator|gobuster|dirb|dirbuster|ffuf|wfuzz|feroxbuster|nuclei|metasploit|msfconsole|msfvenom|sslscan|sslyze|testssl|openvas|nessus|amass|sublist3r|dnsrecon|enum4linux|crackmapexec|responder|aircrack-ng|ettercap|bettercap|setoolkit|beef";
-const CMD_POS = "(?:^|[\\n;&|]|&&|\\|\\|)\\s*(?:sudo\\s+)?(?:[\\w./-]*/)?";
+// Командна позиция: поглъща низ от env-присвоявания (FOO=1) и обвивки (sudo/env/time/nice/…) преди
+// инструмента — иначе `FOO=1 nmap` или `time nmap` се четат като нормална работа (ред-тейм F2).
+const CMD_POS = "(?:^|[\\n;&|]|&&|\\|\\|)\\s*(?:(?:sudo|env|time|nice|nohup|stdbuf|command|xargs|[A-Za-z_]\\w*=[^\\s]*)\\s+)*(?:[\\w./-]*/)?";
 const OFFENSIVE_RE = new RegExp(CMD_POS + "(" + OFFENSIVE + ")\\b", "i");
 const NET_VERB_RE = new RegExp(CMD_POS + "(curl|wget|nc|ncat|netcat|telnet|ssh|scp|sftp|rsync|ping|dig|host|nslookup|whois|openssl)\\b", "i");
 
@@ -106,8 +108,12 @@ export function scopeCheck(input, engagements, now = new Date()) {
     return allow("офанзивен инструмент само срещу наш/вътрешен хост");
   }
   // Активен ангажимент: всяка външна мрежова цел трябва да е в обхват.
-  if (!netVerb && !offensive) return allow("без мрежова цел");
-  if (targets.length === 0) return block("активен ангажимент, но целта е неясна/непарсваема — fail-closed (не рискуваме извън обхват)");
+  // Щом extractTargets е извлякъл цел, проверяваме обхвата ВИНАГИ — не гейтваме върху разпознат verb
+  // (httpie/python/префикс не са в NET_VERB_RE, но целта е реална; ред-тейм F3 — иначе fail-open).
+  if (targets.length === 0) {
+    if (!netVerb && !offensive) return allow("без мрежова цел");
+    return block("активен ангажимент, но целта е неясна/непарсваема — fail-closed (не рискуваме извън обхват)");
+  }
   for (const t of targets) {
     if (classifyHost(t.host) === "internal") continue;
     const match = active.find((e) => inScope(e, t.host));
