@@ -6,6 +6,7 @@ import { translator } from './i18n.js';
 import { GROOVE, HDF_T } from './joinery.js';
 import { esc } from './util.js';
 import { cornerGap, cornerHandleRoom } from './kitchen.js';
+import { SLIDING, DEFAULT_SLIDING } from './sliding.js';
 
 const HW_KIND = [['hinge:', 'hinge'], ['slide:', 'slide'], ['handle:', 'handle']];
 
@@ -18,7 +19,7 @@ export function notes(model) {
   const t = translator(model.lang);
   const corner = Boolean(model.runs?.length);
   const { parts, spec, hardware } = model;
-  const front = parts.find((p) => p.role === 'door' || p.role === 'drawer-front' || p.role === 'bed-head');
+  const front = parts.find((p) => ['door', 'drawer-front', 'sliding-door', 'bed-head'].includes(p.role));
   const carcass = parts.find((p) => p.role === 'side' || p.role === 'bed-rail');
   const has = (test) => parts.some(test);
   const kinds = new Set(parts.flatMap((p) => p.features.map((f) => f.kind)));
@@ -48,6 +49,12 @@ export function notes(model) {
       return `${what}${h.variant ? `, ${t(`variant.${h.variant}`)}` : ''} × ${h.qty}`.replace(/\s+/g, ' ').trim();
     });
   if (named.length) lines.push(t('note.hardware', { list: named.join('; ') }));
+  // sliding doors: what the CNC does not make (the bottom groove, the running gear)
+  const sliding = parts.find((p) => p.role === 'sliding-door');
+  if (sliding) {
+    const sys = SLIDING[spec.sliding] ?? SLIDING[DEFAULT_SLIDING];
+    lines.push(t('note.sliding', { sys: sys.name, T: t.num(sliding.T), w: t.num(sys.bottomGroove.w), d: t.num(sys.bottomGroove.depth) }));
+  }
   const rows = lines.flatMap((t) => wrap(t));
   // a Г or П kitchen has one more line: the space under its plan and views allows it
   const max = corner ? 8 : 6;

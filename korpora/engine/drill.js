@@ -7,7 +7,7 @@ import { r1, neg } from './util.js';
 import { translator } from './i18n.js';
 
 // the kinds of holes, in the order of the drilling table (their names: purpose.<kind> in the catalogue)
-const PURPOSE = ['system', 'cup', 'cup-dowel', 'cup-screw', 'plate', 'handle', 'handle-mark', 'confirmat', 'slide', 'slide-hook', 'pilot', 'screw', 'bedfit', 'stack-pilot', 'blind-fix', 'dowel'];
+const PURPOSE = ['system', 'cup', 'cup-dowel', 'cup-screw', 'plate', 'handle', 'handle-mark', 'confirmat', 'slide', 'slide-hook', 'pilot', 'screw', 'bedfit', 'stack-pilot', 'blind-fix', 'dowel', 'planofit', 'sliding-gear'];
 const BG = translator('bg');
 export const purposeOf = (kind, t = BG) => (PURPOSE.includes(kind) ? t(`purpose.${kind}`) : kind);
 // A horizontal hole in an edge is the other half of the joint: PURPOSE describes the hole through the face.

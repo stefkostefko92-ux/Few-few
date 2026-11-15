@@ -52,6 +52,9 @@ export const OUTPUT_SPECS = [
   { type: 'kitchen', shape: 'left', handle: 'fx:knob' },
   { type: 'kitchen', shape: 'u', post: 'grbl', tool: 8 },
   { type: 'wardrobe', hinge: 'fx:salice' },
+  // sliding doors (sliding.js): two carcasses, Planofit grooves wider than the cutter, on ISO and on GRBL
+  { type: 'wardrobe', doorType: 'sliding', height: 2200, width: 3000, columns: 4 },
+  { type: 'wardrobe', doorType: 'sliding', height: 2100, layout: 'hanging', post: 'grbl', tool: 8 },
   { type: 'bookcase', columns: 3, hinge: 'fx:gtv' },
   // a free carcass that uses every kind of cell and front, wider than one carcass, on GRBL
   {

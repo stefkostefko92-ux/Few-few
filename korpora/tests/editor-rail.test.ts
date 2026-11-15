@@ -57,6 +57,23 @@ test('the server draws the size fields of every type as the editor does, in ever
   }
 });
 
+test('a choice that belongs to another hides with its label: doors per column only with hinged doors', async () => {
+  const { paramsHtml } = await browserModule<ParamsModule>('editor/params-html.js', ['paramsHtml']);
+  await editorWords('bg');
+  const html = paramsHtml(engine().typeParams.wardrobe ?? []);
+  assert.match(
+    html,
+    /<div class="segfield" data-when="doorType:hinged">[\s\S]*?name="doorsPerColumn"/,
+  );
+  const rail = editorRail({ type: 'wardrobe', doorType: 'sliding' });
+  assert.equal(rail?.fields.find((f) => f.key === 'doorsPerColumn')?.shown, false);
+  const server = await ejs.renderFile(join(ROOT, 'views', 'app', 'editor-params.ejs'), {
+    fields: rail?.fields ?? [],
+    te: translatorFor('bg'),
+  });
+  assert.match(server, /<div class="segfield" data-when="doorType:hinged" hidden>/);
+});
+
 test('the server writes the project values and the title line of the editor', () => {
   const rail = editorRail({ type: 'base', width: 750, fronts: 'drawers' });
   assert.ok(rail);

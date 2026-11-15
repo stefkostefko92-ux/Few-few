@@ -238,3 +238,11 @@ td .sw {
 .note {
   max-width: 80ch;
 }
+
+/* a choice that belongs to another (params-html.js): the wrapper does not change the layout, only hides its field */
+.rail .segfield {
+  display: contents;
+}
+.rail .segfield[hidden] {
+  display: none;
+}

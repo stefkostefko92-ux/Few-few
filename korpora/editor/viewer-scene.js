@@ -88,6 +88,14 @@ export function addSymbols(v, model, meshOf) {
       const g = legMesh(v.mats, s.h);
       g.position.copy(v.P(s.x, s.y0, s.z));
       into(s.run).add(g);
+    } else if (s.type === 'slidingTrack') {
+      // the double top track of sliding doors (sliding.js), under the top
+      const g = new THREE.Mesh(
+        new THREE.BoxGeometry((s.x1 - s.x0) * S, 17.5 * S, (s.z1 - s.z0) * S),
+        v.mats.metal('aluminium'),
+      );
+      g.position.copy(v.P((s.x0 + s.x1) / 2, s.y - 17.5 / 2, (s.z0 + s.z1) / 2));
+      into(s.run).add(g);
     } else if (s.type === 'rail') {
       const g = railMesh(v.mats, s.x1 - s.x0);
       g.position.copy(v.P((s.x0 + s.x1) / 2, s.y, s.z));

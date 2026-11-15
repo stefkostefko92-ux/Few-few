@@ -4,7 +4,7 @@
 import { handleHoles } from './hardware.js';
 import { translator } from './i18n.js';
 
-export const FRONTS = new Set(['door', 'drawer-front', 'blind']);
+export const FRONTS = new Set(['door', 'drawer-front', 'blind', 'sliding-door']);
 
 // X and Y: model mm to sheet mm; k: the scale (sheet mm per model mm); t: the model's language.
 export function frontView(parts, symbols, X, Y, k, t = translator('bg')) {

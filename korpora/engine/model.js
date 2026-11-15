@@ -101,7 +101,7 @@ const usesHw = (model, hw) => model.parts.some((p) => p.features.some((f) => f.h
 const usesDecor = (model, id) => model.parts.some((p) => p.decor === id);
 // Parts cut from the front material (frontStock): doors, drawer fronts, the blind fronts of corner cabinets, the plinth
 // board, the bed's head and foot boards. The desk top takes the front decor too (boardTopDecor) — but not a RAL colour.
-const FRONT_ROLES = new Set(['door', 'drawer-front', 'blind', 'plinth', 'bed-head', 'bed-foot']);
+const FRONT_ROLES = new Set(['door', 'drawer-front', 'blind', 'sliding-door', 'plinth', 'bed-head', 'bed-foot']);
 const usesFronts = (model) => model.parts.some((p) => FRONT_ROLES.has(p.role));
 const usesFrontDecor = (model) => usesFronts(model) || model.parts.some((p) => p.key === 'deskTop');
 const CATALOG_FIELDS = [
@@ -229,6 +229,7 @@ export function checkHoles(ctx, p, spec) {
     // a blind hole keeps MIN_WEB of board under it; a deeper one would break out of the other face
     if (!h.through && h.depth > p.T - MIN_WEB + 1e-6) ctx.warn('error', t('w.holeBlind', { part: p.name, d: t.num(h.d), purpose: purposeOf(h.kind, t), depth: t.num(h.depth), T: t.num(p.T), min: MIN_WEB }));
     for (const g of grooves) {
+      if (h.fitting && h.fitting === g.fitting) continue; // one fitting: a Planofit groove ends in its own bosses
       const web = toSegment(h.u, h.v, g) - (g.w + h.d) / 2;
       if (web < MIN_WEB - 1e-6) ctx.warn('error', t('w.holeGroove', { part: p.name, d: t.num(h.d), purpose: purposeOf(h.kind, t), web: t.num(Math.max(0, web)) }));
     }

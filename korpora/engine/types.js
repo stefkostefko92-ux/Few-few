@@ -5,9 +5,8 @@ import { buildBed, bedOuter } from './bed.js';
 import { buildDesk } from './desk.js';
 import { buildCustom } from './custom.js';
 import { buildKitchen, baseCabinet, wallCabinet, kitchenDims, SHAPES } from './kitchen.js';
+import { buildWardrobe, doorsFor, columnWidth } from './wardrobe.js';
 import { holeThrough, mark } from './panel.js';
-import { STOCK } from './materials.js';
-import { HINGE_LIMITS } from './hardware.js';
 import { CONFIRMAT } from './joinery.js';
 import { MAX_CARCASS_W } from './layout.js'; // wider wardrobes and free carcasses are split into several carcasses
 import { clamp, r1 } from './util.js';
@@ -56,8 +55,8 @@ export const TYPES = {
   },
   wardrobe: {
     label: 'Гардероб', group: 'bedroom',
-    params: [R('width', 'Ширина', 800, 3000, 10), R('height', 'Височина с крачетата', 1800, 2600, 10), R('depth', 'Дълбочина', 450, 650, 10), R('legs', 'Цокъл', 0, 150, 5), R('columns', 'Колони', 2, 5, 1, ''), S('layout', 'Разпределение', [['mixed', 'Смесено'], ['hanging', 'Закачалки'], ['shelves', 'Рафтове']]), S('doorsPerColumn', 'Врати на колона', [[0, 'Авто'], [1, '1'], [2, '2']])],
-    defaults: { width: 2000, height: 2400, depth: 600, legs: 100, columns: 4, layout: 'mixed', doorsPerColumn: 0 },
+    params: [R('width', 'Ширина', 800, 3000, 10), R('height', 'Височина с крачетата', 1800, 2600, 10), R('depth', 'Дълбочина', 450, 650, 10), R('legs', 'Цокъл', 0, 150, 5), R('columns', 'Колони', 2, 5, 1, ''), S('layout', 'Разпределение', [['mixed', 'Смесено'], ['hanging', 'Закачалки'], ['shelves', 'Рафтове']]), S('doorType', 'Врати', [['hinged', 'Крилни'], ['sliding', 'Плъзгащи']]), { ...S('doorsPerColumn', 'Врати на колона', [[0, 'Авто'], [1, '1'], [2, '2']]), when: { doorType: ['hinged'] } }],
+    defaults: { width: 2000, height: 2400, depth: 600, legs: 100, columns: 4, layout: 'mixed', doorType: 'hinged', doorsPerColumn: 0 },
   },
   chest: {
     label: 'Скрин', group: 'bedroom',
@@ -175,22 +174,7 @@ export const BUILDERS = {
   wall: (ctx, s) => wallCabinet(ctx, s, common(s)),
   tall: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'between', visibleTop: true, columns: [{ shelves: s.shelves, doors: s.doors, drawers: s.drawers }] }),
   kitchen: (ctx, s) => buildKitchen(ctx, s, common(s)),
-  wardrobe: (ctx, s) => {
-    // wide wardrobes become several carcasses side by side (transportable, tops and bottoms fit the sheet); the columns
-    // are shared out exactly as asked and every carcass is as wide as its columns
-    const m = Math.min(s.columns, Math.ceil(s.width / MAX_CARCASS_W));
-    const counts = Array.from({ length: m }, (_, k) => Math.floor(s.columns / m) + (k < s.columns % m ? 1 : 0));
-    if (m > 1) ctx.warn('info', ctx.t('w.wardrobeSplit', { n: m, cols: counts.join(' + ') }));
-    let x0 = 0;
-    let ci = 0;
-    counts.forEach((n, k) => {
-      const W = k === m - 1 ? s.width - x0 : Math.round((s.width * n) / s.columns);
-      const doors = s.doorsPerColumn || doorsFor(columnWidth(W, n));
-      const cols = Array.from({ length: n }, () => wardrobeColumn(s.layout, ci++, doors));
-      buildCarcass(ctx, { ...common(s), module: m > 1 ? ctx.t('mod.carcass', { n: k + 1 }) : '', x0, W, H: s.height, D: s.depth, plinth: { type: s.legs ? 'panel' : 'none', h: s.legs }, top: 'between', visibleTop: true, columns: cols });
-      x0 += W;
-    });
-  },
+  wardrobe: (ctx, s) => buildWardrobe(ctx, s, common(s)),
   chest: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'over', columns: Array.from({ length: s.columns }, () => ({ drawers: s.drawers, drawerZone: s.height - s.legs - 18 })) }),
   nightstand: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'over', columns: [{ drawers: s.drawers, drawerZone: s.height - s.legs - 18 }] }),
   bed: (ctx, s) => buildBed(ctx, s),
@@ -233,22 +217,6 @@ export const BUILDERS = {
 };
 
 const SIDE_SHELVES = 5; // shelves in each side column of a wall unit
-// A door is about 24 mm wider than the inner width of its column (full overlay on the side, half overlay on the
-// partition, less the 3 mm gap). One door up to the hinge maker's width, two above it; fronts.js checks the real width.
-const DOOR_OVERHANG = 24;
-const doorsFor = (innerW) => (innerW + DOOR_OVERHANG > HINGE_LIMITS.maxWidth ? 2 : 1);
-
-// Column of a wardrobe: hanging, shelves, or hanging above three drawers (drawer fronts outside, doors above them).
-function wardrobeColumn(layout, i, doors) {
-  if (layout === 'hanging') return { rail: true, doors };
-  if (layout === 'shelves') return { shelves: 5, doors };
-  return [{ rail: true, doors }, { shelves: 5, doors }, { rail: true, drawers: 3, drawerZone: 3 * 190, doors }][i % 3];
-}
-
-// Inner width of one column of an n-column carcass of outer width W (18 mm sides and partitions).
-function columnWidth(W, n, T = STOCK.pb18.thickness) {
-  return (W - 2 * T - (n - 1) * T) / n;
-}
 
 // Upper carcass standing on a lower one: 4 screws from inside the upper carcass through its bottom (Ø5 clearance)
 // into the top of the lower one. 4 × 30 through 18 mm leaves 12 mm in the 18 mm top: the tip stays inside it. The

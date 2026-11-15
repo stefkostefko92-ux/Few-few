@@ -8,6 +8,7 @@ import { edgeLabels, cutSize } from './panel.js';
 import { stockName, decorName } from './materials.js';
 import { translator } from './i18n.js';
 import { esc, neg } from './util.js';
+import { SLIDING, DEFAULT_SLIDING } from './sliding.js';
 
 const KEY = new Set(['cup', 'cup-dowel', 'plate', 'handle', 'slide', 'confirmat', 'dowel', 'pilot', 'screw']);
 const LETTERS = 'ABCDEFGHJKLMNPRSTUVWXYZ';
@@ -165,6 +166,13 @@ export function drawingPart(model, meta, partId) {
   g += `<text class="d-note" x="30" y="262">${esc(t(model.spec.bandCompensation ? 'drw.sizesComp' : 'drw.sizes', { L: t.num(p.L), W: t.num(p.W), T: t.num(p.T), cL: t.num(cut.L), cW: t.num(cut.W) }))}</text>`;
   g += `<text class="d-note" x="30" y="267">${esc(bandsTxt.length ? t('drw.bands', { list: bandsTxt.map(t.num).join(' / ') }) : t('drw.noBands'))}</text>`;
   g += `<text class="d-note" x="30" y="272">${esc(t('drw.legend'))}</text>`;
+  // a sliding door runs on the guides in a groove of its bottom edge: sawn or routed by hand, not on the CNC
+  if (p.role === 'sliding-door') {
+    const sys = SLIDING[model.spec.sliding] ?? SLIDING[DEFAULT_SLIDING];
+    g += `<text class="d-note" x="30" y="277">${esc(t('drw.slidingGroove', { w: t.num(sys.bottomGroove.w), d: t.num(sys.bottomGroove.depth) }))}</text>`;
+    const bosses = holes.filter((h) => h.kind === 'planofit').map((h) => h.v);
+    if (bosses.length) g += `<text class="d-note" x="30" y="282">${esc(t('drw.planofitCut', { c: t.num(Math.max(...bosses) - Math.min(...bosses)) }))}</text>`;
+  }
   const material = `${stockName(p.stock, t)} ${t.num(p.T)} · ${decorName(p.decor, t)}`;
   return svgDoc(g + frame(`${p.id} ${p.name} ${t.num(p.L)}×${t.num(p.W)}`, meta, scale, no, count, material, t), t('drw.partOf', { part: `${p.id} ${p.name}` }), p.id);
 }
