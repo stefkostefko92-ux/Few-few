@@ -16985,7 +16985,7 @@
           "Нашите пластове: tools/security/secret-scan.mjs, guard-куките, .github/workflows/security.yml",
           "Границата: Наблюдателя (SRE здраве), VPS-аджията (машина), Правния Разбирач (правен текст)"
         ],
-        "lessons": 229
+        "lessons": 232
       },
       "evolution": [
         {
@@ -17005,9 +17005,20 @@
           "date": "2026-11-15",
           "event": "v22.9 — учене",
           "detail": "Научи: pino-http подава на custom serializers.req вече сериализиран обект от pino-std-serializ… (+2 още)"
+        },
+        {
+          "version": "23.2.0",
+          "date": "2026-11-15",
+          "event": "v23.2 — учене",
+          "detail": "Научи: В ssh_config ControlMaster=no (подразбирането) пак ползва съществуващ master сокет, ако… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-15",
+          "type": "learning",
+          "summary": "Научи: „В ssh_config ControlMaster=no (подразбирането) пак ползва съществуващ master сокет, ако…\" (+2 още)"
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
