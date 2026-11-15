@@ -179,6 +179,7 @@ model User {
   announcements         Announcement[]     @relation("AnnouncementBy")
   memberInvitesCreated  MemberInvite[]     @relation("MemberInviteCreatedBy")
   memberInvitesAccepted MemberInvite[]     @relation("MemberInviteAcceptedBy")
+  subscriptionsGranted  Subscription[]     @relation("SubscriptionGrantedBy")
 
   @@index([platformRole])
 }
@@ -539,12 +540,19 @@ model Subscription {
   currentPeriodEnd   DateTime
   provider           PaymentProvider    @default(MANUAL)
   providerRef        String?
+  /// Даден ръчно от мастъра (SPEC 71) — без плащане и фактура; за таваните се брои като платен.
+  granted            Boolean            @default(false)
+  grantedById        String?
+  grantedBy          User?              @relation("SubscriptionGrantedBy", fields: [grantedById], references: [id], onDelete: SetNull)
+  /// Причината на мастъра (до 200 знака, без лични данни) — показва се в панела.
+  grantNote          String?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
   payments           Payment[]
 
   @@index([organizationId])
   @@index([planCode])
+  @@index([grantedById])
 }
 
 model Payment {

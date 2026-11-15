@@ -10,6 +10,7 @@ import { parseXml, XmlError } from '../xml/parse.js';
 import { NotAnInvoice, type DeclaredTotals, type ReadResult } from './read-common.js';
 import { readUbl } from './read-ubl.js';
 import { readCii } from './read-cii.js';
+import { inputMessage } from '../einvoice/input-messages.js';
 
 /**
  * Входяща е-фактура (SPEC 55): строг XML (без DTD) → UBL 2.1 или CII → модела на EN 16931 → изчисление
@@ -120,7 +121,7 @@ export function checkIncoming(xml: string, limit = MAX_INCOMING_BYTES): Incoming
       ...read,
       parsed: null,
       issues: parsed.error.issues.map((i) =>
-        issue('INPUT', i.path.join('.'), i.message, i.message),
+        issue('INPUT', i.path.join('.'), i.message, inputMessage(i.message).en),
       ),
     };
   }

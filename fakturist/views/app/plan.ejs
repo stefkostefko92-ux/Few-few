@@ -8,7 +8,7 @@
   <h2><%= t('app.plan.current') %></h2>
   <% if (current) { %>
     <p><strong><%= lang === 'bg' ? current.plan.nameBg : current.plan.nameEn %></strong>
-    <% if (current.plan.priceMonthlyCents && current.currentPeriodEnd.getUTCFullYear() < 2100) { %> · <%= t('app.plan.until', { date: day(current.currentPeriodEnd) }) %><% } %></p>
+    <% if (current.granted) { %> · <%= current.currentPeriodEnd.getUTCFullYear() < 2100 ? t('app.plan.granted', { date: day(current.currentPeriodEnd) }) : t('app.plan.grantedForever') %><% } else if (current.plan.priceMonthlyCents && current.currentPeriodEnd.getUTCFullYear() < 2100) { %> · <%= t('app.plan.until', { date: day(current.currentPeriodEnd) }) %><% } %></p>
   <% } else { %><p class="muted"><%= t('app.plan.none') %></p><% } %>
 </section>
 

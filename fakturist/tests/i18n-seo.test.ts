@@ -75,3 +75,19 @@ test('security.txt (RFC 9116) и ключът за IndexNow', () => {
   assert.ok(expires > now.getTime() && expires - now.getTime() < 365 * 24 * 3600 * 1000);
   assert.match(INDEXNOW_KEY, /^[a-f0-9]{32}$/);
 });
+
+test('всяко съобщение на модела (zod в model.ts) има английски двойник', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { INPUT_MESSAGES_EN } = await import('../src/einvoice/input-messages.js');
+  const source = readFileSync(new URL('../src/einvoice/model.ts', import.meta.url), 'utf8');
+  const messages = [...source.matchAll(/'([^']*[А-Яа-я][^']*)'\)/g)].map((m) => m[1]!);
+  assert.ok(messages.length >= 8, 'съобщенията в model.ts');
+  for (const message of messages) assert.ok(INPUT_MESSAGES_EN[message], message);
+});
+
+test('единствено число: при count 1 се взема <ключ>One — „1 документ“, „1 record“', () => {
+  assert.equal(translator('bg')('app.org.usage', { count: 1 }), 'Този месец: 1 документ');
+  assert.equal(translator('bg')('app.org.usage', { count: 3 }), 'Този месец: 3 документа');
+  assert.equal(translator('en')('admin.records', { count: 1 }), '1 record');
+  assert.equal(translator('en')('admin.records', { count: 0 }), '0 records');
+});
