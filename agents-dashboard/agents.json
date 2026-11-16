@@ -1212,7 +1212,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 701
+        "lessons": 703
       },
       "evolution": [
         {
@@ -2048,9 +2048,20 @@
           "date": "2026-11-16",
           "event": "v64.1 — учене",
           "detail": "Научи: WHATWG new URL(path, base) хвърля ERR_INVALID_URL за пътища, започващи с // и невалиден… (+80 още)"
+        },
+        {
+          "version": "64.3.0",
+          "date": "2026-11-16",
+          "event": "v64.3 — учене",
+          "detail": "Научи: nodemailer заменя CR/LF в стойността на Subject с интервал, затова потребителски текст … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-16",
+          "type": "learning",
+          "summary": "Научи: „nodemailer заменя CR/LF в стойността на Subject с интервал, затова потребителски текст …\" (+1 още)"
+        },
         {
           "date": "2026-11-16",
           "type": "learning",
