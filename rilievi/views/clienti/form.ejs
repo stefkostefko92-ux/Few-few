@@ -10,7 +10,7 @@
   const labelOf = (key) => key === 'azienda' ? t('scheda.field.azienda') : t('clienti.campo.' + key);
   const messageOf = (key) => {
     const code = errors[key];
-    if (key === 'azienda') return t('clienti.errore.azienda');
+    if (key === 'azienda') return t(code === 'spente' ? 'preventivi.errore.aziendaSpenta' : 'clienti.errore.azienda');
     if (code === 'required') return t('clienti.errore.required');
     if (code === 'tooLong') return t('clienti.errore.tooLong', { max: max[key] });
     return t('clienti.errore.' + key);
@@ -24,7 +24,7 @@
     { key: 'referente', tipo: 'text', hint: t('clienti.hint.referente') },
     { key: 'note', tipo: 'textarea', wide: true, hint: t('clienti.hint.note') },
   ];
-%><%- include('../partials/top', { titleKey: isEdit ? 'clienti.modificaTitolo' : 'clienti.new', narrowMain: true }) %>
+%><%- include('../partials/top', { titleKey: isEdit ? 'clienti.modificaTitolo' : 'clienti.new', narrowMain: true, scripts: isEdit ? [] : ['offerte-spente'] }) %>
 <div class="page-head">
   <div>
     <a href="<%= back %>"><%= isEdit ? t('clienti.torna') : t('clienti.indietro') %></a>
@@ -50,16 +50,8 @@
 <form class="form" method="post" action="<%= action %>" novalidate>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <% if (isEdit) { %><input type="hidden" name="base" value="<%= base %>"><% } %>
-  <% if (!isEdit && aziende.length > 0) { %>
-  <div class="field field--azienda">
-    <label class="field__label" for="f-azienda"><%= t('scheda.field.azienda') %></label>
-    <select class="select" id="f-azienda" name="azienda" required<% if (errors.azienda) { %> aria-invalid="true" aria-describedby="err-azienda"<% } %>>
-      <option value=""<% if (!azienda) { %> selected<% } %>>—</option>
-      <% for (const item of aziende) { %><option value="<%= item.id %>"<% if (azienda === item.id) { %> selected<% } %>><%= item.name %></option>
-      <% } %>
-    </select>
-    <% if (errors.azienda) { %><p class="field__error" id="err-azienda"><%= messageOf('azienda') %></p><% } %>
-  </div>
+  <% if (!isEdit && (aziende.length > 0 || spente.length > 0)) { %>
+  <%- include('../preventivi/_scelta-azienda', { aziende, spente, azienda, errore: errors.azienda ? messageOf('azienda') : '' }) %>
   <% } %>
   <fieldset class="section">
     <legend class="section__title"><%= t('clienti.sezione.dati') %></legend>
@@ -83,5 +75,6 @@
     <a class="btn btn--bar" href="<%= back %>"><%= t('common.cancel') %></a>
   </div>
 </form>
+<% if (!isEdit) { %><%- include('../preventivi/_attiva-offerte', { spente, azienda, dopo: 'cliente' }) %><% } %>
 </div>
 <%- include('../partials/bottom') %>

@@ -31,7 +31,7 @@ import { reauthPassword } from '../services/reauth.js';
 import type { SessionUser } from '../types.js';
 import { scaricaEsportazione } from './aziende-fine.js';
 import { confermaPassword } from './conferma-password.js';
-import { ICONE_SEZIONI, SEZIONI_IMPOSTAZIONI } from './impostazioni-vista.js';
+import { ICONE_SEZIONI, sezioniDi } from './impostazioni-vista.js';
 
 /**
  * „Esportazione e cambio fornitore“ в настройките (Data Act, чл. 23–30; собственикът, 12 ноември 2026 —
@@ -47,6 +47,7 @@ const SELECT = {
   id: true,
   name: true,
   deactivatedAt: true,
+  preventiviAttivi: true,
   cambioRichiestoAt: true,
   cambioFineAt: true,
   cambioEsito: true,
@@ -84,8 +85,10 @@ async function render(
   const soloQui = soloEsportazione(user);
   res.status(status).render('impostazioni/sezione', {
     sezione: 'esportazione',
-    // Свършила фирма: без другите раздели — човекът там може само да свали данните.
-    sezioni: soloQui ? [] : SEZIONI_IMPOSTAZIONI,
+    // Свършила фирма: без другите раздели — човекът там може само да свали данните. Иначе — разделите на фирмата
+    // като на другите страници (`sezioniDi`): целият списък водеше към „Accesso“ без доставчици — 404, и към
+    // офертите при изключени (визуалната проверка, 16 ноември 2026).
+    sezioni: soloQui ? [] : sezioniDi(azienda),
     senzaPanoramica: soloQui,
     icone: ICONE_SEZIONI,
     aziende,

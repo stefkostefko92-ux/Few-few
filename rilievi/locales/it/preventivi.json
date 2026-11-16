@@ -105,7 +105,8 @@
       "clientePiva": "P. IVA di 11 cifre o codice fiscale di 16 caratteri.",
       "clienteEmail": "Indirizzo email non valido.",
       "validitaGiorni": "Da 1 a 365 giorni.",
-      "totale": "Il totale è troppo alto per un solo preventivo: dividi il lavoro in più preventivi."
+      "totale": "Il totale è troppo alto per un solo preventivo: dividi il lavoro in più preventivi.",
+      "aziendaSpenta": "I preventivi non sono attivi per questa azienda."
     },
     "daScheda": {
       "testo": "Dalla scheda arrivano l'impianto, l'oggetto e una riga per ogni lavoro previsto (senza prezzi). Senza scheda, compila i campi qui sotto.",
@@ -286,6 +287,11 @@
     "archivio": {
       "avviso": "I preventivi di {aziende} sono disattivati: puoi consultare e scaricare preventivi, clienti e listino prezzi ed eliminare i clienti e i preventivi non accettati, ma non crearne di nuovi né modificarli. Per riattivarli rivolgiti all'amministrazione del portale.",
       "master": "I preventivi di {aziende} sono disattivati. Correggi i dati solo su istruzione scritta dell'azienda; invio, esito e nuovi preventivi non sono disponibili."
+    },
+    "spente": {
+      "gruppo": "Preventivi non attivi",
+      "nota": "I preventivi non sono attivi per {azienda}. Attivali per continuare: da quel momento preventivi, clienti e listino si vedono anche nell'azienda, secondo i permessi dei ruoli.",
+      "attiva": "Attiva i preventivi"
     },
     "informativa": {
       "titolo": "Informativa sul trattamento dei dati personali (artt. 13 e 14 GDPR)",
