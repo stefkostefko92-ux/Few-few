@@ -148,7 +148,7 @@ async function main() {
       description:
         "Примерна обява, за да видите как изглежда — заменете я със своя. " +
         "Пътувам редовно до Дупница сутрин и се връщам следобед; има места за спътници.",
-      contactEmail: "zabobovdol@carbonstealth.eu",
+      contactEmail: "info@carbonstealth.eu",
       // Само пример за формата — не се показва на посетителите.
       published: false,
     },

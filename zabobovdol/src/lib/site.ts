@@ -34,7 +34,7 @@ export const SITE = {
     longitude: 23.0008,
   },
   contact: {
-    email: "zabobovdol@carbonstealth.eu",
+    email: "info@carbonstealth.eu",
     phone: "+359877414874",
   },
   // Данни за фирмата-администратор (за импринт / задължителни реквизити по

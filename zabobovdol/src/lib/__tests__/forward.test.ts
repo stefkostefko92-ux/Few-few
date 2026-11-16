@@ -44,14 +44,14 @@ test("препращане: сметище — БЕЗ личните данни 
       reporterEmail: "maria@example.com",
     },
     "zabobovdol.carbonstealth.eu",
-    "zabobovdol@carbonstealth.eu",
+    "info@carbonstealth.eu",
   );
   assert.equal(m.subject, "Сигнал за нерегламентирано сметище: до моста на р. Елешница");
   assert.ok(m.text.includes("Строителни отпадъци"));
   assert.ok(m.text.includes("https://example.com/snimka.jpg"));
   assert.ok(m.text.includes("10.11.2026"));
   for (const pii of ["Мария", "0899", "maria@"]) assert.ok(!m.text.includes(pii), pii);
-  assert.ok(m.text.includes("zabobovdol@carbonstealth.eu"), "как да се свържат с нас за подателя");
+  assert.ok(m.text.includes("info@carbonstealth.eu"), "как да се свържат с нас за подателя");
 });
 
 test("препращане: получателят — точно един адрес; без списъци и нови редове", () => {
