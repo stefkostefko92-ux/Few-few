@@ -12,7 +12,7 @@
     <div><dt><%= t('app.peppol.address') %></dt><dd class="mono"><%= partyId || t('app.peppol.noVat') %></dd></div>
     <div><dt><%= t('app.peppol.status') %></dt><dd><span class="tag<%= participant && participant.status === 'ACTIVE' ? ' tag-active' : participant && participant.status === 'FAILED' ? '' : ' tag-pending' %>"><%= t('app.peppol.statuses.' + (participant ? participant.status : 'NONE')) %></span><% if (participant && participant.enrolledAt) { %> <span class="muted"><%= day(participant.enrolledAt) %></span><% } %></dd></div>
   </dl>
-  <% if (participant && participant.lastError) { %><p class="error" role="alert"><%= participant.lastError %></p><% } %>
+  <% if (participant && participant.lastError) { %><p class="error" role="alert"><%= sys(participant.lastError) %></p><% } %>
   <% if (configured && available && partyId && !verified && (!participant || participant.status !== 'ACTIVE')) { %><p class="callout"><%= t('app.peppol.notVerified') %></p><% } %>
   <% if (canManage && configured && partyId) { %>
     <% if (participant && participant.status === 'ACTIVE') { %>
@@ -32,7 +32,7 @@
     <tr>
       <td data-label="<%= t('app.peppol.document') %>" class="mono"><a href="/app/o/<%= org.id %>/d/<%= x.document.id %>"><%= x.document.number %></a> <span class="muted"><%= x.document.buyerName %></span></td>
       <td data-label="<%= t('app.peppol.receiver') %>" class="mono"><%= x.receiverPartyId %></td>
-      <td data-label="<%= t('app.peppol.status') %>"><span class="tag<%= x.status === 'SENT' ? ' tag-active' : x.status === 'FAILED' ? '' : ' tag-pending' %>"><%= t('app.peppol.tx.' + x.status) %></span><% if (x.lastError) { %><br><span class="hint"><%= x.lastError %></span><% } %></td>
+      <td data-label="<%= t('app.peppol.status') %>"><span class="tag<%= x.status === 'SENT' ? ' tag-active' : x.status === 'FAILED' ? '' : ' tag-pending' %>"><%= t('app.peppol.tx.' + x.status) %></span><% if (x.lastError) { %><br><span class="hint"><%= sys(x.lastError) %></span><% } %></td>
       <td data-label="<%= t('app.peppol.sentAt') %>" class="mono"><%= day(x.sentAt) %></td>
     </tr>
   <% }) %>

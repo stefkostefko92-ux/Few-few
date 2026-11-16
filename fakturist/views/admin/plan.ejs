@@ -1,4 +1,4 @@
-<%- include('../partials/app-head', { title: plan.nameBg }) %>
+<%- include('../partials/app-head', { title: lang === 'bg' ? plan.nameBg : plan.nameEn }) %>
 <p><a href="/admin/r/plans">← <%= t('admin.plans') %></a></p>
 <h1><%= lang === 'bg' ? plan.nameBg : plan.nameEn %> <span class="mono muted"><%= plan.code %></span></h1>
 <%- include('_nav') %>

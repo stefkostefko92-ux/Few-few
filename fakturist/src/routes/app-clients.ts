@@ -10,6 +10,7 @@ import { decideMandate } from '../accounts/mandates.js';
 import { inviteOwnerByFirm, TransferError } from '../accounts/transfer.js';
 import { kickOutbox } from '../mail/outbox.js';
 import { param } from './app-shared.js';
+import { DEFAULT_SERIES_NAME } from '../system-text.js';
 
 /**
  * Пълномощните (фирмата решава за кантори, които издават от нейно име) и фирмите-клиенти на кантората.
@@ -130,7 +131,7 @@ export function appClientsRouter(): Router {
           await tx.documentSeries.create({
             data: {
               organizationId: client.id,
-              name: 'Основна',
+              name: DEFAULT_SERIES_NAME,
               rangeStart: 1n,
               rangeEnd: 9_999_999_999n,
               nextNumber: 1n,

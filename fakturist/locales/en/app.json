@@ -4,7 +4,8 @@
     "security": "Security",
     "admin": "Master panel",
     "main": "Main",
-    "skip": "Skip to content"
+    "skip": "Skip to content",
+    "language": "Language"
   },
   "home": {
     "title": "Your companies",
@@ -597,7 +598,8 @@
       "seriesExhausted": "the series is exhausted",
       "access": "the creator can no longer issue",
       "feature": "the plan no longer includes the feature",
-      "error": "error while issuing"
+      "error": "error while issuing",
+      "terminated": "the company is terminated"
     },
     "remindersTitle": "Overdue reminders",
     "remindersHelp": "3 and 10 days after the due date the buyer receives an email with the invoice PDF and the amount outstanding — at the email on the document. Replies go to you. Paid invoices (marked on the document or from bank matching) get no reminder.",

@@ -94,6 +94,10 @@ scripts/         conformance/run.mjs (официалната проверка) �
 
 ## Правила (не се нарушават)
 
+- **Език** (SPEC 73–74): на влязъл — `User.locale` (превключвателят BG/EN → `POST /app/ezik`); на гост —
+  `?lang=` (формите и връзките носят `langQuery`). Писмо до човек — `recipientLocale`/`mailSignature`
+  (`src/mail/locale.ts`). Текст, който системата записва на български и показва — константа в
+  `src/system-text.ts` + `sys()` в изгледа. Атрибут по условие в EJS — `<%-`, не `<%=` (тест).
 - **Версия и „Какво ново“** (собственикът, 14.11.2026 — „като в rilievi“): версията е `SOFTWARE_VERSION` в
   `src/version.ts` (MAJOR.MINOR; `package.json` = MAJOR.MINOR.0 — тест). Всяко обновяване, което стига до
   хората → ред НАЙ-ОТГОРЕ в `src/news/entries.ts` + текстовете в `locales/{bg,en}/news.json` и вдигната

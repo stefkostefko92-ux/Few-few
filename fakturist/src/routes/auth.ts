@@ -16,6 +16,7 @@ import { attemptFailed, attemptSucceeded, NO_USER, reserveAttempt } from '../aut
 import { isTrustedDevice, rememberDevice } from '../auth/device.js';
 import { queueLockedMail } from '../mail/account-mail.js';
 import { kickOutbox } from '../mail/outbox.js';
+import { appLocale } from '../http/view.js';
 
 /** Входът и регистрацията: най-много 10 опита за 15 минути от адрес. */
 const limiter = rateLimit({
@@ -227,7 +228,7 @@ export function authRouter(): Router {
         .render('auth/register', { open, errors, values: { ...values, password: '' } });
     }
     try {
-      const { userId } = await register(parsed.data);
+      const { userId } = await register(parsed.data, appLocale(req));
       await startSession(res, { id: userId, platformRole: 'NONE' }, true);
       res.redirect(303, '/app');
     } catch (error) {

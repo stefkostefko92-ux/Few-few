@@ -167,7 +167,7 @@ export async function requestTermination(
     // И шаблоните на клиентите, които кантората издава по пълномощно.
     await tx.recurringInvoice.updateMany({
       where: { OR: [{ organizationId: org.id }, { viaFirmId: org.id }], status: 'ACTIVE' },
-      data: { status: 'PAUSED', lastError: 'Фирмата е прекратена.' },
+      data: { status: 'PAUSED', lastError: 'terminated' },
     });
     await queueOrgMail(tx, org.id, 'org.terminated', {
       legalName: org.legalName,

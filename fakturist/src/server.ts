@@ -20,6 +20,7 @@ import { pwaRouter } from './routes/pwa.js';
 import { legalRouter } from './routes/legal.js';
 import { mountApp } from './routes/mount.js';
 import { newsFeedRouter } from './routes/news.js';
+import { queryLocale } from './http/view.js';
 
 /** Грешките на body-parser носят статус; останалите (и не-Error) са 500. */
 function errorStatus(error: unknown): number {
@@ -36,7 +37,7 @@ function localeOfPath(path: string): Locale {
 
 function renderError(req: Request, res: Response, status: 404 | 500): void {
   if (res.headersSent) return;
-  const locale = req.principal?.user.locale ?? localeOfPath(req.path);
+  const locale = req.principal?.user.locale ?? queryLocale(req) ?? localeOfPath(req.path);
   res.locals.lang = locale;
   res.locals.htmlLang = locale;
   res.locals.t = translator(locale, false);

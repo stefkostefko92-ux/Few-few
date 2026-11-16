@@ -2,10 +2,10 @@ import { z } from 'zod';
 import { config } from '../config.js';
 import { prisma } from '../db.js';
 import { BRAND } from '../brand.js';
-import { setting } from '../admin/settings.js';
 import { decryptUserToken } from '../auth/keys.js';
 import { accountMail, lockedMail, type AccountMailKind } from './account-templates.js';
 import type { MailMessage } from './mailer.js';
+import { mailSignature } from './locale.js';
 
 const Payload = z.object({ tokenId: z.string().min(1), tokenEnc: z.string().min(1) });
 
@@ -30,12 +30,12 @@ export async function composeLockedMail(toEmail: string, payload: unknown): Prom
     timeStyle: 'short',
     timeZone: 'Europe/Sofia',
   }).format(new Date(until));
-  const signature = (await setting('documents.signature')) || BRAND.signature;
+  const signature = await mailSignature(locale);
   const mail = lockedMail({
     locale,
     name: user?.name ?? '',
     until: time,
-    link: `${config().PUBLIC_BASE_URL}/zabravena-parola`,
+    link: `${config().PUBLIC_BASE_URL}/zabravena-parola${locale === 'en' ? '?lang=en' : ''}`,
     signature,
     domain: BRAND.signatureDomain,
   });
@@ -85,7 +85,7 @@ export async function composeAccountMail(
   }
   const token = decryptUserToken(tokenEnc, tokenId);
   const locale = row.user.locale === 'en' ? 'en' : 'bg';
-  const signature = (await setting('documents.signature')) || BRAND.signature;
+  const signature = await mailSignature(locale);
   const mail = accountMail(meta.kind, {
     locale,
     name: row.user.name,

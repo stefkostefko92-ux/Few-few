@@ -10,6 +10,7 @@ import type { OrgAccess } from '../auth/guards.js';
 import { AccessPointError, type AccessPoint } from './access-point.js';
 import { partyIdForVat } from './ids.js';
 import { peppolAllowed } from './settings.js';
+import { AP_NO_RESPONSE } from '../system-text.js';
 
 /**
  * Фирмата като получател в Peppol (SPEC 57): адрес `9926:BG…`, регистрация при точката за достъп с
@@ -150,10 +151,9 @@ export async function enrollOrganization(
   } catch (error) {
     // Тайната остава новата: при изтекла заявка доставчикът може вече да я е записал; старата е била
     // на неуспешна или изключена регистрация. Следващото успешно „Включи“ решава окончателно.
-    const message = scrub(
-      error instanceof AccessPointError ? error.message : 'Точката за достъп не отговори',
-      [secret],
-    );
+    const message = scrub(error instanceof AccessPointError ? error.message : AP_NO_RESPONSE, [
+      secret,
+    ]);
     await prisma.peppolParticipant.updateMany({
       where: { organizationId: org.id, status: 'PENDING' },
       data: { status: 'FAILED', lastError: message.slice(0, 500) },
@@ -188,8 +188,7 @@ export async function disableOrganization(
   try {
     await ap.unenroll(participant.partyId);
   } catch (error) {
-    const message =
-      error instanceof AccessPointError ? error.message : 'Точката за достъп не отговори';
+    const message = error instanceof AccessPointError ? error.message : AP_NO_RESPONSE;
     await prisma.peppolParticipant.update({
       where: { id: participant.id },
       data: { lastError: message.slice(0, 500) },

@@ -5,6 +5,7 @@ import { randomToken, sha256Hex } from '../crypto.js';
 import { encryptUserToken } from '../auth/keys.js';
 import { hashPassword, passwordProblem, PASSWORD_MAX_LENGTH } from '../auth/password.js';
 import { DAY, HOUR } from '../time.js';
+import type { Locale } from '../i18n.js';
 
 /**
  * Еднократните връзки по имейл (SPEC 36–38): „Забравена парола“ и потвърждение на имейла. Токенът е 32
@@ -141,7 +142,7 @@ async function findOpen(
   token: string,
   purpose: UserTokenPurpose,
   now: Date,
-): Promise<{ id: string; userId: string; email: string } | null> {
+): Promise<{ id: string; userId: string; email: string; locale: Locale } | null> {
   if (!TOKEN.test(token)) return null;
   const row = await prisma.userToken.findUnique({
     where: { tokenHash: sha256Hex(token) },
@@ -152,21 +153,28 @@ async function findOpen(
       email: true,
       usedAt: true,
       expiresAt: true,
-      user: { select: { email: true, disabledAt: true } },
+      user: { select: { email: true, disabledAt: true, locale: true } },
     },
   });
   if (!row || row.purpose !== purpose || row.usedAt || row.expiresAt <= now) return null;
   if (row.user.disabledAt || row.user.email !== row.email) return null;
-  return { id: row.id, userId: row.userId, email: row.email };
+  const locale = row.user.locale === 'en' ? 'en' : 'bg';
+  return { id: row.id, userId: row.userId, email: row.email, locale };
 }
 
 /** За страницата „Нова парола“: имейлът, за който е връзката, или null. */
 export async function findPasswordReset(
   token: string,
   now: Date = new Date(),
-): Promise<{ email: string } | null> {
+): Promise<{ email: string; locale: Locale } | null> {
   const open = await findOpen(token, 'PASSWORD_RESET', now);
-  return open ? { email: open.email } : null;
+  return open ? { email: open.email, locale: open.locale } : null;
+}
+
+/** Езикът на профила — за страницата, отворена по връзка от писмо без вход. */
+export async function userLocale(userId: string): Promise<Locale> {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { locale: true } });
+  return user?.locale === 'en' ? 'en' : 'bg';
 }
 
 /**
