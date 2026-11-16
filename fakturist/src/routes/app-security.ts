@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import { rateLimit } from 'express-rate-limit';
+import { MINUTE } from '../time.js';
 import QRCode from 'qrcode';
 import { z } from 'zod';
 import { prisma } from '../db.js';
@@ -13,6 +15,20 @@ import {
   verifyPassword,
   PASSWORD_MAX_LENGTH,
 } from '../auth/password.js';
+
+/**
+ * Проверките на текущата парола в „Сигурност“ (смяна, двуфакторен вход, закриване): до 10 за 15 минути на
+ * профил. Без таван откраднатата сесия отгатва паролата, а всяка проверка е Argon2id (64 MiB) — и товар
+ * за входа на всички (Кодаджията, 16.11.2026).
+ */
+export const passwordCheckLimiter = rateLimit({
+  windowMs: 15 * MINUTE,
+  limit: 10,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  keyGenerator: (req) => req.principal?.user.id ?? 'anonymous',
+  handler: (_req, res) => res.redirect(303, '/app/sigurnost?err=rateLimited'),
+});
 
 /** Сигурността на профила: смяна на паролата и двуфакторен вход. Пазачът requireUser е в appRouter. */
 export function appSecurityRouter(): Router {
@@ -34,7 +50,7 @@ export function appSecurityRouter(): Router {
     });
   });
 
-  router.post('/app/sigurnost/parola', async (req, res) => {
+  router.post('/app/sigurnost/parola', passwordCheckLimiter, async (req, res) => {
     const principal = req.principal!;
     const body = z
       .object({
@@ -65,7 +81,7 @@ export function appSecurityRouter(): Router {
     res.redirect(303, '/app/sigurnost?ok=password');
   });
 
-  router.post('/app/sigurnost/2fa', async (req, res) => {
+  router.post('/app/sigurnost/2fa', passwordCheckLimiter, async (req, res) => {
     const principal = req.principal!;
     const body = z
       .object({

@@ -3,6 +3,9 @@ import type { PeppolSettings } from '../admin/integrations.js';
 import { AccessPointError, type AccessPoint, type EnrollInput } from './access-point.js';
 import { AP_BAD_CREDENTIALS, AP_NO_TOKEN, AP_TOO_LARGE } from '../system-text.js';
 
+/** Таванът на изтеглен документ — като на качен файл във „Входящи“. */
+const MAX_DOWNLOAD_BYTES = 2 * 1024 * 1024;
+
 /**
  * eConnect PSB (Procurement Service Bus) — сертифицирана точка за достъп и SMP в списъка на OpenPeppol.
  * По документацията им (econnect.eu/en/docs/developers, прочетена 13.11.2026): OAuth2 client credentials
@@ -255,11 +258,17 @@ export class EConnectAccessPoint implements AccessPoint {
       { headers: { Accept: 'application/xml' } },
     );
     if (!response.ok) await this.rejectFrom(response, 'eConnect download');
-    const xml = await response.text();
-    if (xml.length > 2 * 1024 * 1024) {
+    // Размерът е в байтове (кирилицата е 2 байта в UTF-8); обявен по-голям — без да се чете в паметта.
+    const declared = Number(response.headers.get('content-length') ?? NaN);
+    if (Number.isFinite(declared) && declared > MAX_DOWNLOAD_BYTES) {
+      await response.body?.cancel();
       throw new AccessPointError('invalidResponse', AP_TOO_LARGE);
     }
-    return xml;
+    const body = Buffer.from(await response.arrayBuffer());
+    if (body.byteLength > MAX_DOWNLOAD_BYTES) {
+      throw new AccessPointError('invalidResponse', AP_TOO_LARGE);
+    }
+    return body.toString('utf8');
   }
 }
 

@@ -7,7 +7,10 @@ delete process.env['SMTP_HOST'];
 const { prisma } = await import('../../src/db.js');
 const { register } = await import('../../src/accounts/register.js');
 const { seedPlans } = await import('../../src/billing/seed-plans.js');
-const tokens = await import('../../src/accounts/tokens.js');
+const tokens = {
+  ...(await import('../../src/accounts/tokens.js')),
+  ...(await import('../../src/accounts/email-verification.js')),
+};
 const { createTransferInvite, acceptTransferInvite } =
   await import('../../src/accounts/transfer.js');
 const { processOutbox } = await import('../../src/mail/outbox.js');

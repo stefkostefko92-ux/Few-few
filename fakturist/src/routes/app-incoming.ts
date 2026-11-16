@@ -172,7 +172,10 @@ export function appIncomingRouter(): Router {
       canWrite: roleCan(access.role, 'documents.issue'),
       canAccounting: roleCan(access.role, 'accounting.manage'),
       creditRights: VAT_CREDIT_RIGHTS,
-      journal: { period: journalPeriodOf(entry), window: allowedPeriods(entry.issueDate) },
+      journal: {
+        period: journalPeriodOf(entry),
+        window: allowedPeriods(entry.issueDate, sofiaToday(), entry.typeCode),
+      },
       today: sofiaToday(),
       ok: code(req.query['ok']),
       err: code(req.query['err']),

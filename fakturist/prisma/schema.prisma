@@ -146,6 +146,9 @@ model User {
   failedLogins       Int          @default(0)
   lockedUntil        DateTime?
   lockouts           Int          @default(0)
+  /// Опити от доверени устройства (парола или код) след последния успешен вход — над тавана довереността
+  /// не заобикаля заключването (src/auth/lockout.ts).
+  trustedFailures    Int          @default(0)
   lastLoginAt        DateTime?
   disabledAt         DateTime?
   /// Последното „Разбрах“ в прозореца „Какво ново“ (src/news/) — новините, излезли след него, са непрочетени.

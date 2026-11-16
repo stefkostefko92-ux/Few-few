@@ -153,6 +153,26 @@ test('валута — суми в евро; нулева ставка — 02-14
   );
 });
 
+test('чл. 21, ал. 2 към получател извън ЕС — не 02-17 (само друга държава членка), а за ръчно', () => {
+  const usBuyer = {
+    ...reverseCharge,
+    number: 'R-US-1',
+    buyer: {
+      ...reverseCharge.buyer,
+      vatId: undefined,
+      address: { ...reverseCharge.buyer.address, countryCode: 'US', city: 'New York' },
+    },
+  };
+  const result = salesJournal({
+    vatNumber: 'BG208725180',
+    period: '202611',
+    documents: [doc(usBuyer)],
+  });
+  assert.equal(result.records, 0);
+  assert.equal(result.totals['02-17'], 0n);
+  assert.deepEqual(result.manual, [{ number: 'R-US-1', reason: 'category' }]);
+});
+
 test('основанието решава: чл. 69, ал. 2 — 02-18; чл. 163а — само кодово поле, сумата за ръчно', () => {
   const withReason = (reason: string, category: 'AE' | 'O') => ({
     ...reverseCharge,
@@ -225,4 +245,59 @@ test('сума, която не се побира в 15 знака — за ръ
   assert.deepEqual(result.manual, [{ number: '0000000999', reason: 'amount' }]);
   assert.equal(result.records, 1);
   assert.equal(result.totals['02-11'], 8650n, 'сборът е само от вписания документ');
+});
+
+test('ВОД (K): месецът е на изискуемостта (чл. 51 ЗДДС) — различен от месеца на издаване или аванс → за ръчно', () => {
+  const vod = (number: string, issueDate: string, extra: Record<string, unknown> = {}) => ({
+    ...reverseCharge,
+    number,
+    issueDate,
+    vatExemptions: [
+      {
+        category: 'K',
+        reason: 'Вътреобщностна доставка, чл. 7 ЗДДС / Intra-Community supply',
+        reasonCode: 'VATEX-EU-IC',
+      },
+    ],
+    lines: [{ ...reverseCharge.lines[0]!, vat: { category: 'K', rate: '0' } }],
+    ...extra,
+  });
+  const result = salesJournal({
+    vatNumber: 'BG208725180',
+    period: '202611',
+    documents: [
+      // без дата на данъчното събитие — изискуем при издаването
+      doc(vod('VOD-1', '2026-11-20')),
+      // събитие през октомври, фактура до 15.11 — изискуем при издаването (ноември)
+      doc(vod('VOD-2', '2026-11-14', { taxPointDate: '2026-10-28' })),
+      // събитие през октомври, фактура след 15.11 — изискуем на 15.11, пак ноември
+      doc(vod('VOD-3', '2026-11-25', { delivery: { date: '2026-10-28' } })),
+      // събитие през септември, фактура през ноември — изискуем на 15.10 → октомври, не ноември
+      doc(vod('VOD-4', '2026-11-03', { taxPointDate: '2026-09-30' })),
+      // авансово плащане по ВОД — не е данъчно събитие по чл. 51
+      doc(vod('VOD-5', '2026-11-05', { typeCode: '386' })),
+      // BT-7, попълнен с датата на издаване, не скрива доставката от септември
+      doc(
+        vod('VOD-6', '2026-11-20', {
+          taxPointDate: '2026-11-20',
+          delivery: { date: '2026-09-10' },
+        }),
+      ),
+      // кредитно известие към ВОД — в месеца, в който е издадено, дори събитието да е отдавна
+      doc(
+        vod('VOD-7', '2026-11-21', {
+          typeCode: '381',
+          taxPointDate: '2026-08-01',
+          precedingInvoices: [{ number: 'VOD-0', issueDate: '2026-08-01' }],
+        }),
+      ),
+    ],
+  });
+  assert.equal(result.records, 4);
+  assert.equal(result.totals['02-15'], 3n * 55000n - 55000n);
+  assert.deepEqual(result.manual, [
+    { number: 'VOD-4', reason: 'period' },
+    { number: 'VOD-5', reason: 'period' },
+    { number: 'VOD-6', reason: 'period' },
+  ]);
 });

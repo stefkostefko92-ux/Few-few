@@ -42,7 +42,7 @@
   <% if (replacing) { %>
   <fieldset class="callout annul-box">
     <legend><%= t('app.annul.title') %></legend>
-    <p><%= t('app.annul.lead', { number: replacing.number, date: replacing.issueDate.toISOString().slice(0, 10).split('-').reverse().join('.') }) %></p>
+    <p><%= t('app.annul.lead', { number: replacing.number, date: bgDate(replacing.issueDate) }) %></p>
     <input type="hidden" name="replaces" value="<%= replacing.id %>">
     <input type="hidden" name="typeCode" value="<%= replacing.typeCode %>">
     <label><%= t('app.annul.reason') %><select name="annulReason" required>

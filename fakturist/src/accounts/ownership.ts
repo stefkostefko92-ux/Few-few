@@ -70,9 +70,25 @@ export async function revokeOwnership(input: {
     });
     if (owners === 0) throw new OwnershipError('noOwner');
 
+    // Махнатите получават писмо с решението, причината и как да го оспорят (DSA чл. 17; общите условия,
+    // т. 10–11 — Правният Разбирач, 16.11.2026); одитът сам не стига.
+    const affected = await tx.membership.findMany({
+      where: { organizationId: input.organizationId, user: { disabledAt: null } },
+      select: { user: { select: { email: true } }, organization: { select: { legalName: true } } },
+    });
     const removed = await tx.membership.deleteMany({
       where: { organizationId: input.organizationId },
     });
+    if (affected.length > 0) {
+      await tx.notification.createMany({
+        data: affected.map((m) => ({
+          kind: 'org.ownershipRevoked',
+          toEmail: m.user.email,
+          organizationId: input.organizationId,
+          payload: { legalName: m.organization.legalName, reason },
+        })),
+      });
+    }
     const suspended = await tx.clientMandate.updateMany({
       where: { clientId: input.organizationId, status: 'ACTIVE' },
       data: { status: 'PENDING' },

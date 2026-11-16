@@ -1,5 +1,5 @@
 <%- include('../partials/app-head', { title: t('app.recurring.title') }) %>
-<% const day = (d) => d ? d.toISOString().slice(0, 10).split('-').reverse().join('.') : '—'; %>
+<% const day = (d) => d ? bgDate(d) : '—'; %>
 <p><a href="/app/o/<%= org.id %>">← <%= org.legalName %></a></p>
 <h1><%= t('app.recurring.title') %></h1>
 <% if (ok) { %><p class="ok" role="status"><%= tOr('app.recurring.ok.' + ok, t('app.catalog.saved.updated')) %></p><% } %>

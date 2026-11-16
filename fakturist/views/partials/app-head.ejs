@@ -7,7 +7,7 @@
 <% if (locals.refreshSeconds) { %><meta http-equiv="refresh" content="<%= Number(locals.refreshSeconds) %>"><% } %>
 <title><%= title %> · <%= lang === 'bg' ? brand.name : brand.nameLatin %></title>
 <%- include('pwa-head') %>
-<link rel="stylesheet" href="/fonts/fonts.css?v=<%= v %>">
+<link rel="stylesheet" href="/fonts/fonts-app.css?v=<%= v %>">
 <link rel="stylesheet" href="/css/app.css?v=<%= v %>">
 <script src="/js/app.js?v=<%= v %>" defer></script>
 <% if (locals.newsPopup) { %><script src="/js/news.js?v=<%= v %>" defer></script>

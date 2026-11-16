@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from 'express';
 import { BRAND } from '../brand.js';
-import { COMPANY, CONTENT_UPDATED } from '../company.js';
+import { ARTICLE_PUBLISHED, COMPANY, CONTENT_UPDATED } from '../company.js';
 import { config } from '../config.js';
 import { FEATURES, FEATURE_GROUPS } from '../features.js';
 import { LOCALE_TAG, translator, type Locale } from '../i18n.js';
@@ -39,6 +39,7 @@ async function renderSitePage(
   res.locals.brand = BRAND;
   res.locals.company = COMPANY;
   res.locals.contentUpdated = CONTENT_UPDATED;
+  res.locals.articlePublished = ARTICLE_PUBLISHED;
   res.locals.page = id;
   res.locals.plans = plans;
   res.locals.features = FEATURES;

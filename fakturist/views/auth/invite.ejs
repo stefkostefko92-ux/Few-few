@@ -1,6 +1,6 @@
 <%- include('../partials/app-head', { title: t('auth.invite.title') }) %>
 <%
-  const date = invite.expiresAt.toISOString().slice(0, 10).split('-').reverse().join('.');
+  const date = bgDate(invite.expiresAt);
   const errorText = (code) => code.startsWith('password.')
     ? tOr('auth.errors.' + code, t('auth.errors.invalid'))
     : tOr('auth.invite.errors.' + code, t('auth.errors.invalid'));
@@ -11,7 +11,7 @@
   <p class="muted"><%= t('auth.invite.forEmail', { email: invite.email, date }) %></p>
   <% const m = invite.mandate; const mandateBox = m && m.status === 'PENDING'; %>
   <% if (m) { %>
-    <p class="callout"><%= t('auth.invite.byFirm', { firm: m.firm.legalName, eik: m.firm.eik || '—', ref: m.documentRef, from: m.validFrom.toISOString().slice(0, 10).split('-').reverse().join('.') }) %></p>
+    <p class="callout"><%= t('auth.invite.byFirm', { firm: m.firm.legalName, eik: m.firm.eik || '—', ref: m.documentRef, from: bgDate(m.validFrom) }) %></p>
   <% } %>
   <% if (errors.form) { %><p class="error" role="alert"><%= errorText(errors.form) %></p><% } %>
   <% if (state === 'accept') { %>

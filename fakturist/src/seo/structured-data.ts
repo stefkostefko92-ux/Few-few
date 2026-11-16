@@ -1,9 +1,11 @@
 import { BRAND } from '../brand.js';
-import { COMPANY, CONTENT_UPDATED } from '../company.js';
+import { ARTICLE_PUBLISHED, COMPANY, CONTENT_UPDATED } from '../company.js';
 import { hasKey, type Locale, type Translate } from '../i18n.js';
 import { pageUrl, type SitePageId } from './pages.js';
 import type { PublicPlan } from '../billing/public-plans.js';
 import { LAST_UPDATE } from '../news/entries.js';
+import { FEATURES } from '../features.js';
+import { SOFTWARE_VERSION } from '../version.js';
 
 type Json = Record<string, unknown>;
 
@@ -22,11 +24,13 @@ export function faqItems(
   return items;
 }
 
-export function organization(base: string): Json {
+/** Фирмата — адресът е на езика на страницата (същият като във футъра: NAP). */
+export function organization(base: string, locale: Locale): Json {
   return {
     '@type': 'Organization',
     '@id': `${COMPANY.url}/#organization`,
     name: COMPANY.name,
+    legalName: COMPANY.nameBg,
     alternateName: COMPANY.nameBg,
     url: COMPANY.url,
     email: COMPANY.email,
@@ -35,14 +39,21 @@ export function organization(base: string): Json {
     taxID: COMPANY.eik,
     address: {
       '@type': 'PostalAddress',
-      streetAddress: COMPANY.street.en,
-      addressLocality: COMPANY.city.en,
-      addressRegion: COMPANY.region.en,
+      streetAddress: COMPANY.street[locale],
+      addressLocality: COMPANY.city[locale],
+      addressRegion: COMPANY.region[locale],
       postalCode: COMPANY.postalCode,
       addressCountry: COMPANY.country,
     },
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer support',
+      email: COMPANY.email,
+      telephone: COMPANY.phone,
+      availableLanguage: ['bg', 'en'],
+    },
     sameAs: [...COMPANY.profiles],
-    brand: { '@type': 'Brand', name: BRAND.name, url: base },
+    brand: { '@type': 'Brand', name: BRAND.name, url: base, logo: `${base}/img/brand/logo.png` },
   };
 }
 
@@ -80,6 +91,11 @@ function software(base: string, locale: Locale, t: Translate, plans: PublicPlan[
     applicationCategory: 'BusinessApplication',
     applicationSubCategory: 'Invoicing',
     operatingSystem: 'Web',
+    softwareVersion: SOFTWARE_VERSION,
+    // Само наличните — предстоящото не се обявява като функция (заблуждаваща реклама).
+    featureList: FEATURES.filter((item) => item.status === 'live').map((item) =>
+      t(`features.${item.code}.name`),
+    ),
     description: t('site.home.meta.description'),
     url: pageUrl(base, 'home', locale),
     publisher: { '@id': `${COMPANY.url}/#organization` },
@@ -106,7 +122,7 @@ export function structuredData(input: {
 }): Json {
   const { base, locale, t, page, plans } = input;
   const graph: Json[] = [
-    organization(base),
+    organization(base, locale),
     website(base, locale),
     breadcrumbs(base, locale, t, page),
   ];
@@ -135,7 +151,8 @@ export function structuredData(input: {
     ...(page === 'einvoicing2028'
       ? {
           headline: t('site.einvoicing2028.meta.title'),
-          datePublished: '2026-11-12',
+          datePublished: ARTICLE_PUBLISHED,
+          image: `${base}/img/og-${locale}.png`,
           author: { '@id': `${COMPANY.url}/#organization` },
           publisher: { '@id': `${COMPANY.url}/#organization` },
         }

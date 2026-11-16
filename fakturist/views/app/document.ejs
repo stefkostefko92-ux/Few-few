@@ -3,7 +3,7 @@
 <% if (issued) { %><p class="ok" role="status"><%= t('app.view.issued') %></p><% } %>
 <% if (document.status === 'CANCELLED') { %>
   <div class="callout annulled" role="note">
-    <p><strong><%= t('app.annul.isAnnulled', { date: document.cancelledAt ? document.cancelledAt.toISOString().slice(0, 10).split('-').reverse().join('.') : '' }) %></strong>
+    <p><strong><%= t('app.annul.isAnnulled', { date: document.cancelledAt ? bgDate(document.cancelledAt) : '' }) %></strong>
     <% if (document.cancelReason) { %> — <%= tOr('app.annul.reasons.' + document.cancelReason, document.cancelReason) %><% } %></p>
     <% if (document.replacedBy) { %><p><%= t('app.annul.replacedBy') %> <a class="mono" href="/app/o/<%= document.organizationId %>/d/<%= document.replacedBy.id %>"><%= document.replacedBy.number %></a></p><% } %>
     <p><a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/protokol.pdf" target="_blank" rel="noopener"><%= t('app.annul.protocol') %></a></p>
@@ -52,7 +52,7 @@
   <% if (document.payments.length) { %>
   <ul class="invite-list">
     <% document.payments.forEach((p) => { %>
-      <li><span class="mono"><%= p.paidOn.toISOString().slice(0, 10).split('-').reverse().join('.') %></span> · <span class="mono"><%= money(p.amountCents) %></span> · <%= t('app.payment.sources.' + p.source) %><% if (p.note) { %> · <span class="muted"><%= sys(p.note) %></span><% } %>
+      <li><span class="mono"><%= bgDate(p.paidOn) %></span> · <span class="mono"><%= money(p.amountCents) %></span> · <%= t('app.payment.sources.' + p.source) %><% if (p.note) { %> · <span class="muted"><%= sys(p.note) %></span><% } %>
         <% if (canPay && p.source === 'MANUAL') { %><form method="post" action="/app/o/<%= document.organizationId %>/d/<%= document.id %>/plashtane/<%= p.id %>/mahni" class="inline-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="link"><%= t('app.payment.remove') %></button></form><% } %>
       </li>
     <% }) %>

@@ -145,6 +145,17 @@ test('отнемане: членове вън, пълномощни чакащи
     pdfStyleReset: 1,
   });
   assert.equal(await prisma.membership.count({ where: { organizationId: clientId } }), 0);
+  // Махнатият получава писмо с решението, причината и как да го оспори (DSA чл. 17).
+  const removedUser = await prisma.user.findUniqueOrThrow({ where: { id: oldOwner.userId } });
+  const notice = await prisma.notification.findFirstOrThrow({
+    where: { kind: 'org.ownershipRevoked', toEmail: removedUser.email },
+  });
+  const { composeOrgMail } = await import('../../src/mail/org-mail.js');
+  const mail = await composeOrgMail(notice.kind, notice.toEmail, notice.payload);
+  assert.match(mail.subject, /достъпът ви до „.+“ е спрян/);
+  assert.match(mail.text, /Причина: има спор кой представлява фирмата\./);
+  assert.match(mail.text, /т\. 10 и 11 от общите условия/);
+  assert.match(mail.text, /решението се преглежда от човек/);
   assert.equal(await prisma.pdfStyle.count({ where: { organizationId: clientId } }), 0);
   const mandate = await prisma.clientMandate.findFirstOrThrow({ where: { clientId } });
   assert.equal(mandate.status, 'PENDING');

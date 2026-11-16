@@ -1,3 +1,4 @@
+import { sofiaToday } from '../time.js';
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db.js';
@@ -102,7 +103,7 @@ export function appInboxRouter(): Router {
           journalPeriod: entry.journalPeriod,
           issueDate: entry.document.issueDate,
         }),
-        window: allowedPeriods(entry.document.issueDate),
+        window: allowedPeriods(entry.document.issueDate, sofiaToday(), entry.document.typeCode),
       },
       journalOk: req.query['ok'] === 'journal',
       journalErr:

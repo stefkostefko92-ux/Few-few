@@ -183,9 +183,19 @@ test('известие: „5“ е „0000000005“; към анулирана �
   assert.equal(toNote.status, 400);
 
   const before = await count();
+  // Чужда фактура (от предишната програма): датата ѝ не е при нас — без нея известието не се издава
+  // (чл. 115, ал. 4 ЗДДС, BG-06).
+  const undated = await issue({
+    typeCode: '381',
+    'preceding[number]': '0000099999',
+    'preceding[reason]': 'отстъпка след фактурата',
+  });
+  assert.equal(undated.status, 400, 'чужда фактура без дата — отказ');
+  assert.equal(await count(), before);
   const external = await issue({
     typeCode: '381',
     'preceding[number]': '0000099999',
+    'preceding[issueDate]': today,
     'preceding[reason]': 'отстъпка след фактурата',
   });
   assert.equal(external.status, 303, 'фактура от предишната програма — разрешено');

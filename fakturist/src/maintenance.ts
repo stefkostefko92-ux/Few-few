@@ -10,6 +10,8 @@ import { purgeLegalRecords } from './legal/retention.js';
  * се трият 30 дни след изтичането си, а изпратените и неуспешните писма от опашката — 90 дни след
  * изпращането (неуспешните — от създаването); данните от банковите извлечения — по bank/retention.ts;
  * еднократните ключове на „Издай“ — след 30 дни; известията от Peppol (с отговорите на доставчика) — 90 дни.
+ * Неприетите покани (членове, собственост) са връзки по имейл: 30 дни след изтичането или отмяната; приетата
+ * остава (сочи профила, който я прие).
  * Фирмите — 30 дни след прекратяването (accounts/termination-purge.ts). Нищо друго не се трие оттук:
  * документите на действащите фирми, одитът и приетите условия остават.
  */
@@ -30,6 +32,7 @@ export async function purgeExpired(now: Date = new Date()): Promise<{
   statements: number;
   submissions: number;
   peppolEvents: number;
+  invites: number;
 }> {
   const before = (ms: number) => new Date(now.getTime() - ms);
   const sessions = await prisma.session.deleteMany({
@@ -54,6 +57,15 @@ export async function purgeExpired(now: Date = new Date()): Promise<{
   const peppolEvents = await prisma.peppolEvent.deleteMany({
     where: { receivedAt: { lt: before(RETENTION.peppolEventsMs) } },
   });
+  const staleInvite = {
+    acceptedAt: null,
+    OR: [
+      { expiresAt: { lt: before(RETENTION.expiredTokensMs) } },
+      { revokedAt: { lt: before(RETENTION.expiredTokensMs) } },
+    ],
+  };
+  const memberInvites = await prisma.memberInvite.deleteMany({ where: staleInvite });
+  const transferInvites = await prisma.transferInvite.deleteMany({ where: staleInvite });
   return {
     sessions: sessions.count,
     tokens: tokens.count,
@@ -61,6 +73,7 @@ export async function purgeExpired(now: Date = new Date()): Promise<{
     ...bank,
     submissions: submissions.count,
     peppolEvents: peppolEvents.count,
+    invites: memberInvites.count + transferInvites.count,
   };
 }
 

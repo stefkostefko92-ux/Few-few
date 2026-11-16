@@ -1,6 +1,7 @@
 import {
   calculate,
   InvoiceInputSchema,
+  IssueInputSchema,
   validateDocument,
   DEFAULT_RULE_OPTIONS,
 } from '../einvoice/index.js';
@@ -46,7 +47,7 @@ function issue(rule: string, path: string, bg: string, en: string): Issue {
 
 /**
  * Данните по ЗДДС, които EN 16931 не носи структурирано, а българските издатели (и ядрото ни —
- * src/einvoice/notes.ts) пишат в бележката: основанието за нулева ставка и курсът на ЕЦБ. Курсът — и
+ * src/einvoice/notes.ts) пишат в бележката: основанието за нулева ставка и курсът на ЕЦБ (за лева — фиксираният). Курсът — и
  * от ДДС в евро (BT-111), ако бележката го няма.
  */
 export function recoverBgFields(input: Record<string, unknown>, declared: DeclaredTotals): void {
@@ -69,7 +70,10 @@ export function recoverBgFields(input: Record<string, unknown>, declared: Declar
   }
   if (input['currency'] !== 'EUR' && input['eurExchangeRate'] === undefined) {
     const fromNote = lines
-      .map((line) => /курса на ЕЦБ\s+(\d+(?:\.\d{1,6})?)\s+[A-Z]{3}\/EUR/.exec(line)?.[1])
+      .map(
+        (line) =>
+          /(?:курса на ЕЦБ|фиксирания курс)\s+(\d+(?:\.\d{1,6})?)\s+[A-Z]{3}\/EUR/.exec(line)?.[1],
+      )
       .find(Boolean);
     const vat = declared.vat;
     const vatEur = declared.vatEur;
@@ -115,7 +119,8 @@ export function parseIncoming(xml: string): InvoiceInput | null {
 export function checkIncoming(xml: string, limit = MAX_INCOMING_BYTES): IncomingCheck {
   if (Buffer.byteLength(xml, 'utf8') > limit) throw new IncomingError('tooLarge');
   const read = readIncoming(xml);
-  const parsed = InvoiceInputSchema.safeParse(read.input);
+  // Недоверен файл: схемата на издаването (делител 0 би стигнал до делението в calculate → 500).
+  const parsed = IssueInputSchema.safeParse(read.input);
   if (!parsed.success) {
     return {
       ...read,

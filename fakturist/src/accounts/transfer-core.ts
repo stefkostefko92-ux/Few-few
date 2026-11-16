@@ -34,7 +34,7 @@ export async function lockOrganization(
   organizationId: string,
 ): Promise<void> {
   const rows = await tx.$queryRaw<Array<{ id: string }>>`
-    SELECT "id" FROM "Organization" WHERE "id" = ${organizationId} FOR UPDATE`;
+    SELECT "id" FROM "Organization" WHERE "id" = ${organizationId} FOR NO KEY UPDATE`;
   if (rows.length !== 1) throw new TransferError('notFound');
 }
 

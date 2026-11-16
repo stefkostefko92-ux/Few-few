@@ -8,7 +8,7 @@ import { mkdirSync, readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import ejs from 'ejs';
 import { BRAND } from '../src/brand.js';
-import { COMPANY, CONTENT_UPDATED } from '../src/company.js';
+import { ARTICLE_PUBLISHED, COMPANY, CONTENT_UPDATED } from '../src/company.js';
 import { FEATURES, FEATURE_GROUPS } from '../src/features.js';
 import { DEFAULT_PLANS } from '../src/billing/plans.js';
 import { formatEuro } from '../src/routes/site.js';
@@ -59,6 +59,7 @@ async function renderPage(id: SitePageId, locale: Locale): Promise<string> {
   const locals = {
     ...commonLocals(locale),
     contentUpdated: CONTENT_UPDATED,
+    articlePublished: ARTICLE_PUBLISHED,
     page: id,
     plans: pagePlans,
     features: FEATURES,

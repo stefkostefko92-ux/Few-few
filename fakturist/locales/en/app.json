@@ -461,7 +461,8 @@
       "closeConfirm": "Confirm the closing with the checkbox.",
       "password": "The password is wrong.",
       "master": "A master account is not closed from here.",
-      "transferFirst": "You are the only owner of a company with other members — remove them first or write to us to transfer ownership."
+      "transferFirst": "You are the only owner of a company with other members — remove them first or write to us to transfer ownership.",
+      "terminateFirst": "You are the only person in the company — terminate it first under “Termination” (30 days to download the documents, then the data is deleted), then close your account."
     }
   },
   "plan": {
@@ -1006,7 +1007,8 @@
       "rate": "a rate other than 20% and 9%",
       "type": "a document type that is not entered automatically",
       "currency": "a foreign-currency document without a euro rate",
-      "amount": "an amount that does not fit the 15-character field"
+      "amount": "an amount that does not fit the 15-character field",
+      "period": "an intra-Community supply whose VAT became chargeable (Art. 51 VAT Act) in a month other than the issue month, or an advance invoice for one — the month is set by hand"
     },
     "notesTitle": "How it is built",
     "notes": {
@@ -1059,7 +1061,8 @@
     "reasons": {
       "category": "reverse charge, out-of-scope supply or a rate other than 20 % and 9 % — the tax code depends on the legal basis",
       "type": "document type that does not belong to sales",
-      "cancelled": "cancelled document — recorded as the accountant directs"
+      "cancelled": "cancelled document — recorded as the accountant directs",
+      "currency": "a currency with a high euro rate — the SAF-T rate has 4 decimals and the amounts would not reconcile; enter it by hand"
     },
     "settingsTitle": "Accounts and related parties",
     "settingsHelp": "Chosen by the accountant from the company's chart of accounts. They apply to every month.",

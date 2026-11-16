@@ -1,5 +1,5 @@
 <%- include('../partials/app-head', { title: t('app.proforma.one') + ' ' + proforma.number }) %>
-<% const day = (d) => d ? d.toISOString().slice(0, 10).split('-').reverse().join('.') : '—'; %>
+<% const day = (d) => d ? bgDate(d) : '—'; %>
 <% const sum = (c) => money(c, proforma.currency); %>
 <p><a href="/app/o/<%= org.id %>/proformi">← <%= t('app.proforma.title') %></a></p>
 <% if (ok) { %><p class="ok" role="status"><%= tOr('app.proforma.ok.' + ok, t('app.catalog.saved.updated')) %></p><% } %>

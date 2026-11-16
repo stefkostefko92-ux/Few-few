@@ -1,6 +1,6 @@
 import { calculate, type VatBreakdown } from '../einvoice/calculate.js';
 import { toCents } from '../einvoice/decimal.js';
-import { InvoiceInputSchema } from '../einvoice/model.js';
+import { InvoiceInputSchema, type InvoiceInput } from '../einvoice/model.js';
 import { sofiaToday } from '../time.js';
 import { encodeCp1251 } from './cp1251.js';
 import {
@@ -16,6 +16,7 @@ import {
   PLACE_ABROAD_ART_69_2,
   text,
   ZERO_RATE_SPECIAL,
+  EU_OTHER_COUNTRIES,
 } from './journal-format.js';
 
 export { amountText, ZERO_RATE_SPECIAL } from './journal-format.js';
@@ -64,7 +65,7 @@ export interface JournalDocument {
   input: unknown;
 }
 
-export type ManualReason = 'category' | 'rate' | 'type' | 'currency' | 'amount';
+export type ManualReason = 'category' | 'rate' | 'type' | 'currency' | 'amount' | 'period';
 export interface JournalResult {
   file: Buffer;
   records: number;
@@ -72,11 +73,35 @@ export interface JournalResult {
   manual: Array<{ number: string; reason: ManualReason }>;
 }
 
+/**
+ * ВОД (K): данъкът е изискуем на 15-о число от месеца след данъчното събитие или при издаването, ако е
+ * по-рано (чл. 51, ал. 1–2 ЗДДС), и документът се вписва в месеца на изискуемостта (чл. 124, ал. 3).
+ * Събитието — изрично посочената BT-7, иначе датата на доставка (BT-72), иначе издаването (при издаване
+ * BT-7 се попълва с датата на издаване, затова BT-7 = издаването не скрива по-ранна доставка). Месец,
+ * различен от месеца на издаване, и авансовата фактура по ВОД (плащането не е събитие по чл. 51) — за
+ * ръчно, не наслуки. Известието (381/383) се вписва в месеца, в който е издадено.
+ */
+function vodPeriodDiffers(parsed: InvoiceInput, typeCode: string): boolean {
+  if (typeCode === '381' || typeCode === '383') return false;
+  if (typeCode === '386') return true;
+  const explicit =
+    parsed.taxPointDate && parsed.taxPointDate !== parsed.issueDate
+      ? parsed.taxPointDate
+      : undefined;
+  const event = explicit ?? parsed.delivery?.date ?? parsed.issueDate;
+  const [year, month] = event.split('-').map(Number) as [number, number];
+  const next = month === 12 ? `${year + 1}-01` : `${year}-${String(month + 1).padStart(2, '0')}`;
+  const limit = `${next}-15`;
+  const chargeable = parsed.issueDate <= limit ? parsed.issueDate : limit;
+  return chargeable.slice(0, 7) !== parsed.issueDate.slice(0, 7);
+}
+
 /** Разбивката по ставки → полетата; null — не се разпределя еднозначно. */
 function amounts(
   breakdown: readonly VatBreakdown[],
   inEur: boolean,
   exemptions: ReadonlyArray<{ category: string; reason?: string | undefined }>,
+  buyerCountry: string,
 ): { values: Partial<Record<AmountField, bigint>> } | { manual: ManualReason } {
   const values: Partial<Record<AmountField, bigint>> = {};
   const put = (field: AmountField, value: bigint) => {
@@ -110,7 +135,9 @@ function amounts(
       (group.category === 'AE' || group.category === 'O') &&
       EU_SERVICES_ART_21_2.test(reason)
     ) {
-      // Услуги по чл. 21, ал. 2 с място в друга държава членка — не влизат в 02-10.
+      // Услуги по чл. 21, ал. 2 с място в друга държава членка — не влизат в 02-10. Получател извън ЕС не е
+      // 02-17 (Прил. № 12) — за ръчно, не наслуки.
+      if (!EU_OTHER_COUNTRIES.has(buyerCountry)) return { manual: 'category' };
       put('02-17', base);
     } else if (
       (group.category === 'AE' || group.category === 'O') &&
@@ -185,7 +212,19 @@ export function salesJournal(input: {
     }
     const parsed = InvoiceInputSchema.parse(doc.input);
     const calc = calculate(parsed);
-    const split = amounts(calc.breakdown, parsed.currency === 'EUR', parsed.vatExemptions);
+    if (
+      calc.breakdown.some((group) => group.category === 'K') &&
+      vodPeriodDiffers(parsed, doc.typeCode)
+    ) {
+      manual.push({ number, reason: 'period' });
+      continue;
+    }
+    const split = amounts(
+      calc.breakdown,
+      parsed.currency === 'EUR',
+      parsed.vatExemptions,
+      parsed.buyer.address.countryCode,
+    );
     if ('manual' in split) {
       manual.push({ number, reason: split.manual });
       continue;

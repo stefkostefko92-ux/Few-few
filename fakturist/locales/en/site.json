@@ -380,6 +380,7 @@
     "summary": "According to bill no. 52-602-01-60 amending the VAT Act, as introduced, structured e-invoices become mandatory between companies and to the state from 1 July 2028. The invoice will be a document in UBL 2.1 or CII under EN 16931, not a PDF. The bill has passed only a first reading, on 12 November 2026, so the text may change.",
     "byline": {
       "author": "Author",
+      "published": "Published",
       "updated": "Last updated"
     },
     "toc": "In this article",
