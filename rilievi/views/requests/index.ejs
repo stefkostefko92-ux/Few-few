@@ -20,6 +20,7 @@
   <p><strong><%= t(filter === 'NEW' ? 'requests.empty.NEW' : 'requests.empty.other') %></strong></p>
 </div>
 <% } else { %>
+<div class="table-scorre">
 <table class="table table--stack">
   <caption class="visually-hidden"><%= t('requests.count', { n: list.total }) %></caption>
   <thead><tr>
@@ -42,6 +43,7 @@
     <% } %>
   </tbody>
 </table>
+</div>
 <%- include('../partials/pager', { base: pagerBase, page: list.page, pages: list.pages }) %>
 <% } %>
 <%- include('../partials/bottom') %>

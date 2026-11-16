@@ -33,6 +33,7 @@
   <% if (!query && can('preventivi:write')) { %><p class="muted"><%= t('clienti.emptyHint') %></p><% } %>
 </div>
 <% } else { %>
+<div class="table-scorre">
 <table class="table table--stack">
   <caption class="visually-hidden"><%= t('clienti.list') %></caption>
   <thead>
@@ -50,13 +51,15 @@
       <td class="wide" data-label="<%= t('clienti.colonna.nome') %>"><a class="row-link" href="/clienti/<%= row.id %>"><%= row.nome %></a><% if (row.referente) { %><br><span class="muted"><%= row.referente %></span><% } %></td>
       <td data-label="<%= t('clienti.colonna.indirizzo') %>"><%= row.indirizzo || '—' %></td>
       <td data-label="<%= t('clienti.colonna.piva') %>"><%= row.piva || '—' %></td>
-      <td class="email" data-label="<%= t('clienti.colonna.contatti') %>"><% if (contatti.length === 0) { %>—<% } %><% contatti.forEach((riga, i) => { %><% if (i > 0) { %><br><% } %><%= riga %><% }) %></td>
+      <%# Телефонният номер не се къса („+39 379 29 / 69 699“ — визуалната проверка, 16.11.2026); имейлът се пренася. %>
+      <td class="email" data-label="<%= t('clienti.colonna.contatti') %>"><% if (contatti.length === 0) { %>—<% } %><% contatti.forEach((riga, i) => { %><% if (i > 0) { %><br><% } %><% if (riga.includes('@')) { %><%= riga %><% } else { %><span class="tel"><%= riga %></span><% } %><% }) %></td>
       <% if (showAzienda) { %><td data-label="<%= t('clienti.colonna.azienda') %>"><%= row.azienda.name %></td><% } %>
       <td class="importo" data-label="<%= t('clienti.colonna.preventivi') %>"><%= row._count.preventivi %></td>
     </tr>
     <% } %>
   </tbody>
 </table>
+</div>
 <%- include('../partials/pager', { base, page: page.page, pages: page.pages }) %>
 <% } %>
 <%- include('../partials/bottom') %>

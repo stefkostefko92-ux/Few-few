@@ -29,6 +29,13 @@
   gap: 8px;
 }
 
+/* Изборът на листа — колкото най-дългата възможност („Foglio da 24 (70 × 37 mm)“ се режеше до стрелката). */
+.etichetta-bar__scelta .select {
+  flex: 0 0 auto;
+  width: auto;
+  padding-right: 28px; /* място за стрелката: Chromium смята ширината без него */
+}
+
 .etichetta-bar__nota {
   flex-basis: 100%;
   margin: 0;

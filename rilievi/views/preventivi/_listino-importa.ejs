@@ -31,6 +31,7 @@
       <% if (a.piano.uguali > 0) { %><li><%= t('preventivi.listino.importa.anteprima.uguali', { n: a.piano.uguali }) %></li><% } %>
       <li><%= t('preventivi.listino.importa.anteprima.dopo', { n: a.piano.dopo }) %></li>
     </ul>
+    <div class="table-scorre">
     <table class="table table--stack">
       <caption><%= a.totale > a.righe.length ? t('preventivi.listino.importa.anteprima.prime', { n: a.righe.length, totale: a.totale }) : t('preventivi.listino.importa.anteprima.tutte') %></caption>
       <thead>
@@ -53,6 +54,7 @@
         <% } %>
       </tbody>
     </table>
+    </div>
     <div class="toolbar">
       <button class="btn btn--primary" type="submit" name="conferma" value="1"><%- include('../partials/icon', { name: 'check' }) %><%= t('preventivi.listino.importa.conferma') %></button>
     </div>

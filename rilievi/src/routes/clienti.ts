@@ -29,7 +29,7 @@ import {
 import { setFlash } from '../http/flash.js';
 import { euro } from '../preventivi/importi.js';
 import { MAX_QUERY_LENGTH } from '../schede/search.js';
-import { aziendeInArchivio, aziendePerPreventivo } from './preventivi-vista.js';
+import { aziendaScelta, aziendeInArchivio, aziendePerPreventivo } from './preventivi-vista.js';
 import { aziendaFilterOf, aziendeOf, notFound } from './schede-shared.js';
 
 /**
@@ -76,9 +76,11 @@ clientiRouter.get('/clienti', read, async (req, res) => {
 interface ClienteFormView {
   cliente: ClienteFull | null;
   values: Record<string, string>;
-  errors: ErroriCliente & { azienda?: 'required' | 'invalid' };
+  errors: ErroriCliente & { azienda?: 'required' | 'invalid' | 'spente' };
   base: string;
   aziende: Array<{ id: string; name: string }>;
+  /** MASTER: активните фирми с изключени оферти — в своя група на избора (`aziendePerPreventivo`). */
+  spente?: Array<{ id: string; name: string }>;
   azienda: string;
   conflict?: boolean;
   /** Регистърът на фирмата е на тавана си — нов клиент не се записва. */
@@ -92,30 +94,30 @@ function renderForm(res: Response, status: number, view: ClienteFormView): void 
     maxClienti: MAX_CLIENTI,
     conflict: false,
     pieno: false,
+    spente: [],
     ...view,
   });
 }
 
 clientiRouter.get('/clienti/nuovo', write, async (req, res) => {
-  const { choices, only } = await aziendePerPreventivo(req);
-  const preset = typeof req.query.azienda === 'string' ? req.query.azienda : '';
-  const azienda =
-    only?.id ??
-    (choices.some((a) => a.id === preset) ? preset : choices.length === 1 ? choices[0]!.id : '');
+  const scelte = await aziendePerPreventivo(req);
   renderForm(res, 200, {
     cliente: null,
     values: {},
     errors: {},
     base: '',
-    aziende: choices,
-    azienda,
+    aziende: scelte.choices,
+    spente: scelte.spente,
+    azienda: aziendaScelta(scelte, req.query.azienda),
   });
 });
 
 clientiRouter.post('/clienti', write, requireCsrf, async (req, res) => {
   const body = req.body as Record<string, unknown>;
-  const { choices, only } = await aziendePerPreventivo(req);
+  const { choices, only, spente } = await aziendePerPreventivo(req);
   const azienda = only ?? choices.find((a) => a.id === body.azienda) ?? null;
+  // MASTER е избрал фирма с изключени оферти: нищо не се записва, бележката предлага да се включат.
+  const spenta = azienda ? null : (spente.find((a) => a.id === body.azienda) ?? null);
   const parsed = parseCliente(body);
   const again = (errors: ClienteFormView['errors'], pieno = false) =>
     renderForm(res, 422, {
@@ -124,9 +126,11 @@ clientiRouter.post('/clienti', write, requireCsrf, async (req, res) => {
       errors,
       base: '',
       aziende: choices,
-      azienda: azienda?.id ?? '',
+      spente,
+      azienda: azienda?.id ?? spenta?.id ?? '',
       pieno,
     });
+  if (spenta) return again({ azienda: 'spente', ...(parsed.ok ? {} : parsed.errors) });
   if (!azienda) return again({ azienda: 'required', ...(parsed.ok ? {} : parsed.errors) });
   if (!parsed.ok) return again(parsed.errors);
   const esito = await createCliente(principalOf(req).user.id, azienda.id, parsed.data);

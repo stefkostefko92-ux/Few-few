@@ -18,6 +18,7 @@
   <% if (can('interventi:write')) { %><p class="muted"><%= t('interventi.emptyHint') %></p><% } %>
 </div>
 <% } else { %>
+<div class="table-scorre">
 <table class="table table--stack">
   <caption class="visually-hidden"><%= t('interventi.list') %></caption>
   <thead>
@@ -44,6 +45,7 @@
     <% } %>
   </tbody>
 </table>
+</div>
 <%- include('../partials/pager', { base, page: page.page, pages: page.pages }) %>
 <% } %>
 <%- include('../partials/bottom') %>
