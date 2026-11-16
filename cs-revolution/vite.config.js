@@ -33,6 +33,9 @@ export default defineConfig({
       compress: { drop_console: true, drop_debugger: true },
     },
     rollupOptions: {
+      // Две страници: сайтът и /admin/ (собствен малък бъндъл — посетителят на сайта не тегли панела).
+      // nginx няма SPA fallback, затова /admin/ трябва да е истински dist/admin/index.html.
+      input: { main: 'index.html', admin: 'admin/index.html' },
       output: {
         manualChunks: {
           three: ['three'],

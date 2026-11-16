@@ -55,15 +55,17 @@ logrotate -d /etc/logrotate.d/carbonstealth    # dry run
 ## Verify it actually works
 
 ```bash
-# 6 bad tokens in a row: the 6th must return 429, not 401
+# 6 bad logins in a row: the 6th must return 429, not 401
 for i in $(seq 1 6); do
-  curl -s -o /dev/null -w "%{http_code} " -H "X-CS-Token: wrong-$i" \
-    https://carbonstealth.eu/api/monitor.php
+  curl -s -o /dev/null -w "%{http_code} " -X POST -H "X-CS-Admin: 1" \
+    -H "Origin: https://carbonstealth.eu" -H "Content-Type: application/json" \
+    -d '{"email":"nobody@example.com","password":"wrong-'$i'"}' \
+    "https://carbonstealth.eu/api/admin-auth.php?action=login"
 done; echo
 # expect: 401 401 401 401 401 429
 
-# the real token still works (and clears the counter)
-curl -s -H "X-CS-Token: $CS_ADMIN_TOKEN" https://carbonstealth.eu/api/monitor.php | head -c 60
+# admin endpoints without a session: 401 (and they never count toward the lockout)
+curl -s -o /dev/null -w "%{http_code}\n" https://carbonstealth.eu/api/monitor.php
 ```
 
 If a legitimate admin ever locks themselves out:
