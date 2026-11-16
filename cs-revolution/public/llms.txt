@@ -89,6 +89,9 @@ People look for what we do under many names — all of these are us:
 - **Ospedali Trasparenti** — Civic portal with public, comparable data on Italian hospitals. URL: https://ospedalitrasparenti.it
 - **Vizitka** — Digital business card with a permanent QR code that always shows your current details. URL: https://vizitka-bg.com
 - **Mastilko** — Free print-ready labels, business cards and CVs, previewed live on an A4 sheet. URL: https://mastilko-bg.com
+- **Korpora** — In-browser cabinet furniture design (beta): 3D model, cutting list with edge banding, hardware, drilling maps and CNC files (layered DXF, G-code) from one project. URL: https://korpora.carbonstealth.eu
+- **Rilievi Impianti** — Invitation-only web software for lift companies: survey sheets filled in from a phone, manufacturers' order forms, A4/PDF printouts with the company logo. URL: https://rilievi.carbonstealth.eu
+- **Fakturist** — Online invoicing for Bulgarian companies and accounting firms; every document also stored as structured XML under EN 16931 (UBL 2.1, CII). URL: https://fakturist.carbonstealth.eu
 
 ## Products
 

@@ -10,12 +10,12 @@
 <% if (saved) { %><p class="ok" role="status"><%= t('app.catalog.saved.' + saved) %></p><% } %>
 <% series.forEach((s) => { const used = s.nextNumber > s.rangeStart; const editingThis = editing === s.id; %>
 <section class="panel" aria-labelledby="s-<%= s.id %>">
-  <h2 id="s-<%= s.id %>"><%= s.name %><% if (s.isDefault) { %> <span class="badge"><%= t('app.catalog.default') %></span><% } %></h2>
+  <h2 id="s-<%= s.id %>"><%= sys(s.name) %><% if (s.isDefault) { %> <span class="badge"><%= t('app.catalog.default') %></span><% } %></h2>
   <p class="mono muted"><%= pad(s.rangeStart) %> – <%= pad(s.rangeEnd) %> · <%= t('app.catalog.next') %> <%= pad(s.nextNumber) %> · <%= t('app.catalog.issued', { count: s._count.documents }) %></p>
   <% if (errors[s.id]) { %><p class="error" role="alert"><%= errFor(s.id) %></p><% } %>
   <form method="post" action="/app/o/<%= org.id %>/serii/<%= s.id %>" class="stack narrow-form">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-    <label><%= t('app.catalog.seriesName') %><input name="name" required maxlength="40" value="<%= editingThis ? v('name', s.name) : s.name %>"></label>
+    <label><%= t('app.catalog.seriesName') %><input name="name" required maxlength="40" value="<%= editingThis ? v('name', sys(s.name)) : sys(s.name) %>"></label>
     <div class="row">
       <label><%= t('app.catalog.rangeStart') %><input name="rangeStart" inputmode="numeric" class="mono" required value="<%= editingThis ? v('rangeStart', String(s.rangeStart)) : String(s.rangeStart) %>"<%= used ? ' readonly aria-describedby="locked-' + s.id + '"' : '' %>></label>
       <label><%= t('app.catalog.rangeEnd') %><input name="rangeEnd" inputmode="numeric" class="mono" required value="<%= editingThis ? v('rangeEnd', String(s.rangeEnd)) : String(s.rangeEnd) %>"></label>

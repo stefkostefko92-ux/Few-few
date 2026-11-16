@@ -13,6 +13,8 @@ export const BRAND = {
    * собственика от 13.11.2026. Мастър панелът може да смени текста (настройка `documents.signature`).
    */
   signature: 'Документът е създаден с fakturist.eu — продукт на Carbon Stealth VCC.',
+  /** Подписът в писмата до човек с профил на английски (src/mail/locale.ts), докато мастърът не го смени. */
+  signatureEn: 'Created with fakturist.eu — a product of Carbon Stealth VCC.',
   /** Домейнът в подписа и в писмата. */
   signatureDomain: 'fakturist.eu',
   tagline: {

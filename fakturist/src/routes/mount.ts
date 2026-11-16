@@ -9,6 +9,7 @@ import { inviteRouter } from './invite.js';
 import { memberInviteRouter } from './member-invite.js';
 import { installRouter } from './install.js';
 import { accountRouter } from './account.js';
+import { languageRouter } from './language.js';
 import { appRouter } from './app.js';
 import { adminRouter } from './admin.js';
 
@@ -26,6 +27,7 @@ export function mountApp(app: Express): void {
   app.use(appLocals());
   app.use(authRouter());
   app.use(accountRouter());
+  app.use(languageRouter());
   app.use(installRouter());
   app.use(inviteRouter());
   app.use(memberInviteRouter());

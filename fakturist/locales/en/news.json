@@ -7,6 +7,11 @@
     "ok": "Got it"
   },
   "entries": {
+    "2026-11-16-versiya-1-4": {
+      "area": "Fakturist",
+      "title": "Choose BG or EN (version 1.4)",
+      "text": "The top bar has a BG/EN switch: the language is kept in your account, and Fakturist’s emails to you use it. Signing up or accepting an invitation in English creates an English account, and the new-password link opens in your account’s language. A field with an error in a form is highlighted again, and the current page is marked in the menu."
+    },
     "2026-11-15-versiya-1-3": {
       "area": "Fakturist",
       "title": "Tidier on phones and fully in English (version 1.3)",

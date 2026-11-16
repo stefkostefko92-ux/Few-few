@@ -58,7 +58,7 @@
       <% if (!replacing && !proforma) { %><option value="proforma"<%= sel('typeCode', 'proforma', '380') %>><%= t('app.types.proforma') %></option><% } %>
     </select><% if (!replacing && !proforma) { %><span class="hint"><%= t('app.proforma.typeHint') %></span><% } %></label>
     <label><%= t('app.doc.series') %><select name="seriesId">
-      <% series.forEach((s) => { %><option value="<%= s.id %>"<%= sel('seriesId', s.id, series.find((x) => x.isDefault)?.id) %>><%= s.name %> (<%= String(s.nextNumber).padStart(10, '0') %>)</option><% }) %>
+      <% series.forEach((s) => { %><option value="<%= s.id %>"<%= sel('seriesId', s.id, series.find((x) => x.isDefault)?.id) %>><%= sys(s.name) %> (<%= String(s.nextNumber).padStart(10, '0') %>)</option><% }) %>
     </select></label>
     <label><%= t('app.doc.issueDate') %><input type="date" name="issueDate" required value="<%= val('issueDate', today) %>"></label>
     <label><%= t('app.doc.taxPointDate') %><input type="date" name="taxPointDate" value="<%= val('taxPointDate', today) %>"></label>
@@ -110,7 +110,7 @@
       <% for (let i = 0; i < lineCount; i++) { %>
         <tr>
           <td class="mono muted"><%= i + 1 %></td>
-          <td><input name="lines[<%= i %>][name]" aria-label="<%= t('app.doc.lineName') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.name') %>"<%= items.length ? ' list="catalog-items"' : '' %> data-line="<%= i %>"></td>
+          <td><input name="lines[<%= i %>][name]" aria-label="<%= t('app.doc.lineName') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.name') %>"<%- items.length ? ' list="catalog-items"' : '' %> data-line="<%= i %>"></td>
           <td><input name="lines[<%= i %>][quantity]" inputmode="decimal" class="mono s" aria-label="<%= t('app.doc.quantity') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.quantity') %>"></td>
           <td><select name="lines[<%= i %>][unitCode]" aria-label="<%= t('app.doc.unit') %> <%= i + 1 %>"><% units.forEach((u) => { %><option<%= sel('lines.' + i + '.unitCode', u, 'C62') %>><%= u %></option><% }) %></select></td>
           <td><input name="lines[<%= i %>][netPrice]" inputmode="decimal" class="mono s" aria-label="<%= t('app.doc.price') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.netPrice') %>"></td>

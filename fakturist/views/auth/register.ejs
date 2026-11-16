@@ -15,7 +15,7 @@
   <% if (!open) { %>
     <p class="callout"><%= t('auth.closed', { email: company.email }) %></p>
   <% } else { %>
-  <form method="post" action="/registraciya" class="stack" novalidate>
+  <form method="post" action="/registraciya<%= langQuery %>" class="stack" novalidate>
     <fieldset class="choice">
       <legend><%= t('auth.kind') %></legend>
       <label class="radio"><input type="radio" name="kind" value="company"<%= v('kind') !== 'accountant' ? ' checked' : '' %>> <%= t('auth.kindCompany') %></label>
@@ -25,7 +25,7 @@
       <legend><%= t('auth.you') %></legend>
       <%- field('name', t('auth.name'), 'autocomplete="name" required') %>
       <%- field('email', t('auth.email'), 'type="email" autocomplete="email" required') %>
-      <label<%= errors.password ? ' class="has-error"' : '' %>><%= t('auth.password') %><input type="password" name="password" autocomplete="new-password" minlength="12" required aria-describedby="pw-help"><span class="hint" id="pw-help"><%= t('auth.passwordHelp') %></span><% if (errors.password) { %><span class="field-error"><%= t('auth.errors.' + errors.password) %></span><% } %></label>
+      <label<%- errors.password ? ' class="has-error"' : '' %>><%= t('auth.password') %><input type="password" name="password" autocomplete="new-password" minlength="12" required aria-describedby="pw-help"><span class="hint" id="pw-help"><%= t('auth.passwordHelp') %></span><% if (errors.password) { %><span class="field-error"><%= t('auth.errors.' + errors.password) %></span><% } %></label>
     </fieldset>
     <fieldset>
       <legend><%= v('kind') === 'accountant' ? t('auth.firm') : t('auth.company') %></legend>
@@ -45,6 +45,6 @@
     <button type="submit"><%= t('auth.create') %></button>
   </form>
   <% } %>
-  <p class="muted"><%= t('auth.haveAccount') %> <a href="/vhod"><%= t('auth.login') %></a></p>
+  <p class="muted"><%= t('auth.haveAccount') %> <a href="/vhod<%= langQuery %>"><%= t('auth.login') %></a></p>
 </section>
 <%- include('../partials/app-foot') %>

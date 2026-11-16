@@ -9,6 +9,7 @@ import { InvoiceInputSchema } from '../einvoice/index.js';
 import { DOWNLOAD_SELECT } from '../routes/app-shared.js';
 import { escapeHtml } from './templates.js';
 import type { MailMessage } from './mailer.js';
+import type { Locale } from '../i18n.js';
 
 /**
  * Писмата на фирмата до получателя на документ, който не е във Фактурист (SPEC 51–52): издадената
@@ -39,16 +40,21 @@ async function load(documentId: string) {
   });
 }
 
-export function wrap(paragraphs: string[], signature: string): { text: string; html: string } {
+/** Текстът и HTML-ът на просто писмо; `locale` — поздравът и езикът на HTML-а (писмата до хора с профил). */
+export function wrap(
+  paragraphs: string[],
+  signature: string,
+  locale: Locale = 'bg',
+): { text: string; html: string } {
   const text = [
-    'Здравейте,',
+    locale === 'bg' ? 'Здравейте,' : 'Hello,',
     '',
     ...paragraphs.flatMap((p) => [p, '']),
     '—',
     signature,
     BRAND.signatureDomain,
   ].join('\n');
-  const html = `<!doctype html><html lang="bg"><body style="margin:0;padding:24px;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;color:#0c1929">
+  const html = `<!doctype html><html lang="${locale}"><body style="margin:0;padding:24px;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;color:#0c1929">
 <div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #d5dbe3;border-radius:8px;padding:24px">
 ${paragraphs.map((p) => `<p style="margin:0 0 16px">${escapeHtml(p)}</p>`).join('\n')}
 <p style="margin:0;font-size:12px;color:#4a5568">${escapeHtml(signature)}</p>

@@ -66,6 +66,7 @@
     "db:seed:euro": "tsx prisma/seed-euro.ts",
     "db:fix:decimals": "tsx prisma/fix-bg-decimals.ts",
     "db:fix:texts": "tsx prisma/fix-outdated-texts.ts",
+    "db:fix:email": "tsx prisma/fix-site-email.ts",
     "db:sync:guides": "tsx prisma/sync-missing-guides.ts",
     "db:seed:education": "tsx prisma/seed-education.ts",
     "db:seed:placeholders": "tsx prisma/seed-placeholders.ts",

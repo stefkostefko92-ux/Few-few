@@ -43,11 +43,11 @@
         <label class="radio"><input type="radio" name="template" value="<%= tpl %>"<%= v('template') === tpl ? ' checked' : '' %>> <span><strong><%= t('app.settings.templates.' + tpl + '.name') %></strong> <span class="hint"><%= t('app.settings.templates.' + tpl + '.help') %></span></span></label>
       <% }) %>
     </fieldset>
-    <label<%= errors.font ? ' class="has-error"' : '' %>><%= t('app.settings.fields.font') %>
+    <label<%- errors.font ? ' class="has-error"' : '' %>><%= t('app.settings.fields.font') %>
       <select name="font"><% fonts.forEach((f) => { %><option value="<%= f.key %>"<%= v('font') === f.key ? ' selected' : '' %>><%= f.label %> — <%= t('app.settings.fontKinds.' + f.key) %></option><% }) %></select>
       <span class="hint"><%= t('app.settings.fontHelp') %></span>
     </label>
-    <label<%= errors.accent ? ' class="has-error"' : '' %>><%= t('app.settings.fields.accent') %>
+    <label<%- errors.accent ? ' class="has-error"' : '' %>><%= t('app.settings.fields.accent') %>
       <input type="color" name="accent" value="<%= v('accent') || '#03756c' %>" aria-describedby="accent-help">
       <span class="hint" id="accent-help"><%= t('app.settings.accentHelp') %></span>
     </label>

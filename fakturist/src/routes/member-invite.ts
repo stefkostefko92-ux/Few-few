@@ -12,6 +12,7 @@ import {
 } from '../accounts/members.js';
 import { requestRateKey } from '../http/ip.js';
 import { MINUTE } from '../time.js';
+import { appLocale } from '../http/view.js';
 
 /** Връзката е ключ: 20 опита за 15 минути от адрес. */
 const limiter = rateLimit({
@@ -93,7 +94,7 @@ export function memberInviteRouter(): Router {
       }
       const result = await acceptMemberInvite({
         token,
-        user: { name: parsed.data.name, password: parsed.data.password },
+        user: { name: parsed.data.name, password: parsed.data.password, locale: appLocale(req) },
       });
       await startSession(res, { id: result.userId, platformRole: 'NONE' }, true);
       res.redirect(303, `/app/o/${result.organizationId}`);

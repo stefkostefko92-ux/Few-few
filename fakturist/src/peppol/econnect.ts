@@ -1,6 +1,7 @@
 import { scrub } from '../admin/integration-checks.js';
 import type { PeppolSettings } from '../admin/integrations.js';
 import { AccessPointError, type AccessPoint, type EnrollInput } from './access-point.js';
+import { AP_BAD_CREDENTIALS, AP_NO_TOKEN, AP_TOO_LARGE } from '../system-text.js';
 
 /**
  * eConnect PSB (Procurement Service Bus) — сертифицирана точка за достъп и SMP в списъка на OpenPeppol.
@@ -101,11 +102,7 @@ export class EConnectAccessPoint implements AccessPoint {
     }
     if (response.status === 400 || response.status === 401) {
       await response.body?.cancel();
-      throw new AccessPointError(
-        'unauthorized',
-        'eConnect отказа данните на клиента',
-        response.status,
-      );
+      throw new AccessPointError('unauthorized', AP_BAD_CREDENTIALS, response.status);
     }
     if (!response.ok) {
       await response.body?.cancel();
@@ -120,7 +117,7 @@ export class EConnectAccessPoint implements AccessPoint {
       expires_in?: unknown;
     } | null;
     if (!body || typeof body.access_token !== 'string' || !body.access_token) {
-      throw new AccessPointError('invalidResponse', 'eConnect identity: няма access_token');
+      throw new AccessPointError('invalidResponse', AP_NO_TOKEN);
     }
     const seconds =
       typeof body.expires_in === 'number' && body.expires_in > 0 ? body.expires_in : 3600;
@@ -260,7 +257,7 @@ export class EConnectAccessPoint implements AccessPoint {
     if (!response.ok) await this.rejectFrom(response, 'eConnect download');
     const xml = await response.text();
     if (xml.length > 2 * 1024 * 1024) {
-      throw new AccessPointError('invalidResponse', 'Полученият документ е над 2 MB');
+      throw new AccessPointError('invalidResponse', AP_TOO_LARGE);
     }
     return xml;
   }

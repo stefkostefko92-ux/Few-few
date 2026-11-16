@@ -22,8 +22,8 @@
       <label><%= t('app.client.documentRef') %><input name="documentRef" required value="<%= v('documentRef') %>"></label>
       <label><%= t('app.client.validFrom') %><input type="date" name="validFrom" required value="<%= v('validFrom') %>"></label>
     </div>
-    <label<%= errors.ownerEmail ? ' class="has-error"' : '' %>><%= t('app.client.ownerEmail') %><input type="email" name="ownerEmail" autocomplete="off" spellcheck="false" value="<%= v('ownerEmail') %>" aria-describedby="owner-help"<%= errors.ownerEmail ? ' aria-invalid="true"' : '' %>><span class="hint" id="owner-help"><%= t('app.client.ownerEmailHelp') %></span></label>
-    <label class="check<%= errors.processorDeclaration ? ' has-error' : '' %>"><input type="checkbox" name="processorDeclaration" required<%= errors.processorDeclaration ? ' aria-invalid="true"' : '' %>> <span><%= t('app.client.processorDeclaration') %> <a href="<%= legalUrl('dpa') %>#kantori" target="_blank" rel="noopener"><%= t('app.client.processorDeclarationLink') %></a></span></label>
+    <label<%- errors.ownerEmail ? ' class="has-error"' : '' %>><%= t('app.client.ownerEmail') %><input type="email" name="ownerEmail" autocomplete="off" spellcheck="false" value="<%= v('ownerEmail') %>" aria-describedby="owner-help"<%- errors.ownerEmail ? ' aria-invalid="true"' : '' %>><span class="hint" id="owner-help"><%= t('app.client.ownerEmailHelp') %></span></label>
+    <label class="check<%= errors.processorDeclaration ? ' has-error' : '' %>"><input type="checkbox" name="processorDeclaration" required<%- errors.processorDeclaration ? ' aria-invalid="true"' : '' %>> <span><%= t('app.client.processorDeclaration') %> <a href="<%= legalUrl('dpa') %>#kantori" target="_blank" rel="noopener"><%= t('app.client.processorDeclarationLink') %></a></span></label>
     <button type="submit"><%= t('app.client.save') %></button>
   </form>
 </section>

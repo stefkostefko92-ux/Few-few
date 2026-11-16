@@ -10,7 +10,7 @@
     <% } else if (key === 'issue.profile') { %>
       <label><%= def.label[lang] %><select name="<%= key %>"><% ['en16931', 'peppol'].forEach((p) => { %><option<%= value === p ? ' selected' : '' %>><%= p %></option><% }) %></select><span class="hint"><%= def.help[lang] %></span></label>
     <% } else { %>
-      <label><%= def.label[lang] %><input name="<%= key %>" value="<%= value %>"<%= typeof def.default === 'number' ? ' inputmode="numeric"' : '' %>><span class="hint"><%= def.help[lang] %></span></label>
+      <label><%= def.label[lang] %><input name="<%= key %>" value="<%= value %>"<%- typeof def.default === 'number' ? ' inputmode="numeric"' : '' %>><span class="hint"><%= def.help[lang] %></span></label>
     <% } %>
   <% }) %>
   <button type="submit"><%= t('admin.save') %></button>
@@ -54,7 +54,7 @@
         </label>
         <% if (hint) { %><label class="check"><input type="checkbox" name="clear_<%= f.name %>"> <%= t('admin.integration.clearSecret') %></label><% } %>
       <% } else { %>
-        <label><%= f.label[lang] %><input id="<%= fieldId(f.name) %>" name="<%= f.name %>" value="<%= value ?? '' %>"<%= f.kind === 'number' ? ' inputmode="numeric"' : '' %><% if (f.placeholder) { %> placeholder="<%= f.placeholder %>"<% } %> spellcheck="false"<%- invalid %>><% if (f.help) { %><span class="hint"><%= f.help[lang] %></span><% } %></label>
+        <label><%= f.label[lang] %><input id="<%= fieldId(f.name) %>" name="<%= f.name %>" value="<%= value ?? '' %>"<%- f.kind === 'number' ? ' inputmode="numeric"' : '' %><% if (f.placeholder) { %> placeholder="<%= f.placeholder %>"<% } %> spellcheck="false"<%- invalid %>><% if (f.help) { %><span class="hint"><%= f.help[lang] %></span><% } %></label>
       <% } %>
     <% }) %>
     <% if (item.code === 'revolut') { %>

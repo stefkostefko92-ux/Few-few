@@ -107,6 +107,7 @@ export function appSeriesRouter(): Router {
         seriesId,
         actorId: req.principal!.user.id,
         data: parsed.data,
+        locale: req.principal!.user.locale,
       });
     } catch (error) {
       return seriesFailure(res, access.organizationId, error, seriesId, req.body);

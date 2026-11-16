@@ -10,7 +10,7 @@
   </tr></thead>
   <tbody>
   <% entries.forEach((e) => { %>
-    <tr<%= e.readAt ? '' : ' class="unread"' %>>
+    <tr<%- e.readAt ? '' : ' class="unread"' %>>
       <td data-label="<%= t('app.inbox.from') %>"><a href="/app/o/<%= org.id %>/shkafche/<%= e.id %>"><%= e.senderOrg.legalName %></a><% if (!e.senderOrg.verifiedAt) { %> <span class="tag tag-pending"><%= t('app.inbox.unverified') %></span><% } %></td>
       <td data-label="<%= t('app.org.type') %>"><%= t('app.types.' + e.document.typeCode) %></td>
       <td data-label="<%= t('app.org.number') %>" class="mono"><%= e.document.number %><% if (e.document.status === 'CANCELLED') { %> <span class="tag tag-revoked"><%= t('app.statuses.CANCELLED') %></span><% } %></td>

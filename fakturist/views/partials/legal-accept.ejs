@@ -19,4 +19,4 @@
     org: esc(locals.orgName || t('auth.legalOrg')),
   }) + ' ' + withLinks(t('auth.legalPrivacy'), { privacy: legalLink('privacy', t('auth.legalPrivacyLink')) });
 %>
-<label class="check<%= locals.invalid ? ' has-error' : '' %>"><input type="checkbox" name="acceptTerms" required<%= locals.invalid ? ' aria-invalid="true"' : '' %>> <span><%- acceptLabel %></span></label>
+<label class="check<%= locals.invalid ? ' has-error' : '' %>"><input type="checkbox" name="acceptTerms" required<%- locals.invalid ? ' aria-invalid="true"' : '' %>> <span><%- acceptLabel %></span></label>

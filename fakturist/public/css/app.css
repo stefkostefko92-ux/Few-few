@@ -208,6 +208,55 @@ code {
     display: inline;
   }
 }
+/* Езикът BG/EN в лентата (views/partials/app-head.ejs): влязъл — форма към профила, гост — връзки. */
+.lang-switch {
+  display: inline-flex;
+  gap: 2px;
+  margin: 0 0 0 auto;
+  padding: 2px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+.lang-switch + .logout {
+  margin-left: 0;
+}
+.lang-switch a,
+.lang-switch button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  min-height: 2.25rem;
+  padding: 0 0.5rem;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ink-2);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+.lang-switch a:hover,
+.lang-switch button:hover {
+  background: var(--tint);
+  color: var(--ink);
+}
+.lang-switch [aria-current='true'] {
+  background: var(--accent-soft);
+  color: var(--ink);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+/* Тесен екран: само бутонът за другия език — лентата остава на един ред с „Изход“. */
+@media (max-width: 51.99rem) {
+  .lang-switch {
+    padding: 0;
+    border: 0;
+  }
+  .lang-switch [aria-current='true'] {
+    display: none;
+  }
+}
 .notice {
   margin: 0;
   padding: 0.6rem max(16px, env(safe-area-inset-left, 0px));
@@ -354,6 +403,31 @@ input.mono {
 }
 .grid-3 .span-2 {
   grid-column: span 2;
+}
+/*
+ * Полетата в решетка — на една линия (subgrid): всеки надпис заема четири общи реда (надпис · поле ·
+ * подсказка · грешка), така надпис на два реда не избутва полето си, а полето не се разтяга до най-високата
+ * клетка в реда. Надписът стои точно над полето; подсказката и грешката — отгоре под него.
+ */
+:is(.grid-2, .grid-3, .grid-4) > label:not(.check) {
+  grid-row: span 4;
+  grid-template-rows: subgrid;
+  align-items: end;
+}
+:is(.grid-2, .grid-3, .grid-4) > label:not(.check) > :is(.hint, .field-error) {
+  align-self: start;
+}
+/*
+ * Междината между редовете — под всяко поле, не `row-gap` на решетката: иначе празните редове
+ * „подсказка · грешка“ на subgrid-а носят по една междина и редовете се раздалечават. Отрицателното
+ * поле отдолу връща последната междина — разстоянието до следващия блок остава същото.
+ */
+:is(.grid-2, .grid-3, .grid-4) {
+  row-gap: 0;
+  margin-bottom: calc(-1 * var(--gap));
+}
+:is(.grid-2, .grid-3, .grid-4) > * {
+  margin-bottom: var(--gap);
 }
 @media (max-width: 40rem) {
   .grid-3 .span-2 {
