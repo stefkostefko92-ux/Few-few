@@ -12,6 +12,7 @@ import {
 } from '../accounts/transfer.js';
 import { requestRateKey } from '../http/ip.js';
 import { MINUTE } from '../time.js';
+import { appLocale } from '../http/view.js';
 
 /** Като входа: 10 неуспешни заявки за 15 минути от адрес (IPv6 — по /64). */
 const limiter = rateLimit({
@@ -97,7 +98,7 @@ export function inviteRouter(): Router {
       }
       const result = await acceptTransferInvite({
         token,
-        user: { name: parsed.data.name, password: parsed.data.password },
+        user: { name: parsed.data.name, password: parsed.data.password, locale: appLocale(req) },
         confirmMandate: body['confirmMandate'] === 'on',
       });
       await startSession(res, { id: result.userId, platformRole: 'NONE' }, true);

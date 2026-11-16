@@ -12,7 +12,7 @@
   <tbody>
   <% templates.forEach((r) => { %>
     <tr>
-      <td data-label="<%= t('app.recurring.name') %>"><% if (canIssue) { %><a href="/app/o/<%= org.id %>/povtaryashti/<%= r.id %>"><%= r.name %></a><% } else { %><%= r.name %><% } %><% if (r.lastError) { %><br><span class="hint"><%= tOr('app.recurring.errors.' + r.lastError, r.lastError) %></span><% } %></td>
+      <td data-label="<%= t('app.recurring.name') %>"><% if (canIssue) { %><a href="/app/o/<%= org.id %>/povtaryashti/<%= r.id %>"><%= r.name %></a><% } else { %><%= r.name %><% } %><% if (r.lastError) { %><br><span class="hint"><%= tOr('app.recurring.errors.' + r.lastError, sys(r.lastError)) %></span><% } %></td>
       <td data-label="<%= t('app.recurring.frequency') %>"><%= t('app.recurring.frequencies.' + r.frequency) %></td>
       <td data-label="<%= t('app.recurring.next') %>" class="mono"><%= r.status === 'ENDED' ? '—' : day(r.nextRunOn) %></td>
       <td data-label="<%= t('app.recurring.status') %>"><span class="tag<%= r.status === 'ACTIVE' ? ' tag-active' : r.status === 'PAUSED' ? ' tag-pending' : '' %>"><%= t('app.recurring.statuses.' + r.status) %></span></td>

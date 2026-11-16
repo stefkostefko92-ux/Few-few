@@ -3,7 +3,6 @@ import { config } from '../config.js';
 import { prisma } from '../db.js';
 import { BRAND } from '../brand.js';
 import { errorMessage, logger } from '../logger.js';
-import { setting } from '../admin/settings.js';
 import { documentPdf } from '../documents/render.js';
 import { bgAmount } from '../documents/pdf.js';
 import { fromCents } from '../einvoice/decimal.js';
@@ -18,24 +17,37 @@ import { composeProformaSentMail } from '../proforma/mail.js';
 import { composeMasterMail, MASTER_MAIL_KINDS } from './master-mail.js';
 import { composeOrgMail, ORG_MAIL_KINDS } from './org-mail.js';
 import { MINUTE } from '../time.js';
+import { mailSignature, recipientLocale } from './locale.js';
+import type { Locale } from '../i18n.js';
 
 /** Опитите на едно писмо; паузата расте: 1, 5, 15, 60, 240 минути. */
 export const MAX_ATTEMPTS = 6;
 const BACKOFF_MIN = [1, 5, 15, 60, 240, 240];
 
-const TITLES: Record<string, string> = {
-  '380': 'Фактура',
-  '381': 'Кредитно известие',
-  '383': 'Дебитно известие',
-  '384': 'Коригираща фактура',
-  '386': 'Авансова фактура',
-  '389': 'Самофактура',
+const TITLES: Record<Locale, Record<string, string>> = {
+  bg: {
+    '380': 'Фактура',
+    '381': 'Кредитно известие',
+    '383': 'Дебитно известие',
+    '384': 'Коригираща фактура',
+    '386': 'Авансова фактура',
+    '389': 'Самофактура',
+  },
+  en: {
+    '380': 'Invoice',
+    '381': 'Credit note',
+    '383': 'Debit note',
+    '384': 'Corrected invoice',
+    '386': 'Prepayment invoice',
+    '389': 'Self-billed invoice',
+  },
 };
 
-function bgDate(date: Date): string {
+/** Датата на документа (без часова зона — денят в нея): „12.11.2026“ / „12/11/2026“. */
+function docDate(date: Date, locale: Locale): string {
   const iso = date.toISOString().slice(0, 10);
   const [y, m, d] = iso.split('-');
-  return `${d}.${m}.${y}`;
+  return locale === 'bg' ? `${d}.${m}.${y}` : `${d}/${m}/${y}`;
 }
 
 const InboxPayload = z.object({ inboxEntryId: z.string().min(1) });
@@ -70,17 +82,20 @@ async function composeInboxMail(toEmail: string, payload: unknown): Promise<Mail
   });
   const doc = entry.document;
   const number = doc.number ?? '';
-  const signature = (await setting('documents.signature')) || BRAND.signature;
+  const locale = await recipientLocale(toEmail);
+  const signature = await mailSignature(locale);
+  const amount = fromCents(doc.payableCents);
   const mail = inboxReceivedMail({
+    locale,
     senderName: entry.senderOrg.legalName,
     senderEik: entry.senderOrg.eik,
     senderVerified: entry.senderOrg.verifiedAt !== null,
     recipientName: entry.recipientOrg.legalName,
-    documentTitle: TITLES[doc.typeCode] ?? 'Документ',
+    documentTitle: TITLES[locale][doc.typeCode] ?? (locale === 'bg' ? 'Документ' : 'Document'),
     number,
-    issueDate: bgDate(doc.issueDate),
-    dueDate: doc.dueDate ? bgDate(doc.dueDate) : null,
-    amount: `${bgAmount(fromCents(doc.payableCents))} ${doc.currency}`,
+    issueDate: docDate(doc.issueDate, locale),
+    dueDate: doc.dueDate ? docDate(doc.dueDate, locale) : null,
+    amount: `${locale === 'bg' ? bgAmount(amount) : amount} ${doc.currency}`,
     link: `${config().PUBLIC_BASE_URL}/app/o/${entry.recipientOrgId}/shkafche/${entry.id}`,
     signature,
     domain: BRAND.signatureDomain,
@@ -109,17 +124,21 @@ async function composeInviteMail(toEmail: string, payload: unknown): Promise<Mai
     include: {
       organization: { select: { legalName: true, eik: true } },
       mandate: { select: { firm: { select: { legalName: true } } } },
+      createdBy: { select: { locale: true } },
     },
   });
   if (invite.acceptedAt || invite.revokedAt) throw new Error('Поканата вече не е отворена');
   const token = decryptInviteToken(tokenEnc, inviteId);
-  const signature = (await setting('documents.signature')) || BRAND.signature;
+  // На профила на поканения, ако има; иначе на поканилия — и страницата на поканата се отваря на него.
+  const locale = await recipientLocale(toEmail, invite.createdBy?.locale === 'en' ? 'en' : 'bg');
+  const signature = await mailSignature(locale);
   const mail = transferInviteMail({
+    locale,
     companyName: invite.organization.legalName,
     companyEik: invite.organization.eik,
     firmName: invite.mandate?.firm.legalName ?? null,
-    link: `${config().PUBLIC_BASE_URL}/pokana/${token}`,
-    expires: bgDate(invite.expiresAt),
+    link: `${config().PUBLIC_BASE_URL}/pokana/${token}${locale === 'en' ? '?lang=en' : ''}`,
+    expires: docDate(invite.expiresAt, locale),
     signature,
     domain: BRAND.signatureDomain,
   });
@@ -142,6 +161,7 @@ async function composeReviewMail(toEmail: string, payload: unknown): Promise<Mai
     }),
   ]);
   const mail = ownershipReviewMail({
+    locale: await recipientLocale(toEmail),
     companyName: org.legalName,
     companyEik: org.eik,
     firmName: invite.mandate?.firm.legalName ?? '—',

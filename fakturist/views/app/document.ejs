@@ -36,7 +36,7 @@
   <% if (document.firm) { %><div><dt><%= t('app.view.viaFirm') %></dt><dd><%= document.firm.legalName %><% if (document.mandate) { %> · <span class="muted"><%= document.mandate.documentRef %></span><% } %></dd></div><% } %>
 </dl>
 <% if (peppolResult) { %><p class="<%= peppolResult === 'queued' ? 'ok' : 'error' %>" role="status"><%= tOr('app.peppol.result.' + peppolResult, t('auth.errors.invalid')) %></p><% } %>
-<% if (document.peppolTransmission) { const x = document.peppolTransmission; %><p class="muted"><%= t('app.peppol.title') %> → <span class="mono"><%= x.receiverPartyId %></span> · <span class="tag<%= x.status === 'SENT' ? ' tag-active' : x.status === 'FAILED' ? '' : ' tag-pending' %>"><%= t('app.peppol.tx.' + x.status) %></span><% if (x.lastError) { %> · <span class="hint"><%= x.lastError %></span><% } %></p><% } else if (locals.canPeppol) { %>
+<% if (document.peppolTransmission) { const x = document.peppolTransmission; %><p class="muted"><%= t('app.peppol.title') %> → <span class="mono"><%= x.receiverPartyId %></span> · <span class="tag<%= x.status === 'SENT' ? ' tag-active' : x.status === 'FAILED' ? '' : ' tag-pending' %>"><%= t('app.peppol.tx.' + x.status) %></span><% if (x.lastError) { %> · <span class="hint"><%= sys(x.lastError) %></span><% } %></p><% } else if (locals.canPeppol) { %>
 <form method="post" action="/app/o/<%= document.organizationId %>/d/<%= document.id %>/peppol" class="inline-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="button-secondary"><%= t('app.peppol.send') %></button></form>
 <% } %>
 <% if (document.proforma) { %><p class="muted"><%= t('app.proforma.fromProforma') %> <a class="mono" href="/app/o/<%= document.organizationId %>/proformi/<%= document.proforma.id %>"><%= document.proforma.number %></a></p><% } %>
@@ -52,7 +52,7 @@
   <% if (document.payments.length) { %>
   <ul class="invite-list">
     <% document.payments.forEach((p) => { %>
-      <li><span class="mono"><%= p.paidOn.toISOString().slice(0, 10).split('-').reverse().join('.') %></span> · <span class="mono"><%= money(p.amountCents) %></span> · <%= t('app.payment.sources.' + p.source) %><% if (p.note) { %> · <span class="muted"><%= p.note %></span><% } %>
+      <li><span class="mono"><%= p.paidOn.toISOString().slice(0, 10).split('-').reverse().join('.') %></span> · <span class="mono"><%= money(p.amountCents) %></span> · <%= t('app.payment.sources.' + p.source) %><% if (p.note) { %> · <span class="muted"><%= sys(p.note) %></span><% } %>
         <% if (canPay && p.source === 'MANUAL') { %><form method="post" action="/app/o/<%= document.organizationId %>/d/<%= document.id %>/plashtane/<%= p.id %>/mahni" class="inline-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="link"><%= t('app.payment.remove') %></button></form><% } %>
       </li>
     <% }) %>

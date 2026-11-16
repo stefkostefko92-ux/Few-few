@@ -25,6 +25,7 @@ export const InviteRoleSchema = z.enum(['ADMIN', 'ACCOUNTANT', 'ISSUER', 'VIEWER
 export const MemberEmailSchema = z.string().trim().toLowerCase().max(254).pipe(z.email());
 
 import { MemberError, type Actor } from './member-core.js';
+import type { Locale } from '../i18n.js';
 
 export { MemberError, type Actor };
 
@@ -137,7 +138,8 @@ export async function findMemberInvite(
  */
 export async function acceptMemberInvite(input: {
   token: string;
-  user: { userId: string } | { name: string; password: string };
+  /** Нов профил — на езика на страницата, от която е приета поканата. */
+  user: { userId: string } | { name: string; password: string; locale?: Locale };
   now?: Date;
 }): Promise<{ userId: string; organizationId: string }> {
   const now = input.now ?? new Date();
@@ -148,13 +150,14 @@ export async function acceptMemberInvite(input: {
     select: { email: true },
   });
   if (!pre) throw new MemberError('invalid');
-  let newUser: { name: string; passwordHash: string } | null = null;
+  let newUser: { name: string; passwordHash: string; locale: Locale } | null = null;
   if ('password' in input.user) {
     const name = input.user.name.trim();
     if (name.length < 2 || name.length > 100) throw new MemberError('invalidName');
     const problem = passwordProblem(input.user.password, [pre.email, name]);
     if (problem) throw new MemberError(`password.${problem}`);
-    newUser = { name, passwordHash: await hashPassword(input.user.password) };
+    const locale = input.user.locale ?? 'bg';
+    newUser = { name, passwordHash: await hashPassword(input.user.password), locale };
   }
   try {
     return await prisma.$transaction(async (tx) => {
@@ -200,6 +203,7 @@ export async function acceptMemberInvite(input: {
             email: invite.email,
             name: newUser.name,
             passwordHash: newUser.passwordHash,
+            locale: newUser.locale,
             emailVerifiedAt: now,
           },
         });

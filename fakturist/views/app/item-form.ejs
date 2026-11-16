@@ -10,14 +10,14 @@
   <% if (item) { %><p class="muted"><%= t('app.catalog.copyNote') %></p><% } %>
   <form method="post" class="stack" novalidate>
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-    <label<%= errors.name ? ' class="has-error"' : '' %>><%= t('app.catalog.name') %><input name="name" required value="<%= v('name') %>"<%- invalid('name') %>><% if (errors.name) { %><span class="field-error" id="e-name"><%= err('name') %></span><% } %></label>
+    <label<%- errors.name ? ' class="has-error"' : '' %>><%= t('app.catalog.name') %><input name="name" required value="<%= v('name') %>"<%- invalid('name') %>><% if (errors.name) { %><span class="field-error" id="e-name"><%= err('name') %></span><% } %></label>
     <div class="row">
       <label><%= t('app.doc.unit') %><select name="unitCode"><% units.forEach((u) => { %><option<%= v('unitCode') === u ? ' selected' : '' %>><%= u %></option><% }) %></select></label>
-      <label<%= errors.netPrice ? ' class="has-error"' : '' %>><%= t('app.catalog.netPrice') %><input name="netPrice" inputmode="decimal" class="mono" required value="<%= v('netPrice') %>"<%- invalid('netPrice') %>><% if (errors.netPrice) { %><span class="field-error" id="e-netPrice"><%= err('netPrice') %></span><% } %></label>
+      <label<%- errors.netPrice ? ' class="has-error"' : '' %>><%= t('app.catalog.netPrice') %><input name="netPrice" inputmode="decimal" class="mono" required value="<%= v('netPrice') %>"<%- invalid('netPrice') %>><% if (errors.netPrice) { %><span class="field-error" id="e-netPrice"><%= err('netPrice') %></span><% } %></label>
     </div>
     <div class="row">
       <label><%= t('app.doc.category') %><select name="vatCategory"><% categories.forEach((c) => { %><option<%= v('vatCategory') === c ? ' selected' : '' %>><%= c %></option><% }) %></select></label>
-      <label<%= errors.vatRate ? ' class="has-error"' : '' %>><%= t('app.doc.vatRate') %><input name="vatRate" inputmode="decimal" class="mono" value="<%= v('vatRate') %>"<%- invalid('vatRate') %>><% if (errors.vatRate) { %><span class="field-error" id="e-vatRate"><%= err('vatRate') %></span><% } %></label>
+      <label<%- errors.vatRate ? ' class="has-error"' : '' %>><%= t('app.doc.vatRate') %><input name="vatRate" inputmode="decimal" class="mono" value="<%= v('vatRate') %>"<%- invalid('vatRate') %>><% if (errors.vatRate) { %><span class="field-error" id="e-vatRate"><%= err('vatRate') %></span><% } %></label>
     </div>
     <label><%= t('app.catalog.sellerItemId') %><input name="sellerItemId" class="mono" value="<%= v('sellerItemId') %>"></label>
     <button type="submit"><%= t('app.catalog.save') %></button>

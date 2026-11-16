@@ -7,6 +7,7 @@ import {
   AccountTokenError,
   findPasswordReset,
   requestEmailVerification,
+  userLocale,
   requestPasswordReset,
   resetPassword,
   verifyEmail,
@@ -15,6 +16,7 @@ import { kickOutbox } from '../mail/outbox.js';
 import { errorMessage, logger } from '../logger.js';
 import { requestRateKey } from '../http/ip.js';
 import { MINUTE } from '../time.js';
+import { queryLocale, useLocale } from '../http/view.js';
 
 /** Заявки за писма без вход: 5 за 15 минути от адрес (и успешните — всяка праща писмо). */
 const mailLimiter = rateLimit({
@@ -76,10 +78,12 @@ export function accountRouter(): Router {
     }
   });
 
+  // Страницата по връзката от писмото е на езика на профила (и писмото е на него); `?lang=` го сменя.
   router.get('/nova-parola/:token', async (req, res) => {
     noStore(res);
     const open = await findPasswordReset(tokenParam(req));
     if (!open) return res.status(404).render('auth/link-invalid', { kind: 'reset' });
+    useLocale(res, queryLocale(req) ?? open.locale, false);
     res.render('auth/reset', { email: open.email, error: null });
   });
 
@@ -87,9 +91,12 @@ export function accountRouter(): Router {
     noStore(res);
     const token = tokenParam(req);
     const parsed = ResetForm.safeParse(req.body);
+    const before = await findPasswordReset(token);
+    const locale = queryLocale(req) ?? before?.locale ?? 'bg';
+    useLocale(res, locale, false);
     try {
       await resetPassword({ token, password: parsed.success ? parsed.data.password : '' });
-      res.redirect(303, '/vhod?ok=reset');
+      res.redirect(303, `/vhod?ok=reset${locale === 'en' ? '&lang=en' : ''}`);
     } catch (error) {
       if (!(error instanceof AccountTokenError)) throw error;
       if (error.code === 'invalid') {
@@ -104,7 +111,8 @@ export function accountRouter(): Router {
   router.get('/potvardi-imeyl/:token', async (req, res) => {
     noStore(res);
     try {
-      await verifyEmail(tokenParam(req));
+      const { userId } = await verifyEmail(tokenParam(req));
+      if (!req.principal) useLocale(res, queryLocale(req) ?? (await userLocale(userId)), false);
       res.render('auth/verified', { hideVerifyBar: true });
     } catch (error) {
       if (!(error instanceof AccountTokenError)) throw error;

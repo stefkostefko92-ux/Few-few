@@ -6,6 +6,8 @@ import { hashPassword, passwordProblem, PASSWORD_MAX_LENGTH } from '../auth/pass
 import { isValidBgVat, isValidEik, normalizeVat } from '../einvoice/bg-ids.js';
 import { recordRegistrationAcceptance } from '../legal/acceptance.js';
 import { issueToken } from './tokens.js';
+import { DEFAULT_SERIES_NAME } from '../system-text.js';
+import type { Locale } from '../i18n.js';
 
 /** Данните на фирма (своята или фирма-клиент на кантора) — проверени, преди да стигнат до базата. */
 export const OrganizationDataSchema = z
@@ -60,7 +62,7 @@ export class RegistrationError extends Error {
 }
 
 /** Серията по подразбиране на нова фирма: целият десетразряден диапазон. */
-const DEFAULT_SERIES = { name: 'Основна', rangeStart: 1n, rangeEnd: 9_999_999_999n };
+const DEFAULT_SERIES = { name: DEFAULT_SERIES_NAME, rangeStart: 1n, rangeEnd: 9_999_999_999n };
 
 /**
  * Регистрация: човек + фирма (или кантора) + собственик + серия + безплатен план — в една транзакция.
@@ -68,6 +70,8 @@ const DEFAULT_SERIES = { name: 'Основна', rangeStart: 1n, rangeEnd: 9_999
  */
 export async function register(
   data: Registration,
+  /** Езикът на профила — този на страницата за регистрация. */
+  locale: Locale = 'bg',
 ): Promise<{ userId: string; organizationId: string }> {
   const problem = passwordProblem(data.password, [data.email, data.name]);
   if (problem) throw new RegistrationError(`password.${problem}`);
@@ -89,7 +93,7 @@ export async function register(
         );
       }
       const user = await tx.user.create({
-        data: { email: data.email, name: data.name, passwordHash },
+        data: { email: data.email, name: data.name, passwordHash, locale },
       });
       const organization = await tx.organization.create({
         data: {

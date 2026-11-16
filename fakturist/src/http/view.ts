@@ -5,11 +5,79 @@ import { hasKey, translator, type Locale } from '../i18n.js';
 import { setting } from '../admin/settings.js';
 import { icon } from './icons.js';
 import { SOFTWARE_VERSION } from '../version.js';
+import { systemText } from '../system-text.js';
 
-/** Езикът на приложението: избраният от човека, иначе от адреса (`?lang=en`), иначе български. */
+/** Езикът, избран в адреса (`?lang=en` / `?lang=bg`) — за посетител без профил. */
+export function queryLocale(req: Request): Locale | null {
+  const lang = req.query['lang'];
+  return lang === 'en' || lang === 'bg' ? lang : null;
+}
+
+/** Езикът на приложението: избраният в профила, иначе от адреса, иначе български. */
 export function appLocale(req: Request): Locale {
   if (req.principal) return req.principal.user.locale;
-  return req.query['lang'] === 'en' ? 'en' : 'bg';
+  return queryLocale(req) ?? 'bg';
+}
+
+/**
+ * Изгледът на даден език: преводачът, `<html lang>`, сумите и `langQuery` — частта от адреса, с която
+ * формите и връзките на посетител без профил пазят езика (`?lang=en`); за влязъл езикът е в профила.
+ * Ползва се и от страниците по връзка от писмо (нова парола), които са на езика на профила.
+ */
+export function useLocale(res: Response, locale: Locale, signedIn: boolean): void {
+  res.locals.lang = locale;
+  res.locals.htmlLang = locale;
+  res.locals.t = translator(locale);
+  res.locals.tOr = (key: string, fallback: string): string =>
+    hasKey(locale, key) ? translator(locale)(key) : fallback;
+  res.locals.sys = (value: string): string => systemText(value, locale);
+  // Сума за показ във всеки изглед — точна (низ, не float); маршрутът може да подаде своя.
+  res.locals.money = (cents: bigint | number, currency: string): string =>
+    money(cents, currency, locale);
+  res.locals.langQuery = !signedIn && locale === 'en' ? '?lang=en' : '';
+}
+
+/** Пътят за връщане след смяна на езика: само наш относителен адрес в приложението или панела. */
+export function safeBack(value: unknown): string {
+  return typeof value === 'string' &&
+    value.length <= 500 &&
+    /^\/(app|admin|prilozhenie)(\/[\w\-./%]*)?(\?[\w\-.=&%]*)?$/.test(value) &&
+    !value.includes('//') &&
+    !value.includes('/../')
+    ? value
+    : '/app';
+}
+
+/**
+ * Превключвателят BG/EN в лентата. Влязъл — формата сменя езика в профила и връща на страницата (за
+ * страница, показана след изпратена форма — там, откъдето е изпратена); посетител — връзки с `?lang=`.
+ */
+function languageSwitch(req: Request): { back: string; hrefs: Record<Locale, string> } {
+  // Без `new URL(req.originalUrl)`: адрес като `//%zz` го чупи (ERR_INVALID_URL → 500 за всяка заявка), а
+  // `//host` би дал връзка към чужд сайт. Пътят — с една наклонена черта отпред; заявката — както е.
+  const path = `/${req.path.replace(/^\/+/, '')}`;
+  const at = req.originalUrl.indexOf('?');
+  const query = at === -1 ? '' : req.originalUrl.slice(at + 1);
+  const hrefs = Object.fromEntries(
+    (['bg', 'en'] as const).map((lang) => {
+      const params = new URLSearchParams(query);
+      params.set('lang', lang);
+      return [lang, `${path}?${params.toString()}`];
+    }),
+  ) as Record<Locale, string>;
+  let back = req.method === 'GET' ? `${path}${query ? `?${query}` : ''}` : '/app';
+  if (req.method !== 'GET') {
+    const referer = req.get('referer');
+    if (referer) {
+      try {
+        const from = new URL(referer);
+        back = from.pathname + from.search;
+      } catch {
+        back = '/app';
+      }
+    }
+  }
+  return { back: safeBack(back), hrefs };
 }
 
 /** Общото за изгледите на приложението и панела. */
@@ -17,16 +85,10 @@ export function appLocals() {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const locale = appLocale(req);
-      res.locals.lang = locale;
-      res.locals.htmlLang = locale;
-      res.locals.t = translator(locale);
-      res.locals.tOr = (key: string, fallback: string): string =>
-        hasKey(locale, key) ? translator(locale)(key) : fallback;
+      useLocale(res, locale, Boolean(req.principal));
+      res.locals.languageSwitch = languageSwitch(req);
       res.locals.icon = icon;
       res.locals.softwareVersion = SOFTWARE_VERSION;
-      // Сума за показ във всеки изглед — точна (низ, не float); маршрутът може да подаде своя.
-      res.locals.money = (cents: bigint | number, currency: string): string =>
-        money(cents, currency, locale);
       res.locals.brand = BRAND;
       res.locals.company = COMPANY;
       res.locals.currentUser = req.principal?.user ?? null;

@@ -14,11 +14,17 @@ import { companyData, PASSWORD, startApp, type E2eApp } from '../tests/e2e/suppo
  *   TEST_DATABASE_URL=… AUDIT_OUT=/път npx tsx scripts/pages-audit.ts
  */
 const OUT = process.env['AUDIT_OUT'] ?? '.tmp/pages-audit';
+/** `dark` — снимките на тъмна тема (prefers-color-scheme). */
+const SCHEME = process.env['AUDIT_SCHEME'] === 'dark' ? 'dark' : 'light';
+/** Само адресите, които съдържат този низ (бърза проверка на една страница). */
+const ONLY = process.env['AUDIT_ONLY'] ?? '';
+/** `en` — само английският проход (проверката на превода е там). */
+const LOCALES: readonly Locale[] = process.env['AUDIT_LOCALES'] === 'en' ? ['en'] : ['bg', 'en'];
+type Locale = 'bg' | 'en';
 const VIEWPORTS = [
   { name: 'm', width: 390, height: 844 },
   { name: 'd', width: 1280, height: 800 },
 ] as const;
-type Locale = 'bg' | 'en';
 
 interface Finding {
   url: string;
@@ -367,6 +373,7 @@ function urls(s: Seeded): Record<'public' | 'owner' | 'firm' | 'master', string[
       ...(s.inboxId ? [`${o}/shkafche/${s.inboxId}`] : []),
       `${o}/banka`,
       `${o}/povtaryashti`,
+      `${o}/d/${s.docId}?ok=paid`,
       `${o}/kontragenti`,
       `${o}/kontragenti/nov`,
       `${o}/kontragenti/${s.partyId}`,
@@ -419,17 +426,40 @@ async function inspect(
     const brokenImages = [...document.images].filter(
       (i) => i.complete && i.naturalWidth === 0,
     ).length;
-    const cyrillic =
-      loc === 'en'
-        ? [
-            ...new Set(
-              document.body.innerText
-                .split('\n')
-                .map((l) => l.trim())
-                .filter((l) => /[А-Яа-яЁё]/.test(l)),
-            ),
-          ].slice(0, 60)
-        : [];
+    // На английски: целият текст на страницата, вкл. скрития (затворени details/dialog, опциите на
+    // падащите менюта), атрибутите, които четат екранните четци и браузърът, и заглавието на раздела.
+    const found: string[] = [];
+    if (loc === 'en') {
+      const cyr = /[А-Яа-яЁё]/;
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        const parent = node.parentElement;
+        if (!parent || parent.closest('script, style, noscript, [lang="bg"]')) continue;
+        const text = (node.textContent ?? '').trim();
+        if (cyr.test(text)) found.push(text.slice(0, 160));
+      }
+      const attrs = ['placeholder', 'title', 'aria-label', 'alt', 'data-label', 'aria-description'];
+      for (const el of document.querySelectorAll('*')) {
+        if (el.closest('[lang="bg"]')) continue;
+        for (const name of attrs) {
+          const value = el.getAttribute(name);
+          if (value && cyr.test(value)) found.push(`@${name}: ${value.slice(0, 160)}`);
+        }
+        if (
+          el instanceof HTMLInputElement &&
+          /^(submit|button)$/.test(el.type) &&
+          cyr.test(el.value)
+        ) {
+          found.push(`@value: ${el.value}`);
+        }
+      }
+      if (cyr.test(document.title)) found.push(`<title>: ${document.title}`);
+      const description = document
+        .querySelector('meta[name="description"]')
+        ?.getAttribute('content');
+      if (description && cyr.test(description)) found.push(`<meta description>: ${description}`);
+    }
+    const cyrillic = [...new Set(found)].slice(0, 80);
     return { overflow, brokenImages, cyrillic };
   }, locale);
 }
@@ -463,6 +493,102 @@ async function visit(
   };
 }
 
+/**
+ * Състоянията с грешка на английски: формите, изпратени празни или с невалидни стойности — съобщенията
+ * за грешки, флаговете след пренасочване и страниците на гост (вход, регистрация, забравена парола).
+ */
+async function errorStates(app: E2eApp, s: Seeded): Promise<Finding[]> {
+  const o = `/app/o/${s.a.organizationId}`;
+  const fo = `/app/o/${s.f.organizationId}`;
+  const owner = await formLogin(app, s.a.email);
+  const firm = await formLogin(app, s.f.email);
+  const master = await formLogin(app, 'master@example.test', s.masterCode);
+  const guest: Session = { cookie: '', csrf: '' };
+  const bad = { 'lines[0][netPrice]': '-5', issueDate: '2026-02-31', currency: 'XXX' };
+  const cases: Array<[string, Session, string, Record<string, string>]> = [
+    ['owner', owner, `${o}/nov`, {}],
+    ['owner', owner, `${o}/nov`, { typeCode: '380', ...bad }],
+    ['owner', owner, `${o}/nov`, { typeCode: '381' }],
+    ['owner', owner, `${o}/kontragenti/nov`, { eik: '123', email: 'x' }],
+    ['owner', owner, `${o}/artikuli/nov`, { netPrice: 'abc' }],
+    ['owner', owner, `${o}/serii/nova`, { name: '', rangeStart: '9', rangeEnd: '1' }],
+    ['owner', owner, `${o}/chlenove/pokani`, { email: 'x', role: 'ADMIN' }],
+    ['owner', owner, `${o}/api`, { name: '' }],
+    ['owner', owner, `${o}/saf-t`, { from: 'x' }],
+    ['owner', owner, `${o}/prekratyavane`, { password: 'wrong' }],
+    ['owner', owner, `${o}/nastroyki/pdf`, { accent: 'red' }],
+    ['owner', owner, `${o}/plan/poruchka`, { planCode: 'nope' }],
+    ['owner', owner, `${o}/peppol/vklyuchi`, {}],
+    ['owner', owner, '/app/sigurnost/parola', { current: 'x', password: 'short' }],
+    ['owner', owner, '/app/sigurnost/2fa', { code: '000000' }],
+    ['owner', owner, `${o}/d/${s.docId}/plashtane`, { amount: '-1', paidOn: 'x' }],
+    ['firm', firm, `${fo}/klienti/nov`, { eik: '1' }],
+    ['master', master, '/admin/nastroyki', { 'documents.issueDeadlineDays': '-1' }],
+    ['master', master, '/admin/saobshteniya', { subject: '' }],
+    ['master', master, '/admin/mastari', { email: 'x' }],
+    ['master', master, `/admin/firmi/${s.a.organizationId}/plan`, { planCode: 'business' }],
+    ['master', master, `/admin/firmi/${s.a.organizationId}/plan/prekrati`, {}],
+    [
+      'public',
+      guest,
+      '/vhod?lang=en',
+      { email: 'nobody@example.test', password: 'wrong-password' },
+    ],
+    ['public', guest, '/registraciya?lang=en', { email: 'x' }],
+    ['public', guest, '/zabravena-parola?lang=en', { email: 'nobody@example.test' }],
+  ];
+  const context = await app.browser.newContext({ locale: 'en-GB', colorScheme: SCHEME });
+  const out: Finding[] = [];
+  for (const [role, session, path, fields] of cases) {
+    if (!path.includes(ONLY)) continue;
+    const res = await fetch(`${app.origin}${path}`, {
+      method: 'POST',
+      redirect: 'manual',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        ...(session.cookie ? { cookie: session.cookie } : {}),
+      },
+      body: new URLSearchParams({ ...(session.csrf ? { _csrf: session.csrf } : {}), ...fields }),
+    });
+    const page = await context.newPage();
+    let status = res.status;
+    let shown = path;
+    if (status === 303) {
+      shown = res.headers.get('location') ?? '/';
+      await res.body?.cancel();
+      if (session.cookie) {
+        const [name, value] =
+          session.cookie
+            .split('; ')
+            .find((c) => c.startsWith('fakturist_sid='))
+            ?.split('=') ?? [];
+        if (name && value) await context.addCookies([{ name, value, url: app.origin }]);
+      }
+      status =
+        (await page.goto(`${app.origin}${shown}`, { waitUntil: 'networkidle' }))?.status() ?? 0;
+      await context.clearCookies();
+    } else {
+      await page.setContent(await res.text(), { waitUntil: 'domcontentloaded' });
+    }
+    const found = await inspect(page, 'en');
+    await page.close();
+    out.push({
+      url: `POST ${path} → ${shown}`,
+      role,
+      locale: 'en',
+      viewport: 'form',
+      status,
+      file: '',
+      console: [],
+      ...found,
+      overflow: 0,
+      brokenImages: 0,
+    });
+  }
+  await context.close();
+  return out;
+}
+
 async function main() {
   mkdirSync(join(OUT, 'shots'), { recursive: true });
   const app = await startApp();
@@ -475,7 +601,7 @@ async function main() {
       firm: s.f.userId,
       master: s.master.id,
     } as const;
-    for (const locale of ['bg', 'en'] as const) {
+    for (const locale of LOCALES) {
       await app.prisma.user.updateMany({
         where: { id: { in: Object.values(users) } },
         data: { locale },
@@ -486,6 +612,7 @@ async function main() {
             viewport: { width: vp.width, height: vp.height },
             deviceScaleFactor: 1,
             locale: locale === 'en' ? 'en-GB' : 'bg-BG',
+            colorScheme: SCHEME,
           });
           if (role !== 'public') {
             const email =
@@ -504,7 +631,9 @@ async function main() {
               await context.addCookies([{ name, value, url: app.origin }]);
             }
           }
-          const pages = role === 'public' && locale === 'en' ? [] : list[role];
+          const pages = (role === 'public' && locale === 'en' ? [] : list[role]).filter((u) =>
+            u.includes(ONLY),
+          );
           for (const url of pages) {
             findings.push(
               await visit(context, url, { role, locale, viewport: vp.name }, app.origin),
@@ -514,6 +643,7 @@ async function main() {
         }
       }
     }
+    findings.push(...(await errorStates(app, s)));
     writeFileSync(join(OUT, 'report.json'), JSON.stringify(findings, null, 2));
     const problems = findings.filter(
       (f) =>

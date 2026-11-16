@@ -6,6 +6,7 @@ import { MINUTE } from '../time.js';
 import { AccessPointError, type AccessPoint } from './access-point.js';
 import { PeppolError } from './participants.js';
 import { peppolAllowed } from './settings.js';
+import { AP_NO_UBL, GENERIC_ERROR, UNKNOWN_ERROR } from '../system-text.js';
 
 /**
  * Изпращането през Peppol (SPEC 58): ред в транзакцията на издаването → работникът го взема с условен
@@ -85,7 +86,7 @@ export async function sendDueTransmissions(
       include: { document: { select: { ublXml: true, status: true } } },
     });
     try {
-      if (!item.document.ublXml) throw new AccessPointError('rejected', 'Документът няма UBL');
+      if (!item.document.ublXml) throw new AccessPointError('rejected', AP_NO_UBL);
       await ap.send({
         senderPartyId: item.senderPartyId,
         documentId: item.providerDocumentId,
@@ -100,7 +101,7 @@ export async function sendDueTransmissions(
     } catch (error) {
       const retry =
         error instanceof AccessPointError ? error.retryable : true; /* неочаквано — пак */
-      const message = error instanceof Error ? error.message.slice(0, 500) : 'Неизвестна грешка';
+      const message = error instanceof Error ? error.message.slice(0, 500) : UNKNOWN_ERROR;
       const exhausted = item.attempts >= MAX_ATTEMPTS;
       await prisma.peppolTransmission.updateMany({
         where: { id: item.id, status: 'QUEUED' },
@@ -141,7 +142,7 @@ export async function applyTransmissionEvent(input: {
       ? { status: 'SENT' as const, sentAt: input.at, lastError: null }
       : input.topic === 'InvoiceSentRetry'
         ? { status: 'RETRYING' as const, lastError: input.message?.slice(0, 500) ?? null }
-        : { status: 'FAILED' as const, lastError: input.message?.slice(0, 500) ?? 'Грешка' };
+        : { status: 'FAILED' as const, lastError: input.message?.slice(0, 500) ?? GENERIC_ERROR };
   await prisma.$transaction(async (tx) => {
     await tx.peppolTransmission.update({ where: { id: row.id }, data });
     await audit(tx, {

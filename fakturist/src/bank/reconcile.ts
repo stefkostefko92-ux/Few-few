@@ -14,6 +14,7 @@ import { isCamt, readCamt053 } from './camt.js';
 import { decodeCsv, readCsv } from './csv.js';
 import { BankFormatError, type BankEntry } from './entries.js';
 import { BANK_RETENTION } from './retention.js';
+import { BANK_NOTE, BANK_NOTE_REF } from '../system-text.js';
 
 /**
  * Сверката с банката (SPEC 54): извлечение (camt.053 или CSV) → постъпленията като редове (повторен
@@ -191,7 +192,7 @@ export async function matchLine(
       amountCents: line.amountCents,
       paidOn: line.bookingDate.toISOString().slice(0, 10),
       source: 'BANK',
-      note: line.bankRef ? `Извлечение, реф. ${line.bankRef}` : 'Извлечение',
+      note: line.bankRef ? `${BANK_NOTE_REF}${line.bankRef}` : BANK_NOTE,
       actorId,
     });
     await tx.bankLine.update({

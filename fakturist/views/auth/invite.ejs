@@ -15,7 +15,7 @@
   <% } %>
   <% if (errors.form) { %><p class="error" role="alert"><%= errorText(errors.form) %></p><% } %>
   <% if (state === 'accept') { %>
-    <form method="post" action="/pokana/<%= token %>" class="stack">
+    <form method="post" action="/pokana/<%= token %><%= langQuery %>" class="stack">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <% if (mandateBox) { %><label class="check"><input type="checkbox" name="confirmMandate"> <%= t('auth.invite.confirmMandate', { firm: m.firm.legalName }) %><span class="hint"><%= t('auth.invite.confirmMandateHint') %></span></label><% } %>
       <button type="submit"><%= t('auth.invite.accept') %></button>
@@ -28,16 +28,16 @@
     </form>
   <% } else if (state === 'login') { %>
     <p class="callout"><%= t('auth.invite.loginFirst') %></p>
-    <p><a class="button" href="/vhod?next=<%= encodeURIComponent('/pokana/' + token) %>"><%= t('auth.login') %></a></p>
+    <p><a class="button" href="/vhod?next=<%= encodeURIComponent('/pokana/' + token) %><%= langQuery ? '&lang=en' : '' %>"><%= t('auth.login') %></a></p>
   <% } else { %>
     <% if (Object.keys(errors).some((f) => f !== 'form')) { %>
       <div class="error-box" role="alert"><ul><% Object.entries(errors).filter(([field]) => field !== 'form').forEach(([field, code]) => { %><li><%= errorText(code) %></li><% }) %></ul></div>
     <% } %>
-    <form method="post" action="/pokana/<%= token %>" class="stack" novalidate>
+    <form method="post" action="/pokana/<%= token %><%= langQuery %>" class="stack" novalidate>
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <label<%= errors.name ? ' class="has-error"' : '' %>><%= t('auth.name') %><input name="name" value="<%= name %>" autocomplete="name" required<%= errors.name ? ' aria-invalid="true"' : '' %>></label>
+      <label<%- errors.name ? ' class="has-error"' : '' %>><%= t('auth.name') %><input name="name" value="<%= name %>" autocomplete="name" required<%- errors.name ? ' aria-invalid="true"' : '' %>></label>
       <label><%= t('auth.email') %><input type="email" value="<%= invite.email %>" autocomplete="username" readonly></label>
-      <label<%= errors.password ? ' class="has-error"' : '' %>><%= t('auth.password') %><input type="password" name="password" autocomplete="new-password" minlength="12" required aria-describedby="pw-help"<%= errors.password ? ' aria-invalid="true"' : '' %>><span class="hint" id="pw-help"><%= t('auth.passwordHelp') %></span></label>
+      <label<%- errors.password ? ' class="has-error"' : '' %>><%= t('auth.password') %><input type="password" name="password" autocomplete="new-password" minlength="12" required aria-describedby="pw-help"<%- errors.password ? ' aria-invalid="true"' : '' %>><span class="hint" id="pw-help"><%= t('auth.passwordHelp') %></span></label>
       <% if (mandateBox) { %><label class="check"><input type="checkbox" name="confirmMandate"> <%= t('auth.invite.confirmMandate', { firm: m.firm.legalName }) %><span class="hint"><%= t('auth.invite.confirmMandateHint') %></span></label><% } %>
       <%- include('../partials/legal-accept', { orgName: invite.organization.legalName, invalid: Boolean(errors.acceptTerms) }) %>
       <button type="submit"><%= t('auth.invite.create') %></button>

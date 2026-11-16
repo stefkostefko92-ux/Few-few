@@ -12,6 +12,7 @@ import {
   TOKEN,
   TransferError,
 } from './transfer-core.js';
+import type { Locale } from '../i18n.js';
 
 export interface OpenInvite {
   id: string;
@@ -64,7 +65,8 @@ export async function findOpenInvite(token: string, now = new Date()): Promise<O
   };
 }
 
-type Acceptor = { userId: string } | { name: string; password: string };
+/** Нов профил — на езика на страницата, от която е приета поканата. */
+type Acceptor = { userId: string } | { name: string; password: string; locale?: Locale };
 
 /**
  * Приемане: само с имейла от поканата. Вписан човек — неговият профил; без вход — нов профил, ако няма
@@ -88,13 +90,14 @@ export async function acceptTransferInvite(input: {
   if (!pre) throw new TransferError('invalid');
 
   // Хешът на паролата е бавен (Argon2id) — смята се преди заключването на фирмата.
-  let newUser: { name: string; passwordHash: string } | null = null;
+  let newUser: { name: string; passwordHash: string; locale: Locale } | null = null;
   if ('password' in input.user) {
     const name = input.user.name.trim();
     if (name.length < 2 || name.length > 100) throw new TransferError('invalidName');
     const problem = passwordProblem(input.user.password, [pre.email, name]);
     if (problem) throw new TransferError(`password.${problem}`);
-    newUser = { name, passwordHash: await hashPassword(input.user.password) };
+    const locale = input.user.locale ?? 'bg';
+    newUser = { name, passwordHash: await hashPassword(input.user.password), locale };
   }
 
   try {
@@ -135,6 +138,7 @@ export async function acceptTransferInvite(input: {
             email: invite.email,
             name: newUser.name,
             passwordHash: newUser.passwordHash,
+            locale: newUser.locale,
             emailVerifiedAt: now,
           },
         });
