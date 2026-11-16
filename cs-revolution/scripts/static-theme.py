@@ -29,7 +29,7 @@ import re
 
 
 def live_version():
-    """Версия на „живите“ файлове: хеш на двигателя, слоевете, иконите и неподвижните кадри.
+    """Версия на „живите“ файлове: хеш на двигателя, слоевете, иконите, неподвижните кадри и снимките на проектите.
 
     nginx ги праща с „immutable“ за една година, а service worker-ът ги държи cache-first, но имената им са
     постоянни — затова адресите носят ?v=<хеш>; иначе поправка по двигателя или нов рендер не стигат до
@@ -38,7 +38,7 @@ def live_version():
     h = hashlib.sha1()
     with open("public/js/cs-live.js", "rb") as f:
         h.update(f.read())
-    for d in ("public/brand/live", "public/brand/svc"):
+    for d in ("public/brand/live", "public/brand/svc", "public/work"):
         for name in sorted(os.listdir(d)):
             h.update(name.encode())
             with open(os.path.join(d, name), "rb") as f:
@@ -298,6 +298,9 @@ def theme(path, html):
     if f'href="{notice}"' not in html:
         html = re.sub(rf'((?:Cookie|Cookies|Бисквитки)</a> &middot; <a href="{re.escape(terms)}">{re.escape(tlabel)}</a>)',
                       lambda m: m.group(1) + f' &middot; <a href="{notice}">{nlabel}</a>', html, count=1)
+    # снимките на проектите (public/work/*.webp, портфолио и кейс стъдита): имената са постоянни, а сървърът
+    # ги кешира за година — адресът носи версията, иначе нова снимка не стига до върнал се посетител
+    html = re.sub(r'(/work/[a-z0-9-]+\.webp)(\?v=[0-9a-f]{10})?', lambda m: m.group(1) + LV, html)
     # horizontally scrollable tables must be reachable by keyboard (axe scrollable-region-focusable)
     label = {"it": "Tabella", "en": "Table", "bg": "Таблица"}[lang_of(path, html)]
     html = re.sub(r'<div class="(ctbl|table-wrap)">', lambda m: f'<div class="{m.group(1)}" tabindex="0" role="region" aria-label="{label}">', html)

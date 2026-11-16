@@ -9,6 +9,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { navIcon } from "@/components/nav-icons";
 import { AccessibilityBar } from "@/components/AccessibilityBar";
 import { SiteFooter } from "@/components/SiteFooter";
+import { HideOnAdmin } from "@/components/HideOnAdmin";
 import { ChatWidgetLazy } from "@/components/ChatWidgetLazy";
 import { IntroSplash } from "@/components/IntroSplash";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
@@ -168,7 +169,9 @@ export default async function RootLayout({
         <main id="main" className="min-h-[60vh]">
           {children}
         </main>
-        <SiteFooter />
+        <HideOnAdmin>
+          <SiteFooter />
+        </HideOnAdmin>
         <ChatWidgetLazy />
         <IntroSplash />
         <ServiceWorkerRegister />

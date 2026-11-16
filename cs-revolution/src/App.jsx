@@ -9,8 +9,8 @@ import { CaliperCursor, useChromeLight, useActiveSection, NavSlider, DrumNumber,
 // страниците /prezzi/, /en/pricing/, /bg/ceni/ — една таблица, две места.
 import PRICING from "./pricing.json";
 import { C, CR, BASE, S1, S2, INK, INK2, WARN, LINE, EASE, DISP, MONO } from "./tokens.js";
-// The admin panel (Ctrl+Shift+A) is its own chunk, fetched only when it is opened.
-const AdminPanel = React.lazy(function(){ return import("./AdminPanel.jsx"); });
+// The admin panel lives on its own page, /admin/ (admin/index.html → src/admin-main.jsx): its own
+// small bundle, never part of the public site. Ctrl+Shift+A (and the "cs-admin-toggle" event) go there.
 // THREE.js is lazy loaded inside Scene3D via dynamic import()
 // This removes 465KB from the initial bundle and improves LCP/FCP significantly
 
@@ -1588,7 +1588,6 @@ export default function App(){
   useEffect(function(){try{document.documentElement.lang=lang}catch(e){}},[lang]);
   // (the ipapi.co IP lookup was removed: it sent every visitor's IP to a US company on load;
   //  detectLang() already picks the language from the browser and the time zone)
-  const[showAdmin,setShowAdmin]=useState(false);
   const[mobileMenu,setMobileMenu]=useState(false);
   const[cookieOk,setCookieOk]=useState(function(){try{return localStorage.getItem("cs_cookie")!==null}catch(e){return false}});
   useChromeLight(lang);
@@ -1612,7 +1611,7 @@ export default function App(){
   function rejectCookies(){setCookieOk(true);try{localStorage.setItem("cs_cookie","rejected")}catch(e){}}
 
   // Admin panel: Ctrl+Shift+A or type "admin" in terminal
-  useEffect(function(){function h(e){if(e.ctrlKey&&e.shiftKey&&e.key==="A"){e.preventDefault();setShowAdmin(function(v){return!v});}if(e.key==="Escape")setShowAdmin(false)}function adminEvt(){setShowAdmin(function(v){return!v})}window.addEventListener("keydown",h);window.addEventListener("cs-admin-toggle",adminEvt);return function(){window.removeEventListener("keydown",h);window.removeEventListener("cs-admin-toggle",adminEvt)}},[]);
+  useEffect(function(){function go(){window.location.assign("/admin/")}function h(e){if(e.ctrlKey&&e.shiftKey&&(e.key==="A"||e.key==="a")){e.preventDefault();go();}}window.addEventListener("keydown",h);window.addEventListener("cs-admin-toggle",go);return function(){window.removeEventListener("keydown",h);window.removeEventListener("cs-admin-toggle",go)}},[]);
   useEffect(function(){function h(){setScrollPx(window.scrollY)}window.addEventListener("scroll",h,{passive:true});return function(){window.removeEventListener("scroll",h)}},[]);
 
   // Scroll re-measures: a cyan line sweeps each section once on entry and its
@@ -1946,7 +1945,6 @@ export default function App(){
   return(
     <div className="cs-root" style={{background:BASE,color:INK,fontFamily:MONO,fontSize:12,letterSpacing:".02em",position:"relative",overflowX:"hidden"}}>
       <a href="#main" className="cs-skip">{lang==="it"?"Salta al contenuto":lang==="bg"?"Към съдържанието":"Skip to content"}</a>
-      {showAdmin && <React.Suspense fallback={null}><AdminPanel onClose={function(){setShowAdmin(false)}} /></React.Suspense>}
       <SEOInjector />
       <CaliperCursor />
       <div className="cs-scroll-instr"><ScrollInstrument /></div>
@@ -2123,9 +2121,9 @@ export default function App(){
 
         {/* Real screenshots of each live project (public/work/, captured from the live sites) */}
         <div ref={workRef} className="cs-work-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:16}}>
-        {[["001","PANEV ASCENSORI","STAFFE BREVETTATE · IT","https://panevascensori.it","panev-ascensori"],["002","ZA BOBOV DOL","CIVIC PORTAL · BG","https://zabobovdol.carbonstealth.eu","zabobovdol"],["003","NEXUS DOMINION","BROWSER MMO","https://nexus.carbonstealth.eu","nexus-dominion"],["004","OU VAPTSAROV","SCHOOL WEBSITE","https://ouvaptsarov.com","ou-vaptsarov"],["005","ERP ASCENSORI","ERP SYSTEM","https://erp.carbonstealth.eu","erp-ascensori"],["006","TRETI MART","MARKETPLACE BG","https://tretimart.carbonstealth.eu","treti-mart"],["007","EVANITA SPORT","KANGOO JUMPS STUDIO","https://evanita-bg.com","evanita-sport"],["008","ETERNAL TOUCH","ATELIER · GESSO","https://eternaltouch.it","eternal-touch"],["009","OSPEDALI TRASPARENTI","CIVIC DATA · IT","https://ospedalitrasparenti.it","ospedali-trasparenti"],["010","VIZITKA","QR BUSINESS CARD","https://vizitka-bg.com","vizitka"],["011","MASTILKO","PRINT TOOLS","https://mastilko-bg.com","mastilko"]].map(function(w){
+        {[["001","PANEV ASCENSORI","STAFFE BREVETTATE · IT","https://panevascensori.it","panev-ascensori"],["002","ZA BOBOV DOL","CIVIC PORTAL · BG","https://zabobovdol.carbonstealth.eu","zabobovdol"],["003","NEXUS DOMINION","BROWSER MMO","https://nexus.carbonstealth.eu","nexus-dominion"],["004","OU VAPTSAROV","SCHOOL WEBSITE","https://ouvaptsarov.com","ou-vaptsarov"],["005","ERP ASCENSORI","ERP SYSTEM","https://erp.carbonstealth.eu","erp-ascensori"],["006","TRETI MART","MARKETPLACE BG","https://tretimart.carbonstealth.eu","treti-mart"],["007","EVANITA SPORT","KANGOO JUMPS STUDIO","https://evanita-bg.com","evanita-sport"],["008","ETERNAL TOUCH","ATELIER · GESSO","https://eternaltouch.it","eternal-touch"],["009","OSPEDALI TRASPARENTI","CIVIC DATA · IT","https://ospedalitrasparenti.it","ospedali-trasparenti"],["010","VIZITKA","QR BUSINESS CARD","https://vizitka-bg.com","vizitka"],["011","MASTILKO","PRINT TOOLS","https://mastilko-bg.com","mastilko"],["012","KORPORA","FURNITURE DESIGN · CNC","https://korpora.carbonstealth.eu","korpora"],["013","RILIEVI IMPIANTI","LIFT SURVEYS · IT","https://rilievi.carbonstealth.eu","rilievi"],["014","FAKTURIST","E-INVOICING · BG","https://fakturist.carbonstealth.eu","fakturist"]].map(function(w){
           return <a key={w[0]} href={w[3]} target="_blank" rel="noopener" className="cs-work-card" style={{display:"flex",flexDirection:"column",border:"1px solid rgba("+CR+",.14)",background:"rgba("+CR+",.015)",cursor:"none",textDecoration:"none",color:"inherit",overflow:"hidden"}}>
-            <img src={"/work/"+w[4]+"-480.webp"} srcSet={"/work/"+w[4]+"-480.webp 480w, /work/"+w[4]+".webp 960w"} sizes="(max-width:640px) 100vw, 33vw" width={480} height={300} loading="lazy" decoding="async" alt={w[1]+" \u2014 "+w[2]} style={{display:"block",width:"100%",height:"auto",aspectRatio:"16/10",objectFit:"cover",objectPosition:"top",borderBottom:"1px solid rgba("+CR+",.14)"}}/>
+            <img src={"/work/"+w[4]+"-480.webp"+LIVE_Q} srcSet={"/work/"+w[4]+"-480.webp"+LIVE_Q+" 480w, /work/"+w[4]+".webp"+LIVE_Q+" 960w"} sizes="(max-width:640px) 100vw, 33vw" width={480} height={300} loading="lazy" decoding="async" alt={w[1]+" \u2014 "+w[2]} style={{display:"block",width:"100%",height:"auto",aspectRatio:"16/10",objectFit:"cover",objectPosition:"top",borderBottom:"1px solid rgba("+CR+",.14)"}}/>
             <div style={{display:"flex",flexDirection:"column",gap:6,padding:"14px 16px 16px"}}>
               <span style={{fontFamily:MONO,fontSize:9,color:INK2,letterSpacing:".2em"}}>{w[0]} {"\u00b7"} {w[2]}</span>
               <span style={{fontFamily:HEAD,fontWeight:700,fontSize:"1.05rem",textTransform:"uppercase",letterSpacing:"-.01em",color:INK}}>{w[1]} <span aria-hidden="true" style={{color:C}}>{"\u2197"}</span></span>

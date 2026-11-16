@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 
-// Версия на „живите“ файлове (двигателят cs-live.js, слоевете, неподвижните кадри, иконите): хеш на
+// Версия на „живите“ файлове (двигателят cs-live.js, слоевете, неподвижните кадри, иконите, снимките на проектите): хеш на
 // съдържанието им. nginx ги праща с „immutable“ за една година, а service worker-ът ги държи cache-first,
 // но имената им са постоянни — затова адресите носят ?v=<хеш>. Без него поправка по двигателя или нов
 // рендер не стигат до върнал се посетител. СЪЩИЯТ алгоритъм е в scripts/static-theme.py (live_version) —
@@ -11,7 +11,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 function liveVersion() {
   const h = createHash('sha1');
   h.update(readFileSync('public/js/cs-live.js'));
-  for (const d of ['public/brand/live', 'public/brand/svc']) {
+  for (const d of ['public/brand/live', 'public/brand/svc', 'public/work']) {
     for (const f of readdirSync(d).sort()) h.update(f).update(readFileSync(d + '/' + f));
   }
   for (const f of ['bench-1600.webp', 'bench-800.webp']) h.update(f).update(readFileSync('public/brand/' + f));
@@ -33,6 +33,9 @@ export default defineConfig({
       compress: { drop_console: true, drop_debugger: true },
     },
     rollupOptions: {
+      // Две страници: сайтът и /admin/ (собствен малък бъндъл — посетителят на сайта не тегли панела).
+      // nginx няма SPA fallback, затова /admin/ трябва да е истински dist/admin/index.html.
+      input: { main: 'index.html', admin: 'admin/index.html' },
       output: {
         manualChunks: {
           three: ['three'],

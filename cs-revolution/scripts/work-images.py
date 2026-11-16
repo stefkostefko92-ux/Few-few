@@ -16,6 +16,7 @@ HOST_TO_SLUG = {
     "tretimart.carbonstealth.eu": "treti-mart", "evanita-bg.com": "evanita-sport", "eternaltouch.it": "eternal-touch",
     "ospedalitrasparenti.it": "ospedali-trasparenti", "vizitka-bg.com": "vizitka", "mastilko-bg.com": "mastilko",
     "panevascensori.it": "panev-ascensori", "zabobovdol.carbonstealth.eu": "zabobovdol",
+    "korpora.carbonstealth.eu": "korpora", "rilievi.carbonstealth.eu": "rilievi", "fakturist.carbonstealth.eu": "fakturist",
 }
 ALT = {"it": "Schermata del sito {name}", "en": "Screenshot of the {name} website", "bg": "Екранна снимка на сайта {name}"}
 

@@ -4,7 +4,11 @@ import { slugify, uniqueSlug } from "@/lib/slug";
 import {
   DEFAULT_NEWS_URL,
   MUNICIPALITY_SOURCE,
+  SourceHttpError,
+  describeFetchError,
   isNewsLink,
+  newsUserAgents,
+  retryWithNextAgent,
   parseListing,
   resolveLinkPattern,
 } from "@/lib/ingest-news-parse";
@@ -28,21 +32,32 @@ async function fetchText(url: string): Promise<string> {
   try {
     parsed = new URL(url);
   } catch {
-    throw new Error("Невалиден адрес на източника.");
+    throw new Error("Невалиден адрес на източника. Проверете MUNICIPALITY_NEWS_URL.");
   }
   if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
-    throw new Error("Позволени са само http(s) адреси за източника.");
+    throw new Error("Позволени са само http(s) адреси за източника. Проверете MUNICIPALITY_NEWS_URL.");
   }
-  const res = await fetch(url, {
-    headers: {
-      "user-agent": "ZaBobovDolBot/1.0 (+https://zabobovdol.carbonstealth.eu)",
-      accept: "application/rss+xml, text/html, application/xml;q=0.9, */*;q=0.8",
-    },
-    signal: AbortSignal.timeout(15000),
-    redirect: "follow",
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.text();
+  // Защитната стена може да прекъсне едно представяне — пробваме следващото
+  // (ingest-news-parse.ts: newsUserAgents / retryWithNextAgent).
+  let last: unknown;
+  for (const ua of newsUserAgents(process.env.MUNICIPALITY_NEWS_USER_AGENT)) {
+    try {
+      const res = await fetch(url, {
+        headers: {
+          "user-agent": ua,
+          accept: "application/rss+xml, text/html, application/xml;q=0.9, */*;q=0.8",
+        },
+        signal: AbortSignal.timeout(15000),
+        redirect: "follow",
+      });
+      if (!res.ok) throw new SourceHttpError(res.status);
+      return await res.text();
+    } catch (err) {
+      last = err;
+      if (!retryWithNextAgent(err)) throw err;
+    }
+  }
+  throw last;
 }
 
 export type IngestResult = {
@@ -89,13 +104,20 @@ export async function ingestMunicipalityNews(limit = 15): Promise<IngestResult> 
   try {
     text = await fetchText(url);
   } catch (err) {
-    console.error("[ingest-news] грешка при сваляне:", err instanceof Error ? err.message : err);
+    const code = (err as { cause?: { code?: unknown } } | null)?.cause?.code;
+    console.error(
+      "[ingest-news] грешка при сваляне:",
+      err instanceof Error ? err.message : err,
+      typeof code === "string" ? `(${code})` : "",
+    );
+    // Невалиден адрес/протокол (fetchText) — собственото съобщение; иначе — по причината.
+    const own = err instanceof Error && /^(Невалиден|Позволени)/.test(err.message) ? err.message : null;
     return {
       found: 0,
       created: 0,
       skipped: 0,
       pending: await countPendingNews(pattern),
-      error: "Грешка при сваляне на източника.",
+      error: own ?? describeFetchError(err),
     };
   }
 
