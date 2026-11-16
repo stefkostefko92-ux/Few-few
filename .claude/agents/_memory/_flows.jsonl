@@ -819,3 +819,8 @@
 {"t":"handoff","ts":"2026-11-16T11:28:50.134Z","id":"rbd24702f","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"9cbbad03"}
 {"t":"start","ts":"2026-11-16T11:03:20.287Z","id":"r0a6b2884","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-16T11:03:20.287Z","id":"r0a6b2884","from":"kodadjiyata","to":"друг","status":"има бележки","run":"539639bb","toRaw":"Изпитателя"}
+{"t":"start","ts":"2026-11-16T18:59:25.385Z","id":"re965efe4","flow":"авто","lead":"letopisetsa","auto":true}
+{"t":"handoff","ts":"2026-11-16T18:59:25.385Z","id":"re965efe4","from":"letopisetsa","to":"prevodach","status":"има бележки","run":"2d7cf0c0"}
+{"t":"handoff","ts":"2026-11-16T19:01:02.319Z","id":"re965efe4","from":"razbivacha","to":"kodadjiyata","status":"наред (нула находки след реален опит по всички вектори)","run":"01b3a79e"}
+{"t":"handoff","ts":"2026-11-16T19:03:08.571Z","id":"re965efe4","from":"dizayner","to":"kodadjiyata","status":"има бележки","run":"e58a1b57"}
+{"t":"handoff","ts":"2026-11-16T19:05:17.612Z","id":"re965efe4","from":"prevodach","to":"seo","status":"има бележки","run":"73b4ca4a"}
