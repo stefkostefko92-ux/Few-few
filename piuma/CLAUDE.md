@@ -5,7 +5,9 @@
 продукт в монорепото — `cd piuma/` за всичко.
 
 На `/` стои **витрината** (публичната страница, индексируема); панелът е на `/admin` и е
-`noindex`. Витрината няма нито ред JavaScript и носи целия слой за откриваемост.
+`noindex`. Витрината няма нито ред JavaScript и носи целия слой за откриваемост (SEO/AEO пълен набор).
+Панелът: 7 роли, 2FA, одит-верига, три езика (BG/EN/IT). Агентът влиза с HMAC-подписани заявки и
+пише само чернови. Управляваните страници — автопилот по план + Instagram Insights.
 
 ## Стек
 
@@ -23,7 +25,7 @@ npm test                 # unit (node:test през tsx) — без база
 npm run build            # prisma generate + tsc
 npm run test:integration # иска жива PostgreSQL (DATABASE_URL) И Redis (REDIS_TEST_URL) — панел + агент + публикуване + опашка
 npm run dev              # локален сървър (панел на /admin)
-npm run worker           # BullMQ работник (публикуване · токени · сесии · Insights 04:30 · автопилот пн 06:00)
+npm run worker           # BullMQ работник (публикуване · токени · сесии · Insights 04:30 · автопилот пн 06:00 · одит-верига всеки час)
 npm run owner:create     # първият собственик — от средата на сървъра, еднократно
 ```
 
@@ -72,7 +74,8 @@ src/
   icons.ts             чете `public/icons/*.svg` веднъж → един `<symbol>` спрайт (виж ICONS.md)
   i18n.ts              речниците bg/en/it, `t()`, избор по Accept-Language
   crypto.ts            AES-256-GCM за тайни в покой, HMAC подпис на OAuth state
-  audit.ts             одит с верига от хешове (подправен стар запис чупи веригата)
+  audit.ts             одит с верига v2 (HMAC с ключ от TOKEN_ENC_KEY, HMAC на IP) + почасова пълна проверка
+  audit-chain.ts       чистата логика на веригата (v1 стари записи / v2) · audit-anchor.ts — котвата извън базата (AUDIT_ANCHOR_DIR)
   auth/                rbac (7 нива) · password (Argon2id) · totp · sessions (в базата) · guards (login/CSRF/права)
   agent/               signature (HMAC) · nonce-store (Redis, fail-closed) · auth · routes (/agent/v1)
   admin/               маршрути на панела по домейни (auth · dashboard · brands · manage (представяне/автопилот) · accounts · posts · users · keys · audit)

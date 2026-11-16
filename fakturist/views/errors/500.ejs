@@ -1,0 +1,14 @@
+<%- include('../partials/site-head', { title: t('errors.serverError.title') }) %>
+<main id="main">
+  <section class="page-head err">
+    <div class="wrap">
+      <p class="err-code mono" aria-hidden="true">500</p>
+      <h1 id="h1"><%= t('errors.serverError.title') %></h1>
+      <p class="lead"><%= t('errors.serverError.text', { email: company.email }) %></p>
+      <div class="actions">
+        <a class="btn" href="<%= urls.home %>"><%= t('errors.serverError.home') %></a>
+      </div>
+    </div>
+  </section>
+</main>
+<%- include('../partials/site-foot') %>

@@ -1,0 +1,11 @@
+<%- include('../partials/app-head', { title: t('auth.link.invalidTitle') }) %>
+<section class="narrow">
+  <h1><%= t('auth.link.invalidTitle') %></h1>
+  <p class="callout"><%= t('auth.link.invalid') %></p>
+  <% if (kind === 'reset') { %>
+    <p><a class="button" href="/zabravena-parola"><%= t('auth.link.newReset') %></a></p>
+  <% } else { %>
+    <p><a class="button" href="/app"><%= t('auth.verify.toApp') %></a></p>
+  <% } %>
+</section>
+<%- include('../partials/app-foot') %>

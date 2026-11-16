@@ -20,7 +20,7 @@ import { formatMoney, priceTable, VAT_BG_PERCENT } from '../src/plans/pricing.js
 import { legalPath, PATHS } from '../src/seo/paths.js';
 import { loadEngine } from '../src/services/engine.js';
 import { landingAssets } from '../src/services/landing-assets.js';
-import { furnitureLineup } from '../src/services/furniture-lineup.js';
+import { brochureLineup } from '../src/services/furniture-lineup.js';
 import { cover, drilling, esc, how, type BrochureContext } from './pages.js';
 import { kinds, machine, prices } from './pages-more.js';
 
@@ -62,7 +62,7 @@ type SharedContext = Pick<BrochureContext, 'lineup' | 'render' | 'logo'>;
 
 /** Частите, които не зависят от езика — смятат се веднъж за трите брошури. */
 function sharedContext(): SharedContext {
-  const groups = furnitureLineup();
+  const groups = brochureLineup();
   return {
     lineup: { groups, scale: LINEUP_SCALE, count: groups.reduce((n, g) => n + g.items.length, 0) },
     render: renderImage(),

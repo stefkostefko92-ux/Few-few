@@ -26,6 +26,18 @@
     <% } %>
     <div class="kv__item kv__item--wide"><dt><%= t('cartelli.campo.testo') %></dt><dd><%= c.testo %></dd></div>
   </dl>
+  <%# Спиране поради опасност — D.P.R. 162/1999, чл. 15, ал. 7: денят на всяко от трите уведомявания. %>
+  <%# Списъкът и липсващите — от маршрута (COMUNICAZIONI_FERMO и comunicazioniMancanti в src/cartelli/form.ts). %>
+  <% if (c.pericolo) { const mancano = avvisiFermo.mancanti.length; %>
+  <section class="notice" aria-labelledby="h-pericolo">
+    <h2 class="section__title" id="h-pericolo"><%= t('cartelli.pericolo.comunicazioni') %></h2>
+    <dl class="kv">
+      <% for (const avviso of avvisiFermo.campi) { %><div class="kv__item"><dt><%= t('cartelli.campo.' + avviso.campo) %></dt><% if (avviso.giorno) { %><dd><%= fmt.day(avviso.giorno) %></dd><% } else { %><dd class="empty-value"><%= t('cartelli.pericolo.daFare') %></dd><% } %></div>
+      <% } %>
+    </dl>
+    <% if (mancano) { %><p role="status"><strong><%= t('cartelli.pericolo.manca', { n: mancano }) %></strong></p><% } %>
+  </section>
+  <% } %>
   <figure class="cartello__modello">
     <img class="cartello__anteprima" src="/cartelli/<%= c.id %>/anteprima.webp" width="<%= modello.width %>" height="<%= modello.height %>" alt="<%= t('cartelli.anteprimaAlt', { titolo: modello.titolo }) %>" loading="lazy">
     <figcaption>

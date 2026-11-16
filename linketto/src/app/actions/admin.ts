@@ -5,8 +5,11 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
-import { getStripe } from '@/lib/stripe';
-import { payoutSeller } from '@/lib/payout';
+import { requestPlanRefund, type RefundRequest } from '@/lib/plan-order-service';
+import { banAllowed, banNoticeEmail, isBanCategory, warningNoticeEmail } from '@/lib/dsa-notice';
+import { emailConfigured, sendEmail } from '@/lib/email';
+import { eraseUser } from '@/lib/account-erasure';
+import { applyPlanLimits } from '@/lib/plan-limits';
 import { isLocale } from '@/i18n/locales';
 import type { Plan } from '@prisma/client';
 
@@ -25,11 +28,77 @@ export async function setProfileBanAction(formData: FormData): Promise<void> {
   await requireAdmin(uiLocale);
   const profileId = String(formData.get('profileId') ?? '');
   const ban = formData.get('ban') === '1';
-  await prisma.profile.updateMany({
+  if (!ban) {
+    await prisma.profile.updateMany({
+      where: { id: profileId },
+      data: { bannedAt: null, bannedCategory: null, bannedReason: null, banNoticeSentAt: null },
+    });
+    redirect(`/${uiLocale}/admin?ok=1`);
+  }
+  // DSA чл. 17: без категория и обосновка няма мярка — собственикът получава
+  // мотивите и пътищата за обжалване. ОУ: леките нарушения (спам/друго) —
+  // първо предупреждение със срок; тежките — веднага.
+  const mode = formData.get('mode') === 'warn' ? 'warn' : 'ban';
+  const category = String(formData.get('category') ?? '');
+  const reason = String(formData.get('reason') ?? '').trim();
+  const legalGround = String(formData.get('legalGround') ?? '').trim().slice(0, 300);
+  if (!isBanCategory(category) || reason.length < 10 || reason.length > 2000) {
+    redirect(`/${uiLocale}/admin?error=ban`);
+  }
+  if (mode === 'ban' && category === 'illegal' && legalGround.length < 3) {
+    redirect(`/${uiLocale}/admin?error=ban-ground`);
+  }
+  const decidedAt = new Date();
+  const profile = await prisma.profile.findUnique({
     where: { id: profileId },
-    data: { bannedAt: ban ? new Date() : null },
+    select: { slug: true, warnedAt: true, user: { select: { email: true, locale: true } } },
   });
-  redirect(`/${uiLocale}/admin?ok=1`);
+  if (!profile) redirect(`/${uiLocale}/admin?error=input`);
+  const fromReport = formData.get('fromReport') === 'on';
+
+  if (mode === 'warn') {
+    await prisma.profile.update({
+      where: { id: profileId },
+      data: { warnedAt: decidedAt, warnedCategory: category, warnedReason: reason },
+    });
+    if (emailConfigured()) {
+      const { subject, html } = warningNoticeEmail({
+        locale: profile.user.locale,
+        slug: profile.slug,
+        category,
+        reason,
+        decidedAt,
+        fromReport,
+      });
+      await sendEmail({ to: profile.user.email, subject, html, tag: 'dsa-warning' }).catch(() => false);
+    }
+    redirect(`/${uiLocale}/admin?ok=1`);
+  }
+
+  const allowed = banAllowed({ category, warnedAt: profile.warnedAt, now: decidedAt });
+  if (allowed !== 'ok') redirect(`/${uiLocale}/admin?error=ban-warn`);
+  await prisma.profile.update({
+    where: { id: profileId },
+    data: { bannedAt: decidedAt, bannedCategory: category, bannedReason: reason, banNoticeSentAt: null },
+  });
+  let sent = false;
+  if (emailConfigured()) {
+    const { subject, html } = banNoticeEmail({
+      locale: profile.user.locale,
+      slug: profile.slug,
+      category,
+      reason,
+      legalGround: legalGround || undefined,
+      decidedAt,
+      fromReport,
+    });
+    sent = await sendEmail({ to: profile.user.email, subject, html, tag: 'dsa-notice' }).catch(() => false);
+  }
+  if (sent) {
+    await prisma.profile.updateMany({ where: { id: profileId, bannedAt: decidedAt }, data: { banNoticeSentAt: new Date() } });
+  }
+  // Мотивите се виждат и в таблото на собственика; неизпратен имейл — видимо в админа.
+  redirect(`/${uiLocale}/admin?${sent ? 'ok=1' : 'error=ban-notice'}`);
 }
 
 const updateUserSchema = z.object({
@@ -58,8 +127,17 @@ export async function adminUpdateUserAction(
   try {
     await prisma.user.update({
       where: { id: userId },
-      data: { email, name: name || null, plan: plan as Plan },
+      data: {
+        email,
+        name: name || null,
+        plan: plan as Plan,
+        // FREE/FOUNDER нямат изтичане; ръчно даден PRO/BUSINESS пази текущото
+        // (null = без срок — подарък от админа).
+        ...(plan === 'FREE' || plan === 'FOUNDER' ? { planExpiresAt: null, planReminded: null } : {}),
+      },
     });
+    // Ръчно свален план → платените функции спират (виж lib/plan-limits.ts).
+    await applyPlanLimits(userId);
   } catch (error) {
     // P2002 = зает имейл
     if (
@@ -86,8 +164,9 @@ export async function adminForceLogoutAction(
   redirect(`/${uiLocale}/admin?ok=1`);
 }
 
-/** Пълно изтриване на акаунт (каскадно: профили, линкове, продукти,
-    покупки, съобщения, сесии, IP логове). Не можеш да изтриеш себе си. */
+/** Изтриване на акаунт: без покупки — каскадно (профили, линкове, продукти,
+    съобщения, сесии, IP логове); с покупки — анонимизиране, за да се пазят
+    фискалните записи 10 г. Не можеш да изтриеш себе си. */
 export async function adminDeleteUserAction(
   formData: FormData,
 ): Promise<void> {
@@ -97,7 +176,12 @@ export async function adminDeleteUserAction(
   if (formData.get('confirm') !== 'on' || userId === admin.id) {
     redirect(`/${uiLocale}/admin?error=input`);
   }
-  await prisma.user.delete({ where: { id: userId } }).catch(() => undefined);
+  // Има ли покупки → анонимизиране (фискалните записи се пазят 10 г.),
+  // иначе пълно каскадно изтриване (виж lib/account-erasure.ts).
+  await eraseUser(userId).catch((error: unknown) => {
+    console.error('[admin] eraseUser failed', userId, error);
+    redirect(`/${uiLocale}/admin?error=input`);
+  });
   redirect(`/${uiLocale}/admin?ok=1`);
 }
 
@@ -125,69 +209,29 @@ export async function adminClearDomainAction(
   const profileId = String(formData.get('profileId') ?? '');
   await prisma.profile.updateMany({
     where: { id: profileId },
-    data: { customDomain: null },
+    data: { customDomain: null, domainToken: null, domainVerifiedAt: null },
   });
   redirect(`/${uiLocale}/admin?ok=1`);
 }
 
-/** Връщане на пари за покупка: refund с reverse на transfer-а към продавача
-    и връщане на нашата комисиона (при destination charges платформата иначе
-    носи загубата). Маркира Purchase.refundedAt (и през charge.refunded). */
-export async function adminRefundPurchaseAction(
+/** P10: пълно връщане на поръчка за план (lib/plan-order-service.ts
+    requestPlanRefund): refund при Revolut с Idempotency-Key; при `completed` на
+    refund поръчката планът се връща към този отпреди поръчката, а бонусът на
+    поканилия се сторнира. По-новата приложена поръчка се връща първа. */
+export async function adminRefundPlanOrderAction(
   formData: FormData,
 ): Promise<void> {
   const uiLocale = localeFrom(formData);
   await requireAdmin(uiLocale);
-  const purchaseId = String(formData.get('purchaseId') ?? '');
-  const purchase = await prisma.purchase.findUnique({
-    where: { id: purchaseId },
-  });
-  const stripe = getStripe();
-  if (!purchase?.stripePaymentIntentId || purchase.refundedAt || !stripe) {
-    redirect(`/${uiLocale}/admin?error=refund`);
-  }
+  const planOrderId = String(formData.get('planOrderId') ?? '');
+  let result: RefundRequest;
   try {
-    if (purchase.chargedOn === 'platform') {
-      // Separate charges & transfers (TAX.md): плащането е при нас →
-      // прибираме дела на продавача, АКО е преведен (при провален превод
-      // няма какво да се връща; повторен reversal се проваля тихо),
-      // после връщаме на купувача.
-      if (purchase.stripeTransferId) {
-        await stripe.transfers
-          .createReversal(purchase.stripeTransferId)
-          .catch(() => undefined);
-      }
-      await stripe.refunds.create({
-        payment_intent: purchase.stripePaymentIntentId,
-      });
-    } else {
-      // Заварени покупки от destination-charge модела.
-      await stripe.refunds.create({
-        payment_intent: purchase.stripePaymentIntentId,
-        reverse_transfer: true,
-        refund_application_fee: true,
-      });
-    }
+    result = await requestPlanRefund(planOrderId);
   } catch {
     redirect(`/${uiLocale}/admin?error=refund`);
   }
-  await prisma.purchase.update({
-    where: { id: purchaseId },
-    data: { refundedAt: new Date() },
-  });
-  // Върнати пари → отнемаме и еднократното право на достъп (курс).
-  if (purchase.buyerEmail) {
-    await prisma.entitlement
-      .updateMany({
-        where: {
-          productId: purchase.productId,
-          email: purchase.buyerEmail,
-          stripeSubscriptionId: null,
-        },
-        data: { active: false },
-      })
-      .catch(() => undefined);
-  }
+  if (result === 'newer-first') redirect(`/${uiLocale}/admin?error=refund-order`);
+  if (result === 'not-refundable') redirect(`/${uiLocale}/admin?error=refund`);
   redirect(`/${uiLocale}/admin?ok=1`);
 }
 
@@ -247,16 +291,4 @@ export async function adminSetPasswordAction(
     where: { userId: parsed.data.userId },
   });
   redirect(`/${uiLocale}/admin?ok=1`);
-}
-
-/** Ръчен ретрай на провален превод към продавача (payoutFailedAt) —
-    payoutSeller е идемпотентен (stripeTransferId + idempotencyKey). */
-export async function adminRetryPayoutAction(
-  formData: FormData,
-): Promise<void> {
-  const uiLocale = localeFrom(formData);
-  await requireAdmin(uiLocale);
-  const purchaseId = String(formData.get('purchaseId') ?? '');
-  const ok = purchaseId ? await payoutSeller(purchaseId) : false;
-  redirect(`/${uiLocale}/admin${ok ? '?ok=1' : '?error=payout'}`);
 }

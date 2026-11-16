@@ -22,6 +22,19 @@ export interface ParametriSmtp {
   fonte: 'portale' | 'ambiente';
 }
 
+/** С какво е пращано писмо — помни се с изхода му: думите на диагнозата не четат по-късна настройка. */
+export interface ServerPosta {
+  host: string;
+  porta: number;
+  mittente: string;
+}
+
+export const serverDi = (p: ParametriSmtp): ServerPosta => ({
+  host: p.host,
+  porta: p.port,
+  mittente: typeof p.from === 'string' ? p.from : p.from.address,
+});
+
 /** undefined — още не е четено; null — няма включена настройка в базата. */
 let memoria: ParametriSmtp | null | undefined;
 /** Сменя се при всяка нова настройка — транспортът на mailer.ts се прави наново. */

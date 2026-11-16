@@ -7,6 +7,7 @@ import { validaFino } from './dati.js';
 import type { PreventivoData } from './form.js';
 import {
   accettazione,
+  informativa,
   M,
   PAGE,
   Pagina,
@@ -23,7 +24,8 @@ export type { PreventivoPdfOptions } from './pdf-parti.js';
 /**
  * PDF-ът на офертата — A4 като писмо: горе вляво логото на фирмата (без лого — името), вдясно данните ѝ от
  * настройките; заглавието с номера, деня и до кога важи; „Spett.le“ — клиентът; предметът и уредбата;
- * таблицата на редовете, обобщението по ставки на ДДС, бележките, условията и „Per accettazione“. Долу на
+ * таблицата на редовете, обобщението по ставки на ДДС, бележките, условията, „Per accettazione“ и в края —
+ * информацията по чл. 13 и 14 GDPR на фирмата към клиента (`informativa`). Долу на
  * всяка страница — номерът на офертата, „Generato con…“ и „Pagina n di N“. PDF/A-2b, DejaVu Sans вграден.
  */
 
@@ -154,6 +156,7 @@ export function renderPreventivoPdf(d: PreventivoData, o: PreventivoPdfOptions):
   if (d.note) p.blocco(o.t('preventivi.campo.note'), d.note);
   if (d.condizioni) p.blocco(o.t('preventivi.campo.condizioni'), d.condizioni);
   accettazione(p);
+  informativa(p);
   piedi(doc, o);
   const chunks: Buffer[] = [];
   const done = new Promise<Buffer>((resolve, reject) => {

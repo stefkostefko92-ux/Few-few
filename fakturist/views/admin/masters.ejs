@@ -1,0 +1,41 @@
+<%- include('../partials/app-head', { title: t('admin.masterRole.title') }) %>
+<% const day = (d) => d ? d.toISOString().slice(0, 10).split('-').reverse().join('.') : '—'; %>
+<h1><%= t('admin.masterRole.title') %></h1>
+<%- include('_nav') %>
+<p class="muted"><%= t('admin.masterRole.help') %></p>
+<% if (ok) { %><p class="ok" role="status"><%= tOr('admin.masterRole.ok.' + ok, t('admin.saved')) %></p><% } %>
+<% if (err) { %><p class="error" role="alert"><%= tOr('admin.masterRole.err.' + err, t('auth.errors.invalid')) %></p><% } %>
+<div class="table-wrap"><table class="stack-table">
+  <thead><tr><th scope="col"><%= t('admin.masterRole.email') %></th><th scope="col"><%= t('admin.masterRole.name') %></th><th scope="col"><%= t('admin.masterRole.twoFactor') %></th><th scope="col"><%= t('admin.masterRole.lastLogin') %></th><th scope="col"><span class="sr-only"><%= t('admin.masterRole.actions') %></span></th></tr></thead>
+  <tbody>
+  <% masters.forEach((m) => { %>
+    <tr>
+      <td data-label="<%= t('admin.masterRole.email') %>" class="mono"><%= m.email %><% if (m.id === selfId) { %> <span class="tag"><%= t('admin.masterRole.you') %></span><% } %><% if (m.disabledAt) { %> <span class="tag"><%= t('admin.masterRole.disabled') %></span><% } %></td>
+      <td data-label="<%= t('admin.masterRole.name') %>"><%= m.name %></td>
+      <td data-label="<%= t('admin.masterRole.twoFactor') %>"><span class="tag<%= m.totpEnabledAt ? ' tag-active' : ' tag-pending' %>"><%= m.totpEnabledAt ? t('admin.masterRole.on') : t('admin.masterRole.off') %></span></td>
+      <td data-label="<%= t('admin.masterRole.lastLogin') %>" class="mono"><%= day(m.lastLoginAt) %></td>
+      <td class="actions">
+        <% if (masters.length > 1) { %>
+        <form method="post" action="/admin/mastari/<%= m.id %>/otnemi" class="inline-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <label><span class="sr-only"><%= t('admin.masterRole.code') %></span><input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required class="mono code-input" placeholder="000000" aria-label="<%= t('admin.masterRole.codeFor', { email: m.email }) %>"></label>
+          <button type="submit" class="link"><%= t('admin.masterRole.revoke') %></button>
+        </form>
+        <% } %>
+      </td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+
+<section class="panel" aria-labelledby="grant-h">
+  <h2 id="grant-h"><%= t('admin.masterRole.grantTitle') %></h2>
+  <form method="post" action="/admin/mastari" class="stack narrow-form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label><%= t('admin.masterRole.email') %><input type="email" name="email" required maxlength="254" autocomplete="off"></label>
+    <label><%= t('admin.masterRole.name') %> <span class="hint"><%= t('admin.masterRole.nameHint') %></span><input name="name" maxlength="100" autocomplete="off"></label>
+    <label><%= t('admin.masterRole.code') %> <span class="hint"><%= t('admin.masterRole.codeHint') %></span><input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required class="mono"></label>
+    <div><button type="submit"><%= t('admin.masterRole.grant') %></button></div>
+  </form>
+</section>
+<%- include('../partials/app-foot') %>

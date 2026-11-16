@@ -51,6 +51,7 @@
     <h2 class="section__title" id="h-preventivi"><%= t('aziende.preventivi.title') %></h2>
     <p><strong><%= t(azienda.preventiviAttivi ? 'aziende.preventivi.attivi' : 'aziende.preventivi.spenti') %></strong></p>
     <p class="muted"><%= t('aziende.preventivi.text') %></p>
+    <% if (!azienda.preventiviAttivi && azienda.preventiviArchivio) { %><p class="notice notice--sopra"><%= t('aziende.preventivi.archivio') %></p><% } %>
     <form method="post" action="/aziende/<%= azienda.id %>/preventivi">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <input type="hidden" name="attivi" value="<%= azienda.preventiviAttivi ? '0' : '1' %>">

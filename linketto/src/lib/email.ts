@@ -1,32 +1,77 @@
-// Транзакционен имейл през Resend HTTP API (само server-side ключ, като
-// подхода за Gemini). Без RESEND_API_KEY е тих no-op — билдът и локалната
-// разработка не изискват ключ; на продукция собственикът го попълва.
-// Чистите HTML-строители нямат странични ефекти и се тестват директно;
-// sendEmail сам се гейтва по env, затова не изисква „server-only" пазач.
+// Транзакционен имейл през Brevo (Sendinblue SAS, Франция — ЕС; API v3).
+// Само server-side ключ (като Gemini). Без BREVO_API_KEY е тих no-op — билдът
+// и локалната разработка не изискват ключ; на продукция собственикът го попълва.
+// Чистите строители (HTML, заявката към Brevo) нямат странични ефекти и се
+// тестват директно; sendEmail сам се гейтва по env.
+//
+// Brevo НЕ приема стандартни хедъри (вкл. List-Unsubscribe) и сам добавя свой
+// List-Unsubscribe към транзакционните писма — отписването от седмичния отчет е
+// нашата връзка в тялото на писмото (DEPLOY.md §2: настройката при Brevo).
+
+const BREVO_URL = 'https://api.brevo.com/v3/smtp/email';
+const EMAIL_RE = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
+
+export interface EmailSender {
+  name?: string;
+  email: string;
+}
+
+/** EMAIL_FROM „Linketto <no-reply@…>“ или само адрес → подател за Brevo. */
+export function parseSender(raw: string): EmailSender | null {
+  const value = raw.trim();
+  const match = /^(.*?)\s*<([^>]+)>$/.exec(value);
+  const email = (match ? match[2] : value).trim();
+  if (!EMAIL_RE.test(email)) return null;
+  const name = match?.[1].trim().replace(/^"|"$/g, '').trim();
+  return name ? { name, email } : { email };
+}
+
+/** Тялото на POST /v3/smtp/email (само полетата, които ползваме). */
+export function brevoPayload(input: {
+  sender: EmailSender;
+  to: string;
+  subject: string;
+  html: string;
+  tag?: string;
+}) {
+  return {
+    sender: input.sender,
+    to: [{ email: input.to }],
+    subject: input.subject,
+    htmlContent: input.html,
+    ...(input.tag ? { tags: [input.tag] } : {}),
+  };
+}
 
 export function emailConfigured(): boolean {
-  return Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM);
+  return Boolean(
+    process.env.BREVO_API_KEY && parseSender(process.env.EMAIL_FROM ?? ''),
+  );
 }
 
 export async function sendEmail(input: {
   to: string;
   subject: string;
   html: string;
+  /** Етикет в Brevo за филтриране (delivery, digest, newsletter…). */
+  tag?: string;
 }): Promise<boolean> {
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM;
-  if (!apiKey || !from) return false;
+  const apiKey = process.env.BREVO_API_KEY;
+  const sender = parseSender(process.env.EMAIL_FROM ?? '');
+  if (!apiKey || !sender) return false;
   try {
-    const res = await fetch('https://api.resend.com/emails', {
+    const res = await fetch(BREVO_URL, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        'api-key': apiKey,
         'Content-Type': 'application/json',
+        Accept: 'application/json',
       },
-      body: JSON.stringify({ from, to: input.to, subject: input.subject, html: input.html }),
+      body: JSON.stringify(brevoPayload({ sender, ...input })),
       signal: AbortSignal.timeout(15_000),
     });
-    return res.ok;
+    // 201 = изпратено (202 е само при scheduledAt, което не ползваме).
+    return res.status === 201;
   } catch {
     return false;
   }
@@ -36,127 +81,6 @@ const esc = (value: string) =>
   value.replace(/[&<>"]/g, (c) =>
     c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;' : '&quot;',
   );
-
-// Локализиран текст на имейла-разписка (на езика на купувача). bg е
-// източникът; липсващ език пада към en.
-interface EmailStrings {
-  subjectPrefix: string;
-  thanks: (title: string, price: string) => string;
-  here: string;
-  open: string;
-  fallback: (url: string) => string;
-  receipt: string;
-  waiver: string;
-  viewReceipt: string;
-}
-
-const EMAIL_STRINGS: Record<string, EmailStrings> = {
-  bg: {
-    subjectPrefix: 'Покупка',
-    thanks: (t, p) => `Благодарим за покупката на <strong>${t}</strong> (${p}).`,
-    here: 'Ето линка ти за достъп:',
-    open: 'Отвори покупката',
-    fallback: (u) => `Ако бутонът не работи: ${u}`,
-    receipt:
-      'Този имейл е разписка за покупката ти на траен носител. Пази линка — води те директно до съдържанието.',
-    waiver:
-      'Потвърждаваме, че преди покупката изрично поиска съдържанието да ти бъде предоставено веднага и се съгласи, че така губиш 14-дневното право на отказ.',
-    viewReceipt: 'Виж разписката',
-  },
-  en: {
-    subjectPrefix: 'Purchase',
-    thanks: (t, p) => `Thank you for buying <strong>${t}</strong> (${p}).`,
-    here: 'Here is your access link:',
-    open: 'Open your purchase',
-    fallback: (u) => `If the button does not work: ${u}`,
-    receipt:
-      'This email is your purchase receipt on a durable medium. Keep the link — it takes you straight to the content.',
-    waiver:
-      'We confirm that before the purchase you expressly requested immediate delivery of the content and agreed that you thereby lose the 14-day right of withdrawal.',
-    viewReceipt: 'View receipt',
-  },
-  it: {
-    subjectPrefix: 'Acquisto',
-    thanks: (t, p) => `Grazie per aver acquistato <strong>${t}</strong> (${p}).`,
-    here: 'Ecco il tuo link di accesso:',
-    open: 'Apri il tuo acquisto',
-    fallback: (u) => `Se il pulsante non funziona: ${u}`,
-    receipt:
-      'Questa email è la ricevuta del tuo acquisto su un supporto durevole. Conserva il link — ti porta direttamente al contenuto.',
-    waiver:
-      "Confermiamo che prima dell'acquisto hai richiesto espressamente la consegna immediata del contenuto e hai accettato di perdere così il diritto di recesso di 14 giorni.",
-    viewReceipt: 'Vedi la ricevuta',
-  },
-  es: {
-    subjectPrefix: 'Compra',
-    thanks: (t, p) => `Gracias por comprar <strong>${t}</strong> (${p}).`,
-    here: 'Aquí tienes tu enlace de acceso:',
-    open: 'Abrir tu compra',
-    fallback: (u) => `Si el botón no funciona: ${u}`,
-    receipt:
-      'Este email es el recibo de tu compra en un soporte duradero. Guarda el enlace — te lleva directamente al contenido.',
-    waiver:
-      'Confirmamos que antes de la compra solicitaste expresamente la entrega inmediata del contenido y aceptaste perder así el derecho de desistimiento de 14 días.',
-    viewReceipt: 'Ver recibo',
-  },
-  de: {
-    subjectPrefix: 'Kauf',
-    thanks: (t, p) => `Danke für den Kauf von <strong>${t}</strong> (${p}).`,
-    here: 'Hier ist dein Zugangslink:',
-    open: 'Kauf öffnen',
-    fallback: (u) => `Falls der Button nicht funktioniert: ${u}`,
-    receipt:
-      'Diese E-Mail ist deine Kaufquittung auf einem dauerhaften Datenträger. Bewahre den Link auf — er führt dich direkt zum Inhalt.',
-    waiver:
-      'Wir bestätigen, dass du vor dem Kauf ausdrücklich die sofortige Bereitstellung des Inhalts verlangt und zugestimmt hast, dadurch dein 14-tägiges Widerrufsrecht zu verlieren.',
-    viewReceipt: 'Beleg ansehen',
-  },
-  fr: {
-    subjectPrefix: 'Achat',
-    thanks: (t, p) => `Merci d'avoir acheté <strong>${t}</strong> (${p}).`,
-    here: "Voici votre lien d'accès :",
-    open: 'Ouvrir votre achat',
-    fallback: (u) => `Si le bouton ne fonctionne pas : ${u}`,
-    receipt:
-      "Cet e-mail est le reçu de votre achat sur un support durable. Conservez le lien — il vous mène directement au contenu.",
-    waiver:
-      "Nous confirmons qu'avant l'achat vous avez expressément demandé la livraison immédiate du contenu et accepté de perdre ainsi votre droit de rétractation de 14 jours.",
-    viewReceipt: 'Voir le reçu',
-  },
-};
-
-/** Тема на имейла за доставка (на езика на купувача). */
-export function deliverySubject(productTitle: string, locale?: string): string {
-  const s = EMAIL_STRINGS[locale ?? 'bg'] ?? EMAIL_STRINGS.en;
-  return `Linketto — ${s.subjectPrefix}: ${productTitle}`;
-}
-
-/** Имейл с линка за достъп до купения дигитален продукт (fulfilment). */
-export function deliveryEmailHtml(input: {
-  productTitle: string;
-  deliveryUrl: string;
-  amountCents: number;
-  locale?: string;
-  receiptUrl?: string;
-}): string {
-  const s = EMAIL_STRINGS[input.locale ?? 'bg'] ?? EMAIL_STRINGS.en;
-  const price = `€${(input.amountCents / 100).toFixed(2)}`;
-  const url = esc(input.deliveryUrl);
-  const receiptLink = input.receiptUrl
-    ? `<p style="margin-top:8px"><a href="${esc(input.receiptUrl)}" style="color:#3b82c4;font-size:13px;font-weight:600">${s.viewReceipt} →</a></p>`
-    : '';
-  return `<div style="font-family:system-ui,sans-serif;max-width:520px;margin:0 auto;padding:24px">
-  <h1 style="font-size:20px">Linketto</h1>
-  <p>${s.thanks(esc(input.productTitle), price)}</p>
-  <p>${s.here}</p>
-  <p><a href="${url}" style="display:inline-block;background:#3b82c4;color:#fff;padding:12px 20px;border-radius:9999px;text-decoration:none;font-weight:600">${s.open}</a></p>
-  <p style="color:#64748b;font-size:13px">${s.fallback(url)}</p>
-  <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0">
-  <p style="color:#94a3b8;font-size:12px">${s.receipt}</p>
-  ${receiptLink}
-  <p style="color:#94a3b8;font-size:12px">${s.waiver}</p>
-</div>`;
-}
 
 // ── Бюлетин (email capture): потвърждение + разпращане ────────────────
 interface NewsletterStrings {
@@ -246,68 +170,6 @@ export function subscribeConfirmHtml(input: {
 
 export function broadcastSubject(subject: string): string {
   return subject;
-}
-
-// ── Достъп на купувача (magic-link към курс/членство) ────────────────
-const ACCESS_STRINGS: Record<
-  string,
-  { subject: string; intro: (t: string) => string; button: string; ignore: string }
-> = {
-  bg: {
-    subject: 'Достъп до съдържанието',
-    intro: (t) => `Кликни, за да отвориш „${t}“:`,
-    button: 'Отвори съдържанието',
-    ignore: 'Ако не си поискал това, игнорирай имейла.',
-  },
-  en: {
-    subject: 'Access your content',
-    intro: (t) => `Click to open "${t}":`,
-    button: 'Open content',
-    ignore: "If you didn't request this, ignore this email.",
-  },
-  it: {
-    subject: 'Accedi al contenuto',
-    intro: (t) => `Clicca per aprire "${t}":`,
-    button: 'Apri il contenuto',
-    ignore: 'Se non hai richiesto questo, ignora questa email.',
-  },
-  es: {
-    subject: 'Accede a tu contenido',
-    intro: (t) => `Haz clic para abrir "${t}":`,
-    button: 'Abrir contenido',
-    ignore: 'Si no solicitaste esto, ignora este correo.',
-  },
-  de: {
-    subject: 'Zugang zu deinen Inhalten',
-    intro: (t) => `Klicke, um "${t}" zu öffnen:`,
-    button: 'Inhalt öffnen',
-    ignore: 'Falls du das nicht angefordert hast, ignoriere diese E-Mail.',
-  },
-  fr: {
-    subject: 'Accédez à votre contenu',
-    intro: (t) => `Cliquez pour ouvrir "${t}" :`,
-    button: 'Ouvrir le contenu',
-    ignore: "Si vous n'avez pas demandé cela, ignorez cet e-mail.",
-  },
-};
-
-export function buyerAccessSubject(locale?: string): string {
-  return (ACCESS_STRINGS[locale ?? 'bg'] ?? ACCESS_STRINGS.en).subject;
-}
-
-export function buyerAccessHtml(input: {
-  productTitle: string;
-  accessUrl: string;
-  locale?: string;
-}): string {
-  const s = ACCESS_STRINGS[input.locale ?? 'bg'] ?? ACCESS_STRINGS.en;
-  const url = esc(input.accessUrl);
-  return `<div style="font-family:system-ui,sans-serif;max-width:520px;margin:0 auto;padding:24px">
-  <h1 style="font-size:20px">Linketto</h1>
-  <p>${s.intro(esc(input.productTitle))}</p>
-  <p><a href="${url}" style="display:inline-block;background:#3b82c4;color:#fff;padding:12px 20px;border-radius:9999px;text-decoration:none;font-weight:600">${s.button}</a></p>
-  <p style="color:#94a3b8;font-size:12px">${s.ignore}</p>
-</div>`;
 }
 
 /** Имейл на бюлетина към потвърден абонат, с локализиран линк за отписване. */

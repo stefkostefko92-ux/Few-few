@@ -1,0 +1,44 @@
+<%- include('../partials/app-head', { title: plan.nameBg }) %>
+<p><a href="/admin/r/plans">← <%= t('admin.plans') %></a></p>
+<h1><%= lang === 'bg' ? plan.nameBg : plan.nameEn %> <span class="mono muted"><%= plan.code %></span></h1>
+<%- include('_nav') %>
+<% if (saved) { %><p class="ok" role="status"><%= t('admin.saved') %></p><% } %>
+<% if (Object.keys(errors).length) { %><div class="error-box" role="alert"><ul><% Object.entries(errors).forEach(([f, e]) => { %><li><%= tOr('admin.planFields.' + f, f) %>: <%= e %></li><% }) %></ul></div><% } %>
+<%
+  const euro = (c) => (c === null || c === undefined ? '' : (c / 100).toFixed(2));
+  const num = (n) => (n === null || n === undefined ? '' : String(n));
+%>
+<form method="post" action="/admin/planove/<%= plan.code %>" class="stack narrow-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="row">
+    <label><%= t('admin.planFields.nameBg') %><input name="nameBg" required value="<%= plan.nameBg %>"></label>
+    <label><%= t('admin.planFields.nameEn') %><input name="nameEn" required value="<%= plan.nameEn %>"></label>
+  </div>
+  <div class="row">
+    <label><%= t('admin.planFields.priceMonthly') %><input name="priceMonthly" inputmode="decimal" class="mono" value="<%= euro(plan.priceMonthlyCents) %>"></label>
+    <label><%= t('admin.planFields.priceYearly') %><input name="priceYearly" inputmode="decimal" class="mono" value="<%= euro(plan.priceYearlyCents) %>"></label>
+  </div>
+  <div class="row">
+    <label><%= t('admin.planFields.perClientCompany') %><input name="perClientCompany" inputmode="decimal" class="mono" value="<%= euro(plan.perClientCompanyCents) %>"></label>
+    <label><%= t('admin.planFields.includedClientCompanies') %><input name="includedClientCompanies" inputmode="numeric" class="mono" value="<%= num(plan.includedClientCompanies) %>"></label>
+  </div>
+  <div class="row">
+    <label><%= t('admin.planFields.maxUsers') %><input name="maxUsers" inputmode="numeric" class="mono" value="<%= num(plan.maxUsers) %>"></label>
+    <label><%= t('admin.planFields.maxCompanies') %><input name="maxCompanies" inputmode="numeric" class="mono" value="<%= num(plan.maxCompanies) %>"></label>
+  </div>
+  <div class="row">
+    <label><%= t('admin.planFields.monthlyDocumentSoftLimit') %><input name="monthlyDocumentSoftLimit" inputmode="numeric" class="mono" value="<%= num(plan.monthlyDocumentSoftLimit) %>"></label>
+    <label><%= t('admin.planFields.sortOrder') %><input name="sortOrder" inputmode="numeric" class="mono" value="<%= plan.sortOrder %>"></label>
+  </div>
+  <label class="check"><input type="checkbox" name="highlighted"<%= plan.highlighted ? ' checked' : '' %>> <%= t('admin.planFields.highlighted') %></label>
+  <label class="check"><input type="checkbox" name="isPublic"<%= plan.isPublic ? ' checked' : '' %>> <%= t('admin.planFields.isPublic') %></label>
+  <label class="check"><input type="checkbox" name="isActive"<%= plan.isActive ? ' checked' : '' %>> <%= t('admin.planFields.isActive') %></label>
+  <fieldset>
+    <legend><%= t('admin.planFields.features') %></legend>
+    <% features.forEach((f) => { %>
+      <label class="check"><input type="checkbox" name="features" value="<%= f.code %>"<%= plan.features.includes(f.code) ? ' checked' : '' %>> <%= t('features.' + f.code + '.name') %><% if (f.status === 'planned') { %> <span class="tag"><%= t('admin.planned') %> <%= f.target %></span><% } %></label>
+    <% }) %>
+  </fieldset>
+  <button type="submit"><%= t('admin.save') %></button>
+</form>
+<%- include('../partials/app-foot') %>

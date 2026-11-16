@@ -12,7 +12,7 @@ import {
 } from '../interventi/conferma.js';
 import { numeroModulo, type InterventoFull } from '../interventi/service.js';
 import { improntaContenuto, improntaLeggibile } from '../interventi/sigillo.js';
-import { codiceVoce, GRUPPI_VOCI, valoriVoci } from '../interventi/voci.js';
+import { codiceVoce, gruppiVoci, valoriVoci } from '../interventi/voci.js';
 import { loadIntervento, scope } from './interventi.js';
 import { copiaEmailSchema } from '../legale/informativa.js';
 import { copiaIntervento, informativaDi } from './firma-copia.js';
@@ -52,7 +52,7 @@ async function renderFirma(
     scripts: ['firma'],
     intervento: row,
     numero,
-    gruppi: GRUPPI_VOCI,
+    gruppi: gruppiVoci(row.confermatoAt ?? new Date()),
     codice: codiceVoce,
     voci: valoriVoci(row.voci),
     firme: { tecnico: null, cliente: null },

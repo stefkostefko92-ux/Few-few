@@ -1,0 +1,48 @@
+<%- include('../partials/app-head', { title: t('app.catalog.series') }) %>
+<%
+  const pad = (n) => String(n).padStart(10, '0');
+  const errFor = (key) => (errors[key] ? tOr('app.catalog.errors.' + errors[key], t('auth.errors.invalid')) : '');
+  const v = (name, fallback) => (values && typeof values[name] === 'string' ? values[name] : fallback);
+%>
+<p><a href="/app/o/<%= org.id %>">← <%= org.legalName %></a></p>
+<h1><%= t('app.catalog.series') %></h1>
+<p class="muted"><%= t('app.catalog.seriesHelp') %></p>
+<% if (saved) { %><p class="ok" role="status"><%= t('app.catalog.saved.' + saved) %></p><% } %>
+<% series.forEach((s) => { const used = s.nextNumber > s.rangeStart; const editingThis = editing === s.id; %>
+<section class="panel" aria-labelledby="s-<%= s.id %>">
+  <h2 id="s-<%= s.id %>"><%= s.name %><% if (s.isDefault) { %> <span class="badge"><%= t('app.catalog.default') %></span><% } %></h2>
+  <p class="mono muted"><%= pad(s.rangeStart) %> – <%= pad(s.rangeEnd) %> · <%= t('app.catalog.next') %> <%= pad(s.nextNumber) %> · <%= t('app.catalog.issued', { count: s._count.documents }) %></p>
+  <% if (errors[s.id]) { %><p class="error" role="alert"><%= errFor(s.id) %></p><% } %>
+  <form method="post" action="/app/o/<%= org.id %>/serii/<%= s.id %>" class="stack narrow-form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label><%= t('app.catalog.seriesName') %><input name="name" required maxlength="40" value="<%= editingThis ? v('name', s.name) : s.name %>"></label>
+    <div class="row">
+      <label><%= t('app.catalog.rangeStart') %><input name="rangeStart" inputmode="numeric" class="mono" required value="<%= editingThis ? v('rangeStart', String(s.rangeStart)) : String(s.rangeStart) %>"<%= used ? ' readonly aria-describedby="locked-' + s.id + '"' : '' %>></label>
+      <label><%= t('app.catalog.rangeEnd') %><input name="rangeEnd" inputmode="numeric" class="mono" required value="<%= editingThis ? v('rangeEnd', String(s.rangeEnd)) : String(s.rangeEnd) %>"></label>
+    </div>
+    <% if (used) { %><p class="hint" id="locked-<%= s.id %>"><%= t('app.catalog.startLockedHint') %></p><% } %>
+    <button type="submit" class="button-secondary"><%= t('app.catalog.save') %></button>
+  </form>
+  <div class="actions">
+    <% if (!s.isDefault) { %>
+      <form method="post" action="/app/o/<%= org.id %>/serii/<%= s.id %>/osnovna"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="link"><%= t('app.catalog.makeDefault') %></button></form>
+      <% if (!used) { %><form method="post" action="/app/o/<%= org.id %>/serii/<%= s.id %>/iztrii"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="link"><%= t('app.catalog.deleteSeries') %></button></form><% } %>
+    <% } %>
+  </div>
+</section>
+<% }) %>
+<section class="panel" aria-labelledby="new-series">
+  <h2 id="new-series"><%= t('app.catalog.newSeries') %></h2>
+  <% if (errors.new) { %><p class="error" role="alert"><%= errFor('new') %></p><% } %>
+  <form method="post" action="/app/o/<%= org.id %>/serii/nova" class="stack narrow-form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label><%= t('app.catalog.seriesName') %><input name="name" required maxlength="40" value="<%= editing === null ? v('name', '') : '' %>"></label>
+    <div class="row">
+      <label><%= t('app.catalog.rangeStart') %><input name="rangeStart" inputmode="numeric" class="mono" required value="<%= editing === null ? v('rangeStart', '') : '' %>"></label>
+      <label><%= t('app.catalog.rangeEnd') %><input name="rangeEnd" inputmode="numeric" class="mono" required value="<%= editing === null ? v('rangeEnd', '') : '' %>"></label>
+    </div>
+    <p class="hint"><%= t('app.catalog.newSeriesHint') %></p>
+    <button type="submit"><%= t('app.catalog.create') %></button>
+  </form>
+</section>
+<%- include('../partials/app-foot') %>

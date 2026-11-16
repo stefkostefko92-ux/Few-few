@@ -12,3 +12,4 @@ Supreme AdBlock blokira oglase povsod — videooglase na YouTubu, pasice, pojavn
 • Spletno mesto ne deluje? En klik ga popravi — ali nam sporočite; nič ni poslano, dokler tega sami ne vidite.
 • Prehajate z uBlock Origin, AdGuard ali Adblock Plus? Prenesite dovoljena spletna mesta in filtre z eno datoteko.
 • Oglejte si, s katerimi drugimi spletnimi mesti se stran poveže, in katero koli od njih z enim klikom blokirajte samo tam.
+• Raven zaščite: Osnovna · Standardna · Stroga

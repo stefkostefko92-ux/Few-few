@@ -18,8 +18,10 @@ import type { SeededRng } from "../../kernel/rng.js";
  *   - мачът свършва, щом някой стигне целта; `score` отчита мача.
  * Open information (board + dice
  * are public), so `redact` is a no-op; all randomness is the dice, drawn from
- * the seeded RNG (opening roll in init, then ROLL) → provably fair via
- * commit-reveal. The game opens with the standard opening roll: one die per
+ * the seeded RNG (opening roll in init, then ROLL), детерминистични от seed-а
+ * на мача; seed-ът се пази на сървъра (Match.seed) и се вижда само от админ —
+ * НЕ се публикува commitment към играчите, така че няма проверима честност
+ * „commit-reveal“ (помощникът в kernel/commit.ts още не е вързан). The game opens with the standard opening roll: one die per
  * player, the higher starts and plays exactly those two dice.
  *
  * Board: 24 points indexed 0..23. `points[i]` is a signed checker count —

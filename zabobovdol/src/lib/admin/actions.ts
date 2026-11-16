@@ -1,6 +1,8 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { notifyOnPublish } from "@/lib/push";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { tagsForModel } from "@/lib/cache-core";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser, requireAdmin, type SessionUser } from "@/lib/auth";
@@ -22,6 +24,8 @@ const URL_FIELDS = new Set([
   "facebook",
   "coverImage",
   "sourceUrl",
+  "photoUrl",
+  "target",
 ]);
 function isSafeUrl(value: string): boolean {
   const v = value.trim();
@@ -43,7 +47,7 @@ function delegate(model: string): Delegate {
   return (prisma as unknown as Record<string, Delegate>)[model];
 }
 
-const NULLABLE_NUMBERS = new Set(["lat", "lng"]);
+const NULLABLE_NUMBERS = new Set(["lat", "lng", "birthYear"]);
 
 function coerce(field: Field, raw: FormDataEntryValue | null): unknown {
   switch (field.type) {
@@ -72,7 +76,11 @@ async function uniqueSlugFor(
   desired: string,
   excludeId?: string,
 ): Promise<string> {
-  const root = slugify(desired) || "elem";
+  // Пътища на публичните форми и подстраници (/biznes/nova, /pomeni/nov,
+  // /dobrovolci/stani, /kak-da/kategoriya) — запис с такъв slug би бил недостъпен.
+  const RESERVED = new Set(["nova", "nov", "stani", "kategoriya", "rss-xml"]);
+  let root = slugify(desired) || "elem";
+  if (RESERVED.has(root)) root = `${root}-2`;
   // Зареждаме само кандидатите със същия корен — ограничена заявка.
   const rows = await delegate(model).findMany({
     where: { slug: { startsWith: root } },
@@ -157,6 +165,7 @@ export async function saveRecord(
 
   const title = String(data[resource.titleField] ?? slug ?? "запис");
 
+  let savedId = id;
   if (id) {
     await delegate(resource.model).update({ where: { id }, data });
     await logAudit(user, {
@@ -167,6 +176,7 @@ export async function saveRecord(
     });
   } else {
     const created = await delegate(resource.model).create({ data });
+    savedId = created.id;
     await logAudit(user, {
       action: "CREATE",
       entity: resource.model,
@@ -175,6 +185,10 @@ export async function saveRecord(
     });
   }
 
+  // Известие до абонатите при публикувано прекъсване/измама/новина (веднъж).
+  if (savedId && data.published === true) await notifyOnPublish(resource.model, savedId);
+
+  for (const tag of tagsForModel(resource.model)) revalidateTag(tag);
   revalidatePath("/", "layout");
   redirect(`/admin/${resource.key}?saved=1`);
 }
@@ -198,6 +212,7 @@ export async function deleteRecord(
     summary: `Изтриване: ${resource.labelSingular} „${title}“`,
   });
 
+  for (const tag of tagsForModel(resource.model)) revalidateTag(tag);
   revalidatePath("/", "layout");
   redirect(`/admin/${resource.key}?deleted=1`);
 }
@@ -227,7 +242,9 @@ export async function togglePublish(
     entityId: id,
     summary: `${next ? "Публикуване" : "Скриване"}: ${resource.labelSingular}`,
   });
+  if (next) await notifyOnPublish(resource.model, id);
 
+  for (const tag of tagsForModel(resource.model)) revalidateTag(tag);
   revalidatePath("/", "layout");
   redirect(`/admin/${resource.key}`);
 }

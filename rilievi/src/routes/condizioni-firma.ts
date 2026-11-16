@@ -13,10 +13,10 @@ import {
   sfidaAperta,
   type Dichiarati,
 } from '../legale/firma.js';
-import { ACCETTA_PATH, CONDIZIONI_PATH, FIRMA_PATH } from '../legale/percorsi.js';
+import { ACCETTA_PATH, FIRMA_PATH, percorsoDaFirmare } from '../legale/percorsi.js';
 import { daAccettare } from '../legale/stato.js';
 import { clausoleSpecifiche, leggiTesto } from '../legale/testi.js';
-import { VERSIONE } from '../legale/versioni.js';
+import { versioneDaFirmare } from '../legale/versioni.js';
 import { logger } from '../logger.js';
 import { sendMail } from '../mail/mailer.js';
 import { renderAccetta } from './condizioni-vista.js';
@@ -71,7 +71,7 @@ export async function iniziaFirma(
     subject: t('legale.mail.codice.subject'),
     text: t('legale.mail.codice.text', {
       codice: avvio.codice,
-      versione: VERSIONE.CONDIZIONI,
+      versione: versioneDaFirmare('CONDIZIONI'),
       azienda: o.dichiarati.ragioneSociale,
       minuti: CODICE_MINUTI,
     }),
@@ -79,7 +79,8 @@ export async function iniziaFirma(
   if (esito === 'disabled' && !isProduction()) {
     setFlash(res, 'info', 'legale.firma.prova', { codice: avvio.codice });
   } else if (esito !== 'sent') {
-    await prisma.firmaCondizioni.deleteMany({ where: { userId: user.id, usataAt: null } });
+    // Само ТОЗИ опит: писмото може да е чакало сървъра минути, а междувременно да е тръгнал друг код.
+    await prisma.firmaCondizioni.deleteMany({ where: { id: avvio.id, usataAt: null } });
     await renderAccetta(req, res, 502, {
       errori: {},
       valori: o.valori,
@@ -107,17 +108,18 @@ async function renderFirma(
     return;
   }
   const dichiarati = sfida.dichiarati as unknown as Dichiarati;
+  // Текстът на опита (пратения код) — него вижда и подписва човекът.
   res.status(status).render('legale/firma', {
-    clausole: clausoleSpecifiche(leggiTesto('CONDIZIONI')),
+    clausole: clausoleSpecifiche(leggiTesto('CONDIZIONI', sfida.versione)),
     azienda: dichiarati.ragioneSociale,
     email: sfida.email,
-    versione: VERSIONE.CONDIZIONI,
+    versione: sfida.versione,
     minuti: CODICE_MINUTI,
     errori: extra.errori ?? {},
     errore: extra.errore ?? null,
     rimasti: extra.rimasti ?? MAX_TENTATIVI - sfida.tentativi,
     next,
-    condizioniPath: CONDIZIONI_PATH,
+    condizioniPath: percorsoDaFirmare(),
   });
 }
 
@@ -224,7 +226,7 @@ condizioniFirmaRouter.post(
       subject: t('legale.mail.codice.subject'),
       text: t('legale.mail.codice.text', {
         codice: avvio.codice,
-        versione: VERSIONE.CONDIZIONI,
+        versione: versioneDaFirmare('CONDIZIONI'),
         azienda: (ultima.dichiarati as unknown as Dichiarati).ragioneSociale,
         minuti: CODICE_MINUTI,
       }),
@@ -232,7 +234,14 @@ condizioniFirmaRouter.post(
     if (esito === 'disabled' && !isProduction())
       setFlash(res, 'info', 'legale.firma.prova', { codice: avvio.codice });
     else if (esito === 'sent') setFlash(res, 'ok', 'legale.flash.codiceInviato');
-    else setFlash(res, 'error', 'legale.accetta.errore.invio');
+    else {
+      // Кодът не е стигнал до никого: опитът пада (не брои в тавана на час) и човекът започва наново —
+      // предишният код вече е изгорен от `avviaFirma`, на страницата на подписа няма какво да се въведе.
+      await prisma.firmaCondizioni.deleteMany({ where: { id: avvio.id, usataAt: null } });
+      setFlash(res, 'error', 'legale.accetta.errore.invio');
+      res.redirect(303, conNext(ACCETTA_PATH, next));
+      return;
+    }
     res.redirect(303, conNext(FIRMA_PATH, next));
   },
 );
