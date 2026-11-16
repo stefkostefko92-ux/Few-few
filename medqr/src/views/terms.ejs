@@ -5,7 +5,8 @@
   <h1>Terms of Use</h1>
   <p class="muted">Version <%= legal.version %> · effective from <%= legal.effective %></p>
 
-  <p>These terms govern the relationship between <strong><%= company.name %></strong>
+  <p>These terms govern the relationship between <strong><%= company.name %></strong> (Bulgarian name:
+    <span lang="bg"><%= company.nameBg %></span>), a <%= company.legalFormEn %>, UIC <%= company.uic %>
     (“we”, the “Provider”) and each user (“you”, the “User”) regarding the use of the MedQR service.
     By registering or using the service you accept these terms.</p>
 
@@ -84,8 +85,8 @@
   <h1>Общи условия за ползване</h1>
   <p class="muted">Версия <%= legal.version %> · в сила от <%= legal.effective %></p>
 
-  <p>Тези общи условия уреждат отношенията между <strong><%= company.name %></strong>
-    („ние", „Доставчик") и всеки потребител („вие", „Потребител") във връзка с ползването на
+  <p>Тези общи условия уреждат отношенията между <strong><%= company.nameBg %> (<%= company.name %>)</strong>,
+    <%= company.legalForm %>, ЕИК <%= company.uic %> („ние", „Доставчик") и всеки потребител („вие", „Потребител") във връзка с ползването на
     услугата MedQR. С регистрацията или ползването на услугата вие приемате тези условия.</p>
 
   <h2>1. Определения</h2>

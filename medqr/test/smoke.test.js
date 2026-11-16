@@ -223,6 +223,21 @@ try {
   );
   ok('манифестът включва PNG и maskable иконки');
 
+  // 11c2. Импресумът назовава доставчика с вписаните имена; правната форма е на езика на страницата
+  const aboutEn = await (await req('/about?lang=en')).text();
+  const aboutBg = await (await req('/about?lang=bg')).text();
+  assert.ok(
+    aboutBg.includes(
+      'Карбон Стелт ЕДПК (Carbon Stealth VCC) — еднолично дружество с променлив капитал'
+    ) &&
+      aboutEn.includes(
+        'Carbon Stealth VCC (Bulgarian name: <span lang="bg">Карбон Стелт ЕДПК</span>) — variable capital company (VCC) under Bulgarian law'
+      ) &&
+      !aboutEn.includes('дружество с променлив капитал'),
+    'импресумът: вписаните имена и правната форма на езика на страницата'
+  );
+  ok('импресумът назовава доставчика с вписаните имена');
+
   // 11d. PIN изисква поне 6 цифри (защита от груба сила)
   await req('/profile/pin', { method: 'POST', body: { pin: '1234' } });
   assert.ok(!getByUserId(user.id).pin_hash, 'къс 4-цифрен PIN не се приема');
