@@ -122,8 +122,19 @@ test('неприетите покани (членове и собственос�
     await owner(ago(29)),
     await owner(ago(60), { acceptedAt: ago(61), acceptedById: userId }),
   ];
+  const handover = (data: Record<string, unknown>) =>
+    prisma.firmHandover.create({
+      data: { organizationId: org.id, firmId: org.id, expiresAt: ago(40), ...data },
+    });
+  await handover({ status: 'DECLINED', decidedAt: ago(31) });
+  await handover({ status: 'PENDING', expiresAt: ago(31) });
+  const keptHandover = await handover({ status: 'ACCEPTED', decidedAt: ago(29) });
   const result = await purgeExpired(NOW);
-  assert.equal(result.invites, 3);
+  assert.equal(result.invites, 5);
+  assert.deepEqual(
+    (await prisma.firmHandover.findMany()).map((h) => h.id),
+    [keptHandover.id],
+  );
   const ids = async (rows: Promise<Array<{ id: string }>>) => (await rows).map((r) => r.id).sort();
   assert.deepEqual(await ids(prisma.memberInvite.findMany()), keptMembers.map((r) => r.id).sort());
   assert.deepEqual(await ids(prisma.transferInvite.findMany()), keptOwners.map((r) => r.id).sort());

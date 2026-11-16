@@ -355,6 +355,8 @@ function urls(s: Seeded): Record<'public' | 'owner' | 'firm' | 'master', string[
       '/zabravena-parola',
       '/zabravena-parola?lang=en',
       '/prilozhenie',
+      '/kak-raboti',
+      '/en/how-it-works',
       '/nyama-takava-stranitsa',
       '/en/no-such-page',
     ],
@@ -390,7 +392,9 @@ function urls(s: Seeded): Record<'public' | 'owner' | 'firm' | 'master', string[
       `${o}/dnevnik`,
       `${o}/saf-t`,
       `${o}/prekratyavane`,
+      `${o}/sobstvenost`,
       '/app/sigurnost',
+      '/app/pomosht',
     ],
     firm: [
       '/app',

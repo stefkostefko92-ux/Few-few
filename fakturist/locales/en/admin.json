@@ -289,5 +289,51 @@
       "notGranted": "The current plan was not granted manually — it is not ended from here.",
       "conflict": "The organisation’s plan changed at the same moment (a payment or expiry) — reload the card and try again."
     }
+  },
+  "handover": {
+    "title": "Hand over the ownership now",
+    "intro": "In a dispute or after lost access, once a document of representation is checked. The handover is immediate; the people affected get an email and the reason goes into the audit log.",
+    "to": "To whom",
+    "toPerson": "To a person (by email)",
+    "toFirm": "To an accounting firm (by EIK)",
+    "email": "New owner’s email",
+    "emailHint": "Without an account — one is created and gets a “New password” link.",
+    "name": "Name (for a new account)",
+    "nameHint": "Optional; without it — the part of the email before “@”.",
+    "keepOldOwner": "The old owner stays an administrator (otherwise leaves the company)",
+    "eik": "Accounting firm’s EIK",
+    "eikHint": "The firm takes over the company under an authorisation; the owner and members leave.",
+    "reason": "Reason",
+    "reasonHint": "3–200 characters, e.g. “Certificate of good standing dated 10.11.2026”.",
+    "code": "Code from the app (2FA)",
+    "button": "Hand over now",
+    "done": "The ownership is handed over.",
+    "errors": {
+      "code": "The code from the app is wrong or already used.",
+      "reason": "The reason is 3–200 characters.",
+      "invalidEmail": "The email is not valid.",
+      "notFound": "No such firm or company.",
+      "notFirm": "The EIK is not of an active accounting firm.",
+      "notCompany": "An accounting firm is not handed over to a firm.",
+      "terminated": "The company is terminated.",
+      "disabled": "The account with this email is closed or blocked.",
+      "notAllowed": "Only a master hands over the ownership.",
+      "invalid": "Fill in the fields."
+    }
+  },
+  "profile": {
+    "title": "Company details",
+    "done": "The company details are saved.",
+    "eikTitle": "Change the EIK",
+    "eikIntro": "Only after a check (e.g. a Commercial Register extract). The VAT number “BG” + the old EIK follows the new one; the owner gets an email.",
+    "newEik": "New EIK",
+    "eikButton": "Change the EIK",
+    "errors": {
+      "code": "The code from the app is wrong or already used.",
+      "reason": "The reason is 3–200 characters.",
+      "invalidEik": "The EIK is not valid.",
+      "eikTaken": "The EIK belongs to another company in Fakturist.",
+      "notOwner": "Masters only."
+    }
   }
 }

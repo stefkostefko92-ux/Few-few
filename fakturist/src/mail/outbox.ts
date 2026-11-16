@@ -15,6 +15,7 @@ import { composeAnnulledMail } from './annul-mail.js';
 import { composeDocumentSentMail, composeReminderMail } from './document-mail.js';
 import { composeProformaSentMail } from '../proforma/mail.js';
 import { composeMasterMail, MASTER_MAIL_KINDS } from './master-mail.js';
+import { composeHandoverMail, HANDOVER_MAIL_KINDS } from './handover-mail.js';
 import { composeOrgMail, ORG_MAIL_KINDS } from './org-mail.js';
 import { MINUTE } from '../time.js';
 import { mailSignature, recipientLocale } from './locale.js';
@@ -125,6 +126,7 @@ async function composeInviteMail(toEmail: string, payload: unknown): Promise<Mai
       organization: { select: { legalName: true, eik: true } },
       mandate: { select: { firm: { select: { legalName: true } } } },
       createdBy: { select: { locale: true } },
+      fromUser: { select: { name: true } },
     },
   });
   if (invite.acceptedAt || invite.revokedAt) throw new Error('Поканата вече не е отворена');
@@ -137,6 +139,7 @@ async function composeInviteMail(toEmail: string, payload: unknown): Promise<Mai
     companyName: invite.organization.legalName,
     companyEik: invite.organization.eik,
     firmName: invite.mandate?.firm.legalName ?? null,
+    fromName: invite.fromUser?.name ?? null,
     link: `${config().PUBLIC_BASE_URL}/pokana/${token}${locale === 'en' ? '?lang=en' : ''}`,
     expires: docDate(invite.expiresAt, locale),
     signature,
@@ -186,6 +189,9 @@ async function compose(kind: string, toEmail: string, payload: unknown): Promise
   }
   if ((MASTER_MAIL_KINDS as readonly string[]).includes(kind)) {
     return composeMasterMail(kind, toEmail, payload);
+  }
+  if ((HANDOVER_MAIL_KINDS as readonly string[]).includes(kind)) {
+    return composeHandoverMail(kind, toEmail, payload);
   }
   throw new Error(`Непознат вид писмо: ${kind}`);
 }

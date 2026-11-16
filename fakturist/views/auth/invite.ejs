@@ -7,7 +7,12 @@
 %>
 <section class="narrow wide-ish">
   <h1><%= t('auth.invite.title') %></h1>
+  <% if (invite.from) { %>
+  <p><%= t('auth.invite.handoverIntro', { from: invite.from.name, company: invite.organization.legalName, eik: invite.organization.eik || '—' }) %></p>
+  <p class="muted"><%= t('auth.invite.handoverNote', { from: invite.from.name }) %></p>
+  <% } else { %>
   <p><%= t('auth.invite.intro', { company: invite.organization.legalName, eik: invite.organization.eik || '—' }) %></p>
+  <% } %>
   <p class="muted"><%= t('auth.invite.forEmail', { email: invite.email, date }) %></p>
   <% const m = invite.mandate; const mandateBox = m && m.status === 'PENDING'; %>
   <% if (m) { %>

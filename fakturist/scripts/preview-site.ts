@@ -16,6 +16,7 @@ import { safeJson } from '../src/http/json-ld.js';
 import { demoChain } from '../src/site-demo-chain.js';
 import { pageUrl, SITE_PAGES, type SitePageId } from '../src/seo/pages.js';
 import { faqItems, structuredData } from '../src/seo/structured-data.js';
+import { helpFaq, publicHelp } from '../src/help/content.js';
 import { translator, type Locale } from '../src/i18n.js';
 import { ROOT } from '../src/paths.js';
 import { legalPath, type LegalDocumentId } from '../src/legal/documents.js';
@@ -65,7 +66,8 @@ async function renderPage(id: SitePageId, locale: Locale): Promise<string> {
     features: FEATURES,
     featureGroups: FEATURE_GROUPS,
     formatEuro: (cents: number) => formatEuro(cents, locale),
-    faq: faqItems(locale, t, id),
+    faq: id === 'help' ? helpFaq(locale) : faqItems(locale, t, id),
+    helpSections: id === 'help' ? publicHelp(locale) : [],
     seo: {
       title: t(`site.${id}.meta.title`),
       description: t(`site.${id}.meta.description`),

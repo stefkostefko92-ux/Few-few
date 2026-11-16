@@ -9,7 +9,8 @@
     "pricing": "Pricing",
     "accountants": "For accountants",
     "einvoicing2028": "E-invoicing 2028",
-    "news": "What’s new"
+    "news": "What’s new",
+    "help": "How it works"
   },
   "cta": {
     "login": "Sign in",
@@ -466,5 +467,17 @@
     "version": "Version {version}",
     "updated": "Last updated",
     "feed": "Subscribe (RSS)"
+  },
+  "help": {
+    "meta": {
+      "title": "How Fakturist works: invoicing for companies and firms",
+      "description": "How to issue invoices, notes and pro formas in Fakturist, how an accounting firm works under authorisation, and what VAT ledgers and SAF-T data are.",
+      "keywords": "Carbon Stealth, Fakturist, online invoicing, electronic invoice, EN 16931, accounting firm, authorisation, VAT ledger, SAF-T"
+    },
+    "faq": {
+      "title": "Questions and answers"
+    },
+    "toc": "In this guide",
+    "manualNote": "The manual as a PDF — for each user, by their role — is under “Help” after signing in."
   }
 }

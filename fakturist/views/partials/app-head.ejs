@@ -22,6 +22,7 @@
     <a href="/app"<%- path === '/app' ? ' aria-current="page"' : '' %>><%- icon('building') %><span><%= t('app.nav.companies') %></span></a>
     <a href="/app/sigurnost"<%- path.startsWith('/app/sigurnost') ? ' aria-current="page"' : '' %>><%- icon('shield') %><span><%= t('app.nav.security') %></span></a>
     <% if (currentUser.platformRole === 'MASTER') { %><a href="/admin"<%- path.startsWith('/admin') ? ' aria-current="page"' : '' %>><%- icon('shieldCheck') %><span><%= t('app.nav.admin') %></span></a><% } %>
+    <a href="/app/pomosht"<%- path.startsWith('/app/pomosht') ? ' aria-current="page"' : '' %>><%- icon('help') %><span><%= t('app.nav.help') %></span></a>
     <a href="/prilozhenie" data-install-link<%- path === '/prilozhenie' ? ' aria-current="page"' : '' %>><%- icon('install') %><span><%= t('install.nav') %></span></a>
   </nav>
   <form method="post" action="/app/ezik" class="lang-switch" aria-label="<%= t('app.nav.language') %>">

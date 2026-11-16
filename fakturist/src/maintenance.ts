@@ -11,7 +11,7 @@ import { purgeLegalRecords } from './legal/retention.js';
  * изпращането (неуспешните — от създаването); данните от банковите извлечения — по bank/retention.ts;
  * еднократните ключове на „Издай“ — след 30 дни; известията от Peppol (с отговорите на доставчика) — 90 дни.
  * Неприетите покани (членове, собственост) са връзки по имейл: 30 дни след изтичането или отмяната; приетата
- * остава (сочи профила, който я прие).
+ * остава (сочи профила, който я прие). Предложенията за предаване на кантора — 30 дни след решението/срока.
  * Фирмите — 30 дни след прекратяването (accounts/termination-purge.ts). Нищо друго не се трие оттук:
  * документите на действащите фирми, одитът и приетите условия остават.
  */
@@ -66,6 +66,15 @@ export async function purgeExpired(now: Date = new Date()): Promise<{
   };
   const memberInvites = await prisma.memberInvite.deleteMany({ where: staleInvite });
   const transferInvites = await prisma.transferInvite.deleteMany({ where: staleInvite });
+  // Предложенията към кантора — решените/отменените и изтеклите, 30 дни след това (SPEC 88).
+  const firmHandovers = await prisma.firmHandover.deleteMany({
+    where: {
+      OR: [
+        { status: { not: 'PENDING' }, decidedAt: { lt: before(RETENTION.expiredTokensMs) } },
+        { status: 'PENDING', expiresAt: { lt: before(RETENTION.expiredTokensMs) } },
+      ],
+    },
+  });
   return {
     sessions: sessions.count,
     tokens: tokens.count,
@@ -73,7 +82,7 @@ export async function purgeExpired(now: Date = new Date()): Promise<{
     ...bank,
     submissions: submissions.count,
     peppolEvents: peppolEvents.count,
-    invites: memberInvites.count + transferInvites.count,
+    invites: memberInvites.count + transferInvites.count + firmHandovers.count,
   };
 }
 

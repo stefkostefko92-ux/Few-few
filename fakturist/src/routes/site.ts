@@ -11,6 +11,7 @@ import { pageUrl, SITE_PAGES, type SitePageId } from '../seo/pages.js';
 import { faqItems, structuredData } from '../seo/structured-data.js';
 import { byDay, LAST_UPDATE, NEWS } from '../news/entries.js';
 import { NEWS_FEED_PATHS } from '../news/feed.js';
+import { helpFaq, publicHelp } from '../help/content.js';
 import { SOFTWARE_VERSION } from '../version.js';
 
 /** Сума в евроцентове за показване: „9,00 €“ / „€9.00“. */
@@ -45,7 +46,8 @@ async function renderSitePage(
   res.locals.features = FEATURES;
   res.locals.featureGroups = FEATURE_GROUPS;
   res.locals.formatEuro = (cents: number) => formatEuro(cents, locale);
-  res.locals.faq = faqItems(locale, t, id);
+  res.locals.faq = id === 'help' ? helpFaq(locale) : faqItems(locale, t, id);
+  res.locals.helpSections = id === 'help' ? publicHelp(locale) : [];
   res.locals.urls = Object.fromEntries(
     SITE_PAGES.map((page) => [page.id, page.paths[locale]]),
   ) as Record<SitePageId, string>;

@@ -102,6 +102,11 @@ export async function revokeOwnership(input: {
       where: { organizationId: input.organizationId, kind: 'transfer.invite', status: 'PENDING' },
       data: { status: 'FAILED', lastError: 'Собствеността е отнета.' },
     });
+    // Предложението към кантора от подставения собственик също отпада (SPEC 88).
+    await tx.firmHandover.updateMany({
+      where: { organizationId: input.organizationId, status: 'PENDING' },
+      data: { status: 'REVOKED', decidedAt: now },
+    });
     // И поканите за член: иначе подставеният собственик кани свой имейл и се връща след отнемането.
     const memberInvites = await revokeOpenMemberInvites(
       tx,

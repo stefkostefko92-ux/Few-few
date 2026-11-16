@@ -167,6 +167,8 @@ export interface InviteMailData {
   companyEik: string | null;
   /** Кантората, която кани (по пълномощно); null — поканата е от Фактурист. */
   firmName?: string | null;
+  /** Предаване от собственика (SPEC 84): името му — писмото казва, че той предава собствеността. */
+  fromName?: string | null;
   link: string;
   expires: string;
   signature: string;
@@ -188,6 +190,9 @@ const INVITE = {
     accept: 'Приемете поканата',
     button: 'Приеми поканата',
     subject: (company: string) => `Покана: поемете профила на ${company} във Фактурист`,
+    handover: (from: string, company: string) =>
+      `${from} Ви предава собствеността на ${company} във Фактурист. Като собственик ще виждате документите на фирмата, ще решавате кой има достъп до нея и ще управлявате плана. ${from} остава администратор, докато не решите друго.`,
+    handoverSubject: (company: string) => `Предаване на собственост: ${company} във Фактурист`,
   },
   en: {
     hello: 'Hello,',
@@ -203,6 +208,9 @@ const INVITE = {
     accept: 'Accept the invitation',
     button: 'Accept the invitation',
     subject: (company: string) => `Invitation: take over the account of ${company} in Fakturist`,
+    handover: (from: string, company: string) =>
+      `${from} is handing over the ownership of ${company} in Fakturist to you. As the owner you will see the company’s documents, decide who has access to it and manage the plan. ${from} stays an administrator until you decide otherwise.`,
+    handoverSubject: (company: string) => `Ownership handover: ${company} in Fakturist`,
   },
 } as const;
 
@@ -217,11 +225,9 @@ export function transferInviteMail(data: InviteMailData): {
   const company = data.companyEik
     ? `${data.companyName} (${c.eik} ${data.companyEik})`
     : data.companyName;
-  const intro = c.intro(
-    company,
-    c.by(data.firmName),
-    data.firmName ? c.mandate(data.firmName) : '',
-  );
+  const intro = data.fromName
+    ? c.handover(data.fromName, company)
+    : c.intro(company, c.by(data.firmName), data.firmName ? c.mandate(data.firmName) : '');
   const validity = c.validity(data.expires);
   const text = [
     c.hello,
@@ -245,5 +251,6 @@ export function transferInviteMail(data: InviteMailData): {
 <p style="margin:0 0 24px;font-size:13px;color:#485064">${escapeHtml(c.ignore)}</p>
 <p style="margin:0;font-size:12px;color:#485064">${escapeHtml(data.signature)}</p>
 </div></body></html>`;
-  return { subject: c.subject(data.companyName), text, html };
+  const subject = data.fromName ? c.handoverSubject(data.companyName) : c.subject(data.companyName);
+  return { subject, text, html };
 }

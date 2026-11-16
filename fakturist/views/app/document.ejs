@@ -19,7 +19,6 @@
     <a class="button" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/pdf" target="_blank" rel="noopener"><%= t('app.view.download') %> PDF</a>
     <a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/ubl.xml" target="_blank" rel="noopener"><%= t('app.view.download') %> <%= t('app.view.ubl') %></a>
     <a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/cii.xml" target="_blank" rel="noopener"><%= t('app.view.download') %> <%= t('app.view.cii') %></a>
-    <% if (locals.canAnnul) { %><a class="button-secondary" href="/app/o/<%= document.organizationId %>/nov?zamenya=<%= document.id %>"><%= t('app.annul.button') %></a><% } %>
     <% if (locals.canRecur) { %><a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/povtaryay"><%= t('app.recurring.repeat') %></a><% } %>
   </div>
 </div>
@@ -74,6 +73,13 @@
 <% document.inboxEntries.forEach((e) => { %>
 <p class="ok"><%= t('app.view.delivered', { name: e.recipientOrg.legalName }) %> · <%= t('app.inbox.status.' + e.status) %></p>
 <% }) %>
+<% if (locals.canAnnul) { %>
+<section class="panel stack danger-zone" aria-labelledby="h-annul">
+  <h2 id="h-annul"><%= t('app.annul.title') %></h2>
+  <p class="muted"><%= t('app.annul.zone') %></p>
+  <div><a class="button-danger" href="/app/o/<%= document.organizationId %>/nov?zamenya=<%= document.id %>"><%= t('app.annul.button') %></a></div>
+</section>
+<% } %>
 <% if (document.sha256) { %>
 <p class="chain mono"><%= t('app.view.chain', { index: String(document.chainIndex) }) %> <%= document.sha256.slice(0, 16) %>…</p>
 <% } %>

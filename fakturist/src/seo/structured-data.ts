@@ -4,6 +4,7 @@ import { hasKey, type Locale, type Translate } from '../i18n.js';
 import { pageUrl, type SitePageId } from './pages.js';
 import type { PublicPlan } from '../billing/public-plans.js';
 import { LAST_UPDATE } from '../news/entries.js';
+import { helpFaq, publicHelp } from '../help/content.js';
 import { FEATURES } from '../features.js';
 import { SOFTWARE_VERSION } from '../version.js';
 
@@ -129,7 +130,24 @@ export function structuredData(input: {
   if (page === 'home' || page === 'pricing' || page === 'accountants') {
     graph.push(software(base, locale, t, plans));
   }
-  const faq = faqItems(locale, t, page);
+  // „Как работи“: всеки раздел — HowTo със стъпките; въпросите са в help.json (SPEC 89).
+  if (page === 'help') {
+    for (const section of publicHelp(locale)) {
+      graph.push({
+        '@type': 'HowTo',
+        '@id': `${pageUrl(base, page, locale)}#${section.id}`,
+        name: section.title,
+        description: section.intro,
+        inLanguage: locale,
+        step: section.steps.map((text, index) => ({
+          '@type': 'HowToStep',
+          position: index + 1,
+          text,
+        })),
+      });
+    }
+  }
+  const faq = page === 'help' ? helpFaq(locale) : faqItems(locale, t, page);
   if (faq.length > 0) {
     graph.push({
       '@type': 'FAQPage',

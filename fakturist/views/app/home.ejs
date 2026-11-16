@@ -1,6 +1,25 @@
 <%- include('../partials/app-head', { title: t('app.home.title') }) %>
 <h1><%= t('app.home.title') %></h1>
 <% if (added) { %><p class="ok" role="status"><%= tOr('app.home.added.' + added, t('app.home.added.added')) %></p><% } %>
+<% if (handover) { %><p class="ok" role="status"><%= t('app.ownership.proposals.ok.' + (handover === 'accepted' ? 'accepted' : 'declined')) %></p><% } %>
+<% if (handoverErr) { %><p class="error" role="alert"><%= tOr('app.ownership.proposals.err.' + handoverErr, t('auth.errors.invalid')) %></p><% } %>
+<% if (proposals.length > 0) { %>
+<section class="panel stack" aria-labelledby="proposals-h">
+  <h2 id="proposals-h"><%= t('app.ownership.proposals.title') %></h2>
+  <p class="muted"><%= t('app.ownership.proposals.text') %></p>
+  <ul class="plain stack">
+    <% proposals.forEach((p) => { %>
+    <li>
+      <p><%= t('app.ownership.proposals.item', { company: p.organization.legalName, eik: p.organization.eik || '—', from: p.fromUser ? p.fromUser.name : '—', date: bgDate(p.expiresAt) }) %></p>
+      <div class="actions">
+        <form method="post" action="/app/o/<%= p.firmId %>/predlozheniya/<%= p.id %>/priemi"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit"><%= t('app.ownership.proposals.accept') %></button></form>
+        <form method="post" action="/app/o/<%= p.firmId %>/predlozheniya/<%= p.id %>/otkazhi"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="button-secondary"><%= t('app.ownership.proposals.decline') %></button></form>
+      </div>
+    </li>
+    <% }) %>
+  </ul>
+</section>
+<% } %>
 <% if (invited) { %><p class="<%= invited === 'ok' ? 'ok' : 'error' %>" role="<%= invited === 'ok' ? 'status' : 'alert' %>"><%= tOr('app.home.invite.' + invited, t('app.client.errors.invalid')) %></p><% } %>
 <section>
   <h2><%= t('app.home.own') %></h2>
@@ -33,7 +52,7 @@
           <% if (m.owner && m.owner.hasOwner) { %>
             <span class="tag tag-active"><%= t('app.home.hasOwner') %></span>
           <% } else { %>
-            <% if (m.owner && m.owner.invite) { %><p class="muted"><%= m.owner.invite.email ? t('app.home.invitedEmail', { email: m.owner.invite.email, date: m.owner.invite.expiresAt.toISOString().slice(0, 10) }) : t('app.home.invited', { date: m.owner.invite.expiresAt.toISOString().slice(0, 10) }) %></p><% } %>
+            <% if (m.owner && m.owner.invite) { %><p class="muted"><%= m.owner.invite.email ? t('app.home.invitedEmail', { email: m.owner.invite.email, date: bgDate(m.owner.invite.expiresAt) }) : t('app.home.invited', { date: bgDate(m.owner.invite.expiresAt) }) %></p><% } %>
             <% if (m.status !== 'REVOKED' && canInvite.includes(m.firmId) && m.client.createdByFirmId === m.firmId) { %>
               <form method="post" action="/app/o/<%= m.firmId %>/klienti/<%= m.id %>/pokana" class="invite-row">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">

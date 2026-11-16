@@ -21,7 +21,13 @@ export const ORG_MAIL_KINDS = [
   'org.purged',
   'org.notice',
   'org.ownershipRevoked',
+  'org.eikChanged',
 ] as const;
+
+const EikChanged = z.object({
+  legalName: z.string().min(1).max(300),
+  eik: z.string().regex(/^\d{9}(\d{4})?$/),
+});
 
 const Notice = z.object({ announcementId: z.string().min(1).max(40) });
 const Revoked = z.object({
@@ -116,6 +122,21 @@ export async function composeOrgMail(
           `We have revoked the ownership of “${legalName}” in Fakturist and its members’ access is suspended. Reason: ${REVOKE_REASON.en[reason]}.`,
           'Basis: items 10 and 11 of the terms of service. The issued documents stay with the company; accounting-firm authorisations wait for the new owner.',
           `If you disagree, write to us at ${contact} — a person reviews the decision and we will reply. The real owner gets access through our invitation after a document of representation.`,
+        ];
+  } else if (kind === 'org.eikChanged') {
+    const { legalName, eik } = EikChanged.parse(payload);
+    const contact = config().CONTACT_EMAIL;
+    subject = bg
+      ? `Фактурист — ЕИК на „${legalName}“ е сменен`
+      : `Fakturist — the EIK of “${legalName}” is changed`;
+    paragraphs = bg
+      ? [
+          `ЕИК на „${legalName}“ във Фактурист е сменен на ${eik} след проверка на документите. Новите документи се издават с него; издадените не се променят.`,
+          `Ако не сте поискали това, пишете ни веднага на ${contact}.`,
+        ]
+      : [
+          `The EIK of “${legalName}” in Fakturist is changed to ${eik} after checking the documents. New documents are issued with it; the issued ones do not change.`,
+          `If you did not ask for this, write to us at once at ${contact}.`,
         ];
   } else if (kind === 'org.notice') {
     // Съобщението от мастъра (src/admin/announcements.ts): текстът е в записа, не в опашката.

@@ -34,6 +34,10 @@ import {
 import { pagerLinks, readCursor } from '../http/pagination.js';
 import { appCatalogRouter } from './app-catalog.js';
 import { appSeriesRouter } from './app-series.js';
+import { appOwnershipRouter } from './app-ownership.js';
+import { appCompanyProfileRouter } from './app-company-profile.js';
+import { appHelpRouter } from './app-help.js';
+import { pendingFirmHandovers } from '../accounts/handover.js';
 import { appMembersRouter } from './app-members.js';
 import { appIssueRouter } from './app-issue.js';
 import { appExportRouter } from './app-export.js';
@@ -75,6 +79,9 @@ export function appRouter(): Router {
   router.use(appCatalogRouter());
   router.use(appSeriesRouter());
   router.use(appMembersRouter());
+  router.use(appOwnershipRouter());
+  router.use(appCompanyProfileRouter());
+  router.use(appHelpRouter());
   router.use(appIssueRouter());
   router.use(appExportRouter());
   router.use(appInboxRouter());
@@ -120,7 +127,21 @@ export function appRouter(): Router {
       const value = req.query[key];
       return typeof value === 'string' && /^[a-zA-Z]{1,20}$/.test(value) ? value : null;
     };
+    // Предложенията за поемане (SPEC 86) — за собственика и администратора на кантората.
+    const canDecide = user.memberships
+      .filter((m) => firmIds.includes(m.organizationId) && roleCan(m.role, 'members.manage'))
+      .map((m) => m.organizationId);
+    const proposals = (
+      await Promise.all(
+        canDecide.map(async (firmId) =>
+          (await pendingFirmHandovers(firmId)).map((p) => ({ ...p, firmId })),
+        ),
+      )
+    ).flat();
     res.render('app/home', {
+      proposals,
+      handover: flash('handover'),
+      handoverErr: flash('handoverErr'),
       own: own.map((org) => ({
         ...org,
         role: user.memberships.find((m) => m.organizationId === org.id)?.role ?? 'VIEWER',

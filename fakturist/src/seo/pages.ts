@@ -25,6 +25,12 @@ export const SITE_PAGES = [
     changefreq: 'weekly',
   },
   {
+    id: 'help',
+    paths: { bg: '/kak-raboti', en: '/en/how-it-works' },
+    priority: 0.7,
+    changefreq: 'monthly',
+  },
+  {
     id: 'news',
     paths: { bg: '/kakvo-novo', en: '/en/whats-new' },
     priority: 0.6,

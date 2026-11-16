@@ -1,0 +1,392 @@
+{
+  "title": "How Fakturist works",
+  "lead": "Fakturist is an online invoicing program for Bulgarian companies and accounting firms. Every document is issued with the particulars required by the Bulgarian VAT Act and as structured XML (UBL 2.1 and CII) under the European standard EN 16931. An accounting firm issues on behalf of its clients under an authorisation.",
+  "manual": {
+    "title": "Fakturist manual",
+    "subtitle": "How to work in Fakturist — by your role and your plan",
+    "forCompany": "For a company",
+    "forFirm": "For an accounting firm",
+    "contents": "Contents",
+    "role": "Your role",
+    "generated": "Prepared on",
+    "notAvailable": "Not included in your plan"
+  },
+  "sections": {
+    "start": {
+      "title": "Getting started",
+      "intro": "You create an account for a company or an accounting firm and issue your first document in a few minutes.",
+      "steps": {
+        "1": "Open “Register”. Under “I am registering”, choose “A company — issuing my own invoices” or “An accounting firm — issuing on behalf of client companies”.",
+        "2": "Enter your “Full name”, email and a password of at least 12 characters.",
+        "3": "Fill in the details of the company or accounting firm: “Legal name”, “EIK (company number)”, “Address”, “City” and “Postcode”. “VAT number (if registered)” and IBAN are optional.",
+        "4": "Tick that you accept the terms of service and the data processing agreement, and press “Create account”.",
+        "5": "Open the link in the email to confirm your email address. The link is valid for 7 days; if it has not arrived, press “Send again”.",
+        "6": "Sign in with your email and password. Under “Your companies”, open the company and press “New document”."
+      },
+      "tips": {
+        "1": "If registration is temporarily closed, write to the email address shown on the page — we will invite you.",
+        "2": "On a phone, the “Sections” menu collapses to the current section. Change the language with the “Language” switch."
+      }
+    },
+    "company-data": {
+      "title": "Company details",
+      "intro": "You change the company's name, address, VAT number, bank account, email and phone — and with them, the look of the PDF.",
+      "steps": {
+        "1": "As the owner, open “Team and settings” → “Company settings” → “Company details”.",
+        "2": "Change the name, address, VAT number, bank account, email or phone.",
+        "3": "Press “Save the details”. The new details appear on documents issued after the change.",
+        "4": "For the look of the PDF, open “Team and settings” → “Company settings” → “Document look (PDF)”. Upload the logo with “Upload” — PNG, JPEG or WebP up to 10 MB.",
+        "5": "Choose the “Layout” (“Classic”, “Band” or “Compact”), the “Font”, the “Accent colour” and whether the logo is on the left or the right.",
+        "6": "Press “View a sample (PDF)” to see the result, and then “Save the look”."
+      },
+      "tips": {
+        "1": "The EIK cannot be changed here. Write to Fakturist — the EIK is changed after a check.",
+        "2": "Issued documents do not change when you change the details. The PDF look is different: it also applies to documents already issued the next time they are downloaded. The particulars, the amounts, the authorisation and the Fakturist signature are in every look.",
+        "3": "The details are changed by the owner. The PDF look is changed by the owner and the administrator; an accounting firm acting under an authorisation has no access. An accent colour that is too light is rejected — it must be readable on a white background."
+      }
+    },
+    "issue": {
+      "title": "Issuing an invoice",
+      "intro": "You issue an invoice with all the particulars required by the Bulgarian VAT Act: fill in the form and press “Issue”.",
+      "steps": {
+        "1": "On the company page, press “New document”.",
+        "2": "Under “Type”, choose “Invoice”. Check the “Series”, “Issue date”, “Tax point date” and “Due date”.",
+        "3": "Under “Buyer”, enter the “Legal name”, “EIK” and “Address”, or choose a “Contact” and press “Fill in”.",
+        "4": "Under “Lines”, press “+ Add line” or “Add from items”. Set the “Quantity”, “Unit price excl. VAT”, “VAT category” and “Rate %”.",
+        "5": "For a currency other than euro, enter the “ECB rate (units per €1)”. For a zero rate or no VAT, choose a ready “Basis for not charging VAT” or write your own with the article of the Bulgarian VAT Act.",
+        "6": "Press “Issue”. If there is an error, “The document was not issued — please fix:” shows what to correct.",
+        "7": "On the document page, “Download” gives you the PDF, and “UBL 2.1 (XML)” and “CII (XML)” give you the structured files."
+      },
+      "tips": {
+        "1": "The number and the supplier come from Fakturist on issue, not from the form. An issued document cannot be edited — corrections are made with a note or by annulment.",
+        "2": "“PDF language” is “Bulgarian” or “Bulgarian and English”. The XML has no language.",
+        "3": "An invoice to a company registered with Fakturist reaches that company's inbox automatically, by EIK."
+      }
+    },
+    "notes": {
+      "title": "Credit and debit notes",
+      "intro": "You change the taxable amount of an invoice already issued — a discount, a return or a cancelled supply — with a credit or debit note.",
+      "steps": {
+        "1": "Press “New document” and under “Type” choose “Credit note” or “Debit note”.",
+        "2": "Under “Corrects invoice (for a note)”, enter the invoice's “Number” and “Date”.",
+        "3": "Fill in the “Reason for the note” — it is required, for example “returned goods” or “discount after the invoice”.",
+        "4": "Enter the lines with the amounts of the change and press “Issue”."
+      },
+      "tips": {
+        "1": "A note always refers to the invoice it relates to (Art. 115 of the Bulgarian VAT Act).",
+        "2": "An invoice with a note issued against it can no longer be annulled."
+      }
+    },
+    "annul": {
+      "title": "Annulling a document",
+      "intro": "You annul a document that was drawn up incorrectly and issue a new one in its place in a single step.",
+      "steps": {
+        "1": "Open the issued document and press “Annul and issue a new one”.",
+        "2": "Under “Reason”, choose the cause: “Wrong particular (Art. 116(1))”, “VAT not charged when it should have been (para. 2)”, “VAT charged when it should not have been (para. 3)” or “Wrong VAT rate (para. 6)”.",
+        "3": "Correct the details in the new document, which opens with the details of the old one, and press “Issue”.",
+        "4": "The old document shows “ANNULLED on …” and “Replaced by …”, and the new one shows “Replaces the annulled document”.",
+        "5": "Download the “Annulment protocol (PDF)” if you need it for the accounts."
+      },
+      "tips": {
+        "1": "The number of the annulled document stays taken. The annulled document also stays in the VAT ledgers: in the same month without amounts; later, in the month of annulment with the opposite sign.",
+        "2": "A discount, a return or a cancelled supply is not an annulment — issue a credit or debit note for these.",
+        "3": "The owner, the administrator and the accountant may annul; the “Issuer” role cannot annul."
+      }
+    },
+    "advance": {
+      "title": "Prepayment invoice and final invoice",
+      "intro": "You issue a prepayment invoice for a payment received and later deduct it in the final invoice.",
+      "steps": {
+        "1": "Press “New document”, under “Type” choose “Prepayment invoice”, fill in the form and press “Issue”.",
+        "2": "When the supply takes place, press “New document” and under “Type” choose “Invoice” — for the same buyer and in the same currency.",
+        "3": "In “Deduct the advance from invoice no.”, enter the number of the prepayment invoice.",
+        "4": "Fakturist adds a minus line for the taxable amount of the advance at the same rate. Check the amounts and press “Issue”."
+      },
+      "tips": {
+        "1": "A prepayment invoice can be deducted only once. While it is deducted, it cannot be annulled.",
+        "2": "A payment is recorded against an invoice or a debit note, not against a prepayment invoice."
+      }
+    },
+    "proforma": {
+      "title": "Pro forma invoice",
+      "intro": "You send the customer a request for payment and turn it into an invoice when they pay or on delivery.",
+      "steps": {
+        "1": "Open “Documents” → “Pro forma invoices” and press “New pro forma”. You can also use “New document”, with “Type” → “Pro forma invoice”.",
+        "2": "Fill in the buyer and the lines as for an invoice. The pro forma gets a number made up of “ПФ-” and 10 digits.",
+        "3": "Under “Send by email”, enter the “Recipient email” and press “Send”. The email carries the PDF.",
+        "4": "When the customer pays or on delivery, open the pro forma and press “Issue invoice”. Check the dates — they are today's — and issue.",
+        "5": "If the pro forma is not needed, press “Cancel the pro forma”."
+      },
+      "tips": {
+        "1": "A pro forma invoice is not a tax document under the Bulgarian VAT Act. It takes no number from the invoice series and does not go into the ledgers.",
+        "2": "A pro forma becomes an invoice or a prepayment invoice. A pro forma is not sent via Peppol."
+      }
+    },
+    "catalog": {
+      "title": "Contacts, items and series",
+      "intro": "You save your customers, goods and number series once, so you do not have to enter them for every document.",
+      "steps": {
+        "1": "Open “Catalogue” → “Contacts” and press “New contact”. Enter the “Name”, “EIK (if any)” and “VAT number (if any)”, then press “Save”.",
+        "2": "Under “Items”, press “New item” and enter the name, the “Unit price excluding VAT”, the VAT category and the VAT rate.",
+        "3": "Under “Series”, press “New series” and set the “Series name”, “From number” and “To number”. Each series is a continuous range of ten-digit numbers.",
+        "4": "Press “Make default” on the series you want documents to be issued from.",
+        "5": "When issuing, choose a “Contact” and “Fill in”, or “Add from items”. “Save the recipient as a contact” saves it from the form.",
+        "6": "“Archive” hides a record from the list; “Restore” brings it back."
+      },
+      "tips": {
+        "1": "A change to a contact or item applies to future documents. Issued documents keep their data from the moment of issue.",
+        "2": "A series with issued documents cannot be deleted, its start cannot move and its end cannot drop below the last issued number. Several series are available in a larger plan.",
+        "3": "The main series usually covers the whole range — first lower its end, then create the new one in the freed part."
+      }
+    },
+    "payments": {
+      "title": "Payments and reminders",
+      "intro": "You mark which invoices are paid, and with a bank statement you link incoming payments to invoices.",
+      "steps": {
+        "1": "Open the invoice. Under “Payment” you see “Paid” and “Outstanding”.",
+        "2": "Enter the “Amount”, the “Payment date” and, optionally, a “Note”, then press “Record payment”. A payment recorded by mistake is removed with “Remove”.",
+        "3": "In the document list, filter by “Payment”: “Unpaid”, “Overdue” or “Paid”.",
+        "4": "For a bank statement, open “Payments” → “Bank”. Under “Statement”, choose a camt.053 (XML) or CSV file up to 2 MB and press “Upload”.",
+        "5": "Check the suggestions. “Link” records a payment on the invoice, “Skip” leaves the line, “Undo” reverses the link.",
+        "6": "For reminders, open “Automation” → “Recurring” and turn on “Send reminders to buyers”."
+      },
+      "tips": {
+        "1": "Bank matching is in the Business plan and above. Only incoming payments are kept.",
+        "2": "Reminders go out 3 and 10 days after the due date to the buyer's email on the document and are available in plans with this feature. Paid invoices get no reminder.",
+        "3": "A payment cannot exceed the outstanding amount and cannot be in the future."
+      }
+    },
+    "recurring": {
+      "title": "Recurring invoices",
+      "intro": "You set up an invoice that Fakturist issues on its own every month, quarter or year.",
+      "steps": {
+        "1": "Issue the invoice once. Open it and press “Repeat”.",
+        "2": "Fill in the “Name”, the “Frequency” (“every month”, “every quarter” or “every year”) and the “Next issue”.",
+        "3": "Optionally set “End (optional)”, “Due after (days)” and “Send to email (optional)”.",
+        "4": "In the line text, “{period}” becomes the period, for example “November 2026”.",
+        "5": "Press “Start”.",
+        "6": "Manage the template from “Automation” → “Recurring” with “Pause”, “Resume” and “End”."
+      },
+      "tips": {
+        "1": "Each period, one invoice is issued with the next number from the series. Missed periods are not made up.",
+        "2": "The template is paused after three errors in a row, and also when its creator loses the right to issue or the plan no longer includes the feature.",
+        "3": "The frequency cannot change after the first issue — end the template and create a new one."
+      }
+    },
+    "inbox": {
+      "title": "Inbox and incoming invoices",
+      "intro": "You receive the invoices that other companies on Fakturist issue to you, and you check e-invoices from other software.",
+      "steps": {
+        "1": "Open “Documents” → “Inbox”. New documents are marked “new”.",
+        "2": "Open the document and look at the “Sender”: “The sender is a company verified by Fakturist.” or “unverified”.",
+        "3": "Press “Accept the document” or “Reject”. In “Reason (optional, no personal data)” you can explain the rejection.",
+        "4": "Upload an e-invoice from other software under “Documents” → “Incoming”: choose an “E-invoice (XML)” in UBL 2.1 or CII up to 2 MB and press “Upload and check”.",
+        "5": "“Rule check” shows the errors and warnings under EN 16931 and the Bulgarian VAT Act. “Download XML” gives you the file."
+      },
+      "tips": {
+        "1": "A document reaches the inbox only by the exact EIK of a company registered with Fakturist. An email with the PDF and XML goes to the owners, administrators and accountants.",
+        "2": "If the sender is “unverified”, check the details and the bank account before you pay.",
+        "3": "Errors in the check are the issuer's — the document is stored exactly as received."
+      }
+    },
+    "journals": {
+      "title": "VAT ledgers and SAF-T data",
+      "intro": "You download the sales ledger, the purchase ledger and the SAF-T data for the month — you or your accountant file them.",
+      "steps": {
+        "1": "Open “Documents” → “VAT ledgers”, choose the “Month” and press “Show”.",
+        "2": "Press “Download PRODAGBI.TXT” for the sales ledger.",
+        "3": "For the purchase ledger, open each incoming invoice under “Incoming”, choose the “Right to deduct input VAT” and the “Month in the ledger”, then press “Save for the ledger”.",
+        "4": "Press “Download POKUPKI.TXT”.",
+        "5": "Review “To enter by hand” — the documents the accountant enters manually, because their field depends on the legal basis.",
+        "6": "For SAF-T, open “Documents” → “SAF-T data”, choose the “Month”, press “Show” and then “Download the data (ZIP)”.",
+        "7": "Check the files with the NRA program or its validator, and file them from your own software."
+      },
+      "tips": {
+        "1": "Fakturist files nothing with the NRA. It gives you the files, and the company or the accountant files them.",
+        "2": "“SAF-T data” is the month's sales, not the full monthly file. That file also needs the general ledger, purchases and balances, which are kept in the accounting software. The feature is in the Business plan and above.",
+        "3": "The accounts in “Receivables account” and “Revenue account” are chosen by the accountant. A company without a VAT number does not keep a sales ledger under the Bulgarian VAT Act."
+      }
+    },
+    "team": {
+      "title": "Members and roles",
+      "intro": "You invite colleagues to the company and give each a role — everyone sees and can do only what is theirs.",
+      "steps": {
+        "1": "Open “Team and settings” → “Members”.",
+        "2": "Under “Invite a member”, enter an email and choose a “Role”. The role is below yours.",
+        "3": "Press “Send invitation”. The invitation is an email link valid for 7 days.",
+        "4": "Keep an eye on “Pending invitations”. “Revoke” stops an invitation before it is accepted.",
+        "5": "A member's role is changed in the list with “Save”. “Remove” takes a member out, and “Leave” is for your own access."
+      },
+      "tips": {
+        "1": "“Administrator” manages everything in the company except the plan and termination. “Accountant” issues, annuls and manages contacts and items. “Issuer” issues and manages contacts and items but does not annul. “Viewer” can only read.",
+        "2": "An owner is not invited from here — ownership is handed over under “Ownership”.",
+        "3": "The plan limits the number of users, open invitations included. Roles and rights are available in plans with this feature."
+      }
+    },
+    "mandates": {
+      "title": "Authorisations for an accounting firm",
+      "intro": "You confirm or revoke the authorisation under which your accounting firm issues on behalf of the company.",
+      "steps": {
+        "1": "The accounting firm adds the company with “Authorisation — number and date”. The authorisation awaits confirmation.",
+        "2": "If the accounting firm has invited you as the owner, tick “I confirm the mandate of …” when you accept the invitation.",
+        "3": "Otherwise, open “Team and settings” → “Authorisations” and press “Confirm”.",
+        "4": "“Revoke” stops the accounting firm's access at any time."
+      },
+      "tips": {
+        "1": "While the authorisation awaits confirmation, the accounting firm cannot see the company and cannot issue. It cannot confirm the authorisation itself.",
+        "2": "Every document issued by the accounting firm states the authorisation under which it was issued (Art. 113(7) of the Bulgarian VAT Act).",
+        "3": "The accountant from the accounting firm is at most an “Accountant” in your company — with no access to members, the plan, authorisations or ownership."
+      }
+    },
+    "firm-clients": {
+      "title": "Client companies of an accounting firm",
+      "intro": "You add a client company and issue on its behalf under an authorisation once the owner has confirmed it.",
+      "steps": {
+        "1": "Under “Your companies”, open “Client companies under authorisation” and press “Add a client company”.",
+        "2": "Fill in the “Legal name”, “EIK (company number)”, “Address”, “City” and “Postcode”. “VAT number (if registered)” and IBAN are optional.",
+        "3": "Enter the “Authorisation — number and date” and “Valid from”.",
+        "4": "Optionally, enter the “Company owner’s email”. The owner receives an invitation and, with a single tick, also confirms the authorisation.",
+        "5": "Tick the declaration under “Data processing agreement, section 1a” and press “Save”.",
+        "6": "Follow the status of the authorisation: “awaiting confirmation”, “active” or “revoked”. If you did not enter an email, use “Invite the owner” or “Invite again” later."
+      },
+      "tips": {
+        "1": "Only the accounting firm that added the company can invite the owner. The email cannot belong to an employee of the accounting firm.",
+        "2": "A company already on Fakturist without an owner gets only a pending authorisation — Fakturist confirms it after checking the document.",
+        "3": "The first client companies are free under the plan; for further ones the fee is per client company — see “Plan”."
+      }
+    },
+    "ownership": {
+      "title": "Handing over ownership",
+      "intro": "You hand the company over to another person or to an accounting firm — nothing changes until the recipient accepts.",
+      "steps": {
+        "1": "As the owner, open “Team and settings” → “Ownership”.",
+        "2": "Choose “To another person” or “To an accounting firm”.",
+        "3": "“To another person”: enter the recipient's email. They accept with the link in the email, which is valid for 7 days. You remain an “Administrator”.",
+        "4": "“To an accounting firm”: choose an accounting firm with an active authorisation for the company. The accounting firm accepts from its own account. The owner and the members then leave the company, and the accounting firm manages it under the authorisation and may invite a new owner.",
+        "5": "Confirm with your “Password” and the “Code from the app” if two-factor sign-in is on.",
+        "6": "Press “Send the invitation” (to a person) or “Propose to the firm”.",
+        "7": "“Cancel the handover” stops the invitation as long as it has not been accepted."
+      },
+      "tips": {
+        "1": "Nothing changes until it is accepted — you remain the owner.",
+        "2": "An owner who is still marked “to check” cannot hand over ownership.",
+        "3": "In a dispute or if access is lost, Fakturist can hand over ownership immediately, on stated grounds — write to support."
+      }
+    },
+    "plan": {
+      "title": "Plan and payment",
+      "intro": "You choose a plan and pay for it by card or by bank transfer — the company owner does this under “Plan”.",
+      "steps": {
+        "1": "Open “Payments” → “Plan” and under “Plan and period” choose a plan and a period — “1 month” or “12 months”.",
+        "2": "Under “Payment method”, choose “By card” or “By bank transfer” and press “Order”.",
+        "3": "“By card”: you pay on Revolut's secure page. The card details do not pass through Fakturist.",
+        "4": "“By bank transfer”: press “Download pro forma (PDF)” and pay using the reference shown.",
+        "5": "The plan is activated once the payment is confirmed: by card — usually within a minute; by bank transfer — within 1 business day after the transfer arrives.",
+        "6": "The invoice for the plan is under “Payments” in “Invoice”, in the company's inbox and by email."
+      },
+      "tips": {
+        "1": "When you change plan, the unused part of the paid period is deducted from the price. A cheaper plan whose price is covered by the unused time is ordered after the paid period ends.",
+        "2": "An expired period returns the company to the starting plan — the subscription does not renew automatically.",
+        "3": "Plan rights are granted only on a confirmed payment, not on returning to the page."
+      }
+    },
+    "api": {
+      "title": "API for your software",
+      "intro": "You connect your website, warehouse or CRM to Fakturist so that it can read and issue documents.",
+      "steps": {
+        "1": "Open “Automation” → “API keys” — as the owner or an administrator, on the Business plan and above.",
+        "2": "Under “New key”, enter a “Name”, choose the rights (“read”, “issue”) and press “Create key”.",
+        "3": "Copy the key straight away — it is shown only once. If it is lost, revoke it and create a new one.",
+        "4": "Send requests to /api/v1 with the Authorization: Bearer header and the key. Responses are JSON.",
+        "5": "New documents are issued with POST /api/v1/documents. Add an Idempotency-Key — a repeated request returns the same document instead of issuing a second one.",
+        "6": "“Revoke” stops the key immediately."
+      },
+      "tips": {
+        "1": "Amounts are text with a dot (“100.00”), dates are YYYY-MM-DD. The number and the supplier come from Fakturist, not from the request.",
+        "2": "Errors: 400 — invalid request, 401 — key, 403 — rights or plan, 422 — the document fails the checks, 429 — too many requests. The limit is 120 requests per minute per key, of which up to 30 issues.",
+        "3": "The key acts on behalf of its creator and with their rights. When the creator stops being a member of the company, the key stops working."
+      }
+    },
+    "security": {
+      "title": "Account security",
+      "intro": "You protect your account with a long password and two-factor sign-in, and you can download your personal data or close your account.",
+      "steps": {
+        "1": "Open “Security” from the top menu.",
+        "2": "Under “Change password”, enter the “Current password” and the “New password” — at least 12 characters — and press “Change”. Your other sessions are ended.",
+        "3": "Under “Two-factor sign-in”, scan the code with an authenticator app (Google Authenticator, Aegis, 1Password) or enter the “Key” manually.",
+        "4": "Enter the six-digit code and press “Enable”. From then on, a “Sign-in code” is required after the password.",
+        "5": "If you forget your password, press “Forgot your password?” and open the link in the email — it is valid for 1 hour.",
+        "6": "“Download my data” gives you your personal data in a machine-readable format. “Close the account” closes it once you enter your password."
+      },
+      "tips": {
+        "1": "Five wrong passwords lock the account for 15 minutes, then for 1 hour. You receive an email: “Your Fakturist account is temporarily locked”.",
+        "2": "Closing an account cannot be undone. The documents stay with the companies, and if you are the only owner of a company with other members, sort out the company first."
+      }
+    },
+    "export": {
+      "title": "Data export and termination",
+      "intro": "You download all of the company's documents in one archive, and you can terminate the company with time left to take your data.",
+      "steps": {
+        "1": "As the owner or an administrator, open “Automation” → “Export (ZIP)”.",
+        "2": "The archive contains the PDF and XML of every document exactly as issued, as well as the contacts, items, incoming invoices and payments.",
+        "3": "To terminate the company, open “Team and settings” → “Termination” — the owner only.",
+        "4": "Tick that you understand the consequences, enter “Your password” and press “Terminate the company”.",
+        "5": "You have 30 days. Until then the company is view-only, and “Download the company archive” is available.",
+        "6": "“Undo the termination” restores the company until the period ends."
+      },
+      "tips": {
+        "1": "After the period, the company's data is deleted irreversibly. Its name, the audit trail, the accepted terms and the plan invoices remain.",
+        "2": "Documents you have sent to other companies on Fakturist stay with them as incoming invoices.",
+        "3": "The duty to keep your invoices under the Accountancy Act remains yours — download the archive before the period ends."
+      }
+    },
+    "upcoming": {
+      "title": "What is coming",
+      "intro": "Peppol and reporting to the NRA do not work yet — here is what is coming and what you already have.",
+      "steps": {
+        "1": "Peppol — the exchange of e-invoices over the European network — is coming. Target: third quarter of 2027. “Documents” → “Peppol” will tell you when it is available for your company.",
+        "2": "Reporting to the NRA — coming. Target: first quarter of 2028. It depends on the ordinance, which has not been published yet.",
+        "3": "Mandatory structured e-invoices are planned under the bill from 1 July 2028. This is a bill, not a law in force.",
+        "4": "You already have structured XML — UBL 2.1 and CII under EN 16931 — for every issued document.",
+        "5": "You already have the files for the VAT ledgers and the SAF-T data. You or your accountant file them."
+      },
+      "tips": {
+        "1": "The dates are a target, not a promise. Until a feature is launched, Fakturist shows it as “coming”."
+      }
+    }
+  },
+  "faq": {
+    "1": {
+      "q": "Does Fakturist file the VAT ledgers and SAF-T with the NRA?",
+      "a": "No. Fakturist gives you the files — PRODAGBI.TXT and POKUPKI.TXT for the ledgers and the month's sales for SAF-T — and the company or the accountant files them. The monthly SAF-T file also needs the general ledger, purchases and balances, which are kept in the accounting software."
+    },
+    "2": {
+      "q": "Can I correct an invoice I have already issued?",
+      "a": "No. An issued document cannot be edited. If it was drawn up incorrectly, use “Annul and issue a new one” — the number of the annulled document stays taken. For a discount, a return or a cancelled supply, issue a credit or debit note."
+    },
+    "3": {
+      "q": "Can my accounting firm issue invoices on behalf of the company?",
+      "a": "Yes, but only under an authorisation that the company owner confirms. While it awaits confirmation, the accounting firm cannot see the company. Every document states the authorisation under which it was issued, and the owner can revoke it at any time under “Authorisations”."
+    },
+    "4": {
+      "q": "Can I send invoices via Peppol or report to the NRA from Fakturist?",
+      "a": "Not yet. Both are coming and are not available. Until then, you issue documents with a PDF and structured XML under EN 16931, and you file the ledgers and the SAF-T data outside Fakturist."
+    },
+    "5": {
+      "q": "Do I get the invoice as structured XML, not just as a PDF?",
+      "a": "Yes. Every issued document has a PDF and two XML files — UBL 2.1 and CII — under EN 16931. You download them from the document page with “Download”, “UBL 2.1 (XML)” and “CII (XML)”."
+    },
+    "6": {
+      "q": "Will invoices already issued change if I change the company details?",
+      "a": "No. The new details appear only on documents issued after the change. The EIK is changed only by Fakturist after a check. The PDF look — logo, layout, font and colour — is the exception: it also applies to documents already issued the next time they are downloaded."
+    },
+    "7": {
+      "q": "Can I hand the company over to another owner or to an accounting firm?",
+      "a": "Yes, if you are the owner. Under “Team and settings” → “Ownership”, choose “To another person” or “To an accounting firm”. Nothing changes until it is accepted, and “Cancel the handover” stops the invitation. An owner who is still marked “to check” cannot hand over ownership."
+    },
+    "8": {
+      "q": "Can I take my documents with me if I stop using Fakturist?",
+      "a": "Yes. “Export (ZIP)” gives you the PDF and XML of every document. With “Termination” you have 30 days to download them, after which the company's data is deleted; until then you can undo the termination."
+    }
+  }
+}
