@@ -141,10 +141,13 @@ function BarChart({ data, h = 150, unit = "", prefix = "" }) {
     const H = hh - 18;
     for (let g = 0; g <= 3; g++) { const y = H * (g / 3) + 0.5; ctx.strokeStyle = "rgba(201,209,214,.07)"; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
     if (!d.length || d.every((x) => !x.v)) { ctx.fillStyle = "#6E7980"; ctx.font = "10px 'JetBrains Mono',monospace"; ctx.textAlign = "center"; ctx.fillText("Още няма данни", w / 2, H / 2); return; }
-    const max = Math.max(...d.map((x) => x.v)) || 1, gap = 3, bw = Math.max(2, (w - gap * (d.length - 1)) / d.length);
+    // малко стълбове → тесни (до 48 px) и центрирани, иначе един клиент става цял цветен блок
+    const max = Math.max(...d.map((x) => x.v)) || 1, gap = d.length < 8 ? 14 : 3;
+    const bw = Math.max(2, Math.min(48, (w - gap * (d.length - 1)) / d.length));
+    const x0 = Math.max(0, (w - (bw * d.length + gap * (d.length - 1))) / 2);
     const p = [];
     d.forEach((x, i) => {
-      const bh = (x.v / max) * (H - 8), bx = i * (bw + gap), by = H - bh;
+      const bh = (x.v / max) * (H - 8), bx = x0 + i * (bw + gap), by = H - bh;
       p.push({ x: bx, w: bw, y: by });
       const on = hover === i;
       const g = ctx.createLinearGradient(0, by, 0, H); g.addColorStop(0, on ? "rgba(0,229,255,.95)" : "rgba(0,229,255,.6)"); g.addColorStop(1, "rgba(0,229,255,.12)");
@@ -864,7 +867,11 @@ function Panel({ me, onSignedOut }) {
           </div>
           <div className="adm-note">
             <p><Icon n="key" s={14} /> Паролата, кодът и резервните кодове се сменят само от сървъра:</p>
-            <pre>{"sudo cs-admin password   # нова парола\nsudo cs-admin recovery   # нови резервни кодове\nsudo cs-admin revoke     # изписва всички сесии\nsudo cs-admin status     # какво е настроено"}</pre>
+            <dl className="adm-cmds">
+              {[["sudo cs-admin password", "нова парола"], ["sudo cs-admin recovery", "нови резервни кодове"], ["sudo cs-admin revoke", "изписва всички сесии"], ["sudo cs-admin status", "какво е настроено"]].map(([c, d]) => (
+                <div key={c}><dt><code>{c}</code></dt><dd>{d}</dd></div>
+              ))}
+            </dl>
           </div>
         </Card>
       </div>
@@ -1117,7 +1124,11 @@ button.adm-tr:hover{background:rgba(201,209,214,.035)}
 .adm-kv dt{color:var(--mute)}.adm-kv dd{margin:0;color:var(--ink);min-width:0;overflow-wrap:anywhere}
 .adm-note{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:var(--r2);background:var(--bg2)}
 .adm-note p{margin:0 0 8px;display:flex;align-items:center;gap:8px;color:var(--ink2);font-size:13px}
-.adm-note pre{margin:0;font:12.5px/1.8 var(--mono);color:var(--ink);overflow-x:auto}
+.adm-cmds{margin:0;display:grid;gap:6px}
+.adm-cmds>div{display:grid;grid-template-columns:minmax(0,210px) minmax(0,1fr);gap:4px 14px;align-items:baseline}
+.adm-cmds dt code{font:12.5px var(--mono);color:var(--ink);overflow-wrap:anywhere}
+.adm-cmds dd{margin:0;color:var(--mute);font-size:12.5px}
+@media (max-width:640px){.adm-cmds>div{grid-template-columns:1fr;gap:0}.adm-cmds>div+div{padding-top:6px;border-top:1px solid var(--line)}}
 .adm-stat{display:grid;gap:6px;padding:14px 16px}
 .adm-stat span{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
 .adm-stat b{font:600 16px var(--disp);overflow-wrap:anywhere}
