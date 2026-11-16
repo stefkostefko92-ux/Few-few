@@ -4871,7 +4871,7 @@
           "PageSpeed Insights = Lighthouse (лаб) + CrUX (поле) — полето НЕ съществува преди пускане",
           "Наследява CWV работата на SEO (tools/seo/cwv.mjs)"
         ],
-        "lessons": 146
+        "lessons": 148
       },
       "evolution": [
         {
@@ -4993,9 +4993,20 @@
           "date": "2026-11-16",
           "event": "v20.7 — учене",
           "detail": "Научи: panev/ няма node_modules и server.js не тръгва без dotenv/express; за одит копирай прод… (+2 още)"
+        },
+        {
+          "version": "20.9.0",
+          "date": "2026-11-16",
+          "event": "v20.9 — учене",
+          "detail": "Научи: Фактурист (Express/EJS, production): `.bar` в app.css сменя броя редове при зареждане н… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-16",
+          "type": "learning",
+          "summary": "Научи: „Фактурист (Express/EJS, production): `.bar` в app.css сменя броя редове при зареждане н…\" (+1 още)"
+        },
         {
           "date": "2026-11-16",
           "type": "learning",
