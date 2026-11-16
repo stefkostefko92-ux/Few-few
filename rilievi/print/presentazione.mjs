@@ -1,11 +1,14 @@
-// Презентацията на Rilievi Impianti — А4, осем страници, за печат и за пращане като PDF (собственикът, 16 ноември
-// 2026: „Направи ми презентация а4 за софтуера ни“). Текстовете са италиански (порталът е само на италиански) и
-// казват само каквото порталът прави. Документите в нея са истински PDF-и от портала с примерни данни (фирмата
-// „Ascensori Esempio S.r.l.“), превърнати в SVG (pdftocairo — векторни, остри при всеки размер); екраните на
-// телефона са снимки на портала (390 × 844, DPR 3) — всичко в print/presentazione/ (README.md, „Как са направени“).
-// Пише print/presentazione-a4.pdf, print/presentazione-a4.html и прегледа print/presentazione-anteprima.png.
+// Презентацията на Rilievi Impianti — А4, лице и гръб като флаера (собственикът, 16 ноември 2026: „Направи ми
+// презентация а4 за софтуера ни“, после „Направи го 2 страници като флеъра“). Текстовете са италиански (порталът е
+// само на италиански) и казват само каквото порталът прави — прегледани от Преводача. Модулът на Pelazza е
+// истинският PDF от портала с примерни данни („Ascensori Esempio S.r.l.“), превърнат в SVG (pdftocairo —
+// векторен); двата екрана на телефона са снимки на портала (390 × 844, DPR 3) — print/presentazione/.
+// Пише print/presentazione-a4.html (за преглед), два PDF-а и прегледите на двете страни:
+//   presentazione-a4.pdf         — точно A4 (210 × 297 mm), за принтер в офиса и за пращане по имейл;
+//   presentazione-a4-stampa.pdf  — A4 с 3 mm „bleed“ от всяка страна (216 × 303 mm), за печатница;
+//   presentazione-fronte.png / presentazione-retro.png — прегледите.
 //   node print/presentazione.mjs            (CHROMIUM=/път/до/chromium — по избор)
-import { writeFile } from 'node:fs/promises';
+import { unlink, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import QRCode from 'qrcode';
@@ -13,6 +16,7 @@ import { chromium } from 'playwright';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SITO = 'https://rilievi.carbonstealth.eu/';
+const BLEED = 3; // mm — за печатницата
 const A = 'presentazione/'; // активите — спрямо print/
 
 const qr = await QRCode.toString(SITO, {
@@ -41,288 +45,229 @@ const FONT = [
   ),
 ].join('\n');
 
-const PAGINE = 8;
-const piede = (n) =>
-  `<footer class="piede"><span>Rilievi Impianti</span><span>${n} / ${PAGINE}</span></footer>`;
+/** Петте стъпки на лицето — истинска поредица, затова с номера. */
+const PASSI = [
+  [
+    'Sopralluogo',
+    'Il tecnico compila la scheda dal telefono; se nel vano manca la rete, la scheda resta salvata sul telefono.',
+  ],
+  ['Ufficio', "Trovi l'impianto per matricola o indirizzo e stampi la scheda con il tuo logo."],
+  ['Ordini', "I moduli d'ordine dei costruttori si compilano con i dati della scheda."],
+  ['Assistenza', 'Foglio di intervento firmato sul telefono e cartelli di fermo impianto.'],
+  ['Cantiere', 'Buono di lavoro e verbale di chiusura cantiere, con le firme.'],
+];
 
-const CSS = `
-${FONT}
-:root { --m: 16mm; --nero: #000000; --bianco: #ffffff; --grigio: #595959; --linea: #bdbdbd; --tenue: #f2f2f2; }
-@page { size: 210mm 297mm; margin: 0; }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { background: var(--bianco); }
-body { font-family: 'Fira Sans', sans-serif; color: var(--nero); font-size: 9.6pt; line-height: 1.45;
-  -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-.pagina { position: relative; width: 210mm; height: 297mm; overflow: hidden; break-after: page; padding: var(--m) var(--m) 22mm; }
-.pagina:last-child { break-after: auto; }
-h1, h2 { font-family: 'Fira Sans Condensed', sans-serif; font-weight: 800; line-height: 1.04; letter-spacing: -.2pt; }
-h2 { font-size: 25pt; }
-h3 { font-weight: 700; font-size: 10.5pt; line-height: 1.25; }
-p + p { margin-top: 2mm; }
-.lead { font-size: 11.5pt; line-height: 1.45; margin-top: 4mm; max-width: 165mm; }
-.tenue { color: var(--grigio); }
-.piccolo { font-size: 7.5pt; color: var(--grigio); }
-.piede { position: absolute; left: var(--m); right: var(--m); bottom: 10mm; display: flex; justify-content: space-between;
-  font-size: 7.5pt; color: var(--grigio); border-top: .5pt solid var(--linea); padding-top: 2.5mm; }
-.doc { display: block; width: 100%; height: auto; border: .5pt solid var(--linea); background: var(--bianco); }
-.telefono { display: block; width: 100%; height: auto; border: 2.2mm solid var(--nero); border-radius: 6mm; }
-figure figcaption { margin-top: 2mm; font-size: 7.8pt; line-height: 1.35; color: var(--grigio); }
-.voce { padding: 2.6mm 0 2.8mm; border-top: .5pt solid var(--linea); }
-.voce p { margin-top: .8mm; color: var(--grigio); font-size: 9pt; }
+/** Какво прави порталът — по витрината и rilievi/CLAUDE.md. Не е поредица: без номера. */
+const FUNZIONI = [
+  [
+    'Sul posto, dal telefono',
+    'Campi grandi, unità di misura già scritte, foto e video in ogni sezione. Compaiono solo le domande che servono per quel tipo di impianto e di porte.',
+  ],
+  [
+    "Trovi l'impianto mentre scrivi",
+    'Cerchi per matricola, numero impianto, indirizzo, marca o buono di lavoro. In ufficio stampi la scheda in A4 o in PDF, con il logo della tua azienda.',
+  ],
+  [
+    "Moduli d'ordine compilati dal rilievo",
+    "Quadri Pelazza, Movilift, DMG Pitagora 4.0, Mastech, Elettroquadri e GEAT; bottoniere DMG, scheda dati dell'argano e modulo 2SG. Ogni modulo esce in PDF e lo mandi al fornitore per email.",
+  ],
+  [
+    'Foglio di intervento firmato',
+    'Numerato per azienda. Tecnico e cliente firmano con il dito; dopo la conferma il foglio non si modifica più ed esce in PDF A4.',
+  ],
+  [
+    'Cartelli, buoni e verbali',
+    "Cartelli di fermo impianto con il tuo logo, buono di lavoro e verbale di chiusura cantiere. Se l'impianto ha una scheda, l'indirizzo e altri dati si compilano da soli.",
+  ],
+  [
+    "Calcoli dell'argano e del limitatore",
+    'Partono dai dati del rilievo. Ogni foglio riporta i dati usati e va controllato e firmato da un tecnico abilitato: senza la sua firma non ha valore.',
+  ],
+  [
+    'Nessuna modifica va persa',
+    'Se due persone modificano la stessa scheda, la seconda riceve un avviso. Le ultime 100 versioni restano consultabili.',
+  ],
+  [
+    'Ogni azienda nel suo spazio',
+    "Schede e persone di un'azienda le vede solo quell'azienda, oltre all'amministrazione del portale (Carbon Stealth). 6 ruoli, che l'amministratore rinomina.",
+  ],
+  [
+    'I dati restano tuoi',
+    "Server nell'Unione europea, una copia di sicurezza ogni giorno. L'amministratore scarica tutti i dati dell'azienda quando vuole, senza costi.",
+  ],
+];
 
-/* 1 — copertina */
-.copertina { background: var(--nero); color: var(--bianco); padding: 0; }
-.copertina .logo { position: absolute; left: var(--m); top: var(--m); width: 92mm; }
-.copertina .foto { position: absolute; right: 0; bottom: 0; width: 104mm; height: 139mm; object-fit: cover; object-position: 50% 55%; }
-.copertina .titolo { position: absolute; left: var(--m); top: 88mm; width: 150mm; }
-.copertina h1 { font-size: 40pt; }
-.copertina .lead { font-size: 12.5pt; max-width: 120mm; margin-top: 7mm; }
-.copertina .fondo { position: absolute; left: var(--m); bottom: var(--m); width: 70mm; font-size: 9pt; line-height: 1.5; }
-.copertina .fondo strong { display: block; font-size: 11pt; }
-.copertina .nota { position: absolute; right: 3mm; bottom: 141mm; font-size: 6pt; color: rgba(255,255,255,.65); }
+const esc = (s) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-/* 2 — che cos'è */
-.passi { margin-top: 8mm; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4mm; }
-.passo { border-top: 1.4pt solid var(--nero); padding-top: 2.6mm; }
-.passo .n { font-family: 'Fira Sans Condensed', sans-serif; font-weight: 800; font-size: 20pt; line-height: 1; }
-.passo h3 { margin-top: 1.6mm; }
-.passo p { margin-top: 1mm; font-size: 8.6pt; line-height: 1.4; color: var(--grigio); }
-.ovunque { margin-top: 8mm; }
-.ovunque img { width: 100%; height: 96mm; object-fit: cover; object-position: 50% 58%; display: block; }
-.tre { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; margin-top: 5mm; }
-.telefoni { margin-top: 7mm; display: grid; grid-template-columns: 54mm 54mm 1fr; gap: 6mm; align-items: start; }
-.quattro { display: grid; grid-template-columns: 1fr 1fr; column-gap: 8mm; margin-top: 4mm; }
-
-/* colonne */
-.due { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; }
-.tel-testo { margin-top: 7mm; display: grid; grid-template-columns: 56mm 1fr; gap: 9mm; align-items: start; }
-.sezioni { columns: 2; column-gap: 6mm; margin-top: 2mm; font-size: 9pt; }
-.sezioni li { list-style: none; padding: 1mm 0; border-bottom: .5pt solid var(--linea); break-inside: avoid; }
-.blocco { margin-top: 5mm; }
-
-/* 8 — come iniziare */
-.fine { background: var(--nero); color: var(--bianco); }
-.fine .piede { color: rgba(255,255,255,.7); border-top-color: rgba(255,255,255,.4); }
-.fine .tenue, .fine .voce p { color: rgba(255,255,255,.78); }
-.fine .voce { border-top-color: rgba(255,255,255,.35); }
-.fine .passo { border-top-color: var(--bianco); }
-.fine .passo p { color: rgba(255,255,255,.78); }
-.contatti { margin-top: 10mm; display: grid; grid-template-columns: 58mm 1fr; gap: 9mm; align-items: center;
-  border-top: .5pt solid rgba(255,255,255,.35); padding-top: 8mm; }
-.qr { width: 58mm; height: 58mm; background: var(--bianco); padding: 7.1mm; } /* бяло поле от 4 модула и повече */
-.qr svg { width: 100%; height: 100%; display: block; }
-.contatti strong { display: block; font-family: 'Fira Sans Condensed', sans-serif; font-weight: 800; font-size: 19pt; line-height: 1.08; }
-.contatti .sito { display: block; margin-top: 3mm; font-weight: 700; font-size: 14pt; }
-`;
-
-function html() {
+function html(bleed) {
+  const passi = PASSI.map(
+    ([t, d], i) =>
+      `<li><span class="n">${i + 1}</span><div><h3>${esc(t)}</h3><p>${esc(d)}</p></div></li>`,
+  ).join('\n');
+  const funzioni = FUNZIONI.map(
+    ([t, d]) => `<div class="funzione"><h3>${esc(t)}</h3><p>${esc(d)}</p></div>`,
+  ).join('\n');
   return `<!doctype html>
 <html lang="it">
 <head>
 <meta charset="utf-8">
 <title>Rilievi Impianti — presentazione A4</title>
 <meta name="keywords" content="Carbon Stealth, Rilievi Impianti, software per ascensoristi, scheda rilievo ascensore, foglio di intervento ascensore, moduli d'ordine quadri, calcolo argano">
-<style>${CSS}</style>
+<style>
+${FONT}
+:root {
+  --bleed: ${bleed}mm;
+  --w: calc(210mm + 2 * var(--bleed));
+  --h: calc(297mm + 2 * var(--bleed));
+  /* Безопасната зона: 10 мм от линията на рязане. */
+  --m: calc(10mm + var(--bleed));
+  --nero: #000000;
+  --bianco: #ffffff;
+  --grigio: #595959;
+  --linea: #bdbdbd;
+}
+@page { size: var(--w) var(--h); margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bianco); }
+body { font-family: 'Fira Sans', sans-serif; color: var(--nero); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.pagina { position: relative; width: var(--w); height: var(--h); overflow: hidden; break-after: page; }
+.pagina:last-child { break-after: auto; }
+h1, h2 { font-family: 'Fira Sans Condensed', sans-serif; font-weight: 800; letter-spacing: -.3pt; }
+
+/* Лицето: черно, заглавието, петте стъпки, шахтата долу вдясно. */
+.fronte { background: var(--nero); color: var(--bianco); }
+.fronte .logo { position: absolute; left: var(--m); top: var(--m); width: 98mm; }
+.fronte .testo { position: absolute; left: var(--m); right: var(--m); top: calc(var(--bleed) + 58mm); }
+.fronte h1 { font-size: 40pt; line-height: 1.02; }
+.fronte .lead { margin-top: 6mm; font-size: 12.5pt; line-height: 1.45; max-width: 150mm; }
+.fronte .passi { position: absolute; left: var(--m); top: calc(var(--bleed) + 132mm); width: 84mm; list-style: none; }
+.fronte .passi li { display: grid; grid-template-columns: 10mm 1fr; gap: 2mm; padding: 2.6mm 0 2.8mm; border-top: .5pt solid rgba(255,255,255,.4); }
+.fronte .passi .n { font-family: 'Fira Sans Condensed', sans-serif; font-weight: 800; font-size: 18pt; line-height: 1; }
+.fronte .passi h3 { font-weight: 700; font-size: 10.5pt; line-height: 1.2; }
+.fronte .passi p { margin-top: .6mm; font-size: 8.8pt; line-height: 1.4; color: rgba(255,255,255,.82); }
+.fronte .foto { position: absolute; right: 0; bottom: 0; width: calc(100mm + var(--bleed)); height: calc(150mm + var(--bleed)); object-fit: cover; object-position: 50% 55%; }
+.fronte .nota { position: absolute; right: var(--m); bottom: calc(var(--bleed) + 152mm); font-size: 6pt; color: rgba(255,255,255,.65); }
+.fronte .piede { position: absolute; left: var(--m); bottom: var(--m); width: 84mm; border-top: .5pt solid rgba(255,255,255,.55); padding-top: 3.5mm; }
+.fronte .piede strong { display: block; font-family: 'Fira Sans Condensed', sans-serif; font-weight: 800; font-size: 18pt; line-height: 1.05; }
+.fronte .piede span { display: block; margin-top: 1mm; font-size: 9pt; }
+.fronte .piede .sito { margin-top: 3mm; font-weight: 700; font-size: 12pt; }
+
+/* Гърбът: бяла хартия, черна е само лентата долу (QR кодът). */
+.retro .corpo { position: absolute; left: var(--m); right: var(--m); top: var(--m); }
+.retro h2 { font-size: 24pt; line-height: 1.05; }
+.retro .lead { margin-top: 2.5mm; font-size: 10pt; line-height: 1.42; max-width: 175mm; }
+.retro .vista { margin-top: 5mm; display: grid; grid-template-columns: 46mm 46mm 71mm; justify-content: space-between; align-items: start; }
+.retro .telefono { display: block; width: 100%; height: auto; border: 1.8mm solid var(--nero); border-radius: 5mm; }
+.retro .doc { display: block; width: 100%; height: auto; border: .5pt solid var(--linea); }
+.retro figcaption { margin-top: 1.6mm; font-size: 7.2pt; line-height: 1.3; color: var(--grigio); }
+.retro .griglia { margin-top: 4mm; display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 6mm; }
+.retro .funzione { padding: 2.3mm 0 2.5mm; border-top: .5pt solid var(--linea); }
+.retro .funzione h3 { font-weight: 700; font-size: 9pt; line-height: 1.2; }
+.retro .funzione p { margin-top: .8mm; font-size: 7.7pt; line-height: 1.38; color: var(--grigio); }
+.retro .nota { margin-top: 1mm; font-size: 6.6pt; color: var(--grigio); }
+.retro .banda { position: absolute; left: 0; right: 0; bottom: 0; height: calc(62mm + var(--bleed)); background: var(--nero); color: var(--bianco);
+  padding: 6mm var(--m) calc(var(--bleed) + 7mm); display: grid; grid-template-columns: 46mm 1fr; gap: 8mm; align-items: center; }
+.retro .qr { width: 46mm; height: 46mm; background: var(--bianco); padding: 5.6mm; } /* бяло поле от поне 4 модула */
+.retro .qr svg { width: 100%; height: 100%; display: block; }
+.retro .invito strong { display: block; font-family: 'Fira Sans Condensed', sans-serif; font-weight: 800; font-size: 17pt; line-height: 1.08; }
+.retro .invito p { margin-top: 2mm; font-size: 8.4pt; line-height: 1.42; }
+.retro .invito .sito { display: block; margin-top: 2.5mm; font-weight: 700; font-size: 12.5pt; }
+.retro .contatti { margin-top: 2mm; font-size: 7.6pt; line-height: 1.45; color: rgba(255,255,255,.82); }
+</style>
 </head>
 <body>
-
-<section class="pagina copertina" aria-label="Copertina">
+<section class="pagina fronte" aria-label="Fronte">
   <img class="logo" src="../scripts/logo/originals/logo.png" alt="Rilievi Impianti — Piattaforma tecnica ascensori">
-  <div class="titolo">
+  <div class="testo">
     <h1>Il rilievo dell'ascensore,<br>campo per campo.</h1>
     <p class="lead">Il software web per le aziende di ascensori: la scheda di rilievo dal telefono, i moduli d'ordine dei costruttori, il foglio di intervento firmato, i cartelli e i documenti di cantiere.</p>
   </div>
+  <ol class="passi">
+${passi}
+  </ol>
   <img class="foto" src="../public/img/site/vano-portrait-1200.webp" alt="Rendering 3D di un vano ascensore visto dalla fossa verso l'alto">
   <p class="nota">Immagine: rendering 3D</p>
-  <div class="fondo"><strong>rilievi.carbonstealth.eu</strong>Carbon Stealth VCC<br>Presentazione, novembre 2026</div>
+  <div class="piede"><strong>Primo mese gratuito</strong><span>con tutte le funzioni</span><span class="sito">rilievi.carbonstealth.eu</span></div>
 </section>
-
-<section class="pagina" aria-label="Che cos'è">
-  <h2>Che cos'è Rilievi Impianti</h2>
-  <p class="lead">Un software web per le aziende di ascensori: compili la scheda di rilievo dal telefono, la ritrovi per matricola o indirizzo e la stampi in A4 o in PDF. Comprende foglio di intervento, buono di lavoro, verbale di chiusura cantiere, cartelli di fermo impianto e i calcoli di argano e limitatore.</p>
-  <div class="passi">
-    <div class="passo"><div class="n">1</div><h3>Sopralluogo</h3><p>Il tecnico compila la scheda dal telefono; se nel vano manca la rete, la scheda resta salvata sul telefono.</p></div>
-    <div class="passo"><div class="n">2</div><h3>Ufficio</h3><p>Trovi l'impianto per matricola o indirizzo e stampi la scheda con il tuo logo.</p></div>
-    <div class="passo"><div class="n">3</div><h3>Ordini</h3><p>I moduli d'ordine dei costruttori si compilano con i dati della scheda.</p></div>
-    <div class="passo"><div class="n">4</div><h3>Assistenza</h3><p>Foglio di intervento firmato sul telefono e cartelli di fermo impianto.</p></div>
-    <div class="passo"><div class="n">5</div><h3>Cantiere</h3><p>Buono di lavoro e verbale di chiusura cantiere, con le firme.</p></div>
-  </div>
-  <div class="ovunque">
-    <figure><img src="../public/img/site/tablet-1600.webp" alt="Rendering 3D di un tablet con il portale aperto sulla nuova scheda di rilievo"><figcaption>Immagine: rendering 3D di un tablet con il portale aperto.</figcaption></figure>
-    <div class="tre">
-      <div class="voce"><h3>Si apre nel browser</h3><p>Il portale si apre su telefono, tablet e computer, senza installare nulla. Se vuoi, lo aggiungi alla schermata Home e si apre a schermo intero, come un'app.</p></div>
-      <div class="voce"><h3>Ogni azienda nel suo spazio</h3><p>Schede, persone e logo di un'azienda li vede solo quell'azienda, oltre all'amministrazione del portale (Carbon Stealth). L'amministratore invita i colleghi, ognuno con il suo ruolo.</p></div>
-      <div class="voce"><h3>Con il logo della tua azienda</h3><p>La scheda, il foglio di intervento e il cartello escono con il logo della tua azienda in alto.</p></div>
+<section class="pagina retro" aria-label="Retro">
+  <div class="corpo">
+    <h2>Dal sopralluogo all'ufficio</h2>
+    <p class="lead">Un solo portale per la scheda di rilievo, l'assistenza e il cantiere. Si apre nel browser su telefono, tablet e computer: non c'è niente da installare.</p>
+    <div class="vista">
+      <figure><img class="telefono" src="${A}telefono-scheda.png" alt="La scheda di rilievo aperta su un telefono"><figcaption>La scheda sul telefono.</figcaption></figure>
+      <figure><img class="telefono" src="${A}telefono-firma.png" alt="Le firme del tecnico e del cliente sul telefono"><figcaption>Le firme sul foglio di intervento.</figcaption></figure>
+      <figure><img class="doc" src="${A}modulo-pelazza.svg" alt="Il modulo d'ordine del quadro Pelazza compilato"><figcaption>Il modulo d'ordine del quadro Pelazza, compilato con i dati della scheda.</figcaption></figure>
+    </div>
+    <p class="nota">Schermate e documento del portale con dati di esempio. I marchi citati appartengono ai rispettivi titolari.</p>
+    <div class="griglia">
+${funzioni}
     </div>
   </div>
-  ${piede(2)}
-</section>
-
-<section class="pagina" aria-label="La scheda di rilievo">
-  <h2>La scheda di rilievo, dal telefono</h2>
-  <p class="lead">I dati dell'impianto in una sola scheda: dalla targa al locale macchina, dalle funi alle bottoniere piano per piano.</p>
-  <div class="telefoni">
-    <figure><img class="telefono" src="${A}telefono-scheda.png" alt="La scheda di rilievo aperta su un telefono"><figcaption>La scheda sul telefono.</figcaption></figure>
-    <figure><img class="telefono" src="${A}telefono-elenco.png" alt="La ricerca delle schede per indirizzo su un telefono"><figcaption>La ricerca: per numero impianto, matricola, indirizzo, marca, buono di lavoro o note.</figcaption></figure>
-    <div>
-      <h3>Le sezioni della scheda</h3>
-      <ul class="sezioni" style="columns:1">
-        <li>Impianto</li><li>Ubicazione e accesso</li><li>Tipologia</li><li>Quadro</li><li>Argano o centralina</li><li>Funi e tiranti</li>
-        <li>Limitatore</li><li>Cavi</li><li>Serrature, sospensioni o operatore</li><li>Allarme e telesoccorso</li><li>Bottoniere</li><li>Note e lavori</li>
-      </ul>
-      <p class="piccolo" style="margin-top:2mm">Schermate del portale con dati di esempio.</p>
-    </div>
-  </div>
-  <div class="quattro">
-    <div class="voce"><h3>Pensata per il sopralluogo</h3><p>Campi grandi, comodi anche con i guanti; l'unità di misura è già nel campo e la data del giorno è già scritta. Compaiono solo le domande che servono per quel tipo di impianto e di porte.</p></div>
-    <div class="voce"><h3>Anche senza rete</h3><p>Se invii la scheda senza rete, resta salvata sul telefono fino a 7 giorni e la invii quando torna il segnale.</p></div>
-    <div class="voce"><h3>Foto, video e schizzi</h3><p>Foto e video in ogni sezione, compressi in automatico; sulle foto puoi anche scrivere e disegnare. Gli schizzi a mano hanno quote e simboli del vano.</p></div>
-    <div class="voce"><h3>Nessuna modifica va persa</h3><p>Se due persone modificano la stessa scheda, la seconda riceve un avviso. Le ultime 100 versioni restano consultabili; se vuoi, la scheda passa dall'approvazione di un responsabile prima dell'ordine.</p></div>
-  </div>
-  ${piede(3)}
-</section>
-
-<section class="pagina" aria-label="Moduli d'ordine">
-  <h2>Dalla scheda ai moduli d'ordine</h2>
-  <p class="lead">Se il quadro va sostituito, la scheda compila il modulo d'ordine del costruttore: Pelazza, Movilift, DMG Pitagora 4.0, Mastech (NG120 o QI Touch), Elettroquadri e GEAT. Allo stesso modo prepara il modulo delle bottoniere DMG, la scheda dati dell'argano e il modulo 2SG per operatore e sospensioni.</p>
-  <div class="due" style="margin-top:6mm; padding: 0 21mm">
-    <figure><img class="doc" src="${A}scheda.svg" alt="La prima pagina del PDF della scheda di rilievo"><figcaption>La scheda in PDF A4, con il logo dell'azienda e il nome di chi l'ha compilata (pagina 1 di 5; dati di esempio).</figcaption></figure>
-    <figure><img class="doc" src="${A}modulo-pelazza.svg" alt="Il modulo d'ordine del quadro Pelazza compilato"><figcaption>Il modulo d'ordine del quadro Pelazza, compilato con i dati della scheda.</figcaption></figure>
-  </div>
-  <div class="due" style="margin-top:5mm">
-    <div class="voce"><h3>Dalla scheda ai moduli, senza riscrivere</h3><p>Molti dati dell'impianto, come fermate, velocità o matricola, passano da soli nei moduli che li chiedono, se non li hai già scritti tu. Se due valori non coincidono, il portale te lo segnala e prima di salvare ti chiede di confermare.</p></div>
-    <div class="voce"><h3>Il modulo parte dal portale</h3><p>Ogni modulo esce in PDF e lo mandi al fornitore per email dal portale. Per le altre marche la scheda resta completa e il modulo lo compili a parte.</p></div>
-  </div>
-  <div class="tre" style="margin-top:4mm; grid-template-columns: repeat(3, 40mm); justify-content: space-between; padding: 0 9mm">
-    <figure><img class="doc" src="${A}modulo-dati-argano.svg" alt="La scheda dati dell'argano compilata"><figcaption>Scheda dati dell'argano.</figcaption></figure>
-    <figure><img class="doc" src="${A}modulo-2sg.svg" alt="Il modulo 2SG per operatore e sospensioni compilato"><figcaption>Modulo 2SG per operatore e sospensioni.</figcaption></figure>
-    <figure><img class="doc" src="${A}modulo-ami100.svg" alt="Il modulo AMI 100 Mono RTBS compilato"><figcaption>AMI 100 Mono RTBS, se fossa o testata sono ridotte.</figcaption></figure>
-  </div>
-  <p class="piccolo" style="margin-top:2mm">Documenti generati dal portale con dati di esempio. I marchi citati appartengono ai rispettivi titolari.</p>
-  ${piede(4)}
-</section>
-
-<section class="pagina" aria-label="Foglio di intervento">
-  <h2>Il foglio di intervento, firmato sul telefono</h2>
-  <p class="lead">Come il blocchetto di pronto intervento: numerato per azienda, con le voci da spuntare, le prove e gli orari. Tecnico e cliente firmano con il dito.</p>
-  <div class="tel-testo" style="grid-template-columns: 64mm 1fr;">
-    <figure><img class="telefono" src="${A}telefono-firma.png" alt="Le firme del tecnico e del cliente sul telefono"><figcaption>Le due firme sul telefono (schermata del portale, dati di esempio).</figcaption></figure>
-    <figure><img class="doc" src="${A}intervento.svg" alt="Il foglio di intervento confermato in PDF"><figcaption>Il foglio confermato, in PDF A4 (dati di esempio).</figcaption></figure>
-  </div>
-  <div class="due" style="margin-top:4mm">
-    <div class="voce"><h3>Chiuso dopo la firma</h3><p>Dopo la conferma il foglio non si modifica più: esce in PDF A4 e lo mandi anche via email.</p></div>
-    <div class="voce"><h3>Anche senza rete</h3><p>Se invii il foglio senza rete, resta salvato sul telefono fino a 7 giorni e lo invii quando torna il segnale. Le firme e la conferma, invece, si fanno con la rete.</p></div>
-  </div>
-  ${piede(5)}
-</section>
-
-<section class="pagina" aria-label="Cartelli e documenti di cantiere">
-  <h2>Cartelli e documenti di cantiere</h2>
-  <p class="lead">Lo stesso portale segue l'impianto anche dopo il sopralluogo e usa i dati che la scheda già contiene.</p>
-  <figure style="margin-top:6mm; width:150mm"><img class="doc" src="${A}cartello.svg" alt="Il cartello di fermo impianto in PDF"><figcaption>Il cartello di fermo impianto in PDF, con il logo e i dati dell'azienda in alto.</figcaption></figure>
-  <div class="tel-testo" style="grid-template-columns: 64mm 1fr; margin-top:5mm;">
-    <figure><img class="doc" src="${A}buono.svg" alt="Il buono di lavoro in PDF"><figcaption>Il buono di lavoro in PDF.</figcaption></figure>
-    <div>
-      <div class="voce"><h3>Cartelli di fermo impianto</h3><p>Cinque modelli pronti, con il logo e i dati della tua azienda in alto. Se l'impianto ha una scheda, indirizzo, città e testo per gli utenti si compilano da soli in base ai lavori previsti; per un impianto senza scheda li scrivi a mano.</p></div>
-      <div class="voce"><h3>Buono di lavoro</h3><p>Raccoglie le lavorazioni, i controlli e le firme; quelle che non fai sul telefono le metti a mano sul foglio stampato.</p></div>
-      <div class="voce"><h3>Verbale di chiusura cantiere</h3><p>Lo firmano tecnico e supervisore ed esce in due copie PDF, per l'azienda e per l'installatore.</p></div>
-    </div>
-  </div>
-  ${piede(6)}
-</section>
-
-<section class="pagina" aria-label="Calcoli, persone e dati">
-  <h2>Calcoli, persone e dati</h2>
-  <div class="tel-testo" style="grid-template-columns: 92mm 1fr; margin-top:6mm;">
-    <figure><img class="doc" src="${A}calcolo-argano.svg" alt="Il calcolo dell'argano in PDF"><figcaption>Il calcolo dell'argano in PDF (pagina 1 di 2; dati di esempio).</figcaption></figure>
-    <div>
-      <div class="voce"><h3>Calcolo dell'argano</h3><p>Sul modello RT-E MOD 10411-1: velocità, funi, aderenza, pressione specifica. Parte dai dati del rilievo.</p></div>
-      <div class="voce"><h3>Calcolo del limitatore</h3><p>Dalla velocità nominale e dal tipo di paracadute ricava i limiti della velocità di intervento V1 (impianti elettrici a fune), secondo la norma che la UNI 10411-1:2024 o la UNI 10411-11:2024 indica per la modifica scelta.</p></div>
-      <div class="voce"><h3>Va firmato da un tecnico abilitato</h3><p>Ogni foglio riporta i dati usati e va controllato e firmato da un tecnico abilitato: senza la sua firma non ha valore. Il calcolo aiuta a controllare l'impianto, ma non sostituisce il progettista.</p></div>
-    </div>
-  </div>
-  <div class="due" style="margin-top:6mm">
-    <div>
-      <div class="voce"><h3>Ruoli e permessi su misura</h3><p>In ogni azienda ci sono 6 ruoli: decidono chi consulta, chi compila, chi elimina e chi invita. L'amministratore li rinomina e sceglie cosa possono fare con schede, interventi e registro i ruoli sotto il suo; nel registro, chi ha il permesso vede le proprie operazioni e quelle dei ruoli sotto il suo.</p></div>
-      <div class="voce"><h3>Accesso protetto</h3><p>Si entra solo su invito. Se vuoi, attivi anche la verifica in due passaggi: oltre alla password, un codice da un'app sul telefono.</p></div>
-    </div>
-    <div>
-      <div class="voce"><h3>Dati nell'Unione europea</h3><p>I dati sono su server nell'Unione europea, con una copia di sicurezza ogni giorno.</p></div>
-      <div class="voce"><h3>I dati restano tuoi</h3><p>L'amministratore scarica quando vuole tutti i dati dell'azienda in un unico file, anche per passare a un altro fornitore, senza costi. Ci sono anche l'esportazione in Excel (CSV) e un'API in sola lettura.</p></div>
-    </div>
-  </div>
-  ${piede(7)}
-</section>
-
-<section class="pagina fine" aria-label="Come iniziare">
-  <h2>Come iniziare</h2>
-  <p class="lead">L'accesso è su richiesta: ogni azienda entra con il suo amministratore, che poi invita i colleghi.</p>
-  <div class="passi" style="grid-template-columns: repeat(4, 1fr);">
-    <div class="passo"><div class="n">1</div><h3>Invii la richiesta</h3><p>Dal sito: bastano nome, azienda ed email.</p></div>
-    <div class="passo"><div class="n">2</div><h3>La verifichiamo</h3><p>Leggiamo la richiesta e prepariamo lo spazio della tua azienda.</p></div>
-    <div class="passo"><div class="n">3</div><h3>L'amministratore riceve l'invito</h3><p>Sceglie la password; quando accetta le condizioni inizia il mese di prova gratuita.</p></div>
-    <div class="passo"><div class="n">4</div><h3>Invita i colleghi</h3><p>Tecnici e ufficio, ognuno con il suo ruolo.</p></div>
-  </div>
-  <div class="due" style="margin-top:9mm">
-    <div class="voce"><h3>Quanto costa</h3><p>Il primo mese è gratuito, con tutte le funzioni. Poi scegli un piano in base al numero di persone: fino a 10, fino a 25 oppure oltre 25. Si paga in anticipo e non si rinnova da solo; i prezzi, IVA esclusa, sono su rilievi.carbonstealth.eu/prezzi.</p></div>
-    <div class="voce"><h3>Se l'abbonamento scade</h3><p>Il portale passa in sola lettura: vedi, stampi e scarichi tutto, ma non crei né modifichi dati. Nessun dato viene cancellato e con un nuovo piano tutto torna come prima.</p></div>
-  </div>
-  <div class="contatti">
-    <div class="qr" role="img" aria-label="Codice QR per ${SITO}">${qr}</div>
-    <div>
+  <div class="banda">
+    <div class="qr" role="img" aria-label="Codice QR per ${esc(SITO)}">${qr}</div>
+    <div class="invito">
       <strong>Inquadra il codice e richiedi l'accesso.</strong>
+      <p>Il primo mese è gratuito, con tutte le funzioni. Poi scegli un piano in base al numero di persone: fino a 10, fino a 25 oppure oltre 25. Si paga in anticipo e non si rinnova da solo; i prezzi, IVA esclusa, sono su rilievi.carbonstealth.eu/prezzi.</p>
       <span class="sito">rilievi.carbonstealth.eu</span>
-      <p class="tenue" style="margin-top:4mm">+39 379 29 69 699 &nbsp; info@carbonstealth.eu<br>Carbon Stealth VCC, P. IVA BG208725180<br>I marchi citati appartengono ai rispettivi titolari.</p>
+      <p class="contatti">+39 379 29 69 699 &nbsp; info@carbonstealth.eu<br>Carbon Stealth VCC, P. IVA BG208725180</p>
     </div>
   </div>
-  ${piede(8)}
 </section>
-
 </body>
 </html>
 `;
 }
 
-const file = join(HERE, 'presentazione-a4.html');
-await writeFile(file, html());
+const anteprima = join(HERE, 'presentazione-a4.html');
+await writeFile(anteprima, html(0));
+const stampa = join(HERE, '.presentazione-stampa.html');
+await writeFile(stampa, html(BLEED));
+
 const browser = await chromium.launch(
   process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {},
 );
 try {
   const page = await browser.newPage({ deviceScaleFactor: 1 });
-  await page.goto(pathToFileURL(file).href, { waitUntil: 'load' });
-  await page.evaluate(() => document.fonts.ready);
-  // Нищо не бива да стига до долния ред (номера на страницата) или да излиза от страницата.
-  const preso = await page.evaluate(() =>
-    [...document.querySelectorAll('.pagina')].flatMap((pagina, i) => {
-      const fondo =
-        pagina.querySelector('.piede')?.getBoundingClientRect().top ??
-        pagina.getBoundingClientRect().bottom;
-      return [...pagina.children]
-        .filter(
-          (el) => !el.classList.contains('piede') && getComputedStyle(el).position !== 'absolute',
-        )
-        .filter((el) => el.getBoundingClientRect().bottom > fondo - 2)
-        .map((el) => `pagina ${i + 1}: ${el.tagName.toLowerCase()}.${el.className}`);
-    }),
-  );
-  if (preso.length) throw new Error(`съдържанието стига до долния ред — ${preso.join('; ')}`);
-  await page.pdf({
-    path: join(HERE, 'presentazione-a4.pdf'),
-    printBackground: true,
-    preferCSSPageSize: true,
-  });
-  // Прегледът: осемте страници в мрежа 4 × 2.
-  const anteprima = await browser.newPage({ deviceScaleFactor: 1 });
-  await anteprima.setViewportSize({ width: 1600, height: 1200 });
-  await anteprima.goto(pathToFileURL(file).href, { waitUntil: 'load' });
-  await anteprima.addStyleTag({
-    content:
-      'body{display:grid;grid-template-columns:repeat(4,210mm);gap:6mm;background:#888;padding:6mm;width:max-content;zoom:.5}',
-  });
-  await anteprima.evaluate(() => document.fonts.ready);
-  await anteprima.screenshot({ path: join(HERE, 'presentazione-anteprima.png'), fullPage: true });
+  for (const [file, pdf] of [
+    [anteprima, 'presentazione-a4.pdf'],
+    [stampa, 'presentazione-a4-stampa.pdf'],
+  ]) {
+    await page.goto(pathToFileURL(file).href, { waitUntil: 'load' });
+    await page.evaluate(() => document.fonts.ready);
+    // Нищо не се застъпва: на лицето стъпките стоят над долния блок, на гърба текстът — над черната лента
+    // (поне 3 мм въздух; 1 мм = 96 / 25,4 CSS px).
+    const aria = await page.evaluate(() => {
+      const r = (q) => document.querySelector(q).getBoundingClientRect();
+      const mm = (px) => (px * 25.4) / 96;
+      return {
+        fronte: mm(r('.fronte .piede').top - r('.fronte .passi').bottom),
+        titolo: mm(r('.fronte .passi').top - r('.fronte .testo').bottom),
+        retro: mm(r('.retro .banda').top - r('.retro .corpo').bottom),
+      };
+    });
+    for (const [dove, mm] of Object.entries(aria))
+      if (mm < 3) throw new Error(`${dove}: само ${mm.toFixed(1)} мм между блоковете`);
+    await page.pdf({ path: join(HERE, pdf), printBackground: true, preferCSSPageSize: true });
+  }
+  // Прегледите — по рамката на страницата, закръглена навътре (иначе снимката взима 1 px от съседната).
+  const vista = await browser.newPage({ deviceScaleFactor: 1.5 });
+  await vista.goto(pathToFileURL(anteprima).href, { waitUntil: 'load' });
+  await vista.evaluate(() => document.fonts.ready);
+  const pagine = await vista.$$('.pagina');
+  for (const [i, nome] of ['fronte', 'retro'].entries()) {
+    const r = await pagine[i].boundingBox();
+    const y = Math.ceil(r.y);
+    await vista.screenshot({
+      path: join(HERE, `presentazione-${nome}.png`),
+      fullPage: true,
+      clip: { x: r.x, y, width: r.width, height: Math.floor(r.y + r.height) - y },
+    });
+  }
 } finally {
   await browser.close();
+  await unlink(stampa).catch(() => {});
 }
-console.log('print/: presentazione-a4.pdf, presentazione-anteprima.png');
+console.log(
+  'print/: presentazione-a4.pdf, presentazione-a4-stampa.pdf, presentazione-fronte.png, presentazione-retro.png',
+);
