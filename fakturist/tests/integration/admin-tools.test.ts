@@ -213,6 +213,12 @@ test('покана: само за фирма без собственик; в б�
   assert.equal(invites[0]!.to, 'owner@example.test');
   assert.ok(invites[0]!.text.includes(`/pokana/${second.token}`));
   assert.ok(!invites[0]!.text.includes(first.token));
+  // Сроковете в писмото са тези, които работникът изпълнява (RETENTION) — като в политиката.
+  const { RETENTION } = await import('../../src/maintenance.js');
+  const days = (ms: number) => String(ms / (24 * 60 * 60 * 1000));
+  assert.ok(invites[0]!.text.includes(`поканата ${days(RETENTION.expiredTokensMs)} дни`));
+  assert.ok(invites[0]!.text.includes(`${days(RETENTION.finishedMailsMs)} дни след изпращането`));
+  assert.ok(invites[0]!.text.includes('/poveritelnost'));
   const log = await prisma.auditLog.findFirstOrThrow({
     where: { action: 'organization.transfer.invited', targetId: second.inviteId },
   });

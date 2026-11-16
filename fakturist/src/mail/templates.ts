@@ -171,10 +171,17 @@ export interface InviteMailData {
   fromName?: string | null;
   /** Политиката за поверителност (пълният адрес на езика на писмото) — кой ни е дал имейла и докога го пазим. */
   privacyUrl: string;
+  /** Сроковете от `RETENTION` (maintenance.ts): поканата и записът на писмото в опашката. */
+  retentionDays: InviteRetentionDays;
   link: string;
   expires: string;
   signature: string;
   domain: string;
+}
+
+export interface InviteRetentionDays {
+  invite: number;
+  mail: number;
 }
 
 const INVITE = {
@@ -195,8 +202,8 @@ const INVITE = {
     handover: (from: string, company: string) =>
       `${from} Ви предава собствеността на ${company} във Фактурист. Като собственик ще виждате документите на фирмата, ще решавате кой има достъп до нея и ще управлявате плана. ${from} остава администратор, докато не решите друго.`,
     handoverSubject: (company: string) => `Предаване на собственост: ${company} във Фактурист`,
-    privacy: (who: string, url: string) =>
-      `Имейлът Ви ни е даден от ${who} само за тази покана. Ако не я приемете, изтриваме поканата и имейла 30 дни след изтичането ѝ. Как пазим личните данни: ${url}`,
+    privacy: (who: string, url: string, days: InviteRetentionDays) =>
+      `Имейлът Ви ни е даден от ${who} само за тази покана. Ако не я приемете, изтриваме поканата ${days.invite} дни след изтичането ѝ, а записа за това писмо — ${days.mail} дни след изпращането. Как пазим личните данни: ${url}`,
   },
   en: {
     hello: 'Hello,',
@@ -215,8 +222,8 @@ const INVITE = {
     handover: (from: string, company: string) =>
       `${from} is handing over the ownership of ${company} in Fakturist to you. As the owner you will see the company’s documents, decide who has access to it and manage the plan. ${from} stays an administrator until you decide otherwise.`,
     handoverSubject: (company: string) => `Ownership handover: ${company} in Fakturist`,
-    privacy: (who: string, url: string) =>
-      `${who} gave us your email only for this invitation. If you do not accept it, we delete the invitation and the email 30 days after it expires. How we protect personal data: ${url}`,
+    privacy: (who: string, url: string, days: InviteRetentionDays) =>
+      `${who} gave us your email only for this invitation. If you do not accept it, we delete the invitation ${days.invite} days after it expires and the record of this email ${days.mail} days after sending. How we protect personal data: ${url}`,
   },
 } as const;
 
@@ -236,7 +243,11 @@ export function transferInviteMail(data: InviteMailData): {
     : c.intro(company, c.by(data.firmName), data.firmName ? c.mandate(data.firmName) : '');
   const validity = c.validity(data.expires);
   // Имейлът е даден от трето лице (чл. 14 ОРЗД): кой, за какво, докога, къде е политиката.
-  const privacy = c.privacy(data.fromName ?? c.by(data.firmName), data.privacyUrl);
+  const privacy = c.privacy(
+    data.fromName ?? c.by(data.firmName),
+    data.privacyUrl,
+    data.retentionDays,
+  );
   const text = [
     c.hello,
     '',

@@ -827,3 +827,4 @@
 {"t":"handoff","ts":"2026-11-16T19:25:43.419Z","id":"re965efe4","from":"pravniyat-razbirach","to":"kodadjiyata","status":"има бележки","run":"03de37b6"}
 {"t":"start","ts":"2026-11-16T19:28:27.960Z","id":"r276d01dc","flow":"авто","lead":"razbivacha","auto":true}
 {"t":"handoff","ts":"2026-11-16T19:28:27.961Z","id":"r276d01dc","from":"razbivacha","to":"kodadjiyata","status":"има бележки","run":"702e7090"}
+{"t":"handoff","ts":"2026-11-16T19:47:47.233Z","id":"r276d01dc","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"405cdb80"}

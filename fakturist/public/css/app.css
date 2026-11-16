@@ -1068,7 +1068,7 @@ section.panel + .panel {
 }
 .panel > h2:first-child,
 .panel > h3:first-child,
-.panel > input[type='hidden']:first-child + h2 {
+.panel > input[type='hidden']:first-child + :is(h2, h3) {
   margin-top: 0;
 }
 .panel > .hint,

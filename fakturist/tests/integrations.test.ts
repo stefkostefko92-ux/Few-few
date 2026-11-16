@@ -317,6 +317,7 @@ test('писмото с поканата: екранирано име, връз�
     companyEik: '131063188',
     link,
     privacyUrl: 'https://fakturist.carbonstealth.eu/poveritelnost',
+    retentionDays: { invite: 30, mail: 90 },
     expires: '20.11.2026',
     signature: 'Документът е създаден с fakturist.eu — продукт на Carbon Stealth VCC.',
     domain: 'fakturist.eu',
@@ -366,6 +367,7 @@ test('писмото от кантора назовава кантората и 
     firmName: 'Кантора <Баланс>',
     link: 'https://fakturist.carbonstealth.eu/pokana/TOKEN456',
     privacyUrl: 'https://fakturist.carbonstealth.eu/poveritelnost',
+    retentionDays: { invite: 30, mail: 90 },
     expires: '20.11.2026',
     signature: 'подпис',
     domain: 'fakturist.eu',
@@ -376,6 +378,10 @@ test('писмото от кантора назовава кантората и 
   // Имейлът е даден от трето лице (чл. 14 ОРЗД): кой го е дал, докога се пази, къде е политиката.
   assert.ok(mail.text.includes('Имейлът Ви ни е даден от счетоводната кантора Кантора <Баланс>'));
   assert.ok(mail.text.includes('30 дни след изтичането'));
+  assert.ok(
+    mail.text.includes('90 дни след изпращането'),
+    'и записът в опашката (политиката: 90 дни)',
+  );
   assert.ok(mail.text.includes('https://fakturist.carbonstealth.eu/poveritelnost'));
 });
 
