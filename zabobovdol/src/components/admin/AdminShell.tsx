@@ -341,14 +341,20 @@ export function AdminShell({
                   <p className="truncate text-xs text-slate-500">{user.email}</p>
                 </div>
                 <Link
+                  href="/admin/profil"
+                  className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  <Users aria-hidden className="h-4 w-4" /> Моят профил
+                </Link>
+                <Link
                   href="/"
                   target="_blank"
-                  className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 sm:hidden"
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 sm:hidden"
                 >
                   <ExternalLink aria-hidden className="h-4 w-4" /> Виж сайта
                 </Link>
                 <form action={logoutAction}>
-                  <button className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50">
+                  <button className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50">
                     <LogOut aria-hidden className="h-4 w-4" /> Изход
                   </button>
                 </form>

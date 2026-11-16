@@ -231,9 +231,17 @@ export function navFor(role: "ADMIN" | "EDITOR"): NavGroup[] {
   })).filter((g) => g.items.length > 0);
 }
 
+export const PROFILE: NavItem = {
+  href: "/admin/profil",
+  label: "Моят профил",
+  hint: "Имейл и парола за вход",
+  icon: "users",
+};
+
 /** Активният раздел за адреса: най-дългото съвпадение (/admin/faq/123 → „Ръководства“). */
 export function activeItem(pathname: string, groups: NavGroup[]): { group: NavGroup | null; item: NavItem } | null {
   if (pathname === "/admin") return { group: null, item: DASHBOARD };
+  if (pathname === PROFILE.href) return { group: null, item: PROFILE };
   let best: { group: NavGroup; item: NavItem } | null = null;
   for (const g of groups)
     for (const i of g.items)
