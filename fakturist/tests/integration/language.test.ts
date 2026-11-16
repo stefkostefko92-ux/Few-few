@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { request } from 'node:http';
 import { after, before, test } from 'node:test';
 import { prepareTestDatabase, truncateAll } from './harness.js';
 import { startHttp, type HttpClient, type Session } from './http.js';
@@ -14,6 +15,8 @@ const { processOutbox } = await import('../../src/mail/outbox.js');
 const { composeOrgMail } = await import('../../src/mail/org-mail.js');
 const { composeMasterMail } = await import('../../src/mail/master-mail.js');
 const { DEFAULT_SERIES_NAME } = await import('../../src/system-text.js');
+const { generateTotpSecret } = await import('../../src/auth/totp.js');
+const { encryptTotpSecret } = await import('../../src/auth/keys.js');
 type Message = import('../../src/mail/mailer.js').MailMessage;
 
 /**
@@ -189,14 +192,24 @@ test('началната серия: „Main“ на английски; неп�
     where: { organizationId: bgOrgId },
   });
   assert.equal(series.name, DEFAULT_SERIES_NAME);
-  await http.post(bgOwner, '/app/ezik', { lang: 'en', back: '/app' });
-  const page = await (await http.get(bgOwner, `/app/o/${bgOrgId}/serii`)).text();
-  assert.match(page, /<h2 id="s-[^"]+">Main </);
-  assert.ok(!page.includes(DEFAULT_SERIES_NAME));
   const fields = {
     rangeStart: String(series.rangeStart),
     rangeEnd: String(series.rangeEnd),
   };
+  // На български „Main“ е обикновено ново име — записва се.
+  await http.post(bgOwner, `/app/o/${bgOrgId}/serii/${series.id}`, { name: 'Main', ...fields });
+  assert.equal(
+    (await prisma.documentSeries.findUniqueOrThrow({ where: { id: series.id } })).name,
+    'Main',
+  );
+  await prisma.documentSeries.update({
+    where: { id: series.id },
+    data: { name: DEFAULT_SERIES_NAME },
+  });
+  await http.post(bgOwner, '/app/ezik', { lang: 'en', back: '/app' });
+  const page = await (await http.get(bgOwner, `/app/o/${bgOrgId}/serii`)).text();
+  assert.match(page, /<h2 id="s-[^"]+">Main </);
+  assert.ok(!page.includes(DEFAULT_SERIES_NAME));
   const same = await http.post(bgOwner, `/app/o/${bgOrgId}/serii/${series.id}`, {
     name: 'Main',
     ...fields,
@@ -215,4 +228,54 @@ test('началната серия: „Main“ на английски; неп�
     'Main 2026',
   );
   await http.post(bgOwner, '/app/ezik', { lang: 'bg', back: '/app' });
+});
+
+test('адрес, който URL не разчита (//%zz), е 404, не 500', async () => {
+  const origin = new URL(http.origin);
+  for (const path of ['//%zz', '//[x', '//:99999']) {
+    const status = await new Promise<number>((resolve, reject) => {
+      const req = request(
+        { host: origin.hostname, port: origin.port, path, method: 'GET' },
+        (res) => {
+          res.resume();
+          resolve(res.statusCode ?? 0);
+        },
+      );
+      req.on('error', reject);
+      req.end();
+    });
+    assert.equal(status, 404, path);
+  }
+});
+
+test('сесия без минат втори фактор не сменя езика — към кода', async () => {
+  const { userId } = await register({
+    ...base,
+    kind: 'company',
+    name: 'Петя Колева',
+    email: 'totp@example.test',
+    legalName: 'Мелница Злато ООД',
+    eik: '200245489',
+  });
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      totpSecretEnc: encryptTotpSecret(generateTotpSecret(), userId),
+      totpEnabledAt: new Date(),
+    },
+  });
+  const first = await http.post(null, '/vhod', { email: 'totp@example.test', password: PASSWORD });
+  assert.equal(first.status, 303);
+  assert.match(first.headers.get('location') ?? '', /^\/vhod\/kod/);
+  const cookie = first.headers
+    .getSetCookie()
+    .map((c) => c.split(';')[0])
+    .join('; ');
+  const form = await (await http.get({ cookie, csrf: '' }, '/vhod/kod')).text();
+  const csrf = /name="_csrf" value="([^"]+)"/.exec(form)?.[1] ?? '';
+  assert.ok(csrf);
+  const res = await http.post({ cookie, csrf }, '/app/ezik', { lang: 'en', back: '/app' });
+  assert.equal(res.status, 303);
+  assert.equal(res.headers.get('location'), '/vhod/kod');
+  assert.equal((await prisma.user.findUniqueOrThrow({ where: { id: userId } })).locale, 'bg');
 });

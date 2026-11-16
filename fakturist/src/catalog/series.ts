@@ -5,6 +5,7 @@ import { overlaps } from '../documents/numbering.js';
 import { lockOrganization } from '../accounts/transfer-core.js';
 import type { SeriesInput } from './schemas.js';
 import { DEFAULT_SERIES_NAME, SYSTEM_TEXT_EN } from '../system-text.js';
+import type { Locale } from '../i18n.js';
 
 /**
  * Сериите на фирмата (SPEC 44). Всяка промяна е под заключването на фирмата — същото, което взема
@@ -93,6 +94,8 @@ export async function updateSeries(input: {
   seriesId: string;
   actorId: string;
   data: SeriesInput;
+  /** Езикът, на който е показано името — „Main“ е преводът на „Основна“ само на английски. */
+  locale?: Locale;
 }): Promise<void> {
   await prisma.$transaction(async (tx) => {
     await lockOrganization(tx, input.organizationId);
@@ -109,6 +112,7 @@ export async function updateSeries(input: {
     // Началната серия, показана на английски като „Main“ (src/system-text.ts): непроменено име не я
     // преименува — колегата на български продължава да вижда „Основна“.
     const keepsDefaultName =
+      input.locale === 'en' &&
       series.name === DEFAULT_SERIES_NAME &&
       input.data.name === SYSTEM_TEXT_EN[DEFAULT_SERIES_NAME];
     await tx.documentSeries.update({

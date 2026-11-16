@@ -29,6 +29,8 @@ export function languageRouter(): Router {
   router.post('/app/ezik', limiter, async (req, res) => {
     const principal = req.principal;
     if (!principal) return res.redirect(303, '/vhod');
+    // Само след пълен вход: знаещият само паролата не пипа профила (и езика на писмата до собственика).
+    if (!principal.verified) return res.redirect(303, '/vhod/kod');
     const parsed = LanguageForm.safeParse(req.body);
     if (!parsed.success) throw new HttpError(400);
     await prisma.user.update({

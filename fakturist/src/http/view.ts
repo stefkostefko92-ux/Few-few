@@ -53,15 +53,19 @@ export function safeBack(value: unknown): string {
  * страница, показана след изпратена форма — там, откъдето е изпратена); посетител — връзки с `?lang=`.
  */
 function languageSwitch(req: Request): { back: string; hrefs: Record<Locale, string> } {
-  const url = new URL(req.originalUrl, 'http://local');
+  // Без `new URL(req.originalUrl)`: адрес като `//%zz` го чупи (ERR_INVALID_URL → 500 за всяка заявка), а
+  // `//host` би дал връзка към чужд сайт. Пътят — с една наклонена черта отпред; заявката — както е.
+  const path = `/${req.path.replace(/^\/+/, '')}`;
+  const at = req.originalUrl.indexOf('?');
+  const query = at === -1 ? '' : req.originalUrl.slice(at + 1);
   const hrefs = Object.fromEntries(
     (['bg', 'en'] as const).map((lang) => {
-      const params = new URLSearchParams(url.search);
+      const params = new URLSearchParams(query);
       params.set('lang', lang);
-      return [lang, `${url.pathname}?${params.toString()}`];
+      return [lang, `${path}?${params.toString()}`];
     }),
   ) as Record<Locale, string>;
-  let back = req.method === 'GET' ? url.pathname + url.search : '/app';
+  let back = req.method === 'GET' ? `${path}${query ? `?${query}` : ''}` : '/app';
   if (req.method !== 'GET') {
     const referer = req.get('referer');
     if (referer) {
