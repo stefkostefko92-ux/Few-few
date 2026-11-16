@@ -10,3 +10,5 @@ scripts/render/.venv
 scripts/render/out
 # Стилът ѝ е закован с хеш в CSP на nginx (tests/deploy-nginx.test.ts) — не се преформатира.
 deploy/nginx/manutenzione.html
+print/volantino-a5.html
+print/presentazione-a4.html

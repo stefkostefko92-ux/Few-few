@@ -7,23 +7,20 @@ import { getCliente } from '../clienti/service.js';
 import { setFlash } from '../http/flash.js';
 import { datiDi } from '../preventivi/dati.js';
 import { valoriDaCopia, valoriDaScheda } from '../preventivi/da-scheda.js';
-import {
-  clienteIdDa,
-  formValuesDalBody,
-  parsePreventivo,
-  type ErroriPreventivo,
-} from '../preventivi/form.js';
+import { clienteIdDa, formValuesDalBody, parsePreventivo } from '../preventivi/form.js';
 import { createPreventivo } from '../preventivi/service.js';
 import { highlight, MAX_QUERY_LENGTH } from '../schede/search.js';
 import { businessDay } from '../time.js';
 import { schedaScelta } from './cartelli-nuovo.js';
 import {
+  aziendaScelta,
   aziendePerPreventivo,
   condizioniDi,
   fonteSchede,
   loadPreventivo,
   puoOperare,
   renderPreventivoForm,
+  type ErroriForm,
   type PreventivoFormView,
 } from './preventivi-vista.js';
 
@@ -41,13 +38,11 @@ export const preventiviNuovoRouter: Router = Router();
 const write = requireCapability('preventivi:write');
 
 preventiviNuovoRouter.get('/preventivi/nuovo', write, async (req, res) => {
-  const { choices, only } = await aziendePerPreventivo(req);
+  const scelte = await aziendePerPreventivo(req);
+  const { choices, only, spente } = scelte;
   const fonte = fonteSchede(req);
   const puoCercare = fonte.all || fonte.aziendaIds.length > 0;
-  const preset = typeof req.query.azienda === 'string' ? req.query.azienda : '';
-  const azienda =
-    only?.id ??
-    (choices.some((a) => a.id === preset) ? preset : choices.length === 1 ? choices[0]!.id : '');
+  const azienda = aziendaScelta(scelte, req.query.azienda);
   const base: PreventivoFormView = {
     preventivo: null,
     values: {
@@ -58,6 +53,7 @@ preventiviNuovoRouter.get('/preventivi/nuovo', write, async (req, res) => {
     errors: {},
     base: '',
     aziende: choices,
+    spente,
     azienda,
     puoCercare,
   };
@@ -70,6 +66,7 @@ preventiviNuovoRouter.get('/preventivi/nuovo', write, async (req, res) => {
       values: { ...valoriDaCopia(datiDi(row)), clienteId: row.clienteId ?? '' },
       azienda: row.aziendaId,
       aziende: [],
+      spente: [],
     });
   }
 
@@ -88,14 +85,18 @@ preventiviNuovoRouter.get('/preventivi/nuovo', write, async (req, res) => {
       },
       azienda: cliente.aziendaId,
       aziende: [],
+      spente: [],
     });
   }
 
   if (req.query.scheda !== undefined) {
     const row = puoCercare ? await schedaPerCartello(fonte, req.query.scheda) : null;
-    // Карта на фирма без включени оферти (MASTER вижда всички карти) — няма оферта от нея.
+    // Карта на фирма без включени оферти (MASTER вижда всички карти) — няма оферта от нея; MASTER отива на
+    // формата с избраната фирма, където бележката предлага да се включат.
     const suaAzienda =
       row && (only?.id === row.aziendaId || choices.some((a) => a.id === row.aziendaId));
+    if (row && !suaAzienda && spente.some((a) => a.id === row.aziendaId))
+      return res.redirect(303, `/preventivi/nuovo?azienda=${encodeURIComponent(row.aziendaId)}`);
     if (!row || !suaAzienda) return res.redirect(303, '/preventivi/nuovo');
     return renderPreventivoForm(res, 200, {
       ...base,
@@ -129,7 +130,7 @@ preventiviNuovoRouter.get('/preventivi/nuovo', write, async (req, res) => {
 async function creaDalBody(req: Request, res: Response): Promise<void> {
   const body = req.body as Record<string, unknown>;
   const parsed = parsePreventivo(body);
-  const { choices, only } = await aziendePerPreventivo(req);
+  const { choices, only, spente } = await aziendePerPreventivo(req);
   const fonte = fonteSchede(req);
   const voluta = typeof body.scheda === 'string' && body.scheda !== '' ? body.scheda : null;
   const scheda = voluta ? await schedaPerCartello(fonte, voluta) : null;
@@ -137,13 +138,14 @@ async function creaDalBody(req: Request, res: Response): Promise<void> {
   const azienda = scheda
     ? (tutte.find((a) => a.id === scheda.aziendaId) ?? null)
     : (only ?? choices.find((a) => a.id === body.azienda) ?? null);
-  const again = (errors: ErroriPreventivo) =>
+  const again = (errors: ErroriForm) =>
     renderPreventivoForm(res, 422, {
       preventivo: null,
       values: formValuesDalBody(body),
       errors,
       base: '',
       aziende: choices,
+      spente,
       azienda:
         scheda?.aziendaId ?? only?.id ?? (typeof body.azienda === 'string' ? body.azienda : ''),
       scheda: scheda ? schedaScelta(scheda, spansAziende(fonte) ? tutte : []) : null,
@@ -152,6 +154,9 @@ async function creaDalBody(req: Request, res: Response): Promise<void> {
   const errori = parsed.ok ? {} : parsed.errors;
   // Пратената карта вече я няма за човека — офертата не се записва; написаното остава, връзката — не.
   if ((voluta && !scheda) || (scheda && !azienda)) return again({ scheda: 'invalid', ...errori });
+  // MASTER е избрал фирма с изключени оферти: нищо не се записва, бележката предлага да се включат.
+  if (!azienda && !scheda && spente.some((a) => a.id === body.azienda))
+    return again({ azienda: 'spente', ...errori });
   if (!azienda) return again({ azienda: 'required', ...errori });
   if (!parsed.ok) return again(parsed.errors);
   const esito = await createPreventivo({

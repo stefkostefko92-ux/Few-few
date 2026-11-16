@@ -194,6 +194,29 @@
     grid-column: 1 / -1;
   }
 
+  /* Заглавието на реда (th scope="row": фирмата в договорите, регистрите, плащанията) е заглавието на картата:
+     на целия ред, с надписа си като клетките, без фона и без `nowrap` на заглавие — дългото име се застъпваше
+     със „Stato“ (визуалната проверка, 16 ноември 2026). */
+  .table--stack th[scope='row'] {
+    display: block;
+    grid-column: 1 / -1;
+    padding: 0;
+    border: 0;
+    background: none;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .table--stack th[scope='row']::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 2px;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--muted);
+  }
+
   .table--stack .actions-cell {
     text-align: left;
   }
@@ -273,6 +296,21 @@
 .filter__row .select {
   flex: 1;
   min-width: 0;
+}
+
+/* Търсенето на офертите и на клиентите: дългата подсказка („numero, cliente, oggetto, impianto…“) се събира. */
+.filter.preventivi-cerca {
+  max-width: 720px;
+}
+
+/* Търсене с падащ списък до него (офертите: „Tutti gli stati“): от 720 px списъкът е колкото най-дългата си
+   възможност, полето — останалото (преди списъкът се свиваше до стрелката си, 26 px). */
+@media (min-width: 720px) {
+  .filter__row .input ~ .select {
+    flex: 0 0 auto;
+    width: auto;
+    padding-right: 28px; /* място за стрелката: Chromium смята ширината без него */
+  }
 }
 
 /* На телефон падащият списък е сам на реда, бутонът — под него: името на фирмата не се реже до бутона. */

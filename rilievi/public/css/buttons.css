@@ -20,6 +20,19 @@
   cursor: pointer;
 }
 
+/* На телефон бутон с дълъг текст („Registra la decisione e invia“), който сам не се събира на реда си, се пренася
+   на два реда, вместо да разширява формата и страницата встрани (визуалната проверка, 16 ноември 2026). Бутоните,
+   които се събират, остават на един ред — в лентата с бутони (flex-wrap) първо минават на нов ред. */
+@media (max-width: 479px) {
+  .btn {
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+    padding-block: 6px;
+  }
+}
+
 .btn:hover {
   background: var(--hover);
 }

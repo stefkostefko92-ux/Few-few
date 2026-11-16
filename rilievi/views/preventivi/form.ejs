@@ -20,7 +20,7 @@
   };
   const messageOf = (key) => {
     const code = errors[key];
-    if (key === 'azienda') return t('preventivi.errore.azienda');
+    if (key === 'azienda') return t(code === 'spente' ? 'preventivi.errore.aziendaSpenta' : 'preventivi.errore.azienda');
     if (key === 'scheda') return t('cartelli.daScheda.nonDisponibile');
     if (key === 'righe') return t(code === 'range' ? 'preventivi.errore.troppeRighe' : 'preventivi.errore.nessunaRiga', { n: maxRighe });
     if (key === 'totale') return t('preventivi.errore.totale');
@@ -63,19 +63,11 @@
   <% if (isEdit) { %><input type="hidden" name="base" value="<%= base %>"><% } %>
   <% if (!isEdit && scheda) { %><input type="hidden" name="scheda" value="<%= scheda.id %>"><% } %>
   <%# Bez izbor na firma (edna firma, „Duplica“, oferta ot profila na klient) firmata patuva skrita. %>
-  <% if (!isEdit && !scheda && aziende.length === 0 && azienda) { %><input type="hidden" name="azienda" value="<%= azienda %>"><% } %>
+  <% if (!isEdit && !scheda && aziende.length === 0 && spente.length === 0 && azienda) { %><input type="hidden" name="azienda" value="<%= azienda %>"><% } %>
   <input type="hidden" name="clienteId" value="<%= str('clienteId') %>" data-cliente-id>
   <% if (isEdit) { %><input type="hidden" name="clienteIdPrima" value="<%= str('clienteIdPrima') %>"><% } %>
-  <% if (!isEdit && !scheda && aziende.length > 0) { %>
-  <div class="field field--azienda">
-    <label class="field__label" for="f-azienda"><%= t('scheda.field.azienda') %></label>
-    <select class="select" id="f-azienda" name="azienda" required data-scelta-azienda<%- aria('azienda') %>>
-      <option value=""<% if (!azienda) { %> selected<% } %>>—</option>
-      <% for (const item of aziende) { %><option value="<%= item.id %>"<% if (azienda === item.id) { %> selected<% } %>><%= item.name %></option>
-      <% } %>
-    </select>
-    <% if (errors.azienda) { %><p class="field__error" id="err-azienda"><%= messageOf('azienda') %></p><% } %>
-  </div>
+  <% if (!isEdit && !scheda && (aziende.length > 0 || spente.length > 0)) { %>
+  <%- include('_scelta-azienda', { aziende, spente, azienda, errore: errors.azienda ? messageOf('azienda') : '' }) %>
   <% } %>
 
   <fieldset class="section">
@@ -149,5 +141,6 @@
     <a class="btn btn--bar" href="<%= isEdit ? '/preventivi/' + preventivo.id : '/preventivi' %>"><%= t('common.cancel') %></a>
   </div>
 </form>
+<% if (!isEdit && !scheda) { %><%- include('_attiva-offerte', { spente, azienda, dopo: 'preventivo' }) %><% } %>
 </div>
 <%- include('../partials/bottom') %>
