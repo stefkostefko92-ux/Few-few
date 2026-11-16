@@ -44,6 +44,7 @@
   <p class="muted"><%= t('preventivi.listino.voci', { n: L.page.total }) %></p>
   <a class="btn" href="/preventivi/listino.csv?azienda=<%= encodeURIComponent(azienda.id) %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('preventivi.listino.esporta') %></a>
 </div>
+<div class="table-scorre">
 <table class="table table--stack">
   <caption class="visually-hidden"><%= t('preventivi.listino.titolo') %></caption>
   <thead>
@@ -68,5 +69,6 @@
     <% } %>
   </tbody>
 </table>
+</div>
 <%- include('../partials/pager', { base: pagine, page: L.page.page, pages: L.page.pages }) %>
 <% } %>

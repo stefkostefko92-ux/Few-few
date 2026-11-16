@@ -18,9 +18,27 @@ export async function checkPreventivi(page, { base, shots, scheme, aziendaPath, 
     await page.goto(sheetUrl);
     if (await page.locator('a[href^="/preventivi/nuovo?scheda="]').count())
       fail(`${name}: the scheda offers a quote while quotes are off`);
+    // The MASTER finds the company in the new quote too (the owner, 16 November 2026: "не мога да избера фирма …
+    // от мастър акаунта"): in the group of the companies with quotes off; choosing it shows the note and the
+    // switch, which turns the quotes on and comes back to the form with the company chosen.
+    await page.goto(`${base}/preventivi/nuovo`);
+    const spenta = page.locator(`#f-azienda option[value="${aziendaId}"][data-spenta]`);
+    if (!(await spenta.count()))
+      fail(`${name}: the company with quotes off is not in the new quote`);
+    const nota = page.locator('[data-offerte-spente]');
+    if (await nota.isVisible()) fail(`${name}: the quotes-off note shows before a choice`);
+    await page.selectOption('#f-azienda', aziendaId);
+    if (!(await nota.isVisible())) fail(`${name}: no note for a company with quotes off`);
+    await audit(page, `${name} new quote, company with quotes off`);
+    await aligned(page, `${name} new quote, company with quotes off`);
+    await Promise.all([
+      page.waitForURL(new RegExp(`/preventivi/nuovo\\?azienda=${aziendaId}$`)),
+      page.click('button[form=f-attiva-offerte]'),
+    ]);
+    if ((await page.inputValue('#f-azienda')) !== aziendaId)
+      fail(`${name}: the company is not chosen after turning quotes on`);
+    if (await nota.isVisible()) fail(`${name}: the quotes-off note stays after turning quotes on`);
     await page.goto(`${base}${aziendaPath}`);
-    await page.click('form[action$="/preventivi"] button[type=submit]');
-    await page.waitForURL(new RegExp(`${aziendaPath}(#h-preventivi)?$`));
     if (!(await acceso())) fail(`${name}: quotes not on after the switch`);
   }
 
