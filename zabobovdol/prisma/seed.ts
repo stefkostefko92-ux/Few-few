@@ -1,3 +1,4 @@
+import { adminSeedPlan } from "./admin-seed-core";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { readFileSync } from "node:fs";
@@ -30,24 +31,40 @@ async function main() {
   const password = process.env.ADMIN_PASSWORD ?? "";
   const name = process.env.ADMIN_NAME ?? "Администратор";
 
-  // Безопасност: не създаваме администратор със слаба/примерна парола.
-  const WEAK = ["", "changeme12345", "changeme", "password", "admin"];
-  if (password.length < 10 || WEAK.includes(password.toLowerCase())) {
-    console.error(
-      "\n✖ ADMIN_PASSWORD липсва или е твърде слаб/примерен.\n" +
-        "  Задайте силна парола (поне 10 знака) в .env и пуснете отново:\n" +
-        '    ADMIN_PASSWORD="ваша_силна_парола"\n',
-    );
-    process.exit(1);
-  }
-  const passwordHash = await bcrypt.hash(password, 11);
-
-  await prisma.user.upsert({
-    where: { email },
-    update: { name, role: "ADMIN", active: true },
-    create: { email, name, role: "ADMIN", passwordHash },
+  // Имейлът може да е сменен от „Моят профил“ — тогава в .env е старият и НЕ
+  // създаваме втори администратор със старите данни (prisma/admin-seed-core.ts).
+  // Паролата от .env трябва САМО при създаване — съществуващ администратор не я
+  // ползва (затова след първото пускане ADMIN_PASSWORD може да се махне от .env).
+  const existing = await prisma.user.findUnique({ where: { email }, select: { role: true } });
+  const plan = adminSeedPlan({
+    existingRole: existing ? existing.role : null,
+    adminCount: await prisma.user.count({ where: { role: "ADMIN" } }),
   });
-  console.log(`✔ Администратор: ${email}`);
+  if (plan === "update") {
+    // Само името — без роля и без активиране (решенията от панела остават).
+    await prisma.user.update({ where: { email }, data: { name } });
+    console.log(`✔ Администратор: ${email}`);
+  } else if (plan === "create") {
+    // Безопасност: не създаваме администратор със слаба/примерна парола.
+    const WEAK = ["", "changeme12345", "changeme", "password", "admin"];
+    if (password.length < 10 || WEAK.includes(password.toLowerCase())) {
+      console.error(
+        "\n✖ ADMIN_PASSWORD липсва или е твърде слаб/примерен.\n" +
+          "  Задайте силна парола (поне 10 знака) в .env и пуснете отново:\n" +
+          '    ADMIN_PASSWORD="ваша_силна_парола"\n',
+      );
+      process.exit(1);
+    }
+    const passwordHash = await bcrypt.hash(password, 11);
+    await prisma.user.create({ data: { email, name, role: "ADMIN", passwordHash } });
+    console.log(`✔ Администратор: ${email}`);
+  } else {
+    console.log(
+      existing
+        ? `• ${email} е редактор — seed-ът не повишава роли.`
+        : `• Администратор има (друг имейл) — не създавам нов от .env (${email}).`,
+    );
+  }
 
   // --- Услуги и телефони ---
   const services = [

@@ -4,6 +4,8 @@ import { slugify, uniqueSlug } from "@/lib/slug";
 import {
   DEFAULT_NEWS_URL,
   MUNICIPALITY_SOURCE,
+  SourceHttpError,
+  describeFetchError,
   isNewsLink,
   parseListing,
   resolveLinkPattern,
@@ -28,10 +30,10 @@ async function fetchText(url: string): Promise<string> {
   try {
     parsed = new URL(url);
   } catch {
-    throw new Error("Невалиден адрес на източника.");
+    throw new Error("Невалиден адрес на източника. Проверете MUNICIPALITY_NEWS_URL.");
   }
   if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
-    throw new Error("Позволени са само http(s) адреси за източника.");
+    throw new Error("Позволени са само http(s) адреси за източника. Проверете MUNICIPALITY_NEWS_URL.");
   }
   const res = await fetch(url, {
     headers: {
@@ -41,7 +43,7 @@ async function fetchText(url: string): Promise<string> {
     signal: AbortSignal.timeout(15000),
     redirect: "follow",
   });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  if (!res.ok) throw new SourceHttpError(res.status);
   return res.text();
 }
 
@@ -89,13 +91,20 @@ export async function ingestMunicipalityNews(limit = 15): Promise<IngestResult> 
   try {
     text = await fetchText(url);
   } catch (err) {
-    console.error("[ingest-news] грешка при сваляне:", err instanceof Error ? err.message : err);
+    const code = (err as { cause?: { code?: unknown } } | null)?.cause?.code;
+    console.error(
+      "[ingest-news] грешка при сваляне:",
+      err instanceof Error ? err.message : err,
+      typeof code === "string" ? `(${code})` : "",
+    );
+    // Невалиден адрес/протокол (fetchText) — собственото съобщение; иначе — по причината.
+    const own = err instanceof Error && /^(Невалиден|Позволени)/.test(err.message) ? err.message : null;
     return {
       found: 0,
       created: 0,
       skipped: 0,
       pending: await countPendingNews(pattern),
-      error: "Грешка при сваляне на източника.",
+      error: own ?? describeFetchError(err),
     };
   }
 

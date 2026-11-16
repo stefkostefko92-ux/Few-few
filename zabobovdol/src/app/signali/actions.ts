@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { sendMail, MUNICIPALITY_EMAIL } from "@/lib/mail";
+import { complaintMail } from "@/lib/forward-core";
 import { SITE } from "@/lib/site";
 import { rateLimit, clientKey, RATE_LIMIT_MESSAGE } from "@/lib/ratelimit";
 import {
@@ -102,30 +103,13 @@ export async function submitComplaint(
       },
     });
 
-    // Опит за препращане към институцията по имейл (ако е конфигуриран SMTP).
-    const body = [
-      `Сигнал от граждани, подаден чрез ${SITE.domain}`,
-      `Код за проследяване: ${refCode}`,
-      "",
-      `Категория: ${d.category}`,
-      `Заглавие: ${d.subject}`,
-      d.location ? `Местоположение: ${d.location}` : "",
-      "",
-      "Описание:",
-      d.message,
-      "",
-      "Подател:",
-      `Име: ${d.name || "—"}`,
-      `Имейл: ${d.email || "—"}`,
-      `Телефон: ${d.phone || "—"}`,
-    ]
-      .filter(Boolean)
-      .join("\n");
-
+    // Опит за препращане към институцията по имейл (ако има поща) — същият текст
+    // като при „Изпрати сега“ от админ панела (forward-core.ts).
+    const fwd = complaintMail({ refCode, ...d }, SITE.domain);
     const mail = await sendMail({
       to: MUNICIPALITY_EMAIL,
-      subject: `Сигнал ${refCode}: ${d.subject}`,
-      text: body,
+      subject: fwd.subject,
+      text: fwd.text,
       replyTo: d.email || undefined,
     });
 

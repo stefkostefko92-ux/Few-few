@@ -165,7 +165,12 @@ $DC up -d --build
 
 # Приложението върви като nextjs (1001), а томът със снимките може да е създаден още
 # когато вървеше като root → качването пада с EACCES. Идемпотентно и бързо.
-if ! $DC exec -T -u 0 app sh -c 'chown -R 1001:1001 /app/uploads' >/dev/null 2>&1; then
+# app е без capabilities (cap_drop: ALL) — root вътре в него НЕ може chown. Затова:
+# първо проверка като самото приложение; само ако не може да пише — еднократен
+# контейнер със същия образ и том и единствено CAP_CHOWN.
+if ! $DC exec -T app sh -c 'test -w /app/uploads' >/dev/null 2>&1 \
+   && ! $DC run --rm --no-deps -T --user 0 --cap-add CHOWN --entrypoint sh app \
+          -c 'chown -R 1001:1001 /app/uploads' >/dev/null 2>&1; then
   warn "Не успях да оправя собственика на /app/uploads — проверете качването на снимки."
 fi
 
