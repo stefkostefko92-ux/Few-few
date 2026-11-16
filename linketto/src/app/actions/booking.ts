@@ -1,10 +1,14 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { dash } from '@/lib/dashboard-url';
 import { prisma } from '@/lib/db';
+import { profileHasActiveBlock } from '@/lib/profile-blocks';
+import { RETENTION_DAYS, daysAgo } from '@/lib/retention-days';
 import { getSessionUser } from '@/lib/auth';
 import { isLocale } from '@/i18n/locales';
 import { isValidEmail, normalizeEmail } from '@/lib/newsletter';
+import { clientIp, rateLimit } from '@/lib/rate-limit';
 
 // Публично: посетител заявява час/среща (BOOKING блок). Само заявка — без
 // плащане; създателят потвърждава извън платформата. Honeypot срещу ботове.
@@ -23,13 +27,20 @@ export async function submitBookingAction(formData: FormData): Promise<void> {
     select: { id: true },
   });
   if (!profile) redirect(`${back}${sep}bookError=1`);
+  // Само профил с активен BOOKING блок приема заявки; лимит по IP.
+  if (
+    !(await profileHasActiveBlock(profile.id, 'BOOKING')) ||
+    !rateLimit(`booking:${await clientIp()}`, 5, 10 * 60_000)
+  ) {
+    redirect(`${back}${sep}bookError=1`);
+  }
 
   // Срок на съхранение (чл. 13 ОРЗД): заявки по-стари от 12 месеца се
   // чистят при всяко ново изпращане — без отделен cron (като ContactMessage).
   await prisma.booking
     .deleteMany({
       where: {
-        createdAt: { lt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000) },
+        createdAt: { lt: daysAgo(RETENTION_DAYS.booking) },
       },
     })
     .catch(() => undefined);
@@ -60,5 +71,5 @@ export async function resolveBookingAction(formData: FormData): Promise<void> {
     where: { id: bookingId, profile: { userId: user.id } },
     data: { status: 'done' },
   });
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }

@@ -1,0 +1,246 @@
+import { Router } from 'express';
+import { rateLimit } from 'express-rate-limit';
+import { prisma } from '../db.js';
+import { HttpError, requireOrg } from '../auth/guards.js';
+import { roleCan } from '../auth/roles.js';
+import { documentUpload, uploadStatus } from '../http/upload.js';
+import { IncomingError } from '../incoming/check.js';
+import { IncomingRegisterError, setIncomingStatus, uploadIncoming } from '../incoming/register.js';
+import {
+  allowedPeriods,
+  journalPeriodOf,
+  setIncomingVatCredit,
+  VAT_CREDIT_RIGHTS,
+} from '../incoming/vat-credit.js';
+import { HOUR, sofiaToday } from '../time.js';
+import { param } from './app-shared.js';
+import { money } from '../http/view.js';
+import { afterDate, PAGE_SIZE, pageOf, pagerLinks, readCursor } from '../http/pagination.js';
+
+/**
+ * „Входящи“ (SPEC 55): регистърът — качените UBL/CII файлове и доставените в шкафчето; качване с
+ * проверка по правилата; запис на входящия документ с резултата; платена/отказана. Четене —
+ * `documents.read`; запис — `documents.issue`.
+ */
+const uploadLimiter = rateLimit({
+  windowMs: HOUR,
+  limit: 60,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  keyGenerator: (req) => req.principal?.user.id ?? 'anonymous',
+});
+
+function code(value: unknown): string {
+  return typeof value === 'string' && /^[a-zA-Z]{2,30}$/.test(value) ? value : '';
+}
+
+export function appIncomingRouter(): Router {
+  const router = Router();
+
+  router.get('/app/o/:orgId/vhodyashti', async (req, res) => {
+    const access = await requireOrg(req, 'documents.read');
+    // Един регистър от две таблици: всяка дава до страница след курсора, сливат се по (дата, id).
+    const cursor = readCursor(req.query['predi']);
+    const [org, uploads, inbox] = await Promise.all([
+      prisma.organization.findUniqueOrThrow({
+        where: { id: access.organizationId },
+        select: { id: true, legalName: true },
+      }),
+      prisma.incomingInvoice.findMany({
+        where: {
+          organizationId: access.organizationId,
+          ...afterDate('createdAt', cursor, 'desc'),
+        },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: PAGE_SIZE + 1,
+        select: {
+          id: true,
+          supplierName: true,
+          supplierEik: true,
+          number: true,
+          issueDate: true,
+          dueDate: true,
+          currency: true,
+          payableCents: true,
+          status: true,
+          valid: true,
+          source: true,
+          createdAt: true,
+        },
+      }),
+      prisma.inboxEntry.findMany({
+        where: {
+          recipientOrgId: access.organizationId,
+          ...afterDate('deliveredAt', cursor, 'desc'),
+        },
+        orderBy: [{ deliveredAt: 'desc' }, { id: 'desc' }],
+        take: PAGE_SIZE + 1,
+        select: {
+          id: true,
+          status: true,
+          deliveredAt: true,
+          senderOrg: { select: { legalName: true, eik: true } },
+          document: {
+            select: {
+              number: true,
+              issueDate: true,
+              dueDate: true,
+              currency: true,
+              payableCents: true,
+            },
+          },
+        },
+      }),
+    ]);
+    // Един регистър: качените и доставените в шкафчето, по дата.
+    const rows = [
+      ...uploads.map((u) => ({
+        kind: 'upload' as const,
+        origin: u.source === 'PEPPOL' ? 'peppol' : u.source === 'INBOX' ? 'archived' : 'upload',
+        id: u.id,
+        supplier: u.supplierName,
+        eik: u.supplierEik,
+        number: u.number,
+        issueDate: u.issueDate,
+        dueDate: u.dueDate,
+        currency: u.currency,
+        payableCents: u.payableCents,
+        status: u.status,
+        valid: u.valid,
+        at: u.createdAt,
+      })),
+      ...inbox.map((e) => ({
+        kind: 'inbox' as const,
+        origin: 'inbox',
+        id: e.id,
+        supplier: e.senderOrg.legalName,
+        eik: e.senderOrg.eik,
+        number: e.document.number ?? '',
+        issueDate: e.document.issueDate,
+        dueDate: e.document.dueDate,
+        currency: e.document.currency,
+        payableCents: e.document.payableCents,
+        status: e.status,
+        valid: true,
+        at: e.deliveredAt,
+      })),
+    ].sort((a, b) => b.at.getTime() - a.at.getTime() || (a.id < b.id ? 1 : a.id > b.id ? -1 : 0));
+    const page = pageOf(rows, PAGE_SIZE, (row) => row.at);
+    res.render('app/incoming', {
+      org,
+      rows: page.items,
+      pager: pagerLinks(req, `/app/o/${org.id}/vhodyashti`, 'predi', [], page.next),
+      money: (cents: bigint, currency: string) => money(cents, currency, res.locals.lang),
+      canWrite: roleCan(access.role, 'documents.issue'),
+      ok: code(req.query['ok']),
+      err: code(req.query['err']),
+    });
+  });
+
+  router.post('/app/o/:orgId/vhodyashti', uploadLimiter, documentUpload(), async (req, res) => {
+    const access = await requireOrg(req, 'documents.issue');
+    const base = `/app/o/${access.organizationId}/vhodyashti`;
+    const status = uploadStatus(req);
+    if (status !== 'ok' || !req.file) {
+      return res.redirect(303, `${base}?err=${status === 'tooLarge' ? 'tooLarge' : 'file'}`);
+    }
+    try {
+      const result = await uploadIncoming(access, req.principal!.user.id, {
+        name: req.file.originalname,
+        buffer: req.file.buffer,
+      });
+      res.redirect(303, `${base}/${result.id}?ok=${result.valid ? 'uploaded' : 'uploadedIssues'}`);
+    } catch (error) {
+      if (error instanceof IncomingError || error instanceof IncomingRegisterError) {
+        return res.redirect(303, `${base}?err=${error.code}`);
+      }
+      throw error;
+    }
+  });
+
+  router.get('/app/o/:orgId/vhodyashti/:id', async (req, res) => {
+    const access = await requireOrg(req, 'documents.read');
+    const entry = await prisma.incomingInvoice.findFirst({
+      where: { id: param(req, 'id'), organizationId: access.organizationId },
+      omit: { xml: true },
+    });
+    if (!entry) throw new HttpError(404);
+    res.render('app/incoming-entry', {
+      orgId: access.organizationId,
+      entry,
+      issues: Array.isArray(entry.issues) ? entry.issues : [],
+      canWrite: roleCan(access.role, 'documents.issue'),
+      canAccounting: roleCan(access.role, 'accounting.manage'),
+      creditRights: VAT_CREDIT_RIGHTS,
+      journal: { period: journalPeriodOf(entry), window: allowedPeriods(entry.issueDate) },
+      today: sofiaToday(),
+      ok: code(req.query['ok']),
+      err: code(req.query['err']),
+    });
+  });
+
+  router.get('/app/o/:orgId/vhodyashti/:id/fail.xml', async (req, res) => {
+    const access = await requireOrg(req, 'documents.read');
+    const entry = await prisma.incomingInvoice.findFirst({
+      where: { id: param(req, 'id'), organizationId: access.organizationId },
+      select: { xml: true, number: true },
+    });
+    if (!entry) throw new HttpError(404);
+    const safe = entry.number.replace(/[^\w.-]/g, '_').slice(0, 50);
+    res
+      .set('Cache-Control', 'private, no-store')
+      .set('Content-Disposition', `attachment; filename="vhodyashta-${safe}.xml"`)
+      .type('application/xml')
+      .send(entry.xml);
+  });
+
+  router.post('/app/o/:orgId/vhodyashti/:id/status', async (req, res) => {
+    const access = await requireOrg(req, 'documents.issue');
+    const id = param(req, 'id');
+    const body = req.body as Record<string, unknown>;
+    const status = body['status'];
+    const base = `/app/o/${access.organizationId}/vhodyashti/${id}`;
+    if (status !== 'RECEIVED' && status !== 'PAID' && status !== 'REJECTED') {
+      return res.redirect(303, `${base}?err=invalid`);
+    }
+    try {
+      await setIncomingStatus(
+        access,
+        req.principal!.user.id,
+        id,
+        status,
+        typeof body['paidOn'] === 'string' ? body['paidOn'] : undefined,
+      );
+    } catch (error) {
+      if (error instanceof IncomingRegisterError) {
+        if (error.code === 'notFound') throw new HttpError(404);
+        return res.redirect(303, `${base}?err=${error.code}`);
+      }
+      throw error;
+    }
+    res.redirect(303, `${base}?ok=status`);
+  });
+
+  // Дневникът за покупките: правото на кредит и месецът на включване.
+  router.post('/app/o/:orgId/vhodyashti/:id/dnevnik', async (req, res) => {
+    const access = await requireOrg(req, 'accounting.manage');
+    const id = param(req, 'id');
+    const body = req.body as Record<string, unknown>;
+    const base = `/app/o/${access.organizationId}/vhodyashti/${id}`;
+    try {
+      await setIncomingVatCredit(access, req.principal!.user.id, id, {
+        credit: body['credit'],
+        period: body['period'],
+      });
+    } catch (error) {
+      if (error instanceof IncomingRegisterError) {
+        if (error.code === 'notFound') throw new HttpError(404);
+        return res.redirect(303, `${base}?err=${error.code === 'date' ? 'period' : 'invalid'}`);
+      }
+      throw error;
+    }
+    res.redirect(303, `${base}?ok=journal`);
+  });
+
+  return router;
+}

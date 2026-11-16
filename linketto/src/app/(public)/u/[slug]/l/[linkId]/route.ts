@@ -8,8 +8,10 @@ import {
   type BlockMeta,
 } from "@/lib/blocks";
 import { isSensitiveUrl } from "@/lib/brands";
+import { maybePurgeOldClicks } from "@/lib/retention";
 import { isLocale } from "@/i18n/locales";
 import { countryOf, localeOf } from "@/lib/analytics";
+import { profileUrl } from "@/lib/profile-url";
 
 // Клик по блок: записваме събитието (без бисквитки и лични данни)
 // и пренасочваме към целта. „Умните“ блокове избират целта тук:
@@ -51,6 +53,8 @@ async function handle(
 
   const recordClick = async () => {
     if (!record) return;
+    // Срок за съхранение на аналитиката (до 13 месеца) — лениво чистене.
+    void maybePurgeOldClicks();
     await prisma.clickEvent
       .create({
         data: {
@@ -71,7 +75,6 @@ async function handle(
         ?.displayName ??
       profile.translations[0]?.displayName ??
       slug;
-    const base = process.env.PUBLIC_BASE_URL ?? url.origin;
     await recordClick();
     return new NextResponse(
       buildVCard({
@@ -79,7 +82,7 @@ async function handle(
         phone: meta?.phone,
         email: meta?.email,
         org: meta?.org,
-        url: `${base}/u/${slug}`,
+        url: profileUrl(slug),
       }),
       {
         headers: {

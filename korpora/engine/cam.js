@@ -3,7 +3,8 @@
 // real installation reads them from the machine's tool library), the G-code posts in gcode.js.
 import { cutSize, THROUGH_EXTRA } from './panel.js';
 import { STOCK } from './materials.js';
-import { r1, dimTxt } from './util.js';
+import { r1 } from './util.js';
+import { translator } from './i18n.js';
 import { DRILLS, drillFor, GROOVE_MILL } from './tooling.js';
 
 export { GROOVE_MILL, CUT_LENGTH, contourTool } from './tooling.js';
@@ -27,6 +28,20 @@ export const POSTS = {
 export const STEP_DOWN_RANGE = [0.5, 20];
 export const MAX_FEED_RANGE = [300, 10000];
 
+// A groove wider than the cutter (the 10 mm groove of a Planofit straightener) is cut in passes side by side, the
+// outer ones on the edges of the groove, at most 80 % of the cutter apart; a groove as wide as the cutter, in one.
+export function grooveLines(g, tool) {
+  const spread = g.w - tool.d;
+  if (spread <= 0.01) return [g];
+  const n = Math.ceil(spread / (0.8 * tool.d)) + 1;
+  const len = Math.hypot(g.X2 - g.X1, g.Y2 - g.Y1);
+  const [nx, ny] = [-(g.Y2 - g.Y1) / len, (g.X2 - g.X1) / len];
+  return Array.from({ length: n }, (_, k) => {
+    const o = -spread / 2 + (spread * k) / (n - 1);
+    return { X1: r1(g.X1 + nx * o), Y1: r1(g.Y1 + ny * o), X2: r1(g.X2 + nx * o), Y2: r1(g.Y2 + ny * o) };
+  });
+}
+
 // The name of a sheet's CNC file — one rule for cnc.zip, project.zip (under cnc/) and the CNC tab: sheet-01.nc.
 export const cncFileName = (index, ext) => `sheet-${String(index).padStart(2, '0')}.${ext}`;
 
@@ -40,8 +55,8 @@ function placer(part, pl, compensate) {
   };
 }
 
-// Holes whose circle would leave the cut contour of their part on this sheet, and grooves the groove mill would cut
-// at another width.
+// Holes whose circle would leave the cut contour of their part on this sheet, and grooves narrower than the groove mill
+// (a wider one is cut in passes side by side, grooveLines).
 function sheetFaults(model, sheet) {
   const out = [];
   const byId = new Map(model.parts.map((p) => [p.id, p]));
@@ -49,11 +64,11 @@ function sheetFaults(model, sheet) {
     const part = byId.get(pl.partId);
     const map = placer(part, pl, model.spec.bandCompensation);
     for (const f of part.features) {
-      if (f.type === 'groove' && Math.abs(f.w - GROOVE_MILL.d) > 0.01) out.push(`${part.name}: канал ${dimTxt(f.w)} mm, а фрезата за канали е Ø${dimTxt(GROOVE_MILL.d)} — каналът би излязъл с друга ширина.`);
+      if (f.type === 'groove' && f.w < GROOVE_MILL.d - 0.01) out.push(translator(model.lang)('w.grooveNarrow', { part: part.name, w: translator(model.lang).num(f.w), d: translator(model.lang).num(GROOVE_MILL.d) }));
       if (f.type !== 'hole') continue;
       const [X, Y] = map(f.u, f.v);
       const r = f.d / 2 - 0.05;
-      if (X - r < pl.x || X + r > pl.x + pl.w || Y - r < pl.y || Y + r > pl.y + pl.h) out.push(`${part.name}: отвор Ø${dimTxt(f.d)} би излязъл извън детайла на лист ${sheet.index}.`);
+      if (X - r < pl.x || X + r > pl.x + pl.w || Y - r < pl.y || Y + r > pl.y + pl.h) out.push(translator(model.lang)('w.strayHole', { part: part.name, d: translator(model.lang).num(f.d), sheet: sheet.index }));
     }
   }
   return out;

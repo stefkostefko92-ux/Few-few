@@ -1,0 +1,80 @@
+<%- include('../partials/app-head', { title: t('app.types.' + document.typeCode) + ' ' + (document.number || '') }) %>
+<p><a href="/app/o/<%= document.organizationId %>">← <%= t('app.view.back') %></a></p>
+<% if (issued) { %><p class="ok" role="status"><%= t('app.view.issued') %></p><% } %>
+<% if (document.status === 'CANCELLED') { %>
+  <div class="callout annulled" role="note">
+    <p><strong><%= t('app.annul.isAnnulled', { date: document.cancelledAt ? document.cancelledAt.toISOString().slice(0, 10).split('-').reverse().join('.') : '' }) %></strong>
+    <% if (document.cancelReason) { %> — <%= tOr('app.annul.reasons.' + document.cancelReason, document.cancelReason) %><% } %></p>
+    <% if (document.replacedBy) { %><p><%= t('app.annul.replacedBy') %> <a class="mono" href="/app/o/<%= document.organizationId %>/d/<%= document.replacedBy.id %>"><%= document.replacedBy.number %></a></p><% } %>
+    <p><a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/protokol.pdf" target="_blank" rel="noopener"><%= t('app.annul.protocol') %></a></p>
+  </div>
+<% } %>
+<% if (document.replaces) { %><p class="muted"><%= t('app.annul.replaces') %> <a class="mono" href="/app/o/<%= document.organizationId %>/d/<%= document.replaces.id %>"><%= document.replaces.number %></a></p><% } %>
+<div class="head-row">
+  <div>
+    <p class="muted"><%= t('app.types.' + document.typeCode) %> · <%= t('app.statuses.' + document.status) %></p>
+    <h1 class="mono"><%= document.number %></h1>
+  </div>
+  <div class="actions">
+    <a class="button" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/pdf" target="_blank" rel="noopener"><%= t('app.view.download') %> PDF</a>
+    <a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/ubl.xml" target="_blank" rel="noopener"><%= t('app.view.download') %> <%= t('app.view.ubl') %></a>
+    <a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/cii.xml" target="_blank" rel="noopener"><%= t('app.view.download') %> <%= t('app.view.cii') %></a>
+    <% if (locals.canAnnul) { %><a class="button-secondary" href="/app/o/<%= document.organizationId %>/nov?zamenya=<%= document.id %>"><%= t('app.annul.button') %></a><% } %>
+    <% if (locals.canRecur) { %><a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/povtaryay"><%= t('app.recurring.repeat') %></a><% } %>
+  </div>
+</div>
+<dl class="facts">
+  <div><dt><%= t('app.doc.issueDate') %></dt><dd class="mono"><%= document.issueDate.toISOString().slice(0, 10) %></dd></div>
+  <% if (document.taxPointDate) { %><div><dt><%= t('app.doc.taxPointDate') %></dt><dd class="mono"><%= document.taxPointDate.toISOString().slice(0, 10) %></dd></div><% } %>
+  <% if (document.dueDate) { %><div><dt><%= t('app.doc.dueDate') %></dt><dd class="mono"><%= document.dueDate.toISOString().slice(0, 10) %></dd></div><% } %>
+  <div><dt><%= t('app.org.buyer') %></dt><dd><%= document.buyerName %><% if (document.buyerEik) { %> <span class="mono muted"><%= document.buyerEik %></span><% } %></dd></div>
+  <div><dt><%= t('app.view.net') %></dt><dd class="mono"><%= money(document.taxExclusiveCents) %></dd></div>
+  <div><dt><%= t('app.view.vat') %></dt><dd class="mono"><%= money(document.vatCents) %></dd></div>
+  <% if (document.vatEurCents !== null) { %><div><dt><%= t('app.view.vatEur') %></dt><dd class="mono"><%= eur(document.vatEurCents) %></dd></div><% } %>
+  <div><dt><%= t('app.view.payable') %></dt><dd class="mono strong"><%= money(document.payableCents) %></dd></div>
+  <% if (document.issuedBy) { %><div><dt><%= t('app.view.issuedBy') %></dt><dd><%= document.issuedBy.name %></dd></div><% } %>
+  <% if (document.firm) { %><div><dt><%= t('app.view.viaFirm') %></dt><dd><%= document.firm.legalName %><% if (document.mandate) { %> · <span class="muted"><%= document.mandate.documentRef %></span><% } %></dd></div><% } %>
+</dl>
+<% if (peppolResult) { %><p class="<%= peppolResult === 'queued' ? 'ok' : 'error' %>" role="status"><%= tOr('app.peppol.result.' + peppolResult, t('auth.errors.invalid')) %></p><% } %>
+<% if (document.peppolTransmission) { const x = document.peppolTransmission; %><p class="muted"><%= t('app.peppol.title') %> → <span class="mono"><%= x.receiverPartyId %></span> · <span class="tag<%= x.status === 'SENT' ? ' tag-active' : x.status === 'FAILED' ? '' : ' tag-pending' %>"><%= t('app.peppol.tx.' + x.status) %></span><% if (x.lastError) { %> · <span class="hint"><%= x.lastError %></span><% } %></p><% } else if (locals.canPeppol) { %>
+<form method="post" action="/app/o/<%= document.organizationId %>/d/<%= document.id %>/peppol" class="inline-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="button-secondary"><%= t('app.peppol.send') %></button></form>
+<% } %>
+<% if (document.proforma) { %><p class="muted"><%= t('app.proforma.fromProforma') %> <a class="mono" href="/app/o/<%= document.organizationId %>/proformi/<%= document.proforma.id %>"><%= document.proforma.number %></a></p><% } %>
+<% if (document.recurring) { %><p class="muted"><%= t('app.recurring.fromTemplate') %> <a href="/app/o/<%= document.organizationId %>/povtaryashti/<%= document.recurring.id %>"><%= document.recurring.name %></a><% if (document.recurringPeriod) { %> · <span class="mono"><%= document.recurringPeriod %></span><% } %></p><% } %>
+<% if (locals.payable) { const remaining = document.payableCents - document.paidCents; const plain = (c) => (c / 100n).toString() + '.' + (c % 100n).toString().padStart(2, '0'); %>
+<section class="panel" id="plashtane" aria-labelledby="plashtane-h">
+  <h2 id="plashtane-h"><%= t('app.payment.title') %> <span class="tag<%= document.paymentState === 'PAID' ? ' tag-active' : document.paymentState === 'PARTIAL' ? ' tag-pending' : '' %>"><%= t('app.payment.states.' + document.paymentState) %></span></h2>
+  <% if (paymentResult) { %><p class="<%= paymentResult === 'ok' || paymentResult === 'removed' ? 'ok' : 'error' %>" role="status"><%= tOr('app.payment.result.' + paymentResult, t('auth.errors.invalid')) %></p><% } %>
+  <dl class="facts">
+    <div><dt><%= t('app.payment.paid') %></dt><dd class="mono"><%= money(document.paidCents) %></dd></div>
+    <div><dt><%= t('app.payment.remaining') %></dt><dd class="mono strong"><%= money(remaining) %></dd></div>
+  </dl>
+  <% if (document.payments.length) { %>
+  <ul class="invite-list">
+    <% document.payments.forEach((p) => { %>
+      <li><span class="mono"><%= p.paidOn.toISOString().slice(0, 10).split('-').reverse().join('.') %></span> · <span class="mono"><%= money(p.amountCents) %></span> · <%= t('app.payment.sources.' + p.source) %><% if (p.note) { %> · <span class="muted"><%= p.note %></span><% } %>
+        <% if (canPay && p.source === 'MANUAL') { %><form method="post" action="/app/o/<%= document.organizationId %>/d/<%= document.id %>/plashtane/<%= p.id %>/mahni" class="inline-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="link"><%= t('app.payment.remove') %></button></form><% } %>
+      </li>
+    <% }) %>
+  </ul>
+  <% } %>
+  <% if (canPay && remaining > 0n) { %>
+  <form method="post" action="/app/o/<%= document.organizationId %>/d/<%= document.id %>/plashtane" class="stack narrow-form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="grid-2">
+      <label><%= t('app.payment.amount') %> (<%= document.currency %>)<input name="amount" inputmode="decimal" required value="<%= plain(remaining) %>" class="mono"></label>
+      <label><%= t('app.payment.date') %><input type="date" name="paidOn" required max="<%= today %>" value="<%= today %>"></label>
+    </div>
+    <label><%= t('app.payment.note') %> <span class="hint"><%= t('app.payment.noteHint') %></span><input name="note" maxlength="200"></label>
+    <div><button type="submit"><%= t('app.payment.record') %></button></div>
+  </form>
+  <% } %>
+</section>
+<% } %>
+<% document.inboxEntries.forEach((e) => { %>
+<p class="ok"><%= t('app.view.delivered', { name: e.recipientOrg.legalName }) %> · <%= t('app.inbox.status.' + e.status) %></p>
+<% }) %>
+<% if (document.sha256) { %>
+<p class="chain mono"><%= t('app.view.chain', { index: String(document.chainIndex) }) %> <%= document.sha256.slice(0, 16) %>…</p>
+<% } %>
+<%- include('../partials/app-foot') %>

@@ -2,7 +2,7 @@
 // cycles) and GRBL v1.1 (hobby router, manual tool change). GRBL knows no G41/G42, no canned cycles (G81/G83), no M6
 // and no G43 H (gnea/grbl README, "Supported G-Codes"): the cutter radius is in the path (profilePath) and holes are
 // drilled with G0/G1. Z0 is the sheet top, XY0 its lower left corner; no rapid goes below the R plane.
-import { sheetOps, num, POSTS, SPOIL, CLEAR, ONION, profilePath } from './cam.js';
+import { sheetOps, num, POSTS, SPOIL, CLEAR, ONION, profilePath, grooveLines } from './cam.js';
 import { GROOVE_MILL, contourTool, cuttingFeed, pecks, THROUGH_SLOW } from './tooling.js';
 import { asciiName, dimTxt } from './util.js';
 
@@ -168,19 +168,21 @@ export function toGcode(model, sheet, meta) {
     const tool = GROOVE_MILL;
     const F = cuttingFeed(tool);
     startTool(tool, `${ops.grooves.length} GROOVES`);
-    for (const g of ops.grooves) {
-      const passes = Math.ceil(g.depth / Math.min(4, stepDown));
-      rapid(g.X1, g.Y1);
-      rapid(undefined, undefined, CLEAR);
-      let atStart = true;
-      for (let k = 1; k <= passes; k++) {
-        feed(undefined, undefined, -Math.min(g.depth, (g.depth * k) / passes), tool.plunge, tool.id);
-        if (atStart) feed(g.X2, g.Y2, undefined, F, tool.id);
-        else feed(g.X1, g.Y1, undefined, F, tool.id);
-        atStart = !atStart;
+    // a groove wider than the mill: passes side by side, each to the full depth (grooveLines, cam.js)
+    for (const g of ops.grooves)
+      for (const line of grooveLines(g, tool)) {
+        const passes = Math.ceil(g.depth / Math.min(4, stepDown));
+        rapid(line.X1, line.Y1);
+        rapid(undefined, undefined, CLEAR);
+        let atStart = true;
+        for (let k = 1; k <= passes; k++) {
+          feed(undefined, undefined, -Math.min(g.depth, (g.depth * k) / passes), tool.plunge, tool.id);
+          if (atStart) feed(line.X2, line.Y2, undefined, F, tool.id);
+          else feed(line.X1, line.Y1, undefined, F, tool.id);
+          atStart = !atStart;
+        }
+        rapid(undefined, undefined, CLEAR);
       }
-      rapid(undefined, undefined, CLEAR);
-    }
     endTool();
   }
 

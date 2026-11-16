@@ -7,7 +7,7 @@ import type { Project } from '@prisma/client';
 import { unzipSync } from 'fflate';
 import { engine, loadEngine } from '../src/services/engine.js';
 import { buildExport } from '../src/services/exports.js';
-import { browserGlobals, editorModule } from './editor-modules.js';
+import { browserGlobals, editorModule, editorWords } from './editor-modules.js';
 
 interface Element {
   hidden: boolean;
@@ -44,6 +44,7 @@ browserGlobals({
   document: { querySelector: element, querySelectorAll: () => [] },
   cancelAnimationFrame: () => undefined,
 });
+await editorWords();
 const { renderCnc } = await editorModule<CncModule>('render-cnc.js', ['renderCnc']);
 
 test('the CNC tab names each sheet’s G-code and DXF as cnc.zip does', () => {

@@ -82,7 +82,7 @@ const vuoto = (value: unknown) =>
 const str = (value: unknown): string | null => (typeof value === 'string' ? value : null);
 
 /** P. IVA (11 цифри) или данъчен код (16 знака): главни букви, без интервалите. */
-function pivaDa(raw: unknown): { ok: true; value: string | null } | { ok: false } {
+export function pivaDa(raw: unknown): { ok: true; value: string | null } | { ok: false } {
   if (vuoto(raw)) return { ok: true, value: null };
   if (typeof raw !== 'string') return { ok: false };
   const value = raw.toUpperCase().replace(/\s+/g, '');
@@ -237,6 +237,8 @@ export function formValuesDalBody(body: unknown): FormValues {
     'validitaGiorni',
     'azienda',
     'scheda',
+    'clienteId',
+    'clienteIdPrima',
   ])
     out[key] = text(raw[key]);
   for (let i = 0; i < MAX_INDICE; i += 1)
@@ -245,6 +247,28 @@ export function formValuesDalBody(body: unknown): FormValues {
       if (value !== '') out[`r-${i}-${k}`] = value;
     }
   return out;
+}
+
+const idCliente = (raw: unknown): string | null =>
+  typeof raw === 'string' && /^[a-z0-9]{20,40}$/.test(raw) ? raw : null;
+
+/** Профилът от регистъра на клиентите, с който формата е попълнена (скритото поле) — само вид на id. */
+export function clienteIdDa(body: unknown): string | null {
+  return idCliente(
+    body && typeof body === 'object' ? (body as Record<string, unknown>).clienteId : null,
+  );
+}
+
+/**
+ * Същото при промяна на оферта: `undefined`, когато формата не е сменила профила — пратеното е каквото е
+ * било при отварянето ѝ (`clienteIdPrima`). Тогава връзката в базата не се пипа: клиентът може да е влязъл в
+ * регистъра, докато формата е била отворена (версията на офертата не мърда от това), и записът ѝ не бива да
+ * свали връзката (ревюто на Кодаджията, 13 ноември 2026).
+ */
+export function clienteIdCambiato(body: unknown): string | null | undefined {
+  const raw = body && typeof body === 'object' ? (body as Record<string, unknown>) : {};
+  const ora = idCliente(raw.clienteId);
+  return ora === idCliente(raw.clienteIdPrima) ? undefined : ora;
 }
 
 /** Местата на редовете във формата (подредени). */

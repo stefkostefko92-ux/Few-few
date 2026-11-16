@@ -25,6 +25,7 @@ const vuoto = {
   buoni: [],
   preventivi: [],
   listino: [],
+  clienti: [],
   fornitori: [],
   ordini: [],
   registro: [],

@@ -1,0 +1,15 @@
+<%- include('../partials/site-head', { title: t('errors.notFound.title') }) %>
+<main id="main">
+  <section class="page-head err">
+    <div class="wrap">
+      <p class="err-code mono" aria-hidden="true">404</p>
+      <h1 id="h1"><%= t('errors.notFound.title') %></h1>
+      <p class="lead"><%= t('errors.notFound.text') %></p>
+      <div class="actions">
+        <a class="btn" href="<%= urls.home %>"><%= t('errors.notFound.home') %></a>
+        <a class="btn btn-ghost" href="<%= urls.pricing %>"><%= t('errors.notFound.pricing') %></a>
+      </div>
+    </div>
+  </section>
+</main>
+<%- include('../partials/site-foot') %>

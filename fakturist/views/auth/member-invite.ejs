@@ -1,0 +1,41 @@
+<%- include('../partials/app-head', { title: t('auth.member.title') }) %>
+<%
+  const date = invite.expiresAt.toISOString().slice(0, 10).split('-').reverse().join('.');
+  const errorText = (code) => code.startsWith('password.')
+    ? tOr('auth.errors.' + code, t('auth.errors.invalid'))
+    : tOr('auth.member.errors.' + code, tOr('auth.invite.errors.' + code, t('auth.errors.invalid')));
+%>
+<section class="narrow wide-ish">
+  <h1><%= t('auth.member.title') %></h1>
+  <p><%= t('auth.member.intro', { company: invite.organization.legalName, role: t('app.roles.' + invite.role) }) %></p>
+  <p class="muted"><%= t('auth.invite.forEmail', { email: invite.email, date }) %></p>
+  <% if (errors.form) { %><p class="error" role="alert"><%= errorText(errors.form) %></p><% } %>
+  <% if (state === 'accept') { %>
+    <form method="post" action="/chlen/<%= token %>" class="stack">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button type="submit"><%= t('auth.member.accept') %></button>
+    </form>
+  <% } else if (state === 'wrongAccount') { %>
+    <p class="callout"><%= t('auth.invite.wrongAccount', { current: currentUser ? currentUser.email : '', email: invite.email }) %></p>
+    <form method="post" action="/izhod">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button type="submit" class="button-secondary"><%= t('auth.logout') %></button>
+    </form>
+  <% } else if (state === 'login') { %>
+    <p class="callout"><%= t('auth.invite.loginFirst') %></p>
+    <p><a class="button" href="/vhod?next=<%= encodeURIComponent('/chlen/' + token) %>"><%= t('auth.login') %></a></p>
+  <% } else { %>
+    <% if (Object.keys(errors).some((f) => f !== 'form')) { %>
+      <div class="error-box" role="alert"><ul><% Object.entries(errors).filter(([field]) => field !== 'form').forEach(([field, code]) => { %><li><%= errorText(code) %></li><% }) %></ul></div>
+    <% } %>
+    <form method="post" action="/chlen/<%= token %>" class="stack" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label<%= errors.name ? ' class="has-error"' : '' %>><%= t('auth.name') %><input name="name" value="<%= name %>" autocomplete="name" required<%= errors.name ? ' aria-invalid="true"' : '' %>></label>
+      <label><%= t('auth.email') %><input type="email" value="<%= invite.email %>" autocomplete="username" readonly></label>
+      <label<%= errors.password ? ' class="has-error"' : '' %>><%= t('auth.password') %><input type="password" name="password" autocomplete="new-password" minlength="12" required aria-describedby="pw-help"<%= errors.password ? ' aria-invalid="true"' : '' %>><span class="hint" id="pw-help"><%= t('auth.passwordHelp') %></span></label>
+      <%- include('../partials/legal-accept', { memberOnly: true, invalid: Boolean(errors.acceptTerms) }) %>
+      <button type="submit"><%= t('auth.member.create') %></button>
+    </form>
+  <% } %>
+</section>
+<%- include('../partials/app-foot') %>

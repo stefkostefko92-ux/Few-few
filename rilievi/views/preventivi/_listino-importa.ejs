@@ -1,0 +1,93 @@
+<%
+  // Ценоразписът наведнъж (routes/preventivi-listino-import.ts): редовете, поставени от Excel или от CSV.
+  // Първо „Controlla le righe“ — показва се какво ще стане и нищо не се пише; после „Conferma e importa“
+  // (бутонът е в самия преглед и носи отпечатъка на прегледаното: сменен текст дава нов преглед, не запис).
+  // Прибрано, докато не потрябва (`aperto`).
+  // Грешките са по ред, с номера на реда в поставения текст.
+  const imp = L.importa ?? { testo: '', unita: 'pz', iva: '22', errore: null, dettaglio: null, errori: [], altri: 0, anteprima: null, impronta: '', cambiato: false };
+  const etichetta = { codice: 'codice', descrizione: 'descrizione', unita: 'unita', prezzo: 'prezzoEuro', iva: 'ivaPercento' };
+  const rotto = imp.errore !== null || imp.errori.length > 0;
+%><details class="panel listino-strumento" id="importa"<% if (aperto) { %> open<% } %>>
+  <summary><h2 class="listino-strumento__titolo"><%= t('preventivi.listino.importa.titolo') %></h2></summary>
+  <form class="form listino-importa" method="post" action="/preventivi/listino/importa" novalidate>
+  <%# Enter в поле натиска първия бутон на формата: той само проверява, никога не потвърждава. %>
+  <button type="submit" hidden></button>
+  <% if (rotto) { %><div class="errors" role="alert" tabindex="-1">
+    <h2><%= t('preventivi.listino.importa.errore.titolo') %></h2>
+    <% if (imp.errore) { %><p><%= t('preventivi.listino.importa.errore.' + imp.errore, { n: L.maxVoci, dopo: imp.dopo ?? 0, colonne: imp.dettaglio ?? '' }) %></p><% } %>
+    <% if (imp.errori.length) { %><ul>
+      <% for (const e of imp.errori) { %><li><%= t('preventivi.listino.importa.riga', { riga: e.riga }) %> — <%= t('preventivi.colonna.' + etichetta[e.campo]) %>: <%= t('preventivi.listino.importa.motivo.' + e.codice, { max: L.max[e.campo] ?? 0 }) %></li>
+      <% } %>
+      <% if (imp.altri > 0) { %><li><%= t('preventivi.listino.importa.altriErrori', { n: imp.altri }) %></li><% } %>
+    </ul><% } %>
+  </div><% } %>
+  <% if (imp.anteprima) { const a = imp.anteprima; %><div class="listino-anteprima" role="status">
+    <h3><%= t('preventivi.listino.importa.anteprima.titolo') %></h3>
+    <% if (imp.cambiato) { %><p><strong><%= t('preventivi.listino.importa.anteprima.cambiato') %></strong></p><% } %>
+    <input type="hidden" name="impronta" value="<%= imp.impronta %>">
+    <ul>
+      <li><%= t('preventivi.listino.importa.anteprima.nuove', { n: a.piano.nuove }) %></li>
+      <li><%= t('preventivi.listino.importa.anteprima.aggiornate', { n: a.piano.aggiornate }) %></li>
+      <% if (a.piano.uguali > 0) { %><li><%= t('preventivi.listino.importa.anteprima.uguali', { n: a.piano.uguali }) %></li><% } %>
+      <li><%= t('preventivi.listino.importa.anteprima.dopo', { n: a.piano.dopo }) %></li>
+    </ul>
+    <table class="table table--stack">
+      <caption><%= a.totale > a.righe.length ? t('preventivi.listino.importa.anteprima.prime', { n: a.righe.length, totale: a.totale }) : t('preventivi.listino.importa.anteprima.tutte') %></caption>
+      <thead>
+        <tr>
+          <th scope="col"><%= t('preventivi.colonna.codice') %></th>
+          <th scope="col"><%= t('preventivi.colonna.descrizione') %></th>
+          <th scope="col"><%= t('preventivi.colonna.unita') %></th>
+          <th scope="col" class="importo"><%= t('preventivi.colonna.prezzoEuro') %></th>
+          <th scope="col" class="importo"><%= t('preventivi.colonna.ivaPercento') %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% for (const r of a.righe) { %><tr>
+          <td data-label="<%= t('preventivi.colonna.codice') %>"><%= r.data.codice || '—' %></td>
+          <td class="wide" data-label="<%= t('preventivi.colonna.descrizione') %>"><%= r.data.descrizione %></td>
+          <td data-label="<%= t('preventivi.colonna.unita') %>"><%= r.data.unita %></td>
+          <td class="importo" data-label="<%= t('preventivi.colonna.prezzoEuro') %>"><%= L.euro(r.data.prezzo) %></td>
+          <td class="importo" data-label="<%= t('preventivi.colonna.ivaPercento') %>"><%= r.data.iva %></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+    <div class="toolbar">
+      <button class="btn btn--primary" type="submit" name="conferma" value="1"><%- include('../partials/icon', { name: 'check' }) %><%= t('preventivi.listino.importa.conferma') %></button>
+    </div>
+  </div><% } %>
+  <p><%= t('preventivi.listino.importa.intro') %></p>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="hidden" name="azienda" value="<%= azienda.id %>">
+  <% if (da === 'impostazioni') { %><input type="hidden" name="da" value="impostazioni"><% } %>
+  <div class="field field--wide">
+    <label class="field__label" for="f-importa-testo"><%= t('preventivi.listino.importa.testo') %></label>
+    <textarea class="textarea listino-importa__testo" id="f-importa-testo" name="testo" rows="8" wrap="off" spellcheck="false" autocomplete="off" aria-describedby="hint-importa-testo"><%= imp.testo %></textarea>
+    <p class="field__hint" id="hint-importa-testo"><%= t('preventivi.listino.importa.hint') %></p>
+  </div>
+  <div class="grid grid--righe">
+    <div class="field">
+      <label class="field__label" for="f-importa-unita"><%= t('preventivi.listino.importa.unita') %></label>
+      <input class="input" id="f-importa-unita" name="unita" type="text" maxlength="<%= L.max.unita %>" autocomplete="off" value="<%= imp.unita %>">
+      <div class="field__piede"></div>
+    </div>
+    <div class="field">
+      <label class="field__label" for="f-importa-iva"><%= t('preventivi.listino.importa.iva') %></label>
+      <select class="select" id="f-importa-iva" name="iva">
+        <% for (const al of L.aliquote) { %><option value="<%= al %>"<% if (String(al) === imp.iva) { %> selected<% } %>><%= al %> %</option>
+        <% } %>
+      </select>
+      <div class="field__piede"></div>
+    </div>
+  </div>
+  <div class="toolbar">
+    <% if (imp.anteprima) { %>
+    <button class="btn" type="submit"><%= t('preventivi.listino.importa.ricontrolla') %></button>
+    <% } else { %>
+    <button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'upload' }) %><%= t('preventivi.listino.importa.controlla') %></button>
+    <% } %>
+  </div>
+  <p class="field__hint"><%= t('preventivi.listino.importa.codiceNota') %></p>
+  </form>
+</details>

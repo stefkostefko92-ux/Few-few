@@ -21,3 +21,7 @@ __pycache__/
 !.security/engagements/example.json
 .security/*.key
 *.ed25519.key
+
+# от клона на сайта: архивът за деплой (deploy-all.sh) и работните копия на агентите — никога в git
+cs-revolution-vps.tar.gz
+.claude/worktrees/

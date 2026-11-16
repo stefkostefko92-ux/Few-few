@@ -5,9 +5,9 @@ import { datiSalvati } from '../aziende/dati.js';
 import { prisma } from '../db.js';
 import { amministratoriDi } from '../legale/accettazioni.js';
 import type { Dichiarati } from '../legale/firma.js';
-import { CONDIZIONI_PATH } from '../legale/percorsi.js';
+import { percorsoDaFirmare } from '../legale/percorsi.js';
 import { daAccettare } from '../legale/stato.js';
-import { VERSIONE } from '../legale/versioni.js';
+import { versioneDaFirmare, VERSIONE } from '../legale/versioni.js';
 
 /** Страницата за приемане (views/legale/accetta.ejs) — обща за двете стъпки при грешка. */
 export const testo = (value: unknown): string =>
@@ -73,8 +73,9 @@ export async function renderAccetta(
     errori: form.errori,
     errore: form.errore,
     prova: stato.condizioni === 'accetta' && azienda ? await provaDa(azienda.id) : null,
-    versione: VERSIONE,
+    // Условията — във версията, която се подписва (в навечерието на версия, която влиза сама — тя).
+    versione: { CONDIZIONI: versioneDaFirmare('CONDIZIONI'), REGOLE: VERSIONE.REGOLE },
     next,
-    condizioniPath: CONDIZIONI_PATH,
+    condizioniPath: percorsoDaFirmare(),
   });
 }

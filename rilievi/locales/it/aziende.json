@@ -52,11 +52,12 @@
       "title": "Preventivi",
       "attivi": "Preventivi attivi per questa azienda.",
       "spenti": "Preventivi non attivi per questa azienda.",
-      "text": "Con i preventivi attivi, l'azienda prepara preventivi numerati con listino prezzi, PDF e invio al cliente per email. Disattivandoli non si cancella nulla: preventivi e listino restano nell'esportazione e tornano visibili se li riattivi.",
+      "text": "Con i preventivi attivi, l'azienda prepara preventivi numerati con listino prezzi, anagrafica clienti, PDF e invio al cliente per email. Disattivandoli non si cancella nulla: i dati restano nel portale e nell'esportazione e tornano modificabili se li riattivi.",
       "attiva": "Attiva i preventivi",
       "disattiva": "Disattiva i preventivi",
       "flashOn": "Preventivi attivati per l'azienda.",
-      "flashOff": "Preventivi disattivati per l'azienda. Nulla è stato cancellato."
+      "flashOff": "Preventivi disattivati per l'azienda. Nulla è stato cancellato.",
+      "archivio": "L'azienda ha già preventivi, clienti o un listino prezzi: chi ha i permessi per i preventivi può ancora consultarli e scaricarli ed eliminare i clienti e i preventivi non accettati, ma non crearne di nuovi né modificarli."
     }
   },
   "impostazioni": {

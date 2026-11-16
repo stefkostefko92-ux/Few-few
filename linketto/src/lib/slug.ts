@@ -1,3 +1,5 @@
+import { LOCALES } from '@/i18n/locales';
+
 // Slug на профила: латиница, цифри и тирета; кирилицата се транслитерира,
 // за да може българин да напише „Мария“ и да получи linketto.bio/u/mariya.
 
@@ -8,10 +10,16 @@ const BG_MAP: Record<string, string> = {
   ш: 'sh', щ: 'sht', ъ: 'a', ь: 'y', ю: 'yu', я: 'ya',
 };
 
+// Системни пътища + езиковите кодове: на краткия хост (PROFILE_HOST) slug-ът
+// стои в корена (lnkt.to/<slug>), затова не бива да съвпада с маршрут.
 export const RESERVED_SLUGS = new Set([
   'admin', 'api', 'app', 'auth', 'billing', 'blog', 'dashboard', 'docs',
   'help', 'login', 'logout', 'linketto', 'pricing', 'privacy', 'register',
   'root', 'settings', 'support', 'terms', 'u', 'www',
+  'buyer', 'cookies', 'd', 'favicon', 'icon', 'llms', 'manifest', 'media',
+  'og', 'robots', 's', 'sitemap', 'tools', 'vs', 'apple-touch-icon',
+  'carbonstealth', 'carbon-stealth', 'linktree', 'official', 'staff',
+  ...LOCALES,
 ]);
 
 export function transliterate(input: string): string {
