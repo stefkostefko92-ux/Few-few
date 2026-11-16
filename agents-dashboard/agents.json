@@ -5051,7 +5051,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 261
+        "lessons": 263
       },
       "evolution": [
         {
@@ -5563,9 +5563,20 @@
           "date": "2026-11-16",
           "event": "v28.8 — учене",
           "detail": "Научи: Официалните етикети на бутоните по чл. 11а Дир. 2011/83 са — it „recedere dal contratto… (+7 още)"
+        },
+        {
+          "version": "29.0.0",
+          "date": "2026-11-16",
+          "event": "v29.0 — учене",
+          "detail": "Научи: Във fakturist формата „Добави фирма-клиент“ ползва етикетите от auth.json (auth.legalNa… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-16",
+          "type": "learning",
+          "summary": "Научи: „Във fakturist формата „Добави фирма-клиент“ ползва етикетите от auth.json (auth.legalNa…\" (+1 още)"
+        },
         {
           "date": "2026-11-16",
           "type": "learning",
