@@ -58,3 +58,31 @@ test("новини: непозната грешка — общо съобщен�
   assert.equal(describeFetchError("низ"), "Грешка при сваляне на източника.");
   assert.equal(describeFetchError(null), "Грешка при сваляне на източника.");
 });
+
+// Бъг (16.11.2026, доказан на сървъра): защитната стена на egov.bg прекъсва
+// връзката (ECONNRESET) според User-Agent: „node“ и „ZaBobovDolBot/1.0“ — да,
+// „curl/8.5.0“ — не. Честно представяне без „Bot“; при прекъсване — следващият.
+import { newsUserAgents, retryWithNextAgent } from "@/lib/ingest-news-parse";
+
+test("новини: User-Agent — честен, без „bot“, с адреса на сайта; от .env пръв", () => {
+  const list = newsUserAgents(undefined);
+  assert.ok(list.length >= 2);
+  for (const ua of list) {
+    assert.doesNotMatch(ua, /bot/i, ua);
+    assert.match(ua, /ZaBobovDol\/1\.0/);
+    assert.match(ua, /https:\/\/zabobovdol\.carbonstealth\.eu/);
+  }
+  assert.deepEqual(newsUserAgents("  Custom/2.0  ")[0], "Custom/2.0");
+  assert.equal(newsUserAgents("  ").length, list.length);
+});
+
+test("новини: следващ User-Agent само при прекъсната връзка или 403/429", () => {
+  assert.equal(retryWithNextAgent(fetchFailed("ECONNRESET")), true);
+  assert.equal(retryWithNextAgent(fetchFailed("UND_ERR_SOCKET")), true);
+  assert.equal(retryWithNextAgent(new SourceHttpError(403)), true);
+  assert.equal(retryWithNextAgent(new SourceHttpError(429)), true);
+  assert.equal(retryWithNextAgent(new SourceHttpError(404)), false);
+  assert.equal(retryWithNextAgent(new SourceHttpError(503)), false);
+  assert.equal(retryWithNextAgent(fetchFailed("ENOTFOUND")), false);
+  assert.equal(retryWithNextAgent(Object.assign(new Error("t"), { name: "TimeoutError" })), false);
+});

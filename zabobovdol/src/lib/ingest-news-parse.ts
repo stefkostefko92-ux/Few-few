@@ -31,6 +31,26 @@ export class SourceHttpError extends Error {
   }
 }
 
+// Как се представяме пред сайта на общината. Защитната стена на egov.bg прекъсва
+// връзката (ECONNRESET) според User-Agent — „node“ и „ZaBobovDolBot/1.0“ ги спира
+// (проверено на сървъра 16.11.2026). Честно представяне, без „Bot“, с адрес за
+// връзка; първо стойността от .env (MUNICIPALITY_NEWS_USER_AGENT), ако има.
+const SITE_ADDR = "https://zabobovdol.carbonstealth.eu";
+export function newsUserAgents(fromEnv: string | undefined): string[] {
+  const own = (fromEnv ?? "").trim();
+  return [
+    ...(own ? [own] : []),
+    `Mozilla/5.0 (compatible; ZaBobovDol/1.0; +${SITE_ADDR})`,
+    `ZaBobovDol/1.0 (+${SITE_ADDR})`,
+  ];
+}
+
+/** Пробваме следващото представяне само ако стената е прекъснала или отказала. */
+export function retryWithNextAgent(err: unknown): boolean {
+  if (err instanceof SourceHttpError) return err.status === 403 || err.status === 429;
+  return ["ECONNRESET", "UND_ERR_SOCKET", "EPIPE"].includes(codeOf(err));
+}
+
 const GENERIC_FETCH_ERROR = "Грешка при сваляне на източника.";
 const CHECK_URL = "Проверете адреса на източника (MUNICIPALITY_NEWS_URL).";
 const NOT_RESPONDING =
@@ -59,7 +79,7 @@ export function describeFetchError(err: unknown): string {
   if (["UND_ERR_CONNECT_TIMEOUT", "UND_ERR_HEADERS_TIMEOUT", "UND_ERR_BODY_TIMEOUT", "ETIMEDOUT"].includes(code))
     return NOT_RESPONDING;
   if (["ECONNREFUSED", "ECONNRESET", "EHOSTUNREACH", "ENETUNREACH", "EPIPE", "UND_ERR_SOCKET"].includes(code))
-    return "Сайтът на общината прекъсна или отказа връзката. Опитайте по-късно.";
+    return "Сайтът на общината прекъсна или отказа връзката (вероятно защитата му спира автоматичните заявки). Опитайте по-късно; ако продължава — задайте MUNICIPALITY_NEWS_USER_AGENT.";
   if (code === "ENOTFOUND" || code === "EAI_AGAIN")
     return `Адресът на сайта не се открива (DNS). ${CHECK_URL}`;
   if (/CERT|SSL|TLS|SELF_SIGNED|UNABLE_TO_VERIFY/.test(code))

@@ -7,6 +7,8 @@ import {
   SourceHttpError,
   describeFetchError,
   isNewsLink,
+  newsUserAgents,
+  retryWithNextAgent,
   parseListing,
   resolveLinkPattern,
 } from "@/lib/ingest-news-parse";
@@ -35,16 +37,27 @@ async function fetchText(url: string): Promise<string> {
   if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
     throw new Error("Позволени са само http(s) адреси за източника. Проверете MUNICIPALITY_NEWS_URL.");
   }
-  const res = await fetch(url, {
-    headers: {
-      "user-agent": "ZaBobovDolBot/1.0 (+https://zabobovdol.carbonstealth.eu)",
-      accept: "application/rss+xml, text/html, application/xml;q=0.9, */*;q=0.8",
-    },
-    signal: AbortSignal.timeout(15000),
-    redirect: "follow",
-  });
-  if (!res.ok) throw new SourceHttpError(res.status);
-  return res.text();
+  // Защитната стена може да прекъсне едно представяне — пробваме следващото
+  // (ingest-news-parse.ts: newsUserAgents / retryWithNextAgent).
+  let last: unknown;
+  for (const ua of newsUserAgents(process.env.MUNICIPALITY_NEWS_USER_AGENT)) {
+    try {
+      const res = await fetch(url, {
+        headers: {
+          "user-agent": ua,
+          accept: "application/rss+xml, text/html, application/xml;q=0.9, */*;q=0.8",
+        },
+        signal: AbortSignal.timeout(15000),
+        redirect: "follow",
+      });
+      if (!res.ok) throw new SourceHttpError(res.status);
+      return await res.text();
+    } catch (err) {
+      last = err;
+      if (!retryWithNextAgent(err)) throw err;
+    }
+  }
+  throw last;
 }
 
 export type IngestResult = {
