@@ -73,8 +73,14 @@ test("сесии: печатът зависи от хеша на паролат�
 });
 
 test("seed: администраторът от .env — обнови, ако го има; създай само ако няма НИКАКЪВ администратор", () => {
-  assert.equal(adminSeedPlan({ existsByEmail: true, adminCount: 1 }), "update");
-  assert.equal(adminSeedPlan({ existsByEmail: false, adminCount: 0 }), "create");
+  assert.equal(adminSeedPlan({ existingRole: "ADMIN", adminCount: 1 }), "update");
+  assert.equal(adminSeedPlan({ existingRole: null, adminCount: 0 }), "create");
   // Имейлът е сменен от „Моят профил“ → в .env е старият; втори админ със старата парола — НЕ.
-  assert.equal(adminSeedPlan({ existsByEmail: false, adminCount: 1 }), "skip");
+  assert.equal(adminSeedPlan({ existingRole: null, adminCount: 1 }), "skip");
+});
+
+test("seed: НЕ повишава роля — редактор със стария ADMIN_EMAIL остава редактор (Кодаджията, 16.11.2026)", () => {
+  // Админът си сменя имейла; редактор си слага освободения ADMIN_EMAIL; --seed не бива да го направи ADMIN.
+  assert.equal(adminSeedPlan({ existingRole: "EDITOR", adminCount: 1 }), "skip");
+  assert.equal(adminSeedPlan({ existingRole: "EDITOR", adminCount: 0 }), "skip");
 });

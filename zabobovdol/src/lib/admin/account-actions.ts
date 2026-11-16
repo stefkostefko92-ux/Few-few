@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { Prisma } from "@prisma/client";
 import { createSession, hashPassword, requireUser, verifyPassword } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
@@ -51,9 +52,12 @@ export async function updateOwnAccount(prev: FormState, fd: FormData): Promise<F
         ...(parsed.newPassword ? { passwordHash: await hashPassword(parsed.newPassword) } : {}),
       },
     });
-  } catch {
-    // Състезание за същия имейл (уникален ключ) — казваме го, не гърмим.
-    return failState(values, attempt, undefined, { email: ACCOUNT_ERRORS.emailTaken });
+  } catch (e) {
+    // Само състезание за същия имейл (уникален ключ, P2002) е „зает“; друго —
+    // нагоре (логва се, не се маскира като грешен имейл).
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002")
+      return failState(values, attempt, undefined, { email: ACCOUNT_ERRORS.emailTaken });
+    throw e;
   }
 
   // Нова сесия с новия печат: старите (други устройства) вече не важат.

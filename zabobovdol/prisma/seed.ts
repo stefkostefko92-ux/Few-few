@@ -35,12 +35,14 @@ async function main() {
   // създаваме втори администратор със старите данни (prisma/admin-seed-core.ts).
   // Паролата от .env трябва САМО при създаване — съществуващ администратор не я
   // ползва (затова след първото пускане ADMIN_PASSWORD може да се махне от .env).
+  const existing = await prisma.user.findUnique({ where: { email }, select: { role: true } });
   const plan = adminSeedPlan({
-    existsByEmail: (await prisma.user.count({ where: { email } })) > 0,
+    existingRole: existing ? existing.role : null,
     adminCount: await prisma.user.count({ where: { role: "ADMIN" } }),
   });
   if (plan === "update") {
-    await prisma.user.update({ where: { email }, data: { name, role: "ADMIN", active: true } });
+    // Само името — без роля и без активиране (решенията от панела остават).
+    await prisma.user.update({ where: { email }, data: { name } });
     console.log(`✔ Администратор: ${email}`);
   } else if (plan === "create") {
     // Безопасност: не създаваме администратор със слаба/примерна парола.
@@ -57,7 +59,11 @@ async function main() {
     await prisma.user.create({ data: { email, name, role: "ADMIN", passwordHash } });
     console.log(`✔ Администратор: ${email}`);
   } else {
-    console.log(`• Администратор има (друг имейл) — не създавам нов от .env (${email}).`);
+    console.log(
+      existing
+        ? `• ${email} е редактор — seed-ът не повишава роли.`
+        : `• Администратор има (друг имейл) — не създавам нов от .env (${email}).`,
+    );
   }
 
   // --- Услуги и телефони ---
