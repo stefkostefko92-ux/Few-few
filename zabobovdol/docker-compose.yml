@@ -89,6 +89,8 @@ services:
       INGEST_TOKEN: ${INGEST_TOKEN:-}
       # Шаблон за адреса на новина от общината; празно = вграденият (DEPLOY.md §9.1).
       MUNICIPALITY_NEWS_LINK_PATTERN: ${MUNICIPALITY_NEWS_LINK_PATTERN:-}
+      # Как се представяме пред сайта на общината (празно = вграденото, без „Bot“).
+      MUNICIPALITY_NEWS_USER_AGENT: ${MUNICIPALITY_NEWS_USER_AGENT:-}
       # Имейл при остарели данни (/api/health/freshness?notify=1); празно = ADMIN_EMAIL.
       FRESHNESS_ALERT_EMAIL: ${FRESHNESS_ALERT_EMAIL:-}
       # Автоматичен внос на прекъсванията от ЕРМ Запад: само „1“ го включва.
