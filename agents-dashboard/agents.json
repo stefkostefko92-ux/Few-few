@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-11-15",
+    "updated": "2026-11-16",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 698
+        "lessons": 700
       },
       "evolution": [
         {
@@ -2037,9 +2037,20 @@
           "date": "2026-11-15",
           "event": "v63.8 — учене",
           "detail": "Научи: SELECT … FOR UPDATE на родителски ред влиза в deadlock с транзакция, която първо UPDATE… (+77 още)"
+        },
+        {
+          "version": "64.0.0",
+          "date": "2026-11-16",
+          "event": "v64.0 — учене",
+          "detail": "Научи: WHATWG new URL(path, base) хвърля ERR_INVALID_URL за пътища, започващи с // и невалиден… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-16",
+          "type": "learning",
+          "summary": "Научи: „WHATWG new URL(path, base) хвърля ERR_INVALID_URL за пътища, започващи с // и невалиден…\" (+1 още)"
+        },
         {
           "date": "2026-11-15",
           "type": "learning",
