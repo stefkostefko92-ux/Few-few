@@ -15,7 +15,11 @@ Space Grotesk, циан сияние) и ~400 статични страници 
   * <script id="cs-cal-js"> — шублерът (челюсти около посочения елемент + размер) и лампата по
     хромовото h1; само при мишка и без reduced-motion. CSS: лента за прочетеното, размерна
     линия под h2, сонда по ръба на картите, сканиране на снимките (scroll/view timelines);
-  * футър на правните страници и 404, които нямаха такъв.
+  * футър на правните страници и 404, които нямаха такъв;
+  * таблица, по-широка от телефона (.ctbl се превърта настрани): ръбът, зад който има още,
+    избледнява — в началото десният, в края левият (scroll(self inline) + @property --ctl/--ctr).
+    Когато таблицата се събира, времевата линия е неактивна и маска няма; без поддръжка — както
+    преди; при фокус от клавиатурата маската се маха, за да не скрие рамката на фокуса.
 
 Идемпотентно: при повторно пускане старите блокове се махат и се слагат наново, така
 че промяна тук стига до всички страници с едно пускане. Пуска се от cs-revolution/:
@@ -209,6 +213,10 @@ body::after{{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:1
 .cs-caliper.on i{{opacity:.9}}
 @media(hover:none),(pointer:coarse){{.cs-caliper{{display:none}}}}
 @media(prefers-reduced-motion:reduce){{h1,.card::before,.tier::before,.work-shot,.w>h2::after,.seo-body article>h2::after,body::after{{animation:none!important}}body::after{{display:none}}}}
+@property --ctl{{syntax:'<length>';inherits:false;initial-value:0px}}
+@property --ctr{{syntax:'<length>';inherits:false;initial-value:0px}}
+@keyframes ctblHint{{from{{--ctl:0px;--ctr:36px}}to{{--ctl:36px;--ctr:0px}}}}
+@supports (animation-timeline:scroll()){{.ctbl{{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);animation:ctblHint linear both;animation-timeline:scroll(self inline)}}.ctbl:focus-visible{{-webkit-mask-image:none;mask-image:none}}}}
 """
 
 NAV_JS = """<script id="cs-nav-js">(function(){var n=document.querySelector('nav.nav');if(!n)return;var d=n.querySelector(':scope>div');if(!d)return;
