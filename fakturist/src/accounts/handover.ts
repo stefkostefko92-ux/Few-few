@@ -2,6 +2,7 @@ import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { randomToken, sha256Hex } from '../crypto.js';
 import { encryptInviteToken } from '../auth/keys.js';
+import { DAY } from '../time.js';
 import { EmailSchema, INVITE_TTL_MS } from './transfer-core.js';
 import {
   checkOwnerPassword,
@@ -20,6 +21,9 @@ export { HandoverError, type HandoverErrorCode } from './handover-core.js';
 export { startFirmHandover, decideFirmHandover, pendingFirmHandovers } from './handover-firm.js';
 export { masterHandover, type MasterTarget } from './handover-master.js';
 
+/** Писмата отиват на чужд имейл — до 5 покани за предаване на фирма за 24 часа (броят се под заключването). */
+export const HANDOVER_DAILY_LIMIT = 5;
+
 /**
  * Покана към човек: паролата (и 2FA), имейл ≠ своя. Новата покана отменя всяко отворено предаване на
  * фирмата. До приемането нищо не се сменя.
@@ -37,6 +41,14 @@ export async function startPersonHandover(
   const expiresAt = new Date(now.getTime() + INVITE_TTL_MS);
   return prisma.$transaction(async (tx) => {
     await lockOwnedOrganization(tx, input);
+    const recent = await tx.transferInvite.count({
+      where: {
+        organizationId: input.organizationId,
+        fromUserId: { not: null },
+        createdAt: { gt: new Date(now.getTime() - DAY) },
+      },
+    });
+    if (recent >= HANDOVER_DAILY_LIMIT) throw new HandoverError('dailyLimit');
     await revokeOpenHandovers(tx, input.organizationId, now);
     // Поканата към фирма без собственик (от кантора или мастъра) не може да е отворена тук — фирмата
     // има собственик; ако все пак е останала, отпада.

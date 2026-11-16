@@ -18,7 +18,17 @@ const { encryptTotpSecret } = await import('../../src/auth/keys.js');
  * приемането нищо не се сменя; приелият става собственик, предаващият остава администратор.
  */
 const PASSWORD = 'дълга-и-трудна-парола-2026';
-const EIKS = ['131063188', '123456786', '987654322', '112233440', '556677881', '998877668'];
+const EIKS = [
+  '131063188',
+  '123456786',
+  '987654322',
+  '112233440',
+  '556677881',
+  '998877668',
+  '200000002',
+  '200000015',
+  '200000027',
+];
 let n = 0;
 
 async function company(): Promise<{ ownerId: string; orgId: string; email: string }> {
@@ -77,6 +87,7 @@ test('паролата, покана, приемане с нов профил: �
   assert.ok(await findOpenInvite(token), 'поканата е отворена, въпреки че фирмата има собственик');
 
   const result = await acceptTransferInvite({
+    acceptTerms: true,
     token,
     user: { name: 'Мария Нова', password: 'друга-дълга-парола-2026' },
   });
@@ -112,7 +123,7 @@ test('член на фирмата приема с профила си — по�
     email: 'CHLEN@example.test',
     password: PASSWORD,
   });
-  await acceptTransferInvite({ token, user: { userId: member.id } });
+  await acceptTransferInvite({ acceptTerms: true, token, user: { userId: member.id } });
   assert.equal(await role(member.id, orgId), 'OWNER');
   assert.equal(await role(ownerId, orgId), 'ADMIN');
   assert.equal(await prisma.membership.count({ where: { organizationId: orgId } }), 2);
@@ -184,6 +195,7 @@ test('нова покана отменя старата; отменена или
   assert.equal(await findOpenInvite(first.token), null);
   await assert.rejects(
     acceptTransferInvite({
+      acceptTerms: true,
       token: first.token,
       user: { name: 'Първи', password: 'друга-дълга-парола-2026' },
     }),
@@ -200,6 +212,7 @@ test('нова покана отменя старата; отменена или
   });
   await assert.rejects(
     acceptTransferInvite({
+      acceptTerms: true,
       token: third.token,
       user: { name: 'Трети', password: 'друга-дълга-парола-2026' },
     }),
@@ -209,4 +222,43 @@ test('нова покана отменя старата; отменена или
     await prisma.membership.count({ where: { organizationId: orgId, role: 'OWNER' } }),
     0,
   );
+});
+
+test('Разбивача: поканите за предаване — до 5 за 24 часа на фирма', async () => {
+  const { ownerId, orgId } = await company();
+  const base = { organizationId: orgId, actorId: ownerId, password: PASSWORD };
+  for (let i = 0; i < 5; i += 1)
+    await startPersonHandover({ ...base, email: `p${i}@example.test` });
+  await assert.rejects(
+    startPersonHandover({ ...base, email: 'p6@example.test' }),
+    isCode('dailyLimit'),
+  );
+});
+
+test('закрит профил на собственик: започнатите от него предавания отпадат', async () => {
+  const { orgId } = await company();
+  const { hashPassword } = await import('../../src/auth/password.js');
+  const { closeAccount } = await import('../../src/accounts/close.js');
+  const coOwner = await prisma.user.create({
+    data: {
+      email: 'saowner@example.test',
+      name: 'Съсобственик',
+      passwordHash: await hashPassword(PASSWORD),
+    },
+  });
+  await prisma.membership.create({
+    data: { userId: coOwner.id, organizationId: orgId, role: 'OWNER' },
+  });
+  const { token } = await startPersonHandover({
+    organizationId: orgId,
+    actorId: coOwner.id,
+    email: 'naslednik@example.test',
+    password: PASSWORD,
+  });
+  await closeAccount({ userId: coOwner.id, password: PASSWORD });
+  assert.equal(await findOpenInvite(token), null);
+  const invite = await prisma.transferInvite.findFirstOrThrow({
+    where: { fromUserId: coOwner.id },
+  });
+  assert.ok(invite.revokedAt, 'отменена при закриването');
 });

@@ -2,6 +2,7 @@ import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { INVITE_TTL_MS, lockOrganization, TransferError } from './transfer-core.js';
 import { revokeOpenMemberInvites } from './member-invite-revoke.js';
+import { LEGAL_DOCUMENTS } from '../legal/documents.js';
 import {
   checkOwnerPassword,
   HandoverError,
@@ -21,7 +22,7 @@ export async function startFirmHandover(
   input: OwnerConfirmation & { firmId: string; now?: Date },
 ): Promise<{ id: string; expiresAt: Date }> {
   const now = input.now ?? new Date();
-  const actor = await checkOwnerPassword(input);
+  await checkOwnerPassword(input);
   const expiresAt = new Date(now.getTime() + INVITE_TTL_MS);
   return prisma.$transaction(async (tx) => {
     const org = await lockOwnedOrganization(tx, input);
@@ -57,9 +58,10 @@ export async function startFirmHandover(
           organizationId: input.firmId,
           kind: 'handover.firmProposal',
           toEmail: email,
+          // Идентификаторът, не името: името се чете при изпращането (закрит профил не остава в опашката).
           payload: {
             legalName: org.legalName,
-            fromName: actor.name,
+            fromUserId: input.actorId,
             expiresAt: expiresAt.toISOString(),
           },
         },
@@ -85,10 +87,13 @@ export async function startFirmHandover(
 export async function takeOverByFirm(
   tx: Tx,
   input: { organizationId: string; firmId: string; now: Date },
-): Promise<{ removedMembers: number }> {
-  const removed = await tx.membership.deleteMany({
-    where: { organizationId: input.organizationId },
+): Promise<{ removed: Array<{ userId: string; email: string; role: string }> }> {
+  // Кой излиза — за писмата (DSA чл. 17, т. 10 ОУ: всеки засегнат научава какво е станало).
+  const members = await tx.membership.findMany({
+    where: { organizationId: input.organizationId, user: { disabledAt: null } },
+    select: { userId: true, role: true, user: { select: { email: true } } },
   });
+  await tx.membership.deleteMany({ where: { organizationId: input.organizationId } });
   await tx.apiKey.updateMany({
     where: { organizationId: input.organizationId, revokedAt: null },
     data: { revokedAt: input.now },
@@ -103,7 +108,50 @@ export async function takeOverByFirm(
     where: { id: input.organizationId },
     data: { createdByFirmId: input.firmId, ownerReviewPendingAt: null, ownershipLockedAt: null },
   });
-  return { removedMembers: removed.count };
+  return { removed: members.map((m) => ({ userId: m.userId, email: m.user.email, role: m.role })) };
+}
+
+/**
+ * Декларацията на кантората по т. 1а от договора за обработване при поемане (ОРЗД чл. 28(2), (4)) — като
+ * при добавяне на клиент: записана за фирмата-клиент от името на приелия.
+ */
+export async function recordFirmDeclaration(
+  tx: Tx,
+  input: { userId: string; organizationId: string; now: Date },
+): Promise<void> {
+  await tx.legalAcceptance.create({
+    data: {
+      userId: input.userId,
+      organizationId: input.organizationId,
+      document: 'dpa',
+      version: LEGAL_DOCUMENTS.dpa.version,
+      acceptedAt: input.now,
+    },
+  });
+}
+
+/** Писмото до излезлите членове (без предаващия — той получава своето). */
+export async function mailRemovedMembers(
+  tx: Tx,
+  input: {
+    organizationId: string;
+    legalName: string;
+    firmName: string;
+    removed: Array<{ userId: string; email: string }>;
+    except: string | null;
+    reason: string | null;
+  },
+): Promise<void> {
+  for (const member of input.removed.filter((m) => m.userId !== input.except)) {
+    await tx.notification.create({
+      data: {
+        organizationId: input.organizationId,
+        kind: 'handover.memberRemoved',
+        toEmail: member.email,
+        payload: { legalName: input.legalName, firmName: input.firmName, reason: input.reason },
+      },
+    });
+  }
 }
 
 /**
@@ -116,6 +164,8 @@ export async function decideFirmHandover(input: {
   firmId: string;
   actorId: string;
   accept: boolean;
+  /** Декларацията по т. 1а от договора за обработване — задължителна при приемане. */
+  declaration?: boolean;
   now?: Date;
 }): Promise<void> {
   const now = input.now ?? new Date();
@@ -176,6 +226,7 @@ export async function decideFirmHandover(input: {
       });
       return;
     }
+    if (input.declaration !== true) throw new HandoverError('declaration');
     if (proposal.organization.deletedAt || proposal.organization.terminatedAt) {
       throw new HandoverError('invalid');
     }
@@ -202,14 +253,27 @@ export async function decideFirmHandover(input: {
       firmId: input.firmId,
       now,
     });
+    await recordFirmDeclaration(tx, {
+      userId: input.actorId,
+      organizationId: proposal.organizationId,
+      now,
+    });
     await mailOwner('handover.firmAccepted');
+    await mailRemovedMembers(tx, {
+      organizationId: proposal.organizationId,
+      legalName: proposal.organization.legalName,
+      firmName: proposal.firm.legalName,
+      removed: result.removed,
+      except: proposal.fromUserId,
+      reason: null,
+    });
     await audit(tx, {
       actorId: input.actorId,
       organizationId: proposal.organizationId,
       action: 'organization.handover.firmAccepted',
       targetType: 'FirmHandover',
       targetId: proposal.id,
-      details: { firmId: input.firmId, removedMembers: result.removedMembers },
+      details: { firmId: input.firmId, removedMembers: result.removed.length },
     });
   });
 }

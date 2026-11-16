@@ -50,8 +50,10 @@
     <ul class="muted">
       <li><%= t('app.ownership.firmEffects.members') %></li>
       <li><%= t('app.ownership.firmEffects.mandate') %></li>
+      <li><%= t('app.ownership.firmEffects.controller') %></li>
       <li><%= t('app.ownership.firmEffects.owner') %></li>
     </ul>
+    <p class="callout"><%= t('app.ownership.firmEffects.before') %> <a href="/app/o/<%= org.id %>/iznos.zip" target="_blank" rel="noopener"><%= t('app.ownership.exportLink') %></a></p>
     <label><%= t('app.ownership.password') %><input type="password" name="password" autocomplete="current-password" required></label>
     <% if (twoFactor) { %><label><%= t('app.ownership.code') %><input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><% } %>
     <div><button type="submit"><%= t('app.ownership.sendFirm') %></button></div>

@@ -304,7 +304,7 @@
     "eik": "Accounting firm’s EIK",
     "eikHint": "The firm takes over the company under an authorisation; the owner and members leave.",
     "reason": "Reason",
-    "reasonHint": "3–200 characters, e.g. “Certificate of good standing dated 10.11.2026”.",
+    "reasonHint": "3–200 characters, e.g. “Certificate of good standing of 10.11.2026”. The reason goes into the email to the people affected.",
     "code": "Code from the app (2FA)",
     "button": "Hand over now",
     "done": "The ownership is handed over.",
@@ -318,14 +318,17 @@
       "terminated": "The company is terminated.",
       "disabled": "The account with this email is closed or blocked.",
       "notAllowed": "Only a master hands over the ownership.",
-      "invalid": "Fill in the fields."
-    }
+      "invalid": "Fill in the fields.",
+      "declaration": "Tick the firm’s written declaration under item 1a of the data processing agreement."
+    },
+    "firmDeclared": "For a firm: the firm has declared in writing that its client allowed it to use Fakturist for the client’s documents and that it took on the obligations of a processor under Art. 28(3) GDPR.",
+    "firmDeclaredLink": "Data processing agreement, item 1a"
   },
   "profile": {
     "title": "Company details",
     "done": "The company details are saved.",
     "eikTitle": "Change the EIK",
-    "eikIntro": "Only after a check (e.g. a Commercial Register extract). The VAT number “BG” + the old EIK follows the new one; the owner gets an email.",
+    "eikIntro": "Only to correct the EIK of the same legal entity, after a check (e.g. the Commercial Register). Another entity — a new registration. A VAT number “BG” + the old EIK follows the new one; the owner gets an email.",
     "newEik": "New EIK",
     "eikButton": "Change the EIK",
     "errors": {
@@ -333,7 +336,8 @@
       "reason": "The reason is 3–200 characters.",
       "invalidEik": "The EIK is not valid.",
       "eikTaken": "The EIK belongs to another company in Fakturist.",
-      "notOwner": "Masters only."
+      "notOwner": "Masters only.",
+      "peppolActive": "The company is registered in Peppol — turn Peppol off first."
     }
   }
 }

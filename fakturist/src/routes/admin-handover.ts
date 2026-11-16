@@ -25,6 +25,7 @@ const Form = z.object({
   name: z.string().max(100).optional(),
   keepOldOwner: z.literal('on').optional(),
   eik: z.string().max(13).optional(),
+  firmDeclared: z.literal('on').optional(),
   reason: z.string().max(400),
   code: z.string().trim().max(10),
 });
@@ -47,7 +48,7 @@ export function adminHandoverRouter(): Router {
             ...(form.name ? { name: form.name } : {}),
             keepOldOwner: form.keepOldOwner === 'on',
           }
-        : { kind: 'firm', eik: form.eik ?? '' };
+        : { kind: 'firm', eik: form.eik ?? '', firmDeclared: form.firmDeclared === 'on' };
     try {
       await masterHandover({
         organizationId: id,

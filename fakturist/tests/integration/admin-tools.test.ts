@@ -281,7 +281,11 @@ test('отказ: отменена, изтекла, чужд имейл, същ�
   });
   await revokeTransferInvite({ inviteId: revoked.inviteId, actorId: masterId });
   await assert.rejects(
-    acceptTransferInvite({ token: revoked.token, user: { userId: other.userId } }),
+    acceptTransferInvite({
+      acceptTerms: true,
+      token: revoked.token,
+      user: { userId: other.userId },
+    }),
     isCode('invalid'),
   );
 
@@ -292,6 +296,7 @@ test('отказ: отменена, изтекла, чужд имейл, същ�
   });
   await assert.rejects(
     acceptTransferInvite({
+      acceptTerms: true,
       token: expiring.token,
       user: { userId: other.userId },
       now: new Date(Date.now() + 8 * DAY),
@@ -299,21 +304,37 @@ test('отказ: отменена, изтекла, чужд имейл, същ�
     isCode('invalid'),
   );
   await assert.rejects(
-    acceptTransferInvite({ token: expiring.token, user: newUser }),
+    acceptTransferInvite({ acceptTerms: true, token: expiring.token, user: newUser }),
     isCode('loginRequired'),
   );
   await assert.rejects(
-    acceptTransferInvite({ token: expiring.token, user: { userId: firm.userId } }),
+    acceptTransferInvite({
+      acceptTerms: true,
+      token: expiring.token,
+      user: { userId: firm.userId },
+    }),
     isCode('wrongEmail'),
   );
   await assert.rejects(
-    acceptTransferInvite({ token: 'не-е-токен', user: { userId: other.userId } }),
+    acceptTransferInvite({
+      acceptTerms: true,
+      token: 'не-е-токен',
+      user: { userId: other.userId },
+    }),
     isCode('invalid'),
   );
 
   const results = await Promise.allSettled([
-    acceptTransferInvite({ token: expiring.token, user: { userId: other.userId } }),
-    acceptTransferInvite({ token: expiring.token, user: { userId: other.userId } }),
+    acceptTransferInvite({
+      acceptTerms: true,
+      token: expiring.token,
+      user: { userId: other.userId },
+    }),
+    acceptTransferInvite({
+      acceptTerms: true,
+      token: expiring.token,
+      user: { userId: other.userId },
+    }),
   ]);
   assert.equal(results.filter((r) => r.status === 'fulfilled').length, 1);
   const owners = await prisma.membership.count({
@@ -330,8 +351,8 @@ test('два едновременни нови профила с един име
   const b = await createTransferInvite({ organizationId: two, email, actorId: masterId });
   const user = { name: 'Двойна Покана', password: PASSWORD };
   const results = await Promise.allSettled([
-    acceptTransferInvite({ token: a.token, user }),
-    acceptTransferInvite({ token: b.token, user }),
+    acceptTransferInvite({ acceptTerms: true, token: a.token, user }),
+    acceptTransferInvite({ acceptTerms: true, token: b.token, user }),
   ]);
   const rejected = results.filter((r) => r.status === 'rejected');
   assert.equal(rejected.length, 1);

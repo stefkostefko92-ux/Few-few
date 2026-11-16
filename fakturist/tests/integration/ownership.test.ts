@@ -99,6 +99,7 @@ test('собственик, поканен от кантора: фирмата �
     }),
   );
   await acceptTransferInvite({
+    acceptTerms: true,
     token,
     user: { name: 'Втори Имейл', password: 'съвсем-друга-парола-2026' },
     confirmMandate: true,
@@ -208,6 +209,7 @@ test('отнемане: членове вън, пълномощни чакащи
     actorId: masterId,
   });
   await acceptTransferInvite({
+    acceptTerms: true,
     token: invite.token,
     user: { name: 'Истински Собственик', password: 'истинската-парола-2026' },
   });
@@ -249,6 +251,7 @@ test('фирма с вече потвърдено пълномощно пак в
     }),
   );
   await acceptTransferInvite({
+    acceptTerms: true,
     token,
     user: { name: 'Хмел Собственик', password: 'горчивото-пиво-се-вари-бавно' },
   });

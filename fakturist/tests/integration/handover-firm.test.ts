@@ -180,12 +180,30 @@ test('кантората отказва — нищо не се сменя; пр�
   );
 
   const second = await startFirmHandover(base);
+  // Правният Разбирач: без декларацията по т. 1а от договора за обработване кантората не поема фирмата.
+  await assert.rejects(
+    decideFirmHandover({
+      handoverId: second.id,
+      firmId: firm.organizationId,
+      actorId: firm.userId,
+      accept: true,
+    }),
+    isCode('declaration'),
+  );
+  assert.equal(await prisma.membership.count({ where: { organizationId: orgId } }), 2);
+  const firmDeclarations = () =>
+    prisma.legalAcceptance.count({
+      where: { organizationId: orgId, document: 'dpa', userId: firm.userId },
+    });
+  assert.equal(await firmDeclarations(), 0);
   await decideFirmHandover({
     handoverId: second.id,
     firmId: firm.organizationId,
     actorId: firm.userId,
     accept: true,
+    declaration: true,
   });
+  assert.equal(await firmDeclarations(), 1, 'декларацията на кантората е записана за клиента');
   assert.equal(await prisma.membership.count({ where: { organizationId: orgId } }), 0);
   assert.equal(await prisma.apiKey.count({ where: { organizationId: orgId, revokedAt: null } }), 0);
   const org = await prisma.organization.findUniqueOrThrow({ where: { id: orgId } });
@@ -210,6 +228,7 @@ test('кантората отказва — нищо не се сменя; пр�
       firmId: firm.organizationId,
       actorId: firm.userId,
       accept: true,
+      declaration: true,
     }),
     isCode('invalid'),
   );
@@ -229,6 +248,7 @@ test('изтекло предложение, оттеглено пълномощ
       firmId: firm.organizationId,
       actorId: firm.userId,
       accept: true,
+      declaration: true,
       now,
     });
   const expired = await startFirmHandover(base(a));

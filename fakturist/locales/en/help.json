@@ -270,7 +270,9 @@
       "tips": {
         "1": "Nothing changes until it is accepted — you remain the owner.",
         "2": "An owner who is still marked “to check” cannot hand over ownership.",
-        "3": "In a dispute or if access is lost, Fakturist can hand over ownership immediately, on stated grounds — write to support."
+        "3": "In a dispute or if access is lost, Fakturist can hand over ownership immediately, on stated grounds — write to support.",
+        "4": "Before handing over to a firm, download the “Export (ZIP)” — after it accepts, you no longer have access to the company.",
+        "5": "The firm accepts with the declaration under item 1a of the data processing agreement; invitations to people are up to 5 a day."
       }
     },
     "plan": {

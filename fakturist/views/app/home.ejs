@@ -12,7 +12,10 @@
     <li>
       <p><%= t('app.ownership.proposals.item', { company: p.organization.legalName, eik: p.organization.eik || '—', from: p.fromUser ? p.fromUser.name : '—', date: bgDate(p.expiresAt) }) %></p>
       <div class="actions">
-        <form method="post" action="/app/o/<%= p.firmId %>/predlozheniya/<%= p.id %>/priemi"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit"><%= t('app.ownership.proposals.accept') %></button></form>
+        <form method="post" action="/app/o/<%= p.firmId %>/predlozheniya/<%= p.id %>/priemi" class="stack"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <label class="check"><input type="checkbox" name="declaration" required> <span><%= t('app.client.processorDeclaration') %> <a href="<%= legalUrl('dpa') %>#kantori" target="_blank" rel="noopener"><%= t('app.client.processorDeclarationLink') %></a></span></label>
+          <div><button type="submit"><%= t('app.ownership.proposals.accept') %></button></div>
+        </form>
         <form method="post" action="/app/o/<%= p.firmId %>/predlozheniya/<%= p.id %>/otkazhi"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="button-secondary"><%= t('app.ownership.proposals.decline') %></button></form>
       </div>
     </li>

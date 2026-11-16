@@ -23,7 +23,9 @@
     <form method="post" action="/pokana/<%= token %><%= langQuery %>" class="stack">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <% if (mandateBox) { %><label class="check"><input type="checkbox" name="confirmMandate"> <%= t('auth.invite.confirmMandate', { firm: m.firm.legalName }) %><span class="hint"><%= t('auth.invite.confirmMandateHint') %></span></label><% } %>
-      <button type="submit"><%= t('auth.invite.accept') %></button>
+      <% if (errors.acceptTerms) { %><p class="error" role="alert"><%= t('auth.invite.errors.acceptTerms') %></p><% } %>
+      <%- include('../partials/legal-accept', { orgName: invite.organization.legalName, invalid: Boolean(errors.acceptTerms) }) %>
+      <div><button type="submit"><%= t('auth.invite.accept') %></button></div>
     </form>
   <% } else if (state === 'wrongAccount') { %>
     <p class="callout"><%= t('auth.invite.wrongAccount', { current: currentUser ? currentUser.email : '', email: invite.email }) %></p>

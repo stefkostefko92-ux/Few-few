@@ -268,6 +268,7 @@ test('нов собственик по покана: имейлът е потв�
     actorId: masterId,
   });
   const accepted = await acceptTransferInvite({
+    acceptTerms: true,
     token: invite.token,
     user: { name: 'Нов Собственик', password: 'истинската-парола-2026' },
   });

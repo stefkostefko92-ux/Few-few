@@ -124,9 +124,53 @@ test('предложение към кантората: вижда го на н�
   const home = await (await http.get(firm, '/app')).text();
   const action = /action="(\/app\/o\/[^"]+\/predlozheniya\/[^"]+\/priemi)"/.exec(home)?.[1];
   assert.ok(action, 'предложението е на началото на кантората');
-  const accepted = await http.post(firm, action, {});
+  // Без отметката за декларацията — грешка, нищо не се сменя.
+  const missing = await http.post(firm, action, {});
+  assert.match(missing.headers.get('location') ?? '', /handoverErr=declaration/);
+  assert.equal((await prisma.membership.count({ where: { organizationId: orgId } })) > 0, true);
+  const accepted = await http.post(firm, action, { declaration: 'on' });
   assert.match(accepted.headers.get('location') ?? '', /handover=accepted/);
   assert.equal(await prisma.membership.count({ where: { organizationId: orgId } }), 0);
   // Бившият собственик вече няма достъп до фирмата.
   assert.equal((await http.get(owner, `/app/o/${orgId}`)).status, 404);
+});
+
+test('покана за предаване със съществуващ профил: без отметката за условията — 400, с нея — собственик', async () => {
+  const { startPersonHandover } = await import('../../src/accounts/handover.js');
+  const other = await register({
+    password: PASSWORD,
+    acceptTerms: 'on',
+    addressStreet: 'ул. „Христо Ботев“ 5',
+    addressCity: 'Перник',
+    postalCode: '2300',
+    kind: 'company',
+    name: 'Стоян Петров',
+    email: 'stoyan@example.test',
+    legalName: 'Мелница Злато ООД',
+    eik: '123456786',
+  });
+  const { token } = await startPersonHandover({
+    organizationId: other.organizationId,
+    actorId: other.userId,
+    email: 'admin@example.test',
+    password: PASSWORD,
+  });
+  const admin = await http.login('admin@example.test', PASSWORD);
+  const page = await (await http.get(admin, `/pokana/${token}`)).text();
+  assert.match(page, /name="acceptTerms"/, 'отметката е и за съществуващ профил');
+  const missing = await http.post(admin, `/pokana/${token}`, {});
+  assert.equal(missing.status, 400);
+  assert.equal(
+    await prisma.membership.count({
+      where: { organizationId: other.organizationId, role: 'OWNER' },
+    }),
+    1,
+  );
+  const accepted = await http.post(admin, `/pokana/${token}`, { acceptTerms: 'on' });
+  assert.equal(accepted.status, 303);
+  assert.equal(accepted.headers.get('location'), `/app/o/${other.organizationId}`);
+  const role = await prisma.membership.findFirstOrThrow({
+    where: { organizationId: other.organizationId, user: { email: 'admin@example.test' } },
+  });
+  assert.equal(role.role, 'OWNER');
 });

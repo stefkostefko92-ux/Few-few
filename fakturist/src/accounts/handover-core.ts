@@ -26,7 +26,10 @@ export type HandoverErrorCode =
   | 'expired'
   | 'reason'
   | 'notFirm'
-  | 'disabled';
+  | 'disabled'
+  | 'declaration'
+  | 'peppolActive'
+  | 'dailyLimit';
 
 export class HandoverError extends Error {
   constructor(readonly code: HandoverErrorCode) {

@@ -6,7 +6,7 @@ import { consumeTotpCode } from '../auth/step-up.js';
 import { isValidEik } from '../einvoice/bg-ids.js';
 import { EmailSchema, lockOrganization, TransferError } from './transfer-core.js';
 import { issueToken } from './tokens.js';
-import { takeOverByFirm } from './handover-firm.js';
+import { mailRemovedMembers, recordFirmDeclaration, takeOverByFirm } from './handover-firm.js';
 import { ensureSubscription, HandoverError, managerEmails } from './handover-core.js';
 
 /**
@@ -15,7 +15,15 @@ import { ensureSubscription, HandoverError, managerEmails } from './handover-cor
  */
 export type MasterTarget =
   | { kind: 'person'; email: string; name?: string; keepOldOwner: boolean }
-  | { kind: 'firm'; eik: string };
+  | {
+      kind: 'firm';
+      eik: string;
+      /**
+       * Кантората е приела писмено и е направила декларацията по т. 1а от договора за обработване —
+       * обработващ не се назначава без нейното съгласие (ОРЗД чл. 28(3); правният преглед, 16.11.2026).
+       */
+      firmDeclared: boolean;
+    };
 
 export async function masterHandover(input: {
   organizationId: string;
@@ -33,8 +41,9 @@ export async function masterHandover(input: {
     const parsed = EmailSchema.safeParse(input.target.email);
     if (!parsed.success) throw new HandoverError('invalidEmail');
     email = parsed.data;
-  } else if (!isValidEik(input.target.eik.trim())) {
-    throw new HandoverError('notFound');
+  } else {
+    if (!input.target.firmDeclared) throw new HandoverError('declaration');
+    if (!isValidEik(input.target.eik.trim())) throw new HandoverError('notFound');
   }
   // Хешът е бавен — извън транзакцията; паролата е случайна и никой не я знае.
   const unusable = input.target.kind === 'person' ? await hashPassword(randomToken(32)) : '';
@@ -123,7 +132,7 @@ export async function masterHandover(input: {
       if (org.kind !== 'COMPANY') throw new HandoverError('notCompany');
       const firm = await tx.organization.findUnique({
         where: { eik: target.eik.trim() },
-        select: { id: true, kind: true, deletedAt: true, terminatedAt: true },
+        select: { id: true, kind: true, legalName: true, deletedAt: true, terminatedAt: true },
       });
       if (!firm) throw new HandoverError('notFound');
       if (firm.kind !== 'ACCOUNTING_FIRM' || firm.deletedAt || firm.terminatedAt) {
@@ -143,7 +152,25 @@ export async function masterHandover(input: {
       });
       for (const owner of oldOwners)
         mails.push({ email: owner.user.email, role: 'oldOwnerRemoved' });
-      await takeOverByFirm(tx, { organizationId: input.organizationId, firmId: firm.id, now });
+      const { removed } = await takeOverByFirm(tx, {
+        organizationId: input.organizationId,
+        firmId: firm.id,
+        now,
+      });
+      await recordFirmDeclaration(tx, {
+        userId: input.actorId,
+        organizationId: input.organizationId,
+        now,
+      });
+      const ownerIds = new Set(oldOwners.map((o) => o.userId));
+      await mailRemovedMembers(tx, {
+        organizationId: input.organizationId,
+        legalName: org.legalName,
+        firmName: firm.legalName,
+        removed: removed.filter((m) => !ownerIds.has(m.userId)),
+        except: null,
+        reason,
+      });
       for (const to of await managerEmails(tx, firm.id)) mails.push({ email: to, role: 'firm' });
       result = { firmId: firm.id };
     }
@@ -154,7 +181,7 @@ export async function masterHandover(input: {
           organizationId: input.organizationId,
           kind: 'handover.master',
           toEmail: mail.email,
-          payload: { legalName: org.legalName, role: mail.role },
+          payload: { legalName: org.legalName, role: mail.role, reason },
         },
       });
     }

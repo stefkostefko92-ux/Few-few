@@ -28,6 +28,8 @@ export async function acceptTransferInvite(input: {
   token: string;
   user: Acceptor;
   confirmMandate?: boolean;
+  /** Отметката за условията — задължителна и за съществуващ профил. */
+  acceptTerms?: boolean;
   now?: Date;
 }): Promise<{ userId: string; organizationId: string; created: boolean }> {
   const now = input.now ?? new Date();
@@ -119,6 +121,14 @@ export async function acceptTransferInvite(input: {
         if (!user.emailVerifiedAt) {
           await tx.user.update({ where: { id: user.id }, data: { emailVerifiedAt: now } });
         }
+        // И съществуващ профил декларира, че представлява фирмата, и приема условията за нея
+        // (общите условия т. 2; договорът за обработване т. 1) — правният преглед, 16.11.2026.
+        if (input.acceptTerms !== true) throw new TransferError('acceptTerms');
+        await recordRegistrationAcceptance(tx, {
+          userId,
+          organizationId: invite.organizationId,
+          now,
+        });
       }
 
       const claimed = await tx.transferInvite.updateMany({
@@ -144,16 +154,12 @@ export async function acceptTransferInvite(input: {
           data: { role: 'ADMIN' },
         });
         if (invite.fromUser) {
-          const acceptor = await tx.user.findUniqueOrThrow({
-            where: { id: userId },
-            select: { name: true },
-          });
           await tx.notification.create({
             data: {
               organizationId: invite.organizationId,
               kind: 'handover.accepted',
               toEmail: invite.fromUser.email,
-              payload: { legalName: org.legalName, newOwnerName: acceptor.name },
+              payload: { legalName: org.legalName, newOwnerId: userId },
             },
           });
         }

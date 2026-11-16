@@ -19,6 +19,7 @@ export type TransferErrorCode =
   | 'notCreator'
   | 'invited'
   | 'locked'
+  | 'acceptTerms'
   | `password.${string}`;
 
 export class TransferError extends Error {

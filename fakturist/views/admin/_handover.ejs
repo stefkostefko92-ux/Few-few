@@ -12,7 +12,8 @@
     <label><%= t('admin.handover.email') %><input type="email" name="email" maxlength="254" autocomplete="off" spellcheck="false"><span class="hint"><%= t('admin.handover.emailHint') %></span></label>
     <label><%= t('admin.handover.name') %><input name="name" maxlength="100" autocomplete="off"><span class="hint"><%= t('admin.handover.nameHint') %></span></label>
     <label class="check"><input type="checkbox" name="keepOldOwner" checked> <%= t('admin.handover.keepOldOwner') %></label>
-    <% if (isCompany) { %><label><%= t('admin.handover.eik') %><input name="eik" inputmode="numeric" maxlength="13" autocomplete="off"><span class="hint"><%= t('admin.handover.eikHint') %></span></label><% } %>
+    <% if (isCompany) { %><label><%= t('admin.handover.eik') %><input name="eik" inputmode="numeric" maxlength="13" autocomplete="off"><span class="hint"><%= t('admin.handover.eikHint') %></span></label>
+    <label class="check"><input type="checkbox" name="firmDeclared"> <span><%= t('admin.handover.firmDeclared') %> <a href="<%= legalUrl('dpa') %>#kantori" target="_blank" rel="noopener"><%= t('admin.handover.firmDeclaredLink') %></a></span></label><% } %>
     <label><%= t('admin.handover.reason') %><textarea name="reason" rows="2" minlength="3" maxlength="200" required></textarea><span class="hint"><%= t('admin.handover.reasonHint') %></span></label>
     <label><%= t('admin.handover.code') %><input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label>
     <div><button type="submit" class="button-danger"><%= t('admin.handover.button') %></button></div>

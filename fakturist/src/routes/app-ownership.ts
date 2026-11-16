@@ -1,5 +1,4 @@
 import { Router, type Request } from 'express';
-import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
 import { prisma } from '../db.js';
 import { HttpError, requireOrg } from '../auth/guards.js';
@@ -13,22 +12,14 @@ import {
   startPersonHandover,
 } from '../accounts/handover.js';
 import { kickOutbox } from '../mail/outbox.js';
-import { MINUTE } from '../time.js';
+import { passwordCheckLimiter } from './app-security.js';
 
 /**
  * „Собственост“ на фирмата (SPEC 84–86): само прекият собственик предава — на човек по имейл или на кантора
- * с действащо пълномощно. Паролата и 2FA кодът се проверяват с таван по профил (като в „Сигурност“).
+ * с действащо пълномощно. Паролата и 2FA кодът — под общия таван на проверките на паролата (app-security.ts).
  * Решението на кантората по предложение — от собственика или администратора ѝ (`members.manage`).
  */
-const limiter = rateLimit({
-  windowMs: 15 * MINUTE,
-  limit: 10,
-  standardHeaders: 'draft-8',
-  legacyHeaders: false,
-  keyGenerator: (req) => req.principal?.user.id ?? 'anonymous',
-  handler: (req, res) =>
-    res.redirect(303, `/app/o/${String(req.params['orgId'])}/sobstvenost?err=rateLimited`),
-});
+const limiter = passwordCheckLimiter;
 
 const Confirm = z.object({
   password: z.string().max(PASSWORD_MAX_LENGTH),
@@ -53,6 +44,7 @@ const CODES = new Set([
   'noMandate',
   'notCompany',
   'rateLimited',
+  'dailyLimit',
   'invalid',
   'expired',
   'notAllowed',
@@ -150,6 +142,8 @@ export function appOwnershipRouter(): Router {
         firmId: access.organizationId,
         actorId: req.principal!.user.id,
         accept: decision === 'priemi',
+        // Декларацията по т. 1а от договора за обработване — както при добавяне на клиент.
+        declaration: (req.body as Record<string, unknown>)['declaration'] === 'on',
       });
       kickOutbox();
       res.redirect(303, `${home}?handover=${decision === 'priemi' ? 'accepted' : 'declined'}`);

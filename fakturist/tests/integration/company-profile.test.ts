@@ -183,3 +183,48 @@ test('мастърът сменя данните без собственик; Е
     1,
   );
 });
+
+test('Разбивача: собственик „за проверка“ не сменя данните; ЕИК не се сменя при Peppol (освен изключена)', async () => {
+  await prisma.organization.update({
+    where: { id: orgId },
+    data: { ownerReviewPendingAt: new Date() },
+  });
+  await assert.rejects(
+    updateCompanyProfile({
+      organizationId: orgId,
+      actor: { userId: ownerId, master: false },
+      input: { ...profile, iban: 'BG18RZBB91550123456789' },
+    }),
+    isCode('reviewPending'),
+  );
+  await prisma.organization.update({ where: { id: orgId }, data: { ownerReviewPendingAt: null } });
+
+  const current = await prisma.organization.findUniqueOrThrow({ where: { id: orgId } });
+  await prisma.peppolParticipant.create({
+    data: { organizationId: orgId, partyId: `9926:${current.vatNumber}`, status: 'FAILED' },
+  });
+  // FAILED може да е записан при доставчика — и тогава първо изключване.
+  await assert.rejects(
+    updateCompanyProfile({
+      organizationId: orgId,
+      actor: { userId: ownerId, master: false },
+      input: { ...profile, vatNumber: '' },
+    }),
+    isCode('peppolActive'),
+  );
+  const base = {
+    organizationId: orgId,
+    actorId: masterId,
+    reason: 'Поправка на грешно вписан ЕИК',
+  };
+  await assert.rejects(
+    changeCompanyEik({ ...base, eik: '112233440', code: await code() }),
+    isCode('peppolActive'),
+  );
+  await prisma.peppolParticipant.updateMany({
+    where: { organizationId: orgId },
+    data: { status: 'REMOVED' },
+  });
+  await changeCompanyEik({ ...base, eik: '112233440', code: await code() });
+  await prisma.peppolParticipant.deleteMany({ where: { organizationId: orgId } });
+});

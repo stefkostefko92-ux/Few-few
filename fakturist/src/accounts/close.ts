@@ -135,6 +135,15 @@ export async function closeAccount(input: { userId: string; password: string }):
       }
     }
     await tx.membership.deleteMany({ where: { userId: user.id } });
+    // Предаванията, които е започнал като собственик, отпадат с него (Правният Разбирач, 16.11.2026).
+    await tx.transferInvite.updateMany({
+      where: { fromUserId: user.id, acceptedAt: null, revokedAt: null },
+      data: { revokedAt: now },
+    });
+    await tx.firmHandover.updateMany({
+      where: { fromUserId: user.id, status: 'PENDING' },
+      data: { status: 'REVOKED', decidedAt: now },
+    });
     await tx.apiKey.updateMany({
       where: { createdById: user.id, revokedAt: null },
       data: { revokedAt: now },

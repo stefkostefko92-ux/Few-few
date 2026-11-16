@@ -255,6 +255,7 @@ test('без отметка пълномощното остава чакащо �
     return result.token;
   });
   await acceptTransferInvite({
+    acceptTerms: true,
     token,
     user: { name: 'Лина Тодорова', password: 'линиите-са-прави-и-дълги' },
   });

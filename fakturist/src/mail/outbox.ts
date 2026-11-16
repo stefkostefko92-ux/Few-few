@@ -18,6 +18,7 @@ import { composeMasterMail, MASTER_MAIL_KINDS } from './master-mail.js';
 import { composeHandoverMail, HANDOVER_MAIL_KINDS } from './handover-mail.js';
 import { composeOrgMail, ORG_MAIL_KINDS } from './org-mail.js';
 import { MINUTE } from '../time.js';
+import { legalPath } from '../legal/documents.js';
 import { mailSignature, recipientLocale } from './locale.js';
 import type { Locale } from '../i18n.js';
 
@@ -140,6 +141,7 @@ async function composeInviteMail(toEmail: string, payload: unknown): Promise<Mai
     companyEik: invite.organization.eik,
     firmName: invite.mandate?.firm.legalName ?? null,
     fromName: invite.fromUser?.name ?? null,
+    privacyUrl: `${config().PUBLIC_BASE_URL}${legalPath('privacy', locale)}`,
     link: `${config().PUBLIC_BASE_URL}/pokana/${token}${locale === 'en' ? '?lang=en' : ''}`,
     expires: docDate(invite.expiresAt, locale),
     signature,

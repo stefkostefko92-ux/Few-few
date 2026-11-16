@@ -333,6 +333,13 @@ code {
   display: grid;
   gap: var(--gap);
 }
+/* В решетката полетата не се сливат — разстоянието е само gap-ът. */
+.stack > :is(h2, h3, p, ul, ol) {
+  margin-block-end: 0;
+}
+.stack > :is(p, ul, ol) {
+  margin-block-start: 0;
+}
 fieldset {
   border: 1px solid var(--rule);
   border-radius: var(--radius);

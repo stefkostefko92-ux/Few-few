@@ -346,7 +346,8 @@
         "invalid": "Check the fields: the VAT number is “BG” + EIK, the IBAN is Bulgarian, the postcode is 4 digits.",
         "notOwner": "Only the owner changes the details.",
         "terminated": "The company is terminated — its details do not change.",
-        "peppolActive": "The VAT number is the company’s Peppol address — turn Peppol off first."
+        "peppolActive": "The VAT number is the company’s Peppol address — turn Peppol off first.",
+        "reviewPending": "The ownership is still “under review” — the details change after Fakturist confirms it."
       }
     }
   },
@@ -1138,7 +1139,9 @@
     "firmEffects": {
       "members": "You and all members leave the company; the API keys are revoked.",
       "mandate": "The firm manages the company under the authorisation — the documents and history stay.",
-      "owner": "The firm may later invite a new owner (including you)."
+      "owner": "The firm may later invite a new owner (including you).",
+      "before": "Download the “Export (ZIP)” first — after the handover you no longer have access to the company.",
+      "controller": "The company stays the controller of its data; the firm processes it under the authorisation and its agreement with the company."
     },
     "sendFirm": "Propose to the firm",
     "support": "In a dispute or after lost access, the Fakturist team can hand over the ownership after checking the documents — write to support.",
@@ -1159,7 +1162,8 @@
       "noMandate": "The firm needs an active authorisation for the company.",
       "notCompany": "An accounting firm is not handed over to a firm.",
       "rateLimited": "Too many attempts — try again in 15 minutes.",
-      "invalid": "Fill in all fields."
+      "invalid": "Fill in all fields.",
+      "dailyLimit": "Up to 5 handover invitations a day — try again tomorrow."
     },
     "blocked": {
       "reviewPending": "Your ownership is still under review. A handover is possible after Fakturist confirms it.",
@@ -1179,9 +1183,11 @@
         "noMandate": "The authorisation is no longer active.",
         "invalid": "The proposal is no longer valid.",
         "expired": "The proposal has expired.",
-        "notAllowed": "Only the firm’s owner or administrator decides."
+        "notAllowed": "Only the firm’s owner or administrator decides.",
+        "declaration": "Tick the declaration under item 1a of the data processing agreement."
       }
-    }
+    },
+    "exportLink": "Download the archive (ZIP)"
   },
   "help": {
     "title": "Help",

@@ -168,16 +168,27 @@ test('на кантора по ЕИК: пълномощно се създава,
       actorId: masterId,
       code: await code(),
       reason: 'Молба на собственика',
-      target: { kind: 'firm', eik: '131063188' },
+      target: { kind: 'firm', eik: '131063188', firmDeclared: true },
     }),
     isCode('notFirm'),
+  );
+  // Без писмената декларация на кантората по т. 1а — отказ (Правният Разбирач).
+  await assert.rejects(
+    masterHandover({
+      organizationId: orgId,
+      actorId: masterId,
+      code: await code(),
+      reason: 'Молба на собственика',
+      target: { kind: 'firm', eik: '121604974', firmDeclared: false },
+    }),
+    isCode('declaration'),
   );
   await masterHandover({
     organizationId: orgId,
     actorId: masterId,
     code: await code(),
     reason: 'Молба на собственика',
-    target: { kind: 'firm', eik: '121604974' },
+    target: { kind: 'firm', eik: '121604974', firmDeclared: true },
   });
   assert.equal(await role(ownerId, orgId), null);
   const mandate = await prisma.clientMandate.findUniqueOrThrow({

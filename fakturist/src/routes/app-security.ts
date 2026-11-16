@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { MINUTE } from '../time.js';
+import { ID_PATTERN } from '../ids.js';
 import QRCode from 'qrcode';
 import { z } from 'zod';
 import { prisma } from '../db.js';
@@ -16,10 +17,13 @@ import {
   PASSWORD_MAX_LENGTH,
 } from '../auth/password.js';
 
+const OWNERSHIP_PATH = new RegExp(`^/app/o/(${ID_PATTERN})/sobstvenost(?:/|$)`);
+
 /**
- * Проверките на текущата парола в „Сигурност“ (смяна, двуфакторен вход, закриване): до 10 за 15 минути на
- * профил. Без таван откраднатата сесия отгатва паролата, а всяка проверка е Argon2id (64 MiB) — и товар
- * за входа на всички (Кодаджията, 16.11.2026).
+ * Проверките на текущата парола (смяна, двуфакторен вход, закриване, предаване на собственост): до 10 за
+ * 15 минути на профил — ЕДИН брояч за всички страници (Разбивача, 16.11.2026: отделните тавани се събират).
+ * Без таван откраднатата сесия отгатва паролата, а всяка проверка е Argon2id (64 MiB) — и товар за входа на
+ * всички (Кодаджията, 16.11.2026).
  */
 export const passwordCheckLimiter = rateLimit({
   windowMs: 15 * MINUTE,
@@ -27,7 +31,15 @@ export const passwordCheckLimiter = rateLimit({
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   keyGenerator: (req) => req.principal?.user.id ?? 'anonymous',
-  handler: (_req, res) => res.redirect(303, '/app/sigurnost?err=rateLimited'),
+  handler: (req, res) => {
+    const ownership = OWNERSHIP_PATH.exec(req.originalUrl);
+    res.redirect(
+      303,
+      ownership
+        ? `/app/o/${ownership[1]}/sobstvenost?err=rateLimited`
+        : '/app/sigurnost?err=rateLimited',
+    );
+  },
 });
 
 /** Сигурността на профила: смяна на паролата и двуфакторен вход. Пазачът requireUser е в appRouter. */

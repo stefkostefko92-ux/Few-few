@@ -16,6 +16,7 @@ export class ProfileError extends Error {
     readonly code:
       | 'notFound'
       | 'notOwner'
+      | 'reviewPending'
       | 'terminated'
       | 'invalid'
       | 'peppolActive'
@@ -91,6 +92,14 @@ export const PROFILE_FIELDS = [
 
 type Tx = Prisma.TransactionClient;
 
+/**
+ * Адресът в Peppol е от ДДС номера: докато регистрацията не е изключена (REMOVED), тя може да е записана
+ * при доставчика — и FAILED (неуспешно изключване или опит, приет след таймаут). Първо изключване.
+ */
+function peppolRegistered(peppol: { status: string } | null): boolean {
+  return peppol !== null && peppol.status !== 'REMOVED';
+}
+
 async function lockOrg(tx: Tx, organizationId: string) {
   try {
     await lockOrganization(tx, organizationId);
@@ -131,6 +140,9 @@ export async function updateCompanyProfile(input: {
         select: { role: true },
       });
       if (member?.role !== 'OWNER') throw new ProfileError('notOwner');
+      // Собственик „за проверка“ или фирма със спор за собствеността — данните чакат мастъра.
+      if (org.ownerReviewPendingAt || org.ownershipLockedAt)
+        throw new ProfileError('reviewPending');
     }
     // ДДС номерът на българско ЮЛ е „BG“ + ЕИК (като при регистрацията).
     if (data.vatNumber && data.vatNumber !== `BG${org.eik ?? ''}`)
@@ -143,9 +155,7 @@ export async function updateCompanyProfile(input: {
         where: { organizationId: input.organizationId },
         select: { status: true },
       });
-      if (peppol && (peppol.status === 'ACTIVE' || peppol.status === 'PENDING')) {
-        throw new ProfileError('peppolActive');
-      }
+      if (peppolRegistered(peppol)) throw new ProfileError('peppolActive');
     }
     await tx.organization.update({
       where: { id: input.organizationId },
@@ -190,6 +200,13 @@ export async function changeCompanyEik(input: {
       // ДДС номерът следва ЕИК, ако е бил „BG“ + стария.
       const vatNumber =
         org.vatNumber && org.vatNumber === `BG${org.eik ?? ''}` ? `BG${eik}` : org.vatNumber;
+      if (vatNumber !== org.vatNumber) {
+        const peppol = await tx.peppolParticipant.findUnique({
+          where: { organizationId: org.id },
+          select: { status: true },
+        });
+        if (peppolRegistered(peppol)) throw new ProfileError('peppolActive');
+      }
       await tx.organization.update({ where: { id: org.id }, data: { eik, vatNumber } });
       const owners = await tx.membership.findMany({
         where: { organizationId: org.id, role: 'OWNER', user: { disabledAt: null } },

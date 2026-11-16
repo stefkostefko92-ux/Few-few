@@ -824,3 +824,6 @@
 {"t":"handoff","ts":"2026-11-16T19:01:02.319Z","id":"re965efe4","from":"razbivacha","to":"kodadjiyata","status":"наред (нула находки след реален опит по всички вектори)","run":"01b3a79e"}
 {"t":"handoff","ts":"2026-11-16T19:03:08.571Z","id":"re965efe4","from":"dizayner","to":"kodadjiyata","status":"има бележки","run":"e58a1b57"}
 {"t":"handoff","ts":"2026-11-16T19:05:17.612Z","id":"re965efe4","from":"prevodach","to":"seo","status":"има бележки","run":"73b4ca4a"}
+{"t":"handoff","ts":"2026-11-16T19:25:43.419Z","id":"re965efe4","from":"pravniyat-razbirach","to":"kodadjiyata","status":"има бележки","run":"03de37b6"}
+{"t":"start","ts":"2026-11-16T19:28:27.960Z","id":"r276d01dc","flow":"авто","lead":"razbivacha","auto":true}
+{"t":"handoff","ts":"2026-11-16T19:28:27.961Z","id":"r276d01dc","from":"razbivacha","to":"kodadjiyata","status":"има бележки","run":"702e7090"}
