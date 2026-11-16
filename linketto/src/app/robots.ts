@@ -21,11 +21,10 @@ export default function robots(): MetadataRoute.Robots {
     '/*/register',
     '/*/admin',
     '/u/*/l/', // click redirect-и — не са съдържание
-    '/u/*/delivery',
+    '/u/*/p/', // клик по продукт → линкът за плащане на създателя
     '/u/*/subscribe/', // потвърждение на абонамент (GET с токен)
     '/u/*/unsubscribe', // отписване (GET с токен) — ботове да не го задействат
     '/s/', // съкратени линкове (302 redirect, без HTML/meta)
-    '/buyer/', // magic-link вход на купувача (токен в URL)
     '/d/', // собствените домейни се индексират на своя host, не тук
   ];
   return {

@@ -1,8 +1,9 @@
 <%
   // Промяна на ред от ценоразписа (routes/preventivi-listino.ts) и изтриването му. Цената на вече
   // направените оферти не се сменя — тя е написаната в тях.
+  // `back` и `da` — откъде е дошъл човекът (настройките или страницата на офертите): там се връща.
   const errorKeys = Object.keys(errors);
-  const back = '/preventivi/listino?azienda=' + encodeURIComponent(azienda.id);
+  const coda = '?azienda=' + encodeURIComponent(azienda.id) + (da === 'impostazioni' ? '&da=impostazioni' : '');
 %><%- include('../partials/top', { titleKey: 'preventivi.listino.modifica', narrowMain: true }) %>
 <div class="page-head">
   <div>
@@ -13,7 +14,7 @@
 </div>
 <div class="stack-gap">
 <p class="muted"><%= t('preventivi.listino.nota') %></p>
-<form class="form" method="post" action="/preventivi/listino/<%= id %>?azienda=<%= encodeURIComponent(azienda.id) %>" novalidate>
+<form class="form" method="post" action="/preventivi/listino/<%= id %><%= coda %>" novalidate>
   <% if (errorKeys.length) { %><div class="errors" role="alert" tabindex="-1"><h2><%= t('preventivi.listino.errore.titolo') %></h2></div><% } %>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <%- include('_voce-campi', { maxVoci: 0 }) %>
@@ -24,7 +25,7 @@
 </form>
 <details class="panel buono-elimina">
   <summary><%= t('preventivi.listino.elimina') %></summary>
-  <form method="post" action="/preventivi/listino/<%= id %>/elimina?azienda=<%= encodeURIComponent(azienda.id) %>">
+  <form method="post" action="/preventivi/listino/<%= id %>/elimina<%= coda %>">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <p><%= t('preventivi.listino.eliminaTesto') %></p>
     <button class="btn btn--danger" type="submit"><%- include('../partials/icon', { name: 'trash' }) %><%= t('preventivi.listino.elimina') %></button>

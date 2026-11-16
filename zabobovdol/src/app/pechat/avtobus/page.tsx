@@ -2,7 +2,16 @@ import type { Metadata } from "next";
 import { SITE } from "@/lib/site";
 import { buildMetadata } from "@/lib/seo";
 import { BUS } from "@/lib/bus-schedule";
-import { PrintButton } from "@/components/PrintButton";
+import { SECTION } from "@/lib/section-names";
+import { PageHero } from "@/components/ui";
+import {
+  SheetFooter,
+  SheetHead,
+  SheetLayout,
+  SiteQr,
+  SHEET_TITLE,
+  sheetCrumbs,
+} from "../_components/PrintKit";
 
 export const dynamic = "force-dynamic";
 
@@ -11,98 +20,75 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Разписанието на автобуса Бобов дол – Дупница (превозвач Даци-Р), готово за печат и закачане на видно място. С едър шрифт и QR код към сайта.",
   path: "/pechat/avtobus",
+  keywords: [
+    "автобус Бобов дол Дупница",
+    "разписание автобус Бобов дол",
+    "Даци-Р разписание",
+    "разписание за печат",
+    "За Бобов дол",
+    "Carbon Stealth",
+  ],
 });
 
 export default function BusPrintPage() {
   return (
-    <div className="container-content py-8">
-      <div className="no-print mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">
-            Автобусно разписание за печат
-          </h1>
-          <p className="text-slate-600">
-            Принтирайте този лист и го закачете на видно място у дома или го
-            подарете на възрастен близък.
-          </p>
-        </div>
-        <PrintButton />
-      </div>
+    <>
+      <PageHero
+        className="no-print"
+        eyebrow={SECTION.print}
+        title={SHEET_TITLE["/pechat/avtobus"]}
+        intro="Отпечатайте този лист и го закачете на видно място у дома или го подарете на възрастен близък."
+        crumbs={sheetCrumbs("/pechat/avtobus")}
+      />
 
       {/* Лист за печат (A4) */}
-      <div className="print-sheet mx-auto max-w-3xl rounded-xl border border-slate-300 bg-white p-8 shadow-sm">
-        <div className="flex items-center gap-3 border-b-2 border-slate-200 pb-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/brand/bobov-dol-grb.png"
-            alt="Герб на Бобов дол"
-            width={40}
-            height={58}
-            className="h-14 w-auto"
-          />
-          <div>
-            <div className="font-display text-2xl font-bold text-slate-900">
-              Автобус Бобов дол ⇄ Дупница
-            </div>
-            <div className="text-sm text-slate-600">
-              Превозвач: {BUS.carrier} · {SITE.domain}
-            </div>
-          </div>
-        </div>
+      <SheetLayout current="/pechat/avtobus" width="max-w-3xl" note="Листът е за хартия A4.">
+        <SheetHead
+          title="Автобус Бобов дол ⇄ Дупница"
+          subtitle={<>Превозвач: {BUS.carrier}</>}
+        />
 
-        <div className="mt-6 grid gap-6 sm:grid-cols-2">
+        {/* Двете посоки: една до друга от sm; на lg листът е по-тесен (до него е
+            „Още за печат“) — една под друга, от xl пак две; на хартия — две. */}
+        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 print:grid-cols-2">
           {BUS.directions.map((d) => (
-            <div key={d.title}>
-              <h2 className="font-display text-xl font-bold text-slate-900">
-                {d.title}
-              </h2>
-              <div className="mt-3 grid grid-cols-4 gap-2">
+            <section key={d.title} aria-label={d.title}>
+              <h3 className="font-display text-xl font-bold text-slate-900">{d.title}</h3>
+              {/* Колкото колони се съберат, всяка ≥4.75rem (в rem — расте с
+                  уголемения текст): часът никога не излиза от клетката си. На
+                  хартия — винаги 4, за да остане листът един. */}
+              <ul
+                role="list"
+                className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(4.75rem,1fr))] gap-2 print:grid-cols-4"
+              >
                 {d.times.map((t) => (
-                  <span
+                  <li
                     key={t}
-                    className="rounded-md border border-slate-300 px-1.5 py-1.5 text-center text-lg font-bold text-slate-900"
+                    className="rounded-xl border border-slate-300 px-1 py-1.5 text-center text-lg font-bold tabular-nums text-slate-900"
                   >
                     {t}
-                  </span>
-                ))}
-              </div>
-              <ul className="mt-3 space-y-1 text-sm text-slate-700">
-                {d.notes.map((n, i) => (
-                  <li key={i}>• {n}</li>
+                  </li>
                 ))}
               </ul>
-            </div>
+              <ul role="list" className="mt-3 list-disc space-y-1 pl-5 text-base text-slate-800">
+                {d.notes.map((n, i) => (
+                  <li key={i}>{n}</li>
+                ))}
+              </ul>
+            </section>
           ))}
         </div>
 
-        <div className="mt-6 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
-          Разписанието може да се променя. При съмнение проверете на спирката
-          или с превозвача.
-        </div>
+        <p className="callout-note mt-6 text-slate-900">
+          Разписанието може да се променя. При съмнение проверете на спирката или с
+          превозвача.
+        </p>
 
-        <div className="mt-6 flex items-center gap-4 border-t-2 border-slate-200 pt-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/qr-zabobovdol.png"
-            alt="QR код към сайта"
-            width={90}
-            height={90}
-            className="h-24 w-24"
-          />
-          <div className="text-sm text-slate-700">
-            <div className="font-display text-lg font-bold text-slate-900">
-              Сканирайте за повече
-            </div>
-            Телефони, услуги и обяснения „Как да…“ на{" "}
-            <strong>{SITE.domain}</strong>
-            {SITE.contact.phone && (
-              <div className="mt-1">
-                Контакт: <strong>{SITE.contact.phone}</strong>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+        <SheetFooter qr={<SiteQr />} lead="Сканирайте за повече">
+          Телефони, услуги и обяснения „Как да…“ на{" "}
+          <strong className="text-slate-900 [overflow-wrap:anywhere]">{SITE.domain}</strong>
+        </SheetFooter>
+      </SheetLayout>
+    </>
   );
 }

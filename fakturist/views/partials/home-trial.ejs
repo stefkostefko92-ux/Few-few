@@ -1,0 +1,54 @@
+<%# Пробата за целостта: примерната верига от три звена; смята public/js/site-trial.js (SubtleCrypto). Без JavaScript — готовите стойности. Параметри: chain (src/site-demo-chain.ts). -%>
+<%
+  const short = (h) => h.slice(0, 8) + '…' + h.slice(-6);
+  const fmt = (c) => formatEuro(c);
+  const edit = chain[1];
+-%>
+<section class="section trial" id="proba" aria-labelledby="trial-h">
+  <div class="wrap">
+    <div class="trial-head" data-rv>
+      <h2 id="trial-h"><%= t('landing.trial.title') %></h2>
+      <p><%= t('landing.trial.text') %></p>
+    </div>
+    <div class="trial-box" data-trial data-prefix="<%= demoPrefix %>" data-edit="1"
+      data-m-ok="<%= t('landing.trial.ok') %>" data-m-bad="<%= t('landing.trial.bad') %>"
+      data-m-invalid="<%= t('landing.trial.invalid') %>" data-m-nocrypto="<%= t('landing.trial.noCrypto') %>"
+      data-m-intact="<%= t('landing.trial.intact', { no: edit.no }) %>"
+      data-m-broken="<%= t('landing.trial.broken', { no: edit.no, amount: '{amount}', was: fmt(edit.cents), next: chain[2].no }) %>"
+      data-was="<%= fmt(edit.cents) %>">
+      <ol class="links">
+<% chain.forEach((l, k) => { -%>
+        <li class="ln" data-ln data-no="<%= l.no %>" data-date="<%= l.date %>" data-cents="<%= l.cents %>" data-prev="<%= l.prev %>" data-hash="<%= l.hash %>">
+<% if (k > 0) { -%>
+          <span class="lk" aria-hidden="true"></span>
+<% } -%>
+          <div class="ln-top">
+            <h3><%= t('landing.trial.link', { no: l.no }) %></h3>
+            <span class="st" data-st><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path class="st-ok" d="M3 8.5l3.2 3.2L13 4.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path class="st-bad" d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-st-t><%= t('landing.trial.ok') %></span></span>
+          </div>
+          <dl>
+            <div><dt><%= t('landing.trial.date') %></dt><dd><time datetime="<%= l.date %>"><%= l.date.split('-').reverse().join('.') %></time></dd></div>
+            <div><dt><%= t('landing.trial.amount') %></dt>
+<% if (k === 1) { -%>
+              <dd class="amt"><label class="sr" for="amt"><%= t('landing.trial.amountLabel', { no: l.no }) %></label><input id="amt" class="amt-in" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" value="<%= (l.cents / 100).toFixed(2).replace('.', lang === 'bg' ? ',' : '.') %>" data-amt hidden><span class="amt-eur" aria-hidden="true" hidden>€</span><output class="amt-st" data-amt-st><%= fmt(l.cents) %></output></dd>
+<% } else { -%>
+              <dd class="mono"><%= fmt(l.cents) %></dd>
+<% } -%>
+            </div>
+            <div><dt><%= t('landing.trial.prevRecorded') %></dt><dd class="mono" data-f="prev"><%= k === 0 ? '0000…0000' : short(l.prev) %></dd></div>
+            <div><dt><%= t('landing.trial.prevNow') %></dt><dd class="mono" data-f="prevNow"><%= k === 0 ? t('landing.trial.start') : short(l.prev) %></dd></div>
+            <div><dt><%= t('landing.trial.issued') %></dt><dd class="mono" data-f="issued"><%= short(l.hash) %></dd></div>
+            <div><dt><%= t('landing.trial.now') %></dt><dd class="mono" data-f="now"><%= short(l.hash) %></dd></div>
+          </dl>
+        </li>
+<% }) -%>
+      </ol>
+      <div class="trial-ctl" data-ctl hidden>
+        <button type="button" class="btn btn-on-dark" data-cent><%= t('landing.trial.oneCent') %></button>
+        <button type="button" class="btn btn-ghost-dark" data-reset hidden><%= t('landing.trial.reset') %></button>
+      </div>
+      <p class="trial-live" id="trial-live" role="status" aria-live="polite" data-live><%= t('landing.trial.intact', { no: edit.no }) %></p>
+    </div>
+    <p class="trial-note"><%= t('landing.trial.sample') %></p>
+  </div>
+</section>

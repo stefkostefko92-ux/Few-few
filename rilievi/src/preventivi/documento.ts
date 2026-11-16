@@ -1,6 +1,7 @@
 import { intestazioneDi } from '../aziende/dati.js';
 import type { ViewHelpers } from '../http/view.js';
 import type { Translator } from '../i18n.js';
+import { informativaPerPreventivo } from '../legale/informativa.js';
 import { datiDi } from './dati.js';
 import type { PreventivoFull } from './elenco.js';
 import { renderPreventivoPdf } from './pdf.js';
@@ -18,5 +19,6 @@ export function pdfDelPreventivo(
     intestazione: intestazioneDi(row.azienda.name, row.azienda.datiSocietari),
     numero: row.numero,
     generatoIl: new Date(),
+    informativa: informativaPerPreventivo(row.azienda),
   });
 }

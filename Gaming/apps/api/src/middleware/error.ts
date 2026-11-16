@@ -17,6 +17,12 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     return;
   }
 
+  // Prisma P2025: записът за update/delete не съществува (напр. изтрит доклад) → 404, не 500.
+  if ((err as { name?: string; code?: string })?.name === "PrismaClientKnownRequestError" && (err as { code?: string }).code === "P2025") {
+    res.status(404).json({ error: { code: "not_found", message: "Resource not found" } });
+    return;
+  }
+
   if (err instanceof HttpError) {
     res
       .status(err.status)

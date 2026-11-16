@@ -22,6 +22,8 @@ export const DEFAULT_LOCALE: Locale = "bg";
 export const STARTING_CHIPS = 1000n;
 export const STARTING_GEMS = 0;
 export const STARTING_MMR = 1200;
+/** Долна граница на рейтинга (подобно на FIDE минимума 100): серия загуби не го сваля под нея. */
+export const MIN_MMR = 100;
 
 /** Auth cookie names. */
 export const ACCESS_COOKIE = "aso_at";

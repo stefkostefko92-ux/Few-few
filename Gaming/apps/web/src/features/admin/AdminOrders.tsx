@@ -8,7 +8,8 @@ import { adminApi, type OrderItem } from "./adminApi";
 import { ErrorPanel, errorMessage } from "./load";
 import { UserDetailModal } from "./AdminUsers";
 
-const STATUSES = ["", "completed", "refunded"] as const;
+// „refunding“ = заседнало връщане (срив след Stripe) — довършва се със същия бутон.
+const STATUSES = ["", "completed", "refunding", "refunded"] as const;
 
 /** Global orders + refunds (§14). Read for staff; refund is ADMIN/OWNER. */
 export function AdminOrders() {
@@ -113,7 +114,7 @@ export function AdminOrders() {
                   <span className="font-mono">{o.stripeId.slice(0, 16)}…</span>
                 </div>
               </div>
-              {canRefund && o.status === "completed" ? (
+              {canRefund && (o.status === "completed" || o.status === "refunding") ? (
                 confirmId === o.id ? (
                   <div className="flex flex-col items-end gap-1.5">
                     <label className="flex items-center gap-2 text-xs text-ink-100">
@@ -137,7 +138,9 @@ export function AdminOrders() {
                   </div>
                 ) : (
                   <Button variant="ghost" onClick={() => setConfirmId(o.id)}>
-                    {t("admin.refund", "Върни")}
+                    {o.status === "refunding"
+                      ? t("admin.refundResume", "Довърши връщането")
+                      : t("admin.refund", "Върни")}
                   </Button>
                 )
               ) : null}

@@ -29,15 +29,16 @@ export function hangRail(ctx, a) {
   const { col, i, yInnerTop, backFront, zEnd, mod, nm } = a;
   const length = r1(col.xb - col.xa - 2);
   ctx.symbols.push({ type: 'rail', x0: col.xa + 1, x1: col.xb - 1, y: yInnerTop - RAIL.topEdge - RAIL.h / 2, z: (backFront + zEnd) / 2, h: RAIL.h, module: mod });
-  ctx.hw(`rail${Math.round(col.xb - col.xa)}`, { name: `Лост за закачалки, овален, L=${Math.round(length)} mm`, qty: 1, unit: 'бр.', group: 'Обков' });
-  ctx.hw('railHolders', { name: 'Държач за лост', qty: 2, unit: 'бр.', group: 'Обков' });
+  const t = ctx.t;
+  ctx.hw(`rail${Math.round(col.xb - col.xa)}`, { name: t('hw.rail', { L: Math.round(length) }), qty: 1, unit: t('u.pcs'), group: t('g.hardware') });
+  ctx.hw('railHolders', { name: t('hw.railHolder'), qty: 2, unit: t('u.pcs'), group: t('g.hardware') });
   const depth = r1(zEnd - backFront);
   if (depth < RAIL.depth + MARGIN) {
     // one note per carcass: every rail column of it has the same depth
-    ctx.warn('warn', `${nm('Лост за закачалки')}: вътрешната дълбочина е ${dimTxt(depth)} mm; ГОСТ 13025.1-85 иска поне ${RAIL.depth} mm от гърба до вратата (черт. 1 и 2), а програмата — ${RAIL.depth + MARGIN} mm, с ${MARGIN} mm резерв. Задълбочете шкафа с ${dimTxt(r1(RAIL.depth + MARGIN - depth))} mm.`);
+    ctx.warn('warn', t('w.railDepth', { what: nm(t('part.rail')), depth: t.num(depth), min: RAIL.depth, ours: RAIL.depth + MARGIN, margin: MARGIN, more: t.num(r1(RAIL.depth + MARGIN - depth)) }));
   }
   if (length >= RAIL.midLength - MARGIN) {
-    ctx.hw('railCentre', { name: 'Среден държач за лост', qty: 1, unit: 'бр.', group: 'Обков' });
-    ctx.warn('warn', `${nm(`Колона ${i + 1}`)}: лостът за закачалки е ${dimTxt(length)} mm — Hettich препоръчва среден държач от ${RAIL.midLength} mm нагоре (овална тръба 15/30), а програмата — от ${RAIL.midLength - MARGIN} mm. Добавен е 1 бр. в обкова; монтира се в средата на лоста.`);
+    ctx.hw('railCentre', { name: t('hw.railCentre'), qty: 1, unit: t('u.pcs'), group: t('g.hardware') });
+    ctx.warn('warn', t('w.railCentre', { where: nm(t('part.column', { n: i + 1 })), length: t.num(length), from: RAIL.midLength, ours: RAIL.midLength - MARGIN }));
   }
 }

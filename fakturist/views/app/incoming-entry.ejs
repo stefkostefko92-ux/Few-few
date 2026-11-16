@@ -1,0 +1,37 @@
+<%- include('../partials/app-head', { title: entry.supplierName + ' ' + entry.number }) %>
+<% const day = (d) => d ? d.toISOString().slice(0, 10).split('-').reverse().join('.') : '—'; %>
+<% const amount = (c) => money(c, entry.currency); %>
+<p><a href="/app/o/<%= orgId %>/vhodyashti">← <%= t('app.incoming.title') %></a></p>
+<h1 class="mono"><%= entry.number %></h1>
+<% if (ok) { %><p class="ok" role="status"><%= tOr('app.incoming.ok.' + ok, t('app.catalog.saved.updated')) %></p><% } %>
+<% if (err) { %><p class="error" role="alert"><%= tOr('app.incoming.err.' + err, t('auth.errors.invalid')) %></p><% } %>
+<dl class="facts">
+  <div><dt><%= t('app.incoming.supplier') %></dt><dd><%= entry.supplierName %><% if (entry.supplierEik) { %> <span class="mono muted"><%= entry.supplierEik %></span><% } %><% if (entry.supplierVat) { %> <span class="mono muted"><%= entry.supplierVat %></span><% } %></dd></div>
+  <div><dt><%= t('app.incoming.date') %></dt><dd class="mono"><%= day(entry.issueDate) %></dd></div>
+  <div><dt><%= t('app.incoming.due') %></dt><dd class="mono"><%= day(entry.dueDate) %></dd></div>
+  <div><dt><%= t('app.incoming.amount') %></dt><dd class="mono strong"><%= amount(entry.payableCents) %></dd></div>
+  <div><dt><%= t('app.incoming.vat') %></dt><dd class="mono"><%= amount(entry.vatCents) %></dd></div>
+  <div><dt><%= t('app.incoming.format') %></dt><dd><%= entry.format %><% if (entry.fileName) { %> · <span class="muted"><%= entry.fileName %></span><% } %></dd></div>
+  <div><dt><%= t('app.incoming.status') %></dt><dd><span class="tag"><%= t('app.incoming.statuses.' + entry.status) %></span><% if (entry.paidAt) { %> <span class="mono"><%= day(entry.paidAt) %></span><% } %></dd></div>
+</dl>
+<p><a class="button-secondary" href="/app/o/<%= orgId %>/vhodyashti/<%= entry.id %>/fail.xml" download target="_blank" rel="noopener"><%= t('app.incoming.download') %></a></p>
+<section class="panel">
+  <h2><%= t('app.incoming.check') %></h2>
+  <% if (issues.length === 0) { %><p class="ok"><%= t('app.incoming.clean') %></p><% } else { %>
+  <ul class="invite-list">
+    <% issues.forEach((i) => { %><li><span class="tag<%= i.severity === 'fatal' ? ' tag-pending' : '' %>"><%= i.severity === 'fatal' ? t('app.incoming.error') : t('app.incoming.warning') %></span> <span class="mono"><%= i.rule %></span> · <%= i.message && i.message[lang] ? i.message[lang] : '' %></li><% }) %>
+  </ul>
+  <p class="hint"><%= t('app.incoming.checkHint') %></p>
+  <% } %>
+</section>
+<%- include('../partials/journal-credit', { journalAction: '/app/o/' + orgId + '/vhodyashti/' + entry.id + '/dnevnik', journalCredit: entry.vatCredit }) %>
+<% if (canWrite) { %>
+<form method="post" action="/app/o/<%= orgId %>/vhodyashti/<%= entry.id %>/status" class="panel stack narrow-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <h2><%= t('app.incoming.changeStatus') %></h2>
+  <label><%= t('app.incoming.status') %><select name="status"><% ['RECEIVED', 'PAID', 'REJECTED'].forEach((s) => { %><option value="<%= s %>"<%= entry.status === s ? ' selected' : '' %>><%= t('app.incoming.statuses.' + s) %></option><% }) %></select></label>
+  <label><%= t('app.incoming.paidOn') %><input type="date" name="paidOn" max="<%= today %>" value="<%= entry.paidAt ? entry.paidAt.toISOString().slice(0, 10) : today %>"><span class="hint"><%= t('app.incoming.paidOnHint') %></span></label>
+  <div><button type="submit" class="button-secondary"><%= t('app.catalog.save') %></button></div>
+</form>
+<% } %>
+<%- include('../partials/app-foot') %>

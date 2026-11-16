@@ -75,7 +75,7 @@ export function LobbyWatcher() {
   if (invites.length === 0) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 z-[60] flex flex-col gap-2">
+    <div className="fixed bottom-4 left-4 z-[61] flex flex-col gap-2">
       {invites.map((inv) => {
         const title = gameTitle(t, inv.game);
         return (

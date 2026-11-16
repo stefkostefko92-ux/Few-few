@@ -14,6 +14,7 @@ import { condizioniValide, VERSIONE, versioneProssima } from '../legale/versioni
 import { parseMossa, parseOrdine, sposta } from '../schede/ordine.js';
 import { rigaAbbonamento } from './impostazioni-abbonamento.js';
 import { vistaAccesso } from './impostazioni-accesso.js';
+import { datiListino } from './listino-vista.js';
 import {
   ICONE_SEZIONI,
   isSezione,
@@ -91,6 +92,7 @@ async function riepilogo(
   const nChiavi = await prisma.chiaveApi.count({
     where: { aziendaId: azienda.id, revocataAt: null, scadeAt: { gt: new Date() } },
   });
+  const nVoci = await prisma.voceListino.count({ where: { aziendaId: azienda.id } });
   const righe: Record<SezioneImpostazioni, string> = {
     azienda:
       t(dati?.ragioneSociale ? 'impostazioni.hub.datiSi' : 'impostazioni.hub.datiNo') +
@@ -113,6 +115,7 @@ async function riepilogo(
         ? 'preventivi.impostazioni.hubSi'
         : 'preventivi.impostazioni.hubNo',
     ),
+    listino: nVoci > 0 ? t('preventivi.listino.voci', { n: nVoci }) : t('preventivi.listino.hub0'),
     buoni: t(
       azienda.buonoCodice || azienda.buonoClausola
         ? 'impostazioni.hub.buonoSi'
@@ -168,6 +171,7 @@ impostazioniRouter.get('/impostazioni/:sezione', settings, async (req, res, next
     ...(sezione === 'fornitori' ? { fornitori: await fornitoriDi(azienda.id) } : {}),
     ...(sezione === 'api' ? { chiaviApi: await chiaviDi(azienda.id) } : {}),
     ...(sezione === 'accesso' ? { esterni: await vistaAccesso(azienda) } : {}),
+    ...(sezione === 'listino' ? { listino: await datiListino(req, azienda.id) } : {}),
   });
 });
 

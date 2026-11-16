@@ -1,14 +1,16 @@
 import { prisma, type GameKey } from "@aso/db";
+import { recordLedger } from "@aso/db/ledger";
 import type { SeatScore } from "@aso/game-core";
 import {
+  MIN_MMR,
   STARTING_MMR,
   applyXpMultiplier,
   isBettingGame,
   levelFromXp,
-  settleStake,
   vipPerksFor,
   type SeatReward,
 } from "@aso/shared";
+import { settleBettingStakes } from "./stakes.js";
 
 export interface SeatInfo {
   seat: number;
@@ -16,20 +18,35 @@ export interface SeatInfo {
   isBot: boolean;
 }
 
-const expectedScore = (rating: number, opponent: number): number =>
-  1 / (1 + 10 ** ((opponent - rating) / 400));
+/** Таван на разликата в рейтингите при сметката на очаквания резултат
+ *  (FIDE Rating Regulations 8.3.1: разлика над 400 т. се третира като 400). */
+const MAX_RATING_DIFF = 400;
+
+/**
+ * Очакван резултат по логистична крива с таван на разликата ±400 т.
+ * ЗАБЕЛЕЖКА: това НЕ е таблицата на FIDE (8.3.4 / нормалното разпределение) —
+ * ползваме логистичната формула на Elo, а K е 40 под 30 игри, иначе 20.
+ */
+export const expectedScore = (rating: number, opponent: number): number => {
+  const diff = Math.max(-MAX_RATING_DIFF, Math.min(MAX_RATING_DIFF, opponent - rating));
+  return 1 / (1 + 10 ** (diff / 400));
+};
+
+/** Закръгляне на .5 далеч от нулата (FIDE 8.3.4): −2.5 → −3, 2.5 → 3 (`Math.round(-2.5)` дава −2). */
+export const roundHalfAwayFromZero = (x: number): number => Math.sign(x) * Math.round(Math.abs(x));
 
 const kFactor = (games: number): number => (games < 30 ? 40 : 20);
 
 const numericResult = (r: SeatScore["result"]): number =>
   r === "win" ? 1 : r === "draw" ? 0.5 : 0;
 
-/** Base flat reward, then scaled by result magnitude for games that report one
- *  (backgammon gammon=2 / backgammon=3, belote capot, etc.) so a bigger win
- *  actually pays more. `points` is clamped to a sane 1–3× so it can never blow
- *  up the economy. Betting games settle a wallet stake instead (see below). */
-const rewards = (r: SeatScore["result"], points?: number): { chips: bigint; xp: number } => {
-  const mult = r === "win" ? Math.min(Math.max(Math.round(points ?? 1), 1), 3) : 1;
+/** Base flat reward, scaled only by an engine's explicit win `margin` (1–3×).
+ *  It used to read `points`, which is each game's OWN score (Сантасе match
+ *  points, Домино's 100+, Риба's books, snooker frame points…): a win in those
+ *  games always paid ×3, in chess or belote ×1. Betting games settle a wallet
+ *  stake instead (see below). */
+export const rewards = (r: SeatScore["result"], margin?: number): { chips: bigint; xp: number } => {
+  const mult = r === "win" ? Math.min(Math.max(Math.round(margin ?? 1), 1), 3) : 1;
   return r === "win"
     ? { chips: BigInt(25 * mult), xp: 10 * mult }
     : r === "draw"
@@ -62,8 +79,13 @@ export async function finalizeMatch(opts: {
   game: GameKey;
   seats: SeatInfo[];
   score: SeatScore[];
+  /** Неизиграна партия (оттегляне преди първия ход, FIDE 5.1): мачът се затваря,
+   *  но без рейтинг, награди и MatchPlayer редове. */
+  unrated?: boolean;
+  /** Отделни места без рейтинг/награди/MatchPlayer (оттегляне при ply 0 в маса, която продължава). */
+  unratedSeats?: number[];
 }): Promise<FinalizeResult> {
-  const { matchId, game, seats, score } = opts;
+  const { matchId, game, seats, score, unrated = false, unratedSeats = [] } = opts;
   const resultBySeat = new Map<number, SeatScore["result"]>(
     score.map((s) => [s.seat, s.result]),
   );
@@ -82,6 +104,7 @@ export async function finalizeMatch(opts: {
 
   const betting = isBettingGame(game);
   const pointsBySeat = new Map<number, number>(score.map((s) => [s.seat, s.points ?? 0]));
+  const marginBySeat = new Map<number, number | undefined>(score.map((s) => [s.seat, s.margin]));
 
   await prisma.$transaction(async (tx) => {
     // Idempotency: atomically claim the match by stamping endedAt only if it
@@ -91,10 +114,14 @@ export async function finalizeMatch(opts: {
       where: { id: matchId, endedAt: null },
       data: { endedAt: new Date() },
     });
-    if (claimed.count !== 1) return;
+    if (claimed.count !== 1 || unrated) return;
+
+    // Залогът (Свара) се урежда наведнъж за цялата маса: бот на масата → 0 за
+    // всички; между хора — нулева сума, с ред MATCH в регистъра (виж stakes.ts).
+    const stakes = betting ? await settleBettingStakes(tx, { matchId, game, seats, pointsBySeat }) : null;
 
     for (const seat of seats) {
-      if (seat.isBot || !seat.userId) continue;
+      if (seat.isBot || !seat.userId || unratedSeats.includes(seat.seat)) continue;
       const result = resultBySeat.get(seat.seat);
       if (!result) continue;
       const userId = seat.userId;
@@ -107,7 +134,10 @@ export async function finalizeMatch(opts: {
 
       const current = await ratingFor(userId, game);
       const k = kFactor(current.games);
-      const delta = Math.round(k * (numericResult(result) - expectedScore(myMmr, oppAvg)));
+      // Рейтингът не пада под MIN_MMR: делтата се реже, за да не потъва под пода —
+      // подът само ограничава загубата, никога не я превръща в печалба.
+      const rawDelta = roundHalfAwayFromZero(k * (numericResult(result) - expectedScore(myMmr, oppAvg)));
+      const delta = Math.max(rawDelta, Math.min(0, MIN_MMR - current.mmr));
       deltas[seat.seat] = delta;
 
       const updated = await tx.ratingPerGame.upsert({
@@ -115,7 +145,7 @@ export async function finalizeMatch(opts: {
         create: {
           userId,
           game,
-          mmr: STARTING_MMR + delta,
+          mmr: Math.max(MIN_MMR, STARTING_MMR + delta),
           games: 1,
           wins: result === "win" ? 1 : 0,
         },
@@ -129,27 +159,21 @@ export async function finalizeMatch(opts: {
       // pre-read snapshot (correct under concurrent updates).
       newRatings[seat.seat] = updated.mmr;
 
-      // Betting games (Свара) settle a real WALLET stake from the final internal
-      // chip count: doubling your stack wins a buy-in, busting loses it. Losses
-      // are clamped to the player's available wallet so it can never go negative.
+      // Betting games (Свара): залогът вече е уреден по-горе (нулева сума, „не под
+      // 0“, без залог срещу бот) — тук само показваме приложения chipsΔ.
       let chipsDelta: bigint;
       let xp: number;
       // VIP предимствата се четат в транзакцията; изтекъл абонамент = без множител.
       const profile = await tx.user.findUnique({
         where: { id: userId },
-        select: { chips: true, vipTier: true, vipUntil: true },
+        select: { vipTier: true, vipUntil: true },
       });
       const perks = vipPerksFor(profile?.vipTier, profile?.vipUntil);
       if (betting) {
-        let walletDelta = settleStake(game, pointsBySeat.get(seat.seat) ?? 0);
-        if (walletDelta < 0) {
-          const wallet = Number(profile?.chips ?? 0n);
-          walletDelta = Math.max(walletDelta, -wallet);
-        }
-        chipsDelta = BigInt(walletDelta);
+        chipsDelta = stakes?.get(seat.seat) ?? 0n;
         xp = result === "win" ? 12 : 6; // wagering a table earns more base XP
       } else {
-        const reward = rewards(result, pointsBySeat.get(seat.seat));
+        const reward = rewards(result, marginBySeat.get(seat.seat));
         chipsDelta = reward.chips;
         xp = reward.xp;
       }
@@ -161,11 +185,14 @@ export async function finalizeMatch(opts: {
       });
       // Атомарен инкремент (заключва реда до края на транзакцията), после
       // нивото от реалния нов xp — колоната `level` вече не остава „1“.
+      // Залогът е приложен в settleBettingStakes — тук не се добавя втори път.
+      const walletDelta = betting ? 0n : chipsDelta;
       const after = await tx.user.update({
         where: { id: userId },
-        data: { chips: { increment: chipsDelta }, xp: { increment: xp } },
+        data: { ...(walletDelta !== 0n ? { chips: { increment: walletDelta } } : {}), xp: { increment: xp } },
         select: { xp: true, level: true },
       });
+      await recordLedger(tx, { userId, currency: "CHIPS", delta: walletDelta, reason: "MATCH", refId: matchId });
       const level = levelFromXp(after.xp).level;
       if (level !== after.level) {
         await tx.user.update({ where: { id: userId }, data: { level } });

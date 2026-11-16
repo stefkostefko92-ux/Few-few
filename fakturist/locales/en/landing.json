@@ -1,0 +1,64 @@
+{
+  "hero": {
+    "tryIt": "Try to tamper with a document",
+    "pricing": "See pricing"
+  },
+  "stage": {
+    "label": "A sample invoice and its XML",
+    "type": "Document type",
+    "typeValue": "Invoice (380)",
+    "xmlName": "0000000124.xml",
+    "rulesTitle": "Checked on issue",
+    "ok": "passed",
+    "rule1": {
+      "id": "BR-CO-10",
+      "text": "The lines total is exactly the sum of the line net amounts"
+    },
+    "rule2": { "id": "BR-CO-15", "text": "The amount with VAT is the amount without VAT plus VAT" },
+    "rule3": { "id": "BG-01", "text": "The number has ten digits (Art. 114(1)(2) VAT Act)" },
+    "seal": "Link no. {no} in the chain",
+    "sealHash": "SHA-256 matches",
+    "caption": "Sample document, the companies and amounts are made up. Each field is linked to its EN 16931 number in the XML.",
+    "replay": "Show again"
+  },
+  "trial": {
+    "title": "Try to tamper with an issued document",
+    "text": "Three links of the chain. Change the amount in link no. 0000000124: your browser calculates SHA-256 again, live, and the chain after that link stops matching.",
+    "sample": "Sample data and a simplified record. In Fakturist the fingerprint covers the full record of the document and is sealed with an HMAC seal whose key exists only on the server. The seal is not shown here.",
+    "link": "Link no. {no}",
+    "date": "Issue date",
+    "amount": "Amount due",
+    "amountLabel": "Amount in link no. {no}, euro",
+    "prevRecorded": "Recorded previous fingerprint",
+    "prevNow": "The previous link now gives",
+    "start": "start of the example",
+    "issued": "Issued fingerprint",
+    "now": "Calculated now",
+    "ok": "Matches",
+    "bad": "Does not match",
+    "oneCent": "Change by 1 cent",
+    "reset": "Restore",
+    "invalid": "Enter an amount, for example 1200.00.",
+    "noCrypto": "The live check needs a secure connection (https). The values below were calculated in advance.",
+    "intact": "All three links match. Change the amount in link no. {no} to see what happens.",
+    "broken": "The amount in link no. {no} is {amount} instead of {was}. The new fingerprint differs from the issued one, so the link does not match, and link no. {next} still points to the old one. If someone rewrites the following links too, their seal still would not match: its key is only on the server."
+  },
+  "recv": {
+    "title": "What the recipient's software sees",
+    "lead": "The same invoice, two files. Accounting software does not look at pictures, it reads fields.",
+    "pdfTitle": "A PDF is a picture",
+    "pdfText": "The amount is drawn on a page. The software has to recognise the text and guess which field is where. A mistake shows only when someone checks by hand.",
+    "pdfName": "0000000124.pdf",
+    "unknown": "unclear",
+    "xmlTitle": "XML is fields",
+    "xmlText": "Every value sits in a field named by EN 16931. The software reads BT-115 and knows it is the amount due, with no recognition and no guessing.",
+    "xmlName": "0000000124.xml",
+    "read": "read"
+  },
+  "road": {
+    "countdown": "{days} left until 1 July 2028, under the submitted text of bill no. 52-602-01-60 (passed at first reading on 12 November 2026).",
+    "days": { "one": "{n} day", "other": "{n} days" },
+    "flat": "The final date is 1 July 2028, under the submitted text of bill no. 52-602-01-60 (passed at first reading on 12 November 2026).",
+    "progress": "The line follows your scroll along the bill's calendar."
+  }
+}
