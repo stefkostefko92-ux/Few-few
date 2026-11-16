@@ -19,6 +19,54 @@ export const DEFAULT_NEWS_LINK_PATTERN = String.raw`/actual/news/[^/?#!][^?#]*`;
 
 const MAX_PATTERN_LENGTH = 300;
 
+// ── Защо свалянето не стана — истинската причина, не „проверете адреса“ ──────
+// (16.11.2026: сайтът на общината не приемаше връзки от нашия сървър, а панелът
+// пращаше човека да сменя MUNICIPALITY_NEWS_URL, който си беше верен.)
+
+/** Източникът отговори, но с грешка (HTTP статус). */
+export class SourceHttpError extends Error {
+  constructor(readonly status: number) {
+    super(`HTTP ${status}`);
+    this.name = "SourceHttpError";
+  }
+}
+
+const GENERIC_FETCH_ERROR = "Грешка при сваляне на източника.";
+const CHECK_URL = "Проверете адреса на източника (MUNICIPALITY_NEWS_URL).";
+const NOT_RESPONDING =
+  "Сайтът на общината не отговаря на нашия сървър (връзката изтече). Обикновено е временно — опитайте по-късно. " +
+  "Ако продължава с часове, отворете сайта на общината в браузъра си: ако там се отваря, сайтът не пуска нашия сървър.";
+
+function codeOf(err: unknown): string {
+  const cause = (err as { cause?: { code?: unknown } } | null)?.cause;
+  const own = (err as { code?: unknown } | null)?.code;
+  const c = cause?.code ?? own;
+  return typeof c === "string" ? c : "";
+}
+
+/** Съобщение за админ панела по грешката от fetch — без вътрешни подробности. */
+export function describeFetchError(err: unknown): string {
+  if (err instanceof SourceHttpError) {
+    const s = err.status;
+    if (s === 404 || s === 410) return `Страницата с новините не съществува (${s}). ${CHECK_URL}`;
+    if (s === 403 || s === 429)
+      return `Сайтът на общината отказа достъп (${s}) — вероятно спира автоматичните заявки. Опитайте по-късно.`;
+    if (s >= 500) return `Сайтът на общината временно не работи (грешка ${s}). Опитайте по-късно.`;
+    return `Сайтът на общината отговори с грешка ${s}. ${CHECK_URL}`;
+  }
+  if ((err as { name?: unknown } | null)?.name === "TimeoutError") return NOT_RESPONDING;
+  const code = codeOf(err);
+  if (["UND_ERR_CONNECT_TIMEOUT", "UND_ERR_HEADERS_TIMEOUT", "UND_ERR_BODY_TIMEOUT", "ETIMEDOUT"].includes(code))
+    return NOT_RESPONDING;
+  if (["ECONNREFUSED", "ECONNRESET", "EHOSTUNREACH", "ENETUNREACH", "EPIPE", "UND_ERR_SOCKET"].includes(code))
+    return "Сайтът на общината прекъсна или отказа връзката. Опитайте по-късно.";
+  if (code === "ENOTFOUND" || code === "EAI_AGAIN")
+    return `Адресът на сайта не се открива (DNS). ${CHECK_URL}`;
+  if (/CERT|SSL|TLS|SELF_SIGNED|UNABLE_TO_VERIFY/.test(code))
+    return "Проблем със сертификата (HTTPS) на сайта на общината — връзката не е сигурна и не е направена.";
+  return GENERIC_FETCH_ERROR;
+}
+
 export type RawItem = { title: string; link: string; summary: string; date: Date };
 
 export type ParseOptions = {
