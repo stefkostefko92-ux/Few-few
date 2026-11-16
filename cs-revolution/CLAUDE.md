@@ -47,8 +47,8 @@ re-interpret, restyle or replace the logo anywhere (hero, nav, footer, icons, OG
 exactly that. Motion around it is fine; the mark itself is not material for effects.
 
 **Cache version.** nginx serves every `.js/.webp/.png` with `immutable, max-age=1y` and the service worker is
-cache-first for them, but the engine, the layers, the stills (`bench-1600/800.webp`) and the icons have fixed
-names. So every URL to them carries `?v=<hash of their contents>`: computed in `vite.config.js`
+cache-first for them, but the engine, the layers, the stills (`bench-1600/800.webp`), the icons and the project
+screenshots (`public/work/*.webp` — homepage grid, portfolio, case studies) have fixed names. So every URL to them carries `?v=<hash of their contents>`: computed in `vite.config.js`
 (`liveVersion` → `__CS_LIVE_V__` in the SPA) and by the same algorithm in `scripts/static-theme.py`
 (`live_version`). Never reference these files without it — a fix to the engine or a re-render would not
 reach a returning visitor for a year. After changing any of them: `static-theme.py` → `self-host-fonts.py` →
