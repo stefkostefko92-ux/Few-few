@@ -11481,7 +11481,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 248
+        "lessons": 249
       },
       "evolution": [
         {
@@ -11927,9 +11927,20 @@
           "date": "2026-11-16",
           "event": "v23.8 — учене",
           "detail": "Научи: В three r163+ material.envMapIntensity се чете само ако материалът има собствен envMap;… (+10 още)"
+        },
+        {
+          "version": "23.9.0",
+          "date": "2026-11-16",
+          "event": "v23.9 — учене",
+          "detail": "Научи: Браузърният placeholder е #757575 — 4,25:1 върху #f4f6f8 и 3,84:1 върху тъмно #0c1929, …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-16",
+          "type": "learning",
+          "summary": "Научи: „Браузърният placeholder е #757575 — 4,25:1 върху #f4f6f8 и 3,84:1 върху тъмно #0c1929, …\" · 1 в карантина"
+        },
         {
           "date": "2026-11-16",
           "type": "learning",
