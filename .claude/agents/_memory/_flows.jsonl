@@ -807,3 +807,5 @@
 {"t":"handoff","ts":"2026-11-15T20:31:19.917Z","id":"rf53d3e19","from":"frezadjiyata","to":"kodadjiyata","status":"има бележки","run":"a1233c07"}
 {"t":"start","ts":"2026-11-16T09:47:26.333Z","id":"r5004f6bc","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-16T09:47:26.334Z","id":"r5004f6bc","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"d1a9820a"}
+{"t":"start","ts":"2026-11-16T11:03:20.287Z","id":"r0a6b2884","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-16T11:03:20.287Z","id":"r0a6b2884","from":"kodadjiyata","to":"друг","status":"има бележки","run":"539639bb","toRaw":"Изпитателя"}

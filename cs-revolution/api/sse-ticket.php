@@ -1,8 +1,8 @@
 <?php
 /**
  * Carbon Stealth — issue a short-lived SSE ticket for the leads stream.
- * Admin-gated (X-CS-Token header). The ticket is what the EventSource then
- * uses, so the admin token never travels in a URL / access log.
+ * Admin-gated (admin session cookie, see _admin.php). The ticket is what the
+ * EventSource then uses, so nothing session-like ever travels in a URL / access log.
  */
 declare(strict_types=1);
 header('Content-Type: application/json; charset=UTF-8');
