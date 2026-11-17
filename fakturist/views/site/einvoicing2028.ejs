@@ -1,6 +1,6 @@
 <%
-  const [cy, cm, cd] = contentUpdated.split('-');
-  const updatedText = lang === 'bg' ? `${cd}.${cm}.${cy}` : `${Number(cd)} ${['January','February','March','April','May','June','July','August','September','October','November','December'][Number(cm) - 1]} ${cy}`;
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const dayText = (iso) => { const [y, m, d] = iso.split('-'); return lang === 'bg' ? `${d}.${m}.${y}` : `${Number(d)} ${months[Number(m) - 1]} ${y}`; };
   // Само предстоящите (status: 'planned') — налична функция тук би била „(undefined)“.
   const planned = features.filter((f) => f.status === 'planned').map((f) => `${t('features.' + f.code + '.name')} (${f.target})`).join('; ');
   const toc = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8'];
@@ -14,7 +14,8 @@
       <h1 id="h1"><%= t('site.einvoicing2028.title') %></h1>
       <p class="byline">
         <span><%= t('site.einvoicing2028.byline.author') %>: <a href="<%= company.url %>" rel="author"><%= company.name %></a></span>
-        <span><%= t('site.einvoicing2028.byline.updated') %>: <time datetime="<%= contentUpdated %>"><%= updatedText %></time></span>
+        <span><%= t('site.einvoicing2028.byline.published') %>: <time datetime="<%= articlePublished %>"><%= dayText(articlePublished) %></time></span>
+        <span><%= t('site.einvoicing2028.byline.updated') %>: <time datetime="<%= contentUpdated %>"><%= dayText(contentUpdated) %></time></span>
       </p>
     </div>
   </header>

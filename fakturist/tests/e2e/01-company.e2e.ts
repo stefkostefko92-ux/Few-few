@@ -10,6 +10,7 @@ import {
   PROFILES,
   startApp,
   watch,
+  openOrgMenu,
 } from './support/app.js';
 import type { E2eApp } from './support/app.js';
 import type { Page } from './support/playwright.js';
@@ -81,6 +82,7 @@ for (const profile of PROFILES) {
       });
 
       await t.test('контрагент в каталога', async () => {
+        await openOrgMenu(page);
         await page.getByRole('link', { name: tr('app.catalog.parties'), exact: true }).click();
         await page.waitForURL(/\/kontragenti$/);
         await page.goto(`${page.url()}/nov`);

@@ -38,7 +38,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="<%= t('site.og.alt') %>">
 <% if (page === 'einvoicing2028') { -%>
-<meta property="article:published_time" content="2026-11-12">
+<meta property="article:published_time" content="<%= articlePublished %>">
 <meta property="article:modified_time" content="<%= contentUpdated %>">
 <meta property="article:author" content="<%= company.name %>">
 <% } -%>
@@ -54,6 +54,8 @@
 <meta name="ICBM" content="<%= company.geo.latitude %>, <%= company.geo.longitude %>">
 <script type="application/ld+json" nonce="<%= cspNonce %>"><%- seo.jsonLd %></script>
 <% } else { -%>
+<meta name="description" content="<%= t('site.home.meta.description') %>">
+<meta name="keywords" content="<%= t('site.home.meta.keywords') %>">
 <meta name="robots" content="noindex">
 <% } -%>
 <meta name="color-scheme" content="light dark">

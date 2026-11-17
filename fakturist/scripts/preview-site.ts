@@ -8,7 +8,7 @@ import { mkdirSync, readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import ejs from 'ejs';
 import { BRAND } from '../src/brand.js';
-import { COMPANY, CONTENT_UPDATED } from '../src/company.js';
+import { ARTICLE_PUBLISHED, COMPANY, CONTENT_UPDATED } from '../src/company.js';
 import { FEATURES, FEATURE_GROUPS } from '../src/features.js';
 import { DEFAULT_PLANS } from '../src/billing/plans.js';
 import { formatEuro } from '../src/routes/site.js';
@@ -16,6 +16,7 @@ import { safeJson } from '../src/http/json-ld.js';
 import { demoChain } from '../src/site-demo-chain.js';
 import { pageUrl, SITE_PAGES, type SitePageId } from '../src/seo/pages.js';
 import { faqItems, structuredData } from '../src/seo/structured-data.js';
+import { helpFaq, publicHelp } from '../src/help/content.js';
 import { translator, type Locale } from '../src/i18n.js';
 import { ROOT } from '../src/paths.js';
 import { legalPath, type LegalDocumentId } from '../src/legal/documents.js';
@@ -59,12 +60,14 @@ async function renderPage(id: SitePageId, locale: Locale): Promise<string> {
   const locals = {
     ...commonLocals(locale),
     contentUpdated: CONTENT_UPDATED,
+    articlePublished: ARTICLE_PUBLISHED,
     page: id,
     plans: pagePlans,
     features: FEATURES,
     featureGroups: FEATURE_GROUPS,
     formatEuro: (cents: number) => formatEuro(cents, locale),
-    faq: faqItems(locale, t, id),
+    faq: id === 'help' ? helpFaq(locale) : faqItems(locale, t, id),
+    helpSections: id === 'help' ? publicHelp(locale) : [],
     seo: {
       title: t(`site.${id}.meta.title`),
       description: t(`site.${id}.meta.description`),

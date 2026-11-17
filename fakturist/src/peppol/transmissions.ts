@@ -54,6 +54,9 @@ export async function queueTransmission(
   });
 }
 
+/** Колко чака ред на фирма, на която Peppol не е разрешен към момента (план, флаг, проба). */
+const PARKED_MS = 60 * MINUTE;
+
 function backoff(attempts: number): number {
   return Math.min(2 ** attempts * MINUTE, 6 * 60 * MINUTE);
 }
@@ -66,15 +69,28 @@ export async function sendDueTransmissions(
 ): Promise<number> {
   if (!ap) return 0;
   const due = await prisma.peppolTransmission.findMany({
-    where: { status: 'QUEUED', nextAttemptAt: { lte: now } },
+    // Прекратена или изтрита фирма не чака изобщо (редовете ѝ се трият след срока).
+    where: {
+      status: 'QUEUED',
+      nextAttemptAt: { lte: now },
+      organization: { terminatedAt: null, deletedAt: null },
+    },
     orderBy: { nextAttemptAt: 'asc' },
     take: limit,
     select: { id: true, attempts: true, organizationId: true },
   });
   let accepted = 0;
   for (const row of due) {
-    // Изключена функция (флаг, план, краят на пробата) — редът чака, нищо не тръгва към доставчика.
-    if (!(await peppolAllowed(row.organizationId))) continue;
+    // Изключена функция (флаг, план, краят на пробата) — редът чака, нищо не тръгва към доставчика. Чака
+    // назад в опашката (час): иначе 20 такива реда отпред запушват изпращането за всички (Кодаджията,
+    // 16.11.2026; както при напомнянията — неподходящ ред не запушва опашката).
+    if (!(await peppolAllowed(row.organizationId))) {
+      await prisma.peppolTransmission.updateMany({
+        where: { id: row.id, status: 'QUEUED', attempts: row.attempts },
+        data: { nextAttemptAt: new Date(now.getTime() + PARKED_MS) },
+      });
+      continue;
+    }
     // Заемане: само един процес взема реда (броят опити трябва да е същият).
     const claimed = await prisma.peppolTransmission.updateMany({
       where: { id: row.id, status: 'QUEUED', attempts: row.attempts },

@@ -1,5 +1,5 @@
 import { calculate, type Calculated } from './calculate.js';
-import { InvoiceInputSchema, type InvoiceInput, type Profile } from './model.js';
+import { IssueInputSchema, type InvoiceInput, type Profile } from './model.js';
 import {
   DEFAULT_RULE_OPTIONS,
   hasFatal,
@@ -31,7 +31,7 @@ export interface BuildOptions extends RuleOptions {
 }
 
 export function buildEInvoice(raw: unknown, options: Partial<BuildOptions> = {}): BuildResult {
-  const parsed = InvoiceInputSchema.safeParse(raw);
+  const parsed = IssueInputSchema.safeParse(raw);
   if (!parsed.success) {
     return {
       ok: false,

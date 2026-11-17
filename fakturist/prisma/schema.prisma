@@ -146,6 +146,9 @@ model User {
   failedLogins       Int          @default(0)
   lockedUntil        DateTime?
   lockouts           Int          @default(0)
+  /// Опити от доверени устройства (парола или код) след последния успешен вход — над тавана довереността
+  /// не заобикаля заключването (src/auth/lockout.ts).
+  trustedFailures    Int          @default(0)
   lastLoginAt        DateTime?
   disabledAt         DateTime?
   /// Последното „Разбрах“ в прозореца „Какво ново“ (src/news/) — новините, излезли след него, са непрочетени.
@@ -173,6 +176,9 @@ model User {
   integrations          Integration[]
   invitesCreated        TransferInvite[]   @relation("InviteCreatedBy")
   invitesAccepted       TransferInvite[]   @relation("InviteAcceptedBy")
+  handoversFrom         TransferInvite[]   @relation("InviteFromOwner")
+  firmHandoversFrom     FirmHandover[]     @relation("FirmHandoverFrom")
+  firmHandoversDecided  FirmHandover[]     @relation("FirmHandoverDecidedBy")
   pdfStylesChanged      PdfStyle[]
   tokens                UserToken[]
   legalAcceptances      LegalAcceptance[]
@@ -267,6 +273,8 @@ model Organization {
   inboxSent           InboxEntry[]         @relation("InboxSender")
   notifications       Notification[]
   transferInvites     TransferInvite[]
+  firmHandovers       FirmHandover[]       @relation("FirmHandoverClient")
+  firmHandoverOffers  FirmHandover[]       @relation("FirmHandoverFirm")
   pdfStyle            PdfStyle?
   memberInvites       MemberInvite[]
   legalAcceptances    LegalAcceptance[]
@@ -739,11 +747,46 @@ model TransferInvite {
   /// пълномощното с една отметка.
   mandateId      String?
   mandate        ClientMandate? @relation(fields: [mandateId], references: [id], onDelete: SetNull)
+  /// Предаване от собственика (SPEC 84–85): той е собственик при поканата и трябва още да е при
+  /// приемането; после остава администратор. null — покана към фирма без собственик.
+  fromUserId     String?
+  fromUser       User?          @relation("InviteFromOwner", fields: [fromUserId], references: [id], onDelete: SetNull)
 
   @@index([organizationId])
   @@index([createdById])
   @@index([acceptedById])
   @@index([mandateId])
+  @@index([fromUserId])
+}
+
+enum FirmHandoverStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  REVOKED
+}
+
+/// Предложение на собственика фирмата да се води от кантора (SPEC 86): кантората с действащо пълномощно
+/// приема или отказва. При приемане собственикът и членовете излизат, кантората води фирмата.
+model FirmHandover {
+  id             String             @id @default(cuid())
+  organizationId String
+  organization   Organization       @relation("FirmHandoverClient", fields: [organizationId], references: [id], onDelete: Cascade)
+  firmId         String
+  firm           Organization       @relation("FirmHandoverFirm", fields: [firmId], references: [id], onDelete: Cascade)
+  fromUserId     String?
+  fromUser       User?              @relation("FirmHandoverFrom", fields: [fromUserId], references: [id], onDelete: SetNull)
+  status         FirmHandoverStatus @default(PENDING)
+  createdAt      DateTime           @default(now())
+  expiresAt      DateTime
+  decidedAt      DateTime?
+  decidedById    String?
+  decidedBy      User?              @relation("FirmHandoverDecidedBy", fields: [decidedById], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([firmId, status])
+  @@index([fromUserId])
+  @@index([decidedById])
 }
 
 /// Изгледът на PDF копието на фирмата (настройките на фирмата → „Изглед на документите“). Само външният

@@ -6,12 +6,11 @@ import { PASSWORD_MAX_LENGTH } from '../auth/password.js';
 import {
   AccountTokenError,
   findPasswordReset,
-  requestEmailVerification,
   userLocale,
   requestPasswordReset,
   resetPassword,
-  verifyEmail,
 } from '../accounts/tokens.js';
+import { requestEmailVerification, verifyEmail } from '../accounts/email-verification.js';
 import { kickOutbox } from '../mail/outbox.js';
 import { errorMessage, logger } from '../logger.js';
 import { requestRateKey } from '../http/ip.js';

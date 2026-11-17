@@ -93,7 +93,13 @@ export function appSettingsRouter(): Router {
 
   router.get('/app/o/:orgId/nastroyki', async (req, res) => {
     const access = await settingsAccess(req);
-    const ok = typeof req.query['ok'] === 'string' && /^(pdf|logo|mahnato)$/.test(req.query['ok']);
+    // „Данни на фирмата“ (SPEC 82) — формата е за прекия собственик; другите виждат данните.
+    res.locals.canEditProfile = access.role === 'OWNER';
+    const profil = req.query['profil'];
+    res.locals.profileError =
+      typeof profil === 'string' && /^[a-zA-Z]{2,20}$/.test(profil) ? profil : null;
+    const ok =
+      typeof req.query['ok'] === 'string' && /^(pdf|logo|mahnato|danni)$/.test(req.query['ok']);
     const tooMany = req.query['greshka'] === 'logoTooMany';
     await renderSettings(
       res,

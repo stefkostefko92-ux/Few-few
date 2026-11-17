@@ -11,7 +11,7 @@ import { hashPassword, verifyPassword } from '../auth/password.js';
  * одитът и веригата (кой е издал документа остава като „Закрит профил“).
  */
 export class CloseError extends Error {
-  constructor(readonly code: 'password' | 'master' | 'transferFirst') {
+  constructor(readonly code: 'password' | 'master' | 'transferFirst' | 'terminateFirst') {
     super(code);
   }
 }
@@ -99,8 +99,8 @@ export async function personalData(userId: string): Promise<Record<string, unkno
 
 /**
  * Закриване: паролата потвърждава. Единствен собственик на фирма с други членове първо урежда фирмата
- * (махане на членовете или прехвърляне) — иначе те остават без собственик. Мастър акаунт не се закрива
- * оттук.
+ * (махане на членовете или прехвърляне) — иначе те остават без собственик; единственият човек във фирма
+ * първо я прекратява. Мастър акаунт не се закрива оттук.
  */
 export async function closeAccount(input: { userId: string; password: string }): Promise<void> {
   const user = await prisma.user.findUniqueOrThrow({
@@ -123,23 +123,49 @@ export async function closeAccount(input: { userId: string; password: string }):
         }),
       ]);
       if (owners === 1 && others > 0) throw new CloseError('transferFirst');
+      // Единствен човек във фирмата: без него никой не може да изтегли или прекрати фирмата и данните ѝ биха
+      // стояли безсрочно (ОРЗД чл. 5(1)(д); договорът за обработване, т. 11 — Правният Разбирач, 16.11.2026).
+      // Първо „Прекратяване“ (30 дни за изтегляне, после изтриване), после закриване на профила.
+      if (owners === 1 && others === 0) {
+        const org = await tx.organization.findUniqueOrThrow({
+          where: { id: owned.organizationId },
+          select: { terminatedAt: true, deletedAt: true },
+        });
+        if (!org.terminatedAt && !org.deletedAt) throw new CloseError('terminateFirst');
+      }
     }
     await tx.membership.deleteMany({ where: { userId: user.id } });
+    // Предаванията, които е започнал като собственик, отпадат с него (Правният Разбирач, 16.11.2026).
+    await tx.transferInvite.updateMany({
+      where: { fromUserId: user.id, acceptedAt: null, revokedAt: null },
+      data: { revokedAt: now },
+    });
+    await tx.firmHandover.updateMany({
+      where: { fromUserId: user.id, status: 'PENDING' },
+      data: { status: 'REVOKED', decidedAt: now },
+    });
     await tx.apiKey.updateMany({
       where: { createdById: user.id, revokedAt: null },
       data: { revokedAt: now },
     });
     await tx.session.deleteMany({ where: { userId: user.id } });
     await tx.userToken.deleteMany({ where: { userId: user.id } });
-    await tx.notification.deleteMany({ where: { toEmail: user.email, status: 'PENDING' } });
-    await tx.memberInvite.updateMany({
-      where: { email: user.email, acceptedAt: null, revokedAt: null },
-      data: { revokedAt: now },
+    // Политиката: закриването заличава имейла веднага — и от писмата, и от поканите (членове, собственост):
+    // чакащите се отменят, а всички носят псевдонима вместо имейла.
+    const pseudonym = `closed+${user.id}@fakturist.invalid`;
+    await tx.notification.deleteMany({ where: { toEmail: user.email } });
+    const pending = { email: user.email, acceptedAt: null, revokedAt: null };
+    await tx.memberInvite.updateMany({ where: pending, data: { revokedAt: now } });
+    await tx.transferInvite.updateMany({ where: pending, data: { revokedAt: now } });
+    await tx.memberInvite.updateMany({ where: { email: user.email }, data: { email: pseudonym } });
+    await tx.transferInvite.updateMany({
+      where: { email: user.email },
+      data: { email: pseudonym },
     });
     await tx.user.update({
       where: { id: user.id },
       data: {
-        email: `closed+${user.id}@fakturist.invalid`,
+        email: pseudonym,
         name: 'Закрит профил',
         passwordHash: unusable,
         totpSecretEnc: null,

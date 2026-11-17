@@ -4,6 +4,7 @@ import { loadPdfStyle } from './pdf-style.js';
 import { INK, RULE, SOFT } from './pdf-layout.js';
 import { TITLES } from './pdf-format.js';
 import { ANNUL_REASON_TEXT, isAnnulReason } from './annul.js';
+import { bgDate } from '../time.js';
 
 /**
  * Протоколът за анулиране по чл. 116, ал. 4 ЗДДС (SPEC 47; docs/kazus-anulirane.md): основанието, номерът
@@ -22,8 +23,7 @@ export interface ProtocolSource {
   replacedBy: { number: string | null; issueDate: Date } | null;
 }
 
-const date = (value: Date | null | undefined) =>
-  value ? value.toISOString().slice(0, 10).split('-').reverse().join('.') : '—';
+const date = (value: Date | null | undefined) => (value ? bgDate(value) : '—');
 
 export async function annulProtocolPdf(source: ProtocolSource): Promise<Buffer> {
   const input = InvoiceInputSchema.parse(source.input);

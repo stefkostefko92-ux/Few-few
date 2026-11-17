@@ -13,7 +13,7 @@ import { register, RegistrationError, RegistrationSchema } from '../accounts/reg
 import { MINUTE } from '../time.js';
 import { requestRateKey } from '../http/ip.js';
 import { attemptFailed, attemptSucceeded, NO_USER, reserveAttempt } from '../auth/lockout.js';
-import { isTrustedDevice, rememberDevice } from '../auth/device.js';
+import { rememberDevice, trustedAttempt } from '../auth/device.js';
 import { queueLockedMail } from '../mail/account-mail.js';
 import { kickOutbox } from '../mail/outbox.js';
 import { appLocale } from '../http/view.js';
@@ -69,10 +69,11 @@ export function authRouter(): Router {
     const user = parsed.success ? await prisma.user.findUnique({ where: { email } }) : null;
     // Опитът се заема преди проверката (SPEC 46): заключеният профил не проверява паролата си, но
     // хешът пак се смята (фиктивен) — отговорът и времето не издават кой имейл съществува и дали е заключен.
-    // Довереното устройство (бисквитка от предишен вход) не спира от заключването и не го трупа;
-    // блокиран профил и непознат имейл минават през същите заявки с несъществуващ id.
+    // Довереното устройство (бисквитка от предишен вход) не спира от заключването и не го трупа — до
+    // `TRUSTED_MAX_FAILED` опита след последния успешен вход; блокиран профил и непознат имейл минават през
+    // същите заявки с несъществуващ id.
     const active = user && !user.disabledAt ? user : null;
-    const trusted = active ? isTrustedDevice(req, active.id) : false;
+    const trusted = active ? await trustedAttempt(req, active) : false;
     const allowed = active
       ? trusted || (await reserveAttempt(active.id))
       : (await reserveAttempt(NO_USER), false);
@@ -96,17 +97,16 @@ export function authRouter(): Router {
     // С втори фактор броячът на опитите се нулира едва след кода: иначе знаещият паролата получава нови
     // опити за кода с всеки вход наново (броячът е общ за паролата и кода, по профил, не по сесия).
     if (!needsCode) await attemptSucceeded(active.id);
+    let passwordHash = active.passwordHash;
     if (needsRehash(active.passwordHash) && parsed.success) {
-      await prisma.user.update({
-        where: { id: active.id },
-        data: { passwordHash: await hashPassword(parsed.data.password) },
-      });
+      passwordHash = await hashPassword(parsed.data.password);
+      await prisma.user.update({ where: { id: active.id }, data: { passwordHash } });
     }
     await startSession(res, active, !needsCode);
     if (!needsCode) {
       // Довереното устройство — само след пълен вход (с втория фактор, ако е включен): иначе знаещият
       // само паролата би получил бисквитка, която го пуска покрай заключването.
-      rememberDevice(res, active.id);
+      rememberDevice(res, { ...active, passwordHash });
       await prisma.user.update({ where: { id: active.id }, data: { lastLoginAt: new Date() } });
       await prisma.$transaction((tx) =>
         audit(tx, {
@@ -134,8 +134,12 @@ export function authRouter(): Router {
     const code = String((req.body as { code?: unknown }).code ?? '');
     const user = await prisma.user.findUniqueOrThrow({ where: { id: principal.user.id } });
     // Опитът за кода се заема от брояча на профила (същият като на паролата): паралелни заявки и нови
-    // сесии не дават повече от MAX_FAILED опита; заключеният профил не проверява кода.
-    if (!(await reserveAttempt(user.id))) {
+    // сесии не дават повече от MAX_FAILED опита; заключеният профил не проверява кода. Довереното
+    // устройство (пълен вход по-рано) не спира от заключването и не го трупа — както при паролата
+    // (SPEC 46) — до `TRUSTED_MAX_FAILED` опита след последния успешен вход (иначе бисквитката + паролата
+    // дават неограничени опити за кода); пазят и броячът на сесията (MAX_FAILED_CODES) и таванът по адрес.
+    const trusted = await trustedAttempt(req, user);
+    if (!trusted && !(await reserveAttempt(user.id))) {
       await attemptFailed(user.id);
       await endSession(req, res);
       return res.status(400).render('auth/login', { error: 'auth.codeLocked', next, email: '' });
@@ -157,7 +161,7 @@ export function authRouter(): Router {
         })
       ).count === 1;
     if (!accepted) {
-      const lockedUntil = await attemptFailed(user.id);
+      const lockedUntil = trusted ? null : await attemptFailed(user.id);
       if (lockedUntil) {
         await queueLockedMail(user.id, user.email, lockedUntil);
         kickOutbox();
@@ -186,7 +190,7 @@ export function authRouter(): Router {
     // Нова сесия след втория фактор (нов id и CSRF токен): сесия, видяна преди кода, не става пълна.
     await prisma.session.deleteMany({ where: { id: principal.sessionId } });
     await startSession(res, user, true);
-    rememberDevice(res, user.id);
+    rememberDevice(res, user);
     await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
     await prisma.$transaction((tx) =>
       audit(tx, {

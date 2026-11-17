@@ -7,6 +7,16 @@
     "ok": "Got it"
   },
   "entries": {
+    "2026-11-16-versiya-2-0": {
+      "area": "Fakturist",
+      "title": "Ownership handover, company details and a manual (version 2.0)",
+      "text": "The owner can now hand the company over to another person (by an email invitation — you stay an administrator) or entrust it to their accounting firm with an active authorisation — under “Team and settings” → “Ownership”, with the password and the code from the app. Under “Company settings” → “Company details” the owner changes the legal name, address, VAT number, bank account, email and phone. The new “Help” in the top bar shows how to work for your role and offers a PDF manual to download, and the public “How it works” page explains everything step by step. The terms of service, the data processing agreement and the privacy policy are updated with the ownership handover — you accept them with one tick at your next sign-in."
+    },
+    "2026-11-16-versiya-1-5": {
+      "area": "VAT",
+      "title": "Fixes after a full review (version 1.5)",
+      "text": "The sales ledger no longer puts services to a buyer outside the EU in field 02-17, and it leaves for manual entry an intra-Community supply whose VAT became chargeable in another month. A credit note to an invoice from another program now needs that invoice’s date (Art. 115(4) VAT Act), and an invoice with a negative total is not issued. An invoice in leva states the fixed rate in its note. A received credit note is entered only in the month it was issued. Your trusted device is no longer locked out by someone else’s failed sign-ins, and a new password or a change to two-factor sign-in ends the trust of every device. Dates of cancellations, invitations and keys are shown in Bulgarian time — just after midnight it is already the new day."
+    },
     "2026-11-16-versiya-1-4": {
       "area": "Fakturist",
       "title": "Choose BG or EN (version 1.4)",

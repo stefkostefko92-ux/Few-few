@@ -101,8 +101,9 @@ test('чужда валута: сумата в евро по курса, вал�
   const xml = sales(foreignCurrency);
   assert.deepEqual(values(xml, 'InvoiceUOM'), ['C62']);
   assert.deepEqual(values(xml, 'CurrencyCode'), ['USD', 'USD', 'USD']);
-  assert.deepEqual(values(xml, 'ExchangeRate'), ['1.0842', '1.0842', '1.0842']);
-  // 100.00 USD / 1.0842 = 92.23 EUR; ДДС 20.00 USD = 18.45 EUR.
+  // Множител към евро (XSD: CurrencyAmount x ExchangeRate = Amount): 1 / 1.0842 = 0.9223.
+  assert.deepEqual(values(xml, 'ExchangeRate'), ['0.9223', '0.9223', '0.9223']);
+  // 100.00 USD / 1.0842 = 92.23 EUR (= 100.00 × 0.9223); ДДС 20.00 USD = 18.45 EUR.
   assert.deepEqual(values(xml, 'Amount'), ['92.23', '18.45', '18.45']);
   assert.deepEqual(values(xml, 'CurrencyAmount'), ['100.00', '20.00', '20.00']);
   assert.deepEqual(values(xml, 'UnitPrice'), ['92.23']);
@@ -128,6 +129,44 @@ test('обратно начисляване по чл. 21, ал. 2 — 100217; 0
   // Обратно начисляване: ставката е „Н/П“ — без TaxPercentage; клиентът от ЕС — 11 + ДДС номер.
   assert.deepEqual(values(xml, 'CustomerID')[0], '11IT12345678903');
   assert.match(xml, /<TaxPercentage>0\.00<\/TaxPercentage>/);
+});
+
+test('100217 само за получател в друга държава членка — извън ЕС е за ръчно, както в дневника', () => {
+  const usBuyer: InvoiceInput = {
+    ...reverseCharge,
+    number: 'R-US-1',
+    buyer: {
+      ...reverseCharge.buyer,
+      vatId: undefined,
+      address: { ...reverseCharge.buyer.address, countryCode: 'US', city: 'New York' },
+    },
+  };
+  const result = salesInvoices({ documents: [doc(usBuyer)], accounts, codes: NRA_CODES });
+  assert.deepEqual(result.included, []);
+  assert.deepEqual(result.manual, [{ number: 'R-US-1', reason: 'category' }]);
+});
+
+test('валута с курс, който не се записва точно с 4 знака (JPY 160 → 0.0063, ~0,8 %) — за ръчно', () => {
+  const at = (currency: string, rate: string, number: string): InvoiceInput => ({
+    ...foreignCurrency,
+    number,
+    currency,
+    eurExchangeRate: rate,
+  });
+  const result = salesInvoices({
+    documents: [
+      doc(at('JPY', '160', 'JPY-1')),
+      doc(at('HUF', '400', 'HUF-1')), // 1/400 = 0.0025 — точно
+      doc(foreignCurrency), // USD 1.0842 → 0.9223 (0,005 %)
+    ],
+    accounts,
+    codes: NRA_CODES,
+  });
+  assert.deepEqual(result.manual, [{ number: 'JPY-1', reason: 'currency' }]);
+  assert.deepEqual(
+    values(renderXml(result.xml), 'ExchangeRate').filter((v, i, a) => a.indexOf(v) === i),
+    ['0.0025', '0.9223'],
+  );
 });
 
 test('TaxCode по категорията — точно по лист TAX-IMP на Приложение 2 (v1.0.3)', () => {

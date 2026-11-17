@@ -89,6 +89,27 @@ export function normalizePreceding<T extends { number: string }>(ref: T): T {
 const NOTE_TARGETS = ['380', '386', '384'];
 
 /**
+ * Датата на фактурата в известието (чл. 115, ал. 4 ЗДДС): за номер на документ на фирмата — от записа, ако
+ * формата не я е подала. Чужд номер (предишна програма) остава както е — правилото BG-06 иска датата.
+ */
+export async function withPrecedingDates(
+  tx: Prisma.TransactionClient,
+  organizationId: string,
+  refs: InvoiceInput['precedingInvoices'],
+): Promise<InvoiceInput['precedingInvoices']> {
+  return Promise.all(
+    refs.map(async (ref) => {
+      if (ref.issueDate) return ref;
+      const own = await tx.document.findFirst({
+        where: { organizationId, number: ref.number },
+        select: { issueDate: true },
+      });
+      return own ? { ...ref, issueDate: own.issueDate.toISOString().slice(0, 10) } : ref;
+    }),
+  );
+}
+
+/**
  * Известие (чл. 115 ЗДДС): посоченият номер, ако е на документ на фирмата, трябва да е издадена (неанулирана)
  * фактура — иначе отказ (известие към анулирана фактура, или номер на друго известие). Номер, който не е
  * на фирмата, е фактура от предишна програма — минава с предупреждение. Връща документа за връзката
@@ -173,4 +194,26 @@ export function noteWithoutReason(input: Pick<InvoiceInput, 'typeCode' | 'notes'
       en: 'State the reason for the note (Art. 115(4)(2) VAT Act) — e.g. “returned goods” or “discount after the invoice”.',
     },
   };
+}
+
+/**
+ * Заключванията на издаването: фирмата, после заменяният документ (ако има). FOR NO KEY UPDATE, не FOR
+ * UPDATE: издаванията пак се редят едно след друго, а записите с външен ключ към фирмата (плащане, одит,
+ * шкафче от друга фирма) не чакат — иначе deadlock (40P01 → 500). Заменяният документ се заключва веднага
+ * след фирмата — преди одита (advisory заключването), в същия ред като плащането по него
+ * (src/documents/payments.ts).
+ */
+export async function lockForIssue(
+  tx: Prisma.TransactionClient,
+  organizationId: string,
+  replacesId: string | undefined,
+): Promise<void> {
+  const orgs = await tx.$queryRaw<Array<{ id: string }>>`
+      SELECT "id" FROM "Organization" WHERE "id" = ${organizationId} FOR NO KEY UPDATE`;
+  if (orgs.length !== 1) throw new Error('Фирмата не съществува');
+  if (replacesId) {
+    await tx.$queryRaw`
+      SELECT "id" FROM "Document" WHERE "id" = ${replacesId}
+        AND "organizationId" = ${organizationId} FOR NO KEY UPDATE`;
+  }
 }

@@ -1,6 +1,6 @@
 <%- include('../partials/app-head', { title: t('auth.member.title') }) %>
 <%
-  const date = invite.expiresAt.toISOString().slice(0, 10).split('-').reverse().join('.');
+  const date = bgDate(invite.expiresAt);
   const errorText = (code) => code.startsWith('password.')
     ? tOr('auth.errors.' + code, t('auth.errors.invalid'))
     : tOr('auth.member.errors.' + code, tOr('auth.invite.errors.' + code, t('auth.errors.invalid')));

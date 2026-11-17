@@ -20,9 +20,32 @@ export const ORG_MAIL_KINDS = [
   'org.termination.cancelled',
   'org.purged',
   'org.notice',
+  'org.ownershipRevoked',
+  'org.eikChanged',
 ] as const;
 
+const EikChanged = z.object({
+  legalName: z.string().min(1).max(300),
+  eik: z.string().regex(/^\d{9}(\d{4})?$/),
+});
+
 const Notice = z.object({ announcementId: z.string().min(1).max(40) });
+const Revoked = z.object({
+  legalName: z.string().min(1).max(300),
+  reason: z.enum(['disputed', 'mistake', 'other']),
+});
+const REVOKE_REASON = {
+  bg: {
+    disputed: 'има спор кой представлява фирмата',
+    mistake: 'собственикът е вписан по грешка',
+    other: 'друга причина, записана в решението',
+  },
+  en: {
+    disputed: 'there is a dispute over who represents the company',
+    mistake: 'the owner was recorded by mistake',
+    other: 'another reason, recorded in the decision',
+  },
+} as const;
 
 /**
  * Писмата са на езика на профила на получателя (src/mail/locale.ts). Съобщението от мастъра е написано
@@ -82,6 +105,38 @@ export async function composeOrgMail(
       : [
           `The data of “${legalName}” in Fakturist was deleted after the download period. The backups lose it within 90 days.`,
           'We keep only the legal name, the audit log, the accepted terms and the invoices for the plan — they are our accounting documents too. Documents sent to other companies in Fakturist stay with them.',
+        ];
+  } else if (kind === 'org.ownershipRevoked') {
+    const { legalName, reason } = Revoked.parse(payload);
+    const contact = config().CONTACT_EMAIL;
+    subject = bg
+      ? `Фактурист — достъпът ви до „${legalName}“ е спрян`
+      : `Fakturist — your access to “${legalName}” is suspended`;
+    paragraphs = bg
+      ? [
+          `Отнехме собствеността на „${legalName}“ във Фактурист и достъпът на членовете ѝ е спрян. Причина: ${REVOKE_REASON.bg[reason]}.`,
+          'Основание: т. 10 и 11 от общите условия. Издадените документи остават при фирмата; пълномощията на кантори чакат новия собственик.',
+          `Ако не сте съгласни, пишете ни на ${contact} — решението се преглежда от човек и ще ви отговорим. Истинският собственик получава достъп с покана от нас след документ за представителство.`,
+        ]
+      : [
+          `We have revoked the ownership of “${legalName}” in Fakturist and its members’ access is suspended. Reason: ${REVOKE_REASON.en[reason]}.`,
+          'Basis: items 10 and 11 of the terms of service. The issued documents stay with the company; accounting-firm authorisations wait for the new owner.',
+          `If you disagree, write to us at ${contact} — a person reviews the decision and we will reply. The real owner gets access through our invitation after a document of representation.`,
+        ];
+  } else if (kind === 'org.eikChanged') {
+    const { legalName, eik } = EikChanged.parse(payload);
+    const contact = config().CONTACT_EMAIL;
+    subject = bg
+      ? `Фактурист — ЕИК на „${legalName}“ е сменен`
+      : `Fakturist — the EIK of “${legalName}” is changed`;
+    paragraphs = bg
+      ? [
+          `ЕИК на „${legalName}“ във Фактурист е сменен на ${eik} след проверка на документите. Новите документи се издават с него; издадените не се променят.`,
+          `Ако не сте поискали това, пишете ни веднага на ${contact}.`,
+        ]
+      : [
+          `The EIK of “${legalName}” in Fakturist is changed to ${eik} after checking the documents. New documents are issued with it; the issued ones do not change.`,
+          `If you did not ask for this, write to us at once at ${contact}.`,
         ];
   } else if (kind === 'org.notice') {
     // Съобщението от мастъра (src/admin/announcements.ts): текстът е в записа, не в опашката.

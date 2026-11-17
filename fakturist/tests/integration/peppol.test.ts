@@ -166,6 +166,29 @@ test('работникът: качва UBL-а с нашия UUID веднъж; �
   assert.equal(await sendDueTransmissions(ap), 0);
 });
 
+test('ревю: ред на фирма без право на Peppol се отлага с час — не запушва опашката', async () => {
+  const ap = await accessPoint();
+  const res = await http.post(owner, `/app/o/${orgId}/nov`, form());
+  assert.equal(res.status, 303);
+  const doc = await prisma.document.findFirstOrThrow({
+    where: { organizationId: orgId },
+    orderBy: { createdAt: 'desc' },
+  });
+  const row = await prisma.peppolTransmission.findUniqueOrThrow({ where: { documentId: doc.id } });
+  // Пробата приключи (фирмата вече не е пилотна): редът не тръгва и отива назад в опашката.
+  await prisma.setting.update({ where: { key: 'peppol.pilotOrgIds' }, data: { value: '' } });
+  invalidateSettings();
+  const now = new Date();
+  assert.equal(await sendDueTransmissions(ap, now, 1), 0);
+  const parked = await prisma.peppolTransmission.findUniqueOrThrow({ where: { id: row.id } });
+  assert.equal(parked.status, 'QUEUED');
+  assert.equal(parked.attempts, 0, 'не е опит — нищо не е тръгнало');
+  assert.ok(parked.nextAttemptAt.getTime() >= now.getTime() + 59 * 60_000, 'отложен с час');
+  await prisma.setting.update({ where: { key: 'peppol.pilotOrgIds' }, data: { value: orgId } });
+  invalidateSettings();
+  assert.equal(await sendDueTransmissions(ap, new Date(now.getTime() + 61 * 60_000), 1), 1);
+});
+
 test('известия: подпис, възраст, повторение; „изпратено“ → SENT', async () => {
   const tx = await prisma.peppolTransmission.findFirstOrThrow();
   const event = {
@@ -232,6 +255,32 @@ test('получаване: известие → изтегляне → реги
   // Същият документ с друга доставка — пак един запис.
   assert.equal((await hook(event, { delivery: 'delivery-0101' })).status, 200);
   assert.equal(await prisma.incomingInvoice.count(), 1);
+});
+
+test('получаване: документ над 2 MB — записва се грешката, без безкрайни повторения (200)', async () => {
+  const before = await prisma.incomingInvoice.count();
+  // Над 2 млн. знака (преди: AccessPointError → 500 завинаги) и под 2 млн. знака, но над 2 MB в UTF-8
+  // (преди: мереше знаци, не байтове).
+  const cases = [
+    { id: '000000000002', xml: `<Invoice>${'я'.repeat(2_200_000)}</Invoice>` },
+    { id: '000000000003', xml: `<Invoice>${'я'.repeat(1_100_000)}</Invoice>` },
+  ];
+  for (const item of cases) {
+    fake.state.downloadXml = item.xml;
+    const event = {
+      topic: 'InvoiceReceived',
+      partyId: '9926:BG131063188',
+      documentId: `f3a1c2d4-0000-4000-8000-${item.id}`,
+    };
+    assert.equal((await hook(event, { delivery: `delivery-${item.id}` })).status, 200, item.id);
+    const recorded = await prisma.peppolEvent.findFirstOrThrow({
+      where: { documentId: event.documentId },
+    });
+    assert.ok(recorded.processedAt, 'обработено — точката за достъп не опитва пак');
+    assert.match(recorded.error ?? '', /2 MB/, item.id);
+  }
+  assert.equal(await prisma.incomingInvoice.count(), before);
+  fake.state.downloadXml = '';
 });
 
 test('изключване: отписване при точката за достъп, тайната се трие', async () => {

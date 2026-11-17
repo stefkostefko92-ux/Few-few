@@ -1,15 +1,24 @@
 // Which pointer does what in the sketch editor (schizzo-editor.js): the active tool gets one pointer at a
 // time and every gesture stays tentative until it is let go; a second finger undoes what the first one
 // started (the tool's `cancel`) and the two pinch the view, and nothing draws again until both are up;
-// the middle button or Space with the mouse moves the view. Once a stylus has touched the sheet, a finger
-// is the hand: ignored while the stylus is down or a moment after it, a palm (wider or taller than 40 CSS
-// pixels) always — and a single finger moves the view instead of drawing.
+// the middle button or Space with the mouse moves the view. A palm (a contact wider or taller than PALM)
+// is never a finger. Once a stylus has touched the sheet, a finger is the hand: ignored while the stylus
+// is down or a moment after it, and a single finger moves the view instead of drawing; the stylus coming
+// down drops whatever the hand had begun (a finger resting before the pen touched). Before any stylus the
+// finger is what draws, whatever size the device gives it: Safari on an iPad reports twice
+// UITouch.majorRadius (WebKit, PointerEventIOS.cpp), about 42 CSS pixels for a light fingertip and more
+// for a firm one, so the palm limit sits well above any finger.
 (() => {
   'use strict';
 
   const ed = window.rilieviSchizzoEditor;
   if (!ed) return;
   const { canvas, vista, TOLERANCES } = ed;
+  // A contact wider or taller than this is a palm, not a finger (an iPad fingertip is about 42, pressed
+  // flat 63–84 CSS pixels).
+  const PALM = 100;
+  // How long after the stylus is lifted a finger is still taken for the hand resting by it (ms).
+  const PEN_GRACE_MS = 500;
   const pointers = new Map();
   let mode = 'idle';
   let active = null;
@@ -32,17 +41,36 @@
   canvas.addEventListener('pointerdown', (event) => {
     event.preventDefault();
     const now = performance.now();
+    if (event.pointerType === 'touch') {
+      if (event.width > PALM || event.height > PALM) return;
+      if (penSeen && (penDown || now - lastPen < PEN_GRACE_MS)) return;
+    }
+    try {
+      canvas.setPointerCapture(event.pointerId);
+    } catch {
+      // The pointer is already gone (NotFoundError): there is nothing to follow, and nothing is held —
+      // not even "the stylus is down", or no finger would work until the stylus touched again.
+      return;
+    }
     if (event.pointerType === 'pen') {
       penSeen = true;
       penDown = true;
       lastPen = now;
+      // The stylus wins over the hand: a pinch of the fingers ends, and their later moves and lifts are
+      // ignored (what a finger was drawing is dropped just below).
+      if (mode === 'pinch' || mode === 'blocked') {
+        vista.pinchEnd();
+        mode = 'idle';
+        active = null;
+      }
+      touches().forEach((p) => pointers.delete(p.id));
     }
-    if (event.pointerType === 'touch') {
-      if (penSeen && (penDown || now - lastPen < 500)) return;
-      if (event.width > 40 || event.height > 40) return;
-    }
-    pointers.set(event.pointerId, { type: event.pointerType, x: event.clientX, y: event.clientY });
-    canvas.setPointerCapture(event.pointerId);
+    pointers.set(event.pointerId, {
+      id: event.pointerId,
+      type: event.pointerType,
+      x: event.clientX,
+      y: event.clientY,
+    });
     if (mode === 'pinch' || mode === 'blocked') return;
     if (event.pointerType === 'touch' && touches().length === 2) {
       if (mode === 'tool' && ed.tool) ed.tool.cancel();
@@ -51,6 +79,11 @@
       vista.pinchStart(a, b);
       return;
     }
+    // One pointer has the tool at a time: another one coming down (not the second finger of a pinch) drops
+    // what the first was doing — never left half way in the tool — and takes over.
+    if (mode === 'tool' && ed.tool) ed.tool.cancel();
+    mode = 'idle';
+    active = null;
     const panning =
       (event.pointerType === 'touch' && penSeen) ||
       (event.pointerType === 'mouse' && (event.button === 1 || ed.spaceHeld));
