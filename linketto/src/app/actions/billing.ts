@@ -100,7 +100,6 @@ export async function startCheckoutAction(formData: FormData): Promise<void> {
     const created = await createRevolutOrder({
       amountCents,
       description: `Linketto ${PLAN_LABEL[want]} · ${(PERIOD_LABEL[uiLocale] ?? PERIOD_LABEL.en)[want === 'FOUNDER' ? 'lifetime' : interval]}`,
-      email: user.email,
       reference: order.id,
       redirectUrl: `${SITE_URL}/${uiLocale}/dashboard?upgraded=1`,
     });

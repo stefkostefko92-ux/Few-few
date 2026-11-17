@@ -143,15 +143,17 @@ export default async function AdminPage({
                   ? t('errorRefund')
                   : error === 'refund-order'
                     ? t('errorRefundOrder')
-                    : error === 'ban'
-                      ? t('errorBan')
-                      : error === 'ban-warn'
-                        ? t('errorBanWarn')
-                        : error === 'ban-ground'
-                          ? t('errorBanGround')
-                          : error === 'ban-notice'
-                            ? t('errorBanNotice')
-                            : t('errorInput')}
+                    : error === 'refund-pending'
+                      ? t('errorRefundPending')
+                      : error === 'ban'
+                        ? t('errorBan')
+                        : error === 'ban-warn'
+                          ? t('errorBanWarn')
+                          : error === 'ban-ground'
+                            ? t('errorBanGround')
+                            : error === 'ban-notice'
+                              ? t('errorBanNotice')
+                              : t('errorInput')}
           </p>
         )}
 
