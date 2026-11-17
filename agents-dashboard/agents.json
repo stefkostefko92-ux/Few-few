@@ -2058,6 +2058,11 @@
       ],
       "activity": [
         {
+          "date": "2026-11-17",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Revolut Dispute има подсъстояния (representment, pre_arbitration, arbitration), които с…\" (+1)"
+        },
+        {
           "date": "2026-11-16",
           "type": "learning",
           "summary": "Научи: „Срок за изтриване, обещан в текст на писмо, се сверява с всички таблици, които пазят съ…\""
