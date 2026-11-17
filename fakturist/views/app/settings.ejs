@@ -54,7 +54,7 @@
     <% if (errors.logo) { %><p class="error" role="alert"><%= err('logo') %></p><% } %>
     <form method="post" action="/app/o/<%= org.id %>/nastroyki/logo" enctype="multipart/form-data" class="stack">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <label><%= hasLogo ? t('app.settings.replaceLogo') : t('app.settings.uploadLogo') %><input type="file" name="logo" accept="image/png,image/jpeg,image/webp" required aria-describedby="logo-help"><span class="hint" id="logo-help"><%= t('app.settings.logoHelp') %></span></label>
+      <%- include('../partials/file-pick', { name: 'logo', accept: 'image/png,image/jpeg,image/webp', label: hasLogo ? t('app.settings.replaceLogo') : t('app.settings.uploadLogo'), hint: t('app.settings.logoHelp'), hintId: 'logo-help' }) %>
       <button type="submit"><%= t('app.settings.uploadButton') %></button>
     </form>
     <% if (hasLogo) { %>

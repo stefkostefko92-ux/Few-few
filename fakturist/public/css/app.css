@@ -380,6 +380,26 @@ textarea {
 input[type='file'] {
   padding: 0.4rem;
 }
+/* Полето за файл (views/partials/file-pick.ejs): нашият бутон и името на файла; истинското поле е скрито, но с фокус. */
+.file-pick-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  min-width: 0;
+}
+.file-pick-name {
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.file-pick:focus-within .file-pick-button {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.file-pick-button:hover {
+  background: var(--accent-soft);
+}
 input[type='file']::file-selector-button {
   margin-right: 0.75rem;
   padding: 0.35rem 0.8rem;
@@ -514,6 +534,37 @@ button.big {
   border-radius: var(--radius);
   border-left: 4px solid currentColor;
   margin: 0 0 1rem;
+}
+/* Иконата казва вида на съобщението и без цвета (WCAG 1.4.1); рисунката е маска — цветът е на текста. */
+p:is(.ok, .error, .callout),
+div.error-box {
+  position: relative;
+  padding-left: 2.6rem;
+}
+p:is(.ok, .error, .callout)::before,
+div.error-box::before {
+  content: '';
+  position: absolute;
+  left: 0.85rem;
+  top: 0.85rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  background-color: currentColor;
+  -webkit-mask: var(--msg-icon) center / contain no-repeat;
+  mask: var(--msg-icon) center / contain no-repeat;
+}
+p.ok {
+  --msg-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M8 12.5l2.7 2.7L16 9.5'/%3E%3C/svg%3E");
+}
+p.ok::before {
+  background-color: var(--brand);
+}
+p.error,
+div.error-box {
+  --msg-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5l9 16.5H3z'/%3E%3Cpath d='M12 10v4.5M12 17.2h.01'/%3E%3C/svg%3E");
+}
+p.callout {
+  --msg-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 11v5.5M12 7.8h.01'/%3E%3C/svg%3E");
 }
 .ok {
   border-left-color: var(--brand);

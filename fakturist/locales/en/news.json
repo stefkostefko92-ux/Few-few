@@ -10,7 +10,7 @@
     "2026-11-16-versiya-2-0": {
       "area": "Fakturist",
       "title": "Ownership handover, company details and a manual (version 2.0)",
-      "text": "The owner can now hand the company over to another person (by an email invitation — you stay an administrator) or entrust it to their accounting firm with an active authorisation — under “Team and settings” → “Ownership”, with the password and the code from the app. Under “Company settings” → “Company details” the owner changes the legal name, address, VAT number, bank account, email and phone. The new “Help” in the top bar shows how to work for your role and offers a PDF manual to download, and the public “How it works” page explains everything step by step."
+      "text": "The owner can now hand the company over to another person (by an email invitation — you stay an administrator) or entrust it to their accounting firm with an active authorisation — under “Team and settings” → “Ownership”, with the password and the code from the app. Under “Company settings” → “Company details” the owner changes the legal name, address, VAT number, bank account, email and phone. The new “Help” in the top bar shows how to work for your role and offers a PDF manual to download, and the public “How it works” page explains everything step by step. The terms of service, the data processing agreement and the privacy policy are updated with the ownership handover — you accept them with one tick at your next sign-in."
     },
     "2026-11-16-versiya-1-5": {
       "area": "VAT",

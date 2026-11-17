@@ -10,7 +10,7 @@
 <% if (feature && canWrite) { %>
 <form method="post" action="/app/o/<%= org.id %>/banka" enctype="multipart/form-data" class="panel stack narrow-form">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-  <label><%= t('app.bank.file') %><input type="file" name="file" required accept=".xml,.csv,.txt,application/xml,text/xml,text/csv"><span class="hint"><%= t('app.bank.fileHint') %></span></label>
+  <%- include('../partials/file-pick', { name: 'file', accept: '.xml,.csv,.txt,application/xml,text/xml,text/csv', label: t('app.bank.file'), hint: t('app.bank.fileHint'), hintId: 'bank-file-help' }) %>
   <div><button type="submit"><%= t('app.bank.upload') %></button></div>
 </form>
 <% } %>

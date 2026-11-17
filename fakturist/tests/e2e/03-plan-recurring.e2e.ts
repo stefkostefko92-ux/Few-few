@@ -11,6 +11,7 @@ import {
   PROFILES,
   startApp,
   watch,
+  openOrgMenu,
 } from './support/app.js';
 import type { E2eApp } from './support/app.js';
 
@@ -91,6 +92,7 @@ for (const profile of PROFILES) {
       let reference = '';
       await t.test('„План“: поръчка по банков път дава проформа', async () => {
         await page.goto(orgUrl);
+        await openOrgMenu(page);
         await page.getByRole('link', { name: tr('app.plan.title'), exact: true }).click();
         await page.getByRole('heading', { level: 1, name: tr('app.plan.title') }).waitFor();
         await page.getByText(tr('app.plan.current')).waitFor();

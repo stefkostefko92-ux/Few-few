@@ -16,4 +16,15 @@
       el.hidden = true;
     });
   }
+  // File fields (views/partials/file-pick.ejs): the chosen file's name next to our own button.
+  document.querySelectorAll('.file-pick').forEach((pick) => {
+    const input = pick.querySelector('input[type="file"]');
+    const name = pick.querySelector('[data-file-name]');
+    if (!input || !name) return;
+    const empty = name.textContent;
+    input.addEventListener('change', () => {
+      const file = input.files && input.files[0];
+      name.textContent = file ? file.name : empty;
+    });
+  });
 })();

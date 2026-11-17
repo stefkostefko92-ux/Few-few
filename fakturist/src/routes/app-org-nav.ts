@@ -57,8 +57,6 @@ export function orgNavLocals() {
         org,
         unread,
         pendingMandates,
-        // На началото на фирмата менюто е отворено и на телефон; в разделите се свива до текущия.
-        open: segment === '',
         can: {
           mandates: roleCan(access.role, 'mandates.manage') && direct,
           settings: roleCan(access.role, 'org.settings') && direct,

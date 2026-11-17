@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
-import { prepareTestDatabase, truncateAll } from './harness.js';
+import { acceptCurrentTerms, prepareTestDatabase, truncateAll } from './harness.js';
 import { startHttp, type HttpClient } from './http.js';
 
 prepareTestDatabase();
@@ -63,6 +63,7 @@ before(async () => {
       passwordHash: await hashPassword(PASSWORD),
     },
   });
+  await acceptCurrentTerms(prisma, admin.id);
   await prisma.membership.create({
     data: { userId: admin.id, organizationId: orgId, role: 'ADMIN' },
   });

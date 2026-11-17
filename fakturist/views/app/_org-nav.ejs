@@ -1,7 +1,8 @@
 <%#
   Разделите на фирмата, подредени по смисъл. Данните идват от `orgNav` (src/routes/app.ts → orgNavLocals): правата са
   същите като преди — връзка, която човекът не може да отвори, не се рисува. Активният раздел е по адреса.
-  Един `<details>`: на телефон се свива до текущия раздел, на широк екран е винаги отворен (app.css).
+  Един `<details>`: на телефон е свит до текущия раздел (и на началото на фирмата — името и „Нов документ“ са първи),
+  на широк екран е винаги отворен (`::details-content` в app.css).
 -%>
 <%
   const n = orgNav;
@@ -45,7 +46,7 @@
   const currentLabel = overviewActive ? t('app.orgNav.overview') : (current ? current.label : t('app.orgNav.menu'));
 -%>
 <nav class="org-nav" aria-label="<%= t('app.orgNav.label') %>">
-  <details class="org-menu"<%= n.open ? ' open' : '' %>>
+  <details class="org-menu">
     <summary>
       <%- icon('menu') %>
       <span class="org-menu-name"><span class="org-menu-hint"><%= t('app.orgNav.menu') %></span><span><%= currentLabel %></span></span>

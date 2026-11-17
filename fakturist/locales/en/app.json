@@ -1194,5 +1194,30 @@
     "intro": "How to work with Fakturist — the sections you see for your companies, your role and your plan.",
     "manual": "Download the manual (PDF)",
     "public": "The public “How it works” page"
+  },
+  "legalUpdate": {
+    "title": "Current terms",
+    "intro": "New versions of the terms of service, the data processing agreement and the privacy policy apply from {date}. Read and accept them to continue.",
+    "whatsNew": "What is new",
+    "changes": {
+      "1": "Ownership handover: to another person by email invitation or to the accounting firm with an active mandate (terms of service, section 8).",
+      "2": "An accounting firm takes over a company only with the declaration under section 1a of the data processing agreement; the company stays the controller of its data.",
+      "3": "In a dispute or after lost access, the Fakturist team may hand over the ownership after checking a document of representation; the people affected receive an email with the reason.",
+      "4": "The owner changes the company details; we correct the EIK only for the same legal entity. A new version may be accepted expressly at sign-in."
+    },
+    "docs": {
+      "terms": "Terms of service",
+      "dpa": "Data processing agreement",
+      "privacy": "Privacy policy"
+    },
+    "accept": "Accept and continue",
+    "refuse": "If you disagree, you can download your data and close your account under",
+    "security": "“Security”",
+    "export": "download the archive (ZIP)",
+    "terminate": "termination"
+  },
+  "file": {
+    "choose": "Choose a file",
+    "none": "No file chosen"
   }
 }

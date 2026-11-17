@@ -8,7 +8,7 @@
 <% if (canWrite) { %>
 <form method="post" action="/app/o/<%= org.id %>/vhodyashti" enctype="multipart/form-data" class="panel stack narrow-form">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-  <label><%= t('app.incoming.file') %><input type="file" name="file" required accept=".xml,application/xml,text/xml"><span class="hint"><%= t('app.incoming.fileHint') %></span></label>
+  <%- include('../partials/file-pick', { name: 'file', accept: '.xml,application/xml,text/xml', label: t('app.incoming.file'), hint: t('app.incoming.fileHint'), hintId: 'incoming-file-help' }) %>
   <div><button type="submit"><%= t('app.incoming.upload') %></button></div>
 </form>
 <% } %>
