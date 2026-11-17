@@ -834,3 +834,7 @@
 {"t":"handoff","ts":"2026-11-17T06:06:01.568Z","id":"r06acc622","from":"prevodach","to":"letopisetsa","status":"има бележки","run":"c193707f"}
 {"t":"start","ts":"2026-11-17T06:07:36.518Z","id":"r9fb3916d","flow":"авто","lead":"prodavacha","auto":true}
 {"t":"handoff","ts":"2026-11-17T06:07:36.518Z","id":"r9fb3916d","from":"prodavacha","to":"kodadjiyata","status":"има бележки","run":"140b66d3"}
+{"t":"handoff","ts":"2026-11-17T06:07:51.624Z","id":"r9fb3916d","from":"kachestveniyat","to":"kodadjiyata","status":"има бележки","run":"9d78cf00"}
+{"t":"handoff","ts":"2026-11-17T06:08:25.511Z","id":"r9fb3916d","from":"prodavacha","to":"kodadjiyata","status":"има бележки","run":"dad76a8f"}
+{"t":"handoff","ts":"2026-11-17T06:10:40.658Z","id":"r9fb3916d","from":"kodadjiyata","to":"prodavacha","status":"има бележки","run":"a5ec0d75"}
+{"t":"handoff","ts":"2026-11-17T06:10:57.890Z","id":"r9fb3916d","from":"kodadjiyata","to":"prodavacha","status":"има бележки","run":"0b400949"}
