@@ -23,7 +23,6 @@ ok()   { printf '\033[32m✔ %s\033[0m\n' "$*"; }
 warn() { printf '\033[33m⚠ %s\033[0m\n' "$*"; }
 fail() { local rc="$1"; shift; printf '\033[31m✘ %s\033[0m\n' "$*" >&2; exit "$rc"; }
 
-HEALTH_URL="${LINKETTO_HEALTH_URL:-http://127.0.0.1:4340/api/health}"
 DATA_HOST="${LINKETTO_DATA_HOST:-/opt/few-few/shared/linketto/data}"
 KEEP_DUMPS="${LINKETTO_KEEP_DUMPS:-10}"
 SKIP_BACKUP="${LINKETTO_SKIP_BACKUP:-0}"
@@ -33,10 +32,26 @@ chmod 600 .env 2>/dev/null || true
 grep -qE '^POSTGRES_PASSWORD=.+' .env || fail 2 "В .env липсва POSTGRES_PASSWORD."
 grep -qE '^DATABASE_URL=.+' .env || fail 2 "В .env липсва DATABASE_URL."
 
+# Портът на хоста: HTTP_PORT от .env (същото чете docker-compose.yml), иначе 4350.
+PORT="$(sed -n 's/^HTTP_PORT=//p' .env | tail -1 | tr -dc '0-9' || true)"
+PORT="${PORT:-4350}"
+HEALTH_URL="${LINKETTO_HEALTH_URL:-http://127.0.0.1:${PORT}/api/health}"
+
 if docker compose version >/dev/null 2>&1; then DC="docker compose"
 elif command -v docker-compose >/dev/null 2>&1; then DC="docker-compose"
 else fail 2 "Липсва Docker Compose."; fi
 command -v curl >/dev/null 2>&1 || fail 2 "Липсва curl (нужен за сондата)."
+
+# Порт, зает от ДРУГ процес, се хваща ТУК — преди бекъп, билд и миграции. Иначе всичко минава,
+# а app-ът пада чак на `up` с „port is already allocated“ (17.11.2026: 4340 беше на rilievi).
+# Нашият работещ app също слуши на порта — той е разрешен (откриваме го по етикетите на Compose).
+# Проба с bash /dev/tcp (не `ss`: iproute2 го няма във всяка среда) — връзка = някой слуша.
+if timeout 3 bash -c "exec 3<>/dev/tcp/127.0.0.1/$PORT" 2>/dev/null; then
+  holder="$(docker ps --filter "publish=$PORT" \
+    --format '{{.Label "com.docker.compose.project"}}/{{.Label "com.docker.compose.service"}}' 2>/dev/null | head -1 || true)"
+  [ "$holder" = "linketto/app" ] \
+    || fail 2 "Порт 127.0.0.1:$PORT е зает от ${holder:-процес извън Docker} — сложи свободен HTTP_PORT в .env (виж: ss -ltnp 'sport = :$PORT')."
+fi
 
 # ── 0) Папката за качени снимки — стабилен път извън release-а ─────────────────
 # Създадена от Docker при bind, тя би била root:root и качването тихо би падало.

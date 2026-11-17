@@ -13,7 +13,12 @@
 set -euo pipefail
 
 ENV_FILE="${LINKETTO_ENV:-/opt/few-few/shared/linketto/.env}"
-BASE_URL="${LINKETTO_LOCAL_URL:-http://127.0.0.1:4340}"
+# Портът е HTTP_PORT от същия файл (като docker-compose.yml), иначе 4350; LINKETTO_LOCAL_URL побеждава.
+BASE_URL="${LINKETTO_LOCAL_URL:-}"
+if [ -z "$BASE_URL" ]; then
+  port="$(sed -n 's/^HTTP_PORT=//p' "$ENV_FILE" 2>/dev/null | tail -1 | tr -dc '0-9' || true)"
+  BASE_URL="http://127.0.0.1:${port:-4350}"
+fi
 # Името на Compose проекта е фиксирано в docker-compose.yml (`name: linketto`) —
 # контейнерът на базата се намира по етикет, без да се знае от кой release е вдигнат.
 PROJECT="${LINKETTO_COMPOSE_PROJECT:-linketto}"

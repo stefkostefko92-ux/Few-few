@@ -195,7 +195,10 @@ cookie `NEXT_LOCALE` и винаги печели пред IP. Без CDN хед
 ## 7. Build & run (Docker Compose през `deploy/autodeploy.sh`)
 
 Стекът: `docker-compose.yml` (`db` postgres:16-alpine + `app` от `Dockerfile`, non-root uid 1001,
-само `127.0.0.1:4340`), Compose проект `linketto` (томът е `linketto_db`). На сървъра нищо не се
+само `127.0.0.1:<HTTP_PORT>`, по подразбиране **4350** — 4340/4341/4342 на живия сървър са на
+rilievi/semki/fakturist; смяна = `HTTP_PORT` в `.env` + `proxy_pass` в vhost-а), Compose проект
+`linketto` (томът е `linketto_db`). `scripts/deploy.sh` спира ПРЕДИ бекъпа и билда (код 2), ако
+портът е зает от друг процес. На сървъра нищо не се
 строи на ръка — каноничният път е `deploy/fetch-deploy.sh` → `deploy/autodeploy.sh` (`deploy_linketto`):
 
 ```bash
@@ -220,10 +223,12 @@ release (`/opt/few-few/shared/linketto/last-good`); провал на мигра
 (`env_file` се чете при пресъздаване на контейнера; `restart` не стига. `last-good`, не `current`:
 `current` се мести и при деплой на друг продукт, към release без симлинка `.env`).
 
-**Еднократно:** DNS A/AAAA → VPS, после vhost + TLS:
+**Еднократно:** DNS A/AAAA → VPS, после vhost + TLS. Vhost-ът се взема от последния работещ release
+(`last-good`, не `current`), а `proxy_pass` получава порта от `.env`:
 
 ```bash
-sudo install -m 644 /opt/few-few/current/linketto/deploy/nginx.conf /etc/nginx/sites-available/linketto
+P="$(sudo sed -n 's/^HTTP_PORT=//p' /opt/few-few/shared/linketto/.env | tail -1 | tr -dc '0-9')"; P="${P:-4350}"
+sudo sed "s/127\.0\.0\.1:4350/127.0.0.1:$P/g" "$(cat /opt/few-few/shared/linketto/last-good)/deploy/nginx.conf" | sudo tee /etc/nginx/sites-available/linketto >/dev/null
 sudo ln -sfn /etc/nginx/sites-available/linketto /etc/nginx/sites-enabled/linketto
 sudo nginx -t && sudo systemctl reload nginx
 sudo certbot --nginx -d linketto.carbonstealth.eu --redirect
