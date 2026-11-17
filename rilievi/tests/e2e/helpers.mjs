@@ -7,6 +7,9 @@ const axeSource = readFileSync(
   'utf8',
 );
 
+/** UITouch.majorRadius of a light fingertip on an iPad: Safari makes the contact twice as wide. */
+export const IPAD_FINGER_RADIUS = 20.84;
+
 export const failures = [];
 export const fail = (message) => {
   failures.push(message);
