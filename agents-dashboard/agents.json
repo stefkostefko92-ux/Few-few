@@ -9358,7 +9358,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 305
+        "lessons": 306
       },
       "evolution": [
         {
@@ -9726,9 +9726,20 @@
           "date": "2026-11-17",
           "event": "v28.9 — учене",
           "detail": "Научи: В Revolut Merchant API 2026-09-22 отказан refund през Revolut Pay връща 200 с refund по… (+5 още)"
+        },
+        {
+          "version": "29.0.0",
+          "date": "2026-11-17",
+          "event": "v29.0 — учене",
+          "detail": "Научи: При tsx --test липсващ именуван импорт от TS модул не спира файла с тестове — става und…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-17",
+          "type": "learning",
+          "summary": "Научи: „При tsx --test липсващ именуван импорт от TS модул не спира файла с тестове — става und…\" · 2 в карантина"
+        },
         {
           "date": "2026-11-17",
           "type": "learning",
