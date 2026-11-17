@@ -10,7 +10,7 @@ import {
 } from '@/i18n/locales';
 
 export const SITE_URL =
-  process.env.PUBLIC_BASE_URL ?? 'https://linketto.carbonstealth.eu';
+  process.env.PUBLIC_BASE_URL ?? 'https://piuma.carbonstealth.eu';
 
 export const ORG = {
   name: 'Carbon Stealth VCC',
