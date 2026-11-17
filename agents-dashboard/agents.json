@@ -2042,13 +2042,8 @@
       "activity": [
         {
           "date": "2026-11-17",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „Дедупликация „пропусни, ако последният запис е от същото събитие“ се разлюлява, когато …\""
-        },
-        {
-          "date": "2026-11-17",
           "type": "learning",
-          "summary": "Научи: „Revolut Merchant API до версия 2026-09-22 връща 400 за всеки отказан refund (и при Revo…\" (+93 още) · 12 в карантина"
+          "summary": "Научи: „Revolut Merchant API до версия 2026-09-22 връща 400 за всеки отказан refund (и при Revo…\" (+93 още) · 13 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -2934,28 +2929,17 @@
           "detail": "Научи: В rilievi PDF генераторите на pdfkit (schede, argano, interventi, cartelli) повтарят A4… (+1 още)"
         },
         {
-          "version": "22.1.0",
-          "date": "2026-11-17",
-          "event": "v22.1 — учене",
-          "detail": "Научи: В linketto `npm test` пропуска plan-order-service.int.test.ts (31 теста) без DATABASE_U… (+6 още)"
-        },
-        {
           "version": "22.3.0",
           "date": "2026-11-17",
           "event": "v22.3 — учене",
-          "detail": "Научи: guard-readonly блокира и ln -s към node_modules на продукта в scratchpad; база от origi… (+1 още)"
+          "detail": "Научи: guard-readonly блокира и ln -s към node_modules на продукта в scratchpad; база от origi… (+8 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-17",
           "type": "learning",
-          "summary": "Научи: „guard-readonly блокира и ln -s към node_modules на продукта в scratchpad; база от origi…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-17",
-          "type": "learning",
-          "summary": "Научи: „В linketto `npm test` пропуска plan-order-service.int.test.ts (31 теста) без DATABASE_U…\" (+6 още)"
+          "summary": "Научи: „guard-readonly блокира и ln -s към node_modules на продукта в scratchpad; база от origi…\" (+8 още)"
         },
         {
           "date": "2026-11-04",
@@ -9710,39 +9694,17 @@
           "detail": "Научи: Адаптер към Prisma/Stripe, който се тества под tsx, не импортира server-only, а получав… (+46 още)"
         },
         {
-          "version": "29.7.0",
-          "date": "2026-11-17",
-          "event": "v29.7 — учене",
-          "detail": "Научи: При повтор на мутираща платежна заявка със същия Idempotency-Key, 409 означава „същият … (+40 още)"
-        },
-        {
-          "version": "29.8.0",
-          "date": "2026-11-17",
-          "event": "v29.8 — учене",
-          "detail": "Научи: Червен тест, пуснат преди проверка на причината, може да е червен заради грешка в самия…"
-        },
-        {
           "version": "29.9.0",
           "date": "2026-11-17",
           "event": "v29.9 — учене",
-          "detail": "Научи: При Revolut Merchant отказано с 400 връщане с карта пак създава поръчка за връщане; web…"
+          "detail": "Научи: При Revolut Merchant отказано с 400 връщане с карта пак създава поръчка за връщане; web… (+42 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-17",
           "type": "learning",
-          "summary": "Научи: „При Revolut Merchant отказано с 400 връщане с карта пак създава поръчка за връщане; web…\""
-        },
-        {
-          "date": "2026-11-17",
-          "type": "learning",
-          "summary": "Научи: „Червен тест, пуснат преди проверка на причината, може да е червен заради грешка в самия…\""
-        },
-        {
-          "date": "2026-11-17",
-          "type": "learning",
-          "summary": "Научи: „При повтор на мутираща платежна заявка със същия Idempotency-Key, 409 означава „същият …\" (+40 още) · 5 в карантина"
+          "summary": "Научи: „При Revolut Merchant отказано с 400 връщане с карта пак създава поръчка за връщане; web…\" (+42 още) · 5 в карантина"
         },
         {
           "date": "2026-11-04",

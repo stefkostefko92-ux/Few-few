@@ -321,10 +321,11 @@ test('карта: поръчка при Revolut, webhook → повторно ч
     (await prisma.payment.findUniqueOrThrow({ where: { id: payment.id } })).status,
     'PENDING',
   );
-  // Webhook преди плащането: събитието е сигнал, поръчката още е pending → нищо.
+  // Webhook преди плащането: събитието е сигнал, поръчката още е pending → нищо; 409, за да прати
+  // Revolut пак (200 би потвърдило доставката — повторение няма).
   assert.equal(
     (await webhook({ event: 'ORDER_COMPLETED', order_id: payment.providerOrderId })).status,
-    200,
+    409,
   );
   assert.equal(
     (await prisma.payment.findUniqueOrThrow({ where: { id: payment.id } })).status,
