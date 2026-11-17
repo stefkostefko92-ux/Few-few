@@ -6,7 +6,13 @@ import { emailConfigured, sendEmail } from '@/lib/email';
 import { applyPlanLimits } from '@/lib/plan-limits';
 import { expiryAction } from '@/lib/plan-orders';
 import { planReminderEmail } from '@/lib/plan-reminder';
-import { sendPlanConfirmation, settlePlanOrder, settlePlanRefund } from '@/lib/plan-order-service';
+import {
+  alertStuckRefunds,
+  resendDisputeAlerts,
+  sendPlanConfirmation,
+  settlePlanOrder,
+  settlePlanRefund,
+} from '@/lib/plan-order-service';
 import { revolutConfigured } from '@/lib/revolut';
 import { notifyAdmins } from '@/lib/admin-alert';
 import { sendWithdrawalAck } from '@/lib/withdrawal-service';
@@ -38,7 +44,16 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
   const now = new Date();
-  const report = { reconciled: 0, refunds: 0, confirmed: 0, downgraded: 0, reminded: 0, errors: 0 };
+  const report = {
+    reconciled: 0,
+    refunds: 0,
+    stuckRefundAlerts: 0,
+    confirmed: 0,
+    downgraded: 0,
+    reminded: 0,
+    disputeAlerts: 0,
+    errors: 0,
+  };
 
   // (1) P9: висящи поръчки на възраст 15 мин. – 3 дни.
   if (revolutConfigured()) {
@@ -78,6 +93,20 @@ export async function POST(request: Request): Promise<NextResponse> {
         report.errors += 1;
       }
     }
+  }
+
+  // (1б″) Заседнали връщания (refund_pending без refund id, > 1 ч.) — аларма веднъж за опит.
+  try {
+    report.stuckRefundAlerts = await alertStuckRefunds(now);
+  } catch {
+    report.errors += 1;
+  }
+
+  // (1б′) Алармите за спорове, които не са тръгнали (Brevo/ADMIN_EMAILS) — до успех.
+  try {
+    report.disputeAlerts = await resendDisputeAlerts(now);
+  } catch {
+    report.errors += 1;
   }
 
   // (1в) P14: неизпратени потвърждения (Brevo е бил недостъпен) — до 3 дни назад.

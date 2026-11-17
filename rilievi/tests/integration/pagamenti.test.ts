@@ -4,6 +4,7 @@
 // completed order read back from Revolut with the same amount — on the return page or by the signed webhook, once.
 // A plan bought during the trial starts at its end; a read-only company can pay and is open again at once.
 import assert from 'node:assert/strict';
+import { createHmac } from 'node:crypto';
 import { after, before, describe, it } from 'node:test';
 import {
   avviaRevolutFinto,
@@ -236,6 +237,64 @@ describe('paying a plan', () => {
         })
       ).status,
       200,
+    );
+  });
+
+  // Revolut sends a webhook again only after a 4XX or a timeout; 200–399 is delivered (merchant.yaml 2026-09-22,
+  // webhooks.webhookEvent). An internal error while handling a signed event must therefore answer 4XX — 409 —
+  // or the event is lost; a wrong signature (401) and a signed body that is not an event (200) stay as they are.
+  it('answers 409 to a signed event it could not handle, so that Revolut sends it again', async () => {
+    const { a, browser } = await azienda('Webhook Guasto Srl');
+    const via = await paga(browser, a.id, (await piano(1, 1, 5000)).id);
+    assert.equal(via.status, 303);
+    const ordine = ordineDa(via.location);
+    ordine.state = 'completed';
+    const invia = (ev: { headers: Record<string, string>; body: string }) =>
+      fetch(`${BASE}/webhook/revolut`, { method: 'POST', headers: ev.headers, body: ev.body });
+    const ev = eventoFirmato('ORDER_COMPLETED', ordine.id);
+    // The database refuses to write the payment: the handling fails inside.
+    await prisma.$executeRawUnsafe(
+      `CREATE OR REPLACE FUNCTION rilievi_test_guasto() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'guasto di prova'; END $$`,
+    );
+    await prisma.$executeRawUnsafe(
+      `CREATE TRIGGER rilievi_test_guasto BEFORE UPDATE ON "Pagamento" FOR EACH ROW EXECUTE FUNCTION rilievi_test_guasto()`,
+    );
+    let guasto: Response;
+    try {
+      guasto = await invia(ev);
+    } finally {
+      await prisma.$executeRawUnsafe(`DROP TRIGGER rilievi_test_guasto ON "Pagamento"`);
+      await prisma.$executeRawUnsafe(`DROP FUNCTION rilievi_test_guasto()`);
+    }
+    assert.equal(guasto.status, 409);
+    assert.equal(guasto.headers.get('cache-control'), 'no-store');
+    assert.equal(
+      (await prisma.pagamento.findFirstOrThrow({ where: { aziendaId: a.id } })).stato,
+      'IN_ATTESA',
+    );
+    // A wrong signature: 401, as before.
+    assert.equal(
+      (await invia(eventoFirmato('ORDER_COMPLETED', ordine.id, { segreto: 'wsk_altro' }))).status,
+      401,
+    );
+    // A signed body that is not an event: 200, as before (nothing to send again).
+    const ts = String(Date.now());
+    const corpo = 'non è un evento';
+    const firma = createHmac('sha256', SEGRETO_WEBHOOK).update(`v1.${ts}.${corpo}`).digest('hex');
+    const strano = await invia({
+      body: corpo,
+      headers: {
+        'content-type': 'application/json',
+        'revolut-request-timestamp': ts,
+        'revolut-signature': `v1=${firma}`,
+      },
+    });
+    assert.equal(strano.status, 200);
+    // Revolut sends the event again: now it is handled and the plan is given, once.
+    assert.equal((await invia(ev)).status, 200);
+    assert.equal(
+      (await prisma.pagamento.findFirstOrThrow({ where: { aziendaId: a.id } })).stato,
+      'COMPLETATO',
     );
   });
 

@@ -361,6 +361,131 @@ describe('a refund through Revolut', () => {
     );
   });
 
+  // API 2026-09-22 ("Declined refunds"): a refused Revolut Pay refund answers 200 with the refund order, the order
+  // still "processing" and its payment "declined" or "failed" with the reason (examples Res-Refund-Declined and
+  // Res-Refund-Failed); a card answers 400 as every refusal did before. Both are the same refusal for the portal,
+  // and so is a refund order read back later (webhook, maintenance) whose payments were all refused.
+  it('takes a refused refund payment for a refusal, answered with 400 or with 200', async () => {
+    const { a, browser } = await inProva('Rimborso Pay Rifiutato Srl');
+    const { ordine, pagamento } = await paga(browser, a.id, (await piano(1, 1, 2900)).id);
+    await spegni(a.id);
+    const righe = () =>
+      prisma.rimborso.findMany({
+        where: { perPagamentoId: pagamento.id },
+        orderBy: { createdAt: 'asc' },
+        select: { stato: true, errore: true },
+      });
+    const statoPagamento = async () =>
+      (await prisma.pagamento.findUniqueOrThrow({ where: { id: pagamento.id } })).stato;
+
+    // A card, as before 2026-09-22 and still now: 400 without a reason.
+    rimborsi.http = 400;
+    assert.equal((await rimborsa(pagamento.id, '29,00')).status, 303);
+    rimborsi.http = null;
+    assert.deepEqual(await righe(), [{ stato: 'FALLITO', errore: '400' }]);
+
+    // Revolut Pay since 2026-09-22 (Res-Refund-Declined): 200, the order processing, the payment declined.
+    rimborsi.stato = 'processing';
+    rimborsi.pagamento = { state: 'declined', decline_reason: 'suspected_fraud' };
+    const no = await rimborsa(pagamento.id, '29,00');
+    rimborsi.pagamento = null;
+    assert.equal(no.status, 303);
+    const pagina = await master.browser.get(no.location, HTML);
+    assert.match(pagina.body, /Revolut ha rifiutato il rimborso \(codice suspected_fraud\)/);
+    assert.deepEqual(await righe(), [
+      { stato: 'FALLITO', errore: '400' },
+      { stato: 'FALLITO', errore: 'suspected_fraud' },
+    ]);
+    assert.equal(await statoPagamento(), 'COMPLETATO');
+    assert.equal((await rimborsiDovuti()).filter((r) => r.aziendaId === a.id).length, 1);
+
+    // Accepted, then the payment of the refund fails (Res-Refund-Failed), read back by the signed webhook.
+    rimborsi.stato = 'processing';
+    assert.equal((await rimborsa(pagamento.id, '29,00')).status, 303);
+    const reso = rimborsiDi(ordine.id).at(-1)!;
+    reso.payments = [{ state: 'failed', decline_reason: 'technical_error' }];
+    assert.equal((await notifica('ORDER_PAYMENT_FAILED', reso.id)).status, 200);
+    assert.deepEqual((await righe()).at(-1), { stato: 'FALLITO', errore: 'technical_error' });
+    assert.equal(await statoPagamento(), 'COMPLETATO');
+
+    // A refused payment and the order still open: the maintenance reads it and closes the refund as refused.
+    rimborsi.stato = 'processing';
+    assert.equal((await rimborsa(pagamento.id, '29,00')).status, 303);
+    rimborsiDi(ordine.id).at(-1)!.payments = [{ state: 'declined' }];
+    await riconciliaRimborsi();
+    assert.deepEqual((await righe()).at(-1), { stato: 'FALLITO', errore: 'declined' });
+
+    // A payment still being processed is not a refusal: the refund stays open.
+    rimborsi.stato = 'processing';
+    assert.equal((await rimborsa(pagamento.id, '29,00')).status, 303);
+    const aperto = rimborsiDi(ordine.id).at(-1)!;
+    aperto.payments = [{ state: 'refund_started' }];
+    await riconciliaRimborsi();
+    assert.deepEqual((await righe()).at(-1), { stato: 'IN_CORSO', errore: null });
+    // Then Revolut completes it: the payment is closed, once.
+    aperto.state = 'completed';
+    aperto.payments = [{ state: 'completed' }];
+    await riconciliaRimborsi();
+    assert.deepEqual((await righe()).at(-1), { stato: 'COMPLETATO', errore: null });
+    assert.equal(await statoPagamento(), 'RIMBORSATO');
+  });
+
+  // Revolut completes a refund the portal already holds as refused: a refused payment answered 200, or a card refused
+  // with 400 whose refund order exists all the same (merchant.yaml, refundOrder). The money went back and MASTER could
+  // order it again. Nothing changes by itself: the log and the alarm say it, MASTER decides.
+  it('raises the alarm when Revolut completes a refund held as refused, and changes nothing', async () => {
+    const { a, browser } = await inProva('Rimborso Tardivo Srl');
+    const { ordine, pagamento } = await paga(browser, a.id, (await piano(1, 1, 2900)).id);
+    await spegni(a.id);
+    const righe = () =>
+      prisma.rimborso.findMany({
+        where: { perPagamentoId: pagamento.id },
+        orderBy: { createdAt: 'asc' },
+        select: { stato: true, errore: true },
+      });
+    const tardivo = (m: string) => /ha completato un rimborso segnato come non riuscito/.test(m);
+
+    // Refused: the payment of the refund declined (200), then a card refused with 400 (the order exists).
+    rimborsi.stato = 'processing';
+    rimborsi.pagamento = { state: 'declined', decline_reason: 'suspected_fraud' };
+    assert.equal((await rimborsa(pagamento.id, '29,00')).status, 303);
+    const primo = rimborsiDi(ordine.id).at(-1)!;
+    rimborsi.http = 400;
+    rimborsi.ordineAncheSeRifiutato = true;
+    rimborsi.pagamento = { state: 'declined' };
+    assert.equal((await rimborsa(pagamento.id, '29,00')).status, 303);
+    rimborsi.http = null;
+    rimborsi.ordineAncheSeRifiutato = false;
+    rimborsi.pagamento = null;
+    const secondo = rimborsiDi(ordine.id).at(-1)!;
+    assert.notEqual(secondo.id, primo.id);
+    const rifiutati = [
+      { stato: 'FALLITO', errore: 'suspected_fraud' },
+      { stato: 'FALLITO', errore: '400' },
+    ];
+    assert.deepEqual(await righe(), rifiutati);
+
+    // Revolut completes both after all; each signed webhook raises the alarm, every time.
+    discord.messaggi.length = 0;
+    for (const reso of [primo, secondo]) {
+      reso.state = 'completed';
+      reso.payments = [{ state: 'completed' }];
+      assert.equal((await notifica('ORDER_COMPLETED', reso.id)).status, 200);
+    }
+    for (let i = 0; i < 40 && discord.messaggi.filter(tardivo).length < 2; i += 1)
+      await new Promise((r) => setTimeout(r, 50));
+    assert.equal(discord.messaggi.filter(tardivo).length, 2, discord.messaggi.join('\n'));
+    assert.ok(discord.messaggi.every((m) => !/Rimborso Tardivo|@/.test(m)));
+
+    // Nothing is put right by itself: the refunds stay refused, the payment paid, nothing ordered again.
+    rimborsi.richieste.length = 0;
+    await riconciliaRimborsi();
+    assert.deepEqual(await righe(), rifiutati);
+    assert.deepEqual(rimborsi.richieste, []);
+    const p = await prisma.pagamento.findUniqueOrThrow({ where: { id: pagamento.id } });
+    assert.deepEqual([p.stato, p.rimborsoCent], ['COMPLETATO', null]);
+  });
+
   it('gives back in full a payment that waits for MASTER', async () => {
     const { a, browser } = await inProva('Rimborso Verifica Srl');
     const vista = await browser.get(

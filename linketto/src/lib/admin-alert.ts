@@ -30,12 +30,19 @@ export function adminAlertEmail(input: { subject: string; lines: string[]; admin
   };
 }
 
-export async function notifyAdmins(subject: string, lines: string[]): Promise<void> {
+/**
+ * Праща алармата до всеки админ. Връща true, ако поне едно писмо е прието от
+ * Brevo — за аларми, които не бива да се изгубят (спор), викащият пази „не е
+ * тръгнала“ и опитва пак (cron); останалите викащи пренебрегват резултата.
+ */
+export async function notifyAdmins(subject: string, lines: string[]): Promise<boolean> {
   const to = adminEmails();
-  if (to.length === 0 || !emailConfigured()) return;
+  if (to.length === 0 || !emailConfigured()) return false;
   const base = process.env.PUBLIC_BASE_URL ?? 'http://localhost:3000';
   const { subject: s, html } = adminAlertEmail({ subject, lines, adminUrl: `${base}/bg/admin` });
+  let sent = false;
   for (const address of to) {
-    await sendEmail({ to: address, subject: s, html, tag: 'admin-alert' }).catch(() => false);
+    if (await sendEmail({ to: address, subject: s, html, tag: 'admin-alert' }).catch(() => false)) sent = true;
   }
+  return sent;
 }
