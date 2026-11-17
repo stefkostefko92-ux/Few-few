@@ -11,7 +11,7 @@ import type { PianoImport } from '../preventivi/listino-import-salva.js';
 import { pageOf } from '../schede/list.js';
 import { MAX_QUERY_LENGTH } from '../schede/search.js';
 import { pathSezione, renderImpostazioni } from './impostazioni-vista.js';
-import { aziendeInArchivio } from './preventivi-vista.js';
+import { aziendeInArchivio, aziendePerPreventivo } from './preventivi-vista.js';
 import { notFound } from './schede-shared.js';
 
 /**
@@ -139,11 +139,29 @@ export async function mostraListino(
       });
   }
   const { aziende, azienda } = await aziendaScelta(req, view.aziendaId);
+  // MASTER: и фирмите с изключени оферти — в своя група на избора. Поискана такава (или нито една включена — преди
+  // 404) → само изборът, бележката и ключът „Attiva i preventivi“, никога ценоразписът на друга фирма на нейно място.
+  const { spente } = principalOf(req).user.master
+    ? await aziendePerPreventivo(req)
+    : { spente: [] };
+  const chiesta = spente.find((a) => a.id === view.aziendaId);
+  if (chiesta || (!azienda && spente.length > 0))
+    return res.status(status).render('preventivi/listino', {
+      titleKey: 'preventivi.listino.titolo',
+      aziende,
+      spente,
+      azienda: null,
+      scelta: chiesta?.id ?? '',
+      archivio: [],
+      listino: null,
+    });
   if (!azienda) return notFound(req, res);
   res.status(status).render('preventivi/listino', {
     titleKey: 'preventivi.listino.titolo',
     aziende,
+    spente,
     azienda,
+    scelta: azienda.id,
     archivio: aziendeInArchivio(req, azienda.id),
     listino: await datiListino(req, azienda.id, view),
   });

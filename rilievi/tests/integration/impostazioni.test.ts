@@ -244,3 +244,31 @@ describe('the head of the printed sheet', () => {
     assert.match(page.body, /class="plate__address">Corso Francia 9, Torino</);
   });
 });
+
+// Every settings page lists the same sections of the company (the visual check, 16 November 2026): the export page
+// listed all of them — "Accesso" without sign-in providers (404) and the quotes while off.
+describe('the navigation of the settings pages', () => {
+  it('names only the sections of the company, on every page, the export one too', async () => {
+    const azienda = await makeAzienda();
+    const { browser: admin } = await signedIn('ADMIN', azienda.id);
+    const sezioni = (body: string) =>
+      [...body.matchAll(/href="\/impostazioni\/([a-z]+)\?azienda=/g)].map((m) => m[1]!);
+    const attese = sezioni(
+      (await admin.get(`/impostazioni/azienda?azienda=${azienda.id}`)).body,
+    ).sort();
+    assert.ok(attese.length > 5, 'the settings list its sections');
+    assert.ok(!attese.includes('preventivi') && !attese.includes('listino'), 'quotes off');
+    for (const pagina of ['scheda', 'ruoli', 'esportazione', 'condizioni']) {
+      const reply = await admin.get(`/impostazioni/${pagina}?azienda=${azienda.id}`);
+      assert.equal(reply.status, 200, pagina);
+      const trovate = [...new Set(sezioni(reply.body))].sort();
+      assert.deepEqual(trovate, [...new Set(attese)].sort(), pagina);
+      for (const s of trovate)
+        assert.equal(
+          (await admin.get(`/impostazioni/${s}?azienda=${azienda.id}`)).status,
+          200,
+          `${pagina} → ${s}`,
+        );
+    }
+  });
+});

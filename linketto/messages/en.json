@@ -523,6 +523,7 @@
     "clearDomain": "Remove domain {domain}",
     "refund": "Refund",
     "errorRefund": "Refund failed.",
+    "errorRefundPending": "The refund is in progress — Revolut did not answer clearly. Press “Refund” again: it repeats the same attempt, without refunding twice.",
     "referralCredit": "referral bonus",
     "payoutsTitle": "Payout requests — pending ({count})",
     "payoutsEmpty": "No pending requests.",

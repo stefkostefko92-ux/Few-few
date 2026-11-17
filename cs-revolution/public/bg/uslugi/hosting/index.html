@@ -155,6 +155,10 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 .cs-caliper.on i{opacity:.9}
 @media(hover:none),(pointer:coarse){.cs-caliper{display:none}}
 @media(prefers-reduced-motion:reduce){h1,.card::before,.tier::before,.work-shot,.w>h2::after,.seo-body article>h2::after,body::after{animation:none!important}body::after{display:none}}
+@property --ctl{syntax:'<length>';inherits:false;initial-value:0px}
+@property --ctr{syntax:'<length>';inherits:false;initial-value:0px}
+@keyframes ctblHint{from{--ctl:0px;--ctr:36px}to{--ctl:36px;--ctr:0px}}
+@supports (animation-timeline:scroll()){.ctbl{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);animation:ctblHint linear both;animation-timeline:scroll(self inline)}.ctbl:focus-visible{-webkit-mask-image:none;mask-image:none}}
 </style></head><body>
 <nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">ГЛАВНА</a><a href="/bg/za-nas/">ЗА НАС</a><a href="/bg/uslugi/web-razrabotka/">УСЛУГИ</a><a href="/bg/portfolio/">ПОРТФОЛИО</a><a href="/bg/ceni/">ЦЕНИ</a><a href="/bg/kontakti/">КОНТАКТИ</a></div></nav>
 <div class="hero-s"><div class="w"><div class="tag">// ХОСТИНГ & CLOUD</div><h1>Управляван облачен хостинг и поддръжка на сайтове</h1></div></div><div class="w"><p>Управляван хостинг на Hetzner сървъри.</p><p class="syn">Уеб хостинг, управляван VPS хостинг, облачен сървър или поддръжка на сайт: сървъри Hetzner в Германия със SSL, CDN, бекъпи и мониторинг.</p><h2>Цени</h2><p class='price'>От €15/месец с ДДС</p><p class='price'>От €79/месец business</p><p class='price'>От €199/месец VPS</p><a href="/bg/kontakti/" class="cta">ИЗПРАТИ ЗАЯВКА</a></div>

@@ -217,12 +217,18 @@
     if (event.key === ' ') ed.spaceHeld = false;
   });
 
-  // The soft keyboard shrinks the visual viewport: the editor follows it (the view keeps its middle).
+  // The soft keyboard shrinks the visual viewport: the editor follows it (the view keeps its middle). On
+  // an iPad the keyboard can also scroll the visible part down the page (offsetTop): the editor follows
+  // that too, or its top — the bar with the value being typed — is left above the screen.
   const viewport = window.visualViewport;
+  const followViewport = () => {
+    if (!viewport) return;
+    dialog.style.setProperty('--vvh', `${viewport.height}px`);
+    dialog.style.setProperty('--vvt', `${viewport.offsetTop}px`);
+  };
   if (viewport) {
-    viewport.addEventListener('resize', () => {
-      dialog.style.setProperty('--vvh', `${viewport.height}px`);
-    });
+    viewport.addEventListener('resize', followViewport);
+    viewport.addEventListener('scroll', followViewport);
   }
   // A font that arrives after the first drawing: the texts are measured and painted again.
   if (document.fonts) document.fonts.addEventListener('loadingdone', () => ed.refresh());
@@ -242,6 +248,7 @@
     startWaiting = false;
     title.textContent = titolo || (texts.titolo || '').replace('{n}', () => String(n));
     ed.error('');
+    followViewport();
     dialog.showModal();
     switchTool();
     // Start on the tool in use (on its menu when it is a shape or a symbol) — never on "Discard", the

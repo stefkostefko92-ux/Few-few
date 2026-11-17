@@ -231,6 +231,8 @@ export async function adminRefundPlanOrderAction(
     redirect(`/${uiLocale}/admin?error=refund`);
   }
   if (result === 'newer-first') redirect(`/${uiLocale}/admin?error=refund-order`);
+  // Revolut не отговори ясно — връщането е в ход; повторът е със същия ключ.
+  if (result === 'stuck') redirect(`/${uiLocale}/admin?error=refund-pending`);
   if (result === 'not-refundable') redirect(`/${uiLocale}/admin?error=refund`);
   redirect(`/${uiLocale}/admin?ok=1`);
 }

@@ -69,7 +69,7 @@
       <p class="field__hint" id="hint-pericolo"><%= t('cartelli.pericolo.hint') %></p>
       <% if (errors.pericolo) { %><p class="field__error" id="err-pericolo"><%= messageOf('pericolo') %></p><% } %>
     </div>
-    <div class="grid grid--cartello">
+    <div class="grid grid--avvisi">
       <%- campo('avvisoProprietarioAt', 'date', { facoltativo: true }) %>
       <%- campo('avvisoVerificatoreAt', 'date', { facoltativo: true }) %>
       <%- campo('avvisoComuneAt', 'date', { facoltativo: true }) %>
