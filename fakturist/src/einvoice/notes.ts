@@ -29,10 +29,12 @@ export function documentNote(
       return `${group.category} ${rate}: основа ${base} EUR, ДДС ${vat} EUR`;
     });
     const total = calc.totals.vatInEur ? toFixed(calc.totals.vatInEur, 2) : '-';
-    lines.push(
-      `В евро по курса на ЕЦБ ${input.eurExchangeRate} ${input.currency}/EUR (чл. 114, ал. 5 ЗДДС): ` +
-        `${parts.join('; ')}; общо ДДС ${total} EUR`,
-    );
+    // Левът е с фиксиран курс (ЗВЕРБ, чл. 5) — не „курс на ЕЦБ“ за деня.
+    const basis =
+      input.currency === 'BGN'
+        ? `по фиксирания курс ${input.eurExchangeRate} BGN/EUR (ЗВЕРБ, чл. 5)`
+        : `по курса на ЕЦБ ${input.eurExchangeRate} ${input.currency}/EUR (чл. 114, ал. 5 ЗДДС)`;
+    lines.push(`В евро ${basis}: ${parts.join('; ')}; общо ДДС ${total} EUR`);
   }
   // 4. Подписът на продукта („създаден с fakturist.eu“) — винаги последен; текстът е от мастър панела.
   if (signature) lines.push(signature);

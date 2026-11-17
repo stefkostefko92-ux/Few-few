@@ -10,7 +10,8 @@ import { isIsoDate } from '../recurring/schedule.js';
  * Плащането по издаден документ (SPEC 52): платен / частично / неплатен по сбора на записаните плащания
  * — ръчно отбелязани (`documents.issue`) или от сверката с банката (SPEC 54, `source: BANK`). Само
  * фактура и дебитно известие с положителна сума за плащане; надплащане не се приема. Документът се
- * заключва (FOR UPDATE) — две едновременни отбелязвания не надхвърлят сумата.
+ * заключва (FOR NO KEY UPDATE — не спира проверката на външния ключ при издаване на известие към него, без
+ * deadlock) — две едновременни отбелязвания не надхвърлят сумата.
  */
 export class DocumentPaymentError extends Error {
   constructor(readonly code: 'notFound' | 'notPayable' | 'amount' | 'date' | 'source') {
@@ -49,7 +50,7 @@ export function paymentState(paid: bigint, payable: bigint): State {
 async function lockDocument(tx: Prisma.TransactionClient, organizationId: string, id: string) {
   const rows = await tx.$queryRaw<Array<{ id: string }>>`
     SELECT "id" FROM "Document" WHERE "id" = ${id} AND "organizationId" = ${organizationId}
-    FOR UPDATE`;
+    FOR NO KEY UPDATE`;
   if (rows.length !== 1) throw new DocumentPaymentError('notFound');
   return tx.document.findUniqueOrThrow({
     where: { id },

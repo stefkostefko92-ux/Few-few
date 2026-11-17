@@ -22,7 +22,8 @@ import {
  * приема (transfer-accept.ts) и става OWNER; кантората работи по пълномощно, след като той го потвърди.
  */
 export { INVITE_TTL_MS, TransferError, type TransferErrorCode } from './transfer-core.js';
-export { acceptTransferInvite, findOpenInvite, type OpenInvite } from './transfer-accept.js';
+export { acceptTransferInvite } from './transfer-accept.js';
+export { findOpenInvite, type OpenInvite } from './transfer-open.js';
 
 interface InviteResult {
   inviteId: string;

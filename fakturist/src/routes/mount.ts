@@ -1,6 +1,7 @@
 import express, { type Express } from 'express';
 import { attachSession } from '../auth/sessions.js';
-import { csrf } from '../auth/guards.js';
+import { csrf, HttpError } from '../auth/guards.js';
+import { rejectControlChars } from '../http/body-guard.js';
 import { appLocals } from '../http/view.js';
 import { webhooksRouter } from './webhooks.js';
 import { apiRouter } from '../api/router.js';
@@ -22,6 +23,7 @@ export function mountApp(app: Express): void {
   // REST API (SPEC 53): собствен JSON парсер, ключ вместо сесия, без CSRF — преди формите и сесията.
   app.use(apiRouter());
   app.use(express.urlencoded({ extended: true, limit: '256kb', parameterLimit: 2000 }));
+  app.use(rejectControlChars((_req, _res, next) => next(new HttpError(400))));
   app.use(attachSession());
   app.use(csrf());
   app.use(appLocals());

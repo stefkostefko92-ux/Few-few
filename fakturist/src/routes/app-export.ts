@@ -11,6 +11,7 @@ import { errorMessage, logger } from '../logger.js';
 import { HOUR } from '../time.js';
 import { sofiaToday } from '../time.js';
 import { config } from '../config.js';
+import { passwordCheckLimiter } from './app-security.js';
 
 const MAX_ZIP_ENTRIES = 65_000;
 const tooBig = (contact: string) =>
@@ -93,7 +94,7 @@ export function appExportRouter(): Router {
       .send(JSON.stringify(data, null, 2));
   });
 
-  router.post('/app/sigurnost/zakrii', async (req, res) => {
+  router.post('/app/sigurnost/zakrii', passwordCheckLimiter, async (req, res) => {
     const body = req.body as Record<string, unknown>;
     if (body['confirm'] !== 'on') return res.redirect(303, '/app/sigurnost?err=closeConfirm');
     try {

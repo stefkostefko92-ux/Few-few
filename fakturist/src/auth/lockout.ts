@@ -14,6 +14,11 @@ export const LOCK_STEPS_MS = [15 * MINUTE, HOUR] as const;
 export const LOCKOUT_DECAY_MS = DAY;
 /** Несъществуващ id — за непознат имейл се изпълняват същите заявки (времето не издава профила). */
 export const NO_USER = '-';
+/**
+ * Довереното устройство заобикаля заключването само за толкова опита (парола или код) след последния
+ * успешен вход — иначе бисквитката + паролата биха дали неограничени опити за кода (ревюто, 16.11.2026).
+ */
+export const TRUSTED_MAX_FAILED = 10;
 
 export function lockDuration(lockouts: number): number {
   return LOCK_STEPS_MS[Math.min(lockouts, LOCK_STEPS_MS.length - 1)] ?? HOUR;
@@ -29,11 +34,19 @@ export async function reserveAttempt(userId: string, now: Date = new Date()): Pr
   return updated === 1;
 }
 
-/** Вярна парола: броячите се нулират. */
+/** Опит от доверено устройство — атомарно, като `reserveAttempt`; false — таванът е изчерпан. */
+export async function reserveTrustedAttempt(userId: string): Promise<boolean> {
+  const updated = await prisma.$executeRaw`
+    UPDATE "User" SET "trustedFailures" = "trustedFailures" + 1
+    WHERE "id" = ${userId} AND "trustedFailures" < ${TRUSTED_MAX_FAILED}`;
+  return updated === 1;
+}
+
+/** Успешен вход (паролата и кодът, ако е включен): броячите се нулират. */
 export async function attemptSucceeded(userId: string): Promise<void> {
   await prisma.user.update({
     where: { id: userId },
-    data: { failedLogins: 0, lockouts: 0, lockedUntil: null },
+    data: { failedLogins: 0, lockouts: 0, lockedUntil: null, trustedFailures: 0 },
   });
 }
 

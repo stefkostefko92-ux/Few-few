@@ -84,6 +84,7 @@ export function inviteRouter(): Router {
           token,
           user: { userId: req.principal!.user.id },
           confirmMandate: body['confirmMandate'] === 'on',
+          acceptTerms: body['acceptTerms'] === 'on',
         });
         return res.redirect(303, `/app/o/${result.organizationId}`);
       }
@@ -111,6 +112,15 @@ export function inviteRouter(): Router {
       // Служител на поканилата кантора не става собственик на клиента ѝ.
       if (error.code === 'firmMember') {
         return render(res, 403, { invite, token, state, errors: { form: 'firmMember' }, name });
+      }
+      if (error.code === 'acceptTerms') {
+        return render(res, 400, {
+          invite,
+          token,
+          state,
+          errors: { acceptTerms: 'acceptTerms' },
+          name,
+        });
       }
       if (error.code === 'wrongEmail') {
         return render(res, 403, { invite, token, state: 'wrongAccount' });

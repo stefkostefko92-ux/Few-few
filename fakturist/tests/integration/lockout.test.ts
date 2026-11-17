@@ -176,3 +176,67 @@ test('правен преглед: с двуфакторен вход довер
     data: { totpSecretEnc: null, totpEnabledAt: null, totpLastStep: null },
   });
 });
+
+test('ревю: заключен профил с двуфакторен вход — довереното устройство минава и кода', async () => {
+  const { generateTotpSecret, totpCodeAt, totpStep } = await import('../../src/auth/totp.js');
+  const { encryptTotpSecret } = await import('../../src/auth/keys.js');
+  const secret = generateTotpSecret();
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      totpSecretEnc: encryptTotpSecret(secret, userId),
+      totpEnabledAt: new Date(),
+      totpLastStep: null,
+      lockedUntil: null,
+      failedLogins: 0,
+      lockouts: 0,
+    },
+  });
+  const jar = (res: Response) => res.headers.getSetCookie().map((c) => c.split(';')[0]!);
+  /** Паролата, после кодът — с бисквитките на устройството (`device`, ако е доверено). */
+  async function fullLogin(device: string[]): Promise<{ status: number; cookies: string[] }> {
+    await prisma.user.update({ where: { id: userId }, data: { totpLastStep: null } });
+    const first = await fetch(`${http.origin}/vhod`, {
+      method: 'POST',
+      redirect: 'manual',
+      headers: { 'content-type': 'application/x-www-form-urlencoded', cookie: device.join('; ') },
+      body: new URLSearchParams({ email: 'owner@example.test', password: PASSWORD }),
+    });
+    assert.equal(first.status, 303);
+    const cookie = [...device, ...jar(first)].join('; ');
+    const form = await (await fetch(`${http.origin}/vhod/kod`, { headers: { cookie } })).text();
+    const csrf = /name="_csrf" value="([^"]+)"/.exec(form)?.[1] ?? '';
+    const done = await fetch(`${http.origin}/vhod/kod`, {
+      method: 'POST',
+      redirect: 'manual',
+      headers: { 'content-type': 'application/x-www-form-urlencoded', cookie },
+      body: new URLSearchParams({
+        _csrf: csrf,
+        code: totpCodeAt(secret, totpStep(Math.floor(Date.now() / 1000))),
+      }),
+    });
+    return { status: done.status, cookies: jar(done) };
+  }
+  const trusted = (await fullLogin([])).cookies.filter((c) => /^(__Host-)?fakturist_dev=/.test(c));
+  assert.equal(trusted.length, 1, 'довереното устройство след пълен вход');
+  // Чужд човек, който знае само имейла, е заключил профила с грешни пароли (таванът по адрес в този
+  // файл е изразходван от предишните тестове — състоянието се задава направо).
+  await prisma.user.update({
+    where: { id: userId },
+    data: { lockedUntil: new Date(Date.now() + 15 * MINUTE), failedLogins: 5, lockouts: 1 },
+  });
+  // Собственикът от своето устройство: паролата и кодът минават (SPEC 46).
+  const owner = await fullLogin(trusted);
+  assert.equal(owner.status, 303, 'кодът не е „заключен“ за доверено устройство');
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      totpSecretEnc: null,
+      totpEnabledAt: null,
+      totpLastStep: null,
+      lockedUntil: null,
+      failedLogins: 0,
+      lockouts: 0,
+    },
+  });
+});

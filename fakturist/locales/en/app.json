@@ -5,7 +5,8 @@
     "admin": "Master panel",
     "main": "Main",
     "skip": "Skip to content",
-    "language": "Language"
+    "language": "Language",
+    "help": "Help"
   },
   "home": {
     "title": "Your companies",
@@ -228,7 +229,7 @@
   "inbox": {
     "title": "Inbox",
     "help": "Documents that companies registered with Fakturist issue to you (by EIK). They arrive automatically and an email with the PDF and XML goes to the owners, administrators and accountants.",
-    "none": "No documents received yet.",
+    "none": "No documents received yet. Invoices from companies in Fakturist arrive here on their own — by your company’s EIK.",
     "from": "Sender",
     "state": "Status",
     "new": "new",
@@ -252,7 +253,7 @@
   "mandates": {
     "title": "Authorisations",
     "help": "The accounting firms that issue on behalf of the company (Art. 113(7) of the VAT Act). A firm cannot issue until you confirm its authorisation.",
-    "none": "No authorisations.",
+    "none": "No authorisations. When an accounting firm adds your company, its authorisation waits here for your confirmation.",
     "firm": "Firm",
     "actions": "Actions",
     "approve": "Confirm",
@@ -309,7 +310,8 @@
     "saved": {
       "pdf": "The look is saved. It also applies to already issued documents the next time they are downloaded.",
       "logo": "The logo is uploaded.",
-      "mahnato": "The logo is removed."
+      "mahnato": "The logo is removed.",
+      "danni": "The company details are saved."
     },
     "errors": {
       "invalid": "Choose from the list.",
@@ -320,6 +322,33 @@
       "logoCorrupt": "The file cannot be read as an image.",
       "logoMissing": "Choose a file.",
       "logoTooMany": "Too many uploads in a short time — try again in 10 minutes."
+    },
+    "profile": {
+      "title": "Company details",
+      "intro": "The legal name, address, VAT number and bank account go into documents issued after the change. Issued documents do not change.",
+      "legalName": "Legal name",
+      "eik": "EIK",
+      "eikHint": "The EIK is changed only by Fakturist after a check — write to support.",
+      "vatNumber": "VAT number",
+      "vatHint": "“BG{eik}” or empty if the company is not VAT-registered.",
+      "addressStreet": "Address",
+      "addressCity": "City",
+      "postalCode": "Postcode",
+      "iban": "IBAN",
+      "bic": "BIC",
+      "bankName": "Bank",
+      "email": "Company email",
+      "phone": "Phone",
+      "issuedNote": "The new details apply to documents after saving.",
+      "save": "Save the details",
+      "ownerOnly": "The company details are changed by the owner.",
+      "errors": {
+        "invalid": "Check the fields: the VAT number is “BG” + EIK, the IBAN is Bulgarian, the postcode is 4 digits.",
+        "notOwner": "Only the owner changes the details.",
+        "terminated": "The company is terminated — its details do not change.",
+        "peppolActive": "The VAT number is the company’s Peppol address — turn Peppol off first.",
+        "reviewPending": "The ownership is still “under review” — the details change after Fakturist confirms it."
+      }
     }
   },
   "catalog": {
@@ -446,7 +475,8 @@
       "vatMissing": "VAT not charged when it should have been (para. 2)",
       "vatCharged": "VAT charged when it should not have been (para. 3)",
       "vatRate": "Wrong VAT rate (para. 6)"
-    }
+    },
+    "zone": "Only for a document drawn up in error (Art. 116 VAT Act): it is cancelled together with a new document of the same type. The number stays used and the recipient is notified."
   },
   "export": {
     "link": "Export (ZIP)",
@@ -461,7 +491,8 @@
       "closeConfirm": "Confirm the closing with the checkbox.",
       "password": "The password is wrong.",
       "master": "A master account is not closed from here.",
-      "transferFirst": "You are the only owner of a company with other members — remove them first or write to us to transfer ownership."
+      "transferFirst": "You are the only owner of a company with other members — remove them first or write to us to transfer ownership.",
+      "terminateFirst": "You are the only person in the company — terminate it first under “Termination” (30 days to download the documents, then the data is deleted), then close your account."
     }
   },
   "plan": {
@@ -542,7 +573,7 @@
     "fromTemplate": "From the recurring invoice",
     "fromDocument": "The template is taken from invoice No. {number}: its buyer, lines, notes and payment.",
     "how": "A recurring invoice is made from an issued invoice — the “Repeat” button on the document. Each period a new invoice is issued with the next number of the series, the issue date and a due date.",
-    "none": "No recurring invoices yet.",
+    "none": "No recurring invoices yet. Open an issued invoice and press “Repeat” — Fakturist will issue it on the schedule.",
     "needsPlan": "This feature is in the paid plans.",
     "newTitle": "New recurring invoice",
     "name": "Name",
@@ -689,7 +720,7 @@
     "fileHint": "camt.053 (XML) or CSV, up to 2 MB. Only incoming payments are kept.",
     "upload": "Upload",
     "new": "New incoming payments",
-    "none": "No new incoming payments.",
+    "none": "No new receipts. Upload a statement (camt.053 or CSV) from your bank — Fakturist suggests the invoice each receipt pays.",
     "date": "Date",
     "amount": "Amount",
     "from": "Payer",
@@ -1006,7 +1037,8 @@
       "rate": "a rate other than 20% and 9%",
       "type": "a document type that is not entered automatically",
       "currency": "a foreign-currency document without a euro rate",
-      "amount": "an amount that does not fit the 15-character field"
+      "amount": "an amount that does not fit the 15-character field",
+      "period": "an intra-Community supply whose VAT became chargeable (Art. 51 VAT Act) in a month other than the issue month, or an advance invoice for one — the month is set by hand"
     },
     "notesTitle": "How it is built",
     "notes": {
@@ -1059,7 +1091,8 @@
     "reasons": {
       "category": "reverse charge, out-of-scope supply or a rate other than 20 % and 9 % — the tax code depends on the legal basis",
       "type": "document type that does not belong to sales",
-      "cancelled": "cancelled document — recorded as the accountant directs"
+      "cancelled": "cancelled document — recorded as the accountant directs",
+      "currency": "a currency with a high euro rate — the SAF-T rate has 4 decimals and the amounts would not reconcile; enter it by hand"
     },
     "settingsTitle": "Accounts and related parties",
     "settingsHelp": "Chosen by the accountant from the company's chart of accounts. They apply to every month.",
@@ -1084,5 +1117,107 @@
       "transaction": "The ledger transaction identifier (TransactionID) is the document number — use the same one when you post it.",
       "check": "Check the monthly file with the NRA validator before submitting it. Fakturist submits nothing to the NRA on your behalf."
     }
+  },
+  "ownership": {
+    "title": "Ownership",
+    "intro": "As the owner of “{name}” you can hand the company over to another person or entrust it to your accounting firm. Nothing changes until it is accepted.",
+    "pendingTitle": "Pending handover",
+    "pendingPerson": "The invitation to {email} awaits acceptance until {date}.",
+    "pendingFirm": "The proposal to {firm} awaits a decision until {date}.",
+    "pendingNote": "A new invitation or proposal cancels the pending one.",
+    "cancel": "Cancel the handover",
+    "personTitle": "To another person",
+    "personText": "The recipient accepts with a link from an email, valid for 7 days. After that they are the owner, and you stay an administrator until they decide otherwise.",
+    "email": "Recipient’s email",
+    "password": "Password",
+    "code": "Code from the app",
+    "sendPerson": "Send the invitation",
+    "firmTitle": "To an accounting firm",
+    "firmText": "Only a firm with an active authorisation for the company. It accepts or declines from its own account.",
+    "noFirms": "No accounting firm has an active authorisation for this company. Confirm an authorisation under “Authorisations”.",
+    "firm": "Accounting firm",
+    "firmEffects": {
+      "members": "You and all members leave the company; the API keys are revoked.",
+      "mandate": "The firm manages the company under the authorisation — the documents and history stay.",
+      "owner": "The firm may later invite a new owner (including you).",
+      "before": "Download the “Export (ZIP)” first — after the handover you no longer have access to the company.",
+      "controller": "The company stays the controller of its data; the firm processes it under the authorisation and its agreement with the company."
+    },
+    "sendFirm": "Propose to the firm",
+    "support": "In a dispute or after lost access, the Fakturist team can hand over the ownership after checking the documents — write to support.",
+    "ok": {
+      "person": "The invitation is sent. You will get an email when it is accepted.",
+      "firm": "The proposal is sent to the firm.",
+      "cancelled": "The handover is cancelled."
+    },
+    "err": {
+      "notOwner": "Only the owner hands the company over.",
+      "password": "The password is not correct.",
+      "code": "The code from the app is wrong or already used.",
+      "reviewPending": "Your ownership is still under review — a handover is possible after Fakturist confirms it.",
+      "locked": "The company’s ownership is suspended by Fakturist.",
+      "terminated": "The company is terminated — its ownership is not handed over.",
+      "sameUser": "Enter another person’s email.",
+      "invalidEmail": "The email is not valid.",
+      "noMandate": "The firm needs an active authorisation for the company.",
+      "notCompany": "An accounting firm is not handed over to a firm.",
+      "rateLimited": "Too many attempts — try again in 15 minutes.",
+      "invalid": "Fill in all fields.",
+      "dailyLimit": "Up to 5 handover invitations a day — try again tomorrow."
+    },
+    "blocked": {
+      "reviewPending": "Your ownership is still under review. A handover is possible after Fakturist confirms it.",
+      "locked": "The company’s ownership is suspended by Fakturist — a handover is not possible."
+    },
+    "proposals": {
+      "title": "Takeover proposals",
+      "text": "The owner proposes that your firm takes over the company. If you accept, the owner and its members leave and your firm manages it under the authorisation.",
+      "item": "“{company}” (EIK {eik}) — from {from}, until {date}",
+      "accept": "Accept",
+      "decline": "Decline",
+      "ok": {
+        "accepted": "The company is now managed by your firm.",
+        "declined": "The proposal is declined."
+      },
+      "err": {
+        "noMandate": "The authorisation is no longer active.",
+        "invalid": "The proposal is no longer valid.",
+        "expired": "The proposal has expired.",
+        "notAllowed": "Only the firm’s owner or administrator decides.",
+        "declaration": "Tick the declaration under item 1a of the data processing agreement."
+      }
+    },
+    "exportLink": "Download the archive (ZIP)"
+  },
+  "help": {
+    "title": "Help",
+    "intro": "How to work with Fakturist — the sections you see for your companies, your role and your plan.",
+    "manual": "Download the manual (PDF)",
+    "public": "The public “How it works” page"
+  },
+  "legalUpdate": {
+    "title": "Current terms",
+    "intro": "A new version from {date} of the terms of service, the data processing agreement and the privacy policy — it applies to you from your acceptance. Read them and accept the terms (the owner — also the data processing agreement for their company) to continue.",
+    "whatsNew": "What is new",
+    "changes": {
+      "1": "Ownership handover: to another person by email invitation or to the accounting firm with an active mandate (terms of service, section 8).",
+      "2": "An accounting firm takes over a company only with the declaration under section 1a of the data processing agreement; the company stays the controller of its data.",
+      "3": "In a dispute or after lost access, the Fakturist team may hand over the ownership after checking a document of representation; the people affected receive an email with the reason.",
+      "4": "The owner changes the company details; we correct the EIK only for the same legal entity. A new version may be accepted expressly at sign-in."
+    },
+    "docs": {
+      "terms": "Terms of service",
+      "dpa": "Data processing agreement",
+      "privacy": "Privacy policy"
+    },
+    "accept": "Accept and continue",
+    "refuse": "If you disagree, you may stop using the service without penalty — we refund what you paid for the unused period (sections 11 and 15 of the terms of service). You download your data and close your account under",
+    "security": "“Security”",
+    "export": "download the archive (ZIP)",
+    "terminate": "termination"
+  },
+  "file": {
+    "choose": "Choose a file",
+    "none": "No file chosen"
   }
 }

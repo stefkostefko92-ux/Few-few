@@ -99,6 +99,7 @@ test('собственик, поканен от кантора: фирмата �
     }),
   );
   await acceptTransferInvite({
+    acceptTerms: true,
     token,
     user: { name: 'Втори Имейл', password: 'съвсем-друга-парола-2026' },
     confirmMandate: true,
@@ -145,6 +146,17 @@ test('отнемане: членове вън, пълномощни чакащи
     pdfStyleReset: 1,
   });
   assert.equal(await prisma.membership.count({ where: { organizationId: clientId } }), 0);
+  // Махнатият получава писмо с решението, причината и как да го оспори (DSA чл. 17).
+  const removedUser = await prisma.user.findUniqueOrThrow({ where: { id: oldOwner.userId } });
+  const notice = await prisma.notification.findFirstOrThrow({
+    where: { kind: 'org.ownershipRevoked', toEmail: removedUser.email },
+  });
+  const { composeOrgMail } = await import('../../src/mail/org-mail.js');
+  const mail = await composeOrgMail(notice.kind, notice.toEmail, notice.payload);
+  assert.match(mail.subject, /достъпът ви до „.+“ е спрян/);
+  assert.match(mail.text, /Причина: има спор кой представлява фирмата\./);
+  assert.match(mail.text, /т\. 10 и 11 от общите условия/);
+  assert.match(mail.text, /решението се преглежда от човек/);
   assert.equal(await prisma.pdfStyle.count({ where: { organizationId: clientId } }), 0);
   const mandate = await prisma.clientMandate.findFirstOrThrow({ where: { clientId } });
   assert.equal(mandate.status, 'PENDING');
@@ -197,6 +209,7 @@ test('отнемане: членове вън, пълномощни чакащи
     actorId: masterId,
   });
   await acceptTransferInvite({
+    acceptTerms: true,
     token: invite.token,
     user: { name: 'Истински Собственик', password: 'истинската-парола-2026' },
   });
@@ -238,6 +251,7 @@ test('фирма с вече потвърдено пълномощно пак в
     }),
   );
   await acceptTransferInvite({
+    acceptTerms: true,
     token,
     user: { name: 'Хмел Собственик', password: 'горчивото-пиво-се-вари-бавно' },
   });

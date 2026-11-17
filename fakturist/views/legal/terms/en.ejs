@@ -4,13 +4,14 @@
 <p><%= company.name %> (<%= company.nameBg %>), registered in the Commercial Register and Register of Non-Profit Legal Entities at the Bulgarian Registry Agency under EIK&nbsp;<%= company.eik %>, VAT&nbsp;no.&nbsp;<%= company.vat %>, <%= company.street.en %>, <%= company.postalCode %> <%= company.city.en %>, <%= company.region.en %>, Bulgaria, tel.&nbsp;<a href="<%= company.phoneHref %>"><%= company.phone %></a>, <a href="mailto:<%= contactEmail %>"><%= contactEmail %></a>. Hereafter “we”.</p>
 
 <h2 id="audience">2. Who the service is for</h2>
-<p>Fakturist is for traders, legal entities, freelancers and accounting firms — for their professional activity. It is not intended for consumers within the meaning of the Bulgarian Consumer Protection Act. Whoever registers a company declares that they may represent it or are authorised by it, and accepts these terms and the <a href="<%= legalUrl('dpa') %>">data processing agreement</a> on its behalf.</p>
+<p>Fakturist is for traders, legal entities, freelancers and accounting firms — for their professional activity. It is not intended for consumers within the meaning of the Bulgarian Consumer Protection Act. Whoever registers a company or takes over a company by invitation or handover (section&nbsp;8) declares that they may represent it or are authorised by it, and accepts these terms and the <a href="<%= legalUrl('dpa') %>">data processing agreement</a> on its behalf.</p>
 
 <h2 id="account">3. The account</h2>
 <ul>
-  <li>The data you give at registration must be true and kept up to date — it becomes the particulars of your documents.</li>
+  <li>The data you give at registration must be true and kept up to date — it becomes the particulars of your documents. The company's owner changes the name, address, VAT number and bank account under “Company settings”; the new details apply to documents issued after the change. We correct the EIK after a check, only for the same legal entity — another entity is a new registration.</li>
   <li>You keep your password safe and do not share your account. We recommend two-factor sign-in under “Security”. Actions from your account are deemed yours.</li>
   <li>If you suspect someone else has access, change your password at once and write to us.</li>
+  <li>The parties agree that statements made from the account after sign-in (ticks and buttons — for example accepting these terms) are electronic statements signed with an electronic signature that has the effect of a handwritten signature (Art.&nbsp;13(4) of the Bulgarian Electronic Document and Electronic Trust Services Act).</li>
   <li>You confirm your email address with the link we send you: password links and document notices are sent to it.</li>
 </ul>
 
@@ -51,7 +52,9 @@
 <ul>
   <li>An accounting firm issues on behalf of a client company only with an active mandate — confirmed by the company's owner or by us after a document is presented. The firm is responsible for holding the written mandate referenced in the account.</li>
   <li>The company belongs to its owner, even if the accounting firm added it. The firm is at most an accountant: it does not manage the company's members, plan or mandates.</li>
-  <li>In a dispute over ownership we may suspend access to the company until representation is proven.</li>
+  <li>The owner may hand the company over to another person: with their password (and two-factor code, if enabled) they send an invitation by email, valid for 7 days. The person who accepts becomes the owner and accepts these terms and the data processing agreement on the company's behalf, and the previous owner stays an administrator until the new owner decides otherwise.</li>
+  <li>The owner may also offer the company to its accounting firm with an active mandate. The firm accepts with the declaration under section&nbsp;1a of the data processing agreement. The owner and all members then leave the company, their API keys are revoked, and the firm manages it under the mandate and may invite a new owner. The company stays the controller of the personal data in its documents. Before that the owner downloads the company archive (“Export (ZIP)”) — after the acceptance they no longer have access to it.</li>
+  <li>In a dispute over ownership we may suspend access to the company until representation is proven. In a dispute or after lost access, after checking a document of representation, we may hand the ownership over to a person or to an accounting firm (with its written declaration under section&nbsp;1a of the data processing agreement) and keep the previous owner as an administrator or end their membership; in a handover to an accounting firm all members leave, as in the previous point. The people affected receive an email with the reason and may object; the dispute is resolved under section&nbsp;16.</li>
 </ul>
 
 <h2 id="api">8a. API</h2>
@@ -87,7 +90,7 @@
 <p>Fakturist, its code, design and brand are ours. You receive a non-exclusive right to use the service for the life of the account, for your own business or — for accounting firms — for the business of your clients.</p>
 
 <h2 id="changes">15. Changes to the terms</h2>
-<p>We notify you of a material change by email at least 30 days before it takes effect. If you disagree, you may stop using the service before then, without penalty. The version date is at the top of the page.</p>
+<p>We notify you of a material change by email at least 30 days before it takes effect. If you disagree, you may stop using the service before then, without penalty. We may also ask you to accept a new version expressly at sign-in. If you accept it, it applies to you from that acceptance. Until you accept it, only “Security”, the export and the termination are available in the app. If you do not accept it, you may stop using the service without penalty and we refund what you paid for the unused period (section&nbsp;11). Without express acceptance the new version applies 30 days after the email. The version date is at the top of the page.</p>
 
 <h2 id="law">16. Governing law and disputes</h2>
 <p>Bulgarian law applies. We first try to settle disputes by talking; if we cannot agree — before the competent Bulgarian court.</p>

@@ -13,57 +13,7 @@ import {
   TransferError,
 } from './transfer-core.js';
 import type { Locale } from '../i18n.js';
-
-export interface OpenInvite {
-  id: string;
-  email: string;
-  expiresAt: Date;
-  organization: { id: string; legalName: string; eik: string | null };
-  existingUser: boolean;
-  /** Поканата е от кантора по пълномощно — приелият може да го потвърди с една отметка. */
-  mandate: {
-    id: string;
-    status: 'PENDING' | 'ACTIVE' | 'REVOKED';
-    documentRef: string;
-    validFrom: Date;
-    firm: { legalName: string; eik: string | null };
-  } | null;
-}
-
-/** Отворена покана по токена от връзката — иначе null (непознат, използван, отменен, изтекъл). */
-export async function findOpenInvite(token: string, now = new Date()): Promise<OpenInvite | null> {
-  if (!TOKEN.test(token)) return null;
-  const invite = await prisma.transferInvite.findUnique({
-    where: { tokenHash: sha256Hex(token) },
-    include: {
-      organization: {
-        select: { id: true, legalName: true, eik: true, deletedAt: true, terminatedAt: true },
-      },
-      mandate: {
-        select: {
-          id: true,
-          status: true,
-          documentRef: true,
-          validFrom: true,
-          firm: { select: { legalName: true, eik: true } },
-        },
-      },
-    },
-  });
-  if (!invite || !isOpen(invite, now)) return null;
-  if (invite.organization.deletedAt || invite.organization.terminatedAt) return null;
-  if ((await ownerCount(prisma, invite.organizationId)) > 0) return null;
-  const existingUser = (await prisma.user.count({ where: { email: invite.email } })) > 0;
-  const { deletedAt: _deleted, terminatedAt: _terminated, ...organization } = invite.organization;
-  return {
-    id: invite.id,
-    email: invite.email,
-    expiresAt: invite.expiresAt,
-    organization,
-    existingUser,
-    mandate: invite.mandate,
-  };
-}
+import { isOwner } from './transfer-open.js';
 
 /** Нов профил — на езика на страницата, от която е приета поканата. */
 type Acceptor = { userId: string } | { name: string; password: string; locale?: Locale };
@@ -78,6 +28,8 @@ export async function acceptTransferInvite(input: {
   token: string;
   user: Acceptor;
   confirmMandate?: boolean;
+  /** Отметката за условията — задължителна и за съществуващ профил. */
+  acceptTerms?: boolean;
   now?: Date;
 }): Promise<{ userId: string; organizationId: string; created: boolean }> {
   const now = input.now ?? new Date();
@@ -104,12 +56,15 @@ export async function acceptTransferInvite(input: {
     return await prisma.$transaction(async (tx) => {
       const invite = await tx.transferInvite.findUniqueOrThrow({
         where: { tokenHash },
-        include: { mandate: { select: { id: true, firmId: true, status: true } } },
+        include: {
+          mandate: { select: { id: true, firmId: true, status: true } },
+          fromUser: { select: { email: true } },
+        },
       });
       await lockOrganization(tx, invite.organizationId);
       const org = await tx.organization.findUniqueOrThrow({
         where: { id: invite.organizationId },
-        select: { deletedAt: true, terminatedAt: true },
+        select: { deletedAt: true, terminatedAt: true, legalName: true },
       });
       if (!isOpen(invite, now) || org.deletedAt || org.terminatedAt) {
         throw new TransferError('invalid');
@@ -122,7 +77,14 @@ export async function acceptTransferInvite(input: {
       ) {
         throw new TransferError('invalid');
       }
-      if ((await ownerCount(tx, invite.organizationId)) > 0) throw new TransferError('invalid');
+      // Предаване (SPEC 85): предаващият още е собственик; иначе — покана към фирма без собственик.
+      if (invite.fromUserId) {
+        if (!(await isOwner(tx, invite.fromUserId, invite.organizationId))) {
+          throw new TransferError('invalid');
+        }
+      } else if ((await ownerCount(tx, invite.organizationId)) > 0) {
+        throw new TransferError('invalid');
+      }
       // Служител на поканилата кантора не става собственик на клиента ѝ.
       if (invite.mandate && (await isFirmMember(tx, invite.mandate.firmId, invite.email))) {
         throw new TransferError('firmMember');
@@ -159,6 +121,14 @@ export async function acceptTransferInvite(input: {
         if (!user.emailVerifiedAt) {
           await tx.user.update({ where: { id: user.id }, data: { emailVerifiedAt: now } });
         }
+        // И съществуващ профил декларира, че представлява фирмата, и приема условията за нея
+        // (общите условия т. 2; договорът за обработване т. 1) — правният преглед, 16.11.2026.
+        if (input.acceptTerms !== true) throw new TransferError('acceptTerms');
+        await recordRegistrationAcceptance(tx, {
+          userId,
+          organizationId: invite.organizationId,
+          now,
+        });
       }
 
       const claimed = await tx.transferInvite.updateMany({
@@ -172,6 +142,28 @@ export async function acceptTransferInvite(input: {
         create: { userId, organizationId: invite.organizationId, role: 'OWNER' },
         update: { role: 'OWNER' },
       });
+      // Предаващият остава администратор (решение на собственика, 16.11.2026) и получава писмо.
+      if (invite.fromUserId && invite.fromUserId !== userId) {
+        await tx.membership.update({
+          where: {
+            userId_organizationId: {
+              userId: invite.fromUserId,
+              organizationId: invite.organizationId,
+            },
+          },
+          data: { role: 'ADMIN' },
+        });
+        if (invite.fromUser) {
+          await tx.notification.create({
+            data: {
+              organizationId: invite.organizationId,
+              kind: 'handover.accepted',
+              toEmail: invite.fromUser.email,
+              payload: { legalName: org.legalName, newOwnerId: userId },
+            },
+          });
+        }
+      }
       // Фирмата, добавена от кантора, няма собствен план — получава безплатния, както при регистрация.
       const active = await tx.subscription.findFirst({
         where: { organizationId: invite.organizationId, status: 'ACTIVE' },
@@ -192,7 +184,9 @@ export async function acceptTransferInvite(input: {
       await audit(tx, {
         actorId: userId,
         organizationId: invite.organizationId,
-        action: 'organization.transfer.accepted',
+        action: invite.fromUserId
+          ? 'organization.handover.accepted'
+          : 'organization.transfer.accepted',
         targetType: 'TransferInvite',
         targetId: invite.id,
         details: { newAccount: newUser !== null },

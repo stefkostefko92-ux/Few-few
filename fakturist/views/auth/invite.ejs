@@ -1,24 +1,31 @@
 <%- include('../partials/app-head', { title: t('auth.invite.title') }) %>
 <%
-  const date = invite.expiresAt.toISOString().slice(0, 10).split('-').reverse().join('.');
+  const date = bgDate(invite.expiresAt);
   const errorText = (code) => code.startsWith('password.')
     ? tOr('auth.errors.' + code, t('auth.errors.invalid'))
     : tOr('auth.invite.errors.' + code, t('auth.errors.invalid'));
 %>
 <section class="narrow wide-ish">
   <h1><%= t('auth.invite.title') %></h1>
+  <% if (invite.from) { %>
+  <p><%= t('auth.invite.handoverIntro', { from: invite.from.name, company: invite.organization.legalName, eik: invite.organization.eik || '—' }) %></p>
+  <p class="muted"><%= t('auth.invite.handoverNote', { from: invite.from.name }) %></p>
+  <% } else { %>
   <p><%= t('auth.invite.intro', { company: invite.organization.legalName, eik: invite.organization.eik || '—' }) %></p>
+  <% } %>
   <p class="muted"><%= t('auth.invite.forEmail', { email: invite.email, date }) %></p>
   <% const m = invite.mandate; const mandateBox = m && m.status === 'PENDING'; %>
   <% if (m) { %>
-    <p class="callout"><%= t('auth.invite.byFirm', { firm: m.firm.legalName, eik: m.firm.eik || '—', ref: m.documentRef, from: m.validFrom.toISOString().slice(0, 10).split('-').reverse().join('.') }) %></p>
+    <p class="callout"><%= t('auth.invite.byFirm', { firm: m.firm.legalName, eik: m.firm.eik || '—', ref: m.documentRef, from: bgDate(m.validFrom) }) %></p>
   <% } %>
   <% if (errors.form) { %><p class="error" role="alert"><%= errorText(errors.form) %></p><% } %>
   <% if (state === 'accept') { %>
     <form method="post" action="/pokana/<%= token %><%= langQuery %>" class="stack">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <% if (mandateBox) { %><label class="check"><input type="checkbox" name="confirmMandate"> <%= t('auth.invite.confirmMandate', { firm: m.firm.legalName }) %><span class="hint"><%= t('auth.invite.confirmMandateHint') %></span></label><% } %>
-      <button type="submit"><%= t('auth.invite.accept') %></button>
+      <% if (errors.acceptTerms) { %><p class="error" role="alert"><%= t('auth.invite.errors.acceptTerms') %></p><% } %>
+      <%- include('../partials/legal-accept', { orgName: invite.organization.legalName, invalid: Boolean(errors.acceptTerms) }) %>
+      <div><button type="submit"><%= t('auth.invite.accept') %></button></div>
     </form>
   <% } else if (state === 'wrongAccount') { %>
     <p class="callout"><%= t('auth.invite.wrongAccount', { current: currentUser ? currentUser.email : '', email: invite.email }) %></p>

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
-import { prepareTestDatabase, truncateAll } from './harness.js';
+import { acceptCurrentTerms, prepareTestDatabase, truncateAll } from './harness.js';
 import { startHttp, type HttpClient, type Session } from './http.js';
 
 prepareTestDatabase();
@@ -93,6 +93,7 @@ before(async () => {
         .passwordHash,
     },
   });
+  await acceptCurrentTerms(prisma, viewerUser.id);
   await prisma.membership.create({
     data: { userId: viewerUser.id, organizationId: orgId, role: 'VIEWER' },
   });
@@ -221,6 +222,7 @@ test('създателят вече не може да издава → шабл
   const helper = await prisma.user.create({
     data: { email: 'issuer@example.test', name: 'Издава', passwordHash: 'x' },
   });
+  await acceptCurrentTerms(prisma, helper.id);
   const membership = await prisma.membership.create({
     data: { userId: helper.id, organizationId: orgId, role: 'ISSUER' },
   });
