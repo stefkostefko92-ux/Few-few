@@ -853,3 +853,5 @@
 {"t":"handoff","ts":"2026-11-17T07:33:59.159Z","id":"r7dbcbe97","from":"mobildjiyata","to":"kodadjiyata","status":"има бележки","run":"df3c4515"}
 {"t":"start","ts":"2026-11-17T07:40:42.851Z","id":"r78108818","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-17T07:40:42.851Z","id":"r78108818","from":"kodadjiyata","to":"друг","status":"има бележки","run":"a821e506","toRaw":"Изпитателя"}
+{"t":"start","ts":"2026-11-17T07:46:39.998Z","id":"r98f4bd4a","flow":"авто","lead":"kachestveniyat","auto":true}
+{"t":"handoff","ts":"2026-11-17T07:46:39.998Z","id":"r98f4bd4a","from":"kachestveniyat","to":"kodadjiyata","status":"има бележки","run":"49f75beb"}
