@@ -8,6 +8,8 @@ import { createRequire } from 'node:module';
 /** Елемент в страницата — само полетата, които тестовете четат (без DOM типовете: lib е ES2023). */
 export interface PageElement {
   textContent: string | null;
+  /** Само при `<details>`. */
+  open?: boolean;
   closest(selector: string): PageElement | null;
 }
 
@@ -34,6 +36,7 @@ export interface Locator {
   inputValue(): Promise<string>;
   isChecked(): Promise<boolean>;
   isDisabled(): Promise<boolean>;
+  isVisible(): Promise<boolean>;
   getAttribute(name: string): Promise<string | null>;
   evaluate<T>(fn: (element: PageElement) => T): Promise<T>;
   evaluateAll<T>(fn: (elements: PageElement[]) => T): Promise<T>;

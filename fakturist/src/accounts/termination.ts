@@ -160,6 +160,11 @@ export async function requestTermination(
       where: { organizationId: org.id, acceptedAt: null, revokedAt: null },
       data: { revokedAt: now },
     });
+    // Чакащите предложения за предаване — на фирмата и към кантората (SPEC 88).
+    await tx.firmHandover.updateMany({
+      where: { OR: [{ organizationId: org.id }, { firmId: org.id }], status: 'PENDING' },
+      data: { status: 'REVOKED', decidedAt: now },
+    });
     await tx.apiKey.updateMany({
       where: { organizationId: org.id, revokedAt: null },
       data: { revokedAt: now },

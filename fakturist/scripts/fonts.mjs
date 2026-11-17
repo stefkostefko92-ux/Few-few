@@ -34,4 +34,12 @@ for (const { pkg, family, weights } of FAMILIES) {
   copyFileSync(join(base, 'LICENSE'), join(out, `${pkg}-OFL.txt`));
 }
 writeFileSync(join(out, 'fonts.css'), `${rules.join('\n')}\n`);
+// Приложението (views/partials/app-head.ejs): `optional` — шрифтът, който не е дошъл за ~100 ms, не
+// сменя вече нарисувания текст. Със `swap` лентата се пренарежда и съдържанието скача 44 px (CLS 0,254 на
+// мобилен при студен кеш — Скоростника, 16.11.2026); от втората страница шрифтът е в кеша. Витрината
+// остава със `swap` + preload (views/partials/site-head.ejs) — там текстът иначе би останал резервен.
+writeFileSync(
+  join(out, 'fonts-app.css'),
+  `${rules.map((rule) => rule.replace('font-display:swap', 'font-display:optional')).join('\n')}\n`,
+);
 console.log(`fonts: ${rules.length} лица → public/fonts/`);

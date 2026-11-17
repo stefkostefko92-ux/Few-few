@@ -21,6 +21,7 @@ import { legalRouter } from './routes/legal.js';
 import { mountApp } from './routes/mount.js';
 import { newsFeedRouter } from './routes/news.js';
 import { queryLocale } from './http/view.js';
+import { bgDate } from './time.js';
 
 /** Грешките на body-parser носят статус; останалите (и не-Error) са 500. */
 function errorStatus(error: unknown): number {
@@ -54,6 +55,8 @@ export function createServer(): Express {
   app.disable('x-powered-by');
   app.set('trust proxy', cfg.TRUST_PROXY);
   app.set('view engine', 'ejs');
+  // Датите за показ — по софийско време във всеки изглед (src/time.ts).
+  app.locals.bgDate = bgDate;
   app.set('views', join(ROOT, 'views'));
 
   app.use((_req, res, next) => {

@@ -1,5 +1,5 @@
 <%- include('../partials/app-head', { title: entry.supplierName + ' ' + entry.number }) %>
-<% const day = (d) => d ? d.toISOString().slice(0, 10).split('-').reverse().join('.') : '—'; %>
+<% const day = (d) => d ? bgDate(d) : '—'; %>
 <% const amount = (c) => money(c, entry.currency); %>
 <p><a href="/app/o/<%= orgId %>/vhodyashti">← <%= t('app.incoming.title') %></a></p>
 <h1 class="mono"><%= entry.number %></h1>

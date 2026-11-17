@@ -132,9 +132,9 @@ Shared glossary `ф:р · PI · LT · QG · RM · SC · ИоМ` — internal not
 
 ## Skills — `.claude/skills/`
 
-Ours (BG, vetted; 61; metadata only until triggered): **агентски** — agent-doctrine; **процедури** — deploy · prisma-migrate · quality-gate · verify ·
+Ours (BG, vetted; 62; metadata only until triggered): **агентски** — agent-doctrine; **процедури** — deploy · prisma-migrate · quality-gate · verify ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
-razpit · skill-author · sapernik; **предпазители** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch ·
+razpit · skill-author · sapernik; **предпазители** — fiscal-bg · stripe-payment · revolut-payment · motion-a11y · gdpr-launch ·
 db-readonly · owasp-review · wcag-audit · incident-breach · pentest-engagement; **SEO/perf** — indexnow · keywords-seo · i18n-parity ·
 web-vitals; plus uchitel; **домейн** — youtube-reddit · fivem-mlo · fivem-clothing · fivem-livery; **външни, адаптирани** (14, вкл. archify-diagrams) и **правни** (15) — ростерът е в `tools/agents/CLAUDE.md`, произходът в `.claude/skills/THIRD_PARTY_NOTICES.md`. Gate: `tools/skills/lint.mjs` + `trigger-check.mjs --check`.
 **Own BG skills; never import third-party wholesale**; външно — само с изрично „да“ от собственика (`tools/agents/CLAUDE.md`).

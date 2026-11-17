@@ -46,6 +46,7 @@ const PATHS = {
   building: BUILDING,
   shield: SHIELD,
   shieldCheck: `${SHIELD}<path d="M8.5 12l2.5 2.5 4.5-5"/>`,
+  help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.8-.9 1.5v.4"/><path d="M12 16.8h.01"/>',
   install:
     '<rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M12 8v6M9.5 11.5L12 14l2.5-2.5"/>',
   logout: '<path d="M10 4H5v16h5"/><path d="M15 8l4 4-4 4M19 12H9"/>',

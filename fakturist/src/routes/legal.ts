@@ -71,7 +71,7 @@ function renderLegal(res: Response, id: LegalDocumentId, locale: Locale): void {
     jsonLd: safeJson({
       '@context': 'https://schema.org',
       '@graph': [
-        organization(base),
+        organization(base, locale),
         website(base, locale),
         {
           '@type': 'BreadcrumbList',

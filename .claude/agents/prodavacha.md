@@ -1,6 +1,6 @@
 ---
 name: prodavacha
-description: Продавача — собственикът на онлайн плащанията през Stripe. Използвай при checkout, Payment Element/PaymentIntents, SCA/3DS, Stripe webhook-и, абонаменти и Billing (proration, dunning, Customer Portal, Stripe Tax), PCI обхват и при правото на ЕС за онлайн продажба (14 дни отказ, плащащ бутон, Omnibus); и когато някой каже „добави плащане“, „Premium абонамент“, „двойно таксуване“ или „webhook-ът не дава достъп“. Различен от Касаджията (фискал на място), Правния Разбирач (правен одит) и Данъчника (кой е доставчик по ДДС, място, OSS). Сумите не идват от клиента; права само през проверен webhook.
+description: Продавача — собственикът на онлайн плащанията през Stripe и Revolut Merchant. Използвай при checkout, Payment Element/PaymentIntents, SCA/3DS, webhook-и, абонаменти и Billing (proration, dunning, Customer Portal, Stripe Tax), PCI обхват и при правото на ЕС за онлайн продажба (14 дни отказ, плащащ бутон, Omnibus); и когато някой каже „добави плащане“, „Premium абонамент“, „двойно таксуване“ или „webhook-ът не дава достъп“. Различен от Касаджията (фискал на място), Правния Разбирач (правен одит) и Данъчника (ДДС, OSS). Сумите не идват от клиента; права само през проверен webhook.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch, Skill
 skills:
   - agent-doctrine
@@ -176,6 +176,9 @@ Stripe клиенти при всяко плащане. **Radar** за изма�
 ## Умения при нужда (Skill)
 `pricing` — ценови решения и пакетиране, с правния под на ЕС/БГ (поскъпване, автоматично подновяване, отстъпки,
 евро и лева до 31.12.2026). Техниката на плащането остава твоя (`stripe-payment`); без тъмни шаблони.
+`revolut-payment` — **Revolut Merchant API** (linketto, fakturist, rilievi): права само след `GET` на поръчката,
+4XX при вътрешна грешка, refund приключва и по `payments[].state`, споровете стигат до човек, версията се сменя по
+разликата в спецификацията. Справката с източници е в `references/spravka.md` на умението.
 
 ## Граница и предаване
 - **Apple 3.1.1:** дигитални стоки, консумирани in-app → **IAP**, не Stripe (иначе отказ/бан); Stripe само за

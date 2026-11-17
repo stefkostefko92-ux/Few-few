@@ -493,9 +493,9 @@ model ClickEvent {
 // §7). Сумата и ДДС се решават на сървъра при checkout; правото се дава само
 // след прочетена от API-то поръчка в `completed` (CAS pending → completed).
 model PlanOrder {
-  id                    String    @id @default(cuid())
+  id                    String           @id @default(cuid())
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user                  User             @relation(fields: [userId], references: [id], onDelete: Restrict)
   plan                  Plan
   interval              String // monthly | quarterly | semiannual | annual (FOUNDER: lifetime)
   amountCents           Int // с ДДС, EUR
@@ -503,8 +503,8 @@ model PlanOrder {
   vatCents              Int
   netCents              Int
   vatCountry            String // мястото на доставка (под прага: BG)
-  state                 String    @default("pending") // pending | completed | conflict | refund_pending | refunded | failed | cancelled
-  revolutOrderId        String?   @unique
+  state                 String           @default("pending") // pending | completed | conflict | refund_pending | refunded | failed | cancelled
+  revolutOrderId        String?          @unique
   buyerCountry          String? // от адреса за таксуване при Revolut (доказателство 1)
   cardCountry           String? // държава на картата (доказателство 2)
   completedAt           DateTime?
@@ -516,7 +516,7 @@ model PlanOrder {
   // Потвърждението на траен носител (чл. 8(7) Дир. 2011/83) е изпратено.
   confirmationSentAt    DateTime?
   // Правото е дадено с тази поръчка (false за conflict — платена, неприложена).
-  applied               Boolean   @default(false)
+  applied               Boolean          @default(false)
   // Чл. 11а Дир. 2011/83 (изм. 2023/2673): изявление за отказ през функцията
   // „Откажи се от договора тук“ — кога и с какво име; връщането го прави админът.
   withdrawalRequestedAt DateTime?
@@ -525,12 +525,46 @@ model PlanOrder {
   withdrawalAckSentAt   DateTime?
   // Опит за връщане (Idempotency-Key = `<id>-<опит>`: повторен клик в същия
   // опит не връща два пъти, а нов опит след неуспешен refund не взима стария отговор).
-  refundAttempts        Int       @default(0)
+  refundAttempts        Int              @default(0)
   // Refund поръчката при Revolut (асинхронна, до 2 дни) — state refund_pending.
-  refundOrderId         String?   @unique
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  refundOrderId         String?          @unique
+  // Аларма „refund в ход без отговор от Revolut“ (refund_pending без refundOrderId,
+  // по-стар от 1 ч.) е пратена за текущия опит — нулира се при нов опит.
+  refundStuckAlertedAt  DateTime?
+  disputes              RevolutDispute[]
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
 
   @@index([userId, createdAt])
   @@index([state, createdAt])
+}
+
+// Одитът на споровете (chargeback) при Revolut: ред за всяко ново състояние на
+// спора, прочетено на живо с `GET /api/disputes/{id}` (уебхукът носи само id).
+// Само добавяне — редовете не се променят и не се трият (доказателство и
+// дедупликация: едно известие до админите за едно състояние). Планът НЕ се
+// пипа автоматично — решава човек. Без лични данни (без име/IBAN/карта).
+model RevolutDispute {
+  id             String     @id @default(cuid())
+  disputeId      String // id на спора при Revolut
+  state          String // needs_response | under_review | won | lost
+  // Подсъстоянието и срокът са в ключа: нов етап (representment, arbitration…)
+  // или нов срок при същото състояние е ново известие. NOT NULL с подразбиране
+  // („“ и 1970-01-01 = „няма“) — NULL в уникален индекс на Postgres не се засича.
+  substate       String     @default("")
+  reasonCode     String?
+  reason         String? // reason_description, ≤200 знака
+  amountCents    Int
+  currency       String
+  responseDueAt  DateTime   @default("1970-01-01T00:00:00Z")
+  revolutOrderId String? // оспореното плащане (payment.order_id)
+  planOrderId    String? // нашата поръчка за план, ако е такава
+  planOrder      PlanOrder? @relation(fields: [planOrderId], references: [id], onDelete: Restrict)
+  // Кога алармата до админите е тръгнала; NULL → /api/cron/plans я праща пак.
+  notifiedAt     DateTime?
+  createdAt      DateTime   @default(now())
+
+  @@unique([disputeId, state, substate, responseDueAt])
+  @@index([planOrderId])
+  @@index([notifiedAt])
 }

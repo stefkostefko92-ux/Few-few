@@ -1,5 +1,5 @@
 <%- include('../partials/app-head', { title: t('admin.masterRole.title') }) %>
-<% const day = (d) => d ? d.toISOString().slice(0, 10).split('-').reverse().join('.') : '—'; %>
+<% const day = (d) => d ? bgDate(d) : '—'; %>
 <h1><%= t('admin.masterRole.title') %></h1>
 <%- include('_nav') %>
 <p class="muted"><%= t('admin.masterRole.help') %></p>

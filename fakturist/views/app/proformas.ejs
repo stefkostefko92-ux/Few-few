@@ -1,5 +1,5 @@
 <%- include('../partials/app-head', { title: t('app.proforma.title') }) %>
-<% const day = (d) => d ? d.toISOString().slice(0, 10).split('-').reverse().join('.') : '—'; %>
+<% const day = (d) => d ? bgDate(d) : '—'; %>
 <p><a href="/app/o/<%= org.id %>">← <%= org.legalName %></a></p>
 <div class="head-row">
   <h1><%= t('app.proforma.title') %></h1>

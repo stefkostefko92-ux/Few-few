@@ -129,6 +129,10 @@ async function purgeOrganization(organizationId: string, now: Date): Promise<boo
       await tx.pdfStyle.deleteMany({ where: byOrg });
       await tx.memberInvite.deleteMany({ where: byOrg });
       await tx.transferInvite.deleteMany({ where: byOrg });
+      // Предложенията за предаване — и като фирма, и като кантора (SPEC 88).
+      await tx.firmHandover.deleteMany({
+        where: { OR: [{ organizationId }, { firmId: organizationId }] },
+      });
       await tx.apiKey.deleteMany({ where: byOrg });
       await tx.incomingInvoice.deleteMany({ where: byOrg });
       await tx.peppolParticipant.deleteMany({ where: byOrg });

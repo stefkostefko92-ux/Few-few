@@ -30,13 +30,19 @@ export function addMonths(period: string, months: number): string {
   return `${Math.floor(index / 12)}-${String((index % 12) + 1).padStart(2, '0')}`;
 }
 
-/** Месеците, в които фактурата може да влезе в дневника; null — без дата на издаване. */
+/**
+ * Месеците, в които документът може да влезе в дневника; null — без дата на издаване. Полученото кредитно
+ * известие (381) — само в месеца на издаването му (чл. 124, ал. 5 ЗДДС: „длъжно да отрази“ за периода, в
+ * който е издадено; Данъчника, 16.11.2026) — намалението на кредита не се отлага.
+ */
 export function allowedPeriods(
   issueDate: Date | null,
   today: string = sofiaToday(),
+  typeCode?: string | null,
 ): { from: string; to: string } | null {
   const from = monthOf(issueDate);
   if (!from) return null;
+  if (typeCode === '381') return { from, to: from };
   const last = addMonths(from, CREDIT_WINDOW_MONTHS);
   const current = today.slice(0, 7);
   return { from, to: last < current ? last : current };
@@ -52,12 +58,13 @@ export const journalPeriodOf = (entry: {
 function validated(
   input: { credit: unknown; period: unknown },
   issueDate: Date | null,
+  typeCode: string | null,
 ): { vatCredit: VatCreditRight; journalPeriod: string | null; period: string } {
   const credit = input.credit;
   if (typeof credit !== 'string' || !VAT_CREDIT_RIGHTS.includes(credit as VatCreditRight)) {
     throw new IncomingRegisterError('state');
   }
-  const window = allowedPeriods(issueDate);
+  const window = allowedPeriods(issueDate, sofiaToday(), typeCode);
   const period = input.period;
   if (
     !window ||
@@ -86,10 +93,10 @@ export async function setIncomingVatCredit(
   await prisma.$transaction(async (tx) => {
     const entry = await tx.incomingInvoice.findFirst({
       where: { id, organizationId: access.organizationId },
-      select: { issueDate: true },
+      select: { issueDate: true, typeCode: true },
     });
     if (!entry) throw new IncomingRegisterError('notFound');
-    const { vatCredit, journalPeriod, period } = validated(input, entry.issueDate);
+    const { vatCredit, journalPeriod, period } = validated(input, entry.issueDate, entry.typeCode);
     await tx.incomingInvoice.updateMany({
       where: { id, organizationId: access.organizationId },
       data: { vatCredit, journalPeriod },
@@ -115,10 +122,14 @@ export async function setInboxVatCredit(
   await prisma.$transaction(async (tx) => {
     const entry = await tx.inboxEntry.findFirst({
       where: { id, recipientOrgId: access.organizationId },
-      select: { document: { select: { issueDate: true } } },
+      select: { document: { select: { issueDate: true, typeCode: true } } },
     });
     if (!entry) throw new IncomingRegisterError('notFound');
-    const { vatCredit, journalPeriod, period } = validated(input, entry.document.issueDate);
+    const { vatCredit, journalPeriod, period } = validated(
+      input,
+      entry.document.issueDate,
+      entry.document.typeCode,
+    );
     await tx.inboxEntry.updateMany({
       where: { id, recipientOrgId: access.organizationId },
       data: { vatCredit, journalPeriod },

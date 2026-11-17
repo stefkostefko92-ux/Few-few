@@ -12,6 +12,7 @@ import { authenticateApiKey, type ApiPrincipal, type ApiScope } from './keys.js'
 import { DOCUMENT_ROW_SELECT, documentJson } from './serialize.js';
 import { issueHandler } from './issue.js';
 import { ID } from '../ids.js';
+import { rejectControlChars } from '../http/body-guard.js';
 
 /**
  * REST API v1 (SPEC 53): `Authorization: Bearer fkt_…`, JSON, без бисквитки и без CSRF (няма сесия).
@@ -69,6 +70,10 @@ export function apiRouter(): Router {
     }),
   );
   router.use('/api', express.json({ limit: '256kb' }));
+  router.use(
+    '/api',
+    rejectControlChars((_req, res) => fail(res, 400, 'invalid')),
+  );
   router.use('/api', async (req, res, next) => {
     res.set('Cache-Control', 'no-store');
     const api = await authenticateApiKey(req.get('authorization'));

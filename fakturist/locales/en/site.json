@@ -9,7 +9,8 @@
     "pricing": "Pricing",
     "accountants": "For accountants",
     "einvoicing2028": "E-invoicing 2028",
-    "news": "What’s new"
+    "news": "What’s new",
+    "help": "How it works"
   },
   "cta": {
     "login": "Sign in",
@@ -380,6 +381,7 @@
     "summary": "According to bill no. 52-602-01-60 amending the VAT Act, as introduced, structured e-invoices become mandatory between companies and to the state from 1 July 2028. The invoice will be a document in UBL 2.1 or CII under EN 16931, not a PDF. The bill has passed only a first reading, on 12 November 2026, so the text may change.",
     "byline": {
       "author": "Author",
+      "published": "Published",
       "updated": "Last updated"
     },
     "toc": "In this article",
@@ -465,5 +467,17 @@
     "version": "Version {version}",
     "updated": "Last updated",
     "feed": "Subscribe (RSS)"
+  },
+  "help": {
+    "meta": {
+      "title": "How Fakturist works: invoicing for companies and firms",
+      "description": "How to issue invoices, notes and pro formas in Fakturist, how an accounting firm works under authorisation, and what VAT ledgers and SAF-T data are.",
+      "keywords": "Carbon Stealth, Fakturist, online invoicing, electronic invoice, EN 16931, accounting firm, authorisation, VAT ledger, SAF-T"
+    },
+    "faq": {
+      "title": "Questions and answers"
+    },
+    "toc": "In this guide",
+    "manualNote": "The manual as a PDF — for each user, by their role — is under “Help” after signing in."
   }
 }

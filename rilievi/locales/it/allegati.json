@@ -77,7 +77,8 @@
       "titolo": "Annotazioni sulla foto",
       "salvate": "Annotazioni salvate: compaiono anche nella stampa e nel PDF.",
       "tolte": "Annotazioni tolte dalla foto.",
-      "errore": "Annotazioni non salvate: controlla la connessione e riprova."
+      "errore": "Annotazioni non salvate: controlla la connessione e riprova.",
+      "foto": "Foto non caricata: controlla la connessione e riprova."
     }
   }
 }

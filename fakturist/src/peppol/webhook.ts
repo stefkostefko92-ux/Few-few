@@ -5,7 +5,7 @@ import { decryptPeppolHookSecret } from '../auth/keys.js';
 import { errorMessage, logger } from '../logger.js';
 import { IncomingRegisterError, registerIncoming } from '../incoming/register.js';
 import { IncomingError } from '../incoming/check.js';
-import type { AccessPoint } from './access-point.js';
+import { AccessPointError, type AccessPoint } from './access-point.js';
 import { applyTransmissionEvent } from './transmissions.js';
 
 /**
@@ -88,24 +88,11 @@ export async function handlePeppolWebhook(input: {
   try {
     if (event.topic === 'InvoiceReceived' && event.documentId) {
       if (!input.ap) throw new Error('Peppol не е настроен');
-      const xml = await input.ap.download({ partyId: event.partyId, documentId: event.documentId });
-      try {
-        await registerIncoming({
-          organizationId: participant.organizationId,
-          actorId: null,
-          fileName: `peppol-${event.documentId}.xml`.slice(0, 200),
-          buffer: Buffer.from(xml, 'utf8'),
-          source: 'PEPPOL',
-        });
-      } catch (error) {
-        // Вече е в регистъра или не е фактура — записва се, без нов опит.
-        if (!(error instanceof IncomingRegisterError) && !(error instanceof IncomingError)) {
-          throw error;
-        }
-        await prisma.peppolEvent.update({
-          where: { id: record.id },
-          data: { error: error.message.slice(0, 300) },
-        });
+      const xml = await downloadOrNull(input.ap, event.partyId, event.documentId, record.id);
+      if (xml === null) {
+        result = 'ignored';
+      } else {
+        await registerPeppolIncoming(participant.organizationId, event.documentId, xml, record.id);
       }
     } else if (
       (event.topic === 'InvoiceSent' ||
@@ -138,4 +125,51 @@ export async function handlePeppolWebhook(input: {
     data: { processedAt: now },
   });
   return { status: 200, result };
+}
+
+/**
+ * Изтеглянето: постоянна грешка (документ над 2 MB, неразчетен отговор) се записва и известието е обработено
+ * — иначе 500 и точката за достъп опитва завинаги. Временната (мрежа, 429, 5xx, ключове) — пак нов опит.
+ */
+async function downloadOrNull(
+  ap: AccessPoint,
+  partyId: string,
+  documentId: string,
+  eventId: string,
+): Promise<string | null> {
+  try {
+    return await ap.download({ partyId, documentId });
+  } catch (error) {
+    if (!(error instanceof AccessPointError) || error.code !== 'invalidResponse') throw error;
+    await prisma.peppolEvent.update({
+      where: { id: eventId },
+      data: { error: error.message.slice(0, 300) },
+    });
+    logger.warn({ documentId }, 'Peppol: документът не може да се приеме — без нов опит');
+    return null;
+  }
+}
+
+/** В регистъра на входящите; вече е там или не е фактура — записва се, без нов опит. */
+async function registerPeppolIncoming(
+  organizationId: string,
+  documentId: string,
+  xml: string,
+  eventId: string,
+): Promise<void> {
+  try {
+    await registerIncoming({
+      organizationId,
+      actorId: null,
+      fileName: `peppol-${documentId}.xml`.slice(0, 200),
+      buffer: Buffer.from(xml, 'utf8'),
+      source: 'PEPPOL',
+    });
+  } catch (error) {
+    if (!(error instanceof IncomingRegisterError) && !(error instanceof IncomingError)) throw error;
+    await prisma.peppolEvent.update({
+      where: { id: eventId },
+      data: { error: error.message.slice(0, 300) },
+    });
+  }
 }

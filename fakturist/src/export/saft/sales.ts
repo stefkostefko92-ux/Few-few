@@ -3,8 +3,16 @@ import type { VatCategory } from '../../einvoice/codes.js';
 import { add, isNegative, neg, toFixed, toPlain, ZERO, type Dec } from '../../einvoice/decimal.js';
 import { el, leaf, type XmlElement } from '../../einvoice/xml.js';
 import { NOTE_REASON_PREFIX } from '../../documents/form.js';
-import { amountStructure, lineVat, money, parseRate, toEur } from './amounts.js';
-import { exemptionReasonFor } from '../journal-format.js';
+import {
+  amountStructure,
+  lineVat,
+  money,
+  parseRate,
+  saftExchangeRate,
+  saftExchangeRateExact,
+  toEur,
+} from './amounts.js';
+import { EU_OTHER_COUNTRIES, exemptionReasonFor } from '../journal-format.js';
 import { clip } from './keys.js';
 import { addressXml, saftLines, type SaftLine } from './lines.js';
 import { SAFT_NAMESPACE, type SaftAccounts, type SaftCodes, type SaftDocument } from './model.js';
@@ -17,7 +25,7 @@ import { SAFT_NAMESPACE, type SaftAccounts, type SaftCodes, type SaftDocument } 
  * документ са отделни редове (псевдоартикули `FKT-DISCOUNT`/`FKT-CHARGE`). Документ без код за вида или за
  * категорията на ДДС не влиза — излиза в списъка „за ръчно“, никога наслуки.
  */
-export type ManualReason = 'type' | 'category' | 'cancelled';
+export type ManualReason = 'type' | 'category' | 'cancelled' | 'currency';
 export interface SalesResult {
   xml: XmlElement;
   included: SaftDocument[];
@@ -54,7 +62,7 @@ function taxInformation(
       leaf('Amount', money(vatEur ?? toEur(vat, m.currency, m.rate))),
       leaf('CurrencyCode', m.currency),
       leaf('CurrencyAmount', money(vat)),
-      m.currency !== 'EUR' && m.rate ? leaf('ExchangeRate', toFixed(m.rate, 4)) : null,
+      m.currency !== 'EUR' && m.rate ? leaf('ExchangeRate', saftExchangeRate(m.rate)) : null,
     ),
     leaf('TaxExemptionReason', clip(group.exemption, 70)),
   );
@@ -204,6 +212,11 @@ export function salesInvoices(input: {
       manual.push({ number: doc.number, reason: 'type' });
       continue;
     }
+    const rate = doc.input.currency === 'EUR' ? null : parseRate(doc.input.eurExchangeRate);
+    if (rate && !saftExchangeRateExact(rate)) {
+      manual.push({ number: doc.number, reason: 'currency' });
+      continue;
+    }
     const calc = calculate(doc.input);
     const lines = saftLines(doc.input, calc);
     const unmapped =
@@ -216,7 +229,19 @@ export function salesInvoices(input: {
             exemptionReasonFor(g.category, g.exemptionReason, doc.input.vatExemptions),
           ) === null,
       );
-    if (unmapped) {
+    // 100217 (чл. 21, ал. 2) е само за място в друга държава членка — получател извън ЕС е за ръчно,
+    // както в PRODAGBI.TXT (src/export/sales-journal.ts).
+    const art21OutsideEu =
+      !EU_OTHER_COUNTRIES.has(doc.input.buyer.address.countryCode) &&
+      calc.breakdown.some(
+        (g) =>
+          codes.vatTaxCode(
+            g.category,
+            g.rate,
+            exemptionReasonFor(g.category, g.exemptionReason, doc.input.vatExemptions),
+          ) === '100217',
+      );
+    if (unmapped || art21OutsideEu) {
       manual.push({ number: doc.number, reason: 'category' });
       continue;
     }

@@ -4,7 +4,7 @@ import { isValidBgVat, isValidEik } from './bg-ids.js';
 import type { InvoiceInput, PartyInput } from './model.js';
 import type { RuleOptions, Severity } from './rules.js';
 
-/** Правилата по ЗДДС (BG-01…BG-10) — частта от `validateDocument` за България. */
+/** Правилата по ЗДДС (BG-01…BG-10; BG-11 — знакът на сумата — е в rules.ts) — частта за България. */
 type Fail = (rule: string, path: string, bg: string, en: string, severity?: Severity) => void;
 
 /** Фиксираният курс на лева (ЗВЕРБ, чл. 5) като „лева за 1 евро“ — посоката на `eurExchangeRate`. */
@@ -85,6 +85,19 @@ export function validateBg(
       'Известието съдържа номера и датата на фактурата, към която е издадено (чл. 115 ЗДДС).',
       'A note must reference the number and date of the invoice it corrects (Art. 115 of the VAT Act).',
     );
+  }
+  if (NOTE_TYPES.includes(input.typeCode)) {
+    // Чл. 115, ал. 4: номерът И датата (Данъчника, 16.11.2026). За фактура от Фактурист датата се попълва
+    // при издаването (src/documents/issue-parts.ts → withPrecedingDates); тук остава за чуждата.
+    input.precedingInvoices.forEach((ref, index) => {
+      if (ref.issueDate) return;
+      fail(
+        'BG-06',
+        `precedingInvoices.${index}.issueDate`,
+        'Посочете и датата на фактурата, към която е известието (чл. 115, ал. 4 ЗДДС).',
+        'State the date of the invoice the note refers to as well (Art. 115(4) of the VAT Act).',
+      );
+    });
   }
 
   for (const category of ['Z', 'E', 'AE', 'K', 'G', 'O'] as const) {

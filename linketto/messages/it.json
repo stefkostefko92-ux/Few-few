@@ -522,6 +522,7 @@
     "clearDomain": "Rimuovi il dominio {domain}",
     "refund": "Rimborsa",
     "errorRefund": "Rimborso non riuscito.",
+    "errorRefundPending": "Il rimborso è in corso: Revolut non ha risposto in modo chiaro. Premi di nuovo «Rimborsa»: ripete lo stesso tentativo, senza rimborsare due volte.",
     "referralCredit": "bonus di invito",
     "payoutsTitle": "Richieste di pagamento — in sospeso ({count})",
     "payoutsEmpty": "Nessuna richiesta in sospeso.",

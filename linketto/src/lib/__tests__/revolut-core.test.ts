@@ -33,21 +33,22 @@ test('P3: грешна тайна, променено тяло, старо вр�
   assert.equal(verifyRevolutSignature({ rawBody: body, timestamp: ts, signature: sign(ts, body), secret: '', now }), false);
 });
 
-// P2
-test('P2: тялото на поръчката — сума в центове, EUR, референция = PlanOrder.id', () => {
+// P2 + F5: без `customer` — само с email (без id) Revolut създава НОВ клиент
+// при всяка поръчка (merchant.yaml, Customer-v2); нищо у нас не го чете.
+test('P2: тялото на поръчката — сума в центове, EUR, референция = PlanOrder.id, без customer', () => {
+  const body = revolutOrderBody({
+    amountCents: 3840,
+    description: 'Linketto Pro · 12 месеца',
+    reference: 'po_1',
+    redirectUrl: 'https://linketto.example/bg/dashboard?upgraded=1',
+  });
+  assert.equal('customer' in body, false);
   assert.deepEqual(
-    revolutOrderBody({
-      amountCents: 3840,
-      description: 'Linketto Pro · 12 месеца',
-      email: 'a@b.eu',
-      reference: 'po_1',
-      redirectUrl: 'https://linketto.example/bg/dashboard?upgraded=1',
-    }),
+    body,
     {
       amount: 3840,
       currency: 'EUR',
       description: 'Linketto Pro · 12 месеца',
-      customer: { email: 'a@b.eu' },
       merchant_order_data: { reference: 'po_1' },
       metadata: { plan_order_id: 'po_1' },
       redirect_url: 'https://linketto.example/bg/dashboard?upgraded=1',

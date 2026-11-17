@@ -7,14 +7,13 @@ import { fromCents } from '../einvoice/decimal.js';
 import { wrap } from '../mail/document-mail.js';
 import type { MailMessage } from '../mail/mailer.js';
 import { proformaDocumentPdf } from './render.js';
+import { bgDate } from '../time.js';
 
 /**
  * Писмото с проформата до получателя (извън Фактурист): PDF, без XML — проформата не е е-фактура.
  * Отказана или вече фактурирана проформа не тръгва, дори писмото да е в опашката.
  */
 const Payload = z.object({ proformaId: z.string().min(1) });
-
-const bgDate = (date: Date) => date.toISOString().slice(0, 10).split('-').reverse().join('.');
 
 export async function composeProformaSentMail(
   toEmail: string,
