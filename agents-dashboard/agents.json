@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 710
+        "lessons": 711
       },
       "evolution": [
         {
@@ -2037,9 +2037,20 @@
           "date": "2026-11-17",
           "event": "v65.0 — учене",
           "detail": "Научи: Срок за изтриване, обещан в текст на писмо, се сверява с всички таблици, които пазят съ… (+89 още)"
+        },
+        {
+          "version": "65.1.0",
+          "date": "2026-11-17",
+          "event": "v65.1 — учене",
+          "detail": "Научи: Revolut Merchant API не казва колко дълго пази Idempotency-Key, нито какво връща за същ…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-17",
+          "type": "learning",
+          "summary": "Научи: „Revolut Merchant API не казва колко дълго пази Idempotency-Key, нито какво връща за същ…\""
+        },
         {
           "date": "2026-11-17",
           "type": "learning",
