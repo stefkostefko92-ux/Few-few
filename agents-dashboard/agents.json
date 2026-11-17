@@ -5073,7 +5073,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 263
+        "lessons": 265
       },
       "evolution": [
         {
@@ -5585,9 +5585,20 @@
           "date": "2026-11-17",
           "event": "v29.0 — учене",
           "detail": "Научи: Във fakturist формата „Добави фирма-клиент“ ползва етикетите от auth.json (auth.legalNa… (+9 още)"
+        },
+        {
+          "version": "29.2.0",
+          "date": "2026-11-17",
+          "event": "v29.2 — учене",
+          "detail": "Научи: В linketto it.json админ секцията свършва на payoutMarkPaid; ключовете за поръчки (erro… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-17",
+          "type": "learning",
+          "summary": "Научи: „В linketto it.json админ секцията свършва на payoutMarkPaid; ключовете за поръчки (erro…\" (+1 още)"
+        },
         {
           "date": "2026-11-17",
           "type": "learning",
