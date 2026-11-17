@@ -153,7 +153,7 @@ test('buildVCard: коректен формат и екраниране', () => 
     phone: '+359877414874',
     email: 'maria@example.com',
     org: 'ACME, Ltd',
-    url: 'https://linketto.carbonstealth.eu/u/maria',
+    url: 'https://piuma.carbonstealth.eu/u/maria',
   });
   assert.ok(card.startsWith('BEGIN:VCARD\r\nVERSION:3.0'));
   assert.ok(card.includes('FN:Мария\\; Петрова'));

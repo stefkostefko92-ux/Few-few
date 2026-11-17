@@ -45,7 +45,7 @@ FIVEM_STATE_DIR="${FIVEM_STATE_DIR:-/opt/few-few/shared/fivem}"
 # Откатът сочи последния release, който е отговорил (LINKETTO_LAST_GOOD; prune_releases го пази).
 # Празно = от HTTP_PORT в $LINKETTO_STATE_DIR/.env (по подразбиране 4350) — смята се в deploy_linketto.
 LINKETTO_HEALTH_URL="${LINKETTO_HEALTH_URL:-}"
-LINKETTO_DOMAIN="${LINKETTO_DOMAIN:-linketto.carbonstealth.eu}"
+LINKETTO_DOMAIN="${LINKETTO_DOMAIN:-piuma.carbonstealth.eu}"
 LINKETTO_STATE_DIR="${LINKETTO_STATE_DIR:-/opt/few-few/shared/linketto}"
 LINKETTO_LAST_GOOD="${LINKETTO_LAST_GOOD:-$LINKETTO_STATE_DIR/last-good}"
 LINKETTO_INDEXNOW="${LINKETTO_INDEXNOW:-1}"
