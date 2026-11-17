@@ -815,3 +815,7 @@
 {"t":"handoff","ts":"2026-11-17T05:40:26.907Z","id":"rb4a33965","from":"prodavacha","to":"kodadjiyata","status":"има бележки","run":"d2e8fc24"}
 {"t":"start","ts":"2026-11-17T05:46:19.662Z","id":"r0a5d975a","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-17T05:46:19.663Z","id":"r0a5d975a","from":"kodadjiyata","to":"prodavacha","status":"има бележки","run":"ff9fb8a0"}
+{"t":"start","ts":"2026-11-17T05:49:15.887Z","id":"r0b43fefa","flow":"авто","lead":"prodavacha","auto":true}
+{"t":"handoff","ts":"2026-11-17T05:49:15.888Z","id":"r0b43fefa","from":"prodavacha","to":"kodadjiyata","status":"има бележки","run":"dad76a8f"}
+{"t":"start","ts":"2026-11-17T05:51:41.679Z","id":"r12f65c75","flow":"авто","lead":"prodavacha","auto":true}
+{"t":"handoff","ts":"2026-11-17T05:51:41.679Z","id":"r12f65c75","from":"prodavacha","to":"kodadjiyata","status":"има бележки","run":"140b66d3"}
