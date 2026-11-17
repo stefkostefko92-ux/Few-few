@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { revolutSettings } from '../admin/integrations.js';
 import { REVOLUT_API_VERSION, REVOLUT_BASE_URL, scrub } from '../admin/integration-checks.js';
 import { errorMessage } from '../logger.js';
@@ -157,6 +158,42 @@ export async function retrieveRevolutOrder(
 ): Promise<RevolutOrder> {
   if (!ORDER_ID.test(orderId)) throw new RevolutError('invalidResponse');
   return parseRevolutOrder(await call('GET', `/api/orders/${orderId}`, null, fetchImpl));
+}
+
+/** Id на спор при Revolut (UUID по спецификацията) — и в известието, и в адреса за четене. */
+export const DISPUTE_ID = /^[A-Za-z0-9-]{8,80}$/;
+
+/**
+ * Спорът (chargeback) по `merchant.yaml` (схемата `Dispute` — еднаква в 2026-08-17 и 2026-09-22; полетата не
+ * са задължителни): без id или с непознато състояние → `invalidResponse`, никога догадка.
+ */
+const DisputeSchema = z.object({
+  id: z.string().regex(DISPUTE_ID),
+  state: z.enum(['needs_response', 'under_review', 'won', 'lost']),
+  substate: z.string().max(40).optional(),
+  response_due_date: z.string().max(40).optional(),
+  updated_at: z.string().max(40).optional(),
+  reason_code: z.string().max(40).optional(),
+  amount: z.number().int().nonnegative().optional(),
+  currency: z.string().length(3).optional(),
+  payment: z.object({ order_id: z.string().max(100).optional() }).optional(),
+});
+export type RevolutDispute = z.infer<typeof DisputeSchema>;
+
+/**
+ * Спорът, както го казва Revolut сега (известието носи само id-то). `GET /api/disputes/{id}` е само в
+ * продукционната среда — в sandbox отговорът е грешка (`rejected`).
+ */
+export async function retrieveRevolutDispute(
+  disputeId: string,
+  fetchImpl: FetchLike = fetch,
+): Promise<RevolutDispute> {
+  if (!DISPUTE_ID.test(disputeId)) throw new RevolutError('invalidResponse');
+  const parsed = DisputeSchema.safeParse(
+    await call('GET', `/api/disputes/${disputeId}`, null, fetchImpl),
+  );
+  if (!parsed.success || parsed.data.id !== disputeId) throw new RevolutError('invalidResponse');
+  return parsed.data;
 }
 
 /**
