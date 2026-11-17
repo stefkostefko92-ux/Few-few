@@ -4,6 +4,7 @@ import { prisma } from '../db.js';
 import { wrap } from './document-mail.js';
 import type { MailMessage } from './mailer.js';
 import { mailLongDate, mailSignature, recipientLocale } from './locale.js';
+import { legalPath } from '../legal/documents.js';
 
 /**
  * Писмата за предаването на собственост (SPEC 84–87, src/accounts/handover*.ts). Поканата към човека е
@@ -147,9 +148,18 @@ export async function composeHandoverMail(
         firm: `The Fakturist team entrusted “${legalName}” to your firm under an authorisation, with the declaration under item 1a of the data processing agreement. The company is on your firm’s start page (${base}/app); you can invite a new owner.`,
       },
     } as const;
+    const privacy = `${base}${legalPath('privacy', locale)}`;
     paragraphs = [
       text[locale][role],
       bg ? `Основание: ${reason}.` : `Reason: ${reason}.`,
+      // Профил, създаден от нас — откъде са данните (чл. 14 ОРЗД, Правният Разбирач, 17.11.2026).
+      ...(role === 'newOwner'
+        ? [
+            bg
+              ? `Имейла и името Ви взехме от документа за представителство на фирмата — само за да Ви направим неин собственик. Как пазим личните данни: ${privacy}`
+              : `We took your email and name from the company's document of representation — only to make you its owner. How we protect personal data: ${privacy}`,
+          ]
+        : []),
       bg
         ? `Ако не сте съгласни, пишете ни на ${contact} — решението се преглежда от човек. Можете да се обърнете и към компетентния български съд.`
         : `If you disagree, write to us at ${contact} — a person reviews the decision. You may also turn to the competent Bulgarian court.`,

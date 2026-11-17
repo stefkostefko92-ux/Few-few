@@ -158,6 +158,15 @@ test('на нов имейл без профил: профил без изпол
   );
   assert.equal(await role(user.id, orgId), 'OWNER');
   assert.equal(await role(ownerId, orgId), null);
+  // Чл. 14 ОРЗД: писмото до новия собственик казва откъде са данните и къде е политиката.
+  const { composeHandoverMail } = await import('../../src/mail/handover-mail.js');
+  const note = await prisma.notification.findFirstOrThrow({
+    where: { kind: 'handover.master', toEmail: 'nov@example.test' },
+  });
+  const mail = await composeHandoverMail(note.kind, note.toEmail, note.payload);
+  assert.ok(mail.text.includes('документа за представителство на фирмата'), mail.text);
+  assert.ok(mail.text.includes('/poveritelnost'));
+  assert.ok(mail.text.includes('Изгубен достъп, документ за представителство'), 'основанието');
 });
 
 test('на кантора по ЕИК: пълномощно се създава, членовете излизат, кантората води фирмата', async () => {

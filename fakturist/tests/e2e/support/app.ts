@@ -202,7 +202,7 @@ export function byLabel(page: Pick<Page, 'getByLabel'>, text: string) {
 export async function openOrgMenu(page: Page): Promise<void> {
   const menu = page.locator('details.org-menu');
   if ((await menu.count()) === 0) return;
-  if (await menu.evaluate((el) => (el as HTMLDetailsElement).open)) return;
+  if (await menu.evaluate((el) => el.open === true)) return;
   const summary = menu.locator('summary');
   if (await summary.isVisible()) await summary.click();
 }

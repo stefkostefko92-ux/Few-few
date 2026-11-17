@@ -19,7 +19,7 @@
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <input type="hidden" name="next" value="<%= next %>">
     <% if (error) { %><p class="error" role="alert"><%= owner ? t('auth.invite.errors.acceptTerms') : t('auth.member.errors.acceptTerms') %></p><% } %>
-    <%- include('../partials/legal-accept', { orgName: pending.companies.map((c) => c.legalName).join(', '), memberOnly: !owner, invalid: error }) %>
+    <%- include('../partials/legal-accept', { orgName: pending.companies.map((c) => c.legalName).join(', '), memberOnly: !owner, many: pending.companies.length > 1, invalid: error }) %>
     <div><button type="submit"><%= t('app.legalUpdate.accept') %></button></div>
   </form>
   <p class="muted"><%= t('app.legalUpdate.refuse') %> <a href="/app/sigurnost"><%= t('app.legalUpdate.security') %></a></p>

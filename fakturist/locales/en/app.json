@@ -1197,7 +1197,7 @@
   },
   "legalUpdate": {
     "title": "Current terms",
-    "intro": "New versions of the terms of service, the data processing agreement and the privacy policy apply from {date}. Read and accept them to continue.",
+    "intro": "A new version from {date} of the terms of service, the data processing agreement and the privacy policy — it applies to you from your acceptance. Read them and accept the terms (the owner — also the data processing agreement for their company) to continue.",
     "whatsNew": "What is new",
     "changes": {
       "1": "Ownership handover: to another person by email invitation or to the accounting firm with an active mandate (terms of service, section 8).",
@@ -1211,7 +1211,7 @@
       "privacy": "Privacy policy"
     },
     "accept": "Accept and continue",
-    "refuse": "If you disagree, you can download your data and close your account under",
+    "refuse": "If you disagree, you may stop using the service without penalty — we refund what you paid for the unused period (sections 11 and 15 of the terms of service). You download your data and close your account under",
     "security": "“Security”",
     "export": "download the archive (ZIP)",
     "terminate": "termination"
