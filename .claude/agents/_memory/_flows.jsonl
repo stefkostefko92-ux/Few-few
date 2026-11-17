@@ -829,3 +829,8 @@
 {"t":"handoff","ts":"2026-11-17T05:57:48.290Z","id":"r83c24803","from":"kodadjiyata","to":"prodavacha","status":"има бележки","run":"a5ec0d75"}
 {"t":"start","ts":"2026-11-17T06:02:40.294Z","id":"rb4716ed3","flow":"авто","lead":"prodavacha","auto":true}
 {"t":"handoff","ts":"2026-11-17T06:02:40.294Z","id":"rb4716ed3","from":"prodavacha","to":"kodadjiyata","status":"има бележки","run":"d2e8fc24"}
+{"t":"start","ts":"2026-11-17T06:05:28.968Z","id":"r06acc622","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-17T06:05:28.968Z","id":"r06acc622","from":"kodadjiyata","to":"kachestveniyat","status":"наред","run":"ff9fb8a0"}
+{"t":"handoff","ts":"2026-11-17T06:06:01.568Z","id":"r06acc622","from":"prevodach","to":"letopisetsa","status":"има бележки","run":"c193707f"}
+{"t":"start","ts":"2026-11-17T06:07:36.518Z","id":"r9fb3916d","flow":"авто","lead":"prodavacha","auto":true}
+{"t":"handoff","ts":"2026-11-17T06:07:36.518Z","id":"r9fb3916d","from":"prodavacha","to":"kodadjiyata","status":"има бележки","run":"140b66d3"}
