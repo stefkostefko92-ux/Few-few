@@ -14,7 +14,7 @@ ExecStart=/usr/local/sbin/linketto-cron %i
 TimeoutStartSec=900
 Nice=10
 Environment=LINKETTO_ENV=/opt/few-few/shared/linketto/.env
-Environment=LINKETTO_LOCAL_URL=http://127.0.0.1:4340
+# Портът се чете от HTTP_PORT в LINKETTO_ENV (по подразбиране 4350) — не се дублира тук.
 
 # --- Sandboxing ---
 # Върви като root: чете файла с тайните (600, root) и говори с docker сокета
