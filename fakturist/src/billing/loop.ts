@@ -1,10 +1,12 @@
 import { errorMessage, logger } from '../logger.js';
 import { reconcileCardPayments } from './card.js';
+import { recheckUnreadDisputes } from './disputes.js';
 import { expireSubscriptions } from './expiry.js';
 
 /**
- * Работникът на плащанията (на 10 минути): висящите плащания с карта (webhook-ът може да се изгуби) и
- * изтеклите платени периоди. Грешката само се записва — следващият път опитва пак.
+ * Работникът на плащанията (на 10 минути): висящите плащания с карта (webhook-ът може да се изгуби),
+ * споровете, които още не са прочетени от Revolut (disputes.ts), и изтеклите платени периоди. Грешката
+ * само се записва — следващият път опитва пак.
  */
 export function startBillingLoop(): NodeJS.Timeout {
   const run = () => {
@@ -14,6 +16,10 @@ export function startBillingLoop(): NodeJS.Timeout {
       })
       .catch((error: unknown) =>
         logger.error({ err: errorMessage(error) }, 'проверката на плащанията с карта не мина'),
+      )
+      .then(() => recheckUnreadDisputes())
+      .catch((error: unknown) =>
+        logger.error({ err: errorMessage(error) }, 'повторното четене на споровете не мина'),
       )
       .then(() => expireSubscriptions())
       .then((count) => {
