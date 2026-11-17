@@ -6,6 +6,12 @@ import { revolutOrderBody } from '@/lib/revolut-core';
 // плащанията са изключени (fail closed). Средата по подразбиране е sandbox —
 // продукция само с изрично REVOLUT_ENV=production.
 
+// Версията НЕ се сменя тук без diff на спецификациите. При 2026-08-17 всеки отказан
+// refund идва като 400 (хвърля от `call`); клонът за 200 с отказано плащане
+// (refundOutcome → 'failed', plan-order-core) е подготвен за 2026-09-22, където
+// Revolut Pay връща 200 (merchant.yaml, refundOrder „Declined refunds“). Асинхронният
+// отказ (refund поръчката, четена с GET, стига до „declined/failed“ — refundOrder
+// „Asynchronous processing“) не зависи от тази разлика и се чете и днес.
 const API_VERSION = '2026-08-17';
 
 function baseUrl(): string {
@@ -37,8 +43,13 @@ async function call(
     signal: AbortSignal.timeout(15_000),
     cache: 'no-store',
   });
-  // Тялото на грешка не се логва (може да съдържа данни на клиента) — само статусът.
-  if (!res.ok) throw new Error(`revolut ${init.method} ${path.split('/').slice(0, 3).join('/')}: ${res.status}`);
+  // Тялото на грешка не се логва (може да съдържа данни на клиента) — само статусът
+  // (и в `status`, за да се различи временна грешка от отказ — isTransientRevolutError).
+  if (!res.ok) {
+    throw Object.assign(new Error(`revolut ${init.method} ${path.split('/').slice(0, 3).join('/')}: ${res.status}`), {
+      status: res.status,
+    });
+  }
   return res.status === 204 ? null : res.json();
 }
 
@@ -64,19 +75,27 @@ export function getRevolutOrder(orderId: string): Promise<unknown> {
 /**
  * P10: пълен refund; Idempotency-Key (≤50 знака) пази от двоен refund при
  * повторен клик. Revolut създава НОВА поръчка `type: refund`
- * (`related_order_id`), която стига до краен статус до 2 дни — затова се
- * връща нейното id и състояние; нашият запис се приключва чак при `completed`.
+ * (`related_order_id`), която стига до краен статус до 2 дни — връща се самата
+ * refund поръчка; докъде е, решава ядрото (refundOutcome: и `payments[].state`,
+ * защото отказът при Revolut Pay от версия 2026-09-22 идва като 200, F1).
+ * Отказ с 400 (карта; всеки отказ преди 2026-09-22) хвърля от `call`.
  */
-export async function refundRevolutOrder(input: {
+export function refundRevolutOrder(input: {
   orderId: string;
   amountCents: number;
   idempotencyKey: string;
-}): Promise<{ id: string; state: string }> {
-  const refund = (await call(`/api/orders/${encodeURIComponent(input.orderId)}/refund`, {
+}): Promise<unknown> {
+  return call(`/api/orders/${encodeURIComponent(input.orderId)}/refund`, {
     method: 'POST',
     body: { amount: input.amountCents, currency: 'EUR', description: 'Linketto refund' },
     idempotencyKey: input.idempotencyKey,
-  })) as { id?: unknown; state?: unknown } | null;
-  if (!refund || typeof refund.id !== 'string') throw new Error('revolut: refund without id');
-  return { id: refund.id, state: typeof refund.state === 'string' ? refund.state : 'pending' };
+  });
+}
+
+/**
+ * F2: спорът, както го казва Revolut сега (уебхукът носи само id). Само в
+ * Production — в Sandbox отговорът е 404 (merchant.yaml, retrieveDispute).
+ */
+export function getRevolutDispute(disputeId: string): Promise<unknown> {
+  return call(`/api/disputes/${encodeURIComponent(disputeId)}`, { method: 'GET' });
 }

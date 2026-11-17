@@ -1,18 +1,18 @@
 {
-  "date": "2026-11-15",
-  "ref": "cfe6b9d070378b65b2ef8e76e0272d01dfa3efea",
-  "cli": "2.1.325 (Claude Code)",
-  "summary": "проба 1/1 · оценки 1/1 · verifier ✓ · критичните пропуснати (входовете им са непроменени; минаха на 2026-11-15)",
-  "costUsd": 1.55,
-  "criticalAt": "2026-11-15",
+  "date": "2026-11-17",
+  "ref": "fbfd929db247017448fb5008dcfae2dee480e97b",
+  "cli": "2.1.326 (Claude Code)",
+  "summary": "проба 1/1 · оценки 6/6 · pass^k 2/2 · verifier ✓",
+  "costUsd": 7.64,
+  "criticalAt": "2026-11-17",
   "probe": [
     {
-      "agent": "vps-adjiyata",
+      "agent": "prodavacha",
       "ok": true,
       "problems": []
     }
   ],
-  "inputsHash": "64ca38c7531c838e67a4799ef89fc6cacb9b6b7c137935a041e756272b3ea9f8",
+  "inputsHash": "9a3aff01a6a5876a51ea066cd58f2b68be655f01ebc2e133edb457ffb2ad781d",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
@@ -40,7 +40,7 @@
     ".claude/agents/pravniyat-razbirach.md": "4634f1b7d53f6e6de2050003c45a57868790481e4c94ce8e96d0d6ef8b8d5975",
     ".claude/agents/prevodach.md": "7aa99a4ee469bf4abb816e63d854188f98b4c13ca1fbe0c5e7ff7d27cb1ee623",
     ".claude/agents/printadjiyata.md": "17cce75ed4135f3f1a164a7c0dfc71a8483eabe3ca23e1f38d16cec212f53e3d",
-    ".claude/agents/prodavacha.md": "ae210b0008655def191b971353ee2490e74bd1c25e10e230197d1dbcf04cf5c3",
+    ".claude/agents/prodavacha.md": "d18ac27bbad0af7acaa573c284df8a4bd44e231f712d757a37c30abaecbc682c",
     ".claude/agents/pronikvacha.md": "84b6eb8da482d1f70f4f9a8701db79d3698e431eeecc7a3c827e6d981881a3a0",
     ".claude/agents/razbivacha.md": "fdafe89b983bf24dab949c780e74f8060c9742e18d4c0738916feccee96171f6",
     ".claude/agents/seo.md": "2ae498fdd0cbd5965560f8c7fbb521ac4c6a70e3b3bb52ed07219776476d2f99",
