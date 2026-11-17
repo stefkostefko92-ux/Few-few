@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { after, before, test } from 'node:test';
-import { prepareTestDatabase, truncateAll } from './harness.js';
+import { acceptCurrentTerms, prepareTestDatabase, truncateAll } from './harness.js';
 
 prepareTestDatabase();
 const { prisma } = await import('../../src/db.js');
@@ -255,6 +255,7 @@ test('без отметка пълномощното остава чакащо �
     return result.token;
   });
   await acceptTransferInvite({
+    acceptTerms: true,
     token,
     user: { name: 'Лина Тодорова', password: 'линиите-са-прави-и-дълги' },
   });
@@ -467,6 +468,7 @@ test('имейлът от поканата се вижда само от OWNER/A
       passwordHash: await hashPassword(PASSWORD),
     },
   });
+  await acceptCurrentTerms(prisma, viewer.id);
   await prisma.membership.create({
     data: { userId: viewer.id, organizationId: firm.organizationId, role: 'VIEWER' },
   });

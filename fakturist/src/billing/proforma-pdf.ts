@@ -1,6 +1,7 @@
 import PDFDocument from 'pdfkit';
 import { loadPdfStyle } from '../documents/pdf-style.js';
 import { INK, RULE, SOFT } from '../documents/pdf-layout.js';
+import { bgDate } from '../time.js';
 
 /**
  * Проформата за банков превод (SPEC 49): покана за плащане с основанието, по което мастърът сверява
@@ -29,7 +30,7 @@ export interface ProformaSource {
   totalCents: number;
 }
 
-const date = (value: Date) => value.toISOString().slice(0, 10).split('-').reverse().join('.');
+const date = bgDate;
 
 function eur(cents: number): string {
   const whole = Math.floor(cents / 100)

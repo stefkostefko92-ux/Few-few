@@ -22,6 +22,7 @@ const ORG_NAV_SECTIONS = new Set([
   'prekratyavane',
   'dnevnik',
   'saf-t',
+  'sobstvenost',
 ]);
 
 /**
@@ -56,13 +57,12 @@ export function orgNavLocals() {
         org,
         unread,
         pendingMandates,
-        // На началото на фирмата менюто е отворено и на телефон; в разделите се свива до текущия.
-        open: segment === '',
         can: {
           mandates: roleCan(access.role, 'mandates.manage') && direct,
           settings: roleCan(access.role, 'org.settings') && direct,
           members: roleCan(access.role, 'members.manage') && direct,
           billing: roleCan(access.role, 'billing.manage') && direct,
+          owner: access.role === 'OWNER' && direct,
           parties: roleCan(access.role, 'parties.manage'),
           items: roleCan(access.role, 'items.manage'),
           series: roleCan(access.role, 'series.manage') && direct,

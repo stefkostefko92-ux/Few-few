@@ -127,6 +127,7 @@ test('F1: поканите за член, пратени от подставен
     }),
   );
   const puppet = await acceptTransferInvite({
+    acceptTerms: true,
     token: invite.token,
     user: { name: 'Подставен Собственик', password: PASSWORD },
     confirmMandate: true,
@@ -185,6 +186,7 @@ test('F3: оттеглено пълномощно → поканата на ка
   assert.ok(stored.revokedAt);
   await assert.rejects(
     acceptTransferInvite({
+      acceptTerms: true,
       token: invite.token,
       user: { name: 'Подставен Втори', password: PASSWORD },
       confirmMandate: true,

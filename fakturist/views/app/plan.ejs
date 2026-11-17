@@ -1,5 +1,5 @@
 <%- include('../partials/app-head', { title: t('app.plan.title') }) %>
-<% const day = (d) => d.toISOString().slice(0, 10).split('-').reverse().join('.'); %>
+<% const day = (d) => bgDate(d); %>
 <% const eur = (c) => (lang === 'bg' ? (c / 100).toFixed(2).replace('.', ',') + ' €' : '€' + (c / 100).toFixed(2)); %>
 <p><a href="/app/o/<%= org.id %>">← <%= org.legalName %></a></p>
 <h1><%= t('app.plan.title') %></h1>

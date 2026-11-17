@@ -65,6 +65,7 @@ test('почистването трие само изтеклото над ср�
     statements: 0,
     submissions: 0,
     peppolEvents: 1,
+    invites: 0,
   });
   const ids = async (rows: Promise<Array<{ id: string }>>) => (await rows).map((r) => r.id).sort();
   assert.deepEqual(await ids(prisma.session.findMany()), [recent.id, live.id].sort());
@@ -74,4 +75,67 @@ test('почистването трие само изтеклото над ср�
     [recentSent.id, oldPending.id].sort(),
   );
   assert.deepEqual(await ids(prisma.peppolEvent.findMany()), [recentEvent.id]);
+});
+
+test('неприетите покани (членове и собственост) — 30 дни след изтичането или отмяната; приетите остават', async () => {
+  const org = await prisma.organization.create({
+    data: {
+      kind: 'COMPANY',
+      legalName: 'Пекарна Зора ЕООД',
+      eik: '123456786',
+      addressStreet: 'ул. „Витоша“ 1',
+      addressCity: 'София',
+      postalCode: '1000',
+    },
+  });
+  let n = 0;
+  const member = (expiresAt: Date, extra: Record<string, unknown> = {}) =>
+    prisma.memberInvite.create({
+      data: {
+        organizationId: org.id,
+        email: `m${(n += 1)}@example.test`,
+        role: 'VIEWER',
+        tokenHash: String(n).padStart(64, 'c'),
+        expiresAt,
+        ...extra,
+      },
+    });
+  const owner = (expiresAt: Date, extra: Record<string, unknown> = {}) =>
+    prisma.transferInvite.create({
+      data: {
+        organizationId: org.id,
+        email: `o${(n += 1)}@example.test`,
+        tokenHash: String(n).padStart(64, 'd'),
+        expiresAt,
+        ...extra,
+      },
+    });
+  await member(ago(31));
+  await member(ago(10), { revokedAt: ago(31) });
+  const keptMembers = [
+    await member(ago(29)),
+    await member(ago(60), { acceptedAt: ago(61), acceptedById: userId }),
+    await member(new Date(NOW.getTime() + DAY)),
+  ];
+  await owner(ago(31));
+  const keptOwners = [
+    await owner(ago(29)),
+    await owner(ago(60), { acceptedAt: ago(61), acceptedById: userId }),
+  ];
+  const handover = (data: Record<string, unknown>) =>
+    prisma.firmHandover.create({
+      data: { organizationId: org.id, firmId: org.id, expiresAt: ago(40), ...data },
+    });
+  await handover({ status: 'DECLINED', decidedAt: ago(31) });
+  await handover({ status: 'PENDING', expiresAt: ago(31) });
+  const keptHandover = await handover({ status: 'ACCEPTED', decidedAt: ago(29) });
+  const result = await purgeExpired(NOW);
+  assert.equal(result.invites, 5);
+  assert.deepEqual(
+    (await prisma.firmHandover.findMany()).map((h) => h.id),
+    [keptHandover.id],
+  );
+  const ids = async (rows: Promise<Array<{ id: string }>>) => (await rows).map((r) => r.id).sort();
+  assert.deepEqual(await ids(prisma.memberInvite.findMany()), keptMembers.map((r) => r.id).sort());
+  assert.deepEqual(await ids(prisma.transferInvite.findMany()), keptOwners.map((r) => r.id).sort());
 });

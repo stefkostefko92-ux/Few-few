@@ -6,6 +6,7 @@ import {
   EU_SERVICES_ART_21_2,
   PLACE_ABROAD_ART_69_2,
   ZERO_RATE_SPECIAL,
+  EU_OTHER_COUNTRIES,
 } from '../journal-format.js';
 import { shortHash, clip } from './keys.js';
 import type { SaftCodes } from './model.js';
@@ -34,34 +35,7 @@ import type { SaftCodes } from './model.js';
  * - Мерни единици — Unit_Of_Measure: всички от интерфейса са в номенклатурата (C62 — „единица“) освен
  *   E48 („услуга“) → C62.
  */
-const EU_OTHER = new Set([
-  'AT',
-  'BE',
-  'CY',
-  'CZ',
-  'DE',
-  'DK',
-  'EE',
-  'ES',
-  'FI',
-  'FR',
-  'GR',
-  'HR',
-  'HU',
-  'IE',
-  'IT',
-  'LT',
-  'LU',
-  'LV',
-  'MT',
-  'NL',
-  'PL',
-  'PT',
-  'RO',
-  'SE',
-  'SI',
-  'SK',
-]);
+const EU_OTHER = EU_OTHER_COUNTRIES;
 
 /** Описанията — дословно от лист TAX-IMP. */
 export const VAT_SALES_CODES: Record<string, string> = {

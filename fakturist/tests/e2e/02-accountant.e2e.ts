@@ -12,6 +12,7 @@ import {
   registerViaUi,
   startApp,
   watch,
+  openOrgMenu,
 } from './support/app.js';
 import type { E2eApp } from './support/app.js';
 
@@ -77,6 +78,7 @@ for (const profile of PROFILES) {
       await t.test('собственикът потвърждава пълномощното', async () => {
         await login(app, ownerPage, owner.email);
         await ownerPage.getByRole('link', { name: owner.legalName }).click();
+        await openOrgMenu(ownerPage);
         await ownerPage
           .getByRole('link', { name: new RegExp(`^${tr('app.mandates.title')}`) })
           .click();

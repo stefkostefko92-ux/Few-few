@@ -12,6 +12,9 @@ export const INPUT_MESSAGES_EN: Readonly<Record<string, string>> = {
   'Мерна единица по UN/ECE Rec. 20': 'Unit of measure per UN/ECE Rec. 20',
   'Валута по ISO 4217': 'Currency per ISO 4217',
   'Код по списъка VATEX': 'Code from the VATEX list',
+  'Трябва да е над 0': 'Must be greater than 0',
+  'Процентът е от 0 до 100': 'The percentage is from 0 to 100',
+  'Процентът не може да е отрицателен': 'The percentage cannot be negative',
 };
 
 export function inputMessage(message: string): { bg: string; en: string } {

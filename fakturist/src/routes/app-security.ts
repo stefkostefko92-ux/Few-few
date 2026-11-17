@@ -1,4 +1,7 @@
 import { Router } from 'express';
+import { rateLimit } from 'express-rate-limit';
+import { MINUTE } from '../time.js';
+import { ID_PATTERN } from '../ids.js';
 import QRCode from 'qrcode';
 import { z } from 'zod';
 import { prisma } from '../db.js';
@@ -13,6 +16,31 @@ import {
   verifyPassword,
   PASSWORD_MAX_LENGTH,
 } from '../auth/password.js';
+
+const OWNERSHIP_PATH = new RegExp(`^/app/o/(${ID_PATTERN})/sobstvenost(?:/|$)`);
+
+/**
+ * Проверките на текущата парола (смяна, двуфакторен вход, закриване, предаване на собственост): до 10 за
+ * 15 минути на профил — ЕДИН брояч за всички страници (Разбивача, 16.11.2026: отделните тавани се събират).
+ * Без таван откраднатата сесия отгатва паролата, а всяка проверка е Argon2id (64 MiB) — и товар за входа на
+ * всички (Кодаджията, 16.11.2026).
+ */
+export const passwordCheckLimiter = rateLimit({
+  windowMs: 15 * MINUTE,
+  limit: 10,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  keyGenerator: (req) => req.principal?.user.id ?? 'anonymous',
+  handler: (req, res) => {
+    const ownership = OWNERSHIP_PATH.exec(req.originalUrl);
+    res.redirect(
+      303,
+      ownership
+        ? `/app/o/${ownership[1]}/sobstvenost?err=rateLimited`
+        : '/app/sigurnost?err=rateLimited',
+    );
+  },
+});
 
 /** Сигурността на профила: смяна на паролата и двуфакторен вход. Пазачът requireUser е в appRouter. */
 export function appSecurityRouter(): Router {
@@ -34,7 +62,7 @@ export function appSecurityRouter(): Router {
     });
   });
 
-  router.post('/app/sigurnost/parola', async (req, res) => {
+  router.post('/app/sigurnost/parola', passwordCheckLimiter, async (req, res) => {
     const principal = req.principal!;
     const body = z
       .object({
@@ -65,7 +93,7 @@ export function appSecurityRouter(): Router {
     res.redirect(303, '/app/sigurnost?ok=password');
   });
 
-  router.post('/app/sigurnost/2fa', async (req, res) => {
+  router.post('/app/sigurnost/2fa', passwordCheckLimiter, async (req, res) => {
     const principal = req.principal!;
     const body = z
       .object({

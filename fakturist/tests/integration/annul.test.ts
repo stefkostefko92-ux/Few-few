@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { after, before, test } from 'node:test';
-import { prepareTestDatabase, truncateAll } from './harness.js';
+import { acceptCurrentTerms, prepareTestDatabase, truncateAll } from './harness.js';
 import { startHttp, type HttpClient, type Session } from './http.js';
 
 prepareTestDatabase();
@@ -62,6 +62,7 @@ before(async () => {
         .passwordHash,
     },
   });
+  await acceptCurrentTerms(prisma, issuerUser.id);
   await prisma.membership.create({
     data: { userId: issuerUser.id, organizationId: orgId, role: 'ISSUER' },
   });

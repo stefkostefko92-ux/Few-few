@@ -13,7 +13,7 @@
   // Член на фирма приема само общите условия за себе си (договорът за обработване е на фирмата).
   const acceptLabel = locals.memberOnly ? withLinks(t('auth.legalAcceptMember'), {
     terms: legalLink('terms', t('auth.legalTerms')),
-  }) + ' ' + withLinks(t('auth.legalPrivacy'), { privacy: legalLink('privacy', t('auth.legalPrivacyLink')) }) : withLinks(t('auth.legalAccept'), {
+  }) + ' ' + withLinks(t('auth.legalPrivacy'), { privacy: legalLink('privacy', t('auth.legalPrivacyLink')) }) : withLinks(t(locals.many ? 'auth.legalAcceptMany' : 'auth.legalAccept'), {
     terms: legalLink('terms', t('auth.legalTerms')),
     dpa: legalLink('dpa', t('auth.legalDpa')),
     org: esc(locals.orgName || t('auth.legalOrg')),

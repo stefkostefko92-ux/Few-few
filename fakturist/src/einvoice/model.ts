@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { isDecimalText } from './decimal.js';
+import { cmp, dec, isDecimalText } from './decimal.js';
 import {
   DOCUMENT_TYPES,
   EAS,
@@ -209,6 +209,45 @@ export const InvoiceInputSchema = z.object({
 });
 
 export type InvoiceInput = z.infer<typeof InvoiceInputSchema>;
+
+const positive = (value: string) => isDecimalText(value) && cmp(dec(value), dec('0')) > 0;
+/** Отстъпка — от 0 до 100 %; надбавка — от 0 нагоре (надбавка над 100 % е допустима в EN 16931). */
+function percentProblem(value: string, isCharge: boolean): string | null {
+  if (!isDecimalText(value)) return null; // формата на числото пази схемата
+  if (isCharge) return cmp(dec(value), dec('0')) < 0 ? 'Процентът не може да е отрицателен' : null;
+  return cmp(dec(value), dec('0')) < 0 || cmp(dec(value), dec('100')) > 0
+    ? 'Процентът е от 0 до 100'
+    : null;
+}
+
+/**
+ * Входът при ИЗДАВАНЕ (buildEInvoice): схемата на записа + ограниченията, добавени по прегледа от
+ * 16.11.2026 — делителите (курс, базово количество) над 0 (иначе делението в calculate.ts → 500) и
+ * процентът на отстъпка от 0 до 100 (на надбавка — от 0). Пази и проверката на недоверен входящ файл. Записаният вход на вече издадени документи се разчита с `InvoiceInputSchema`
+ * (PDF, дневници, SAF-T) — затягане там би счупило издаденото преди него.
+ */
+export const IssueInputSchema = InvoiceInputSchema.superRefine((input, ctx) => {
+  const fail = (path: Array<string | number>, message: string) =>
+    ctx.addIssue({ code: 'custom', path, message });
+  if (input.eurExchangeRate !== undefined && !positive(input.eurExchangeRate)) {
+    fail(['eurExchangeRate'], 'Трябва да е над 0');
+  }
+  input.lines.forEach((line, index) => {
+    if (line.priceBaseQuantity !== undefined && !positive(line.priceBaseQuantity)) {
+      fail(['lines', index, 'priceBaseQuantity'], 'Трябва да е над 0');
+    }
+    line.allowanceCharges.forEach((charge, at) => {
+      const problem =
+        charge.percent === undefined ? null : percentProblem(charge.percent, charge.isCharge);
+      if (problem) fail(['lines', index, 'allowanceCharges', at, 'percent'], problem);
+    });
+  });
+  input.allowanceCharges.forEach((charge, at) => {
+    const problem =
+      charge.percent === undefined ? null : percentProblem(charge.percent, charge.isCharge);
+    if (problem) fail(['allowanceCharges', at, 'percent'], problem);
+  });
+});
 export type PartyInput = z.infer<typeof PartySchema>;
 export type AddressInput = z.infer<typeof AddressSchema>;
 export type AllowanceChargeInput = z.infer<typeof AllowanceChargeSchema>;
