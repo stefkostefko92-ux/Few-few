@@ -95,9 +95,18 @@ DATABASE_URL="postgresql://…" npx prisma migrate deploy
 ```json
 {
   "url": "https://linketto.carbonstealth.eu/api/revolut/webhook",
-  "events": ["ORDER_COMPLETED", "ORDER_AUTHORISED", "ORDER_FAILED", "ORDER_CANCELLED"]
+  "events": [
+    "ORDER_COMPLETED", "ORDER_AUTHORISED", "ORDER_FAILED", "ORDER_CANCELLED",
+    "ORDER_PAYMENT_DECLINED", "ORDER_PAYMENT_FAILED",
+    "DISPUTE_ACTION_REQUIRED", "DISPUTE_UNDER_REVIEW", "DISPUTE_WON", "DISPUTE_LOST"
+  ]
 }
 ```
+
+Ако Revolut откаже събитията за спорове за този ключ/среда (`400`/`422` — напр. в Sandbox, където
+`/api/disputes` го няма), създай го без четирите `DISPUTE_*` (както прави rilievi); тогава споровете се
+гледат само в Revolut Business. Вече създаден уебхук се допълва с `PATCH /api/webhooks/{id}` и тяло
+`{"events": [...]}` (сменят се само подадените полета; тайната остава).
 
 към `https://merchant.revolut.com` (Sandbox: `https://sandbox-merchant.revolut.com`). Ключът се чете
 от файла с тайните на сървъра — не се пише в командния ред/историята. От отговора `signing_secret`
@@ -115,6 +124,24 @@ DATABASE_URL="postgresql://…" npx prisma migrate deploy
 - Платена поръчка, която **не може да се приложи** (сумата не съвпада или междувременно е купен
   по-висок план/„Основател“), става `conflict` („Платена, неприложена — върни“ в `/admin`) — без
   промяна на плана; админът я връща.
+- `ORDER_PAYMENT_DECLINED`/`ORDER_PAYMENT_FAILED` идват и за refund поръчките: отказан refund може да
+  остане с поръчка в `processing`, а отказът е само в `payments[].state` (`declined`/`failed`) —
+  уреждането го чете оттам и връща поръчката към платена (аларма „Връщането на пари е неуспешно“).
+  От версия `2026-09-22` отказ при Revolut Pay идва и синхронно като `200` — кодът го третира като `400`.
+- **Спорове** (`DISPUTE_*`, тялото носи само `dispute_id`): порталът чете спора с
+  `GET /api/disputes/{id}` (само Production), записва всяко ново известие (състояние, подсъстояние,
+  срок) в `RevolutDispute` и праща аларма до `ADMIN_EMAILS` със срока за отговор. Аларма, която не е
+  тръгнала (Brevo, празен `ADMIN_EMAILS`), остава с `notifiedAt = NULL` и cron-ът (§9) я допраща при
+  всяко пускане, докато тръгне — затова `ADMIN_EMAILS` и Brevo са задължителни в продукция.
+  **Нищо не се отнема автоматично** — отговорът е в Revolut Business, а при загубен спор планът се
+  сменя ръчно от `/admin`. Спор, който не се чете (404/401), дава аларма само с id-то (без писмо →
+  409 и Revolut опитва пак).
+- **Refund без отговор** (таймаут, мрежа, 409, 429, 5XX): поръчката остава „в ход“ без refund id —
+  Revolut може вече да го е създал. `/admin` казва „в ход — натисни пак“ (`?error=refund-pending`), а
+  бутонът за връщане я повтаря със **същия** Idempotency-Key (без двойно връщане). Cron-ът (§9)
+  праща аларма веднъж за опит за такива поръчки, по-стари от 1 ч. Само изричен 4XX (без 409) или
+  отказано плащане я връща към „платена“. Refund, приет от Revolut за поръчка, която междувременно не
+  е „в ход“, дава аларма „Refund при Revolut без запис у нас“ — не се връща пак, сверява се ръчно.
 - Revolut повтаря доставката **само при 4XX/таймаут** (3 пъти през 10 мин.) — при вътрешна грешка
   връщаме 409. Изпуснатото хваща cron-ът (§9), който проверява висящите поръчки на 15 мин. – 3 дни.
 - По избор: Nginx да приема `/api/revolut/webhook` само от IP адресите на Revolut (списъкът е в

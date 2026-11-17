@@ -77,6 +77,9 @@ src/app/api/revolut/webhook/ Подписан уебхук на Revolut (HMAC в
                        поръчката на живо и дава плана с CAS pending→completed.
                        ЕДИНСТВЕНИТЕ места, които дават план: той и
                        /api/cron/plans (висящи поръчки) — никога redirect-ът.
+                       DISPUTE_* → recordDispute: GET /api/disputes/{id},
+                       одит RevolutDispute + аларма със срока; без
+                       автоматично отнемане (решава човек).
 src/lib/plans.ts       Планове: FREE · PRO €4/мес. · BUSINESS €9/мес. · FOUNDER
                        €49 завинаги; периоди 1/3/6/12 мес. (−0/10/15/20%). Без
                        комисиони. Лимити (maxLocales, analyticsDays…) — само оттук.
