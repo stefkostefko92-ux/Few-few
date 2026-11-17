@@ -10,13 +10,18 @@ import { fallisci, ordina, registra } from './rimborso-revolut.js';
  * същия Idempotency-Key; ако отговорът се е изгубил, а Revolut го е направил, известието му се познава по нашия id.
  */
 
-/** Сверката на едно отворено връщане: чете поръчката му или, без отговор досега, нарежда пак със същия ключ. */
+/**
+ * Сверката на едно отворено връщане: чете поръчката му или, без отговор досега, нарежда пак със същия ключ.
+ * Отказано връщане с известна поръчка (FALLITO) също се чете, когато Revolut съобщи за нея: завършена — лог и
+ * аларма (`completa`), нищо друго; отказано връщане НИКОГА не се нарежда пак оттук.
+ */
 export async function riconciliaRimborso(rimborsoId: string): Promise<void> {
   const r = await prisma.rimborso.findUnique({
     where: { id: rimborsoId },
     include: { pagamento: { select: { ambiente: true, revolutOrderId: true } } },
   });
-  if (!r || r.stato !== 'IN_CORSO' || !r.pagamento.revolutOrderId) return;
+  if (!r || !r.pagamento.revolutOrderId) return;
+  if (r.stato !== 'IN_CORSO' && !(r.stato === 'FALLITO' && r.revolutRefundId)) return;
   const c = await clientePer(r.pagamento.ambiente);
   if (!c) return;
   if (!r.revolutRefundId) {
@@ -44,7 +49,8 @@ export async function riconciliaRimborso(rimborsoId: string): Promise<void> {
 
 /**
  * Известие за поръчка, която не е плащане: връщане, което знаем — сверка; връщане, чийто отговор се е изгубил —
- * познава се по нашия id в `merchant_order_data.reference` (и по върнатата поръчка и сумата) и се довършва.
+ * познава се по нашия id в `merchant_order_data.reference` (и по върнатата поръчка и сумата) и се довършва. Така се
+ * познава и отказаното с 400 (картата): поръчката му все пак съществува и ако Revolut я завърши — аларма (`completa`).
  */
 export async function rimborsoDaNotifica(orderId: string): Promise<void> {
   const noto = await prisma.rimborso.findUnique({
@@ -64,7 +70,7 @@ export async function rimborsoDaNotifica(orderId: string): Promise<void> {
   const riferimento = ordine.merchant_order_data?.reference;
   if (ordine.type !== 'refund' || !riferimento || ordine.id !== orderId) return;
   const r = await prisma.rimborso.findFirst({
-    where: { id: riferimento, stato: 'IN_CORSO', revolutRefundId: null },
+    where: { id: riferimento, stato: { in: ['IN_CORSO', 'FALLITO'] }, revolutRefundId: null },
     include: { pagamento: { select: { revolutOrderId: true } } },
   });
   if (

@@ -23,17 +23,47 @@ export interface OrdineFinto {
   redirect: string;
   /** A refund order: the order it gives money back on. */
   related?: string;
+  /** The payments of the order (Payment-v3), as Revolut lists them: only the state and the reason of a refusal. */
+  payments?: PagamentoFinto[];
 }
 
-/** How the next refunds answer: the state of the new refund order, or an HTTP error, or no answer at all. */
+export interface PagamentoFinto {
+  state: string;
+  decline_reason?: string;
+}
+
+/** A refund whose payments were all declined or failed: Revolut did not give the money back. */
+const rifiutato = (o: OrdineFinto) =>
+  (o.payments ?? []).length > 0 &&
+  o.payments!.every((p) => p.state === 'declined' || p.state === 'failed');
+
+/**
+ * How the next refunds answer: the state of the new refund order, or an HTTP error, or no answer at all; or, as a
+ * Revolut Pay refund refused since API 2026-09-22 (examples Res-Refund-Declined / Res-Refund-Failed), 200 with the
+ * refund order still `processing` and its payment `declined` or `failed`.
+ */
 export const rimborsi: {
   stato: OrdineFinto['state'];
   http: number | null;
+  pagamento: PagamentoFinto | null;
+  /**
+   * With `http`: the refund order is created all the same, then the error is answered — a card refund refused with
+   * 400, whose "declined refund order is still created" (merchant.yaml, refundOrder).
+   */
+  ordineAncheSeRifiutato: boolean;
   /** The request is accepted and done, but the answer never arrives (the portal sees a network error). */
   muto: boolean;
   chiavi: Map<string, string>;
   richieste: Array<{ ordine: string; chiave: string | undefined; amount: number }>;
-} = { stato: 'processing', http: null, muto: false, chiavi: new Map(), richieste: [] };
+} = {
+  stato: 'processing',
+  http: null,
+  pagamento: null,
+  ordineAncheSeRifiutato: false,
+  muto: false,
+  chiavi: new Map(),
+  richieste: [],
+};
 
 export interface DisputaFinta {
   id: string;
@@ -77,6 +107,17 @@ const vista = (o: OrdineFinto) => ({
   merchant_order_data: { reference: o.reference },
   checkout_url: `${BASE_REVOLUT}/pay/${o.id}`,
   created_at: new Date().toISOString(),
+  ...(o.payments
+    ? {
+        payments: o.payments.map((p, i) => ({
+          id: `${o.id}-p${i}`,
+          ...p,
+          amount: o.amount,
+          currency: o.currency,
+          payment_method: { type: 'revolut_pay_account' },
+        })),
+      }
+    : {}),
 });
 
 export async function avviaRevolutFinto(): Promise<void> {
@@ -117,12 +158,19 @@ export async function avviaRevolutFinto(): Promise<void> {
       const chiave = req.headers['idempotency-key'] as string | undefined;
       const origine = ordini.get(r[1]!);
       rimborsi.richieste.push({ ordine: r[1]!, chiave, amount: Number(b.amount) });
-      if (rimborsi.http !== null) return json(rimborsi.http, { code: 'refund_refused' });
+      if (rimborsi.http !== null && !rimborsi.ordineAncheSeRifiutato)
+        return json(rimborsi.http, { code: 'refund_refused' });
       if (!origine) return json(404, { code: 'not_found' });
       const gia = chiave ? rimborsi.chiavi.get(chiave) : undefined;
       if (gia) return json(201, vista(ordini.get(gia)!));
       const resi = [...ordini.values()]
-        .filter((o) => o.related === origine.id && o.state !== 'failed' && o.state !== 'cancelled')
+        .filter(
+          (o) =>
+            o.related === origine.id &&
+            o.state !== 'failed' &&
+            o.state !== 'cancelled' &&
+            !rifiutato(o),
+        )
         .reduce((somma, o) => somma + o.amount, 0);
       if (
         origine.state !== 'completed' ||
@@ -139,11 +187,14 @@ export async function avviaRevolutFinto(): Promise<void> {
         reference: String((b.merchant_order_data as { reference?: string })?.reference ?? ''),
         redirect: '',
         related: origine.id,
+        ...(rimborsi.pagamento ? { payments: [{ ...rimborsi.pagamento }] } : {}),
       };
       ordini.set(id, o);
       if (chiave) rimborsi.chiavi.set(chiave, id);
       if (rimborsi.muto) return req.socket.destroy();
-      return json(201, vista(o));
+      if (rimborsi.http !== null) return json(rimborsi.http, { code: 'refund_refused' });
+      // A refused Revolut Pay refund: 200 instead of the 400 of a card (API 2026-09-22).
+      return json(rifiutato(o) ? 200 : 201, vista(o));
     }
     const d = /^\/api\/disputes\/([A-Za-z0-9-]+)$/.exec(url.pathname);
     if (d && req.method === 'GET') {
