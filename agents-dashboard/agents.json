@@ -9352,7 +9352,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 314
+        "lessons": 315
       },
       "evolution": [
         {
@@ -9720,9 +9720,20 @@
           "date": "2026-11-17",
           "event": "v29.8 — учене",
           "detail": "Научи: Червен тест, пуснат преди проверка на причината, може да е червен заради грешка в самия…"
+        },
+        {
+          "version": "29.9.0",
+          "date": "2026-11-17",
+          "event": "v29.9 — учене",
+          "detail": "Научи: При Revolut Merchant отказано с 400 връщане с карта пак създава поръчка за връщане; web…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-17",
+          "type": "learning",
+          "summary": "Научи: „При Revolut Merchant отказано с 400 връщане с карта пак създава поръчка за връщане; web…\""
+        },
         {
           "date": "2026-11-17",
           "type": "learning",
