@@ -25,6 +25,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-17-versione-5-5": {
+        "area": "Abbonamento e pagamenti",
+        "titolo": "Versione 5.5: rimborsi e avvisi di Revolut più affidabili",
+        "testo": "Quando Revolut rifiuta il rimborso di un pagamento, anche fatto con Revolut Pay, il portale ora lo segna come non riuscito appena Revolut lo comunica, con il motivo indicato da Revolut; prima poteva restare in corso. L'amministrazione del portale lo vede e può ripetere il rimborso; se poi Revolut completa lo stesso un rimborso segnato come non riuscito, riceve un allarme e non lo ripete per errore. Se il portale non riesce a registrare subito un avviso di pagamento di Revolut, ora chiede a Revolut di rimandarlo, così il pagamento non si perde e il piano parte lo stesso."
+      },
       "2026-11-16-versione-5-4": {
         "area": "Preventivi e pagine del portale",
         "titolo": "Versione 5.4: preventivi per ogni azienda e pagine rifinite",
