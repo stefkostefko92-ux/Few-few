@@ -2870,7 +2870,7 @@
           "Sandi Metz „The Wrong Abstraction“ + Page-Jones connascence",
           "Google eng-practices (code review/readability); граница спрямо .claude/agents/kodadjiyata.md"
         ],
-        "lessons": 137
+        "lessons": 138
       },
       "evolution": [
         {
@@ -2938,9 +2938,20 @@
           "date": "2026-11-17",
           "event": "v22.3 — учене",
           "detail": "Научи: guard-readonly блокира и ln -s към node_modules на продукта в scratchpad; база от origi… (+8 още)"
+        },
+        {
+          "version": "22.4.0",
+          "date": "2026-11-17",
+          "event": "v22.4 — учене",
+          "detail": "Научи: В rilievi e2e `fail` от tests/e2e/helpers.mjs не хвърля, а трупа в `failures`, затова п…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-17",
+          "type": "learning",
+          "summary": "Научи: „В rilievi e2e `fail` от tests/e2e/helpers.mjs не хвърля, а трупа в `failures`, затова п…\""
+        },
         {
           "date": "2026-11-17",
           "type": "learning",
