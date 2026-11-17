@@ -838,3 +838,5 @@
 {"t":"handoff","ts":"2026-11-17T06:08:25.511Z","id":"r9fb3916d","from":"prodavacha","to":"kodadjiyata","status":"има бележки","run":"dad76a8f"}
 {"t":"handoff","ts":"2026-11-17T06:10:40.658Z","id":"r9fb3916d","from":"kodadjiyata","to":"prodavacha","status":"има бележки","run":"a5ec0d75"}
 {"t":"handoff","ts":"2026-11-17T06:10:57.890Z","id":"r9fb3916d","from":"kodadjiyata","to":"prodavacha","status":"има бележки","run":"0b400949"}
+{"t":"start","ts":"2026-11-17T06:12:13.371Z","id":"ra34bbe77","flow":"авто","lead":"kachestveniyat","auto":true}
+{"t":"handoff","ts":"2026-11-17T06:12:13.371Z","id":"ra34bbe77","from":"kachestveniyat","to":"prodavacha","status":"има бележки","run":"036796e5"}
