@@ -9336,7 +9336,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 309
+        "lessons": 311
       },
       "evolution": [
         {
@@ -9698,9 +9698,20 @@
           "date": "2026-11-17",
           "event": "v29.3 — учене",
           "detail": "Научи: В zod 4 `.optional().catch(undefined)` на поле от обект оставя целия обект четим, когат… (+36 още)"
+        },
+        {
+          "version": "29.5.0",
+          "date": "2026-11-17",
+          "event": "v29.5 — учене",
+          "detail": "Научи: Prisma 6 приема статично подразбиране за DateTime като ISO низ (@default(\"1970-01-01T00… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-17",
+          "type": "learning",
+          "summary": "Научи: „Prisma 6 приема статично подразбиране за DateTime като ISO низ (@default(\"1970-01-01T00…\" (+1 още)"
+        },
         {
           "date": "2026-11-17",
           "type": "learning",
