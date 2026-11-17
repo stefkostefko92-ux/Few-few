@@ -10119,7 +10119,7 @@
           "developer.apple.com / developer.android.com — App Review, Privacy Manifest, AAB, target API, Data Safety",
           "Bubblewrap / Capacitor / EAA (EN 301 549) — двата пътя на обвиване + достъпност"
         ],
-        "lessons": 218
+        "lessons": 219
       },
       "evolution": [
         {
@@ -10451,9 +10451,20 @@
           "date": "2026-11-17",
           "event": "v20.9 — учене",
           "detail": "Научи: Във WebKit bug 290847 линк с Content-Disposition attachment (и inline PDF) в iOS home-s…"
+        },
+        {
+          "version": "21.0.0",
+          "date": "2026-11-17",
+          "event": "v21.0 — учене",
+          "detail": "Научи: Safari/iOS задава PointerEvent width/height на touch като 2*radiusX и 2*radiusY (не 1×)…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-17",
+          "type": "learning",
+          "summary": "Научи: „Safari/iOS задава PointerEvent width/height на touch като 2*radiusX и 2*radiusY (не 1×)…\""
+        },
         {
           "date": "2026-11-17",
           "type": "learning",
