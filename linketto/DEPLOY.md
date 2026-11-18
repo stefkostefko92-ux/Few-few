@@ -231,7 +231,13 @@ P="$(sudo sed -n 's/^HTTP_PORT=//p' /opt/few-few/shared/linketto/.env | tail -1 
 sudo sed "s/127\.0\.0\.1:4350/127.0.0.1:$P/g" "$(cat /opt/few-few/shared/linketto/last-good)/deploy/nginx.conf" | sudo tee /etc/nginx/sites-available/linketto >/dev/null
 sudo ln -sfn /etc/nginx/sites-available/linketto /etc/nginx/sites-enabled/linketto
 sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d piuma.carbonstealth.eu --redirect
+# Пазач: без сайт с точно това име certbot слага сертификата в default/catch-all блока
+# (17.11.2026 — влезе в conf.d/00-reject-unknown.conf). Затова certbot тръгва САМО ако vhost-ът го носи.
+if sudo grep -q 'server_name piuma.carbonstealth.eu;' /etc/nginx/sites-enabled/linketto; then
+  sudo certbot --nginx -d piuma.carbonstealth.eu --redirect
+else
+  echo "СТОП: /etc/nginx/sites-enabled/linketto не носи piuma.carbonstealth.eu — деплоят мина ли? (last-good)"
+fi
 ```
 
 **Cron (§9) — systemd таймери, инсталират се сами:** `linketto-cron-plans.timer` (всеки час :17),
