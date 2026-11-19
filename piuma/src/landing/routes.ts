@@ -149,22 +149,37 @@ landingRouter.get('/robots.txt', (_req, res) => {
     );
 });
 
+/**
+ * Публичните страници в картата на сайта. Всяка има по адрес на език и същите езикови
+ * варианти като в `<head>` на страницата. Поверителността е под витрината по приоритет.
+ */
+const SITEMAP_PAGES = [
+  {
+    path: '/',
+    changefreq: 'weekly',
+    priority: (locale: Locale) => (locale === 'bg' ? '1.0' : '0.8'),
+  },
+  { path: '/privacy', changefreq: 'monthly', priority: () => '0.3' },
+] as const;
+
 landingRouter.get('/sitemap.xml', (_req, res) => {
   const today = new Date().toISOString().slice(0, 10);
-  const links = alternates()
-    .map((a) => `    <xhtml:link rel="alternate" hreflang="${a.hreflang}" href="${a.href}"/>`)
-    .join('\n');
-  const entries = LOCALES.map((locale) =>
-    [
-      '  <url>',
-      `    <loc>${canonicalFor(locale)}</loc>`,
-      links,
-      `    <lastmod>${today}</lastmod>`,
-      '    <changefreq>weekly</changefreq>',
-      `    <priority>${locale === 'bg' ? '1.0' : '0.8'}</priority>`,
-      '  </url>',
-    ].join('\n'),
-  ).join('\n');
+  const entries = SITEMAP_PAGES.flatMap((page) => {
+    const links = alternates(page.path)
+      .map((a) => `    <xhtml:link rel="alternate" hreflang="${a.hreflang}" href="${a.href}"/>`)
+      .join('\n');
+    return LOCALES.map((locale) =>
+      [
+        '  <url>',
+        `    <loc>${canonicalFor(locale, page.path)}</loc>`,
+        links,
+        `    <lastmod>${today}</lastmod>`,
+        `    <changefreq>${page.changefreq}</changefreq>`,
+        `    <priority>${page.priority(locale)}</priority>`,
+        '  </url>',
+      ].join('\n'),
+    );
+  }).join('\n');
 
   res
     .type('application/xml')

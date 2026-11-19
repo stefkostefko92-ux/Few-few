@@ -281,11 +281,71 @@ test('страницата за поверителност носи раздел
   assert.doesNotMatch(html, /<script/);
 });
 
-test('страницата за поверителност носи ≥5 ключови думи с „Carbon Stealth“', () => {
-  const keywords = translate('bg', 'privacy.meta.keywords')
-    .split(',')
-    .map((word) => word.trim())
-    .filter(Boolean);
-  assert.ok(keywords.length >= 5);
-  assert.ok(keywords.some((word) => word.includes('Carbon Stealth')));
+test('страницата за поверителност носи ≥5 ключови думи с „Carbon Stealth“ на всеки език', () => {
+  for (const locale of LOCALES) {
+    const keywords = translate(locale, 'privacy.meta.keywords')
+      .split(',')
+      .map((word) => word.trim())
+      .filter(Boolean);
+    assert.ok(keywords.length >= 5, locale);
+    assert.ok(
+      keywords.some((word) => word.includes('Carbon Stealth')),
+      locale,
+    );
+  }
+});
+
+/* ── Картата на сайта: витрината и поверителността, всяка с езиковите си варианти ── */
+
+async function sitemap(): Promise<string> {
+  // config() се чете при първото извикване — средата се подава преди маршрута.
+  Object.assign(process.env, {
+    NODE_ENV: 'test',
+    PUBLIC_BASE_URL: 'https://piuma.example.com',
+    DATABASE_URL: 'postgresql://user:pass@127.0.0.1:5432/db',
+    REDIS_URL: 'redis://127.0.0.1:6379/3',
+    IG_APP_ID: '123456',
+    IG_APP_SECRET: 'app-secret',
+    IG_REDIRECT_URI: 'https://piuma.example.com/auth/instagram/callback',
+    TOKEN_ENC_KEY: 'a'.repeat(64),
+  });
+  const { default: express } = await import('express');
+  const { landingRouter } = await import('../src/landing/routes.js');
+  const app = express().use(landingRouter);
+  const server = app.listen(0);
+  await new Promise<void>((resolve) => server.once('listening', resolve));
+  try {
+    const { port } = server.address() as import('node:net').AddressInfo;
+    const response = await fetch(`http://127.0.0.1:${port}/sitemap.xml`);
+    assert.equal(response.status, 200);
+    return await response.text();
+  } finally {
+    server.close();
+  }
+}
+
+test('sitemap.xml носи /privacy на трите езика с hreflang и x-default', async () => {
+  const xml = await sitemap();
+  const urls = [...xml.matchAll(/<url>([\s\S]*?)<\/url>/g)].map((m) => m[1]!);
+  const locs = urls.map((block) => /<loc>([^<]+)<\/loc>/.exec(block)?.[1]);
+  for (const path of ['/', '/privacy']) {
+    for (const locale of LOCALES) {
+      const href = `https://piuma.example.com${path}${locale === 'bg' ? '' : `?lang=${locale}`}`;
+      const index = locs.indexOf(href);
+      assert.ok(index >= 0, `липсва <loc> ${href}`);
+      const block = urls[index]!;
+      for (const code of LOCALES) {
+        const alt = `https://piuma.example.com${path}${code === 'bg' ? '' : `?lang=${code}`}`;
+        assert.ok(
+          block.includes(`hreflang="${code}" href="${alt}"`),
+          `${href}: без hreflang ${code}`,
+        );
+      }
+      assert.ok(
+        block.includes(`hreflang="x-default" href="https://piuma.example.com${path}"`),
+        `${href}: без x-default`,
+      );
+    }
+  }
+  assert.equal(urls.length, 2 * LOCALES.length, 'точно витрината и поверителността');
 });
