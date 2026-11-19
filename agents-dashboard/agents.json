@@ -5062,7 +5062,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 265
+        "lessons": 269
       },
       "evolution": [
         {
@@ -5574,9 +5574,20 @@
           "date": "2026-11-19",
           "event": "v29.2 — учене",
           "detail": "Научи: В linketto it.json админ секцията свършва на payoutMarkPaid; ключовете за поръчки (erro… (+11 още)"
+        },
+        {
+          "version": "29.6.0",
+          "date": "2026-11-19",
+          "event": "v29.6 — учене",
+          "detail": "Научи: При AI Act (CELEX 32024R1689) cellar UUID е dc8116a1-3fe6-11ef-865a-01aa75ed71a1 и номе… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-19",
+          "type": "learning",
+          "summary": "Научи: „При AI Act (CELEX 32024R1689) cellar UUID е dc8116a1-3fe6-11ef-865a-01aa75ed71a1 и номе…\" (+3 още)"
+        },
         {
           "date": "2026-11-19",
           "type": "learning",
