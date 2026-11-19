@@ -8,11 +8,12 @@ export interface LlmReply {
   stop: string | null;
   costMicro: bigint;
 }
-export type Llm = (req: {
+export interface LlmRequest {
   system: string;
   messages: ChatMessage[];
   maxTokens: number;
-}) => Promise<LlmReply>;
+}
+export type Llm = (req: LlmRequest) => Promise<LlmReply>;
 
 /** Какво вижда посетителят след един ход към шлюза. */
 export interface TargetReply {
@@ -23,24 +24,47 @@ export interface TargetReply {
 }
 export type Target = (agent: string, messages: ChatMessage[]) => Promise<TargetReply>;
 
+/** Горна граница на разхода на едно повикване (вход по UTF-8 байтове + пълния max_tokens изход). */
+export interface CostCeiling {
+  simUser: (req: LlmRequest) => bigint;
+  grader: (req: LlmRequest) => bigint;
+  target: (agent: string, messages: ChatMessage[]) => bigint;
+}
+
+export class BudgetExhausted extends Error {}
+
 /** Твърд таван на разхода (opt-in, задължителен); от 75 % — нови случаи не започват. */
 export class Budget {
   spent = 0n;
+  /** Опити (успешни и неуспешни) и колко от тях са неуспешни. */
+  calls = 0;
+  failed = 0;
   constructor(readonly maxMicro: bigint) {
     if (maxMicro <= 0n) throw new Error('бюджетът трябва да е > 0');
   }
-  spend(micro: bigint): void {
-    this.spent += micro;
-  }
-  exhausted(): boolean {
-    return this.spent >= this.maxMicro;
+  /**
+   * Резервира горната граница ПРЕДИ повикването: spent + ceiling > max → не вика изобщо.
+   * Неуспешен опит се таксува с горната граница — доставчикът може вече да е таксувал.
+   */
+  async call<T extends { costMicro: bigint }>(ceiling: bigint, fn: () => Promise<T>): Promise<T> {
+    if (this.spent + ceiling > this.maxMicro) {
+      throw new BudgetExhausted('бюджетът не стига за горната граница на следващото повикване');
+    }
+    this.calls++;
+    try {
+      const r = await fn();
+      this.spent += r.costMicro;
+      return r;
+    } catch (err) {
+      this.failed++;
+      this.spent += ceiling;
+      throw err;
+    }
   }
   shrinking(): boolean {
     return this.spent * 4n >= this.maxMicro * 3n;
   }
 }
-
-class BudgetExhausted extends Error {}
 
 export interface Turn {
   user: string;
@@ -63,6 +87,7 @@ export interface EvalDeps {
   simUser: Llm;
   grader: Llm;
   budget: Budget;
+  ceiling: CostCeiling;
   maxUserTurns?: number;
   maxMessageChars?: number;
   /** Подготовка преди всеки случай (напр. нов ключ → собствена кофа за откази). */
@@ -115,12 +140,7 @@ export async function runCase(sc: Scenario, repeat: number, deps: EvalDeps): Pro
     repeat,
   };
   const turns: Turn[] = [];
-  const pay = (micro: bigint) => {
-    deps.budget.spend(micro);
-  };
-  const guard = () => {
-    if (deps.budget.exhausted()) throw new BudgetExhausted('бюджетът е изчерпан');
-  };
+  const { budget, ceiling } = deps;
 
   try {
     const history: ChatMessage[] = [];
@@ -128,23 +148,18 @@ export async function runCase(sc: Scenario, repeat: number, deps: EvalDeps): Pro
       { role: 'user', content: 'Започни разговора: напиши първото си съобщение.' },
     ];
     for (let i = 0; i < maxTurns; i++) {
-      guard();
-      const sim = await deps.simUser({
-        system: simUserSystem(sc),
-        messages: simMsgs,
-        maxTokens: 800,
-      });
-      pay(sim.costMicro);
+      const simReq = { system: simUserSystem(sc), messages: simMsgs, maxTokens: 800 };
+      const sim = await budget.call(ceiling.simUser(simReq), () => deps.simUser(simReq));
       if (sim.stop === 'refusal') {
         return { ...base, status: 'error', note: 'симулираният потребител отказа', turns };
       }
       const userText = sim.text.trim().slice(0, maxChars);
       if (!userText || userText.includes(END)) break;
 
-      guard();
       history.push({ role: 'user', content: userText });
-      const reply = await deps.target(sc.agent, history);
-      pay(reply.costMicro);
+      const reply = await budget.call(ceiling.target(sc.agent, history), () =>
+        deps.target(sc.agent, history),
+      );
       if (reply.refused || reply.filtered) history.pop();
       else history.push({ role: 'assistant', content: reply.shown });
       turns.push({
@@ -167,13 +182,12 @@ export async function runCase(sc: Scenario, repeat: number, deps: EvalDeps): Pro
 
   // Оценителят: всяка негова повреда маркира и ИЗКЛЮЧВА случая — никога „уместно“ по подразбиране.
   try {
-    guard();
-    const g = await deps.grader({
+    const gReq = {
       system: GRADER_SYSTEM,
-      messages: [{ role: 'user', content: graderPrompt(sc, turns) }],
+      messages: [{ role: 'user' as const, content: graderPrompt(sc, turns) }],
       maxTokens: 2000,
-    });
-    pay(g.costMicro);
+    };
+    const g = await budget.call(ceiling.grader(gReq), () => deps.grader(gReq));
     if (g.stop === 'refusal') {
       return { ...base, status: 'grader_broken', note: 'оценителят отказа', turns, grader: g.text };
     }

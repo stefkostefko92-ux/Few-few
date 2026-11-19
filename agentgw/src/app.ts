@@ -16,9 +16,9 @@ import {
 import { LeakGuard } from './leak.js';
 import { log } from './logger.js';
 import { redactPii } from './pii.js';
-import { costMicroUsd, type TokenUsage } from './pricing.js';
+import { costMicroUsd, inputTokensUpperBound, type TokenUsage } from './pricing.js';
 import type { AgentProfile } from './profiles.js';
-import { RateLimiter, StrikeCounter } from './ratelimit.js';
+import { clientBucket, RateLimiter, StrikeCounter } from './ratelimit.js';
 
 export interface AppDeps {
   cfg: Config;
@@ -196,10 +196,12 @@ export function createApp(deps: AppDeps) {
         fail(res, 503, 'ai_unavailable', 'AI асистентът временно не е наличен.');
         return;
       }
-      // Повторни откази от една връзка → пауза. Кофата е ключ+IP в паметта (както лимитът
-      // заявки/мин): един злонамерен посетител не спира чата за всички на сайта.
-      const strikeBucket = `refusal:${key.id}:${req.ip ?? 'unknown'}`;
-      if (strikes.count(strikeBucket) >= cfg.REFUSAL_STRIKES) {
+      // Повторни откази от една връзка → пауза. Кофата е ключ+IP (IPv6 по /64) в паметта (както
+      // лимитът заявки/мин): един злонамерен посетител не спира чата за всички на сайта.
+      // „Ударът“ се резервира още тук и се освобождава при затварянето на отговора — иначе
+      // паралелни заявки минават всички покрай прага, защото отказът се брои едва в края.
+      const strikeBucket = `refusal:${key.id}:${clientBucket(req.ip ?? 'unknown')}`;
+      if (!strikes.reserve(strikeBucket, cfg.REFUSAL_STRIKES)) {
         log('warn', 'refusal_throttled', { keyId: key.id, agent });
         res.setHeader('Retry-After', String(strikes.retryAfter(strikeBucket)));
         fail(
@@ -210,6 +212,7 @@ export function createApp(deps: AppDeps) {
         );
         return;
       }
+      res.once('close', () => strikes.release(strikeBucket));
       const month = monthKey();
       const used = await store.monthUsage(key.id, month);
       if (used.costMicroUsd >= key.capMicroUsd) {
@@ -229,6 +232,22 @@ export function createApp(deps: AppDeps) {
       res.on('close', () => {
         if (!res.writableFinished) abort.abort();
       });
+      const record = async (usage: TokenUsage, stop: string | null) => {
+        const cost = costMicroUsd(model, usage, cfg.PRICE_MULTIPLIER);
+        try {
+          await store.addUsage(key.id, month, { ...usage, costMicroUsd: cost });
+        } catch (err) {
+          log('error', 'usage_write_failed', { keyId: key.id, err: String(err) });
+        }
+        log('info', 'chat', {
+          keyId: key.id,
+          agent,
+          model,
+          stop,
+          ...usage,
+          costMicro: String(cost),
+        });
+      };
 
       let stream: AsyncIterable<
         import('@anthropic-ai/sdk/resources/messages/messages').RawMessageStreamEvent
@@ -236,6 +255,20 @@ export function createApp(deps: AppDeps) {
       try {
         stream = await deps.model.open(params, abort.signal);
       } catch (err) {
+        if (abort.signal.aborted) {
+          // Клиентът затвори, докато чакахме Vertex: заявката може вече да се генерира и да
+          // се таксува от Google — записваме горна граница (fail-closed за тавана).
+          await record(
+            {
+              inputTokens: inputTokensUpperBound(params),
+              outputTokens: cfg.MAX_OUTPUT_TOKENS,
+              cacheReadTokens: 0,
+              cacheWriteTokens: 0,
+            },
+            'client_closed',
+          );
+          return;
+        }
         const status = (err as { status?: unknown }).status;
         log('warn', 'upstream_open_failed', { keyId: key.id, agent, status });
         if (status === 429)
@@ -261,6 +294,8 @@ export function createApp(deps: AppDeps) {
         cacheWriteTokens: 0,
       };
       let stop: string | null = null;
+      // Без message_start не знаем входа — горна оценка от байтовете на промпта.
+      let started = false;
       // Финалният usage идва с message_delta. Без него (прекъсване, филтър) не знаем колко е
       // генерирано — таксуваме горна граница max_tokens (fail-closed за тавана).
       let finalUsage = false;
@@ -269,6 +304,7 @@ export function createApp(deps: AppDeps) {
       try {
         for await (const ev of stream) {
           if (ev.type === 'message_start') {
+            started = true;
             const u = ev.message.usage;
             usage.inputTokens = u.input_tokens;
             usage.outputTokens = u.output_tokens;
@@ -322,20 +358,9 @@ export function createApp(deps: AppDeps) {
         }
       } finally {
         if (!finalUsage) usage.outputTokens = Math.max(usage.outputTokens, cfg.MAX_OUTPUT_TOKENS);
-        const cost = costMicroUsd(model, usage, cfg.PRICE_MULTIPLIER);
-        try {
-          await store.addUsage(key.id, month, { ...usage, costMicroUsd: cost });
-        } catch (err) {
-          log('error', 'usage_write_failed', { keyId: key.id, err: String(err) });
-        }
-        log('info', 'chat', {
-          keyId: key.id,
-          agent,
-          model,
-          stop: blocked ? 'output_filtered' : stop,
-          ...usage,
-          costMicro: String(cost),
-        });
+        if (!started)
+          usage.inputTokens = Math.max(usage.inputTokens, inputTokensUpperBound(params));
+        await record(usage, blocked ? 'output_filtered' : stop);
         res.end();
       }
     },

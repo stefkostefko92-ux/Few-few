@@ -41,6 +41,19 @@ export interface TokenUsage {
 }
 
 /**
+ * Горна оценка на входните токени, когато моделът не е върнал `usage` (прекъсване преди
+ * `message_start`): UTF-8 байтовете на системния промпт и разговора в JSON. Всеки токен е поне
+ * един байт текст, а JSON обвивката само добавя — на практика ≥ 2 байта на токен, така че
+ * покрива и кеш записа (1.25× вход).
+ */
+export function inputTokensUpperBound(params: { system?: unknown; messages: unknown }): number {
+  return (
+    Buffer.byteLength(JSON.stringify(params.system ?? '')) +
+    Buffer.byteLength(JSON.stringify(params.messages))
+  );
+}
+
+/**
  * Разход в микро-USD, закръглен нагоре (по-добре да надценим с микродолар, отколкото
  * таванът да изтече). Непознат модел не стига дотук — конфигурацията го спира при старт;
  * ако все пак стигне, таксуваме по тавана на всички известни цени (fail-closed), не по

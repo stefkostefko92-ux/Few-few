@@ -29,7 +29,7 @@
       thinking: 'Мисли…',
       error: 'Нещо се обърка. Опитай пак.',
       refusal:
-        'Асистентът не може да помогне с тази заявка. Тя не остава в разговора — можеш да зададеш друг въпрос.',
+        'Асистентът не може да помогне с тази заявка. Няма да я взема предвид в следващите отговори — можеш да зададеш друг въпрос.',
       truncated: '(отговорът е съкратен)',
     },
     en: {
@@ -44,7 +44,7 @@
       thinking: 'Thinking…',
       error: 'Something went wrong. Please try again.',
       refusal:
-        'The assistant cannot help with this request. It was removed from the conversation — you can ask something else.',
+        'The assistant can’t help with this request. It won’t be taken into account in later answers — you can ask something else.',
       truncated: '(answer was shortened)',
     },
     it: {
@@ -59,7 +59,7 @@
       thinking: 'Sto pensando…',
       error: 'Qualcosa è andato storto. Riprova.',
       refusal:
-        "L'assistente non può aiutare con questa richiesta. È stata rimossa dalla conversazione: puoi fare un'altra domanda.",
+        "L'assistente non può aiutarti con questa richiesta. Non ne terrà conto nelle risposte successive: puoi fare un'altra domanda.",
       truncated: '(risposta abbreviata)',
     },
   };

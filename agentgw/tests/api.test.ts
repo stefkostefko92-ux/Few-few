@@ -447,6 +447,107 @@ describe('изтичане на промпта и повторни откази'
     assert.equal(u.outputTokens, 1000);
   });
 
+  /** Чака записа на разхода (той е след края на отговора). */
+  const usageOf = async (h: Harness, id: string) => {
+    for (let i = 0; i < 200 && (await h.store.monthUsage(id, monthKey())).requests === 0; i++) {
+      await new Promise((res) => setTimeout(res, 10));
+    }
+    return h.store.monthUsage(id, monthKey());
+  };
+  /** Горната граница на входа: UTF-8 байтовете на системния промпт и разговора. */
+  const promptBytes = (h: Harness) => {
+    const call = h.model.calls.at(-1)!;
+    return Buffer.byteLength(JSON.stringify(call.system) + JSON.stringify(call.messages));
+  };
+
+  test('прекъсване по време на отварянето → записан разход с горна граница', async (t) => {
+    const h = await startHarness({ cfg: cfg() });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    h.model.openStall = true;
+    const ctl = new AbortController();
+    const pending = fetch(`${h.url}/v1/chat`, {
+      method: 'POST',
+      headers: { ...json, 'X-Agent-Key': k.plain },
+      body: chatBody(),
+      signal: ctl.signal,
+    }).catch(() => null);
+    for (let i = 0; i < 200 && h.model.calls.length === 0; i++) {
+      await new Promise((res) => setTimeout(res, 5));
+    }
+    ctl.abort();
+    await pending;
+    const u = await usageOf(h, k.id);
+    assert.equal(u.requests, 1);
+    assert.equal(u.outputTokens, 1000);
+    assert.ok(u.inputTokens >= promptBytes(h), `вход ${u.inputTokens} < ${promptBytes(h)}`);
+  });
+
+  test('прекъсване след отварянето, преди message_start → входът е горна оценка, не 0', async (t) => {
+    const h = await startHarness({ cfg: cfg() });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    h.model.stallAfter = 0; // нито едно събитие
+    const ctl = new AbortController();
+    await fetch(`${h.url}/v1/chat`, {
+      method: 'POST',
+      headers: { ...json, 'X-Agent-Key': k.plain },
+      body: chatBody(),
+      signal: ctl.signal,
+    });
+    ctl.abort();
+    const u = await usageOf(h, k.id);
+    assert.equal(u.requests, 1);
+    assert.equal(u.outputTokens, 1000);
+    assert.ok(u.inputTokens >= promptBytes(h), `вход ${u.inputTokens} < ${promptBytes(h)}`);
+  });
+
+  test('откази от различни адреси в една IPv6 /64 → една кофа', async (t) => {
+    const h = await startHarness({
+      cfg: testConfig({ LEAK_CANARY: CANARY, REFUSAL_STRIKES: '2', TRUST_PROXY: '1' }),
+    });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    const from = (ip: string) =>
+      fetch(`${h.url}/v1/chat`, {
+        method: 'POST',
+        headers: { ...json, 'X-Agent-Key': k.plain, 'X-Forwarded-For': ip },
+        body: chatBody(),
+      });
+    h.model.events = textEvents([], { stop: 'refusal' });
+    await (await from('2001:db8:1:2::a')).text();
+    await (await from('2001:db8:1:2::b')).text();
+    assert.equal((await from('2001:db8:1:2:ffff::1')).status, 429);
+    h.model.events = textEvents(['ок']);
+    const other = await from('2001:db8:1:3::1');
+    assert.equal(other.status, 200);
+    await other.text();
+  });
+
+  test('паралелни заявки не минават всички покрай прага на отказите', async (t) => {
+    const h = await startHarness({ cfg: cfg() });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    h.model.events = textEvents([], { stop: 'refusal' });
+    h.model.openDelayMs = 50;
+    const rs = await Promise.all([1, 2, 3, 4].map(() => ask(h, k.plain)));
+    await Promise.all(rs.map((r) => r.text()));
+    assert.equal(h.model.calls.length, 2);
+    assert.deepEqual(rs.map((r) => r.status).sort(), [200, 200, 429, 429]);
+  });
+
+  test('успешните заявки освобождават резервацията (без 429 при REFUSAL_STRIKES=2)', async (t) => {
+    const h = await startHarness({ cfg: cfg() });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    h.model.events = textEvents(['ок']);
+    for (let i = 0; i < 4; i++) {
+      const r = await ask(h, k.plain);
+      assert.equal(r.status, 200, `заявка ${i + 1}`);
+      await r.text();
+    }
+  });
+
   test('повторни откази от ключ+IP → 429 и моделът не се вика', async (t) => {
     const h = await startHarness({ cfg: cfg() });
     t.after(() => h.close());

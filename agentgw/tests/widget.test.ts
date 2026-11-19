@@ -85,14 +85,14 @@ function sse(events: Array<[string, unknown]>): Uint8Array {
   );
 }
 
-function loadWidget(replies: Uint8Array[]) {
+function loadWidget(replies: Uint8Array[], lang = 'bg') {
   const sent: Sent[] = [];
   let shadow: FakeRoot | null = null;
   const body = new FakeEl();
   const script = new FakeEl();
   script.setAttribute('data-key', 'cs_pk_' + 'x'.repeat(43));
   script.setAttribute('data-agent', 'seo');
-  script.setAttribute('data-lang', 'bg');
+  script.setAttribute('data-lang', lang);
   (script as unknown as { src: string }).src = 'https://gw.example/widget.js';
   const document = {
     currentScript: script,
@@ -195,5 +195,29 @@ describe('уиджет — история на разговора', () => {
     );
     await w.ask('Нов въпрос');
     assert.deepEqual(w.sent[1]!.messages, [{ role: 'user', content: 'Нов въпрос' }]);
+  });
+
+  test('текстът при отказ не обещава махане от екрана — въпросът остава видим (BG/EN/IT)', async () => {
+    const expected: Record<string, string> = {
+      bg: 'Асистентът не може да помогне с тази заявка. Няма да я взема предвид в следващите отговори — можеш да зададеш друг въпрос.',
+      en: 'The assistant can’t help with this request. It won’t be taken into account in later answers — you can ask something else.',
+      it: "L'assistente non può aiutarti con questa richiesta. Non ne terrà conto nelle risposte successive: puoi fare un'altra domanda.",
+    };
+    for (const [lang, text] of Object.entries(expected)) {
+      const w = loadWidget(
+        [
+          sse([
+            ['refusal', { message: 'x' }],
+            ['done', { stop: 'refusal', truncated: false }],
+          ]),
+        ],
+        lang,
+      );
+      await w.ask('Отказан въпрос');
+      const bubbles = w.log.children.map((c) => c.textContent);
+      assert.ok(bubbles.includes('Отказан въпрос'), `${lang}: въпросът изчезна от екрана`);
+      assert.ok(bubbles.includes(text), `${lang}: ${JSON.stringify(bubbles)}`);
+      assert.equal(/removed|rimossa|не остава/i.test(bubbles.join(' ')), false, lang);
+    }
   });
 });

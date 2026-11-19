@@ -9,21 +9,30 @@
  * разговори (симулиран потребител), не разговори на посетители.
  */
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
+import { appendFileSync, chmodSync, readFileSync, writeFileSync } from 'node:fs';
 import type { AddressInfo } from 'node:net';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { AnthropicVertex } from '@anthropic-ai/vertex-sdk';
 import { createApp } from '../app.js';
-import { VertexChatModel } from '../claude.js';
+import { buildParams, VertexChatModel } from '../claude.js';
 import { loadConfig, type Config } from '../config.js';
 import { generateKey, hashKey, keyPrefix, monthKey, usdToMicro } from '../keys.js';
 import { silenceLogs } from '../logger.js';
-import { costMicroUsd, hasPrice } from '../pricing.js';
+import { costMicroUsd, hasPrice, inputTokensUpperBound } from '../pricing.js';
 import { loadProfiles } from '../profiles.js';
 import { MemoryStore } from '../store/memory.js';
 import { cohenKappa, summarize } from './metrics.js';
-import { Budget, httpTarget, runEval, type CaseResult, type Llm, type Target } from './runner.js';
+import {
+  Budget,
+  httpTarget,
+  runEval,
+  type CaseResult,
+  type CostCeiling,
+  type Llm,
+  type LlmRequest,
+  type Target,
+} from './runner.js';
 import { PREREGISTRATION, RUBRICS, SCENARIOS, type Scenario } from './scenarios.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -90,11 +99,12 @@ async function run(): Promise<number> {
 
   silenceLogs();
   const store = new MemoryStore();
+  const profiles = loadProfiles(join(root, 'agents'));
   const app = createApp({
     cfg,
     store,
     model: new VertexChatModel(cfg),
-    profiles: loadProfiles(join(root, 'agents')),
+    profiles,
     widgetJs: '',
   });
   const server = app.listen(0, '127.0.0.1');
@@ -110,6 +120,25 @@ async function run(): Promise<number> {
   const budget = new Budget(usdToMicro(maxUsd));
   const simUser = vertexLlm(client, userModel, cfg);
   const grader = vertexLlm(client, graderModel, cfg);
+  // Горна граница на повикване: вход по UTF-8 байтове + целия max_tokens изход (мисленето е вътре).
+  const worst = (model: string, input: number, output: number) =>
+    costMicroUsd(
+      model,
+      { inputTokens: input, outputTokens: output, cacheReadTokens: 0, cacheWriteTokens: 0 },
+      cfg.PRICE_MULTIPLIER,
+    );
+  const llmCeiling = (model: string) => (req: LlmRequest) =>
+    worst(model, inputTokensUpperBound(req), req.maxTokens);
+  const ceiling: CostCeiling = {
+    simUser: llmCeiling(userModel),
+    grader: llmCeiling(graderModel),
+    target: (agent, messages) => {
+      const profile = profiles.get(agent);
+      if (!profile) throw new Error(`няма публичен профил ${agent}`);
+      const params = buildParams(profile, messages, cfg);
+      return worst(params.model, inputTokensUpperBound(params), cfg.MAX_OUTPUT_TOKENS);
+    },
+  };
 
   // Нов ключ за всеки случай: собствена кофа за откази и точен разход от хранилището.
   let current = { plain: '', id: '' };
@@ -138,12 +167,14 @@ async function run(): Promise<number> {
     .digest('hex')
     .slice(0, 16);
   writeFileSync(out, '', { mode: 0o600 });
+  // mode важи само при създаване — съществуващ файл запазва старите права.
+  chmodSync(out, 0o600);
   let results: CaseResult[] = [];
   try {
     results = await runEval(
       SCENARIOS,
       repeats,
-      { target, simUser, grader, budget, beforeCase },
+      { target, simUser, grader, budget, ceiling, beforeCase },
       (row) => {
         appendFileSync(out, `${JSON.stringify(row)}\n`);
         console.error(`${row.id}\t${row.status}\t${row.appropriate ?? ''}\t${row.note ?? ''}`);
@@ -168,6 +199,8 @@ async function run(): Promise<number> {
           grader: graderModel,
         },
         spentUsd: Number(budget.spent) / 1e6,
+        calls: budget.calls,
+        failedCalls: budget.failed,
         maxUsd,
         out,
         ...summary,

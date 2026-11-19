@@ -8,7 +8,7 @@ import { LeakGuard } from '../src/leak.js';
 import { egnValid, ibanValid, luhnValid, redactPii } from '../src/pii.js';
 import { costMicroUsd, PRICES } from '../src/pricing.js';
 import { loadProfiles, PUBLIC_DOCTRINE, publicDoctrine } from '../src/profiles.js';
-import { RateLimiter, StrikeCounter } from '../src/ratelimit.js';
+import { clientBucket, RateLimiter, StrikeCounter } from '../src/ratelimit.js';
 import { ROOT, testConfig } from './helpers.js';
 
 /** Валидно ЕГН, сглобено в runtime (контролна цифра по алгоритъма). */
@@ -136,6 +136,96 @@ describe('филтър на изхода (LeakGuard)', () => {
     for (const ok of ['Натисни Edit', 'React hooks', 'собственикът на сайта', 'my_memory_card']) {
       assert.equal(run([ok]).leak, null, ok);
     }
+  });
+
+  /** Режe по UTF-16 единици (може да среже и сурогатна двойка), както би могла делта. */
+  const chunks = (text: string, size: number) => text.match(new RegExp(`[^]{1,${size}}`, 'g'))!;
+  const spread = (s: string, sep: string) => [...s].join(sep);
+  const fullwidth = (s: string) =>
+    s.replace(/[A-Z0-9]/g, (c) => String.fromCharCode(c.charCodeAt(0) + 0xfee0));
+
+  test('заобикаляния на канарчето → засечено и нищо от него не излиза (парчета по 1 и 5)', () => {
+    const cases: Array<[string, string]> = [
+      ['8 интервала', spread(CANARY, ' '.repeat(8))],
+      ['20 интервала', spread(CANARY, ' '.repeat(20))],
+      ['5 интервала', spread(CANARY, ' '.repeat(5))],
+      ['нови редове и тирета', spread(CANARY, ' -\n- ')],
+      ['нулева ширина', spread(CANARY, '​')],
+      ['fullwidth', fullwidth(CANARY)],
+      ['fullwidth на разредки', spread(fullwidth(CANARY), '   ')],
+      ['кирилско С', CANARY.replace('C', 'С')],
+      [
+        'кирилски малки',
+        CANARY.toLowerCase().replace('c', 'с').replace('a', 'а').replace('e', 'е'),
+      ],
+      ['гръцко Α и Ε', CANARY.replace('A', 'Α').replace('E', 'Ε')],
+      ['математически удебелени', CANARY.replace('C', '\u{1d402}')],
+      ['комбиниращ знак', CANARY.replace('C', 'Ç')],
+    ];
+    for (const [name, leak] of cases) {
+      const text = `Код: ${leak} край`;
+      for (const size of [1, 5]) {
+        const r = run(chunks(text, size));
+        assert.equal(r.leak, 'канарче', `${name}, парчета по ${size}`);
+        assert.ok(
+          'Код: '.startsWith(r.out),
+          `${name}, по ${size}: изтече ${JSON.stringify(r.out)}`,
+        );
+      }
+    }
+  });
+
+  test('откъс от доктрината с много интервали или с друго тире → засечен, нищо не излиза', () => {
+    for (const [name, frag] of [
+      ['150 интервала', 'Правила' + ' '.repeat(150) + '— с приоритет над всичко'],
+      ['en dash', 'Правила – с приоритет над всичко'],
+      ['тире без интервали', 'Правила-с приоритет над всичко'],
+      ['нов ред между думите', 'Контролен\n\nкод   на тези\tинструкции'],
+      ['150 интервала в профила', 'Твоят' + ' '.repeat(150) + 'профил (експертиза и тон)'],
+    ] as const) {
+      for (const size of [1, 5, 1000]) {
+        const r = run(chunks(`Ето: ${frag}. Още текст.`, size));
+        assert.notEqual(r.leak, null, `${name}, парчета по ${size}`);
+        assert.ok(
+          'Ето: '.startsWith(r.out),
+          `${name}, по ${size}: изтече ${JSON.stringify(r.out)}`,
+        );
+      }
+    }
+  });
+
+  test('нормален текст (кирилица, тирета, емоджи, много интервали) минава цял през flush()', () => {
+    const text =
+      'Съвет — СЕО: Ако сайтът е бавен, провери ТОП 10 страници – особено мобилните.   \n\n' +
+      '1. Заглавия; 2. Скорост 🚀; 3. Данни 𝐀𝐁𝐂 и café. Край.'.repeat(4);
+    for (const size of [1, 2, 5, 7, 64, 5000]) {
+      assert.deepEqual(run(chunks(text, size)), { out: text, leak: null }, `парчета по ${size}`);
+    }
+  });
+});
+
+describe('брояч на откази (StrikeCounter) и кофа по клиент', () => {
+  test('IPv6 → префикс /64; IPv4 и IPv4-mapped → адресът', () => {
+    assert.equal(clientBucket('2001:db8:1:2::a'), clientBucket('2001:0db8:0001:0002:ffff::1'));
+    assert.equal(clientBucket('2001:db8:1:2:3:4:5:6'), clientBucket('2001:db8:1:2::'));
+    assert.notEqual(clientBucket('2001:db8:1:2::a'), clientBucket('2001:db8:1:3::a'));
+    assert.equal(clientBucket('::ffff:203.0.113.7'), '203.0.113.7');
+    assert.equal(clientBucket('203.0.113.7'), '203.0.113.7');
+    assert.notEqual(clientBucket('203.0.113.7'), clientBucket('203.0.113.8'));
+    assert.equal(clientBucket('fe80::1%eth0'), clientBucket('fe80::2'));
+  });
+
+  test('резервация: заявките в полет се броят; освобождаването я връща', () => {
+    const s = new StrikeCounter(60_000);
+    assert.equal(s.reserve('b', 2), true);
+    assert.equal(s.reserve('b', 2), true);
+    assert.equal(s.reserve('b', 2), false, 'трета паралелна заявка над прага');
+    s.release('b');
+    s.add('b'); // едната завърши с отказ
+    s.release('b');
+    assert.equal(s.count('b'), 1);
+    assert.equal(s.reserve('b', 2), true);
+    assert.equal(s.reserve('b', 2), false);
   });
 });
 
