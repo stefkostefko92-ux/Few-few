@@ -28,7 +28,8 @@
       send: 'Изпрати',
       thinking: 'Мисли…',
       error: 'Нещо се обърка. Опитай пак.',
-      refusal: 'Асистентът не може да помогне с тази заявка.',
+      refusal:
+        'Асистентът не може да помогне с тази заявка. Тя не остава в разговора — можеш да зададеш друг въпрос.',
       truncated: '(отговорът е съкратен)',
     },
     en: {
@@ -42,7 +43,8 @@
       send: 'Send',
       thinking: 'Thinking…',
       error: 'Something went wrong. Please try again.',
-      refusal: 'The assistant cannot help with this request.',
+      refusal:
+        'The assistant cannot help with this request. It was removed from the conversation — you can ask something else.',
       truncated: '(answer was shortened)',
     },
     it: {
@@ -56,7 +58,8 @@
       send: 'Invia',
       thinking: 'Sto pensando…',
       error: 'Qualcosa è andato storto. Riprova.',
-      refusal: "L'assistente non può aiutare con questa richiesta.",
+      refusal:
+        "L'assistente non può aiutare con questa richiesta. È stata rimossa dalla conversazione: puoi fare un'altra domanda.",
       truncated: '(risposta abbreviata)',
     },
   };
@@ -176,6 +179,7 @@
     history.push({ role: 'user', content: text });
     var out = bubble('a', t.thinking);
     var answer = '';
+    var refused = false;
 
     fetch(base + '/v1/chat', {
       method: 'POST',
@@ -210,14 +214,19 @@
           if (!data) return;
           var d = JSON.parse(data);
           if (ev === 'delta') {
+            if (refused) return;
             answer += d.text;
             out.textContent = answer;
             logEl.scrollTop = logEl.scrollHeight;
           } else if (ev === 'refusal') {
-            out.textContent = answer ? answer + '\n\n' + t.refusal : t.refusal;
+            // Нулиране на контекста след отказ (docs: handle-streaming-refusals): частичният
+            // отговор не се показва и не се пази, а отказаният ход излиза от историята.
+            refused = true;
+            answer = '';
+            out.textContent = t.refusal;
           } else if (ev === 'error') {
             throw new Error(d.message || t.error);
-          } else if (ev === 'done' && d.truncated) {
+          } else if (ev === 'done' && d.truncated && !refused) {
             out.textContent = answer + '\n' + t.truncated;
           }
         }
@@ -236,7 +245,7 @@
         return pump();
       })
       .then(function () {
-        if (answer) history.push({ role: 'assistant', content: answer });
+        if (answer && !refused) history.push({ role: 'assistant', content: answer });
         else history.pop();
       })
       .catch(function (err) {

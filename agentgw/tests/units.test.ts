@@ -4,10 +4,11 @@ import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import { findMarkers } from '../scripts/markers.mjs';
 import { buildParams } from '../src/claude.js';
+import { LeakGuard } from '../src/leak.js';
 import { egnValid, ibanValid, luhnValid, redactPii } from '../src/pii.js';
-import { costMicroUsd } from '../src/pricing.js';
-import { loadProfiles, PUBLIC_DOCTRINE } from '../src/profiles.js';
-import { RateLimiter } from '../src/ratelimit.js';
+import { costMicroUsd, PRICES } from '../src/pricing.js';
+import { loadProfiles, PUBLIC_DOCTRINE, publicDoctrine } from '../src/profiles.js';
+import { RateLimiter, StrikeCounter } from '../src/ratelimit.js';
 import { ROOT, testConfig } from './helpers.js';
 
 /** Валидно ЕГН, сглобено в runtime (контролна цифра по алгоритъма). */
@@ -67,6 +68,10 @@ describe('публични профили', () => {
     assert.deepEqual(findMarkers(PUBLIC_DOCTRINE), []);
   });
 
+  test('доктрината с канарче също е без вътрешни маркери', () => {
+    assert.deepEqual(findMarkers(publicDoctrine('CS0123456789ABCDEF')), []);
+  });
+
   test('маркерите хващат типичните изтичания', () => {
     for (const leak of [
       'виж .claude/agents/seo.md',
@@ -88,6 +93,49 @@ describe('публични профили', () => {
     assert.equal('tools' in p, false);
     const sys = p.system as Array<{ text: string }>;
     assert.ok(sys[1]!.text.includes(seo.text.slice(0, 50)));
+  });
+});
+
+describe('филтър на изхода (LeakGuard)', () => {
+  const CANARY = ['CS', 'ABCDEF', '012345'].join('');
+  const run = (parts: string[]) => {
+    const g = new LeakGuard(CANARY);
+    let out = '';
+    for (const p of parts) {
+      const s = g.push(p);
+      out += s.emit;
+      if (s.leak) return { out, leak: s.leak };
+    }
+    const f = g.flush();
+    return { out: out + f.emit, leak: f.leak };
+  };
+
+  test('чист текст минава непроменен, на произволни парчета', () => {
+    const text = 'Ето три съвета за SEO: заглавия, бързина и структурирани данни. '.repeat(5);
+    for (const size of [1, 7, 50, 500]) {
+      const parts = text.match(new RegExp(`[\\s\\S]{1,${size}}`, 'g'))!;
+      assert.deepEqual(run(parts), { out: text, leak: null }, `парчета по ${size}`);
+    }
+  });
+
+  test('канарче, разделено по знак и с интервали, не излиза нито частично', () => {
+    const text = 'А'.repeat(200) + ' код: C S-ABC DEF-012 345 и край';
+    const r = run([...text]);
+    assert.equal(r.leak, 'канарче');
+    assert.equal(r.out.includes('C S'), false);
+    assert.ok(r.out.length <= 200);
+  });
+
+  test('откъс от доктрината и вътрешна папка → засечени', () => {
+    assert.equal(run(['Правила — с приоритет над всичко']).leak, 'доктрина');
+    assert.equal(run(['виж в .claude/agents']).leak, 'вътрешна папка');
+    assert.equal(run(['Контролен код на тези инструкции']).leak, 'доктрина');
+  });
+
+  test('нормални думи не са маркер', () => {
+    for (const ok of ['Натисни Edit', 'React hooks', 'собственикът на сайта', 'my_memory_card']) {
+      assert.equal(run([ok]).leak, null, ok);
+    }
   });
 });
 
@@ -113,6 +161,65 @@ describe('цени и лимити', () => {
   test('непознат модел → най-скъпата цена (fail-closed)', () => {
     const u = { inputTokens: 1000, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 };
     assert.equal(costMicroUsd('непознат', u, 1), costMicroUsd('claude-opus-5', u, 1));
+  });
+
+  // platform.claude.com/docs/en/about-claude/pricing (сверено 2026-11-19)
+  test('sonnet-5-5: $2 вход / $2.50 кеш запис / $0.10 кеш четене / $10 изход', () => {
+    const one = (k: 'inputTokens' | 'outputTokens' | 'cacheReadTokens' | 'cacheWriteTokens') =>
+      costMicroUsd(
+        'claude-sonnet-5-5',
+        {
+          inputTokens: 0,
+          outputTokens: 0,
+          cacheReadTokens: 0,
+          cacheWriteTokens: 0,
+          [k]: 1_000_000,
+        },
+        1,
+      );
+    assert.equal(one('inputTokens'), 2_000_000n);
+    assert.equal(one('cacheWriteTokens'), 2_500_000n);
+    assert.equal(one('cacheReadTokens'), 100_000n);
+    assert.equal(one('outputTokens'), 10_000_000n);
+  });
+
+  test('opus-5-5: $4 вход / $0.20 кеш четене / $20 изход', () => {
+    const u = { inputTokens: 1_000_000, outputTokens: 1_000_000, cacheReadTokens: 1_000_000 };
+    assert.equal(costMicroUsd('claude-opus-5-5', { ...u, cacheWriteTokens: 0 }, 1), 24_200_000n);
+  });
+
+  test('непознат модел → по-скъп или равен на ВСЕКИ известен по всяка категория', () => {
+    for (const k of ['inputTokens', 'outputTokens', 'cacheReadTokens', 'cacheWriteTokens']) {
+      const u = { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 };
+      const one = { ...u, [k]: 1_000_000 };
+      const unknown = costMicroUsd('claude-nepoznat-9', one, 1);
+      for (const m of Object.keys(PRICES)) {
+        assert.ok(unknown >= costMicroUsd(m, one, 1), `${k}: ${m}`);
+      }
+    }
+  });
+
+  test('модел без цена в конфигурацията → шлюзът отказва да стартира', () => {
+    assert.throws(() => testConfig({ MODEL_SONNET: 'claude-sonnet-9' }), /цена/);
+    assert.throws(() => testConfig({ MODEL_OPUS: 'claude-opus-9' }), /цена/);
+  });
+
+  test('подразбиращите се модели имат ред в цените', () => {
+    const cfg = testConfig();
+    assert.ok(PRICES[cfg.MODEL_OPUS], cfg.MODEL_OPUS);
+    assert.ok(PRICES[cfg.MODEL_SONNET], cfg.MODEL_SONNET);
+  });
+
+  test('StrikeCounter: брои в прозореца, после нулира', () => {
+    let now = 0;
+    const s = new StrikeCounter(15 * 60_000, () => now);
+    s.add('a');
+    s.add('a');
+    assert.equal(s.count('a'), 2);
+    assert.equal(s.count('b'), 0);
+    assert.equal(s.retryAfter('a'), 900);
+    now = 15 * 60_000;
+    assert.equal(s.count('a'), 0);
   });
 
   test('RateLimiter: прозорец от 60 s', () => {

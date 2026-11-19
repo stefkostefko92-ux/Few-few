@@ -35,6 +35,7 @@
     "profiles:check": "node scripts/check-profiles.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
+    "eval:safety": "node dist/eval/safety.js",
     "gate": "npm run lint && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {

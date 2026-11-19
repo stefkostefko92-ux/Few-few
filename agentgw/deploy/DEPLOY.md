@@ -12,10 +12,10 @@
 1. **Проект:** създай GCP проект (напр. `carbonstealth-agents`) с активен billing.
 2. **API:** включи Vertex AI API:
    `gcloud services enable aiplatform.googleapis.com --project <ПРОЕКТ>`
-3. **Модели:** в **Vertex AI → Model Garden** потърси „Claude“ и **активирай** (Enable) Claude Opus 5
-   и Claude Sonnet 5 за проекта (приемане на условията на Anthropic). Провери, че са налични за
+3. **Модели:** в **Vertex AI → Model Garden** потърси „Claude“ и **активирай** (Enable) Claude Opus 5.5
+   и Claude Sonnet 5.5 за проекта (приемане на условията на Anthropic). Провери, че са налични за
    мулти-региона **`eu`** — по документацията единичните региони (`europe-west1` и др.) поддържат
-   само Claude Sonnet 4.6 и по-стари; Opus 5 / Sonnet 5 вървят през `eu` или `global`
+   само Claude Sonnet 4.6 и по-стари; Opus 5.5 / Sonnet 5.5 вървят през `eu` или `global`
    (`global` е **забранен** тук — няма гаранция за ЕС обработка). Цената на `eu` е +10% спрямо
    global (затова `PRICE_MULTIPLIER=1.1`).
 4. **Квоти:** Vertex AI → Quotas — провери/поискай квота за Claude в `eu`.
@@ -135,8 +135,9 @@ run revoke <id|префикс>
 
 ## 10. Контролен списък преди „на живо“
 
-- [ ] Claude Opus 5 / Sonnet 5 активирани в Model Garden за `eu`; реална проба с `curl`
-      срещу `https://aiplatform.eu.rep.googleapis.com/v1/projects/<ПРОЕКТ>/locations/eu/publishers/anthropic/models/claude-sonnet-5:rawPredict`
+- [ ] Claude Opus 5.5 / Sonnet 5.5 активирани в Model Garden за `eu`; реална проба с `curl`
+      срещу `https://aiplatform.eu.rep.googleapis.com/v1/projects/<ПРОЕКТ>/locations/eu/publishers/anthropic/models/claude-sonnet-5-5:rawPredict`
+      (и `claude-opus-5-5`); квотата за `eu` в IAM → Quotas е > 0
 - [ ] Service account само с `roles/aiplatform.user`; JSON mode 600, собственик `agentgw`
 - [ ] `/etc/agentgw/agentgw.env` mode 600; `KEY_PEPPER` генериран, не копиран
 - [ ] `/healthz` → `"ai": true`; TLS A на SSL Labs

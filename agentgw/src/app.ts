@@ -13,11 +13,12 @@ import {
   type KeyRecord,
   type Store,
 } from './keys.js';
+import { LeakGuard } from './leak.js';
 import { log } from './logger.js';
 import { redactPii } from './pii.js';
 import { costMicroUsd, type TokenUsage } from './pricing.js';
 import type { AgentProfile } from './profiles.js';
-import { RateLimiter } from './ratelimit.js';
+import { RateLimiter, StrikeCounter } from './ratelimit.js';
 
 export interface AppDeps {
   cfg: Config;
@@ -27,6 +28,7 @@ export interface AppDeps {
   profiles: Map<string, AgentProfile>;
   widgetJs: string;
   limiter?: RateLimiter;
+  strikes?: StrikeCounter;
 }
 
 type Authed = Request & { apiKey?: KeyRecord };
@@ -50,6 +52,7 @@ export function securityHeaders(_req: Request, res: Response, next: NextFunction
 export function createApp(deps: AppDeps) {
   const { cfg, store, profiles } = deps;
   const limiter = deps.limiter ?? new RateLimiter();
+  const strikes = deps.strikes ?? new StrikeCounter(cfg.REFUSAL_WINDOW_MIN * 60_000);
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', cfg.TRUST_PROXY);
@@ -193,6 +196,20 @@ export function createApp(deps: AppDeps) {
         fail(res, 503, 'ai_unavailable', 'AI асистентът временно не е наличен.');
         return;
       }
+      // Повторни откази от една връзка → пауза. Кофата е ключ+IP в паметта (както лимитът
+      // заявки/мин): един злонамерен посетител не спира чата за всички на сайта.
+      const strikeBucket = `refusal:${key.id}:${req.ip ?? 'unknown'}`;
+      if (strikes.count(strikeBucket) >= cfg.REFUSAL_STRIKES) {
+        log('warn', 'refusal_throttled', { keyId: key.id, agent });
+        res.setHeader('Retry-After', String(strikes.retryAfter(strikeBucket)));
+        fail(
+          res,
+          429,
+          'too_many_refusals',
+          'Твърде много отказани заявки. Опитай по-късно с въпрос в темата на асистента.',
+        );
+        return;
+      }
       const month = monthKey();
       const used = await store.monthUsage(key.id, month);
       if (used.costMicroUsd >= key.capMicroUsd) {
@@ -244,6 +261,11 @@ export function createApp(deps: AppDeps) {
         cacheWriteTokens: 0,
       };
       let stop: string | null = null;
+      // Финалният usage идва с message_delta. Без него (прекъсване, филтър) не знаем колко е
+      // генерирано — таксуваме горна граница max_tokens (fail-closed за тавана).
+      let finalUsage = false;
+      let blocked: string | null = null;
+      const guard = new LeakGuard(cfg.LEAK_CANARY);
       try {
         for await (const ev of stream) {
           if (ev.type === 'message_start') {
@@ -253,9 +275,15 @@ export function createApp(deps: AppDeps) {
             usage.cacheReadTokens = u.cache_read_input_tokens ?? 0;
             usage.cacheWriteTokens = u.cache_creation_input_tokens ?? 0;
           } else if (ev.type === 'content_block_delta' && ev.delta.type === 'text_delta') {
-            send('delta', { text: ev.delta.text });
+            const step = guard.push(ev.delta.text);
+            if (step.emit) send('delta', { text: step.emit });
+            if (step.leak) {
+              blocked = step.leak;
+              break;
+            }
           } else if (ev.type === 'message_delta') {
             stop = ev.delta.stop_reason ?? stop;
+            finalUsage = true;
             // usage в message_delta е кумулативен.
             usage.outputTokens = Math.max(usage.outputTokens, ev.usage.output_tokens);
             if (ev.usage.input_tokens != null) usage.inputTokens = ev.usage.input_tokens;
@@ -265,16 +293,35 @@ export function createApp(deps: AppDeps) {
               usage.cacheWriteTokens = ev.usage.cache_creation_input_tokens;
           }
         }
-        if (stop === 'refusal') {
-          send('refusal', { message: 'Асистентът не може да помогне с тази заявка.' });
+        if (!blocked) {
+          const step = guard.flush();
+          if (step.emit) send('delta', { text: step.emit });
+          blocked = step.leak;
         }
-        send('done', { stop, truncated: stop === 'max_tokens' });
+        if (blocked) {
+          abort.abort();
+          strikes.add(strikeBucket);
+          log('warn', 'output_blocked', { keyId: key.id, agent, marker: blocked });
+          send('refusal', {
+            message: 'Асистентът не може да продължи този отговор.',
+            reason: 'output_filtered',
+          });
+          send('done', { stop: 'output_filtered', truncated: false });
+        } else {
+          if (stop === 'refusal') {
+            // Нулирането на контекста е в уиджета: отказаният ход не остава в историята.
+            strikes.add(strikeBucket);
+            send('refusal', { message: 'Асистентът не може да помогне с тази заявка.' });
+          }
+          send('done', { stop, truncated: stop === 'max_tokens' });
+        }
       } catch (err) {
         if (!abort.signal.aborted) {
           log('warn', 'upstream_stream_failed', { keyId: key.id, agent, err: String(err) });
           send('error', { code: 'upstream_error', message: 'Връзката с AI прекъсна. Опитай пак.' });
         }
       } finally {
+        if (!finalUsage) usage.outputTokens = Math.max(usage.outputTokens, cfg.MAX_OUTPUT_TOKENS);
         const cost = costMicroUsd(model, usage, cfg.PRICE_MULTIPLIER);
         try {
           await store.addUsage(key.id, month, { ...usage, costMicroUsd: cost });
@@ -285,7 +332,7 @@ export function createApp(deps: AppDeps) {
           keyId: key.id,
           agent,
           model,
-          stop,
+          stop: blocked ? 'output_filtered' : stop,
           ...usage,
           costMicro: String(cost),
         });
