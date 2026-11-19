@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import test from 'node:test';
+import ejs from 'ejs';
 import { LOCALES, translate } from '../src/i18n.js';
 
 /* Витрината е единствената публична страница: тя е и лицето на продукта, и целият му
@@ -221,4 +222,70 @@ test('шрифтът на заглавията е наш, лек и с лице�
     VIEW,
     /rel="preload" href="\/static\/fonts\/literata-latin-600-normal\.woff2" as="font"/,
   );
+});
+
+/* ── Поверителност и импресум (Правният Разбирач, 2026-11-19) ── */
+
+const PRIVACY = 'views/landing/privacy.ejs';
+
+function renderPrivacy(locale: (typeof LOCALES)[number]): Promise<string> {
+  return ejs.renderFile(PRIVACY, {
+    locale,
+    t: (key: string, params?: Record<string, string | number>) => translate(locale, key, params),
+    locales: LOCALES,
+    langUrl: (code: string) => `/privacy?lang=${code}`,
+    canonical: 'https://piuma.example.com/privacy',
+    alternates: [],
+    cspNonce: 'n',
+  });
+}
+
+test('/privacy съществува и долната лента води към нея', () => {
+  assert.match(ROUTES, /landingRouter\.get\('\/privacy'/);
+  assert.match(VIEW, /<a href="\/privacy">/);
+  assert.ok(existsSync(PRIVACY));
+});
+
+test('импресумът стои в долната лента с пълните данни на администратора', () => {
+  assert.match(VIEW, /t\('landing\.footer\.imprint'\)/);
+  assert.equal(
+    translate('bg', 'landing.footer.imprint'),
+    'Carbon Stealth VCC · ЕИК 208725180 · ДДС № BG208725180 · ул. „Самуил“ 3, 2670 Бобов дол, България · info@carbonstealth.eu',
+  );
+  // „Условия“ няма страница — връзка към несъществуващ адрес не се слага.
+  assert.doesNotMatch(VIEW, /href="\/(terms|uslovia)"/);
+});
+
+test('страницата за поверителност носи разделите по чл. 13 ОРЗД', async () => {
+  const html = await renderPrivacy('bg');
+  assert.equal((html.match(/<h1[\s>]/g) ?? []).length, 1);
+  for (const needle of [
+    'Carbon Stealth VCC, ЕИК 208725180',
+    'чл. 6(1)(б) ОРЗД',
+    'най-много 30 дни',
+    'от 9 до 30 дни',
+    'ЗА ПОПЪЛВАНЕ ОТ СОБСТВЕНИКА',
+    'Google Cloud (Vertex AI)',
+    'мулти-региона „eu“',
+    'Cloud Data Processing Addendum',
+    'Не изпращаме имейли, пароли, IP адреси',
+    'КЗЛД',
+  ]) {
+    assert.ok(html.includes(needle), `липсва: ${needle}`);
+  }
+  assert.match(html, /href="https:\/\/www\.cpdp\.bg"/);
+  assert.match(html, /href="mailto:info@carbonstealth\.eu"/);
+  assert.match(html, /<link rel="canonical" href="https:\/\/piuma\.example\.com\/privacy">/);
+  // Същият CSP като витрината: нито един inline стил, нито един скрипт.
+  assert.doesNotMatch(html, /style="/);
+  assert.doesNotMatch(html, /<script/);
+});
+
+test('страницата за поверителност носи ≥5 ключови думи с „Carbon Stealth“', () => {
+  const keywords = translate('bg', 'privacy.meta.keywords')
+    .split(',')
+    .map((word) => word.trim())
+    .filter(Boolean);
+  assert.ok(keywords.length >= 5);
+  assert.ok(keywords.some((word) => word.includes('Carbon Stealth')));
 });

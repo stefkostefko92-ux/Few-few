@@ -55,7 +55,16 @@ function trim(text: string, max = 160): string {
  * да затвори кавичката и да продължи като инструкция; системният промпт казва, че полето е данни.
  */
 function untrusted(caption: string): string {
-  return JSON.stringify({ caption: trim(caption) });
+  return JSON.stringify({ caption: trim(maskMentions(caption)) });
+}
+
+/**
+ * Минимизация: споменат профил (`@потребител`) е лична данна на трето лице и не е нужен на
+ * модела, за да учи ъгъла на поста — към AI доставчика отива само `@…`. Instagram имената са
+ * букви, цифри, точка и долна черта.
+ */
+function maskMentions(text: string): string {
+  return text.replace(/@[\p{L}\p{N}._]+/gu, '@…');
 }
 
 /**

@@ -22,15 +22,15 @@ function absolute(path: string): string {
 }
 
 /** Канонично: витрината е на корена; езикът е параметър, не отделен адрес. */
-function canonicalFor(locale: Locale): string {
-  return locale === 'bg' ? absolute('/') : absolute(`/?lang=${locale}`);
+function canonicalFor(locale: Locale, path = '/'): string {
+  return locale === 'bg' ? absolute(path) : absolute(`${path}?lang=${locale}`);
 }
 
 /** Езиковите варианти за `hreflang`, плюс `x-default` към източника. */
-function alternates(): Array<{ hreflang: string; href: string }> {
+function alternates(path = '/'): Array<{ hreflang: string; href: string }> {
   return [
-    ...LOCALES.map((code) => ({ hreflang: code, href: canonicalFor(code) })),
-    { hreflang: 'x-default', href: absolute('/') },
+    ...LOCALES.map((code) => ({ hreflang: code, href: canonicalFor(code, path) })),
+    { hreflang: 'x-default', href: absolute(path) },
   ];
 }
 
@@ -115,6 +115,19 @@ landingRouter.get('/', (req: Request, res) => {
     // Стойностите идват от речниците, не от вход на потребител; `<` пак се екранира,
     // за да не може низ да затвори етикета предсрочно.
     structuredData: JSON.stringify(structured).replace(/</g, '\\u003c'),
+  });
+});
+
+/**
+ * Политиката за поверителност (чл. 13 ОРЗД) — публична, без вход, от същите речници като
+ * витрината. Без JavaScript и без данни от заявката: само текст. Имейлът и www.cpdp.bg в
+ * преведения текст стават връзки в шаблона; изчезнат ли от превода, връзката стои отделно.
+ */
+landingRouter.get('/privacy', (_req, res) => {
+  const locale = res.locals.locale as Locale;
+  res.render('landing/privacy', {
+    canonical: canonicalFor(locale, '/privacy'),
+    alternates: alternates('/privacy'),
   });
 });
 

@@ -104,3 +104,29 @@ test('надписите от Insights влизат JSON-кодирани — к
   // Старото обрамчване в „…“ го няма — то се затваряше с една кавичка в надписа.
   assert.doesNotMatch(strong, /: „/);
 });
+
+/* Минимизация (ОРЗД чл. 5(1)(в)): споменат профил в наш надпис е лична данна на трето лице
+   и не е нужен на модела — към AI доставчика отива само „@…“. */
+test('@потребител в откъсите от надписите се заменя с „@…“ преди изпращане', () => {
+  const text = buildUserPrompt({
+    brand,
+    kind: 'IMAGE',
+    topic: 'x',
+    count: 1,
+    performance: {
+      top: [
+        {
+          caption: 'Благодарим на @maria.ivanova_88 и @Studio.X за тренировката!',
+          kind: 'IMAGE',
+          reach: 10,
+          interactions: 1,
+        },
+      ],
+      weak: [{ caption: 'Пиши ни @evanita_sport', kind: 'REELS', reach: 5, interactions: 0 }],
+      bestKind: null,
+    },
+  });
+  assert.doesNotMatch(text, /maria|Studio\.X|evanita_sport/);
+  assert.match(text, /Благодарим на @… и @… за тренировката!/);
+  assert.match(text, /Пиши ни @…/);
+});
