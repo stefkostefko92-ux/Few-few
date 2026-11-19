@@ -130,6 +130,18 @@ test("червен екип 19.11.2026 (вътрешен, 79 проби): 14-т�
     assert.equal(hook("guard-self.mjs", write(f)).status, 2, `трябва да се спре: ${f}`);
 });
 
+test("ревю на PR #434: папка-предшественик като цел или обект (cp -r в .claude/, mv, rsync, rm -rf .claude) се спира", () => {
+  for (const c of [
+    "cp -r /tmp/x/hooks .claude/", "rsync -a /tmp/x/ .claude/", "mv /tmp/s/settings.json .claude/", "rm -rf .claude", "git checkout evil -- .claude",
+    "cp -r /tmp/evil/.claude .", "mv .claude /tmp/x", "cp /tmp/settings.json ~/.claude/", "cp -a /tmp/x/ ~/.claude", "git restore --source=evil .",
+    "chmod -R 777 .claude", "cp -t .claude/ /tmp/hooks -r", "rm -rf ~/.claude", "npx prettier --write .",
+  ]) assert.equal(hook("guard-self.mjs", bash(c)).status, 2, `трябва да се спре: ${c}`);
+  for (const c of [
+    "cp -r .claude /tmp/backup", "cp /tmp/a.ts src/", "mv src/a.ts src/b.ts", "rm -rf node_modules dist", "rsync -a piuma/ /tmp/p/", "git add . && git commit -m x",
+    "du -sh .", "cd piuma && npx prettier --write .", "git checkout -b feat/x", "tar -czf /tmp/a.tgz .", "cp README.md /tmp/",
+  ]) assert.equal(hook("guard-self.mjs", bash(c)).status, 0, `трябва да мине: ${c}`);
+});
+
 test("новите правила не спират нормална работа (архиви извън репото, проверка на кръпка, тесен find, export)", () => {
   for (const c of [
     "tar -xf /tmp/a.tar -C /tmp/x", "tar -czf /tmp/a.tgz piuma", "tar -tf /tmp/a.tar", "unzip -l /tmp/a.zip", "unzip -o /tmp/a.zip -d /tmp/u",

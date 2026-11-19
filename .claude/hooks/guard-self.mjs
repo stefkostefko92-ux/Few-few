@@ -258,6 +258,32 @@ function argvVerdict(argvRaw, state, set) {
     const roots = []; for (const w of args) { if (w.startsWith("-") || /^[!(),]$/.test(w)) break; roots.push(w); }
     if ((roots.length ? roots : ["."]).some((r) => coversAnchor(r, state.cwd))) return ["find с -delete/-exec от папка, която съдържа пазачите", "A"];
   }
+  // Папка-предшественик на пазачите (ревю на PR #434 — Кодаджията и AI-джията): `cp -r /tmp/x/hooks .claude/`,
+  // `mv /tmp/s/settings.json .claude/`, `rsync -a /tmp/x/ .claude/`, `rm -rf .claude`, `git checkout evil -- .claude`
+  // стигат до пазен път, без той да е буквално в командата → съди се целта като път-резултат и папката-предшественик.
+  const pathy = (w) => !w.startsWith("-") && !/^[a-z][a-z0-9+.-]*:\/\//i.test(w);
+  const ancestorHit = (w) => pathy(w) && coversAnchor(w, state.cwd);
+  if (!READERS.has(name) && name !== "find" && !(name === "git" && GIT_READ.has(gitSub(args)))) {
+    if (["cp", "install", "rsync", "mv", "ln"].includes(name)) {
+      const t = args.findIndex((w) => w === "-t" || w.startsWith("--target-directory"));
+      const plain = args.filter(pathy);
+      const dest = t >= 0 ? (args[t].includes("=") ? args[t].split("=").slice(1).join("=") : args[t + 1]) : plain[plain.length - 1];
+      const srcs = t >= 0 ? plain.filter((w) => w !== dest) : plain.slice(0, -1);
+      if (dest) {
+        const d = resolve(state.cwd, expandHome(dest));
+        for (const s of srcs) {
+          const r = join(d, basename(s.replace(/\/+$/, "")));
+          if (tierOfPath(r, state.cwd, set) || coversAnchor(r, state.cwd)) return [`${name}: резултатът ${relative(ROOT, r) || r} е пазен път`, "A"];
+        }
+        const recursive = name === "rsync" || name === "mv" || args.some((w) => /^-[a-zA-Z]*[rRa]/.test(w) || w === "--recursive" || w === "--archive");
+        if (recursive && coversAnchor(d, state.cwd)) return [`${name}: рекурсивен запис в папка, която съдържа пазачите`, "A"];
+      }
+      if (name === "mv" && srcs.some(ancestorHit)) return ["mv: мести папка, която съдържа пазачите", "A"];
+    } else if (!INTERP.test(name) && !["tar", "bsdtar", "zip", "7z", "7za", "cpio", "unzip", "patch", "sed"].includes(name) && args.some(ancestorHit)) {
+      // (архиваторите се съдят по-горе по режим и местоназначение: `tar -czf /tmp/a.tgz .` само чете)
+      return [`${name}: действие върху папка, която съдържа пазачите`, "A"];
+    }
+  }
   const hits = args.map((w, i) => [i, w, wordTier(w, state.cwd, set)]).filter(([, , t]) => t);
   if (!hits.length) return ["", ""];
   const tier = hits.reduce((acc, [, , t]) => max(acc, t), "");

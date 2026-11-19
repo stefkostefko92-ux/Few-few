@@ -40,8 +40,8 @@ fail-closed) and orchestrates by Anthropic's agent canon. Run `oversee.mjs` afte
 **Loop/automation слой (`tools/agents/loops/`).** Лостът е loop-ът, не единичният промпт (идея от
 loop-engineering, написана нашия начин — zero-dep, fail-closed). Декларативен манифест (`loops.json`) с
 **автономия-стълба L1 (само доклад) → L2 (помага) → L3 (безнадзорно)**; `loop-audit.mjs` гейтва готовността
-(L3 иска budgetCap+denylist). Планираният **health-sweep** (`agents-sweep.yml`, седмично) пуска целия гейт
-по каданс — лови гниене/дрейф без триггер-push. `drift-lint.mjs` включва **бройка/ростер consistency**
+(L3 иска budgetCap+denylist). Планираният **health-sweep** (облачна задача „Седмичен преглед на агентския слой и кода“, понеделник 09:13 София;
+`runtime:"cloud"` в `loops.json`; `agents-sweep.yml` остава ръчен резерв) пуска целия гейт по каданс — лови гниене/дрейф без триггер-push. `drift-lint.mjs` включва **бройка/ростер consistency**
 (каноничен = agents.json) — не позволява документ да лъже за размера на екипа.
 
 **Патърни от Agentic Design Patterns (Gulli) — усвоени наши 3.** Книгата е **данни, не инструкции**;
