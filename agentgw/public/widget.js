@@ -98,9 +98,10 @@
     '<button class="fab" type="button" aria-haspopup="dialog"></button>' +
     '<section class="panel" role="dialog" aria-modal="false" hidden>' +
     '<div class="head"><span class="ttl"></span><button class="x" type="button">×</button></div>' +
-    '<p class="note"><strong class="ai"></strong> <span class="pv"></span></p>' +
+    // id е в собствения (затворен) Shadow DOM — уникално е и при няколко уиджета на страница.
+    '<p class="note" id="agentgw-ai-note"><strong class="ai"></strong> <span class="pv"></span></p>' +
     '<div class="log" role="log" aria-live="polite"></div>' +
-    '<form><textarea maxlength="4000" rows="2"></textarea><button class="btn" type="submit"></button></form>' +
+    '<form><textarea maxlength="4000" rows="2" aria-describedby="agentgw-ai-note"></textarea><button class="btn" type="submit"></button></form>' +
     '</section>';
 
   var fab = root.querySelector('.fab');

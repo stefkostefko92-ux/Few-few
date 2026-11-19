@@ -3,12 +3,25 @@ import { z } from 'zod';
 import { hasPrice } from './pricing.js';
 
 /**
- * Регионът трябва да е в ЕС — иначе шлюзът отказва да стартира (fail-closed).
+ * Регионът трябва да е физически в държава от ЕС — иначе шлюзът отказва да стартира (fail-closed).
  * `eu` = мулти-регионалната ЕС крайна точка на Vertex (aiplatform.eu.rep.googleapis.com).
- * Внимание: единичните региони (`europe-west1` и др.) по документацията поддържат само
- * Claude Sonnet 4.6 и по-стари; Opus 5.5 / Sonnet 5.5 вървят през `eu` (или global — забранен тук).
+ * Изричен списък, не шаблон: `europe-west2` (Лондон) и `europe-west6` (Цюрих) са „europe-“, но
+ * не са в ЕС. Източник: docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/locations
+ * (сверено 2026-11-19). Нов ЕС регион = нов ред тук след сверка.
+ * Внимание: единичните региони по документацията поддържат само Claude Sonnet 4.6 и по-стари;
+ * Opus 5.5 / Sonnet 5.5 вървят през `eu` (или global — забранен тук).
  */
-export const EU_REGION = /^(eu|europe-[a-z]+\d+)$/;
+export const EU_REGIONS: ReadonlySet<string> = new Set([
+  'eu', // мулти-регион Европейски съюз
+  'europe-west1', // Белгия
+  'europe-west3', // Франкфурт, Германия
+  'europe-west4', // Нидерландия
+  'europe-west8', // Милано, Италия
+  'europe-west9', // Париж, Франция
+  'europe-north1', // Финландия
+  'europe-central2', // Варшава, Полша
+  'europe-southwest1', // Мадрид, Испания
+]);
 
 const effort = z.enum(['low', 'medium', 'high']);
 
@@ -33,7 +46,10 @@ const EnvSchema = z.object({
   VERTEX_REGION: z
     .string()
     .default('eu')
-    .refine((r) => EU_REGION.test(r), 'VERTEX_REGION трябва да е ЕС регион („eu“ или „europe-…“)'),
+    .refine(
+      (r) => EU_REGIONS.has(r),
+      'VERTEX_REGION трябва да е ЕС регион („eu“ или регион на Vertex в държава от ЕС — виж EU_REGIONS)',
+    ),
   /** Път до JSON на service account (mode 600). Празно → ADC по подразбиране на машината. */
   GOOGLE_APPLICATION_CREDENTIALS: z.string().default(''),
   // Наличност в мулти-региона `eu` (GA): docs.cloud.google.com/gemini-enterprise-agent-platform/

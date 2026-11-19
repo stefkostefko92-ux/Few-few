@@ -523,6 +523,26 @@ describe('лимити и fail-closed', () => {
     assert.throws(() => testConfig({ VERTEX_REGION: 'global' }), /ЕС регион/);
     assert.throws(() => testConfig({ VERTEX_REGION: 'us-east5' }), /ЕС регион/);
     assert.equal(testConfig({ VERTEX_REGION: 'europe-west1' }).VERTEX_REGION, 'europe-west1');
+  });
+
+  test('регион „europe-…“ извън ЕС (Лондон, Цюрих) или непознат → отказ', () => {
+    for (const r of ['europe-west2', 'europe-west6', 'europe-north2', 'europe-west99', 'EU']) {
+      assert.throws(() => testConfig({ VERTEX_REGION: r }), /ЕС регион/, r);
+    }
+    // docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/locations (сверено 2026-11-19)
+    for (const r of [
+      'eu',
+      'europe-west1',
+      'europe-west3',
+      'europe-west4',
+      'europe-west8',
+      'europe-west9',
+      'europe-north1',
+      'europe-central2',
+      'europe-southwest1',
+    ]) {
+      assert.equal(testConfig({ VERTEX_REGION: r }).VERTEX_REGION, r);
+    }
     assert.equal(testConfig().VERTEX_REGION, 'eu');
   });
 });

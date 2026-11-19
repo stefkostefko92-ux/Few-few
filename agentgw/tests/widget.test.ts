@@ -61,7 +61,9 @@ class FakeEl {
 
 class FakeRoot {
   readonly els: Record<string, FakeEl> = {};
-  set innerHTML(_html: string) {
+  html = '';
+  set innerHTML(html: string) {
+    this.html = html;
     for (const sel of ['.fab', '.panel', '.log', 'form', 'textarea', '.btn', '.x', '.ttl']) {
       this.els[sel] = new FakeEl();
     }
@@ -139,8 +141,19 @@ function loadWidget(replies: Uint8Array[]) {
     }
     assert.equal(sendBtn.disabled, false, 'заявката не приключи');
   }
-  return { sent, ask, log };
+  return { sent, ask, log, root };
 }
+
+describe('уиджет — достъпност на AI бележката (AI Act чл. 50(5))', () => {
+  test('полето за въпрос сочи бележката с aria-describedby → четецът я прочита при фокус', () => {
+    const { html } = loadWidget([]).root;
+    const noteId = /<p class="note"[^>]*\bid="([^"]+)"/.exec(html)?.[1];
+    assert.ok(noteId, 'бележката .note няма id');
+    const described = /<textarea[^>]*\baria-describedby="([^"]+)"/.exec(html)?.[1];
+    assert.equal(described, noteId, 'textarea не е описано от бележката');
+    assert.equal(html.split(`id="${noteId}"`).length - 1, 1, 'id-то не е уникално');
+  });
+});
 
 describe('уиджет — история на разговора', () => {
   test('нормален ход: отговорът остава в историята', async () => {
