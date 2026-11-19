@@ -8,6 +8,7 @@
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-sonnet-5-5"
   },
   "autoMemoryEnabled": false,
+  "skillListingBudgetFraction": 0.02,
   "permissions": {
     "deny": [
       "Read(.env)",
