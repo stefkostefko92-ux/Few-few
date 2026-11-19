@@ -7,8 +7,8 @@
 #
 # Тайните НЕ са тук — идват от `.env` до този файл (mode 600 на сървъра, никога в репото).
 # Задължителни: POSTGRES_PASSWORD · TOKEN_ENC_KEY · IG_APP_ID · IG_APP_SECRET ·
-# IG_REDIRECT_URI · PUBLIC_BASE_URL. По избор: ANTHROPIC_API_KEY (без него автопилотът
-# не пише чернови), HTTP_PORT (по подразбиране 4310), IG_WEBHOOK_VERIFY_TOKEN +
+# IG_REDIRECT_URI · PUBLIC_BASE_URL. По избор: VERTEX_PROJECT_ID + GOOGLE_APPLICATION_CREDENTIALS
+# (Claude през Google Cloud Vertex AI, регион eu — без тях автопилотът не пише чернови), HTTP_PORT (по подразбиране 4310), IG_WEBHOOK_VERIFY_TOKEN +
 # REPLY_PRIVACY_URL („Отговор по ключова дума“ — DEPLOY.md §6а), AUDIT_V1_MAX_ID
 # (последният v1 номер на одита — DEPLOY.md §8а). Празно = липсва.
 name: piuma
@@ -41,7 +41,14 @@ x-app-env: &app-env
   REPLY_CONTACT_EMAIL: ${REPLY_CONTACT_EMAIL:-info@carbonstealth.eu}
   PRIVATE_REPLIES_PER_HOUR: ${PRIVATE_REPLIES_PER_HOUR:-60}
   PRIVATE_REPLIES_RETENTION_DAYS: ${PRIVATE_REPLIES_RETENTION_DAYS:-9}
-  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  # Чернови от Claude САМО през Google Cloud Vertex AI в ЕС (мулти-регион `eu`; друг регион =
+  # процесът не тръгва). В `.env` GOOGLE_APPLICATION_CREDENTIALS е пътят на ХОСТА до JSON ключа
+  # (mode 600, собственик uid 1000 = `node` в образа); тук се монтира само за четене и процесът
+  # вижда вътрешния път. Празно → генерирането е изключено, панелът и публикуването работят.
+  VERTEX_PROJECT_ID: ${VERTEX_PROJECT_ID:-}
+  VERTEX_REGION: ${VERTEX_REGION:-eu}
+  VERTEX_MODEL: ${VERTEX_MODEL:-claude-opus-5-5}
+  GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:+/run/secrets/vertex-sa.json}
   TOTP_ISSUER: ${TOTP_ISSUER:-Piuma}
   # Къде води „Поискай достъп“ на витрината (страница за контакт или mailto:).
   CONTACT_URL: ${CONTACT_URL:-https://carbonstealth.eu}
@@ -120,6 +127,8 @@ services:
       - '127.0.0.1:${HTTP_PORT:-4310}:4310'
     volumes:
       - audit-anchor:/var/lib/piuma/audit
+      # Ключът на service account-а за Vertex AI — само за четене; без него се монтира /dev/null.
+      - ${GOOGLE_APPLICATION_CREDENTIALS:-/dev/null}:/run/secrets/vertex-sa.json:ro
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -135,6 +144,8 @@ services:
     command: ['npm', 'run', 'worker']
     volumes:
       - audit-anchor:/var/lib/piuma/audit
+      # Ключът на service account-а за Vertex AI — само за четене; без него се монтира /dev/null.
+      - ${GOOGLE_APPLICATION_CREDENTIALS:-/dev/null}:/run/secrets/vertex-sa.json:ro
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
