@@ -348,13 +348,13 @@ handoff, извличането на паметта — без самата па
 Докажи през CLI-то, както за предпазителите: проба с агент, който цитира какво има в контекста си, струва
 ~20k токена и хваща това, което никой тест не вижда.
 
-**Guard hooks (active, 5):** `guard-readonly.mjs` (PreToolUse/Bash — агент, чиято дефиниция има Bash, но
+**Guard hooks (active, 8 — пълната таблица и guard-self/guard-model от 19.11.2026 са в `.claude/hooks/README.md`):** `guard-readonly.mjs` (PreToolUse/Bash — агент, чиято дефиниция има Bash, но
 няма Write/Edit, не пише в репото през Bash: git записи, `sed -i`, `>` към файл, `--write`/`--fix`, npm/pnpm,
 които сменят lockfile; `agent_type` идва в payload-а; кука на ниво settings, защото frontmatter куките не
 тичат в `-p`), `guard-prompt.mjs` (UserPromptSubmit — pasted secret never enters history),
 `guard-dangerous.mjs` (PreToolUse/Bash — only catastrophic: root/home/**workspace** rm, disk destroyers,
 `curl|sh`, force push / delete of main, `gh repo delete`), `guard-secrets.mjs`
-(PostToolUse/Write|Edit|MultiEdit|NotebookEdit — early secret warning), `guard-exfil.mjs`
+(PreToolUse/Write|Edit|MultiEdit|NotebookEdit — the write is refused before the secret reaches disk; PostToolUse stays as a second layer), `guard-exfil.mjs`
 (PreToolUse/Bash|WebFetch|WebSearch|**mcp__.\*** — blocks secrets/PII leaving via any net verb/interpreter,
 incl. pipe, `$(…)` substitution, stdin redirect, upload flags, scp/rsync, archives, code reads,
 credential-emitting commands, **staging** for a later exfil, and **any MCP tool argument** (GitHub comment

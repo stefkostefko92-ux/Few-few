@@ -90,18 +90,22 @@
     },
     {
       "id": "subagent-background-default",
-      "claim": "Субагент, пуснат от главната сесия, по подразбиране тече на заден план; резултатът идва като известие, а PostToolUse на Agent вижда само пускането.",
-      "source": "https://code.claude.com/docs/en/sub-agents.md#run-subagents-in-foreground-or-background",
+      "claim": "Субагент, пуснат от главната сесия, по подразбиране тече на заден план; резултатът идва като известие, а PostToolUse на Agent вижда само пускането. В `claude -p` фоновата работа след последния ход се чака най-много CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS (по подразбиране 10 мин. бездействие), после се спира и частичният резултат се губи — live-run задава тавана по външния таймаут и иска блок ПРЕДАВАНЕ за `ok`.",
+      "source": "https://code.claude.com/docs/en/sub-agents.md#run-subagents-in-foreground-or-background + https://code.claude.com/docs/en/headless.md#background-tasks-at-exit",
       "keywords": [
         "background subagent",
         "subagents in the background",
         "fork mode",
         "CLAUDE_CODE_FORK_SUBAGENT",
-        "completion notification"
+        "completion notification",
+        "PRINT_BG_WAIT",
+        "background tasks at exit"
       ],
       "relies": [
         ".claude/hooks/agent-return.mjs",
-        ".claude/agents/_orchestration.md"
+        ".claude/agents/_orchestration.md",
+        "tools/agents/evals/live-run.mjs",
+        "tools/agents/pr-review.mjs"
       ]
     },
     {
@@ -401,15 +405,23 @@
     },
     {
       "id": "builtin-haiku-agent",
-      "claim": "Вграденият субагент claude-code-guide тича на Haiku; правилото на собственика е „никога Haiku“, затова е забранен с permissions.deny \"Agent(claude-code-guide)\". Нов вграден агент на Haiku → добави го в deny.",
-      "source": "https://code.claude.com/docs/en/sub-agents.md (Built-in subagents; Disable specific subagents) + usage.jsonl id e53fa044df (24.09.2026)",
+      "claim": "Вграденият субагент claude-code-guide тича на Haiku; правилото на собственика е „никога Haiku“, затова е забранен с permissions.deny \"Agent(claude-code-guide)\". Нов вграден агент на Haiku → добави го в deny. Фоновите задачи на харнеса (заглавия, обобщения за напредъка на подагентите от 2.1.328, /goal) и псевдонимът `haiku` вървят на ANTHROPIC_DEFAULT_HAIKU_MODEL — в settings.json env той сочи Sonnet 5.5; смяна към Haiku през /model спира PreModelSwitch куката guard-model.",
+      "source": "https://code.claude.com/docs/en/sub-agents.md (Built-in subagents; Disable specific subagents) + usage.jsonl id e53fa044df (24.09.2026) + https://code.claude.com/docs/en/env-vars.md (ANTHROPIC_DEFAULT_HAIKU_MODEL) + changelog 2.1.328",
       "keywords": [
         "claude-code-guide",
         "Haiku",
-        "built-in subagents"
+        "built-in subagents",
+        "small fast model",
+        [
+          "progress",
+          "summar"
+        ],
+        "ANTHROPIC_DEFAULT_HAIKU_MODEL",
+        "PreModelSwitch"
       ],
       "relies": [
-        ".claude/settings.json"
+        ".claude/settings.json",
+        ".claude/hooks/guard-model.mjs"
       ]
     },
     {
@@ -452,6 +464,111 @@
         "tools/lib/cli-version.mjs",
         "tools/agents/live-gate.mjs",
         "tools/agents/sandbox-setup.mjs"
+      ]
+    },
+    {
+      "id": "code-mode-repl-deny",
+      "claim": "Code Mode (експериментален) тича само в интерактивен терминал; самият JS стига до куките с matcher REPL (tool_input.code), а `REPL` в permissions.deny не дава на Code Mode да тръгне — затова е забранен, докато пазачите не съдят REPL.",
+      "source": "https://code.claude.com/docs/en/code-mode.md",
+      "keywords": [
+        "Code Mode",
+        "CLAUDE_CODE_EXPERIMENTAL_CODE_MODE",
+        "REPL tool",
+        [
+          "REPL",
+          "matcher"
+        ]
+      ],
+      "relies": [
+        ".claude/settings.json"
+      ]
+    },
+    {
+      "id": "precompact-stdout-summary",
+      "claim": "stdout на PreCompact (exit 0) е инструкция към обобщението на уплътняването, не контекст; като контекст влиза stdout на SessionStart, който има matcher `compact` — затова снимката се връща от session-restore, а PreCompact казва какво обобщението да запази.",
+      "source": "https://code.claude.com/docs/en/hooks.md (PreCompact output; SessionStart matcher compact)",
+      "keywords": [
+        "PreCompact",
+        [
+          "SessionStart",
+          "compact"
+        ],
+        "compaction summary"
+      ],
+      "relies": [
+        ".claude/hooks/precompact-save.mjs",
+        ".claude/hooks/session-restore.mjs"
+      ]
+    },
+    {
+      "id": "subprocess-env-scrub",
+      "claim": "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1 маха тайните от средата на Bash, куките и stdio MCP (оставя GITHUB_TOKEN и проксито); на Linux без bubblewrap Claude Code не тръгва, без socat Bash не тръгва, а `ps`/`kill` не виждат процеси от предишно извикване — затова е само в headless пусканията и само при bwrap+socat (аблация 19.11.2026). Освен това в работната папка се създават празни заместители за bind-mount (package.json, .npmrc, lock файлове, файловете с тайни; записани в .git/info/exclude) — празният package.json чупи node `require`; затова scrub тече само във временно копие, което се трие след пускането.",
+      "source": "https://code.claude.com/docs/en/env-vars.md#what-the-subprocess-environment-scrub-removes",
+      "keywords": [
+        "SUBPROCESS_ENV_SCRUB",
+        "bubblewrap",
+        "PID namespace",
+        "socat"
+      ],
+      "relies": [
+        "tools/agents/evals/live-run.mjs"
+      ]
+    },
+    {
+      "id": "hook-scripts-self-protection",
+      "claim": "ConfigChange не се задейства при редакция на скрипт на кука (влиза веднага), а без managed settings мод може да одобри блокирано извикване; затова PreToolUse кука guard-self спира агент, който пише в куките, настройките, модовете и импортите на пазачите, и пита човека в главната сесия.",
+      "source": "https://code.claude.com/docs/en/hooks.md#configchange + https://code.claude.com/docs/en/plugins/mods/admin.md",
+      "keywords": [
+        "ConfigChange",
+        "dev-mods",
+        "protected path",
+        [
+          "mods",
+          "hook"
+        ]
+      ],
+      "relies": [
+        ".claude/hooks/guard-self.mjs",
+        ".claude/settings.json"
+      ]
+    },
+    {
+      "id": "stop-failure-hook",
+      "claim": "StopFailure тича вместо Stop при грешка на API (rate_limit, billing_error, max_output_tokens…); изходът му се игнорира — ползваме го само за запис в _state/stop-failures.jsonl.",
+      "source": "https://code.claude.com/docs/en/hooks.md#stopfailure",
+      "keywords": [
+        "StopFailure"
+      ],
+      "relies": [
+        ".claude/hooks/stop-failure.mjs"
+      ]
+    },
+    {
+      "id": "auto-memory-off",
+      "claim": "Автоматичната памет на главната сесия (autoMemoryEnabled, по подразбиране true) зарежда до 200 реда/25KB при старт без нашата проверка „само verified“ — изключена е в проектните настройки и guard-config пази ключа.",
+      "source": "https://code.claude.com/docs/en/settings-reference.md (autoMemoryEnabled) + https://code.claude.com/docs/en/memory.md",
+      "keywords": [
+        "auto memory",
+        "autoMemoryEnabled",
+        "autoMemoryDirectory"
+      ],
+      "relies": [
+        ".claude/settings.json",
+        ".claude/hooks/guard-config.mjs"
+      ]
+    },
+    {
+      "id": "bypass-disabled",
+      "claim": "disableBypassPermissionsMode: \"disable\" работи от всяко ниво — отказва --dangerously-skip-permissions и permissionMode: bypassPermissions в агент; в bypass записите в защитените пътища минават, а модовете се зареждат без питане.",
+      "source": "https://code.claude.com/docs/en/settings-reference.md (disableBypassPermissionsMode) + https://code.claude.com/docs/en/permission-modes.md (Protected paths)",
+      "keywords": [
+        "disableBypassPermissionsMode",
+        "bypassPermissions",
+        "dangerously-skip-permissions"
+      ],
+      "relies": [
+        ".claude/settings.json",
+        ".claude/hooks/guard-config.mjs"
       ]
     }
   ]

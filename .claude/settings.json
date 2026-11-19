@@ -4,8 +4,10 @@
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "0",
     "CLAUDE_CODE_SUBAGENT_EFFORT": "medium",
     "CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS": "10",
-    "CLAUDE_CODE_WORKFLOW_MAX_CONCURRENT_AGENTS": "10"
+    "CLAUDE_CODE_WORKFLOW_MAX_CONCURRENT_AGENTS": "10",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-sonnet-5-5"
   },
+  "autoMemoryEnabled": false,
   "permissions": {
     "deny": [
       "Read(.env)",
@@ -32,8 +34,20 @@
       "Edit(~/.claude/.credentials.json)",
       "Read(**/.next/**)",
       "Edit(**/.next/**)",
-      "Agent(claude-code-guide)"
-    ]
+      "Agent(claude-code-guide)",
+      "Read(//**/.env)",
+      "Edit(//**/.env)",
+      "Read(//**/.env.local)",
+      "Edit(//**/.env.local)",
+      "Read(//**/.env.production)",
+      "Edit(//**/.env.production)",
+      "Read(//**/.env.prod)",
+      "Edit(//**/.env.prod)",
+      "Read(//**/.env.staging)",
+      "Edit(//**/.env.staging)",
+      "REPL"
+    ],
+    "disableBypassPermissionsMode": "disable"
   },
   "hooks": {
     "SubagentStart": [
@@ -142,6 +156,28 @@
     ],
     "PreToolUse": [
       {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit|Bash|Monitor",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-self.mjs\"",
+            "timeout": 10,
+            "onFailure": "block"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-secrets.mjs\"",
+            "timeout": 10,
+            "onFailure": "block"
+          }
+        ]
+      },
+      {
         "matcher": "Bash|Monitor",
         "hooks": [
           {
@@ -219,6 +255,40 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/format-on-edit.mjs\"",
             "timeout": 20
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-restore.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-failure.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreModelSwitch": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-model.mjs\"",
+            "timeout": 10
           }
         ]
       }

@@ -1,11 +1,17 @@
 #!/usr/bin/env node
-// guard-secrets.mjs — PostToolUse(Write|Edit) ранно предупреждение. Ако тъкмо записан файл съдържа
-// ВИСОКО-УВЕРЕН секрет-шаблон (near-zero-FP), surface-ва предупреждение веднага (exit 2), за да го махнеш
-// ПРЕДИ commit. Не отменя записа — реалният hard gate е `tools/security/secret-scan.mjs` при commit/CI.
-// Пропуска fixture/eval/test/scratch пътища (там фалшиви ключове са легитимни). **Fail-open** навсякъде.
+// guard-secrets.mjs — тайна в съдържанието, което агентът пише (Write|Edit|MultiEdit|NotebookEdit).
 //
-// Договор: stdin = JSON {tool_name, tool_input:{file_path, content|new_string}}. Регистриран като
-// PostToolUse matcher "Write|Edit".
+// Два режима по `hook_event_name` (19.11.2026, по https://code.claude.com/docs/en/hooks.md: PostToolUse тича
+// СЛЕД инструмента — записаното вече е на диска; за предотвратяване се ползва PreToolUse):
+//   • PreToolUse (основният): ВИСОКО-УВЕРЕН секрет-шаблон (near-zero-FP) в новото съдържание → отказ (exit 2),
+//     тайната не стига до диска. Fail-closed: неразбираем payload или вътрешна грешка → отказ;
+//     срив/таймаут → `onFailure: "block"`.
+//   • PostToolUse (втори слой, ако PreToolUse не е тичал — напр. стара сесия): предупреждение (exit 2) да се
+//     махне ПРЕДИ commit. Fail-open.
+// Реалният твърд гейт остава `tools/security/secret-scan.mjs` при commit/CI.
+// Пропуска fixture/eval/test/scratch пътища (там фалшиви ключове са легитимни).
+//
+// Договор: stdin = JSON {hook_event_name, tool_name, tool_input:{file_path, content|new_string|edits|new_source}}.
 
 // Near-zero-FP шаблони — от ЕДИНСТВЕНИЯ източник `tools/lib/secret-patterns.mjs`.
 // Дотук този списък беше преписан на ръка с коментар „както в secret-scan" и дрейфна до 8 срещу 18:
@@ -58,27 +64,39 @@ export function contentOf(ti = {}) {
     (Array.isArray(ti.edits) ? ti.edits.map((e) => e?.new_string ?? "").join("\n") : "");
 }
 
+/** Решение за payload: {exit, message}. Чиста функция — тестваема. */
+export function verdict(payload) {
+  const pre = payload?.hook_event_name === "PreToolUse";
+  const ti = payload?.tool_input || {};
+  // Кръг 2 (2026-09-09): NotebookEdit пише в `notebook_path`/`new_source`, MultiEdit в `edits[]` —
+  // куката четеше само Write/Edit полетата, значи тайна в бележник или в мулти-редакция минаваше
+  // (проба: изход 0). Тук четем всички форми; matcher-ът в settings.json включва и двата инструмента.
+  const file = fileOf(ti);
+  if (file && SKIP_PATH.test(file)) return { exit: 0, message: "" };
+  const hit = findSecret(contentOf(ti));
+  if (!hit) return { exit: 0, message: "" };
+  return pre
+    ? { exit: 2, message: `⛔ guard-secrets: записът е отказан — възможен ${hit} в ${file || "файла"}. Тайните живеят само на сървъра (mode 600), никога в репото. Сложи плейсхолдър (напр. в .env.example) и пиши отново.\n` }
+    : { exit: 2, message: `⚠️  guard-secrets: възможен ${hit} в ${file || "записания файл"}. Махни го (тайните живеят само на сървъра, mode 600) ПРЕДИ commit. Пусни: node tools/security/secret-scan.mjs\n` };
+}
+
 if (isMain(import.meta.url)) {
   let buf = "";
+  const fail = (pre) => {
+    // PreToolUse е пазач (fail-closed); PostToolUse е само предупреждение (fail-open).
+    if (pre) { process.stderr.write("⛔ guard-secrets: неразбираем payload или вътрешна грешка — записът е отказан (fail-closed).\n"); process.exit(2); }
+    process.exit(0);
+  };
   process.stdin.on("data", (d) => (buf += d));
   process.stdin.on("end", () => {
+    let payload;
+    try { payload = JSON.parse(buf || "{}"); } catch { return fail(/"hook_event_name"\s*:\s*"PreToolUse"/.test(buf) || !/PostToolUse/.test(buf)); }
     try {
-      const payload = JSON.parse(buf || "{}");
-      const ti = payload?.tool_input || {};
-      // Кръг 2 (2026-09-09): NotebookEdit пише в `notebook_path`/`new_source`, MultiEdit в `edits[]` —
-      // куката четеше само Write/Edit полетата, значи тайна в бележник или в мулти-редакция минаваше
-      // (проба: изход 0). Тук четем всички форми; matcher-ът в settings.json включва и двата инструмента.
-      const file = fileOf(ti);
-      if (file && SKIP_PATH.test(file)) process.exit(0);
-      const content = contentOf(ti);
-      const hit = findSecret(content);
-      if (hit) {
-        process.stderr.write(`⚠️  guard-secrets: възможен ${hit} в ${file || "записания файл"}. Махни го (тайните живеят само на сървъра, mode 600) ПРЕДИ commit. Пусни: node tools/security/secret-scan.mjs\n`);
-        process.exit(2);
-      }
-      process.exit(0);
+      const v = verdict(payload);
+      if (v.message) process.stderr.write(v.message);
+      process.exit(v.exit);
     } catch {
-      process.exit(0); // fail-open
+      fail(payload?.hook_event_name !== "PostToolUse");
     }
   });
   process.stdin.on("error", () => process.exit(0));
