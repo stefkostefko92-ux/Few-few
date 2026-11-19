@@ -7,7 +7,8 @@ Vertex AI в ЕС**. Самостоятелен продукт — `cd agentgw/`
 ## Стек
 
 Node ≥22 · TypeScript strict (ESM, `NodeNext`) · Express 5 · Zod 4 · Prisma 6 + PostgreSQL ·
-`@anthropic-ai/vertex-sdk` (`AnthropicVertex({ projectId, region })`) · тестове `node:test` през tsx.
+`@anthropic-ai/vertex-sdk` v1 (`AnthropicVertex({ projectId, region })`, API версия `2026-10-21`;
+вдига се САМО заедно с `@anthropic-ai/sdk` v1 — иначе второ копие) · тестове `node:test` през tsx.
 
 ## Команди (гейтът)
 
