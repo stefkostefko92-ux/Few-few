@@ -14252,7 +14252,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 331
+        "lessons": 335
       },
       "evolution": [
         {
@@ -14392,9 +14392,20 @@
           "date": "2026-11-19",
           "event": "v32.5 — учене",
           "detail": "Научи: Claude API (first-party) няма ЕС местоживеене: inference_geo приема само \\\"us\\\" или \\\"g… (+28 още)"
+        },
+        {
+          "version": "32.9.0",
+          "date": "2026-11-19",
+          "event": "v32.9 — учене",
+          "detail": "Научи: Таблицата за местоживеене на данни на Google Cloud отбелязва Claude Opus 5.5 и Claude O… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-19",
+          "type": "learning",
+          "summary": "Научи: „Таблицата за местоживеене на данни на Google Cloud отбелязва Claude Opus 5.5 и Claude O…\" (+3 още)"
+        },
         {
           "date": "2026-11-19",
           "type": "learning",
