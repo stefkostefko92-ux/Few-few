@@ -1212,7 +1212,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 718
+        "lessons": 720
       },
       "evolution": [
         {
@@ -2060,9 +2060,20 @@
           "date": "2026-11-19",
           "event": "v65.8 — учене",
           "detail": "Научи: @anthropic-ai/sdk 1.5.0 messages.parse с zodOutputFormat разчита всеки текстов блок нез… (+1 още)"
+        },
+        {
+          "version": "66.0.0",
+          "date": "2026-11-19",
+          "event": "v66.0 — учене",
+          "detail": "Научи: В Node http събитието 'close' на ServerResponse се излъчва само веднъж; слушател, регис… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-19",
+          "type": "learning",
+          "summary": "Научи: „В Node http събитието 'close' на ServerResponse се излъчва само веднъж; слушател, регис…\" (+1 още)"
+        },
         {
           "date": "2026-11-19",
           "type": "learning",
