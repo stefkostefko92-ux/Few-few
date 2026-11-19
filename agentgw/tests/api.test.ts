@@ -548,6 +548,67 @@ describe('изтичане на промпта и повторни откази'
     }
   });
 
+  /**
+   * Клиентът затваря, докато шлюзът чака хранилището (`step`). Връща след като отложеното
+   * извикване е пуснато и обработчикът е имал време да завърши.
+   */
+  const closeDuring = async (h: Harness, key: string, step: 'findKeyByHash' | 'monthUsage') => {
+    const store = h.store as unknown as Record<string, (...a: unknown[]) => Promise<unknown>>;
+    const orig = store[step]!.bind(h.store);
+    let entered!: () => void;
+    const inside = new Promise<void>((r) => (entered = r));
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    store[step] = async (...a: unknown[]) => {
+      entered();
+      await gate;
+      return orig(...a);
+    };
+    const ctl = new AbortController();
+    const pending = fetch(`${h.url}/v1/chat`, {
+      method: 'POST',
+      headers: { ...json, 'X-Agent-Key': key },
+      body: chatBody(),
+      signal: ctl.signal,
+    }).catch(() => null);
+    await inside;
+    ctl.abort();
+    await pending;
+    await new Promise((r) => setTimeout(r, 50)); // сървърът вижда затварянето на сокета
+    store[step] = orig;
+    release();
+    await new Promise((r) => setTimeout(r, 50)); // обработчикът продължава след await-а
+  };
+
+  test('затваряне по време на търсенето на ключа → резервацията се освобождава, моделът не се вика', async (t) => {
+    const h = await startHarness({ cfg: cfg() });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    h.model.events = textEvents(['ок']);
+    await closeDuring(h, k.plain, 'findKeyByHash');
+    await closeDuring(h, k.plain, 'findKeyByHash');
+    assert.equal(h.model.calls.length, 0, 'моделът е викан за затворена връзка');
+    for (let i = 0; i < 2; i++) {
+      const r = await ask(h, k.plain);
+      assert.equal(r.status, 200, `заявка ${i + 1} след 2 ранни затваряния`);
+      await r.text();
+    }
+  });
+
+  test('затваряне по време на проверката на тавана → моделът не се вика и няма разход', async (t) => {
+    const h = await startHarness({ cfg: cfg() });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    h.model.events = textEvents(['ок']);
+    await closeDuring(h, k.plain, 'monthUsage');
+    await closeDuring(h, k.plain, 'monthUsage');
+    assert.equal(h.model.calls.length, 0, 'моделът е викан за затворена връзка');
+    assert.equal((await h.store.monthUsage(k.id, monthKey())).requests, 0);
+    const r = await ask(h, k.plain);
+    assert.equal(r.status, 200);
+    await r.text();
+  });
+
   test('повторни откази от ключ+IP → 429 и моделът не се вика', async (t) => {
     const h = await startHarness({ cfg: cfg() });
     t.after(() => h.close());

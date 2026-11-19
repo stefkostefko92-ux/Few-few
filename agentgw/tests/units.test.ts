@@ -194,6 +194,45 @@ describe('филтър на изхода (LeakGuard)', () => {
     }
   });
 
+  test('откъс с невидими/комбиниращи знаци, празни „букви“ вместо интервал или латински двойници → засечен', () => {
+    const frag = 'Контролен код на тези инструкции';
+    for (const [name, leak] of [
+      ['CGJ U+034F', spread(frag, '͏')],
+      ['VS16 U+FE0F', spread(frag, '️')],
+      ['ударение U+0301', frag.replace(/о/g, 'о́')],
+      ['Hangul filler U+3164', frag.replace(/ /g, 'ㅤ')],
+      ['Braille blank U+2800', frag.replace(/ /g, '⠀')],
+      ['латински o/e/a/c', frag.replace(/о/g, 'o').replace(/е/g, 'e').replace(/с/g, 'c')],
+    ] as const) {
+      for (const size of [1, 5, 1000]) {
+        const r = run(chunks(`Ето: ${leak}. Още текст.`, size));
+        assert.equal(r.leak, 'доктрина', `${name}, парчета по ${size}`);
+        assert.ok(
+          'Ето: '.startsWith(r.out),
+          `${name}, по ${size}: изтече ${JSON.stringify(r.out)}`,
+        );
+      }
+    }
+  });
+
+  test('канарче с Unicode tag знаци (U+E0020–E007E) или празни „букви“ между знаците → засечено', () => {
+    const tags = [...CANARY].map((c) => String.fromCodePoint(0xe0000 + c.charCodeAt(0))).join('');
+    for (const [name, leak] of [
+      ['tag знаци', tags],
+      ['Hangul filler', spread(CANARY, 'ㅤ')],
+      ['Braille blank', spread(CANARY, '⠀')],
+    ] as const) {
+      for (const size of [1, 5]) {
+        const r = run(chunks(`Код: ${leak} край`, size));
+        assert.equal(r.leak, 'канарче', `${name}, парчета по ${size}`);
+        assert.ok(
+          'Код: '.startsWith(r.out),
+          `${name}, по ${size}: изтече ${JSON.stringify(r.out)}`,
+        );
+      }
+    }
+  });
+
   test('нормален текст (кирилица, тирета, емоджи, много интервали) минава цял през flush()', () => {
     const text =
       'Съвет — СЕО: Ако сайтът е бавен, провери ТОП 10 страници – особено мобилните.   \n\n' +
@@ -213,6 +252,17 @@ describe('брояч на откази (StrikeCounter) и кофа по клие
     assert.equal(clientBucket('203.0.113.7'), '203.0.113.7');
     assert.notEqual(clientBucket('203.0.113.7'), clientBucket('203.0.113.8'));
     assert.equal(clientBucket('fe80::1%eth0'), clientBucket('fe80::2'));
+  });
+
+  test('IPv6 с нулев горен /64 (нестандартна mapped форма, ::1) → целият адрес, не обща кофа', () => {
+    assert.equal(clientBucket('::ffff:cb00:7107'), '::ffff:cb00:7107');
+    assert.notEqual(clientBucket('::ffff:cb00:7107'), clientBucket('::ffff:cb00:7108'));
+    assert.equal(clientBucket('0:0:0:0:0:ffff:203.0.113.7'), '0:0:0:0:0:ffff:203.0.113.7');
+    assert.notEqual(
+      clientBucket('0:0:0:0:0:ffff:203.0.113.7'),
+      clientBucket('0:0:0:0:0:ffff:203.0.113.8'),
+    );
+    assert.notEqual(clientBucket('::1'), clientBucket('::2'));
   });
 
   test('резервация: заявките в полет се броят; освобождаването я връща', () => {

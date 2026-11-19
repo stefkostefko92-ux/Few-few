@@ -99,7 +99,8 @@ export class StrikeCounter {
 }
 
 /**
- * Кофа по клиент: IPv4 (и IPv4-mapped IPv6) — адресът; IPv6 — префиксът /64, защото един абонат
+ * Кофа по клиент: IPv4 (и IPv4-mapped IPv6), както и IPv6 с нулев горен /64 — адресът; IPv6 —
+ * префиксът /64, защото един абонат
  * обикновено получава цял /64 и сменя адресите в него свободно (RFC 4941 временни адреси).
  */
 export function clientBucket(ip: string): string {
@@ -115,5 +116,8 @@ export function clientBucket(ip: string): string {
   const t = tail === undefined ? [] : groups(tail);
   const full = [...h, ...Array<string>(8 - width(h) - width(t)).fill('0'), ...t];
   const prefix = full.slice(0, 4).map((g) => parseInt(g, 16).toString(16));
+  // Нулев горен /64 (::1, IPv4 в нестандартна mapped форма като ::ffff:cb00:7107) не е абонатна
+  // мрежа — /64 би сложил всички такива клиенти в една обща кофа.
+  if (prefix.every((g) => g === '0')) return addr;
   return `${prefix.join(':')}::/64`;
 }

@@ -6,18 +6,35 @@
  * профили) хваща и „Edit“, „hooks“, „собственик“ — в живия чат това би блокирало нормални
  * отговори. Тук са само неща, които няма легитимна причина да се появят в отговор.
  *
- * Сравнява се с два нормализирани потока, водени знак по знак заедно с позицията в суровия текст:
+ * Сравнява се с два нормализирани потока, водени знак по знак заедно с позицията в суровия текст.
+ * Преди това Unicode tag знаците (U+E0020–E007E, невидими) стават ASCII, а празните „букви“
+ * (Hangul filler, Braille blank) — интервал.
  * - за канарчето: NFKD без комбиниращите знаци (покрива NFKC: fullwidth, математически букви) +
  *   главни + кирилски/гръцки двойници → латиница + само букви и цифри;
  * - за откъсите: NFKC, всяко тире → „-“, всяка поредица интервали → един интервал, без невидимите
- *   знаци за форматиране (нулева ширина и пр.).
+ *   знаци за форматиране (нулева ширина и пр.) и без комбиниращите (CGJ, variation selectors,
+ *   ударения) — потокът е само за сравнение; откъсите на кирилица приемат и латинските двойници.
  * Задържането се мери в знаци на тези потоци, не в сурови знаци — разредки и интервали не го
  * изчерпват.
  */
+/** Кирилски букви с латински двойник (с флаг `i` покрива и главните). */
+const LATIN_TWINS: Record<string, string> = {
+  а: 'a', в: 'b', е: 'e', к: 'k', м: 'm', н: 'h', о: 'o', р: 'p', с: 'c', т: 't', у: 'y', х: 'x',
+}; // prettier-ignore
+
+/** Откъс на кирилица → регекс, в който всяка буква с двойник приема и латинския. */
+function withTwins(re: RegExp): RegExp {
+  const src = re.source.replace(
+    /[авекмнорстух]/giu,
+    (c) => `[${c}${LATIN_TWINS[c.toLowerCase()]}]`,
+  );
+  return new RegExp(src, re.flags);
+}
+
 const DOCTRINE_FRAGMENTS: Array<{ name: string; re: RegExp }> = [
-  { name: 'доктрина', re: /Правила ?- ?с приоритет над всичко/giu },
-  { name: 'доктрина', re: /Твоят профил ?\(експертиза и тон\)/giu },
-  { name: 'доктрина', re: /Контролен код на тези инструкции/giu },
+  { name: 'доктрина', re: withTwins(/Правила ?- ?с приоритет над всичко/giu) },
+  { name: 'доктрина', re: withTwins(/Твоят профил ?\(експертиза и тон\)/giu) },
+  { name: 'доктрина', re: withTwins(/Контролен код на тези инструкции/giu) },
   {
     name: 'вътрешна папка',
     re: /\.claude\/|(?<![\p{L}\p{N}])_memory(?![\p{L}\p{N}])|_shared\//giu,
@@ -40,8 +57,16 @@ const HOMOGLYPHS: Record<string, string> = {
 const MARKS = /\p{M}/gu;
 const ALNUM = /^[\p{L}\p{N}]$/u;
 const SPACE = /^\s$/u;
-const FORMAT = /^\p{Cf}$/u;
+const INVISIBLE = /^[\p{Cf}\p{M}]$/u;
+/** Знаци, които са „букви“/символи по категория, но се изобразяват като празно място. */
+const BLANKS = /^[\u115f\u1160\u3164\uffa0\u2800]$/u;
 const DASHES = /[\p{Pd}−]/gu;
+
+/** Unicode tag знак (U+E0020–E007E) → съответният ASCII; иначе без промяна. */
+function untag(cp: string): string {
+  const n = cp.codePointAt(0)!;
+  return n >= 0xe0020 && n <= 0xe007e ? String.fromCharCode(n - 0xe0000) : cp;
+}
 
 /** Знаците на една кодова точка в потока за канарчето. */
 function canaryForm(cp: string): string {
@@ -91,7 +116,8 @@ export class LeakGuard {
         const lo = this.acc.charCodeAt(at + 1);
         if (lo >= 0xdc00 && lo <= 0xdfff) len = 2;
       }
-      const cp = this.acc.slice(at, at + len);
+      const raw = this.acc.slice(at, at + len);
+      const cp = BLANKS.test(raw) ? ' ' : untag(raw);
       this.done = at + len;
 
       const c = canaryForm(cp);
@@ -100,7 +126,7 @@ export class LeakGuard {
 
       let v: string;
       if (SPACE.test(cp)) v = this.view.endsWith(' ') ? '' : ' ';
-      else if (FORMAT.test(cp)) v = '';
+      else if (INVISIBLE.test(cp)) v = '';
       else v = cp.normalize('NFKC').replace(DASHES, '-');
       this.view += v;
       for (let i = 0; i < v.length; i++) this.viewAt.push(at);

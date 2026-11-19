@@ -212,6 +212,13 @@ export function createApp(deps: AppDeps) {
         );
         return;
       }
+      // 'close' се излъчва веднъж: затворил ли е клиентът по време на await-а за ключа, слушателят
+      // по-долу никога няма да се извика и резервацията остава завинаги (вечно 429). Node вдига
+      // `res.closed` синхронно точно преди 'close', затова проверката тук не дава двойно освобождаване.
+      if (res.closed) {
+        strikes.release(strikeBucket);
+        return;
+      }
       res.once('close', () => strikes.release(strikeBucket));
       const month = monthKey();
       const used = await store.monthUsage(key.id, month);
@@ -232,6 +239,9 @@ export function createApp(deps: AppDeps) {
       res.on('close', () => {
         if (!res.writableFinished) abort.abort();
       });
+      // Затворено по време на await-а за тавана: 'close' е минал и abort няма да дойде — не
+      // отваряме модела, иначе той генерира и таксува за връзка, която никой не чете.
+      if (res.closed) return;
       const record = async (usage: TokenUsage, stop: string | null) => {
         const cost = costMicroUsd(model, usage, cfg.PRICE_MULTIPLIER);
         try {
