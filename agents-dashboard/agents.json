@@ -49,7 +49,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 471
+        "lessons": 474
       },
       "evolution": [
         {
@@ -621,9 +621,20 @@
           "date": "2026-11-19",
           "event": "v42.4 — учене",
           "detail": "Научи: ЗЗД чл. 16, ал. 3 — при договор с продължително изпълнение изменените общи условия важа… (+39 още)"
+        },
+        {
+          "version": "42.7.0",
+          "date": "2026-11-19",
+          "event": "v42.7 — учене",
+          "detail": "Научи: Anthropic („How Claude marks AI-generated content“) дава текстов воден знак за Opus 5/5… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-19",
+          "type": "learning",
+          "summary": "Научи: „Anthropic („How Claude marks AI-generated content“) дава текстов воден знак за Opus 5/5…\" (+2 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-19",
           "type": "learning",
