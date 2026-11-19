@@ -38,12 +38,14 @@ FIVEM_DOMAIN="${FIVEM_DOMAIN:-thraex.carbonstealth.eu}"
 FIVEM_STATE_DIR="${FIVEM_STATE_DIR:-/opt/few-few/shared/fivem}"
 
 # linketto (Linketto — „link in bio“; Docker Compose: db + app, моделът на fivem). app слуша
-# само на 127.0.0.1:4340 зад Nginx с TLS. Стъпките са в linketto/scripts/deploy.sh (същият
+# само на 127.0.0.1:<HTTP_PORT от .env, по подразбиране 4350> зад Nginx с TLS (НЕ 4340 — на живия
+# сървър е на rilievi). Стъпките са в linketto/scripts/deploy.sh (същият
 # скрипт и за ръчния деплой): бекъп → билд → миграции с НОВИЯ образ → смяна → сонда с маркер.
 # Тайните (.env), дъмповете и качените снимки живеят ИЗВЪН releases — в LINKETTO_STATE_DIR.
 # Откатът сочи последния release, който е отговорил (LINKETTO_LAST_GOOD; prune_releases го пази).
-LINKETTO_HEALTH_URL="${LINKETTO_HEALTH_URL:-http://127.0.0.1:4340/api/health}"
-LINKETTO_DOMAIN="${LINKETTO_DOMAIN:-linketto.carbonstealth.eu}"
+# Празно = от HTTP_PORT в $LINKETTO_STATE_DIR/.env (по подразбиране 4350) — смята се в deploy_linketto.
+LINKETTO_HEALTH_URL="${LINKETTO_HEALTH_URL:-}"
+LINKETTO_DOMAIN="${LINKETTO_DOMAIN:-piuma.carbonstealth.eu}"
 LINKETTO_STATE_DIR="${LINKETTO_STATE_DIR:-/opt/few-few/shared/linketto}"
 LINKETTO_LAST_GOOD="${LINKETTO_LAST_GOOD:-$LINKETTO_STATE_DIR/last-good}"
 LINKETTO_INDEXNOW="${LINKETTO_INDEXNOW:-1}"
@@ -2237,6 +2239,8 @@ PUBLIC_BASE_URL=https://${LINKETTO_DOMAIN}
 # Път В КОНТЕЙНЕРА; на хоста е ${LINKETTO_STATE_DIR}/data (извън releases).
 DATA_DIR=/data
 CRON_SECRET=${cron}
+# Портът на хоста (127.0.0.1). 4340–4342 са заети на живия сървър (rilievi/semki/fakturist).
+HTTP_PORT=4350
 PROFILE_HOST=
 # sandbox НАРОЧНО: production едва след зеления приемен тест (DEPLOY.md §8).
 REVOLUT_ENV=sandbox
@@ -2253,6 +2257,11 @@ EOF
     ok "linketto: $LINKETTO_STATE_DIR/.env създаден (600)."
   fi
   chmod 600 "$LINKETTO_STATE_DIR/.env" 2>/dev/null || true
+  # Портът — от .env (същото чете docker-compose.yml); изричният LINKETTO_HEALTH_URL побеждава.
+  local port
+  port="$(sed -n 's/^HTTP_PORT=//p' "$LINKETTO_STATE_DIR/.env" 2>/dev/null | tail -1 | tr -dc '0-9' || true)"
+  port="${port:-4350}"
+  [ -n "$LINKETTO_HEALTH_URL" ] || LINKETTO_HEALTH_URL="http://127.0.0.1:${port}/api/health"
   # Празните ръчни ключове — напомняне при всеки деплой, докато не се попълнят (стойности не се печатат).
   for k in ADMIN_EMAILS BREVO_API_KEY EMAIL_FROM REVOLUT_SECRET_KEY REVOLUT_WEBHOOK_SECRET; do
     grep -qE "^${k}=.+" "$LINKETTO_STATE_DIR/.env" \
@@ -2292,7 +2301,7 @@ EOF
         printf '%s\n' "$(readlink -f "$d")" > "$LINKETTO_LAST_GOOD.tmp" && mv -f "$LINKETTO_LAST_GOOD.tmp" "$LINKETTO_LAST_GOOD"
         linketto_install_cron "$d" || warn "linketto: таймерите не се инсталираха — виж по-горе."
         [ -e /etc/nginx/sites-enabled/linketto ] \
-          || warn "linketto: няма /etc/nginx/sites-enabled/linketto — сайтът върви само на 127.0.0.1:4340 (linketto/DEPLOY.md §7)."
+          || warn "linketto: няма /etc/nginx/sites-enabled/linketto — сайтът върви само на 127.0.0.1:${port} (linketto/DEPLOY.md §7)."
         linketto_indexnow
       else
         deploy_failed=1

@@ -138,7 +138,7 @@ ZIP отпреди месец.
   `CF-Connecting-IP`/`X-Forwarded-For` — това е защита, не настройка**) + certbot, и
   `RESEND_API_KEY` в `.env`, иначе уведомленията по чл. 16/17 DSA не тръгват →
   `FiveM/DEPLOY.md`.
-- **linketto** (Linketto — „link in bio“): Docker Compose (db + app на `127.0.0.1:4340`, проект
+- **linketto** (Linketto — „link in bio“): Docker Compose (db + app на `127.0.0.1:<HTTP_PORT>`, по подразбиране 4350 — 4340 е на rilievi; проект
   `linketto`). Тайните, дъмповете и качените снимки са в `/opt/few-few/shared/linketto/` (`.env` 600 —
   при пръв деплой се генерират САМО `POSTGRES_PASSWORD`/`DATABASE_URL`/`CRON_SECRET`, Revolut е в
   `sandbox`; том `linketto_db` без `.env` = отказ, не нови тайни). `linketto/scripts/deploy.sh`:
@@ -266,7 +266,7 @@ ZIP отпреди месец.
 | `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fakturist fivem linketto` | кои проекти да се разгръщат тук |
 | `FIVEM_HEALTH_URL` | `http://127.0.0.1:3010/api/health` | health на fivem |
 | `FIVEM_DOMAIN` | `thraex.carbonstealth.eu` | домейн на fivem (за `.env` и IndexNow) |
-| `LINKETTO_HEALTH_URL` · `LINKETTO_DOMAIN` · `LINKETTO_STATE_DIR` · `LINKETTO_INDEXNOW` | `http://127.0.0.1:4340/api/health` · `linketto.carbonstealth.eu` · `/opt/few-few/shared/linketto` · `1` | сонда, домейн, тайни/бекъпи/снимки/last-good, IndexNow на linketto |
+| `LINKETTO_HEALTH_URL` · `LINKETTO_DOMAIN` · `LINKETTO_STATE_DIR` · `LINKETTO_INDEXNOW` | празно → `http://127.0.0.1:<HTTP_PORT от .env, иначе 4350>/api/health` · `piuma.carbonstealth.eu` · `/opt/few-few/shared/linketto` · `1` | сонда, домейн, тайни/бекъпи/снимки/last-good, IndexNow на linketto |
 | `PANEV_DIR` | `/opt/panev` | път на panev (systemd) |
 | `PANEV_ENV` | `/etc/panev/panev.env` | тайните на panev (600, `EnvironmentFile`) |
 | `PANEV_HEALTH_URL` | `http://127.0.0.1:4102/api/health` | health на panev |

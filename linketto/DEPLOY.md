@@ -74,7 +74,7 @@ DATABASE_URL="postgresql://…" npx prisma migrate deploy
 | Ключ | Откъде | Бележка |
 |------|--------|---------|
 | `DATABASE_URL` | PostgreSQL в ЕС | — |
-| `PUBLIC_BASE_URL` | `https://linketto.carbonstealth.eu` | sitemap, canonical, redirect-а след плащане, имейли |
+| `PUBLIC_BASE_URL` | `https://piuma.carbonstealth.eu` | sitemap, canonical, redirect-а след плащане, имейли |
 | `REVOLUT_SECRET_KEY` | Revolut Business → APIs → Merchant API | Production или Sandbox ключ (по `REVOLUT_ENV`) |
 | `REVOLUT_ENV` | ти | `production` = `merchant.revolut.com`; всичко друго = sandbox |
 | `REVOLUT_WEBHOOK_SECRET` | отговорът при създаване на уебхука (§3) | без него `/api/revolut/webhook` връща 503 и уреждането става само от cron-а (§9) |
@@ -94,7 +94,7 @@ DATABASE_URL="postgresql://…" npx prisma migrate deploy
 
 ```json
 {
-  "url": "https://linketto.carbonstealth.eu/api/revolut/webhook",
+  "url": "https://piuma.carbonstealth.eu/api/revolut/webhook",
   "events": [
     "ORDER_COMPLETED", "ORDER_AUTHORISED", "ORDER_FAILED", "ORDER_CANCELLED",
     "ORDER_PAYMENT_DECLINED", "ORDER_PAYMENT_FAILED",
@@ -195,7 +195,10 @@ cookie `NEXT_LOCALE` и винаги печели пред IP. Без CDN хед
 ## 7. Build & run (Docker Compose през `deploy/autodeploy.sh`)
 
 Стекът: `docker-compose.yml` (`db` postgres:16-alpine + `app` от `Dockerfile`, non-root uid 1001,
-само `127.0.0.1:4340`), Compose проект `linketto` (томът е `linketto_db`). На сървъра нищо не се
+само `127.0.0.1:<HTTP_PORT>`, по подразбиране **4350** — 4340/4341/4342 на живия сървър са на
+rilievi/semki/fakturist; смяна = `HTTP_PORT` в `.env` + `proxy_pass` в vhost-а), Compose проект
+`linketto` (томът е `linketto_db`). `scripts/deploy.sh` спира ПРЕДИ бекъпа и билда (код 2), ако
+портът е зает от друг процес. На сървъра нищо не се
 строи на ръка — каноничният път е `deploy/fetch-deploy.sh` → `deploy/autodeploy.sh` (`deploy_linketto`):
 
 ```bash
@@ -220,13 +223,21 @@ release (`/opt/few-few/shared/linketto/last-good`); провал на мигра
 (`env_file` се чете при пресъздаване на контейнера; `restart` не стига. `last-good`, не `current`:
 `current` се мести и при деплой на друг продукт, към release без симлинка `.env`).
 
-**Еднократно:** DNS A/AAAA → VPS, после vhost + TLS:
+**Еднократно:** DNS A/AAAA → VPS, после vhost + TLS. Vhost-ът се взема от последния работещ release
+(`last-good`, не `current`), а `proxy_pass` получава порта от `.env`:
 
 ```bash
-sudo install -m 644 /opt/few-few/current/linketto/deploy/nginx.conf /etc/nginx/sites-available/linketto
+P="$(sudo sed -n 's/^HTTP_PORT=//p' /opt/few-few/shared/linketto/.env | tail -1 | tr -dc '0-9')"; P="${P:-4350}"
+sudo sed "s/127\.0\.0\.1:4350/127.0.0.1:$P/g" "$(cat /opt/few-few/shared/linketto/last-good)/deploy/nginx.conf" | sudo tee /etc/nginx/sites-available/linketto >/dev/null
 sudo ln -sfn /etc/nginx/sites-available/linketto /etc/nginx/sites-enabled/linketto
 sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d linketto.carbonstealth.eu --redirect
+# Пазач: без сайт с точно това име certbot слага сертификата в default/catch-all блока
+# (17.11.2026 — влезе в conf.d/00-reject-unknown.conf). Затова certbot тръгва САМО ако vhost-ът го носи.
+if sudo grep -q 'server_name piuma.carbonstealth.eu;' /etc/nginx/sites-enabled/linketto; then
+  sudo certbot --nginx -d piuma.carbonstealth.eu --redirect
+else
+  echo "СТОП: /etc/nginx/sites-enabled/linketto не носи piuma.carbonstealth.eu — деплоят мина ли? (last-good)"
+fi
 ```
 
 **Cron (§9) — systemd таймери, инсталират се сами:** `linketto-cron-plans.timer` (всеки час :17),
@@ -303,7 +314,7 @@ Health probe: `GET /api/health` → `{"status":"ok","db":"up","app":"linketto"}`
   пренасочва към основния сайт.
 - **IndexNow след деплой** (нови страници `/tools`, `/tools/qr`, `/tools/bio`,
   `/vs/linktree`, `/vs/beacons` + sitemap):
-  `node tools/seo/indexnow.mjs https://linketto.carbonstealth.eu`.
+  `node tools/seo/indexnow.mjs https://piuma.carbonstealth.eu`.
 - **Сравнителните страници (`/vs/*`):** фактите за конкурентите са в
   `src/lib/comparisons.ts` с дата на проверка — преглеждай ги поне веднъж на
   тримесечие (цените им се менят; остарял факт = подвеждаща сравнителна реклама).

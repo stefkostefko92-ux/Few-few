@@ -15,7 +15,7 @@ export async function fetchCapped(
       signal: AbortSignal.timeout(input.timeoutMs ?? 8000),
       headers: {
         Accept: input.accept,
-        'User-Agent': 'LinkettoImport/1.0 (+https://linketto.carbonstealth.eu)',
+        'User-Agent': 'LinkettoImport/1.0 (+https://piuma.carbonstealth.eu)',
       },
       cache: 'no-store',
     });
