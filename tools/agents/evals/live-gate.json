@@ -1,9 +1,9 @@
 {
   "date": "2026-11-19",
-  "ref": "edd63443ce7024ddc0064e2bd883097cb1877be0",
+  "ref": "c58075b3956df684037cb84855589be6ca088c1a",
   "cli": "2.1.328 (Claude Code)",
   "summary": "проба 3/3 · оценки 6/6 · pass^k 2/2 · verifier ✓",
-  "costUsd": 8.71,
+  "costUsd": 10.31,
   "criticalAt": "2026-11-19",
   "probe": [
     {
@@ -22,7 +22,7 @@
       "problems": []
     }
   ],
-  "inputsHash": "4994e35302e030008fd06992436a6c07590d962fb70dfbaf27f7026f60768bd0",
+  "inputsHash": "e53c49258e56f9dc67cec96b0e0bd7a734bb96f1d3818d6896ae8e35d039c5de",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
@@ -83,7 +83,7 @@
     ".claude/hooks/session-restore.mjs": "cf1d4a2d2bc545ae5a3778d1cb170e2f53e6db733c618ee3baf525b7a75d5faa",
     ".claude/hooks/stop-failure.mjs": "84adc72d569483635018a406ae63c583e279fe3eb390f69bf42b826f2bdfa6ba",
     ".claude/hooks/usage-capture.mjs": "b6dee83a4a53f425c0e8dfab3c8b050e36b7c70b4f45c8dd9d041a5780530981",
-    ".claude/settings.json": "cdfec45e16354861f049e7affeb781d1da462ec65ab654e7725b8f872e5373df",
+    ".claude/settings.json": "4d26ecab681d0df2d4698be8edb6944bfc34391001db42d583bcd63664e603f7",
     ".claude/skills/agent-doctrine/SKILL.md": "9e910f00f812006d9e59f6a40e77ca38835fdf8d19eab7be3219d0aaea8e3411",
     "tools/agents/handoff.mjs": "088afa443cf1c3a6325b28a80bc74426aba907a1d7c287d0add05497b29dcba3",
     "tools/agents/teams.mjs": "955295f80b10250391714245bf5b6906c3341f2b8217c960cf07e290b4035fbb",
