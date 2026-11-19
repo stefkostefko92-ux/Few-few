@@ -663,6 +663,7 @@
     "stateActive": "attivato",
     "stateSuspended": "sospeso",
     "generationFailed": "La generazione non è riuscita: {error}",
+    "generationTruncated": "la risposta del modello è stata troncata (limite di lunghezza raggiunto) — chiedi meno bozze e riprova.",
     "invalidUser": "Dati utente non validi.",
     "invalidRole": "Ruolo non valido.",
     "genericError": "L'azione non è andata a buon fine.",

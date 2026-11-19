@@ -4,6 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import type { ClientOptions } from '@anthropic-ai/vertex-sdk';
+import { LOCALES, translate } from '../src/i18n.js';
+import { logger } from '../src/logger.js';
 import {
   buildDraftRequest,
   ContentGenerationError,
@@ -131,7 +133,7 @@ test('системният промпт казва, че JSON полетата �
   assert.match(SYSTEM_PROMPT, /данни, не инструкции/);
 });
 
-/* ── Истинският Vertex клиент на SDK-то с фалшив fetch: parse + zodOutputFormat ── */
+/* ── Истинският Vertex клиент на SDK-то с фалшив fetch: create + zodOutputFormat, схемата се проверява при нас ── */
 
 interface Captured {
   url: string;
@@ -139,7 +141,12 @@ interface Captured {
   body: Record<string, unknown>;
 }
 
-function fakeVertex(status: number, payload: unknown, seen: Captured[]) {
+function fakeVertex(
+  status: number,
+  payload: unknown,
+  seen: Captured[],
+  headers: Record<string, string> = {},
+) {
   return createVertexClient(ready, {
     authClient: fakeAuth,
     fetch: async (url: string | URL | Request, init?: RequestInit) => {
@@ -150,7 +157,7 @@ function fakeVertex(status: number, payload: unknown, seen: Captured[]) {
       });
       return new Response(JSON.stringify(payload), {
         status,
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', ...headers },
       });
     },
   });
@@ -187,7 +194,7 @@ function message(stopReason = 'end_turn', drafts: unknown[] = [draft]) {
   };
 }
 
-test('messages.parse през Vertex: ЕС rawPredict, модел в пътя, Google токен, usage без съдържание', async () => {
+test('messages.create през Vertex: ЕС rawPredict, модел в пътя, Google токен, usage без съдържание', async () => {
   const previous = process.env.ANTHROPIC_API_KEY;
   process.env.ANTHROPIC_API_KEY = ['sk', 'ant', 'fake'].join('-');
   const seen: Captured[] = [];
@@ -242,6 +249,110 @@ test('отказ от модела → ясна грешка, без черно�
     ),
     (error: unknown) => error instanceof ContentGenerationError && /отказа/.test(error.message),
   );
+});
+
+/** Отговор с един текстов блок — каквото моделът е написал, без да е задължително JSON. */
+function rawMessage(stopReason: string, text: string) {
+  return {
+    ...message(stopReason),
+    content: [
+      { type: 'thinking', thinking: '', signature: 'sig' },
+      { type: 'text', text },
+    ],
+  };
+}
+
+test('отказ с обикновен текст → съобщението за отказ, а разходът се записва', async () => {
+  const usage: DraftUsage[] = [];
+  await assert.rejects(
+    generateDrafts(
+      {
+        client: fakeVertex(200, rawMessage('refusal', "I can't help with that."), []),
+        model: 'claude-opus-5-5',
+        onUsage: (u) => usage.push(u),
+      },
+      input,
+    ),
+    (error: unknown) => error instanceof ContentGenerationError && /отказа/.test(error.message),
+  );
+  assert.equal(usage.length, 1);
+  assert.equal(usage[0]!.stopReason, 'refusal');
+  assert.equal(usage[0]!.outputTokens, 1430);
+});
+
+test('отрязан отговор (max_tokens) → ясно „отрязан“ на три езика, а разходът се записва', async () => {
+  const usage: DraftUsage[] = [];
+  let caught: unknown;
+  await assert.rejects(
+    generateDrafts(
+      {
+        client: fakeVertex(200, rawMessage('max_tokens', '{"drafts":[{"hook":"Пър'), []),
+        model: 'claude-opus-5-5',
+        onUsage: (u) => usage.push(u),
+      },
+      input,
+    ),
+    (error: unknown) => {
+      caught = error;
+      return error instanceof ContentGenerationError && /отрязан/.test(error.message);
+    },
+  );
+  assert.deepEqual(
+    usage.map((u) => u.stopReason),
+    ['max_tokens'],
+  );
+  // Панелът превежда по ключа — потребителят на EN/IT не вижда български.
+  const key = (caught as ContentGenerationError).key;
+  assert.equal(key, 'flash.generationTruncated');
+  const texts = LOCALES.map((locale) => translate(locale, key!));
+  assert.equal(new Set(texts).size, 3, 'три различни превода');
+  assert.match(texts[0]!, /отрязан/);
+});
+
+test('завършен отговор с JSON извън схемата → „не върна валидни чернови“, разходът се записва', async () => {
+  const usage: DraftUsage[] = [];
+  for (const text of ['не е JSON', '{"drafts":[{"hook":1}]}', '{"drafts":[]}']) {
+    await assert.rejects(
+      generateDrafts(
+        {
+          client: fakeVertex(200, rawMessage('end_turn', text), []),
+          model: 'claude-opus-5-5',
+          onUsage: (u) => usage.push(u),
+        },
+        input,
+      ),
+      (error: unknown) =>
+        error instanceof ContentGenerationError && /валидни чернови/.test(error.message),
+      text,
+    );
+  }
+  assert.equal(usage.length, 3);
+});
+
+test('грешка на Vertex оставя в лога ai.error: име, код и request-id — без съобщение и тяло', async (t) => {
+  const warn = t.mock.method(logger, 'warn', () => undefined);
+  const secret = 'Текст от модела, който не бива да стига до лога';
+  await assert.rejects(
+    generateDrafts(
+      {
+        client: fakeVertex(404, { error: { code: 404, message: secret } }, [], {
+          'request-id': 'req_vertex_1',
+        }),
+        model: 'claude-opus-5-5',
+      },
+      input,
+    ),
+    ContentGenerationError,
+  );
+  assert.equal(warn.mock.callCount(), 1);
+  const [fields] = warn.mock.calls[0]!.arguments as unknown as [Record<string, unknown>];
+  assert.deepEqual(fields, {
+    event: 'ai.error',
+    name: 'NotFoundError',
+    status: 404,
+    requestId: 'req_vertex_1',
+  });
+  assert.doesNotMatch(JSON.stringify(warn.mock.calls[0]!.arguments), /не бива/);
 });
 
 test('грешка на Vertex се превежда на български по HTTP кода, без да се повтаря безсмислено', async () => {

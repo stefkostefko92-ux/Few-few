@@ -4,7 +4,7 @@ import { audit } from '../audit.js';
 import { config } from '../config.js';
 import { prisma } from '../db.js';
 import { requireCapability, requireCsrf, requireLogin } from '../auth/guards.js';
-import { generateDrafts } from '../content/generate.js';
+import { ContentGenerationError, generateDrafts } from '../content/generate.js';
 import { aiSetup, vertexDraftModel } from '../content/vertex.js';
 import { parsePlan } from '../content/plan.js';
 import { brandPostPerformance, performanceContext } from '../services/insights.js';
@@ -267,7 +267,13 @@ postRouter.post(
         res,
         'error',
         tr(res, 'flash.generationFailed', {
-          error: error instanceof Error ? error.message : '—',
+          // С ключ — преводът на езика на потребителя; иначе българското изречение.
+          error:
+            error instanceof ContentGenerationError && error.key
+              ? tr(res, error.key)
+              : error instanceof Error
+                ? error.message
+                : '—',
         }),
       );
       res.redirect('/admin/posts/new');

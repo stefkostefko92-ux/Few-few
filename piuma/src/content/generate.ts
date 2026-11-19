@@ -1,9 +1,15 @@
-import { APIConnectionTimeoutError, APIError, APIUserAbortError } from '@anthropic-ai/sdk';
+import {
+  AnthropicError,
+  APIConnectionTimeoutError,
+  APIError,
+  APIUserAbortError,
+} from '@anthropic-ai/sdk';
 import type { AnthropicVertex } from '@anthropic-ai/vertex-sdk';
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
 // Помощникът на SDK-то очаква схеми от новото ядро на zod (`zod/v4`, налично в zod 3.25+).
 // Останалата част от продукта ползва класическия `zod` API — не ги смесвай в един файл.
 import * as z from 'zod/v4';
+import { logger } from '../logger.js';
 import { CAPTION_MAX, HASHTAG_RECOMMENDED } from './lint.js';
 import { CROSS_POST_PLATFORMS, type CrossPostPlatform } from './plan.js';
 import { buildUserPrompt, type PromptInput } from './prompt.js';
@@ -66,7 +72,18 @@ export interface GeneratedDraft {
   variants: CrossPostVariant[];
 }
 
-export class ContentGenerationError extends Error {}
+/**
+ * Грешка за човека в панела. `message` е на български (и за лога на автопилота); `key`, ако
+ * го има, е ключ от речниците — панелът показва превода на езика на потребителя.
+ */
+export class ContentGenerationError extends Error {
+  constructor(
+    message: string,
+    readonly key?: string,
+  ) {
+    super(message);
+  }
+}
 
 /** Разходът на едно извикване — само числа, без промпт и без лични данни. */
 export interface DraftUsage {
@@ -127,6 +144,18 @@ export function buildDraftRequest(input: GenerateInput, model: string) {
 /** Грешката на доставчика → изречение за човека в панела. Тяло на отговора не се показва. */
 function explain(error: unknown, model: string): ContentGenerationError {
   if (error instanceof ContentGenerationError) return error;
+  if (error instanceof AnthropicError) {
+    // Причината остава за оператора. Без `message` и без тялото — там може да има текст от модела.
+    logger.warn(
+      {
+        event: 'ai.error',
+        name: error.constructor.name,
+        status: error instanceof APIError ? error.status : undefined,
+        requestId: error instanceof APIError ? error.requestID : undefined,
+      },
+      'AI: извикването към Vertex се провали',
+    );
+  }
   if (error instanceof APIUserAbortError || error instanceof APIConnectionTimeoutError) {
     return new ContentGenerationError('Vertex AI не отговори навреме — опитай пак.');
   }
@@ -149,6 +178,24 @@ function explain(error: unknown, model: string): ContentGenerationError {
   return new ContentGenerationError('Връзката с Vertex AI се провали.');
 }
 
+/** JSON-ът от текстовия блок, проверен срещу схемата. Невалидното е `null`, не изключение. */
+function parseDrafts(
+  content: ReadonlyArray<{ type: string }>,
+): z.infer<typeof draftsSchema> | null {
+  const block = content.find(
+    (item): item is { type: 'text'; text: string } => item.type === 'text',
+  );
+  if (!block) return null;
+  let json: unknown;
+  try {
+    json = JSON.parse(block.text);
+  } catch {
+    return null;
+  }
+  const result = draftsSchema.safeParse(json);
+  return result.success ? result.data : null;
+}
+
 /**
  * Връща чернови — НЕ публикува. Одобрението е човешко решение по-надолу по пътя.
  */
@@ -160,17 +207,26 @@ export async function generateDrafts(
   const requested = new Set<CrossPostPlatform>(input.crossPost ?? []);
   let response;
   try {
-    response = await ai.client.messages.parse(buildDraftRequest(input, ai.model), { signal });
+    // `create`, не `parse`: `parse` разчита текста преди `stop_reason` да е видян — отказ с
+    // обикновен текст или отрязан JSON ставаше „връзката се провали“ и разходът не се записваше.
+    response = await ai.client.messages.create(buildDraftRequest(input, ai.model), { signal });
   } catch (error) {
     throw explain(error, ai.model);
   }
+  // Платеното се записва винаги — и когато черновите не стават.
   ai.onUsage?.(usageRecord(ai.model, response.usage, response.stop_reason));
 
   if (response.stop_reason === 'refusal') {
     throw new ContentGenerationError('Моделът отказа да произведе съдържание за тази заявка.');
   }
+  if (response.stop_reason === 'max_tokens') {
+    throw new ContentGenerationError(
+      'Отговорът на модела е отрязан (достигнат е лимитът на дължината) — поискай по-малко чернови и опитай пак.',
+      'flash.generationTruncated',
+    );
+  }
 
-  const parsed = response.parsed_output;
+  const parsed = parseDrafts(response.content);
   if (!parsed || parsed.drafts.length === 0) {
     throw new ContentGenerationError('Моделът не върна валидни чернови.');
   }

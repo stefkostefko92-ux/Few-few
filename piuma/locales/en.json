@@ -663,6 +663,7 @@
     "stateActive": "activated",
     "stateSuspended": "suspended",
     "generationFailed": "Generation failed: {error}",
+    "generationTruncated": "the model's response was cut off (length limit reached) — ask for fewer drafts and try again.",
     "invalidUser": "Invalid user details.",
     "invalidRole": "Invalid role.",
     "genericError": "The action did not go through.",
