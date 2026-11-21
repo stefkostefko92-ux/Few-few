@@ -176,3 +176,59 @@ test("EVAL_ALLOWED пуска локалната търсачка на ui-ux-pro
   assert.ok(EVAL_ALLOWED.some((r) => r.startsWith("Bash(python3 -I -B .claude/skills/ui-ux-pro-max/scripts/search.py")));
   assert.ok(!EVAL_ALLOWED.some((r) => /^Bash\(python3 \*\)$|^Bash\(python3\)$/.test(r)), "без общо разрешение за python3");
 });
+
+test("ok иска блок ПРЕДАВАНЕ: „агентът още работи“ вече не е успех; отговорът се взема от транскрипта на подагента (19.11.2026)", async () => {
+  const { judgeRun } = await import("./live-run.mjs");
+  const handoff = "Отговор\n\n## ПРЕДАВАНЕ\nОт: seo → Към: човек\nСтатус: наред\nНаходки: —\nИзход/артефакт: —\nСледваща стъпка: —";
+  // Преди: ok = !err && text — „още работи“ минаваше.
+  const silent = judgeRun({ err: null, text: "Агентът още работи, ще върна отговора.", needsHandoff: true });
+  assert.equal(silent.ok, false);
+  assert.match(silent.why, /ПРЕДАВАНЕ/);
+  const rescued = judgeRun({ err: null, text: "обобщение", needsHandoff: true, recover: () => handoff });
+  assert.equal(rescued.ok, true);
+  assert.equal(rescued.recovered, true);
+  assert.equal(rescued.text, handoff);
+  assert.equal(judgeRun({ err: null, text: handoff, needsHandoff: true }).ok, true);
+  assert.equal(judgeRun({ err: null, text: "цитат на контекста", needsHandoff: false }).ok, true, "пробите на живия гейт не дължат ПРЕДАВАНЕ");
+  assert.equal(judgeRun({ err: new Error("timeout"), text: handoff, needsHandoff: true }).ok, false);
+  assert.equal(judgeRun({ err: null, text: "  ", needsHandoff: false }).ok, false);
+});
+
+test("средата на headless пускането: таван на чакането по външния таймаут, без обобщения за напредък, scrub само при поддръжка", async () => {
+  const { runEnv, scrubSupported } = await import("./live-run.mjs");
+  const e = runEnv({ CLAUDE_CODE_SESSION_ID: "parent", PATH: "/bin" }, { wt: "/tmp/w", timeoutMs: 900000 });
+  assert.equal(e.CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS, "840000");
+  assert.equal(e.CLAUDE_CODE_DISABLE_AGENT_PROGRESS_SUMMARIES, "1");
+  assert.equal(e.CLAUDE_PROJECT_DIR, "/tmp/w");
+  assert.equal(e.AGENT_MEMORY_SYNC, "0");
+  assert.ok(!("CLAUDE_CODE_SESSION_ID" in e), "своя сесия, не на родителя");
+  assert.ok(!("CLAUDE_CODE_SUBPROCESS_ENV_SCRUB" in e));
+  assert.equal(runEnv({}, { wt: "/w", scrub: true }).CLAUDE_CODE_SUBPROCESS_ENV_SCRUB, "1");
+  assert.equal(runEnv({ CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS: "5" }, { wt: "/w" }).CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS, "5", "изрична стойност печели");
+  assert.equal(runEnv({}, { wt: "/w", timeoutMs: 1000 }).CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS, "60000", "долна граница 1 мин.");
+  // Без bubblewrap Claude Code не тръгва, без socat Bash не тръгва (аблация 19.11.2026) → scrub само при двата.
+  assert.equal(scrubSupported({ platform: "linux", has: () => true }), true);
+  assert.equal(scrubSupported({ platform: "linux", has: (b) => b !== "socat" }), false);
+  assert.equal(scrubSupported({ platform: "linux", has: (b) => b !== "bwrap" }), false);
+  assert.equal(scrubSupported({ platform: "darwin", has: () => true }), false, "непроверена платформа → изключено");
+});
+
+test("subagentFinalText чете последния текст на НАШИЯ подагент от транскрипта на сесията", async () => {
+  const { subagentFinalText } = await import("./live-run.mjs");
+  const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const home = mkdtempSync(join(tmpdir(), "lr-home-"));
+  try {
+    const wt = "/tmp/live-run-abc";
+    const dir = join(home, ".claude", "projects", wt.replace(/[/.]/g, "-"), "11111111-2222-3333-4444-555555555555", "subagents");
+    mkdirSync(dir, { recursive: true });
+    const line = (t) => JSON.stringify({ type: "assistant", message: { content: [{ type: "text", text: t }] } });
+    writeFileSync(join(dir, "agent-a.jsonl"), [line("първо"), line("ПОСЛЕДНО от seo")].join("\n"));
+    writeFileSync(join(dir, "agent-a.meta.json"), JSON.stringify({ agentType: "seo" }));
+    writeFileSync(join(dir, "agent-b.jsonl"), line("чужд агент"));
+    writeFileSync(join(dir, "agent-b.meta.json"), JSON.stringify({ agentType: "kodadjiyata" }));
+    assert.equal(subagentFinalText("11111111-2222-3333-4444-555555555555", wt, "seo", home), "ПОСЛЕДНО от seo");
+    assert.equal(subagentFinalText("11111111-2222-3333-4444-555555555555", wt, "prodavacha", home), "");
+    assert.equal(subagentFinalText("../x", wt, "seo", home), "", "невалидна сесия не избира път");
+  } finally { rmSync(home, { recursive: true, force: true }); }
+});
