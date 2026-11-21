@@ -22,6 +22,11 @@ interface Strings {
   noAuto: string;
   withdrawalTitle: string;
   withdrawal: string;
+  /**
+   * При изрично искане за ранно начало (отметката при поръчката — abuse-money-spec Б2,
+   * чл. 6(1)(j) и 8(7)(a) Дир. 2011/83). Текстът — Правния Разбирач; без превод → en.
+   */
+  withdrawalImmediate?: (date: string) => string;
   formTitle: string;
   form: string;
   terms: string;
@@ -46,6 +51,8 @@ const STRINGS: Record<string, Strings> = {
     withdrawalTitle: 'Право на отказ',
     withdrawal:
       'Ако си потребител, можеш да се откажеш от договора в срок от 14 дни, считано от деня след плащането, без да посочваш причина и без разноски. Планът започва веднага; при отказ в срока връщаме цялата сума, без да удържаме нищо за използваните дни, не по-късно от 14 дни от получаването на отказа, по същия начин на плащане. Изпрати ни ясно изявление на info@carbonstealth.eu — можеш да ползваш формуляра по-долу, но не е задължително. При отказ отпада само платеното с това плащане — планът и срокът отпреди него се възстановяват.',
+    withdrawalImmediate: (d) =>
+      `Ако си потребител, можеш да се откажеш от договора в срок от 14 дни, считано от деня след плащането, без да посочваш причина. По твое изрично искане (отметка при поръчката на ${d} UTC) планът започна веднага, преди изтичането на срока за отказ. Ако се откажеш в срока, дължиш сума, пропорционална на предоставеното до уведомяването ни за отказа, спрямо целия период по това плащане (за „Основател“ — спрямо 365 дни), а останалото ти връщаме не по-късно от 14 дни от получаването на отказа, по същия начин на плащане. След като договорът бъде изпълнен изцяло, правото на отказ отпада. Изпрати ни ясно изявление на info@carbonstealth.eu или ползвай бутона „Откажете се от договора тук“ в таблото — можеш да ползваш и формуляра по-долу, но не е задължително. При отказ отпада само платеното с това плащане — планът и срокът отпреди него се възстановяват; ако си преминал към по-висок план, срокът на предишния се удължава с времето, през което си ползвал новия.`,
     formTitle: 'Стандартен формуляр за отказ',
     form:
       'До: Carbon Stealth VCC, ул. „Самуил“ 3, 2670 Бобов дол, България, info@carbonstealth.eu. С настоящото уведомявам, че се отказвам от договора за следната услуга: … / Поръчана на: … / Име: … / Адрес: … / Имейл на акаунта: … / Подпис (само на хартия) / Дата: …',
@@ -69,6 +76,8 @@ const STRINGS: Record<string, Strings> = {
     withdrawalTitle: 'Right of withdrawal',
     withdrawal:
       'If you are a consumer, you may withdraw from the contract within 14 days starting from the day after the payment, without giving any reason and at no cost. The plan starts immediately; if you withdraw in time, we refund the full amount, with no deduction for days used, no later than 14 days from receiving your notice, using the same means of payment. Send us a clear statement at info@carbonstealth.eu — you may use the form below, but you do not have to. Withdrawal removes only what this payment bought — the plan and period you had before it are restored.',
+    withdrawalImmediate: (d) =>
+      `If you are a consumer, you may withdraw from the contract within 14 days starting from the day after the payment, without giving any reason. At your express request (box ticked when ordering on ${d} UTC), the plan started immediately, before the withdrawal period ended. If you withdraw in time, you owe an amount proportionate to what was provided until you inform us of the withdrawal, compared with the full period of this payment (for "Founder" — compared with 365 days), and we refund the rest no later than 14 days from receiving your notice, using the same means of payment. Once the contract has been fully performed, the right of withdrawal no longer applies. Send us a clear statement at info@carbonstealth.eu or use the "Withdraw from the contract here" button in your dashboard — you may also use the form below, but you do not have to. Withdrawal removes only what this payment bought — the plan and period you had before it are restored; if you moved to a higher plan, the previous plan's period is extended by the time you used the new one.`,
     formTitle: 'Model withdrawal form',
     form:
       'To: Carbon Stealth VCC, 3 Samuil St, 2670 Bobov Dol, Bulgaria, info@carbonstealth.eu. I hereby give notice that I withdraw from my contract for the provision of the following service: … / Ordered on: … / Name: … / Address: … / Account email: … / Signature (only if on paper) / Date: …',
@@ -189,12 +198,20 @@ export function planConfirmationEmail(input: {
   termsUrl: string;
   /** Последният ден на срока за отказ и адресът на таблото (бутонът за отказ). */
   withdrawUntil?: Date;
+  /** Изричното искане за ранно начало (Б1) — тогава текстът за пропорционалното плащане. */
+  immediateStartAt?: Date | null;
   dashboardUrl?: string;
 }): { subject: string; html: string } {
   const s = STRINGS[input.locale] ?? STRINGS.en;
   const lang = STRINGS[input.locale] ? input.locale : 'en';
   const plan = PLAN_NAMES[input.plan] ?? input.plan;
   const rate = `${input.vatRateBp / 100}%`;
+  const immediate = s.withdrawalImmediate ?? STRINGS.en!.withdrawalImmediate!;
+  const withdrawalText = input.immediateStartAt
+    ? immediate(
+        new Intl.DateTimeFormat(lang, { dateStyle: 'long', timeStyle: 'short', timeZone: 'UTC' }).format(input.immediateStartAt),
+      )
+    : s.withdrawal;
   const until = input.paidUntil
     ? s.paidUntil(new Intl.DateTimeFormat(lang, { dateStyle: 'long', timeZone: 'UTC' }).format(input.paidUntil))
     : s.forever;
@@ -205,7 +222,7 @@ export function planConfirmationEmail(input: {
   <p style="line-height:1.7">${s.planLabel}: <strong>${plan}</strong><br>${s.periodLabel}: ${s.periods[input.interval] ?? esc(input.interval)}<br>${until}<br>${s.total(eur(input.amountCents), eur(input.vatCents), rate)}<br>${s.orderRef}: ${esc(input.orderRef)}</p>
   <p>${s.noAuto}</p>
   <h2 style="font-size:16px;margin-top:24px">${s.withdrawalTitle}</h2>
-  <p style="font-size:14px;line-height:1.6">${s.withdrawal}</p>
+  <p style="font-size:14px;line-height:1.6">${withdrawalText}</p>
   ${
     s.withdrawButton && input.withdrawUntil && input.dashboardUrl
       ? `<p style="font-size:14px;line-height:1.6">${s.withdrawButton(

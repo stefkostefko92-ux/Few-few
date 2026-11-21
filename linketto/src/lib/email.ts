@@ -96,7 +96,8 @@ const esc = (value: string) =>
 
 // ── Бюлетин (email capture): потвърждение + разпращане ────────────────
 interface NewsletterStrings {
-  confirmSubject: (who: string) => string;
+  /** Без името на профила (то е текст от създателя — Разбивача т. 5); името е само в тялото. */
+  confirmSubject: string;
   confirmIntro: (who: string) => string;
   confirmButton: string;
   confirmIgnore: string;
@@ -106,7 +107,7 @@ interface NewsletterStrings {
 
 const NEWSLETTER_STRINGS: Record<string, NewsletterStrings> = {
   bg: {
-    confirmSubject: (w) => `Потвърди абонамента за ${w}`,
+    confirmSubject: 'Linketto: потвърди абонамента си за бюлетина',
     confirmIntro: (w) => `Записа се за бюлетина на <strong>${w}</strong>. Потвърди имейла си:`,
     confirmButton: 'Потвърди абонамента',
     confirmIgnore: 'Ако не си ти, просто игнорирай този имейл — нищо няма да получиш.',
@@ -114,7 +115,7 @@ const NEWSLETTER_STRINGS: Record<string, NewsletterStrings> = {
     sentVia: 'Изпратено през Linketto',
   },
   en: {
-    confirmSubject: (w) => `Confirm your subscription to ${w}`,
+    confirmSubject: 'Linketto: confirm your newsletter subscription',
     confirmIntro: (w) => `You signed up for <strong>${w}</strong>'s newsletter. Please confirm your email:`,
     confirmButton: 'Confirm subscription',
     confirmIgnore: "If this wasn't you, just ignore this email — you won't receive anything.",
@@ -122,7 +123,7 @@ const NEWSLETTER_STRINGS: Record<string, NewsletterStrings> = {
     sentVia: 'Sent via Linketto',
   },
   it: {
-    confirmSubject: (w) => `Conferma l'iscrizione a ${w}`,
+    confirmSubject: "Linketto: conferma l'iscrizione alla newsletter",
     confirmIntro: (w) => `Ti sei iscritto alla newsletter di <strong>${w}</strong>. Conferma la tua email:`,
     confirmButton: "Conferma l'iscrizione",
     confirmIgnore: 'Se non sei stato tu, ignora questa email — non riceverai nulla.',
@@ -130,7 +131,7 @@ const NEWSLETTER_STRINGS: Record<string, NewsletterStrings> = {
     sentVia: 'Inviato tramite Linketto',
   },
   es: {
-    confirmSubject: (w) => `Confirma tu suscripción a ${w}`,
+    confirmSubject: 'Linketto: confirma tu suscripción al boletín',
     confirmIntro: (w) => `Te suscribiste al boletín de <strong>${w}</strong>. Confirma tu correo:`,
     confirmButton: 'Confirmar suscripción',
     confirmIgnore: 'Si no fuiste tú, ignora este correo — no recibirás nada.',
@@ -138,7 +139,7 @@ const NEWSLETTER_STRINGS: Record<string, NewsletterStrings> = {
     sentVia: 'Enviado a través de Linketto',
   },
   de: {
-    confirmSubject: (w) => `Bestätige dein Abo von ${w}`,
+    confirmSubject: 'Linketto: bestätige dein Newsletter-Abo',
     confirmIntro: (w) => `Du hast den Newsletter von <strong>${w}</strong> abonniert. Bitte bestätige deine E-Mail:`,
     confirmButton: 'Abo bestätigen',
     confirmIgnore: 'Falls du das nicht warst, ignoriere diese E-Mail — du erhältst nichts.',
@@ -146,7 +147,7 @@ const NEWSLETTER_STRINGS: Record<string, NewsletterStrings> = {
     sentVia: 'Gesendet über Linketto',
   },
   fr: {
-    confirmSubject: (w) => `Confirmez votre abonnement à ${w}`,
+    confirmSubject: 'Linketto : confirmez votre abonnement à la newsletter',
     confirmIntro: (w) => `Vous vous êtes inscrit à la newsletter de <strong>${w}</strong>. Confirmez votre e-mail :`,
     confirmButton: "Confirmer l'abonnement",
     confirmIgnore: "Si ce n'était pas vous, ignorez cet e-mail — vous ne recevrez rien.",
@@ -159,8 +160,8 @@ function newsletterStrings(locale?: string): NewsletterStrings {
   return NEWSLETTER_STRINGS[locale ?? 'bg'] ?? NEWSLETTER_STRINGS.en;
 }
 
-export function subscribeConfirmSubject(who: string, locale?: string): string {
-  return newsletterStrings(locale).confirmSubject(who);
+export function subscribeConfirmSubject(_who: string, locale?: string): string {
+  return newsletterStrings(locale).confirmSubject;
 }
 
 /** Имейл за двойно съгласие (GDPR) с линк за потвърждение. */

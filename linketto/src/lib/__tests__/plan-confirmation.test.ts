@@ -69,3 +69,23 @@ test('P14: ред с бутона „Откажете се от договора
   assert.match(html, /28 ноември 2026/);
   assert.ok(html.includes('https://l.example/bg/dashboard#plan'));
 });
+
+test('P14: при изрично искане за ранно начало — текстът за пропорционалното плащане (Б2)', () => {
+  const base = {
+    locale: 'bg',
+    name: 'Иван',
+    plan: 'PRO',
+    interval: 'monthly',
+    amountCents: 400,
+    vatCents: 67,
+    vatRateBp: 2000,
+    paidUntil: new Date('2026-04-01T00:00:00Z'),
+    orderRef: 'ord1',
+    termsUrl: 'https://example.com/bg/terms',
+  };
+  const withConsent = planConfirmationEmail({ ...base, immediateStartAt: new Date('2026-03-01T10:00:00Z') }).html;
+  assert.match(withConsent, /пропорционална/);
+  assert.match(withConsent, /изрично искане/);
+  assert.doesNotMatch(withConsent, /без да удържаме нищо/);
+  assert.match(planConfirmationEmail(base).html, /без да удържаме нищо/);
+});

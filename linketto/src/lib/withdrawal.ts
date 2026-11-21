@@ -53,6 +53,8 @@ interface Strings {
   orderedOn: string;
   receivedOn: string;
   next: string;
+  /** При удръжка (abuse-money-spec Б6) — правният текст на Правния Разбирач. Без превод → en. */
+  nextPartial?: (v: { refund: string; kept: string; start: string; received: string }) => string;
 }
 
 const STRINGS: Record<string, Strings> = {
@@ -65,6 +67,8 @@ const STRINGS: Record<string, Strings> = {
     orderedOn: 'Поръчан (платен) на',
     receivedOn: 'Изявлението е получено на',
     next: 'Връщаме цялата платена сума без неоправдано забавяне и не по-късно от 14 дни от получаването на отказа, по същия начин на плащане и без такси за теб. Отпада само платеното с тази поръчка — планът и срокът отпреди нея се възстановяват.',
+    nextPartial: (v) =>
+      `Връщаме ти ${v.refund} без неоправдано забавяне и не по-късно от 14 дни от получаването на отказа, по същия начин на плащане и без такси за теб. Удържаме ${v.kept} — пропорционалната сума за времето от ${v.start} до ${v.received}, през което планът по тази поръчка ти е бил предоставен по твое изрично искане. Отпада само платеното с тази поръчка — планът и срокът отпреди нея се възстановяват.`,
   },
   en: {
     subject: 'Linketto: acknowledgement of your withdrawal from the contract',
@@ -75,6 +79,8 @@ const STRINGS: Record<string, Strings> = {
     orderedOn: 'Ordered (paid) on',
     receivedOn: 'Statement received on',
     next: 'We refund the full amount paid without undue delay and no later than 14 days from receiving your withdrawal, using the same means of payment and at no cost to you. Only what this order bought is removed — the plan and period you had before it are restored.',
+    nextPartial: (v) =>
+      `We refund ${v.refund} to you without undue delay and no later than 14 days from receiving your withdrawal, using the same means of payment and at no cost to you. We keep ${v.kept} — the proportionate amount for the time from ${v.start} to ${v.received} during which the plan under this order was provided to you at your express request. Only what this order bought is removed — the plan and period you had before it are restored.`,
   },
   it: {
     subject: 'Linketto: conferma di ricevimento del recesso dal contratto',
@@ -131,6 +137,9 @@ export function withdrawalAckEmail(input: {
   orderRef: string;
   orderedAt: Date;
   requestedAt: Date;
+  /** Сметнатата при отказа сума за връщане (Б4); липсва/= платеното → пълно връщане. */
+  refundCents?: number | null;
+  usedSec?: number | null;
 }): { subject: string; html: string } {
   const lang = STRINGS[input.locale] ? input.locale : 'en';
   const s = STRINGS[lang];
@@ -138,6 +147,17 @@ export function withdrawalAckEmail(input: {
     new Intl.DateTimeFormat(lang, { dateStyle: 'long', timeStyle: 'short', timeZone: 'UTC' }).format(d) + ' UTC';
   const plan = PLAN_NAMES[input.plan] ?? esc(input.plan);
   const period = s.periods[input.interval] ?? esc(input.interval);
+  const eur = (cents: number) => `€${(cents / 100).toFixed(2)}`;
+  const partial = typeof input.refundCents === 'number' && input.refundCents < input.amountCents;
+  const nextPartial = s.nextPartial ?? STRINGS.en!.nextPartial!;
+  const nextText = partial
+    ? nextPartial({
+        refund: eur(input.refundCents as number),
+        kept: eur(input.amountCents - (input.refundCents as number)),
+        start: when(new Date(input.requestedAt.getTime() - (input.usedSec ?? 0) * 1000)),
+        received: when(input.requestedAt),
+      })
+    : s.next;
   const html = `<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0f172a">
   <h1 style="font-size:20px">Linketto</h1>
   <p>${s.intro}</p>
@@ -147,7 +167,7 @@ export function withdrawalAckEmail(input: {
     ${s.orderedOn}: ${when(input.orderedAt)}<br>
     ${s.receivedOn}: <strong>${when(input.requestedAt)}</strong>
   </blockquote>
-  <p style="font-size:14px;line-height:1.6">${s.next}</p>
+  <p style="font-size:14px;line-height:1.6">${nextText}</p>
   <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0">
   <p style="color:#64748b;font-size:12px">Carbon Stealth VCC · ЕИК/EIK 208725180 · info@carbonstealth.eu</p>
 </div>`;

@@ -198,6 +198,23 @@ export default async function AdminPage({
     },
   });
 
+  // Б9: удържаното при отказ (пропорционално) е продажба — в приходите и ДДС.
+  const retained = await prisma.planOrder.aggregate({
+    where: { state: 'refunded', refundCents: { not: null } },
+    _sum: { amountCents: true, refundCents: true, vatCents: true, refundVatCents: true },
+  });
+  const retainedCents = (retained._sum.amountCents ?? 0) - (retained._sum.refundCents ?? 0);
+  const retainedVatCents = (retained._sum.vatCents ?? 0) - (retained._sum.refundVatCents ?? 0);
+  // А5: задържаните реферални бонуси по потребител (още не са в баланса).
+  const heldByUser = new Map(
+    (
+      await prisma.referral.groupBy({
+        by: ['referrerId'],
+        where: { releasedAt: null, reversedAt: null, referrerId: { in: users.map((u) => u.id) } },
+        _sum: { rewardCents: true },
+      })
+    ).map((row) => [row.referrerId, row._sum.rewardCents ?? 0]),
+  );
   const nf = new Intl.NumberFormat(locale);
   const money = (cents: number) => `€${(cents / 100).toFixed(2)}`;
   const errorText: Record<string, string> = {
@@ -249,8 +266,8 @@ export default async function AdminPage({
     { value: nf.format(profileCount), label: t('statsProfiles'), glyph: <UserGlyph className="h-full w-full" /> },
     { value: nf.format(clickCount), label: t('statsClicks'), glyph: <TrendGlyph className="h-full w-full" /> },
     { value: nf.format(orderTotals._count._all), label: t('statsOrders'), glyph: <BagGlyph className="h-full w-full" /> },
-    { value: money(orderTotals._sum.amountCents ?? 0), label: t('statsRevenue'), glyph: <CardGlyph className="h-full w-full" />, featured: true },
-    { value: money(orderTotals._sum.vatCents ?? 0), label: t('statsVat'), glyph: <BarsGlyph className="h-full w-full" /> },
+    { value: money((orderTotals._sum.amountCents ?? 0) + retainedCents), label: t('statsRevenue'), glyph: <CardGlyph className="h-full w-full" />, featured: true },
+    { value: money((orderTotals._sum.vatCents ?? 0) + retainedVatCents), label: t('statsVat'), glyph: <BarsGlyph className="h-full w-full" /> },
   ];
 
   return (
@@ -554,9 +571,14 @@ export default async function AdminPage({
                           {t('planUntil', { date: user.planExpiresAt.toISOString().slice(0, 10) })}
                         </span>
                       )}
-                      {user.referralCreditCents > 0 && (
+                      {user.referralCreditCents !== 0 && (
                         <span>
                           {t('referralCredit')}: {money(user.referralCreditCents)}
+                        </span>
+                      )}
+                      {(heldByUser.get(user.id) ?? 0) > 0 && (
+                        <span>
+                          {t('referralHeld')}: {money(heldByUser.get(user.id) ?? 0)}
                         </span>
                       )}
                     </p>

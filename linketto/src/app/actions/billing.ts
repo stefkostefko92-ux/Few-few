@@ -41,8 +41,25 @@ async function crossBorderCents(from: Date, to: Date): Promise<number> {
       ],
     },
   });
-  return sum._sum.amountCents ?? 0;
+  // Б9: удържаното при отказ (пропорционално) също е трансгранична продажба.
+  const retained = await prisma.planOrder.aggregate({
+    _sum: { amountCents: true, refundCents: true },
+    where: {
+      state: 'refunded',
+      refundCents: { not: null },
+      completedAt: { gte: from, lt: to },
+      OR: [
+        { buyerCountry: { not: null, notIn: ['BG'] } },
+        { buyerCountry: null, cardCountry: { not: null, notIn: ['BG'] } },
+        { buyerCountry: null, cardCountry: null },
+      ],
+    },
+  });
+  return (sum._sum.amountCents ?? 0) + (retained._sum.amountCents ?? 0) - (retained._sum.refundCents ?? 0);
 }
+
+/** Версия на текста на отметката за ранно начало (за доказателство кой текст е приет). */
+const IMMEDIATE_START_TERMS = '2026-11-22';
 
 export async function startCheckoutAction(formData: FormData): Promise<void> {
   const rawLocale = String(formData.get('uiLocale') ?? 'en');
@@ -52,6 +69,9 @@ export async function startCheckoutAction(formData: FormData): Promise<void> {
 
   const want = String(formData.get('plan') ?? '');
   if (!isPaidPlan(want)) redirect(`/${uiLocale}/dashboard?error=generic`);
+  // abuse-money-spec Б1 (чл. 8(8) Дир. 2011/83): изричното искане за ранно начало —
+  // задължително (решение на собственика); проверката е на сървъра, не само в браузъра.
+  if (formData.get('immediateStart') !== '1') redirect(`/${uiLocale}/dashboard?error=consent#plan`);
   const rawInterval = String(formData.get('interval') ?? 'monthly');
   const interval: BillingIntervalId = BILLING_INTERVALS.some((i) => i.id === rawInterval)
     ? (rawInterval as BillingIntervalId)
@@ -93,6 +113,8 @@ export async function startCheckoutAction(formData: FormData): Promise<void> {
       vatCents: vat.vatCents,
       netCents: vat.netCents,
       vatCountry: vat.country,
+      immediateStartAt: now,
+      immediateStartTerms: IMMEDIATE_START_TERMS,
     },
   });
   let checkoutUrl: string;

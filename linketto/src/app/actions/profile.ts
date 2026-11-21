@@ -10,9 +10,9 @@ import { getSessionUser } from '@/lib/auth';
 import { isValidSlug, normalizeSlug } from '@/lib/slug';
 import { isLocale, LOCALES } from '@/i18n/locales';
 import { planFor } from '@/lib/plans';
-import { parseBlockInput, pollVotesStillValid, type BlockMeta } from '@/lib/blocks';
+import { MAX_BLOCKS_PER_PROFILE, parseBlockInput, pollVotesStillValid, type BlockMeta } from '@/lib/blocks';
 import { parseStyle, styleInput, styleSchema } from '@/lib/style';
-import { saveUploadedImage } from '@/lib/media';
+import { removeUnusedMedia, saveUploadedImage } from '@/lib/media';
 import { applyTemplate, isTemplateId, NICHE_TEMPLATES } from '@/lib/templates';
 import { domainChange, domainTxtName, txtMatches } from '@/lib/domain-verify';
 import { rateLimit } from '@/lib/rate-limit';
@@ -207,11 +207,16 @@ export async function updateStyleAction(formData: FormData): Promise<void> {
   if (parsed.data.hideBadge && !planFor(user.plan).hideBadge) {
     redirect(await dash(uiLocale, '?error=limit'));
   }
+  const before = await prisma.profile.findFirst({ where: { id: profileId, userId: user.id }, select: { style: true } });
   const { count } = await prisma.profile.updateMany({
     where: { id: profileId, userId: user.id },
     data: { style: parsed.data },
   });
   if (count === 0) redirect(await dash(uiLocale, '?error=generic'));
+  // Махнат или сменен аватар/фон → старият наш файл се трие, ако никъде не се ползва.
+  const old = parseStyle(before?.style);
+  if (old.avatarUrl !== parsed.data.avatarUrl) await removeUnusedMedia(old.avatarUrl);
+  if (old.bgImageUrl !== parsed.data.bgImageUrl) await removeUnusedMedia(old.bgImageUrl);
   redirect(await dash(uiLocale));
 }
 
@@ -245,6 +250,8 @@ export async function uploadImageAction(formData: FormData): Promise<void> {
     where: { id: profile.id },
     data: { style: nextStyle },
   });
+  // Старият файл (ако е наш и вече никъде не се ползва) — изтрит.
+  await removeUnusedMedia(kind === 'bg' ? style.bgImageUrl : style.avatarUrl);
   redirect(await dash(uiLocale));
 }
 
@@ -318,6 +325,7 @@ export async function addLinkAction(formData: FormData): Promise<void> {
     include: { _count: { select: { links: true } } },
   });
   if (!profile) redirect(await dash(uiLocale, '?error=generic'));
+  if (profile._count.links >= MAX_BLOCKS_PER_PROFILE) redirect(await dash(uiLocale, '?error=blocksLimit'));
   await prisma.link.create({
     data: {
       profileId,

@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
 import { isLocale } from '@/i18n/locales';
 import { canWithdraw } from '@/lib/withdrawal';
+import { withdrawalRefund } from '@/lib/withdrawal-refund';
 import { sendWithdrawalAck } from '@/lib/withdrawal-service';
 import { notifyAdmins } from '@/lib/admin-alert';
 import { requestPlanRefund } from '@/lib/plan-order-service';
@@ -43,6 +44,20 @@ export async function withdrawPlanAction(formData: FormData): Promise<void> {
     redirect(`/${uiLocale}/dashboard?error=withdraw#plan`);
   }
 
+  // Сумата за връщане (пропорционално — abuse-money-spec Б3) се смята ВЕДНЪЖ, тук, и се
+  // пази заедно с изявлението: същата е при всеки повтор към Revolut и при ръчно връщане.
+  const refund = withdrawalRefund({
+    amountCents: order.amountCents,
+    vatCents: order.vatCents,
+    plan: order.plan,
+    interval: order.interval,
+    prevPlan: order.prevPlan,
+    prevExpiresAt: order.prevExpiresAt,
+    completedAt: order.completedAt ?? now,
+    requestedAt: now,
+    immediateStartAt: order.immediateStartAt,
+    applied: order.applied,
+  });
   // Изявлението — веднъж (повторен клик/таб не записва второ).
   const { count } = await prisma.planOrder.updateMany({
     where: {
@@ -51,7 +66,13 @@ export async function withdrawPlanAction(formData: FormData): Promise<void> {
       state: { in: ['completed', 'conflict'] },
       withdrawalRequestedAt: null,
     },
-    data: { withdrawalRequestedAt: now, withdrawalName: name.data },
+    data: {
+      withdrawalRequestedAt: now,
+      withdrawalName: name.data,
+      refundCents: refund.refundCents,
+      refundVatCents: refund.refundVatCents,
+      withdrawalUsedSec: refund.usedSec,
+    },
   });
   if (count !== 1) redirect(`/${uiLocale}/dashboard?withdrawn=1#plan`);
 
@@ -65,13 +86,19 @@ export async function withdrawPlanAction(formData: FormData): Promise<void> {
   } catch (error) {
     outcome = `грешка: ${error instanceof Error ? error.message : 'unknown'}`;
   }
+  // Б7: повторни откази — само аларма; правото не се ограничава.
+  const recent = await prisma.planOrder.count({
+    where: { userId: user.id, withdrawalRequestedAt: { gte: new Date(now.getTime() - 90 * 24 * 60 * 60_000) } },
+  });
   await notifyAdmins(
     outcome === 'requested' || outcome === 'refunded'
       ? 'Отказ от договор — връщането е пуснато'
       : 'Отказ от договор — НУЖНО Е РЪЧНО ВРЪЩАНЕ',
     [
       `Поръчка: ${order.id} (${order.plan}, ${order.interval}, €${(order.amountCents / 100).toFixed(2)})`,
+      `За връщане: €${(refund.refundCents / 100).toFixed(2)} (удръжка за предоставеното: €${((order.amountCents - refund.refundCents) / 100).toFixed(2)})`,
       `Изявление: ${now.toISOString()}`,
+      ...(recent >= 2 ? [`ПОВТОРЕН ОТКАЗ: ${recent} отказа от този акаунт за 90 дни.`] : []),
       `Връщане: ${outcome}${outcome === 'newer-first' ? ' — има по-нова приложена поръчка; върни по-новата или реши ръчно' : ''}`,
       `Потвърждение до потребителя: ${ackSent ? 'изпратено' : 'НЕ Е ИЗПРАТЕНО — cron-ът ще опита пак; провери Brevo'}`,
       'Срок за връщане: 14 дни от получаването на изявлението.',

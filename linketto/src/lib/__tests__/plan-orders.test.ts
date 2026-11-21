@@ -102,3 +102,21 @@ test('checkPurchase: безсрочен подарък блокира същия
   assert.equal(checkPurchase({ plan: 'PRO', expiresAt: null, want: 'FOUNDER', now: NOW }), 'ok');
   assert.equal(checkPurchase({ plan: 'FREE', expiresAt: null, want: 'PRO', now: NOW }), 'ok');
 });
+
+test('planAfterRefund: отказ от по-висок план — старият срок се удължава с ползваното време', () => {
+  const now = new Date('2026-03-06T00:00:00Z');
+  const prev = new Date('2026-04-01T00:00:00Z');
+  const fiveDays = 5 * 24 * 60 * 60 * 1000;
+  assert.deepEqual(planAfterRefund({ prevPlan: 'PRO', prevExpiresAt: prev, now, extendMs: fiveDays }), {
+    plan: 'PRO',
+    expiresAt: new Date(prev.getTime() + fiveDays),
+  });
+  // Изтекъл стар срок, който удължаването връща в бъдещето → пак активен.
+  const justExpired = new Date('2026-03-04T00:00:00Z');
+  assert.deepEqual(planAfterRefund({ prevPlan: 'PRO', prevExpiresAt: justExpired, now, extendMs: fiveDays }), {
+    plan: 'PRO',
+    expiresAt: new Date(justExpired.getTime() + fiveDays),
+  });
+  // FREE/FOUNDER/без срок — удължаването не ги пипа.
+  assert.deepEqual(planAfterRefund({ prevPlan: 'FREE', prevExpiresAt: null, now, extendMs: fiveDays }), { plan: 'FREE', expiresAt: null });
+});

@@ -6,10 +6,10 @@ import { dash } from '@/lib/dashboard-url';
 import { prisma } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
 import { isLocale } from '@/i18n/locales';
-import { parseBlockInput } from '@/lib/blocks';
+import { MAX_BLOCKS_PER_PROFILE, parseBlockInput } from '@/lib/blocks';
 import { fetchCapped } from '@/lib/safe-fetch';
 import { linktreeUsername, parseLinktreeHtml } from '@/lib/linktree-import';
-import { saveUploadedImage } from '@/lib/media';
+import { removeUnusedMedia, saveUploadedImage } from '@/lib/media';
 import { rateLimit } from '@/lib/rate-limit';
 import { parseStyle } from '@/lib/style';
 
@@ -53,8 +53,10 @@ export async function importLinktreeAction(formData: FormData): Promise<void> {
     redirect(await dash(uiLocale, '?error=import'));
   }
 
-  // Всеки блок минава през същата валидация като ръчно добавения.
-  const blocks = parsed.blocks.flatMap((block) => {
+  // Всеки блок минава през същата валидация като ръчно добавения; общо ≤ таванa.
+  const room = Math.max(0, MAX_BLOCKS_PER_PROFILE - profile._count.links);
+  if (room === 0) redirect(await dash(uiLocale, '?error=blocksLimit'));
+  const blocks = parsed.blocks.slice(0, room).flatMap((block) => {
     const input = parseBlockInput({
       kind: block.kind,
       url: block.kind === 'LINK' ? block.url : '',
@@ -115,6 +117,7 @@ export async function importLinktreeAction(formData: FormData): Promise<void> {
           where: { id: profile.id },
           data: { style: { ...style, avatarUrl: saved } },
         });
+        await removeUnusedMedia(style.avatarUrl);
       }
     }
   }

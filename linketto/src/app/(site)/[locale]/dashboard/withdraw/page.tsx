@@ -11,6 +11,7 @@ import { planFor } from '@/lib/plans';
 import { type Locale } from '@/i18n/locales';
 import { getSessionUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { withdrawalRefund } from '@/lib/withdrawal-refund';
 import { canWithdraw, withdrawalLastDay } from '@/lib/withdrawal';
 import { withdrawPlanAction } from '@/app/actions/withdrawal';
 import { ChevronLeftIcon } from '@/components/icons';
@@ -49,6 +50,22 @@ export default async function WithdrawPage({
       now,
     });
   const fmt = (d: Date) => new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(d);
+  // Б6: сумата за връщане, ако отказът е подаден СЕГА (окончателната се смята при потвърждението).
+  const preview =
+    order && allowed
+      ? withdrawalRefund({
+          amountCents: order.amountCents,
+          vatCents: order.vatCents,
+          plan: order.plan,
+          interval: order.interval,
+          prevPlan: order.prevPlan,
+          prevExpiresAt: order.prevExpiresAt,
+          completedAt: order.completedAt ?? now,
+          requestedAt: now,
+          immediateStartAt: order.immediateStartAt,
+          applied: order.applied,
+        })
+      : null;
 
   const profileList = await prisma.profile.findMany({
     where: { userId: user.id },
@@ -102,6 +119,19 @@ export default async function WithdrawPage({
                 <dd className="break-all text-fg">{user.email}</dd>
                 <dt className="font-medium text-fg-muted">{t('withdrawUntil')}</dt>
                 <dd className="text-fg">{fmt(withdrawalLastDay(order.completedAt as Date))}</dd>
+                {preview && (
+                  <>
+                    <dt className="font-medium text-fg-muted">{t('withdrawRefundAmount')}</dt>
+                    <dd className="font-semibold text-fg">
+                      €{(preview.refundCents / 100).toFixed(2)}
+                      {preview.refundCents < order.amountCents && (
+                        <span className="block text-micro font-normal text-fg-muted">
+                          {t('withdrawKeptNote', { kept: `€${((order.amountCents - preview.refundCents) / 100).toFixed(2)}` })}
+                        </span>
+                      )}
+                    </dd>
+                  </>
+                )}
               </dl>
               <Field id="withdraw-name" label={t('withdrawName')}>
                 <Input

@@ -18,6 +18,9 @@ function localeFrom(formData: FormData): string {
   return isLocale(raw) ? raw : 'en';
 }
 
+/** Таван на кратките линкове на профил (Разбивача т. 6). */
+const MAX_SHORT_LINKS_PER_PROFILE = 100;
+
 const targetSchema = z
   .string()
   .trim()
@@ -35,11 +38,15 @@ export async function addShortLinkAction(formData: FormData): Promise<void> {
     redirect(await dash(uiLocale, '?error=shortlink'));
   }
 
+  // Разбивача т. 6: пренасочване от нашия домейн към произволен адрес — само от
+  // акаунт с потвърден имейл (не от еднократни фишинг акаунти), с таван на профил.
+  if (!user.emailVerifiedAt) redirect(await dash(uiLocale, '?error=shortlinkVerify'));
   const profile = await prisma.profile.findFirst({
     where: { id: profileId, userId: user.id },
-    select: { id: true },
+    select: { id: true, _count: { select: { shortLinks: true } } },
   });
   if (!profile) redirect(await dash(uiLocale, '?error=generic'));
+  if (profile._count.shortLinks >= MAX_SHORT_LINKS_PER_PROFILE) redirect(await dash(uiLocale, '?error=shortlinkLimit'));
 
   // Код: желан от потребителя или автоматично генериран (уникален).
   const wanted = normalizeShortCode(String(formData.get('code') ?? ''));

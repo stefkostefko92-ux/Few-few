@@ -30,4 +30,5 @@ export const {
   recordDispute,
   resendDisputeAlerts,
   alertStuckRefunds,
+  releaseReferralBonuses,
 } = service;

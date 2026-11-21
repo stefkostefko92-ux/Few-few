@@ -1,8 +1,9 @@
 import 'server-only';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { randomBytes } from 'node:crypto';
-import sharp from 'sharp';
+import { prisma } from '@/lib/db';
+import { mediaFileName, processImage } from '@/lib/image-process';
 
 // Качени изображения (фон/аватар): валидираме, преоразмеряваме и
 // презаписваме в webp през sharp — това маха EXIF метаданните (GDPR)
@@ -22,25 +23,25 @@ export async function saveUploadedImage(
   if (!ALLOWED_TYPES.has(file.type) || file.size > MAX_UPLOAD_BYTES) {
     return null;
   }
-  const buffer = Buffer.from(await file.arrayBuffer());
-  let processed: Buffer;
-  try {
-    const pipeline = sharp(buffer, { failOn: 'error' }).rotate();
-    processed =
-      kind === 'bg'
-        ? await pipeline
-            .resize(1920, 1920, { fit: 'inside', withoutEnlargement: true })
-            .webp({ quality: 82 })
-            .toBuffer()
-        : await pipeline
-            .resize(512, 512, { fit: 'cover' })
-            .webp({ quality: 85 })
-            .toBuffer();
-  } catch {
-    return null; // не е валидно изображение
-  }
+  // Размерите — от заглавката, преди декодиране; ≤2 обработки наведнъж (lib/image-process.ts).
+  const result = await processImage(Buffer.from(await file.arrayBuffer()), kind);
+  if (!result.ok) return null; // твърде голямо или не е валидно изображение
   const name = `${kind}-${randomBytes(12).toString('hex')}.webp`;
   await mkdir(uploadsDir(), { recursive: true });
-  await writeFile(path.join(uploadsDir(), name), processed);
+  await writeFile(path.join(uploadsDir(), name), result.buffer);
   return `/media/${name}`;
+}
+
+/**
+ * Изтрива НАШ качен файл, който вече не се ползва (abuse-money-spec В2): иначе
+ * всяка смяна на аватар/фон оставя стария публично достъпен завинаги (и диска
+ * се пълни). Само имена от наш формат; само ако никой профил не го сочи.
+ */
+export async function removeUnusedMedia(url: string | null | undefined): Promise<void> {
+  const name = mediaFileName(url);
+  if (!name) return;
+  const rows = await prisma.$queryRaw<{ n: bigint }[]>`
+    SELECT count(*)::bigint AS n FROM "Profile" WHERE "style"::text LIKE ${'%' + name + '%'}`;
+  if (Number(rows[0]?.n ?? 0) > 0) return;
+  await unlink(path.join(uploadsDir(), name)).catch(() => undefined);
 }

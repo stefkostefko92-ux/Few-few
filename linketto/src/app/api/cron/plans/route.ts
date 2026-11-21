@@ -8,6 +8,7 @@ import { expiryAction } from '@/lib/plan-orders';
 import { planReminderEmail } from '@/lib/plan-reminder';
 import {
   alertStuckRefunds,
+  releaseReferralBonuses,
   resendDisputeAlerts,
   sendPlanConfirmation,
   settlePlanOrder,
@@ -52,6 +53,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     downgraded: 0,
     reminded: 0,
     disputeAlerts: 0,
+    referralsReleased: 0,
     errors: 0,
   };
 
@@ -100,6 +102,15 @@ export async function POST(request: Request): Promise<NextResponse> {
     report.stuckRefundAlerts = await alertStuckRefunds(now);
   } catch {
     report.errors += 1;
+  }
+
+  // (1б‴) Реферални бонуси: задържаните по чисти поръчки след 30 дни → в баланса (abuse-money-spec А2).
+  if (await revolutReady()) {
+    try {
+      report.referralsReleased = (await releaseReferralBonuses(now)).released;
+    } catch {
+      report.errors += 1;
+    }
   }
 
   // (1б′) Алармите за спорове, които не са тръгнали (Brevo/ADMIN_EMAILS) — до успех.

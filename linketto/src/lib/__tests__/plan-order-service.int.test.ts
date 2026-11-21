@@ -215,13 +215,15 @@ test('I4b: две поръчки, уредени едновременно → и
   assert.ok(days > 58 && days < 63, `≈2 месеца, получено ${days}`);
 });
 
-test('I5: бонус веднъж; връщането сторнира бонуса и връща предишния план и срок', { skip }, async () => {
+test('I5: бонус веднъж (задържан); връщането го сторнира и връща предишния план и срок', { skip }, async () => {
   const referrer = await mkUser();
   const before = new Date(Date.now() + 10 * DAY);
   const user = await mkUser({ plan: 'PRO', planExpiresAt: before, referredById: referrer.id });
   const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
   assert.equal(await service.settlePlanOrder({ id: order.id }), 'completed');
-  assert.equal((await userOf(referrer.id)).referralCreditCents, 60);
+  // abuse-money-spec А1: бонусът е задържан — не е в баланса до срока за отказ/спор.
+  assert.equal((await userOf(referrer.id)).referralCreditCents, 0);
+  assert.equal((await db.referral.findUniqueOrThrow({ where: { planOrderId: order.id } })).releasedAt, null);
   assert.ok(((await userOf(user.id)).planExpiresAt as Date).getTime() > before.getTime() + 27 * DAY);
 
   assert.equal(await service.requestPlanRefund(order.id), 'requested');
@@ -368,7 +370,9 @@ test('F1d: асинхронен отказ — refund поръчката в proc
   assert.equal(back.state, 'completed');
   assert.equal(back.refundOrderId, null);
   assert.equal((await userOf(user.id)).plan, 'PRO');
-  assert.equal((await userOf(referrer.id)).referralCreditCents, 60);
+  // Бонусът е задържан (А1) и НЕ е сторниран — парите не са върнати.
+  assert.equal((await userOf(referrer.id)).referralCreditCents, 0);
+  assert.equal((await db.referral.findUniqueOrThrow({ where: { planOrderId: a.id } })).reversedAt, null);
   assert.ok(alerts.some((s) => /неуспешно/.test(s)));
   assert.ok(alertLines.flat().some((line) => /suspected_fraud/.test(line)), 'причината за отказа е в алармата');
   // Повторно събитие за същия refund — нищо.
@@ -408,7 +412,7 @@ const disputeFor = (revolutOrderId: string, state: string, extra: Record<string,
   ...extra,
 });
 
-test('F2a: спор по платена поръчка → одит, аларма със срока; планът и бонусът остават', { skip }, async () => {
+test('F2a: спор по платена поръчка → одит, аларма със срока; планът остава, бонусът се сторнира (А4)', { skip }, async () => {
   const referrer = await mkUser();
   const user = await mkUser({ referredById: referrer.id });
   const a = await mkOrder(user.id, 'PRO', 'monthly', 400);
@@ -429,10 +433,13 @@ test('F2a: спор по платена поръчка → одит, аларм�
   const lines = alertLines[0].join('\n');
   assert.match(lines, /2026-12-02/);
   assert.match(lines, new RegExp(a.id));
-  // Нищо автоматично.
+  // Планът и поръчката — нищо автоматично; задържаният бонус е сторниран (А4), без пипане на баланса.
   assert.equal((await userOf(user.id)).plan, 'PRO');
   assert.equal((await reload(a.id)).state, 'completed');
-  assert.equal((await userOf(referrer.id)).referralCreditCents, 60);
+  assert.equal((await userOf(referrer.id)).referralCreditCents, 0);
+  const reversed = await db.referral.findUniqueOrThrow({ where: { planOrderId: a.id } });
+  assert.ok(reversed.reversedAt);
+  assert.equal(reversed.reversalReason, 'dispute');
   assert.deepEqual(limited, []);
 
   // Повторно известие за същото състояние (ретрай) — без нов ред и без нова аларма.
@@ -447,7 +454,7 @@ test('F2a: спор по платена поръчка → одит, аларм�
   assert.equal(alerts.length, 2);
   assert.equal((await userOf(user.id)).plan, 'PRO');
   assert.equal((await reload(a.id)).state, 'completed');
-  assert.equal((await userOf(referrer.id)).referralCreditCents, 60);
+  assert.equal((await userOf(referrer.id)).referralCreditCents, 0);
 });
 
 test('F2b: две известия за едно състояние едновременно → един ред, една аларма', { skip }, async () => {
@@ -678,4 +685,114 @@ test('L2: заседнал refund_pending без refund id, по-стар от 1
   assert.equal(await service.requestPlanRefund(a.id), 'requested');
   assert.equal(await service.alertStuckRefunds(later), 0, 'с refund id не е заседнал');
   assert.equal(alerts.length, sentAlerts);
+});
+
+// ── abuse-money-spec А/Б: задържане на бонуса и пропорционално връщане ──────────
+
+async function backdate(orderId: string, days: number) {
+  const order = await reload(orderId);
+  const shift = (d: Date | null) => (d ? new Date(d.getTime() - days * DAY) : d);
+  await db.planOrder.update({ where: { id: orderId }, data: { completedAt: shift(order.completedAt) } });
+  await db.referral.updateMany({ where: { planOrderId: orderId }, data: { createdAt: new Date(Date.now() - days * DAY) } });
+}
+
+test('A2: бонусът се освобождава след 30 дни по чиста поръчка — веднъж', { skip }, async () => {
+  const referrer = await mkUser();
+  const user = await mkUser({ referredById: referrer.id });
+  const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: order.id });
+  assert.equal((await service.releaseReferralBonuses()).released, 0, 'преди срока — задържан');
+  await backdate(order.id, 31);
+  assert.equal((await service.releaseReferralBonuses()).released, 1);
+  assert.equal((await userOf(referrer.id)).referralCreditCents, 60);
+  assert.equal((await service.releaseReferralBonuses()).released, 0, 'повторно — нищо');
+  assert.equal((await userOf(referrer.id)).referralCreditCents, 60);
+});
+
+test('A7: освободен бонус → връщането го сторнира с decrement; задържан → без пипане на баланса', { skip }, async () => {
+  const referrer = await mkUser();
+  const user = await mkUser({ referredById: referrer.id });
+  const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: order.id });
+  await backdate(order.id, 31);
+  await service.releaseReferralBonuses();
+  refundImmediate = 'completed';
+  assert.equal(await service.requestPlanRefund(order.id), 'refunded');
+  assert.equal((await userOf(referrer.id)).referralCreditCents, 0);
+  const referral = await db.referral.findUniqueOrThrow({ where: { planOrderId: order.id } });
+  assert.ok(referral.reversedAt && referral.releasedAt);
+});
+
+test('A8: при Revolut поръчката има върната сума → бонусът остава задържан, аларма', { skip }, async () => {
+  const referrer = await mkUser();
+  const user = await mkUser({ referredById: referrer.id });
+  const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: order.id });
+  await backdate(order.id, 31);
+  live.set(order.revolutOrderId as string, { ...paid(400), refunded_amount: 400 });
+  assert.equal((await service.releaseReferralBonuses()).released, 0);
+  assert.equal((await userOf(referrer.id)).referralCreditCents, 0);
+  assert.ok(alerts.some((s) => /бонус не е освободен/.test(s)));
+});
+
+test('Б4: частично връщане — към Revolut отива сметнатата сума, с референция; повторът е със същата', { skip }, async () => {
+  const user = await mkUser();
+  const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: order.id });
+  await db.planOrder.update({ where: { id: order.id }, data: { refundCents: 271, withdrawalRequestedAt: new Date() } });
+  refundResponse = () => {
+    throw Object.assign(new Error('revolut POST: 503'), { status: 503 });
+  };
+  assert.equal(await service.requestPlanRefund(order.id), 'stuck');
+  refundResponse = null;
+  assert.equal(await service.requestPlanRefund(order.id), 'requested');
+  assert.equal(refunds.length, 2);
+  assert.deepEqual(refunds.map((r) => r.amountCents), [271, 271]);
+  assert.equal(refunds[0].idempotencyKey, refunds[1].idempotencyKey);
+  assert.equal((refunds[0] as { reference?: string }).reference, `${order.id}-r1`);
+});
+
+test('Б4: удръжка = цялата сума (refundCents 0) → без заявка към Revolut, договорът приключва', { skip }, async () => {
+  const user = await mkUser();
+  const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: order.id });
+  await db.planOrder.update({ where: { id: order.id }, data: { refundCents: 0, withdrawalRequestedAt: new Date() } });
+  assert.equal(await service.requestPlanRefund(order.id), 'refunded');
+  assert.equal(refunds.length, 0);
+  assert.equal((await reload(order.id)).state, 'refunded');
+});
+
+test('Б4: refund поръчка с друга сума → не се приключва, аларма', { skip }, async () => {
+  const user = await mkUser();
+  const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: order.id });
+  await db.planOrder.update({ where: { id: order.id }, data: { refundCents: 271, withdrawalRequestedAt: new Date() } });
+  assert.equal(await service.requestPlanRefund(order.id), 'requested');
+  const pending = await reload(order.id);
+  live.set(pending.refundOrderId as string, { type: 'refund', state: 'completed', amount: 400, currency: 'EUR' });
+  assert.equal(await service.settlePlanRefund({ refundOrderId: pending.refundOrderId as string }), 'pending');
+  assert.equal((await reload(order.id)).state, 'refund_pending');
+  assert.ok(alerts.some((s) => /различна сума/.test(s)));
+  live.set(pending.refundOrderId as string, { type: 'refund', state: 'completed', amount: 271, currency: 'EUR' });
+  assert.equal(await service.settlePlanRefund({ refundOrderId: pending.refundOrderId as string }), 'refunded');
+});
+
+test('Б5: отказ от по-висок план → старият срок се удължава с ползваното време', { skip }, async () => {
+  const before = new Date(Date.now() + 20 * DAY);
+  const user = await mkUser({ plan: 'PRO', planExpiresAt: before });
+  const order = await mkOrder(user.id, 'BUSINESS', 'monthly', 900);
+  await service.settlePlanOrder({ id: order.id });
+  const fiveDays = 5 * 86_400;
+  await db.planOrder.update({
+    where: { id: order.id },
+    data: { withdrawalRequestedAt: new Date(), withdrawalUsedSec: fiveDays, refundCents: 755 },
+  });
+  refundImmediate = 'completed';
+  live.clear();
+  refundResponse = (id) => ({ id, state: 'completed', type: 'refund', amount: 755, currency: 'EUR' });
+  assert.equal(await service.requestPlanRefund(order.id), 'refunded');
+  refundResponse = null;
+  const u = await userOf(user.id);
+  assert.equal(u.plan, 'PRO');
+  assert.equal((u.planExpiresAt as Date).getTime(), before.getTime() + fiveDays * 1000);
 });

@@ -58,6 +58,7 @@ import {
 import {
   canWithdraw,
   payoutProgressPercent,
+  REFERRAL_HOLD_DAYS,
   REFERRAL_MIN_PAYOUT_CENTS,
   REFERRAL_PERCENT,
 } from '@/lib/referral';
@@ -105,12 +106,17 @@ const DASHBOARD_ERRORS: Record<string, string> = {
   upload: 'errorUpload',
   payout: 'errorPayout',
   broadcast: 'errorBroadcast',
+  broadcastLimit: 'errorBroadcastLimit',
+  shortlinkVerify: 'errorShortlinkVerify',
+  shortlinkLimit: 'errorShortlinkLimit',
+  blocksLimit: 'errorBlocksLimit',
   shortlink: 'errorShortlink',
   profiles: 'errorProfiles',
   payments: 'errorPayments',
   withdraw: 'errorWithdraw',
   domainVerify: 'errorDomainVerify',
   plan: 'errorPlan',
+  consent: 'errorConsent',
   import: 'errorImport',
 };
 
@@ -275,10 +281,20 @@ export default async function DashboardPage({
       ])
     : [0, 0];
   // Реферална програма: брой поканени регистрации и успешни (платили) реферали.
-  const [referredSignups, successfulReferrals] = await Promise.all([
+  const [referredSignups, successfulReferrals, heldReferrals] = await Promise.all([
     prisma.user.count({ where: { referredById: user.id } }),
     prisma.referral.count({ where: { referrerId: user.id } }),
+    // Задържаните бонуси (abuse-money-spec А5) — влизат в баланса след срока за отказ/спор.
+    prisma.referral.aggregate({
+      where: { referrerId: user.id, releasedAt: null, reversedAt: null },
+      _sum: { rewardCents: true },
+      _min: { createdAt: true },
+    }),
   ]);
+  const heldCents = heldReferrals._sum.rewardCents ?? 0;
+  const nextRelease = heldReferrals._min.createdAt
+    ? new Date(heldReferrals._min.createdAt.getTime() + (REFERRAL_HOLD_DAYS + 1) * 24 * 60 * 60_000)
+    : null;
   // Функцията за отказ (чл. 11а Дир. 2011/83): платените поръчки от последните
   // 15 дни — допустимите показват „Откажете се от договора тук“, а подадените —
   // кога е получено изявлението.
@@ -2207,6 +2223,14 @@ export default async function DashboardPage({
                       credit: t('referralCredit'),
                     }}
                   />
+                  {heldCents > 0 && nextRelease && (
+                    <p className="mt-2 text-xs text-fg-muted">
+                      {t('referralHeld', {
+                        held: `€${(heldCents / 100).toFixed(2)}`,
+                        date: new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone: 'UTC' }).format(nextRelease),
+                      })}
+                    </p>
+                  )}
                   {/* Теглене при достигнат праг */}
                   {canWithdraw(user.referralCreditCents) && (
                     <form
@@ -2358,6 +2382,10 @@ export default async function DashboardPage({
                             })}
                           </select>
                         </label>
+                        <label className="flex w-full items-start gap-2 text-xs leading-relaxed text-fg-2">
+                          <input type="checkbox" name="immediateStart" value="1" required className="mt-0.5 shrink-0" />
+                          <span>{t('immediateStartConsent')}</span>
+                        </label>
                         <button
                           type="submit"
                           className={buttonStyles()}
@@ -2376,6 +2404,10 @@ export default async function DashboardPage({
                   >
                     <input type="hidden" name="uiLocale" value={locale} />
                     <input type="hidden" name="plan" value="FOUNDER" />
+                    <label className="flex w-full items-start gap-2 text-xs leading-relaxed text-fg-2">
+                      <input type="checkbox" name="immediateStart" value="1" required className="mt-0.5 shrink-0" />
+                      <span>{t('immediateStartConsent')}</span>
+                    </label>
                     <button
                       type="submit"
                       className={buttonStyles({ variant: 'secondary' })}

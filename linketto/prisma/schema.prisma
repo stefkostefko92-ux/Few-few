@@ -87,6 +87,7 @@ model Referral {
   // Плащането, породило наградата (сторно при refund/спор, billing-sync).
   stripePaymentIntentId String?   @unique
   planOrderId           String?   @unique // Revolut: поръчката, породила наградата (сторно при refund)
+  releasedAt            DateTime? // задържан до тук (abuse-money-spec А); null = задържан
   reversedAt            DateTime?
   reversalReason        String? // refund | dispute
   clawbackPayoutId      String? // одитна следа: ReferralPayout, в който е влязла наградата (без релация)
@@ -188,6 +189,7 @@ model Profile {
   accent           String? // hex цвят, валидиран в кода
   style            Json? // стилов енджин (src/lib/style.ts) — фон, шрифт, бутони, layout…
   bannedAt         DateTime? // модерация: баннат = невидим публично (без публичен банер)
+  lastBroadcastAt  DateTime? // последна рассылка на бюлетина (≤1 за 24 ч — abuse-money-spec Г1)
   // DSA чл. 17: изложение на мотивите — категория (lib/report.ts) и обосновка;
   // пращат се на собственика при бана.
   bannedCategory   String?
@@ -612,6 +614,13 @@ model PlanOrder {
   withdrawalName        String?
   // Потвърждението на получаването (траен носител) е изпратено — иначе cron-ът опитва пак.
   withdrawalAckSentAt   DateTime?
+  // Пропорционално плащане при отказ (abuse-money-spec Б): изричното искане за ранно
+  // начало (отметката при поръчката) и сумата за връщане — сметната веднъж при отказа.
+  immediateStartAt      DateTime?
+  immediateStartTerms   String? // версия на текста на отметката
+  refundCents           Int? // за връщане (null = пълната сума)
+  refundVatCents        Int?
+  withdrawalUsedSec     Int? // предоставеното време по поръчката до отказа
   // Опит за връщане (Idempotency-Key = `<id>-<опит>`: повторен клик в същия
   // опит не връща два пъти, а нов опит след неуспешен refund не взима стария отговор).
   refundAttempts        Int              @default(0)
