@@ -9,6 +9,7 @@
  * on demand (rAF only while tokens move) so a static board costs no idle GPU.
  */
 import { upgradeMaterial } from "../gl/baked.js";
+import { woodTexture } from "../gl/helpers.js";
 import { BuildingKit } from "./buildings.js";
 import {
   AmbientLight,
@@ -251,36 +252,6 @@ function plaqueTexture(): CanvasTexture {
   ctx.restore();
   const tex = new CanvasTexture(c);
   tex.colorSpace = SRGBColorSpace;
-  return tex;
-}
-
-/** Procedural walnut wood for the outer rail frame. */
-function woodTexture(): CanvasTexture {
-  const W = 512;
-  const c = document.createElement("canvas");
-  c.width = c.height = W;
-  const ctx = c.getContext("2d")!;
-  const g = ctx.createLinearGradient(0, 0, 0, W);
-  g.addColorStop(0, "#5b3b1f");
-  g.addColorStop(0.5, "#462914");
-  g.addColorStop(1, "#3a2312");
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, W, W);
-  for (let i = 0; i < 70; i++) {
-    const y = Math.random() * W;
-    ctx.strokeStyle = `rgba(${(20 + Math.random() * 40) | 0},${(12 + Math.random() * 20) | 0},8,0.22)`;
-    ctx.lineWidth = 1 + Math.random() * 2.5;
-    ctx.beginPath();
-    for (let x = 0; x <= W; x += 14) ctx.lineTo(x, y + Math.sin(x * 0.03 + i) * 5);
-    ctx.stroke();
-  }
-  for (let i = 0; i < 24; i++) {
-    ctx.fillStyle = "rgba(255,212,150,0.05)";
-    ctx.fillRect(0, Math.random() * W, W, 1.5);
-  }
-  const tex = new CanvasTexture(c);
-  tex.colorSpace = SRGBColorSpace;
-  tex.wrapS = tex.wrapT = RepeatWrapping;
   return tex;
 }
 
