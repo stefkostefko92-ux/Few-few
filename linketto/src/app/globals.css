@@ -52,6 +52,7 @@
     --c-danger-soft: 252 233 233;
     --c-danger-text: 165 32 32;
 
+    --c-chart-2: 124 77 210;
     --c-ring: 37 99 163;
 
     /* Елевации: на светла — меки сенки; на тъмна — светлина по ръба */
@@ -95,6 +96,7 @@
     --c-danger-soft: 42 18 20;
     --c-danger-text: 240 128 122;
 
+    --c-chart-2: 176 146 250;
     --c-ring: 116 178 238;
 
     --shadow-1: inset 0 1px 0 rgb(255 255 255 / 0.04);
@@ -140,6 +142,7 @@
       --c-danger-soft: 42 18 20;
       --c-danger-text: 240 128 122;
 
+      --c-chart-2: 176 146 250;
       --c-ring: 116 178 238;
 
       --shadow-1: inset 0 1px 0 rgb(255 255 255 / 0.04);
@@ -598,46 +601,61 @@
     border-top: 1px solid color-mix(in srgb, currentColor 14%, transparent);
   }
 
-  /* Табло/админ/аналитика: единни контроли */
+  /* Табло/админ/аналитика: единни контроли — само токени, затова са еднакви
+     в светла и тъмна тема. Размерите/рамките са в класовете на елементите. */
   .dash select {
     appearance: none;
     -webkit-appearance: none;
-    background-color: #fff;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238a96a8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 0.7rem center;
     background-size: 1rem;
-    padding-right: 2.2rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 0.5rem;
+    padding-inline-end: 2.2rem;
+    cursor: pointer;
+  }
+  [dir='rtl'] .dash select {
+    background-position: left 0.7rem center;
   }
   .dash input:not([type='checkbox']):not([type='radio']):not([type='color']):not([type='file']):not([type='hidden']),
   .dash select,
   .dash textarea {
+    background-color: rgb(var(--c-s1));
+    color: rgb(var(--c-fg));
     transition:
       border-color 0.15s ease,
       box-shadow 0.15s ease;
   }
+  .dash input::placeholder,
+  .dash textarea::placeholder {
+    color: rgb(var(--c-fg-muted));
+  }
   .dash input:not([type='checkbox']):not([type='radio']):not([type='color']):not([type='file']):not([type='hidden']):hover,
   .dash select:hover,
   .dash textarea:hover {
-    border-color: #94a3b8;
+    border-color: rgb(var(--c-fg-muted));
   }
   .dash input:focus-visible,
   .dash select:focus-visible,
   .dash textarea:focus-visible {
     outline: none;
-    border-color: #2b6cab;
-    box-shadow: 0 0 0 3px rgba(59, 130, 196, 0.28);
+    border-color: rgb(var(--c-accent));
+    box-shadow: 0 0 0 3px rgb(var(--c-ring) / 0.35);
+  }
+  .dash input:disabled,
+  .dash select:disabled,
+  .dash textarea:disabled {
+    background-color: rgb(var(--c-s2));
+    cursor: not-allowed;
+    opacity: 0.65;
   }
   .dash input[type='checkbox'],
   .dash input[type='radio'] {
-    accent-color: #2b6cab;
+    accent-color: rgb(var(--c-accent));
   }
   .dash input[type='color'] {
     cursor: pointer;
     border-radius: 0.5rem;
-    background: #fff;
+    background: rgb(var(--c-s1));
   }
   .dash button,
   .dash a[class*='rounded-full'] {
@@ -654,7 +672,7 @@
   .dash button:focus-visible,
   .dash a:focus-visible,
   .dash summary:focus-visible {
-    outline: 2px solid #2b6cab;
+    outline: 2px solid rgb(var(--c-ring));
     outline-offset: 2px;
     border-radius: 0.5rem;
   }
@@ -663,22 +681,11 @@
     opacity: 0.5;
   }
 
-  /* Секции на таблото: фин подем, котва без залепване под менюто */
-  .dash-card {
-    scroll-margin-top: 8.5rem;
-    box-shadow:
-      0 1px 2px rgba(15, 23, 42, 0.04),
-      0 8px 24px -16px rgba(15, 23, 42, 0.12);
-  }
-
-  /* Лепнещо меню на таблото (само котви, нула JS) */
-  .dash-nav {
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    mask-image: linear-gradient(90deg, transparent, #000 1.25rem, #000 calc(100% - 1.25rem), transparent);
-  }
-  .dash-nav::-webkit-scrollbar {
-    display: none;
+  /* Раздели на таблото: котвата не се скрива под лепкавата горна лента —
+     грижата е на html { scroll-padding-top } (= височината на лентата + 1rem);
+     собствен scroll-margin тук би се сумирал с нея и би я удвоил. */
+  .dash details > summary {
+    cursor: pointer;
   }
 
   /* Уиджет „как се отваря“ на ЧЗВ — плюс, който се завърта в крос */
@@ -697,7 +704,7 @@
     width: 1.75rem;
     height: 1.75rem;
     border-radius: 9999px;
-    background: #eef4fa;
+    background: rgb(var(--c-accent-soft));
     transition:
       background-color 0.25s ease,
       transform 0.3s ease;
@@ -711,7 +718,7 @@
     width: 0.7rem;
     height: 2px;
     border-radius: 2px;
-    background: #2b6cab;
+    background: rgb(var(--c-accent-text));
     transform: translate(-50%, -50%);
   }
   .faq-item .faq-plus::after {
@@ -719,17 +726,17 @@
     transition: transform 0.3s ease;
   }
   .faq-item[open] .faq-plus {
-    background: #2b6cab;
+    background: rgb(var(--c-accent));
   }
   .faq-item[open] .faq-plus::before,
   .faq-item[open] .faq-plus::after {
-    background: #fff;
+    background: rgb(var(--c-accent-fg));
   }
   .faq-item[open] .faq-plus::after {
     transform: translate(-50%, -50%) rotate(0deg);
   }
   .faq-item summary:focus-visible {
-    outline: 2px solid #2b6cab;
+    outline: 2px solid rgb(var(--c-ring));
     outline-offset: 6px;
     border-radius: 0.75rem;
   }

@@ -53,9 +53,14 @@ export function AppShell({
       <aside
         id={panelId}
         className={cn(
-          'fixed inset-y-0 start-0 z-50 w-[15rem] border-e border-line bg-surface transition-transform duration-200 ease-out lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:translate-x-0 lg:bg-surface-2/50 lg:rtl:translate-x-0',
-          open ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full',
+          'fixed inset-y-0 start-0 z-50 w-[15rem] border-e border-line bg-surface transition-[transform,visibility] duration-200 ease-out lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:translate-x-0 lg:bg-surface-2/50 lg:rtl:translate-x-0',
+          open ? 'visible translate-x-0' : 'invisible -translate-x-full rtl:translate-x-full lg:visible',
         )}
+        // Клик по връзка в чекмеджето го затваря (котвите в същата страница
+        // не сменят pathname)
+        onClick={(event) => {
+          if ((event.target as HTMLElement).closest('a')) setOpen(false);
+        }}
       >
         {sidebar}
       </aside>

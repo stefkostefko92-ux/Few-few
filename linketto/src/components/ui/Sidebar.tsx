@@ -7,8 +7,9 @@ export interface SidebarItem {
   icon?: React.ReactNode;
   /** Малък брояч/бадж отдясно */
   badge?: React.ReactNode;
-  /** Текущата страница (страницата си знае сама; няма usePathname тук) */
-  current?: boolean;
+  /** Текущата страница (страницата си знае сама; няма usePathname тук);
+   *  'location' = текущият раздел в същата страница (котва) */
+  current?: boolean | 'page' | 'location';
 }
 
 export interface SidebarGroup {
@@ -39,9 +40,9 @@ export function Sidebar({
   className?: string;
 }) {
   return (
-    <div className={cn('flex h-full flex-col gap-6 px-3 py-4', className)}>
+    <div className={cn('flex h-full flex-col gap-5 px-3 py-4', className)}>
       {brand && <div className="px-2">{brand}</div>}
-      <nav aria-label={ariaLabel} className="flex-1 space-y-6 overflow-y-auto">
+      <nav aria-label={ariaLabel} className="flex-1 space-y-5 overflow-y-auto">
         {groups.map((group, index) => (
           <div key={group.label ?? index}>
             {group.label && (
@@ -54,9 +55,9 @@ export function Sidebar({
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    aria-current={item.current ? 'page' : undefined}
+                    aria-current={item.current ? (item.current === true ? 'page' : item.current) : undefined}
                     className={cn(
-                      'focus-ring group flex items-center gap-2.5 rounded-control px-2.5 py-2 text-body font-medium transition-colors',
+                      'focus-ring group flex items-center gap-2.5 rounded-control px-2.5 py-1.5 text-body font-medium transition-colors',
                       item.current
                         ? 'bg-accent-soft text-accent-soft-fg'
                         : 'text-fg-2 hover:bg-surface-3 hover:text-fg',

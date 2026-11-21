@@ -58,6 +58,7 @@ const config: Config = {
           text: token('danger-text'),
         },
         ring: token('ring'),
+        chart2: token('chart-2'),
         linketto: {
           50: '#f2f7fb',
           100: '#e7f0f8',

@@ -421,7 +421,18 @@
       "illegal": "Illegal content",
       "spam": "Spam or misleading links",
       "other": "Another breach of the Terms of Service"
-    }
+    },
+    "navGroupProfile": "Profile",
+    "navGroupGrowth": "Growth",
+    "navGroupSales": "Sales",
+    "navGroupAccount": "Account",
+    "navHome": "Dashboard",
+    "viewPage": "View page",
+    "pageIntro": "Your profile, links and audience in one place.",
+    "analyticsIntro": "How your visitors behave — no cookies, no personal data.",
+    "withdrawIntro2": "The final step: confirm your withdrawal from the contract.",
+    "navMessages": "Messages",
+    "navAudience": "Audience"
   },
   "profile": {
     "poweredBy": "Made with Linketto",
