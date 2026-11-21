@@ -43,7 +43,7 @@
     "featureQrBody": "QR kód v tvojej farbe a blok vCard, ktorý uloží tvoj kontakt do každého telefónu jedným dotykom.",
     "heroBadge": "Viacjazyčný link in bio · Hostovaný v EÚ",
     "trustEu": "Hostovaný v Európskej únii",
-    "trustGdpr": "GDPR v predvolenom nastavení",
+    "trustGdpr": "V súlade s GDPR",
     "trustCookies": "Bez cookies pre návštevníkov",
     "statsLangsLabel": "jazykov od prvého dňa",
     "statsBrandsLabel": "platforiem s oficiálnymi ikonami",
@@ -57,7 +57,7 @@
     "faq1q": "Čo je Linketto?",
     "faq1a": "Linketto je stránka „link in bio”: jeden odkaz, ktorý združuje všetky tvoje odkazy, produkty a kontakty. Jedinečné je, že tvoja stránka hovorí jazykom každého návštevníka — vytvor ju raz a zobrazí sa vo všetkých 24 úradných jazykoch EÚ.",
     "faq2q": "Čím sa Linketto líši od Linktree?",
-    "faq2a": "Štyri veci: tvoj profil má verzie vo všetkých jazykoch a každému návštevníkovi sám ukáže tú jeho; je hostovaný v EÚ s GDPR v predvolenom nastavení; analytika je bez cookies a bez osobných údajov; a vlastnú doménu máš už od plánu Pro (€4/mes.). Podrobné porovnanie so zdrojmi a dátumom nájdeš na stránke „Linketto vs. Linktree”.",
+    "faq2a": "Štyri veci: tvoj profil má verzie vo všetkých jazykoch a každému návštevníkovi sám ukáže tú jeho; je hostovaný v EÚ a v súlade s GDPR; analytika je bez cookies a bez osobných údajov; a vlastnú doménu máš už od plánu Pro (€4/mes.). Podrobné porovnanie so zdrojmi a dátumom nájdeš na stránke „Linketto vs. Linktree”.",
     "faq3q": "Koľko Linketto stojí?",
     "faq4q": "Ako funguje viacjazyčný profil?",
     "faq4a": "Návštevník automaticky vidí profil vo svojom jazyku (podľa nastavenia prehliadača) alebo si jazyk vyberie na stránke. Píšeš vo svojom jazyku a vstavaný AI preklad doplní ostatné jazyky jedným tlačidlom — tvoje ručné preklady sa nikdy neprepíšu.",
@@ -440,7 +440,18 @@
     "linkEdit": "Upraviť",
     "linkOtherLanguages": "Názov v ďalších jazykoch",
     "linkSaveChanges": "Uložiť zmeny",
-    "linkNoTitle": "(bez názvu)"
+    "linkNoTitle": "(bez názvu)",
+    "autoTranslateTitle": "Automatický preklad pre návštevníkov",
+    "autoTranslateStateOn": "zapnutý",
+    "autoTranslateStateOff": "vypnutý",
+    "autoTranslateOn": "Návštevník z krajiny, do ktorej jazyka nemáš preklad, uvidí tvoj profil automaticky preložený (Google Gemini, USA) so štítkom „Strojový preklad (AI)” a odkazom na originál. Tvoje vlastné preklady majú vždy prednosť.",
+    "autoTranslateOff": "Návštevníci vidia len jazyky, do ktorých si profil preložil sám.",
+    "autoTranslateTurnOff": "Vypnúť",
+    "autoTranslateTurnOn": "Zapnúť",
+    "autoTranslateStatePending": "naplánovaný",
+    "autoTranslatePendingAt": "Zapne sa {date} (po upozornení e-mailom). Môžeš ho predtým vypnúť — potom sa z tvojho profilu nič neodošle.",
+    "autoTranslatePendingNoNotice": "Zatiaľ nie je zapnutý — najmenej 14 dní pred zapnutím dostaneš e-mail.",
+    "autoTranslateTurnOnNow": "Zapnúť hneď"
   },
   "profile": {
     "poweredBy": "Vytvorené s Linketto",
@@ -478,7 +489,11 @@
     "sellerTrader": "Predajca je obchodník",
     "videoPlay": "Prehrať video",
     "bookingWhen": "Preferovaný termín",
-    "badgeCta": "Vytvor si vlastnú stránku zadarmo"
+    "badgeCta": "Vytvor si vlastnú stránku zadarmo",
+    "autoTranslated": "Strojový preklad (AI) (originál: {language})",
+    "showOriginal": "Zobraziť originál",
+    "translateInBrowser": "Preložiť do jazyka: {language}",
+    "translating": "Prekladám…"
   },
   "footer": {
     "company": "Produkt Carbon Stealth VCC",
@@ -554,7 +569,13 @@
     "referralCredit": "referálny bonus",
     "payoutsTitle": "Žiadosti o výplatu — čakajúce ({count})",
     "payoutsEmpty": "Žiadne čakajúce žiadosti.",
-    "payoutMarkPaid": "Označiť ako vyplatené"
+    "payoutMarkPaid": "Označiť ako vyplatené",
+    "autoNoticeTitle": "Automatický preklad — upozornenie tvorcov",
+    "autoNoticeHint": "Profily vytvorené pred touto funkciou sa zapnú až 14 dní po e-maile ich vlastníkovi (transparentnosť podľa čl. 12–13 GDPR). Tlačidlo odošle e-maily a naplánuje zapnutie len pre tých, ku ktorým e-mail dorazil.",
+    "autoNoticeStats": "Bez upozornenia: {pending} · Naplánované: {scheduled}",
+    "autoNoticeButton": "Upozorniť a naplánovať (+14 dní)",
+    "autoNoticeDone": "Upozornení tvorcovia: {count}.",
+    "autoNoticeNoEmail": "E-mail (Brevo) nie je nastavený — správy nemožno odoslať."
   },
   "notFound": {
     "title": "Stránka sa nenašla",

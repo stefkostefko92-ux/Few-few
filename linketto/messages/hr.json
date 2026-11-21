@@ -43,7 +43,7 @@
     "featureQrBody": "QR kod u tvojoj boji i vCard blok koji sprema tvoj kontakt u telefon jednim dodirom.",
     "heroBadge": "Višejezični link in bio · Hostano u EU-u",
     "trustEu": "Hostano u Europskoj uniji",
-    "trustGdpr": "GDPR po zadanom",
+    "trustGdpr": "Usklađeno s GDPR-om",
     "trustCookies": "Bez kolačića za posjetitelje",
     "statsLangsLabel": "jezika od prvog dana",
     "statsBrandsLabel": "platformi sa službenim ikonama",
@@ -57,7 +57,7 @@
     "faq1q": "Što je Linketto?",
     "faq1a": "Linketto je „link in bio“ stranica: jedan link koji okuplja sve tvoje linkove, proizvode i kontakte. Ono jedinstveno: tvoja stranica govori jezik svakog posjetitelja — napraviš je jednom, a prikazuje se na sva 24 službena jezika EU-a.",
     "faq2q": "Po čemu se Linketto razlikuje od Linktreea?",
-    "faq2a": "Četiri stvari: tvoj profil ima verzije na svim jezicima i svakom posjetitelju sam prikazuje njegovu; hostan je u EU-u s GDPR-om po zadanom; analitika je bez kolačića i bez osobnih podataka; a vlastitu domenu imaš već od plana Pro (€4/mj). Detaljna usporedba s izvorima i datumom nalazi se na stranici „Linketto vs. Linktree“.",
+    "faq2a": "Četiri stvari: tvoj profil ima verzije na svim jezicima i svakom posjetitelju sam prikazuje njegovu; hostan je u EU-u i usklađen s GDPR-om; analitika je bez kolačića i bez osobnih podataka; a vlastitu domenu imaš već od plana Pro (€4/mj). Detaljna usporedba s izvorima i datumom nalazi se na stranici „Linketto vs. Linktree“.",
     "faq3q": "Koliko Linketto košta?",
     "faq4q": "Kako radi višejezični profil?",
     "faq4a": "Posjetitelj automatski vidi profil na svom jeziku (prema postavci preglednika) ili odabere jezik na stranici. Pišeš na svom jeziku, a ugrađeni AI prijevod popuni ostale jezike jednim klikom — tvoji ručni prijevodi nikad se ne prepisuju.",
@@ -440,7 +440,18 @@
     "linkEdit": "Uredi",
     "linkOtherLanguages": "Naslov na drugim jezicima",
     "linkSaveChanges": "Spremi promjene",
-    "linkNoTitle": "(bez naslova)"
+    "linkNoTitle": "(bez naslova)",
+    "autoTranslateTitle": "Automatski prijevod za posjetitelje",
+    "autoTranslateStateOn": "uključen",
+    "autoTranslateStateOff": "isključen",
+    "autoTranslateOn": "Posjetitelj iz zemlje na čiji jezik nemaš prijevod vidi tvoj profil automatski preveden (Google Gemini, SAD) s oznakom „Strojni prijevod (AI)“ i poveznicom na izvornik. Tvoji prijevodi uvijek imaju prednost.",
+    "autoTranslateOff": "Posjetitelji vide samo jezike na koje si sam preveo profil.",
+    "autoTranslateTurnOff": "Isključi",
+    "autoTranslateTurnOn": "Uključi",
+    "autoTranslateStatePending": "zakazan",
+    "autoTranslatePendingAt": "Uključit će se {date} (nakon obavijesti e-poštom). Možeš ga isključiti prije toga — tada se ništa s tvog profila neće poslati.",
+    "autoTranslatePendingNoNotice": "Još nije uključen — dobit ćeš e-poruku najmanje 14 dana prije uključivanja.",
+    "autoTranslateTurnOnNow": "Uključi sada"
   },
   "profile": {
     "poweredBy": "Napravljeno s Linkettom",
@@ -478,7 +489,11 @@
     "sellerTrader": "Prodavatelj je trgovac",
     "videoPlay": "Pokreni video",
     "bookingWhen": "Željeni termin",
-    "badgeCta": "Napravi svoju stranicu besplatno"
+    "badgeCta": "Napravi svoju stranicu besplatno",
+    "autoTranslated": "Strojni prijevod (AI) (izvornik: {language})",
+    "showOriginal": "Prikaži izvornik",
+    "translateInBrowser": "Prevedi na jezik: {language}",
+    "translating": "Prevodim…"
   },
   "footer": {
     "company": "Proizvod tvrtke Carbon Stealth VCC",
@@ -554,7 +569,13 @@
     "referralCredit": "preporučni bonus",
     "payoutsTitle": "Zahtjevi za isplatu — na čekanju ({count})",
     "payoutsEmpty": "Nema zahtjeva na čekanju.",
-    "payoutMarkPaid": "Označi kao plaćeno"
+    "payoutMarkPaid": "Označi kao plaćeno",
+    "autoNoticeTitle": "Automatski prijevod — obavještavanje autora",
+    "autoNoticeHint": "Profili nastali prije ove funkcije uključuju se tek 14 dana nakon e-poruke vlasniku (transparentnost prema čl. 12–13 GDPR-a). Gumb šalje poruke i zakazuje uključivanje samo za one kojima je poruka stigla.",
+    "autoNoticeStats": "Bez obavijesti: {pending} · Zakazano: {scheduled}",
+    "autoNoticeButton": "Obavijesti i zakaži (+14 dana)",
+    "autoNoticeDone": "Obaviješteni autori: {count}.",
+    "autoNoticeNoEmail": "E-pošta (Brevo) nije postavljena — poruke se ne mogu poslati."
   },
   "notFound": {
     "title": "Stranica nije pronađena",

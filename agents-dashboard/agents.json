@@ -617,28 +617,17 @@
           "detail": "Научи: TDM изключението не спасява достъп в нарушение на условията на платформа — Дир. 2019/79… (+57 още)"
         },
         {
-          "version": "42.7.0",
-          "date": "2026-11-21",
-          "event": "v42.7 — учене",
-          "detail": "Научи: Anthropic („How Claude marks AI-generated content“) дава текстов воден знак за Opus 5/5… (+42 още)"
-        },
-        {
           "version": "42.9.0",
           "date": "2026-11-21",
           "event": "v42.9 — учене",
-          "detail": "Научи: Gemini API Additional Terms (в сила 23.03.2026) — за ЕИП/CH/UK платените условия за дан… (+1 още)"
+          "detail": "Научи: Gemini API Additional Terms (в сила 23.03.2026) — за ЕИП/CH/UK платените условия за дан… (+44 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-21",
           "type": "learning",
-          "summary": "Научи: „Gemini API Additional Terms (в сила 23.03.2026) — за ЕИП/CH/UK платените условия за дан…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „Anthropic („How Claude marks AI-generated content“) дава текстов воден знак за Opus 5/5…\" (+42 още) · 10 в карантина"
+          "summary": "Научи: „Gemini API Additional Terms (в сила 23.03.2026) — за ЕИП/CH/UK платените условия за дан…\" (+44 още) · 10 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -2044,28 +2033,17 @@
           "detail": "Научи: sharp 0.35 с limitInputPixels не пази паметта при прогресивен JPEG (208 Mpx, 4:4:4, фай… (+1 още)"
         },
         {
-          "version": "66.3.0",
-          "date": "2026-11-21",
-          "event": "v66.3 — учене",
-          "detail": "Научи: Поле datetime-local, което получава стойност само в useEffect, се изпраща празно без JS… (+102 още)"
-        },
-        {
           "version": "66.5.0",
           "date": "2026-11-21",
           "event": "v66.5 — учене",
-          "detail": "Научи: Почасов лимит „по ресурс“ пред платено AI извикване без общ таван и без кеширане на неу… (+1 още)"
+          "detail": "Научи: Почасов лимит „по ресурс“ пред платено AI извикване без общ таван и без кеширане на неу… (+104 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-21",
           "type": "learning",
-          "summary": "Научи: „Почасов лимит „по ресурс“ пред платено AI извикване без общ таван и без кеширане на неу…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „Поле datetime-local, което получава стойност само в useEffect, се изпраща празно без JS…\" (+102 още) · 15 в карантина"
+          "summary": "Научи: „Почасов лимит „по ресурс“ пред платено AI извикване без общ таван и без кеширане на неу…\" (+104 още) · 15 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -5581,39 +5559,17 @@
           "detail": "Научи: В linketto идентификацията на дружеството живее само в messages/*.json (legal.privacyBo… (+34 още)"
         },
         {
-          "version": "30.2.0",
-          "date": "2026-11-21",
-          "event": "v30.2 — учене",
-          "detail": "Научи: В linketto fr.json регистърът в dashboard е vous (pageIntro), с отделни tu низове (refe… (+21 още)"
-        },
-        {
-          "version": "30.4.0",
-          "date": "2026-11-21",
-          "event": "v30.4 — учене",
-          "detail": "Научи: В linketto messages/*.json обектът dashboard в 26-те не-bg локала вече завършва с linkN… (+1 още)"
-        },
-        {
           "version": "30.6.0",
           "date": "2026-11-21",
           "event": "v30.6 — учене",
-          "detail": "Научи: В linketto src/lib/auto-translate-notice.ts STRINGS е заключен към локали с човешки пра… (+1 още)"
+          "detail": "Научи: В linketto src/lib/auto-translate-notice.ts STRINGS е заключен към локали с човешки пра… (+25 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-21",
           "type": "learning",
-          "summary": "Научи: „В linketto src/lib/auto-translate-notice.ts STRINGS е заключен към локали с човешки пра…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „В linketto messages/*.json обектът dashboard в 26-те не-bg локала вече завършва с linkN…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „В linketto fr.json регистърът в dashboard е vous (pageIntro), с отделни tu низове (refe…\" (+21 още) · 2 в карантина"
+          "summary": "Научи: „В linketto src/lib/auto-translate-notice.ts STRINGS е заключен към локали с човешки пра…\" (+25 още) · 2 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -16227,39 +16183,17 @@
           "detail": "Научи: guard-exfil DATA_FILE_SEND блокира curl с --data поле на име password/token дори към lo… (+2 още)"
         },
         {
-          "version": "30.1.0",
-          "date": "2026-11-21",
-          "event": "v30.1 — учене",
-          "detail": "Научи: Без managed settings, managed-mcp.json или Team/Enterprise /login мод на потребителя мо… (+28 още)"
-        },
-        {
-          "version": "30.3.0",
-          "date": "2026-11-21",
-          "event": "v30.3 — учене",
-          "detail": "Научи: Map-базиран in-memory лимитер с „изхвърли най-старите при >MAX_KEYS“ се нулира от всеки… (+1 още)"
-        },
-        {
           "version": "30.4.0",
           "date": "2026-11-21",
           "event": "v30.4 — учене",
-          "detail": "Научи: sharp без limitInputPixels приема PNG 16000x16000 от 0,74 MB; 14 паралелни обработки ст…"
+          "detail": "Научи: sharp без limitInputPixels приема PNG 16000x16000 от 0,74 MB; 14 паралелни обработки ст… (+31 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-21",
           "type": "learning",
-          "summary": "Научи: „sharp без limitInputPixels приема PNG 16000x16000 от 0,74 MB; 14 паралелни обработки ст…\" · 1 в карантина"
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „Map-базиран in-memory лимитер с „изхвърли най-старите при >MAX_KEYS“ се нулира от всеки…\" (+1 още) · 1 в карантина"
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „Без managed settings, managed-mcp.json или Team/Enterprise /login мод на потребителя мо…\" (+28 още) · 3 в карантина"
+          "summary": "Научи: „sharp без limitInputPixels приема PNG 16000x16000 от 0,74 MB; 14 паралелни обработки ст…\" (+31 още) · 5 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -16918,28 +16852,17 @@
           "detail": "Роден за продукта „киберсигурност“: клиентът иска не само дали е пробит, а дали ще разбере навреме и какво прави тогава. Синият екип като роля не съществуваше — детекцията, реакцията при инцидент и втвърдяването бяха пръснати. Стражата поема умението incident-breach от Наблюдателя (Наблюдателят остава SRE — здраве/наличност), води детекция-като-код по MITRE ATT&CK и каскадата по ОРЗД/NIS2/CRA. Purple-team с Прониквача. Нов екип „Крепостта“."
         },
         {
-          "version": "23.4.0",
-          "date": "2026-11-21",
-          "event": "v23.4 — учене",
-          "detail": "Научи: При първо монтиране на нов празен именуван Docker том върху папка, която съществува в о… (+232 още)"
-        },
-        {
           "version": "23.7.0",
           "date": "2026-11-21",
           "event": "v23.7 — учене",
-          "detail": "Научи: Open redirect-ът в next-intl (GHSA-8f24-v5vv-gm5j, поправен в 4.9.1) засяга само middle… (+2 още)"
+          "detail": "Научи: Open redirect-ът в next-intl (GHSA-8f24-v5vv-gm5j, поправен в 4.9.1) засяга само middle… (+235 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-21",
           "type": "learning",
-          "summary": "Научи: „Open redirect-ът в next-intl (GHSA-8f24-v5vv-gm5j, поправен в 4.9.1) засяга само middle…\" (+2 още)"
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „При първо монтиране на нов празен именуван Docker том върху папка, която съществува в о…\" (+232 още) · 21 в карантина"
+          "summary": "Научи: „Open redirect-ът в next-intl (GHSA-8f24-v5vv-gm5j, поправен в 4.9.1) засяга само middle…\" (+235 още) · 21 в карантина"
         },
         {
           "date": "2026-11-15",

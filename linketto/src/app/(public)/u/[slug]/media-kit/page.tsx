@@ -8,6 +8,7 @@ import { languageDemand } from '@/lib/language-gap';
 import { ctr } from '@/lib/analytics';
 import { mediaKitStrings } from '@/lib/mediakit';
 import { PrintButton } from '@/components/PrintButton';
+import { requestCountry } from '@/lib/geoip';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,7 +41,7 @@ export default async function MediaKitPage({
     hl && available.includes(hl)
       ? hl
       : localeFromGeo({
-          country: requestHeaders.get('cf-ipcountry'),
+          country: requestCountry(requestHeaders),
           acceptLanguage: requestHeaders.get('accept-language'),
           available,
           fallback: available.includes(profile.defaultLocale)
@@ -187,7 +188,13 @@ export default async function MediaKitPage({
           </div>
         )}
 
-        <p className="mt-6 text-[11px] text-slate-400">{s.window}</p>
+        <p className="mt-6 text-[11px] text-slate-400">
+          {s.window}{' '}
+          {/* Държавите идват от DB-IP Lite (CC BY 4.0) — атрибуцията е задължителна. */}
+          <a href="https://db-ip.com" rel="nofollow noopener" target="_blank" className="underline-offset-2 hover:underline">
+            IP Geolocation by DB-IP
+          </a>
+        </p>
 
         <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4 print:hidden">
           <span className="text-xs text-slate-400">{s.poweredBy}</span>

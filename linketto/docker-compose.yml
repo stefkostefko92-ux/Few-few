@@ -37,6 +37,9 @@ services:
       NODE_ENV: production
       # В контейнера DATA_DIR е винаги /data — истинското място е томът по-долу.
       DATA_DIR: /data
+      # Базата IP → държава (DB-IP Lite) — сваля я root cron-ът на хоста в
+      # отделна папка, монтирана само за четене (не в /data, която е на app).
+      GEOIP_DB: /geoip/dbip-country-lite.mmdb
     # Само loopback: навън се излиза през nginx на хоста с TLS (deploy/nginx.conf).
     # Портът на хоста = HTTP_PORT от .env, по подразбиране 4350. НЕ 4340: на живия сървър
     # 4340/4341/4342 са на rilievi/semki/fakturist (първият деплой падна с „port is already
@@ -48,6 +51,7 @@ services:
     # (потребителят `nextjs` в образа) — autodeploy създава папката с тези права.
     volumes:
       - ${LINKETTO_DATA_HOST:-/opt/few-few/shared/linketto/data}:/data
+      - ${LINKETTO_GEOIP_HOST:-/opt/few-few/shared/linketto/geoip}:/geoip:ro
     # Процесът не иска никакви capabilities (порт 3000 > 1024, без chown/setuid).
     cap_drop: [ALL]
     security_opt:

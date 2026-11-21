@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { countryOf, localeOf } from '@/lib/analytics';
 import { isExternalPaymentUrl } from '@/lib/external-url';
 import { maybePurgeOldClicks } from '@/lib/retention';
+import { requestCountry } from '@/lib/geoip';
 
 // Клик по продукт → към линка за плащане на създателя (решение О-1). Записваме
 // само анонимно събитие (без бисквитки, IP и user agent — както при блоковете),
@@ -52,7 +53,7 @@ async function handle(request: Request, { params }: Ctx, record: boolean): Promi
           productId: product.id,
           locale: localeOf(url.searchParams.get('hl')),
           referrerHost: hostOf(request.headers.get('referer')),
-          country: countryOf(request.headers.get('cf-ipcountry')),
+          country: countryOf(requestCountry(request.headers)),
         },
       })
       .catch(() => undefined);

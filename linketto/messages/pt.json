@@ -43,7 +43,7 @@
     "featureQrBody": "Um código QR na tua cor e um bloco vCard que guarda o teu contacto em qualquer telemóvel com um toque.",
     "heroBadge": "Link in bio multilingue · Alojado na UE",
     "trustEu": "Alojado na União Europeia",
-    "trustGdpr": "GDPR por predefinição",
+    "trustGdpr": "Em conformidade com o GDPR",
     "trustCookies": "Sem cookies para os teus visitantes",
     "statsLangsLabel": "idiomas desde o primeiro dia",
     "statsBrandsLabel": "plataformas com ícones oficiais",
@@ -57,7 +57,7 @@
     "faq1q": "O que é o Linketto?",
     "faq1a": "O Linketto é uma página link in bio: um único link que reúne todos os teus links, produtos e contactos. O que o torna único: a tua página fala o idioma de cada visitante — cria-a uma vez e ela aparece nos 24 idiomas oficiais da UE.",
     "faq2q": "Em que é que o Linketto é diferente do Linktree?",
-    "faq2a": "Quatro coisas: o teu perfil tem versões em todos os idiomas e mostra automaticamente a cada visitante a sua; é alojado na UE com GDPR por predefinição; as análises não têm cookies nem dados pessoais; e tens domínio próprio logo a partir do plano Pro (€4/mês). Uma comparação detalhada, com fontes e data, está na página «Linketto vs Linktree».",
+    "faq2a": "Quatro coisas: o teu perfil tem versões em todos os idiomas e mostra automaticamente a cada visitante a sua; é alojado na UE e está em conformidade com o GDPR; as análises não têm cookies nem dados pessoais; e tens domínio próprio logo a partir do plano Pro (€4/mês). Uma comparação detalhada, com fontes e data, está na página «Linketto vs Linktree».",
     "faq3q": "Quanto custa o Linketto?",
     "faq4q": "Como funciona o perfil multilingue?",
     "faq4a": "Os visitantes veem automaticamente o teu perfil no seu idioma (a partir das definições do navegador) ou escolhem um na página. Escreves no teu idioma e a tradução por IA integrada preenche os restantes com um clique — as tuas traduções manuais nunca são substituídas.",
@@ -76,7 +76,7 @@
     "statsFeeLabel": "a parte do Linketto nas tuas vendas",
     "faq5q": "Posso vender produtos a partir da minha página?",
     "trustPayments": "Pagamento dos planos através do Revolut Bank UAB (um banco licenciado na UE)",
-    "featureEuBody": "Alojamento na UE, GDPR por predefinição. Os pagamentos (Revolut Bank UAB) e os e-mails (Brevo) ficam com fornecedores da UE; o único fora da UE é a IA (Google) — só quando tu próprio usas «Traduzir com IA» ou «Gerar bio». Mais detalhes na Política de Privacidade.",
+    "featureEuBody": "Alojamento na UE. Os e-mails (Brevo) e os pagamentos (Revolut Bank UAB) ficam com fornecedores da UE; a Revolut pode transferir dados para fora do EEE segundo a sua política. Para fora da UE só enviamos dados à Google (Gemini, EUA) — o texto do teu perfil para «Traduzir com IA», «Gerar bio» e a tradução automática para os visitantes (ativada por predefinição, desativa-se com um só botão); não enviamos dados dos visitantes. Mais detalhes na Política de Privacidade.",
     "faq3a": "O plano gratuito é mesmo gratuito — links ilimitados e 2 versões de idioma. O Pro custa €4/mês (todos os idiomas, domínio próprio), o Business €9/mês (até 5 perfis) e o Founder é um pagamento único de €49 — Pro para sempre, até 5 perfis. Pagas de uma só vez por 1, 3, 6 ou 12 meses — sem subscrição e sem cobranças automáticas.",
     "faq5a": "Sim — adicionas um produto com preço e o teu próprio link de pagamento (Revolut, PayPal, Gumroad e outros). O comprador paga-te diretamente; o Linketto não fica entre vocês e não cobra comissão. O vendedor és tu e és responsável pela encomenda, pelos impostos e pelos direitos do comprador.",
     "resumeMotion": "Retomar a animação",
@@ -443,7 +443,18 @@
     "linkEdit": "Editar",
     "linkOtherLanguages": "Título noutros idiomas",
     "linkSaveChanges": "Guardar alterações",
-    "linkNoTitle": "(sem título)"
+    "linkNoTitle": "(sem título)",
+    "autoTranslateTitle": "Tradução automática para os visitantes",
+    "autoTranslateStateOn": "ativada",
+    "autoTranslateStateOff": "desativada",
+    "autoTranslateOn": "Um visitante de um país em cujo idioma não tens tradução vê o teu perfil traduzido automaticamente (Google Gemini, EUA), com a etiqueta «Tradução automática (IA)» e uma ligação para o original. As tuas traduções têm sempre prioridade.",
+    "autoTranslateOff": "Os visitantes só veem os idiomas que traduziste tu próprio.",
+    "autoTranslateTurnOff": "Desativar",
+    "autoTranslateTurnOn": "Ativar",
+    "autoTranslateStatePending": "agendada",
+    "autoTranslatePendingAt": "Será ativada a {date} (depois do aviso por email). Podes desativá-la antes — nesse caso, nada do teu perfil será enviado.",
+    "autoTranslatePendingNoNotice": "Ainda não está ativada — vais receber um email pelo menos 14 dias antes da ativação.",
+    "autoTranslateTurnOnNow": "Ativar agora"
   },
   "profile": {
     "poweredBy": "Feito com o Linketto",
@@ -481,7 +492,11 @@
     "sellerTrader": "O vendedor é um profissional",
     "videoPlay": "Reproduzir vídeo",
     "bookingWhen": "Horário preferido",
-    "badgeCta": "Cria a tua página gratuitamente"
+    "badgeCta": "Cria a tua página gratuitamente",
+    "autoTranslated": "Tradução automática (IA) (original em {language})",
+    "showOriginal": "Ver o original",
+    "translateInBrowser": "Traduzir para {language}",
+    "translating": "A traduzir…"
   },
   "footer": {
     "company": "Um produto da Carbon Stealth VCC",
@@ -557,7 +572,13 @@
     "referralCredit": "bónus de referência",
     "payoutsTitle": "Pedidos de pagamento — pendentes ({count})",
     "payoutsEmpty": "Sem pedidos pendentes.",
-    "payoutMarkPaid": "Marcar como pago"
+    "payoutMarkPaid": "Marcar como pago",
+    "autoNoticeTitle": "Tradução automática — aviso aos criadores",
+    "autoNoticeHint": "Os perfis anteriores à funcionalidade só são ativados 14 dias depois de um email ao seu titular (transparência nos termos dos arts. 12.º–13.º do GDPR). O botão envia os emails e agenda a ativação apenas para aqueles a quem o email chegou.",
+    "autoNoticeStats": "Sem aviso: {pending} · Agendados: {scheduled}",
+    "autoNoticeButton": "Avisar e agendar (+14 dias)",
+    "autoNoticeDone": "Criadores avisados: {count}.",
+    "autoNoticeNoEmail": "O email (Brevo) não está configurado — as mensagens não podem ser enviadas."
   },
   "notFound": {
     "title": "Página não encontrada",

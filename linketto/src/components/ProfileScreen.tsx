@@ -9,7 +9,6 @@ import { SITE_URL } from '@/lib/seo';
 import {
   DIALECT_LOCALES,
   dirFor,
-  localeFromGeo,
   LOCALE_NAMES,
 } from '@/i18n/locales';
 import {
@@ -20,6 +19,16 @@ import {
 } from '@/lib/blocks';
 import { brandFor, isSensitiveUrl } from '@/lib/brands';
 import { countryOf } from '@/lib/analytics';
+import { requestCountry } from '@/lib/geoip';
+import {
+  applyAutoTranslation,
+  autoTranslateActive,
+  isBotUserAgent,
+  pickProfileView,
+  profileSource,
+} from '@/lib/auto-translate';
+import { autoTranslation } from '@/lib/auto-translate-server';
+import { BrowserTranslate } from '@/components/BrowserTranslate';
 import { BrandIcon, BRAND_COLORS } from '@/components/brand-icons';
 import { ShareButton } from '@/components/ShareButton';
 import { VideoFacade } from '@/components/VideoFacade';
@@ -95,7 +104,7 @@ export async function loadProfileBy(where: Prisma.ProfileWhereUniqueInput) {
       // Само продукти с линк за плащане на създателя (решение О-1).
       products: {
         where: { active: true, externalUrl: { not: null } },
-        orderBy: { position: 'asc' },
+        orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
         include: { translations: true },
       },
       user: {
@@ -165,7 +174,7 @@ export function profileMetadata(
 }
 
 export async function ProfileScreen({
-  profile,
+  profile: loaded,
   hl,
   sent,
   formError,
@@ -190,29 +199,51 @@ export async function ProfileScreen({
   /** Жив преглед от таблото: не се брои посещение, нищо не е кликаемо. */
   preview?: boolean;
 }) {
-  const slug = profile.slug;
-  const available = profile.translations.map((t) => t.locale);
+  // Езикът (docs/geo-autotranslate-spec.md, Б): изричен ?hl → браузър → държава по
+  // IP (без диалекти) → … ; ако създателят няма този език — автоматичен превод
+  // (кеширан; ботовете и прегледът от таблото никога не получават машинен превод).
   const requestHeaders = await headers();
-  let viewLocale: string;
-  if (hl && available.includes(hl)) {
-    // Явният избор (?hl) винаги печели.
-    viewLocale = hl;
-  } else {
-    // Иначе автоматично по IP геолокация (държава) в рамките на езиците,
-    // които създателят е превел; после Accept-Language. Диалектите не се
-    // избират автоматично.
-    viewLocale = localeFromGeo({
-      country: requestHeaders.get('cf-ipcountry'),
-      acceptLanguage: requestHeaders.get('accept-language'),
-      available,
-      fallback: available.includes(profile.defaultLocale)
-        ? profile.defaultLocale
-        : available[0],
+  const available = loaded.translations.map((t) => t.locale);
+  const country = requestCountry(requestHeaders);
+  const pick = pickProfileView({
+    hl,
+    country,
+    acceptLanguage: requestHeaders.get('accept-language'),
+    available,
+    defaultLocale: loaded.defaultLocale,
+    autoTranslate: autoTranslateActive(loaded) && !preview,
+    isBot: isBotUserAgent(requestHeaders.get('user-agent')),
+  });
+  const viewLocale = pick.locale;
+  let profile = loaded;
+  // Езикът на оригинала, когато съдържанието е преведено автоматично на сървъра
+  // (autoFrom) или чака превода на браузъра (browserFrom).
+  let autoFrom: string | null = null;
+  let browserFrom: string | null = null;
+  const source = pick.mode === 'auto' ? profileSource(loaded) : null;
+  if (source) {
+    // Пресен (платен) превод — само при автоматичен избор на езика; изричното
+    // ?hl= на чужд език чете само кеша (защита на разхода).
+    const entry = await autoTranslation(loaded.id, source, viewLocale, {
+      fresh: !(hl && hl === viewLocale),
     });
+    if (entry) {
+      profile = applyAutoTranslation(loaded, viewLocale, entry, source.from);
+      autoFrom = source.from;
+    } else {
+      browserFrom = source.from;
+    }
   }
+  const slug = profile.slug;
+  // Езикът на съдържанието на създателя, когато е различен от интерфейса
+  // (оригинал, който чака превода на браузъра) — за екранните четци и за
+  // предложението за превод на браузъра.
+  const contentLang = browserFrom ?? undefined;
+  const ct = { 'data-ct': '', lang: contentLang } as const;
 
   const translation =
     profile.translations.find((t) => t.locale === viewLocale) ??
+    profile.translations.find((t) => t.locale === profile.defaultLocale) ??
     profile.translations[0];
   const t = await getTranslations({
     locale: viewLocale,
@@ -227,7 +258,7 @@ export async function ProfileScreen({
         profileId: profile.id,
         locale: viewLocale,
         referrerHost: hostOf(requestHeaders.get('referer')),
-        country: countryOf(requestHeaders.get('cf-ipcountry')),
+        country: countryOf(country),
       },
     })
     .catch(() => undefined);
@@ -331,6 +362,7 @@ export async function ProfileScreen({
         </span>
       )}
       <span
+        {...ct}
         className={`min-w-0 flex-1 break-words ${
           isStart ? 'text-start' : 'text-center'
         } ${big ? 'text-lg font-bold' : ''}`}
@@ -469,6 +501,7 @@ export async function ProfileScreen({
       // Прегледът е само за гледане: inert спира и клик, и фокус/Enter (без
       // записани кликове и изпратени формуляри).
       inert={preview || undefined}
+      data-ai-translated={autoFrom ? viewLocale : undefined}
       className="relative flex min-h-screen flex-col items-center overflow-x-clip px-4 py-6 sm:px-6 sm:py-16"
       style={{
         ...rootStyle,
@@ -598,6 +631,7 @@ export async function ProfileScreen({
         )}
         <p className="pf-muted text-sm font-medium">{greeting}</p>
         <h1
+          {...ct}
           className={`pf-name mt-0.5 font-bold leading-[1.1] tracking-tight ${
             nameFont ? 'text-[2.15rem] sm:text-4xl' : 'text-[1.85rem] sm:text-3xl'
           }`}
@@ -607,12 +641,53 @@ export async function ProfileScreen({
         </h1>
         {translation.bio && (
           <p
+            {...ct}
             className={`pf-bio pf-muted mt-3 max-w-sm text-[15px] leading-relaxed ${
               isStart ? '' : 'mx-auto'
             }`}
           >
             {translation.bio}
           </p>
+        )}
+        {autoFrom && (
+          <p className="pf-muted mt-3 text-xs">
+            {t('autoTranslated', {
+              language: LOCALE_NAMES[autoFrom as keyof typeof LOCALE_NAMES] ?? autoFrom,
+            })}{' '}
+            ·{' '}
+            <a href={`/u/${slug}?hl=${autoFrom}`} className="underline underline-offset-2">
+              {t('showOriginal')}
+            </a>
+          </p>
+        )}
+        {browserFrom && source && (
+          <BrowserTranslate
+            from={browserFrom}
+            to={viewLocale}
+            texts={[
+              source.content.displayName,
+              source.content.bio ?? '',
+              // Само видимите сега блокове — насрочените не бива да изтичат в страницата.
+              ...source.content.links
+                .filter((item) => {
+                  const block = loaded.links.find((link) => link.id === item.id);
+                  return block ? isBlockVisible(block, new Date()) : false;
+                })
+                .map((link) => link.title),
+              ...(source.content.products ?? []).map((product) => product.title),
+            ].filter(Boolean).slice(0, 300)}
+            originalHref={`/u/${slug}?hl=${browserFrom}`}
+            labels={{
+              done: t('autoTranslated', {
+                language: LOCALE_NAMES[browserFrom as keyof typeof LOCALE_NAMES] ?? browserFrom,
+              }),
+              showOriginal: t('showOriginal'),
+              translate: t('translateInBrowser', {
+                language: LOCALE_NAMES[viewLocale as keyof typeof LOCALE_NAMES] ?? viewLocale,
+              }),
+              translating: t('translating'),
+            }}
+          />
         )}
         {unsub && (
           <p
@@ -695,7 +770,7 @@ export async function ProfileScreen({
                   <li key={link.id} className={`pf-rise pt-4 ${gridSpan}`} style={rise()}>
                     <div className="flex items-center gap-3">
                       <span aria-hidden className="h-px flex-1 bg-current opacity-15" />
-                      <h2 className="pf-muted text-sm font-semibold">
+                      <h2 {...ct} className="pf-muted text-sm font-semibold">
                         {title}
                       </h2>
                       <span aria-hidden className="h-px flex-1 bg-current opacity-15" />
@@ -742,7 +817,7 @@ export async function ProfileScreen({
                     >
                       <p className="inline-flex items-center gap-2 font-semibold">
                         <MusicIcon className="h-4 w-4 shrink-0" />
-                        {title}
+                        <span {...ct}>{title}</span>
                       </p>
                       <p className="mt-2 flex justify-center gap-3 text-sm">
                         {meta?.spotify && (
@@ -772,7 +847,7 @@ export async function ProfileScreen({
                       className={`pf-panel border px-5 py-4 ${boxShape} ${shadowClass}`}
                       style={bv(accentFor(meta))}
                     >
-                      <p className="text-center font-medium">{title}</p>
+                      <p {...ct} className="text-center font-medium">{title}</p>
                       {sent ? (
                         <p className="mt-3 text-center text-sm opacity-80">
                           {t('formSent')}
@@ -850,7 +925,7 @@ export async function ProfileScreen({
                       className={`pf-panel border px-5 py-4 ${boxShape} ${shadowClass}`}
                       style={bv(accentFor(meta))}
                     >
-                      <p className="text-center font-medium">{title}</p>
+                      <p {...ct} className="text-center font-medium">{title}</p>
                       {subscribed ? (
                         <p className="mt-3 text-center text-sm opacity-80">
                           {subscribed === 'confirmed'
@@ -934,7 +1009,7 @@ export async function ProfileScreen({
                       className={`pf-panel border px-5 py-4 ${boxShape} ${shadowClass}`}
                       style={bv(accentFor(meta))}
                     >
-                      <p className="text-center font-medium">{title}</p>
+                      <p {...ct} className="text-center font-medium">{title}</p>
                       <div className="mt-3 space-y-2">
                         {options.map((option, i) => (
                           <form
@@ -997,7 +1072,7 @@ export async function ProfileScreen({
                       className={`pf-panel border px-5 py-4 ${boxShape} ${shadowClass}`}
                       style={bv(accentFor(meta))}
                     >
-                      <p className="text-center font-medium">{title}</p>
+                      <p {...ct} className="text-center font-medium">{title}</p>
                       {booked ? (
                         <p className="mt-3 text-center text-sm opacity-80">
                           {t('bookingSent')}
@@ -1182,7 +1257,7 @@ export async function ProfileScreen({
                       style={bv(accent)}
                     >
                       <span className="min-w-0">
-                        <span className="block font-semibold">{productTitle}</span>
+                        <span {...ct} className="block font-semibold">{productTitle}</span>
                         {productTr?.description && (
                           <span className="mt-0.5 block text-xs font-normal opacity-80">
                             {productTr.description}
@@ -1230,6 +1305,21 @@ export async function ProfileScreen({
             className="pf-muted inline-flex min-h-10 items-center px-3 text-xs underline-offset-4 hover:underline"
           >
             {t('report')}
+          </a>
+          <a
+            href={`/${viewLocale}/privacy`}
+            className="pf-muted inline-flex min-h-10 items-center px-3 text-xs underline-offset-4 hover:underline"
+          >
+            {t('formPrivacyLink')}
+          </a>
+          {/* Лицензът на DB-IP Lite (CC BY 4.0) изисква атрибуция там, където се ползва. */}
+          <a
+            href="https://db-ip.com"
+            rel="nofollow noopener"
+            target="_blank"
+            className="pf-muted inline-flex min-h-10 items-center px-3 text-[11px] opacity-70 underline-offset-4 hover:underline"
+          >
+            IP Geolocation by DB-IP
           </a>
         </p>
       </div>

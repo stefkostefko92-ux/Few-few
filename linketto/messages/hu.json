@@ -43,7 +43,7 @@
     "featureQrBody": "QR-kód a saját színedben és egy vCard blokk, amely egy érintéssel elmenti a névjegyedet a telefonba.",
     "heroBadge": "Többnyelvű link in bio · Az EU-ban tárolva",
     "trustEu": "Az Európai Unióban tárolva",
-    "trustGdpr": "GDPR alapból",
+    "trustGdpr": "GDPR-nek megfelelő",
     "trustCookies": "Nincsenek sütik a látogatóknak",
     "statsLangsLabel": "nyelv az első naptól",
     "statsBrandsLabel": "platform hivatalos ikonokkal",
@@ -57,7 +57,7 @@
     "faq1q": "Mi az a Linketto?",
     "faq1a": "A Linketto egy „link in bio” oldal: egyetlen link, amely összegyűjti az összes linkedet, termékedet és elérhetőségedet. Az egyedi benne: az oldalad minden látogató nyelvén beszél — egyszer építed meg, és az EU mind a 24 hivatalos nyelvén megjelenik.",
     "faq2q": "Miben különbözik a Linketto a Linktree-től?",
-    "faq2a": "Négy dologban: a profilodnak minden nyelven van változata, és minden látogatónak magától a sajátját mutatja; az EU-ban van tárolva, alapból GDPR-rel; az analitika sütik és személyes adatok nélküli; saját domaint pedig már a Pro csomagtól (€4/hó) kapsz. Részletes összehasonlítás forrásokkal és dátummal a „Linketto vs. Linktree” oldalon.",
+    "faq2a": "Négy dologban: a profilodnak minden nyelven van változata, és minden látogatónak magától a sajátját mutatja; az EU-ban van tárolva, és megfelel a GDPR-nek; az analitika sütik és személyes adatok nélküli; saját domaint pedig már a Pro csomagtól (€4/hó) kapsz. Részletes összehasonlítás forrásokkal és dátummal a „Linketto vs. Linktree” oldalon.",
     "faq3q": "Mennyibe kerül a Linketto?",
     "faq4q": "Hogyan működik a többnyelvű profil?",
     "faq4a": "A látogató automatikusan a saját nyelvén látja a profilt (a böngészője beállítása szerint), vagy nyelvet választ az oldalon. A saját nyelveden írsz, a beépített AI-fordítás pedig egy kattintással kitölti a többi nyelvet — a kézi fordításaidat sosem írja felül.",
@@ -440,7 +440,18 @@
     "linkEdit": "Szerkesztés",
     "linkOtherLanguages": "Cím más nyelveken",
     "linkSaveChanges": "Változások mentése",
-    "linkNoTitle": "(cím nélkül)"
+    "linkNoTitle": "(cím nélkül)",
+    "autoTranslateTitle": "Automatikus fordítás a látogatóknak",
+    "autoTranslateStateOn": "bekapcsolva",
+    "autoTranslateStateOff": "kikapcsolva",
+    "autoTranslateOn": "Az a látogató, akinek az országa nyelvén nincs fordításod, automatikusan lefordítva látja a profilodat (Google Gemini, USA), „Gépi fordítás (AI)” címkével és az eredetire mutató linkkel. A saját fordításaid mindig elsőbbséget élveznek.",
+    "autoTranslateOff": "A látogatók csak azokat a nyelveket látják, amelyekre te magad fordítottad le a profilodat.",
+    "autoTranslateTurnOff": "Kikapcsolás",
+    "autoTranslateTurnOn": "Bekapcsolás",
+    "autoTranslateStatePending": "ütemezve",
+    "autoTranslatePendingAt": "Bekapcsol: {date} (az e-mailes értesítés után). Előtte kikapcsolhatod — ekkor semmi sem kerül elküldésre a profilodból.",
+    "autoTranslatePendingNoNotice": "Még nincs bekapcsolva — legalább 14 nappal a bekapcsolás előtt e-mailt kapsz.",
+    "autoTranslateTurnOnNow": "Bekapcsolás most"
   },
   "profile": {
     "poweredBy": "Linkettóval készült",
@@ -478,7 +489,11 @@
     "sellerTrader": "Az eladó kereskedő",
     "videoPlay": "Videó lejátszása",
     "bookingWhen": "Kívánt időpont",
-    "badgeCta": "Készítsd el a saját oldaladat ingyen"
+    "badgeCta": "Készítsd el a saját oldaladat ingyen",
+    "autoTranslated": "Gépi fordítás (AI) (eredeti: {language})",
+    "showOriginal": "Eredeti megjelenítése",
+    "translateInBrowser": "Fordítás {language} nyelvre",
+    "translating": "Fordítás…"
   },
   "footer": {
     "company": "A Carbon Stealth VCC terméke",
@@ -554,7 +569,13 @@
     "referralCredit": "ajánlói bónusz",
     "payoutsTitle": "Kifizetési kérelmek — függőben ({count})",
     "payoutsEmpty": "Nincsenek függőben lévő kérelmek.",
-    "payoutMarkPaid": "Megjelölés kifizetettként"
+    "payoutMarkPaid": "Megjelölés kifizetettként",
+    "autoNoticeTitle": "Automatikus fordítás — az alkotók értesítése",
+    "autoNoticeHint": "A funkció előtti profiloknál csak 14 nappal a tulajdonosnak küldött e-mail után kapcsol be (átláthatóság, GDPR 12–13. cikk). A gomb elküldi a leveleket, és csak azoknál ütemezi a bekapcsolást, akikhez a levél megérkezett.",
+    "autoNoticeStats": "Értesítés nélkül: {pending} · Ütemezve: {scheduled}",
+    "autoNoticeButton": "Értesítés és ütemezés (+14 nap)",
+    "autoNoticeDone": "Értesített alkotók: {count}.",
+    "autoNoticeNoEmail": "Az e-mail (Brevo) nincs beállítva — a levelek nem küldhetők el."
   },
   "notFound": {
     "title": "Az oldal nem található",

@@ -6,6 +6,7 @@
 #   linketto-cron plans       POST /api/cron/plans   — ЗАДЪЛЖИТЕЛНО на всеки час
 #   linketto-cron digest      POST /api/cron/digest  — дневно (08:10)
 #   linketto-cron retention   сроковете от политиката (psql в контейнера на базата)
+#   linketto-cron geoip       базата IP → държава (DB-IP Lite) — месечно и при деплой
 #
 # CRON_SECRET се чете от файла с тайните (mode 600) и стига до curl през stdin
 # (`-K -`), никога като аргумент: argv се вижда от всеки през `ps`, а crontab/
@@ -76,9 +77,41 @@ DELETE FROM "Session"        WHERE "expiresAt" < now();
 SQL
 }
 
+# Базата IP → държава за езика по държава (docs/geo-autotranslate-spec.md, А):
+# DB-IP IP to Country Lite (CC BY 4.0, без акаунт, ново издание всеки месец).
+# Сваля се в $STATE/geoip (монтирана :ro в контейнера като /geoip); app я
+# презарежда сам при смяна на файла. IP адреси не излизат никъде — само сваляме.
+# Атомарно: временен файл → проверка → mv. Правата са изрични (644): unit-ът е с
+# UMask=0077, а приложението в контейнера чете като uid 1001.
+geoip() {
+  local dir tmp m
+  # Отделна папка на root (755), монтирана :ro в контейнера като /geoip — root
+  # cron-ът не пише в папка, която контролира приложението (без symlink риск),
+  # а unit-ът е без capabilities и не би минал през data/ (750, 1001).
+  dir="${LINKETTO_GEOIP_HOST:-$(dirname "$ENV_FILE")/geoip}"
+  install -d -m 755 "$dir"
+  tmp="$(mktemp "$dir/.dbip.XXXXXX")"
+  # shellcheck disable=SC2064  # пътят е известен сега — разширяваме го веднага
+  trap "rm -f '$tmp' '$tmp.gz'" EXIT
+  # Текущият месец, а ако изданието още не е излязло — предишният.
+  for m in "$(date -u +%Y-%m)" "$(date -u -d "$(date -u +%Y-%m-01) -1 day" +%Y-%m)"; do
+    curl -fsS --max-time 300 -o "$tmp.gz" "https://download.db-ip.com/free/dbip-country-lite-$m.mmdb.gz" || continue
+    gunzip -c "$tmp.gz" > "$tmp" || continue
+    # Истинска MaxMind DB: над 1 MB и с маркера на метаданните.
+    if [ "$(stat -c %s "$tmp")" -gt 1000000 ] && grep -aq 'MaxMind.com' "$tmp"; then
+      chmod 644 "$tmp"
+      mv -f "$tmp" "$dir/dbip-country-lite.mmdb"
+      printf 'geoip: базата е обновена (издание %s)\n' "$m"
+      return 0
+    fi
+  done
+  die "geoip: не успях да сваля базата от download.db-ip.com (езикът пада към Accept-Language)"
+}
+
 case "${1:-}" in
   plans)     call_route /api/cron/plans ;;
   digest)    call_route /api/cron/digest ;;
   retention) retention ;;
-  *)         die "употреба: linketto-cron plans|digest|retention" ;;
+  geoip)     geoip ;;
+  *)         die "употреба: linketto-cron plans|digest|retention|geoip" ;;
 esac

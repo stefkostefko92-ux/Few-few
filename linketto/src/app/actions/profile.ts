@@ -401,6 +401,24 @@ export async function moveLinkAction(formData: FormData): Promise<void> {
   redirect(await dash(uiLocale));
 }
 
+/** Автоматичният превод за посетителите на други езици — вкл./изкл. (по подразбиране вкл.). */
+export async function setAutoTranslateAction(formData: FormData): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  const user = await requireUser(uiLocale);
+  const profileId = String(formData.get('profileId') ?? '');
+  const on = formData.get('value') === 'on';
+  // Изричен избор на създателя — важи и за профил в „pending“ (възражение по
+  // чл. 21 преди датата или съгласие за по-ранно включване).
+  const { count } = await prisma.profile.updateMany({
+    where: { id: profileId, userId: user.id },
+    data: { autoTranslateMode: on ? 'on' : 'off', autoTranslateStartsAt: null },
+  });
+  if (count === 0) redirect(await dash(uiLocale, '?error=generic'));
+  // Изключено → махаме и кеша: преведеното вече не се показва и не се пази.
+  if (!on) await prisma.autoTranslation.deleteMany({ where: { profileId } });
+  redirect(await dash(uiLocale));
+}
+
 /** Скрива/показва блока на публичния профил (active) — без да го трие. */
 export async function toggleLinkActiveAction(formData: FormData): Promise<void> {
   const uiLocale = localeFrom(formData);
