@@ -104,7 +104,11 @@ export async function SiteFooter({
           </ul>
         </nav>
         <p className="mt-8 text-micro leading-relaxed text-fg-muted">
-          {t('company')} · {t('legalLine')}
+          {t('company')} · {t('legalLine')} ·{' '}
+          {/* Езикът по държава ползва DB-IP Lite (CC BY 4.0) — атрибуцията е задължителна. */}
+          <a href="https://db-ip.com" rel="nofollow noopener" target="_blank" className="underline-offset-2 hover:underline">
+            IP Geolocation by DB-IP
+          </a>
         </p>
       </Container>
     </footer>

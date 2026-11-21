@@ -43,7 +43,7 @@
     "featureQrBody": "Un cod QR în culoarea ta și un bloc vCard care îți salvează contactul pe orice telefon cu o singură atingere.",
     "heroBadge": "Link in bio multilingv · Găzduit în UE",
     "trustEu": "Găzduit în Uniunea Europeană",
-    "trustGdpr": "GDPR în mod implicit",
+    "trustGdpr": "Conform GDPR",
     "trustCookies": "Fără cookie-uri pentru vizitatorii tăi",
     "statsLangsLabel": "limbi din prima zi",
     "statsBrandsLabel": "platforme cu pictograme oficiale",
@@ -57,7 +57,7 @@
     "faq1q": "Ce este Linketto?",
     "faq1a": "Linketto este o pagină link in bio: un singur link care adună toate linkurile, produsele și contactele tale. Ce e unic: pagina ta vorbește limba fiecărui vizitator — o creezi o dată și apare în toate cele 24 de limbi oficiale ale UE.",
     "faq2q": "Prin ce se deosebește Linketto de Linktree?",
-    "faq2a": "Patru lucruri: profilul tău are versiuni în toate limbile și îi arată automat fiecărui vizitator versiunea lui; este găzduit în UE cu GDPR în mod implicit; analiza este fără cookie-uri și fără date personale; iar domeniu propriu ai încă de la planul Pro (€4/lună). O comparație detaliată, cu surse și dată, găsești pe pagina „Linketto vs Linktree”.",
+    "faq2a": "Patru lucruri: profilul tău are versiuni în toate limbile și îi arată automat fiecărui vizitator versiunea lui; este găzduit în UE și conform GDPR; analiza este fără cookie-uri și fără date personale; iar domeniu propriu ai încă de la planul Pro (€4/lună). O comparație detaliată, cu surse și dată, găsești pe pagina „Linketto vs Linktree”.",
     "faq3q": "Cât costă Linketto?",
     "faq4q": "Cum funcționează profilul multilingv?",
     "faq4a": "Vizitatorii îți văd automat profilul în limba lor (din setările browserului) sau aleg una pe pagină. Tu scrii în limba ta, iar traducerea AI integrată completează restul cu un clic — traducerile tale manuale nu sunt niciodată suprascrise.",
@@ -440,7 +440,18 @@
     "linkEdit": "Editează",
     "linkOtherLanguages": "Titlul în alte limbi",
     "linkSaveChanges": "Salvează modificările",
-    "linkNoTitle": "(fără titlu)"
+    "linkNoTitle": "(fără titlu)",
+    "autoTranslateTitle": "Traducere automată pentru vizitatori",
+    "autoTranslateStateOn": "activată",
+    "autoTranslateStateOff": "dezactivată",
+    "autoTranslateOn": "Un vizitator dintr-o țară în a cărei limbă nu ai traducere vede profilul tău tradus automat (Google Gemini, SUA), cu eticheta „Traducere automată (AI)” și un link către original. Traducerile tale au întotdeauna prioritate.",
+    "autoTranslateOff": "Vizitatorii văd doar limbile în care ai tradus tu profilul.",
+    "autoTranslateTurnOff": "Dezactivează",
+    "autoTranslateTurnOn": "Activează",
+    "autoTranslateStatePending": "programată",
+    "autoTranslatePendingAt": "Se va activa pe {date} (după notificarea pe e-mail). O poți dezactiva înainte — atunci nimic din profilul tău nu va fi trimis.",
+    "autoTranslatePendingNoNotice": "Încă nu este activată — vei primi un e-mail cu cel puțin 14 zile înainte de activare.",
+    "autoTranslateTurnOnNow": "Activează acum"
   },
   "profile": {
     "poweredBy": "Creat cu Linketto",
@@ -478,7 +489,11 @@
     "sellerTrader": "Vânzătorul este comerciant",
     "videoPlay": "Redă videoclipul",
     "bookingWhen": "Ora preferată",
-    "badgeCta": "Creează-ți pagina gratuit"
+    "badgeCta": "Creează-ți pagina gratuit",
+    "autoTranslated": "Traducere automată (AI) (original în {language})",
+    "showOriginal": "Arată originalul",
+    "translateInBrowser": "Traduce în {language}",
+    "translating": "Se traduce…"
   },
   "footer": {
     "company": "Un produs Carbon Stealth VCC",
@@ -554,7 +569,13 @@
     "referralCredit": "bonus de recomandare",
     "payoutsTitle": "Cereri de plată — în așteptare ({count})",
     "payoutsEmpty": "Nicio cerere în așteptare.",
-    "payoutMarkPaid": "Marchează ca plătit"
+    "payoutMarkPaid": "Marchează ca plătit",
+    "autoNoticeTitle": "Traducere automată — notificarea creatorilor",
+    "autoNoticeHint": "Profilurile anterioare funcției sunt activate abia la 14 zile după un e-mail către proprietar (transparență conform art. 12–13 GDPR). Butonul trimite e-mailurile și programează activarea doar pentru cei la care e-mailul a ajuns.",
+    "autoNoticeStats": "Fără notificare: {pending} · Programate: {scheduled}",
+    "autoNoticeButton": "Notifică și programează (+14 zile)",
+    "autoNoticeDone": "Creatori notificați: {count}.",
+    "autoNoticeNoEmail": "E-mailul (Brevo) nu este configurat — mesajele nu pot fi trimise."
   },
   "notFound": {
     "title": "Pagina nu a fost găsită",

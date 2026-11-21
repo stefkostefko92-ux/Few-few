@@ -43,7 +43,7 @@
     "featureQrBody": "Un codici QR dû tò culuri e un blocu vCard chi sarva lu tò cuntattu supra lu tilèfunu cu un toccu.",
     "heroBadge": "Link in bio multilingua · Ospitatu nta l'UE",
     "trustEu": "Ospitatu nta l'Unioni Europea",
-    "trustGdpr": "GDPR pi default",
+    "trustGdpr": "Cunformi ô GDPR",
     "trustCookies": "Nuddu cookie pi li tò visitaturi",
     "statsLangsLabel": "lingui dû primu jornu",
     "statsBrandsLabel": "piattaformi cu icòni ufficiali",
@@ -57,7 +57,7 @@
     "faq1q": "Chi è Linketto?",
     "faq1a": "Linketto è na pàggina link in bio: un sulu link chi arricogghi tutti li tò linki, prudutti e cuntatti. La cosa unica: la pàggina parra la lingua di ogni visitaturi — la fai na vota e cumpari nta tutti li 24 lingui ufficiali dâ UE.",
     "faq2q": "Nta chi cosa Linketto è diversu di Linktree?",
-    "faq2a": "Quattru cosi: lu tò prufilu havi virsioni nta tutti li lingui e a ogni visitaturi ci ammustra la sò, sulu; è ospitatu nta l'UE cu GDPR pi default; l'analisi sunnu senza cookie e senza dati pirsunali; e lu tò duminiu l'hai già dô pianu Pro (€4/misi). Nu cunfrontu dittagghiatu cu fonti e data è supra la pàggina «Linketto cuntra Linktree».",
+    "faq2a": "Quattru cosi: lu tò prufilu havi virsioni nta tutti li lingui e a ogni visitaturi ci ammustra la sò, sulu; è ospitatu nta l'UE e cunformi ô GDPR; l'analisi sunnu senza cookie e senza dati pirsunali; e lu tò duminiu l'hai già dô pianu Pro (€4/misi). Nu cunfrontu dittagghiatu cu fonti e data è supra la pàggina «Linketto cuntra Linktree».",
     "faq3q": "Quantu costa Linketto?",
     "faq4q": "Comu funziona lu prufilu multilingua?",
     "faq4a": "Lu visitaturi vidi automaticamenti lu prufilu nta la sò lingua (dî 'mpustazioni dû browser) o la scegghi supra la pàggina. Tu scrivi nta la tò lingua e la traduzioni AI integrata cumpleta l'autri cu un click — li tò traduzioni manuali nun si scancèllanu mai.",
@@ -431,7 +431,18 @@
     "linkEdit": "Mudìfica",
     "linkOtherLanguages": "Tìtulu nta autri lingui",
     "linkSaveChanges": "Sarva li canciamenti",
-    "linkNoTitle": "(senza tìtulu)"
+    "linkNoTitle": "(senza tìtulu)",
+    "autoTranslateTitle": "Traduzzioni automàtica pi li visitatura",
+    "autoTranslateStateOn": "attiva",
+    "autoTranslateStateOff": "astutata",
+    "autoTranslateOn": "Un visitaturi di un paisi dâ cui lingua nun hai traduzzioni vidi lu to prufilu traduciutu automaticamenti (Google Gemini, USA), cu l'etichetta «Traduzzioni automàtica (AI)» e un link a l'urigginali. Li to traduzzioni hannu sempri la pricidenza.",
+    "autoTranslateOff": "Li visitatura vìdinu sulu li lingui ca traducisti tu.",
+    "autoTranslateTurnOff": "Astuta",
+    "autoTranslateTurnOn": "Addumma",
+    "autoTranslateStatePending": "prugrammata",
+    "autoTranslatePendingAt": "S'addumma lu {date} (dopu l'avvisu pi email). La poi astutari prima — accussì nun si manna nenti dû to prufilu.",
+    "autoTranslatePendingNoNotice": "Nun è ancora addumata — ti arriva n'email almenu 14 jorna prima ca s'addumma.",
+    "autoTranslateTurnOnNow": "Addumma ora"
   },
   "profile": {
     "poweredBy": "Fattu cu Linketto",
@@ -469,7 +480,11 @@
     "sellerTrader": "Lu vinnituri è un prufissiunista",
     "videoPlay": "Fai partiri lu video",
     "bookingWhen": "Orariu chi ti cunveni",
-    "badgeCta": "Crea la tò pàggina gratis"
+    "badgeCta": "Crea la tò pàggina gratis",
+    "autoTranslated": "Traduzzioni automàtica (AI) (urigginali 'n {language})",
+    "showOriginal": "Ammustra l'urigginali",
+    "translateInBrowser": "Traduci 'n {language}",
+    "translating": "Staiu traducennu…"
   },
   "footer": {
     "company": "Un prudottu Carbon Stealth VCC",
@@ -545,7 +560,13 @@
     "referralCredit": "bonus referral",
     "payoutsTitle": "Richiesti di pagamentu — 'n attesa ({count})",
     "payoutsEmpty": "Nudda richiesta 'n attesa.",
-    "payoutMarkPaid": "Signa comu pagatu"
+    "payoutMarkPaid": "Signa comu pagatu",
+    "autoNoticeTitle": "Traduzzioni automàtica — avvisu ê creator",
+    "autoNoticeHint": "Li prufili di prima dâ funzioni s'addummanu sulu 14 jorna dopu n'email ô patruni (trasparenza pi l'artt. 12–13 GDPR). Lu buttuni manna l'email e prugramma l'addumata sulu pi chiddi ca ricivèru l'email.",
+    "autoNoticeStats": "Senza avvisu: {pending} · Prugrammati: {scheduled}",
+    "autoNoticeButton": "Avvisa e prugramma (+14 jorna)",
+    "autoNoticeDone": "Creator avvisati: {count}.",
+    "autoNoticeNoEmail": "L'email (Brevo) nun è cunfigurata — li missaggi nun ponnu pàrtiri."
   },
   "notFound": {
     "title": "Pàggina non truvata",

@@ -3,7 +3,9 @@ import { cleanBio, geminiAllowed } from './ai-text';
 
 // AI превод на профила с един клик — Gemini Flash (същият подход като
 // mastilko): ключът е САМО server-side env, клиентът никога не говори с
-// Google. Съдържанието се праща само по изрично действие на потребителя.
+// Google. Съдържанието се праща по действие на потребителя („Преведи с AI“,
+// „Генерирай био“) или за автоматичния превод за посетителите (публичното
+// съдържание на профила; изключва се от таблото — auto-translate-server.ts).
 
 export interface TranslatableContent {
   displayName: string;

@@ -43,7 +43,7 @@
     "featureQrBody": "QR kods tavā krāsā un vCard bloks, kas saglabā tavu kontaktu jebkurā telefonā ar vienu pieskārienu.",
     "heroBadge": "Daudzvalodu link in bio · Mitināts ES",
     "trustEu": "Mitināts Eiropas Savienībā",
-    "trustGdpr": "GDPR pēc noklusējuma",
+    "trustGdpr": "Atbilst GDPR",
     "trustCookies": "Nekādu sīkdatņu apmeklētājiem",
     "statsLangsLabel": "valodas jau no pirmās dienas",
     "statsBrandsLabel": "platformas ar oficiālām ikonām",
@@ -57,7 +57,7 @@
     "faq1q": "Kas ir Linketto?",
     "faq1a": "Linketto ir „link in bio“ lapa: viena saite, kas apvieno visas tavas saites, produktus un kontaktus. Unikālais: tava lapa runā katra apmeklētāja valodā — izveido to vienreiz, un tā tiek rādīta visās 24 ES oficiālajās valodās.",
     "faq2q": "Ar ko Linketto atšķiras no Linktree?",
-    "faq2a": "Četras lietas: tavam profilam ir versijas visās valodās, un tas katram apmeklētājam pats parāda viņa valodu; tas ir mitināts ES ar GDPR pēc noklusējuma; analītika ir bez sīkdatnēm un bez personas datiem; un savu domēnu tu iegūsti jau no Pro plāna (€4/mēn). Detalizēts salīdzinājums ar avotiem un datumu — lapā „Linketto pret Linktree“.",
+    "faq2a": "Četras lietas: tavam profilam ir versijas visās valodās, un tas katram apmeklētājam pats parāda viņa valodu; tas ir mitināts ES un atbilst GDPR; analītika ir bez sīkdatnēm un bez personas datiem; un savu domēnu tu iegūsti jau no Pro plāna (€4/mēn). Detalizēts salīdzinājums ar avotiem un datumu — lapā „Linketto pret Linktree“.",
     "faq3q": "Cik maksā Linketto?",
     "faq4q": "Kā darbojas daudzvalodu profils?",
     "faq4a": "Apmeklētājs automātiski redz profilu savā valodā (pēc pārlūka iestatījumiem) vai izvēlas valodu lapā. Tu raksti savā valodā, un iebūvētais AI tulkojums aizpilda pārējās ar vienu klikšķi — tavi manuālie tulkojumi nekad netiek pārrakstīti.",
@@ -440,7 +440,18 @@
     "linkEdit": "Rediģēt",
     "linkOtherLanguages": "Nosaukums citās valodās",
     "linkSaveChanges": "Saglabāt izmaiņas",
-    "linkNoTitle": "(bez nosaukuma)"
+    "linkNoTitle": "(bez nosaukuma)",
+    "autoTranslateTitle": "Automātisks tulkojums apmeklētājiem",
+    "autoTranslateStateOn": "ieslēgts",
+    "autoTranslateStateOff": "izslēgts",
+    "autoTranslateOn": "Apmeklētājs no valsts, kuras valodā tev nav tulkojuma, redz tavu profilu automātiski iztulkotu (Google Gemini, ASV) ar atzīmi „Mašīntulkojums (AI)“ un saiti uz oriģinālu. Taviem tulkojumiem vienmēr ir priekšroka.",
+    "autoTranslateOff": "Apmeklētāji redz tikai tās valodas, kurās tu pats esi iztulkojis profilu.",
+    "autoTranslateTurnOff": "Izslēgt",
+    "autoTranslateTurnOn": "Ieslēgt",
+    "autoTranslateStatePending": "gaidāms",
+    "autoTranslatePendingAt": "Tiks ieslēgts {date} (pēc paziņojuma e-pastā). Tu to vari izslēgt pirms tam — tad no tava profila nekas netiks nosūtīts.",
+    "autoTranslatePendingNoNotice": "Vēl nav ieslēgts — e-pastu saņemsi vismaz 14 dienas pirms ieslēgšanas.",
+    "autoTranslateTurnOnNow": "Ieslēgt tagad"
   },
   "profile": {
     "poweredBy": "Izveidots ar Linketto",
@@ -478,7 +489,11 @@
     "sellerTrader": "Pārdevējs ir tirgotājs",
     "videoPlay": "Atskaņot video",
     "bookingWhen": "Vēlamais laiks",
-    "badgeCta": "Izveido savu lapu bez maksas"
+    "badgeCta": "Izveido savu lapu bez maksas",
+    "autoTranslated": "Mašīntulkojums (AI) (oriģināls: {language})",
+    "showOriginal": "Rādīt oriģinālu",
+    "translateInBrowser": "Tulkot {language} valodā",
+    "translating": "Tulko…"
   },
   "footer": {
     "company": "Carbon Stealth VCC produkts",
@@ -554,7 +569,13 @@
     "referralCredit": "ieteikuma bonuss",
     "payoutsTitle": "Izmaksas pieprasījumi — gaida ({count})",
     "payoutsEmpty": "Nav gaidošu pieprasījumu.",
-    "payoutMarkPaid": "Atzīmēt kā samaksātu"
+    "payoutMarkPaid": "Atzīmēt kā samaksātu",
+    "autoNoticeTitle": "Automātisks tulkojums — autoru informēšana",
+    "autoNoticeHint": "Profiliem, kas izveidoti pirms šīs funkcijas, tā tiek ieslēgta tikai 14 dienas pēc e-pasta to īpašniekam (pārredzamība saskaņā ar GDPR 12.–13. pantu). Poga nosūta vēstules un ieplāno ieslēgšanu tikai tiem, kuriem vēstule ir nonākusi.",
+    "autoNoticeStats": "Bez paziņojuma: {pending} · Ieplānoti: {scheduled}",
+    "autoNoticeButton": "Paziņot un ieplānot (+14 dienas)",
+    "autoNoticeDone": "Informēti autori: {count}.",
+    "autoNoticeNoEmail": "E-pasts (Brevo) nav iestatīts — vēstules nevar nosūtīt."
   },
   "notFound": {
     "title": "Lapa nav atrasta",

@@ -10,6 +10,8 @@ import { banAllowed, banNoticeEmail, isBanCategory, warningNoticeEmail } from '@
 import { emailConfigured, sendEmail } from '@/lib/email';
 import { eraseUser } from '@/lib/account-erasure';
 import { applyPlanLimits } from '@/lib/plan-limits';
+import { autoTranslateNoticeEmail, autoTranslateStartDate } from '@/lib/auto-translate-notice';
+import { SITE_URL } from '@/lib/seo';
 import { isLocale } from '@/i18n/locales';
 import type { Plan } from '@prisma/client';
 
@@ -293,4 +295,46 @@ export async function adminSetPasswordAction(
     where: { userId: parsed.data.userId },
   });
   redirect(`/${uiLocale}/admin?ok=1`);
+}
+
+/**
+ * Уведомление до създателите с профили отпреди автоматичния превод (правен
+ * преглед, ОРЗД чл. 12–13): по едно писмо на собственик; датата на включване
+ * (≥14 дни) се насрочва САМО за профилите, чийто собственик реално е получил
+ * писмото. Без Brevo — нищо не се насрочва.
+ */
+export async function adminNotifyAutoTranslateAction(formData: FormData): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  await requireAdmin(uiLocale);
+  if (!emailConfigured()) redirect(`/${uiLocale}/admin?error=autonotice-email#autotranslate`);
+  const pending = await prisma.profile.findMany({
+    where: { autoTranslateMode: 'pending', autoTranslateStartsAt: null },
+    select: { id: true, slug: true, user: { select: { id: true, email: true, locale: true } } },
+  });
+  const byUser = new Map<string, { email: string; locale: string; ids: string[]; slugs: string[] }>();
+  for (const profile of pending) {
+    const entry = byUser.get(profile.user.id) ?? {
+      email: profile.user.email,
+      locale: profile.user.locale,
+      ids: [],
+      slugs: [],
+    };
+    entry.ids.push(profile.id);
+    entry.slugs.push(profile.slug);
+    byUser.set(profile.user.id, entry);
+  }
+  const startsAt = autoTranslateStartDate(new Date());
+  let sent = 0;
+  for (const owner of byUser.values()) {
+    const mail = autoTranslateNoticeEmail({ locale: owner.locale, slugs: owner.slugs, startsAt, baseUrl: SITE_URL });
+    const ok = await sendEmail({ to: owner.email, subject: mail.subject, html: mail.html, tag: 'notice' });
+    if (!ok) continue;
+    // Само „pending“ без дата — ако междувременно създателят е избрал сам, не пипаме.
+    await prisma.profile.updateMany({
+      where: { id: { in: owner.ids }, autoTranslateMode: 'pending', autoTranslateStartsAt: null },
+      data: { autoTranslateStartsAt: startsAt },
+    });
+    sent += 1;
+  }
+  redirect(`/${uiLocale}/admin?ok=autonotice&count=${sent}#autotranslate`);
 }

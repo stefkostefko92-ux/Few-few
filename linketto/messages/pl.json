@@ -43,7 +43,7 @@
     "featureQrBody": "Kod QR w Twoim kolorze i blok vCard, który zapisuje Twój kontakt w każdym telefonie jednym dotknięciem.",
     "heroBadge": "Wielojęzyczny link in bio · Hostowany w UE",
     "trustEu": "Hostowany w Unii Europejskiej",
-    "trustGdpr": "GDPR w standardzie",
+    "trustGdpr": "Zgodny z GDPR",
     "trustCookies": "Bez ciasteczek dla odwiedzających",
     "statsLangsLabel": "języków od pierwszego dnia",
     "statsBrandsLabel": "platform z oficjalnymi ikonami",
@@ -57,7 +57,7 @@
     "faq1q": "Czym jest Linketto?",
     "faq1a": "Linketto to strona „link in bio”: jeden link, który zbiera wszystkie Twoje linki, produkty i kontakty. To, co wyjątkowe: Twoja strona mówi językiem każdego odwiedzającego — stwórz ją raz, a wyświetla się we wszystkich 24 oficjalnych językach UE.",
     "faq2q": "Czym Linketto różni się od Linktree?",
-    "faq2a": "Cztery rzeczy: Twój profil ma wersje we wszystkich językach i sam pokazuje każdemu odwiedzającemu jego własną; jest hostowany w UE z GDPR w standardzie; analityka działa bez ciasteczek i bez danych osobowych; a własną domenę masz już od planu Pro (€4/mies.). Szczegółowe porównanie ze źródłami i datą znajdziesz na stronie „Linketto vs Linktree”.",
+    "faq2a": "Cztery rzeczy: Twój profil ma wersje we wszystkich językach i sam pokazuje każdemu odwiedzającemu jego własną; jest hostowany w UE i zgodny z GDPR; analityka działa bez ciasteczek i bez danych osobowych; a własną domenę masz już od planu Pro (€4/mies.). Szczegółowe porównanie ze źródłami i datą znajdziesz na stronie „Linketto vs Linktree”.",
     "faq3q": "Ile kosztuje Linketto?",
     "faq4q": "Jak działa wielojęzyczny profil?",
     "faq4a": "Odwiedzający automatycznie widzi profil w swoim języku (według ustawień przeglądarki) lub wybiera język na stronie. Piszesz w swoim języku, a wbudowane tłumaczenie AI uzupełnia pozostałe języki jednym przyciskiem — Twoje ręczne tłumaczenia nigdy nie są nadpisywane.",
@@ -76,7 +76,7 @@
     "statsFeeLabel": "udział Linketto w Twojej sprzedaży",
     "faq5q": "Czy mogę sprzedawać produkty na swojej stronie?",
     "trustPayments": "Płatności za plany przez Revolut Bank UAB (licencjonowany bank w UE)",
-    "featureEuBody": "Hosting w UE, GDPR w standardzie. Płatności (Revolut Bank UAB) i e-maile (Brevo) obsługują dostawcy z UE; jedynym spoza UE jest AI (Google) — tylko wtedy, gdy sam używasz „Przetłumacz z AI” lub „Wygeneruj bio”. Szczegóły znajdziesz w Polityce prywatności.",
+    "featureEuBody": "Hosting w UE. E-maile (Brevo) i płatności (Revolut Bank UAB) obsługują dostawcy z UE; Revolut może przekazywać dane poza EOG zgodnie ze swoją polityką. Poza UE wysyłamy dane tylko do Google (Gemini, USA) — tekst Twojego profilu dla „Przetłumacz z AI”, „Wygeneruj bio” i automatycznego tłumaczenia dla odwiedzających (domyślnie włączone, wyłączysz je jednym przyciskiem); danych odwiedzających nie wysyłamy. Szczegóły znajdziesz w Polityce prywatności.",
     "faq3a": "Plan darmowy jest naprawdę darmowy — nieograniczona liczba linków i 2 wersje językowe. Pro kosztuje €4/mies. (wszystkie języki, własna domena), Business €9/mies. (do 5 profili), a Founder to jednorazowo €49 — Pro na zawsze, do 5 profili. Płacisz z góry za 1, 3, 6 lub 12 miesięcy — bez subskrypcji i bez automatycznych obciążeń.",
     "faq5a": "Tak — dodajesz produkt z ceną i własnym linkiem do płatności (Revolut, PayPal, Gumroad i inne). Kupujący płaci bezpośrednio Tobie; Linketto nie stoi między wami i nie pobiera prowizji. Sprzedawcą jesteś Ty i odpowiadasz za zamówienie, podatki i prawa kupującego.",
     "resumeMotion": "Wznów animację",
@@ -443,7 +443,18 @@
     "linkEdit": "Edytuj",
     "linkOtherLanguages": "Tytuł w innych językach",
     "linkSaveChanges": "Zapisz zmiany",
-    "linkNoTitle": "(bez tytułu)"
+    "linkNoTitle": "(bez tytułu)",
+    "autoTranslateTitle": "Tłumaczenie automatyczne dla odwiedzających",
+    "autoTranslateStateOn": "włączone",
+    "autoTranslateStateOff": "wyłączone",
+    "autoTranslateOn": "Odwiedzający z kraju, na którego język nie masz tłumaczenia, widzi Twój profil przetłumaczony automatycznie (Google Gemini, USA), z etykietą „Tłumaczenie maszynowe (AI)” i linkiem do oryginału. Twoje tłumaczenia zawsze mają pierwszeństwo.",
+    "autoTranslateOff": "Odwiedzający widzą tylko języki, na które sam przetłumaczyłeś profil.",
+    "autoTranslateTurnOff": "Wyłącz",
+    "autoTranslateTurnOn": "Włącz",
+    "autoTranslateStatePending": "zaplanowane",
+    "autoTranslatePendingAt": "Zostanie włączone {date} (po powiadomieniu e-mailem). Możesz je wcześniej wyłączyć — wtedy nic z Twojego profilu nie zostanie wysłane.",
+    "autoTranslatePendingNoNotice": "Jeszcze niewłączone — otrzymasz e-mail co najmniej 14 dni przed włączeniem.",
+    "autoTranslateTurnOnNow": "Włącz teraz"
   },
   "profile": {
     "poweredBy": "Stworzone z Linketto",
@@ -481,7 +492,11 @@
     "sellerTrader": "Sprzedawca jest przedsiębiorcą",
     "videoPlay": "Odtwórz wideo",
     "bookingWhen": "Preferowany termin",
-    "badgeCta": "Stwórz swoją stronę za darmo"
+    "badgeCta": "Stwórz swoją stronę za darmo",
+    "autoTranslated": "Tłumaczenie maszynowe (AI) (oryginał: {language})",
+    "showOriginal": "Pokaż oryginał",
+    "translateInBrowser": "Przetłumacz na język: {language}",
+    "translating": "Tłumaczenie…"
   },
   "footer": {
     "company": "Produkt Carbon Stealth VCC",
@@ -557,7 +572,13 @@
     "referralCredit": "bonus polecający",
     "payoutsTitle": "Wnioski o wypłatę — oczekujące ({count})",
     "payoutsEmpty": "Brak oczekujących wniosków.",
-    "payoutMarkPaid": "Oznacz jako opłacone"
+    "payoutMarkPaid": "Oznacz jako opłacone",
+    "autoNoticeTitle": "Automatyczne tłumaczenie — powiadamianie twórców",
+    "autoNoticeHint": "Profile sprzed tej funkcji są włączane dopiero 14 dni po e-mailu do ich właściciela (przejrzystość zgodnie z art. 12–13 GDPR). Przycisk wysyła wiadomości i planuje włączenie tylko dla tych, do których e-mail dotarł.",
+    "autoNoticeStats": "Bez powiadomienia: {pending} · Zaplanowane: {scheduled}",
+    "autoNoticeButton": "Powiadom i zaplanuj (+14 dni)",
+    "autoNoticeDone": "Powiadomieni twórcy: {count}.",
+    "autoNoticeNoEmail": "E-mail (Brevo) nie jest skonfigurowany — wiadomości nie mogą zostać wysłane."
   },
   "notFound": {
     "title": "Nie znaleziono strony",

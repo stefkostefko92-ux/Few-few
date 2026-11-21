@@ -43,7 +43,7 @@
     "featureQrBody": "QR-koodi omissa väreissäsi ja vCard-lohko, joka tallentaa yhteystietosi mihin tahansa puhelimeen yhdellä napautuksella.",
     "heroBadge": "Monikielinen link in bio · Isännöity EU:ssa",
     "trustEu": "Isännöity Euroopan unionissa",
-    "trustGdpr": "GDPR oletuksena",
+    "trustGdpr": "GDPR:n mukainen",
     "trustCookies": "Ei evästeitä kävijöillesi",
     "statsLangsLabel": "kieltä ensimmäisestä päivästä",
     "statsBrandsLabel": "alustaa virallisilla kuvakkeilla",
@@ -57,7 +57,7 @@
     "faq1q": "Mikä Linketto on?",
     "faq1a": "Linketto on link-in-bio-sivu: yksi linkki, joka kokoaa kaikki linkkisi, tuotteesi ja yhteystietosi. Ainutlaatuista: sivusi puhuu jokaisen kävijän kieltä — rakenna se kerran ja se näkyy kaikilla EU:n 24 virallisella kielellä.",
     "faq2q": "Miten Linketto eroaa Linktreestä?",
-    "faq2a": "Neljä asiaa: profiilistasi on versiot kaikilla kielillä, ja se näyttää jokaiselle kävijälle automaattisesti tämän oman kielen version; se on isännöity EU:ssa, GDPR oletuksena; analytiikka on evästeetöntä ja ilman henkilötietoja; ja oman verkkotunnuksen saat jo Pro-paketista alkaen (4 €/kk). Yksityiskohtainen vertailu lähteineen ja päivämäärineen löytyy sivulta ”Linketto vs Linktree”.",
+    "faq2a": "Neljä asiaa: profiilistasi on versiot kaikilla kielillä, ja se näyttää jokaiselle kävijälle automaattisesti tämän oman kielen version; se on isännöity EU:ssa ja GDPR:n mukainen; analytiikka on evästeetöntä ja ilman henkilötietoja; ja oman verkkotunnuksen saat jo Pro-paketista alkaen (4 €/kk). Yksityiskohtainen vertailu lähteineen ja päivämäärineen löytyy sivulta ”Linketto vs Linktree”.",
     "faq3q": "Paljonko Linketto maksaa?",
     "faq4q": "Miten monikielinen profiili toimii?",
     "faq4a": "Kävijä näkee profiilisi automaattisesti omalla kielellään (selaimen asetuksista) tai valitsee kielen sivulla. Kirjoitat omalla kielelläsi, ja sisäänrakennettu tekoälykäännös täyttää loput yhdellä klikkauksella — käsin tehtyjä käännöksiäsi ei koskaan korvata.",
@@ -440,7 +440,18 @@
     "linkEdit": "Muokkaa",
     "linkOtherLanguages": "Otsikko muilla kielillä",
     "linkSaveChanges": "Tallenna muutokset",
-    "linkNoTitle": "(ei otsikkoa)"
+    "linkNoTitle": "(ei otsikkoa)",
+    "autoTranslateTitle": "Automaattinen käännös kävijöille",
+    "autoTranslateStateOn": "päällä",
+    "autoTranslateStateOff": "pois päältä",
+    "autoTranslateOn": "Kävijä maasta, jonka kielelle sinulla ei ole käännöstä, näkee profiilisi automaattisesti käännettynä (Google Gemini, Yhdysvallat) merkinnällä „Konekäännös (tekoäly)“ ja linkillä alkuperäiseen. Omat käännöksesi ovat aina etusijalla.",
+    "autoTranslateOff": "Kävijät näkevät vain kielet, joille olet itse kääntänyt profiilisi.",
+    "autoTranslateTurnOff": "Poista käytöstä",
+    "autoTranslateTurnOn": "Ota käyttöön",
+    "autoTranslateStatePending": "tulossa",
+    "autoTranslatePendingAt": "Otetaan käyttöön {date} (sähköposti-ilmoituksen jälkeen). Voit poistaa sen käytöstä sitä ennen — silloin profiilistasi ei lähetetä mitään.",
+    "autoTranslatePendingNoNotice": "Ei vielä käytössä — saat sähköpostin vähintään 14 päivää ennen käyttöönottoa.",
+    "autoTranslateTurnOnNow": "Ota käyttöön nyt"
   },
   "profile": {
     "poweredBy": "Tehty Linkettolla",
@@ -478,7 +489,11 @@
     "sellerTrader": "Myyjä on elinkeinonharjoittaja",
     "videoPlay": "Toista video",
     "bookingWhen": "Toivottu aika",
-    "badgeCta": "Luo oma sivusi ilmaiseksi"
+    "badgeCta": "Luo oma sivusi ilmaiseksi",
+    "autoTranslated": "Konekäännös (tekoäly) (alkuperäinen: {language})",
+    "showOriginal": "Näytä alkuperäinen",
+    "translateInBrowser": "Käännä kielelle: {language}",
+    "translating": "Käännetään…"
   },
   "footer": {
     "company": "Carbon Stealth VCC -tuote",
@@ -554,7 +569,13 @@
     "referralCredit": "suosittelubonus",
     "payoutsTitle": "Maksupyynnöt — odottavat ({count})",
     "payoutsEmpty": "Ei odottavia pyyntöjä.",
-    "payoutMarkPaid": "Merkitse maksetuksi"
+    "payoutMarkPaid": "Merkitse maksetuksi",
+    "autoNoticeTitle": "Automaattinen käännös — ilmoitus sisällöntuottajille",
+    "autoNoticeHint": "Ennen toimintoa luoduissa profiileissa se otetaan käyttöön vasta 14 päivää omistajalle lähetetyn sähköpostin jälkeen (läpinäkyvyys, GDPR 12–13 art.). Painike lähettää viestit ja ajastaa käyttöönoton vain niille, joille viesti on mennyt perille.",
+    "autoNoticeStats": "Ilman ilmoitusta: {pending} · Ajastettu: {scheduled}",
+    "autoNoticeButton": "Ilmoita ja ajasta (+14 päivää)",
+    "autoNoticeDone": "Ilmoitettu sisällöntuottajille: {count}.",
+    "autoNoticeNoEmail": "Sähköpostia (Brevo) ei ole määritetty — viestejä ei voi lähettää."
   },
   "notFound": {
     "title": "Sivua ei löytynyt",

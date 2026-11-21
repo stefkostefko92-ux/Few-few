@@ -21,6 +21,7 @@ import {
   createProfileAction,
   deleteLinkAction,
   moveLinkAction,
+  setAutoTranslateAction,
   toggleLinkActiveAction,
   updateLinkAction,
   updateProfileAction,
@@ -49,6 +50,7 @@ import { LivePreview } from '@/components/LivePreview';
 import { DashKeepPlace } from '@/components/DashKeepPlace';
 import { SortableLinks } from '@/components/SortableLinks';
 import { blockFieldsFor, blockFormValues } from '@/lib/blocks';
+import { autoTranslateActive } from '@/lib/auto-translate';
 import {
   ensureReferralCodeAction,
   requestPayoutAction,
@@ -993,6 +995,57 @@ export default async function DashboardPage({
               <p className="mt-1 text-sm text-fg-muted">
                 {t('translationsHint')} {t('aiTranslateHint')}
               </p>
+              {/* Автоматичен превод за посетителите (docs/geo-autotranslate-spec.md):
+                  on / off (възражение) / pending (профил отпреди функцията — включва се
+                  едва ≥14 дни след имейла; до тогава създателят може да възрази). */}
+              {(() => {
+                const active = autoTranslateActive(profile);
+                const pending = profile.autoTranslateMode === 'pending' && !active;
+                const startsAt = profile.autoTranslateStartsAt;
+                const toggle = (value: 'on' | 'off', label: string, variant: 'secondary' | 'ghost') => (
+                  <form action={setAutoTranslateAction}>
+                    <input type="hidden" name="uiLocale" value={locale} />
+                    <input type="hidden" name="profileId" value={profile.id} />
+                    <input type="hidden" name="value" value={value} />
+                    <button type="submit" className={buttonStyles({ variant, size: 'sm' })}>
+                      {label}
+                    </button>
+                  </form>
+                );
+                return (
+                  <div id="autotranslate" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-card border border-line bg-surface-2 p-3">
+                    <div className="min-w-0 flex-1 basis-64">
+                      <p className="flex items-center gap-2 text-sm font-semibold text-fg">
+                        {t('autoTranslateTitle')}
+                        <Badge tone={active ? 'success' : pending ? 'warning' : 'neutral'}>
+                          {active
+                            ? t('autoTranslateStateOn')
+                            : pending
+                              ? t('autoTranslateStatePending')
+                              : t('autoTranslateStateOff')}
+                        </Badge>
+                      </p>
+                      <p className="mt-1 text-xs text-fg-muted">
+                        {active
+                          ? t('autoTranslateOn')
+                          : pending
+                            ? startsAt
+                              ? t('autoTranslatePendingAt', {
+                                  date: new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(startsAt),
+                                })
+                              : t('autoTranslatePendingNoNotice')
+                            : t('autoTranslateOff')}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {pending && toggle('on', t('autoTranslateTurnOnNow'), 'ghost')}
+                      {active || pending
+                        ? toggle('off', t('autoTranslateTurnOff'), 'secondary')
+                        : toggle('on', t('autoTranslateTurnOn'), 'secondary')}
+                    </div>
+                  </div>
+                );
+              })()}
               {/* AI генериране на био от ключови думи (на основния език) */}
               <form
                 action={aiGenerateBioAction}
