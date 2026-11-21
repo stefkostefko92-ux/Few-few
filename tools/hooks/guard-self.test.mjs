@@ -154,6 +154,13 @@ test("фалшиви блокове от живата работа на AI-дж�
   ]) assert.equal(hook("guard-self.mjs", bash(c)).status, 2, `трябва да се спре: ${c}`);
 });
 
+test("tree -o пише във файл (трудният spec на Кодаджията, 21.11.2026): целта се съди като пренасочване", () => {
+  for (const c of ["tree --noreport -i -o .claude/settings.json /tmp/d", "tree -o .claude/hooks/guard-exfil.mjs .", "tree -fi -o ~/.claude/settings.json /tmp"])
+    assert.equal(hook("guard-self.mjs", bash(c)).status, 2, `трябва да се спре: ${c}`);
+  for (const c of ["tree .claude", "tree -L 2 .claude/hooks", "tree -o /tmp/tree.txt .", "tree . -o /tmp/x"])
+    assert.equal(hook("guard-self.mjs", bash(c)).status, 0, `трябва да мине: ${c}`);
+});
+
 test("новите правила не спират нормална работа (архиви извън репото, проверка на кръпка, тесен find, export)", () => {
   for (const c of [
     "tar -xf /tmp/a.tar -C /tmp/x", "tar -czf /tmp/a.tgz piuma", "tar -tf /tmp/a.tar", "unzip -l /tmp/a.zip", "unzip -o /tmp/a.zip -d /tmp/u",

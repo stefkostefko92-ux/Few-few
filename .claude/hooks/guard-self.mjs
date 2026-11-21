@@ -255,6 +255,16 @@ function argvVerdict(argvRaw, state, set) {
       if (coversAnchor(dest || state.cwd, state.cwd)) return [`${name}: извличане/кръпка по данни в папка с пазачите (${dest || state.cwd})`, "A"];
     }
   }
+  // tree -o ФАЙЛ пише изхода си във файл, макар tree да е в READERS (трудният spec на Кодаджията, 21.11.2026:
+  // `tree -o .claude/settings.json /tmp/d` презаписваше настройките) → целта се съди като пренасочване.
+  if (name === "tree") {
+    for (let i = 0; i < args.length; i++) {
+      const target = args[i] === "-o" ? args[i + 1] : /^-o./.test(args[i]) ? args[i].slice(2) : null;
+      if (!target) continue;
+      const t = max(tierOfPath(target, state.cwd, set), tierOfGlob(target, state.cwd, set));
+      if (t) return [`tree -o пише в пазен файл (${target})`, t];
+    }
+  }
   // find -delete/-exec от корен, който съдържа пазачите — шаблонът на find (`*hooks/x`) не е път, не гадаем.
   if (name === "find" && args.some((w) => /^-(?:delete|exec|execdir|ok|okdir|fprint\w*|fls)$/.test(w))) {
     const roots = []; for (const w of args) { if (w.startsWith("-") || /^[!(),]$/.test(w)) break; roots.push(w); }
