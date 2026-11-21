@@ -9358,7 +9358,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 325
+        "lessons": 326
       },
       "evolution": [
         {
@@ -9726,9 +9726,20 @@
           "date": "2026-11-21",
           "event": "v30.9 — учене",
           "detail": "Научи: Revolut Merchant refund приема частична сума многократно (Σ ≤ сумата на поръчката), cur…"
+        },
+        {
+          "version": "31.0.0",
+          "date": "2026-11-21",
+          "event": "v31.0 — учене",
+          "detail": "Научи: В Revolut Merchant API 2026-08-17 схемата Order-v7 (отговорът на GET /api/orders/{id} и…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-21",
+          "type": "learning",
+          "summary": "Научи: „В Revolut Merchant API 2026-08-17 схемата Order-v7 (отговорът на GET /api/orders/{id} и…\""
+        },
         {
           "date": "2026-11-21",
           "type": "learning",
