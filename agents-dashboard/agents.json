@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-11-14",
+    "updated": "2026-11-21",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -11501,7 +11501,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 246
+        "lessons": 248
       },
       "evolution": [
         {
@@ -11947,9 +11947,20 @@
           "date": "2026-11-14",
           "event": "v23.6 — учене",
           "detail": "Научи: Чертане на линии с CSS анимация само върху transform - подай на SVG clipPath-rect trans… (+8 още)"
+        },
+        {
+          "version": "23.8.0",
+          "date": "2026-11-21",
+          "event": "v23.8 — учене",
+          "detail": "Научи: Темова обвивка за непренесени екрани е вложен `data-theme=\"light\"` само ако :root блокъ… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-21",
+          "type": "learning",
+          "summary": "Научи: „Темова обвивка за непренесени екрани е вложен `data-theme=\"light\"` само ако :root блокъ…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-14",
           "type": "learning",
