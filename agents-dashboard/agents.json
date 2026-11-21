@@ -15458,7 +15458,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 226
+        "lessons": 229
       },
       "evolution": [
         {
@@ -15568,9 +15568,20 @@
           "date": "2026-11-21",
           "event": "v22.6 — учене",
           "detail": "Научи: node:test с { todo } прави пакета зелен (exit 0, fail 0), но TAP редовете \"not ok # TOD…"
+        },
+        {
+          "version": "22.9.0",
+          "date": "2026-11-21",
+          "event": "v22.9 — учене",
+          "detail": "Научи: Покритие на тестове, които са обикновени скриптове (не node:test), се мери без c8 — `NO… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-21",
+          "type": "learning",
+          "summary": "Научи: „Покритие на тестове, които са обикновени скриптове (не node:test), се мери без c8 — `NO…\" (+2 още) · 2 в карантина"
+        },
         {
           "date": "2026-11-21",
           "type": "learning",
