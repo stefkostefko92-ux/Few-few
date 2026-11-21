@@ -223,7 +223,15 @@ release (`/opt/few-few/shared/linketto/last-good`); провал на мигра
 (`env_file` се чете при пресъздаване на контейнера; `restart` не стига. `last-good`, не `current`:
 `current` се мести и при деплой на друг продукт, към release без симлинка `.env`).
 
-**Еднократно:** DNS A/AAAA → VPS, после vhost + TLS. Vhost-ът се взема от последния работещ release
+**Най-кратко (препоръчано):** `deploy/https-setup.sh` прави всичко по-долу с проверки и спира при първия
+проблем — деплой от `main`, vhost от `last-good`, слага издадения сертификат в правилния сайт и
+връща `conf.d/00-reject-unknown.conf`, ако certbot го е пипнал:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/stefkostefko92-ux/Few-few/main/linketto/deploy/https-setup.sh -o /root/linketto-https.sh && sudo bash /root/linketto-https.sh
+```
+
+**Ръчно:** DNS A/AAAA → VPS, после vhost + TLS. Vhost-ът се взема от последния работещ release
 (`last-good`, не `current`), а `proxy_pass` получава порта от `.env`:
 
 ```bash
