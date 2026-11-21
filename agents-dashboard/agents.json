@@ -2887,7 +2887,7 @@
           "Sandi Metz „The Wrong Abstraction“ + Page-Jones connascence",
           "Google eng-practices (code review/readability); граница спрямо .claude/agents/kodadjiyata.md"
         ],
-        "lessons": 141
+        "lessons": 143
       },
       "evolution": [
         {
@@ -2955,9 +2955,20 @@
           "date": "2026-11-21",
           "event": "v22.7 — учене",
           "detail": "Научи: „Първата папка под продукта“ е лош контекст за паритет на копия в монорепо с apps/* и p… (+12 още)"
+        },
+        {
+          "version": "22.9.0",
+          "date": "2026-11-21",
+          "event": "v22.9 — учене",
+          "detail": "Научи: В linketto ESLint 9 мери сложност и влагане без промяна на конфига с --rule '{\"complexi… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-21",
+          "type": "learning",
+          "summary": "Научи: „В linketto ESLint 9 мери сложност и влагане без промяна на конфига с --rule '{\"complexi…\" (+1 още)"
+        },
         {
           "date": "2026-11-21",
           "type": "learning",
