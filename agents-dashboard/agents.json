@@ -5051,7 +5051,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 272
+        "lessons": 274
       },
       "evolution": [
         {
@@ -5563,9 +5563,20 @@
           "date": "2026-11-21",
           "event": "v29.9 — учене",
           "detail": "Научи: В linketto правният клас, който пада към en, не е само legal.* — home.featureEuBody/faq… (+18 още)"
+        },
+        {
+          "version": "30.1.0",
+          "date": "2026-11-21",
+          "event": "v30.1 — учене",
+          "detail": "Научи: В linketto messages/*.json обектът dashboard в 26-те не-bg локала завършва с navAudienc… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-21",
+          "type": "learning",
+          "summary": "Научи: „В linketto messages/*.json обектът dashboard в 26-те не-bg локала завършва с navAudienc…\" (+1 още)"
+        },
         {
           "date": "2026-11-21",
           "type": "learning",
