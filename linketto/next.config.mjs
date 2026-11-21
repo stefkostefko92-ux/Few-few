@@ -26,6 +26,16 @@ const nextConfig = {
           },
         ],
       },
+      {
+        // Живият преглед в таблото се вгражда в iframe от същия сайт (последното
+        // правило за същия ключ печели). Само за собственика — виж страницата.
+        source: '/u/:slug/preview',
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'Content-Security-Policy', value: "frame-ancestors 'self'" },
+          { key: 'Cache-Control', value: 'private, no-store' },
+        ],
+      },
     ];
   },
 };

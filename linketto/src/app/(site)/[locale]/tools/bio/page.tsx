@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
+import { LxPage } from '@/components/landing/LxPage';
 import { ToolPage } from '@/components/ToolPage';
 import { BioTool } from '@/components/BioTool';
 import { HREFLANG_LOCALES, LOCALE_NAMES, type Locale } from '@/i18n/locales';
@@ -46,7 +46,7 @@ export default async function BioToolPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
-      <SiteHeader locale={locale as Locale} />
+      <LxPage locale={locale as Locale} currentPath="/tools/bio">
       <ToolPage
         eyebrow={t('eyebrow')}
         title={t('bioTitle')}
@@ -84,7 +84,7 @@ export default async function BioToolPage({
           }}
         />
       </ToolPage>
-      <SiteFooter locale={locale as Locale} currentPath="/tools/bio" />
+      </LxPage>
     </>
   );
 }

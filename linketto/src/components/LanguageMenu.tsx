@@ -9,18 +9,22 @@ import { cn } from '@/components/ui/cn';
 
 // Избор на език в хедъра: бутон + списък от всички езици (чисти <a> —
 // ръчният избор пише бисквитката през LocaleChoice). Адресът е текущата
-// страница на избрания език. Escape/клик встрани затварят; под `inline`
-// списъкът стои в потока (мобилното меню).
+// страница на избрания език (със същите ?параметри и #котва — в таблото
+// остава избраният профил и раздел). Escape/клик встрани затварят; под
+// `inline` списъкът стои в потока; `withName` показва и името на езика.
 export function LanguageMenu({
   locale,
   label,
   inline = false,
+  withName = false,
 }: {
   locale: Locale;
   label: string;
   inline?: boolean;
+  withName?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [tail, setTail] = useState('');
   const pathname = usePathname() ?? `/${locale}`;
   const rest = pathname.replace(/^\/[^/]+/, '');
   const panelId = useId();
@@ -62,7 +66,7 @@ export function LanguageMenu({
         <li key={loc}>
           <LocaleChoice
             locale={loc}
-            href={`/${loc}${rest}`}
+            href={`/${loc}${rest}${tail}`}
             className={cn(
               'focus-ring flex items-center justify-between gap-2 rounded-[0.375rem] px-2.5 py-1.5 transition-colors',
               loc === locale
@@ -85,7 +89,10 @@ export function LanguageMenu({
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => {
+          setTail(window.location.search + window.location.hash);
+          setOpen((value) => !value);
+        }}
         className={cn(
           'focus-ring inline-flex h-9 items-center gap-1.5 rounded-control px-2.5 text-small font-semibold text-fg-2 transition-colors hover:bg-surface-3 hover:text-fg',
           inline && 'w-full justify-between border border-line bg-surface px-3',
@@ -97,8 +104,11 @@ export function LanguageMenu({
           <span className="uppercase" aria-hidden>
             {locale}
           </span>
-          {inline && (
-            <span className="font-medium normal-case text-fg-muted" aria-hidden>
+          {(inline || withName) && (
+            <span
+              className={cn('font-medium normal-case text-fg-muted', withName && !inline && 'hidden sm:inline')}
+              aria-hidden
+            >
               {LOCALE_NAMES[locale]}
             </span>
           )}

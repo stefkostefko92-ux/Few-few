@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { logoutAction } from '@/app/actions/auth';
 import { DashSidebar, type DashNavGroup } from '@/components/DashSidebar';
+import { LanguageMenu } from '@/components/LanguageMenu';
 import { AppShell } from '@/components/ui/AppShell';
 import { Badge } from '@/components/ui/Badge';
 import { Button, buttonStyles } from '@/components/ui/Button';
@@ -161,6 +162,9 @@ export async function AdminShell({
         {t('adminBadge')}
       </Badge>
       <div className="flex shrink-0 items-center gap-2">
+        <div className="rounded-control border border-line bg-surface">
+          <LanguageMenu locale={locale} label={tNav('language')} withName />
+        </div>
         <a href={`/${locale}/dashboard`} className={`${linkClass} hidden md:inline-flex`}>
           {t('toDashboard')}
         </a>

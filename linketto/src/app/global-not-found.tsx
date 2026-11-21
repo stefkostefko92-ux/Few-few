@@ -3,6 +3,7 @@ import { fontVariables } from '@/app/fonts';
 import { NotFoundView } from '@/components/NotFoundView';
 import { ThemeScript } from '@/components/ui/ThemeScript';
 import './globals.css';
+import '@/components/landing/lx.css';
 
 export const metadata: Metadata = {
   title: '404 · Linketto',
@@ -18,12 +19,18 @@ export default function GlobalNotFound() {
         <ThemeScript />
       </head>
       <body className="min-h-screen bg-bg font-ui text-fg">
-        <NotFoundView
-          title="Страницата не е намерена · Page not found"
-          body="Линкът е грешен или страницата вече не съществува. This link is wrong or the page no longer exists."
-          homeLabel="Linketto"
-          homeHref="/"
-        />
+        {/* Същият тъмен свят като лендинга и вътрешните страници (LxPage). */}
+        <div className="lx lx-page text-fg" data-theme="dark">
+          <div aria-hidden className="lx-page-bg">
+            <div className="lx-grain" />
+          </div>
+          <NotFoundView
+            title="Страницата не е намерена · Page not found"
+            body="Линкът е грешен или страницата вече не съществува. This link is wrong or the page no longer exists."
+            homeLabel="Linketto"
+            homeHref="/"
+          />
+        </div>
       </body>
     </html>
   );

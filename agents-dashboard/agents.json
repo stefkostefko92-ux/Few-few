@@ -2033,28 +2033,17 @@
           "detail": "Научи: sharp 0.35 с limitInputPixels не пази паметта при прогресивен JPEG (208 Mpx, 4:4:4, фай… (+1 още)"
         },
         {
-          "version": "66.2.0",
-          "date": "2026-11-21",
-          "event": "v66.2 — учене",
-          "detail": "Научи: Сторож на WebGL цикъл, който при бавни кадри вика loseContext и излиза от frame без фла… (+101 още)"
-        },
-        {
           "version": "66.3.0",
           "date": "2026-11-21",
           "event": "v66.3 — учене",
-          "detail": "Научи: Поле datetime-local, което получава стойност само в useEffect, се изпраща празно без JS…"
+          "detail": "Научи: Поле datetime-local, което получава стойност само в useEffect, се изпраща празно без JS… (+102 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-21",
           "type": "learning",
-          "summary": "Научи: „Поле datetime-local, което получава стойност само в useEffect, се изпраща празно без JS…\""
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „Сторож на WebGL цикъл, който при бавни кадри вика loseContext и излиза от frame без фла…\" (+101 още) · 15 в карантина"
+          "summary": "Научи: „Поле datetime-local, което получава стойност само в useEffect, се изпраща празно без JS…\" (+102 още) · 15 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -5570,39 +5559,17 @@
           "detail": "Научи: В linketto идентификацията на дружеството живее само в messages/*.json (legal.privacyBo… (+34 още)"
         },
         {
-          "version": "29.9.0",
-          "date": "2026-11-21",
-          "event": "v29.9 — учене",
-          "detail": "Научи: В linketto правният клас, който пада към en, не е само legal.* — home.featureEuBody/faq… (+18 още)"
-        },
-        {
-          "version": "30.1.0",
-          "date": "2026-11-21",
-          "event": "v30.1 — учене",
-          "detail": "Научи: В linketto messages/*.json обектът dashboard в 26-те не-bg локала завършва с navAudienc… (+1 още)"
-        },
-        {
           "version": "30.2.0",
           "date": "2026-11-21",
           "event": "v30.2 — учене",
-          "detail": "Научи: В linketto fr.json регистърът в dashboard е vous (pageIntro), с отделни tu низове (refe…"
+          "detail": "Научи: В linketto fr.json регистърът в dashboard е vous (pageIntro), с отделни tu низове (refe… (+21 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-21",
           "type": "learning",
-          "summary": "Научи: „В linketto fr.json регистърът в dashboard е vous (pageIntro), с отделни tu низове (refe…\""
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „В linketto messages/*.json обектът dashboard в 26-те не-bg локала завършва с navAudienc…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „В linketto правният клас, който пада към en, не е само legal.* — home.featureEuBody/faq…\" (+18 още) · 2 в карантина"
+          "summary": "Научи: „В linketto fr.json регистърът в dashboard е vous (pageIntro), с отделни tu низове (refe…\" (+21 още) · 2 в карантина"
         },
         {
           "date": "2026-11-04",

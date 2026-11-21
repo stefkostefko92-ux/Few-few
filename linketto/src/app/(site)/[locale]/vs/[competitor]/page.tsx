@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
+import { LxPage } from '@/components/landing/LxPage';
 import { ToolPage } from '@/components/ToolPage';
 import { CheckIcon } from '@/components/icons';
 import { Table, TBody, TD, TH, THead, TR } from '@/components/ui/Table';
@@ -80,7 +80,7 @@ export default async function VersusPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
-      <SiteHeader locale={locale as Locale} />
+      <LxPage locale={locale as Locale} currentPath={`/vs/${competitor}`}>
       <ToolPage
         eyebrow={t('eyebrow')}
         title={t('title', { name })}
@@ -174,7 +174,7 @@ export default async function VersusPage({
           </p>
         )}
       </ToolPage>
-      <SiteFooter locale={locale as Locale} currentPath={`/vs/${competitor}`} />
+      </LxPage>
     </>
   );
 }

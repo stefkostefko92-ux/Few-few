@@ -189,6 +189,16 @@
     outline-offset: 2px;
   }
 
+  /* Логото (public/logo.png) е синьо; в тъмна тема — бяло, както на лендинга. */
+  [data-theme='dark'] .brand-logo {
+    filter: brightness(0) invert(1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) .brand-logo {
+      filter: brightness(0) invert(1);
+    }
+  }
+
   /* Решетка с избледняващи краища — „милиметровка“ на hero-то и 404 */
   .bg-grid {
     background-image:

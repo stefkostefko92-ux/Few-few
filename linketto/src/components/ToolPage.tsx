@@ -1,10 +1,8 @@
-import { Badge } from '@/components/ui/Badge';
-import { ButtonLink } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { Container } from '@/components/ui/Container';
+import Link from 'next/link';
 
-// Обща рамка за публичните страници-инструменти и сравненията: заглавие
-// върху милиметровката, работна повърхност и спокойна CTA към регистрацията.
+// Обща рамка за публичните страници-инструменти и сравненията — в света на
+// лендинга (LxPage я обвива): стикер, огромно заглавие, работна повърхност
+// с розова сянка и лайм лента с CTA към регистрацията.
 export function ToolPage({
   eyebrow,
   title,
@@ -20,30 +18,22 @@ export function ToolPage({
 }) {
   return (
     <main id="main">
-      <section className="relative isolate overflow-hidden border-b border-line">
-        <div aria-hidden className="bg-grid absolute inset-0 -z-10" />
-        <div aria-hidden className="bg-glow absolute inset-0 -z-10" />
-        <Container className="max-w-4xl py-14 sm:py-20">
-          <Badge tone="accent">{eyebrow}</Badge>
-          <h1 className="enter mt-5 max-w-3xl text-balance text-title text-fg">
-            {title}
-          </h1>
-          <p className="mt-5 max-w-2xl text-lead text-fg-muted">{intro}</p>
-        </Container>
+      <section className="lx-wrap lx-tool-hero">
+        <p className="lx-sticker">{eyebrow}</p>
+        <h1 className="lx-display lx-tool-h1">{title}</h1>
+        <p className="lx-tool-intro">{intro}</p>
       </section>
-      <Container className="max-w-4xl py-10 sm:py-14">
-        <Card variant="raised" padding="lg">
-          {children}
-        </Card>
-      </Container>
-      <section className="border-t border-line bg-surface-2/50">
-        <Container className="max-w-4xl py-14 sm:py-16">
-          <h2 className="max-w-xl text-balance text-heading text-fg">{cta.title}</h2>
-          <p className="mt-3 max-w-xl text-lead text-fg-muted">{cta.text}</p>
-          <ButtonLink href={cta.href} size="lg" className="mt-7">
+      <div className="lx-wrap lx-tool-body">
+        <div className="lx-tool-card">{children}</div>
+      </div>
+      <section className="lx-tool-cta">
+        <div className="lx-wrap">
+          <h2 className="lx-display">{cta.title}</h2>
+          <p>{cta.text}</p>
+          <Link href={cta.href} className="lx-btn lx-btn-ink" data-magnet>
             {cta.label}
-          </ButtonLink>
-        </Container>
+          </Link>
+        </div>
       </section>
     </main>
   );
