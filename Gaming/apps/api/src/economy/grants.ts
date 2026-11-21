@@ -1,4 +1,5 @@
 import { prisma, type VipTier } from "@aso/db";
+import { credit } from "@aso/db/ledger";
 import { logger } from "../logger.js";
 
 type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
@@ -33,19 +34,23 @@ export function snapshotFromMetadata(md: Record<string, string> | null | undefin
  *
  * Източник: снимката от сесията, иначе редът в `Product` по SKU. НЕ зависи от
  * `active` — вече платена поръчка се начислява и ако продуктът е деактивиран.
+ *
+ * Връща реално начисленото (записва се в Purchase за бъдещ clawback) или `null`,
+ * ако нищо не е дадено. Всеки кредит оставя ред PURCHASE в регистъра (`refId`).
  */
 export async function grantProduct(
   tx: Tx,
   userId: string,
   sku: string,
   snapshot?: GrantSnapshot | null,
-): Promise<void> {
+  refId?: string,
+): Promise<{ gems: number; chips: number; cosmeticId: string | null } | null> {
   // Липсващ или изтрит (GDPR) акаунт: не хвърляме — иначе webhook-ът връща 500 и Stripe
   // повтаря безкрайно. Логваме за ръчно възстановяване на сумата.
   const owner = await tx.user.findUnique({ where: { id: userId }, select: { id: true, deletedAt: true } });
   if (!owner || owner.deletedAt) {
     logger.error({ sku, userId }, "grantProduct: user missing or erased — manual refund review");
-    return;
+    return null;
   }
 
   let spec = snapshot ?? null;
@@ -55,7 +60,7 @@ export async function grantProduct(
       // Платено, но без продукт и без снимка — не измисляме награда; шумно в лога
       // за ръчна обработка (възстановяване/рефънд).
       logger.error({ sku, userId }, "grantProduct: unknown sku and no snapshot — manual review");
-      return;
+      return null;
     }
     spec = { kind: row.kind, gems: row.gems ?? 0, chips: row.chips ?? 0, cosmeticId: row.cosmeticId };
   }
@@ -63,15 +68,11 @@ export async function grantProduct(
   // VIP е абонамент: дава се от invoice.paid с РЕАЛНИЯ период от Stripe, не тук.
   if (spec.kind === "VIP_SUB") {
     logger.warn({ sku, userId }, "grantProduct: VIP sku in one-time path — ignored (granted via invoice.paid)");
-    return;
+    return null;
   }
 
-  if (spec.gems > 0) {
-    await tx.user.update({ where: { id: userId }, data: { gems: { increment: spec.gems } } });
-  }
-  if (spec.chips > 0) {
-    await tx.user.update({ where: { id: userId }, data: { chips: { increment: BigInt(spec.chips) } } });
-  }
+  await credit(tx, userId, "GEMS", spec.gems, "PURCHASE", refId ?? null);
+  await credit(tx, userId, "CHIPS", spec.chips, "PURCHASE", refId ?? null);
   if (spec.cosmeticId) {
     await tx.inventoryItem.upsert({
       where: { userId_cosmeticId: { userId, cosmeticId: spec.cosmeticId } },
@@ -79,21 +80,21 @@ export async function grantProduct(
       update: {},
     });
   }
+  return { gems: spec.gems, chips: spec.chips, cosmeticId: spec.cosmeticId };
 }
 
 /**
  * Credit the monthly VIP gem stipend (SILVER+). Called once per paid invoice
  * from the webhook, inside its dedup transaction, so renewals grant gems but
- * retries do not double-credit.
+ * retries do not double-credit. Ред VIP_STIPEND в регистъра (refId = invoice).
  */
 export async function grantVipStipend(
   tx: Tx,
   userId: string,
   gems: number,
+  refId?: string,
 ): Promise<void> {
-  if (gems > 0) {
-    await tx.user.update({ where: { id: userId }, data: { gems: { increment: gems } } });
-  }
+  await credit(tx, userId, "GEMS", gems, "VIP_STIPEND", refId ?? null);
 }
 
 /** Set / extend a VIP subscription (from subscription webhooks). */

@@ -88,6 +88,16 @@
     return svg;
   };
 
+  // The line under the tile that says what happened (read out by screen readers).
+  const statoDi = (tile) => {
+    const stato = tile.querySelector('[data-annota-stato]') || document.createElement('p');
+    stato.className = 'galleria__info';
+    stato.setAttribute('role', 'status');
+    stato.dataset.annotaStato = '';
+    if (!stato.isConnected) tile.append(stato);
+    return stato;
+  };
+
   const salva = async (tile, foglio) => {
     const button = tile.querySelector('[data-annota]');
     const etichetta = button && button.querySelector('span');
@@ -104,11 +114,7 @@
     } catch {
       ok = false;
     }
-    const stato = tile.querySelector('[data-annota-stato]') || document.createElement('p');
-    stato.className = 'galleria__info';
-    stato.setAttribute('role', 'status');
-    stato.dataset.annotaStato = '';
-    if (!stato.isConnected) tile.append(stato);
+    const stato = statoDi(tile);
     if (!ok) {
       stato.textContent = testi.errore || '';
       return;
@@ -132,6 +138,9 @@
     img.decoding = 'async';
     img.onload = () => {
       button.disabled = false;
+      // The photo is here: a line left by a try that failed goes.
+      const stato = tile.querySelector('[data-annota-stato]');
+      if (stato && stato.textContent === testi.foto) stato.textContent = '';
       let foglio = { e: [] };
       try {
         if (tile.dataset.annotazioni) foglio = JSON.parse(tile.dataset.annotazioni);
@@ -154,8 +163,10 @@
         }),
       );
     };
+    // A photo that does not arrive (a weak signal on the site): the tile says so and the button works again.
     img.onerror = () => {
       button.disabled = false;
+      statoDi(tile).textContent = testi.foto || '';
     };
     img.src = tile.dataset.foto;
   });

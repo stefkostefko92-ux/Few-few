@@ -1108,25 +1108,36 @@
   // Shape: { "": [[name, ...args]], "host.tld": [[name, ...args]] }. The ""
   // key holds global directives that run on every page.
   var MAP = /*__SCRIPTLET_MAP__*/{};
+  // Two builds of this one file (6.0): "global" = scriptlets/main.js, registered on
+  // every page (the baked MAP above, entities, the popup guard); "chunk" =
+  // scriptlets/ubo_engine.js, registered only right after a uBO data chunk on that
+  // chunk's hosts (MAP empty, no popup guard). They share no state and leave nothing
+  // on the page, so their order does not matter — and main.js no longer needs the
+  // ~17k chunk hosts as excludeMatches, which Chrome copied into every renderer.
+  var ROLE = /*__ENGINE_ROLE__*/"global";
   // uBlock Origin directives for THIS site come from a chunk script (scriptlets/
   // ubo/cNN.js, DATA baked and validated at build time) that the service worker
-  // registers just before this file for that chunk's hosts — same registration,
-  // guaranteed order. Picked up and removed in this tick, before any page script
-  // exists; each entry is re-checked against the build profile of the policy.
+  // registers just before the chunk build of this file for that chunk's hosts —
+  // same registration, guaranteed order. Picked up and removed in this tick, before
+  // any page script exists; each entry is re-checked against the build profile of
+  // the policy.
   var EXTRA = null;
   // uBO "entity" directives (example.* = example on any public suffix) come from
   // scriptlets/ubo/entities.js, which the manifest injects before this file only
   // where its globs match; the real hostname decides below (entityKeys).
   var ENT = null;
   try {
-    var chunkKey = "__tbabScriptletChunk";
-    var chunkDesc = Object.getOwnPropertyDescriptor(document, chunkKey);
-    if (chunkDesc && chunkDesc.value && typeof chunkDesc.value === "object") EXTRA = chunkDesc.value;
-    delete document[chunkKey];
-    var entKey = "__tbabScriptletEntities";
-    var entDesc = Object.getOwnPropertyDescriptor(document, entKey);
-    if (entDesc && entDesc.value && typeof entDesc.value === "object") ENT = entDesc.value;
-    delete document[entKey];
+    if (ROLE === "chunk") {
+      var chunkKey = "__tbabScriptletChunk";
+      var chunkDesc = Object.getOwnPropertyDescriptor(document, chunkKey);
+      if (chunkDesc && chunkDesc.value && typeof chunkDesc.value === "object") EXTRA = chunkDesc.value;
+      delete document[chunkKey];
+    } else {
+      var entKey = "__tbabScriptletEntities";
+      var entDesc = Object.getOwnPropertyDescriptor(document, entKey);
+      if (entDesc && entDesc.value && typeof entDesc.value === "object") ENT = entDesc.value;
+      delete document[entKey];
+    }
   } catch (e) {}
   // EasyList $popup domains (baked by the build): popunder/popup launchers.
   var POPUP_HOSTS = /*__POPUP_HOSTS__*/[];

@@ -124,8 +124,12 @@ export async function salvaVoce(
 ): Promise<EsitoVoce> {
   try {
     return await prisma.$transaction(async (tx) => {
+      // Само при включени оферти и активна фирма, под заключения ред: MASTER, изключил офертите междувременно,
+      // не оставя ред, записан след изключването (ревюто на Кодаджията, 14 ноември 2026).
       const azienda = await tx.$queryRaw<Array<{ id: string }>>`
-        SELECT "id" FROM "Azienda" WHERE "id" = ${aziendaId} FOR UPDATE`;
+        SELECT "id" FROM "Azienda"
+        WHERE "id" = ${aziendaId} AND "preventiviAttivi" AND "deactivatedAt" IS NULL
+        FOR UPDATE`;
       if (azienda.length === 0) return 'missing';
       if (id === null) {
         if ((await tx.voceListino.count({ where: { aziendaId } })) >= MAX_VOCI) return 'pieno';
@@ -159,6 +163,8 @@ export async function eliminaVoce(
   id: string,
 ): Promise<boolean> {
   return prisma.$transaction(async (tx) => {
+    // Под същото заключване като добавянето и внасянето: ред не изчезва, докато внасянето го обновява.
+    await tx.$queryRaw`SELECT "id" FROM "Azienda" WHERE "id" = ${aziendaId} FOR UPDATE`;
     const deleted = await tx.voceListino.deleteMany({ where: { id, aziendaId } });
     if (deleted.count === 0) return false;
     await writeAudit(

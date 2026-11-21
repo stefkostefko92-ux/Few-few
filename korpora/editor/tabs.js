@@ -1,8 +1,8 @@
-// The output tabs (3D, BOM, drilling, nesting, drawings, CNC, catalog): WAI-ARIA tabs with the arrow keys, one tab
+// The output tabs (3D, constructor, BOM, drilling, nesting, drawings, CNC, catalog): WAI-ARIA tabs with the arrow keys, one tab
 // stop, the tab in the address (#draw) so a reload or a link opens it again.
 import { $$ } from './dom.js';
 
-export const TABS = ['view', 'bom', 'drill', 'nest', 'draw', 'cnc', 'cat'];
+export const TABS = ['view', 'build', 'bom', 'drill', 'nest', 'draw', 'cnc', 'cat'];
 
 // Marks the tab and shows its panel; what the panel draws is the caller's (onShow).
 export function showTab(id, focus = false) {
@@ -29,11 +29,11 @@ export function bindTabs(select) {
   }
 }
 
-// The tab named in the address opens first; a link or the address bar can change it later too (replaceState in
-// showTab fires no hashchange).
-export function followHash(select, current) {
+// The tab named in the address opens first (otherwise `first`: the constructor for a free carcass); a link or the
+// address bar can change it later too (replaceState in showTab fires no hashchange).
+export function followHash(select, current, first = 'view') {
   const named = () => location.hash.replace('#', '');
-  select(TABS.includes(named()) ? named() : 'view');
+  select(TABS.includes(named()) ? named() : first);
   window.addEventListener('hashchange', () => {
     if (TABS.includes(named()) && named() !== current()) select(named());
   });

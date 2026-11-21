@@ -153,11 +153,26 @@ async function dealNo(page: Page): Promise<string> {
 /** Play a card of a zone by clicking its visible strip; the server must accept
  *  and the card must leave that hand — unless it closed the deal and a new
  *  hand was dealt (which may hold the same card again). */
-export async function playCard(page: Page, zone: string, card: string): Promise<void> {
+export async function playCard(
+  page: Page,
+  zone: string,
+  card: string,
+  /** След клика: отговор на прозорец, който картата може да отвори (напр. „Белот“). */
+  afterClick?: (page: Page) => Promise<void>,
+): Promise<void> {
   const el = cardIn(page, zone, card);
   await expect(el).toHaveAttribute("data-playable", "true");
   const deal = await dealNo(page);
-  await act(page, el, CARD_GRIP);
+  if (afterClick) {
+    // Картата може първо да отвори прозорец (напр. „Белот“): ходът тръгва след отговора.
+    await expect(el).toBeVisible();
+    const before = await stateVersion(page);
+    await el.click(CARD_GRIP);
+    await afterClick(page);
+    await expectServerAdvanced(page, before);
+  } else {
+    await act(page, el, CARD_GRIP);
+  }
   await expect
     .poll(
       async () => (await dealNo(page)) !== deal || (await cardIn(page, zone, card).count()) === 0,

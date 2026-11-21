@@ -76,7 +76,7 @@ export function buildFixture(game: GameKey): Fixture {
   const turn = typeof redacted.turn === "number" ? (redacted.turn as number) : 0;
   const players: MatchPlayerInfo[] = Array.from({ length: seats }, (_, i) => ({
     seat: i,
-    displayName: i === 0 ? "Admin" : "АСО Бот",
+    displayName: i === 0 ? "Admin" : `Бот ${i}`,
     isBot: i !== 0,
   }));
 

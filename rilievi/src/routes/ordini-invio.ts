@@ -16,6 +16,7 @@ import {
 import { moduliDellaScheda, slotDiPath } from '../ordini/modulo-scheda.js';
 import { schedaTitle } from '../schede/format.js';
 import type { SchedaFull } from '../schede/service.js';
+import { pathSezione } from './impostazioni-vista.js';
 import { loadScheda, notFound, scope } from './schede-shared.js';
 
 /**
@@ -49,6 +50,10 @@ async function renderInvio(
     ident: schedaTitle(scheda, res.locals.t),
     moduli: moduliDellaScheda(scheda),
     fornitori: await fornitoriDi(scheda.aziendaId),
+    // Празният адресник казва къде се попълва — с връзка само за който управлява настройките на фирмата.
+    impostazioni: canIn(principalOf(req).user, 'aziende:settings', scheda.aziendaId)
+      ? pathSezione('fornitori', scheda.aziendaId)
+      : null,
     valori,
     errore,
   });

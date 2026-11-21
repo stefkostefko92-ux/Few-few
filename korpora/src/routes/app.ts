@@ -4,7 +4,7 @@ import { setFlash } from '../http/flash.js';
 import { jsonForScript } from '../http/json-script.js';
 import { apiLimiter, exportLimiter } from '../http/limits.js';
 import { idParam, requestMeta, stringField } from '../http/meta.js';
-import { translatorFor } from '../i18n.js';
+import { textsUnder } from '../i18n.js';
 import { planView } from '../plans/plan.js';
 import { catalogInfo, isFurnitureType, specOf } from '../services/engine.js';
 import { editorRail, furnitureKinds } from '../services/furniture.js';
@@ -89,15 +89,22 @@ appRouter.get('/app/p/:id', async (req, res) => {
     return;
   }
   const plan = planView(principal.user);
+  const { locale } = res.locals;
   res.render('app/editor', {
     project,
     plan,
     readOnly: !plan.canCreate,
     // видът, габаритът и полетата за размерите идват готови от сървъра: страницата не подскача (CLS)
-    rail: editorRail(specOf(project.spec)),
-    // Работното поле на редактора засега е само на български (етикетите идват и от двигателя);
-    // заглавната лента остава на езика на човека, а под нея има бележка.
-    te: translatorFor('bg'),
+    rail: editorRail(specOf(project.spec), locale),
+    te: res.locals.t,
+    // думите на скрипта на редактора (табовете, изборите, таблиците) на езика на екрана; двигателят строи
+    // модела на същия език (`<main lang>`), затова детайлите, проверките и чертежите говорят като страницата
+    editorText: jsonForScript({
+      ...textsUnder(locale, 'editor.ui.'),
+      ...Object.fromEntries(
+        Object.entries(textsUnder(locale, 'furniture.group.')).map(([k, v]) => [`group.${k}`, v]),
+      ),
+    }),
     boot: jsonForScript({
       id: project.id,
       name: project.name,
@@ -162,7 +169,8 @@ appRouter.get('/app/p/:id/export/:kind', exportLimiter, async (req, res) => {
   }
   let file;
   try {
-    file = buildExport(project, principal.user.name, kind);
+    // изходът е на езика на екрана — същият, на който редакторът показва детайлите и проверките
+    file = buildExport(project, principal.user.name, kind, res.locals.locale);
   } catch (err) {
     if (!(err instanceof CncBlockedError)) throw err;
     res.status(422).render('errors/error', {

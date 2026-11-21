@@ -1971,7 +1971,7 @@ paths:
       summary: Всички покупки със сума, платена към момента на покупката (курсор).
       x-required-roles: [MODERATOR, SUPPORT, ADMIN, OWNER]
       parameters:
-        - { name: status, in: query, schema: { type: string, enum: [completed, refunded] }, description: "Непозната стойност = без филтър." }
+        - { name: status, in: query, schema: { type: string, enum: [completed, refunding, refunded] }, description: "Непозната стойност = без филтър. `refunding` = заседнало връщане за довършване." }
         - { $ref: "#/components/parameters/Take" }
         - { $ref: "#/components/parameters/Cursor" }
       responses:
@@ -1985,7 +1985,7 @@ paths:
       operationId: adminOrderRefund
       tags: [Админ]
       summary: Връща еднократна покупка през Stripe; по избор взима обратно наградата (до наличното).
-      description: Абонаментни фактури не се връщат оттук (портал/Stripe табло). Виртуалната валута не се взима автоматично.
+      description: Абонаментни фактури не се връщат оттук (портал/Stripe табло). Виртуалната валута не се взима автоматично. Покупка в `refunding` (заседнало връщане) се довършва със същата заявка — същият Idempotency-Key към Stripe, един clawback.
       x-required-roles: [ADMIN, OWNER]
       requestBody:
         required: true
@@ -2013,6 +2013,11 @@ paths:
               schema: { $ref: "#/components/schemas/Error" }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "403": { $ref: "#/components/responses/Forbidden" }
+        "502":
+          description: "`refund_pending` — Stripe не потвърди (връзка/5xx); покупката остава `refunding`, опитай пак."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
         "503":
           description: "`stripe_not_configured`."
           content:

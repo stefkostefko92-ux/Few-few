@@ -36,8 +36,11 @@ RUN chmod +x ./docker-entrypoint.sh
 # всяка RCE в рамката (а такива излизат редовно) дава root вътре. Собствеността
 # на /app е нужна, защото `next start` пише в .next/cache по време на работа, а
 # entrypoint-ът пуска `prisma migrate deploy`. Същият модел като scuolabulgara.
+# /app/uploads се създава тук, за да наследи НОВ том собственика nextjs (Docker копира
+# правата от образа в празен том). Заварен том от времето с root се оправя от
+# scripts/deploy.sh (chown при всеки деплой), иначе качването на снимки пада с EACCES.
 RUN groupadd -g 1001 nodejs && useradd -u 1001 -g nodejs -m nextjs \
- && chown -R nextjs:nodejs /app
+ && mkdir -p /app/uploads && chown -R nextjs:nodejs /app
 USER nextjs
 EXPOSE 3000
 ENTRYPOINT ["./docker-entrypoint.sh"]

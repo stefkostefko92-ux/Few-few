@@ -3,13 +3,16 @@
 #   docker compose -f docker-compose.monitoring.yml up -d
 services:
   beszel:
-    image: henrygd/beszel:latest
+    # Заковано: таг + digest (Docker Hub henrygd/beszel, 0.21.2 от 2026-11-12). Без :latest —
+    # иначе `pull` тихо сменя версията. Обновяване: нов таг + digest от официалния release,
+    # сървър и агент ЗАЕДНО (една и съща версия).
+    image: henrygd/beszel:0.21.2@sha256:b0be90bd4aee2993fde763032a5098ce4386fba43cfe5031ec017b8d9e8c97a2
     restart: unless-stopped
     ports: ["127.0.0.1:8090:8090"]   # зад reverse proxy; не публично
     volumes: ["./beszel_data:/beszel_data"]
 
   beszel-agent:
-    image: henrygd/beszel-agent:latest
+    image: henrygd/beszel-agent:0.21.2@sha256:343254226ae57a5cc6f8c23c755b1464730aba2abc7043116a2e222711ec6e1a
     restart: unless-stopped
     network_mode: host
     environment:

@@ -207,6 +207,17 @@ try {
       if (pdf.status() !== 200 || body.subarray(0, 5).toString() !== '%PDF-') fail('PDF download');
       if (!body.toString('latin1').includes('/Subtype /Image'))
         fail('PDF without the company logo');
+      // The saved scheda by email (the owner, 13 November 2026): the button leads to the form, the form sends
+      // and comes back with an answer — on a test portal the mail is off, and the page says so.
+      await page.goto(sheetUrl);
+      await page.click('a[href="#invia"]');
+      await page.fill('#f-invia-email', 'condominio-e2e@example.it');
+      await page.fill('#f-invia-messaggio', 'Prova E2E.');
+      await Promise.all([page.waitForEvent('load'), page.click('#invia button[type=submit]')]);
+      if (page.url() !== sheetUrl) fail(`scheda by email: landed on ${page.url()}`);
+      const esitoInvio = ((await page.locator('.flash').textContent()) ?? '').trim();
+      if (!/Scheda inviata a|invio delle email non è attivo/.test(esitoInvio))
+        fail(`scheda by email: no answer (${esitoInvio.slice(0, 80)})`);
       await page.goto(`${sheetUrl}/stampa`);
       if (!(await page.locator('.paper__logo').count())) fail('print without the company logo');
       if (!(await page.textContent('.paper__by')).trim()) fail('print without the author');

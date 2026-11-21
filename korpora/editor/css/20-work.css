@@ -288,3 +288,22 @@ select.pick {
   max-width: 100%;
   min-width: 0;
 }
+
+/* AR on a phone (viewer-ar.js): the WebXR canvas fills the screen; the page's overlay carries the hint and the way out */
+.ar-canvas {
+  position: fixed;
+  inset: 0;
+}
+.ar-overlay {
+  position: fixed;
+  inset: auto 16px 24px;
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgb(0 0 0 / 0.62);
+  color: #fff;
+}
+.ar-overlay[hidden] {
+  display: none;
+}

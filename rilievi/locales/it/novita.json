@@ -25,6 +25,66 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-17-versione-5-6": {
+        "area": "Schizzi",
+        "titolo": "Versione 5.6: schizzi e annotazioni con il dito su iPad",
+        "testo": "Su iPad il dito ora disegna negli schizzi e nelle annotazioni sulle foto: prima il portale lo scambiava per il palmo della mano e non tracciava nulla. Con l'Apple Pencil, quando la penna tocca il foglio annulla quello che la mano aveva appena iniziato, e un palmo appoggiato non disegna né sposta il foglio. Due dita sulla cornice dell'editor non ingrandiscono più la pagina, e con la tastiera aperta la barra del valore resta in vista. Se la foto da annotare non si carica, il portale lo dice invece di non fare nulla."
+      },
+      "2026-11-17-versione-5-5": {
+        "area": "Abbonamento e pagamenti",
+        "titolo": "Versione 5.5: rimborsi e avvisi di Revolut più affidabili",
+        "testo": "Quando Revolut rifiuta il rimborso di un pagamento, anche fatto con Revolut Pay, il portale ora lo segna come non riuscito appena Revolut lo comunica, con il motivo indicato da Revolut; prima poteva restare in corso. L'amministrazione del portale lo vede e può ripetere il rimborso; se poi Revolut completa lo stesso un rimborso segnato come non riuscito, riceve un allarme e non lo ripete per errore. Se il portale non riesce a registrare subito un avviso di pagamento di Revolut, ora chiede a Revolut di rimandarlo, così il pagamento non si perde e il piano parte lo stesso."
+      },
+      "2026-11-16-versione-5-4": {
+        "area": "Preventivi e pagine del portale",
+        "titolo": "Versione 5.4: preventivi per ogni azienda e pagine rifinite",
+        "testo": "Nel nuovo preventivo, nel nuovo cliente e nel listino l'amministrazione del portale vede tutte le aziende attive; quelle con i preventivi non attivi stanno in un gruppo a parte e si possono attivare da lì, senza perdere il modulo. Abbiamo controllato tutte le pagine su telefono, tablet e computer: le tabelle scorrono senza spostare la pagina, i pulsanti lunghi vanno a capo sul telefono, le date dei tre avvisi del fermo per pericolo stanno su una riga, i numeri di telefono non si spezzano più a metà, nel registro ogni calcolo apre la sua pagina e, se la rubrica dei fornitori è vuota, la pagina di invio lo dice."
+      },
+      "2026-11-15-versione-4-2": {
+        "area": "Schede e cartelli",
+        "titolo": "Versione 5.3: anno, marcatura CE e fermo per pericolo",
+        "testo": "Nella scheda ci sono l'anno di installazione, la marcatura CE e gli altri dati della targa in cabina (soggetto delle verifiche, installatore, numero di fabbricazione). Con anno e CE la scheda indica il D.M. 23/07/2009 e la parte della UNI 10411 per le modifiche; se la scheda prevede la sostituzione del quadro, dell'argano o della centralina ricorda la verifica straordinaria. Sul cartello di fermo puoi segnare il fermo per pericolo e il giorno delle tre comunicazioni (D.P.R. 162/1999, art. 15 c. 7). La voce 90 del foglio di intervento nomina tutti i soggetti delle verifiche; i fogli già confermati restano con il testo di prima."
+      },
+      "2026-11-14-versione-5-2": {
+        "area": "Preventivi",
+        "titolo": "Versione 5.2: informativa nel preventivo, dati sempre accessibili",
+        "testo": "In fondo a ogni preventivo ora c'è l'informativa privacy per il cliente e il suo referente: il portale propone un modello con i dati dell'azienda, che l'amministratore può cambiare in Impostazioni → Preventivi. I preventivi non accettati (bozze, inviati, rifiutati) si possono eliminare; quelli accettati restano. Se l'amministrazione del portale disattiva i preventivi di un'azienda che li ha già usati, preventivi, clienti e listino restano consultabili e scaricabili, e si possono eliminare i clienti e i preventivi non accettati."
+      },
+      "2026-11-14-versione-5-1": {
+        "area": "Preventivi",
+        "titolo": "Versione 5.1: due numeri di telefono per cliente",
+        "testo": "Nell'anagrafica clienti il campo «Telefono» accetta anche due numeri, separati da una virgola: per esempio il fisso e il cellulare, oppure un numero italiano e uno estero. Nel profilo del cliente ogni numero ha il suo collegamento per chiamare, e la ricerca trova il cliente con l'uno o l'altro numero."
+      },
+      "2026-11-13-versione-5-0": {
+        "area": "Preventivi",
+        "titolo": "Versione 5.0: l'anagrafica clienti, i dati pronti nel preventivo",
+        "testo": "Ogni azienda ora ha la sua anagrafica clienti: la pagina «Clienti» nel menu, accanto ai preventivi. Per ogni cliente salvi nome o ragione sociale, indirizzo, partita IVA o codice fiscale, email, telefono, referente e note. Quando scrivi un preventivo scegli il cliente dall'anagrafica e i suoi dati si compilano da soli; se li correggi nel preventivo, valgono solo per quel preventivo. Dal profilo del cliente vedi i suoi preventivi e ne inizi uno nuovo già intestato a lui. Un cliente scritto a mano in un preventivo entra in anagrafica con il pulsante «Aggiungi all'anagrafica clienti». Eliminare un cliente non tocca i suoi preventivi. L'anagrafica c'è per le aziende con i preventivi attivi: la vede chi vede i preventivi e la modifica chi li scrive."
+      },
+      "2026-11-13-versione-4-6": {
+        "area": "Impostazioni",
+        "titolo": "Versione 4.6: il listino prezzi nelle impostazioni, anche da Excel",
+        "testo": "Il listino prezzi dei preventivi ora è una sezione delle impostazioni dell'azienda: «Listino prezzi». Aggiungi le voci una alla volta oppure incollale tutte insieme da Excel o da un file CSV: prima vedi quante voci sono nuove e quante vengono aggiornate, poi confermi. Una riga incollata con un codice già presente nel listino aggiorna quella voce. Se una riga ha un errore non viene salvata nessuna voce, e l'errore è indicato con il numero della riga. Puoi anche scaricare il listino in Excel (CSV). Nel preventivo, se il listino è vuoto, trovi il collegamento per compilarlo. La sezione è disponibile per le aziende con i preventivi attivi."
+      },
+      "2026-11-13-versione-4-5": {
+        "area": "Schede",
+        "titolo": "Versione 4.5: moduli DMG in una sola lingua, niente testo tagliato",
+        "testo": "I moduli d'ordine DMG (Pitagora 4.0 e Fixtures) ora escono solo in italiano, con qualsiasi lettore PDF e stampante. Prima alcuni lettori PDF e alcune stampanti mostravano le scritte in italiano, francese e inglese una sopra l'altra. La data e gli altri campi dei moduli compilabili non vengono più tagliati dal bordo: un indirizzo lungo va su due righe e una nota che non entra nel suo campo finisce con «…». Sul modulo Fixtures le larghezze del modello stanno accanto alle loro caselle e non coprono più il titolo della sezione 3."
+      },
+      "2026-11-13-versione-4-4": {
+        "area": "Schede",
+        "titolo": "Versione 4.4: la scheda si invia per email dal portale",
+        "testo": "Dalla pagina di una scheda salvata ora puoi inviarla per email: scrivi l'indirizzo, se vuoi aggiungi un messaggio, e il portale manda il PDF in allegato, lo stesso che scarichi. Le risposte arrivano alla tua email. L'indirizzo del destinatario non viene salvato. Lo può fare chi modifica le schede dell'azienda."
+      },
+      "2026-11-13-versione-4-3": {
+        "area": "Portale",
+        "titolo": "Versione 4.3: il codice per la firma vale 30 minuti",
+        "testo": "Il codice per firmare le condizioni di servizio, che ricevi per email, ora vale 30 minuti invece di 10: se l'email arriva in ritardo, fai in tempo a inserirlo. Quando il portale invia un'email — il link per la nuova password, il codice per la firma, un invito — ora avvisa che a volte servono 5–10 minuti perché arrivi. Nella pagina della firma, se manca la spunta dell'approvazione, il modulo non parte e il codice che hai scritto resta al suo posto."
+      },
+      "2026-11-13-versione-4-2": {
+        "area": "Portale",
+        "titolo": "Versione 4.2: preventivo a tutta larghezza, firma più semplice",
+        "testo": "Quando compili un preventivo, le righe occupano di nuovo tutta la larghezza, anche se il listino dell'azienda è vuoto. Chi firma le condizioni di servizio firma direttamente la versione in vigore dal 14 novembre 2026, una volta sola. Se il codice per la firma non parte per email, il portale lo dice subito e il tentativo non conta nel limite dei codici all'ora."
+      },
       "2026-11-13-versione-4-1": {
         "area": "Portale",
         "titolo": "Versione 4.1: acquisto anche senza VIES e nota di credito sui rimborsi",

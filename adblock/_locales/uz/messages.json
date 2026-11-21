@@ -856,5 +856,50 @@
   },
   "welTest": {
     "message": "Sinov sahifasida qanday ishlashini koʻring"
+  },
+  "modeHere": {
+    "message": "Bu yerda himoya"
+  },
+  "modeBasic": {
+    "message": "Asosiy"
+  },
+  "modeStandard": {
+    "message": "Standart"
+  },
+  "modeStrict": {
+    "message": "Qatʼiy"
+  },
+  "opt_mode": {
+    "message": "Himoya darajasi"
+  },
+  "opt_mode_sub": {
+    "message": "Barcha saytlar uchun. Bitta saytga alohida daraja berish uchun kengaytmani oʻsha saytda oching."
+  },
+  "modeHint": {
+    "message": "Asosiy: faqat tarmoqda bloklash. Standart: tavsiya etiladi. Qatʼiy: freymlar ichida ham. Sahifa qayta yuklanadi."
+  },
+  "modeBasicDesc": {
+    "message": "Faqat tarmoqda bloklash: eng yengili, deyarli hech narsa buzilmaydi. YouTube oʻz himoyasini saqlaydi."
+  },
+  "modeStandardDesc": {
+    "message": "Tavsiya etiladi: sahifaning oʻzida toʻliq himoya."
+  },
+  "modeStrictDesc": {
+    "message": "Joylangan freymlar ichida ham: eng koʻp yashiradi, eng koʻp xotira ishlatadi."
+  },
+  "opt_who": {
+    "message": "Kimlarni toʻxtatdik"
+  },
+  "opt_who_sub": {
+    "message": "Soʻnggi 30 kunda brauzeringizga serverlari bilan bogʻlanishga yoʻl qoʻymaganimiz kompaniyalar. Faqat shu qurilmada, kompaniya va kun boʻyicha sanaladi: manzillar ham, saytlar ham yoʻq."
+  },
+  "opt_who_empty": {
+    "message": "Hali hech narsa sanalmadi. Biroz koʻrib chiqing va yana qarang."
+  },
+  "opt_who_row": {
+    "message": "Soʻrovlar: $1 · Kunlar: $2"
+  },
+  "managedNote": {
+    "message": "Tashkilotingiz tomonidan oʻrnatilgan"
   }
 }

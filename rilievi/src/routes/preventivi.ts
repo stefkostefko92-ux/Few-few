@@ -5,6 +5,7 @@ import { setFlash } from '../http/flash.js';
 import { datiDi, validaFino } from '../preventivi/dati.js';
 import { listPreventivi } from '../preventivi/elenco.js';
 import {
+  clienteIdCambiato,
   formValuesDalBody,
   formValuesDaPreventivo,
   parsePreventivo,
@@ -27,7 +28,9 @@ import {
 import { MAX_QUERY_LENGTH } from '../schede/search.js';
 import { aziendaFilterOf, aziendeOf, notFound } from './schede-shared.js';
 import {
+  aziendeInArchivio,
   loadPreventivo,
+  puoOperare,
   puoScrivere,
   puoTogliere,
   renderPreventivoForm,
@@ -62,6 +65,7 @@ preventiviRouter.get('/preventivi', read, async (req, res) => {
     stato: stato ?? '',
     stati: STATI,
     euro,
+    archivio: aziendeInArchivio(req),
   });
 });
 
@@ -70,6 +74,7 @@ preventiviRouter.get('/preventivi/:id', read, async (req, res) => {
   if (!row) return notFound(req, res);
   const dati = datiDi(row);
   const scrive = puoScrivere(req, row);
+  const opera = puoOperare(req, row);
   res.render('preventivi/show', {
     titleKey: 'preventivi.titolo',
     preventivo: row,
@@ -79,8 +84,9 @@ preventiviRouter.get('/preventivi/:id', read, async (req, res) => {
     validoFino: validaFino(dati.data, dati.validitaGiorni),
     modifica: scrive && MODIFICABILI.includes(row.stato),
     scrive,
+    opera,
     elimina: puoTogliere(req, row),
-    passaggi: scrive ? passaggiDa(row.stato) : [],
+    passaggi: opera ? passaggiDa(row.stato) : [],
     euro,
     quantitaTesto,
     scontoTesto,
@@ -97,7 +103,12 @@ preventiviRouter.get('/preventivi/:id/modifica', write, async (req, res) => {
   }
   renderPreventivoForm(res, 200, {
     preventivo: row,
-    values: formValuesDaPreventivo(datiDi(row)),
+    // Профилът от регистъра — и какъв е бил при отварянето (`clienteIdPrima`): несменен, не се пипа.
+    values: {
+      ...formValuesDaPreventivo(datiDi(row)),
+      clienteId: row.clienteId ?? '',
+      clienteIdPrima: row.clienteId ?? '',
+    },
     errors: {},
     base: row.updatedAt.toISOString(),
     aziende: [],
@@ -128,6 +139,7 @@ preventiviRouter.post('/preventivi/:id', write, requireCsrf, async (req, res) =>
     base,
     data: parsed.data,
     actorId: principalOf(req).user.id,
+    clienteId: clienteIdCambiato(body),
   });
   if (esito.esito === 'missing') return notFound(req, res);
   if (esito.esito === 'bloccato') {

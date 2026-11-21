@@ -12,3 +12,4 @@ Supreme AdBlock nima qilayotganingizni kuzatmasdan, reklamani hamma joyda blokla
 • Sayt buzildimi? Bir bosish uni tuzatadi yoki bizga xabar bering — siz avval koʻrmaguningizcha hech narsa yuborilmaydi.
 • uBlock Origin, AdGuard yoki Adblock Plus kengaytmasidan oʻtyapsizmi? Ruxsat berilgan saytlar va filtrlarni bitta fayl bilan olib keling.
 • Sahifa qaysi boshqa saytlarga ulanishini koʻring va ulardan birini bir bosishda faqat shu saytda bloklang.
+• Himoya darajasi: Asosiy · Standart · Qatʼiy

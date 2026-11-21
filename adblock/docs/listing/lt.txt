@@ -12,3 +12,4 @@ Supreme AdBlock blokuoja reklamas visur — YouTube vaizdo reklamas, reklamjuost
 • Svetainė neveikia? Vienas spustelėjimas ją pataiso — arba praneškite mums; niekas nesiunčiama, kol to nepamatote.
 • Pereinate nuo uBlock Origin, AdGuard ar Adblock Plus? Perkelkite leidžiamas svetaines ir filtrus vienu failu.
 • Matykite, prie kokių kitų svetainių jungiasi puslapis, ir vienu spustelėjimu užblokuokite kurią nors tik ten.
+• Apsaugos lygis: Pagrindinė · Standartinė · Griežta
