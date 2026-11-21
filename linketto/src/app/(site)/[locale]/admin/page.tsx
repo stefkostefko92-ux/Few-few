@@ -34,6 +34,8 @@ import {
 } from '@/app/actions/admin';
 
 import { BAN_CATEGORIES } from '@/lib/dsa-notice';
+import { IntegrationsPanel, settingFieldLabelKey } from '@/components/admin/IntegrationsPanel';
+import { SETTING_KEYS, type SettingKey } from '@/lib/settings-spec';
 
 export const dynamic = 'force-dynamic';
 
@@ -95,10 +97,21 @@ export default async function AdminPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string; ok?: string; error?: string; count?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    ok?: string;
+    error?: string;
+    count?: string;
+    test?: string;
+    code?: string;
+    field?: string;
+    nodisputes?: string;
+    reused?: string;
+    webhook?: string;
+  }>;
 }) {
   const { locale } = await params;
-  const { q, ok, error, count: okCount } = await searchParams;
+  const { q, ok, error, count: okCount, test, code, field, nodisputes, reused, webhook } = await searchParams;
   await requireAdmin(locale);
   const t = await getTranslations('admin');
 
@@ -198,6 +211,13 @@ export default async function AdminPage({
     'ban-ground': t('errorBanGround'),
     'ban-notice': t('errorBanNotice'),
     'autonotice-email': t('autoNoticeNoEmail'),
+    'admin-target': t('errorAdminTarget'),
+    setting: t('errorSetting', {
+      field: SETTING_KEYS.includes(field as SettingKey) ? t(settingFieldLabelKey(field as SettingKey)) : '—',
+    }),
+    nokey: t('errorNoSealKey'),
+    'open-orders': t('errorOpenOrders', { count: Number(okCount) || 0 }),
+    rate: t('errorRate'),
   };
   // Автоматичен превод: профили отпреди функцията — без уведомление / насрочени.
   const [autoPending, autoScheduled] = await Promise.all([
@@ -241,7 +261,11 @@ export default async function AdminPage({
           <div className="space-y-3">
             {ok && (
               <Callout tone="success">
-                {ok === 'autonotice' ? t('autoNoticeDone', { count: Number(okCount) || 0 }) : t('saved')}
+                {ok === 'autonotice'
+                  ? t('autoNoticeDone', { count: Number(okCount) || 0 })
+                  : ok === 'nochange'
+                    ? t('intNoChange')
+                    : t('saved')}
               </Callout>
             )}
             {error && <Callout tone="danger">{errorText[error] ?? t('errorInput')}</Callout>}
@@ -481,6 +505,18 @@ export default async function AdminPage({
               </TBody>
             </Table>
           )}
+        </Section>
+
+        {/* Ключовете на Revolut (плащания) и Brevo (имейли) — само с пресен 2FA код */}
+        <Section id="integrations" title={t('intTitle')} description={t('intHint')}>
+          <IntegrationsPanel
+            locale={locale}
+            test={test}
+            code={code}
+            noDisputes={nodisputes === '1'}
+            reused={reused === '1'}
+            webhookReset={webhook === 'reset'}
+          />
         </Section>
 
         {/* Потребители и профили */}

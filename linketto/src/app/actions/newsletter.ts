@@ -6,7 +6,7 @@ import { prisma } from '@/lib/db';
 import { profileHasActiveBlock } from '@/lib/profile-blocks';
 import { RETENTION_DAYS, daysAgo } from '@/lib/retention-days';
 import { getSessionUser } from '@/lib/auth';
-import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { clientIpKey, rateLimit } from '@/lib/rate-limit';
 import { isLocale } from '@/i18n/locales';
 import {
   generateSubscriberToken,
@@ -55,7 +55,7 @@ export async function subscribeAction(formData: FormData): Promise<void> {
   }
   const locale = isLocale(hl) ? hl : null;
   // Лимит по IP: формата праща писма до чужди адреси от нашия домейн.
-  if (!rateLimit(`subscribe-ip:${await clientIp()}`, 6, 10 * 60_000)) {
+  if (!rateLimit(`subscribe-ip:${await clientIpKey()}`, 6, 10 * 60_000)) {
     redirect(`${back}${hl ? '&' : '?'}subError=1`);
   }
 

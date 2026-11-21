@@ -2,7 +2,7 @@
 // изпращане не чупи бизнес действието, само се логва. Само служебни данни
 // (id на поръчка/профил, състояние) — без лични данни на трети лица.
 
-import { emailConfigured, sendEmail } from '@/lib/email';
+import { emailReady, sendEmail } from '@/lib/email';
 
 export function adminEmails(raw = process.env.ADMIN_EMAILS ?? ''): string[] {
   return raw
@@ -37,7 +37,7 @@ export function adminAlertEmail(input: { subject: string; lines: string[]; admin
  */
 export async function notifyAdmins(subject: string, lines: string[]): Promise<boolean> {
   const to = adminEmails();
-  if (to.length === 0 || !emailConfigured()) return false;
+  if (to.length === 0 || !(await emailReady())) return false;
   const base = process.env.PUBLIC_BASE_URL ?? 'http://localhost:3000';
   const { subject: s, html } = adminAlertEmail({ subject, lines, adminUrl: `${base}/bg/admin` });
   let sent = false;

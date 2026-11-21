@@ -9,6 +9,33 @@ interface Bucket {
 
 const buckets = new Map<string, Bucket>();
 const MAX_KEYS = 10_000;
+// Критичните ключове (вход, регистрация, 2FA, общите тавани) НЕ се изхвърлят
+// при наводняване с нови ключове — иначе публичен endpoint с ключ от нападателя
+// нулира защитата на входа и AI тавана (червен екип). Те имат собствен,
+// много по-висок таван (нападателят плаща bcrypt/лимит за всеки).
+const MAX_CRITICAL_KEYS = 200_000;
+const CRITICAL = /^(login-|register|mfa|2fa|stepup|reset-|verify-)|:global$/;
+
+export function isCriticalKey(key: string): boolean {
+  return CRITICAL.test(key);
+}
+
+/**
+ * IP за ключ на лимит: IPv4 — целият адрес; IPv6 — мрежата /64 (един абонат
+ * обикновено има цяла /64 — иначе всеки адрес от нея е „нов“ лимит).
+ */
+export function ipBucket(ip: string): string {
+  const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i.exec(ip);
+  if (mapped) return mapped[1]!;
+  if (!ip.includes(':')) return ip;
+  const [head = '', tail = ''] = ip.toLowerCase().split('::');
+  const left = head ? head.split(':') : [];
+  const right = tail ? tail.split(':') : [];
+  const fill = ip.includes('::') ? Array(Math.max(0, 8 - left.length - right.length)).fill('0') : [];
+  const full = [...left, ...fill, ...right].slice(0, 8);
+  if (full.length < 4 || full.some((part) => !/^[0-9a-f]{1,4}$/.test(part))) return ip;
+  return `${full.slice(0, 4).map((part) => part.replace(/^0+(?=.)/, '')).join(':')}::/64`;
+}
 // Изтеклите кофи (с IP в ключа) се чистят поне веднъж в минута — политиката
 // обещава, че IP-то за лимита стои в паметта само докато трае прозорецът.
 const PRUNE_EVERY_MS = 60_000;
@@ -66,11 +93,28 @@ function prune(now: number): void {
     const last = b.hits[b.hits.length - 1];
     if (last === undefined || now - last >= b.windowMs) buckets.delete(k);
   }
-  // Крайна защита: при атака с безкрайно нови ключове изхвърляме най-старите.
-  if (buckets.size > MAX_KEYS) {
+  // Крайна защита: при атака с безкрайно нови ключове изхвърляме най-старите
+  // НЕкритични; критичните имат отделен (по-висок) таван.
+  let normal = 0;
+  let critical = 0;
+  for (const k of buckets.keys()) {
+    if (isCriticalKey(k)) critical += 1;
+    else normal += 1;
+  }
+  if (normal > MAX_KEYS) {
     for (const k of buckets.keys()) {
+      if (isCriticalKey(k)) continue;
       buckets.delete(k);
-      if (buckets.size <= MAX_KEYS / 2) break;
+      normal -= 1;
+      if (normal <= MAX_KEYS / 2) break;
+    }
+  }
+  if (critical > MAX_CRITICAL_KEYS) {
+    for (const k of buckets.keys()) {
+      if (!isCriticalKey(k)) continue;
+      buckets.delete(k);
+      critical -= 1;
+      if (critical <= MAX_CRITICAL_KEYS / 2) break;
     }
   }
 }

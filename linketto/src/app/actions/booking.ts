@@ -8,7 +8,7 @@ import { RETENTION_DAYS, daysAgo } from '@/lib/retention-days';
 import { getSessionUser } from '@/lib/auth';
 import { isLocale } from '@/i18n/locales';
 import { isValidEmail, normalizeEmail } from '@/lib/newsletter';
-import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { clientIpKey, rateLimit } from '@/lib/rate-limit';
 
 // Публично: посетител заявява час/среща (BOOKING блок). Само заявка — без
 // плащане; създателят потвърждава извън платформата. Honeypot срещу ботове.
@@ -30,7 +30,7 @@ export async function submitBookingAction(formData: FormData): Promise<void> {
   // Само профил с активен BOOKING блок приема заявки; лимит по IP.
   if (
     !(await profileHasActiveBlock(profile.id, 'BOOKING')) ||
-    !rateLimit(`booking:${await clientIp()}`, 5, 10 * 60_000)
+    !rateLimit(`booking:${await clientIpKey()}`, 5, 10 * 60_000)
   ) {
     redirect(`${back}${sep}bookError=1`);
   }

@@ -373,6 +373,14 @@ export default async function DashboardPage({
           </Callout>
         )}
         {domainVerified && <Callout tone="success">{t('domainVerifiedOk')}</Callout>}
+        {!user.emailVerifiedAt && (
+          <Callout tone="warning">
+            {t('verifyBanner')}{' '}
+            <a href={`/${locale}/dashboard/security#email`} className="font-semibold underline">
+              {t('verifyBannerLink')}
+            </a>
+          </Callout>
+        )}
         {/* DSA чл. 17: мотивите за спиране/предупреждението — и в таблото, не
             само по имейл (видимо само за собственика, никога публично). */}
         {profile?.bannedAt && (

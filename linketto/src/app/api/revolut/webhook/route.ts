@@ -1,4 +1,7 @@
 import { NextResponse } from 'next/server';
+import { setting } from '@/lib/settings';
+import { alertAtThreshold, countRecent, recordSecurityEvent } from '@/lib/security-events';
+import { clientIpKey, rateLimit } from '@/lib/rate-limit';
 import { verifyRevolutSignature, webhookEvent } from '@/lib/revolut-core';
 import { recordDispute, settlePlanOrder, settlePlanRefund } from '@/lib/plan-order-service';
 import { prisma } from '@/lib/db';
@@ -14,7 +17,7 @@ import { prisma } from '@/lib/db';
 // се синхронизира — връщането се прави само от /admin (DEPLOY §4).
 
 export async function POST(request: Request): Promise<NextResponse> {
-  const secret = process.env.REVOLUT_WEBHOOK_SECRET;
+  const secret = await setting('revolut.webhookSecret');
   if (!secret) return NextResponse.json({ error: 'disabled' }, { status: 503 });
 
   const rawBody = await request.text();
@@ -25,7 +28,19 @@ export async function POST(request: Request): Promise<NextResponse> {
     secret,
     now: Date.now(),
   });
-  if (!ok) return NextResponse.json({ error: 'bad signature' }, { status: 401 });
+  if (!ok) {
+    // Детекция (син екип D6): грешен подпис = подправен уебхук или сменена тайна.
+    // Записът е само под лимит (по IP /64 и общо) — иначе анонимен флуд пълни
+    // дневника и управлява алармите (Кодаджията M2).
+    if (rateLimit(`webhook-bad:${await clientIpKey()}`, 10, 60 * 60_000) && rateLimit('webhook-bad:global', 100, 60 * 60_000)) {
+      await recordSecurityEvent('webhook.bad_signature', { meta: { provider: 'revolut' } });
+      await alertAtThreshold(await countRecent('webhook.bad_signature', 60), 3, 'Revolut уебхук с грешен подпис', [
+        '3 заявки към /api/revolut/webhook с невалиден подпис за 1 час.',
+        'Възможно: подправени заявки или сменена тайна на уебхука в Revolut.',
+      ]);
+    }
+    return NextResponse.json({ error: 'bad signature' }, { status: 401 });
+  }
 
   let body: unknown;
   try {

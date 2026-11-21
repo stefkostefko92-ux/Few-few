@@ -75,20 +75,29 @@ DATABASE_URL="postgresql://…" npx prisma migrate deploy
 |------|--------|---------|
 | `DATABASE_URL` | PostgreSQL в ЕС | — |
 | `PUBLIC_BASE_URL` | `https://piuma.carbonstealth.eu` | sitemap, canonical, redirect-а след плащане, имейли |
-| `REVOLUT_SECRET_KEY` | Revolut Business → APIs → Merchant API | Production или Sandbox ключ (по `REVOLUT_ENV`) |
+| `SETTINGS_KEY` | `openssl rand -base64 32` (autodeploy го генерира, ако липсва) | шифрова TOTP секретите и ключовете от админ панела; **пази копие на `.env`** — без него 2FA и записаните ключове не се четат. Смяна: старият → `SETTINGS_KEY_OLD` |
+| `REVOLUT_SECRET_KEY` | Revolut Business → APIs → Merchant API | Production или Sandbox ключ (по `REVOLUT_ENV`). **Или** от админ панела → „Плащания и имейл“ (шифрован, с предимство пред `.env`) |
 | `REVOLUT_ENV` | ти | `production` = `merchant.revolut.com`; всичко друго = sandbox |
 | `REVOLUT_WEBHOOK_SECRET` | отговорът при създаване на уебхука (§3) | без него `/api/revolut/webhook` връща 503 и уреждането става само от cron-а (§9) |
 | `BREVO_API_KEY` + `EMAIL_FROM` | app.brevo.com → SMTP & API | напомнянията за плана, потвърждения за бюлетин, седмичен отчет; подателят — потвърден домейн; **DPA** |
 | `DATA_DIR` | абсолютна папка извън release-а, напр. `/var/lib/linketto` | **ЗАДЪЛЖИТЕЛНА на сървъра** — качените аватари/фонове (`DATA_DIR/uploads`); `./data` се губи при всеки нов release |
 | `GEMINI_API_KEY` | aistudio.google.com | „Преведи с AI", „Генерирай био“ и `/tools/bio`; за ЕС — **само платен tier + DPA** |
 | `GEMINI_PAID_TIER` | ти | `1` = ключът е на платен акаунт с DPA. Без него AI функциите са изключени (fail-closed) |
-| `ADMIN_EMAILS` | ти | запетая-разделени имейли с достъп до `/admin` |
+| `ADMIN_EMAILS` | ти | запетая-разделени имейли с достъп до `/admin`. Достъпът иска и потвърден имейл + 2FA. **Преди първия деплой с 2FA** провери, че всеки адрес от списъка, който вече има акаунт, е твой: `SELECT email, "createdAt" FROM "User" WHERE lower(email) = ANY(...)` — първото включване на 2FA е „доверие при първа употреба“, а старите акаунти се маркират като потвърдени. След деплоя включи 2FA веднага |
 | `PROFILE_HOST` | кратък домейн, напр. `lnkt.to` | по избор — линковете за споделяне/QR/vCard стават `https://<хост>/<slug>`; нужни DNS, TLS и Nginx `server_name` |
 | `CRON_SECRET` | `openssl rand -hex 32` | дневните cron-ове (§9: отчет + планове) и подписът на линка за отписване; ≥24 знака; без него маршрутите са изключени (503) |
 
 ## 3. Revolut уебхук
 
-Създава се еднократно през API-то на Revolut (Merchant API → Webhooks → „Create a webhook“):
+**Най-лесно:** админ панел → „Плащания и имейл“ → „Регистрирай уебхука в Revolut“ (иска 2FA код):
+създава уебхука към `<PUBLIC_BASE_URL>/api/revolut/webhook` със събитията по-долу (без `DISPUTE_*`,
+ако Revolut ги откаже за средата; в продукция това праща и аларма до админите) и записва тайната
+шифрована. Ако за адреса вече има уебхук, бутонът не прави дубликат — взима тайната му от Revolut, а ако
+Revolut не я върне — постави я ръчно в полето „Тайна на уебхука“. Смяна на средата (sandbox ↔ продукция)
+изтрива старата тайна (уебхукът е към другата среда) — регистрирай го наново. При висящи поръчки
+(неплатени до 3 дни или връщане в ход) смяната на среда/ключ иска изрично потвърждение на броя.
+
+Ръчно — еднократно през API-то на Revolut (Merchant API → Webhooks → „Create a webhook“):
 `POST /api/webhooks` с `Authorization: Bearer <REVOLUT_SECRET_KEY>`, `Revolut-Api-Version: 2026-08-17`
 (задължителен, ≥ 2024-09-01; старият път `/api/1.0/webhooks` вече го няма в спецификацията) и тяло
 

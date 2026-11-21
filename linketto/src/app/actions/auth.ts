@@ -2,13 +2,24 @@
 
 import { redirect } from 'next/navigation';
 import { clientIp, isRateLimited, rateLimit } from '@/lib/rate-limit';
+import { ipBucket } from '@/lib/limiter';
 import { z } from 'zod';
 import {
+  clearLoginChallenge,
+  createLoginChallenge,
   createSession,
   destroySession,
+  readLoginChallenge,
   registerUser,
   verifyLogin,
 } from '@/lib/auth';
+import { isAdminEmail } from '@/lib/admin-list';
+import { notifyAdmins } from '@/lib/admin-alert';
+import { openTotpSecret } from '@/lib/totp-secret';
+import { verifyTotp } from '@/lib/totp';
+import { matchBackupCode } from '@/lib/backup-codes';
+import { alertAtThreshold, countRecent, recordSecurityEvent, subjectHash } from '@/lib/security-events';
+import { notifyUserSecurity, requestCountryCode, sendVerificationEmail } from '@/lib/account-flows';
 import { isLocale } from '@/i18n/locales';
 import { requestIp } from '@/lib/admin';
 import { prisma } from '@/lib/db';
@@ -57,6 +68,12 @@ export async function registerAction(formData: FormData): Promise<void> {
     password: formData.get('password'),
   });
   if (!parsed.success) {
+    redirect(back('generic'));
+  }
+  // Червен/син екип: регистрацията беше без лимит (bcrypt ~350 ms CPU на
+  // опит + оракул „имейлът е зает“). 5 на час от адрес (/64) и общ дневен таван.
+  const ipKey = ipBucket(await clientIp());
+  if (!rateLimit(`register-ip:${ipKey}`, 5, 60 * 60_000) || !rateLimit('register:global', 300, 24 * 60 * 60_000)) {
     redirect(back('generic'));
   }
   const name = String(formData.get('name') ?? '').trim().slice(0, 100) || null;
@@ -108,7 +125,9 @@ export async function registerAction(formData: FormData): Promise<void> {
   }
 
   await logLoginIp(user.id);
-  await createSession(user.id);
+  // Имейлът се потвърждава по писмо (без потвърден имейл няма админ достъп).
+  await sendVerificationEmail(user);
+  await createSession(user.id, { admin: isAdminEmail(user.email) });
   redirect(`/${locale}/dashboard`);
 }
 
@@ -130,7 +149,7 @@ export async function loginAction(formData: FormData): Promise<void> {
   const email = parsed.data.email.toLowerCase();
   const emailKey = `login-email:${email}`;
   if (
-    !rateLimit(`login-ip:${ip}`, 10, 10 * 60_000) ||
+    !rateLimit(`login-ip:${ipBucket(ip)}`, 10, 10 * 60_000) ||
     isRateLimited(emailKey, 20, 10 * 60_000)
   ) {
     redirect(`/${locale}/login?error=invalid`);
@@ -138,11 +157,100 @@ export async function loginAction(formData: FormData): Promise<void> {
   const user = await verifyLogin(parsed.data.email, parsed.data.password);
   if (!user) {
     rateLimit(emailKey, 20, 10 * 60_000);
+    // Дневник (HMAC на имейла, без IP) + аларма при вълна срещу един акаунт (D1).
+    const subject = subjectHash(email);
+    await recordSecurityEvent('auth.login.failed', { subject, country: await requestCountryCode() });
+    if (subject) {
+      await alertAtThreshold(await countRecent('auth.login.failed', 10, { subject }), 20, 'Вълна от неуспешни входове', [
+        '20 неуспешни опита за вход в един акаунт за 10 минути (възможно налучкване на парола).',
+      ]);
+    }
     redirect(`/${locale}/login?error=invalid`);
   }
+  // 2FA: паролата сама не дава сесия — първо код (вход на 2 стъпки).
+  if (user.totpEnabledAt) {
+    await createLoginChallenge(user.id);
+    redirect(`/${locale}/login/2fa`);
+  }
+  await completeLogin(user, false);
+  redirect(isAdminEmail(user.email) ? `/${locale}/dashboard/security?need=admin2fa` : `/${locale}/dashboard`);
+}
+
+/** Сесия + дневник; вход в админ акаунт = аларма до всички админи (D2). */
+async function completeLogin(user: { id: string; email: string }, mfa: boolean): Promise<void> {
+  const admin = isAdminEmail(user.email);
   await logLoginIp(user.id);
-  await createSession(user.id);
-  redirect(`/${locale}/dashboard`);
+  await createSession(user.id, { admin, mfa });
+  const country = await requestCountryCode();
+  await recordSecurityEvent(admin ? 'admin.login' : 'auth.login', { userId: user.id, country, meta: { mfa } });
+  if (admin) {
+    await notifyAdmins('Вход в админ акаунт', [
+      `Акаунт: ${user.email}`,
+      `Държава: ${country ?? 'неизвестна'}`,
+      `С 2FA: ${mfa ? 'да' : 'НЕ'}`,
+      'Ако не си бил ти — смени паролата и изведи всички устройства веднага.',
+    ]).catch(() => false);
+  }
+}
+
+const mfaSchema = z.string().trim().min(6).max(20);
+
+/** Стъпка 2 на входа: код от приложението или резервен код. */
+export async function verifyMfaAction(formData: FormData): Promise<void> {
+  const locale = localeFrom(formData);
+  const challenge = await readLoginChallenge();
+  if (!challenge) redirect(`/${locale}/login?error=expired`);
+  const user = challenge.user;
+  const code = mfaSchema.safeParse(formData.get('code'));
+  // 5 опита на предизвикателство и 5 за 15 мин. на акаунт (критичен ключ).
+  if (!code.success || !rateLimit(`mfa:${user.id}`, 5, 15 * 60_000) || challenge.attempts >= 5) {
+    await failMfa(challenge.id, user.id, locale, challenge.attempts);
+  }
+  const value = code.success ? code.data : '';
+  const secret = await openTotpSecret(user);
+  const step = secret ? verifyTotp(secret, value, { lastStep: user.totpLastStep }) : null;
+  if (step !== null) {
+    // Условно: същата стъпка не минава два пъти дори при паралелни заявки.
+    const { count } = await prisma.user.updateMany({
+      where: { id: user.id, OR: [{ totpLastStep: null }, { totpLastStep: { lt: step } }] },
+      data: { totpLastStep: step },
+    });
+    if (count === 1) {
+      await clearLoginChallenge(challenge.id);
+      await completeLogin(user, true);
+      redirect(`/${locale}/dashboard`);
+    }
+  } else {
+    const index = matchBackupCode(value, user.backupCodeHashes);
+    if (index >= 0) {
+      const left = user.backupCodeHashes.filter((_, i) => i !== index);
+      const { count } = await prisma.user.updateMany({
+        where: { id: user.id, backupCodeHashes: { equals: user.backupCodeHashes } },
+        data: { backupCodeHashes: left },
+      });
+      if (count === 1) {
+        await clearLoginChallenge(challenge.id);
+        await completeLogin(user, true);
+        await recordSecurityEvent('mfa.backup_used', { userId: user.id, meta: { left: left.length } });
+        await notifyUserSecurity(user, 'backup-used', left.length);
+        if (isAdminEmail(user.email)) {
+          await notifyAdmins('Резервен 2FA код в админ акаунт', [`Акаунт: ${user.email}`, `Остават: ${left.length}`]).catch(() => false);
+        }
+        redirect(`/${locale}/dashboard${left.length <= 3 ? '/security?need=backup' : ''}`);
+      }
+    }
+  }
+  await failMfa(challenge.id, user.id, locale, challenge.attempts);
+}
+
+async function failMfa(challengeId: string, userId: string, locale: string, attempts: number): Promise<never> {
+  await recordSecurityEvent('mfa.failed', { userId });
+  if (attempts + 1 >= 5) {
+    await clearLoginChallenge(challengeId);
+    redirect(`/${locale}/login?error=invalid`);
+  }
+  await prisma.loginChallenge.update({ where: { id: challengeId }, data: { attempts: { increment: 1 } } }).catch(() => undefined);
+  redirect(`/${locale}/login/2fa?error=code`);
 }
 
 export async function logoutAction(formData: FormData): Promise<void> {

@@ -184,3 +184,19 @@ export const ExternalGlyph = (p: P) =>
 export const LogOutGlyph = (p: P) =>
   g(p, <path d="M14 4h4.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H14M10 8l-4 4 4 4M6 12h10" />);
 export const ChevronLeftGlyph = (p: P) => g(p, <path d="m15 6-6 6 6 6" />);
+export const ShieldGlyph = (p: P) =>
+  g(
+    p,
+    <>
+      <path d="M12 3 4.5 6v5.5c0 4.4 3.1 8.2 7.5 9.5 4.4-1.3 7.5-5.1 7.5-9.5V6L12 3Z" />
+      <path d="m9 12 2 2 4-4" />
+    </>,
+  );
+export const KeyGlyph = (p: P) =>
+  g(
+    p,
+    <>
+      <circle cx="8" cy="15" r="4" />
+      <path d="m10.85 12.15 8.15-8.15M16 7l2.5 2.5M14 9l2 2" />
+    </>,
+  );

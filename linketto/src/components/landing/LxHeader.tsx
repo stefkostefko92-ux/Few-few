@@ -5,6 +5,7 @@ import type { Locale } from '@/i18n/locales';
 import { getSessionUser } from '@/lib/auth';
 import { logoutAction } from '@/app/actions/auth';
 import { LanguageMenu } from '@/components/LanguageMenu';
+import { isAdminEmail } from '@/lib/admin';
 
 // Хедърът на публичния сайт (лендинг, инструменти, сравнения, правни, вход):
 // тъмно стъкло, логото от лендинга. Вход/регистрация или табло/изход;
@@ -46,6 +47,12 @@ export async function LxHeader({ locale }: { locale: Locale }) {
           <LanguageMenu locale={locale} label={t('language')} />
           {user ? (
             <>
+              {/* Мастър акаунт: админът е на един клик (само за ADMIN_EMAILS). */}
+              {isAdminEmail(user.email) && (
+                <Link href={`/${locale}/admin`} className="lx-admin-link">
+                  {t('admin')}
+                </Link>
+              )}
               <Link href={`/${locale}/dashboard`}>{t('dashboard')}</Link>
               <form action={logoutAction}>
                 <input type="hidden" name="locale" value={locale} />

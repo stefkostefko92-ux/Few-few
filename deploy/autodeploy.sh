@@ -2269,6 +2269,19 @@ EOF
     ok "linketto: $LINKETTO_STATE_DIR/.env създаден (600)."
   fi
   chmod 600 "$LINKETTO_STATE_DIR/.env" 2>/dev/null || true
+  # Главният ключ за шифрованите тайни (2FA секрети, ключове на доставчици) —
+  # генерира се веднъж, ако липсва; НЕ се сменя после (загубен ключ = 2FA и
+  # шифрованите настройки стават нечетими). Бекъпни .env извън сървъра.
+  if ! grep -q '^SETTINGS_KEY=..*' "$LINKETTO_STATE_DIR/.env"; then
+    local sk
+    sk="$(openssl rand -base64 32 || true)"
+    if [ "${#sk}" -ge 40 ]; then
+      printf '\n# Главен ключ за шифрованите тайни (2FA, ключове на доставчици). НЕ го сменяй; пази копие офлайн.\nSETTINGS_KEY=%s\n' "$sk" >> "$LINKETTO_STATE_DIR/.env"
+      ok "linketto: SETTINGS_KEY е генериран (пази копие на .env офлайн)."
+    else
+      warn "linketto: openssl не даде SETTINGS_KEY — 2FA и шифрованите настройки остават изключени."
+    fi
+  fi
   # Портът — от .env (същото чете docker-compose.yml); изричният LINKETTO_HEALTH_URL побеждава.
   local port
   port="$(sed -n 's/^HTTP_PORT=//p' "$LINKETTO_STATE_DIR/.env" 2>/dev/null | tail -1 | tr -dc '0-9' || true)"

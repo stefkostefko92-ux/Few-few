@@ -20,6 +20,7 @@ function intervalFor(table: string, extra = ''): number {
 
 test('cron сроковете съвпадат с RETENTION_DAYS', () => {
   assert.equal(intervalFor('ClickEvent'), RETENTION_DAYS.clickEvent);
+  assert.equal(intervalFor('SecurityEvent'), RETENTION_DAYS.securityEvent);
   assert.equal(intervalFor('ContactMessage'), RETENTION_DAYS.contactMessage);
   assert.equal(intervalFor('Booking'), RETENTION_DAYS.booking);
   assert.equal(intervalFor('LoginEvent'), RETENTION_DAYS.loginEvent);

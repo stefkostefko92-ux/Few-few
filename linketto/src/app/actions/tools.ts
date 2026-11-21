@@ -2,7 +2,7 @@
 
 import { aiConfigured, generateBio } from '@/lib/ai';
 import { isLocale } from '@/i18n/locales';
-import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { clientIpKey, rateLimit } from '@/lib/rate-limit';
 
 // Публичният „AI био“ инструмент (/tools/bio) — без регистрация. Входът е
 // само име + бележки; нищо не се записва. Лимит по IP + общ дневен таван,
@@ -24,7 +24,7 @@ export async function publicBioAction(
   const rawLocale = String(formData.get('language') ?? 'en');
   if (!keywords) return { error: 'input' };
   if (
-    !rateLimit(`bio-tool:${await clientIp()}`, 5, 60 * 60_000) ||
+    !rateLimit(`bio-tool:${await clientIpKey()}`, 5, 60 * 60_000) ||
     !rateLimit('bio-tool:global', 500, 24 * 60 * 60_000)
   ) {
     return { error: 'rate' };

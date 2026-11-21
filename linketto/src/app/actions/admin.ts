@@ -4,10 +4,13 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
-import { requireAdmin } from '@/lib/admin';
+import { requireAdmin, requireStepUp } from '@/lib/admin';
+import { adminEmailChange, isAdminEmail } from '@/lib/admin-list';
+import { recordSecurityEvent } from '@/lib/security-events';
+import { notifyUserSecurity, sendVerificationEmail } from '@/lib/account-flows';
 import { requestPlanRefund, type RefundRequest } from '@/lib/plan-order-service';
 import { banAllowed, banNoticeEmail, isBanCategory, warningNoticeEmail } from '@/lib/dsa-notice';
-import { emailConfigured, sendEmail } from '@/lib/email';
+import { emailReady, sendEmail } from '@/lib/email';
 import { eraseUser } from '@/lib/account-erasure';
 import { applyPlanLimits } from '@/lib/plan-limits';
 import { autoTranslateNoticeEmail, autoTranslateStartDate } from '@/lib/auto-translate-notice';
@@ -23,6 +26,17 @@ function localeFrom(formData: FormData): string {
 }
 
 const PLAN_VALUES = ['FREE', 'PRO', 'BUSINESS', 'FOUNDER'] as const;
+
+/**
+ * Червен екип: админ не може да превземе ДРУГ админ (имейл, парола, изход,
+ * изтриване) — само самият той от „Сигурност“. Връща целевия потребител.
+ */
+async function guardTarget(uiLocale: string, adminId: string, userId: string) {
+  const target = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true, locale: true } });
+  if (!target) redirect(`/${uiLocale}/admin?error=input`);
+  if (target.id !== adminId && isAdminEmail(target.email)) redirect(`/${uiLocale}/admin?error=admin-target`);
+  return target;
+}
 
 /** Бан/отбан на профил: баннат = невидим публично (без публичен банер). */
 export async function setProfileBanAction(formData: FormData): Promise<void> {
@@ -63,7 +77,7 @@ export async function setProfileBanAction(formData: FormData): Promise<void> {
       where: { id: profileId },
       data: { warnedAt: decidedAt, warnedCategory: category, warnedReason: reason },
     });
-    if (emailConfigured()) {
+    if (await emailReady()) {
       const { subject, html } = warningNoticeEmail({
         locale: profile.user.locale,
         slug: profile.slug,
@@ -84,7 +98,7 @@ export async function setProfileBanAction(formData: FormData): Promise<void> {
     data: { bannedAt: decidedAt, bannedCategory: category, bannedReason: reason, banNoticeSentAt: null },
   });
   let sent = false;
-  if (emailConfigured()) {
+  if (await emailReady()) {
     const { subject, html } = banNoticeEmail({
       locale: profile.user.locale,
       slug: profile.slug,
@@ -115,7 +129,7 @@ export async function adminUpdateUserAction(
   formData: FormData,
 ): Promise<void> {
   const uiLocale = localeFrom(formData);
-  await requireAdmin(uiLocale);
+  const admin = await requireStepUp(uiLocale);
   const parsed = updateUserSchema.safeParse({
     userId: formData.get('userId'),
     email: formData.get('email'),
@@ -126,11 +140,16 @@ export async function adminUpdateUserAction(
     redirect(`/${uiLocale}/admin?error=input`);
   }
   const { userId, email, name, plan } = parsed.data;
+  const target = await guardTarget(uiLocale, admin.id, userId);
+  const change = adminEmailChange({ adminId: admin.id, targetId: userId, current: target.email, next: email });
+  if (change === 'forbidden') redirect(`/${uiLocale}/admin?error=admin-target`);
   try {
     await prisma.user.update({
       where: { id: userId },
       data: {
         email,
+        // Новият адрес трябва да се потвърди наново (иначе старото потвърждение „важи“ за него).
+        ...(change === 'changed' ? { emailVerifiedAt: null } : {}),
         name: name || null,
         plan: plan as Plan,
         // FREE/FOUNDER нямат изтичане; ръчно даден PRO/BUSINESS пази текущото
@@ -140,6 +159,15 @@ export async function adminUpdateUserAction(
     });
     // Ръчно свален план → платените функции спират (виж lib/plan-limits.ts).
     await applyPlanLimits(userId);
+    if (change === 'changed') {
+      // Висящи връзки за потвърждение (към стария адрес) и сесиите отпадат.
+      await prisma.userToken.deleteMany({ where: { userId } });
+      await prisma.session.deleteMany({ where: { userId } });
+      // Старият адрес научава за смяната (иначе тихо превземане на акаунта).
+      await notifyUserSecurity(target, 'admin-email');
+      await sendVerificationEmail({ id: userId, email, locale: target.locale }).catch(() => false);
+      await recordSecurityEvent('admin.action', { userId: admin.id, meta: { action: 'change-email', target: userId } });
+    }
   } catch (error) {
     // P2002 = зает имейл
     if (
@@ -160,8 +188,9 @@ export async function adminForceLogoutAction(
   formData: FormData,
 ): Promise<void> {
   const uiLocale = localeFrom(formData);
-  await requireAdmin(uiLocale);
+  const admin = await requireAdmin(uiLocale);
   const userId = String(formData.get('userId') ?? '');
+  await guardTarget(uiLocale, admin.id, userId);
   await prisma.session.deleteMany({ where: { userId } });
   redirect(`/${uiLocale}/admin?ok=1`);
 }
@@ -173,11 +202,13 @@ export async function adminDeleteUserAction(
   formData: FormData,
 ): Promise<void> {
   const uiLocale = localeFrom(formData);
-  const admin = await requireAdmin(uiLocale);
+  const admin = await requireStepUp(uiLocale);
   const userId = String(formData.get('userId') ?? '');
   if (formData.get('confirm') !== 'on' || userId === admin.id) {
     redirect(`/${uiLocale}/admin?error=input`);
   }
+  await guardTarget(uiLocale, admin.id, userId);
+  await recordSecurityEvent('admin.action', { userId: admin.id, meta: { action: 'delete-user', target: userId } });
   // Има ли покупки → анонимизиране (фискалните записи се пазят 10 г.),
   // иначе пълно каскадно изтриване (виж lib/account-erasure.ts).
   await eraseUser(userId).catch((error: unknown) => {
@@ -224,7 +255,8 @@ export async function adminRefundPlanOrderAction(
   formData: FormData,
 ): Promise<void> {
   const uiLocale = localeFrom(formData);
-  await requireAdmin(uiLocale);
+  const stepAdmin = await requireStepUp(uiLocale);
+  await recordSecurityEvent('admin.action', { userId: stepAdmin.id, meta: { action: 'refund' } });
   const planOrderId = String(formData.get('planOrderId') ?? '');
   let result: RefundRequest;
   try {
@@ -244,7 +276,8 @@ export async function adminMarkPayoutPaidAction(
   formData: FormData,
 ): Promise<void> {
   const uiLocale = localeFrom(formData);
-  await requireAdmin(uiLocale);
+  const stepAdmin = await requireStepUp(uiLocale);
+  await recordSecurityEvent('admin.action', { userId: stepAdmin.id, meta: { action: 'payout-paid' } });
   const payoutId = String(formData.get('payoutId') ?? '');
   await prisma.referralPayout.updateMany({
     where: { id: payoutId, status: 'pending' },
@@ -278,7 +311,7 @@ export async function adminSetPasswordAction(
   formData: FormData,
 ): Promise<void> {
   const uiLocale = localeFrom(formData);
-  await requireAdmin(uiLocale);
+  const stepAdmin = await requireStepUp(uiLocale);
   const parsed = passwordSchema.safeParse({
     userId: formData.get('userId'),
     password: formData.get('password'),
@@ -286,6 +319,7 @@ export async function adminSetPasswordAction(
   if (!parsed.success) {
     redirect(`/${uiLocale}/admin?error=password`);
   }
+  const target = await guardTarget(uiLocale, stepAdmin.id, parsed.data.userId);
   const passwordHash = await bcrypt.hash(parsed.data.password, 12);
   await prisma.user.update({
     where: { id: parsed.data.userId },
@@ -294,6 +328,8 @@ export async function adminSetPasswordAction(
   await prisma.session.deleteMany({
     where: { userId: parsed.data.userId },
   });
+  await recordSecurityEvent('admin.action', { userId: stepAdmin.id, meta: { action: 'set-password', target: target.id } });
+  await notifyUserSecurity(target, 'admin-password');
   redirect(`/${uiLocale}/admin?ok=1`);
 }
 
@@ -306,7 +342,7 @@ export async function adminSetPasswordAction(
 export async function adminNotifyAutoTranslateAction(formData: FormData): Promise<void> {
   const uiLocale = localeFrom(formData);
   await requireAdmin(uiLocale);
-  if (!emailConfigured()) redirect(`/${uiLocale}/admin?error=autonotice-email#autotranslate`);
+  if (!(await emailReady())) redirect(`/${uiLocale}/admin?error=autonotice-email#autotranslate`);
   const pending = await prisma.profile.findMany({
     where: { autoTranslateMode: 'pending', autoTranslateStartsAt: null },
     select: { id: true, slug: true, user: { select: { id: true, email: true, locale: true } } },

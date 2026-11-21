@@ -8,7 +8,7 @@ import { SITE_URL } from '@/lib/seo';
 import { BILLING_INTERVALS, type BillingIntervalId, type PlanId } from '@/lib/plans';
 import { checkPurchase, isPaidPlan, planOrderAmountCents } from '@/lib/plan-orders';
 import { vatForPlanSale } from '@/lib/vat';
-import { createRevolutOrder, revolutConfigured } from '@/lib/revolut';
+import { createRevolutOrder, revolutReady } from '@/lib/revolut';
 
 // Плащане на план през Revolut (docs/revolut-migration-spec.md §7): предплатен
 // период (1/3/6/12 мес.) или FOUNDER завинаги — еднократна поръчка, без
@@ -65,7 +65,7 @@ export async function startCheckoutAction(formData: FormData): Promise<void> {
     now,
   });
   if (allowed !== 'ok') redirect(`/${uiLocale}/dashboard?error=plan`);
-  if (!revolutConfigured()) redirect(`/${uiLocale}/dashboard?error=payments`);
+  if (!(await revolutReady())) redirect(`/${uiLocale}/dashboard?error=payments`);
 
   const amountCents = planOrderAmountCents(want, interval);
   if (!amountCents) redirect(`/${uiLocale}/dashboard?error=generic`);
