@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { verifyAuditChain } from '../audit.js';
 import { config } from '../config.js';
+import { aiSetup } from '../content/vertex.js';
 import { prisma } from '../db.js';
 import { requireCapability, requireLogin } from '../auth/guards.js';
 import { pageParam, tr } from './helpers.js';
@@ -48,7 +49,7 @@ auditRouter.get(
         scopes: cfg.IG_SCOPES.split(','),
         redirectUri: cfg.IG_REDIRECT_URI,
         appIdSet: Boolean(cfg.IG_APP_ID),
-        anthropicSet: Boolean(cfg.ANTHROPIC_API_KEY),
+        aiReady: aiSetup(cfg).ready,
         totpIssuer: cfg.TOTP_ISSUER,
         trustProxy: cfg.TRUST_PROXY,
       },
