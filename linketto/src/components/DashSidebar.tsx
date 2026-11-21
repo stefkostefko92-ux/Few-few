@@ -11,6 +11,8 @@ export interface DashNavItem {
   sectionId?: string;
   /** Маршрут, който е текущата страница (analytics, withdraw) */
   page?: boolean;
+  /** Брояч отдясно (напр. неразгледани сигнали) */
+  badge?: React.ReactNode;
 }
 
 export interface DashNavGroup {
@@ -80,6 +82,7 @@ export function DashSidebar({
       href: item.href,
       label: item.label,
       icon: item.icon,
+      badge: item.badge,
       current: item.page
         ? ('page' as const)
         : scrollspy && item.sectionId && item.sectionId === active
