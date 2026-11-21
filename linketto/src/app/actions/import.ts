@@ -7,6 +7,7 @@ import { prisma } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
 import { isLocale } from '@/i18n/locales';
 import { MAX_BLOCKS_PER_PROFILE, parseBlockInput } from '@/lib/blocks';
+import { lockedCount } from '@/lib/profile-lock';
 import { fetchCapped } from '@/lib/safe-fetch';
 import { linktreeUsername, parseLinktreeHtml } from '@/lib/linktree-import';
 import { removeUnusedMedia, saveUploadedImage } from '@/lib/media';
@@ -34,10 +35,7 @@ export async function importLinktreeAction(formData: FormData): Promise<void> {
   }
   const profile = await prisma.profile.findFirst({
     where: { id: profileId, userId: user.id },
-    include: {
-      translations: true,
-      _count: { select: { links: true } },
-    },
+    include: { translations: true },
   });
   if (!profile) redirect(await dash(uiLocale, '?error=generic'));
 
@@ -53,10 +51,9 @@ export async function importLinktreeAction(formData: FormData): Promise<void> {
     redirect(await dash(uiLocale, '?error=import'));
   }
 
-  // Всеки блок минава през същата валидация като ръчно добавения; общо ≤ таванa.
-  const room = Math.max(0, MAX_BLOCKS_PER_PROFILE - profile._count.links);
-  if (room === 0) redirect(await dash(uiLocale, '?error=blocksLimit'));
-  const blocks = parsed.blocks.slice(0, room).flatMap((block) => {
+  // Всеки блок минава през същата валидация като ръчно добавения; общо ≤ тавана — броят
+  // се взима СЛЕД мрежовото четене, под заключения ред на профила (lib/profile-lock.ts).
+  const valid = parsed.blocks.flatMap((block) => {
     const input = parseBlockInput({
       kind: block.kind,
       url: block.kind === 'LINK' ? block.url : '',
@@ -65,22 +62,26 @@ export async function importLinktreeAction(formData: FormData): Promise<void> {
     });
     return input ? [{ input, title: block.title }] : [];
   });
-  await prisma.$transaction(
-    blocks.map(({ input, title }, index) =>
-      prisma.link.create({
+  const imported = await prisma.$transaction(async (tx) => {
+    const existing = await lockedCount(tx, profile.id, 'links');
+    const blocks = valid.slice(0, Math.max(0, MAX_BLOCKS_PER_PROFILE - existing));
+    for (const [index, { input, title }] of blocks.entries()) {
+      await tx.link.create({
         data: {
           profileId: profile.id,
           kind: input.kind,
           url: input.url,
           meta: input.meta ? (input.meta as Prisma.InputJsonValue) : undefined,
-          position: profile._count.links + index,
+          position: existing + index,
           translations: {
             create: { locale: profile.defaultLocale, title },
           },
         },
-      }),
-    ),
-  );
+      });
+    }
+    return blocks.length;
+  });
+  if (imported === 0 && valid.length > 0) redirect(await dash(uiLocale, '?error=blocksLimit'));
 
   // Био и име — само ако са празни/автоматични (написаното не се презаписва).
   const main = profile.translations.find(
@@ -111,6 +112,7 @@ export async function importLinktreeAction(formData: FormData): Promise<void> {
       const saved = await saveUploadedImage(
         new File([new Uint8Array(image.body)], 'avatar', { type }),
         'avatar',
+        user.id,
       );
       if (saved) {
         await prisma.profile.update({
@@ -122,5 +124,5 @@ export async function importLinktreeAction(formData: FormData): Promise<void> {
     }
   }
 
-  redirect(await dash(uiLocale, `?imported=${blocks.length}`));
+  redirect(await dash(uiLocale, `?imported=${imported}`));
 }

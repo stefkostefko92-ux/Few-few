@@ -281,20 +281,24 @@ export default async function DashboardPage({
       ])
     : [0, 0];
   // Реферална програма: брой поканени регистрации и успешни (платили) реферали.
-  const [referredSignups, successfulReferrals, heldReferrals] = await Promise.all([
+  const holdMs = REFERRAL_HOLD_DAYS * 24 * 60 * 60_000;
+  const [referredSignups, successfulReferrals, heldReferrals, nextHeld] = await Promise.all([
     prisma.user.count({ where: { referredById: user.id } }),
     prisma.referral.count({ where: { referrerId: user.id } }),
     // Задържаните бонуси (abuse-money-spec А5) — влизат в баланса след срока за отказ/спор.
     prisma.referral.aggregate({
       where: { referrerId: user.id, releasedAt: null, reversedAt: null },
       _sum: { rewardCents: true },
-      _min: { createdAt: true },
+    }),
+    // Датата — само на още неузрелите (узрелите, но блокирани чакат проверка — без дата).
+    prisma.referral.findFirst({
+      where: { referrerId: user.id, releasedAt: null, reversedAt: null, flaggedAt: null, createdAt: { gte: new Date(Date.now() - holdMs) } },
+      orderBy: { createdAt: 'asc' },
+      select: { createdAt: true },
     }),
   ]);
   const heldCents = heldReferrals._sum.rewardCents ?? 0;
-  const nextRelease = heldReferrals._min.createdAt
-    ? new Date(heldReferrals._min.createdAt.getTime() + (REFERRAL_HOLD_DAYS + 1) * 24 * 60 * 60_000)
-    : null;
+  const nextRelease = nextHeld ? new Date(nextHeld.createdAt.getTime() + holdMs + 24 * 60 * 60_000) : null;
   // Функцията за отказ (чл. 11а Дир. 2011/83): платените поръчки от последните
   // 15 дни — допустимите показват „Откажете се от договора тук“, а подадените —
   // кога е получено изявлението.
@@ -2382,6 +2386,9 @@ export default async function DashboardPage({
                             })}
                           </select>
                         </label>
+                        {planId !== plan.id && plan.id !== 'FREE' && (
+                          <p className="w-full text-xs text-fg-muted">{t('upgradeCarryNote')}</p>
+                        )}
                         <label className="flex w-full items-start gap-2 text-xs leading-relaxed text-fg-2">
                           <input type="checkbox" name="immediateStart" value="1" required className="mt-0.5 shrink-0" />
                           <span>{t('immediateStartConsent')}</span>
@@ -2392,9 +2399,6 @@ export default async function DashboardPage({
                         >
                           {t('toPayment')}
                         </button>
-                        {planId !== plan.id && plan.id !== 'FREE' && (
-                          <p className="w-full text-xs text-fg-muted">{t('upgradeCarryNote')}</p>
-                        )}
                       </form>
                     ))}
                   {/* Founder — еднократно, завинаги */}

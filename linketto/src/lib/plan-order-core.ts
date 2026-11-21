@@ -99,7 +99,10 @@ function disputeAlert(d: {
         ? `Срок за отговор: ${due.toISOString()} (UTC) — без отговор спорът е загубен.`
         : 'Срок за отговор: не е посочен — провери в Revolut Business.',
       `Причина: ${[d.reasonCode, d.reason].filter(Boolean).join(' — ') || '—'}`,
-      'Нищо не е пипнато автоматично (планът, поръчката, реферал бонусът) — решава човек: отговор в Revolut Business, при загубен спор — от /admin.',
+      'Планът и поръчката не са пипнати — решава човек: отговор в Revolut Business, при загубен спор — от /admin.',
+      d.state === 'won'
+        ? 'Реферал бонусът по поръчката (ако е сторниран заради спора) е върнат в задържане — cron-ът го освобождава след живо четене от Revolut.'
+        : 'Реферал бонусът по поръчката е сторниран (А4); при спечелен спор се връща автоматично.',
     ],
   ];
 }
@@ -195,6 +198,8 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
               plan: want,
               rewardCents,
               planOrderId: order.id,
+              // Изрично: DEFAULT на колоната е „освободен“ (редовете на стария код — А6).
+              releasedAt: null,
             },
           });
         }
@@ -243,6 +248,7 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
       withdrawUntil: withdrawalLastDay(order.completedAt ?? order.createdAt),
       dashboardUrl: `${deps.siteUrl}/${order.user.locale}/dashboard#plan`,
       immediateStartAt: order.immediateStartAt,
+      immediateStartText: order.immediateStartText,
     });
     const sent = await deps.email.send({ to: order.user.email, subject, html, tag: 'plan-confirmation' });
     if (!sent) return false;
@@ -421,12 +427,6 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
   }
 
   /**
-   * P10/P10′: парите са върнати — поръчката е `refunded`. Приложена поръчка:
-   * планът се връща към този ОТПРЕДИ нея (planAfterRefund; изтекъл → FREE,
-   * R-limits) и бонусът по нея се сторнира (може да остави отрицателен баланс —
-   * правилото от ОУ). Неприложена (conflict) поръчка не пипа плана.
-   */
-  /**
    * Сторно на бонуса по поръчка (abuse-money-spec А3/А4/А7) — условни записи; броят
    * засегнати редове решава баланса, в транзакцията на викащия. Задържан → само
    * reversedAt; освободен → reversedAt + decrement. Паралелно освобождаване от cron-а
@@ -461,6 +461,19 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
   }
 
   /**
+   * Спечелен спор (ОУ, „Покани“): бонусът, сторниран ЗАРАДИ спора, се връща в задържане —
+   * условен запис; освобождава го cron-ът (живо четене от Revolut, без отказ). Бонус,
+   * сторниран заради връщане на пари, не се пипа.
+   */
+  async function restoreDisputedReferral(tx: Prisma.TransactionClient, planOrderId: string): Promise<boolean> {
+    const { count } = await tx.referral.updateMany({
+      where: { planOrderId, reversalReason: 'dispute', reversedAt: { not: null } },
+      data: { reversedAt: null, reversalReason: null, releasedAt: null, flaggedAt: null },
+    });
+    return count === 1;
+  }
+
+  /**
    * Освобождава задържаните бонуси (abuse-money-spec А2/А8), от /api/cron/plans.
    * Само по чиста поръчка (completed, без отказ, без спор) след REFERRAL_HOLD_DAYS и
    * след живо четене от Revolut (completed, без върната сума); условен запис + increment
@@ -468,71 +481,94 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
    */
   async function releaseReferralBonuses(now: Date = new Date()): Promise<{ released: number; held: number }> {
     const cutoff = new Date(now.getTime() - REFERRAL_HOLD_DAYS * 24 * 60 * 60 * 1000);
-    const due = await db.referral.findMany({
-      where: { releasedAt: null, reversedAt: null, planOrderId: { not: null } },
-      take: 200,
-      orderBy: { createdAt: 'asc' },
-    });
     let released = 0;
     let held = 0;
-    for (const referral of due) {
-      const order = await db.planOrder.findUnique({ where: { id: referral.planOrderId as string } });
-      const disputed = order ? (await db.revolutDispute.count({ where: { planOrderId: order.id } })) > 0 : false;
-      if (
-        !order ||
-        !referralReleaseDue({
-          completedAt: order.completedAt,
-          orderState: order.state,
-          withdrawalRequestedAt: order.withdrawalRequestedAt,
-          disputed,
-          releasedAt: referral.releasedAt,
-          reversedAt: referral.reversedAt,
-          now,
-        }) ||
-        !order.completedAt ||
-        order.completedAt.getTime() >= cutoff.getTime()
-      ) {
-        held += 1;
-        continue;
-      }
-      // А8: на живо — връщане, пуснато ръчно в Revolut Business, или незаписан спор.
-      let clean = false;
-      try {
-        const live = rec(await deps.revolut.getOrder(order.revolutOrderId as string));
-        clean = live.state === 'completed' && !(typeof live.refunded_amount === 'number' && live.refunded_amount > 0);
-      } catch (error) {
-        if (isTransientRevolutError(error)) {
-          held += 1;
-          continue;
-        }
-      }
-      if (!clean) {
-        held += 1;
-        await deps
-          .notifyAdmins('Реферален бонус не е освободен — провери поръчката', [
-            `Поръчка: ${order.id} (€${(order.amountCents / 100).toFixed(2)})`,
-            'При Revolut поръчката не е „completed“ или има върната сума — бонусът остава задържан.',
-          ])
-          .catch(() => false);
-        continue;
-      }
-      const ok = await db.$transaction(async (tx) => {
-        const { count } = await tx.referral.updateMany({
-          where: { id: referral.id, releasedAt: null, reversedAt: null },
-          data: { releasedAt: now },
-        });
-        if (count !== 1) return false;
-        await tx.user.update({
-          where: { id: referral.referrerId },
-          data: { referralCreditCents: { increment: referral.rewardCents } },
-        });
-        return true;
+    // Само узрелите и неотбелязаните; на страници — трайно задържаните (отказ в ход и др.)
+    // не запушват опашката пред по-новите.
+    let cursor: string | undefined;
+    for (let page = 0; page < 50; page += 1) {
+      const due = await db.referral.findMany({
+        where: { releasedAt: null, reversedAt: null, flaggedAt: null, planOrderId: { not: null }, createdAt: { lt: cutoff } },
+        take: 200,
+        orderBy: { id: 'asc' },
+        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       });
-      if (ok) released += 1;
+      if (due.length === 0) break;
+      cursor = due[due.length - 1]!.id;
+      for (const referral of due) {
+        if (await releaseOne(referral, now, cutoff)) released += 1;
+        else held += 1;
+      }
     }
     return { released, held };
   }
 
+  async function releaseOne(
+    referral: { id: string; referrerId: string; rewardCents: number; planOrderId: string | null; releasedAt: Date | null; reversedAt: Date | null },
+    now: Date,
+    cutoff: Date,
+  ): Promise<boolean> {
+    const order = await db.planOrder.findUnique({ where: { id: referral.planOrderId as string } });
+    if (!order) return false;
+    // Открит или загубен спор държи бонуса; спечелен („won“) — не.
+    const rows = await db.revolutDispute.findMany({ where: { planOrderId: order.id }, select: { disputeId: true, state: true } });
+    const disputed = rows.some((r) => !rows.some((w) => w.disputeId === r.disputeId && w.state === 'won'));
+    if (
+      !referralReleaseDue({
+        completedAt: order.completedAt,
+        orderState: order.state,
+        withdrawalRequestedAt: order.withdrawalRequestedAt,
+        disputed,
+        releasedAt: referral.releasedAt,
+        reversedAt: referral.reversedAt,
+        now,
+      }) ||
+      !order.completedAt ||
+      order.completedAt.getTime() >= cutoff.getTime()
+    ) {
+      return false;
+    }
+    // А8: на живо — връщане, пуснато ръчно в Revolut Business, или незаписан спор.
+    let clean = false;
+    try {
+      const live = rec(await deps.revolut.getOrder(order.revolutOrderId as string));
+      clean = live.state === 'completed' && !(typeof live.refunded_amount === 'number' && live.refunded_amount > 0);
+    } catch (error) {
+      if (isTransientRevolutError(error)) return false;
+    }
+    if (!clean) {
+      // Веднъж: отметката изважда бонуса от опашката — решава човек (не се освобождава сам).
+      const { count } = await db.referral.updateMany({ where: { id: referral.id, flaggedAt: null }, data: { flaggedAt: now } });
+      if (count === 1) {
+        await deps
+          .notifyAdmins('Реферален бонус не е освободен — провери поръчката', [
+            `Поръчка: ${order.id} (€${(order.amountCents / 100).toFixed(2)})`,
+            'При Revolut поръчката не е „completed“ или има върната сума — бонусът остава задържан, докато човек не реши.',
+          ])
+          .catch(() => false);
+      }
+      return false;
+    }
+    return db.$transaction(async (tx) => {
+      const { count } = await tx.referral.updateMany({
+        where: { id: referral.id, releasedAt: null, reversedAt: null },
+        data: { releasedAt: now },
+      });
+      if (count !== 1) return false;
+      await tx.user.update({
+        where: { id: referral.referrerId },
+        data: { referralCreditCents: { increment: referral.rewardCents } },
+      });
+      return true;
+    });
+  }
+
+  /**
+   * P10/P10′: парите са върнати — поръчката е `refunded`. Приложена поръчка:
+   * планът се връща към този ОТПРЕДИ нея (planAfterRefund; изтекъл → FREE,
+   * R-limits) и бонусът по нея се сторнира (може да остави отрицателен баланс —
+   * правилото от ОУ). Неприложена (conflict) поръчка не пипа плана.
+   */
   async function finalizeRefund(planOrderId: string): Promise<void> {
     const order = await db.planOrder.findUnique({ where: { id: planOrderId } });
     if (!order || order.state !== 'refund_pending') return;
@@ -645,8 +681,10 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
     });
     if (count !== 1) return 'unchanged';
     deps.log(`[plan-order] спор ${dispute.id}: ${dispute.state} (поръчка ${planOrder?.id ?? '—'})`);
-    // А4: всеки спор сторнира бонуса по поръчката (спечелен — решава човек).
-    if (planOrder) {
+    // А4: спорът сторнира бонуса по поръчката; спечелен („won“) го връща в задържане (ОУ).
+    if (planOrder && dispute.state === 'won') {
+      await db.$transaction((tx) => restoreDisputedReferral(tx, planOrder.id));
+    } else if (planOrder) {
       const reversed = await db.$transaction((tx) => reverseReferralBonus(tx, planOrder.id, 'dispute'));
       if (reversed === 'released') {
         await deps

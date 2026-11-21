@@ -41,7 +41,8 @@ const service = createPlanOrderService({
     refund: async (input) => {
       refunds.push(input);
       const id = `rf-${randomUUID()}`;
-      const body = refundResponse ? refundResponse(id) : { id, state: refundImmediate };
+      // Като Order-v7 при Revolut: refund поръчка със сумата и валутата (сверката е fail closed).
+      const body = refundResponse ? refundResponse(id) : { id, state: refundImmediate, type: 'refund', amount: input.amountCents, currency: 'EUR' };
       live.set(id, body);
       return body as { id: string; state: string };
     },
@@ -234,7 +235,7 @@ test('I5: бонус веднъж (задържан); връщането го с
   assert.equal(refunds[0].amountCents, 400);
   assert.equal(await service.settlePlanRefund({ refundOrderId: pending.refundOrderId as string }), 'pending');
 
-  live.set(pending.refundOrderId as string, { state: 'completed' });
+  live.set(pending.refundOrderId as string, { type: 'refund', state: 'completed', amount: 400, currency: 'EUR' });
   assert.equal(await service.settlePlanRefund({ refundOrderId: pending.refundOrderId as string }), 'refunded');
   assert.equal(await service.settlePlanRefund({ id: order.id }), 'noop');
   const u = await userOf(user.id);
@@ -795,4 +796,79 @@ test('Б5: отказ от по-висок план → старият срок 
   const u = await userOf(user.id);
   assert.equal(u.plan, 'PRO');
   assert.equal((u.planExpiresAt as Date).getTime(), before.getTime() + fiveDays * 1000);
+});
+
+test('А4в: спечелен спор → сторнираният бонус се връща в задържане; cron-ът го освобождава веднъж', { skip }, async () => {
+  const referrer = await mkUser();
+  const user = await mkUser({ referredById: referrer.id });
+  const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: order.id });
+  await backdate(order.id, 31);
+  await service.releaseReferralBonuses();
+  assert.equal((await userOf(referrer.id)).referralCreditCents, 60);
+
+  const id = `dsp-int-${randomUUID()}`;
+  disputes.set(id, disputeFor(order.revolutOrderId as string, 'needs_response', { id }));
+  assert.equal(await service.recordDispute(id), 'recorded');
+  assert.equal((await userOf(referrer.id)).referralCreditCents, 0, 'освободеният бонус е сторниран');
+
+  disputes.set(id, disputeFor(order.revolutOrderId as string, 'won', { id }));
+  assert.equal(await service.recordDispute(id), 'recorded');
+  const back = await db.referral.findUniqueOrThrow({ where: { planOrderId: order.id } });
+  assert.equal(back.reversedAt, null);
+  assert.equal(back.releasedAt, null, 'обратно в задържане — освобождава го cron-ът след живо четене');
+  assert.equal((await service.releaseReferralBonuses()).released, 1);
+  assert.equal((await userOf(referrer.id)).referralCreditCents, 60);
+
+  // Повторно известие „won“ и повторен cron — без втори бонус.
+  assert.equal(await service.recordDispute(id), 'unchanged');
+  assert.equal((await service.releaseReferralBonuses()).released, 0);
+  assert.equal((await userOf(referrer.id)).referralCreditCents, 60);
+});
+
+test('А4в: открит или загубен спор държи бонуса; „won“ не връща бонус, сторниран заради връщане', { skip }, async () => {
+  const referrer = await mkUser();
+  const user = await mkUser({ referredById: referrer.id });
+  const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: order.id });
+  await backdate(order.id, 31);
+  const id = `dsp-int-${randomUUID()}`;
+  disputes.set(id, disputeFor(order.revolutOrderId as string, 'lost', { id }));
+  assert.equal(await service.recordDispute(id), 'recorded');
+  assert.equal((await service.releaseReferralBonuses()).released, 0);
+
+  const other = await mkUser({ referredById: referrer.id });
+  const paidBack = await mkOrder(other.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: paidBack.id });
+  refundImmediate = 'completed';
+  assert.equal(await service.requestPlanRefund(paidBack.id), 'refunded');
+  const won = `dsp-int-${randomUUID()}`;
+  disputes.set(won, disputeFor(paidBack.revolutOrderId as string, 'won', { id: won }));
+  assert.equal(await service.recordDispute(won), 'recorded');
+  const kept = await db.referral.findUniqueOrThrow({ where: { planOrderId: paidBack.id } });
+  assert.ok(kept.reversedAt);
+  assert.equal(kept.reversalReason, 'refund');
+  assert.equal((await userOf(referrer.id)).referralCreditCents, 0);
+});
+
+test('A8б: бонус, който не е чист при Revolut → аларма веднъж, не при всеки cron', { skip }, async () => {
+  const referrer = await mkUser();
+  const user = await mkUser({ referredById: referrer.id });
+  const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: order.id });
+  await backdate(order.id, 31);
+  live.set(order.revolutOrderId as string, { ...paid(400), refunded_amount: 100 });
+  await service.releaseReferralBonuses();
+  await service.releaseReferralBonuses();
+  assert.equal(alerts.filter((s) => /бонус не е освободен/.test(s)).length, 1);
+  assert.equal((await userOf(referrer.id)).referralCreditCents, 0);
+});
+
+test('A6: бонус, създаден без releasedAt (стар код след миграцията) → смята се за освободен', { skip }, async () => {
+  const referrer = await mkUser();
+  const user = await mkUser({ referredById: referrer.id });
+  // Като стария код: create без releasedAt + веднага increment.
+  const legacy = await db.referral.create({ data: { referrerId: referrer.id, referredUserId: user.id, plan: 'PRO', rewardCents: 60 } });
+  assert.ok(legacy.releasedAt, 'DEFAULT на колоната = освободен');
+  assert.equal((await service.releaseReferralBonuses()).released, 0, 'не се кредитира втори път');
 });

@@ -77,8 +77,38 @@ test('най-много 2 едновременни обработки в про�
       await new Promise((r) => setTimeout(r, 20));
       running -= 1;
     });
-  await Promise.all(Array.from({ length: 8 }, job));
+  // 2 текат + 4 чакат = таванът на опашката (повече → отказ, виж теста за Н1).
+  await Promise.all(Array.from({ length: 6 }, job));
   assert.equal(peak, 2);
+});
+
+test('освободеното място се предава на чакащия — нов викащ точно тогава не става трети', async () => {
+  // Нов викащ, пристигнал след 0…8 microtask-а от освобождаването (прозорецът преди
+  // събудения чакащ да тръгне), не бива да прескача (Кодаджията: старият код даваше 3).
+  for (let depth = 0; depth <= 8; depth += 1) {
+    let running = 0;
+    let peak = 0;
+    const gates: Array<() => void> = [];
+    const job = () =>
+      withImageSlot(async () => {
+        running += 1;
+        peak = Math.max(peak, running);
+        await new Promise<void>((r) => gates.push(r));
+        running -= 1;
+      });
+    const jobs = [job(), job(), job()];
+    await new Promise((r) => setImmediate(r));
+    gates.shift()!();
+    let hop: Promise<void> = Promise.resolve();
+    for (let i = 0; i < depth; i += 1) hop = hop.then(() => undefined);
+    jobs.push(hop.then(() => job()));
+    while (jobs.length > 0) {
+      await new Promise((r) => setImmediate(r));
+      while (gates.length > 0) gates.shift()!();
+      await Promise.race([Promise.all(jobs).then(() => jobs.splice(0)), new Promise((r) => setImmediate(r))]);
+    }
+    assert.ok(peak <= 2, `depth ${depth}: peak ${peak}`);
+  }
 });
 
 test('името на наш /media файл: само собствените (за безопасно триене)', () => {
@@ -87,4 +117,34 @@ test('името на наш /media файл: само собствените (�
   assert.equal(mediaFileName('/media/../secret'), null);
   assert.equal(mediaFileName('https://evil.example/media/avatar-x.webp'), null);
   assert.equal(mediaFileName(undefined), null);
+});
+
+test('опашката е с таван: 2 текат + 4 чакат → следващото се отказва веднага (Н1)', async () => {
+  const { imageQueueFull, ImageBusyError } = await import('../image-process');
+  const gates: Array<() => void> = [];
+  const hold = () => withImageSlot(() => new Promise<void>((r) => gates.push(r)));
+  const jobs = Array.from({ length: 6 }, hold);
+  await new Promise((r) => setImmediate(r));
+  assert.equal(imageQueueFull(), true);
+  await assert.rejects(withImageSlot(async () => undefined), ImageBusyError);
+  const big = await processImage(Buffer.alloc(10), 'avatar');
+  assert.deepEqual(big, { ok: false, reason: 'busy' });
+  while (gates.length > 0 || jobs.length > 0) {
+    while (gates.length > 0) gates.shift()!();
+    await new Promise((r) => setImmediate(r));
+    if (gates.length === 0) break;
+  }
+  await Promise.all(jobs);
+  assert.equal(imageQueueFull(), false);
+});
+
+test('най-много 1 качване в ход на потребител', async () => {
+  const { withUploadLock } = await import('../image-process');
+  let release!: () => void;
+  const first = withUploadLock('u1', () => new Promise<string>((r) => (release = () => r('ok'))));
+  assert.equal(await withUploadLock('u1', async () => 'second'), null, 'същият потребител — отказ');
+  assert.equal(await withUploadLock('u2', async () => 'other'), 'other', 'друг потребител — минава');
+  release();
+  assert.equal(await first, 'ok');
+  assert.equal(await withUploadLock('u1', async () => 'again'), 'again', 'след края — пак може');
 });

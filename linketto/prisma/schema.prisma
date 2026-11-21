@@ -87,7 +87,11 @@ model Referral {
   // Плащането, породило наградата (сторно при refund/спор, billing-sync).
   stripePaymentIntentId String?   @unique
   planOrderId           String?   @unique // Revolut: поръчката, породила наградата (сторно при refund)
-  releasedAt            DateTime? // задържан до тук (abuse-money-spec А); null = задържан
+  // Задържан до тук (abuse-money-spec А); null = задържан. DEFAULT = „освободен“: ред от СТАРИЯ
+  // код (прозорецът migrate → нов app или откат на кода) вече е кредитиран при плащането; новият
+  // код подава releasedAt: null изрично.
+  releasedAt            DateTime? @default(now())
+  flaggedAt             DateTime? // аларма „не е чист при Revolut“ — веднъж; такъв бонус решава човек
   reversedAt            DateTime?
   reversalReason        String? // refund | dispute
   clawbackPayoutId      String? // одитна следа: ReferralPayout, в който е влязла наградата (без релация)
@@ -617,7 +621,8 @@ model PlanOrder {
   // Пропорционално плащане при отказ (abuse-money-spec Б): изричното искане за ранно
   // начало (отметката при поръчката) и сумата за връщане — сметната веднъж при отказа.
   immediateStartAt      DateTime?
-  immediateStartTerms   String? // версия на текста на отметката
+  immediateStartTerms   String? // версия на текста на отметката + езика (напр. 2026-11-21:bg)
+  immediateStartText    String? // дословният текст на отметката, приет от купувача (ЗЗП чл. 49, ал. 9 → P14)
   refundCents           Int? // за връщане (null = пълната сума)
   refundVatCents        Int?
   withdrawalUsedSec     Int? // предоставеното време по поръчката до отказа

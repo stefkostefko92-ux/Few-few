@@ -3,7 +3,7 @@ import { mkdir, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { randomBytes } from 'node:crypto';
 import { prisma } from '@/lib/db';
-import { mediaFileName, processImage } from '@/lib/image-process';
+import { imageQueueFull, mediaFileName, processImage, withUploadLock } from '@/lib/image-process';
 
 // Качени изображения (фон/аватар): валидираме, преоразмеряваме и
 // презаписваме в webp през sharp — това маха EXIF метаданните (GDPR)
@@ -19,17 +19,23 @@ export function uploadsDir(): string {
 export async function saveUploadedImage(
   file: File,
   kind: 'bg' | 'avatar',
+  ownerKey: string,
 ): Promise<string | null> {
   if (!ALLOWED_TYPES.has(file.type) || file.size > MAX_UPLOAD_BYTES) {
     return null;
   }
-  // Размерите — от заглавката, преди декодиране; ≤2 обработки наведнъж (lib/image-process.ts).
-  const result = await processImage(Buffer.from(await file.arrayBuffer()), kind);
-  if (!result.ok) return null; // твърде голямо или не е валидно изображение
-  const name = `${kind}-${randomBytes(12).toString('hex')}.webp`;
-  await mkdir(uploadsDir(), { recursive: true });
-  await writeFile(path.join(uploadsDir(), name), result.buffer);
-  return `/media/${name}`;
+  // Пълна опашка или друго качване на същия потребител в ход → отказ веднага, преди
+  // тялото да се копира (Разбивача Н1). Размерите — от заглавката; ≤2 обработки наведнъж.
+  if (imageQueueFull()) return null;
+  const saved = await withUploadLock(ownerKey, async () => {
+    const result = await processImage(Buffer.from(await file.arrayBuffer()), kind);
+    if (!result.ok) return null; // твърде голямо, невалидно или заето
+    const name = `${kind}-${randomBytes(12).toString('hex')}.webp`;
+    await mkdir(uploadsDir(), { recursive: true });
+    await writeFile(path.join(uploadsDir(), name), result.buffer);
+    return `/media/${name}`;
+  });
+  return saved ?? null;
 }
 
 /**

@@ -74,7 +74,29 @@ export async function withdrawPlanAction(formData: FormData): Promise<void> {
       withdrawalUsedSec: refund.usedSec,
     },
   });
-  if (count !== 1) redirect(`/${uiLocale}/dashboard?withdrawn=1#plan`);
+  if (count !== 1) {
+    // Разбивача Н7: между проверката и записа админът е пуснал връщане (refund_pending) —
+    // изявлението НЕ се губи: записва се без удръжка (тече връщане на цялата сума).
+    const late = await prisma.planOrder.updateMany({
+      where: { id: order.id, userId: user.id, state: 'refund_pending', withdrawalRequestedAt: null },
+      data: { withdrawalRequestedAt: now, withdrawalName: name.data },
+    });
+    if (late.count === 1) {
+      const lateAck = await sendWithdrawalAck(order.id).catch(() => false);
+      await notifyAdmins('Отказ от договор по време на връщане', [
+        `Поръчка: ${order.id} (${order.plan}, ${order.interval}, €${(order.amountCents / 100).toFixed(2)})`,
+        `Изявление: ${now.toISOString()} — връщането вече тече; дължи се цялата сума (без удръжка).`,
+        `Потвърждение до потребителя: ${lateAck ? 'изпратено' : 'НЕ Е ИЗПРАТЕНО — cron-ът ще опита пак'}`,
+      ]);
+      redirect(`/${uiLocale}/dashboard?withdrawn=1#plan`);
+    }
+    // Повторен клик/таб → вече записано; иначе (напр. върнато междувременно) — грешка, не „успех“.
+    const current = await prisma.planOrder.findFirst({
+      where: { id: order.id, userId: user.id },
+      select: { withdrawalRequestedAt: true },
+    });
+    redirect(current?.withdrawalRequestedAt ? `/${uiLocale}/dashboard?withdrawn=1#plan` : `/${uiLocale}/dashboard?error=withdraw#plan`);
+  }
 
   // Потвърждението на траен носител; неизпратеното опитва пак cron-ът, а
   // алармата казва на админа, ако не е тръгнало.

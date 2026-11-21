@@ -139,17 +139,6 @@ export async function sendBroadcastAction(formData: FormData): Promise<void> {
   // Разбивача т. 5: баннат профил не праща през нашия Brevo; най-много 1 рассылка
   // за 24 ч — атомарно (условен запис), без състезание между два таба.
   if (profile.bannedAt) redirect(await dash(uiLocale, '?error=broadcast'));
-  const { count: claimed } = await prisma.profile.updateMany({
-    where: {
-      id: profile.id,
-      userId: user.id,
-      bannedAt: null,
-      OR: [{ lastBroadcastAt: null }, { lastBroadcastAt: { lt: new Date(Date.now() - BROADCAST_COOLDOWN_MS) } }],
-    },
-    data: { lastBroadcastAt: new Date() },
-  });
-  if (claimed !== 1) redirect(await dash(uiLocale, '?error=broadcastLimit'));
-
   const subscribers = await prisma.subscriber.findMany({
     where: {
       profileId: profile.id,
@@ -158,6 +147,19 @@ export async function sendBroadcastAction(formData: FormData): Promise<void> {
     },
     select: { email: true, token: true, locale: true },
   });
+  // Без абонати няма какво да тръгне — слотът за 24 ч не се хаби.
+  if (subscribers.length === 0) redirect(await dash(uiLocale, '?broadcast=0'));
+  const claimedAt = new Date();
+  const { count: claimed } = await prisma.profile.updateMany({
+    where: {
+      id: profile.id,
+      userId: user.id,
+      bannedAt: null,
+      OR: [{ lastBroadcastAt: null }, { lastBroadcastAt: { lt: new Date(claimedAt.getTime() - BROADCAST_COOLDOWN_MS) } }],
+    },
+    data: { lastBroadcastAt: claimedAt },
+  });
+  if (claimed !== 1) redirect(await dash(uiLocale, '?error=broadcastLimit'));
   const who = sellerName(
     profile.translations,
     profile.defaultLocale,
@@ -189,7 +191,12 @@ export async function sendBroadcastAction(formData: FormData): Promise<void> {
   }
   // Брои се САМО реално изпратеното (без BREVO_API_KEY sendEmail връща
   // false) — иначе дашбордът лъже „изпратен до N“ (одит L2).
-  if (subscribers.length > 0 && sent === 0) {
+  if (sent === 0) {
+    // Нищо не е тръгнало (напр. Brevo не е настроен) → слотът се връща (само ако е нашият).
+    await prisma.profile.updateMany({
+      where: { id: profile.id, lastBroadcastAt: claimedAt },
+      data: { lastBroadcastAt: profile.lastBroadcastAt },
+    });
     redirect(await dash(uiLocale, '?error=broadcast'));
   }
   redirect(await dash(uiLocale, `?broadcast=${sent}`));

@@ -11,6 +11,7 @@ import { isValidSlug, normalizeSlug } from '@/lib/slug';
 import { isLocale, LOCALES } from '@/i18n/locales';
 import { planFor } from '@/lib/plans';
 import { MAX_BLOCKS_PER_PROFILE, parseBlockInput, pollVotesStillValid, type BlockMeta } from '@/lib/blocks';
+import { lockedCount } from '@/lib/profile-lock';
 import { parseStyle, styleInput, styleSchema } from '@/lib/style';
 import { removeUnusedMedia, saveUploadedImage } from '@/lib/media';
 import { applyTemplate, isTemplateId, NICHE_TEMPLATES } from '@/lib/templates';
@@ -208,13 +209,20 @@ export async function updateStyleAction(formData: FormData): Promise<void> {
     redirect(await dash(uiLocale, '?error=limit'));
   }
   const before = await prisma.profile.findFirst({ where: { id: profileId, userId: user.id }, select: { style: true } });
+  if (!before) redirect(await dash(uiLocale, '?error=generic'));
+  const old = parseStyle(before.style);
+  // Наш /media файл — само ако вече е в стила на ТОЗИ профил (качен е през uploadImageAction);
+  // иначе чужд файл би останал публичен след като собственикът го махне (Разбивача Н4).
+  for (const key of ['avatarUrl', 'bgImageUrl'] as const) {
+    const next = parsed.data[key];
+    if (next?.startsWith('/media/') && next !== old[key]) redirect(await dash(uiLocale, '?error=style'));
+  }
   const { count } = await prisma.profile.updateMany({
     where: { id: profileId, userId: user.id },
     data: { style: parsed.data },
   });
   if (count === 0) redirect(await dash(uiLocale, '?error=generic'));
   // Махнат или сменен аватар/фон → старият наш файл се трие, ако никъде не се ползва.
-  const old = parseStyle(before?.style);
   if (old.avatarUrl !== parsed.data.avatarUrl) await removeUnusedMedia(old.avatarUrl);
   if (old.bgImageUrl !== parsed.data.bgImageUrl) await removeUnusedMedia(old.bgImageUrl);
   redirect(await dash(uiLocale));
@@ -238,7 +246,7 @@ export async function uploadImageAction(formData: FormData): Promise<void> {
   });
   if (!profile) redirect(await dash(uiLocale, '?error=generic'));
 
-  const mediaPath = await saveUploadedImage(file, kind);
+  const mediaPath = await saveUploadedImage(file, kind, user.id);
   if (!mediaPath) redirect(await dash(uiLocale, '?error=upload'));
 
   const style = parseStyle(profile.style);
@@ -320,26 +328,30 @@ export async function addLinkAction(formData: FormData): Promise<void> {
   if (!input || !title) {
     redirect(await dash(uiLocale, '?error=block'));
   }
-  const profile = await prisma.profile.findFirst({
-    where: { id: profileId, userId: user.id },
-    include: { _count: { select: { links: true } } },
-  });
+  if (!rateLimit(`add-link:${user.id}`, 300, 60 * 60_000)) redirect(await dash(uiLocale, '?error=blocksLimit'));
+  const profile = await prisma.profile.findFirst({ where: { id: profileId, userId: user.id } });
   if (!profile) redirect(await dash(uiLocale, '?error=generic'));
-  if (profile._count.links >= MAX_BLOCKS_PER_PROFILE) redirect(await dash(uiLocale, '?error=blocksLimit'));
-  await prisma.link.create({
-    data: {
-      profileId,
-      kind: input.kind,
-      url: input.url,
-      meta: input.meta ? (input.meta as Prisma.InputJsonValue) : undefined,
-      position: profile._count.links,
-      showFrom: parseDateInput(formData.get('showFrom'), formData.get('tz')),
-      showUntil: parseDateInput(formData.get('showUntil'), formData.get('tz')),
-      translations: {
-        create: { locale: profile.defaultLocale, title },
+  // Таванът — броене и запис под заключения ред на профила (паралелни заявки не го прескачат).
+  const added = await prisma.$transaction(async (tx) => {
+    const links = await lockedCount(tx, profile.id, 'links');
+    if (links >= MAX_BLOCKS_PER_PROFILE) return false;
+    await tx.link.create({
+      data: {
+        profileId,
+        kind: input.kind,
+        url: input.url,
+        meta: input.meta ? (input.meta as Prisma.InputJsonValue) : undefined,
+        position: links,
+        showFrom: parseDateInput(formData.get('showFrom'), formData.get('tz')),
+        showUntil: parseDateInput(formData.get('showUntil'), formData.get('tz')),
+        translations: {
+          create: { locale: profile.defaultLocale, title },
+        },
       },
-    },
+    });
+    return true;
   });
+  if (!added) redirect(await dash(uiLocale, '?error=blocksLimit'));
   redirect(await dash(uiLocale));
 }
 

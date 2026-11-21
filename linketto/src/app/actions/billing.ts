@@ -1,6 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { getSessionUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { isLocale } from '@/i18n/locales';
@@ -59,7 +60,9 @@ async function crossBorderCents(from: Date, to: Date): Promise<number> {
 }
 
 /** Версия на текста на отметката за ранно начало (за доказателство кой текст е приет). */
-const IMMEDIATE_START_TERMS = '2026-11-22';
+// Версия на текста на отметката (dashboard.immediateStartConsent); пази се с езика, а самият
+// приет текст — в immediateStartText (цитира се в потвърждението, P14).
+const IMMEDIATE_START_TERMS = '2026-11-21';
 
 export async function startCheckoutAction(formData: FormData): Promise<void> {
   const rawLocale = String(formData.get('uiLocale') ?? 'en');
@@ -114,7 +117,8 @@ export async function startCheckoutAction(formData: FormData): Promise<void> {
       netCents: vat.netCents,
       vatCountry: vat.country,
       immediateStartAt: now,
-      immediateStartTerms: IMMEDIATE_START_TERMS,
+      immediateStartTerms: `${IMMEDIATE_START_TERMS}:${uiLocale}`,
+      immediateStartText: (await getTranslations({ locale: uiLocale, namespace: 'dashboard' }))('immediateStartConsent'),
     },
   });
   let checkoutUrl: string;

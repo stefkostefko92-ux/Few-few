@@ -26,7 +26,8 @@ interface Strings {
    * При изрично искане за ранно начало (отметката при поръчката — abuse-money-spec Б2,
    * чл. 6(1)(j) и 8(7)(a) Дир. 2011/83). Текстът — Правния Разбирач; без превод → en.
    */
-  withdrawalImmediate?: (date: string) => string;
+  /** consent = дословният текст на отметката, приет при поръчката (вече екраниран за HTML; '' = няма запис). */
+  withdrawalImmediate?: (date: string, consent: string) => string;
   formTitle: string;
   form: string;
   terms: string;
@@ -51,8 +52,8 @@ const STRINGS: Record<string, Strings> = {
     withdrawalTitle: 'Право на отказ',
     withdrawal:
       'Ако си потребител, можеш да се откажеш от договора в срок от 14 дни, считано от деня след плащането, без да посочваш причина и без разноски. Планът започва веднага; при отказ в срока връщаме цялата сума, без да удържаме нищо за използваните дни, не по-късно от 14 дни от получаването на отказа, по същия начин на плащане. Изпрати ни ясно изявление на info@carbonstealth.eu — можеш да ползваш формуляра по-долу, но не е задължително. При отказ отпада само платеното с това плащане — планът и срокът отпреди него се възстановяват.',
-    withdrawalImmediate: (d) =>
-      `Ако си потребител, можеш да се откажеш от договора в срок от 14 дни, считано от деня след плащането, без да посочваш причина. По твое изрично искане (отметка при поръчката на ${d} UTC) планът започна веднага, преди изтичането на срока за отказ. Ако се откажеш в срока, дължиш сума, пропорционална на предоставеното до уведомяването ни за отказа, спрямо целия период по това плащане (за „Основател“ — спрямо 365 дни), а останалото ти връщаме не по-късно от 14 дни от получаването на отказа, по същия начин на плащане. След като договорът бъде изпълнен изцяло, правото на отказ отпада. Изпрати ни ясно изявление на info@carbonstealth.eu или ползвай бутона „Откажете се от договора тук“ в таблото — можеш да ползваш и формуляра по-долу, но не е задължително. При отказ отпада само платеното с това плащане — планът и срокът отпреди него се възстановяват; ако си преминал към по-висок план, срокът на предишния се удължава с времето, през което си ползвал новия.`,
+    withdrawalImmediate: (d, consent) =>
+      `Ако си потребител, можеш да се откажеш от договора в срок от 14 дни, считано от деня след плащането, без да посочваш причина. При поръчката на ${d} UTC изрично поиска планът да започне веднага${consent ? `, като отметна: „${consent}“` : '.'} Затова планът започна веднага след плащането, преди изтичането на срока за отказ (ако с това плащане удължаваш същия план — започва от края на текущия период, а при отказ преди това връщаме цялата сума). Ако се откажеш в срока, дължиш сума, пропорционална на предоставеното до уведомяването ни за отказа, спрямо целия период по това плащане (за „Основател“ — спрямо 365 дни), а останалото ти връщаме не по-късно от 14 дни от получаването на отказа, по същия начин на плащане и без такси за теб. След като договорът бъде изпълнен изцяло, правото на отказ отпада. Изпрати ни ясно изявление на info@carbonstealth.eu или ползвай бутона „Откажете се от договора тук“ в таблото — можеш да ползваш и формуляра по-долу, но не е задължително. При отказ отпада само платеното с това плащане — планът и срокът отпреди него се възстановяват; ако си преминал към по-висок план, срокът на предишния се удължава с времето, през което си ползвал новия.`,
     formTitle: 'Стандартен формуляр за отказ',
     form:
       'До: Carbon Stealth VCC, ул. „Самуил“ 3, 2670 Бобов дол, България, info@carbonstealth.eu. С настоящото уведомявам, че се отказвам от договора за следната услуга: … / Поръчана на: … / Име: … / Адрес: … / Имейл на акаунта: … / Подпис (само на хартия) / Дата: …',
@@ -101,6 +102,8 @@ const STRINGS: Record<string, Strings> = {
     withdrawalTitle: 'Diritto di recesso',
     withdrawal:
       'Se sei un consumatore, puoi recedere dal contratto entro 14 giorni dal giorno del pagamento, senza indicarne le ragioni e senza costi. Il piano inizia subito; in caso di recesso nei termini ti rimborsiamo l’intero importo, senza trattenere nulla per i giorni utilizzati, entro 14 giorni dal ricevimento del recesso, con lo stesso mezzo di pagamento. Inviaci una dichiarazione esplicita a info@carbonstealth.eu — puoi usare il modulo qui sotto, ma non è obbligatorio. Con il recesso viene meno solo ciò che è stato acquistato con questo pagamento — il piano e il periodo precedenti vengono ripristinati.',
+    withdrawalImmediate: (d) =>
+      `Se sei un consumatore, puoi recedere dal contratto entro 14 giorni a decorrere dal giorno successivo al pagamento, senza indicarne le ragioni. Su tua espressa richiesta (casella spuntata al momento dell’ordine, il ${d} UTC) il piano è iniziato subito, prima della scadenza del periodo di recesso. Se recedi entro il termine, sei tenuto a pagare un importo proporzionale a quanto fornito fino al momento in cui ci comunichi il recesso, rispetto all’intero periodo di questo pagamento (per Founder — rispetto a 365 giorni), e ti rimborsiamo il resto entro 14 giorni dal ricevimento del recesso, con lo stesso mezzo di pagamento. Una volta che il contratto è stato pienamente eseguito, il diritto di recesso viene meno. Inviaci una dichiarazione esplicita a info@carbonstealth.eu oppure usa il pulsante «Recedere dal contratto qui» nel pannello — puoi usare anche il modulo qui sotto, ma non è obbligatorio. Con il recesso viene meno solo ciò che è stato acquistato con questo pagamento — il piano e il periodo precedenti vengono ripristinati; se sei passato a un piano superiore, il periodo del piano precedente viene prolungato del tempo in cui hai usato quello nuovo.`,
     formTitle: 'Modulo di recesso tipo',
     form:
       'Destinatario: Carbon Stealth VCC, ul. Samuil 3, 2670 Bobov Dol, Bulgaria, info@carbonstealth.eu. Con la presente notifico il recesso dal mio contratto di vendita dei seguenti servizi: … / Ordinato il: … / Nome: … / Indirizzo: … / Email dell’account: … / Firma (solo se il presente modulo è notificato in versione cartacea) / Data: …',
@@ -124,6 +127,8 @@ const STRINGS: Record<string, Strings> = {
     withdrawalTitle: 'Derecho de desistimiento',
     withdrawal:
       'Si eres consumidor, puedes desistir del contrato en un plazo de 14 días desde el día del pago, sin indicar el motivo y sin ningún coste. El plan empieza de inmediato; si desistes dentro del plazo, te devolvemos el importe íntegro, sin descontar nada por los días utilizados, a más tardar 14 días después de recibir tu desistimiento, por el mismo medio de pago. Envíanos una declaración inequívoca a info@carbonstealth.eu; puedes usar el formulario de abajo, aunque no es obligatorio. Con el desistimiento se retira solo lo adquirido con este pago: se restablecen el plan y el período que tenías antes.',
+    withdrawalImmediate: (d) =>
+      `Si eres consumidor, puedes desistir del contrato en un plazo de 14 días contados desde el día siguiente al pago, sin indicar el motivo. A petición expresa tuya (casilla marcada al hacer el pedido el ${d} UTC), el plan empezó de inmediato, antes de que venciera el plazo de desistimiento. Si desistes dentro del plazo, nos abonarás un importe proporcional a la parte ya prestada en el momento en que nos comuniques tu desistimiento, en relación con el período completo de este pago (para Founder, en relación con 365 días), y te devolvemos el resto a más tardar 14 días después de recibir tu desistimiento, por el mismo medio de pago. Una vez que el contrato se haya ejecutado íntegramente, pierdes el derecho de desistimiento. Envíanos una declaración inequívoca a info@carbonstealth.eu o usa el botón «Desistir del contrato aquí» de tu panel; también puedes usar el formulario de abajo, aunque no es obligatorio. Con el desistimiento se retira solo lo adquirido con este pago: se restablecen el plan y el período que tenías antes; si pasaste a un plan superior, el período del plan anterior se prolonga por el tiempo durante el que usaste el nuevo.`,
     formTitle: 'Modelo de formulario de desistimiento',
     form:
       'A la atención de: Carbon Stealth VCC, ul. Samuil 3, 2670 Bobov Dol, Bulgaria, info@carbonstealth.eu. Por la presente le comunico que desisto de mi contrato de prestación del siguiente servicio: … / Pedido el: … / Nombre: … / Domicilio: … / Email de la cuenta: … / Firma (solo si el presente formulario se presenta en papel) / Fecha: …',
@@ -147,6 +152,8 @@ const STRINGS: Record<string, Strings> = {
     withdrawalTitle: 'Widerrufsrecht',
     withdrawal:
       'Wenn du Verbraucher bist, kannst du den Vertrag binnen 14 Tagen ab dem Tag der Zahlung ohne Angabe von Gründen und ohne Kosten widerrufen. Der Plan beginnt sofort; bei fristgerechtem Widerruf erstatten wir dir den vollen Betrag, ohne etwas für die genutzten Tage einzubehalten, spätestens binnen 14 Tagen ab Eingang deines Widerrufs, über dasselbe Zahlungsmittel. Sende uns eine eindeutige Erklärung an info@carbonstealth.eu — du kannst das untenstehende Formular verwenden, musst es aber nicht. Durch den Widerruf entfällt nur, was mit dieser Zahlung bezahlt wurde — der Plan und der Zeitraum von davor werden wiederhergestellt.',
+    withdrawalImmediate: (d) =>
+      `Wenn du Verbraucher bist, kannst du den Vertrag binnen 14 Tagen, gerechnet ab dem Tag nach der Zahlung, ohne Angabe von Gründen widerrufen. Auf dein ausdrückliches Verlangen (Häkchen bei der Bestellung am ${d} UTC) hat der Plan sofort begonnen, noch vor Ablauf der Widerrufsfrist. Widerrufst du fristgerecht, zahlst du uns einen Betrag, der dem Anteil der bis zu dem Zeitpunkt, zu dem du uns von der Ausübung des Widerrufsrechts unterrichtest, bereits erbrachten Leistungen im Vergleich zum gesamten Zeitraum dieser Zahlung entspricht (bei Founder — im Vergleich zu 365 Tagen); den Rest erstatten wir dir spätestens binnen 14 Tagen ab Eingang des Widerrufs über dasselbe Zahlungsmittel. Ist der Vertrag vollständig erfüllt, erlischt das Widerrufsrecht. Sende uns eine eindeutige Erklärung an info@carbonstealth.eu oder nutze die Schaltfläche „Vertrag widerrufen“ im Dashboard — du kannst auch das untenstehende Formular verwenden, musst es aber nicht. Durch den Widerruf entfällt nur, was mit dieser Zahlung bezahlt wurde — der Plan und der Zeitraum von davor werden wiederhergestellt; bist du in einen höheren Plan gewechselt, verlängert sich der Zeitraum des vorherigen Plans um die Zeit, in der du den neuen genutzt hast.`,
     formTitle: 'Muster-Widerrufsformular',
     form:
       'An: Carbon Stealth VCC, ul. Samuil 3, 2670 Bobov Dol, Bulgarien, info@carbonstealth.eu. Hiermit widerrufe ich den von mir abgeschlossenen Vertrag über die Erbringung der folgenden Dienstleistung: … / Bestellt am: … / Name: … / Anschrift: … / E-Mail-Adresse des Kontos: … / Unterschrift (nur bei Mitteilung auf Papier) / Datum: …',
@@ -170,6 +177,8 @@ const STRINGS: Record<string, Strings> = {
     withdrawalTitle: 'Droit de rétractation',
     withdrawal:
       'Si vous êtes un consommateur, vous pouvez vous rétracter du contrat dans un délai de 14 jours à compter du jour du paiement, sans avoir à motiver votre décision et sans frais. Le plan démarre immédiatement ; en cas de rétractation dans le délai, nous vous remboursons l’intégralité du montant, sans rien retenir pour les jours utilisés, au plus tard 14 jours après réception de votre rétractation, en utilisant le même moyen de paiement. Envoyez-nous une déclaration dénuée d’ambiguïté à info@carbonstealth.eu — vous pouvez utiliser le formulaire ci-dessous, mais ce n’est pas obligatoire. La rétractation ne retire que ce qui a été acheté avec ce paiement — le plan et la période dont vous disposiez auparavant sont rétablis.',
+    withdrawalImmediate: (d) =>
+      `Si vous êtes un consommateur, vous pouvez vous rétracter du contrat dans un délai de 14 jours à compter du lendemain du paiement, sans avoir à motiver votre décision. À votre demande expresse (case cochée lors de la commande le ${d} UTC), le plan a démarré immédiatement, avant l’expiration du délai de rétractation. Si vous vous rétractez dans le délai, vous devez un montant proportionnel à ce qui vous a été fourni jusqu’au moment où vous nous informez de votre rétractation, par rapport à la période totale de ce paiement (pour Founder — par rapport à 365 jours), et nous vous remboursons le reste au plus tard 14 jours après réception de votre rétractation, par le même moyen de paiement. Une fois le contrat pleinement exécuté, le droit de rétractation prend fin. Envoyez-nous une déclaration dénuée d’ambiguïté à info@carbonstealth.eu ou utilisez le bouton « Renoncer au contrat ici » dans votre tableau de bord — vous pouvez aussi utiliser le formulaire ci-dessous, mais ce n’est pas obligatoire. La rétractation ne retire que ce qui a été acheté avec ce paiement — le plan et la période dont vous disposiez auparavant sont rétablis ; si vous êtes passé à un plan supérieur, la période du plan précédent est prolongée de la durée pendant laquelle vous avez utilisé le nouveau.`,
     formTitle: 'Modèle de formulaire de rétractation',
     form:
       'À l’attention de : Carbon Stealth VCC, ul. Samuil 3, 2670 Bobov Dol, Bulgarie, info@carbonstealth.eu. Je vous notifie par la présente ma rétractation du contrat pour la prestation de services ci-dessous : … / Commandé le : … / Nom : … / Adresse : … / E-mail du compte : … / Signature (uniquement en cas de notification du présent formulaire sur papier) / Date : …',
@@ -200,6 +209,8 @@ export function planConfirmationEmail(input: {
   withdrawUntil?: Date;
   /** Изричното искане за ранно начало (Б1) — тогава текстът за пропорционалното плащане. */
   immediateStartAt?: Date | null;
+  /** Дословният текст на отметката (ЗЗП чл. 49, ал. 9 — искането на траен носител). */
+  immediateStartText?: string | null;
   dashboardUrl?: string;
 }): { subject: string; html: string } {
   const s = STRINGS[input.locale] ?? STRINGS.en;
@@ -210,6 +221,7 @@ export function planConfirmationEmail(input: {
   const withdrawalText = input.immediateStartAt
     ? immediate(
         new Intl.DateTimeFormat(lang, { dateStyle: 'long', timeStyle: 'short', timeZone: 'UTC' }).format(input.immediateStartAt),
+        esc(input.immediateStartText ?? ''),
       )
     : s.withdrawal;
   const until = input.paidUntil

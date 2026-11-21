@@ -222,13 +222,10 @@ export function isTransientRevolutError(error: unknown): boolean {
 
 /**
  * Refund поръчката отговаря ли на очакваната сума (частично връщане при отказ —
- * abuse-money-spec Б4): `type` (ако го има) е refund, `amount` (ако го има) =
- * очакваното, валутата (ако я има) — EUR. Липсващо поле не блокира.
+ * abuse-money-spec Б4): `type` е refund, `amount` = очакваното, валутата — EUR.
  */
 export function refundAmountMatches(order: unknown, expectedCents: number): boolean {
+  // Order-v7 (2026-08-17) няма задължителни полета — липсващо поле НЕ е съвпадение (fail closed).
   const o = rec(order);
-  if (typeof o.type === 'string' && o.type !== 'refund') return false;
-  if (typeof o.amount === 'number' && o.amount !== expectedCents) return false;
-  if (typeof o.currency === 'string' && o.currency !== 'EUR') return false;
-  return true;
+  return o.type === 'refund' && o.amount === expectedCents && o.currency === 'EUR';
 }

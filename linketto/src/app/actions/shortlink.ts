@@ -12,6 +12,7 @@ import {
   isValidShortCode,
   normalizeShortCode,
 } from '@/lib/shortlink';
+import { lockedCount } from '@/lib/profile-lock';
 
 function localeFrom(formData: FormData): string {
   const raw = String(formData.get('uiLocale') ?? 'en');
@@ -43,10 +44,9 @@ export async function addShortLinkAction(formData: FormData): Promise<void> {
   if (!user.emailVerifiedAt) redirect(await dash(uiLocale, '?error=shortlinkVerify'));
   const profile = await prisma.profile.findFirst({
     where: { id: profileId, userId: user.id },
-    select: { id: true, _count: { select: { shortLinks: true } } },
+    select: { id: true },
   });
   if (!profile) redirect(await dash(uiLocale, '?error=generic'));
-  if (profile._count.shortLinks >= MAX_SHORT_LINKS_PER_PROFILE) redirect(await dash(uiLocale, '?error=shortlinkLimit'));
 
   // Код: желан от потребителя или автоматично генериран (уникален).
   const wanted = normalizeShortCode(String(formData.get('code') ?? ''));
@@ -68,14 +68,22 @@ export async function addShortLinkAction(formData: FormData): Promise<void> {
     }
     if (!code) redirect(await dash(uiLocale, '?error=shortlink'));
   }
+  // Таванът — броене и запис под заключения ред на профила (lib/profile-lock.ts).
+  let outcome: 'ok' | 'limit' | 'taken' = 'ok';
   try {
-    await prisma.shortLink.create({
-      data: { profileId, code, targetUrl: target.data },
+    outcome = await prisma.$transaction(async (tx) => {
+      if ((await lockedCount(tx, profile.id, 'shortLinks')) >= MAX_SHORT_LINKS_PER_PROFILE) return 'limit';
+      await tx.shortLink.create({
+        data: { profileId: profile.id, code, targetUrl: target.data },
+      });
+      return 'ok';
     });
   } catch {
     // Уникалност на кода — вече зает.
-    redirect(await dash(uiLocale, '?error=shortlink'));
+    outcome = 'taken';
   }
+  if (outcome === 'limit') redirect(await dash(uiLocale, '?error=shortlinkLimit'));
+  if (outcome === 'taken') redirect(await dash(uiLocale, '?error=shortlink'));
   redirect(await dash(uiLocale));
 }
 

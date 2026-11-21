@@ -117,6 +117,9 @@ test('refundAmountMatches: частичното връщане се сверяв
   assert.equal(refundAmountMatches({ type: 'refund', amount: 400, currency: 'EUR' }, 271), false);
   assert.equal(refundAmountMatches({ type: 'refund', amount: 271, currency: 'USD' }, 271), false);
   assert.equal(refundAmountMatches({ type: 'payment', amount: 271, currency: 'EUR' }, 271), false);
-  // Без поле за сума (напр. кратък отговор) — не блокира; сверката е по това, което има.
-  assert.equal(refundAmountMatches({ state: 'completed' }, 271), true);
+  // Order-v7 няма задължителни полета — липсваща сума, валута или вид НЕ минава (fail closed).
+  assert.equal(refundAmountMatches({ state: 'completed' }, 271), false);
+  assert.equal(refundAmountMatches({ type: 'refund', currency: 'EUR' }, 271), false);
+  assert.equal(refundAmountMatches({ type: 'refund', amount: 271 }, 271), false);
+  assert.equal(refundAmountMatches({ amount: 271, currency: 'EUR' }, 271), false);
 });

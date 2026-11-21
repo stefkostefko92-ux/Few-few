@@ -453,6 +453,11 @@ export default async function AdminPage({
                         {t('vatShort')} {money(order.vatCents)}
                         {order.buyerCountry ?? order.cardCountry ? ` · ${order.buyerCountry ?? order.cardCountry}` : ''}
                       </p>
+                      {order.refundCents !== null && (
+                        <p className="text-micro font-medium text-danger">
+                          {t('refundPartial', { amount: money(order.refundCents) })}
+                        </p>
+                      )}
                     </TD>
                     <TD>
                       <div className="flex flex-col items-start gap-1">

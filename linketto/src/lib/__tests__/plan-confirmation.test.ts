@@ -83,9 +83,17 @@ test('P14: при изрично искане за ранно начало — �
     orderRef: 'ord1',
     termsUrl: 'https://example.com/bg/terms',
   };
-  const withConsent = planConfirmationEmail({ ...base, immediateStartAt: new Date('2026-03-01T10:00:00Z') }).html;
+  const consent = 'Искам планът да започне веднага <b>&</b>. Разбирам.';
+  const withConsent = planConfirmationEmail({
+    ...base,
+    immediateStartAt: new Date('2026-03-01T10:00:00Z'),
+    immediateStartText: consent,
+  }).html;
   assert.match(withConsent, /пропорционална/);
-  assert.match(withConsent, /изрично искане/);
+  assert.match(withConsent, /изрично поиска/);
   assert.doesNotMatch(withConsent, /без да удържаме нищо/);
+  // ЗЗП чл. 49, ал. 9: приетият текст — дословно (екраниран) в писмото на траен носител.
+  assert.match(withConsent, /като отметна: „Искам планът да започне веднага &lt;b&gt;&amp;&lt;\/b&gt;\. Разбирам\.“/);
+  assert.doesNotMatch(withConsent, /<b>&<\/b>/);
   assert.match(planConfirmationEmail(base).html, /без да удържаме нищо/);
 });
