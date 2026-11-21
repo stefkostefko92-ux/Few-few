@@ -466,16 +466,15 @@ export async function ProfileScreen({
     <main
       lang={viewLocale}
       dir={dirFor(viewLocale)}
+      // Прегледът е само за гледане: inert спира и клик, и фокус/Enter (без
+      // записани кликове и изпратени формуляри).
+      inert={preview || undefined}
       className="relative flex min-h-screen flex-col items-center overflow-x-clip px-4 py-6 sm:px-6 sm:py-16"
       style={{
         ...rootStyle,
         fontFamily: fontFamily(styleCfg),
       }}
     >
-      {preview && (
-        // Прегледът е само за гледане: без кликове (не се броят) и без формуляри.
-        <style>{'main a,main button,main input,main textarea,main select,main summary,main iframe{pointer-events:none}'}</style>
-      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

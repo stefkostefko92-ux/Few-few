@@ -10,7 +10,7 @@ import { getSessionUser } from '@/lib/auth';
 import { isValidSlug, normalizeSlug } from '@/lib/slug';
 import { isLocale, LOCALES } from '@/i18n/locales';
 import { planFor } from '@/lib/plans';
-import { parseBlockInput } from '@/lib/blocks';
+import { parseBlockInput, pollVotesStillValid, type BlockMeta } from '@/lib/blocks';
 import { parseStyle, styleInput, styleSchema } from '@/lib/style';
 import { saveUploadedImage } from '@/lib/media';
 import { applyTemplate, isTemplateId, NICHE_TEMPLATES } from '@/lib/templates';
@@ -428,7 +428,7 @@ export async function updateLinkAction(formData: FormData): Promise<void> {
   const linkId = String(formData.get('linkId') ?? '');
   const link = await prisma.link.findFirst({
     where: { id: linkId, profile: { userId: user.id } },
-    select: { kind: true, profile: { select: { defaultLocale: true } } },
+    select: { kind: true, meta: true, profile: { select: { defaultLocale: true } } },
   });
   if (!link) redirect(await dash(uiLocale, '?error=generic'));
   const title = String(formData.get('title') ?? '').trim().slice(0, 100);
@@ -443,7 +443,14 @@ export async function updateLinkAction(formData: FormData): Promise<void> {
   });
   if (!input || !title) redirect(await dash(uiLocale, '?error=block'));
   const locale = link.profile.defaultLocale;
+  // Гласовете са по индекс на опцията: при махната/разменена/преименувана опция
+  // старите гласове биха се показали на чужда опция → трием ги в същата транзакция.
+  const previousOptions = (link.meta as BlockMeta | null)?.options;
+  const resetVotes =
+    link.kind === 'POLL' &&
+    !pollVotesStillValid(Array.isArray(previousOptions) ? previousOptions : [], input.meta?.options ?? []);
   await prisma.$transaction([
+    ...(resetVotes ? [prisma.pollVote.deleteMany({ where: { linkId } })] : []),
     prisma.link.updateMany({
       where: { id: linkId, profile: { userId: user.id } },
       data: {

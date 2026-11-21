@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { utcInputValue } from '@/lib/datetime-input';
 
 /** Date → „YYYY-MM-DDTHH:mm“ в часовата зона на браузъра (за datetime-local). */
 function toLocalInput(date: Date): string {
@@ -11,7 +12,9 @@ function toLocalInput(date: Date): string {
 /**
  * datetime-local, попълнено от записан момент (ISO) в часовата зона на
  * браузъра — сървърът не знае зоната на човека. Записът я връща обратно през
- * TimeZoneField (tz) в същата форма.
+ * TimeZoneField (tz) в същата форма. Сървърът рендира стойността в UTC: без JS
+ * (или преди hydration) tz е празно и записът също тълкува в UTC — така
+ * „Запази“ не трие и не мести насрочването.
  */
 export function LocalDateTimeInput({
   name,
@@ -31,5 +34,13 @@ export function LocalDateTimeInput({
     ref.current.defaultValue = value;
     ref.current.value = value;
   }, [iso]);
-  return <input ref={ref} type="datetime-local" name={name} className={className} />;
+  return (
+    <input
+      ref={ref}
+      type="datetime-local"
+      name={name}
+      defaultValue={utcInputValue(iso)}
+      className={className}
+    />
+  );
 }

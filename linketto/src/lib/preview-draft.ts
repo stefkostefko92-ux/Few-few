@@ -5,44 +5,15 @@
 
 import { isProfileTheme } from '@/lib/profile-themes';
 import { parseStyle, styleInput, styleSchema } from '@/lib/style';
+import { fromBase64Url, type PreviewDraft } from '@/lib/preview-codec';
+
+export { encodeDraft, type PreviewDraft } from '@/lib/preview-codec';
 
 /** Таван на кодираната чернова — защита от огромен адрес. */
 export const DRAFT_MAX = 8000;
 const LOCALE_RE = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 const MAX_ENTRIES = 60;
-
-export type PreviewDraft = {
-  /** Тема (id от PROFILE_THEMES). */
-  theme?: string;
-  /** Акцент (#rrggbb или '' = без). */
-  accent?: string;
-  /** Полетата на формата „Персонализация“ (сурови, както при запис). */
-  style?: Record<string, string>;
-  /** Име/био по език. */
-  tr?: Record<string, { n?: string; b?: string }>;
-  /** Заглавия на блокове: linkId → език → заглавие. */
-  lt?: Record<string, Record<string, string>>;
-};
-
-function toBase64Url(bytes: Uint8Array): string {
-  let binary = '';
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-function fromBase64Url(text: string): string {
-  const b64 = text.replace(/-/g, '+').replace(/_/g, '/');
-  const binary = atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4));
-  const bytes = Uint8Array.from(binary, (ch) => ch.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
-}
-
-/** Кодира черновата за адреса (браузър и сървър). Празна → ''. */
-export function encodeDraft(draft: PreviewDraft): string {
-  if (Object.keys(draft).length === 0) return '';
-  return toBase64Url(new TextEncoder().encode(JSON.stringify(draft)));
-}
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);

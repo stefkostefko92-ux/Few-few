@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { encodeDraft, type PreviewDraft } from '@/lib/preview-draft';
+import { encodeDraft, type PreviewDraft } from '@/lib/preview-codec';
 import { cn } from '@/components/ui/cn';
 
 /**

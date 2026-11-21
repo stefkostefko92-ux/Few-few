@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { loadProfileBy, ProfileScreen } from '@/components/ProfileScreen';
 import { getSessionUser } from '@/lib/auth';
@@ -17,6 +18,8 @@ export const metadata: Metadata = {
  * за всеки друг е 404, без да издава дали профилът съществува. Показва и
  * непубликуван профил. Незапазените промени идват като чернова (?d=),
  * валидират се като при запис и НЕ се записват; посещение не се брои.
+ * Черновата се приема само в iframe от същия сайт (Sec-Fetch-*): връзка от
+ * чужд сайт не може да подхвърли текст/картинки в прегледа на собственика.
  * X-Frame-Options за този път е SAMEORIGIN (next.config.mjs).
  */
 export default async function ProfilePreviewPage({
@@ -32,7 +35,10 @@ export default async function ProfilePreviewPage({
   if (!user) notFound();
   const profile = await loadProfileBy({ slug });
   if (!profile || profile.userId !== user.id) notFound();
-  const draft = decodeDraft(d);
+  const request = await headers();
+  const embedded =
+    request.get('sec-fetch-dest') === 'iframe' && request.get('sec-fetch-site') === 'same-origin';
+  const draft = embedded ? decodeDraft(d) : null;
   const shown = draft
     ? applyDraft(profile, draft, { canHideBadge: planFor(user.plan).hideBadge })
     : profile;

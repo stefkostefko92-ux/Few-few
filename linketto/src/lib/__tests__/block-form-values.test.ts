@@ -45,3 +45,30 @@ test('blockFormValues: без meta и с повреден url не гърми', 
   assert.equal(blockFormValues({ kind: 'MAP', url: 'не е url', meta: null }).url, '');
   assert.equal(blockFormValues({ kind: 'APP', url: null, meta: 'x' as unknown as BlockMeta }).extra1, '');
 });
+
+import { pollVotesStillValid } from '../blocks';
+import { utcInputValue } from '../datetime-input';
+
+// Ревю (Medium): гласовете на анкета са по индекс — смяна на опциите ги разменя.
+test('pollVotesStillValid: само добавяне в края пази гласовете', () => {
+  assert.equal(pollVotesStillValid(['A', 'B'], ['A', 'B']), true);
+  assert.equal(pollVotesStillValid(['A', 'B'], ['A', 'B', 'C']), true);
+  assert.equal(pollVotesStillValid(['A', 'B', 'C'], ['B', 'C']), false); // махната
+  assert.equal(pollVotesStillValid(['A', 'B'], ['B', 'A']), false); // разменени
+  assert.equal(pollVotesStillValid(['A', 'B'], ['A', 'X']), false); // преименувана
+});
+
+// Ревю (Medium): без JS полето за дата трябва да носи записаната стойност (в UTC,
+// защото тогава tz е празно и сървърът тълкува в UTC), иначе „Запази“ трие насрочването.
+test('utcInputValue: ISO → datetime-local в UTC; празно/невалидно → празно', () => {
+  assert.equal(utcInputValue('2026-12-24T18:30:00.000Z'), '2026-12-24T18:30');
+  assert.equal(utcInputValue(null), '');
+  assert.equal(utcInputValue('не е дата'), '');
+});
+
+import { zonedLocalToUtc } from '../zoned-time';
+
+test('utcInputValue + zonedLocalToUtc без зона: пълен кръг до минута (запис без JS не мести часа)', () => {
+  const iso = '2026-12-24T18:30:00.000Z';
+  assert.equal(zonedLocalToUtc(utcInputValue(iso), '')?.toISOString(), iso);
+});

@@ -377,3 +377,13 @@ export function blockFormValues(link: { kind: string; url: string | null; meta: 
   }
   return out;
 }
+
+/**
+ * Гласовете на анкета се пазят по индекс на опцията (PollVote.optionIndex).
+ * Остават верни само ако старите опции стоят непроменени на същите места —
+ * т.е. новият списък е старият + опции в края. Иначе гласовете се трият.
+ */
+export function pollVotesStillValid(previous: readonly string[], next: readonly string[]): boolean {
+  if (next.length < previous.length) return false;
+  return previous.every((option, index) => next[index] === option);
+}
