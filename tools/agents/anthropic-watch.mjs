@@ -5,11 +5,15 @@
 // Anthropic/Claude за новости в процедурата. Ръчното „прочети пак всичко“ е скъпо и пропуска
 // тихите промени (нова страница, нов флаг в changelog-а). Тук сравняваме снимка със снимка.
 //
-// Четири публични източника, без ключове:
+// Шест публични източника, без ключове:
 //   1. https://code.claude.com/docs/llms.txt          — списъкът на всички страници в документацията
 //   2. https://code.claude.com/docs/en/changelog.md   — версиите на Claude Code след последната видяна
 //   3. https://www.anthropic.com/engineering          — инженерният блог (агенти, evals, harness)
 //   4. anthropics/skills → .claude-plugin/marketplace.json — официалните умения (нови/махнати)
+//   5. https://platform.claude.com/docs/en/release-notes/overview.md — бележките на платформата (Claude API,
+//      SDK, Console): версии на API, цени, региони, спиране на модели, воден знак — 19.11.2026 видяхме, че
+//      тези неща (API 2026-10-21, user profiles, IP allowlist, Fable 5.2) минаваха покрай нас;
+//   6. https://platform.claude.com/llms.txt           — страниците на платформата (без справочника /api/*).
 //
 //   node tools/agents/anthropic-watch.mjs              # доклад: какво е ново спрямо снимката
 //   node tools/agents/anthropic-watch.mjs --update     # доклад + записва новата снимка
@@ -38,11 +42,18 @@ export function loadContracts(file = CONTRACTS) {
   try { return JSON.parse(readFileSync(file, "utf8")).contracts || []; } catch { return []; }
 }
 
+/** Ключова дума → регекс с граница на думата ОТПРЕД (наставките остават: „subagent“ хваща „subagents“).
+ *  19.11.2026: като подниз двойката ["sed","permission"] хващаше „refu-sed“ и „u-sed“ — 14 от 19 удара бяха шум. */
+export function keywordRe(k) {
+  const esc = String(k).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(?<![\\p{L}\\p{N}_])${esc}`, "iu");
+}
+
 /** Кои договори засяга ред от changelog-а (ключова дума, без значение регистъра). Ключ-масив = всички части
  *  в реда (["skill", "compact"]) — общи думи като „compaction“ сами вдигаха шум (08.11.2026: 41 от 53 удара). */
 export function touchedContracts(line, contracts = loadContracts()) {
-  const l = String(line || "").toLowerCase();
-  const hit = (k) => (Array.isArray(k) ? k.length > 0 && k.every(hit) : l.includes(String(k).toLowerCase()));
+  const l = String(line || "");
+  const hit = (k) => (Array.isArray(k) ? k.length > 0 && k.every(hit) : keywordRe(k).test(l));
   return contracts.filter((c) => (c.keywords || []).some(hit)).map((c) => c.id);
 }
 export const SOURCES = {
@@ -52,12 +63,51 @@ export const SOURCES = {
   // Официалните умения: нови/махнати се виждат тук (смяната на лиценза на Office уменията на 06.11.2026
   // мина покрай трите източника по-горе). raw.githubusercontent.com — без ключ и без GitHub API.
   skills: "https://raw.githubusercontent.com/anthropics/skills/main/.claude-plugin/marketplace.json",
+  platformNotes: "https://platform.claude.com/docs/en/release-notes/overview.md",
+  platformDocs: "https://platform.claude.com/llms.txt",
 };
 export const SKILLS_TREE = "https://github.com/anthropics/skills/tree/main/skills/";
 
 // Редовете от changelog-а, които засягат НАШИЯ агентски процес (агенти, куки, умения, права, кеш,
 // памет, оркестрация). Останалото (VSCode теми, Windows поправки) е шум за флота.
 export const RELEVANT = /subagent|sub-agent|agent|hook|skill|frontmatter|permission|sandbox|cache|ttl|workflow|memory|CLAUDE\.md|settings|MCP|plugin|worktree|compact|context|effort|model|fork|background|eval/i;
+
+// Бележките на платформата, които засягат продуктите ни (agentgw и piuma през Vertex `eu`, цените, ЕС данните,
+// SDK-тата) или флота (модели, усилие, кеш). Останалото (Console UI, Managed Agents без наш случай) е шум.
+export const PLATFORM_RELEVANT = /vertex|google cloud|\bgoogle\b|deprecat|retire|pric|refusal|cach|residency|inference_geo|region|\bEU\b|SDK|watermark|opus|sonnet|haiku|fable|effort|thinking|structured output|api version|anthropic-version|rate limit|data retention|zero data/i;
+
+const MONTHS = { january: 1, february: 2, march: 3, april: 4, may: 5, june: 6, july: 7, august: 8, september: 9, october: 10, november: 11, december: 12 };
+/** „November 17, 2026“ → „2026-11-17“ (или "" при друг формат). */
+export function isoDate(s) {
+  const m = String(s || "").trim().match(/^([A-Za-z]+) (\d{1,2}), (\d{4})$/);
+  const mo = m && MONTHS[m[1].toLowerCase()];
+  return mo ? `${m[3]}-${String(mo).padStart(2, "0")}-${m[2].padStart(2, "0")}` : "";
+}
+
+/** release-notes/overview.md → [{ date: "2026-11-17", bullets }] (най-новата първа; заглавия `### <дата>`). */
+export function parsePlatformNotes(text) {
+  const out = [];
+  let cur = null;
+  for (const line of String(text).split("\n")) {
+    const h = line.match(/^###\s+(.+?)\s*$/);
+    if (h) { const date = isoDate(h[1]); cur = date ? { date, bullets: [] } : null; if (cur) out.push(cur); continue; }
+    const b = cur && line.match(/^\s*[*-]\s+(.+)$/);
+    if (b) cur.bullets.push(clean(b[1].replace(/\[([^\]]+)\]\([^)]+\)/g, "$1"), 400));
+  }
+  return out;
+}
+
+/** platform llms.txt → [{ url, title }] — ръководствата, без справочника /api/* и архивите на системните промптове. */
+export function parsePlatformDocs(text) {
+  const seen = new Map();
+  for (const m of String(text).matchAll(/\[([^\]]+)\]\((https:\/\/platform\.claude\.com\/docs\/en\/[^)\s]+)\)([^\n]*)/g)) {
+    const url = m[2];
+    if (/\/docs\/en\/(?:api\/|release-notes\/system-prompts)/.test(url) || seen.has(url)) continue;
+    const ctx = clean(m[3].replace(/^\s*-\s*/, ""), 60);
+    seen.set(url, { url, title: clean(ctx ? `${m[1]} — ${ctx}` : m[1], 140) });
+  }
+  return [...seen.values()];
+}
 
 /** Текст от мрежата → само печатни знаци, без управляващи, с таван на дължината. */
 export function clean(s, max = 200) {
@@ -138,7 +188,15 @@ export function diffSnapshot(prev, cur, contracts = loadContracts()) {
   const skillsKnown = Array.isArray(p.skills);
   const skillsBefore = new Set((p.skills || []).map((s) => s.id));
   const skillsNow = new Set((cur.skills || []).map((s) => s.id));
+  // Платформата: първата снимка с нея е начална точка (иначе всичко излиза „ново“ веднъж).
+  const pdKnown = Array.isArray(p.platformDocs);
+  const pdBefore = new Set((p.platformDocs || []).map((d) => d.url));
+  const pdNow = new Set((cur.platformDocs || []).map((d) => d.url));
+  const notes = p.platformNotesDate ? (cur.platformNotes || []).filter((n) => n.date > p.platformNotesDate) : [];
   return {
+    newPlatformNotes: notes.map((n) => ({ ...n, relevant: n.bullets.filter((b) => PLATFORM_RELEVANT.test(b)) })),
+    newPlatformDocs: cur.platformDocs && pdKnown ? cur.platformDocs.filter((d) => !pdBefore.has(d.url)) : [],
+    removedPlatformDocs: cur.platformDocs && pdKnown ? (p.platformDocs || []).filter((d) => !pdNow.has(d.url)) : [],
     newSkills: cur.skills && skillsKnown ? cur.skills.filter((s) => !skillsBefore.has(s.id)) : [],
     removedSkills: cur.skills ? (p.skills || []).filter((s) => !skillsNow.has(s.id)) : [],
     newDocs: cur.docs ? cur.docs.filter((d) => !docsBefore.has(d.url)) : [],
@@ -161,13 +219,15 @@ export function nextState(prev, cur, today) {
     docs: cur.docs || p.docs || [],
     engineering: cur.engineering || p.engineering || [],
     skills: cur.skills || p.skills || [],
+    platformNotesDate: (cur.platformNotes || []).reduce((m, n) => (n.date > m ? n.date : m), p.platformNotesDate || "") || null,
+    platformDocs: cur.platformDocs || p.platformDocs || [],
   };
 }
 
 export function renderReport(d, failed) {
   const lines = [];
   const none = !d.newDocs.length && !d.removedDocs.length && !d.newVersions.length && !d.newPosts.length &&
-    !d.newSkills?.length && !d.removedSkills?.length;
+    !d.newSkills?.length && !d.removedSkills?.length && !d.newPlatformNotes?.length && !d.newPlatformDocs?.length && !d.removedPlatformDocs?.length;
   lines.push(none ? "Няма новости от последната проверка." : "Новости от последната проверка:");
   if (d.contractHits?.length) {
     lines.push("", `⚠ ЗАСЯГАТ ДОГОВОР С ХАРНЕСА (${d.contractHits.length}) — оцени първо, после node tools/agents/live-gate.mjs:`);
@@ -182,6 +242,15 @@ export function renderReport(d, failed) {
       if (v.relevant.length > 15) lines.push(`    … още ${v.relevant.length - 15}`);
     }
   }
+  if (d.newPlatformNotes?.length) {
+    lines.push("", `Платформата (Claude API/SDK/Console) — ${d.newPlatformNotes.length} нови дати (${d.newPlatformNotes.map((n) => n.date).join(", ")}):`);
+    for (const n of d.newPlatformNotes) {
+      lines.push(`  ${n.date} — ${n.relevant.length} от ${n.bullets.length} реда засягат продуктите/флота (Vertex, цени, ЕС, SDK, модели)`);
+      for (const b of n.relevant.slice(0, 10)) lines.push(`    - ${b}`);
+    }
+  }
+  if (d.newPlatformDocs?.length) { lines.push("", `Нови страници на платформата (${d.newPlatformDocs.length}):`); for (const x of d.newPlatformDocs.slice(0, 40)) lines.push(`  - ${x.title} — ${x.url}`); }
+  if (d.removedPlatformDocs?.length) { lines.push("", `Махнати страници на платформата (${d.removedPlatformDocs.length}):`); for (const x of d.removedPlatformDocs.slice(0, 40)) lines.push(`  - ${x.title} — ${x.url}`); }
   if (d.newDocs.length) { lines.push("", `Нови страници в документацията (${d.newDocs.length}):`); for (const x of d.newDocs) lines.push(`  - ${x.title} — ${x.url}`); }
   if (d.removedDocs.length) { lines.push("", `Махнати страници (${d.removedDocs.length}):`); for (const x of d.removedDocs) lines.push(`  - ${x.title} — ${x.url}`); }
   if (d.newPosts.length) { lines.push("", `Нови статии в инженерния блог (${d.newPosts.length}):`); for (const x of d.newPosts) lines.push(`  - ${x.title} — https://www.anthropic.com/engineering/${x.slug}`); }
@@ -205,7 +274,8 @@ async function main(argv) {
   const prev = existsSync(STATE) ? JSON.parse(readFileSync(STATE, "utf8")) : null;
 
   const cur = {}, failed = [];
-  const parsers = { docs: parseDocsIndex, changelog: parseChangelog, engineering: parseEngineering, skills: parseSkillsMarketplace };
+  const parsers = { docs: parseDocsIndex, changelog: parseChangelog, engineering: parseEngineering, skills: parseSkillsMarketplace,
+    platformNotes: parsePlatformNotes, platformDocs: parsePlatformDocs };
   await Promise.all(Object.entries(SOURCES).map(async ([k, url]) => {
     try {
       const parsed = parsers[k](await get(url));

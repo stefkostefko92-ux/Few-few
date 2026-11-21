@@ -139,9 +139,10 @@ db-readonly · owasp-review · wcag-audit · incident-breach · pentest-engageme
 web-vitals; plus uchitel; **домейн** — youtube-reddit · fivem-mlo · fivem-clothing · fivem-livery; **външни, адаптирани** (14, вкл. archify-diagrams) и **правни** (15) — ростерът е в `tools/agents/CLAUDE.md`, произходът в `.claude/skills/THIRD_PARTY_NOTICES.md`. Gate: `tools/skills/lint.mjs` + `trigger-check.mjs --check`.
 **Own BG skills; never import third-party wholesale**; външно — само с изрично „да“ от собственика (`tools/agents/CLAUDE.md`).
 
-**Guard hooks (6):** `guard-prompt` · `guard-dangerous` (only catastrophic Bash) · `guard-secrets` ·
+**Guard hooks (8):** `guard-prompt` · `guard-dangerous` (only catastrophic Bash) · `guard-secrets` (before the write) ·
 `guard-exfil` (secrets/PII out via any net verb, interpreter, Monitor or MCP argument) · `guard-readonly` ·
-`guard-config` (mid-session settings can't weaken guards). One secret list, fail-closed on a hit,
+`guard-config` (mid-session settings can't weaken guards) · `guard-self` (an agent can't rewrite hooks, settings, mods
+or memory; main session → human confirms) · `guard-model` (never Haiku). One secret list, fail-closed on a hit,
 red-teamed through the CLI; `permissions.deny` (read+write) for `.env`/keys (`.env.example` open). Hook context >10,000 chars never reaches an agent (doctrine = `agent-doctrine` skill).
 **Learning ⇒ the fleet Artifact is republished, always** (owner's rule; `artifact-sync` Stop hook).
 Details → `.claude/hooks/README.md`.

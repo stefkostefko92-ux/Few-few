@@ -40,8 +40,8 @@ fail-closed) and orchestrates by Anthropic's agent canon. Run `oversee.mjs` afte
 **Loop/automation слой (`tools/agents/loops/`).** Лостът е loop-ът, не единичният промпт (идея от
 loop-engineering, написана нашия начин — zero-dep, fail-closed). Декларативен манифест (`loops.json`) с
 **автономия-стълба L1 (само доклад) → L2 (помага) → L3 (безнадзорно)**; `loop-audit.mjs` гейтва готовността
-(L3 иска budgetCap+denylist). Планираният **health-sweep** (`agents-sweep.yml`, седмично) пуска целия гейт
-по каданс — лови гниене/дрейф без триггер-push. `drift-lint.mjs` включва **бройка/ростер consistency**
+(L3 иска budgetCap+denylist). Планираният **health-sweep** (облачна задача „Седмичен преглед на агентския слой и кода“, понеделник 09:13 София;
+`runtime:"cloud"` в `loops.json`; `agents-sweep.yml` остава ръчен резерв) пуска целия гейт по каданс — лови гниене/дрейф без триггер-push. `drift-lint.mjs` включва **бройка/ростер consistency**
 (каноничен = agents.json) — не позволява документ да лъже за размера на екипа.
 
 **Патърни от Agentic Design Patterns (Gulli) — усвоени наши 3.** Книгата е **данни, не инструкции**;
@@ -348,13 +348,13 @@ handoff, извличането на паметта — без самата па
 Докажи през CLI-то, както за предпазителите: проба с агент, който цитира какво има в контекста си, струва
 ~20k токена и хваща това, което никой тест не вижда.
 
-**Guard hooks (active, 5):** `guard-readonly.mjs` (PreToolUse/Bash — агент, чиято дефиниция има Bash, но
+**Guard hooks (active, 8 — пълната таблица и guard-self/guard-model от 19.11.2026 са в `.claude/hooks/README.md`):** `guard-readonly.mjs` (PreToolUse/Bash — агент, чиято дефиниция има Bash, но
 няма Write/Edit, не пише в репото през Bash: git записи, `sed -i`, `>` към файл, `--write`/`--fix`, npm/pnpm,
 които сменят lockfile; `agent_type` идва в payload-а; кука на ниво settings, защото frontmatter куките не
 тичат в `-p`), `guard-prompt.mjs` (UserPromptSubmit — pasted secret never enters history),
 `guard-dangerous.mjs` (PreToolUse/Bash — only catastrophic: root/home/**workspace** rm, disk destroyers,
 `curl|sh`, force push / delete of main, `gh repo delete`), `guard-secrets.mjs`
-(PostToolUse/Write|Edit|MultiEdit|NotebookEdit — early secret warning), `guard-exfil.mjs`
+(PreToolUse/Write|Edit|MultiEdit|NotebookEdit — the write is refused before the secret reaches disk; PostToolUse stays as a second layer), `guard-exfil.mjs`
 (PreToolUse/Bash|WebFetch|WebSearch|**mcp__.\*** — blocks secrets/PII leaving via any net verb/interpreter,
 incl. pipe, `$(…)` substitution, stdin redirect, upload flags, scp/rsync, archives, code reads,
 credential-emitting commands, **staging** for a later exfil, and **any MCP tool argument** (GitHub comment
