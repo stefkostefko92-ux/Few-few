@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { COMPANY } from './company.js';
 
 const hexKey = (name: string) =>
