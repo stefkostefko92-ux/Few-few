@@ -142,6 +142,18 @@ test("ревю на PR #434: папка-предшественик като це
   ]) assert.equal(hook("guard-self.mjs", bash(c)).status, 0, `трябва да мине: ${c}`);
 });
 
+test("фалшиви блокове от живата работа на AI-джията (21.11.2026): git -C <корен> и известна променлива", () => {
+  for (const c of [
+    "git -C /home/user/Few-few branch --show-current", "git -C . branch -a", "git -C .. tag -l", "git -C . remote -v", "git -C . symbolic-ref HEAD",
+    "F=/tmp/fx/kodadjiyata-guard-self-v1; git show 9445525:.claude/hooks/guard-self.mjs > $F/guard-self.mjs",
+    "D=/tmp/out; mkdir -p $D && cp README.md $D/",
+  ]) assert.equal(hook("guard-self.mjs", bash(c)).status, 0, `трябва да мине: ${c}`);
+  for (const c of [
+    "git -C /tmp checkout evil -- /home/user/Few-few/.claude", "git -C .claude checkout evil -- hooks", "git --work-tree=. checkout evil -- .claude",
+    "F=.claude/hooks; git show x:y > $F/guard-exfil.mjs", "rm $UNKNOWN/hooks/guard-exfil.mjs", "echo x > ${HOOKS_DIR}/guard-self.mjs",
+  ]) assert.equal(hook("guard-self.mjs", bash(c)).status, 2, `трябва да се спре: ${c}`);
+});
+
 test("новите правила не спират нормална работа (архиви извън репото, проверка на кръпка, тесен find, export)", () => {
   for (const c of [
     "tar -xf /tmp/a.tar -C /tmp/x", "tar -czf /tmp/a.tgz piuma", "tar -tf /tmp/a.tar", "unzip -l /tmp/a.zip", "unzip -o /tmp/a.zip -d /tmp/u",

@@ -177,7 +177,7 @@ const LOOSE = /\$[{A-Za-z_][^/]*\/(?:hooks|dev-mods|plugins)\/|\$[{A-Za-z_][^/]*
 const READERS = new Set(["cat", "head", "tail", "less", "more", "wc", "grep", "egrep", "fgrep", "rg", "ls", "stat", "file",
   "diff", "cmp", "sha256sum", "sha1sum", "sha512sum", "md5sum", "b2sum", "cksum", "jq", "realpath", "readlink", "dirname",
   "basename", "test", "[", "echo", "printf", "true", "false", "od", "hexdump", "strings", "column", "bat", "cd", "pushd", "popd", "du", "tree"]);
-const GIT_READ = new Set(["status", "diff", "log", "show", "add", "commit", "push", "ls-files", "ls-tree", "grep", "blame",
+const GIT_READ = new Set(["status", "diff", "log", "show", "add", "commit", "push", "ls-files", "ls-tree", "grep", "blame", "branch", "tag", "remote", "symbolic-ref",
   "rev-parse", "cat-file", "fetch", "shortlog", "describe", "show-ref", "for-each-ref", "check-ignore", "check-attr", "reflog", "whatchanged", "diff-tree", "diff-index", "merge-base", "rev-list", "name-rev", "hash-object"]);
 const INTERP = /^(?:node|nodejs|deno|bun|python[0-9.]*|ruby|perl|php|(?:ba|z|k|da|a|c|tc|fi)?sh)$/;
 const REDIR = /^(?:\d*>>?|&>>?|>\||\d*>&?)(.*)$/; // `>` `>>` `2>` `&>` `>|` (+ слепен път)
@@ -195,8 +195,10 @@ function argvVerdict(argvRaw, state, set) {
   // Простите присвоявания се проследяват (`D=.claude; rm $D/hooks/x`), после думите се разгръщат.
   for (const w of argvRaw) { const m = /^([A-Za-z_]\w*)=(.*)$/.exec(w); if (m) state.vars[m[1]] = m[2]; else break; }
   if (/^(?:export|declare|local|readonly)$/.test(argvRaw[0] || "")) for (const w of argvRaw.slice(1)) { const m = /^([A-Za-z_]\w*)=(.*)$/.exec(w); if (m) state.vars[m[1]] = m[2]; }
-  for (const w of argvRaw) if (LOOSE.test(w)) return [`пазен път зад неразгърната променлива (${w.slice(0, 80)})`, "A"];
   const argv0 = argvRaw.map((w) => expandVars(w, state.vars));
+  // Съди се СЛЕД разгръщането: известна променлива (`F=/tmp/fx; … > $F/guard-self.mjs`) вече е буквален път и
+  // се съди по него; отказ остава само за неразгърната (21.11.2026 — фалшив блок на фикстура в tools/…/fixtures).
+  for (const w of argv0) if (LOOSE.test(w)) return [`пазен път зад неразгърната променлива (${w.slice(0, 80)})`, "A"];
   // Пренасочванията пишат: целта им се съди като запис, независимо от програмата.
   const argv = [];
   for (let k = 0; k < argv0.length; k++) {
@@ -262,7 +264,24 @@ function argvVerdict(argvRaw, state, set) {
   // `mv /tmp/s/settings.json .claude/`, `rsync -a /tmp/x/ .claude/`, `rm -rf .claude`, `git checkout evil -- .claude`
   // стигат до пазен път, без той да е буквално в командата → съди се целта като път-резултат и папката-предшественик.
   const pathy = (w) => !w.startsWith("-") && !/^[a-z][a-z0-9+.-]*:\/\//i.test(w);
-  const ancestorHit = (w) => pathy(w) && coversAnchor(w, state.cwd);
+  // git: глобалните флагове преди подкомандата не са цел; `-C`/`--work-tree` е папката, спрямо която се съдят
+  // пътищата (21.11.2026 — `git -C <корен> branch --show-current` беше спрян, а `git -C .claude checkout x -- hooks` мина бе).
+  let gcwd = state.cwd, gargs = args;
+  if (name === "git") {
+    gargs = [];
+    let i = 0;
+    for (; i < args.length && args[i].startsWith("-"); i++) {
+      const w = args[i], eq = /^--(git-dir|work-tree|namespace|exec-path)=(.*)$/.exec(w);
+      if (eq) { if (eq[1] === "work-tree") gcwd = resolve(gcwd, expandHome(eq[2])); continue; }
+      if (/^(?:-C|-c|--git-dir|--work-tree|--namespace|--exec-path)$/.test(w)) {
+        if ((w === "-C" || w === "--work-tree") && args[i + 1]) gcwd = resolve(gcwd, expandHome(args[i + 1]));
+        i++; continue;
+      }
+      gargs.push(w);
+    }
+    gargs.push(...args.slice(i));
+  }
+  const ancestorHit = (w) => pathy(w) && coversAnchor(w, gcwd);
   if (!READERS.has(name) && name !== "find" && !(name === "git" && GIT_READ.has(gitSub(args)))) {
     if (["cp", "install", "rsync", "mv", "ln"].includes(name)) {
       const t = args.findIndex((w) => w === "-t" || w.startsWith("--target-directory"));
@@ -279,7 +298,7 @@ function argvVerdict(argvRaw, state, set) {
         if (recursive && coversAnchor(d, state.cwd)) return [`${name}: рекурсивен запис в папка, която съдържа пазачите`, "A"];
       }
       if (name === "mv" && srcs.some(ancestorHit)) return ["mv: мести папка, която съдържа пазачите", "A"];
-    } else if (!INTERP.test(name) && !["tar", "bsdtar", "zip", "7z", "7za", "cpio", "unzip", "patch", "sed"].includes(name) && args.some(ancestorHit)) {
+    } else if (!INTERP.test(name) && !["tar", "bsdtar", "zip", "7z", "7za", "cpio", "unzip", "patch", "sed"].includes(name) && gargs.some(ancestorHit)) {
       // (архиваторите се съдят по-горе по режим и местоназначение: `tar -czf /tmp/a.tgz .` само чете)
       return [`${name}: действие върху папка, която съдържа пазачите`, "A"];
     }
