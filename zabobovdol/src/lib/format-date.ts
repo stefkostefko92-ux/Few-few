@@ -26,7 +26,8 @@ export type DateOpts = {
 
 const NBSP = " ";
 
-const MONTHS = [
+/** Месеците на български, малки букви (един източник: форматирането и разчитането на дати в новините). */
+export const BG_MONTHS = [
   "януари",
   "февруари",
   "март",
@@ -39,7 +40,8 @@ const MONTHS = [
   "октомври",
   "ноември",
   "декември",
-];
+] as const;
+const MONTHS: readonly string[] = BG_MONTHS;
 const WEEKDAYS = ["неделя", "понеделник", "вторник", "сряда", "четвъртък", "петък", "събота"];
 
 type Parts = { y: number; m: number; d: number; hh: number; mm: number; ss: number; wd: number };
