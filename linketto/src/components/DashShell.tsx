@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { logoutAction } from '@/app/actions/auth';
 import { DashSidebar, type DashNavGroup } from '@/components/DashSidebar';
+import { LanguageMenu } from '@/components/LanguageMenu';
 import { ProfileSwitcher } from '@/components/ProfileSwitcher';
 import { AppShell } from '@/components/ui/AppShell';
 import { Badge } from '@/components/ui/Badge';
@@ -43,6 +44,7 @@ export async function DashShell({
   profiles,
   activeId,
   planId,
+  aside,
   children,
 }: {
   locale: Locale;
@@ -50,6 +52,8 @@ export async function DashShell({
   profiles: { id: string; slug: string }[];
   activeId?: string;
   planId: string;
+  /** Дясна колона на широк екран (живият преглед на профила). */
+  aside?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const t = await getTranslations({ locale, namespace: 'dashboard' });
@@ -175,6 +179,10 @@ export async function DashShell({
         )}
       </div>
       <div className="flex shrink-0 items-center gap-2">
+        {/* Езикът на таблото — винаги видим (запазва профила и раздела). */}
+        <div className="rounded-control border border-line bg-surface">
+          <LanguageMenu locale={locale} label={tNav('language')} withName />
+        </div>
         {active && (
           <a
             href={profileUrl(active.slug)}
@@ -207,9 +215,19 @@ export async function DashShell({
       >
         {tNav('skip')}
       </a>
-      <main id="main" className="dash mx-auto w-full max-w-4xl">
-        {children}
-      </main>
+      {aside ? (
+        <main
+          id="main"
+          className="dash mx-auto grid w-full max-w-[90rem] gap-8 xl:grid-cols-[minmax(0,1fr)_22rem]"
+        >
+          <div className="min-w-0">{children}</div>
+          <div className="min-w-0">{aside}</div>
+        </main>
+      ) : (
+        <main id="main" className="dash mx-auto w-full max-w-4xl">
+          {children}
+        </main>
+      )}
     </AppShell>
   );
 }

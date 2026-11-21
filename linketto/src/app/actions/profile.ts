@@ -11,14 +11,15 @@ import { isValidSlug, normalizeSlug } from '@/lib/slug';
 import { isLocale, LOCALES } from '@/i18n/locales';
 import { planFor } from '@/lib/plans';
 import { parseBlockInput } from '@/lib/blocks';
-import { parseStyle, styleSchema } from '@/lib/style';
+import { parseStyle, styleInput, styleSchema } from '@/lib/style';
 import { saveUploadedImage } from '@/lib/media';
 import { applyTemplate, isTemplateId, NICHE_TEMPLATES } from '@/lib/templates';
 import { domainChange, domainTxtName, txtMatches } from '@/lib/domain-verify';
 import { rateLimit } from '@/lib/rate-limit';
 import { zonedLocalToUtc } from '@/lib/zoned-time';
 import { PROFILE_THEMES } from '@/lib/profile-themes';
-import type { Prisma } from '@prisma/client';
+import { moveInOrder, validReorder } from '@/lib/link-order';
+import { Prisma } from '@prisma/client';
 
 function localeFrom(formData: FormData): string {
   const raw = String(formData.get('uiLocale') ?? 'en');
@@ -198,30 +199,7 @@ export async function updateStyleAction(formData: FormData): Promise<void> {
   const user = await requireUser(uiLocale);
   const profileId = String(formData.get('profileId') ?? '');
 
-  const field = (name: string) => {
-    const value = String(formData.get(name) ?? '').trim();
-    return value === '' ? undefined : value;
-  };
-  const parsed = styleSchema.safeParse({
-    bgStyle: field('bgStyle'),
-    bgEffect: field('bgEffect'),
-    bgColor1: field('bgColor1'),
-    bgColor2: field('bgColor2'),
-    bgImageUrl: field('bgImageUrl'),
-    textColor: field('textColor'),
-    font: field('font'),
-    buttonShape: field('buttonShape'),
-    buttonFill: field('buttonFill'),
-    buttonShadow: field('buttonShadow'),
-    layout: field('layout'),
-    align: field('align'),
-    avatarUrl: field('avatarUrl'),
-    avatarShape: field('avatarShape'),
-    bgOverlay: field('bgOverlay'),
-    hideBadge: formData.get('hideBadge') === 'on',
-    showViews: formData.get('showViews') === 'on',
-    mediaKit: formData.get('mediaKit') === 'on',
-  });
+  const parsed = styleSchema.safeParse(styleInput((name) => formData.get(name)));
   if (!parsed.success) {
     redirect(await dash(uiLocale, '?error=style'));
   }
@@ -368,6 +346,119 @@ export async function deleteLinkAction(formData: FormData): Promise<void> {
   await prisma.link.deleteMany({
     where: { id: linkId, profile: { userId: user.id } },
   });
+  redirect(await dash(uiLocale));
+}
+
+// ── Управление на блоковете: подреждане, скриване, редакция (таблото) ───────────────────
+
+/** Подредените id-та на блоковете на профил на потребителя (null = чужд/няма профил). */
+async function ownedLinkOrder(userId: string, profileId: string): Promise<string[] | null> {
+  const profile = await prisma.profile.findFirst({
+    where: { id: profileId, userId },
+    select: { links: { select: { id: true }, orderBy: [{ position: 'asc' }, { createdAt: 'asc' }] } },
+  });
+  return profile ? profile.links.map((link) => link.id) : null;
+}
+
+/** Записва реда като позиции 0..n-1 в една транзакция. */
+async function writeOrder(profileId: string, ids: readonly string[]): Promise<void> {
+  await prisma.$transaction(
+    ids.map((id, position) =>
+      prisma.link.updateMany({ where: { id, profileId }, data: { position } }),
+    ),
+  );
+}
+
+/** Drag & drop от таблото: целият нов ред; приема се само точното множество блокове на профила. */
+export async function reorderLinksAction(
+  profileId: unknown,
+  orderedIds: unknown,
+): Promise<{ ok: boolean }> {
+  const user = await getSessionUser();
+  if (!user || typeof profileId !== 'string' || !Array.isArray(orderedIds)) return { ok: false };
+  const current = await ownedLinkOrder(user.id, profileId);
+  if (!current) return { ok: false };
+  const next = validReorder(current, orderedIds);
+  if (!next) return { ok: false };
+  await writeOrder(profileId, next);
+  return { ok: true };
+}
+
+/** ↑/↓ без JavaScript и от клавиатура: мести блока с една позиция. */
+export async function moveLinkAction(formData: FormData): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  const user = await requireUser(uiLocale);
+  const linkId = String(formData.get('linkId') ?? '');
+  const dir = formData.get('dir') === 'up' ? 'up' : 'down';
+  const link = await prisma.link.findFirst({
+    where: { id: linkId, profile: { userId: user.id } },
+    select: { profileId: true },
+  });
+  if (!link) redirect(await dash(uiLocale, '?error=generic'));
+  const current = await ownedLinkOrder(user.id, link.profileId);
+  const next = current ? moveInOrder(current, linkId, dir) : null;
+  if (next) await writeOrder(link.profileId, next);
+  redirect(await dash(uiLocale));
+}
+
+/** Скрива/показва блока на публичния профил (active) — без да го трие. */
+export async function toggleLinkActiveAction(formData: FormData): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  const user = await requireUser(uiLocale);
+  const linkId = String(formData.get('linkId') ?? '');
+  const link = await prisma.link.findFirst({
+    where: { id: linkId, profile: { userId: user.id } },
+    select: { active: true },
+  });
+  if (!link) redirect(await dash(uiLocale, '?error=generic'));
+  await prisma.link.updateMany({
+    where: { id: linkId, profile: { userId: user.id } },
+    data: { active: !link.active },
+  });
+  redirect(await dash(uiLocale));
+}
+
+/**
+ * Редакция на съществуващ блок: заглавие (основният език на профила), целта и kind-специфичните
+ * полета (същата валидация като при добавяне — parseBlockInput), насрочване. Видът не се сменя.
+ */
+export async function updateLinkAction(formData: FormData): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  const user = await requireUser(uiLocale);
+  const linkId = String(formData.get('linkId') ?? '');
+  const link = await prisma.link.findFirst({
+    where: { id: linkId, profile: { userId: user.id } },
+    select: { kind: true, profile: { select: { defaultLocale: true } } },
+  });
+  if (!link) redirect(await dash(uiLocale, '?error=generic'));
+  const title = String(formData.get('title') ?? '').trim().slice(0, 100);
+  const input = parseBlockInput({
+    kind: link.kind,
+    url: String(formData.get('url') ?? ''),
+    extra1: String(formData.get('extra1') ?? ''),
+    extra2: String(formData.get('extra2') ?? ''),
+    color: String(formData.get('color') ?? ''),
+    featured: formData.get('featured') === 'on',
+    options: String(formData.get('options') ?? ''),
+  });
+  if (!input || !title) redirect(await dash(uiLocale, '?error=block'));
+  const locale = link.profile.defaultLocale;
+  await prisma.$transaction([
+    prisma.link.updateMany({
+      where: { id: linkId, profile: { userId: user.id } },
+      data: {
+        url: input.url,
+        meta: input.meta ? (input.meta as Prisma.InputJsonValue) : Prisma.DbNull,
+        showFrom: parseDateInput(formData.get('showFrom'), formData.get('tz')),
+        showUntil: parseDateInput(formData.get('showUntil'), formData.get('tz')),
+      },
+    }),
+    prisma.linkTranslation.upsert({
+      where: { linkId_locale: { linkId, locale } },
+      create: { linkId, locale, title },
+      update: { title },
+    }),
+  ]);
   redirect(await dash(uiLocale));
 }
 

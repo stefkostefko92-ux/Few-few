@@ -88,7 +88,8 @@ export async function loadProfileBy(where: Prisma.ProfileWhereUniqueInput) {
       translations: true,
       links: {
         where: { active: true },
-        orderBy: { position: 'asc' },
+        // Същият ред като в таблото (равни позиции → по създаване).
+        orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
         include: { translations: true },
       },
       // Само продукти с линк за плащане на създателя (решение О-1).
@@ -174,6 +175,7 @@ export async function ProfileScreen({
   voted,
   booked,
   bookError,
+  preview = false,
 }: {
   profile: LoadedProfile;
   hl?: string;
@@ -185,6 +187,8 @@ export async function ProfileScreen({
   voted?: string;
   booked?: string;
   bookError?: string;
+  /** Жив преглед от таблото: не се брои посещение, нищо не е кликаемо. */
+  preview?: boolean;
 }) {
   const slug = profile.slug;
   const available = profile.translations.map((t) => t.locale);
@@ -215,8 +219,9 @@ export async function ProfileScreen({
     namespace: 'profile',
   });
 
-  // Преглед на страницата — без бисквитки, без лични данни.
-  await prisma.clickEvent
+  // Преглед на страницата — без бисквитки, без лични данни. Прегледът от
+  // таблото не е посещение.
+  if (!preview) await prisma.clickEvent
     .create({
       data: {
         profileId: profile.id,
@@ -467,6 +472,10 @@ export async function ProfileScreen({
         fontFamily: fontFamily(styleCfg),
       }}
     >
+      {preview && (
+        // Прегледът е само за гледане: без кликове (не се броят) и без формуляри.
+        <style>{'main a,main button,main input,main textarea,main select,main summary,main iframe{pointer-events:none}'}</style>
+      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

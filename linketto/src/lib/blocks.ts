@@ -303,3 +303,77 @@ export function pickMusicTarget(
   if (service === 'apple' && meta?.apple) return meta.apple;
   return fallback ?? meta?.spotify ?? meta?.apple ?? null;
 }
+
+/** Кои полета на формата ползва даден вид блок (за формата за редакция). */
+export function blockFieldsFor(kind: string): { url: boolean; extra1: boolean; extra2: boolean; options: boolean } {
+  switch (kind) {
+    case 'LINK':
+    case 'TIP':
+    case 'VIDEO':
+    case 'PHONE':
+    case 'MAP':
+      return { url: true, extra1: false, extra2: false, options: false };
+    case 'APP':
+    case 'VCARD':
+      return { url: true, extra1: true, extra2: true, options: false };
+    case 'MUSIC':
+      return { url: true, extra1: true, extra2: false, options: false };
+    case 'POLL':
+      return { url: false, extra1: false, extra2: false, options: true };
+    default:
+      return { url: false, extra1: false, extra2: false, options: false };
+  }
+}
+
+/**
+ * Обратното на parseBlockInput: стойностите за формата за редакция от записания
+ * блок. parseBlockInput(blockFormValues(x)) връща същите url/meta (тест) —
+ * запис без промяна не разваля блока.
+ */
+export function blockFormValues(link: { kind: string; url: string | null; meta: unknown }): {
+  url: string;
+  extra1: string;
+  extra2: string;
+  options: string;
+  color: string;
+  featured: boolean;
+} {
+  const meta = (link.meta && typeof link.meta === 'object' ? link.meta : {}) as BlockMeta;
+  const out = {
+    url: '',
+    extra1: '',
+    extra2: '',
+    options: Array.isArray(meta.options) ? meta.options.join('\n') : '',
+    color: typeof meta.color === 'string' ? meta.color : '',
+    featured: meta.featured === true,
+  };
+  switch (link.kind) {
+    case 'PHONE':
+      out.url = (link.url ?? '').replace(/^tel:/, '');
+      break;
+    case 'MAP':
+      try {
+        out.url = link.url ? (new URL(link.url).searchParams.get('q') ?? '') : '';
+      } catch {
+        out.url = '';
+      }
+      break;
+    case 'APP':
+      out.url = link.url ?? '';
+      out.extra1 = meta.ios ?? '';
+      out.extra2 = meta.android ?? '';
+      break;
+    case 'VCARD':
+      out.url = meta.phone ?? '';
+      out.extra1 = meta.email ?? '';
+      out.extra2 = meta.org ?? '';
+      break;
+    case 'MUSIC':
+      out.url = meta.spotify ?? '';
+      out.extra1 = meta.apple ?? '';
+      break;
+    default:
+      out.url = link.url ?? '';
+  }
+  return out;
+}
