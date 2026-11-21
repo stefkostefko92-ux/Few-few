@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
+import { LxPage } from '@/components/landing/LxPage';
 import { LegalDoc } from '@/components/LegalDoc';
 import type { Locale } from '@/i18n/locales';
 
@@ -12,9 +12,9 @@ export default async function PrivacyPage({
   const t = await getTranslations('legal');
   return (
     <>
-      <SiteHeader locale={locale as Locale} />
+      <LxPage locale={locale as Locale} currentPath="/privacy">
       <LegalDoc title={t('privacyTitle')} body={t('privacyBody')} />
-      <SiteFooter locale={locale as Locale} currentPath="/privacy" />
+      </LxPage>
     </>
   );
 }

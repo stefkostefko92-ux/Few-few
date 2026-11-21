@@ -40,7 +40,9 @@ html:has(.lx) {
 .lx *::after {
   box-sizing: border-box;
 }
-.lx a {
+/* :where — нулева специфичност: utility класовете на общите компоненти (бутон-линк
+   с text-accent-fg) печелят; иначе текстът на лайм бутон става бял. */
+:where(.lx) a {
   color: inherit;
   text-decoration: none;
 }
@@ -1617,4 +1619,129 @@ html[dir='rtl'] .lx-track {
     inset-inline-end: 0.6rem;
     padding: 0.55rem 0.8rem;
   }
+}
+
+/* ═══ Вътрешните публични страници (LxPage) ═════════════════════════════
+   Инструменти, сравнения, правни, вход/регистрация, 404 — същият свят като
+   лендинга, но статичен (без шейдър и без автоматично движение → не им трябва
+   бутон за пауза). Общите компоненти вътре ползват тъмните токени; акцентът
+   им става лайм, за да говорят на езика на кампанията. */
+.lx[data-theme='dark'],
+.lx-foot[data-theme='dark'] {
+  --c-bg: 9 6 15;
+  --c-s1: 18 13 28;
+  --c-s2: 24 18 37;
+  --c-s3: 34 26 50;
+  --c-line: 46 37 64;
+  --c-line-strong: 64 52 88;
+  --c-accent: 214 255 61;
+  --c-accent-hover: 226 255 112;
+  --c-accent-active: 196 236 40;
+  --c-accent-fg: 9 6 15;
+  --c-accent-text: 214 255 61;
+  --c-accent-soft: 35 42 10;
+  --c-accent-soft-fg: 226 255 112;
+  --c-ring: 214 255 61;
+}
+.lx-skip {
+  position: absolute;
+  inset-inline-start: 1rem;
+  inset-block-start: 0.6rem;
+  z-index: 60;
+  translate: 0 -5rem;
+  background: var(--lime);
+  color: var(--ink) !important;
+  font-weight: 800;
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.4rem;
+}
+.lx-skip:focus-visible {
+  translate: 0 0;
+}
+.lx-nav-main {
+  gap: 1.4rem;
+}
+@media (max-width: 62rem) {
+  .lx-nav-main {
+    display: none;
+  }
+}
+.lx-page {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+.lx-page > main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+}
+.lx-page-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(40rem 26rem at 88% -4rem, rgba(255, 45, 149, 0.42), transparent 70%),
+    radial-gradient(36rem 24rem at -6% 10rem, rgba(43, 59, 255, 0.45), transparent 70%),
+    radial-gradient(26rem 18rem at 70% 34rem, rgba(122, 43, 255, 0.28), transparent 70%),
+    var(--ink);
+}
+.lx-page-bg .lx-grain {
+  z-index: 1;
+}
+
+/* ── ToolPage в света LX ─────────────────────────────────────────────── */
+.lx-tool-hero {
+  padding-block: clamp(3rem, 8vw, 6.5rem) clamp(2rem, 5vw, 3.5rem);
+}
+.lx-tool-h1 {
+  font-size: clamp(2.4rem, 6vw, 5.2rem);
+  color: #fff;
+  max-width: 18ch;
+}
+.lx-tool-h1 em {
+  font-style: normal;
+  color: var(--lime);
+}
+.lx-tool-intro {
+  margin-block-start: 1.4rem;
+  max-width: 44rem;
+  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.78);
+}
+.lx-tool-body {
+  padding-block-end: clamp(3rem, 7vw, 5rem);
+}
+.lx-tool-card {
+  border: 2px solid rgba(255, 255, 255, 0.14);
+  border-radius: 1.4rem;
+  background: rgba(18, 13, 28, 0.86);
+  backdrop-filter: blur(10px);
+  box-shadow: 0.55rem 0.55rem 0 var(--pink);
+  padding: clamp(1.25rem, 3.5vw, 2.5rem);
+}
+.lx-tool-cta {
+  position: relative;
+  z-index: 1;
+  background: var(--lime);
+  color: var(--ink);
+  padding-block: clamp(3rem, 7vw, 5.5rem);
+  border-block-start: 3px solid var(--ink);
+}
+.lx-tool-cta h2 {
+  font-size: clamp(2rem, 4.6vw, 3.8rem);
+  max-width: 20ch;
+}
+.lx-tool-cta p {
+  margin-block-start: 1rem;
+  max-width: 40rem;
+  font-size: 1.1rem;
+  line-height: 1.55;
+  color: rgba(9, 6, 15, 0.78);
+}
+.lx-tool-cta .lx-btn {
+  margin-block-start: 2rem;
 }

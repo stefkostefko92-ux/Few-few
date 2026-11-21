@@ -21,7 +21,7 @@ export { Table, TBody, TD, TH, THead, TR } from '@/components/ui/Table';
 export { ThemeToggle } from '@/components/ui/ThemeToggle';
 export { ThemeScript } from '@/components/ui/ThemeScript';
 export { Container } from '@/components/ui/Container';
-export { Logo, LogoMark } from '@/components/ui/Logo';
+export { Logo } from '@/components/ui/Logo';
 export { PageHeader } from '@/components/ui/PageHeader';
 export { Sidebar } from '@/components/ui/Sidebar';
 export type { SidebarGroup, SidebarItem } from '@/components/ui/Sidebar';

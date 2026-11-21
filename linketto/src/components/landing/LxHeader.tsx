@@ -6,16 +6,26 @@ import { getSessionUser } from '@/lib/auth';
 import { logoutAction } from '@/app/actions/auth';
 import { LanguageMenu } from '@/components/LanguageMenu';
 
-// Хедърът на лендинга: тъмно стъкло върху шейдъра. Същата логика като
-// общия SiteHeader (вход/регистрация/табло), друг облик.
+// Хедърът на публичния сайт (лендинг, инструменти, сравнения, правни, вход):
+// тъмно стъкло, логото от лендинга. Вход/регистрация или табло/изход;
+// на мобилно основната навигация е във футъра.
 export async function LxHeader({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: 'nav' });
   const tCommon = await getTranslations({ locale, namespace: 'common' });
   const user = await getSessionUser();
+  const links = [
+    { href: `/${locale}#features`, label: t('features') },
+    { href: `/${locale}#pricing`, label: t('pricing') },
+    { href: `/${locale}#faq`, label: t('faq') },
+    { href: `/${locale}/tools`, label: t('tools') },
+  ];
   return (
     <header className="lx-header">
+      <a href="#main" className="lx-skip">
+        {t('skip')}
+      </a>
       <div className="lx-wrap lx-header-in">
-        <Link href={`/${locale}`} className="flex items-center">
+        <Link href={`/${locale}`} className="flex items-center" aria-label={tCommon('appName')}>
           <Image
             src="/logo.png"
             alt={tCommon('appName')}
@@ -25,7 +35,14 @@ export async function LxHeader({ locale }: { locale: Locale }) {
             className="lx-logo"
           />
         </Link>
-        <nav className="lx-nav">
+        <nav aria-label={t('main')} className="lx-nav lx-nav-main">
+          {links.map((link) => (
+            <Link key={link.href} href={link.href}>
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+        <div className="lx-nav">
           <LanguageMenu locale={locale} label={t('language')} />
           {user ? (
             <>
@@ -49,7 +66,7 @@ export async function LxHeader({ locale }: { locale: Locale }) {
               </Link>
             </>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );
