@@ -28,7 +28,9 @@ import { createHash } from "node:crypto";
 import { isTestFile } from "../lib/audit-patterns.mjs";
 import { isMain } from "../lib/is-main.mjs";
 
-export const CODE_EXT = new Set([".js", ".mjs", ".cjs", ".ts", ".tsx", ".jsx", ".mts", ".cts"]);
+// PHP (21.11.2026): PHP тестовете се броят, затова и PHP кодът влиза в знаменателя (иначе делът се изкривява).
+export const CODE_EXT = new Set([".js", ".mjs", ".cjs", ".ts", ".tsx", ".jsx", ".mts", ".cts", ".php"]);
+const isCode = (p) => CODE_EXT.has(extname(p)) && !GENERATED.test(p);
 export const BLOCK = 8;
 export const BIG = 600;
 const MAX_BYTES = 300_000;
@@ -64,13 +66,26 @@ export function normalize(line) {
   return t;
 }
 
+/**
+ * Значещите редове на файл ({ n, line }). Многоредовият `import {…} from` / `export {…} from` се пропуска цял:
+ * `normalize` вижда само ред по ред и броеше елементите му за код (ревю 21.11.2026 — rilievi, zabobovdol).
+ */
+export function significantRows(text) {
+  const rows = [];
+  let inImport = false;
+  text.split("\n").forEach((l, i) => {
+    const t = l.trim();
+    if (inImport) { if (/\bfrom\s*["'`]|^\}\s*;?$/.test(t)) inImport = false; return; }
+    if (/^(import|export)\s*(type\s*)?\{[^}]*$/.test(t) && (t.startsWith("import") || !/=/.test(t))) { inImport = true; return; }
+    const n = normalize(l);
+    if (n) rows.push({ n, line: i + 1 });
+  });
+  return rows;
+}
+
 /** Дублирани блокове: files = [{ path, text }] → [{ lines, at: ["път:ред", …] }], най-дългите първи. */
 export function duplicateBlocks(files, block = BLOCK) {
-  const seq = files.map((f) => {
-    const rows = [];
-    f.text.split("\n").forEach((l, i) => { const n = normalize(l); if (n) rows.push({ n, line: i + 1 }); });
-    return { path: f.path, rows };
-  });
+  const seq = files.map((f) => ({ path: f.path, rows: significantRows(f.text) }));
   const hashAt = (rows, i) => createHash("sha1").update(rows.slice(i, i + block).map((r) => r.n).join("\n")).digest("hex");
   const seen = new Map();
   for (const f of seq) for (let i = 0; i + block <= f.rows.length; i++) {
@@ -100,34 +115,56 @@ export function duplicateBlocks(files, block = BLOCK) {
 }
 
 const relOf = (p) => p.split("/").slice(1).join("/");
+const topOf = (p) => p.split("/")[1] ?? "";
 const noExt = (p) => p.slice(0, p.length - extname(p).length);
+const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/** Път в текст по граница: „src/util“ не е в „src/utils/…“ (ревю 21.11.2026, проба C). */
+const hasPath = (t, frag) => new RegExp(`(^|[^\\w-])${esc(frag)}(?=$|[^\\w-])`).test(t);
+/** Името на файла като токен — в кавички или пред точка, не подниз („it“ в `it(`, проба B). */
+const hasBase = (t, base) => new RegExp(`["'\`/]${esc(base)}(\\.|["'\`])`).test(t);
 
-/** Копието е назовано от тест: пълният път без разширение или папката (≥3 нива) + името на файла. */
-function namedByTest(path, testTexts) {
+/** Тестът назовава копието: пълният път без разширение или папката (≥3 нива) + името като токен. */
+function names(t, path) {
   const rel = relOf(path), dir = dirname(rel), base = noExt(basename(rel));
-  return testTexts.some((t) => t.includes(noExt(rel)) || (dir.split("/").length >= 3 && t.includes(dir) && t.includes(base)));
+  return hasPath(t, noExt(rel)) || (dir.split("/").length >= 3 && hasPath(t, dir) && hasBase(t, base));
 }
 
-/** Огледала: цели файлове с еднакво значещо съдържание (≥ BLOCK реда) на различни места. */
-export function mirrorGroups(src, testTexts) {
+/**
+ * Огледалата са под тест, когато тест от едно копие гледа КЪМ другите (паритет през границата): копията, които
+ * тестът назовава извън своята първа папка, плюс копието в неговата папка. Тест до собственото си копие не
+ * пази двойката (ревю 21.11.2026, проба A — правилото „n−1 назовани“ даваше фалшиво „под тест“).
+ */
+export function guardedBy(at, tests) {
+  const covered = new Set();
+  for (const t of tests) {
+    const cross = at.filter((p) => topOf(p) !== topOf(t.path) && names(t.text, p));
+    if (!cross.length) continue;
+    for (const p of cross) covered.add(p);
+    for (const p of at) if (topOf(p) === topOf(t.path)) covered.add(p);
+  }
+  return at.every((p) => covered.has(p));
+}
+
+/** Огледала: цели файлове с еднакъв суров текст (без крайните интервали), ≥ BLOCK значещи реда. */
+export function mirrorGroups(src, tests) {
   const by = new Map();
   for (const f of src) {
-    const rows = f.text.split("\n").map(normalize).filter(Boolean);
-    if (rows.length < BLOCK) continue;
-    const h = createHash("sha1").update(rows.join("\n")).digest("hex");
+    if (significantRows(f.text).length < BLOCK) continue;
+    const h = createHash("sha1").update(f.text.replace(/[ \t]+$/gm, "")).digest("hex");
     by.set(h, [...(by.get(h) || []), f.path]);
   }
-  return [...by.values()].filter((g) => g.length > 1).map((at) => ({ at, guarded: at.filter((p) => namedByTest(p, testTexts)).length >= at.length - 1 }));
+  return [...by.values()].filter((g) => g.length > 1).map((at) => ({ at, guarded: guardedBy(at, tests), lines: significantRows(src.find((f) => f.path === at[0]).text).length }));
 }
 
 /** Отчет за един продукт от списък { path, text }. */
 export function productReport(files, { top = 5, staticGate = false } = {}) {
-  const ours = files.filter((f) => !GENERATED.test(f.path));
-  const generated = ours.filter((f) => CODE_EXT.has(extname(f.path)) && isGenerated(f.text));
-  const code = ours.filter((f) => CODE_EXT.has(extname(f.path)) && !isGenerated(f.text));
-  const tests = ours.filter((f) => isHygieneTest(f.path) && (CODE_EXT.has(extname(f.path)) || extname(f.path) === ".php"));
+  const all = files.filter((f) => isCode(f.path));
+  const generated = all.filter((f) => isGenerated(f.text));
+  const code = all.filter((f) => !isGenerated(f.text));
+  const tests = code.filter((f) => isHygieneTest(f.path));
   const src = code.filter((f) => !isHygieneTest(f.path));
-  const mirrors = mirrorGroups(src, tests.map((t) => t.text));
+  const mirrors = mirrorGroups(src, tests);
+  const loose = mirrors.filter((m) => !m.guarded);
   const copies = new Set(mirrors.flatMap((m) => m.at.slice(1)));
   const uniq = src.filter((f) => !copies.has(f.path)); // всяко огледало веднъж
   const debt = [];
@@ -139,9 +176,10 @@ export function productReport(files, { top = 5, staticGate = false } = {}) {
     generated: generated.length,
     debt: debt.length, debtAt: debt.slice(0, top),
     big: big.length, bigAt: big.slice(0, top),
-    dups: dups.length, dupLines: dups.reduce((a, d) => a + d.lines, 0), dupAt: dups.slice(0, top),
-    mirrors: mirrors.length, mirrorsUnguarded: mirrors.filter((m) => !m.guarded).length,
-    mirrorAt: mirrors.sort((a, b) => Number(a.guarded) - Number(b.guarded)).slice(0, top),
+    // Огледало без тест е сигнал → влиза в заглавното число (ревю 21.11.2026), блоковете остават в dupAt.
+    dups: dups.length + loose.length, dupLines: dups.reduce((a, d) => a + d.lines, 0) + loose.reduce((a, m) => a + m.lines, 0), dupAt: dups.slice(0, top),
+    mirrors: mirrors.length, mirrorsUnguarded: loose.length,
+    mirrorAt: [...mirrors].sort((a, b) => Number(a.guarded) - Number(b.guarded)).slice(0, top),
   };
 }
 
@@ -165,7 +203,7 @@ function workflows(root) {
 function load(root, product) {
   const out = [];
   for (const p of tracked(root, product)) {
-    if ((!CODE_EXT.has(extname(p)) && !(extname(p) === ".php" && isHygieneTest(p))) || GENERATED.test(p)) continue;
+    if (!isCode(p)) continue;
     try { if (statSync(join(root, p)).size > MAX_BYTES) continue; out.push({ path: p, text: readFileSync(join(root, p), "utf8") }); } catch { /* изтрит в работното дърво */ }
   }
   return out;
