@@ -696,9 +696,15 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
     if (count !== 1) return 'unchanged';
     deps.log(`[plan-order] спор ${dispute.id}: ${dispute.state} (поръчка ${planOrder?.id ?? '—'})`);
     // А4: спорът сторнира бонуса по поръчката; спечелен („won“) го връща в задържане (ОУ).
+    // Закъсняло „needs_response“/„under_review“ след „won“ за същия спор (разменени уебхуци)
+    // не сторнира; „lost“ (напр. арбитраж след „won“) — да.
+    const alreadyWon =
+      planOrder && (dispute.state === 'needs_response' || dispute.state === 'under_review')
+        ? (await db.revolutDispute.count({ where: { disputeId: dispute.id, state: 'won' } })) > 0
+        : false;
     if (planOrder && dispute.state === 'won') {
       await db.$transaction((tx) => restoreDisputedReferral(tx, planOrder.id));
-    } else if (planOrder) {
+    } else if (planOrder && !alreadyWon) {
       const reversed = await db.$transaction((tx) => reverseReferralBonus(tx, planOrder.id, 'dispute'));
       if (reversed === 'released') {
         await deps

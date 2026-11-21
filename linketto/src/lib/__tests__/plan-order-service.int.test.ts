@@ -889,3 +889,17 @@ test('А4в: „won“ по поръчка, върната междувреме�
   assert.ok(r.reversedAt, 'не е върнат в задържане');
   assert.equal(r.reversalReason, 'refund');
 });
+
+test('А4в: „won“ пристигнал преди „needs_response“ (разменени уебхуци) → бонусът не се сторнира', { skip }, async () => {
+  const referrer = await mkUser();
+  const user = await mkUser({ referredById: referrer.id });
+  const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: order.id });
+  const id = `dsp-int-${randomUUID()}`;
+  disputes.set(id, disputeFor(order.revolutOrderId as string, 'won', { id }));
+  assert.equal(await service.recordDispute(id), 'recorded');
+  disputes.set(id, disputeFor(order.revolutOrderId as string, 'needs_response', { id }));
+  assert.equal(await service.recordDispute(id), 'recorded');
+  const r = await db.referral.findUniqueOrThrow({ where: { planOrderId: order.id } });
+  assert.equal(r.reversedAt, null, 'спорът вече е спечелен — закъснялото „needs_response“ не сторнира');
+});

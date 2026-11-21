@@ -13,7 +13,9 @@ import { requestCountry } from '@/lib/geoip';
 export const dynamic = 'force-dynamic';
 
 // Медиа китът е частен документ за брандове — не се индексира.
-export const metadata: Metadata = { robots: { index: false, follow: false } };
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  return { title: `Media kit · @${(await params).slug} · Linketto`, robots: { index: false, follow: false } };
+}
 
 const WINDOW_DAYS = 30;
 

@@ -19,7 +19,8 @@ export async function requireAdmin(uiLocale: string) {
     case 'ok':
       return active.user;
     case 'not-admin':
-      redirect(`/${uiLocale}/login`);
+      // Влязъл, но не е админ → таблото (не входа, където вече е влязъл).
+      redirect(`/${uiLocale}/dashboard`);
     case 'verify-email':
       redirect(`/${uiLocale}/dashboard/security?need=verify`);
     case 'enroll-2fa':

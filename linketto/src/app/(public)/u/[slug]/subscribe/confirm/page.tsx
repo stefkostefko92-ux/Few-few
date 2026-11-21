@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import { NewsletterTokenPage } from '@/components/newsletter/NewsletterTokenPage';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { robots: { index: false } };
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  return { title: `@${(await params).slug} · Linketto`, robots: { index: false } };
+}
 
 export default async function Page({
   params,

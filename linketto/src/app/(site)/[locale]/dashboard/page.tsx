@@ -2421,7 +2421,8 @@ export default async function DashboardPage({
                     </label>
                     <button
                       type="submit"
-                      className={buttonStyles({ variant: 'secondary' })}
+                      // Дългият надпис се пренася на телефон (иначе излиза 12 px вдясно).
+                      className={buttonStyles({ variant: 'secondary', className: 'w-full whitespace-normal text-center sm:w-auto' })}
                     >
                       {t('buyFounder', { price: `€${(PLANS.FOUNDER.priceCents / 100).toFixed(0)}` })}
                     </button>

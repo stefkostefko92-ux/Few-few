@@ -11,7 +11,10 @@ import { submitReportAction } from '@/app/actions/report';
 // DSA чл. 16: страница „Докладвай този профил“. Не се индексира.
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = { robots: { index: false } };
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  // Заглавие без език (страницата избира езика по ?hl/Accept-Language) — axe: document-title.
+  return { title: `@${(await params).slug} · Linketto`, robots: { index: false } };
+}
 
 export default async function ReportPage({
   params,

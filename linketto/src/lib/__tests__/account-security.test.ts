@@ -73,3 +73,11 @@ test('защитен админ = адрес от списъка + потвър�
   assert.equal(isWorkingAdmin({ email: 'owner@example.com', emailVerifiedAt: at, totpEnabledAt: null }, env), true);
   assert.equal(isWorkingAdmin({ email: 'x@y.eu', emailVerifiedAt: at, totpEnabledAt: at }, env), false);
 });
+
+test('потвърждение на имейл: само в сесията на същия потребител — за всеки адрес (Н8)', async () => {
+  const { verifyEmailAllowed } = await import('../verify-email-policy');
+  assert.equal(verifyEmailAllowed('u1', 'u1'), true);
+  assert.equal(verifyEmailAllowed('u1', null), false, 'без сесия (скенер в пощата) — не');
+  assert.equal(verifyEmailAllowed('u1', undefined), false);
+  assert.equal(verifyEmailAllowed('u1', 'u2'), false, 'чужда сесия — не');
+});

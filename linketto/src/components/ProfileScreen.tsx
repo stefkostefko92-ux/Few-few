@@ -1317,7 +1317,7 @@ export async function ProfileScreen({
             href="https://db-ip.com"
             rel="nofollow noopener"
             target="_blank"
-            className="pf-muted inline-flex min-h-10 items-center px-3 text-[11px] opacity-70 underline-offset-4 hover:underline"
+            className="pf-muted inline-flex min-h-10 items-center px-3 text-[11px] underline-offset-4 hover:underline"
           >
             IP Geolocation by DB-IP
           </a>
