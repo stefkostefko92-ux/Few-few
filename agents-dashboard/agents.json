@@ -11481,7 +11481,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 261
+        "lessons": 263
       },
       "evolution": [
         {
@@ -11957,9 +11957,20 @@
           "date": "2026-11-21",
           "event": "v25.1 — учене",
           "detail": "Научи: При html със scroll-behavior:smooth скрийншот 300ms след scrollIntoView хваща скрола по… (+1 още)"
+        },
+        {
+          "version": "25.3.0",
+          "date": "2026-11-21",
+          "event": "v25.3 — учене",
+          "detail": "Научи: В linketto неслойовият CSS на globals.css бие Tailwind utilities в @layer, затова на кл… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-21",
+          "type": "learning",
+          "summary": "Научи: „В linketto неслойовият CSS на globals.css бие Tailwind utilities в @layer, затова на кл…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-21",
           "type": "learning",
