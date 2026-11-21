@@ -7,7 +7,21 @@
     "login": "Kirjaudu",
     "register": "Luo tili",
     "dashboard": "Hallinta",
-    "logout": "Kirjaudu ulos"
+    "logout": "Kirjaudu ulos",
+    "features": "Ominaisuudet",
+    "pricing": "Hinnat",
+    "faq": "UKK",
+    "tools": "Työkalut",
+    "menu": "Valikko",
+    "closeMenu": "Sulje valikko",
+    "language": "Kieli",
+    "main": "Päänavigaatio",
+    "skip": "Siirry sisältöön",
+    "theme": "Teema",
+    "themeLight": "Vaalea",
+    "themeDark": "Tumma",
+    "themeSystem": "Järjestelmä",
+    "onThisPage": "Tällä sivulla"
   },
   "home": {
     "heroTitle": "Yksi linkki biossa. Kaikki maailman kielet.",
@@ -61,7 +75,14 @@
     "featureFeeBody": "Myyt oman maksulinkkisi kautta (Revolut, PayPal ja muut) — rahat menevät suoraan sinulle, eikä Linketto ota niistä osuutta. Maksupalveluntarjoajasi omat maksut ovat edelleen voimassa sen ehtojen mukaan.",
     "statsFeeLabel": "Linketton osuus myynnistäsi",
     "faq5q": "Voinko myydä tuotteita sivultani?",
-    "trustPayments": "Pakettien maksut Revolut Bank UAB:n kautta (luvanvarainen pankki EU:ssa)"
+    "trustPayments": "Pakettien maksut Revolut Bank UAB:n kautta (luvanvarainen pankki EU:ssa)",
+    "resumeMotion": "Jatka animaatiota",
+    "lxStripHint": "Jatka vierittämistä — nauha liikkuu",
+    "lxStatsTitle": "Linketto lukuina",
+    "demoLabel": "Esimerkki: yksi profiili, monta kieltä",
+    "factsLabel": "Linketto lukuina",
+    "heroNote": "Ilmainen. Ei luottokorttia.",
+    "manifestoLabel": "Lupauksemme"
   },
   "pricing": {
     "title": "Yksinkertaiset, rehelliset hinnat",
@@ -377,7 +398,28 @@
     "withdrawName": "Nimi",
     "withdrawNameError": "Kirjoita nimesi.",
     "withdrawConfirm": "Vahvista peruuttaminen",
-    "withdrawPaidOn": "maksettu {date}"
+    "withdrawPaidOn": "maksettu {date}",
+    "themeName_aurora": "Revontulet",
+    "themeName_mono": "Mono",
+    "themeName_dusk": "Hämärä",
+    "themeName_editorial": "Toimitus",
+    "themeName_midnight": "Grafiitti",
+    "themeName_sand": "Hiekka",
+    "themeName_cobalt": "Koboltti",
+    "themeName_chrome": "Kromi",
+    "themeName_acid": "Happo",
+    "themeName_auto": "Automaattinen (vaalea ja tumma)",
+    "navGroupProfile": "Profiili",
+    "navGroupGrowth": "Kasvu",
+    "navGroupSales": "Myynti",
+    "navGroupAccount": "Tili",
+    "navHome": "Hallinta",
+    "viewPage": "Näytä sivu",
+    "pageIntro": "Profiilisi, linkkisi ja yleisösi yhdessä paikassa.",
+    "analyticsIntro": "Miten kävijäsi toimivat — ilman evästeitä ja henkilötietoja.",
+    "withdrawIntro2": "Toinen ja viimeinen vaihe: vahvista sopimuksen peruuttaminen.",
+    "navMessages": "Viestit",
+    "navAudience": "Yleisö"
   },
   "profile": {
     "poweredBy": "Tehty Linkettolla",
@@ -425,7 +467,10 @@
     "contact": "info@carbonstealth.eu",
     "cookies": "Evästeet",
     "tools": "Ilmaiset työkalut",
-    "compare": "Linketto vs Linktree"
+    "compare": "Linketto vs Linktree",
+    "product": "Tuote",
+    "legal": "Oikeudelliset tiedot",
+    "languages": "Kielet"
   },
   "seo": {
     "metaTitle": "Linketto — monikielinen link in bio: kaikki linkkisi, jokaisella kielellä",

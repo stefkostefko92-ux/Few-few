@@ -1,0 +1,1620 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   LX — лендингът на Linketto като модна кампания.
+   Собствен свят: токени и класове с префикс .lx — не пипат таблото/админа.
+   Без SVG: само типография, CSS градиенти, 3D transforms, clip-path,
+   mix-blend-mode, scroll-driven анимации и един суров WebGL2 шейдър.
+
+   Анти-строб (WCAG 2.3.1): никое нещо не променя яркост на голяма площ
+   по-бързо от ~0,2 Hz; глич ефектите са ПРОСТРАНСТВЕНИ (отместване на
+   цветни призраци през clip-path/transform), не светкавици.
+   Решение на собственика: няма reduced-motion затихване; остава бутонът
+   „Спри движението“ (WCAG 2.2.2), който паузира всички .lx-auto
+   анимации и шейдъра.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.lx {
+  --ink: #09060f;
+  --pink: #ff2d95;
+  --cobalt: #2b3bff;
+  --lime: #d6ff3d;
+  --chrome: #e8e6f4;
+  --bubble: #ffb4e2;
+  --violet: #7a2bff;
+  --paper: #f4f2fa;
+  --focus: var(--lime);
+  --ease-out: cubic-bezier(0.2, 0.9, 0.2, 1);
+
+  position: relative;
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  overflow-x: clip;
+  isolation: isolate;
+}
+html:has(.lx) {
+  background: #09060f;
+  scroll-behavior: smooth;
+}
+.lx *,
+.lx *::before,
+.lx *::after {
+  box-sizing: border-box;
+}
+.lx a {
+  color: inherit;
+  text-decoration: none;
+}
+.lx :focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.lx ::selection {
+  background: var(--pink);
+  color: var(--ink);
+}
+.lx-wrap {
+  width: min(100% - 3rem, 86rem);
+  margin-inline: auto;
+}
+.lx-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: url('/lx-grain.png') 0 0 / 160px 160px;
+  opacity: 0.16;
+  mix-blend-mode: overlay;
+  z-index: 3;
+}
+
+/* ── Типографски примитиви ──────────────────────────────────────────── */
+.lx-display {
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 0.9;
+  text-wrap: balance;
+  font-kerning: none;
+}
+.lx-h2 {
+  font-size: clamp(2.7rem, 8.4vw, 8.6rem);
+}
+.lx-line {
+  position: relative;
+  display: block;
+  white-space: normal;
+  clip-path: inset(-0.05em -0.3em -0.14em -0.3em);
+}
+.lx-w {
+  display: inline-block;
+  white-space: nowrap;
+}
+.lx-ch {
+  display: inline-block;
+  transform-origin: 50% 90%;
+  animation: lx-rise 0.9s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 16ms);
+  transition:
+    transform 0.9s var(--ease-out),
+    color 0.9s ease;
+}
+/* ако JS/CSS анимацията не стартира, буквите си остават на мястото */
+@keyframes lx-rise {
+  from {
+    transform: translateY(62%) rotate(7deg);
+  }
+  to {
+    transform: none;
+  }
+}
+/* следа от мастило: буквата подскача и се връща бавно */
+@media (hover: hover) {
+  .lx-line .lx-ch:hover {
+    transform: translateY(-0.07em) skewX(-9deg);
+    color: var(--pink);
+    transition-duration: 0.12s;
+  }
+}
+
+/* RGB split: два цветни призрака, отместени и режещи се през лента,
+   която бавно пътува нагоре-надолу по реда. Само transform + clip-path. */
+.lx-split::before,
+.lx-split::after {
+  content: attr(data-text);
+  content: attr(data-text) / '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  font-kerning: none;
+  text-wrap: balance;
+  animation-duration: 9s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+.lx-split::before {
+  color: #ff2d95;
+  animation-name: lx-ghost-a;
+}
+.lx-split::after {
+  color: #28e0ff;
+  animation-name: lx-ghost-b;
+}
+@keyframes lx-ghost-a {
+  0%,
+  100% {
+    transform: translate(-0.012em, 0);
+    clip-path: inset(8% 0 78% 0);
+  }
+  30% {
+    transform: translate(-0.04em, 0.006em);
+    clip-path: inset(34% 0 44% 0);
+  }
+  60% {
+    transform: translate(-0.02em, -0.004em);
+    clip-path: inset(66% 0 14% 0);
+  }
+}
+@keyframes lx-ghost-b {
+  0%,
+  100% {
+    transform: translate(0.012em, 0);
+    clip-path: inset(72% 0 12% 0);
+  }
+  35% {
+    transform: translate(0.045em, -0.006em);
+    clip-path: inset(40% 0 38% 0);
+  }
+  65% {
+    transform: translate(0.02em, 0.004em);
+    clip-path: inset(10% 0 74% 0);
+  }
+}
+/* призраците вървят едва след като буквите са кацнали */
+.lx-split::before,
+.lx-split::after {
+  animation-delay: 1.6s;
+  opacity: 0.9;
+}
+
+/* ── Пауза (WCAG 2.2.2): спира всичко, което върви само ─────────────── */
+.lx[data-lx-motion='off'] .lx-auto,
+.lx[data-lx-motion='off'] .lx-auto::before,
+.lx[data-lx-motion='off'] .lx-auto::after,
+.lx[data-lx-motion='off'] .lx-split::before,
+.lx[data-lx-motion='off'] .lx-split::after {
+  animation-play-state: paused !important;
+}
+.lx-pause {
+  position: fixed;
+  inset-block-end: 1rem;
+  inset-inline-end: 1rem;
+  z-index: 70;
+  cursor: pointer;
+  border: 2px solid var(--pink);
+  border-radius: 999px;
+  background: rgba(9, 6, 15, 0.92);
+  color: #fff;
+  font: 700 0.8rem/1 var(--font-ui), system-ui, sans-serif;
+  padding: 0.7rem 1rem;
+  backdrop-filter: blur(10px);
+  transition:
+    background 0.2s,
+    color 0.2s,
+    transform 0.2s;
+}
+.lx-pause:hover,
+.lx-pause[data-paused='true'] {
+  background: var(--pink);
+  color: var(--ink);
+}
+.lx-pause:focus-visible {
+  outline: 3px solid var(--lime);
+  outline-offset: 3px;
+}
+
+/* ── Прогрес на скрола + курсор ─────────────────────────────────────── */
+.lx-progress {
+  display: none;
+}
+@supports (animation-timeline: scroll()) {
+  .lx-progress {
+    display: block;
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 5px;
+    z-index: 80;
+    background: linear-gradient(90deg, var(--pink), var(--lime), var(--cobalt));
+    transform-origin: 0 50%;
+    animation: lx-scalex linear both;
+    animation-timeline: scroll(root);
+  }
+}
+@keyframes lx-scalex {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.lx-cursor {
+  position: fixed;
+  inset: 0 auto auto 0;
+  width: 2.2rem;
+  height: 2.2rem;
+  margin: -1.1rem 0 0 -1.1rem;
+  border-radius: 50%;
+  background: #fff;
+  mix-blend-mode: difference;
+  pointer-events: none;
+  z-index: 90;
+  opacity: 0;
+  transition:
+    opacity 0.3s,
+    width 0.25s var(--ease-out),
+    height 0.25s var(--ease-out),
+    margin 0.25s var(--ease-out);
+  will-change: transform;
+}
+.lx-cursor.is-live {
+  opacity: 1;
+}
+.lx-cursor.is-big {
+  width: 5rem;
+  height: 5rem;
+  margin: -2.5rem 0 0 -2.5rem;
+}
+
+/* ── Хедър ──────────────────────────────────────────────────────────── */
+.lx-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(9, 6, 15, 0.9);
+  backdrop-filter: blur(14px);
+  border-block-end: 1px solid rgba(255, 255, 255, 0.12);
+}
+.lx-header-in {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.8rem;
+}
+.lx-logo {
+  height: 2.1rem;
+  width: auto;
+  filter: brightness(0) invert(1);
+}
+.lx-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.lx-nav a:not(.lx-btn):hover {
+  color: var(--lime);
+}
+
+/* ── Бутони ─────────────────────────────────────────────────────────── */
+.lx-btn {
+  --bg: var(--pink);
+  --fg: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--fg) !important;
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  padding: 0.85rem 1.5rem;
+  cursor: pointer;
+  position: relative;
+  transform: translate3d(var(--mx, 0px), var(--my, 0px), 0);
+  transition:
+    transform 0.28s var(--ease-out),
+    box-shadow 0.2s;
+  box-shadow: 0.2rem 0.2rem 0 var(--ink);
+}
+.lx-btn:hover {
+  box-shadow: 0.38rem 0.38rem 0 var(--ink);
+}
+.lx-btn-lime {
+  --bg: var(--lime);
+}
+.lx-btn-ink {
+  --bg: var(--ink);
+  --fg: #fff;
+  box-shadow: 0.2rem 0.2rem 0 var(--pink);
+}
+.lx-btn-ink:hover {
+  box-shadow: 0.38rem 0.38rem 0 var(--pink);
+}
+.lx-btn-white {
+  --bg: #fff;
+}
+.lx-btn-sm {
+  padding: 0.6rem 1.1rem;
+  font-size: 0.85rem;
+  box-shadow: none;
+}
+
+/* ═══ HERO ═══════════════════════════════════════════════════════════ */
+.lx-hero {
+  position: relative;
+  min-height: min(100svh, 62rem);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--ink);
+}
+.lx-hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+/* Fallback без WebGL: течен градиент от три слоя, който дрейфва бавно */
+.lx-fallback {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(38% 42% at 70% 38%, rgba(255, 45, 149, 0.95), transparent 70%),
+    radial-gradient(34% 40% at 30% 70%, rgba(43, 59, 255, 0.95), transparent 70%),
+    radial-gradient(26% 30% at 82% 80%, rgba(214, 255, 61, 0.7), transparent 70%),
+    radial-gradient(30% 34% at 18% 22%, rgba(122, 43, 255, 0.9), transparent 70%),
+    var(--ink);
+  animation: lx-drift 26s ease-in-out infinite alternate;
+}
+@keyframes lx-drift {
+  from {
+    transform: translate3d(-3%, -2%, 0) rotate(0deg) scale(1);
+  }
+  to {
+    transform: translate3d(3%, 3%, 0) rotate(14deg) scale(1.12);
+  }
+}
+.lx-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+  transition: opacity 1.6s ease;
+}
+.lx-canvas.is-live {
+  opacity: 1;
+}
+/* Подложка: най-светлият кадър на шейдъра под текста остава ≤ ~0,13 L,
+   така че белият текст държи ≥ 4,5:1 (виж доклада за измерването). */
+.lx-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      70% 90% at 14% 55%,
+      rgba(9, 6, 15, 0.92) 0%,
+      rgba(9, 6, 15, 0.84) 38%,
+      rgba(9, 6, 15, 0.05) 70%
+    ),
+    linear-gradient(to bottom, rgba(9, 6, 15, 0.75), transparent 20%, transparent 72%, var(--ink));
+}
+html[dir='rtl'] .lx-scrim {
+  transform: scaleX(-1);
+}
+.lx-hero-grid {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  align-items: center;
+  gap: 2rem;
+  padding-block: clamp(2rem, 5vw, 4rem) 2rem;
+}
+.lx-hero-copy {
+  position: relative;
+  min-width: 0;
+}
+.lx-sticker {
+  display: inline-block;
+  background: var(--lime);
+  color: var(--ink);
+  font-weight: 800;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.4rem;
+  rotate: -3deg;
+  box-shadow: 0.25rem 0.25rem 0 var(--pink);
+  margin-block-end: 1.6rem;
+  max-width: 100%;
+}
+.lx-h1 {
+  font-size: clamp(2.7rem, 6.3vw, 6.8rem);
+  color: #fff;
+}
+.lx-h1 .lx-line + .lx-line {
+  margin-block-start: 0.12em;
+  font-weight: 300;
+  letter-spacing: -0.05em;
+  color: var(--lime);
+}
+.lx-sub {
+  margin-block-start: 1.6rem;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.5vw, 1.25rem);
+  line-height: 1.55;
+  color: #f1eefa;
+  text-shadow: 0 1px 14px rgba(9, 6, 15, 0.9);
+}
+.lx-hero-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.6rem;
+  margin-block-start: 0.6rem;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+.lx-hero-links a {
+  text-decoration: underline;
+  text-decoration-color: var(--pink);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 0.3em;
+  transition: color 0.2s;
+}
+.lx-hero-links a:hover {
+  color: var(--lime);
+}
+.lx-trust {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem 1.5rem;
+  padding-block: 1.1rem;
+  border-block-start: 2px solid var(--pink);
+  font-weight: 700;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  color: #f1eefa;
+}
+.lx-trust p {
+  margin: 0;
+}
+
+/* Формулярът „Запази си името“ — тежък стикер, не стъклена капсула */
+.lx-claim {
+  width: 100%;
+  max-width: 36rem;
+}
+.lx-claim-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 1.6rem;
+  background: var(--chrome);
+  border: 3px solid var(--ink);
+  box-shadow: 0.4rem 0.4rem 0 var(--pink);
+  transition: box-shadow 0.2s;
+}
+.lx-claim-box:focus-within {
+  box-shadow: 0.4rem 0.4rem 0 var(--lime);
+}
+.lx-claim-field {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+}
+.lx-claim-prefix {
+  flex-shrink: 0;
+  max-width: 55%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #55506a;
+}
+.lx-claim-input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: 800 1.05rem/1.2 var(--font-ui), system-ui, sans-serif;
+}
+.lx-claim-input::placeholder {
+  color: #6b6683;
+  font-weight: 700;
+}
+.lx-claim-input:focus {
+  outline: none;
+}
+.lx-claim-submit {
+  border: 0;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font: 800 1rem/1 var(--font-ui), system-ui, sans-serif;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.lx-claim-submit:hover:not(:disabled) {
+  background: var(--pink);
+  color: var(--ink);
+}
+.lx-claim-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.lx-claim-status {
+  min-height: 1.4rem;
+  margin: 0.55rem 0 0;
+  padding-inline: 0.3rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #d9d4ec;
+  text-shadow: 0 1px 10px var(--ink);
+}
+.lx-claim-status[data-state='available'] {
+  color: var(--lime);
+}
+.lx-claim-status[data-state='bad'] {
+  color: #ffb0cf;
+}
+@media (min-width: 40rem) {
+  .lx-claim-box {
+    flex-direction: row;
+    align-items: center;
+    border-radius: 999px;
+  }
+}
+
+/* ── 3D пръстен от профили, въртящ се около оста Y ───────────────────── */
+.lx-ring-stage {
+  position: relative;
+  height: clamp(22rem, 38vw, 34rem);
+  perspective: 1500px;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+}
+.lx-ring-tilt {
+  transform-style: preserve-3d;
+  transform: rotateX(calc(-14deg + var(--py, 0) * -9deg))
+    rotateY(calc(var(--px, 0) * 14deg)) rotateZ(-4deg);
+  transition: transform 0.4s ease-out;
+}
+.lx-ring {
+  --r: clamp(12rem, 19vw, 19rem);
+  position: relative;
+  width: clamp(10rem, 15vw, 14rem);
+  height: clamp(14rem, 21vw, 19rem);
+  transform-style: preserve-3d;
+  animation: lx-spin 52s linear infinite;
+}
+@keyframes lx-spin {
+  to {
+    transform: rotateY(360deg);
+  }
+}
+.lx-card {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem;
+  border-radius: 1.2rem;
+  border: 3px solid var(--ink);
+  backface-visibility: hidden;
+  transform: rotateY(var(--a)) translateZ(var(--r));
+  box-shadow: 0 1.2rem 2.4rem rgba(0, 0, 0, 0.5);
+}
+.lx-card b {
+  font-size: clamp(1.5rem, 2.6vw, 2.3rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+.lx-card small {
+  display: block;
+  margin-block-start: 0.35rem;
+  font-weight: 800;
+  font-size: 0.78rem;
+}
+.lx-card i {
+  display: block;
+  font-style: normal;
+  font-weight: 800;
+  font-size: 0.78rem;
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  padding: 0.38rem 0.6rem;
+  margin-block-start: 0.35rem;
+  text-align: center;
+}
+.lx-card-0 {
+  background: var(--pink);
+  color: var(--ink);
+}
+.lx-card-1 {
+  background: var(--cobalt);
+  color: #fff;
+}
+.lx-card-2 {
+  background: var(--lime);
+  color: var(--ink);
+}
+.lx-card-3 {
+  background: linear-gradient(135deg, #fff 0%, #b9b5d6 38%, #f4f2ff 58%, #9a96bd 100%);
+  color: var(--ink);
+}
+
+/* ═══ ЛЕНТИ (две пресичащи се) ═══════════════════════════════════════ */
+.lx-ribbons {
+  position: relative;
+  z-index: 4;
+  padding-block: 3.2rem 4.2rem;
+  margin-block-start: -1.2rem;
+  overflow-x: clip;
+}
+.lx-ribbon {
+  position: relative;
+  width: 112%;
+  margin-inline: -6%;
+  overflow: hidden;
+  padding-block: 0.7rem 0.9rem;
+  border-block: 4px solid var(--ink);
+  transform: rotate(var(--rot)) skewX(var(--skew, 0deg));
+}
+.lx-ribbon-a {
+  --rot: -2.6deg;
+  background: var(--pink);
+  color: var(--ink);
+}
+.lx-ribbon-b {
+  --rot: 2.1deg;
+  margin-block-start: -2.4rem;
+  background: var(--lime);
+  color: var(--ink);
+}
+.lx-track {
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-size: clamp(2.4rem, 5.6vw, 5.4rem);
+}
+.lx-track > span {
+  display: flex;
+  gap: 0.5em;
+  padding-inline-end: 0.5em;
+}
+.lx-track .o {
+  color: #fff;
+  text-shadow: 0.05em 0.05em 0 var(--ink);
+}
+.lx-ribbon-b .lx-track .o {
+  color: var(--pink);
+}
+.lx-track-l {
+  animation: lx-run 74s linear infinite;
+}
+.lx-track-r {
+  animation: lx-run 96s linear infinite reverse;
+}
+@keyframes lx-run {
+  to {
+    transform: translateX(-50%);
+  }
+}
+html[dir='rtl'] .lx-track {
+  direction: ltr;
+}
+
+/* ═══ ЛЕНТА-ПЛАКАТИ: pinned, хоризонтален скрол ═════════════════════ */
+.lx-strip {
+  position: relative;
+  background: var(--paper);
+  color: var(--ink);
+  --focus: var(--ink);
+}
+.lx-strip-pin {
+  padding-block: clamp(2rem, 5vw, 4rem);
+}
+.lx-strip-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  margin-block-end: 1.6rem;
+}
+.lx-strip-head h2 {
+  font-size: clamp(2.7rem, 8vw, 7.6rem);
+  margin: 0;
+}
+.lx-hint {
+  margin: 0;
+  font-weight: 800;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.9rem;
+  background: var(--ink);
+  color: var(--lime);
+  border-radius: 999px;
+}
+.lx-strip-track {
+  display: flex;
+  gap: clamp(1rem, 2vw, 1.6rem);
+  list-style: none;
+  margin: 0;
+  padding: 0.4rem 1.5rem 1.5rem;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+}
+.lx-poster {
+  position: relative;
+  flex: 0 0 min(80vw, 27rem);
+  min-height: clamp(26rem, 62vh, 33rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.7rem;
+  padding: 1.4rem;
+  border-radius: 1.5rem;
+  border: 4px solid var(--ink);
+  overflow: hidden;
+  scroll-snap-align: start;
+  box-shadow: 0.5rem 0.5rem 0 var(--ink);
+  transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.25s ease-out;
+}
+.lx-poster h3 {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-size: clamp(1.7rem, 2.8vw, 2.5rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+.lx-poster p {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  font-weight: 600;
+}
+.lx-poster-0 {
+  background: var(--pink);
+  color: var(--ink);
+}
+.lx-poster-1 {
+  background: var(--cobalt);
+  color: #fff;
+}
+.lx-poster-2 {
+  background: var(--lime);
+  color: var(--ink);
+}
+.lx-poster-3 {
+  background: var(--ink);
+  color: #fff;
+}
+.lx-poster-4 {
+  background: var(--bubble);
+  color: var(--ink);
+}
+.lx-poster-5 {
+  background: var(--violet);
+  color: #fff;
+}
+.lx-poster-6 {
+  background: var(--chrome);
+  color: var(--ink);
+}
+.lx-poster-7 {
+  background: var(--pink);
+  color: var(--ink);
+}
+.lx-art {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 58%;
+  pointer-events: none;
+}
+/* Плакатът сам рисува идеята си — само с градиенти */
+.lx-art::before,
+.lx-art::after {
+  content: '';
+  position: absolute;
+}
+/* 0 · езици: концентрични вълни */
+.lx-art-0::before {
+  inset: -30% -10% auto auto;
+  width: 22rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: repeating-radial-gradient(circle, var(--ink) 0 0.55rem, transparent 0.55rem 1.3rem);
+  animation: lx-pulse 9s ease-in-out infinite;
+}
+/* 1 · AI: конус, който се върти */
+.lx-art-1::before {
+  inset: -22% -14% auto auto;
+  width: 19rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--pink), var(--lime), var(--bubble), var(--pink));
+  animation: lx-rot 14s linear infinite;
+}
+.lx-art-1::after {
+  inset: 12% auto auto 12%;
+  width: 6rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--ink);
+}
+/* 2 · 0 %: гигантско изрязано число */
+.lx-art-2::before {
+  content: '0%';
+  inset: -18% auto auto -3%;
+  font-weight: 800;
+  font-size: 15rem;
+  line-height: 0.9;
+  letter-spacing: -0.08em;
+  color: var(--ink);
+}
+/* 3 · QR: шахматна мрежа */
+.lx-art-3::before {
+  inset: 0.5rem 0.5rem auto auto;
+  width: 11rem;
+  aspect-ratio: 1;
+  background:
+    conic-gradient(#fff 25%, transparent 0 50%, #fff 0 75%, transparent 0) 0 0 / 2.2rem 2.2rem,
+    var(--ink);
+  outline: 0.6rem solid #fff;
+  outline-offset: -0.6rem;
+  box-shadow: 0 0 0 0.5rem var(--pink);
+  rotate: 8deg;
+}
+/* 4 · аналитика: стълби от лента */
+.lx-art-4::before {
+  inset: auto 0 0 0;
+  height: 100%;
+  background:
+    linear-gradient(var(--ink), var(--ink)) 8% 100% / 11% 38% no-repeat,
+    linear-gradient(var(--ink), var(--ink)) 26% 100% / 11% 56% no-repeat,
+    linear-gradient(var(--ink), var(--ink)) 44% 100% / 11% 44% no-repeat,
+    linear-gradient(var(--ink), var(--ink)) 62% 100% / 11% 78% no-repeat,
+    linear-gradient(var(--pink), var(--pink)) 80% 100% / 11% 96% no-repeat;
+  transform-origin: 50% 100%;
+  animation: lx-breathe 7s ease-in-out infinite;
+}
+/* 5 · доверие: две ръце-дъги */
+.lx-art-5::before {
+  inset: 6% auto auto 10%;
+  width: 9rem;
+  height: 9rem;
+  border-radius: 50%;
+  background: var(--lime);
+  mix-blend-mode: normal;
+}
+.lx-art-5::after {
+  inset: 14% auto auto 36%;
+  width: 9rem;
+  height: 9rem;
+  border-radius: 50%;
+  background: var(--pink);
+  mix-blend-mode: multiply;
+  animation: lx-sway 8s ease-in-out infinite;
+}
+/* 6 · ЕС: пръстен от дванайсет точки (12 <s> в JSX) */
+.lx-art-6 {
+  display: grid;
+  place-items: center;
+}
+.lx-art-6 s {
+  position: absolute;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: var(--lime);
+  border: 3px solid var(--ink);
+  transform: rotate(calc(var(--k) * 30deg)) translateY(-5.2rem);
+}
+.lx-art-6 {
+  animation: lx-rot 60s linear infinite;
+  inset-block-start: 1rem;
+  height: 11rem;
+}
+/* 7 · домейн: адресна лента */
+.lx-art-7::before {
+  content: attr(data-d);
+  inset: 18% -10% auto -10%;
+  padding: 0.9rem 2rem;
+  background: var(--ink);
+  color: var(--lime);
+  font-weight: 800;
+  font-size: 1.7rem;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  rotate: -5deg;
+  border-radius: 999px;
+}
+.lx-art-7::after {
+  inset: 54% -10% auto -10%;
+  height: 3.2rem;
+  background: repeating-linear-gradient(115deg, var(--ink) 0 0.9rem, transparent 0.9rem 1.8rem);
+  rotate: -5deg;
+}
+@keyframes lx-rot {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes lx-pulse {
+  50% {
+    transform: scale(1.14) rotate(8deg);
+  }
+}
+@keyframes lx-breathe {
+  50% {
+    transform: scaleY(0.86);
+  }
+}
+@keyframes lx-sway {
+  50% {
+    transform: translateX(-2.6rem);
+  }
+}
+
+/* Пинът и хоризонталното влачене: само ако браузърът има scroll-driven */
+@supports (animation-timeline: view()) {
+  .lx-strip {
+    --n: 8;
+    height: calc(var(--n) * 38vh + 100svh);
+    view-timeline: --lx-strip block;
+  }
+  .lx-strip-pin {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .lx-strip-track {
+    overflow: visible;
+    width: max-content;
+    scroll-snap-type: none;
+    animation: lx-slide linear both;
+    animation-timeline: --lx-strip;
+    animation-range: cover 100svh cover calc(100% - 100svh);
+  }
+  html[dir='rtl'] .lx-strip-track {
+    animation-name: lx-slide-rtl;
+  }
+  .lx-poster {
+    min-height: clamp(24rem, calc(100svh - 17rem), 33rem);
+  }
+}
+@keyframes lx-slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% + 100vw));
+  }
+}
+@keyframes lx-slide-rtl {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(100% - 100vw));
+  }
+}
+
+/* ═══ ЧИСЛА (лайм) ═══════════════════════════════════════════════════ */
+.lx-stats {
+  position: relative;
+  background: var(--lime);
+  color: var(--ink);
+  --focus: var(--ink);
+  clip-path: polygon(0 5vw, 100% 0, 100% 100%, 0 100%);
+  margin-block-start: -5vw;
+  padding-block: calc(5vw + 3rem) 4.5rem;
+}
+.lx-stats h2 {
+  margin: 0 0 2.2rem;
+  font-size: clamp(1.9rem, 4vw, 3.4rem);
+}
+.lx-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem 1rem;
+}
+.lx-stat {
+  rotate: var(--r, 0deg);
+}
+.lx-stat:nth-child(1) {
+  --r: -3deg;
+}
+.lx-stat:nth-child(2) {
+  --r: 2deg;
+  translate: 0 1.6rem;
+}
+.lx-stat:nth-child(3) {
+  --r: -1.5deg;
+}
+.lx-stat:nth-child(4) {
+  --r: 3deg;
+  translate: 0 1.2rem;
+}
+.lx-num {
+  margin: 0;
+  font-weight: 800;
+  font-size: clamp(4.4rem, 12.5vw, 12rem);
+  line-height: 0.85;
+  letter-spacing: -0.07em;
+  text-shadow: 0.045em 0.045em 0 var(--pink);
+}
+.lx-stat-label {
+  margin: 0.7rem 0 0;
+  max-width: 15rem;
+  font-weight: 800;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+@property --lx-n {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: false;
+}
+@keyframes lx-count {
+  from {
+    --lx-n: 0;
+  }
+  to {
+    --lx-n: var(--lx-target, 0);
+  }
+}
+.lx-live {
+  display: none;
+}
+@supports (animation-timeline: view()) {
+  .lx-live {
+    display: inline;
+    counter-reset: lxn var(--lx-n);
+    animation: lx-count 1s linear both;
+    animation-timeline: view();
+    animation-range: entry 10% cover 45%;
+  }
+  .lx-live::after {
+    content: counter(lxn);
+  }
+  .lx-static {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}
+
+/* ═══ МАНИФЕСТ (кобалт) ══════════════════════════════════════════════ */
+.lx-manifesto {
+  position: relative;
+  background: var(--cobalt);
+  color: #fff;
+  clip-path: polygon(0 0, 100% 5vw, 100% 100%, 0 100%);
+  margin-block-start: -5vw;
+  padding-block: calc(5vw + 4rem) 6rem;
+  overflow: hidden;
+}
+.lx-manifesto-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.6fr);
+  align-items: center;
+  gap: 2.5rem;
+}
+.lx-manifesto h2 {
+  margin: 0 0 2rem;
+  font-size: clamp(2.7rem, 7.4vw, 7.4rem);
+}
+.lx-quote {
+  margin: 0;
+  max-width: 44rem;
+  font-weight: 700;
+  font-size: clamp(1.25rem, 2.4vw, 2rem);
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+}
+.lx-quote .w {
+  text-decoration: underline;
+  text-decoration-thickness: 0.14em;
+  text-underline-offset: 0.2em;
+  text-decoration-color: rgba(214, 255, 61, 0);
+}
+@supports (animation-timeline: view()) {
+  .lx-quote .w {
+    animation: lx-ul linear both;
+    animation-timeline: view();
+    animation-range: entry 55% cover 42%;
+  }
+}
+@keyframes lx-ul {
+  to {
+    text-decoration-color: var(--lime);
+  }
+}
+.lx-by {
+  margin: 2rem 0 0;
+  font-weight: 800;
+  font-size: 1rem;
+  display: inline-block;
+  background: var(--ink);
+  padding: 0.55rem 1rem;
+  border-radius: 0.4rem;
+  rotate: -1.5deg;
+}
+.lx-disc {
+  position: relative;
+  width: 100%;
+  max-width: 24rem;
+  aspect-ratio: 1;
+  margin-inline: auto;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, var(--cobalt) 0 18%, transparent 18.5%),
+    conic-gradient(from 0deg, var(--pink), var(--violet), var(--ink), var(--lime), var(--bubble), var(--pink));
+  border: 4px solid var(--ink);
+  animation: lx-rot 40s linear infinite;
+}
+.lx-disc::after {
+  content: '';
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  border: 3px dashed var(--ink);
+}
+
+/* ═══ ЦЕНИ (розово) ═════════════════════════════════════════════════ */
+.lx-pricing {
+  position: relative;
+  background: var(--pink);
+  color: var(--ink);
+  --focus: var(--ink);
+  clip-path: polygon(0 5vw, 100% 0, 100% 100%, 0 100%);
+  margin-block-start: -5vw;
+  padding-block: calc(5vw + 4rem) 6rem;
+}
+.lx-pricing h2 {
+  margin: 0;
+  font-size: clamp(2.7rem, 9vw, 9rem);
+}
+.lx-pricing-note {
+  max-width: 44rem;
+  margin: 1.6rem 0 0;
+  font-weight: 700;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+.lx-plans {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.3rem;
+  margin-block-start: 3.4rem;
+  align-items: start;
+}
+.lx-plan {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 1.6rem;
+  border: 4px solid var(--ink);
+  border-radius: 1.5rem;
+  box-shadow: 0.5rem 0.5rem 0 var(--ink);
+  rotate: var(--r, 0deg);
+  transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.25s ease-out;
+}
+.lx-plan-free {
+  --r: -1.6deg;
+  background: var(--ink);
+  color: #fff;
+}
+.lx-plan-pro {
+  --r: 1deg;
+  background: var(--lime);
+  color: var(--ink);
+  margin-block-start: -1.4rem;
+  padding-block: 2.2rem;
+}
+.lx-plan-business {
+  --r: -0.8deg;
+  background: var(--cobalt);
+  color: #fff;
+}
+.lx-plan-founder {
+  --r: 1.6deg;
+  background: var(--chrome);
+  color: var(--ink);
+}
+.lx-plan h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.lx-price {
+  margin: 0.8rem 0 0;
+  font-weight: 800;
+  font-size: clamp(3.8rem, 6.2vw, 6rem);
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+}
+.lx-price small {
+  font-size: 1rem;
+  letter-spacing: 0;
+  font-weight: 700;
+  margin-inline-start: 0.3rem;
+}
+.lx-offer {
+  margin: 0.6rem 0 0;
+  font-weight: 800;
+  font-size: 0.88rem;
+}
+.lx-plan-free .lx-offer {
+  color: var(--lime);
+}
+.lx-plan-business .lx-offer {
+  color: var(--lime);
+}
+.lx-plan ul {
+  list-style: none;
+  padding: 0;
+  margin: 1.3rem 0 1.6rem;
+  flex: 1;
+  display: grid;
+  gap: 0.7rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+.lx-plan li {
+  position: relative;
+  padding-inline-start: 1.5rem;
+}
+.lx-plan li::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0.32em;
+  width: 0.8rem;
+  height: 0.8rem;
+  background: var(--pink);
+  rotate: 45deg;
+  border: 2px solid currentColor;
+}
+.lx-plan-pro li::before {
+  background: var(--ink);
+}
+.lx-plan-pro .lx-btn {
+  --bg: var(--ink);
+  --fg: #fff;
+  box-shadow: 0.2rem 0.2rem 0 var(--pink);
+}
+.lx-plan-business .lx-btn {
+  --bg: #fff;
+  --fg: var(--ink);
+}
+.lx-plan-founder .lx-btn {
+  --bg: var(--ink);
+  --fg: #fff;
+  box-shadow: 0.2rem 0.2rem 0 var(--pink);
+}
+.lx-plan-free .lx-btn {
+  --bg: var(--pink);
+  --fg: var(--ink);
+  box-shadow: 0.2rem 0.2rem 0 var(--lime);
+}
+.lx-badge {
+  position: absolute;
+  inset-block-start: -2.2rem;
+  inset-inline-end: -1rem;
+  display: grid;
+  place-items: center;
+  width: 6.4rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--pink);
+  color: var(--ink);
+  border: 4px solid var(--ink);
+  font-weight: 800;
+  font-size: 0.78rem;
+  line-height: 1.05;
+  text-align: center;
+  padding: 0.5rem;
+  rotate: 12deg;
+  animation: lx-wobble 6s ease-in-out infinite;
+}
+@keyframes lx-wobble {
+  50% {
+    rotate: -6deg;
+    scale: 1.06;
+  }
+}
+
+/* ═══ ЧЗВ (мастило) ═════════════════════════════════════════════════ */
+.lx-faq {
+  position: relative;
+  background: var(--ink);
+  clip-path: polygon(0 5vw, 100% 0, 100% 100%, 0 100%);
+  margin-block-start: -5vw;
+  padding-block: calc(5vw + 4rem) 6rem;
+}
+.lx-faq h2 {
+  margin: 0 0 2.6rem;
+  font-size: clamp(2.7rem, 8.4vw, 8.4rem);
+}
+.lx-faq-list {
+  border-block-start: 3px solid #fff;
+}
+.lx-q {
+  border-block-end: 3px solid #fff;
+  position: relative;
+  isolation: isolate;
+}
+.lx-q::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--pink);
+  transform: scaleY(0);
+  transform-origin: 50% 100%;
+  transition: transform 0.35s var(--ease-out);
+}
+.lx-q:hover::before,
+.lx-q[open]::before {
+  transform: scaleY(1);
+}
+.lx-q:hover,
+.lx-q[open] {
+  color: var(--ink);
+}
+.lx-q summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  list-style: none;
+  cursor: pointer;
+  padding: 1.5rem 0.4rem;
+  font-weight: 800;
+  font-size: clamp(1.5rem, 3.6vw, 3.4rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.lx-q summary::-webkit-details-marker {
+  display: none;
+}
+.lx-q summary:focus-visible {
+  outline-offset: -3px;
+}
+.lx-plus {
+  position: relative;
+  flex: none;
+  width: 2.6rem;
+  height: 2.6rem;
+  transition: rotate 0.35s var(--ease-out);
+}
+.lx-plus::before,
+.lx-plus::after {
+  content: '';
+  position: absolute;
+  inset: 50% 0 auto 0;
+  height: 0.38rem;
+  margin-top: -0.19rem;
+  background: currentColor;
+  border-radius: 1px;
+}
+.lx-plus::after {
+  rotate: 90deg;
+}
+.lx-q[open] .lx-plus {
+  rotate: 135deg;
+}
+.lx-q p {
+  margin: 0;
+  max-width: 46rem;
+  padding: 0 0.4rem 1.8rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* ═══ ФИНАЛ ═════════════════════════════════════════════════════════ */
+.lx-final {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(60% 70% at 85% 20%, rgba(43, 59, 255, 0.55), transparent 70%),
+    radial-gradient(50% 60% at 10% 90%, rgba(255, 45, 149, 0.5), transparent 70%),
+    var(--ink);
+  text-align: center;
+  padding-block: 6rem 4rem;
+}
+.lx-final h2 {
+  margin: 0 auto;
+  max-width: 78rem;
+  font-size: clamp(2.8rem, 9vw, 9.2rem);
+}
+.lx-sun {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(11rem, 20vw, 15rem);
+  aspect-ratio: 1;
+  margin: 3rem auto 0;
+  border-radius: 50%;
+  background: var(--lime);
+  color: var(--ink) !important;
+  font-weight: 800;
+  font-size: 1.05rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  padding: 1.8rem;
+  transform: translate3d(var(--mx, 0px), var(--my, 0px), 0);
+  transition: transform 0.28s var(--ease-out);
+  isolation: isolate;
+}
+.lx-sun::before {
+  content: '';
+  position: absolute;
+  inset: -0.9rem;
+  z-index: -1;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--pink), var(--cobalt), var(--lime), var(--violet), var(--pink));
+  animation: lx-rot 11s linear infinite;
+}
+.lx-sun::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 50%;
+  background: var(--lime);
+}
+.lx-sun:hover {
+  scale: 1.06;
+}
+.lx-mark {
+  margin: 4rem 0 -0.12em;
+  font-weight: 800;
+  font-size: clamp(5rem, 24vw, 24rem);
+  line-height: 0.8;
+  letter-spacing: -0.07em;
+  color: rgba(255, 255, 255, 0.09);
+  user-select: none;
+  white-space: nowrap;
+  font-kerning: none;
+}
+.lx-mark .lx-ch {
+  transition: color 0.6s ease;
+}
+@media (hover: hover) {
+  .lx-mark .lx-ch:hover {
+    color: var(--pink);
+    transform: translateY(-0.06em);
+    transition-duration: 0.1s;
+  }
+}
+
+/* Последен слой: футърът (общият) стои под нашия финал */
+.lx-foot {
+  /* Литерал, не var(--ink): футърът е ИЗВЪН .lx, където --ink не е дефинирана; полупрозрачният
+     футър (bg-surface-2/60) иначе пуска светлия фон на сайта и става сив. */
+  background: #09060f;
+  border-block-start: 3px solid var(--pink);
+}
+
+/* ── Мобилно ───────────────────────────────────────────────────────── */
+@media (max-width: 62rem) {
+  .lx-scrim {
+    background:
+      linear-gradient(
+        to bottom,
+        rgba(9, 6, 15, 0.9) 0%,
+        rgba(9, 6, 15, 0.86) 52%,
+        rgba(9, 6, 15, 0.15) 74%,
+        var(--ink) 100%
+      );
+  }
+  .lx-hero-grid {
+    padding-block-start: 3.2rem;
+    grid-template-columns: 1fr;
+  }
+  .lx-ring-stage {
+    height: 22rem;
+    margin-block-start: 0.5rem;
+  }
+  .lx-ring {
+    --r: 10.2rem;
+    width: 9.2rem;
+    height: 13rem;
+  }
+  .lx-trust {
+    grid-template-columns: 1fr 1fr;
+  }
+  .lx-stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .lx-manifesto-grid {
+    grid-template-columns: 1fr;
+  }
+  .lx-disc {
+    max-width: 14rem;
+  }
+  .lx-plans {
+    grid-template-columns: 1fr 1fr;
+    gap: 2.4rem 1.2rem;
+  }
+  .lx-plan-pro {
+    margin-block-start: 0;
+  }
+}
+@media (max-width: 40rem) {
+  .lx-wrap {
+    width: min(100% - 2rem, 86rem);
+  }
+  .lx-plans {
+    grid-template-columns: 1fr;
+  }
+  .lx-badge {
+    inset-block-start: -1.8rem;
+  }
+  .lx-nav {
+    gap: 0.7rem;
+    font-size: 0.8rem;
+  }
+  .lx-logo {
+    height: 1.7rem;
+  }
+  .lx-strip-track {
+    padding-inline: 1rem;
+  }
+  .lx-art-2::before {
+    font-size: 11rem;
+  }
+  .lx-pause {
+    inset-block-end: 0.6rem;
+    inset-inline-end: 0.6rem;
+    padding: 0.55rem 0.8rem;
+  }
+}

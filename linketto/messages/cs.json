@@ -7,7 +7,21 @@
     "login": "Přihlásit se",
     "register": "Registrovat se",
     "dashboard": "Nástěnka",
-    "logout": "Odhlásit se"
+    "logout": "Odhlásit se",
+    "features": "Funkce",
+    "pricing": "Ceník",
+    "faq": "Dotazy",
+    "tools": "Nástroje",
+    "menu": "Menu",
+    "closeMenu": "Zavřít menu",
+    "language": "Jazyk",
+    "main": "Hlavní navigace",
+    "skip": "Přejít na obsah",
+    "theme": "Motiv",
+    "themeLight": "Světlý",
+    "themeDark": "Tmavý",
+    "themeSystem": "Systémový",
+    "onThisPage": "Na této stránce"
   },
   "home": {
     "heroTitle": "Jeden odkaz v biu. Všechny jazyky světa.",
@@ -61,7 +75,14 @@
     "featureFeeBody": "Prodáváš přes svůj vlastní platební odkaz (Revolut, PayPal a další) — peníze jdou rovnou k tobě a Linketto si nebere žádný podíl. Poplatky tvého poskytovatele plateb platí dál podle jeho podmínek.",
     "statsFeeLabel": "podíl Linketta z tvých prodejů",
     "faq5q": "Můžu prodávat produkty ze své stránky?",
-    "trustPayments": "Platby za plány přes Revolut Bank UAB (licencovaná banka v EU)"
+    "trustPayments": "Platby za plány přes Revolut Bank UAB (licencovaná banka v EU)",
+    "resumeMotion": "Spustit animace",
+    "lxStripHint": "Posouvej dál — pás se točí",
+    "lxStatsTitle": "Linketto v číslech",
+    "demoLabel": "Ukázka: jeden profil, mnoho jazyků",
+    "factsLabel": "Linketto v číslech",
+    "heroNote": "Zdarma. Bez platební karty.",
+    "manifestoLabel": "Náš slib"
   },
   "pricing": {
     "title": "Jednoduché a férové ceny",
@@ -377,7 +398,28 @@
     "withdrawName": "Jméno",
     "withdrawNameError": "Zadej své jméno.",
     "withdrawConfirm": "Potvrdit odstoupení od smlouvy",
-    "withdrawPaidOn": "zaplaceno {date}"
+    "withdrawPaidOn": "zaplaceno {date}",
+    "themeName_aurora": "Aurora",
+    "themeName_mono": "Mono",
+    "themeName_dusk": "Soumrak",
+    "themeName_editorial": "Redakce",
+    "themeName_midnight": "Grafit",
+    "themeName_sand": "Písek",
+    "themeName_cobalt": "Kobalt",
+    "themeName_chrome": "Chrom",
+    "themeName_acid": "Kyselina",
+    "themeName_auto": "Automatický (světlý i tmavý)",
+    "navGroupProfile": "Profil",
+    "navGroupGrowth": "Růst",
+    "navGroupSales": "Prodej",
+    "navGroupAccount": "Účet",
+    "navHome": "Nástěnka",
+    "viewPage": "Zobrazit stránku",
+    "pageIntro": "Tvůj profil, odkazy a publikum na jednom místě.",
+    "analyticsIntro": "Jak se chovají tví návštěvníci — bez cookies a bez osobních údajů.",
+    "withdrawIntro2": "Druhý a poslední krok: potvrď své odstoupení od smlouvy.",
+    "navMessages": "Zprávy",
+    "navAudience": "Publikum"
   },
   "profile": {
     "poweredBy": "Vytvořeno s Linketto",
@@ -425,7 +467,10 @@
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookies",
     "tools": "Nástroje zdarma",
-    "compare": "Linketto vs. Linktree"
+    "compare": "Linketto vs. Linktree",
+    "product": "Produkt",
+    "legal": "Právní informace",
+    "languages": "Jazyky"
   },
   "seo": {
     "metaTitle": "Linketto — vícejazyčný link in bio: všechny odkazy, v každém jazyce",

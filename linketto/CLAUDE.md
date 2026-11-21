@@ -119,6 +119,7 @@ actions/auth.ts, 90 дни, декларирано в политиката; НЕ
 DATA_DIR/uploads, сервирани от /media/[file] (стриктен allowlist на името).
 Шрифтове: src/app/fonts.ts (next/font, self-hosted — нула външни заявки).
 
+Теми на профила: `src/lib/profile-themes.ts` (PROFILE_THEMES = единственият списък — action, табло, ProfileScreen; токени → CSS променливи `--pf-*`, `auto` през light-dark(); непознато ID → aurora; контраст AA пази тестът; сцените chrome/acid са само CSS, без SVG).
 Стилов енджин: Profile.style (Json) + src/lib/style.ts (zod схема,
 DEFAULT_STYLE, прощаващ parseStyle — невалидно поле пада към подразбирането;
 backgroundCss/buttonCss/fontFamily/readableOn). Нова стилова опция = поле в

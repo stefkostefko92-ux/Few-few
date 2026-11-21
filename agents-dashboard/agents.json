@@ -2033,28 +2033,17 @@
           "detail": "Научи: sharp 0.35 с limitInputPixels не пази паметта при прогресивен JPEG (208 Mpx, 4:4:4, фай… (+1 още)"
         },
         {
-          "version": "66.1.0",
-          "date": "2026-11-21",
-          "event": "v66.1 — учене",
-          "detail": "Научи: Пазач, който съди Bash само по думите на командата, пропуска копиране на папка в родите… (+100 още)"
-        },
-        {
           "version": "66.2.0",
           "date": "2026-11-21",
           "event": "v66.2 — учене",
-          "detail": "Научи: Сторож на WebGL цикъл, който при бавни кадри вика loseContext и излиза от frame без фла…"
+          "detail": "Научи: Сторож на WebGL цикъл, който при бавни кадри вика loseContext и излиза от frame без фла… (+101 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-21",
           "type": "learning",
-          "summary": "Научи: „Сторож на WebGL цикъл, който при бавни кадри вика loseContext и излиза от frame без фла…\""
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „Пазач, който съди Bash само по думите на командата, пропуска копиране на папка в родите…\" (+100 още) · 15 в карантина"
+          "summary": "Научи: „Сторож на WebGL цикъл, който при бавни кадри вика loseContext и излиза от frame без фла…\" (+101 още) · 15 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -5570,39 +5559,17 @@
           "detail": "Научи: В linketto идентификацията на дружеството живее само в messages/*.json (legal.privacyBo… (+34 още)"
         },
         {
-          "version": "29.6.0",
-          "date": "2026-11-21",
-          "event": "v29.6 — учене",
-          "detail": "Научи: При AI Act (CELEX 32024R1689) cellar UUID е dc8116a1-3fe6-11ef-865a-01aa75ed71a1 и номе… (+15 още)"
-        },
-        {
-          "version": "29.8.0",
-          "date": "2026-11-21",
-          "event": "v29.8 — учене",
-          "detail": "Научи: В linketto fr.json регистърът е „vous“ (Votre tableau de bord, faq2a, moderation*), въп… (+1 още)"
-        },
-        {
           "version": "29.9.0",
           "date": "2026-11-21",
           "event": "v29.9 — учене",
-          "detail": "Научи: В linketto правният клас, който пада към en, не е само legal.* — home.featureEuBody/faq…"
+          "detail": "Научи: В linketto правният клас, който пада към en, не е само legal.* — home.featureEuBody/faq… (+18 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-21",
           "type": "learning",
-          "summary": "Научи: „В linketto правният клас, който пада към en, не е само legal.* — home.featureEuBody/faq…\""
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „В linketto fr.json регистърът е „vous“ (Votre tableau de bord, faq2a, moderation*), въп…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „При AI Act (CELEX 32024R1689) cellar UUID е dc8116a1-3fe6-11ef-865a-01aa75ed71a1 и номе…\" (+15 още) · 2 в карантина"
+          "summary": "Научи: „В linketto правният клас, който пада към en, не е само legal.* — home.featureEuBody/faq…\" (+18 още) · 2 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -11956,105 +11923,17 @@
           "detail": "Научи: Nexus Dominion desktop nav-profile overflow (дълго име+титла) — правилният фикс е таван… (+14 още)"
         },
         {
-          "version": "24.1.0",
-          "date": "2026-11-21",
-          "event": "v24.1 — учене",
-          "detail": "Научи: Браузърният placeholder е #757575 — 4,25:1 върху #f4f6f8 и 3,84:1 върху тъмно #0c1929, … (+13 още)"
-        },
-        {
-          "version": "24.4.0",
-          "date": "2026-11-21",
-          "event": "v24.4 — учене",
-          "detail": "Научи: Вложен data-theme=\"light\" като обвивка за непренесен екран работи само ако :root блокът… (+2 още)"
-        },
-        {
-          "version": "24.7.0",
-          "date": "2026-11-21",
-          "event": "v24.7 — учене",
-          "detail": "Научи: Когато html има scroll-padding-top за лепкава лента, собствен scroll-margin-top на секц… (+2 още)"
-        },
-        {
-          "version": "24.8.0",
-          "date": "2026-11-21",
-          "event": "v24.8 — учене",
-          "detail": "Научи: Scrollspy върху котви трябва да пада към първия раздел, когато още няма такъв над линия…"
-        },
-        {
-          "version": "24.9.0",
-          "date": "2026-11-21",
-          "event": "v24.9 — учене",
-          "detail": "Научи: Tailwind класовете в cn() на примитива не се сливат (няма tailwind-merge), затова проти…"
-        },
-        {
-          "version": "25.1.0",
-          "date": "2026-11-21",
-          "event": "v25.1 — учене",
-          "detail": "Научи: При html със scroll-behavior:smooth скрийншот 300ms след scrollIntoView хваща скрола по… (+1 още)"
-        },
-        {
-          "version": "25.3.0",
-          "date": "2026-11-21",
-          "event": "v25.3 — учене",
-          "detail": "Научи: В linketto неслойовият CSS на globals.css бие Tailwind utilities в @layer, затова на кл… (+1 още)"
-        },
-        {
-          "version": "25.5.0",
-          "date": "2026-11-21",
-          "event": "v25.5 — учене",
-          "detail": "Научи: За scroll-driven pin с хоризонтално влачене ползвай view-timeline на високия контейнер … (+1 още)"
-        },
-        {
           "version": "25.7.0",
           "date": "2026-11-21",
           "event": "v25.7 — учене",
-          "detail": "Научи: Variable шрифт с -webkit-text-stroke показва вътрешните припокриващи се контури на букв… (+1 още)"
+          "detail": "Научи: Variable шрифт с -webkit-text-stroke показва вътрешните припокриващи се контури на букв… (+29 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-21",
           "type": "learning",
-          "summary": "Научи: „Variable шрифт с -webkit-text-stroke показва вътрешните припокриващи се контури на букв…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „За scroll-driven pin с хоризонтално влачене ползвай view-timeline на високия контейнер …\" (+1 още) · 1 в карантина"
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „В linketto неслойовият CSS на globals.css бие Tailwind utilities в @layer, затова на кл…\" (+1 още) · 1 в карантина"
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „При html със scroll-behavior:smooth скрийншот 300ms след scrollIntoView хваща скрола по…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „Tailwind класовете в cn() на примитива не се сливат (няма tailwind-merge), затова проти…\" · 1 в карантина"
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „Scrollspy върху котви трябва да пада към първия раздел, когато още няма такъв над линия…\""
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „Когато html има scroll-padding-top за лепкава лента, собствен scroll-margin-top на секц…\" (+2 още)"
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „Вложен data-theme=\"light\" като обвивка за непренесен екран работи само ако :root блокът…\" (+2 още)"
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „Браузърният placeholder е #757575 — 4,25:1 върху #f4f6f8 и 3,84:1 върху тъмно #0c1929, …\" (+13 още) · 11 в карантина"
+          "summary": "Научи: „Variable шрифт с -webkit-text-stroke показва вътрешните припокриващи се контури на букв…\" (+29 още) · 14 в карантина"
         },
         {
           "date": "2026-11-04",

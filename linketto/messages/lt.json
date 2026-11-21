@@ -7,7 +7,21 @@
     "login": "Prisijungti",
     "register": "Registruotis",
     "dashboard": "Skydelis",
-    "logout": "Atsijungti"
+    "logout": "Atsijungti",
+    "features": "Funkcijos",
+    "pricing": "Kainos",
+    "faq": "DUK",
+    "tools": "Įrankiai",
+    "menu": "Meniu",
+    "closeMenu": "Uždaryti meniu",
+    "language": "Kalba",
+    "main": "Pagrindinė navigacija",
+    "skip": "Pereiti prie turinio",
+    "theme": "Tema",
+    "themeLight": "Šviesi",
+    "themeDark": "Tamsi",
+    "themeSystem": "Pagal sistemą",
+    "onThisPage": "Šiame puslapyje"
   },
   "home": {
     "heroTitle": "Viena nuoroda bio. Visos pasaulio kalbos.",
@@ -61,7 +75,14 @@
     "featureFeeBody": "Parduodi per savo mokėjimo nuorodą (Revolut, PayPal ir kt.) — pinigai keliauja tiesiai tau, o Linketto neima jokios dalies. Tavo mokėjimų paslaugų teikėjo mokesčiai ir toliau taikomi pagal jo sąlygas.",
     "statsFeeLabel": "Linketto dalis iš tavo pardavimų",
     "faq5q": "Ar galiu parduoti produktus savo puslapyje?",
-    "trustPayments": "Planų mokėjimai per Revolut Bank UAB (licencijuotas ES bankas)"
+    "trustPayments": "Planų mokėjimai per Revolut Bank UAB (licencijuotas ES bankas)",
+    "resumeMotion": "Paleisti animacijas",
+    "lxStripHint": "Slink toliau — juosta juda",
+    "lxStatsTitle": "Linketto skaičiais",
+    "demoLabel": "Pavyzdys: vienas profilis, daug kalbų",
+    "factsLabel": "Linketto skaičiais",
+    "heroNote": "Nemokamai. Be kredito kortelės.",
+    "manifestoLabel": "Mūsų pažadas"
   },
   "pricing": {
     "title": "Paprastos ir sąžiningos kainos",
@@ -377,7 +398,28 @@
     "withdrawName": "Vardas",
     "withdrawNameError": "Įvesk savo vardą.",
     "withdrawConfirm": "Patvirtinti sutarties atsisakymą",
-    "withdrawPaidOn": "apmokėta {date}"
+    "withdrawPaidOn": "apmokėta {date}",
+    "themeName_aurora": "Aurora",
+    "themeName_mono": "Mono",
+    "themeName_dusk": "Prieblanda",
+    "themeName_editorial": "Redakcinė",
+    "themeName_midnight": "Grafitas",
+    "themeName_sand": "Smėlis",
+    "themeName_cobalt": "Kobaltas",
+    "themeName_chrome": "Chromas",
+    "themeName_acid": "Rūgštis",
+    "themeName_auto": "Automatinė (šviesi ir tamsi)",
+    "navGroupProfile": "Profilis",
+    "navGroupGrowth": "Augimas",
+    "navGroupSales": "Pardavimai",
+    "navGroupAccount": "Paskyra",
+    "navHome": "Skydelis",
+    "viewPage": "Peržiūrėti puslapį",
+    "pageIntro": "Tavo profilis, nuorodos ir auditorija vienoje vietoje.",
+    "analyticsIntro": "Kaip elgiasi tavo lankytojai — be slapukų ir be asmens duomenų.",
+    "withdrawIntro2": "Antras ir paskutinis žingsnis: patvirtink sutarties atsisakymą.",
+    "navMessages": "Žinutės",
+    "navAudience": "Auditorija"
   },
   "profile": {
     "poweredBy": "Sukurta su Linketto",
@@ -425,7 +467,10 @@
     "contact": "info@carbonstealth.eu",
     "cookies": "Slapukai",
     "tools": "Nemokami įrankiai",
-    "compare": "Linketto prieš Linktree"
+    "compare": "Linketto prieš Linktree",
+    "product": "Produktas",
+    "legal": "Teisinė informacija",
+    "languages": "Kalbos"
   },
   "seo": {
     "metaTitle": "Linketto — daugiakalbis link in bio: visos tavo nuorodos bet kuria kalba",

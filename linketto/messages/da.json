@@ -7,7 +7,21 @@
     "login": "Log ind",
     "register": "Opret konto",
     "dashboard": "Panel",
-    "logout": "Log ud"
+    "logout": "Log ud",
+    "features": "Funktioner",
+    "pricing": "Priser",
+    "faq": "Spørgsmål",
+    "tools": "Værktøjer",
+    "menu": "Menu",
+    "closeMenu": "Luk menuen",
+    "language": "Sprog",
+    "main": "Hovednavigation",
+    "skip": "Gå til indholdet",
+    "theme": "Tema",
+    "themeLight": "Lyst",
+    "themeDark": "Mørkt",
+    "themeSystem": "System",
+    "onThisPage": "På denne side"
   },
   "home": {
     "heroTitle": "Ét link i bioen. Alle verdens sprog.",
@@ -61,7 +75,14 @@
     "featureFeeBody": "Du sælger via dit eget betalingslink (Revolut, PayPal og andre) — pengene går direkte til dig, og Linketto tager ingen andel. Din betalingsudbyders egne gebyrer gælder stadig efter dens vilkår.",
     "statsFeeLabel": "Linkettos andel af dit salg",
     "faq5q": "Kan jeg sælge produkter fra min side?",
-    "trustPayments": "Betaling af planer via Revolut Bank UAB (en licenseret bank i EU)"
+    "trustPayments": "Betaling af planer via Revolut Bank UAB (en licenseret bank i EU)",
+    "resumeMotion": "Genoptag animationen",
+    "lxStripHint": "Scroll videre — båndet bevæger sig",
+    "lxStatsTitle": "Linketto i tal",
+    "demoLabel": "Eksempel: én profil, mange sprog",
+    "factsLabel": "Linketto i tal",
+    "heroNote": "Gratis. Intet betalingskort.",
+    "manifestoLabel": "Vores løfte"
   },
   "pricing": {
     "title": "Enkle, ærlige priser",
@@ -377,7 +398,28 @@
     "withdrawName": "Navn",
     "withdrawNameError": "Skriv dit navn.",
     "withdrawConfirm": "Bekræft fortrydelse",
-    "withdrawPaidOn": "betalt {date}"
+    "withdrawPaidOn": "betalt {date}",
+    "themeName_aurora": "Nordlys",
+    "themeName_mono": "Mono",
+    "themeName_dusk": "Skumring",
+    "themeName_editorial": "Redaktion",
+    "themeName_midnight": "Grafit",
+    "themeName_sand": "Sand",
+    "themeName_cobalt": "Kobolt",
+    "themeName_chrome": "Krom",
+    "themeName_acid": "Syre",
+    "themeName_auto": "Automatisk (lyst og mørkt)",
+    "navGroupProfile": "Profil",
+    "navGroupGrowth": "Vækst",
+    "navGroupSales": "Salg",
+    "navGroupAccount": "Konto",
+    "navHome": "Panel",
+    "viewPage": "Se siden",
+    "pageIntro": "Din profil, dine links og dit publikum samlet ét sted.",
+    "analyticsIntro": "Sådan opfører dine besøgende sig — uden cookies og uden personoplysninger.",
+    "withdrawIntro2": "Andet og sidste trin: bekræft, at du fortryder aftalen.",
+    "navMessages": "Beskeder",
+    "navAudience": "Publikum"
   },
   "profile": {
     "poweredBy": "Lavet med Linketto",
@@ -425,7 +467,10 @@
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookies",
     "tools": "Gratis værktøjer",
-    "compare": "Linketto vs Linktree"
+    "compare": "Linketto vs Linktree",
+    "product": "Produkt",
+    "legal": "Juridisk",
+    "languages": "Sprog"
   },
   "seo": {
     "metaTitle": "Linketto — flersproget link in bio: alle dine links, på alle sprog",
