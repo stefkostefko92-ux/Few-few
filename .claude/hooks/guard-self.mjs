@@ -19,7 +19,12 @@
 //   guard-*.mjs, agent-cap.mjs и тази кука — нов импорт се покрива сам) · извличане на архив / кръпка / `find -exec`
 //   „по данни“ в папка, която съдържа пазачите (съдържанието не се вижда в командата → съди се местоназначението).
 //   Червен екип 19.11.2026 (вътрешен, 79 проби): 14 пропуска на първата версия затворени, 0 фалшиви блока.
-// Ниво B — паметта: `.claude/agents/_memory/**` (поуките влизат само през memory-capture с проверка).
+//   Конфигурацията на git (`.git/config`, `~/.gitconfig`, `git config`/`-c` с ключ, който пуска код).
+// Ниво B — паметта: `.claude/agents/_memory/**` (поуките влизат само през memory-capture с проверка); импортите
+//   на останалите куки (memory-capture, memory-preload, dod-check… → `tools/lib/memory-*`, `handoff.mjs`…);
+//   git, който пренаписва работното дърво от ref (`reset --hard`, `checkout <ref>`, `stash pop`, `merge`, `pull`…).
+// Пайп: пазен път в едно звено, а в следващо — изпълнител на входа си (`sh`, `node`, `xargs <пишеща>`,
+//   `while read`, `sed …e`, `awk system()`) → съди се като запис (отворения spec на Кодаджията, 21.11.2026).
 //
 // Решение:
 //   • субагент (има `agent_id`/`agent_type` в payload-а) → отказ (exit 2), ниво A и B. Пазач се сменя само
@@ -62,16 +67,23 @@ const TIER_A = [
   /^[A-Za-z]:\/ProgramData\/ClaudeCode(?:\/|$)/i,
   /(?:^|\/)\.mcp\.json$/,
   /(?:^|\/)\.claude\.json$/,
+  // Конфигурацията на git пуска код при всяка git команда (core.fsmonitor, core.sshCommand, alias.* с „!“, filter.*,
+  // include.path) и може да смени core.hooksPath покрай регекса за командата (отворения spec, 21.11.2026).
+  /(?:^|\/)\.git\/config$/,
+  /(?:^|\/)\.git\/worktrees\/[^/]+\/config(?:\.worktree)?$/,
+  /(?:^|\/)\.gitconfig$/,
+  /(?:^|\/)\.config\/git\/config$/,
+  /^\/etc\/gitconfig$/,
 ];
 const TIER_B = [/(?:^|\/)\.claude\/agents\/_memory(?:\/|$)/];
 
 const IMPORT_RE = /(?:\bfrom\s*|\bimport\s*\(\s*|^\s*import\s+)["'](\.{1,2}\/[^"']+)["']/gm;
 
-/** Файловете, които пазачите зареждат (транзитивно), като пътища спрямо корена на репото. */
-export function guardClosure(root = ROOT) {
+/** Файловете, които пазачите (или `start` — всички куки) зареждат транзитивно, като пътища спрямо корена на репото. */
+export function guardClosure(root = ROOT, start_ = /^(?:guard-[\w-]+|agent-cap)\.mjs$/) {
   const hooks = join(root, ".claude", "hooks");
   let start = [];
-  try { start = readdirSync(hooks).filter((f) => /^(?:guard-[\w-]+|agent-cap)\.mjs$/.test(f)).map((f) => join(hooks, f)); } catch { /* няма */ }
+  try { start = readdirSync(hooks).filter((f) => start_.test(f)).map((f) => join(hooks, f)); } catch { /* няма */ }
   const seen = new Set(), queue = [...start];
   while (queue.length) {
     const f = queue.pop();
@@ -87,8 +99,14 @@ export function guardClosure(root = ROOT) {
 /** Списък с правила за ниво A: регексите + затвореният списък на импортите (суфикс по граница „/“). */
 export function protectedSet(root = ROOT) {
   const closure = guardClosure(root).filter((r) => !TIER_A.some((re) => re.test(r)));
+  // Импортите на останалите куки (memory-capture, memory-preload, dod-check, usage-capture…) се изпълняват в куката:
+  // агент, който ги пренапише, заобикаля проверката на поуките и ПРЕДАВАНЕ → ниво B (отказ за агент, свободно за
+  // главната сесия). Само по пълен път — името на файла (usage.mjs, handoff.mjs) не е уникално в репото.
+  const inA = new Set(closure);
+  const hookDeps = guardClosure(root, /\.mjs$/).filter((r) => !inA.has(r) && !TIER_A.some((re) => re.test(r)));
   const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return { a: [...TIER_A, ...closure.map((r) => new RegExp(`(?:^|/)${esc(r)}$`))], b: TIER_B, closure };
+  const rx = (r) => new RegExp(`(?:^|/)${esc(r)}$`);
+  return { a: [...TIER_A, ...closure.map(rx)], b: [...TIER_B, ...hookDeps.map(rx)], closure, hookDeps };
 }
 
 /** Абсолютен път с разрешени symlink-ове (ако пътят или родителят му съществува). */
@@ -137,6 +155,7 @@ function tierOfGlob(word, cwd, set) {
   try { re = globRe(resolve(cwd, expandHome(word)).split("\\").join("/")); } catch { return "A"; } // счупен глоб → fail-closed
   const probes = [
     ...set.closure.map((r) => join(ROOT, r)),
+    ...(set.hookDeps || []).map((r) => join(ROOT, r)),
     ...["hooks", "hooks/guard-exfil.mjs", "hooks/_state/compact-snapshot.md", "settings.json", "settings.local.json",
       "dev-mods", "dev-mods/m/mod.js", "plugins", "agents/_memory", "agents/_memory/x.md", "skills/x/.claude-plugin"]
       .flatMap((x) => [join(ROOT, ".claude", x), join(homedir(), ".claude", x), join(cwd, ".claude", x)]),
@@ -162,7 +181,9 @@ function anchors(cwd) {
 /** Папката съдържа (или е) пазена котва → запис „по данни“ в нея (архив, кръпка) може да стигне до пазачите. */
 export function coversAnchor(dir, cwd = ROOT) {
   const d = resolve(cwd, expandHome(String(dir || "."))).replace(/\/+$/, "") || "/";
-  return anchors(cwd).some((a) => a === d || a.startsWith(d === "/" ? "/" : d + "/")) || !!tierOfPath(d, cwd);
+  // Сам пазен на ниво A. Ниво B (паметта, импортите на куките) се съди по думата със своето ниво — иначе
+  // `prettier --check tools/lib/memory-core.mjs` ставаше „папка с пазачите“ (A → питане и за главната сесия).
+  return anchors(cwd).some((a) => a === d || a.startsWith(d === "/" ? "/" : d + "/")) || tierOfPath(d, cwd) === "A";
 }
 
 /** `$X`/`${X}` → стойност от проследените присвоявания (и HOME). */
@@ -182,11 +203,40 @@ const GIT_READ = new Set(["status", "diff", "log", "show", "add", "commit", "pus
 const INTERP = /^(?:node|nodejs|deno|bun|python[0-9.]*|ruby|perl|php|(?:ba|z|k|da|a|c|tc|fi)?sh)$/;
 const REDIR = /^(?:\d*>>?|&>>?|>\||\d*>&?)(.*)$/; // `>` `>>` `2>` `&>` `>|` (+ слепен път)
 
-/** Подкомандата на git след глобалните флагове (`git -C x -c a=b log` → log). */
-function gitSub(args) {
+/** Мястото на подкомандата на git след глобалните флагове (`git -C x -c a=b log` → 4). */
+function gitSubIndex(args) {
   let i = 0;
   while (i < args.length && args[i].startsWith("-")) i += /^(?:-C|-c|--git-dir|--work-tree|--namespace|--exec-path)$/.test(args[i]) ? 2 : 1;
-  return args[i] || "";
+  return i;
+}
+/** Подкомандата на git след глобалните флагове (`git -C x -c a=b log` → log). */
+function gitSub(args) { return args[gitSubIndex(args)] || ""; }
+
+// Ключове на git, чиято стойност е команда/код (пуска се при git команда) или зарежда чужда конфигурация.
+const GIT_EXEC_KEY = /^(?:core\.(?:hookspath|fsmonitor|sshcommand|pager|editor|askpass|gitproxy|attributesfile)|alias\..+|filter\..+|diff\.(?:external|.+\.(?:textconv|command))|merge\..+\.driver|include\.path|includeif\..+|credential\.(?:.+\.)?helper|gpg\.(?:.+\.)?program|sequence\.editor|pager\..+|interactive\.difffilter|uploadpack\..+|receive\..+|remote\..+\.(?:uploadpack|receivepack|proxy)|url\..+|http\.(?:.+\.)?proxy|submodule\..+\.update|(?:diff|merge)tool\..+\.(?:cmd|path)|web\.browser|browser\..+\.(?:cmd|path)|man\..+\.(?:cmd|path)|instaweb\..+)$/i;
+
+// git подкоманди, които пренаписват работното дърво от ref — `git reset --hard <стар sha>` връща стара, уязвима версия
+// на куките, без пазен път да е в командата (отворения spec, 21.11.2026). Ниво B: отказ за агент, свободно за главната сесия.
+/** Корен на работното дърво на git над `dir` ("" — извън репо). */
+function gitTop(dir) {
+  for (let d = resolve(dir); ; d = dirname(d)) { if (existsSync(join(d, ".git"))) return d; if (d === dirname(d)) return ""; }
+}
+function gitRewritesTree(sub, rest, gcwd) {
+  const pos = rest.filter((w) => !w.startsWith("-")), has = (re) => rest.some((w) => re.test(w));
+  if (rest.includes("--")) return false; // пътищата след `--` се съдят като пътища (по-горе)
+  switch (sub) {
+    case "checkout":
+      if (has(/^-[bB]$|^--orphan$/)) return pos.length > 1; // нов клон от HEAD не сменя файлове; с начална точка — сменя
+      return pos.length > 0 && !pos.every((p) => existsSync(resolve(gcwd, p))); // съществуващ файл = пътека, иначе ref
+    case "switch": return !(has(/^-[cC]$|^--create$|^--force-create$|^--orphan$/) && pos.length <= 1) && pos.length > 0;
+    case "reset": return has(/^--(?:hard|merge|keep)$/);
+    case "stash": return !["list", "show", "drop", "clear", "create", "store"].includes(pos[0]);
+    case "clean": return has(/^-[a-zA-Z]*f|^--force$/) && !has(/^-[a-zA-Z]*n|^--dry-run$/);
+    case "read-tree": return has(/^-u$|^--reset$/);
+    case "bisect": return !["log", "view", "visualize", "terms"].includes(pos[0]);
+    case "merge": case "pull": case "rebase": case "cherry-pick": case "revert": case "checkout-index": return true;
+    default: return false;
+  }
 }
 
 /** argv на проста команда → [причина, ниво] или ["", ""]. `state.cwd` се мести при `cd`. */
@@ -220,6 +270,14 @@ function argvVerdict(argvRaw, state, set) {
     if (m && wordTier(m[1], state.cwd, set)) return [`пазен път в променлива (${w.slice(0, 80)})`, wordTier(m[1], state.cwd, set)];
     if (!m) break;
   }
+  // `for f in <списък>; do …; done`: списъкът сам не пише — променливата получава най-пазения елемент, за да се съди
+  // тялото по истинския път (`rm $f` → отказ, `echo "$f"`/`git diff $f` → свободно).
+  if (argv[0] === "for" && argv[2] === "in" && /^[A-Za-z_]\w*$/.test(argv[1] || "")) {
+    let pick = argv[3] || "", best = "";
+    for (const w of argv.slice(3)) { const t = wordTier(w, state.cwd, set); if (t && (t === "A" || !best)) { pick = w; best = t; if (t === "A") break; } }
+    state.vars[argv[1]] = pick;
+    return ["", ""];
+  }
   // `env -S "rm …"` разделя низа на команда — commandOf го поглъща като стойност на флага.
   if (base(argv[0] || "") === "env") {
     const k = argv.findIndex((w) => w === "-S" || w === "--split-string" || w.startsWith("--split-string="));
@@ -233,7 +291,25 @@ function argvVerdict(argvRaw, state, set) {
   if (name === "git") {
     const all = args.join(" ");
     if (/core\.hookspath/i.test(all) && !/--get\b|--list\b|\s-l\b/.test(all)) return ["git: смяна на core.hooksPath изключва .githooks пазача", "A"];
+    // `git -c alias.x='!rm -rf .claude' x`, `-c core.fsmonitor='rm …'`: стойността е команда на обвивката → съди се като команда.
+    for (let i = 0; i < args.length && args[i].startsWith("-"); i++) {
+      if (args[i] !== "-c" || !args[i + 1]) continue;
+      const kv = /^([^=]+)=(.*)$/s.exec(args[++i]);
+      if (!kv) continue;
+      const t = tierOfText(kv[2], set);
+      if (t) return [`git -c ${kv[1]}: пазен път в стойността`, t];
+      if (GIT_EXEC_KEY.test(kv[1])) { const w = bashVerdictAt(kv[2].replace(/^!/, ""), { ...state, vars: { ...state.vars } }, set, 1); if (w[0]) return [`git -c ${kv[1]}: ${w[0]}`, w[1]]; }
+    }
     const sub = gitSub(args);
+    if (sub === "config") {
+      const rest = args.slice(gitSubIndex(args) + 1);
+      const pos = rest.filter((w) => !w.startsWith("-"));
+      const writes = rest.some((w) => /^(?:--add|--replace-all|--unset(?:-all)?|--rename-section|--remove-section)$/.test(w)) || ["set", "unset"].includes(pos[0]) || pos.length >= 2;
+      const reads = rest.some((w) => /^(?:--get(?:-all|-regexp|-urlmatch|-color(?:bool)?)?|--list|-l)$/.test(w)) || ["get", "list"].includes(pos[0]);
+      if (rest.some((w) => w === "--edit" || w === "-e") || pos[0] === "edit") return ["git config --edit пише конфигурацията на git", "A"];
+      const key = ["set", "unset"].includes(pos[0]) ? pos[1] : pos[0];
+      if (writes && !reads && key && GIT_EXEC_KEY.test(key)) return [`git config ${key}: ключ, който пуска код при всяка git команда`, "A"];
+    }
     if (/^(?:apply|am)$/.test(sub) && !args.some((w) => /^--(?:check|stat|numstat|summary)$/.test(w))) {
       const k = args.indexOf("--directory");
       const dir = k >= 0 ? args[k + 1] : state.cwd;
@@ -292,7 +368,9 @@ function argvVerdict(argvRaw, state, set) {
     gargs.push(...args.slice(i));
   }
   const ancestorHit = (w) => pathy(w) && coversAnchor(w, gcwd);
-  if (!READERS.has(name) && name !== "find" && !(name === "git" && GIT_READ.has(gitSub(args)))) {
+  // `git restore --staged .` пипа само индекса, не файловете.
+  const stagedOnly = name === "git" && gitSub(args) === "restore" && args.some((w) => w === "--staged" || w === "-S") && !args.some((w) => w === "--worktree" || w === "-W");
+  if (!READERS.has(name) && name !== "find" && !stagedOnly && !(name === "git" && GIT_READ.has(gitSub(args)))) {
     if (["cp", "install", "rsync", "mv", "ln"].includes(name)) {
       const t = args.findIndex((w) => w === "-t" || w.startsWith("--target-directory"));
       const plain = args.filter(pathy);
@@ -312,6 +390,11 @@ function argvVerdict(argvRaw, state, set) {
       // (архиваторите се съдят по-горе по режим и местоназначение: `tar -czf /tmp/a.tgz .` само чете)
       return [`${name}: действие върху папка, която съдържа пазачите`, "A"];
     }
+  }
+  if (name === "git") {
+    const sub = gitSub(args), top = gitTop(gcwd);
+    if (top && (existsSync(join(top, ".claude")) || coversAnchor(top, state.cwd)) && gitRewritesTree(sub, args.slice(gitSubIndex(args) + 1), gcwd))
+      return [`git ${sub} пренаписва работното дърво от ref (вкл. куките) — за един файл ползвай \`git checkout <ref> -- <път>\``, "B"];
   }
   const hits = args.map((w, i) => [i, w, wordTier(w, state.cwd, set)]).filter(([, , t]) => t);
   if (!hits.length) return ["", ""];
@@ -370,6 +453,10 @@ function heredocs(src) {
       head = base(a[0] || "?");
       // Съобщение за commit през stdin (`git commit -F - <<EOF`) е данни; `git apply <<EOF` пише → не е четене.
       if (head === "git") head = GIT_READ.has(gitSub(a.slice(1))) ? "cat" : "git";
+      // `cat <<'EOF' | node`: тялото стига до изпълнителя след пайпа, не до cat.
+      const lineEnd = src.indexOf("\n", m.index);
+      const after = src.slice(m.index + m[0].length, lineEnd < 0 ? src.length : lineEnd);
+      for (const st of (pipelineList(head + after)[0] || []).slice(1)) { const ex = stageExecutor(st); if (ex) { head = ex; break; } }
     } catch { head = "?"; }
     const bodyStart = src.indexOf("\n", m.index);
     if (bodyStart < 0) continue;
@@ -385,6 +472,105 @@ function heredocs(src) {
   return out;
 }
 
+// ── Пайп: пазен път в едно звено → изпълнител в следващо ──────────────────────────────────────────────
+// `echo <пазен> | xargs rm`, `… | sh`, `… | while read f; do rm "$f"; done`: пътят е в звено, което само „чете“, а
+// изпълнителят няма аргументи — по думите си всяко звено е невинно (отворения spec на Кодаджията, 21.11.2026).
+
+/** Индексът на затварящата скоба за `(` на позиция `open` (кавичките се прескачат). */
+function closeParenAt(s, open) {
+  let depth = 0;
+  for (let i = open; i < s.length; i++) {
+    const c = s[i];
+    if (c === "\\") { i++; continue; }
+    if (c === "'") { const j = s.indexOf("'", i + 1); i = j < 0 ? s.length : j; continue; }
+    if (c === '"') { for (i++; i < s.length && s[i] !== '"'; i++) if (s[i] === "\\") i++; continue; }
+    if (c === "(") depth++;
+    else if (c === ")" && --depth === 0) return i;
+  }
+  return s.length - 1;
+}
+
+/** Командните редове като списъци от звена на пайп. Кавички, `$(…)`, `<(…)`, `>(…)` и телата на heredoc се прескачат. */
+function pipelineList(src) {
+  const s = String(src || ""), out = [], pending = [];
+  let stages = [], cur = "";
+  const endStage = () => { stages.push(cur.trim()); cur = ""; };
+  const endLine = () => { endStage(); const st = stages.filter(Boolean); if (st.length) out.push(st); stages = []; };
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (c === "\\") { cur += c + (s[i + 1] ?? ""); i++; continue; }
+    if (c === "'" || c === "`") { const j = s.indexOf(c, i + 1), k = j < 0 ? s.length - 1 : j; cur += s.slice(i, k + 1); i = k; continue; }
+    if (c === '"') { let k = i + 1; for (; k < s.length && s[k] !== '"'; k++) if (s[k] === "\\") k++; cur += s.slice(i, k + 1); i = k; continue; }
+    if (/[$<>]/.test(c) && s[i + 1] === "(") { const k = closeParenAt(s, i + 1); cur += s.slice(i, k + 1); i = k; continue; }
+    if (c === "<" && s[i + 1] === "<" && s[i + 2] !== "<" && s[i - 1] !== "<") {
+      const m = /^<<(-?)\s*(['"]?)([\w.-]+)\2/.exec(s.slice(i));
+      if (m) { pending.push({ delim: m[3], strip: m[1] === "-" }); cur += m[0]; i += m[0].length - 1; continue; }
+    }
+    if (c === "\n") {
+      endLine();
+      for (const h of pending.splice(0)) { // тялото на heredoc е данни на своята команда (съди се в heredocs())
+        let p = i + 1;
+        while (p < s.length) { let e = s.indexOf("\n", p); if (e < 0) e = s.length; const line = s.slice(p, e); p = e + 1; if ((h.strip ? line.replace(/^\t+/, "") : line) === h.delim) break; }
+        i = p - 1;
+      }
+      continue;
+    }
+    if (c === "|" && s[i + 1] === "|") { endLine(); i++; continue; }
+    if (c === "|") { endStage(); if (s[i + 1] === "&") i++; continue; }
+    if (c === "&" && s[i + 1] === "&") { endLine(); i++; continue; }
+    if (c === "&" && (s[i + 1] === ">" || s[i - 1] === ">")) { cur += c; continue; } // `&>`, `>&` са пренасочвания
+    if (c === ";" || c === "&" || c === "(" || c === ")") { endLine(); continue; }
+    cur += c;
+  }
+  endLine();
+  return out;
+}
+
+const STDIN_LOOP = /^(?:while|until|for|read|mapfile|readarray|eval|source|\.|parallel)$/;
+/** Звено, което изпълнява входа си (код или аргументи от stdin) → име; иначе "". */
+function stageExecutor(stage) {
+  let argv;
+  try { argv = shellWords(stage).cmds[0] || []; } catch { return "?"; }
+  const raw = argv.filter((w) => !/^[A-Za-z_]\w*=/.test(w));
+  if (!raw.length) return "";
+  if (STDIN_LOOP.test(base(raw[0]))) return base(raw[0]);
+  for (const m of stage.matchAll(/>\(([^)]*)\)/g)) { const ex = stageExecutor(m[1]); if (ex) return ex; } // `tee >(sh)`
+  const a = commandOf(raw), n = base(a[0] || ""), opts = a.slice(1);
+  if (raw.slice(0, raw.length - a.length).some((w) => base(w) === "xargs")) return !a.length || READERS.has(n) ? "" : `xargs ${n}`;
+  if (INTERP.test(n)) {
+    // Проба на пазач (`printf '…' | node .claude/hooks/guard-x.mjs`): stdin е payload-ът, кукaта само съди.
+    const script = opts.find((w) => !w.startsWith("-"));
+    const code = opts.some((w) => /^(?:-e|-c|-p|--eval|--print|-r|--require|--import|-m|-)$/.test(w));
+    return !code && script && /(?:^|\/)\.claude\/hooks\/[\w.-]+\.mjs$/.test(script) ? "" : n;
+  }
+  if (/^[gmn]?awk$/.test(n)) return opts.some((w) => !w.startsWith("-") && /system\s*\(|\||>/.test(w)) ? n : "";
+  if (n === "sed") return opts.some((w) => /(?:^|[;\n{}]\s*)e(?:\s|;|$)/.test(w) || /^s(.)(?:\\.|(?!\1).)*\1(?:\\.|(?!\1).)*\1[gpIiMm0-9]*e/.test(w)) ? "sed e" : "";
+  return "";
+}
+
+/** Ниво на пазен път в текст: свободният текст (пътищата на пазачите) и всяка дума като път (вкл. импортите на куките). */
+function textOrPathTier(text, state, set) {
+  let t = tierOfText(text, set);
+  try { for (const argv of shellWords(text).cmds) for (const w of argv) t = max(t, tierOfPath(expandVars(w, state.vars || {}), state.cwd, set)); } catch { /* текстът стига */ }
+  return t;
+}
+
+function pipeVerdict(src, state, set) {
+  for (const stages of pipelineList(src)) {
+    for (let k = 0; k < stages.length; k++) {
+      const ex = stageExecutor(stages[k]);
+      if (!ex) continue;
+      // Входът на изпълнителя в собственото му звено: `xargs rm < <(echo …)`, `sh <<< "…"`, `xargs rm < списък`.
+      const own = [...stages[k].matchAll(/<\(([^)]*)\)/g)].map((m) => m[1])
+        .concat([...stages[k].matchAll(/<<<\s*('[^']*'|"[^"]*"|\S+)/g)].map((m) => m[1]))
+        .concat([...stages[k].matchAll(/(?:^|[^<>&\d])<\s*([^\s<(][^\s]*)/g)].map((m) => m[1]));
+      const t = max(k ? textOrPathTier(stages.slice(0, k).join(" | "), state, set) : "", own.length ? textOrPathTier(own.join(" "), state, set) : "");
+      if (t) return [`пазен път стига като данни до ${ex}, който изпълнява входа си`, t];
+    }
+  }
+  return ["", ""];
+}
+
 function bashVerdictAt(command, state, set, depth) {
   if (depth > 4) return ["твърде дълбоко вложени команди", "A"];
   // `>|` (noclobber override) е пренасочване, а не пайп — иначе целта изглежда като нова команда.
@@ -393,6 +579,8 @@ function bashVerdictAt(command, state, set, depth) {
     const t = tierOfText(h.body, set);
     if (t && !READERS.has(h.head)) return [`heredoc към ${h.head || "?"} споменава пазен път`, t];
   }
+  const pv = pipeVerdict(src, state, set);
+  if (pv[0]) return pv;
   let parsed;
   try { parsed = shellWords(src); } catch { return tierOfText(src, set) ? ["неразбираема команда с пазен път", tierOfText(src, set)] : ["", ""]; }
   for (const argv of parsed.cmds) {
