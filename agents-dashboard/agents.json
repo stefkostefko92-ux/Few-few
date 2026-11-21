@@ -11481,7 +11481,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 263
+        "lessons": 265
       },
       "evolution": [
         {
@@ -11963,9 +11963,20 @@
           "date": "2026-11-21",
           "event": "v25.3 — учене",
           "detail": "Научи: В linketto неслойовият CSS на globals.css бие Tailwind utilities в @layer, затова на кл… (+1 още)"
+        },
+        {
+          "version": "25.5.0",
+          "date": "2026-11-21",
+          "event": "v25.5 — учене",
+          "detail": "Научи: За scroll-driven pin с хоризонтално влачене ползвай view-timeline на високия контейнер … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-21",
+          "type": "learning",
+          "summary": "Научи: „За scroll-driven pin с хоризонтално влачене ползвай view-timeline на високия контейнер …\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-21",
           "type": "learning",
