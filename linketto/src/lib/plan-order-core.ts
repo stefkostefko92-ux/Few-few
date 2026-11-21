@@ -38,7 +38,7 @@ export interface PlanOrderDeps {
     getDispute(disputeId: string): Promise<unknown>;
   };
   email: {
-    configured(): boolean;
+    configured(): boolean | Promise<boolean>;
     send(input: { to: string; subject: string; html: string; tag?: string }): Promise<boolean>;
   };
   /** true, ако поне едно писмо е тръгнало (спорът се допраща от cron-а при false). */
@@ -210,7 +210,7 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
    * (условен запис на confirmationSentAt). Връща true, ако е изпратено сега.
    */
   async function sendPlanConfirmation(planOrderId: string): Promise<boolean> {
-    if (!deps.email.configured()) return false;
+    if (!(await deps.email.configured())) return false;
     const order = await db.planOrder.findUnique({
       where: { id: planOrderId },
       include: { user: { select: { email: true, name: true, locale: true, planExpiresAt: true } } },

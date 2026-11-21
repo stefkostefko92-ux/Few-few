@@ -7,25 +7,22 @@
 // Brevo НЕ приема стандартни хедъри (вкл. List-Unsubscribe) и сам добавя свой
 // List-Unsubscribe към транзакционните писма — отписването от седмичния отчет е
 // нашата връзка в тялото на писмото (DEPLOY.md §2: настройката при Brevo).
+import { envSetting, parseSender, type EmailSender, type SettingKey } from '@/lib/settings-spec';
+
+export { parseSender, type EmailSender } from '@/lib/settings-spec';
+
+// Ключът и подателят — от админ панела или .env (lib/settings.ts). Той е
+// server-only (база), затова се зарежда при нужда: чистите строители по-долу
+// остават тестваеми, а извън сървъра на Next (node:test) важи само .env.
+async function setting(key: SettingKey): Promise<string | null> {
+  try {
+    return await (await import('@/lib/settings')).setting(key);
+  } catch {
+    return envSetting(key);
+  }
+}
 
 const BREVO_URL = 'https://api.brevo.com/v3/smtp/email';
-const EMAIL_RE = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
-
-export interface EmailSender {
-  name?: string;
-  email: string;
-}
-
-/** EMAIL_FROM „Linketto <no-reply@…>“ или само адрес → подател за Brevo. */
-export function parseSender(raw: string): EmailSender | null {
-  const value = raw.trim();
-  const match = /^(.*?)\s*<([^>]+)>$/.exec(value);
-  const email = (match ? match[2] : value).trim();
-  if (!EMAIL_RE.test(email)) return null;
-  const name = match?.[1].trim().replace(/^"|"$/g, '').trim();
-  return name ? { name, email } : { email };
-}
-
 /** Тялото на POST /v3/smtp/email (само полетата, които ползваме). */
 export function brevoPayload(input: {
   sender: EmailSender;
@@ -43,10 +40,9 @@ export function brevoPayload(input: {
   };
 }
 
-export function emailConfigured(): boolean {
-  return Boolean(
-    process.env.BREVO_API_KEY && parseSender(process.env.EMAIL_FROM ?? ''),
-  );
+/** Brevo е настроен (ключ + подател) — от админ панела или от .env. */
+export async function emailReady(): Promise<boolean> {
+  return Boolean((await setting('brevo.apiKey')) && parseSender((await setting('brevo.sender')) ?? ''));
 }
 
 export async function sendEmail(input: {
@@ -56,8 +52,8 @@ export async function sendEmail(input: {
   /** Етикет в Brevo за филтриране (delivery, digest, newsletter…). */
   tag?: string;
 }): Promise<boolean> {
-  const apiKey = process.env.BREVO_API_KEY;
-  const sender = parseSender(process.env.EMAIL_FROM ?? '');
+  const apiKey = await setting('brevo.apiKey');
+  const sender = parseSender((await setting('brevo.sender')) ?? '');
   if (!apiKey || !sender) return false;
   try {
     const res = await fetch(BREVO_URL, {
@@ -74,6 +70,22 @@ export async function sendEmail(input: {
     return res.status === 201;
   } catch {
     return false;
+  }
+}
+
+/** Проверка на ключа от админа: GET /v3/account — отговорът не се показва. */
+export async function brevoPing(): Promise<{ ok: boolean; status?: number }> {
+  const apiKey = await setting('brevo.apiKey');
+  if (!apiKey) return { ok: false };
+  try {
+    const res = await fetch('https://api.brevo.com/v3/account', {
+      headers: { 'api-key': apiKey, Accept: 'application/json' },
+      signal: AbortSignal.timeout(10_000),
+      cache: 'no-store',
+    });
+    return res.ok ? { ok: true } : { ok: false, status: res.status };
+  } catch {
+    return { ok: false };
   }
 }
 

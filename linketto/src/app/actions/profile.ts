@@ -223,6 +223,8 @@ export async function uploadImageAction(formData: FormData): Promise<void> {
   const profileId = String(formData.get('profileId') ?? '');
   const kind = String(formData.get('kind') ?? '') as 'bg' | 'avatar';
   const file = formData.get('file');
+  // Качването е тежко (sharp) — 30 на час на потребител (червен екип).
+  if (!rateLimit(`upload:${user.id}`, 30, 60 * 60_000)) redirect(await dash(uiLocale, '?error=upload'));
   if ((kind !== 'bg' && kind !== 'avatar') || !(file instanceof File)) {
     redirect(await dash(uiLocale, '?error=upload'));
   }

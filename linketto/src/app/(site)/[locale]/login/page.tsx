@@ -13,10 +13,10 @@ export default async function LoginPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; ok?: string }>;
 }) {
   const { locale } = await params;
-  const { error } = await searchParams;
+  const { error, ok } = await searchParams;
   const t = await getTranslations('auth');
 
   return (
@@ -33,9 +33,22 @@ export default async function LoginPage({
           </Link>
         }
       >
+        {ok === 'signedout' && (
+          <Callout tone="success" className="mt-5">
+            {t('signedOut')}
+          </Callout>
+        )}
         {error && (
           <Callout tone="danger" className="mt-5">
-            {error === 'invalid' ? t('errorInvalid') : t('errorGeneric')}
+            {error === 'invalid'
+              ? t('errorInvalid')
+              : error === 'expired'
+                ? t('errorExpired')
+                : error === 'link'
+                  ? t('errorLink')
+                  : error === 'verify-login'
+                    ? t('errorVerifyLogin')
+                    : t('errorGeneric')}
           </Callout>
         )}
         <form action={loginAction} className="mt-6 space-y-4">
