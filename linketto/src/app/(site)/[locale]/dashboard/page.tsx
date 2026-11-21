@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { SiteHeader } from '@/components/SiteChrome';
+import { ForcedLight } from '@/components/ui/ForcedLight';
 import { LOCALES, LOCALE_NAMES, type Locale } from '@/i18n/locales';
 import { getSessionUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
@@ -311,9 +312,9 @@ export default async function DashboardPage({
     : null;
 
   return (
-    <>
+    <ForcedLight>
       <SiteHeader locale={locale as Locale} />
-      <main className="dash mx-auto max-w-3xl space-y-10 px-6 py-10">
+      <main id="main" className="dash mx-auto max-w-3xl space-y-10 px-6 py-10">
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
           {t('title')}
         </h1>
@@ -2223,6 +2224,6 @@ export default async function DashboardPage({
           </>
         )}
       </main>
-    </>
+    </ForcedLight>
   );
 }

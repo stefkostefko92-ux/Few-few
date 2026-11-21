@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { SiteHeader } from '@/components/SiteChrome';
+import { ForcedLight } from '@/components/ui/ForcedLight';
 import { type Locale } from '@/i18n/locales';
 import { getSessionUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
@@ -203,9 +204,9 @@ export default async function AnalyticsPage({
   };
 
   return (
-    <>
+    <ForcedLight>
       <SiteHeader locale={locale as Locale} />
-      <main className="dash mx-auto max-w-4xl space-y-8 px-6 py-10">
+      <main id="main" className="dash mx-auto max-w-4xl space-y-8 px-6 py-10">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
             {t('analyticsTitle')}
@@ -365,6 +366,6 @@ export default async function AnalyticsPage({
           )}
         </section>
       </main>
-    </>
+    </ForcedLight>
   );
 }

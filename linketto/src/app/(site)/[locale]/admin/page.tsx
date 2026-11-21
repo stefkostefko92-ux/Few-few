@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { SiteHeader } from '@/components/SiteChrome';
+import { ForcedLight } from '@/components/ui/ForcedLight';
 import type { Locale } from '@/i18n/locales';
 import { prisma } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
@@ -124,9 +125,9 @@ export default async function AdminPage({
     'w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm';
 
   return (
-    <>
+    <ForcedLight>
       <SiteHeader locale={locale as Locale} />
-      <main className="dash mx-auto max-w-5xl space-y-6 px-6 py-10">
+      <main id="main" className="dash mx-auto max-w-5xl space-y-6 px-6 py-10">
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">{t('title')}</h1>
         {ok && (
           <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
@@ -664,6 +665,6 @@ export default async function AdminPage({
           ))}
         </div>
       </main>
-    </>
+    </ForcedLight>
   );
 }

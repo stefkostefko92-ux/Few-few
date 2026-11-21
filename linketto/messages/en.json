@@ -7,7 +7,21 @@
     "login": "Log in",
     "register": "Sign up",
     "dashboard": "Dashboard",
-    "logout": "Log out"
+    "logout": "Log out",
+    "features": "Features",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "tools": "Tools",
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "language": "Language",
+    "main": "Main navigation",
+    "skip": "Skip to content",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "onThisPage": "On this page"
   },
   "home": {
     "heroTitle": "One link in bio. Every language in the world.",
@@ -64,7 +78,11 @@
     "claimTaken": "{slug} is taken. Try another one.",
     "claimInvalid": "Letters, numbers and hyphens only (up to 32 characters).",
     "claimTools": "Free tools",
-    "trustPayments": "Plan payments via Revolut Bank UAB (a licensed EU bank)"
+    "trustPayments": "Plan payments via Revolut Bank UAB (a licensed EU bank)",
+    "demoLabel": "Example: one profile, many languages",
+    "factsLabel": "Linketto in numbers",
+    "heroNote": "Free. No credit card.",
+    "manifestoLabel": "Our promise"
   },
   "pricing": {
     "title": "Simple, honest pricing",
@@ -462,7 +480,10 @@
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookies",
     "tools": "Free tools",
-    "compare": "Linketto vs Linktree"
+    "compare": "Linketto vs Linktree",
+    "product": "Product",
+    "legal": "Legal",
+    "languages": "Languages"
   },
   "seo": {
     "metaTitle": "Linketto — multilingual link in bio: all your links, in every language",

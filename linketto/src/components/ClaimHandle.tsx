@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import { normalizeSlug } from '@/lib/slug';
+import { Button } from '@/components/ui/Button';
 
 // „Запази си името“ в hero-то: пишеш името → проверка на живо дали е
 // свободно → регистрацията го създава веднага (?handle=). Работи и без JS
@@ -66,7 +67,7 @@ export function ClaimHandle({
     <form
       action={`/${locale}/register`}
       method="get"
-      className="mx-auto w-full max-w-xl lg:mx-0"
+      className="w-full max-w-xl"
       onSubmit={(event) => {
         if (blocked || !slug) event.preventDefault();
       }}
@@ -74,9 +75,9 @@ export function ClaimHandle({
       <label htmlFor={inputId} className="sr-only">
         {labels.label}
       </label>
-      <div className="flex flex-col gap-2 rounded-3xl border border-white/20 bg-white/10 p-2 shadow-2xl shadow-sky-500/10 backdrop-blur-md transition focus-within:border-white/50 sm:flex-row sm:items-center sm:rounded-full">
-        <div className="flex min-w-0 flex-1 items-center rounded-full bg-slate-950/40 px-4 py-3">
-          <span className="max-w-[55%] shrink-0 truncate text-sm font-medium text-slate-400 sm:max-w-none">
+      <div className="flex flex-col gap-2 rounded-card border border-line-input bg-surface p-1.5 shadow-e2 transition-[border-color,box-shadow] focus-within:border-accent focus-within:shadow-focus sm:flex-row sm:items-center">
+        <div className="flex min-w-0 flex-1 items-center px-3 py-2.5">
+          <span className="max-w-[55%] shrink-0 truncate text-body font-medium text-fg-muted sm:max-w-none">
             {prefix}
           </span>
           <input
@@ -90,26 +91,22 @@ export function ClaimHandle({
             spellCheck={false}
             maxLength={40}
             aria-describedby={`${inputId}-status`}
-            className="min-w-0 flex-1 bg-transparent text-base font-semibold text-white placeholder:text-slate-500 focus:outline-none"
+            className="min-w-0 flex-1 bg-transparent text-[1rem] font-semibold text-fg placeholder:font-medium placeholder:text-fg-muted focus:outline-none"
           />
         </div>
-        <button
-          type="submit"
-          disabled={blocked}
-          className="btn-shine rounded-full bg-white px-6 py-3 font-semibold text-slate-900 shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-sky-400/30 disabled:cursor-not-allowed disabled:opacity-60"
-        >
+        <Button type="submit" size="lg" disabled={blocked}>
           {labels.cta}
-        </button>
+        </Button>
       </div>
       <p
         id={`${inputId}-status`}
         aria-live="polite"
-        className={`mt-2 min-h-5 px-4 text-sm font-medium ${
+        className={`mt-2 min-h-5 px-1 text-small font-medium ${
           status === 'available'
-            ? 'text-emerald-300'
+            ? 'text-success-text'
             : blocked
-              ? 'text-rose-300'
-              : 'text-slate-400'
+              ? 'text-danger-text'
+              : 'text-fg-muted'
         }`}
       >
         {message && slug ? (

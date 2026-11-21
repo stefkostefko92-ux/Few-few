@@ -7,7 +7,21 @@
     "login": "Вход",
     "register": "Регистрация",
     "dashboard": "Табло",
-    "logout": "Изход"
+    "logout": "Изход",
+    "features": "Функции",
+    "pricing": "Цени",
+    "faq": "Въпроси",
+    "tools": "Инструменти",
+    "menu": "Меню",
+    "closeMenu": "Затвори менюто",
+    "language": "Език",
+    "main": "Основна навигация",
+    "skip": "Към съдържанието",
+    "theme": "Тема",
+    "themeLight": "Светла",
+    "themeDark": "Тъмна",
+    "themeSystem": "Системна",
+    "onThisPage": "На тази страница"
   },
   "home": {
     "heroTitle": "Един линк в биото. Всички езици на света.",
@@ -64,7 +78,11 @@
     "claimTaken": "{slug} е заето. Опитай с друг вариант.",
     "claimInvalid": "Само букви, цифри и тирета (до 32 знака).",
     "claimTools": "Безплатни инструменти",
-    "trustPayments": "Плащане на плановете през Revolut Bank UAB (лицензирана банка в ЕС)"
+    "trustPayments": "Плащане на плановете през Revolut Bank UAB (лицензирана банка в ЕС)",
+    "demoLabel": "Пример: един профил, много езика",
+    "factsLabel": "Linketto в числа",
+    "heroNote": "Безплатно. Без кредитна карта.",
+    "manifestoLabel": "Обещание"
   },
   "pricing": {
     "title": "Прости и честни цени",
@@ -462,7 +480,10 @@
     "contact": "info@carbonstealth.eu",
     "cookies": "Бисквитки",
     "tools": "Безплатни инструменти",
-    "compare": "Linketto срещу Linktree"
+    "compare": "Linketto срещу Linktree",
+    "product": "Продукт",
+    "legal": "Правна информация",
+    "languages": "Езици"
   },
   "seo": {
     "metaTitle": "Linketto — многоезичен link in bio: всички линкове, на всеки език",

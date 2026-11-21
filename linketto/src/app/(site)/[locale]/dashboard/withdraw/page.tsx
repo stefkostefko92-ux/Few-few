@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { SiteHeader } from '@/components/SiteChrome';
+import { ForcedLight } from '@/components/ui/ForcedLight';
 import { type Locale } from '@/i18n/locales';
 import { getSessionUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
@@ -46,9 +47,9 @@ export default async function WithdrawPage({
   const fmt = (d: Date) => new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(d);
 
   return (
-    <>
+    <ForcedLight>
       <SiteHeader locale={locale as Locale} />
-      <main className="dash mx-auto max-w-2xl space-y-6 px-6 py-10">
+      <main id="main" className="dash mx-auto max-w-2xl space-y-6 px-6 py-10">
         <Link
           href={`/${locale}/dashboard#plan`}
           className="inline-flex items-center gap-1 text-sm font-medium text-linketto-700 hover:underline"
@@ -109,6 +110,6 @@ export default async function WithdrawPage({
           </form>
         )}
       </main>
-    </>
+    </ForcedLight>
   );
 }

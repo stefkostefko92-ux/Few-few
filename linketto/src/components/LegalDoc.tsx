@@ -1,40 +1,71 @@
+import { getTranslations } from 'next-intl/server';
+import { Container } from '@/components/ui/Container';
+
 // Правен текст в четим вид. Съдържанието НЕ се променя: абзаците са разделени
 // с празен ред, а „Заглавие · текст“ в началото на абзац става подзаглавие.
+// От подзаглавията се строи съдържание отляво (само ≥lg, залепено).
 const LEAD = /^([^·\n]{2,56}?) · ([\s\S]+)$/;
 
-export function LegalDoc({ title, body }: { title: string; body: string }) {
-  const paragraphs = body.split(/\n{2,}/).map((part) => part.trim());
+export async function LegalDoc({ title, body }: { title: string; body: string }) {
+  const t = await getTranslations('nav');
+  const parts = body
+    .split(/\n{2,}/)
+    .map((part) => part.trim())
+    .map((paragraph, index) => {
+      const match = LEAD.exec(paragraph);
+      return match
+        ? { index, heading: match[1], text: match[2] }
+        : { index, heading: null, text: paragraph };
+    });
+  const toc = parts.filter((part) => part.heading);
+
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-16">
-      <article className="rounded-3xl border border-slate-200 bg-white px-6 py-9 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_20px_50px_-30px_rgba(15,23,42,0.18)] sm:px-12 sm:py-12">
-        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
-          {title}
-        </h1>
-        <div
-          aria-hidden
-          className="mt-4 h-1 w-14 rounded-full bg-gradient-to-r from-sky-500 to-violet-500"
-        />
-        <div className="legal-doc mt-8 space-y-6 text-[15.5px] text-slate-700">
-          {paragraphs.map((paragraph, index) => {
-            const match = LEAD.exec(paragraph);
-            if (!match) {
-              return (
-                <p key={index} className="whitespace-pre-line">
-                  {paragraph}
-                </p>
-              );
-            }
-            return (
-              <section key={index}>
-                <h2 className="text-base font-bold text-slate-900">
-                  {match[1]}
-                </h2>
-                <p className="mt-1.5 whitespace-pre-line">{match[2]}</p>
+    <main id="main">
+      <div className="border-b border-line bg-surface-2/50">
+        <Container className="py-12 sm:py-16">
+          <h1 className="max-w-3xl text-title text-fg">{title}</h1>
+        </Container>
+      </div>
+      <Container className="grid gap-10 py-10 sm:py-14 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-16">
+        {toc.length > 2 ? (
+          <nav
+            aria-label={t('onThisPage')}
+            className="hidden lg:block"
+          >
+            <div className="sticky top-[calc(var(--header-h)+2rem)] max-h-[calc(100vh-var(--header-h)-4rem)] overflow-y-auto pe-2">
+              <p className="text-small font-semibold text-fg">{t('onThisPage')}</p>
+              <ol className="mt-3 space-y-0.5 border-s border-line text-small">
+                {toc.map((part) => (
+                  <li key={part.index}>
+                    <a
+                      href={`#s-${part.index}`}
+                      className="focus-ring -ms-px block rounded-sm border-s border-transparent py-1 ps-3 text-fg-muted transition-colors hover:border-accent hover:text-fg"
+                    >
+                      {part.heading}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </nav>
+        ) : (
+          <div className="hidden lg:block" />
+        )}
+        <article className="legal-doc max-w-prose space-y-7 text-[1.0625rem] text-fg-2">
+          {parts.map((part) =>
+            part.heading ? (
+              <section key={part.index} id={`s-${part.index}`} className="scroll-mt-24">
+                <h2 className="text-subheading text-fg">{part.heading}</h2>
+                <p className="mt-2 whitespace-pre-line">{part.text}</p>
               </section>
-            );
-          })}
-        </div>
-      </article>
+            ) : (
+              <p key={part.index} className="whitespace-pre-line">
+                {part.text}
+              </p>
+            ),
+          )}
+        </article>
+      </Container>
     </main>
   );
 }
