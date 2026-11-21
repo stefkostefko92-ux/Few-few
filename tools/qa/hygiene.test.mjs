@@ -129,7 +129,8 @@ test("огледала: цели еднакви файлове не са дуб�
 
 test("огледала: тест, който назовава папката (речниците по език), ги пази; папка от 2 нива — не", () => {
   const dict = `export default {\n${body("d")}\n};\n`;
-  const loop = `for (const f of ["bg", "de"]) {\n  const web = read(join(HERE, "../../../frontend/src/i18n/catalog", \`\${f}.js\`));\n}\n`;
+  // Като истинския тест на SupremeDiscordBot: чете И своето копие, И другото (паритет = поне две копия).
+  const loop = `for (const f of ["bg", "de"]) {\n  const bot = read(join(HERE, "../utils/catalogL10n", \`\${f}.js\`));\n  const web = read(join(HERE, "../../../frontend/src/i18n/catalog", \`\${f}.js\`));\n}\n`;
   const files = [
     { path: "p/bot/src/utils/catalogL10n/bg.js", text: dict },
     { path: "p/frontend/src/i18n/catalog/bg.js", text: dict },
@@ -237,4 +238,33 @@ test("генериран тест не е тест; PHP кодът влиза в
   ]);
   assert.equal(r.tests, 1);
   assert.equal(r.files, 2);
+});
+
+// ─── Второто ревю на Качествения (21.11.2026): E, G, F, I ────────────────────────────────────────────
+test("E: приложенията делят първа папка (apps/*) — тест, който чете само едното копие, не пази другото", () => {
+  const files = [{ path: "p/apps/web/src/fmt.ts", text: fn }, { path: "p/packages/core/src/fmt.ts", text: fn }];
+  const one = { path: "p/apps/api/src/x.test.ts", text: `import { run } from "../../../packages/core/src/fmt";\n` };
+  assert.equal(productReport([...files, one]).mirrorsUnguarded, 1);
+  const both = { path: "p/apps/api/src/x.test.ts", text: `const a = read("../../web/src/fmt.ts");\nconst b = read("../../../packages/core/src/fmt.ts");\nexpect(a).toBe(b);\n` };
+  assert.equal(productReport([...files, both]).mirrorsUnguarded, 0, "тест, който чете двете копия, е паритет");
+});
+
+test("G: `export {` без from, затворен с `}; // коментар`, не поглъща файла", () => {
+  const tail = Array.from({ length: 12 }, (_, i) => `  callSomething${i}(one, two, three);`).join("\n");
+  const t = (tag) => `export {\n  alpha,\n  beta,\n}; // ${tag}\nfunction f() {\n${tail}\n}\n`;
+  const r = productReport([{ path: "p/a.js", text: t("a") + "const onlyA = 1;\n" }, { path: "p/b.js", text: t("b") + "const onlyB = 2;\n" }]);
+  assert.equal(r.dupAt.length, 1, JSON.stringify(r.dupAt));
+});
+
+test("F: `import {` в шаблонен низ (генератор на код) не поглъща кода след него", () => {
+  const tail = Array.from({ length: 12 }, (_, i) => `  emitPart${i}(one, two, three);`).join("\n");
+  const t = (tag) => `const header = \`\nimport {\n\`;\nfunction gen() {\n${tail}\n}\nconst only${tag} = 1;\n`;
+  const r = productReport([{ path: "p/a.js", text: t("A") }, { path: "p/b.js", text: t("B") }]);
+  assert.equal(r.dupAt.length, 1, JSON.stringify(r.dupAt));
+});
+
+test("I: PHP `use App\\…;` не е дублиран код", () => {
+  const uses = Array.from({ length: 9 }, (_, i) => `use App\\Models\\Model${i};`).join("\n");
+  const r = productReport([{ path: "p/a.php", text: `<?php\n${uses}\n$a = 1;\n` }, { path: "p/b.php", text: `<?php\n${uses}\n$b = 2;\n` }]);
+  assert.equal(r.dups, 0, JSON.stringify(r.dupAt));
 });

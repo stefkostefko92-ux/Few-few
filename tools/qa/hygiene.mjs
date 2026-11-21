@@ -22,7 +22,7 @@
 // са „огледала“ (под тест или БЕЗ тест — второто остава сигнал); тестовете се броят и като `*-test.mjs`/
 // `*.test.php`; продукт, който CI пуска през static-site-check, е „статичен“, не „0 тестове“.
 import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, extname, basename, dirname } from "node:path";
+import { join, extname, basename, dirname, posix } from "node:path";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { isTestFile } from "../lib/audit-patterns.mjs";
@@ -63,6 +63,7 @@ export function isDebt(line) {
 export function normalize(line) {
   const t = line.trim().replace(/\s+/g, " ");
   if (t.length < 4 || /^[{}()[\];,]+$/.test(t) || /^(import\b|export \* from|export \{[^}]*\} from)/.test(t) || /^(\/\/|\/\*|\*)/.test(t)) return "";
+  if (/^use\s+[\w\\]+/.test(t)) return ""; // PHP `use App\…;` е import, не код (ревю 21.11.2026)
   return t;
 }
 
@@ -75,7 +76,13 @@ export function significantRows(text) {
   let inImport = false;
   text.split("\n").forEach((l, i) => {
     const t = l.trim();
-    if (inImport) { if (/\bfrom\s*["'`]|^\}\s*;?$/.test(t)) inImport = false; return; }
+    // Пропуска се само докато редът прилича на елемент на import; всеки друг ред спира пропускането и се брои
+    // (иначе `}; // коментар` или `import {` в шаблонен низ поглъщаха целия файл — ревю 21.11.2026, G и F).
+    if (inImport) {
+      if (/^\}\s*from\s*["'`]/.test(t)) { inImport = false; return; }
+      if (/^(type\s+)?[\w$]+(\s+as\s+[\w$]+)?,?\s*(\/\/.*)?$/.test(t) || t === "") return;
+      inImport = false;
+    }
     if (/^(import|export)\s*(type\s*)?\{[^}]*$/.test(t) && (t.startsWith("import") || !/=/.test(t))) { inImport = true; return; }
     const n = normalize(l);
     if (n) rows.push({ n, line: i + 1 });
@@ -115,7 +122,6 @@ export function duplicateBlocks(files, block = BLOCK) {
 }
 
 const relOf = (p) => p.split("/").slice(1).join("/");
-const topOf = (p) => p.split("/")[1] ?? "";
 const noExt = (p) => p.slice(0, p.length - extname(p).length);
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 /** Път в текст по граница: „src/util“ не е в „src/utils/…“ (ревю 21.11.2026, проба C). */
@@ -123,24 +129,33 @@ const hasPath = (t, frag) => new RegExp(`(^|[^\\w-])${esc(frag)}(?=$|[^\\w-])`).
 /** Името на файла като токен — в кавички или пред точка, не подниз („it“ в `it(`, проба B). */
 const hasBase = (t, base) => new RegExp(`["'\`/]${esc(base)}(\\.|["'\`])`).test(t);
 
-/** Тестът назовава копието: пълният път без разширение или папката (≥3 нива) + името като токен. */
-function names(t, path) {
-  const rel = relOf(path), dir = dirname(rel), base = noExt(basename(rel));
-  return hasPath(t, noExt(rel)) || (dir.split("/").length >= 3 && hasPath(t, dir) && hasBase(t, base));
+/** Относителните низове в теста („./x“, „../a/b.js“), разрешени спрямо папката на теста. */
+function reached(t) {
+  const dir = dirname(t.path);
+  return new Set([...t.text.matchAll(/["'`](\.\.?\/[^"'`$\s]*)/g)].map((m) => posix.normalize(posix.join(dir, m[1])).replace(/\/$/, "")));
 }
 
 /**
- * Огледалата са под тест, когато тест от едно копие гледа КЪМ другите (паритет през границата): копията, които
- * тестът назовава извън своята първа папка, плюс копието в неговата папка. Тест до собственото си копие не
- * пази двойката (ревю 21.11.2026, проба A — правилото „n−1 назовани“ даваше фалшиво „под тест“).
+ * Тестът стига до копието: относителен път към него (с или без разширение), относителна папка + името като
+ * токен, или пълният път от корена на продукта (без разширение / папка ≥3 нива + име) — по граница.
+ */
+function names(t, path, rel = reached(t)) {
+  const r = relOf(path), dir = dirname(r), base = noExt(basename(r));
+  if (rel.has(path) || rel.has(noExt(path)) || (rel.has(dirname(path)) && hasBase(t.text, base))) return true;
+  return hasPath(t.text, noExt(r)) || (dir.split("/").length >= 3 && hasPath(t.text, dir) && hasBase(t.text, base));
+}
+
+/**
+ * Огледалата са под тест, когато тест чете поне ДВЕ копия (паритет) и такива тестове покриват всички копия.
+ * Тест само до собственото си копие не пази двойката (проба A); обща първа папка (`apps/*`) не значи, че
+ * тестът стига до копието (проба E) — затова пътят се разрешава спрямо теста (ревю 21.11.2026).
  */
 export function guardedBy(at, tests) {
   const covered = new Set();
   for (const t of tests) {
-    const cross = at.filter((p) => topOf(p) !== topOf(t.path) && names(t.text, p));
-    if (!cross.length) continue;
-    for (const p of cross) covered.add(p);
-    for (const p of at) if (topOf(p) === topOf(t.path)) covered.add(p);
+    const rel = reached(t);
+    const hit = at.filter((p) => names(t, p, rel));
+    if (hit.length >= 2) for (const p of hit) covered.add(p);
   }
   return at.every((p) => covered.has(p));
 }
