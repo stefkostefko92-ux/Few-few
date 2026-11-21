@@ -14334,7 +14334,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 354
+        "lessons": 355
       },
       "evolution": [
         {
@@ -14528,9 +14528,20 @@
           "date": "2026-11-21",
           "event": "v34.8 — учене",
           "detail": "Научи: node --test с път до папка (node --test tools/agents/evals/) не пуска тестовете в нея и…"
+        },
+        {
+          "version": "34.9.0",
+          "date": "2026-11-21",
+          "event": "v34.9 — учене",
+          "detail": "Научи: Отказ при structured output (stop_reason refusal) идва с 200 и се таксува, а messages.p…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-21",
+          "type": "learning",
+          "summary": "Научи: „Отказ при structured output (stop_reason refusal) идва с 200 и се таксува, а messages.p…\""
+        },
         {
           "date": "2026-11-21",
           "type": "learning",
