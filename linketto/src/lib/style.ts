@@ -4,6 +4,7 @@
 
 import { z } from 'zod';
 import type { CSSProperties } from 'react';
+import { contrastHex, parseHex } from '@/lib/contrast';
 
 const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 // Картинка: външен https URL или качен от нас файл (/media/...).
@@ -122,13 +123,18 @@ export function buttonShadowClass(style: ProfileStyle): string {
   }
 }
 
-/** Кой цвят текст се чете върху даден hex фон. */
+/** Кой цвят текст се чете върху даден hex фон — този с по-висок WCAG
+ *  контраст (не праг по яркост: среден син върху бял пада под 4.5:1). */
 export function readableOn(hexColor: string): string {
-  const r = parseInt(hexColor.slice(1, 3), 16);
-  const g = parseInt(hexColor.slice(3, 5), 16);
-  const b = parseInt(hexColor.slice(5, 7), 16);
-  const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
-  return luminance > 150 ? '#111827' : '#ffffff';
+  if (!parseHex(hexColor)) return '#ffffff';
+  const dark = contrastHex('#111827', hexColor);
+  const light = contrastHex('#ffffff', hexColor);
+  const best = dark >= light ? '#111827' : '#ffffff';
+  // Среден тон: нито графитът, нито бялото стигат 4.5:1 → чисто черно.
+  if (Math.max(dark, light) < 4.5 && contrastHex('#000000', hexColor) >= 4.5) {
+    return '#000000';
+  }
+  return best;
 }
 
 /** Inline CSS на бутон според fill режима и (пер-блок) акцентен цвят. */

@@ -17,9 +17,8 @@ import { applyTemplate, isTemplateId, NICHE_TEMPLATES } from '@/lib/templates';
 import { domainChange, domainTxtName, txtMatches } from '@/lib/domain-verify';
 import { rateLimit } from '@/lib/rate-limit';
 import { zonedLocalToUtc } from '@/lib/zoned-time';
+import { PROFILE_THEMES } from '@/lib/profile-themes';
 import type { Prisma } from '@prisma/client';
-
-const THEMES = ['aurora', 'mono', 'dusk'] as const;
 
 function localeFrom(formData: FormData): string {
   const raw = String(formData.get('uiLocale') ?? 'en');
@@ -98,7 +97,7 @@ export async function applyTemplateAction(formData: FormData): Promise<void> {
 }
 
 const settingsSchema = z.object({
-  theme: z.enum(THEMES),
+  theme: z.enum(PROFILE_THEMES),
   accent: z
     .string()
     .regex(/^#[0-9a-fA-F]{6}$/)

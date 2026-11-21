@@ -29,6 +29,13 @@ import {
   upsertProfileTranslationAction,
 } from '@/app/actions/profile';
 import { backgroundCss, buttonCss, parseStyle } from '@/lib/style';
+import { ThemePicker } from '@/components/ThemePicker';
+import {
+  PROFILE_THEMES,
+  resolveProfileTheme,
+  safeAccent,
+  type ProfileThemeId,
+} from '@/lib/profile-themes';
 import { profileUrl } from '@/lib/profile-url';
 import { NICHE_TEMPLATES, TEMPLATE_IDS } from '@/lib/templates';
 import { languageDemand } from '@/lib/language-gap';
@@ -74,8 +81,6 @@ import {
 } from '@/app/actions/shop';
 
 export const dynamic = 'force-dynamic';
-
-const THEMES = ['aurora', 'mono', 'dusk'] as const;
 
 // ?error=<код> → ключ на съобщението (непознат код → общата грешка).
 const DASHBOARD_ERRORS: Record<string, string> = {
@@ -489,20 +494,16 @@ export default async function DashboardPage({
               >
                 <input type="hidden" name="uiLocale" value={locale} />
                 <input type="hidden" name="profileId" value={profile.id} />
-                <label className="block text-sm font-medium">
-                  {t('theme')}
-                  <select
-                    name="theme"
-                    defaultValue={profile.theme}
-                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
-                  >
-                    {THEMES.map((theme) => (
-                      <option key={theme} value={theme}>
-                        {theme}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <ThemePicker
+                  className="sm:col-span-2"
+                  name="theme"
+                  legend={t('theme')}
+                  value={resolveProfileTheme(profile.theme)}
+                  accent={safeAccent(profile.accent)}
+                  labels={Object.fromEntries(
+                    PROFILE_THEMES.map((id) => [id, t(`themeName_${id}`)]),
+                  ) as Record<ProfileThemeId, string>}
+                />
                 <label className="block text-sm font-medium">
                   {t('defaultLocale')}
                   <select
