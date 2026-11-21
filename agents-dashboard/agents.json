@@ -16875,7 +16875,7 @@
           "Нашите пластове: tools/security/secret-scan.mjs, guard-куките, .github/workflows/security.yml",
           "Границата: Наблюдателя (SRE здраве), VPS-аджията (машина), Правния Разбирач (правен текст)"
         ],
-        "lessons": 234
+        "lessons": 237
       },
       "evolution": [
         {
@@ -16889,9 +16889,20 @@
           "date": "2026-11-21",
           "event": "v23.4 — учене",
           "detail": "Научи: При първо монтиране на нов празен именуван Docker том върху папка, която съществува в о… (+232 още)"
+        },
+        {
+          "version": "23.7.0",
+          "date": "2026-11-21",
+          "event": "v23.7 — учене",
+          "detail": "Научи: Open redirect-ът в next-intl (GHSA-8f24-v5vv-gm5j, поправен в 4.9.1) засяга само middle… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-21",
+          "type": "learning",
+          "summary": "Научи: „Open redirect-ът в next-intl (GHSA-8f24-v5vv-gm5j, поправен в 4.9.1) засяга само middle…\" (+2 още)"
+        },
         {
           "date": "2026-11-21",
           "type": "learning",
