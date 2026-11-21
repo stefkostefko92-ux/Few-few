@@ -7,6 +7,8 @@
 // САМО връзки по шаблон (MUNICIPALITY_NEWS_LINK_PATTERN) и САМО с дата до тях.
 // Нищо не съвпада → нищо не се внася (fail closed), а отчетът казва защо.
 
+import { BG_MONTHS } from "@/lib/format-date";
+
 export const MUNICIPALITY_SOURCE = "Община Бобов дол";
 
 export const DEFAULT_NEWS_URL =
@@ -215,20 +217,7 @@ function toAbsolute(base: string, href: string): string | null {
 
 // --- дата ---
 
-const MONTHS = [
-  "януари",
-  "февруари",
-  "март",
-  "април",
-  "май",
-  "юни",
-  "юли",
-  "август",
-  "септември",
-  "октомври",
-  "ноември",
-  "декември",
-];
+const MONTHS: readonly string[] = BG_MONTHS;
 const NUMERIC_DATE = /(?<!\d)(\d{1,2})[./](\d{1,2})[./](\d{4})(?!\d)/g;
 const WORD_DATE = new RegExp(`(?<!\\d)(\\d{1,2})\\s+(${MONTHS.join("|")})\\s+(\\d{4})(?!\\d)`, "giu");
 
