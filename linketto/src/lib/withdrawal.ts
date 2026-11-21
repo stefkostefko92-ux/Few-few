@@ -80,7 +80,7 @@ const STRINGS: Record<string, Strings> = {
     receivedOn: 'Statement received on',
     next: 'We refund the full amount paid without undue delay and no later than 14 days from receiving your withdrawal, using the same means of payment and at no cost to you. Only what this order bought is removed — the plan and period you had before it are restored.',
     nextPartial: (v) =>
-      `We refund ${v.refund} to you without undue delay and no later than 14 days from receiving your withdrawal, using the same means of payment and at no cost to you. We keep ${v.kept} — the proportionate amount for the time from ${v.start} to ${v.received} during which the plan under this order was provided to you at your express request. Only what this order bought is removed — the plan and period you had before it are restored.`,
+      `We refund ${v.refund} to you without undue delay and no later than 14 days from receiving your withdrawal, using the same means of payment and at no cost to you. We keep ${v.kept} — the proportionate amount for the time from ${v.start} to ${v.received} during which the plan under this order was provided to you at your express request. Only what this order bought is removed — the plan and period you had before it are restored; if this order moved you to a higher plan, the previous plan's period is extended by the time you used the new one.`,
   },
   it: {
     subject: 'Linketto: conferma di ricevimento del recesso dal contratto',
@@ -92,7 +92,7 @@ const STRINGS: Record<string, Strings> = {
     receivedOn: 'Dichiarazione ricevuta il',
     next: 'Ti rimborsiamo l’intero importo pagato senza indebito ritardo e comunque entro 14 giorni dal ricevimento del recesso, con lo stesso mezzo di pagamento e senza costi per te. Viene meno solo ciò che è stato acquistato con questo ordine — il piano e il periodo che avevi prima vengono ripristinati.',
     nextPartial: (v) =>
-      `Ti rimborsiamo ${v.refund} senza indebito ritardo e comunque entro 14 giorni dal ricevimento del recesso, con lo stesso mezzo di pagamento e senza costi per te. Tratteniamo ${v.kept} — l’importo proporzionale per il periodo dal ${v.start} al ${v.received}, durante il quale il piano relativo a questo ordine ti è stato fornito su tua espressa richiesta. Viene meno solo ciò che è stato acquistato con questo ordine — il piano e il periodo che avevi prima vengono ripristinati.`,
+      `Ti rimborsiamo ${v.refund} senza indebito ritardo e comunque entro 14 giorni dal ricevimento del recesso, con lo stesso mezzo di pagamento e senza costi per te. Tratteniamo ${v.kept} — l’importo proporzionale per il periodo dal ${v.start} al ${v.received}, durante il quale il piano relativo a questo ordine ti è stato fornito su tua espressa richiesta. Viene meno solo ciò che è stato acquistato con questo ordine — il piano e il periodo che avevi prima vengono ripristinati; se con questo ordine sei passato a un piano superiore, il periodo del piano precedente viene prolungato del tempo in cui hai usato quello nuovo.`,
   },
   es: {
     subject: 'Linketto: acuse de recibo de tu desistimiento del contrato',
@@ -104,7 +104,7 @@ const STRINGS: Record<string, Strings> = {
     receivedOn: 'Declaración recibida el',
     next: 'Te devolvemos el importe íntegro pagado sin demoras indebidas y, a más tardar, 14 días después de recibir tu desistimiento, por el mismo medio de pago y sin ningún coste para ti. Solo se retira lo adquirido con este pedido: se restablecen el plan y el período que tenías antes.',
     nextPartial: (v) =>
-      `Te devolvemos ${v.refund} sin demoras indebidas y, a más tardar, 14 días después de recibir tu desistimiento, por el mismo medio de pago y sin ningún coste para ti. Retenemos ${v.kept}: el importe proporcional al tiempo transcurrido entre el ${v.start} y el ${v.received}, durante el cual se te prestó el plan de este pedido a petición expresa tuya. Solo se retira lo adquirido con este pedido: se restablecen el plan y el período que tenías antes.`,
+      `Te devolvemos ${v.refund} sin demoras indebidas y, a más tardar, 14 días después de recibir tu desistimiento, por el mismo medio de pago y sin ningún coste para ti. Retenemos ${v.kept}: el importe proporcional al tiempo transcurrido entre el ${v.start} y el ${v.received}, durante el cual se te prestó el plan de este pedido a petición expresa tuya. Solo se retira lo adquirido con este pedido: se restablecen el plan y el período que tenías antes; si con este pedido pasaste a un plan superior, el período del plan anterior se prolonga por el tiempo durante el que usaste el nuevo.`,
   },
   de: {
     subject: 'Linketto: Eingangsbestätigung deines Widerrufs',
@@ -116,7 +116,7 @@ const STRINGS: Record<string, Strings> = {
     receivedOn: 'Erklärung eingegangen am',
     next: 'Wir erstatten dir den vollen gezahlten Betrag unverzüglich und spätestens binnen 14 Tagen ab Eingang deines Widerrufs, über dasselbe Zahlungsmittel und ohne Kosten für dich. Es entfällt nur, was mit dieser Bestellung bezahlt wurde — Plan und Zeitraum von davor werden wiederhergestellt.',
     nextPartial: (v) =>
-      `Wir erstatten dir ${v.refund} unverzüglich und spätestens binnen 14 Tagen ab Eingang deines Widerrufs, über dasselbe Zahlungsmittel und ohne Kosten für dich. Wir behalten ${v.kept} ein — den anteiligen Betrag für die Zeit vom ${v.start} bis zum ${v.received}, in der dir der Plan aus dieser Bestellung auf dein ausdrückliches Verlangen bereitgestellt wurde. Es entfällt nur, was mit dieser Bestellung bezahlt wurde — Plan und Zeitraum von davor werden wiederhergestellt.`,
+      `Wir erstatten dir ${v.refund} unverzüglich und spätestens binnen 14 Tagen ab Eingang deines Widerrufs, über dasselbe Zahlungsmittel und ohne Kosten für dich. Wir behalten ${v.kept} ein — den anteiligen Betrag für die Zeit vom ${v.start} bis zum ${v.received}, in der dir der Plan aus dieser Bestellung auf dein ausdrückliches Verlangen bereitgestellt wurde. Es entfällt nur, was mit dieser Bestellung bezahlt wurde — Plan und Zeitraum von davor werden wiederhergestellt; bist du mit dieser Bestellung in einen höheren Plan gewechselt, verlängert sich der Zeitraum des vorherigen Plans um die Zeit, in der du den neuen genutzt hast.`,
   },
   fr: {
     subject: 'Linketto : accusé de réception de votre rétractation',
@@ -128,7 +128,7 @@ const STRINGS: Record<string, Strings> = {
     receivedOn: 'Déclaration reçue le',
     next: 'Nous vous remboursons l’intégralité du montant payé sans retard excessif et au plus tard 14 jours après réception de votre rétractation, par le même moyen de paiement et sans frais pour vous. Seul ce qui a été acheté avec cette commande est retiré — le plan et la période dont vous disposiez auparavant sont rétablis.',
     nextPartial: (v) =>
-      `Nous vous remboursons ${v.refund} sans retard excessif et au plus tard 14 jours après réception de votre rétractation, par le même moyen de paiement et sans frais pour vous. Nous retenons ${v.kept} — le montant proportionnel à la période du ${v.start} au ${v.received}, pendant laquelle le plan de cette commande vous a été fourni à votre demande expresse. Seul ce qui a été acheté avec cette commande est retiré — le plan et la période dont vous disposiez auparavant sont rétablis.`,
+      `Nous vous remboursons ${v.refund} sans retard excessif et au plus tard 14 jours après réception de votre rétractation, par le même moyen de paiement et sans frais pour vous. Nous retenons ${v.kept} — le montant proportionnel à la période du ${v.start} au ${v.received}, pendant laquelle le plan de cette commande vous a été fourni à votre demande expresse. Seul ce qui a été acheté avec cette commande est retiré — le plan et la période dont vous disposiez auparavant sont rétablis ; si cette commande vous a fait passer à un plan supérieur, la période du plan précédent est prolongée de la durée pendant laquelle vous avez utilisé le nouveau.`,
   },
 };
 

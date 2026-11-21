@@ -31,7 +31,7 @@ const nextConfig = {
             // вграденото видео, translator — за превода в браузъра.
             key: 'Permissions-Policy',
             value:
-              'camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), hid=(), bluetooth=(), midi=(), browsing-topics=()',
+              'camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), hid=(), midi=(), browsing-topics=()',
           },
         ],
       },

@@ -4,6 +4,7 @@ import path from 'node:path';
 import { randomBytes } from 'node:crypto';
 import { prisma } from '@/lib/db';
 import { imageQueueFull, mediaFileName, processImage, withUploadLock } from '@/lib/image-process';
+import { mediaReferences } from '@/lib/media-refs';
 
 // Качени изображения (фон/аватар): валидираме, преоразмеряваме и
 // презаписваме в webp през sharp — това маха EXIF метаданните (GDPR)
@@ -45,9 +46,6 @@ export async function saveUploadedImage(
  */
 export async function removeUnusedMedia(url: string | null | undefined): Promise<void> {
   const name = mediaFileName(url);
-  if (!name) return;
-  const rows = await prisma.$queryRaw<{ n: bigint }[]>`
-    SELECT count(*)::bigint AS n FROM "Profile" WHERE "style"::text LIKE ${'%' + name + '%'}`;
-  if (Number(rows[0]?.n ?? 0) > 0) return;
+  if (!name || (await mediaReferences(prisma, url)) !== 0) return;
   await unlink(path.join(uploadsDir(), name)).catch(() => undefined);
 }

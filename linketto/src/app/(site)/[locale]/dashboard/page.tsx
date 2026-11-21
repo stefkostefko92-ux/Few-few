@@ -969,6 +969,7 @@ export default async function DashboardPage({
                     <input
                       type="file"
                       name="file"
+                      aria-label={t('uploadBg')}
                       required
                       accept="image/jpeg,image/png,image/webp"
                       className="flex-1 text-xs text-fg-muted file:me-3 file:rounded-full file:border-0 file:bg-accent-soft file:px-4 file:py-2 file:text-sm file:font-semibold file:text-accent-soft-fg hover:file:bg-accent-soft"
@@ -990,6 +991,7 @@ export default async function DashboardPage({
                     <input
                       type="file"
                       name="file"
+                      aria-label={t('uploadAvatar')}
                       required
                       accept="image/jpeg,image/png,image/webp"
                       className="flex-1 text-xs text-fg-muted file:me-3 file:rounded-full file:border-0 file:bg-accent-soft file:px-4 file:py-2 file:text-sm file:font-semibold file:text-accent-soft-fg hover:file:bg-accent-soft"
@@ -1548,24 +1550,29 @@ export default async function DashboardPage({
             <section id="qr" className="dash-card rounded-card border border-line bg-surface p-5 shadow-e1 sm:p-6">
               <h2 className="text-subheading text-fg">{t('qrSection')}</h2>
               <p className="mt-1 text-sm text-fg-muted">{t('qrHint')}</p>
-              <div className="mt-4 flex items-center gap-6">
-                {/* eslint-disable-next-line @next/next/no-img-element -- динамичен SVG route */}
-                <img
-                  src={`/u/${profile.slug}/qr`}
-                  alt="QR"
-                  width={144}
-                  height={144}
-                  className="h-36 w-36 rounded-card border border-line bg-surface p-2"
-                />
-                <a
-                  href={`/u/${profile.slug}/qr`}
-                  download={`${profile.slug}-qr.svg`}
-                  className={buttonStyles({ variant: 'secondary' })}
-                >
-                  <DownloadIcon className="h-4 w-4" />
-                  SVG
-                </a>
-              </div>
+              {/* QR route-ът връща 404 за скрит профил — вместо счупена картинка, подсказка. */}
+              {profile.published ? (
+                <div className="mt-4 flex items-center gap-6">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- динамичен SVG route */}
+                  <img
+                    src={`/u/${profile.slug}/qr`}
+                    alt="QR"
+                    width={144}
+                    height={144}
+                    className="h-36 w-36 rounded-card border border-line bg-surface p-2"
+                  />
+                  <a
+                    href={`/u/${profile.slug}/qr`}
+                    download={`${profile.slug}-qr.svg`}
+                    className={buttonStyles({ variant: 'secondary' })}
+                  >
+                    <DownloadIcon className="h-4 w-4" />
+                    SVG
+                  </a>
+                </div>
+              ) : (
+                <p className="mt-4 rounded-card border border-dashed border-line p-4 text-sm text-fg-muted">{t('qrUnpublished')}</p>
+              )}
               {parseStyle(profile.style).mediaKit && (
                 <p className="mt-4 border-t border-line pt-4 text-sm">
                   <a

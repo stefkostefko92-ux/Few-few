@@ -466,6 +466,12 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
    * сторниран заради връщане на пари, не се пипа.
    */
   async function restoreDisputedReferral(tx: Prisma.TransactionClient, planOrderId: string): Promise<boolean> {
+    // Само по поръчка, която още стои (платена, без отказ) — върната или с отказ остава сторнирана.
+    const order = await tx.planOrder.findUnique({ where: { id: planOrderId }, select: { state: true, withdrawalRequestedAt: true } });
+    if (order?.state !== 'completed' || order.withdrawalRequestedAt) {
+      await tx.referral.updateMany({ where: { planOrderId, reversalReason: 'dispute' }, data: { reversalReason: 'refund' } });
+      return false;
+    }
     const { count } = await tx.referral.updateMany({
       where: { planOrderId, reversalReason: 'dispute', reversedAt: { not: null } },
       data: { reversedAt: null, reversalReason: null, releasedAt: null, flaggedAt: null },
@@ -485,13 +491,21 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
     let held = 0;
     // Само узрелите и неотбелязаните; на страници — трайно задържаните (отказ в ход и др.)
     // не запушват опашката пред по-новите.
+    // Курсор по `id > последния` (не Prisma cursor+skip: обработеният ред излиза от филтъра
+    // и skip:1 би прескочил следващия).
     let cursor: string | undefined;
     for (let page = 0; page < 50; page += 1) {
       const due = await db.referral.findMany({
-        where: { releasedAt: null, reversedAt: null, flaggedAt: null, planOrderId: { not: null }, createdAt: { lt: cutoff } },
+        where: {
+          releasedAt: null,
+          reversedAt: null,
+          flaggedAt: null,
+          planOrderId: { not: null },
+          createdAt: { lt: cutoff },
+          ...(cursor ? { id: { gt: cursor } } : {}),
+        },
         take: 200,
         orderBy: { id: 'asc' },
-        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       });
       if (due.length === 0) break;
       cursor = due[due.length - 1]!.id;

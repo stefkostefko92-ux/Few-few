@@ -45,3 +45,21 @@ test('30 паралелни добавяния при таван 5 → точн�
     await db.user.delete({ where: { id: user.id } });
   }
 });
+
+test('mediaReferences: само точно поле avatarUrl/bgImageUrl — https адрес с името не задържа файла', { skip }, async () => {
+  const { mediaReferences } = await import('../media-refs');
+  const name = `avatar-${randomUUID().replace(/-/g, '').slice(0, 24)}.webp`;
+  const own = `/media/${name}`;
+  const victim = await db.user.create({ data: { email: `${randomUUID()}@lock.int.test`, passwordHash: 'x' } });
+  const attacker = await db.user.create({ data: { email: `${randomUUID()}@lock.int.test`, passwordHash: 'x' } });
+  try {
+    const v = await db.profile.create({ data: { userId: victim.id, slug: `v-${randomUUID().slice(0, 8)}`, style: { avatarUrl: own } } });
+    await db.profile.create({ data: { userId: attacker.id, slug: `a-${randomUUID().slice(0, 8)}`, style: { avatarUrl: `https://linketto.example${own}` } } });
+    assert.equal(await mediaReferences(db, own), 1, 'само профилът на жертвата');
+    await db.profile.update({ where: { id: v.id }, data: { style: {} } });
+    assert.equal(await mediaReferences(db, own), 0, 'чуждият https адрес не задържа файла');
+    assert.equal(await mediaReferences(db, 'https://evil.example/x.webp'), null, 'не е наш файл');
+  } finally {
+    await db.user.deleteMany({ where: { id: { in: [victim.id, attacker.id] } } });
+  }
+});

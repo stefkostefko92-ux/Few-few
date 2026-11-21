@@ -148,3 +148,13 @@ test('най-много 1 качване в ход на потребител', a
   assert.equal(await first, 'ok');
   assert.equal(await withUploadLock('u1', async () => 'again'), 'again', 'след края — пак може');
 });
+
+test('общо ≤6 качвания в ход (място се запазва синхронно, преди тялото да се копира)', async () => {
+  const { withUploadLock } = await import('../image-process');
+  const gates: Array<() => void> = [];
+  const held = Array.from({ length: 6 }, (_, i) => withUploadLock(`k${i}`, () => new Promise<void>((r) => gates.push(r))));
+  assert.equal(await withUploadLock('k-extra', async () => 'x'), null, '7-ото — отказ веднага');
+  gates.forEach((g) => g());
+  await Promise.all(held);
+  assert.equal(await withUploadLock('k-extra', async () => 'x'), 'x');
+});

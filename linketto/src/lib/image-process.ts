@@ -50,9 +50,13 @@ export function imageQueueFull(): boolean {
 
 const inFlight = new Set<string>();
 
-/** Най-много 1 качване в ход на ключ (потребител); зает → null веднага. */
+/**
+ * Най-много 1 качване в ход на ключ (потребител) и общо ≤ MAX_PARALLEL + MAX_WAITING —
+ * мястото се запазва СИНХРОННО, преди тялото да се копира (паралелни заявки от много
+ * акаунти не минават проверката преди да се преброят). Зает → null веднага.
+ */
 export async function withUploadLock<T>(key: string, fn: () => Promise<T>): Promise<T | null> {
-  if (inFlight.has(key)) return null;
+  if (inFlight.has(key) || inFlight.size >= MAX_PARALLEL + MAX_WAITING) return null;
   inFlight.add(key);
   try {
     return await fn();

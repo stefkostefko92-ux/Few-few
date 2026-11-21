@@ -872,3 +872,20 @@ test('A6: бонус, създаден без releasedAt (стар код сле
   assert.ok(legacy.releasedAt, 'DEFAULT на колоната = освободен');
   assert.equal((await service.releaseReferralBonuses()).released, 0, 'не се кредитира втори път');
 });
+
+test('А4в: „won“ по поръчка, върната междувременно → бонусът остава сторниран (причина refund)', { skip }, async () => {
+  const referrer = await mkUser();
+  const user = await mkUser({ referredById: referrer.id });
+  const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: order.id });
+  const id = `dsp-int-${randomUUID()}`;
+  disputes.set(id, disputeFor(order.revolutOrderId as string, 'needs_response', { id }));
+  await service.recordDispute(id);
+  refundImmediate = 'completed';
+  assert.equal(await service.requestPlanRefund(order.id), 'refunded');
+  disputes.set(id, disputeFor(order.revolutOrderId as string, 'won', { id }));
+  assert.equal(await service.recordDispute(id), 'recorded');
+  const r = await db.referral.findUniqueOrThrow({ where: { planOrderId: order.id } });
+  assert.ok(r.reversedAt, 'не е върнат в задържане');
+  assert.equal(r.reversalReason, 'refund');
+});
