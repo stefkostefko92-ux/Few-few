@@ -16170,7 +16170,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 204
+        "lessons": 206
       },
       "evolution": [
         {
@@ -16220,9 +16220,20 @@
           "date": "2026-11-21",
           "event": "v30.1 — учене",
           "detail": "Научи: Без managed settings, managed-mcp.json или Team/Enterprise /login мод на потребителя мо… (+28 още)"
+        },
+        {
+          "version": "30.3.0",
+          "date": "2026-11-21",
+          "event": "v30.3 — учене",
+          "detail": "Научи: Map-базиран in-memory лимитер с „изхвърли най-старите при >MAX_KEYS“ се нулира от всеки… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-21",
+          "type": "learning",
+          "summary": "Научи: „Map-базиран in-memory лимитер с „изхвърли най-старите при >MAX_KEYS“ се нулира от всеки…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-21",
           "type": "learning",
