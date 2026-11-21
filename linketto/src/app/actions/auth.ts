@@ -171,17 +171,17 @@ export async function loginAction(formData: FormData): Promise<void> {
     await recordSecurityEvent('auth.login.failed', { subject, country: await requestCountryCode() });
     // Стражата: вълна срещу един акаунт, бавно налучкване (24 ч) и „пръскане“ по много акаунти.
     if (subject) {
-      await alertAtThreshold({ name: 'login-wave', key: subject, threshold: 20 }, await countRecent('auth.login.failed', 10, { subject }), 'Вълна от неуспешни входове', [
+      await alertAtThreshold({ name: 'login-wave', key: subject, threshold: 20, outsider: true }, await countRecent('auth.login.failed', 10, { subject }), 'Вълна от неуспешни входове', [
         '20+ неуспешни опита за вход в един акаунт за 10 минути (възможно налучкване на парола).',
       ]);
       await alertAtThreshold(
-        { name: 'login-slow', key: subject, threshold: 50, windowMs: 24 * 60 * 60_000 },
+        { name: 'login-slow', key: subject, threshold: 50, windowMs: 24 * 60 * 60_000, outsider: true },
         await countRecent('auth.login.failed', 24 * 60, { subject }),
         'Бавно налучкване на парола',
         ['50+ неуспешни опита за вход в един акаунт за 24 часа.'],
       );
     }
-    await alertAtThreshold({ name: 'login-spray', threshold: 200 }, await countRecent('auth.login.failed', 10), 'Масови неуспешни входове', [
+    await alertAtThreshold({ name: 'login-spray', threshold: 200, outsider: true }, await countRecent('auth.login.failed', 10), 'Масови неуспешни входове', [
       '200+ неуспешни опита за вход за 10 минути в целия сайт (възможно „пръскане“ на пароли по много акаунти).',
     ]);
     redirect(`/${locale}/login?error=invalid`);

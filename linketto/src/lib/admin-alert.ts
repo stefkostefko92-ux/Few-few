@@ -45,5 +45,7 @@ export async function notifyAdmins(subject: string, lines: string[]): Promise<bo
   for (const address of to) {
     if (await sendEmail({ to: address, subject: s, html, tag: 'admin-alert' }).catch(() => false)) sent = true;
   }
+  // Отказ от Brevo (напр. изчерпана дневна квота) — също със следа (Стражата).
+  if (!sent) console.error('[admin-alert] не е изпратена: Brevo отказа писмото');
   return sent;
 }

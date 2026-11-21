@@ -70,7 +70,7 @@ export async function countRecent(
  * външен човек нито залива пощата, нито заглушава правилото.
  */
 export async function alertAtThreshold(
-  rule: { name: string; key?: string; threshold: number; windowMs?: number },
+  rule: { name: string; key?: string; threshold: number; windowMs?: number; outsider?: boolean },
   count: number,
   subject: string,
   lines: string[],
@@ -81,6 +81,7 @@ export async function alertAtThreshold(
     rule: rule.name,
     key: rule.key ?? 'all',
     windowMs: rule.windowMs,
+    outsider: rule.outsider,
   });
   if (due) await notifyAdmins(subject, lines).catch(() => false);
 }

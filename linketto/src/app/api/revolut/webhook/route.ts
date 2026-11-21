@@ -34,7 +34,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     // дневника и управлява алармите (Кодаджията M2).
     if (rateLimit(`webhook-bad:${await clientIpKey()}`, 10, 60 * 60_000) && rateLimit('webhook-bad:global', 100, 60 * 60_000)) {
       await recordSecurityEvent('webhook.bad_signature', { meta: { provider: 'revolut' } });
-      await alertAtThreshold({ name: 'webhook-bad-signature', key: 'revolut', threshold: 3 }, await countRecent('webhook.bad_signature', 60), 'Revolut уебхук с грешен подпис', [
+      await alertAtThreshold({ name: 'webhook-bad-signature', key: 'revolut', threshold: 3, outsider: true }, await countRecent('webhook.bad_signature', 60), 'Revolut уебхук с грешен подпис', [
         '3+ заявки към /api/revolut/webhook с невалиден подпис за 1 час.',
         'Възможно: подправени заявки или сменена тайна на уебхука в Revolut.',
       ]);
