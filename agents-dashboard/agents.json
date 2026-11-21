@@ -49,7 +49,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 474
+        "lessons": 476
       },
       "evolution": [
         {
@@ -621,9 +621,20 @@
           "date": "2026-11-21",
           "event": "v42.7 — учене",
           "detail": "Научи: Anthropic („How Claude marks AI-generated content“) дава текстов воден знак за Opus 5/5… (+42 още)"
+        },
+        {
+          "version": "42.9.0",
+          "date": "2026-11-21",
+          "event": "v42.9 — учене",
+          "detail": "Научи: Gemini API Additional Terms (в сила 23.03.2026) — за ЕИП/CH/UK платените условия за дан… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-21",
+          "type": "learning",
+          "summary": "Научи: „Gemini API Additional Terms (в сила 23.03.2026) — за ЕИП/CH/UK платените условия за дан…\" (+1 още)"
+        },
         {
           "date": "2026-11-21",
           "type": "learning",
