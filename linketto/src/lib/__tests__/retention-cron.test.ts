@@ -20,6 +20,7 @@ function intervalFor(table: string, extra = ''): number {
 
 test('cron сроковете съвпадат с RETENTION_DAYS', () => {
   assert.equal(intervalFor('ClickEvent'), RETENTION_DAYS.clickEvent);
+  assert.equal(intervalFor('SecurityEvent'), RETENTION_DAYS.securityEvent);
   assert.equal(intervalFor('ContactMessage'), RETENTION_DAYS.contactMessage);
   assert.equal(intervalFor('Booking'), RETENTION_DAYS.booking);
   assert.equal(intervalFor('LoginEvent'), RETENTION_DAYS.loginEvent);
@@ -31,4 +32,9 @@ test('cron сроковете съвпадат с RETENTION_DAYS', () => {
 
 test('cron чисти изтеклите сесии', () => {
   assert.match(CRON, /DELETE FROM "Session"\s+WHERE "expiresAt" < now\(\);/);
+});
+
+test('cron чисти изоставеното записване на 2FA (Правният Разбирач N5)', () => {
+  // Започнато, недовършено записване: шифрованият секрет не стои до изтриване на акаунта.
+  assert.match(CRON, /UPDATE "User"\s+SET "totpPendingSealed" = NULL WHERE "totpPendingSealed" IS NOT NULL AND "updatedAt" < now\(\) - interval '1 day';/);
 });

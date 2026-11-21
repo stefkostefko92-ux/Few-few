@@ -12,6 +12,8 @@ export const RETENTION_DAYS = {
   unconfirmedSubscriber: 30,
   /** Аналитични събития (≈ 13 месеца). */
   clickEvent: 396,
+  /** Дневник на сигурността (без IP; имейлът — само HMAC). */
+  securityEvent: 90,
 } as const;
 
 /** Дата отпреди `days` дни — граница за deleteMany. */

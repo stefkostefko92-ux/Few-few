@@ -31,7 +31,7 @@ DATABASE_URL_TEST=postgresql://…/linketto_test npx tsx --test src/lib/__tests_
 ```
 
 Env: виж `.env.example`. Ключовете на Revolut/Brevo са на Carbon Stealth VCC —
-**само през env на сървъра, никога в кода**.
+**през env на сървъра или от админ панела (шифровани в базата), никога в кода**.
 
 ## Архитектура
 
@@ -104,7 +104,21 @@ actions/report.ts, категории в src/lib/report.ts); чл. 13 бележ
 се чисти след 12 мес.; legal.* текстовете са пълни (одитирани 2026-07-08).
 
 Админ: /[locale]/admin (noindex, robots disallow) — само за имейли от env
-ADMIN_EMAILS (src/lib/admin.ts requireAdmin; НИКАКВИ админ флагове в БД).
+ADMIN_EMAILS (src/lib/admin.ts requireAdmin; НИКАКВИ админ флагове в БД) И
+`adminGate` (lib/admin-list.ts): потвърден имейл + включена 2FA + сесия, потвърдена с код;
+опасните действия (смяна на имейл/парола, изтриване, refund, изплащане, ключове) —
+`requireStepUp` (код ≤10 мин.). Админ не пипа ДРУГ админ (`guardTarget`). Връзка „Админ“ в
+хедъра и в таблото за админите.
+Сигурност на акаунта (docs/security-2fa-settings-spec.md): TOTP без зависимости
+(lib/totp.ts) + 10 резервни кода (sha256), тайните шифровани с AES-256-GCM
+(lib/secret-box.ts, `SETTINGS_KEY`/`SETTINGS_KEY_OLD`, AAD контекст); вход на 2 стъпки
+(LoginChallenge + `__Host-linketto_mfa`); сесии `__Host-linketto_session` с изтичане при
+неактивност 7 дни (админ 12 ч) и абсолютно 30 дни (админ 24 ч); дневник `SecurityEvent`
+(lib/security-events.ts, 90 дни, имейлът при неуспешен вход — само HMAC) + аларми по прагове.
+Ключове на доставчиците от панела: секция „Плащания и имейл“ (actions/integrations.ts,
+components/admin/IntegrationsPanel.tsx) → таблица `Setting` (тайните шифровани, никога
+обратно към браузъра); `setting(key)` в lib/settings.ts — базата печели пред .env, кеш 30 s;
+`revolutReady()`/`emailReady()` са async. Само Revolut — друг доставчик на плащания няма.
 actions/admin.ts: бан/отбан (Profile.bannedAt — баннат = notFound на ВСИЧКИ
 публични маршрути + извън sitemap, без публичен банер), смяна на
 имейл/име/план, нова парола (bcrypt 12; старата не се вижда; всички сесии
@@ -156,7 +170,7 @@ ReferralCard + ensureReferralCodeAction за стари профили. Кред
 и в админ панела (за изплащане).
 
 Транзакционен имейл: src/lib/email.ts (Brevo API v3, `sendEmail` → 201; без
-BREVO_API_KEY/валиден EMAIL_FROM = no-op). Brevo добавя собствен List-Unsubscribe —
+ключ/валиден подател — от панела или BREVO_API_KEY/EMAIL_FROM — = no-op). Brevo добавя собствен List-Unsubscribe —
 стандартни заглавия не се подават. AI преводът (lib/ai.ts) покрива и продуктите
 (заглавие+описание). Health probe: /api/health. Deploy чеклист: DEPLOY.md.
 

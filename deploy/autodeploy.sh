@@ -2269,6 +2269,48 @@ EOF
     ok "linketto: $LINKETTO_STATE_DIR/.env създаден (600)."
   fi
   chmod 600 "$LINKETTO_STATE_DIR/.env" 2>/dev/null || true
+  # Главният ключ за шифрованите тайни (2FA секрети, ключове на доставчици) —
+  # генерира се веднъж, ако липсва; НЕ се сменя после (загубен ключ = 2FA и
+  # шифрованите настройки стават нечетими). Бекъпни .env извън сървъра.
+  # Пазач (VPS-аджията/Стражата): празен ред SETTINGS_KEY="" е „липсващ“; ако
+  # преди е имало ключ (отпечатък sha256 — не самият ключ), нов НЕ се генерира;
+  # смяна е позволена само със стария в SETTINGS_KEY_OLD (ротация).
+  local sk sk_old fp_file fp_cur fp_prev
+  sk="$(sed -n 's/^SETTINGS_KEY=//p' "$LINKETTO_STATE_DIR/.env" | tail -1 | tr -d "\"' \r")"
+  sk_old="$(sed -n 's/^SETTINGS_KEY_OLD=//p' "$LINKETTO_STATE_DIR/.env" | tail -1 | tr -d "\"' \r")"
+  fp_file="$LINKETTO_STATE_DIR/settings-key.sha256"
+  fp_prev="$(cat "$fp_file" 2>/dev/null || true)"
+  if [ -z "$sk" ]; then
+    if [ -n "$fp_prev" ]; then
+      warn "linketto: SETTINGS_KEY липсва, а преди е имало ключ ($fp_file) — НЕ генерирам нов."
+      warn "  Върни SETTINGS_KEY от копието на .env (иначе 2FA и шифрованите ключове стават нечетими)."
+      deploy_failed=1
+      return
+    fi
+    sk="$(openssl rand -base64 32 || true)"
+    if [ "${#sk}" -ge 40 ]; then
+      sed -i '/^SETTINGS_KEY=/d' "$LINKETTO_STATE_DIR/.env"
+      printf '\n# Главен ключ за шифрованите тайни (2FA, ключове на доставчици). НЕ го сменяй; пази копие офлайн.\nSETTINGS_KEY=%s\n' "$sk" >> "$LINKETTO_STATE_DIR/.env"
+      ok "linketto: SETTINGS_KEY е генериран (пази копие на .env офлайн)."
+    else
+      sk=""
+      warn "linketto: openssl не даде SETTINGS_KEY — 2FA и шифрованите настройки остават изключени."
+    fi
+  fi
+  if [ -n "$sk" ]; then
+    fp_cur="$(printf '%s' "$sk" | sha256sum | cut -c1-64)"
+    if [ -n "$fp_prev" ] && [ "$fp_prev" != "$fp_cur" ]; then
+      if [ -n "$sk_old" ] && [ "$(printf '%s' "$sk_old" | sha256sum | cut -c1-64)" = "$fp_prev" ]; then
+        ok "linketto: ротация на SETTINGS_KEY (старият е в SETTINGS_KEY_OLD — дръж го, докато всичко се прешифрова)."
+      else
+        warn "linketto: SETTINGS_KEY е сменен без стария в SETTINGS_KEY_OLD — шифрованите данни биха станали нечетими."
+        warn "  Върни стария SETTINGS_KEY или го сложи в SETTINGS_KEY_OLD и пусни деплоя пак."
+        deploy_failed=1
+        return
+      fi
+    fi
+    ( umask 077; printf '%s\n' "$fp_cur" > "$fp_file" )
+  fi
   # Портът — от .env (същото чете docker-compose.yml); изричният LINKETTO_HEALTH_URL побеждава.
   local port
   port="$(sed -n 's/^HTTP_PORT=//p' "$LINKETTO_STATE_DIR/.env" 2>/dev/null | tail -1 | tr -dc '0-9' || true)"

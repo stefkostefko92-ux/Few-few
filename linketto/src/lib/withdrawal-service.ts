@@ -1,6 +1,6 @@
 import 'server-only';
 import { prisma } from '@/lib/db';
-import { emailConfigured, sendEmail } from '@/lib/email';
+import { emailReady, sendEmail } from '@/lib/email';
 import { withdrawalAckEmail } from '@/lib/withdrawal';
 
 /**
@@ -9,7 +9,7 @@ import { withdrawalAckEmail } from '@/lib/withdrawal';
  * Неизпратеното го опитва пак /api/cron/plans. Връща true, ако е изпратено сега.
  */
 export async function sendWithdrawalAck(planOrderId: string): Promise<boolean> {
-  if (!emailConfigured()) return false;
+  if (!(await emailReady())) return false;
   const order = await prisma.planOrder.findUnique({
     where: { id: planOrderId },
     include: { user: { select: { email: true, locale: true } } },

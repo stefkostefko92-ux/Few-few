@@ -1,6 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { rateLimit } from '@/lib/rate-limit';
 import { dash } from '@/lib/dashboard-url';
 import { prisma } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
@@ -17,6 +18,10 @@ export async function aiGenerateBioAction(formData: FormData): Promise<void> {
   const user = await getSessionUser();
   if (!user) redirect(`/${uiLocale}/login`);
   if (!aiConfigured()) redirect(await dash(uiLocale, '?error=aikey'));
+  // Лимит на разхода към Gemini (син/червен екип): на потребител на ден + общ дневен таван.
+  if (!rateLimit(`ai-bio:${user.id}`, 20, 24 * 60 * 60_000) || !rateLimit('ai:global', 2000, 24 * 60 * 60_000)) {
+    redirect(await dash(uiLocale, '?error=ai'));
+  }
 
   const profileId = String(formData.get('profileId') ?? '');
   const keywords = String(formData.get('keywords') ?? '').trim();
@@ -70,6 +75,10 @@ export async function aiTranslateAction(formData: FormData): Promise<void> {
   const user = await getSessionUser();
   if (!user) redirect(`/${uiLocale}/login`);
   if (!aiConfigured()) redirect(await dash(uiLocale, '?error=aikey'));
+  // Лимит на разхода към Gemini (син/червен екип): на потребител на ден + общ дневен таван.
+  if (!rateLimit(`ai-translate:${user.id}`, 10, 24 * 60 * 60_000) || !rateLimit('ai:global', 2000, 24 * 60 * 60_000)) {
+    redirect(await dash(uiLocale, '?error=ai'));
+  }
 
   const profileId = String(formData.get('profileId') ?? '');
   const profile = await prisma.profile.findFirst({

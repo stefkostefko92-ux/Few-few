@@ -2,6 +2,8 @@ import { getTranslations } from 'next-intl/server';
 import { logoutAction } from '@/app/actions/auth';
 import { DashSidebar, type DashNavGroup } from '@/components/DashSidebar';
 import { LanguageMenu } from '@/components/LanguageMenu';
+import { getSessionUser } from '@/lib/auth';
+import { isAdminEmail } from '@/lib/admin';
 import { ProfileSwitcher } from '@/components/ProfileSwitcher';
 import { AppShell } from '@/components/ui/AppShell';
 import { Badge } from '@/components/ui/Badge';
@@ -25,12 +27,14 @@ import {
   UserGlyph,
   UsersGlyph,
   BoltGlyph,
+  ShieldGlyph,
+  KeyGlyph,
 } from '@/components/ui/glyphs';
 import type { Locale } from '@/i18n/locales';
 import { profileUrl } from '@/lib/profile-url';
 import { cn } from '@/components/ui/cn';
 
-export type DashPage = 'dashboard' | 'analytics' | 'withdraw';
+export type DashPage = 'dashboard' | 'analytics' | 'withdraw' | 'security';
 
 /**
  * Обвивката на таблото: странично меню с групи, горна лента (профил, „Виж
@@ -58,6 +62,9 @@ export async function DashShell({
 }) {
   const t = await getTranslations({ locale, namespace: 'dashboard' });
   const tNav = await getTranslations({ locale, namespace: 'nav' });
+  const viewer = await getSessionUser();
+  // Мастър акаунт: админът е на един клик от таблото (само за ADMIN_EMAILS).
+  const isAdmin = viewer ? isAdminEmail(viewer.email) : false;
   const tCommon = await getTranslations({ locale, namespace: 'common' });
 
   const active = profiles.find((item) => item.id === activeId);
@@ -111,6 +118,12 @@ export async function DashShell({
         {
           label: t('navGroupAccount'),
           items: [
+            {
+              href: `${dashBase}/security`,
+              label: t('navSecurity'),
+              icon: <KeyGlyph className={icon} />,
+              page: page === 'security',
+            },
             section('referral', t('referralSection'), <GiftGlyph className={icon} />),
             { ...section('plan', t('planSection'), <CardGlyph className={icon} />), page: page === 'withdraw' },
           ],
@@ -179,6 +192,16 @@ export async function DashShell({
         )}
       </div>
       <div className="flex shrink-0 items-center gap-2">
+        {isAdmin && (
+          <a
+            href={`/${locale}/admin`}
+            className={buttonStyles({ variant: 'secondary', size: 'sm', className: 'gap-1.5 border-accent text-accent-text' })}
+          >
+            <ShieldGlyph className="h-4 w-4" />
+            <span className="hidden sm:inline">{tNav('admin')}</span>
+            <span className="sr-only sm:hidden">{tNav('admin')}</span>
+          </a>
+        )}
         {/* Езикът на таблото — винаги видим (запазва профила и раздела). */}
         <div className="rounded-control border border-line bg-surface">
           <LanguageMenu locale={locale} label={tNav('language')} withName />

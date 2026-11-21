@@ -43,6 +43,15 @@ model User {
   planExpiresAt               DateTime? // предплатен PRO/BUSINESS — до кога (FOUNDER/FREE: null)
   planReminded                Int? // последно напомняне за текущия период: 7 или 1 (дни преди изтичане)
   lastDigestAt                DateTime? // кога cron-ът на отчета е обработил потребителя последно (въртене на партидата)
+  // Сигурност на акаунта (docs/security-2fa-settings-spec.md):
+  emailVerifiedAt             DateTime? // потвърден имейл — задължителен за админ достъп
+  totpSecretSealed            String? // TOTP секрет, шифрован (lib/secret-box.ts, контекст totp:<id>)
+  totpPendingSealed           String? // секрет при записване — още непотвърден
+  totpEnabledAt               DateTime? // 2FA включена (потвърдена с код)
+  totpLastStep                Int? // последната използвана TOTP стъпка — същият код не минава втори път
+  backupCodeHashes            String[]         @default([]) // sha256 на еднократните резервни кодове
+  loginChallenges             LoginChallenge[]
+  userTokens                  UserToken[]
   createdAt                   DateTime         @default(now())
   updatedAt                   DateTime         @updatedAt
   sessions                    Session[]
@@ -101,14 +110,71 @@ model ReferralPayout {
 }
 
 model Session {
+  id         String    @id @default(cuid())
+  tokenHash  String    @unique // sha256 на cookie токена — суровият токен не се пази
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime
+  lastSeenAt DateTime  @default(now()) // изтичане при неактивност (обновява се ≤1 път на час)
+  mfaAt      DateTime? // кога 2FA е потвърдена в тази сесия — за step-up при опасни действия
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// Вход на 2 стъпки: след паролата — краткотрайно предизвикателство (5 мин.),
+// НЕ сесия. Бисквитката носи суровия токен; тук е само хешът.
+model LoginChallenge {
   id        String   @id @default(cuid())
-  tokenHash String   @unique // sha256 на cookie токена — суровият токен не се пази
+  tokenHash String   @unique
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attempts  Int      @default(0)
   expiresAt DateTime
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+// Еднократни токени по имейл (потвърждение на имейла). Само хешът.
+model UserToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose   String // verify-email
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, purpose])
+}
+
+// Настройки на доставчиците от админ панела (Revolut, Brevo). Тайните са
+// шифровани (lib/secret-box.ts, контекст setting:<key>) и никога не се
+// показват обратно — само last4. Празно → стойността от .env.
+model Setting {
+  key       String   @id // revolut.secretKey | revolut.webhookSecret | revolut.env | brevo.apiKey | brevo.sender
+  value     String? // нетайна стойност (среда, подател)
+  sealed    String? // шифрована тайна
+  last4     String?
+  updatedBy String? // userId на админа
+  updatedAt DateTime @updatedAt
+}
+
+// Дневник на събитията по сигурност (без пароли, кодове, тайни, IP).
+// Имейлът при неуспешен вход е само HMAC. Пази се 90 дни (retention-days.ts).
+model SecurityEvent {
+  id        String   @id @default(cuid())
+  type      String // auth.login.failed | admin.login | mfa.enabled | mfa.disabled | mfa.failed | mfa.backup_used | …
+  userId    String?
+  subject   String? // HMAC на имейла (неуспешен вход) или ключ на настройка
+  country   String?
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  @@index([type, createdAt])
+  @@index([userId, createdAt])
 }
 
 model Profile {

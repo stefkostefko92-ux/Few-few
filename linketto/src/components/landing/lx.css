@@ -1745,3 +1745,11 @@ html[dir='rtl'] .lx-track {
 .lx-tool-cta .lx-btn {
   margin-block-start: 2rem;
 }
+
+/* Връзката към админа (само мастър акаунт) — лайм рамка, да се вижда веднага. */
+.lx-admin-link {
+  border: 2px solid var(--lime);
+  border-radius: 999px;
+  padding: 0.3rem 0.8rem;
+  color: var(--lime) !important;
+}

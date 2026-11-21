@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
-import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { clientIpKey, rateLimit } from '@/lib/rate-limit';
 
 // Публично: посетител гласува в анкета (POLL блок). Агрегат без бисквитки —
 // пазим само индекса на опцията. Повторното/масовото гласуване се ограничава
@@ -18,9 +18,8 @@ export async function votePollAction(formData: FormData): Promise<void> {
   if (!linkId || !Number.isInteger(optionIndex) || optionIndex < 0) {
     redirect(back);
   }
-  if (!rateLimit(`poll:${linkId}:${await clientIp()}`, 3, 60 * 60_000)) {
-    redirect(back);
-  }
+  // Първо блокът, после лимитът: ключ с произволен linkId от нападателя не
+  // бива да стига до лимитера (червен екип — наводняване с ключове).
   const link = await prisma.link.findFirst({
     where: {
       id: linkId,
@@ -30,6 +29,9 @@ export async function votePollAction(formData: FormData): Promise<void> {
     },
     select: { id: true, meta: true },
   });
+  if (link && !rateLimit(`poll:${link.id}:${await clientIpKey()}`, 3, 60 * 60_000)) {
+    redirect(back);
+  }
   if (link) {
     const options = Array.isArray(
       (link.meta as { options?: unknown } | null)?.options,
