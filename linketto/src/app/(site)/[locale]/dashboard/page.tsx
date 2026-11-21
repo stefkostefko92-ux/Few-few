@@ -1,6 +1,11 @@
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { SiteHeader } from '@/components/SiteChrome';
+import { DashShell } from '@/components/DashShell';
+import { Badge } from '@/components/ui/Badge';
+import { Callout } from '@/components/ui/Callout';
+import { Card } from '@/components/ui/Card';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { buttonStyles } from '@/components/ui/Button';
 import { LOCALES, LOCALE_NAMES, type Locale } from '@/i18n/locales';
 import { getSessionUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
@@ -24,6 +29,13 @@ import {
   upsertProfileTranslationAction,
 } from '@/app/actions/profile';
 import { backgroundCss, buttonCss, parseStyle } from '@/lib/style';
+import { ThemePicker } from '@/components/ThemePicker';
+import {
+  PROFILE_THEMES,
+  resolveProfileTheme,
+  safeAccent,
+  type ProfileThemeId,
+} from '@/lib/profile-themes';
 import { profileUrl } from '@/lib/profile-url';
 import { NICHE_TEMPLATES, TEMPLATE_IDS } from '@/lib/templates';
 import { languageDemand } from '@/lib/language-gap';
@@ -69,8 +81,6 @@ import {
 } from '@/app/actions/shop';
 
 export const dynamic = 'force-dynamic';
-
-const THEMES = ['aurora', 'mono', 'dusk'] as const;
 
 // ?error=<код> → ключ на съобщението (непознат код → общата грешка).
 const DASHBOARD_ERRORS: Record<string, string> = {
@@ -311,163 +321,89 @@ export default async function DashboardPage({
     : null;
 
   return (
-    <>
-      <SiteHeader locale={locale as Locale} />
-      <main className="dash mx-auto max-w-3xl space-y-10 px-6 py-10">
-        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
-          {t('title')}
-        </h1>
-        {profile && (
-          <nav
-            aria-label={t('title')}
-            className="dash-nav sticky top-[4.1rem] z-30 -mx-6 !mt-4 overflow-x-auto bg-slate-50/95 px-6 py-2.5 backdrop-blur-md lg:-mx-20 lg:px-0"
-          >
-            <ul className="mx-auto flex w-max gap-2">
-              {(
-                [
-                  ['profile', t('profileSection')],
-                  ['style', t('styleSection')],
-                  ['languages', t('translationsSection')],
-                  ['links', t('linksSection')],
-                  ['stats', t('statsSection')],
-                  ['shop', t('shopSection')],
-                  ['referral', t('referralSection')],
-                  ['plan', t('planSection')],
-                ] as const
-              ).map(([id, label]) => (
-                <li key={id}>
-                  <a
-                    href={`#${id}`}
-                    className="block whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[13px] font-medium text-slate-600 shadow-sm transition hover:border-linketto-500 hover:text-linketto-700"
-                  >
-                    {label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )}
+    <DashShell
+      locale={locale as Locale}
+      page="dashboard"
+      profiles={profileList}
+      activeId={activeId}
+      planId={plan.id}
+    >
+      <PageHeader title={t('title')} description={t('pageIntro')} />
+      <div className="space-y-6">
         {error && (
-          <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+          <Callout tone="danger">
             {t(Object.hasOwn(DASHBOARD_ERRORS, error) ? DASHBOARD_ERRORS[error] : 'errorGeneric')}
-          </p>
+          </Callout>
         )}
-        {domainVerified && (
-          <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
-            {t('domainVerifiedOk')}
-          </p>
-        )}
+        {domainVerified && <Callout tone="success">{t('domainVerifiedOk')}</Callout>}
         {/* DSA чл. 17: мотивите за спиране/предупреждението — и в таблото, не
             само по имейл (видимо само за собственика, никога публично). */}
         {profile?.bannedAt && (
-          <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-            <p className="font-semibold">
-              {t('moderationBanned', {
-                slug: profile.slug,
-                date: new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(profile.bannedAt),
-              })}
-            </p>
+          <Callout
+            tone="danger"
+            title={t('moderationBanned', {
+              slug: profile.slug,
+              date: new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(profile.bannedAt),
+            })}
+          >
             {profile.bannedCategory && (
-              <p className="mt-1">
+              <p>
                 {t(`moderationCategory.${profile.bannedCategory}`)}
                 {profile.bannedReason ? ` — ${profile.bannedReason}` : ''}
               </p>
             )}
-            <p className="mt-1">{t('moderationAppeal')}</p>
-          </div>
+            <p>{t('moderationAppeal')}</p>
+          </Callout>
         )}
         {profile && !profile.bannedAt && profile.warnedAt &&
           profile.warnedAt.getTime() > Date.now() - 30 * 86_400_000 && (
-          <div role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-            <p className="font-semibold">
-              {t('moderationWarned', {
-                slug: profile.slug,
-                date: new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(
-                  new Date(profile.warnedAt.getTime() + 7 * 86_400_000),
-                ),
-              })}
-            </p>
+          <Callout
+            tone="warning"
+            title={t('moderationWarned', {
+              slug: profile.slug,
+              date: new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(
+                new Date(profile.warnedAt.getTime() + 7 * 86_400_000),
+              ),
+            })}
+          >
             {profile.warnedCategory && (
-              <p className="mt-1">
+              <p>
                 {t(`moderationCategory.${profile.warnedCategory}`)}
                 {profile.warnedReason ? ` — ${profile.warnedReason}` : ''}
               </p>
             )}
-            <p className="mt-1">{t('moderationAppeal')}</p>
-          </div>
+            <p>{t('moderationAppeal')}</p>
+          </Callout>
         )}
-        {withdrawn && (
-          <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
-            {t('withdrawDone')}
-          </p>
-        )}
-        {upgraded && plan.id === 'FREE' && (
-          <p
-            role="status"
-            className="rounded-lg bg-sky-50 p-3 text-sm text-sky-800"
-          >
-            {t('upgradedProcessing')}
-          </p>
-        )}
-        {translated && (
-          <p
-            role="status"
-            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
-          >
-            {t('translatedOk')}
-          </p>
-        )}
-        {generated && (
-          <p
-            role="status"
-            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
-          >
-            {t('generatedOk')}
-          </p>
-        )}
-        {payout && (
-          <p
-            role="status"
-            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
-          >
-            {t('referralPayoutRequested')}
-          </p>
-        )}
-        {broadcast && (
-          <p
-            role="status"
-            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
-          >
-            {t('broadcastSent', { count: broadcast })}
-          </p>
-        )}
+        {withdrawn && <Callout tone="success">{t('withdrawDone')}</Callout>}
+        {upgraded && plan.id === 'FREE' && <Callout tone="info">{t('upgradedProcessing')}</Callout>}
+        {translated && <Callout tone="success">{t('translatedOk')}</Callout>}
+        {generated && <Callout tone="success">{t('generatedOk')}</Callout>}
+        {payout && <Callout tone="success">{t('referralPayoutRequested')}</Callout>}
+        {broadcast && <Callout tone="success">{t('broadcastSent', { count: broadcast })}</Callout>}
         {imported && (
-          <p
-            role="status"
-            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
-          >
+          <Callout tone="success">
             {t('importedOk', { count: Number(imported) || 0 })}{' '}
             <a href="#languages" className="font-semibold underline">
               {t('importedTranslate')}
             </a>
-          </p>
+          </Callout>
         )}
 
-        {/* Превключвател на профили + добавяне (няколко профила = Business) */}
+        {/* Профили: списък + добавяне (няколко профила = Business) */}
         {profileList.length > 0 && (
-          <section className="rounded-2xl border border-slate-200 bg-white p-4">
+          <Card id="profiles" padding="sm" className="dash-card">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-semibold text-slate-600">
-                {t('profilesLabel')}:
-              </span>
+              <span className="text-small font-semibold text-fg-2">{t('profilesLabel')}</span>
               {profileList.map((item) => (
                 <a
                   key={item.id}
                   href={`/${locale}/dashboard?p=${item.id}`}
-                  className={`rounded-full px-3 py-1 text-sm font-medium ${
+                  aria-current={item.id === activeId ? 'true' : undefined}
+                  className={`focus-ring rounded-full px-3 py-1 text-small font-medium ${
                     item.id === activeId
-                      ? 'bg-linketto-600 text-white'
-                      : 'border border-slate-300 text-slate-600 hover:bg-slate-50'
+                      ? 'bg-accent text-accent-fg'
+                      : 'border border-line-strong text-fg-2 hover:bg-surface-3'
                   }`}
                 >
                   /{item.slug}
@@ -477,7 +413,7 @@ export default async function DashboardPage({
             {canAddProfile ? (
               <form
                 action={createProfileAction}
-                className="mt-3 flex flex-wrap gap-2 border-t border-slate-100 pt-3"
+                className="mt-3 flex flex-wrap gap-2 border-t border-line pt-3"
               >
                 <input type="hidden" name="uiLocale" value={locale} />
                 <input
@@ -485,25 +421,23 @@ export default async function DashboardPage({
                   name="slug"
                   required
                   placeholder={t('newProfileSlug')}
-                  className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                  aria-label={t('newProfileSlug')}
+                  className="h-9 min-w-0 flex-1 rounded-control border border-line-input px-3 text-small"
                 />
-                <button
-                  type="submit"
-                  className="rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
-                >
+                <button type="submit" className={buttonStyles({ variant: 'secondary', size: 'sm' })}>
                   {t('addProfile')}
                 </button>
               </form>
             ) : (
-              <p className="mt-2 text-xs text-slate-500">
+              <p className="mt-2 text-small text-fg-muted">
                 {t('profilesUpsell', { max: plan.maxProfiles })}
               </p>
             )}
-          </section>
+          </Card>
         )}
 
         {!profile ? (
-          <section className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+          <section className="dash-card rounded-card border border-line bg-surface p-5 shadow-e1 sm:p-6">
             <p className="font-medium">{t('noProfile')}</p>
             <form action={createProfileAction} className="mt-4 flex flex-wrap gap-3">
               <input type="hidden" name="uiLocale" value={locale} />
@@ -512,19 +446,19 @@ export default async function DashboardPage({
                 name="slug"
                 required
                 placeholder="maria"
-                className="flex-1 rounded-lg border border-slate-300 px-3 py-2"
+                className="flex-1 rounded-control border border-line-input px-3 py-2"
               />
               <input
                 type="text"
                 name="displayName"
                 placeholder={t('displayName')}
-                className="flex-1 rounded-lg border border-slate-300 px-3 py-2"
+                className="flex-1 rounded-control border border-line-input px-3 py-2"
               />
               <select
                 name="template"
                 defaultValue=""
                 aria-label={t('templatesTitle')}
-                className="rounded-lg border border-slate-300 px-3 py-2"
+                className="rounded-control border border-line-input px-3 py-2"
               >
                 <option value="">{t('templateNone')}</option>
                 {TEMPLATE_IDS.map((id) => (
@@ -535,7 +469,7 @@ export default async function DashboardPage({
               </select>
               <button
                 type="submit"
-                className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700"
+                className={buttonStyles()}
               >
                 {t('createProfile')}
               </button>
@@ -543,12 +477,12 @@ export default async function DashboardPage({
           </section>
         ) : (
           <>
-            <section id="profile" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+            <section id="profile" className="dash-card rounded-card border border-line bg-surface p-5 shadow-e1 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-                <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('profileSection')}</h2>
+                <h2 className="text-subheading text-fg">{t('profileSection')}</h2>
                 <a
                   href={profileUrl(profile.slug)}
-                  className="text-sm font-medium text-linketto-700 hover:underline"
+                  className="text-sm font-medium text-accent-text hover:underline"
                 >
                   {t('viewPublic')} →{' '}
                   {profileUrl(profile.slug).replace(/^https?:\/\//, '')}
@@ -560,26 +494,22 @@ export default async function DashboardPage({
               >
                 <input type="hidden" name="uiLocale" value={locale} />
                 <input type="hidden" name="profileId" value={profile.id} />
-                <label className="block text-sm font-medium">
-                  {t('theme')}
-                  <select
-                    name="theme"
-                    defaultValue={profile.theme}
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
-                  >
-                    {THEMES.map((theme) => (
-                      <option key={theme} value={theme}>
-                        {theme}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <ThemePicker
+                  className="sm:col-span-2"
+                  name="theme"
+                  legend={t('theme')}
+                  value={resolveProfileTheme(profile.theme)}
+                  accent={safeAccent(profile.accent)}
+                  labels={Object.fromEntries(
+                    PROFILE_THEMES.map((id) => [id, t(`themeName_${id}`)]),
+                  ) as Record<ProfileThemeId, string>}
+                />
                 <label className="block text-sm font-medium">
                   {t('defaultLocale')}
                   <select
                     name="defaultLocale"
                     defaultValue={profile.defaultLocale}
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
                   >
                     {LOCALES.map((loc) => (
                       <option key={loc} value={loc}>
@@ -596,7 +526,7 @@ export default async function DashboardPage({
                     defaultValue={profile.accent ?? ''}
                     placeholder="#3b82c4"
                     pattern="#[0-9a-fA-F]{6}"
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
                   />
                 </label>
                 <label className="block text-sm font-medium">
@@ -606,9 +536,9 @@ export default async function DashboardPage({
                     name="customDomain"
                     defaultValue={profile.customDomain ?? ''}
                     placeholder="links.example.com"
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
                   />
-                  <span className="mt-1 block text-xs font-normal text-slate-500">
+                  <span className="mt-1 block text-xs font-normal text-fg-muted">
                     {t('customDomainHint')}
                   </span>
                 </label>
@@ -623,7 +553,7 @@ export default async function DashboardPage({
                 </label>
                 <button
                   type="submit"
-                  className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700 sm:col-span-2 sm:justify-self-start"
+                  className={buttonStyles({ className: 'sm:col-span-2 sm:justify-self-start' })}
                 >
                   {t('save')}
                 </button>
@@ -631,9 +561,9 @@ export default async function DashboardPage({
               {/* Собствен домейн: TXT проверка на собствеността — публично се
                   показва едва след нея (lib/domain-verify.ts). */}
               {profile.customDomain && profile.domainToken && (
-                <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
+                <div className="mt-4 rounded-card border border-line bg-surface-2 p-4 text-sm">
                   {profile.domainVerifiedAt ? (
-                    <p className="inline-flex items-center gap-1.5 font-medium text-green-700">
+                    <p className="inline-flex items-center gap-1.5 font-medium text-success-text">
                       <CheckIcon className="h-4 w-4" />
                       {t('domainVerified', { domain: profile.customDomain })}
                     </p>
@@ -641,19 +571,19 @@ export default async function DashboardPage({
                     <form action={verifyDomainAction} className="space-y-2">
                       <input type="hidden" name="uiLocale" value={locale} />
                       <input type="hidden" name="profileId" value={profile.id} />
-                      <p className="font-medium text-amber-700">
+                      <p className="font-medium text-warning-text">
                         {t('domainUnverified', { domain: profile.customDomain })}
                       </p>
-                      <p className="text-slate-600">{t('domainTxtHint')}</p>
+                      <p className="text-fg-2">{t('domainTxtHint')}</p>
                       <dl className="grid gap-1 font-mono text-xs sm:grid-cols-[5rem_1fr]">
-                        <dt className="text-slate-500">TXT</dt>
-                        <dd className="break-all text-slate-900">{domainTxtName(profile.customDomain)}</dd>
-                        <dt className="text-slate-500">{t('domainTxtValueLabel')}</dt>
-                        <dd className="break-all text-slate-900">{domainTxtValue(profile.domainToken)}</dd>
+                        <dt className="text-fg-muted">TXT</dt>
+                        <dd className="break-all text-fg">{domainTxtName(profile.customDomain)}</dd>
+                        <dt className="text-fg-muted">{t('domainTxtValueLabel')}</dt>
+                        <dd className="break-all text-fg">{domainTxtValue(profile.domainToken)}</dd>
                       </dl>
                       <button
                         type="submit"
-                        className="rounded-full border border-linketto-600 px-4 py-1.5 font-semibold text-linketto-700 hover:bg-linketto-50"
+                        className={buttonStyles({ variant: 'secondary', size: 'sm' })}
                       >
                         {t('domainVerifyButton')}
                       </button>
@@ -663,12 +593,12 @@ export default async function DashboardPage({
               )}
             </section>
 
-            <section id="style" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('styleSection')}</h2>
-              <p className="mt-1 text-sm text-slate-500">{t('styleHint')}</p>
+            <section id="style" className="dash-card rounded-card border border-line bg-surface p-5 shadow-e1 sm:p-6">
+              <h2 className="text-subheading text-fg">{t('styleSection')}</h2>
+              <p className="mt-1 text-sm text-fg-muted">{t('styleHint')}</p>
               {/* Шаблони по ниша — готов вид за 1 клик (съдържанието се пази) */}
               <div className="mt-4">
-                <p className="text-sm font-semibold text-slate-700">
+                <p className="text-sm font-semibold text-fg-2">
                   {t('templatesTitle')}
                 </p>
                 <ul className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
@@ -683,11 +613,11 @@ export default async function DashboardPage({
                           <input type="hidden" name="template" value={id} />
                           <button
                             type="submit"
-                            className="group w-full rounded-xl border border-slate-200 p-1.5 text-left transition hover:-translate-y-0.5 hover:border-linketto-400 hover:shadow-md"
+                            className="group w-full rounded-card border border-line p-1.5 text-start transition hover:border-accent "
                           >
                             <span
                               aria-hidden="true"
-                              className="flex h-20 flex-col items-center justify-center gap-1.5 rounded-lg px-3"
+                              className="flex h-20 flex-col items-center justify-center gap-1.5 rounded-control px-3"
                               style={{
                                 ...backgroundCss(look),
                                 color: look.textColor ?? '#ffffff',
@@ -702,7 +632,7 @@ export default async function DashboardPage({
                                 style={buttonCss(look, preset.accent)}
                               />
                             </span>
-                            <span className="mt-1.5 block px-1 text-xs font-semibold text-slate-700 group-hover:text-linketto-700">
+                            <span className="mt-1.5 block px-1 text-xs font-semibold text-fg-2 group-hover:text-accent-text">
                               {t(`template_${id}`)}
                             </span>
                           </button>
@@ -715,7 +645,7 @@ export default async function DashboardPage({
               {(() => {
                 const styleCfg = parseStyle(profile.style);
                 const selectClass =
-                  'mt-1 w-full rounded-lg border border-slate-300 px-3 py-2';
+                  'mt-1 w-full rounded-control border border-line-input px-3 py-2';
                 return (
                   <form
                     action={updateStyleAction}
@@ -761,7 +691,7 @@ export default async function DashboardPage({
                         type="color"
                         name="bgColor1"
                         defaultValue={styleCfg.bgColor1}
-                        className="mt-1 h-10 w-full rounded-lg border border-slate-300"
+                        className="mt-1 h-10 w-full rounded-control border border-line-input"
                       />
                     </label>
                     <label className="block text-sm font-medium">
@@ -770,7 +700,7 @@ export default async function DashboardPage({
                         type="color"
                         name="bgColor2"
                         defaultValue={styleCfg.bgColor2}
-                        className="mt-1 h-10 w-full rounded-lg border border-slate-300"
+                        className="mt-1 h-10 w-full rounded-control border border-line-input"
                       />
                     </label>
                     <label className="block text-sm font-medium sm:col-span-2">
@@ -955,14 +885,14 @@ export default async function DashboardPage({
                     </label>
                     <button
                       type="submit"
-                      className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700 sm:col-span-3 sm:justify-self-start"
+                      className={buttonStyles({ className: 'sm:col-span-3 sm:justify-self-start' })}
                     >
                       {t('save')}
                     </button>
                   </form>
                 );
               })()}
-              <div className="mt-6 grid gap-4 border-t border-slate-100 pt-6 sm:grid-cols-2">
+              <div className="mt-6 grid gap-4 border-t border-line pt-6 sm:grid-cols-2">
                 <form action={uploadImageAction} className="text-sm">
                   <input type="hidden" name="uiLocale" value={locale} />
                   <input type="hidden" name="profileId" value={profile.id} />
@@ -974,11 +904,11 @@ export default async function DashboardPage({
                       name="file"
                       required
                       accept="image/jpeg,image/png,image/webp"
-                      className="flex-1 text-xs text-slate-500 file:mr-3 file:rounded-full file:border-0 file:bg-linketto-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-linketto-700 hover:file:bg-linketto-100"
+                      className="flex-1 text-xs text-fg-muted file:me-3 file:rounded-full file:border-0 file:bg-accent-soft file:px-4 file:py-2 file:text-sm file:font-semibold file:text-accent-soft-fg hover:file:bg-accent-soft"
                     />
                     <button
                       type="submit"
-                      className="rounded-full border border-linketto-600 px-4 py-1.5 font-semibold text-linketto-700 hover:bg-linketto-50"
+                      className={buttonStyles({ variant: 'secondary', size: 'sm' })}
                     >
                       {t('uploadButton')}
                     </button>
@@ -995,11 +925,11 @@ export default async function DashboardPage({
                       name="file"
                       required
                       accept="image/jpeg,image/png,image/webp"
-                      className="flex-1 text-xs text-slate-500 file:mr-3 file:rounded-full file:border-0 file:bg-linketto-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-linketto-700 hover:file:bg-linketto-100"
+                      className="flex-1 text-xs text-fg-muted file:me-3 file:rounded-full file:border-0 file:bg-accent-soft file:px-4 file:py-2 file:text-sm file:font-semibold file:text-accent-soft-fg hover:file:bg-accent-soft"
                     />
                     <button
                       type="submit"
-                      className="rounded-full border border-linketto-600 px-4 py-1.5 font-semibold text-linketto-700 hover:bg-linketto-50"
+                      className={buttonStyles({ variant: 'secondary', size: 'sm' })}
                     >
                       {t('uploadButton')}
                     </button>
@@ -1008,28 +938,28 @@ export default async function DashboardPage({
               </div>
             </section>
 
-            <section id="languages" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+            <section id="languages" className="dash-card rounded-card border border-line bg-surface p-5 shadow-e1 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('translationsSection')}</h2>
+                <h2 className="text-subheading text-fg">{t('translationsSection')}</h2>
                 <form action={aiTranslateAction}>
                   <input type="hidden" name="uiLocale" value={locale} />
                   <input type="hidden" name="profileId" value={profile.id} />
                   <button
                     type="submit"
-                    className="inline-flex items-center gap-2 rounded-full bg-linketto-600 px-4 py-2 text-sm font-semibold text-white hover:bg-linketto-700"
+                    className={buttonStyles()}
                   >
                     <SparklesIcon className="h-4 w-4" />
                     {t('aiTranslateButton')}
                   </button>
                 </form>
               </div>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-fg-muted">
                 {t('translationsHint')} {t('aiTranslateHint')}
               </p>
               {/* AI генериране на био от ключови думи (на основния език) */}
               <form
                 action={aiGenerateBioAction}
-                className="mt-4 flex flex-wrap items-end gap-2 rounded-xl border border-linketto-100 bg-linketto-50/50 p-3"
+                className="mt-4 flex flex-wrap items-end gap-2 rounded-card border border-line bg-accent-soft p-3"
               >
                 <input type="hidden" name="uiLocale" value={locale} />
                 <input type="hidden" name="profileId" value={profile.id} />
@@ -1040,12 +970,12 @@ export default async function DashboardPage({
                     name="keywords"
                     required
                     placeholder={t('aiBioPlaceholder')}
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
                   />
                 </label>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-2 rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                  className={buttonStyles({ variant: 'secondary' })}
                 >
                   <SparklesIcon className="h-4 w-4" />
                   {t('aiBioButton')}
@@ -1079,7 +1009,7 @@ export default async function DashboardPage({
                             type="text"
                             name="displayName"
                             defaultValue={translation?.displayName ?? ''}
-                            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                            className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
                           />
                         </label>
                         <label className="block text-sm">
@@ -1088,12 +1018,12 @@ export default async function DashboardPage({
                             type="text"
                             name="bio"
                             defaultValue={translation?.bio ?? ''}
-                            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                            className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
                           />
                         </label>
                         <button
                           type="submit"
-                          className="rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                          className={buttonStyles({ variant: 'secondary' })}
                         >
                           {t('save')}
                         </button>
@@ -1108,8 +1038,8 @@ export default async function DashboardPage({
                     <>
                       {filled.map(row)}
                       {empty.length > 0 && (
-                        <details className="faq-item rounded-xl border border-dashed border-slate-300 px-4 py-3 open:border-solid open:bg-slate-50/60">
-                          <summary className="cursor-pointer list-none text-sm font-semibold text-linketto-700">
+                        <details className="faq-item rounded-card border border-dashed border-line-input px-4 py-3 open:border-solid open:bg-surface-2">
+                          <summary className="cursor-pointer list-none text-sm font-semibold text-accent-text">
                             <span>{t('moreLanguages', { count: empty.length })}</span>
                             <span aria-hidden className="faq-plus" />
                           </summary>
@@ -1124,17 +1054,17 @@ export default async function DashboardPage({
               </div>
             </section>
 
-            <section id="links" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('linksSection')}</h2>
+            <section id="links" className="dash-card rounded-card border border-line bg-surface p-5 shadow-e1 sm:p-6">
+              <h2 className="text-subheading text-fg">{t('linksSection')}</h2>
               {/* Пренасяне от Linktree за минута — най-ниската бариера за смяна */}
               <details
-                className="group mt-4 rounded-xl border border-dashed border-linketto-300 bg-linketto-50/60 p-4"
+                className="group mt-4 rounded-card border border-dashed border-accent/40 bg-accent-soft p-4"
                 open={profile.links.length === 0}
               >
-                <summary className="cursor-pointer text-sm font-semibold text-linketto-800">
+                <summary className="cursor-pointer text-sm font-semibold text-accent-soft-fg">
                   {t('importTitle')}
                 </summary>
-                <p className="mt-2 text-sm text-slate-600">{t('importHint')}</p>
+                <p className="mt-2 text-sm text-fg-2">{t('importHint')}</p>
                 <form
                   action={importLinktreeAction}
                   className="mt-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center"
@@ -1147,15 +1077,15 @@ export default async function DashboardPage({
                     required
                     placeholder="linktr.ee/maria"
                     aria-label={t('importTitle')}
-                    className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                    className="min-w-0 flex-1 rounded-control border border-line-input bg-surface px-3 py-2 text-sm"
                   />
-                  <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <label className="flex items-center gap-2 text-sm text-fg-2">
                     <input type="checkbox" name="own" required />
                     {t('importOwn')}
                   </label>
                   <button
                     type="submit"
-                    className="rounded-full bg-linketto-600 px-5 py-2 text-sm font-semibold text-white hover:bg-linketto-700"
+                    className={buttonStyles()}
                   >
                     {t('importCta')}
                   </button>
@@ -1165,15 +1095,15 @@ export default async function DashboardPage({
                 {profile.links.map((link) => (
                   <div
                     key={link.id}
-                    className="rounded-xl border border-slate-100 p-4"
+                    className="rounded-card border border-line p-4"
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <p className="truncate text-sm text-slate-500">
-                        <span className="mr-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-semibold text-slate-600">
+                      <p className="truncate text-sm text-fg-muted">
+                        <span className="me-2 rounded bg-surface-3 px-1.5 py-0.5 text-xs font-semibold text-fg-2">
                           {t(`kind_${link.kind}`)}
                         </span>
                         {(link.showFrom || link.showUntil) && (
-                          <span className="mr-2 inline-flex items-center gap-1 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-700">
+                          <span className="me-2 inline-flex items-center gap-1 rounded bg-warning-soft px-1.5 py-0.5 text-xs font-semibold text-warning-text">
                             <ClockIcon className="h-3 w-3" />
                             {t('scheduledBadge')}
                           </span>
@@ -1185,7 +1115,7 @@ export default async function DashboardPage({
                         <input type="hidden" name="linkId" value={link.id} />
                         <button
                           type="submit"
-                          className="shrink-0 text-sm font-medium text-red-700 hover:underline"
+                          className="shrink-0 text-sm font-medium text-danger-text hover:underline"
                         >
                           {t('delete')}
                         </button>
@@ -1213,7 +1143,7 @@ export default async function DashboardPage({
                               name="locale"
                               value={translation.locale}
                             />
-                            <span className="w-8 text-xs font-semibold uppercase text-slate-500">
+                            <span className="w-8 text-xs font-semibold uppercase text-fg-muted">
                               {translation.locale}
                             </span>
                             <input
@@ -1221,11 +1151,11 @@ export default async function DashboardPage({
                               name="title"
                               defaultValue={linkTitle?.title ?? ''}
                               placeholder={t('linkTitle')}
-                              className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                              className="min-w-0 flex-1 rounded-control border border-line-input px-3 py-1.5 text-sm"
                             />
                             <button
                               type="submit"
-                              className="shrink-0 rounded-full border border-linketto-600 px-3 py-1 text-xs font-semibold text-linketto-700 hover:bg-linketto-50"
+                              className={buttonStyles({ variant: 'secondary', size: 'sm', className: 'shrink-0' })}
                             >
                               {t('save')}
                             </button>
@@ -1247,7 +1177,7 @@ export default async function DashboardPage({
                   <select
                     name="kind"
                     defaultValue="LINK"
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
                   >
                     {(
                       [
@@ -1277,7 +1207,7 @@ export default async function DashboardPage({
                     type="text"
                     name="title"
                     required
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
                   />
                 </label>
                 <label className="block text-sm font-medium">
@@ -1286,7 +1216,7 @@ export default async function DashboardPage({
                     type="text"
                     name="url"
                     placeholder="https://…"
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
                   />
                 </label>
                 <label className="block text-sm font-medium">
@@ -1295,7 +1225,7 @@ export default async function DashboardPage({
                     type="url"
                     name="extra1"
                     placeholder="https://…"
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
                   />
                 </label>
                 <label className="block text-sm font-medium">
@@ -1304,7 +1234,7 @@ export default async function DashboardPage({
                     type="url"
                     name="extra2"
                     placeholder="https://…"
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
                   />
                 </label>
                 <label className="block text-sm font-medium">
@@ -1314,7 +1244,7 @@ export default async function DashboardPage({
                     name="color"
                     placeholder="#3b82c4"
                     pattern="#[0-9a-fA-F]{6}"
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
                   />
                 </label>
                 <TimeZoneField />
@@ -1323,7 +1253,7 @@ export default async function DashboardPage({
                   <input
                     type="datetime-local"
                     name="showFrom"
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
                   />
                 </label>
                 <label className="block text-sm font-medium">
@@ -1331,7 +1261,7 @@ export default async function DashboardPage({
                   <input
                     type="datetime-local"
                     name="showUntil"
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
                   />
                 </label>
                 <label className="block text-sm font-medium sm:col-span-2">
@@ -1340,9 +1270,9 @@ export default async function DashboardPage({
                     name="options"
                     rows={3}
                     placeholder={t('pollOptionsPlaceholder')}
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
                   />
-                  <span className="mt-1 block text-xs font-normal text-slate-500">
+                  <span className="mt-1 block text-xs font-normal text-fg-muted">
                     {t('pollOptionsHint')}
                   </span>
                 </label>
@@ -1350,21 +1280,21 @@ export default async function DashboardPage({
                   <input type="checkbox" name="featured" className="h-4 w-4" />
                   {t('featuredLabel')}
                 </label>
-                <p className="text-xs text-slate-500 sm:col-span-2">
+                <p className="text-xs text-fg-muted sm:col-span-2">
                   {t('addBlockHint')} {t('scheduleHint')}
                 </p>
                 <button
                   type="submit"
-                  className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700 sm:justify-self-start"
+                  className={buttonStyles({ className: 'sm:justify-self-start' })}
                 >
                   {t('addLink')}
                 </button>
               </form>
             </section>
 
-            <section id="qr" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('qrSection')}</h2>
-              <p className="mt-1 text-sm text-slate-500">{t('qrHint')}</p>
+            <section id="qr" className="dash-card rounded-card border border-line bg-surface p-5 shadow-e1 sm:p-6">
+              <h2 className="text-subheading text-fg">{t('qrSection')}</h2>
+              <p className="mt-1 text-sm text-fg-muted">{t('qrHint')}</p>
               <div className="mt-4 flex items-center gap-6">
                 {/* eslint-disable-next-line @next/next/no-img-element -- динамичен SVG route */}
                 <img
@@ -1372,22 +1302,22 @@ export default async function DashboardPage({
                   alt="QR"
                   width={144}
                   height={144}
-                  className="h-36 w-36 rounded-xl border border-slate-200 bg-white p-2"
+                  className="h-36 w-36 rounded-card border border-line bg-surface p-2"
                 />
                 <a
                   href={`/u/${profile.slug}/qr`}
                   download={`${profile.slug}-qr.svg`}
-                  className="inline-flex items-center gap-2 rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                  className={buttonStyles({ variant: 'secondary' })}
                 >
                   <DownloadIcon className="h-4 w-4" />
                   SVG
                 </a>
               </div>
               {parseStyle(profile.style).mediaKit && (
-                <p className="mt-4 border-t border-slate-100 pt-4 text-sm">
+                <p className="mt-4 border-t border-line pt-4 text-sm">
                   <a
                     href={`/u/${profile.slug}/media-kit`}
-                    className="inline-flex items-center gap-2 font-semibold text-linketto-700 hover:underline"
+                    className="inline-flex items-center gap-2 font-semibold text-accent-text hover:underline"
                   >
                     <SparklesIcon className="h-4 w-4" />
                     {t('mediaKitLink')} → /u/{profile.slug}/media-kit
@@ -1397,9 +1327,9 @@ export default async function DashboardPage({
             </section>
 
             {/* Съкратени линкове с брояч на кликове */}
-            <section id="short" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('shortLinksSection')}</h2>
-              <p className="mt-1 text-sm text-slate-500">
+            <section id="short" className="dash-card rounded-card border border-line bg-surface p-5 shadow-e1 sm:p-6">
+              <h2 className="text-subheading text-fg">{t('shortLinksSection')}</h2>
+              <p className="mt-1 text-sm text-fg-muted">
                 {t('shortLinksHint')}
               </p>
               {shortLinks.length > 0 && (
@@ -1407,10 +1337,10 @@ export default async function DashboardPage({
                   {shortLinks.map((link) => (
                     <li
                       key={link.id}
-                      className="flex items-center justify-between gap-2 text-slate-600"
+                      className="flex items-center justify-between gap-2 text-fg-2"
                     >
                       <span className="min-w-0 truncate">
-                        <span className="font-mono font-semibold text-linketto-700">
+                        <span className="font-mono font-semibold text-accent-text">
                           {shortLinkBase.replace(/^https?:\/\//, '')}/s/
                           {link.code}
                         </span>{' '}
@@ -1433,7 +1363,7 @@ export default async function DashboardPage({
                           />
                           <button
                             type="submit"
-                            className="text-xs font-medium text-red-600 hover:underline"
+                            className="text-xs font-medium text-danger-text hover:underline"
                           >
                             {t('delete')}
                           </button>
@@ -1449,67 +1379,67 @@ export default async function DashboardPage({
               >
                 <input type="hidden" name="uiLocale" value={locale} />
                 <input type="hidden" name="profileId" value={profile.id} />
-                <label className="block text-xs font-medium text-slate-500">
+                <label className="block text-xs font-medium text-fg-muted">
                   {t('shortTarget')}
                   <input
                     type="url"
                     name="targetUrl"
                     required
                     placeholder="https://…"
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                    className="mt-1 w-full rounded-control border border-line-input px-3 py-1.5 text-sm"
                   />
                 </label>
-                <label className="block text-xs font-medium text-slate-500">
+                <label className="block text-xs font-medium text-fg-muted">
                   {t('shortCode')}
                   <input
                     type="text"
                     name="code"
                     placeholder={t('shortCodeAuto')}
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                    className="mt-1 w-full rounded-control border border-line-input px-3 py-1.5 text-sm"
                   />
                 </label>
                 <button
                   type="submit"
-                  className="rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                  className={buttonStyles({ variant: 'secondary', size: 'sm' })}
                 >
                   {t('addShortLink')}
                 </button>
               </form>
             </section>
 
-            <section id="stats" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+            <section id="stats" className="dash-card rounded-card border border-line bg-surface p-5 shadow-e1 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('statsSection')}</h2>
+                <h2 className="text-subheading text-fg">{t('statsSection')}</h2>
                 <Link
                   href={`/${locale}/dashboard/analytics?p=${profile.id}`}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                  className={buttonStyles({ variant: 'secondary', size: 'sm' })}
                 >
                   <ChartColumnIcon className="h-4 w-4" />
                   {t('analyticsLink')}
                 </Link>
               </div>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-fg-muted">
                 {plan.analyticsDays
                   ? t('statsWindow', { days: plan.analyticsDays })
                   : t('statsWindowAll')}
               </p>
               <div className="mt-4 grid grid-cols-2 gap-4">
-                <div className="rounded-xl bg-slate-50 p-4 text-center">
-                  <p className="text-3xl font-extrabold text-linketto-700">
+                <div className="rounded-card bg-surface-2 p-4 text-center">
+                  <p className="text-3xl font-extrabold text-accent-text">
                     {views}
                   </p>
-                  <p className="text-sm text-slate-500">{t('statsViews')}</p>
+                  <p className="text-sm text-fg-muted">{t('statsViews')}</p>
                 </div>
-                <div className="rounded-xl bg-slate-50 p-4 text-center">
-                  <p className="text-3xl font-extrabold text-linketto-700">
+                <div className="rounded-card bg-surface-2 p-4 text-center">
+                  <p className="text-3xl font-extrabold text-accent-text">
                     {clicks}
                   </p>
-                  <p className="text-sm text-slate-500">{t('statsClicks')}</p>
+                  <p className="text-sm text-fg-muted">{t('statsClicks')}</p>
                 </div>
               </div>
               <div className="mt-6 grid gap-6 sm:grid-cols-3">
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600">
+                  <h3 className="text-sm font-semibold text-fg-2">
                     {t('statsByLink')}
                   </h3>
                   <ul className="mt-2 space-y-1 text-sm">
@@ -1525,12 +1455,12 @@ export default async function DashboardPage({
                       </li>
                     ))}
                     {byLink.length === 0 && (
-                      <li className="text-slate-500">—</li>
+                      <li className="text-fg-muted">—</li>
                     )}
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600">
+                  <h3 className="text-sm font-semibold text-fg-2">
                     {t('statsByLocale')}
                   </h3>
                   <ul className="mt-2 space-y-1 text-sm">
@@ -1546,12 +1476,12 @@ export default async function DashboardPage({
                       </li>
                     ))}
                     {byLocale.length === 0 && (
-                      <li className="text-slate-500">—</li>
+                      <li className="text-fg-muted">—</li>
                     )}
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-600">
+                  <h3 className="text-sm font-semibold text-fg-2">
                     {t('statsByCountry')}
                   </h3>
                   <ul className="mt-2 space-y-1 text-sm">
@@ -1567,7 +1497,7 @@ export default async function DashboardPage({
                       </li>
                     ))}
                     {byCountry.length === 0 && (
-                      <li className="text-slate-500">—</li>
+                      <li className="text-fg-muted">—</li>
                     )}
                   </ul>
                 </div>
@@ -1576,19 +1506,19 @@ export default async function DashboardPage({
 
             {/* Езикова дупка — уникалната ни функция: аудиторията по език
                 срещу наличните преводи, с подкана за AI превод. */}
-            <section id="gap" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+            <section id="gap" className="dash-card rounded-card border border-line bg-surface p-5 shadow-e1 sm:p-6">
               <div className="flex items-center gap-2">
-                <SparklesIcon className="h-5 w-5 text-linketto-600" />
-                <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('gapSection')}</h2>
+                <SparklesIcon className="h-5 w-5 text-accent-text" />
+                <h2 className="text-subheading text-fg">{t('gapSection')}</h2>
               </div>
-              <p className="mt-1 text-sm text-slate-500">{t('gapHint')}</p>
+              <p className="mt-1 text-sm text-fg-muted">{t('gapHint')}</p>
               {/* Седмичният отчет по имейл — отказ с 1 клик и тук, и от имейла */}
               <form
                 action={setDigestAction}
-                className="mt-3 flex flex-wrap items-center gap-3 rounded-xl bg-slate-50 px-4 py-3"
+                className="mt-3 flex flex-wrap items-center gap-3 rounded-card bg-surface-2 px-4 py-3"
               >
                 <input type="hidden" name="uiLocale" value={locale} />
-                <label className="flex flex-1 items-center gap-2 text-sm text-slate-700">
+                <label className="flex flex-1 items-center gap-2 text-sm text-fg-2">
                   <input
                     type="checkbox"
                     name="digest"
@@ -1598,13 +1528,13 @@ export default async function DashboardPage({
                 </label>
                 <button
                   type="submit"
-                  className="rounded-full border border-slate-300 px-4 py-1.5 text-xs font-semibold text-slate-700 hover:bg-white"
+                  className={buttonStyles({ variant: 'secondary', size: 'sm' })}
                 >
                   {t('save')}
                 </button>
               </form>
               {!gap || gap.mappedVisitors === 0 ? (
-                <p className="mt-4 text-sm text-slate-500">{t('gapNoData')}</p>
+                <p className="mt-4 text-sm text-fg-muted">{t('gapNoData')}</p>
               ) : (
                 <>
                   <ul className="mt-4 space-y-2">
@@ -1616,26 +1546,26 @@ export default async function DashboardPage({
                         <span className="w-28 shrink-0 font-medium">
                           {row.name}
                         </span>
-                        <span className="relative h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                        <span className="relative h-2 flex-1 overflow-hidden rounded-full bg-surface-3">
                           <span
-                            className={`absolute inset-y-0 left-0 rounded-full ${
+                            className={`absolute inset-y-0 start-0 rounded-full ${
                               row.hasTranslation
-                                ? 'bg-green-500'
-                                : 'bg-linketto-500'
+                                ? 'bg-success'
+                                : 'bg-accent'
                             }`}
                             style={{ width: `${row.percent}%` }}
                           />
                         </span>
-                        <span className="w-10 shrink-0 text-right font-semibold text-slate-600">
+                        <span className="w-10 shrink-0 text-end font-semibold text-fg-2">
                           {row.percent}%
                         </span>
                         {row.hasTranslation ? (
-                          <span className="inline-flex w-24 shrink-0 items-center gap-1 text-xs font-medium text-green-700">
+                          <span className="inline-flex w-24 shrink-0 items-center gap-1 text-xs font-medium text-success-text">
                             <CheckIcon className="h-3.5 w-3.5" />
                             {t('gapHave')}
                           </span>
                         ) : (
-                          <span className="w-24 shrink-0 text-xs font-semibold text-linketto-700">
+                          <span className="w-24 shrink-0 text-xs font-semibold text-accent-text">
                             {t('gapMissing')}
                           </span>
                         )}
@@ -1643,8 +1573,8 @@ export default async function DashboardPage({
                     ))}
                   </ul>
                   {gap.missing.length > 0 ? (
-                    <div className="mt-5 rounded-xl border border-linketto-200 bg-linketto-50/60 p-4">
-                      <p className="text-sm font-medium text-slate-700">
+                    <div className="mt-5 rounded-card border border-accent/30 bg-accent-soft p-4">
+                      <p className="text-sm font-medium text-fg-2">
                         {t('gapMissingIntro', {
                           languages: gap.missing
                             .slice(0, 3)
@@ -1661,7 +1591,7 @@ export default async function DashboardPage({
                         />
                         <button
                           type="submit"
-                          className="inline-flex items-center gap-2 rounded-full bg-linketto-600 px-4 py-2 text-sm font-semibold text-white hover:bg-linketto-700"
+                          className={buttonStyles()}
                         >
                           <SparklesIcon className="h-4 w-4" />
                           {t('gapTranslateCta')}
@@ -1669,7 +1599,7 @@ export default async function DashboardPage({
                       </form>
                     </div>
                   ) : (
-                    <p className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+                    <p className="mt-5 inline-flex items-center gap-1.5 rounded-card bg-success-soft px-4 py-3 text-sm font-medium text-success-text">
                       <CheckIcon className="h-4 w-4" />
                       {t('gapAllCovered')}
                     </p>
@@ -1678,19 +1608,19 @@ export default async function DashboardPage({
               )}
             </section>
 
-            <section id="messages" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('messagesSection')}</h2>
+            <section id="messages" className="dash-card rounded-card border border-line bg-surface p-5 shadow-e1 sm:p-6">
+              <h2 className="text-subheading text-fg">{t('messagesSection')}</h2>
               {messages.length === 0 ? (
-                <p className="mt-2 text-sm text-slate-500">{t('noMessages')}</p>
+                <p className="mt-2 text-sm text-fg-muted">{t('noMessages')}</p>
               ) : (
                 <ul className="mt-4 space-y-3">
                   {messages.map((message) => (
                     <li
                       key={message.id}
-                      className="rounded-xl border border-slate-100 p-3 text-sm"
+                      className="rounded-card border border-line p-3 text-sm"
                     >
-                      <p className="text-slate-700">{message.message}</p>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="text-fg-2">{message.message}</p>
+                      <p className="mt-1 text-xs text-fg-muted">
                         {[message.name, message.email]
                           .filter(Boolean)
                           .join(' · ')}{' '}
@@ -1703,35 +1633,35 @@ export default async function DashboardPage({
             </section>
 
             {/* Заявки за час (BOOKING блок) */}
-            <section id="bookings" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('bookingsSection')}</h2>
+            <section id="bookings" className="dash-card rounded-card border border-line bg-surface p-5 shadow-e1 sm:p-6">
+              <h2 className="text-subheading text-fg">{t('bookingsSection')}</h2>
               {bookings.length === 0 ? (
-                <p className="mt-2 text-sm text-slate-500">{t('noBookings')}</p>
+                <p className="mt-2 text-sm text-fg-muted">{t('noBookings')}</p>
               ) : (
                 <ul className="mt-4 space-y-3">
                   {bookings.map((booking) => (
                     <li
                       key={booking.id}
-                      className={`rounded-xl border p-3 text-sm ${
+                      className={`rounded-card border p-3 text-sm ${
                         booking.status === 'done'
-                          ? 'border-slate-100 opacity-60'
-                          : 'border-slate-200'
+                          ? 'border-line opacity-60'
+                          : 'border-line'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <p className="font-medium text-slate-700">
+                          <p className="font-medium text-fg-2">
                             {[booking.name, booking.email]
                               .filter(Boolean)
                               .join(' · ')}
                           </p>
                           {booking.preferredAt && (
-                            <p className="text-xs text-linketto-700">
+                            <p className="text-xs text-accent-text">
                               {booking.preferredAt.replace('T', ' ')}
                             </p>
                           )}
                           {booking.message && (
-                            <p className="mt-1 text-slate-600">
+                            <p className="mt-1 text-fg-2">
                               {booking.message}
                             </p>
                           )}
@@ -1750,7 +1680,7 @@ export default async function DashboardPage({
                             />
                             <button
                               type="submit"
-                              className="shrink-0 text-xs font-medium text-green-700 hover:underline"
+                              className="shrink-0 text-xs font-medium text-success-text hover:underline"
                             >
                               {t('bookingResolve')}
                             </button>
@@ -1764,29 +1694,29 @@ export default async function DashboardPage({
             </section>
 
             {/* Аудитория — бюлетин (email capture), износ и разпращане */}
-            <section id="audience" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('audienceSection')}</h2>
-              <p className="mt-1 text-sm text-slate-500">{t('audienceHint')}</p>
+            <section id="audience" className="dash-card rounded-card border border-line bg-surface p-5 shadow-e1 sm:p-6">
+              <h2 className="text-subheading text-fg">{t('audienceSection')}</h2>
+              <p className="mt-1 text-sm text-fg-muted">{t('audienceHint')}</p>
               <div className="mt-4 flex flex-wrap items-center gap-4">
-                <div className="rounded-xl bg-slate-50 px-5 py-3 text-center">
-                  <p className="text-2xl font-extrabold text-linketto-700">
+                <div className="rounded-card bg-surface-2 px-5 py-3 text-center">
+                  <p className="text-2xl font-extrabold text-accent-text">
                     {subConfirmed}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-fg-muted">
                     {t('audienceConfirmed')}
                   </p>
                 </div>
-                <div className="rounded-xl bg-slate-50 px-5 py-3 text-center">
-                  <p className="text-2xl font-extrabold text-slate-500">
+                <div className="rounded-card bg-surface-2 px-5 py-3 text-center">
+                  <p className="text-2xl font-extrabold text-fg-muted">
                     {subPending}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-fg-muted">
                     {t('audiencePending')}
                   </p>
                 </div>
                 <a
                   href={`/${locale}/dashboard/subscribers/export?p=${profile.id}`}
-                  className="inline-flex items-center gap-2 rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                  className={buttonStyles({ variant: 'secondary' })}
                 >
                   <DownloadIcon className="h-4 w-4" />
                   {t('audienceExport')}
@@ -1795,11 +1725,11 @@ export default async function DashboardPage({
               {/* Разпращане на бюлетин до потвърдените абонати */}
               <form
                 action={sendBroadcastAction}
-                className="mt-5 space-y-2 border-t border-slate-100 pt-5"
+                className="mt-5 space-y-2 border-t border-line pt-5"
               >
                 <input type="hidden" name="uiLocale" value={locale} />
                 <input type="hidden" name="profileId" value={profile.id} />
-                <h3 className="text-sm font-semibold text-slate-600">
+                <h3 className="text-sm font-semibold text-fg-2">
                   {t('broadcastTitle')}
                 </h3>
                 <input
@@ -1808,7 +1738,7 @@ export default async function DashboardPage({
                   required
                   maxLength={150}
                   placeholder={t('broadcastSubject')}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded-control border border-line-input px-3 py-2 text-sm"
                 />
                 <textarea
                   name="body"
@@ -1816,24 +1746,24 @@ export default async function DashboardPage({
                   rows={5}
                   maxLength={5000}
                   placeholder={t('broadcastBody')}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded-control border border-line-input px-3 py-2 text-sm"
                 />
-                <p className="text-xs text-slate-500">{t('broadcastHint')}</p>
+                <p className="text-xs text-fg-muted">{t('broadcastHint')}</p>
                 <button
                   type="submit"
                   disabled={subConfirmed === 0}
-                  className="rounded-full bg-linketto-600 px-5 py-2 text-sm font-semibold text-white hover:bg-linketto-700 disabled:opacity-40"
+                  className={buttonStyles({ className: 'disabled:opacity-40' })}
                 >
                   {t('broadcastSend')}
                 </button>
               </form>
             </section>
 
-            <section id="shop" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('shopSection')}</h2>
+            <section id="shop" className="dash-card rounded-card border border-line bg-surface p-5 shadow-e1 sm:p-6">
+              <h2 className="text-subheading text-fg">{t('shopSection')}</h2>
               {/* Решение О-1: продажбите НЕ минават през Linketto — продуктът е
                   витрина с линк към собственото плащане на създателя. */}
-              <p className="mt-1 text-sm text-slate-500">{t('shopExternalNote')}</p>
+              <p className="mt-1 text-sm text-fg-muted">{t('shopExternalNote')}</p>
               {/* Дир. 2011/83 чл. 6а: деклариран статут на продавача */}
               <form action={setTraderStatusAction} className="mt-3">
                 <input type="hidden" name="uiLocale" value={locale} />
@@ -1848,22 +1778,22 @@ export default async function DashboardPage({
                 </label>
                 <button
                   type="submit"
-                  className="mt-2 rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                  className={buttonStyles({ variant: 'secondary', size: 'sm', className: 'mt-2' })}
                 >
                   {t('save')}
                 </button>
               </form>
               <div className="mt-4 space-y-4">
                 {products.map((product) => (
-                  <div key={product.id} className="rounded-xl border border-slate-100 p-4">
+                  <div key={product.id} className="rounded-card border border-line p-4">
                     <div className="flex items-center justify-between gap-3">
-                      <p className="truncate text-sm text-slate-500">
-                        <span className="mr-2 font-semibold text-slate-700">
+                      <p className="truncate text-sm text-fg-muted">
+                        <span className="me-2 font-semibold text-fg-2">
                           €{(product.priceCents / 100).toFixed(2)}
                         </span>
                         {product.active ? '' : `(${t('productInactive')}) `}
                         {product.externalUrl ? (
-                          <span className="mr-2 text-xs font-semibold text-linketto-700">
+                          <span className="me-2 text-xs font-semibold text-accent-text">
                             {t('productClicks', { count: productClicksOf(product.id) })}
                           </span>
                         ) : null}
@@ -1872,7 +1802,7 @@ export default async function DashboardPage({
                       <form action={deleteProductAction}>
                         <input type="hidden" name="uiLocale" value={locale} />
                         <input type="hidden" name="productId" value={product.id} />
-                        <button type="submit" className="text-sm text-red-600 hover:underline">
+                        <button type="submit" className="text-sm text-danger-text hover:underline">
                           {t('delete')}
                         </button>
                       </form>
@@ -1884,7 +1814,7 @@ export default async function DashboardPage({
                     >
                       <input type="hidden" name="uiLocale" value={locale} />
                       <input type="hidden" name="productId" value={product.id} />
-                      <label className="block text-xs font-medium text-slate-500">
+                      <label className="block text-xs font-medium text-fg-muted">
                         {t('productPrice')}
                         <input
                           type="number"
@@ -1893,10 +1823,10 @@ export default async function DashboardPage({
                           min="0"
                           step="0.01"
                           defaultValue={(product.priceCents / 100).toFixed(2)}
-                          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                          className="mt-1 w-full rounded-control border border-line-input px-3 py-1.5 text-sm"
                         />
                       </label>
-                      <label className="block text-xs font-medium text-slate-500">
+                      <label className="block text-xs font-medium text-fg-muted">
                         {t('productPayUrl')}
                         <input
                           type="url"
@@ -1904,10 +1834,10 @@ export default async function DashboardPage({
                           required
                           pattern="https://.*"
                           defaultValue={product.externalUrl ?? ''}
-                          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                          className="mt-1 w-full rounded-control border border-line-input px-3 py-1.5 text-sm"
                         />
                       </label>
-                      <label className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                      <label className="flex items-center gap-1.5 text-xs font-medium text-fg-muted">
                         <input
                           type="checkbox"
                           name="active"
@@ -1918,7 +1848,7 @@ export default async function DashboardPage({
                       </label>
                       <button
                         type="submit"
-                        className="rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                        className={buttonStyles({ variant: 'secondary', size: 'sm' })}
                       >
                         {t('save')}
                       </button>
@@ -1937,7 +1867,7 @@ export default async function DashboardPage({
                             <input type="hidden" name="uiLocale" value={locale} />
                             <input type="hidden" name="productId" value={product.id} />
                             <input type="hidden" name="locale" value={translation.locale} />
-                            <span className="mt-2 w-8 text-xs font-semibold uppercase text-slate-500">
+                            <span className="mt-2 w-8 text-xs font-semibold uppercase text-fg-muted">
                               {translation.locale}
                             </span>
                             <div className="flex-1 space-y-1">
@@ -1946,19 +1876,19 @@ export default async function DashboardPage({
                                 name="title"
                                 defaultValue={productTr?.title ?? ''}
                                 placeholder={t('productTitle')}
-                                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                                className="w-full rounded-control border border-line-input px-3 py-1.5 text-sm"
                               />
                               <textarea
                                 name="description"
                                 rows={2}
                                 defaultValue={productTr?.description ?? ''}
                                 placeholder={t('productDescription')}
-                                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                                className="w-full rounded-control border border-line-input px-3 py-1.5 text-sm"
                               />
                             </div>
                             <button
                               type="submit"
-                              className="mt-2 text-sm font-medium text-linketto-700 hover:underline"
+                              className="mt-2 text-sm font-medium text-accent-text hover:underline"
                             >
                               {t('save')}
                             </button>
@@ -1977,7 +1907,7 @@ export default async function DashboardPage({
                   name="title"
                   required
                   placeholder={t('productTitle')}
-                  className="rounded-lg border border-slate-300 px-3 py-2"
+                  className="rounded-control border border-line-input px-3 py-2"
                 />
                 <input
                   type="number"
@@ -1987,7 +1917,7 @@ export default async function DashboardPage({
                   step="0.01"
                   placeholder="9.99"
                   aria-label={t('productPrice')}
-                  className="rounded-lg border border-slate-300 px-3 py-2"
+                  className="rounded-control border border-line-input px-3 py-2"
                 />
                 <input
                   type="url"
@@ -1996,20 +1926,20 @@ export default async function DashboardPage({
                   pattern="https://.*"
                   placeholder={t('productPayUrlPlaceholder')}
                   aria-label={t('productPayUrl')}
-                  className="rounded-lg border border-slate-300 px-3 py-2 sm:col-span-2"
+                  className="rounded-control border border-line-input px-3 py-2 sm:col-span-2"
                 />
                 <button
                   type="submit"
-                  className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700 sm:col-span-2 sm:justify-self-start"
+                  className={buttonStyles({ className: 'sm:col-span-2 sm:justify-self-start' })}
                 >
                   {t('addProduct')}
                 </button>
               </form>
             </section>
 
-            <section id="referral" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('referralSection')}</h2>
-              <p className="mt-1 text-sm text-slate-500">
+            <section id="referral" className="dash-card rounded-card border border-line bg-surface p-5 shadow-e1 sm:p-6">
+              <h2 className="text-subheading text-fg">{t('referralSection')}</h2>
+              <p className="mt-1 text-sm text-fg-muted">
                 {t('referralReward', {
                   percent: REFERRAL_PERCENT,
                   minPayout: REFERRAL_MIN_PAYOUT_CENTS / 100,
@@ -2048,7 +1978,7 @@ export default async function DashboardPage({
                   {canWithdraw(user.referralCreditCents) && (
                     <form
                       action={requestPayoutAction}
-                      className="mt-4 flex flex-wrap items-end gap-3 rounded-xl border border-green-200 bg-green-50/50 p-4"
+                      className="mt-4 flex flex-wrap items-end gap-3 rounded-card border border-success/30 bg-success-soft p-4"
                     >
                       <input type="hidden" name="uiLocale" value={locale} />
                       <label className="flex-1 text-sm font-medium">
@@ -2058,12 +1988,12 @@ export default async function DashboardPage({
                           name="method"
                           required
                           placeholder={t('referralPayoutMethodPlaceholder')}
-                          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                          className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
                         />
                       </label>
                       <button
                         type="submit"
-                        className="rounded-full bg-green-600 px-5 py-2 font-semibold text-white hover:bg-green-700"
+                        className={buttonStyles()}
                       >
                         {t('referralWithdraw')}
                       </button>
@@ -2075,7 +2005,7 @@ export default async function DashboardPage({
                   <input type="hidden" name="uiLocale" value={locale} />
                   <button
                     type="submit"
-                    className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700"
+                    className={buttonStyles()}
                   >
                     {t('referralActivate')}
                   </button>
@@ -2083,10 +2013,13 @@ export default async function DashboardPage({
               )}
             </section>
 
-            <section id="plan" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-              <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('planSection')}</h2>
-              <p className="mt-2 text-sm text-slate-600">
-                {t('currentPlan')}: <strong>{plan.id}</strong>
+            <section id="plan" className="dash-card rounded-card border border-line bg-surface p-5 shadow-e1 sm:p-6">
+              <h2 className="text-subheading text-fg">{t('planSection')}</h2>
+              <p className="mt-2 text-sm text-fg-2">
+                {t('currentPlan')}:{' '}
+                <Badge tone={plan.id === 'FREE' ? 'neutral' : 'accent'} dot>
+                  {plan.id}
+                </Badge>
                 {plan.id === 'FOUNDER'
                   ? ` · ${t('planForever')}`
                   : user.planExpiresAt && plan.id !== 'FREE'
@@ -2098,10 +2031,10 @@ export default async function DashboardPage({
                     : ''}
               </p>
               {(withdrawable.length > 0 || withdrawalsRequested.length > 0) && (
-                <div className="mt-4 space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
+                <div className="mt-4 space-y-2 rounded-card border border-line bg-surface-2 p-4 text-sm">
                   {withdrawable.map((o) => (
                     <div key={o.id} className="flex flex-wrap items-center justify-between gap-3">
-                      <span className="text-slate-700">
+                      <span className="text-fg-2">
                         Linketto {o.plan} · €{(o.amountCents / 100).toFixed(2)} ·{' '}
                         {t('withdrawPaidOn', {
                           date: new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone: 'UTC' }).format(
@@ -2111,14 +2044,14 @@ export default async function DashboardPage({
                       </span>
                       <a
                         href={`/${locale}/dashboard/withdraw?order=${o.id}`}
-                        className="rounded-full border border-red-500 px-4 py-1.5 text-sm font-semibold text-red-600 hover:bg-red-50"
+                        className="rounded-full border border-danger px-4 py-1.5 text-sm font-semibold text-danger-text hover:bg-danger-soft"
                       >
                         {t('withdrawTitle')}
                       </a>
                     </div>
                   ))}
                   {withdrawalsRequested.map((o) => (
-                    <p key={o.id} className="text-slate-600">
+                    <p key={o.id} className="text-fg-2">
                       {t('withdrawReceived', {
                         date: new Intl.DateTimeFormat(locale, {
                           dateStyle: 'medium',
@@ -2136,13 +2069,13 @@ export default async function DashboardPage({
                   план = оставащите дни се прехвърлят пропорционално по цена. */}
               {!(upgraded && plan.id === 'FREE') && plan.id !== 'FOUNDER' && (
                 <div className="mt-4 space-y-4">
-                  <p className="text-sm text-slate-500">{t('prepaidNote')}</p>
+                  <p className="text-sm text-fg-muted">{t('prepaidNote')}</p>
                   {/* Преддоговорна информация (чл. 6(1)(е),(h) Дир. 2011/83): крайна
                       цена с ДДС, незабавен старт, 14 дни отказ с пълно връщане. */}
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-fg-2">
                     {t.rich('precontractNote', {
                       terms: (chunks) => (
-                        <a href={`/${locale}/terms`} className="font-medium text-linketto-700 underline">
+                        <a href={`/${locale}/terms`} className="font-medium text-accent-text underline">
                           {chunks}
                         </a>
                       ),
@@ -2167,17 +2100,17 @@ export default async function DashboardPage({
                       <form
                         key={planId}
                         action={startCheckoutAction}
-                        className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-100 p-4"
+                        className="flex flex-wrap items-end gap-3 rounded-card border border-line p-4"
                       >
                         <input type="hidden" name="uiLocale" value={locale} />
                         <input type="hidden" name="plan" value={planId} />
-                        <span className="font-semibold text-slate-700">{label}</span>
+                        <span className="font-semibold text-fg-2">{label}</span>
                         <label className="text-sm">
-                          <span className="mb-1 block text-xs text-slate-500">{t('billingPeriod')}</span>
+                          <span className="mb-1 block text-xs text-fg-muted">{t('billingPeriod')}</span>
                           <select
                             name="interval"
                             defaultValue="monthly"
-                            className="rounded-lg border border-slate-300 px-3 py-2"
+                            className="rounded-control border border-line-input px-3 py-2"
                           >
                             {BILLING_INTERVALS.map((interval) => {
                               const price = intervalPriceCents(planId, interval.id);
@@ -2194,25 +2127,25 @@ export default async function DashboardPage({
                         </label>
                         <button
                           type="submit"
-                          className="rounded-full bg-linketto-600 px-5 py-2 text-sm font-semibold text-white hover:bg-linketto-700"
+                          className={buttonStyles()}
                         >
                           {t('toPayment')}
                         </button>
                         {planId !== plan.id && plan.id !== 'FREE' && (
-                          <p className="w-full text-xs text-slate-500">{t('upgradeCarryNote')}</p>
+                          <p className="w-full text-xs text-fg-muted">{t('upgradeCarryNote')}</p>
                         )}
                       </form>
                     ))}
                   {/* Founder — еднократно, завинаги */}
                   <form
                     action={startCheckoutAction}
-                    className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-100 p-4"
+                    className="flex flex-wrap items-center gap-3 rounded-card border border-line p-4"
                   >
                     <input type="hidden" name="uiLocale" value={locale} />
                     <input type="hidden" name="plan" value="FOUNDER" />
                     <button
                       type="submit"
-                      className="rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                      className={buttonStyles({ variant: 'secondary' })}
                     >
                       {t('buyFounder', { price: `€${(PLANS.FOUNDER.priceCents / 100).toFixed(0)}` })}
                     </button>
@@ -2222,7 +2155,7 @@ export default async function DashboardPage({
             </section>
           </>
         )}
-      </main>
-    </>
+      </div>
+    </DashShell>
   );
 }

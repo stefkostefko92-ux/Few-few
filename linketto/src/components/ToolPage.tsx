@@ -1,7 +1,10 @@
-import Link from 'next/link';
+import { Badge } from '@/components/ui/Badge';
+import { ButtonLink } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Container } from '@/components/ui/Container';
 
-// Обща рамка за публичните страници-инструменти и сравненията: тъмен hero
-// с бранд сиянието, бяла работна карта и CTA към регистрацията.
+// Обща рамка за публичните страници-инструменти и сравненията: заглавие
+// върху милиметровката, работна повърхност и спокойна CTA към регистрацията.
 export function ToolPage({
   eyebrow,
   title,
@@ -16,40 +19,31 @@ export function ToolPage({
   cta: { title: string; text: string; href: string; label: string };
 }) {
   return (
-    <main>
-      <section className="grain relative overflow-hidden bg-slate-950 text-white">
-        <div aria-hidden className="pointer-events-none absolute inset-0">
-          <div className="animate-aurora absolute -top-40 left-[-10%] h-[30rem] w-[30rem] rounded-full bg-linketto-600/40 blur-3xl" />
-          <div className="animate-aurora-slow absolute -bottom-52 right-[-8%] h-[32rem] w-[32rem] rounded-full bg-violet-600/30 blur-3xl" />
-        </div>
-        <div className="relative mx-auto max-w-4xl px-6 pb-24 pt-16 text-center sm:pt-20">
-          <p className="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-sky-200 backdrop-blur">
-            {eyebrow}
-          </p>
-          <h1 className="mt-5 text-balance text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+    <main id="main">
+      <section className="relative isolate overflow-hidden border-b border-line">
+        <div aria-hidden className="bg-grid absolute inset-0 -z-10" />
+        <div aria-hidden className="bg-glow absolute inset-0 -z-10" />
+        <Container className="max-w-4xl py-14 sm:py-20">
+          <Badge tone="accent">{eyebrow}</Badge>
+          <h1 className="enter mt-5 max-w-3xl text-balance text-title text-fg">
             {title}
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-slate-300">
-            {intro}
-          </p>
-        </div>
+          <p className="mt-5 max-w-2xl text-lead text-fg-muted">{intro}</p>
+        </Container>
       </section>
-      <div className="relative mx-auto -mt-14 max-w-4xl px-4 sm:px-6">
-        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xl shadow-slate-900/5 sm:p-8">
+      <Container className="max-w-4xl py-10 sm:py-14">
+        <Card variant="raised" padding="lg">
           {children}
-        </div>
-      </div>
-      <section className="mx-auto max-w-4xl px-6 py-16 text-center">
-        <h2 className="text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-          {cta.title}
-        </h2>
-        <p className="mx-auto mt-3 max-w-xl text-slate-600">{cta.text}</p>
-        <Link
-          href={cta.href}
-          className="btn-shine mt-7 inline-block rounded-full bg-linketto-600 px-7 py-3.5 font-semibold text-white shadow-lg shadow-linketto-600/25 transition hover:-translate-y-0.5 hover:bg-linketto-700"
-        >
-          {cta.label}
-        </Link>
+        </Card>
+      </Container>
+      <section className="border-t border-line bg-surface-2/50">
+        <Container className="max-w-4xl py-14 sm:py-16">
+          <h2 className="max-w-xl text-balance text-heading text-fg">{cta.title}</h2>
+          <p className="mt-3 max-w-xl text-lead text-fg-muted">{cta.text}</p>
+          <ButtonLink href={cta.href} size="lg" className="mt-7">
+            {cta.label}
+          </ButtonLink>
+        </Container>
       </section>
     </main>
   );

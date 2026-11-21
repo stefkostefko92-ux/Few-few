@@ -7,7 +7,21 @@
     "login": "Prijava",
     "register": "Registracija",
     "dashboard": "Nadzorna plošča",
-    "logout": "Odjava"
+    "logout": "Odjava",
+    "features": "Funkcije",
+    "pricing": "Cenik",
+    "faq": "Vprašanja",
+    "tools": "Orodja",
+    "menu": "Meni",
+    "closeMenu": "Zapri meni",
+    "language": "Jezik",
+    "main": "Glavna navigacija",
+    "skip": "Skoči na vsebino",
+    "theme": "Tema",
+    "themeLight": "Svetla",
+    "themeDark": "Temna",
+    "themeSystem": "Sistemska",
+    "onThisPage": "Na tej strani"
   },
   "home": {
     "heroTitle": "Ena povezava v biografiji. Vsi jeziki sveta.",
@@ -61,7 +75,14 @@
     "featureFeeBody": "Prodajaš prek svoje povezave za plačilo (Revolut, PayPal in drugi) — denar gre neposredno k tebi, Linketto pa ne vzame nobenega deleža. Stroški tvojega ponudnika plačil še naprej veljajo po njegovih pogojih.",
     "statsFeeLabel": "delež Linketta od tvoje prodaje",
     "faq5q": "Ali lahko prodajam izdelke s svoje strani?",
-    "trustPayments": "Plačila paketov prek Revolut Bank UAB (licencirana banka v EU)"
+    "trustPayments": "Plačila paketov prek Revolut Bank UAB (licencirana banka v EU)",
+    "resumeMotion": "Zaženi animacije",
+    "lxStripHint": "Pomikaj se naprej — trak se premika",
+    "lxStatsTitle": "Linketto v številkah",
+    "demoLabel": "Primer: en profil, veliko jezikov",
+    "factsLabel": "Linketto v številkah",
+    "heroNote": "Brezplačno. Brez kreditne kartice.",
+    "manifestoLabel": "Naša obljuba"
   },
   "pricing": {
     "title": "Preproste in poštene cene",
@@ -377,7 +398,28 @@
     "withdrawName": "Ime",
     "withdrawNameError": "Vpiši svoje ime.",
     "withdrawConfirm": "Potrdi odstop od pogodbe",
-    "withdrawPaidOn": "plačano {date}"
+    "withdrawPaidOn": "plačano {date}",
+    "themeName_aurora": "Aurora",
+    "themeName_mono": "Mono",
+    "themeName_dusk": "Somrak",
+    "themeName_editorial": "Uredniška",
+    "themeName_midnight": "Grafit",
+    "themeName_sand": "Pesek",
+    "themeName_cobalt": "Kobalt",
+    "themeName_chrome": "Krom",
+    "themeName_acid": "Kislina",
+    "themeName_auto": "Samodejna (svetla in temna)",
+    "navGroupProfile": "Profil",
+    "navGroupGrowth": "Rast",
+    "navGroupSales": "Prodaja",
+    "navGroupAccount": "Račun",
+    "navHome": "Nadzorna plošča",
+    "viewPage": "Poglej stran",
+    "pageIntro": "Tvoj profil, povezave in občinstvo na enem mestu.",
+    "analyticsIntro": "Kako se vedejo tvoji obiskovalci — brez piškotkov in brez osebnih podatkov.",
+    "withdrawIntro2": "Drugi in zadnji korak: potrdi svoj odstop od pogodbe.",
+    "navMessages": "Sporočila",
+    "navAudience": "Občinstvo"
   },
   "profile": {
     "poweredBy": "Ustvarjeno z Linketto",
@@ -425,7 +467,10 @@
     "contact": "info@carbonstealth.eu",
     "cookies": "Piškotki",
     "tools": "Brezplačna orodja",
-    "compare": "Linketto vs. Linktree"
+    "compare": "Linketto vs. Linktree",
+    "product": "Izdelek",
+    "legal": "Pravne informacije",
+    "languages": "Jeziki"
   },
   "seo": {
     "metaTitle": "Linketto — večjezični link in bio: vse povezave, v vsakem jeziku",
