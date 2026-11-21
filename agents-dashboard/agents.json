@@ -5095,7 +5095,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 284
+        "lessons": 285
       },
       "evolution": [
         {
@@ -5631,9 +5631,20 @@
           "date": "2026-11-21",
           "event": "v31.1 — учене",
           "detail": "Научи: В linketto последният ключ на auth/admin се мени при всяка вълна (сега в en/it/es/de/fr…"
+        },
+        {
+          "version": "31.2.0",
+          "date": "2026-11-21",
+          "event": "v31.2 — учене",
+          "detail": "Научи: В linketto legal.privacyBody „Дневник на сигурността“ е преведен като en \"Security log\"…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-21",
+          "type": "learning",
+          "summary": "Научи: „В linketto legal.privacyBody „Дневник на сигурността“ е преведен като en \"Security log\"…\""
+        },
         {
           "date": "2026-11-21",
           "type": "learning",
