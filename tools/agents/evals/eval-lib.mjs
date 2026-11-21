@@ -224,6 +224,14 @@ export function trialStats(results) {
 }
 
 /** Структурна валидност на spec (за --check гейта — без да пуска агента). */
+/**
+ * Фикстурите, които задачата назовава (`tools/agents/evals/fixtures/…`). `--check` ги сверява с диска: spec,
+ * чиято фикстура липсва, не е самостоятелен, а гейтът минаваше без нея (21.11.2026, AI-джията).
+ */
+export function fixtureRefs(task) {
+  return [...String(task || "").matchAll(/tools\/agents\/evals\/fixtures\/[^\s`'"()<>,;]+/g)].map((m) => m[0].replace(/[.:]+$/, ""));
+}
+
 export function validateSpec(spec, knownAgents) {
   const errs = [];
   if (!spec || typeof spec !== "object") return ["spec не е обект"];
