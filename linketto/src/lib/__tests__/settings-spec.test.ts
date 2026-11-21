@@ -85,3 +85,11 @@ test('смяна на Revolut ключ/среда при висящи поръч
   assert.deepEqual(revolutSwitchCheck({ updates: [env('sandbox')], currentEnv: null, openOrders: 5, confirmed: null }), { blocked: false, envChanged: false });
   assert.equal(revolutSwitchCheck({ updates: [{ key: 'revolut.webhookSecret', value: WSK }], currentEnv: 'production', openOrders: 5, confirmed: null }).blocked, false);
 });
+
+test('подател: валидаторът приема само каквото пощата реално може да ползва (parseSender)', () => {
+  // Кодаджията: иначе „валиден“ подател тихо спира всички писма, вкл. алармите до админите.
+  for (const bad of ['no-reply@x.eu>', 'Linketto <no-reply@x.eu', 'Linketto no-reply@x.eu']) {
+    assert.equal(validateSetting('brevo.sender', bad), null, bad);
+  }
+  assert.ok(validateSetting('brevo.sender', '"Linketto Team" <a@b.eu>'));
+});

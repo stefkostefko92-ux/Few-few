@@ -1,6 +1,6 @@
 import 'server-only';
 import { prisma } from '@/lib/db';
-import { needsReseal, open as openSealed, seal } from '@/lib/secret-box';
+import { needsReseal, open as openSealed, seal, sealContext } from '@/lib/secret-box';
 import { envSetting, isSecretSetting, SETTING_ENV, SETTING_KEYS, type SettingKey } from '@/lib/settings-spec';
 
 // Ключовете на доставчиците (docs/security-2fa-settings-spec.md, В): настройката
@@ -28,13 +28,15 @@ async function load(): Promise<Partial<Record<SettingKey, string>>> {
   for (const row of rows) {
     const key = row.key as SettingKey;
     if (!(key in SETTING_ENV)) continue;
-    const value = row.sealed ? openSealed(row.sealed, `setting:${key}`) : row.value;
+    // Тайна само от шифрования ред (Разбивача F5): нешифрован `value` при таен ключ
+    // = запис покрай панела (без step-up и аларма) → не се приема.
+    const value = row.sealed ? openSealed(row.sealed, sealContext.setting(key)) : isSecretSetting(key) ? null : row.value;
     if (!value) continue;
     values[key] = value;
     // Ротация на SETTINGS_KEY: прочетено със стария ключ → шифрова се с новия.
     if (row.sealed && needsReseal(row.sealed)) {
       await prisma.setting
-        .updateMany({ where: { key, sealed: row.sealed }, data: { sealed: seal(value, `setting:${key}`) } })
+        .updateMany({ where: { key, sealed: row.sealed }, data: { sealed: seal(value, sealContext.setting(key)) } })
         .catch(() => undefined);
     }
   }
@@ -85,7 +87,7 @@ export async function settingsOverview(): Promise<SettingStatus[]> {
     const row = byKey.get(key);
     const secret = isSecretSetting(key);
     const env = process.env[SETTING_ENV[key]]?.trim() || null;
-    const fromRow = row ? (row.sealed ? openSealed(row.sealed, `setting:${key}`) : row.value) : null;
+    const fromRow = row ? (row.sealed ? openSealed(row.sealed, sealContext.setting(key)) : row.value) : null;
     const meta = { updatedAt: row?.updatedAt ?? null, updatedBy: row?.updatedBy ? (emailOf.get(row.updatedBy) ?? null) : null };
     if (fromRow) {
       return { key, source: 'admin', display: secret ? (row?.last4 ? `••••${row.last4}` : mask(fromRow)) : fromRow, ...meta };
@@ -96,11 +98,16 @@ export async function settingsOverview(): Promise<SettingStatus[]> {
   });
 }
 
-/** Висящи поръчки, които смяна на Revolut среда/ключ би осиротила (Продавача §4). */
+/** Поръчки, които смяна на Revolut среда/ключ/акаунт би осиротила (Продавача §4, B2). */
 export async function openRevolutOrders(): Promise<number> {
   return prisma.planOrder.count({
     where: {
-      OR: [{ state: 'refund_pending' }, { state: 'pending', createdAt: { gte: new Date(Date.now() - 3 * 24 * 60 * 60_000) } }],
+      // conflict = платена, неприложена: връщането ѝ минава през API-то на същия акаунт (Продавача B2).
+      OR: [
+        { state: 'refund_pending' },
+        { state: 'conflict' },
+        { state: 'pending', createdAt: { gte: new Date(Date.now() - 3 * 24 * 60 * 60_000) } },
+      ],
     },
   });
 }

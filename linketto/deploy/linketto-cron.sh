@@ -77,6 +77,7 @@ DELETE FROM "Session"        WHERE "expiresAt" < now();
 DELETE FROM "SecurityEvent"  WHERE "createdAt" < now() - interval '90 days';
 DELETE FROM "LoginChallenge" WHERE "expiresAt" < now();
 DELETE FROM "UserToken"      WHERE "expiresAt" < now() - interval '1 day';
+UPDATE "User"                SET "totpPendingSealed" = NULL WHERE "totpPendingSealed" IS NOT NULL AND "updatedAt" < now() - interval '1 day';
 SQL
 }
 

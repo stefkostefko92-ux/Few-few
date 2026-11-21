@@ -2,11 +2,12 @@
 
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import bcrypt from 'bcryptjs';
+import { hashPassword } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { requireAdmin, requireStepUp } from '@/lib/admin';
-import { adminEmailChange, isAdminEmail } from '@/lib/admin-list';
+import { adminEmailChange, isWorkingAdmin } from '@/lib/admin-list';
 import { recordSecurityEvent } from '@/lib/security-events';
+import { notifyAdmins } from '@/lib/admin-alert';
 import { notifyUserSecurity, sendVerificationEmail } from '@/lib/account-flows';
 import { requestPlanRefund, type RefundRequest } from '@/lib/plan-order-service';
 import { banAllowed, banNoticeEmail, isBanCategory, warningNoticeEmail } from '@/lib/dsa-notice';
@@ -16,7 +17,7 @@ import { applyPlanLimits } from '@/lib/plan-limits';
 import { autoTranslateNoticeEmail, autoTranslateStartDate } from '@/lib/auto-translate-notice';
 import { SITE_URL } from '@/lib/seo';
 import { isLocale } from '@/i18n/locales';
-import type { Plan } from '@prisma/client';
+import type { Plan, Prisma } from '@prisma/client';
 
 // Админ действия — само за ADMIN_EMAILS. Всяко действие проверява наново.
 
@@ -32,9 +33,14 @@ const PLAN_VALUES = ['FREE', 'PRO', 'BUSINESS', 'FOUNDER'] as const;
  * изтриване) — само самият той от „Сигурност“. Връща целевия потребител.
  */
 async function guardTarget(uiLocale: string, adminId: string, userId: string) {
-  const target = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true, locale: true } });
+  const target = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, email: true, locale: true, emailVerifiedAt: true, totpEnabledAt: true },
+  });
   if (!target) redirect(`/${uiLocale}/admin?error=input`);
-  if (target.id !== adminId && isAdminEmail(target.email)) redirect(`/${uiLocale}/admin?error=admin-target`);
+  // Защитен е само РАБОТЕЩ админ (потвърден + 2FA). Акаунт, „заел“ админ адрес
+  // без потвърждение/2FA, админът може да изтрие (Разбивача F1).
+  if (target.id !== adminId && isWorkingAdmin(target)) redirect(`/${uiLocale}/admin?error=admin-target`);
   return target;
 }
 
@@ -144,7 +150,9 @@ export async function adminUpdateUserAction(
   const change = adminEmailChange({ adminId: admin.id, targetId: userId, current: target.email, next: email });
   if (change === 'forbidden') redirect(`/${uiLocale}/admin?error=admin-target`);
   try {
-    await prisma.user.update({
+    // Атомарно: нов адрес без потвърждение + без висящи токени/сесии в един запис
+    // (иначе стар токен може да „потвърди“ новия адрес в прозореца между тях).
+    const updateUser = prisma.user.update({
       where: { id: userId },
       data: {
         email,
@@ -157,14 +165,18 @@ export async function adminUpdateUserAction(
         ...(plan === 'FREE' || plan === 'FOUNDER' ? { planExpiresAt: null, planReminded: null } : {}),
       },
     });
+    const ops: Prisma.PrismaPromise<unknown>[] = [updateUser];
+    if (change === 'changed') {
+      ops.push(prisma.userToken.deleteMany({ where: { userId } }), prisma.session.deleteMany({ where: { userId } }));
+    }
+    await prisma.$transaction(ops);
     // Ръчно свален план → платените функции спират (виж lib/plan-limits.ts).
     await applyPlanLimits(userId);
     if (change === 'changed') {
-      // Висящи връзки за потвърждение (към стария адрес) и сесиите отпадат.
-      await prisma.userToken.deleteMany({ where: { userId } });
-      await prisma.session.deleteMany({ where: { userId } });
       // Старият адрес научава за смяната (иначе тихо превземане на акаунта).
       await notifyUserSecurity(target, 'admin-email');
+      // Стражата: смяната на имейл (път към превземане) — и до всички админи.
+      await notifyAdmins('Админ смени имейла на акаунт', [`Админ: ${admin.email}`, `Акаунт (id): ${userId}`]).catch(() => false);
       await sendVerificationEmail({ id: userId, email, locale: target.locale }).catch(() => false);
       await recordSecurityEvent('admin.action', { userId: admin.id, meta: { action: 'change-email', target: userId } });
     }
@@ -191,7 +203,8 @@ export async function adminForceLogoutAction(
   const admin = await requireAdmin(uiLocale);
   const userId = String(formData.get('userId') ?? '');
   await guardTarget(uiLocale, admin.id, userId);
-  await prisma.session.deleteMany({ where: { userId } });
+  const { count } = await prisma.session.deleteMany({ where: { userId } });
+  await recordSecurityEvent('admin.action', { userId: admin.id, meta: { action: 'force-logout', target: userId, count } });
   redirect(`/${uiLocale}/admin?ok=1`);
 }
 
@@ -320,7 +333,7 @@ export async function adminSetPasswordAction(
     redirect(`/${uiLocale}/admin?error=password`);
   }
   const target = await guardTarget(uiLocale, stepAdmin.id, parsed.data.userId);
-  const passwordHash = await bcrypt.hash(parsed.data.password, 12);
+  const passwordHash = await hashPassword(parsed.data.password);
   await prisma.user.update({
     where: { id: parsed.data.userId },
     data: { passwordHash },

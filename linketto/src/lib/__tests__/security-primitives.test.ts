@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
-import { canSeal, keyRingFrom, needsReseal, open, seal } from '../secret-box';
+import { canSeal, keyRingFrom, needsReseal, open, seal, sealContext } from '../secret-box';
 import { base32Decode, base32Encode, hotp, newTotpSecret, otpauthUri, totpStep, verifyTotp } from '../totp';
 import { hashBackupCode, matchBackupCode, newBackupCodes } from '../backup-codes';
 
@@ -84,4 +84,19 @@ test('резервни кодове: 10 уникални, еднократни, 
   assert.equal(matchBackupCode(codes[3]!.toLowerCase().replace('-', ' '), hashes), 3);
   assert.equal(matchBackupCode('AAAAA-AAAAA', hashes), -1);
   assert.equal(matchBackupCode('', hashes), -1);
+});
+
+test('sealContext: същите низове като вече шифрованите данни (смяна = изгубена 2FA/ключове)', () => {
+  assert.equal(sealContext.totp('u1'), 'totp:u1');
+  assert.equal(sealContext.totpPending('u1'), 'totp-pending:u1');
+  assert.equal(sealContext.setting('revolut.secretKey'), 'setting:revolut.secretKey');
+});
+
+test('open: къс таг на GCM → null (тагът е точно 16 байта)', () => {
+  const ring = keyRingFrom({ SETTINGS_KEY: randomBytes(32).toString('base64') });
+  const sealed = seal('тайна', 'ctx', ring);
+  const parts = sealed.split('.');
+  parts[3] = Buffer.from(parts[3]!, 'base64url').subarray(0, 8).toString('base64url');
+  assert.equal(open(parts.join('.'), 'ctx', ring), null);
+  assert.equal(open(sealed, 'ctx', ring), 'тайна');
 });

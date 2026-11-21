@@ -1,7 +1,9 @@
 import 'server-only';
 import { createHmac } from 'node:crypto';
+import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { notifyAdmins } from '@/lib/admin-alert';
+import { alertDue } from '@/lib/alert-policy';
 
 // Дневник на събитията по сигурност + аларми (син екип, детекция D1–D7).
 // Никога: пароли, кодове, тайни, токени, IP. Имейлът при неуспешен вход е
@@ -21,6 +23,8 @@ export type SecurityEventType =
   | 'stepup.ok'
   | 'stepup.failed'
   | 'email.verified'
+  | 'email.verify_blocked'
+  | 'admin.register'
   | 'webhook.bad_signature'
   | 'setting.changed'
   | 'admin.action';
@@ -43,7 +47,7 @@ export async function recordSecurityEvent(
         userId: data.userId ?? null,
         subject: data.subject ?? null,
         country: data.country ?? null,
-        meta: (data.meta ?? undefined) as never,
+        meta: (data.meta ?? undefined) as Prisma.InputJsonValue | undefined,
       },
     })
     .catch(() => undefined);
@@ -61,14 +65,22 @@ export async function countRecent(
 }
 
 /**
- * Аларма до админите при точно достигнат праг (а не при всяко следващо
- * събитие) — едно писмо на вълна, без да се залива пощата.
+ * Аларма до админите по детекционно правило (lib/alert-policy.ts): при
+ * count >= праг, веднъж на прозорец за правило+ключ, с общ таван на правило —
+ * външен човек нито залива пощата, нито заглушава правилото.
  */
 export async function alertAtThreshold(
+  rule: { name: string; key?: string; threshold: number; windowMs?: number },
   count: number,
-  threshold: number,
   subject: string,
   lines: string[],
 ): Promise<void> {
-  if (count === threshold) await notifyAdmins(subject, lines).catch(() => false);
+  const due = alertDue({
+    count,
+    threshold: rule.threshold,
+    rule: rule.name,
+    key: rule.key ?? 'all',
+    windowMs: rule.windowMs,
+  });
+  if (due) await notifyAdmins(subject, lines).catch(() => false);
 }

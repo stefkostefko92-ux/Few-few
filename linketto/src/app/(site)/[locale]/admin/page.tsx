@@ -516,6 +516,7 @@ export default async function AdminPage({
             noDisputes={nodisputes === '1'}
             reused={reused === '1'}
             webhookReset={webhook === 'reset'}
+            webhookEnvStale={webhook === 'env-stale'}
           />
         </Section>
 

@@ -12,7 +12,8 @@ import { getSession } from '@/lib/auth';
 import { isAdminEmail } from '@/lib/admin-list';
 import { prisma } from '@/lib/db';
 import { planFor } from '@/lib/plans';
-import { open as openSealed } from '@/lib/secret-box';
+import { open as openSealed, sealContext } from '@/lib/secret-box';
+import { BACKUP_CODES_LOW } from '@/lib/backup-codes';
 import { otpauthUri } from '@/lib/totp';
 import {
   cancelTotpEnrollAction,
@@ -35,7 +36,7 @@ export default async function SecurityPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ ok?: string; error?: string; need?: string; step?: string }>;
+  searchParams: Promise<{ ok?: string; error?: string; need?: string }>;
 }) {
   const { locale } = await params;
   const { ok, error, need } = await searchParams;
@@ -51,7 +52,7 @@ export default async function SecurityPage({
   ]);
 
   // QR за записване — само докато има чакащ (непотвърден) секрет.
-  const pendingSecret = user.totpPendingSealed ? openSealed(user.totpPendingSealed, `totp-pending:${user.id}`) : null;
+  const pendingSecret = user.totpPendingSealed ? openSealed(user.totpPendingSealed, sealContext.totpPending(user.id)) : null;
   const qr = pendingSecret
     ? await QRCode.toDataURL(otpauthUri(pendingSecret, user.email), { margin: 1, width: 220, errorCorrectionLevel: 'M' })
     : null;
@@ -93,7 +94,7 @@ export default async function SecurityPage({
         {error && errorText[error] && <Callout tone="danger">{errorText[error]}</Callout>}
         {need === 'admin2fa' && !user.totpEnabledAt && <Callout tone="warning">{t('adminRequired')}</Callout>}
         {need === 'verify' && !user.emailVerifiedAt && <Callout tone="warning">{t('adminVerifyRequired')}</Callout>}
-        {user.totpEnabledAt && user.backupCodeHashes.length <= 3 && <Callout tone="warning">{t('backupLow')}</Callout>}
+        {user.totpEnabledAt && user.backupCodeHashes.length <= BACKUP_CODES_LOW && <Callout tone="warning">{t('backupLow')}</Callout>}
 
         {/* Имейл */}
         <section id="email" className={card}>

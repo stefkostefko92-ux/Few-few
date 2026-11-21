@@ -14,7 +14,7 @@ const MAX_KEYS = 10_000;
 // нулира защитата на входа и AI тавана (червен екип). Те имат собствен,
 // много по-висок таван (нападателят плаща bcrypt/лимит за всеки).
 const MAX_CRITICAL_KEYS = 200_000;
-const CRITICAL = /^(login-|register|mfa|2fa|stepup|reset-|verify-)|:global$/;
+const CRITICAL = /^(login-|register|mfa|2fa|stepup|reset-|verify-|alert:)|:global$/;
 
 export function isCriticalKey(key: string): boolean {
   return CRITICAL.test(key);

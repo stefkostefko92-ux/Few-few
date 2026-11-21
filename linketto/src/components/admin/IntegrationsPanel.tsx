@@ -15,7 +15,7 @@ import { getSession, stepUpFresh } from '@/lib/auth';
 import { canSeal } from '@/lib/secret-box';
 import { openRevolutOrders, settingsOverview, type SettingStatus } from '@/lib/settings';
 import { isSecretSetting, SETTING_GROUPS, type SettingGroup, type SettingKey } from '@/lib/settings-spec';
-import { SITE_URL } from '@/lib/seo';
+import { REVOLUT_WEBHOOK_URL } from '@/lib/seo';
 
 // „Плащания и имейл“ в админ панела: ключовете на Revolut и Brevo
 // (actions/integrations.ts). Тайните никога не се връщат към браузъра —
@@ -42,6 +42,7 @@ export async function IntegrationsPanel({
   noDisputes,
   reused,
   webhookReset,
+  webhookEnvStale,
 }: {
   locale: string;
   test?: string;
@@ -49,6 +50,7 @@ export async function IntegrationsPanel({
   noDisputes?: boolean;
   reused?: boolean;
   webhookReset?: boolean;
+  webhookEnvStale?: boolean;
 }) {
   const t = await getTranslations('admin');
   const [overview, active, openOrders] = await Promise.all([settingsOverview(), getSession(), openRevolutOrders()]);
@@ -97,6 +99,9 @@ export async function IntegrationsPanel({
       <div key={key} className="space-y-1.5">
         <Label htmlFor={id}>{t(FIELD_LABEL[key])}</Label>
         {statusLine(status)}
+        {key === 'revolut.secretKey' && status.source !== 'none' && (
+          <p className="text-micro text-fg-muted">{t('intKeyAccountHint')}</p>
+        )}
         {key === 'revolut.env' ? (
           <Select id={id} name={key} defaultValue="" disabled={!fresh}>
             <option value="">{t('intKeep')}</option>
@@ -126,6 +131,12 @@ export async function IntegrationsPanel({
         <form key={key} action={clearSettingAction}>
           <input type="hidden" name="uiLocale" value={locale} />
           <input type="hidden" name="key" value={key} />
+          {(key === 'revolut.env' || key === 'revolut.secretKey') && openOrders > 0 && (
+            <label className="me-2 inline-flex items-center gap-1.5 text-micro text-warning-text">
+              <input type="checkbox" name="confirmOpen" value={String(openOrders)} disabled={!fresh} />
+              {t('intOpenOrdersConfirm', { count: openOrders })}
+            </label>
+          )}
           <Button type="submit" variant="ghost" size="sm" disabled={!fresh}>
             {t('intClear', { field: t(FIELD_LABEL[key]) })}
           </Button>
@@ -178,6 +189,7 @@ export async function IntegrationsPanel({
         </Callout>
       )}
       {webhookReset && <Callout tone="warning">{t('intWebhookReset')}</Callout>}
+      {webhookEnvStale && <Callout tone="warning">{t('intWebhookEnvStale')}</Callout>}
       {!sealOk && <Callout tone="warning">{t('intNoSealKey')}</Callout>}
       {!fresh && (
         <Callout tone="info">
@@ -193,7 +205,7 @@ export async function IntegrationsPanel({
           t('intRevolutTitle'),
           <form action={registerWebhookAction}>
             <input type="hidden" name="uiLocale" value={locale} />
-            <Button type="submit" variant="secondary" size="sm" disabled={!fresh || !sealOk} title={t('intWebhookHint', { url: `${SITE_URL}/api/revolut/webhook` })}>
+            <Button type="submit" variant="secondary" size="sm" disabled={!fresh || !sealOk} title={t('intWebhookHint', { url: REVOLUT_WEBHOOK_URL })}>
               {t('intWebhook')}
             </Button>
           </form>,
@@ -209,7 +221,7 @@ export async function IntegrationsPanel({
           </form>,
         )}
       </div>
-      <p className="text-micro text-fg-muted">{t('intWebhookHint', { url: `${SITE_URL}/api/revolut/webhook` })}</p>
+      <p className="text-micro text-fg-muted">{t('intWebhookHint', { url: REVOLUT_WEBHOOK_URL })}</p>
     </div>
   );
 }

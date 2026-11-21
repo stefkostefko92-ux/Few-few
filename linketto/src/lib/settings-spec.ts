@@ -20,6 +20,23 @@ export function envSetting(key: SettingKey, env: Record<string, string | undefin
   return value ? value : null;
 }
 
+const EMAIL_RE = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
+
+export interface EmailSender {
+  name?: string;
+  email: string;
+}
+
+/** EMAIL_FROM „Linketto <no-reply@…>“ или само адрес → подател за Brevo. */
+export function parseSender(raw: string): EmailSender | null {
+  const value = raw.trim();
+  const match = /^(.*?)\s*<([^>]+)>$/.exec(value);
+  const email = (match ? match[2] : value).trim();
+  if (!EMAIL_RE.test(email)) return null;
+  const name = match?.[1].trim().replace(/^"|"$/g, '').trim();
+  return name ? { name, email } : { email };
+}
+
 /** Тайните се пазят шифровани и никога не се показват обратно. */
 export function isSecretSetting(key: SettingKey): boolean {
   return key === 'revolut.secretKey' || key === 'revolut.webhookSecret' || key === 'brevo.apiKey';
@@ -44,11 +61,9 @@ export function validateSetting(key: SettingKey, raw: string): string | null {
       return value === 'sandbox' || value === 'production' ? value : null;
     case 'brevo.apiKey':
       return /^xkeysib-[A-Za-z0-9-]{20,200}$/.test(value) ? value : null;
-    case 'brevo.sender': {
-      // „Име <адрес>“ или само адрес — същото като EMAIL_FROM (lib/email.ts parseSender).
-      const match = /^(?:([^<>]{1,80})\s*)?<?([^\s@<>]+@[^\s@<>]+\.[^\s@<>]+)>?$/.exec(value);
-      return match ? value : null;
-    }
+    case 'brevo.sender':
+      // Същият парсер, който ползва пощата — иначе „валиден“ подател тихо спира всички писма.
+      return parseSender(value) ? value : null;
   }
 }
 

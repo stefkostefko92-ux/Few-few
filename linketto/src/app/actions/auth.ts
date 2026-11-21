@@ -17,7 +17,7 @@ import { isAdminEmail } from '@/lib/admin-list';
 import { notifyAdmins } from '@/lib/admin-alert';
 import { openTotpSecret } from '@/lib/totp-secret';
 import { verifyTotp } from '@/lib/totp';
-import { matchBackupCode } from '@/lib/backup-codes';
+import { BACKUP_CODES_LOW, matchBackupCode } from '@/lib/backup-codes';
 import { alertAtThreshold, countRecent, recordSecurityEvent, subjectHash } from '@/lib/security-events';
 import { notifyUserSecurity, requestCountryCode, sendVerificationEmail } from '@/lib/account-flows';
 import { isLocale } from '@/i18n/locales';
@@ -126,7 +126,16 @@ export async function registerAction(formData: FormData): Promise<void> {
 
   await logLoginIp(user.id);
   // Имейлът се потвърждава по писмо (без потвърден имейл няма админ достъп).
-  await sendVerificationEmail(user);
+  // Най-добро усилие: провал на пощата не чупи вече създадения акаунт (писмото се праща пак от „Сигурност“).
+  await sendVerificationEmail(user).catch(() => false);
+  if (isAdminEmail(user.email)) {
+    // Разбивача F1: регистрация с админ адрес — собственикът трябва да знае веднага.
+    await recordSecurityEvent('admin.register', { userId: user.id, country: await requestCountryCode() });
+    await notifyAdmins('Регистрация с админ адрес', [
+      `Адрес: ${user.email}`,
+      'Ако не си бил ти — НЕ отваряй писмото за потвърждение и изтрий акаунта от админ панела.',
+    ]).catch(() => false);
+  }
   await createSession(user.id, { admin: isAdminEmail(user.email) });
   redirect(`/${locale}/dashboard`);
 }
@@ -160,11 +169,21 @@ export async function loginAction(formData: FormData): Promise<void> {
     // Дневник (HMAC на имейла, без IP) + аларма при вълна срещу един акаунт (D1).
     const subject = subjectHash(email);
     await recordSecurityEvent('auth.login.failed', { subject, country: await requestCountryCode() });
+    // Стражата: вълна срещу един акаунт, бавно налучкване (24 ч) и „пръскане“ по много акаунти.
     if (subject) {
-      await alertAtThreshold(await countRecent('auth.login.failed', 10, { subject }), 20, 'Вълна от неуспешни входове', [
-        '20 неуспешни опита за вход в един акаунт за 10 минути (възможно налучкване на парола).',
+      await alertAtThreshold({ name: 'login-wave', key: subject, threshold: 20 }, await countRecent('auth.login.failed', 10, { subject }), 'Вълна от неуспешни входове', [
+        '20+ неуспешни опита за вход в един акаунт за 10 минути (възможно налучкване на парола).',
       ]);
+      await alertAtThreshold(
+        { name: 'login-slow', key: subject, threshold: 50, windowMs: 24 * 60 * 60_000 },
+        await countRecent('auth.login.failed', 24 * 60, { subject }),
+        'Бавно налучкване на парола',
+        ['50+ неуспешни опита за вход в един акаунт за 24 часа.'],
+      );
     }
+    await alertAtThreshold({ name: 'login-spray', threshold: 200 }, await countRecent('auth.login.failed', 10), 'Масови неуспешни входове', [
+      '200+ неуспешни опита за вход за 10 минути в целия сайт (възможно „пръскане“ на пароли по много акаунти).',
+    ]);
     redirect(`/${locale}/login?error=invalid`);
   }
   // 2FA: паролата сама не дава сесия — първо код (вход на 2 стъпки).
@@ -204,7 +223,7 @@ export async function verifyMfaAction(formData: FormData): Promise<void> {
   const code = mfaSchema.safeParse(formData.get('code'));
   // 5 опита на предизвикателство и 5 за 15 мин. на акаунт (критичен ключ).
   if (!code.success || !rateLimit(`mfa:${user.id}`, 5, 15 * 60_000) || challenge.attempts >= 5) {
-    await failMfa(challenge.id, user.id, locale, challenge.attempts);
+    await failMfa(challenge.id, user, locale, challenge.attempts);
   }
   const value = code.success ? code.data : '';
   const secret = await openTotpSecret(user);
@@ -236,15 +255,27 @@ export async function verifyMfaAction(formData: FormData): Promise<void> {
         if (isAdminEmail(user.email)) {
           await notifyAdmins('Резервен 2FA код в админ акаунт', [`Акаунт: ${user.email}`, `Остават: ${left.length}`]).catch(() => false);
         }
-        redirect(`/${locale}/dashboard${left.length <= 3 ? '/security?need=backup' : ''}`);
+        redirect(`/${locale}/dashboard${left.length <= BACKUP_CODES_LOW ? '/security?need=backup' : ''}`);
       }
     }
   }
-  await failMfa(challenge.id, user.id, locale, challenge.attempts);
+  await failMfa(challenge.id, user, locale, challenge.attempts);
 }
 
-async function failMfa(challengeId: string, userId: string, locale: string, attempts: number): Promise<never> {
-  await recordSecurityEvent('mfa.failed', { userId });
+async function failMfa(
+  challengeId: string,
+  user: { id: string; email: string },
+  locale: string,
+  attempts: number,
+): Promise<never> {
+  await recordSecurityEvent('mfa.failed', { userId: user.id });
+  // Вярна парола + грешен код в админ акаунт = паролата вероятно е изтекла (Стражата B2).
+  if (isAdminEmail(user.email)) {
+    await alertAtThreshold({ name: 'admin-mfa-failed', key: user.id, threshold: 1 }, 1, 'Грешен 2FA код в админ акаунт', [
+      `Акаунт: ${user.email}`,
+      'Паролата е била вярна, кодът — не. Ако не си бил ти, смени паролата веднага.',
+    ]);
+  }
   if (attempts + 1 >= 5) {
     await clearLoginChallenge(challengeId);
     redirect(`/${locale}/login?error=invalid`);

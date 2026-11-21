@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { adminEmailChange, adminGate, isAdminEmail } from '../admin-list';
+import { adminEmailChange, adminGate, isAdminEmail, isWorkingAdmin } from '../admin-list';
 import { SESSION_LIMITS, sessionExpired, stepUpFresh, STEP_UP_MS } from '../session-policy';
+import { securityNoticeMessage, verifyEmailMessage } from '../account-emails';
 
 // docs/security-2fa-settings-spec.md — критерии 4–10 (логиката; потоците са в server actions).
 
@@ -11,17 +12,19 @@ test('isAdminEmail: само от списъка, без значение от �
   assert.equal(isAdminEmail('SECOND@example.com', env), true);
   assert.equal(isAdminEmail('other@example.com', env), false);
   assert.equal(isAdminEmail('owner@example.com', ''), false);
+  // Един парсер за достъп и аларми: запис, който не е имейл, не дава достъп.
+  assert.equal(isAdminEmail('owner', 'owner, a@b.eu'), false);
+  assert.equal(isAdminEmail(' A@B.eu ', 'owner, a@b.eu'), true);
 });
 
 test('adminGate: имейлът сам не стига — потвърден имейл, 2FA и потвърдена сесия', () => {
-  process.env.ADMIN_EMAILS = env;
   const base = { email: 'owner@example.com', emailVerifiedAt: new Date(), totpEnabledAt: new Date(), mfaAt: new Date() };
-  assert.equal(adminGate(base), 'ok');
-  assert.equal(adminGate({ ...base, email: 'x@y.z' }), 'not-admin');
+  assert.equal(adminGate(base, env), 'ok');
+  assert.equal(adminGate({ ...base, email: 'x@y.z' }, env), 'not-admin');
   // Нападател регистрира непотвърден адрес от ADMIN_EMAILS → не е админ.
-  assert.equal(adminGate({ ...base, emailVerifiedAt: null }), 'verify-email');
-  assert.equal(adminGate({ ...base, totpEnabledAt: null }), 'enroll-2fa');
-  assert.equal(adminGate({ ...base, mfaAt: null }), 'step-up');
+  assert.equal(adminGate({ ...base, emailVerifiedAt: null }, env), 'verify-email');
+  assert.equal(adminGate({ ...base, totpEnabledAt: null }, env), 'enroll-2fa');
+  assert.equal(adminGate({ ...base, mfaAt: null }, env), 'step-up');
 });
 
 test('сесии: неактивност и абсолютен срок; админът е по-строг', () => {
@@ -43,7 +46,6 @@ test('step-up: пресен код ≤10 мин.', () => {
   assert.equal(stepUpFresh({ mfaAt: new Date(now - STEP_UP_MS - 1) }, now), false);
 });
 
-import { securityNoticeMessage, verifyEmailMessage } from '../account-emails';
 
 test('писма: потвърждение (екраниран адрес) и известие; непознат език → английски', () => {
   const mail = verifyEmailMessage({ locale: 'bg', url: 'https://x.test/api/verify-email?token=a"b' });
@@ -60,4 +62,13 @@ test('смяна на имейл от админ: чужд акаунт не м�
   assert.equal(adminEmailChange({ adminId: 'a', targetId: 'u', current: 'u@x.eu', next: 'new@x.eu', raw: env }), 'changed');
   // Себе си админът може (пак минава през потвърждение на новия адрес).
   assert.equal(adminEmailChange({ adminId: 'a', targetId: 'a', current: 'owner@example.com', next: 'second@example.com', raw: env }), 'changed');
+});
+
+test('работещ админ = адрес от списъка + потвърден имейл + 2FA (само той е защитен от други админи)', () => {
+  // Разбивача F1: акаунт, „заел“ админ адрес без потвърждение/2FA, трябва да може да се изтрие.
+  const at = new Date();
+  assert.equal(isWorkingAdmin({ email: 'owner@example.com', emailVerifiedAt: at, totpEnabledAt: at }, env), true);
+  assert.equal(isWorkingAdmin({ email: 'owner@example.com', emailVerifiedAt: null, totpEnabledAt: at }, env), false);
+  assert.equal(isWorkingAdmin({ email: 'owner@example.com', emailVerifiedAt: at, totpEnabledAt: null }, env), false);
+  assert.equal(isWorkingAdmin({ email: 'x@y.eu', emailVerifiedAt: at, totpEnabledAt: at }, env), false);
 });

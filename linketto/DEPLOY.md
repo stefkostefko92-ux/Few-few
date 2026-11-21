@@ -283,8 +283,8 @@ Health probe: `GET /api/health` → `{"status":"ok","db":"up","app":"linketto"}`
    планът **не** се удължава втори път.
 4. Купи пак Про, 1 месец → изтичането се мести с 1 месец от края (не от днес).
 5. Купи Бизнес → оставащите дни от Про се прехвърлят пропорционално.
-6. Изключи уебхука (празен `REVOLUT_WEBHOOK_SECRET`) → плати → изчакай 15 мин. и пусни cron-а (§9)
-   ръчно → урежда.
+6. Изключи уебхука — празен `REVOLUT_WEBHOOK_SECRET` в `.env` **и** „Върни към .env“ за тайната в админ
+   панела (базата печели пред `.env`) → плати → изчакай 15 мин. и пусни cron-а (§9) ръчно → урежда.
 7. `/admin` → „Върни парите“ на последната поръчка → „Връщане при Revolut…“ → (уебхук/cron) „Върната“;
    планът е този отпреди поръчката (след т. 4 — Про до предишната дата), бонусът е сторниран.
    „Върни парите“ на по-стара поръчка преди по-новата → грешка „първо по-новата“.
@@ -292,6 +292,10 @@ Health probe: `GET /api/health` → `{"status":"ok","db":"up","app":"linketto"}`
    неприложена“, планът остава „Основател“.
 9. Сложи `planExpiresAt` на утре в базата → cron → имейл „изтича след 1 ден“ (Brevo); на вчера →
    cron → FREE и платените функции спират (домейн/бадж/излишни профили).
+10. Админ панел → „Плащания и имейл“ (Продавача): „Регистрирай уебхука“ → в Sandbox се очаква бележка „без
+    спорове“; плати → уебхукът минава подписа (204, не 401). Втори клик → без дубликат („намерен съществуващ“
+    или „постави тайната ръчно“). Грешен ключ → проверката след записа показва `revolut-fail` (401). Смяна на
+    средата при висяща поръчка → без отметката отказ, с нея — тайната на уебхука се трие от панела.
 
 Чак след зелен приемен тест — `REVOLUT_ENV=production` с Production ключ и уебхук.
 
@@ -309,6 +313,10 @@ Health probe: `GET /api/health` → `{"status":"ok","db":"up","app":"linketto"}`
   DELETE FROM "BuyerToken"     WHERE "expiresAt" < now() - interval '1 day';
   DELETE FROM "BuyerSession"   WHERE "expiresAt" < now();
   DELETE FROM "Session"        WHERE "expiresAt" < now();
+  DELETE FROM "SecurityEvent"  WHERE "createdAt" < now() - interval '90 days';
+  DELETE FROM "LoginChallenge" WHERE "expiresAt" < now();
+  DELETE FROM "UserToken"      WHERE "expiresAt" < now() - interval '1 day';
+  UPDATE "User"                SET "totpPendingSealed" = NULL WHERE "totpPendingSealed" IS NOT NULL AND "updatedAt" < now() - interval '1 day';
   ```
 
 - **Cron за седмичния отчет (дневно, напр. 08:10):** `POST /api/cron/digest`

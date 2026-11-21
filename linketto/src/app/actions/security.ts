@@ -19,12 +19,12 @@ import {
 } from '@/lib/auth';
 import { isAdminEmail } from '@/lib/admin-list';
 import { notifyAdmins } from '@/lib/admin-alert';
-import { canSeal, open as openSealed, seal } from '@/lib/secret-box';
+import { canSeal, open as openSealed, seal, sealContext } from '@/lib/secret-box';
 import { newTotpSecret, verifyTotp } from '@/lib/totp';
 import { openTotpSecret } from '@/lib/totp-secret';
 import { hashBackupCode, matchBackupCode, newBackupCodes } from '@/lib/backup-codes';
 import { rateLimit } from '@/lib/rate-limit';
-import { recordSecurityEvent } from '@/lib/security-events';
+import { alertAtThreshold, recordSecurityEvent } from '@/lib/security-events';
 import { notifyUserSecurity, sendVerificationEmail } from '@/lib/account-flows';
 
 function localeFrom(formData: FormData): string {
@@ -64,7 +64,7 @@ export async function startTotpEnrollAction(formData: FormData): Promise<void> {
   if (!canSeal()) redirect(page(locale, '?error=nokey'));
   await prisma.user.update({
     where: { id: user.id },
-    data: { totpPendingSealed: seal(newTotpSecret(), `totp-pending:${user.id}`) },
+    data: { totpPendingSealed: seal(newTotpSecret(), sealContext.totpPending(user.id)) },
   });
   redirect(page(locale, '?step=scan'));
 }
@@ -83,7 +83,7 @@ export async function confirmTotpEnrollAction(_prev: CodesState, formData: FormD
   if (!rateLimit(`mfa-enroll:${user.id}`, 10, 15 * 60_000)) return { error: 'rate' };
   // Вече включена (състезание с друго записване) → без подмяна на секрета без стария фактор.
   if (user.totpEnabledAt || !user.totpPendingSealed) return { error: 'expired' };
-  const secret = openSealed(user.totpPendingSealed, `totp-pending:${user.id}`);
+  const secret = openSealed(user.totpPendingSealed, sealContext.totpPending(user.id));
   const code = String(formData.get('code') ?? '');
   const step = secret ? verifyTotp(secret, code) : null;
   if (!secret || step === null) return { error: 'code' };
@@ -91,7 +91,7 @@ export async function confirmTotpEnrollAction(_prev: CodesState, formData: FormD
   const { count } = await prisma.user.updateMany({
     where: { id: user.id, totpEnabledAt: null, totpPendingSealed: user.totpPendingSealed },
     data: {
-      totpSecretSealed: seal(secret, `totp:${user.id}`),
+      totpSecretSealed: seal(secret, sealContext.totp(user.id)),
       totpPendingSealed: null,
       totpEnabledAt: new Date(),
       totpLastStep: step,
@@ -199,6 +199,10 @@ export async function stepUpAction(formData: FormData): Promise<void> {
   if (!rateLimit(`stepup:${user.id}`, 5, 15 * 60_000)) redirect(`/${locale}/admin/step-up?error=rate`);
   if ((await checkTotp(user, String(formData.get('code') ?? ''))) === null) {
     await recordSecurityEvent('stepup.failed', { userId: user.id });
+    await alertAtThreshold({ name: 'admin-stepup-failed', key: user.id, threshold: 1 }, 1, 'Грешен код за потвърждение в админ акаунт', [
+      `Акаунт: ${user.email}`,
+      'Някой с активна админ сесия въведе грешен 2FA код за опасно действие.',
+    ]);
     redirect(`/${locale}/admin/step-up?error=code`);
   }
   await markSessionMfa(session.id);

@@ -6,6 +6,8 @@ import { createHash, randomInt, timingSafeEqual } from 'node:crypto';
 
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // без I, O, 0, 1
 export const BACKUP_CODE_COUNT = 10;
+/** Под този брой оставащи кодове — подкана за нови (вход и страницата „Сигурност“). */
+export const BACKUP_CODES_LOW = 3;
 
 export function newBackupCodes(count = BACKUP_CODE_COUNT): string[] {
   return Array.from({ length: count }, () => {

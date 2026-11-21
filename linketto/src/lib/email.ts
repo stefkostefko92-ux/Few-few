@@ -7,7 +7,9 @@
 // Brevo НЕ приема стандартни хедъри (вкл. List-Unsubscribe) и сам добавя свой
 // List-Unsubscribe към транзакционните писма — отписването от седмичния отчет е
 // нашата връзка в тялото на писмото (DEPLOY.md §2: настройката при Brevo).
-import { envSetting, type SettingKey } from '@/lib/settings-spec';
+import { envSetting, parseSender, type EmailSender, type SettingKey } from '@/lib/settings-spec';
+
+export { parseSender, type EmailSender } from '@/lib/settings-spec';
 
 // Ключът и подателят — от админ панела или .env (lib/settings.ts). Той е
 // server-only (база), затова се зарежда при нужда: чистите строители по-долу
@@ -21,23 +23,6 @@ async function setting(key: SettingKey): Promise<string | null> {
 }
 
 const BREVO_URL = 'https://api.brevo.com/v3/smtp/email';
-const EMAIL_RE = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
-
-export interface EmailSender {
-  name?: string;
-  email: string;
-}
-
-/** EMAIL_FROM „Linketto <no-reply@…>“ или само адрес → подател за Brevo. */
-export function parseSender(raw: string): EmailSender | null {
-  const value = raw.trim();
-  const match = /^(.*?)\s*<([^>]+)>$/.exec(value);
-  const email = (match ? match[2] : value).trim();
-  if (!EMAIL_RE.test(email)) return null;
-  const name = match?.[1].trim().replace(/^"|"$/g, '').trim();
-  return name ? { name, email } : { email };
-}
-
 /** Тялото на POST /v3/smtp/email (само полетата, които ползваме). */
 export function brevoPayload(input: {
   sender: EmailSender;

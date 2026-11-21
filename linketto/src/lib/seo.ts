@@ -12,6 +12,9 @@ import {
 export const SITE_URL =
   process.env.PUBLIC_BASE_URL ?? 'https://piuma.carbonstealth.eu';
 
+/** Адресът, на който Revolut праща събитията (регистрация от админ панела, DEPLOY §3). */
+export const REVOLUT_WEBHOOK_URL = `${SITE_URL}/api/revolut/webhook`;
+
 export const ORG = {
   name: 'Carbon Stealth VCC',
   url: 'https://carbonstealth.eu',

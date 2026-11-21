@@ -2,22 +2,34 @@
 // базата и без имейли в кода. Отделен модул без зависимости (ползват го и
 // auth.ts, и admin.ts — без кръгов импорт).
 
-export function isAdminEmail(email: string, raw: string = process.env.ADMIN_EMAILS ?? ''): boolean {
-  const list = raw
+const EMAIL_SHAPE = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
+
+/**
+ * Списъкът от ADMIN_EMAILS — ЕДИН парсер за достъпа и за алармите: запис, който
+ * не е имейл, не дава достъп (иначе админ без аларми). Fail-closed.
+ */
+export function adminEmailList(raw: string = process.env.ADMIN_EMAILS ?? ''): string[] {
+  return raw
     .split(',')
     .map((item) => item.trim().toLowerCase())
-    .filter(Boolean);
-  return list.includes(email.toLowerCase());
+    .filter((item) => EMAIL_SHAPE.test(item));
+}
+
+export function isAdminEmail(email: string, raw?: string): boolean {
+  return adminEmailList(raw).includes(email.trim().toLowerCase());
 }
 
 /** Защо (ако) админ достъпът е отказан — чисто, тества се. */
-export function adminGate(input: {
-  email: string;
-  emailVerifiedAt: Date | null;
-  totpEnabledAt: Date | null;
-  mfaAt: Date | null;
-}): 'ok' | 'not-admin' | 'verify-email' | 'enroll-2fa' | 'step-up' {
-  if (!isAdminEmail(input.email)) return 'not-admin';
+export function adminGate(
+  input: {
+    email: string;
+    emailVerifiedAt: Date | null;
+    totpEnabledAt: Date | null;
+    mfaAt: Date | null;
+  },
+  raw?: string,
+): 'ok' | 'not-admin' | 'verify-email' | 'enroll-2fa' | 'step-up' {
+  if (!isAdminEmail(input.email, raw)) return 'not-admin';
   if (!input.emailVerifiedAt) return 'verify-email';
   if (!input.totpEnabledAt) return 'enroll-2fa';
   if (!input.mfaAt) return 'step-up';
@@ -39,4 +51,12 @@ export function adminEmailChange(input: {
   if (input.current.trim().toLowerCase() === input.next.trim().toLowerCase()) return 'same';
   if (input.targetId !== input.adminId && isAdminEmail(input.next, input.raw)) return 'forbidden';
   return 'changed';
+}
+
+/** Работещ админ: адрес от списъка + потвърден имейл + включена 2FA (защитен от другите админи). */
+export function isWorkingAdmin(
+  user: { email: string; emailVerifiedAt: Date | null; totpEnabledAt: Date | null },
+  raw?: string,
+): boolean {
+  return isAdminEmail(user.email, raw) && user.emailVerifiedAt !== null && user.totpEnabledAt !== null;
 }

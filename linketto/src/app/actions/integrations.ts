@@ -12,9 +12,10 @@ import { prisma } from '@/lib/db';
 import { isLocale } from '@/i18n/locales';
 import { requireAdmin, requireStepUp } from '@/lib/admin';
 import { adminAlertEmail, notifyAdmins } from '@/lib/admin-alert';
-import { canSeal, seal } from '@/lib/secret-box';
-import { invalidateSettings, openRevolutOrders, setting } from '@/lib/settings';
+import { canSeal, seal, sealContext } from '@/lib/secret-box';
+import { invalidateSettings, openRevolutOrders, setting, settingSource } from '@/lib/settings';
 import {
+  envSetting,
   isSecretSetting,
   isSettingGroup,
   last4,
@@ -27,7 +28,7 @@ import { rateLimit } from '@/lib/rate-limit';
 import { recordSecurityEvent } from '@/lib/security-events';
 import { registerRevolutWebhook, revolutPing, revolutReady } from '@/lib/revolut';
 import { brevoPing, emailReady, sendEmail } from '@/lib/email';
-import { SITE_URL } from '@/lib/seo';
+import { REVOLUT_WEBHOOK_URL, SITE_URL } from '@/lib/seo';
 
 function localeFrom(formData: FormData): string {
   const raw = String(formData.get('uiLocale') ?? 'en');
@@ -57,13 +58,39 @@ async function alertChange(adminEmail: string, what: string, keys: SettingKey[])
 async function pingQuery(group: 'revolut' | 'brevo'): Promise<string> {
   // Без ключ няма какво да се проверява (иначе „няма връзка“ би заблуждавало).
   if (!(await setting(group === 'revolut' ? 'revolut.secretKey' : 'brevo.apiKey'))) return '';
-  const result = group === 'revolut' ? await revolutPing() : await brevoPing();
+  if (group === 'brevo') {
+    // Реално писмо до админите С НОВИТЕ настройки (Разбивача F2): иначе непотвърден
+    // подател в Brevo тихо спира всички писма, вкл. алармите.
+    const sent = await notifyAdmins('Brevo настройките са сменени', [
+      'Това писмо идва с новите настройки на Brevo — пощата работи.',
+    ]).catch(() => false);
+    return `&test=mail-${sent ? 'ok' : 'fail'}`;
+  }
+  const result = await revolutPing();
   return `&test=${group}-${result.ok ? 'ok' : 'fail'}${result.status ? `&code=${result.status}` : ''}`;
+}
+
+/**
+ * След смяна на Revolut среда старата тайна на уебхука не важи. От панела —
+ * трие се (в същата транзакция); от .env — не може да се трие оттук, затова
+ * админът получава изрично указание да я махне и от .env (Продавача B1).
+ */
+async function webhookAfterEnvChange(envChanged: boolean): Promise<{ drop: boolean; flag: string }> {
+  if (!envChanged) return { drop: false, flag: '' };
+  const source = await settingSource('revolut.webhookSecret');
+  if (source === 'admin') return { drop: true, flag: '&webhook=reset' };
+  if (source === 'env') return { drop: false, flag: '&webhook=env-stale' };
+  return { drop: false, flag: '' };
+}
+
+function confirmedFrom(formData: FormData): string | null {
+  const value = formData.get('confirmOpen');
+  return typeof value === 'string' ? value : null;
 }
 
 function upsertSetting(key: SettingKey, value: string, adminId: string) {
   const data = isSecretSetting(key)
-    ? { value: null, sealed: seal(value, `setting:${key}`), last4: last4(value), updatedBy: adminId }
+    ? { value: null, sealed: seal(value, sealContext.setting(key)), last4: last4(value), updatedBy: adminId }
     : { value, sealed: null, last4: null, updatedBy: adminId };
   return prisma.setting.upsert({ where: { key }, create: { key, ...data }, update: data });
 }
@@ -90,7 +117,7 @@ export async function saveSettingsAction(formData: FormData): Promise<void> {
       updates: plan.updates,
       currentEnv: await setting('revolut.env'),
       openOrders,
-      confirmed: typeof formData.get('confirmOpen') === 'string' ? String(formData.get('confirmOpen')) : null,
+      confirmed: confirmedFrom(formData),
     });
     if (check.blocked) redirect(back(locale, `error=open-orders&count=${openOrders}`));
     envChanged = check.envChanged;
@@ -98,8 +125,8 @@ export async function saveSettingsAction(formData: FormData): Promise<void> {
 
   const keys = plan.updates.map((update) => update.key);
   // Нова среда → старата тайна на уебхука не важи (уебхукът е към другата среда).
-  const dropWebhook = envChanged && !keys.includes('revolut.webhookSecret');
-  const hadWebhook = dropWebhook && Boolean(await setting('revolut.webhookSecret'));
+  const webhook = keys.includes('revolut.webhookSecret') ? { drop: false, flag: '' } : await webhookAfterEnvChange(envChanged);
+  const dropWebhook = webhook.drop;
   await alertChange(admin.email, 'променени', dropWebhook ? [...keys, 'revolut.webhookSecret'] : keys);
   // Всичко или нищо: една транзакция за цялата група.
   await prisma.$transaction([
@@ -108,7 +135,7 @@ export async function saveSettingsAction(formData: FormData): Promise<void> {
   ]);
   invalidateSettings();
   await recordSecurityEvent('setting.changed', { userId: admin.id, meta: { action: 'save', keys, dropWebhook } });
-  redirect(back(locale, `ok=settings${hadWebhook ? '&webhook=reset' : ''}${await pingQuery(group)}`));
+  redirect(back(locale, `ok=settings${webhook.flag}${await pingQuery(group)}`));
 }
 
 /** Изтрива стойността от панела → важи тази от .env (ако има). */
@@ -118,11 +145,32 @@ export async function clearSettingAction(formData: FormData): Promise<void> {
   const key = String(formData.get('key') ?? '') as SettingKey;
   if (!SETTING_KEYS.includes(key)) redirect(back(locale, 'error=input'));
   if (!rateLimit(`settings:${admin.id}`, 20, 60 * 60_000)) redirect(back(locale, 'error=rate'));
-  await alertChange(admin.email, 'изтрити от панела (важи .env)', [key]);
-  await prisma.setting.deleteMany({ where: { key } });
+  // „Върни към .env“ също сменя ефективната среда/ключ → същата проверка за висящи
+  // поръчки и същото нулиране на уебхука като при запис (Кодаджията).
+  let envChanged = false;
+  if (key === 'revolut.env' || key === 'revolut.secretKey') {
+    const openOrders = await openRevolutOrders();
+    const check = revolutSwitchCheck({
+      updates: [{ key, value: envSetting(key) ?? (key === 'revolut.env' ? 'sandbox' : '') }],
+      currentEnv: await setting('revolut.env'),
+      openOrders,
+      confirmed: confirmedFrom(formData),
+    });
+    if (check.blocked) redirect(back(locale, `error=open-orders&count=${openOrders}`));
+    envChanged = check.envChanged;
+  }
+  const webhook = await webhookAfterEnvChange(envChanged);
+  await alertChange(admin.email, 'изтрити от панела (важи .env)', webhook.drop ? [key, 'revolut.webhookSecret'] : [key]);
+  await prisma.$transaction([
+    prisma.setting.deleteMany({ where: { key } }),
+    ...(webhook.drop ? [prisma.setting.deleteMany({ where: { key: 'revolut.webhookSecret' } })] : []),
+  ]);
   invalidateSettings();
-  await recordSecurityEvent('setting.changed', { userId: admin.id, meta: { action: 'clear', keys: [key] } });
-  redirect(back(locale, 'ok=settings'));
+  await recordSecurityEvent('setting.changed', {
+    userId: admin.id,
+    meta: { action: 'clear', keys: [key], dropWebhook: webhook.drop },
+  });
+  redirect(back(locale, `ok=settings${webhook.flag}`));
 }
 
 /** „Провери връзката“ — само четене при доставчика; резултатът е код, без тяло. */
@@ -162,7 +210,7 @@ export async function registerWebhookAction(formData: FormData): Promise<void> {
   if (!rateLimit(`settings:${admin.id}`, 20, 60 * 60_000)) redirect(back(locale, 'error=rate'));
   if (!canSeal()) redirect(back(locale, 'error=nokey'));
   if (!(await revolutReady())) redirect(back(locale, 'test=webhook-nokey'));
-  const result = await registerRevolutWebhook(`${SITE_URL}/api/revolut/webhook`);
+  const result = await registerRevolutWebhook(REVOLUT_WEBHOOK_URL);
   if ('error' in result) {
     const code = result.status ? `&code=${result.status}` : '';
     redirect(back(locale, `test=webhook-${result.error}${code}`));

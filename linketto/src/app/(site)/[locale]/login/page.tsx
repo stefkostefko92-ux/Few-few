@@ -46,7 +46,9 @@ export default async function LoginPage({
                 ? t('errorExpired')
                 : error === 'link'
                   ? t('errorLink')
-                  : t('errorGeneric')}
+                  : error === 'verify-login'
+                    ? t('errorVerifyLogin')
+                    : t('errorGeneric')}
           </Callout>
         )}
         <form action={loginAction} className="mt-6 space-y-4">

@@ -1,6 +1,6 @@
 import 'server-only';
 import { prisma } from '@/lib/db';
-import { needsReseal, open as openSealed, seal } from '@/lib/secret-box';
+import { needsReseal, open as openSealed, seal, sealContext } from '@/lib/secret-box';
 
 /**
  * TOTP секретът на потребителя. Ротация на SETTINGS_KEY (старият →
@@ -10,12 +10,12 @@ import { needsReseal, open as openSealed, seal } from '@/lib/secret-box';
  */
 export async function openTotpSecret(user: { id: string; totpSecretSealed: string | null }): Promise<string | null> {
   if (!user.totpSecretSealed) return null;
-  const secret = openSealed(user.totpSecretSealed, `totp:${user.id}`);
+  const secret = openSealed(user.totpSecretSealed, sealContext.totp(user.id));
   if (secret && needsReseal(user.totpSecretSealed)) {
     await prisma.user
       .updateMany({
         where: { id: user.id, totpSecretSealed: user.totpSecretSealed },
-        data: { totpSecretSealed: seal(secret, `totp:${user.id}`) },
+        data: { totpSecretSealed: seal(secret, sealContext.totp(user.id)) },
       })
       .catch(() => undefined);
   }

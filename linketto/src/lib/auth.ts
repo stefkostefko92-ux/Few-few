@@ -59,7 +59,7 @@ export async function registerUser(
 // невалидна форма, а изравняването на времето иска реалната работа.
 let dummy: string | null = null;
 function dummyHash(): string {
-  dummy ??= bcrypt.hashSync('linketto-timing-equalizer', 12);
+  dummy ??= bcrypt.hashSync('linketto-timing-equalizer', BCRYPT_ROUNDS);
   return dummy;
 }
 
@@ -199,6 +199,14 @@ export async function createUserToken(userId: string, purpose: 'verify-email', t
 }
 
 /** Използва токена (еднократно); връща потребителя или null. */
+/** Чий е токенът — БЕЗ да го изразходва (за проверка преди консумиране). */
+export async function peekUserToken(token: string, purpose: 'verify-email'): Promise<User | null> {
+  if (!/^[A-Za-z0-9_-]{20,100}$/.test(token)) return null;
+  const record = await prisma.userToken.findUnique({ where: { tokenHash: hashToken(token) }, include: { user: true } });
+  if (!record || record.purpose !== purpose || record.usedAt || record.expiresAt.getTime() < Date.now()) return null;
+  return record.user;
+}
+
 export async function consumeUserToken(token: string, purpose: 'verify-email'): Promise<User | null> {
   if (!/^[A-Za-z0-9_-]{20,100}$/.test(token)) return null;
   const record = await prisma.userToken.findUnique({ where: { tokenHash: hashToken(token) }, include: { user: true } });

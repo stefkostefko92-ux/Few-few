@@ -51,6 +51,16 @@ export function seal(plaintext: string, context: string, ring: KeyRing = keyRing
   return ['v1', key.id, b64(iv), b64(cipher.getAuthTag()), b64(ct)].join('.');
 }
 
+/**
+ * Контекстите (AAD) на шифроването — единственото място, където се пишат.
+ * Печатна грешка би направила `open` тихо `null` (изгубена 2FA или ключ).
+ */
+export const sealContext = {
+  totp: (userId: string) => `totp:${userId}`,
+  totpPending: (userId: string) => `totp-pending:${userId}`,
+  setting: (key: string) => `setting:${key}`,
+} as const;
+
 /** null при грешен ключ, подменен контекст, повреден запис — никога изключение. */
 export function open(sealed: string, context: string, ring: KeyRing = keyRing()): string | null {
   const parts = sealed.split('.');
@@ -59,9 +69,12 @@ export function open(sealed: string, context: string, ring: KeyRing = keyRing())
   const key = [ring.current, ring.old].find((k) => k?.id === keyId);
   if (!key) return null;
   try {
-    const decipher = createDecipheriv('aes-256-gcm', key.bytes, Buffer.from(iv, 'base64url'));
+    // Тагът е точно 16 байта — къс таг отслабва автентикацията (Кодаджията).
+    const tagBytes = Buffer.from(tag, 'base64url');
+    if (tagBytes.length !== 16) return null;
+    const decipher = createDecipheriv('aes-256-gcm', key.bytes, Buffer.from(iv, 'base64url'), { authTagLength: 16 });
     decipher.setAAD(Buffer.from(context, 'utf8'));
-    decipher.setAuthTag(Buffer.from(tag, 'base64url'));
+    decipher.setAuthTag(tagBytes);
     return Buffer.concat([decipher.update(Buffer.from(ct, 'base64url')), decipher.final()]).toString('utf8');
   } catch {
     return null;
