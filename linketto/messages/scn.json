@@ -7,7 +7,21 @@
     "login": "Trasi",
     "register": "Registrati",
     "dashboard": "Panneddu",
-    "logout": "Nesci"
+    "logout": "Nesci",
+    "features": "Funziunalità",
+    "pricing": "Prezzi",
+    "faq": "Dumanni",
+    "tools": "Strumenti",
+    "menu": "Menù",
+    "closeMenu": "Chiui lu menù",
+    "language": "Lingua",
+    "main": "Navigazzioni principali",
+    "skip": "Va' ô cuntinutu",
+    "theme": "Tema",
+    "themeLight": "Chiaru",
+    "themeDark": "Scuru",
+    "themeSystem": "Dû sistema",
+    "onThisPage": "Nta sta pàggina"
   },
   "home": {
     "heroTitle": "Un sulu link in bio. Tutti li lingui dû munnu.",
@@ -61,7 +75,13 @@
     "featureFeeBody": "Vinni cû tò link di pagamentu (Revolut, PayPal e àutri) — li soldi vannu dritti a tia, e Linketto nun si pigghia nenti. Li spisi dû tò furnituri di pagamenti restanu comu dìcinu li sò cundizzioni.",
     "statsFeeLabel": "la parti di Linketto supra li tò vìnniti",
     "faq5q": "Pozzu vìnniri prudotti dâ mè pàggina?",
-    "trustPayments": "Pagamentu dî piani cu Revolut Bank UAB (na banca cu licenza nta l'UE)"
+    "trustPayments": "Pagamentu dî piani cu Revolut Bank UAB (na banca cu licenza nta l'UE)",
+    "resumeMotion": "Fa' ripartiri lu muvimentu",
+    "lxStatsTitle": "Linketto nni nùmmari",
+    "demoLabel": "Esempiu: un prufilu, tanti lingui",
+    "factsLabel": "Linketto nni nùmmari",
+    "heroNote": "Gratis. Senza carta di crèditu.",
+    "manifestoLabel": "La nostra prumissa"
   },
   "pricing": {
     "title": "Prezzi sèmplici e onesti",
@@ -375,7 +395,22 @@
     "withdrawUntil": "Ti poi ritirari nzinu ô",
     "withdrawName": "Nomu",
     "withdrawNameError": "Metti lu tò nomu.",
-    "withdrawPaidOn": "pagatu lu {date}"
+    "withdrawPaidOn": "pagatu lu {date}",
+    "themeName_aurora": "Aurora",
+    "themeName_mono": "Mono",
+    "themeName_cobalt": "Cobaltu",
+    "themeName_chrome": "Cromu",
+    "themeName_auto": "Autumàticu (chiaru e scuru)",
+    "navGroupProfile": "Prufilu",
+    "navGroupGrowth": "Crisciuta",
+    "navGroupSales": "Vinniti",
+    "navGroupAccount": "Cuntu",
+    "navHome": "Panneddu",
+    "viewPage": "Talìa la pàggina",
+    "pageIntro": "Lu tò prufilu, li link e lu tò pubblicu nta un postu sulu.",
+    "analyticsIntro": "Comu si cumportanu li tò visitatura — senza cookie e senza dati pirsunali.",
+    "navMessages": "Missaggi",
+    "navAudience": "Pubblicu"
   },
   "profile": {
     "poweredBy": "Fattu cu Linketto",
@@ -423,7 +458,10 @@
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookie",
     "tools": "Strumenti gratis",
-    "compare": "Linketto cuntra Linktree"
+    "compare": "Linketto cuntra Linktree",
+    "product": "Prodottu",
+    "legal": "Nfurmazzioni ligali",
+    "languages": "Lingui"
   },
   "seo": {
     "metaTitle": "Linketto — link in bio multilingua: tutti li tò linki, nta ogni lingua",

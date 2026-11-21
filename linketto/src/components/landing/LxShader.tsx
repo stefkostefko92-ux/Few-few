@@ -201,7 +201,14 @@ export function LxShader() {
         }
       };
 
+      // `dead`: шейдърът е изключен завинаги (сторожът или изгубен контекст). Без този флаг всеки
+      // sync() (видимост, скрол, пауза) рестартира цикъла върху изгубения контекст — безкрайни
+      // празни кадри точно на слабите устройства, които сторожът е трябвало да пощади.
+      let dead = false;
       const teardown = () => {
+        dead = true;
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
         canvas.classList.remove('is-live');
         gl.getExtension('WEBGL_lose_context')?.loseContext();
       };
@@ -241,7 +248,7 @@ export function LxShader() {
         schedule();
       };
 
-      const shouldRun = () => inView && motionOn && !document.hidden;
+      const shouldRun = () => !dead && inView && motionOn && !document.hidden;
       const schedule = () => {
         if (!raf && shouldRun() && !disposed) {
           last = performance.now();
@@ -278,6 +285,9 @@ export function LxShader() {
       };
       const onLost = (event: Event) => {
         event.preventDefault();
+        dead = true;
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
         canvas.classList.remove('is-live');
       };
       const observer = new IntersectionObserver(
@@ -289,6 +299,7 @@ export function LxShader() {
       );
       observer.observe(canvas);
       const resizeObserver = new ResizeObserver(() => {
+        if (dead) return;
         if (!shouldRun()) draw();
       });
       resizeObserver.observe(canvas);

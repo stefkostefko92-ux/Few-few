@@ -403,7 +403,7 @@ export default async function HomePage({
           </section>
 
           {/* ── ЧЗВ: отговори отпред — за хора и за AI (AEO) ─────────── */}
-          <section aria-labelledby="faq-title" className="lx-faq">
+          <section id="faq" aria-labelledby="faq-title" className="lx-faq">
             <div className="lx-wrap">
               <h2 id="faq-title" className="lx-display">
                 <KineticLines text={t('faqTitle')} locale={locale} split={false} />

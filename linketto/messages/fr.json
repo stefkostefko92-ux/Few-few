@@ -7,7 +7,21 @@
     "login": "Connexion",
     "register": "Inscription",
     "dashboard": "Tableau de bord",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "features": "Fonctionnalités",
+    "pricing": "Tarifs",
+    "faq": "FAQ",
+    "tools": "Outils",
+    "menu": "Menu",
+    "closeMenu": "Fermer le menu",
+    "language": "Langue",
+    "main": "Navigation principale",
+    "skip": "Aller au contenu",
+    "theme": "Thème",
+    "themeLight": "Clair",
+    "themeDark": "Sombre",
+    "themeSystem": "Système",
+    "onThisPage": "Sur cette page"
   },
   "home": {
     "heroSubtitle": "Linketto est la page « link in bio » multilingue : votre profil parle la langue de chaque visiteur. Hébergé dans l’UE, sans commission et avec des prix honnêtes.",
@@ -64,7 +78,14 @@
     "claimAvailable": "{slug} est libre — réservez-le avant que quelqu'un d'autre ne le prenne.",
     "claimTaken": "{slug} est déjà pris. Essayez une autre variante.",
     "claimInvalid": "Uniquement des lettres, des chiffres et des tirets (32 caractères max.).",
-    "claimTools": "Outils gratuits"
+    "claimTools": "Outils gratuits",
+    "resumeMotion": "Reprendre l’animation",
+    "lxStripHint": "Continuez à faire défiler : le bandeau bouge",
+    "lxStatsTitle": "Linketto en chiffres",
+    "demoLabel": "Exemple : un profil, plusieurs langues",
+    "factsLabel": "Linketto en chiffres",
+    "heroNote": "Gratuit. Sans carte bancaire.",
+    "manifestoLabel": "Notre promesse"
   },
   "pricing": {
     "vatNote": "Les prix sont TTC, TVA de 20% incluse.",
@@ -403,7 +424,28 @@
       "illegal": "Contenus illicites",
       "spam": "Spam ou liens trompeurs",
       "other": "Autre manquement aux Conditions d’utilisation"
-    }
+    },
+    "themeName_aurora": "Aurore",
+    "themeName_mono": "Mono",
+    "themeName_dusk": "Crépuscule",
+    "themeName_editorial": "Éditorial",
+    "themeName_midnight": "Graphite",
+    "themeName_sand": "Sable",
+    "themeName_cobalt": "Cobalt",
+    "themeName_chrome": "Chrome",
+    "themeName_acid": "Acide",
+    "themeName_auto": "Automatique (clair et sombre)",
+    "navGroupProfile": "Profil",
+    "navGroupGrowth": "Croissance",
+    "navGroupSales": "Ventes",
+    "navGroupAccount": "Compte",
+    "navHome": "Tableau de bord",
+    "viewPage": "Voir la page",
+    "pageIntro": "Votre profil, vos liens et votre audience au même endroit.",
+    "analyticsIntro": "Comment se comportent vos visiteurs — sans cookies ni données personnelles.",
+    "withdrawIntro2": "Deuxième et dernière étape : confirmez votre rétractation du contrat.",
+    "navMessages": "Messages",
+    "navAudience": "Audience"
   },
   "profile": {
     "shopSellerNote": "Le vendeur est le créateur — le paiement et le contrat d’achat se font directement avec le créateur ; Linketto n’est pas partie à l’achat.",
@@ -462,7 +504,10 @@
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookies",
     "tools": "Outils gratuits",
-    "compare": "Linketto vs Linktree"
+    "compare": "Linketto vs Linktree",
+    "product": "Produit",
+    "legal": "Informations légales",
+    "languages": "Langues"
   },
   "seo": {
     "metaDescription": "Linketto est la page « link in bio » multilingue : tous vos liens au même endroit, dans la langue de chaque visiteur. Hébergé dans l’UE, statistiques sans cookies, sans commission. Un produit Carbon Stealth.",

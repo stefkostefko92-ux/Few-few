@@ -7,7 +7,21 @@
     "login": "Pieteikties",
     "register": "Reģistrēties",
     "dashboard": "Panelis",
-    "logout": "Iziet"
+    "logout": "Iziet",
+    "features": "Funkcijas",
+    "pricing": "Cenas",
+    "faq": "BUJ",
+    "tools": "Rīki",
+    "menu": "Izvēlne",
+    "closeMenu": "Aizvērt izvēlni",
+    "language": "Valoda",
+    "main": "Galvenā navigācija",
+    "skip": "Pāriet uz saturu",
+    "theme": "Tēma",
+    "themeLight": "Gaišā",
+    "themeDark": "Tumšā",
+    "themeSystem": "Pēc sistēmas",
+    "onThisPage": "Šajā lapā"
   },
   "home": {
     "heroTitle": "Viena saite bio. Visas pasaules valodas.",
@@ -61,7 +75,14 @@
     "featureFeeBody": "Tu pārdod, izmantojot savu maksājuma saiti (Revolut, PayPal un citi) — nauda nonāk tieši pie tevis, un Linketto neņem nekādu daļu. Tava maksājumu pakalpojumu sniedzēja maksas joprojām tiek piemērotas saskaņā ar tā noteikumiem.",
     "statsFeeLabel": "Linketto daļa no tavas pārdošanas",
     "faq5q": "Vai varu pārdot produktus savā lapā?",
-    "trustPayments": "Plānu apmaksa caur Revolut Bank UAB (licencēta banka ES)"
+    "trustPayments": "Plānu apmaksa caur Revolut Bank UAB (licencēta banka ES)",
+    "resumeMotion": "Atsākt animācijas",
+    "lxStripHint": "Ritini tālāk — josla kustas",
+    "lxStatsTitle": "Linketto skaitļos",
+    "demoLabel": "Piemērs: viens profils, daudz valodu",
+    "factsLabel": "Linketto skaitļos",
+    "heroNote": "Bez maksas. Bez kredītkartes.",
+    "manifestoLabel": "Mūsu solījums"
   },
   "pricing": {
     "title": "Vienkāršas un godīgas cenas",
@@ -377,7 +398,28 @@
     "withdrawName": "Vārds",
     "withdrawNameError": "Ievadi savu vārdu.",
     "withdrawConfirm": "Apstiprināt atteikumu",
-    "withdrawPaidOn": "apmaksāts {date}"
+    "withdrawPaidOn": "apmaksāts {date}",
+    "themeName_aurora": "Aurora",
+    "themeName_mono": "Mono",
+    "themeName_dusk": "Krēsla",
+    "themeName_editorial": "Redakcijas",
+    "themeName_midnight": "Grafīts",
+    "themeName_sand": "Smiltis",
+    "themeName_cobalt": "Kobalts",
+    "themeName_chrome": "Hroms",
+    "themeName_acid": "Skābe",
+    "themeName_auto": "Automātiskā (gaišā un tumšā)",
+    "navGroupProfile": "Profils",
+    "navGroupGrowth": "Izaugsme",
+    "navGroupSales": "Pārdošana",
+    "navGroupAccount": "Konts",
+    "navHome": "Panelis",
+    "viewPage": "Skatīt lapu",
+    "pageIntro": "Tavs profils, saites un auditorija vienuviet.",
+    "analyticsIntro": "Kā uzvedas tavi apmeklētāji — bez sīkdatnēm un bez personas datiem.",
+    "withdrawIntro2": "Otrais un pēdējais solis: apstiprini atteikumu no līguma.",
+    "navMessages": "Ziņojumi",
+    "navAudience": "Auditorija"
   },
   "profile": {
     "poweredBy": "Izveidots ar Linketto",
@@ -425,7 +467,10 @@
     "contact": "info@carbonstealth.eu",
     "cookies": "Sīkdatnes",
     "tools": "Bezmaksas rīki",
-    "compare": "Linketto pret Linktree"
+    "compare": "Linketto pret Linktree",
+    "product": "Produkts",
+    "legal": "Juridiskā informācija",
+    "languages": "Valodas"
   },
   "seo": {
     "metaTitle": "Linketto — daudzvalodu link in bio: visas tavas saites jebkurā valodā",

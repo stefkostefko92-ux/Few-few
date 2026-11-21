@@ -7,7 +7,21 @@
     "login": "Accedi",
     "register": "Registrati",
     "dashboard": "Pannello",
-    "logout": "Esci"
+    "logout": "Esci",
+    "features": "Funzionalità",
+    "pricing": "Prezzi",
+    "faq": "FAQ",
+    "tools": "Strumenti",
+    "menu": "Menu",
+    "closeMenu": "Chiudi il menu",
+    "language": "Lingua",
+    "main": "Navigazione principale",
+    "skip": "Vai al contenuto",
+    "theme": "Tema",
+    "themeLight": "Chiaro",
+    "themeDark": "Scuro",
+    "themeSystem": "Sistema",
+    "onThisPage": "In questa pagina"
   },
   "home": {
     "heroSubtitle": "Linketto è la pagina «link in bio» multilingue: il tuo profilo parla la lingua di ogni visitatore. Ospitato nell’UE, senza commissioni e con prezzi onesti.",
@@ -64,7 +78,14 @@
     "claimAvailable": "{slug} è libero — riservalo prima che lo prenda qualcun altro.",
     "claimTaken": "{slug} è già occupato. Prova un'altra variante.",
     "claimInvalid": "Solo lettere, numeri e trattini (fino a 32 caratteri).",
-    "claimTools": "Strumenti gratuiti"
+    "claimTools": "Strumenti gratuiti",
+    "resumeMotion": "Riprendi l’animazione",
+    "lxStripHint": "Continua a scorrere: la striscia si muove",
+    "lxStatsTitle": "Linketto in cifre",
+    "demoLabel": "Esempio: un profilo, tante lingue",
+    "factsLabel": "Linketto in cifre",
+    "heroNote": "Gratis. Senza carta di credito.",
+    "manifestoLabel": "La nostra promessa"
   },
   "pricing": {
     "vatNote": "I prezzi sono finali, IVA al 20% inclusa.",
@@ -403,7 +424,28 @@
       "illegal": "Contenuti illegali",
       "spam": "Spam o link ingannevoli",
       "other": "Altra violazione dei Termini di servizio"
-    }
+    },
+    "themeName_aurora": "Aurora",
+    "themeName_mono": "Mono",
+    "themeName_dusk": "Crepuscolo",
+    "themeName_editorial": "Editoriale",
+    "themeName_midnight": "Grafite",
+    "themeName_sand": "Sabbia",
+    "themeName_cobalt": "Cobalto",
+    "themeName_chrome": "Cromo",
+    "themeName_acid": "Acido",
+    "themeName_auto": "Automatico (chiaro e scuro)",
+    "navGroupProfile": "Profilo",
+    "navGroupGrowth": "Crescita",
+    "navGroupSales": "Vendite",
+    "navGroupAccount": "Account",
+    "navHome": "Pannello",
+    "viewPage": "Vedi la pagina",
+    "pageIntro": "Il tuo profilo, i tuoi link e il tuo pubblico in un unico posto.",
+    "analyticsIntro": "Come si comportano i tuoi visitatori — senza cookie e senza dati personali.",
+    "withdrawIntro2": "Secondo e ultimo passaggio: conferma il recesso dal contratto.",
+    "navMessages": "Messaggi",
+    "navAudience": "Pubblico"
   },
   "profile": {
     "shopSellerNote": "Vende il creator — pagamento e contratto di acquisto avvengono direttamente con il creator; Linketto non è parte dell’acquisto.",
@@ -462,7 +504,10 @@
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookie",
     "tools": "Strumenti gratuiti",
-    "compare": "Linketto vs Linktree"
+    "compare": "Linketto vs Linktree",
+    "product": "Prodotto",
+    "legal": "Note legali",
+    "languages": "Lingue"
   },
   "seo": {
     "metaDescription": "Linketto è la pagina «link in bio» multilingue: tutti i tuoi link in un unico posto, nella lingua di ogni visitatore. Ospitato nell’UE, analisi senza cookie, senza commissioni. Un prodotto Carbon Stealth.",

@@ -34,10 +34,13 @@ export function AppShell({
   const pathname = usePathname();
   const panelId = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const asideRef = useRef<HTMLElement>(null);
 
   useEffect(() => setOpen(false), [pathname]);
   useEffect(() => {
     if (!open) return;
+    // Фокусът влиза в чекмеджето (WCAG 2.4.3): иначе Tab минава зад слоя към съдържанието.
+    asideRef.current?.querySelector<HTMLElement>('a[href], button:not([disabled])')?.focus();
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setOpen(false);
@@ -51,6 +54,7 @@ export function AppShell({
   return (
     <div className={cn('min-h-screen bg-bg text-fg lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]', className)}>
       <aside
+        ref={asideRef}
         id={panelId}
         className={cn(
           'fixed inset-y-0 start-0 z-50 w-[15rem] border-e border-line bg-surface transition-[transform,visibility] duration-200 ease-out lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:translate-x-0 lg:bg-surface-2/50 lg:rtl:translate-x-0',
@@ -88,7 +92,9 @@ export function AppShell({
           </button>
           <div className="min-w-0 flex-1">{topbar}</div>
         </div>
-        <div className="px-4 py-8 sm:px-6 lg:px-10">{children}</div>
+        <div className="px-4 py-8 sm:px-6 lg:px-10" inert={open}>
+          {children}
+        </div>
       </div>
     </div>
   );

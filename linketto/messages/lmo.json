@@ -7,7 +7,18 @@
     "login": "Entra",
     "register": "Registret",
     "dashboard": "Panell",
-    "logout": "Va foeura"
+    "logout": "Va foeura",
+    "features": "Funzion",
+    "pricing": "Pressi",
+    "faq": "Domand",
+    "tools": "Strument",
+    "menu": "Menù",
+    "language": "Lengua",
+    "main": "Navigazion principal",
+    "theme": "Tema",
+    "themeLight": "Ciar",
+    "themeDark": "Scur",
+    "themeSystem": "Del sistema"
   },
   "home": {
     "heroTitle": "On sol link in bio. Tutt i lengu del mond.",
@@ -61,7 +72,13 @@
     "featureFeeBody": "Te vendet cont el tò link de pagament (Revolut, PayPal e alter) — i danee vann dritt a ti, e Linketto el se ciapa nagott. I spes del tò fornidor de pagament resten segond i sò condizion.",
     "statsFeeLabel": "la part de Linketto sui tò vendid",
     "faq5q": "Poss vend di prodott de la mia pagina?",
-    "trustPayments": "Pagament di pian cont Revolut Bank UAB (ona banca cont licenza in la UE)"
+    "trustPayments": "Pagament di pian cont Revolut Bank UAB (ona banca cont licenza in la UE)",
+    "resumeMotion": "Fa ripartì el moviment",
+    "lxStatsTitle": "Linketto in numer",
+    "demoLabel": "Esempi: on profil, tanti lengu",
+    "factsLabel": "Linketto in numer",
+    "heroNote": "Gratis. Senza carta de credit.",
+    "manifestoLabel": "La nostra promessa"
   },
   "pricing": {
     "title": "Prezzi sempliz e onest",
@@ -375,7 +392,17 @@
     "withdrawUntil": "Te pòdet ritiràss fin al",
     "withdrawName": "Nomm",
     "withdrawNameError": "Scriv el tò nomm.",
-    "withdrawPaidOn": "pagaa el {date}"
+    "withdrawPaidOn": "pagaa el {date}",
+    "themeName_aurora": "Aurora",
+    "themeName_mono": "Mono",
+    "themeName_auto": "Automatich (ciar e scur)",
+    "navGroupProfile": "Profil",
+    "navGroupAccount": "Cont",
+    "navHome": "Panell",
+    "viewPage": "Varda la pagina",
+    "analyticsIntro": "Come se comporten i tò visitador — senza cookie e senza dati personal.",
+    "navMessages": "Messagg",
+    "navAudience": "Pubblich"
   },
   "profile": {
     "poweredBy": "Faa con Linketto",
@@ -423,7 +450,8 @@
     "contact": "info@carbonstealth.eu",
     "cookies": "Cookie",
     "tools": "Strument gratis",
-    "compare": "Linketto contra Linktree"
+    "compare": "Linketto contra Linktree",
+    "languages": "Lengu"
   },
   "seo": {
     "metaTitle": "Linketto — link in bio multilengua: tucc i tò link, in ogni lengua",

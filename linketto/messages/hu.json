@@ -7,7 +7,21 @@
     "login": "Bejelentkezés",
     "register": "Regisztráció",
     "dashboard": "Vezérlőpult",
-    "logout": "Kijelentkezés"
+    "logout": "Kijelentkezés",
+    "features": "Funkciók",
+    "pricing": "Árak",
+    "faq": "GYIK",
+    "tools": "Eszközök",
+    "menu": "Menü",
+    "closeMenu": "Menü bezárása",
+    "language": "Nyelv",
+    "main": "Fő navigáció",
+    "skip": "Ugrás a tartalomra",
+    "theme": "Téma",
+    "themeLight": "Világos",
+    "themeDark": "Sötét",
+    "themeSystem": "Rendszer",
+    "onThisPage": "Ezen az oldalon"
   },
   "home": {
     "heroTitle": "Egy link a bióban. A világ összes nyelvén.",
@@ -61,7 +75,14 @@
     "featureFeeBody": "A saját fizetési linkeden keresztül értékesítesz (Revolut, PayPal és mások) — a pénz egyenesen hozzád kerül, a Linketto semmit sem von le belőle. A fizetési szolgáltatód saját díjai az ő feltételei szerint továbbra is érvényesek.",
     "statsFeeLabel": "a Linketto részesedése az eladásaidból",
     "faq5q": "Árulhatok termékeket az oldalamról?",
-    "trustPayments": "A csomagok fizetése a Revolut Bank UAB-n keresztül (engedéllyel rendelkező EU-s bank)"
+    "trustPayments": "A csomagok fizetése a Revolut Bank UAB-n keresztül (engedéllyel rendelkező EU-s bank)",
+    "resumeMotion": "Animációk folytatása",
+    "lxStripHint": "Görgess tovább — a sáv mozog",
+    "lxStatsTitle": "A Linketto számokban",
+    "demoLabel": "Példa: egy profil, sok nyelv",
+    "factsLabel": "A Linketto számokban",
+    "heroNote": "Ingyenes. Bankkártya nélkül.",
+    "manifestoLabel": "Ígéretünk"
   },
   "pricing": {
     "title": "Egyszerű és tisztességes árak",
@@ -377,7 +398,28 @@
     "withdrawName": "Név",
     "withdrawNameError": "Add meg a neved.",
     "withdrawConfirm": "Elállás megerősítése",
-    "withdrawPaidOn": "fizetve: {date}"
+    "withdrawPaidOn": "fizetve: {date}",
+    "themeName_aurora": "Aurora",
+    "themeName_mono": "Mono",
+    "themeName_dusk": "Alkony",
+    "themeName_editorial": "Szerkesztőségi",
+    "themeName_midnight": "Grafit",
+    "themeName_sand": "Homok",
+    "themeName_cobalt": "Kobalt",
+    "themeName_chrome": "Króm",
+    "themeName_acid": "Sav",
+    "themeName_auto": "Automatikus (világos és sötét)",
+    "navGroupProfile": "Profil",
+    "navGroupGrowth": "Növekedés",
+    "navGroupSales": "Értékesítés",
+    "navGroupAccount": "Fiók",
+    "navHome": "Vezérlőpult",
+    "viewPage": "Oldal megtekintése",
+    "pageIntro": "A profilod, a linkjeid és a közönséged egy helyen.",
+    "analyticsIntro": "Hogyan viselkednek a látogatóid — sütik és személyes adatok nélkül.",
+    "withdrawIntro2": "A második, egyben utolsó lépés: erősítsd meg, hogy elállsz a szerződéstől.",
+    "navMessages": "Üzenetek",
+    "navAudience": "Közönség"
   },
   "profile": {
     "poweredBy": "Linkettóval készült",
@@ -425,7 +467,10 @@
     "contact": "info@carbonstealth.eu",
     "cookies": "Sütik",
     "tools": "Ingyenes eszközök",
-    "compare": "Linketto vs. Linktree"
+    "compare": "Linketto vs. Linktree",
+    "product": "Termék",
+    "legal": "Jogi információk",
+    "languages": "Nyelvek"
   },
   "seo": {
     "metaTitle": "Linketto — többnyelvű link in bio: minden linked, minden nyelven",

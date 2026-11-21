@@ -241,7 +241,17 @@ export async function ProfileScreen({
   const customLight =
     styleCfg.bgStyle !== 'image' && readableOn(styleCfg.bgColor1) !== '#ffffff';
   const rootStyle: React.CSSProperties = isTheme
-    ? themeVars(themeId)
+    ? {
+        ...themeVars(themeId),
+        // Изричният цвят на текста от таблото важи и върху тема (както преди редизайна);
+        // textColor е валидиран hex от zod схемата в lib/style.ts.
+        ...(styleCfg.textColor
+          ? ({
+              '--pf-fg': styleCfg.textColor,
+              '--pf-muted': `color-mix(in srgb, ${styleCfg.textColor} 76%, transparent)`,
+            } as React.CSSProperties)
+          : {}),
+      }
     : {
         ...backgroundCss(styleCfg),
         ...customVars({ fg: customFg, light: customLight, accent }),
