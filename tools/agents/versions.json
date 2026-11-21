@@ -156,6 +156,18 @@
       "current": "Manifest V3 е единственият приеман от Web Store; MV2 е мъртъв — Chrome 138 е последната версия с MV2, а на 2026-08-31 всички останали MV2 разширения са махнати от Web Store",
       "checkedAt": "2026-10-28",
       "source": "https://developer.chrome.com/docs/extensions/develop/migrate/mv2-deprecation-timeline"
+    },
+    {
+      "id": "anthropic-sdk",
+      "npm": "@anthropic-ai/sdk",
+      "current": "1.5.0",
+      "checkedAt": "2026-11-19"
+    },
+    {
+      "id": "anthropic-vertex-sdk",
+      "npm": "@anthropic-ai/vertex-sdk",
+      "current": "1.1.2",
+      "checkedAt": "2026-11-19"
     }
   ]
 }

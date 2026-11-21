@@ -1,6 +1,21 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { SiteHeader } from '@/components/SiteChrome';
+import { AdminShell } from '@/components/AdminShell';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Callout } from '@/components/ui/Callout';
+import { Card } from '@/components/ui/Card';
+import { Input, Label, Select, Textarea } from '@/components/ui/Field';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Table, TBody, TD, TH, THead, TR } from '@/components/ui/Table';
+import {
+  BagGlyph,
+  BarsGlyph,
+  CardGlyph,
+  TrendGlyph,
+  UserGlyph,
+  UsersGlyph,
+} from '@/components/ui/glyphs';
 import type { Locale } from '@/i18n/locales';
 import { prisma } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
@@ -24,6 +39,55 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { robots: { index: false } };
 
 const PLAN_VALUES = ['FREE', 'PRO', 'BUSINESS', 'FOUNDER'] as const;
+
+type Tone = 'neutral' | 'accent' | 'success' | 'warning' | 'danger';
+const ORDER_TONE: Record<string, Tone> = {
+  pending: 'warning',
+  completed: 'success',
+  conflict: 'danger',
+  refund_pending: 'warning',
+  refunded: 'neutral',
+  failed: 'danger',
+  cancelled: 'neutral',
+};
+
+// Опасните действия имат собствен вид: контурен (необратимо/засягащо
+// потребителя) и плътен (изтриване, спиране) — не се бъркат с обикновените.
+const dangerOutline =
+  'focus-ring inline-flex h-8 select-none items-center justify-center gap-2 whitespace-nowrap rounded-control border border-danger/50 bg-surface px-3 text-small font-semibold text-danger-text transition-colors hover:border-danger hover:bg-danger-soft active:translate-y-px';
+const warningOutline =
+  'focus-ring inline-flex h-8 select-none items-center justify-center gap-2 whitespace-nowrap rounded-control border border-warning/60 bg-surface px-3 text-small font-semibold text-warning-text transition-colors hover:border-warning hover:bg-warning-soft active:translate-y-px';
+
+const stamp = (d: Date) => d.toISOString().slice(0, 16).replace('T', ' ');
+
+function Section({
+  id,
+  title,
+  description,
+  action,
+  children,
+}: {
+  id: string;
+  title: React.ReactNode;
+  description?: React.ReactNode;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section id={id} aria-labelledby={`${id}-title`} className="space-y-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="min-w-0">
+          <h2 id={`${id}-title`} className="text-subheading text-fg">
+            {title}
+          </h2>
+          {description && <p className="mt-1 max-w-prose text-small text-fg-muted">{description}</p>}
+        </div>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
 
 export default async function AdminPage({
   params,
@@ -120,550 +184,522 @@ export default async function AdminPage({
     },
   });
 
-  const inputClass =
-    'w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm';
+  const nf = new Intl.NumberFormat(locale);
+  const money = (cents: number) => `€${(cents / 100).toFixed(2)}`;
+  const errorText: Record<string, string> = {
+    email: t('errorEmail'),
+    password: t('errorPassword'),
+    refund: t('errorRefund'),
+    'refund-order': t('errorRefundOrder'),
+    'refund-pending': t('errorRefundPending'),
+    ban: t('errorBan'),
+    'ban-warn': t('errorBanWarn'),
+    'ban-ground': t('errorBanGround'),
+    'ban-notice': t('errorBanNotice'),
+  };
+
+  const needsRefund = (order: (typeof paidOrders)[number]) =>
+    order.state === 'completed' ||
+    order.state === 'conflict' ||
+    (order.state === 'refund_pending' && !order.refundOrderId);
+
+  const moderated = users.flatMap((user) =>
+    user.profiles
+      .filter((profile) => profile.bannedAt || profile.warnedAt)
+      .map((profile) => ({ user, profile })),
+  );
+
+  const counts = {
+    reports: openReports.length,
+    moderated: moderated.length,
+    ordersAction: paidOrders.filter((o) => o.state === 'conflict' || (o.state === 'refund_pending' && !o.refundOrderId)).length,
+    payouts: pendingPayouts.length,
+    users: users.length,
+  };
+
+  const kpis = [
+    { value: nf.format(userCount), label: t('statsUsers'), glyph: <UsersGlyph className="h-full w-full" /> },
+    { value: nf.format(profileCount), label: t('statsProfiles'), glyph: <UserGlyph className="h-full w-full" /> },
+    { value: nf.format(clickCount), label: t('statsClicks'), glyph: <TrendGlyph className="h-full w-full" /> },
+    { value: nf.format(orderTotals._count._all), label: t('statsOrders'), glyph: <BagGlyph className="h-full w-full" /> },
+    { value: money(orderTotals._sum.amountCents ?? 0), label: t('statsRevenue'), glyph: <CardGlyph className="h-full w-full" />, featured: true },
+    { value: money(orderTotals._sum.vatCents ?? 0), label: t('statsVat'), glyph: <BarsGlyph className="h-full w-full" /> },
+  ];
 
   return (
-    <>
-      <SiteHeader locale={locale as Locale} />
-      <main className="dash mx-auto max-w-5xl space-y-6 px-6 py-10">
-        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">{t('title')}</h1>
-        {ok && (
-          <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
-            {t('saved')}
-          </p>
-        )}
-        {error && (
-          <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
-            {error === 'email'
-              ? t('errorEmail')
-              : error === 'password'
-                ? t('errorPassword')
-                : error === 'refund'
-                  ? t('errorRefund')
-                  : error === 'refund-order'
-                    ? t('errorRefundOrder')
-                    : error === 'refund-pending'
-                      ? t('errorRefundPending')
-                      : error === 'ban'
-                        ? t('errorBan')
-                        : error === 'ban-warn'
-                          ? t('errorBanWarn')
-                          : error === 'ban-ground'
-                            ? t('errorBanGround')
-                            : error === 'ban-notice'
-                              ? t('errorBanNotice')
-                              : t('errorInput')}
-          </p>
+    <AdminShell locale={locale as Locale} counts={counts}>
+      <PageHeader title={t('title')} description={t('subtitle')} />
+      <div className="space-y-12">
+        {(ok || error) && (
+          <div className="space-y-3">
+            {ok && <Callout tone="success">{t('saved')}</Callout>}
+            {error && <Callout tone="danger">{errorText[error] ?? t('errorInput')}</Callout>}
+          </div>
         )}
 
         {/* Платформена картина с един поглед */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-          {(
-            [
-              [userCount, t('statsUsers')],
-              [profileCount, t('statsProfiles')],
-              [clickCount, t('statsClicks')],
-              [orderTotals._count._all, t('statsOrders')],
-              [
-                `€${((orderTotals._sum.amountCents ?? 0) / 100).toFixed(2)}`,
-                t('statsRevenue'),
-              ],
-              [
-                `€${((orderTotals._sum.vatCents ?? 0) / 100).toFixed(2)}`,
-                t('statsVat'),
-              ],
-            ] as const
-          ).map(([value, label]) => (
-            <div
-              key={label}
-              className="rounded-xl border border-slate-200 bg-white p-4 text-center"
-            >
-              <p className="text-xl font-extrabold text-linketto-700">
-                {value}
-              </p>
-              <p className="mt-1 text-xs text-slate-500">{label}</p>
-            </div>
-          ))}
-        </div>
+        <Section id="stats" title={t('statsTitle')}>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+            {kpis.map((kpi) => (
+              <Card key={kpi.label} variant={kpi.featured ? 'accent' : 'default'} padding="sm" className="min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-small text-fg-muted">{kpi.label}</p>
+                  <span
+                    aria-hidden
+                    className={`h-7 w-7 shrink-0 rounded-control p-1.5 ${kpi.featured ? 'bg-accent-soft text-accent-soft-fg' : 'bg-surface-3 text-fg-2'}`}
+                  >
+                    {kpi.glyph}
+                  </span>
+                </div>
+                <p className="mt-3 truncate text-heading tabular-nums text-fg">{kpi.value}</p>
+              </Card>
+            ))}
+          </div>
+        </Section>
 
         {/* DSA сигнали — отворените чакат действие */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
-          <h2 className="font-semibold">
-            {t('reportsTitle', { count: openReports.length })}
-          </h2>
+        <Section id="reports" title={t('reportsTitle', { count: openReports.length })}>
           {openReports.length === 0 ? (
-            <p className="mt-2 text-sm text-slate-500">{t('reportsEmpty')}</p>
+            <Card variant="muted" padding="sm" className="text-small text-fg-muted">
+              {t('reportsEmpty')}
+            </Card>
           ) : (
-            <ul className="mt-4 space-y-3">
+            <ul className="space-y-3">
               {openReports.map((report) => (
-                <li
+                <Card
+                  as="li"
                   key={report.id}
-                  className="rounded-xl border border-amber-200 bg-amber-50/50 p-4 text-sm"
+                  padding="sm"
+                  className="border-s-4 border-s-warning text-small"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p>
+                    <p className="flex flex-wrap items-center gap-2">
                       <a
                         href={`/u/${report.profile.slug}`}
-                        className="font-semibold text-linketto-700 hover:underline"
+                        className="focus-ring font-semibold text-accent-text hover:underline"
                       >
                         /u/{report.profile.slug}
-                      </a>{' '}
-                      · <span className="font-medium">{report.category}</span>{' '}
-                      <span className="text-xs text-slate-500">
-                        {report.createdAt.toISOString().slice(0, 16).replace('T', ' ')}
-                      </span>
+                      </a>
+                      <Badge tone="warning">{report.category}</Badge>
+                      <span className="text-micro text-fg-muted">{stamp(report.createdAt)}</span>
                     </p>
                     <form action={adminResolveReportAction}>
                       <input type="hidden" name="uiLocale" value={locale} />
                       <input type="hidden" name="reportId" value={report.id} />
-                      <button
-                        type="submit"
-                        className="rounded-full border border-green-600 px-4 py-1 text-xs font-semibold text-green-700 hover:bg-green-50"
-                      >
+                      <Button type="submit" variant="secondary" size="sm">
                         {t('resolve')}
-                      </button>
+                      </Button>
                     </form>
                   </div>
-                  <p className="mt-2 text-slate-700">{report.message}</p>
-                  {report.email && (
-                    <p className="mt-1 text-xs text-slate-500">{report.email}</p>
-                  )}
-                </li>
+                  <p className="mt-2 text-fg-2">{report.message}</p>
+                  {report.email && <p className="mt-1 text-micro text-fg-muted">{report.email}</p>}
+                </Card>
               ))}
             </ul>
           )}
-        </section>
+        </Section>
+
+        {/* Спрени и предупредени профили (от показаните потребители) */}
+        <Section id="moderated" title={t('moderatedTitle', { count: moderated.length })} description={t('moderatedHint')}>
+          {moderated.length === 0 ? (
+            <Card variant="muted" padding="sm" className="text-small text-fg-muted">
+              {t('moderatedEmpty')}
+            </Card>
+          ) : (
+            <Table>
+              <THead>
+                <tr>
+                  <TH>{t('colProfile')}</TH>
+                  <TH>{t('colState')}</TH>
+                  <TH>{t('banCategoryLabelShort')}</TH>
+                  <TH>{t('colDate')}</TH>
+                </tr>
+              </THead>
+              <TBody>
+                {moderated.map(({ user, profile }) => {
+                  const category = profile.bannedAt ? profile.bannedCategory : profile.warnedCategory;
+                  return (
+                    <TR key={profile.id}>
+                      <TD>
+                        <a href={`#user-${user.id}`} className="focus-ring font-semibold text-accent-text hover:underline">
+                          /u/{profile.slug}
+                        </a>
+                        <p className="text-micro text-fg-muted">{user.email}</p>
+                      </TD>
+                      <TD>
+                        <Badge tone={profile.bannedAt ? 'danger' : 'warning'} dot>
+                          {profile.bannedAt ? t('banned') : t('warned')}
+                        </Badge>
+                      </TD>
+                      <TD>
+                        {category ? t(`banCategory.${category}`) : '—'}
+                        {profile.bannedAt && profile.bannedReason && (
+                          <p className="mt-0.5 line-clamp-2 max-w-sm text-micro text-fg-muted">{profile.bannedReason}</p>
+                        )}
+                      </TD>
+                      <TD className="whitespace-nowrap tabular-nums">
+                        {(profile.bannedAt ?? profile.warnedAt)?.toISOString().slice(0, 10)}
+                      </TD>
+                    </TR>
+                  );
+                })}
+              </TBody>
+            </Table>
+          )}
+        </Section>
 
         {/* Поръчки на планове (Revolut) + пълно връщане на пари */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
-          <h2 className="font-semibold">{t('ordersTitle')}</h2>
+        <Section id="orders" title={t('ordersTitle')}>
           {recentOrders.length === 0 ? (
-            <p className="mt-2 text-sm text-slate-500">{t('ordersEmpty')}</p>
+            <Card variant="muted" padding="sm" className="text-small text-fg-muted">
+              {t('ordersEmpty')}
+            </Card>
           ) : (
-            <ul className="mt-4 space-y-2 text-sm">
-              {recentOrders.map((order) => (
-                <li
-                  key={order.id}
-                  className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-2"
-                >
-                  <span className="min-w-0">
-                    <span className="font-medium">{order.user.email}</span> ·{' '}
-                    {order.plan} · {t(`interval.${order.interval}`)} ·{' '}
-                    <span className="font-semibold">
-                      €{(order.amountCents / 100).toFixed(2)}
-                    </span>{' '}
-                    <span className="text-xs text-slate-500">
-                      ({t('vatShort')} €{(order.vatCents / 100).toFixed(2)}
-                      {order.buyerCountry ?? order.cardCountry
-                        ? ` · ${order.buyerCountry ?? order.cardCountry}`
-                        : ''}
-                      {' · '}
-                      {order.createdAt.toISOString().slice(0, 16).replace('T', ' ')})
-                    </span>
-                    {order.withdrawalRequestedAt && (
-                      <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs font-semibold text-red-700">
-                        {t('withdrawalRequested', {
-                          date: order.withdrawalRequestedAt.toISOString().slice(0, 16).replace('T', ' '),
-                        })}
-                      </span>
-                    )}
-                  </span>
-                  {order.state === 'completed' ||
-                  order.state === 'conflict' ||
-                  (order.state === 'refund_pending' && !order.refundOrderId) ? (
-                    <form action={adminRefundPlanOrderAction}>
-                      <input type="hidden" name="uiLocale" value={locale} />
-                      <input type="hidden" name="planOrderId" value={order.id} />
-                      {order.state === 'conflict' && (
-                        <span className="mr-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-700">
-                          {t('orderState.conflict')}
-                        </span>
+            <Table className="min-w-[44rem]">
+              <THead>
+                <tr>
+                  <TH>{t('colUser')}</TH>
+                  <TH>{t('colPlan')}</TH>
+                  <TH className="text-end">{t('colAmount')}</TH>
+                  <TH>{t('colState')}</TH>
+                  <TH className="text-end">{t('colAction')}</TH>
+                </tr>
+              </THead>
+              <TBody>
+                {recentOrders.map((order) => (
+                  <TR key={order.id}>
+                    <TD>
+                      <p className="break-all font-medium text-fg">{order.user.email}</p>
+                      <p className="text-micro tabular-nums text-fg-muted">{stamp(order.createdAt)}</p>
+                    </TD>
+                    <TD className="whitespace-nowrap">
+                      <Badge tone="accent">{order.plan}</Badge>{' '}
+                      <span className="text-fg-muted">{t(`interval.${order.interval}`)}</span>
+                    </TD>
+                    <TD className="whitespace-nowrap text-end tabular-nums">
+                      <p className="font-semibold text-fg">{money(order.amountCents)}</p>
+                      <p className="text-micro text-fg-muted">
+                        {t('vatShort')} {money(order.vatCents)}
+                        {order.buyerCountry ?? order.cardCountry ? ` · ${order.buyerCountry ?? order.cardCountry}` : ''}
+                      </p>
+                    </TD>
+                    <TD>
+                      <div className="flex flex-col items-start gap-1">
+                        <Badge tone={ORDER_TONE[order.state] ?? 'neutral'} dot>
+                          {t(`orderState.${order.state}`)}
+                        </Badge>
+                        {order.withdrawalRequestedAt && (
+                          <Badge tone="danger">
+                            {t('withdrawalRequested', { date: stamp(order.withdrawalRequestedAt) })}
+                          </Badge>
+                        )}
+                      </div>
+                    </TD>
+                    <TD className="text-end">
+                      {needsRefund(order) && (
+                        <form action={adminRefundPlanOrderAction}>
+                          <input type="hidden" name="uiLocale" value={locale} />
+                          <input type="hidden" name="planOrderId" value={order.id} />
+                          <button type="submit" className={dangerOutline}>
+                            {t('refund')}
+                          </button>
+                        </form>
                       )}
-                      <button
-                        type="submit"
-                        className="rounded-full border border-red-500 px-4 py-1 text-xs font-semibold text-red-600 hover:bg-red-50"
-                      >
-                        {t('refund')}
-                      </button>
-                    </form>
-                  ) : (
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
-                      {t(`orderState.${order.state}`)}
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
+                    </TD>
+                  </TR>
+                ))}
+              </TBody>
+            </Table>
           )}
-        </section>
+        </Section>
 
         {/* Чакащи изплащания на реферал бонуси */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
-          <h2 className="font-semibold">
-            {t('payoutsTitle', { count: pendingPayouts.length })}
-          </h2>
+        <Section id="payouts" title={t('payoutsTitle', { count: pendingPayouts.length })}>
           {pendingPayouts.length === 0 ? (
-            <p className="mt-2 text-sm text-slate-500">{t('payoutsEmpty')}</p>
+            <Card variant="muted" padding="sm" className="text-small text-fg-muted">
+              {t('payoutsEmpty')}
+            </Card>
           ) : (
-            <ul className="mt-4 space-y-3">
-              {pendingPayouts.map((p) => (
-                <li
-                  key={p.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-green-200 bg-green-50/50 p-4 text-sm"
-                >
-                  <span>
-                    <span className="font-semibold text-green-700">
-                      €{(p.amountCents / 100).toFixed(2)}
-                    </span>{' '}
-                    · {p.user.email} ·{' '}
-                    <span className="font-mono text-xs">{p.method}</span>{' '}
-                    <span className="text-xs text-slate-500">
-                      {p.requestedAt.toISOString().slice(0, 10)}
-                    </span>
-                  </span>
-                  <form action={adminMarkPayoutPaidAction}>
-                    <input type="hidden" name="uiLocale" value={locale} />
-                    <input type="hidden" name="payoutId" value={p.id} />
-                    <button
-                      type="submit"
-                      className="rounded-full border border-green-600 px-4 py-1 text-xs font-semibold text-green-700 hover:bg-green-50"
-                    >
-                      {t('payoutMarkPaid')}
-                    </button>
-                  </form>
-                </li>
-              ))}
-            </ul>
+            <Table className="min-w-[36rem]">
+              <THead>
+                <tr>
+                  <TH>{t('colUser')}</TH>
+                  <TH className="text-end">{t('colAmount')}</TH>
+                  <TH>{t('colMethod')}</TH>
+                  <TH>{t('colDate')}</TH>
+                  <TH className="text-end">{t('colAction')}</TH>
+                </tr>
+              </THead>
+              <TBody>
+                {pendingPayouts.map((p) => (
+                  <TR key={p.id}>
+                    <TD className="break-all font-medium text-fg">{p.user.email}</TD>
+                    <TD className="text-end font-semibold tabular-nums text-success-text">{money(p.amountCents)}</TD>
+                    <TD className="font-mono text-micro">{p.method}</TD>
+                    <TD className="whitespace-nowrap tabular-nums">{p.requestedAt.toISOString().slice(0, 10)}</TD>
+                    <TD className="text-end">
+                      <form action={adminMarkPayoutPaidAction}>
+                        <input type="hidden" name="uiLocale" value={locale} />
+                        <input type="hidden" name="payoutId" value={p.id} />
+                        <Button type="submit" variant="secondary" size="sm">
+                          {t('payoutMarkPaid')}
+                        </Button>
+                      </form>
+                    </TD>
+                  </TR>
+                ))}
+              </TBody>
+            </Table>
           )}
-        </section>
+        </Section>
 
-        <form method="get" className="flex gap-3">
-          <input
-            type="search"
-            name="q"
-            defaultValue={q ?? ''}
-            placeholder={t('searchPlaceholder')}
-            className="flex-1 rounded-lg border border-slate-300 px-3 py-2"
-          />
-          <button
-            type="submit"
-            className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700"
-          >
-            {t('search')}
-          </button>
-        </form>
-        <p className="text-sm text-slate-500">
-          {t('total', { count: users.length })}
-        </p>
-
-        <div className="space-y-6">
-          {users.map((user) => (
-            <section
-              key={user.id}
-              className="rounded-2xl border border-slate-200 bg-white p-6"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="font-semibold text-slate-900">{user.email}</p>
-                  <p className="text-xs text-slate-500">
-                    {user.name ?? '—'} · {user.plan} ·{' '}
-                    {user.createdAt.toISOString().slice(0, 10)}
-                    {user.planExpiresAt
-                      ? ` · ${t('planUntil', { date: user.planExpiresAt.toISOString().slice(0, 10) })}`
-                      : ''}
-                    {user.referralCreditCents > 0
-                      ? ` · ${t('referralCredit')}: €${(user.referralCreditCents / 100).toFixed(2)}`
-                      : ''}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {user.profiles.map((profile) => (
-                    <span
-                      key={profile.id}
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        profile.bannedAt
-                          ? 'bg-red-100 text-red-700'
-                          : profile.published
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-slate-100 text-slate-600'
-                      }`}
-                    >
-                      /u/{profile.slug}
-                      {profile.bannedAt
-                        ? ` · ${t('banned')}`
-                        : profile.published
-                          ? ''
-                          : ` · ${t('unpublished')}`}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Логнати IP-та (последните 5, пазят се 90 дни) */}
-              <div className="mt-4">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  {t('loginIps', { count: user._count.loginEvents })}
-                </h3>
-                {user.loginEvents.length === 0 ? (
-                  <p className="mt-1 text-sm text-slate-500">—</p>
-                ) : (
-                  <ul className="mt-1 flex flex-wrap gap-x-6 gap-y-1 font-mono text-sm text-slate-700">
-                    {user.loginEvents.map((event) => (
-                      <li key={event.id}>
-                        {event.ip}
-                        <span className="ml-2 font-sans text-xs text-slate-500">
-                          {event.createdAt.toISOString().slice(0, 16).replace('T', ' ')}
+        {/* Потребители и профили */}
+        <Section
+          id="users"
+          title={t('usersTitle')}
+          description={t('total', { count: users.length })}
+          action={
+            <form method="get" role="search" className="flex w-full gap-2 sm:w-auto">
+              <Input
+                type="search"
+                name="q"
+                aria-label={t('search')}
+                defaultValue={q ?? ''}
+                placeholder={t('searchPlaceholder')}
+                className="min-w-0 flex-1 sm:w-72"
+              />
+              <Button type="submit">{t('search')}</Button>
+            </form>
+          }
+        >
+          <div className="space-y-5">
+            {users.map((user) => (
+              <Card as="section" key={user.id} id={`user-${user.id}`} padding="md" className="space-y-5">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="break-all text-body font-semibold text-fg">{user.email}</p>
+                    <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-small text-fg-muted">
+                      <span>{user.name ?? '—'}</span>
+                      <Badge tone={user.plan === 'FREE' ? 'neutral' : 'accent'}>{user.plan}</Badge>
+                      <span className="tabular-nums">{user.createdAt.toISOString().slice(0, 10)}</span>
+                      {user.planExpiresAt && (
+                        <span className="tabular-nums">
+                          {t('planUntil', { date: user.planExpiresAt.toISOString().slice(0, 10) })}
                         </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+                      )}
+                      {user.referralCreditCents > 0 && (
+                        <span>
+                          {t('referralCredit')}: {money(user.referralCreditCents)}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                </div>
 
-              <div className="mt-5 grid gap-6 border-t border-slate-100 pt-5 lg:grid-cols-2">
-                {/* Пълна промяна на данните */}
-                <form
-                  action={adminUpdateUserAction}
-                  className="space-y-2 text-sm"
-                >
-                  <input type="hidden" name="uiLocale" value={locale} />
-                  <input type="hidden" name="userId" value={user.id} />
-                  <h3 className="font-semibold text-slate-700">
-                    {t('editUser')}
-                  </h3>
-                  <label className="block">
-                    {t('email')}
-                    <input
-                      type="email"
-                      name="email"
-                      required
-                      defaultValue={user.email}
-                      className={inputClass}
-                    />
-                  </label>
-                  <label className="block">
-                    {t('name')}
-                    <input
-                      type="text"
-                      name="name"
-                      defaultValue={user.name ?? ''}
-                      className={inputClass}
-                    />
-                  </label>
-                  <label className="block">
-                    {t('plan')}
-                    <select name="plan" defaultValue={user.plan} className={inputClass}>
-                      {PLAN_VALUES.map((plan) => (
-                        <option key={plan} value={plan}>
-                          {plan}
-                        </option>
+                {/* Логнати IP-та (последните 5, пазят се 90 дни) */}
+                <div>
+                  <h3 className="text-small font-semibold text-fg-2">{t('loginIps', { count: user._count.loginEvents })}</h3>
+                  {user.loginEvents.length === 0 ? (
+                    <p className="mt-1 text-small text-fg-muted">—</p>
+                  ) : (
+                    <ul className="mt-1.5 flex flex-wrap gap-x-6 gap-y-1 font-mono text-small text-fg-2">
+                      {user.loginEvents.map((event) => (
+                        <li key={event.id}>
+                          {event.ip}
+                          <span className="ms-2 font-sans text-micro tabular-nums text-fg-muted">{stamp(event.createdAt)}</span>
+                        </li>
                       ))}
-                    </select>
-                  </label>
-                  <button
-                    type="submit"
-                    className="rounded-full border border-linketto-600 px-4 py-1.5 font-semibold text-linketto-700 hover:bg-linketto-50"
-                  >
-                    {t('save')}
-                  </button>
-                </form>
+                    </ul>
+                  )}
+                </div>
 
-                {/* Нова парола + бан */}
-                <div className="space-y-4 text-sm">
+                <div className="grid gap-6 border-t border-line pt-5 lg:grid-cols-2">
+                  {/* Пълна промяна на данните */}
+                  <form action={adminUpdateUserAction} className="space-y-3">
+                    <input type="hidden" name="uiLocale" value={locale} />
+                    <input type="hidden" name="userId" value={user.id} />
+                    <h3 className="text-body font-semibold text-fg">{t('editUser')}</h3>
+                    <div className="space-y-1.5">
+                      <Label htmlFor={`${user.id}-email`}>{t('email')}</Label>
+                      <Input id={`${user.id}-email`} type="email" name="email" required defaultValue={user.email} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor={`${user.id}-name`}>{t('name')}</Label>
+                      <Input id={`${user.id}-name`} type="text" name="name" defaultValue={user.name ?? ''} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor={`${user.id}-plan`}>{t('plan')}</Label>
+                      <Select id={`${user.id}-plan`} name="plan" defaultValue={user.plan}>
+                        {PLAN_VALUES.map((plan) => (
+                          <option key={plan} value={plan}>
+                            {plan}
+                          </option>
+                        ))}
+                      </Select>
+                    </div>
+                    <Button type="submit" variant="secondary" size="sm">
+                      {t('save')}
+                    </Button>
+                  </form>
+
+                  {/* Профили: публикуване, домейн, бан */}
+                  <div className="space-y-3">
+                    <h3 className="text-body font-semibold text-fg">{t('profilesTitle')}</h3>
+                    {user.profiles.length === 0 && <p className="text-small text-fg-muted">—</p>}
+                    {user.profiles.map((profile) => (
+                      <div key={profile.id} className="space-y-3 rounded-control border border-line bg-surface-2/50 p-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-semibold text-fg">/u/{profile.slug}</span>
+                          <Badge tone={profile.bannedAt ? 'danger' : profile.published ? 'success' : 'neutral'} dot>
+                            {profile.bannedAt ? t('banned') : profile.published ? t('published') : t('unpublished')}
+                          </Badge>
+                          {!profile.bannedAt && profile.warnedAt && (
+                            <Badge tone="warning">
+                              {t('warnedOn', {
+                                date: profile.warnedAt.toISOString().slice(0, 10),
+                                category: t(`banCategory.${profile.warnedCategory ?? 'other'}`),
+                              })}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <form action={adminSetPublishedAction}>
+                            <input type="hidden" name="uiLocale" value={locale} />
+                            <input type="hidden" name="profileId" value={profile.id} />
+                            <input type="hidden" name="publish" value={profile.published ? '0' : '1'} />
+                            <Button type="submit" variant="secondary" size="sm">
+                              {profile.published ? t('unpublish') : t('publish')}
+                            </Button>
+                          </form>
+                          {profile.customDomain && (
+                            <form action={adminClearDomainAction}>
+                              <input type="hidden" name="uiLocale" value={locale} />
+                              <input type="hidden" name="profileId" value={profile.id} />
+                              <Button type="submit" variant="secondary" size="sm">
+                                {t('clearDomain', { domain: profile.customDomain })}
+                              </Button>
+                            </form>
+                          )}
+                          {profile.bannedAt && (
+                            <form action={setProfileBanAction}>
+                              <input type="hidden" name="uiLocale" value={locale} />
+                              <input type="hidden" name="profileId" value={profile.id} />
+                              <input type="hidden" name="ban" value="0" />
+                              <Button type="submit" variant="secondary" size="sm">
+                                {t('unbanProfile', { slug: profile.slug })}
+                              </Button>
+                            </form>
+                          )}
+                        </div>
+                        {profile.bannedAt && profile.bannedCategory && (
+                          <p className="text-micro text-fg-muted">
+                            {t(`banCategory.${profile.bannedCategory}`)} · {profile.bannedReason}
+                            {profile.banNoticeSentAt ? '' : ` · ${t('banNoticeNotSent')}`}
+                          </p>
+                        )}
+                        {!profile.bannedAt && (
+                          /* DSA чл. 17: бан само с категория и обосновка — собственикът
+                             получава изложение на мотивите по имейл. */
+                          <details className="group rounded-control border border-danger/35 bg-danger-soft/40 p-3">
+                            <summary className="focus-ring cursor-pointer list-none text-small font-semibold text-danger-text [&::-webkit-details-marker]:hidden">
+                              {t('banProfile', { slug: profile.slug })}
+                            </summary>
+                            <form action={setProfileBanAction} className="mt-3 space-y-3">
+                              <input type="hidden" name="uiLocale" value={locale} />
+                              <input type="hidden" name="profileId" value={profile.id} />
+                              <input type="hidden" name="ban" value="1" />
+                              <div className="space-y-1.5">
+                                <Label htmlFor={`${profile.id}-cat`}>{t('banCategoryLabel')}</Label>
+                                <Select id={`${profile.id}-cat`} name="category" required>
+                                  {BAN_CATEGORIES.map((c) => (
+                                    <option key={c} value={c}>
+                                      {t(`banCategory.${c}`)}
+                                    </option>
+                                  ))}
+                                </Select>
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label htmlFor={`${profile.id}-reason`}>{t('banReasonLabel')}</Label>
+                                <Textarea id={`${profile.id}-reason`} name="reason" required minLength={10} maxLength={2000} rows={3} />
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label htmlFor={`${profile.id}-ground`}>{t('banLegalGroundLabel')}</Label>
+                                <Input id={`${profile.id}-ground`} type="text" name="legalGround" maxLength={300} />
+                              </div>
+                              <label className="flex items-center gap-2 text-small text-fg-2">
+                                <input type="checkbox" name="fromReport" className="h-4 w-4" />
+                                {t('banFromReport')}
+                              </label>
+                              <p className="text-small text-fg-muted">{t('banNoticeHint')}</p>
+                              <div className="flex flex-wrap gap-2">
+                                <button type="submit" name="mode" value="warn" className={warningOutline}>
+                                  {t('warnConfirm')}
+                                </button>
+                                <Button type="submit" name="mode" value="ban" variant="danger" size="sm">
+                                  {t('banConfirm')}
+                                </Button>
+                              </div>
+                            </form>
+                          </details>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Опасната зона: нова парола, изход отвсякъде, пълно изтриване */}
+                <div className="space-y-4 rounded-card border border-danger/35 bg-danger-soft/40 p-4">
+                  <div>
+                    <h3 className="text-body font-semibold text-danger-text">{t('dangerZone')}</h3>
+                    <p className="text-small text-fg-muted">{t('dangerZoneHint')}</p>
+                  </div>
                   <form action={adminSetPasswordAction} className="space-y-2">
                     <input type="hidden" name="uiLocale" value={locale} />
                     <input type="hidden" name="userId" value={user.id} />
-                    <h3 className="font-semibold text-slate-700">
-                      {t('setPassword')}
-                    </h3>
-                    <input
-                      type="password"
-                      name="password"
-                      required
-                      minLength={8}
-                      placeholder={t('newPassword')}
-                      autoComplete="new-password"
-                      className={inputClass}
-                    />
-                    <p className="text-xs text-slate-500">{t('passwordHint')}</p>
-                    <button
-                      type="submit"
-                      className="rounded-full border border-amber-600 px-4 py-1.5 font-semibold text-amber-700 hover:bg-amber-50"
-                    >
-                      {t('setPasswordButton')}
-                    </button>
-                  </form>
-
-                  {user.profiles.map((profile) => (
-                    <div key={profile.id} className="flex flex-wrap gap-2">
-                      {profile.bannedAt ? (
-                        <form action={setProfileBanAction} className="flex flex-wrap items-center gap-2">
-                          <input type="hidden" name="uiLocale" value={locale} />
-                          <input type="hidden" name="profileId" value={profile.id} />
-                          <input type="hidden" name="ban" value="0" />
-                          <button
-                            type="submit"
-                            className="rounded-full border border-green-600 px-4 py-1.5 font-semibold text-green-700 hover:bg-green-50"
-                          >
-                            {t('unbanProfile', { slug: profile.slug })}
-                          </button>
-                          {profile.bannedCategory && (
-                            <span className="text-xs text-slate-500">
-                              {t(`banCategory.${profile.bannedCategory}`)} · {profile.bannedReason}
-                              {profile.banNoticeSentAt ? '' : ` · ${t('banNoticeNotSent')}`}
-                            </span>
-                          )}
-                        </form>
-                      ) : (
-                        /* DSA чл. 17: бан само с категория и обосновка — собственикът
-                           получава изложение на мотивите по имейл. */
-                        <details className="w-full rounded-xl border border-red-200 p-3">
-                          <summary className="cursor-pointer font-semibold text-red-700">
-                            {t('banProfile', { slug: profile.slug })}
-                            {profile.warnedAt && (
-                              <span className="ml-2 text-xs font-normal text-amber-700">
-                                {t('warnedOn', {
-                                  date: profile.warnedAt.toISOString().slice(0, 10),
-                                  category: t(`banCategory.${profile.warnedCategory ?? 'other'}`),
-                                })}
-                              </span>
-                            )}
-                          </summary>
-                          <form action={setProfileBanAction} className="mt-3 space-y-2">
-                            <input type="hidden" name="uiLocale" value={locale} />
-                            <input type="hidden" name="profileId" value={profile.id} />
-                            <input type="hidden" name="ban" value="1" />
-                            <label className="block">
-                              {t('banCategoryLabel')}
-                              <select name="category" required className={inputClass}>
-                                {BAN_CATEGORIES.map((c) => (
-                                  <option key={c} value={c}>
-                                    {t(`banCategory.${c}`)}
-                                  </option>
-                                ))}
-                              </select>
-                            </label>
-                            <label className="block">
-                              {t('banReasonLabel')}
-                              <textarea
-                                name="reason"
-                                required
-                                minLength={10}
-                                maxLength={2000}
-                                rows={3}
-                                className={inputClass}
-                              />
-                            </label>
-                            <label className="block">
-                              {t('banLegalGroundLabel')}
-                              <input type="text" name="legalGround" maxLength={300} className={inputClass} />
-                            </label>
-                            <label className="flex items-center gap-2 text-xs text-slate-600">
-                              <input type="checkbox" name="fromReport" className="h-3.5 w-3.5" />
-                              {t('banFromReport')}
-                            </label>
-                            <p className="text-xs text-slate-500">{t('banNoticeHint')}</p>
-                            <div className="flex flex-wrap gap-2">
-                              <button
-                                type="submit"
-                                name="mode"
-                                value="warn"
-                                className="rounded-full border border-amber-600 px-4 py-1.5 font-semibold text-amber-700 hover:bg-amber-50"
-                              >
-                                {t('warnConfirm')}
-                              </button>
-                              <button
-                                type="submit"
-                                name="mode"
-                                value="ban"
-                                className="rounded-full bg-red-600 px-4 py-1.5 font-semibold text-white hover:bg-red-700"
-                              >
-                                {t('banConfirm')}
-                              </button>
-                            </div>
-                          </form>
-                        </details>
-                      )}
-                      <form action={adminSetPublishedAction}>
-                        <input type="hidden" name="uiLocale" value={locale} />
-                        <input
-                          type="hidden"
-                          name="profileId"
-                          value={profile.id}
-                        />
-                        <input
-                          type="hidden"
-                          name="publish"
-                          value={profile.published ? '0' : '1'}
-                        />
-                        <button
-                          type="submit"
-                          className="rounded-full border border-slate-400 px-4 py-1.5 font-semibold text-slate-600 hover:bg-slate-50"
-                        >
-                          {profile.published ? t('unpublish') : t('publish')}
-                        </button>
-                      </form>
-                      {profile.customDomain && (
-                        <form action={adminClearDomainAction}>
-                          <input type="hidden" name="uiLocale" value={locale} />
-                          <input
-                            type="hidden"
-                            name="profileId"
-                            value={profile.id}
-                          />
-                          <button
-                            type="submit"
-                            className="rounded-full border border-slate-400 px-4 py-1.5 font-semibold text-slate-600 hover:bg-slate-50"
-                          >
-                            {t('clearDomain', { domain: profile.customDomain })}
-                          </button>
-                        </form>
-                      )}
+                    <Label htmlFor={`${user.id}-pw`}>{t('setPassword')}</Label>
+                    <div className="flex flex-wrap gap-2">
+                      <Input
+                        id={`${user.id}-pw`}
+                        type="password"
+                        name="password"
+                        required
+                        minLength={8}
+                        placeholder={t('newPassword')}
+                        autoComplete="new-password"
+                        className="min-w-0 flex-1 sm:max-w-xs"
+                      />
+                      <button type="submit" className={`${dangerOutline} h-10`}>
+                        {t('setPasswordButton')}
+                      </button>
                     </div>
-                  ))}
-
-                  {/* Опасната зона: изход отвсякъде + пълно изтриване */}
-                  <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3">
+                    <p className="text-small text-fg-muted">{t('passwordHint')}</p>
+                  </form>
+                  <div className="flex flex-wrap items-center gap-3 border-t border-danger/20 pt-4">
                     <form action={adminForceLogoutAction}>
                       <input type="hidden" name="uiLocale" value={locale} />
                       <input type="hidden" name="userId" value={user.id} />
-                      <button
-                        type="submit"
-                        className="rounded-full border border-slate-400 px-4 py-1.5 font-semibold text-slate-600 hover:bg-slate-50"
-                      >
+                      <button type="submit" className={dangerOutline}>
                         {t('forceLogout', { count: user._count.sessions })}
                       </button>
                     </form>
-                    <form
-                      action={adminDeleteUserAction}
-                      className="flex items-center gap-2"
-                    >
+                    <form action={adminDeleteUserAction} className="flex flex-wrap items-center gap-3 sm:ms-auto">
                       <input type="hidden" name="uiLocale" value={locale} />
                       <input type="hidden" name="userId" value={user.id} />
-                      <label className="flex items-center gap-1.5 text-xs text-slate-500">
-                        <input
-                          type="checkbox"
-                          name="confirm"
-                          required
-                          className="h-3.5 w-3.5"
-                        />
+                      <label className="flex items-center gap-2 text-small text-fg-2">
+                        <input type="checkbox" name="confirm" required className="h-4 w-4" />
                         {t('deleteConfirm')}
                       </label>
-                      <button
-                        type="submit"
-                        className="rounded-full bg-red-600 px-4 py-1.5 font-semibold text-white hover:bg-red-700"
-                      >
+                      <Button type="submit" variant="danger" size="sm">
                         {t('deleteUser')}
-                      </button>
+                      </Button>
                     </form>
                   </div>
                 </div>
-              </div>
-            </section>
-          ))}
-        </div>
-      </main>
-    </>
+              </Card>
+            ))}
+          </div>
+        </Section>
+      </div>
+    </AdminShell>
   );
 }

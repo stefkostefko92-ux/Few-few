@@ -1,5 +1,5 @@
 import { getLocale, getTranslations } from 'next-intl/server';
-import { SiteHeader } from '@/components/SiteChrome';
+import { LxPage } from '@/components/landing/LxPage';
 import { NotFoundView } from '@/components/NotFoundView';
 import type { Locale } from '@/i18n/locales';
 
@@ -8,7 +8,7 @@ export default async function LocaleNotFound() {
   const t = await getTranslations({ locale, namespace: 'notFound' });
   return (
     <>
-      <SiteHeader locale={locale} />
+      <LxPage locale={locale} currentPath="">
       <NotFoundView
         title={t('title')}
         body={t('body')}
@@ -16,6 +16,7 @@ export default async function LocaleNotFound() {
         homeHref={`/${locale}`}
         withHeader
       />
+      </LxPage>
     </>
   );
 }

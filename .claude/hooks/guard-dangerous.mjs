@@ -117,7 +117,7 @@ export function codeView(cmd) {
       if (i < s.length) { out += '"'; i++; }
       continue;
     }
-    if (c === "<" && s[i + 1] === "<" && s[i + 2] !== "<") { // heredoc (не here-string `<<<`)
+    if (c === "<" && s[i + 1] === "<" && s[i + 2] !== "<" && s[i - 1] !== "<") { // heredoc (не here-string `<<<` — и от второто `<` нататък; 19.11.2026)
       const m = /^<<(-?)\s*(['"]?)([\w.-]+)\2/.exec(s.slice(i));
       if (m) {
         const seg = out.slice(out.lastIndexOf("\n") + 1).split(/[;&|(]/).pop();
@@ -298,7 +298,7 @@ export function shellWords(src) {
     if (c === "$" && s[i + 1] === "(") { const k = sub(i + 1); word += s.slice(i, k + 1); inWord = true; i = k; continue; }
     if (c === "`") { let k = s.indexOf("`", i + 1); if (k < 0) k = s.length; subs.push(s.slice(i + 1, k)); inWord = true; i = k; continue; }
     if (c === "#" && !inWord) { const j = s.indexOf("\n", i); i = (j < 0 ? s.length : j) - 1; continue; }
-    if (c === "<" && s[i + 1] === "<" && s[i + 2] !== "<") { // heredoc (не here-string `<<<`)
+    if (c === "<" && s[i + 1] === "<" && s[i + 2] !== "<" && s[i - 1] !== "<") { // heredoc (не here-string `<<<` — и от второто `<` нататък; 19.11.2026)
       const m = /^<<(-?)\s*(['"]?)([\w.-]+)\2/.exec(s.slice(i));
       if (m) {
         endWord();

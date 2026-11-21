@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
-import { SiteHeader } from '@/components/SiteChrome';
-import { AuthShell, AUTH_SUBMIT_CLASS } from '@/components/AuthShell';
+import { LxPage } from '@/components/landing/LxPage';
+import { AuthShell } from '@/components/AuthShell';
+import { Button } from '@/components/ui/Button';
+import { Callout } from '@/components/ui/Callout';
+import { Input, Label } from '@/components/ui/Field';
 import type { Locale } from '@/i18n/locales';
 import { registerAction } from '@/app/actions/auth';
 import { isValidSlug, normalizeSlug } from '@/lib/slug';
@@ -23,30 +26,30 @@ export default async function RegisterPage({
 
   return (
     <>
-      <SiteHeader locale={locale as Locale} />
+      <LxPage locale={locale as Locale} currentPath="/register">
       <AuthShell
         title={t('registerTitle')}
         footer={
           <Link
             href={`/${locale}/login`}
-            className="font-semibold text-linketto-700 underline-offset-4 hover:underline"
+            className="focus-ring rounded-sm font-semibold text-accent-text underline-offset-4 hover:underline"
           >
             {t('haveAccount')}
           </Link>
         }
       >
         {error && (
-          <p role="alert" className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
+          <Callout tone="danger" className="mt-5">
             {error === 'exists' ? t('errorExists') : t('errorGeneric')}
-          </p>
+          </Callout>
         )}
         {ref && (
-          <p className="mt-5 rounded-xl border border-sky-200 bg-linketto-50 px-4 py-3 text-sm text-linketto-900">
+          <Callout tone="info" className="mt-5">
             {t('referredBanner')}
-          </p>
+          </Callout>
         )}
         {claimed && (
-          <p className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+          <Callout tone="success" className="mt-5">
             {t.rich('claimedBanner', {
               url: () => (
                 <strong className="break-all font-semibold">
@@ -54,54 +57,52 @@ export default async function RegisterPage({
                 </strong>
               ),
             })}
-          </p>
+          </Callout>
         )}
-        <form action={registerAction} className="mt-6 space-y-5">
+        <form action={registerAction} className="mt-6 space-y-4">
           <input type="hidden" name="locale" value={locale} />
           {ref && <input type="hidden" name="ref" value={ref} />}
           {claimed && <input type="hidden" name="handle" value={claimed} />}
-          <label className="block text-sm font-semibold text-slate-800">
-            {t('name')}
-            <input
+          <div className="space-y-1.5">
+            <Label htmlFor="name">{t('name')}</Label>
+            <Input
+              id="name"
               type="text"
               name="name"
               autoComplete="name"
-              className="auth-field"
             />
-          </label>
-          <label className="block text-sm font-semibold text-slate-800">
-            {t('email')}
-            <input
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="email">{t('email')}</Label>
+            <Input
+              id="email"
               type="email"
               name="email"
               required
               autoComplete="email"
-              className="auth-field"
             />
-          </label>
-          <label className="block text-sm font-semibold text-slate-800">
-            {t('password')}
-            <input
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="password">{t('password')}</Label>
+            <Input
+              id="password"
               type="password"
               name="password"
               required
               minLength={8}
               autoComplete="new-password"
-              className="auth-field"
             />
-          </label>
-          <button
-            type="submit"
-            className={AUTH_SUBMIT_CLASS}
-          >
+          </div>
+          <Button type="submit" size="lg" block className="!mt-6">
             {t('submitRegister')}
-          </button>
+          </Button>
           {/* ePrivacy чл. 13(2): уведомление за седмичния отчет + отказ с 1 клик */}
-          <p className="text-center text-xs leading-relaxed text-slate-500">
+          <p className="text-center text-small text-fg-muted">
             {t('digestNotice')}
           </p>
         </form>
       </AuthShell>
+      </LxPage>
     </>
   );
 }

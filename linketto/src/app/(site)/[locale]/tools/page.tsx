@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
-import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
+import { LxPage } from '@/components/landing/LxPage';
 import { ToolPage } from '@/components/ToolPage';
+import { ArrowRightGlyph } from '@/components/ui/glyphs';
 import type { Locale } from '@/i18n/locales';
 import { pageMetadata } from '@/lib/seo';
 
@@ -36,7 +37,7 @@ export default async function ToolsPage({
   ];
   return (
     <>
-      <SiteHeader locale={locale as Locale} />
+      <LxPage locale={locale as Locale} currentPath="/tools">
       <ToolPage
         eyebrow={t('eyebrow')}
         title={t('indexTitle')}
@@ -53,27 +54,28 @@ export default async function ToolsPage({
             <li key={tool.href}>
               <Link
                 href={tool.href}
-                className="group flex h-full flex-col rounded-2xl border border-slate-200 p-6 transition hover:-translate-y-0.5 hover:border-linketto-400 hover:shadow-lg"
+                className="focus-ring group flex h-full flex-col rounded-card border border-line bg-surface p-6 shadow-e1 transition-[border-color,box-shadow] duration-150 hover:border-line-input hover:shadow-e2"
               >
                 <span
                   aria-hidden="true"
-                  className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-linketto-500 to-violet-600 text-sm font-extrabold text-white shadow-md"
+                  className="flex h-10 w-10 items-center justify-center rounded-control bg-accent-soft text-small font-extrabold text-accent-soft-fg"
                 >
                   {tool.mark}
                 </span>
-                <span className="mt-4 text-lg font-bold text-slate-900">{tool.name}</span>
-                <span className="mt-1.5 flex-1 text-sm leading-relaxed text-slate-600">
+                <span className="mt-4 text-subheading text-fg">{tool.name}</span>
+                <span className="mt-1.5 flex-1 text-body text-fg-muted">
                   {tool.desc}
                 </span>
-                <span className="mt-4 text-sm font-semibold text-linketto-700 group-hover:underline">
-                  {t('open')} →
+                <span className="mt-5 inline-flex items-center gap-1.5 text-body font-semibold text-accent-text">
+                  {t('open')}
+                  <ArrowRightGlyph className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5" />
                 </span>
               </Link>
             </li>
           ))}
         </ul>
       </ToolPage>
-      <SiteFooter locale={locale as Locale} currentPath="/tools" />
+      </LxPage>
     </>
   );
 }

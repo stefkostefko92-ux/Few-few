@@ -1,65 +1,13 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { LOCALES, LOCALE_NAMES, type Locale } from '@/i18n/locales';
-import { getSessionUser } from '@/lib/auth';
-import { logoutAction } from '@/app/actions/auth';
 import { LocaleChoice } from '@/components/LocaleChoice';
+import { Container } from '@/components/ui/Container';
+import { Logo } from '@/components/ui/Logo';
+import { cn } from '@/components/ui/cn';
 
-export async function SiteHeader({ locale }: { locale: Locale }) {
-  const t = await getTranslations({ locale, namespace: 'nav' });
-  const tCommon = await getTranslations({ locale, namespace: 'common' });
-  const user = await getSessionUser();
-  return (
-    <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/75 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
-      <Link href={`/${locale}`} className="flex items-center">
-        <Image
-          src="/logo.png"
-          alt={tCommon('appName')}
-          width={132}
-          height={50}
-          priority
-          className="h-9 w-auto"
-        />
-      </Link>
-      <nav className="flex items-center gap-4 text-sm">
-        {user ? (
-          <>
-            <Link
-              href={`/${locale}/dashboard`}
-              className="font-medium text-linketto-700 hover:underline"
-            >
-              {t('dashboard')}
-            </Link>
-            <form action={logoutAction}>
-              <input type="hidden" name="locale" value={locale} />
-              <button type="submit" className="text-slate-600 hover:underline">
-                {t('logout')}
-              </button>
-            </form>
-          </>
-        ) : (
-          <>
-            <Link
-              href={`/${locale}/login`}
-              className="rounded px-1 py-1 text-slate-600 transition hover:text-slate-900"
-            >
-              {t('login')}
-            </Link>
-            <Link
-              href={`/${locale}/register`}
-              className="rounded-full bg-linketto-600 px-4 py-2 font-semibold text-white shadow-sm transition hover:bg-linketto-700"
-            >
-              {t('register')}
-            </Link>
-          </>
-        )}
-      </nav>
-      </div>
-    </header>
-  );
-}
+const FOOT_LINK =
+  'focus-ring rounded-sm text-body text-fg-2 transition-colors hover:text-fg';
 
 export async function SiteFooter({
   locale,
@@ -69,83 +17,96 @@ export async function SiteFooter({
   currentPath: string;
 }) {
   const t = await getTranslations({ locale, namespace: 'footer' });
+  const tNav = await getTranslations({ locale, namespace: 'nav' });
   const tCommon = await getTranslations({ locale, namespace: 'common' });
   return (
-    <footer className="bg-slate-950 py-14 text-sm text-slate-400">
-      <div className="mx-auto grid max-w-6xl gap-10 px-6 md:grid-cols-[1fr_1.7fr_0.8fr]">
+    <footer className="border-t border-line bg-surface-2/60">
+      <Container className="grid gap-12 py-14 md:grid-cols-[1.3fr_1fr_1fr] lg:py-16">
         <div>
-          <Image
-            src="/logo.png"
-            alt={tCommon('appName')}
-            width={158}
-            height={60}
-            className="h-11 w-auto brightness-0 invert opacity-90"
-          />
-          <p className="mt-4 max-w-xs leading-relaxed">{tCommon('tagline')}</p>
-        </div>
-        <nav
-          className="grid grid-cols-2 content-start gap-x-6 gap-y-2.5 sm:grid-cols-3"
-          aria-label="Language"
-        >
-          {LOCALES.map((loc) => (
-            <LocaleChoice
-              key={loc}
-              locale={loc}
-              href={`/${loc}${currentPath}`}
-              className={
-                loc === locale
-                  ? 'font-semibold text-white'
-                  : 'rounded transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300'
-              }
-            >
-              {LOCALE_NAMES[loc]}
-            </LocaleChoice>
-          ))}
-        </nav>
-        <div className="flex flex-col items-start gap-2.5">
-          <Link
-            href={`/${locale}/tools`}
-            className="transition hover:text-white"
-          >
-            {t('tools')}
-          </Link>
-          <Link
-            href={`/${locale}/vs/linktree`}
-            className="transition hover:text-white"
-          >
-            {t('compare')}
-          </Link>
-          <Link
-            href={`/${locale}/privacy`}
-            className="transition hover:text-white"
-          >
-            {t('privacy')}
-          </Link>
-          <Link
-            href={`/${locale}/terms`}
-            className="transition hover:text-white"
-          >
-            {t('terms')}
-          </Link>
-          <Link
-            href={`/${locale}/cookies`}
-            className="transition hover:text-white"
-          >
-            {t('cookies')}
-          </Link>
+          <Logo name={tCommon('appName')} />
+          <p className="mt-4 max-w-xs text-body text-fg-muted">
+            {tCommon('tagline')}
+          </p>
           <a
             href="mailto:info@carbonstealth.eu"
-            className="transition hover:text-white"
+            className={cn(FOOT_LINK, 'mt-5 inline-block font-medium text-accent-text')}
           >
             {t('contact')}
           </a>
         </div>
-      </div>
-      <div className="mx-auto mt-12 max-w-6xl px-6">
-        <p className="border-t border-white/10 pt-6 text-xs text-slate-400">
+        <nav aria-label={t('product')}>
+          <p className="text-small font-semibold text-fg">{t('product')}</p>
+          <ul className="mt-4 space-y-2.5">
+            <li>
+              <Link href={`/${locale}#features`} className={FOOT_LINK}>
+                {tNav('features')}
+              </Link>
+            </li>
+            <li>
+              <Link href={`/${locale}#pricing`} className={FOOT_LINK}>
+                {tNav('pricing')}
+              </Link>
+            </li>
+            <li>
+              <Link href={`/${locale}/tools`} className={FOOT_LINK}>
+                {t('tools')}
+              </Link>
+            </li>
+            <li>
+              <Link href={`/${locale}/vs/linktree`} className={FOOT_LINK}>
+                {t('compare')}
+              </Link>
+            </li>
+          </ul>
+        </nav>
+        <nav aria-label={t('legal')}>
+          <p className="text-small font-semibold text-fg">{t('legal')}</p>
+          <ul className="mt-4 space-y-2.5">
+            <li>
+              <Link href={`/${locale}/privacy`} className={FOOT_LINK}>
+                {t('privacy')}
+              </Link>
+            </li>
+            <li>
+              <Link href={`/${locale}/terms`} className={FOOT_LINK}>
+                {t('terms')}
+              </Link>
+            </li>
+            <li>
+              <Link href={`/${locale}/cookies`} className={FOOT_LINK}>
+                {t('cookies')}
+              </Link>
+            </li>
+          </ul>
+        </nav>
+      </Container>
+
+      <Container className="border-t border-line py-8">
+        <nav aria-label={t('languages')}>
+          <p className="sr-only">{t('languages')}</p>
+          <ul className="flex flex-wrap gap-x-5 gap-y-2 text-small">
+            {LOCALES.map((loc) => (
+              <li key={loc}>
+                <LocaleChoice
+                  locale={loc}
+                  href={`/${loc}${currentPath}`}
+                  className={cn(
+                    'focus-ring rounded-sm transition-colors',
+                    loc === locale
+                      ? 'font-semibold text-fg'
+                      : 'text-fg-muted hover:text-fg',
+                  )}
+                >
+                  {LOCALE_NAMES[loc]}
+                </LocaleChoice>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <p className="mt-8 text-micro leading-relaxed text-fg-muted">
           {t('company')} · {t('legalLine')}
         </p>
-      </div>
+      </Container>
     </footer>
   );
 }

@@ -37,3 +37,25 @@ test("съгласие: изпълнен само при „да“ и от дв
   assert.equal(combine(crit, { verdict: "failed" }, { verdict: "failed" }).verdict, "failed");
   assert.equal(parseGrade("няма json"), null);
 });
+
+test("счупен оценител (пропуснат критерий) се маркира и изключва — не тих needs_revision със 100% съгласие", async () => {
+  const { exitCode, graderArgs, GRADE_SCHEMA } = await import("./rubric-grade.mjs");
+  const crit = [{ id: "a" }, { id: "b" }];
+  // Преди: и двата прохода без „b“ → undefined === undefined → agree:true, agreement 100%, тих needs_revision.
+  const r = combine(crit, { criteria: [{ id: "a", met: true }], verdict: "satisfied" }, { criteria: [{ id: "a", met: true }], verdict: "satisfied" });
+  assert.equal(r.verdict, "grader_broken");
+  assert.deepEqual(r.broken, ["b"]);
+  assert.equal(r.rows.find((x) => x.id === "b").broken, true);
+  assert.equal(r.agreement, 1, "съгласието се смята само върху оценените редове");
+  assert.equal(exitCode(r.verdict), 4);
+  // met, което не е булево, също е счупен отговор.
+  assert.equal(combine([{ id: "a" }], { criteria: [{ id: "a", met: "да" }] }, { criteria: [{ id: "a", met: true }] }).verdict, "grader_broken");
+  // Изходите: 0/1/3 непроменени.
+  assert.deepEqual(["satisfied", "needs_revision", "failed"].map(exitCode), [0, 1, 3]);
+  // Структуриран изход и без сесия/куки (headless.md).
+  const args = graderArgs("opus");
+  assert.ok(args.includes("--json-schema") && JSON.parse(args[args.indexOf("--json-schema") + 1]).required.includes("criteria"));
+  assert.ok(args.includes("--no-session-persistence"));
+  assert.equal(JSON.parse(args[args.indexOf("--settings") + 1]).disableAllHooks, true);
+  assert.deepEqual(GRADE_SCHEMA.required, ["criteria", "verdict"]);
+});

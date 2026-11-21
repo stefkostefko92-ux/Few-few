@@ -91,6 +91,11 @@ const PAYLOADS = {
   "format-on-edit.mjs": { hook_event_name: "PostToolUse", tool_name: "Edit", tool_input: { file_path: "src/app.ts" } },
   // 15.11.2026: оградата на пентеста — безопасна локална команда без мрежова цел → 0 (не блок).
   "guard-engagement.mjs": { tool_name: "Bash", tool_input: { command: "git status --short" } },
+  // 19.11.2026 (ръководствата на Anthropic): самозащитата, моделът, снимката след уплътняване, API провалите.
+  "guard-self.mjs": { tool_name: "Bash", tool_input: { command: "git status --short" } },
+  "guard-model.mjs": { hook_event_name: "PreModelSwitch", to_model: "claude-opus-5-5", requested_model: "opus" },
+  "session-restore.mjs": { hook_event_name: "SessionStart", source: "compact" },
+  "stop-failure.mjs": { hook_event_name: "StopFailure", error: "unknown" },
 };
 
 const hooks = registeredHooks();
@@ -119,7 +124,14 @@ const REGISTRATION = {
   // 2026-09-21: MCP инструментите (mcp__github__*, mcp__Gmail__* …) са СЪЩО изходен канал — без
   // `mcp__.*` в matcher-а тайна в тяло на коментар/чернова на имейл напускаше без пазач (3/3 на живо).
   "guard-exfil.mjs": { event: "PreToolUse", matcher: /Bash/, alsoMatcher: [/Monitor/, /WebFetch/, /WebSearch/, /mcp__/] },
-  "guard-secrets.mjs": { event: "PostToolUse", matcher: /Write/, alsoMatcher: [/Edit/] },
+  // 19.11.2026: ПРЕДИ записа (тайната не стига до диска); PostToolUse остава втори слой.
+  "guard-secrets.mjs": { event: "PreToolUse", matcher: /Write/, alsoMatcher: [/Edit/, /MultiEdit/, /NotebookEdit/] },
+  // Агент не пише в пазачите — и през Bash, и през инструментите за запис.
+  "guard-self.mjs": { event: "PreToolUse", matcher: /Write/, alsoMatcher: [/Edit/, /MultiEdit/, /NotebookEdit/, /Bash/, /Monitor/] },
+  "guard-model.mjs": { event: "PreModelSwitch" },
+  // Снимката се връща в контекста само след уплътняване.
+  "session-restore.mjs": { event: "SessionStart", matcher: /compact/ },
+  "stop-failure.mjs": { event: "StopFailure" },
   // Настройка, сменена по средата на сесия, не отслабва пазачите на същата сесия.
   "guard-config.mjs": { event: "ConfigChange" },
   // ПРЕДИ пускането на агент — иначе 11-ият общ агент вече е тръгнал.
