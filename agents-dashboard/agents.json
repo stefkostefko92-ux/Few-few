@@ -15447,7 +15447,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 225
+        "lessons": 226
       },
       "evolution": [
         {
@@ -15551,9 +15551,20 @@
           "date": "2026-11-21",
           "event": "v22.5 — учене",
           "detail": "Научи: node:test mock.timers.enable({apis:[\"Date\"]}) хвърля \"MockTimers is already enabled\" пр… (+3 още)"
+        },
+        {
+          "version": "22.6.0",
+          "date": "2026-11-21",
+          "event": "v22.6 — учене",
+          "detail": "Научи: node:test с { todo } прави пакета зелен (exit 0, fail 0), но TAP редовете \"not ok # TOD…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-21",
+          "type": "learning",
+          "summary": "Научи: „node:test с { todo } прави пакета зелен (exit 0, fail 0), но TAP редовете \"not ok # TOD…\""
+        },
         {
           "date": "2026-11-21",
           "type": "learning",
