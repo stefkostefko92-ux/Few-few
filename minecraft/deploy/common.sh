@@ -78,5 +78,59 @@ bootstrap() {
     -e PAPER_USER_AGENT="$PAPER_USER_AGENT" -e MC_NAME="$MC_NAME" -e MC_VERSION="$MC_VERSION" \
     -e MC_IMAGE="$MC_IMAGE" -e MC_MEMORY="$MC_MEMORY" -e MC_DISK="$MC_DISK" -e MC_CPU="$MC_CPU" \
     -e MC_BACKUPS="$MC_BACKUPS" -e FORCE_REINSTALL="${FORCE_REINSTALL:-0}" \
+    -e POWER_ACTION="${POWER_ACTION:-}" \
     panel php artisan tinker --execute="require '/tmp/pelican-bootstrap.php';"
+}
+
+# ── Общо за switch-flavor.sh и auto-update.sh ──────────────────────────────
+# Ред „KEY=стойност“ от изхода на `bootstrap info`.
+field() { printf '%s\n' "$2" | sed -n "s/^$1=//p" | tail -n 1; }
+
+server_info() {
+  local out
+  out="$(bootstrap info)" || { printf '%s\n' "$out" >&2; fail "панелът не намери сървър „$MC_NAME“ на нод $NODE_NAME"; }
+  printf '%s\n' "$out"
+}
+
+# Paper с известен sha256: jar-ът във volume-а е точно този build.
+jar_is_target() {
+  [ "$MC_FLAVOR" = paper ] && [ -n "$PAPER_SHA256" ] && [ -f "$1/server.jar" ] \
+    && [ "$(sha256sum "$1/server.jar" | cut -d' ' -f1)" = "$PAPER_SHA256" ]
+}
+
+# Преинсталацията е заявка от контейнера на панела към Wings през https://$NODE_FQDN. Проверява се
+# преди бекъпа: 401 от /api/system = Wings е жив и nginx го вижда (API-то иска токена на панела).
+panel_reaches_wings() {
+  local status
+  # shellcheck disable=SC2016 # PHP кодът се изпълнява в контейнера; $argv/$http_response_header са негови.
+  status="$("${COMPOSE[@]}" exec -T panel php -r '
+    $ctx = stream_context_create(["http" => ["timeout" => 10, "ignore_errors" => true]]);
+    $body = @file_get_contents("https://" . $argv[1] . "/api/system", false, $ctx);
+    echo $body === false ? "грешка: " . (error_get_last()["message"] ?? "няма връзка") : ($http_response_header[0] ?? "без отговор");
+  ' "$NODE_FQDN" 2>&1 | tail -n 1)" || true
+  case "$status" in
+    *" 401"*) ok "панелът стига до Wings през https://$NODE_FQDN" ;;
+    *) fail "панелът не стига до Wings през https://$NODE_FQDN ($status) — нищо не е пипано. Виж README → „Отстраняване на проблеми“ → „панелът не стига до Wings“" ;;
+  esac
+}
+
+# MC_BUILD=latest →най-новият STABLE build на MC_VERSION и неговият sha256 от Paper API.
+# В панела се записва конкретният номер, така че следващ reinstall сваля същия jar.
+resolve_latest_build() {
+  [ "$MC_FLAVOR" = paper ] && [ "$MC_BUILD" = latest ] || return 0
+  command -v python3 >/dev/null || fail "за MC_BUILD=latest трябва python3"
+  local json line
+  json="$(curl -fsS -m 30 -A "$PAPER_USER_AGENT" "https://fill.papermc.io/v3/projects/paper/versions/$MC_VERSION/builds")" \
+    || fail "Paper API не отговори за версия $MC_VERSION"
+  line="$(printf '%s' "$json" | python3 -I -c '
+import json, sys
+builds = [b for b in json.load(sys.stdin) if b.get("channel") == "STABLE"]
+if builds:
+    b = max(builds, key=lambda b: b["id"])
+    print(b["id"], b["downloads"]["server:default"]["checksums"]["sha256"])
+')"
+  [[ "$line" =~ ^[0-9]+\ [0-9a-f]{64}$ ]] || fail "няма STABLE build на Paper за $MC_VERSION"
+  MC_BUILD="${line% *}"
+  PAPER_SHA256="${line#* }"
+  ok "най-новият STABLE build: Paper $MC_VERSION-$MC_BUILD"
 }

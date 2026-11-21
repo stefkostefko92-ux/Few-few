@@ -21,9 +21,12 @@
  *                         whitelist.json и server.properties остават. Вход: като `server`, плюс
  *                         FORCE_REINSTALL=1 — преинсталира и когато настройките вече съвпадат.
  *                         Последен ред: „SWITCH=reinstalling“ или „SWITCH=unchanged“.
+ * BOOTSTRAP_MODE=power  — POWER_ACTION=start|stop|kill към Wings (както бутоните в панела).
+ *                         Вход: NODE_NAME, MC_NAME, POWER_ACTION. Последен ред: „POWER=<действие>“.
  */
 
 use App\Models\Allocation;
+use App\Repositories\Daemon\DaemonServerRepository;
 use App\Models\Egg;
 use App\Models\Node;
 use App\Models\Server;
@@ -80,9 +83,20 @@ $description = static fn (): string => ($env('MC_FLAVOR') === 'paper' ? 'Paper' 
 $name = $env('NODE_NAME');
 $mode = $env('BOOTSTRAP_MODE');
 
-if ($mode === 'info' || $mode === 'switch') {
+if ($mode === 'info' || $mode === 'switch' || $mode === 'power') {
     $node = Node::query()->where('name', $name)->firstOrFail();
     $server = Server::query()->where('node_id', $node->id)->where('name', $env('MC_NAME'))->firstOrFail();
+
+    if ($mode === 'power') {
+        $action = $env('POWER_ACTION');
+        if (!in_array($action, ['start', 'stop', 'kill'], true)) {
+            throw new RuntimeException("непознато POWER_ACTION: $action");
+        }
+        app(DaemonServerRepository::class)->setServer($server)->power($action)->throw();
+        echo "POWER=$action\n";
+
+        return;
+    }
 
     if ($mode === 'info') {
         echo "SERVER_UUID={$server->uuid}\n";

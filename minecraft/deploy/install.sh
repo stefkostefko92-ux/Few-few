@@ -338,6 +338,7 @@ main() {
 
   if panel_installed; then
     setup_in_panel
+    bash "$SRC_DIR/auto-update.sh" --install
     ok "готово: https://$PANEL_FQDN → сървър „$MC_NAME“ → Start → приеми EULA. Играчите: $PANEL_FQDN"
   else
     installer_step

@@ -46,7 +46,8 @@ SFTP клиент ──2022/tcp──▶ Wings (SFTP сървърът му)
 | --- | --- |
 | `install.sh` | пуска се от архива; идемпотентен |
 | `switch-flavor.sh` | смяна Vanilla ⇄ Paper и ъпдейт на Paper build — със спрян сървър и бекъп |
-| `common.sh` | общите настройки (версии, портове, egg-ове) на двата скрипта |
+| `auto-update.sh` + `systemd/minecraft-update.*` | нощен автоматичен ъпдейт на Paper (`/opt/pelican/deploy/`, таймер 05:30 София) |
+| `common.sh` | общите настройки (версии, портове, egg-ове) и помощните функции на скриптовете |
 | `compose.yml` | `/opt/pelican/compose.yml` (тайните: `/opt/pelican/.env`, 600, генерирани веднъж) |
 | `bootstrap.php` | пуска се в контейнера на панела: нод, алокация, egg, сървър, смяна на egg-а |
 | `backup.sh` + `systemd/pelican-backup.*` | `/opt/pelican/backup.sh`, таймер 03:40 UTC |
@@ -204,7 +205,31 @@ Server → Files → `plugins/` (или SFTP) → качи `.jar` → **Restart*
 
 ## Ъпдейт
 
-**Paper build (същата версия)** — когато конзолата пише `*** Currently you are N builds behind ***`:
+### Автоматично (Paper build, всяка нощ)
+
+`minecraft-update.timer` пуска `auto-update.sh` всяка нощ в **05:30 (София)**:
+1. пита Paper API за най-новия STABLE build на `MC_VERSION`; ако `server.jar` вече е той — край;
+2. ако някой играе (Server List Ping на 127.0.0.1:25565) — пропуска до следващата нощ, никой не се
+   изритва;
+3. иначе спира сървъра през панела → `switch-flavor.sh` (бекъп на панела + пълен бекъп на сървъра в
+   `/var/backups/minecraft-world`, нов `server.jar`, проверка по sha256) → пуска сървъра пак, ако е
+   вървял. Ако ъпдейтът се провали, а jar-ът е старият, сървърът се пуска пак; с непроверен нов jar
+   остава спрян.
+
+Включва се веднъж (копира скриптовете в `/opt/pelican/deploy/` и името на сървъра в
+`/etc/default/minecraft-update`; `install.sh` го прави сам при нова инсталация):
+```bash
+sudo MC_NAME="Custom Mafia" bash /opt/few-few/current/minecraft/deploy/auto-update.sh --install
+sudo systemctl start minecraft-update.service      # веднага, без да чака нощта
+journalctl -u minecraft-update -n 50 --no-pager     # какво е направил
+systemctl list-timers minecraft-update.timer        # кога е следващото
+```
+Изключване: `sudo systemctl disable --now minecraft-update.timer`. Пълният бекъп е ~2 GB на ъпдейт
+(пазят се 5) — следи диска. Нова версия на Minecraft (26.3 → 26.4) **не** се слага автоматично.
+
+### Ръчно (Paper build, същата версия)
+
+Когато конзолата пише `*** Currently you are N builds behind ***` и не искаш да чакаш нощта:
 спри сървъра от панела, после
 ```bash
 sudo MC_NAME="Custom Mafia" MC_BUILD=latest bash /opt/few-few/current/minecraft/deploy/switch-flavor.sh
@@ -228,7 +253,8 @@ sudo MC_NAME="Custom Mafia" MC_BUILD=latest bash /opt/few-few/current/minecraft/
   `panel.sql.gz` (MariaDB), `pelican-data.tar.gz` (APP_KEY на панела — без него шифрованите полета в
   базата са загубени), `stack.env`. Ръчно: `sudo bash /opt/pelican/backup.sh`.
 - **Световете** — бекъпите на Pelican в `/var/lib/pelican/backups` (графикът по-горе), плюс пълен
-  архив на сървъра при всеки `switch-flavor.sh` в `/var/backups/minecraft-world` (последните 5).
+  архив на сървъра при всеки `switch-flavor.sh` и всеки автоматичен ъпдейт в
+  `/var/backups/minecraft-world` (последните 5).
 - И двете са на **същия диск** — копирай ги и извън VPS-а (Hetzner Storage Box / друг сървър).
 
 Възстановяване на панела:

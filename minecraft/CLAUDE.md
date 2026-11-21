@@ -11,11 +11,14 @@
   Minecraft: `MC_VERSION` + Paper `MC_BUILD` + `PAPER_SHA256` в `deploy/common.sh` (от
   `fill.papermc.io/v3/projects/paper/versions/<v>/builds`, само STABLE) + образ `yolks:java_<N>` според
   `java.version.minimum` на версията — 26.x иска Java 25. `MC_BUILD=latest` е позволено само в
-  `switch-flavor.sh`: резолвира се при пуска до конкретен STABLE номер + sha256 от API-то и в панела
+  `switch-flavor.sh` и `auto-update.sh`: резолвира се при пуска до конкретен STABLE номер + sha256 от API-то и в панела
   се записва номерът, не `latest`.
 - **Смяна Vanilla ⇄ Paper и ъпдейт на build** само през `deploy/switch-flavor.sh`: иска спрян сървър,
   прави бекъп на целия сървър преди да пипне панела, проверява jar-а по sha256. Инсталаторите на двата
   egg-а сменят само `server.jar` — светът, ops/whitelist и `server.properties` не се пипат.
+- **Автоматичният ъпдейт** (`deploy/auto-update.sh` + `minecraft-update.timer`) е само за Paper build в
+  рамките на `MC_VERSION`; при играчи онлайн пропуска, никога не изритва. Работи от копието в
+  `/opt/pelican/deploy/` — промяна в репото стига там с `auto-update.sh --install`.
 - **Портове:** 4330 панел, 4331 Wings (и двата само 127.0.0.1, зад nginx), 2022 SFTP, 25565 игра.
   Нов порт → първо `ss -tlnp` и картата в `deploy/autodeploy.sh` (8080 е на SupremeDiscordBot).
 - **Мрежи** `10.240.30.0/24` (панел) и `10.240.31.0/24` (Wings) — извън 172.16/12 на другите стекове.
@@ -30,8 +33,8 @@
 
 ```bash
 cd minecraft/deploy
-shellcheck -S style install.sh backup.sh switch-flavor.sh common.sh
-for f in install.sh backup.sh switch-flavor.sh common.sh; do bash -n "$f"; done
+shellcheck -S style install.sh backup.sh switch-flavor.sh common.sh auto-update.sh
+for f in install.sh backup.sh switch-flavor.sh common.sh auto-update.sh; do bash -n "$f"; done
 docker run --rm -v "$PWD":/w -w /w php:8.4-cli-alpine php -l bootstrap.php
 printf 'PANEL_FQDN=x\nAPP_KEY=x\nDB_PASSWORD=x\nDB_ROOT_PASSWORD=x\nREDIS_PASSWORD=x\n' > /tmp/mc.env \
   && docker compose --env-file /tmp/mc.env -f compose.yml config -q

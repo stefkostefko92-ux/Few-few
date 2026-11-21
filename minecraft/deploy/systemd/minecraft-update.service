@@ -1,0 +1,15 @@
+# Автоматичен ъпдейт на Paper до най-новия STABLE build. Инсталира се от auto-update.sh --install.
+# Сървърът се избира по MC_NAME от /etc/default/minecraft-update.
+[Unit]
+Description=Minecraft (Pelican): автоматичен ъпдейт на Paper
+After=docker.service wings.service network-online.target
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/default/minecraft-update
+ExecStart=/usr/bin/env bash /opt/pelican/deploy/auto-update.sh
+TimeoutStartSec=45min
+Nice=10
+IOSchedulingClass=idle
