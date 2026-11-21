@@ -79,7 +79,9 @@ install_self() {
   command -v python3 >/dev/null || fail "трябва python3 (Server List Ping и Paper API)"
   install -d -m 700 "$INSTALL_DIR"
   if [ "$SRC_DIR" != "$INSTALL_DIR" ]; then
-    install -m 600 "$SRC_DIR/common.sh" "$SRC_DIR/bootstrap.php" "$INSTALL_DIR/"
+    install -m 600 "$SRC_DIR/common.sh" "$INSTALL_DIR/"
+    # 644: PHP в контейнера на панела не е root; файлът няма тайни.
+    install -m 644 "$SRC_DIR/bootstrap.php" "$INSTALL_DIR/"
     install -m 700 "$SRC_DIR/switch-flavor.sh" "$SRC_DIR/auto-update.sh" "$INSTALL_DIR/"
     install -m 700 "$SRC_DIR/backup.sh" "$PELICAN_DIR/backup.sh"
   fi

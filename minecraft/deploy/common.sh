@@ -70,6 +70,8 @@ panel_installed() { "${COMPOSE[@]}" exec -T panel grep -q '^APP_INSTALLED=true' 
 bootstrap() {
   local mode="$1"
   "${COMPOSE[@]}" cp "$SRC_DIR/bootstrap.php" panel:/tmp/pelican-bootstrap.php >/dev/null 2>&1
+  # `compose cp` пази правата на файла; PHP в контейнера не е root и трябва да може да го чете.
+  "${COMPOSE[@]}" exec -T -u 0 panel chmod 644 /tmp/pelican-bootstrap.php
   "${COMPOSE[@]}" exec -T \
     -e BOOTSTRAP_MODE="$mode" -e NODE_NAME="$NODE_NAME" -e NODE_FQDN="$NODE_FQDN" \
     -e NODE_MEMORY="$NODE_MEMORY" -e NODE_DISK="$NODE_DISK" -e WINGS_PORT="$WINGS_PORT" \
