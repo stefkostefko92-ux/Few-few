@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
+import { LxPage } from '@/components/landing/LxPage';
 import { LegalDoc } from '@/components/LegalDoc';
 import type { Locale } from '@/i18n/locales';
 import { pageMetadata } from '@/lib/seo';
@@ -28,9 +28,9 @@ export default async function CookiesPage({
   const t = await getTranslations('legal');
   return (
     <>
-      <SiteHeader locale={locale as Locale} />
+      <LxPage locale={locale as Locale} currentPath="/cookies">
       <LegalDoc title={t('cookiesTitle')} body={t('cookiesBody')} />
-      <SiteFooter locale={locale as Locale} currentPath="/cookies" />
+      </LxPage>
     </>
   );
 }

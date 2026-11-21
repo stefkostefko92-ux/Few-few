@@ -185,7 +185,7 @@ export default async function HomePage({
       <div className="lx" data-theme="dark" data-lx-root data-lx-motion="on">
         <div aria-hidden className="lx-progress" />
         <LxHeader locale={locale as Locale} />
-        <main>
+        <main id="main">
           {/* ── HERO: течен хром (WebGL2) + кинетичен плакат ─────────── */}
           <section className="lx-hero" data-lx-hero>
             <div aria-hidden className="lx-hero-bg">

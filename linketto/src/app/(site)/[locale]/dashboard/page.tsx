@@ -20,6 +20,9 @@ import {
   addLinkAction,
   createProfileAction,
   deleteLinkAction,
+  moveLinkAction,
+  toggleLinkActiveAction,
+  updateLinkAction,
   updateProfileAction,
   updateStyleAction,
   verifyDomainAction,
@@ -41,6 +44,11 @@ import { NICHE_TEMPLATES, TEMPLATE_IDS } from '@/lib/templates';
 import { languageDemand } from '@/lib/language-gap';
 import { ReferralCard } from '@/components/ReferralCard';
 import { TimeZoneField } from '@/components/TimeZoneField';
+import { LocalDateTimeInput } from '@/components/LocalDateTimeInput';
+import { LivePreview } from '@/components/LivePreview';
+import { DashKeepPlace } from '@/components/DashKeepPlace';
+import { SortableLinks } from '@/components/SortableLinks';
+import { blockFieldsFor, blockFormValues } from '@/lib/blocks';
 import {
   ensureReferralCodeAction,
   requestPayoutAction,
@@ -154,7 +162,7 @@ export default async function DashboardPage({
         include: {
           translations: { orderBy: { locale: 'asc' } },
           links: {
-            orderBy: { position: 'asc' },
+            orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
             include: { translations: true },
           },
         },
@@ -320,6 +328,10 @@ export default async function DashboardPage({
       )
     : null;
 
+  // Всеки рендер на сървъра (след запис, подреждане…) → нов rev: прегледът се
+  // презарежда, а таблото връща мястото, от което е изпратена формата.
+  const rev = Date.now().toString(36);
+
   return (
     <DashShell
       locale={locale as Locale}
@@ -327,7 +339,30 @@ export default async function DashboardPage({
       profiles={profileList}
       activeId={activeId}
       planId={plan.id}
+      aside={
+        profile && profile.translations.length > 0 ? (
+          <LivePreview
+            slug={profile.slug}
+            rev={rev}
+            defaultLocale={profile.defaultLocale}
+            locales={profile.translations.map((tr) => ({
+              code: tr.locale,
+              name: LOCALE_NAMES[tr.locale as Locale] ?? tr.locale,
+            }))}
+            labels={{
+              title: t('previewTitle'),
+              hint: t('previewHint'),
+              language: t('previewLanguage'),
+              open: t('previewOpen'),
+              close: t('previewClose'),
+              toggle: t('previewToggle'),
+              frame: t('previewFrame'),
+            }}
+          />
+        ) : undefined
+      }
     >
+      <DashKeepPlace rev={rev} />
       <PageHeader title={t('title')} description={t('pageIntro')} />
       <div className="space-y-6">
         {error && (
@@ -490,6 +525,7 @@ export default async function DashboardPage({
               </div>
               <form
                 action={updateProfileAction}
+                data-preview="profile"
                 className="mt-4 grid gap-4 sm:grid-cols-2"
               >
                 <input type="hidden" name="uiLocale" value={locale} />
@@ -649,6 +685,7 @@ export default async function DashboardPage({
                 return (
                   <form
                     action={updateStyleAction}
+                    data-preview="style"
                     className="mt-4 grid gap-4 sm:grid-cols-3"
                   >
                     <input type="hidden" name="uiLocale" value={locale} />
@@ -991,6 +1028,7 @@ export default async function DashboardPage({
                       <form
                         key={loc}
                         action={upsertProfileTranslationAction}
+                        data-preview="translation"
                         className="grid items-end gap-3 sm:grid-cols-[6rem_1fr_1fr_auto]"
                       >
                         <input type="hidden" name="uiLocale" value={locale} />
@@ -1091,81 +1129,215 @@ export default async function DashboardPage({
                   </button>
                 </form>
               </details>
-              <div className="mt-4 space-y-6">
-                {profile.links.map((link) => (
-                  <div
-                    key={link.id}
-                    className="rounded-card border border-line p-4"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="truncate text-sm text-fg-muted">
-                        <span className="me-2 rounded bg-surface-3 px-1.5 py-0.5 text-xs font-semibold text-fg-2">
-                          {t(`kind_${link.kind}`)}
-                        </span>
-                        {(link.showFrom || link.showUntil) && (
-                          <span className="me-2 inline-flex items-center gap-1 rounded bg-warning-soft px-1.5 py-0.5 text-xs font-semibold text-warning-text">
-                            <ClockIcon className="h-3 w-3" />
-                            {t('scheduledBadge')}
-                          </span>
-                        )}
-                        {link.url ?? ''}
-                      </p>
-                      <form action={deleteLinkAction}>
-                        <input type="hidden" name="uiLocale" value={locale} />
-                        <input type="hidden" name="linkId" value={link.id} />
-                        <button
-                          type="submit"
-                          className="shrink-0 text-sm font-medium text-danger-text hover:underline"
-                        >
-                          {t('delete')}
-                        </button>
-                      </form>
-                    </div>
-                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                      {profile.translations.map((translation) => {
-                        const linkTitle = link.translations.find(
-                          (item) => item.locale === translation.locale,
-                        );
-                        return (
-                          <form
-                            key={translation.locale}
-                            action={upsertLinkTranslationAction}
-                            className="flex items-center gap-2"
-                          >
-                            <input
-                              type="hidden"
-                              name="uiLocale"
-                              value={locale}
-                            />
-                            <input type="hidden" name="linkId" value={link.id} />
-                            <input
-                              type="hidden"
-                              name="locale"
-                              value={translation.locale}
-                            />
-                            <span className="w-8 text-xs font-semibold uppercase text-fg-muted">
-                              {translation.locale}
-                            </span>
-                            <input
-                              type="text"
-                              name="title"
-                              defaultValue={linkTitle?.title ?? ''}
-                              placeholder={t('linkTitle')}
-                              className="min-w-0 flex-1 rounded-control border border-line-input px-3 py-1.5 text-sm"
-                            />
-                            <button
-                              type="submit"
-                              className={buttonStyles({ variant: 'secondary', size: 'sm', className: 'shrink-0' })}
-                            >
-                              {t('save')}
-                            </button>
-                          </form>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <p className="mt-4 text-sm text-fg-muted">{t('linksIntro')}</p>
+              {profile.links.length > 0 && (
+                <div className="mt-3">
+                  <SortableLinks
+                    profileId={profile.id}
+                    labels={{
+                      handle: t('linkHandle'),
+                      saving: t('linkOrderSaving'),
+                      saved: t('linkOrderSaved'),
+                      failed: t('linkOrderFailed'),
+                    }}
+                    items={profile.links.map((link, index) => {
+                      const title =
+                        link.translations.find((item) => item.locale === profile.defaultLocale)?.title ?? '';
+                      const values = blockFormValues(link);
+                      const shows = blockFieldsFor(link.kind);
+                      const field = 'mt-1 w-full rounded-control border border-line-input bg-surface px-3 py-2 text-sm';
+                      return {
+                        id: link.id,
+                        label: title || link.url || t('linkNoTitle'),
+                        node: (
+                          <div>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                              {/* min-w: на тесен екран бутоните падат на нов ред, а заглавието се вижда */}
+                              <div className="min-w-[min(100%,14rem)] flex-1">
+                                <p className="flex flex-wrap items-center gap-1.5">
+                                  <span className="rounded bg-surface-3 px-1.5 py-0.5 text-xs font-semibold text-fg-2">
+                                    {t(`kind_${link.kind}`)}
+                                  </span>
+                                  {!link.active && (
+                                    <span className="rounded border border-line px-1.5 py-0.5 text-xs font-semibold text-fg-muted">
+                                      {t('linkHiddenBadge')}
+                                    </span>
+                                  )}
+                                  {(link.showFrom || link.showUntil) && (
+                                    <span className="inline-flex items-center gap-1 rounded bg-warning-soft px-1.5 py-0.5 text-xs font-semibold text-warning-text">
+                                      <ClockIcon className="h-3 w-3" />
+                                      {t('scheduledBadge')}
+                                    </span>
+                                  )}
+                                </p>
+                                <p
+                                  className={`mt-1 truncate text-sm font-semibold ${
+                                    link.active ? 'text-fg' : 'text-fg-muted line-through'
+                                  }`}
+                                >
+                                  {title || t('linkNoTitle')}
+                                </p>
+                                {link.url && <p className="truncate text-xs text-fg-muted">{link.url}</p>}
+                              </div>
+                              <div className="flex shrink-0 items-center gap-1">
+                                {(['up', 'down'] as const).map((dir) => (
+                                  <form key={dir} action={moveLinkAction}>
+                                    <input type="hidden" name="uiLocale" value={locale} />
+                                    <input type="hidden" name="linkId" value={link.id} />
+                                    <input type="hidden" name="dir" value={dir} />
+                                    <button
+                                      type="submit"
+                                      disabled={dir === 'up' ? index === 0 : index === profile.links.length - 1}
+                                      aria-label={`${t(dir === 'up' ? 'linkMoveUp' : 'linkMoveDown')}: ${title || t('linkNoTitle')}`}
+                                      title={t(dir === 'up' ? 'linkMoveUp' : 'linkMoveDown')}
+                                      className={buttonStyles({
+                                        variant: 'ghost',
+                                        size: 'sm',
+                                        className: 'w-8 px-0 disabled:opacity-30',
+                                      })}
+                                    >
+                                      <span aria-hidden>{dir === 'up' ? '↑' : '↓'}</span>
+                                    </button>
+                                  </form>
+                                ))}
+                                <form action={toggleLinkActiveAction}>
+                                  <input type="hidden" name="uiLocale" value={locale} />
+                                  <input type="hidden" name="linkId" value={link.id} />
+                                  <button
+                                    type="submit"
+                                    className={buttonStyles({ variant: 'secondary', size: 'sm' })}
+                                  >
+                                    {link.active ? t('linkHide') : t('linkShow')}
+                                  </button>
+                                </form>
+                                <form action={deleteLinkAction}>
+                                  <input type="hidden" name="uiLocale" value={locale} />
+                                  <input type="hidden" name="linkId" value={link.id} />
+                                  <button
+                                    type="submit"
+                                    className="rounded-control px-2 py-1.5 text-sm font-medium text-danger-text hover:underline"
+                                  >
+                                    {t('delete')}
+                                  </button>
+                                </form>
+                              </div>
+                            </div>
+                            <details className="mt-2">
+                              <summary className="cursor-pointer text-sm font-semibold text-accent-text">
+                                {t('linkEdit')}
+                              </summary>
+                              <form
+                                action={updateLinkAction}
+                                data-preview="link-edit"
+                                data-locale={profile.defaultLocale}
+                                className="mt-3 grid gap-3 sm:grid-cols-2"
+                              >
+                                <input type="hidden" name="uiLocale" value={locale} />
+                                <input type="hidden" name="linkId" value={link.id} />
+                                <label className="block text-sm font-medium sm:col-span-2">
+                                  {t('linkTitle')} ({profile.defaultLocale.toUpperCase()})
+                                  <input type="text" name="title" required maxLength={100} defaultValue={title} className={field} />
+                                </label>
+                                {shows.url && (
+                                  <label className="block text-sm font-medium">
+                                    {t('urlLabel')}
+                                    <input type="text" name="url" defaultValue={values.url} className={field} />
+                                  </label>
+                                )}
+                                {shows.extra1 && (
+                                  <label className="block text-sm font-medium">
+                                    {t('extra1Label')}
+                                    <input type="text" name="extra1" defaultValue={values.extra1} className={field} />
+                                  </label>
+                                )}
+                                {shows.extra2 && (
+                                  <label className="block text-sm font-medium">
+                                    {t('extra2Label')}
+                                    <input type="text" name="extra2" defaultValue={values.extra2} className={field} />
+                                  </label>
+                                )}
+                                {shows.options && (
+                                  <label className="block text-sm font-medium sm:col-span-2">
+                                    {t('pollOptionsLabel')}
+                                    <textarea name="options" rows={3} defaultValue={values.options} className={field} />
+                                  </label>
+                                )}
+                                <label className="block text-sm font-medium">
+                                  {t('blockColorLabel')}
+                                  <input
+                                    type="text"
+                                    name="color"
+                                    defaultValue={values.color}
+                                    placeholder="#3b82c4"
+                                    pattern="#[0-9a-fA-F]{6}"
+                                    className={field}
+                                  />
+                                </label>
+                                <TimeZoneField />
+                                <label className="block text-sm font-medium">
+                                  {t('scheduleFromLabel')}
+                                  <LocalDateTimeInput name="showFrom" iso={link.showFrom?.toISOString() ?? null} className={field} />
+                                </label>
+                                <label className="block text-sm font-medium">
+                                  {t('scheduleUntilLabel')}
+                                  <LocalDateTimeInput name="showUntil" iso={link.showUntil?.toISOString() ?? null} className={field} />
+                                </label>
+                                <label className="flex items-center gap-2 text-sm font-medium sm:col-span-2">
+                                  <input type="checkbox" name="featured" defaultChecked={values.featured} className="h-4 w-4" />
+                                  {t('featuredLabel')}
+                                </label>
+                                <button type="submit" className={buttonStyles({ size: 'sm', className: 'sm:justify-self-start' })}>
+                                  {t('linkSaveChanges')}
+                                </button>
+                              </form>
+                              {profile.translations.length > 1 && (
+                                <div className="mt-4 border-t border-line pt-3">
+                                  <p className="text-xs font-semibold text-fg-2">{t('linkOtherLanguages')}</p>
+                                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                                    {profile.translations
+                                      .filter((translation) => translation.locale !== profile.defaultLocale)
+                                      .map((translation) => (
+                                        <form
+                                          key={translation.locale}
+                                          action={upsertLinkTranslationAction}
+                                          data-preview="link"
+                                          className="flex items-center gap-2"
+                                        >
+                                          <input type="hidden" name="uiLocale" value={locale} />
+                                          <input type="hidden" name="linkId" value={link.id} />
+                                          <input type="hidden" name="locale" value={translation.locale} />
+                                          <span className="w-8 text-xs font-semibold uppercase text-fg-muted">
+                                            {translation.locale}
+                                          </span>
+                                          <input
+                                            type="text"
+                                            name="title"
+                                            maxLength={100}
+                                            defaultValue={
+                                              link.translations.find((item) => item.locale === translation.locale)?.title ?? ''
+                                            }
+                                            placeholder={t('linkTitle')}
+                                            className="min-w-0 flex-1 rounded-control border border-line-input bg-surface px-3 py-1.5 text-sm"
+                                          />
+                                          <button
+                                            type="submit"
+                                            className={buttonStyles({ variant: 'secondary', size: 'sm', className: 'shrink-0' })}
+                                          >
+                                            {t('save')}
+                                          </button>
+                                        </form>
+                                      ))}
+                                  </div>
+                                </div>
+                              )}
+                            </details>
+                          </div>
+                        ),
+                      };
+                    })}
+                  />
+                </div>
+              )}
               <form
                 action={addLinkAction}
                 className="mt-6 grid gap-3 sm:grid-cols-2"

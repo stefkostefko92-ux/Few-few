@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
-import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
+import { LxPage } from '@/components/landing/LxPage';
 import { ToolPage } from '@/components/ToolPage';
 import { ArrowRightGlyph } from '@/components/ui/glyphs';
 import type { Locale } from '@/i18n/locales';
@@ -37,7 +37,7 @@ export default async function ToolsPage({
   ];
   return (
     <>
-      <SiteHeader locale={locale as Locale} />
+      <LxPage locale={locale as Locale} currentPath="/tools">
       <ToolPage
         eyebrow={t('eyebrow')}
         title={t('indexTitle')}
@@ -75,7 +75,7 @@ export default async function ToolsPage({
           ))}
         </ul>
       </ToolPage>
-      <SiteFooter locale={locale as Locale} currentPath="/tools" />
+      </LxPage>
     </>
   );
 }

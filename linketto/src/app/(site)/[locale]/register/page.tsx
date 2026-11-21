@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
-import { SiteHeader } from '@/components/SiteChrome';
+import { LxPage } from '@/components/landing/LxPage';
 import { AuthShell } from '@/components/AuthShell';
 import { Button } from '@/components/ui/Button';
 import { Callout } from '@/components/ui/Callout';
@@ -26,7 +26,7 @@ export default async function RegisterPage({
 
   return (
     <>
-      <SiteHeader locale={locale as Locale} />
+      <LxPage locale={locale as Locale} currentPath="/register">
       <AuthShell
         title={t('registerTitle')}
         footer={
@@ -102,6 +102,7 @@ export default async function RegisterPage({
           </p>
         </form>
       </AuthShell>
+      </LxPage>
     </>
   );
 }

@@ -47,6 +47,41 @@ export const styleSchema = z.object({
 
 export type ProfileStyle = z.infer<typeof styleSchema>;
 
+/** Текстовите полета на формата „Персонализация“ (без чекбоксовете). */
+export const STYLE_TEXT_FIELDS = [
+  'bgStyle',
+  'bgEffect',
+  'bgColor1',
+  'bgColor2',
+  'bgImageUrl',
+  'textColor',
+  'font',
+  'buttonShape',
+  'buttonFill',
+  'buttonShadow',
+  'layout',
+  'align',
+  'avatarUrl',
+  'avatarShape',
+  'bgOverlay',
+] as const;
+export const STYLE_FLAG_FIELDS = ['hideBadge', 'showViews', 'mediaKit'] as const;
+
+/**
+ * Суровият вход за styleSchema от полетата на формата — общ за записа
+ * (updateStyleAction) и за живия преглед. Празно поле = подразбиране;
+ * чекбокс = 'on'.
+ */
+export function styleInput(get: (name: string) => unknown): Record<string, unknown> {
+  const raw: Record<string, unknown> = {};
+  for (const name of STYLE_TEXT_FIELDS) {
+    const value = String(get(name) ?? '').trim();
+    raw[name] = value === '' ? undefined : value;
+  }
+  for (const name of STYLE_FLAG_FIELDS) raw[name] = get(name) === 'on';
+  return raw;
+}
+
 export const DEFAULT_STYLE: ProfileStyle = styleSchema.parse({});
 
 /** Прощаващ парсер: невалидно/липсващо поле пада към подразбирането. */

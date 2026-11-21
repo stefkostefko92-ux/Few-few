@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ButtonLink } from '@/components/ui/Button';
-import { LogoMark } from '@/components/ui/Logo';
+import { Logo } from '@/components/ui/Logo';
 
 // Една 404 за целия сайт. Цифрата е единствената „голяма“ дума: огромна,
 // избледняваща към дъното на милиметровката; останалото е тихо и води към
@@ -33,7 +33,7 @@ export function NotFoundView({
           aria-label={homeLabel}
           className="focus-ring absolute start-6 top-6 rounded-control"
         >
-          <LogoMark className="h-8 w-8" />
+          <Logo name={homeLabel} />
         </Link>
       )}
       <p
