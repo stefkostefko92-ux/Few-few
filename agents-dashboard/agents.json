@@ -12021,6 +12021,11 @@
         {
           "date": "2026-11-21",
           "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Пълностраничен скрийншот не показва sticky pin с view-timeline (лента, която се върти п…\" (+1)"
+        },
+        {
+          "date": "2026-11-21",
+          "type": "quarantine",
           "summary": "Хипотеза → карантина: „В linketto публичните страници (ToolPage/LegalDoc/AuthShell през LxPage) са винаги тъмн…\""
         },
         {
