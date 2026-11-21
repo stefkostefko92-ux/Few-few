@@ -43,7 +43,7 @@
     "featureQrBody": "Cód QR i do dhath féin agus bloc vCard a shábhálann do theagmháil ar aon fhón le tapadh amháin.",
     "heroBadge": "Link in bio il-teangach · Óstáilte san AE",
     "trustEu": "Óstáilte san Aontas Eorpach",
-    "trustGdpr": "GDPR mar réamhshocrú",
+    "trustGdpr": "I gcomhréir le GDPR",
     "trustCookies": "Gan fianáin do na cuairteoirí",
     "statsLangsLabel": "teanga ón gcéad lá",
     "statsBrandsLabel": "ardán le deilbhíní oifigiúla",
@@ -57,7 +57,7 @@
     "faq1q": "Cad é Linketto?",
     "faq1a": "Is leathanach „link in bio“ é Linketto: nasc amháin a bhailíonn do naisc, do tháirgí agus do theagmhálacha go léir. Is é an rud uathúil: labhraíonn do leathanach teanga gach cuairteora — déan uair amháin é agus taispeántar é i ngach ceann de 24 theanga oifigiúla an AE.",
     "faq2q": "Cén difríocht atá idir Linketto agus Linktree?",
-    "faq2a": "Ceithre rud: tá leaganacha i ngach teanga ag do phróifíl agus taispeánann sí a theanga féin do gach cuairteoir go huathoibríoch; tá sí óstáilte san AE le GDPR mar réamhshocrú; tá an anailísíocht saor ó fhianáin agus gan sonraí pearsanta; agus faigheann tú d'fhearann féin ón bplean Pro ar aghaidh (€4/mí). Tá comparáid mhionsonraithe le foinsí agus dáta ar an leathanach „Linketto i gcoinne Linktree“.",
+    "faq2a": "Ceithre rud: tá leaganacha i ngach teanga ag do phróifíl agus taispeánann sí a theanga féin do gach cuairteoir go huathoibríoch; tá sí óstáilte san AE agus i gcomhréir le GDPR; tá an anailísíocht saor ó fhianáin agus gan sonraí pearsanta; agus faigheann tú d'fhearann féin ón bplean Pro ar aghaidh (€4/mí). Tá comparáid mhionsonraithe le foinsí agus dáta ar an leathanach „Linketto i gcoinne Linktree“.",
     "faq3q": "Cé mhéad a chosnaíonn Linketto?",
     "faq4q": "Conas a oibríonn an phróifíl il-teangach?",
     "faq4a": "Feiceann an cuairteoir do phróifíl ina theanga go huathoibríoch (ó shocruithe a bhrabhsálaí) nó roghnaíonn sé teanga ón leathanach. Scríobhann tú i do theanga féin, agus líonann an t-aistriúchán AI ionsuite na teangacha eile le cnaipe amháin — ní scríobhtar thar do chuid aistriúchán láimhe riamh.",
@@ -435,7 +435,18 @@
     "linkEdit": "Cuir in eagar",
     "linkOtherLanguages": "Teideal i dteangacha eile",
     "linkSaveChanges": "Sábháil na hathruithe",
-    "linkNoTitle": "(gan teideal)"
+    "linkNoTitle": "(gan teideal)",
+    "autoTranslateTitle": "Aistriúchán uathoibríoch do chuairteoirí",
+    "autoTranslateStateOn": "ar siúl",
+    "autoTranslateStateOff": "múchta",
+    "autoTranslateOn": "Feiceann cuairteoir ó thír nach bhfuil aistriúchán agat ina teanga do phróifíl aistrithe go huathoibríoch (Google Gemini, SAM), leis an lipéad „Meaisínaistriúchán (AI)“ agus nasc chuig an mbunleagan. Bíonn tús áite i gcónaí ag d'aistriúcháin féin.",
+    "autoTranslateOff": "Ní fheiceann cuairteoirí ach na teangacha a d'aistrigh tú féin do phróifíl iontu.",
+    "autoTranslateTurnOff": "Múch",
+    "autoTranslateTurnOn": "Cas air",
+    "autoTranslateStatePending": "le teacht",
+    "autoTranslatePendingAt": "Cuirfear ar siúl é ar {date} (tar éis an fhógra ríomhphoist). Is féidir leat é a mhúchadh roimhe sin — ansin ní sheolfar aon rud ó do phróifíl.",
+    "autoTranslatePendingNoNotice": "Níl sé ar siúl fós — gheobhaidh tú ríomhphost 14 lá ar a laghad sula gcuirfear ar siúl é.",
+    "autoTranslateTurnOnNow": "Cas air anois"
   },
   "profile": {
     "poweredBy": "Déanta le Linketto",
@@ -473,7 +484,11 @@
     "sellerTrader": "Is trádálaí é an díoltóir",
     "videoPlay": "Seinn an físeán",
     "bookingWhen": "An t-am is fearr leat",
-    "badgeCta": "Cruthaigh do leathanach féin saor in aisce"
+    "badgeCta": "Cruthaigh do leathanach féin saor in aisce",
+    "autoTranslated": "Meaisínaistriúchán (AI) (bunleagan: {language})",
+    "showOriginal": "Taispeáin an bunleagan",
+    "translateInBrowser": "Aistrigh go {language}",
+    "translating": "Á aistriú…"
   },
   "footer": {
     "company": "Táirge de chuid Carbon Stealth VCC",
@@ -549,7 +564,13 @@
     "referralCredit": "bónas atreoraithe",
     "payoutsTitle": "Iarratais íocaíochta amach — ar feitheamh ({count})",
     "payoutsEmpty": "Gan iarratais ar feitheamh.",
-    "payoutMarkPaid": "Marcáil mar íoctha"
+    "payoutMarkPaid": "Marcáil mar íoctha",
+    "autoNoticeTitle": "Aistriúchán uathoibríoch — fógra do chruthaitheoirí",
+    "autoNoticeHint": "Ní chuirtear an ghné ar siúl do phróifílí níos sine ach 14 lá tar éis ríomhphost a sheoladh chuig an úinéir (trédhearcacht faoi Airt. 12–13 GDPR). Seolann an cnaipe na ríomhphoist agus sceidealaíonn sé an ghníomhú dóibh siúd ar shroich an ríomhphost iad amháin.",
+    "autoNoticeStats": "Gan fógra: {pending} · Sceidealaithe: {scheduled}",
+    "autoNoticeButton": "Cuir in iúl agus sceidealaigh (+14 lá)",
+    "autoNoticeDone": "Cruthaitheoirí curtha ar an eolas: {count}.",
+    "autoNoticeNoEmail": "Níl ríomhphost (Brevo) socraithe — ní féidir na teachtaireachtaí a sheoladh."
   },
   "notFound": {
     "title": "Níor aimsíodh an leathanach",

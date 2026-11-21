@@ -12,6 +12,7 @@ import { maybePurgeOldClicks } from "@/lib/retention";
 import { isLocale } from "@/i18n/locales";
 import { countryOf, localeOf } from "@/lib/analytics";
 import { profileUrl } from "@/lib/profile-url";
+import { requestCountry } from "@/lib/geoip";
 
 // Клик по блок: записваме събитието (без бисквитки и лични данни)
 // и пренасочваме към целта. „Умните“ блокове избират целта тук:
@@ -62,7 +63,7 @@ async function handle(
           linkId: link.id,
           locale: localeOf(url.searchParams.get("hl")),
           referrerHost: hostOf(request.headers.get("referer")),
-          country: countryOf(request.headers.get("cf-ipcountry")),
+          country: countryOf(requestCountry(request.headers)),
         },
       })
       .catch(() => undefined);

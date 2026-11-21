@@ -24,6 +24,7 @@ import {
   adminDeleteUserAction,
   adminForceLogoutAction,
   adminMarkPayoutPaidAction,
+  adminNotifyAutoTranslateAction,
   adminRefundPlanOrderAction,
   adminResolveReportAction,
   adminSetPasswordAction,
@@ -94,10 +95,10 @@ export default async function AdminPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string; ok?: string; error?: string }>;
+  searchParams: Promise<{ q?: string; ok?: string; error?: string; count?: string }>;
 }) {
   const { locale } = await params;
-  const { q, ok, error } = await searchParams;
+  const { q, ok, error, count: okCount } = await searchParams;
   await requireAdmin(locale);
   const t = await getTranslations('admin');
 
@@ -196,7 +197,13 @@ export default async function AdminPage({
     'ban-warn': t('errorBanWarn'),
     'ban-ground': t('errorBanGround'),
     'ban-notice': t('errorBanNotice'),
+    'autonotice-email': t('autoNoticeNoEmail'),
   };
+  // Автоматичен превод: профили отпреди функцията — без уведомление / насрочени.
+  const [autoPending, autoScheduled] = await Promise.all([
+    prisma.profile.count({ where: { autoTranslateMode: 'pending', autoTranslateStartsAt: null } }),
+    prisma.profile.count({ where: { autoTranslateMode: 'pending', autoTranslateStartsAt: { not: null } } }),
+  ]);
 
   const needsRefund = (order: (typeof paidOrders)[number]) =>
     order.state === 'completed' ||
@@ -232,7 +239,11 @@ export default async function AdminPage({
       <div className="space-y-12">
         {(ok || error) && (
           <div className="space-y-3">
-            {ok && <Callout tone="success">{t('saved')}</Callout>}
+            {ok && (
+              <Callout tone="success">
+                {ok === 'autonotice' ? t('autoNoticeDone', { count: Number(okCount) || 0 }) : t('saved')}
+              </Callout>
+            )}
             {error && <Callout tone="danger">{errorText[error] ?? t('errorInput')}</Callout>}
           </div>
         )}
@@ -256,6 +267,25 @@ export default async function AdminPage({
             ))}
           </div>
         </Section>
+
+        {/* Автоматичен превод: предварително уведомление до създателите (ОРЗД чл. 12–13) */}
+        {(autoPending > 0 || autoScheduled > 0) && (
+          <Section id="autotranslate" title={t('autoNoticeTitle')} description={t('autoNoticeHint')}>
+            <Card padding="sm" className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-small text-fg-2">
+                {t('autoNoticeStats', { pending: autoPending, scheduled: autoScheduled })}
+              </p>
+              {autoPending > 0 && (
+                <form action={adminNotifyAutoTranslateAction}>
+                  <input type="hidden" name="uiLocale" value={locale} />
+                  <Button type="submit" size="sm">
+                    {t('autoNoticeButton')}
+                  </Button>
+                </form>
+              )}
+            </Card>
+          </Section>
+        )}
 
         {/* DSA сигнали — отворените чакат действие */}
         <Section id="reports" title={t('reportsTitle', { count: openReports.length })}>

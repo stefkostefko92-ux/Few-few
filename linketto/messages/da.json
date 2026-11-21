@@ -43,7 +43,7 @@
     "featureQrBody": "En QR-kode i din farve og en vCard-blok, der gemmer din kontakt i enhver telefon med ét tryk.",
     "heroBadge": "Flersproget link in bio · Hostet i EU",
     "trustEu": "Hostet i Den Europæiske Union",
-    "trustGdpr": "GDPR som standard",
+    "trustGdpr": "I overensstemmelse med GDPR",
     "trustCookies": "Ingen cookies til dine besøgende",
     "statsLangsLabel": "sprog fra dag ét",
     "statsBrandsLabel": "platforme med officielle ikoner",
@@ -57,7 +57,7 @@
     "faq1q": "Hvad er Linketto?",
     "faq1a": "Linketto er en link-in-bio-side: ét link, der samler alle dine links, produkter og kontakter. Det unikke: din side taler hver besøgendes sprog — byg den én gang, og den vises på alle 24 officielle EU-sprog.",
     "faq2q": "Hvordan adskiller Linketto sig fra Linktree?",
-    "faq2a": "Fire ting: din profil har versioner på alle sprog og viser automatisk hver besøgende sin egen; den er hostet i EU med GDPR som standard; statistikken er uden cookies og uden personoplysninger; og eget domæne har du allerede fra Pro-planen (4 €/md.). En udførlig sammenligning med kilder og dato finder du på siden „Linketto vs Linktree“.",
+    "faq2a": "Fire ting: din profil har versioner på alle sprog og viser automatisk hver besøgende sin egen; den er hostet i EU og overholder GDPR; statistikken er uden cookies og uden personoplysninger; og eget domæne har du allerede fra Pro-planen (4 €/md.). En udførlig sammenligning med kilder og dato finder du på siden „Linketto vs Linktree“.",
     "faq3q": "Hvad koster Linketto?",
     "faq4q": "Hvordan fungerer den flersprogede profil?",
     "faq4a": "Den besøgende ser automatisk din profil på sit sprog (fra browserindstillingerne) eller vælger et på siden. Du skriver på dit sprog, og den indbyggede AI-oversættelse udfylder resten med ét klik — dine manuelle oversættelser overskrives aldrig.",
@@ -440,7 +440,18 @@
     "linkEdit": "Rediger",
     "linkOtherLanguages": "Titel på andre sprog",
     "linkSaveChanges": "Gem ændringer",
-    "linkNoTitle": "(uden titel)"
+    "linkNoTitle": "(uden titel)",
+    "autoTranslateTitle": "Automatisk oversættelse for besøgende",
+    "autoTranslateStateOn": "til",
+    "autoTranslateStateOff": "fra",
+    "autoTranslateOn": "En besøgende fra et land, hvis sprog du ikke har en oversættelse til, ser din profil oversat automatisk (Google Gemini, USA) med mærkatet „Maskinoversættelse (AI)“ og et link til originalen. Dine egne oversættelser har altid forrang.",
+    "autoTranslateOff": "Besøgende ser kun de sprog, du selv har oversat til.",
+    "autoTranslateTurnOff": "Slå fra",
+    "autoTranslateTurnOn": "Slå til",
+    "autoTranslateStatePending": "planlagt",
+    "autoTranslatePendingAt": "Slås til den {date} (efter meddelelsen på e-mail). Du kan slå den fra inden — så bliver intet fra din profil sendt.",
+    "autoTranslatePendingNoNotice": "Endnu ikke slået til — du får en e-mail mindst 14 dage før den slås til.",
+    "autoTranslateTurnOnNow": "Slå til nu"
   },
   "profile": {
     "poweredBy": "Lavet med Linketto",
@@ -478,7 +489,11 @@
     "sellerTrader": "Sælgeren er erhvervsdrivende",
     "videoPlay": "Afspil video",
     "bookingWhen": "Ønsket tidspunkt",
-    "badgeCta": "Opret din egen side gratis"
+    "badgeCta": "Opret din egen side gratis",
+    "autoTranslated": "Maskinoversættelse (AI) (original: {language})",
+    "showOriginal": "Vis originalen",
+    "translateInBrowser": "Oversæt til {language}",
+    "translating": "Oversætter…"
   },
   "footer": {
     "company": "Et produkt fra Carbon Stealth VCC",
@@ -554,7 +569,13 @@
     "referralCredit": "henvisningsbonus",
     "payoutsTitle": "Udbetalingsanmodninger — afventende ({count})",
     "payoutsEmpty": "Ingen afventende anmodninger.",
-    "payoutMarkPaid": "Marker som betalt"
+    "payoutMarkPaid": "Marker som betalt",
+    "autoNoticeTitle": "Automatisk oversættelse — besked til skabere",
+    "autoNoticeHint": "Profiler fra før funktionen slås først til 14 dage efter en e-mail til ejeren (gennemsigtighed efter GDPR art. 12-13). Knappen sender e-mails og planlægger aktiveringen kun for dem, som e-mailen er nået frem til.",
+    "autoNoticeStats": "Uden besked: {pending} · Planlagt: {scheduled}",
+    "autoNoticeButton": "Giv besked og planlæg (+14 dage)",
+    "autoNoticeDone": "Skabere underrettet: {count}.",
+    "autoNoticeNoEmail": "E-mail (Brevo) er ikke sat op — beskederne kan ikke sendes."
   },
   "notFound": {
     "title": "Siden blev ikke fundet",

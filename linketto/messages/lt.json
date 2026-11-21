@@ -43,7 +43,7 @@
     "featureQrBody": "QR kodas tavo spalva ir vCard blokas, kuris išsaugo tavo kontaktą bet kuriame telefone vienu prisilietimu.",
     "heroBadge": "Daugiakalbis link in bio · Talpinamas ES",
     "trustEu": "Talpinamas Europos Sąjungoje",
-    "trustGdpr": "GDPR pagal nutylėjimą",
+    "trustGdpr": "Atitinka GDPR",
     "trustCookies": "Jokių slapukų lankytojams",
     "statsLangsLabel": "kalbos nuo pirmos dienos",
     "statsBrandsLabel": "platformos su oficialiomis piktogramomis",
@@ -57,7 +57,7 @@
     "faq1q": "Kas yra Linketto?",
     "faq1a": "Linketto yra „link in bio“ puslapis: viena nuoroda, apjungianti visas tavo nuorodas, produktus ir kontaktus. Išskirtinumas: tavo puslapis kalba kiekvieno lankytojo kalba — sukurk jį kartą ir jis rodomas visomis 24 oficialiosiomis ES kalbomis.",
     "faq2q": "Kuo Linketto skiriasi nuo Linktree?",
-    "faq2a": "Keturi dalykai: tavo profilis turi versijas visomis kalbomis ir pats kiekvienam lankytojui rodo jo kalbą; jis talpinamas ES su GDPR pagal nutylėjimą; analitika be slapukų ir be asmens duomenų; o savo domeną turi jau nuo Pro plano (€4/mėn). Išsamus palyginimas su šaltiniais ir data — puslapyje „Linketto prieš Linktree“.",
+    "faq2a": "Keturi dalykai: tavo profilis turi versijas visomis kalbomis ir pats kiekvienam lankytojui rodo jo kalbą; jis talpinamas ES ir atitinka GDPR; analitika be slapukų ir be asmens duomenų; o savo domeną turi jau nuo Pro plano (€4/mėn). Išsamus palyginimas su šaltiniais ir data — puslapyje „Linketto prieš Linktree“.",
     "faq3q": "Kiek kainuoja Linketto?",
     "faq4q": "Kaip veikia daugiakalbis profilis?",
     "faq4a": "Lankytojas automatiškai mato profilį savo kalba (pagal naršyklės nustatymus) arba pasirenka kalbą puslapyje. Rašai savo kalba, o integruotas AI vertimas užpildo likusias vienu paspaudimu — tavo rankiniai vertimai niekada neperrašomi.",
@@ -440,7 +440,18 @@
     "linkEdit": "Redaguoti",
     "linkOtherLanguages": "Pavadinimas kitomis kalbomis",
     "linkSaveChanges": "Išsaugoti pakeitimus",
-    "linkNoTitle": "(be pavadinimo)"
+    "linkNoTitle": "(be pavadinimo)",
+    "autoTranslateTitle": "Automatinis vertimas lankytojams",
+    "autoTranslateStateOn": "įjungtas",
+    "autoTranslateStateOff": "išjungtas",
+    "autoTranslateOn": "Lankytojas iš šalies, į kurios kalbą neturi vertimo, mato tavo profilį automatiškai išverstą (Google Gemini, JAV) su žyma „Mašininis vertimas (AI)“ ir nuoroda į originalą. Tavo vertimams visada teikiama pirmenybė.",
+    "autoTranslateOff": "Lankytojai mato tik tas kalbas, į kurias profilį išvertei pats.",
+    "autoTranslateTurnOff": "Išjungti",
+    "autoTranslateTurnOn": "Įjungti",
+    "autoTranslateStatePending": "numatytas",
+    "autoTranslatePendingAt": "Bus įjungtas {date} (po pranešimo el. paštu). Gali jį išjungti anksčiau — tada iš tavo profilio nieko nebus išsiųsta.",
+    "autoTranslatePendingNoNotice": "Dar neįjungtas — el. laišką gausi likus ne mažiau kaip 14 dienų iki įjungimo.",
+    "autoTranslateTurnOnNow": "Įjungti dabar"
   },
   "profile": {
     "poweredBy": "Sukurta su Linketto",
@@ -478,7 +489,11 @@
     "sellerTrader": "Pardavėjas yra prekiautojas",
     "videoPlay": "Paleisti vaizdo įrašą",
     "bookingWhen": "Pageidaujamas laikas",
-    "badgeCta": "Susikurk savo puslapį nemokamai"
+    "badgeCta": "Susikurk savo puslapį nemokamai",
+    "autoTranslated": "Mašininis vertimas (AI) (originalas: {language})",
+    "showOriginal": "Rodyti originalą",
+    "translateInBrowser": "Versti į {language} kalbą",
+    "translating": "Verčiama…"
   },
   "footer": {
     "company": "Carbon Stealth VCC produktas",
@@ -554,7 +569,13 @@
     "referralCredit": "rekomendacijos premija",
     "payoutsTitle": "Išmokų prašymai — laukiantys ({count})",
     "payoutsEmpty": "Nėra laukiančių prašymų.",
-    "payoutMarkPaid": "Pažymėti kaip apmokėtą"
+    "payoutMarkPaid": "Pažymėti kaip apmokėtą",
+    "autoNoticeTitle": "Automatinis vertimas — kūrėjų informavimas",
+    "autoNoticeHint": "Iki šios funkcijos sukurtuose profiliuose ji įjungiama tik praėjus 14 dienų po el. laiško savininkui (skaidrumas pagal GDPR 12–13 str.). Mygtukas išsiunčia laiškus ir suplanuoja įjungimą tik tiems, kuriuos laiškas pasiekė.",
+    "autoNoticeStats": "Be pranešimo: {pending} · Suplanuota: {scheduled}",
+    "autoNoticeButton": "Pranešti ir suplanuoti (+14 dienų)",
+    "autoNoticeDone": "Informuota kūrėjų: {count}.",
+    "autoNoticeNoEmail": "El. paštas (Brevo) nesukonfigūruotas — laiškų išsiųsti negalima."
   },
   "notFound": {
     "title": "Puslapis nerastas",

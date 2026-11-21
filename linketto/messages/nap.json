@@ -43,7 +43,7 @@
     "featureQrBody": "Nu codice QR d'o culore tuoje e nu blocco vCard ca sarva 'o cuntatto tuoje ncopp'ô telefono cu nu tuocco.",
     "heroBadge": "Link in bio multilengua · Ospitato int'â UE",
     "trustEu": "Ospitato int'â Unione Europea",
-    "trustGdpr": "GDPR pe' default",
+    "trustGdpr": "Conforme ô GDPR",
     "trustCookies": "Nisciuno cookie pe' 'e visitature tuoje",
     "statsLangsLabel": "lengue d'o primmo juorno",
     "statsBrandsLabel": "piattaforme cu icone ufficiale",
@@ -57,7 +57,7 @@
     "faq1q": "Che cos'è Linketto?",
     "faq1a": "Linketto è na paggena link in bio: nu solo link ca arrecoglie tutte 'e link, 'e prudotte e 'e cuntatte tuoje. 'A cosa uneca: 'a paggena parla 'a lengua 'e ogne visitatore — 'a fabbriche na vota e essa cumpare int'a tutte 'e 24 lengue ufficiale d'a UE.",
     "faq2q": "Int'a che ccosa Linketto è differente 'a Linktree?",
-    "faq2a": "Quatto cose: 'o profilo tuoje tene verziune int'a tutte 'e lengue e a ogne visitatore le mostra chella soja, sulo; è ospitato int'â UE cu GDPR pe' default; ll'analise so' senza cookie e senza date personale; e 'o dominio tuoje 'o tiene già d'ô piano Pro (€4/mese). Nu cunfronto dettagliato cu fonte e data sta ncopp'â paggena «Linketto contro Linktree».",
+    "faq2a": "Quatto cose: 'o profilo tuoje tene verziune int'a tutte 'e lengue e a ogne visitatore le mostra chella soja, sulo; è ospitato int'â UE e conforme ô GDPR; ll'analise so' senza cookie e senza date personale; e 'o dominio tuoje 'o tiene già d'ô piano Pro (€4/mese). Nu cunfronto dettagliato cu fonte e data sta ncopp'â paggena «Linketto contro Linktree».",
     "faq3q": "Quanto costa Linketto?",
     "faq4q": "Comme funziona 'o profilo multilengua?",
     "faq4a": "'O visitatore vede automaticamente 'o profilo int'â lengua soja (d'ê mpustazione d'o browser) o 'a scarta ncopp'â paggena. Tu scrive int'â lengua toja e 'a traduzione AI integrata cumpletta ll'ate cu nu click — 'e traduzione manuale toje nun se cagnano maje.",
@@ -431,7 +431,18 @@
     "linkEdit": "Modifica",
     "linkOtherLanguages": "Titolo int'ê llengue ate",
     "linkSaveChanges": "Sarva 'e cagnamiente",
-    "linkNoTitle": "(senza titolo)"
+    "linkNoTitle": "(senza titolo)",
+    "autoTranslateTitle": "Traduzione automateca pe' 'e visitature",
+    "autoTranslateStateOn": "attiva",
+    "autoTranslateStateOff": "stutata",
+    "autoTranslateOn": "Nu visitatore 'e nu paese 'e cui lengua nun tiene traduzione vede 'o profilo tuojo tradutto automaticamente (Google Gemini, USA), cu ll'etichetta «Traduzione automateca (AI)» e nu link a ll'origginale. 'E traduzione toje teneno sempe 'a precedenza.",
+    "autoTranslateOff": "'E visitature vedeno sulo 'e lengue ca hê tradutto tu.",
+    "autoTranslateTurnOff": "Stuta",
+    "autoTranslateTurnOn": "Appiccia",
+    "autoTranslateStatePending": "programmata",
+    "autoTranslatePendingAt": "S'appiccia 'o {date} (doppo l'avviso pe' email). 'A può stutà primma — accussì nun se manna niente d''o profilo tuojo.",
+    "autoTranslatePendingNoNotice": "Nun è ancora appicciata — te arriva n'email almeno 14 juorne primma ca s'appiccia.",
+    "autoTranslateTurnOnNow": "Appiccia mo'"
   },
   "profile": {
     "poweredBy": "Fatto cu Linketto",
@@ -469,7 +480,11 @@
     "sellerTrader": "'O venditore è nu professionista",
     "videoPlay": "Fa' partì 'o video",
     "bookingWhen": "Orario ca te cunviene",
-    "badgeCta": "Crea 'a paggena toja gratis"
+    "badgeCta": "Crea 'a paggena toja gratis",
+    "autoTranslated": "Traduzione automateca (AI) (origginale 'n {language})",
+    "showOriginal": "Fa' vedé l'origginale",
+    "translateInBrowser": "Traduce 'n {language}",
+    "translating": "Sto traducenno…"
   },
   "footer": {
     "company": "Nu prudotto Carbon Stealth VCC",
@@ -545,7 +560,13 @@
     "referralCredit": "bonus referral",
     "payoutsTitle": "Richieste 'e pagamento — in attesa ({count})",
     "payoutsEmpty": "Nisciuna richiesta in attesa.",
-    "payoutMarkPaid": "Signa comme pavato"
+    "payoutMarkPaid": "Signa comme pavato",
+    "autoNoticeTitle": "Traduzione automateca — avviso ê creator",
+    "autoNoticeHint": "'E profile 'e primma d''a funzione s'appicciano sulo 14 juorne doppo n'email ô patrone (trasparenza pe' ll'artt. 12–13 GDPR). 'O buttone manna ll'email e programma l'appicciatura sulo pe' chille ca hanno ricevuto ll'email.",
+    "autoNoticeStats": "Senza avviso: {pending} · Programmate: {scheduled}",
+    "autoNoticeButton": "Avvisa e programma (+14 juorne)",
+    "autoNoticeDone": "Creator avvisate: {count}.",
+    "autoNoticeNoEmail": "L'email (Brevo) nun è configurata — 'e messagge nun ponno partì."
   },
   "notFound": {
     "title": "Paggena nun truvata",

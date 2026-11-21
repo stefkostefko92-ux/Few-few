@@ -43,7 +43,7 @@
     "featureQrBody": "En QR-kod i din färg och ett vCard-block som sparar din kontakt i vilken telefon som helst med en knapptryckning.",
     "heroBadge": "Flerspråkig link in bio · Hostad i EU",
     "trustEu": "Hostad inom Europeiska unionen",
-    "trustGdpr": "GDPR som standard",
+    "trustGdpr": "I enlighet med GDPR",
     "trustCookies": "Inga cookies för dina besökare",
     "statsLangsLabel": "språk från dag ett",
     "statsBrandsLabel": "plattformar med officiella ikoner",
@@ -57,7 +57,7 @@
     "faq1q": "Vad är Linketto?",
     "faq1a": "Linketto är en link-in-bio-sida: en länk som samlar alla dina länkar, produkter och kontakter. Det unika: din sida talar varje besökares språk — bygg den en gång och den visas på alla 24 officiella EU-språk.",
     "faq2q": "Hur skiljer sig Linketto från Linktree?",
-    "faq2a": "Fyra saker: din profil har versioner på alla språk och visar automatiskt varje besökare dennes egen; den är hostad i EU med GDPR som standard; statistiken är utan cookies och utan personuppgifter; och egen domän har du redan från Pro-planen (4 €/mån). En utförlig jämförelse med källor och datum finns på sidan ”Linketto vs Linktree”.",
+    "faq2a": "Fyra saker: din profil har versioner på alla språk och visar automatiskt varje besökare dennes egen; den är hostad i EU och följer GDPR; statistiken är utan cookies och utan personuppgifter; och egen domän har du redan från Pro-planen (4 €/mån). En utförlig jämförelse med källor och datum finns på sidan ”Linketto vs Linktree”.",
     "faq3q": "Vad kostar Linketto?",
     "faq4q": "Hur fungerar den flerspråkiga profilen?",
     "faq4a": "Besökaren ser automatiskt din profil på sitt språk (från webbläsarens inställningar) eller väljer ett på sidan. Du skriver på ditt språk och den inbyggda AI-översättningen fyller i resten med ett klick — dina manuella översättningar skrivs aldrig över.",
@@ -440,7 +440,18 @@
     "linkEdit": "Redigera",
     "linkOtherLanguages": "Titel på andra språk",
     "linkSaveChanges": "Spara ändringarna",
-    "linkNoTitle": "(utan titel)"
+    "linkNoTitle": "(utan titel)",
+    "autoTranslateTitle": "Automatisk översättning för besökare",
+    "autoTranslateStateOn": "på",
+    "autoTranslateStateOff": "av",
+    "autoTranslateOn": "En besökare från ett land vars språk du inte har någon översättning till ser din profil automatiskt översatt (Google Gemini, USA) med etiketten „Maskinöversättning (AI)“ och en länk till originalet. Dina egna översättningar går alltid före.",
+    "autoTranslateOff": "Besökare ser bara de språk som du själv har översatt till.",
+    "autoTranslateTurnOff": "Stäng av",
+    "autoTranslateTurnOn": "Slå på",
+    "autoTranslateStatePending": "planerad",
+    "autoTranslatePendingAt": "Slås på den {date} (efter meddelandet via e-post). Du kan stänga av den innan dess — då skickas ingenting från din profil.",
+    "autoTranslatePendingNoNotice": "Inte påslagen ännu — du får ett e-postmeddelande minst 14 dagar innan den slås på.",
+    "autoTranslateTurnOnNow": "Slå på nu"
   },
   "profile": {
     "poweredBy": "Skapad med Linketto",
@@ -478,7 +489,11 @@
     "sellerTrader": "Säljaren är näringsidkare",
     "videoPlay": "Spela upp video",
     "bookingWhen": "Önskad tid",
-    "badgeCta": "Skapa din egen sida gratis"
+    "badgeCta": "Skapa din egen sida gratis",
+    "autoTranslated": "Maskinöversättning (AI) (original: {language})",
+    "showOriginal": "Visa originalet",
+    "translateInBrowser": "Översätt till {language}",
+    "translating": "Översätter…"
   },
   "footer": {
     "company": "En produkt från Carbon Stealth VCC",
@@ -554,7 +569,13 @@
     "referralCredit": "hänvisningsbonus",
     "payoutsTitle": "Utbetalningsbegäranden — väntande ({count})",
     "payoutsEmpty": "Inga väntande begäranden.",
-    "payoutMarkPaid": "Markera som betald"
+    "payoutMarkPaid": "Markera som betald",
+    "autoNoticeTitle": "Automatisk översättning — avisering av skapare",
+    "autoNoticeHint": "Profiler från före funktionen slås på först 14 dagar efter ett e-postmeddelande till ägaren (öppenhet enligt artiklarna 12–13 i GDPR). Knappen skickar meddelandena och schemalägger påslagningen bara för dem som meddelandet har nått.",
+    "autoNoticeStats": "Utan avisering: {pending} · Schemalagda: {scheduled}",
+    "autoNoticeButton": "Avisera och schemalägg (+14 dagar)",
+    "autoNoticeDone": "Aviserade skapare: {count}.",
+    "autoNoticeNoEmail": "E-post (Brevo) är inte konfigurerad — meddelandena kan inte skickas."
   },
   "notFound": {
     "title": "Sidan hittades inte",

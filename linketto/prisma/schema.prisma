@@ -137,9 +137,16 @@ model Profile {
   domainToken      String?
   domainVerifiedAt DateTime?
   published        Boolean              @default(true)
+  // Автоматичен превод за посетителите на други езици (Gemini, кеширан;
+  // docs/geo-autotranslate-spec.md): on (нови профили) | off (създателят го е
+  // изключил — възражение по чл. 21) | pending (профил отпреди функцията:
+  // включва се едва на autoTranslateStartsAt — ≥14 дни след уведомлението).
+  autoTranslateMode     String    @default("on")
+  autoTranslateStartsAt DateTime?
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
   translations     ProfileTranslation[]
+  autoTranslations AutoTranslation[]
   links            Link[]
   clicks           ClickEvent[]
   messages         ContactMessage[]
@@ -247,6 +254,22 @@ model ProfileTranslation {
   locale      String
   displayName String
   bio         String?
+
+  @@unique([profileId, locale])
+}
+
+// Кеш на автоматичния превод на профил за език, на който създателят няма
+// превод. sourceHash = хеш на изходното съдържание: промяна → превежда се
+// наново. Не е превод на създателя — не се показва в таблото като език.
+model AutoTranslation {
+  id         String   @id @default(cuid())
+  profileId  String
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  locale     String
+  sourceHash String
+  content    Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@unique([profileId, locale])
 }

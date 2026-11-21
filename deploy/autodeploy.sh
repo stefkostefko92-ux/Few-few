@@ -2166,19 +2166,31 @@ linketto_install_cron() {
   install -m 644 "$d/deploy/systemd/linketto-cron@.service" /etc/systemd/system/linketto-cron@.service
   # Пътят до тайните следва LINKETTO_STATE_DIR, ако е сменен.
   install -d -m 755 /etc/systemd/system/linketto-cron@.service.d
-  printf '[Service]\nEnvironment=LINKETTO_ENV=%s/.env\n' "$LINKETTO_STATE_DIR" \
+  # ReadWritePaths: единственото място, където cron пише — базата IP → държава
+  # (отделна папка на root, монтирана :ro в контейнера; не data/, която е на app).
+  install -d -m 755 -o root -g root "$LINKETTO_STATE_DIR/geoip"
+  printf '[Service]\nEnvironment=LINKETTO_ENV=%s/.env\nReadWritePaths=-%s/geoip\n' "$LINKETTO_STATE_DIR" "$LINKETTO_STATE_DIR" \
     > /etc/systemd/system/linketto-cron@.service.d/env.conf
-  for t in plans digest retention; do
+  for t in plans digest retention geoip; do
     install -m 644 "$d/deploy/systemd/linketto-cron-$t.timer" "/etc/systemd/system/linketto-cron-$t.timer"
   done
   systemctl daemon-reload >/dev/null 2>&1 \
     || { warn "linketto: systemctl daemon-reload не мина — таймерите НЕ са активни (cron §9 не върви)."; return 0; }
   local bad=0
-  for t in plans digest retention; do
+  for t in plans digest retention geoip; do
     systemctl enable --now "linketto-cron-$t.timer" >/dev/null 2>&1 \
       || { bad=1; warn "linketto: linketto-cron-$t.timer не се активира — виж systemctl status linketto-cron-$t.timer"; }
   done
-  [ "$bad" = "0" ] && ok "linketto: таймери активни (планове :17 всеки час · отчет 08:10 · срокове 03:40)."
+  [ "$bad" = "0" ] && ok "linketto: таймери активни (планове :17 всеки час · отчет 08:10 · срокове 03:40 · IP база месечно)."
+  # Езикът по държава иска базата IP → държава — при първи деплой я сваляме веднага
+  # (иначе чака таймера до 3-то число). Без нея сайтът работи, езикът пада към браузъра.
+  if [ ! -s "$LINKETTO_STATE_DIR/geoip/dbip-country-lite.mmdb" ]; then
+    if systemctl start linketto-cron@geoip.service >/dev/null 2>&1; then
+      ok "linketto: базата IP → държава е свалена (езикът по държава работи)."
+    else
+      warn "linketto: базата IP → държава не се свали — виж journalctl -u linketto-cron@geoip (езикът засега е по браузъра)."
+    fi
+  fi
   return 0
 }
 

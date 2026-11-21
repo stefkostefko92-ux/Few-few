@@ -43,7 +43,7 @@
     "featureQrBody": "QR-kood sinu värvis ja vCard-plokk, mis salvestab sinu kontakti telefoni ühe puudutusega.",
     "heroBadge": "Mitmekeelne link in bio · Majutatud ELis",
     "trustEu": "Majutatud Euroopa Liidus",
-    "trustGdpr": "GDPR vaikimisi",
+    "trustGdpr": "GDPR-iga kooskõlas",
     "trustCookies": "Külastajatele ei mingeid küpsiseid",
     "statsLangsLabel": "keelt esimesest päevast",
     "statsBrandsLabel": "platvormi ametlike ikoonidega",
@@ -57,7 +57,7 @@
     "faq1q": "Mis on Linketto?",
     "faq1a": "Linketto on „link in bio“ leht: üks link, mis koondab kõik su lingid, tooted ja kontaktid. Erilisus: sinu leht räägib iga külastaja keelt — ehita see üks kord ja see kuvatakse kõigis 24 ELi ametlikus keeles.",
     "faq2q": "Mille poolest erineb Linketto Linktree’st?",
-    "faq2a": "Neli asja: sinu profiilil on versioonid kõigis keeltes ja see näitab igale külastajale ise tema keelt; see on majutatud ELis, GDPR vaikimisi; analüütika on küpsisteta ja isikuandmeteta; ning oma domeeni saad juba Pro paketist (€4/kuus). Põhjalik võrdlus allikate ja kuupäevaga on lehel „Linketto vs Linktree“.",
+    "faq2a": "Neli asja: sinu profiilil on versioonid kõigis keeltes ja see näitab igale külastajale ise tema keelt; see on majutatud ELis ja GDPR-iga kooskõlas; analüütika on küpsisteta ja isikuandmeteta; ning oma domeeni saad juba Pro paketist (€4/kuus). Põhjalik võrdlus allikate ja kuupäevaga on lehel „Linketto vs Linktree“.",
     "faq3q": "Kui palju Linketto maksab?",
     "faq4q": "Kuidas mitmekeelne profiil töötab?",
     "faq4a": "Külastaja näeb profiili automaatselt oma keeles (brauseri seadete järgi) või valib keele lehel. Kirjutad oma keeles ja sisseehitatud AI-tõlge täidab ülejäänud ühe klikiga — sinu käsitsi tehtud tõlkeid ei kirjutata kunagi üle.",
@@ -440,7 +440,18 @@
     "linkEdit": "Muuda",
     "linkOtherLanguages": "Pealkiri teistes keeltes",
     "linkSaveChanges": "Salvesta muudatused",
-    "linkNoTitle": "(pealkirjata)"
+    "linkNoTitle": "(pealkirjata)",
+    "autoTranslateTitle": "Automaatne tõlge külastajatele",
+    "autoTranslateStateOn": "sees",
+    "autoTranslateStateOff": "väljas",
+    "autoTranslateOn": "Külastaja riigist, mille keelde sul tõlget pole, näeb su profiili automaatselt tõlgituna (Google Gemini, USA) sildiga „Masintõlge (AI)“ ja lingiga originaalile. Sinu enda tõlked on alati eelistatud.",
+    "autoTranslateOff": "Külastajad näevad ainult neid keeli, millesse oled profiili ise tõlkinud.",
+    "autoTranslateTurnOff": "Lülita välja",
+    "autoTranslateTurnOn": "Lülita sisse",
+    "autoTranslateStatePending": "tulekul",
+    "autoTranslatePendingAt": "Lülitub sisse {date} (pärast e-posti teel teavitamist). Saad selle enne välja lülitada — siis ei saadeta su profiilist midagi.",
+    "autoTranslatePendingNoNotice": "Veel pole sisse lülitatud — saad e-kirja vähemalt 14 päeva enne sisselülitamist.",
+    "autoTranslateTurnOnNow": "Lülita kohe sisse"
   },
   "profile": {
     "poweredBy": "Loodud Linkettoga",
@@ -478,7 +489,11 @@
     "sellerTrader": "Müüja on kaupleja",
     "videoPlay": "Esita video",
     "bookingWhen": "Sobiv aeg",
-    "badgeCta": "Loo oma leht tasuta"
+    "badgeCta": "Loo oma leht tasuta",
+    "autoTranslated": "Masintõlge (AI) (originaal: {language})",
+    "showOriginal": "Näita originaali",
+    "translateInBrowser": "Tõlgi keelde: {language}",
+    "translating": "Tõlgin…"
   },
   "footer": {
     "company": "Carbon Stealth VCC toode",
@@ -554,7 +569,13 @@
     "referralCredit": "soovitusboonus",
     "payoutsTitle": "Väljamaksetaotlused — ootel ({count})",
     "payoutsEmpty": "Ootel taotlusi pole.",
-    "payoutMarkPaid": "Märgi makstuks"
+    "payoutMarkPaid": "Märgi makstuks",
+    "autoNoticeTitle": "Automaatne tõlge — loojate teavitamine",
+    "autoNoticeHint": "Enne funktsiooni loodud profiilidel lülitub see sisse alles 14 päeva pärast omanikule saadetud e-kirja (läbipaistvus GDPR art 12–13 alusel). Nupp saadab kirjad ja ajastab sisselülitamise ainult neile, kelleni kiri jõudis.",
+    "autoNoticeStats": "Teavitamata: {pending} · Ajastatud: {scheduled}",
+    "autoNoticeButton": "Teavita ja ajasta (+14 päeva)",
+    "autoNoticeDone": "Teavitatud loojaid: {count}.",
+    "autoNoticeNoEmail": "E-post (Brevo) pole seadistatud — kirju ei saa saata."
   },
   "notFound": {
     "title": "Lehte ei leitud",

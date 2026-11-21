@@ -43,7 +43,7 @@
     "featureQrBody": "Kodiċi QR fil-kulur tiegħek u blokk vCard li jissejvja l-kuntatt tiegħek fuq kull telefon b'tektika waħda.",
     "heroBadge": "Link in bio multilingwi · Ospitat fl-UE",
     "trustEu": "Ospitat fl-Unjoni Ewropea",
-    "trustGdpr": "GDPR b'mod awtomatiku",
+    "trustGdpr": "Konformi mal-GDPR",
     "trustCookies": "L-ebda cookies għall-viżitaturi",
     "statsLangsLabel": "lingwi mill-ewwel jum",
     "statsBrandsLabel": "pjattaformi b'ikoni uffiċjali",
@@ -57,7 +57,7 @@
     "faq1q": "X'inhu Linketto?",
     "faq1a": "Linketto huwa paġna „link in bio“: link wieħed li jiġbor il-links, il-prodotti u l-kuntatti tiegħek kollha. Il-parti unika: il-paġna tiegħek titkellem il-lingwa ta' kull viżitatur — ibnieha darba u tidher fl-24 lingwa uffiċjali kollha tal-UE.",
     "faq2q": "Kif inhu differenti Linketto minn Linktree?",
-    "faq2a": "Erba' affarijiet: il-profil tiegħek għandu verżjonijiet bil-lingwi kollha u juri waħdu lil kull viżitatur il-lingwa tiegħu; huwa ospitat fl-UE b'GDPR awtomatiku; l-analitika hija bla cookies u mingħajr dejta personali; u d-dominju tiegħek għandek diġà mill-pjan Pro (€4/xahar). Paragun dettaljat b'sorsi u data jinsab fil-paġna „Linketto kontra Linktree“.",
+    "faq2a": "Erba' affarijiet: il-profil tiegħek għandu verżjonijiet bil-lingwi kollha u juri waħdu lil kull viżitatur il-lingwa tiegħu; huwa ospitat fl-UE u konformi mal-GDPR; l-analitika hija bla cookies u mingħajr dejta personali; u d-dominju tiegħek għandek diġà mill-pjan Pro (€4/xahar). Paragun dettaljat b'sorsi u data jinsab fil-paġna „Linketto kontra Linktree“.",
     "faq3q": "Kemm jiswa Linketto?",
     "faq4q": "Kif jaħdem il-profil multilingwi?",
     "faq4a": "Il-viżitatur jara awtomatikament il-profil tiegħek fil-lingwa tiegħu (mis-settings tal-browser tiegħu) jew jagħżel lingwa mill-paġna. Tikteb bil-lingwa tiegħek u t-traduzzjoni AI integrata timla l-bqija b'klikk waħda — it-traduzzjonijiet manwali tiegħek qatt ma jinkitbu fuqhom.",
@@ -435,7 +435,18 @@
     "linkEdit": "Editja",
     "linkOtherLanguages": "Titlu f'lingwi oħra",
     "linkSaveChanges": "Issejvja l-bidliet",
-    "linkNoTitle": "(mingħajr titlu)"
+    "linkNoTitle": "(mingħajr titlu)",
+    "autoTranslateTitle": "Traduzzjoni awtomatika għall-viżitaturi",
+    "autoTranslateStateOn": "mixgħula",
+    "autoTranslateStateOff": "mitfija",
+    "autoTranslateOn": "Viżitatur minn pajjiż li m'għandekx traduzzjoni bil-lingwa tiegħu jara l-profil tiegħek tradott awtomatikament (Google Gemini, l-Istati Uniti), bit-tikketta „Traduzzjoni awtomatika (AI)“ u link għall-oriġinal. It-traduzzjonijiet tiegħek dejjem għandhom il-prijorità.",
+    "autoTranslateOff": "Il-viżitaturi jaraw biss il-lingwi li ttraduċejt int stess il-profil għalihom.",
+    "autoTranslateTurnOff": "Itfi",
+    "autoTranslateTurnOn": "Ixgħel",
+    "autoTranslateStatePending": "ippjanata",
+    "autoTranslatePendingAt": "Se tinxtegħel fi {date} (wara n-notifika bl-email). Tista' titfiha qabel — f'dak il-każ xejn mill-profil tiegħek ma jintbagħat.",
+    "autoTranslatePendingNoNotice": "Għadha mhix mixgħula — se tirċievi email mill-inqas 14-il jum qabel ma tinxtegħel.",
+    "autoTranslateTurnOnNow": "Ixgħel issa"
   },
   "profile": {
     "poweredBy": "Magħmul bi Linketto",
@@ -473,7 +484,11 @@
     "sellerTrader": "Il-bejjiegħ huwa kummerċjant",
     "videoPlay": "Ħaddem il-vidjo",
     "bookingWhen": "Ħin preferut",
-    "badgeCta": "Oħloq il-paġna tiegħek b'xejn"
+    "badgeCta": "Oħloq il-paġna tiegħek b'xejn",
+    "autoTranslated": "Traduzzjoni awtomatika (AI) (oriġinal: {language})",
+    "showOriginal": "Uri l-oriġinal",
+    "translateInBrowser": "Ittraduċi għall-{language}",
+    "translating": "Qed nittraduċi…"
   },
   "footer": {
     "company": "Prodott ta' Carbon Stealth VCC",
@@ -549,7 +564,13 @@
     "referralCredit": "bonus tar-referral",
     "payoutsTitle": "Talbiet ta' ħlas — pendenti ({count})",
     "payoutsEmpty": "L-ebda talbiet pendenti.",
-    "payoutMarkPaid": "Immarka bħala mħallas"
+    "payoutMarkPaid": "Immarka bħala mħallas",
+    "autoNoticeTitle": "Traduzzjoni awtomatika — notifika lill-kreaturi",
+    "autoNoticeHint": "Il-profili ta' qabel il-funzjoni jinxtegħlu biss 14-il jum wara email lis-sid tagħhom (trasparenza skont l-Artikoli 12–13 tal-GDPR). Il-buttuna tibgħat l-emails u tippjana l-attivazzjoni biss għal dawk li laħqithom l-email.",
+    "autoNoticeStats": "Mingħajr notifika: {pending} · Ippjanati: {scheduled}",
+    "autoNoticeButton": "Innotifika u ppjana (+14-il jum)",
+    "autoNoticeDone": "Kreaturi nnotifikati: {count}.",
+    "autoNoticeNoEmail": "L-email (Brevo) mhijiex konfigurata — il-messaġġi ma jistgħux jintbagħtu."
   },
   "notFound": {
     "title": "Il-paġna ma nstabitx",

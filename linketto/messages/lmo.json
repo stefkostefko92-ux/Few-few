@@ -40,7 +40,7 @@
     "featureQrBody": "On codes QR del tò color e on blocch vCard che salva el tò contatt sul telefonin con on tocch.",
     "heroBadge": "Link in bio multilengua · Ospitaa in la UE",
     "trustEu": "Ospitaa in la Union Europea",
-    "trustGdpr": "GDPR de default",
+    "trustGdpr": "Conforme al GDPR",
     "trustCookies": "Nissun cookie per i tò visitador",
     "statsLangsLabel": "lengu del primm dì",
     "statsBrandsLabel": "piattaform con icôn uffizial",
@@ -54,7 +54,7 @@
     "faq1q": "Cos'è Linketto?",
     "faq1a": "Linketto l'è ona pagina link in bio: on link sol che el mett insema tucc i tò link, prodott e contatt. La roba unica: la pagina la parla la lengua de ogni visitador — ti la fett vunna volta e la ven foeura in tutt i 24 lengu ufficiai de l'UE.",
     "faq2q": "In cosa Linketto l'è different de Linktree?",
-    "faq2a": "Quatter robb: el tò profil el gh'ha version in tutt i lengu e a ogni visitador el ghe fa vedé la soa de per lù; l'è ospitaa in la UE con GDPR de default; i analisi hinn senza cookie e senza dati personal; e el tò domini te le gh'hee giamò del pian Pro (€4/mes). On confront detajaa con fonti e data l'è su la pagina «Linketto contra Linktree».",
+    "faq2a": "Quatter robb: el tò profil el gh'ha version in tutt i lengu e a ogni visitador el ghe fa vedé la soa de per lù; l'è ospitaa in la UE e conforme al GDPR; i analisi hinn senza cookie e senza dati personal; e el tò domini te le gh'hee giamò del pian Pro (€4/mes). On confront detajaa con fonti e data l'è su la pagina «Linketto contra Linktree».",
     "faq3q": "Quant costa Linketto?",
     "faq4q": "Come funziona el profil multilengua?",
     "faq4a": "El visitador el vede in automatich el profil in la soa lengua (di impostazion del browser) o el la sceglì su la pagina. Ti te scrivet in la tua lengua e la traduzion AI integrada la compila i alter con on click — i tò traduzion a man ven mai sovrascritt.",
@@ -423,7 +423,18 @@
     "linkEdit": "Modifica",
     "linkOtherLanguages": "Titol in di alter lengue",
     "linkSaveChanges": "Salva i cambiament",
-    "linkNoTitle": "(senza titol)"
+    "linkNoTitle": "(senza titol)",
+    "autoTranslateTitle": "Tradussion automatica per i visitador",
+    "autoTranslateStateOn": "attiva",
+    "autoTranslateStateOff": "smorzada",
+    "autoTranslateOn": "On visitador d'on paes in la cui lengua te gh'het minga ona tradussion el ved el tò profil tradott in automatich (Google Gemini, USA), con l'etichetta «Tradussion automatica (AI)» e on link a l'original. I tò tradussion gh'hann semper la precedenza.",
+    "autoTranslateOff": "I visitador veden domà i lengu che te gh'het tradott ti.",
+    "autoTranslateTurnOff": "Smorza",
+    "autoTranslateTurnOn": "Impizza",
+    "autoTranslateStatePending": "programada",
+    "autoTranslatePendingAt": "La se impizza el {date} (dopo l'avis per email). Te la pòdet smorzà prima — insci nient del tò profil el vegnarà mandaa.",
+    "autoTranslatePendingNoNotice": "L'è minga anmò impizzada — te ricevet on'email almen 14 dì prima che la se impizza.",
+    "autoTranslateTurnOnNow": "Impizza adess"
   },
   "profile": {
     "poweredBy": "Faa con Linketto",
@@ -461,7 +472,11 @@
     "sellerTrader": "El venditor l'è on professionista",
     "videoPlay": "Fa partì el video",
     "bookingWhen": "Orari che te va ben",
-    "badgeCta": "Crea la tua pagina gratis"
+    "badgeCta": "Crea la tua pagina gratis",
+    "autoTranslated": "Tradussion automatica (AI) (original in {language})",
+    "showOriginal": "Mostra l'original",
+    "translateInBrowser": "Tradus in {language}",
+    "translating": "Sto tradusend…"
   },
   "footer": {
     "company": "On prodott Carbon Stealth VCC",
@@ -535,7 +550,13 @@
     "referralCredit": "bonus referral",
     "payoutsTitle": "Domand de pagament — in atesa ({count})",
     "payoutsEmpty": "Nissuna domanda in atesa.",
-    "payoutMarkPaid": "Segna come pagaa"
+    "payoutMarkPaid": "Segna come pagaa",
+    "autoNoticeTitle": "Tradussion automatica — avis ai creator",
+    "autoNoticeHint": "I profil de prima de la funzion se impizzen domà 14 dì dopo on'email al padron (trasparenza segond i art. 12–13 GDPR). El boton el manda i email e el programa l'impizzada domà per quei che hann ricevuu l'email.",
+    "autoNoticeStats": "Senza avis: {pending} · Programaa: {scheduled}",
+    "autoNoticeButton": "Avisa e programa (+14 dì)",
+    "autoNoticeDone": "Creator avisaa: {count}.",
+    "autoNoticeNoEmail": "L'email (Brevo) l'è minga configurada — i messagg poden minga partì."
   },
   "notFound": {
     "title": "Pagina minga trovada",

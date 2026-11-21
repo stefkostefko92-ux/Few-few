@@ -43,7 +43,7 @@
     "featureQrBody": "Een QR-code in jouw kleur en een vCard-blok dat je contact met één tik op elke telefoon opslaat.",
     "heroBadge": "Meertalige link in bio · Gehost in de EU",
     "trustEu": "Gehost in de Europese Unie",
-    "trustGdpr": "GDPR standaard",
+    "trustGdpr": "GDPR-conform",
     "trustCookies": "Geen cookies voor je bezoekers",
     "statsLangsLabel": "talen vanaf dag één",
     "statsBrandsLabel": "platforms met officiële iconen",
@@ -57,7 +57,7 @@
     "faq1q": "Wat is Linketto?",
     "faq1a": "Linketto is een link-in-bio-pagina: één link die al je links, producten en contacten bundelt. Het unieke: je pagina spreekt de taal van elke bezoeker — maak hem één keer en hij verschijnt in alle 24 officiële talen van de EU.",
     "faq2q": "Waarin verschilt Linketto van Linktree?",
-    "faq2a": "Vier dingen: je profiel heeft versies in alle talen en toont elke bezoeker automatisch diens eigen versie; het is gehost in de EU met GDPR standaard; de analytics zijn zonder cookies en zonder persoonsgegevens; en een eigen domein heb je al vanaf het Pro-abonnement (€4/mnd). Een uitgebreide vergelijking met bronnen en datum vind je op de pagina ‘Linketto vs Linktree’.",
+    "faq2a": "Vier dingen: je profiel heeft versies in alle talen en toont elke bezoeker automatisch diens eigen versie; het is gehost in de EU en GDPR-conform; de analytics zijn zonder cookies en zonder persoonsgegevens; en een eigen domein heb je al vanaf het Pro-abonnement (€4/mnd). Een uitgebreide vergelijking met bronnen en datum vind je op de pagina ‘Linketto vs Linktree’.",
     "faq3q": "Wat kost Linketto?",
     "faq4q": "Hoe werkt het meertalige profiel?",
     "faq4a": "Bezoekers zien je profiel automatisch in hun taal (via hun browserinstellingen) of kiezen er een op de pagina. Jij schrijft in je eigen taal en de ingebouwde AI-vertaling vult de rest met één klik aan — je handmatige vertalingen worden nooit overschreven.",
@@ -76,7 +76,7 @@
     "statsFeeLabel": "het aandeel van Linketto in je verkopen",
     "faq5q": "Kan ik producten verkopen via mijn pagina?",
     "trustPayments": "Betaling van pakketten via Revolut Bank UAB (een erkende bank in de EU)",
-    "featureEuBody": "Hosting in de EU, GDPR standaard. Betalingen (Revolut Bank UAB) en e-mails (Brevo) lopen via aanbieders uit de EU; de enige buiten de EU is AI (Google) — alleen wanneer je zelf ‘Vertalen met AI’ of ‘Bio genereren’ gebruikt. Meer details vind je in het privacybeleid.",
+    "featureEuBody": "Hosting in de EU. E-mails (Brevo) en betalingen (Revolut Bank UAB) lopen via aanbieders uit de EU; Revolut kan volgens zijn eigen beleid gegevens buiten de EER doorgeven. Buiten de EU sturen we alleen naar Google (Gemini, VS) — de tekst van je profiel voor ‘Vertalen met AI’, ‘Bio genereren’ en de automatische vertaling voor bezoekers (standaard aan, met één knop uit te schakelen); gegevens van bezoekers sturen we niet. Meer details vind je in het privacybeleid.",
     "faq3a": "Het gratis pakket is echt gratis — onbeperkt links en 2 taalversies. Pro kost €4/mnd (alle talen, eigen domein), Business €9/mnd (tot 5 profielen) en Founder is eenmalig €49 — Pro voor altijd, tot 5 profielen. Je betaalt in één keer voor 1, 3, 6 of 12 maanden — zonder doorlopend abonnement en zonder automatische afschrijvingen.",
     "faq5a": "Ja — je voegt een product toe met een prijs en je eigen betaallink (Revolut, PayPal, Gumroad en andere). De koper betaalt rechtstreeks aan jou; Linketto staat niet tussen jullie in en rekent geen commissie. Jij bent de verkoper en bent verantwoordelijk voor de bestelling, de belastingen en de rechten van de koper.",
     "resumeMotion": "Animatie hervatten",
@@ -443,7 +443,18 @@
     "linkEdit": "Bewerken",
     "linkOtherLanguages": "Titel in andere talen",
     "linkSaveChanges": "Wijzigingen opslaan",
-    "linkNoTitle": "(zonder titel)"
+    "linkNoTitle": "(zonder titel)",
+    "autoTranslateTitle": "Automatische vertaling voor bezoekers",
+    "autoTranslateStateOn": "aan",
+    "autoTranslateStateOff": "uit",
+    "autoTranslateOn": "Een bezoeker uit een land met een taal waarvoor je geen vertaling hebt, ziet je profiel automatisch vertaald (Google Gemini, VS), met het label 'Machinevertaling (AI)' en een link naar het origineel. Je eigen vertalingen gaan altijd voor.",
+    "autoTranslateOff": "Bezoekers zien alleen de talen die je zelf hebt vertaald.",
+    "autoTranslateTurnOff": "Uitschakelen",
+    "autoTranslateTurnOn": "Inschakelen",
+    "autoTranslateStatePending": "gepland",
+    "autoTranslatePendingAt": "Wordt ingeschakeld op {date} (na de melding per e-mail). Je kunt het vóór die datum uitschakelen — dan wordt er niets van je profiel verstuurd.",
+    "autoTranslatePendingNoNotice": "Nog niet ingeschakeld — je krijgt minstens 14 dagen vóór het inschakelen een e-mail.",
+    "autoTranslateTurnOnNow": "Nu inschakelen"
   },
   "profile": {
     "poweredBy": "Gemaakt met Linketto",
@@ -481,7 +492,11 @@
     "sellerTrader": "De verkoper is een handelaar",
     "videoPlay": "Video afspelen",
     "bookingWhen": "Voorkeurstijd",
-    "badgeCta": "Maak gratis je eigen pagina"
+    "badgeCta": "Maak gratis je eigen pagina",
+    "autoTranslated": "Machinevertaling (AI) (origineel: {language})",
+    "showOriginal": "Origineel tonen",
+    "translateInBrowser": "Vertalen naar het {language}",
+    "translating": "Bezig met vertalen…"
   },
   "footer": {
     "company": "Een product van Carbon Stealth VCC",
@@ -557,7 +572,13 @@
     "referralCredit": "referralbonus",
     "payoutsTitle": "Uitbetalingsverzoeken — in behandeling ({count})",
     "payoutsEmpty": "Geen openstaande verzoeken.",
-    "payoutMarkPaid": "Als betaald markeren"
+    "payoutMarkPaid": "Als betaald markeren",
+    "autoNoticeTitle": "Automatische vertaling — melding aan makers",
+    "autoNoticeHint": "Profielen van vóór de functie worden pas 14 dagen na een e-mail aan de eigenaar ingeschakeld (transparantie volgens art. 12–13 GDPR). De knop verstuurt de e-mails en plant het inschakelen alleen voor wie de e-mail heeft bereikt.",
+    "autoNoticeStats": "Zonder melding: {pending} · Gepland: {scheduled}",
+    "autoNoticeButton": "Melden en plannen (+14 dagen)",
+    "autoNoticeDone": "Makers op de hoogte gebracht: {count}.",
+    "autoNoticeNoEmail": "E-mail (Brevo) is niet ingesteld — de e-mails kunnen niet worden verstuurd."
   },
   "notFound": {
     "title": "Pagina niet gevonden",
