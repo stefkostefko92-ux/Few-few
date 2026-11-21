@@ -11481,7 +11481,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 258
+        "lessons": 259
       },
       "evolution": [
         {
@@ -11945,9 +11945,20 @@
           "date": "2026-11-21",
           "event": "v24.8 — учене",
           "detail": "Научи: Scrollspy върху котви трябва да пада към първия раздел, когато още няма такъв над линия…"
+        },
+        {
+          "version": "24.9.0",
+          "date": "2026-11-21",
+          "event": "v24.9 — учене",
+          "detail": "Научи: Tailwind класовете в cn() на примитива не се сливат (няма tailwind-merge), затова проти…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-21",
+          "type": "learning",
+          "summary": "Научи: „Tailwind класовете в cn() на примитива не се сливат (няма tailwind-merge), затова проти…\" · 1 в карантина"
+        },
         {
           "date": "2026-11-21",
           "type": "learning",
