@@ -2,9 +2,8 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import { normalizeSlug } from '@/lib/slug';
-import { Button } from '@/components/ui/Button';
 
-// „Запази си името“ в hero-то: пишеш името → проверка на живо дали е
+// „Запази си името“ в hero-то (облик: .lx-claim* в components/landing/lx.css): пишеш името → проверка на живо дали е
 // свободно → регистрацията го създава веднага (?handle=). Работи и без JS
 // (обикновена GET форма към /register).
 
@@ -67,7 +66,7 @@ export function ClaimHandle({
     <form
       action={`/${locale}/register`}
       method="get"
-      className="w-full max-w-xl"
+      className="lx-claim"
       onSubmit={(event) => {
         if (blocked || !slug) event.preventDefault();
       }}
@@ -75,11 +74,9 @@ export function ClaimHandle({
       <label htmlFor={inputId} className="sr-only">
         {labels.label}
       </label>
-      <div className="flex flex-col gap-2 rounded-card border border-line-input bg-surface p-1.5 shadow-e2 transition-[border-color,box-shadow] focus-within:border-accent focus-within:shadow-focus sm:flex-row sm:items-center">
-        <div className="flex min-w-0 flex-1 items-center px-3 py-2.5">
-          <span className="max-w-[55%] shrink-0 truncate text-body font-medium text-fg-muted sm:max-w-none">
-            {prefix}
-          </span>
+      <div className="lx-claim-box">
+        <div className="lx-claim-field">
+          <span className="lx-claim-prefix">{prefix}</span>
           <input
             id={inputId}
             name="handle"
@@ -91,23 +88,23 @@ export function ClaimHandle({
             spellCheck={false}
             maxLength={40}
             aria-describedby={`${inputId}-status`}
-            className="min-w-0 flex-1 bg-transparent text-[1rem] font-semibold text-fg placeholder:font-medium placeholder:text-fg-muted focus:outline-none"
+            className="lx-claim-input"
           />
         </div>
-        <Button type="submit" size="lg" disabled={blocked}>
+        <button
+          type="submit"
+          disabled={blocked}
+          className="lx-claim-submit"
+          data-magnet
+        >
           {labels.cta}
-        </Button>
+        </button>
       </div>
       <p
         id={`${inputId}-status`}
         aria-live="polite"
-        className={`mt-2 min-h-5 px-1 text-small font-medium ${
-          status === 'available'
-            ? 'text-success-text'
-            : blocked
-              ? 'text-danger-text'
-              : 'text-fg-muted'
-        }`}
+        className="lx-claim-status"
+        data-state={status === 'available' ? 'available' : blocked ? 'bad' : 'idle'}
       >
         {message && slug ? (
           <>
