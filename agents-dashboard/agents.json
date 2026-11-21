@@ -9391,7 +9391,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 323
+        "lessons": 324
       },
       "evolution": [
         {
@@ -9759,9 +9759,20 @@
           "date": "2026-11-21",
           "event": "v30.7 — учене",
           "detail": "Научи: В Revolut Merchant API GET /api/webhooks връща обект {webhooks:[Webhook-v2]} (required … (+1 още)"
+        },
+        {
+          "version": "30.8.0",
+          "date": "2026-11-21",
+          "event": "v30.8 — учене",
+          "detail": "Научи: При Revolut Merchant POST /api/webhooks връща 422 и при 11-ти уебхук (най-много 10), за…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-21",
+          "type": "learning",
+          "summary": "Научи: „При Revolut Merchant POST /api/webhooks връща 422 и при 11-ти уебхук (най-много 10), за…\""
+        },
         {
           "date": "2026-11-21",
           "type": "learning",
