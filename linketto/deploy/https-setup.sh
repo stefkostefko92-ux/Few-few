@@ -30,12 +30,31 @@ for c in nginx certbot curl; do command -v "$c" >/dev/null 2>&1 || stop "лип�
 P="$(sed -n 's/^HTTP_PORT=//p' "$ENVF" | tail -1 | tr -dc '0-9' || true)"; P="${P:-4350}"
 
 say "1) Общият блок за непознати домейни не бива да носи $DOMAIN"
+# НЕ `certbot rollback`: той връща ПОСЛЕДНАТА промяна на certbot, без значение за кой домейн —
+# на сървър с много сайтове може да върне чужд (21.11.2026 три пускания не махнаха piuma).
+# Тук се маха точно server { … } блокът, който носи домейна; всичко останало остава дума по дума.
 if [ -f "$REJ" ] && grep -q "$DOMAIN" "$REJ"; then
-  cp -a "$REJ" /root/00-reject-unknown.conf.after-certbot
-  certbot rollback --checkpoints 1
-  diff /root/00-reject-unknown.conf.after-certbot "$REJ" || true
-  grep -q "$DOMAIN" "$REJ" && stop "certbot rollback не махна $DOMAIN от $REJ — копието е в /root/00-reject-unknown.conf.after-certbot; прати ми файла."
-  echo "върнат (копие: /root/00-reject-unknown.conf.after-certbot)"
+  bak="/root/00-reject-unknown.conf.$(date +%Y%m%d-%H%M%S)"
+  cp -a "$REJ" "$bak"
+  tmp="$(mktemp)"
+  awk -v d="$DOMAIN" '
+    depth == 0 && /^[[:space:]]*server[[:space:]]*\{/ { buf = $0 "\n"; depth = 1; next }
+    depth > 0 {
+      buf = buf $0 "\n"
+      line = $0; o = gsub(/\{/, "{", line); c = gsub(/\}/, "}", line); depth += o - c
+      if (depth <= 0) { if (index(buf, d) == 0) printf "%s", buf; buf = ""; depth = 0 }
+      next
+    }
+    { print }
+    END { if (depth > 0) { printf "%s", buf; exit 3 } }
+  ' "$bak" > "$tmp" || { rm -f "$tmp"; stop "не разбрах структурата на $REJ — нищо не е пипнато; прати ми файла."; }
+  grep -q "$DOMAIN" "$tmp" && { rm -f "$tmp"; stop "блокът за $DOMAIN не се махна — нищо не е пипнато."; }
+  grep -q 'default_server' "$tmp" && grep -q 'ssl_reject_handshake on' "$tmp" \
+    || { rm -f "$tmp"; stop "общият блок липсва след филтъра — нищо не е пипнато."; }
+  cat "$tmp" > "$REJ"; rm -f "$tmp"
+  diff "$bak" "$REJ" || true
+  if ! nginx -t; then cat "$bak" > "$REJ"; stop "nginx -t падна — $REJ е върнат от $bak."; fi
+  echo "махнат блокът за $DOMAIN (копие: $bak)"
 else
   echo "чист"
 fi
