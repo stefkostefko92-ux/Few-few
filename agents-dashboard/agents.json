@@ -617,28 +617,17 @@
           "detail": "Научи: TDM изключението не спасява достъп в нарушение на условията на платформа — Дир. 2019/79… (+57 още)"
         },
         {
-          "version": "42.4.0",
-          "date": "2026-11-19",
-          "event": "v42.4 — учене",
-          "detail": "Научи: ЗЗД чл. 16, ал. 3 — при договор с продължително изпълнение изменените общи условия важа… (+39 още)"
-        },
-        {
           "version": "42.7.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v42.7 — учене",
-          "detail": "Научи: Anthropic („How Claude marks AI-generated content“) дава текстов воден знак за Opus 5/5… (+2 още)"
+          "detail": "Научи: Anthropic („How Claude marks AI-generated content“) дава текстов воден знак за Opus 5/5… (+42 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
-          "summary": "Научи: „Anthropic („How Claude marks AI-generated content“) дава текстов воден знак за Opus 5/5…\" (+2 още) · 1 в карантина"
-        },
-        {
-          "date": "2026-11-19",
-          "type": "learning",
-          "summary": "Научи: „ЗЗД чл. 16, ал. 3 — при договор с продължително изпълнение изменените общи условия важа…\" (+39 още) · 9 в карантина"
+          "summary": "Научи: „Anthropic („How Claude marks AI-generated content“) дава текстов воден знак за Opus 5/5…\" (+42 още) · 10 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -1212,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 721
+        "lessons": 720
       },
       "evolution": [
         {
@@ -2044,66 +2033,17 @@
           "detail": "Научи: sharp 0.35 с limitInputPixels не пази паметта при прогресивен JPEG (208 Mpx, 4:4:4, фай… (+1 още)"
         },
         {
-          "version": "65.4.0",
-          "date": "2026-11-19",
-          "event": "v65.4 — учене",
-          "detail": "Научи: Revolut Merchant API до версия 2026-09-22 връща 400 за всеки отказан refund (и при Revo… (+93 още)"
-        },
-        {
-          "version": "65.6.0",
-          "date": "2026-11-19",
-          "event": "v65.6 — учене",
-          "detail": "Научи: Изходен филтър, който маха разделителите (не-буквено-цифрови знаци) от прозорец с фикси… (+1 още)"
-        },
-        {
-          "version": "65.8.0",
-          "date": "2026-11-19",
-          "event": "v65.8 — учене",
-          "detail": "Научи: @anthropic-ai/sdk 1.5.0 messages.parse с zodOutputFormat разчита всеки текстов блок нез… (+1 още)"
-        },
-        {
-          "version": "66.0.0",
-          "date": "2026-11-19",
-          "event": "v66.0 — учене",
-          "detail": "Научи: В Node http събитието 'close' на ServerResponse се излъчва само веднъж; слушател, регис… (+1 още)"
-        },
-        {
           "version": "66.1.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v66.1 — учене",
-          "detail": "Научи: Пазач, който съди Bash само по думите на командата, пропуска копиране на папка в родите…"
+          "detail": "Научи: Пазач, който съди Bash само по думите на командата, пропуска копиране на папка в родите… (+100 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-21",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „guard-readonly хуукът блокира Bash команди, които пишат в scratchpad чрез shell променл…\""
-        },
-        {
-          "date": "2026-11-19",
           "type": "learning",
-          "summary": "Научи: „Пазач, който съди Bash само по думите на командата, пропуска копиране на папка в родите…\""
-        },
-        {
-          "date": "2026-11-19",
-          "type": "learning",
-          "summary": "Научи: „В Node http събитието 'close' на ServerResponse се излъчва само веднъж; слушател, регис…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-19",
-          "type": "learning",
-          "summary": "Научи: „@anthropic-ai/sdk 1.5.0 messages.parse с zodOutputFormat разчита всеки текстов блок нез…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-19",
-          "type": "learning",
-          "summary": "Научи: „Изходен филтър, който маха разделителите (не-буквено-цифрови знаци) от прозорец с фикси…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-19",
-          "type": "learning",
-          "summary": "Научи: „Revolut Merchant API до версия 2026-09-22 връща 400 за всеки отказан refund (и при Revo…\" (+93 още) · 14 в карантина"
+          "summary": "Научи: „Пазач, който съди Bash само по думите на командата, пропуска копиране на папка в родите…\" (+100 още) · 15 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -2989,39 +2929,17 @@
           "detail": "Научи: В rilievi PDF генераторите на pdfkit (schede, argano, interventi, cartelli) повтарят A4… (+1 още)"
         },
         {
-          "version": "22.4.0",
-          "date": "2026-11-19",
-          "event": "v22.4 — учене",
-          "detail": "Научи: В rilievi e2e `fail` от tests/e2e/helpers.mjs не хвърля, а трупа в `failures`, затова п… (+9 още)"
-        },
-        {
-          "version": "22.6.0",
-          "date": "2026-11-21",
-          "event": "v22.6 — учене",
-          "detail": "Научи: Евристика „тестът назовава копието“ с String.includes на име на файл е безсмислена за к… (+1 още)"
-        },
-        {
           "version": "22.7.0",
           "date": "2026-11-21",
           "event": "v22.7 — учене",
-          "detail": "Научи: „Първата папка под продукта“ е лош контекст за паритет на копия в монорепо с apps/* и p…"
+          "detail": "Научи: „Първата папка под продукта“ е лош контекст за паритет на копия в монорепо с apps/* и p… (+12 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-21",
           "type": "learning",
-          "summary": "Научи: „„Първата папка под продукта“ е лош контекст за паритет на копия в монорепо с apps/* и p…\""
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „Евристика „тестът назовава копието“ с String.includes на име на файл е безсмислена за к…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-19",
-          "type": "learning",
-          "summary": "Научи: „В rilievi e2e `fail` от tests/e2e/helpers.mjs не хвърля, а трупа в `failures`, затова п…\" (+9 още)"
+          "summary": "Научи: „„Първата папка под продукта“ е лош контекст за паритет на копия в монорепо с apps/* и p…\" (+12 още)"
         },
         {
           "date": "2026-11-04",
@@ -4403,14 +4321,14 @@
         },
         {
           "version": "23.4.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v23.4 — учене",
           "detail": "Научи: WebFetch връща само визуалния текст на страницата, без head и JSON-LD; canonical, hrefl… (+3 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
           "summary": "Научи: „WebFetch връща само визуалния текст на страницата, без head и JSON-LD; canonical, hrefl…\" (+3 още) · 2 в карантина"
         },
@@ -5017,14 +4935,14 @@
         },
         {
           "version": "20.9.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v20.9 — учене",
           "detail": "Научи: Фактурист (Express/EJS, production): `.bar` в app.css сменя броя редове при зареждане н… (+4 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
           "summary": "Научи: „Фактурист (Express/EJS, production): `.bar` в app.css сменя броя редове при зареждане н…\" (+4 още)"
         },
@@ -5641,28 +5559,17 @@
           "detail": "Научи: В linketto идентификацията на дружеството живее само в messages/*.json (legal.privacyBo… (+34 още)"
         },
         {
-          "version": "29.2.0",
-          "date": "2026-11-19",
-          "event": "v29.2 — учене",
-          "detail": "Научи: В linketto it.json админ секцията свършва на payoutMarkPaid; ключовете за поръчки (erro… (+11 още)"
-        },
-        {
           "version": "29.6.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v29.6 — учене",
-          "detail": "Научи: При AI Act (CELEX 32024R1689) cellar UUID е dc8116a1-3fe6-11ef-865a-01aa75ed71a1 и номе… (+3 още)"
+          "detail": "Научи: При AI Act (CELEX 32024R1689) cellar UUID е dc8116a1-3fe6-11ef-865a-01aa75ed71a1 и номе… (+15 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
-          "summary": "Научи: „При AI Act (CELEX 32024R1689) cellar UUID е dc8116a1-3fe6-11ef-865a-01aa75ed71a1 и номе…\" (+3 още)"
-        },
-        {
-          "date": "2026-11-19",
-          "type": "learning",
-          "summary": "Научи: „В linketto it.json админ секцията свършва на payoutMarkPaid; ключовете за поръчки (erro…\" (+11 още) · 2 в карантина"
+          "summary": "Научи: „При AI Act (CELEX 32024R1689) cellar UUID е dc8116a1-3fe6-11ef-865a-01aa75ed71a1 и номе…\" (+15 още) · 2 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -6936,7 +6843,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 297
+        "lessons": 296
       },
       "evolution": [
         {
@@ -7349,14 +7256,14 @@
         },
         {
           "version": "26.7.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v26.7 — учене",
           "detail": "Научи: Директивата `http2 on;` в nginx съществува от 1.25.1; nginx 1.24 (Ubuntu 24.04 apt) дав… (+21 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
           "summary": "Научи: „Директивата `http2 on;` в nginx съществува от 1.25.1; nginx 1.24 (Ubuntu 24.04 apt) дав…\" (+21 още) · 4 в карантина"
         },
@@ -9019,14 +8926,14 @@
         },
         {
           "version": "21.2.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v21.2 — учене",
           "detail": "Научи: YouTube закачането на коментар иска включени advanced features (до 24 ч), води се през … (+1 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
           "summary": "Научи: „YouTube закачането на коментар иска включени advanced features (до 24 ч), води се през …\" (+1 още)"
         },
@@ -9788,14 +9695,14 @@
         },
         {
           "version": "30.5.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v30.5 — учене",
           "detail": "Научи: Revolut Business API: OAuth AccessToken (JWT client assertion, access token 40 мин) е D… (+48 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
           "summary": "Научи: „Revolut Business API: OAuth AccessToken (JWT client assertion, access token 40 мин) е D…\" (+48 още) · 5 в карантина"
         },
@@ -10541,14 +10448,14 @@
         },
         {
           "version": "21.0.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v21.0 — учене",
           "detail": "Научи: Safari/iOS задава PointerEvent width/height на touch като 2*radiusX и 2*radiusY (не 1×)… (+1 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
           "summary": "Научи: „Safari/iOS задава PointerEvent width/height на touch като 2*radiusX и 2*radiusY (не 1×)…\" (+1 още) · 1 в карантина"
         },
@@ -12016,28 +11923,17 @@
           "detail": "Научи: Nexus Dominion desktop nav-profile overflow (дълго име+титла) — правилният фикс е таван… (+14 още)"
         },
         {
-          "version": "23.9.0",
-          "date": "2026-11-19",
-          "event": "v23.9 — учене",
-          "detail": "Научи: Браузърният placeholder е #757575 — 4,25:1 върху #f4f6f8 и 3,84:1 върху тъмно #0c1929, … (+11 още)"
-        },
-        {
           "version": "24.1.0",
           "date": "2026-11-21",
           "event": "v24.1 — учене",
-          "detail": "Научи: Темова обвивка за непренесени екрани е вложен `data-theme=\"light\"` само ако :root блокъ… (+1 още)"
+          "detail": "Научи: Браузърният placeholder е #757575 — 4,25:1 върху #f4f6f8 и 3,84:1 върху тъмно #0c1929, … (+13 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-21",
           "type": "learning",
-          "summary": "Научи: „Темова обвивка за непренесени екрани е вложен `data-theme=\"light\"` само ако :root блокъ…\" (+1 още) · 1 в карантина"
-        },
-        {
-          "date": "2026-11-19",
-          "type": "learning",
-          "summary": "Научи: „Браузърният placeholder е #757575 — 4,25:1 върху #f4f6f8 и 3,84:1 върху тъмно #0c1929, …\" (+11 още) · 10 в карантина"
+          "summary": "Научи: „Браузърният placeholder е #757575 — 4,25:1 върху #f4f6f8 и 3,84:1 върху тъмно #0c1929, …\" (+13 още) · 11 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -12898,14 +12794,14 @@
         },
         {
           "version": "21.4.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v21.4 — учене",
           "detail": "Научи: За регистрация с `matches:<all_urls>` и `excludeMatches`, шаблонът `*://*.a.com/*` изкл…"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
           "summary": "Научи: „За регистрация с `matches:<all_urls>` и `excludeMatches`, шаблонът `*://*.a.com/*` изкл…\""
         },
@@ -13644,14 +13540,14 @@
         },
         {
           "version": "21.9.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v21.9 — учене",
           "detail": "Научи: Prisma-мок тестове с vi.resetAllMocks нулират и mockResolvedValue на модулни мокове (dn… (+7 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
           "summary": "Научи: „Prisma-мок тестове с vi.resetAllMocks нулират и mockResolvedValue на модулни мокове (dn…\" (+7 още) · 3 в карантина"
         },
@@ -14481,127 +14377,17 @@
           "detail": "Научи: Рутерът в teams.mjs брои ключовете на екипа като обединение от team.keys и ключовете на… (+1 още)"
         },
         {
-          "version": "32.5.0",
-          "date": "2026-11-19",
-          "event": "v32.5 — учене",
-          "detail": "Научи: Claude API (first-party) няма ЕС местоживеене: inference_geo приема само \\\"us\\\" или \\\"g… (+28 още)"
-        },
-        {
-          "version": "32.9.0",
-          "date": "2026-11-19",
-          "event": "v32.9 — учене",
-          "detail": "Научи: Таблицата за местоживеене на данни на Google Cloud отбелязва Claude Opus 5.5 и Claude O… (+3 още)"
-        },
-        {
-          "version": "33.3.0",
-          "date": "2026-11-19",
-          "event": "v33.3 — учене",
-          "detail": "Научи: Страниците на Google Cloud за claude-opus-5-5 и claude-sonnet-5-5 ги дават GA в \"eu (Eu… (+3 още)"
-        },
-        {
-          "version": "33.5.0",
-          "date": "2026-11-19",
-          "event": "v33.5 — учене",
-          "detail": "Научи: Списъкът с локации на Vertex AI generative AI има 10 европейски региона — europe-west1 … (+1 още)"
-        },
-        {
-          "version": "33.8.0",
-          "date": "2026-11-19",
-          "event": "v33.8 — учене",
-          "detail": "Научи: В @anthropic-ai/sdk 1.5.0 messages.parse със zodOutputFormat разчита текстовия блок без… (+2 още)"
-        },
-        {
-          "version": "33.9.0",
-          "date": "2026-11-19",
-          "event": "v33.9 — учене",
-          "detail": "Научи: При глобален JS RegExp с lastIndex > 0 lookbehind вижда знаците преди lastIndex в целия…"
-        },
-        {
-          "version": "34.0.0",
-          "date": "2026-11-19",
-          "event": "v34.0 — учене",
-          "detail": "Научи: В Node 22 ServerResponse вдига вътрешния флаг _closed (getter res.closed) синхронно точ…"
-        },
-        {
-          "version": "34.3.0",
-          "date": "2026-11-19",
-          "event": "v34.3 — учене",
-          "detail": "Научи: PreModelSwitch получава from_model, to_model (каноничен ID) и requested_model (псевдони… (+2 още)"
-        },
-        {
-          "version": "34.7.0",
-          "date": "2026-11-21",
-          "event": "v34.7 — учене",
-          "detail": "Научи: Първостепенният Claude API няма обработка в ЕС — inference_geo приема само \"us\" и \"glob… (+3 още)"
-        },
-        {
-          "version": "34.8.0",
-          "date": "2026-11-21",
-          "event": "v34.8 — учене",
-          "detail": "Научи: node --test с път до папка (node --test tools/agents/evals/) не пуска тестовете в нея и…"
-        },
-        {
           "version": "34.9.0",
           "date": "2026-11-21",
           "event": "v34.9 — учене",
-          "detail": "Научи: Отказ при structured output (stop_reason refusal) идва с 200 и се таксува, а messages.p…"
+          "detail": "Научи: Отказ при structured output (stop_reason refusal) идва с 200 и се таксува, а messages.p… (+52 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-21",
           "type": "learning",
-          "summary": "Научи: „Отказ при structured output (stop_reason refusal) идва с 200 и се таксува, а messages.p…\""
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „node --test с път до папка (node --test tools/agents/evals/) не пуска тестовете в нея и…\""
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „Първостепенният Claude API няма обработка в ЕС — inference_geo приема само \"us\" и \"glob…\" (+3 още)"
-        },
-        {
-          "date": "2026-11-19",
-          "type": "learning",
-          "summary": "Научи: „PreModelSwitch получава from_model, to_model (каноничен ID) и requested_model (псевдони…\" (+2 още)"
-        },
-        {
-          "date": "2026-11-19",
-          "type": "learning",
-          "summary": "Научи: „В Node 22 ServerResponse вдига вътрешния флаг _closed (getter res.closed) синхронно точ…\" · 1 в карантина"
-        },
-        {
-          "date": "2026-11-19",
-          "type": "learning",
-          "summary": "Научи: „При глобален JS RegExp с lastIndex > 0 lookbehind вижда знаците преди lastIndex в целия…\" · 1 в карантина"
-        },
-        {
-          "date": "2026-11-19",
-          "type": "learning",
-          "summary": "Научи: „В @anthropic-ai/sdk 1.5.0 messages.parse със zodOutputFormat разчита текстовия блок без…\" (+2 още)"
-        },
-        {
-          "date": "2026-11-19",
-          "type": "learning",
-          "summary": "Научи: „Списъкът с локации на Vertex AI generative AI има 10 европейски региона — europe-west1 …\" (+1 още)"
-        },
-        {
-          "date": "2026-11-19",
-          "type": "learning",
-          "summary": "Научи: „Страниците на Google Cloud за claude-opus-5-5 и claude-sonnet-5-5 ги дават GA в \"eu (Eu…\" (+3 още)"
-        },
-        {
-          "date": "2026-11-19",
-          "type": "learning",
-          "summary": "Научи: „Таблицата за местоживеене на данни на Google Cloud отбелязва Claude Opus 5.5 и Claude O…\" (+3 още)"
-        },
-        {
-          "date": "2026-11-19",
-          "type": "learning",
-          "summary": "Научи: „Claude API (first-party) няма ЕС местоживеене: inference_geo приема само \\\"us\\\" или \\\"g…\" (+28 още) · 3 в карантина"
+          "summary": "Научи: „Отказ при structured output (stop_reason refusal) идва с 200 и се таксува, а messages.p…\" (+52 още) · 5 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -14828,14 +14614,14 @@
         },
         {
           "version": "24.6.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v24.6 — учене",
           "detail": "Научи: Декларацията на производителя на СУПТО е по образец Прил. № 30 (чл. 52в, ал. 1 Н-18), и… (+4 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
           "summary": "Научи: „Декларацията на производителя на СУПТО е по образец Прил. № 30 (чл. 52в, ал. 1 Н-18), и…\" (+4 още)"
         },
@@ -15107,14 +14893,14 @@
         },
         {
           "version": "23.3.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v23.3 — учене",
           "detail": "Научи: Discord privileged intents — праг 10 000 уникални потребители (не сървъри); при достига… (+4 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
           "summary": "Научи: „Discord privileged intents — праг 10 000 уникални потребители (не сървъри); при достига…\" (+4 още) · 1 в карантина"
         },
@@ -15358,14 +15144,14 @@
         },
         {
           "version": "21.8.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v21.8 — учене",
           "detail": "Научи: Блоков скалар `run: |` в YAML се чупи, ако многоредов низ (напр. `gh pr create --body \"… (+2 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
           "summary": "Научи: „Блоков скалар `run: |` в YAML се чупи, ако многоредов низ (напр. `gh pr create --body \"…\" (+2 още)"
         },
@@ -15507,7 +15293,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 229
+        "lessons": 227
       },
       "evolution": [
         {
@@ -15601,50 +15387,17 @@
           "detail": "Научи: Нови чисти решения за предупреждение (console.warn) се изразяват като функция, която вр… (+9 още)"
         },
         {
-          "version": "22.1.0",
-          "date": "2026-11-19",
-          "event": "v22.1 — учене",
-          "detail": "Научи: Шестцифрен TOTP се сверява с 8-цифрените вектори от RFC 6238 приложение B чрез последни… (+5 още)"
-        },
-        {
-          "version": "22.5.0",
-          "date": "2026-11-21",
-          "event": "v22.5 — учене",
-          "detail": "Научи: node:test mock.timers.enable({apis:[\"Date\"]}) хвърля \"MockTimers is already enabled\" пр… (+3 още)"
-        },
-        {
-          "version": "22.6.0",
-          "date": "2026-11-21",
-          "event": "v22.6 — учене",
-          "detail": "Научи: node:test с { todo } прави пакета зелен (exit 0, fail 0), но TAP редовете \"not ok # TOD…"
-        },
-        {
           "version": "22.9.0",
           "date": "2026-11-21",
           "event": "v22.9 — учене",
-          "detail": "Научи: Покритие на тестове, които са обикновени скриптове (не node:test), се мери без c8 — `NO… (+2 още)"
+          "detail": "Научи: Покритие на тестове, които са обикновени скриптове (не node:test), се мери без c8 — `NO… (+13 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-21",
           "type": "learning",
-          "summary": "Научи: „Покритие на тестове, които са обикновени скриптове (не node:test), се мери без c8 — `NO…\" (+2 още) · 2 в карантина"
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „node:test с { todo } прави пакета зелен (exit 0, fail 0), но TAP редовете \"not ok # TOD…\""
-        },
-        {
-          "date": "2026-11-21",
-          "type": "learning",
-          "summary": "Научи: „node:test mock.timers.enable({apis:[\"Date\"]}) хвърля \"MockTimers is already enabled\" пр…\" (+3 още)"
-        },
-        {
-          "date": "2026-11-19",
-          "type": "learning",
-          "summary": "Научи: „Шестцифрен TOTP се сверява с 8-цифрените вектори от RFC 6238 приложение B чрез последни…\" (+5 още)"
+          "summary": "Научи: „Покритие на тестове, които са обикновени скриптове (не node:test), се мери без c8 — `NO…\" (+13 още) · 2 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -15869,14 +15622,14 @@
         },
         {
           "version": "22.1.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v22.1 — учене",
           "detail": "Научи: Пътят до потребителски надпис се сверява в app.json чрез flatten скрипт по префикс; дъл… (+4 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
           "summary": "Научи: „Пътят до потребителски надпис се сверява в app.json чрез flatten скрипт по префикс; дъл…\" (+4 още)"
         },
@@ -16430,28 +16183,17 @@
           "detail": "Научи: guard-exfil DATA_FILE_SEND блокира curl с --data поле на име password/token дори към lo… (+2 още)"
         },
         {
-          "version": "29.5.0",
-          "date": "2026-11-19",
-          "event": "v29.5 — учене",
-          "detail": "Научи: Пазач на инвариант, сложен само в един запис (updateCompanyProfile), не пази същото пол… (+22 още)"
-        },
-        {
           "version": "30.1.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v30.1 — учене",
-          "detail": "Научи: Без managed settings, managed-mcp.json или Team/Enterprise /login мод на потребителя мо… (+5 още)"
+          "detail": "Научи: Без managed settings, managed-mcp.json или Team/Enterprise /login мод на потребителя мо… (+28 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
-          "summary": "Научи: „Без managed settings, managed-mcp.json или Team/Enterprise /login мод на потребителя мо…\" (+5 още)"
-        },
-        {
-          "date": "2026-11-19",
-          "type": "learning",
-          "summary": "Научи: „Пазач на инвариант, сложен само в един запис (updateCompanyProfile), не пази същото пол…\" (+22 още) · 3 в карантина"
+          "summary": "Научи: „Без managed settings, managed-mcp.json или Team/Enterprise /login мод на потребителя мо…\" (+28 още) · 3 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -16758,14 +16500,14 @@
         },
         {
           "version": "22.2.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v22.2 — учене",
           "detail": "Научи: Процес — в rilievi името `comunicazioni` в locals на шаблона е запазено за съобщенията … (+26 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
           "summary": "Научи: „Процес — в rilievi името `comunicazioni` в locals на шаблона е запазено за съобщенията …\" (+26 още) · 1 в карантина"
         },
@@ -16837,14 +16579,14 @@
         },
         {
           "version": "20.7.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v20.7 — учене",
           "detail": "Научи: Leitz за свредла за дибли Z2/V2 (HW) дава n 3000–9000; примерът в диаграмата за ламинир… (+205 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
           "summary": "Научи: „Leitz за свредла за дибли Z2/V2 (HW) дава n 3000–9000; примерът в диаграмата за ламинир…\" (+205 още) · 71 в карантина"
         },
@@ -16905,14 +16647,14 @@
         },
         {
           "version": "22.3.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v22.3 — учене",
           "detail": "Научи: Офлайн реплика на стаята за избор на e2e seed се прави така - init с `SeededRng(seed)`,… (+221 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
           "summary": "Научи: „Офлайн реплика на стаята за избор на e2e seed се прави така - init с `SeededRng(seed)`,…\" (+221 още) · 78 в карантина"
         },
@@ -16971,14 +16713,14 @@
         },
         {
           "version": "21.6.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v21.6 — учене",
           "detail": "Научи: ЗДДС чл. 124 — ал. 2 издадените документи в дневника за продажбите за периода на издава… (+214 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
           "summary": "Научи: „ЗДДС чл. 124 — ал. 2 издадените документи в дневника за продажбите за периода на издава…\" (+214 още) · 77 в карантина"
         },
@@ -17040,14 +16782,14 @@
         },
         {
           "version": "20.8.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v20.8 — учене",
           "detail": "Научи: Nmap шаблоните за време -T0 (paranoid) сканира последователно с 5 минути между пробите,… (+206 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
           "summary": "Научи: „Nmap шаблоните за време -T0 (paranoid) сканира последователно с 5 минути между пробите,…\" (+206 още) · 12 в карантина"
         },
@@ -17111,14 +16853,14 @@
         },
         {
           "version": "23.4.0",
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "event": "v23.4 — учене",
           "detail": "Научи: При първо монтиране на нов празен именуван Docker том върху папка, която съществува в о… (+232 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-19",
+          "date": "2026-11-21",
           "type": "learning",
           "summary": "Научи: „При първо монтиране на нов празен именуван Docker том върху папка, която съществува в о…\" (+232 още) · 21 в карантина"
         },
