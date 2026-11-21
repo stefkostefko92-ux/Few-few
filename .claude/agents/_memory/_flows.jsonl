@@ -851,3 +851,5 @@
 {"t":"handoff","ts":"2026-11-21T09:52:17.695Z","id":"r14dae130","from":"izpitatelya","to":"kodadjiyata","status":"има бележки","run":"3f16fb58"}
 {"t":"handoff","ts":"2026-11-21T09:53:17.408Z","id":"r14dae130","from":"ai-djiyata","to":"човек","status":"има бележки","run":"aa4c6c5b"}
 {"t":"handoff","ts":"2026-11-21T09:54:26.213Z","id":"r14dae130","from":"kodadjiyata","to":"kachestveniyat","status":"наред","run":"6a44d7cf"}
+{"t":"start","ts":"2026-11-21T13:46:46.125Z","id":"rd0e3b071","flow":"авто","lead":"ai-djiyata","auto":true}
+{"t":"handoff","ts":"2026-11-21T13:46:46.125Z","id":"rd0e3b071","from":"ai-djiyata","to":"човек","status":"има бележки","run":"46b67f1e"}
