@@ -64,11 +64,12 @@ test('смяна на имейл от админ: чужд акаунт не м�
   assert.equal(adminEmailChange({ adminId: 'a', targetId: 'a', current: 'owner@example.com', next: 'second@example.com', raw: env }), 'changed');
 });
 
-test('работещ админ = адрес от списъка + потвърден имейл + 2FA (само той е защитен от други админи)', () => {
-  // Разбивача F1: акаунт, „заел“ админ адрес без потвърждение/2FA, трябва да може да се изтрие.
+test('защитен админ = адрес от списъка + потвърден имейл (със или без 2FA)', () => {
+  // Разбивача F1: непотвърден акаунт, „заел“ админ адрес, може да се изтрие.
+  // Разбивача N3: потвърден админ, който още записва 2FA, НЕ може да бъде поет от друг админ.
   const at = new Date();
   assert.equal(isWorkingAdmin({ email: 'owner@example.com', emailVerifiedAt: at, totpEnabledAt: at }, env), true);
   assert.equal(isWorkingAdmin({ email: 'owner@example.com', emailVerifiedAt: null, totpEnabledAt: at }, env), false);
-  assert.equal(isWorkingAdmin({ email: 'owner@example.com', emailVerifiedAt: at, totpEnabledAt: null }, env), false);
+  assert.equal(isWorkingAdmin({ email: 'owner@example.com', emailVerifiedAt: at, totpEnabledAt: null }, env), true);
   assert.equal(isWorkingAdmin({ email: 'x@y.eu', emailVerifiedAt: at, totpEnabledAt: at }, env), false);
 });

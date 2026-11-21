@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { hashPassword } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { requireAdmin, requireStepUp } from '@/lib/admin';
-import { adminEmailChange, isWorkingAdmin } from '@/lib/admin-list';
+import { adminEmailChange, isAdminEmail, isWorkingAdmin } from '@/lib/admin-list';
 import { recordSecurityEvent } from '@/lib/security-events';
 import { notifyAdmins } from '@/lib/admin-alert';
 import { notifyUserSecurity, sendVerificationEmail } from '@/lib/account-flows';
@@ -333,6 +333,8 @@ export async function adminSetPasswordAction(
     redirect(`/${uiLocale}/admin?error=password`);
   }
   const target = await guardTarget(uiLocale, stepAdmin.id, parsed.data.userId);
+  // Разбивача N3: чужд акаунт с админ адрес (дори непотвърден) — никога нова парола от друг админ.
+  if (target.id !== stepAdmin.id && isAdminEmail(target.email)) redirect(`/${uiLocale}/admin?error=admin-target`);
   const passwordHash = await hashPassword(parsed.data.password);
   await prisma.user.update({
     where: { id: parsed.data.userId },

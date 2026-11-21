@@ -87,7 +87,8 @@ export async function settingsOverview(): Promise<SettingStatus[]> {
     const row = byKey.get(key);
     const secret = isSecretSetting(key);
     const env = process.env[SETTING_ENV[key]]?.trim() || null;
-    const fromRow = row ? (row.sealed ? openSealed(row.sealed, sealContext.setting(key)) : row.value) : null;
+    // Като load(): таен ключ само от шифрования ред; нешифрован таен ред = „не се чете“ (Разбивача F5).
+    const fromRow = row ? (row.sealed ? openSealed(row.sealed, sealContext.setting(key)) : secret ? null : row.value) : null;
     const meta = { updatedAt: row?.updatedAt ?? null, updatedBy: row?.updatedBy ? (emailOf.get(row.updatedBy) ?? null) : null };
     if (fromRow) {
       return { key, source: 'admin', display: secret ? (row?.last4 ? `••••${row.last4}` : mask(fromRow)) : fromRow, ...meta };

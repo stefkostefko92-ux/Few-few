@@ -181,6 +181,14 @@ export async function loginAction(formData: FormData): Promise<void> {
         ['50+ неуспешни опита за вход в един акаунт за 24 часа.'],
       );
     }
+    // Разбивача N2: админ адресите — отделно правило, извън общия бюджет (ключовете
+    // са само от ADMIN_EMAILS, нападателят не може да ги върти → най-много 1/ч на админ).
+    if (isAdminEmail(email)) {
+      await alertAtThreshold({ name: 'login-wave-admin', key: subject ?? 'admin', threshold: 5 }, await countRecent('auth.login.failed', 10, subject ? { subject } : {}), 'Неуспешни входове в АДМИН акаунт', [
+        `Акаунт: ${email}`,
+        '5+ неуспешни опита за вход за 10 минути.',
+      ]);
+    }
     await alertAtThreshold({ name: 'login-spray', threshold: 200, outsider: true }, await countRecent('auth.login.failed', 10), 'Масови неуспешни входове', [
       '200+ неуспешни опита за вход за 10 минути в целия сайт (възможно „пръскане“ на пароли по много акаунти).',
     ]);

@@ -53,10 +53,14 @@ export function adminEmailChange(input: {
   return 'changed';
 }
 
-/** Работещ админ: адрес от списъка + потвърден имейл + включена 2FA (защитен от другите админи). */
+/**
+ * Защитен от другите админи: адрес от списъка + потвърден имейл (със или без
+ * 2FA — новодобавен админ, който още записва 2FA, не бива да може да бъде поет;
+ * Разбивача N3). Само непотвърден акаунт, „заел“ админ адрес, може да се изтрие.
+ */
 export function isWorkingAdmin(
-  user: { email: string; emailVerifiedAt: Date | null; totpEnabledAt: Date | null },
+  user: { email: string; emailVerifiedAt: Date | null; totpEnabledAt?: Date | null },
   raw?: string,
 ): boolean {
-  return isAdminEmail(user.email, raw) && user.emailVerifiedAt !== null && user.totpEnabledAt !== null;
+  return isAdminEmail(user.email, raw) && user.emailVerifiedAt !== null;
 }

@@ -8,7 +8,7 @@
 // - Общ таван на правило: въртене на ключове (различни имейли/IP) не изчерпва
 //   квотата на Brevo (безплатният план е 300 писма/ден за ВСИЧКИ писма).
 
-import { rateLimit } from '@/lib/limiter';
+import { isRateLimited, rateLimit } from '@/lib/limiter';
 
 export const ALERT_RULE_CAP_PER_HOUR = 6;
 // Общ бюджет за правилата, които ВЪНШЕН човек може да задейства (неуспешни
@@ -19,6 +19,11 @@ export const OUTSIDER_ALERTS_PER_HOUR = 2;
 export const OUTSIDER_ALERTS_PER_DAY = 12;
 const HOUR_MS = 60 * 60_000;
 const DAY_MS = 24 * HOUR_MS;
+
+/** Изчерпан ли е денонощният бюджет на външните (за бележка в последната аларма). */
+export function outsiderBudgetExhausted(now: number = Date.now()): boolean {
+  return isRateLimited('alert:outsider:day:global', OUTSIDER_ALERTS_PER_DAY, DAY_MS, now);
+}
 
 export function alertDue(input: {
   count: number;

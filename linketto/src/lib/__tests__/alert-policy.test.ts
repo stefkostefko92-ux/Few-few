@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { alertDue, ALERT_RULE_CAP_PER_HOUR, OUTSIDER_ALERTS_PER_DAY, OUTSIDER_ALERTS_PER_HOUR } from '../alert-policy';
+import { alertDue, ALERT_RULE_CAP_PER_HOUR, OUTSIDER_ALERTS_PER_DAY, OUTSIDER_ALERTS_PER_HOUR, outsiderBudgetExhausted } from '../alert-policy';
 import { isCriticalKey } from '../limiter';
 
 // Стражата B1 + Разбивача F4: аларма при count >= праг (не ===), веднъж на
@@ -70,4 +70,21 @@ test('админ алармите (вход, 2FA, step-up) са извън бю�
   for (let i = 0; i < 50; i += 1) alertDue({ count: 9, threshold: 1, rule: `o${i}`, key: 'k', now: t0 + i, outsider: true });
   // …а алармата за грешен 2FA код в админ акаунт пак тръгва.
   assert.equal(alertDue({ count: 1, threshold: 1, rule: 'admin-mfa-failed-t', key: 'admin1', now: t0 + 100 }), true);
+});
+
+test('последната аларма от бюджета на външните е разпознаваема (бележка „изчерпан“)', () => {
+  const t0 = Date.UTC(2026, 10, 27, 0);
+  assert.equal(outsiderBudgetExhausted(t0), false);
+  let sent = 0;
+  let last = t0;
+  for (let i = 0; i < 200 && sent < OUTSIDER_ALERTS_PER_DAY; i += 1) {
+    const now = t0 + i * 31 * 60_000;
+    if (alertDue({ count: 9, threshold: 1, rule: `ex${i % 4}`, key: `k${i}`, now, outsider: true })) {
+      sent += 1;
+      last = now;
+    }
+  }
+  assert.equal(sent, OUTSIDER_ALERTS_PER_DAY);
+  // Веднага след последната — бюджетът е изчерпан (бележката влиза в това писмо).
+  assert.equal(outsiderBudgetExhausted(last), true);
 });

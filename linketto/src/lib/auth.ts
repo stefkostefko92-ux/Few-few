@@ -87,7 +87,10 @@ export async function hashPassword(password: string): Promise<string> {
 
 async function currentToken(): Promise<string | null> {
   const store = await cookies();
-  return store.get(SESSION_COOKIE)?.value ?? (PROD ? store.get(LEGACY_COOKIE)?.value : undefined) ?? null;
+  // Само __Host- бисквитката (Разбивача N1): старата без префикс може да се
+  // подхвърли от съседен поддомейн (Domain=родителски) и да обезсмисли всяка
+  // проверка „в сесията на същия потребител“. Старите сесии влизат наново веднъж.
+  return store.get(SESSION_COOKIE)?.value ?? null;
 }
 
 /** Нова сесия (ротация: текущата от бисквитката се трие). */

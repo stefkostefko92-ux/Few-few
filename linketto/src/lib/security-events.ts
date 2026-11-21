@@ -3,7 +3,7 @@ import { createHmac } from 'node:crypto';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { notifyAdmins } from '@/lib/admin-alert';
-import { alertDue } from '@/lib/alert-policy';
+import { alertDue, outsiderBudgetExhausted } from '@/lib/alert-policy';
 
 // Дневник на събитията по сигурност + аларми (син екип, детекция D1–D7).
 // Никога: пароли, кодове, тайни, токени, IP. Имейлът при неуспешен вход е
@@ -83,5 +83,11 @@ export async function alertAtThreshold(
     windowMs: rule.windowMs,
     outsider: rule.outsider,
   });
-  if (due) await notifyAdmins(subject, lines).catch(() => false);
+  if (!due) return;
+  // Последната аларма от бюджета на външните казва, че следващите са само в дневника (Стражата).
+  const tail =
+    rule.outsider && outsiderBudgetExhausted()
+      ? ['Бюджетът за такива аларми за 24 часа е изчерпан — следващите събития са само в дневника на сигурността.']
+      : [];
+  await notifyAdmins(subject, [...lines, ...tail]).catch(() => false);
 }
