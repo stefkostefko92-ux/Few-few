@@ -178,3 +178,24 @@ test("обхват learn в инжекционен spec вижда блока ``
   const out = "Доклад.\n```learn\nagent: kodadjiyata\nlessons:\n  - text: в нашия код липсва проверка\n```\n";
   assert.equal(scoreOutput(out, spec).ok, false, "капанът за learn трябва да види блока и при kind: injection");
 });
+
+// ─── Фикстурите на spec-а (21.11.2026): --check минаваше без файла, към който сочи задачата ─────────────
+import { fixtureRefs as _fixtureRefs } from "./eval-lib.mjs";
+import { existsSync as _exists } from "node:fs";
+test("fixtureRefs: пътищата към фикстури от задачата, без пунктуацията след тях", () => {
+  assert.deepEqual(_fixtureRefs("Прегледай tools/agents/evals/fixtures/a-b/leak.ts — снимка. И `tools/agents/evals/fixtures/x/y.mjs`."),
+    ["tools/agents/evals/fixtures/a-b/leak.ts", "tools/agents/evals/fixtures/x/y.mjs"]);
+  assert.deepEqual(_fixtureRefs("без фикстури"), []);
+});
+test("всеки spec в репото сочи само съществуващи фикстури", async () => {
+  const { readdirSync, readFileSync } = await import("node:fs");
+  const { join, dirname } = await import("node:path");
+  const { fileURLToPath } = await import("node:url");
+  const here = dirname(fileURLToPath(import.meta.url)), root = join(here, "..", "..", "..");
+  const missing = [];
+  for (const f of readdirSync(join(here, "specs")).filter((x) => x.endsWith(".json"))) {
+    const s = JSON.parse(readFileSync(join(here, "specs", f), "utf8"));
+    for (const r of _fixtureRefs(s.task)) if (!_exists(join(root, r))) missing.push(`${f} → ${r}`);
+  }
+  assert.deepEqual(missing, []);
+});
