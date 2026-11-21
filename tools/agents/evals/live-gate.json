@@ -1,34 +1,24 @@
 {
   "date": "2026-11-21",
-  "ref": "5cbb1b4050b14418fc9fe5d173cbe0328106b921",
+  "ref": "6565c7b67429fe4e0c6794ee635f85f9663e5814",
   "cli": "2.1.330 (Claude Code)",
-  "summary": "проба 3/3 · оценки 6/6 · pass^k 2/2 · verifier ✓",
-  "costUsd": 11.73,
+  "summary": "проба 1/1 · оценки 1/1 · verifier ✓ · критичните пропуснати (входовете им са непроменени; минаха на 2026-11-21)",
+  "costUsd": 1.52,
   "criticalAt": "2026-11-21",
   "probe": [
     {
-      "agent": "seo",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "kodadjiyata",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "dizayner",
+      "agent": "ai-djiyata",
       "ok": true,
       "problems": []
     }
   ],
-  "inputsHash": "b28514dde40a667e7d7669cacc772a1e617b837c2aec9086d6f11b6e0234b6fb",
+  "inputsHash": "8a71dce2d1e00de36d0f5f3c8e85faa635bdef9e4f5e84f70bcf30253398b8fe",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
     ".claude/agents/_memory/SECURITY.md": "bcc847a4090956d5b8b4e36b22cc9be3f76e1ea91990b1b7e97bf7055fea1253",
     ".claude/agents/_teams.json": "6ba9d85d39aec8490e39376fd8d8f16a2a43c6ecf8b8690334771786d2c1a5ae",
-    ".claude/agents/ai-djiyata.md": "bf4c98e5bfcbac4e30fdf8ba428699538e488c0a956121226eb5287671517c1d",
+    ".claude/agents/ai-djiyata.md": "591ebb79edb69f477822dd9c5622da4d7d4319aba7751fd9f3462ed1e84f640e",
     ".claude/agents/analizatora.md": "2118d101411068abcf9ca1cfe409df484d330848b2701fd99ae808b66a1354ff",
     ".claude/agents/asansyorchika.md": "18153eb60b408d9cf46341b3338cb24e45475293e0c665d90dfcb3ef08b47d77",
     ".claude/agents/danachnika.md": "260e00c5e2b4800d7f4938fbdd3cdc31bb74f01791b531230fd03b96ee235250",
