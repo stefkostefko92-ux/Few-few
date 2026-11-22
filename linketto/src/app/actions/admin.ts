@@ -9,7 +9,7 @@ import { adminEmailChange, isAdminEmail, isWorkingAdmin } from '@/lib/admin-list
 import { recordSecurityEvent } from '@/lib/security-events';
 import { notifyAdmins } from '@/lib/admin-alert';
 import { notifyUserSecurity, sendVerificationEmail } from '@/lib/account-flows';
-import { closeRefundManually, requestPlanRefund, type RefundRequest } from '@/lib/plan-order-service';
+import { closeRefundManually, RefundUnreadableError, requestPlanRefund, type RefundRequest } from '@/lib/plan-order-service';
 import { banAllowed, banNoticeEmail, isBanCategory, warningNoticeEmail } from '@/lib/dsa-notice';
 import { emailReady, sendEmail } from '@/lib/email';
 import { eraseUser } from '@/lib/account-erasure';
@@ -292,13 +292,16 @@ export async function adminCloseRefundAction(formData: FormData): Promise<void> 
   const uiLocale = localeFrom(formData);
   const stepAdmin = await requireStepUp(uiLocale);
   const planOrderId = String(formData.get('planOrderId') ?? '');
+  // Refund-ът, който админът е видял и сверил (Р1) — по-нов опит не се приключва с този формуляр.
+  const refundOrderId = String(formData.get('refundOrderId') ?? '');
   if (formData.get('confirm') !== 'on') redirect(`/${uiLocale}/admin?error=refund-close-confirm`);
-  await recordSecurityEvent('admin.action', { userId: stepAdmin.id, meta: { action: 'refund-close', planOrderId } });
+  await recordSecurityEvent('admin.action', { userId: stepAdmin.id, meta: { action: 'refund-close', planOrderId, refundOrderId } });
   let result: Awaited<ReturnType<typeof closeRefundManually>>;
   try {
-    result = await closeRefundManually(planOrderId);
-  } catch {
-    redirect(`/${uiLocale}/admin?error=refund-close-unreadable`);
+    result = await closeRefundManually(planOrderId, refundOrderId);
+  } catch (error) {
+    // „Нищо не е променено“ — само когато Revolut не отговори (Р3); иначе — провери състоянието.
+    redirect(`/${uiLocale}/admin?error=${error instanceof RefundUnreadableError ? 'refund-close-unreadable' : 'refund-close-check'}`);
   }
   if (result === 'refund-in-progress') redirect(`/${uiLocale}/admin?error=refund-close-progress`);
   if (result === 'refund-failed') redirect(`/${uiLocale}/admin?error=refund-close-failed`);

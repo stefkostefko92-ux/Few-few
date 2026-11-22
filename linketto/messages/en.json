@@ -684,6 +684,7 @@
     "errorRefundCloseProgress": "Revolut is still processing the refund — the money has not been refunded. Try again later (up to 2 days).",
     "errorRefundCloseFailed": "Revolut declined the refund — the order is back to paid. Run “Refund” again if needed.",
     "errorRefundCloseUnreadable": "Revolut did not answer — nothing has been changed. Try again in a moment.",
+    "errorRefundCloseCheck": "The closing did not finish clearly — check the order’s status below before you try again.",
     "referralCredit": "referral bonus",
     "payoutsTitle": "Payout requests — pending ({count})",
     "payoutsEmpty": "No pending requests.",

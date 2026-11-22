@@ -683,6 +683,7 @@
     "errorRefundCloseProgress": "Revolut sta ancora elaborando il rimborso: il denaro non è stato restituito. Riprova più tardi (fino a 2 giorni).",
     "errorRefundCloseFailed": "Revolut ha rifiutato il rimborso: l'ordine risulta di nuovo pagato. Avvia di nuovo «Rimborsa», se necessario.",
     "errorRefundCloseUnreadable": "Revolut non ha risposto: non è stato modificato nulla. Riprova tra poco.",
+    "errorRefundCloseCheck": "La chiusura non si è conclusa in modo chiaro: controlla lo stato dell'ordine qui sotto prima di riprovare.",
     "referralCredit": "bonus di invito",
     "payoutsTitle": "Richieste di pagamento — in sospeso ({count})",
     "payoutsEmpty": "Nessuna richiesta in sospeso.",

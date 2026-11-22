@@ -36,7 +36,7 @@ const limited: string[] = [];
 /** Грешка от клиента на Revolut с HTTP статус (като revolut.ts). */
 const httpError = (status: number) => Object.assign(new Error(`revolut GET /api/disputes: ${status}`), { status });
 
-const service = createPlanOrderService({
+const deps: Parameters<typeof createPlanOrderService>[0] = {
   db,
   revolut: {
     getOrder: async (id) => {
@@ -77,6 +77,32 @@ const service = createPlanOrderService({
   },
   siteUrl: 'https://l.example',
   log: () => undefined,
+};
+const service = createPlanOrderService(deps);
+// Червен екип (Р2/Р3): транзакцията пада веднъж или applyPlanLimits хвърля — същото ядро.
+let txFail = false;
+let limitsFail = false;
+const faultyDb = DB_URL
+  ? (new Proxy(db, {
+      get(target, prop, receiver) {
+        if (prop === '$transaction' && txFail) {
+          return async () => {
+            txFail = false;
+            throw new Error('db: serialization failure (инжектирано)');
+          };
+        }
+        const value = Reflect.get(target, prop, receiver);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    }) as PrismaClient)
+  : db;
+const faulty = createPlanOrderService({
+  ...deps,
+  db: faultyDb,
+  applyPlanLimits: async (userId) => {
+    if (limitsFail) throw new Error('applyPlanLimits: ENOSPC (инжектирано)');
+    limited.push(userId);
+  },
 });
 
 const paid = (amount: number) => ({
@@ -132,6 +158,8 @@ beforeEach(async () => {
   refundResponse = null;
   getOrderHook = null;
   notifyOk = true;
+  txFail = false;
+  limitsFail = false;
   await db.revolutDispute.deleteMany({ where: { disputeId: { startsWith: 'dsp-int-' } } });
   await db.referral.deleteMany({ where: { referrer: { email: { endsWith: '@int.test' } } } });
   await db.planOrder.deleteMany({ where: { user: { email: { endsWith: '@int.test' } } } });
@@ -1124,21 +1152,21 @@ test('Б1: ръчно приключване само за refund_pending с ref
   const user = await mkUser();
   const paidOrder = await mkOrder(user.id, 'PRO', 'monthly', 400);
   await service.settlePlanOrder({ id: paidOrder.id });
-  assert.equal(await service.closeRefundManually(paidOrder.id), 'not-closable', 'платена');
+  assert.equal(await service.closeRefundManually(paidOrder.id, 'rf-x'), 'not-closable', 'платена');
   refundResponse = () => {
     throw httpError(503);
   };
   assert.equal(await service.requestPlanRefund(paidOrder.id), 'stuck');
-  assert.equal(await service.closeRefundManually(paidOrder.id), 'not-closable', 'заседнал без refund id');
+  assert.equal(await service.closeRefundManually(paidOrder.id, 'rf-x'), 'not-closable', 'заседнал без refund id');
   assert.equal((await reload(paidOrder.id)).state, 'refund_pending');
-  assert.equal(await service.closeRefundManually('няма-такава'), 'not-closable');
+  assert.equal(await service.closeRefundManually('няма-такава', 'rf-x'), 'not-closable');
   assert.equal(limited.length, 0);
 });
 
 test('Б2: живото четене хвърля → ръчното приключване хвърля, нищо не се пипа', { skip }, async () => {
   const { order, rid } = await mismatchedRefund();
   getOrderHook = (id) => (id === rid ? Promise.reject(httpError(503)) : null);
-  await assert.rejects(service.closeRefundManually(order.id));
+  await assert.rejects(service.closeRefundManually(order.id, rid), { name: 'RefundUnreadableError' });
   const now = await reload(order.id);
   assert.equal(now.state, 'refund_pending');
   assert.equal(now.refundOrderId, rid);
@@ -1148,7 +1176,7 @@ test('Б2: живото четене хвърля → ръчното прикл�
 test('Б3: живо „отказано“ → пак платена (като автоматичния път), резултат refund-failed', { skip }, async () => {
   const { user, order, rid } = await mismatchedRefund();
   live.set(rid, { id: rid, type: 'refund', state: 'failed', payments: [{ state: 'declined' }] });
-  assert.equal(await service.closeRefundManually(order.id), 'refund-failed');
+  assert.equal(await service.closeRefundManually(order.id, rid), 'refund-failed');
   const now = await reload(order.id);
   assert.equal(now.state, 'completed');
   assert.equal(now.refundOrderId, null);
@@ -1159,7 +1187,7 @@ test('Б3: живо „отказано“ → пак платена (като �
 test('Б4: живо „в ход“ → refund-in-progress, нищо не се пипа', { skip }, async () => {
   const { user, order, rid } = await mismatchedRefund();
   live.set(rid, { id: rid, type: 'refund', state: 'processing', amount: 399, currency: 'EUR', payments: [{ state: 'refund_validated' }] });
-  assert.equal(await service.closeRefundManually(order.id), 'refund-in-progress');
+  assert.equal(await service.closeRefundManually(order.id, rid), 'refund-in-progress');
   assert.equal((await reload(order.id)).state, 'refund_pending');
   assert.equal((await userOf(user.id)).plan, 'PRO');
 });
@@ -1168,7 +1196,7 @@ test('Б5: живо „completed“ с друга сума → приключе�
   const referrer = await mkUser();
   const { user, order, rid } = await mismatchedRefund({ liveAmount: 399, referrerId: referrer.id });
   const before = alerts.length;
-  assert.equal(await service.closeRefundManually(order.id), 'closed');
+  assert.equal(await service.closeRefundManually(order.id, rid), 'closed');
   const now = await reload(order.id);
   assert.equal(now.state, 'refunded');
   assert.equal(now.refundOrderId, rid);
@@ -1184,7 +1212,7 @@ test('Б5: живо „completed“ с друга сума → приключе�
 test('Б5′: живо „completed“ в друга валута → приключено, счетоводно остава очакваната сума', { skip }, async () => {
   const { order, rid } = await mismatchedRefund();
   live.set(rid, { id: rid, type: 'refund', state: 'completed', amount: 400, currency: 'BGN' });
-  assert.equal(await service.closeRefundManually(order.id), 'closed');
+  assert.equal(await service.closeRefundManually(order.id, rid), 'closed');
   const now = await reload(order.id);
   assert.equal(now.state, 'refunded');
   assert.equal(now.refundCents, null, 'не четем BGN като евро');
@@ -1193,13 +1221,64 @@ test('Б5′: живо „completed“ в друга валута → прикл
 
 test('Б6: две паралелни ръчни приключвания → сторно веднъж', { skip }, async () => {
   const referrer = await mkUser();
-  const { order } = await mismatchedRefund({ referrerId: referrer.id });
+  const { order, rid } = await mismatchedRefund({ referrerId: referrer.id });
   await db.referral.updateMany({ where: { planOrderId: order.id }, data: { releasedAt: new Date() } });
   const ref = await db.referral.findUniqueOrThrow({ where: { planOrderId: order.id } });
   await db.user.update({ where: { id: referrer.id }, data: { referralCreditCents: ref.rewardCents } });
-  const results = await Promise.all([service.closeRefundManually(order.id), service.closeRefundManually(order.id)]);
+  const results = await Promise.all([service.closeRefundManually(order.id, rid), service.closeRefundManually(order.id, rid)]);
   assert.deepEqual([...results].sort(), ['closed', 'not-closable']);
   assert.equal((await reload(order.id)).state, 'refunded');
   assert.equal((await userOf(referrer.id)).referralCreditCents, 0, 'не отрицателен');
   assert.equal(limited.length, 1);
+});
+
+test('Б8 (Р1): приключва се само refund-ът, който админът е сверил — по-нов refund не', { skip }, async () => {
+  const { order, rid: r1 } = await mismatchedRefund();
+  // R1 е отказан → поръчката е пак платена → нов опит R2 (completed за 1 цент).
+  live.set(r1, { id: r1, type: 'refund', state: 'failed', payments: [{ state: 'declined' }] });
+  assert.equal(await service.settlePlanRefund({ id: order.id }), 'failed');
+  refundResponse = (id) => {
+    live.set(id, { id, type: 'refund', state: 'completed', amount: 1, currency: 'EUR' });
+    return { id, state: 'pending' };
+  };
+  assert.equal(await service.requestPlanRefund(order.id), 'requested');
+  refundResponse = null;
+  const r2 = (await reload(order.id)).refundOrderId as string;
+  assert.notEqual(r2, r1);
+  // Формулярът от страницата, видяна при R1:
+  assert.equal(await service.closeRefundManually(order.id, r1), 'not-closable');
+  const now = await reload(order.id);
+  assert.equal(now.state, 'refund_pending');
+  assert.equal(now.refundOrderId, r2);
+  assert.equal(now.refundCents, null, 'нищо не е коригирано');
+  assert.equal(limited.length, 0);
+});
+
+test('Б9 (Р2): падне ли транзакцията, корекцията на сумата не остава — cron-ът не приключва тихо', { skip }, async () => {
+  const { order, rid } = await mismatchedRefund({ liveAmount: 399 });
+  txFail = true;
+  await assert.rejects(faulty.closeRefundManually(order.id, rid));
+  const mid = await reload(order.id);
+  assert.equal(mid.state, 'refund_pending');
+  assert.equal(mid.refundCents, null, 'корекцията е в същия условен запис като приключването');
+  assert.equal(await service.settlePlanRefund({ id: order.id }), 'pending', 'пак разминаване, не тихо приключване');
+});
+
+test('Б10 (Р3): applyPlanLimits хвърля след приключването → резултатът е „closed“ и алармата казва какво да се провери', { skip }, async () => {
+  const { order, rid } = await mismatchedRefund();
+  limitsFail = true;
+  assert.equal(await faulty.closeRefundManually(order.id, rid), 'closed');
+  assert.equal((await reload(order.id)).state, 'refunded');
+  assert.ok(alerts.some((x) => /приключено ръчно/i.test(x)));
+  assert.ok(alerts.some((x) => /ограниченията на плана/.test(x)), 'аларма: ограниченията не се приложиха');
+});
+
+test('Б11 (Р4): живото „completed“ без вид refund или с чуждо id → не се приключва', { skip }, async () => {
+  const { order, rid } = await mismatchedRefund();
+  live.set(rid, { id: rid, state: 'completed', amount: 399, currency: 'EUR' });
+  assert.equal(await service.closeRefundManually(order.id, rid), 'not-closable', 'без type refund');
+  live.set(rid, { id: 'rf-друг', type: 'refund', state: 'completed', amount: 399, currency: 'EUR' });
+  assert.equal(await service.closeRefundManually(order.id, rid), 'not-closable', 'чуждо id');
+  assert.equal((await reload(order.id)).state, 'refund_pending');
+  assert.equal(limited.length, 0);
 });
