@@ -92,7 +92,7 @@ export default {
   },
   patent: {
     title: 'A patented system',
-    body: 'The Panev Ascensori support bracket is protected by a utility model patent granted by the Italian Ministry of Enterprises and Made in Italy (UIBM). The title protects the adjustable fixing solution for structural components of lift and goods-lift installations.',
+    body: 'The Panev Ascensori support bracket is protected by an Italian utility model patent, granted by the Ministry of Enterprises and Made in Italy (UIBM). The title protects the adjustable fixing solution for structural components of lift and goods-lift installations.',
     conformity: 'Products compliant with UNI EN 81 (safety rules for lifts), steel compliant with UNI EN 10025, suitable for UNI 10411 inspection.',
     rows: [
       ['Number', 'No. 202023000002112'],
