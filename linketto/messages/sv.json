@@ -119,7 +119,9 @@
       "f3": "Upp till 5 profiler, som i Business"
     },
     "mostPopular": "Populärast",
-    "annualOffer": "Spara {percent} % med en årsplan"
+    "annualOffer": "Spara {percent} % med en årsplan",
+    "vatNote": "Priserna är slutpriser inkl. 20 % moms.",
+    "prepaidNote": "Ingen prenumeration: du betalar en gång för 1, 3, 6 eller 12 månader och bestämmer själv om du vill förlänga — vi påminner dig via e-post innan perioden tar slut."
   },
   "auth": {
     "loginTitle": "Logga in på Linketto",
@@ -667,7 +669,7 @@
     "currencyNote": "Priserna för {name} anges i USD, så som deras sida visar dem; i vissa länder kan du se en annan valuta. Våra priser är i euro.",
     "alsoCompare": "Jämför även:",
     "ctaTitle": "Byt på en minut",
-    "ctaText": "Skapa din Linketto gratis — flytta över dina länkar från Linktree på en minut och låt AI översätta dem till alla språk.",
+    "ctaText": "Skapa din Linketto gratis och flytta över dina länkar från {name} — AI översätter dem till alla språk.",
     "ctaButton": "Kom igång gratis",
     "plansNote": "De två tjänsternas planer innehåller olika funktioner; vi jämför bara de egenskaper som anges. Fullständiga villkor finns på deras prissidor.",
     "metaDescription": "Linketto eller {name}? Priser, egen domän, varumärke och statistik — fakta från deras officiella sidor, med datum och källa.",

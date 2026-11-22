@@ -219,3 +219,13 @@ export function isTransientRevolutError(error: unknown): boolean {
   if (typeof status !== 'number') return true;
   return status === 409 || status === 429 || status >= 500;
 }
+
+/**
+ * Refund поръчката отговаря ли на очакваната сума (частично връщане при отказ —
+ * abuse-money-spec Б4): `type` е refund, `amount` = очакваното, валутата — EUR.
+ */
+export function refundAmountMatches(order: unknown, expectedCents: number): boolean {
+  // Order-v7 (2026-08-17) няма задължителни полета — липсващо поле НЕ е съвпадение (fail closed).
+  const o = rec(order);
+  return o.type === 'refund' && o.amount === expectedCents && o.currency === 'EUR';
+}

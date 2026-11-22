@@ -19,6 +19,8 @@ export type SecurityEventType =
   | 'mfa.backup_used'
   | 'mfa.backup_regenerated'
   | 'password.changed'
+  | 'password.reset_requested'
+  | 'password.reset'
   | 'sessions.revoked'
   | 'stepup.ok'
   | 'stepup.failed'

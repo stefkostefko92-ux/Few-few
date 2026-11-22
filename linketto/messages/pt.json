@@ -122,7 +122,9 @@
       "f3": "Até 5 perfis, como no Business"
     },
     "mostPopular": "Mais popular",
-    "annualOffer": "Poupa {percent}% com um plano anual"
+    "annualOffer": "Poupa {percent}% com um plano anual",
+    "vatNote": "Os preços são finais, com IVA de 20% incluído.",
+    "prepaidNote": "Sem subscrição: pagas de uma só vez por 1, 3, 6 ou 12 meses e decides tu se queres prolongar — lembramos-te por email antes do fim."
   },
   "auth": {
     "loginTitle": "Entrar no Linketto",
@@ -670,7 +672,7 @@
     "currencyNote": "Os preços do {name} estão em USD, tal como aparecem na sua página; em alguns países poderás ver outra moeda. Os nossos preços estão em euros.",
     "alsoCompare": "Compara também:",
     "ctaTitle": "Muda num minuto",
-    "ctaText": "Cria o teu Linketto gratuitamente — traz os teus links do Linktree num minuto e a IA vai traduzi-los para todos os idiomas.",
+    "ctaText": "Cria o teu Linketto gratuitamente e traz para cá os teus links — a IA vai traduzi-los para todos os idiomas.",
     "ctaButton": "Começar grátis",
     "plansNote": "Os planos dos dois serviços incluem funcionalidades diferentes; comparamos apenas as características indicadas. As condições completas estão nas respetivas páginas de preços.",
     "metaDescription": "Linketto ou {name}? Preços, domínio próprio, marca e análises — factos das páginas oficiais deles, com data e fonte.",

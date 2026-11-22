@@ -119,7 +119,9 @@
       "f3": "Kuni 5 profiili, nagu Businessis"
     },
     "mostPopular": "Kõige populaarsem",
-    "annualOffer": "Säästa {percent}% aastapaketiga"
+    "annualOffer": "Säästa {percent}% aastapaketiga",
+    "vatNote": "Hinnad on lõplikud ja sisaldavad 20% käibemaksu.",
+    "prepaidNote": "Ilma püsitellimuseta: maksad ühe korraga 1, 3, 6 või 12 kuu eest ja otsustad ise, kas pikendada — tuletame sulle enne lõppu e-kirjaga meelde."
   },
   "auth": {
     "loginTitle": "Logi Linkettosse sisse",
@@ -667,7 +669,7 @@
     "currencyNote": "{name} hinnad on USD-s, nagu nende leht neid näitab; mõnes riigis võid näha muud valuutat. Meie hinnad on eurodes.",
     "alsoCompare": "Võrdle veel:",
     "ctaTitle": "Vaheta minutiga",
-    "ctaText": "Loo oma Linketto tasuta — too oma lingid Linktree’st minutiga üle ja AI tõlgib need igasse keelde.",
+    "ctaText": "Loo oma Linketto tasuta ja too oma lingid üle — AI tõlgib need igasse keelde.",
     "ctaButton": "Alusta tasuta",
     "plansNote": "Kahe teenuse pakettides on erinevad funktsioonid; võrdleme ainult loetletud omadusi. Täielikud tingimused on nende hinnalehtedel.",
     "metaDescription": "Linketto või {name}? Hinnad, oma domeen, bränding ja analüütika — faktid nende ametlikelt lehtedelt, kuupäeva ja allikaga.",

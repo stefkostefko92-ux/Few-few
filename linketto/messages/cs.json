@@ -119,7 +119,9 @@
       "f3": "Až 5 profilů, jako u Business"
     },
     "mostPopular": "Nejoblíbenější",
-    "annualOffer": "Ušetři {percent} % s ročním plánem"
+    "annualOffer": "Ušetři {percent} % s ročním plánem",
+    "vatNote": "Ceny jsou konečné, včetně 20 % DPH.",
+    "prepaidNote": "Bez předplatného: zaplatíš jednorázově za 1, 3, 6 nebo 12 měsíců a o prodloužení rozhoduješ ty — před koncem ti to připomeneme e-mailem."
   },
   "auth": {
     "loginTitle": "Přihlaš se do Linketto",
@@ -667,7 +669,7 @@
     "currencyNote": "Ceny {name} jsou v USD, jak je uvádí jejich stránka; v některých zemích můžeš vidět jinou měnu. Naše ceny jsou v eurech.",
     "alsoCompare": "Další srovnání:",
     "ctaTitle": "Přejdi za minutu",
-    "ctaText": "Vytvoř si své Linketto zdarma — přenes své odkazy z Linktree za minutu a AI je přeloží do každého jazyka.",
+    "ctaText": "Vytvoř si své Linketto zdarma a přenes si své odkazy — AI je přeloží do každého jazyka.",
     "ctaButton": "Začni zdarma",
     "plansNote": "Plány obou služeb zahrnují různé funkce; porovnáváme jen uvedené vlastnosti. Úplné podmínky najdeš na jejich stránkách s cenami.",
     "metaDescription": "Linketto, nebo {name}? Ceny, vlastní doména, značka a analytika — fakta z jejich oficiálních stránek, s datem a zdrojem.",

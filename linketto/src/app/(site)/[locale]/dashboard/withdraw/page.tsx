@@ -11,6 +11,7 @@ import { planFor } from '@/lib/plans';
 import { type Locale } from '@/i18n/locales';
 import { getSessionUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { withdrawalRefund } from '@/lib/withdrawal-refund';
 import { canWithdraw, withdrawalLastDay } from '@/lib/withdrawal';
 import { withdrawPlanAction } from '@/app/actions/withdrawal';
 import { ChevronLeftIcon } from '@/components/icons';
@@ -49,6 +50,22 @@ export default async function WithdrawPage({
       now,
     });
   const fmt = (d: Date) => new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(d);
+  // Б6: сумата за връщане, ако отказът е подаден СЕГА (окончателната се смята при потвърждението).
+  const preview =
+    order && allowed
+      ? withdrawalRefund({
+          amountCents: order.amountCents,
+          vatCents: order.vatCents,
+          plan: order.plan,
+          interval: order.interval,
+          prevPlan: order.prevPlan,
+          prevExpiresAt: order.prevExpiresAt,
+          completedAt: order.completedAt ?? now,
+          requestedAt: now,
+          immediateStartAt: order.immediateStartAt,
+          applied: order.applied,
+        })
+      : null;
 
   const profileList = await prisma.profile.findMany({
     where: { userId: user.id },
@@ -87,7 +104,21 @@ export default async function WithdrawPage({
           <Card as="section" padding="lg" className="dash-card">
             <form action={withdrawPlanAction} className="space-y-5">
               <p className="text-body text-fg-2">{t('withdrawIntro')}</p>
-              <dl className="grid gap-x-4 gap-y-2.5 rounded-card border border-line bg-surface-2 p-4 text-small sm:grid-cols-[10rem_1fr]">
+              {/* Сумата за връщане — най-важното число на екрана (визуалният обход), над подробностите. */}
+              {preview && (
+                <div className="rounded-card border border-line bg-accent-soft p-4">
+                  <p className="text-small font-semibold text-accent-soft-fg">{t('withdrawRefundAmount')}</p>
+                  <p className="mt-1 text-[1.75rem] font-bold leading-tight tabular-nums text-fg">
+                    €{(preview.refundCents / 100).toFixed(2)}
+                  </p>
+                  {preview.refundCents < order.amountCents && (
+                    <p className="mt-2 text-small leading-relaxed text-fg-2">
+                      {t('withdrawKeptNote', { kept: `€${((order.amountCents - preview.refundCents) / 100).toFixed(2)}` })}
+                    </p>
+                  )}
+                </div>
+              )}
+              <dl className="grid gap-x-4 gap-y-1 rounded-card border border-line bg-surface-2 p-4 text-small sm:grid-cols-[10rem_1fr] sm:gap-y-2.5 [&>dt:not(:first-child)]:mt-3 sm:[&>dt:not(:first-child)]:mt-0">
                 <dt className="font-medium text-fg-muted">{t('withdrawContract')}</dt>
                 <dd className="text-fg">
                   Linketto {PLAN_NAMES[order.plan] ?? order.plan} ·{' '}
@@ -97,7 +128,9 @@ export default async function WithdrawPage({
                 <dt className="font-medium text-fg-muted">{t('withdrawOrderedOn')}</dt>
                 <dd className="text-fg">{fmt(order.completedAt ?? order.createdAt)}</dd>
                 <dt className="font-medium text-fg-muted">{t('withdrawOrderRef')}</dt>
-                <dd className="break-all font-mono text-micro text-fg-2">{order.id}</dd>
+                <dd className="font-mono text-micro text-fg-2" title={order.id}>
+                  …{order.id.slice(-10)}
+                </dd>
                 <dt className="font-medium text-fg-muted">{t('withdrawEmail')}</dt>
                 <dd className="break-all text-fg">{user.email}</dd>
                 <dt className="font-medium text-fg-muted">{t('withdrawUntil')}</dt>

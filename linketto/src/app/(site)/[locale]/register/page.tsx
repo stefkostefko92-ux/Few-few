@@ -9,6 +9,7 @@ import type { Locale } from '@/i18n/locales';
 import { registerAction } from '@/app/actions/auth';
 import { isValidSlug, normalizeSlug } from '@/lib/slug';
 import { profileUrl } from '@/lib/profile-url';
+import { PASSWORD_MIN } from '@/lib/password-policy';
 
 export default async function RegisterPage({
   params,
@@ -40,7 +41,13 @@ export default async function RegisterPage({
       >
         {error && (
           <Callout tone="danger" className="mt-5">
-            {error === 'exists' ? t('errorExists') : t('errorGeneric')}
+            {error === 'exists'
+              ? t('errorExists')
+              : error === 'weak'
+                ? t('errorWeak', { min: PASSWORD_MIN })
+                : error === 'terms'
+                  ? t('errorTerms')
+                  : t('errorGeneric')}
           </Callout>
         )}
         {ref && (
@@ -52,7 +59,7 @@ export default async function RegisterPage({
           <Callout tone="success" className="mt-5">
             {t.rich('claimedBanner', {
               url: () => (
-                <strong className="break-all font-semibold">
+                <strong className="font-semibold [overflow-wrap:anywhere]">
                   {profileUrl(claimed).replace(/^https?:\/\//, '')}
                 </strong>
               ),
@@ -89,13 +96,40 @@ export default async function RegisterPage({
               type="password"
               name="password"
               required
-              minLength={8}
+              minLength={PASSWORD_MIN}
+              maxLength={200}
               autoComplete="new-password"
+              aria-describedby="password-hint"
             />
+            <p id="password-hint" className="text-small text-fg-muted">
+              {t('passwordHint', { min: PASSWORD_MIN })}
+            </p>
           </div>
-          <Button type="submit" size="lg" block className="!mt-6">
+          {/* ЗЗП чл. 147а: изрично приемане на ОУ (неотметната, задължителна; сървърът проверява) — над бутона. */}
+          <label className="!mt-6 flex items-start gap-2.5 text-small leading-relaxed text-fg">
+            <input type="checkbox" name="acceptTerms" value="1" required className="mt-1 h-4 w-4 shrink-0" />
+            <span>
+              {t.rich('registerTerms', {
+                terms: (chunks) => (
+                  <Link href={`/${locale}/terms`} target="_blank" className="font-semibold text-accent-text underline underline-offset-2">
+                    {chunks}
+                  </Link>
+                ),
+              })}
+            </span>
+          </label>
+          <Button type="submit" size="lg" block>
             {t('submitRegister')}
           </Button>
+          <p className="text-center text-small text-fg-2">
+            {t.rich('registerPrivacy', {
+              privacy: (chunks) => (
+                <Link href={`/${locale}/privacy`} className="font-semibold text-accent-text underline underline-offset-2">
+                  {chunks}
+                </Link>
+              ),
+            })}
+          </p>
           {/* ePrivacy чл. 13(2): уведомление за седмичния отчет + отказ с 1 клик */}
           <p className="text-center text-small text-fg-muted">
             {t('digestNotice')}

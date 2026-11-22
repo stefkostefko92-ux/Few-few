@@ -106,6 +106,13 @@ actions/report.ts, категории в src/lib/report.ts); чл. 13 бележ
 Админ: /[locale]/admin (noindex, robots disallow) — само за имейли от env
 ADMIN_EMAILS (src/lib/admin.ts requireAdmin; НИКАКВИ админ флагове в БД) И
 `adminGate` (lib/admin-list.ts): потвърден имейл + включена 2FA + сесия, потвърдена с код;
+потвърждението на имейл по връзка важи само в сесията на СЪЩИЯ потребител, за всеки адрес
+(`lib/verify-email-policy.ts` — иначе адрес, добавен в ADMIN_EMAILS по-късно, наследява чуждо потвърждение);
+„Забравена парола“ (docs/password-reset-spec.md): `/[locale]/forgot` (без изброяване на акаунти, лимит
+по IP и имейл) → токен `reset-password` 60 мин → `/[locale]/reset` (GET само форма; POST сменя паролата и
+прекратява всички сесии); едно правило за нова парола (`lib/password-policy.ts`, ≥10). Регистрацията иска
+изрична отметка за ОУ (ЗЗП чл. 147а) → `User.termsAcceptedAt/termsVersion` (`lib/terms.ts`, вдигай
+`TERMS_VERSION` при промяна на ОУ); писмото за потвърждение потвърждава и регистрацията с връзка към ОУ.
 опасните действия (смяна на имейл/парола, изтриване, refund, изплащане, ключове) —
 `requireStepUp` (код ≤10 мин.). Админ не пипа ДРУГ админ (`guardTarget`). Връзка „Админ“ в
 хедъра и в таблото за админите.
@@ -130,7 +137,9 @@ actions/admin.ts: бан/отбан (Profile.bannedAt — баннат = notFoun
 actions/auth.ts, 90 дни, декларирано в политиката; НЕ важи за посетители).
 
 Качени изображения: src/lib/media.ts (sharp → webp, маха EXIF, ≤8 MB) →
-DATA_DIR/uploads, сервирани от /media/[file] (стриктен allowlist на името).
+DATA_DIR/uploads, сервирани от /media/[file] (стриктен allowlist на името). `lib/image-process.ts`:
+40 Mpx по заглавката, ≤2 обработки, опашка ≤4, 1 качване в ход на потребител; неползваните файлове
+се трият (`removeUnusedMedia`).
 Шрифтове: src/app/fonts.ts (next/font, self-hosted — нула външни заявки).
 
 Теми на профила: `src/lib/profile-themes.ts` (PROFILE_THEMES = единственият списък — action, табло, ProfileScreen; токени → CSS променливи `--pf-*`, `auto` през light-dark(); непознато ID → aurora; контраст AA пази тестът; сцените chrome/acid са само CSS, без SVG).
@@ -158,16 +167,22 @@ checkPurchase (lib/plan-orders.ts; FOUNDER не се купува пак, по-�
 пази снимка prevPlan/prevExpiresAt и праща потвърждение (lib/plan-confirmation.ts, P14).
 Връщане: само от /admin → refund поръчка при Revolut (`refund_pending`, до 2 дни) → при
 `completed` планът се връща към снимката (отпада само платеното с поръчката). Реферал
-бонусът (REFERRAL_PERCENT=15 от платената сума) е в същата транзакция.
+бонусът (REFERRAL_PERCENT=15 от платената сума) се записва в същата транзакция като
+**задържан** (`releasedAt null`, docs/abuse-money-spec.md А) и влиза в баланса след 30 дни от
+cron-а (`releaseReferralBonuses`: живо GET, условен запис); отказ/връщане/спор го сторнират,
+спечелен спор го връща в задържане. Отказът е с **пропорционално плащане** (чл. 14(3);
+`lib/withdrawal-refund.ts`, сумата се пази в `refundCents`) при задължителна отметка за ранно
+начало (текстът се пази дословно и се цитира в P14).
 Теглене: REFERRAL_MIN_PAYOUT_CENTS=10000 (€100); requestPayoutAction снапшотва
 баланса в ReferralPayout и нулира referralCreditCents (транзакция, под праг = грешка);
 админът маркира платено (adminMarkPayoutPaidAction).
 Реферали: lib/referral.ts (referralRewardCents по план, generateReferralCode).
 User.referralCode/referredById/referralCreditCents + модел Referral (ledger,
 unique referredUserId, planOrderId). registerAction обвързва реферера от ?ref;
-settlePlanOrder начислява бонуса при първата платена поръчка (идемпотентно). Дашборд:
-ReferralCard + ensureReferralCodeAction за стари профили. Кредитът се вижда
-и в админ панела (за изплащане).
+settlePlanOrder записва бонуса (задържан) при първата платена поръчка (идемпотентно). Дашборд:
+ReferralCard + ensureReferralCodeAction за стари профили. Кредитът (и задържаните) се вижда
+и в админ панела (за изплащане). Таваните на профила (200 блока, 100 кратки линка) — под
+заключения ред (`lib/profile-lock.ts`).
 
 Транзакционен имейл: src/lib/email.ts (Brevo API v3, `sendEmail` → 201; без
 ключ/валиден подател — от панела или BREVO_API_KEY/EMAIL_FROM — = no-op). Brevo добавя собствен List-Unsubscribe —

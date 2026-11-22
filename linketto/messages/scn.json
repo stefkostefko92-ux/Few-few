@@ -118,7 +118,9 @@
       "f3": "Finu a 5 prufili, comu cu Business"
     },
     "mostPopular": "Cchiù populari",
-    "annualOffer": "Sparagna lu {percent}% cu un pianu annuali"
+    "annualOffer": "Sparagna lu {percent}% cu un pianu annuali",
+    "vatNote": "Li prezzi sunnu finali, cu l'IVA dû 20% nclusa.",
+    "prepaidNote": "Senza abbunamentu: paghi na vota sula pi 1, 3, 6 o 12 misi e dicidi tu si allunghi — ti lu ricurdamu pi email prima ca finisci."
   },
   "auth": {
     "loginTitle": "Trasi a Linketto",
@@ -658,7 +660,7 @@
     "currencyNote": "Li prezzi di {name} sunnu in USD, comu li ammustra la pàggina sò; nta certi paisi putissi vidiri n'àutra muneta. Li nostri prezzi sunnu in euro.",
     "alsoCompare": "Cunfronta ancora:",
     "ctaTitle": "Passa nta nu minutu",
-    "ctaText": "Crea lu tò Linketto gratis — porta ccà li tò link di Linktree nta un minutu e l'AI li traduci nta ogni lingua.",
+    "ctaText": "Crea lu tò Linketto gratis e porta ccà li tò link di {name} — l'AI li traduci nta ogni lingua.",
     "ctaButton": "Accumincia gratis",
     "plansNote": "Li piani dî dui sirvizzi hannu funzioni diversi; cunfruntamu sulu li carattirìstichi elencati. Li cunnizzioni cumpleti sunnu ntê so pàggini dî prezzi.",
     "metaDescription": "Linketto o {name}? Prezzi, duminiu pirsunalizzatu, brand e analisi — fatti dî sò pàggini ufficiali, cu data e fonti.",

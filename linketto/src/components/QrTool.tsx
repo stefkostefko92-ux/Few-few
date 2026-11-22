@@ -124,7 +124,14 @@ export function QrTool({
       </div>
       <figure className="mx-auto w-full max-w-[18rem]">
         <div
-          className="flex aspect-square items-center justify-center rounded-panel border border-line bg-[conic-gradient(#e8ecf1_25%,#fff_0_50%,#e8ecf1_0_75%,#fff_0)] bg-[length:20px_20px] p-4"
+          // Шахматът (прозрачност) — само при прозрачен фон и готов код; иначе спокойна повърхност.
+          className={`flex aspect-square items-center justify-center rounded-panel border border-line p-4 ${
+            svg && transparent
+              ? 'bg-[conic-gradient(#e8ecf1_25%,#fff_0_50%,#e8ecf1_0_75%,#fff_0)] bg-[length:20px_20px]'
+              : svg
+                ? 'bg-white'
+                : 'bg-surface-2'
+          }`}
           role="img"
           aria-label={svg ? labels.preview : labels.empty}
         >

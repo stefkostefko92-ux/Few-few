@@ -38,6 +38,11 @@ export default async function LoginPage({
             {t('signedOut')}
           </Callout>
         )}
+        {ok === 'reset' && (
+          <Callout tone="success" className="mt-5">
+            {t('resetDone')}
+          </Callout>
+        )}
         {error && (
           <Callout tone="danger" className="mt-5">
             {error === 'invalid'
@@ -64,7 +69,15 @@ export default async function LoginPage({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="password">{t('password')}</Label>
+            <div className="flex items-baseline justify-between gap-3">
+              <Label htmlFor="password">{t('password')}</Label>
+              <Link
+                href={`/${locale}/forgot`}
+                className="focus-ring rounded-sm text-small font-medium text-accent-text underline-offset-4 hover:underline"
+              >
+                {t('forgotLink')}
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"

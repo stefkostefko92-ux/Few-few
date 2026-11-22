@@ -71,12 +71,13 @@ export function BioTool({
           />
         </div>
         <div className="sm:col-span-2">
+          {/* Изпращането към доставчик извън ЕС — над бутона и четимо (не дребно под него). */}
+          <Callout tone="info" className="mb-4">
+            {labels.notice}
+          </Callout>
           <Button type="submit" size="lg" disabled={pending}>
             {pending ? labels.generating : labels.generate}
           </Button>
-          <p className="mt-3 text-small text-fg-muted">
-            {labels.notice}
-          </p>
         </div>
       </form>
 

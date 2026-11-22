@@ -110,3 +110,16 @@ test('Временна грешка: мрежа, 409 (същият ключ ощ
   for (const status of [400, 401, 403, 404, 422]) assert.equal(isTransientRevolutError(http(status)), false, String(status));
   assert.equal(isTransientRevolutError(new Error('fetch failed')), true);
 });
+
+test('refundAmountMatches: частичното връщане се сверява по сума и валута (abuse-money-spec Б4)', async () => {
+  const { refundAmountMatches } = await import('../revolut-core');
+  assert.equal(refundAmountMatches({ type: 'refund', amount: 271, currency: 'EUR' }, 271), true);
+  assert.equal(refundAmountMatches({ type: 'refund', amount: 400, currency: 'EUR' }, 271), false);
+  assert.equal(refundAmountMatches({ type: 'refund', amount: 271, currency: 'USD' }, 271), false);
+  assert.equal(refundAmountMatches({ type: 'payment', amount: 271, currency: 'EUR' }, 271), false);
+  // Order-v7 няма задължителни полета — липсваща сума, валута или вид НЕ минава (fail closed).
+  assert.equal(refundAmountMatches({ state: 'completed' }, 271), false);
+  assert.equal(refundAmountMatches({ type: 'refund', currency: 'EUR' }, 271), false);
+  assert.equal(refundAmountMatches({ type: 'refund', amount: 271 }, 271), false);
+  assert.equal(refundAmountMatches({ amount: 271, currency: 'EUR' }, 271), false);
+});

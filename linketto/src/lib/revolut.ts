@@ -85,10 +85,17 @@ export function refundRevolutOrder(input: {
   orderId: string;
   amountCents: number;
   idempotencyKey: string;
+  /** Наша референция на refund поръчката (`<id>-r<опит>`) — за да се намери и отказана (merchant.yaml refundOrder). */
+  reference?: string;
 }): Promise<unknown> {
   return call(`/api/orders/${encodeURIComponent(input.orderId)}/refund`, {
     method: 'POST',
-    body: { amount: input.amountCents, currency: 'EUR', description: 'Linketto refund' },
+    body: {
+      amount: input.amountCents,
+      currency: 'EUR',
+      description: 'Linketto refund',
+      ...(input.reference ? { merchant_order_data: { reference: input.reference } } : {}),
+    },
     idempotencyKey: input.idempotencyKey,
   });
 }

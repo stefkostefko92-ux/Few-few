@@ -260,8 +260,10 @@
   }
 
   /* Правни текстове: четим рядък текст */
-  .legal-doc p {
-    line-height: 1.8;
+  .legal-doc p,
+  .legal-doc li {
+    line-height: 1.75;
+    font-weight: 400;
   }
 }
 
@@ -737,7 +739,8 @@
     width: 100%;
     border-radius: 0.75rem;
     border: 1px solid color-mix(in srgb, currentColor 48%, transparent);
-    background: color-mix(in srgb, currentColor 7%, transparent);
+    /* Токенът на темата (profile-themes.ts → --pf-field), иначе — от currentColor. */
+    background: var(--pf-field, color-mix(in srgb, currentColor 7%, transparent));
     padding: 0.6rem 0.85rem;
     min-height: 2.75rem;
     transition:
@@ -747,7 +750,7 @@
   }
   .pf-field::placeholder {
     color: currentColor;
-    opacity: 0.62;
+    opacity: 0.74;
   }
   .pf-field:hover {
     border-color: color-mix(in srgb, currentColor 55%, transparent);
@@ -927,4 +930,9 @@
     border-radius: 0.75rem;
   }
 
+}
+
+/* Playfair идва със старинни цифри („2о26“) — в профилите искаме обикновени (визуалният обход). */
+[style*='--font-profile-serif'] {
+  font-variant-numeric: lining-nums;
 }

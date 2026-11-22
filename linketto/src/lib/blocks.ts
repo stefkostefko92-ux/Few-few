@@ -387,3 +387,6 @@ export function pollVotesStillValid(previous: readonly string[], next: readonly 
   if (next.length < previous.length) return false;
   return previous.every((option, index) => next[index] === option);
 }
+
+/** Таван на блоковете на профил (Разбивача т. 8: подканата на AI превода и злоупотреби). */
+export const MAX_BLOCKS_PER_PROFILE = 200;
