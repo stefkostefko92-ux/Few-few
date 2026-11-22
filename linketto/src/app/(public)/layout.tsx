@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import '../globals.css';
-import { fontVariables } from '@/app/fonts';
+import { publicFontVariables } from '@/app/fonts';
 import { SITE_URL } from '@/lib/seo';
 
 // Без metadataBase относителните hreflang/OG URL падат към localhost.
@@ -20,7 +20,7 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={fontVariables}>
+    <html lang="en" className={publicFontVariables}>
       <body className="min-h-screen">{children}</body>
     </html>
   );

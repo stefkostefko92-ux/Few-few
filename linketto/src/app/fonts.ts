@@ -51,8 +51,26 @@ export const comfortaa = Comfortaa({
   preload: false,
 });
 
+// Същият Manrope за публичните страници (/u/...): там UI шрифтът е само на сигнала и
+// бюлетина, а профилът е с избрания си шрифт — затова без preload (~39 KB по-малко).
+export const manropeLazy = Manrope({
+  subsets: ['latin', 'cyrillic'],
+  variable: '--font-ui',
+  display: 'swap',
+  preload: false,
+});
+
 export const fontVariables = [
   manrope.variable,
+  inter.variable,
+  playfair.variable,
+  jetbrains.variable,
+  comfortaa.variable,
+].join(' ');
+
+/** За публичните страници — без preload на UI шрифта. */
+export const publicFontVariables = [
+  manropeLazy.variable,
   inter.variable,
   playfair.variable,
   jetbrains.variable,

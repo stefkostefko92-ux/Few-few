@@ -130,207 +130,236 @@ export function LxShader() {
         powerPreference: 'default',
       });
       if (!gl) return;
+      // Софтуерен WebGL (SwiftShader/llvmpipe — без GPU ускорение): всеки кадър е ~100 ms на
+      // главната нишка и замръзва страницата → оставаме на CSS градиента. Лабораторните одити
+      // (Lighthouse/PSI) също рендерират софтуерно, затова там шейдърът не се мери.
+      const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+      const renderer = String(gl.getParameter(debugInfo ? debugInfo.UNMASKED_RENDERER_WEBGL : gl.RENDERER) ?? '');
+      if (/swiftshader|llvmpipe|softpipe|software|basic render/i.test(renderer)) {
+        gl.getExtension('WEBGL_lose_context')?.loseContext();
+        return;
+      }
 
+      // Компилацията не се чака синхронно (getShaderParameter веднага блокира главната нишка
+      // за стотици ms): с KHR_parallel_shader_compile питаме COMPLETION_STATUS между кадрите.
       const compile = (type: number, source: string) => {
         const shader = gl.createShader(type)!;
         gl.shaderSource(shader, source);
         gl.compileShader(shader);
-        return gl.getShaderParameter(shader, gl.COMPILE_STATUS) ? shader : null;
+        return shader;
       };
       const vs = compile(gl.VERTEX_SHADER, VERT);
       const fs = compile(gl.FRAGMENT_SHADER, FRAG);
-      if (!vs || !fs) return;
       const program = gl.createProgram()!;
       gl.attachShader(program, vs);
       gl.attachShader(program, fs);
       gl.linkProgram(program);
-      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return;
-      gl.useProgram(program);
-      const vao = gl.createVertexArray();
-      gl.bindVertexArray(vao);
-
-      const uRes = gl.getUniformLocation(program, 'uRes');
-      const uTime = gl.getUniformLocation(program, 'uTime');
-      const uMouse = gl.getUniformLocation(program, 'uMouse');
-      const uBump = gl.getUniformLocation(program, 'uBump');
-      const uScroll = gl.getUniformLocation(program, 'uScroll');
-
-      let scale = 0.8; // дял от CSS пикселите × DPR (глаткото поле не иска повече)
-      let w = 0;
-      let h = 0;
-      const resize = () => {
-        const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-        const nw = Math.max(2, Math.round(canvas.clientWidth * dpr * scale));
-        const nh = Math.max(2, Math.round(canvas.clientHeight * dpr * scale));
-        if (nw !== w || nh !== h) {
-          w = nw;
-          h = nh;
-          canvas.width = w;
-          canvas.height = h;
-          gl.viewport(0, 0, w, h);
-        }
-      };
-
-      let time = 0;
-      let last = 0;
-      let raf = 0;
-      let inView = true;
-      let motionOn = true;
-      let mouseX = 0.5;
-      let mouseY = 0.5;
-      let tx = 0.5;
-      let ty = 0.5;
-      let bump = 0;
-      let bumpTarget = 0;
-      let firstFrame = true;
-      const frames: number[] = [];
-      let cuts = 0;
-
-      const draw = () => {
-        resize();
-        const scroll = Math.min(window.scrollY / Math.max(window.innerHeight, 1), 2);
-        gl.uniform2f(uRes, w, h);
-        gl.uniform1f(uTime, time);
-        gl.uniform2f(uMouse, mouseX * w, (1 - mouseY) * h);
-        gl.uniform1f(uBump, bump);
-        gl.uniform1f(uScroll, scroll);
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
-        if (firstFrame) {
-          firstFrame = false;
-          canvas.classList.add('is-live');
-        }
-      };
-
-      // `dead`: шейдърът е изключен завинаги (сторожът или изгубен контекст). Без този флаг всеки
-      // sync() (видимост, скрол, пауза) рестартира цикъла върху изгубения контекст — безкрайни
-      // празни кадри точно на слабите устройства, които сторожът е трябвало да пощади.
-      let dead = false;
-      const teardown = () => {
-        dead = true;
-        if (raf) cancelAnimationFrame(raf);
-        raf = 0;
-        canvas.classList.remove('is-live');
-        gl.getExtension('WEBGL_lose_context')?.loseContext();
-      };
-
-      const frame = (now: number) => {
-        raf = 0;
+      const parallel = gl.getExtension('KHR_parallel_shader_compile');
+      const whenLinked = (go: () => void) => {
         if (disposed) return;
-        const dt = Math.min((now - last) / 1000, 0.1);
-        const ms = now - last;
-        last = now;
-        time += dt;
-        mouseX += (tx - mouseX) * 0.06;
-        mouseY += (ty - mouseY) * 0.06;
-        bump += (bumpTarget - bump) * 0.05;
-        draw();
+        if (parallel && !gl.getProgramParameter(program, parallel.COMPLETION_STATUS_KHR)) {
+          window.setTimeout(() => whenLinked(go), 32);
+          return;
+        }
+        go();
+      };
+      whenLinked(() => {
+        // Неуспешна компилация на шейдър → неуспешно свързване; CSS градиентът остава.
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return;
+        gl.useProgram(program);
+        const vao = gl.createVertexArray();
+        gl.bindVertexArray(vao);
 
-        // сторожът на кадрите: трайно бавно → първо по-малка резолюция,
-        // после отказ от шейдъра (CSS градиентът остава)
-        frames.push(ms);
-        if (frames.length >= 45) {
-          const sorted = [...frames].sort((a, b) => a - b);
-          const median = sorted[Math.floor(sorted.length / 2)];
-          frames.length = 0;
-          if (median > 42) {
-            if (scale > 0.45) {
-              scale = Math.max(0.4, scale * 0.7);
-              cuts += 1;
-            } else {
+        const uRes = gl.getUniformLocation(program, 'uRes');
+        const uTime = gl.getUniformLocation(program, 'uTime');
+        const uMouse = gl.getUniformLocation(program, 'uMouse');
+        const uBump = gl.getUniformLocation(program, 'uBump');
+        const uScroll = gl.getUniformLocation(program, 'uScroll');
+
+        let scale = 0.8; // дял от CSS пикселите × DPR (глаткото поле не иска повече)
+        let w = 0;
+        let h = 0;
+        const resize = () => {
+          const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+          const nw = Math.max(2, Math.round(canvas.clientWidth * dpr * scale));
+          const nh = Math.max(2, Math.round(canvas.clientHeight * dpr * scale));
+          if (nw !== w || nh !== h) {
+            w = nw;
+            h = nh;
+            canvas.width = w;
+            canvas.height = h;
+            gl.viewport(0, 0, w, h);
+          }
+        };
+
+        let time = 0;
+        let last = 0;
+        let raf = 0;
+        let inView = true;
+        let motionOn = true;
+        let mouseX = 0.5;
+        let mouseY = 0.5;
+        let tx = 0.5;
+        let ty = 0.5;
+        let bump = 0;
+        let bumpTarget = 0;
+        let firstFrame = true;
+        const frames: number[] = [];
+        let cuts = 0;
+
+        const draw = () => {
+          resize();
+          const scroll = Math.min(window.scrollY / Math.max(window.innerHeight, 1), 2);
+          gl.uniform2f(uRes, w, h);
+          gl.uniform1f(uTime, time);
+          gl.uniform2f(uMouse, mouseX * w, (1 - mouseY) * h);
+          gl.uniform1f(uBump, bump);
+          gl.uniform1f(uScroll, scroll);
+          gl.drawArrays(gl.TRIANGLES, 0, 3);
+          if (firstFrame) {
+            firstFrame = false;
+            canvas.classList.add('is-live');
+          }
+        };
+
+        // `dead`: шейдърът е изключен завинаги (сторожът или изгубен контекст). Без този флаг всеки
+        // sync() (видимост, скрол, пауза) рестартира цикъла върху изгубения контекст — безкрайни
+        // празни кадри точно на слабите устройства, които сторожът е трябвало да пощади.
+        let dead = false;
+        const teardown = () => {
+          dead = true;
+          if (raf) cancelAnimationFrame(raf);
+          raf = 0;
+          canvas.classList.remove('is-live');
+          gl.getExtension('WEBGL_lose_context')?.loseContext();
+        };
+
+        const frame = (now: number) => {
+          raf = 0;
+          if (disposed) return;
+          const dt = Math.min((now - last) / 1000, 0.1);
+          const ms = now - last;
+          last = now;
+          time += dt;
+          mouseX += (tx - mouseX) * 0.06;
+          mouseY += (ty - mouseY) * 0.06;
+          bump += (bumpTarget - bump) * 0.05;
+          draw();
+
+          // сторожът на кадрите: трайно бавно → първо по-малка резолюция,
+          // после отказ от шейдъра (CSS градиентът остава)
+          frames.push(ms);
+          if (frames.length >= (cuts === 0 ? 20 : 45)) {
+            const sorted = [...frames].sort((a, b) => a - b);
+            const median = sorted[Math.floor(sorted.length / 2)];
+            frames.length = 0;
+            if (median > 42) {
+              if (scale > 0.45) {
+                scale = Math.max(0.4, scale * 0.7);
+                cuts += 1;
+              } else {
+                teardown();
+                return;
+              }
+            } else if (cuts > 0 && median > 34 && scale <= 0.45) {
               teardown();
               return;
             }
-          } else if (cuts > 0 && median > 34 && scale <= 0.45) {
-            teardown();
-            return;
           }
-        }
-        schedule();
-      };
-
-      const shouldRun = () => !dead && inView && motionOn && !document.hidden;
-      const schedule = () => {
-        if (!raf && shouldRun() && !disposed) {
-          last = performance.now();
-          raf = requestAnimationFrame(frame);
-        }
-      };
-      const sync = () => {
-        if (shouldRun()) {
           schedule();
-        } else if (raf) {
-          cancelAnimationFrame(raf);
-          raf = 0;
-          frames.length = 0;
-        }
-      };
+        };
 
-      draw(); // първият кадър винаги, дори при пауза (статичен „плакат“)
-      sync();
+        const shouldRun = () => !dead && inView && motionOn && !document.hidden;
+        const schedule = () => {
+          if (!raf && shouldRun() && !disposed) {
+            last = performance.now();
+            raf = requestAnimationFrame(frame);
+          }
+        };
+        const sync = () => {
+          if (shouldRun()) {
+            schedule();
+          } else if (raf) {
+            cancelAnimationFrame(raf);
+            raf = 0;
+            frames.length = 0;
+          }
+        };
 
-      const onMotion = (event: Event) => {
-        motionOn = (event as CustomEvent<{ on: boolean }>).detail.on;
+        draw(); // първият кадър винаги, дори при пауза (статичен „плакат“)
         sync();
-      };
-      const onVisibility = () => sync();
-      const onPointer = (event: PointerEvent) => {
-        const rect = canvas.getBoundingClientRect();
-        if (rect.bottom < 0 || rect.top > window.innerHeight) return;
-        tx = (event.clientX - rect.left) / rect.width;
-        ty = (event.clientY - rect.top) / rect.height;
-        bumpTarget = ty >= 0 && ty <= 1 && tx >= 0 && tx <= 1 ? 1 : 0;
-      };
-      const onLeave = () => {
-        bumpTarget = 0;
-      };
-      const onLost = (event: Event) => {
-        event.preventDefault();
-        dead = true;
-        if (raf) cancelAnimationFrame(raf);
-        raf = 0;
-        canvas.classList.remove('is-live');
-      };
-      const observer = new IntersectionObserver(
-        (entries) => {
-          inView = entries[0]?.isIntersecting ?? true;
+
+        const onMotion = (event: Event) => {
+          motionOn = (event as CustomEvent<{ on: boolean }>).detail.on;
           sync();
-        },
-        { threshold: 0 },
-      );
-      observer.observe(canvas);
-      const resizeObserver = new ResizeObserver(() => {
-        if (dead) return;
-        if (!shouldRun()) draw();
+        };
+        const onVisibility = () => sync();
+        const onPointer = (event: PointerEvent) => {
+          const rect = canvas.getBoundingClientRect();
+          if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+          tx = (event.clientX - rect.left) / rect.width;
+          ty = (event.clientY - rect.top) / rect.height;
+          bumpTarget = ty >= 0 && ty <= 1 && tx >= 0 && tx <= 1 ? 1 : 0;
+        };
+        const onLeave = () => {
+          bumpTarget = 0;
+        };
+        const onLost = (event: Event) => {
+          event.preventDefault();
+          dead = true;
+          if (raf) cancelAnimationFrame(raf);
+          raf = 0;
+          canvas.classList.remove('is-live');
+        };
+        const observer = new IntersectionObserver(
+          (entries) => {
+            inView = entries[0]?.isIntersecting ?? true;
+            sync();
+          },
+          { threshold: 0 },
+        );
+        observer.observe(canvas);
+        const resizeObserver = new ResizeObserver(() => {
+          if (dead) return;
+          if (!shouldRun()) draw();
+        });
+        resizeObserver.observe(canvas);
+
+        window.addEventListener('lx:motion', onMotion);
+        document.addEventListener('visibilitychange', onVisibility);
+        window.addEventListener('pointermove', onPointer, { passive: true });
+        document.documentElement.addEventListener('pointerleave', onLeave);
+        canvas.addEventListener('webglcontextlost', onLost);
+
+        cleanup = () => {
+          if (raf) cancelAnimationFrame(raf);
+          observer.disconnect();
+          resizeObserver.disconnect();
+          window.removeEventListener('lx:motion', onMotion);
+          document.removeEventListener('visibilitychange', onVisibility);
+          window.removeEventListener('pointermove', onPointer);
+          document.documentElement.removeEventListener('pointerleave', onLeave);
+          canvas.removeEventListener('webglcontextlost', onLost);
+          gl.getExtension('WEBGL_lose_context')?.loseContext();
+        };
       });
-      resizeObserver.observe(canvas);
-
-      window.addEventListener('lx:motion', onMotion);
-      document.addEventListener('visibilitychange', onVisibility);
-      window.addEventListener('pointermove', onPointer, { passive: true });
-      document.documentElement.addEventListener('pointerleave', onLeave);
-      canvas.addEventListener('webglcontextlost', onLost);
-
-      cleanup = () => {
-        if (raf) cancelAnimationFrame(raf);
-        observer.disconnect();
-        resizeObserver.disconnect();
-        window.removeEventListener('lx:motion', onMotion);
-        document.removeEventListener('visibilitychange', onVisibility);
-        window.removeEventListener('pointermove', onPointer);
-        document.documentElement.removeEventListener('pointerleave', onLeave);
-        canvas.removeEventListener('webglcontextlost', onLost);
-        gl.getExtension('WEBGL_lose_context')?.loseContext();
-      };
     };
 
-    // след първото рисуване: два rAF + празен ход
+    // Шейдърът е украса: тръгва чак след `load` и в празен ход на главната нишка, за да не
+    // спори със зареждането и хидратацията (TBT). Дотогава се вижда CSS градиентът.
     let timer = 0;
-    const first = requestAnimationFrame(() => {
-      timer = window.setTimeout(start, 120);
-    });
+    let idle = 0;
+    const kick = () => {
+      if (disposed) return;
+      if (typeof window.requestIdleCallback === 'function') idle = window.requestIdleCallback(start, { timeout: 4000 });
+      else timer = window.setTimeout(start, 1500);
+    };
+    if (document.readyState === 'complete') kick();
+    else window.addEventListener('load', kick, { once: true });
     return () => {
       disposed = true;
-      cancelAnimationFrame(first);
+      window.removeEventListener('load', kick);
+      if (idle && typeof window.cancelIdleCallback === 'function') window.cancelIdleCallback(idle);
       window.clearTimeout(timer);
       cleanup?.();
     };
