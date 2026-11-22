@@ -174,7 +174,11 @@ checkPurchase (lib/plan-orders.ts; FOUNDER не се купува пак, по-�
 реда на потребителя, пуска checkPurchase ОТНОВО (иначе → `conflict`: платена, неприложена),
 пази снимка prevPlan/prevExpiresAt и праща потвърждение (lib/plan-confirmation.ts, P14).
 Връщане: само от /admin → refund поръчка при Revolut (`refund_pending`, до 2 дни) → при
-`completed` планът се връща към снимката (отпада само платеното с поръчката). Реферал
+`completed` (САМО по живо четене: type refund + точна сума + EUR; CAS по `refundOrderId` и опита —
+червен екип 2026-11-22) планът се връща към снимката (отпада само платеното с поръчката).
+Разминаване в сумата → аларма най-много веднъж на 24 ч (маркер `refundStuckAlertedAt`) и бутон
+„Приключи ръчно“ в /admin след сверка в Revolut Business (`closeRefundManually`,
+docs/refund-manual-close-spec.md — решава живото четене; реалната сума влиза в `refundCents`). Реферал
 бонусът (REFERRAL_PERCENT=15 от платената сума) се записва в същата транзакция като
 **задържан** (`releasedAt null`, docs/abuse-money-spec.md А) и влиза в баланса след 30 дни от
 cron-а (`releaseReferralBonuses`: живо GET, условен запис); отказ/връщане/спор го сторнират,
