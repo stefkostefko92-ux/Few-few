@@ -7,6 +7,7 @@ import '@/components/landing/lx.css';
 
 export const metadata: Metadata = {
   title: '404 · Linketto',
+  keywords: ['Linketto', 'link in bio', 'multilingual link in bio', 'bio link', 'Carbon Stealth'],
   robots: { index: false },
 };
 

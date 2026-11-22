@@ -73,6 +73,10 @@ grep -q "server_name $DOMAIN;" "$LG/deploy/nginx.conf" \
   || stop "$LG/deploy/nginx.conf не носи $DOMAIN — деплоят от main мина ли?"
 
 say "3) nginx сайт + сертификат"
+# Кешът на vhost-а: nginx прави само последната папка на proxy_cache_path — без родителя `nginx -t` пада.
+[ -L /var/cache/nginx/linketto ] && stop "/var/cache/nginx/linketto е симлинк — провери ръчно."
+install -d -m 0755 /var/cache/nginx
+install -d -o www-data -g www-data -m 0700 /var/cache/nginx/linketto
 sed "s/127\.0\.0\.1:4350/127.0.0.1:$P/g" "$LG/deploy/nginx.conf" > "$SITE"
 ln -sfn "$SITE" "$LINK"
 nginx -t

@@ -194,6 +194,27 @@
     "urlLabel": "URL / telefonas / adresas",
     "extra1Label": "App Store / Spotify URL",
     "extra2Label": "Google Play / Apple Music URL",
+    "field_url": "Nuoroda (https://…)",
+    "field_tip": "Mokėjimo nuoroda (Revolut, PayPal, Ko-fi…)",
+    "field_video": "Vaizdo įrašo nuoroda (YouTube arba Vimeo)",
+    "field_phone": "Telefono numeris",
+    "field_address": "Adresas arba vieta",
+    "field_spotify": "Spotify nuoroda",
+    "field_appleMusic": "Apple Music nuoroda",
+    "field_appStore": "App Store nuoroda",
+    "field_googlePlay": "Google Play nuoroda",
+    "field_appWeb": "Tinklalapis kitiems įrenginiams (nebūtina)",
+    "field_vcardPhone": "Telefonas",
+    "field_vcardEmail": "El. paštas",
+    "field_vcardOrg": "Įmonė (nebūtina)",
+    "kindHint_HEADER": "Antraštė padalija blokus į skyrius — užtenka vien teksto.",
+    "kindHint_FORM": "Lankytojai tau rašo per formą, o žinutes matai skydelyje. Užtenka pavadinimo.",
+    "kindHint_EMAIL": "Renka tavo naujienlaiškio prenumeratorius; kiekvienas patvirtina el. paštu. Užtenka pavadinimo.",
+    "kindHint_BOOKING": "Lankytojai siunčia rezervacijos užklausą, kurią matai skydelyje ir pažymi kaip apdorotą. Užtenka pavadinimo.",
+    "kindHint_MUSIC": "Užpildyk bent vieną — lankytojas pasirenka savo paslaugą.",
+    "kindHint_APP": "Užpildyk bent vieną parduotuvę — parodysime tinkamą pagal lankytojo telefoną.",
+    "kindHint_VIDEO": "Vaizdo įrašas įterpiamas į profilį ir įkeliamas tik jį spustelėjus.",
+    "kindHint_VCARD": "Užpildyk telefoną ir (arba) el. paštą — lankytojas vienu prisilietimu išsaugo juos savo kontaktuose.",
     "addBlockHint": "Antraštei ir formai reikia tik pavadinimo. Programėlei užpildyk App Store ir (arba) Google Play. Muzikai — Spotify ir (arba) Apple Music.",
     "messagesSection": "Formos žinutės",
     "noMessages": "Kol kas nėra žinučių.",
@@ -526,7 +547,11 @@
   "seo": {
     "metaTitle": "Linketto — daugiakalbis link in bio: visos tavo nuorodos bet kuria kalba",
     "keywords": "Linketto, Carbon Stealth, share links, link in bio, linktree alternatyva, bio nuoroda, link in bio puslapis, kūrėjo puslapis, daugiakalbis profilis, skaitmeninė vizitinė kortelė, parduok skaitmeninius produktus, visos nuorodos vienoje vietoje",
-    "metaDescription": "Linketto — daugiakalbis link in bio: visos tavo nuorodos vienoje vietoje, kiekvieno lankytojo kalba. Talpinamas ES, analitika be slapukų, be komisinių. Carbon Stealth produktas."
+    "metaDescription": "Linketto — daugiakalbis link in bio: visos tavo nuorodos vienoje vietoje, kiekvieno lankytojo kalba. Talpinamas ES, analitika be slapukų, be komisinių. Carbon Stealth produktas.",
+    "privacyDescription": "Kaip Linketto tvarko tavo asmens duomenis: tik tai, ko reikia paslaugai, talpinimas ES, jokio duomenų pardavimo ir jokių sekimo slapukų.",
+    "termsDescription": "Linketto naudojimosi sąlygos: sutarties sudarymas, planai ir mokėjimai, teisė atsisakyti sutarties, turinys ir moderavimas, kvietimų programa.",
+    "cookiesDescription": "Linketto naudoja tik būtinuosius slapukus prisijungimui ir kalbos pasirinkimui. Profilių lankytojai slapukų negauna.",
+    "profileDescription": "{name} platformoje Linketto — visos nuorodos vienoje vietoje, kiekvieno lankytojo kalba."
   },
   "report": {
     "title": "Pranešti apie profilį „{name}“",
@@ -673,7 +698,9 @@
     "ctaButton": "Pradėk nemokamai",
     "plansNote": "Abiejų paslaugų planuose yra skirtingų funkcijų; lyginame tik išvardytas savybes. Visos sąlygos pateiktos jų kainų puslapiuose.",
     "metaDescription": "Linketto ar {name}? Kainos, savas domenas, prekės ženklas ir analitika — faktai iš jų oficialių puslapių, su data ir šaltiniu.",
-    "intro": "Sąžiningas kainos ir funkcijų palyginimas — kiekviena {name} reikšmė paimta iš jų oficialaus puslapio, su šaltiniu ir data."
+    "intro": "Sąžiningas kainos ir funkcijų palyginimas — kiekviena {name} reikšmė paimta iš jų oficialaus puslapio, su šaltiniu ir data.",
+    "summaryLead": "Trumpai ({date} duomenimis):",
+    "summaryRow": "{feature} — Linketto: {us}; {name}: {them}."
   },
   "security": {
     "title": "Saugumas",

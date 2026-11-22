@@ -194,6 +194,27 @@
     "urlLabel": "URL / telefon / adress",
     "extra1Label": "App Store / Spotify-URL",
     "extra2Label": "Google Play / Apple Music-URL",
+    "field_url": "Länk (https://…)",
+    "field_tip": "Betalningslänk (Revolut, PayPal, Ko-fi…)",
+    "field_video": "Länk till videon (YouTube eller Vimeo)",
+    "field_phone": "Telefonnummer",
+    "field_address": "Adress eller plats",
+    "field_spotify": "Spotify-länk",
+    "field_appleMusic": "Apple Music-länk",
+    "field_appStore": "App Store-länk",
+    "field_googlePlay": "Google Play-länk",
+    "field_appWeb": "Webbsida för andra enheter (valfritt)",
+    "field_vcardPhone": "Telefon",
+    "field_vcardEmail": "E-post",
+    "field_vcardOrg": "Företag (valfritt)",
+    "kindHint_HEADER": "Rubriken delar in blocken i avsnitt — det räcker med texten.",
+    "kindHint_FORM": "Besökare skriver till dig via formuläret, och meddelandena ser du i panelen. Det räcker med en titel.",
+    "kindHint_EMAIL": "Samlar prenumeranter till ditt nyhetsbrev; var och en bekräftar via e-post. Det räcker med en titel.",
+    "kindHint_BOOKING": "Besökare skickar en bokningsförfrågan som du ser i panelen och markerar som hanterad. Det räcker med en titel.",
+    "kindHint_MUSIC": "Fyll i minst ett av dem — besökaren väljer sin tjänst.",
+    "kindHint_APP": "Fyll i minst en butik — vi visar rätt butik utifrån besökarens telefon.",
+    "kindHint_VIDEO": "Videon bäddas in i profilen och laddas först när någon klickar på den.",
+    "kindHint_VCARD": "Fyll i telefon och/eller e-post — besökaren sparar dem i sina kontakter med ett tryck.",
     "addBlockHint": "Rubrik och formulär behöver bara en titel. För en app, fyll i App Store och/eller Google Play. För musik — Spotify och/eller Apple Music.",
     "messagesSection": "Meddelanden från formuläret",
     "noMessages": "Inga meddelanden än.",
@@ -526,7 +547,11 @@
   "seo": {
     "metaTitle": "Linketto — flerspråkig link in bio: alla dina länkar, på alla språk",
     "keywords": "Linketto, Carbon Stealth, share links, link in bio, länk i bion, alla länkar på ett ställe, linktree-alternativ, bio link, digitalt visitkort, sida för kreatörer, flerspråkig profil, sälj digitala produkter",
-    "metaDescription": "Linketto är den flerspråkiga link in bio-tjänsten: alla dina länkar på ett ställe, på varje besökares språk. Hostad i EU, statistik utan cookies, ingen provision. En produkt från Carbon Stealth."
+    "metaDescription": "Linketto är den flerspråkiga link in bio-tjänsten: alla dina länkar på ett ställe, på varje besökares språk. Hostad i EU, statistik utan cookies, ingen provision. En produkt från Carbon Stealth.",
+    "privacyDescription": "Så behandlar Linketto dina personuppgifter: bara det tjänsten behöver, hosting i EU, ingen försäljning av data och inga spårningscookies.",
+    "termsDescription": "Linkettos villkor: hur avtalet ingås, planer och betalningar, ångerrätt, innehåll och moderering, inbjudningsprogram.",
+    "cookiesDescription": "Linketto använder bara strikt nödvändiga cookies för inloggning och språkval. Besökare på profilerna får inga cookies.",
+    "profileDescription": "{name} på Linketto — alla länkar på ett ställe, på varje besökares språk."
   },
   "report": {
     "title": "Anmäl profilen „{name}“",
@@ -673,7 +698,9 @@
     "ctaButton": "Kom igång gratis",
     "plansNote": "De två tjänsternas planer innehåller olika funktioner; vi jämför bara de egenskaper som anges. Fullständiga villkor finns på deras prissidor.",
     "metaDescription": "Linketto eller {name}? Priser, egen domän, varumärke och statistik — fakta från deras officiella sidor, med datum och källa.",
-    "intro": "En ärlig jämförelse av pris och funktioner — varje värde för {name} kommer från deras officiella sida, med källa och datum."
+    "intro": "En ärlig jämförelse av pris och funktioner — varje värde för {name} kommer från deras officiella sida, med källa och datum.",
+    "summaryLead": "I korthet (per {date}):",
+    "summaryRow": "{feature} — Linketto: {us}; {name}: {them}."
   },
   "security": {
     "title": "Säkerhet",

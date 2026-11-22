@@ -62,6 +62,8 @@ export function LivePreview({
   const [open, setOpen] = useState(false);
   const [desktop, setDesktop] = useState(false);
   const [loading, setLoading] = useState(true);
+  // Първото зареждане на рамката: до него — скелет (иначе бял правоъгълник в тъмна тема).
+  const [ready, setReady] = useState(false);
   const snapshots = useRef(new WeakMap<HTMLFormElement, string>());
   const pending = useRef(new Set<HTMLFormElement>());
   const timer = useRef<number | undefined>(undefined);
@@ -155,6 +157,9 @@ export function LivePreview({
   const src = `/u/${encodeURIComponent(slug)}/preview?hl=${encodeURIComponent(hl)}${draft ? `&d=${draft}` : ''}&r=${rev}`;
   useEffect(() => setLoading(true), [src]);
   const showFrame = desktop || open;
+  useEffect(() => {
+    if (!showFrame) setReady(false);
+  }, [showFrame]);
 
   const panel = (
     <div className="flex h-full flex-col">
@@ -186,16 +191,29 @@ export function LivePreview({
           </label>
         )}
       </div>
-      <div className="mt-3 min-h-0 flex-1 overflow-hidden rounded-[2rem] border-[6px] border-fg/85 bg-black shadow-e3">
+      <div className="relative mt-3 min-h-0 flex-1 overflow-hidden rounded-[2rem] border-[6px] border-fg/85 bg-surface-2 shadow-e3">
+        {!ready && (
+          <div aria-hidden className="absolute inset-0 flex flex-col items-center gap-3 px-6 pt-12 motion-safe:animate-pulse">
+            <span className="h-16 w-16 rounded-full bg-fg/10" />
+            <span className="h-3 w-28 rounded-full bg-fg/10" />
+            <span className="mb-4 h-2.5 w-40 rounded-full bg-fg/5" />
+            {[0, 1, 2, 3].map((i) => (
+              <span key={i} className="h-11 w-full rounded-control bg-fg/10" />
+            ))}
+          </div>
+        )}
         {showFrame && (
           <iframe
             key="preview"
             title={labels.frame}
             src={src}
-            onLoad={() => setLoading(false)}
+            onLoad={() => {
+              setLoading(false);
+              setReady(true);
+            }}
             sandbox="allow-same-origin"
             tabIndex={-1}
-            className="h-full w-full bg-white"
+            className={cn('relative h-full w-full transition-opacity duration-200', ready ? 'bg-white opacity-100' : 'opacity-0')}
           />
         )}
       </div>
