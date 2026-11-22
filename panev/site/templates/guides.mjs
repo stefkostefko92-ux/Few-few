@@ -46,7 +46,16 @@ const faqLd = (t, key) => ({
   mainEntity: t.guides[key].faq.map((x) => ({ '@type': 'Question', name: x.q, acceptedAnswer: { '@type': 'Answer', text: x.a } })),
 });
 
-const families = (t) => FAMILY_KEYS.map((k) => `<li><a href="${pagePath(t, k)}">${esc(t.families[k].crumb)}</a></li>`).join('');
+// Семействата — под неутрално заглавие: патентът защитава решението с шарнирното съединение, не
+// всеки код от ценоразписа, затова линковете към семействата не стоят под „патентованата система“.
+const related = (t) => `
+<section class="section">
+  <div class="wrap">
+    <h2>${esc(t.guides.shared.relatedTitle)}</h2>
+    <nav class="fam-links" aria-label="${esc(t.guides.shared.relatedLabel)}"><ul>${FAMILY_KEYS.map((k) => `<li><a href="${pagePath(t, k)}">${esc(t.families[k].crumb)}</a></li>`).join('')}</ul></nav>
+    <p><a href="${pagePath(t, 'products')}">${esc(t.families.shared.fullList)}</a> · <a href="${pagePath(t, 'catalog')}">${esc(t.nav.catalog)}</a></p>
+  </div>
+</section>`;
 
 // ── Патентът ─────────────────────────────────────────────────
 export function patentPage(t) {
@@ -100,11 +109,11 @@ export function patentPage(t) {
   <div class="wrap">
     <h2>${esc(g.whereTitle)}</h2>
     <p>${esc(g.whereLead)}</p>
-    <nav class="fam-links" aria-label="${esc(sh.relatedLabel)}"><ul>${families(t)}</ul></nav>
-    <p><a href="${pagePath(t, 'products')}">${esc(t.families.shared.fullList)}</a> · <a href="${pagePath(t, 'catalog')}">${esc(t.nav.catalog)}</a></p>
+    <p class="sec-more"><a href="${pdfPage(2)}">${esc(sh.catalogPage(2))}</a> · <a href="${pdfPage(3)}">${esc(sh.catalogPage(3))}</a> · <a href="${pagePath(t, 'walls')}">${esc(g.wallsLink)}</a></p>
   </div>
 </section>
 ${faqHtml(g)}
+${related(t)}
 
 ${orderCta(t)}`;
 }
@@ -175,19 +184,13 @@ ${regolaScript()}
 </section>
 ${cantiereSection(t, 'walls')}
 ${faqHtml(g)}
-
-<section class="section">
-  <div class="wrap">
-    <h2>${esc(sh.relatedTitle)}</h2>
-    <nav class="fam-links" aria-label="${esc(sh.relatedLabel)}"><ul>${families(t)}</ul></nav>
-    <p><a href="${pagePath(t, 'products')}">${esc(t.families.shared.fullList)}</a> · <a href="${pagePath(t, 'catalog')}">${esc(t.nav.catalog)}</a></p>
-  </div>
-</section>
+${related(t)}
 
 ${orderCta(t)}`;
 }
 
-// Шестте стъпки са тези от стр. 10 на каталога; инструментите — трите от началната страница.
+// Шестте стъпки са тези от стр. 10 на каталога; инструментите — трите от началната страница. Описанието
+// носи и уговорката (меродавни са монтажните чертежи и проектът): HowTo се чете и извън страницата.
 export const wallsLd = (t) => {
   const g = t.guides.walls;
   const url = pageUrl(t, 'walls');
@@ -198,7 +201,7 @@ export const wallsLd = (t) => {
       '@id': `${url}#howto`,
       url: `${url}#montaggio`,
       name: g.howToName,
-      description: g.stepsLead,
+      description: `${g.stepsLead} ${g.stepsNote}`,
       inLanguage: t.htmlLang,
       isPartOf: { '@id': `${url}#webpage` },
       tool: t.problem.tools.map((name) => ({ '@type': 'HowToTool', name })),
