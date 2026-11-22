@@ -5062,7 +5062,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 302
+        "lessons": 303
       },
       "evolution": [
         {
@@ -5574,9 +5574,20 @@
           "date": "2026-11-22",
           "event": "v32.9 — учене",
           "detail": "Научи: В linketto messages/*.json обръщението в dashboard е на „ти“ във всички локали освен fr… (+48 още)"
+        },
+        {
+          "version": "33.0.0",
+          "date": "2026-11-22",
+          "event": "v33.0 — учене",
+          "detail": "Научи: Korpora нарича разкроя в IT „distinta di taglio“ и в EN „cut list“ (не „piano di taglio…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-22",
+          "type": "learning",
+          "summary": "Научи: „Korpora нарича разкроя в IT „distinta di taglio“ и в EN „cut list“ (не „piano di taglio…\""
+        },
         {
           "date": "2026-11-22",
           "type": "learning",
