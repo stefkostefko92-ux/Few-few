@@ -3,7 +3,8 @@ import { headers } from 'next/headers';
 import type { User } from '@prisma/client';
 import { createUserToken } from '@/lib/auth';
 import { emailReady, sendEmail } from '@/lib/email';
-import { securityNoticeMessage, verifyEmailMessage, type SecurityNoticeKind } from '@/lib/account-emails';
+import { resetPasswordMessage, securityNoticeMessage, verifyEmailMessage, type SecurityNoticeKind } from '@/lib/account-emails';
+import { RESET_TTL_MS } from '@/lib/password-policy';
 import { requestCountry } from '@/lib/geoip';
 import { SITE_URL } from '@/lib/seo';
 
@@ -16,6 +17,15 @@ export async function sendVerificationEmail(user: Pick<User, 'id' | 'email' | 'l
   const url = `${SITE_URL.replace(/\/$/, '')}/api/verify-email?token=${token}`;
   const mail = verifyEmailMessage({ locale: user.locale, url });
   return sendEmail({ to: user.email, subject: mail.subject, html: mail.html, tag: 'verify' }).catch(() => false);
+}
+
+/** Писмо с връзка за нова парола (docs/password-reset-spec.md R2): 60 мин, еднократна. */
+export async function sendPasswordResetEmail(user: Pick<User, 'id' | 'email'>, locale: string): Promise<boolean> {
+  if (!(await emailReady())) return false;
+  const token = await createUserToken(user.id, 'reset-password', RESET_TTL_MS);
+  const url = `${SITE_URL.replace(/\/$/, '')}/${locale}/reset?token=${token}`;
+  const mail = resetPasswordMessage({ locale, url });
+  return sendEmail({ to: user.email, subject: mail.subject, html: mail.html, tag: 'password-reset' }).catch(() => false);
 }
 
 /** Известие до самия потребител при промяна по сигурността (най-добро усилие). */

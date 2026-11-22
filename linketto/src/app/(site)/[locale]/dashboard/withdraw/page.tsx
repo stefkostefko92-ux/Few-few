@@ -104,7 +104,21 @@ export default async function WithdrawPage({
           <Card as="section" padding="lg" className="dash-card">
             <form action={withdrawPlanAction} className="space-y-5">
               <p className="text-body text-fg-2">{t('withdrawIntro')}</p>
-              <dl className="grid gap-x-4 gap-y-2.5 rounded-card border border-line bg-surface-2 p-4 text-small sm:grid-cols-[10rem_1fr]">
+              {/* Сумата за връщане — най-важното число на екрана (визуалният обход), над подробностите. */}
+              {preview && (
+                <div className="rounded-card border border-line bg-accent-soft p-4">
+                  <p className="text-small font-semibold text-accent-soft-fg">{t('withdrawRefundAmount')}</p>
+                  <p className="mt-1 text-[1.75rem] font-bold leading-tight tabular-nums text-fg">
+                    €{(preview.refundCents / 100).toFixed(2)}
+                  </p>
+                  {preview.refundCents < order.amountCents && (
+                    <p className="mt-2 text-small leading-relaxed text-fg-2">
+                      {t('withdrawKeptNote', { kept: `€${((order.amountCents - preview.refundCents) / 100).toFixed(2)}` })}
+                    </p>
+                  )}
+                </div>
+              )}
+              <dl className="grid gap-x-4 gap-y-1 rounded-card border border-line bg-surface-2 p-4 text-small sm:grid-cols-[10rem_1fr] sm:gap-y-2.5 [&>dt:not(:first-child)]:mt-3 sm:[&>dt:not(:first-child)]:mt-0">
                 <dt className="font-medium text-fg-muted">{t('withdrawContract')}</dt>
                 <dd className="text-fg">
                   Linketto {PLAN_NAMES[order.plan] ?? order.plan} ·{' '}
@@ -114,24 +128,13 @@ export default async function WithdrawPage({
                 <dt className="font-medium text-fg-muted">{t('withdrawOrderedOn')}</dt>
                 <dd className="text-fg">{fmt(order.completedAt ?? order.createdAt)}</dd>
                 <dt className="font-medium text-fg-muted">{t('withdrawOrderRef')}</dt>
-                <dd className="break-all font-mono text-micro text-fg-2">{order.id}</dd>
+                <dd className="font-mono text-micro text-fg-2" title={order.id}>
+                  …{order.id.slice(-10)}
+                </dd>
                 <dt className="font-medium text-fg-muted">{t('withdrawEmail')}</dt>
                 <dd className="break-all text-fg">{user.email}</dd>
                 <dt className="font-medium text-fg-muted">{t('withdrawUntil')}</dt>
                 <dd className="text-fg">{fmt(withdrawalLastDay(order.completedAt as Date))}</dd>
-                {preview && (
-                  <>
-                    <dt className="font-medium text-fg-muted">{t('withdrawRefundAmount')}</dt>
-                    <dd className="font-semibold text-fg">
-                      €{(preview.refundCents / 100).toFixed(2)}
-                      {preview.refundCents < order.amountCents && (
-                        <span className="block text-micro font-normal text-fg-muted">
-                          {t('withdrawKeptNote', { kept: `€${((order.amountCents - preview.refundCents) / 100).toFixed(2)}` })}
-                        </span>
-                      )}
-                    </dd>
-                  </>
-                )}
               </dl>
               <Field id="withdraw-name" label={t('withdrawName')}>
                 <Input

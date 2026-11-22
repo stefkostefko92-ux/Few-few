@@ -84,7 +84,8 @@ html:has(.lx) {
   position: relative;
   display: block;
   white-space: normal;
-  clip-path: inset(-0.05em -0.3em -0.14em -0.3em);
+  /* Дъното ≥ -0.35em: при line-height .9 по-малко реже опашките на g, y, p (обходът: de/pl/en). */
+  clip-path: inset(-0.05em -0.3em -0.35em -0.3em);
 }
 .lx-w {
   display: inline-block;
@@ -212,6 +213,16 @@ html:has(.lx) {
 .lx-pause:focus-visible {
   outline: 3px solid var(--lime);
   outline-offset: 3px;
+}
+.lx-pause-icon {
+  display: none;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+@media (max-width: 62rem) {
+  .lx-pause-icon {
+    display: inline;
+  }
 }
 
 /* ── Прогрес на скрола + курсор ─────────────────────────────────────── */
@@ -1048,7 +1059,8 @@ html[dir='rtl'] .lx-track {
   --focus: var(--ink);
   clip-path: polygon(0 5vw, 100% 0, 100% 100%, 0 100%);
   margin-block-start: -5vw;
-  padding-block: calc(5vw + 3rem) 4.5rem;
+  /* Долу: манифестът се качва с -5vw (наклонен срез) — без да докосва етикетите. */
+  padding-block: calc(5vw + 3rem) calc(5vw + 4.5rem);
 }
 .lx-stats h2 {
   margin: 0 0 2.2rem;
@@ -1358,10 +1370,12 @@ html[dir='rtl'] .lx-track {
   color: var(--ink);
   border: 4px solid var(--ink);
   font-weight: 800;
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   line-height: 1.05;
   text-align: center;
   padding: 0.5rem;
+  overflow-wrap: anywhere;
+  hyphens: auto;
   rotate: 12deg;
   animation: lx-wobble 6s ease-in-out infinite;
 }
@@ -1545,6 +1559,11 @@ html[dir='rtl'] .lx-track {
   background: #09060f;
   border-block-start: 3px solid var(--pink);
 }
+.lx-foot .max-w-page {
+  width: min(100% - 3rem, 86rem);
+  max-width: none;
+  padding-inline: 0;
+}
 
 /* ── Мобилно ───────────────────────────────────────────────────────── */
 @media (max-width: 62rem) {
@@ -1617,7 +1636,22 @@ html[dir='rtl'] .lx-track {
   .lx-pause {
     inset-block-end: 0.6rem;
     inset-inline-end: 0.6rem;
-    padding: 0.55rem 0.8rem;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+    padding: 0;
+    display: grid;
+    place-items: center;
+  }
+  .lx-pause-text {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .lx-badge {
+    inset-inline-end: 0.2rem;
   }
 }
 
@@ -1634,6 +1668,8 @@ html[dir='rtl'] .lx-track {
   --c-s3: 34 26 50;
   --c-line: 46 37 64;
   --c-line-strong: 64 52 88;
+  /* Рамката на полетата — видима върху тъмната карта (обходът: вход/регистрация). */
+  --c-line-input: 112 96 142;
   --c-accent: 214 255 61;
   --c-accent-hover: 226 255 112;
   --c-accent-active: 196 236 40;
@@ -1661,9 +1697,66 @@ html[dir='rtl'] .lx-track {
 .lx-nav-main {
   gap: 1.4rem;
 }
+.lx-menu {
+  display: none;
+}
 @media (max-width: 62rem) {
   .lx-nav-main {
     display: none;
+  }
+  /* Мобилно меню: бутон до логото, панел под хедъра. */
+  .lx-menu {
+    display: block;
+    position: relative;
+    margin-inline-end: auto;
+  }
+  .lx-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2.6rem;
+    block-size: 2.6rem;
+    border-radius: 0.6rem;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+    cursor: pointer;
+    list-style: none;
+  }
+  .lx-menu-btn::-webkit-details-marker {
+    display: none;
+  }
+  .lx-menu[open] .lx-menu-btn {
+    background: var(--lime);
+    color: var(--ink);
+    border-color: var(--lime);
+  }
+  .lx-menu-btn:focus-visible {
+    outline: 2px solid var(--lime);
+    outline-offset: 2px;
+  }
+  .lx-menu-panel {
+    position: absolute;
+    inset-block-start: calc(100% + 0.7rem);
+    inset-inline-start: 0;
+    z-index: 60;
+    display: grid;
+    min-inline-size: 13rem;
+    padding: 0.4rem;
+    border-radius: 0.8rem;
+    background: rgba(18, 13, 28, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 1.2rem 2.4rem rgba(0, 0, 0, 0.45);
+    font-weight: 700;
+  }
+  .lx-menu-panel a {
+    padding: 0.75rem 0.9rem;
+    border-radius: 0.55rem;
+    color: #fff;
+  }
+  .lx-menu-panel a:hover,
+  .lx-menu-panel a:focus-visible {
+    background: rgba(214, 255, 61, 0.12);
+    color: var(--lime);
   }
 }
 .lx-page {

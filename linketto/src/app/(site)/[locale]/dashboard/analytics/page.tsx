@@ -135,6 +135,10 @@ export default async function AnalyticsPage({
     now,
   );
   const max = seriesMax(series) || 1;
+  const hasTraffic = series.some((point) => point.views > 0 || point.clicks > 0);
+  // Датите по езика на таблото (не ISO) — визуалният обход.
+  const dayLabel = (iso: string | undefined) =>
+    iso ? new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${iso}T00:00:00Z`)) : '';
   const gap = languageDemand(
     byCountry.map((row) => ({ country: row.country, count: row._count._all })),
     profile.translations.map((tr) => tr.locale),
@@ -239,6 +243,11 @@ export default async function AnalyticsPage({
         {/* Тренд по дни */}
         <Card as="section" className={sectionClass}>
           <CardHeader title={t('analyticsTrend')} description={t('analyticsLast30')} />
+          {!hasTraffic && (
+            <p className="mt-4 rounded-control border border-dashed border-line p-3 text-small text-fg-muted">
+              {t('analyticsNoTraffic')}
+            </p>
+          )}
           <div className="mt-5 flex gap-3">
             <div
               aria-hidden
@@ -280,8 +289,8 @@ export default async function AnalyticsPage({
                 aria-hidden
                 className="mt-1.5 flex justify-between text-micro tabular-nums text-fg-muted"
               >
-                <span>{series[0]?.date}</span>
-                <span>{series[series.length - 1]?.date}</span>
+                <span>{dayLabel(series[0]?.date)}</span>
+                <span>{dayLabel(series[series.length - 1]?.date)}</span>
               </div>
             </div>
           </div>

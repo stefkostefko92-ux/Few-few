@@ -314,7 +314,8 @@ export async function ProfileScreen({
         : '9999px';
   const isGrid = styleCfg.layout === 'grid';
   const isStart = styleCfg.align === 'start';
-  const btnClass = `pf-btn block min-h-[3.25rem] border px-3 py-2.5 font-semibold ${shapeClass} ${shadowClass}`;
+  // В решетка плочките в един ред са с еднаква височина (h-full), съдържанието — центрирано.
+  const btnClass = `pf-btn ${isGrid ? 'flex h-full items-center justify-center' : 'block'} min-h-[3.25rem] border px-3 py-2.5 font-semibold ${shapeClass} ${shadowClass}`;
   const gridSpan = isGrid ? 'col-span-2' : '';
   const bv = (a: string) =>
     buttonVars(styleCfg.buttonFill, a, isTheme, readableOn(a));
@@ -331,8 +332,7 @@ export async function ProfileScreen({
         } as React.CSSProperties)
       : buttonVars('solid', a, isTheme, ink);
   };
-  const submitClass =
-    'pf-btn w-full min-h-11 rounded-full border px-4 py-2 font-semibold';
+  const submitClass = `pf-btn w-full min-h-11 border px-4 py-2 font-semibold ${shapeClass}`;
   const avatarShapeClass =
     styleCfg.avatarShape === 'circle'
       ? 'rounded-full'
@@ -1233,7 +1233,7 @@ export async function ProfileScreen({
             </h2>
             {/* Дир. 2011/83 чл. 6а: продавачът е създателят (статут), Linketto
                 не е страна по покупката — плащането е при него (решение О-1). */}
-            <p className="pf-muted mt-2 text-center text-[11px] leading-snug">
+            <p className="pf-muted mt-2 text-center text-xs leading-relaxed">
               {t('shopSellerNote')} {profile.user.isTrader ? t('sellerTrader') : t('sellerPrivate')}.{' '}
               {t('shopExternalNote')}
             </p>
@@ -1292,8 +1292,8 @@ export async function ProfileScreen({
               <span className="font-bold" style={{ color: 'var(--pf-fg)' }}>
                 Linketto
               </span>
-              <span aria-hidden="true" className="h-3.5 w-px shrink-0 bg-current opacity-40" />
-              <span>{t('badgeCta')}</span>
+              <span aria-hidden="true" className="hidden h-3.5 w-px shrink-0 bg-current opacity-40 min-[380px]:inline-block" />
+              <span className="whitespace-nowrap">{t('badgeCta')}</span>
             </a>
           </p>
         )}

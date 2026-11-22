@@ -167,8 +167,13 @@ export function LxController({
         className="lx-pause"
         data-paused={paused}
         onClick={() => setPaused((value) => !value)}
+        aria-label={paused ? resumeLabel : pauseLabel}
       >
-        {paused ? resumeLabel : pauseLabel}
+        {/* На телефон — само икона (не покрива картите в героя); текстът остава за четците. */}
+        <span aria-hidden className="lx-pause-icon">
+          {paused ? '▶' : '❚❚'}
+        </span>
+        <span className="lx-pause-text">{paused ? resumeLabel : pauseLabel}</span>
       </button>
     </>
   );

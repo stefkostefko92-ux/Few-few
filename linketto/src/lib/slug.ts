@@ -14,7 +14,7 @@ const BG_MAP: Record<string, string> = {
 // стои в корена (lnkt.to/<slug>), затова не бива да съвпада с маршрут.
 export const RESERVED_SLUGS = new Set([
   'admin', 'api', 'app', 'auth', 'billing', 'blog', 'dashboard', 'docs',
-  'help', 'login', 'logout', 'linketto', 'pricing', 'privacy', 'register',
+  'help', 'login', 'logout', 'linketto', 'pricing', 'privacy', 'register', 'forgot', 'reset',
   'root', 'settings', 'support', 'terms', 'u', 'www',
   'buyer', 'cookies', 'd', 'favicon', 'icon', 'llms', 'manifest', 'media',
   'og', 'robots', 's', 'sitemap', 'tools', 'vs', 'apple-touch-icon',

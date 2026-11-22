@@ -42,7 +42,7 @@ export function Sidebar({
   return (
     <div className={cn('flex h-full flex-col gap-5 px-3 py-4', className)}>
       {brand && <div className="px-2">{brand}</div>}
-      <nav aria-label={ariaLabel} className="flex-1 space-y-5 overflow-y-auto">
+      <nav aria-label={ariaLabel} className="min-h-0 flex-1 space-y-4 overflow-y-auto">
         {groups.map((group, index) => (
           <div key={group.label ?? index}>
             {group.label && (

@@ -38,7 +38,7 @@ export default async function ReportPage({
   return (
     <main
       lang={locale}
-      className="dash flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10 font-ui text-slate-900 sm:px-6"
+      className="dash flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10 font-ui text-slate-900 [color-scheme:light] sm:px-6"
     >
       <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.2)] sm:p-9">
       <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
@@ -79,7 +79,7 @@ export default async function ReportPage({
             <select
               name="category"
               required
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900"
             >
               {REPORT_CATEGORIES.map((category) => (
                 <option key={category} value={category}>
@@ -95,7 +95,7 @@ export default async function ReportPage({
               required
               minLength={10}
               rows={5}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900"
             />
           </label>
           <label className="block font-medium">
@@ -103,7 +103,7 @@ export default async function ReportPage({
             <input
               type="email"
               name="email"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900"
             />
           </label>
           <p className="text-xs text-slate-500">{t('legalNote')}</p>

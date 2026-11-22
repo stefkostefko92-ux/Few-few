@@ -22,10 +22,18 @@ type Strings = {
   noticeSubject: string;
   notice: Record<SecurityNoticeKind, string>;
   notYou: string;
+  /** „Забравена парола“ (docs/password-reset-spec.md); без превод → английски. */
+  reset?: { subject: string; body: string; button: string; ignore: string };
 };
 
 const STRINGS: Record<string, Strings> = {
   bg: {
+    reset: {
+      subject: 'Linketto: нова парола',
+      body: 'Някой (надяваме се ти) поиска нова парола за акаунта ти. Натисни бутона, за да зададеш нова. Връзката важи 60 минути и е еднократна.',
+      button: 'Задай нова парола',
+      ignore: 'Не си искал(а) нова парола? Не прави нищо — паролата ти остава същата.',
+    },
     verifySubject: 'Linketto: потвърди имейла си',
     verifyBody: 'Натисни бутона, за да потвърдиш, че този имейл е твой. Връзката важи 48 часа и е еднократна.',
     verifyButton: 'Потвърди имейла',
@@ -44,6 +52,12 @@ const STRINGS: Record<string, Strings> = {
     notYou: 'Ако не си бил ти, смени паролата си веднага и ни пиши на info@carbonstealth.eu.',
   },
   en: {
+    reset: {
+      subject: 'Linketto: reset your password',
+      body: 'Someone (hopefully you) asked for a new password for your account. Press the button to set a new one. The link is valid for 60 minutes and works once.',
+      button: 'Set a new password',
+      ignore: 'Didn’t ask for a new password? Do nothing — your password stays the same.',
+    },
     verifySubject: 'Linketto: confirm your email',
     verifyBody: 'Press the button to confirm that this email is yours. The link is valid for 48 hours and works once.',
     verifyButton: 'Confirm email',
@@ -166,4 +180,16 @@ export function securityNoticeMessage(input: {
   const s = pick(input.locale);
   const line = s.notice[input.kind].replace('{left}', String(input.left ?? 0));
   return { subject: s.noticeSubject, html: frame(`<p>${esc(line)}</p><p>${s.notYou}</p>`) };
+}
+
+export function resetPasswordMessage(input: { locale: string; url: string }): { subject: string; html: string } {
+  const r = pick(input.locale).reset ?? STRINGS.en!.reset!;
+  const url = esc(input.url);
+  return {
+    subject: r.subject,
+    html: frame(`<p>${esc(r.body)}</p>
+  <p><a href="${url}" style="display:inline-block;background:#0f172a;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none;font-weight:600">${esc(r.button)}</a></p>
+  <p style="font-size:12px;color:#64748b;word-break:break-all">${url}</p>
+  <p style="font-size:14px">${esc(r.ignore)}</p>`),
+  };
 }

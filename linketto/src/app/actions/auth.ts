@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { clientIp, isRateLimited, rateLimit } from '@/lib/rate-limit';
+import { newPasswordSchema } from '@/lib/password-policy';
 import { ipBucket } from '@/lib/limiter';
 import { z } from 'zod';
 import {
@@ -42,9 +43,14 @@ async function logLoginIp(userId: string): Promise<void> {
     .catch(() => undefined);
 }
 
+// Вход: приема и по-стари пароли (≥8); НОВИТЕ пароли — по lib/password-policy.ts.
 const credentialsSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(200),
   password: z.string().min(8).max(200),
+});
+const registerSchema = z.object({
+  email: credentialsSchema.shape.email,
+  password: newPasswordSchema,
 });
 
 function localeFrom(formData: FormData): string {
@@ -63,12 +69,12 @@ export async function registerAction(formData: FormData): Promise<void> {
   const kept = keep.toString();
   const back = (error: string) =>
     `/${locale}/register?error=${error}${kept ? `&${kept}` : ''}`;
-  const parsed = credentialsSchema.safeParse({
+  const parsed = registerSchema.safeParse({
     email: formData.get('email'),
     password: formData.get('password'),
   });
   if (!parsed.success) {
-    redirect(back('generic'));
+    redirect(back(newPasswordSchema.safeParse(formData.get('password')).success ? 'generic' : 'weak'));
   }
   // Червен/син екип: регистрацията беше без лимит (bcrypt ~350 ms CPU на
   // опит + оракул „имейлът е зает“). 5 на час от адрес (/64) и общ дневен таван.

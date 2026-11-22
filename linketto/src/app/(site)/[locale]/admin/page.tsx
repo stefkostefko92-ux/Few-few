@@ -36,6 +36,7 @@ import {
 import { BAN_CATEGORIES } from '@/lib/dsa-notice';
 import { IntegrationsPanel, settingFieldLabelKey } from '@/components/admin/IntegrationsPanel';
 import { SETTING_KEYS, type SettingKey } from '@/lib/settings-spec';
+import { PASSWORD_MIN } from '@/lib/password-policy';
 
 export const dynamic = 'force-dynamic';
 
@@ -757,7 +758,7 @@ export default async function AdminPage({
                         type="password"
                         name="password"
                         required
-                        minLength={8}
+                        minLength={PASSWORD_MIN}
                         placeholder={t('newPassword')}
                         autoComplete="new-password"
                         className="min-w-0 flex-1 sm:max-w-xs"

@@ -16,6 +16,7 @@ import { faqJsonLd, pageMetadata, siteJsonLd } from '@/lib/seo';
 import { LOCALES, type Locale } from '@/i18n/locales';
 import { BLOCK_KINDS } from '@/lib/blocks';
 import { BILLING_INTERVALS, PLANS } from '@/lib/plans';
+import { quoteMarks } from '@/lib/quote-marks';
 
 // Максималната отстъпка (годишен план) — за маркетинговия ред в цените.
 const ANNUAL_DISCOUNT =
@@ -172,7 +173,9 @@ export default async function HomePage({
     ['0', '%', t('statsFeeLabel')],
   ] as const;
 
-  const quoteWords = `„${t('manifestoQuote')}“`.split(' ');
+  // Кавичките са по езика (обходът: en/it/pl с „…“ изглеждаха чужди).
+  const [qOpen, qClose] = quoteMarks(locale);
+  const quoteWords = `${qOpen}${t('manifestoQuote')}${qClose}`.split(' ');
 
   return (
     <>
@@ -427,7 +430,8 @@ export default async function HomePage({
             <div aria-hidden className="lx-grain" />
             <div className="lx-wrap">
               <h2 className="lx-display">
-                <KineticLines text={t('ctaTitle')} locale={locale} split={false} ghost />
+                {/* Без цветни призраци: при пренасяне на дълго заглавие (it) призракът се чупи другаде. */}
+                <KineticLines text={t('ctaTitle')} locale={locale} split={false} />
               </h2>
               <Link href={`/${locale}/register`} className="lx-sun" data-magnet>
                 {t('ctaButton')}

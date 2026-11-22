@@ -98,7 +98,7 @@ export default async function SecurityPage({
 
         {/* Имейл */}
         <section id="email" className={card}>
-          <h2 className="flex items-center gap-2 text-subheading text-fg">
+          <h2 className="flex flex-wrap items-center gap-2 text-subheading text-fg">
             {t('emailTitle')}
             <Badge tone={user.emailVerifiedAt ? 'success' : 'warning'}>
               {user.emailVerifiedAt ? t('emailVerified') : t('emailUnverified')}
@@ -118,9 +118,9 @@ export default async function SecurityPage({
 
         {/* 2FA */}
         <section id="mfa" className={card}>
-          <h2 className="flex items-center gap-2 text-subheading text-fg">
+          <h2 className="flex flex-wrap items-center gap-2 text-subheading text-fg">
             {t('mfaTitle')}
-            <Badge tone={user.totpEnabledAt ? 'success' : admin ? 'danger' : 'neutral'}>
+            <Badge tone={user.totpEnabledAt ? 'success' : admin ? 'danger' : 'warning'}>
               {user.totpEnabledAt ? t('mfaOn') : t('mfaOff')}
             </Badge>
           </h2>
