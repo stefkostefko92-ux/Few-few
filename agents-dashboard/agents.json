@@ -4352,6 +4352,11 @@
       "activity": [
         {
           "date": "2026-11-22",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Официалните страници на Anthropic (support.claude.com, статия 8896518) и Perplexity (do…\""
+        },
+        {
+          "date": "2026-11-22",
           "type": "learning",
           "summary": "Научи: „Google казва, че за поява в Google Search не са нужни нови машинно четими файлове, AI т…\" (+5 още)"
         },
