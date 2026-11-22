@@ -23,6 +23,16 @@ const fmtTime = (t) => new Date(t).toLocaleTimeString("bg-BG", { hour: "2-digit"
 const fmtDT = (t) => (t ? new Date(t).toLocaleString("bg-BG", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "");
 const safeHref = (u) => (typeof u === "string" && /^https?:\/\//i.test(u) ? u : "#");
 
+// Полетата за B2B квалификация от формата (стойностите — api/_contact.php), с етикети на български.
+const B2B_LABELS = {
+  solution: { web: "Уебсайт", ecommerce: "Онлайн магазин", erp: "ERP / управленска система", software: "Софтуер по поръчка", app: "Мобилно приложение", seo: "SEO / GEO / AEO", other: "Друго" },
+  budget: { lt5k: "до €5000", "5-15k": "€5000–15 000", "15-50k": "€15 000–50 000", gt50k: "над €50 000", tbd: "бюджет: ще уточним" },
+  country: { IT: "Италия", BG: "България", EU: "друга от ЕС", WORLD: "извън ЕС" },
+};
+
+// само собствени ключове: „__proto__“ от стар ред в лога не бива да върне обект в JSX (срив на панела)
+const b2bLabel = (k, v) => (Object.prototype.hasOwnProperty.call(B2B_LABELS[k], v) ? B2B_LABELS[k][v] : String(v));
+
 // Сайтовете, които панелът пинга от браузъра (всички са в connect-src на CSP за /admin/ в nginx).
 const SITES = [
   { name: "carbonstealth.eu", label: "Carbon Stealth", type: "Фирмен сайт", tech: "React · Vite · PHP" },
@@ -663,9 +673,18 @@ function Panel({ me, onSignedOut }) {
               <div className="adm-th adm-tr-contact"><span>Име</span><span>Контакт</span><span>Съобщение</span><span>Дата</span></div>
               {contacts.map((c, i) => (
                 <div className="adm-tr adm-tr-contact" key={i}>
-                  <b>{c.name || "—"}</b>
+                  <span><b>{c.name || "—"}</b>{c.company ? <small>{c.company}</small> : null}</span>
                   <span className="adm-mono">{c.email || ""}{c.phone ? " · " + c.phone : ""}</span>
-                  <span className="adm-clip">{c.message || ""}</span>
+                  <span className="adm-msg">
+                    {(c.solution || c.budget || c.country) ? (
+                      <span className="adm-tags">
+                        {c.solution ? <span className="adm-pill is-ok">{b2bLabel("solution", c.solution)}</span> : null}
+                        {c.budget ? <span className="adm-pill">{b2bLabel("budget", c.budget)}</span> : null}
+                        {c.country ? <span className="adm-pill">{b2bLabel("country", c.country)}</span> : null}
+                      </span>
+                    ) : null}
+                    <span className="adm-clip">{c.message || ""}</span>
+                  </span>
                   <time>{c.date || ""}</time>
                 </div>
               ))}
@@ -1079,6 +1098,7 @@ const CSS = `
 .adm-clip{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--ink2);text-decoration:none}
 a.adm-clip:hover{color:var(--cy)}
 .adm-tags{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+.adm-msg{display:grid;gap:5px;min-width:0}
 
 /* ── таблици ── */
 .adm-table{display:grid}
