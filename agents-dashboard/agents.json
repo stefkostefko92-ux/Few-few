@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 731
+        "lessons": 732
       },
       "evolution": [
         {
@@ -2037,9 +2037,20 @@
           "date": "2026-11-22",
           "event": "v67.2 — учене",
           "detail": "Научи: Prisma cursor-пагинацията генерира \"id >= (SELECT id WHERE id = cursor) AND <филтър> OF… (+111 още)"
+        },
+        {
+          "version": "67.3.0",
+          "date": "2026-11-22",
+          "event": "v67.3 — учене",
+          "detail": "Научи: next-intl 3.26 getTranslations({locale}) подава locale-а като requestLocale на getReque…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-22",
+          "type": "learning",
+          "summary": "Научи: „next-intl 3.26 getTranslations({locale}) подава locale-а като requestLocale на getReque…\""
+        },
         {
           "date": "2026-11-22",
           "type": "learning",
@@ -4838,7 +4849,7 @@
           "PageSpeed Insights = Lighthouse (лаб) + CrUX (поле) — полето НЕ съществува преди пускане",
           "Наследява CWV работата на SEO (tools/seo/cwv.mjs)"
         ],
-        "lessons": 148
+        "lessons": 150
       },
       "evolution": [
         {
@@ -4960,9 +4971,31 @@
           "date": "2026-11-22",
           "event": "v20.9 — учене",
           "detail": "Научи: Фактурист (Express/EJS, production): `.bar` в app.css сменя броя редове при зареждане н… (+4 още)"
+        },
+        {
+          "version": "21.0.0",
+          "date": "2026-11-22",
+          "event": "v21.0 — учене",
+          "detail": "Научи: guard-self на хука блокира bash команда с аргумент '/' за tr (чете го като корен на фай…"
+        },
+        {
+          "version": "21.1.0",
+          "date": "2026-11-22",
+          "event": "v21.1 — учене",
+          "detail": "Научи: prelaunch-audit дава фалшив съвет за render-blocking на Next.js polyfills-*.js, защото …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-22",
+          "type": "learning",
+          "summary": "Научи: „prelaunch-audit дава фалшив съвет за render-blocking на Next.js polyfills-*.js, защото …\" · 1 в карантина"
+        },
+        {
+          "date": "2026-11-22",
+          "type": "learning",
+          "summary": "Научи: „guard-self на хука блокира bash команда с аргумент '/' за tr (чете го като корен на фай…\" · 3 в карантина"
+        },
         {
           "date": "2026-11-22",
           "type": "learning",
@@ -5073,7 +5106,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 292
+        "lessons": 295
       },
       "evolution": [
         {
@@ -5585,9 +5618,20 @@
           "date": "2026-11-22",
           "event": "v31.9 — учене",
           "detail": "Научи: В linketto началната страница обгражда home.manifestoQuote с кавички по езика (quoteMar… (+38 още)"
+        },
+        {
+          "version": "32.2.0",
+          "date": "2026-11-22",
+          "event": "v32.2 — учене",
+          "detail": "Научи: В гръцки ';' е въпросителен знак, затова ICU шаблон с ';' като разделител (напр. \"{us};… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-22",
+          "type": "learning",
+          "summary": "Научи: „В гръцки ';' е въпросителен знак, затова ICU шаблон с ';' като разделител (напр. \"{us};…\" (+2 още)"
+        },
         {
           "date": "2026-11-22",
           "type": "learning",
@@ -6865,7 +6909,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 298
+        "lessons": 302
       },
       "evolution": [
         {
@@ -7281,9 +7325,31 @@
           "date": "2026-11-22",
           "event": "v26.9 — учене",
           "detail": "Научи: carry_env в autodeploy.sh пренася .env от /opt/few-few/shared/<proj>/.env (после curren… (+23 още)"
+        },
+        {
+          "version": "27.2.0",
+          "date": "2026-11-22",
+          "event": "v27.2 — учене",
+          "detail": "Научи: proxy_cache_path в nginx създава само последната папка от пътя, не родителите — без род… (+2 още)"
+        },
+        {
+          "version": "27.3.0",
+          "date": "2026-11-22",
+          "event": "v27.3 — учене",
+          "detail": "Научи: GNU sed -i без --follow-symlinks подменя симлинка с обикновен файл, затова редакция на …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-22",
+          "type": "learning",
+          "summary": "Научи: „GNU sed -i без --follow-symlinks подменя симлинка с обикновен файл, затова редакция на …\""
+        },
+        {
+          "date": "2026-11-22",
+          "type": "learning",
+          "summary": "Научи: „proxy_cache_path в nginx създава само последната папка от пътя, не родителите — без род…\" (+2 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-22",
           "type": "learning",
@@ -16159,7 +16225,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 219
+        "lessons": 221
       },
       "evolution": [
         {
@@ -16209,9 +16275,31 @@
           "date": "2026-11-22",
           "event": "v31.6 — учене",
           "detail": "Научи: Prisma пагинация с cursor+skip:1 прескача ред, когато редът-курсор излезе от where в съ… (+43 още)"
+        },
+        {
+          "version": "31.7.0",
+          "date": "2026-11-22",
+          "event": "v31.7 — учене",
+          "detail": "Научи: CAS преход по състояние (state=X) без идентификатора на конкретната външна операция (re…"
+        },
+        {
+          "version": "31.8.0",
+          "date": "2026-11-22",
+          "event": "v31.8 — учене",
+          "detail": "Научи: CAS преход само по състояние (state=X) без id-то на конкретната външна операция позволя…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-22",
+          "type": "learning",
+          "summary": "Научи: „CAS преход само по състояние (state=X) без id-то на конкретната външна операция позволя…\""
+        },
+        {
+          "date": "2026-11-22",
+          "type": "learning",
+          "summary": "Научи: „CAS преход по състояние (state=X) без идентификатора на конкретната външна операция (re…\""
+        },
         {
           "date": "2026-11-22",
           "type": "learning",
