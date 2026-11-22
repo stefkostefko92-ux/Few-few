@@ -3872,7 +3872,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 244
+        "lessons": 245
       },
       "evolution": [
         {
@@ -4324,9 +4324,20 @@
           "date": "2026-11-22",
           "event": "v23.4 — учене",
           "detail": "Научи: WebFetch връща само визуалния текст на страницата, без head и JSON-LD; canonical, hrefl… (+3 още)"
+        },
+        {
+          "version": "23.5.0",
+          "date": "2026-11-22",
+          "event": "v23.5 — учене",
+          "detail": "Научи: Next.js App Router: ключ `keywords: undefined` в Metadata на страница презаписва наслед…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-22",
+          "type": "learning",
+          "summary": "Научи: „Next.js App Router: ключ `keywords: undefined` в Metadata на страница презаписва наслед…\""
+        },
         {
           "date": "2026-11-22",
           "type": "learning",
