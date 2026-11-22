@@ -11,31 +11,39 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-// Безопасни схеми за връзки.
-function safeHref(url: string): string | null {
-  const u = url.trim();
-  if (u.startsWith("/") || u.startsWith("#")) return u;
+// Безопасни схеми за връзки. „//host“ и „/\host“ не са вътрешни: браузърът ги
+// отваря като външен адрес (протокол-относителен), затова се отхвърлят (21.11.2026).
+function safeHref(u: string): string | null {
+  // (без trim: LINK вече изключва празните знаци в адреса)
+  if (u.startsWith("#")) return u;
+  if (u.startsWith("/")) return /^\/[/\\]/.test(u) ? null : u;
   if (/^(https?:|mailto:|tel:)/i.test(u)) return u;
   return null;
 }
 
+// Адресът позволява едно ниво скоби (`…/wiki/Foo_(bar)`), иначе „)“ остава след текста.
+// Несдвоена или двойно вложена скоба не прави връзка — в адреса се пише като %28 / %29.
+const LINK = /\[([^\]]+)\]\(((?:[^()\s]|\([^()\s]*\))+)\)/g;
+const SLOT = "\u0000";
+
+function emphasis(s: string): string {
+  return s
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>");
+}
+
 function inline(text: string): string {
-  let out = escapeHtml(text);
-  // Връзки [текст](url)
-  out = out.replace(
-    /\[([^\]]+)\]\(([^)\s]+)\)/g,
-    (_m, label: string, url: string) => {
-      const href = safeHref(url);
-      if (!href) return label;
-      const ext = /^https?:/i.test(href);
-      const attrs = ext ? ' target="_blank" rel="noopener noreferrer"' : "";
-      return `<a href="${escapeHtml(href)}"${attrs}>${label}</a>`;
-    },
-  );
-  // Удебеляване и курсив
-  out = out.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-  out = out.replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>");
-  return out;
+  // Входът вече е екраниран веднъж, затова адресът НЕ се екранира втори път
+  // (иначе „&“ ставаше „&amp;amp;“ и параметърът се губеше — 21.11.2026).
+  // Готовите връзки се пазят в слотове, за да не стигне курсивът до href.
+  const links: string[] = [];
+  const out = escapeHtml(text.split(SLOT).join("")).replace(LINK, (_m, label: string, url: string) => {
+    const href = safeHref(url);
+    const attrs = href && /^https?:/i.test(href) ? ' target="_blank" rel="noopener noreferrer"' : "";
+    links.push(href ? `<a href="${href}"${attrs}>${emphasis(label)}</a>` : emphasis(label));
+    return `${SLOT}${links.length - 1}${SLOT}`;
+  });
+  return emphasis(out).replace(new RegExp(`${SLOT}(\\d+)${SLOT}`, "g"), (_m, i: string) => links[Number(i)]);
 }
 
 export function markdownToHtml(input: string): string {

@@ -14,6 +14,7 @@ _Stack: Next.js (App Router) · React · TypeScript · Prisma · Tailwind; auth 
 npm run dev                     # next dev
 npm run typecheck               # tsc --noEmit
 npm run lint                    # eslint .
+npm test                        # tsx --test src/lib/__tests__/*.test.ts
 npm run db:seed                 # tsx prisma/seed.ts
 npm run build                   # prisma generate && next build
 ```

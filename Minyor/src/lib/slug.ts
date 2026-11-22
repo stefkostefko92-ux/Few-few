@@ -15,10 +15,13 @@ export function slugify(input: string): string {
     else if (/\s|[-_./]/.test(ch)) out += "-";
     // всичко друго се пропуска
   }
+  // Тирето се маха и СЛЕД отрязването до 80 знака — иначе slug-ът може да
+  // завърши на „-“ (21.11.2026).
   return (
     out
       .replace(/-+/g, "-")
       .replace(/^-|-$/g, "")
-      .slice(0, 80) || "elem"
+      .slice(0, 80)
+      .replace(/-$/, "") || "elem"
   );
 }
