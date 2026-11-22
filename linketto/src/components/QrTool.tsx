@@ -2,6 +2,8 @@
 
 import { useEffect, useId, useState } from 'react';
 import QRCode from 'qrcode';
+import { Button } from '@/components/ui/Button';
+import { Input, Label } from '@/components/ui/Field';
 
 // Безплатен QR генератор — изцяло в браузъра: нищо не се праща към сървър,
 // няма регистрация, няма воден знак. SVG (за печат) и PNG (за соцмрежи).
@@ -77,10 +79,9 @@ export function QrTool({
   return (
     <div className="grid gap-8 md:grid-cols-[1fr_minmax(0,18rem)] md:items-start">
       <div className="space-y-5">
-        <label htmlFor={urlId} className="block text-sm font-semibold text-slate-800">
-          {labels.url}
-        </label>
-        <input
+        <div className="space-y-1.5">
+        <Label htmlFor={urlId}>{labels.url}</Label>
+        <Input
           id={urlId}
           type="text"
           inputMode="url"
@@ -89,22 +90,23 @@ export function QrTool({
           value={text}
           onChange={(event) => setText(event.target.value.slice(0, 1000))}
           placeholder={labels.placeholder}
-          className="auth-field !mt-1.5"
         />
+        </div>
         <div className="flex flex-wrap items-center gap-5">
-          <label htmlFor={colorId} className="flex items-center gap-3 text-sm font-semibold text-slate-800">
+          <label htmlFor={colorId} className="flex items-center gap-3 text-small font-semibold text-fg">
             <input
               id={colorId}
               type="color"
               value={color}
               onChange={(event) => setColor(event.target.value)}
-              className="h-10 w-14 cursor-pointer rounded-lg border border-slate-300 bg-white p-1"
+              className="focus-ring h-10 w-14 cursor-pointer rounded-control border border-line-input bg-surface p-1"
             />
             {labels.color}
           </label>
-          <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+          <label className="flex items-center gap-2 text-small font-medium text-fg-2">
             <input
               type="checkbox"
+              className="h-4 w-4 accent-[rgb(var(--c-accent))]"
               checked={transparent}
               onChange={(event) => setTransparent(event.target.checked)}
             />
@@ -112,27 +114,24 @@ export function QrTool({
           </label>
         </div>
         <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={onSvg}
-            disabled={!svg}
-            className="rounded-full bg-linketto-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-linketto-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
+          <Button onClick={onSvg} disabled={!svg}>
             {labels.downloadSvg}
-          </button>
-          <button
-            type="button"
-            onClick={onPng}
-            disabled={!svg}
-            className="rounded-full border border-linketto-600 px-5 py-2.5 text-sm font-semibold text-linketto-700 transition hover:bg-linketto-50 disabled:cursor-not-allowed disabled:opacity-50"
-          >
+          </Button>
+          <Button variant="secondary" onClick={onPng} disabled={!svg}>
             {labels.downloadPng}
-          </button>
+          </Button>
         </div>
       </div>
       <figure className="mx-auto w-full max-w-[18rem]">
         <div
-          className="flex aspect-square items-center justify-center rounded-2xl border border-slate-200 bg-[conic-gradient(#f1f5f9_25%,#fff_0_50%,#f1f5f9_0_75%,#fff_0)] bg-[length:20px_20px] p-4"
+          // Шахматът (прозрачност) — само при прозрачен фон и готов код; иначе спокойна повърхност.
+          className={`flex aspect-square items-center justify-center rounded-panel border border-line p-4 ${
+            svg && transparent
+              ? 'bg-[conic-gradient(#e8ecf1_25%,#fff_0_50%,#e8ecf1_0_75%,#fff_0)] bg-[length:20px_20px]'
+              : svg
+                ? 'bg-white'
+                : 'bg-surface-2'
+          }`}
           role="img"
           aria-label={svg ? labels.preview : labels.empty}
         >
@@ -144,7 +143,7 @@ export function QrTool({
               dangerouslySetInnerHTML={{ __html: svg }}
             />
           ) : (
-            <p className="px-6 text-center text-sm text-slate-500">{labels.empty}</p>
+            <p className="rounded-control bg-surface/90 px-4 py-3 text-center text-small text-fg-2">{labels.empty}</p>
           )}
         </div>
       </figure>

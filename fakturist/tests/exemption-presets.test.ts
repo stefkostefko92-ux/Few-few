@@ -5,7 +5,7 @@ import type { InvoiceInput } from '../src/einvoice/model.js';
 import { EXEMPTION_PRESETS } from '../src/documents/exemption-reasons.js';
 import { salesJournal, type AmountField } from '../src/export/sales-journal.js';
 import { NRA_CODES } from '../src/export/saft/codes.js';
-import { zeroRated } from './fixtures/einvoice-samples.js';
+import { reverseCharge, zeroRated } from './fixtures/einvoice-samples.js';
 
 /**
  * Готовите основания (BT-120): всяко дава очакваното поле в PRODAGBI.TXT и кода в SAF-T (TAX-IMP v1.0.3).
@@ -31,7 +31,7 @@ const EXPECTED: Record<string, { field: AmountField | null; code: string | null 
     code: '100214',
   },
   'Нулева ставка — чл. 140 ЗДДС (обща туристическа услуга)': { field: '02-16', code: '100216' },
-  'Нулева ставка — чл. 146, ал. 1 ЗДДС (облагане на маржа)': { field: '02-16', code: '100216' },
+  'Нулева ставка — чл. 146 ЗДДС (облагане на маржа)': { field: '02-16', code: '100216' },
   'Нулева ставка — чл. 173, ал. 1 ЗДДС (международен договор)': { field: '02-16', code: '100216' },
   'Място на изпълнение извън страната — чл. 69, ал. 2 ЗДДС': { field: '02-18', code: '100218' },
   'Доставчикът не е регистриран по ЗДДС — данък не се посочва (чл. 113, ал. 9 ЗДДС)': {
@@ -56,6 +56,8 @@ test('поле в PRODAGBI.TXT и код в SAF-T за всяко основан
     const rate = preset.category === 'O' ? undefined : '0';
     const input: InvoiceInput = {
       ...zeroRated,
+      // Услугите по чл. 21, ал. 2 са 02-17 само към друга държава членка (получател в Италия).
+      buyer: /чл\. 21, ал\. 2/.test(preset.text) ? reverseCharge.buyer : zeroRated.buyer,
       vatExemptions: [{ category: preset.category, reason: preset.text }],
       lines: zeroRated.lines.map((l) => ({ ...l, vat: { category: preset.category, rate } })),
     };

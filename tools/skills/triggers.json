@@ -672,6 +672,20 @@
         "прегледай този diff за sql injection преди merge",
         "опитай да счупиш нашия агент с prompt injection"
       ]
+    },
+    "revolut-payment": {
+      "should": [
+        "добави плащане през Revolut",
+        "уебхукът от Revolut не дава плана на клиента",
+        "вдигни Revolut-Api-Version на новата версия",
+        "чети входящите преводи по банковата сметка в Revolut Business",
+        "пусни изходящ превод през b2b.revolut.com с request_id"
+      ],
+      "shouldNot": [
+        "добави абонамент през Stripe",
+        "пипни касовия бон по Н-18",
+        "внеси извлечението от банката в CSV"
+      ]
     }
   }
 }

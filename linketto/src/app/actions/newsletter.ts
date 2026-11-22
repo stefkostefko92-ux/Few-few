@@ -1,18 +1,15 @@
 'use server';
 
+import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { dash } from '@/lib/dashboard-url';
 import { prisma } from '@/lib/db';
 import { profileHasActiveBlock } from '@/lib/profile-blocks';
 import { RETENTION_DAYS, daysAgo } from '@/lib/retention-days';
 import { getSessionUser } from '@/lib/auth';
-import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { clientIpKey, rateLimit } from '@/lib/rate-limit';
 import { isLocale } from '@/i18n/locales';
-import {
-  generateSubscriberToken,
-  isValidEmail,
-  normalizeEmail,
-} from '@/lib/newsletter';
+import { BROADCAST_COOLDOWN_MS, generateSubscriberToken, isValidEmail, normalizeEmail } from '@/lib/newsletter';
 import {
   broadcastHtml,
   broadcastSubject,
@@ -55,7 +52,7 @@ export async function subscribeAction(formData: FormData): Promise<void> {
   }
   const locale = isLocale(hl) ? hl : null;
   // Лимит по IP: формата праща писма до чужди адреси от нашия домейн.
-  if (!rateLimit(`subscribe-ip:${await clientIp()}`, 6, 10 * 60_000)) {
+  if (!rateLimit(`subscribe-ip:${await clientIpKey()}`, 6, 10 * 60_000)) {
     redirect(`${back}${hl ? '&' : '?'}subError=1`);
   }
 
@@ -139,7 +136,9 @@ export async function sendBroadcastAction(formData: FormData): Promise<void> {
     include: { translations: true },
   });
   if (!profile) redirect(await dash(uiLocale, '?error=generic'));
-
+  // Разбивача т. 5: баннат профил не праща през нашия Brevo; най-много 1 рассылка
+  // за 24 ч — атомарно (условен запис), без състезание между два таба.
+  if (profile.bannedAt) redirect(await dash(uiLocale, '?error=broadcast'));
   const subscribers = await prisma.subscriber.findMany({
     where: {
       profileId: profile.id,
@@ -148,6 +147,19 @@ export async function sendBroadcastAction(formData: FormData): Promise<void> {
     },
     select: { email: true, token: true, locale: true },
   });
+  // Без абонати няма какво да тръгне — слотът за 24 ч не се хаби.
+  if (subscribers.length === 0) redirect(await dash(uiLocale, '?broadcast=0'));
+  const claimedAt = new Date();
+  const { count: claimed } = await prisma.profile.updateMany({
+    where: {
+      id: profile.id,
+      userId: user.id,
+      bannedAt: null,
+      OR: [{ lastBroadcastAt: null }, { lastBroadcastAt: { lt: new Date(claimedAt.getTime() - BROADCAST_COOLDOWN_MS) } }],
+    },
+    data: { lastBroadcastAt: claimedAt },
+  });
+  if (claimed !== 1) redirect(await dash(uiLocale, '?error=broadcastLimit'));
   const who = sellerName(
     profile.translations,
     profile.defaultLocale,
@@ -179,7 +191,12 @@ export async function sendBroadcastAction(formData: FormData): Promise<void> {
   }
   // Брои се САМО реално изпратеното (без BREVO_API_KEY sendEmail връща
   // false) — иначе дашбордът лъже „изпратен до N“ (одит L2).
-  if (subscribers.length > 0 && sent === 0) {
+  if (sent === 0) {
+    // Нищо не е тръгнало (напр. Brevo не е настроен) → слотът се връща (само ако е нашият).
+    await prisma.profile.updateMany({
+      where: { id: profile.id, lastBroadcastAt: claimedAt },
+      data: { lastBroadcastAt: profile.lastBroadcastAt },
+    });
     redirect(await dash(uiLocale, '?error=broadcast'));
   }
   redirect(await dash(uiLocale, `?broadcast=${sent}`));
@@ -198,4 +215,41 @@ export async function deleteSubscriberAction(
     where: { id: subscriberId, profile: { userId: user.id } },
   });
   redirect(await dash(uiLocale));
+}
+
+// Потвърждение/отписване от писмото (Разбивача т. 5): GET страницата само показва
+// бутон; действието е тук (POST) — скенерите в пощата отварят връзките сами.
+const tokenSchema = z.string().trim().min(16).max(200);
+
+export async function confirmSubscriptionAction(formData: FormData): Promise<void> {
+  const slug = String(formData.get('slug') ?? '').slice(0, 80);
+  const token = tokenSchema.safeParse(formData.get('token'));
+  if (!token.success) redirect(`/u/${encodeURIComponent(slug)}`);
+  const subscriber = await prisma.subscriber.findUnique({
+    where: { token: token.data },
+    include: { profile: { select: { slug: true, bannedAt: true } } },
+  });
+  if (!subscriber || subscriber.profile.slug !== slug || subscriber.profile.bannedAt) {
+    redirect(`/u/${encodeURIComponent(slug)}/subscribe/confirm?invalid=1`);
+  }
+  await prisma.subscriber.update({
+    where: { id: subscriber.id },
+    data: { confirmedAt: subscriber.confirmedAt ?? new Date(), unsubscribedAt: null },
+  });
+  redirect(`/u/${encodeURIComponent(slug)}?subscribed=confirmed`);
+}
+
+export async function unsubscribeAction(formData: FormData): Promise<void> {
+  const slug = String(formData.get('slug') ?? '').slice(0, 80);
+  const token = tokenSchema.safeParse(formData.get('token'));
+  if (!token.success) redirect(`/u/${encodeURIComponent(slug)}`);
+  const subscriber = await prisma.subscriber.findUnique({
+    where: { token: token.data },
+    include: { profile: { select: { slug: true } } },
+  });
+  if (subscriber && subscriber.profile.slug === slug) {
+    // Целта отпада → имейлът се изтрива (чл. 17 ОРЗД; обработващ по чл. 28 не пази данни след отписване).
+    await prisma.subscriber.delete({ where: { id: subscriber.id } }).catch(() => undefined);
+  }
+  redirect(`/u/${encodeURIComponent(slug)}?unsub=1`);
 }

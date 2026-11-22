@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Rilievi Impianti — volantino A5</title>
+<meta name="keywords" content="Carbon Stealth, Rilievi Impianti, software per ascensoristi, scheda rilievo ascensore, foglio di intervento ascensore, cartello fermo impianto">
+<style>
+@font-face{font-family:'Fira Sans';font-weight:400;font-style:normal;src:url('../node_modules/@fontsource/fira-sans/files/fira-sans-latin-400-normal.woff2') format('woff2');}
+@font-face{font-family:'Fira Sans';font-weight:600;font-style:normal;src:url('../node_modules/@fontsource/fira-sans/files/fira-sans-latin-600-normal.woff2') format('woff2');}
+@font-face{font-family:'Fira Sans';font-weight:700;font-style:normal;src:url('../node_modules/@fontsource/fira-sans/files/fira-sans-latin-700-normal.woff2') format('woff2');}
+@font-face{font-family:'Fira Sans Condensed';font-weight:700;font-style:normal;src:url('../node_modules/@fontsource/fira-sans-condensed/files/fira-sans-condensed-latin-700-normal.woff2') format('woff2');}
+@font-face{font-family:'Fira Sans Condensed';font-weight:800;font-style:normal;src:url('../node_modules/@fontsource/fira-sans-condensed/files/fira-sans-condensed-latin-800-normal.woff2') format('woff2');}
+:root {
+  --bleed: 0mm;
+  --w: calc(148mm + 2 * var(--bleed));
+  --h: calc(210mm + 2 * var(--bleed));
+  /* Безопасната зона: 7 мм от линията на рязане. */
+  --m: calc(7mm + var(--bleed));
+  --nero: #000000;
+  --bianco: #ffffff;
+  --grigio: #595959;
+  --linea: #bdbdbd;
+}
+@page { size: var(--w) var(--h); margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bianco); }
+body { font-family: 'Fira Sans', sans-serif; color: var(--nero); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.pagina { position: relative; width: var(--w); height: var(--h); overflow: hidden; break-after: page; }
+.pagina:last-child { break-after: auto; }
+
+/* Лицето: шахтата от ямата нагоре, на цялата страница. */
+.fronte { background: var(--nero); color: var(--bianco); }
+.fronte .foto { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; }
+.fronte .velo { position: absolute; inset: 0; background:
+  linear-gradient(180deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.55) 22%, rgba(0,0,0,0) 40%, rgba(0,0,0,0) 48%, rgba(0,0,0,.82) 68%, rgba(0,0,0,.96) 100%); }
+.fronte .logo { position: absolute; top: calc(var(--m) + 2mm); left: 50%; transform: translateX(-50%); width: 104mm; }
+.fronte .testo { position: absolute; left: var(--m); right: var(--m); bottom: calc(var(--m) + 27mm); }
+.fronte h1 { font-family: 'Fira Sans Condensed', sans-serif; font-weight: 800; font-size: 31pt; line-height: 1.02; letter-spacing: -.3pt; }
+.fronte .lead { margin-top: 5mm; font-size: 10.5pt; line-height: 1.42; max-width: 118mm; }
+.fronte .piede { position: absolute; left: var(--m); right: var(--m); bottom: var(--m); display: flex; align-items: flex-end; justify-content: space-between; gap: 6mm; border-top: .5pt solid rgba(255,255,255,.55); padding-top: 4mm; }
+.fronte .prova strong { display: block; font-family: 'Fira Sans Condensed', sans-serif; font-weight: 800; font-size: 17pt; line-height: 1.05; }
+.fronte .prova span { display: block; margin-top: 1mm; font-size: 8.5pt; }
+.fronte .sito { font-weight: 600; font-size: 11pt; white-space: nowrap; }
+.fronte .nota { position: absolute; right: calc(var(--bleed) + 5mm); top: 50%; transform: translateY(-50%) rotate(-90deg); transform-origin: right center; font-size: 5.5pt; color: rgba(255,255,255,.7); white-space: nowrap; }
+
+/* Гърбът: бяла хартия, черна е само лентата долу (QR кодът). */
+.retro .corpo { position: absolute; left: var(--m); right: var(--m); top: var(--m); }
+.retro h2 { font-family: 'Fira Sans Condensed', sans-serif; font-weight: 800; font-size: 22pt; line-height: 1.05; }
+.retro .lead { margin-top: 2.5mm; font-size: 9pt; line-height: 1.4; color: var(--nero); max-width: 125mm; }
+.retro .griglia { margin-top: 4mm; display: grid; grid-template-columns: 1fr 1fr; column-gap: 6mm; row-gap: 0; }
+.retro .funzione { padding: 2.4mm 0 2.6mm; border-top: .5pt solid var(--linea); }
+.retro .funzione h3 { font-weight: 700; font-size: 9pt; line-height: 1.2; }
+.retro .funzione p { margin-top: 1mm; font-size: 7.6pt; line-height: 1.38; color: var(--grigio); }
+.retro .tablet { margin-top: 1mm; display: grid; grid-template-columns: 52mm 1fr; gap: 6mm; align-items: center; border-top: .5pt solid var(--linea); padding-top: 3mm; }
+.retro .tablet img { width: 52mm; height: 31mm; object-fit: cover; object-position: 50% 55%; display: block; }
+.retro .tablet p { font-size: 7.6pt; line-height: 1.4; color: var(--grigio); }
+.retro .tablet p strong { display: block; color: var(--nero); font-size: 9pt; font-weight: 700; margin-bottom: 1mm; }
+.retro .tablet small { display: block; margin-top: 2mm; font-size: 6pt; color: var(--grigio); }
+.retro .banda { position: absolute; left: 0; right: 0; bottom: 0; height: calc(55mm + var(--bleed)); background: var(--nero); color: var(--bianco); padding: 4.5mm var(--m) calc(var(--bleed) + 6.5mm); display: grid; grid-template-columns: 42mm 1fr; gap: 7mm; align-items: center; }
+.retro .qr { width: 42mm; height: 42mm; background: var(--bianco); padding: 5.2mm; } /* бяло поле от поне 4 модула */
+.retro .qr svg { width: 100%; height: 100%; display: block; }
+.retro .invito strong { display: block; font-family: 'Fira Sans Condensed', sans-serif; font-weight: 800; font-size: 15.5pt; line-height: 1.08; }
+.retro .invito p { margin-top: 2mm; font-size: 8pt; line-height: 1.4; }
+.retro .invito .sito { display: block; margin-top: 3mm; font-weight: 700; font-size: 11.5pt; }
+.retro .contatti { margin-top: 2.5mm; font-size: 7.4pt; line-height: 1.45; color: rgba(255,255,255,.82); }
+</style>
+</head>
+<body>
+<section class="pagina fronte" aria-label="Fronte">
+  <img class="foto" src="../public/img/site/vano-portrait-1200.webp" alt="Rendering 3D di un vano ascensore visto dalla fossa verso l'alto">
+  <div class="velo"></div>
+  <img class="logo" src="../scripts/logo/originals/logo.png" alt="Rilievi Impianti — Piattaforma tecnica ascensori">
+  <div class="testo">
+    <h1>Il rilievo dell'ascensore, campo per campo.</h1>
+    <p class="lead">Il software web per le aziende di ascensori. Il tecnico compila la scheda di rilievo dal telefono; in ufficio la trovi per matricola o indirizzo e la stampi con il logo della tua azienda.</p>
+  </div>
+  <div class="piede">
+    <div class="prova"><strong>Primo mese gratuito</strong><span>con tutte le funzioni</span></div>
+    <div class="sito">rilievi.carbonstealth.eu</div>
+  </div>
+  <p class="nota">Immagine: rendering 3D</p>
+</section>
+<section class="pagina retro" aria-label="Retro">
+  <div class="corpo">
+    <h2>Dal sopralluogo all'ufficio</h2>
+    <p class="lead">Un solo portale per la scheda di rilievo, l'assistenza e il cantiere. Si apre nel browser su telefono, tablet e computer: non c'è niente da installare.</p>
+    <div class="griglia">
+<div class="funzione"><h3>Sul posto, dal telefono</h3><p>Campi grandi, unità di misura già scritte, foto e video in ogni sezione. Senza rete la scheda resta salvata sul telefono e la invii quando torna il segnale.</p></div>
+<div class="funzione"><h3>Trovi l'impianto mentre scrivi</h3><p>Cerchi per matricola, numero impianto, indirizzo, marca o buono di lavoro. In ufficio stampi la scheda in A4 o in PDF, con il logo della tua azienda.</p></div>
+<div class="funzione"><h3>Moduli d'ordine compilati dal rilievo</h3><p>Quadri Pelazza, Movilift, DMG Pitagora 4.0, Mastech, Elettroquadri e GEAT; bottoniere DMG, scheda dati dell'argano e modulo 2SG per operatore e sospensioni.</p></div>
+<div class="funzione"><h3>Foglio di intervento firmato</h3><p>Numerato per azienda. Tecnico e cliente firmano con il dito; dopo la conferma il foglio non si modifica più ed esce in PDF A4.</p></div>
+<div class="funzione"><h3>Cartelli, buoni e verbali</h3><p>Cartelli di fermo impianto con il tuo logo, buono di lavoro e verbale di chiusura cantiere. Se l'impianto ha una scheda, l'indirizzo e altri dati si compilano da soli; il resto lo scrivi tu.</p></div>
+<div class="funzione"><h3>Calcoli dell'argano e del limitatore</h3><p>Partono dai dati del rilievo. Ogni foglio riporta i dati usati e va controllato e firmato da un tecnico abilitato.</p></div>
+    </div>
+    <div class="tablet">
+      <img src="../public/img/site/tablet-1600.webp" alt="Rendering 3D di un tablet con il portale aperto sulla nuova scheda di rilievo">
+      <p><strong>I dati restano tuoi</strong>Server nell'Unione europea, una copia di sicurezza ogni giorno. L'amministratore scarica tutti i dati dell'azienda quando vuole, senza costi.<small>Immagine: rendering 3D di un tablet con il portale aperto</small></p>
+    </div>
+  </div>
+  <div class="banda">
+    <div class="qr" role="img" aria-label="Codice QR per https://rilievi.carbonstealth.eu/"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h29v29H0z"/><path stroke="#000000" d="M0 0.5h7m1 0h2m1 0h5m1 0h1m4 0h7M0 1.5h1m5 0h1m1 0h4m1 0h3m1 0h4m1 0h1m5 0h1M0 2.5h1m1 0h3m1 0h1m1 0h1m2 0h1m1 0h2m5 0h1m1 0h1m1 0h3m1 0h1M0 3.5h1m1 0h3m1 0h1m2 0h1m2 0h1m1 0h2m1 0h1m1 0h2m1 0h1m1 0h3m1 0h1M0 4.5h1m1 0h3m1 0h1m1 0h1m1 0h4m1 0h1m1 0h1m1 0h1m2 0h1m1 0h3m1 0h1M0 5.5h1m5 0h1m5 0h3m2 0h1m2 0h1m1 0h1m5 0h1M0 6.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 7.5h1m4 0h1m3 0h1M0 8.5h1m2 0h9m1 0h5m3 0h1m2 0h1m1 0h3M1 9.5h1m3 0h1m1 0h1m2 0h2m2 0h1m3 0h2m3 0h2m1 0h2M0 10.5h3m1 0h1m1 0h2m1 0h4m1 0h1m2 0h1m2 0h1m3 0h1m1 0h1M0 11.5h3m1 0h1m5 0h1m3 0h2m1 0h1m1 0h1m1 0h3m1 0h1m2 0h1M1 12.5h6m2 0h1m2 0h3m1 0h1m2 0h2m1 0h2m4 0h1M0 13.5h1m1 0h1m1 0h2m1 0h1m10 0h1m2 0h8M0 14.5h4m1 0h3m1 0h2m1 0h1m1 0h2m2 0h2m2 0h1m1 0h1m1 0h1m1 0h1M0 15.5h2m1 0h2m3 0h2m1 0h1m1 0h3m3 0h2m2 0h1m2 0h1m1 0h1M1 16.5h1m1 0h2m1 0h1m1 0h1m3 0h1m10 0h1m1 0h1M0 17.5h2m3 0h1m9 0h2m1 0h3m3 0h1m1 0h2M0 18.5h4m2 0h1m1 0h1m1 0h2m1 0h3m1 0h1m1 0h1m1 0h1m2 0h2m2 0h1M0 19.5h5m3 0h4m1 0h1m2 0h1m1 0h4m3 0h2M0 20.5h4m1 0h6m2 0h1m1 0h1m1 0h1m1 0h9M8 21.5h1m2 0h1m1 0h1m1 0h1m4 0h1m3 0h2M0 22.5h7m1 0h1m3 0h2m1 0h3m1 0h2m1 0h1m1 0h2M0 23.5h1m5 0h1m1 0h2m3 0h1m3 0h4m3 0h1m2 0h2M0 24.5h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h2m1 0h2m2 0h7m1 0h2M0 25.5h1m1 0h3m1 0h1m1 0h1m2 0h1m1 0h6m9 0h1M0 26.5h1m1 0h3m1 0h1m2 0h1m1 0h2m1 0h3m1 0h2m1 0h1m1 0h2m1 0h3M0 27.5h1m5 0h1m2 0h3m1 0h3m2 0h1m2 0h1m3 0h2m1 0h1M0 28.5h7m1 0h1m2 0h1m2 0h1m3 0h8"/></svg>
+</div>
+    <div class="invito">
+      <strong>Inquadra il codice e richiedi l'accesso.</strong>
+      <p>Il primo mese è gratuito, con tutte le funzioni. L'accesso è su richiesta: ogni azienda entra con il suo amministratore, che poi invita i colleghi.</p>
+      <span class="sito">rilievi.carbonstealth.eu</span>
+      <p class="contatti">+39 379 29 69 699 &nbsp; info@carbonstealth.eu<br>Carbon Stealth VCC, P. IVA BG208725180<br>I marchi citati appartengono ai rispettivi titolari.</p>
+    </div>
+  </div>
+</section>
+</body>
+</html>

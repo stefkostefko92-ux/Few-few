@@ -63,7 +63,7 @@ export function checkPurchase(input: {
   return 'ok';
 }
 
-function addMonthsUtc(date: Date, months: number): Date {
+export function addMonthsUtc(date: Date, months: number): Date {
   const d = new Date(date.getTime());
   const day = d.getUTCDate();
   d.setUTCDate(1);
@@ -131,10 +131,19 @@ export function planAfterRefund(input: {
   prevPlan: PlanId | null;
   prevExpiresAt: Date | null;
   now: Date;
+  /**
+   * Отказ от по-висок план (abuse-money-spec Б5): времето с новия план не е ползвано
+   * със стария → срокът на стария се удължава с него.
+   */
+  extendMs?: number;
 }): { plan: PlanId; expiresAt: Date | null } {
-  const { prevPlan, prevExpiresAt, now } = input;
+  const { prevPlan, now } = input;
   if (!prevPlan || prevPlan === 'FREE') return { plan: 'FREE', expiresAt: null };
   if (prevPlan === 'FOUNDER') return { plan: 'FOUNDER', expiresAt: null };
+  const prevExpiresAt =
+    input.prevExpiresAt && input.extendMs && input.extendMs > 0
+      ? new Date(input.prevExpiresAt.getTime() + input.extendMs)
+      : input.prevExpiresAt;
   if (prevExpiresAt && prevExpiresAt.getTime() <= now.getTime()) return { plan: 'FREE', expiresAt: null };
   return { plan: prevPlan, expiresAt: prevExpiresAt };
 }

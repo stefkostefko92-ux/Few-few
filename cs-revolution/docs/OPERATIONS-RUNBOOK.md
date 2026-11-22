@@ -23,15 +23,25 @@ why the generic `/run/php/php-fpm.sock` symlink points at the **wrong** pool —
 
 ## 2. Secrets & environment (must be set, never in git)
 
-- **Admin token** — `CS_ADMIN_TOKEN` in the FPM pool. Same value you type in the admin
-  panel and send as the `X-CS-Token` header.
+- **Admin login** — `https://carbonstealth.eu/admin/`: email + password + 6-digit code
+  from an authenticator app. Credentials live only in `/etc/carbonstealth/admin.json`
+  (root:www-data 0640) and are managed with the root CLI that `deploy-all.sh` installs:
   ```bash
-  grep -n CS_ADMIN_TOKEN /etc/php/8.5/fpm/pool.d/www.conf     # find it
-  # to set/rotate:
-  TOK=$(openssl rand -hex 32)
-  echo "env[CS_ADMIN_TOKEN] = $TOK" >> /etc/php/8.5/fpm/pool.d/www.conf
-  systemctl restart php8.5-fpm.service
+  sudo cs-admin setup      # first time: email, password (typed twice, hidden), QR/key, 10 recovery codes
+  sudo cs-admin password   # change the password (2FA and recovery codes stay)
+  sudo cs-admin recovery   # new recovery codes (old ones stop working)
+  sudo cs-admin revoke     # sign out every session
+  sudo cs-admin status     # what is configured (never prints secrets)
+  sudo apt install qrencode   # optional: QR code right in the terminal during setup
   ```
+  Lost phone + no recovery codes → `sudo cs-admin setup --force` on the server.
+  **After a server move / restore without `api/logs/`** (or if `status` says the recovery codes
+  are STOPPED): the record of which recovery codes were used is gone, so they are refused on
+  purpose (the authenticator code still works) → `sudo cs-admin recovery` for a fresh set.
+  `cs-admin` reads `CS_LOG_DIR` / `CS_ADMIN_CREDENTIALS` from the PHP-FPM pool (`www.conf`) and
+  refuses to run if they disagree with what it was given, so `revoke` never "revokes" the wrong folder.
+  The old `CS_ADMIN_TOKEN` (FPM pool env) / `X-CS-Token` header is **no longer used** —
+  delete the line from `/etc/php/8.5/fpm/pool.d/www.conf` and restart FPM.
 - **SMTP password** — only in `api/smtp-local.php` (see §5). Never commit it.
 
 ---
@@ -150,12 +160,15 @@ bash /root/cs-revolution/deploy.sh   # rsyncs dist, copies api/*.php, installs n
 ## 7. Post-change verification checklist
 
 ```bash
-# API alive (real server stats)
-curl -s -H "X-CS-Token: <TOKEN>" https://carbonstealth.eu/api/monitor.php | head -c 120
+# admin API is closed without a session (expect 401), login page is up (expect 200)
+curl -s -o /dev/null -w "%{http_code}\n" https://carbonstealth.eu/api/monitor.php
+curl -s -o /dev/null -w "%{http_code}\n" https://carbonstealth.eu/admin/
+sudo cs-admin status
+# real server stats: sign in at /admin/ → Табло / Сървър
 # contact form
 curl -s -X POST https://carbonstealth.eu/api/contact.php -H "Content-Type: application/json" \
   -d '{"name":"Test","email":"you@example.com","message":"ping","lang":"it","_gotcha":""}'
-# IndexNow bulk (admin only) — from the panel: INDEXNOW → Submit All
+# IndexNow bulk (admin only) — from the panel: IndexNow → „Подай всички sitemap-и“
 # analyzer header parity — open /test/ and compare with the homepage nav
 ```
 Expected: `monitor.php` → `{"ok":true,…}`, contact → `{"ok":true,"message":"sent"}`

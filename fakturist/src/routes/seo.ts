@@ -10,6 +10,7 @@ import { LEGAL_DOCUMENTS, LEGAL_DOCUMENT_IDS } from '../legal/documents.js';
 import { ROOT } from '../paths.js';
 import { DAY } from '../time.js';
 import { LAST_UPDATE } from '../news/entries.js';
+import { NEWS_FEED_PATHS } from '../news/feed.js';
 
 function xmlEscape(value: string): string {
   return value
@@ -90,6 +91,9 @@ export function llmsTxt(base: string): string {
     `> ${BRAND.tagline.bg}`,
     `> ${BRAND.tagline.en}`,
     '',
+    bg('site.home.meta.description'),
+    en('site.home.meta.description'),
+    '',
     `${BRAND.nameLatin} is made by ${COMPANY.name} (${COMPANY.nameBg}), EIK ${COMPANY.eik}, Bulgaria.`,
     '',
     '## Страници (BG)',
@@ -112,8 +116,9 @@ export function llmsTxt(base: string): string {
         `- [${en(`legal.${id}.title`)}](${base}${LEGAL_DOCUMENTS[id].paths.en}): ${en(`legal.${id}.metaDescription`)}`,
     ),
     '',
-    '## App',
-    `- [Install the app / Инсталирай приложението](${base}/prilozhenie): phone, tablet and computer (PWA).`,
+    '## News / Новини (RSS)',
+    `- [Какво ново](${base}${NEWS_FEED_PATHS.bg})`,
+    `- [What's new](${base}${NEWS_FEED_PATHS.en})`,
     '',
   ];
   return lines.join('\n');

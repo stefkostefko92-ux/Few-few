@@ -324,3 +324,8 @@
 .field--azienda {
   max-width: 520px;
 }
+
+/* Фирма с изключени оферти, избрана от MASTER: бележката и „Attiva i preventivi“ под избора. */
+.field--azienda .notice {
+  margin-top: 4px;
+}

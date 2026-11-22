@@ -10,6 +10,7 @@ import { DOWNLOAD_SELECT } from '../routes/app-shared.js';
 import { escapeHtml } from './templates.js';
 import type { MailMessage } from './mailer.js';
 import type { Locale } from '../i18n.js';
+import { bgDate } from '../time.js';
 
 /**
  * Писмата на фирмата до получателя на документ, който не е във Фактурист (SPEC 51–52): издадената
@@ -19,8 +20,6 @@ import type { Locale } from '../i18n.js';
  */
 const SentPayload = z.object({ documentId: z.string().min(1) });
 const ReminderPayload = z.object({ documentId: z.string().min(1), step: z.number().int() });
-
-const bgDate = (date: Date) => date.toISOString().slice(0, 10).split('-').reverse().join('.');
 
 async function load(documentId: string) {
   return prisma.document.findUniqueOrThrow({

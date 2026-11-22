@@ -1,7 +1,8 @@
 <%#
   Разделите на фирмата, подредени по смисъл. Данните идват от `orgNav` (src/routes/app.ts → orgNavLocals): правата са
   същите като преди — връзка, която човекът не може да отвори, не се рисува. Активният раздел е по адреса.
-  Един `<details>`: на телефон се свива до текущия раздел, на широк екран е винаги отворен (app.css).
+  Един `<details>`: на телефон е свит до текущия раздел (и на началото на фирмата — името и „Нов документ“ са първи),
+  на широк екран е винаги отворен (`::details-content` в app.css).
 -%>
 <%
   const n = orgNav;
@@ -34,6 +35,7 @@
       { slug: 'chlenove', icon: 'members', label: t('app.members.title'), show: can.members },
       { slug: 'palnomoshtni', icon: 'mandates', label: t('app.mandates.title'), badge: n.pendingMandates > 0 ? String(n.pendingMandates) : '', pending: true, show: can.mandates && n.org.kind === 'COMPANY' },
       { slug: 'nastroyki', icon: 'settings', label: t('app.settings.title'), show: can.settings },
+      { slug: 'sobstvenost', icon: 'crown', label: t('app.ownership.title'), show: can.owner },
       { slug: 'prekratyavane', icon: 'close', label: t('app.termination.title'), show: can.billing || Boolean(n.org.terminatedAt) },
     ] },
   ];
@@ -44,7 +46,7 @@
   const currentLabel = overviewActive ? t('app.orgNav.overview') : (current ? current.label : t('app.orgNav.menu'));
 -%>
 <nav class="org-nav" aria-label="<%= t('app.orgNav.label') %>">
-  <details class="org-menu"<%= n.open ? ' open' : '' %>>
+  <details class="org-menu">
     <summary>
       <%- icon('menu') %>
       <span class="org-menu-name"><span class="org-menu-hint"><%= t('app.orgNav.menu') %></span><span><%= currentLabel %></span></span>

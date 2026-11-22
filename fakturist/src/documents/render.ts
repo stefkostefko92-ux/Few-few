@@ -6,6 +6,7 @@ import { setting } from '../admin/settings.js';
 import { renderPdf } from './pdf.js';
 import { loadPdfStyle } from './pdf-style.js';
 import { isPdfLanguage } from './pdf-labels.js';
+import { bgDate } from '../time.js';
 
 /** Записът на документа, който трябва за PDF-а. */
 export interface PdfSource {
@@ -29,9 +30,7 @@ export interface PdfSource {
 
 function annulledText(document: PdfSource): string | null {
   if (document.status !== 'CANCELLED') return null;
-  const date = document.cancelledAt
-    ? document.cancelledAt.toISOString().slice(0, 10).split('-').reverse().join('.')
-    : '';
+  const date = document.cancelledAt ? bgDate(document.cancelledAt) : '';
   const replaced = document.replacedBy?.number
     ? ` — заменен с № ${document.replacedBy.number}`
     : '';

@@ -173,14 +173,30 @@ aziendeRouter.post('/aziende/:id/stato', manage, requireCsrf, async (req, res) =
   res.redirect(303, `/aziende/${encodeURIComponent(id)}`);
 });
 
+/**
+ * Къде се връща включването от избора на фирма на нова оферта, нов клиент или ценоразписа
+ * (views/preventivi/_scelta-azienda.ejs) — с избраната фирма; всичко друго — страницата на фирмата. Адресът се
+ * строи тук, не идва от формата.
+ */
+const DOPO_ACCESE: Record<string, (id: string) => string> = {
+  preventivo: (id) => `/preventivi/nuovo?azienda=${encodeURIComponent(id)}`,
+  cliente: (id) => `/clienti/nuovo?azienda=${encodeURIComponent(id)}`,
+  listino: (id) => `/preventivi/listino?azienda=${encodeURIComponent(id)}`,
+};
+
 /** Офертите на фирмата — включва и изключва ги само MASTER (C1); нищо не се трие. */
 aziendeRouter.post('/aziende/:id/preventivi', manage, requireCsrf, async (req, res) => {
   const id = String(req.params.id);
-  const attivi = (req.body as Record<string, unknown>).attivi === '1';
+  const body = req.body as Record<string, unknown>;
+  const attivi = body.attivi === '1';
   if (!isAziendaId(id) || !(await setPreventiviAttivi(principalOf(req).user, id, attivi)))
     return notFound(req, res);
   setFlash(res, 'ok', attivi ? 'aziende.preventivi.flashOn' : 'aziende.preventivi.flashOff');
-  res.redirect(303, `/aziende/${encodeURIComponent(id)}#h-preventivi`);
+  const dopo =
+    attivi && typeof body.dopo === 'string' && Object.hasOwn(DOPO_ACCESE, body.dopo)
+      ? DOPO_ACCESE[body.dopo]
+      : undefined;
+  res.redirect(303, dopo ? dopo(id) : `/aziende/${encodeURIComponent(id)}#h-preventivi`);
 });
 
 /**

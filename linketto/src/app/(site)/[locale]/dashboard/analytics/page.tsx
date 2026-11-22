@@ -1,7 +1,9 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { SiteHeader } from '@/components/SiteChrome';
+import { DashShell } from '@/components/DashShell';
+import { ButtonLink } from '@/components/ui/Button';
+import { Card, CardHeader } from '@/components/ui/Card';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { type Locale } from '@/i18n/locales';
 import { getSessionUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
@@ -43,6 +45,11 @@ export default async function AnalyticsPage({
   if (!profile) redirect(`/${locale}/dashboard`);
 
   const plan = planFor(user.plan);
+  const profileList = await prisma.profile.findMany({
+    where: { userId: user.id },
+    select: { id: true, slug: true },
+    orderBy: { createdAt: 'asc' },
+  });
   const now = new Date();
   const windowSince = plan.analyticsDays
     ? new Date(now.getTime() - plan.analyticsDays * 86_400_000)
@@ -128,6 +135,10 @@ export default async function AnalyticsPage({
     now,
   );
   const max = seriesMax(series) || 1;
+  const hasTraffic = series.some((point) => point.views > 0 || point.clicks > 0);
+  // Датите по езика на таблото (не ISO) — визуалният обход.
+  const dayLabel = (iso: string | undefined) =>
+    iso ? new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${iso}T00:00:00Z`)) : '';
   const gap = languageDemand(
     byCountry.map((row) => ({ country: row.country, count: row._count._all })),
     profile.translations.map((tr) => tr.locale),
@@ -147,25 +158,11 @@ export default async function AnalyticsPage({
     return link?.url ? link.url.replace(/^https?:\/\/(www\.)?/, '') : '—';
   };
 
-  const StatTile = ({
-    value,
-    label,
-    raised = false,
-  }: {
-    value: string;
-    label: string;
-    raised?: boolean;
-  }) => (
-    <div
-      className={`rounded-xl p-4 text-center ${
-        raised
-          ? 'border border-slate-200 bg-white shadow-sm'
-          : 'bg-slate-50'
-      }`}
-    >
-      <p className="text-2xl font-extrabold text-linketto-700">{value}</p>
-      <p className="mt-0.5 text-xs text-slate-500">{label}</p>
-    </div>
+  const StatTile = ({ value, label }: { value: string; label: string }) => (
+    <Card padding="sm" className="text-center">
+      <p className="text-heading tabular-nums text-fg">{value}</p>
+      <p className="mt-0.5 text-small text-fg-muted">{label}</p>
+    </Card>
   );
 
   const BarList = ({
@@ -178,21 +175,21 @@ export default async function AnalyticsPage({
     const listMax = rows.reduce((m, r) => Math.max(m, r.value), 0) || 1;
     return (
       <div>
-        <h3 className="text-sm font-semibold text-slate-600">{title}</h3>
-        <ul className="mt-2 space-y-1.5 text-sm">
-          {rows.length === 0 && <li className="text-slate-500">—</li>}
+        <h3 className="text-small font-semibold text-fg-2">{title}</h3>
+        <ul className="mt-2 space-y-1.5 text-small">
+          {rows.length === 0 && <li className="text-fg-muted">—</li>}
           {rows.map((row, i) => (
             <li key={`${row.label}-${i}`} className="flex items-center gap-2">
-              <span className="w-28 shrink-0 truncate sm:w-32" title={row.label}>
+              <span className="w-28 shrink-0 truncate text-fg-2 sm:w-32" title={row.label}>
                 {row.label}
               </span>
-              <span className="relative h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+              <span className="relative h-2 flex-1 overflow-hidden rounded-full bg-surface-3">
                 <span
-                  className="absolute inset-y-0 left-0 rounded-full bg-linketto-500"
+                  className="absolute inset-y-0 start-0 rounded-full bg-accent"
                   style={{ width: `${Math.round((row.value / listMax) * 100)}%` }}
                 />
               </span>
-              <span className="w-10 shrink-0 text-right font-semibold text-slate-600">
+              <span className="w-10 shrink-0 text-end font-semibold tabular-nums text-fg">
                 {row.value}
               </span>
             </li>
@@ -202,74 +199,85 @@ export default async function AnalyticsPage({
     );
   };
 
-  return (
-    <>
-      <SiteHeader locale={locale as Locale} />
-      <main className="dash mx-auto max-w-4xl space-y-8 px-6 py-10">
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
-            {t('analyticsTitle')}
-          </h1>
-          <Link
-            href={`/${locale}/dashboard`}
-            className="inline-flex items-center gap-1 text-sm font-medium text-linketto-700 hover:underline"
-          >
-            <ChevronLeftIcon className="h-4 w-4" />
-            {t('analyticsBack')}
-          </Link>
-        </div>
-        <p className="text-xs text-slate-500">
-          {plan.analyticsDays
-            ? t('statsWindow', { days: plan.analyticsDays })
-            : t('statsWindowAll')}
-        </p>
+  const sectionClass = 'dash-card';
 
+  return (
+    <DashShell
+      locale={locale as Locale}
+      page="analytics"
+      profiles={profileList}
+      activeId={profile.id}
+      planId={plan.id}
+    >
+      <PageHeader
+        title={t('analyticsTitle')}
+        description={
+          <>
+            {t('analyticsIntro')}{' '}
+            {plan.analyticsDays
+              ? t('statsWindow', { days: plan.analyticsDays })
+              : t('statsWindowAll')}
+          </>
+        }
+        actions={
+          <ButtonLink
+            href={`/${locale}/dashboard${profileList[0]?.id === profile.id ? '' : `?p=${profile.id}`}#stats`}
+            variant="secondary"
+            size="sm"
+            className="gap-1.5"
+          >
+            <ChevronLeftIcon className="h-4 w-4 rtl:rotate-180" />
+            {t('analyticsBack')}
+          </ButtonLink>
+        }
+      />
+      <div className="space-y-6">
         {/* Ключови числа */}
-        <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <StatTile raised value={String(views)} label={t('statsViews')} />
-          <StatTile raised value={String(clicks)} label={t('statsClicks')} />
-          <StatTile
-            raised
-            value={`${ctr(views, clicks)}%`}
-            label={t('analyticsCtr')}
-          />
-          <StatTile raised value={String(productClicks)} label={t('analyticsProductClicks')} />
+        <section aria-label={t('statsSection')} className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <StatTile value={String(views)} label={t('statsViews')} />
+          <StatTile value={String(clicks)} label={t('statsClicks')} />
+          <StatTile value={`${ctr(views, clicks)}%`} label={t('analyticsCtr')} />
+          <StatTile value={String(productClicks)} label={t('analyticsProductClicks')} />
         </section>
 
         {/* Тренд по дни */}
-        <section className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-          <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('analyticsTrend')}</h2>
-          <p className="mt-1 text-xs text-slate-500">{t('analyticsLast30')}</p>
+        <Card as="section" className={sectionClass}>
+          <CardHeader title={t('analyticsTrend')} description={t('analyticsLast30')} />
+          {!hasTraffic && (
+            <p className="mt-4 rounded-control border border-dashed border-line p-3 text-small text-fg-muted">
+              {t('analyticsNoTraffic')}
+            </p>
+          )}
           <div className="mt-5 flex gap-3">
             <div
               aria-hidden
-              className="flex h-44 flex-col justify-between text-end text-[11px] tabular-nums text-slate-500"
+              className="flex h-44 flex-col justify-between text-end text-micro tabular-nums text-fg-muted"
             >
               <span>{max}</span>
               <span>0</span>
             </div>
             <div className="min-w-0 flex-1">
               <div
-                className="flex h-44 items-end gap-[3px] border-b border-slate-300"
+                className="flex h-44 items-end gap-[3px] border-b border-line-input"
                 style={{
                   backgroundImage:
-                    'repeating-linear-gradient(to top, transparent 0, transparent calc(25% - 1px), #e8eef5 calc(25% - 1px), #e8eef5 25%)',
+                    'repeating-linear-gradient(to top, transparent 0, transparent calc(25% - 1px), rgb(var(--c-line)) calc(25% - 1px), rgb(var(--c-line)) 25%)',
                 }}
               >
                 {series.map((point) => (
                   <div
                     key={point.date}
-                    className="group relative flex h-full min-w-0 flex-1 items-end justify-center gap-px rounded-t transition-colors hover:bg-slate-900/[0.04]"
+                    className="group relative flex h-full min-w-0 flex-1 items-end justify-center gap-px rounded-t transition-colors hover:bg-fg/[0.06]"
                     title={`${point.date} · ${point.views} / ${point.clicks}`}
                   >
                     <span
-                      className="w-1/2 rounded-t-[3px] bg-linketto-600 transition-[filter] group-hover:brightness-110"
+                      className="w-1/2 rounded-t-[3px] bg-accent"
                       style={{
                         height: `${point.views > 0 ? Math.max(2, (point.views / max) * 100) : 0}%`,
                       }}
                     />
                     <span
-                      className="w-1/2 rounded-t-[3px] bg-violet-400 transition-[filter] group-hover:brightness-110"
+                      className="w-1/2 rounded-t-[3px] bg-chart2"
                       style={{
                         height: `${point.clicks > 0 ? Math.max(2, (point.clicks / max) * 100) : 0}%`,
                       }}
@@ -279,27 +287,27 @@ export default async function AnalyticsPage({
               </div>
               <div
                 aria-hidden
-                className="mt-1.5 flex justify-between text-[11px] tabular-nums text-slate-500"
+                className="mt-1.5 flex justify-between text-micro tabular-nums text-fg-muted"
               >
-                <span>{series[0]?.date}</span>
-                <span>{series[series.length - 1]?.date}</span>
+                <span>{dayLabel(series[0]?.date)}</span>
+                <span>{dayLabel(series[series.length - 1]?.date)}</span>
               </div>
             </div>
           </div>
-          <div className="mt-3 flex gap-4 text-xs text-slate-500">
+          <div className="mt-4 flex gap-4 text-small text-fg-2">
             <span className="inline-flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-linketto-600" />
+              <span aria-hidden className="h-2.5 w-2.5 rounded-sm bg-accent" />
               {t('statsViews')}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-violet-400" />
+              <span aria-hidden className="h-2.5 w-2.5 rounded-sm bg-chart2" />
               {t('statsClicks')}
             </span>
           </div>
-        </section>
+        </Card>
 
         {/* Разбивки */}
-        <section className="dash-card grid gap-8 rounded-2xl border border-slate-200 bg-white p-5 sm:grid-cols-2 sm:p-6">
+        <Card as="section" className={`${sectionClass} grid gap-8 sm:grid-cols-2`}>
           <BarList
             title={t('statsByLink')}
             rows={byLink.map((row) => ({
@@ -328,43 +336,45 @@ export default async function AnalyticsPage({
               value: row._count._all,
             }))}
           />
-        </section>
+        </Card>
 
         {/* Езикова дупка */}
-        <section className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-          <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('gapSection')}</h2>
+        <Card as="section" className={sectionClass}>
+          <CardHeader title={t('gapSection')} />
           {gap.mappedVisitors === 0 ? (
-            <p className="mt-2 text-sm text-slate-500">{t('gapNoData')}</p>
+            <p className="mt-2 text-small text-fg-muted">{t('gapNoData')}</p>
           ) : (
-            <BarList
-              title={t('analyticsByAudienceLang')}
-              rows={gap.demand.map((row) => ({
-                label: `${row.name}${row.hasTranslation ? '' : ' •'}`,
-                value: row.visitors,
-              }))}
-            />
+            <div className="mt-4">
+              <BarList
+                title={t('analyticsByAudienceLang')}
+                rows={gap.demand.map((row) => ({
+                  label: `${row.name}${row.hasTranslation ? '' : ' •'}`,
+                  value: row.visitors,
+                }))}
+              />
+            </div>
           )}
-        </section>
+        </Card>
 
         {/* Интерес към продуктите (кликове към линка за плащане) */}
-        <section className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-          <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('analyticsProducts')}</h2>
+        <Card as="section" className={sectionClass}>
+          <CardHeader title={t('analyticsProducts')} />
           {byProduct.length === 0 ? (
-            <p className="mt-2 text-sm text-slate-500">{t('analyticsNoProductClicks')}</p>
+            <p className="mt-2 text-small text-fg-muted">{t('analyticsNoProductClicks')}</p>
           ) : (
-            <ul className="mt-4 space-y-2 text-sm">
+            <ul className="mt-4 divide-y divide-line text-small">
               {byProduct.map((row) => (
-                <li key={row.productId} className="flex items-center justify-between gap-3">
-                  <span className="min-w-0 truncate text-slate-700">{productTitle(row.productId)}</span>
-                  <span className="shrink-0 font-semibold text-slate-900">
+                <li key={row.productId} className="flex items-center justify-between gap-3 py-2">
+                  <span className="min-w-0 truncate text-fg-2">{productTitle(row.productId)}</span>
+                  <span className="shrink-0 font-semibold tabular-nums text-fg">
                     {row._count._all} · {ctr(views, row._count._all)}%
                   </span>
                 </li>
               ))}
             </ul>
           )}
-        </section>
-      </main>
-    </>
+        </Card>
+      </div>
+    </DashShell>
   );
 }

@@ -155,6 +155,10 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 .cs-caliper.on i{opacity:.9}
 @media(hover:none),(pointer:coarse){.cs-caliper{display:none}}
 @media(prefers-reduced-motion:reduce){h1,.card::before,.tier::before,.work-shot,.w>h2::after,.seo-body article>h2::after,body::after{animation:none!important}body::after{display:none}}
+@property --ctl{syntax:'<length>';inherits:false;initial-value:0px}
+@property --ctr{syntax:'<length>';inherits:false;initial-value:0px}
+@keyframes ctblHint{from{--ctl:0px;--ctr:36px}to{--ctl:36px;--ctr:0px}}
+@supports (animation-timeline:scroll()){.ctbl{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);animation:ctblHint linear both;animation-timeline:scroll(self inline)}.ctbl:focus-visible{-webkit-mask-image:none;mask-image:none}}
 </style></head><body>
 <nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">ГЛАВНА</a><a href="/bg/za-nas/">ЗА НАС</a><a href="/bg/uslugi/web-razrabotka/">УСЛУГИ</a><a href="/bg/portfolio/">ПОРТФОЛИО</a><a href="/bg/ceni/">ЦЕНИ</a><a href="/bg/kontakti/">КОНТАКТИ</a></div></nav>
 <div class="hero-s"><div class="w"><div class="tag">// ЕЛЕКТРОННА ТЪРГОВИЯ</div><h1>Изработка на онлайн магазини и електронна търговия</h1></div></div><div class="w"><p>Пълнофункционални онлайн магазини с управление на поръчки и сигурни плащания.</p><p class="syn">Онлайн магазин, електронен магазин, e-commerce сайт или интернет магазин: изграждаме магазини с WooCommerce, Shopify или React + Stripe, с плащания, доставка и ДДС настройка.</p><h2>Цени</h2><p class='price'>От €2190 с ДДС</p><p class='price'>От €2,500 мулти-езичен</p><a href="/bg/kontakti/" class="cta">ИЗПРАТИ ЗАЯВКА</a></div>

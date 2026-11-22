@@ -3,6 +3,8 @@
   // поле е по желание; празното име — името на фирмата в портала.
   const MAX = { ragioneSociale: 160, indirizzo: 200, cap: 10, citta: 80, provincia: 2, telefono: 40, email: 160, partitaIva: 20, sito: 160 };
   const WIDE = ['ragioneSociale', 'indirizzo'];
+  // Имейлът и сайтът — две колони от 720 px: адресът се чете цял („info@ascensori-esempio.example“ се режеше).
+  const DOPPIA = ['email', 'sito'];
   const AUTO = { ragioneSociale: 'organization', indirizzo: 'street-address', cap: 'postal-code', citta: 'address-level2', provincia: 'address-level1', telefono: 'tel', email: 'email', sito: 'url' };
   const HINT = ['ragioneSociale'];
 %><section aria-labelledby="h-dati">
@@ -17,7 +19,7 @@
            const error = dati.errors[key];
            const hint = HINT.includes(key);
            const describedBy = [hint ? 'hint-' + id : null, error ? 'err-' + id : null].filter(Boolean).join(' '); %>
-      <div class="field<%= WIDE.includes(key) ? ' field--wide' : '' %>">
+      <div class="field<%= WIDE.includes(key) ? ' field--wide' : DOPPIA.includes(key) ? ' field--doppia' : '' %>">
         <label class="field__label" for="<%= id %>"><%= t('impostazioni.dati.campo.' + key) %></label>
         <input class="input" id="<%= id %>" name="<%= key %>" type="<%= key === 'email' ? 'email' : key === 'telefono' ? 'tel' : 'text' %>" maxlength="<%= MAX[key] %>" autocomplete="<%= AUTO[key] || 'off' %>" value="<%= dati.values[key] || '' %>"<% if (key === 'provincia') { %> autocapitalize="characters" size="3"<% } %><% if (error) { %> aria-invalid="true"<% } %><% if (describedBy) { %> aria-describedby="<%= describedBy %>"<% } %>>
         <% if (hint) { %><p class="field__hint" id="hint-<%= id %>"><%= t('impostazioni.dati.hint.' + key) %></p><% } %>

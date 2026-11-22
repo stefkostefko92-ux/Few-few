@@ -9,8 +9,8 @@ import { CaliperCursor, useChromeLight, useActiveSection, NavSlider, DrumNumber,
 // страниците /prezzi/, /en/pricing/, /bg/ceni/ — една таблица, две места.
 import PRICING from "./pricing.json";
 import { C, CR, BASE, S1, S2, INK, INK2, WARN, LINE, EASE, DISP, MONO } from "./tokens.js";
-// The admin panel (Ctrl+Shift+A) is its own chunk, fetched only when it is opened.
-const AdminPanel = React.lazy(function(){ return import("./AdminPanel.jsx"); });
+// The admin panel lives on its own page, /admin/ (admin/index.html → src/admin-main.jsx): its own
+// small bundle, never part of the public site. Ctrl+Shift+A (and the "cs-admin-toggle" event) go there.
 // THREE.js is lazy loaded inside Scene3D via dynamic import()
 // This removes 465KB from the initial bundle and improves LCP/FCP significantly
 
@@ -1588,7 +1588,6 @@ export default function App(){
   useEffect(function(){try{document.documentElement.lang=lang}catch(e){}},[lang]);
   // (the ipapi.co IP lookup was removed: it sent every visitor's IP to a US company on load;
   //  detectLang() already picks the language from the browser and the time zone)
-  const[showAdmin,setShowAdmin]=useState(false);
   const[mobileMenu,setMobileMenu]=useState(false);
   const[cookieOk,setCookieOk]=useState(function(){try{return localStorage.getItem("cs_cookie")!==null}catch(e){return false}});
   useChromeLight(lang);
@@ -1612,7 +1611,7 @@ export default function App(){
   function rejectCookies(){setCookieOk(true);try{localStorage.setItem("cs_cookie","rejected")}catch(e){}}
 
   // Admin panel: Ctrl+Shift+A or type "admin" in terminal
-  useEffect(function(){function h(e){if(e.ctrlKey&&e.shiftKey&&e.key==="A"){e.preventDefault();setShowAdmin(function(v){return!v});}if(e.key==="Escape")setShowAdmin(false)}function adminEvt(){setShowAdmin(function(v){return!v})}window.addEventListener("keydown",h);window.addEventListener("cs-admin-toggle",adminEvt);return function(){window.removeEventListener("keydown",h);window.removeEventListener("cs-admin-toggle",adminEvt)}},[]);
+  useEffect(function(){function go(){window.location.assign("/admin/")}function h(e){if(e.ctrlKey&&e.shiftKey&&(e.key==="A"||e.key==="a")){e.preventDefault();go();}}window.addEventListener("keydown",h);window.addEventListener("cs-admin-toggle",go);return function(){window.removeEventListener("keydown",h);window.removeEventListener("cs-admin-toggle",go)}},[]);
   useEffect(function(){function h(){setScrollPx(window.scrollY)}window.addEventListener("scroll",h,{passive:true});return function(){window.removeEventListener("scroll",h)}},[]);
 
   // Scroll re-measures: a cyan line sweeps each section once on entry and its
@@ -1946,7 +1945,6 @@ export default function App(){
   return(
     <div className="cs-root" style={{background:BASE,color:INK,fontFamily:MONO,fontSize:12,letterSpacing:".02em",position:"relative",overflowX:"hidden"}}>
       <a href="#main" className="cs-skip">{lang==="it"?"Salta al contenuto":lang==="bg"?"Към съдържанието":"Skip to content"}</a>
-      {showAdmin && <React.Suspense fallback={null}><AdminPanel onClose={function(){setShowAdmin(false)}} /></React.Suspense>}
       <SEOInjector />
       <CaliperCursor />
       <div className="cs-scroll-instr"><ScrollInstrument /></div>

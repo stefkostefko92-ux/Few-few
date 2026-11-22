@@ -170,7 +170,7 @@
 </form>
 <script type="application/json" id="collegati-dati" nonce="<%= cspNonce %>"><%- collegati.json %></script>
 <% if (schizzi.attivo) { %><%- include('_schizzo-editor') %>
-<script type="application/json" id="annotazioni-testi" nonce="<%= cspNonce %>"><%- JSON.stringify(Object.fromEntries(['annota', 'modifica', 'titolo', 'salvate', 'tolte', 'errore'].map((k) => [k, t('allegati.annotazioni.' + k)]))).replace(/</g, '\\u003c') %></script><% } %>
+<script type="application/json" id="annotazioni-testi" nonce="<%= cspNonce %>"><%- JSON.stringify(Object.fromEntries(['annota', 'modifica', 'titolo', 'salvate', 'tolte', 'errore', 'foto'].map((k) => [k, t('allegati.annotazioni.' + k)]))).replace(/</g, '\\u003c') %></script><% } %>
 <% if (isEdit) { %><%- include('_allegati-forms', { ritorno: 'modifica' }) %><% } %>
 </div>
 <% } %>

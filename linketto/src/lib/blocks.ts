@@ -303,3 +303,159 @@ export function pickMusicTarget(
   if (service === 'apple' && meta?.apple) return meta.apple;
   return fallback ?? meta?.spotify ?? meta?.apple ?? null;
 }
+
+/** Кои полета на формата ползва даден вид блок (за формата за редакция). */
+export function blockFieldsFor(kind: string): { url: boolean; extra1: boolean; extra2: boolean; options: boolean } {
+  switch (kind) {
+    case 'LINK':
+    case 'TIP':
+    case 'VIDEO':
+    case 'PHONE':
+    case 'MAP':
+      return { url: true, extra1: false, extra2: false, options: false };
+    case 'APP':
+    case 'VCARD':
+      return { url: true, extra1: true, extra2: true, options: false };
+    case 'MUSIC':
+      return { url: true, extra1: true, extra2: false, options: false };
+    case 'POLL':
+      return { url: false, extra1: false, extra2: false, options: true };
+    default:
+      return { url: false, extra1: false, extra2: false, options: false };
+  }
+}
+
+/** Етикет на поле във формата (ключ `dashboard.field_<id>`); празно = полето не се ползва. */
+export type BlockFieldLabel =
+  | 'url'
+  | 'tip'
+  | 'video'
+  | 'phone'
+  | 'address'
+  | 'spotify'
+  | 'appleMusic'
+  | 'appStore'
+  | 'googlePlay'
+  | 'appWeb'
+  | 'vcardPhone'
+  | 'vcardEmail'
+  | 'vcardOrg';
+
+/**
+ * Какво означава всяко поле за даден вид — същият ред като parseBlockCore
+ * (MUSIC: url = Spotify, extra1 = Apple Music; APP: extra1 = App Store, extra2 = Google Play).
+ */
+export function blockFieldLabels(kind: string): { url: BlockFieldLabel | null; extra1: BlockFieldLabel | null; extra2: BlockFieldLabel | null } {
+  switch (kind) {
+    case 'LINK':
+      return { url: 'url', extra1: null, extra2: null };
+    case 'TIP':
+      return { url: 'tip', extra1: null, extra2: null };
+    case 'VIDEO':
+      return { url: 'video', extra1: null, extra2: null };
+    case 'PHONE':
+      return { url: 'phone', extra1: null, extra2: null };
+    case 'MAP':
+      return { url: 'address', extra1: null, extra2: null };
+    case 'MUSIC':
+      return { url: 'spotify', extra1: 'appleMusic', extra2: null };
+    case 'APP':
+      return { url: 'appWeb', extra1: 'appStore', extra2: 'googlePlay' };
+    case 'VCARD':
+      return { url: 'vcardPhone', extra1: 'vcardEmail', extra2: 'vcardOrg' };
+    default:
+      return { url: null, extra1: null, extra2: null };
+  }
+}
+
+/** Вход за полето: тип, задължително ли е, подсказка. */
+export function blockFieldInput(label: BlockFieldLabel): { type: 'url' | 'tel' | 'email' | 'text'; required: boolean; placeholder?: string } {
+  switch (label) {
+    case 'url':
+    case 'tip':
+    case 'video':
+      return { type: 'url', required: true, placeholder: 'https://…' };
+    case 'phone':
+      return { type: 'tel', required: true, placeholder: '+359 …' };
+    case 'address':
+      return { type: 'text', required: true };
+    case 'spotify':
+    case 'appleMusic':
+    case 'appStore':
+    case 'googlePlay':
+    case 'appWeb':
+      return { type: 'url', required: false, placeholder: 'https://…' };
+    case 'vcardPhone':
+      return { type: 'tel', required: false, placeholder: '+359 …' };
+    case 'vcardEmail':
+      return { type: 'email', required: false };
+    case 'vcardOrg':
+      return { type: 'text', required: false };
+  }
+}
+
+/**
+ * Обратното на parseBlockInput: стойностите за формата за редакция от записания
+ * блок. parseBlockInput(blockFormValues(x)) връща същите url/meta (тест) —
+ * запис без промяна не разваля блока.
+ */
+export function blockFormValues(link: { kind: string; url: string | null; meta: unknown }): {
+  url: string;
+  extra1: string;
+  extra2: string;
+  options: string;
+  color: string;
+  featured: boolean;
+} {
+  const meta = (link.meta && typeof link.meta === 'object' ? link.meta : {}) as BlockMeta;
+  const out = {
+    url: '',
+    extra1: '',
+    extra2: '',
+    options: Array.isArray(meta.options) ? meta.options.join('\n') : '',
+    color: typeof meta.color === 'string' ? meta.color : '',
+    featured: meta.featured === true,
+  };
+  switch (link.kind) {
+    case 'PHONE':
+      out.url = (link.url ?? '').replace(/^tel:/, '');
+      break;
+    case 'MAP':
+      try {
+        out.url = link.url ? (new URL(link.url).searchParams.get('q') ?? '') : '';
+      } catch {
+        out.url = '';
+      }
+      break;
+    case 'APP':
+      out.url = link.url ?? '';
+      out.extra1 = meta.ios ?? '';
+      out.extra2 = meta.android ?? '';
+      break;
+    case 'VCARD':
+      out.url = meta.phone ?? '';
+      out.extra1 = meta.email ?? '';
+      out.extra2 = meta.org ?? '';
+      break;
+    case 'MUSIC':
+      out.url = meta.spotify ?? '';
+      out.extra1 = meta.apple ?? '';
+      break;
+    default:
+      out.url = link.url ?? '';
+  }
+  return out;
+}
+
+/**
+ * Гласовете на анкета се пазят по индекс на опцията (PollVote.optionIndex).
+ * Остават верни само ако старите опции стоят непроменени на същите места —
+ * т.е. новият списък е старият + опции в края. Иначе гласовете се трият.
+ */
+export function pollVotesStillValid(previous: readonly string[], next: readonly string[]): boolean {
+  if (next.length < previous.length) return false;
+  return previous.every((option, index) => next[index] === option);
+}
+
+/** Таван на блоковете на профил (Разбивача т. 8: подканата на AI превода и злоупотреби). */
+export const MAX_BLOCKS_PER_PROFILE = 200;

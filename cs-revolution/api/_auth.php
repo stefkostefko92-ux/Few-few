@@ -5,11 +5,12 @@
  * header-safe strings, SSRF-safe host validation.
  *
  * SECURITY MODEL
- *  - The admin token lives ONLY in the PHP-FPM environment (CS_ADMIN_TOKEN),
- *    never in the JS bundle. Set it in the pool config:
- *      env[CS_ADMIN_TOKEN] = <long-random-string>
- *  - Sensitive endpoints call cs_require_admin(). If CS_ADMIN_TOKEN is not
- *    set, access is DENIED (fail-closed) — secure by default.
+ *  - Admin access = a session from api/admin-auth.php (email + password + TOTP code, see
+ *    api/_admin.php). The old shared token (CS_ADMIN_TOKEN / X-CS-Token) is GONE: it is not
+ *    read anywhere, so leaving it in the pool config grants nothing.
+ *  - Sensitive endpoints call cs_require_admin(): a valid session, and for anything that
+ *    changes state (POST…) also the X-CS-Admin: 1 header + same Origin (CSRF). No credentials
+ *    file on the server → nobody can log in (fail-closed).
  *  - Logs/PII are written to CS_LOG_DIR (default: a private dir outside the
  *    webroot if writable, else api/logs which nginx must deny).
  */
@@ -28,54 +29,42 @@ if (isset($_SERVER['SCRIPT_FILENAME']) &&
 if (!headers_sent()) header('X-Robots-Tag: noindex, nofollow');
 
 
-if (!function_exists('cs_admin_token')) {
+if (!function_exists('cs_is_admin')) {
 
-    function cs_admin_token(): string {
-        $t = getenv('CS_ADMIN_TOKEN');
-        return is_string($t) ? trim($t) : '';
-    }
-
-    /**
-     * Token presented by the caller — HEADER ONLY (X-CS-Token).
-     *
-     * Query-string auth (?token=/?key=) was removed on purpose: a token in the
-     * URL leaks into nginx access logs, browser history and Referer headers,
-     * and `?key=` collided with admin-data.php's own data-key parameter. The
-     * admin panel has always sent the header (see csAuthFetch in src/App.jsx).
-     */
-    function cs_presented_token(): string {
-        return trim((string)($_SERVER['HTTP_X_CS_TOKEN'] ?? ''));
-    }
-
-    /** Returns true if the caller is an authorized admin (constant-time compare). */
+    /** True if the caller holds a valid admin session (see api/_admin.php). */
     function cs_is_admin(): bool {
-        $expected = cs_admin_token();
-        if ($expected === '') return false;            // fail-closed: no token configured
-        $given = cs_presented_token();
-        if ($given === '') return false;
-        return hash_equals($expected, $given);
+        return cs_admin_session_current() !== null;
+    }
+
+    function cs_json_exit(int $code, array $body): void {
+        http_response_code($code);
+        header('Content-Type: application/json; charset=utf-8');
+        header('Cache-Control: no-store');
+        echo json_encode($body);
+        exit;
     }
 
     /**
-     * Hard gate for admin-only endpoints. Emits 401 JSON and exits on failure.
-     * Brute-force hardened: every failed attempt is throttled and recorded, and
-     * a locked-out caller is refused (429) BEFORE the token is even compared.
+     * Every admin request — GET included — must carry X-CS-Admin: 1 and come from our own Origin.
+     * SameSite=Strict does NOT stop a sibling subdomain (*.carbonstealth.eu is the same site), and a
+     * plain <img>/<a> can't add a custom header, so the header is what makes a request "ours".
+     */
+    function cs_admin_csrf_ok(): bool {
+        return ((string)($_SERVER['HTTP_X_CS_ADMIN'] ?? '')) === '1' && cs_admin_same_origin();
+    }
+
+    /**
+     * Hard gate for admin-only endpoints: no cookie → 401; cookie without the CSRF header → 403;
+     * then a valid session (401 otherwise). Credential guessing is throttled where credentials are
+     * actually checked — api/admin-auth.php; a missing/expired session here is not a guess (the
+     * cookie is 256 random bits), so it does not count towards the lockout: a panel that keeps
+     * polling after its session expired must not lock the admin out of the login form.
      */
     function cs_require_admin(): void {
-        $lock = cs_auth_lock_remaining();
-        if ($lock > 0) {
-            http_response_code(429);
-            header('Retry-After: ' . $lock);
-            header('Content-Type: application/json; charset=utf-8');
-            echo json_encode(['ok' => false, 'error' => 'too_many_attempts', 'retry_after' => $lock]);
-            exit;
-        }
-        if (cs_is_admin()) { cs_auth_record_success(); return; }
-        cs_auth_record_failure();
-        http_response_code(401);
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(['ok' => false, 'error' => 'unauthorized']);
-        exit;
+        if (cs_admin_cookie_value() === '') cs_json_exit(401, ['ok' => false, 'error' => 'unauthorized']);
+        if (!cs_admin_csrf_ok()) cs_json_exit(403, ['ok' => false, 'error' => 'csrf']);
+        if (cs_is_admin()) return;
+        cs_json_exit(401, ['ok' => false, 'error' => 'unauthorized']);
     }
 
     /** Real client IP — REMOTE_ADDR only (X-Forwarded-* is attacker-spoofable). */
@@ -129,23 +118,47 @@ if (!function_exists('cs_admin_token')) {
         return $out;
     }
 
-    /** Seconds this caller must still wait, or 0 if allowed to try. */
-    function cs_auth_lock_remaining(): int {
+    /**
+     * Check the lockout AND book this attempt as a failure in ONE locked step (no TOCTOU: N parallel
+     * guesses can't all see "not locked" before the first one is counted). Returns the seconds the
+     * caller must still wait (attempt refused, nothing booked) or 0 (attempt booked — call
+     * cs_auth_release_attempt() if it turns out right, cs_auth_failed() if wrong).
+     *
+     * The distributed-spray response (lock a source after a single wrong answer) is applied while
+     * booking, but a booked attempt that is CORRECT is released/cleared at once — so a spray makes
+     * every wrong answer expensive while the real admin still gets through.
+     */
+    function cs_auth_reserve_attempt(): int {
         $key = cs_ip_key();
         $now = time();
         $rem = 0;
         cs_auth_with_state(function ($st) use ($key, $now, &$rem) {
-            $until = (int)($st['ips'][$key]['until'] ?? 0);
-            if ($until > $now) $rem = $until - $now;
-            // NOTE: the distributed-attack response deliberately lives in
-            // cs_auth_record_failure(), NOT here. This function runs BEFORE the
-            // token is compared, so blocking here during a spray would lock out
-            // the real admin too — handing an attacker a cheap DoS. Instead a
-            // spray makes every WRONG answer much more expensive, while a
-            // correct token still gets through instantly.
-            return null; // read-only
+            $cur   = $st['ips'][$key] ?? ['fails' => 0, 'until' => 0, 'last' => 0];
+            $until = (int)($cur['until'] ?? 0);
+            if ($until > $now) { $rem = $until - $now; return null; }   // locked: refuse, book nothing
+            $fails = (int)($cur['fails'] ?? 0) + 1;
+            $st['global'][] = $now;
+            // Under a distributed spray (>100 attempts from all sources in 10 min) a *single*
+            // wrong answer is already suspicious: lock this source instead of granting 5 tries.
+            $spraying = count($st['global']) > 100;
+            $lock = $spraying ? max(60, cs_auth_lock_seconds($fails)) : cs_auth_lock_seconds($fails);
+            $st['ips'][$key] = ['fails' => $fails, 'until' => $lock > 0 ? $now + $lock : 0, 'last' => $now];
+            return $st;
         });
         return $rem;
+    }
+
+    /** A booked attempt was right (e.g. the password step): un-book it, lifting the lock it set. */
+    function cs_auth_release_attempt(): void {
+        $key = cs_ip_key();
+        cs_auth_with_state(function ($st) use ($key) {
+            if (!isset($st['ips'][$key])) return null;
+            $fails = max(0, (int)($st['ips'][$key]['fails'] ?? 0) - 1);
+            $st['ips'][$key]['fails'] = $fails;
+            if (cs_auth_lock_seconds($fails) === 0) $st['ips'][$key]['until'] = 0;
+            array_pop($st['global']);
+            return $st;
+        });
     }
 
     /** Escalating lockout for a given failure count. */
@@ -157,26 +170,8 @@ if (!function_exists('cs_admin_token')) {
         return 86400;
     }
 
-    function cs_auth_record_failure(): void {
-        $key = cs_ip_key();
-        $now = time();
-        $spraying = false;
-        cs_auth_with_state(function ($st) use ($key, $now, &$spraying) {
-            $cur   = $st['ips'][$key] ?? ['fails' => 0, 'until' => 0, 'last' => 0];
-            $fails = (int)($cur['fails'] ?? 0) + 1;
-            $st['global'][] = $now;
-            // Under a distributed spray (>100 failures from all sources in 10
-            // min) a *single* wrong answer is already suspicious: lock this
-            // source immediately instead of granting it the usual 5 free tries.
-            $spraying = count($st['global']) > 100;
-            $lock = $spraying ? max(60, cs_auth_lock_seconds($fails)) : cs_auth_lock_seconds($fails);
-            $st['ips'][$key] = [
-                'fails' => $fails,
-                'until' => $lock > 0 ? $now + $lock : 0,
-                'last'  => $now,
-            ];
-            return $st;
-        });
+    /** A booked attempt was wrong: it is already counted — log it for fail2ban and slow down. */
+    function cs_auth_failed(): void {
         // Append-only signal for fail2ban (real IP, security legitimate interest,
         // short retention — rotate this file; see deploy/security/).
         $flog = cs_log_dir() . '/auth_failures.log';
@@ -281,29 +276,38 @@ if (!function_exists('cs_admin_token')) {
 }
 
 // ── Short-lived SSE tickets ──────────────────────────────────────
-// EventSource can't send headers, so instead of putting the admin token in
-// the URL (which leaks into access logs), the admin panel exchanges its token
-// for a short-lived opaque ticket and connects with that.
+// EventSource can't send headers, so instead of anything session-like in the URL (it would leak
+// into access logs), the admin panel exchanges its session for a short-lived opaque ticket. The
+// ticket is BOUND to that session: it works only while the session lives, so "Изход", "Излез от
+// всички устройства" and `cs-admin revoke` stop it (and the open stream) at once.
 if (!function_exists('cs_issue_sse_ticket')) {
     function cs_sse_ticket_file(): string { return cs_log_dir() . '/sse_tickets.json'; }
 
+    /** Call only after cs_require_admin(): binds the ticket to the caller's session. */
     function cs_issue_sse_ticket(int $ttl = 120): string {
-        $f = cs_sse_ticket_file();
-        $t = json_decode((string)@file_get_contents($f), true);
-        if (!is_array($t)) $t = [];
-        $now = time();
-        foreach ($t as $k => $exp) { if ((int)$exp < $now) unset($t[$k]); } // prune expired
         $ticket = bin2hex(random_bytes(16));
-        $t[$ticket] = $now + $ttl;
-        @file_put_contents($f, json_encode($t), LOCK_EX);
-        @chmod($f, 0600);
+        $sk = cs_admin_session_key();
+        $now = time();
+        cs_admin_locked(cs_sse_ticket_file(), function ($t) use ($ticket, $sk, $now, $ttl) {
+            foreach ($t as $k => $v) if (!is_array($v) || (int)($v['exp'] ?? 0) < $now) unset($t[$k]);   // prune
+            $t[$ticket] = ['exp' => $now + $ttl, 'sk' => $sk];
+            return $t;
+        });
         return $ticket;
     }
 
-    // Valid until expiry (multi-use within TTL so EventSource auto-reconnect works).
-    function cs_check_sse_ticket(string $ticket): bool {
-        if ($ticket === '' || strlen($ticket) > 64 || !ctype_xdigit($ticket)) return false;
-        $t = json_decode((string)@file_get_contents(cs_sse_ticket_file()), true);
-        return is_array($t) && isset($t[$ticket]) && (int)$t[$ticket] >= time();
+    /**
+     * The session key the ticket is bound to, or '' (unknown, expired, or its session is gone).
+     * Multi-use within the TTL so EventSource auto-reconnect works.
+     */
+    function cs_check_sse_ticket(string $ticket): string {
+        if ($ticket === '' || strlen($ticket) > 64 || !ctype_xdigit($ticket)) return '';
+        $t = cs_admin_read(cs_sse_ticket_file());
+        $v = $t[$ticket] ?? null;
+        if (!is_array($v) || (int)($v['exp'] ?? 0) < time()) return '';
+        $sk = (string)($v['sk'] ?? '');
+        return cs_admin_session_key_alive($sk) ? $sk : '';
     }
 }
+
+require_once __DIR__ . '/_admin.php';

@@ -28,7 +28,7 @@ file holds only what is true across all products. Keep it that way.
 | `CSPos/` | Carbon Stealth POS — касова система за хранителни магазини | Next.js 15 · React 19 · TS · Prisma · SQLite · Tailwind · Electron (.exe) | BG · Н-18/СУПТО/евро · фискални у-ва + ПОС терминали · тъч |
 | `vizitka/` | Vizitka — винаги актуална дигитална визитка (QR профил) | Express · EJS · SQLite · plain JS ESM | BG · vizitka-bg.com |
 | `mastilko/` | Мастилко — безплатни етикети, визитки и CV за печат | Next.js 16 · React 19 · TS · Tailwind · Gemini Flash | BG · без база (localStorage) · mastilko-bg.com |
-| `linketto/` | Linketto — многоезичен „link in bio“ (конкурент на Linktree) | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind · next-intl · Revolut Business · Brevo · Docker | 27 локала · без комисиони · linketto.carbonstealth.eu (порт 4340) |
+| `linketto/` | Linketto — многоезичен „link in bio“ (конкурент на Linktree) | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind · next-intl · Revolut Business · Brevo · Docker | 27 локала · без комисиони · piuma.carbonstealth.eu (порт 4350, `HTTP_PORT`) |
 | `eternaltouch/` | Eternal Touch — атѐлие за ръчни гипсови декорации (витрина/каталог) | Express · EJS · Prisma · PostgreSQL · Docker · plain JS ESM | IT/BG/EN · eternaltouch.it · витрина, **не** e-commerce |
 | `evanitasport/` | Evanita Sport — дамско студио за Kangoo Jumps и силови тренировки (Дупница) | static HTML/CSS/JS · Nginx | BG · evanita-bg.com |
 | `adblock/` | Supreme AdBlock — блокира реклами, тракери и anti-adblock стени | Chrome MV3 · vanilla JS (без билд) · `declarativeNetRequest` | EN UI · Chrome Web Store |
@@ -132,16 +132,17 @@ Shared glossary `ф:р · PI · LT · QG · RM · SC · ИоМ` — internal not
 
 ## Skills — `.claude/skills/`
 
-Ours (BG, vetted; 61; metadata only until triggered): **агентски** — agent-doctrine; **процедури** — deploy · prisma-migrate · quality-gate · verify ·
+Ours (BG, vetted; 62; metadata only until triggered): **агентски** — agent-doctrine; **процедури** — deploy · prisma-migrate · quality-gate · verify ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
-razpit · skill-author · sapernik; **предпазители** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch ·
+razpit · skill-author · sapernik; **предпазители** — fiscal-bg · stripe-payment · revolut-payment · motion-a11y · gdpr-launch ·
 db-readonly · owasp-review · wcag-audit · incident-breach · pentest-engagement; **SEO/perf** — indexnow · keywords-seo · i18n-parity ·
 web-vitals; plus uchitel; **домейн** — youtube-reddit · fivem-mlo · fivem-clothing · fivem-livery; **външни, адаптирани** (14, вкл. archify-diagrams) и **правни** (15) — ростерът е в `tools/agents/CLAUDE.md`, произходът в `.claude/skills/THIRD_PARTY_NOTICES.md`. Gate: `tools/skills/lint.mjs` + `trigger-check.mjs --check`.
 **Own BG skills; never import third-party wholesale**; външно — само с изрично „да“ от собственика (`tools/agents/CLAUDE.md`).
 
-**Guard hooks (6):** `guard-prompt` · `guard-dangerous` (only catastrophic Bash) · `guard-secrets` ·
+**Guard hooks (8):** `guard-prompt` · `guard-dangerous` (only catastrophic Bash) · `guard-secrets` (before the write) ·
 `guard-exfil` (secrets/PII out via any net verb, interpreter, Monitor or MCP argument) · `guard-readonly` ·
-`guard-config` (mid-session settings can't weaken guards). One secret list, fail-closed on a hit,
+`guard-config` (mid-session settings can't weaken guards) · `guard-self` (an agent can't rewrite hooks, settings, mods
+or memory; main session → human confirms) · `guard-model` (never Haiku). One secret list, fail-closed on a hit,
 red-teamed through the CLI; `permissions.deny` (read+write) for `.env`/keys (`.env.example` open). Hook context >10,000 chars never reaches an agent (doctrine = `agent-doctrine` skill).
 **Learning ⇒ the fleet Artifact is republished, always** (owner's rule; `artifact-sync` Stop hook).
 Details → `.claude/hooks/README.md`.

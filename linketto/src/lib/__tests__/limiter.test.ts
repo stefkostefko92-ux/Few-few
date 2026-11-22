@@ -67,3 +67,36 @@ test('isRateLimited: само поглежда, не брои', () => {
   assert.equal(isRateLimited('k', 2, 1000, 2), true);
   assert.equal(isRateLimited('k', 2, 1000, 1001), false); // първият удар изтече
 });
+
+import { ipBucket, isCriticalKey } from '../limiter';
+
+// Червен екип (блокер): наводняване с 10 001 ключа от публичен endpoint
+// (анкета с произволен linkId) нулираше лимита на входа и общия AI таван.
+test('наводняване с некритични ключове НЕ нулира критичните (вход, общ таван)', () => {
+  resetRateLimits();
+  const now = 1_000_000;
+  for (let i = 0; i < 10; i += 1) rateLimit('login-ip:1.2.3.4', 10, 10 * 60_000, now);
+  assert.equal(rateLimit('login-ip:1.2.3.4', 10, 10 * 60_000, now), false);
+  for (let i = 0; i < 500; i += 1) rateLimit('bio-tool:global', 500, 24 * 60 * 60_000, now);
+  for (let i = 0; i < 10_001; i += 1) rateLimit(`poll:fake-${i}:9.9.9.9`, 3, 60 * 60_000, now);
+  assert.equal(rateLimit('login-ip:1.2.3.4', 10, 10 * 60_000, now), false);
+  assert.equal(rateLimit('bio-tool:global', 500, 24 * 60 * 60_000, now), false);
+  assert.ok(rateLimitKeyCount() <= 10_000 + 2);
+});
+
+test('isCriticalKey: вход, регистрация, 2FA и общите тавани', () => {
+  assert.equal(isCriticalKey('login-email:a@b.c'), true);
+  assert.equal(isCriticalKey('register-ip:1.2.3.4'), true);
+  assert.equal(isCriticalKey('mfa:user1'), true);
+  assert.equal(isCriticalKey('ai:global'), true);
+  assert.equal(isCriticalKey('poll:x:1.2.3.4'), false);
+});
+
+test('ipBucket: IPv4 цял, IPv6 по /64, IPv4-mapped → IPv4', () => {
+  assert.equal(ipBucket('93.62.1.1'), '93.62.1.1');
+  assert.equal(ipBucket('2a01:4f8:c0c:1234:aaaa:bbbb:cccc:dddd'), '2a01:4f8:c0c:1234::/64');
+  assert.equal(ipBucket('2a01:4f8:c0c:1234::1'), '2a01:4f8:c0c:1234::/64');
+  assert.equal(ipBucket('2a01:04f8::1'), '2a01:4f8:0:0::/64');
+  assert.equal(ipBucket('::ffff:10.0.0.1'), '10.0.0.1');
+  assert.equal(ipBucket('unknown'), 'unknown');
+});

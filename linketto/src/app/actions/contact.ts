@@ -3,9 +3,10 @@
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
+import { isLocale } from '@/i18n/locales';
 import { profileHasActiveBlock } from '@/lib/profile-blocks';
 import { RETENTION_DAYS, daysAgo } from '@/lib/retention-days';
-import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { clientIpKey, rateLimit } from '@/lib/rate-limit';
 
 const messageSchema = z.object({
   name: z.string().trim().max(100).optional(),
@@ -48,7 +49,7 @@ export async function submitContactAction(formData: FormData): Promise<void> {
     profile?.published &&
     !profile.bannedAt &&
     (await profileHasActiveBlock(profile.id, 'FORM')) &&
-    rateLimit(`contact:${await clientIp()}`, 5, 10 * 60_000)
+    rateLimit(`contact:${await clientIpKey()}`, 5, 10 * 60_000)
   ) {
     await prisma.contactMessage.create({
       data: {
@@ -56,7 +57,8 @@ export async function submitContactAction(formData: FormData): Promise<void> {
         name: parsed.data.name || null,
         email: parsed.data.email || null,
         message: parsed.data.message,
-        locale: hl || null,
+        // hl идва от формата — само валиден език (иначе до ~9 MB низ на запис).
+        locale: isLocale(hl) ? hl : null,
       },
     });
   }

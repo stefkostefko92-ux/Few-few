@@ -43,6 +43,17 @@ model User {
   planExpiresAt               DateTime? // предплатен PRO/BUSINESS — до кога (FOUNDER/FREE: null)
   planReminded                Int? // последно напомняне за текущия период: 7 или 1 (дни преди изтичане)
   lastDigestAt                DateTime? // кога cron-ът на отчета е обработил потребителя последно (въртене на партидата)
+  // Сигурност на акаунта (docs/security-2fa-settings-spec.md):
+  emailVerifiedAt             DateTime? // потвърден имейл — задължителен за админ достъп
+  termsAcceptedAt             DateTime? // прието при регистрацията (ЗЗП чл. 147а; lib/terms.ts)
+  termsVersion                String? // версията на ОУ, която е приета (TERMS_VERSION)
+  totpSecretSealed            String? // TOTP секрет, шифрован (lib/secret-box.ts, контекст totp:<id>)
+  totpPendingSealed           String? // секрет при записване — още непотвърден
+  totpEnabledAt               DateTime? // 2FA включена (потвърдена с код)
+  totpLastStep                Int? // последната използвана TOTP стъпка — същият код не минава втори път
+  backupCodeHashes            String[]         @default([]) // sha256 на еднократните резервни кодове
+  loginChallenges             LoginChallenge[]
+  userTokens                  UserToken[]
   createdAt                   DateTime         @default(now())
   updatedAt                   DateTime         @updatedAt
   sessions                    Session[]
@@ -78,6 +89,11 @@ model Referral {
   // Плащането, породило наградата (сторно при refund/спор, billing-sync).
   stripePaymentIntentId String?   @unique
   planOrderId           String?   @unique // Revolut: поръчката, породила наградата (сторно при refund)
+  // Задържан до тук (abuse-money-spec А); null = задържан. DEFAULT = „освободен“: ред от СТАРИЯ
+  // код (прозорецът migrate → нов app или откат на кода) вече е кредитиран при плащането; новият
+  // код подава releasedAt: null изрично.
+  releasedAt            DateTime? @default(now())
+  flaggedAt             DateTime? // аларма „не е чист при Revolut“ — веднъж; такъв бонус решава човек
   reversedAt            DateTime?
   reversalReason        String? // refund | dispute
   clawbackPayoutId      String? // одитна следа: ReferralPayout, в който е влязла наградата (без релация)
@@ -101,14 +117,71 @@ model ReferralPayout {
 }
 
 model Session {
+  id         String    @id @default(cuid())
+  tokenHash  String    @unique // sha256 на cookie токена — суровият токен не се пази
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime
+  lastSeenAt DateTime  @default(now()) // изтичане при неактивност (обновява се ≤1 път на час)
+  mfaAt      DateTime? // кога 2FA е потвърдена в тази сесия — за step-up при опасни действия
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// Вход на 2 стъпки: след паролата — краткотрайно предизвикателство (5 мин.),
+// НЕ сесия. Бисквитката носи суровия токен; тук е само хешът.
+model LoginChallenge {
   id        String   @id @default(cuid())
-  tokenHash String   @unique // sha256 на cookie токена — суровият токен не се пази
+  tokenHash String   @unique
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attempts  Int      @default(0)
   expiresAt DateTime
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+// Еднократни токени по имейл (потвърждение на имейла). Само хешът.
+model UserToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose   String // verify-email
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, purpose])
+}
+
+// Настройки на доставчиците от админ панела (Revolut, Brevo). Тайните са
+// шифровани (lib/secret-box.ts, контекст setting:<key>) и никога не се
+// показват обратно — само last4. Празно → стойността от .env.
+model Setting {
+  key       String   @id // revolut.secretKey | revolut.webhookSecret | revolut.env | brevo.apiKey | brevo.sender
+  value     String? // нетайна стойност (среда, подател)
+  sealed    String? // шифрована тайна
+  last4     String?
+  updatedBy String? // userId на админа
+  updatedAt DateTime @updatedAt
+}
+
+// Дневник на събитията по сигурност (без пароли, кодове, тайни, IP).
+// Имейлът при неуспешен вход е само HMAC. Пази се 90 дни (retention-days.ts).
+model SecurityEvent {
+  id        String   @id @default(cuid())
+  type      String // auth.login.failed | admin.login | mfa.enabled | mfa.disabled | mfa.failed | mfa.backup_used | …
+  userId    String?
+  subject   String? // HMAC на имейла (неуспешен вход) или ключ на настройка
+  country   String?
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  @@index([type, createdAt])
+  @@index([userId, createdAt])
 }
 
 model Profile {
@@ -122,6 +195,7 @@ model Profile {
   accent           String? // hex цвят, валидиран в кода
   style            Json? // стилов енджин (src/lib/style.ts) — фон, шрифт, бутони, layout…
   bannedAt         DateTime? // модерация: баннат = невидим публично (без публичен банер)
+  lastBroadcastAt  DateTime? // последна рассылка на бюлетина (≤1 за 24 ч — abuse-money-spec Г1)
   // DSA чл. 17: изложение на мотивите — категория (lib/report.ts) и обосновка;
   // пращат се на собственика при бана.
   bannedCategory   String?
@@ -137,9 +211,16 @@ model Profile {
   domainToken      String?
   domainVerifiedAt DateTime?
   published        Boolean              @default(true)
+  // Автоматичен превод за посетителите на други езици (Gemini, кеширан;
+  // docs/geo-autotranslate-spec.md): on (нови профили) | off (създателят го е
+  // изключил — възражение по чл. 21) | pending (профил отпреди функцията:
+  // включва се едва на autoTranslateStartsAt — ≥14 дни след уведомлението).
+  autoTranslateMode     String    @default("on")
+  autoTranslateStartsAt DateTime?
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
   translations     ProfileTranslation[]
+  autoTranslations AutoTranslation[]
   links            Link[]
   clicks           ClickEvent[]
   messages         ContactMessage[]
@@ -247,6 +328,22 @@ model ProfileTranslation {
   locale      String
   displayName String
   bio         String?
+
+  @@unique([profileId, locale])
+}
+
+// Кеш на автоматичния превод на профил за език, на който създателят няма
+// превод. sourceHash = хеш на изходното съдържание: промяна → превежда се
+// наново. Не е превод на създателя — не се показва в таблото като език.
+model AutoTranslation {
+  id         String   @id @default(cuid())
+  profileId  String
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  locale     String
+  sourceHash String
+  content    Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@unique([profileId, locale])
 }
@@ -493,9 +590,9 @@ model ClickEvent {
 // §7). Сумата и ДДС се решават на сървъра при checkout; правото се дава само
 // след прочетена от API-то поръчка в `completed` (CAS pending → completed).
 model PlanOrder {
-  id                    String    @id @default(cuid())
+  id                    String           @id @default(cuid())
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user                  User             @relation(fields: [userId], references: [id], onDelete: Restrict)
   plan                  Plan
   interval              String // monthly | quarterly | semiannual | annual (FOUNDER: lifetime)
   amountCents           Int // с ДДС, EUR
@@ -503,8 +600,8 @@ model PlanOrder {
   vatCents              Int
   netCents              Int
   vatCountry            String // мястото на доставка (под прага: BG)
-  state                 String    @default("pending") // pending | completed | conflict | refund_pending | refunded | failed | cancelled
-  revolutOrderId        String?   @unique
+  state                 String           @default("pending") // pending | completed | conflict | refund_pending | refunded | failed | cancelled
+  revolutOrderId        String?          @unique
   buyerCountry          String? // от адреса за таксуване при Revolut (доказателство 1)
   cardCountry           String? // държава на картата (доказателство 2)
   completedAt           DateTime?
@@ -516,21 +613,63 @@ model PlanOrder {
   // Потвърждението на траен носител (чл. 8(7) Дир. 2011/83) е изпратено.
   confirmationSentAt    DateTime?
   // Правото е дадено с тази поръчка (false за conflict — платена, неприложена).
-  applied               Boolean   @default(false)
+  applied               Boolean          @default(false)
   // Чл. 11а Дир. 2011/83 (изм. 2023/2673): изявление за отказ през функцията
   // „Откажи се от договора тук“ — кога и с какво име; връщането го прави админът.
   withdrawalRequestedAt DateTime?
   withdrawalName        String?
   // Потвърждението на получаването (траен носител) е изпратено — иначе cron-ът опитва пак.
   withdrawalAckSentAt   DateTime?
+  // Пропорционално плащане при отказ (abuse-money-spec Б): изричното искане за ранно
+  // начало (отметката при поръчката) и сумата за връщане — сметната веднъж при отказа.
+  immediateStartAt      DateTime?
+  immediateStartTerms   String? // версия на текста на отметката + езика (напр. 2026-11-21:bg)
+  immediateStartText    String? // дословният текст на отметката, приет от купувача (ЗЗП чл. 49, ал. 9 → P14)
+  refundCents           Int? // за връщане (null = пълната сума)
+  refundVatCents        Int?
+  withdrawalUsedSec     Int? // предоставеното време по поръчката до отказа
   // Опит за връщане (Idempotency-Key = `<id>-<опит>`: повторен клик в същия
   // опит не връща два пъти, а нов опит след неуспешен refund не взима стария отговор).
-  refundAttempts        Int       @default(0)
+  refundAttempts        Int              @default(0)
   // Refund поръчката при Revolut (асинхронна, до 2 дни) — state refund_pending.
-  refundOrderId         String?   @unique
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  refundOrderId         String?          @unique
+  // Аларма „refund в ход без отговор от Revolut“ (refund_pending без refundOrderId,
+  // по-стар от 1 ч.) е пратена за текущия опит — нулира се при нов опит.
+  refundStuckAlertedAt  DateTime?
+  disputes              RevolutDispute[]
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
 
   @@index([userId, createdAt])
   @@index([state, createdAt])
+}
+
+// Одитът на споровете (chargeback) при Revolut: ред за всяко ново състояние на
+// спора, прочетено на живо с `GET /api/disputes/{id}` (уебхукът носи само id).
+// Само добавяне — редовете не се променят и не се трият (доказателство и
+// дедупликация: едно известие до админите за едно състояние). Планът НЕ се
+// пипа автоматично — решава човек. Без лични данни (без име/IBAN/карта).
+model RevolutDispute {
+  id             String     @id @default(cuid())
+  disputeId      String // id на спора при Revolut
+  state          String // needs_response | under_review | won | lost
+  // Подсъстоянието и срокът са в ключа: нов етап (representment, arbitration…)
+  // или нов срок при същото състояние е ново известие. NOT NULL с подразбиране
+  // („“ и 1970-01-01 = „няма“) — NULL в уникален индекс на Postgres не се засича.
+  substate       String     @default("")
+  reasonCode     String?
+  reason         String? // reason_description, ≤200 знака
+  amountCents    Int
+  currency       String
+  responseDueAt  DateTime   @default("1970-01-01T00:00:00Z")
+  revolutOrderId String? // оспореното плащане (payment.order_id)
+  planOrderId    String? // нашата поръчка за план, ако е такава
+  planOrder      PlanOrder? @relation(fields: [planOrderId], references: [id], onDelete: Restrict)
+  // Кога алармата до админите е тръгнала; NULL → /api/cron/plans я праща пак.
+  notifiedAt     DateTime?
+  createdAt      DateTime   @default(now())
+
+  @@unique([disputeId, state, substate, responseDueAt])
+  @@index([planOrderId])
+  @@index([notifiedAt])
 }

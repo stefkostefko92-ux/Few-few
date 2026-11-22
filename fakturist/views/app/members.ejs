@@ -33,7 +33,7 @@
 <h2><%= t('app.members.pending') %></h2>
 <ul class="invite-list">
   <% invites.forEach((i) => { %>
-    <li><span class="mono"><%= i.email %></span> · <%= t('app.roles.' + i.role) %> · <span class="muted"><%= t('app.members.until', { date: i.expiresAt.toISOString().slice(0, 10).split('-').reverse().join('.') }) %></span>
+    <li><span class="mono"><%= i.email %></span> · <%= t('app.roles.' + i.role) %> · <span class="muted"><%= t('app.members.until', { date: bgDate(i.expiresAt) }) %></span>
       <% if (canManage(i.role)) { %><form method="post" action="/app/o/<%= org.id %>/chlenove/pokani/<%= i.id %>/otmeni" class="inline-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="link"><%= t('app.members.revoke') %></button></form><% } %>
     </li>
   <% }) %>

@@ -155,6 +155,10 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 .cs-caliper.on i{opacity:.9}
 @media(hover:none),(pointer:coarse){.cs-caliper{display:none}}
 @media(prefers-reduced-motion:reduce){h1,.card::before,.tier::before,.work-shot,.w>h2::after,.seo-body article>h2::after,body::after{animation:none!important}body::after{display:none}}
+@property --ctl{syntax:'<length>';inherits:false;initial-value:0px}
+@property --ctr{syntax:'<length>';inherits:false;initial-value:0px}
+@keyframes ctblHint{from{--ctl:0px;--ctr:36px}to{--ctl:36px;--ctr:0px}}
+@supports (animation-timeline:scroll()){.ctbl{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);animation:ctblHint linear both;animation-timeline:scroll(self inline)}.ctbl:focus-visible{-webkit-mask-image:none;mask-image:none}}
 </style></head><body>
 <nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">HOME</a><a href="/chi-siamo/">CHI SIAMO</a><a href="/servizi/sviluppo-siti-web/">SERVIZI</a><a href="/portfolio/">PORTFOLIO</a><a href="/prezzi/">PREZZI</a><a href="/contatti/">CONTATTI</a></div></nav>
 <div class="hero-s"><div class="w"><div class="tag">// E-COMMERCE</div><h1>Realizzazione E-Commerce e Negozi Online</h1></div></div><div class="w"><p>Negozi online completi con gestione ordini, pagamenti sicuri e checkout ottimizzato per massimizzare le conversioni.</p><p class="syn">E-commerce, negozio online, shop online o sito di vendita: costruiamo store con WooCommerce, Shopify o React + Stripe, con pagamenti, spedizioni e IVA UE già configurati.</p><h2>Piattaforme</h2><ul><li>WooCommerce (WordPress)</li><li>Shopify</li><li>Custom React + Stripe</li></ul><h2>Prezzi</h2><p class='price'>Da €1.825 + IVA — shop fino a 200 prodotti</p><p class='price'>Da €2.500 — shop scalabile multi-lingua</p><p class='price'>Da €6.000 — marketplace B2B</p><a href="/contatti/" class="cta">RICHIEDI PREVENTIVO</a></div>

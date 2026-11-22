@@ -10,6 +10,12 @@
   },
   "models": [
     {
+      "id": "fable-5-2",
+      "in": 8,
+      "out": 40,
+      "cacheRead": 0.2
+    },
+    {
       "id": "fable-5-1",
       "in": 10,
       "out": 50,

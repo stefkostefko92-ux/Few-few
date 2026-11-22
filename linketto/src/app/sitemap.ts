@@ -3,7 +3,11 @@ import { DIALECT_LOCALES, HREFLANG_LOCALES } from '@/i18n/locales';
 import { prisma } from '@/lib/db';
 import { isSensitiveUrl } from '@/lib/brands';
 import { SITE_URL } from '@/lib/seo';
-import { COMPETITOR_IDS } from '@/lib/comparisons';
+import { COMPARISONS_CHECKED_AT, COMPETITOR_IDS } from '@/lib/comparisons';
+
+// Последна съществена промяна на статичните страници (а не „сега“ — Google пренебрегва
+// lastModified, който се мени при всяка заявка). Вдигай при промяна на съдържанието.
+const STATIC_UPDATED_AT = new Date('2026-11-22');
 
 // Динамичен: включва публикуваните профили към момента на заявката.
 export const dynamic = 'force-dynamic';
@@ -29,7 +33,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ].map(
     (path) => ({
       url: `${base}/en${path}`,
-      lastModified: new Date(),
+      lastModified: path.startsWith('/vs/') ? new Date(COMPARISONS_CHECKED_AT) : STATIC_UPDATED_AT,
       changeFrequency:
         path === '' || path.startsWith('/vs/')
           ? ('weekly' as const)
@@ -40,13 +44,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const profiles = await prisma.profile
     .findMany({
-      where: { published: true, bannedAt: null },
+      // Без езикова версия профилът връща 404 — не влиза в sitemap.
+      where: { published: true, bannedAt: null, translations: { some: {} } },
       select: {
         slug: true,
         updatedAt: true,
         translations: { select: { locale: true } },
         links: { where: { active: true }, select: { url: true } },
       },
+      orderBy: { updatedAt: 'desc' },
       take: 5000,
     })
     .catch(() => []);

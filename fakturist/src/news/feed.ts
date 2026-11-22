@@ -1,7 +1,7 @@
 import { translator, type Locale } from '../i18n.js';
 import { BRAND } from '../brand.js';
 import { pageUrl } from '../seo/pages.js';
-import { dayStart, NEWS } from './entries.js';
+import { dayStart, LAST_UPDATE, NEWS } from './entries.js';
 
 /** Емисията на „Какво ново“ (RSS 2.0) — по една на език; текстовете са тези от страницата. */
 export const NEWS_FEED_PATHS: Record<Locale, string> = {
@@ -39,6 +39,7 @@ export function newsRss(base: string, locale: Locale): string {
     `<atom:link href="${escapeXml(`${base}${NEWS_FEED_PATHS[locale]}`)}" rel="self" type="application/rss+xml"/>`,
     `<description>${escapeXml(t('site.news.meta.description'))}</description>`,
     `<language>${locale === 'bg' ? 'bg-BG' : 'en-GB'}</language>`,
+    `<lastBuildDate>${dayStart(LAST_UPDATE).toUTCString()}</lastBuildDate>`,
     `<generator>${escapeXml(BRAND.nameLatin)}</generator>`,
     ...items,
     '</channel>',

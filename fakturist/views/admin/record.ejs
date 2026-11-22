@@ -2,8 +2,10 @@
 <p><a href="/admin/r/<%= resource.slug %>">← <%= resource.label[lang] %></a></p>
 <h1><%= resource.label[lang] %></h1>
 <%- include('_nav') %>
-<% if (error) { %><p class="error" role="alert"><%= error.startsWith('grant.') ? tOr('admin.grant.errors.' + error.slice(6), t('auth.errors.invalid')) : tOr('admin.transfer.errors.' + error, tOr('admin.ownership.errors.' + error, tOr('app.termination.err.' + error, t('auth.errors.invalid')))) %></p><% } %>
+<% if (error) { %><p class="error" role="alert"><%= error.startsWith('grant.') ? tOr('admin.grant.errors.' + error.slice(6), t('auth.errors.invalid')) : error.startsWith('handover.') ? tOr('admin.handover.errors.' + error.slice(9), t('auth.errors.invalid')) : error.startsWith('profile.') ? tOr('admin.profile.errors.' + error.slice(8), tOr('app.settings.profile.errors.' + error.slice(8), t('auth.errors.invalid'))) : tOr('admin.transfer.errors.' + error, tOr('admin.ownership.errors.' + error, tOr('app.termination.err.' + error, t('auth.errors.invalid')))) %></p><% } %>
 <% if (locals.planFlash) { %><p class="ok" role="status"><%= t('admin.grant.' + (planFlash === 'ok' ? 'done' : 'ended')) %></p><% } %>
+<% if (locals.profileDone) { %><p class="ok" role="status"><%= t('admin.profile.done') %></p><% } %>
+<% if (locals.handoverDone) { %><p class="ok" role="status"><%= t('admin.handover.done') %></p><% } %>
 <% if (locals.terminationDone) { %><p class="ok" role="status"><%= t('admin.termination.done') %></p><% } %>
 <% if (revoked) { %><p class="ok" role="status"><%= t('admin.ownership.done') %></p><% } %>
 <dl class="record">
@@ -33,7 +35,7 @@
   <h2 id="h-transfer"><%= t('admin.transfer.title') %></h2>
   <p><%= t('admin.transfer.intro') %></p>
   <% if (transfer.openInvite) { %>
-    <p class="callout"><%= t('admin.transfer.pending', { email: transfer.openInvite.email, date: transfer.openInvite.expiresAt.toISOString().slice(0, 10) }) %> <a href="/admin/r/transfers/<%= transfer.openInvite.id %>"><%= t('admin.open') %></a></p>
+    <p class="callout"><%= t('admin.transfer.pending', { email: transfer.openInvite.email, date: bgDate(transfer.openInvite.expiresAt) }) %> <a href="/admin/r/transfers/<%= transfer.openInvite.id %>"><%= t('admin.open') %></a></p>
   <% } %>
   <form method="post" action="/admin/firmi/<%= row.id %>/prehvarli" class="stack">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -74,6 +76,7 @@
 <% } %>
 <% if (locals.grant && !row.deletedAt) { %>
 <%- include('_plan-grant', { grant, orgId: row.id, terminated: Boolean(row.terminatedAt) }) %>
+<% if (!row.deletedAt && !row.terminatedAt) { %><%- include('_company-profile', { org: row }) %><%- include('_handover', { orgId: row.id, isCompany: row.kind === 'COMPANY' }) %><% } %>
 <% } %>
 <% if (resource.model === 'Organization' && !row.deletedAt) { %>
 <section class="panel stack narrow-form" aria-labelledby="h-terminate">

@@ -90,6 +90,8 @@
       "messaggio": "Messaggio (facoltativo)",
       "messaggioHint": "Va nel testo dell'email, sotto il modulo. Le risposte arrivano al tuo indirizzo.",
       "rubrica": "La rubrica dei fornitori si compila in Impostazioni → Fornitori.",
+      "rubricaVuota": "La rubrica dei fornitori è vuota: scrivi qui sotto nome ed email del fornitore.",
+      "rubricaApri": "Aggiungi i fornitori alla rubrica",
       "invia": "Invia il modulo",
       "errore": "Scegli un fornitore dalla rubrica o scrivi nome ed email validi.",
       "flash": {

@@ -1,5 +1,5 @@
 <%- include('../partials/app-head', { title: t('app.bank.title') }) %>
-<% const day = (d) => d.toISOString().slice(0, 10).split('-').reverse().join('.'); %>
+<% const day = (d) => bgDate(d); %>
 <% const eur = (c, cur) => money(c, cur); %>
 <p><a href="/app/o/<%= org.id %>">← <%= org.legalName %></a></p>
 <h1><%= t('app.bank.title') %></h1>
@@ -10,7 +10,7 @@
 <% if (feature && canWrite) { %>
 <form method="post" action="/app/o/<%= org.id %>/banka" enctype="multipart/form-data" class="panel stack narrow-form">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-  <label><%= t('app.bank.file') %><input type="file" name="file" required accept=".xml,.csv,.txt,application/xml,text/xml,text/csv"><span class="hint"><%= t('app.bank.fileHint') %></span></label>
+  <%- include('../partials/file-pick', { name: 'file', accept: '.xml,.csv,.txt,application/xml,text/xml,text/csv', label: t('app.bank.file'), hint: t('app.bank.fileHint'), hintId: 'bank-file-help' }) %>
   <div><button type="submit"><%= t('app.bank.upload') %></button></div>
 </form>
 <% } %>
@@ -59,7 +59,7 @@
 <p class="hint"><%= t('app.bank.retention') %></p>
 <ul class="invite-list">
   <% statements.forEach((s) => { %>
-    <li><span class="mono"><%= s.createdAt.toISOString().slice(0, 10).split('-').reverse().join('.') %></span> · <%= s.format === 'CAMT053' ? 'camt.053' : 'CSV' %> · <%= t('app.bank.statementLines', { created: s.newLines, total: s.lineCount }) %>
+    <li><span class="mono"><%= bgDate(s.createdAt) %></span> · <%= s.format === 'CAMT053' ? 'camt.053' : 'CSV' %> · <%= t('app.bank.statementLines', { created: s.newLines, total: s.lineCount }) %>
       <% if (canWrite) { %><form method="post" action="/app/o/<%= org.id %>/banka/izvlechenie/<%= s.id %>/iztriy" class="inline-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="link"><%= t('app.bank.deleteStatement') %></button></form><% } %>
     </li>
   <% }) %>

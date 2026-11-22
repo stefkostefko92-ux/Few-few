@@ -1,4 +1,4 @@
-<% const day = (d) => new Date(d).toISOString().slice(0, 10).split('-').reverse().join('.'); %>
+<% const day = (d) => bgDate(new Date(d)); %>
 <% const planName = (code) => { const p = grant.allPlans.find((x) => x.code === code); return p ? (lang === 'bg' ? p.nameBg : p.nameEn) : code; }; %>
 <section class="panel stack narrow-form" aria-labelledby="h-grant">
   <h2 id="h-grant"><%= t('admin.grant.title') %></h2>

@@ -195,6 +195,18 @@ export function byLabel(page: Pick<Page, 'getByLabel'>, text: string) {
   return page.getByLabel(new RegExp(`^${escapeRegExp(text)}(?!\\d)`));
 }
 
+/**
+ * Менюто на фирмата: на телефон е свито (и на началото ѝ — името и „Нов документ“ са първи), на широк екран е
+ * винаги отворено. Отваря го като човек — с докосване на „Раздели“, ако е нужно.
+ */
+export async function openOrgMenu(page: Page): Promise<void> {
+  const menu = page.locator('details.org-menu');
+  if ((await menu.count()) === 0) return;
+  if (await menu.evaluate((el) => el.open === true)) return;
+  const summary = menu.locator('summary');
+  if (await summary.isVisible()) await summary.click();
+}
+
 /** Вход през формата на `/vhod`. */
 export async function login(app: E2eApp, page: Page, email: string): Promise<void> {
   await page.goto(`${app.origin}/vhod`);

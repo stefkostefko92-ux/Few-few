@@ -5,7 +5,7 @@
   "description": "Linketto — многоезичен „link in bio“ профил: всичките ти линкове, нанизани на едно място.",
   "license": "UNLICENSED",
   "author": "Carbon Stealth VCC",
-  "homepage": "https://linketto.carbonstealth.eu",
+  "homepage": "https://piuma.carbonstealth.eu",
   "repository": {
     "type": "git",
     "url": "https://github.com/stefkostefko92-ux/Few-few.git",
@@ -37,6 +37,7 @@
     "@prisma/client": "^6.2.1",
     "@types/qrcode": "^1.5.6",
     "bcryptjs": "^2.4.3",
+    "mmdb-lib": "3.0.5",
     "next": "^15.5.29",
     "next-intl": "^3.26.3",
     "prisma": "^6.2.1",

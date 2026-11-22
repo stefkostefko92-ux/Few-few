@@ -159,6 +159,10 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 .cs-caliper.on i{opacity:.9}
 @media(hover:none),(pointer:coarse){.cs-caliper{display:none}}
 @media(prefers-reduced-motion:reduce){h1,.card::before,.tier::before,.work-shot,.w>h2::after,.seo-body article>h2::after,body::after{animation:none!important}body::after{display:none}}
+@property --ctl{syntax:'<length>';inherits:false;initial-value:0px}
+@property --ctr{syntax:'<length>';inherits:false;initial-value:0px}
+@keyframes ctblHint{from{--ctl:0px;--ctr:36px}to{--ctl:36px;--ctr:0px}}
+@supports (animation-timeline:scroll()){.ctbl{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);animation:ctblHint linear both;animation-timeline:scroll(self inline)}.ctbl:focus-visible{-webkit-mask-image:none;mask-image:none}}
 </style></head><body><nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">HOME</a><a href="/chi-siamo/">CHI SIAMO</a><a href="/servizi/sviluppo-siti-web/">SERVIZI</a><a href="/portfolio/">PORTFOLIO</a><a href="/prezzi/">PREZZI</a><a href="/contatti/">CONTATTI</a></div></nav><div class="hero-s"><div class="w"><div class="tag">// BLOG</div><h1>ERP vs Gestionale: Quali Differenze e Cosa Scegliere</h1></div></div><div class="w"><p class="blog-date">16 Luglio 2026 &middot; 8 min di lettura</p><p>In breve: un <strong>gestionale</strong> risolve un'area specifica (fatturazione, magazzino o contabilit&agrave;), mentre un <strong>ERP</strong> integra pi&ugrave; aree in un unico sistema con dati condivisi. Il gestionale costa meno e basta a chi ha esigenze semplici; l'ERP conviene quando i dati sparsi tra pi&ugrave; programmi e fogli Excel iniziano a causare errori, doppie digitazioni e perdite di tempo.</p>
 <h2>Le differenze principali</h2>
 <div class="ctbl" tabindex="0" role="region" aria-label="Tabella"><table><thead><tr><th>Criterio</th><th>Gestionale</th><th>ERP</th></tr></thead><tbody>

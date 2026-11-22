@@ -1,6 +1,6 @@
 {
-  "checkedAt": "2026-11-08",
-  "changelogVersion": "2.1.319",
+  "checkedAt": "2026-11-19",
+  "changelogVersion": "2.1.328",
   "docs": [
     {
       "url": "https://code.claude.com/docs/en/overview.md",
@@ -443,6 +443,10 @@
       "title": "Claude Code on Claude Platform on AWS"
     },
     {
+      "url": "https://code.claude.com/docs/en/claude-models-on-google-cloud-anthropic-managed.md",
+      "title": "Claude Code with Claude Models on Google Cloud (Anthropic managed)"
+    },
+    {
       "url": "https://code.claude.com/docs/en/google-vertex-ai.md",
       "title": "Claude Code on Google Cloud's Agent Platform"
     },
@@ -619,6 +623,10 @@
       "title": "Escalate hard decisions with the advisor tool"
     },
     {
+      "url": "https://code.claude.com/docs/en/code-mode.md",
+      "title": "Run tool calls from code with Code Mode"
+    },
+    {
       "url": "https://code.claude.com/docs/en/output-styles.md",
       "title": "Output styles"
     },
@@ -724,7 +732,7 @@
     },
     {
       "url": "https://code.claude.com/docs/en/agent-sdk/streaming-vs-single-mode.md",
-      "title": "Streaming Input"
+      "title": "Send messages to a running agent"
     },
     {
       "url": "https://code.claude.com/docs/en/agent-sdk/user-input.md",
@@ -811,106 +819,6 @@
       "title": "Agent SDK reference - Python"
     },
     {
-      "url": "https://code.claude.com/docs/en/whats-new/index.md",
-      "title": "What's new"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w37.md",
-      "title": "Week 37 · September 7–11, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w36.md",
-      "title": "Week 36 · August 31 – September 4, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w35.md",
-      "title": "Week 35 · August 24–28, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w34.md",
-      "title": "Week 34 · August 17–21, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w33.md",
-      "title": "Week 33 · August 10–14, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w32.md",
-      "title": "Week 32 · August 3–7, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w30.md",
-      "title": "Week 30 · July 20–24, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w29.md",
-      "title": "Week 29 · July 13–17, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w28.md",
-      "title": "Week 28 · July 6–10, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w27.md",
-      "title": "Week 27 · June 29 – July 3, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w26.md",
-      "title": "Week 26 · June 22–26, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w25.md",
-      "title": "Week 25 · June 15–19, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w24.md",
-      "title": "Week 24 · June 8–12, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w23.md",
-      "title": "Week 23 · June 1–5, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w22.md",
-      "title": "Week 22 · May 25–29, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w21.md",
-      "title": "Week 21 · May 18–22, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w20.md",
-      "title": "Week 20 · May 11–15, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w19.md",
-      "title": "Week 19 · May 4–8, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w18.md",
-      "title": "Week 18 · April 27 – May 1, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w17.md",
-      "title": "Week 17 · April 20–24, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w16.md",
-      "title": "Week 16 · April 13–17, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w15.md",
-      "title": "Week 15 · April 6–10, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w14.md",
-      "title": "Week 14 · March 30 – April 3, 2026"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/whats-new/2026-w13.md",
-      "title": "Week 13 · March 23–27, 2026"
-    },
-    {
       "url": "https://code.claude.com/docs/en/legal-and-compliance.md",
       "title": "Legal and compliance"
     }
@@ -927,6 +835,10 @@
     {
       "slug": "AI-resistant-technical-evaluations",
       "title": "Read more"
+    },
+    {
+      "slug": "building-strong-safety-evaluations",
+      "title": "Building strong safety evaluations"
     },
     {
       "slug": "components-of-agent-memory",
@@ -1007,10 +919,6 @@
     {
       "slug": "multi-agent-research-system",
       "title": "How we built our multi-agent research system"
-    },
-    {
-      "slug": "claude-code-best-practices",
-      "title": "Claude Code: Best practices for agentic coding"
     }
   ],
   "skills": [
@@ -1108,6 +1016,1229 @@
       "id": "discernment-nudge/discernment-nudge",
       "plugin": "discernment-nudge",
       "skill": "discernment-nudge"
+    }
+  ],
+  "platformNotesDate": "2026-11-17",
+  "platformDocs": [
+    {
+      "url": "https://platform.claude.com/docs/en/home.md",
+      "title": "Documentation"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview.md",
+      "title": "Overview — Agent Skills"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/claude-models-on-google-cloud/overview.md",
+      "title": "Overview — Claude Models on Google Cloud"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/overview.md",
+      "title": "Features overview"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/quickstart.md",
+      "title": "Quickstart — Get started with Agent Skills in the API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/get-started.md",
+      "title": "Quickstart — Get started with Claude"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/intro.md",
+      "title": "Intro to Claude"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/mcp-tunnels/overview.md",
+      "title": "Overview — MCP tunnels"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/mcp-tunnels/quickstart.md",
+      "title": "Quickstart — MCP tunnels quickstart"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview.md",
+      "title": "Overview — Tool use with Claude"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool.md",
+      "title": "Advisor tool"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/mcp-tunnels/concepts.md",
+      "title": "Architecture and components"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/authentication.md",
+      "title": "Authentication"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/bash-tool.md",
+      "title": "Bash tool"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/batch-processing.md",
+      "title": "Batch processing"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/browser-use-sdk.md",
+      "title": "Browser and computer use (SDK) — Browser and computer use with the SDK toolsets"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/browser-use-tool.md",
+      "title": "Browser use tool"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/mid-conversation-effort-example.md",
+      "title": "Build an orchestration mode"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/cache-diagnostics.md",
+      "title": "Cache diagnostics"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/preserved-thinking/change-tools-or-instructions.md",
+      "title": "Change tools or instructions — Change tools or instructions without failing the prefix che…"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/citations.md",
+      "title": "Citations"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/claude-in-amazon-bedrock.md",
+      "title": "Amazon Bedrock (mantle) — Claude in Amazon Bedrock (bedrock-mantle)"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/claude-in-microsoft-foundry.md",
+      "title": "Microsoft Foundry — Claude in Microsoft Foundry"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/claude-models-on-google-cloud/anthropic-managed.md",
+      "title": "Anthropic-managed — Claude Models on Google Cloud (Anthropic managed)"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/claude-models-on-google-cloud/google-managed.md",
+      "title": "Google-managed — Claude Models on Google Cloud (Google managed)"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/claude-on-amazon-bedrock-legacy.md",
+      "title": "Amazon Bedrock (runtime) — Claude on Amazon Bedrock (bedrock-runtime)"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/claude-platform-on-aws.md",
+      "title": "Claude Platform on AWS"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/code-execution-tool.md",
+      "title": "Code execution tool"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/compaction-thinking-blocks.md",
+      "title": "Keep thinking blocks valid — Compaction and preserved thinking"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/compaction-threshold.md",
+      "title": "Threshold compaction — Compaction at a token threshold"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/compaction-background.md",
+      "title": "Compact in the background — Compaction in the background"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/compaction-on-demand.md",
+      "title": "Compact on demand — Compaction on demand"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/compaction.md",
+      "title": "Compaction — Compaction overview"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/compaction-keep-recent-turns.md",
+      "title": "Keep recent turns — Compaction that keeps recent turns"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool.md",
+      "title": "Computer use tool"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/context-editing.md",
+      "title": "Context editing"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/context-windows.md",
+      "title": "Context windows"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/vision-coordinates.md",
+      "title": "Coordinates and bounding boxes"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/define-tools.md",
+      "title": "Define tools"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/mcp-tunnels/deploy-compose.md",
+      "title": "Deploy with Docker Compose — Deploy MCP tunnels with Docker Compose"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/mcp-tunnels/deploy-helm.md",
+      "title": "Deploy with Helm — Deploy MCP tunnels with Helm"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/effort.md",
+      "title": "Overview — Effort"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/embeddings.md",
+      "title": "Embeddings"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/extended-thinking.md",
+      "title": "Extended thinking (legacy) — Extended thinking"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/fallback-credit.md",
+      "title": "Fallback credit"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/fast-mode.md",
+      "title": "Fast mode"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/files.md",
+      "title": "Files API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/fine-grained-tool-streaming.md",
+      "title": "Fine-grained tool streaming"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/preserved-thinking/fix-bound-to-a-different-conversation.md",
+      "title": "Fix the 400 error — Fix a thinking block bound to a different conversation"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/get-api-key.md",
+      "title": "Get your API key — Get your Claude API key"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/handle-streaming-refusals.md",
+      "title": "Streaming refusals — Handle streaming refusals"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/handle-tool-calls.md",
+      "title": "Handle tool calls"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/how-tool-use-works.md",
+      "title": "How tool use works"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/manage-tool-context.md",
+      "title": "Manage tool context"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/mcp-tunnels/console.md",
+      "title": "Manage in the Console — Manage tunnels in the Claude Console"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/mcp-connector.md",
+      "title": "MCP connector"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/mcp-tunnels/reference.md",
+      "title": "Reference — MCP tunnels reference"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/mcp-tunnels/security.md",
+      "title": "Security — MCP tunnels security"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool.md",
+      "title": "Memory tool"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/message-threads.md",
+      "title": "Message threads"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/mid-conversation-system-messages.md",
+      "title": "Mid-conversation messages — Mid-conversation system messages and tool changes"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/multilingual-support.md",
+      "title": "Multilingual support"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/parallel-tool-use.md",
+      "title": "Parallel tool use"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/pdf-support.md",
+      "title": "PDF support"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/effort-per-message.md",
+      "title": "Per-message effort (beta) — Per-message effort"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/preserved-thinking/prefix-checks.md",
+      "title": "Prefix checks — Prefix checks on thinking blocks"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/preserved-thinking.md",
+      "title": "Overview — Preserved thinking"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/programmatic-tool-calling.md",
+      "title": "Programmatic tool calling"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching.md",
+      "title": "Prompt caching"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/refusals-and-fallback.md",
+      "title": "Refusals and fallback"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/remote-mcp-servers.md",
+      "title": "Remote MCP servers"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/search-results.md",
+      "title": "Search results"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/server-tools.md",
+      "title": "Server tools"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices.md",
+      "title": "Best practices — Skill authoring best practices"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/enterprise.md",
+      "title": "Skills for enterprise"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/thinking-steering-and-cost.md",
+      "title": "Steering and cost control — Steering thinking"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/handling-stop-reasons.md",
+      "title": "Stop reasons and fallback"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/streaming.md",
+      "title": "Streaming Messages — Streaming messages"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/strict-tool-use.md",
+      "title": "Strict tool use"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/structured-outputs.md",
+      "title": "Structured outputs"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/task-budgets.md",
+      "title": "Task budgets (beta) — Task budgets"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/text-editor-tool.md",
+      "title": "Text editor tool"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/text-watermark.md",
+      "title": "Text watermark"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/thinking.md",
+      "title": "Overview — Thinking"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/thinking-tool-workflows.md",
+      "title": "Tool and multi-turn workflows — Thinking in tool and multi-turn workflows"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/token-counting.md",
+      "title": "Token counting"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-combinations.md",
+      "title": "Tool combinations"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-reference.md",
+      "title": "Tool reference"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-runner.md",
+      "title": "Tool runner (SDK)"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-search-tool.md",
+      "title": "Tool search tool"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-use-with-prompt-caching.md",
+      "title": "Tool use with prompt caching"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/mcp-tunnels/troubleshooting.md",
+      "title": "Troubleshooting — Troubleshoot MCP tunnels"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/thinking-troubleshooting.md",
+      "title": "Troubleshooting — Troubleshooting thinking"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/troubleshooting-tool-use.md",
+      "title": "Troubleshooting — Troubleshooting tool use"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/build-a-tool-using-agent.md",
+      "title": "Tutorial: Build a tool-using agent"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/skills-guide.md",
+      "title": "Skills in the API — Using Agent Skills with the API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/working-with-messages.md",
+      "title": "Using the Messages API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/vision.md",
+      "title": "Overview — Vision"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/web-fetch-tool.md",
+      "title": "Web fetch tool"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/web-search-tool.md",
+      "title": "Web search tool"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/overview.md",
+      "title": "Overview — Claude Managed Agents overview"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/quickstart.md",
+      "title": "Quickstart — Get started with Claude Managed Agents"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted/quickstart.md",
+      "title": "Quickstart — Get started with self-hosted Claude Managed Agents"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/github.md",
+      "title": "Access GitHub — Accessing GitHub"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/files.md",
+      "title": "Attach and download files — Adding files"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted/agent-identity.md",
+      "title": "Agent identity and credentials"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/vaults.md",
+      "title": "Authenticate with vaults"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/onboarding.md",
+      "title": "Build in Console"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted/call-the-api.md",
+      "title": "Call the API — Call the API on a self-hosted server"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/choosing-an-environment.md",
+      "title": "Choose an environment — Choosing an agent environment"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/environments.md",
+      "title": "Cloud environment setup"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/cloud-sandboxes-reference.md",
+      "title": "Cloud sandbox reference"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted/configuration-reference.md",
+      "title": "Configuration reference"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted-sandboxes-custom-tools.md",
+      "title": "Custom tools and MCP servers — Custom tools in self-hosted sandboxes"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted-data-and-access.md",
+      "title": "Data and access — Data and access in self-hosted Claude Managed Agents"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/define-outcomes.md",
+      "title": "Define outcomes"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/agent-setup.md",
+      "title": "Agent setup — Define your agent"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted/kubernetes.md",
+      "title": "Deploy on Kubernetes"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted-sandboxes-workers.md",
+      "title": "Deploy workers — Deploy self-hosted workers"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted/differences.md",
+      "title": "Differences from hosted — Differences from the hosted service"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/dreams.md",
+      "title": "Dreams"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted/inference-provider.md",
+      "title": "Inference provider"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/session-observability.md",
+      "title": "Inspect and track usage — Inspect sessions and track usage"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/mcp-connector.md",
+      "title": "MCP connector"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted-sandboxes-memory.md",
+      "title": "Memory stores — Memory stores in self-hosted sandboxes"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/migration.md",
+      "title": "Migration"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted-sandboxes-operations.md",
+      "title": "Monitor and troubleshoot — Monitor and troubleshoot self-hosted workers"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/multiagent-orchestration.md",
+      "title": "Multiagent orchestration"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/permission-policies.md",
+      "title": "Permission policies"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/event-deltas.md",
+      "title": "Event deltas — Preview responses with event deltas"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/reference.md",
+      "title": "Managed Agents reference — Reference"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/tools-web-restrictions.md",
+      "title": "Web tool restrictions — Restrict web search and web fetch domains"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/secure-deployment-monitoring.md",
+      "title": "Review and monitor sessions — Review and monitor agent sessions"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted-sandboxes-per-session.md",
+      "title": "Sandbox per session — Run one sandbox per session"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/scheduled-deployments.md",
+      "title": "Scheduled deployments"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/secure-deployment.md",
+      "title": "Secure your deployment — Secure your Managed Agents deployment"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted-sandboxes-security.md",
+      "title": "Security model"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/secure-deployment-risks.md",
+      "title": "Risks and boundaries — Security risks and sandbox boundaries"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted.md",
+      "title": "Overview — Self-hosted Claude Managed Agents"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted-sandboxes.md",
+      "title": "Overview and quickstart — Self-hosted sandboxes"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted-sandboxes-reference.md",
+      "title": "Worker reference — Self-hosted worker reference"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/budgets.md",
+      "title": "Session budgets"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/events-and-streaming.md",
+      "title": "Session event stream"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/session-operations.md",
+      "title": "Session operations"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/session-threads.md",
+      "title": "Session threads"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted/configure.md",
+      "title": "Single sign-on"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/skills.md",
+      "title": "Agent Skills — Skills"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/sessions.md",
+      "title": "Start a session"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/webhooks.md",
+      "title": "Subscribe to webhooks"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/tools.md",
+      "title": "Tools"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted/upgrade.md",
+      "title": "Upgrade — Upgrade self-hosted Claude Managed Agents"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/self-hosted/console.md",
+      "title": "Console — Use the console on your server"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/memory.md",
+      "title": "Memory stores — Using agent memory"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/managed-agents/workflow-runs.md",
+      "title": "Workflow runs"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/overview.md",
+      "title": "Overview — Claude Platform OAuth (EAP)"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/compliance-security-posture/overview.md",
+      "title": "Overview — Security posture in the Compliance API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/access-transparency.md",
+      "title": "Overview — Access Transparency"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/cmek-admin-api.md",
+      "title": "Admin API — Add and attach an encryption key with the Admin API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/admin-api.md",
+      "title": "Admin API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/analytics-api.md",
+      "title": "Analytics APIs"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/api-and-data-retention.md",
+      "title": "API and data retention"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/app-attest.md",
+      "title": "App Attest — App Attest for iOS and macOS apps"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/app-review.md",
+      "title": "App testing and review — App testing and review (EAP)"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/branding-samples.md",
+      "title": "Branding samples — Branding samples (EAP)"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/compliance-security-posture/check-events-against-results.md",
+      "title": "Check events against results — Check stored Security posture events against current results"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/claude-code-analytics-api.md",
+      "title": "Claude Code Analytics API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/claude-tag-api.md",
+      "title": "Claude Tag API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/cmek-data-retention.md",
+      "title": "Data retention and ZDR — CMEK, data retention, and ZDR"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/compliance-api.md",
+      "title": "Overview — Compliance API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/compliance-faq.md",
+      "title": "FAQ — Compliance API FAQ"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/inference-hooks-configuration.md",
+      "title": "Configure Inference hooks"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/admin-api-keys.md",
+      "title": "Create an Admin API key"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/cmek.md",
+      "title": "Overview — Customer-managed encryption keys"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/data-residency.md",
+      "title": "Data residency"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/compliance-integration-patterns.md",
+      "title": "Design your integration — Design your compliance integration"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/compliance-security-posture/detect-changes.md",
+      "title": "Detect changes — Detect changes in Security posture"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/inference-hooks-endpoint.md",
+      "title": "Build an integration — Develop an Inference hooks integration"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/compliance-errors.md",
+      "title": "Errors — Handle Compliance API errors"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/cmek-how-it-works.md",
+      "title": "How it works — How CMEK works"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/inference-hooks.md",
+      "title": "Overview — Inference hooks"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/ip-allowlist.md",
+      "title": "IP allowlisting (beta) — IP allowlisting"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/cmek-aws-kms-workspaces.md",
+      "title": "Limit key to workspaces — Limit an AWS KMS key to specific workspaces"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/organization-billing-connections.md",
+      "title": "Linked billing — Linked billing (EAP)"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/compliance-org-data.md",
+      "title": "Organizations, users, roles, groups, and settings — List organizations, users, roles, groups, and settings"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/wif-admin-api.md",
+      "title": "Manage WIF with the Admin API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/compliance-security-posture/ocsf-mapping.md",
+      "title": "Map events to OCSF — Map Security posture events to OCSF"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/oauth-reference.md",
+      "title": "OAuth reference — OAuth reference (EAP)"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/opentelemetry.md",
+      "title": "Overview — OpenTelemetry tracing for the Claude API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/organization-webhooks.md",
+      "title": "Organization webhooks (beta) — Organization webhooks"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/plugins-api.md",
+      "title": "Plugins API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/compliance-activity-feed.md",
+      "title": "Activity Feed — Query the Activity Feed"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/rate-limits-api.md",
+      "title": "Rate Limits API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/compliance-content-data.md",
+      "title": "Chats, files, and projects — Retrieve and delete chats, files, and projects"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/compliance-sessions.md",
+      "title": "Session transcripts — Retrieve session transcripts"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/compliance-security-posture/events-reference.md",
+      "title": "Events reference — Security posture events reference"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/compliance-security-posture/results-reference.md",
+      "title": "Results reference — Security posture results reference"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/user-profiles-verification-portal.md",
+      "title": "Verification Portal links — Send an end customer a link to the Verification Portal"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/compliance-security-posture/send-events.md",
+      "title": "Send events to your SIEM — Send Security posture events to your SIEM"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/cmek-claude-platform-on-aws.md",
+      "title": "Claude Platform on AWS — Set up CMEK on Claude Platform on AWS"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/cmek-aws-kms.md",
+      "title": "AWS KMS — Set up CMEK with AWS KMS"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/cmek-azure-key-vault.md",
+      "title": "Azure Key Vault — Set up CMEK with Azure Key Vault"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/cmek-google-cloud-kms.md",
+      "title": "Google Cloud KMS — Set up CMEK with Google Cloud KMS"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/opentelemetry/sdk.md",
+      "title": "Get Anthropic SDK spans — Set up OpenTelemetry with the Anthropic SDK"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/opentelemetry/api.md",
+      "title": "Get Claude API spans — Set up OpenTelemetry with the Claude API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/compliance-api-access.md",
+      "title": "Set up the Compliance API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/spend-limits-api.md",
+      "title": "Spend Limits API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/cmek-troubleshooting.md",
+      "title": "Troubleshooting — Troubleshoot CMEK"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/usage-cost-analytics-api.md",
+      "title": "Usage and Cost Analytics API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/usage-cost-api.md",
+      "title": "Usage and Cost API (legacy) — Usage and Cost API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/wif-providers/aws.md",
+      "title": "AWS — Use WIF with AWS"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/wif-providers/github-actions.md",
+      "title": "GitHub Actions — Use WIF with GitHub Actions"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/wif-providers/gcp.md",
+      "title": "Google Cloud — Use WIF with Google Cloud"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/wif-providers/kubernetes.md",
+      "title": "Kubernetes — Use WIF with Kubernetes"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/wif-providers/azure.md",
+      "title": "Microsoft Entra ID — Use WIF with Microsoft Entra ID"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/wif-providers/okta.md",
+      "title": "Okta — Use WIF with Okta"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/wif-providers/spiffe.md",
+      "title": "SPIFFE — Use WIF with SPIFFE"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/user-management.md",
+      "title": "User management"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/user-profiles.md",
+      "title": "User profiles — User profiles for end-customer attribution"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/access-transparency-log.md",
+      "title": "Transparency log (beta) — Verify Access Transparency events with the transparency log"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/cmek-coverage-claude-enterprise.md",
+      "title": "Coverage: Claude Enterprise — What CMEK covers on Claude Enterprise"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/cmek-coverage-claude-platform.md",
+      "title": "Coverage: Claude Platform — What CMEK covers on Claude Platform"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/cmek-key-lifecycle.md",
+      "title": "Rotate, disable, delete — What happens when you rotate, disable, or delete your encry…"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/wif-reference.md",
+      "title": "WIF reference"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/workload-identity-federation.md",
+      "title": "Workload Identity Federation"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/workspaces.md",
+      "title": "Workspaces"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/about-claude/use-case-guides/overview.md",
+      "title": "Overview — Guides to common use cases"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview.md",
+      "title": "Overview — Prompt engineering overview"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/about-claude/additional-resources.md",
+      "title": "Additional resources"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/about-claude/use-case-guides/commerce-agents.md",
+      "title": "Commerce agent"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/about-claude/use-case-guides/content-moderation.md",
+      "title": "Content moderation"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/about-claude/use-case-guides/customer-support-chat.md",
+      "title": "Customer support agent"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/test-and-evaluate/develop-tests.md",
+      "title": "Define success and build evaluations — Define success criteria and build evaluations"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/about-claude/glossary.md",
+      "title": "Glossary"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/increase-consistency.md",
+      "title": "Increase output consistency"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/about-claude/use-case-guides/legal-summarization.md",
+      "title": "Legal summarization"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/mitigate-jailbreaks.md",
+      "title": "Mitigate jailbreaks — Mitigate jailbreaks and prompt injections"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices.md",
+      "title": "Prompting best practices"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5.md",
+      "title": "Prompting Claude Fable 5"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1.md",
+      "title": "Prompting Claude Fable 5.1"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-2.md",
+      "title": "Prompting Claude Fable 5.2"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-haiku-5-5.md",
+      "title": "Prompting Claude Haiku 5.5"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-4-8.md",
+      "title": "Prompting Claude Opus 4.8"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5.md",
+      "title": "Prompting Claude Opus 5"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5.md",
+      "title": "Prompting Claude Opus 5.5"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5.md",
+      "title": "Prompting Claude Sonnet 5"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5-5.md",
+      "title": "Prompting Claude Sonnet 5.5"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/reduce-hallucinations.md",
+      "title": "Reduce hallucinations"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/reduce-prompt-leak.md",
+      "title": "Reduce prompt leak"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/reduce-latency.md",
+      "title": "Reducing latency"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/about-claude/use-case-guides/ticket-routing.md",
+      "title": "Ticket routing"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/fable-5/overview.md",
+      "title": "Claude Fable 5"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/fable-5-1/overview.md",
+      "title": "Claude Fable 5.1"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/fable-5-2/overview.md",
+      "title": "Claude Fable 5.2"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/haiku-4-5/overview.md",
+      "title": "Claude Haiku 4.5"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/haiku-5-5/overview.md",
+      "title": "Claude Haiku 5.5"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/mythos-5/overview.md",
+      "title": "Claude Mythos 5"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/mythos-5-1/overview.md",
+      "title": "Claude Mythos 5.1"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/mythos-5-2/overview.md",
+      "title": "Claude Mythos 5.2"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/opus-4-5/overview.md",
+      "title": "Claude Opus 4.5"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/opus-4-6/overview.md",
+      "title": "Claude Opus 4.6"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/opus-4-7/overview.md",
+      "title": "Claude Opus 4.7"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/opus-4-8/overview.md",
+      "title": "Claude Opus 4.8"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/opus-5/overview.md",
+      "title": "Claude Opus 5"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/opus-5-5/overview.md",
+      "title": "Claude Opus 5.5"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/sonnet-4-5/overview.md",
+      "title": "Claude Sonnet 4.5"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/sonnet-4-6/overview.md",
+      "title": "Claude Sonnet 4.6"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/sonnet-5/overview.md",
+      "title": "Claude Sonnet 5"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/sonnet-5-5/overview.md",
+      "title": "Claude Sonnet 5.5"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/resources/overview.md",
+      "title": "Model cards"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/overview.md",
+      "title": "Models overview"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/about-claude/api-credits-for-subscribers.md",
+      "title": "API credits for subscribers — API credits for Max, Ultra, and Team plans"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/about-claude/models/choosing-a-model.md",
+      "title": "Choosing a model — Choosing the right model"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/fable-5-2/migration-guide.md",
+      "title": "Migration guide — Claude Fable 5.2 and Claude Mythos 5.2 migration guide"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/haiku-5-5/migration-guide.md",
+      "title": "Migration guide — Claude Haiku 5.5 migration guide"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/opus-5-5/migration-guide.md",
+      "title": "Migration guide — Claude Opus 5.5 migration guide"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/sonnet-5-5/migration-guide.md",
+      "title": "Migration guide — Claude Sonnet 5.5 migration guide"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/about-claude/models/migration-guide.md",
+      "title": "Upgrade between model versions — Migration guides"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/about-claude/model-deprecations.md",
+      "title": "Model deprecations"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/about-claude/models/model-ids-and-versions.md",
+      "title": "Model IDs and versioning"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/about-claude/models/optimizing-for-cost-and-intelligence.md",
+      "title": "Optimizing for cost and intelligence"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/about-claude/pricing.md",
+      "title": "Pricing"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/fable-5-2/whats-new-fable-5-2.md",
+      "title": "What's new — What's new in Claude Fable 5.2"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/haiku-5-5/whats-new-haiku-5-5.md",
+      "title": "What's new — What's new in Claude Haiku 5.5"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/opus-5-5/whats-new-opus-5-5.md",
+      "title": "What's new — What's new in Claude Opus 5.5"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/models/sonnet-5-5/whats-new-sonnet-5-5.md",
+      "title": "What's new — What's new in Claude Sonnet 5.5"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/cli-sdks-libraries/cli/quickstart.md",
+      "title": "Quickstart — CLI quickstart"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/cli-sdks-libraries/overview.md",
+      "title": "Overview — SDKs, CLI, and libraries"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/cli-sdks-libraries/libraries/apple-foundation-models.md",
+      "title": "Apple Foundation Models"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/cli-sdks-libraries/sdks/csharp.md",
+      "title": "C# — C# SDK"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/cli-sdks-libraries/cli/authentication.md",
+      "title": "Authentication options — CLI authentication options"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/cli-sdks-libraries/cli/scripting.md",
+      "title": "Scripting and automation — CLI scripting and automation"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/cli-sdks-libraries/cli/sessions-connect.md",
+      "title": "Connect to a Managed Agents session — Connect to a Managed Agents session from your terminal"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/cli-sdks-libraries/sdks/go.md",
+      "title": "Go — Go SDK"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/cli-sdks-libraries/sdks/java.md",
+      "title": "Java — Java SDK"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/cli-sdks-libraries/cli/apply.md",
+      "title": "Manage resources as code — Manage resources as code with ant apply"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/cli-sdks-libraries/libraries/openai-sdk.md",
+      "title": "OpenAI SDK compatibility"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/cli-sdks-libraries/sdks/php.md",
+      "title": "PHP — PHP SDK"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/cli-sdks-libraries/sdks/python.md",
+      "title": "Python — Python SDK"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/cli-sdks-libraries/sdks/ruby.md",
+      "title": "Ruby — Ruby SDK"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/cli-sdks-libraries/middleware.md",
+      "title": "Middleware — SDK middleware"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/cli-sdks-libraries/sdks/typescript.md",
+      "title": "TypeScript — TypeScript SDK"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/cli-sdks-libraries/cli/using.md",
+      "title": "Using the CLI"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/claude-api-skill.md",
+      "title": "Overview — Claude API skill"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/release-notes/overview.md",
+      "title": "Overview — Claude Platform release notes"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/claude_api_primer.md",
+      "title": "API usage primer for Claude"
     }
   ]
 }

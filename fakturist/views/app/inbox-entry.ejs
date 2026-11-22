@@ -1,7 +1,7 @@
 <%- include('../partials/app-head', { title: t('app.types.' + document.typeCode) + ' ' + document.number }) %>
 <p><a href="/app/o/<%= entry.recipientOrgId %>/shkafche">← <%= t('app.inbox.title') %></a></p>
 <% if (document.status === 'CANCELLED') { %>
-  <p class="callout annulled" role="note"><strong><%= t('app.annul.isAnnulled', { date: document.cancelledAt ? document.cancelledAt.toISOString().slice(0, 10).split('-').reverse().join('.') : '' }) %></strong><% if (document.replacedBy && document.replacedBy.number) { %> · <%= t('app.annul.replacedBy') %> <span class="mono"><%= document.replacedBy.number %></span><% } %></p>
+  <p class="callout annulled" role="note"><strong><%= t('app.annul.isAnnulled', { date: document.cancelledAt ? bgDate(document.cancelledAt) : '' }) %></strong><% if (document.replacedBy && document.replacedBy.number) { %> · <%= t('app.annul.replacedBy') %> <span class="mono"><%= document.replacedBy.number %></span><% } %></p>
 <% } %>
 <div class="head-row">
   <div>

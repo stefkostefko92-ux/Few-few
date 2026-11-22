@@ -31,7 +31,7 @@ export async function createProforma(
   const settings = await issueSettings();
   return prisma.$transaction(async (tx) => {
     const orgs = await tx.$queryRaw<Array<{ id: string }>>`
-      SELECT "id" FROM "Organization" WHERE "id" = ${access.organizationId} FOR UPDATE`;
+      SELECT "id" FROM "Organization" WHERE "id" = ${access.organizationId} FOR NO KEY UPDATE`;
     if (orgs.length !== 1) throw new ProformaError('notFound');
     await recheckAccess(tx, access, actorId);
     const org = await tx.organization.findUniqueOrThrow({ where: { id: access.organizationId } });
@@ -119,7 +119,7 @@ export async function sendProforma(
 ): Promise<void> {
   await prisma.$transaction(async (tx) => {
     const orgs = await tx.$queryRaw<Array<{ id: string }>>`
-      SELECT "id" FROM "Organization" WHERE "id" = ${access.organizationId} FOR UPDATE`;
+      SELECT "id" FROM "Organization" WHERE "id" = ${access.organizationId} FOR NO KEY UPDATE`;
     if (orgs.length !== 1) throw new ProformaError('notFound');
     await recheckAccess(tx, access, actorId);
     const proforma = await tx.proforma.findFirst({

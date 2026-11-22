@@ -1,5 +1,5 @@
 [Unit]
-# Linketto — периодична задача (%i = plans | digest | retention), DEPLOY.md §9.
+# Linketto — периодична задача (%i = plans | digest | retention | geoip | backup), DEPLOY.md §9.
 # Пуска се от linketto-cron-%i.timer; инсталира се от deploy/autodeploy.sh.
 # Дневник: journalctl -u linketto-cron@%i -n 50
 # Провал (напр. 500 от /api/cron/plans при грешка в ред) = unit в „failed“ —
@@ -14,11 +14,13 @@ ExecStart=/usr/local/sbin/linketto-cron %i
 TimeoutStartSec=900
 Nice=10
 Environment=LINKETTO_ENV=/opt/few-few/shared/linketto/.env
-Environment=LINKETTO_LOCAL_URL=http://127.0.0.1:4340
+# Портът се чете от HTTP_PORT в LINKETTO_ENV (по подразбиране 4350) — не се дублира тук.
 
 # --- Sandboxing ---
 # Върви като root: чете файла с тайните (600, root) и говори с docker сокета
-# (retention). Нищо не пише на диска.
+# (retention, backup). Пише само базата IP → държава (geoip) — в $STATE/geoip — и шифрованите
+# бекъпи — в $STATE/backups/daily; двете са разрешени от drop-in-а env.conf (ReadWritePaths),
+# който слага autodeploy. Без capabilities: снимките (1001, 750) бекъпът чете през docker exec в app.
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict

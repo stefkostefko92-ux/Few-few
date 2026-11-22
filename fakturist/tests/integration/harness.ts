@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
+import { LEGAL_DOCUMENTS } from '../../src/legal/documents.js';
 
 /**
  * Интеграционните тестове вървят само срещу база, чието име съдържа `_test` или `_ci` — таблиците се
@@ -30,4 +31,27 @@ export async function truncateAll(db: {
   await db.$executeRawUnsafe(
     `TRUNCATE ${tables.map((t) => `"${t.tablename}"`).join(', ')} RESTART IDENTITY CASCADE`,
   );
+}
+
+/**
+ * Човек, създаден направо в базата (член по покана в реалния живот), е приел общите условия с текущата версия —
+ * иначе приложението го води към „Актуалните условия“ (SPEC 92).
+ */
+export async function acceptCurrentTerms(
+  db: {
+    legalAcceptance: {
+      createMany(args: {
+        data: Array<{ userId: string; document: string; version: string }>;
+      }): Promise<unknown>;
+    };
+  },
+  userId: string,
+): Promise<void> {
+  await db.legalAcceptance.createMany({
+    data: (['terms', 'privacy'] as const).map((document) => ({
+      userId,
+      document,
+      version: LEGAL_DOCUMENTS[document].version,
+    })),
+  });
 }

@@ -179,3 +179,36 @@ test("договорите с харнеса: ред от changelog-а, койт
   assert.equal(d.contractHits.length, 1);
   assert.match(renderReport(d, []), /ЗАСЯГАТ ДОГОВОР С ХАРНЕСА/);
 });
+
+test("ключовите думи се търсят по граница на дума отпред — „sed“ не хваща „refused“/„used“ (19.11.2026: 14 от 19 удара бяха шум)", async () => {
+  const { touchedContracts, keywordRe } = await import("./anthropic-watch.mjs");
+  const c = [{ id: "x", keywords: [["sed", "permission"]] }, { id: "y", keywords: ["subagent"] }];
+  assert.deepEqual(touchedContracts("Fixed a crash when a permission prompt was refused", c), []);
+  assert.deepEqual(touchedContracts("Commands used with a permission rule", c), []);
+  assert.deepEqual(touchedContracts("`sed` edits now require permission", c), ["x"]);
+  assert.deepEqual(touchedContracts("Fixed subagents losing context", c), ["y"], "наставките остават");
+  assert.equal(keywordRe("CLAUDE.md").test("CLAUDExmd"), false, "специалните знаци са буквални");
+});
+
+test("платформата: бележките по дата и страниците (без справочника /api/*) — нова дата и нова страница се отчитат", async () => {
+  const { parsePlatformNotes, parsePlatformDocs, diffSnapshot, nextState, renderReport, isoDate } = await import("./anthropic-watch.mjs");
+  assert.equal(isoDate("November 7, 2026"), "2026-11-07");
+  assert.equal(isoDate("нещо друго"), "");
+  const notes = parsePlatformNotes("intro\n\n### November 17, 2026\n\n* We launched [Linked billing](https://x) in beta.\n\n### November 16, 2026\n\n* Opus 5.5 is now on Vertex AI `eu` with new pricing.\n* Console theme.\n");
+  assert.deepEqual(notes.map((n) => n.date), ["2026-11-17", "2026-11-16"]);
+  assert.equal(notes[0].bullets[0], "We launched Linked billing in beta.", "линковете стават текст");
+  const docs = parsePlatformDocs("- [Overview](https://platform.claude.com/docs/en/build-with-claude/overview.md) - Build\n- [Create](https://platform.claude.com/docs/en/api/beta/x.md)\n- [P](https://platform.claude.com/docs/en/release-notes/system-prompts/a.md)\n");
+  assert.deepEqual(docs.map((d) => d.url), ["https://platform.claude.com/docs/en/build-with-claude/overview.md"]);
+  // Първа снимка с платформата = начална точка, не „всичко е ново“.
+  const first = diffSnapshot({}, { platformNotes: notes, platformDocs: docs }, []);
+  assert.equal(first.newPlatformNotes.length, 0);
+  assert.equal(first.newPlatformDocs.length, 0);
+  const st = nextState({}, { platformNotes: notes, platformDocs: docs }, "2026-11-19");
+  assert.equal(st.platformNotesDate, "2026-11-17");
+  const later = [{ date: "2026-11-20", bullets: ["Claude Opus 5 will be retired on Vertex AI.", "New Console colors."] }, ...notes];
+  const d = diffSnapshot(st, { platformNotes: later, platformDocs: [...docs, { url: "https://platform.claude.com/docs/en/new.md", title: "New" }] }, []);
+  assert.deepEqual(d.newPlatformNotes.map((n) => n.date), ["2026-11-20"]);
+  assert.deepEqual(d.newPlatformNotes[0].relevant, ["Claude Opus 5 will be retired on Vertex AI."], "само редовете за Vertex/модели/цени");
+  assert.equal(d.newPlatformDocs.length, 1);
+  assert.match(renderReport({ newDocs: [], removedDocs: [], newVersions: [], newPosts: [], ...d }, []), /Платформата[\s\S]*2026-11-20[\s\S]*retired/);
+});

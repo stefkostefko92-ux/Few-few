@@ -25,6 +25,26 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-21-versione-5-7": {
+        "area": "Portale",
+        "titolo": "Versione 5.7: etichetta QR e tabelle più comode",
+        "testo": "Abbiamo ricontrollato tutte le pagine del portale su telefono, tablet e computer, con il tema chiaro e quello scuro e con ruoli diversi. Nella pagina dell'etichetta QR la scelta «Etichette sul foglio» ora ha lo stesso aspetto degli altri campi del portale e, sul telefono, la scritta sta sopra la scelta invece di andare a capo tre volte. Le tabelle più larghe dello schermo, come quelle dei registri, si possono scorrere anche con la tastiera: il tasto Tab le raggiunge e le frecce le fanno scorrere. Nella pagina sull'esportazione dei dati il pulsante ha ora il suo nome vero, «Scarica tutti i dati»."
+      },
+      "2026-11-17-versione-5-6": {
+        "area": "Schizzi",
+        "titolo": "Versione 5.6: schizzi e annotazioni con il dito su iPad",
+        "testo": "Su iPad il dito ora disegna negli schizzi e nelle annotazioni sulle foto: prima il portale lo scambiava per il palmo della mano e non tracciava nulla. Con l'Apple Pencil, quando la penna tocca il foglio annulla quello che la mano aveva appena iniziato, e un palmo appoggiato non disegna né sposta il foglio. Due dita sulla cornice dell'editor non ingrandiscono più la pagina, e con la tastiera aperta la barra del valore resta in vista. Se la foto da annotare non si carica, il portale lo dice invece di non fare nulla."
+      },
+      "2026-11-17-versione-5-5": {
+        "area": "Abbonamento e pagamenti",
+        "titolo": "Versione 5.5: rimborsi e avvisi di Revolut più affidabili",
+        "testo": "Quando Revolut rifiuta il rimborso di un pagamento, anche fatto con Revolut Pay, il portale ora lo segna come non riuscito appena Revolut lo comunica, con il motivo indicato da Revolut; prima poteva restare in corso. L'amministrazione del portale lo vede e può ripetere il rimborso; se poi Revolut completa lo stesso un rimborso segnato come non riuscito, riceve un allarme e non lo ripete per errore. Se il portale non riesce a registrare subito un avviso di pagamento di Revolut, ora chiede a Revolut di rimandarlo, così il pagamento non si perde e il piano parte lo stesso."
+      },
+      "2026-11-16-versione-5-4": {
+        "area": "Preventivi e pagine del portale",
+        "titolo": "Versione 5.4: preventivi per ogni azienda e pagine rifinite",
+        "testo": "Nel nuovo preventivo, nel nuovo cliente e nel listino l'amministrazione del portale vede tutte le aziende attive; quelle con i preventivi non attivi stanno in un gruppo a parte e si possono attivare da lì, senza perdere il modulo. Abbiamo controllato tutte le pagine su telefono, tablet e computer: le tabelle scorrono senza spostare la pagina, i pulsanti lunghi vanno a capo sul telefono, le date dei tre avvisi del fermo per pericolo stanno su una riga, i numeri di telefono non si spezzano più a metà, nel registro ogni calcolo apre la sua pagina e, se la rubrica dei fornitori è vuota, la pagina di invio lo dice."
+      },
       "2026-11-15-versione-4-2": {
         "area": "Schede e cartelli",
         "titolo": "Versione 5.3: anno, marcatura CE e fermo per pericolo",

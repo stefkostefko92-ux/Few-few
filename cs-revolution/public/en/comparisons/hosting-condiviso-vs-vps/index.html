@@ -159,6 +159,10 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 .cs-caliper.on i{opacity:.9}
 @media(hover:none),(pointer:coarse){.cs-caliper{display:none}}
 @media(prefers-reduced-motion:reduce){h1,.card::before,.tier::before,.work-shot,.w>h2::after,.seo-body article>h2::after,body::after{animation:none!important}body::after{display:none}}
+@property --ctl{syntax:'<length>';inherits:false;initial-value:0px}
+@property --ctr{syntax:'<length>';inherits:false;initial-value:0px}
+@keyframes ctblHint{from{--ctl:0px;--ctr:36px}to{--ctl:36px;--ctr:0px}}
+@supports (animation-timeline:scroll()){.ctbl{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);animation:ctblHint linear both;animation-timeline:scroll(self inline)}.ctbl:focus-visible{-webkit-mask-image:none;mask-image:none}}
 </style></head><body><nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">HOME</a><a href="/en/about/">ABOUT</a><a href="/en/services/web-development/">SERVICES</a><a href="/en/portfolio/">PORTFOLIO</a><a href="/en/pricing/">PRICING</a><a href="/en/contact/">CONTACT</a></div></nav><div class="hero-s"><div class="w"><div class="tag">// COMPARISON</div><h1>Shared Hosting vs VPS: Which to Choose in 2026</h1></div></div><div class="w"><p><strong>In short:</strong> <strong>shared hosting</strong> is perfectly fine for brochure sites, blogs and small e-commerce with modest traffic: it's cheap and needs no technical skills. A <strong>VPS</strong> (virtual private server) makes sense when the site grows, traffic rises or you need performance, security and control that shared can't guarantee. If your site is new or small, start with shared; when it starts slowing under load, that's the signal to move to a VPS.</p>
 <h2>Head-to-head comparison</h2>
 <div class="ctbl" tabindex="0" role="region" aria-label="Table"><table><thead><tr><th>Criterion</th><th>Shared hosting</th><th>VPS</th></tr></thead><tbody>

@@ -2,14 +2,11 @@
 // изпращане не чупи бизнес действието, само се логва. Само служебни данни
 // (id на поръчка/профил, състояние) — без лични данни на трети лица.
 
-import { emailConfigured, sendEmail } from '@/lib/email';
+import { adminEmailList } from '@/lib/admin-list';
+import { emailReady, sendEmail } from '@/lib/email';
 
-export function adminEmails(raw = process.env.ADMIN_EMAILS ?? ''): string[] {
-  return raw
-    .split(',')
-    .map((item) => item.trim().toLowerCase())
-    .filter((item) => /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/.test(item));
-}
+/** Получателите на алармите — същият списък, който дава достъп (lib/admin-list.ts). */
+export const adminEmails = adminEmailList;
 
 const esc = (value: string) =>
   value.replace(/[&<>"]/g, (c) => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;' : '&quot;'));
@@ -30,12 +27,25 @@ export function adminAlertEmail(input: { subject: string; lines: string[]; admin
   };
 }
 
-export async function notifyAdmins(subject: string, lines: string[]): Promise<void> {
+/**
+ * Праща алармата до всеки админ. Връща true, ако поне едно писмо е прието от
+ * Brevo — за аларми, които не бива да се изгубят (спор), викащият пази „не е
+ * тръгнала“ и опитва пак (cron); останалите викащи пренебрегват резултата.
+ */
+export async function notifyAdmins(subject: string, lines: string[]): Promise<boolean> {
   const to = adminEmails();
-  if (to.length === 0 || !emailConfigured()) return;
+  if (to.length === 0 || !(await emailReady())) {
+    // Следа без лични данни: аларма, която не е тръгнала, не бива да е тиха (Стражата).
+    console.error(`[admin-alert] не е изпратена: ${to.length === 0 ? 'празен ADMIN_EMAILS' : 'Brevo не е настроен'}`);
+    return false;
+  }
   const base = process.env.PUBLIC_BASE_URL ?? 'http://localhost:3000';
   const { subject: s, html } = adminAlertEmail({ subject, lines, adminUrl: `${base}/bg/admin` });
+  let sent = false;
   for (const address of to) {
-    await sendEmail({ to: address, subject: s, html, tag: 'admin-alert' }).catch(() => false);
+    if (await sendEmail({ to: address, subject: s, html, tag: 'admin-alert' }).catch(() => false)) sent = true;
   }
+  // Отказ от Brevo (напр. изчерпана дневна квота) — също със следа (Стражата).
+  if (!sent) console.error('[admin-alert] не е изпратена: Brevo отказа писмото');
+  return sent;
 }

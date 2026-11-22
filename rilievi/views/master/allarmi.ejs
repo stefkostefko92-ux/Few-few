@@ -21,7 +21,7 @@
   <section class="panel" aria-labelledby="h-allarmi-cosa">
     <h2 class="section__title" id="h-allarmi-cosa"><%= t(a + 'cosaTitolo') %></h2>
     <ul>
-      <% for (const k of ['manutenzione', 'pagamento', 'contestazione', 'rimborso', 'posta', 'segnalazione']) { %><li><%= t(a + 'cosa.' + k) %></li>
+      <% for (const k of ['manutenzione', 'pagamento', 'contestazione', 'rimborso', 'rimborsoDopoRifiuto', 'posta', 'segnalazione']) { %><li><%= t(a + 'cosa.' + k) %></li>
       <% } %>
     </ul>
     <p class="muted"><%= t(a + 'senzaDati') %></p>

@@ -212,7 +212,14 @@ describe('the webhook of Revolut', () => {
     webhook.rifiutaDispute = true;
     const due = await master.browser.submit(CONSOLE, `${CONSOLE}/webhook`, {});
     assert.equal(due.status, 303);
-    assert.deepEqual(webhook.eventi, ['ORDER_COMPLETED', 'ORDER_CANCELLED', 'ORDER_FAILED']);
+    // The refused payment of a refund (and of a payment) comes by the webhook, not only by the maintenance.
+    assert.deepEqual(webhook.eventi, [
+      'ORDER_COMPLETED',
+      'ORDER_CANCELLED',
+      'ORDER_FAILED',
+      'ORDER_PAYMENT_DECLINED',
+      'ORDER_PAYMENT_FAILED',
+    ]);
     const pagina = await master.browser.get(due.location, HTML);
     assert.match(pagina.body, /senza gli avvisi delle contestazioni/);
     webhook.rifiutaDispute = false;

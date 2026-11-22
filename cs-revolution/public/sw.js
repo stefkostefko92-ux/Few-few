@@ -19,6 +19,7 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;      // don't touch cross-origin (fonts, ipapi, etc.)
   if (url.pathname.startsWith('/api/')) return;          // never cache API / live data / SSE
+  if (url.pathname.startsWith('/admin')) return;         // админ панелът: винаги от мрежата, нищо в кеша
 
   const isAsset = /\.(?:js|css|woff2?|png|jpg|jpeg|webp|svg|ico|xml|txt|json)$/i.test(url.pathname) || url.pathname.startsWith('/assets/');
 

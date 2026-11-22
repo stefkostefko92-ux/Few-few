@@ -25,6 +25,8 @@ import {
   PEPPOL_NO_RECEIVER,
   SeriesExhausted,
   sellerOf,
+  lockForIssue,
+  withPrecedingDates,
 } from './issue-parts.js';
 import { ID } from '../ids.js';
 import { deductAdvance } from './advance.js';
@@ -106,9 +108,7 @@ export async function issueInTx(
 ): Promise<IssueResult> {
   const { deadlineDays, requireBankAccount, signature } = settings;
   const profile = options.peppol ? 'peppol' : settings.profile;
-  const orgs = await tx.$queryRaw<Array<{ id: string }>>`
-      SELECT "id" FROM "Organization" WHERE "id" = ${access.organizationId} FOR UPDATE`;
-  if (orgs.length !== 1) throw new Error('Фирмата не съществува');
+  await lockForIssue(tx, access.organizationId, options.replaces?.documentId);
   await recheckAccess(tx, access, actorId);
   const org = await tx.organization.findUniqueOrThrow({ where: { id: access.organizationId } });
 
@@ -125,7 +125,11 @@ export async function issueInTx(
     : request;
   const { seriesId: _series, ...rest } = effective;
   // „5“ и „0000000005“ са един и същ номер — в XML-а и във връзката отива десетразрядният.
-  const precedingInvoices = rest.precedingInvoices.map(normalizePreceding);
+  const precedingInvoices = await withPrecedingDates(
+    tx,
+    org.id,
+    rest.precedingInvoices.map(normalizePreceding),
+  );
   // Датата на данъчното събитие е реквизит (чл. 114, ал. 1, т. 10): без нея — датата на издаване, и
   // в XML-а (BT-7), за да не се разминава с PDF-а.
   const taxPointDate = rest.taxPointDate ?? rest.issueDate;

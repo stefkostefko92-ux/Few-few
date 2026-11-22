@@ -113,6 +113,41 @@ export function audit(skills, corpus) {
   return { fails, notes };
 }
 
+// ── Бюджетът на списъка с умения (19.11.2026) ────────────────────────────────────────────────────────
+// Claude Code слага в контекста имената и описанията на всички умения, но ги реже до дял от контекстния прозорец
+// (`skillListingBudgetFraction`, по подразбиране 0.01); при препълване маха описанията на най-рядко ползваните —
+// тогава те не се задействат сами (https://code.claude.com/docs/en/skills.md, „Skill descriptions are cut short“).
+// Измерено в облачната сесия (claude --debug-file, 19.11.2026): „Skill listing over budget: 101 skills, 50973 chars >
+// 30000 budget“ — т.е. 1% = 30 000 знака при модела на сесията; без описание останаха stripe-payment, revolut-payment,
+// wcag-audit, systematic-debugging и още 13 наши. Вградените и синхронизираните от акаунта умения (~21 000 знака) делят
+// същия бюджет, затова нашите имат право най-много на SHARE от него.
+export const CHARS_PER_PERCENT = 30000;
+export const OUR_SHARE = 0.6;
+export const DESC_CAP = 1536;
+
+/** Знаците, които нашите умения заемат в списъка (описание + when_to_use, таван 1536; ръчните не се броят). */
+export function listingChars(dir = SKILLS) {
+  let chars = 0, listed = 0;
+  for (const f of readdirSync(dir).filter((x) => existsSync(join(dir, x, "SKILL.md")))) {
+    const { fm } = parseFrontmatter(readFileSync(join(dir, f, "SKILL.md"), "utf8")) || { fm: {} };
+    if (String(fm["disable-model-invocation"]) === "true") continue;
+    const text = `${fm.description || ""} ${fm.when_to_use || ""}`.replace(/\s+/g, " ").trim();
+    chars += Math.min(DESC_CAP, text.length) + f.length + 4;
+    listed++;
+  }
+  return { chars, listed };
+}
+
+/** Бюджетът по настройките на проекта → {fraction, budget, ours, limit, ok}. */
+export function listingBudget(settingsFile = join(ROOT, ".claude", "settings.json"), dir = SKILLS) {
+  let fraction = 0.01;
+  try { const f = Number(JSON.parse(readFileSync(settingsFile, "utf8")).skillListingBudgetFraction); if (f > 0 && f <= 1) fraction = f; } catch { /* по подразбиране */ }
+  const budget = Math.round(CHARS_PER_PERCENT * fraction * 100);
+  const { chars, listed } = listingChars(dir);
+  const limit = Math.round(budget * OUR_SHARE);
+  return { fraction, budget, ours: chars, listed, limit, ok: chars <= limit };
+}
+
 export function loadSkills(dir = SKILLS) {
   return readdirSync(dir).filter((f) => statSync(join(dir, f)).isDirectory())
     .filter((f) => existsSync(join(dir, f, "SKILL.md")))
@@ -136,5 +171,10 @@ if (isMain(import.meta.url)) {
   console.log(`  ДОКЛАД (не гейтва): застъпване между описания — лексикален проксѝ, НЕ симулация на`);
   console.log(`  реалното задействане на Claude; то не е наблюдаемо оттук.`);
   console.log(`  ${fails.length} гейтващи · ${notes.length} застъпвания за човешко око\n`);
+  const b = listingBudget();
+  console.log(`  ${b.ok ? "\x1b[32m✓\x1b[0m" : "\x1b[31m✗\x1b[0m"} бюджет на списъка: нашите ${b.listed} умения = ${b.ours} знака · таван за тях ${b.limit} ` +
+    `(${Math.round(OUR_SHARE * 100)}% от ${b.budget} при skillListingBudgetFraction ${b.fraction})` +
+    (b.ok ? "" : " — описанията на най-рядко ползваните ще се режат и те няма да се задействат сами; вдигни skillListingBudgetFraction или съкрати описанията") + "\n");
+  if (!b.ok) fails.push({ kind: "бюджет", name: "*", msg: "списъкът с умения не се побира" });
   process.exit(CHECK && fails.length ? 1 : 0);
 }

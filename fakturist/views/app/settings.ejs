@@ -7,6 +7,38 @@
 <h1><%= t('app.settings.title') %></h1>
 <% if (saved) { %><p class="ok" role="status"><%= t('app.settings.saved.' + saved) %></p><% } %>
 
+<section aria-labelledby="h-profile" class="stack wide-ish">
+  <h2 id="h-profile"><%= t('app.settings.profile.title') %></h2>
+  <p class="muted"><%= t('app.settings.profile.intro') %></p>
+  <% if (locals.profileError) { %><p class="error" role="alert"><%= tOr('app.settings.profile.errors.' + profileError, t('auth.errors.invalid')) %></p><% } %>
+  <% if (locals.canEditProfile) { %>
+  <form method="post" action="/app/o/<%= org.id %>/nastroyki/danni" class="panel stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label><%= t('app.settings.profile.legalName') %><input name="legalName" value="<%= org.legalName %>" minlength="2" maxlength="200" required autocomplete="organization"></label>
+    <label><%= t('app.settings.profile.eik') %><input value="<%= org.eik || '' %>" readonly><span class="hint"><%= t('app.settings.profile.eikHint') %></span></label>
+    <label><%= t('app.settings.profile.vatNumber') %><input name="vatNumber" value="<%= org.vatNumber || '' %>" maxlength="14" autocomplete="off"><span class="hint"><%= t('app.settings.profile.vatHint', { eik: org.eik || '' }) %></span></label>
+    <label><%= t('app.settings.profile.addressStreet') %><input name="addressStreet" value="<%= org.addressStreet %>" minlength="3" maxlength="200" required autocomplete="street-address"></label>
+    <div class="grid-2">
+      <label><%= t('app.settings.profile.addressCity') %><input name="addressCity" value="<%= org.addressCity %>" minlength="2" maxlength="100" required autocomplete="address-level2"></label>
+      <label><%= t('app.settings.profile.postalCode') %><input name="postalCode" value="<%= org.postalCode %>" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required autocomplete="postal-code"></label>
+    </div>
+    <label><%= t('app.settings.profile.iban') %><input name="iban" value="<%= org.iban || '' %>" maxlength="34" autocomplete="off" spellcheck="false"></label>
+    <div class="grid-2">
+      <label><%= t('app.settings.profile.bic') %><input name="bic" value="<%= org.bic || '' %>" maxlength="11" autocomplete="off" spellcheck="false"></label>
+      <label><%= t('app.settings.profile.bankName') %><input name="bankName" value="<%= org.bankName || '' %>" maxlength="120" autocomplete="off"></label>
+    </div>
+    <div class="grid-2">
+      <label><%= t('app.settings.profile.email') %><input type="email" name="email" value="<%= org.email || '' %>" maxlength="254" autocomplete="email"></label>
+      <label><%= t('app.settings.profile.phone') %><input type="tel" name="phone" value="<%= org.phone || '' %>" maxlength="30" autocomplete="tel"></label>
+    </div>
+    <p class="hint"><%= t('app.settings.profile.issuedNote') %></p>
+    <div><button type="submit"><%= t('app.settings.profile.save') %></button></div>
+  </form>
+  <% } else { %>
+  <p class="callout"><%= t('app.settings.profile.ownerOnly') %></p>
+  <% } %>
+</section>
+
 <section aria-labelledby="h-pdf" class="stack wide-ish">
   <h2 id="h-pdf"><%= t('app.settings.pdfTitle') %></h2>
   <p class="muted"><%= t('app.settings.pdfIntro') %></p>
@@ -22,7 +54,7 @@
     <% if (errors.logo) { %><p class="error" role="alert"><%= err('logo') %></p><% } %>
     <form method="post" action="/app/o/<%= org.id %>/nastroyki/logo" enctype="multipart/form-data" class="stack">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <label><%= hasLogo ? t('app.settings.replaceLogo') : t('app.settings.uploadLogo') %><input type="file" name="logo" accept="image/png,image/jpeg,image/webp" required aria-describedby="logo-help"><span class="hint" id="logo-help"><%= t('app.settings.logoHelp') %></span></label>
+      <%- include('../partials/file-pick', { name: 'logo', accept: 'image/png,image/jpeg,image/webp', label: hasLogo ? t('app.settings.replaceLogo') : t('app.settings.uploadLogo'), hint: t('app.settings.logoHelp'), hintId: 'logo-help' }) %>
       <button type="submit"><%= t('app.settings.uploadButton') %></button>
     </form>
     <% if (hasLogo) { %>

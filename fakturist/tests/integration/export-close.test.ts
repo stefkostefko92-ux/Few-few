@@ -199,12 +199,62 @@ test('закриване: грешна парола, единствен собс
   });
   assert.ok(blocked.headers.get('location')?.endsWith('err=close.transferFirst'));
   await prisma.membership.delete({ where: { id: membership.id } });
+  // Единственият човек във фирмата: първо прекратяване — иначе фирмата остава без никого (правен преглед).
+  const alone = await http.post(owner, '/app/sigurnost/zakrii', {
+    password: PASSWORD,
+    confirm: 'on',
+  });
+  assert.ok(alone.headers.get('location')?.endsWith('err=close.terminateFirst'));
+  await prisma.organization.update({
+    where: { id: orgId },
+    data: { terminatedAt: new Date(), purgeAfter: new Date(Date.now() + 30 * 86_400_000) },
+  });
+
+  // Следи с имейла: изпратено писмо, приета и чакаща покана (член и собственост) — заличават се при
+  // закриването (политиката: „заличава името и имейла ви веднага“).
+  const email = 'owner@example.test';
+  await prisma.notification.create({
+    data: { kind: 'x', toEmail: email, payload: {}, status: 'SENT', sentAt: new Date() },
+  });
+  const later = new Date(Date.now() + 86_400_000);
+  await prisma.memberInvite.create({
+    data: {
+      organizationId: orgId,
+      email,
+      role: 'VIEWER',
+      tokenHash: 'e'.repeat(64),
+      expiresAt: later,
+    },
+  });
+  await prisma.transferInvite.create({
+    data: { organizationId: orgId, email, tokenHash: 'f'.repeat(64), expiresAt: later },
+  });
+  await prisma.memberInvite.create({
+    data: {
+      organizationId: orgId,
+      email,
+      role: 'ADMIN',
+      tokenHash: 'g'.repeat(64),
+      expiresAt: later,
+      acceptedAt: new Date(),
+      acceptedById: ownerId,
+    },
+  });
 
   const closed = await http.post(owner, '/app/sigurnost/zakrii', {
     password: PASSWORD,
     confirm: 'on',
   });
   assert.equal(closed.status, 303);
+  assert.equal(await prisma.notification.count({ where: { toEmail: email } }), 0);
+  assert.equal(await prisma.memberInvite.count({ where: { email } }), 0);
+  assert.equal(await prisma.transferInvite.count({ where: { email } }), 0);
+  assert.equal(
+    (await prisma.memberInvite.count({ where: { revokedAt: null, acceptedAt: null } })) +
+      (await prisma.transferInvite.count({ where: { revokedAt: null, acceptedAt: null } })),
+    0,
+    'чакащите покани до закрития имейл са отменени',
+  );
   // Бисквитката „доверено устройство“ се маха заедно със сесията.
   assert.ok(
     closed.headers

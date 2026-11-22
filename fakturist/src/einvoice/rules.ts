@@ -229,6 +229,20 @@ export function validateDocument(
     }
   }
 
+  // Намалението е известие (чл. 115 ЗДДС): фактура с отрицателна обща сума би влязла в дневника за
+  // продажбите като продажба с минус (код 01), не като кредитно известие (03) — Разбивача, 16.11.2026.
+  if (
+    ['380', '384', '386', '383'].includes(input.typeCode) &&
+    isNegative(calc.totals.taxExclusive)
+  ) {
+    fail(
+      'BG-11',
+      'lines',
+      'Сумата на документа не може да е отрицателна — намалението се прави с кредитно известие (чл. 115 ЗДДС).',
+      'The document total cannot be negative — a reduction is made with a credit note (Art. 115 of the VAT Act).',
+    );
+  }
+
   validateBg(input, categories, exemption, options, fail);
 
   return issues;

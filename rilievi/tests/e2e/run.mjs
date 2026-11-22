@@ -275,6 +275,10 @@ try {
       ['contracts', '/master/contratti'],
       ['verify', '/master/verifica'],
       ['notices', '/master/comunicazioni'],
+      // The visual check of 21 November 2026: the registers' wide tables scroll inside their box and take
+      // the keyboard focus (axe scrollable-region-focusable); the QR label page has the portal's fields.
+      ['registers', '/master/registri'],
+      ['label', `${new URL(sheetUrl).pathname}/etichetta`],
       ['requests', '/richieste?stato=ALL'],
       ['account', '/account'],
     ]) {

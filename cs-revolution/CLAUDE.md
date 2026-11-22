@@ -106,8 +106,27 @@ Deploy, live-patch, and troubleshooting are documented in
   (NOT the generic `/run/php/php-fpm.sock` symlink — it points at another pool).
 - The **`api/*.php` files must be deployed** alongside `dist/` — a static-only deploy
   leaves every `/api/*.php` returning `File not found.`
-- Admin token = `CS_ADMIN_TOKEN` in the FPM pool env; also the admin-panel password
-  and the `X-CS-Token` header.
+- **Admin = `/admin/`** (own Vite entry `admin/index.html` → `src/admin-main.jsx` →
+  `src/AdminPanel.jsx`; Ctrl+Shift+A on the site just navigates there). Login is email +
+  password (Argon2id) + 6-digit TOTP code (or a one-time recovery code) via
+  `api/admin-auth.php`; the session is the `__Host-cs_admin` cookie (HttpOnly, Secure,
+  SameSite=Strict, 30 min idle / 8 h absolute, stored server-side as sha256 in `api/logs/`).
+  Every admin request (GET too) needs `X-CS-Admin: 1` + same Origin — SameSite=Strict does not
+  stop sibling `*.carbonstealth.eu` subdomains. No cookie → 401, cookie without header → 403.
+  Login attempts are booked before checking (one lock), so parallel guesses get ≤5 tries.
+  State (`api/logs/admin_*.json`) is written atomically (tmp + rename, `*.lock`); recovery codes
+  only work while the state carries their anchor (written by `cs-admin setup|recovery`) — lost or
+  corrupt state stops them instead of reviving used ones. The SSE ticket is bound to the session
+  (logout/revoke ends the stream). `/admin/` has its own strict CSP in nginx (`script-src 'self'`,
+  `frame-ancestors 'none'`, no ad domains); the panel sends visitor IPs to no third party.
+  Library: `api/_admin.php` (denied by nginx). Credentials live **only** on the server in
+  `/etc/carbonstealth/admin.json` (root:www-data 0640), written by the root CLI
+  `sudo cs-admin setup|password|recovery|revoke|status` (`server/cs-admin.php`, installed by
+  `deploy-all.sh`). The password is typed by the owner on the server — never in chat, the
+  repo or the archive. The old shared `CS_ADMIN_TOKEN` / `X-CS-Token` is **removed**.
+- Auth tests (acceptance criteria К1–К13 in the header): `php tests/admin-auth.test.php`
+  — part of this product's quality gate, together with `php -l api/*.php server/*.php`
+  and the build.
 - SMTP goes through Gmail via `api/smtp-local.php` (git-ignored) + the dependency-free
   `api/smtp-native.php`. Needs a Google **App Password**. Hetzner blocks port 25.
 - Users often want **no-download live patches**: apply via pasted shell commands
@@ -135,7 +154,8 @@ JSON-LD + the HowTo schema in `App.jsx` + `llms.txt` — change them everywhere 
 and bump the sitemap `lastmod` of every touched page.
 
 ## Hard rules
-- Secrets (SMTP password, admin token) **never** in the repo — env / `smtp-local.php` only.
+- Secrets (SMTP password, admin password / TOTP secret / recovery codes) **never** in the
+  repo — `smtp-local.php` and `/etc/carbonstealth/admin.json` on the server only.
 - No fake reviews, stats, clients, or testimonials — only real, verifiable facts.
 - Develop on the designated feature branch; commit messages end with the required
   `Co-Authored-By` + `Claude-Session` footer.

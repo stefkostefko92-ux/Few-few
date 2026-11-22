@@ -1,5 +1,5 @@
 <%- include('../partials/app-head', { title: template ? template.name : t('app.recurring.newTitle') }) %>
-<% const day = (d) => d ? d.toISOString().slice(0, 10).split('-').reverse().join('.') : '—'; %>
+<% const day = (d) => d ? bgDate(d) : '—'; %>
 <p><a href="/app/o/<%= orgId %>/povtaryashti">← <%= t('app.recurring.title') %></a></p>
 <h1><%= template ? template.name : t('app.recurring.newTitle') %></h1>
 <% if (doc) { %><p class="muted"><%= t('app.recurring.fromDocument', { number: doc.number }) %></p><% } %>
