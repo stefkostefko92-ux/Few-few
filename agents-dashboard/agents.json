@@ -6898,7 +6898,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 298
+        "lessons": 301
       },
       "evolution": [
         {
@@ -7314,9 +7314,20 @@
           "date": "2026-11-22",
           "event": "v26.9 — учене",
           "detail": "Научи: carry_env в autodeploy.sh пренася .env от /opt/few-few/shared/<proj>/.env (после curren… (+23 още)"
+        },
+        {
+          "version": "27.2.0",
+          "date": "2026-11-22",
+          "event": "v27.2 — учене",
+          "detail": "Научи: proxy_cache_path в nginx създава само последната папка от пътя, не родителите — без род… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-22",
+          "type": "learning",
+          "summary": "Научи: „proxy_cache_path в nginx създава само последната папка от пътя, не родителите — без род…\" (+2 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-22",
           "type": "learning",
