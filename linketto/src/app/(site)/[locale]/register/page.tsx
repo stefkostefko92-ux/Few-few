@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { LxPage } from '@/components/landing/LxPage';
@@ -10,6 +11,22 @@ import { registerAction } from '@/app/actions/auth';
 import { isValidSlug, normalizeSlug } from '@/lib/slug';
 import { profileUrl } from '@/lib/profile-url';
 import { PASSWORD_MIN } from '@/lib/password-policy';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'auth' });
+  // noindex (не Disallow в robots.txt) — ботът трябва да прочете страницата, за да го види;
+  // вариантите с ?ref=/?handle= се сгъват към чистия адрес.
+  return {
+    title: t('registerTitle'),
+    robots: { index: false, follow: true },
+    alternates: { canonical: `/${locale}/register` },
+  };
+}
 
 export default async function RegisterPage({
   params,

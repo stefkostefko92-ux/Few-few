@@ -302,7 +302,7 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
     const { order, attempt } = claim;
     // Б4: изцяло ползван период (удръжката = цялата сума) — договорът приключва без пари обратно.
     if (refundAmount(order) === 0) {
-      await finalizeRefund(order.id);
+      await finalizeRefund(order.id, null);
       return 'refunded';
     }
     // Revolut не прие връщането (изричен 4XX или отказано плащане) → поръчката е пак платена.
@@ -347,11 +347,17 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
       return 'stuck';
     }
     const refund = { id: outcome.id, state: outcome.state };
+    // Записът е условен по ТОЗИ опит (Н2, червен екип): закъснял отговор на стар опит не
+    // презаписва refund от по-нов опит. Повтор на заседнал опит със същия ключ връща
+    // същия refund — ако вече е записан, това не е разминаване.
     const recorded = await db.planOrder.updateMany({
-      where: { id: order.id, state: 'refund_pending' },
+      where: { id: order.id, state: 'refund_pending', refundOrderId: null, refundAttempts: attempt },
       data: { refundOrderId: refund.id },
     });
-    if (recorded.count !== 1) {
+    const alreadyRecorded =
+      recorded.count !== 1 &&
+      (await db.planOrder.count({ where: { id: order.id, state: 'refund_pending', refundOrderId: refund.id } })) === 1;
+    if (recorded.count !== 1 && !alreadyRecorded) {
       // Revolut прие refund-а, а поръчката вече не е refund_pending (паралелна
       // заявка я е върнала в „платена“) — парите може да се върнат, без това да се
       // види у нас. Не се поправя автоматично: човек сверява в Revolut Business.
@@ -366,12 +372,15 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
       throw new Error(`revolut: refund ${refund.id} без запис у нас (поръчка ${order.id})`);
     }
     if (refund.state === 'completed') {
-      if (!refundAmountMatches(raw, refundAmount(order))) {
-        await alertRefundMismatch(order, refund.id);
-        return 'requested';
-      }
-      await finalizeRefund(order.id);
-      return 'refunded';
+      // Отговорът на POST не стига (Н3, червен екип): приключва се само по живо четене на
+      // refund поръчката — type refund + state completed + точна сума + EUR, както от
+      // уебхука/cron-а. Временна грешка при четенето → „в ход“ без аларма (cron-ът довършва).
+      const settled = await settlePlanRefund({ id: order.id }).catch((error: unknown) => {
+        deps.log(`[plan-order] ${order.id}: живото четене на refund ${refund.id} не мина (${String(error)}) — довършва cron-ът`);
+        return 'pending' as const;
+      });
+      if (settled === 'refunded') return 'refunded';
+      if (settled === 'failed') throw new Error(`revolut: refund declined (${refund.id})`);
     }
     return 'requested';
   }
@@ -405,15 +414,19 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
         await alertRefundMismatch(order, order.refundOrderId);
         return 'pending';
       }
-      await finalizeRefund(order.id);
-      return 'refunded';
+      if (await finalizeRefund(order.id, order.refundOrderId)) return 'refunded';
+      // Паралелно уреждане на същия refund вече го е приключило → същият изход; иначе остаряло.
+      const now = await db.planOrder.findUnique({ where: { id: order.id }, select: { state: true, refundOrderId: true } });
+      return now?.state === 'refunded' && now.refundOrderId === order.refundOrderId ? 'refunded' : 'noop';
     }
     if (live.state === 'failed') {
-      // Парите НЕ са върнати → поръчката е пак платена; правото не се пипа.
-      await db.planOrder.updateMany({
-        where: { id: order.id, state: 'refund_pending' },
+      // Парите НЕ са върнати → поръчката е пак платена; правото не се пипа. Условно по
+      // ТОЗИ refund (Н1, червен екип): остаряло „failed“ за стар refund не изтрива по-нов.
+      const reverted = await db.planOrder.updateMany({
+        where: { id: order.id, state: 'refund_pending', refundOrderId: order.refundOrderId },
         data: { state: order.applied ? 'completed' : 'conflict', refundOrderId: null },
       });
+      if (reverted.count !== 1) return 'noop';
       const why = live.declineReason ? ` (${live.declineReason})` : '';
       deps.log(`[plan-order] ${order.id}: refund при Revolut е отказан${why} — поръчката е пак платена`);
       await deps.notifyAdmins('Връщането на пари е неуспешно', [
@@ -583,16 +596,22 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
    * R-limits) и бонусът по нея се сторнира (може да остави отрицателен баланс —
    * правилото от ОУ). Неприложена (conflict) поръчка не пипа плана.
    */
-  async function finalizeRefund(planOrderId: string): Promise<void> {
+  /**
+   * Приключва връщането по КОНКРЕТНИЯ refund (`refundOrderId`; null = без пари обратно,
+   * изцяло ползван период). Връща true, ако тази извикване е приключило поръчката.
+   */
+  async function finalizeRefund(planOrderId: string, refundOrderId: string | null): Promise<boolean> {
     const order = await db.planOrder.findUnique({ where: { id: planOrderId } });
-    if (!order || order.state !== 'refund_pending') return;
+    if (!order || order.state !== 'refund_pending' || order.refundOrderId !== refundOrderId) return false;
     let planNotRestored = false;
+    let claimedHere = false;
     const restoredPlan = await db.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${order.userId} FOR UPDATE`;
       const claimed = await tx.planOrder.updateMany({
-        where: { id: order.id, state: 'refund_pending' },
+        where: { id: order.id, state: 'refund_pending', refundOrderId },
         data: { state: 'refunded', refundedAt: new Date() },
       });
+      claimedHere = claimed.count === 1;
       if (claimed.count !== 1 || !order.applied) return false;
       // Защитна мрежа: ако въпреки блокировката има по-нова приложена поръчка,
       // снимката е остаряла — планът не се пипа, админът решава ръчно.
@@ -638,6 +657,7 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
         ])
         .catch(() => undefined);
     }
+    return claimedHere;
   }
 
   /**

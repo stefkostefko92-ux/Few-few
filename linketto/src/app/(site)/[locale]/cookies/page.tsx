@@ -15,7 +15,8 @@ export async function generateMetadata({
   const tSeo = await getTranslations({ locale, namespace: 'seo' });
   return pageMetadata(locale as Locale, '/cookies', {
     title: t('cookiesTitle'),
-    description: tSeo('metaDescription'),
+    description: tSeo('cookiesDescription'),
+    keywords: tSeo('keywords').split(', '),
   });
 }
 

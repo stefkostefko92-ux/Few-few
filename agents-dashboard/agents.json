@@ -2033,28 +2033,17 @@
           "detail": "Научи: sharp 0.35 с limitInputPixels не пази паметта при прогресивен JPEG (208 Mpx, 4:4:4, фай… (+1 още)"
         },
         {
-          "version": "67.2.0",
-          "date": "2026-11-22",
-          "event": "v67.2 — учене",
-          "detail": "Научи: Prisma cursor-пагинацията генерира \"id >= (SELECT id WHERE id = cursor) AND <филтър> OF… (+111 още)"
-        },
-        {
           "version": "67.3.0",
           "date": "2026-11-22",
           "event": "v67.3 — учене",
-          "detail": "Научи: next-intl 3.26 getTranslations({locale}) подава locale-а като requestLocale на getReque…"
+          "detail": "Научи: next-intl 3.26 getTranslations({locale}) подава locale-а като requestLocale на getReque… (+112 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-22",
           "type": "learning",
-          "summary": "Научи: „next-intl 3.26 getTranslations({locale}) подава locale-а като requestLocale на getReque…\""
-        },
-        {
-          "date": "2026-11-22",
-          "type": "learning",
-          "summary": "Научи: „Prisma cursor-пагинацията генерира \"id >= (SELECT id WHERE id = cursor) AND <филтър> OF…\" (+111 още) · 16 в карантина"
+          "summary": "Научи: „next-intl 3.26 getTranslations({locale}) подава locale-а като requestLocale на getReque…\" (+112 още) · 16 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -4331,22 +4320,10 @@
           "detail": "Научи: zabobovdol layout.tsx задава alternates.canonical=SITE.url за всички страници; page.tsx… (+22 още)"
         },
         {
-          "version": "23.4.0",
-          "date": "2026-11-22",
-          "event": "v23.4 — учене",
-          "detail": "Научи: WebFetch връща само визуалния текст на страницата, без head и JSON-LD; canonical, hrefl… (+3 още)"
-        },
-        {
-          "version": "23.5.0",
-          "date": "2026-11-22",
-          "event": "v23.5 — учене",
-          "detail": "Научи: Next.js App Router: ключ `keywords: undefined` в Metadata на страница презаписва наслед…"
-        },
-        {
           "version": "24.1.0",
           "date": "2026-11-22",
           "event": "v24.1 — учене",
-          "detail": "Научи: Google казва, че за поява в Google Search не са нужни нови машинно четими файлове, AI т… (+5 още)"
+          "detail": "Научи: Google казва, че за поява в Google Search не са нужни нови машинно четими файлове, AI т… (+10 още)"
         }
       ],
       "activity": [
@@ -4358,17 +4335,7 @@
         {
           "date": "2026-11-22",
           "type": "learning",
-          "summary": "Научи: „Google казва, че за поява в Google Search не са нужни нови машинно четими файлове, AI т…\" (+5 още)"
-        },
-        {
-          "date": "2026-11-22",
-          "type": "learning",
-          "summary": "Научи: „Next.js App Router: ключ `keywords: undefined` в Metadata на страница презаписва наслед…\""
-        },
-        {
-          "date": "2026-11-22",
-          "type": "learning",
-          "summary": "Научи: „WebFetch връща само визуалния текст на страницата, без head и JSON-LD; canonical, hrefl…\" (+3 още) · 2 в карантина"
+          "summary": "Научи: „Google казва, че за поява в Google Search не са нужни нови машинно четими файлове, AI т…\" (+10 още) · 2 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -4972,39 +4939,17 @@
           "detail": "Научи: Когато Bash откаже prelaunch-audit за одобрение, не оценявай на око; дай статичен прегл… (+1 още)"
         },
         {
-          "version": "20.9.0",
-          "date": "2026-11-22",
-          "event": "v20.9 — учене",
-          "detail": "Научи: Фактурист (Express/EJS, production): `.bar` в app.css сменя броя редове при зареждане н… (+4 още)"
-        },
-        {
-          "version": "21.0.0",
-          "date": "2026-11-22",
-          "event": "v21.0 — учене",
-          "detail": "Научи: guard-self на хука блокира bash команда с аргумент '/' за tr (чете го като корен на фай…"
-        },
-        {
           "version": "21.1.0",
           "date": "2026-11-22",
           "event": "v21.1 — учене",
-          "detail": "Научи: prelaunch-audit дава фалшив съвет за render-blocking на Next.js polyfills-*.js, защото …"
+          "detail": "Научи: prelaunch-audit дава фалшив съвет за render-blocking на Next.js polyfills-*.js, защото … (+6 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-22",
           "type": "learning",
-          "summary": "Научи: „prelaunch-audit дава фалшив съвет за render-blocking на Next.js polyfills-*.js, защото …\" · 1 в карантина"
-        },
-        {
-          "date": "2026-11-22",
-          "type": "learning",
-          "summary": "Научи: „guard-self на хука блокира bash команда с аргумент '/' за tr (чете го като корен на фай…\" · 3 в карантина"
-        },
-        {
-          "date": "2026-11-22",
-          "type": "learning",
-          "summary": "Научи: „Фактурист (Express/EJS, production): `.bar` в app.css сменя броя редове при зареждане н…\" (+4 още)"
+          "summary": "Научи: „prelaunch-audit дава фалшив съвет за render-blocking на Next.js polyfills-*.js, защото …\" (+6 още) · 4 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -5619,28 +5564,17 @@
           "detail": "Научи: В linketto идентификацията на дружеството живее само в messages/*.json (legal.privacyBo… (+34 още)"
         },
         {
-          "version": "31.9.0",
-          "date": "2026-11-22",
-          "event": "v31.9 — учене",
-          "detail": "Научи: В linketto началната страница обгражда home.manifestoQuote с кавички по езика (quoteMar… (+38 още)"
-        },
-        {
           "version": "32.2.0",
           "date": "2026-11-22",
           "event": "v32.2 — учене",
-          "detail": "Научи: В гръцки ';' е въпросителен знак, затова ICU шаблон с ';' като разделител (напр. \"{us};… (+2 още)"
+          "detail": "Научи: В гръцки ';' е въпросителен знак, затова ICU шаблон с ';' като разделител (напр. \"{us};… (+41 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-22",
           "type": "learning",
-          "summary": "Научи: „В гръцки ';' е въпросителен знак, затова ICU шаблон с ';' като разделител (напр. \"{us};…\" (+2 още)"
-        },
-        {
-          "date": "2026-11-22",
-          "type": "learning",
-          "summary": "Научи: „В linketto началната страница обгражда home.manifestoQuote с кавички по езика (quoteMar…\" (+38 още) · 4 в карантина"
+          "summary": "Научи: „В гръцки ';' е въпросителен знак, затова ICU шаблон с ';' като разделител (напр. \"{us};…\" (+41 още) · 4 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -7326,39 +7260,17 @@
           "detail": "Научи: www.openssh.com/releasenotes.html отговаря с 301 от OpenBSD httpd, затова curl без -L в… (+37 още)"
         },
         {
-          "version": "26.9.0",
-          "date": "2026-11-22",
-          "event": "v26.9 — учене",
-          "detail": "Научи: carry_env в autodeploy.sh пренася .env от /opt/few-few/shared/<proj>/.env (после curren… (+23 още)"
-        },
-        {
-          "version": "27.2.0",
-          "date": "2026-11-22",
-          "event": "v27.2 — учене",
-          "detail": "Научи: proxy_cache_path в nginx създава само последната папка от пътя, не родителите — без род… (+2 още)"
-        },
-        {
           "version": "27.3.0",
           "date": "2026-11-22",
           "event": "v27.3 — учене",
-          "detail": "Научи: GNU sed -i без --follow-symlinks подменя симлинка с обикновен файл, затова редакция на …"
+          "detail": "Научи: GNU sed -i без --follow-symlinks подменя симлинка с обикновен файл, затова редакция на … (+27 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-22",
           "type": "learning",
-          "summary": "Научи: „GNU sed -i без --follow-symlinks подменя симлинка с обикновен файл, затова редакция на …\""
-        },
-        {
-          "date": "2026-11-22",
-          "type": "learning",
-          "summary": "Научи: „proxy_cache_path в nginx създава само последната папка от пътя, не родителите — без род…\" (+2 още) · 1 в карантина"
-        },
-        {
-          "date": "2026-11-22",
-          "type": "learning",
-          "summary": "Научи: „carry_env в autodeploy.sh пренася .env от /opt/few-few/shared/<proj>/.env (после curren…\" (+23 още) · 6 в карантина"
+          "summary": "Научи: „GNU sed -i без --follow-symlinks подменя симлинка с обикновен файл, затова редакция на …\" (+27 още) · 7 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -16276,22 +16188,10 @@
           "detail": "Научи: guard-exfil DATA_FILE_SEND блокира curl с --data поле на име password/token дори към lo… (+2 още)"
         },
         {
-          "version": "31.6.0",
-          "date": "2026-11-22",
-          "event": "v31.6 — учене",
-          "detail": "Научи: Prisma пагинация с cursor+skip:1 прескача ред, когато редът-курсор излезе от where в съ… (+43 още)"
-        },
-        {
-          "version": "31.7.0",
-          "date": "2026-11-22",
-          "event": "v31.7 — учене",
-          "detail": "Научи: CAS преход по състояние (state=X) без идентификатора на конкретната външна операция (re…"
-        },
-        {
           "version": "31.8.0",
           "date": "2026-11-22",
           "event": "v31.8 — учене",
-          "detail": "Научи: CAS преход само по състояние (state=X) без id-то на конкретната външна операция позволя…"
+          "detail": "Научи: CAS преход само по състояние (state=X) без id-то на конкретната външна операция позволя… (+45 още)"
         },
         {
           "version": "32.0.0",
@@ -16309,17 +16209,7 @@
         {
           "date": "2026-11-22",
           "type": "learning",
-          "summary": "Научи: „CAS преход само по състояние (state=X) без id-то на конкретната външна операция позволя…\""
-        },
-        {
-          "date": "2026-11-22",
-          "type": "learning",
-          "summary": "Научи: „CAS преход по състояние (state=X) без идентификатора на конкретната външна операция (re…\""
-        },
-        {
-          "date": "2026-11-22",
-          "type": "learning",
-          "summary": "Научи: „Prisma пагинация с cursor+skip:1 прескача ред, когато редът-курсор излезе от where в съ…\" (+43 още) · 6 в карантина"
+          "summary": "Научи: „CAS преход само по състояние (state=X) без id-то на конкретната външна операция позволя…\" (+45 още) · 6 в карантина"
         },
         {
           "date": "2026-11-04",

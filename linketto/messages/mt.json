@@ -193,6 +193,27 @@
     "urlLabel": "URL / telefon / indirizz",
     "extra1Label": "URL App Store / Spotify",
     "extra2Label": "URL Google Play / Apple Music",
+    "field_url": "Link (https://…)",
+    "field_tip": "Link tal-ħlas (Revolut, PayPal, Ko-fi…)",
+    "field_video": "Link tal-vidjo (YouTube jew Vimeo)",
+    "field_phone": "Numru tat-telefon",
+    "field_address": "Indirizz jew post",
+    "field_spotify": "Link ta' Spotify",
+    "field_appleMusic": "Link ta' Apple Music",
+    "field_appStore": "Link tal-App Store",
+    "field_googlePlay": "Link ta' Google Play",
+    "field_appWeb": "Paġna web għall-apparati l-oħra (fakultattiv)",
+    "field_vcardPhone": "Telefon",
+    "field_vcardEmail": "Email",
+    "field_vcardOrg": "Kumpanija (fakultattiv)",
+    "kindHint_HEADER": "L-intestatura taqsam il-blokki f'sezzjonijiet — biżżejjed it-test.",
+    "kindHint_FORM": "Il-viżitaturi jiktbulek permezz tal-formola, u l-messaġġi tarahom fid-dashboard. Biżżejjed titlu.",
+    "kindHint_EMAIL": "Jiġbor abbonati għan-newsletter tiegħek; kull wieħed jikkonferma bl-email. Biżżejjed titlu.",
+    "kindHint_BOOKING": "Il-viżitaturi jibagħtu talba għal appuntament, li taraha fid-dashboard u timmarkaha bħala pproċessata. Biżżejjed titlu.",
+    "kindHint_MUSIC": "Imla mill-inqas wieħed — il-viżitatur jagħżel is-servizz tiegħu.",
+    "kindHint_APP": "Imla mill-inqas ħanut wieħed — nuru dak it-tajjeb skont it-telefon tal-viżitatur.",
+    "kindHint_VIDEO": "Il-vidjo jiddaħħal fil-profil u jitgħabba biss meta tikklikkja fuqu.",
+    "kindHint_VCARD": "Imla t-telefon u/jew l-email — il-viżitatur jissejvjahom fil-kuntatti tiegħu b'mess wieħed.",
     "addBlockHint": "L-intestatura u l-formola jeħtieġu biss titlu. Għal app, imla App Store u/jew Google Play. Għall-mużika — Spotify u/jew Apple Music.",
     "messagesSection": "Messaġġi mill-formola",
     "noMessages": "L-ebda messaġġi s'issa.",
@@ -521,7 +542,11 @@
   "seo": {
     "metaTitle": "Linketto — link in bio multilingwi: il-links tiegħek kollha, b'kull lingwa",
     "keywords": "Linketto, Carbon Stealth, share links, link in bio, alternattiva għal linktree, bio link, paġna link in bio, profil multilingwi, karta tan-negozju diġitali, bigħ prodotti diġitali, il-links kollha f'post wieħed",
-    "metaDescription": "Linketto huwa l-link in bio multilingwi: il-links tiegħek kollha f'post wieħed, bil-lingwa ta' kull viżitatur. Ospitat fl-UE, analitika bla cookies, mingħajr kummissjonijiet. Prodott ta' Carbon Stealth."
+    "metaDescription": "Linketto huwa l-link in bio multilingwi: il-links tiegħek kollha f'post wieħed, bil-lingwa ta' kull viżitatur. Ospitat fl-UE, analitika bla cookies, mingħajr kummissjonijiet. Prodott ta' Carbon Stealth.",
+    "privacyDescription": "Kif Linketto jipproċessa d-dejta personali tiegħek: biss dak li jeħtieġ is-servizz, ospitat fl-UE, l-ebda bejgħ ta' dejta u l-ebda cookies ta' traċċar.",
+    "termsDescription": "It-termini ta' Linketto: il-konklużjoni tal-kuntratt, pjanijiet u ħlasijiet, dritt ta' rtirar, kontenut u moderazzjoni, programm ta' stediniet.",
+    "cookiesDescription": "Linketto juża biss cookies strettament meħtieġa għad-dħul u l-għażla tal-lingwa. Il-viżitaturi tal-profili ma jirċievu l-ebda cookies.",
+    "profileDescription": "{name} fuq Linketto — il-links kollha f'post wieħed, bil-lingwa ta' kull viżitatur."
   },
   "report": {
     "title": "Irrapporta l-profil „{name}“",
@@ -668,7 +693,9 @@
     "ctaButton": "Ibda b'xejn",
     "plansNote": "Il-pjanijiet taż-żewġ servizzi jinkludu funzjonijiet differenti; aħna nqabblu biss il-karatteristiċi elenkati. It-termini sħaħ jinsabu fil-paġni tal-prezzijiet tagħhom.",
     "metaDescription": "Linketto jew {name}? Prezzijiet, dominju personalizzat, branding u analitika — fatti mill-paġni uffiċjali tagħhom, bid-data u s-sors.",
-    "intro": "Paragun onest tal-prezz u tal-karatteristiċi — kull valur għal {name} ġej mill-paġna uffiċjali tagħhom, bis-sors u d-data."
+    "intro": "Paragun onest tal-prezz u tal-karatteristiċi — kull valur għal {name} ġej mill-paġna uffiċjali tagħhom, bis-sors u d-data.",
+    "summaryLead": "Fil-qosor (data: {date}):",
+    "summaryRow": "{feature} — Linketto: {us}; {name}: {them}."
   },
   "security": {
     "title": "Sigurtà",

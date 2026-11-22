@@ -742,54 +742,60 @@ export default async function AdminPage({
                   </div>
                 </div>
 
-                {/* Опасната зона: нова парола, изход отвсякъде, пълно изтриване */}
-                <div className="space-y-4 rounded-card border border-danger/35 bg-danger-soft/40 p-4">
-                  <div>
-                    <h3 className="text-body font-semibold text-danger-text">{t('dangerZone')}</h3>
-                    <p className="text-small text-fg-muted">{t('dangerZoneHint')}</p>
-                  </div>
-                  <form action={adminSetPasswordAction} className="space-y-2">
-                    <input type="hidden" name="uiLocale" value={locale} />
-                    <input type="hidden" name="userId" value={user.id} />
-                    <Label htmlFor={`${user.id}-pw`}>{t('setPassword')}</Label>
-                    <div className="flex flex-wrap gap-2">
-                      <Input
-                        id={`${user.id}-pw`}
-                        type="password"
-                        name="password"
-                        required
-                        minLength={PASSWORD_MIN}
-                        placeholder={t('newPassword')}
-                        autoComplete="new-password"
-                        className="min-w-0 flex-1 sm:max-w-xs"
-                      />
-                      <button type="submit" className={`${dangerOutline} h-10`}>
-                        {t('setPasswordButton')}
-                      </button>
+                {/* Опасната зона: нова парола, изход отвсякъде, пълно изтриване — сгъната,
+                    за да е списъкът кратък и да не се натиска нещо необратимо случайно. */}
+                <details className="group rounded-card border border-danger/35 bg-danger-soft/40 p-4">
+                  <summary className="focus-ring flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+                    <span>
+                      <span className="block text-body font-semibold text-danger-text">{t('dangerZone')}</span>
+                      <span className="block text-small text-fg-muted">{t('dangerZoneHint')}</span>
+                    </span>
+                    <span aria-hidden className="text-danger-text transition-transform group-open:rotate-180">▾</span>
+                  </summary>
+                  <div className="mt-4 space-y-4">
+                    <form action={adminSetPasswordAction} className="space-y-2">
+                      <input type="hidden" name="uiLocale" value={locale} />
+                      <input type="hidden" name="userId" value={user.id} />
+                      <Label htmlFor={`${user.id}-pw`}>{t('setPassword')}</Label>
+                      <div className="flex flex-wrap gap-2">
+                        <Input
+                          id={`${user.id}-pw`}
+                          type="password"
+                          name="password"
+                          required
+                          minLength={PASSWORD_MIN}
+                          placeholder={t('newPassword')}
+                          autoComplete="new-password"
+                          className="min-w-0 flex-1 sm:max-w-xs"
+                        />
+                        <button type="submit" className={`${dangerOutline} h-10`}>
+                          {t('setPasswordButton')}
+                        </button>
+                      </div>
+                      <p className="text-small text-fg-muted">{t('passwordHint')}</p>
+                    </form>
+                    <div className="flex flex-wrap items-center gap-3 border-t border-danger/20 pt-4">
+                      <form action={adminForceLogoutAction}>
+                        <input type="hidden" name="uiLocale" value={locale} />
+                        <input type="hidden" name="userId" value={user.id} />
+                        <button type="submit" className={dangerOutline}>
+                          {t('forceLogout', { count: user._count.sessions })}
+                        </button>
+                      </form>
+                      <form action={adminDeleteUserAction} className="flex flex-wrap items-center gap-3 sm:ms-auto">
+                        <input type="hidden" name="uiLocale" value={locale} />
+                        <input type="hidden" name="userId" value={user.id} />
+                        <label className="flex items-center gap-2 text-small text-fg-2">
+                          <input type="checkbox" name="confirm" required className="h-4 w-4" />
+                          {t('deleteConfirm')}
+                        </label>
+                        <Button type="submit" variant="danger" size="sm">
+                          {t('deleteUser')}
+                        </Button>
+                      </form>
                     </div>
-                    <p className="text-small text-fg-muted">{t('passwordHint')}</p>
-                  </form>
-                  <div className="flex flex-wrap items-center gap-3 border-t border-danger/20 pt-4">
-                    <form action={adminForceLogoutAction}>
-                      <input type="hidden" name="uiLocale" value={locale} />
-                      <input type="hidden" name="userId" value={user.id} />
-                      <button type="submit" className={dangerOutline}>
-                        {t('forceLogout', { count: user._count.sessions })}
-                      </button>
-                    </form>
-                    <form action={adminDeleteUserAction} className="flex flex-wrap items-center gap-3 sm:ms-auto">
-                      <input type="hidden" name="uiLocale" value={locale} />
-                      <input type="hidden" name="userId" value={user.id} />
-                      <label className="flex items-center gap-2 text-small text-fg-2">
-                        <input type="checkbox" name="confirm" required className="h-4 w-4" />
-                        {t('deleteConfirm')}
-                      </label>
-                      <Button type="submit" variant="danger" size="sm">
-                        {t('deleteUser')}
-                      </Button>
-                    </form>
                   </div>
-                </div>
+                </details>
               </Card>
             ))}
           </div>

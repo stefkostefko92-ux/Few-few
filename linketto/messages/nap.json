@@ -193,6 +193,27 @@
     "urlLabel": "URL / telefono / indirizzo",
     "extra1Label": "URL App Store / Spotify",
     "extra2Label": "URL Google Play / Apple Music",
+    "field_url": "Link (https://…)",
+    "field_tip": "Link p'o pagamento (Revolut, PayPal, Ko-fi…)",
+    "field_video": "Link d'o video (YouTube o Vimeo)",
+    "field_phone": "Nummero 'e telefono",
+    "field_address": "Indirizzo o posto",
+    "field_spotify": "Link 'e Spotify",
+    "field_appleMusic": "Link 'e Apple Music",
+    "field_appStore": "Link 'e App Store",
+    "field_googlePlay": "Link 'e Google Play",
+    "field_appWeb": "Paggena web pe' ll'ate dispositive (facoltativa)",
+    "field_vcardPhone": "Telefono",
+    "field_vcardEmail": "Email",
+    "field_vcardOrg": "Azienda (facoltativa)",
+    "kindHint_HEADER": "'A testata sparte 'e blocche 'n seziune — abbasta 'o testo.",
+    "kindHint_FORM": "'E visitature te scriveno cu 'o modulo, e 'e messagge 'e vide dint'ô pannello. Abbasta nu titolo.",
+    "kindHint_EMAIL": "Arraccoglie iscritte p'a newsletter toja; ognuno cunferma cu n'email. Abbasta nu titolo.",
+    "kindHint_BOOKING": "'E visitature mannano na richiesta 'e appuntamento, ca vide dint'ô pannello e segne comme sbrigata. Abbasta nu titolo.",
+    "kindHint_MUSIC": "Jenghe almeno uno — 'o visitatore se sceglie 'o servizio suojo.",
+    "kindHint_APP": "Jenghe almeno nu store — mustammo chillo giusto secondo 'o telefono d'o visitatore.",
+    "kindHint_VIDEO": "'O video se mette dint'ô profilo e se carreca sulo quanno se clicca.",
+    "kindHint_VCARD": "Jenghe telefono e/o email — 'o visitatore s'e sarva dint'ê cuntatte cu nu tocco.",
     "addBlockHint": "Pe' testata e modulo abbasta 'o titolo. Pe' n'app jenghe App Store e/o Google Play. Pe' 'a museca — Spotify e/o Apple Music.",
     "messagesSection": "Messagge d'o modulo",
     "noMessages": "Ancora nisciuno messaggio.",
@@ -517,7 +538,11 @@
   "seo": {
     "metaTitle": "Linketto — link in bio multilengua: tutte 'e link tuoje, in ogne lengua",
     "keywords": "Linketto, Carbon Stealth, share links, link in bio, alternativa a Linktree, bio link, paggena 'e link, paggena p'o creator, profilo multilengua, biglietto 'e visita digitale, vénnere prudotte digitale, tutte 'e link dint'a nu posto",
-    "metaDescription": "Linketto è 'o link in bio multilengua: tutte 'e link tuoje int'a nu posto sulo, int'â lengua 'e ogne visitatore. Ospitato int'â UE, analise senza cookie, senza commissione. Nu prodotto 'e Carbon Stealth."
+    "metaDescription": "Linketto è 'o link in bio multilengua: tutte 'e link tuoje int'a nu posto sulo, int'â lengua 'e ogne visitatore. Ospitato int'â UE, analise senza cookie, senza commissione. Nu prodotto 'e Carbon Stealth.",
+    "privacyDescription": "Comme Linketto tratta 'e date personale tuoje: sulo chello ca serve p'o servizio, hosting int'â UE, niente vendita 'e date e niente cookie 'e tracciamento.",
+    "termsDescription": "'E cundizione 'e Linketto: conclusione d'o cuntratto, piane e pagamente, diritto 'e recesso, cuntenute e moderazione, prugramma 'e invite.",
+    "cookiesDescription": "Linketto usa sulo cookie strettamente necessarie pe' ll'accesso e pe' scegliere 'a lengua. Chi visita 'e profile nun riceve cookie.",
+    "profileDescription": "{name} ncopp'a Linketto — tutte 'e link int'a nu posto sulo, int'â lengua 'e ogne visitatore."
   },
   "report": {
     "title": "Signala 'o profilo «{name}»",
@@ -664,7 +689,9 @@
     "ctaButton": "Accummencia gratis",
     "plansNote": "'E piane d'e ddoje servizie teneno funzione diverse; cunfruntammo sulo 'e caratteristiche elencate. 'E condizione cumplete stanno ncopp'ê paggene d'e prezze lloro.",
     "metaDescription": "Linketto o {name}? Prezze, dominio personalizzato, brand e analise — fatte d'e paggene ufficiale lloro, cu data e fonte.",
-    "intro": "Nu cunfronto onesto 'e prezzo e funzione — ogne valore pe' {name} vene d'â paggena ufficiale lloro, cu fonte e data."
+    "intro": "Nu cunfronto onesto 'e prezzo e funzione — ogne valore pe' {name} vene d'â paggena ufficiale lloro, cu fonte e data.",
+    "summaryLead": "In breve (ô {date}):",
+    "summaryRow": "{feature} — Linketto: {us}; {name}: {them}."
   },
   "security": {
     "title": "Sicurezza",
