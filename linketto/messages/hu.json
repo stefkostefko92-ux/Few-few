@@ -194,6 +194,27 @@
     "urlLabel": "URL / telefon / cím",
     "extra1Label": "App Store / Spotify URL",
     "extra2Label": "Google Play / Apple Music URL",
+    "field_url": "Link (https://…)",
+    "field_tip": "Fizetési link (Revolut, PayPal, Ko-fi…)",
+    "field_video": "Link a videóhoz (YouTube vagy Vimeo)",
+    "field_phone": "Telefonszám",
+    "field_address": "Cím vagy helyszín",
+    "field_spotify": "Spotify-link",
+    "field_appleMusic": "Apple Music-link",
+    "field_appStore": "App Store-link",
+    "field_googlePlay": "Google Play-link",
+    "field_appWeb": "Weboldal a többi eszközhöz (opcionális)",
+    "field_vcardPhone": "Telefon",
+    "field_vcardEmail": "E-mail",
+    "field_vcardOrg": "Cég (opcionális)",
+    "kindHint_HEADER": "A címsor szakaszokra bontja a blokkokat — elég csak a szöveg.",
+    "kindHint_FORM": "A látogatók az űrlapon keresztül írnak neked, az üzeneteket pedig az irányítópulton látod. Elég egy cím.",
+    "kindHint_EMAIL": "Feliratkozókat gyűjt a hírleveledre; mindenki e-mailben megerősíti a feliratkozást. Elég egy cím.",
+    "kindHint_BOOKING": "A látogatók időpontkérést küldenek, amelyet az irányítópulton látsz, és elintézettnek jelölsz. Elég egy cím.",
+    "kindHint_MUSIC": "Tölts ki legalább egyet — a látogató a saját szolgáltatását választja.",
+    "kindHint_APP": "Tölts ki legalább egy áruházat — a látogató telefonjától függően a megfelelőt mutatjuk.",
+    "kindHint_VIDEO": "A videó beágyazódik a profilba, és csak kattintásra töltődik be.",
+    "kindHint_VCARD": "Add meg a telefonszámot és/vagy az e-mailt — a látogató egy érintéssel elmenti őket a névjegyei közé.",
     "addBlockHint": "Címsorhoz és űrlaphoz csak a cím szükséges. Alkalmazáshoz töltsd ki az App Store-t és/vagy a Google Playt. Zenéhez — Spotify és/vagy Apple Music.",
     "messagesSection": "Üzenetek az űrlapról",
     "noMessages": "Még nincsenek üzenetek.",
@@ -526,7 +547,11 @@
   "seo": {
     "metaTitle": "Linketto — többnyelvű link in bio: minden linked, minden nyelven",
     "keywords": "Linketto, Carbon Stealth, share links, link in bio, Linktree alternatíva, bio link, link in bio oldal, alkotói oldal, többnyelvű profil, digitális névjegykártya, digitális termékek eladása, minden link egy helyen",
-    "metaDescription": "A Linketto a többnyelvű link in bio: minden linked egy helyen, minden látogató nyelvén. Az EU-ban tárolva, sütik nélküli analitika, jutalék nélkül. A Carbon Stealth terméke."
+    "metaDescription": "A Linketto a többnyelvű link in bio: minden linked egy helyen, minden látogató nyelvén. Az EU-ban tárolva, sütik nélküli analitika, jutalék nélkül. A Carbon Stealth terméke.",
+    "privacyDescription": "Hogyan kezeli a Linketto a személyes adataidat: csak a szolgáltatáshoz szükségeset, EU-s tárhely, nincs adatértékesítés és nincsenek nyomkövető sütik.",
+    "termsDescription": "A Linketto általános szerződési feltételei: a szerződés létrejötte, csomagok és fizetés, elállási jog, tartalom és moderálás, meghívóprogram.",
+    "cookiesDescription": "A Linketto csak a bejelentkezéshez és a nyelvválasztáshoz feltétlenül szükséges sütiket használ. A profilok látogatói nem kapnak sütit.",
+    "profileDescription": "{name} a Linkettón — minden link egy helyen, minden látogató nyelvén."
   },
   "report": {
     "title": "A(z) „{name}” profil jelentése",
@@ -673,7 +698,9 @@
     "ctaButton": "Kezdd el ingyen",
     "plansNote": "A két szolgáltatás csomagjai eltérő funkciókat tartalmaznak; csak a felsorolt jellemzőket hasonlítjuk össze. A teljes feltételek az árazási oldalaikon találhatók.",
     "metaDescription": "Linketto vagy {name}? Árak, saját domain, márkajelzés és analitika — tények a hivatalos oldalaikról, dátummal és forrással.",
-    "intro": "Őszinte összehasonlítás árban és funkciókban — a(z) {name} minden adata a hivatalos oldalukról származik, forrással és dátummal."
+    "intro": "Őszinte összehasonlítás árban és funkciókban — a(z) {name} minden adata a hivatalos oldalukról származik, forrással és dátummal.",
+    "summaryLead": "Röviden (állapot: {date}):",
+    "summaryRow": "{feature} — Linketto: {us}; {name}: {them}."
   },
   "security": {
     "title": "Biztonság",

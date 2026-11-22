@@ -193,6 +193,27 @@
     "urlLabel": "URL / fón / seoladh",
     "extra1Label": "URL App Store / Spotify",
     "extra2Label": "URL Google Play / Apple Music",
+    "field_url": "Nasc (https://…)",
+    "field_tip": "Nasc íocaíochta (Revolut, PayPal, Ko-fi…)",
+    "field_video": "Nasc chuig an bhfíseán (YouTube nó Vimeo)",
+    "field_phone": "Uimhir theileafóin",
+    "field_address": "Seoladh nó áit",
+    "field_spotify": "Nasc Spotify",
+    "field_appleMusic": "Nasc Apple Music",
+    "field_appStore": "Nasc App Store",
+    "field_googlePlay": "Nasc Google Play",
+    "field_appWeb": "Leathanach gréasáin do ghléasanna eile (roghnach)",
+    "field_vcardPhone": "Teileafón",
+    "field_vcardEmail": "Ríomhphost",
+    "field_vcardOrg": "Comhlacht (roghnach)",
+    "kindHint_HEADER": "Roinneann an ceannteideal na bloic ina rannóga — is leor an téacs amháin.",
+    "kindHint_FORM": "Scríobhann cuairteoirí chugat tríd an bhfoirm, agus feiceann tú na teachtaireachtaí ar an bpainéal. Is leor teideal.",
+    "kindHint_EMAIL": "Bailíonn sé síntiúsóirí do do nuachtlitir; deimhníonn gach duine trí ríomhphost. Is leor teideal.",
+    "kindHint_BOOKING": "Seolann cuairteoirí iarratas ar choinne, a fheiceann tú ar an bpainéal agus a mharcálann tú mar láimhseáilte. Is leor teideal.",
+    "kindHint_MUSIC": "Líon isteach ceann amháin ar a laghad — roghnaíonn an cuairteoir a sheirbhís féin.",
+    "kindHint_APP": "Líon isteach siopa amháin ar a laghad — taispeánaimid an ceann ceart de réir fhón an chuairteora.",
+    "kindHint_VIDEO": "Leabaítear an físeán sa phróifíl agus ní lódáiltear é go dtí go gcliceáiltear air.",
+    "kindHint_VCARD": "Líon isteach an teileafón agus/nó an ríomhphost — sábhálann an cuairteoir ina theagmhálaithe iad le tadhall amháin.",
     "addBlockHint": "Ní theastaíonn ach teideal don cheannteideal agus don fhoirm. Le haghaidh aipe, líon isteach App Store agus/nó Google Play. Le haghaidh ceoil — Spotify agus/nó Apple Music.",
     "messagesSection": "Teachtaireachtaí ón bhfoirm",
     "noMessages": "Gan teachtaireachtaí fós.",
@@ -521,7 +542,11 @@
   "seo": {
     "metaTitle": "Linketto — link in bio il-teangach: do naisc go léir, i ngach teanga",
     "keywords": "Linketto, Carbon Stealth, share links, link in bio, rogha eile ar linktree, nasc bio, leathanach link in bio, próifíl il-teangach, cárta gnó digiteach, díol táirgí digiteacha, gach nasc in aon áit amháin",
-    "metaDescription": "Is é Linketto an link in bio ilteangach: do naisc go léir in aon áit amháin, i dteanga gach cuairteora. Óstáilte san AE, anailísíocht gan fianáin, gan choimisiún. Táirge de chuid Carbon Stealth."
+    "metaDescription": "Is é Linketto an link in bio ilteangach: do naisc go léir in aon áit amháin, i dteanga gach cuairteora. Óstáilte san AE, anailísíocht gan fianáin, gan choimisiún. Táirge de chuid Carbon Stealth.",
+    "privacyDescription": "Conas a phróiseálann Linketto do shonraí pearsanta: an méid is gá don tseirbhís amháin, óstáil san AE, gan sonraí a dhíol agus gan fianáin rianaithe.",
+    "termsDescription": "Téarmaí Linketto: an conradh a dhéanamh, pleananna agus íocaíochtaí, ceart tarraingthe siar, ábhar agus modhnóireacht, clár cuirí.",
+    "cookiesDescription": "Ní úsáideann Linketto ach fianáin atá fíor-riachtanach don logáil isteach agus do rogha teanga. Ní fhaigheann cuairteoirí na bpróifílí aon fhianáin.",
+    "profileDescription": "{name} ar Linketto — na naisc go léir in aon áit amháin, i dteanga gach cuairteora."
   },
   "report": {
     "title": "Tuairiscigh an phróifíl „{name}“",
@@ -668,7 +693,9 @@
     "ctaButton": "Tosaigh saor in aisce",
     "plansNote": "Tá gnéithe éagsúla i bpleananna an dá sheirbhís; ní chuirimid i gcomparáid ach na tréithe atá liostaithe. Tá na téarmaí iomlána ar a leathanaigh praghsanna.",
     "metaDescription": "Linketto nó {name}? Praghsanna, fearann saincheaptha, brandáil agus anailísíocht — fíricí óna leathanaigh oifigiúla, le dáta agus foinse.",
-    "intro": "Comparáid mhacánta ar phraghas agus ar ghnéithe — tagann gach luach do {name} óna leathanach oifigiúil, le foinse agus dáta."
+    "intro": "Comparáid mhacánta ar phraghas agus ar ghnéithe — tagann gach luach do {name} óna leathanach oifigiúil, le foinse agus dáta.",
+    "summaryLead": "Go hachomair (amhail an {date}):",
+    "summaryRow": "{feature} — Linketto: {us}; {name}: {them}."
   },
   "security": {
     "title": "Slándáil",

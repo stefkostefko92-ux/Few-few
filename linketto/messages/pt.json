@@ -197,6 +197,27 @@
     "urlLabel": "URL / telefone / endereço",
     "extra1Label": "App Store / Spotify URL",
     "extra2Label": "Google Play / Apple Music URL",
+    "field_url": "Link (https://…)",
+    "field_tip": "Link de pagamento (Revolut, PayPal, Ko-fi…)",
+    "field_video": "Link do vídeo (YouTube ou Vimeo)",
+    "field_phone": "Número de telefone",
+    "field_address": "Morada ou local",
+    "field_spotify": "Link do Spotify",
+    "field_appleMusic": "Link do Apple Music",
+    "field_appStore": "Link da App Store",
+    "field_googlePlay": "Link do Google Play",
+    "field_appWeb": "Página web para os outros dispositivos (opcional)",
+    "field_vcardPhone": "Telefone",
+    "field_vcardEmail": "E-mail",
+    "field_vcardOrg": "Empresa (opcional)",
+    "kindHint_HEADER": "O cabeçalho divide os blocos em secções — basta o texto.",
+    "kindHint_FORM": "Os visitantes escrevem-te através do formulário e vês as mensagens no painel. Basta um título.",
+    "kindHint_EMAIL": "Recolhe subscritores para a tua newsletter; cada um confirma por e-mail. Basta um título.",
+    "kindHint_BOOKING": "Os visitantes enviam um pedido de marcação, que vês no painel e marcas como tratado. Basta um título.",
+    "kindHint_MUSIC": "Preenche pelo menos um — o visitante escolhe o seu serviço.",
+    "kindHint_APP": "Preenche pelo menos uma loja — mostramos a certa conforme o telemóvel do visitante.",
+    "kindHint_VIDEO": "O vídeo é incorporado no perfil e só carrega quando é clicado.",
+    "kindHint_VCARD": "Preenche o telefone e/ou o e-mail — o visitante guarda-os nos contactos com um toque.",
     "addBlockHint": "O cabeçalho e o formulário só precisam de um título. Para uma aplicação, preenche a App Store e/ou o Google Play. Para música — Spotify e/ou Apple Music.",
     "messagesSection": "Mensagens do formulário",
     "noMessages": "Ainda não há mensagens.",
@@ -529,7 +550,11 @@
   "seo": {
     "metaTitle": "Linketto — link in bio multilingue: todos os teus links, em todos os idiomas",
     "keywords": "Linketto, Carbon Stealth, share links, link in bio, link na bio, alternativa ao Linktree, bio link, página link in bio, página para criadores, perfil multilingue, cartão de visita digital, vender produtos digitais, todos os links num só lugar",
-    "metaDescription": "O Linketto é o link in bio multilingue: todos os teus links num só lugar, no idioma de cada visitante. Alojado na UE, análises sem cookies, sem comissões. Um produto da Carbon Stealth."
+    "metaDescription": "O Linketto é o link in bio multilingue: todos os teus links num só lugar, no idioma de cada visitante. Alojado na UE, análises sem cookies, sem comissões. Um produto da Carbon Stealth.",
+    "privacyDescription": "Como o Linketto trata os teus dados pessoais: só o necessário para o serviço, alojamento na UE, sem venda de dados e sem cookies de rastreio.",
+    "termsDescription": "Os termos do Linketto: celebração do contrato, planos e pagamentos, direito de livre resolução, conteúdos e moderação, programa de convites.",
+    "cookiesDescription": "O Linketto usa apenas cookies estritamente necessários para o início de sessão e a escolha do idioma. Os visitantes dos perfis não recebem cookies.",
+    "profileDescription": "{name} no Linketto — todos os links num só lugar, no idioma de cada visitante."
   },
   "report": {
     "title": "Denunciar o perfil «{name}»",
@@ -676,7 +701,9 @@
     "ctaButton": "Começar grátis",
     "plansNote": "Os planos dos dois serviços incluem funcionalidades diferentes; comparamos apenas as características indicadas. As condições completas estão nas respetivas páginas de preços.",
     "metaDescription": "Linketto ou {name}? Preços, domínio próprio, marca e análises — factos das páginas oficiais deles, com data e fonte.",
-    "intro": "Uma comparação honesta de preço e funcionalidades — cada valor para {name} vem da página oficial deles, com fonte e data."
+    "intro": "Uma comparação honesta de preço e funcionalidades — cada valor para {name} vem da página oficial deles, com fonte e data.",
+    "summaryLead": "Em resumo (à data de {date}):",
+    "summaryRow": "{feature} — Linketto: {us}; {name}: {them}."
   },
   "security": {
     "title": "Segurança",

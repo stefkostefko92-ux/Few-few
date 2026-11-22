@@ -194,6 +194,27 @@
     "urlLabel": "URL / telefon / adresa",
     "extra1Label": "App Store / Spotify URL",
     "extra2Label": "Google Play / Apple Music URL",
+    "field_url": "Link (https://…)",
+    "field_tip": "Link za plaćanje (Revolut, PayPal, Ko-fi…)",
+    "field_video": "Link na video (YouTube ili Vimeo)",
+    "field_phone": "Broj telefona",
+    "field_address": "Adresa ili mjesto",
+    "field_spotify": "Spotify link",
+    "field_appleMusic": "Apple Music link",
+    "field_appStore": "App Store link",
+    "field_googlePlay": "Google Play link",
+    "field_appWeb": "Web-stranica za ostale uređaje (neobavezno)",
+    "field_vcardPhone": "Telefon",
+    "field_vcardEmail": "E-pošta",
+    "field_vcardOrg": "Tvrtka (neobavezno)",
+    "kindHint_HEADER": "Naslov dijeli blokove u odjeljke — dovoljan je samo tekst.",
+    "kindHint_FORM": "Posjetitelji ti pišu putem obrasca, a poruke vidiš na ploči. Dovoljan je naslov.",
+    "kindHint_EMAIL": "Prikuplja pretplatnike za tvoj newsletter; svatko potvrđuje e-poštom. Dovoljan je naslov.",
+    "kindHint_BOOKING": "Posjetitelji šalju zahtjev za termin koji vidiš na ploči i označavaš kao obrađen. Dovoljan je naslov.",
+    "kindHint_MUSIC": "Ispuni barem jedno — posjetitelj bira svoju uslugu.",
+    "kindHint_APP": "Ispuni barem jednu trgovinu — prikazujemo pravu prema telefonu posjetitelja.",
+    "kindHint_VIDEO": "Video se ugrađuje u profil i učitava se tek na klik.",
+    "kindHint_VCARD": "Ispuni telefon i/ili e-poštu — posjetitelj ih jednim dodirom sprema u kontakte.",
     "addBlockHint": "Za naslov i obrazac dovoljan je samo naslov. Za aplikaciju ispuni App Store i/ili Google Play. Za glazbu — Spotify i/ili Apple Music.",
     "messagesSection": "Poruke iz obrasca",
     "noMessages": "Još nema poruka.",
@@ -526,7 +547,11 @@
   "seo": {
     "metaTitle": "Linketto — višejezični link in bio: svi tvoji linkovi, na svakom jeziku",
     "keywords": "Linketto, Carbon Stealth, share links, link in bio, alternativa Linktreeu, bio link, stranica linkova, stranica za kreatore, višejezični profil, digitalna posjetnica, prodaja digitalnih proizvoda, svi linkovi na jednom mjestu",
-    "metaDescription": "Linketto je višejezični link in bio: svi tvoji linkovi na jednom mjestu, na jeziku svakog posjetitelja. Hostano u EU-u, analitika bez kolačića, bez provizija. Proizvod tvrtke Carbon Stealth."
+    "metaDescription": "Linketto je višejezični link in bio: svi tvoji linkovi na jednom mjestu, na jeziku svakog posjetitelja. Hostano u EU-u, analitika bez kolačića, bez provizija. Proizvod tvrtke Carbon Stealth.",
+    "privacyDescription": "Kako Linketto obrađuje tvoje osobne podatke: samo ono što je potrebno za uslugu, hosting u EU-u, bez prodaje podataka i bez kolačića za praćenje.",
+    "termsDescription": "Uvjeti korištenja Linketta: sklapanje ugovora, planovi i plaćanja, pravo na odustajanje, sadržaj i moderacija, program pozivnica.",
+    "cookiesDescription": "Linketto koristi samo strogo nužne kolačiće za prijavu i odabir jezika. Posjetitelji profila ne dobivaju kolačiće.",
+    "profileDescription": "{name} na Linkettu — svi linkovi na jednom mjestu, na jeziku svakog posjetitelja."
   },
   "report": {
     "title": "Prijavi profil „{name}“",
@@ -673,7 +698,9 @@
     "ctaButton": "Započni besplatno",
     "plansNote": "Planovi dviju usluga uključuju različite funkcije; uspoređujemo samo navedene značajke. Potpuni uvjeti nalaze se na njihovim stranicama s cijenama.",
     "metaDescription": "Linketto ili {name}? Cijene, vlastita domena, brend i analitika — činjenice s njihovih službenih stranica, s datumom i izvorom.",
-    "intro": "Poštena usporedba cijena i funkcija — svaka vrijednost za {name} potječe s njihove službene stranice, s izvorom i datumom."
+    "intro": "Poštena usporedba cijena i funkcija — svaka vrijednost za {name} potječe s njihove službene stranice, s izvorom i datumom.",
+    "summaryLead": "Ukratko (na dan {date}):",
+    "summaryRow": "{feature} — Linketto: {us}; {name}: {them}."
   },
   "security": {
     "title": "Sigurnost",

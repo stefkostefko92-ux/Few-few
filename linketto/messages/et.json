@@ -194,6 +194,27 @@
     "urlLabel": "URL / telefon / aadress",
     "extra1Label": "App Store / Spotify URL",
     "extra2Label": "Google Play / Apple Music URL",
+    "field_url": "Link (https://…)",
+    "field_tip": "Makselink (Revolut, PayPal, Ko-fi…)",
+    "field_video": "Link videole (YouTube või Vimeo)",
+    "field_phone": "Telefoninumber",
+    "field_address": "Aadress või koht",
+    "field_spotify": "Spotify link",
+    "field_appleMusic": "Apple Music link",
+    "field_appStore": "App Store link",
+    "field_googlePlay": "Google Play link",
+    "field_appWeb": "Veebileht teistele seadmetele (valikuline)",
+    "field_vcardPhone": "Telefon",
+    "field_vcardEmail": "E-post",
+    "field_vcardOrg": "Ettevõte (valikuline)",
+    "kindHint_HEADER": "Pealkiri jagab plokid jaotisteks — piisab ainult tekstist.",
+    "kindHint_FORM": "Külastajad kirjutavad sulle vormi kaudu ja sõnumeid näed töölaual. Piisab pealkirjast.",
+    "kindHint_EMAIL": "Kogub su uudiskirjale tellijaid; igaüks kinnitab tellimuse e-posti teel. Piisab pealkirjast.",
+    "kindHint_BOOKING": "Külastajad saadavad broneerimistaotluse, mida näed töölaual ja märgid käsitletuks. Piisab pealkirjast.",
+    "kindHint_MUSIC": "Täida vähemalt üks — külastaja valib oma teenuse.",
+    "kindHint_APP": "Täida vähemalt üks pood — näitame külastaja telefoni järgi õiget.",
+    "kindHint_VIDEO": "Video manustatakse profiili ja laaditakse alles klõpsamisel.",
+    "kindHint_VCARD": "Täida telefon ja/või e-post — külastaja salvestab need ühe puudutusega oma kontaktidesse.",
     "addBlockHint": "Pealkiri ja vorm vajavad ainult pealkirja. Rakenduse jaoks täida App Store ja/või Google Play. Muusika jaoks — Spotify ja/või Apple Music.",
     "messagesSection": "Vormisõnumid",
     "noMessages": "Sõnumeid veel pole.",
@@ -526,7 +547,11 @@
   "seo": {
     "metaTitle": "Linketto — mitmekeelne link in bio: kõik su lingid, igas keeles",
     "keywords": "Linketto, Carbon Stealth, share links, link in bio, linktree alternatiiv, bio link, link in bio leht, looja maandumisleht, mitmekeelne profiil, digitaalne visiitkaart, müü digitaalseid tooteid, kõik lingid ühes kohas",
-    "metaDescription": "Linketto on mitmekeelne link in bio: kõik su lingid ühes kohas, iga külastaja keeles. Majutatud ELis, küpsisteta analüütika, ilma vahendustasudeta. Toode ettevõttelt Carbon Stealth."
+    "metaDescription": "Linketto on mitmekeelne link in bio: kõik su lingid ühes kohas, iga külastaja keeles. Majutatud ELis, küpsisteta analüütika, ilma vahendustasudeta. Toode ettevõttelt Carbon Stealth.",
+    "privacyDescription": "Kuidas Linketto sinu isikuandmeid töötleb: ainult teenuseks vajalik, majutus ELis, andmeid ei müüda ja jälgimisküpsiseid pole.",
+    "termsDescription": "Linketto kasutustingimused: lepingu sõlmimine, paketid ja maksed, taganemisõigus, sisu ja modereerimine, kutseprogramm.",
+    "cookiesDescription": "Linketto kasutab ainult hädavajalikke küpsiseid sisselogimiseks ja keele valimiseks. Profiilide külastajad küpsiseid ei saa.",
+    "profileDescription": "{name} Linkettos — kõik lingid ühes kohas, iga külastaja keeles."
   },
   "report": {
     "title": "Teata profiilist „{name}“",
@@ -673,7 +698,9 @@
     "ctaButton": "Alusta tasuta",
     "plansNote": "Kahe teenuse pakettides on erinevad funktsioonid; võrdleme ainult loetletud omadusi. Täielikud tingimused on nende hinnalehtedel.",
     "metaDescription": "Linketto või {name}? Hinnad, oma domeen, bränding ja analüütika — faktid nende ametlikelt lehtedelt, kuupäeva ja allikaga.",
-    "intro": "Aus hinna ja funktsioonide võrdlus — iga väärtus teenuse {name} kohta pärineb nende ametlikult lehelt, allika ja kuupäevaga."
+    "intro": "Aus hinna ja funktsioonide võrdlus — iga väärtus teenuse {name} kohta pärineb nende ametlikult lehelt, allika ja kuupäevaga.",
+    "summaryLead": "Lühidalt (seisuga {date}):",
+    "summaryRow": "{feature} — Linketto: {us}; {name}: {them}."
   },
   "security": {
     "title": "Turvalisus",

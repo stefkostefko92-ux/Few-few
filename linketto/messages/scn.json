@@ -193,6 +193,27 @@
     "urlLabel": "URL / tilèfunu / indirizzu",
     "extra1Label": "URL App Store / Spotify",
     "extra2Label": "URL Google Play / Apple Music",
+    "field_url": "Link (https://…)",
+    "field_tip": "Link pi pagari (Revolut, PayPal, Ko-fi…)",
+    "field_video": "Link dô video (YouTube o Vimeo)",
+    "field_phone": "Nùmmiru di telèfunu",
+    "field_address": "Nnirizzu o postu",
+    "field_spotify": "Link di Spotify",
+    "field_appleMusic": "Link di Apple Music",
+    "field_appStore": "Link di App Store",
+    "field_googlePlay": "Link di Google Play",
+    "field_appWeb": "Pàggina web pi l'àutri dispusitivi (facultativa)",
+    "field_vcardPhone": "Telèfunu",
+    "field_vcardEmail": "Email",
+    "field_vcardOrg": "Azzienda (facultativa)",
+    "kindHint_HEADER": "L'intistazioni sparti li blocchi n sezzioni — abbasta lu testu.",
+    "kindHint_FORM": "Li visitatura ti scrivinu cû mòdulu, e li missaggi li vidi nô pannellu. Abbasta un titulu.",
+    "kindHint_EMAIL": "Arricogghi iscritti pâ tò newsletter; ognunu cunferma pi email. Abbasta un titulu.",
+    "kindHint_BOOKING": "Li visitatura mannanu na richiesta d'appuntamentu, ca vidi nô pannellu e signi comu sbrigata. Abbasta un titulu.",
+    "kindHint_MUSIC": "Jinchi armenu unu — lu visitaturi scegghi lu sò sirvizziu.",
+    "kindHint_APP": "Jinchi armenu un store — ammustramu chiddu giustu secunnu lu telèfunu dû visitaturi.",
+    "kindHint_VIDEO": "Lu video si metti nô prufilu e si càrrica sulu quannu si clicca.",
+    "kindHint_VCARD": "Jinchi telèfunu e/o email — lu visitaturi si li sarva nê cuntatti cu un tocchu.",
     "addBlockHint": "Pi intistazioni e mòdulu abbasta lu titulu. Pi na app jinchi App Store e/o Google Play. Pi la musica — Spotify e/o Apple Music.",
     "messagesSection": "Missaggi dû mòdulu",
     "noMessages": "Ancora nuddu missaggiu.",
@@ -517,7 +538,11 @@
   "seo": {
     "metaTitle": "Linketto — link in bio multilingua: tutti li tò linki, nta ogni lingua",
     "keywords": "Linketto, Carbon Stealth, share links, link in bio, alternativa a Linktree, bio link, pàggina di link, pàggina pû creator, prufilu multilingua, biglittu di visita digitali, vìnniri prudutti digitali, tutti li linki nta un locu",
-    "metaDescription": "Linketto è lu link in bio multilingua: tutti li tò link nta un sulu postu, nta la lingua di ogni visitaturi. Ospitatu nta l'UE, analisi senza cookie, senza cummissioni. Un prudottu di Carbon Stealth."
+    "metaDescription": "Linketto è lu link in bio multilingua: tutti li tò link nta un sulu postu, nta la lingua di ogni visitaturi. Ospitatu nta l'UE, analisi senza cookie, senza cummissioni. Un prudottu di Carbon Stealth.",
+    "privacyDescription": "Comu Linketto tratta li tò dati pirsunali: sulu chiddu ca servi pô sirvizziu, hosting nta l'UE, nenti vinnita di dati e nenti cookie di tracciamentu.",
+    "termsDescription": "Li cundizioni di Linketto: cunchiusioni dû cuntrattu, piani e pagamenti, dirittu di recessu, cuntinuti e mudirazzioni, prugramma d'inviti.",
+    "cookiesDescription": "Linketto usa sulu cookie strittamenti nicissari pi l'accessu e pi sceglìri la lingua. Cu visita li prufili nun arricivi cookie.",
+    "profileDescription": "{name} supra Linketto — tutti li link nta un sulu postu, nta la lingua di ogni visitaturi."
   },
   "report": {
     "title": "Signala lu prufilu «{name}»",
@@ -664,7 +689,9 @@
     "ctaButton": "Accumincia gratis",
     "plansNote": "Li piani dî dui sirvizzi hannu funzioni diversi; cunfruntamu sulu li carattirìstichi elencati. Li cunnizzioni cumpleti sunnu ntê so pàggini dî prezzi.",
     "metaDescription": "Linketto o {name}? Prezzi, duminiu pirsunalizzatu, brand e analisi — fatti dî sò pàggini ufficiali, cu data e fonti.",
-    "intro": "Un cunfrontu onestu di prezzu e funzioni — ogni valuri pi {name} veni dâ sò pàggina ufficiali, cu fonti e data."
+    "intro": "Un cunfrontu onestu di prezzu e funzioni — ogni valuri pi {name} veni dâ sò pàggina ufficiali, cu fonti e data.",
+    "summaryLead": "In curtu (ô {date}):",
+    "summaryRow": "{feature} — Linketto: {us}; {name}: {them}."
   },
   "security": {
     "title": "Sicurizza",
