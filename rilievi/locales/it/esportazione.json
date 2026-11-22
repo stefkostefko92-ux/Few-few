@@ -71,7 +71,7 @@
       "indice": "In questa pagina",
       "scaricare": {
         "titolo": "Come si scaricano i dati?",
-        "testo": "Solo gli amministratori dell'azienda possono scaricare il file. Apri Impostazioni → Esportazione e cambio fornitore, scrivi la tua password e premi «Scarica i dati». Ogni esportazione resta nel registro delle attività dell'azienda. Puoi scaricare il file quante volte vuoi.",
+        "testo": "Solo gli amministratori dell'azienda possono scaricare il file. Apri Impostazioni → Esportazione e cambio fornitore, scrivi la tua password e premi «Scarica tutti i dati». Ogni esportazione resta nel registro delle attività dell'azienda. Puoi scaricare il file quante volte vuoi.",
         "tecnico": "Indirizzo tecnico, per chi automatizza: POST {indirizzo}, con la sessione di un amministratore, il token del modulo e la password. La risposta è il file .tar."
       },
       "file": {
