@@ -89,7 +89,7 @@ function organizationLd(t) {
 export function crumbName(t, pageKey) {
   const named = { home: t.nav.home, products: t.nav.products, catalog: t.nav.catalog, contacts: t.nav.contacts,
     viewer3d: t.nav.viewer3d, privacy: t.meta.privacy.title.split('—')[0].trim(), terms: t.termsPage.title };
-  return named[pageKey] ?? t.families[pageKey].crumb;
+  return named[pageKey] ?? (t.families[pageKey] ?? t.guides[pageKey]).crumb;
 }
 
 // parents: ключовете на страниците между началната и тази (страница на семейство → ['products']).
@@ -238,9 +238,10 @@ export function orderDrawer(t) {
 export function footer(t, locales, pageKey) {
   const f = t.footer;
   const year = 2026;
-  // Към страниците по семейства (по една за всяко търсене), после листата и каталогът.
+  // Към страниците по семейства (по една за всяко търсене), монтажа върху неравни зидарии, листата и каталога.
   const prodLinks = ['famDoors', 'famGuides', 'famSg', 'famSpecial']
     .map((key, i) => `<li><a href="${pagePath(t, key)}">${esc(f.productLinks[i])}</a></li>`).join('')
+    + `<li><a href="${pagePath(t, 'walls')}">${esc(t.guides.walls.crumb)}</a></li>`
     + `<li><a href="${pagePath(t, 'products')}">${esc(t.nav.products)}</a></li>`;
 
   return `</main>
@@ -250,7 +251,7 @@ ${orderDrawer(t)}
     <div class="footer-brand">
       ${logoPicture(esc(COMPANY.name), { width: 200, lazy: true })}
       <p>${esc(f.tagline)}</p>
-      <p class="footer-patent">${esc(f.patentLine)}</p>
+      <p class="footer-patent"><a href="${pagePath(t, 'patent')}">${esc(f.patentLine)}</a></p>
       <p class="footer-flag"><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>${esc(f.madeInItaly)}</p>
     </div>
     <div>

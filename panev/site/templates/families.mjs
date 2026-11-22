@@ -74,7 +74,7 @@ ${cantiereSection(t, key)}
   <div class="wrap">
     <h2>${esc(sh.otherTitle)}</h2>
     <nav class="fam-links" aria-label="${esc(sh.familiesLabel)}"><ul>${others}</ul></nav>
-    <p><a href="${pagePath(t, 'products')}">${esc(sh.fullList)}</a> · <a href="${pagePath(t, 'catalog')}">${esc(t.nav.catalog)}</a></p>
+    <p><a href="${pagePath(t, 'products')}">${esc(sh.fullList)}</a> · <a href="${pagePath(t, 'catalog')}">${esc(t.nav.catalog)}</a> · <a href="${pagePath(t, 'walls')}">${esc(t.guides.walls.crumb)}</a></p>
   </div>
 </section>
 
