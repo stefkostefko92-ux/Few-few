@@ -1,4 +1,6 @@
 import type { FotoDimensione } from '@prisma/client';
+import { rettangoloFoto } from '../allegati/annotazioni.js';
+import { drawAnnotazioni } from './pdf-schizzi.js';
 import type { FotoPdf, GruppoFotoPdf } from '../allegati/stampa.js';
 import {
   CONTENT_WIDTH,
@@ -169,6 +171,13 @@ export function drawFoto(
     for (const posto of riga) {
       const f = fila[posto.indice]!;
       doc.image(f.foto.immagine, x, y, { width: posto.larghezza, height: posto.altezza });
+      if (f.foto.annotazioni)
+        drawAnnotazioni(
+          ctx,
+          f.foto.annotazioni,
+          { x, y, w: posto.larghezza, h: posto.altezza },
+          rettangoloFoto(f.foto.larghezza, f.foto.altezza),
+        );
       doc.rect(x, y, posto.larghezza, posto.altezza).lineWidth(0.5).stroke(RULE);
       doc
         .font('Sans-Bold')

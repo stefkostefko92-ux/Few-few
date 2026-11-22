@@ -47,6 +47,7 @@
         <% if (errori[key]) { %><p class="field__error" id="err-<%= key %>"><%= t(errori[key]) %></p><% } %>
       </div>
       <% } %>
+      <% if (locals.prova) { %><div class="notice"><p><strong><%= t('legale.accetta.prova.titolo') %></strong></p><p><%= t('legale.accetta.prova.testo', { fine: fmt.dayRoma(prova.fine) }) %></p></div><% } %>
       <label class="tick legale__spunta"><input type="checkbox" id="f-condizioni" name="condizioni" value="si"<%- aria('condizioni') %>><span class="tick__box" aria-hidden="true"></span><span><%= t('legale.accetta.condizioni', { versione: giorno(versione.CONDIZIONI) }) %></span></label>
       <% if (errori.condizioni) { %><p class="field__error" id="err-condizioni"><%= t(errori.condizioni) %></p><% } %>
       <p class="muted"><%= t('legale.accetta.passo') %></p>

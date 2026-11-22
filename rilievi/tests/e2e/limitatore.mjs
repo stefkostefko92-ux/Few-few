@@ -62,6 +62,6 @@ export async function checkLimitatore(page, { shots, scheme, sheetUrl }) {
     fail(`${name}: the page is not the current item of the menu`);
   await audit(page, `${name} list`);
   await page.fill('#f-cerca', numero);
-  await page.click('form[role=search] button');
+  await page.click('main form[role=search] button');
   await page.waitForURL(new RegExp(`${sheetPath}/calcolo-limitatore$`));
 }

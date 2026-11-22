@@ -37,6 +37,20 @@ export const SECTIONS = [
       { key: 'capienzaPersone', kind: 'int', min: 0, max: 1_000, unit: 'persone' },
       { key: 'fermate', kind: 'int', min: 0, max: 300 },
       { key: 'marca', kind: 'text', maxLength: 120 },
+      // Табелата в кабината по D.P.R. 162/1999, чл. 16, ал. 3: а) кой прави периодичните проверки; б)
+      // монтажникът и фабричният номер (в) матрикулата, г) товарът и д) хората са по-горе) —
+      // research/norme-ascensori/leggi/dpr-162-1999.md:316-318.
+      { key: 'soggettoVerifiche', kind: 'text', maxLength: 120 },
+      { key: 'installatore', kind: 'text', maxLength: 120 },
+      { key: 'numeroFabbricazione', kind: 'text', maxLength: 40 },
+      // Годината на монтажа и CE маркировката решават кое важи: D.M. 23/07/2009 е само за асансьорите
+      // отпреди D.P.R. 162/1999 (чл. 1, ал. 1; сроковете по години — чл. 2, ал. 2), а частта на UNI 10411
+      // за промените — по CE (src/schede/regime.ts; research/norme-ascensori/leggi/dm-23-07-2009.md:34-51).
+      { key: 'annoInstallazione', kind: 'int', min: 1850, max: 2100 },
+      { key: 'marcaturaCe', kind: 'yesno' },
+      // Бележка на всеки раздел (собственикът, 11 ноември 2026): „Note impianto“ дойде тук от „Note e
+      // lavori“ — същата колона, написаното остава. Разделът не се печата отделно: бележката е под табелата.
+      { key: 'noteImpianto', kind: 'textarea', maxLength: 4000, wide: true },
     ],
   },
   {
@@ -48,6 +62,7 @@ export const SECTIONS = [
       // Къде е кутийката — свободен текст („Piano -1, vano contatori“).
       { key: 'ubicazioneCassettina', kind: 'text', maxLength: 120 },
       { key: 'parcheggio', kind: 'text', maxLength: 300, wide: true },
+      { key: 'ubicazioneNote', kind: 'textarea', maxLength: 4000, wide: true },
     ],
   },
   {
@@ -61,6 +76,7 @@ export const SECTIONS = [
       { key: 'tipoPorte', kind: 'checks', options: TIPO_PORTE, single: true },
       // „Accessi: 1 / 2“ — двойният достъп като брой достъпи.
       { key: 'doppioAccesso', kind: 'yesno', risposte: ['no', 'si'], when: PORTE_SCELTE },
+      { key: 'tipologiaNote', kind: 'textarea', maxLength: 4000, wide: true },
     ],
   },
   SEZIONE_QUADRO,
@@ -86,6 +102,7 @@ export const SECTIONS = [
       { key: 'tirantiContrappesoTipo', kind: 'text', maxLength: 120, when: NON_IDRAULICO },
       { key: 'tirantiFossaNumero', kind: 'int', min: 0, max: 100, when: IDRAULICO },
       { key: 'tirantiFossaTipo', kind: 'text', maxLength: 120, when: IDRAULICO },
+      { key: 'funiNote', kind: 'textarea', maxLength: 4000, wide: true },
     ],
   },
   {
@@ -96,6 +113,7 @@ export const SECTIONS = [
       { key: 'funicellaDiametroMm', kind: 'decimal', min: 0, max: 100, unit: 'mm' },
       { key: 'funicellaLunghezzaM', kind: 'decimal', min: 0, max: 10_000, unit: 'm' },
       { key: 'tenditore', kind: 'text', maxLength: 120 },
+      { key: 'limitatoreNote', kind: 'textarea', maxLength: 4000, wide: true },
     ],
   },
   {
@@ -118,6 +136,7 @@ export const SECTIONS = [
       { key: 'cornettaInstallare', kind: 'yesno' },
       { key: 'allarmePortineria', kind: 'yesno' },
       { key: 'displayPortineria', kind: 'yesno' },
+      { key: 'allarmeNote', kind: 'textarea', maxLength: 4000, wide: true },
     ],
   },
   {
@@ -142,7 +161,6 @@ export const SECTIONS = [
     key: 'note',
     fields: [
       { key: 'noteQuadretto', kind: 'textarea', maxLength: 4000, wide: true },
-      { key: 'noteImpianto', kind: 'textarea', maxLength: 4000, wide: true },
       // „Luce vano da sostituire“ — в бележките (собственикът го премести от „Tipologia“); при Sì —
       // бележка на ръка (октомври 2026).
       { key: 'luceVanoSostituire', kind: 'yesno' },
@@ -167,6 +185,19 @@ export const FIELDS: readonly FieldDef[] = SECTIONS.flatMap(
   (section): readonly FieldDef[] => section.fields,
 );
 
+/**
+ * Разделът Impianto не се печата отделно: под табелата на листа и на PDF-а стоят останалите данни от табелата
+ * в кабината (D.P.R. 162/1999, чл. 16, ал. 3 а) и б)), годината, CE и „Note impianto“ — само попълненото.
+ */
+export const SOTTO_TARGA = [
+  'soggettoVerifiche',
+  'installatore',
+  'numeroFabbricazione',
+  'annoInstallazione',
+  'marcaturaCe',
+  'noteImpianto',
+] as const satisfies readonly SchedaFieldKey[];
+
 /** Поне едно от тези трябва да е попълнено — иначе схемата не може да се намери после. */
 export const IDENTIFIERS = ['indirizzo', 'matricola', 'numeroImpianto'] as const;
 
@@ -177,8 +208,13 @@ export const SEARCHABLE = [
   'indirizzo',
   'marca',
   'buonoLavoro',
+  'numeroFabbricazione',
+  'installatore',
+  'soggettoVerifiche',
   'parcheggio',
   'noteLocaleMacchina',
+  'ubicazioneNote',
+  'tipologiaNote',
   'grembiuleNote',
   'quadroNote',
   'arganoTipo',
@@ -193,11 +229,14 @@ export const SEARCHABLE = [
   'tirantiCabinaTipo',
   'tirantiContrappesoTipo',
   'tirantiFossaTipo',
+  'funiNote',
   'limitatoreTipo',
   'tenditore',
+  'limitatoreNote',
   'serratureTipo',
   'pattinoRetrattileTipo',
   'serratureNote',
+  'allarmeNote',
   'noteQuadretto',
   'noteImpianto',
   'luceVanoNote',

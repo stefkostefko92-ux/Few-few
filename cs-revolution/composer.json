@@ -1,0 +1,13 @@
+{
+  "name": "carbonstealth/site",
+  "description": "Carbon Stealth VCC — server-side helpers (contact form SMTP).",
+  "type": "project",
+  "require": {
+    "php": ">=8.1",
+    "phpmailer/phpmailer": "^6.9"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "platform-check": false
+  }
+}

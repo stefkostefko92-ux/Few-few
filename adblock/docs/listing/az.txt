@@ -12,3 +12,4 @@ Supreme AdBlock nə etdiyinizi izləmədən reklamları hər yerdə bloklayır �
 • Sayt pozulub? Bir klik düzəldir, ya da bizə bildirin — siz görmədən heç nə göndərilmir.
 • uBlock Origin, AdGuard və ya Adblock Plus-dan keçirsiniz? İcazəli saytlarınızı və filtrlərinizi bir faylla gətirin.
 • Səhifənin başqa hansı saytlara qoşulduğunu görün və birini bir kliklə yalnız orada bloklayın.
+• Qoruma səviyyəsi: Əsas · Standart · Sərt

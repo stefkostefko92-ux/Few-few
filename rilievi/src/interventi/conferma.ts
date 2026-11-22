@@ -128,7 +128,7 @@ export type EsitoConferma =
 export const LOCK_FIRME = 0x52_49_4c_46; // „RILF“
 
 /**
- * Кои от тези отпечатъци на подписи вече стоят някъде — на лист за интервенция или на протокол, във
+ * Кои от тези отпечатъци на подписи вече стоят някъде — на лист за интервенция, на протокол или на бон, във
  * всяка фирма и в което и да е поле. Вика се в транзакцията на потвърждението, след `LOCK_FIRME`.
  */
 export async function firmeGiaUsate(
@@ -136,7 +136,7 @@ export async function firmeGiaUsate(
   hashes: readonly string[],
 ): Promise<Set<string>> {
   const list = [...hashes];
-  const [interventi, verbali] = await Promise.all([
+  const [interventi, verbali, buoni] = await Promise.all([
     tx.intervento.findMany({
       where: { OR: [{ firmaTecnicoHash: { in: list } }, { firmaClienteHash: { in: list } }] },
       select: { firmaTecnicoHash: true, firmaClienteHash: true },
@@ -145,11 +145,14 @@ export async function firmeGiaUsate(
       where: { OR: [{ firmaTecnicoHash: { in: list } }, { firmaSupervisoreHash: { in: list } }] },
       select: { firmaTecnicoHash: true, firmaSupervisoreHash: true },
     }),
+    // Подписите на „Buono di lavoro“ (src/buoni/) — по едно място на ред.
+    tx.buonoFirma.findMany({ where: { hash: { in: list } }, select: { hash: true } }),
   ]);
   return new Set(
     [
       ...interventi.flatMap((r) => [r.firmaTecnicoHash, r.firmaClienteHash]),
       ...verbali.flatMap((r) => [r.firmaTecnicoHash, r.firmaSupervisoreHash]),
+      ...buoni.map((r) => r.hash),
     ].filter((h): h is string => h !== null),
   );
 }

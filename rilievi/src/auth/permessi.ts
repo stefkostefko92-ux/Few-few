@@ -17,8 +17,11 @@ export const CAPACITA_CONFIGURABILI = [
   'schede:write',
   'schede:delete',
   'schede:trash',
+  'schede:approve',
   'interventi:read',
   'interventi:write',
+  'preventivi:read',
+  'preventivi:write',
   'audit:view',
 ] as const satisfies readonly Capability[];
 export type CapacitaConfigurabile = (typeof CAPACITA_CONFIGURABILI)[number];
@@ -45,7 +48,9 @@ const IMPLICA: Readonly<Partial<Record<CapacitaConfigurabile, CapacitaConfigurab
   'schede:write': 'schede:read',
   'schede:delete': 'schede:read',
   'schede:trash': 'schede:read',
+  'schede:approve': 'schede:read',
   'interventi:write': 'interventi:read',
+  'preventivi:write': 'preventivi:read',
 };
 
 const isConfigurabile = (value: unknown): value is CapacitaConfigurabile =>

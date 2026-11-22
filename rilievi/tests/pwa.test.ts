@@ -88,11 +88,16 @@ describe('the service worker', () => {
       skipWaiting: () => undefined,
       clients: { claim: async () => undefined },
     };
-    vm.runInNewContext(source, { self, fetch, Response });
+    vm.runInNewContext(source, {
+      self: { ...self, location: { origin: 'https://r.example' } },
+      fetch,
+      Response,
+      URL,
+    });
     return listeners;
   }
 
-  function fetchEvent(request: { mode: string; method: string }) {
+  function fetchEvent(request: { mode: string; method: string; url?: string }) {
     const event = {
       request,
       answer: null as Promise<Response> | null,
@@ -106,8 +111,18 @@ describe('the service worker', () => {
     for (const request of [
       { mode: 'cors', method: 'GET' },
       { mode: 'no-cors', method: 'GET' },
-      // A form that is sent: never answered by the worker, it goes to the server or fails as before.
-      { mode: 'navigate', method: 'POST' },
+      // A form that is not a field document (a deletion, a signature, the sign-in): as before.
+      {
+        mode: 'navigate',
+        method: 'POST',
+        url: 'https://r.example/schede/cm0000000000000000000001/elimina',
+      },
+      {
+        mode: 'navigate',
+        method: 'POST',
+        url: 'https://r.example/interventi/cm0000000000000000000001/firma',
+      },
+      { mode: 'navigate', method: 'POST', url: 'https://r.example/accesso' },
     ]) {
       const event = fetchEvent(request);
       onFetch!(event);
@@ -135,8 +150,8 @@ describe('the service worker', () => {
     assert.doesNotMatch(body, /<script/);
   });
 
-  it('keeps nothing on the device', () => {
-    assert.doesNotMatch(source, /caches\.|indexedDB|localStorage/);
+  it('keeps no page on the device (only an unsent form — tests/bozze-sw.test.ts)', () => {
+    assert.doesNotMatch(source, /caches\.|localStorage|sessionStorage/);
   });
 });
 

@@ -70,20 +70,29 @@ export async function accessoAttivo(userId: string): Promise<LoggedUser | null> 
   };
 }
 
-/** Входът е завършен (паролата и, ако има, кодът): броячите падат, последният вход, одит. */
+/**
+ * Входът е завършен (паролата или доставчикът на самоличност и, ако има, кодът): броячите падат,
+ * последният вход, одит — с втория фактор или с доставчика.
+ */
 export async function completaAccesso(
   userId: string,
-  via: 'password' | 'totp' | 'recupero',
+  via: 'password' | 'totp' | 'recupero' | 'microsoft' | 'google',
 ): Promise<void> {
   await attemptSucceeded(userId, true);
   await prisma.user.update({ where: { id: userId }, data: { lastLoginAt: new Date() } });
+  const meta =
+    via === 'password'
+      ? null
+      : via === 'totp' || via === 'recupero'
+        ? { secondoFattore: via }
+        : { fornitore: via };
   await writeUserAudit(
     {
       actorId: userId,
       action: 'LOGIN',
       targetType: 'user',
       targetId: userId,
-      ...(via === 'password' ? {} : { meta: { secondoFattore: via } }),
+      ...(meta ? { meta } : {}),
     },
     userId,
   );

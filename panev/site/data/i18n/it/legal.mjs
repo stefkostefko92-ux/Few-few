@@ -46,7 +46,7 @@ export default {
       },
       {
         h: 'Spedizione',
-        p: 'Gratuita in tutta Italia per ordini superiori a 500 € (IVA esclusa); sotto tale soglia le spese di trasporto sono a carico del cliente e vengono indicate nella conferma d’ordine. Consegna standard 2 – 5 giorni lavorativi; express 24 – 48 ore su richiesta.',
+        p: 'Gratuita in tutta Italia per ordini superiori a 500 € (IVA esclusa); sotto tale soglia le spese di trasporto sono a carico del cliente e vengono indicate nella conferma d’ordine. Consegna standard in circa 2 – 3 settimane lavorative; express in 1 settimana su richiesta.',
       },
       {
         h: 'Pagamento',

@@ -10,6 +10,7 @@ import {
   insightsJobId,
   publishJobId,
 } from '../src/queue/publish-queue.js';
+import * as queueModule from '../src/queue/publish-queue.js';
 
 /*
  * Правилата на BullMQ за имена, които не се виждат, докато не тръгне процес срещу Redis:
@@ -49,4 +50,15 @@ test('имената на задачите също са без двоеточи
   for (const name of [PUBLISH_JOB, REFRESH_JOB, INSIGHTS_JOB, AUTOPILOT_JOB]) {
     assert.doesNotMatch(name, /:/, name);
   }
+});
+
+test('планираната проверка на одит-веригата има задача и id без двоеточие', () => {
+  const queue = queueModule as Record<string, unknown>;
+  assert.equal(typeof queue.AUDIT_VERIFY_JOB, 'string', 'AUDIT_VERIFY_JOB липсва');
+  assert.equal(typeof queue.AUDIT_VERIFY_JOB_ID, 'string', 'AUDIT_VERIFY_JOB_ID липсва');
+  for (const name of [queue.AUDIT_VERIFY_JOB, queue.AUDIT_VERIFY_JOB_ID] as string[]) {
+    assert.doesNotMatch(name, /:/, name);
+    assert.notEqual(String(Number.parseInt(name, 10)), name);
+  }
+  assert.equal(typeof queue.scheduleAuditVerify, 'function', 'scheduleAuditVerify липсва');
 });

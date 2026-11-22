@@ -13,6 +13,7 @@ const PANELS = [
   ['MASTECH', 'NG120'],
   ['MASTECH', 'QI_TOUCH'],
   ['ELETTROQUADRI'],
+  ['GEAT'],
 ];
 
 /** The rest of the sheet, in the order a person ticks it. */
@@ -288,6 +289,8 @@ const SWITCHES = [
   [['ELETTROQUADRI'], ['MASTECH', 'NG120'], 'GEARLESS', 'el', 'mn'],
   [['ELETTROQUADRI'], ['DMG'], 'IDRAULICO', 'eo', 'dp'],
   [['DMG'], ['PELAZZA'], 'IDRAULICO', 'dp', 'oq'],
+  [['PELAZZA'], ['GEAT'], 'ELETTRICO', 'oq', 'gt'],
+  [['GEAT'], ['ELETTROQUADRI'], 'GEARLESS', 'gt', 'el'],
 ];
 
 const make = async (page, [marca, modello]) => {

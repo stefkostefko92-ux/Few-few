@@ -284,13 +284,15 @@
   flex: 0 0 100%;
 }
 
-.paper__foto-grid--una .paper__figura img {
+.paper__foto-grid--una .paper__figura img,
+.paper__foto-grid--una .paper__figura .paper__foto-annotata {
   width: auto;
   max-width: 100%;
   max-height: 176mm;
 }
 
-.paper__figura img {
+.paper__figura img,
+.paper__figura .paper__foto-annotata {
   display: block;
   width: 100%;
   height: auto;

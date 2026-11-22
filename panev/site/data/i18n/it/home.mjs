@@ -117,7 +117,7 @@ export default {
       },
       {
         title: 'Ricevi la conferma',
-        body: 'Ti rispondiamo con disponibilità, totale e tempi di consegna: standard 2 – 5 giorni lavorativi, express 24 – 48 ore su richiesta.',
+        body: 'Ti rispondiamo con disponibilità, totale e tempi di consegna: standard circa 2 – 3 settimane lavorative, express 1 settimana su richiesta.',
       },
     ],
     freeShipping: 'Spedizione gratuita in tutta Italia per ordini superiori a 500 € (IVA esclusa).',
@@ -138,7 +138,7 @@ export default {
       },
       {
         q: 'Quanto costa la spedizione e in quanto tempo arriva?',
-        a: 'La spedizione è gratuita in tutta Italia per ordini superiori a 500 € (IVA esclusa); sotto tale soglia le spese sono indicate nella conferma d’ordine. Consegna standard 2 – 5 giorni lavorativi, express 24 – 48 ore su richiesta.',
+        a: 'La spedizione è gratuita in tutta Italia per ordini superiori a 500 € (IVA esclusa); sotto tale soglia le spese sono indicate nella conferma d’ordine. Consegna standard in circa 2 – 3 settimane lavorative, express in 1 settimana su richiesta.',
       },
       {
         q: 'Che cosa significano DX e SX?',

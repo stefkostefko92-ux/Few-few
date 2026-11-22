@@ -3,9 +3,11 @@
 // "Scarta"); the menus work from the keyboard and Esc closes the menu, not the editor; after a menu the
 // keys still reach the editor; on a tablet the
 // panels stay on the screen and two taps with a pinch between them still draw the line
-// (schizzi-clic.mjs), and on a phone on its side the "Stile" panel and the value bar stay on it too.
+// (schizzi-clic.mjs), an iPad finger and the Apple Pencil draw, in the sketch and in "Annota"
+// (schizzi-ipad.mjs), and on a phone on its side the "Stile" panel and the value bar stay on it too.
 import { fail } from './helpers.mjs';
 import { checkTapPinchTap } from './schizzi-clic.mjs';
+import { checkIpad, checkIpadAnnotation } from './schizzi-ipad.mjs';
 
 export async function checkReopened(page, dialog) {
   const state = await page.evaluate(() => ({
@@ -140,6 +142,7 @@ export async function checkLayouts(page, editUrl) {
     const tab = await context.newPage();
     tab.on('dialog', (d) => d.accept());
     await tab.goto(editUrl);
+    if (name === 'tablet') await checkIpadAnnotation(tab, name);
     await tab.locator('[data-schizzi-nuovo]').click();
     const dialog = tab.locator('[data-schizzo-editor]');
     await dialog.waitFor({ state: 'visible' });
@@ -149,7 +152,10 @@ export async function checkLayouts(page, editUrl) {
       await onScreen(tab, details.locator('.menu__pannello'), `sketch ${name}: menu ${menu}`);
       await details.locator('summary').click();
     }
-    if (name === 'tablet') await checkTapPinchTap(tab, dialog, name);
+    if (name === 'tablet') {
+      await checkTapPinchTap(tab, dialog, name);
+      await checkIpad(tab, dialog, name);
+    }
     if (name === 'phone landscape') {
       // A dimension up to its number: the value bar and OK on the screen.
       await dialog.locator('label[for="schizzo-strumento-quota"]').click();
@@ -173,6 +179,32 @@ export async function checkLayouts(page, editUrl) {
         const box = await dialog.locator(what).boundingBox();
         if (box.y + box.height > 170) fail(`sketch ${name}: ${what} under the keyboard`);
       }
+      // On an iPad the keyboard can also scroll the visible part down (visualViewport.offsetTop): the
+      // visual viewport says so with a "scroll" — the editor's top and height follow it, the value bar
+      // with them. (The browser here has no soft keyboard: its visual viewport tells what one would.)
+      const keyboard = (offsetTop, height) =>
+        tab.evaluate(
+          ([top, h]) => {
+            const vv = window.visualViewport;
+            if (top === null) {
+              delete vv.offsetTop;
+              delete vv.height;
+            } else {
+              Object.defineProperty(vv, 'offsetTop', { get: () => top, configurable: true });
+              Object.defineProperty(vv, 'height', { get: () => h, configurable: true });
+            }
+            vv.dispatchEvent(new Event('scroll'));
+          },
+          [offsetTop, height],
+        );
+      await keyboard(60, 170);
+      const top = await dialog.boundingBox();
+      const field = await dialog.locator('#schizzo-valore').boundingBox();
+      if (Math.round(top.y) !== 60 || Math.round(top.height) !== 170)
+        fail(`sketch ${name}: the editor does not follow the visible part ${JSON.stringify(top)}`);
+      else if (field.y < 60 || field.y + field.height > 230)
+        fail(`sketch ${name}: the value bar is out of the visible part`);
+      await keyboard(null);
     }
     await context.close();
   }

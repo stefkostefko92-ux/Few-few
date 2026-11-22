@@ -46,7 +46,7 @@ export default {
       },
       {
         h: 'Shipping',
-        p: 'Free across Italy for orders above € 500 (excl. VAT); below that threshold shipping costs are borne by the customer and are stated in the order confirmation. Standard delivery 2 – 5 working days; express 24 – 48 h on request.',
+        p: 'Free across Italy for orders above € 500 (excl. VAT); below that threshold shipping costs are borne by the customer and are stated in the order confirmation. Standard delivery in about 2 – 3 working weeks; express in 1 week on request.',
       },
       {
         h: 'Payment',

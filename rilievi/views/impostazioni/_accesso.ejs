@@ -1,0 +1,30 @@
+<%
+  // „Accesso con Microsoft o Google“ (D1, routes/impostazioni-accesso.ts): директорията на Microsoft Entra и
+  // домейнът на Google Workspace — само на доставчиците с регистрирано приложение; колко души са свързали.
+  const est = esterni;
+  const nomi = { microsoft: 'Microsoft', google: 'Google' };
+  const campi = { microsoft: { maxlength: 36, inputmode: 'text' }, google: { maxlength: 253, inputmode: 'url' } };
+%><section class="esterni" aria-labelledby="h-accesso">
+  <h2 class="section__title" id="h-accesso"><%= t('impostazioni.pagine.accesso.titolo') %></h2>
+  <p><%= t('esterno.impostazioni.intro') %></p>
+  <form class="form" method="post" action="/impostazioni/accesso" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="azienda" value="<%= azienda.id %>">
+    <% for (const f of fornitoriEsterni) { const err = est.errors[f]; %>
+    <div class="field">
+      <label class="field__label" for="acc-<%= f %>"><%= t('esterno.impostazioni.' + f) %></label>
+      <input class="input" id="acc-<%= f %>" name="<%= f %>" type="text" maxlength="<%= campi[f].maxlength %>" inputmode="<%= campi[f].inputmode %>" autocomplete="off" autocapitalize="none" spellcheck="false" value="<%= est.values[f] %>" aria-describedby="acc-<%= f %>-hint<% if (err) { %> acc-<%= f %>-err<% } %>"<% if (err) { %> aria-invalid="true"<% } %>>
+      <p class="field__hint" id="acc-<%= f %>-hint"><%= t('esterno.impostazioni.' + f + 'Hint') %> <%= t('esterno.impostazioni.collegati', { fornitore: nomi[f], n: est.collegati[f] || 0 }) %></p>
+      <% if (err) { %><p class="field__error" id="acc-<%= f %>-err"><%= t(err) %></p><% } %>
+    </div>
+    <% } %>
+    <div class="toolbar"><button class="btn btn--primary" type="submit"><%= t('esterno.impostazioni.salva') %></button></div>
+  </form>
+  <h3><%= t('esterno.impostazioni.comeTitolo') %></h3>
+  <ol>
+    <li><%= t('esterno.impostazioni.passo1') %></li>
+    <li><%= t('esterno.impostazioni.passo2') %></li>
+    <li><%= t('esterno.impostazioni.passo3') %></li>
+  </ol>
+  <p class="field__hint"><%= t('esterno.impostazioni.responsabilita') %></p>
+</section>

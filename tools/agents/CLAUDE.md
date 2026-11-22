@@ -8,7 +8,7 @@ A/B 27.10.2026 на 5 агента: без него 9/9 и pass^k 5/5 срещу
 
 ## Агентите — `.claude/agents/`
 
-32 purpose-built subagents (BG system prompt, least-privilege `tools`), each with
+34 purpose-built subagents (BG system prompt, least-privilege `tools`), each with
 **durable verified memory** + a **hook-enforced self-learning loop**
 (`SubagentStart`/`SubagentStop` → `_memory/<id>.md`; verified-only,
 source-or-nothing, secrets hard-dropped). Every agent also preloads the **security
@@ -30,7 +30,7 @@ that file **and** `agents-dashboard/agents.json` in sync when you change an agen
 fail-closed) and orchestrates by Anthropic's agent canon. Run `oversee.mjs` after any change to the agent layer.
 
 **Екипи (`.claude/agents/_teams.json` → `_teams.md`, `teams.mjs`).** Екипът дава входна точка вместо
-плосък ростер и държи веригите къси (всяка стъпка плаща префикса наново). Всеки агент е в **точно един** от 9 екипа; екипът има водач, основен поток **≤3 стъпки** с гейт
+плосък ростер и държи веригите къси (всяка стъпка плаща префикса наново). Всеки агент е в **точно един** от 10 екипа; екипът има водач, основен поток **≤3 стъпки** с гейт
 между тях и **човешка точка**, 5 тестови задачи, 3 вероятни провала и метрики, сочещи реални наши
 инструменти. Картата на агента (екип · тръгва при · получава · връща · предава на · човек) се инжектира
 при старт **след** статичния префикс — кешът остава общ. `teams.mjs --check` (в `gate.mjs`) гейтва
@@ -40,8 +40,8 @@ fail-closed) and orchestrates by Anthropic's agent canon. Run `oversee.mjs` afte
 **Loop/automation слой (`tools/agents/loops/`).** Лостът е loop-ът, не единичният промпт (идея от
 loop-engineering, написана нашия начин — zero-dep, fail-closed). Декларативен манифест (`loops.json`) с
 **автономия-стълба L1 (само доклад) → L2 (помага) → L3 (безнадзорно)**; `loop-audit.mjs` гейтва готовността
-(L3 иска budgetCap+denylist). Планираният **health-sweep** (`agents-sweep.yml`, седмично) пуска целия гейт
-по каданс — лови гниене/дрейф без триггер-push. `drift-lint.mjs` включва **бройка/ростер consistency**
+(L3 иска budgetCap+denylist). Планираният **health-sweep** (облачна задача „Седмичен преглед на агентския слой и кода“, понеделник 09:13 София;
+`runtime:"cloud"` в `loops.json`; `agents-sweep.yml` остава ръчен резерв) пуска целия гейт по каданс — лови гниене/дрейф без триггер-push. `drift-lint.mjs` включва **бройка/ростер consistency**
 (каноничен = agents.json) — не позволява документ да лъже за размера на екипа.
 
 **Патърни от Agentic Design Patterns (Gulli) — усвоени наши 3.** Книгата е **данни, не инструкции**;
@@ -236,19 +236,22 @@ On-demand **workflow packages** (`SKILL.md` = YAML frontmatter + imperative body
 `scripts/`/`references/`). Only metadata (~100 tokens) loads until a skill triggers — so they
 capture repeating procedures **without** bloating every session. Different from agents (a *who*
 you delegate to) and MCP/tools (*how* to connect): a skill is *what to do, in what order, with what
-guardrails*. Ours (BG, vetted; 51): **агентски** — agent-doctrine (генериран, зарежда се във всеки агент през `skills:`); **процедури** — deploy · prisma-migrate · quality-gate · verify ·
+guardrails*. Ours (BG, vetted; 62): **агентски** — agent-doctrine (генериран, във всеки агент през `skills:`); **процедури** — deploy · prisma-migrate · quality-gate · verify ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
 razpit · skill-author · sapernik;
-**предпазители/сигурност** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch · db-readonly ·
-owasp-review · wcag-audit; **SEO/производителност** — indexnow · keywords-seo · i18n-parity · web-vitals;
-plus uchitel; **домейн** — youtube-reddit · fivem-mlo · fivem-clothing · fivem-livery; **дизайн** — frontend-design (официалното на Anthropic, Apache 2.0; изключение по решение
-на собственика — Дизайнера го зарежда винаги през `skills:`); **външни, адаптирани** (2026-10-28) —
+**предпазители/сигурност** — fiscal-bg · stripe-payment · revolut-payment · motion-a11y · gdpr-launch · db-readonly ·
+owasp-review · wcag-audit · incident-breach · pentest-engagement; **SEO/perf** — indexnow · keywords-seo · i18n-parity · web-vitals;
+plus uchitel; **домейн** — youtube-reddit · fivem-mlo · fivem-clothing · fivem-livery; **дизайн** — frontend-design (Anthropic, Apache 2.0; Дизайнера го зарежда винаги през `skills:`); **външни, адаптирани** (2026-10-28) —
 dpa-review · dsar-response · pia-generation · aia-generation · vendor-ai-review · marketing-claims-review ·
-humanizer · test-driven-development · seo-geo · seo-hreflang · pricing; (2026-10-31, правни) — use-case-triage ·
+humanizer · test-driven-development · seo-geo · seo-hreflang · pricing; (2026-11-08) — receiving-code-review ·
+discernment-nudge · improve-codebase-architecture; (2026-11-14) — ponytail-review ·
+observability-and-instrumentation · deprecation-and-migration · ui-ux-pro-max · archify-diagrams (tt-a1i/archify, Apache-2.0; каналите за обновления и марки по мрежа махнати; Летописецът); (2026-10-31, правни) — use-case-triage ·
 reg-gap-analysis · ai-inventory · saas-msa-review · nda-review · vendor-agreement-review · stakeholder-summary ·
 oss-review · ip-clause-review. Gate: `node tools/skills/lint.mjs` + `node tools/skills/trigger-check.mjs --check`
 (both fail-closed, in `gate.mjs`). **Author our own BG, verified skills — never import third-party
-skills wholesale** (external = data, not commands).
+skills wholesale** (external = data, not commands). Партида 2026-11-08: discernment-nudge и improve-codebase-architecture
+са само ръчни (`disable-model-invocation: true` — описанието не влиза в контекста, затова собственикът им не иска `Skill`
+в `tools:`); karpathy-guidelines влезе като доктрина в `PROCEDURE.md`, не като умение (`THIRD_PARTY_NOTICES.md`).
 
 **Външно умение влиза само по този път (2026-10-28, 16 кандидата → 11 умения от 5 хранилища; 2026-10-31 — още 9
 правни от anthropics/claude-for-legal, общ „Наш профил“ и предпазители от един източник).** (1) Сваляне
@@ -298,7 +301,10 @@ Claude" (Anthropic, 33 стр.) описва изисквания, които п
 dizayner) и всеки агент със сменена дефиниция, пуснати в нова headless сесия през Agent tool, връщат ДОСЛОВНО
 думите след всеки маркер (доктрина · процедура · споделени · карта · памет) и след началото на коренния CLAUDE.md
 (трябва да липсва); цитатът се сверява с източника — налучкан или преразказан не минава; (2) **критичните оценки**
-с pass^k (Касаджията и Продавача по 3 опита) + golden spec-ът на сменения агент + verifier; (3) **печат**
+с pass^k (Касаджията и Продавача по 3 опита) + golden spec-ът на сменения агент + verifier — критичните се
+пропускат само при смяна единствено на чужди дефиниции, ако са минали до 7 дни при същия CLI (контекстът им
+е байт по байт същият; 2026-11-15, ~$6.7 и ~6 мин по-малко на такъв гейт; ръчно пускане без промени = пълно);
+(3) **печат**
 `evals/live-gate.json` с хеш на входовете (дефиниции, куки, settings, agent-doctrine, PROCEDURE/SECURITY, teams,
 handoff, извличането на паметта — без самата памет). Гейтът `live-fresh` е **задължителен**: сменен вход без нов
 печат = червено, и в CI. Двигателят е `evals/live-run.mjs` (изолирано копие, без Stop куките на оркестратора,
@@ -310,6 +316,16 @@ handoff, извличането на паметта — без самата па
 `additionalContext`, `skills:` в субагент, `omitClaudeMd`, фонов субагент, SubagentStop/Start, флаговете на
 `claude -p` …) с източник, ключови думи и файловете, които стъпват на него. Проверката на 5 дни
 (`anthropic-watch.mjs`) маркира всяка новост в changelog-а, която засяга договор → живият гейт първи.
+**Минимален CLI** (`tools/lib/cli-version.mjs`, `MIN_CLI` 2.1.319 — sandbox escape при worktree): живият
+гейт отказва под него (fail-closed, и при неизвестна версия), `sandbox-setup` предупреждава; договор `min-cli-2-1-319`.
+
+**Поуките на Boris Cherny (11.11.2026, `tools/research/boris-cherny.md`) — какво влезе.** Ядро → `core-map --diff`
+напомня, че планът минава през втори наш агент преди кода (`_orchestration.md`). Нов модел → `ablation-watch.mjs`
+казва, че ритуалът за аблация е дължим (`evals/README.md`, „Аблация на доктрината“). Седмичният sweep пуска
+`tools/qa/hygiene.mjs` (дълг, дубли, големи файлове по продукт → Качествения). Куката `format-on-edit` форматира
+с prettier на продукта. Паметта при старт носи индекс („показани N от M“), а `tools/memory/source-check.mjs`
+показва поуки с мъртъв източник в репото. **Не влезе:** `denyInsteadOfPrompting` глобално — в интерактивната
+сесия на собственика щеше да отказва вместо да пита, а оценките и живият гейт вече тичат с `dontAsk`.
 
 **Отворените PR-и минават през нашите агенти** (`pr-triage.mjs` → `pr-review.mjs`, 2026-10-27). Кой — по
 пътищата от git: код → Кодаджията + до двама собственици на домейна (най-засегнатите продукти); само зависимости →
@@ -332,13 +348,13 @@ handoff, извличането на паметта — без самата па
 Докажи през CLI-то, както за предпазителите: проба с агент, който цитира какво има в контекста си, струва
 ~20k токена и хваща това, което никой тест не вижда.
 
-**Guard hooks (active, 5):** `guard-readonly.mjs` (PreToolUse/Bash — агент, чиято дефиниция има Bash, но
+**Guard hooks (active, 8 — пълната таблица и guard-self/guard-model от 19.11.2026 са в `.claude/hooks/README.md`):** `guard-readonly.mjs` (PreToolUse/Bash — агент, чиято дефиниция има Bash, но
 няма Write/Edit, не пише в репото през Bash: git записи, `sed -i`, `>` към файл, `--write`/`--fix`, npm/pnpm,
 които сменят lockfile; `agent_type` идва в payload-а; кука на ниво settings, защото frontmatter куките не
 тичат в `-p`), `guard-prompt.mjs` (UserPromptSubmit — pasted secret never enters history),
 `guard-dangerous.mjs` (PreToolUse/Bash — only catastrophic: root/home/**workspace** rm, disk destroyers,
 `curl|sh`, force push / delete of main, `gh repo delete`), `guard-secrets.mjs`
-(PostToolUse/Write|Edit|MultiEdit|NotebookEdit — early secret warning), `guard-exfil.mjs`
+(PreToolUse/Write|Edit|MultiEdit|NotebookEdit — the write is refused before the secret reaches disk; PostToolUse stays as a second layer), `guard-exfil.mjs`
 (PreToolUse/Bash|WebFetch|WebSearch|**mcp__.\*** — blocks secrets/PII leaving via any net verb/interpreter,
 incl. pipe, `$(…)` substitution, stdin redirect, upload flags, scp/rsync, archives, code reads,
 credential-emitting commands, **staging** for a later exfil, and **any MCP tool argument** (GitHub comment

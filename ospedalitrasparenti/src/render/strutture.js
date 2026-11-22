@@ -197,11 +197,12 @@ export function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, 
     ? `<div class="semrow" role="list" aria-label="Le cinque spie di questa struttura">
   ${spie
     .map(
-      (s) => `<span class="semitem" role="listitem" title="${esc(s.dettaglio)}"><span class="dot ${s.stato}"></span>${esc(s.label)}${s.stato === 'nd' ? ' <span class="small">(n.d.)</span>' : ''}</span>`
+      // .sr: състоянието на спията и за екранния четец (точката е само цвят + title)
+      (s) => `<span class="semitem" role="listitem" title="${esc(s.dettaglio)}"><span class="dot ${s.stato}"></span>${esc(s.label)}${s.stato === 'nd' ? ' <span class="small">(n.d.)</span>' : ''}<span class="sr">: ${esc(s.dettaglio)}</span></span>`
     )
     .join('\n  ')}
-  <a class="small" href="../pagella.html#legenda">Cosa significano?</a>
-  ${conFeed ? `<a class="small" href="../feed/${esc(ente.codice)}.xml">🔔 Segui (RSS)</a>` : ''}
+  <span role="listitem"><a class="small" href="../pagella.html#legenda">Cosa significano?</a></span>
+  ${conFeed ? `<span role="listitem"><a class="small" href="../feed/${esc(ente.codice)}.xml">🔔 Segui (RSS)</a></span>` : ''}
 </div>`
     : '';
 

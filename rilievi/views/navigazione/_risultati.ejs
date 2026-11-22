@@ -1,0 +1,47 @@
+<%
+  // Резултатите на търсенето — страницата /cerca и прозорецът Ctrl K (същото парче, src/cerca/service.ts).
+  // Всяка връзка е `cerca__voce`: стрелките на прозореца минават през тях (public/js/cerca.js).
+  const idraulico = (s) => (s.tipoImpianto || []).includes('IDRAULICO');
+  const piuAziende = currentUser.master || currentUser.memberships.length > 1;
+  const titolo = (matricola, numero) => [matricola ? t('cerca.matricola', { m: matricola }) : null, numero ? t('cerca.numero', { n: numero }) : null].filter(Boolean).join(' · ') || t('cerca.senzaDati');
+  const calcoli = [...r.argano.map((c) => ({ ...c, tipo: 'argano' })), ...r.limitatore.map((c) => ({ ...c, tipo: 'limitatore' }))];
+%><% if (!trovato) { %><p class="cerca__vuoto"><%= r.q ? t('cerca.nessuno', { q: r.q }) : t('cerca.inizia') %></p>
+<% } %><% if (r.impianti && r.impianti.rows.length > 0) { %><section class="cerca__gruppo" aria-labelledby="cg-impianti<%= parziale ? '-p' : '' %>">
+  <h2 id="cg-impianti<%= parziale ? '-p' : '' %>"><%= t('cerca.impianti') %> <span class="cerca__n"><%= r.impianti.total %></span></h2>
+  <ul>
+    <% for (const s of r.impianti.rows) { %><li class="cerca__riga">
+      <a class="cerca__voce" href="/schede/<%= s.id %>"><%- include('../partials/icon', { name: 'sheet' }) %><span class="cerca__testo"><span class="cerca__titolo"><%= titolo(s.matricola, s.numeroImpianto) %></span><span class="cerca__sotto"><%= s.indirizzo || '—' %><% if (piuAziende) { %> · <%= s.azienda.name %><% } %><% if (s.deletedAt) { %> · <%= t('cerca.cestino') %><% } %></span></span></a>
+      <% if (!idraulico(s) && !s.deletedAt) { %><span class="cerca__azioni"><a class="cerca__voce cerca__mini" href="/schede/<%= s.id %>/calcolo-argano"><%= t('cerca.argano') %></a><a class="cerca__voce cerca__mini" href="/schede/<%= s.id %>/calcolo-limitatore"><%= t('cerca.limitatore') %></a></span><% } %>
+    </li>
+    <% } %>
+  </ul>
+  <% if (r.impianti.total > r.impianti.rows.length) { %><a class="cerca__voce cerca__tutte" href="/schede?q=<%= encodeURIComponent(r.q) %>"><%= t('cerca.tutte', { n: r.impianti.total }) %></a><% } %>
+</section>
+<% } %><% if (calcoli.length > 0) { %><section class="cerca__gruppo" aria-labelledby="cg-calcoli<%= parziale ? '-p' : '' %>">
+  <h2 id="cg-calcoli<%= parziale ? '-p' : '' %>"><%= t('cerca.calcoli') %> <span class="cerca__n"><%= calcoli.length %></span></h2>
+  <ul>
+    <% for (const c of calcoli) { %><li class="cerca__riga">
+      <a class="cerca__voce" href="<%= c.href %>"><%- include('../partials/icon', { name: c.tipo === 'argano' ? 'calc' : 'gauge' }) %><span class="cerca__testo"><span class="cerca__titolo"><%= titolo(c.matricola, c.numeroImpianto) %></span><span class="cerca__sotto"><%= t('cerca.' + c.tipo) %> · <%= c.indirizzo || '—' %><% if (piuAziende) { %> · <%= c.aziendaName %><% } %></span></span></a>
+    </li>
+    <% } %>
+  </ul>
+</section>
+<% } %><% if (r.aziende.length > 0) { %><section class="cerca__gruppo" aria-labelledby="cg-aziende<%= parziale ? '-p' : '' %>">
+  <h2 id="cg-aziende<%= parziale ? '-p' : '' %>"><%= t('cerca.aziende') %> <span class="cerca__n"><%= r.aziende.length %></span></h2>
+  <ul>
+    <% for (const a of r.aziende) { %><li class="cerca__riga">
+      <a class="cerca__voce" href="/aziende/<%= a.id %>"><%- include('../partials/icon', { name: 'building' }) %><span class="cerca__testo"><span class="cerca__titolo"><%= a.name %></span><% if (a.disattivata) { %><span class="cerca__sotto"><%= t('aziende.deactivated') %></span><% } %></span></a>
+    </li>
+    <% } %>
+  </ul>
+</section>
+<% } %><% if (r.pagine.length > 0) { %><section class="cerca__gruppo" aria-labelledby="cg-pagine<%= parziale ? '-p' : '' %>">
+  <h2 id="cg-pagine<%= parziale ? '-p' : '' %>"><%= t('cerca.pagine') %></h2>
+  <ul>
+    <% for (const p of r.pagine) { %><li class="cerca__riga">
+      <a class="cerca__voce" href="<%= p.href %>"><%- include('../partials/icon', { name: p.icon }) %><span class="cerca__testo"><span class="cerca__titolo"><%= t(p.key) %></span><% if (p.descKey) { %><span class="cerca__sotto"><%= t(p.descKey) %></span><% } %></span></a>
+    </li>
+    <% } %>
+  </ul>
+</section>
+<% } %>

@@ -1,7 +1,7 @@
 {
   "verbali": {
     "list": "Verbali di chiusura cantiere",
-    "listSub": "I verbali di fine lavori, dal più recente. Dopo le due firme si scaricano due PDF: copia azienda e copia installatore.",
+    "listSub": "I verbali di chiusura cantiere, dal più recente. Dopo le due firme si scaricano due PDF: copia azienda e copia installatore.",
     "new": "Nuovo verbale",
     "titolo": "Verbale di chiusura cantiere",
     "indietro": "Torna ai verbali",
@@ -81,7 +81,7 @@
     "daScheda": {
       "testo": "Cerca la scheda: indirizzo e N° buono si compilano da soli. Impianto senza scheda? Compila i campi qui sotto.",
       "nessuna": "Nessuna scheda trovata: compila il verbale a mano qui sotto.",
-      "crea": "Verbale di chiusura",
+      "crea": "Verbale di chiusura cantiere",
       "dellaScheda": "Verbali di chiusura cantiere"
     },
     "firma": {
@@ -114,7 +114,13 @@
       "creato": "Verbale salvato.",
       "salvato": "Modifiche salvate.",
       "confermato": "Verbale firmato e confermato: scarica la copia azienda e la copia installatore.",
-      "conflitto": "Il verbale è stato modificato da qualcun altro mentre lo guardavi: ecco i tuoi dati, controlla e salva di nuovo."
+      "conflitto": "Il verbale è stato modificato da qualcun altro mentre lo guardavi: ecco i tuoi dati, controlla e salva di nuovo.",
+      "confermatoCopia": "Verbale firmato e confermato. Le copie in PDF sono state inviate all'indirizzo indicato.",
+      "confermatoCopiaNo": "Verbale firmato e confermato, ma l'email con la copia non è partita: scarica i PDF e inviali tu."
+    },
+    "email": {
+      "oggetto": "Verbale di chiusura cantiere del {data} — {azienda}",
+      "corpo": "Buongiorno,\n\nin allegato le due copie (azienda e installatore) del verbale di chiusura cantiere del {data}, firmato e confermato con {azienda}.\n\nI PDF sono in formato PDF/A; sotto il riquadro trovate la data della conferma e l'impronta del documento firmato.\n\nEmail inviata dal portale Rilievi Impianti per conto di {azienda}. L'indirizzo è stato usato solo per questo invio."
     }
   }
 }

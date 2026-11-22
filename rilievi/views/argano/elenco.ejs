@@ -66,6 +66,7 @@
       <p class="muted"><%= t(calcolo.chiave + '.elenco.vuotoHint') %></p>
     </div>
     <% } else { %>
+    <div class="table-scorre">
     <table class="table table--stack">
       <caption class="visually-hidden"><%= t(calcolo.chiave + '.elenco.salvati') %></caption>
       <thead>
@@ -88,6 +89,7 @@
         <% } %>
       </tbody>
     </table>
+    </div>
     <%- include('../partials/pager', { base, page: page.page, pages: page.pages }) %>
     <% } %>
   </section>
