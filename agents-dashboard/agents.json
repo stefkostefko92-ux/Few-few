@@ -1212,7 +1212,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 732
+        "lessons": 733
       },
       "evolution": [
         {
@@ -2048,9 +2048,20 @@
           "date": "2026-11-22",
           "event": "v67.3 — учене",
           "detail": "Научи: next-intl 3.26 getTranslations({locale}) подава locale-а като requestLocale на getReque… (+112 още)"
+        },
+        {
+          "version": "67.4.0",
+          "date": "2026-11-22",
+          "event": "v67.4 — учене",
+          "detail": "Научи: PyMuPDF doc.xref_set_key(cat, \"Lang\", \"(it-IT)\") се чете обратно с xref_get_key като ('…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-22",
+          "type": "learning",
+          "summary": "Научи: „PyMuPDF doc.xref_set_key(cat, \"Lang\", \"(it-IT)\") се чете обратно с xref_get_key като ('…\""
+        },
         {
           "date": "2026-11-22",
           "type": "learning",
