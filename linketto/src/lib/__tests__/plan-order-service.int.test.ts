@@ -24,6 +24,8 @@ const refunds: { orderId: string; amountCents: number; idempotencyKey: string }[
 let refundImmediate = 'pending';
 // Отговорът на POST /refund с код 2xx (по подразбиране — поръчка с refundImmediate).
 let refundResponse: ((id: string) => unknown) | null = null;
+// Кука на живото четене (GET /api/orders/{id}): стойност/обещание или null = от `live`.
+let getOrderHook: ((id: string) => Promise<unknown> | null) | null = null;
 const sent: { to: string; subject: string }[] = [];
 const alerts: string[] = [];
 const alertLines: string[][] = [];
@@ -37,7 +39,11 @@ const httpError = (status: number) => Object.assign(new Error(`revolut GET /api/
 const service = createPlanOrderService({
   db,
   revolut: {
-    getOrder: async (id) => live.get(id) ?? { state: 'pending' },
+    getOrder: async (id) => {
+      const hooked = getOrderHook?.(id);
+      if (hooked) return hooked;
+      return live.get(id) ?? { state: 'pending' };
+    },
     refund: async (input) => {
       refunds.push(input);
       const id = `rf-${randomUUID()}`;
@@ -124,6 +130,7 @@ beforeEach(async () => {
   limited.length = 0;
   refundImmediate = 'pending';
   refundResponse = null;
+  getOrderHook = null;
   notifyOk = true;
   await db.revolutDispute.deleteMany({ where: { disputeId: { startsWith: 'dsp-int-' } } });
   await db.referral.deleteMany({ where: { referrer: { email: { endsWith: '@int.test' } } } });
@@ -927,4 +934,145 @@ test('Б4: отговорът на POST refund е „completed“ без сум�
   assert.equal(await service.requestPlanRefund(other.id), 'requested');
   assert.ok(alerts.some((s) => /различна сума/.test(s)));
   refundResponse = null;
+});
+
+// ── Червен екип (2026-11-22): инвариантът на връщането ──────────────────────────────
+// Приключва се САМО по живо четене: type refund + state completed + точна сума + EUR.
+// Остаряло решение за стар refund не пипа по-нов (CAS по refundOrderId/опита).
+
+test('РЕ-C1: POST „completed“ с точна сума, живо = failed → не приключва; поръчката е пак платена', { skip }, async () => {
+  const user = await mkUser();
+  const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: order.id });
+  refundResponse = (id) => {
+    live.set(id, { id, type: 'refund', state: 'failed', amount: 400, currency: 'EUR' });
+    return { id, type: 'refund', state: 'completed', amount: 400, currency: 'EUR' };
+  };
+  await assert.rejects(service.requestPlanRefund(order.id), /declined/);
+  const back = await reload(order.id);
+  assert.equal(back.state, 'completed', 'парите не са върнати → пак платена');
+  assert.equal(back.refundOrderId, null);
+  assert.equal((await userOf(user.id)).plan, 'PRO');
+  assert.equal(limited.length, 0);
+});
+
+test('РЕ-C2: кратък „completed“, живо = точна сума, но state processing → не приключва', { skip }, async () => {
+  const user = await mkUser();
+  const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: order.id });
+  refundResponse = (id) => {
+    live.set(id, { id, type: 'refund', state: 'processing', amount: 400, currency: 'EUR', payments: [{ state: 'refund_validated' }] });
+    return { id, state: 'completed' };
+  };
+  assert.equal(await service.requestPlanRefund(order.id), 'requested');
+  assert.equal((await reload(order.id)).state, 'refund_pending');
+  assert.equal((await userOf(user.id)).plan, 'PRO');
+});
+
+test('РЕ-C3: кратък „completed“, живо = отказано със сума → не приключва', { skip }, async () => {
+  const user = await mkUser();
+  const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: order.id });
+  refundResponse = (id) => {
+    live.set(id, { id, type: 'refund', state: 'failed', amount: 400, currency: 'EUR', payments: [{ state: 'declined', decline_reason: 'x' }] });
+    return { id, state: 'completed' };
+  };
+  await assert.rejects(service.requestPlanRefund(order.id), /declined/);
+  assert.notEqual((await reload(order.id)).state, 'refunded');
+  assert.equal((await userOf(user.id)).plan, 'PRO');
+});
+
+test('РЕ-F2: отказ с удръжка (271) — POST твърди „completed“ 271, живо 400 → не приключва, аларма', { skip }, async () => {
+  const user = await mkUser();
+  const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: order.id });
+  await db.planOrder.update({ where: { id: order.id }, data: { refundCents: 271, withdrawalRequestedAt: new Date() } });
+  refundResponse = (id) => {
+    live.set(id, { id, type: 'refund', state: 'completed', amount: 400, currency: 'EUR' });
+    return { id, type: 'refund', state: 'completed', amount: 271, currency: 'EUR' };
+  };
+  assert.equal(await service.requestPlanRefund(order.id), 'requested');
+  assert.equal((await reload(order.id)).state, 'refund_pending');
+  assert.ok(alerts.some((x) => /различна сума/.test(x)));
+});
+
+test('РЕ-B: живото четене хвърля (503) → „в ход“ без аларма за различна сума; cron-ът после приключва', { skip }, async () => {
+  const user = await mkUser();
+  const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: order.id });
+  let rid = '';
+  refundResponse = (id) => {
+    rid = id;
+    return { id, state: 'completed' };
+  };
+  getOrderHook = (id) => (id === rid ? Promise.reject(httpError(503)) : null);
+  assert.equal(await service.requestPlanRefund(order.id), 'requested');
+  assert.equal((await reload(order.id)).state, 'refund_pending');
+  assert.equal(alerts.filter((x) => /различна сума/.test(x)).length, 0, 'временна грешка ≠ разминаване');
+  getOrderHook = null;
+  live.set(rid, { id: rid, type: 'refund', state: 'completed', amount: 400, currency: 'EUR' });
+  assert.equal(await service.settlePlanRefund({ id: order.id }), 'refunded');
+});
+
+test('РЕ-G: остаряло „failed“ за R1 (cron) не изтрива по-новия R2', { skip }, async () => {
+  const user = await mkUser();
+  const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: order.id });
+  assert.equal(await service.requestPlanRefund(order.id), 'requested');
+  const r1 = (await reload(order.id)).refundOrderId as string;
+  live.set(r1, { id: r1, type: 'refund', state: 'failed', payments: [{ state: 'declined' }] });
+  let r2 = '';
+  let fired = false;
+  // Cron-ът прочита поръчката с R1 и чака Revolut; междувременно уебхукът урежда R1
+  // („платена“) и админът пуска нов refund R2.
+  getOrderHook = (id) => {
+    if (id !== r1 || fired) return null;
+    fired = true;
+    return (async () => {
+      assert.equal(await service.settlePlanRefund({ refundOrderId: r1 }), 'failed');
+      assert.equal(await service.requestPlanRefund(order.id), 'requested');
+      r2 = (await reload(order.id)).refundOrderId as string;
+      return live.get(r1);
+    })();
+  };
+  await service.settlePlanRefund({ id: order.id });
+  const now = await reload(order.id);
+  assert.ok(r2 && r2 !== r1);
+  assert.equal(now.state, 'refund_pending');
+  assert.equal(now.refundOrderId, r2, 'R2 не бива да се губи');
+  live.set(r2, { id: r2, type: 'refund', state: 'completed', amount: 400, currency: 'EUR' });
+  assert.equal(await service.settlePlanRefund({ refundOrderId: r2 }), 'refunded');
+  assert.equal(refunds.length, 2);
+});
+
+test('РЕ-H: закъснял отговор на POST за R1 не презаписва записания R2', { skip }, async () => {
+  const user = await mkUser();
+  const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: order.id });
+  let call = 0;
+  let r1 = '';
+  let r2 = '';
+  let release: (value: unknown) => void = () => {};
+  refundResponse = (id) => {
+    call += 1;
+    if (call === 1) {
+      r1 = id;
+      // Revolut създаде R1, но отговорът виси в мрежата.
+      return new Promise((resolve) => (release = resolve));
+    }
+    if (call === 2) return { id: r1, state: 'pending', type: 'refund', amount: 400, currency: 'EUR' };
+    r2 = id;
+    return { id, state: 'pending', type: 'refund', amount: 400, currency: 'EUR' };
+  };
+  const first = service.requestPlanRefund(order.id);
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  // Админът повтаря „заседналото“ (същият ключ) → R1 е записан; R1 пропада; нов опит → R2.
+  assert.equal(await service.requestPlanRefund(order.id), 'requested');
+  live.set(r1, { id: r1, type: 'refund', state: 'failed', payments: [{ state: 'declined' }] });
+  assert.equal(await service.settlePlanRefund({ id: order.id }), 'failed');
+  assert.equal(await service.requestPlanRefund(order.id), 'requested');
+  assert.equal((await reload(order.id)).refundOrderId, r2);
+  release({ id: r1, state: 'pending', type: 'refund', amount: 400, currency: 'EUR' });
+  await first.catch(() => undefined);
+  assert.equal((await reload(order.id)).refundOrderId, r2, 'R2 презаписан със стария R1');
 });

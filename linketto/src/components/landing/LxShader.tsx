@@ -135,10 +135,14 @@ export function LxShader() {
       // (Lighthouse/PSI) също рендерират софтуерно, затова там шейдърът не се мери.
       const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
       const renderer = String(gl.getParameter(debugInfo ? debugInfo.UNMASKED_RENDERER_WEBGL : gl.RENDERER) ?? '');
+      const loseContext = () => gl.getExtension('WEBGL_lose_context')?.loseContext();
       if (/swiftshader|llvmpipe|softpipe|software|basic render/i.test(renderer)) {
-        gl.getExtension('WEBGL_lose_context')?.loseContext();
+        loseContext();
         return;
       }
+      // До пълното `cleanup` (след свързването): unmount по време на компилацията пак
+      // освобождава контекста (браузърът държи ~16 живи WebGL контекста).
+      cleanup = loseContext;
 
       // Компилацията не се чака синхронно (getShaderParameter веднага блокира главната нишка
       // за стотици ms): с KHR_parallel_shader_compile питаме COMPLETION_STATUS между кадрите.
@@ -156,7 +160,7 @@ export function LxShader() {
       gl.linkProgram(program);
       const parallel = gl.getExtension('KHR_parallel_shader_compile');
       const whenLinked = (go: () => void) => {
-        if (disposed) return;
+        if (disposed) return; // cleanup (loseContext) вече е извикан от unmount-а
         if (parallel && !gl.getProgramParameter(program, parallel.COMPLETION_STATUS_KHR)) {
           window.setTimeout(() => whenLinked(go), 32);
           return;
@@ -165,7 +169,11 @@ export function LxShader() {
       };
       whenLinked(() => {
         // Неуспешна компилация на шейдър → неуспешно свързване; CSS градиентът остава.
-        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return;
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+          loseContext();
+          cleanup = undefined;
+          return;
+        }
         gl.useProgram(program);
         const vao = gl.createVertexArray();
         gl.bindVertexArray(vao);

@@ -1,14 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { blockFieldInput, blockFieldLabels, blockFieldsFor, type BlockFieldLabel } from '@/lib/blocks';
 
 const field = 'mt-1 w-full rounded-control border border-line-input px-3 py-2';
 
 /**
  * Вид блок + полетата, които той ползва, с етикет по вида (за „Музика“ първото поле е
- * Spotify, второто Apple Music — както ги чете parseBlockInput). Без JavaScript остават
- * полетата на „Линк“ (подразбирането).
+ * Spotify, второто Apple Music — както ги чете parseBlockInput). Без JavaScript (и преди
+ * хидратацията) полето е свободен текст и не е задължително — сървърът валидира по вида,
+ * както преди; тесният тип и `required` идват чак след хидратацията.
  */
 export function AddBlockFields({
   kinds,
@@ -32,6 +33,13 @@ export function AddBlockFields({
   optionsHint: string;
 }) {
   const [kind, setKind] = useState('LINK');
+  const [hydrated, setHydrated] = useState(false);
+  const select = useRef<HTMLSelectElement>(null);
+  useEffect(() => {
+    // Изборът, направен преди хидратацията, печели (select-ът е неконтролиран).
+    if (select.current) setKind(select.current.value);
+    setHydrated(true);
+  }, []);
   const shows = blockFieldsFor(kind);
   const labels = blockFieldLabels(kind);
   const input = (name: 'url' | 'extra1' | 'extra2') => {
@@ -42,9 +50,9 @@ export function AddBlockFields({
       <label key={`${kind}-${name}`} className="block text-sm font-medium">
         {fieldLabels[label]}
         <input
-          type={spec.type}
+          type={hydrated ? spec.type : 'text'}
           name={name}
-          required={spec.required}
+          required={hydrated && spec.required}
           placeholder={spec.placeholder}
           autoComplete="off"
           className={field}
@@ -57,7 +65,7 @@ export function AddBlockFields({
     <>
       <label className="block text-sm font-medium">
         {kindLabel}
-        <select name="kind" value={kind} onChange={(e) => setKind(e.target.value)} className={field}>
+        <select ref={select} name="kind" defaultValue="LINK" onChange={(e) => setKind(e.target.value)} className={field}>
           {kinds.map((k) => (
             <option key={k} value={k}>
               {kindLabels[k]}
