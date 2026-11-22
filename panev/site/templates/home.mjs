@@ -87,6 +87,7 @@ ${viewerSection(t)}
       <p>${esc(t.problem.body2)}</p>
       <p class="tools-label">${esc(t.problem.toolsLabel)}</p>
       <div class="chips">${t.problem.tools.map((x) => `<span class="chip">${esc(x)}</span>`).join('')}</div>
+      <p class="sec-more"><a href="${pagePath(t, 'walls')}">${esc(t.guides.walls.h1)}</a></p>
     </div>
     <div class="highlight-card">
       <h3>${esc(t.problem.highlight)}</h3>
@@ -119,6 +120,7 @@ ${cantiereSection(t, 'home')}
       <h2>${esc(t.patent.title)}</h2>
       <p>${esc(t.patent.body)}</p>
       <p class="conformity">${esc(t.patent.conformity)}</p>
+      <p class="sec-more"><a href="${pagePath(t, 'patent')}">${esc(t.guides.patent.anatomyTitle)}</a></p>
     </div>
     <dl class="spec-card">${patentRows}</dl>
   </div>
