@@ -172,6 +172,7 @@ export function productsPage(t) {
       </table>
     </div>
     <nav class="fam-links" aria-label="${esc(t.families.shared.familiesLabel)}"><ul>${famLinks}</ul></nav>
+    <p class="sec-more"><a href="${pagePath(t, 'walls')}">${esc(t.guides.walls.h1)}</a> · <a href="${pagePath(t, 'patent')}">${esc(t.guides.patent.link)}</a></p>
   </div>
 </section>
 

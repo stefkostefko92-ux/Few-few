@@ -3,7 +3,7 @@
 // е отпред, после данните, FAQ (FAQPage) и — за монтажа — шестте стъпки от каталога (HowTo).
 // Текстовете са в i18n/<език>/guides.mjs; фактите са само тези от каталога.
 
-import { esc, pagePath, crumbName } from './layout.mjs';
+import { esc, pagePath, crumbName, ORIGIN } from './layout.mjs';
 import { orderCta } from './products.mjs';
 import { FAMILY_KEYS } from './families.mjs';
 import { CATALOG_PDF } from '../data/products.mjs';
@@ -36,9 +36,14 @@ const faqHtml = (g) => `
   </div>
 </section>`;
 
-const faqLd = (g) => ({
+// Възлите са вързани за страницата си (@id, isPartOf към #webpage от layout.mjs) и носят езика ѝ.
+const pageUrl = (t, key) => `${ORIGIN}${pagePath(t, key)}`;
+const faqLd = (t, key) => ({
   '@type': 'FAQPage',
-  mainEntity: g.faq.map((x) => ({ '@type': 'Question', name: x.q, acceptedAnswer: { '@type': 'Answer', text: x.a } })),
+  '@id': `${pageUrl(t, key)}#faq`,
+  inLanguage: t.htmlLang,
+  isPartOf: { '@id': `${pageUrl(t, key)}#webpage` },
+  mainEntity: t.guides[key].faq.map((x) => ({ '@type': 'Question', name: x.q, acceptedAnswer: { '@type': 'Answer', text: x.a } })),
 });
 
 const families = (t) => FAMILY_KEYS.map((k) => `<li><a href="${pagePath(t, k)}">${esc(t.families[k].crumb)}</a></li>`).join('');
@@ -104,7 +109,7 @@ ${faqHtml(g)}
 ${orderCta(t)}`;
 }
 
-export const patentLd = (t) => [faqLd(t.guides.patent)];
+export const patentLd = (t) => [faqLd(t, 'patent')];
 
 // ── Неравни зидарии ──────────────────────────────────────────
 export function wallsPage(t) {
@@ -185,13 +190,17 @@ ${orderCta(t)}`;
 // Шестте стъпки са тези от стр. 10 на каталога; инструментите — трите от началната страница.
 export const wallsLd = (t) => {
   const g = t.guides.walls;
+  const url = pageUrl(t, 'walls');
   return [
-    faqLd(g),
+    faqLd(t, 'walls'),
     {
       '@type': 'HowTo',
+      '@id': `${url}#howto`,
+      url: `${url}#montaggio`,
       name: g.howToName,
       description: g.stepsLead,
       inLanguage: t.htmlLang,
+      isPartOf: { '@id': `${url}#webpage` },
       tool: t.problem.tools.map((name) => ({ '@type': 'HowToTool', name })),
       step: g.steps.map((s, i) => ({ '@type': 'HowToStep', position: i + 1, name: s.title, text: s.body })),
     },

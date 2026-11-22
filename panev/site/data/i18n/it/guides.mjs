@@ -8,14 +8,14 @@ export default {
   },
   guideMeta: {
     patent: {
-      title: 'Staffe brevettate per ascensori: il brevetto | Panev',
+      title: 'Brevetto staffe ascensore: modello di utilità UIBM | Panev',
       description: 'Le staffe Panev sono tutelate dal brevetto per Modello di Utilità N. 202023000002112 (UIBM): deposito 19/05/2023, rilascio 07/01/2025, valido fino al 2033.',
-      keywords: ['staffe brevettate ascensori', 'brevetto staffa ascensore', 'modello di utilità 202023000002112', 'staffa di supporto brevettata', 'brevetto UIBM staffe ascensori', 'Panev Ascensori', 'Carbon Stealth'],
+      keywords: ['brevetto staffe ascensore', 'brevetto staffa ascensore', 'modello di utilità 202023000002112', 'staffa di supporto brevettata', 'brevetto UIBM staffe ascensori', 'brevetto Panev', 'Panev Ascensori', 'Carbon Stealth'],
     },
     walls: {
-      title: 'Staffe regolabili per murature irregolari | Panev',
-      description: 'Guide del contrappeso e porte di piano su murature irregolari o non perpendicolari: staffe regolabili ±7°/±8°, corsa di estensione, montaggio in sei passi.',
-      keywords: ['staffe regolabili murature irregolari', 'fissaggio guide ascensore muratura irregolare', 'staffe ascensore muro non perpendicolare', 'montaggio staffe ascensore', 'fissaggio porta di piano muro fuori squadra', 'Panev Ascensori', 'Carbon Stealth'],
+      title: 'Staffe ascensore su muri irregolari e fuori squadra | Panev',
+      description: 'Fissare guide del contrappeso e porte di piano su muri irregolari o fuori squadra: giunto articolato, corsa di estensione, montaggio in sei passi.',
+      keywords: ['staffe ascensore muri irregolari', 'fissaggio guide ascensore muratura irregolare', 'staffe ascensore muro fuori squadra', 'montaggio staffe ascensore', 'fissaggio porta di piano muro non perpendicolare', 'Panev Ascensori', 'Carbon Stealth'],
     },
   },
   guides: {
@@ -27,8 +27,9 @@ export default {
     },
     patent: {
       crumb: 'Brevetto',
+      link: 'Il brevetto delle staffe Panev',
       kicker: 'Proprietà industriale · Modello di Utilità',
-      h1: 'Staffe brevettate per ascensori: il brevetto Panev',
+      h1: 'Il brevetto delle staffe Panev: Modello di Utilità N. 202023000002112',
       lead: 'Sì, le staffe Panev sono brevettate: la staffa di supporto è tutelata dal brevetto per Modello di Utilità N. 202023000002112, rilasciato dal Ministero delle Imprese e del Made in Italy (UIBM) il 7 gennaio 2025 e valido fino al 19 maggio 2033.',
       visualAlt: 'Staffa brevettata per porta di piano, piastra A 65 170 7 con staffa B 65 320, render 3D',
       factsTitle: 'I dati del brevetto',
@@ -53,7 +54,7 @@ export default {
       faq: [
         { q: 'Le staffe Panev sono brevettate?', a: 'Sì. La staffa di supporto Panev Ascensori è tutelata dal brevetto per Modello di Utilità N. 202023000002112, rilasciato a Roma il 7 gennaio 2025 dal Ministero delle Imprese e del Made in Italy (UIBM).' },
         { q: 'Fino a quando è valido il brevetto?', a: 'Fino al 19 maggio 2033. La domanda è stata depositata il 19 maggio 2023.' },
-        { q: 'Che cosa protegge il brevetto?', a: 'Il titolo è «Staffa di supporto per un componente strutturale di un impianto di ascensore o montacarichi» (classifica B66B) e protegge la soluzione di fissaggio regolabile presentata nel catalogo: un elemento di fissaggio alla muratura e un elemento di supporto collegati da un giunto articolato, con un elemento di bloccaggio che fissa l’angolo regolato.' },
+        { q: 'Che cosa protegge il brevetto?', a: 'Protegge la soluzione di fissaggio regolabile presentata nel catalogo: un elemento di fissaggio alla muratura e un elemento di supporto collegati da un giunto articolato, con un elemento di bloccaggio che fissa l’angolo regolato. Il titolo è «Staffa di supporto per un componente strutturale di un impianto di ascensore o montacarichi» (classifica B66B).' },
         { q: 'Dove si verifica il brevetto?', a: 'Nei registri dell’Ufficio Italiano Brevetti e Marchi (UIBM), con il numero 202023000002112. Il certificato è riprodotto a pagina 02 del catalogo tecnico.' },
       ],
     },
@@ -95,7 +96,7 @@ export default {
         { q: 'Come si fissano le guide del contrappeso su murature irregolari?', a: 'Con un supporto regolabile (SU, SD o SC) e la staffa di giunzione SG: il supporto si fissa alla muratura e la staffa di giunzione scorre su di esso entro la corsa di estensione indicata per ogni configurazione, con un’aletta di sormonto di 35 mm. Il supporto SD ha la base decentrata, per una maggiore flessibilità di posizionamento su murature irregolari.' },
         { q: 'Come si compensa un muro non perpendicolare alla porta di piano?', a: 'Con il giunto articolato delle staffe per porte di piano: l’elemento di supporto ruota rispetto a quello fissato al muro, di ± 8° sulla serie 65 e di ± 7° sulle serie 45 e 37, e un elemento di bloccaggio fissa l’angolo regolato.' },
         { q: 'Quali attrezzi servono per il montaggio?', a: 'Tre: trapano tassellatore, chiavi per bulloni e livella.' },
-        { q: 'E se la misura che serve non è a listino?', a: 'Per le condizioni di montaggio non standard ci sono le soluzioni su misura: la sporgenza “A” del supporto SC 50 170 si definisce sul disegno esecutivo del cantiere. Invia disegno o misure a info@panevascensori.it e ricevi la quotazione su commessa.' },
+        { q: 'E se la misura che serve non è a listino?', a: 'Si realizza su misura: la sporgenza “A” del supporto SC 50 170 si definisce sul disegno esecutivo del cantiere. Invia disegno o misure a info@panevascensori.it e ricevi la quotazione su commessa.' },
       ],
     },
   },
