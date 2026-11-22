@@ -18,6 +18,7 @@ import {
 } from './templates/pages.mjs';
 import { viewerPage } from './templates/viewer.mjs';
 import { familyPage, familyLd, FAMILY_KEYS } from './templates/families.mjs';
+import { patentPage, patentLd, wallsPage, wallsLd, GUIDE_KEYS, GUIDE_PARENTS } from './templates/guides.mjs';
 import { CATALOG_PDF } from './data/products.mjs';
 import { logoPicture } from './templates/asset.mjs';
 
@@ -43,6 +44,9 @@ const PAGES = [
   { key: 'terms',    body: (t) => termsPage(t) },
   // Страниците по семейства: под листата в пътеката (parents).
   ...FAMILY_KEYS.map((key) => ({ key, body: (t) => familyPage(t, key), ld: (t) => familyLd(t, key), css: [VISTA_CSS, LISTINO_CSS, REGOLA_CSS], parents: ['products'] })),
+  // Задълбочените страници: патентът и монтажът върху неравни зидарии (templates/guides.mjs).
+  { key: 'patent', body: (t) => patentPage(t), ld: (t) => patentLd(t), css: [VISTA_CSS, REGOLA_CSS], parents: GUIDE_PARENTS.patent },
+  { key: 'walls', body: (t) => wallsPage(t), ld: (t) => wallsLd(t), css: [VISTA_CSS, REGOLA_CSS], parents: GUIDE_PARENTS.walls },
 ];
 
 let written = 0;
@@ -115,7 +119,7 @@ function lastmod(url, file) {
 }
 const prioOf = (key) => key === 'home' ? '1.0'
   : ['products', 'catalog', ...FAMILY_KEYS].includes(key) ? '0.9'
-  : ['contacts', 'viewer3d'].includes(key) ? '0.8' : '0.3';
+  : ['contacts', 'viewer3d', ...GUIDE_KEYS].includes(key) ? '0.8' : '0.3';
 const urls = [...PAGES, { key: 'viewer3d' }].map((def) => locales.map((t) => {
   const loc = `${ORIGIN}${pagePath(t, def.key)}`;
   const alts = locales.map((lt) =>

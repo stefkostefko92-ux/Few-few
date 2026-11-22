@@ -724,6 +724,26 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
 .sec-head .chips { margin-bottom: 0; }
 .sec-head + .section { padding-top: 1.8rem; }
 
+/* Задълбочените страници (патент, неравни зидарии): термин → обяснение, и стъпки на два реда */
+.term-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 2.4rem; margin: 1.6rem 0 0; }
+.term-list > div { padding: .9rem 0; border-top: 1px solid var(--line); }
+.term-list dt { font-weight: 700; color: var(--navy); }
+.term-list dd { margin: .2rem 0 0; color: var(--muted); }
+/* Линията е отгоре, не отляво: важи при всеки брой колони. */
+.steps-rows { gap: 1.8rem 2.2rem; }
+.steps-rows .step, .steps-rows .step:first-child { padding: 1.1rem 0 0; margin-top: 0; border-left: 0; border-top: 1px solid var(--line); }
+.footer-patent a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+/* На телефон таблицата „условие → решение“ става поредица от блокове: третата колона иначе остава
+   извън екрана, а втората се чупи на по три думи на ред. */
+@media (max-width: 760px) {
+  .term-list { grid-template-columns: 1fr; }
+  .stack-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .stack-table tr { display: block; padding: 1rem 1.1rem; border-bottom: 1px solid var(--line); }
+  .stack-table tr:last-child { border-bottom: 0; }
+  .stack-table :is(th[scope="row"], td) { display: block; padding: 0; border: 0; background: none; }
+  .stack-table td { margin-top: .4rem; }
+}
+
 /* 404 — една страница за трите езика */
 .nf-page { min-height: 100vh; min-height: 100svh; display: flex; align-items: center; }
 .nf-page .wrap { width: 100%; padding-top: 3rem; padding-bottom: 3rem; }
