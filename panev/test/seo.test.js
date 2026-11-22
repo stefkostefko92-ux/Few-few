@@ -45,6 +45,17 @@ test('sitemap: всяка страница съществува, веднъж, �
   }
 });
 
+test('sitemap: и обратното — всяка индексируема страница на диска е в него', () => {
+  const inSitemap = new Set(htmlUrls.map(fileOf));
+  for (const dir of ['', 'en', 'bg']) {
+    for (const name of fs.readdirSync(path.join(ROOT, dir)).filter((f) => f.endsWith('.html'))) {
+      const file = path.join(ROOT, dir, name);
+      const noindex = /<meta name="robots" content="[^"]*noindex/.test(fs.readFileSync(file, 'utf8'));
+      assert.ok(noindex || inSitemap.has(file), `${path.join(dir, name)}: индексируема, но липсва в sitemap.xml`);
+    }
+  }
+});
+
 test('canonical сочи самата страница, а hreflang е it/en/bg/x-default и е взаимен', () => {
   for (const [url, p] of pages) {
     assert.equal(p.canonical, url, `${url}: canonical`);
