@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-11-13",
+    "updated": "2026-11-22",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -5039,7 +5039,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 253
+        "lessons": 255
       },
       "evolution": [
         {
@@ -5545,9 +5545,20 @@
           "date": "2026-11-04",
           "event": "v28.0 — учене",
           "detail": "Научи: В linketto идентификацията на дружеството живее само в messages/*.json (legal.privacyBo… (+34 още)"
+        },
+        {
+          "version": "28.2.0",
+          "date": "2026-11-22",
+          "event": "v28.2 — учене",
+          "detail": "Научи: В panev SEO тестът мери заглавие и описание с JS .length върху генерирания HTML след un… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-22",
+          "type": "learning",
+          "summary": "Научи: „В panev SEO тестът мери заглавие и описание с JS .length върху генерирания HTML след un…\" (+1 още)"
+        },
         {
           "date": "2026-11-13",
           "type": "quarantine",
