@@ -49,7 +49,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 481
+        "lessons": 484
       },
       "evolution": [
         {
@@ -627,9 +627,20 @@
           "date": "2026-11-22",
           "event": "v43.4 — учене",
           "detail": "Научи: Чл. 127, ал. 2 c.p.i. наказва с административна санкция от €150 до €1 500 (след чл. 6 З…"
+        },
+        {
+          "version": "43.7.0",
+          "date": "2026-11-22",
+          "event": "v43.7 — учене",
+          "detail": "Научи: Неперсонализираните реклами на AdSense (requestNonPersonalizedAds=1) пак ползват бискви… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-22",
+          "type": "learning",
+          "summary": "Научи: „Неперсонализираните реклами на AdSense (requestNonPersonalizedAds=1) пак ползват бискви…\" (+2 още)"
+        },
         {
           "date": "2026-11-22",
           "type": "learning",
@@ -1212,7 +1223,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 733
+        "lessons": 734
       },
       "evolution": [
         {
@@ -2054,9 +2065,20 @@
           "date": "2026-11-22",
           "event": "v67.4 — учене",
           "detail": "Научи: PyMuPDF doc.xref_set_key(cat, \"Lang\", \"(it-IT)\") се чете обратно с xref_get_key като ('…"
+        },
+        {
+          "version": "67.5.0",
+          "date": "2026-11-22",
+          "event": "v67.5 — учене",
+          "detail": "Научи: PHP explode с limit N връща точно N части, когато разделителите са N-1 или повече, зато…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-22",
+          "type": "learning",
+          "summary": "Научи: „PHP explode с limit N връща точно N части, когато разделителите са N-1 или повече, зато…\""
+        },
         {
           "date": "2026-11-22",
           "type": "learning",
