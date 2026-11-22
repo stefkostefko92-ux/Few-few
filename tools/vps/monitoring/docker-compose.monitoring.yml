@@ -27,4 +27,7 @@ services:
     volumes: ["./kuma_data:/app/data"]
 # Алерти: Uptime Kuma → Telegram/имейл при HTTP != 200 на
 #   https://zabobovdol.carbonstealth.eu/ и https://medqr.carbonstealth.eu/
+# Linketto: монитор „HTTP(s) - Keyword“ към https://piuma.carbonstealth.eu/api/health с ключова дума
+#   "app":"linketto" (200 без маркера = чужд процес на порта). Kuma е на СЪЩИЯ хост — затова
+#   външната проба е отделно: .github/workflows/linketto-health.yml → probe-health.sh (тук).
 # Тайните (BESZEL_KEY, токени) идват от .env с mode 600, не от репото.

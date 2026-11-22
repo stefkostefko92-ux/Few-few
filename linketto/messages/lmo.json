@@ -190,6 +190,27 @@
     "urlLabel": "URL / telefon / indiriz",
     "extra1Label": "URL App Store / Spotify",
     "extra2Label": "URL Google Play / Apple Music",
+    "field_url": "Link (https://…)",
+    "field_tip": "Link per pagà (Revolut, PayPal, Ko-fi…)",
+    "field_video": "Link al video (YouTube o Vimeo)",
+    "field_phone": "Numer de telefon",
+    "field_address": "Indirizz o post",
+    "field_spotify": "Link de Spotify",
+    "field_appleMusic": "Link de Apple Music",
+    "field_appStore": "Link de App Store",
+    "field_googlePlay": "Link de Google Play",
+    "field_appWeb": "Pagina web per i alter dispositiv (facoltativa)",
+    "field_vcardPhone": "Telefon",
+    "field_vcardEmail": "Email",
+    "field_vcardOrg": "Azienda (facoltativa)",
+    "kindHint_HEADER": "L'intestazion la divid i blocch in sezion — basta el test.",
+    "kindHint_FORM": "I visitador te scriven col modul, e i messagg te i vedet in del panell. Basta on titol.",
+    "kindHint_EMAIL": "La tira insema iscritt per la toa newsletter; ognun el conferma per email. Basta on titol.",
+    "kindHint_BOOKING": "I visitador manden ona domanda de appontament, che te vedet in del panell e te segnet come sbrigada. Basta on titol.",
+    "kindHint_MUSIC": "Impienissi almanch vun — el visitador el sceglie el sò servizi.",
+    "kindHint_APP": "Impienissi almanch on store — mostrom quell giust segond el telefon del visitador.",
+    "kindHint_VIDEO": "El video el ven miss in del profil e el se carega domà quand se clicca.",
+    "kindHint_VCARD": "Impienissi telefon e/o email — el visitador el i salva in di contatt cont on tocch.",
     "addBlockHint": "Per intestazion e modul basta el titol. Per ona app impienissi App Store e/o Google Play. Per la musica — Spotify e/o Apple Music.",
     "messagesSection": "Messagg del modul",
     "noMessages": "Anmò nissun messagg.",
@@ -507,7 +528,11 @@
   "seo": {
     "metaTitle": "Linketto — link in bio multilengua: tucc i tò link, in ogni lengua",
     "keywords": "Linketto, Carbon Stealth, share links, link in bio, alternativa a Linktree, bio link, pagina de link, pagina per creator, profil multilengua, biglietto de visita digital, vend prodott digital, tucc i link in d'on sit",
-    "metaDescription": "Linketto l'è el link in bio multilengua: tucc i tò link in d'on sol post, in la lengua de ogni visitador. Ospitaa in la UE, analisi senza cookie, senza commission. On prodott de Carbon Stealth."
+    "metaDescription": "Linketto l'è el link in bio multilengua: tucc i tò link in d'on sol post, in la lengua de ogni visitador. Ospitaa in la UE, analisi senza cookie, senza commission. On prodott de Carbon Stealth.",
+    "privacyDescription": "Come Linketto el tratta i tò dati personai: domà quell che serv al servizi, hosting in la UE, nissuna vendita de dati e nissun cookie de tracciament.",
+    "termsDescription": "I condizion de Linketto: conclusion del contratt, pian e pagament, diritt de recess, contegnuu e moderazion, programma de invid.",
+    "cookiesDescription": "Linketto el dopera domà cookie strettament necessari per l'access e per la scelta de la lengua. Chi visita i profil el riceve nissun cookie.",
+    "profileDescription": "{name} su Linketto — tucc i link in d'on sol post, in la lengua de ogni visitador."
   },
   "report": {
     "title": "Segnala el profil «{name}»",
@@ -654,7 +679,9 @@
     "ctaButton": "Comincia gratis",
     "plansNote": "I pian di duu servizzi gh'hann funzion diverse; confrontom domà i caratteristich elencaa. I condizion complett hinn in sui sò pagin di prezzi.",
     "metaDescription": "Linketto o {name}? Prezzi, domini personalizzaa, brand e analisi — fatt di sò pagin ufficiai, cont data e fonte.",
-    "intro": "On confront onest de prezzi e fonzion — ogni valor per {name} el ven de la sò pagina ufficial, cont fonte e data."
+    "intro": "On confront onest de prezzi e fonzion — ogni valor per {name} el ven de la sò pagina ufficial, cont fonte e data.",
+    "summaryLead": "In curt (al {date}):",
+    "summaryRow": "{feature} — Linketto: {us}; {name}: {them}."
   },
   "security": {
     "title": "Sicurezza",

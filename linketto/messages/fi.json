@@ -194,6 +194,27 @@
     "urlLabel": "URL / puhelin / osoite",
     "extra1Label": "App Store / Spotify -URL",
     "extra2Label": "Google Play / Apple Music -URL",
+    "field_url": "Linkki (https://…)",
+    "field_tip": "Maksulinkki (Revolut, PayPal, Ko-fi…)",
+    "field_video": "Linkki videoon (YouTube tai Vimeo)",
+    "field_phone": "Puhelinnumero",
+    "field_address": "Osoite tai paikka",
+    "field_spotify": "Spotify-linkki",
+    "field_appleMusic": "Apple Music -linkki",
+    "field_appStore": "App Store -linkki",
+    "field_googlePlay": "Google Play -linkki",
+    "field_appWeb": "Verkkosivu muille laitteille (valinnainen)",
+    "field_vcardPhone": "Puhelin",
+    "field_vcardEmail": "Sähköposti",
+    "field_vcardOrg": "Yritys (valinnainen)",
+    "kindHint_HEADER": "Otsikko jakaa lohkot osioihin — pelkkä teksti riittää.",
+    "kindHint_FORM": "Kävijät kirjoittavat sinulle lomakkeen kautta, ja näet viestit hallintapaneelissa. Otsikko riittää.",
+    "kindHint_EMAIL": "Kerää tilaajia uutiskirjeellesi; jokainen vahvistaa tilauksensa sähköpostitse. Otsikko riittää.",
+    "kindHint_BOOKING": "Kävijät lähettävät ajanvarauspyynnön, jonka näet hallintapaneelissa ja merkitset käsitellyksi. Otsikko riittää.",
+    "kindHint_MUSIC": "Täytä vähintään toinen — kävijä valitsee oman palvelunsa.",
+    "kindHint_APP": "Täytä vähintään toinen kauppa — näytämme oikean kävijän puhelimen mukaan.",
+    "kindHint_VIDEO": "Video upotetaan profiiliin, ja se latautuu vasta klikattaessa.",
+    "kindHint_VCARD": "Täytä puhelin ja/tai sähköposti — kävijä tallentaa ne yhteystietoihinsa yhdellä napautuksella.",
     "addBlockHint": "Otsikko ja lomake tarvitsevat vain otsikon. Sovellukselle täytä App Store ja/tai Google Play. Musiikille — Spotify ja/tai Apple Music.",
     "messagesSection": "Lomakkeen viestit",
     "noMessages": "Ei vielä viestejä.",
@@ -526,7 +547,11 @@
   "seo": {
     "metaTitle": "Linketto — monikielinen link in bio: kaikki linkkisi, jokaisella kielellä",
     "keywords": "Linketto, Carbon Stealth, share links, link in bio, linkki biossa, kaikki linkit yhdessä paikassa, linktree-vaihtoehto, bio link, digitaalinen käyntikortti, tekijän sivu, monikielinen profiili, myy digitaalisia tuotteita",
-    "metaDescription": "Linketto on monikielinen link in bio: kaikki linkkisi yhdessä paikassa, jokaisen kävijän kielellä. Isännöity EU:ssa, analytiikka ilman evästeitä, ei välityspalkkioita. Tekijänä Carbon Stealth."
+    "metaDescription": "Linketto on monikielinen link in bio: kaikki linkkisi yhdessä paikassa, jokaisen kävijän kielellä. Isännöity EU:ssa, analytiikka ilman evästeitä, ei välityspalkkioita. Tekijänä Carbon Stealth.",
+    "privacyDescription": "Miten Linketto käsittelee henkilötietojasi: vain palvelun tarvitsemat tiedot, ylläpito EU:ssa, ei tietojen myyntiä eikä seurantaevästeitä.",
+    "termsDescription": "Linketton käyttöehdot: sopimuksen syntyminen, paketit ja maksut, peruuttamisoikeus, sisältö ja moderointi, kutsuohjelma.",
+    "cookiesDescription": "Linketto käyttää vain välttämättömiä evästeitä kirjautumiseen ja kielen valintaan. Profiilien kävijät eivät saa evästeitä.",
+    "profileDescription": "{name} Linkettossa — kaikki linkit yhdessä paikassa, jokaisen kävijän kielellä."
   },
   "report": {
     "title": "Ilmoita profiilista „{name}“",
@@ -673,7 +698,9 @@
     "ctaButton": "Aloita ilmaiseksi",
     "plansNote": "Kummankin palvelun paketeissa on eri ominaisuuksia; vertailemme vain lueteltuja ominaisuuksia. Täydelliset ehdot löytyvät niiden hinnastosivuilta.",
     "metaDescription": "Linketto vai {name}? Hinnat, oma verkkotunnus, brändäys ja analytiikka — tiedot palvelun virallisilta sivuilta, päivämäärän ja lähteen kanssa.",
-    "intro": "Rehellinen hinta- ja ominaisuusvertailu — jokainen palvelun {name} arvo on peräisin sen virallisilta sivuilta, lähteen ja päivämäärän kanssa."
+    "intro": "Rehellinen hinta- ja ominaisuusvertailu — jokainen palvelun {name} arvo on peräisin sen virallisilta sivuilta, lähteen ja päivämäärän kanssa.",
+    "summaryLead": "Lyhyesti (tilanne {date}):",
+    "summaryRow": "{feature} — Linketto: {us}; {name}: {them}."
   },
   "security": {
     "title": "Tietoturva",

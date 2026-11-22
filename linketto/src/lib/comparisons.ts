@@ -10,7 +10,7 @@
 
 import { PLANS } from '@/lib/plans';
 
-export const COMPARISONS_CHECKED_AT = '2026-10-23';
+export const COMPARISONS_CHECKED_AT = '2026-11-22';
 
 export const COMPETITOR_IDS = ['linktree', 'beacons'] as const;
 export type CompetitorId = (typeof COMPETITOR_IDS)[number];
@@ -51,12 +51,12 @@ export const COMPETITORS: Record<CompetitorId, Competitor> = {
     id: 'linktree',
     name: 'Linktree',
     currency: 'USD',
+    // Цените се рисуват в браузъра (по регион; проверени в Chromium, USD, месечно плащане);
+    // „Analytics history“ е в таблицата „All Features“ на същата страница. Редът за собствен
+    // домейн е махнат на 2026-11-22: помощната статия (6571689) е 404, а без първоизточник
+    // отрицателно твърдение не влиза.
     sources: [
       { label: 'linktr.ee/s/pricing', url: 'https://linktr.ee/s/pricing' },
-      {
-        label: 'Linktree Help · custom domains (6571689)',
-        url: 'https://linktr.ee/help/en/articles/6571689',
-      },
     ],
     rows: [
       {
@@ -64,12 +64,6 @@ export const COMPETITORS: Record<CompetitorId, Competitor> = {
         us: { t: 'price', amount: eur(PRO.priceCents), plan: 'Pro' },
         them: { t: 'price', amount: '$9', plan: 'Starter' },
         source: 0,
-      },
-      {
-        id: 'customDomain',
-        us: { t: 'yesFrom', amount: eur(PRO.priceCents), plan: 'Pro' },
-        them: { t: 'no' },
-        source: 1,
       },
       {
         id: 'removeBranding',

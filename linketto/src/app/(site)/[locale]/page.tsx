@@ -91,11 +91,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const tSeo = await getTranslations({ locale, namespace: 'seo' });
-  return pageMetadata(locale as Locale, '', {
+  const meta = pageMetadata(locale as Locale, '', {
     title: tSeo('metaTitle'),
     description: tSeo('metaDescription'),
     keywords: tSeo('keywords').split(', '),
   });
+  // Заглавието вече носи марката — без шаблона „%s · Linketto“ от layout-а.
+  return { ...meta, title: { absolute: tSeo('metaTitle') } };
 }
 
 const FAQ_KEYS = ['faq1', 'faq2', 'faq3', 'faq4', 'faq5'] as const;

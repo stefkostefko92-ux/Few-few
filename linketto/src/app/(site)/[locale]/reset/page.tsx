@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { LxPage } from '@/components/landing/LxPage';
@@ -11,7 +12,15 @@ import { peekUserToken } from '@/lib/auth';
 import { PASSWORD_MIN } from '@/lib/password-policy';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { robots: { index: false }, referrer: 'no-referrer' as const };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'auth' });
+  return { title: t('resetTitle'), robots: { index: false }, referrer: 'no-referrer' };
+}
 
 // „Забравена парола“ — стъпка 2 (R3): GET само показва формата (скенерите не сменят нищо);
 // токенът се изразходва чак при POST (resetPasswordAction).
