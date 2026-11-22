@@ -119,7 +119,9 @@
       "f3": "Až 5 profilů, jako u Business"
     },
     "mostPopular": "Nejoblíbenější",
-    "annualOffer": "Ušetři {percent} % s ročním plánem"
+    "annualOffer": "Ušetři {percent} % s ročním plánem",
+    "vatNote": "Ceny jsou konečné, včetně 20 % DPH.",
+    "prepaidNote": "Bez předplatného: zaplatíš jednorázově za 1, 3, 6 nebo 12 měsíců a o prodloužení rozhoduješ ty — před koncem ti to připomeneme e-mailem."
   },
   "auth": {
     "loginTitle": "Přihlaš se do Linketto",

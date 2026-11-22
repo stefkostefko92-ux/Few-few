@@ -1292,7 +1292,7 @@ export async function ProfileScreen({
               <span className="font-bold" style={{ color: 'var(--pf-fg)' }}>
                 Linketto
               </span>
-              <span aria-hidden="true" className="hidden h-3.5 w-px shrink-0 bg-current opacity-40 min-[380px]:inline-block" />
+              <span aria-hidden="true" className="hidden h-3.5 w-px shrink-0 bg-current opacity-40 min-[480px]:inline-block" />
               <span className="whitespace-nowrap">{t('badgeCta')}</span>
             </a>
           </p>

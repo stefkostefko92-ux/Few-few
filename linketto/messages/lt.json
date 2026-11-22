@@ -119,7 +119,9 @@
       "f3": "Iki 5 profilių, kaip Business plane"
     },
     "mostPopular": "Populiariausias",
-    "annualOffer": "Sutaupyk {percent}% su metiniu planu"
+    "annualOffer": "Sutaupyk {percent}% su metiniu planu",
+    "vatNote": "Kainos galutinės, su 20% PVM.",
+    "prepaidNote": "Jokios prenumeratos: moki vieną kartą už 1, 3, 6 ar 12 mėnesių ir tu sprendi, ar pratęsti — prieš pabaigą priminsime el. paštu."
   },
   "auth": {
     "loginTitle": "Prisijunk prie Linketto",

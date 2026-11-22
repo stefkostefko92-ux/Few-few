@@ -119,7 +119,9 @@
       "f3": "Do 5 profilov, kot pri Business"
     },
     "mostPopular": "Najbolj priljubljen",
-    "annualOffer": "Prihrani {percent} % z letnim paketom"
+    "annualOffer": "Prihrani {percent} % z letnim paketom",
+    "vatNote": "Cene so končne, vključno z 20 % DDV.",
+    "prepaidNote": "Brez naročnine: plačaš enkrat za 1, 3, 6 ali 12 mesecev in ti se odločiš, ali želiš podaljšati — pred koncem te opomnimo po e-pošti."
   },
   "auth": {
     "loginTitle": "Prijava v Linketto",

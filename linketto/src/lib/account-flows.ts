@@ -11,11 +11,20 @@ import { SITE_URL } from '@/lib/seo';
 const VERIFY_TTL_MS = 48 * 60 * 60 * 1000;
 
 /** Писмо за потвърждение на имейла (еднократна връзка, 48 ч.). false = не е тръгнало. */
-export async function sendVerificationEmail(user: Pick<User, 'id' | 'email' | 'locale'>): Promise<boolean> {
+export async function sendVerificationEmail(
+  user: Pick<User, 'id' | 'email' | 'locale'> & { termsVersion?: string | null },
+): Promise<boolean> {
   if (!(await emailReady())) return false;
   const token = await createUserToken(user.id, 'verify-email', VERIFY_TTL_MS);
-  const url = `${SITE_URL.replace(/\/$/, '')}/api/verify-email?token=${token}`;
-  const mail = verifyEmailMessage({ locale: user.locale, url });
+  const base = SITE_URL.replace(/\/$/, '');
+  const url = `${base}/api/verify-email?token=${token}`;
+  // ЗЕТ чл. 10, ал. 2 / чл. 9: потвърждение на регистрацията + приетите ОУ (версия, връзка).
+  const mail = verifyEmailMessage({
+    locale: user.locale,
+    url,
+    termsUrl: `${base}/${user.locale}/terms`,
+    termsVersion: user.termsVersion ?? undefined,
+  });
   return sendEmail({ to: user.email, subject: mail.subject, html: mail.html, tag: 'verify' }).catch(() => false);
 }
 

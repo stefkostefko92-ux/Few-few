@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 import { clientIp, isRateLimited, rateLimit } from '@/lib/rate-limit';
 import { newPasswordSchema } from '@/lib/password-policy';
+import { termsAccepted } from '@/lib/terms';
 import { ipBucket } from '@/lib/limiter';
 import { z } from 'zod';
 import {
@@ -76,6 +77,8 @@ export async function registerAction(formData: FormData): Promise<void> {
   if (!parsed.success) {
     redirect(back(newPasswordSchema.safeParse(formData.get('password')).success ? 'generic' : 'weak'));
   }
+  // ЗЗП чл. 147а: изрично приемане на ОУ (версията се записва в registerUser).
+  if (!termsAccepted(formData.get('acceptTerms'))) redirect(back('terms'));
   // Червен/син екип: регистрацията беше без лимит (bcrypt ~350 ms CPU на
   // опит + оракул „имейлът е зает“). 5 на час от адрес (/64) и общ дневен таван.
   const ipKey = ipBucket(await clientIp());

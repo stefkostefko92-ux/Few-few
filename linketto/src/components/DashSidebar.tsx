@@ -55,8 +55,9 @@ export function DashSidebar({
         const el = document.getElementById(id);
         if (el && el.getBoundingClientRect().top <= line) current = id;
       }
+      const scrollable = document.documentElement.scrollHeight > window.innerHeight + 4;
       const atEnd =
-        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+        scrollable && window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
       if (!current && ids.length) current = ids[0];
       if (atEnd && ids.length) current = ids[ids.length - 1];
       setActive(current);

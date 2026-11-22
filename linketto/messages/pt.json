@@ -122,7 +122,9 @@
       "f3": "Até 5 perfis, como no Business"
     },
     "mostPopular": "Mais popular",
-    "annualOffer": "Poupa {percent}% com um plano anual"
+    "annualOffer": "Poupa {percent}% com um plano anual",
+    "vatNote": "Os preços são finais, com IVA de 20% incluído.",
+    "prepaidNote": "Sem subscrição: pagas de uma só vez por 1, 3, 6 ou 12 meses e decides tu se queres prolongar — lembramos-te por email antes do fim."
   },
   "auth": {
     "loginTitle": "Entrar no Linketto",

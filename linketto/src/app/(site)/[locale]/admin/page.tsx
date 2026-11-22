@@ -434,14 +434,14 @@ export default async function AdminPage({
                   <TH>{t('colPlan')}</TH>
                   <TH className="text-end">{t('colAmount')}</TH>
                   <TH>{t('colState')}</TH>
-                  <TH className="text-end">{t('colAction')}</TH>
+                  <TH className="sticky end-0 bg-surface-2 text-end">{t('colAction')}</TH>
                 </tr>
               </THead>
               <TBody>
                 {recentOrders.map((order) => (
                   <TR key={order.id}>
                     <TD>
-                      <p className="break-all font-medium text-fg">{order.user.email}</p>
+                      <p className="[overflow-wrap:anywhere] font-medium text-fg">{order.user.email}</p>
                       <p className="text-micro tabular-nums text-fg-muted">{stamp(order.createdAt)}</p>
                     </TD>
                     <TD className="whitespace-nowrap">
@@ -472,7 +472,7 @@ export default async function AdminPage({
                         )}
                       </div>
                     </TD>
-                    <TD className="text-end">
+                    <TD className="sticky end-0 bg-surface shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.35)] text-end">
                       {needsRefund(order) && (
                         <form action={adminRefundPlanOrderAction}>
                           <input type="hidden" name="uiLocale" value={locale} />
@@ -504,17 +504,17 @@ export default async function AdminPage({
                   <TH className="text-end">{t('colAmount')}</TH>
                   <TH>{t('colMethod')}</TH>
                   <TH>{t('colDate')}</TH>
-                  <TH className="text-end">{t('colAction')}</TH>
+                  <TH className="sticky end-0 bg-surface-2 text-end">{t('colAction')}</TH>
                 </tr>
               </THead>
               <TBody>
                 {pendingPayouts.map((p) => (
                   <TR key={p.id}>
-                    <TD className="break-all font-medium text-fg">{p.user.email}</TD>
+                    <TD className="[overflow-wrap:anywhere] font-medium text-fg">{p.user.email}</TD>
                     <TD className="text-end font-semibold tabular-nums text-success-text">{money(p.amountCents)}</TD>
                     <TD className="font-mono text-micro">{p.method}</TD>
                     <TD className="whitespace-nowrap tabular-nums">{p.requestedAt.toISOString().slice(0, 10)}</TD>
-                    <TD className="text-end">
+                    <TD className="sticky end-0 bg-surface shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.35)] text-end">
                       <form action={adminMarkPayoutPaidAction}>
                         <input type="hidden" name="uiLocale" value={locale} />
                         <input type="hidden" name="payoutId" value={p.id} />
@@ -567,7 +567,7 @@ export default async function AdminPage({
               <Card as="section" key={user.id} id={`user-${user.id}`} padding="md" className="space-y-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="break-all text-body font-semibold text-fg">{user.email}</p>
+                    <p className="[overflow-wrap:anywhere] text-body font-semibold text-fg">{user.email}</p>
                     <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-small text-fg-muted">
                       <span>{user.name ?? '—'}</span>
                       <Badge tone={user.plan === 'FREE' ? 'neutral' : 'accent'}>{user.plan}</Badge>

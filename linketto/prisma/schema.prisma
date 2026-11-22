@@ -45,6 +45,8 @@ model User {
   lastDigestAt                DateTime? // кога cron-ът на отчета е обработил потребителя последно (въртене на партидата)
   // Сигурност на акаунта (docs/security-2fa-settings-spec.md):
   emailVerifiedAt             DateTime? // потвърден имейл — задължителен за админ достъп
+  termsAcceptedAt             DateTime? // прието при регистрацията (ЗЗП чл. 147а; lib/terms.ts)
+  termsVersion                String? // версията на ОУ, която е приета (TERMS_VERSION)
   totpSecretSealed            String? // TOTP секрет, шифрован (lib/secret-box.ts, контекст totp:<id>)
   totpPendingSealed           String? // секрет при записване — още непотвърден
   totpEnabledAt               DateTime? // 2FA включена (потвърдена с код)

@@ -38,6 +38,7 @@ export default async function ReportPage({
   return (
     <main
       lang={locale}
+      data-theme="light"
       className="dash flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10 font-ui text-slate-900 [color-scheme:light] sm:px-6"
     >
       <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.2)] sm:p-9">

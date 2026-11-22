@@ -119,7 +119,9 @@
       "f3": "Legfeljebb 5 profil, mint a Businessben"
     },
     "mostPopular": "Legnépszerűbb",
-    "annualOffer": "Spórolj {percent}%-ot éves csomaggal"
+    "annualOffer": "Spórolj {percent}%-ot éves csomaggal",
+    "vatNote": "Az árak végső árak, a 20% áfát tartalmazzák.",
+    "prepaidNote": "Nincs előfizetés: egyszer fizetsz 1, 3, 6 vagy 12 hónapra, és te döntöd el, hogy meghosszabbítod-e — a lejárat előtt e-mailben emlékeztetünk."
   },
   "auth": {
     "loginTitle": "Bejelentkezés a Linkettóba",

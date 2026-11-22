@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from './db';
 import { isAdminEmail } from './admin-list';
 import { LAST_SEEN_EVERY_MS, SESSION_LIMITS, sessionExpired } from './session-policy';
+import { TERMS_VERSION } from './terms';
 
 export { stepUpFresh } from './session-policy';
 import type { Session, User } from '@prisma/client';
@@ -51,7 +52,7 @@ export async function registerUser(
   if (existing) return null;
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
   return prisma.user.create({
-    data: { email, passwordHash, name, locale },
+    data: { email, passwordHash, name, locale, termsAcceptedAt: new Date(), termsVersion: TERMS_VERSION },
   });
 }
 

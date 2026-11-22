@@ -118,7 +118,9 @@
       "f3": "Sa 5 profili, bħal f'Business"
     },
     "mostPopular": "L-aktar popolari",
-    "annualOffer": "Iffranka {percent}% b'pjan annwali"
+    "annualOffer": "Iffranka {percent}% b'pjan annwali",
+    "vatNote": "Il-prezzijiet huma finali, inkluża l-VAT ta' 20%.",
+    "prepaidNote": "Bla abbonament: tħallas darba waħda għal 1, 3, 6 jew 12-il xahar u tiddeċiedi int jekk iġġeddidx — infakkruk bl-email qabel jispiċċa."
   },
   "auth": {
     "loginTitle": "Idħol f'Linketto",

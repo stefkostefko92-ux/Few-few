@@ -119,7 +119,9 @@
       "f3": "Upp till 5 profiler, som i Business"
     },
     "mostPopular": "Populärast",
-    "annualOffer": "Spara {percent} % med en årsplan"
+    "annualOffer": "Spara {percent} % med en årsplan",
+    "vatNote": "Priserna är slutpriser inkl. 20 % moms.",
+    "prepaidNote": "Ingen prenumeration: du betalar en gång för 1, 3, 6 eller 12 månader och bestämmer själv om du vill förlänga — vi påminner dig via e-post innan perioden tar slut."
   },
   "auth": {
     "loginTitle": "Logga in på Linketto",

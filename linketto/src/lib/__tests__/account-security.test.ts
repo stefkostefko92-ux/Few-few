@@ -81,3 +81,24 @@ test('потвърждение на имейл: само в сесията на 
   assert.equal(verifyEmailAllowed('u1', undefined), false);
   assert.equal(verifyEmailAllowed('u1', 'u2'), false, 'чужда сесия — не');
 });
+
+test('регистрация: Общите условия — изрична отметка и версия (ЗЗП чл. 147а)', async () => {
+  const { termsAccepted, TERMS_VERSION } = await import('../terms');
+  assert.equal(termsAccepted('1'), true);
+  for (const value of [null, '', 'on ', '0', 'true']) assert.equal(termsAccepted(value), false, String(value));
+  assert.match(TERMS_VERSION, /^\d{4}-\d{2}-\d{2}$/);
+});
+
+test('писмото за потвърждение потвърждава регистрацията и сочи ОУ с версия (ЗЕТ чл. 10, ал. 2)', () => {
+  const mail = verifyEmailMessage({
+    locale: 'bg',
+    url: 'https://x.test/api/verify-email?token=t',
+    termsUrl: 'https://x.test/bg/terms',
+    termsVersion: '2026-11-22',
+  });
+  assert.match(mail.html, /Регистрацията ти/);
+  assert.ok(mail.html.includes('https://x.test/bg/terms'));
+  assert.ok(mail.html.includes('2026-11-22'));
+  const fi = verifyEmailMessage({ locale: 'fi', url: 'https://x/v', termsUrl: 'https://x/en/terms', termsVersion: '2026-11-22' });
+  assert.match(fi.html, /registration/i, 'непреведен език → английски');
+});

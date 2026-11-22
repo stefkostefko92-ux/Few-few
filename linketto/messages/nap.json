@@ -118,7 +118,9 @@
       "f3": "Fino a 5 profile, comme cu Business"
     },
     "mostPopular": "Cchiù populare",
-    "annualOffer": "Sparagne 'o {percent}% cu nu piano annuale"
+    "annualOffer": "Sparagne 'o {percent}% cu nu piano annuale",
+    "vatNote": "'E prezze so' finale, cu l'IVA d'o 20% 'nclusa.",
+    "prepaidNote": "Senza abbonamento: paje na vota sola pe' 1, 3, 6 o 12 mise e decide tu si allungà — t'o ricurdammo pe' email primma ca fernesce."
   },
   "auth": {
     "loginTitle": "Trase a Linketto",

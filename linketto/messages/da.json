@@ -119,7 +119,9 @@
       "f3": "Op til 5 profiler, som i Business"
     },
     "mostPopular": "Mest populær",
-    "annualOffer": "Spar {percent} % med en årsplan"
+    "annualOffer": "Spar {percent} % med en årsplan",
+    "vatNote": "Priserne er endelige, inkl. 20 % moms.",
+    "prepaidNote": "Intet abonnement: du betaler én gang for 1, 3, 6 eller 12 måneder og bestemmer selv, om du vil forlænge — vi minder dig om det på e-mail inden udløb."
   },
   "auth": {
     "loginTitle": "Log ind på Linketto",

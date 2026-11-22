@@ -41,7 +41,13 @@ export default async function RegisterPage({
       >
         {error && (
           <Callout tone="danger" className="mt-5">
-            {error === 'exists' ? t('errorExists') : error === 'weak' ? t('errorWeak', { min: PASSWORD_MIN }) : t('errorGeneric')}
+            {error === 'exists'
+              ? t('errorExists')
+              : error === 'weak'
+                ? t('errorWeak', { min: PASSWORD_MIN })
+                : error === 'terms'
+                  ? t('errorTerms')
+                  : t('errorGeneric')}
           </Callout>
         )}
         {ref && (
@@ -99,16 +105,24 @@ export default async function RegisterPage({
               {t('passwordHint', { min: PASSWORD_MIN })}
             </p>
           </div>
-          <Button type="submit" size="lg" block className="!mt-6">
+          {/* ЗЗП чл. 147а: изрично приемане на ОУ (неотметната, задължителна; сървърът проверява) — над бутона. */}
+          <label className="!mt-6 flex items-start gap-2.5 text-small leading-relaxed text-fg">
+            <input type="checkbox" name="acceptTerms" value="1" required className="mt-1 h-4 w-4 shrink-0" />
+            <span>
+              {t.rich('registerTerms', {
+                terms: (chunks) => (
+                  <Link href={`/${locale}/terms`} target="_blank" className="font-semibold text-accent-text underline underline-offset-2">
+                    {chunks}
+                  </Link>
+                ),
+              })}
+            </span>
+          </label>
+          <Button type="submit" size="lg" block>
             {t('submitRegister')}
           </Button>
           <p className="text-center text-small text-fg-2">
-            {t.rich('registerTerms', {
-              terms: (chunks) => (
-                <Link href={`/${locale}/terms`} className="font-semibold text-accent-text underline underline-offset-2">
-                  {chunks}
-                </Link>
-              ),
+            {t.rich('registerPrivacy', {
               privacy: (chunks) => (
                 <Link href={`/${locale}/privacy`} className="font-semibold text-accent-text underline underline-offset-2">
                   {chunks}

@@ -119,7 +119,9 @@
       "f3": "Enintään 5 profiilia, kuten Businessissa"
     },
     "mostPopular": "Suosituin",
-    "annualOffer": "Säästä {percent} % vuosipaketilla"
+    "annualOffer": "Säästä {percent} % vuosipaketilla",
+    "vatNote": "Hinnat ovat lopullisia ja sisältävät 20 %:n arvonlisäveron.",
+    "prepaidNote": "Ei kestotilausta: maksat kerralla 1, 3, 6 tai 12 kuukaudesta ja päätät itse, jatkatko — muistutamme sinua sähköpostilla ennen jakson päättymistä."
   },
   "auth": {
     "loginTitle": "Kirjaudu Linkettoon",

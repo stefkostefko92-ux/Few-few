@@ -118,7 +118,9 @@
       "f3": "Suas le 5 phróifíl, mar atá le Business"
     },
     "mostPopular": "Is coitianta",
-    "annualOffer": "Sábháil {percent}% le plean bliantúil"
+    "annualOffer": "Sábháil {percent}% le plean bliantúil",
+    "vatNote": "Is praghsanna deiridh iad, CBL 20% san áireamh.",
+    "prepaidNote": "Gan síntiús: íocann tú uair amháin ar feadh 1, 3, 6 nó 12 mhí agus socraíonn tú féin an síneoidh tú é — cuirfimid i gcuimhne duit trí ríomhphost roimh an deireadh."
   },
   "auth": {
     "loginTitle": "Logáil isteach i Linketto",

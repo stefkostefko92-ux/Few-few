@@ -122,7 +122,9 @@
       "f3": "Do 5 profili, jak w Business"
     },
     "mostPopular": "Najpopularniejszy",
-    "annualOffer": "Oszczędź {percent}% z planem rocznym"
+    "annualOffer": "Oszczędź {percent}% z planem rocznym",
+    "vatNote": "Ceny są ostateczne i zawierają 20% VAT.",
+    "prepaidNote": "Bez subskrypcji: płacisz jednorazowo za 1, 3, 6 lub 12 miesięcy i to ty decydujesz, czy przedłużyć — przed końcem przypomnimy ci o tym e-mailem."
   },
   "auth": {
     "loginTitle": "Zaloguj się do Linketto",

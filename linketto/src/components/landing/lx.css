@@ -297,7 +297,11 @@ html:has(.lx) {
 .lx-logo {
   height: 2.1rem;
   width: auto;
+  flex-shrink: 0;
   filter: brightness(0) invert(1);
+}
+.lx-header-in > a:first-of-type {
+  flex-shrink: 0;
 }
 .lx-nav {
   display: flex;
@@ -305,6 +309,11 @@ html:has(.lx) {
   gap: 1.2rem;
   font-weight: 700;
   font-size: 0.9rem;
+}
+/* Преведените етикети („Zaloguj się“, „Sign up“) — на един ред. */
+.lx-nav a,
+.lx-nav button {
+  white-space: nowrap;
 }
 .lx-nav a:not(.lx-btn):hover {
   color: var(--lime);
@@ -1363,18 +1372,17 @@ html[dir='rtl'] .lx-track {
   inset-inline-end: -1rem;
   display: grid;
   place-items: center;
-  width: 6.4rem;
+  width: 7.2rem;
   aspect-ratio: 1;
   border-radius: 50%;
   background: var(--pink);
   color: var(--ink);
   border: 4px solid var(--ink);
   font-weight: 800;
-  font-size: 0.74rem;
+  font-size: 0.68rem;
   line-height: 1.05;
   text-align: center;
   padding: 0.5rem;
-  overflow-wrap: anywhere;
   hyphens: auto;
   rotate: 12deg;
   animation: lx-wobble 6s ease-in-out infinite;
@@ -1621,11 +1629,18 @@ html[dir='rtl'] .lx-track {
     inset-block-start: -1.8rem;
   }
   .lx-nav {
-    gap: 0.7rem;
+    gap: 0.55rem;
     font-size: 0.8rem;
   }
   .lx-logo {
-    height: 1.7rem;
+    height: 1.55rem;
+  }
+  .lx-header-in {
+    gap: 0.6rem;
+  }
+  .lx-btn-sm {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.78rem;
   }
   .lx-strip-track {
     padding-inline: 1rem;

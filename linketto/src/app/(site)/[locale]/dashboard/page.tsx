@@ -500,7 +500,10 @@ export default async function DashboardPage({
               </form>
             ) : (
               <p className="mt-2 text-small text-fg-muted">
-                {t('profilesUpsell', { max: plan.maxProfiles })}
+                {/* Най-високият план няма „надстрой“ — само тавана. */}
+                {user.plan === 'BUSINESS' || user.plan === 'FOUNDER'
+                  ? t('profilesMax', { max: plan.maxProfiles })
+                  : t('profilesUpsell', { max: plan.maxProfiles })}
               </p>
             )}
           </Card>
@@ -2210,9 +2213,14 @@ export default async function DashboardPage({
             <section id="referral" className="dash-card rounded-card border border-line bg-surface p-5 shadow-e1 sm:p-6">
               <h2 className="text-subheading text-fg">{t('referralSection')}</h2>
               <p className="mt-1 text-sm text-fg-muted">
-                {t('referralReward', {
+                {t.rich('referralReward', {
                   percent: REFERRAL_PERCENT,
                   minPayout: REFERRAL_MIN_PAYOUT_CENTS / 100,
+                  terms: (chunks) => (
+                    <a href={`/${locale}/terms`} className="font-medium text-accent-text underline">
+                      {chunks}
+                    </a>
+                  ),
                 })}
               </p>
               {referralUrl ? (
@@ -2445,8 +2453,10 @@ export default async function DashboardPage({
                     </label>
                     <button
                       type="submit"
-                      // Дългият надпис се пренася на телефон (иначе излиза 12 px вдясно).
-                      className={buttonStyles({ className: 'w-full whitespace-normal text-center sm:w-auto' })}
+                      // Дългият надпис се пренася на телефон: inline стил, защото базата е nowrap,
+                      // а cn() не слива класове (whitespace-normal губи).
+                      className={buttonStyles({ className: 'h-auto min-h-11 w-full py-2.5 text-center sm:w-auto' })}
+                      style={{ whiteSpace: 'normal' }}
                     >
                       {t('buyFounder', { price: `€${(PLANS.FOUNDER.priceCents / 100).toFixed(0)}` })}
                     </button>
