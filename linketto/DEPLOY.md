@@ -49,9 +49,44 @@
 - **Интеграционни тестове на плащанията** срещу реален Postgres (CI има postgres service).
 
 **Остава отворено (не блокира):**
-- Няма CSP (засега само безопасните заглавия в `next.config.mjs`).
+- CSP е само **Report-Only** (стъпка 1, nginx; §7 „CSP“) — нищо не блокира, докладите са в дневника на app.
+  Принудителна политика с nonce — след преглед на докладите от живия трафик.
 - Ограничителят на публичните форми и входа е в паметта на процеса (`src/lib/limiter.ts`) — при
   повече от един инстанс се заменя с Redis.
+
+## 0а. Чеклист за първия деплой (по ред)
+
+Всяка стъпка има проверка; следващата — чак когато предишната е зелена.
+
+1. **Сървърът:** `apt-get install -y age` (за бекъпа), nginx ≥ 1.24, Docker Engine ≥ 29.5.1, certbot. DNS A/AAAA за
+   `piuma.carbonstealth.eu` → VPS (IP-то — от DNS: `getent hosts piuma.carbonstealth.eu`).
+2. **Код в `main`** (команди за деплой само от `main`), после
+   `sudo REF=main PROJECTS="linketto" bash /opt/few-few/current/deploy/fetch-deploy.sh`. Първият пробег създава
+   файла с тайните (600) с генерируемите: `POSTGRES_PASSWORD`, `CRON_SECRET`, `SETTINGS_KEY`, `APP_DB_PASSWORD`
+   (ролята на приложението, §7), `PUBLIC_BASE_URL`, `REVOLUT_ENV=sandbox`. **Копие офлайн** (без `SETTINGS_KEY`
+   2FA и шифрованите ключове стават нечетими).
+3. **Ръчните ключове** (§2; после `cd "$(cat /opt/few-few/shared/linketto/last-good)" && sudo docker compose up -d app`):
+   - `PUBLIC_BASE_URL=https://piuma.carbonstealth.eu` (canonical, имейли, връщането от Revolut, уебхукът);
+   - `ADMIN_EMAILS` — само твои адреси (т. 6 и бележката в §2);
+   - `REVOLUT_ENV=sandbox` + Sandbox `REVOLUT_SECRET_KEY` (или от админ панела — шифрован);
+   - `BREVO_API_KEY` + `EMAIL_FROM` от **потвърден домейн**. DNS на домейна на подателя (сменя собственикът): първо
+     **SPF** (`include:` на Brevo) и **DKIM** (записите от Brevo → Senders & Domains); после **DMARC** поетапно
+     `p=none; rua=mailto:<твой адрес>` → `p=quarantine` → `p=reject` — към следващия етап само когато отчетите
+     (`rua`) показват, че цялата легитимна поща минава с подравнени SPF/DKIM. Проверка: писмо „Забравена парола“ до
+     себе си → в заглавията `spf=pass`, `dkim=pass`, `dmarc=pass`;
+   - `BACKUP_AGE_RECIPIENTS` — **публичният** age ключ (§7 „Бекъпи“); частният остава при теб;
+   - по избор `GEMINI_API_KEY` + `GEMINI_PAID_TIER=1` (само платен акаунт с DPA), `PROFILE_HOST`.
+4. **HTTPS:** `deploy/https-setup.sh` (§7). После
+   `curl -sI https://piuma.carbonstealth.eu/bg | grep -i content-security-policy-report-only` → редът е там.
+5. **Уебхукът на Revolut (Sandbox):** админ панел → „Плащания и имейл“ → „Регистрирай уебхука“ (§3).
+6. **Първият админ:** регистрация с адрес от `ADMIN_EMAILS` → връзката за потвърждение на имейла се отваря **в същия
+   браузър** (потвърждението важи само в сесията на същия потребител — `lib/verify-email-policy.ts`) → „Сигурност“ →
+   2FA (TOTP) → резервните кодове офлайн → изход и вход с код → `/bg/admin` се отваря.
+7. **Таймерите:** `systemctl list-timers 'linketto-cron-*'` → пет (планове, отчет, срокове, бекъп, IP база).
+   `sudo systemctl start linketto-cron@backup && journalctl -u linketto-cron@backup -n 5` → ред `backup: … шифровано`.
+8. **Проверено възстановяване** от твоята машина (§7 „Бекъпи“) → зелено.
+9. **Мониторинг:** след merge в `main` — Actions → „linketto health“ → Run workflow → зелено (§7 „Мониторинг“).
+10. **Приемният тест в Sandbox** (§8) → зелено. **Чак тогава** Revolut production (§8а).
 
 ## 1. База данни (PostgreSQL, ЕС регион)
 
@@ -73,7 +108,9 @@ DATABASE_URL="postgresql://…" npx prisma migrate deploy
 
 | Ключ | Откъде | Бележка |
 |------|--------|---------|
-| `DATABASE_URL` | PostgreSQL в ЕС | — |
+| `DATABASE_URL` | PostgreSQL в ЕС | локално/dev. **На сървъра app не го чете оттук**: `docker-compose.yml` го сглобява с ролята `linketto_app` (§7 „Роли в базата“); редът остава само за откат към release отпреди ролите |
+| `APP_DB_PASSWORD` | генерира се от `scripts/deploy.sh` (hex) | паролата на ролята на приложението `linketto_app` (без DDL); `POSTGRES_PASSWORD` (собственикът) стига само до `db` и `migrate` |
+| `BACKUP_AGE_RECIPIENTS` | `age-keygen -y <частен ключ>` на ТВОЯТА машина | **публичният** ключ (`age1…`, няколко — със запетая) за дневния шифрован бекъп. Празно = бекъпът пада (нешифрован не се пише). Частен ключ (`AGE-SECRET-KEY-…`) във файла = бекъпът отказва |
 | `PUBLIC_BASE_URL` | `https://piuma.carbonstealth.eu` | sitemap, canonical, redirect-а след плащане, имейли |
 | `SETTINGS_KEY` | `openssl rand -base64 32` (autodeploy го генерира, ако липсва) | шифрова TOTP секретите и ключовете от админ панела; **пази копие на `.env`** — без него 2FA и записаните ключове не се четат. Смяна: старият → `SETTINGS_KEY_OLD` |
 | `REVOLUT_SECRET_KEY` | Revolut Business → APIs → Merchant API | Production или Sandbox ключ (по `REVOLUT_ENV`). **Или** от админ панела → „Плащания и имейл“ (шифрован, с предимство пред `.env`) |
@@ -215,8 +252,9 @@ sudo REF=main PROJECTS="linketto" bash /opt/few-few/current/deploy/fetch-deploy.
 ```
 
 Какво прави (`linketto/scripts/deploy.sh`, същият скрипт и за ръчен пробег от папката на release-а):
-`pg_dump | gzip` бекъп (празен/без схема = спиране) → `docker compose build app` (старият app
-продължава) → база → `prisma migrate deploy` с НОВИЯ образ → `up -d app` → сонда `/api/health`
+`pg_dump | gzip` бекъп от **работещата** база (празен/без схема = спиране) → `docker compose build app` (старият
+app продължава) → база (тук се прилага новата ѝ конфигурация) → `prisma migrate deploy` с НОВИЯ образ през услугата
+`migrate` (ролята собственик) → ролята `linketto_app` и правата ѝ → `up -d app` → сонда `/api/health`
 с маркер `"app":"linketto"`. Провал на сондата → автоматичен откат на кода към последния работещ
 release (`/opt/few-few/shared/linketto/last-good`); провал на миграцията → работи старият код.
 
@@ -266,17 +304,116 @@ fi
 
 **Cron (§9) — systemd таймери, инсталират се сами:** `linketto-cron-plans.timer` (всеки час :17),
 `linketto-cron-digest.timer` (08:10), `linketto-cron-retention.timer` (03:40, SQL сроковете от
-`retention-days.ts`). `CRON_SECRET` се чете от файла с тайните. Ръчно: `sudo systemctl start
-linketto-cron@plans`; дневник: `journalctl -u 'linketto-cron@*' -n 50`.
+`retention-days.ts`), `linketto-cron-backup.timer` (02:50, шифрованият бекъп), `linketto-cron-geoip.timer`
+(месечно). Всички са с `RandomizedDelaySec` (jitter) и `Persistent=true`. `/api/cron/plans` е **на всеки час**, не
+дневно — висящите поръчки при Revolut (изпуснат уебхук) не бива да чакат до утре. `CRON_SECRET` се чете от файла с
+тайните (600) и стига до curl през stdin (`-K -`), не в argv. Ръчно: `sudo systemctl start
+linketto-cron@plans`; дневник: `journalctl -u 'linketto-cron@*' -n 50`; провал → `systemctl --failed`.
 
 **Провалена миграция:** приложението върви на стария код. Бекъпът е в
-`/opt/few-few/shared/linketto/backups/`; диагноза — `docker compose run --rm --no-deps app npx
---no-install prisma migrate status`; оправяне на миграцията или `prisma migrate resolve` — човек.
+`/opt/few-few/shared/linketto/backups/`; диагноза — `docker compose run --rm --no-deps -T migrate
+node_modules/.bin/prisma migrate status`; оправяне на миграцията или `prisma migrate resolve` — човек.
 
 **Дневници на nginx:** `/var/log/nginx/linketto/` — access без IP (`log_format linketto_noip`),
 ротация 7 дни (`deploy/logrotate.conf` → `/etc/logrotate.d/linketto`).
 
 Health probe: `GET /api/health` → `{"status":"ok","db":"up","app":"linketto"}` (503 при паднала база).
+
+### Роли в базата
+
+- `linketto` — собственикът (`POSTGRES_USER` на образа): миграциите (услугата `migrate`), бекъпът и сроковете
+  (през локалния сокет на `db`). Паролата му не стига до `app` (там `POSTGRES_PASSWORD` е празен).
+- `linketto_app` — приложението: `NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS`, само
+  `SELECT/INSERT/UPDATE/DELETE` по таблиците (и бъдещите — `ALTER DEFAULT PRIVILEGES`), без `CREATE` в схемата,
+  `_prisma_migrations` — само четене. Създава се и се пренастройва при **всеки** деплой, след миграциите.
+- **Първият деплой с ролите** там, където linketto вече върви: базата се пресъздава във вътрешната мрежа (томът
+  `linketto_db` остава) — старият app губи връзка с нея за десетина секунди, до вдигането на новия. Дъмпът е преди това.
+- **Откат към release отпреди ролите** работи: неговият compose чете `DATABASE_URL` (собственика) от файла с тайните
+  и вдига базата в старата мрежа. Не трий този ред, докато такъв откат е възможен.
+
+### Втвърдяване на контейнерите
+
+`app`, `db`, `migrate`: коренът е само за четене, пише се в томовете и в tmpfs (`app`: `/tmp` 32 MB,
+`/app/.next/cache` 64 MB — броят се към паметта); `cap_drop: [ALL]` (`db` връща само CHOWN/DAC_OVERRIDE/FOWNER/
+SETGID/SETUID за entrypoint-а), `no-new-privileges`; тавани: `app` 1 GB/2 CPU, `db` 512 MB/1 CPU, `pids_limit`, без
+swap над тавана. `mem_limit: 1g` при `MALLOC_ARENA_MAX=2`: измереният връх е 731–790 MB, плюс tmpfs ≤ 96 MB → остават
+~130 MB резерв. Кодът в образа е собственост на root; процесът е `next start` направо (без npm). `db` е само в
+`backend` (`internal: true`, без изход навън); `app` е и в `egress` (Revolut, Brevo, Gemini). Дневниците на Docker —
+до 3×10 MB на контейнер. Проверено локално (22.11.2026): `scripts/deploy.sh` два пъти с read-only `app`/`db`,
+страниците и `/_next/image` (пише в кеша) — без `EROFS`/`EACCES`. **След всяка промяна тук:** `up -d` → сонда →
+`docker compose logs app | grep -Ei 'EROFS|EACCES|Operation not permitted'`.
+
+### nginx — лимити, таймаути, кеш, скенери (`deploy/nginx.conf`)
+
+| Какво | Стойност | Защо |
+|---|---|---|
+| общ лимит | 20 r/s, burst 60 на IP | CGNAT: много хора през един IP |
+| `/api/` | 5 r/s, burst 20; тяло ≤ 1 MB | `/api/handle`, `/api/verify-email` и др. |
+| вход/регистрация/забравена/нова парола | 10 POST/мин, burst 10 | GET-овете не харчат лимита |
+| server actions (POST с `Next-Action`) | 3 r/s, burst 20 | таблото, формите, качването |
+| `/api/revolut/webhook` | без лимит, тяло ≤ 256 KB | защитата е подписът |
+| връзки | 40 на IP | slowloris |
+| тяло (страниците) | 10 MB | снимка ≤ 8 MB (`media.ts`), `bodySizeLimit` 9 MB |
+| таймаути | header 15 s, body 30 s, send 30 s, keepalive 30 s | между две четения, не за цялото качване |
+| кеш | `/_next/static` 30 дни; `/media` **10 мин.** | изтрита снимка не се сервира дълго от нас |
+| скенери | `/.env`, `/.git`, `/wp-*`, `*.php` … → 444 | `.well-known` минава |
+
+Отказ по лимит = 429 (в `access.log`, без IP). Кешът е в `/var/cache/nginx/linketto` — autodeploy и `https-setup.sh`
+създават папката (nginx прави само последната папка; без родителя `nginx -t` пада — проверено). **Cloudflare
+отпред** → първо `real_ip`, иначе всички делят лимита. Проверено: `nginx -t` на 1.24 (като на Ubuntu 24.04) и
+функционален тест с макет на app (444, 429 на 11-ия POST към входа, GET без лимит, 413 на `/api/`, кешът на `/media`,
+изчистен `X-Forwarded-For`).
+
+### CSP — Report-Only (решение, 22.11.2026)
+
+**Сега:** статична `Content-Security-Policy-Report-Only` от nginx за всички отговори, доклади → `POST /api/csp-report`
+(`report-uri` + `report-to`/`Reporting-Endpoints`) → ред `[csp-report] {"directive":…,"blocked":"https://хост",
+"page":"/u/*",…}` в `docker compose logs app`. В реда няма IP, user agent, slug, параметри или път на ресурса
+(`src/lib/csp-report.ts`; таван 300 реда/мин.). Заглавията в `next.config.mjs` (HSTS, X-Frame-Options и др.) са
+непроменени.
+**Защо не nonce в middleware сега:** (1) `matcher`-ът на middleware изключва `/u`, `/d`, `/s`, `/api` — публичните
+профили (основният трафик) щяха да останат без политика, а разширяването му пипа локализирания рутинг и
+пренаписването на собствените/кратките домейни; (2) nonce има само при динамично рендиране — статичните отговори
+биха докладвали всеки вграден скрипт на Next (шум без сигнал); (3) без живи тестове в браузър грешка в middleware
+чупи рутинга на целия сайт, а Report-Only в nginx не може да счупи нищо.
+**Какво хваща стъпка 1:** външни скриптове/връзки/рамки/форми (XSS, който зарежда от чужд хост, изтичане към чужд
+`connect-src`, `form-action`), `object-src`, `base-uri`. `'unsafe-inline'` за скриптове остава до стъпка 2.
+**Стъпка 2 (отделна задача):** 2–4 седмици доклади → nonce за динамичните страници + разширен matcher → пак
+Report-Only → чак после принудително. Преглед: `docker compose logs app | grep csp-report | sort | uniq -c | sort -rn`.
+
+### Бекъпи (шифровани) и проверено възстановяване
+
+- **Дневно 02:50** (`linketto-cron backup`): `pg_dump` (текстов, `--no-owner --no-privileges`) + `DATA_DIR/uploads`
+  (през контейнера на app — той е собственикът им) → **шифровано с age** към `BACKUP_AGE_RECIPIENTS` →
+  `/opt/few-few/shared/linketto/backups/daily/<UTC време>/` (700): `db.sql.gz.age`, `uploads.tar.gz.age`,
+  `manifest.txt.age` (брой редове по таблица, приложените миграции, брой снимки), `SHA256SUMS`. Нешифровано не стига
+  до диска (поток). Ротация: последните 14 (`LINKETTO_BACKUP_KEEP`). Без age или ключ unit-ът пада всяка нощ
+  (fail-closed, `systemctl --failed`). Без работещ app базата се бекъпва, а unit-ът пада („снимките НЕ са“).
+- **Ключът:** `age-keygen -o ~/.config/age/linketto-backup.txt` **на твоята машина**; публичният ред (`age1…`) →
+  `BACKUP_AGE_RECIPIENTS`. Частният — офлайн, в две копия: без него бекъпите не се четат.
+- **Извън сървъра:** наборите са шифровани — копирай ги където искаш (твоята машина, restic → S3/B2 в ЕС);
+  `tools/vps/backup-verify.sh backup` слага последния набор в restic.
+- **Проверено възстановяване — месечно и след промяна на схемата** (от твоята машина; ключът минава през SSH до
+  stdin на скрипта и не стига до диска на сървъра):
+  `ssh root@<сървър> 'bash /opt/few-few/current/tools/vps/backup-verify.sh linketto-verify --identity -' < ~/.config/age/linketto-backup.txt`.
+  sha256 → разшифроване в паметта → възстановяване във **временна** база (еднократен postgres контейнер без мрежа,
+  tmpfs) → броят редове по таблица и приложените миграции = манифеста → броят снимки. Живата база не се пипа; печатат
+  се само броеве. Проверено локално срещу истински дъмп (33 таблици, 22 миграции, 2 снимки).
+- **Възстановяване при инцидент** (човек, след бекъп на текущото): `age -d -i <ключ> db.sql.gz.age | gunzip | docker
+  compose exec -T db psql -U linketto -d linketto` в **празна** база → `scripts/deploy.sh` (миграциите на по-новия код и
+  правата на `linketto_app`); снимките — `tar -xz` в `DATA_DIR` със собственик 1001.
+- Дъмповете отпреди деплой (`backups/pre-deploy-*.sql.gz`, последните 10) остават нешифровани (700, root) — за бърз
+  откат на място без ключа на собственика.
+
+### Мониторинг
+
+- **Външна проба:** `.github/workflows/linketto-health.yml` (на 10 мин., от GitHub) →
+  `tools/vps/monitoring/probe-health.sh https://piuma.carbonstealth.eu/api/health '"app":"linketto"'`. Здрав = 200 +
+  `"status":"ok"` + маркерът (200 от чужд процес/прокси не е здрав; без `-k`). **Аларма:** issue `linketto-down` →
+  известие от GitHub по имейл; затваря се сам при възстановяване. Без външни услуги и без лични данни (в issue-то е
+  само HTTP кодът). Разписанието върви само от `main`.
+- **На хоста:** Uptime Kuma (`tools/vps/monitoring/`) — „HTTP(s) - Keyword“ към същия адрес с `"app":"linketto"`;
+  Beszel — диск/памет. Провалени таймери: `systemctl --failed`.
 
 ## 8. Приемен тест преди реални пари (Revolut **Sandbox**)
 
@@ -304,11 +441,37 @@ Health probe: `GET /api/health` → `{"status":"ok","db":"up","app":"linketto"}`
     или „постави тайната ръчно“). Грешен ключ → проверката след записа показва `revolut-fail` (401). Смяна на
     средата при висяща поръчка → без отметката отказ, с нея — тайната на уебхука се трие от панела.
 
-Чак след зелен приемен тест — `REVOLUT_ENV=production` с Production ключ и уебхук.
+11. **Отказ с частично връщане (чл. 11а/14(3)):** купи Про, 1 месец с отметката за ранно начало → уебхук → „Платена“
+    → табло → „План“ → „Откажете се от договора тук“ → „Потвърждавам отказа“ → имейл с потвърждение на получаването →
+    в `/admin` поръчката е „Връщане при Revolut…“ със сума = платеното минус пропорционалното за изминалите дни
+    (`refundCents`, `lib/withdrawal-refund.ts`) → уебхук за refund поръчката (или cron) → „Върната“, планът е този
+    отпреди поръчката.
+12. **Целият път наведнъж** на нов акаунт (регистрация → плащане → отказ → частично връщане → уебхук), с отворени
+    `docker compose logs -f app`: нито един 401 на уебхука, нито една аларма „неуспешен refund“.
+
+Чак след зелен приемен тест — `REVOLUT_ENV=production` с Production ключ и уебхук (§8а).
+
+## 8а. Revolut production — кога и как
+
+**Кога** (всичко изпълнено): §8 е зелен изцяло (вкл. т. 10–12); ДДС прагът е потвърден от консултант (§0, т. 1);
+Brevo DPA + SPF/DKIM минават (DMARC поне `p=none` с отчети); правният преглед на ОУ/политиката е минал; проверено
+възстановяване от бекъп (§7 „Бекъпи“) е зелено; външният монитор е активен; Merchant акаунтът е одобрен за production, а
+за API ключа подписването на заявките е **изключено** (§3).
+
+**Как:**
+1. Без висящи Sandbox поръчки (или с изричното потвърждение на броя в панела).
+2. Админ панел → „Плащания и имейл“ → средата `production` + Production ключът (шифрован; 2FA код). Или във файла с
+   тайните `REVOLUT_ENV=production` + ключа → `docker compose up -d app` от `last-good`.
+3. „Регистрирай уебхука“ → в production очаквай и `DISPUTE_*`; тайната се записва шифрована.
+4. Реално плащане с твоя карта: Про, 1 месец (€4) → уебхук 204 → „Платена“ → имейлът за потвърждение → „Върни
+   парите“ → „Върната“. Провери в Revolut Business, че плащането и връщането са там.
+5. След следващия кръгъл час: `journalctl -u linketto-cron@plans -n 5` → `errors: 0`.
+Обратно към Sandbox: същият път; смяната на средата трие тайната на уебхука (§3) — регистрирай го наново.
 
 ## 9. Преди публичен старт (не блокират деплоя, но задължителни)
 
-- **Cron за сроковете на съхранение (дневно, `psql`):** политиката за
+- **Cron за сроковете на съхранение (дневно, `psql`) — вече е таймер** (`linketto-cron-retention.timer`, §7); SQL-ът
+  по-долу е в `deploy/linketto-cron.sh` (тестът `retention-cron.test.ts` го сверява). Политиката за
   поверителност обещава срокове (`src/lib/retention-days.ts` е единният
   източник). Приложението чисти лениво, но реалният гарант е cron:
   ```sql
@@ -354,4 +517,4 @@ Health probe: `GET /api/health` → `{"status":"ok","db":"up","app":"linketto"}`
 - **Правен преглед:** текстовете в `messages/*.json` (`legal.*`) са изрядни, но
   минават през жив юрист/DPO преди масов трафик.
 - **Преводен одит:** през агента Преводач (`legal.*` — bg → en → it/es/de/fr; UI — всички 27 локала).
-- **Резервни копия** на базата (дневни, ЕС).
+- **Резервни копия** — дневни, шифровани, с проверено възстановяване (§7 „Бекъпи“); копие извън сървъра в ЕС.

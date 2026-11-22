@@ -7,6 +7,7 @@
 #   linketto-cron digest      POST /api/cron/digest  — дневно (08:10)
 #   linketto-cron retention   сроковете от политиката (psql в контейнера на базата)
 #   linketto-cron geoip       базата IP → държава (DB-IP Lite) — месечно и при деплой
+#   linketto-cron backup      дневен бекъп (pg_dump + снимките), шифрован с age — 02:50
 #
 # CRON_SECRET се чете от файла с тайните (mode 600) и стига до curl през stdin
 # (`-K -`), никога като аргумент: argv се вижда от всеки през `ps`, а crontab/
@@ -112,10 +113,124 @@ geoip() {
   die "geoip: не успях да сваля базата от download.db-ip.com (езикът пада към Accept-Language)"
 }
 
+# Дневен бекъп (DEPLOY.md §7, „Бекъпи“): pg_dump + качените снимки, ШИФРОВАНИ с age към
+# публичния ключ на собственика (BACKUP_AGE_RECIPIENTS в .env). Частният ключ НЕ е на сървъра —
+# тук нищо не може да се разшифрова; проверката на възстановяването е
+# `tools/vps/backup-verify.sh linketto-verify` с ключа, подаден през stdin.
+#
+# Набор = папка $DIR/<UTC време>/ (700): db.sql.gz.age, uploads.tar.gz.age, manifest.txt.age
+# (брой редове по таблица, приложените миграции, брой снимки) и SHA256SUMS (за цялост без ключ).
+# Нешифровано не се пише нищо на диска: дъмпът минава през поток pg_dump → броене → gzip → age.
+# Пише се в .partial-* и се преименува чак при успех; ротация — последните $KEEP набора.
+backup_recipients() {
+  local raw r
+  # Частен ключ в конфигурацията на сървъра = грешка в процедурата, не бекъп.
+  if grep -q 'AGE-SECRET-KEY-' "$ENV_FILE" 2>/dev/null; then
+    die "backup: в $ENV_FILE има ЧАСТЕН age ключ — махни го веднага; на сървъра стои само публичният (age1…)."
+  fi
+  raw="$(sed -n 's/^BACKUP_AGE_RECIPIENTS=//p' "$ENV_FILE" | tail -1 | tr -d '"'"'"'\r' | tr ',' ' ' || true)"
+  for r in $raw; do
+    # bech32: age1 + 58 знака от азбуката без b, i, o, 1.
+    [[ "$r" =~ ^age1[02-9ac-hj-np-z]{58}$ ]] || die "backup: невалиден получател в BACKUP_AGE_RECIPIENTS (очаква се age1…, 62 знака)."
+    printf '%s\n' "$r"
+  done
+}
+
+backup() {
+  local dir keep stamp part db app recips=() r tables rows nup old
+  # Всичко, което пише бекъпът, е само за root (и извън systemd, където UMask=0077 го няма).
+  umask 077
+  dir="${LINKETTO_BACKUP_DIR:-$(dirname "$ENV_FILE")/backups/daily}"
+  keep="${LINKETTO_BACKUP_KEEP:-14}"
+  case "$keep" in ''|*[!0-9]*) die "backup: LINKETTO_BACKUP_KEEP трябва да е число." ;; esac
+  [ "$keep" -ge 1 ] || keep=1
+  command -v age >/dev/null 2>&1 || die "backup: липсва age (apt-get install -y age) — нешифрован бекъп не пиша."
+  # Проверката в подобвивка: провал (частен ключ, невалиден получател) спира тук с нейното съобщение.
+  local list
+  list="$(backup_recipients)" || exit 1
+  for r in $list; do recips+=(-r "$r"); done
+  [ "${#recips[@]}" -gt 0 ] \
+    || die "backup: BACKUP_AGE_RECIPIENTS е празен в $ENV_FILE — нешифрован бекъп не пиша (DEPLOY.md §7, „Бекъпи“)."
+
+  db="$(docker ps -q --filter "label=com.docker.compose.project=$PROJECT" \
+    --filter "label=com.docker.compose.service=db" | head -1 || true)"
+  [ -n "$db" ] || die "backup: няма работещ контейнер на базата (проект $PROJECT)."
+  # Снимките се четат от контейнера на app (той е собственикът им, uid 1001): този unit е без
+  # capabilities и root тук не минава през data/ (750, 1001).
+  # Без работещ app базата пак се бекъпва (тя е по-ценната), а unit-ът завършва с грешка накрая.
+  app="$(docker ps -q --filter "label=com.docker.compose.project=$PROJECT" \
+    --filter "label=com.docker.compose.service=app" | head -1 || true)"
+
+  install -d -m 700 "$dir"
+  stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+  part="$dir/.partial-$stamp"
+  install -d -m 700 "$part"
+  # shellcheck disable=SC2064  # пътят е известен сега — разширяваме го веднага
+  trap "rm -rf '$part'" EXIT
+
+  # 1) База: `--no-owner --no-privileges` — възстановява се във всяка празна база (и във временната
+  # на проверката); правата на linketto_app ги слага scripts/deploy.sh при всеки деплой.
+  # Текстов формат: всеки ред на таблица е точно един ред между `COPY …` и `\.` — awk ги брои по
+  # пътя (без втори проход и без нешифрован файл), броят влиза в манифеста за сверка.
+  docker exec "$db" pg_dump -U linketto -d linketto --no-owner --no-privileges \
+    | awk -v out="$part/rows.txt" '
+        { print }
+        /^CREATE TABLE / { tables++ }
+        inb && /^\\\.$/ { printf "%s %d\n", name, n > out; inb = 0; next }
+        inb { n++; next }
+        /^COPY public\..* FROM stdin;$/ { name = $2; n = 0; inb = 1 }
+        END { printf "#tables %d\n", tables > out }' \
+    | gzip -6 | age "${recips[@]}" -o "$part/db.sql.gz.age" \
+    || die "backup: pg_dump/шифроването се провали — наборът НЕ е записан."
+  tables="$(sed -n 's/^#tables //p' "$part/rows.txt")"
+  [ "${tables:-0}" -ge 1 ] || die "backup: дъмпът е без нито една таблица — наборът НЕ е записан."
+  rows="$(grep -v '^#' "$part/rows.txt" | awk '{ s += $2 } END { print s + 0 }')"
+
+  docker exec "$db" psql -X -At -U linketto -d linketto -v ON_ERROR_STOP=1 -c \
+    'SELECT migration_name FROM "_prisma_migrations" WHERE finished_at IS NOT NULL AND rolled_back_at IS NULL ORDER BY 1' \
+    > "$part/migrations.txt" || die "backup: не прочетох _prisma_migrations."
+
+  # 2) Снимките (DATA_DIR/uploads). Празна папка/липсваща папка = празен архив, не грешка.
+  local files=(db.sql.gz.age manifest.txt.age)
+  if [ -n "$app" ]; then
+    nup="$(docker exec "$app" sh -c 'if [ -d /data/uploads ]; then find /data/uploads -type f | wc -l; else echo 0; fi')" \
+      || die "backup: не преброих снимките в app."
+    nup="$(printf '%s' "$nup" | tr -dc '0-9')"
+    docker exec "$app" sh -c 'cd /data && if [ -d uploads ]; then tar -czf - uploads; else tar -czf - -T /dev/null; fi' \
+      | age "${recips[@]}" -o "$part/uploads.tar.gz.age" \
+      || die "backup: архивът на снимките/шифроването се провали — наборът НЕ е записан."
+    files+=(uploads.tar.gz.age)
+  else
+    nup="missing"
+  fi
+
+  # 3) Манифест (също шифрован: броят редове е бизнес информация) + контролни суми.
+  {
+    printf 'linketto-backup 1\ncreated %s\nuploads %s\n' "$stamp" "$nup"
+    grep -v '^#' "$part/rows.txt" | sed 's/^/rows /'
+    sed 's/^/migration /' "$part/migrations.txt"
+  } | age "${recips[@]}" -o "$part/manifest.txt.age" || die "backup: манифестът не се шифрова."
+  rm -f "$part/rows.txt" "$part/migrations.txt"
+  ( cd "$part" && sha256sum "${files[@]}" > SHA256SUMS )
+  mv "$part" "$dir/$stamp"
+  trap - EXIT
+  printf 'backup: %s — %s таблици, %s реда, %s снимки, %s (шифровано за %s получател/и)\n' \
+    "$stamp" "$tables" "$rows" "$nup" "$(du -sh "$dir/$stamp" | cut -f1)" "$(( ${#recips[@]} / 2 ))"
+
+  # 4) Ротация: само папки с точно този шаблон на името; недовършени .partial-* по-стари от ден.
+  { find "$dir" -mindepth 1 -maxdepth 1 -type d -name '[0-9]*T[0-9]*Z' -printf '%f\n' | sort -r; } \
+    | tail -n +$((keep + 1)) | while read -r old; do
+        [[ "$old" =~ ^[0-9]{8}T[0-9]{6}Z$ ]] && rm -rf -- "${dir:?}/$old"
+      done
+  find "$dir" -mindepth 1 -maxdepth 1 -type d -name '.partial-*' -mtime +0 -exec rm -rf -- {} + 2>/dev/null || true
+  [ "$nup" != "missing" ] || die "backup: app не върви — базата е бекъпната ($stamp), снимките НЕ са."
+}
+
 case "${1:-}" in
   plans)     call_route /api/cron/plans ;;
   digest)    call_route /api/cron/digest ;;
   retention) retention ;;
   geoip)     geoip ;;
-  *)         die "употреба: linketto-cron plans|digest|retention|geoip" ;;
+  backup)    backup ;;
+  *)         die "употреба: linketto-cron plans|digest|retention|geoip|backup" ;;
 esac
