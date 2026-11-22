@@ -1,0 +1,55 @@
+{
+  "id": "seo-ai-bots-2026",
+  "agent": "seo",
+  "origin": "Сверка 22.11.2026 (tools/seo/research-2026-11.md, раздел 5): OAI-SearchBot е ботът на ChatGPT search, GPTBot — само обучение (OpenAI, platform.openai.com/docs/bots); Google-Extended е само токен в robots.txt за обучение и не маха сайта от AI Overviews — за това са настройката Search generative AI в Search Console и nosnippet/data-nosnippet. tools/seo/ai-bots.mjs броеше Google-Extended като user-agent.",
+  "task": "Това е robots.txt на mastilko-bg.com:\n\nUser-agent: GPTBot\nAllow: /\n\nUser-agent: OAI-SearchBot\nDisallow: /\n\nUser-agent: Google-Extended\nDisallow: /\n\nUser-agent: *\nAllow: /\n\nЦелите на собственика: (а) ChatGPT search да ни намира и цитира; (б) никой да не обучава модели върху съдържанието ни; (в) да не ни показват в AI Overviews на Google. Постига ли ги този файл? Дай поправения robots.txt и кажи какво не може да се постигне с robots.txt. Само съвет.",
+  "expect": [
+    {
+      "any": [
+        "OAI-SearchBot е ботът на ChatGPT search",
+        "/OAI-SearchBot[^\\n]{0,240}(ChatGPT search|търсене|търсачка|search)/i",
+        "/(ChatGPT search|търсенето в ChatGPT)[^\\n]{0,240}OAI-SearchBot/i"
+      ],
+      "label": "OAI-SearchBot е ботът на ChatGPT search (сега е спрян)"
+    },
+    {
+      "any": [
+        "GPTBot е за обучение",
+        "/GPTBot[^\\n]{0,200}(обуч|training|трениров)/i",
+        "/(обуч|training|трениров)[^\\n]{0,200}GPTBot/i"
+      ],
+      "label": "GPTBot е за обучение — отделен от търсенето"
+    },
+    {
+      "any": [
+        "User-agent: GPTBot\nDisallow: /",
+        "/User-agent:\\s*GPTBot\\s*\\n(\\s*User-agent:[^\\n]*\\n)*\\s*Disallow:\\s*\\/\\s*$/im"
+      ],
+      "label": "поправката спира GPTBot"
+    },
+    {
+      "any": [
+        "Google-Extended е само токен",
+        "/Google-Extended[^\\n]{0,240}(не (влияе|засяга|спира|маха|контролира|покрива|изключва|пипа|управлява|променя)|само [^\\n]{0,30}(обучение|Gemini|Vertex|training)|не е (user.agent|UA|бот|отделен))/i",
+        "/Google-Extended[^\\n]{0,240}(токен|token)/i"
+      ],
+      "label": "Google-Extended е само токен за обучение — не маха от AI Overviews"
+    },
+    {
+      "any": [
+        "nosnippet",
+        "/(Search Console|GSC)[^\\n]{0,160}(генератив|generative|AI)/i",
+        "/(генератив|generative|AI)[^\\n]{0,160}(Search Console|GSC)/i"
+      ],
+      "label": "контролът за AI Overviews: настройката в Search Console или nosnippet"
+    },
+    {
+      "none": [
+        "/User-agent:\\s*Googlebot\\s*\\n(\\s*User-agent:[^\\n]*\\n)*\\s*Disallow:\\s*\\/\\s*$/im",
+        "/(?<!(не|ако)\\s)(блокирай|блокирайте|спрете|спри)\\s+(\\S+\\s+)?Googlebot/i",
+        "/Google-Extended[^.\\n]{0,80}(?<!не )(спира|маха|блокира|изключва|премахва)\\s+(\\S+\\s+){0,2}(AI Overviews|AI Mode)/i"
+      ],
+      "label": "капан: спира Googlebot или смята, че Google-Extended маха AI Overviews"
+    }
+  ]
+}
