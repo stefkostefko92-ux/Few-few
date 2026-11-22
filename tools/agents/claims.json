@@ -75,6 +75,61 @@
       ],
       "checkedAt": "2026-09-25",
       "note": "Открито при пресверката на карантината (2026-08-04): поука твърдеше 30 и `error_type`; и двете се разминаха с живата дока. Anchor умишлено ЛИПСВА — числото е точно това, което се мени, значи котва по литерал ще пада при всяка промяна вместо да иска пресверка."
+    },
+    {
+      "id": "google-gen-ai-guide-2026",
+      "kind": "platform",
+      "statement": "Google (ръководство за генеративен AI в Search, 15.05.2026): оптимизацията за AI Overviews и AI Mode е SEO; не са нужни llms.txt, „AI файлове“, специална schema/markdown, накъсване на текста, пренаписване „за AI“, страници за всяка fan-out подзаявка (scaled content abuse). Ключът е некомодитизирано съдържание. „Пасажи 130–170 думи“ и „отговор отпред 40–60 думи“ са евристики на доставчици, не изискване на Google.",
+      "source": "https://developers.google.com/search/docs/fundamentals/ai-optimization-guide",
+      "agents": [
+        "seo"
+      ],
+      "checkedAt": "2026-11-22",
+      "note": "tools/seo/research-2026-11.md, раздел 3. Дефиницията на SEO до 22.11.2026 твърдеше обратното (errors.jsonl, spec seo-geo-mythbusting-2026)."
+    },
+    {
+      "id": "gsc-gen-ai-report-control",
+      "kind": "platform",
+      "statement": "Search Console: отчетът Generative AI performance е за всички сайтове от 31.08.2026 — импресии, страници, държави, устройства; без кликове и CTR. Настройката Search generative AI решава дали сайтът участва в AI Overviews, AI Mode и AI функциите в Discover; не е сигнал за класиране и не е контрол за обучение (за обучението е Google-Extended). FAQ rich results не се показват от 05.2026.",
+      "source": "https://support.google.com/webmasters/answer/16984139",
+      "agents": [
+        "seo"
+      ],
+      "checkedAt": "2026-11-22",
+      "note": "Също: developers.google.com/search/docs/appearance/ai-features и /search/updates. Подробностите за настройката са от независими източници — сверявай в самия Search Console."
+    },
+    {
+      "id": "google-ranking-updates-2026",
+      "kind": "platform",
+      "statement": "Core update-и 2026: март (27.03), май (21.05), ноември — тече от 10.11.2026 към 22.11.2026. Spam update-и: 24.03, 24.06, 18.08, 24.09. При спад на трафика първо се проверява таблото за статус; по време на разгръщане не се реагира.",
+      "source": "https://developers.google.com/search/updates/ranking",
+      "agents": [
+        "seo"
+      ],
+      "checkedAt": "2026-11-22",
+      "note": "Ноемврийският ще приключи — при пресверка обнови датата на края в seo.md (Пейзаж 2026)."
+    },
+    {
+      "id": "ai-crawlers-2026",
+      "kind": "platform",
+      "statement": "OpenAI: OAI-SearchBot (ChatGPT search; без него няма в ChatGPT search), GPTBot (обучение, отделно), ChatGPT-User, OAI-AdsBot. Anthropic: Claude-SearchBot, ClaudeBot (обучение), Claude-User. Apple: Applebot (Siri/Spotlight), Applebot-Extended — само токен за обучение. Google-Extended — само токен в robots.txt за обучение, не е user-agent и не маха сайта от AI Overviews. DuckAssistBot, MistralAI-User, meta-externalagent — по страниците на доставчиците.",
+      "source": "https://platform.openai.com/docs/bots",
+      "agents": [
+        "seo"
+      ],
+      "checkedAt": "2026-11-22",
+      "note": "Също: support.claude.com/en/articles/8896518 · support.apple.com/en-us/119829 · developers.facebook.com/docs/sharing/webmasters/web-crawlers · duckduckgo.com/duckduckgo-help-pages/results/duckassistbot · docs.mistral.ai/robots. Инструментът: tools/seo/ai-bots.mjs (+ ai-bots.test.mjs)."
+    },
+    {
+      "id": "google-ad-grants-eligibility",
+      "kind": "platform",
+      "statement": "Google Ad Grants: до $10 000/месец текстова реклама в Google Search само за регистрирани нестопански организации през Google for Nonprofits (проверка от Percent). Не са допустими държавни органи, болници и медицински групи, училища, академични институции и университети (благотворителните им звена — да). Търговско дружество — не.",
+      "source": "https://www.google.com/nonprofits/eligibility/",
+      "agents": [
+        "seo"
+      ],
+      "checkedAt": "2026-11-22",
+      "note": "Също: support.google.com/nonprofits/answer/3215869. Наличността по държава (BG/IT) — само от независими източници; сверявай при регистрация. Умение bezplatna-vidimost."
     }
   ]
 }
