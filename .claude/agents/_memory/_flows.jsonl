@@ -859,3 +859,6 @@
 {"t":"start","ts":"2026-11-22T17:49:47.739Z","id":"rf0340393","flow":"авто","lead":"pravniyat-razbirach","auto":true}
 {"t":"handoff","ts":"2026-11-22T17:49:47.739Z","id":"rf0340393","from":"pravniyat-razbirach","to":"човек","status":"има бележки","run":"85b1242d"}
 {"t":"handoff","ts":"2026-11-22T17:54:38.600Z","id":"rf0340393","from":"kodadjiyata","to":"kachestveniyat","status":"наред","run":"e8d0de48"}
+{"t":"start","ts":"2026-11-22T17:56:12.481Z","id":"r20b7cf8c","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-22T17:56:12.481Z","id":"r20b7cf8c","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"6c8ad744"}
+{"t":"handoff","ts":"2026-11-22T17:56:58.266Z","id":"r20b7cf8c","from":"pravniyat-razbirach","to":"vps-adjiyata","status":"блокер","run":"9298d3c2"}
