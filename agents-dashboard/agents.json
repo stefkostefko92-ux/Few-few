@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 731
+        "lessons": 732
       },
       "evolution": [
         {
@@ -2037,9 +2037,20 @@
           "date": "2026-11-22",
           "event": "v67.2 — учене",
           "detail": "Научи: Prisma cursor-пагинацията генерира \"id >= (SELECT id WHERE id = cursor) AND <филтър> OF… (+111 още)"
+        },
+        {
+          "version": "67.3.0",
+          "date": "2026-11-22",
+          "event": "v67.3 — учене",
+          "detail": "Научи: next-intl 3.26 getTranslations({locale}) подава locale-а като requestLocale на getReque…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-22",
+          "type": "learning",
+          "summary": "Научи: „next-intl 3.26 getTranslations({locale}) подава locale-а като requestLocale на getReque…\""
+        },
         {
           "date": "2026-11-22",
           "type": "learning",
