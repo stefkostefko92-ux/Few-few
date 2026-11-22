@@ -660,7 +660,7 @@
     "currencyNote": "'E prezze 'e {name} so' in USD, comme 'e mostra 'a paggena lloro; int'a cierti paise putisse vedé n'ata moneta. 'E prezze nuoste so' in euro.",
     "alsoCompare": "Cunfronta ancora:",
     "ctaTitle": "Passa int'a nu minuto",
-    "ctaText": "Crea 'o Linketto tuoje gratis — puorta ccà 'e link tuoje 'a Linktree dint'a nu minuto e ll'AI 'e traduce int'a ogne lengua.",
+    "ctaText": "Crea 'o Linketto tuoje gratis e puorta ccà 'e link tuoje 'a {name} — ll'AI 'e traduce int'a ogne lengua.",
     "ctaButton": "Accummencia gratis",
     "plansNote": "'E piane d'e ddoje servizie teneno funzione diverse; cunfruntammo sulo 'e caratteristiche elencate. 'E condizione cumplete stanno ncopp'ê paggene d'e prezze lloro.",
     "metaDescription": "Linketto o {name}? Prezze, dominio personalizzato, brand e analise — fatte d'e paggene ufficiale lloro, cu data e fonte.",
