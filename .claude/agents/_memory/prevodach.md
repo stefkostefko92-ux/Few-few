@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-11-22:** В linketto it.json обектът admin се обръща към собственика на tu (Premi, Riprova), не на Lei; новите admin низове следват tu, за да съвпаднат със съседните _(превод на admin.* низове към it в linketto; verified; linketto/messages/it.json:678 (errorRefundPending "Premi di nuovo «Rimborsa»"))_
 - **2026-11-22:** В гръцки ';' е въпросителен знак, затова ICU шаблон с ';' като разделител (напр. "{us}; {name}") в el трябва да ползва ano teleia '·' (U+00B7) _(превод на низове с ';' към el във всеки продукт; verified; linketto/messages/el.json — kindHint_EMAIL и vs.summaryRow (2026-11-22); гръцкият правопис ползва ';' за въпрос и '·' за точка и запетая)_
 - **2026-11-22:** linketto messages/*.json — fr няма NBSP/U+202F, а интервалът пред ':' ';' и вътре в « » е обикновен; при нов fr низ не се вкарва NBSP _(френска типография в linketto; verified; Grep "\x{00A0}|\x{202F}" linketto/messages → 0 съвпадения (2026-11-22))_
 - **2026-11-22:** linketto messages — seo обектът завършва с keywords в bg/en/it/es/de/fr и с metaDescription в останалите 21; котвата `"\n  },\n  "report": {` е уникална и безопасна за добавяне в края на seo _(добавяне на seo ключове в linketto; verified; Grep -B2 '^  "report": \{' linketto/messages (27 файла) + 27/27 успешни Edit-а)_
