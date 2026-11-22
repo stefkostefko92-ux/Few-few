@@ -56,6 +56,8 @@ export async function POST(request: Request): Promise<NextResponse> {
     referralsReleased: 0,
     errors: 0,
   };
+  // Кои поръчки са гръмнали (вътрешни id, без лични данни) — за алармата; не влизат в отговора.
+  const failedOrders: string[] = [];
 
   // (1) P9: висящи поръчки на възраст 15 мин. – 3 дни.
   if (await revolutReady()) {
@@ -75,6 +77,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         if (result !== 'pending' && result !== 'noop') report.reconciled += 1;
       } catch {
         report.errors += 1;
+        failedOrders.push(`${order.id} (плащане)`);
       }
     }
   }
@@ -93,6 +96,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         if (result === 'refunded' || result === 'failed') report.refunds += 1;
       } catch {
         report.errors += 1;
+        failedOrders.push(`${order.id} (връщане)`);
       }
     }
   }
@@ -223,6 +227,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (report.errors) {
     await notifyAdmins('Cron на плановете: грешки', [
       `Грешки: ${report.errors}`,
+      ...(failedOrders.length ? [`Поръчки: ${failedOrders.slice(0, 20).join(', ')}${failedOrders.length > 20 ? ' …' : ''}`] : []),
       `Уредени: ${report.reconciled}, refund-и: ${report.refunds}, потвърждения: ${report.confirmed}, свалени: ${report.downgraded}, напомняния: ${report.reminded}`,
       'Подробности — в журнала на сървъра ([plan-order]).',
     ]).catch(() => undefined);
