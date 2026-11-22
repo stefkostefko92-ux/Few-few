@@ -26,6 +26,7 @@ import {
   adminMarkPayoutPaidAction,
   adminNotifyAutoTranslateAction,
   adminRefundPlanOrderAction,
+  adminCloseRefundAction,
   adminResolveReportAction,
   adminSetPasswordAction,
   adminSetPublishedAction,
@@ -224,6 +225,11 @@ export default async function AdminPage({
     refund: t('errorRefund'),
     'refund-order': t('errorRefundOrder'),
     'refund-pending': t('errorRefundPending'),
+    'refund-close': t('errorRefundClose'),
+    'refund-close-confirm': t('errorRefundCloseConfirm'),
+    'refund-close-progress': t('errorRefundCloseProgress'),
+    'refund-close-failed': t('errorRefundCloseFailed'),
+    'refund-close-unreadable': t('errorRefundCloseUnreadable'),
     ban: t('errorBan'),
     'ban-warn': t('errorBanWarn'),
     'ban-ground': t('errorBanGround'),
@@ -479,6 +485,21 @@ export default async function AdminPage({
                           <input type="hidden" name="planOrderId" value={order.id} />
                           <button type="submit" className={dangerOutline}>
                             {t('refund')}
+                          </button>
+                        </form>
+                      )}
+                      {/* Връщане в ход с refund при Revolut: ръчно приключване след сверка
+                          (docs/refund-manual-close-spec.md Б — решава живото четене). */}
+                      {order.state === 'refund_pending' && order.refundOrderId && (
+                        <form action={adminCloseRefundAction} className="flex flex-col items-end gap-1.5">
+                          <input type="hidden" name="uiLocale" value={locale} />
+                          <input type="hidden" name="planOrderId" value={order.id} />
+                          <label className="flex max-w-[14rem] items-start gap-1.5 text-start text-micro text-fg-2">
+                            <input type="checkbox" name="confirm" required className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                            {t('refundCloseConfirm')}
+                          </label>
+                          <button type="submit" className={dangerOutline}>
+                            {t('refundClose')}
                           </button>
                         </form>
                       )}

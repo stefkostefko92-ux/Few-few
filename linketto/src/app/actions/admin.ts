@@ -9,7 +9,7 @@ import { adminEmailChange, isAdminEmail, isWorkingAdmin } from '@/lib/admin-list
 import { recordSecurityEvent } from '@/lib/security-events';
 import { notifyAdmins } from '@/lib/admin-alert';
 import { notifyUserSecurity, sendVerificationEmail } from '@/lib/account-flows';
-import { requestPlanRefund, type RefundRequest } from '@/lib/plan-order-service';
+import { closeRefundManually, requestPlanRefund, type RefundRequest } from '@/lib/plan-order-service';
 import { banAllowed, banNoticeEmail, isBanCategory, warningNoticeEmail } from '@/lib/dsa-notice';
 import { emailReady, sendEmail } from '@/lib/email';
 import { eraseUser } from '@/lib/account-erasure';
@@ -282,6 +282,27 @@ export async function adminRefundPlanOrderAction(
   // Revolut не отговори ясно — връщането е в ход; повторът е със същия ключ.
   if (result === 'stuck') redirect(`/${uiLocale}/admin?error=refund-pending`);
   if (result === 'not-refundable') redirect(`/${uiLocale}/admin?error=refund`);
+  redirect(`/${uiLocale}/admin?ok=1`);
+}
+
+/** „Приключи ръчно“ (docs/refund-manual-close-spec.md Б): връщане в ход, чиято refund поръчка при
+    Revolut не съвпада по сума/валута — след сверка в Revolut Business. Решава живото четене в ядрото;
+    иска step-up и изрична отметка. */
+export async function adminCloseRefundAction(formData: FormData): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  const stepAdmin = await requireStepUp(uiLocale);
+  const planOrderId = String(formData.get('planOrderId') ?? '');
+  if (formData.get('confirm') !== 'on') redirect(`/${uiLocale}/admin?error=refund-close-confirm`);
+  await recordSecurityEvent('admin.action', { userId: stepAdmin.id, meta: { action: 'refund-close', planOrderId } });
+  let result: Awaited<ReturnType<typeof closeRefundManually>>;
+  try {
+    result = await closeRefundManually(planOrderId);
+  } catch {
+    redirect(`/${uiLocale}/admin?error=refund-close-unreadable`);
+  }
+  if (result === 'refund-in-progress') redirect(`/${uiLocale}/admin?error=refund-close-progress`);
+  if (result === 'refund-failed') redirect(`/${uiLocale}/admin?error=refund-close-failed`);
+  if (result === 'not-closable') redirect(`/${uiLocale}/admin?error=refund-close`);
   redirect(`/${uiLocale}/admin?ok=1`);
 }
 

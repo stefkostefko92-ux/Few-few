@@ -27,6 +27,7 @@ export const {
   sendPlanConfirmation,
   requestPlanRefund,
   settlePlanRefund,
+  closeRefundManually,
   recordDispute,
   resendDisputeAlerts,
   alertStuckRefunds,
