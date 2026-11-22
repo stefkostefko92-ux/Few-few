@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from './db';
 import { isAdminEmail } from './admin-list';
 import { LAST_SEEN_EVERY_MS, SESSION_LIMITS, sessionExpired } from './session-policy';
+import { TERMS_VERSION } from './terms';
 
 export { stepUpFresh } from './session-policy';
 import type { Session, User } from '@prisma/client';
@@ -51,7 +52,7 @@ export async function registerUser(
   if (existing) return null;
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
   return prisma.user.create({
-    data: { email, passwordHash, name, locale },
+    data: { email, passwordHash, name, locale, termsAcceptedAt: new Date(), termsVersion: TERMS_VERSION },
   });
 }
 
@@ -192,7 +193,10 @@ export async function clearLoginChallenge(id?: string): Promise<void> {
 
 // --- Еднократни токени по имейл ----------------------------------------------
 
-export async function createUserToken(userId: string, purpose: 'verify-email', ttlMs: number): Promise<string> {
+/** Целта на токена — проверява се при всяко четене (verify ≠ reset). */
+export type TokenPurpose = 'verify-email' | 'reset-password';
+
+export async function createUserToken(userId: string, purpose: TokenPurpose, ttlMs: number): Promise<string> {
   const token = randomBytes(32).toString('base64url');
   await prisma.userToken.deleteMany({ where: { userId, purpose, usedAt: null } });
   await prisma.userToken.create({
@@ -203,14 +207,14 @@ export async function createUserToken(userId: string, purpose: 'verify-email', t
 
 /** Използва токена (еднократно); връща потребителя или null. */
 /** Чий е токенът — БЕЗ да го изразходва (за проверка преди консумиране). */
-export async function peekUserToken(token: string, purpose: 'verify-email'): Promise<User | null> {
+export async function peekUserToken(token: string, purpose: TokenPurpose): Promise<User | null> {
   if (!/^[A-Za-z0-9_-]{20,100}$/.test(token)) return null;
   const record = await prisma.userToken.findUnique({ where: { tokenHash: hashToken(token) }, include: { user: true } });
   if (!record || record.purpose !== purpose || record.usedAt || record.expiresAt.getTime() < Date.now()) return null;
   return record.user;
 }
 
-export async function consumeUserToken(token: string, purpose: 'verify-email'): Promise<User | null> {
+export async function consumeUserToken(token: string, purpose: TokenPurpose): Promise<User | null> {
   if (!/^[A-Za-z0-9_-]{20,100}$/.test(token)) return null;
   const record = await prisma.userToken.findUnique({ where: { tokenHash: hashToken(token) }, include: { user: true } });
   if (!record || record.purpose !== purpose || record.usedAt || record.expiresAt.getTime() < Date.now()) return null;

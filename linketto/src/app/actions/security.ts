@@ -6,7 +6,6 @@
 // пътуват само в отговора на действието (не в адреса, не в логове).
 
 import { redirect } from 'next/navigation';
-import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { isLocale } from '@/i18n/locales';
 import {
@@ -26,6 +25,7 @@ import { hashBackupCode, matchBackupCode, newBackupCodes } from '@/lib/backup-co
 import { rateLimit } from '@/lib/rate-limit';
 import { alertAtThreshold, recordSecurityEvent } from '@/lib/security-events';
 import { notifyUserSecurity, sendVerificationEmail } from '@/lib/account-flows';
+import { newPasswordSchema } from '@/lib/password-policy';
 
 function localeFrom(formData: FormData): string {
   const raw = String(formData.get('uiLocale') ?? 'en');
@@ -153,7 +153,7 @@ export async function disableTotpAction(formData: FormData): Promise<void> {
 
 // --- Парола и сесии -----------------------------------------------------------
 
-const newPassword = z.string().min(10).max(200);
+const newPassword = newPasswordSchema; // lib/password-policy.ts — едно правило навсякъде
 
 export async function changePasswordAction(formData: FormData): Promise<void> {
   const locale = localeFrom(formData);

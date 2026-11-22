@@ -119,7 +119,9 @@
       "f3": "Enintään 5 profiilia, kuten Businessissa"
     },
     "mostPopular": "Suosituin",
-    "annualOffer": "Säästä {percent} % vuosipaketilla"
+    "annualOffer": "Säästä {percent} % vuosipaketilla",
+    "vatNote": "Hinnat ovat lopullisia ja sisältävät 20 %:n arvonlisäveron.",
+    "prepaidNote": "Ei kestotilausta: maksat kerralla 1, 3, 6 tai 12 kuukaudesta ja päätät itse, jatkatko — muistutamme sinua sähköpostilla ennen jakson päättymistä."
   },
   "auth": {
     "loginTitle": "Kirjaudu Linkettoon",
@@ -667,7 +669,7 @@
     "currencyNote": "Palvelun {name} hinnat ovat USD:nä, kuten sen sivu ne näyttää; joissakin maissa saatat nähdä toisen valuutan. Meidän hintamme ovat euroissa.",
     "alsoCompare": "Vertaa myös:",
     "ctaTitle": "Vaihda minuutissa",
-    "ctaText": "Luo oma Linketto ilmaiseksi — siirrä linkkisi Linktreestä minuutissa, ja tekoäly kääntää ne jokaiselle kielelle.",
+    "ctaText": "Luo oma Linketto ilmaiseksi ja siirrä linkkisi tänne — tekoäly kääntää ne jokaiselle kielelle.",
     "ctaButton": "Aloita ilmaiseksi",
     "plansNote": "Kummankin palvelun paketeissa on eri ominaisuuksia; vertailemme vain lueteltuja ominaisuuksia. Täydelliset ehdot löytyvät niiden hinnastosivuilta.",
     "metaDescription": "Linketto vai {name}? Hinnat, oma verkkotunnus, brändäys ja analytiikka — tiedot palvelun virallisilta sivuilta, päivämäärän ja lähteen kanssa.",

@@ -22,10 +22,22 @@ type Strings = {
   noticeSubject: string;
   notice: Record<SecurityNoticeKind, string>;
   notYou: string;
+  /** ЗЕТ чл. 10, ал. 2: потвърждение на регистрацията + ОУ (версия, връзка); без превод → английски. */
+  registered?: (version: string, link: string) => string;
+  /** „Забравена парола“ (docs/password-reset-spec.md); без превод → английски. */
+  reset?: { subject: string; body: string; button: string; ignore: string };
 };
 
 const STRINGS: Record<string, Strings> = {
   bg: {
+    registered: (version, link) =>
+      `Регистрацията ти в Linketto е получена — акаунтът е създаден при <a href="${link}">Общите условия</a> (версия от ${version}).`,
+    reset: {
+      subject: 'Linketto: нова парола',
+      body: 'Някой (надяваме се ти) поиска нова парола за акаунта ти. Натисни бутона, за да зададеш нова. Връзката важи 60 минути и е еднократна.',
+      button: 'Задай нова парола',
+      ignore: 'Не си искал(а) нова парола? Не прави нищо — паролата ти остава същата.',
+    },
     verifySubject: 'Linketto: потвърди имейла си',
     verifyBody: 'Натисни бутона, за да потвърдиш, че този имейл е твой. Връзката важи 48 часа и е еднократна.',
     verifyButton: 'Потвърди имейла',
@@ -44,6 +56,14 @@ const STRINGS: Record<string, Strings> = {
     notYou: 'Ако не си бил ти, смени паролата си веднага и ни пиши на info@carbonstealth.eu.',
   },
   en: {
+    registered: (version, link) =>
+      `Your Linketto registration has been received — the account was created under the <a href="${link}">Terms of Service</a> (version of ${version}).`,
+    reset: {
+      subject: 'Linketto: reset your password',
+      body: 'Someone (hopefully you) asked for a new password for your account. Press the button to set a new one. The link is valid for 60 minutes and works once.',
+      button: 'Set a new password',
+      ignore: 'Didn’t ask for a new password? Do nothing — your password stays the same.',
+    },
     verifySubject: 'Linketto: confirm your email',
     verifyBody: 'Press the button to confirm that this email is yours. The link is valid for 48 hours and works once.',
     verifyButton: 'Confirm email',
@@ -62,6 +82,14 @@ const STRINGS: Record<string, Strings> = {
     notYou: 'If this was not you, change your password right away and write to info@carbonstealth.eu.',
   },
   it: {
+    registered: (version, link) =>
+      `La tua registrazione a Linketto è stata ricevuta — l’account è stato creato alle condizioni dei <a href="${link}">Termini di servizio</a> (versione del ${version}).`,
+    reset: {
+      subject: 'Linketto: imposta una nuova password',
+      body: 'Qualcuno (speriamo tu) ha chiesto una nuova password per il tuo account. Premi il pulsante per impostarne una nuova. Il link è valido 60 minuti e si può usare una sola volta.',
+      button: 'Imposta una nuova password',
+      ignore: 'Non hai chiesto una nuova password? Non fare nulla — la tua password resta la stessa.',
+    },
     verifySubject: 'Linketto: conferma la tua email',
     verifyBody: 'Premi il pulsante per confermare che questa email è tua. Il link è valido 48 ore e si può usare una sola volta.',
     verifyButton: 'Conferma l’email',
@@ -80,6 +108,14 @@ const STRINGS: Record<string, Strings> = {
     notYou: 'Se non sei stato tu, cambia subito la password e scrivici a info@carbonstealth.eu.',
   },
   es: {
+    registered: (version, link) =>
+      `Hemos recibido tu registro en Linketto — la cuenta se ha creado conforme a los <a href="${link}">Términos del servicio</a> (versión del ${version}).`,
+    reset: {
+      subject: 'Linketto: establece una nueva contraseña',
+      body: 'Alguien (esperamos que tú) ha pedido una nueva contraseña para tu cuenta. Pulsa el botón para establecer una nueva. El enlace es válido durante 60 minutos y solo se puede usar una vez.',
+      button: 'Establecer una nueva contraseña',
+      ignore: '¿No has pedido una nueva contraseña? No hagas nada — tu contraseña sigue siendo la misma.',
+    },
     verifySubject: 'Linketto: confirma tu email',
     verifyBody: 'Pulsa el botón para confirmar que este email es tuyo. El enlace es válido durante 48 horas y solo se puede usar una vez.',
     verifyButton: 'Confirmar el email',
@@ -98,6 +134,14 @@ const STRINGS: Record<string, Strings> = {
     notYou: 'Si no has sido tú, cambia tu contraseña de inmediato y escríbenos a info@carbonstealth.eu.',
   },
   de: {
+    registered: (version, link) =>
+      `Deine Registrierung bei Linketto ist eingegangen — das Konto wurde zu den <a href="${link}">Nutzungsbedingungen</a> (Fassung vom ${version}) angelegt.`,
+    reset: {
+      subject: 'Linketto: Lege ein neues Passwort fest',
+      body: 'Jemand (hoffentlich du) hat ein neues Passwort für dein Konto angefordert. Klicke auf den Button, um ein neues festzulegen. Der Link ist 60 Minuten gültig und funktioniert nur einmal.',
+      button: 'Neues Passwort festlegen',
+      ignore: 'Du hast kein neues Passwort angefordert? Dann musst du nichts tun — dein Passwort bleibt unverändert.',
+    },
     verifySubject: 'Linketto: Bestätige deine E-Mail-Adresse',
     verifyBody: 'Klicke auf den Button, um zu bestätigen, dass diese E-Mail-Adresse dir gehört. Der Link ist 48 Stunden gültig und funktioniert nur einmal.',
     verifyButton: 'E-Mail-Adresse bestätigen',
@@ -116,6 +160,14 @@ const STRINGS: Record<string, Strings> = {
     notYou: 'Wenn du das nicht warst, ändere sofort dein Passwort und schreib uns an info@carbonstealth.eu.',
   },
   fr: {
+    registered: (version, link) =>
+      `Votre inscription à Linketto a bien été reçue — le compte a été créé selon les <a href="${link}">Conditions d’utilisation</a> (version du ${version}).`,
+    reset: {
+      subject: 'Linketto : définissez un nouveau mot de passe',
+      body: 'Quelqu’un (vous, espérons-le) a demandé un nouveau mot de passe pour votre compte. Cliquez sur le bouton pour en définir un nouveau. Le lien est valable 60 minutes et ne fonctionne qu’une seule fois.',
+      button: 'Définir un nouveau mot de passe',
+      ignore: 'Vous n’avez pas demandé de nouveau mot de passe ? Ne faites rien — votre mot de passe reste inchangé.',
+    },
     verifySubject: 'Linketto : confirmez votre e-mail',
     verifyBody: 'Cliquez sur le bouton pour confirmer que cette adresse e-mail est bien la vôtre. Le lien est valable 48 heures et ne fonctionne qu’une seule fois.',
     verifyButton: 'Confirmer l’e-mail',
@@ -146,12 +198,20 @@ const frame = (body: string) => `<div style="font-family:system-ui,sans-serif;ma
   <p style="color:#64748b;font-size:12px">Carbon Stealth VCC · info@carbonstealth.eu</p>
 </div>`;
 
-export function verifyEmailMessage(input: { locale: string; url: string }): { subject: string; html: string } {
+export function verifyEmailMessage(input: {
+  locale: string;
+  url: string;
+  termsUrl?: string;
+  termsVersion?: string;
+}): { subject: string; html: string } {
   const s = pick(input.locale);
   const url = esc(input.url);
+  const registered = s.registered ?? STRINGS.en!.registered!;
+  const receipt =
+    input.termsUrl && input.termsVersion ? `<p>${registered(esc(input.termsVersion), esc(input.termsUrl))}</p>\n  ` : '';
   return {
     subject: s.verifySubject,
-    html: frame(`<p>${s.verifyBody}</p>
+    html: frame(`${receipt}<p>${s.verifyBody}</p>
   <p><a href="${url}" style="display:inline-block;background:#0f172a;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none;font-weight:600">${s.verifyButton}</a></p>
   <p style="font-size:12px;color:#64748b;word-break:break-all">${url}</p>
   <p style="font-size:14px">${s.verifyIgnore}</p>`),
@@ -166,4 +226,16 @@ export function securityNoticeMessage(input: {
   const s = pick(input.locale);
   const line = s.notice[input.kind].replace('{left}', String(input.left ?? 0));
   return { subject: s.noticeSubject, html: frame(`<p>${esc(line)}</p><p>${s.notYou}</p>`) };
+}
+
+export function resetPasswordMessage(input: { locale: string; url: string }): { subject: string; html: string } {
+  const r = pick(input.locale).reset ?? STRINGS.en!.reset!;
+  const url = esc(input.url);
+  return {
+    subject: r.subject,
+    html: frame(`<p>${esc(r.body)}</p>
+  <p><a href="${url}" style="display:inline-block;background:#0f172a;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none;font-weight:600">${esc(r.button)}</a></p>
+  <p style="font-size:12px;color:#64748b;word-break:break-all">${url}</p>
+  <p style="font-size:14px">${esc(r.ignore)}</p>`),
+  };
 }

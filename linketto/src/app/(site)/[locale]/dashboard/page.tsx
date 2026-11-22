@@ -58,6 +58,7 @@ import {
 import {
   canWithdraw,
   payoutProgressPercent,
+  REFERRAL_HOLD_DAYS,
   REFERRAL_MIN_PAYOUT_CENTS,
   REFERRAL_PERCENT,
 } from '@/lib/referral';
@@ -105,12 +106,17 @@ const DASHBOARD_ERRORS: Record<string, string> = {
   upload: 'errorUpload',
   payout: 'errorPayout',
   broadcast: 'errorBroadcast',
+  broadcastLimit: 'errorBroadcastLimit',
+  shortlinkVerify: 'errorShortlinkVerify',
+  shortlinkLimit: 'errorShortlinkLimit',
+  blocksLimit: 'errorBlocksLimit',
   shortlink: 'errorShortlink',
   profiles: 'errorProfiles',
   payments: 'errorPayments',
   withdraw: 'errorWithdraw',
   domainVerify: 'errorDomainVerify',
   plan: 'errorPlan',
+  consent: 'errorConsent',
   import: 'errorImport',
 };
 
@@ -149,6 +155,11 @@ export default async function DashboardPage({
   if (!user) redirect(`/${locale}/login`);
   const t = await getTranslations('dashboard');
   const plan = planFor(user.plan);
+  // Отметката за ранно начало: четим текст (не дребен сив); при грешка — открояване.
+  const consentError = error === 'consent';
+  const consentClass = `flex w-full max-w-prose items-start gap-2.5 rounded-control text-sm leading-relaxed text-fg ${
+    consentError ? 'border border-danger bg-danger-soft/40 p-3' : ''
+  }`;
 
   // Няколко профила на акаунт (Business): списък за превключвателя + активен.
   const profileList = await prisma.profile.findMany({
@@ -275,10 +286,24 @@ export default async function DashboardPage({
       ])
     : [0, 0];
   // Реферална програма: брой поканени регистрации и успешни (платили) реферали.
-  const [referredSignups, successfulReferrals] = await Promise.all([
+  const holdMs = REFERRAL_HOLD_DAYS * 24 * 60 * 60_000;
+  const [referredSignups, successfulReferrals, heldReferrals, nextHeld] = await Promise.all([
     prisma.user.count({ where: { referredById: user.id } }),
     prisma.referral.count({ where: { referrerId: user.id } }),
+    // Задържаните бонуси (abuse-money-spec А5) — влизат в баланса след срока за отказ/спор.
+    prisma.referral.aggregate({
+      where: { referrerId: user.id, releasedAt: null, reversedAt: null },
+      _sum: { rewardCents: true },
+    }),
+    // Датата — само на още неузрелите (узрелите, но блокирани чакат проверка — без дата).
+    prisma.referral.findFirst({
+      where: { referrerId: user.id, releasedAt: null, reversedAt: null, flaggedAt: null, createdAt: { gte: new Date(Date.now() - holdMs) } },
+      orderBy: { createdAt: 'asc' },
+      select: { createdAt: true },
+    }),
   ]);
+  const heldCents = heldReferrals._sum.rewardCents ?? 0;
+  const nextRelease = nextHeld ? new Date(nextHeld.createdAt.getTime() + holdMs + 24 * 60 * 60_000) : null;
   // Функцията за отказ (чл. 11а Дир. 2011/83): платените поръчки от последните
   // 15 дни — допустимите показват „Откажете се от договора тук“, а подадените —
   // кога е получено изявлението.
@@ -475,7 +500,10 @@ export default async function DashboardPage({
               </form>
             ) : (
               <p className="mt-2 text-small text-fg-muted">
-                {t('profilesUpsell', { max: plan.maxProfiles })}
+                {/* Най-високият план няма „надстрой“ — само тавана. */}
+                {user.plan === 'BUSINESS' || user.plan === 'FOUNDER'
+                  ? t('profilesMax', { max: plan.maxProfiles })
+                  : t('profilesUpsell', { max: plan.maxProfiles })}
               </p>
             )}
           </Card>
@@ -903,7 +931,7 @@ export default async function DashboardPage({
                         className={selectClass}
                       />
                     </label>
-                    <label className="flex items-end gap-2 text-sm font-medium sm:col-span-2">
+                    <label className="flex items-start gap-2 text-sm font-medium sm:col-span-2">
                       <input
                         type="checkbox"
                         name="hideBadge"
@@ -912,7 +940,7 @@ export default async function DashboardPage({
                       />
                       {t('styleHideBadge')}
                     </label>
-                    <label className="flex items-end gap-2 text-sm font-medium sm:col-span-2">
+                    <label className="flex items-start gap-2 text-sm font-medium sm:col-span-2">
                       <input
                         type="checkbox"
                         name="showViews"
@@ -921,7 +949,7 @@ export default async function DashboardPage({
                       />
                       {t('styleShowViews')}
                     </label>
-                    <label className="flex items-end gap-2 text-sm font-medium sm:col-span-2">
+                    <label className="flex items-start gap-2 text-sm font-medium sm:col-span-2">
                       <input
                         type="checkbox"
                         name="mediaKit"
@@ -945,17 +973,18 @@ export default async function DashboardPage({
                   <input type="hidden" name="profileId" value={profile.id} />
                   <input type="hidden" name="kind" value="bg" />
                   <span className="font-medium">{t('uploadBg')}</span>
-                  <div className="mt-2 flex items-center gap-3">
+                  <div className="mt-2 flex flex-wrap items-center gap-3">
                     <input
                       type="file"
                       name="file"
+                      aria-label={t('uploadBg')}
                       required
                       accept="image/jpeg,image/png,image/webp"
-                      className="flex-1 text-xs text-fg-muted file:me-3 file:rounded-full file:border-0 file:bg-accent-soft file:px-4 file:py-2 file:text-sm file:font-semibold file:text-accent-soft-fg hover:file:bg-accent-soft"
+                      className="min-w-0 flex-1 text-xs text-fg-muted file:me-3 file:rounded-full file:border-0 file:bg-accent-soft file:px-4 file:py-2 file:text-sm file:font-semibold file:text-accent-soft-fg hover:file:bg-accent-soft"
                     />
                     <button
                       type="submit"
-                      className={buttonStyles({ variant: 'secondary', size: 'sm' })}
+                      className={buttonStyles({ variant: 'secondary', size: 'sm', className: 'shrink-0' })}
                     >
                       {t('uploadButton')}
                     </button>
@@ -966,17 +995,18 @@ export default async function DashboardPage({
                   <input type="hidden" name="profileId" value={profile.id} />
                   <input type="hidden" name="kind" value="avatar" />
                   <span className="font-medium">{t('uploadAvatar')}</span>
-                  <div className="mt-2 flex items-center gap-3">
+                  <div className="mt-2 flex flex-wrap items-center gap-3">
                     <input
                       type="file"
                       name="file"
+                      aria-label={t('uploadAvatar')}
                       required
                       accept="image/jpeg,image/png,image/webp"
-                      className="flex-1 text-xs text-fg-muted file:me-3 file:rounded-full file:border-0 file:bg-accent-soft file:px-4 file:py-2 file:text-sm file:font-semibold file:text-accent-soft-fg hover:file:bg-accent-soft"
+                      className="min-w-0 flex-1 text-xs text-fg-muted file:me-3 file:rounded-full file:border-0 file:bg-accent-soft file:px-4 file:py-2 file:text-sm file:font-semibold file:text-accent-soft-fg hover:file:bg-accent-soft"
                     />
                     <button
                       type="submit"
-                      className={buttonStyles({ variant: 'secondary', size: 'sm' })}
+                      className={buttonStyles({ variant: 'secondary', size: 'sm', className: 'shrink-0' })}
                     >
                       {t('uploadButton')}
                     </button>
@@ -1190,7 +1220,12 @@ export default async function DashboardPage({
                   </button>
                 </form>
               </details>
-              <p className="mt-4 text-sm text-fg-muted">{t('linksIntro')}</p>
+              {/* Празно състояние: без указание за плъзгане, когато няма какво да се плъзга. */}
+              {profile.links.length === 0 ? (
+                <p className="mt-4 rounded-card border border-dashed border-line p-4 text-sm text-fg-2">{t('linksEmpty')}</p>
+              ) : (
+                <p className="mt-4 text-sm text-fg-muted">{t('linksIntro')}</p>
+              )}
               {profile.links.length > 0 && (
                 <div className="mt-3">
                   <SortableLinks
@@ -1528,24 +1563,29 @@ export default async function DashboardPage({
             <section id="qr" className="dash-card rounded-card border border-line bg-surface p-5 shadow-e1 sm:p-6">
               <h2 className="text-subheading text-fg">{t('qrSection')}</h2>
               <p className="mt-1 text-sm text-fg-muted">{t('qrHint')}</p>
-              <div className="mt-4 flex items-center gap-6">
-                {/* eslint-disable-next-line @next/next/no-img-element -- динамичен SVG route */}
-                <img
-                  src={`/u/${profile.slug}/qr`}
-                  alt="QR"
-                  width={144}
-                  height={144}
-                  className="h-36 w-36 rounded-card border border-line bg-surface p-2"
-                />
-                <a
-                  href={`/u/${profile.slug}/qr`}
-                  download={`${profile.slug}-qr.svg`}
-                  className={buttonStyles({ variant: 'secondary' })}
-                >
-                  <DownloadIcon className="h-4 w-4" />
-                  SVG
-                </a>
-              </div>
+              {/* QR route-ът връща 404 за скрит профил — вместо счупена картинка, подсказка. */}
+              {profile.published ? (
+                <div className="mt-4 flex items-center gap-6">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- динамичен SVG route */}
+                  <img
+                    src={`/u/${profile.slug}/qr`}
+                    alt="QR"
+                    width={144}
+                    height={144}
+                    className="h-36 w-36 rounded-card border border-line bg-surface p-2"
+                  />
+                  <a
+                    href={`/u/${profile.slug}/qr`}
+                    download={`${profile.slug}-qr.svg`}
+                    className={buttonStyles({ variant: 'secondary' })}
+                  >
+                    <DownloadIcon className="h-4 w-4" />
+                    SVG
+                  </a>
+                </div>
+              ) : (
+                <p className="mt-4 rounded-card border border-dashed border-line p-4 text-sm text-fg-muted">{t('qrUnpublished')}</p>
+              )}
               {parseStyle(profile.style).mediaKit && (
                 <p className="mt-4 border-t border-line pt-4 text-sm">
                   <a
@@ -2173,9 +2213,14 @@ export default async function DashboardPage({
             <section id="referral" className="dash-card rounded-card border border-line bg-surface p-5 shadow-e1 sm:p-6">
               <h2 className="text-subheading text-fg">{t('referralSection')}</h2>
               <p className="mt-1 text-sm text-fg-muted">
-                {t('referralReward', {
+                {t.rich('referralReward', {
                   percent: REFERRAL_PERCENT,
                   minPayout: REFERRAL_MIN_PAYOUT_CENTS / 100,
+                  terms: (chunks) => (
+                    <a href={`/${locale}/terms`} className="font-medium text-accent-text underline">
+                      {chunks}
+                    </a>
+                  ),
                 })}
               </p>
               {referralUrl ? (
@@ -2207,6 +2252,14 @@ export default async function DashboardPage({
                       credit: t('referralCredit'),
                     }}
                   />
+                  {heldCents > 0 && nextRelease && (
+                    <p className="mt-2 text-xs text-fg-muted">
+                      {t('referralHeld', {
+                        held: `€${(heldCents / 100).toFixed(2)}`,
+                        date: new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone: 'UTC' }).format(nextRelease),
+                      })}
+                    </p>
+                  )}
                   {/* Теглене при достигнат праг */}
                   {canWithdraw(user.referralCreditCents) && (
                     <form
@@ -2302,6 +2355,12 @@ export default async function DashboardPage({
                   план = оставащите дни се прехвърлят пропорционално по цена. */}
               {!(upgraded && plan.id === 'FREE') && plan.id !== 'FOUNDER' && (
                 <div className="mt-4 space-y-4">
+                  {/* Грешката за липсваща отметка — тук, до формите (не само горе на страницата). */}
+                  {consentError && (
+                    <Callout tone="danger">
+                      {t('errorConsent')}
+                    </Callout>
+                  )}
                   <p className="text-sm text-fg-muted">{t('prepaidNote')}</p>
                   {/* Преддоговорна информация (чл. 6(1)(е),(h) Дир. 2011/83): крайна
                       цена с ДДС, незабавен старт, 14 дни отказ с пълно връщане. */}
@@ -2337,7 +2396,7 @@ export default async function DashboardPage({
                       >
                         <input type="hidden" name="uiLocale" value={locale} />
                         <input type="hidden" name="plan" value={planId} />
-                        <span className="font-semibold text-fg-2">{label}</span>
+                        <h3 className="w-full text-subheading text-fg">{label}</h3>
                         <label className="text-sm">
                           <span className="mb-1 block text-xs text-fg-muted">{t('billingPeriod')}</span>
                           <select
@@ -2350,13 +2409,22 @@ export default async function DashboardPage({
                               const monthly = effectiveMonthlyCents(planId, interval.id);
                               return (
                                 <option key={interval.id} value={interval.id}>
-                                  {t(`interval_${interval.id}`)} — €{(price / 100).toFixed(2)} (€
-                                  {(monthly / 100).toFixed(2)}/{t('perMonthShort')}
-                                  {interval.discountPercent > 0 ? `, −${interval.discountPercent}%` : ''})
+                                  {/* Месечно: без скоби (цената би се повторила два пъти). */}
+                                  {t(`interval_${interval.id}`)} — €{(price / 100).toFixed(2)}
+                                  {interval.id === 'monthly'
+                                    ? ''
+                                    : ` (€${(monthly / 100).toFixed(2)}/${t('perMonthShort')}${interval.discountPercent > 0 ? `, −${interval.discountPercent}%` : ''})`}
                                 </option>
                               );
                             })}
                           </select>
+                        </label>
+                        {planId !== plan.id && plan.id !== 'FREE' && (
+                          <p className="w-full text-xs text-fg-muted">{t('upgradeCarryNote')}</p>
+                        )}
+                        <label className={consentClass}>
+                          <input type="checkbox" name="immediateStart" value="1" required className="mt-1 h-4 w-4 shrink-0" />
+                          <span>{t('immediateStartConsent')}</span>
                         </label>
                         <button
                           type="submit"
@@ -2364,9 +2432,6 @@ export default async function DashboardPage({
                         >
                           {t('toPayment')}
                         </button>
-                        {planId !== plan.id && plan.id !== 'FREE' && (
-                          <p className="w-full text-xs text-fg-muted">{t('upgradeCarryNote')}</p>
-                        )}
                       </form>
                     ))}
                   {/* Founder — еднократно, завинаги */}
@@ -2376,9 +2441,22 @@ export default async function DashboardPage({
                   >
                     <input type="hidden" name="uiLocale" value={locale} />
                     <input type="hidden" name="plan" value="FOUNDER" />
+                    <div className="w-full">
+                      <h3 className="text-subheading text-fg">{t('founderTitle')}</h3>
+                      <p className="mt-1 text-sm text-fg-2">
+                        {t('founderDesc', { price: `€${(PLANS.FOUNDER.priceCents / 100).toFixed(0)}` })}
+                      </p>
+                    </div>
+                    <label className={consentClass}>
+                      <input type="checkbox" name="immediateStart" value="1" required className="mt-1 h-4 w-4 shrink-0" />
+                      <span>{t('immediateStartConsent')}</span>
+                    </label>
                     <button
                       type="submit"
-                      className={buttonStyles({ variant: 'secondary' })}
+                      // Дългият надпис се пренася на телефон: inline стил, защото базата е nowrap,
+                      // а cn() не слива класове (whitespace-normal губи).
+                      className={buttonStyles({ className: 'h-auto min-h-11 w-full py-2.5 text-center sm:w-auto' })}
+                      style={{ whiteSpace: 'normal' }}
                     >
                       {t('buyFounder', { price: `€${(PLANS.FOUNDER.priceCents / 100).toFixed(0)}` })}
                     </button>

@@ -119,7 +119,9 @@
       "f3": "Līdz 5 profiliem, kā Business plānā"
     },
     "mostPopular": "Vispopulārākais",
-    "annualOffer": "Ietaupi {percent}% ar gada plānu"
+    "annualOffer": "Ietaupi {percent}% ar gada plānu",
+    "vatNote": "Cenas ir galīgās, ar 20% PVN.",
+    "prepaidNote": "Bez abonementa: maksā vienreiz par 1, 3, 6 vai 12 mēnešiem un tu izlem, vai pagarināt — pirms beigām atgādināsim e-pastā."
   },
   "auth": {
     "loginTitle": "Pieteikties Linketto",
@@ -667,7 +669,7 @@
     "currencyNote": "{name} cenas ir USD, kā tās rāda viņu lapa; dažās valstīs tu vari redzēt citu valūtu. Mūsu cenas ir eiro.",
     "alsoCompare": "Salīdzini vēl:",
     "ctaTitle": "Pārej minūtes laikā",
-    "ctaText": "Izveido savu Linketto bez maksas — pārnes savas saites no Linktree minūtes laikā, un AI tās iztulkos jebkurā valodā.",
+    "ctaText": "Izveido savu Linketto bez maksas un pārnes savas saites — AI tās iztulkos jebkurā valodā.",
     "ctaButton": "Sāc bez maksas",
     "plansNote": "Abu pakalpojumu plāni ietver dažādas funkcijas; mēs salīdzinām tikai uzskaitītās īpašības. Pilni noteikumi ir to cenu lapās.",
     "metaDescription": "Linketto vai {name}? Cenas, savs domēns, zīmols un analītika — fakti no viņu oficiālajām lapām, ar datumu un avotu.",

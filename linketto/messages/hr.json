@@ -119,7 +119,9 @@
       "f3": "Do 5 profila, kao kod Businessa"
     },
     "mostPopular": "Najpopularniji",
-    "annualOffer": "Uštedi {percent} % uz godišnji plan"
+    "annualOffer": "Uštedi {percent} % uz godišnji plan",
+    "vatNote": "Cijene su konačne, uključujući 20 % PDV-a.",
+    "prepaidNote": "Bez pretplate: plaćaš jednokratno za 1, 3, 6 ili 12 mjeseci i ti odlučuješ hoćeš li produljiti — prije isteka podsjetit ćemo te e-poštom."
   },
   "auth": {
     "loginTitle": "Prijava u Linketto",
@@ -667,7 +669,7 @@
     "currencyNote": "Cijene {name} su u USD, kako ih prikazuje njihova stranica; u nekim državama možeš vidjeti drugu valutu. Naše cijene su u eurima.",
     "alsoCompare": "Usporedi još:",
     "ctaTitle": "Prijeđi za minutu",
-    "ctaText": "Napravi svoj Linketto besplatno — prenesi svoje poveznice s Linktreea za minutu, a AI će ih prevesti na svaki jezik.",
+    "ctaText": "Napravi svoj Linketto besplatno i prenesi svoje poveznice — AI će ih prevesti na svaki jezik.",
     "ctaButton": "Započni besplatno",
     "plansNote": "Planovi dviju usluga uključuju različite funkcije; uspoređujemo samo navedene značajke. Potpuni uvjeti nalaze se na njihovim stranicama s cijenama.",
     "metaDescription": "Linketto ili {name}? Cijene, vlastita domena, brend i analitika — činjenice s njihovih službenih stranica, s datumom i izvorom.",

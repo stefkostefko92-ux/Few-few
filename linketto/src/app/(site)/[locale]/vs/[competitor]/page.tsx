@@ -92,7 +92,32 @@ export default async function VersusPage({
           label: t('ctaButton'),
         }}
       >
-        <Table className="min-w-[34rem]">
+        {/* Телефон: карти ред по ред (таблицата не се събира в 390 px — визуалният обход). */}
+        <ul className="space-y-3 sm:hidden">
+          {data.rows.map((row) => (
+            <li key={row.id} className="rounded-card border border-line bg-surface p-4">
+              <p className="font-medium text-fg">
+                {t(`row_${row.id}`)}
+                <sup className="ms-0.5 text-micro font-normal">
+                  <a href={`#src-${row.source + 1}`} className="focus-ring rounded-sm text-accent-text hover:underline">
+                    [{row.source + 1}]
+                  </a>
+                </sup>
+              </p>
+              <dl className="mt-3 grid grid-cols-2 gap-2 text-small">
+                <div className="rounded-control bg-accent-soft p-3">
+                  <dt className="text-micro font-semibold text-accent-soft-fg">Linketto</dt>
+                  <dd className="mt-1 font-semibold text-fg">{cell(row.us)}</dd>
+                </div>
+                <div className="rounded-control bg-surface-2 p-3">
+                  <dt className="text-micro font-semibold text-fg-muted">{name}</dt>
+                  <dd className="mt-1 text-fg-2">{cell(row.them)}</dd>
+                </div>
+              </dl>
+            </li>
+          ))}
+        </ul>
+        <Table className="min-w-[34rem]" wrapperClassName="hidden sm:block">
           <caption className="sr-only">{t('title', { name })}</caption>
           <THead>
             <tr>
@@ -136,9 +161,9 @@ export default async function VersusPage({
           ))}
         </ul>
 
-        <div className="mt-10 rounded-card border border-line bg-surface-2 p-5 text-small text-fg-muted">
+        <div className="mt-10 rounded-card border border-line bg-surface-2 p-5 text-body leading-relaxed text-fg-2">
           <p>{t('disclaimer', { name, date: checked })}</p>
-          <ol className="mt-2 list-decimal space-y-1 ps-5">
+          <ol className="mt-3 list-decimal space-y-1 ps-6 text-small">
             {data.sources.map((source, index) => (
               <li key={source.url} id={`src-${index + 1}`}>
                 <a

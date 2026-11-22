@@ -44,6 +44,9 @@ ENV NODE_ENV=production
 ENV PORT=3000
 # Качените снимки (DATA_DIR) — монтира се стабилен път от хоста (docker-compose.yml).
 ENV DATA_DIR=/data
+# По-малко malloc арени: паралелните sharp декодирания държат ~160–220 MB по-малко RSS
+# при mem_limit 1g (Разбивача, Н1: 925–959 → 731–790 MB).
+ENV MALLOC_ARENA_MAX=2
 RUN groupadd -g 1001 nodejs && useradd -u 1001 -g nodejs -m nextjs \
   && install -d -o 1001 -g 1001 -m 750 /data
 COPY --from=prod-deps --chown=1001:1001 /app/node_modules ./node_modules

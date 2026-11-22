@@ -67,3 +67,24 @@ test('W4: потвърждение на траен носител — съдър
   assert.match(en.subject, /withdrawal/i);
   assert.match(en.html, /Founder/);
 });
+
+test('потвърждението на отказа: при удръжка — сумата за връщане и удържаното; без удръжка — „цялата сума“', () => {
+  const base = {
+    locale: 'bg',
+    name: 'Иван',
+    plan: 'PRO',
+    interval: 'monthly',
+    amountCents: 400,
+    orderRef: 'ord1',
+    orderedAt: new Date('2026-03-01T00:00:00Z'),
+    requestedAt: new Date('2026-03-11T00:00:00Z'),
+  };
+  const partial = withdrawalAckEmail({ ...base, refundCents: 271, usedSec: 10 * 86400 }).html;
+  assert.match(partial, /€2\.71/);
+  assert.match(partial, /€1\.29/);
+  assert.doesNotMatch(partial, /цялата платена сума/);
+  const full = withdrawalAckEmail({ ...base, refundCents: 400, usedSec: 0 }).html;
+  assert.match(full, /цялата платена сума/);
+  // Без сметната сума (стари поръчки) — пълно връщане.
+  assert.match(withdrawalAckEmail(base).html, /цялата платена сума/);
+});

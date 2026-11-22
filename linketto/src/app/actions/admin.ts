@@ -18,6 +18,7 @@ import { autoTranslateNoticeEmail, autoTranslateStartDate } from '@/lib/auto-tra
 import { SITE_URL } from '@/lib/seo';
 import { isLocale } from '@/i18n/locales';
 import type { Plan, Prisma } from '@prisma/client';
+import { newPasswordSchema } from '@/lib/password-policy';
 
 // Админ действия — само за ADMIN_EMAILS. Всяко действие проверява наново.
 
@@ -315,7 +316,7 @@ export async function adminResolveReportAction(
 
 const passwordSchema = z.object({
   userId: z.string().min(1),
-  password: z.string().min(8).max(200),
+  password: newPasswordSchema,
 });
 
 /** Ръчна нова парола (старата не се вижда никъде — пази се само хеш).

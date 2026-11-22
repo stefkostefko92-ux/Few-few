@@ -73,3 +73,32 @@ test('защитен админ = адрес от списъка + потвър�
   assert.equal(isWorkingAdmin({ email: 'owner@example.com', emailVerifiedAt: at, totpEnabledAt: null }, env), true);
   assert.equal(isWorkingAdmin({ email: 'x@y.eu', emailVerifiedAt: at, totpEnabledAt: at }, env), false);
 });
+
+test('потвърждение на имейл: само в сесията на същия потребител — за всеки адрес (Н8)', async () => {
+  const { verifyEmailAllowed } = await import('../verify-email-policy');
+  assert.equal(verifyEmailAllowed('u1', 'u1'), true);
+  assert.equal(verifyEmailAllowed('u1', null), false, 'без сесия (скенер в пощата) — не');
+  assert.equal(verifyEmailAllowed('u1', undefined), false);
+  assert.equal(verifyEmailAllowed('u1', 'u2'), false, 'чужда сесия — не');
+});
+
+test('регистрация: Общите условия — изрична отметка и версия (ЗЗП чл. 147а)', async () => {
+  const { termsAccepted, TERMS_VERSION } = await import('../terms');
+  assert.equal(termsAccepted('1'), true);
+  for (const value of [null, '', 'on ', '0', 'true']) assert.equal(termsAccepted(value), false, String(value));
+  assert.match(TERMS_VERSION, /^\d{4}-\d{2}-\d{2}$/);
+});
+
+test('писмото за потвърждение потвърждава регистрацията и сочи ОУ с версия (ЗЕТ чл. 10, ал. 2)', () => {
+  const mail = verifyEmailMessage({
+    locale: 'bg',
+    url: 'https://x.test/api/verify-email?token=t',
+    termsUrl: 'https://x.test/bg/terms',
+    termsVersion: '2026-11-22',
+  });
+  assert.match(mail.html, /Регистрацията ти/);
+  assert.ok(mail.html.includes('https://x.test/bg/terms'));
+  assert.ok(mail.html.includes('2026-11-22'));
+  const fi = verifyEmailMessage({ locale: 'fi', url: 'https://x/v', termsUrl: 'https://x/en/terms', termsVersion: '2026-11-22' });
+  assert.match(fi.html, /registration/i, 'непреведен език → английски');
+});

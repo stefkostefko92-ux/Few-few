@@ -115,7 +115,9 @@
       "f3": "Fin a 5 profil, come con Business"
     },
     "mostPopular": "Pussee popolar",
-    "annualOffer": "Risparmia el {percent}% con on pian annual"
+    "annualOffer": "Risparmia el {percent}% con on pian annual",
+    "vatNote": "I pressi hinn finai, IVA del 20% inclusa.",
+    "prepaidNote": "Senza abonament: te paghet ona volta domà per 1, 3, 6 o 12 mes e te decidet ti se slongà — te le ricordom per email prima de la fin."
   },
   "auth": {
     "loginTitle": "Entra in Linketto",
@@ -648,7 +650,7 @@
     "currencyNote": "I prezzi de {name} hinn in USD, come i a mostra la soa pagina; in quai paes te podariet vedé on'altra moneda. I nost prezzi hinn in euro.",
     "alsoCompare": "Confronta anmò:",
     "ctaTitle": "Passa in on minut",
-    "ctaText": "Crea el tò Linketto gratis — porta chì i tò link de Linktree in on minut e l'AI i traduss in ogni lingua.",
+    "ctaText": "Crea el tò Linketto gratis e porta chì i tò link de {name} — l'AI i traduss in ogni lingua.",
     "ctaButton": "Comincia gratis",
     "plansNote": "I pian di duu servizzi gh'hann funzion diverse; confrontom domà i caratteristich elencaa. I condizion complett hinn in sui sò pagin di prezzi.",
     "metaDescription": "Linketto o {name}? Prezzi, domini personalizzaa, brand e analisi — fatt di sò pagin ufficiai, cont data e fonte.",

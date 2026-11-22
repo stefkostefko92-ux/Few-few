@@ -36,6 +36,7 @@ import {
 import { BAN_CATEGORIES } from '@/lib/dsa-notice';
 import { IntegrationsPanel, settingFieldLabelKey } from '@/components/admin/IntegrationsPanel';
 import { SETTING_KEYS, type SettingKey } from '@/lib/settings-spec';
+import { PASSWORD_MIN } from '@/lib/password-policy';
 
 export const dynamic = 'force-dynamic';
 
@@ -198,6 +199,23 @@ export default async function AdminPage({
     },
   });
 
+  // Б9: удържаното при отказ (пропорционално) е продажба — в приходите и ДДС.
+  const retained = await prisma.planOrder.aggregate({
+    where: { state: 'refunded', refundCents: { not: null } },
+    _sum: { amountCents: true, refundCents: true, vatCents: true, refundVatCents: true },
+  });
+  const retainedCents = (retained._sum.amountCents ?? 0) - (retained._sum.refundCents ?? 0);
+  const retainedVatCents = (retained._sum.vatCents ?? 0) - (retained._sum.refundVatCents ?? 0);
+  // А5: задържаните реферални бонуси по потребител (още не са в баланса).
+  const heldByUser = new Map(
+    (
+      await prisma.referral.groupBy({
+        by: ['referrerId'],
+        where: { releasedAt: null, reversedAt: null, referrerId: { in: users.map((u) => u.id) } },
+        _sum: { rewardCents: true },
+      })
+    ).map((row) => [row.referrerId, row._sum.rewardCents ?? 0]),
+  );
   const nf = new Intl.NumberFormat(locale);
   const money = (cents: number) => `€${(cents / 100).toFixed(2)}`;
   const errorText: Record<string, string> = {
@@ -249,8 +267,8 @@ export default async function AdminPage({
     { value: nf.format(profileCount), label: t('statsProfiles'), glyph: <UserGlyph className="h-full w-full" /> },
     { value: nf.format(clickCount), label: t('statsClicks'), glyph: <TrendGlyph className="h-full w-full" /> },
     { value: nf.format(orderTotals._count._all), label: t('statsOrders'), glyph: <BagGlyph className="h-full w-full" /> },
-    { value: money(orderTotals._sum.amountCents ?? 0), label: t('statsRevenue'), glyph: <CardGlyph className="h-full w-full" />, featured: true },
-    { value: money(orderTotals._sum.vatCents ?? 0), label: t('statsVat'), glyph: <BarsGlyph className="h-full w-full" /> },
+    { value: money((orderTotals._sum.amountCents ?? 0) + retainedCents), label: t('statsRevenue'), glyph: <CardGlyph className="h-full w-full" />, featured: true },
+    { value: money((orderTotals._sum.vatCents ?? 0) + retainedVatCents), label: t('statsVat'), glyph: <BarsGlyph className="h-full w-full" /> },
   ];
 
   return (
@@ -416,14 +434,14 @@ export default async function AdminPage({
                   <TH>{t('colPlan')}</TH>
                   <TH className="text-end">{t('colAmount')}</TH>
                   <TH>{t('colState')}</TH>
-                  <TH className="text-end">{t('colAction')}</TH>
+                  <TH className="sticky end-0 bg-surface-2 text-end">{t('colAction')}</TH>
                 </tr>
               </THead>
               <TBody>
                 {recentOrders.map((order) => (
                   <TR key={order.id}>
                     <TD>
-                      <p className="break-all font-medium text-fg">{order.user.email}</p>
+                      <p className="[overflow-wrap:anywhere] font-medium text-fg">{order.user.email}</p>
                       <p className="text-micro tabular-nums text-fg-muted">{stamp(order.createdAt)}</p>
                     </TD>
                     <TD className="whitespace-nowrap">
@@ -436,6 +454,11 @@ export default async function AdminPage({
                         {t('vatShort')} {money(order.vatCents)}
                         {order.buyerCountry ?? order.cardCountry ? ` · ${order.buyerCountry ?? order.cardCountry}` : ''}
                       </p>
+                      {order.refundCents !== null && (
+                        <p className="text-micro font-medium text-danger">
+                          {t('refundPartial', { amount: money(order.refundCents) })}
+                        </p>
+                      )}
                     </TD>
                     <TD>
                       <div className="flex flex-col items-start gap-1">
@@ -449,7 +472,7 @@ export default async function AdminPage({
                         )}
                       </div>
                     </TD>
-                    <TD className="text-end">
+                    <TD className="sticky end-0 bg-surface shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.35)] text-end">
                       {needsRefund(order) && (
                         <form action={adminRefundPlanOrderAction}>
                           <input type="hidden" name="uiLocale" value={locale} />
@@ -481,17 +504,17 @@ export default async function AdminPage({
                   <TH className="text-end">{t('colAmount')}</TH>
                   <TH>{t('colMethod')}</TH>
                   <TH>{t('colDate')}</TH>
-                  <TH className="text-end">{t('colAction')}</TH>
+                  <TH className="sticky end-0 bg-surface-2 text-end">{t('colAction')}</TH>
                 </tr>
               </THead>
               <TBody>
                 {pendingPayouts.map((p) => (
                   <TR key={p.id}>
-                    <TD className="break-all font-medium text-fg">{p.user.email}</TD>
+                    <TD className="[overflow-wrap:anywhere] font-medium text-fg">{p.user.email}</TD>
                     <TD className="text-end font-semibold tabular-nums text-success-text">{money(p.amountCents)}</TD>
                     <TD className="font-mono text-micro">{p.method}</TD>
                     <TD className="whitespace-nowrap tabular-nums">{p.requestedAt.toISOString().slice(0, 10)}</TD>
-                    <TD className="text-end">
+                    <TD className="sticky end-0 bg-surface shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.35)] text-end">
                       <form action={adminMarkPayoutPaidAction}>
                         <input type="hidden" name="uiLocale" value={locale} />
                         <input type="hidden" name="payoutId" value={p.id} />
@@ -544,7 +567,7 @@ export default async function AdminPage({
               <Card as="section" key={user.id} id={`user-${user.id}`} padding="md" className="space-y-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="break-all text-body font-semibold text-fg">{user.email}</p>
+                    <p className="[overflow-wrap:anywhere] text-body font-semibold text-fg">{user.email}</p>
                     <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-small text-fg-muted">
                       <span>{user.name ?? '—'}</span>
                       <Badge tone={user.plan === 'FREE' ? 'neutral' : 'accent'}>{user.plan}</Badge>
@@ -554,9 +577,14 @@ export default async function AdminPage({
                           {t('planUntil', { date: user.planExpiresAt.toISOString().slice(0, 10) })}
                         </span>
                       )}
-                      {user.referralCreditCents > 0 && (
+                      {user.referralCreditCents !== 0 && (
                         <span>
                           {t('referralCredit')}: {money(user.referralCreditCents)}
+                        </span>
+                      )}
+                      {(heldByUser.get(user.id) ?? 0) > 0 && (
+                        <span>
+                          {t('referralHeld')}: {money(heldByUser.get(user.id) ?? 0)}
                         </span>
                       )}
                     </p>
@@ -730,7 +758,7 @@ export default async function AdminPage({
                         type="password"
                         name="password"
                         required
-                        minLength={8}
+                        minLength={PASSWORD_MIN}
                         placeholder={t('newPassword')}
                         autoComplete="new-password"
                         className="min-w-0 flex-1 sm:max-w-xs"

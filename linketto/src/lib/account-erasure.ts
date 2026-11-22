@@ -1,12 +1,11 @@
 import 'server-only';
 import { randomBytes } from 'node:crypto';
-import { unlink } from 'node:fs/promises';
-import path from 'node:path';
 import { Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
-import { uploadsDir } from '@/lib/media';
+import { removeUnusedMedia } from '@/lib/media';
 import { parseStyle } from '@/lib/style';
+import { mediaFileName } from '@/lib/image-process';
 
 // Изтриване на акаунт, което пази фискалните записи (одит 2026-10-09).
 //
@@ -33,7 +32,10 @@ export async function eraseUser(userId: string): Promise<ErasureResult> {
     prisma.planOrder.count({ where: { userId } }),
   ]);
   if (purchases + entitlements + payouts + planOrders === 0) {
+    const owned = await prisma.profile.findMany({ where: { userId }, select: { style: true } });
     await prisma.user.delete({ where: { id: userId } });
+    // Качените снимки са лични данни — и при пълно изтриване (каскадата не пипа диска).
+    for (const url of mediaUrls(owned)) await removeUnusedMedia(url);
     return 'deleted';
   }
 
@@ -44,12 +46,7 @@ export async function eraseUser(userId: string): Promise<ErasureResult> {
   const profileIds = profiles.map((p) => p.id);
   const ofProfiles = { profileId: { in: profileIds } };
   // Качените снимки (аватар/фон) са лични данни — махаме и файловете.
-  const uploads = profiles.flatMap((p) => {
-    const style = parseStyle(p.style);
-    return [style.avatarUrl, style.bgImageUrl].filter(
-      (u): u is string => typeof u === 'string' && /^\/media\/[a-z0-9-]+\.webp$/.test(u),
-    );
-  });
+  const uploads = mediaUrls(profiles);
   // Случайна парола, която никой не знае — цената на хеша е без значение.
   const passwordHash = await bcrypt.hash(randomBytes(32).toString('hex'), 10);
 
@@ -106,8 +103,15 @@ export async function eraseUser(userId: string): Promise<ErasureResult> {
   ]);
   // Файловете след транзакцията — провал при изтриване не бива да връща
   // анонимизирането (нереференцирани файлове са безобидни).
-  for (const url of uploads) {
-    await unlink(path.join(uploadsDir(), path.basename(url))).catch(() => undefined);
-  }
+  // Само файл, който никой друг профил не сочи (иначе чужд стил би изтрил файла на жертвата — Н4).
+  for (const url of uploads) await removeUnusedMedia(url);
   return 'anonymized';
+}
+
+/** Нашите качени файлове в стиловете на профилите. */
+function mediaUrls(profiles: readonly { style: Prisma.JsonValue }[]): string[] {
+  return profiles.flatMap((p) => {
+    const style = parseStyle(p.style);
+    return [style.avatarUrl, style.bgImageUrl].filter((u): u is string => mediaFileName(u) !== null);
+  });
 }

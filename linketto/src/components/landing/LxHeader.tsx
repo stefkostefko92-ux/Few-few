@@ -6,10 +6,11 @@ import { getSessionUser } from '@/lib/auth';
 import { logoutAction } from '@/app/actions/auth';
 import { LanguageMenu } from '@/components/LanguageMenu';
 import { isAdminEmail } from '@/lib/admin';
+import { LxMenu } from '@/components/landing/LxMenu';
 
 // Хедърът на публичния сайт (лендинг, инструменти, сравнения, правни, вход):
 // тъмно стъкло, логото от лендинга. Вход/регистрация или табло/изход;
-// на мобилно основната навигация е във футъра.
+// на мобилно основната навигация е зад бутон „Меню“ (<details>, без JS).
 export async function LxHeader({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: 'nav' });
   const tCommon = await getTranslations({ locale, namespace: 'common' });
@@ -36,6 +37,8 @@ export async function LxHeader({ locale }: { locale: Locale }) {
             className="lx-logo"
           />
         </Link>
+        {/* Под 62rem основната навигация е скрита — менюто я дава на телефон (визуалният обход). */}
+        <LxMenu label={t('menu')} navLabel={t('main')} links={links} />
         <nav aria-label={t('main')} className="lx-nav lx-nav-main">
           {links.map((link) => (
             <Link key={link.href} href={link.href}>

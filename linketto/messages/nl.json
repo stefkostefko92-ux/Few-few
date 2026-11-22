@@ -122,7 +122,9 @@
       "f3": "Tot 5 profielen, net als Business"
     },
     "mostPopular": "Meest populair",
-    "annualOffer": "Bespaar {percent}% met een jaarabonnement"
+    "annualOffer": "Bespaar {percent}% met een jaarabonnement",
+    "vatNote": "De prijzen zijn eindprijzen, inclusief 20% btw.",
+    "prepaidNote": "Geen abonnement: je betaalt één keer voor 1, 3, 6 of 12 maanden en beslist zelf of je verlengt — we herinneren je vóór het einde per e-mail."
   },
   "auth": {
     "loginTitle": "Inloggen bij Linketto",
@@ -670,7 +672,7 @@
     "currencyNote": "De prijzen van {name} zijn in USD, zoals hun pagina ze toont; in sommige landen zie je mogelijk een andere valuta. Onze prijzen zijn in euro.",
     "alsoCompare": "Vergelijk ook:",
     "ctaTitle": "Overstappen in een minuut",
-    "ctaText": "Maak gratis je Linketto aan — zet je links in een minuut over van Linktree en laat AI ze naar elke taal vertalen.",
+    "ctaText": "Maak gratis je Linketto aan en zet je links over van {name} — AI vertaalt ze naar elke taal.",
     "ctaButton": "Gratis beginnen",
     "plansNote": "De abonnementen van beide diensten bevatten verschillende functies; we vergelijken alleen de genoemde kenmerken. De volledige voorwaarden staan op hun prijspagina's.",
     "metaDescription": "Linketto of {name}? Prijzen, eigen domein, branding en statistieken — feiten van hun officiële pagina's, met datum en bron.",

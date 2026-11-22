@@ -24,6 +24,8 @@ export async function sendWithdrawalAck(planOrderId: string): Promise<boolean> {
     orderRef: order.id,
     orderedAt: order.completedAt ?? order.createdAt,
     requestedAt: order.withdrawalRequestedAt,
+    refundCents: order.refundCents,
+    usedSec: order.withdrawalUsedSec,
   });
   const sent = await sendEmail({ to: order.user.email, subject, html, tag: 'withdrawal-ack' }).catch(() => false);
   if (!sent) return false;

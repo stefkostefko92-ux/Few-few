@@ -119,7 +119,9 @@
       "f3": "Până la 5 profiluri, ca la Business"
     },
     "mostPopular": "Cel mai popular",
-    "annualOffer": "Economisește {percent}% cu un plan anual"
+    "annualOffer": "Economisește {percent}% cu un plan anual",
+    "vatNote": "Prețurile sunt finale, cu TVA de 20% inclus.",
+    "prepaidNote": "Fără abonament: plătești o singură dată pentru 1, 3, 6 sau 12 luni și decizi tu dacă prelungești — îți reamintim prin e-mail înainte de final."
   },
   "auth": {
     "loginTitle": "Autentificare în Linketto",
@@ -667,7 +669,7 @@
     "currencyNote": "Prețurile de la {name} sunt în USD, așa cum le afișează pagina lor; în unele țări poți vedea altă monedă. Prețurile noastre sunt în euro.",
     "alsoCompare": "Mai compară:",
     "ctaTitle": "Fă schimbarea într-un minut",
-    "ctaText": "Creează-ți Linketto gratuit — mută-ți linkurile de pe Linktree într-un minut, iar AI-ul le va traduce în fiecare limbă.",
+    "ctaText": "Creează-ți Linketto gratuit și mută-ți linkurile de pe {name} — AI-ul le va traduce în fiecare limbă.",
     "ctaButton": "Începe gratuit",
     "plansNote": "Planurile celor două servicii includ funcții diferite; comparăm doar caracteristicile enumerate. Condițiile complete sunt pe paginile lor de prețuri.",
     "metaDescription": "Linketto sau {name}? Prețuri, domeniu propriu, branding și analiză — fapte de pe paginile lor oficiale, cu dată și sursă.",
