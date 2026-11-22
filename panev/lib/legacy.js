@@ -14,20 +14,21 @@
 
 // Изрични съответствия (запазени от предишната карта в server.js).
 const LEGACY_REDIRECTS = new Map([
-  ['/servizi', '/'], ['/chi-siamo', '/'], ['/brevetto', '/'],
+  ['/servizi', '/'], ['/chi-siamo', '/'],
   ['/faq', '/contatti'], ['/carrello', '/prodotti'], ['/success', '/prodotti'],
   ['/cookie', '/privacy'], ['/termini', '/condizioni'], ['/en', '/en/'],
 ]);
 
 const LANG = {
-  it: { home: '/', products: '/prodotti', contacts: '/contatti', privacy: '/privacy', terms: '/condizioni' },
-  en: { home: '/en/', products: '/en/products', contacts: '/en/contacts', privacy: '/en/privacy', terms: '/en/terms' },
-  bg: { home: '/bg/', products: '/bg/produkti', contacts: '/bg/kontakti', privacy: '/bg/poveritelnost', terms: '/bg/usloviya' },
+  it: { home: '/', products: '/prodotti', contacts: '/contatti', privacy: '/privacy', terms: '/condizioni', patent: '/brevetto' },
+  en: { home: '/en/', products: '/en/products', contacts: '/en/contacts', privacy: '/en/privacy', terms: '/en/terms', patent: '/en/patent' },
+  bg: { home: '/bg/', products: '/bg/produkti', contacts: '/bg/kontakti', privacy: '/bg/poveritelnost', terms: '/bg/usloviya', patent: '/bg/patent' },
 };
 
 // Страниците на стария сайт по смисъл (без езиковия префикс) → вид страница в LANG.
 const OLD_PAGES = new Map([
-  ['servizi', 'home'], ['chi-siamo', 'home'], ['brevetto', 'home'], ['home', 'home'],
+  // Старият сайт имаше страница за патента: /brevetto вече е истинска страница, на другите езици води към нея.
+  ['servizi', 'home'], ['chi-siamo', 'home'], ['brevetto', 'patent'], ['home', 'home'],
   ['faq', 'contacts'], ['lavora-con-noi', 'contacts'], ['contatti', 'contacts'], ['contact', 'contacts'],
   ['carrello', 'products'], ['cart-page', 'products'], ['shop', 'products'], ['negozio', 'products'],
   ['success', 'products'], ['thank-you-page', 'products'],
