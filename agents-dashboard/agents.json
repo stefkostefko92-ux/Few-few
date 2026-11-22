@@ -11503,7 +11503,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 268
+        "lessons": 269
       },
       "evolution": [
         {
@@ -11955,9 +11955,20 @@
           "date": "2026-11-22",
           "event": "v25.8 — учене",
           "detail": "Научи: В linketto Button.tsx има whitespace-nowrap в базата и cn() не слива класове, затова wh…"
+        },
+        {
+          "version": "25.9.0",
+          "date": "2026-11-22",
+          "event": "v25.9 — учене",
+          "detail": "Научи: Flex хедър с лого и `Вход`/`Регистрация` без `flex-shrink:0` на логото и без `white-spa…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-22",
+          "type": "learning",
+          "summary": "Научи: „Flex хедър с лого и `Вход`/`Регистрация` без `flex-shrink:0` на логото и без `white-spa…\" · 1 в карантина"
+        },
         {
           "date": "2026-11-22",
           "type": "learning",
