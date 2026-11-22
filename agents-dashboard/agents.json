@@ -5056,7 +5056,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 296
+        "lessons": 297
       },
       "evolution": [
         {
@@ -5574,9 +5574,20 @@
           "date": "2026-11-22",
           "event": "v32.3 — учене",
           "detail": "Научи: В linketto it.json обектът admin се обръща към собственика на tu (Premi, Riprova), не н…"
+        },
+        {
+          "version": "32.4.0",
+          "date": "2026-11-22",
+          "event": "v32.4 — учене",
+          "detail": "Научи: В linketto en.json апострофът е извит (’, напр. „user’s“), а в it.json е прав (', напр.…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-22",
+          "type": "learning",
+          "summary": "Научи: „В linketto en.json апострофът е извит (’, напр. „user’s“), а в it.json е прав (', напр.…\""
+        },
         {
           "date": "2026-11-22",
           "type": "learning",
