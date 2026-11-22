@@ -4,8 +4,11 @@ import { fontVariables } from '@/app/fonts';
 import { SITE_URL } from '@/lib/seo';
 
 // Без metadataBase относителните hreflang/OG URL падат към localhost.
+// Общите ключови думи за всички публични страници (report, media-kit, отписване…);
+// профилът ги замества със своите (profileMetadata). Правило на репото: ≥5, една „Carbon Stealth“.
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  keywords: ['Linketto', 'link in bio', 'multilingual link in bio', 'bio link', 'Carbon Stealth'],
 };
 
 // Root layout за публичните профили (/u/...). Езикът на конкретния профил

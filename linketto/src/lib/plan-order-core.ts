@@ -366,7 +366,13 @@ export function createPlanOrderService(deps: PlanOrderDeps) {
       throw new Error(`revolut: refund ${refund.id} без запис у нас (поръчка ${order.id})`);
     }
     if (refund.state === 'completed') {
-      if (!refundAmountMatches(raw, refundAmount(order))) {
+      // Отговорът на POST може да е кратък (Order-v7 няма задължителни полета) — тогава
+      // решава живото четене на refund поръчката; разминаване или липса → аларма.
+      let source: unknown = raw;
+      if (!refundAmountMatches(source, refundAmount(order))) {
+        source = await deps.revolut.getOrder(refund.id).catch(() => null);
+      }
+      if (!refundAmountMatches(source, refundAmount(order))) {
         await alertRefundMismatch(order, refund.id);
         return 'requested';
       }

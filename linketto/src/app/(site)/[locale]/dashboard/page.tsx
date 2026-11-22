@@ -49,7 +49,8 @@ import { LocalDateTimeInput } from '@/components/LocalDateTimeInput';
 import { LivePreview } from '@/components/LivePreview';
 import { DashKeepPlace } from '@/components/DashKeepPlace';
 import { SortableLinks } from '@/components/SortableLinks';
-import { blockFieldsFor, blockFormValues } from '@/lib/blocks';
+import { blockFieldInput, blockFieldLabels, blockFieldsFor, blockFormValues, type BlockFieldLabel } from '@/lib/blocks';
+import { AddBlockFields } from '@/components/AddBlockFields';
 import { autoTranslateActive } from '@/lib/auto-translate';
 import {
   ensureReferralCodeAction,
@@ -92,6 +93,13 @@ import {
 } from '@/app/actions/shop';
 
 export const dynamic = 'force-dynamic';
+
+/** Видовете във формата „Добави блок“ (редът в падащото меню). */
+const ADD_BLOCK_KINDS = ['LINK', 'HEADER', 'PHONE', 'MAP', 'VIDEO', 'MUSIC', 'APP', 'FORM', 'TIP', 'VCARD', 'EMAIL', 'POLL', 'BOOKING'] as const;
+const BLOCK_FIELD_LABELS: readonly BlockFieldLabel[] = [
+  'url', 'tip', 'video', 'phone', 'address', 'spotify', 'appleMusic', 'appStore', 'googlePlay', 'appWeb', 'vcardPhone', 'vcardEmail', 'vcardOrg',
+];
+const KIND_HINTS = ['HEADER', 'FORM', 'EMAIL', 'BOOKING', 'MUSIC', 'APP', 'VIDEO', 'VCARD'] as const;
 
 // ?error=<код> → ключ на съобщението (непознат код → общата грешка).
 const DASHBOARD_ERRORS: Record<string, string> = {
@@ -1087,11 +1095,11 @@ export default async function DashboardPage({
               {/* AI генериране на био от ключови думи (на основния език) */}
               <form
                 action={aiGenerateBioAction}
-                className="mt-4 flex flex-wrap items-end gap-2 rounded-card border border-line bg-accent-soft p-3"
+                className="mt-4 flex flex-col gap-2 rounded-card border border-line bg-accent-soft p-3 sm:flex-row sm:items-end"
               >
                 <input type="hidden" name="uiLocale" value={locale} />
                 <input type="hidden" name="profileId" value={profile.id} />
-                <label className="flex-1 text-sm font-medium">
+                <label className="w-full text-sm font-medium sm:flex-1">
                   {t('aiBioLabel')}
                   <input
                     type="text"
@@ -1241,6 +1249,7 @@ export default async function DashboardPage({
                         link.translations.find((item) => item.locale === profile.defaultLocale)?.title ?? '';
                       const values = blockFormValues(link);
                       const shows = blockFieldsFor(link.kind);
+                      const fieldLabels = blockFieldLabels(link.kind);
                       const field = 'mt-1 w-full rounded-control border border-line-input bg-surface px-3 py-2 text-sm';
                       return {
                         id: link.id,
@@ -1334,24 +1343,24 @@ export default async function DashboardPage({
                                   {t('linkTitle')} ({profile.defaultLocale.toUpperCase()})
                                   <input type="text" name="title" required maxLength={100} defaultValue={title} className={field} />
                                 </label>
-                                {shows.url && (
-                                  <label className="block text-sm font-medium">
-                                    {t('urlLabel')}
-                                    <input type="text" name="url" defaultValue={values.url} className={field} />
-                                  </label>
-                                )}
-                                {shows.extra1 && (
-                                  <label className="block text-sm font-medium">
-                                    {t('extra1Label')}
-                                    <input type="text" name="extra1" defaultValue={values.extra1} className={field} />
-                                  </label>
-                                )}
-                                {shows.extra2 && (
-                                  <label className="block text-sm font-medium">
-                                    {t('extra2Label')}
-                                    <input type="text" name="extra2" defaultValue={values.extra2} className={field} />
-                                  </label>
-                                )}
+                                {(['url', 'extra1', 'extra2'] as const).map((name) => {
+                                  const label = fieldLabels[name];
+                                  if (!label) return null;
+                                  const spec = blockFieldInput(label);
+                                  return (
+                                    <label key={name} className="block text-sm font-medium">
+                                      {t(`field_${label}`)}
+                                      <input
+                                        type={spec.type}
+                                        name={name}
+                                        required={spec.required}
+                                        placeholder={spec.placeholder}
+                                        defaultValue={values[name]}
+                                        className={field}
+                                      />
+                                    </label>
+                                  );
+                                })}
                                 {shows.options && (
                                   <label className="block text-sm font-medium sm:col-span-2">
                                     {t('pollOptionsLabel')}
@@ -1440,71 +1449,17 @@ export default async function DashboardPage({
               >
                 <input type="hidden" name="uiLocale" value={locale} />
                 <input type="hidden" name="profileId" value={profile.id} />
-                <label className="block text-sm font-medium">
-                  {t('kindLabel')}
-                  <select
-                    name="kind"
-                    defaultValue="LINK"
-                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
-                  >
-                    {(
-                      [
-                        'LINK',
-                        'HEADER',
-                        'PHONE',
-                        'MAP',
-                        'VIDEO',
-                        'MUSIC',
-                        'APP',
-                        'FORM',
-                        'TIP',
-                        'EMAIL',
-                        'POLL',
-                        'BOOKING',
-                      ] as const
-                    ).map((kind) => (
-                      <option key={kind} value={kind}>
-                        {t(`kind_${kind}`)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block text-sm font-medium">
-                  {t('linkTitle')}
-                  <input
-                    type="text"
-                    name="title"
-                    required
-                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
-                  />
-                </label>
-                <label className="block text-sm font-medium">
-                  {t('urlLabel')}
-                  <input
-                    type="text"
-                    name="url"
-                    placeholder="https://…"
-                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
-                  />
-                </label>
-                <label className="block text-sm font-medium">
-                  {t('extra1Label')}
-                  <input
-                    type="url"
-                    name="extra1"
-                    placeholder="https://…"
-                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
-                  />
-                </label>
-                <label className="block text-sm font-medium">
-                  {t('extra2Label')}
-                  <input
-                    type="url"
-                    name="extra2"
-                    placeholder="https://…"
-                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
-                  />
-                </label>
+                <AddBlockFields
+                  kinds={ADD_BLOCK_KINDS}
+                  kindLabel={t('kindLabel')}
+                  kindLabels={Object.fromEntries(ADD_BLOCK_KINDS.map((k) => [k, t(`kind_${k}`)]))}
+                  fieldLabels={Object.fromEntries(BLOCK_FIELD_LABELS.map((f) => [f, t(`field_${f}`)])) as Record<BlockFieldLabel, string>}
+                  hints={Object.fromEntries(KIND_HINTS.map((k) => [k, t(`kindHint_${k}`)]))}
+                  titleLabel={t('linkTitle')}
+                  optionsLabel={t('pollOptionsLabel')}
+                  optionsPlaceholder={t('pollOptionsPlaceholder')}
+                  optionsHint={t('pollOptionsHint')}
+                />
                 <label className="block text-sm font-medium">
                   {t('blockColorLabel')}
                   <input
@@ -1532,25 +1487,11 @@ export default async function DashboardPage({
                     className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
                   />
                 </label>
-                <label className="block text-sm font-medium sm:col-span-2">
-                  {t('pollOptionsLabel')}
-                  <textarea
-                    name="options"
-                    rows={3}
-                    placeholder={t('pollOptionsPlaceholder')}
-                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
-                  />
-                  <span className="mt-1 block text-xs font-normal text-fg-muted">
-                    {t('pollOptionsHint')}
-                  </span>
-                </label>
                 <label className="flex items-center gap-2 text-sm font-medium sm:col-span-2">
                   <input type="checkbox" name="featured" className="h-4 w-4" />
                   {t('featuredLabel')}
                 </label>
-                <p className="text-xs text-fg-muted sm:col-span-2">
-                  {t('addBlockHint')} {t('scheduleHint')}
-                </p>
+                <p className="text-xs text-fg-muted sm:col-span-2">{t('scheduleHint')}</p>
                 <button
                   type="submit"
                   className={buttonStyles({ className: 'sm:justify-self-start' })}

@@ -43,7 +43,8 @@ const service = createPlanOrderService({
       const id = `rf-${randomUUID()}`;
       // Като Order-v7 при Revolut: refund поръчка със сумата и валутата (сверката е fail closed).
       const body = refundResponse ? refundResponse(id) : { id, state: refundImmediate, type: 'refund', amount: input.amountCents, currency: 'EUR' };
-      live.set(id, body);
+      // Тестът може сам да зададе живата refund поръчка (различна от краткия отговор на POST).
+      if (!live.has(id)) live.set(id, body);
       return body as { id: string; state: string };
     },
     getDispute: async (id: string) => {
@@ -902,4 +903,28 @@ test('А4в: „won“ пристигнал преди „needs_response“ (р�
   assert.equal(await service.recordDispute(id), 'recorded');
   const r = await db.referral.findUniqueOrThrow({ where: { planOrderId: order.id } });
   assert.equal(r.reversedAt, null, 'спорът вече е спечелен — закъснялото „needs_response“ не сторнира');
+});
+
+test('Б4: отговорът на POST refund е „completed“ без сума → живо четене на refund поръчката решава', { skip }, async () => {
+  const user = await mkUser();
+  const order = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: order.id });
+  // Кратък отговор (Order-v7 няма задължителни полета) — пълната поръчка е при GET.
+  refundResponse = (id) => {
+    live.set(id, { id, type: 'refund', state: 'completed', amount: 400, currency: 'EUR' });
+    return { id, state: 'completed' };
+  };
+  assert.equal(await service.requestPlanRefund(order.id), 'refunded');
+  assert.equal((await reload(order.id)).state, 'refunded');
+
+  // И живото четене без сума → не се приключва, аларма.
+  const other = await mkOrder(user.id, 'PRO', 'monthly', 400);
+  await service.settlePlanOrder({ id: other.id });
+  refundResponse = (id) => {
+    live.set(id, { id, state: 'completed' });
+    return { id, state: 'completed' };
+  };
+  assert.equal(await service.requestPlanRefund(other.id), 'requested');
+  assert.ok(alerts.some((s) => /различна сума/.test(s)));
+  refundResponse = null;
 });
