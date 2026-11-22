@@ -150,6 +150,10 @@ var LANGS = {
   // ── CONTACT FORM ──
   form_name: { it: "Nome e Cognome", en: "Full Name", bg: "\u0418\u043C\u0435 \u0438 \u0424\u0430\u043C\u0438\u043B\u0438\u044F" },
   form_email: { it: "Email", en: "Email", bg: "\u0418\u043C\u0435\u0439\u043B" },
+  form_company: { it: "Azienda (opzionale)", en: "Company (optional)", bg: "Фирма (по избор)" },
+  form_country: { it: "Paese (opzionale)", en: "Country (optional)", bg: "Държава (по избор)" },
+  form_solution: { it: "Di cosa hai bisogno? (opzionale)", en: "What do you need? (optional)", bg: "От какво имате нужда? (по избор)" },
+  form_budget: { it: "Budget indicativo (opzionale)", en: "Approximate budget (optional)", bg: "Приблизителен бюджет (по избор)" },
   form_phone: { it: "Telefono (opzionale)", en: "Phone (optional)", bg: "\u0422\u0435\u043B\u0435\u0444\u043E\u043D (\u043D\u0435\u0437\u0430\u0434\u044A\u043B\u0436\u0438\u0442\u0435\u043B\u043D\u043E)" },
   form_msg: { it: "Descrivi il tuo progetto...", en: "Describe your project...", bg: "\u041E\u043F\u0438\u0448\u0435\u0442\u0435 \u043F\u0440\u043E\u0435\u043A\u0442\u0430 \u0441\u0438..." },
   form_send: { it: "INVIA RICHIESTA", en: "SEND REQUEST", bg: "\u0418\u0417\u041F\u0420\u0410\u0422\u0418" },
@@ -1579,6 +1583,11 @@ function Dim(props){
 // ═══════════════════════════════════════════════════
 // MAIN APP
 // ═══════════════════════════════════════════════════
+// Формата за контакт — B2B полета (стойностите съвпадат със списъците в api/_contact.php)
+const B2B_COUNTRY=[["IT",{it:"Italia",en:"Italy",bg:"Италия"}],["BG",{it:"Bulgaria",en:"Bulgaria",bg:"България"}],["EU",{it:"Altro paese UE",en:"Other EU country",bg:"Друга държава от ЕС"}],["WORLD",{it:"Fuori dall'UE",en:"Outside the EU",bg:"Извън ЕС"}]];
+const B2B_SOLUTION=[["web",{it:"Sito web",en:"Website",bg:"Уебсайт"}],["ecommerce",{it:"E-commerce",en:"E-commerce",bg:"Онлайн магазин"}],["erp",{it:"ERP / gestionale",en:"ERP / management software",bg:"ERP / управленска система"}],["software",{it:"Software su misura",en:"Custom software",bg:"Софтуер по поръчка"}],["app",{it:"App mobile",en:"Mobile app",bg:"Мобилно приложение"}],["seo",{it:"SEO / GEO / AEO",en:"SEO / GEO / AEO",bg:"SEO / GEO / AEO"}],["other",{it:"Altro",en:"Other",bg:"Друго"}]];
+const B2B_BUDGET=[["lt5k",{it:"Fino a €5.000",en:"Under €5,000",bg:"До €5000"}],["5-15k",{it:"€5.000–15.000",en:"€5,000–15,000",bg:"€5000–15 000"}],["15-50k",{it:"€15.000–50.000",en:"€15,000–50,000",bg:"€15 000–50 000"}],["gt50k",{it:"Oltre €50.000",en:"Over €50,000",bg:"Над €50 000"}],["tbd",{it:"Da definire",en:"To be defined",bg:"Предстои да уточним"}]];
+
 export default function App(){
   const[loaded,setLoaded]=useState(true);const[pct,setPct]=useState(100);
   const[scrollPx,setScrollPx]=useState(0);
@@ -1600,12 +1609,12 @@ export default function App(){
   // услугите „светват“ веднъж, когато редът влезе в екрана: светлината на иконата и едно отражение през нея
   // (крайно, под 2 s — не е постоянно движение; при reduced-motion не се случва)
   useEffect(function(){if(reducedMotion()||!("IntersectionObserver" in window))return;var rows=document.querySelectorAll(".cs-srv-row");if(!rows.length)return;var io=new IntersectionObserver(function(en){en.forEach(function(e){if(e.isIntersecting){e.target.classList.add("on");io.unobserve(e.target)}})},{threshold:.4});rows.forEach(function(r){io.observe(r)});return function(){io.disconnect()}},[lang]);
-  const[formName,setFormName]=useState("");const[formEmail,setFormEmail]=useState("");const[formPhone,setFormPhone]=useState("");const[formMsg,setFormMsg]=useState("");const[formSent,setFormSent]=useState(false);
+  const[formName,setFormName]=useState("");const[formEmail,setFormEmail]=useState("");const[formPhone,setFormPhone]=useState("");const[formMsg,setFormMsg]=useState("");const[formCompany,setFormCompany]=useState("");const[formCountry,setFormCountry]=useState("");const[formSolution,setFormSolution]=useState("");const[formBudget,setFormBudget]=useState("");const[formSent,setFormSent]=useState(false);const formStarted=useRef(false);
 
   // Translation helper
   function t(key){var entry=LANGS[key];if(!entry)return key;return entry[lang]||entry.en||key}
 
-  function handleFormSubmit(){if(!formName.trim()||!formEmail.trim()||!formMsg.trim())return;setFormSent("sending");fetch("/api/contact.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:formName,email:formEmail,phone:formPhone,message:formMsg,lang:lang,_gotcha:""})}).then(function(r){return r.json()}).then(function(d){if(d.ok){setFormSent("ok");setTimeout(function(){setFormSent(false);setFormName("");setFormEmail("");setFormPhone("");setFormMsg("")},5000)}else{setFormSent("error")}}).catch(function(){setFormSent("error");setTimeout(function(){setFormSent(false)},4000)})}
+  function handleFormSubmit(){if(!formName.trim()||!formEmail.trim()||!formMsg.trim())return;setFormSent("sending");fetch("/api/contact.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:formName,email:formEmail,phone:formPhone,message:formMsg,company:formCompany,country:formCountry,solution:formSolution,budget:formBudget,lang:lang,_gotcha:""})}).then(function(r){return r.json()}).then(function(d){if(d.ok){setFormSent("ok");if(window.csTrack)window.csTrack("generate_lead",{form:"contact",solution:formSolution||"none",budget:formBudget||"none",country:formCountry||"none"});setTimeout(function(){setFormSent(false);setFormName("");setFormEmail("");setFormPhone("");setFormMsg("");setFormCompany("");setFormCountry("");setFormSolution("");setFormBudget("")},5000)}else{setFormSent("error")}}).catch(function(){setFormSent("error");setTimeout(function(){setFormSent(false)},4000)})}
   useEffect(function(){if(!mobileMenu)return;function k(e){if(e.key==="Escape")setMobileMenu(false)}document.addEventListener("keydown",k);return function(){document.removeEventListener("keydown",k)}},[mobileMenu]);
   function acceptCookies(){setCookieOk(true);try{localStorage.setItem("cs_cookie","accepted")}catch(e){}}
   function rejectCookies(){setCookieOk(true);try{localStorage.setItem("cs_cookie","rejected")}catch(e){}}
@@ -2281,11 +2290,13 @@ export default function App(){
               {formSent==="ok" && <div className="cs-stamp" aria-hidden="true">{lang==="it"?"RICEVUTO":lang==="bg"?"ПРИЕТО":"RECEIVED"} {"\u00b7"} {new Date().toISOString().slice(0,10)}</div>}
             </div>
           ) : (
-            <form onSubmit={function(e){e.preventDefault();handleFormSubmit()}} style={{display:"flex",flexDirection:"column",gap:10}}>
+            <form onFocus={function(){if(!formStarted.current){formStarted.current=true;if(window.csTrack)window.csTrack("form_start",{form:"contact"})}}} onSubmit={function(e){e.preventDefault();handleFormSubmit()}} style={{display:"flex",flexDirection:"column",gap:10}}>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
                 <input value={formName} onChange={function(e){setFormName(e.target.value)}} placeholder={t("form_name")} aria-label={t("form_name")} required style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}/>
                 <input value={formEmail} onChange={function(e){setFormEmail(e.target.value)}} placeholder={t("form_email")} aria-label={t("form_email")} type="email" required style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}/>
               </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}><input value={formCompany} onChange={function(e){setFormCompany(e.target.value)}} placeholder={t("form_company")} aria-label={t("form_company")} autoComplete="organization" maxLength={200} style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}} /><select value={formCountry} onChange={function(e){setFormCountry(e.target.value)}} aria-label={t("form_country")} style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}><option value="">{t("form_country")}</option>{B2B_COUNTRY.map(function(o){return <option key={o[0]} value={o[0]}>{o[1][lang]||o[1].en}</option>})}</select></div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}><select value={formSolution} onChange={function(e){setFormSolution(e.target.value)}} aria-label={t("form_solution")} style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}><option value="">{t("form_solution")}</option>{B2B_SOLUTION.map(function(o){return <option key={o[0]} value={o[0]}>{o[1][lang]||o[1].en}</option>})}</select><select value={formBudget} onChange={function(e){setFormBudget(e.target.value)}} aria-label={t("form_budget")} style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}><option value="">{t("form_budget")}</option>{B2B_BUDGET.map(function(o){return <option key={o[0]} value={o[0]}>{o[1][lang]||o[1].en}</option>})}</select></div>
               <input value={formPhone} onChange={function(e){setFormPhone(e.target.value)}} placeholder={t("form_phone")} aria-label={t("form_phone")} type="tel" style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}/>
               <textarea value={formMsg} onChange={function(e){setFormMsg(e.target.value)}} placeholder={t("form_msg")} aria-label={t("form_msg")} required rows={5} style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace",resize:"vertical"}}/>
               <p style={{fontSize:9,color:"#999",lineHeight:1.6}}>{t("form_gdpr")} <a href={lang==="bg"?"/bg/privacy/":lang==="en"?"/en/privacy/":"/privacy/"} style={{color:C,textDecoration:"none"}}>{lang==="it"?"Informativa Privacy":lang==="bg"?"\u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430 \u0437\u0430 \u041F\u043E\u0432\u0435\u0440\u0438\u0442\u0435\u043B\u043D\u043E\u0441\u0442":"Privacy Policy"}</a>.</p>
@@ -2505,7 +2516,7 @@ export default function App(){
           <p style={{fontSize:12,color:"#ccc",lineHeight:1.7,margin:0}}>{t("cookie_text")} <a href={lang==="bg"?"/bg/cookie/":lang==="en"?"/en/cookie/":"/cookie/"} style={{color:C,textDecoration:"none"}}>{t("cookie_more")}</a></p>
         </div>
         <div style={{display:"flex",gap:8}}>
-          <div {...kb(rejectCookies,t("cookie_reject"))} style={{padding:"8px 20px",border:"1px solid rgba(245,245,240,.2)",color:"#ccc",fontSize:11,letterSpacing:".15em",cursor:"pointer",minHeight:24}}>{t("cookie_reject")}</div>
+          <div {...kb(rejectCookies,t("cookie_reject"))} style={{padding:"8px 20px",border:"1px solid rgba("+CR+",.4)",background:"rgba("+CR+",.1)",color:C,fontSize:11,letterSpacing:".15em",cursor:"pointer",minHeight:24}}>{t("cookie_reject")}</div>
           <div {...kb(acceptCookies,t("cookie_accept"))} style={{padding:"8px 20px",border:"1px solid rgba("+CR+",.4)",background:"rgba("+CR+",.1)",color:C,fontSize:11,letterSpacing:".15em",cursor:"pointer",minHeight:24}}>{t("cookie_accept")}</div>
         </div>
       </div>}

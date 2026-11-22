@@ -30,6 +30,7 @@ import glob
 import hashlib
 import os
 import re
+from html import unescape
 
 
 def live_version():
@@ -269,7 +270,7 @@ SKIP = {"public/offline.html", "public/status/index.html"}  # the status page is
 STRIP = [re.compile(r'<link id="cs-theme-fonts(?:-pre\d?)?"[^>]*>'), re.compile(r'<link id="cs-bench-pre\d?"[^>]*>'), re.compile(r'<script id="cs-js-flag">.*?</script>', re.S),
          re.compile(r'<style id="cs-theme">.*?</style>', re.S), re.compile(r'<script id="cs-nav-js">.*?</script>', re.S),
          re.compile(r'<div class="ft cs-legal-ft">.*?</div>', re.S), re.compile(r'<script id="cs-cal-js">.*?</script>', re.S),
-         re.compile(r'<script id="cs-live-boot">.*?</script>', re.S)]
+         re.compile(r'<script id="cs-live-boot">.*?</script>', re.S), re.compile(r'<script id="cs-consent-js"[^>]*></script>')]
 
 
 LEGAL = {"it": ("/termini/", "Termini", "/note-legali/", "Note legali"),
@@ -312,6 +313,14 @@ def theme(path, html):
     # horizontally scrollable tables must be reachable by keyboard (axe scrollable-region-focusable)
     label = {"it": "Tabella", "en": "Table", "bg": "Таблица"}[lang_of(path, html)]
     html = re.sub(r'<div class="(ctbl|table-wrap)">', lambda m: f'<div class="{m.group(1)}" tabindex="0" role="region" aria-label="{label}">', html)
+    # <title> над 65 знака се реже в резултатите на Google: опашката „ | Carbon Stealth“ отпада (името на сайта
+    # Google показва отделно — WebSite/Organization в JSON-LD). og:title и twitter:title остават цели.
+    def fit(m):
+        t = m.group(1)
+        if len(unescape(t)) > 65 and t.endswith(" | Carbon Stealth"):
+            t = t[: -len(" | Carbon Stealth")]
+        return "<title>" + t + "</title>"
+    html = re.sub(r"<title>([^<]*)</title>", fit, html, count=1)
     return html
 
 
