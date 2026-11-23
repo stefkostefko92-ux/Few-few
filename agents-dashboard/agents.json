@@ -14922,7 +14922,7 @@
           "Meta Advertising Standards + Conversions API + Platform Terms/Developer Policies",
           "OWASP ASVS/MASVS (via CASA/MASA), fastlane precheck (metadata lint модел)"
         ],
-        "lessons": 249
+        "lessons": 251
       },
       "evolution": [
         {
@@ -15044,9 +15044,20 @@
           "date": "2026-11-23",
           "event": "v23.3 — учене",
           "detail": "Научи: Discord privileged intents — праг 10 000 уникални потребители (не сървъри); при достига… (+4 още)"
+        },
+        {
+          "version": "23.5.0",
+          "date": "2026-11-23",
+          "event": "v23.5 — учене",
+          "detail": "Научи: Chrome Web Store премахна всички останали MV2 разширения на 31.08.2026 (времевата линия… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Chrome Web Store премахна всички останали MV2 разширения на 31.08.2026 (времевата линия…\" (+1 още)"
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
