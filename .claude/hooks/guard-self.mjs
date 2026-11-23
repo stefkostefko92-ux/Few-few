@@ -610,7 +610,7 @@ export function decide(p, { set = protectedSet() } = {}) {
   const cwd = typeof p?.cwd === "string" && isAbsolute(p.cwd) ? p.cwd : ROOT;
   let why = "", tier = "";
   if (WRITE_TOOLS.has(tool)) [why, tier] = writeVerdict(p.tool_input || {}, { cwd, set });
-  else if (tool === "Bash" || tool === "Monitor") [why, tier] = bashVerdict(p.tool_input?.command, { cwd, set });
+  else if (tool === "Bash" || tool === "PowerShell" || tool === "Monitor") [why, tier] = bashVerdict(p.tool_input?.command, { cwd, set });
   if (!why) return { action: "allow", reason: "" };
   const agent = p.agent_id || p.agent_type;
   if (agent) return { action: "deny", reason: why, agent: String(p.agent_type || p.agent_id) };

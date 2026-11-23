@@ -173,7 +173,7 @@ function main() {
   let p = {};
   try { p = JSON.parse(readFileSync(0, "utf8")); } catch { process.exit(0); }
   // Monitor (2.1.314+) пуска shell команда като Bash — съди се по същото правило; без команда няма запис.
-  if (!["Bash", "Monitor"].includes(p.tool_name) || !isReadOnlyAgent(p.agent_type)) process.exit(0);
+  if (!["Bash", "PowerShell", "Monitor"].includes(p.tool_name) || !isReadOnlyAgent(p.agent_type)) process.exit(0);
   const why = mutationReason(p.tool_input?.command, { scratch: p.scratchpad_dir || "" });
   if (!why) process.exit(0);
   process.stderr.write(
