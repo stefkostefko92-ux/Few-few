@@ -16274,7 +16274,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 232
+        "lessons": 233
       },
       "evolution": [
         {
@@ -16360,9 +16360,20 @@
           "date": "2026-11-23",
           "event": "v32.9 — учене",
           "detail": "Научи: Express 4 router.use(fn) без път задава path '/' и Layer с end:false, затова middleware…"
+        },
+        {
+          "version": "33.0.0",
+          "date": "2026-11-23",
+          "event": "v33.0 — учене",
+          "detail": "Научи: Обикновен btree индекс в PostgreSQL обслужва закотвен LIKE 'prefix%' само при C локал; …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Обикновен btree индекс в PostgreSQL обслужва закотвен LIKE 'prefix%' само при C локал; …\""
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
