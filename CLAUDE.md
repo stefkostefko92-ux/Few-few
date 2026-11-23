@@ -99,7 +99,7 @@ hooks, skills).
 
 ## Custom agents — `.claude/agents/`
 
-34 purpose-built subagents (BG system prompt, least-privilege `tools`, `maxTurns` checkpoint), each with
+35 purpose-built subagents (BG system prompt, least-privilege `tools`, `maxTurns` checkpoint), each with
 **durable verified memory** and a **hook-enforced self-learning loop**: lessons land in their own branch
 `agents/memory` (never the task branch; one standing PR brings them to `main`) and are retrieved at start
 by relevance to the actual task. Every agent preloads the **security doctrine + procedure** as the
@@ -132,11 +132,11 @@ Shared glossary `ф:р · PI · LT · QG · RM · SC · ИоМ` — internal not
 
 ## Skills — `.claude/skills/`
 
-Ours (BG, vetted; 62; metadata only until triggered): **агентски** — agent-doctrine; **процедури** — deploy · prisma-migrate · quality-gate · verify ·
+Ours (BG, vetted; 65; metadata only until triggered): **агентски** — agent-doctrine; **процедури** — deploy · prisma-migrate · quality-gate · verify ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
 razpit · skill-author · sapernik; **предпазители** — fiscal-bg · stripe-payment · revolut-payment · motion-a11y · gdpr-launch ·
-db-readonly · owasp-review · wcag-audit · incident-breach · pentest-engagement; **SEO/perf** — indexnow · keywords-seo · i18n-parity ·
-web-vitals; plus uchitel; **домейн** — youtube-reddit · fivem-mlo · fivem-clothing · fivem-livery; **външни, адаптирани** (14, вкл. archify-diagrams) и **правни** (15) — ростерът е в `tools/agents/CLAUDE.md`, произходът в `.claude/skills/THIRD_PARTY_NOTICES.md`. Gate: `tools/skills/lint.mjs` + `trigger-check.mjs --check`.
+db-readonly · owasp-review · wcag-audit · incident-breach · pentest-engagement; **SEO/perf** — indexnow · keywords-seo · i18n-parity · bezplatna-vidimost ·
+web-vitals; plus uchitel; **домейн** — youtube-reddit · fivem-mlo · fivem-clothing · fivem-livery; **външни, адаптирани** (16, вкл. archify-diagrams, model-na-zaplahite, igrovo-studio) и **правни** (15) — ростерът е в `tools/agents/CLAUDE.md`, произходът в `.claude/skills/THIRD_PARTY_NOTICES.md`. Gate: `tools/skills/lint.mjs` + `trigger-check.mjs --check`.
 **Own BG skills; never import third-party wholesale**; външно — само с изрично „да“ от собственика (`tools/agents/CLAUDE.md`).
 
 **Guard hooks (8):** `guard-prompt` · `guard-dangerous` (only catastrophic Bash) · `guard-secrets` (before the write) ·

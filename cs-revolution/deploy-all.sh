@@ -242,6 +242,7 @@ chk "https://$DOMAIN/api/status.php"        200 "API status (публичен)"
 chk "https://$DOMAIN/api/smtp-local.php"    404 "smtp-local.php БЛОКИРАН"
 chk "https://$DOMAIN/api/_auth.php"         404 "_auth.php БЛОКИРАН"
 chk "https://$DOMAIN/api/_admin.php"        404 "_admin.php БЛОКИРАН"
+chk "https://$DOMAIN/api/_contact.php"      404 "_contact.php БЛОКИРАН"
 chk "https://$DOMAIN/admin/"                200 "Админ панел /admin/"
 if curl -skI --max-time 10 "https://$DOMAIN/admin/" | grep -qi "frame-ancestors 'none'"; then
   c_ok "/admin/ е със собствената строга CSP"

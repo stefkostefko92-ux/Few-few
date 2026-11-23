@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url><loc>https://carbonstealth.eu/settori/</loc><lastmod>2026-09-25</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
-<url><loc>https://carbonstealth.eu/en/industries/</loc><lastmod>2026-09-25</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
-<url><loc>https://carbonstealth.eu/bg/branshove/</loc><lastmod>2026-09-25</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+<url><loc>https://carbonstealth.eu/settori/</loc><lastmod>2026-11-22</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+<url><loc>https://carbonstealth.eu/en/industries/</loc><lastmod>2026-11-22</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+<url><loc>https://carbonstealth.eu/bg/branshove/</loc><lastmod>2026-11-22</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
 <url><loc>https://carbonstealth.eu/settori/ristoranti/</loc><lastmod>2026-09-25</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
 <url><loc>https://carbonstealth.eu/en/industries/ristoranti/</loc><lastmod>2026-09-25</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
 <url><loc>https://carbonstealth.eu/bg/branshove/ristoranti/</loc><lastmod>2026-09-25</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
@@ -33,10 +33,13 @@
 <url><loc>https://carbonstealth.eu/settori/scuole-formazione/</loc><lastmod>2026-09-25</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
 <url><loc>https://carbonstealth.eu/en/industries/scuole-formazione/</loc><lastmod>2026-09-25</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
 <url><loc>https://carbonstealth.eu/bg/branshove/scuole-formazione/</loc><lastmod>2026-09-25</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
-<url><loc>https://carbonstealth.eu/settori/ecommerce-alimentari/</loc><lastmod>2026-09-25</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+<url><loc>https://carbonstealth.eu/settori/ecommerce-alimentari/</loc><lastmod>2026-11-22</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
 <url><loc>https://carbonstealth.eu/en/industries/ecommerce-alimentari/</loc><lastmod>2026-09-25</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
-<url><loc>https://carbonstealth.eu/bg/branshove/ecommerce-alimentari/</loc><lastmod>2026-09-25</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
-<url><loc>https://carbonstealth.eu/settori/servizi-professionali/</loc><lastmod>2026-09-25</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+<url><loc>https://carbonstealth.eu/bg/branshove/ecommerce-alimentari/</loc><lastmod>2026-11-22</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+<url><loc>https://carbonstealth.eu/settori/servizi-professionali/</loc><lastmod>2026-11-22</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
 <url><loc>https://carbonstealth.eu/en/industries/servizi-professionali/</loc><lastmod>2026-09-25</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
-<url><loc>https://carbonstealth.eu/bg/branshove/servizi-professionali/</loc><lastmod>2026-09-25</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+<url><loc>https://carbonstealth.eu/bg/branshove/servizi-professionali/</loc><lastmod>2026-11-22</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+<url><loc>https://carbonstealth.eu/settori/ascensori/</loc><lastmod>2026-11-22</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://carbonstealth.eu/en/industries/ascensori/</loc><lastmod>2026-11-22</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://carbonstealth.eu/bg/branshove/ascensori/</loc><lastmod>2026-11-22</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
 </urlset>

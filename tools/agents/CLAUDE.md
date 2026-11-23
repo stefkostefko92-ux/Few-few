@@ -8,7 +8,7 @@ A/B 27.10.2026 на 5 агента: без него 9/9 и pass^k 5/5 срещу
 
 ## Агентите — `.claude/agents/`
 
-34 purpose-built subagents (BG system prompt, least-privilege `tools`), each with
+35 purpose-built subagents (BG system prompt, least-privilege `tools`), each with
 **durable verified memory** + a **hook-enforced self-learning loop**
 (`SubagentStart`/`SubagentStop` → `_memory/<id>.md`; verified-only,
 source-or-nothing, secrets hard-dropped). Every agent also preloads the **security
@@ -236,16 +236,16 @@ On-demand **workflow packages** (`SKILL.md` = YAML frontmatter + imperative body
 `scripts/`/`references/`). Only metadata (~100 tokens) loads until a skill triggers — so they
 capture repeating procedures **without** bloating every session. Different from agents (a *who*
 you delegate to) and MCP/tools (*how* to connect): a skill is *what to do, in what order, with what
-guardrails*. Ours (BG, vetted; 62): **агентски** — agent-doctrine (генериран, във всеки агент през `skills:`); **процедури** — deploy · prisma-migrate · quality-gate · verify ·
+guardrails*. Ours (BG, vetted; 65): **агентски** — agent-doctrine (генериран, във всеки агент през `skills:`); **процедури** — deploy · prisma-migrate · quality-gate · verify ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
 razpit · skill-author · sapernik;
 **предпазители/сигурност** — fiscal-bg · stripe-payment · revolut-payment · motion-a11y · gdpr-launch · db-readonly ·
-owasp-review · wcag-audit · incident-breach · pentest-engagement; **SEO/perf** — indexnow · keywords-seo · i18n-parity · web-vitals;
+owasp-review · wcag-audit · incident-breach · pentest-engagement; **SEO/perf** — indexnow · keywords-seo · i18n-parity · web-vitals · bezplatna-vidimost;
 plus uchitel; **домейн** — youtube-reddit · fivem-mlo · fivem-clothing · fivem-livery; **дизайн** — frontend-design (Anthropic, Apache 2.0; Дизайнера го зарежда винаги през `skills:`); **външни, адаптирани** (2026-10-28) —
 dpa-review · dsar-response · pia-generation · aia-generation · vendor-ai-review · marketing-claims-review ·
 humanizer · test-driven-development · seo-geo · seo-hreflang · pricing; (2026-11-08) — receiving-code-review ·
 discernment-nudge · improve-codebase-architecture; (2026-11-14) — ponytail-review ·
-observability-and-instrumentation · deprecation-and-migration · ui-ux-pro-max · archify-diagrams (tt-a1i/archify, Apache-2.0; каналите за обновления и марки по мрежа махнати; Летописецът); (2026-10-31, правни) — use-case-triage ·
+observability-and-instrumentation · deprecation-and-migration · ui-ux-pro-max · archify-diagrams (tt-a1i/archify, Apache-2.0; каналите за обновления и марки по мрежа махнати; Летописецът); (2026-11-23) — model-na-zaplahite (openai/skills security-threat-model, Apache-2.0; докладът само в `.tmp/`; Стражата) · igrovo-studio (openai/plugins game-studio, MIT; 9 умения → 1 с `references/`, без imagegen и Python скриптовете; Дизайнера); (2026-10-31, правни) — use-case-triage ·
 reg-gap-analysis · ai-inventory · saas-msa-review · nda-review · vendor-agreement-review · stakeholder-summary ·
 oss-review · ip-clause-review. Gate: `node tools/skills/lint.mjs` + `node tools/skills/trigger-check.mjs --check`
 (both fail-closed, in `gate.mjs`). **Author our own BG, verified skills — never import third-party

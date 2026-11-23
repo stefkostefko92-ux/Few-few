@@ -2,7 +2,7 @@
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
     <loc>https://carbonstealth.eu/sitemap-pages.xml</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-11-22</lastmod>
   </sitemap>
   <sitemap>
     <loc>https://carbonstealth.eu/sitemap-blog.xml</loc>
@@ -39,5 +39,9 @@
   <sitemap>
     <loc>https://carbonstealth.eu/sitemap-images.xml</loc>
     <lastmod>2026-09-25</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://carbonstealth.eu/sitemap-solutions.xml</loc>
+    <lastmod>2026-11-22</lastmod>
   </sitemap>
 </sitemapindex>
