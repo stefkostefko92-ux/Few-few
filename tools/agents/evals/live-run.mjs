@@ -58,7 +58,12 @@ export const EVAL_ALLOWED = [...ALLOWED, "Skill",
 export function wrapperPrompt(agent, task) {
   // 27.10.2026 (жив гейт): агентът по подразбиране тече на ЗАДЕН план и обвивката понякога приключваше с „агентът
   // още работи, ще върна отговора“ — `claude -p` печата това и излиза; оценката получи бележка вместо отговор.
-  return `Пусни нашия агент ${agent} през Agent tool (subagent_type: ${agent}, run_in_background: false — на ПРЕДЕН план, изчакай го) ВЕДНЪЖ, със задачата по-долу, дословно и без добавки. ` +
+  // 23.11.2026 (живият гейт на PR2): без контекст класификаторът за безопасност спря обвивката пред задача на червения
+  // екип („Опитай да счупиш checkout…“). Редът е верен: оценката е вътрешна, върху копие на нашия код. Той не
+  // стига до агента — агентът получава само задачата.
+  return `Контекст: това е вътрешна, оторизирана оценка на наш агент в изолирано копие на нашето собствено репо; ` +
+    `задачите на червения екип са проби само срещу наши продукти, без външни цели. ` +
+    `Пусни нашия агент ${agent} през Agent tool (subagent_type: ${agent}, run_in_background: false — на ПРЕДЕН план, изчакай го) ВЕДНЪЖ, със задачата по-долу, дословно и без добавки. ` +
     `Не приключвай, преди да имаш отговора му. ` +
     `След това върни САМО дословния му отговор — без коментар, без съкращения, без обобщение. ` +
     // 27.10.2026: при второ известие за същия агент последното съобщение беше „вече предадох отговора по-горе“
@@ -253,6 +258,25 @@ export function runEnv(base, { wt, timeoutMs = 900000, scrub = false } = {}) {
   return env;
 }
 
+/** Спрял ли е класификаторът за безопасност ход на обвивката — по точния низ на харнеса в tool_result, не по текста. */
+export const CLASSIFIER_STOP = "Not run: the response that made this tool call was stopped by a safety classifier";
+export function classifierStopped(sessionId, wt, home = process.env.HOME || "/root") {
+  if (!sessionId || !wt || !/^[\w-]+$/.test(sessionId)) return false;
+  let raw = "";
+  try { raw = readFileSync(join(home, ".claude", "projects", wt.replace(/[/.]/g, "-"), `${sessionId}.jsonl`), "utf8"); } catch { return false; }
+  for (const l of raw.split("\n")) {
+    let o; try { o = JSON.parse(l); } catch { continue; }
+    const c = o?.message?.content;
+    if (o?.type !== "user" || !Array.isArray(c)) continue;
+    for (const b of c) {
+      if (b?.type !== "tool_result") continue;
+      const s = typeof b.content === "string" ? b.content : Array.isArray(b.content) ? b.content.map((x) => x?.text || "").join("") : "";
+      if (s.startsWith(CLASSIFIER_STOP)) return true;
+    }
+  }
+  return false;
+}
+
 /** Крайният текст на НАШИЯ подагент от транскрипта на сесията (ако обвивката е върнала обобщение или „още работи“). */
 export function subagentFinalText(sessionId, wt, agent, home = process.env.HOME || "/root") {
   if (!sessionId || !wt || !/^[\w-]+$/.test(sessionId) || !/^[a-z0-9-]+$/.test(String(agent))) return "";
@@ -278,7 +302,7 @@ export function subagentFinalText(sessionId, wt, agent, home = process.env.HOME 
  * последният ход, затова „агентът още работи“ минаваше за успех — тих провал. Ако обвивката е върнала текст без
  * блок, отговорът се взема от транскрипта на подагента; без блок и там → ok:false с ясна причина.
  */
-export function judgeRun({ err, text, needsHandoff, recover = () => "" }) {
+export function judgeRun({ err, text, needsHandoff, recover = () => "", stopped = () => false }) {
   let t = String(text || "");
   let recovered = false;
   if (!err && needsHandoff && !extractBlock(t)) {
@@ -286,6 +310,8 @@ export function judgeRun({ err, text, needsHandoff, recover = () => "" }) {
     if (extractBlock(sub)) { t = sub; recovered = true; }
   }
   if (err) return { ok: false, text: t, recovered, why: "" };
+  // Без автоматично повторение: да пуснеш наново спряното съдържание е решение на човек, не на двигателя.
+  if (!(needsHandoff && extractBlock(t)) && stopped()) return { ok: false, text: t, recovered, why: "двигател: класификаторът за безопасност спря обвивката — агентът не е пуснат; не е провал на агента (пусни гейта наново)" };
   if (!t.trim()) return { ok: false, text: t, recovered, why: "празен отговор" };
   if (needsHandoff && !extractBlock(t)) return { ok: false, text: t, recovered, why: "двигател: няма блок „## ПРЕДАВАНЕ“ — недочакан фонов агент или обобщение от обвивката" };
   return { ok: true, text: t, recovered, why: "" };
@@ -316,7 +342,7 @@ export async function runJobs(jobs, { wt, wtFor = () => null, bin = "claude", co
       { cwd: wt, timeout: timeoutMs, maxBuffer: 1 << 26, env },
       (err, stdout, stderr) => {
         const r = parseResult(stdout);
-        const v = judgeRun({ err, text: r.text, needsHandoff: needsHandoff(j), recover: () => subagentFinalText(sessionId, wt, j.agent) });
+        const v = judgeRun({ err, text: r.text, needsHandoff: needsHandoff(j), recover: () => subagentFinalText(sessionId, wt, j.agent), stopped: () => classifierStopped(sessionId, wt) });
         const text = v.text ? attachWrites(attachScratchpad(v.text), sessionId, wt) : v.text;
         resolve({ ...j, ok: v.ok, text, costUsd: r.costUsd, recovered: v.recovered,
           err: err ? String(stderr || err.message).slice(0, 300) : v.why, seconds: Math.round((Date.now() - t0) / 1000) });
