@@ -59,6 +59,43 @@ const WORD_RULES = BODIES.map(([b, why]) => [new RegExp("^" + b), why]);
 /** Махни съдържанието на кавичките — „> файл“ в текстов аргумент не е пренасочване. */
 const unquote = (s) => s.replace(/'[^']*'/g, "''").replace(/"(?:\\.|[^"\\])*"/g, '""');
 
+// ── Променливи с буквален път от същата команда (23.11.2026, Разбивача — фалшив позитив) ─────────────────────
+// `D=<scratch>/al; cat > $D/probe.mjs` се спираше: пазачът не разгъва променливи. Разгъваме САМО недвусмислено —
+// точно едно буквално присвояване (или същата стойност повторена) на горно ниво (не в `( )`/`{ }`) ПРЕДИ употребата,
+// без друго свързване на името (`+=`, read, for, unset, declare…), и не в единични кавички. Стойност с `$` или `
+// не е буквална. Всичко двусмислено остава неразгънато → целта не е временна → спира, както досега (fail-closed).
+const ASSIGN = /(^|[;&|\n(){}]|&&|\|\|)\s*(?:export\s+)?([A-Za-z_]\w*)=(?:"([^"$`\\]*)"|'([^']*)'|([^\s;&|()<>$`"'\\{}]*))(?=$|[\s;&|\n)])/g;
+const otherBinding = (n) => new RegExp(String.raw`(?:(?<![\w$])${n}\+=|\b(?:read|for|select|getopts|mapfile|readarray|unset|declare|typeset|local)\b[^;&|\n]*(?<![\w$])${n}\b)`);
+const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+function substituteOutsideSingleQuotes(text, name, value) {
+  const use = new RegExp(String.raw`\$\{${esc(name)}\}|\$${esc(name)}(?!\w)`, "g");
+  return text.split(/('[^']*')/).map((part, i) => (i % 2 ? part : part.replace(use, () => value))).join("");
+}
+
+/** Разгъва само недвусмислените буквални присвоявания от същата команда. Чиста функция. */
+export function resolveLiteralVars(command) {
+  const src = String(command || "");
+  const found = new Map();
+  for (const m of src.matchAll(ASSIGN)) {
+    const name = m[2];
+    const value = m[3] ?? m[4] ?? m[5] ?? "";
+    const before = unquote(src.slice(0, m.index + m[1].length));
+    const depth = (before.match(/[({]/g) || []).length - (before.match(/[)}]/g) || []).length;
+    const prev = found.get(name);
+    if (prev === null) continue;
+    if (depth !== 0 || !value || (prev && prev.value !== value)) { found.set(name, null); continue; }
+    if (!prev) found.set(name, { value, end: m.index + m[0].length });
+  }
+  const flat = unquote(src);
+  const live = [...found].filter(([n, v]) => v && !otherBinding(esc(n)).test(flat)).sort((a, b) => b[1].end - a[1].end);
+  let out = src;
+  for (const [name, v] of live) out = out.slice(0, v.end) + substituteOutsideSingleQuotes(out.slice(v.end), name, v.value);
+  return out;
+}
+
+const VAR_HINT = " — променлива не се разгъва надеждно; напиши пълния път";
+
 /** Временна цел: /tmp, $TMPDIR, /dev/null…, scratchpad-ът (буквален път). „..“ никога — /tmp/../repo е репото.
  *  Една двойка обграждащи кавички се маха („"<scratch>/dl/"“ е същият път; 15.11.2026, фалшив позитив при Прониквача) —
  *  неразгърната променлива в кавички („"$X"“) пак не е буквален временен път и остава спряна. */
@@ -84,7 +121,7 @@ function fileCmdReason(cmd, scratch) {
     // Цел в кавички тук е изпразнена от unquote („""“) — суровият ред не знае пътя. Съди я нивото по думи
     // (wordReason → fileArgvReason), което разбира кавичките; иначе `cp x "<scratch>/dl/"` беше фалшив позитив.
     if (targets.some((t) => /^(?:""|'')$/.test(t))) continue;
-    if (!targets.length || !targets.every(ok)) return "команда, която пише/трие файлове извън /tmp и scratchpad-а";
+    if (!targets.length || !targets.every(ok)) return "команда, която пише/трие файлове извън /tmp и scratchpad-а" + (targets.some((t) => t.includes("$")) ? VAR_HINT : "");
   }
   return "";
 }
@@ -95,10 +132,10 @@ function writesFile(cmd, scratch) {
   for (const m of cmd.matchAll(/(?:^|[^<>&\d])(?:\d)?>>?\s*([^\s;&|)]+)/g)) {
     const t = m[1];
     if (t.startsWith("(") || t.startsWith("&")) continue; // >(…) process substitution · >&2
-    if (!okTarget(t)) return `пренасочване към файл (${t})`;
+    if (!okTarget(t)) return `пренасочване към файл (${t})` + (t.includes("$") ? VAR_HINT : "");
   }
   for (const m of cmd.matchAll(/\btee\s+(?:-a\s+)?([^\s;&|)]+)/g)) {
-    if (!okTarget(m[1])) return `tee към файл (${m[1]})`;
+    if (!okTarget(m[1])) return `tee към файл (${m[1]})` + (m[1].includes("$") ? VAR_HINT : "");
   }
   return "";
 }
@@ -127,13 +164,18 @@ function fileArgvReason(name, args, scratch) {
   const ok = tempTarget(scratch);
   const plain = args.filter((x) => x && !x.startsWith("-"));
   const targets = DEST_ONLY.has(name) ? plain.slice(-1) : /^ch(?:mod|own)$/.test(name) ? plain.slice(1) : plain;
-  return !targets.length || !targets.every(ok) ? "команда, която пише/трие файлове извън /tmp и scratchpad-а" : "";
+  return !targets.length || !targets.every(ok) ? "команда, която пише/трие файлове извън /tmp и scratchpad-а" + (targets.some((t) => t.includes("$")) ? VAR_HINT : "") : "";
 }
 
-function wordReason(src, scratch, depth) {
+function wordReason(src, scratch, depth, raw = src) {
   let parsed;
   try { parsed = shellWords(src); } catch { return ""; }
-  for (const argv of parsed.cmds) {
+  // Вътрешният низ на `sh -c '…'` е КОД, а codeView неутрализира единичните кавички (`>` → `_`) — 23.11.2026:
+  // `sh -c 'cat > src/x'` минаваше. Низът се взема от суровата команда (както в guard-dangerous и guard-self), само
+  // когато двата разбора съвпадат по брой команди; иначе (напр. heredoc с данни) — както досега.
+  let rawCmds = null;
+  try { const r = shellWords(raw); if (r.cmds.length === parsed.cmds.length) rawCmds = r.cmds; } catch { /* остава изгледът */ }
+  for (const [i, argv] of parsed.cmds.entries()) {
     const a = unwrap(argv);
     if (a.length) {
       const name = base(a[0]), args = a.slice(1);
@@ -148,7 +190,7 @@ function wordReason(src, scratch, depth) {
         if (k >= 0) { const why = mutationReasonAt(args.slice(k + 1).filter((x) => x !== ";" && x !== "+").join(" "), scratch, depth + 1); if (why) return why; }
       }
     }
-    for (const inner of execStrings(argv)) { const why = mutationReasonAt(inner, scratch, depth + 1); if (why) return why; }
+    for (const inner of execStrings(rawCmds ? rawCmds[i] : argv)) { const why = mutationReasonAt(inner, scratch, depth + 1); if (why) return why; }
   }
   for (const inner of parsed.subs) { const why = mutationReasonAt(inner, scratch, depth + 1); if (why) return why; }
   return "";
@@ -158,15 +200,16 @@ function mutationReasonAt(command, scratch, depth) {
   if (depth > 3) return "";
   // codeView: тялото на heredoc към python/node/cat е данни (знаците му стават `_`), към обвивка — код.
   // Хванато на 28.10.2026: `ord(ch) > 127` в python heredoc се четеше като пренасочване към файл.
-  const src = codeView(sanitize(String(command || "")));
+  const raw = sanitize(String(command || ""));
+  const src = codeView(raw);
   const cmd = unquote(src);
   for (const [re, why] of RULES) if (re.test(cmd)) return why;
-  return fileCmdReason(cmd, scratch) || writesFile(cmd, scratch) || wordReason(src, scratch, depth);
+  return fileCmdReason(cmd, scratch) || writesFile(cmd, scratch) || wordReason(src, scratch, depth, raw);
 }
 
 /** Чиста логика: команда → причина за блок или "" . */
 export function mutationReason(command, { scratch = "" } = {}) {
-  return mutationReasonAt(command, scratch, 0);
+  return mutationReasonAt(resolveLiteralVars(command), scratch, 0);
 }
 
 function main() {
