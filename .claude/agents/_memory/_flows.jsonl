@@ -930,3 +930,6 @@
 {"t":"close","ts":"2026-11-23T16:19:14.899Z","id":"fg63lhd","status":"завършен"}
 {"t":"close","ts":"2026-11-23T16:19:14.939Z","id":"flq49z0","status":"завършен"}
 {"t":"close","ts":"2026-11-23T16:19:14.977Z","id":"f90uy23","status":"завършен"}
+{"t":"start","ts":"2026-11-23T16:10:35.010Z","id":"r34a320bf","flow":"авто","lead":"pravniyat-razbirach","auto":true}
+{"t":"handoff","ts":"2026-11-23T16:10:35.011Z","id":"r34a320bf","from":"pravniyat-razbirach","to":"ai-djiyata","status":"има бележки","run":"e5be9d69"}
+{"t":"handoff","ts":"2026-11-23T16:11:31.961Z","id":"r34a320bf","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"444fb621"}
