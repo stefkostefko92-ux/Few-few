@@ -223,3 +223,23 @@ test("умения: Skill извикванията се броят по име; 
   assert.deepEqual(good.skills, { "plugin:skill-x": 3 });
   rmSync(dir, { recursive: true, force: true });
 });
+
+test("умения: прочетен SKILL.md се брои като ползване; справочник, чужд път и лошо име — не", () => {
+  // Жива оценка 23.11.2026: Дизайнера прочете igrovo-studio/SKILL.md с Read вместо Skill — броенето само на
+  // Skill щеше да покаже умението като „никога викано“.
+  const dir = mkdtempSync(join(tmpdir(), "uc-skr-"));
+  const rd = (id, file_path) => ({ message: { model: "claude-sonnet-5-5", role: "assistant", id: `m${id}`, usage: { input_tokens: 1, output_tokens: 1 }, content: [{ type: "tool_use", id, name: "Read", input: { file_path } }] } });
+  const lines = [
+    rd("a", "/tmp/live-run-x/.claude/skills/igrovo-studio/SKILL.md"),
+    rd("b", "/home/u/repo/.claude/skills/igrovo-studio/references/gltf-loading-starter.md"),
+    rd("c", "/home/u/repo/.claude/skills/../../etc/SKILL.md"),
+    rd("d", "/home/u/repo/.claude/skills/__proto__/SKILL.md"),
+    rd("e", "/home/u/repo/skills/seo-geo/SKILL.md"),
+    { message: { model: "claude-sonnet-5-5", role: "assistant", id: "mf", usage: { input_tokens: 1, output_tokens: 1 }, content: [{ type: "tool_use", id: "f", name: "Skill", input: { skill: "igrovo-studio" } }] } },
+  ];
+  const p = join(dir, "agent-skr.jsonl");
+  writeFileSync(p, lines.map((l) => JSON.stringify(l)).join("\n") + "\n");
+  const r = summarizeTranscript(p, { agentType: "dizayner" });
+  assert.deepEqual(r.skills, { "igrovo-studio": 2 }, "Skill + Read на SKILL.md под .claude/skills/<име>/");
+  rmSync(dir, { recursive: true, force: true });
+});
