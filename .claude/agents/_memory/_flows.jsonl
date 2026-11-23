@@ -884,3 +884,43 @@
 {"t":"handoff","ts":"2026-11-23T09:31:15.932Z","id":"r7782e8d7","from":"razbivacha","to":"kodadjiyata","status":"наред","note":"трети преглед (r6749f409): N1–N8 затворени в b1085eb5d"}
 {"t":"close","ts":"2026-11-23T09:31:15.963Z","id":"r7782e8d7","status":"завършен"}
 {"t":"close","ts":"2026-11-23T09:31:15.996Z","id":"r6749f409","status":"завършен"}
+{"t":"start","ts":"2026-11-23T11:02:15.968Z","id":"r22b4cdc3","flow":"авто","lead":"razbivacha","auto":true}
+{"t":"handoff","ts":"2026-11-23T11:02:15.969Z","id":"r22b4cdc3","from":"razbivacha","to":"dizayner","status":"наред","run":"4618e1c1"}
+{"t":"handoff","ts":"2026-11-23T11:02:27.804Z","id":"r22b4cdc3","from":"prodavacha","to":"оркестратор","status":"има бележки","run":"1ed663fb"}
+{"t":"handoff","ts":"2026-11-23T11:02:49.909Z","id":"r22b4cdc3","from":"pravniyat-razbirach","to":"ai-djiyata","status":"има бележки","run":"44088a8f"}
+{"t":"handoff","ts":"2026-11-23T11:02:58.586Z","id":"r22b4cdc3","from":"razbivacha","to":"diskordjiyata","status":"наред","run":"5fee8e1e"}
+{"t":"handoff","ts":"2026-11-23T11:03:02.039Z","id":"r22b4cdc3","from":"razbivacha","to":"diskordjiyata","status":"наред","run":"5f146bdc"}
+{"t":"handoff","ts":"2026-11-23T11:03:53.972Z","id":"r22b4cdc3","from":"razbivacha","to":"kodadjiyata","status":"има бележки","run":"c3960bcc"}
+{"t":"handoff","ts":"2026-11-23T11:03:58.666Z","id":"r22b4cdc3","from":"prevodach","to":"ai-djiyata","status":"има бележки","run":"95c99d97"}
+{"t":"handoff","ts":"2026-11-23T11:03:59.701Z","id":"r22b4cdc3","from":"razbivacha","to":"nabludatelya","status":"наред","run":"64ceeaef"}
+{"t":"handoff","ts":"2026-11-23T11:04:02.205Z","id":"r22b4cdc3","from":"razbivacha","to":"kodadjiyata","status":"има бележки","run":"ca6c8c23"}
+{"t":"handoff","ts":"2026-11-23T11:04:39.116Z","id":"r22b4cdc3","from":"kachestveniyat","to":"ai-djiyata","status":"има бележки","run":"45a8158d"}
+{"t":"handoff","ts":"2026-11-23T11:04:41.718Z","id":"r22b4cdc3","from":"razbivacha","to":"kodadjiyata","status":"наред","run":"7ff4ddba"}
+{"t":"handoff","ts":"2026-11-23T11:04:43.843Z","id":"r22b4cdc3","from":"razbivacha","to":"kodadjiyata","status":"има бележки","run":"1bc954a3"}
+{"t":"handoff","ts":"2026-11-23T11:04:52.695Z","id":"r22b4cdc3","from":"razbivacha","to":"seo","status":"наред","run":"1ac65184"}
+{"t":"handoff","ts":"2026-11-23T11:06:37.293Z","id":"r22b4cdc3","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"2c6f6e5a"}
+{"t":"handoff","ts":"2026-11-23T11:06:42.288Z","id":"r22b4cdc3","from":"ai-djiyata","to":"човек","status":"има бележки","run":"3cbd3637"}
+{"t":"handoff","ts":"2026-11-23T11:18:03.493Z","id":"r22b4cdc3","from":"tayniyat-agent","to":"ai-djiyata","status":"има бележки","run":"46ba6831"}
+{"t":"handoff","ts":"2026-11-23T11:19:13.770Z","id":"r22b4cdc3","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"26890e72"}
+{"t":"handoff","ts":"2026-11-23T11:20:36.153Z","id":"r22b4cdc3","from":"pravniyat-razbirach","to":"ai-djiyata","status":"има бележки","run":"153f12fd"}
+{"t":"start","ts":"2026-11-23T12:01:22.627Z","id":"r32ba5242","flow":"авто","lead":"izpitatelya","auto":true}
+{"t":"handoff","ts":"2026-11-23T12:01:22.627Z","id":"r32ba5242","from":"izpitatelya","to":"ai-djiyata","status":"наред","run":"cfb1fd68"}
+{"t":"handoff","ts":"2026-11-23T12:03:58.430Z","id":"r32ba5242","from":"kodadjiyata","to":"друг","status":"има бележки","run":"343eb642","toRaw":"Изпитателя"}
+{"t":"handoff","ts":"2026-11-23T12:08:22.967Z","id":"r32ba5242","from":"razbivacha","to":"kodadjiyata","status":"има бележки","run":"e1f3ed20"}
+{"t":"start","ts":"2026-11-23T12:40:33.077Z","id":"r05dda047","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-23T12:40:33.077Z","id":"r05dda047","from":"kodadjiyata","to":"човек","status":"има бележки","run":"50a18384"}
+{"t":"handoff","ts":"2026-11-23T12:43:40.095Z","id":"r05dda047","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"6b596719"}
+{"t":"start","ts":"2026-11-23T13:17:05.903Z","id":"r71083b9e","flow":"авто","lead":"socialdjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-23T13:17:05.904Z","id":"r71083b9e","from":"socialdjiyata","to":"човек","status":"има бележки","run":"06a450c3"}
+{"t":"start","ts":"2026-11-23T14:39:18.297Z","id":"f8xjw1g","flow":"решение: звук","lead":"ai-studio","steps":["ai-studio"]}
+{"t":"start","ts":"2026-11-23T14:39:18.374Z","id":"fzac9wj","flow":"решение: Преводача","lead":"prevodach","steps":["prevodach"]}
+{"t":"start","ts":"2026-11-23T14:39:18.439Z","id":"ft06stu","flow":"решение: таван","lead":"ai-djiyata","steps":["ai-djiyata"]}
+{"t":"start","ts":"2026-11-23T14:39:18.501Z","id":"fg63lhd","flow":"решение: OWASP","lead":"razbivacha","steps":["razbivacha"]}
+{"t":"start","ts":"2026-11-23T14:39:18.564Z","id":"flq49z0","flow":"решение: регламент","lead":"pravniyat-razbirach","steps":["pravniyat-razbirach"]}
+{"t":"start","ts":"2026-11-23T14:39:18.643Z","id":"f90uy23","flow":"решение: youtube-agent-skill","lead":"socialdjiyata","steps":["socialdjiyata"]}
+{"t":"handoff","ts":"2026-11-23T14:39:28.605Z","id":"f8xjw1g","from":"ai-studio","to":"човек","status":"наред","note":"решение: TP на звука — −1 dBTP (tools/video/presets.mjs) или −1,5 dBTP (clip.sh)? Една константа; препоръка −1,5 за платформите с прекодиране."}
+{"t":"handoff","ts":"2026-11-23T14:39:28.641Z","id":"fzac9wj","from":"prevodach","to":"човек","status":"наред","note":"решение: да получи ли Преводача Bash? Препоръка: не — остава „поискай изхода“, по-малка повърхност."}
+{"t":"handoff","ts":"2026-11-23T14:39:28.684Z","id":"ft06stu","from":"ai-djiyata","to":"човек","status":"наред","note":"решение: числата на месечния таван в .claude/hooks/budgets.json — $200 на агент, Кодаджията $400, общи $300, флот $1500. Смени ги с една редакция или потвърди."}
+{"t":"handoff","ts":"2026-11-23T14:39:28.735Z","id":"fg63lhd","from":"razbivacha","to":"човек","status":"наред","note":"решение: минава ли флотът на номерацията OWASP LLM Top 10 2026? Сега кодът се цитира с годината и двете версии стоят в claims.json."}
+{"t":"handoff","ts":"2026-11-23T14:39:28.777Z","id":"flq49z0","from":"pravniyat-razbirach","to":"човек","status":"наред","note":"решение: номерът „Рег. (ЕС) 2026/1744“ не е потвърден в EUR-Lex — свери в Официален вестник или кажи да остане бележката „свери с OJ“."}
+{"t":"handoff","ts":"2026-11-23T14:39:28.827Z","id":"f90uy23","from":"socialdjiyata","to":"човек","status":"наред","note":"решение: кои от трите идеи от youtube-agent-skill да направим като наш код — edl.mjs (AI Studio), shorts-pick.mjs (Социалджията), проверка заглавие+корица в post-lint.mjs? Чака изрично „да“."}

@@ -39,6 +39,9 @@ export const CATASTROPHIC = [
   // Изтегли-и-изпълни се съди в psDownloadExec() по-долу: в отделни изрази (`$c=(iwr …).Content; iex $c`),
   // през `%{ iex $_ }` и `[scriptblock]::Create` (кръг 2, Разбивача) един регекс по ред не стига.
   { re: /\b(?:powershell|pwsh)(?:\.exe)?\b[^\n]*\s-e(?:c|nc\w*)?\s+["']?[A-Za-z0-9+/=]{16,}/i, why: "кодирана PowerShell команда (-EncodedCommand крие какво се изпълнява)" },
+  // Разбивача, 23.11.2026 (N4): агент, който пуска нова сесия на Claude Code (`claude -p`, с `--bare` — без куки
+  // изобщо), минава покрай месечния таван и всички пазачи. Живият гейт я пуска през spawn в Node, не през Bash.
+  { re: /(?:^|[;&|(]\s*|\n\s*|\b(?:sudo|exec|nohup|env)\s+)(?:claude(?:\.exe)?\s+(?:[^\n;&|]*\s)?(?:-p|--print|--bare)\b|npx\s+(?:-y\s+)?@anthropic-ai\/claude-code\b)/, why: "вложена сесия на Claude Code от агент (claude -p) — заобикаля тавана на разхода и пазачите" },
 ];
 
 // curl|sh на PowerShell: изтегляне (iwr/irm/DownloadString/WebClient/BITS) И изпълнение на код от низ (iex,
