@@ -10,7 +10,10 @@ import {
 } from '@/i18n/locales';
 
 export const SITE_URL =
-  process.env.PUBLIC_BASE_URL ?? 'https://linketto.carbonstealth.eu';
+  process.env.PUBLIC_BASE_URL ?? 'https://piuma.carbonstealth.eu';
+
+/** Адресът, на който Revolut праща събитията (регистрация от админ панела, DEPLOY §3). */
+export const REVOLUT_WEBHOOK_URL = `${SITE_URL}/api/revolut/webhook`;
 
 export const ORG = {
   name: 'Carbon Stealth VCC',
@@ -55,7 +58,8 @@ export function pageMetadata(
   return {
     title: input.title,
     description: input.description,
-    keywords: input.keywords,
+    // Без ключа, когато няма думи: `keywords: undefined` презаписва тези от layout-а.
+    ...(input.keywords ? { keywords: input.keywords } : {}),
     alternates: localeAlternates(locale, path),
     openGraph: {
       type: 'website',

@@ -103,7 +103,7 @@
     "toHome": "Pagina iniziale",
     "toProjects": "Progetti",
     "cncBlockedTitle": "I file CNC non vengono generati",
-    "cncBlockedText": "I controlli della costruzione hanno trovato errori, e G-code e DXF non devono mai essere sbagliati. Correggeteli nell'editor: il download si sblocca appena gli errori spariscono. L'editor e l'elenco degli errori sono in bulgaro.",
+    "cncBlockedText": "I controlli della costruzione hanno trovato errori, e G-code e DXF non devono mai essere sbagliati. Correggeteli nell'editor: il download si sblocca appena gli errori spariscono.",
     "toProject": "Torna al progetto",
     "tooLarge": "Quanto inviato è troppo grande.",
     "tooManyIn": "Da questa rete sono arrivate troppe richieste. Riprovate tra {minutes}."
@@ -150,7 +150,7 @@
     "base": "Mobile base",
     "wall": "Pensile",
     "tall": "Colonna",
-    "kitchen": "Cucina lineare",
+    "kitchen": "Cucina",
     "wardrobe": "Armadio",
     "chest": "Cassettiera",
     "nightstand": "Comodino",
@@ -159,10 +159,16 @@
     "tv": "Mobile TV",
     "desk": "Scrivania",
     "wallunit": "Parete attrezzata",
+    "vanity": "Mobile sottolavabo",
+    "mirror": "Pensile a specchio",
+    "room": "Stanza",
+    "custom": "Mobile su misura",
     "group": {
       "kitchen": "Cucina e contenitori",
       "bedroom": "Camera da letto",
       "living": "Soggiorno e studio",
+      "bathroom": "Bagno",
+      "custom": "Configuratore",
       "other": "Altro"
     }
   }

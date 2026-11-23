@@ -30,6 +30,7 @@ import { grainUv, upgradeMaterial } from "../gl/baked.js";
 import { contactShadow, disposeObject, easeInOut, woodNormal, woodTexture } from "../gl/helpers.js";
 import { defaultGfxParams } from "../gl/gfxRegistry.js";
 import { RenderCore } from "../gl/render.js";
+import { clientToNdc, worldToClient } from "../board/projection.js";
 import { parseFen, type Orientation } from "./types.js";
 
 const SQ = 1; // square size
@@ -313,10 +314,16 @@ export class ChessScene {
     this.hiLayer.add(m);
   }
 
+  /** Тестова кука (board/e2eHook): client координати на центъра на поле "e4". */
+  screenPoint(square: string, rect: DOMRect): { x: number; y: number } | null {
+    if (!/^[a-h][1-8]$/.test(square)) return null;
+    const [x, z] = this.squareIdWorld(square);
+    return worldToClient(new Vector3(x, -this.boardPlane.constant, z), this.camera, rect);
+  }
+
   /** Raycast a screen point to a square id (e.g. "e4") or null. */
   pick(clientX: number, clientY: number, rect: DOMRect): string | null {
-    const ndc = new Vector2(((clientX - rect.left) / rect.width) * 2 - 1, -(((clientY - rect.top) / rect.height) * 2 - 1));
-    this.ray.setFromCamera(ndc, this.camera);
+    this.ray.setFromCamera(clientToNdc(clientX, clientY, rect), this.camera);
     const hit = new Vector3();
     if (!this.ray.ray.intersectPlane(this.boardPlane, hit)) return null;
     const file = Math.round(hit.x + 3.5);

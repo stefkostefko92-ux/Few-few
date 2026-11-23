@@ -161,7 +161,10 @@ export function skillRosterHits(text, skillIds, file = "CLAUDE.md") {
   if (!m) return [];
   const out = [];
   if (+m[1] !== skillIds.length) out.push({ file, what: "брой умения", detail: `казва ${m[1]}, а са ${skillIds.length}` });
-  const list = String(text).slice(m.index, m.index + 1200);
+  // Изброяването свършва при „Gate:“ (така е и в двата CLAUDE.md). Фиксираният прозорец от 1200 знака
+  // отрязваше края, щом ростерът порасна (14.11.2026: правните умения изглеждаха „неизброени“).
+  const gate = String(text).indexOf("Gate:", m.index);
+  const list = String(text).slice(m.index, gate > m.index ? gate : m.index + 1200);
   const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const missing = skillIds.filter((s) => !new RegExp(`(^|[^a-z0-9-])${esc(s)}(?![a-z0-9-])`).test(list));
   if (missing.length) out.push({ file, what: "ростер на уменията", detail: `не са изброени: ${missing.join(", ")}` });

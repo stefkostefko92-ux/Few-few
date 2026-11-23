@@ -84,7 +84,7 @@ progressionRouter.get(
   "/me",
   asyncHandler(async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.user!.sub } });
-    if (!user) throw unauthorized();
+    if (!user || user.deletedAt) throw unauthorized(); // изтрит (GDPR) акаунт няма профил
     const progress = profileProgress(user.xp);
     res.json({ xp: user.xp, ...progress });
   }),

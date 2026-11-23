@@ -29,6 +29,28 @@
   gap: 8px;
 }
 
+/* Изборът на листа — колкото най-дългата възможност („Foglio da 24 (70 × 37 mm)“ се режеше до стрелката),
+   с вида на полетата на портала (forms.css; без него беше голият списък на браузъра — визуалната проверка,
+   21 ноември 2026) и висок колкото бутоните до него. */
+.etichetta-bar__scelta .select {
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 38px;
+  padding-block: 6px;
+  padding-right: 28px; /* място за стрелката: Chromium смята ширината без него */
+}
+
+/* На телефон надписът стои над избора, а не на три реда до него. */
+@media (max-width: 479px) {
+  .etichetta-bar__scelta {
+    flex-wrap: wrap;
+  }
+
+  .etichetta-bar__scelta label {
+    flex-basis: 100%;
+  }
+}
+
 .etichetta-bar__nota {
   flex-basis: 100%;
   margin: 0;

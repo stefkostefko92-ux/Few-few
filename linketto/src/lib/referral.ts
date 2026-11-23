@@ -40,3 +40,23 @@ export function generateReferralCode(): string {
 export function referralLink(baseUrl: string, locale: string, code: string) {
   return `${baseUrl}/${locale}/register?ref=${code}`;
 }
+
+/**
+ * Задържане на бонуса (abuse-money-spec А2): 14 дни за отказ + буфер за спор и бавно
+ * връщане. Дотогава бонусът е „задържан“ и не влиза в баланса за изплащане.
+ */
+export const REFERRAL_HOLD_DAYS = 30;
+
+export function referralReleaseDue(input: {
+  completedAt: Date | null;
+  orderState: string;
+  withdrawalRequestedAt: Date | null;
+  disputed: boolean;
+  releasedAt: Date | null;
+  reversedAt: Date | null;
+  now: Date;
+}): boolean {
+  if (input.releasedAt || input.reversedAt || input.disputed || input.withdrawalRequestedAt) return false;
+  if (input.orderState !== 'completed' || !input.completedAt) return false;
+  return input.now.getTime() - input.completedAt.getTime() > REFERRAL_HOLD_DAYS * 24 * 60 * 60 * 1000;
+}

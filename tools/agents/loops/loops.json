@@ -10,7 +10,13 @@
       "autonomy": "L1",
       "escalation": "Провал → CI е червен + уведомление; НИЩО не се авто-поправя. Човек/AI-джията решава.",
       "budgetCap": null,
-      "denylist": []
+      "denylist": [],
+      "runtime": "cloud",
+      "connectors": [],
+      "network": "trusted",
+      "secretsInEnv": false,
+      "output": "report",
+      "cloudTask": "Седмичен преглед на агентския слой и кода (облачна планирана задача, понеделник 09:13 Europe/Sofia, среда Default с ограничена мрежа — само пакетни регистри; без конектори; push известие). Заменя седмичния agents-sweep.yml, който няма рънър (19.11.2026)."
     },
     {
       "id": "memory-curation",
@@ -77,6 +83,36 @@
       "network": "trusted",
       "secretsInEnv": false,
       "output": "draft-pr"
+    },
+    {
+      "id": "code-hygiene",
+      "description": "Седмичен доклад за чистотата на продуктовия код (Boris Cherny: рутини за мъртъв код, дубли и покритие): маркери за дълг, дублирани блокове, файлове над 600 реда и дял тестове по продукт. Стъпка в agents-sweep.yml; Качествения чете доклада и предлага рефактор с умението improve-codebase-architecture.",
+      "trigger": "schedule:weekly",
+      "command": "node tools/qa/hygiene.mjs",
+      "owner": "kachestveniyat",
+      "autonomy": "L1",
+      "escalation": "Само доклад — нищо не се пипа автоматично. Рефактор е промяна с поведение-запазващи тестове, по решение на собственика за всеки продукт.",
+      "budgetCap": null,
+      "denylist": [],
+      "runtime": "cloud",
+      "connectors": [],
+      "network": "trusted",
+      "secretsInEnv": false,
+      "output": "report",
+      "cloudTask": "Седмичен преглед на агентския слой и кода (облачна планирана задача, понеделник 09:13 Europe/Sofia, среда Default с ограничена мрежа — само пакетни регистри; без конектори; push известие). Заменя седмичния agents-sweep.yml, който няма рънър (19.11.2026)."
+    },
+    {
+      "id": "ablation-watch",
+      "description": "Ритуал при нов модел (Boris Cherny: при всяко издание махни промпта и върни само реда, който поправя видим провал): сравнява модела, на който флотът реално върви (записите за употреба), с печата tools/agents/evals/ablation.json и печата командите за рамената (live-run --patch). Видим в гейта като доклад.",
+      "trigger": "event:new-model",
+      "command": "node tools/agents/ablation-watch.mjs",
+      "owner": "ai-djiyata",
+      "autonomy": "L1",
+      "escalation": "Нов модел → доклад с командите; самата аблация е скъпа (k≥6 на рамо) и тече само по решение. Ред се маха само при равно качество (golden + verifier + сляпо двойково съдийство); пазачите не са кандидати.",
+      "budgetCap": null,
+      "denylist": [
+        ".claude/hooks/guard-*"
+      ]
     }
   ]
 }

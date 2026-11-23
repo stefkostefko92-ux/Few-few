@@ -245,6 +245,22 @@
       "ai-djiyata",
       "goladjiyata",
       "kodadjiyata"
+    ],
+    "e880aac62e2670a3e3a6989c538d0037f5556f86": [
+      "ai-djiyata",
+      "kodadjiyata"
+    ],
+    "e2decf54d51e239c7a63b90d0f6b5681058f7e6d": [
+      "kodadjiyata",
+      "prodavacha"
+    ],
+    "732ed12758adccc43a0c0c746beb9b6bfbeff916": [
+      "ai-djiyata",
+      "kodadjiyata"
+    ],
+    "06ac45c79f247d6b9036a7223b0db09fc7b7b32d": [
+      "ai-djiyata",
+      "kodadjiyata"
     ]
   },
   "runs": [
@@ -1231,6 +1247,70 @@
       "verdict": "поправки",
       "costUsd": 0.85,
       "date": "2026-10-27"
+    },
+    {
+      "pr": 387,
+      "sha": "e880aac62e2670a3e3a6989c538d0037f5556f86",
+      "agent": "kodadjiyata",
+      "verdict": "чисто",
+      "costUsd": 1.03,
+      "date": "2026-11-15"
+    },
+    {
+      "pr": 387,
+      "sha": "e880aac62e2670a3e3a6989c538d0037f5556f86",
+      "agent": "ai-djiyata",
+      "verdict": "чисто",
+      "costUsd": 1.1,
+      "date": "2026-11-15"
+    },
+    {
+      "pr": 296,
+      "sha": "e2decf54d51e239c7a63b90d0f6b5681058f7e6d",
+      "agent": "kodadjiyata",
+      "verdict": "поправки",
+      "costUsd": 2.31,
+      "date": "2026-11-14"
+    },
+    {
+      "pr": 296,
+      "sha": "e2decf54d51e239c7a63b90d0f6b5681058f7e6d",
+      "agent": "prodavacha",
+      "verdict": "поправки",
+      "costUsd": 1.84,
+      "date": "2026-11-14"
+    },
+    {
+      "pr": 434,
+      "sha": "732ed12758adccc43a0c0c746beb9b6bfbeff916",
+      "agent": "kodadjiyata",
+      "verdict": "поправки",
+      "costUsd": 1.26,
+      "date": "2026-11-19"
+    },
+    {
+      "pr": 434,
+      "sha": "732ed12758adccc43a0c0c746beb9b6bfbeff916",
+      "agent": "ai-djiyata",
+      "verdict": "поправки",
+      "costUsd": 3.29,
+      "date": "2026-11-19"
+    },
+    {
+      "pr": 458,
+      "sha": "06ac45c79f247d6b9036a7223b0db09fc7b7b32d",
+      "agent": "kodadjiyata",
+      "verdict": "поправки",
+      "costUsd": 1.13,
+      "date": "2026-11-23"
+    },
+    {
+      "pr": 458,
+      "sha": "06ac45c79f247d6b9036a7223b0db09fc7b7b32d",
+      "agent": "ai-djiyata",
+      "verdict": "поправки",
+      "costUsd": 1.5,
+      "date": "2026-11-23"
     }
   ]
 }

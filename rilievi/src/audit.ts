@@ -99,6 +99,8 @@ export const AUDIT_ACTIONS = [
   'FORNITORE_DELETE',
   'ORDINE_INVIATO',
   'ORDINE_STATO',
+  // Картата по имейл от страницата ѝ (src/schede/invio.ts): кой и коя карта — без адреса.
+  'SCHEDA_EMAIL',
   // „Buono di lavoro“ (src/buoni/): листът, подписите му (броят, без щрихите), писмото, кодът и клаузата.
   'BUONO_CREATE',
   'BUONO_UPDATE',
@@ -116,6 +118,10 @@ export const AUDIT_ACTIONS = [
   'LISTINO_UPDATE',
   'AZIENDA_PREVENTIVI',
   'AZIENDA_PREVENTIVI_CONDIZIONI',
+  // Регистърът на клиентите на фирмата (src/clienti/): само действието — никога името или данните на клиента.
+  'CLIENTE_CREATE',
+  'CLIENTE_UPDATE',
+  'CLIENTE_DELETE',
   // Анотациите върху снимка на картата (src/allegati/annotazioni.ts): само броят на елементите.
   'ALLEGATO_ANNOTAZIONI',
   // Съобщенията на /stato (src/stato/avvisi.ts): видът, ново ли е, затворено ли е — без текста.
@@ -188,6 +194,7 @@ export interface AuditEntry {
     | 'ordine'
     | 'buono'
     | 'preventivo'
+    | 'cliente'
     | 'avviso'
     | 'posta'
     | 'pagamento'

@@ -19,6 +19,9 @@
       <% } %>
     </select>
   </div>
+  <%# Празен адресник — без падащ списък само с „— Scrivi … —“: бележката казва какво да се направи (визуалната
+      проверка, 16.11.2026); връзката към настройките — за който ги управлява. %>
+  <% if (fornitori.length > 0) { %>
   <div class="field">
     <label class="field__label" for="f-fornitore"><%= t('flusso.invio.fornitore') %></label>
     <select class="select" id="f-fornitore" name="fornitore" aria-describedby="hint-fornitore">
@@ -28,6 +31,9 @@
     </select>
     <p class="field__hint" id="hint-fornitore"><%= t('flusso.invio.rubrica') %></p>
   </div>
+  <% } else { %>
+  <p class="field__hint"><%= t('flusso.invio.rubricaVuota') %><% if (impostazioni) { %> <a href="<%= impostazioni %>"><%= t('flusso.invio.rubricaApri') %></a><% } %></p>
+  <% } %>
   <div class="grid">
     <div class="field">
       <label class="field__label" for="f-nome"><%= t('flusso.invio.nome') %></label>

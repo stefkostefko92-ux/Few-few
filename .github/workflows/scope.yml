@@ -21,5 +21,8 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Scope-check (one project per change)
-        run: node tools/agents/scope-check.mjs --range "origin/${{ github.base_ref }}...HEAD"
+        env:
+          BASE_REF: ${{ github.base_ref }} # през env, не вмъкнато в скрипта
+        run: node tools/agents/scope-check.mjs --range "origin/$BASE_REF...HEAD"

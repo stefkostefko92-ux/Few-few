@@ -6,6 +6,7 @@ import { describe, it } from 'node:test';
 import {
   copiaEmailSchema,
   informativaPerFirma,
+  informativaPerPreventivo,
   informativaSchema,
   modelloInformativa,
 } from '../src/legale/informativa.js';
@@ -40,6 +41,31 @@ describe('the notice on the signature page', () => {
     const azienda = { name: 'A', datiSocietari: null, informativaFirme: 'Il nostro testo.' };
     assert.equal(informativaPerFirma(azienda), 'Il nostro testo.');
     assert.match(informativaPerFirma({ ...azienda, informativaFirme: '  ' }), /^Titolare/);
+  });
+
+  it('fills the notice at the end of a quote, until the company writes its own', () => {
+    // The owner, 14 November 2026: the customers and their contact persons are told who keeps their data
+    // (GDPR art. 13 and 14) on the quote itself; the model is by Правният Разбирач.
+    const azienda = {
+      name: 'Ascensori Prova',
+      datiSocietari: { ragioneSociale: 'Ascensori Prova S.r.l.', email: 'info@prova.it' },
+      informativaPreventivi: null,
+    };
+    const testo = informativaPerPreventivo(azienda);
+    assert.match(
+      testo,
+      /^Titolare del trattamento: Ascensori Prova S\.r\.l\.\. Contatto: info@prova\.it\./,
+    );
+    assert.match(testo, /referente/);
+    assert.match(testo, /Garante per la protezione dei dati personali/);
+    assert.doesNotMatch(testo, /\{\w+\}/);
+    // Not the notice for the signers: another text.
+    assert.notEqual(testo, modelloInformativa(azienda));
+    assert.equal(
+      informativaPerPreventivo({ ...azienda, informativaPreventivi: 'Il nostro testo.' }),
+      'Il nostro testo.',
+    );
+    assert.match(informativaPerPreventivo({ ...azienda, informativaPreventivi: ' ' }), /^Titolare/);
   });
 
   it('cleans what is written and refuses it empty or too long', () => {

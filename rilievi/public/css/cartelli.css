@@ -194,3 +194,18 @@
     grid-column: 1 / -1;
   }
 }
+
+/* Спирането поради опасност: трите дати на уведомяванията — по една колона, етикетите отдолу на една линия
+   (на две или три реда — „Soggetto delle verifiche periodiche informato il“), полетата на една линия; на
+   телефон — една под друга. Преди бяха в шестата част на реда: етикетът на пет реда, годината — отрязана. */
+.grid--avvisi {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: end;
+  margin-top: 14px;
+}
+
+@media (min-width: 720px) {
+  .grid--avvisi {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

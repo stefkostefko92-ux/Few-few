@@ -14,7 +14,9 @@
 // споделени поуки, карта, памет) и след началото на коренния CLAUDE.md (трябва да липсва — omitClaudeMd).
 // Цитатът се сверява със самия източник — налучкан или преразказан отговор не минава.
 // Оценки: критичните spec-ове (Касаджията и Продавача по 3 опита — pass^k) + golden spec-а на всеки агент,
-// чиято дефиниция се е сменила; verifier-ът минава на всеки изход.
+// чиято дефиниция се е сменила; verifier-ът минава на всеки изход. Критичните се пропускат САМО когато са
+// сменени единствено дефиниции на други агенти и са минали в последните CRITICAL_MAX_AGE_DAYS дни при
+// същия CLI (виж criticalNeeded) — резюмето в печата го казва изрично.
 
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync, readdirSync, existsSync, mkdtempSync, rmSync, mkdirSync } from "node:fs";
@@ -49,8 +51,19 @@ export function inputFiles(root = ROOT) {
 }
 
 const sha = (s) => createHash("sha256").update(s).digest("hex");
+// Пропуск 1 (вълна 5): картата на агента носи ИМЕНАТА/модела/усилието на съотборниците от agents.json
+// (teams.mjs#cardFor → names()), а те не са файл-вход. Хешираме само тази ПРОЕКЦИЯ, не целия файл —
+// knowledge.lessons/activity растат при всяко учене и иначе биха обезсилвали печата без промяна в контекста.
+// Пропуск 2 (скил-описания отвъд agent-doctrine): те стигат до агент със `Skill`, но се менят често и
+// носят нисък риск за ФИДЕЛНОСТТА (менюто от умения, не поведението) — пазят се от skills lint +
+// trigger-check, не оттук; да се пренесе тук при доказан дрейф-инцидент.
+export function agentsProjection(agents) {
+  return (agents || []).map((a) => `${a.id}:${a.name}:${a.model}:${a.effort}`).sort().join("\n");
+}
 export function fileHashes(root = ROOT, files = inputFiles(root)) {
-  return Object.fromEntries(files.map((f) => [f, sha(readFileSync(join(root, f)))]));
+  const h = Object.fromEntries(files.map((f) => [f, sha(readFileSync(join(root, f)))]));
+  try { h["agents-dashboard/agents.json#card"] = sha(agentsProjection(JSON.parse(readFileSync(join(root, "agents-dashboard", "agents.json"), "utf8")).agents)); } catch { /* таблото се проверява от oversee */ }
+  return h;
 }
 export function inputsHash(hashes) {
   return sha(Object.entries(hashes).sort(([a], [b]) => a.localeCompare(b)).map(([f, h]) => `${f}\n${h}`).join("\n"));
@@ -64,12 +77,42 @@ export function changedSince(stamp, hashes) {
 }
 
 /** Кои агенти да се пробват и оценят според сменените входове. */
-export function planFor(changed, agentsAll) {
-  const defs = changed.filter((f) => /^\.claude\/agents\/[^_/][^/]*\.md$/.test(f)).map((f) => f.split("/").pop().replace(/\.md$/, ""));
-  const plumbing = changed.some((f) => !/^\.claude\/agents\/[^_/][^/]*\.md$/.test(f));
+// Свежест на критичните (собственика, 2026-11-15: „по-бързо и по-евтино, без да губим нищо“). Пускането им
+// при всяка промяна струваше ~$6.7 и ~6 мин на гейт (85% от гейта при смяна на една дефиниция), а когато са
+// сменени само дефиниции на ДРУГИ агенти, контекстът им е байт по байт същият: картата чете само собствения
+// .md (teams.mjs#canRunTools), съотборниците влизат само с име, куките не вмъкват чужди дефиниции. Затова
+// тогава се пропускат — но поне веднъж на CRITICAL_MAX_AGE_DAYS дни пак тичат, за да не изпуснем дрейф на
+// модела или на паметта им (тя не е във входовете).
+export const CRITICAL_MAX_AGE_DAYS = 7;
+const isDef = (f) => /^\.claude\/agents\/[^_/][^/]*\.md$/.test(f);
+
+/** Кога критичните са минали за последно. Печат отпреди 2026-11-15 (без criticalAt) ги е пускал винаги. */
+export function lastCriticalAt(stamp) {
+  if (!stamp) return null;
+  return stamp.criticalAt || stamp.date || null;
+}
+
+/** Нужни ли са критичните оценки — fail closed: при липсващи данни ги пуска. */
+export function criticalNeeded(changed, { lastCriticalAt: last, today, cliChanged } = {}) {
+  // Ръчно пускане без промени = умишлена пълна повторна проверка (напр. след тиха смяна на модела, която
+  // не сменя версията на CLI) — тогава всичко тича.
+  if (!changed.length) return { need: true, why: "ръчна повторна проверка без промени" };
+  if (changed.some((f) => !isDef(f))) return { need: true, why: "сменен общ вход" };
+  if (changed.some((f) => CRITICAL.some(([a]) => f === `.claude/agents/${a}.md`))) return { need: true, why: "сменена е дефиниция на критичен агент" };
+  if (cliChanged) return { need: true, why: "нова версия на CLI" };
+  if (!last || !today) return { need: true, why: "няма запис кога са минали за последно" };
+  const days = (Date.parse(today) - Date.parse(last)) / 86400000;
+  if (!(days < CRITICAL_MAX_AGE_DAYS)) return { need: true, why: `последната им проверка е отпреди ${Math.round(days)} дни` };
+  return { need: false, why: `входовете им са непроменени; минаха на ${last}` };
+}
+
+export function planFor(changed, agentsAll, ctx = {}) {
+  const defs = changed.filter(isDef).map((f) => f.split("/").pop().replace(/\.md$/, ""));
+  const plumbing = changed.some((f) => !isDef(f));
   const probe = [...new Set([...(plumbing || !defs.length ? CANARIES : []), ...defs])].filter((a) => agentsAll.includes(a));
-  const evals = [...CRITICAL.map(([a, s, k]) => `${a}:${s}:${k}`), ...defs.filter((a) => !CRITICAL.some(([c]) => c === a)).map((a) => `${a}:${a}`)];
-  return { probe, evals: [...new Set(evals)] };
+  const critical = criticalNeeded(changed, ctx);
+  const evals = [...(critical.need ? CRITICAL.map(([a, s, k]) => `${a}:${s}:${k}`) : []), ...defs.filter((a) => !CRITICAL.some(([c]) => c === a)).map((a) => `${a}:${a}`)];
+  return { probe, evals: [...new Set(evals)], critical };
 }
 
 // ── Проба на контекста ──────────────────────────────────────────────────────────────────────────
@@ -190,6 +233,12 @@ function check() {
 async function run() {
   const { claudeAvailable, makeWorktree, runJobs, expandJobs, EVAL_ALLOWED } = await import("./evals/live-run.mjs");
   if (!claudeAvailable()) { console.error("live-gate: няма `claude` CLI с вход — живата проверка не е възможна тук."); return 2; }
+  // Пробите тичат в отделни worktree-та: под MIN_CLI създаването им може да избяга от sandbox-а (2.1.319).
+  const { minCliProblem } = await import("../lib/cli-version.mjs");
+  const cliNow = (() => { try { return execFileSync("claude", ["--version"], { encoding: "utf8" }).trim(); } catch { return "?"; } })();
+  const today = process.env.OVERSEE_TODAY || new Date().toISOString().slice(0, 10);
+  const cliProblem = minCliProblem(cliNow);
+  if (cliProblem) { console.error(`live-gate: ${cliProblem}`); return 2; }
   const files = inputFiles();
   const dirty = execFileSync("git", ["-C", ROOT, "status", "--porcelain", "--", ...files], { encoding: "utf8" }).trim();
   if (dirty) { console.error(`live-gate: има незаписани промени по агентския слой — комитни ги първо (пробата тича върху commit-а):\n${dirty}`); return 2; }
@@ -197,8 +246,10 @@ async function run() {
   const hashes = fileHashes(ROOT, files);
   const agentsAll = files.filter((f) => /^\.claude\/agents\/[^_/][^/]*\.md$/.test(f)).map((f) => f.split("/").pop().replace(/\.md$/, ""));
   const stamp = readStamp();
-  const plan = planFor(stamp ? changedSince(stamp, hashes) : ["(първа проверка)"], agentsAll);
-  console.log(`live-gate · ${ref.slice(0, 9)} · проба: ${plan.probe.join(", ")} · оценки: ${plan.evals.join(", ")}`);
+  const plan = planFor(stamp ? changedSince(stamp, hashes) : ["(първа проверка)"], agentsAll,
+    { lastCriticalAt: lastCriticalAt(stamp), today, cliChanged: !!stamp?.cli && stamp.cli !== cliNow });
+  console.log(`live-gate · ${ref.slice(0, 9)} · проба: ${plan.probe.join(", ")} · оценки: ${plan.evals.join(", ")}` +
+    ` · критичните: ${plan.critical.need ? "да" : "пропуснати"} (${plan.critical.why})`);
 
   const { dir, cleanup } = makeWorktree(ref);
   const out = mkdtempSync(join(tmpdir(), "live-gate-out-"));
@@ -231,16 +282,18 @@ async function run() {
     const evalOk = !!evalSummary && evalSummary.summary.fullPass === evalSummary.summary.specs && passHatOk;
     const ok = probe.every((p) => p.ok) && evalOk && !vfail.length && !missing.length;
     const cost = results.reduce((a, r) => a + r.costUsd, 0);
-    const summary = `проба ${probe.filter((p) => p.ok).length}/${probe.length} · оценки ${evalSummary?.summary.fullPass ?? 0}/${evalSummary?.summary.specs ?? 0}${t ? ` · pass^k ${t.passHatK}/${t.specs}` : ""} · verifier ${vfail.length ? "✗ " + vfail.join(",") : "✓"}`;
+    const summary = `проба ${probe.filter((p) => p.ok).length}/${probe.length} · оценки ${evalSummary?.summary.fullPass ?? 0}/${evalSummary?.summary.specs ?? 0}${t ? ` · pass^k ${t.passHatK}/${t.specs}` : ""} · verifier ${vfail.length ? "✗ " + vfail.join(",") : "✓"}` +
+      (plan.critical.need ? "" : ` · критичните пропуснати (${plan.critical.why})`);
     console.log(`\n${ok ? "✓" : "✗"} live-gate: ${summary} · $${cost.toFixed(2)}`);
     if (!ok) {
       if (evalSummary) for (const r of evalSummary.results.filter((x) => !x.ok)) console.log(`    ✗ ${r.id}${r.trial ? " #" + r.trial : ""}: ${r.checks.filter((c) => !c.ok && !c.advisory).map((c) => c.label).join(" · ")}`);
       console.log(`  изходите: ${out} — прочети ги, преди да обучаваш агент (оценителят също греши). Печат НЕ е записан.`);
       return 1;
     }
-    const cli = (() => { try { return execFileSync("claude", ["--version"], { encoding: "utf8" }).trim(); } catch { return "?"; } })();
-    const date = process.env.OVERSEE_TODAY || new Date().toISOString().slice(0, 10);
-    writeFileSync(STAMP, JSON.stringify({ date, ref, cli, summary, costUsd: +cost.toFixed(2), probe, inputsHash: inputsHash(hashes), files: hashes }, null, 2) + "\n");
+    // criticalAt носи датата напред, когато критичните са пропуснати — иначе таванът на свежестта би
+    // се нулирал от гейт, който изобщо не ги е пускал.
+    const criticalAt = plan.critical.need ? today : lastCriticalAt(stamp);
+    writeFileSync(STAMP, JSON.stringify({ date: today, ref, cli: cliNow, summary, costUsd: +cost.toFixed(2), criticalAt, probe, inputsHash: inputsHash(hashes), files: hashes }, null, 2) + "\n");
     console.log(`  печат: ${relative(ROOT, STAMP)} — комитни го с промяната.`);
     rmSync(out, { recursive: true, force: true });
     return 0;

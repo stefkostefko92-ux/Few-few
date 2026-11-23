@@ -75,6 +75,25 @@ describe('a sign from the scheda of the lift', () => {
     assert.match(again, /id="f-ubicazione"[^>]*value="Scala B"/);
   });
 
+  it('reminds of the extraordinary check for a constructive change, also when the form is refused', async () => {
+    const azienda = await makeAzienda();
+    const scheda = await makeScheda(azienda.id);
+    const { browser } = await signedIn('TECNICO', azienda.id);
+    const titolo = /Modifica costruttiva: serve la verifica straordinaria/;
+    assert.match((await browser.get(`/cartelli/nuovo?scheda=${scheda.id}`)).body, titolo);
+    const refused = await browser.submit(`/cartelli/nuovo?scheda=${scheda.id}`, '/cartelli', {
+      ...SIGN,
+      testo: '',
+      scheda: scheda.id,
+    });
+    assert.equal(refused.status, 422);
+    assert.match(refused.body, titolo);
+    // Without a scheda there is nothing to remind.
+    const plain = await browser.submit('/cartelli/nuovo', '/cartelli', { ...SIGN, testo: '' });
+    assert.equal(plain.status, 422);
+    assert.doesNotMatch(plain.body, titolo);
+  });
+
   it('is found by the search in the form: one hit goes straight to the filled form', async () => {
     const azienda = await makeAzienda();
     const scheda = await makeScheda(azienda.id);

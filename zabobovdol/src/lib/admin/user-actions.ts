@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin, hashPassword } from "@/lib/auth";
+import { requireAdmin, hashPassword, createSession } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
 
 const createSchema = z.object({
@@ -81,12 +81,16 @@ export async function updateUser(userId: string, formData: FormData): Promise<vo
     data.passwordHash = await hashPassword(newPassword);
   }
 
-  await prisma.user.update({ where: { id: userId }, data });
+  const updated = await prisma.user.update({ where: { id: userId }, data });
+  // Нова парола сменя печата на сесиите (auth.ts) → неговите сесии падат. Ако е
+  // собствената — нова сесия тук, за да не изхвърли администратора.
+  if (newPassword && userId === admin.id)
+    await createSession({ id: updated.id, email: updated.email, name: updated.name, role: updated.role });
   await logAudit(admin, {
     action: "UPDATE",
     entity: "User",
     entityId: userId,
-    summary: `Промяна на потребител (${role}${newPassword ? ", нова парола" : ""})`,
+    summary: `Промяна на потребител (${role}${newPassword ? ", нова парола — сесиите му са прекратени" : ""})`,
   });
   revalidatePath("/admin/users");
   redirect("/admin/users?saved=1");
