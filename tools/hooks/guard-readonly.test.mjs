@@ -143,6 +143,21 @@ test("променлива с буквален временен път от съ
     "D=/tmp/a; sh -c 'cat > $D/x'",
     "D=/tmp/../repo; cat > $D/x",
     "DD=/tmp/a; cat > $D/x",
+    // Разбивача, 23.11.2026 (блокер в първата версия): присвояване точно преди команда (`D=v cmd`) НЕ е видимо в
+    // самата команда — `$D` е празно и `${D}/<абсолютен път>` пише в репото.
+    "D=/tmp/x cat > $D/y",
+    "D=/tmp/z cat f > ${D}/home/user/Few-few/poc",
+    "A=/tmp/a B=/tmp/b cat > $B/x",
+    // Присвояване, което може да не се изпълни в текущия шел: след &&, ||, | или на заден план (&).
+    "false && D=/tmp/x; cat > ${D}/home/user/Few-few/poc",
+    "true || D=/tmp/x; cat > ${D}/home/user/Few-few/poc",
+    "echo | D=/tmp/x; cat > ${D}/home/user/Few-few/poc",
+    "D=/tmp/x & cat > ${D}/home/user/Few-few/poc",
+    // Скрито пре-присвояване: eval, source/., printf -v.
+    "D=/tmp/x; eval 'D='; cat > ${D}/home/user/Few-few/poc",
+    "D=/tmp/x; source ./env.sh; cat > ${D}/home/user/Few-few/poc",
+    "D=/tmp/x; . ./env.sh; cat > ${D}/home/user/Few-few/poc",
+    "D=/tmp/x; printf -v D ''; cat > ${D}/home/user/Few-few/poc",
   ]) assert.notEqual(mutationReason(c, { scratch: sc }), "", c);
 });
 
