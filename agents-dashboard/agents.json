@@ -14389,7 +14389,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 361
+        "lessons": 363
       },
       "evolution": [
         {
@@ -14547,9 +14547,20 @@
           "date": "2026-11-23",
           "event": "v35.5 — учене",
           "detail": "Научи: teams.mjs route при равенство вътре в избрания екип, когато водачът не е сред най-висок… (+1 още)"
+        },
+        {
+          "version": "35.7.0",
+          "date": "2026-11-23",
+          "event": "v35.7 — учене",
+          "detail": "Научи: Отвореният код на Cal.com е преименуван на calcom/cal.diy — изцяло MIT, без EE функции … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Отвореният код на Cal.com е преименуван на calcom/cal.diy — изцяло MIT, без EE функции …\" (+1 още) · 2 в карантина"
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
