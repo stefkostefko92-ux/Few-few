@@ -16,6 +16,20 @@
 **Phone (Bulgaria):** +359 877 414 874
 **Website:** https://carbonstealth.eu
 
+## Solutions (four areas)
+
+The services are grouped in four areas; the first two are the main focus.
+Overview: https://carbonstealth.eu/soluzioni/ · https://carbonstealth.eu/en/solutions/ · https://carbonstealth.eu/bg/resheniya/
+
+1. **Business software** — custom ERP, management software and API integrations. Projects: ERP Ascensori (production, warehouse, invoicing, 7 access levels), Rilievi Impianti (lift survey sheets that fill in manufacturers' order forms), Fakturist (Bulgarian e-invoicing, EN 16931 XML).
+   - https://carbonstealth.eu/soluzioni/software-aziendale/ · https://carbonstealth.eu/en/solutions/business-software/ · https://carbonstealth.eu/bg/resheniya/biznes-softuer/
+2. **Industrial technology** — reverse engineering and CAD reconstruction, FDM 3D printing, software that outputs CNC files. Projects: Korpora (cabinet furniture design: cutting list, drilling map, layered DXF R12, G-code for ISO/Fanuc and GRBL), Panev Ascensori (48-item catalogue with a 3D view of every item).
+   - https://carbonstealth.eu/soluzioni/tecnologia-industriale/ · https://carbonstealth.eu/en/solutions/industrial-technology/ · https://carbonstealth.eu/bg/resheniya/industrialni-tehnologii/
+3. **Websites and e-commerce** — websites, online stores, mobile apps, SEO/GEO/AEO, at public prices (see Pricing).
+   - https://carbonstealth.eu/soluzioni/siti-ecommerce/ · https://carbonstealth.eu/en/solutions/websites-ecommerce/ · https://carbonstealth.eu/bg/resheniya/saytove-i-magazini/
+4. **Games and interactive** — real-time multiplayer browser games with server-side rules. Projects: Nexus Dominion, FiveM Bulgaria.
+   - https://carbonstealth.eu/soluzioni/game-interattivo/ · https://carbonstealth.eu/en/solutions/games-interactive/ · https://carbonstealth.eu/bg/resheniya/igri-i-interaktiv/
+
 ## Services
 
 ### Web Development

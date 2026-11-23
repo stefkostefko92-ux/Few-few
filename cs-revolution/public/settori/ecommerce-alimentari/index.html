@@ -52,7 +52,18 @@ a{color:var(--cs-c)}
 .nav img{height:34px!important;width:auto!important}
 .nav>div a{display:inline-block;padding:7px 0}
 /* last nav link (Contatti / Contact / Контакти) = the call to action, like the SPA's ring-glow CTA */
-@media(min-width:901px){.nav>div a:last-child{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}.nav>div a:last-child:hover{background:rgba(0,229,255,.08)}}
+@media(min-width:901px){.nav>div>a:last-child{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}.nav>div>a:last-child:hover{background:rgba(0,229,255,.08)}}
+/* „Soluzioni ▾“ (scripts/solutions-nav.py): четирите направления под връзката към хъба — отварят се с мишка или
+   с клавиатура (:focus-within), без JS; на телефон стоят отворени в менюто */
+.nav-dd{position:relative;display:inline-block}
+.nav-dd-t::after{content:" \25BE";opacity:.7}
+.nav-dd-m{position:absolute;left:0;top:100%;display:none;flex-direction:column;min-width:250px;padding:8px 0;background:rgba(10,12,14,.98);
+  border:1px solid rgba(0,229,255,.25);box-shadow:0 14px 32px rgba(0,0,0,.55);z-index:1003}
+.nav-dd:hover>.nav-dd-m,.nav-dd:focus-within>.nav-dd-m{display:flex}
+.nav .nav-dd-m a{margin:0!important;padding:10px 18px!important;font-size:11px!important;letter-spacing:.08em!important;white-space:nowrap}
+.nav .nav-dd-m a:hover,.nav .nav-dd-m a:focus-visible{background:rgba(0,229,255,.08);color:var(--cs-c)!important}
+.cs-dir{font-size:11px;letter-spacing:.12em;color:var(--cs-ink2);margin-top:10px}
+.cs-games{border-top:1px solid rgba(0,229,255,.14);border-bottom:1px solid rgba(0,229,255,.14);padding:14px 0;margin:28px 0;font-size:12px;letter-spacing:.06em}
 /* portfolio: screenshots were 860px wide one after another; tighter and paired with their text */
 .w>.work-shot{max-width:720px}
 .nav-toggle{display:none}
@@ -111,6 +122,10 @@ a{color:var(--cs-c)}
   .js .nav.open>div>a{flex:none}
   .js .nav.open>div>a:first-child{margin-top:auto}
   .js .nav.open>div>a:last-child{margin-bottom:auto}
+  .js .nav.open .nav-dd{display:flex;flex-direction:column;align-items:center;gap:6px;flex:none}
+  .js .nav.open .nav-dd-t::after{content:none}
+  .js .nav.open .nav-dd-m{position:static;display:flex;gap:6px;min-width:0;padding:0;background:none;border:0;box-shadow:none}
+  .js .nav.open .nav-dd-m a{min-width:210px;font-size:11px!important;padding:10px 20px!important;color:var(--cs-ink2)!important;border-color:rgba(0,229,255,.16)}
   .nav.open .nav-toggle span:nth-child(1){transform:translateY(7px) rotate(45deg)}
   .nav.open .nav-toggle span:nth-child(2){opacity:0}
   .nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
@@ -161,7 +176,7 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 @property --ctr{syntax:'<length>';inherits:false;initial-value:0px}
 @keyframes ctblHint{from{--ctl:0px;--ctr:36px}to{--ctl:36px;--ctr:0px}}
 @supports (animation-timeline:scroll()){.ctbl{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);animation:ctblHint linear both;animation-timeline:scroll(self inline)}.ctbl:focus-visible{-webkit-mask-image:none;mask-image:none}}
-</style></head><body><nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">HOME</a><a href="/chi-siamo/">CHI SIAMO</a><a href="/servizi/sviluppo-siti-web/">SERVIZI</a><a href="/settori/">SETTORI</a><a href="/prezzi/">PREZZI</a><a href="/contatti/">CONTATTI</a></div></nav><div class="hero-s"><div class="w"><div class="tag">// SETTORE</div><h1>Siti Web e Software per E-commerce Alimentari</h1></div></div><div class="w"><p>Vendere cibo online &egrave; diverso da qualsiasi altro e-commerce: entrano in gioco <strong>scadenze, lotti, catena del freddo, peso variabile e normative sulle etichette</strong>. Un produttore alimentare, una cantina, un caseificio o una gastronomia hanno bisogno di un e-commerce pensato per il food, non di un negozio generico adattato alla meno peggio. La differenza si vede nei resi, nei reclami e nella fiducia del cliente.</p><ul><li>Un e-commerce food con prodotti a peso variabile, allergeni ed etichette a norma.</li><li>Gestione di scadenze, lotti e tracciabilità collegata al magazzino.</li><li>Spedizioni refrigerate con finestre di consegna e giorni dedicati ai freschi.</li><li>Abbonamenti e ordini ricorrenti per box, cantine e gastronomie con clienti fedeli.</li></ul>
+</style></head><body><nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">HOME</a><span class="nav-dd"><a href="/soluzioni/" class="nav-dd-t">SOLUZIONI</a><span class="nav-dd-m"><a href="/soluzioni/software-aziendale/">Software aziendale</a><a href="/soluzioni/tecnologia-industriale/">Tecnologia industriale</a><a href="/soluzioni/siti-ecommerce/">Siti ed e-commerce</a><a href="/soluzioni/game-interattivo/">Game e interattivo</a></span></span><a href="/settori/">SETTORI</a><a href="/case-study/">CASE STUDY</a><a href="/prezzi/">PREZZI</a><a href="/chi-siamo/">CHI SIAMO</a><a href="/contatti/">CONTATTI</a></div></nav><div class="hero-s"><div class="w"><div class="tag">// SETTORE</div><h1>Siti Web e Software per E-commerce Alimentari</h1></div></div><div class="w"><p>Vendere cibo online &egrave; diverso da qualsiasi altro e-commerce: entrano in gioco <strong>scadenze, lotti, catena del freddo, peso variabile e normative sulle etichette</strong>. Un produttore alimentare, una cantina, un caseificio o una gastronomia hanno bisogno di un e-commerce pensato per il food, non di un negozio generico adattato alla meno peggio. La differenza si vede nei resi, nei reclami e nella fiducia del cliente.</p><ul><li>Un e-commerce food con prodotti a peso variabile, allergeni ed etichette a norma.</li><li>Gestione di scadenze, lotti e tracciabilità collegata al magazzino.</li><li>Spedizioni refrigerate con finestre di consegna e giorni dedicati ai freschi.</li><li>Abbonamenti e ordini ricorrenti per box, cantine e gastronomie con clienti fedeli.</li></ul>
 <h2>L'e-commerce alimentare</h2>
 <p>Realizziamo <a href="/servizi/ecommerce/">e-commerce per il food</a> (da <strong>€1.825 + IVA</strong>) con gestione di prodotti a peso variabile, allergeni ed etichette a norma, date di scadenza, vendita per confezione o sfuso e spedizioni con corriere refrigerato dove serve. Integriamo pagamenti, calcolo spedizioni per zona e gestione degli ordini freschi con giorni di consegna dedicati.</p>
 <h2>Lotti, scadenze e tracciabilit&agrave;</h2>
