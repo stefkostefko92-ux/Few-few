@@ -910,3 +910,5 @@
 {"t":"start","ts":"2026-11-23T12:40:33.077Z","id":"r05dda047","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-23T12:40:33.077Z","id":"r05dda047","from":"kodadjiyata","to":"човек","status":"има бележки","run":"50a18384"}
 {"t":"handoff","ts":"2026-11-23T12:43:40.095Z","id":"r05dda047","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"6b596719"}
+{"t":"start","ts":"2026-11-23T13:17:05.903Z","id":"r71083b9e","flow":"авто","lead":"socialdjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-23T13:17:05.904Z","id":"r71083b9e","from":"socialdjiyata","to":"човек","status":"има бележки","run":"06a450c3"}
