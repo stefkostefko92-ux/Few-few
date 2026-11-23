@@ -73,6 +73,17 @@ test("collect + renderJs: броячи по ниво и валиден JS за �
   assert.equal(w.WAITING.items[0].ref, "#9");
 });
 
+// Проба в Chromium (23.11.2026): шестте решения на собственика стояха под 7 PR-а от юни и юли. В едно ниво редът е
+// решение → таван/твърдение/жив гейт → PR → поток: изричното питане към човека е най-горе.
+test("collect: в едно ниво решенията са първи, потоците — последни", () => {
+  const dec = JSON.stringify({ t: "handoff", id: "f1", ts: "2026-11-23T10:00:00Z", from: "ai-djiyata", to: "човек", status: "наред", note: "решение: таванът" });
+  const out = collect({ prs: [{ number: 1, title: "стар", draft: false, head: { ref: "a" }, updated_at: "2026-07-01T00:00:00Z" }],
+    flowLines: [JSON.stringify({ t: "start", id: "f1", flow: "решение", lead: "ai-djiyata" }), dec],
+    reg: { ttlDays: 60, claims: [] }, changed: ["x"], spend: { byAgent: {}, fleet: 0 }, cfg: null, now: NOW, prsAt: "2026-11-23" });
+  const act = out.items.filter((i) => i.level === "действие").map((i) => i.kind);
+  assert.deepEqual(act, ["решение", "жив гейт", "PR"]);
+});
+
 test("budgetItems ползва правилото на куката — одобрението за месеца сваля „спешно“", () => {
   const cfg = { warnAt: 0.8, default: 100, agents: { kodadjiyata: 400 }, generic: 50, fleet: 1500, approved: { "2026-11": { kodadjiyata: 200, fleet: 500 } } };
   const items = budgetItems({ byAgent: { kodadjiyata: 450 }, fleet: 1600 }, cfg, "2026-11");

@@ -22,6 +22,10 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..");
 export const OUT = join(ROOT, "agents-dashboard", "waiting.js");
 const LEVELS = ["спешно", "действие", "внимание", "инфо"];
+// В едно ниво: изричното питане към човека първо, сигналите на гейта после, PR-ите, накрая потоците (проба в Chromium,
+// 23.11.2026: решенията стояха под 7 PR-а от юни и юли).
+const KINDS = ["решение", "таван", "твърдение", "жив гейт", "PR", "поток"];
+const kindRank = (k) => { const i = KINDS.indexOf(k); return i < 0 ? KINDS.length : i; };
 const DAY = 86_400_000;
 
 /** Отворените PR-и: готовите — действие; зависимостите — внимание; черновите — инфо. */
@@ -132,7 +136,7 @@ export function collect({ prs = [], flowLines = [], reg = null, changed = [], sp
   const items = [
     ...prItems(prs, { now }), ...flowItems(flowLines, { now, names }), ...claimItems(reg, { today: now.toISOString().slice(0, 10) }),
     ...[liveGateItem(changed)].filter(Boolean), ...budgetItems(spend, cfg, m),
-  ].sort((a, b) => LEVELS.indexOf(a.level) - LEVELS.indexOf(b.level));
+  ].sort((a, b) => LEVELS.indexOf(a.level) - LEVELS.indexOf(b.level) || kindRank(a.kind) - kindRank(b.kind));
   const counts = { total: items.length };
   for (const l of LEVELS) counts[l] = items.filter((i) => i.level === l).length;
   // Суровата снимка на PR-ите се пази, за да може следващото пускане без `--prs` да я преизползва.
