@@ -60,6 +60,35 @@ test("рутинг: ключът е начало на дума, не подни�
   assert.equal(route("деплойни medqr").team, "pusk");
 });
 
+// AI-джията, 23.11.2026: „доставчикът по ДДС при продажба през App Store“ отиваше при Тайния агент —
+// равенство 1:1 с Данъчника вътре в екипа се решаваше мълчаливо по реда на членовете, без „РАВНО“.
+test("рутинг: равенство между двама членове на екипа се вижда (agentTie), не се решава тихо", () => {
+  const T = {
+    fallback: "c",
+    teams: [{ id: "x", lead: "c", members: ["c", "a", "b"], keys: [] }],
+    agents: { a: { keys: ["alpha"] }, b: { keys: ["beta"] }, c: { keys: [] } },
+  };
+  const r = route("alpha beta", T);
+  assert.equal(r.agentTie, true);
+  assert.deepEqual([r.agent, r.agentRival].sort(), ["a", "b"]);
+  const clear = route("alpha", T);
+  assert.equal(clear.agentTie, false);
+  assert.equal(clear.agent, "a");
+  // Водачът печели равенството си без тревога — това е съзнателното правило.
+  const T2 = { ...T, agents: { ...T.agents, c: { keys: ["alpha"] } } };
+  assert.equal(route("alpha", T2).agent, "c");
+  assert.equal(route("alpha", T2).agentTie, false);
+});
+
+test("рутинг: примерите от прегледа на флота стигат до собственика си", () => {
+  assert.equal(route("кой е доставчикът по ДДС при продажба през App Store").agent, "danachnika");
+  assert.equal(route("prompt injection атака срещу нашите агенти").agent, "razbivacha");
+  assert.equal(route("защо сайтът не се индексира в Google").agent, "seo");
+  assert.equal(route("изтичане на тайна в git история").agent, "strazhata");
+  assert.equal(route("правило за бела в играта на сървъра").agent, "igrodelets");
+  assert.equal(route("пентест на login формата на нашия сайт преди пуск").agent, "razbivacha");
+});
+
 test("рутинг: нищо не хвана → водачът на флота", () => {
   const r = route("направи ми кафе");
   assert.equal(r.fallback, true);
