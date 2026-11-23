@@ -10,8 +10,8 @@ Firefox пакетът е същият код с друг manifest (`tools/packa
 
 1. `bash tools/package.sh` → `dist/` съдържа `-firefox.zip` и `-source.zip` (изходният код от HEAD
    през `git archive` — комитни преди това).
-2. `npx web-ext@8 lint --source-dir <разархивиран -firefox.zip>` → **0 грешки** (6.1.0 на 13 ноември 2026:
-   0 грешки, 20 предупреждения, 0 бележки; +5 спрямо 5.8.0 — същите `getMatchedRules` /
+2. `npx web-ext@8 lint --source-dir <разархивиран -firefox.zip>` → **0 грешки** (6.1.1 на 23 ноември 2026:
+   0 грешки, 20 предупреждения, 0 бележки — същите като в 6.1.0; +5 спрямо 5.8.0 — същите `getMatchedRules` /
    `onRuleMatchedDebug`, ползвани и от „Who we stopped“, който във Firefox е скрит). Очакваните предупреждения и какво да кажеш за тях:
    - `UNSUPPORTED_API` `getMatchedRules` / `onRuleMatchedDebug` — липсват във Firefox; кодът проверява
      за тях и popup-ът скрива дневника „Блокирано на тази страница“;
