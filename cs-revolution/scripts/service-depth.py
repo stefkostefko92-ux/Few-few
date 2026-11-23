@@ -182,10 +182,12 @@ LASTMOD = "2026-10-08"   # дата на реалното съдържание; 
 
 
 def bump_lastmod(sitemap, locs):
+    """Само напред: по-нова дата (друга промяна по страницата) остава — иначе всеки пуск на веригата я връщаше назад."""
     s = open(sitemap, encoding="utf-8").read()
     o = s
     for loc in locs:
-        o = re.sub(r"(<loc>" + re.escape(loc) + r"</loc><lastmod>)[^<]*(</lastmod>)", r"\g<1>" + LASTMOD + r"\g<2>", o)
+        o = re.sub(r"(<loc>" + re.escape(loc) + r"</loc><lastmod>)([^<]*)(</lastmod>)",
+                   lambda m: m.group(1) + max(m.group(2), LASTMOD) + m.group(3), o)
     if o != s:
         open(sitemap, "w", encoding="utf-8").write(o)
 

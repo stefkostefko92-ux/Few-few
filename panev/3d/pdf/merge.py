@@ -15,7 +15,8 @@
 - page labels follow the printed numbers ("14", "14 · 3D", ..., the summary "67" to "69");
 - the logo is the owner's new one on every page (logo.py);
 - "Proprietà intellettuale di Panev Ascensori SAS" in every footer but the cover's and on every
-  technical drawing (notice.py; the renders carry it from their sheets).
+  technical drawing (notice.py; the renders carry it from their sheets);
+- the document language is set (it-IT) and every printed "panevascensori.it" and e-mail address is a link.
 Every other thing stays as it is: drawings, dimensions, ranges, tables and prices.
 Writes dist/pdf/catalogo-staffe-panev-2026.pdf."""
 import json
@@ -89,6 +90,18 @@ doc.set_page_labels([{"startpage": pos, "prefix": lab, "style": "", "firstpagenu
 kind, value = doc.xref_get_key(doc.pdf_catalog(), "PageLabels")
 doc.xref_set_key(doc.pdf_catalog(), "PageLabels", value.replace("\\302\\267", "\\267"))
 notice.apply(doc, gen, stamps)  # the intellectual property notice, by the labels (notice.py)
+
+# The document says which language it is in (screen readers, search engines), and the site's address
+# and the e-mail are links wherever a page prints them: the PDF travels on its own, as an advert.
+SITE, MAIL = "https://panevascensori.it/", "info@panevascensori.it"
+doc.xref_set_key(doc.pdf_catalog(), "Lang", "(it-IT)")  # set_language() keeps the language only, without the region
+for page in doc:
+    taken = [pymupdf.Rect(lk["from"]) for lk in page.get_links() if lk.get("uri")]
+    for word, uri in ((MAIL, f"mailto:{MAIL}"), ("panevascensori.it", SITE)):  # the e-mail first: it holds the site's name
+        for hit in page.search_for(word):
+            if not any(hit.intersects(r) for r in taken):
+                page.insert_link({"kind": pymupdf.LINK_URI, "from": hit, "uri": uri})
+                taken.append(hit)
 
 out = os.path.join(OUT, "catalogo-staffe-panev-2026.pdf")
 doc.save(out, garbage=4, deflate=True)

@@ -87,6 +87,164 @@ L = {
 # CTA are added by the renderer.
 
 SECTORS = [
+# асансьорният бранш — само факти от ERP Ascensori, panev/ и rilievi/ (без клиенти и резултати)
+dict(**{'slug': 'ascensori',
+ 'related': ['produzione-industria', 'artigiani-officine', 'servizi-professionali'],
+ 'keywords': {'it': 'software per aziende ascensoristiche, gestionale per aziende ascensori, ERP ascensori, rilievi impianti ascensori, catalogo B2B componenti ascensori, Carbon Stealth',
+              'en': 'software for elevator companies, elevator company management software, elevator ERP, elevator installation surveys, B2B elevator parts catalog, Carbon Stealth',
+              'bg': 'софтуер за асансьорни фирми, управленска система за асансьори, ERP за асансьори, огледи на асансьорни уредби, B2B каталог за асансьорни части, Carbon Stealth'},
+ 'names': {'it': 'Aziende Ascensoristiche', 'en': 'Elevator Companies', 'bg': 'Асансьорни Фирми'},
+ 'tagline': {'it': 'ERP di produzione, rilievi impianti e cataloghi B2B: tre sistemi reali per il settore.',
+             'en': 'Production ERP, installation surveys and B2B catalogs: three real systems for the sector.',
+             'bg': 'Производствен ERP, огледи на уредби и B2B каталози: три реални системи за бранша.'},
+ 'it': {'desc': 'Software per aziende ascensoristiche: ERP di produzione, portale rilievi impianti e siti B2B con catalogo. Tre sistemi reali in '
+                'uso. Preventivo in 24 ore.',
+        'body': '<p>Costruttori, installatori e manutentori di ascensori lavorano con commesse lunghe, componenti su misura, sopralluoghi tecnici e '
+                'norme precise. I programmi generici non seguono questi flussi e i dati finiscono tra fogli Excel, moduli di carta e telefonate. Per '
+                'questo settore abbiamo già costruito tre sistemi che sono in uso oggi.</p>\n'
+                '<h2>ERP per la produzione di ascensori</h2>\n'
+                '<p>Per un produttore italiano di ascensori abbiamo realizzato un <a href="/servizi/erp/">ERP su misura</a> che segue ogni commessa '
+                'attraverso le fasi di produzione e collega il magazzino (carichi, scarichi e giacenze per commessa) alla fatturazione, senza '
+                "reinserimenti manuali. Sette livelli di accesso vanno dall'operatore di reparto alla direzione, e le dashboard di business "
+                'intelligence dicono quante commesse sono in corso e cosa manca a magazzino. Stack: React, Prisma, PostgreSQL. <a '
+                'href="/case-study/erp-ascensori/">Leggi il case study</a>.</p>\n'
+                '<img class="work-shot" src="/work/erp-ascensori.webp" srcset="/work/erp-ascensori-480.webp 480w, /work/erp-ascensori.webp 960w" '
+                'sizes="(max-width:900px) 100vw, 860px" width="960" height="600" loading="lazy" decoding="async" alt="Schermata dell\'ERP per un '
+                'produttore di ascensori">\n'
+                '<h2>Sito B2B e catalogo per componenti</h2>\n'
+                '<p>Per Panev Ascensori, produttore di staffe brevettate per porte di piano e guide del contrappeso (brevetto UIBM N. '
+                '202023000002112), abbiamo realizzato il nuovo sito in italiano, inglese e bulgaro: i 48 articoli del listino con codici e prezzi, '
+                "il catalogo PDF da sfogliare e scaricare, una vista 3D fotorealistica di ogni articolo e un elenco d'ordine che il cliente B2B "
+                'invia per email, senza carrello e senza cookie. Il sito è online su <a href="https://panevascensori.it" '
+                'rel="noopener">panevascensori.it</a>.</p>\n'
+                '<img class="work-shot" src="/work/panev-ascensori.webp" srcset="/work/panev-ascensori-480.webp 480w, /work/panev-ascensori.webp '
+                '960w" sizes="(max-width:900px) 100vw, 860px" width="960" height="600" loading="lazy" decoding="async" alt="Schermata del sito di '
+                'Panev Ascensori">\n'
+                '<h2>Rilievi impianti e interventi in digitale</h2>\n'
+                '<p><a href="https://rilievi.carbonstealth.eu" rel="noopener">Rilievi Impianti</a> è il nostro portale per le aziende che fanno '
+                "sopralluoghi e ammodernamenti: la scheda di rilievo dell'impianto si compila dal browser, anche da tablet, con foto, video e "
+                "schizzi a mano in ogni sezione, e si stampa in A4 o in PDF. Le schede d'ordine dei fornitori (Pelazza, MoviLift, DMG, Mastech, "
+                'Elettroquadri) si compilano dai dati del rilievo; il modulo di pronto intervento si firma con il dito da tecnico e cliente. Il '
+                'portale gestisce più aziende, ognuna con i propri utenti, ruoli e logo, e prepara anche le offerte dal listino. Nella scheda '
+                'trovano posto anno, marcatura CE e dati di targa, con i riferimenti a DM 23/07/2009, UNI 10411 e DPR 162/1999.</p>\n'
+                '<img class="work-shot" src="/work/rilievi.webp" srcset="/work/rilievi-480.webp 480w, /work/rilievi.webp 960w" '
+                'sizes="(max-width:900px) 100vw, 860px" width="960" height="600" loading="lazy" decoding="async" alt="Schermata del portale Rilievi '
+                'Impianti">\n'
+                '<h2>Cosa possiamo costruire per la tua azienda</h2>\n'
+                "<p>Partiamo dai tuoi flussi reali: la commessa, il sopralluogo, l'ordine ai fornitori, il magazzino, la fattura. Un <a "
+                'href="/servizi/erp/">gestionale su misura</a> parte da <strong>€5.000</strong>, un <a href="/servizi/sviluppo-siti-web/">sito '
+                'aziendale</a> da <strong>€1.575 + IVA</strong>; le integrazioni con i sistemi che usi già passano dal <a '
+                'href="/servizi/sviluppo-software/">software su misura</a>.</p>',
+        'faqs': [('Sviluppate software per aziende ascensoristiche?',
+                  'Sì. Abbiamo realizzato un ERP su misura per un produttore italiano di ascensori, il sito B2B con catalogo di Panev Ascensori e '
+                  'Rilievi Impianti, il portale per i rilievi degli impianti. Tutti e tre sono in uso.'),
+                 ("Quanto costa un gestionale per un'azienda di ascensori?",
+                  'Un gestionale su misura parte da €5.000; il prezzo dipende dai moduli (produzione, magazzino, fatturazione, rilievi) e dalle '
+                  'integrazioni. Il preventivo è gratuito e arriva entro 24 ore.'),
+                 ('Come si accede a Rilievi Impianti?',
+                  "Il portale è su invito: dalla pagina pubblica rilievi.carbonstealth.eu si richiede l'accesso per la propria azienda, che poi ha i "
+                  'propri utenti e ruoli.'),
+                 ('Il software tiene conto delle norme del settore?',
+                  'La scheda di rilievo prevede i dati e i riferimenti di DM 23/07/2009, UNI 10411 e DPR 162/1999. La verifica di conformità '
+                  "dell'impianto resta in capo al tecnico abilitato.")]},
+ 'en': {'desc': 'Software for elevator companies: production ERP, an installation survey portal and B2B catalog websites. Three real systems in use. '
+                'Quote within 24 hours.',
+        'body': '<p>Elevator manufacturers, installers and maintenance companies work with long orders, custom components, technical site surveys '
+                "and precise standards. Generic software doesn't follow these flows, and data ends up in spreadsheets, paper forms and phone calls. "
+                'For this sector we have already built three systems that are in use today.</p>\n'
+                '<h2>ERP for elevator production</h2>\n'
+                '<p>For an Italian elevator manufacturer we built a <a href="/en/services/erp/">custom ERP</a> that follows every order through its '
+                'production stages and connects the warehouse (stock in, stock out and levels per order) with invoicing, with no manual re-entry. '
+                'Seven access levels run from the shop-floor operator to management, and business intelligence dashboards show how many orders are '
+                'in progress and what is missing from stock. Stack: React, Prisma, PostgreSQL. <a href="/en/case-studies/erp-ascensori/">Read the '
+                'case study</a>.</p>\n'
+                '<img class="work-shot" src="/work/erp-ascensori.webp" srcset="/work/erp-ascensori-480.webp 480w, /work/erp-ascensori.webp 960w" '
+                'sizes="(max-width:900px) 100vw, 860px" width="960" height="600" loading="lazy" decoding="async" alt="Screenshot of the ERP for an '
+                'elevator manufacturer">\n'
+                '<h2>B2B website and component catalog</h2>\n'
+                '<p>For Panev Ascensori, a manufacturer of patented brackets for landing doors and counterweight guides (UIBM patent No. '
+                '202023000002112), we built the new site in Italian, English and Bulgarian: the 48 catalog items with codes and prices, a PDF '
+                'catalog to browse and download, a photorealistic 3D view of every item and an order list the B2B customer sends by email, with no '
+                'cart and no cookies. The site is live at <a href="https://panevascensori.it" rel="noopener">panevascensori.it</a>.</p>\n'
+                '<img class="work-shot" src="/work/panev-ascensori.webp" srcset="/work/panev-ascensori-480.webp 480w, /work/panev-ascensori.webp '
+                '960w" sizes="(max-width:900px) 100vw, 860px" width="960" height="600" loading="lazy" decoding="async" alt="Screenshot of the Panev '
+                'Ascensori website">\n'
+                '<h2>Installation surveys and service calls, digital</h2>\n'
+                '<p><a href="https://rilievi.carbonstealth.eu" rel="noopener">Rilievi Impianti</a> is our portal for companies that survey and '
+                'modernize installations: the installation survey sheet is filled in from the browser, tablets included, with photos, videos and '
+                'hand sketches in every section, and prints on A4 or as a PDF. Supplier order sheets (Pelazza, MoviLift, DMG, Mastech, '
+                'Elettroquadri) are filled from the survey data; the emergency service form is signed with a finger by the technician and the '
+                'customer. The portal handles several companies, each with its own users, roles and logo, and also prepares quotes from the price '
+                'list. The survey sheet has room for year, CE marking and nameplate data, with references to DM 23/07/2009, UNI 10411 and DPR '
+                '162/1999.</p>\n'
+                '<img class="work-shot" src="/work/rilievi.webp" srcset="/work/rilievi-480.webp 480w, /work/rilievi.webp 960w" '
+                'sizes="(max-width:900px) 100vw, 860px" width="960" height="600" loading="lazy" decoding="async" alt="Screenshot of the Rilievi '
+                'Impianti portal">\n'
+                '<h2>What we can build for your company</h2>\n'
+                '<p>We start from your real flows: the order, the survey, the supplier order, the warehouse, the invoice. A <a '
+                'href="/en/services/erp/">custom management system</a> starts at <strong>€5,000</strong>, a <a '
+                'href="/en/services/web-development/">business website</a> at <strong>€1,575 + VAT</strong>; integrations with the systems you '
+                'already use go through <a href="/en/services/software-development/">custom software</a>.</p>',
+        'faqs': [('Do you develop software for elevator companies?',
+                  'Yes. We built a custom ERP for an Italian elevator manufacturer, the B2B catalog website of Panev Ascensori and Rilievi Impianti, '
+                  'the portal for installation surveys. All three are in use.'),
+                 ('How much does management software for an elevator company cost?',
+                  'Custom management software starts at €5,000; the price depends on the modules (production, warehouse, invoicing, surveys) and on '
+                  'integrations. The quote is free and arrives within 24 hours.'),
+                 ('How do I get access to Rilievi Impianti?',
+                  'The portal is invitation-only: from the public page rilievi.carbonstealth.eu you request access for your company, which then has '
+                  'its own users and roles.'),
+                 ("Does the software take the sector's standards into account?",
+                  "The survey sheet includes the data and references of DM 23/07/2009, UNI 10411 and DPR 162/1999. Checking the installation's "
+                  'compliance remains the job of the qualified technician.')]},
+ 'bg': {'desc': 'Софтуер за асансьорни фирми: производствен ERP, портал за огледи на уредби и B2B сайтове с каталог. Три реални системи в употреба. '
+                'Оферта до 24 часа.',
+        'body': '<p>Производителите, монтажниците и фирмите за поддръжка на асансьори работят с дълги поръчки, компоненти по мярка, технически '
+                'огледи и точни норми. Общите програми не следват тези процеси и данните остават в Excel таблици, хартиени формуляри и телефонни '
+                'разговори. За този бранш вече изградихме три системи, които се ползват днес.</p>\n'
+                '<h2>ERP за производството на асансьори</h2>\n'
+                '<p>За италиански производител на асансьори изработихме <a href="/bg/uslugi/erp/">ERP по поръчка</a>, който следи всяка поръчка през '
+                'етапите на производството и свързва склада (приход, разход и наличности по поръчка) с фактурирането, без повторно въвеждане. Седем '
+                'нива на достъп стигат от оператора в цеха до ръководството, а BI таблата показват колко поръчки са в ход и какво липсва в склада. '
+                'Стек: React, Prisma, PostgreSQL. <a href="/bg/keys-studii/erp-ascensori/">Прочетете кейс студията</a>.</p>\n'
+                '<img class="work-shot" src="/work/erp-ascensori.webp" srcset="/work/erp-ascensori-480.webp 480w, /work/erp-ascensori.webp 960w" '
+                'sizes="(max-width:900px) 100vw, 860px" width="960" height="600" loading="lazy" decoding="async" alt="Екран от ERP системата за '
+                'производител на асансьори">\n'
+                '<h2>B2B сайт и каталог за компоненти</h2>\n'
+                '<p>За Panev Ascensori, производител на патентовани планки за етажни врати и водачи на противотежестта (патент UIBM № '
+                '202023000002112), направихме новия сайт на италиански, английски и български: 48-те артикула от ценоразписа с кодове и цени, PDF '
+                'каталог за разглеждане и сваляне, фотореалистичен 3D изглед на всеки артикул и списък за поръчка, който B2B клиентът изпраща по '
+                'имейл, без количка и без бисквитки. Сайтът е на <a href="https://panevascensori.it" rel="noopener">panevascensori.it</a>.</p>\n'
+                '<img class="work-shot" src="/work/panev-ascensori.webp" srcset="/work/panev-ascensori-480.webp 480w, /work/panev-ascensori.webp '
+                '960w" sizes="(max-width:900px) 100vw, 860px" width="960" height="600" loading="lazy" decoding="async" alt="Екран от сайта на Panev '
+                'Ascensori">\n'
+                '<h2>Огледи на уредби и интервенции, дигитално</h2>\n'
+                '<p><a href="https://rilievi.carbonstealth.eu" rel="noopener">Rilievi Impianti</a> е нашият портал за фирми, които правят огледи и '
+                'модернизации: картата за оглед на уредбата се попълва от браузъра, включително от таблет, със снимки, клипове и скици на ръка във '
+                'всеки раздел, и се печата на A4 или като PDF. Листовете за поръчка към доставчиците (Pelazza, MoviLift, DMG, Mastech, '
+                'Elettroquadri) се попълват от данните от огледа, а листът за аварийна интервенция се подписва с пръст от техника и клиента. '
+                'Порталът обслужва няколко фирми, всяка със свои потребители, роли и лого, и подготвя оферти по ценоразписа. В картата има място за '
+                'годината, CE маркировката и данните от табелата, с препратки към DM 23/07/2009, UNI 10411 и DPR 162/1999.</p>\n'
+                '<img class="work-shot" src="/work/rilievi.webp" srcset="/work/rilievi-480.webp 480w, /work/rilievi.webp 960w" '
+                'sizes="(max-width:900px) 100vw, 860px" width="960" height="600" loading="lazy" decoding="async" alt="Екран от портала Rilievi '
+                'Impianti">\n'
+                '<h2>Какво можем да изградим за вашата фирма</h2>\n'
+                '<p>Започваме от реалните ви процеси: поръчката, огледа, заявката към доставчика, склада, фактурата. <a '
+                'href="/bg/uslugi/erp/">Управленска система по поръчка</a> започва от <strong>€5000</strong>, <a '
+                'href="/bg/uslugi/web-razrabotka/">фирмен сайт</a> — от <strong>€1890 с ДДС</strong>; интеграциите със системите, които вече '
+                'ползвате, минават през <a href="/bg/uslugi/softuer/">софтуер по поръчка</a>.</p>',
+        'faqs': [('Разработвате ли софтуер за асансьорни фирми?',
+                  'Да. Изработихме ERP по поръчка за италиански производител на асансьори, B2B сайта с каталог на Panev Ascensori и Rilievi Impianti '
+                  '— портала за огледи на уредби. И трите се ползват.'),
+                 ('Колко струва управленска система за асансьорна фирма?',
+                  'Системата по поръчка започва от €5000; цената зависи от модулите (производство, склад, фактуриране, огледи) и от интеграциите. '
+                  'Офертата е безплатна и идва до 24 часа.'),
+                 ('Как се получава достъп до Rilievi Impianti?',
+                  'Порталът е само с покана: от публичната страница rilievi.carbonstealth.eu заявявате достъп за фирмата си, която после има свои '
+                  'потребители и роли.'),
+                 ('Съобразен ли е софтуерът с нормите в бранша?',
+                  'Картата за оглед предвижда данните и препратките по DM 23/07/2009, UNI 10411 и DPR 162/1999. Проверката за съответствие на '
+                  'уредбата остава задача на правоспособния техник.')]}}),
 
 # 1 ── Ristoranti ────────────────────────────────────────────────
 dict(slug="ristoranti", related=["hotel-turismo", "ecommerce-alimentari", "artigiani-officine"],
@@ -675,7 +833,7 @@ dict(slug="ecommerce-alimentari", related=["ristoranti", "moda-abbigliamento", "
    en="Selling food online with fresh delivery, batches and expiry dates.",
    bg="Продажба на храна онлайн с пресни доставки, партиди и срокове."),
  it=dict(
-  desc="E-commerce per prodotti alimentari, gestione lotti, scadenze e spedizioni refrigerate per produttori, cantine e negozi di gastronomia. Da €1.825 + IVA, preventivo gratuito in 24 ore.",
+  desc="E-commerce alimentare con gestione lotti, scadenze e spedizioni refrigerate per produttori, cantine e gastronomie. Da €1.825 + IVA, preventivo in 24 ore.",
   body="""<p>Vendere cibo online &egrave; diverso da qualsiasi altro e-commerce: entrano in gioco <strong>scadenze, lotti, catena del freddo, peso variabile e normative sulle etichette</strong>. Un produttore alimentare, una cantina, un caseificio o una gastronomia hanno bisogno di un e-commerce pensato per il food, non di un negozio generico adattato alla meno peggio. La differenza si vede nei resi, nei reclami e nella fiducia del cliente.</p>
 <h2>L'e-commerce alimentare</h2>
 <p>Realizziamo <a href="/servizi/ecommerce/">e-commerce per il food</a> (da <strong>€1.825 + IVA</strong>) con gestione di prodotti a peso variabile, allergeni ed etichette a norma, date di scadenza, vendita per confezione o sfuso e spedizioni con corriere refrigerato dove serve. Integriamo pagamenti, calcolo spedizioni per zona e gestione degli ordini freschi con giorni di consegna dedicati.</p>
@@ -709,7 +867,7 @@ dict(slug="ecommerce-alimentari", related=["ristoranti", "moda-abbigliamento", "
    ("Do you handle refrigerated shipping?", "Yes. We integrate cold-chain couriers, delivery windows and dedicated days for shipping fresh goods, so the product arrives intact. We also configure zone-based shipping costs and free-shipping thresholds."),
   ]),
  bg=dict(
-  desc="Онлайн магазин за хранителни продукти, управление на партиди, срокове и хладилни доставки за производители, винарни и деликатесни магазини. От €2190 с ДДС, безплатна оферта до 24 часа.",
+  desc="Онлайн магазин за храни с партиди, срокове и хладилни доставки за производители, винарни и деликатесни магазини. От €2190 с ДДС, безплатна оферта до 24 часа.",
   body="""<p>Продажбата на храна онлайн е различна от всеки друг онлайн магазин: намесват се <strong>срокове на годност, партиди, хладилна верига, променливо тегло и изисквания за етикети</strong>. Хранителният производител, винарната, мандрата или деликатесният магазин имат нужда от онлайн магазин, направен за храна, а не от общ магазин, натъкмен как да е. Разликата се вижда във връщанията, оплакванията и доверието на клиента.</p>
 <h2>Хранителният онлайн магазин</h2>
 <p>Изработваме <a href="/bg/uslugi/ecommerce/">онлайн магазини за храна</a> (от <strong>€2190 с ДДС</strong>) с продукти с променливо тегло, коректна информация за алергени и етикети, срокове на годност, продажба на опаковка или насипно и доставка с хладилен куриер, където трябва. Интегрираме плащания, изчисляване на доставка по зона и обработка на пресни поръчки със специални дни за доставка.</p>
@@ -733,7 +891,7 @@ dict(slug="servizi-professionali", related=["avvocati", "studi-medici", "immobil
    en="Authoritative sites, booking and software for consultants and firms.",
    bg="Авторитетни сайтове, записване и софтуер за консултанти и кантори."),
  it=dict(
-  desc="Sito professionale, prenotazione consulenze, gestione clienti e fatturazione per consulenti, commercialisti, agenzie e studi. Da €658 + IVA, preventivo gratuito in 24 ore.",
+  desc="Sito professionale, prenotazione consulenze, gestione clienti e fatturazione per consulenti, commercialisti e studi. Da €658 + IVA, preventivo in 24 ore.",
   body="""<p>Commercialisti, consulenti, agenzie, architetti, ingegneri: chi vende competenza viene valutato prima di tutto online. Un professionista o uno studio hanno bisogno di un <strong>sito che comunichi autorevolezza e risultati, raccolga contatti qualificati e trasformi il primo interesse in una consulenza prenotata</strong>. E dietro le quinte, di strumenti che riducano il lavoro amministrativo e liberino tempo per il lavoro che conta.</p>
 <h2>Il sito che genera clienti</h2>
 <p>Realizziamo <a href="/servizi/sviluppo-siti-web/">siti per professionisti</a> (da <strong>€1.575 + IVA</strong>) chiari e credibili: servizi, casi e risultati, chi sei, testimonianze e un blog che dimostra competenza. Il design comunica posizionamento e prezzo percepito: un sito curato attira clienti migliori e giustifica tariffe pi&ugrave; alte.</p>
@@ -767,7 +925,7 @@ dict(slug="servizi-professionali", related=["avvocati", "studi-medici", "immobil
    ("Does a management system really save me time?", "Yes. Keeping clients, projects, hours and invoices in one system removes double entry, avoids missed deadlines and makes invoicing fast. The time recovered from admin goes to the work that generates revenue."),
   ]),
  bg=dict(
-  desc="Професионален сайт, записване на консултации, управление на клиенти и фактуриране за консултанти, счетоводители, агенции и кантори. От €790 с ДДС, безплатна оферта до 24 часа.",
+  desc="Професионален сайт, записване на консултации, клиенти и фактуриране за консултанти, счетоводители и кантори. От €790 с ДДС, безплатна оферта до 24 часа.",
   body="""<p>Счетоводители, консултанти, агенции, архитекти, инженери: продаващите експертиза се преценяват първо онлайн. Специалистът или кантората имат нужда от <strong>сайт, който излъчва авторитет и резултати, събира качествени запитвания и превръща първия интерес в записана консултация</strong>. А зад кулисите — от инструменти, които намаляват административната работа и освобождават време за работата, която има значение.</p>
 <h2>Сайтът, който генерира клиенти</h2>
 <p>Изработваме <a href="/bg/uslugi/web-razrabotka/">сайтове за специалисти</a> (от <strong>€1890 с ДДС</strong>), ясни и убедителни: услуги, казуси и резултати, кой сте, отзиви и блог, който доказва компетентност. Дизайнът излъчва позициониране и възприемана цена: издържан сайт привлича по-добри клиенти и оправдава по-високи тарифи.</p>
@@ -789,6 +947,24 @@ dict(slug="servizi-professionali", related=["avvocati", "studi-medici", "immobil
 # Injected after the intro paragraph (needs) and before the FAQ (close),
 # expanding each sector to genuine, sector-specific 450-650 word bodies.
 EXTRAS = {
+ "ascensori": {'it': {'needs': ['Un gestionale che segua la commessa dalla produzione al magazzino alla fattura, senza reinserire i dati.',
+                  'Schede di rilievo digitali con foto e firme, al posto dei moduli di carta.',
+                  'Ordini ai fornitori compilati dai dati del sopralluogo, senza ricopiare.',
+                  'Un sito B2B con catalogo, codici e listino sempre aggiornati per i clienti professionali.'],
+        'close': 'Nel settore degli ascensori ogni dato passa per molte mani: tecnico, ufficio, magazzino, fornitore. Un sistema unico riduce gli '
+                 'errori di trascrizione e libera tempo per il lavoro tecnico. Partiamo da un preventivo gratuito in 24 ore.'},
+ 'en': {'needs': ['Management software that follows the order from production to warehouse to invoice, without re-entering data.',
+                  'Digital survey sheets with photos and signatures instead of paper forms.',
+                  'Supplier orders filled from the survey data, without copying.',
+                  'A B2B site with catalog, codes and price list always up to date for professional customers.'],
+        'close': 'In the elevator business every piece of data passes through many hands: technician, office, warehouse, supplier. One system cuts '
+                 'transcription errors and frees time for technical work. We start with a free quote within 24 hours.'},
+ 'bg': {'needs': ['Управленска система, която следва поръчката от производството през склада до фактурата, без повторно въвеждане.',
+                  'Дигитални карти за оглед със снимки и подписи вместо хартиени формуляри.',
+                  'Поръчки към доставчиците, попълнени от данните от огледа, без преписване.',
+                  'B2B сайт с каталог, кодове и ценоразпис, винаги актуални за професионалните клиенти.'],
+        'close': 'В асансьорния бранш всяка информация минава през много ръце: техник, офис, склад, доставчик. Една система намалява грешките при '
+                 'преписване и освобождава време за техническата работа. Започваме с безплатна оферта до 24 часа.'}},
  "ristoranti": dict(
   it=dict(needs=["Un sito rapido e mobile-first, perché quasi tutte le ricerche di ristoranti avvengono da smartphone in movimento.",
                  "Un menu digitale aggiornabile in autonomia, senza PDF e senza ristampe a ogni cambio.",
@@ -1080,8 +1256,12 @@ def render_sector(lang, sector):
     needs_ul = "<ul>" + "".join(f"<li>{html.escape(b)}</li>" for b in x["needs"]) + "</ul>"
     intro_p, rest = c["body"].split("</p>", 1)
     body_html = intro_p + "</p>" + needs_ul + rest + f'<p>{html.escape(x["close"])}</p>'
+    hd = head(lang, title, desc, canon, alts)
+    kw = sector.get("keywords", {}).get(lang)
+    if kw:  # собствени ключови думи на сектора; иначе seo-keywords.py слага общите
+        hd = hd.replace('<link rel="canonical"', f'<meta name="keywords" content="{esc(kw)}">\n<link rel="canonical"', 1)
     body = (
-        head(lang, title, desc, canon, alts)
+        hd
         + sector_jsonld(lang, sector, title, desc, canon)
         + "\n</head><body>"
         + s["nav"]

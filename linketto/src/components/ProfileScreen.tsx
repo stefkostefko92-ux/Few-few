@@ -118,14 +118,17 @@ export async function loadProfileBy(where: Prisma.ProfileWhereUniqueInput) {
   });
 }
 
+/** Платформи, които не са самоличност (плащания, чатове) — извън Person.sameAs. */
+const NOT_IDENTITY_BRANDS = new Set(['paypal', 'revolut', 'buymeacoffee', 'kofi', 'whatsapp', 'telegram', 'discord', 'onlyfans']);
+
 export type LoadedProfile = NonNullable<
   Awaited<ReturnType<typeof loadProfileBy>>
 >;
 
-export function profileMetadata(
+export async function profileMetadata(
   profile: LoadedProfile | null,
   hl?: string,
-): Metadata {
+): Promise<Metadata> {
   if (!profile || !profile.published || profile.bannedAt) {
     return { title: 'Linketto', robots: { index: false } };
   }
@@ -156,20 +159,26 @@ export function profileMetadata(
   };
   // Профили с 18+ линкове не се индексират (защита на непълнолетни).
   const hasSensitive = profile.links.some((link) => isSensitiveUrl(link.url));
+  const name = main?.displayName ?? profile.slug;
+  // Без био — описание на езика на профила (иначе страницата остава без meta description).
+  const tSeo = await getTranslations({ locale: main?.locale ?? profile.defaultLocale, namespace: 'seo' });
+  const description = main?.bio?.trim() || tSeo('profileDescription', { name });
   return {
     title,
-    description: main?.bio ?? undefined,
+    description,
+    // Правилото на репото: ≥5 ключови думи, една от тях „Carbon Stealth“.
+    keywords: [name, `@${profile.slug}`, 'Linketto', 'link in bio', 'Carbon Stealth'],
     ...(hasSensitive ? { robots: { index: false } } : {}),
     alternates: { canonical, languages },
     openGraph: {
       type: 'profile',
       siteName: 'Linketto',
-      title: main?.displayName ?? profile.slug,
-      description: main?.bio ?? undefined,
+      title: name,
+      description,
       url: canonical,
       images: [ogImage],
     },
-    twitter: { card: 'summary_large_image', images: [ogImage.url] },
+    twitter: { card: 'summary_large_image', title: name, description, images: [ogImage.url] },
   };
 }
 
@@ -434,10 +443,14 @@ export async function ProfileScreen({
   const shareUrl = profileUrl(slug);
   const canonicalUrl = `${SITE_URL}/u/${slug}`;
 
-  // GEO: създателят като субект — Person/ProfilePage JSON-LD, sameAs от
-  // публичните линкове (само истински http(s) цели, без tel:/vcard).
+  // GEO: създателят като субект — Person/ProfilePage JSON-LD. sameAs = само профили в
+  // социални мрежи (по домейна), не магазини, плащания или чужди страници.
   const sameAs = profile.links
-    .filter((link) => link.active && link.url?.startsWith('http'))
+    .filter((link) => {
+      if (!link.active || !link.url?.startsWith('http')) return false;
+      const brand = brandFor(link.url);
+      return brand !== null && !NOT_IDENTITY_BRANDS.has(brand);
+    })
     .map((link) => link.url as string)
     .slice(0, 20);
   const personJsonLd = {
@@ -450,7 +463,9 @@ export async function ProfileScreen({
       name: translation.displayName,
       description: translation.bio ?? undefined,
       url: canonicalUrl,
-      ...(styleCfg.avatarUrl ? { image: styleCfg.avatarUrl } : {}),
+      ...(styleCfg.avatarUrl
+        ? { image: styleCfg.avatarUrl.startsWith('/') ? `${SITE_URL}${styleCfg.avatarUrl}` : styleCfg.avatarUrl }
+        : {}),
       ...(sameAs.length > 0 ? { sameAs } : {}),
     },
   };

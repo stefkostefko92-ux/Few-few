@@ -63,7 +63,7 @@ html:has(.lx) {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: url('/lx-grain.png') 0 0 / 160px 160px;
+  background: url('/lx-grain.webp') 0 0 / 160px 160px; /* WebP: 27 KB вместо 65 KB PNG */
   opacity: 0.16;
   mix-blend-mode: overlay;
   z-index: 3;

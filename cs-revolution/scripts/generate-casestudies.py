@@ -66,7 +66,7 @@ dict(slug="nexus-dominion", name="Nexus Dominion", section="Game Development",
  lang=dict(
   it=dict(
    title="Nexus Dominion — Caso Studio | Carbon Stealth",
-   desc="Case study di Nexus Dominion: un MMO per browser dark-fantasy con multiplayer in tempo reale, gilde, dungeon, arena PvP ed economia guidata dai giocatori. Stack React, Node.js, PostgreSQL, Redis, Socket.IO.",
+   desc="Case study di Nexus Dominion: MMO dark-fantasy per browser con multiplayer in tempo reale, gilde, dungeon, arena PvP ed economia dei giocatori.",
    card="MMO per browser dark-fantasy con multiplayer in tempo reale, gilde, dungeon e arena PvP.",
    body="""<h2>Panoramica</h2>
 <p><strong>Nexus Dominion</strong> è un MMO (Massively Multiplayer Online) giocabile direttamente dal browser, ambientato in un mondo dark-fantasy di ispirazione medievale. Il progetto nasce con un obiettivo tecnico preciso: offrire un'esperienza di gioco persistente e in tempo reale, con centinaia di interazioni simultanee, senza chiedere all'utente di installare nulla. Tutto vive nel browser, dal login alla battaglia. Abbiamo progettato l'intera architettura da zero, dal database al motore di gioco lato server fino all'interfaccia.</p>
@@ -89,7 +89,7 @@ dict(slug="nexus-dominion", name="Nexus Dominion", section="Game Development",
    ]),
   en=dict(
    title="Nexus Dominion — Case Study | Carbon Stealth",
-   desc="Nexus Dominion case study: a dark-fantasy browser MMO with real-time multiplayer, guilds, dungeons, a PvP arena and a player-driven economy. Built on React, Node.js, PostgreSQL, Redis and Socket.IO.",
+   desc="Nexus Dominion case study: a dark-fantasy browser MMO with real-time multiplayer, guilds, dungeons, a PvP arena and a player economy. React, Node.js, Redis.",
    card="A dark-fantasy browser MMO with real-time multiplayer, guilds, dungeons and a PvP arena.",
    body="""<h2>Overview</h2>
 <p><strong>Nexus Dominion</strong> is a Massively Multiplayer Online (MMO) game playable straight from the browser, set in a dark-fantasy medieval world. The project started with a precise technical goal: deliver a persistent, real-time gaming experience with hundreds of simultaneous interactions, without asking the player to install anything. Everything lives in the browser, from login to battle. We designed the entire architecture from scratch — from the database to the server-side game engine to the interface.</p>
@@ -112,7 +112,7 @@ dict(slug="nexus-dominion", name="Nexus Dominion", section="Game Development",
    ]),
   bg=dict(
    title="Nexus Dominion — Кейс Студия | Carbon Stealth",
-   desc="Кейс студия за Nexus Dominion: браузър MMO в dark-fantasy стил с мултиплейър в реално време, гилдии, подземия, PvP арена и икономика, водена от играчите. React, Node.js, PostgreSQL, Redis, Socket.IO.",
+   desc="Кейс студия за Nexus Dominion: браузър MMO в dark-fantasy стил с мултиплейър в реално време, гилдии, подземия, PvP арена и икономика на играчите.",
    card="Браузър MMO в dark-fantasy стил с мултиплейър в реално време, гилдии, подземия и PvP арена.",
    body="""<h2>Преглед</h2>
 <p><strong>Nexus Dominion</strong> е MMO (Massively Multiplayer Online) игра, която се играе директно от браузъра, в dark-fantasy средновековен свят. Проектът стартира с ясна техническа цел: да предложи постоянно, real-time игрово изживяване със стотици едновременни взаимодействия, без потребителят да инсталира каквото и да е. Всичко живее в браузъра — от вход до битка. Проектирахме цялата архитектура от нулата: от базата данни през сървърния игрови двигател до интерфейса.</p>
@@ -142,7 +142,7 @@ dict(slug="erp-ascensori", name="ERP Ascensori", section="ERP & Business Softwar
  lang=dict(
   it=dict(
    title="ERP Ascensori — Caso Studio | Carbon Stealth",
-   desc="Case study di un ERP su misura per un produttore italiano di ascensori: tracciamento produzione, magazzino, fatturazione, accessi a 7 livelli e dashboard di business intelligence. Stack React, Prisma, PostgreSQL.",
+   desc="Case study: ERP su misura per un produttore italiano di ascensori. Produzione, magazzino, fatturazione, accessi a 7 livelli e dashboard BI. React, Prisma.",
    card="ERP su misura per un produttore di ascensori: produzione, magazzino, fatturazione e dashboard BI.",
    body="""<h2>Panoramica</h2>
 <p>Abbiamo progettato e sviluppato un <strong>ERP su misura</strong> per un produttore italiano di ascensori. L'obiettivo era sostituire una gestione frammentata tra fogli di calcolo e programmi scollegati con un unico sistema centrale che seguisse l'intero ciclo aziendale: dalla commessa in produzione, al magazzino, fino alla fatturazione. Un ERP standard non copriva le specificità di un'azienda manifatturiera con processi propri, quindi abbiamo costruito la soluzione partendo dai suoi flussi reali.</p>
@@ -156,7 +156,7 @@ dict(slug="erp-ascensori", name="ERP Ascensori", section="ERP & Business Softwar
 <h2>Il risultato</h2>
 <p>Il risultato è un ERP che unifica in un unico posto produzione, magazzino e fatturazione, con una gerarchia di accessi a 7 livelli che rispecchia l'organigramma reale dell'azienda. Le dashboard di BI danno alla direzione una visione immediata sull'andamento, mentre chi opera in produzione registra lo stato di avanzamento in modo semplice. Il sistema è vivo e in uso: <a href="https://erp.carbonstealth.eu" target="_blank" rel="noopener">erp.carbonstealth.eu</a>.</p>
 <h2>Cosa possiamo fare per te</h2>
-<p>Se la tua azienda gestisce troppi dati su Excel scollegati o su programmi che non si parlano, un ERP su misura può fare la differenza. Costruiamo il sistema attorno ai tuoi processi, non il contrario. Scopri il nostro <a href="/servizi/erp/">servizio ERP su misura</a>, lo <a href="/servizi/sviluppo-software/">sviluppo software gestionale</a> e l'<a href="/servizi/hosting/">hosting cloud gestito</a> su cui lo facciamo girare.</p>""",
+<p>Se la tua azienda gestisce troppi dati su Excel scollegati o su programmi che non si parlano, un ERP su misura può fare la differenza. Costruiamo il sistema attorno ai tuoi processi, non il contrario. Scopri il nostro <a href="/servizi/erp/">servizio ERP su misura</a>, lo <a href="/servizi/sviluppo-software/">sviluppo software gestionale</a> e l'<a href="/servizi/hosting/">hosting cloud gestito</a> su cui lo facciamo girare. Gli altri sistemi che abbiamo costruito per il settore sono in <a href="/settori/ascensori/">software per aziende ascensoristiche</a>.</p>""",
    faqs=[
     ("Che cos'è questo progetto ERP?", "È un sistema ERP su misura sviluppato per un produttore italiano di ascensori, che unifica tracciamento della produzione, magazzino e fatturazione in un'unica applicazione web."),
     ("Quali funzioni include l'ERP?", "Tracciamento della produzione, gestione del magazzino, fatturazione, controllo degli accessi basato sui ruoli con 7 livelli e dashboard di business intelligence per la direzione."),
@@ -165,7 +165,7 @@ dict(slug="erp-ascensori", name="ERP Ascensori", section="ERP & Business Softwar
    ]),
   en=dict(
    title="ERP Ascensori — Case Study | Carbon Stealth",
-   desc="Case study of a custom ERP for an Italian elevator manufacturer: production tracking, warehouse, invoicing, 7-level role-based access and business intelligence dashboards. Built on React, Prisma and PostgreSQL.",
+   desc="Case study: a custom ERP for an Italian elevator manufacturer. Production, warehouse, invoicing, 7-level access and BI dashboards. React, Prisma, PostgreSQL.",
    card="A custom ERP for an elevator manufacturer: production, warehouse, invoicing and BI dashboards.",
    body="""<h2>Overview</h2>
 <p>We designed and developed a <strong>custom ERP</strong> for an Italian elevator manufacturer. The goal was to replace a fragmented setup — spreadsheets and disconnected programs — with a single central system that follows the whole business cycle: from a job in production, to the warehouse, through to invoicing. An off-the-shelf ERP could not cover the specifics of a manufacturer with its own processes, so we built the solution starting from its real workflows.</p>
@@ -179,7 +179,7 @@ dict(slug="erp-ascensori", name="ERP Ascensori", section="ERP & Business Softwar
 <h2>The Result</h2>
 <p>The result is an ERP that unifies production, warehouse and invoicing in one place, with a 7-level access hierarchy that mirrors the company's real org chart. The BI dashboards give management an immediate view of how things are going, while people in production log progress in a simple way. The system is live and in use: <a href="https://erp.carbonstealth.eu" target="_blank" rel="noopener">erp.carbonstealth.eu</a>.</p>
 <h2>What We Can Do For You</h2>
-<p>If your company juggles too much data across disconnected spreadsheets or programs that don't talk to each other, a custom ERP can change things. We build the system around your processes, not the other way round. Explore our <a href="/en/services/erp/">custom ERP service</a>, our <a href="/en/services/software-development/">business software development</a> and the <a href="/en/services/hosting/">managed cloud hosting</a> we run it on.</p>""",
+<p>If your company juggles too much data across disconnected spreadsheets or programs that don't talk to each other, a custom ERP can change things. We build the system around your processes, not the other way round. Explore our <a href="/en/services/erp/">custom ERP service</a>, our <a href="/en/services/software-development/">business software development</a> and the <a href="/en/services/hosting/">managed cloud hosting</a> we run it on. The other systems we have built for the sector are in <a href="/en/industries/ascensori/">software for elevator companies</a>.</p>""",
    faqs=[
     ("What is this ERP project?", "It is a custom ERP system built for an Italian elevator manufacturer, unifying production tracking, warehouse and invoicing in a single web application."),
     ("What features does the ERP include?", "Production tracking, warehouse management, invoicing, role-based access control with 7 levels and business intelligence dashboards for management."),
@@ -188,7 +188,7 @@ dict(slug="erp-ascensori", name="ERP Ascensori", section="ERP & Business Softwar
    ]),
   bg=dict(
    title="ERP Ascensori — Кейс Студия | Carbon Stealth",
-   desc="Кейс студия за ERP по поръчка за италиански производител на асансьори: проследяване на производството, склад, фактуриране, ролеви достъп на 7 нива и BI табла. React, Prisma, PostgreSQL.",
+   desc="Кейс студия: ERP по поръчка за италиански производител на асансьори. Производство, склад, фактуриране, достъп на 7 нива и BI табла. React, Prisma.",
    card="ERP по поръчка за производител на асансьори: производство, склад, фактуриране и BI табла.",
    body="""<h2>Преглед</h2>
 <p>Проектирахме и разработихме <strong>ERP по поръчка</strong> за италиански производител на асансьори. Целта беше да заменим разпокъсаната работа между електронни таблици и несвързани програми с единна централна система, която следва целия бизнес цикъл: от поръчка в производство, през склада, до фактурирането. Готово ERP не покриваше спецификите на производствена фирма със собствени процеси, затова изградихме решението, тръгвайки от реалните ѝ работни потоци.</p>
@@ -202,7 +202,7 @@ dict(slug="erp-ascensori", name="ERP Ascensori", section="ERP & Business Softwar
 <h2>Резултатът</h2>
 <p>Резултатът е ERP, който обединява производство, склад и фактуриране на едно място, с йерархия на достъпа от 7 нива, отразяваща реалната структура на фирмата. BI таблата дават на ръководството незабавен поглед върху хода на нещата, а хората в производството отчитат напредъка лесно. Системата е жива и в реална употреба: <a href="https://erp.carbonstealth.eu" target="_blank" rel="noopener">erp.carbonstealth.eu</a>.</p>
 <h2>Какво можем да направим за вас</h2>
-<p>Ако фирмата ви жонглира с прекалено много данни в несвързани таблици или програми, които не си говорят, едно ERP по поръчка може да промени нещата. Изграждаме системата около вашите процеси, а не обратното. Разгледайте нашата <a href="/bg/uslugi/erp/">услуга за ERP по поръчка</a>, <a href="/bg/uslugi/softuer/">разработката на бизнес софтуер</a> и <a href="/bg/uslugi/hosting/">управлявания облачен хостинг</a>, върху който я пускаме.</p>""",
+<p>Ако фирмата ви жонглира с прекалено много данни в несвързани таблици или програми, които не си говорят, едно ERP по поръчка може да промени нещата. Изграждаме системата около вашите процеси, а не обратното. Разгледайте нашата <a href="/bg/uslugi/erp/">услуга за ERP по поръчка</a>, <a href="/bg/uslugi/softuer/">разработката на бизнес софтуер</a> и <a href="/bg/uslugi/hosting/">управлявания облачен хостинг</a>, върху който я пускаме. Другите системи, които изградихме за бранша, са в <a href="/bg/branshove/ascensori/">софтуер за асансьорни фирми</a>.</p>""",
    faqs=[
     ("Какво представлява този ERP проект?", "Това е ERP система по поръчка, изградена за италиански производител на асансьори, която обединява проследяване на производството, склад и фактуриране в едно уеб приложение."),
     ("Какви функции включва ERP системата?", "Проследяване на производството, управление на склада, фактуриране, ролеви контрол на достъпа със 7 нива и business intelligence табла за ръководството."),
@@ -374,7 +374,7 @@ dict(slug="treti-mart", name="Treti Mart", section="Marketplace & E-commerce",
 HUB = {
  "it": dict(
    title="Case Studies — Progetti Reali | Carbon Stealth",
-   desc="I nostri case study: progetti reali costruiti da Carbon Stealth. Un MMO per browser, un ERP su misura, un sito scolastico multilingua e un marketplace con pagamenti sicuri.",
+   desc="Case study: progetti reali di Carbon Stealth. Un MMO per browser, un ERP su misura, un sito scolastico multilingua e un marketplace con pagamenti sicuri.",
    h1="Case Studies",
    intro="""<p>Questi sono <strong>progetti reali</strong> che abbiamo progettato e costruito da zero. Ogni case study racconta il problema affrontato, la soluzione tecnica adottata e il risultato online — con lo stack completo e un link al progetto live. Dai un MMO real-time a un ERP gestionale, dal sito istituzionale di una scuola a un marketplace con pagamenti sicuri: coprono l'intero spettro di ciò che sappiamo fare.</p>""",
    cta_p="""<p>Vuoi un progetto come questi? <a href="/contatti/">Raccontaci la tua idea</a> e ti diciamo come possiamo realizzarla.</p>"""),

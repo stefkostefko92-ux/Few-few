@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { LxPage } from '@/components/landing/LxPage';
@@ -8,7 +9,15 @@ import { Input, Label } from '@/components/ui/Field';
 import type { Locale } from '@/i18n/locales';
 import { requestPasswordResetAction } from '@/app/actions/password-reset';
 
-export const metadata = { robots: { index: false } };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'auth' });
+  return { title: t('forgotTitle'), robots: { index: false } };
+}
 
 // „Забравена парола“ — стъпка 1 (docs/password-reset-spec.md R1): един и същ отговор за всеки адрес.
 export default async function ForgotPage({

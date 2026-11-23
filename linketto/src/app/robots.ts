@@ -17,9 +17,8 @@ export default function robots(): MetadataRoute.Robots {
   const disallow = [
     '/api/',
     '/*/dashboard',
-    '/*/login',
-    '/*/register',
     '/*/admin',
+    // login/register/forgot/reset НЕ са тук: имат noindex, а ботът трябва да го прочете.
     '/u/*/l/', // click redirect-и — не са съдържание
     '/u/*/p/', // клик по продукт → линкът за плащане на създателя
     '/u/*/subscribe/', // потвърждение на абонамент (GET с токен)

@@ -194,6 +194,27 @@
     "urlLabel": "URL / telefon / adresse",
     "extra1Label": "App Store / Spotify-URL",
     "extra2Label": "Google Play / Apple Music-URL",
+    "field_url": "Link (https://…)",
+    "field_tip": "Betalingslink (Revolut, PayPal, Ko-fi…)",
+    "field_video": "Link til videoen (YouTube eller Vimeo)",
+    "field_phone": "Telefonnummer",
+    "field_address": "Adresse eller sted",
+    "field_spotify": "Spotify-link",
+    "field_appleMusic": "Apple Music-link",
+    "field_appStore": "App Store-link",
+    "field_googlePlay": "Google Play-link",
+    "field_appWeb": "Webside til andre enheder (valgfrit)",
+    "field_vcardPhone": "Telefon",
+    "field_vcardEmail": "E-mail",
+    "field_vcardOrg": "Virksomhed (valgfrit)",
+    "kindHint_HEADER": "Overskriften deler blokkene op i sektioner — teksten er nok.",
+    "kindHint_FORM": "Besøgende skriver til dig via formularen, og beskederne ser du i panelet. En titel er nok.",
+    "kindHint_EMAIL": "Samler abonnenter til dit nyhedsbrev; hver enkelt bekræfter via e-mail. En titel er nok.",
+    "kindHint_BOOKING": "Besøgende sender en bookingforespørgsel, som du ser i panelet og markerer som behandlet. En titel er nok.",
+    "kindHint_MUSIC": "Udfyld mindst ét af dem — den besøgende vælger selv sin tjeneste.",
+    "kindHint_APP": "Udfyld mindst én butik — vi viser den rigtige ud fra den besøgendes telefon.",
+    "kindHint_VIDEO": "Videoen indlejres i profilen og indlæses først ved klik.",
+    "kindHint_VCARD": "Udfyld telefon og/eller e-mail — den besøgende gemmer dem i sine kontakter med ét tryk.",
     "addBlockHint": "Overskrift og formular kræver kun en titel. Til en app udfyldes App Store og/eller Google Play. Til musik — Spotify og/eller Apple Music.",
     "messagesSection": "Beskeder fra formularen",
     "noMessages": "Ingen beskeder endnu.",
@@ -526,7 +547,11 @@
   "seo": {
     "metaTitle": "Linketto — flersproget link in bio: alle dine links, på alle sprog",
     "keywords": "Linketto, Carbon Stealth, share links, link in bio, link i bioen, alle links ét sted, linktree-alternativ, bio link, digitalt visitkort, side for kreatører, flersproget profil, sælg digitale produkter",
-    "metaDescription": "Linketto er den flersprogede link in bio: alle dine links samlet ét sted, på hver besøgendes sprog. Hostet i EU, statistik uden cookies, ingen kommission. Et produkt fra Carbon Stealth."
+    "metaDescription": "Linketto er den flersprogede link in bio: alle dine links samlet ét sted, på hver besøgendes sprog. Hostet i EU, statistik uden cookies, ingen kommission. Et produkt fra Carbon Stealth.",
+    "privacyDescription": "Sådan behandler Linketto dine personoplysninger: kun det, tjenesten kræver, hosting i EU, intet salg af data og ingen sporingscookies.",
+    "termsDescription": "Linkettos vilkår: indgåelse af aftalen, planer og betalinger, fortrydelsesret, indhold og moderation, invitationsprogram.",
+    "cookiesDescription": "Linketto bruger kun strengt nødvendige cookies til login og sprogvalg. Besøgende på profilerne får ingen cookies.",
+    "profileDescription": "{name} på Linketto — alle links samlet ét sted, på hver besøgendes sprog."
   },
   "report": {
     "title": "Anmeld profilen „{name}“",
@@ -673,7 +698,9 @@
     "ctaButton": "Kom gratis i gang",
     "plansNote": "De to tjenesters planer indeholder forskellige funktioner; vi sammenligner kun de nævnte egenskaber. De fulde vilkår står på deres prissider.",
     "metaDescription": "Linketto eller {name}? Priser, eget domæne, branding og statistik — fakta fra deres officielle sider, med dato og kilde.",
-    "intro": "En ærlig sammenligning af pris og funktioner — hver værdi for {name} stammer fra deres officielle side, med kilde og dato."
+    "intro": "En ærlig sammenligning af pris og funktioner — hver værdi for {name} stammer fra deres officielle side, med kilde og dato.",
+    "summaryLead": "Kort fortalt (pr. {date}):",
+    "summaryRow": "{feature} — Linketto: {us}; {name}: {them}."
   },
   "security": {
     "title": "Sikkerhed",
