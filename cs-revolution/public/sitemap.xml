@@ -40,4 +40,8 @@
     <loc>https://carbonstealth.eu/sitemap-images.xml</loc>
     <lastmod>2026-09-25</lastmod>
   </sitemap>
+  <sitemap>
+    <loc>https://carbonstealth.eu/sitemap-solutions.xml</loc>
+    <lastmod>2026-11-22</lastmod>
+  </sitemap>
 </sitemapindex>

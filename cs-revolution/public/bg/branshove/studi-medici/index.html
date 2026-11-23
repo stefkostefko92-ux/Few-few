@@ -52,7 +52,18 @@ a{color:var(--cs-c)}
 .nav img{height:34px!important;width:auto!important}
 .nav>div a{display:inline-block;padding:7px 0}
 /* last nav link (Contatti / Contact / Контакти) = the call to action, like the SPA's ring-glow CTA */
-@media(min-width:901px){.nav>div a:last-child{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}.nav>div a:last-child:hover{background:rgba(0,229,255,.08)}}
+@media(min-width:901px){.nav>div>a:last-child{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}.nav>div>a:last-child:hover{background:rgba(0,229,255,.08)}}
+/* „Soluzioni ▾“ (scripts/solutions-nav.py): четирите направления под връзката към хъба — отварят се с мишка или
+   с клавиатура (:focus-within), без JS; на телефон стоят отворени в менюто */
+.nav-dd{position:relative;display:inline-block}
+.nav-dd-t::after{content:" \25BE";opacity:.7}
+.nav-dd-m{position:absolute;left:0;top:100%;display:none;flex-direction:column;min-width:250px;padding:8px 0;background:rgba(10,12,14,.98);
+  border:1px solid rgba(0,229,255,.25);box-shadow:0 14px 32px rgba(0,0,0,.55);z-index:1003}
+.nav-dd:hover>.nav-dd-m,.nav-dd:focus-within>.nav-dd-m{display:flex}
+.nav .nav-dd-m a{margin:0!important;padding:10px 18px!important;font-size:11px!important;letter-spacing:.08em!important;white-space:nowrap}
+.nav .nav-dd-m a:hover,.nav .nav-dd-m a:focus-visible{background:rgba(0,229,255,.08);color:var(--cs-c)!important}
+.cs-dir{font-size:11px;letter-spacing:.12em;color:var(--cs-ink2);margin-top:10px}
+.cs-games{border-top:1px solid rgba(0,229,255,.14);border-bottom:1px solid rgba(0,229,255,.14);padding:14px 0;margin:28px 0;font-size:12px;letter-spacing:.06em}
 /* portfolio: screenshots were 860px wide one after another; tighter and paired with their text */
 .w>.work-shot{max-width:720px}
 .nav-toggle{display:none}
@@ -111,6 +122,10 @@ a{color:var(--cs-c)}
   .js .nav.open>div>a{flex:none}
   .js .nav.open>div>a:first-child{margin-top:auto}
   .js .nav.open>div>a:last-child{margin-bottom:auto}
+  .js .nav.open .nav-dd{display:flex;flex-direction:column;align-items:center;gap:6px;flex:none}
+  .js .nav.open .nav-dd-t::after{content:none}
+  .js .nav.open .nav-dd-m{position:static;display:flex;gap:6px;min-width:0;padding:0;background:none;border:0;box-shadow:none}
+  .js .nav.open .nav-dd-m a{min-width:210px;font-size:11px!important;padding:10px 20px!important;color:var(--cs-ink2)!important;border-color:rgba(0,229,255,.16)}
   .nav.open .nav-toggle span:nth-child(1){transform:translateY(7px) rotate(45deg)}
   .nav.open .nav-toggle span:nth-child(2){opacity:0}
   .nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
@@ -161,7 +176,7 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 @property --ctr{syntax:'<length>';inherits:false;initial-value:0px}
 @keyframes ctblHint{from{--ctl:0px;--ctr:36px}to{--ctl:36px;--ctr:0px}}
 @supports (animation-timeline:scroll()){.ctbl{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);animation:ctblHint linear both;animation-timeline:scroll(self inline)}.ctbl:focus-visible{-webkit-mask-image:none;mask-image:none}}
-</style></head><body><nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">ГЛАВНА</a><a href="/bg/za-nas/">ЗА НАС</a><a href="/bg/uslugi/web-razrabotka/">УСЛУГИ</a><a href="/bg/branshove/">БРАНШОВЕ</a><a href="/bg/ceni/">ЦЕНИ</a><a href="/bg/kontakti/">КОНТАКТИ</a></div></nav><div class="hero-s"><div class="w"><div class="tag">// БРАНШ</div><h1>Сайтове и Софтуер за Медицински Кабинети</h1></div></div><div class="w"><p>Пациентът избира кабинет заради доверие и удобство: търси онлайн, чете кой сте и какви услуги предлагате и иска да запише час, без да звъни в работно време. Медицинският кабинет, зъболекарят или клиниката имат нужда от <strong>професионален сайт, който вдъхва доверие, онлайн записване и управление на графика, което намалява неявяванията</strong>. И тъй като се обработват здравни данни, всичко трябва да е в съответствие с правилата за поверителност.</p><ul><li>Професионален, достъпен сайт, който вдъхва доверие и обяснява ясно услугите.</li><li>Онлайн записване на часове, свързано с реалния график, с напомняния, които намаляват неявяванията.</li><li>Пълно съответствие с GDPR при управление на бисквитки, форми и чувствителни здравни данни.</li><li>Локално SEO, за да излизате, когато пациент търси вашата специалност наблизо.</li></ul>
+</style></head><body><nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/bg/">ГЛАВНА</a><span class="nav-dd"><a href="/bg/resheniya/" class="nav-dd-t">РЕШЕНИЯ</a><span class="nav-dd-m"><a href="/bg/resheniya/biznes-softuer/">Бизнес софтуер</a><a href="/bg/resheniya/industrialni-tehnologii/">Индустриални технологии</a><a href="/bg/resheniya/saytove-i-magazini/">Сайтове и магазини</a><a href="/bg/resheniya/igri-i-interaktiv/">Игри и интерактив</a></span></span><a href="/bg/branshove/">БРАНШОВЕ</a><a href="/bg/keys-studii/">КЕЙС СТЪДИТА</a><a href="/bg/ceni/">ЦЕНИ</a><a href="/bg/za-nas/">ЗА НАС</a><a href="/bg/kontakti/">КОНТАКТИ</a></div></nav><div class="hero-s"><div class="w"><div class="tag">// БРАНШ</div><h1>Сайтове и Софтуер за Медицински Кабинети</h1></div></div><div class="w"><p>Пациентът избира кабинет заради доверие и удобство: търси онлайн, чете кой сте и какви услуги предлагате и иска да запише час, без да звъни в работно време. Медицинският кабинет, зъболекарят или клиниката имат нужда от <strong>професионален сайт, който вдъхва доверие, онлайн записване и управление на графика, което намалява неявяванията</strong>. И тъй като се обработват здравни данни, всичко трябва да е в съответствие с правилата за поверителност.</p><ul><li>Професионален, достъпен сайт, който вдъхва доверие и обяснява ясно услугите.</li><li>Онлайн записване на часове, свързано с реалния график, с напомняния, които намаляват неявяванията.</li><li>Пълно съответствие с GDPR при управление на бисквитки, форми и чувствителни здравни данни.</li><li>Локално SEO, за да излизате, когато пациент търси вашата специалност наблизо.</li></ul>
 <h2>Сайтът на кабинета</h2>
 <p>Изработваме <a href="/bg/uslugi/web-razrabotka/">сайтове за лекарски кабинети</a> (от <strong>€1890 с ДДС</strong>), ясни и успокояващи: кой сте, екипът, услугите, работното време, как да ви намерят и полезна за пациента информация. Разбираем текст, бързо зареждане и пълна достъпност, с коректно управлявани бисквитки и декларации по GDPR.</p>
 <h2>Онлайн записване на часове</h2>
