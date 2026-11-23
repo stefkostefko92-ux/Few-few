@@ -1072,7 +1072,7 @@ dict(slug="landing-page-che-converte", section="Web Development", read=7, lang=d
   ]),
  bg=dict(
   title="Как да Направите Landing Page с Висока Конверсия | Carbon Stealth",
-  desc="Как да направите landing page с висока конверсия: структура, заглавие, призив за действие, социално доказателство и скорост. Елементите, които превръщат посетители в клиенти.",
+  desc="Как да направите landing page с висока конверсия: структура, заглавие, призив за действие, социално доказателство и скорост.",
   body="""<p>Landing page с висока конверсия има една-единствена цел, ясно послание в първите секунди и очевиден, повтарящ се <strong>призив за действие</strong>. Не става дума за пищен дизайн: конвертира страницата, която отговаря веднага на въпроса на посетителя, премахва разсейващите елементи и прави следващата стъпка лесна. Колкото по-малко избори предлагате, толкова повече действия получавате.</p>
 <h2>Елементите, които водят до конверсия</h2>
 <ul>
@@ -1955,7 +1955,7 @@ dict(slug="contenuti-seo-come-scrivere", section="SEO", read=8, lang=dict(
   ]),
  bg=dict(
   title="Как да Пишете SEO Съдържание, което Класира | Carbon Stealth",
-  desc="Как да пишете SEO съдържание, което се класира в Google: търсителско намерение, структура, ключови думи и качество. Практическо ръководство за полезен, добре индексиран текст.",
+  desc="Как да пишете SEO съдържание, което се класира в Google: намерение на търсенето, структура, ключови думи и качество. Практическо ръководство.",
   body="""<p>SEO съдържанието се класира, когато отговаря на <strong>търсителското намерение</strong> зад дадена заявка по-добре от алтернативите. Не става дума за натъпкване на текста с ключови думи, а за разбиране какво реално иска човекът и даване на най-ясния, пълен и полезен отговор. Google възнаграждава съдържанието, което удовлетворява потребителя: писането за търсачки и писането за хора днес съвпадат.</p>
 <h2>Методът в пет стъпки</h2>
 <ul>
@@ -2033,7 +2033,7 @@ def jsonld(lang, post, title, desc):
     s = L[lang]
     slug = post["slug"]
     canon = f"{BASE}{s['prefix']}/blog/{slug}/"
-    faqs = post["lang"][lang]["faqs"]
+    faqs = [(html.unescape(q), html.unescape(a)) for q, a in post["lang"][lang]["faqs"]]
     graph = {"@context": "https://schema.org", "@graph": [
         {"@type": "BlogPosting", "@id": f"{canon}#article", "headline": title,
          "description": desc, "image": f"{BASE}/{s['og']}",
@@ -2059,11 +2059,14 @@ def jsonld(lang, post, title, desc):
 def render(lang, post):
     s = L[lang]
     c = post["lang"][lang]
-    title = c["title"]
+    # Заглавието, описанието и въпросите са ЧИСТ текст: в тях има HTML ентитита (perch&eacute;, pi&ugrave;),
+    # писани за тялото. Тук се разкодират веднъж, после esc()/json.dumps ги кодират правилно — иначе
+    # Google показва „perch&eacute;“ (двойно ескапиране в title, meta, JSON-LD и видимите въпроси).
+    title = html.unescape(c["title"])
     # h1 is title without the "| Carbon Stealth" suffix
     h1 = title.split("|")[0].strip()
-    desc = c["desc"]
-    faqs = c["faqs"]
+    desc = html.unescape(c["desc"])
+    faqs = [(html.unescape(q), html.unescape(a)) for q, a in c["faqs"]]
     faq_html = "".join(
         f'<div class="faq-item"><div class="faq-q">{html.escape(q)}</div><div class="faq-a">{html.escape(a)}</div></div>'
         for q, a in faqs)

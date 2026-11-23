@@ -23,6 +23,18 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
   `staffe-su-misura` (+ EN/BG slug-ове) — H1 с търсената фраза, отговор отпред, таблиците от
   ценоразписа, FAQ, линк към страниците в PDF-а, breadcrumbs (визуални + schema). Продуктите носят
   Product + Offer (`priceValidUntil` = `CATALOG_VALID_UNTIL` в `products.mjs` — **поднови го за 2027**).
+- **Задълбочени страници** (`site/templates/guides.mjs`, текстове в `i18n/<език>/guides.mjs`), по една
+  за въпрос, който купувачът задава на търсачка или на AI: **патентът** (`/brevetto`, `/en/patent`,
+  `/bg/patent`: данните от сертификата, какво защитава, частите на планката, FAQ) и **неравни зидарии**
+  (`/staffe-murature-irregolari` + EN/BG: условие на обекта → регулация → семейство, шестте монтажни
+  стъпки от стр. 10 на каталога като HowTo, FAQ). Фактите са само тези от каталога (стр. 02, 03, 04,
+  08, 10, 66); имената на притежателите на патента не се изписват на сайта („v. registro“ в `llms.txt`).
+  `/brevetto` беше адрес и на стария Wix сайт: вече е истинска страница, а `/en/brevetto` и
+  `/bg/brevetto` водят към нея (`lib/legacy.js`).
+- **SEO чеклистът е тест** (`test/seo.test.js`, върху генерираните страници от `sitemap.xml`): canonical
+  към себе си, взаимен hreflang it/en/bg/x-default, заглавие ≤ 60 и описание 70–160 знака (уникални),
+  един H1, ≥ 5 ключови думи с „Carbon Stealth“, разчитаем JSON-LD, снимки с alt и размери. Нова
+  страница влиза в теста сама, щом е в sitemap-а.
 - **lastmod в sitemap** е от хеш на съдържанието (`site/data/lastmod.json`, комитва се): датата се
   мести само когато страницата наистина се смени.
 - **Изход:** статични страници в корена (`index.html`, `prodotti.html`,
@@ -38,6 +50,8 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
   рамо. PDF-ът и превютата се правят с `cd 3d && npm run catalog-pdf`,
   никога на ръка. На всяка страница без корицата и на всеки чертеж и рендер пише „Proprietà
   intellettuale di Panev Ascensori SAS“ (`3d/pdf/notice.py`).
+  PDF-ът носи езика си (`/Lang it-IT`), а отпечатаните „panevascensori.it“ и имейлът са линкове
+  (`3d/pdf/merge.py`, пази го `verify.py`).
   **Адресът `https://panevascensori.it/docs/catalogo-staffe-panev-2026.pdf` е раздаден на клиенти
   като реклама — не го сменяй и не му добавяй `?v=`.** Новото издание отива под същото име, а
   `/docs/` е `no-cache` (nginx + `server.js`): браузърът проверява при всяко отваряне и сваля
@@ -133,11 +147,11 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
 ## Команди (в `panev/`)
 
 ```bash
-npm run build:site       # node site/build.mjs — регенерира 36-те страници (18 + 12 по семейства + три 3D + три рамки) + sitemap
+npm run build:site       # node site/build.mjs — регенерира 42-те страници (18 + 12 по семейства + 6 задълбочени + три 3D + три рамки) + sitemap
 npm run dev              # nodemon server.js
 npm start                # node server.js
 npm run db:seed          # node scripts/seed.js (admin/legacy данни)
-npm test                 # node --test test/*.test.js — сесиите на админа и правилата за парола (временна SQLite)
+npm test                 # node --test test/*.test.js — сесиите на админа и правилата за парола (временна SQLite), старите адреси, SEO чеклистът върху генерираните страници
 node scripts/admin-password.js --list | <имейл> | --stdin <имейл> | --revoke <имейл>   # на сървъра: случайна / своя (по тръба) парола / край на сесиите
 ```
 

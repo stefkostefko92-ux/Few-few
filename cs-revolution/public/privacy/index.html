@@ -46,7 +46,18 @@ a{color:var(--cs-c)}
 .nav img{height:34px!important;width:auto!important}
 .nav>div a{display:inline-block;padding:7px 0}
 /* last nav link (Contatti / Contact / Контакти) = the call to action, like the SPA's ring-glow CTA */
-@media(min-width:901px){.nav>div a:last-child{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}.nav>div a:last-child:hover{background:rgba(0,229,255,.08)}}
+@media(min-width:901px){.nav>div>a:last-child{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}.nav>div>a:last-child:hover{background:rgba(0,229,255,.08)}}
+/* „Soluzioni ▾“ (scripts/solutions-nav.py): четирите направления под връзката към хъба — отварят се с мишка или
+   с клавиатура (:focus-within), без JS; на телефон стоят отворени в менюто */
+.nav-dd{position:relative;display:inline-block}
+.nav-dd-t::after{content:" \25BE";opacity:.7}
+.nav-dd-m{position:absolute;left:0;top:100%;display:none;flex-direction:column;min-width:250px;padding:8px 0;background:rgba(10,12,14,.98);
+  border:1px solid rgba(0,229,255,.25);box-shadow:0 14px 32px rgba(0,0,0,.55);z-index:1003}
+.nav-dd:hover>.nav-dd-m,.nav-dd:focus-within>.nav-dd-m{display:flex}
+.nav .nav-dd-m a{margin:0!important;padding:10px 18px!important;font-size:11px!important;letter-spacing:.08em!important;white-space:nowrap}
+.nav .nav-dd-m a:hover,.nav .nav-dd-m a:focus-visible{background:rgba(0,229,255,.08);color:var(--cs-c)!important}
+.cs-dir{font-size:11px;letter-spacing:.12em;color:var(--cs-ink2);margin-top:10px}
+.cs-games{border-top:1px solid rgba(0,229,255,.14);border-bottom:1px solid rgba(0,229,255,.14);padding:14px 0;margin:28px 0;font-size:12px;letter-spacing:.06em}
 /* portfolio: screenshots were 860px wide one after another; tighter and paired with their text */
 .w>.work-shot{max-width:720px}
 .nav-toggle{display:none}
@@ -105,6 +116,10 @@ a{color:var(--cs-c)}
   .js .nav.open>div>a{flex:none}
   .js .nav.open>div>a:first-child{margin-top:auto}
   .js .nav.open>div>a:last-child{margin-bottom:auto}
+  .js .nav.open .nav-dd{display:flex;flex-direction:column;align-items:center;gap:6px;flex:none}
+  .js .nav.open .nav-dd-t::after{content:none}
+  .js .nav.open .nav-dd-m{position:static;display:flex;gap:6px;min-width:0;padding:0;background:none;border:0;box-shadow:none}
+  .js .nav.open .nav-dd-m a{min-width:210px;font-size:11px!important;padding:10px 20px!important;color:var(--cs-ink2)!important;border-color:rgba(0,229,255,.16)}
   .nav.open .nav-toggle span:nth-child(1){transform:translateY(7px) rotate(45deg)}
   .nav.open .nav-toggle span:nth-child(2){opacity:0}
   .nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
@@ -159,9 +174,9 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 <a href="https://carbonstealth.eu" class="bk">← CARBON STEALTH</a>
 <div class="lg"><a href="/privacy/">IT</a><a href="/en/privacy/">EN</a><a href="/bg/privacy/">BG</a></div>
 <h1>INFORMATIVA SULLA PRIVACY</h1>
-<p><strong>Ultimo aggiornamento:</strong> 25 settembre 2026</p>
+<p><strong>Ultimo aggiornamento:</strong> 22 novembre 2026</p>
 <p><strong>Titolare:</strong> Carbon Stealth VCC, ul. Samuil 3, Bobov Dol 2670, Bulgaria — EIK 208725180</p>
-<h2>1. Dati raccolti</h2><p>Raccogliamo: dati di contatto (nome, email, telefono) dai moduli; dati tecnici (IP, browser, OS, risoluzione); dati di navigazione (pagine, durata, fonte); cookie (vedi Politica Cookie).</p>
+<h2>1. Dati raccolti</h2><p>Raccogliamo: dati di contatto (nome, email, telefono) dai moduli e, se li indichi, azienda, paese, tipo di soluzione e budget indicativo; dati tecnici (IP, browser, OS, risoluzione); dati di navigazione (pagine, durata, fonte); cookie (vedi Politica Cookie).</p>
 <h2>2. Base giuridica</h2><p>Trattiamo i dati in base a: consenso (Art. 6(1)(a) GDPR), esecuzione contratto (Art. 6(1)(b)), legittimo interesse (Art. 6(1)(f)), obblighi legali (Art. 6(1)(c)).</p>
 <h2>3. Finalita</h2><ul><li>Erogazione servizi richiesti</li><li>Comunicazioni su progetti</li><li>Miglioramento del sito e UX</li><li>Analisi statistiche anonime</li><li>Adempimenti legali e fiscali</li></ul>
 <h2>4. Condivisione</h2><p>Non vendiamo dati. Condividiamo solo con i fornitori necessari al servizio: hosting (Hetzner, Germania), invio email del modulo di contatto (provider SMTP), Google PageSpeed Insights (solo per l'analisi sito che richiedi su /test/) e Google AdSense (Google Ireland Ltd / Google LLC) per la pubblicità sul sito. Gli annunci sono non personalizzati finché non premi ACCETTA nel banner cookie; con il consenso Google può usare cookie e identificatori per personalizzarli (<a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">come Google usa i dati</a>). I caratteri tipografici sono ospitati sul nostro server: nessuna richiesta a Google Fonts.</p>

@@ -58,7 +58,8 @@ export function pageMetadata(
   return {
     title: input.title,
     description: input.description,
-    keywords: input.keywords,
+    // Без ключа, когато няма думи: `keywords: undefined` презаписва тези от layout-а.
+    ...(input.keywords ? { keywords: input.keywords } : {}),
     alternates: localeAlternates(locale, path),
     openGraph: {
       type: 'website',

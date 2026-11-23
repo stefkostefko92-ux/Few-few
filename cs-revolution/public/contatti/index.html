@@ -50,7 +50,18 @@ a{color:var(--cs-c)}
 .nav img{height:34px!important;width:auto!important}
 .nav>div a{display:inline-block;padding:7px 0}
 /* last nav link (Contatti / Contact / Контакти) = the call to action, like the SPA's ring-glow CTA */
-@media(min-width:901px){.nav>div a:last-child{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}.nav>div a:last-child:hover{background:rgba(0,229,255,.08)}}
+@media(min-width:901px){.nav>div>a:last-child{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}.nav>div>a:last-child:hover{background:rgba(0,229,255,.08)}}
+/* „Soluzioni ▾“ (scripts/solutions-nav.py): четирите направления под връзката към хъба — отварят се с мишка или
+   с клавиатура (:focus-within), без JS; на телефон стоят отворени в менюто */
+.nav-dd{position:relative;display:inline-block}
+.nav-dd-t::after{content:" \25BE";opacity:.7}
+.nav-dd-m{position:absolute;left:0;top:100%;display:none;flex-direction:column;min-width:250px;padding:8px 0;background:rgba(10,12,14,.98);
+  border:1px solid rgba(0,229,255,.25);box-shadow:0 14px 32px rgba(0,0,0,.55);z-index:1003}
+.nav-dd:hover>.nav-dd-m,.nav-dd:focus-within>.nav-dd-m{display:flex}
+.nav .nav-dd-m a{margin:0!important;padding:10px 18px!important;font-size:11px!important;letter-spacing:.08em!important;white-space:nowrap}
+.nav .nav-dd-m a:hover,.nav .nav-dd-m a:focus-visible{background:rgba(0,229,255,.08);color:var(--cs-c)!important}
+.cs-dir{font-size:11px;letter-spacing:.12em;color:var(--cs-ink2);margin-top:10px}
+.cs-games{border-top:1px solid rgba(0,229,255,.14);border-bottom:1px solid rgba(0,229,255,.14);padding:14px 0;margin:28px 0;font-size:12px;letter-spacing:.06em}
 /* portfolio: screenshots were 860px wide one after another; tighter and paired with their text */
 .w>.work-shot{max-width:720px}
 .nav-toggle{display:none}
@@ -109,6 +120,10 @@ a{color:var(--cs-c)}
   .js .nav.open>div>a{flex:none}
   .js .nav.open>div>a:first-child{margin-top:auto}
   .js .nav.open>div>a:last-child{margin-bottom:auto}
+  .js .nav.open .nav-dd{display:flex;flex-direction:column;align-items:center;gap:6px;flex:none}
+  .js .nav.open .nav-dd-t::after{content:none}
+  .js .nav.open .nav-dd-m{position:static;display:flex;gap:6px;min-width:0;padding:0;background:none;border:0;box-shadow:none}
+  .js .nav.open .nav-dd-m a{min-width:210px;font-size:11px!important;padding:10px 20px!important;color:var(--cs-ink2)!important;border-color:rgba(0,229,255,.16)}
   .nav.open .nav-toggle span:nth-child(1){transform:translateY(7px) rotate(45deg)}
   .nav.open .nav-toggle span:nth-child(2){opacity:0}
   .nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
@@ -160,7 +175,7 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 @keyframes ctblHint{from{--ctl:0px;--ctr:36px}to{--ctl:36px;--ctr:0px}}
 @supports (animation-timeline:scroll()){.ctbl{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);animation:ctblHint linear both;animation-timeline:scroll(self inline)}.ctbl:focus-visible{-webkit-mask-image:none;mask-image:none}}
 </style></head><body>
-<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">HOME</a><a href="/chi-siamo/">CHI SIAMO</a><a href="/servizi/sviluppo-siti-web/">SERVIZI</a><a href="/portfolio/">PORTFOLIO</a><a href="/prezzi/">PREZZI</a><a href="/contatti/">CONTATTI</a></div></nav>
+<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">HOME</a><span class="nav-dd"><a href="/soluzioni/" class="nav-dd-t">SOLUZIONI</a><span class="nav-dd-m"><a href="/soluzioni/software-aziendale/">Software aziendale</a><a href="/soluzioni/tecnologia-industriale/">Tecnologia industriale</a><a href="/soluzioni/siti-ecommerce/">Siti ed e-commerce</a><a href="/soluzioni/game-interattivo/">Game e interattivo</a></span></span><a href="/settori/">SETTORI</a><a href="/case-study/">CASE STUDY</a><a href="/prezzi/">PREZZI</a><a href="/chi-siamo/">CHI SIAMO</a><a href="/contatti/">CONTATTI</a></div></nav>
 <div class="hero-s"><div class="w"><div class="tag">// CONTATTI</div><h1>CONTATTI</h1></div></div><div class="w"><p>Siamo disponibili per nuovi progetti. Contattaci per un preventivo gratuito — rispondiamo entro 24 ore lavorative.</p><p><a class="cta" href="/?lang=it#contact">SCRIVICI UN MESSAGGIO &rarr;</a> &nbsp; <a class="cta" href="/test/">ANALISI GRATUITA DEL SITO &rarr;</a></p><h2>Sede Legale</h2><p>ul. Samuil 3, Bobov Dol 2670, Bulgaria<br>EIK: 208725180</p><h2>Telefono</h2><p>Italia: <a href='tel:+393792969699'>+39 379 296 9699</a> (WhatsApp)<br>Bulgaria: <a href='tel:+359877414874'>+359 877 414 874</a> (WhatsApp)</p><h2>Email</h2><p><a href='mailto:info@carbonstealth.eu'>info@carbonstealth.eu</a></p><h2>Orari</h2><p>Lunedì - Venerdì: 09:00 - 18:00 (CET)<br>Sabato: 10:00 - 14:00<br>Domenica: chiuso</p></div>
 <div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK 208725180 &middot; Bobov Dol, Bulgaria</p><p>Tutti i diritti riservati &middot; <a href="/privacy/">Privacy</a> &middot; <a href="/cookie/">Cookie</a> &middot; <a href="/termini/">Termini</a> &middot; <a href="/note-legali/">Note legali</a></p><p class="ft-links" style="margin-top:10px"><a href="/prezzi/">Prezzi</a> &middot; <a href="/portfolio/">Portfolio</a> &middot; <a href="/settori/">Settori</a> &middot; <a href="/geo/">Città</a> &middot; <a href="/servizi-locali/">Servizi locali</a> &middot; <a href="/blog/">Blog</a> &middot; <a href="/glossario/">Glossario</a> &middot; <a href="/confronti/">Confronti</a> &middot; <a href="/case-study/">Case study</a> &middot; <a href="/strumenti/">Strumenti</a></p></div>
 <noscript><div class="google-map" style="margin:32px 0;border-radius:12px;overflow:hidden;border:1px solid #1a1a22">

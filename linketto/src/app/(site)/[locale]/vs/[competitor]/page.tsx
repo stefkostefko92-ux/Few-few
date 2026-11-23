@@ -7,7 +7,7 @@ import { CheckIcon } from '@/components/icons';
 import { Table, TBody, TD, TH, THead, TR } from '@/components/ui/Table';
 import type { Locale } from '@/i18n/locales';
 import { safeJsonLd } from '@/lib/jsonld';
-import { pageMetadata, SITE_URL } from '@/lib/seo';
+import { ORG, pageMetadata, SITE_URL } from '@/lib/seo';
 import {
   COMPARISONS_CHECKED_AT,
   COMPETITORS,
@@ -64,15 +64,42 @@ export default async function VersusPage({
   const highlights = ['hl1', 'hl2', 'hl3', 'hl4'] as const;
   const others = Object.values(COMPETITORS).filter((c) => c.id !== competitor);
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'WebPage',
-    name: t('title', { name }),
-    url: `${SITE_URL}/${locale}/vs/${competitor}`,
-    inLanguage: locale,
-    dateModified: COMPARISONS_CHECKED_AT,
-    publisher: { '@type': 'Organization', name: 'Carbon Stealth VCC' },
-  };
+  // „Отговор отпред“ (AI/търсачки цитират първите изречения): фактите идват от същите
+  // редове като таблицата — нищо не се пише отделно.
+  const summary = data.rows
+    .map((row) =>
+      t('summaryRow', { feature: t(`row_${row.id}`), us: cell(row.us), name, them: cell(row.them) }),
+    )
+    .join(' ');
+
+  const pageUrl = `${SITE_URL}/${locale}/vs/${competitor}`;
+  const jsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      '@id': `${pageUrl}#webpage`,
+      name: t('title', { name }),
+      description: `${t('summaryLead', { date: checked })} ${summary}`,
+      url: pageUrl,
+      inLanguage: locale,
+      dateModified: COMPARISONS_CHECKED_AT,
+      isPartOf: { '@id': `${SITE_URL}#website` },
+      publisher: { '@id': `${ORG.url}#org` },
+      about: [
+        { '@type': 'SoftwareApplication', name: 'Linketto', url: SITE_URL },
+        { '@type': 'SoftwareApplication', name, url: data.sources[0]?.url },
+      ],
+      citation: data.sources.map((source) => source.url),
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Linketto', item: `${SITE_URL}/${locale}` },
+        { '@type': 'ListItem', position: 2, name: t('title', { name }), item: pageUrl },
+      ],
+    },
+  ];
 
   return (
     <>
@@ -92,6 +119,9 @@ export default async function VersusPage({
           label: t('ctaButton'),
         }}
       >
+        <p className="mb-5 text-body text-fg-2">
+          <strong className="font-semibold text-fg">{t('summaryLead', { date: checked })}</strong> {summary}
+        </p>
         {/* Телефон: карти ред по ред (таблицата не се събира в 390 px — визуалният обход). */}
         <ul className="space-y-3 sm:hidden">
           {data.rows.map((row) => (

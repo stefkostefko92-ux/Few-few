@@ -26,6 +26,7 @@ import {
   adminMarkPayoutPaidAction,
   adminNotifyAutoTranslateAction,
   adminRefundPlanOrderAction,
+  adminCloseRefundAction,
   adminResolveReportAction,
   adminSetPasswordAction,
   adminSetPublishedAction,
@@ -224,6 +225,12 @@ export default async function AdminPage({
     refund: t('errorRefund'),
     'refund-order': t('errorRefundOrder'),
     'refund-pending': t('errorRefundPending'),
+    'refund-close': t('errorRefundClose'),
+    'refund-close-confirm': t('errorRefundCloseConfirm'),
+    'refund-close-progress': t('errorRefundCloseProgress'),
+    'refund-close-failed': t('errorRefundCloseFailed'),
+    'refund-close-unreadable': t('errorRefundCloseUnreadable'),
+    'refund-close-check': t('errorRefundCloseCheck'),
     ban: t('errorBan'),
     'ban-warn': t('errorBanWarn'),
     'ban-ground': t('errorBanGround'),
@@ -479,6 +486,24 @@ export default async function AdminPage({
                           <input type="hidden" name="planOrderId" value={order.id} />
                           <button type="submit" className={dangerOutline}>
                             {t('refund')}
+                          </button>
+                        </form>
+                      )}
+                      {/* Връщане в ход с refund при Revolut: ръчно приключване след сверка
+                          (docs/refund-manual-close-spec.md Б — решава живото четене). */}
+                      {order.state === 'refund_pending' && order.refundOrderId && (
+                        <form action={adminCloseRefundAction} className="flex flex-col items-end gap-1.5">
+                          <input type="hidden" name="uiLocale" value={locale} />
+                          <input type="hidden" name="planOrderId" value={order.id} />
+                          <input type="hidden" name="refundOrderId" value={order.refundOrderId} />
+                          {/* Id-то, което се сверява в Revolut Business. */}
+                          <span className="font-mono text-micro text-fg-muted [overflow-wrap:anywhere]">{order.refundOrderId}</span>
+                          <label className="flex max-w-[14rem] items-start gap-1.5 text-start text-micro text-fg-2">
+                            <input type="checkbox" name="confirm" required className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                            {t('refundCloseConfirm')}
+                          </label>
+                          <button type="submit" className={dangerOutline}>
+                            {t('refundClose')}
                           </button>
                         </form>
                       )}
@@ -742,54 +767,60 @@ export default async function AdminPage({
                   </div>
                 </div>
 
-                {/* Опасната зона: нова парола, изход отвсякъде, пълно изтриване */}
-                <div className="space-y-4 rounded-card border border-danger/35 bg-danger-soft/40 p-4">
-                  <div>
-                    <h3 className="text-body font-semibold text-danger-text">{t('dangerZone')}</h3>
-                    <p className="text-small text-fg-muted">{t('dangerZoneHint')}</p>
-                  </div>
-                  <form action={adminSetPasswordAction} className="space-y-2">
-                    <input type="hidden" name="uiLocale" value={locale} />
-                    <input type="hidden" name="userId" value={user.id} />
-                    <Label htmlFor={`${user.id}-pw`}>{t('setPassword')}</Label>
-                    <div className="flex flex-wrap gap-2">
-                      <Input
-                        id={`${user.id}-pw`}
-                        type="password"
-                        name="password"
-                        required
-                        minLength={PASSWORD_MIN}
-                        placeholder={t('newPassword')}
-                        autoComplete="new-password"
-                        className="min-w-0 flex-1 sm:max-w-xs"
-                      />
-                      <button type="submit" className={`${dangerOutline} h-10`}>
-                        {t('setPasswordButton')}
-                      </button>
+                {/* Опасната зона: нова парола, изход отвсякъде, пълно изтриване — сгъната,
+                    за да е списъкът кратък и да не се натиска нещо необратимо случайно. */}
+                <details className="group rounded-card border border-danger/35 bg-danger-soft/40 p-4">
+                  <summary className="focus-ring flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+                    <span>
+                      <span className="block text-body font-semibold text-danger-text">{t('dangerZone')}</span>
+                      <span className="block text-small text-fg-muted">{t('dangerZoneHint')}</span>
+                    </span>
+                    <span aria-hidden className="text-danger-text transition-transform group-open:rotate-180">▾</span>
+                  </summary>
+                  <div className="mt-4 space-y-4">
+                    <form action={adminSetPasswordAction} className="space-y-2">
+                      <input type="hidden" name="uiLocale" value={locale} />
+                      <input type="hidden" name="userId" value={user.id} />
+                      <Label htmlFor={`${user.id}-pw`}>{t('setPassword')}</Label>
+                      <div className="flex flex-wrap gap-2">
+                        <Input
+                          id={`${user.id}-pw`}
+                          type="password"
+                          name="password"
+                          required
+                          minLength={PASSWORD_MIN}
+                          placeholder={t('newPassword')}
+                          autoComplete="new-password"
+                          className="min-w-0 flex-1 sm:max-w-xs"
+                        />
+                        <button type="submit" className={`${dangerOutline} h-10`}>
+                          {t('setPasswordButton')}
+                        </button>
+                      </div>
+                      <p className="text-small text-fg-muted">{t('passwordHint')}</p>
+                    </form>
+                    <div className="flex flex-wrap items-center gap-3 border-t border-danger/20 pt-4">
+                      <form action={adminForceLogoutAction}>
+                        <input type="hidden" name="uiLocale" value={locale} />
+                        <input type="hidden" name="userId" value={user.id} />
+                        <button type="submit" className={dangerOutline}>
+                          {t('forceLogout', { count: user._count.sessions })}
+                        </button>
+                      </form>
+                      <form action={adminDeleteUserAction} className="flex flex-wrap items-center gap-3 sm:ms-auto">
+                        <input type="hidden" name="uiLocale" value={locale} />
+                        <input type="hidden" name="userId" value={user.id} />
+                        <label className="flex items-center gap-2 text-small text-fg-2">
+                          <input type="checkbox" name="confirm" required className="h-4 w-4" />
+                          {t('deleteConfirm')}
+                        </label>
+                        <Button type="submit" variant="danger" size="sm">
+                          {t('deleteUser')}
+                        </Button>
+                      </form>
                     </div>
-                    <p className="text-small text-fg-muted">{t('passwordHint')}</p>
-                  </form>
-                  <div className="flex flex-wrap items-center gap-3 border-t border-danger/20 pt-4">
-                    <form action={adminForceLogoutAction}>
-                      <input type="hidden" name="uiLocale" value={locale} />
-                      <input type="hidden" name="userId" value={user.id} />
-                      <button type="submit" className={dangerOutline}>
-                        {t('forceLogout', { count: user._count.sessions })}
-                      </button>
-                    </form>
-                    <form action={adminDeleteUserAction} className="flex flex-wrap items-center gap-3 sm:ms-auto">
-                      <input type="hidden" name="uiLocale" value={locale} />
-                      <input type="hidden" name="userId" value={user.id} />
-                      <label className="flex items-center gap-2 text-small text-fg-2">
-                        <input type="checkbox" name="confirm" required className="h-4 w-4" />
-                        {t('deleteConfirm')}
-                      </label>
-                      <Button type="submit" variant="danger" size="sm">
-                        {t('deleteUser')}
-                      </Button>
-                    </form>
                   </div>
-                </div>
+                </details>
               </Card>
             ))}
           </div>

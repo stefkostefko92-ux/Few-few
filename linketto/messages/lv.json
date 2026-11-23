@@ -194,6 +194,27 @@
     "urlLabel": "URL / tālrunis / adrese",
     "extra1Label": "App Store / Spotify URL",
     "extra2Label": "Google Play / Apple Music URL",
+    "field_url": "Saite (https://…)",
+    "field_tip": "Maksājuma saite (Revolut, PayPal, Ko-fi…)",
+    "field_video": "Video saite (YouTube vai Vimeo)",
+    "field_phone": "Tālruņa numurs",
+    "field_address": "Adrese vai vieta",
+    "field_spotify": "Spotify saite",
+    "field_appleMusic": "Apple Music saite",
+    "field_appStore": "App Store saite",
+    "field_googlePlay": "Google Play saite",
+    "field_appWeb": "Tīmekļa lapa citām ierīcēm (pēc izvēles)",
+    "field_vcardPhone": "Tālrunis",
+    "field_vcardEmail": "E-pasts",
+    "field_vcardOrg": "Uzņēmums (pēc izvēles)",
+    "kindHint_HEADER": "Virsraksts sadala blokus sadaļās — pietiek ar tekstu.",
+    "kindHint_FORM": "Apmeklētāji tev raksta caur formu, bet ziņojumus redzi panelī. Pietiek ar nosaukumu.",
+    "kindHint_EMAIL": "Vāc tavu jaunumu abonentus; katrs apstiprina pierakstīšanos pa e-pastu. Pietiek ar nosaukumu.",
+    "kindHint_BOOKING": "Apmeklētāji nosūta pieraksta pieprasījumu, ko redzi panelī un atzīmē kā apstrādātu. Pietiek ar nosaukumu.",
+    "kindHint_MUSIC": "Aizpildi vismaz vienu — apmeklētājs izvēlas savu pakalpojumu.",
+    "kindHint_APP": "Aizpildi vismaz vienu veikalu — rādām pareizo atkarībā no apmeklētāja tālruņa.",
+    "kindHint_VIDEO": "Video tiek iegults profilā un ielādējas tikai pēc klikšķa.",
+    "kindHint_VCARD": "Aizpildi tālruni un/vai e-pastu — apmeklētājs ar vienu pieskārienu tos saglabā savos kontaktos.",
     "addBlockHint": "Virsrakstam un formai vajadzīgs tikai nosaukums. Lietotnei aizpildi App Store un/vai Google Play. Mūzikai — Spotify un/vai Apple Music.",
     "messagesSection": "Formas ziņojumi",
     "noMessages": "Vēl nav ziņojumu.",
@@ -526,7 +547,11 @@
   "seo": {
     "metaTitle": "Linketto — daudzvalodu link in bio: visas tavas saites jebkurā valodā",
     "keywords": "Linketto, Carbon Stealth, share links, link in bio, linktree alternatīva, bio saite, link in bio lapa, satura veidotāja lapa, daudzvalodu profils, digitālā vizītkarte, pārdod digitālos produktus, visas saites vienuviet",
-    "metaDescription": "Linketto ir daudzvalodu link in bio: visas tavas saites vienuviet, katra apmeklētāja valodā. Mitināts ES, analītika bez sīkdatnēm, bez komisijas maksām. Carbon Stealth produkts."
+    "metaDescription": "Linketto ir daudzvalodu link in bio: visas tavas saites vienuviet, katra apmeklētāja valodā. Mitināts ES, analītika bez sīkdatnēm, bez komisijas maksām. Carbon Stealth produkts.",
+    "privacyDescription": "Kā Linketto apstrādā tavus personas datus: tikai pakalpojumam nepieciešamo, mitināšana ES, bez datu pārdošanas un bez izsekošanas sīkdatnēm.",
+    "termsDescription": "Linketto lietošanas noteikumi: līguma noslēgšana, plāni un maksājumi, atteikuma tiesības, saturs un moderācija, uzaicinājumu programma.",
+    "cookiesDescription": "Linketto izmanto tikai strikti nepieciešamās sīkdatnes pieteikšanās un valodas izvēlei. Profilu apmeklētāji sīkdatnes nesaņem.",
+    "profileDescription": "{name} platformā Linketto — visas saites vienuviet, katra apmeklētāja valodā."
   },
   "report": {
     "title": "Ziņot par profilu „{name}“",
@@ -673,7 +698,9 @@
     "ctaButton": "Sāc bez maksas",
     "plansNote": "Abu pakalpojumu plāni ietver dažādas funkcijas; mēs salīdzinām tikai uzskaitītās īpašības. Pilni noteikumi ir to cenu lapās.",
     "metaDescription": "Linketto vai {name}? Cenas, savs domēns, zīmols un analītika — fakti no viņu oficiālajām lapām, ar datumu un avotu.",
-    "intro": "Godīgs cenu un funkciju salīdzinājums — katra {name} vērtība ņemta no viņu oficiālās lapas, ar avotu un datumu."
+    "intro": "Godīgs cenu un funkciju salīdzinājums — katra {name} vērtība ņemta no viņu oficiālās lapas, ar avotu un datumu.",
+    "summaryLead": "Īsumā (stāvoklis: {date}):",
+    "summaryRow": "{feature} — Linketto: {us}; {name}: {them}."
   },
   "security": {
     "title": "Drošība",

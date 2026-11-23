@@ -68,6 +68,10 @@ src/lib/blocks.ts      Блокова система (по linkie.to): kinds LIN
                        MAP/VIDEO/MUSIC/APP/FORM; parseBlockInput валидира и
                        нормализира входа (tel:, Google Maps URL, embed проверка);
                        videoEmbedSrc (YouTube nocookie/Vimeo allowlist).
+                       blockFieldsFor/blockFieldLabels/blockFieldInput = кои полета,
+                       с какъв етикет и тип ползва видът (MUSIC: url=Spotify,
+                       extra1=Apple Music) — формата „Добави блок“ е клиентската
+                       AddBlockFields, редакцията — същите функции на сървъра.
                        FORM блокът пише в ContactMessage (публично действие с
                        honeypot; съобщенията се четат в дашборда).
 src/app/actions/       Server actions (auth, profile, billing) — zod вход,
@@ -95,9 +99,13 @@ src/app/(public)/u/[slug]/qr/  Безплатен QR (SVG, акцентен цв
 рендиране, и при клик. VCARD блокът връща .vcf през click route-а.
 
 SEO: src/lib/seo.ts (SITE_URL, pageMetadata → canonical+hreflang за 6-те
-локала, siteJsonLd/faqJsonLd). Профилите: profileMetadata (OG, canonical,
-noindex при 18+ линк) + ProfilePage/Person JSON-LD. sitemap.ts (hreflang
-alternates, без 18+ профили), robots.ts (AI ботове изрично allow),
+локала, siteJsonLd/faqJsonLd; `keywords` се слага само ако е подаден — иначе `undefined`
+презаписва тези от layout-а). Всяка индексируема страница има собствени title/description
+(privacy/terms/cookies — `seo.*Description`); login/register/forgot/reset са noindex и НЕ са в
+Disallow (ботът трябва да прочете noindex). Профилите: profileMetadata (async; OG, canonical,
+ключови думи с „Carbon Stealth“, резервно описание `seo.profileDescription`, noindex при 18+ линк)
++ ProfilePage/Person JSON-LD (sameAs — само социални мрежи по домейна). sitemap.ts (hreflang
+alternates, без 18+ профили и без профили без езикова версия; фиксиран lastModified), robots.ts (AI ботове изрично allow),
 public/llms.txt. Правно: DSA сигнали = /u/[slug]/report (модел Report,
 actions/report.ts, категории в src/lib/report.ts); чл. 13 бележка под FORM
 блока; ContactMessage
@@ -166,7 +174,11 @@ checkPurchase (lib/plan-orders.ts; FOUNDER не се купува пак, по-�
 реда на потребителя, пуска checkPurchase ОТНОВО (иначе → `conflict`: платена, неприложена),
 пази снимка prevPlan/prevExpiresAt и праща потвърждение (lib/plan-confirmation.ts, P14).
 Връщане: само от /admin → refund поръчка при Revolut (`refund_pending`, до 2 дни) → при
-`completed` планът се връща към снимката (отпада само платеното с поръчката). Реферал
+`completed` (САМО по живо четене: type refund + точна сума + EUR; CAS по `refundOrderId` и опита —
+червен екип 2026-11-22) планът се връща към снимката (отпада само платеното с поръчката).
+Разминаване в сумата → аларма най-много веднъж на 24 ч (маркер `refundStuckAlertedAt`) и бутон
+„Приключи ръчно“ в /admin след сверка в Revolut Business (`closeRefundManually`,
+docs/refund-manual-close-spec.md — решава живото четене; реалната сума влиза в `refundCents`). Реферал
 бонусът (REFERRAL_PERCENT=15 от платената сума) се записва в същата транзакция като
 **задържан** (`releasedAt null`, docs/abuse-money-spec.md А) и влиза в баланса след 30 дни от
 cron-а (`releaseReferralBonuses`: живо GET, условен запис); отказ/връщане/спор го сторнират,
@@ -245,7 +257,10 @@ actions/shop.ts (по userId); статут търговец/частно лиц
 `ugc.production.linktr.ee` → sharp). **Безплатни инструменти** `/[locale]/tools` (QR — изцяло в браузъра;
 AI био — `actions/tools.ts`, лимит по IP + дневен таван, нищо не се пази). **Сравнения** `/[locale]/vs/<id>`
 — фактите САМО в `lib/comparisons.ts` с дата и първоизточник (Дир. 2006/114 чл. 4); твърдения без
-източник не влизат („Linktree е само на английски“ и „12/9%“ вече НЕ са верни — да не се връщат).
+източник не влизат („Linktree е само на английски“ и „12/9%“ вече НЕ са верни — да не се връщат;
+„Linktree няма собствен домейн“ е махнато 2026-11-22 — източникът е 404). Цените на Linktree се
+рисуват в браузъра по регион: проверка с Chromium, не с fetch (ботът получава текст без цени).
+„Отговорът отпред“ над таблицата се сглобява от същите редове (`vs.summaryRow`).
 **Седмичен отчет** „езикова дупка“: `lib/digest.ts` (чисти функции) + `POST /api/cron/digest`
 (Bearer `CRON_SECRET`, дневен cron, ≤1 на ~седмица по `User.lastDigestAt`) + отписване с 1 клик
 `/api/digest/unsubscribe` (HMAC подпис, GET без странични ефекти, POST = RFC 8058) и от таблото

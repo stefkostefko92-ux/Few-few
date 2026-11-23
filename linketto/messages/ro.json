@@ -194,6 +194,27 @@
     "urlLabel": "URL / telefon / adresă",
     "extra1Label": "App Store / Spotify URL",
     "extra2Label": "Google Play / Apple Music URL",
+    "field_url": "Link (https://…)",
+    "field_tip": "Link de plată (Revolut, PayPal, Ko-fi…)",
+    "field_video": "Linkul videoclipului (YouTube sau Vimeo)",
+    "field_phone": "Număr de telefon",
+    "field_address": "Adresă sau loc",
+    "field_spotify": "Link Spotify",
+    "field_appleMusic": "Link Apple Music",
+    "field_appStore": "Link App Store",
+    "field_googlePlay": "Link Google Play",
+    "field_appWeb": "Pagină web pentru celelalte dispozitive (opțional)",
+    "field_vcardPhone": "Telefon",
+    "field_vcardEmail": "E-mail",
+    "field_vcardOrg": "Firmă (opțional)",
+    "kindHint_HEADER": "Titlul împarte blocurile în secțiuni — e suficient textul.",
+    "kindHint_FORM": "Vizitatorii îți scriu prin formular, iar mesajele le vezi în panou. E suficient un titlu.",
+    "kindHint_EMAIL": "Strânge abonați pentru newsletterul tău; fiecare confirmă prin e-mail. E suficient un titlu.",
+    "kindHint_BOOKING": "Vizitatorii trimit o cerere de programare, pe care o vezi în panou și o marchezi ca rezolvată. E suficient un titlu.",
+    "kindHint_MUSIC": "Completează cel puțin unul — vizitatorul își alege serviciul.",
+    "kindHint_APP": "Completează cel puțin un magazin — îl afișăm pe cel potrivit în funcție de telefonul vizitatorului.",
+    "kindHint_VIDEO": "Videoclipul se încorporează în profil și se încarcă doar la apăsare.",
+    "kindHint_VCARD": "Completează telefonul și/sau e-mailul — vizitatorul le salvează în contacte cu o singură atingere.",
     "addBlockHint": "Pentru titlu și formular e suficient doar un titlu. Pentru o aplicație, completează App Store și/sau Google Play. Pentru muzică — Spotify și/sau Apple Music.",
     "messagesSection": "Mesaje din formular",
     "noMessages": "Încă nu există mesaje.",
@@ -526,7 +547,11 @@
   "seo": {
     "metaTitle": "Linketto — link in bio multilingv: toate linkurile tale, în orice limbă",
     "keywords": "Linketto, Carbon Stealth, share links, link in bio, link în bio, alternativă Linktree, bio link, pagină link in bio, pagină pentru creatori, profil multilingv, carte de vizită digitală, vinde produse digitale, toate linkurile într-un singur loc",
-    "metaDescription": "Linketto este link in bio-ul multilingv: toate linkurile tale într-un singur loc, în limba fiecărui vizitator. Găzduit în UE, analiză fără cookie-uri, fără comisioane. Un produs Carbon Stealth."
+    "metaDescription": "Linketto este link in bio-ul multilingv: toate linkurile tale într-un singur loc, în limba fiecărui vizitator. Găzduit în UE, analiză fără cookie-uri, fără comisioane. Un produs Carbon Stealth.",
+    "privacyDescription": "Cum prelucrează Linketto datele tale personale: doar ce e necesar pentru serviciu, găzduire în UE, fără vânzarea datelor și fără cookie-uri de urmărire.",
+    "termsDescription": "Termenii și condițiile Linketto: încheierea contractului, planuri și plăți, dreptul de retragere, conținut și moderare, programul de invitații.",
+    "cookiesDescription": "Linketto folosește doar cookie-uri strict necesare pentru autentificare și alegerea limbii. Vizitatorii profilurilor nu primesc cookie-uri.",
+    "profileDescription": "{name} pe Linketto — toate linkurile într-un singur loc, în limba fiecărui vizitator."
   },
   "report": {
     "title": "Raportează profilul „{name}”",
@@ -673,7 +698,9 @@
     "ctaButton": "Începe gratuit",
     "plansNote": "Planurile celor două servicii includ funcții diferite; comparăm doar caracteristicile enumerate. Condițiile complete sunt pe paginile lor de prețuri.",
     "metaDescription": "Linketto sau {name}? Prețuri, domeniu propriu, branding și analiză — fapte de pe paginile lor oficiale, cu dată și sursă.",
-    "intro": "O comparație onestă de preț și funcții — fiecare valoare pentru {name} provine de pe pagina lor oficială, cu sursă și dată."
+    "intro": "O comparație onestă de preț și funcții — fiecare valoare pentru {name} provine de pe pagina lor oficială, cu sursă și dată.",
+    "summaryLead": "Pe scurt (la data de {date}):",
+    "summaryRow": "{feature} — Linketto: {us}; {name}: {them}."
   },
   "security": {
     "title": "Securitate",

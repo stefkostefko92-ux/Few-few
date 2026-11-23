@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="bg"><head><meta charset="UTF-8"><script id="cs-ads-npa">(function(){var a=window.adsbygoogle=window.adsbygoogle||[];try{if(localStorage.getItem("cs_cookie")!=="accepted")a.requestNonPersonalizedAds=1}catch(e){a.requestNonPersonalizedAds=1}})()</script><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9580994554261732" crossorigin="anonymous"></script><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Google Business Profile: Как да ви Намират Локално | Carbon Stealth</title>
+<title>Google Business Profile: Как да ви Намират Локално</title>
 <meta name="description" content="Как да използвате Google Business Profile, за да ви намират при локални търсения: настройка, отзиви, снимки, публикации и грешките, които костват позиции на картата.">
 <meta name="keywords" content="google business profile, как да ви намират локално, уеб агенция, изработка на сайт, уеб дизайн, изработка на онлайн магазин, Carbon Stealth">
 <link rel="canonical" href="https://carbonstealth.eu/bg/blog/google-business-profile-guida/">
@@ -54,7 +54,18 @@ a{color:var(--cs-c)}
 .nav img{height:34px!important;width:auto!important}
 .nav>div a{display:inline-block;padding:7px 0}
 /* last nav link (Contatti / Contact / Контакти) = the call to action, like the SPA's ring-glow CTA */
-@media(min-width:901px){.nav>div a:last-child{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}.nav>div a:last-child:hover{background:rgba(0,229,255,.08)}}
+@media(min-width:901px){.nav>div>a:last-child{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}.nav>div>a:last-child:hover{background:rgba(0,229,255,.08)}}
+/* „Soluzioni ▾“ (scripts/solutions-nav.py): четирите направления под връзката към хъба — отварят се с мишка или
+   с клавиатура (:focus-within), без JS; на телефон стоят отворени в менюто */
+.nav-dd{position:relative;display:inline-block}
+.nav-dd-t::after{content:" \25BE";opacity:.7}
+.nav-dd-m{position:absolute;left:0;top:100%;display:none;flex-direction:column;min-width:250px;padding:8px 0;background:rgba(10,12,14,.98);
+  border:1px solid rgba(0,229,255,.25);box-shadow:0 14px 32px rgba(0,0,0,.55);z-index:1003}
+.nav-dd:hover>.nav-dd-m,.nav-dd:focus-within>.nav-dd-m{display:flex}
+.nav .nav-dd-m a{margin:0!important;padding:10px 18px!important;font-size:11px!important;letter-spacing:.08em!important;white-space:nowrap}
+.nav .nav-dd-m a:hover,.nav .nav-dd-m a:focus-visible{background:rgba(0,229,255,.08);color:var(--cs-c)!important}
+.cs-dir{font-size:11px;letter-spacing:.12em;color:var(--cs-ink2);margin-top:10px}
+.cs-games{border-top:1px solid rgba(0,229,255,.14);border-bottom:1px solid rgba(0,229,255,.14);padding:14px 0;margin:28px 0;font-size:12px;letter-spacing:.06em}
 /* portfolio: screenshots were 860px wide one after another; tighter and paired with their text */
 .w>.work-shot{max-width:720px}
 .nav-toggle{display:none}
@@ -113,6 +124,10 @@ a{color:var(--cs-c)}
   .js .nav.open>div>a{flex:none}
   .js .nav.open>div>a:first-child{margin-top:auto}
   .js .nav.open>div>a:last-child{margin-bottom:auto}
+  .js .nav.open .nav-dd{display:flex;flex-direction:column;align-items:center;gap:6px;flex:none}
+  .js .nav.open .nav-dd-t::after{content:none}
+  .js .nav.open .nav-dd-m{position:static;display:flex;gap:6px;min-width:0;padding:0;background:none;border:0;box-shadow:none}
+  .js .nav.open .nav-dd-m a{min-width:210px;font-size:11px!important;padding:10px 20px!important;color:var(--cs-ink2)!important;border-color:rgba(0,229,255,.16)}
   .nav.open .nav-toggle span:nth-child(1){transform:translateY(7px) rotate(45deg)}
   .nav.open .nav-toggle span:nth-child(2){opacity:0}
   .nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
@@ -163,7 +178,7 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 @property --ctr{syntax:'<length>';inherits:false;initial-value:0px}
 @keyframes ctblHint{from{--ctl:0px;--ctr:36px}to{--ctl:36px;--ctr:0px}}
 @supports (animation-timeline:scroll()){.ctbl{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);animation:ctblHint linear both;animation-timeline:scroll(self inline)}.ctbl:focus-visible{-webkit-mask-image:none;mask-image:none}}
-</style></head><body><nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">ГЛАВНА</a><a href="/bg/za-nas/">ЗА НАС</a><a href="/bg/uslugi/web-razrabotka/">УСЛУГИ</a><a href="/bg/portfolio/">ПОРТФОЛИО</a><a href="/bg/ceni/">ЦЕНИ</a><a href="/bg/kontakti/">КОНТАКТИ</a></div></nav><div class="hero-s"><div class="w"><div class="tag">// BLOG</div><h1>Google Business Profile: Как да ви Намират Локално</h1></div></div><div class="w"><p class="blog-date">16 Юли 2026 &middot; 7 мин четене</p><p>Google Business Profile (бившият Google My Business) е безплатният инструмент, който показва бизнеса ви при локални търсения и в Google Maps. Ако имате магазин, кабинет или обслужвате конкретен район, това вероятно е каналът с най-добра възвръщаемост спрямо усилието: пълен и поддържан профил може да носи обаждания и посещения, без да харчите за реклама. Правилото е просто: колкото по-пълен, актуален и богат на отзиви е профилът, толкова повече Google го показва.</p>
+</style></head><body><nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/bg/">ГЛАВНА</a><span class="nav-dd"><a href="/bg/resheniya/" class="nav-dd-t">РЕШЕНИЯ</a><span class="nav-dd-m"><a href="/bg/resheniya/biznes-softuer/">Бизнес софтуер</a><a href="/bg/resheniya/industrialni-tehnologii/">Индустриални технологии</a><a href="/bg/resheniya/saytove-i-magazini/">Сайтове и магазини</a><a href="/bg/resheniya/igri-i-interaktiv/">Игри и интерактив</a></span></span><a href="/bg/branshove/">БРАНШОВЕ</a><a href="/bg/keys-studii/">КЕЙС СТЪДИТА</a><a href="/bg/ceni/">ЦЕНИ</a><a href="/bg/za-nas/">ЗА НАС</a><a href="/bg/kontakti/">КОНТАКТИ</a></div></nav><div class="hero-s"><div class="w"><div class="tag">// BLOG</div><h1>Google Business Profile: Как да ви Намират Локално</h1></div></div><div class="w"><p class="blog-date">16 Юли 2026 &middot; 7 мин четене</p><p>Google Business Profile (бившият Google My Business) е безплатният инструмент, който показва бизнеса ви при локални търсения и в Google Maps. Ако имате магазин, кабинет или обслужвате конкретен район, това вероятно е каналът с най-добра възвръщаемост спрямо усилието: пълен и поддържан профил може да носи обаждания и посещения, без да харчите за реклама. Правилото е просто: колкото по-пълен, актуален и богат на отзиви е профилът, толкова повече Google го показва.</p>
 <h2>Как да настроите профила правилно</h2>
 <ul>
 <li><strong>Пълни и последователни данни:</strong> име, адрес и телефон трябва да съвпадат точно с тези на сайта.</li>

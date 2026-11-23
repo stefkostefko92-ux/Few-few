@@ -30,6 +30,7 @@ import glob
 import hashlib
 import os
 import re
+from html import unescape
 
 
 def live_version():
@@ -108,7 +109,18 @@ a{{color:var(--cs-c)}}
 .nav img{{height:34px!important;width:auto!important}}
 .nav>div a{{display:inline-block;padding:7px 0}}
 /* last nav link (Contatti / Contact / Контакти) = the call to action, like the SPA's ring-glow CTA */
-@media(min-width:{NAV_MAX + 1}px){{.nav>div a:last-child{{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}}.nav>div a:last-child:hover{{background:rgba(0,229,255,.08)}}}}
+@media(min-width:{NAV_MAX + 1}px){{.nav>div>a:last-child{{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}}.nav>div>a:last-child:hover{{background:rgba(0,229,255,.08)}}}}
+/* „Soluzioni ▾“ (scripts/solutions-nav.py): четирите направления под връзката към хъба — отварят се с мишка или
+   с клавиатура (:focus-within), без JS; на телефон стоят отворени в менюто */
+.nav-dd{{position:relative;display:inline-block}}
+.nav-dd-t::after{{content:" \\25BE";opacity:.7}}
+.nav-dd-m{{position:absolute;left:0;top:100%;display:none;flex-direction:column;min-width:250px;padding:8px 0;background:rgba(10,12,14,.98);
+  border:1px solid rgba(0,229,255,.25);box-shadow:0 14px 32px rgba(0,0,0,.55);z-index:1003}}
+.nav-dd:hover>.nav-dd-m,.nav-dd:focus-within>.nav-dd-m{{display:flex}}
+.nav .nav-dd-m a{{margin:0!important;padding:10px 18px!important;font-size:11px!important;letter-spacing:.08em!important;white-space:nowrap}}
+.nav .nav-dd-m a:hover,.nav .nav-dd-m a:focus-visible{{background:rgba(0,229,255,.08);color:var(--cs-c)!important}}
+.cs-dir{{font-size:11px;letter-spacing:.12em;color:var(--cs-ink2);margin-top:10px}}
+.cs-games{{border-top:1px solid rgba(0,229,255,.14);border-bottom:1px solid rgba(0,229,255,.14);padding:14px 0;margin:28px 0;font-size:12px;letter-spacing:.06em}}
 /* portfolio: screenshots were 860px wide one after another; tighter and paired with their text */
 .w>.work-shot{{max-width:720px}}
 .nav-toggle{{display:none}}
@@ -167,6 +179,10 @@ a{{color:var(--cs-c)}}
   .js .nav.open>div>a{{flex:none}}
   .js .nav.open>div>a:first-child{{margin-top:auto}}
   .js .nav.open>div>a:last-child{{margin-bottom:auto}}
+  .js .nav.open .nav-dd{{display:flex;flex-direction:column;align-items:center;gap:6px;flex:none}}
+  .js .nav.open .nav-dd-t::after{{content:none}}
+  .js .nav.open .nav-dd-m{{position:static;display:flex;gap:6px;min-width:0;padding:0;background:none;border:0;box-shadow:none}}
+  .js .nav.open .nav-dd-m a{{min-width:210px;font-size:11px!important;padding:10px 20px!important;color:var(--cs-ink2)!important;border-color:rgba(0,229,255,.16)}}
   .nav.open .nav-toggle span:nth-child(1){{transform:translateY(7px) rotate(45deg)}}
   .nav.open .nav-toggle span:nth-child(2){{opacity:0}}
   .nav.open .nav-toggle span:nth-child(3){{transform:translateY(-7px) rotate(-45deg)}}
@@ -269,7 +285,7 @@ SKIP = {"public/offline.html", "public/status/index.html"}  # the status page is
 STRIP = [re.compile(r'<link id="cs-theme-fonts(?:-pre\d?)?"[^>]*>'), re.compile(r'<link id="cs-bench-pre\d?"[^>]*>'), re.compile(r'<script id="cs-js-flag">.*?</script>', re.S),
          re.compile(r'<style id="cs-theme">.*?</style>', re.S), re.compile(r'<script id="cs-nav-js">.*?</script>', re.S),
          re.compile(r'<div class="ft cs-legal-ft">.*?</div>', re.S), re.compile(r'<script id="cs-cal-js">.*?</script>', re.S),
-         re.compile(r'<script id="cs-live-boot">.*?</script>', re.S)]
+         re.compile(r'<script id="cs-live-boot">.*?</script>', re.S), re.compile(r'<script id="cs-consent-js"[^>]*></script>')]
 
 
 LEGAL = {"it": ("/termini/", "Termini", "/note-legali/", "Note legali"),
@@ -308,10 +324,18 @@ def theme(path, html):
                       lambda m: m.group(1) + f' &middot; <a href="{notice}">{nlabel}</a>', html, count=1)
     # снимките на проектите (public/work/*.webp, портфолио и кейс стъдита): имената са постоянни, а сървърът
     # ги кешира за година — адресът носи версията, иначе нова снимка не стига до върнал се посетител
-    html = re.sub(r'(/work/[a-z0-9-]+\.webp)(\?v=[0-9a-f]{10})?', lambda m: m.group(1) + LV, html)
+    html = re.sub(r'(/(?:work|brand/svc)/[a-z0-9-]+\.webp)(\?v=[0-9a-f]{10})?', lambda m: m.group(1) + LV, html)
     # horizontally scrollable tables must be reachable by keyboard (axe scrollable-region-focusable)
     label = {"it": "Tabella", "en": "Table", "bg": "Таблица"}[lang_of(path, html)]
     html = re.sub(r'<div class="(ctbl|table-wrap)">', lambda m: f'<div class="{m.group(1)}" tabindex="0" role="region" aria-label="{label}">', html)
+    # <title> над 65 знака се реже в резултатите на Google: опашката „ | Carbon Stealth“ отпада (името на сайта
+    # Google показва отделно — WebSite/Organization в JSON-LD). og:title и twitter:title остават цели.
+    def fit(m):
+        t = m.group(1)
+        if len(unescape(t)) > 65 and t.endswith(" | Carbon Stealth"):
+            t = t[: -len(" | Carbon Stealth")]
+        return "<title>" + t + "</title>"
+    html = re.sub(r"<title>([^<]*)</title>", fit, html, count=1)
     return html
 
 

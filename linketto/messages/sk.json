@@ -194,6 +194,27 @@
     "urlLabel": "URL / telefón / adresa",
     "extra1Label": "App Store / Spotify URL",
     "extra2Label": "Google Play / Apple Music URL",
+    "field_url": "Odkaz (https://…)",
+    "field_tip": "Platobný odkaz (Revolut, PayPal, Ko-fi…)",
+    "field_video": "Odkaz na video (YouTube alebo Vimeo)",
+    "field_phone": "Telefónne číslo",
+    "field_address": "Adresa alebo miesto",
+    "field_spotify": "Odkaz na Spotify",
+    "field_appleMusic": "Odkaz na Apple Music",
+    "field_appStore": "Odkaz na App Store",
+    "field_googlePlay": "Odkaz na Google Play",
+    "field_appWeb": "Webová stránka pre ostatné zariadenia (voliteľné)",
+    "field_vcardPhone": "Telefón",
+    "field_vcardEmail": "E-mail",
+    "field_vcardOrg": "Firma (voliteľné)",
+    "kindHint_HEADER": "Nadpis rozdeľuje bloky na sekcie — stačí len text.",
+    "kindHint_FORM": "Návštevníci ti píšu cez formulár a správy vidíš v paneli. Stačí názov.",
+    "kindHint_EMAIL": "Zbiera odberateľov tvojho newslettera; každý sa potvrdí e-mailom. Stačí názov.",
+    "kindHint_BOOKING": "Návštevníci posielajú žiadosť o termín, ktorú vidíš v paneli a označíš ako vybavenú. Stačí názov.",
+    "kindHint_MUSIC": "Vyplň aspoň jedno — návštevník si vyberie svoju službu.",
+    "kindHint_APP": "Vyplň aspoň jeden obchod — zobrazíme ten správny podľa telefónu návštevníka.",
+    "kindHint_VIDEO": "Video sa vloží do profilu a načíta sa až po kliknutí.",
+    "kindHint_VCARD": "Vyplň telefón a/alebo e-mail — návštevník si ich jedným ťuknutím uloží do kontaktov.",
     "addBlockHint": "Nadpis a formulár potrebujú len názov. Pri aplikácii vyplň App Store a/alebo Google Play. Pri hudbe — Spotify a/alebo Apple Music.",
     "messagesSection": "Správy z formulára",
     "noMessages": "Zatiaľ žiadne správy.",
@@ -526,7 +547,11 @@
   "seo": {
     "metaTitle": "Linketto — viacjazyčný link in bio: všetky odkazy, v každom jazyku",
     "keywords": "Linketto, Carbon Stealth, share links, link in bio, odkaz v biu, všetky odkazy na jednom mieste, alternatíva k linktree, bio link, digitálna vizitka, stránka pre tvorcov, viacjazyčný profil, predaj digitálnych produktov",
-    "metaDescription": "Linketto je viacjazyčný link in bio: všetky tvoje odkazy na jednom mieste, v jazyku každého návštevníka. Hostovaný v EÚ, analytika bez cookies, bez provízií. Produkt Carbon Stealth."
+    "metaDescription": "Linketto je viacjazyčný link in bio: všetky tvoje odkazy na jednom mieste, v jazyku každého návštevníka. Hostovaný v EÚ, analytika bez cookies, bez provízií. Produkt Carbon Stealth.",
+    "privacyDescription": "Ako Linketto spracúva tvoje osobné údaje: len to, čo služba potrebuje, hosting v EÚ, žiadny predaj údajov a žiadne sledovacie cookies.",
+    "termsDescription": "Obchodné podmienky Linketta: uzavretie zmluvy, plány a platby, právo na odstúpenie od zmluvy, obsah a moderovanie, program pozvánok.",
+    "cookiesDescription": "Linketto používa len nevyhnutne potrebné cookies na prihlásenie a výber jazyka. Návštevníci profilov nedostávajú žiadne cookies.",
+    "profileDescription": "{name} na Linkette — všetky odkazy na jednom mieste, v jazyku každého návštevníka."
   },
   "report": {
     "title": "Nahlásiť profil „{name}”",
@@ -673,7 +698,9 @@
     "ctaButton": "Začni zadarmo",
     "plansNote": "Plány oboch služieb zahŕňajú rôzne funkcie; porovnávame len uvedené vlastnosti. Úplné podmienky nájdeš na ich stránkach s cenami.",
     "metaDescription": "Linketto, alebo {name}? Ceny, vlastná doména, značka a analytika — fakty z ich oficiálnych stránok, s dátumom a zdrojom.",
-    "intro": "Férové porovnanie ceny a funkcií — každá hodnota pre {name} pochádza z ich oficiálnej stránky, so zdrojom a dátumom."
+    "intro": "Férové porovnanie ceny a funkcií — každá hodnota pre {name} pochádza z ich oficiálnej stránky, so zdrojom a dátumom.",
+    "summaryLead": "V skratke (k {date}):",
+    "summaryRow": "{feature} — Linketto: {us}; {name}: {them}."
   },
   "security": {
     "title": "Zabezpečenie",

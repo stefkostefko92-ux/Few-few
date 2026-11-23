@@ -197,6 +197,27 @@
     "urlLabel": "URL / telefon / adres",
     "extra1Label": "App Store / Spotify URL",
     "extra2Label": "Google Play / Apple Music URL",
+    "field_url": "Link (https://…)",
+    "field_tip": "Link do płatności (Revolut, PayPal, Ko-fi…)",
+    "field_video": "Link do filmu (YouTube lub Vimeo)",
+    "field_phone": "Numer telefonu",
+    "field_address": "Adres lub miejsce",
+    "field_spotify": "Link do Spotify",
+    "field_appleMusic": "Link do Apple Music",
+    "field_appStore": "Link do App Store",
+    "field_googlePlay": "Link do Google Play",
+    "field_appWeb": "Strona internetowa dla innych urządzeń (opcjonalnie)",
+    "field_vcardPhone": "Telefon",
+    "field_vcardEmail": "E-mail",
+    "field_vcardOrg": "Firma (opcjonalnie)",
+    "kindHint_HEADER": "Nagłówek dzieli bloki na sekcje — wystarczy sam tekst.",
+    "kindHint_FORM": "Odwiedzający piszą do Ciebie przez formularz, a wiadomości widzisz w panelu. Wystarczy tytuł.",
+    "kindHint_EMAIL": "Zbiera subskrybentów Twojego newslettera; każdy potwierdza zapis e-mailem. Wystarczy tytuł.",
+    "kindHint_BOOKING": "Odwiedzający wysyłają prośbę o rezerwację, którą widzisz w panelu i oznaczasz jako załatwioną. Wystarczy tytuł.",
+    "kindHint_MUSIC": "Uzupełnij co najmniej jedno — odwiedzający wybiera swój serwis.",
+    "kindHint_APP": "Uzupełnij co najmniej jeden sklep — pokażemy właściwy zależnie od telefonu odwiedzającego.",
+    "kindHint_VIDEO": "Film jest osadzany w profilu i ładuje się dopiero po kliknięciu.",
+    "kindHint_VCARD": "Uzupełnij telefon i/lub e-mail — odwiedzający zapisze je w kontaktach jednym dotknięciem.",
     "addBlockHint": "Nagłówek i formularz wymagają tylko tytułu. Dla aplikacji uzupełnij App Store i/lub Google Play. Dla muzyki — Spotify i/lub Apple Music.",
     "messagesSection": "Wiadomości z formularza",
     "noMessages": "Jeszcze brak wiadomości.",
@@ -529,7 +550,11 @@
   "seo": {
     "metaTitle": "Linketto — wielojęzyczny link in bio: wszystkie linki, w każdym języku",
     "keywords": "Linketto, Carbon Stealth, share links, link in bio, link w bio, wszystkie linki w jednym miejscu, alternatywa dla linktree, bio link, wizytówka cyfrowa, strona dla twórców, profil wielojęzyczny, sprzedaż produktów cyfrowych",
-    "metaDescription": "Linketto to wielojęzyczny link in bio: wszystkie Twoje linki w jednym miejscu, w języku każdego odwiedzającego. Hosting w UE, analityka bez ciasteczek, bez prowizji. Produkt Carbon Stealth."
+    "metaDescription": "Linketto to wielojęzyczny link in bio: wszystkie Twoje linki w jednym miejscu, w języku każdego odwiedzającego. Hosting w UE, analityka bez ciasteczek, bez prowizji. Produkt Carbon Stealth.",
+    "privacyDescription": "Jak Linketto przetwarza Twoje dane osobowe: tylko to, co potrzebne do działania usługi, hosting w UE, bez sprzedaży danych i bez śledzących ciasteczek.",
+    "termsDescription": "Regulamin Linketto: zawarcie umowy, plany i płatności, prawo odstąpienia od umowy, treści i moderacja, program poleceń.",
+    "cookiesDescription": "Linketto używa tylko ściśle niezbędnych ciasteczek do logowania i wyboru języka. Odwiedzający profile nie otrzymują ciasteczek.",
+    "profileDescription": "{name} w Linketto — wszystkie linki w jednym miejscu, w języku każdego odwiedzającego."
   },
   "report": {
     "title": "Zgłoś profil „{name}”",
@@ -676,7 +701,9 @@
     "ctaButton": "Zacznij za darmo",
     "plansNote": "Plany obu usług obejmują różne funkcje; porównujemy tylko wymienione cechy. Pełne warunki znajdziesz na ich stronach z cenami.",
     "metaDescription": "Linketto czy {name}? Ceny, własna domena, branding i analityka — fakty z ich oficjalnych stron, z datą i źródłem.",
-    "intro": "Uczciwe porównanie ceny i funkcji — każda wartość dla {name} pochodzi z ich oficjalnej strony, ze źródłem i datą."
+    "intro": "Uczciwe porównanie ceny i funkcji — każda wartość dla {name} pochodzi z ich oficjalnej strony, ze źródłem i datą.",
+    "summaryLead": "W skrócie (stan na {date}):",
+    "summaryRow": "{feature} — Linketto: {us}; {name}: {them}."
   },
   "security": {
     "title": "Bezpieczeństwo",
