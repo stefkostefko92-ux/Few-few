@@ -865,3 +865,22 @@
 {"t":"start","ts":"2026-11-22T20:10:35.613Z","id":"ra6cc5bb2","flow":"авто","lead":"seo","auto":true}
 {"t":"handoff","ts":"2026-11-22T20:10:35.613Z","id":"ra6cc5bb2","from":"seo","to":"prevodach","status":"има бележки","run":"01a24b93"}
 {"t":"handoff","ts":"2026-11-22T20:15:01.380Z","id":"ra6cc5bb2","from":"prevodach","to":"човек","status":"има бележки","run":"6bd7b890"}
+{"t":"start","ts":"2026-11-23T09:59:33.007Z","id":"ff8e8gu","flow":"видео продукция 4K/60 (Blender, FFmpeg, DaVinci Resolve)","lead":"ai-djiyata","steps":["ai-djiyata"]}
+{"t":"handoff","ts":"2026-11-23T09:59:41.760Z","id":"ff8e8gu","from":"ai-djiyata","to":"човек","status":"блокер","note":"teams.mjs --route: нищо не хвана; няма агент, който води производството (сцени, 3D, звук, рендер, Resolve) — заявка на собственика 23.11"}
+{"t":"close","ts":"2026-11-23T09:59:41.790Z","id":"ff8e8gu","status":"блокиран"}
+{"t":"start","ts":"2026-11-23T10:16:00.512Z","id":"r4d2b701c","flow":"авто","lead":"ai-djiyata","auto":true}
+{"t":"handoff","ts":"2026-11-23T10:16:00.512Z","id":"r4d2b701c","from":"ai-djiyata","to":"човек","status":"има бележки","run":"63ba6b51"}
+{"t":"handoff","ts":"2026-11-23T10:16:43.212Z","id":"r4d2b701c","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"328d8ae3"}
+{"t":"handoff","ts":"2026-11-23T10:18:07.814Z","id":"r4d2b701c","from":"pravniyat-razbirach","to":"ai-djiyata","status":"има бележки","run":"a457d4d3"}
+{"t":"handoff","ts":"2026-11-23T10:29:15.369Z","id":"r4d2b701c","from":"ai-djiyata","to":"човек","status":"наред","note":"прегледите на AI Studio (AI-джията, Кодаджията, Правния) — всички находки поправени в 5102e47e5"}
+{"t":"close","ts":"2026-11-23T10:29:15.410Z","id":"r4d2b701c","status":"завършен"}
+{"t":"start","ts":"2026-11-23T08:53:40.957Z","id":"r7782e8d7","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-23T08:53:40.957Z","id":"r7782e8d7","from":"kodadjiyata","to":"човек","status":"има бележки","run":"09f95ae0"}
+{"t":"handoff","ts":"2026-11-23T08:53:45.142Z","id":"r7782e8d7","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"03e60ea4"}
+{"t":"handoff","ts":"2026-11-23T09:02:21.536Z","id":"r7782e8d7","from":"pravniyat-razbirach","to":"kodadjiyata","status":"има бележки","run":"e40e5fd8"}
+{"t":"handoff","ts":"2026-11-23T09:02:57.295Z","id":"r7782e8d7","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"18209726"}
+{"t":"start","ts":"2026-11-23T09:28:14.842Z","id":"r6749f409","flow":"авто","lead":"razbivacha","auto":true}
+{"t":"handoff","ts":"2026-11-23T09:28:14.843Z","id":"r6749f409","from":"razbivacha","to":"kodadjiyata","status":"наред","run":"51f48071"}
+{"t":"handoff","ts":"2026-11-23T09:31:15.932Z","id":"r7782e8d7","from":"razbivacha","to":"kodadjiyata","status":"наред","note":"трети преглед (r6749f409): N1–N8 затворени в b1085eb5d"}
+{"t":"close","ts":"2026-11-23T09:31:15.963Z","id":"r7782e8d7","status":"завършен"}
+{"t":"close","ts":"2026-11-23T09:31:15.996Z","id":"r6749f409","status":"завършен"}
