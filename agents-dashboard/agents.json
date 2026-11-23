@@ -5133,7 +5133,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 303
+        "lessons": 304
       },
       "evolution": [
         {
@@ -5645,9 +5645,20 @@
           "date": "2026-11-23",
           "event": "v33.0 — учене",
           "detail": "Научи: Korpora нарича разкроя в IT „distinta di taglio“ и в EN „cut list“ (не „piano di taglio… (+49 още)"
+        },
+        {
+          "version": "33.1.0",
+          "date": "2026-11-23",
+          "event": "v33.1 — учене",
+          "detail": "Научи: В Supreme Bot всяка сума в € в FAQ на лендинга трябва да е цена на най-близкото спомена…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „В Supreme Bot всяка сума в € в FAQ на лендинга трябва да е цена на най-близкото спомена…\""
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
