@@ -1,9 +1,9 @@
 {
   "date": "2026-11-23",
-  "ref": "4c5a32e497a95699d40b50cc6231e787f1515e49",
+  "ref": "07dd5d0fe9d32097e504626d3bbf8302a680972c",
   "cli": "2.1.330 (Claude Code)",
-  "summary": "проба 9/9 · оценки 12/12 · pass^k 8/8 · verifier ✓",
-  "costUsd": 21.4,
+  "summary": "проба 4/4 · оценки 7/7 · pass^k 3/3 · verifier ✓",
+  "costUsd": 11.69,
   "criticalAt": "2026-11-23",
   "probe": [
     {
@@ -22,37 +22,12 @@
       "problems": []
     },
     {
-      "agent": "ai-djiyata",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "ai-studio",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "pravniyat-razbirach",
-      "ok": true,
-      "problems": []
-    },
-    {
       "agent": "prevodach",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "razbivacha",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "socialdjiyata",
       "ok": true,
       "problems": []
     }
   ],
-  "inputsHash": "22a476fe1f8440ab3dc7efc8646e328aaa1f75facf8f1b05e1b9f3cb6ec3b4f9",
+  "inputsHash": "b624365ec9e8439128e6c21b58e8b6c5348ed9768e81cfa566979ebecf7c5c4f",
   "files": {
     ".claude/agents/3d-maniac.md": "bdec637b2b2ca2d29db8fdc0049e65598aaf2cf0bc4552f6a5c8718e75ed162d",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
@@ -79,7 +54,7 @@
     ".claude/agents/mobildjiyata.md": "a632d13bd67854d418381a9cae4de6a313737f00554f2166b851ebdea2fede98",
     ".claude/agents/nabludatelya.md": "f7b124cdb19a57af4a588e393307bfa8e3f0b7db4226a409ffcdbc9ee0cfe402",
     ".claude/agents/pravniyat-razbirach.md": "1bf2c8aaf1733bc4a256e7538a88a689348d3a65e0a11e5f56d150f8ce77cbcf",
-    ".claude/agents/prevodach.md": "f91cd9f6b4384a6a73bf39d45e59016e0477b930e69ee9248274571e566ecd77",
+    ".claude/agents/prevodach.md": "03057b29992a1e4f17b313a64fd36eae190fc2885eb6b1232c47361fcb8debd2",
     ".claude/agents/printadjiyata.md": "d68133622d5966611129f43344c9b52996877107d3453a0f93b46bdf62622a57",
     ".claude/agents/prodavacha.md": "d738a2c99eb768b9bb0b30e1e66f6bafdf6b93e7df0f2188b340f7268393b9aa",
     ".claude/agents/pronikvacha.md": "9393082ca8b6601b87c61f89cdb105bb1f3c1ad0cd3aa43e2a71ae4c50c25791",
@@ -98,7 +73,7 @@
     ".claude/hooks/budget.mjs": "852f0055195ac4ed24c8ef3f04bef89ea254ce5142c4b996a57837772139a3d4",
     ".claude/hooks/dod-check.mjs": "0894630c593574889b2b355e4abd6c4bdc68d461c3f1675d84d65b8d51587c81",
     ".claude/hooks/format-on-edit.mjs": "d4f5c6bfd6296f2cc6f64c05927c72a2c71f0f17f5ade5b4b5930b8a60164c4c",
-    ".claude/hooks/guard-allowlist.mjs": "74557281d8634a8e549c5c20722ef035999cb8de6e066b3a6d6f578861e61e91",
+    ".claude/hooks/guard-allowlist.mjs": "a90d10740ab38a53bd8b07abecaad23cd7319ada43a9146f5a796a88e4d026c0",
     ".claude/hooks/guard-config.mjs": "b14433069e4af13b1dc84f7d76dbc5129cdd03688c45bfa9c2292827a3bd4cdd",
     ".claude/hooks/guard-dangerous.mjs": "99015658b5281af828013bab014d7ab7a9c21dc44873035f224e8f5c4c445c50",
     ".claude/hooks/guard-engagement.mjs": "0706e7055fe799f7e0f5fd9c1a87314a0cc63905da2108c61830e52ee201dc37",
