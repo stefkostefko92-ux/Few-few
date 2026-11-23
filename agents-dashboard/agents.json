@@ -1245,7 +1245,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 737
+        "lessons": 726
       },
       "evolution": [
         {
@@ -5144,7 +5144,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 304
+        "lessons": 303
       },
       "evolution": [
         {
@@ -6192,7 +6192,7 @@
           "съседни seed-*.ts — стил, тон и коментари за източник",
           "schema.prisma + package.json db:seed:* вериги"
         ],
-        "lessons": 170
+        "lessons": 169
       },
       "evolution": [
         {
@@ -6947,7 +6947,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 302
+        "lessons": 300
       },
       "evolution": [
         {
@@ -9440,7 +9440,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 327
+        "lessons": 325
       },
       "evolution": [
         {
@@ -11596,7 +11596,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 269
+        "lessons": 267
       },
       "evolution": [
         {
@@ -13320,7 +13320,7 @@
           "discord.py docs — алтернативен Python стек",
           "Discord Developer Policy & ToS — verification, привилегировани intents, данни"
         ],
-        "lessons": 224
+        "lessons": 222
       },
       "evolution": [
         {
@@ -15915,7 +15915,7 @@
           "Kubernetes probes docs (liveness/readiness/startup), graceful shutdown/SIGTERM",
           "Това репо: CLAUDE.md (продуктов стек), границата VPS-аджията (машина/деплой) и Конвейерът (CI)"
         ],
-        "lessons": 222
+        "lessons": 218
       },
       "evolution": [
         {
