@@ -912,3 +912,15 @@
 {"t":"handoff","ts":"2026-11-23T12:43:40.095Z","id":"r05dda047","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"6b596719"}
 {"t":"start","ts":"2026-11-23T13:17:05.903Z","id":"r71083b9e","flow":"авто","lead":"socialdjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-23T13:17:05.904Z","id":"r71083b9e","from":"socialdjiyata","to":"човек","status":"има бележки","run":"06a450c3"}
+{"t":"start","ts":"2026-11-23T14:39:18.297Z","id":"f8xjw1g","flow":"решение: звук","lead":"ai-studio","steps":["ai-studio"]}
+{"t":"start","ts":"2026-11-23T14:39:18.374Z","id":"fzac9wj","flow":"решение: Преводача","lead":"prevodach","steps":["prevodach"]}
+{"t":"start","ts":"2026-11-23T14:39:18.439Z","id":"ft06stu","flow":"решение: таван","lead":"ai-djiyata","steps":["ai-djiyata"]}
+{"t":"start","ts":"2026-11-23T14:39:18.501Z","id":"fg63lhd","flow":"решение: OWASP","lead":"razbivacha","steps":["razbivacha"]}
+{"t":"start","ts":"2026-11-23T14:39:18.564Z","id":"flq49z0","flow":"решение: регламент","lead":"pravniyat-razbirach","steps":["pravniyat-razbirach"]}
+{"t":"start","ts":"2026-11-23T14:39:18.643Z","id":"f90uy23","flow":"решение: youtube-agent-skill","lead":"socialdjiyata","steps":["socialdjiyata"]}
+{"t":"handoff","ts":"2026-11-23T14:39:28.605Z","id":"f8xjw1g","from":"ai-studio","to":"човек","status":"наред","note":"решение: TP на звука — −1 dBTP (tools/video/presets.mjs) или −1,5 dBTP (clip.sh)? Една константа; препоръка −1,5 за платформите с прекодиране."}
+{"t":"handoff","ts":"2026-11-23T14:39:28.641Z","id":"fzac9wj","from":"prevodach","to":"човек","status":"наред","note":"решение: да получи ли Преводача Bash? Препоръка: не — остава „поискай изхода“, по-малка повърхност."}
+{"t":"handoff","ts":"2026-11-23T14:39:28.684Z","id":"ft06stu","from":"ai-djiyata","to":"човек","status":"наред","note":"решение: числата на месечния таван в .claude/hooks/budgets.json — $200 на агент, Кодаджията $400, общи $300, флот $1500. Смени ги с една редакция или потвърди."}
+{"t":"handoff","ts":"2026-11-23T14:39:28.735Z","id":"fg63lhd","from":"razbivacha","to":"човек","status":"наред","note":"решение: минава ли флотът на номерацията OWASP LLM Top 10 2026? Сега кодът се цитира с годината и двете версии стоят в claims.json."}
+{"t":"handoff","ts":"2026-11-23T14:39:28.777Z","id":"flq49z0","from":"pravniyat-razbirach","to":"човек","status":"наред","note":"решение: номерът „Рег. (ЕС) 2026/1744“ не е потвърден в EUR-Lex — свери в Официален вестник или кажи да остане бележката „свери с OJ“."}
+{"t":"handoff","ts":"2026-11-23T14:39:28.827Z","id":"f90uy23","from":"socialdjiyata","to":"човек","status":"наред","note":"решение: кои от трите идеи от youtube-agent-skill да направим като наш код — edl.mjs (AI Studio), shorts-pick.mjs (Социалджията), проверка заглавие+корица в post-lint.mjs? Чака изрично „да“."}
