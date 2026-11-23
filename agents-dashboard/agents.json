@@ -5700,6 +5700,11 @@
       "activity": [
         {
           "date": "2026-11-23",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Panev door bracket A+B joins with two M10 bolts — pivot bolt in a round hole (giunto ar…\""
+        },
+        {
+          "date": "2026-11-23",
           "type": "learning",
           "summary": "Научи: „В Supreme Bot всяка сума в € в FAQ на лендинга трябва да е цена на най-близкото спомена…\""
         },
