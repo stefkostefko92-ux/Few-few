@@ -8,7 +8,7 @@ A/B 27.10.2026 на 5 агента: без него 9/9 и pass^k 5/5 срещу
 
 ## Агентите — `.claude/agents/`
 
-34 purpose-built subagents (BG system prompt, least-privilege `tools`), each with
+35 purpose-built subagents (BG system prompt, least-privilege `tools`), each with
 **durable verified memory** + a **hook-enforced self-learning loop**
 (`SubagentStart`/`SubagentStop` → `_memory/<id>.md`; verified-only,
 source-or-nothing, secrets hard-dropped). Every agent also preloads the **security

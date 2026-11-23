@@ -869,3 +869,6 @@
 {"t":"start","ts":"2026-11-22T20:10:35.613Z","id":"ra6cc5bb2","flow":"авто","lead":"seo","auto":true}
 {"t":"handoff","ts":"2026-11-22T20:10:35.613Z","id":"ra6cc5bb2","from":"seo","to":"prevodach","status":"има бележки","run":"01a24b93"}
 {"t":"handoff","ts":"2026-11-22T20:15:01.380Z","id":"ra6cc5bb2","from":"prevodach","to":"човек","status":"има бележки","run":"6bd7b890"}
+{"t":"start","ts":"2026-11-23T09:59:33.007Z","id":"ff8e8gu","flow":"видео продукция 4K/60 (Blender, FFmpeg, DaVinci Resolve)","lead":"ai-djiyata","steps":["ai-djiyata"]}
+{"t":"handoff","ts":"2026-11-23T09:59:41.760Z","id":"ff8e8gu","from":"ai-djiyata","to":"човек","status":"блокер","note":"teams.mjs --route: нищо не хвана; няма агент, който води производството (сцени, 3D, звук, рендер, Resolve) — заявка на собственика 23.11"}
+{"t":"close","ts":"2026-11-23T09:59:41.790Z","id":"ff8e8gu","status":"блокиран"}
