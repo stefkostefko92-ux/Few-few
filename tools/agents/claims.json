@@ -9,7 +9,8 @@
       "source": "https://digital-strategy.ec.europa.eu/en/faqs/transparency-obligations-under-article-50-ai-act ; https://artificialintelligenceact.eu/article/99/ ; EUR-Lex Регламент (ЕС) 2024/1689 чл. 50",
       "agents": [
         "socialdjiyata",
-        "pravniyat-razbirach"
+        "pravniyat-razbirach",
+        "ai-studio"
       ],
       "checkedAt": "2026-09-25",
       "note": "Цитирай чл. 50(4) за органичен маркетинг, НЕ 50(2). Anchor умишлено ЛИПСВА — чл. 50 е двусмислен (CRD 2011/83 също има чл. 50 = право на отказ)."
@@ -75,6 +76,28 @@
       ],
       "checkedAt": "2026-09-25",
       "note": "Открито при пресверката на карантината (2026-08-04): поука твърдеше 30 и `error_type`; и двете се разминаха с живата дока. Anchor умишлено ЛИПСВА — числото е точно това, което се мени, значи котва по литерал ще пада при всяка промяна вместо да иска пресверка."
+    },
+    {
+      "id": "remotion-license-2026",
+      "kind": "legal",
+      "statement": "Remotion (4.x) е безплатен за физически лица и за фирми с общо до 3 души (и нестопански организации); броят се сътрудниците и фрийлансърите по проекта, а при проект на клиент — хората на двете фирми; над това е нужен фирмен лиценз. Рендерът от командния ред праща телеметрия само при зададен licenseKey (и при \"free-license\"), а рендерът в браузъра (@remotion/web-renderer) — винаги, с домейна и IP адреса. При 5.0 лицензът се сменя. Собственикът потвърди 23.11.2026, че сме до 3 души.",
+      "source": "https://raw.githubusercontent.com/remotion-dev/remotion/main/LICENSE.md ; https://www.remotion.dev/docs/license/faq.md ; https://www.remotion.dev/docs/telemetry",
+      "agents": [
+        "ai-studio"
+      ],
+      "checkedAt": "2026-11-23",
+      "note": "Станем ли 4 души (с клиента при клиентски проект) — фирмен лиценз преди следващия рендер. Рендер само от командния ред, без licenseKey. Вдигане към 5.0 — нова сверка."
+    },
+    {
+      "id": "youtube-upload-4k60-2026",
+      "kind": "platform",
+      "statement": "YouTube препоръчва за 2160p при 48–60 fps SDR 53–68 Mbps; MP4 с fast start, без edit lists; H.264 High, прогресивно, 2 последователни B-кадъра, CABAC, променлив битрейт, затворен GOP с дължина половината от кадрите в секунда; 4:2:0; BT.709; AAC-LC 48 kHz, стерео 384 kbps. Безплатният DaVinci Resolve работи с 8-битови формати до UHD при 60 fps; хардуерното H.264/H.265 кодиране е изброено в Studio (за безплатния страницата не казва изрично).",
+      "source": "https://support.google.com/youtube/answer/1722171 ; https://www.blackmagicdesign.com/products/davinciresolve/studio",
+      "agents": [
+        "ai-studio"
+      ],
+      "checkedAt": "2026-11-23",
+      "note": "tools/video/presets.mjs youtube4k60 следва тези числа; при промяна на страницата — тестът presets.test.mjs и presets.mjs заедно."
     },
     {
       "id": "google-gen-ai-guide-2026",

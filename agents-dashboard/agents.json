@@ -17008,6 +17008,67 @@
         }
       ],
       "recentLessons": []
+    },
+    {
+      "id": "ai-studio",
+      "name": "AI Studio",
+      "title": "Видео студио — сцени с код, Blender, FFmpeg/NVENC, мастер за Resolve",
+      "emoji": "🎥",
+      "accent": "#c2410c",
+      "tagline": "От сценария до готовия 4K/60 файл — на компютъра на собственика.",
+      "file": ".claude/agents/ai-studio.md",
+      "model": "sonnet",
+      "effort": "medium",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch",
+        "Skill"
+      ],
+      "mission": "Видео продукция на компютъра на собственика (Windows + NVIDIA): сцени с код (нашата HTML линия с render(t) или Remotion), 3D в Blender без интерфейс (Cycles + OptiX), звук до −14 LUFS на два прохода, рендер с FFmpeg и NVENC, мастер DNxHR HQ за безплатния DaVinci Resolve (финалния монтаж прави човек) и файл за YouTube 4K60 по препоръките на YouTube + 9:16 за Социалджията. Само собствени или лицензирани активи; AI глас или образ носи етикет; промо клиповете са замразени; нищо не инсталира сам. Различен от Социалджията (обхват) и Дизайнера (уеб ефекти).",
+      "capabilities": [
+        "Готовност на студиото: tools/video/doctor.mjs (Node, FFmpeg с NVENC/DNxHR/ProRes/loudnorm, Blender, Python, NVIDIA, Resolve, Audacity)",
+        "Готови команди: tools/video/presets.mjs — YouTube 4K60, мастер за Resolve, loudnorm на два прохода, кадри → видео, 9:16",
+        "Сцени с код: HTML render(t) + Playwright или Remotion (безплатен лиценз до 3 души, рендер само от командния ред)",
+        "Blender без интерфейс: Cycles + OptiX, PNG поредица, build.py в git",
+        "Звук: −14 LUFS / −1 dBTP; Audacity за ръчната работа с гласа",
+        "Предаване: мастер DNxHR HQ към Resolve, файл за YouTube и 9:16 към Социалджията; ffprobe проверка",
+        "Предпазители: права и лицензи до файла, AI Act чл. 50 етикет, синтетични данни в записите на екрана, без стробоскоп"
+      ],
+      "knowledge": {
+        "sources": 5,
+        "researchToolUses": 6,
+        "priorArt": [
+          "YouTube — препоръчани настройки за качване (support.google.com/youtube/answer/1722171, 23.11.2026)",
+          "Blackmagic Design — DaVinci Resolve и Studio (безплатният: 8-бита до UHD/60; хардуерно H.264/H.265 — Studio)",
+          "Remotion — LICENSE.md и Telemetry (безплатен до 3 души; телеметрия при рендер в браузъра)",
+          "microsoft/winget-pkgs — id-тата за Node LTS, FFmpeg (Gyan), Blender, Audacity",
+          "Нашите промо линии: cs-revolution/marketing/youtube-promo, fakturist/promo, scuolabulgara/promo"
+        ],
+        "lessons": 3
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-11-23",
+          "event": "Раждане",
+          "detail": "Роден по заявка на собственика: „искам сам да правя видеа“ — програмите от списъка „Codex Video Production Studio“, но с Claude вместо Codex. Задачата за видео 4K/60 с Blender и DaVinci нямаше собственик (teams.mjs → AI-джията; веригата ff8e8gu спря заради липсата). Носи tools/video (doctor + presets, проверени на реално 4K60 видео) и справочник за инсталирането на Windows + NVIDIA."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-11-23",
+          "type": "birth",
+          "summary": "Роден: видео студио — сцени с код, Blender, FFmpeg/NVENC, мастер за Resolve, файл за YouTube 4K60."
+        }
+      ],
+      "recentLessons": []
     }
   ]
 }
