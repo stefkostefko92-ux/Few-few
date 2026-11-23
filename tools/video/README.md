@@ -102,9 +102,18 @@ PNG поредицата отива през `presets.mjs frames` или дир�
 node tools/video/presets.mjs loudnorm --in audio/voice.wav --out audio/voice-14.wav --run
 ```
 
-- Нормализирането е на два прохода: −14 LUFS, true peak −1 dBTP. Проба на 23.11.2026: −14,1 LUFS.
+- Нормализирането е на два прохода: −14 LUFS, true peak −1,5 dBTP (решение 23.11.2026: AES TD1008 дава −1 dBTP като
+  таван на входа на кодека, платформите прекодират до AAC, а true-peak метърът греши до ~0,6 dB; същото число е в
+  `tools/social/clip.sh`). Проба на 23.11.2026: −14,1 LUFS.
 - В Audacity е ръчната работа: махане на шум и рязане на паузи. Експорт в WAV 48 kHz / 24-bit.
 - Музика и звукови ефекти — само собствени или лицензирани, лицензът стои до файла.
+- **Предложени срезове** (`edl.mjs`, 23.11.2026; идея от youtube-agent-skill, кодът е наш): от транскрипта и
+  тишините дава JSON със срезове — паузи ≥ 0,7 s (с 0,15 s отстъп), реплики само от „ъъъ/ммм/um“ и фалстартове.
+  Само предлага; режеш в Resolve. Паразит вътре в реплика е подсказка, не срез.
+  ```bash
+  ffmpeg -i запис.wav -af silencedetect=noise=-35dB:d=0.5 -f null - 2> тишини.log
+  node tools/video/edl.mjs --subs запис.srt --silence тишини.log > срезове.json
+  ```
 
 ## 6. Към DaVinci Resolve и обратно
 

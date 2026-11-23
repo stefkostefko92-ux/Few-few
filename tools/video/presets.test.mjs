@@ -47,15 +47,15 @@ test("master: DNxHR HQ (8-бита, чете се от безплатния Reso
   assert.equal(pair(p, "-profile:v"), "3");
 });
 
-test("loudnorm на два прохода: −14 LUFS, −1 dBTP; вторият проход ползва измереното", () => {
+test("loudnorm на два прохода: −14 LUFS, −1,5 dBTP; вторият проход ползва измереното", () => {
   const m = loudnormMeasure({ input: "voice.wav" });
-  assert.match(pair(m, "-af"), /^loudnorm=I=-14:TP=-1:LRA=11:print_format=json$/);
+  assert.match(pair(m, "-af"), /^loudnorm=I=-14:TP=-1.5:LRA=11:print_format=json$/);
   assert.deepEqual(m.slice(-3), ["-f", "null", "-"]);
   const stderr = `[Parsed_loudnorm_0 @ 0x1]\n{\n\t"input_i" : "-23.54",\n\t"input_tp" : "-7.85",\n\t"input_lra" : "5.20",\n\t"input_thresh" : "-33.96",\n\t"output_i" : "-14.02",\n\t"target_offset" : "0.02"\n}\n`;
   const meas = parseLoudnorm(stderr);
   assert.deepEqual(meas, { input_i: "-23.54", input_tp: "-7.85", input_lra: "5.20", input_thresh: "-33.96", target_offset: "0.02" });
   const a = loudnormApply({ input: "voice.wav", output: "audio/voice-14.wav", measured: meas });
-  assert.equal(pair(a, "-af"), "loudnorm=I=-14:TP=-1:LRA=11:measured_I=-23.54:measured_TP=-7.85:measured_LRA=5.20:measured_thresh=-33.96:offset=0.02:linear=true");
+  assert.equal(pair(a, "-af"), "loudnorm=I=-14:TP=-1.5:LRA=11:measured_I=-23.54:measured_TP=-7.85:measured_LRA=5.20:measured_thresh=-33.96:offset=0.02:linear=true");
   assert.equal(pair(a, "-ar"), "48000");
   assert.equal(parseLoudnorm("няма json тук"), null);
   assert.throws(() => loudnormApply({ input: "a.wav", output: "b.wav", measured: { ...meas, input_i: "-23; rm -rf /" } }), /измерено/);
@@ -96,4 +96,19 @@ test("защити: опция на мястото на път, еднакъв �
 
 test("display: командата за човека е с кавички около пътища с интервали", () => {
   assert.equal(display(["-i", "my clip.mov", "-n", "out.mp4"]), `ffmpeg -i "my clip.mov" -n out.mp4`);
+});
+
+// Решение 23.11.2026 (собственикът: „звука реши ти“): −1,5 dBTP навсякъде. TD1008 дава −1 dBTP като таван на входа на
+// кодека; платформите прекодират до AAC, а 4× свръхдискретизацията на true-peak метъра греши до ~0,6 dB. Двата
+// инструмента бяха разминати (presets −1, clip.sh −1,5) — този тест не им дава да се разминат пак.
+test("един TP навсякъде: presets.mjs и tools/social/clip.sh нормализират до един и същ true peak", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { join, dirname } = await import("node:path");
+  const { fileURLToPath } = await import("node:url");
+  const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+  const sh = readFileSync(join(root, "tools", "social", "clip.sh"), "utf8");
+  const tps = [...sh.matchAll(/loudnorm=I=-14:TP=(-?[\d.]+)/g)].map((m) => m[1]);
+  assert.ok(tps.length >= 2, "clip.sh има двата прохода");
+  const ours = pair(loudnormMeasure({ input: "x.wav" }), "-af").match(/TP=(-?[\d.]+)/)[1];
+  for (const tp of tps) assert.equal(tp, ours, `clip.sh TP=${tp} ≠ presets.mjs TP=${ours}`);
 });
