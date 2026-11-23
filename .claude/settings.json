@@ -192,6 +192,12 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-readonly.mjs\"",
             "timeout": 10,
             "onFailure": "block"
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-allowlist.mjs\"",
+            "timeout": 10,
+            "onFailure": "block"
           }
         ]
       },

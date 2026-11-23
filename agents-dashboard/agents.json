@@ -5119,6 +5119,7 @@
         "Edit",
         "Grep",
         "Glob",
+        "Bash",
         "WebFetch",
         "WebSearch"
       ],

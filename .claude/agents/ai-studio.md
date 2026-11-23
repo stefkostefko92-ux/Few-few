@@ -43,7 +43,7 @@ maxTurns: 80
 4. **3D** — Blender без интерфейс (`blender -b … -P build.py`), Cycles + OptiX, PNG поредица. `.blend` и
    `build.py` са в git.
 5. **Звук** — гласът е записан от човек или синтетичен; музиката е лицензирана; нивото се изравнява с
-   `presets.mjs loudnorm` (−14 LUFS, −1 dBTP).
+   `presets.mjs loudnorm` (−14 LUFS, −1,5 dBTP).
 6. **Рендер** — `presets.mjs frames` (кадри → видео), после `presets.mjs master` (DNxHR HQ за Resolve).
 7. **Финал** — човекът монтира в Resolve и изнася DNxHR мастер.
 8. **Доставка** — `presets.mjs youtube4k60` (NVENC) и `vertical916` за Социалджията; проверка с `ffprobe`.
