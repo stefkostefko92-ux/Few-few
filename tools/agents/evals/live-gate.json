@@ -1,24 +1,40 @@
 {
-  "date": "2026-11-21",
-  "ref": "6565c7b67429fe4e0c6794ee635f85f9663e5814",
+  "date": "2026-11-23",
+  "ref": "5102e47e525a53bcf2565e4024ba046bdaade1fe",
   "cli": "2.1.330 (Claude Code)",
-  "summary": "проба 1/1 · оценки 1/1 · verifier ✓ · критичните пропуснати (входовете им са непроменени; минаха на 2026-11-21)",
-  "costUsd": 1.52,
-  "criticalAt": "2026-11-21",
+  "summary": "проба 4/4 · оценки 7/7 · pass^k 3/3 · verifier ✓",
+  "costUsd": 11.54,
+  "criticalAt": "2026-11-23",
   "probe": [
     {
-      "agent": "ai-djiyata",
+      "agent": "seo",
+      "ok": true,
+      "problems": []
+    },
+    {
+      "agent": "kodadjiyata",
+      "ok": true,
+      "problems": []
+    },
+    {
+      "agent": "dizayner",
+      "ok": true,
+      "problems": []
+    },
+    {
+      "agent": "ai-studio",
       "ok": true,
       "problems": []
     }
   ],
-  "inputsHash": "8a71dce2d1e00de36d0f5f3c8e85faa635bdef9e4f5e84f70bcf30253398b8fe",
+  "inputsHash": "2b3dde34f722e44a84c993885e82d619fa62b6a16a569336eea297e99db722eb",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
     ".claude/agents/_memory/SECURITY.md": "bcc847a4090956d5b8b4e36b22cc9be3f76e1ea91990b1b7e97bf7055fea1253",
-    ".claude/agents/_teams.json": "6ba9d85d39aec8490e39376fd8d8f16a2a43c6ecf8b8690334771786d2c1a5ae",
+    ".claude/agents/_teams.json": "20df20dc2d98a8f3ccd7039fb0111d9fa6db74a535ee05d9565c6f738892c8a4",
     ".claude/agents/ai-djiyata.md": "591ebb79edb69f477822dd9c5622da4d7d4319aba7751fd9f3462ed1e84f640e",
+    ".claude/agents/ai-studio.md": "39916a31e63ba69569c0056faafb5428604567b1d26fe9cd7b5e5df97e4bd3e7",
     ".claude/agents/analizatora.md": "2118d101411068abcf9ca1cfe409df484d330848b2701fd99ae808b66a1354ff",
     ".claude/agents/asansyorchika.md": "18153eb60b408d9cf46341b3338cb24e45475293e0c665d90dfcb3ef08b47d77",
     ".claude/agents/danachnika.md": "260e00c5e2b4800d7f4938fbdd3cdc31bb74f01791b531230fd03b96ee235250",
@@ -73,12 +89,12 @@
     ".claude/hooks/session-restore.mjs": "cf1d4a2d2bc545ae5a3778d1cb170e2f53e6db733c618ee3baf525b7a75d5faa",
     ".claude/hooks/stop-failure.mjs": "84adc72d569483635018a406ae63c583e279fe3eb390f69bf42b826f2bdfa6ba",
     ".claude/hooks/usage-capture.mjs": "b6dee83a4a53f425c0e8dfab3c8b050e36b7c70b4f45c8dd9d041a5780530981",
-    ".claude/settings.json": "4d26ecab681d0df2d4698be8edb6944bfc34391001db42d583bcd63664e603f7",
+    ".claude/settings.json": "1968a56534c5d1e26000f11044f7e53b81fa7794e62c510a93c864b049ef1bf5",
     ".claude/skills/agent-doctrine/SKILL.md": "9e910f00f812006d9e59f6a40e77ca38835fdf8d19eab7be3219d0aaea8e3411",
     "tools/agents/handoff.mjs": "088afa443cf1c3a6325b28a80bc74426aba907a1d7c287d0add05497b29dcba3",
     "tools/agents/teams.mjs": "955295f80b10250391714245bf5b6906c3341f2b8217c960cf07e290b4035fbb",
     "tools/lib/memory-branch.mjs": "7c81bd029381e5f15d101a465a27ba275ea80fc8fcc029a25f45b9d89e6083ad",
     "tools/lib/memory-retrieval.mjs": "5a7f76c209d3eaf570f1c1a59d2ed6b08e572f4b8778e3fde6b0bfe6841a6215",
-    "agents-dashboard/agents.json#card": "b773fd9c43ebab7e660c0aeef8e68b7a6b7400fe22b8b08697932a80b87afa03"
+    "agents-dashboard/agents.json#card": "f4c18ce794dd88328c6922ed2e9dfea483048e5f64e2fc315a7ee0bef21cc555"
   }
 }
