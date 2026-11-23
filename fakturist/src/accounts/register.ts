@@ -8,7 +8,6 @@ import { recordRegistrationAcceptance } from '../legal/acceptance.js';
 import { issueToken } from './tokens.js';
 import { DEFAULT_SERIES_NAME } from '../system-text.js';
 import type { Locale } from '../i18n.js';
-import type { Campaign } from '../marketing/campaign.js';
 
 /** Данните на фирма (своята или фирма-клиент на кантора) — проверени, преди да стигнат до базата. */
 export const OrganizationDataSchema = z
@@ -73,8 +72,6 @@ export async function register(
   data: Registration,
   /** Езикът на профила — този на страницата за регистрация. */
   locale: Locale = 'bg',
-  /** Откъде е дошла регистрацията (SPEC 93) — от скритите полета на формата, вече проверен. */
-  campaign: Campaign | null = null,
 ): Promise<{ userId: string; organizationId: string }> {
   const problem = passwordProblem(data.password, [data.email, data.name]);
   if (problem) throw new RegistrationError(`password.${problem}`);
@@ -110,11 +107,6 @@ export async function register(
           iban: data.iban || null,
           eAddressScheme: data.vatNumber ? '9926' : null,
           eAddressValue: data.vatNumber ?? null,
-          signupSource: campaign?.source ?? null,
-          signupMedium: campaign?.medium ?? null,
-          signupCampaign: campaign?.campaign ?? null,
-          signupContent: campaign?.content ?? null,
-          signupTerm: campaign?.term ?? null,
         },
       });
       await tx.membership.create({

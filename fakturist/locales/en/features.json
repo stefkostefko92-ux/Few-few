@@ -9,7 +9,7 @@
   },
   "planned": "Coming · {target}",
   "invoices": {
-    "name": "Invoices under Art. 114 of the VAT Act, checked on issue",
+    "name": "Invoices with every field the Bulgarian VAT Act requires",
     "description": "Art. 114 of the VAT Act is checked on issue: number, exemption basis, tax point."
   },
   "credit-debit-notes": {
@@ -22,7 +22,7 @@
   },
   "eur-vat-bg": {
     "name": "VAT in euro for any currency",
-    "description": "For an invoice in dollars or francs, the base and VAT are also computed in euro at the ECB rate you enter."
+    "description": "For an invoice in dollars or francs, the base and VAT are also computed in euro at the ECB rate."
   },
   "tamper-evident-ledger": {
     "name": "Tamper-evident document ledger",
@@ -38,7 +38,7 @@
   },
   "pdf": {
     "name": "PDF for your customer",
-    "description": "The readable copy from the same data as the XML, with Cyrillic and your logo."
+    "description": "The readable copy, generated from the same XML, with Cyrillic and your logo."
   },
   "recurring": {
     "name": "Recurring invoices",
@@ -62,7 +62,7 @@
   },
   "audit-log": {
     "name": "Audit trail",
-    "description": "Who did what and when, in a chain where any rewriting shows."
+    "description": "Who did what and when, in a chain that cannot be rewritten."
   },
   "two-factor": {
     "name": "Two-factor sign-in",

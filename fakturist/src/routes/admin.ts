@@ -26,7 +26,6 @@ import { adminHandoverRouter } from './admin-handover.js';
 import { adminCompanyRouter } from './admin-company.js';
 import { grantView } from '../billing/grant.js';
 import { adminAnnouncementsRouter } from './admin-announcements.js';
-import { adminSourcesRouter } from './admin-sources.js';
 
 /**
  * Регистърът по групи за менюто на панела (views/admin/_nav.ejs). „Планове“ са отделна връзка в главните,
@@ -54,7 +53,6 @@ export function adminRouter(): Router {
   router.use(adminGrantRouter());
   router.use(adminHandoverRouter());
   router.use(adminCompanyRouter());
-  router.use(adminSourcesRouter());
   router.use(adminAnnouncementsRouter());
 
   router.get('/admin', async (_req, res) => {

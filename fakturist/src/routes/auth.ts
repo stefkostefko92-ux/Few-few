@@ -17,7 +17,6 @@ import { rememberDevice, trustedAttempt } from '../auth/device.js';
 import { queueLockedMail } from '../mail/account-mail.js';
 import { kickOutbox } from '../mail/outbox.js';
 import { appLocale } from '../http/view.js';
-import { CAMPAIGN_FIELDS, readCampaign, type Campaign } from '../marketing/campaign.js';
 
 /** Входът и регистрацията: най-много 10 опита за 15 минути от адрес. */
 const limiter = rateLimit({
@@ -45,16 +44,6 @@ const LoginSchema = z.object({
   password: z.string().max(256),
   next: z.string().max(300).optional(),
 });
-
-/** Етикетът на кампанията в скритите полета на формата (SPEC 93) — само попълнените. */
-function campaignFields(res: Response, campaign: Campaign | null): void {
-  res.locals.campaignFields = CAMPAIGN_FIELDS.flatMap(([field, name]) => {
-    const value = campaign?.[field];
-    return value ? [{ name, value }] : [];
-  });
-}
-
-const selfHost = () => new URL(config().PUBLIC_BASE_URL).hostname;
 
 async function registrationOpen(): Promise<boolean> {
   return config().REGISTRATION_OPEN && (await setting('registration.enabled'));
@@ -217,7 +206,6 @@ export function authRouter(): Router {
 
   router.get('/registraciya', async (req, res) => {
     const kind = req.query['kind'] === 'accountant' ? 'accountant' : 'company';
-    campaignFields(res, readCampaign(req.query, undefined, selfHost()));
     res.render('auth/register', {
       open: await registrationOpen(),
       errors: {},
@@ -228,8 +216,6 @@ export function authRouter(): Router {
   router.post('/registraciya', limiter, async (req: Request, res: Response) => {
     const open = await registrationOpen();
     const values = req.body as Record<string, string>;
-    const campaign = readCampaign(values, undefined, selfHost());
-    campaignFields(res, campaign);
     if (!open) return res.status(403).render('auth/register', { open, errors: {}, values });
     const parsed = RegistrationSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -246,7 +232,7 @@ export function authRouter(): Router {
         .render('auth/register', { open, errors, values: { ...values, password: '' } });
     }
     try {
-      const { userId } = await register(parsed.data, appLocale(req), campaign);
+      const { userId } = await register(parsed.data, appLocale(req));
       await startSession(res, { id: userId, platformRole: 'NONE' }, true);
       res.redirect(303, '/app');
     } catch (error) {

@@ -15,8 +15,8 @@ export const LEGAL_DOCUMENTS = {
     paths: { bg: '/obshti-usloviya', en: '/en/terms' },
   },
   privacy: {
-    version: '2026-11-23',
-    date: '2026-11-23',
+    version: '2026-11-17.2',
+    date: '2026-11-17',
     paths: { bg: '/poveritelnost', en: '/en/privacy' },
   },
   dpa: {
