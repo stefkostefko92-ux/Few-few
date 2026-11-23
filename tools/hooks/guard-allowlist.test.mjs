@@ -77,3 +77,28 @@ test("CLI: PowerShell и Monitor за агент от списъка се съд
   assert.equal(bad.status, 0, "без payload няма агент — нищо за съдене");
   assert.equal(run("prevodach", undefined, { tool_input: {} }).status, 2, "агент от списъка без команда → спира");
 });
+
+// Разбивача, 23.11.2026 (N2): аргументът можеше да е файл с тайни (скрит сегмент, .pem, credentials.json), а pseudo.mjs
+// изписва целия файл в контекста на агент с WebFetch. Аргументите са само локали: код на език или видим .json без
+// тайно име.
+test("аргументите са само локали: код на език или видим .json без тайно име", () => {
+  for (const c of [
+    "node tools/i18n/check-parity.mjs linketto/messages/bg.json linketto/messages/en.json",
+    "node tools/i18n/glossary-check.mjs it medqr/locales/it.json",
+    "node tools/i18n/pseudo.mjs adblock/_locales/en/messages.json > /tmp/p.json",
+  ]) assert.equal(allowReason("prevodach", c, { scratch: SCRATCH }), "", c);
+  for (const c of [
+    "node tools/i18n/pseudo.mjs linketto/.env",
+    "node tools/i18n/pseudo.mjs linketto/.env.production",
+    "node tools/i18n/pseudo.mjs .config/x.json",
+    "node tools/i18n/pseudo.mjs vps/credentials.json",
+    "node tools/i18n/pseudo.mjs firebase-adminsdk-x.json",
+    "node tools/i18n/pseudo.mjs certs/server.pem",
+    "node tools/i18n/pseudo.mjs secrets.json",
+    "node tools/i18n/pseudo.mjs deploy/service-account.json",
+    "node tools/i18n/pseudo.mjs api-token.json",
+    "node tools/i18n/pseudo.mjs private-key.json",
+    "node tools/i18n/pseudo.mjs linketto/messages/en.txt",
+    "node tools/i18n/glossary-check.mjs de medqr/locales/de.json",
+  ]) assert.notEqual(allowReason("prevodach", c, { scratch: SCRATCH }), "", c);
+});

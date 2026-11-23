@@ -25,6 +25,11 @@ export const ALLOW = Object.freeze({
 
 const SAFE_CHARS = /^[A-Za-z0-9_.\/@,+\- >]*$/;
 const SAFE_ARG = /^[A-Za-z0-9_][A-Za-z0-9_.\/@,+-]*$/;
+// Разбивача, 23.11.2026 (N2): аргументът е само локал — код на език (glossary-check) или видим .json без тайно име.
+// Иначе `pseudo.mjs` изписваше файл с тайни (скрит сегмент, .pem, credentials.json) в контекста на агент с WebFetch.
+const LANG = /^(?:bg|en|it)$/;
+const SECRETISH = /secret|credential|token|passw|private|adminsdk|service-?account|(?:^|[^a-z])key(?:s)?(?:[^a-z]|$)|\.env/i;
+const localeArg = (a) => LANG.test(a) || (/\.json$/.test(a) && !/(?:^|\/)\./.test(a) && !SECRETISH.test(a));
 
 /** Описание на позволеното — влиза в съобщението за отказ. */
 export function allowedText(agent) {
@@ -53,7 +58,10 @@ export function allowReason(agent, command, { scratch = "" } = {}) {
   if (!cfg.scripts.includes(toks[1] || "")) return `скриптът не е в списъка (${toks[1] || "—"})`;
   const args = toks.slice(2);
   if (!args.length) return "липсват файлове";
-  for (const a of args) if (!SAFE_ARG.test(a) || a.includes("..")) return `аргументът не е относителен път или код (${a})`;
+  for (const a of args) {
+    if (!SAFE_ARG.test(a) || a.includes("..")) return `аргументът не е относителен път или код (${a})`;
+    if (!localeArg(a)) return `аргументът не е локал — само код на език (bg/en/it) или видим .json без тайно име (${a})`;
+  }
   return "";
 }
 
