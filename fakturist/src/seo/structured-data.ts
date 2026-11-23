@@ -1,7 +1,6 @@
 import { BRAND } from '../brand.js';
 import { ARTICLE_PUBLISHED, COMPANY, CONTENT_UPDATED } from '../company.js';
 import { hasKey, type Locale, type Translate } from '../i18n.js';
-import { isLanding, landingParams, landingSections } from './landing.js';
 import { pageUrl, type SitePageId } from './pages.js';
 import type { PublicPlan } from '../billing/public-plans.js';
 import { LAST_UPDATE } from '../news/entries.js';
@@ -16,13 +15,12 @@ export function faqItems(
   locale: Locale,
   t: Translate,
   page: SitePageId,
-  params: Record<string, string> = {},
 ): Array<{ q: string; a: string }> {
   const items: Array<{ q: string; a: string }> = [];
   for (let n = 1; n < 50; n += 1) {
     const key = `site.${page}.faq.${n}`;
     if (!hasKey(locale, `${key}.q`)) break;
-    items.push({ q: t(`${key}.q`, params), a: t(`${key}.a`, params) });
+    items.push({ q: t(`${key}.q`), a: t(`${key}.a`) });
   }
   return items;
 }
@@ -56,26 +54,6 @@ export function organization(base: string, locale: Locale): Json {
       availableLanguage: ['bg', 'en'],
     },
     sameAs: [...COMPANY.profiles],
-    knowsAbout:
-      locale === 'bg'
-        ? [
-            'електронно фактуриране',
-            'ЗДДС',
-            'EN 16931',
-            'UBL',
-            'SAF-T',
-            'Peppol',
-            'дневници по ДДС',
-          ]
-        : [
-            'electronic invoicing',
-            'Bulgarian VAT Act',
-            'EN 16931',
-            'UBL',
-            'SAF-T',
-            'Peppol',
-            'VAT ledgers',
-          ],
     brand: { '@type': 'Brand', name: BRAND.name, url: base, logo: `${base}/img/brand/logo.png` },
   };
 }
@@ -97,7 +75,6 @@ function breadcrumbs(base: string, locale: Locale, t: Translate, page: SitePageI
     items.push({ name: t(`site.nav.${page}`), url: pageUrl(base, page, locale) });
   return {
     '@type': 'BreadcrumbList',
-    '@id': `${pageUrl(base, page, locale)}#breadcrumb`,
     itemListElement: items.map((item, index) => ({
       '@type': 'ListItem',
       position: index + 1,
@@ -150,26 +127,8 @@ export function structuredData(input: {
     website(base, locale),
     breadcrumbs(base, locale, t, page),
   ];
-  if (page === 'home' || page === 'pricing' || page === 'accountants' || page === 'freeInvoicing') {
+  if (page === 'home' || page === 'pricing' || page === 'accountants') {
     graph.push(software(base, locale, t, plans));
-  }
-  // Страниците за рекламите: всеки раздел със стъпки — HowTo.
-  const params = isLanding(page) ? landingParams(locale, t, plans) : {};
-  if (isLanding(page)) {
-    for (const section of landingSections(locale, t, page, params)) {
-      if (section.steps.length === 0) continue;
-      graph.push({
-        '@type': 'HowTo',
-        '@id': `${pageUrl(base, page, locale)}#${section.id}`,
-        name: section.title,
-        inLanguage: locale,
-        step: section.steps.map((text, index) => ({
-          '@type': 'HowToStep',
-          position: index + 1,
-          text,
-        })),
-      });
-    }
   }
   // „Как работи“: всеки раздел — HowTo със стъпките; въпросите са в help.json (SPEC 89).
   if (page === 'help') {
@@ -188,12 +147,10 @@ export function structuredData(input: {
       });
     }
   }
-  const faq = page === 'help' ? helpFaq(locale) : faqItems(locale, t, page, params);
+  const faq = page === 'help' ? helpFaq(locale) : faqItems(locale, t, page);
   if (faq.length > 0) {
     graph.push({
       '@type': 'FAQPage',
-      '@id': `${pageUrl(base, page, locale)}#faq`,
-      inLanguage: locale,
       mainEntity: faq.map((item) => ({
         '@type': 'Question',
         name: item.q,
@@ -220,8 +177,6 @@ export function structuredData(input: {
       : {}),
     speakable: { '@type': 'SpeakableSpecification', cssSelector: ['h1', '[data-speakable]'] },
     isPartOf: { '@id': `${base}/#website` },
-    breadcrumb: { '@id': `${pageUrl(base, page, locale)}#breadcrumb` },
-    publisher: { '@id': `${COMPANY.url}/#organization` },
   });
   return { '@context': 'https://schema.org', '@graph': graph };
 }

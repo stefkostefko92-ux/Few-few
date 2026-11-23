@@ -254,13 +254,6 @@ model Organization {
   saftRevenueAccount    String           @default("703")
   /// SAF-T: ЕИК / ДДС номера на свързаните лица (RelatedParty = Y) — въвежда ги фирмата, Фактурист не ги знае.
   saftRelatedParties    String[]         @default([])
-  /// Откъде е дошла регистрацията (SPEC 93, src/marketing/campaign.ts): етикетът на кампанията от адреса
-  /// (`utm_*`) или хостът на външния сайт („referral“). Само имена на кампании и сайтове — без бисквитки.
-  signupSource          String?
-  signupMedium          String?
-  signupCampaign        String?
-  signupContent         String?
-  signupTerm            String?
   createdByFirmId       String?
   createdByFirm         Organization?    @relation("CreatedByFirm", fields: [createdByFirmId], references: [id], onDelete: SetNull)
   createdClients        Organization[]   @relation("CreatedByFirm")

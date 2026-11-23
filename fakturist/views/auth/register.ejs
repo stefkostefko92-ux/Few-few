@@ -16,8 +16,6 @@
     <p class="callout"><%= t('auth.closed', { email: company.email }) %></p>
   <% } else { %>
   <form method="post" action="/registraciya<%= langQuery %>" class="stack" novalidate>
-    <% (locals.campaignFields || []).forEach((f) => { %><input type="hidden" name="<%= f.name %>" value="<%= f.value %>">
-    <% }) %>
     <fieldset class="choice">
       <legend><%= t('auth.kind') %></legend>
       <label class="radio"><input type="radio" name="kind" value="company"<%= v('kind') !== 'accountant' ? ' checked' : '' %>> <%= t('auth.kindCompany') %></label>
