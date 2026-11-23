@@ -152,8 +152,11 @@ export function followText(source, marker) {
 export function quoteMatches(quote, expected) {
   if (quote == null || expected == null) return false;
   const q = words(quote), e = words(expected);
-  if (q.length < 4) return false;
-  return q.slice(0, 4).every((w, i) => w === e[i]);
+  if (q.length < 4 || e.length < 4) return false;
+  // Първите 4 думи на източника, поредни, с отместване до 2 (живият гейт на PR2, 23.11.2026: „(правила на държавно
+  // ниво…“ — контекстът е видян, преписването е неточно). Налучкване не дава 4 поредни думи от източника.
+  for (let off = 0; off <= 2 && off + 4 <= q.length; off++) if (e.slice(0, 4).every((w, i) => w === q[off + i])) return true;
+  return false;
 }
 
 // Деветият жив гейт (28.10): Летописецът даде грешен обект и после поправен („ползвай само втория“), а тук се
