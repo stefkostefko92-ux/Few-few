@@ -938,3 +938,6 @@
 {"t":"close","ts":"2026-11-23T16:36:43.258Z","id":"r34a320bf","status":"завършен"}
 {"t":"start","ts":"2026-11-23T18:26:19.430Z","id":"r3eb5f2a6","flow":"авто","lead":"ai-djiyata","auto":true}
 {"t":"handoff","ts":"2026-11-23T18:26:19.430Z","id":"r3eb5f2a6","from":"ai-djiyata","to":"seo","status":"има бележки","run":"8f0ecbf0"}
+{"t":"start","ts":"2026-11-23T18:32:26.296Z","id":"r7dcbb68b","flow":"авто","lead":"razbivacha","auto":true}
+{"t":"handoff","ts":"2026-11-23T18:32:26.297Z","id":"r7dcbb68b","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"10e38824"}
+{"t":"close","ts":"2026-11-23T18:35:45.014Z","id":"r7dcbb68b","status":"завършен"}
