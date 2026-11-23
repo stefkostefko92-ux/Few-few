@@ -30,6 +30,9 @@ export const CATASTROPHIC = [
   // Red-team 2026-09-08: унищожаване на диск без dd/mkfs — wipefs, shred, blkdiscard, sgdisk --zap-all,
   // parted mklabel. Изискваме суров /dev/ диск: `shred файл.txt` е нормално.
   { re: /\b(wipefs|shred|blkdiscard|sgdisk\s+(-Z|--zap-all)|parted\s+\S+\s+mklabel|nvme\s+format)\b[^\n]*\/dev\/(sd|nvme|vd|hd|disk|mmcblk)/i, why: "унищожаване на суров диск (wipefs/shred/blkdiscard/sgdisk)" },
+  // Разбивача, 23.11.2026 (N4): агент, който пуска нова сесия на Claude Code (`claude -p`, с `--bare` — без куки
+  // изобщо), минава покрай месечния таван и всички пазачи. Живият гейт я пуска през spawn в Node, не през Bash.
+  { re: /(?:^|[;&|(]\s*|\n\s*|\b(?:sudo|exec|nohup|env)\s+)(?:claude(?:\.exe)?\s+(?:[^\n;&|]*\s)?(?:-p|--print|--bare)\b|npx\s+(?:-y\s+)?@anthropic-ai\/claude-code\b)/, why: "вложена сесия на Claude Code от агент (claude -p) — заобикаля тавана на разхода и пазачите" },
 ];
 
 // Red-team 2026-07-30 (F5a): `rm -rf /` се хващаше, но `rm -r -f /` — НЕ, защото шаблонът искаше r и f

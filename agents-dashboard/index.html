@@ -18844,6 +18844,46 @@ function md(src) {
   setTimeout(hashOpen, 500);
 })();
 </script>
+<script src="./waiting.js"></script>
+<script>
+/* ---- „Чака теб“ (23.11.2026): какво чака собственика — PR-и, потоци при човек, решения, изтичащи
+   твърдения, жив гейт, таван на разхода. Данните: waiting.js от tools/agents/waiting.mjs. ---- */
+(function () {
+  const W = window.WAITING;
+  const xb = document.querySelector(".xbtns");
+  if (!W || !xb) return;
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  const LV = { "спешно": "#ff6b6b", "действие": "#ffb347", "внимание": "#7fb7ff", "инфо": "#8a93a6" };
+  const css = document.createElement("style");
+  css.textContent = `
+  #wait{ position:fixed;z-index:21;top:70px;right:16px;width:min(420px,92vw);max-height:78vh;overflow-y:auto;border-radius:14px;padding:14px 16px;background:rgba(8,11,17,.98);backdrop-filter:blur(10px);border:1px solid var(--line);box-shadow:0 20px 60px rgba(0,0,0,.6);display:none; }
+  #wait.open{ display:block; }
+  #xb-wait{ position:relative; } #xb-wait .wn{ position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;font:600 10px/16px system-ui,sans-serif;color:#0b0e14;background:var(--wc,#ffb347); }
+  .wrow{ display:grid;grid-template-columns:10px 1fr;gap:9px;padding:9px 2px;border-bottom:1px solid var(--line); }
+  .wrow .wd{ width:8px;height:8px;border-radius:50%;margin-top:5px; }
+  .wrow .wt{ font-size:12px;line-height:1.42;color:var(--txt); } .wrow .wt a{ color:inherit; }
+  .wrow .wk{ font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);margin-bottom:2px; }
+  .wrow .wa{ font-size:11px;color:var(--mut);margin-top:3px;line-height:1.4; } .wrow .wa code{ font-size:10.5px; }
+  .wmeta{ font-size:10.5px;color:var(--mut);margin:-4px 0 6px; }
+  @media (max-width:680px){ .xbtns{ display:flex !important; } .xbtns .xbtn:not(#xb-wait){ display:none; } }`;
+  document.head.appendChild(css);
+  const top = W.counts["спешно"] ? "спешно" : W.counts["действие"] ? "действие" : W.counts["внимание"] ? "внимание" : "инфо";
+  xb.insertAdjacentHTML("afterbegin", `<button class="xbtn" id="xb-wait" title="Чака теб" aria-label="Чака теб: ${W.counts.total}" style="--wc:${LV[top]}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 19h12M8 5h8M9 5c0 4 6 4 6 7s-6 3-6 7M15 5c0 4-6 4-6 7s6 3 6 7"/></svg>${W.counts.total ? `<span class="wn">${W.counts.total}</span>` : ""}</button>`);
+  document.body.insertAdjacentHTML("beforeend", `<div id="wait" role="dialog" aria-label="Чака теб"></div>`);
+  const day = (iso) => (iso ? String(iso).slice(0, 10) : "—");
+  function render() {
+    const p = document.getElementById("wait");
+    const rows = W.items.map((i) => {
+      const title = i.url ? `<a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a>` : esc(i.title);
+      const act = i.action ? `<div class="wa">→ ${/^node /.test(i.action) ? `<code>${esc(i.action)}</code>` : esc(i.action)}</div>` : "";
+      return `<div class="wrow"><span class="wd" style="background:${LV[i.level] || LV["инфо"]}" title="${esc(i.level)}"></span><div><div class="wk">${esc(i.kind)} · ${esc(i.ref)} · ${esc(i.level)}</div><div class="wt">${title}</div>${i.detail ? `<div class="wa">${esc(i.detail)}</div>` : ""}${act}</div></div>`;
+    }).join("") || `<div class="wa">Нищо не чака — флотът работи сам.</div>`;
+    p.innerHTML = `<div class="stitle"><b>Чака теб · ${W.counts.total}</b><button class="sx" aria-label="Затвори">×</button></div><div class="wmeta">събрано ${day(W.generatedAt)} · PR-и към ${day(W.prsAt)}</div>${rows}`;
+    p.querySelector(".sx").onclick = () => p.classList.remove("open");
+  }
+  document.getElementById("xb-wait").onclick = () => { const p = document.getElementById("wait"); if (p.classList.toggle("open")) render(); };
+})();
+</script>
 <script src="./docs.js"></script>
 </body>
 </html>

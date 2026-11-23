@@ -80,6 +80,8 @@ const DOCS_TAG = '<script src="./docs.js"></script>';
 // се вгражда точно като docs.js — по-стари върхове на паметта (преди 2026-09-25) нямат тага, значи
 // вграждането е УСЛОВНО (виж build(), огледално на m3d по-долу), за да не чупи стар артифакт-билд.
 const GALAXY_TAG = '<script src="./galaxy.js"></script>';
+// „Чака теб“ (23.11.2026): данните на панела, вградени като docs.js; условно — стари върхове нямат тага.
+const WAITING_TAG = '<script src="./waiting.js"></script>';
 const IMG_SRC = 'src="./mascots/${encodeURIComponent(id)}-icon3d.webp"';
 const IMG_SRC_INLINE = "src=\"${MASCOT_ICONS[id] || ''}\"";
 // 3D кадърът-резерв в профила (startMascot) — като иконите: data: URI вместо относителен път.
@@ -228,6 +230,12 @@ export function build(dash = DASH, reader = null) {
   // Замяна с ФУНКЦИЯ, не с низ: в низа `$`` / `$'` / `$&` са шаблони — „(`$`)“ в rilievi/CLAUDE.md
   // вмъкна цялото начало на страницата втори път (31.10.2026, 58 агента вместо 29).
   html = html.replace(DOCS_TAG, () => `<script>\n${docs}\n</script>`);
+
+  if (html.includes(WAITING_TAG)) {
+    let waiting = "window.WAITING = null;";
+    try { waiting = rd.read("waiting.js").trim(); } catch { /* няма снимка — панелът не се показва */ }
+    html = html.replace(WAITING_TAG, () => `<script>\n${waiting}\n</script>`);
+  }
 
   // Галактиката: условно (виж бележката при GALAXY_TAG) — по-стари върхове на паметта я нямат.
   let galaxy = "";

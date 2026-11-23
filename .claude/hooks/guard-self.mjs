@@ -74,6 +74,11 @@ const TIER_A = [
   /(?:^|\/)\.gitconfig$/,
   /(?:^|\/)\.config\/git\/config$/,
   /^\/etc\/gitconfig$/,
+  // Месечният таван (23.11.2026) съди по данни, не само по код: цените, дневникът на разхода, буферът в .git
+  // и флагът за оценки. Разбивача (N2): `{}` в prices.json или ред с по-високо `v` в буфера сваляше разхода до 0.
+  /(?:^|\/)tools\/agents\/prices\.json$/,
+  /(?:^|\/)tools\/agents\/evals\/usage\.jsonl$/,
+  /(?:^|\/)\.git(?:\/worktrees\/[^/]+)?\/agents-(?:usage\.pending\.jsonl|eval\.json)$/,
 ];
 const TIER_B = [/(?:^|\/)\.claude\/agents\/_memory(?:\/|$)/];
 
