@@ -1223,7 +1223,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 735
+        "lessons": 736
       },
       "evolution": [
         {
@@ -2065,9 +2065,20 @@
           "date": "2026-11-23",
           "event": "v67.6 — учене",
           "detail": "Научи: .pr-review/458.diff е отрязан на 350000 знака при agents-dashboard/docs.js (37 от 49 фа…"
+        },
+        {
+          "version": "67.7.0",
+          "date": "2026-11-23",
+          "event": "v67.7 — учене",
+          "detail": "Научи: spawnSync със stdio pipe и maxBuffer по подразбиране (1 MiB) при препълване връща error…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „spawnSync със stdio pipe и maxBuffer по подразбиране (1 MiB) при препълване връща error…\" · 1 в карантина"
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
