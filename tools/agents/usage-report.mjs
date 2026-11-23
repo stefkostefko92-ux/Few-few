@@ -50,7 +50,6 @@ function pricesAge(prices) {
   return Math.round((Date.parse(TODAY) - Date.parse(prices.checkedAt)) / 864e5);
 }
 
-/** effort във frontmatter на всеки наш агент (agents/*.md) → { id: "high" | … }. */
 /**
  * Кои умения агентите реално викат (23.11.2026, идея от openai/plugins · plugin-eval). Цената на умение
  * (описание в списъка, тяло при извикване) се мери другаде; тук е отсрещната страна — ползва ли се изобщо.
@@ -71,12 +70,33 @@ export function skillUsage(recs, known = []) {
   return { runsWithField, used, never: known.filter((k) => !used.has(k)).sort() };
 }
 
-export function knownSkills(dir = join(ROOT, ".claude", "skills")) {
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && existsSync(join(dir, d.name, "SKILL.md"))).map((d) => d.name).sort();
+/**
+ * Нашите умения, разделени по това дали ползването им се вижда в транскрипта. Предзаредените през `skills:` във
+ * frontmatter на агент (agent-doctrine, frontend-design) стигат като съобщение, не като tool_use; само ръчните
+ * (`disable-model-invocation: true`) моделът не вика. Без това отчетът предлагаше доктрината „за изтриване“
+ * (прегледът на PR #458, Кодаджията и AI-джията).
+ */
+export function skillCatalog(dir = join(ROOT, ".claude", "skills"), agentsDir = join(ROOT, ".claude", "agents")) {
+  const preloaded = new Set();
+  if (existsSync(agentsDir)) for (const f of readdirSync(agentsDir).filter((f) => /^[a-z0-9-]+\.md$/.test(f) && f !== "README.md")) {
+    const fm = readFileSync(join(agentsDir, f), "utf8").split("---")[1] || "";
+    const block = fm.match(/^skills:\s*\n((?:[ \t]+-[^\n]*\n?)+)/m);
+    if (block) for (const m of block[1].matchAll(/-\s*([a-z0-9-]+)/g)) preloaded.add(m[1]);
+  }
+  const out = { measured: [], preloaded: [], manual: [] };
+  if (!existsSync(dir)) return out;
+  for (const d of readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name).sort()) {
+    const p = join(dir, d, "SKILL.md");
+    if (!existsSync(p)) continue;
+    const fm = readFileSync(p, "utf8").split("---")[1] || "";
+    if (preloaded.has(d)) out.preloaded.push(d);
+    else if (/^disable-model-invocation:\s*true\s*$/m.test(fm)) out.manual.push(d);
+    else out.measured.push(d);
+  }
+  return out;
 }
 
+/** effort във frontmatter на всеки наш агент (agents/*.md) → { id: "high" | … }. */
 export function definedEfforts(dir = join(ROOT, ".claude", "agents")) {
   const out = {};
   for (const f of readdirSync(dir).filter((f) => /^[a-z0-9-]+\.md$/.test(f) && f !== "README.md")) {
@@ -176,12 +196,14 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     for (const [k, v] of [...tb].sort((x, y) => y[1] - x[1]).slice(0, 6))
       console.log(`     ${k.padEnd(22)} ${(v / 1e6).toFixed(1).padStart(6)} MB · ${Math.round(100 * v / total)}%`);
   }
-  const su = skillUsage(recs, knownSkills());
+  const cat = skillCatalog();
+  const su = skillUsage(recs, cat.measured);
   if (su.runsWithField) {
     console.log(`   умения (${su.runsWithField} пускания със запис):`);
     for (const [k, v] of [...su.used].sort((x, y) => y[1].calls - x[1].calls).slice(0, 8))
       console.log(`     ${k.padEnd(28)} ${String(v.calls).padStart(3)} изв. · ${v.runs} пуск. · ${v.agents.join(", ")}`);
     console.log(`     никога викани (${su.never.length}): ${su.never.slice(0, 12).join(", ")}${su.never.length > 12 ? " …" : ""} — кандидат за изтриване или за по-ясно описание; не присъда при малко пускания`);
+    console.log(`     не се мерят: предзаредени през skills: (${cat.preloaded.join(", ")}) · само ръчни (${cat.manual.length})`);
   } else console.log("   умения: НЕИЗМЕРЕНО — нито едно пускане още не носи поле skills (записва се от 23.11.2026)");
   const rr = recs.filter((r) => r.rereads);
   if (rr.length) {

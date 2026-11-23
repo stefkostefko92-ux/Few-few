@@ -224,7 +224,7 @@ test("умения: Skill извикванията се броят по име; 
   rmSync(dir, { recursive: true, force: true });
 });
 
-test("умения: прочетен SKILL.md се брои като ползване; справочник, чужд път и лошо име — не", () => {
+test("умения: прочетен SKILL.md е едно ползване на пускане; Skill печели; справочник, .pr-review, чужд път и лошо име — не", () => {
   // Жива оценка 23.11.2026: Дизайнера прочете igrovo-studio/SKILL.md с Read вместо Skill — броенето само на
   // Skill щеше да покаже умението като „никога викано“.
   const dir = mkdtempSync(join(tmpdir(), "uc-skr-"));
@@ -236,10 +236,16 @@ test("умения: прочетен SKILL.md се брои като ползв�
     rd("d", "/home/u/repo/.claude/skills/__proto__/SKILL.md"),
     rd("e", "/home/u/repo/skills/seo-geo/SKILL.md"),
     { message: { model: "claude-sonnet-5-5", role: "assistant", id: "mf", usage: { input_tokens: 1, output_tokens: 1 }, content: [{ type: "tool_use", id: "f", name: "Skill", input: { skill: "igrovo-studio" } }] } },
+    // Същият отговор, записан на втори ред със същото message.id (виж v: 2) — Skill не се брои два пъти.
+    { message: { model: "claude-sonnet-5-5", role: "assistant", id: "mf", usage: { input_tokens: 1, output_tokens: 2 }, content: [{ type: "tool_use", id: "f", name: "Skill", input: { skill: "igrovo-studio" } }] } },
+    // Четене на части: едно ползване. Преглед на PR (.pr-review) не е ползване.
+    rd("g", "/tmp/w/.claude/skills/model-na-zaplahite/SKILL.md"),
+    rd("h", "/tmp/w/.claude/skills/model-na-zaplahite/SKILL.md"),
+    rd("i", "/tmp/w/.pr-review/458/files/.claude/skills/ui-ux-pro-max/SKILL.md"),
   ];
   const p = join(dir, "agent-skr.jsonl");
   writeFileSync(p, lines.map((l) => JSON.stringify(l)).join("\n") + "\n");
   const r = summarizeTranscript(p, { agentType: "dizayner" });
-  assert.deepEqual(r.skills, { "igrovo-studio": 2 }, "Skill + Read на SKILL.md под .claude/skills/<име>/");
+  assert.deepEqual(r.skills, { "igrovo-studio": 1, "model-na-zaplahite": 1 }, "Skill се брои по tool_use id; Read — най-много веднъж и само без Skill");
   rmSync(dir, { recursive: true, force: true });
 });

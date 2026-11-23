@@ -5,7 +5,7 @@
 
 ## Overview
 
-Use this skill for 2D sprite generation and normalization. This workflow is intentionally anchored around one approved frame and a whole-strip generation pass because frame-by-frame generation drifts too easily.
+Use this skill for 2D sprite production and normalization. This workflow is intentionally anchored around one approved frame and a whole-strip pass because frame-by-frame work drifts too easily.
 
 This skill is 2D-specific. If the request is for 3D characters, meshes, or materials, route back through `../SKILL.md`.
 

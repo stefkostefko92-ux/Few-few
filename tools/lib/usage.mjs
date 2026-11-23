@@ -77,8 +77,12 @@ export function summarizeTranscript(path, hint = {}) {
   // инструмент ги носи — без това решението „по-малки резултати“ е на сляпо.
   const toolOf = new Map(), toolBytes = {};
   // Кои умения агентът реално е извикал (23.11.2026, идея от openai/plugins · plugin-eval): цената на умение
-  // се мереше, а ползването — не. Името идва от транскрипта, затова минава през SKILL_NAME.
-  const skills = {};
+  // се мереше, а ползването — не. Името идва от транскрипта, затова минава през SKILL_NAME. Skill се брои по
+  // tool_use id (един отговор може да е записан на няколко реда); прочетен SKILL.md — най-много веднъж на пускане
+  // и само ако няма Skill за същото име. Предзаредените през skills: не са tool_use — тях отчетът не ги мери.
+  // Граница: Read не различава „ползвам“ от „преглеждам“ (AI-джията чете SKILL.md при преглед на PR, извън
+  // .pr-review/) — броят е сигнал за „живо ли е“, не присъда.
+  const skills = {}, skillIds = new Set(), skillReads = new Set();
   // Повторно четене на същото (файл + offset/limit/pages): 02.11.2026 един PDF, прочетен 5 пъти, утрои пускането.
   const readKey = new Map(), seenReads = new Set(); let rereads = 0, rereadBytes = 0;
   let t0 = "", t1 = "";
@@ -97,9 +101,13 @@ export function summarizeTranscript(path, hint = {}) {
       if (b?.type === "tool_use") {
         tools++;
         if (b.id) toolOf.set(b.id, String(b.name || "?").replace(/^mcp__([^_]+)__.*/, "mcp:$1"));
-        const sk = b.name === "Skill" && typeof b.input?.skill === "string" ? b.input.skill
-          : b.name === "Read" && typeof b.input?.file_path === "string" ? (b.input.file_path.match(SKILL_FILE) || [])[1] : undefined;
-        if (sk && SKILL_NAME.test(sk)) skills[sk] = (skills[sk] || 0) + 1;
+        if (b.name === "Skill" && typeof b.input?.skill === "string" && SKILL_NAME.test(b.input.skill) && !skillIds.has(b.id ?? {})) {
+          if (b.id) skillIds.add(b.id);
+          skills[b.input.skill] = (skills[b.input.skill] || 0) + 1;
+        } else if (b.name === "Read" && typeof b.input?.file_path === "string" && !b.input.file_path.includes("/.pr-review/")) {
+          const m = b.input.file_path.match(SKILL_FILE);
+          if (m && SKILL_NAME.test(m[1])) skillReads.add(m[1]);
+        }
         if (b.name === "Read" && b.id && b.input?.file_path) {
           const k = [b.input.file_path, b.input.offset ?? "", b.input.limit ?? "", b.input.pages ?? ""].join("|");
           if (seenReads.has(k)) { rereads++; readKey.set(b.id, true); } else seenReads.add(k);
@@ -127,6 +135,7 @@ export function summarizeTranscript(path, hint = {}) {
     peakCtx = Math.max(peakCtx, ctx);
   }
   if (!turns) return null;
+  for (const k of skillReads) if (!skills[k]) skills[k] = 1;
   const id = createHash("sha1").update(basename(path)).digest("hex").slice(0, 10);
   const durationSec = t0 && t1 ? Math.round((Date.parse(t1) - Date.parse(t0)) / 1000) : null;
   return {
@@ -137,9 +146,9 @@ export function summarizeTranscript(path, hint = {}) {
   };
 }
 
-/** Име на умение: kebab-case, по желание с префикс на плъгин (`plugin:skill`); без пътища и прототипни имена. */
 /** Агентът може да прочете умението и с Read (жива оценка 23.11.2026) — това също е ползване. */
 const SKILL_FILE = /\/\.claude\/skills\/([a-z0-9][a-z0-9-]{0,63})\/SKILL\.md$/;
+/** Име на умение: kebab-case, по желание с префикс на плъгин (`plugin:skill`); без пътища и прототипни имена. */
 export const SKILL_NAME = /^(?!(__proto__|constructor|prototype)$)[a-z0-9][a-z0-9-]{0,63}(:[a-z0-9][a-z0-9-]{0,63})?$/;
 
 // Дневникът е данни от диска (и от клона agents/memory) — не им вярвай на формата. Нечислови или

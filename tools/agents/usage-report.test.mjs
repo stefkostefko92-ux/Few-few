@@ -37,6 +37,24 @@ test("unpricedSplit: запис без модел не се брои за лип
   assert.deepEqual(unpricedSplit(recs, prices), { noModel: 1, noPrice: 1, models: ["claude-nova-9"] });
 });
 
+test("skillCatalog: предзаредените през skills: и само ръчните умения не се мерят като „никога викани“", async () => {
+  const { skillCatalog } = await import("./usage-report.mjs");
+  const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import("node:fs");
+  const { join } = await import("node:path");
+  const { tmpdir } = await import("node:os");
+  const root = mkdtempSync(join(tmpdir(), "ur-sk-"));
+  const sk = (name, extra = "") => { mkdirSync(join(root, "skills", name), { recursive: true }); writeFileSync(join(root, "skills", name, "SKILL.md"), `---\nname: ${name}\ndescription: x\n${extra}---\n\nтяло\n`); };
+  sk("agent-doctrine"); sk("frontend-design"); sk("seo-geo"); sk("discernment-nudge", "disable-model-invocation: true\n");
+  mkdirSync(join(root, "skills", "no-skill-md"), { recursive: true });
+  mkdirSync(join(root, "agents"));
+  writeFileSync(join(root, "agents", "dizayner.md"), "---\nname: dizayner\nskills:\n  - agent-doctrine\n  - frontend-design\nmodel: sonnet\n---\n\nтяло\n");
+  writeFileSync(join(root, "agents", "seo.md"), "---\nname: seo\nskills:\n  - agent-doctrine\n---\n");
+  writeFileSync(join(root, "agents", "README.md"), "skills:\n  - seo-geo\n");
+  const c = skillCatalog(join(root, "skills"), join(root, "agents"));
+  assert.deepEqual(c, { measured: ["seo-geo"], preloaded: ["agent-doctrine", "frontend-design"], manual: ["discernment-nudge"] });
+  rmSync(root, { recursive: true, force: true });
+});
+
 test("skillUsage: брои пусканията по умение и казва кои наши умения никога не са викани", async () => {
   const { skillUsage } = await import("./usage-report.mjs");
   const recs = [
