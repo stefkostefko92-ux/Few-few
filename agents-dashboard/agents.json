@@ -1256,7 +1256,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 726
+        "lessons": 728
       },
       "evolution": [
         {
@@ -2110,9 +2110,20 @@
           "date": "2026-11-23",
           "event": "v67.8 — учене",
           "detail": "Научи: spawnSync със stdio pipe и maxBuffer по подразбиране 1 MiB при препълване връща error.c…"
+        },
+        {
+          "version": "68.0.0",
+          "date": "2026-11-23",
+          "event": "v68.0 — учене",
+          "detail": "Научи: Валидатор на ЕГН (дата + контролна сума mod 11) приема ~1,1% от случайните 10-цифрени ч… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Валидатор на ЕГН (дата + контролна сума mod 11) приема ~1,1% от случайните 10-цифрени ч…\" (+1 още)"
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
