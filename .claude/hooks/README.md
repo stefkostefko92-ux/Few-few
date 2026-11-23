@@ -64,7 +64,7 @@ settings.json бяха регистрирани четири с други match
 | **`guard-model.mjs`** | `PreModelSwitch` | Смяна към Haiku през `/model`, `/config` или `set_model` (правило на собственика „никога Haiku“). Фоновите задачи на харнеса са пренасочени отделно: `ANTHROPIC_DEFAULT_HAIKU_MODEL` → Sonnet 5.5 в `env`. |
 | **`guard-config.mjs`** | `ConfigChange` (без matcher) · `onFailure: "block"` | Настройка, сменена ПО СРЕДАТА на сесия, да отслаби пазачите на същата сесия (31.10.2026). `project_settings` се сравнява с git HEAD: махнато deny правило, махната или стеснена кука, свален `onFailure: "block"`, намален `timeout`, изключена ограда за запис, върната автоматична памет (`autoMemoryEnabled`), махнат `disableBypassPermissionsMode`, махнат или Haiku `ANTHROPIC_DEFAULT_HAIKU_MODEL`. Локалните (с предимство пред проектните): `autoMemoryEnabled: true` или Haiku. Във всеки файл: `disableAllHooks`, `defaultMode` `bypassPermissions`/`auto`. Умение, сменено по средата на сесия, влиза от следващата. Затягането минава. Блокът е мълчалив по дизайна на харнеса — всяко решение влиза в `_state/config-changes.jsonl`. Тест: `tools/hooks/guard-config.test.mjs`. |
 | **`agent-cap.mjs`** | `PreToolUse` · `Agent\|Task\|Workflow` | 11-ият общ агент в сесия (`general-purpose`, `Explore`, `Plan`, `fork`…); нашите от `.claude/agents/` не се броят. Правилото „общи агенти: таван 10“ вече е механизъм. Плюс `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS=10` (едновременни, всички) и `CLAUDE_CODE_SUBAGENT_EFFORT=medium` (общите без собствено усилие) в `env`. **Месечен таван на разхода** (23.11.2026, `budget.mjs` + `budgets.json`): над `warnAt` (80%) — предупреждение към собственика; над тавана на агента, на общия кош или на флота — пускането спира, докато собственикът не вдигне тавана или не добави `approved` за месеца. Броят се само продукционните пускания от `usage.jsonl`; живите проверки не. Под guard-self са и конфигурацията, и данните, по които се съди (`prices.json`, `usage.jsonl`, буферът и флагът за оценки в `.git`). Живите проверки се броят. Списъкът на нашите агенти идва от matcher-а на SubagentStart в `settings.json`, не от папката, затова нов `.md` не отваря нов кош. **Fail-closed** (Разбивача, 23.11.2026): невалиден `budgets.json`, липсващи цени или грешка в куката → спира с причина; `onFailure: block`. Вложена сесия `claude -p` от агент спира `guard-dangerous`. Твърдият таван остава лимитът на разхода при доставчика. |
-| **`guard-exfil.mjs`** | `PreToolUse` · `Bash\|Monitor\|WebFetch\|WebSearch\|mcp__.*` | ИЗНАСЯНЕ навън (lethal-trifecta изходът): литерална тайна или тайна env променлива към мрежов verb/интерпретатор; `.env`/ключ/credential файл през пайп, субституция `$(…)`, stdin редирект, `-d/-F/-T/--data-raw/--post-file`, scp/rsync, архив, четене от код (`readFileSync`, `open`); `/proc/*/environ`; пълен env dump; команди, които издават credential (`gh auth token`, `vault read`…) към мрежа; стажиране (env dump/тайна → файл, `git remote add` чужд URL); `git push` към чужд URL; `npm publish`; тайна в URL/търсене; **тайна в аргумент на MCP инструмент** (`mcp__github__*`, `mcp__Gmail__*`… — целият `tool_input` се сериализира и се търси по същия списък + секрет в URL query). **Monitor** (31.10.2026, проба на живо): shell командата му стига до Bash-куките като `tool_name: "Bash"`, а WebSocket режимът (`ws.url`, `protocols`, `headers`) — само до matcher, който назовава Monitor; проверяват се всички канали едновременно. Входът се разкодира (`%XX`, двукратно) преди шаблоните. |
+| **`guard-exfil.mjs`** | `PreToolUse` · `Bash\|PowerShell\|Monitor\|WebFetch\|WebSearch\|mcp__.*` | ИЗНАСЯНЕ навън (lethal-trifecta изходът): литерална тайна или тайна env променлива към мрежов verb/интерпретатор; `.env`/ключ/credential файл през пайп, субституция `$(…)`, stdin редирект, `-d/-F/-T/--data-raw/--post-file`, scp/rsync, архив, четене от код (`readFileSync`, `open`); `/proc/*/environ`; пълен env dump; команди, които издават credential (`gh auth token`, `vault read`…) към мрежа; стажиране (env dump/тайна → файл, `git remote add` чужд URL); `git push` към чужд URL; `npm publish`; тайна в URL/търсене; **тайна в аргумент на MCP инструмент** (`mcp__github__*`, `mcp__Gmail__*`… — целият `tool_input` се сериализира и се търси по същия списък + секрет в URL query). **Monitor** (31.10.2026, проба на живо): shell командата му стига до Bash-куките като `tool_name: "Bash"`, а WebSocket режимът (`ws.url`, `protocols`, `headers`) — само до matcher, който назовава Monitor; проверяват се всички канали едновременно. Входът се разкодира (`%XX`, двукратно) преди шаблоните. |
 
 **Когато предпазителят не може да тръгне (`onFailure: "block"`, Claude Code ≥ 2.1.295).** Вътрешна грешка в
 предпазителя пак е fail-open (exit 0) — фалшивият блок изключва предпазители. Но ако скриптът изобщо не
@@ -125,6 +125,34 @@ URL query. MCP се проверява ПЪРВИ в диспечера — им
 `detectUrlExfil(ti.url)` с `undefined`. `deep-audit` брои `mcp__` в `tools:` на агент за недоверена външна
 повърхност (иска injection spec) — днес нула агенти го имат; регексът е покритие за бъдещето, не мутационно
 доказано.
+
+### Windows и PowerShell (2026-11-23)
+AI Studio работи на компютъра на собственика с Windows. Разбивача пусна 8 проби с Windows правопис и всички
+минаха. На Claude Code за Windows има и **отделен инструмент `PowerShell`** (поле `command`;
+code.claude.com/docs/en/hooks: „Match `Bash|PowerShell` in hooks that inspect shell commands“). Кука с
+matcher само `Bash` там изобщо не тича. Затова:
+- Шел куките (`guard-self`, `guard-dangerous`, `guard-readonly`, `guard-exfil`, `guard-engagement`) са на
+  `Bash|PowerShell|…`. `guards-windows.test.mjs` пази matcher-ите.
+- `guard-exfil` познава `iwr`/`irm`/`Invoke-WebRequest`/`Invoke-RestMethod`, BITS, `certutil -urlcache`,
+  `Net.WebClient`, `$env:ИМЕ` и `%ИМЕ%`, `Get-Content`/`gc`/`type`, `-InFile` и `Get-ChildItem env:`.
+- `guard-dangerous` спира рекурсивно триене на корен на устройство, профил или системна папка
+  (`Remove-Item -Recurse`, `rd /s`, `del /s`, вкл. през пайп от `Get-ChildItem`), `Format-Volume`/`format C:`,
+  `iwr … | iex` и кодирана команда (`-EncodedCommand`).
+
+**Тайна, четена през шела, и ЕГН (F2).** `deny Read(.env)` в `settings.json` важи само за инструмента Read,
+затова `guard-exfil` спира и четенето през шела: `.env` и `.env.<среда>` (без `.example`/`.sample`/
+`.template`), частен ssh ключ, credentials файлове. Целта на пренасочване (`cat > .env <<EOF`) е запис и
+минава. ЕГН с валидна дата и контролна сума (`pii.mjs`) се спира в адрес на WebFetch и в търсене (и с разделител
+`850315-1235`). В аргумент на MCP и в мрежова команда — само с етикет до числото (ЕГН, EGN, ЛНЧ), защото
+~1,1% от случайните 10-цифрени числа (ID на коментари в GitHub, Unix време) минават проверката на датата
+и сумата (Кодаджията, 2M проби).
+
+**Таван 32 KB на шел команда** (`guard-dangerous`, `guard-exfil`). Някои шаблони са квадратични на дълъг
+вход, а таймаутът на куката (10 s) пада „отворено“. Над тавана командата се спира с молба да се раздели.
+
+**Честно за границата.** Регулярен израз не спира тайна, която моделът вече е видял и кодира сам (base64,
+разбита на части). Надеждният контрол е тайната изобщо да не влиза в контекста — затова се реже
+четенето — плюс мрежов allowlist в sandbox-а (`tools/agents/sandbox-setup.mjs`).
 
 ### Къде отива поуката (`memory-capture.mjs` → `tools/lib/memory-branch.mjs`)
 Два дефекта от един корен — куката комитваше в КЛОНА НА ЗАДАЧАТА:
