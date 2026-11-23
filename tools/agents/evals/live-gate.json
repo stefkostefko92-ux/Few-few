@@ -1,9 +1,9 @@
 {
   "date": "2026-11-23",
-  "ref": "5102e47e525a53bcf2565e4024ba046bdaade1fe",
+  "ref": "10ed5193a57ac2fd7596865a78b79a4476f93e6e",
   "cli": "2.1.330 (Claude Code)",
-  "summary": "проба 4/4 · оценки 7/7 · pass^k 3/3 · verifier ✓",
-  "costUsd": 11.54,
+  "summary": "проба 3/3 · оценки 6/6 · pass^k 2/2 · verifier ✓",
+  "costUsd": 10.33,
   "criticalAt": "2026-11-23",
   "probe": [
     {
@@ -20,14 +20,9 @@
       "agent": "dizayner",
       "ok": true,
       "problems": []
-    },
-    {
-      "agent": "ai-studio",
-      "ok": true,
-      "problems": []
     }
   ],
-  "inputsHash": "2b3dde34f722e44a84c993885e82d619fa62b6a16a569336eea297e99db722eb",
+  "inputsHash": "1a3350c68acf771cc59eb47c197b62f108319fcfae3a78c74b4568bc82d1aad0",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
