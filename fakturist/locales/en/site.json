@@ -92,28 +92,28 @@
     "rules": {
       "1": {
         "name": "Number",
-        "text": "Ten digits, sequential, no gaps. After 0000000124 comes 0000000125.",
+        "text": "Ten digits, sequential within the series. In Fakturist also without gaps: after 0000000124 comes 0000000125.",
         "ref": "Art. 114(1)(2) VAT Act"
       },
       "2": {
         "name": "Basis for not charging VAT",
         "text": "When you do not charge VAT, you state the basis, and it is checked on issue.",
-        "ref": "Art. 114 VAT Act"
+        "ref": "Art. 114(1)(12) and (4) VAT Act"
       },
       "3": {
         "name": "VAT in euro",
-        "text": "On an invoice in a foreign currency the tax is also shown in euro.",
+        "text": "On an invoice in a foreign currency the taxable amount and the tax are also stated in euro.",
         "ref": "Art. 114(5) VAT Act"
       },
       "4": {
         "name": "Credit and debit notes",
         "text": "A credit or debit note points to the invoice it relates to.",
-        "ref": "Art. 115 VAT Act"
+        "ref": "Art. 115(4)(1) VAT Act"
       },
       "5": {
         "name": "Integrity",
-        "text": "An issued document gets a SHA-256 fingerprint and joins a chain. A change after issue shows.",
-        "ref": "Art. 114(6) VAT Act"
+        "text": "An issued document gets a SHA-256 fingerprint and joins a chain — a change after issue shows. The law requires integrity by a method of your choice; the chain is our method, not a legal requirement.",
+        "ref": "Method of your choice: Art. 114(6) VAT Act"
       },
       "title": "What we check before a document goes out",
       "lead": "The rules are not in a manual you have to read. They are part of issuing."
@@ -582,11 +582,11 @@
       },
       "3": {
         "title": "How does a pro forma become an invoice?",
-        "p1": "When the customer pays, press “Issue invoice” on the pro forma. The form is filled in with its details, and on issuing the pro forma is marked as invoiced. No double entry, and the invoice takes its number from the invoice series."
+        "p1": "When the customer pays, press “Issue invoice” on the pro forma and choose the type: “Invoice” if the goods or service have already been delivered, or “Prepayment invoice” if the payment comes before delivery. The form is filled in from the pro forma; check the dates — for an advance it is the day the payment was received. On issuing, the pro forma is marked as invoiced and the invoice takes its number from the invoice series."
       },
       "4": {
         "title": "Pro forma or advance invoice?",
-        "p1": "If you are VAT-registered and receive a payment before you deliver the goods or service, you issue an invoice for the advance — the pro forma does not replace it. Fakturist also issues advance invoices, and in the final invoice you deduct the advance by entering the number of the advance invoice.",
+        "p1": "If you receive a payment before you deliver the goods or service, you issue an invoice for the advance within the statutory deadline after receiving it — the pro forma does not replace it. If you are VAT-registered, the tax as a rule becomes chargeable when the advance is received; if you are not, the advance invoice carries no VAT. In Fakturist choose the type “Prepayment invoice”; in the final invoice you deduct the advance by entering its number. Check advances on intra-Community supplies, reverse-charge cases and other special cases with your accountant.",
         "link": {
           "page": "vatLedgers",
           "text": "How invoices go into the sales ledger"
