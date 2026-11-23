@@ -853,10 +853,6 @@
 {"t":"handoff","ts":"2026-11-21T09:54:26.213Z","id":"r14dae130","from":"kodadjiyata","to":"kachestveniyat","status":"наред","run":"6a44d7cf"}
 {"t":"start","ts":"2026-11-21T13:46:46.125Z","id":"rd0e3b071","flow":"авто","lead":"ai-djiyata","auto":true}
 {"t":"handoff","ts":"2026-11-21T13:46:46.125Z","id":"rd0e3b071","from":"ai-djiyata","to":"човек","status":"има бележки","run":"46b67f1e"}
-{"t":"start","ts":"2026-11-23T06:06:25.869Z","id":"rbf559a72","flow":"авто","lead":"seo","auto":true}
-{"t":"handoff","ts":"2026-11-23T06:06:25.869Z","id":"rbf559a72","from":"seo","to":"kodadjiyata","status":"има бележки","run":"e5fa8bbf"}
-{"t":"handoff","ts":"2026-11-23T06:09:42.665Z","id":"rbf559a72","from":"pravniyat-razbirach","to":"prevodach","status":"има бележки","run":"ba39f9f2"}
-{"t":"handoff","ts":"2026-11-23T06:13:06.074Z","id":"rbf559a72","from":"danachnika","to":"човек","status":"има бележки","run":"5c49ed4d"}
 {"t":"start","ts":"2026-11-22T17:46:57.894Z","id":"r3613d841","flow":"авто","lead":"seo","auto":true}
 {"t":"handoff","ts":"2026-11-22T17:46:57.894Z","id":"r3613d841","from":"seo","to":"оркестратор","status":"има бележки","run":"40c4ba6a"}
 {"t":"handoff","ts":"2026-11-22T17:47:45.145Z","id":"r3613d841","from":"prevodach","to":"човек","status":"има бележки","run":"769db881"}
@@ -878,3 +874,13 @@
 {"t":"handoff","ts":"2026-11-23T10:18:07.814Z","id":"r4d2b701c","from":"pravniyat-razbirach","to":"ai-djiyata","status":"има бележки","run":"a457d4d3"}
 {"t":"handoff","ts":"2026-11-23T10:29:15.369Z","id":"r4d2b701c","from":"ai-djiyata","to":"човек","status":"наред","note":"прегледите на AI Studio (AI-джията, Кодаджията, Правния) — всички находки поправени в 5102e47e5"}
 {"t":"close","ts":"2026-11-23T10:29:15.410Z","id":"r4d2b701c","status":"завършен"}
+{"t":"start","ts":"2026-11-23T08:53:40.957Z","id":"r7782e8d7","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-23T08:53:40.957Z","id":"r7782e8d7","from":"kodadjiyata","to":"човек","status":"има бележки","run":"09f95ae0"}
+{"t":"handoff","ts":"2026-11-23T08:53:45.142Z","id":"r7782e8d7","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"03e60ea4"}
+{"t":"handoff","ts":"2026-11-23T09:02:21.536Z","id":"r7782e8d7","from":"pravniyat-razbirach","to":"kodadjiyata","status":"има бележки","run":"e40e5fd8"}
+{"t":"handoff","ts":"2026-11-23T09:02:57.295Z","id":"r7782e8d7","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"18209726"}
+{"t":"start","ts":"2026-11-23T09:28:14.842Z","id":"r6749f409","flow":"авто","lead":"razbivacha","auto":true}
+{"t":"handoff","ts":"2026-11-23T09:28:14.843Z","id":"r6749f409","from":"razbivacha","to":"kodadjiyata","status":"наред","run":"51f48071"}
+{"t":"handoff","ts":"2026-11-23T09:31:15.932Z","id":"r7782e8d7","from":"razbivacha","to":"kodadjiyata","status":"наред","note":"трети преглед (r6749f409): N1–N8 затворени в b1085eb5d"}
+{"t":"close","ts":"2026-11-23T09:31:15.963Z","id":"r7782e8d7","status":"завършен"}
+{"t":"close","ts":"2026-11-23T09:31:15.996Z","id":"r6749f409","status":"завършен"}

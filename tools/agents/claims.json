@@ -98,6 +98,61 @@
       ],
       "checkedAt": "2026-11-23",
       "note": "tools/video/presets.mjs youtube4k60 следва тези числа; при промяна на страницата — тестът presets.test.mjs и presets.mjs заедно."
+    },
+    {
+      "id": "google-gen-ai-guide-2026",
+      "kind": "platform",
+      "statement": "Google (ръководство за генеративен AI в Search, 15.05.2026): оптимизацията за AI Overviews и AI Mode е SEO; не са нужни llms.txt, „AI файлове“, специална schema/markdown, накъсване на текста, пренаписване „за AI“, страници за всяка fan-out подзаявка (scaled content abuse). Ключът е некомодитизирано съдържание. „Пасажи 130–170 думи“ и „отговор отпред 40–60 думи“ са евристики на доставчици, не изискване на Google.",
+      "source": "https://developers.google.com/search/docs/fundamentals/ai-optimization-guide",
+      "agents": [
+        "seo"
+      ],
+      "checkedAt": "2026-11-22",
+      "note": "tools/seo/research-2026-11.md, раздел 3. Дефиницията на SEO до 22.11.2026 твърдеше обратното (errors.jsonl, spec seo-geo-mythbusting-2026)."
+    },
+    {
+      "id": "gsc-gen-ai-report-control",
+      "kind": "platform",
+      "statement": "Search Console: отчетът Generative AI performance е за всички сайтове от 31.08.2026 — импресии, страници, държави, устройства; страницата описва само импресии (кликове и CTR не се споменават). Настройката Search generative AI решава дали сайтът участва в AI Overviews, AI Mode и AI функциите в Discover; не е сигнал за класиране и не е контрол за обучение (за обучението е Google-Extended). FAQ rich results не се показват от 05.2026.",
+      "source": "https://developers.google.com/search/docs/crawling-indexing/control-what-you-share",
+      "agents": [
+        "seo"
+      ],
+      "checkedAt": "2026-11-22",
+      "note": "Отчетът: support.google.com/webmasters/answer/16984139 (импресии; „to all websites“ от 31.08.2026). Настройката е описана в control-what-you-share („Use the Search generative AI control … in Search Console“), НЕ в ai-features — там я търси агентът на 22.11.2026 и не я намери. FAQ: developers.google.com/search/updates."
+    },
+    {
+      "id": "google-ranking-updates-2026",
+      "kind": "platform",
+      "statement": "Core update-и 2026: март (27.03), май (21.05), ноември — тече от 10.11.2026 към 22.11.2026. Spam update-и: 24.03, 24.06, 18.08, 24.09. При спад на трафика първо се проверява таблото за статус; по време на разгръщане не се реагира.",
+      "source": "https://developers.google.com/search/updates/ranking",
+      "agents": [
+        "seo"
+      ],
+      "checkedAt": "2026-11-22",
+      "note": "Ноемврийският ще приключи — при пресверка обнови датата на края в seo.md (Пейзаж 2026). Историята на ноемврийския: status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history (пренасочване от /search/updates/ranking)."
+    },
+    {
+      "id": "ai-crawlers-2026",
+      "kind": "platform",
+      "statement": "OpenAI: OAI-SearchBot (ChatGPT search; без него няма в ChatGPT search), GPTBot (обучение, отделно), ChatGPT-User, OAI-AdsBot. Anthropic: Claude-SearchBot, ClaudeBot (обучение), Claude-User. Apple: Applebot (Siri/Spotlight), Applebot-Extended — само токен за обучение. Google-Extended — само токен в robots.txt за обучение, не е user-agent и не маха сайта от AI Overviews. DuckAssistBot, MistralAI-User, meta-externalagent — по страниците на доставчиците.",
+      "source": "https://developers.openai.com/api/docs/bots",
+      "agents": [
+        "seo"
+      ],
+      "checkedAt": "2026-11-22",
+      "note": "platform.openai.com/docs/bots пренасочва (301) към developers.openai.com/api/docs/bots (сверка на агента, 22.11.2026). Също: support.claude.com/en/articles/8896518 · support.apple.com/en-us/119829 · developers.facebook.com/docs/sharing/webmasters/web-crawlers · duckduckgo.com/duckduckgo-help-pages/results/duckassistbot · docs.mistral.ai/robots. Инструментът: tools/seo/ai-bots.mjs (+ ai-bots.test.mjs)."
+    },
+    {
+      "id": "google-ad-grants-eligibility",
+      "kind": "platform",
+      "statement": "Google Ad Grants: до $10 000/месец текстова реклама в Google Search само за регистрирани нестопански организации през Google for Nonprofits (проверка от Percent). Не са допустими държавни органи, болници и медицински групи, училища, академични институции и университети (благотворителните им звена — да). Търговско дружество — не.",
+      "source": "https://www.google.com/nonprofits/eligibility/",
+      "agents": [
+        "seo"
+      ],
+      "checkedAt": "2026-11-22",
+      "note": "„Благотворителните им звена — да“ е от support.google.com/nonprofits/answer/3215869 („philanthropic arms of educational organizations are eligible“), не от страницата за допустимост. Също: support.google.com/nonprofits/answer/3215869. Наличността по държава (BG/IT) — само от независими източници; сверявай при регистрация. Умение bezplatna-vidimost."
     }
   ]
 }

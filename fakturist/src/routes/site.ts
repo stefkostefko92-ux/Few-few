@@ -13,8 +13,6 @@ import { byDay, LAST_UPDATE, NEWS } from '../news/entries.js';
 import { NEWS_FEED_PATHS } from '../news/feed.js';
 import { helpFaq, publicHelp } from '../help/content.js';
 import { SOFTWARE_VERSION } from '../version.js';
-import { campaignQuery, readCampaign, withQuery } from '../marketing/campaign.js';
-import { isLanding, landingParams, landingSections } from '../seo/landing.js';
 
 /** Сума в евроцентове за показване: „9,00 €“ / „€9.00“. */
 export function formatEuro(cents: number, locale: Locale): string {
@@ -24,7 +22,7 @@ export function formatEuro(cents: number, locale: Locale): string {
 }
 
 async function renderSitePage(
-  req: Request,
+  _req: Request,
   res: Response,
   id: SitePageId,
   locale: Locale,
@@ -48,30 +46,11 @@ async function renderSitePage(
   res.locals.features = FEATURES;
   res.locals.featureGroups = FEATURE_GROUPS;
   res.locals.formatEuro = (cents: number) => formatEuro(cents, locale);
-  const params = isLanding(id) ? landingParams(locale, t, plans ?? []) : {};
-  res.locals.landingParams = params;
-  res.locals.sections = isLanding(id) ? landingSections(locale, t, id, params) : [];
-  res.locals.faq = id === 'help' ? helpFaq(locale) : faqItems(locale, t, id, params);
+  res.locals.faq = id === 'help' ? helpFaq(locale) : faqItems(locale, t, id);
   res.locals.helpSections = id === 'help' ? publicHelp(locale) : [];
-  // Етикетът на кампанията (SPEC 93) — само в адресите. Вътрешните връзки го носят само когато е изрично в
-  // адреса (рекламата); сайтът, от който идва посетителят, отива само във връзката към регистрацията — иначе
-  // всеки органичен посетител би разнасял „utm_source=www.google.com“ из сайта (SEO, 23.11.2026).
-  const selfHost = new URL(base).hostname;
-  const explicit = readCampaign(req.query, undefined, selfHost);
-  const campaign = explicit ?? readCampaign({}, req.get('referer') ?? undefined, selfHost);
-  const carried = campaignQuery(explicit);
-  // Страницата зависи от етикета — не се пази в общ кеш.
-  if (campaign) res.set({ 'Cache-Control': 'private', Vary: 'Referer' });
   res.locals.urls = Object.fromEntries(
-    SITE_PAGES.map((page) => [
-      page.id,
-      carried ? `${page.paths[locale]}?${carried}` : page.paths[locale],
-    ]),
+    SITE_PAGES.map((page) => [page.id, page.paths[locale]]),
   ) as Record<SitePageId, string>;
-  res.locals.appUrls = {
-    register: withQuery('/registraciya', locale, campaign),
-    login: withQuery('/vhod', locale, null),
-  };
   res.locals.demoChain = demoChain();
   res.locals.registrationOpen = config().REGISTRATION_OPEN;
   // „Какво ново“ (src/news/): дните с новините, датата на последната, емисията, версията.
@@ -90,7 +69,7 @@ async function renderSitePage(
     ogImage: `${base}/img/og-${locale}.png`,
     jsonLd: safeJson(structuredData({ base, locale, t, page: id, plans: plans ?? [] })),
   };
-  res.render(isLanding(id) ? 'site/landing' : `site/${id}`);
+  res.render(`site/${id}`);
 }
 
 export function siteRouter(): Router {
