@@ -114,3 +114,63 @@ test("файлови команди: цел в кавички към scratchpad/
   for (const c of [`cp /tmp/a "src/a.ts"`, `cp a "$TARGET"`, `cp a "${sc}/../../../home/x"`])
     assert.match(mutationReason(c, { scratch: sc }), /пише\/трие/, c);
 });
+
+// Разбивача, 23.11.2026 (фалшив позитив): `D=<scratch>/al; cat > $D/probe.mjs` се спираше — пазачът не разгъва
+// променливи. Разгъва се САМО недвусмислено: точно едно буквално присвояване на горно ниво преди употребата, без друго
+// свързване на името (read, for, +=, unset, declare…), не в единични кавички. Всичко друго остава спряно.
+test("променлива с буквален временен път от същата команда се разгъва; двусмислената остава спряна", () => {
+  const sc = "/tmp/claude-0/x/scratchpad";
+  for (const c of [
+    `D=${sc}/al; mkdir -p $D; cat > $D/probe.mjs <<'EOF'\nconsole.log(1)\nEOF`,
+    `export D="${sc}/al"; cp README.md "$D/"`,
+    "D=/tmp/x && echo hi > ${D}/out.txt",
+    `OUT=${sc}/r.json; node tools/agents/oversee.mjs > $OUT`,
+    `D=${sc}; D=${sc}; touch $D/a`,
+  ]) assert.equal(mutationReason(c, { scratch: sc }), "", c);
+  for (const c of [
+    "cat > $D/x; D=/tmp/y",
+    "D=/tmp/a; D=src; cat > $D/x",
+    "D=/tmp/a; read D; cat > $D/x",
+    "D=/tmp/a; D+=x; cat > $D/x",
+    "(D=/tmp/a); cat > $D/x",
+    "{ D=/tmp/a; }; cat > $D/x",
+    "D=$(pwd); cat > $D/x",
+    "D=`pwd`; cat > $D/x",
+    "D=src; cat > $D/x",
+    "D=/tmp/a; for D in src lib; do cat > $D/x; done",
+    "D=/tmp/a; unset D; cat > $D/x",
+    "D=/tmp/a; declare D=src; cat > $D/x",
+    "D=/tmp/a; sh -c 'cat > $D/x'",
+    "D=/tmp/../repo; cat > $D/x",
+    "DD=/tmp/a; cat > $D/x",
+    // Разбивача, 23.11.2026 (блокер в първата версия): присвояване точно преди команда (`D=v cmd`) НЕ е видимо в
+    // самата команда — `$D` е празно и `${D}/<абсолютен път>` пише в репото.
+    "D=/tmp/x cat > $D/y",
+    "D=/tmp/z cat f > ${D}/home/user/Few-few/poc",
+    "A=/tmp/a B=/tmp/b cat > $B/x",
+    // Присвояване, което може да не се изпълни в текущия шел: след &&, ||, | или на заден план (&).
+    "false && D=/tmp/x; cat > ${D}/home/user/Few-few/poc",
+    "true || D=/tmp/x; cat > ${D}/home/user/Few-few/poc",
+    "echo | D=/tmp/x; cat > ${D}/home/user/Few-few/poc",
+    "D=/tmp/x & cat > ${D}/home/user/Few-few/poc",
+    // Скрито пре-присвояване: eval, source/., printf -v.
+    "D=/tmp/x; eval 'D='; cat > ${D}/home/user/Few-few/poc",
+    "D=/tmp/x; source ./env.sh; cat > ${D}/home/user/Few-few/poc",
+    "D=/tmp/x; . ./env.sh; cat > ${D}/home/user/Few-few/poc",
+    "D=/tmp/x; printf -v D ''; cat > ${D}/home/user/Few-few/poc",
+  ]) assert.notEqual(mutationReason(c, { scratch: sc }), "", c);
+});
+
+test("съобщението при неразгъната променлива подсказва пълния път", () => {
+  assert.match(mutationReason("cat > $X/f.txt", { scratch: "/s/pad" }), /пълния път/);
+});
+
+// Съществуваща дупка, хваната при поправката на променливите (23.11.2026): `sh -c 'cat > src/x'` минаваше — codeView
+// неутрализира съдържанието на единични кавички (`>` → `_`), а вътрешният низ на sh -c се четеше от този изглед.
+// guard-dangerous и guard-self четат низа от суровата команда; guard-readonly вече също.
+test("пренасочване вътре в sh -c '…' се вижда; heredoc към python остава данни", () => {
+  for (const c of ["sh -c 'cat > src/x'", "bash -lc 'echo hi >> README.md'", "sh -c 'tee src/a.txt < /dev/null'"])
+    assert.notEqual(mutationReason(c, { scratch: "/s/pad" }), "", c);
+  for (const c of ["bash -lc 'echo hi > /tmp/x'", "python3 - <<'EOF'\nprint(\"sh -c 'cat > src/x'\")\nEOF", "sh -c 'node --test tools/hooks/guard-readonly.test.mjs'"])
+    assert.equal(mutationReason(c, { scratch: "/s/pad" }), "", c);
+});
