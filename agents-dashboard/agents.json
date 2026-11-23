@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-11-22",
+    "updated": "2026-11-23",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -5566,6 +5566,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-23",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Panev door bracket A+B joins with two M10 bolts — pivot bolt in a round hole (giunto ar…\""
+        },
         {
           "date": "2026-11-22",
           "type": "learning",
