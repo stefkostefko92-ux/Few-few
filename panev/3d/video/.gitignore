@@ -1,0 +1,8 @@
+# Internal render inputs and outputs: downloaded on the machine that renders, never in git.
+/assets
+/mesh
+/render
+/frames
+/out
+__pycache__/
+*.blend1

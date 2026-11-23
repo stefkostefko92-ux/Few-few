@@ -159,6 +159,13 @@ xvfb-run -a npm run render -- --codes=<id,id> --size=1600x1200 --frames=48 --out
     (в облачната сесия: `CHROMIUM=/opt/pw-browsers/chromium npm run catalog-pdf`).
   - `previews.py` прави наново `panev/img/catalogo/pagina-NN.webp` от готовия PDF в
     `dist/pdf/catalogo/`.
+- **`video/`** — видео инструкцията „Montaggio in dieci passi“ (A 45 175 2 + B 45 320, само IT, 16:9).
+  Цялото описание е в `video/README.md`.
+  - Blender + Cycles строи сцената от геометрията на `src/` (`video/export_mesh.mjs` → `video/mesh/`).
+    Надписите се рисуват с Pillow. Всичко се пуска с `py render.py light|heavy`.
+  - Тежката версия (4K/60, OptiX, NVENC) се прави на компютъра на собственика.
+  - `assets/`, `mesh/`, `render/`, `frames/`, `out/` не влизат в git.
+  - Текстовете са в `video/texts.py`. Не са за сайта (още).
 
 ## Правила
 
