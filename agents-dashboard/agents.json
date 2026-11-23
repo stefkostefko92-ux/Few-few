@@ -49,7 +49,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 489
+        "lessons": 492
       },
       "evolution": [
         {
@@ -633,9 +633,20 @@
           "date": "2026-11-23",
           "event": "v44.2 — учене",
           "detail": "Научи: openai/plugins няма LICENSE в корена и README без лиценз; game-studio обявява MIT само … (+2 още)"
+        },
+        {
+          "version": "44.5.0",
+          "date": "2026-11-23",
+          "event": "v44.5 — учене",
+          "detail": "Научи: Remotion License FAQ брои за прага на безплатния лиценз общия брой хора — фрийлансърите… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Remotion License FAQ брои за прага на безплатния лиценз общия брой хора — фрийлансърите…\" (+2 още)"
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
