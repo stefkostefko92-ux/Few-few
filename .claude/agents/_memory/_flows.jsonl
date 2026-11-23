@@ -872,3 +872,9 @@
 {"t":"start","ts":"2026-11-23T09:59:33.007Z","id":"ff8e8gu","flow":"видео продукция 4K/60 (Blender, FFmpeg, DaVinci Resolve)","lead":"ai-djiyata","steps":["ai-djiyata"]}
 {"t":"handoff","ts":"2026-11-23T09:59:41.760Z","id":"ff8e8gu","from":"ai-djiyata","to":"човек","status":"блокер","note":"teams.mjs --route: нищо не хвана; няма агент, който води производството (сцени, 3D, звук, рендер, Resolve) — заявка на собственика 23.11"}
 {"t":"close","ts":"2026-11-23T09:59:41.790Z","id":"ff8e8gu","status":"блокиран"}
+{"t":"start","ts":"2026-11-23T10:16:00.512Z","id":"r4d2b701c","flow":"авто","lead":"ai-djiyata","auto":true}
+{"t":"handoff","ts":"2026-11-23T10:16:00.512Z","id":"r4d2b701c","from":"ai-djiyata","to":"човек","status":"има бележки","run":"63ba6b51"}
+{"t":"handoff","ts":"2026-11-23T10:16:43.212Z","id":"r4d2b701c","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"328d8ae3"}
+{"t":"handoff","ts":"2026-11-23T10:18:07.814Z","id":"r4d2b701c","from":"pravniyat-razbirach","to":"ai-djiyata","status":"има бележки","run":"a457d4d3"}
+{"t":"handoff","ts":"2026-11-23T10:29:15.369Z","id":"r4d2b701c","from":"ai-djiyata","to":"човек","status":"наред","note":"прегледите на AI Studio (AI-джията, Кодаджията, Правния) — всички находки поправени в 5102e47e5"}
+{"t":"close","ts":"2026-11-23T10:29:15.410Z","id":"r4d2b701c","status":"завършен"}
