@@ -884,3 +884,5 @@
 {"t":"handoff","ts":"2026-11-23T09:31:15.932Z","id":"r7782e8d7","from":"razbivacha","to":"kodadjiyata","status":"наред","note":"трети преглед (r6749f409): N1–N8 затворени в b1085eb5d"}
 {"t":"close","ts":"2026-11-23T09:31:15.963Z","id":"r7782e8d7","status":"завършен"}
 {"t":"close","ts":"2026-11-23T09:31:15.996Z","id":"r6749f409","status":"завършен"}
+{"t":"start","ts":"2026-11-23T12:40:52.294Z","id":"r0e509c4a","flow":"авто","lead":"prevodach","auto":true}
+{"t":"handoff","ts":"2026-11-23T12:40:52.294Z","id":"r0e509c4a","from":"prevodach","to":"човек","status":"има бележки","run":"3c954617"}
