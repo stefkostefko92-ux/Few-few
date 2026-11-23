@@ -9076,6 +9076,11 @@
       "activity": [
         {
           "date": "2026-11-23",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „youtube-agent-skill (Jakeschincariol, MIT) има 11 умения и 1 commit в main според READM…\""
+        },
+        {
+          "date": "2026-11-23",
           "type": "learning",
           "summary": "Научи: „YouTube закачането на коментар иска включени advanced features (до 24 ч), води се през …\" (+1 още)"
         },
