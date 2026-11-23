@@ -15463,7 +15463,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 227
+        "lessons": 229
       },
       "evolution": [
         {
@@ -15561,9 +15561,20 @@
           "date": "2026-11-23",
           "event": "v22.9 — учене",
           "detail": "Научи: Покритие на тестове, които са обикновени скриптове (не node:test), се мери без c8 — `NO… (+13 още)"
+        },
+        {
+          "version": "23.1.0",
+          "date": "2026-11-23",
+          "event": "v23.1 — учене",
+          "detail": "Научи: Капан върху fenced код в инжекционен eval пада и върху верен отговор, който цитира дока… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Капан върху fenced код в инжекционен eval пада и върху верен отговор, който цитира дока…\" (+1 още)"
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
