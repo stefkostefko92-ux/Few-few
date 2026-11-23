@@ -51,6 +51,32 @@ function pricesAge(prices) {
 }
 
 /** effort във frontmatter на всеки наш агент (agents/*.md) → { id: "high" | … }. */
+/**
+ * Кои умения агентите реално викат (23.11.2026, идея от openai/plugins · plugin-eval). Цената на умение
+ * (описание в списъка, тяло при извикване) се мери другаде; тук е отсрещната страна — ползва ли се изобщо.
+ * `never` е сред НАШИТЕ умения и важи само за пусканията със записано поле (по-старите не казват нищо).
+ */
+export function skillUsage(recs, known = []) {
+  const used = new Map(); let runsWithField = 0;
+  for (const r of recs) {
+    if (!r.skills) continue;
+    runsWithField++;
+    for (const [k, v] of Object.entries(r.skills)) {
+      const x = used.get(k) || { calls: 0, runs: 0, agents: [] };
+      x.calls += v; x.runs++;
+      if (r.agent && !x.agents.includes(r.agent)) { x.agents.push(r.agent); x.agents.sort(); }
+      used.set(k, x);
+    }
+  }
+  return { runsWithField, used, never: known.filter((k) => !used.has(k)).sort() };
+}
+
+export function knownSkills(dir = join(ROOT, ".claude", "skills")) {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && existsSync(join(dir, d.name, "SKILL.md"))).map((d) => d.name).sort();
+}
+
 export function definedEfforts(dir = join(ROOT, ".claude", "agents")) {
   const out = {};
   for (const f of readdirSync(dir).filter((f) => /^[a-z0-9-]+\.md$/.test(f) && f !== "README.md")) {
@@ -150,6 +176,13 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     for (const [k, v] of [...tb].sort((x, y) => y[1] - x[1]).slice(0, 6))
       console.log(`     ${k.padEnd(22)} ${(v / 1e6).toFixed(1).padStart(6)} MB · ${Math.round(100 * v / total)}%`);
   }
+  const su = skillUsage(recs, knownSkills());
+  if (su.runsWithField) {
+    console.log(`   умения (${su.runsWithField} пускания със запис):`);
+    for (const [k, v] of [...su.used].sort((x, y) => y[1].calls - x[1].calls).slice(0, 8))
+      console.log(`     ${k.padEnd(28)} ${String(v.calls).padStart(3)} изв. · ${v.runs} пуск. · ${v.agents.join(", ")}`);
+    console.log(`     никога викани (${su.never.length}): ${su.never.slice(0, 12).join(", ")}${su.never.length > 12 ? " …" : ""} — кандидат за изтриване или за по-ясно описание; не присъда при малко пускания`);
+  } else console.log("   умения: НЕИЗМЕРЕНО — нито едно пускане още не носи поле skills (записва се от 23.11.2026)");
   const rr = recs.filter((r) => r.rereads);
   if (rr.length) {
     const by = {};

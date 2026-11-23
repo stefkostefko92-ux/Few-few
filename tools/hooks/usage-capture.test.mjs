@@ -202,3 +202,24 @@ test("повторно четене на същия файл (и страниц�
   assert.equal(r.toolBytes.Read, 3200);
   rmSync(dir, { recursive: true, force: true });
 });
+
+// Идея от openai/plugins · plugin-eval (23.11.2026): цената на умение се мери, но не и дали агентите го ПОЛЗВАТ.
+// Без брояч умение с лошо описание, което никога не се вдига, изглежда точно като полезно.
+test("умения: Skill извикванията се броят по име; лоши имена от транскрипта и от диска отпадат", () => {
+  const dir = mkdtempSync(join(tmpdir(), "uc-sk-"));
+  const sk = (id, skill) => ({ message: { model: "claude-sonnet-5-5", role: "assistant", id: `m${id}`, usage: { input_tokens: 1, output_tokens: 1 }, content: [{ type: "tool_use", id, name: "Skill", input: { skill } }] } });
+  const lines = [sk("a", "seo-geo"), sk("b", "seo-geo"), sk("c", "bezplatna-vidimost"), sk("d", "__proto__"), sk("e", "../../etc"), sk("f", "x".repeat(200)), sk("g", 42)];
+  const p = join(dir, "agent-sk.jsonl");
+  writeFileSync(p, lines.map((l) => JSON.stringify(l)).join("\n") + "\n");
+  const r = summarizeTranscript(p, { agentType: "seo" });
+  assert.deepEqual(r.skills, { "seo-geo": 2, "bezplatna-vidimost": 1 }, "броят се само валидни имена на умения");
+  const plain = summarizeTranscript(transcript(dir));
+  assert.equal(plain.skills, undefined, "пускане без умения няма поле skills");
+  const [bad] = [...parseLedger(JSON.stringify({ id: "s", agent: "a", skills: { "seo-geo": -1 } }))];
+  assert.equal(bad.skills, undefined, "речник с отрицателни броеве от диска се изхвърля");
+  const [bad2] = [...parseLedger(JSON.stringify({ id: "s2", agent: "a", skills: { "../x": 1 } }))];
+  assert.equal(bad2.skills, undefined, "речник с невалидно име от диска се изхвърля");
+  const [good] = [...parseLedger(JSON.stringify({ id: "s3", agent: "a", skills: { "plugin:skill-x": 3 } }))];
+  assert.deepEqual(good.skills, { "plugin:skill-x": 3 });
+  rmSync(dir, { recursive: true, force: true });
+});

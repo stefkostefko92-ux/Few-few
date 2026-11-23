@@ -36,3 +36,16 @@ test("unpricedSplit: запис без модел не се брои за лип
   ];
   assert.deepEqual(unpricedSplit(recs, prices), { noModel: 1, noPrice: 1, models: ["claude-nova-9"] });
 });
+
+test("skillUsage: брои пусканията по умение и казва кои наши умения никога не са викани", async () => {
+  const { skillUsage } = await import("./usage-report.mjs");
+  const recs = [
+    { id: "1", agent: "seo", skills: { "seo-geo": 2 } },
+    { id: "2", agent: "seo", skills: { "seo-geo": 1, "bezplatna-vidimost": 1 } },
+    { id: "3", agent: "kodadjiyata" },
+  ];
+  const u = skillUsage(recs, ["seo-geo", "bezplatna-vidimost", "keywords-seo"]);
+  assert.equal(u.runsWithField, 2, "броят се само пусканията със записани умения");
+  assert.deepEqual(u.used.get("seo-geo"), { calls: 3, runs: 2, agents: ["seo"] });
+  assert.deepEqual(u.never, ["keywords-seo"]);
+});
