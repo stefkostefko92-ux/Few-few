@@ -45,6 +45,7 @@ import { fileURLToPath } from "node:url";
 import { homedir } from "node:os";
 import { sanitize } from "./guard-secrets.mjs";
 import { shellWords, commandOf, execStrings, base } from "./guard-dangerous.mjs";
+import { ALLOW } from "./guard-allowlist.mjs";
 import { isMain } from "../../tools/lib/is-main.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -85,11 +86,11 @@ const TIER_B = [/(?:^|\/)\.claude\/agents\/_memory(?:\/|$)/];
 const IMPORT_RE = /(?:\bfrom\s*|\bimport\s*\(\s*|^\s*import\s+)["'](\.{1,2}\/[^"']+)["']/gm;
 
 /** Файловете, които пазачите (или `start` — всички куки) зареждат транзитивно, като пътища спрямо корена на репото. */
-export function guardClosure(root = ROOT, start_ = /^(?:guard-[\w-]+|agent-cap)\.mjs$/) {
+export function guardClosure(root = ROOT, start_ = /^(?:guard-[\w-]+|agent-cap)\.mjs$/, extra = []) {
   const hooks = join(root, ".claude", "hooks");
   let start = [];
   try { start = readdirSync(hooks).filter((f) => start_.test(f)).map((f) => join(hooks, f)); } catch { /* няма */ }
-  const seen = new Set(), queue = [...start];
+  const seen = new Set(), queue = [...start, ...extra.map((r) => join(root, r))];
   while (queue.length) {
     const f = queue.pop();
     if (seen.has(f) || !existsSync(f)) continue;
@@ -102,8 +103,13 @@ export function guardClosure(root = ROOT, start_ = /^(?:guard-[\w-]+|agent-cap)\
 }
 
 /** Списък с правила за ниво A: регексите + затвореният списък на импортите (суфикс по граница „/“). */
+// Разбивача, 23.11.2026 (N1, блокер): скрипт от позволения списък на guard-allowlist се пуска от агент, който има
+// Write/Edit (Преводача). Непазен, той е пренаписваем → позволената команда пуска произволен код. Затова скриптовете и
+// импортите им влизат в затворения списък на ниво A заедно с пазачите.
+const ALLOWED_SCRIPTS = Object.values(ALLOW).flatMap((a) => a.scripts);
+
 export function protectedSet(root = ROOT) {
-  const closure = guardClosure(root).filter((r) => !TIER_A.some((re) => re.test(r)));
+  const closure = guardClosure(root, undefined, ALLOWED_SCRIPTS).filter((r) => !TIER_A.some((re) => re.test(r)));
   // Импортите на останалите куки (memory-capture, memory-preload, dod-check, usage-capture…) се изпълняват в куката:
   // агент, който ги пренапише, заобикаля проверката на поуките и ПРЕДАВАНЕ → ниво B (отказ за агент, свободно за
   // главната сесия). Само по пълен път — името на файла (usage.mjs, handoff.mjs) не е уникално в репото.
