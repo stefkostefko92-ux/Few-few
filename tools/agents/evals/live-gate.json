@@ -1,18 +1,23 @@
 {
-  "date": "2026-11-22",
-  "ref": "d18bdc8a4ba40b12209edfa826ac6b583edea21b",
+  "date": "2026-11-23",
+  "ref": "b1085eb5dd8ae46b1c6fc69a31342405c7c48b57",
   "cli": "2.1.330 (Claude Code)",
-  "summary": "проба 1/1 · оценки 1/1 · verifier ✓ · критичните пропуснати (входовете им са непроменени; минаха на 2026-11-21)",
-  "costUsd": 1.16,
+  "summary": "проба 2/2 · оценки 2/2 · verifier ✓ · критичните пропуснати (входовете им са непроменени; минаха на 2026-11-21)",
+  "costUsd": 3.52,
   "criticalAt": "2026-11-21",
   "probe": [
     {
-      "agent": "seo",
+      "agent": "dizayner",
+      "ok": true,
+      "problems": []
+    },
+    {
+      "agent": "strazhata",
       "ok": true,
       "problems": []
     }
   ],
-  "inputsHash": "368603432c8db0e9d90635fe661fab64c90a338ae675cb699265879ac0dcbd55",
+  "inputsHash": "07b49bbd21960454d60568c0cb23a5164223eacf1db32e15329ec4ce6ba022fb",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
@@ -23,7 +28,7 @@
     ".claude/agents/asansyorchika.md": "18153eb60b408d9cf46341b3338cb24e45475293e0c665d90dfcb3ef08b47d77",
     ".claude/agents/danachnika.md": "260e00c5e2b4800d7f4938fbdd3cdc31bb74f01791b531230fd03b96ee235250",
     ".claude/agents/diskordjiyata.md": "0acfc0d389c8032125485aa585cb59812883e26651e424955d37fb15a2266e3f",
-    ".claude/agents/dizayner.md": "22f2d7ddc03e674ff3a9baa775ed3a4e5c0c413adda8a8c16a282d9e7d8c091b",
+    ".claude/agents/dizayner.md": "aa5dbe4c7bb7653779e9af2db7518bdaf6cc8a9cd2682e9984c3d2c18ae01d61",
     ".claude/agents/frezadjiyata.md": "72f8aad6f14620ec069b83a40542f5db23b51e1811e13dc0447a08eeb9c5890d",
     ".claude/agents/geymara.md": "faa9f8c43746b4eedf3b5f59110dcffa6ddc6adf27ab737d6e4896f5d0247764",
     ".claude/agents/goladjiyata.md": "0f0f100d590e829b6439e578f28759d470f56c9c150f08f250ec5ba0014d3c99",
@@ -47,7 +52,7 @@
     ".claude/agents/siydara.md": "af3fd19f820426163706daf6a2a423577e994b8bb4e35e2cb67f62f61ace3899",
     ".claude/agents/skorostnika.md": "0ad5b9114475b291ef17eaf1efcd2806af42f39a35f490ce67da0608fbdc2881",
     ".claude/agents/socialdjiyata.md": "9d476569003d9d71fb512f17687af1818e3f8fc31d89a3a12bb3b67bcc249713",
-    ".claude/agents/strazhata.md": "5a4d84031095f62a273abd4bb5e3ad399cb89a3e3c30fe21c4df20422703086a",
+    ".claude/agents/strazhata.md": "bf659ba22741dee7a7fe94ac1bd8ea562579da106d37f184c93c71d4a58b5a2a",
     ".claude/agents/tayniyat-agent.md": "22ce18f5fe48538cabcb4216005823861c2708047438e6c5fcf11e1162b5a617",
     ".claude/agents/treydara.md": "0047d1976157ad45f4483f8a65c458d462d594770502f27afe3a7b79bc7cb1e0",
     ".claude/agents/vps-adjiyata.md": "fdd89489d2ce45f85218d6d7dd4b530753b4bad9aaa1d022074e2ddb8dbe7db6",
