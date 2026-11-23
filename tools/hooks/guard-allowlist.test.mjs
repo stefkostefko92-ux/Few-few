@@ -102,3 +102,25 @@ test("аргументите са само локали: код на език и
     "node tools/i18n/glossary-check.mjs de medqr/locales/de.json",
   ]) assert.notEqual(allowReason("prevodach", c, { scratch: SCRATCH }), "", c);
 });
+
+// Живият гейт (23.11.2026, commit 4c5a32e49): Преводача приготвя черновите на локалите в scratchpad-а или в `.tmp/`
+// и всичките 7 опита да пусне проверките бяха отказани (абсолютен път, скрита папка). Само тези две места се отварят,
+// пак само за видим .json без тайно име; чужд /tmp, „scratch-evil“ и `..` остават забранени.
+test("локали в scratchpad-а (абсолютен път) и в .tmp/ се приемат; чужд /tmp и подобни префикси — не", () => {
+  for (const c of [
+    `node tools/i18n/check-parity.mjs ${SCRATCH}/bg.json ${SCRATCH}/en.json ${SCRATCH}/it.json`,
+    `node tools/i18n/glossary-check.mjs it ${SCRATCH}/it.json`,
+    "node tools/i18n/check-parity.mjs .tmp/medqr-emerg/bg.json .tmp/medqr-emerg/en.json",
+    "node tools/i18n/pseudo.mjs .tmp/medqr-emerg/it.json > /tmp/p.json",
+  ]) assert.equal(allowReason("prevodach", c, { scratch: SCRATCH }), "", c);
+  for (const c of [
+    `node tools/i18n/check-parity.mjs ${SCRATCH}-evil/bg.json`,
+    "node tools/i18n/check-parity.mjs /tmp/other-session/bg.json",
+    `node tools/i18n/check-parity.mjs ${SCRATCH}/secrets.json`,
+    `node tools/i18n/check-parity.mjs ${SCRATCH}/.env.json`,
+    "node tools/i18n/check-parity.mjs .tmp/.hidden/x.json",
+    "node tools/i18n/check-parity.mjs .tmp/x/../../.env",
+    "node tools/i18n/check-parity.mjs .git/config.json",
+  ]) assert.notEqual(allowReason("prevodach", c, { scratch: SCRATCH }), "", c);
+  assert.notEqual(allowReason("prevodach", `node tools/i18n/check-parity.mjs ${SCRATCH}/bg.json`, { scratch: "" }), "", "без scratchpad в payload-а абсолютен път не минава");
+});

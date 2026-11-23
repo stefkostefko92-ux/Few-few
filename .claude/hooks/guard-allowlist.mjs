@@ -34,7 +34,8 @@ const localeArg = (a) => LANG.test(a) || (/\.json$/.test(a) && !/(?:^|\/)\./.tes
 /** Описание на позволеното — влиза в съобщението за отказ. */
 export function allowedText(agent) {
   const a = ALLOW[agent];
-  return a ? a.scripts.map((s) => `node ${s} <файлове>`).join(" · ") + " (по желание `> /tmp/…` или `> <scratchpad>/…`)" : "";
+  return a ? a.scripts.map((s) => `node ${s} <локали>`).join(" · ") +
+    " — локал = видим .json без тайно име (относителен път в репото, `.tmp/…` или абсолютен път в scratchpad-а) или код bg/en/it; по желание `> /tmp/…` или `> <scratchpad>/…`" : "";
 }
 
 const tempTarget = (t, scratch) => !t.includes("..") && (t.startsWith("/tmp/") || Boolean(scratch && t.startsWith(scratch.replace(/\/?$/, "/"))));
@@ -58,9 +59,18 @@ export function allowReason(agent, command, { scratch = "" } = {}) {
   if (!cfg.scripts.includes(toks[1] || "")) return `скриптът не е в списъка (${toks[1] || "—"})`;
   const args = toks.slice(2);
   if (!args.length) return "липсват файлове";
+  // Живият гейт (23.11.2026): черновите на локалите стоят в scratchpad-а (абсолютен път) или в `.tmp/` — само тези
+  // две места се отварят; останалата част от пътя минава същите правила (видим .json без тайно име, без `..`).
+  const pre = scratch ? scratch.replace(/\/?$/, "/") : "";
   for (const a of args) {
-    if (!SAFE_ARG.test(a) || a.includes("..")) return `аргументът не е относителен път или код (${a})`;
-    if (!localeArg(a)) return `аргументът не е локал — само код на език (bg/en/it) или видим .json без тайно име (${a})`;
+    if (a.includes("..")) return `аргументът съдържа „..“ (${a})`;
+    let rel = a;
+    if (a.startsWith("/")) {
+      if (!pre || !a.startsWith(pre)) return `абсолютен път извън scratchpad-а (${a})`;
+      rel = a.slice(pre.length);
+    } else if (a.startsWith(".tmp/")) rel = a.slice(".tmp/".length);
+    if (!SAFE_ARG.test(rel)) return `аргументът не е относителен път или код (${a})`;
+    if (!localeArg(rel)) return `аргументът не е локал — само код на език (bg/en/it) или видим .json без тайно име (${a})`;
   }
   return "";
 }
