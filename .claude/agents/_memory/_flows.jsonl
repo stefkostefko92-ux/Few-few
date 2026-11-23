@@ -853,3 +853,7 @@
 {"t":"handoff","ts":"2026-11-21T09:54:26.213Z","id":"r14dae130","from":"kodadjiyata","to":"kachestveniyat","status":"наред","run":"6a44d7cf"}
 {"t":"start","ts":"2026-11-21T13:46:46.125Z","id":"rd0e3b071","flow":"авто","lead":"ai-djiyata","auto":true}
 {"t":"handoff","ts":"2026-11-21T13:46:46.125Z","id":"rd0e3b071","from":"ai-djiyata","to":"човек","status":"има бележки","run":"46b67f1e"}
+{"t":"start","ts":"2026-11-23T06:06:25.869Z","id":"rbf559a72","flow":"авто","lead":"seo","auto":true}
+{"t":"handoff","ts":"2026-11-23T06:06:25.869Z","id":"rbf559a72","from":"seo","to":"kodadjiyata","status":"има бележки","run":"e5fa8bbf"}
+{"t":"handoff","ts":"2026-11-23T06:09:42.665Z","id":"rbf559a72","from":"pravniyat-razbirach","to":"prevodach","status":"има бележки","run":"ba39f9f2"}
+{"t":"handoff","ts":"2026-11-23T06:13:06.074Z","id":"rbf559a72","from":"danachnika","to":"човек","status":"има бележки","run":"5c49ed4d"}

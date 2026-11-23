@@ -9,6 +9,7 @@ import { pageUrl, SITE_PAGES, type SitePageId } from '../seo/pages.js';
 import { organization, website } from '../seo/structured-data.js';
 import { SESSION_LIMITS } from '../auth/sessions.js';
 import { DAY, HOUR } from '../time.js';
+import { withQuery } from '../marketing/campaign.js';
 
 /** Датата на версията за показване: „13.11.2026“ / „13 November 2026“. */
 function versionDate(version: string, locale: Locale): string {
@@ -56,6 +57,11 @@ function renderLegal(res: Response, id: LegalDocumentId, locale: Locale): void {
     SITE_PAGES.map((page) => [page.id, page.paths[locale]]),
   ) as Record<SitePageId, string>;
   res.locals.registrationOpen = config().REGISTRATION_OPEN;
+  // Английската страница води към регистрацията и входа на английски.
+  res.locals.appUrls = {
+    register: withQuery('/registraciya', locale, null),
+    login: withQuery('/vhod', locale, null),
+  };
   res.locals.seo = {
     title: t(`legal.${id}.metaTitle`),
     description: t(`legal.${id}.metaDescription`),

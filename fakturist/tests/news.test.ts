@@ -44,7 +44,7 @@ test('новините не обявяват функции, които още �
 });
 
 test('регистрирането: нова инсталация — в деня на новината; обновяване — сега', () => {
-  const now = new Date('2026-11-20T10:00:00Z');
+  const now = new Date('2026-11-25T10:00:00Z');
   const fresh = toRegister(new Set(), now);
   assert.equal(fresh.length, NEWS.length);
   assert.equal(fresh[0]!.publishedAt.getTime(), dayStart(NEWS[0]!.date).getTime());

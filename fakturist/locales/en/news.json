@@ -111,6 +111,11 @@
       "area": "Accounting firms",
       "title": "For accounting firms",
       "text": "The firm issues its clients’ documents from its own account under a mandate (Art. 113(7) of the VAT Act), and the company owner confirms the mandate and sees everything."
+    },
+    "2026-11-23-versiya-2-1": {
+      "area": "Website",
+      "title": "New explainer pages and sign-up in English (version 2.1)",
+      "text": "The website has new pages: the free invoicing software, the pro forma invoice, the VAT ledgers and the SAF-T data — what Fakturist does, what it does not do and how it works step by step. The English pages now lead to sign-up and sign-in in English. The privacy policy describes how we note which ad or site a sign-up comes from — with no cookies and nothing stored in your browser."
     }
   },
   "footer": "What’s new · version {version}"
