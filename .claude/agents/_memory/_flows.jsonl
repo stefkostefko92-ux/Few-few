@@ -933,3 +933,6 @@
 {"t":"start","ts":"2026-11-23T16:10:35.010Z","id":"r34a320bf","flow":"авто","lead":"pravniyat-razbirach","auto":true}
 {"t":"handoff","ts":"2026-11-23T16:10:35.011Z","id":"r34a320bf","from":"pravniyat-razbirach","to":"ai-djiyata","status":"има бележки","run":"e5be9d69"}
 {"t":"handoff","ts":"2026-11-23T16:11:31.961Z","id":"r34a320bf","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"444fb621"}
+{"t":"start","ts":"2026-11-23T16:21:41.531Z","id":"r34a320bf","flow":"авто","lead":"razbivacha","auto":true}
+{"t":"handoff","ts":"2026-11-23T16:21:41.531Z","id":"r34a320bf","from":"razbivacha","to":"човек","status":"блокер","run":"7b67e8d6"}
+{"t":"close","ts":"2026-11-23T16:36:43.258Z","id":"r34a320bf","status":"завършен"}
