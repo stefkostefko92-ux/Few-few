@@ -941,3 +941,9 @@
 {"t":"start","ts":"2026-11-23T18:32:26.296Z","id":"r7dcbb68b","flow":"авто","lead":"razbivacha","auto":true}
 {"t":"handoff","ts":"2026-11-23T18:32:26.297Z","id":"r7dcbb68b","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"10e38824"}
 {"t":"close","ts":"2026-11-23T18:35:45.014Z","id":"r7dcbb68b","status":"завършен"}
+{"t":"start","ts":"2026-11-24T06:35:12.974Z","id":"r6cc40e27","flow":"авто","lead":"seo","auto":true}
+{"t":"handoff","ts":"2026-11-24T06:35:12.974Z","id":"r6cc40e27","from":"seo","to":"човек","status":"има бележки","run":"15ff79f7"}
+{"t":"start","ts":"2026-11-24T06:40:54.139Z","id":"r6a2fc773","flow":"авто","lead":"pravniyat-razbirach","auto":true}
+{"t":"handoff","ts":"2026-11-24T06:40:54.139Z","id":"r6a2fc773","from":"pravniyat-razbirach","to":"seo","status":"има бележки","run":"d8ea4b9d"}
+{"t":"start","ts":"2026-11-24T07:03:46.226Z","id":"r97bb59e0","flow":"авто","lead":"ai-djiyata","auto":true}
+{"t":"handoff","ts":"2026-11-24T07:03:46.226Z","id":"r97bb59e0","from":"ai-djiyata","to":"човек","status":"има бележки","run":"38b1ca94"}
