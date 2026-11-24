@@ -247,3 +247,18 @@ test("новите правила не спират нормална работ�
     "export NODE_ENV=test && npm test", "X=$(pwd); echo $X", "git config user.name x", "git config --get core.hooksPath", "cat ~/.claude.json",
   ]) assert.equal(hook("guard-self.mjs", bash(c)).status, 0, `трябва да мине: ${c}`);
 });
+
+// Разбивача, 23.11.2026 (N1, блокер): Преводача има Write/Edit, а скриптовете от позволения списък на guard-allowlist не
+// бяха пазени — пренаписан `tools/i18n/pseudo.mjs` се пускаше през позволената команда (произволен код). Скриптовете
+// и техните импорти са ниво A: агентът не ги пипа, главната сесия пита човека.
+test("скриптовете от позволения списък на guard-allowlist и импортите им са пазени (ниво A)", async () => {
+  const { protectedSet } = await import("../../.claude/hooks/guard-self.mjs");
+  const { ALLOW } = await import("../../.claude/hooks/guard-allowlist.mjs");
+  const ps = protectedSet(ROOT);
+  for (const s of Object.values(ALLOW).flatMap((a) => a.scripts)) {
+    assert.ok(ps.a.some((re) => re.test(s)), `${s} трябва да е в ниво A`);
+    assert.equal(hook("guard-self.mjs", write(s, { agent_type: "prevodach" })).status, 2, `Write от Преводача към ${s} се спира`);
+    assert.equal(hook("guard-self.mjs", { ...write(s, { agent_type: "prevodach" }), tool_name: "Edit" }).status, 2);
+  }
+  assert.equal(hook("guard-self.mjs", write("linketto/messages/it.json", { agent_type: "prevodach" })).status, 0, "локалите остават свободни");
+});

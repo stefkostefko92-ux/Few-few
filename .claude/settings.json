@@ -157,7 +157,7 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Write|Edit|MultiEdit|NotebookEdit|Bash|Monitor",
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit|Bash|PowerShell|Monitor",
         "hooks": [
           {
             "type": "command",
@@ -179,7 +179,7 @@
         ]
       },
       {
-        "matcher": "Bash|Monitor",
+        "matcher": "Bash|PowerShell|Monitor",
         "hooks": [
           {
             "type": "command",
@@ -192,11 +192,17 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-readonly.mjs\"",
             "timeout": 10,
             "onFailure": "block"
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-allowlist.mjs\"",
+            "timeout": 10,
+            "onFailure": "block"
           }
         ]
       },
       {
-        "matcher": "Bash|Monitor|WebFetch|WebSearch|mcp__.*",
+        "matcher": "Bash|PowerShell|Monitor|WebFetch|WebSearch|mcp__.*",
         "hooks": [
           {
             "type": "command",
@@ -207,7 +213,7 @@
         ]
       },
       {
-        "matcher": "Bash|Monitor|WebFetch",
+        "matcher": "Bash|PowerShell|Monitor|WebFetch",
         "hooks": [
           {
             "type": "command",
@@ -218,12 +224,13 @@
         ]
       },
       {
-        "matcher": "Agent|Task",
+        "matcher": "Agent|Task|Workflow",
         "hooks": [
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/agent-cap.mjs\"",
-            "timeout": 10
+            "timeout": 10,
+            "onFailure": "block"
           }
         ]
       }

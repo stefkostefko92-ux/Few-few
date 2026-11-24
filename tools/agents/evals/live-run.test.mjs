@@ -213,6 +213,44 @@ test("средата на headless пускането: таван на чака�
   assert.equal(scrubSupported({ platform: "darwin", has: () => true }), false, "непроверена платформа → изключено");
 });
 
+// Живият гейт на PR2 (23.11.2026): класификаторът за безопасност спря обвивката, преди да пусне Разбивача, а обвивката
+// правилно не опита с друга формулировка. Двигателят отчиташе „няма ПРЕДАВАНЕ“ — четеше се като провал на агента.
+// Сега причината се назовава по точния низ на харнеса; повторение НЕ се прави автоматично (решава човекът).
+test("classifierStopped познава спряната обвивка по низа на харнеса; judgeRun назовава двигателя, не агента", async () => {
+  const { classifierStopped, judgeRun } = await import("./live-run.mjs");
+  const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const home = mkdtempSync(join(tmpdir(), "lr-home-"));
+  try {
+    const wt = "/tmp/live-run-xyz";
+    const sid = "11111111-2222-3333-4444-555555555555";
+    const dir = join(home, ".claude", "projects", wt.replace(/[/.]/g, "-"));
+    mkdirSync(dir, { recursive: true });
+    const res = (c) => JSON.stringify({ type: "user", message: { content: [{ type: "tool_result", content: c }] } });
+    writeFileSync(join(dir, `${sid}.jsonl`), [res("Not run: the response that made this tool call was stopped by a safety classifier."),
+      JSON.stringify({ type: "assistant", message: { content: [{ type: "text", text: "Агентът не е пуснат." }] } })].join("\n"));
+    const other = "22222222-2222-3333-4444-555555555555";
+    writeFileSync(join(dir, `${other}.jsonl`), res("Агентът говори за safety classifier в отговора си."));
+    assert.equal(classifierStopped(sid, wt, home), true);
+    assert.equal(classifierStopped(other, wt, home), false, "споменаване в текст не е спиране");
+    assert.equal(classifierStopped("../x", wt, home), false, "невалидна сесия не избира път");
+    assert.equal(classifierStopped("33333333-2222-3333-4444-555555555555", wt, home), false, "липсващ транскрипт");
+    const v = judgeRun({ err: null, text: "Агентът не е пуснат.", needsHandoff: true, stopped: () => true });
+    assert.equal(v.ok, false);
+    assert.match(v.why, /класификатор/);
+    assert.match(v.why, /не е провал на агента/);
+    const handoff = "## ПРЕДАВАНЕ\nОт: seo → Към: човек\nСтатус: наред\nНаходки: —\nИзход/артефакт: —\nСледваща стъпка: —";
+    assert.equal(judgeRun({ err: null, text: handoff, needsHandoff: true, stopped: () => true }).ok, true, "агентът е върнал блок — спирането е било друго");
+  } finally { rmSync(home, { recursive: true, force: true }); }
+});
+
+test("wrapperPrompt носи верния контекст: оторизирана оценка на наш агент върху наше репо", () => {
+  const p = wrapperPrompt("razbivacha", "Опитай да счупиш checkout/абонамент потока на linketto");
+  assert.match(p, /оторизиран/);
+  assert.match(p, /нашето собствено репо/);
+  assert.ok(p.endsWith("ЗАДАЧА:\nОпитай да счупиш checkout/абонамент потока на linketto"), "задачата остава дословна и последна");
+});
+
 test("subagentFinalText чете последния текст на НАШИЯ подагент от транскрипта на сесията", async () => {
   const { subagentFinalText } = await import("./live-run.mjs");
   const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import("node:fs");

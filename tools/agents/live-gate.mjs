@@ -127,7 +127,7 @@ export const MARKERS = {
 export const MUST_BE_ABSENT = ["rootClaudeMd"];
 
 export function probeTask() {
-  const fields = Object.entries(MARKERS).map(([k, m]) => `"${k}": дословно първите 6 думи СЛЕД „${m}“ или null, ако го няма в контекста ти`).join(";\n");
+  const fields = Object.entries(MARKERS).map(([k, m]) => `"${k}": дословно първите 6 думи веднага СЛЕД „${m}“ на същия ред (и подзаглавие в скоби е част от тях) или null, ако го няма в контекста ти`).join(";\n");
   return "Диагностика на контекста — без инструменти и без търсене; само от това, което вече е в контекста ти при старта. " +
     "Върни САМО един JSON обект (без код-ограда, без друг текст преди него) с полетата:\n" + fields +
     ";\n\"handoffFields\": true, ако във формата на блока ПРЕДАВАНЕ виждаш полето „Изход/артефакт:“, иначе false.\n" +
@@ -148,12 +148,32 @@ export function followText(source, marker) {
   return source.slice(i + marker.length, i + marker.length + 160).replace(/\n/g, " ");
 }
 
-/** Цитатът на агента верен ли е: поне 4 думи и съвпада с началото на реалния текст след маркера. */
+/**
+ * Кандидатите за „текстът след маркера“: остатъкът от реда на маркера (както followText) и началото на СЛЕДВАЩИЯ
+ * непразен ред. Живите гейтове на PR1 и PR2 (23.11.2026): Дизайнера два пъти прескочи подзаглавието в скоби и цитира
+ * дословно следващия ред — доставката е доказана. По-далечен ред не е кандидат.
+ */
+export function followCandidates(source, marker) {
+  const s = String(source || "");
+  const i = s.indexOf(marker);
+  if (i < 0) return null;
+  const out = [followText(s, marker)];
+  const nl = s.indexOf("\n", i + marker.length);
+  const next = nl < 0 ? null : s.slice(nl + 1).split("\n").find((l) => l.trim());
+  if (next) out.push(next.slice(0, 160));
+  return out;
+}
+
+/** Цитатът на агента верен ли е: поне 4 думи и съвпада с началото на реалния текст след маркера (или с един от кандидатите). */
 export function quoteMatches(quote, expected) {
   if (quote == null || expected == null) return false;
+  if (Array.isArray(expected)) return expected.some((x) => quoteMatches(quote, x));
   const q = words(quote), e = words(expected);
-  if (q.length < 4) return false;
-  return q.slice(0, 4).every((w, i) => w === e[i]);
+  if (q.length < 4 || e.length < 4) return false;
+  // Първите 4 думи на източника, поредни, с отместване до 2 (живият гейт на PR2, 23.11.2026: „(правила на държавно
+  // ниво…“ — контекстът е видян, преписването е неточно). Налучкване не дава 4 поредни думи от източника.
+  for (let off = 0; off <= 2 && off + 4 <= q.length; off++) if (e.slice(0, 4).every((w, i) => w === q[off + i])) return true;
+  return false;
 }
 
 // Деветият жив гейт (28.10): Летописецът даде грешен обект и после поправен („ползвай само втория“), а тук се
@@ -206,12 +226,12 @@ async function expectedFor(agent, root) {
   const agentPart = pre.agentPart(agent, { prompt: "диагностика" });
   const rootMd = readFileSync(join(root, "CLAUDE.md"), "utf8");
   return {
-    doctrine: followText(skill, MARKERS.doctrine),
-    procedure: followText(skill, MARKERS.procedure),
-    shared: followText(pre.sharedLessons(), MARKERS.shared),
-    card: followText(agentPart, MARKERS.card),
-    memory: followText(agentPart, MARKERS.memory),
-    rootClaudeMd: followText(rootMd, MARKERS.rootClaudeMd),
+    doctrine: followCandidates(skill, MARKERS.doctrine),
+    procedure: followCandidates(skill, MARKERS.procedure),
+    shared: followCandidates(pre.sharedLessons(), MARKERS.shared),
+    card: followCandidates(agentPart, MARKERS.card),
+    memory: followCandidates(agentPart, MARKERS.memory),
+    rootClaudeMd: followCandidates(rootMd, MARKERS.rootClaudeMd),
   };
 }
 
