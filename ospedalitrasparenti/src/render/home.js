@@ -4,6 +4,7 @@
 
 import { esc, numeroIt } from '../lib/format.js';
 import { page, badge, siteUrl, CSS_HOME } from '../lib/site-ui.js';
+import { orgJsonLd } from '../lib/titolare.js';
 
 /** @typedef {import('../lib/dataset.js').Ente} Ente */
 /** @typedef {import('../lib/models.js').SegnData} SegnData */
@@ -124,14 +125,7 @@ sono anomalie contabili da verificare. <a href="segnalazioni.html">Tutte le segn
         '@context': 'https://schema.org',
         '@graph': [
           {
-            '@type': 'Organization',
-            '@id': `${su}/#org`,
-            name: 'Ospedali Trasparenti',
-            url: `${su}/`,
-            logo: `${su}/logo.png`,
-            description: 'Progetto di trasparenza civica sui conti e gli appalti degli ospedali pubblici italiani.',
-            parentOrganization: { '@type': 'Organization', name: 'Carbon Stealth VCC', url: 'https://carbonstealth.eu' },
-            sameAs: ['https://carbonstealth.eu'],
+            ...orgJsonLd(su),
             knowsAbout: [
               'sanità pubblica italiana',
               'appalti pubblici della sanità',
