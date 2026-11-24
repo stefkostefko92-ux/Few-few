@@ -69,7 +69,7 @@ test("parentOrganization е регистрираното дружество с �
     };
   }).parentOrganization;
   // Един и същ @id във всички наши продукти — търсачките виждат ЕДНО дружество, не десет.
-  assert.equal(p["@id"], "https://carbonstealth.eu/#org");
+  assert.equal(p["@id"], "https://carbonstealth.eu/#organization");
   assert.equal(p.name, "Carbon Stealth VCC");
   assert.equal(p.legalName, "Карбон Стелт ЕДПК");
   assert.equal(p.vatID, "BG208725180");

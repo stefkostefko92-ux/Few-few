@@ -50,8 +50,8 @@ export const SITE = {
     address: "ул. „Самуил“ № 3, 2670 Бобов дол, обл. Кюстендил, България",
     // Адресът по части — за PostalAddress в JSON-LD (същият като горния ред).
     street: "ул. „Самуил“ № 3",
-    // Общ за всички наши продукти — търсачките виждат едно дружество, не десет.
-    id: "https://carbonstealth.eu/#org",
+    // Каноничният @id, който публикува самият carbonstealth.eu (cs-revolution) — общ за всички наши продукти.
+    id: "https://carbonstealth.eu/#organization",
     // Официалните профили на фирмата, посочени от собственика (същите като в korpora/src/company.ts).
     // Не се добавят други.
     profiles: ["https://www.youtube.com/@CarbonStealth", "https://www.tiktok.com/@zerofucksgiiven"],
