@@ -29,7 +29,8 @@ const YEAR_MS = 366 * 24 * 3600 * 1000;
 
 const PAGES = {
   "page-about": /за[\s-]?нас|za-?nas|\babout\b|chi[\s-]?siamo|who[\s-]?we[\s-]?are|\bazienda\b|наш(?:ия)?[\s-]екип|\bteam\b/i,
-  "page-contact": /контакт|kontakt|\bcontact|contatt/i,
+  // mailto:/tel: от началната е контакт и без думата (adblock, korpora, piuma, gaming — 24.11.2026)
+  "page-contact": /^(?:mailto|tel):|контакт|kontakt|\bcontact|contatt/i,
   "page-privacy": /поверителност|privacy|privatezza|лични[\s-]данни|lichni-danni|\bgdpr\b/i,
   "page-legal": /импресум|impressum|note[\s-]legali|правна[\s-]информация|данни[\s-]за[\s-](?:фирмата|дружеството)|\blegal\b|termini|\bterms\b|условия|uslovia/i,
 };
@@ -94,7 +95,9 @@ export function analyze({ url, html = "", headers = {}, security = null, now = n
     add("org-logo", "бележка", Boolean(org.logo), org.logo ? "" : "няма logo (Google: поне 112×112, достъпно за обхождане)");
     const contact = org.contactPoint || org.email || org.telephone;
     add("org-contact", ymyl ? "твърда" : "бележка", Boolean(contact), contact ? "" : "няма контакт в схемата (email/telephone/contactPoint)");
-    add("org-legal-ids", "бележка", Boolean(org.legalName || org.vatID || org.taxID), org.legalName || org.vatID || org.taxID ? "" : "няма legalName/vatID/taxID — регистрираното дружество не е машинно ясно");
+    // Проектът не е юридическо лице: правните данни на дружеството-майка (parentOrganization) важат за него.
+    const legal = [org, ...[].concat(org.parentOrganization || [])].some((n) => n && (n.legalName || n.vatID || n.taxID));
+    add("org-legal-ids", "бележка", legal, legal ? "" : "няма legalName/vatID/taxID (нито в parentOrganization) — регистрираното дружество не е машинно ясно");
   }
   const selfRated = orgs.filter((n) => n.aggregateRating || n.review);
   add("self-serving-rating", "твърда", !selfRated.length, selfRated.length ? `звезди (aggregateRating/review) върху ${selfRated.map((n) => typesOf(n).join("/")).join(", ")} — Google не ги позволява, когато бизнесът контролира отзивите; махни ги от схемата` : "");
