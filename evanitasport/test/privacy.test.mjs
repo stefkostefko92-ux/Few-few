@@ -50,6 +50,8 @@ test("страницата за поверителност носи реални
   assert.match(h, /id="karta"[\s\S]*чл\. 6, пар\. 1, б\. „а“[\s\S]*съвместно с Google/);
   assert.match(h, /Право на възражение/);
   assert.match(h, /до 15 дни след записа/);
+  // срок за контактите — собственикът, 24.11.2026: 2 седмици
+  assert.match(h, /Ако не станете клиент, изтриваме съобщенията и номера ви до 2 седмици след последния контакт\./);
   assert.match(h, /<meta name="keywords" content="[^"]*Carbon Stealth[^"]*"/);
   assert.match(h, /<link rel="canonical" href="https:\/\/evanita-bg\.com\/poveritelnost\.html"/);
 });
