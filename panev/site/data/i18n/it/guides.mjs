@@ -48,7 +48,7 @@ export default {
         ['Fori di collegamento', 'Per fissare il componente all’elemento di supporto.'],
       ],
       whereTitle: 'Dove è descritta la soluzione brevettata',
-      whereLead: 'La soluzione è presentata nel catalogo tecnico 2026: il certificato a pagina 02, la descrizione e la tavola a pagina 03.',
+      whereLead: 'La soluzione è presentata nel catalogo tecnico 2027: il certificato a pagina 02, la descrizione e la tavola a pagina 03.',
       wallsLink: 'Come si monta su murature irregolari',
       faqTitle: 'Brevetto: domande frequenti',
       faq: [

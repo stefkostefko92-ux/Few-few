@@ -34,7 +34,7 @@ export default {
   },
   termsPage: {
     title: 'Commercial terms',
-    updated: '2026 price list — the valid commercial offer prevails.',
+    updated: '2027 price list — the valid commercial offer prevails.',
     sections: [
       {
         h: 'Scope',
@@ -42,7 +42,7 @@ export default {
       },
       {
         h: 'Prices',
-        p: 'Prices in euro, excl. VAT, per single unit, as per the 2026 price list. Items marked “on request” are quoted per job. Volume and recurring-supply discounts on request. Subject to change.',
+        p: 'Prices in euro, excl. VAT, per single unit, as per the 2027 price list. Items marked “on request” are quoted per job. Volume and recurring-supply discounts on request. Subject to change.',
       },
       {
         h: 'Shipping',

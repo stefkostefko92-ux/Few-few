@@ -48,7 +48,7 @@ export default {
         ['Connection holes', 'To fix the component to the support element.'],
       ],
       whereTitle: 'Where the patented solution is described',
-      whereLead: 'The solution is presented in the 2026 technical catalogue: the certificate on page 02, the description and the drawing on page 03.',
+      whereLead: 'The solution is presented in the 2027 technical catalogue: the certificate on page 02, the description and the drawing on page 03.',
       wallsLink: 'How it is mounted on uneven walls',
       faqTitle: 'Patent: FAQ',
       faq: [
