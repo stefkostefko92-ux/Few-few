@@ -2132,6 +2132,11 @@
       "activity": [
         {
           "date": "2026-11-24",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „path.join(base, '/abs/path') не нулира към абсолютния път (дава base/abs/path), но path…\""
+        },
+        {
+          "date": "2026-11-24",
           "type": "learning",
           "summary": "Научи: „Каноничният @id на дружеството, публикуван на живо от carbonstealth.eu, е https://carbo…\" (+5 още)"
         },
