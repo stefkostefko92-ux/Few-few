@@ -92,19 +92,19 @@ function planInk(P, o = {}) {   // the plan: red pencil dashes, written on
   ctx.restore();
 }
 
-// ---- the hero: a terracotta dot with a cream asterisk and a pair of eyes; works on paper and on navy
+// ---- the hero: a sky-blue dot with a pair of eyes; works on paper and on navy
+// (Carbon Stealth: upstream drew a terracotta dot with an asterisk — Anthropic's mark; ours has neither)
 function dotHero(x, y, r, o = {}) {
   const key = o.key ?? 'hero', dark = !!o.dark;
   y += Math.sin(TT * TAU * 0.9 + key.length) * r * 0.04;                  // idle bob
   SPARK_AT = toScreen(x, y);
   if (!dark && o.shadow !== false) paint(ellipsePts(x + r * 0.55, y + r * 0.75, r * 1.08, r, 0, 28), { fill: 'rgba(58,36,23,0.3)', line: false, key: key + 'sh', tex: [{ k: 'hatch', a: 0.8, gap: 4, al: 0.6 }] });
   const P = ellipsePts(x, y, r, r, 0, 30);
-  if (dark) { ink(P, { closed: true, color: 'rgba(240,150,110,0.18)', w: r * 0.7, key: key + 'g' }); ink(P, { closed: true, color: 'rgba(200,208,240,0.2)', w: 16, key: key + 'g2' }); }
+  if (dark) { ink(P, { closed: true, color: 'rgba(156,196,214,0.22)', w: r * 0.7, key: key + 'g' }); ink(P, { closed: true, color: 'rgba(200,208,240,0.2)', w: 16, key: key + 'g2' }); }
   paint(P, {
-    fill: C.terra, key, line: dark ? C.peri : C.ink, w: dark ? 5 : Math.max(3, r * 0.08),
-    tex: [{ k: 'cross', c: C.orangeD, al: 0.5, gap: 5 }, { k: 'pencil', c: C.orangeL, al: 0.35, per: 60, dens: (px, py) => clamp((x - px + y - py) / r) }],
+    fill: o.fill ?? C.sky, key, line: dark ? C.peri : C.ink, w: dark ? 5 : Math.max(3, r * 0.08),
+    tex: [{ k: 'cross', c: C.skyD, al: 0.5, gap: 5 }, { k: 'pencil', c: C.skyL, al: 0.35, per: 60, dens: (px, py) => clamp((x - px + y - py) / r) }],
   });
-  asterisk(x, y - r * 0.38, r * 0.06, r * 0.26, 8, o.spin ?? TT * 0.5, C.cream, Math.max(2, r * 0.06));
   const blink = (B + key.length * 7) % 41 < 2, ey = y + r * 0.08;
   for (const s of [-1, 1]) {
     if (blink) ink([[x + s * r * 0.28 - r * 0.08, ey], [x + s * r * 0.28 + r * 0.08, ey]], { w: r * 0.06, color: C.ink, key: key + 'bl' + s, amt: 0.3 });
@@ -141,7 +141,7 @@ const STYLE = {
   },
   blob(P, c, key) { paint(P, { fill: c, key, w: 4, tex: [{ k: 'hatch', a: 0.8, gap: 6, al: 0.35 }, { k: 'pencil', c: '#fff6e0', al: 0.3, per: 80 }] }); },
   hero(x, y, r, o) { dotHero(x, y, r * 0.6, { ...o, key: o.key }); },
-  heroColor: C.terra,
+  heroColor: C.sky,
   heroPts: (x, y, r) => ellipsePts(x, y, r * 0.6, r * 0.6, 0, 96),
   post() { grain({ n: 2600 }); },
 };

@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 const argv = process.argv.slice(2);
 const opt = (k, d) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : d; };
 if (!argv[0] || argv[0].startsWith('--')) { console.error('usage: node scripts/voice.mjs pieces/<name> [--scratch] [--model small.en] [--rate 0]'); process.exit(2); }
-const ROOT = path.resolve(argv[0]), VDIR = path.join(ROOT, 'voice'), SR = 48000;
+const ROOT = path.resolve(argv[0]), VDIR = inside(ROOT, 'voice'), SR = 48000;
 const S = JSON.parse(fs.readFileSync(path.join(VDIR, 'script.json'), 'utf8'));
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
@@ -109,7 +109,7 @@ for (const L of lines) {
   }
 }
 const voice = { duration: +total.toFixed(3), lead, tail, lines };
-fs.writeFileSync(path.join(ROOT, 'voice.json'), JSON.stringify(voice, null, 1));
+fs.writeFileSync(inside(ROOT, 'voice.json'), JSON.stringify(voice, null, 1));   // Carbon Stealth: и след symlink
 console.log(`voice: ${lines.length} lines, ${totalWords} words, ${total.toFixed(2)}s (lead ${lead}s, tail ${tail}s); word times ${heard ? `${matched}/${totalWords} heard, the rest filled in` : 'estimated'}`);
 for (const L of lines) console.log(`  ${L.id.padEnd(10)} ${L.t0.toFixed(2)}-${L.t1.toFixed(2)}s  ${(L.words.length / (L.t1 - L.t0)).toFixed(2)} w/s  ${L.take}  "${L.text}"`);
 console.log(`wrote ${path.relative(process.cwd(), wav)} and ${path.relative(process.cwd(), path.join(ROOT, 'voice.json'))} (rebuild to inject VOICE)`);

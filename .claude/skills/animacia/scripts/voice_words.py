@@ -2,7 +2,7 @@
 """Word timings for a voice-over, read from the audio itself (faster-whisper with a model already on disk (HF_HUB_OFFLINE=1 — nothing is downloaded), no API).
    usage: python scripts/voice_words.py <voice.wav> [--model small.en]
    prints JSON: [{"w": "word", "t0": 1.23, "t1": 1.51}, ...]
-Called by scripts/voice.mjs; it falls back to an estimate when faster-whisper isn't installed (pip install faster-whisper)."""
+Called by scripts/voice.mjs; it falls back to an estimate when faster-whisper isn't installed (the human installs faster-whisper)."""
 import json
 import sys
 
@@ -15,7 +15,7 @@ def main():
         model = args[i + 1]
         del args[i:i + 2]
     from faster_whisper import WhisperModel
-    m = WhisperModel(model, device='cpu', compute_type='int8')
+    m = WhisperModel(model, device='cpu', compute_type='int8', local_files_only=True)   # Carbon Stealth: само от диска, и при пряко пускане
     segs, _ = m.transcribe(args[0], word_timestamps=True, vad_filter=False, beam_size=5, language='en')
     out = []
     for s in segs:

@@ -3,7 +3,7 @@
 //  constant hairlines (grey silhouettes and edges, lighter inner lines), faces filled white so nearer
 //  objects hide farther lines, rounded slabs with visible thickness, grids of repeated parts, and one
 //  tiny dark accent. Motion on 1s with spring settles. Built on kit/core.js (RNG, EZ, rrectPts, ellipsePts,
-//  resample, toScreen, TT / ev / DEFER / E0 / SPARK_AT). Studied from MIT-licensed isometric line figures.
+//  resample, toScreen, TT / ev / DEFER / E0 / SPARK_AT). Studied from isometric line figures described upstream as MIT-licensed (source not verified; nothing copied — Carbon Stealth).
 //  Needs from the piece head: W, H, FPS, CX (caption centre x). Optional: `const ISO_DARK = true` for the dark ground.
 //
 //  Hidden lines are painter's order: draw back to front (smaller x + y first, lower z first in a stack).

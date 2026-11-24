@@ -57,7 +57,7 @@ Every piece is one choice from each column. Read a format as a proven combinatio
 - **Device:** the last era reveals a survivor or successor, then returns to the first image.
 - **Fits:** any history; a session's context window filling over time.
 - **Checks (`format: 'F2'`, fixed stage):** 0 hard cuts; the stage still ≥85% of frames; ≥4 morph bridges on the grid; the counter present ≥80%; ≤−40 dB for ≥0.4s before the loudest hit. Morph-chain pieces across many worlds use `format: 'morph-chain'` (cuts + morph grid + story arc).
-- **Status: proven** — a fixed-stage history of AI video, and a 60s cut-paper history of AI across 15 worlds (13 morphs, one hard cut on the payoff; `examples/history-of-ai`).
+- **Status: proven** — a fixed-stage history of AI video, and a 60s cut-paper history of AI across 15 worlds (13 morphs, one hard cut on the payoff; the example is not shipped in our copy — real people, Carbon Stealth).
 
 ### F3. Call → catalogue
 - **Engine:** a call goes out; the answer is a catalogue, one item per beat, gathered into one image; the answer goes back.

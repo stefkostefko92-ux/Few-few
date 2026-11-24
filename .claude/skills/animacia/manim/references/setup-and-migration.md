@@ -14,17 +14,17 @@ uv run python -m manim checkhealth
 
 Carbon Stealth: the environment is made by the human, only from the lock file (`uv sync --locked` in `manim/`); an agent installs nothing and never widens the pinned versions.
 
-On Windows use `.venv\Scripts\python.exe` instead. PowerShell can locate uv with `Get-Command uv`. A one-off run is `uv run --python 3.13 --with "manim==0.22.0" python -m manim --version`; it still needs the platform's native dependencies.
+On Windows use `.venv\Scripts\python.exe` instead. PowerShell can locate uv with `Get-Command uv`.
 
 PyAV handles ordinary media encoding; a standalone FFmpeg executable is not required for core Manim rendering since 0.19. This does **not** eliminate Cairo/Pango, fonts, optional TeX tools, or graphics requirements for OpenGL. FFmpeg/ffprobe can still be useful for external conversion and inspection.
 
-When native dependency installation is necessary, use the [official OS-specific instructions](https://docs.manim.community/en/stable/installation.html). On macOS the common prerequisites are `brew install cairo pango pkg-config`; on Ubuntu `libcairo2-dev libpango1.0-dev pkg-config` and build tools are common prerequisites. Diagnose the actual error before adding dependencies. A successful `checkhealth` does not verify all optional formula/font backends.
+When native dependency installation is necessary, the human installs them (Carbon Stealth: an agent installs nothing) following the [official OS-specific instructions](https://docs.manim.community/en/stable/installation.html). On macOS the common prerequisites are `brew install cairo pango pkg-config`; on Ubuntu `libcairo2-dev libpango1.0-dev pkg-config` and build tools are common prerequisites. Diagnose the actual error before adding dependencies. A successful `checkhealth` does not verify all optional formula/font backends.
 
 ## Math choices
 
 - `Text` / `MarkupText`: Pango; use for prose and simple numeric labels.
 - `Tex` / `MathTex`: require a working TeX toolchain, including the selected compiler and `dvisvgm`. Keep raw strings for LaTeX.
-- `Typst` / `MathTypst`: install `manim[typst]`; a full TeX distribution is unnecessary. Use Typst syntax. Current 0.22 public names are `Typst` and `MathTypst` (not `TypstMath`).
+- `Typst` / `MathTypst`: the locked `typst` extra (`uv sync --locked --extra typst`, run by the human); a full TeX distribution is unnecessary. Use Typst syntax. Current 0.22 public names are `Typst` and `MathTypst` (not `TypstMath`).
 
 For non-math scenes, missing TeX need not block work. For requested formulas, prefer a working supported backend rather than replacing mathematical typesetting with unreadable plain text.
 

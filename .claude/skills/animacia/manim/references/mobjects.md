@@ -49,7 +49,7 @@ For a derivation, use named captures such as `MathTypst("{{ a^2 : left_a }} = {{
 
 Keep the full formula's typeset layout, select disjoint semantic groups, and animate those groups with explicit `ReplacementTransform` mappings. If adding the selected groups directly to the scene, keep their parent formula out of the scene so each glyph has one animation owner. Align successive formulas by a stable anchor such as the equals sign. See `examples/typst_derivation.py`: `TypstDerivation` for a runnable subtraction-on-both-sides and cancellation sequence using the existing optional Typst extra.
 
-Typst has its own language: passing LaTeX commands such as `\frac` is not a drop-in migration. Use `manim[typst]` and inspect font/math output. Plain numeric labels can use `Text(str(value))`; `Integer`, `DecimalNumber`, `Variable`, axes numbers, and default graph labels may otherwise invoke TeX. Pass explicit `Text` labels when creating a TeX-free graph:
+Typst has its own language: passing LaTeX commands such as `\frac` is not a drop-in migration. Use the locked `typst` extra and inspect font/math output. Plain numeric labels can use `Text(str(value))`; `Integer`, `DecimalNumber`, `Variable`, axes numbers, and default graph labels may otherwise invoke TeX. Pass explicit `Text` labels when creating a TeX-free graph:
 
 ```python
 axes = Axes(x_range=[-3, 3, 1], y_range=[0, 9, 3], x_length=7, y_length=4)

@@ -18,7 +18,7 @@
 //           over the score: the score at "music" dB, ducked a little more while the voice speaks, then -14 LUFS
 //
 // usage: node scripts/export.mjs pieces/<name> [--from N] [--to N] [--workers 4] [--no-audio] [--no-mux] [--no-captions] [--only-audio] [--share] [--gpu] [--format F | --formats A,B] [--blur N]
-import { spawnSync, playwright, inside, num } from './safe.mjs';   // Carbon Stealth: ffmpeg само с файлове, offline Chromium, числа в граници
+import { spawnSync, playwright, inside, num, name as safeName } from './safe.mjs';   // Carbon Stealth: ffmpeg само с файлове, offline Chromium, числа в граници
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -30,8 +30,8 @@ const USAGE = 'usage: node scripts/export.mjs pieces/<name> [--from N] [--to N] 
 const argv = process.argv.slice(2);
 if (!argv[0] || argv[0].startsWith('--')) { console.error(USAGE); process.exit(2); }
 const ROOT = path.resolve(argv[0]);
-const FRAMES = path.join(ROOT, 'frames');
-const RENDERS = path.join(ROOT, 'renders');
+const FRAMES = inside(ROOT, 'frames');   // Carbon Stealth: и след symlink
+const RENDERS = inside(ROOT, 'renders');
 const opt = (name, dflt) => { const i = argv.indexOf('--' + name); return i >= 0 ? argv[i + 1] : dflt; };
 const flag = (name) => argv.includes('--' + name);
 
@@ -87,7 +87,7 @@ const to = Math.min(parseInt(opt('to', String(meta.frames - 1)), 10), meta.frame
 console.log(`index.html: ${meta.width}x${meta.height}, ${meta.frames} frames @ ${meta.fps}fps (${(meta.frames / meta.fps).toFixed(4)}s)`);
 // another format than the main one: its own frames folder and renders/<name>-<w>x<h>.mp4
 const SUFFIX = FORMAT && FORMAT !== (PIECE_JSON.formats || [])[0] ? `-${meta.width}x${meta.height}` : '';   // the main format (piece.json "formats"[0]) keeps final.mp4
-const FR = SUFFIX ? FRAMES + SUFFIX : FRAMES;
+const FR = SUFFIX ? inside(ROOT, 'frames' + SUFFIX) : FRAMES;
 fs.mkdirSync(FR, { recursive: true });
 // a piece that got shorter leaves its old tail frames behind, and ffmpeg's image sequence would join them on: remove them
 for (const n of fs.readdirSync(FR)) { const m = /^f(\d+)\.png$/.exec(n); if (m && Number(m[1]) >= meta.frames) fs.unlinkSync(path.join(FR, n)); }
@@ -126,7 +126,7 @@ if (!flag('no-audio')) {
   t0 = Date.now();
   const stems = await first.evaluate(async () => (typeof window.renderAudioStems === 'function' ? await window.renderAudioStems() : null));
   if (stems) {
-    for (const [name, data] of Object.entries(stems)) fs.writeFileSync(path.join(RENDERS, `stem-${name}.wav`), Buffer.from(data, 'base64'));
+    for (const [k, data] of Object.entries(stems)) fs.writeFileSync(inside(RENDERS, `stem-${safeName(k, 'stem')}.wav`), Buffer.from(data, 'base64'));   // Carbon Stealth: името идва от страницата
     console.log(`stems written: ${Object.keys(stems).map((n) => `stem-${n}.wav`).join(', ')} in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
   }
   // the user's own track replaces the synthesized music: track window + the score's sfx stem, loudness-normalised

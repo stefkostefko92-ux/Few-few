@@ -9,10 +9,10 @@ import numpy as np
 
 S = 270
 def frames(v):
-    raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', v, '-vf', f'scale={S}:{S}:flags=area,format=gray', '-f', 'rawvideo', '-'], capture_output=True).stdout
+    raw = subprocess.run(['ffmpeg', '-v', 'error', '-protocol_whitelist', 'file,pipe', '-i', v, '-vf', f'scale={S}:{S}:flags=area,format=gray', '-f', 'rawvideo', '-'], capture_output=True).stdout
     return np.frombuffer(raw, np.uint8).reshape(-1, S, S).astype(np.int16)
 def audio(v, sr=16000):
-    raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', v, '-ac', '1', '-ar', str(sr), '-f', 's16le', '-'], capture_output=True).stdout
+    raw = subprocess.run(['ffmpeg', '-v', 'error', '-protocol_whitelist', 'file,pipe', '-i', v, '-ac', '1', '-ar', str(sr), '-f', 's16le', '-'], capture_output=True).stdout
     return np.frombuffer(raw, np.int16).astype(np.float32) / 32768, sr
 
 def runs(mask, minlen):
@@ -74,6 +74,6 @@ if __name__ == '__main__':
             sys.exit(f'not a local file: {v}')
         fps = want
         if not fps:
-            r = subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=r_frame_rate', '-of', 'csv=p=0', v], capture_output=True, text=True).stdout.strip()
+            r = subprocess.run(['ffprobe', '-protocol_whitelist', 'file,pipe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=r_frame_rate', '-of', 'csv=p=0', v], capture_output=True, text=True).stdout.strip()
             a_, b_ = (r.split('/') + ['1'])[:2]; fps = float(a_) / float(b_ or 1) if a_ else 24
         measure(v, max(1, round(fps)))   # frame indexing needs a whole fps (29.97 -> 30)

@@ -21,7 +21,7 @@ Ask only what you can't infer from the request. AskUserQuestion takes up to 4 qu
    - On-screen handwritten narration
 
 4. **The look?** *(skip the gallery when the request already names a style or brings references — go to new-style.md or the named style)* Build the gallery (`node scripts/gallery.mjs <out.png> [<project>/styles]`), show it, then ask:
-   - One of these: cut paper / crosshatch ink / riso print / sketchbook / math / pixel / isometric *(recommend the one that fits the subject: cut paper for histories and stories, crosshatch for Claude Code explainers, math for anything with equations or graphs, pixel for computing history, isometric for products, devices and infrastructure, riso or sketchbook for a softer editorial feel)*
+   - One of these: cut paper / crosshatch ink / riso print / sketchbook / math / pixel / isometric *(recommend the one that fits the subject: cut paper for histories and stories, crosshatch for software and agent explainers (Carbon Stealth), math for anything with equations or graphs, pixel for computing history, isometric for products, devices and infrastructure, riso or sketchbook for a softer editorial feel)*
    - A style they've made before (any `styles/<name>/` in their project)
    - My own references (the gallery's last tile, "custom") — links or files (videos, stills, a web page): follow [new-style.md](new-style.md); keep the media local and uncommitted
    - Surprise me
@@ -33,7 +33,7 @@ Ask only what you can't infer from the request. AskUserQuestion takes up to 4 qu
 
 6. **Music: do you have your own track?**
    - No — compose the score in code, cut to a 120 BPM grid *(recommended unless they have one)*
-   - Yes — a file (WAV / MP3 / M4A) they own or licensed. Ask for its path, the part to use (start time) and the BPM if they know it. Then SKILL.md → Music: `scripts/beats.mjs` maps its beats, the cuts follow the song, and export uses the track (the score adds sound effects only). Never fetch music from a site the user didn't point to.
+   - Yes — a file (WAV / MP3 / M4A) they own or licensed — the licence covers sync in video, the master recording, the platforms it goes to and commercial use; its number goes in `LOG.md` (Carbon Stealth). Ask for its path, the part to use (start time) and the BPM if they know it. Then SKILL.md → Music: `scripts/beats.mjs` maps its beats, the cuts follow the song, and export uses the track (the score adds sound effects only). Never fetch music from a site the user didn't point to.
 
 7. **Is it about a product, app or site — should the video show the real thing?** *(ask only when the subject is a product)*
    - Yes — real screenshots and the logo: ask them for the screenshots (our own product, demo data, no personal data) and any logo / brand files. SKILL.md → Assets. *(recommended for a product reel)*

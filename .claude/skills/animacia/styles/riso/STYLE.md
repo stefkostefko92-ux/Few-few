@@ -6,7 +6,7 @@ A three-ink risograph print on cream paper: halftone screens at their own angles
 
 **The one rule: nothing is painted, everything is printed.** A frame is a sheet of paper run through three spot-ink plates. A plate only says how much ink goes where (a grey tone 0..1). The screen turns that tone into dots at the plate's angle, and the inks multiply. There is no black ink and no white ink.
 
-The parameters below were measured from a reference print animation (1080 wide, 24fps, 120 BPM) and then rebuilt in code; the demo here is an original subject.
+The parameters below were measured from a reference print animation (1080 wide, 24fps, 120 BPM) and then rebuilt in code; the demo here is an original subject. (The reference and the study are not shipped; only the measured parameters are used — a technique, not a copy of the work. Carbon Stealth)
 
 ## Palette
 

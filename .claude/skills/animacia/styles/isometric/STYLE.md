@@ -2,7 +2,7 @@
 
 ![sample](sample.png)
 
-Calm, precise product illustration: objects in 2:1 dimetric isometric on a white ground, drawn only with constant hairlines. Grey silhouettes and edges, lighter inner and receding lines, faces filled white so nearer objects hide farther lines. Rounded slabs and plates with visible thickness, stacked layers, grids of repeated parts (keys, vents, pillars, ports), and one tiny dark accent per frame. Motion on 1s with spring settles; otherwise still. Studied from MIT-licensed isometric line figures (references kept local, never copied).
+Calm, precise product illustration: objects in 2:1 dimetric isometric on a white ground, drawn only with constant hairlines. Grey silhouettes and edges, lighter inner and receding lines, faces filled white so nearer objects hide farther lines. Rounded slabs and plates with visible thickness, stacked layers, grids of repeated parts (keys, vents, pillars, ports), and one tiny dark accent per frame. Motion on 1s with spring settles; otherwise still. Studied from isometric line figures described upstream as MIT-licensed (source not recorded or verified; references not shipped, nothing copied — Carbon Stealth).
 
 ## Measured (from the reference figures' live SVG, and screenshots of them)
 

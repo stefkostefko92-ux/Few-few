@@ -32,11 +32,11 @@ import { textCheck, printTextCheck } from './textcheck.mjs';
 
 const { chromium } = playwright();
 
-const REPO = process.cwd();   // reference images resolve from where you run the tool
+const REPO = path.resolve(process.argv[2] || '.', '..', '..');   // Carbon Stealth: проектът на парчето (<проект>/pieces/<име>), не cwd
 if (!process.argv[2]) { console.error('usage: node scripts/review.mjs pieces/<name>'); process.exit(2); }
 const ROOT = path.resolve(process.argv[2]);
 const FORMAT = process.argv.includes('--format') ? process.argv[process.argv.indexOf('--format') + 1] : null;
-let REVIEW = path.join(ROOT, 'review');
+let REVIEW = inside(ROOT, 'review');   // Carbon Stealth: и след symlink
 let VIDEO = path.join(ROOT, 'renders', 'final.mp4');
 
 const PIECE = JSON.parse(fs.readFileSync(path.join(ROOT, 'piece.json'), 'utf8'));
@@ -48,9 +48,9 @@ const SOUND_WAV = PIECE.voice && fs.existsSync(SCORE_WAV) ? SCORE_WAV : path.joi
 const REF_FOR = PIECE.review?.refs || {};
 const REFDIR = path.join(REPO, 'references');
 const refPath = (n) => {
-  if (path.isAbsolute(n) || n.includes('/')) return inside(REPO, n);   // Carbon Stealth: само в проекта
+  if (path.isAbsolute(n) || /[\\/]/.test(n) || n === '..') return inside(REPO, n);   // Carbon Stealth: само в проекта
   const dirs = [REFDIR, ...(fs.existsSync(REFDIR) ? fs.readdirSync(REFDIR).map((d) => path.join(REFDIR, d)).filter((d) => fs.statSync(d).isDirectory()) : [])];
-  return dirs.map((d) => path.join(d, n)).find((f) => fs.existsSync(f)) || path.join(REFDIR, n);
+  return inside(REPO, dirs.map((d) => path.join(d, n)).find((f) => fs.existsSync(f)) || path.join(REFDIR, n));
 };
 
 // ---- read TIMELINE + frame->shot mapping straight from index.html
@@ -91,7 +91,7 @@ const TXT = await textCheck(page, { safe: info.T.height > info.T.width ? info.T.
 await browser.close();
 const { T } = info;
 // another format than the main one: its own render and review folder
-if (FORMAT && FORMAT !== (PIECE.formats || [])[0]) { const suf = `-${Number.parseInt(T.width, 10) || 0}x${Number.parseInt(T.height, 10) || 0}`; VIDEO = path.join(ROOT, 'renders', `final${suf}.mp4`); REVIEW = path.join(ROOT, `review${suf}`); }
+if (FORMAT && FORMAT !== (PIECE.formats || [])[0]) { const suf = `-${Number.parseInt(T.width, 10) || 0}x${Number.parseInt(T.height, 10) || 0}`; VIDEO = path.join(ROOT, 'renders', `final${suf}.mp4`); REVIEW = inside(ROOT, `review${suf}`); }
 fs.mkdirSync(REVIEW, { recursive: true });
 if (!fs.existsSync(VIDEO)) { console.error('no render at', VIDEO, '- run export.mjs first'); process.exit(1); }
 const FW = T.width || 1080, FH = T.height || 1080, VERTICAL = FH > FW;

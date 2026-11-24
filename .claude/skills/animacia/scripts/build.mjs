@@ -62,22 +62,25 @@ const m = out.match(/<script>([\s\S]*)<\/script>/);
 if (!m) { console.error('no <script> block found'); process.exit(1); }
 if (!/\bconst STYLE\s*=/.test(m[1])) { console.error('no STYLE hooks: the style kit must define `const STYLE = { ... }` (see styles/cut-paper/kit.js)'); process.exit(1); }
 // the code itself: no data: URIs, no URLs (the user's own assets are added below, from <piece>/assets/ only)
-const bad = out.split('\n').map((l, i) => [i + 1, l]).filter(([, l]) => /data:[a-z]+\/|https?:\/\//i.test(l));
-if (bad.length) { console.error('forbidden (data: URI or http URL):', bad.slice(0, 5).map(([n, l]) => `${n}: ${l.trim().slice(0, 80)}`).join(' | ')); process.exit(1); }
+const bad = out.split('\n').map((l, i) => [i + 1, l]).filter(([, l]) => /data:[a-z]+\/|https?:\/\/|['"`](stun|turn)s?:|RTCPeerConnection/i.test(l));
+if (bad.length) { console.error('forbidden (data: URI, http URL or WebRTC):', bad.slice(0, 5).map(([n, l]) => `${n}: ${l.trim().slice(0, 80)}`).join(' | ')); process.exit(1); }
 
 // ---- generated parts, injected right after "use strict" (before the head's own code runs)
 const inject = [];
 // a supplied music track's beat map (scripts/beats.mjs -> <piece>/beats.json): the head reads BEATS.bpm / BEATS.offset
-const beatsFile = path.join(ROOT, 'beats.json');
+const beatsFile = insideAny([ROOT], ROOT, 'beats.json');   // Carbon Stealth: и след symlink
 if (fs.existsSync(beatsFile)) inject.push(`// ---- beats.json (scripts/beats.mjs): the supplied track's tempo, beats, downbeats and hits\nconst BEATS = ${jsonForScript(JSON.parse(fs.readFileSync(beatsFile, 'utf8')))};`);
 // a voice-over's timing (scripts/voice.mjs -> <piece>/voice.json): lines and word times the scenes cue on
-const voiceFile = path.join(ROOT, 'voice.json');
+const voiceFile = insideAny([ROOT], ROOT, 'voice.json');
 if (fs.existsSync(voiceFile)) { const V = JSON.parse(fs.readFileSync(voiceFile, 'utf8')); V.lines.forEach((l) => delete l.take); inject.push(`// ---- voice.json (scripts/voice.mjs): the voice-over's lines and word times
 const VOICE = ${jsonForScript(V)};`); }
 // the user's own assets: screenshots and logos in <piece>/assets/, embedded so the piece stays one file and
 // the canvas stays readable (an image loaded from a file:// URL would taint it and break every check)
 const ASSET_DIR = path.join(ROOT, 'assets'), MIME = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', gif: 'image/gif', svg: 'image/svg+xml' };
 const assetFiles = fs.existsSync(ASSET_DIR) ? fs.readdirSync(ASSET_DIR).filter((n) => /^[\w.-]+\.(png|jpe?g|webp|gif|svg)$/i.test(n) && MIME[n.split('.').pop().toLowerCase()]) : [];   // Carbon Stealth: безопасни имена
+// Carbon Stealth: assets/ и всеки файл в нея — истински, в парчето (symlink навън вграждаше чужд файл)
+if (fs.existsSync(ASSET_DIR)) { try { insideAny([ROOT], ROOT, 'assets'); } catch (e) { console.error(e.message); process.exit(1); } }
+for (const n of assetFiles) if (fs.lstatSync(path.join(ASSET_DIR, n)).isSymbolicLink()) { console.error(`assets/${n} е symlink — отказ (само истински файлове в парчето)`); process.exit(1); }
 let assetBytes = 0;
 if (assetFiles.length) {
   const src = {};
@@ -95,7 +98,7 @@ if (assetFiles.length) {
 }
 const m2 = out.match(/<script>([\s\S]*)<\/script>/);
 try { new vm.Script(m2[1], { filename: 'index.html' }); } catch (e) { console.error('syntax error:', e.message); process.exit(1); }
-fs.writeFileSync(path.join(ROOT, 'index.html'), out);
+fs.writeFileSync(insideAny([ROOT], ROOT, 'index.html'), out);
 const extras = [fs.existsSync(beatsFile) ? 'beats.json' : null, fs.existsSync(voiceFile) ? 'voice.json' : null, assetFiles.length ? `${assetFiles.length} asset(s), ${(assetBytes / 1e6).toFixed(1)} MB` : null].filter(Boolean);
 if (assetBytes > 12e6) console.warn(`warning: ${(assetBytes / 1e6).toFixed(1)} MB of assets — resize screenshots to the size they're shown at`);
 console.log(`built ${path.join(ROOT, 'index.html')}: ${out.split('\n').length} lines from ${parts.length} parts (style: ${styleName})${extras.length ? ' + ' + extras.join(' + ') : ''}; syntax ok; no external assets`);

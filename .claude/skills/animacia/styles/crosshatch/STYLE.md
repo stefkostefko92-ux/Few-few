@@ -2,6 +2,8 @@
 
 ![sample](sample.png)
 
+*(Carbon Stealth)* The style was built around Claude Code, a trade mark of Anthropic. In our pieces: no asterisk logomark, no terracotta `#d97757` hero, no "Claude Code" wordmark or copied interface — the hero has our own colour (sky by default). The sample is re-rendered from `demo/`.
+
 A sketchy ink line that boils on 2s, crosshatch and coloured-pencil shading clipped inside shapes, stipple, paper grain. Warm cream paper and wood by day; navy "inside the computer" worlds with periwinkle lines and glowing accents.
 
 ## Palette
@@ -28,7 +30,7 @@ A sketchy ink line that boils on 2s, crosshatch and coloured-pencil shading clip
 2. **The line boils** — never a perfectly still stroke in a held frame.
 3. **Tool-call pills (`toolPill('Read', 'notes.md', …)`) make agent steps readable** — and must be true.
 4. **The dark world and the paper world look different on a contact sheet:** navy + periwinkle lines inside the machine, cream + ink outside.
-5. **The hero dot keeps its terracotta and asterisk** in both worlds (it gets a glow in the dark).
+5. **The hero dot keeps its colour** in both worlds (sky by default, `o.fill` to change it; it gets a glow in the dark).
 6. **World-anchored textures** when the camera pans (texture keys don't depend on screen position).
 
 ## Kit API
