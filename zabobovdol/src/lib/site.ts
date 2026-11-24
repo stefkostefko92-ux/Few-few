@@ -48,6 +48,13 @@ export const SITE = {
     vat: "BG208725180",
     manager: "Стефан Костадинов",
     address: "ул. „Самуил“ № 3, 2670 Бобов дол, обл. Кюстендил, България",
+    // Адресът по части — за PostalAddress в JSON-LD (същият като горния ред).
+    street: "ул. „Самуил“ № 3",
+    // Общ за всички наши продукти — търсачките виждат едно дружество, не десет.
+    id: "https://carbonstealth.eu/#org",
+    // Официалните профили на фирмата, посочени от собственика (същите като в korpora/src/company.ts).
+    // Не се добавят други.
+    profiles: ["https://www.youtube.com/@CarbonStealth", "https://www.tiktok.com/@zerofucksgiiven"],
     register:
       "Търговски регистър и регистър на ЮЛНЦ при Агенция по вписванията",
     email: "info@carbonstealth.eu",
