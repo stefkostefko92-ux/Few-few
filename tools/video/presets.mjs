@@ -22,7 +22,10 @@ import { fileURLToPath } from "node:url";
 
 const ENCODERS = new Set(["h264_nvenc", "hevc_nvenc", "libx264"]);
 const FPS = new Set([24, 25, 30, 48, 50, 60]);
-const LOUD = { I: -14, TP: -1, LRA: 11 }; // YouTube и повечето платформи нормализират около −14 LUFS
+// −14 LUFS: YouTube и повечето платформи нормализират около тази стойност. −1,5 dBTP (решение 23.11.2026): AES TD1008 дава
+// −1 dBTP като таван на входа на кодека; платформите прекодират до AAC, а true-peak метърът (4×) греши до ~0,6 dB —
+// половин dB запас. Същото число е в tools/social/clip.sh (тестът в presets.test.mjs пази двете равни).
+const LOUD = { I: -14, TP: -1.5, LRA: 11 };
 const NUM = /^-?\d+(\.\d+)?$/;
 
 // FFmpeg приема и протоколи (http:, tcp:, pipe:, concat:) на мястото на файл — тук път е само локален файл;

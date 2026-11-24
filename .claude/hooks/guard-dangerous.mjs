@@ -30,7 +30,75 @@ export const CATASTROPHIC = [
   // Red-team 2026-09-08: унищожаване на диск без dd/mkfs — wipefs, shred, blkdiscard, sgdisk --zap-all,
   // parted mklabel. Изискваме суров /dev/ диск: `shred файл.txt` е нормално.
   { re: /\b(wipefs|shred|blkdiscard|sgdisk\s+(-Z|--zap-all)|parted\s+\S+\s+mklabel|nvme\s+format)\b[^\n]*\/dev\/(sd|nvme|vd|hd|disk|mmcblk)/i, why: "унищожаване на суров диск (wipefs/shred/blkdiscard/sgdisk)" },
+  // Red-team 2026-11-23 (F1): AI Studio работи на Windows. Форматиране на том/диск в PowerShell и cmd.
+  // `Format-Table`/`Format-List` са нормални — затова само Volume/Disk/Partition и `format <буква>:`.
+  { re: /(?:^|[;&|(]\s*|\n\s*|["'])\s*(?:Format-Volume|Clear-Disk|Initialize-Disk|Remove-Partition)\b/i, why: "форматиране или изчистване на диск (PowerShell)" },
+  { re: /(?:^|[;&|(]\s*|\n\s*|["'])\s*format(?:\.com)?\s+[A-Za-z]:/i, why: "форматиране на диск (format C:)" },
+  // curl|sh на PowerShell: изтегли и изпълни (`iwr … | iex`, `iex (iwr …)`, `DownloadString`) и кодирана
+  // команда (`-enc <base64>` скрива какво се изпълнява — агентът няма легитимна нужда от нея).
+  // Изтегли-и-изпълни се съди в psDownloadExec() по-долу: в отделни изрази (`$c=(iwr …).Content; iex $c`),
+  // през `%{ iex $_ }` и `[scriptblock]::Create` (кръг 2, Разбивача) един регекс по ред не стига.
+  { re: /\b(?:powershell|pwsh)(?:\.exe)?\b[^\n]*\s-e(?:c|nc\w*)?\s+["']?[A-Za-z0-9+/=]{16,}/i, why: "кодирана PowerShell команда (-EncodedCommand крие какво се изпълнява)" },
+  // Разбивача, 23.11.2026 (N4): агент, който пуска нова сесия на Claude Code (`claude -p`, с `--bare` — без куки
+  // изобщо), минава покрай месечния таван и всички пазачи. Живият гейт я пуска през spawn в Node, не през Bash.
+  { re: /(?:^|[;&|(]\s*|\n\s*|\b(?:sudo|exec|nohup|env)\s+)(?:claude(?:\.exe)?\s+(?:[^\n;&|]*\s)?(?:-p|--print|--bare)\b|npx\s+(?:-y\s+)?@anthropic-ai\/claude-code\b)/, why: "вложена сесия на Claude Code от агент (claude -p) — заобикаля тавана на разхода и пазачите" },
 ];
+
+// curl|sh на PowerShell: изтегляне (iwr/irm/DownloadString/WebClient/BITS) И изпълнение на код от низ (iex,
+// Invoke-Expression, [scriptblock]::Create) в една и съща команда — независимо от реда и разделителите.
+// Два линейни теста вместо един шаблон с `.*` между тях (без квадратично връщане назад).
+const PS_DOWNLOAD = /\b(?:iwr|irm|Invoke-WebRequest|Invoke-RestMethod|Start-BitsTransfer|DownloadString|DownloadData|DownloadFile|Net\.WebClient)\b/i;
+const PS_EXEC_STRING = /(?:^|[^\w-])(?:iex|Invoke-Expression)\b|\[scriptblock\]::Create\s*\(/i;
+export function psDownloadExec(s) {
+  return PS_DOWNLOAD.test(s) && PS_EXEC_STRING.test(s) ? "изтегляне и изпълнение на код в PowerShell (iwr … iex / scriptblock)" : null;
+}
+
+// Red-team 2026-11-23 (F1): триене на Windows. `Remove-Item -Recurse -Force C:\Users\owner`,
+// `rd /s /q …` и `del /s C:\*` минаваха с изход 0 — isCatastrophicRm познава само `rm` и Unix пътища.
+// Съдим ДУМИТЕ на всеки сегмент: рекурсивно триене + цел, която е корен на устройство, профил или
+// системна папка. Поддиректория (`.\build`, `…\AppData\Local\Temp\render`) е нормална работа.
+const WIN_DEL_VERB = /^(?:remove-item|ri|rm|rmdir|rd|del|erase)$/i;
+const WIN_LIST_VERB = /^(?:get-childitem|gci|dir|ls|get-item|gi)$/i;
+const WIN_DANGER_TARGET = [
+  /^[A-Za-z]:[\\/]?(?:\*(?:\.\*)?)?$/, // C:  C:\  C:\*  C:\*.*
+  /^[\\/]\*?$/, // корен на текущото устройство
+  /^[A-Za-z]:[\\/]Users(?:[\\/][^\\/]+)?[\\/]?(?:\*(?:\.\*)?)?$/i, // C:\Users, C:\Users\<име>
+  /^[A-Za-z]:[\\/](?:Windows|Program Files(?: \(x86\))?|ProgramData)(?:[\\/]System32)?[\\/]?\*?$/i,
+  // `$env:X` и скобестото `${env:X}` (кръг 2, Разбивача); `$HOME`, `~`, `%X%`.
+  /^(?:\$\{?env:(?:USERPROFILE|SystemDrive|HOMEDRIVE|HOMEPATH|SystemRoot|windir|ProgramFiles)\}?|\$\{?HOME\}?|~|%(?:USERPROFILE|SystemDrive|HOMEDRIVE|HOMEPATH|SystemRoot|windir|ProgramFiles)%)[\\/]?\*?$/i,
+  // Git Bash и WSL виждат устройството като `/c/` и `/mnt/c/` (кръг 2, Кодаджията — High).
+  /^\/(?:mnt\/)?[A-Za-z](?:\/(?:Users(?:\/[^/]+)?|Windows|ProgramData|Program Files(?: \(x86\))?))?\/?\*?$/i,
+];
+const winTokens = (seg) => (seg.match(/"[^"]*"|'[^']*'|\S+/g) || []).map((t) => t.replace(/^["']|["']$/g, ""));
+const winDanger = (t) => WIN_DANGER_TARGET.some((re) => re.test(t));
+const isFlag = (t) => /^-/.test(t) || /^\/[A-Za-z?]$/.test(t);
+
+export function isCatastrophicWin(cmd, depth = 0) {
+  if (depth > 3) return null;
+  for (const pipeline of String(cmd || "").split(/\r?\n|;|&&|\|\||(?<![|&])&(?![&])/)) {
+    const segs = pipeline.split(/(?<!\|)\|(?!\|)/).map((x) => x.trim()).filter(Boolean);
+    for (let i = 0; i < segs.length; i++) {
+      // Обвивки: `cmd /c "…"`, `powershell -Command "…"` — съдим вътрешната команда.
+      const wrap = segs[i].match(/^(?:cmd(?:\.exe)?\s+\/[ck]|(?:powershell|pwsh)(?:\.exe)?\b.*?\s-c(?:ommand)?)\s+([\s\S]+)$/i);
+      if (wrap) { const why = isCatastrophicWin(wrap[1].replace(/^["']|["']$/g, ""), depth + 1); if (why) return why; continue; }
+      const t = winTokens(segs[i]);
+      if (!t.length || !WIN_DEL_VERB.test(t[0])) continue;
+      const verb = t[0].toLowerCase();
+      const isRecursive = (words, v) => words.some((w) => (v === "rm" ? /^-[a-z]*r[a-z]*$/i.test(w) && !/^-force$/i.test(w) : false)
+        || /^-r(?:e(?:c(?:u(?:r(?:s(?:e)?)?)?)?)?)?(?::\$true)?$/i.test(w) || /^\/s$/i.test(w));
+      const targets = t.slice(1).filter((w) => !isFlag(w));
+      if (isRecursive(t, verb) && targets.some(winDanger)) return "рекурсивно триене на корен, профил или системна папка на Windows";
+      // `Get-ChildItem C:\ | Remove-Item -Recurse` — целта идва по пайпа. Рекурсията може да е и на
+      // изброителя: `Get-ChildItem C:\Users\owner -Recurse | Remove-Item -Force` (кръг 2, Разбивача).
+      if (!targets.length && i > 0) {
+        const prev = winTokens(segs[i - 1]);
+        if (WIN_LIST_VERB.test(prev[0] || "") && (isRecursive(t, verb) || isRecursive(prev, ""))
+          && prev.slice(1).filter((w) => !isFlag(w)).some(winDanger)) return "рекурсивно триене на корен или профил на Windows през пайп";
+      }
+    }
+  }
+  return null;
+}
 
 // Red-team 2026-07-30 (F5a): `rm -rf /` се хващаше, но `rm -r -f /` — НЕ, защото шаблонът искаше r и f
 // в ЕДНА флагова група. Разделените флагове са също толкова катастрофални и се пишат също толкова лесно.
@@ -389,10 +457,18 @@ function wordDanger(s, depth) {
   return null;
 }
 
+// Кръг 2 (Кодаджията): `isRemoteExec` с `curl` + 50 000 пайпа отнема ~30 s, а таймаутът на куката (10 s)
+// пада „отворено“ — значи от ~30 KB нагоре вратата е отворена. Над тавана командата се спира с молба да
+// се раздели; агент няма нужда от 32 KB в една команда (същият таван като guard-exfil).
+export const MAX_COMMAND = 32 * 1024;
+
 export function isCatastrophic(cmd, depth = 0) {
   if (depth > 3) return null;
+  if (String(cmd || "").length > MAX_COMMAND) return `командата е над ${MAX_COMMAND / 1024} KB — раздели я (дълъг вход прави проверката бавна, а таймаутът я пуска)`;
   const s = sanitize(cmd); // `rm<U+200B> -rf /` минаваше — невидимият знак чупеше `\brm\b`
   if (isCatastrophicRm(s)) return "rm -rf на корен/дом (вкл. разделени флагове)";
+  const win = isCatastrophicWin(s) || psDownloadExec(s);
+  if (win) return win;
   const remote = isRemoteExec(s);
   if (remote) return remote;
   for (const p of CATASTROPHIC) if (p.re.test(s)) return p.why;

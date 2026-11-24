@@ -5,76 +5,78 @@
     {
       "id": "ai-act-art50",
       "kind": "legal",
-      "statement": "AI Act (Регламент (ЕС) 2024/1689) чл. 50: прозрачност при AI-генерирано/deepfake съдържание. Прилага се от 02.08.2026 и НЕ е отложен от Digital Omnibus. Единствена отсрочка: машинното маркиране по чл. 50(2) за системи, пуснати на пазара ПРЕДИ 02.08.2026 → до 02.12.2026. чл. 50(4) (разкриване от внедрителя; за текст — при информиране на публиката по въпрос от обществен интерес) важи от 02.08.2026; изключението за очевидно артистично/сатирично е тясно. Кодексът за прозрачност е оценен като адекватен от Комисията и Съвета по ИИ. Съдържание отпреди 02.08.2026 не се маркира със задна дата. Глоба чл. 99(4): до €15M или 3% от световния оборот; чл. 99(6) — за МСП по-ниската от двете.",
-      "source": "https://digital-strategy.ec.europa.eu/en/faqs/transparency-obligations-under-article-50-ai-act ; https://artificialintelligenceact.eu/article/99/ ; EUR-Lex Регламент (ЕС) 2024/1689 чл. 50",
+      "statement": "AI Act (Регламент (ЕС) 2024/1689) чл. 50: прозрачност при AI-генерирано/deepfake съдържание. Прилага се от 02.08.2026 и НЕ е отложен от Digital Omnibus. Единствена отсрочка: машинното маркиране по чл. 50(2) за системи, пуснати на пазара ПРЕДИ 02.08.2026 → до 02.12.2026 (чл. 111(4)). чл. 50(4) (разкриване от внедрителя) важи от 02.08.2026; за текст по въпрос от обществен интерес — освен при човешки преглед/редакционен контрол и редакционна отговорност; при очевидно артистично/творческо/сатирично произведение задължението НЕ отпада, а се свежда до подходящо разкриване, което не пречи на произведението. Кодексът за прозрачност е доброволен (чл. 50(2), (4), (5)). Чл. 50(7) е заменен с Рег. (ЕС) 2026/1744, т. 20: Комисията оценява адекватността на кодекса за ал. 2 и 4, като отчита в максимална степен становището на Съвета по ИИ, и при неадекватност може да приеме акт за изпълнение по чл. 98(2). Съдържание отпреди 02.08.2026 не се маркира със задна дата. Глоба чл. 99(4)(g): до €15M или 3% от световния годишен оборот, което е по-високо; чл. 99(6) — за МСП, вкл. стартъпи, по-ниската от двете; чл. 99(6a) (нова) — същото за SMC при глобите по ал. 4 и 5.",
+      "source": "https://digital-strategy.ec.europa.eu/en/faqs/transparency-obligations-under-article-50-ai-act ; https://artificialintelligenceact.eu/article/50/ ; https://artificialintelligenceact.eu/article/99/ ; EUR-Lex Регламент (ЕС) 2024/1689 чл. 50 ; Рег. (ЕС) 2026/1744: http://data.europa.eu/eli/reg/2026/1744/oj (OJ L, 2026/1744, 24.7.2026; ES текст сверен през https://www.boe.es/doue/2026/1744/L00001-00041.pdf на 23.11.2026; EFTA https://www.efta.int/eea-lex/32026r1744)",
       "agents": [
         "socialdjiyata",
         "pravniyat-razbirach",
-        "ai-studio"
+        "ai-studio",
+        "ai-djiyata"
       ],
-      "checkedAt": "2026-09-25",
-      "note": "Цитирай чл. 50(4) за органичен маркетинг, НЕ 50(2). Anchor умишлено ЛИПСВА — чл. 50 е двусмислен (CRD 2011/83 също има чл. 50 = право на отказ)."
+      "checkedAt": "2026-11-23",
+      "note": "Цитирай чл. 50(4) за органичен маркетинг, НЕ 50(2). Anchor умишлено ЛИПСВА — чл. 50 е двусмислен (CRD 2011/83 също има чл. 50 = право на отказ). Пресверено 23.11.2026 (Правният Разбирач): номер, чл. 111(4), чл. 99(6a) и чл. 50(7) — сверени с ОВ (ES) 23.11.2026; EUR-Lex още празен — при отваряне свери EN/BG текста."
     },
     {
       "id": "crd-payment-button",
       "kind": "legal",
-      "statement": "CRD 2011/83/ЕС чл. 8(2): плащащ бутон при дистанционен електронен договор със задължение за плащане трябва да е обозначен само с формулировка „поръчка със задължение за плащане“ (или недвусмислен еквивалент); при неспазване потребителят не е обвързан с договора. Неясни надписи (Продължи/Завърши) не са валидни. CJEU C-249/21 Fuhrmann-2.",
-      "source": "EUR-Lex 2011/83/ЕС чл. 8(2) (дословно огледало: https://www.legislation.gov.uk/eudr/2011/83/article/8) ; CJEU C-249/21 Fuhrmann-2",
+      "statement": "CRD 2011/83/ЕС чл. 8(2), ал. 2: ако поръчката се прави с бутон или подобна функция, той трябва да е обозначен лесно четимо само с думите „поръчка със задължение за плащане“ или съответна недвусмислена формулировка; при неспазване потребителят не е обвързан от договора или поръчката. Значение имат само думите върху самия бутон, не обстоятелствата около процеса (СЕС C-249/21 Fuhrmann-2, 07.04.2022); надпис без указание за плащане („Продължи“) не изпълнява изискването, а „Завърши поръчката/резервацията“ е двусмислен, освен ако думата непременно и систематично се свързва с плащане — преценката е на националния съд. Изискването важи и когато задължението за плащане е условно (възниква след сбъдване на последващо условие); при нарушение потребителят все пак може да потвърди поръчката (СЕС C-400/22 Conny, 30.05.2024). Дир. 2023/2673 не изменя чл. 8.",
+      "source": "EUR-Lex 2011/83/ЕС чл. 8(2) (огледало, ред. 01.07.2018, без промени след 31.12.2020: https://www.legislation.gov.uk/eudr/2011/83/article/8) ; СЕС C-249/21 Fuhrmann-2, пресрелийз 60/22: https://curia.europa.eu/jcms/upload/docs/application/pdf/2022-04/cp220060en.pdf ; СЕС C-400/22 Conny (ECLI:EU:C:2024:436), пресрелийз 90/24: https://curia.europa.eu/jcms/upload/docs/application/pdf/2024-05/cp240090es.pdf ; Дир. 2023/2673 чл. 1 (огледало: https://lawplayer.com/eu/act/32023L2673)",
       "agents": [
         "prodavacha",
         "pravniyat-razbirach"
       ],
-      "checkedAt": "2026-09-25",
-      "note": "Anchor умишлено ЛИПСВА — 8(2) шуми (18 агента)."
+      "checkedAt": "2026-11-23",
+      "note": "Anchor умишлено ЛИПСВА — 8(2) шуми (18 агента). Пресверено 23.11.2026 (Правният Разбирач): поправено преувеличението за Fuhrmann-2, добавен C-400/22 Conny. Отворено: дали Дир. 2024/825 пипа чл. 8 (консолидацията в EUR-Lex е празна)."
     },
     {
-      "id": "owasp-llm-2025",
+      "id": "owasp-llm-2026",
       "kind": "taxonomy",
-      "statement": "OWASP Top 10 for LLM Applications (2025): LLM01 Prompt Injection · LLM02 Sensitive Information Disclosure · LLM05 Improper Output Handling · LLM06 Excessive Agency · LLM07 System Prompt Leakage · LLM08 Vector/Embedding Weaknesses.",
-      "source": "https://genai.owasp.org/llm-top-10/",
+      "statement": "OWASP Top 10 for LLM Applications 2026 (текуща): LLM01:2026 Prompt Injection · LLM02:2026 Sensitive Information Disclosure · LLM03:2026 Excessive Agency · LLM04:2026 Supply Chain · LLM05:2026 Data and Model Poisoning · LLM06:2026 Unbounded Consumption · LLM07:2026 Misinformation · LLM08:2026 Hidden Context Exposure (обхваща system prompt-а) · LLM09:2026 Vector and Embedding Weaknesses · LLM10:2026 Improper Output Handling. Цитирай кода винаги с годината (`LLM03:2026`); 2025 кодът — само в скоби при клиент/одит по 2025 (`LLM03:2026 (2025: LLM06)`).",
+      "source": "https://genai.owasp.org/top-10-for-llm-applications-2026/ ; https://github.com/GenAI-Security-Project/GenAI-LLM-Top10/tree/main/2026/final ; https://github.com/OWASP/www-project-top-10-for-large-language-model-applications",
       "agents": [
         "razbivacha",
-        "ai-djiyata"
+        "ai-djiyata",
+        "pronikvacha"
       ],
       "anchor": "LLM0",
-      "checkedAt": "2026-09-25",
-      "note": "2025 версия. 2023 кодовете (тогава LLM06=Sensitive Info Disclosure, LLM08=Excessive Agency) са остарели — не ги смесвай. Anchor LLM0 е недвусмислен → авто-проверка за присъствие. Доктрината живее и в _memory/SECURITY.md."
+      "checkedAt": "2026-11-23",
+      "note": "2026 е финалната текуща версия (GenAI-LLM-Top10/2026/final; README на проекта: „Current release … 2026 — published August 4, 2026“, 2025 е архивна); страницата на genai.owasp.org е от 27.10.2026, а /llm-top-10/ още показва 2025 — датата е Несигурно. 2025→2026: 01→01 · 02→02 · 03→04 · 04→05 · 05→10 · 06→03 · 07→08 (System Prompt Leakage → Hidden Context Exposure) · 08→09 · 09→07 · 10→06; нови и махнати няма. 2023 кодовете са остарели. Anchor LLM0 е недвусмислен → авто-проверка за присъствие. Флотът мина на 2026 по решение на собственика (23.11.2026); пресверено от Разбивача."
     },
     {
       "id": "play-target-api-2026",
       "kind": "platform",
-      "statement": "Google Play target API — срокът 31.08.2026 е ИЗМИНАЛ: нови апс и ъпдейти ≥ API 36 (Android 16); Wear OS и Android Automotive ≥ 35; Android TV и Android XR ≥ 34. Съществуващи ≥ API 35, иначе губят видимост за нови потребители на по-нови устройства. Отсрочка по заявка до 01.11.2026 (форма в Play Console). Трайно частни апс за вътрешна дистрибуция са освободени.",
-      "source": "https://developer.android.com/google/play/requirements/target-sdk",
+      "statement": "Google Play target API — срокът 31.08.2026 и отсрочката до 01.11.2026 са ИЗМИНАЛИ: нови апс и ъпдейти ≥ API 36 (Android 16); Wear OS и Android Automotive ≥ 35; Android TV и Android XR ≥ 34. Съществуващи ≥ API 35, иначе губят видимост за нови потребители на по-нови устройства. Трайно частни апс за вътрешна дистрибуция са освободени. Към 23.11.2026 срок за 2027 (API 37) не е обявен.",
+      "source": "https://developer.android.com/google/play/requirements/target-sdk ; https://support.google.com/googleplay/android-developer/answer/11926878",
       "agents": [
         "tayniyat-agent",
         "mobildjiyata"
       ],
-      "checkedAt": "2026-09-25",
+      "checkedAt": "2026-11-23",
       "note": "ТВЪРД СРОК с цена „сваляне от листинга\". Добавен в регистъра на Кръг 6 (2026-08-04): дотогава TTL пазеше само правните твърдения, а платформените дати — еднакво волатилни и по-скъпи — стояха само в паметта. Числото се сверява ЖИВО преди всеки submit, не по спомен."
     },
     {
       "id": "chrome-mv2-end-2026",
       "kind": "platform",
-      "statement": "Manifest V2 — СЛУЧИЛО СЕ: на 31.08.2026 всички останали MV2 разширения са премахнати от Chrome Web Store. Реактивиране от потребителя спря на 24.07.2025; Chrome 138 е последната версия с MV2 (само чрез enterprise изключение). MV3 е единственият възможен формат.",
+      "statement": "Manifest V2 — СЛУЧИЛО СЕ: на 31.08.2026 всички останали MV2 разширения са премахнати от Chrome Web Store (вече инсталирани на Chrome ≤138 работят, но без ъпдейти и без преинсталиране). Реактивиране от потребителя спря с Chrome 138 (запис 24.07.2025); Chrome 138 е последната версия с MV2 (само чрез enterprise изключението ExtensionManifestV2Availability, премахнато в Chrome 139). MV3 е единственият възможен формат.",
       "source": "https://developer.chrome.com/docs/extensions/develop/migrate/mv2-deprecation-timeline",
       "agents": [
         "hromadjiyata",
         "tayniyat-agent"
       ],
-      "checkedAt": "2026-09-25",
+      "checkedAt": "2026-11-23",
       "note": "Засяга adblock/ и SupremeBot/ (MV3). Срокът е близък — при пресверяване гледай и дали датата не е местена."
     },
     {
       "id": "cc-hook-events",
       "kind": "taxonomy",
-      "statement": "Claude Code хуковите събития са 33 (не 31): спрямо 2026-08-04 са добавени PreModelSwitch и PostModelSwitch. Списъкът включва ConfigChange. Името на полето за грешка при PostToolUseFailure не се вижда в текущата страница — не се твърди, докато не се провери живо. Броят се мести без обявяване — точно като npm мажор.",
-      "source": "https://code.claude.com/docs/en/hooks",
+      "statement": "Claude Code хуковите събития са 33 (жива сверка 23.11.2026), вкл. ConfigChange, PreModelSwitch и PostModelSwitch. PostToolUseFailure подава грешката в полето `error` (низ, форматът зависи от инструмента) плюс незадължително `is_interrupt`. На Windows има и отделен инструмент PowerShell (поле `command`) — кука, която съди шел команди, назовава `Bash|PowerShell`. Броят се мести без обявяване — сверявай живо, не по памет.",
+      "source": "https://code.claude.com/docs/en/hooks.md ; https://code.claude.com/docs/en/tools-reference",
       "agents": [
         "ai-djiyata",
         "izpitatelya",
         "razbivacha"
       ],
-      "checkedAt": "2026-09-25",
+      "checkedAt": "2026-11-23",
       "note": "Открито при пресверката на карантината (2026-08-04): поука твърдеше 30 и `error_type`; и двете се разминаха с живата дока. Anchor умишлено ЛИПСВА — числото е точно това, което се мени, значи котва по литерал ще пада при всяка промяна вместо да иска пресверка."
     },
     {
@@ -153,6 +155,31 @@
       ],
       "checkedAt": "2026-11-22",
       "note": "„Благотворителните им звена — да“ е от support.google.com/nonprofits/answer/3215869 („philanthropic arms of educational organizations are eligible“), не от страницата за допустимост. Също: support.google.com/nonprofits/answer/3215869. Наличността по държава (BG/IT) — само от независими източници; сверявай при регистрация. Умение bezplatna-vidimost."
+    },
+    {
+      "id": "owasp-top10-2025",
+      "kind": "taxonomy",
+      "statement": "OWASP Top 10:2025 (уеб): A01:2025 Broken Access Control … A10:2025 Mishandling of Exceptional Conditions; A03:2025 е Software Supply Chain Failures; SSRF е влят в A01. Цитирай кода с годината.",
+      "source": "https://top10.owasp.org/2025/ ; https://top10.owasp.org/2025/0x00_2025-Introduction/",
+      "agents": [
+        "kodadjiyata",
+        "razbivacha"
+      ],
+      "anchor": "Top 10:2025",
+      "checkedAt": "2026-11-23",
+      "note": "Добавен при пресверката 23.11.2026 (Разбивача): дотогава цитиран в kodadjiyata.md и razbivacha.md без запис. „Финал ян. 2026“ не е намерено на живите страници — махнато от дефиницията."
+    },
+    {
+      "id": "owasp-agentic-2026",
+      "kind": "taxonomy",
+      "statement": "OWASP Top 10 for Agentic Applications 2026: ASI01 Agent Goal Hijack · ASI02 Tool Misuse and Exploitation · … · ASI06 Memory & Context Poisoning · … · ASI10 Rogue Agents.",
+      "source": "https://genai.owasp.org/top-10-for-agentic-applications-2026/",
+      "agents": [
+        "razbivacha"
+      ],
+      "anchor": "ASI0",
+      "checkedAt": "2026-11-23",
+      "note": "Добавен при пресверката 23.11.2026 (Разбивача); страницата е от 28.10.2026, последна промяна 16.11.2026."
     }
   ]
 }

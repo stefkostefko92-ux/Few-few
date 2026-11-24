@@ -77,6 +77,7 @@ const PAYLOADS = {
   "route-hint.mjs": { prompt: "прегледай PR-а за сигурност на medqr" },
   "guard-dangerous.mjs": { tool_name: "Bash", tool_input: { command: "ls -la" } },
   "guard-readonly.mjs": { tool_name: "Bash", agent_type: "kodadjiyata", tool_input: { command: "git diff HEAD~1" } },
+  "guard-allowlist.mjs": { tool_name: "Bash", agent_type: "prevodach", tool_input: { command: "node tools/i18n/check-parity.mjs a.json b.json" } },
   "guard-exfil.mjs": { tool_name: "Bash", tool_input: { command: "git status --short" } },
   "guard-secrets.mjs": { tool_name: "Write", tool_input: { file_path: "src/app.ts", content: "export const x = 1;" } },
   "precompact-save.mjs": { transcript_path: "", trigger: "auto" },
@@ -121,6 +122,7 @@ const REGISTRATION = {
   "guard-dangerous.mjs": { event: "PreToolUse", matcher: /Bash/ },
   // Ревюър без Write/Edit не пише през Bash — ПРЕДИ командата, иначе файлът вече е променен.
   "guard-readonly.mjs": { event: "PreToolUse", matcher: /Bash/ },
+  "guard-allowlist.mjs": { event: "PreToolUse", matcher: /Bash/ },
   // 2026-09-21: MCP инструментите (mcp__github__*, mcp__Gmail__* …) са СЪЩО изходен канал — без
   // `mcp__.*` в matcher-а тайна в тяло на коментар/чернова на имейл напускаше без пазач (3/3 на живо).
   "guard-exfil.mjs": { event: "PreToolUse", matcher: /Bash/, alsoMatcher: [/Monitor/, /WebFetch/, /WebSearch/, /mcp__/] },
