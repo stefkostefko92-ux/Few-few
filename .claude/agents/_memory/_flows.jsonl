@@ -956,3 +956,14 @@
 {"t":"handoff","ts":"2026-11-24T07:42:15.631Z","id":"ra63f0bda","from":"kodadjiyata","to":"seo","status":"има бележки","run":"18bdf9e6"}
 {"t":"start","ts":"2026-11-24T08:15:54.351Z","id":"r9f9cedec","flow":"авто","lead":"pravniyat-razbirach","auto":true}
 {"t":"handoff","ts":"2026-11-24T08:15:54.351Z","id":"r9f9cedec","from":"pravniyat-razbirach","to":"kodadjiyata","status":"има бележки","run":"379c103f"}
+{"t":"start","ts":"2026-11-24T09:11:48.029Z","id":"r98718bfc","flow":"авто","lead":"ai-studio","auto":true}
+{"t":"handoff","ts":"2026-11-24T09:11:48.029Z","id":"r98718bfc","from":"ai-studio","to":"kodadjiyata","status":"има бележки","run":"25e269eb"}
+{"t":"start","ts":"2026-11-24T09:21:15.652Z","id":"r6a9ef3bf","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-24T09:21:15.652Z","id":"r6a9ef3bf","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"95737b9d"}
+{"t":"start","ts":"2026-11-24T09:21:53.271Z","id":"rdf00e8d2","flow":"авто","lead":"razbivacha","auto":true}
+{"t":"handoff","ts":"2026-11-24T09:21:53.271Z","id":"rdf00e8d2","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"b63d1692"}
+{"t":"handoff","ts":"2026-11-24T10:34:09.683Z","id":"rdf00e8d2","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"76c15fcd"}
+{"t":"handoff","ts":"2026-11-24T10:35:22.213Z","id":"rdf00e8d2","from":"pravniyat-razbirach","to":"ai-studio","status":"има бележки","run":"9f60c3cf"}
+{"t":"handoff","ts":"2026-11-24T10:35:40.688Z","id":"rdf00e8d2","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"c186609f"}
+{"t":"start","ts":"2026-11-24T11:06:35.888Z","id":"r20009fe9","flow":"авто","lead":"razbivacha","auto":true}
+{"t":"handoff","ts":"2026-11-24T11:06:35.888Z","id":"r20009fe9","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"2d9dc067"}
