@@ -1,4 +1,5 @@
-"""python render.py light|heavy [--only stills,shots,assemble,audio,encode] [--shots asm,pos] [--bench T] — the video.
+"""python render.py light|heavy [--only stills,shots,assemble,audio,encode] [--shots asm,pos] [--bench T] [--gpu [OPTIX]]
+— the video.
 
 light  review clip: Cycles on the CPU, 1280x720 at 12 samples, 24 fps, frames 1920x1080, H.264 CRF 23.
 heavy  the master: Cycles + OptiX on the NVIDIA card, 3840x2160 at 96 samples, 60 fps, frames 3840x2160,
@@ -7,6 +8,7 @@ Sound: audio.py writes the music and the tools (one soundtrack for both presets,
 it to −14 LUFS / −1.5 dBTP, encode puts it under the picture (AAC 384 kb/s). It needs no render: --only audio,encode.
 Every step resumes: a shot continues after its last saved frame, assembly skips frames already written.
 --bench T renders one full frame at second T with the preset's settings and prints the time (estimate first).
+--gpu renders the light preset on the NVIDIA card too (OptiX; or --gpu CUDA): same frames, far sooner than the CPU.
 Needs: Blender (BLENDER=<path> or on PATH), Node, FFmpeg, Python with numpy + pillow, assets/ (fetch_assets.py),
 mesh/ (node export_mesh.mjs, from panev/3d after npm ci)."""
 import argparse
@@ -133,8 +135,11 @@ def main():
     ap.add_argument("--only", default="stills,shots,assemble,audio,encode")
     ap.add_argument("--shots", default="")
     ap.add_argument("--bench", type=float)
+    ap.add_argument("--gpu", nargs="?", const="OPTIX", default=None)
     a = ap.parse_args()
     cfg = PRESETS[a.preset]
+    if a.gpu:
+        cfg = {**cfg, "VIDEO_DEVICE": a.gpu.upper()}
     env = {**os.environ, **{k: v for k, v in cfg.items() if k.startswith("VIDEO_")}}
     root = os.path.join(HERE, "render", a.preset)
     frames = os.path.join(HERE, "frames", a.preset)

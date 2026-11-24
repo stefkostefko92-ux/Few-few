@@ -73,6 +73,8 @@ npm ci
 node video/export_mesh.mjs                 # геометрията на планката → video/mesh/ (само локално)
 cd video
 py fetch_assets.py                         # Poly Haven (CC0) + Inter → assets/, проверка по хеш
+py render.py light --gpu                   # лекият клип (1080p) на видеокартата
+py captions.py                             # италианските субтитри за YouTube
 py render.py heavy --bench 26              # един кадър: колко време на кадър
 py render.py heavy                         # всичко; при прекъсване просто го пусни пак
 ```
