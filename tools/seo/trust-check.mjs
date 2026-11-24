@@ -143,9 +143,10 @@ async function checkSite(url) {
 }
 
 async function main(argv) {
-  const { SITES } = await import("./sites.mjs");
+  const { SITES, activeSites } = await import("./sites.mjs");
   const wanted = argv.filter((a) => !a.startsWith("--"));
-  const urls = wanted.length ? wanted.map((w) => (/^https?:\/\//.test(w) ? w : `https://${w}`)) : SITES.map((s) => s.url);
+  const urls = wanted.length ? wanted.map((w) => (/^https?:\/\//.test(w) ? w : `https://${w}`)) : activeSites(SITES).map((s) => s.url);
+  const paused = wanted.length ? [] : SITES.filter((s) => s.skip);
   const results = await Promise.all(urls.map(checkSite));
   if (argv.includes("--json")) process.stdout.write(JSON.stringify(results, null, 2) + "\n");
   else {
@@ -159,6 +160,7 @@ async function main(argv) {
       for (const c of soft) process.stdout.write(`    ! ${c.id}: ${c.msg}\n`);
     }
     const bad = results.filter((r) => r.error || r.checks.some((c) => !c.ok && c.level === "твърда")).length;
+    for (const s of paused) process.stdout.write(`— ${s.url}: пропуснат (${s.skip})\n`);
     process.stdout.write(`\n${results.length} сайта · ✘ ${bad} с твърд провал · ✓ ${results.filter((r) => !r.error && r.checks.every((c) => c.ok)).length} чисти\n`);
   }
   if (argv.includes("--check") && results.some((r) => r.error || r.checks.some((c) => !c.ok && c.level === "твърда"))) process.exitCode = 1;
