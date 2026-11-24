@@ -1267,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 730
+        "lessons": 731
       },
       "evolution": [
         {
@@ -2127,9 +2127,20 @@
           "date": "2026-11-24",
           "event": "v68.2 — учене",
           "detail": "Научи: JSON.stringify не екранира < > &, затова `window.X = ${JSON.stringify(data)}` е безопас… (+3 още)"
+        },
+        {
+          "version": "68.3.0",
+          "date": "2026-11-24",
+          "event": "v68.3 — учене",
+          "detail": "Научи: ospedalitrasparenti има два пътя за четене на config.titolare — src/lib/titolare.js (TI…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „ospedalitrasparenti има два пътя за четене на config.titolare — src/lib/titolare.js (TI…\""
+        },
         {
           "date": "2026-11-24",
           "type": "learning",
