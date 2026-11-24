@@ -148,6 +148,14 @@ function docsLinks() {
   return `<nav><h2><a href="${DOCS_HUB.path}">${esc(DOCS_HUB.h1)}</a></h2><ul>${items}</ul></nav>`;
 }
 
+// Кой стои зад продукта и как се свързваш (доверие — tools/seo/doverie.md). Footer-ът на SPA-то
+// (LandingParts.jsx) се рисува в браузъра; обхождач без JavaScript вижда само тази снимка.
+// Същите данни като видимия footer: имейл, правни страници, седалище.
+function contactFooter() {
+  return `<footer><p>Supreme Bot by Carbon Stealth VCC — ul. Samuil 3, 2670 Bobov dol, Bulgaria. Contact: <a href="mailto:legal@carbonstealth.eu">legal@carbonstealth.eu</a></p>
+    <ul><li><a href="/terms">Terms of Service</a></li><li><a href="/privacy">Privacy Policy</a></li><li><a href="/cookies">Cookie Policy</a></li><li><a href="/accessibility">Accessibility</a></li></ul></footer>`;
+}
+
 function guideLinks(t) {
   if (!t.guides) return "";
   const items = GUIDE_LINKS
@@ -203,6 +211,7 @@ function landingSnapshot(t) {
     ${guideLinks(t)}
     ${featureLinks(t.guides?.features || "Features")}
     ${docsLinks()}
+    ${contactFooter()}
   </div>`;
 }
 
@@ -325,6 +334,7 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
     })}
     ${featureLinks("Features")}
     ${docsLinks()}
+    ${contactFooter()}
   </div>`;
   let html = injectHead(template, `  ${hreflangCluster()}`);
   html = injectRoot(html, rootSnapshot);
