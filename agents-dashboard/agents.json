@@ -1256,7 +1256,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 734
+        "lessons": 735
       },
       "evolution": [
         {
@@ -2116,9 +2116,20 @@
           "date": "2026-11-24",
           "event": "v68.6 — учене",
           "detail": "Научи: guard-self блокира Bash `node -e`, чийто код внася модул под .claude/ (дори само за чет… (+7 още)"
+        },
+        {
+          "version": "68.7.0",
+          "date": "2026-11-24",
+          "event": "v68.7 — учене",
+          "detail": "Научи: В live-run PR ревю allowlist-ът пуска само git diff/log/show, scan.sh, verifier.mjs и n…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „В live-run PR ревю allowlist-ът пуска само git diff/log/show, scan.sh, verifier.mjs и n…\""
+        },
         {
           "date": "2026-11-24",
           "type": "learning",
