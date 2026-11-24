@@ -180,6 +180,41 @@
       "anchor": "ASI0",
       "checkedAt": "2026-11-23",
       "note": "Добавен при пресверката 23.11.2026 (Разбивача); страницата е от 28.10.2026, последна промяна 16.11.2026."
+    },
+    {
+      "id": "google-qrg-trust",
+      "kind": "platform",
+      "statement": "Search Quality Rater Guidelines (версия 11.09.2025): Trust е най-важният елемент на E-E-A-T; репутацията се съди по независими източници (не по това, което сайтът казва за себе си); сайт с лични или финансови данни без информация кой отговаря и без контакт е „Lowest“ (стр. 35–36); „No single rating can directly impact“ класирането. Google: „E-E-A-T itself isn’t a specific ranking factor“.",
+      "source": "https://services.google.com/fh/files/misc/hsw-sqrg.pdf (стр. 6, 22–27, 35–36) ; https://developers.google.com/search/docs/fundamentals/creating-helpful-content",
+      "agents": [
+        "seo"
+      ],
+      "checkedAt": "2026-11-24",
+      "note": "Нова версия на QRG сменя номерата на страниците и може да смени акцентите — при изтекъл TTL свери версията и цитатите. Не обещавай класиране от E-E-A-T сигнали."
+    },
+    {
+      "id": "google-review-self-serving",
+      "kind": "platform",
+      "statement": "Google review snippets: LocalBusiness и Organization (вкл. подтипове като Restaurant) не са допустими за звезди, когато обектът контролира отзивите за себе си, вкл. през вграден Google/Facebook widget; оценките трябва да са от потребители и видими на страницата.",
+      "source": "https://developers.google.com/search/docs/appearance/structured-data/review-snippet",
+      "agents": [
+        "seo",
+        "pravniyat-razbirach"
+      ],
+      "checkedAt": "2026-11-24",
+      "note": "Проверява се детерминистично от tools/seo/trust-check.mjs (self-serving-rating). Правната страна на отзивите (Omnibus) е отделно — Правният Разбирач."
+    },
+    {
+      "id": "omnibus-reviews",
+      "kind": "legal",
+      "statement": "Отзиви (Дир. 2005/29 изм. с 2019/2161, в сила от 28.05.2022): търговецът казва дали и как проверява, че отзивите са от реални потребители (чл. 7(6)); винаги нелоялно е да твърди, че отзивите са от потребители, без разумни стъпки за проверка, и да подава или поръчва фалшиви отзиви или да изкривява реални (Прил. I т. 23б–23в). BG: ЗЗП чл. 68ж т. 26–27; IT: Codice del consumo чл. 22(5-bis), 23(1)(bb-ter, bb-quater). Значка за доверие или качество без разрешение — Прил. I т. 2.",
+      "source": "https://www.legislation.gov.uk/eudr/2019/2161/article/3",
+      "agents": [
+        "pravniyat-razbirach",
+        "seo"
+      ],
+      "checkedAt": "2026-11-24",
+      "note": "Сверено от Правния Разбирач на 24.11.2026 (плейбук tools/seo/doverie.md). Непроверено: точният член в ЗЗП за информацията как се проверяват отзивите и санкцията по ЗЗП; членовете на IT Закон № 34/2026 за ресторантите (от пресата)."
     }
   ]
 }
