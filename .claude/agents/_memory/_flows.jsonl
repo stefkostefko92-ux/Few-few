@@ -950,3 +950,5 @@
 {"t":"start","ts":"2026-11-24T07:36:42.386Z","id":"ra63f0bda","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-24T07:36:42.387Z","id":"ra63f0bda","from":"kodadjiyata","to":"друг","status":"има бележки","run":"25847ec9","toRaw":"kachestveniya"}
 {"t":"handoff","ts":"2026-11-24T07:42:15.631Z","id":"ra63f0bda","from":"kodadjiyata","to":"seo","status":"има бележки","run":"18bdf9e6"}
+{"t":"start","ts":"2026-11-24T08:15:54.351Z","id":"r9f9cedec","flow":"авто","lead":"pravniyat-razbirach","auto":true}
+{"t":"handoff","ts":"2026-11-24T08:15:54.351Z","id":"r9f9cedec","from":"pravniyat-razbirach","to":"kodadjiyata","status":"има бележки","run":"379c103f"}

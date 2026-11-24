@@ -34,3 +34,7 @@ jobs:
       # и има непразен <title> + lang (минимум за достъпност и SEO).
       - name: Проверка на статичния сайт
         run: node tools/qa/static-site-check.mjs evanitasport
+      # Поверителност: без ресурси на трети страни при зареждане, карта само след клик,
+      # страница за поверителност с реалните данни (без зависимости — node:test).
+      - name: Тестове за поверителност
+        run: node --test evanitasport/test/privacy.test.mjs
