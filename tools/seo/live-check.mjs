@@ -20,7 +20,7 @@ import { readFile } from "node:fs/promises";
 import { isIP } from "node:net";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { SITES } from "./sites.mjs";
+import { SITES, activeSites } from "./sites.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const UA_GOOGLE = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)";
@@ -418,7 +418,7 @@ async function main(argv) {
         const o = toOrigin(a);
         return SITES.find((s) => toOrigin(s.url) === o) || { url: o };
       })
-    : SITES;
+    : activeSites(SITES);
   const results = await Promise.all(
     targets.map(async (s) => {
       const r = await checkSite(s.url, { sample, key: s.key }).catch((e) => ({ site: s.url, findings: [{ level: "block", msg: `проверката гръмна: ${errCode(e)}` }], facts: {} }));
