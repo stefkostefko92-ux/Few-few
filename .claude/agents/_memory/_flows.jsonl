@@ -967,3 +967,5 @@
 {"t":"handoff","ts":"2026-11-24T10:35:40.688Z","id":"rdf00e8d2","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"c186609f"}
 {"t":"start","ts":"2026-11-24T11:06:35.888Z","id":"r20009fe9","flow":"авто","lead":"razbivacha","auto":true}
 {"t":"handoff","ts":"2026-11-24T11:06:35.888Z","id":"r20009fe9","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"2d9dc067"}
+{"t":"start","ts":"2026-11-24T14:58:18.701Z","id":"r9c2c6f07","flow":"авто","lead":"socialdjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-24T14:58:18.701Z","id":"r9c2c6f07","from":"socialdjiyata","to":"човек","status":"има бележки","run":"7ade7616"}
