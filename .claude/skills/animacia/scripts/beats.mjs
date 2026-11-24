@@ -8,7 +8,7 @@
 // Method (no dependencies): ffmpeg decode -> spectral-flux onset strength -> tempo by autocorrelation with a
 // prior around 120 BPM -> beat phase by the strongest onset comb -> bar phase by the low-band energy.
 // Constant tempo is assumed (most pop, electronic and library music); check the printed grid against a listen.
-import { spawnSync } from './safe.mjs';   // Carbon Stealth: ffmpeg само с локален файл
+import { spawnSync, outFile } from './safe.mjs';   // Carbon Stealth: ffmpeg само с локален файл
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -97,7 +97,7 @@ const quiet = []; let q0 = -1;
 db.forEach((v, i) => { if (v < med - 15) { if (q0 < 0) q0 = i; } else { if (q0 >= 0 && i - q0 >= 5) quiet.push([+(q0 / 10).toFixed(1), +(i / 10).toFixed(1)]); q0 = -1; } });
 const out = { source: path.basename(src), start: START, duration: +dur.toFixed(3), bpm: +bpm.toFixed(2), offset: +ph.o.toFixed(3), period: +period.toFixed(4),
   beats, downbeats, hits: hits.map((t) => +t.toFixed(3)), loudest: { t: +(L / 10).toFixed(1), db: +db[L].toFixed(1) }, quiet };
-const file = dest.endsWith('.json') ? dest : path.join(dest, 'beats.json');
+const file = outFile(dest.endsWith('.json') ? dest : path.join(dest, 'beats.json'));   // Carbon Stealth: не през symlink
 fs.writeFileSync(file, JSON.stringify(out, null, 1));
 console.log(`${out.source}: ${out.duration}s used from ${START}s; ${out.bpm} BPM (beat ${out.period}s = ${(out.period * 24).toFixed(2)} frames at 24fps), first beat ${out.offset}s, ${beats.length} beats, ${downbeats.length} bars (first at ${downbeats[0]}s)`);
 console.log(`hits (the strongest onsets): ${out.hits.slice(0, 12).join(', ')}${out.hits.length > 12 ? ' …' : ''}`);

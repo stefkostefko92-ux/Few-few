@@ -165,7 +165,7 @@ test("от край до край: symlink в src/ и assets/ на парчет�
   writeFileSync(join(out, "part.js"), readFileSync(join(piece, part), "utf8") + "\n// CANARY-srclink\n");
   rmSync(join(piece, part)); symlinkSync(join(out, "part.js"), join(piece, part));
   const b = spawnSync(process.execPath, [join(TOOLS, "build.mjs"), piece], { encoding: "utf8" });
-  assert.notEqual(b.status, 0); assert.match(b.stderr, /извън/);
+  assert.notEqual(b.status, 0); assert.match(b.stderr, /извън|symlink/);
   rmSync(join(piece, part)); cpSync(join(out, "part.js"), join(piece, part));
   writeFileSync(join(out, "logo.png"), "CANARY-asset");
   mkdirSync(join(piece, "assets"), { recursive: true }); symlinkSync(join(out, "logo.png"), join(piece, "assets", "logo.png"));
@@ -187,4 +187,48 @@ test("от край до край: аудио пистата от страниц
   for (const d of [work, join(work, "pieces"), piece]) assert.ok(!existsSync(join(d, "evil.wav")), `файлът излезе от renders/ в ${d}`);
   assert.notEqual(e.status, 0, "export трябва да откаже името на пистата");
   assert.match(e.stderr, /stem/);
+});
+
+test("noLinks/outFile: symlink навсякъде в парчето → отказ; чисто парче минава (повторен опит, Разбивача)", () => {
+  const w = mkdtempSync(join(tmpdir(), "animacia-nl-"));
+  const piece = join(w, "piece"), victim = join(w, "victim.sh");
+  mkdirSync(join(piece, "renders", "deep"), { recursive: true });
+  writeFileSync(victim, "echo ok\n");
+  assert.equal(safe.noLinks(piece), piece);
+  symlinkSync(victim, join(piece, "renders", "deep", "audio.wav"));
+  assert.throws(() => safe.noLinks(piece), /symlink/);
+  assert.throws(() => safe.outFile(join(piece, "renders", "deep", "audio.wav")), /symlink/);
+  assert.equal(safe.outFile(join(piece, "nov.json")), join(piece, "nov.json"));
+  rmSync(w, { recursive: true, force: true });
+});
+
+test("всеки скрипт, който пише в парчето, първо вика noLinks (build, export, review, voice, storyboard) или outFile (beats)", () => {
+  for (const f of ["build.mjs", "export.mjs", "review.mjs", "voice.mjs", "storyboard.mjs"]) assert.match(readFileSync(join(TOOLS, f), "utf8"), /noLinks\(/, f);
+  assert.match(readFileSync(join(TOOLS, "beats.mjs"), "utf8"), /outFile\(/, "beats.mjs");
+});
+
+test("от край до край: renders/audio.wav като symlink навън — export отказва и външният файл остава (повторен опит, Разбивача)", { timeout: 120_000 }, () => {
+  const work = mkdtempSync(join(tmpdir(), "animacia-"));
+  const piece = join(work, "pieces", "out"), victim = join(work, "victim.sh");
+  cpSync(join(SKILL, "styles", "math", "demo"), piece, { recursive: true });
+  assert.equal(spawnSync(process.execPath, [join(TOOLS, "build.mjs"), piece], { encoding: "utf8" }).status, 0);
+  writeFileSync(victim, "echo original\n");
+  mkdirSync(join(piece, "renders")); symlinkSync(victim, join(piece, "renders", "audio.wav"));
+  const e = spawnSync(process.execPath, [join(TOOLS, "export.mjs"), piece, "--only-audio", "--no-mux"], { encoding: "utf8" });
+  assert.notEqual(e.status, 0);
+  assert.match(e.stderr, /symlink/);
+  assert.equal(readFileSync(victim, "utf8"), "echo original\n", "външният файл е презаписан");
+});
+
+test("от край до край: voice/<ред>.scratch.wav.txt като symlink навън — voice отказва и външният файл остава (повторен опит, Разбивача)", { timeout: 60_000 }, () => {
+  const work = mkdtempSync(join(tmpdir(), "animacia-"));
+  const piece = join(work, "pieces", "vo"), victim = join(work, "rc2.sh");
+  mkdirSync(join(piece, "voice"), { recursive: true });
+  writeFileSync(join(piece, "voice", "script.json"), JSON.stringify({ lines: [{ id: "a", text: "echo CANARY-voice" }] }));
+  writeFileSync(victim, "echo original\n");
+  symlinkSync(victim, join(piece, "voice", "a.scratch.wav.txt"));
+  const v = spawnSync(process.execPath, [join(TOOLS, "voice.mjs"), piece, "--scratch"], { encoding: "utf8" });
+  assert.notEqual(v.status, 0);
+  assert.match(v.stderr, /symlink/);
+  assert.equal(readFileSync(victim, "utf8"), "echo original\n", "външният файл е презаписан");
 });

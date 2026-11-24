@@ -12,7 +12,7 @@
 // from the letters. --scratch makes any missing line with the OS's own speech (Windows SAPI, macOS say) so the picture
 // can be timed before the real voice exists: swap the real takes in, run this again, rebuild — scenes that cue from
 // VOICE move with it.
-import { spawnSync, inside, name } from './safe.mjs';   // Carbon Stealth
+import { spawnSync, inside, name, noLinks } from './safe.mjs';   // Carbon Stealth
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -21,6 +21,7 @@ const argv = process.argv.slice(2);
 const opt = (k, d) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : d; };
 if (!argv[0] || argv[0].startsWith('--')) { console.error('usage: node scripts/voice.mjs pieces/<name> [--scratch] [--model small.en] [--rate 0]'); process.exit(2); }
 const ROOT = path.resolve(argv[0]), VDIR = inside(ROOT, 'voice'), SR = 48000;
+try { noLinks(ROOT); } catch (e) { console.error(e.message); process.exit(1); }   // Carbon Stealth: без symlink в парчето
 const S = JSON.parse(fs.readFileSync(path.join(VDIR, 'script.json'), 'utf8'));
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 

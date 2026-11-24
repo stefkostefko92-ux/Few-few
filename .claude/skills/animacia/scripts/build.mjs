@@ -17,13 +17,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
-import { insideAny, name, jsonForScript } from './safe.mjs';   // Carbon Stealth
+import { insideAny, name, jsonForScript, noLinks } from './safe.mjs';   // Carbon Stealth
 
 const SKILL = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT = ['src/head.html', 'kit/core.js', 'style', 'src/scenes.js', 'src/bridges.js', 'kit/morph.js', 'kit/board.js', 'kit/score-head.js', 'src/score.js', 'kit/score-tail.js'];
 const dir = process.argv[2];
 if (!dir) { console.error('usage: node scripts/build.mjs <piece dir>'); process.exit(2); }
 const ROOT = path.resolve(dir);
+try { noLinks(ROOT); } catch (e) { console.error(e.message); process.exit(1); }   // Carbon Stealth: без symlink в парчето
 const meta = fs.existsSync(path.join(ROOT, 'piece.json')) ? JSON.parse(fs.readFileSync(path.join(ROOT, 'piece.json'), 'utf8')) : {};
 let styleName;
 try { styleName = name(meta.style || 'cut-paper', 'style'); } catch (e) { console.error(e.message); process.exit(1); }

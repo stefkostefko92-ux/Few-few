@@ -4,6 +4,7 @@
 //                   WebRTC е махнат от страницата, а UDP/TCP на WebRTC и DNS отиват в мъртъв прокси
 //   spawnSync()   — като node:child_process; за ffmpeg/ffprobe всеки вход -i е само файл или pipe
 //   inside()      — пътят остава в базовата папка (piece.json, voice script, --out) — и след symlink
+//   noLinks()     — парчето без нито един symlink (изходите се пишат с writeFileSync и ffmpeg -y, а те следват връзката)
 //   num() / name()— числа в граници за филтрите на ffmpeg; kebab имена за стил/ред (без пътища)
 //   jsonForScript — JSON, който не може да затвори inline <script>
 import { createRequire } from 'node:module';
@@ -99,6 +100,28 @@ export function insideAny(bases, from, p) {
   const abs = path.resolve(from, String(p));
   for (const b of bases.map((x) => path.resolve(x))) if (under(b, abs) && realUnder(b, abs)) return abs;
   throw new Error(`път извън ${bases.join(' / ')}: ${p}`);
+}
+
+/** Парчето без нито един symlink — проверява се ПРЕДИ всеки запис в него. writeFileSync и ffmpeg -y следват
+ *  връзка в последния елемент: renders/audio.wav → ~/.bashrc презаписваше външния файл (повторен опит, Разбивача,
+ *  24.11.2026). Истинските файлове и папки минават; връзка където и да е в дървото → отказ. */
+export function noLinks(root) {
+  const r = path.resolve(root);
+  const walk = (d) => {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      const p = path.join(d, e.name);
+      if (e.isSymbolicLink()) throw new Error(`symlink в парчето — отказ: ${path.relative(r, p)} (само истински файлове и папки)`);
+      if (e.isDirectory()) walk(p);
+    }
+  };
+  if (fs.existsSync(r)) walk(r);
+  return r;
+}
+
+/** Изходен файл по избор (напр. beats.json): не може да е symlink. */
+export function outFile(p) {
+  try { if (fs.lstatSync(p).isSymbolicLink()) throw new Error(`symlink — отказ: ${p}`); } catch (e) { if (e.code !== 'ENOENT') throw e; }
+  return p;
 }
 
 /** Крайно число в [lo, hi]; иначе хвърля — стойността отива във филтъра на ffmpeg. */

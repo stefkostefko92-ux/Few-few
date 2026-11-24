@@ -23,7 +23,7 @@
 //   references/, references/stills/ and every references/<look>/ folder
 //
 // usage: node scripts/review.mjs pieces/<name> [--format 1:1]
-import { spawnSync, playwright, inside } from './safe.mjs';   // Carbon Stealth: ffmpeg само с файлове, offline Chromium
+import { spawnSync, playwright, inside, noLinks } from './safe.mjs';   // Carbon Stealth: ffmpeg само с файлове, offline Chromium
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -35,6 +35,7 @@ const { chromium } = playwright();
 const REPO = path.resolve(process.argv[2] || '.', '..', '..');   // Carbon Stealth: проектът на парчето (<проект>/pieces/<име>), не cwd
 if (!process.argv[2]) { console.error('usage: node scripts/review.mjs pieces/<name>'); process.exit(2); }
 const ROOT = path.resolve(process.argv[2]);
+try { noLinks(ROOT); } catch (e) { console.error(e.message); process.exit(1); }   // Carbon Stealth: без symlink в парчето
 const FORMAT = process.argv.includes('--format') ? process.argv[process.argv.indexOf('--format') + 1] : null;
 let REVIEW = inside(ROOT, 'review');   // Carbon Stealth: и след symlink
 let VIDEO = path.join(ROOT, 'renders', 'final.mp4');

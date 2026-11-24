@@ -1,6 +1,6 @@
 // Render a piece's storyboard (TIMELINE.board, drawn by kit/board.js) to a PNG, plus optional single panels at full size
 // usage: node scripts/storyboard.mjs <piece dir | index.html> [out.png] [panel numbers...]   (out defaults to <piece>/storyboard.png)
-import { playwright } from './safe.mjs';
+import { playwright, noLinks } from './safe.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -10,6 +10,7 @@ if (!src) { console.error('usage: node scripts/storyboard.mjs <piece dir | index
 const file = src.endsWith('.html') ? src : path.join(src, 'index.html');
 const out = args[0] && args[0].endsWith('.png') ? args.shift() : path.join(path.dirname(file), 'storyboard.png');
 const panels = args;
+try { noLinks(path.dirname(path.resolve(file))); } catch (e) { console.error(e.message); process.exit(1); }   // Carbon Stealth: без symlink в парчето
 const browser = await chromium.launch(); const page = await browser.newPage();
 page.on('pageerror', (e) => console.error('pageerror:', e.message));
 await page.goto(pathToFileURL(path.resolve(file)).href + '?export=1' + (format ? `&format=${encodeURIComponent(format)}` : ''));

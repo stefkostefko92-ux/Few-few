@@ -18,7 +18,7 @@
 //           over the score: the score at "music" dB, ducked a little more while the voice speaks, then -14 LUFS
 //
 // usage: node scripts/export.mjs pieces/<name> [--from N] [--to N] [--workers 4] [--no-audio] [--no-mux] [--no-captions] [--only-audio] [--share] [--gpu] [--format F | --formats A,B] [--blur N]
-import { spawnSync, playwright, inside, num, name as safeName } from './safe.mjs';   // Carbon Stealth: ffmpeg само с файлове, offline Chromium, числа в граници
+import { spawnSync, playwright, inside, num, name as safeName, noLinks } from './safe.mjs';   // Carbon Stealth: ffmpeg само с файлове, offline Chromium, числа в граници
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -30,6 +30,7 @@ const USAGE = 'usage: node scripts/export.mjs pieces/<name> [--from N] [--to N] 
 const argv = process.argv.slice(2);
 if (!argv[0] || argv[0].startsWith('--')) { console.error(USAGE); process.exit(2); }
 const ROOT = path.resolve(argv[0]);
+try { noLinks(ROOT); } catch (e) { console.error(e.message); process.exit(1); }   // Carbon Stealth: без symlink в парчето
 const FRAMES = inside(ROOT, 'frames');   // Carbon Stealth: и след symlink
 const RENDERS = inside(ROOT, 'renders');
 const opt = (name, dflt) => { const i = argv.indexOf('--' + name); return i >= 0 ? argv[i + 1] : dflt; };
