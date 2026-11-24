@@ -16401,7 +16401,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 255
+        "lessons": 257
       },
       "evolution": [
         {
@@ -16511,9 +16511,20 @@
           "date": "2026-11-24",
           "event": "v35.3 — учене",
           "detail": "Научи: faster-whisper WhisperModel(\"<размер>\") сваля модела от Hugging Face Hub при първо пуск… (+19 още)"
+        },
+        {
+          "version": "35.5.0",
+          "date": "2026-11-24",
+          "event": "v35.5 — учене",
+          "detail": "Научи: Chromium с фиксиран --proxy-server (Playwright proxy) отказва WebTransport/HTTP3 изобщо… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „Chromium с фиксиран --proxy-server (Playwright proxy) отказва WebTransport/HTTP3 изобщо…\" (+1 още)"
+        },
         {
           "date": "2026-11-24",
           "type": "quarantine",
