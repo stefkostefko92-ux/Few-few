@@ -16516,6 +16516,11 @@
       "activity": [
         {
           "date": "2026-11-24",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Playwright context offline:true заедно с context.route('**/*') не спират WebRTC — TURN …\" (+1)"
+        },
+        {
+          "date": "2026-11-24",
           "type": "learning",
           "summary": "Научи: „faster-whisper WhisperModel(\"<размер>\") сваля модела от Hugging Face Hub при първо пуск…\" (+19 още) · 1 в карантина"
         },
