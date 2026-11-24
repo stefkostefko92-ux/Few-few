@@ -29,7 +29,7 @@ test('orgJsonLd: #org с контакт; правните данни са на �
   assert.equal(o.contactPoint.email, 'info@carbonstealth.eu');
   assert.ok(!('vatID' in o) && !('legalName' in o), 'проектът не е отделно юридическо лице');
   const p = o.parentOrganization;
-  assert.equal(p['@id'], 'https://carbonstealth.eu/#org');
+  assert.equal(p['@id'], 'https://carbonstealth.eu/#organization');
   assert.equal(p.legalName, 'Карбон Стелт ЕДПК');
   assert.equal(p.vatID, 'BG208725180');
   assert.equal(p.taxID, '208725180');
