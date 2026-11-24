@@ -427,6 +427,16 @@ export function gitPushDanger(argv) {
   return null;
 }
 
+/** `claude … ultrareview` по argv — пълен път, VAR=, timeout, command, time, env, xargs, then и кавички не го
+ *  скриват (Кодаджията, втори преглед на PR #482: регексът по началото на реда се заобикаляше). Непокрито остава
+ *  alias или shell функция (`c(){ claude "$@"; }; c ultrareview`) — там помага питането за Bash. */
+export const ULTRAREVIEW_WHY = "платен Ultrareview от агент (claude ultrareview) — таксува usage credits и с --post публикува в PR без въпрос; пуска го само собственикът: /code-review ultra <номер> в своя терминал";
+export function claudeUltrareview(argv) {
+  const a = commandOf(argv);
+  if (!a.length || !/^claude(?:\.exe)?$/i.test(base(a[0]))) return null;
+  return a.slice(1).includes("ultrareview") ? ULTRAREVIEW_WHY : null;
+}
+
 const RUN_FLAG = /^--(?:server|cmd|command|exec|execute|run|shell)(?:=([\s\S]*))?$/;
 /** Низовете в argv, които програмата ще подаде на обвивка. */
 export function execStrings(argv) {
@@ -452,7 +462,7 @@ function wordDanger(s, depth) {
   let parsed;
   try { parsed = shellWords(s); } catch { return null; }
   for (const argv of parsed.cmds) {
-    const g = gitPushDanger(argv);
+    const g = gitPushDanger(argv) || claudeUltrareview(argv);
     if (g) return g;
     for (const inner of execStrings(argv)) { const why = isCatastrophic(inner, depth + 1); if (why) return why; }
   }

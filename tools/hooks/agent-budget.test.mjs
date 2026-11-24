@@ -173,4 +173,10 @@ test("guard-dangerous: платеният Ultrareview от Bash се спира 
     assert.ok(isCatastrophic(c), c);
   for (const c of ['git commit -m "claude ultrareview по избор"', "grep -rn ultrareview tools/agents", "node tools/agents/core-map.mjs --diff", 'echo "claude ultrareview"'])
     assert.equal(isCatastrophic(c), null, c);
+  // Кодаджията, втори преглед на PR #482: регексът по началото на реда се заобикаляше — съди се по argv.
+  for (const c of ["/usr/local/bin/claude ultrareview 482 --post", "~/.local/bin/claude ultrareview", "FOO=1 claude ultrareview", "timeout 900 claude ultrareview",
+    "command claude ultrareview", "time claude ultrareview 1", "env -i claude ultrareview", "echo 1 | xargs claude ultrareview",
+    "if true; then claude ultrareview 1; fi", '"claude" ultrareview 482', "nice -n 5 claude ultrareview", "x=$(claude ultrareview 1)"])
+    assert.ok(isCatastrophic(c), c);
+  for (const c of ["claude --version", "claude mcp list", "ls ~/.local/bin/claude"]) assert.equal(isCatastrophic(c), null, c);
 });
