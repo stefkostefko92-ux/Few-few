@@ -45,7 +45,7 @@ function localize(app, t, locales, embed) {
     <a class="home" href="${pagePath(t, 'home')}">${logoPicture(esc(COMPANY.name), { width: 128 })}</a>`]]),
     ['<h1 id="title">Staffe Panev in 3D</h1>', `<h1 id="title">${esc(s.title)}</h1>`],
     ['aria-label="Lingua"></div>', `aria-label="${esc(s.language)}">${langs}</div>`],
-    ['aria-label="Catalogo 2026"', `aria-label="${esc(s.catalog)}"`],
+    ['aria-label="Catalogo 2027"', `aria-label="${esc(s.catalog)}"`],
     ['aria-label="Modello 3D"', `aria-label="${esc(s.canvas('').replace(/: $/, ''))}"`],
     ['>Caricamento del modello 3D…<', `>${esc(s.loading)}<`],
     ['aria-label="Controlli"', `aria-label="${esc(s.controls)}"`],

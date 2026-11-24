@@ -251,7 +251,7 @@ def outro(c, t):
         for i, ln in enumerate(wrap("Sintesi per installatori qualificati: fanno fede i disegni di montaggio del catalogo tecnico e il progetto dell’impianto.",
                                     font("Inter-Regular", 25), w - 80)):
             d.text(s(x + 40, y + 132 + i * 36), ln, font=font("Inter-Regular", 25), fill=(214, 221, 240, 255))
-        d.text(s(x + 40, y + 228), "panevascensori.it  ·  Catalogo tecnico 2026, pag. 10", font=font("Inter-SemiBold", 26), fill=WHITE)
+        d.text(s(x + 40, y + 228), "panevascensori.it  ·  Catalogo tecnico 2027, pag. 10", font=font("Inter-SemiBold", 26), fill=WHITE)
     c.layer(al, draw)
     logo_card(c, 72, 64, 84, al)
 
