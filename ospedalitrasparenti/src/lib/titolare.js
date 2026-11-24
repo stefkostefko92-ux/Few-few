@@ -37,7 +37,7 @@ export const telHref = (/** @type {string} */ n) => `tel:${n.replace(/[^\d+]/g, 
 export function orgJsonLd(su, t = TITOLARE) {
   const tel = telefoni(t);
   /** @type {Record<string, any>} */
-  const parent = { '@type': 'Organization', '@id': 'https://carbonstealth.eu/#org', name: t.nome || 'Carbon Stealth VCC', url: 'https://carbonstealth.eu' };
+  const parent = { '@type': 'Organization', '@id': 'https://carbonstealth.eu/#organization', name: t.nome || 'Carbon Stealth VCC', url: 'https://carbonstealth.eu' };
   if (t.nomeLegale) parent.legalName = t.nomeLegale;
   if (t.partitaIva) parent.vatID = t.partitaIva;
   if (t.eik) parent.taxID = t.eik;
