@@ -647,28 +647,17 @@
           "detail": "Научи: Чл. 27(1) ОРЗД задължава администратора или обработващия да определи писмено представит…"
         },
         {
-          "version": "46.3.0",
-          "date": "2026-11-24",
-          "event": "v46.3 — учене",
-          "detail": "Научи: ЗЕТ чл. 4, ал. 1, т. 4 изисква и телефон, и адрес на електронна поща (кумулативно); сай… (+16 още)"
-        },
-        {
           "version": "46.4.0",
           "date": "2026-11-24",
           "event": "v46.4 — учене",
-          "detail": "Научи: AI Act чл. 50(4) задължава внедрителя да разкрие само deep fake (чл. 3(60) — наподобява…"
+          "detail": "Научи: AI Act чл. 50(4) задължава внедрителя да разкрие само deep fake (чл. 3(60) — наподобява… (+17 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-24",
           "type": "learning",
-          "summary": "Научи: „AI Act чл. 50(4) задължава внедрителя да разкрие само deep fake (чл. 3(60) — наподобява…\""
-        },
-        {
-          "date": "2026-11-24",
-          "type": "learning",
-          "summary": "Научи: „ЗЕТ чл. 4, ал. 1, т. 4 изисква и телефон, и адрес на електронна поща (кумулативно); сай…\" (+16 още) · 4 в карантина"
+          "summary": "Научи: „AI Act чл. 50(4) задължава внедрителя да разкрие само deep fake (чл. 3(60) — наподобява…\" (+17 още) · 4 в карантина"
         },
         {
           "date": "2026-11-23",
@@ -2123,39 +2112,17 @@
           "detail": "Научи: spawnSync със stdio pipe и maxBuffer по подразбиране 1 MiB при препълване връща error.c…"
         },
         {
-          "version": "68.4.0",
-          "date": "2026-11-24",
-          "event": "v68.4 — учене",
-          "detail": "Научи: Каноничният @id на дружеството, публикуван на живо от carbonstealth.eu, е https://carbo… (+5 още)"
-        },
-        {
-          "version": "68.5.0",
-          "date": "2026-11-24",
-          "event": "v68.5 — учене",
-          "detail": "Научи: guard-self блокира `node -e`, който внася модул под .claude/ (дори само за четене), а g…"
-        },
-        {
           "version": "68.6.0",
           "date": "2026-11-24",
           "event": "v68.6 — учене",
-          "detail": "Научи: guard-self блокира Bash `node -e`, чийто код внася модул под .claude/ (дори само за чет…"
+          "detail": "Научи: guard-self блокира Bash `node -e`, чийто код внася модул под .claude/ (дори само за чет… (+7 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-24",
           "type": "learning",
-          "summary": "Научи: „guard-self блокира Bash `node -e`, чийто код внася модул под .claude/ (дори само за чет…\""
-        },
-        {
-          "date": "2026-11-24",
-          "type": "learning",
-          "summary": "Научи: „guard-self блокира `node -e`, който внася модул под .claude/ (дори само за четене), а g…\" · 1 в карантина"
-        },
-        {
-          "date": "2026-11-24",
-          "type": "learning",
-          "summary": "Научи: „Каноничният @id на дружеството, публикуван на живо от carbonstealth.eu, е https://carbo…\" (+5 още) · 1 в карантина"
+          "summary": "Научи: „guard-self блокира Bash `node -e`, чийто код внася модул под .claude/ (дори само за чет…\" (+7 още) · 2 в карантина"
         },
         {
           "date": "2026-11-23",
@@ -16507,33 +16474,17 @@
           "detail": "Научи: Агент, който работи на Windows хост, се проверява с Windows правопис ($env:NAME, %NAME%… (+1 още)"
         },
         {
-          "version": "35.3.0",
-          "date": "2026-11-24",
-          "event": "v35.3 — учене",
-          "detail": "Научи: faster-whisper WhisperModel(\"<размер>\") сваля модела от Hugging Face Hub при първо пуск… (+19 още)"
-        },
-        {
           "version": "35.5.0",
           "date": "2026-11-24",
           "event": "v35.5 — учене",
-          "detail": "Научи: Chromium с фиксиран --proxy-server (Playwright proxy) отказва WebTransport/HTTP3 изобщо… (+1 още)"
+          "detail": "Научи: Chromium с фиксиран --proxy-server (Playwright proxy) отказва WebTransport/HTTP3 изобщо… (+21 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-24",
           "type": "learning",
-          "summary": "Научи: „Chromium с фиксиран --proxy-server (Playwright proxy) отказва WebTransport/HTTP3 изобщо…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-24",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „Playwright context offline:true заедно с context.route('**/*') не спират WebRTC — TURN …\" (+1)"
-        },
-        {
-          "date": "2026-11-24",
-          "type": "learning",
-          "summary": "Научи: „faster-whisper WhisperModel(\"<размер>\") сваля модела от Hugging Face Hub при първо пуск…\" (+19 още) · 1 в карантина"
+          "summary": "Научи: „Chromium с фиксиран --proxy-server (Playwright proxy) отказва WebTransport/HTTP3 изобщо…\" (+21 още) · 3 в карантина"
         },
         {
           "date": "2026-11-23",
