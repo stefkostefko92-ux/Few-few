@@ -16384,7 +16384,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 249
+        "lessons": 252
       },
       "evolution": [
         {
@@ -16494,9 +16494,20 @@
           "date": "2026-11-24",
           "event": "v34.7 — учене",
           "detail": "Научи: Пазач, който разгъва shell променлива от присвояване на същата команда, трябва да разгр… (+13 още)"
+        },
+        {
+          "version": "35.0.0",
+          "date": "2026-11-24",
+          "event": "v35.0 — учене",
+          "detail": "Научи: faster-whisper WhisperModel(\"<размер>\") сваля модела от Hugging Face Hub при първо пуск… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „faster-whisper WhisperModel(\"<размер>\") сваля модела от Hugging Face Hub при първо пуск…\" (+2 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-24",
           "type": "learning",
