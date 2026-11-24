@@ -169,6 +169,8 @@ xvfb-run -a npm run render -- --codes=<id,id> --size=1600x1200 --frames=48 --out
   - Тежката версия (4K/60, OptiX, NVENC) се прави на компютъра на собственика.
   - `assets/`, `mesh/`, `render/`, `frames/`, `out/` не влизат в git.
   - Текстовете са в `video/texts.py`. Не са за сайта (още).
+  - Звукът (музика + шумове) е синтезиран в код, без чужд семпъл: `score.py`, `sfx.py`, `audio.py` (само numpy и
+    FFmpeg). Моментите на шумовете повтарят `pose.py`/`cut.py`, затова се местят заедно с тях.
 
 ## Правила
 
