@@ -9,7 +9,7 @@
 //
 //   node tools/agents/core-map.mjs <файл…>            # кои от тях са ядро
 //   node tools/agents/core-map.mjs --diff [base]      # ядро без тест в текущия diff (изход 1)
-// Ползва се от pr-triage (ядро без тест → и Изпитателят) и от уменията commit-pr и verify.
+// Ползва се от pr-triage (ядро без тест → и Изпитателят; ядро → Ultrareview по избор) и от уменията commit-pr и verify.
 
 import { execFileSync } from "node:child_process";
 import { isMain } from "../lib/is-main.mjs";
@@ -51,6 +51,17 @@ export const PLAN_REVIEW = "↳ ядро: планът минава през в�
   "Качествения (дизайн и поддръжка) или умение razpit; после тест първо, човекът чете тестовете.";
 export function planReviewHint(report) { return report?.core?.length ? PLAN_REVIEW : ""; }
 
+// Ядро → по избор и втори, независим преглед извън флота: Ultrareview (решение на собственика 24.11.2026, план
+// Ultra). Платен е (3 безплатни еднократно, после usage credits) и се пуска САМО от човек — Claude не го стартира
+// сам (договор ultrareview-human-only, цената — claims.json ultrareview-pricing). PR режимът клонира от GitHub, без
+// да качва работното дърво (на Windows без WSL клонът качва и непубликуваните промени във файловете).
+export function ultrareviewHint(report, pr) {
+  if (!report?.core?.length) return "";
+  return `↳ ядро: по избор и само с „да“ на собственика — Ultrareview: \`/code-review ultra ${pr || "<номер на PR>"}\` ` +
+    "(облачен флот от проверяващи, всяка находка възпроизведена; 3 безплатни еднократно, после ~$5–25 от usage credits). " +
+    "PR режимът клонира PR-а от GitHub и не качва работното дърво; без --post — находките не отиват в PR, освен ако собственикът избере.";
+}
+
 async function runCli() {
   const argv = process.argv.slice(2);
   if (argv[0] === "--diff") {
@@ -61,6 +72,7 @@ async function runCli() {
     if (!r.core.length) { console.log("✓ core-map: diff-ът не пипа ядро — листа."); process.exit(0); }
     console.log(`ядро (${r.core.length}): ${r.core.join(", ")}`);
     console.log(planReviewHint(r));
+    console.log(ultrareviewHint(r));
     if (r.coreWithoutTest.length) {
       console.log(`✗ ядро без тест в същия продукт: ${r.coreWithoutTest.join(", ")} — първо тест (умение test-driven-development), човекът чете тестовете.`);
       process.exit(1);

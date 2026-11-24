@@ -570,6 +570,22 @@
         ".claude/settings.json",
         ".claude/hooks/guard-config.mjs"
       ]
+    },
+    {
+      "id": "ultrareview-human-only",
+      "claim": "Ultrareview тръгва само когато човек напише `/code-review ultra` — Claude не го стартира сам; преди старт диалог с обхвата, оставащите безплатни и оценката на цената. PR режимът (`/code-review ultra <номер>`) клонира PR-а от github.com през GitHub акаунта, свързан с Claude, и не качва работното дърво; прегледът на клон качва репото (на Windows без WSL — и непубликуваните промени във файловете, каквото и да е името им). Находките не се публикуват в PR без избор за пускането (--no-post по подразбиране). Иска вход с claude.ai — не през Bedrock, Vertex или Foundry.",
+      "source": "https://code.claude.com/docs/en/ultrareview.md + https://code.claude.com/docs/en/claude-code-on-the-web.md (Send local repositories without GitHub)",
+      "keywords": [
+        "ultrareview",
+        "code-review ultra",
+        "--post"
+      ],
+      "relies": [
+        "tools/agents/core-map.mjs",
+        "tools/agents/pr-triage.mjs",
+        "tools/agents/pr-review.mjs",
+        ".claude/skills/commit-pr/SKILL.md"
+      ]
     }
   ]
 }
