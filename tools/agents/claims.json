@@ -180,6 +180,29 @@
       "anchor": "ASI0",
       "checkedAt": "2026-11-23",
       "note": "Добавен при пресверката 23.11.2026 (Разбивача); страницата е от 28.10.2026, последна промяна 16.11.2026."
+    },
+    {
+      "id": "google-qrg-trust",
+      "kind": "platform",
+      "statement": "Search Quality Rater Guidelines (версия 11.09.2025): Trust е най-важният елемент на E-E-A-T; репутацията се съди по независими източници (не по това, което сайтът казва за себе си); сайт с лични или финансови данни без информация кой отговаря и без контакт е „Lowest“ (стр. 35–36); „No single rating can directly impact“ класирането. Google: „E-E-A-T itself isn’t a specific ranking factor“.",
+      "source": "https://services.google.com/fh/files/misc/hsw-sqrg.pdf (стр. 6, 22–27, 35–36) ; https://developers.google.com/search/docs/fundamentals/creating-helpful-content",
+      "agents": [
+        "seo"
+      ],
+      "checkedAt": "2026-11-24",
+      "note": "Нова версия на QRG сменя номерата на страниците и може да смени акцентите — при изтекъл TTL свери версията и цитатите. Не обещавай класиране от E-E-A-T сигнали."
+    },
+    {
+      "id": "google-review-self-serving",
+      "kind": "platform",
+      "statement": "Google review snippets: LocalBusiness и Organization (вкл. подтипове като Restaurant) не са допустими за звезди, когато обектът контролира отзивите за себе си, вкл. през вграден Google/Facebook widget; оценките трябва да са от потребители и видими на страницата.",
+      "source": "https://developers.google.com/search/docs/appearance/structured-data/review-snippet",
+      "agents": [
+        "seo",
+        "pravniyat-razbirach"
+      ],
+      "checkedAt": "2026-11-24",
+      "note": "Проверява се детерминистично от tools/seo/trust-check.mjs (self-serving-rating). Правната страна на отзивите (Omnibus) е отделно — Правният Разбирач."
     }
   ]
 }
