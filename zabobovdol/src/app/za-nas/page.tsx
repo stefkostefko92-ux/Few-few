@@ -124,7 +124,12 @@ export default function AboutPage() {
 
             <h2>Връзка с нас</h2>
             <p>
-              Въпрос, поправка или идея? Пишете ни от страницата{" "}
+              Отговорно лице за съдържанието: <strong>{SITE.company.manager}</strong>, управител на{" "}
+              {SITE.company.legalName}.
+            </p>
+            <p>
+              Въпрос, поправка или идея? Пишете ни на{" "}
+              <a href={`mailto:${SITE.contact.email}`}>{SITE.contact.email}</a> или от страницата{" "}
               <Link href="/kontakti">„Контакти“</Link>.
             </p>
           </div>

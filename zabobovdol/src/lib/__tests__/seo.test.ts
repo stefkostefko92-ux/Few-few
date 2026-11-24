@@ -54,6 +54,35 @@ test("графът е свързан чрез устойчиви @id", () => {
   assert.ok(org.logo, "организацията има лого");
 });
 
+test("parentOrganization е регистрираното дружество с устойчив @id и пълни реквизити", () => {
+  const p = (organizationLd() as {
+    parentOrganization: {
+      "@id": string;
+      name: string;
+      legalName: string;
+      vatID: string;
+      taxID: string;
+      email: string;
+      telephone: string;
+      address: { "@type": string; postalCode: string; addressCountry: string };
+      sameAs: string[];
+    };
+  }).parentOrganization;
+  // Един и същ @id във всички наши продукти — търсачките виждат ЕДНО дружество, не десет.
+  assert.equal(p["@id"], "https://carbonstealth.eu/#organization");
+  assert.equal(p.name, "Carbon Stealth VCC");
+  assert.equal(p.legalName, "Карбон Стелт ЕДПК");
+  assert.equal(p.vatID, "BG208725180");
+  assert.equal(p.taxID, "208725180");
+  assert.equal(p.email, "info@carbonstealth.eu");
+  assert.equal(p.telephone, "+359877414874");
+  assert.equal(p.address["@type"], "PostalAddress");
+  assert.equal(p.address.postalCode, "2670");
+  assert.equal(p.address.addressCountry, "BG");
+  // само профилите, посочени от собственика — без измислени
+  assert.deepEqual(p.sameAs, ["https://www.youtube.com/@CarbonStealth", "https://www.tiktok.com/@zerofucksgiiven"]);
+});
+
 test("organizationLd добавя sameAs само при подадени профили", () => {
   const without = organizationLd() as Record<string, unknown>;
   assert.ok(!("sameAs" in without));
