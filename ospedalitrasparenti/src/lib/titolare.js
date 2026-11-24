@@ -21,7 +21,7 @@ export const TITOLARE = Object.freeze(leggi());
 
 /** Първият телефон е италианският (сайтът е за Италия); останалите — на дружеството. */
 export function telefoni(t = TITOLARE) {
-  return Array.isArray(t.telefoni) ? t.telefoni : [];
+  return Array.isArray(t.telefoni) ? t.telefoni.filter((x) => typeof x === 'string' && x.trim() !== '') : [];
 }
 
 /** `tel:` по RFC 3966 — без интервали. */

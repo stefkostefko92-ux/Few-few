@@ -39,6 +39,16 @@ test('orgJsonLd: #org с контакт; правните данни са на �
   assert.equal(p.telephone, '+359 877 414 874');
 });
 
+test('telefoni: само непразни низове — число или празно в config не чупи билда', async () => {
+  const { telefoni } = await import('../src/lib/titolare.js');
+  assert.deepEqual(telefoni({ telefoni: /** @type {any} */ (['+39 1', 393792969699, '', '  ', '+359 2']) }), ['+39 1', '+359 2']);
+  assert.deepEqual(telefoni({}), []);
+});
+
+test('orgJsonLd: проектът няма sameAs към дружеството — връзката е само parentOrganization', () => {
+  assert.ok(!('sameAs' in orgJsonLd(SU)));
+});
+
 test('footer: връзка „Contatti“ и видимият контакт = контактът от схемата', () => {
   const f = shellBottom({ rel: '' });
   assert.match(f, /<a href="note-legali\.html#contatti">Contatti<\/a>/);

@@ -126,7 +126,6 @@ sono anomalie contabili da verificare. <a href="segnalazioni.html">Tutte le segn
         '@graph': [
           {
             ...orgJsonLd(su),
-            sameAs: ['https://carbonstealth.eu'],
             knowsAbout: [
               'sanità pubblica italiana',
               'appalti pubblici della sanità',
