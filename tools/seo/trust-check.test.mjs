@@ -91,3 +91,19 @@ test("sameAs само към https; празен sameAs е бележка, не 
   const e = analyze({ url: "https://c.eu", html: ld({ ...ORG, sameAs: [] }) + LINKS, headers: HEAD_OK, security: SEC_OK, now: NOW });
   assert.equal(by(e, "org-sameAs").level, "бележка");
 });
+
+test("контакт: mailto:/tel: връзка от началната е контакт, и без думата „контакт“", () => {
+  const html = ld(ORG) + `<a href="/privacy">Privacy</a><a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a>`;
+  assert.equal(by(analyze({ url: "https://x.example", html, now: NOW }), "page-contact").ok, true, "mailto");
+  const tel = ld(ORG) + `<a href="tel:+359877414874">0877 414 874</a>`;
+  assert.equal(by(analyze({ url: "https://x.example", html: tel, now: NOW }), "page-contact").ok, true, "tel");
+});
+
+test("правни данни: legalName/vatID/taxID на parentOrganization важат за проекта", () => {
+  const proj = { "@context": "https://schema.org", "@type": "Organization", "@id": "https://p.example/#org", name: "Проект", email: "a@b.c",
+    parentOrganization: { "@type": "Organization", "@id": "https://carbonstealth.eu/#org", legalName: "Карбон Стелт ЕДПК", vatID: "BG208725180" } };
+  const r = analyze({ url: "https://p.example", html: ld(proj), now: NOW });
+  assert.equal(by(r, "org-legal-ids").ok, true);
+  const bare = { ...proj, parentOrganization: { "@type": "Organization", name: "X" } };
+  assert.equal(by(analyze({ url: "https://p.example", html: ld(bare), now: NOW }), "org-legal-ids").ok, false);
+});

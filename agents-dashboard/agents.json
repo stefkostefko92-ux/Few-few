@@ -2112,39 +2112,17 @@
           "detail": "Научи: spawnSync със stdio pipe и maxBuffer по подразбиране 1 MiB при препълване връща error.c…"
         },
         {
-          "version": "68.2.0",
-          "date": "2026-11-24",
-          "event": "v68.2 — учене",
-          "detail": "Научи: JSON.stringify не екранира < > &, затова `window.X = ${JSON.stringify(data)}` е безопас… (+3 още)"
-        },
-        {
-          "version": "68.3.0",
-          "date": "2026-11-24",
-          "event": "v68.3 — учене",
-          "detail": "Научи: ospedalitrasparenti има два пътя за четене на config.titolare — src/lib/titolare.js (TI…"
-        },
-        {
           "version": "68.4.0",
           "date": "2026-11-24",
           "event": "v68.4 — учене",
-          "detail": "Научи: Каноничният @id на дружеството, публикуван на живо от carbonstealth.eu, е https://carbo…"
+          "detail": "Научи: Каноничният @id на дружеството, публикуван на живо от carbonstealth.eu, е https://carbo… (+5 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-24",
           "type": "learning",
-          "summary": "Научи: „Каноничният @id на дружеството, публикуван на живо от carbonstealth.eu, е https://carbo…\""
-        },
-        {
-          "date": "2026-11-24",
-          "type": "learning",
-          "summary": "Научи: „ospedalitrasparenti има два пътя за четене на config.titolare — src/lib/titolare.js (TI…\""
-        },
-        {
-          "date": "2026-11-24",
-          "type": "learning",
-          "summary": "Научи: „JSON.stringify не екранира < > &, затова `window.X = ${JSON.stringify(data)}` е безопас…\" (+3 още)"
+          "summary": "Научи: „Каноничният @id на дружеството, публикуван на живо от carbonstealth.eu, е https://carbo…\" (+5 още)"
         },
         {
           "date": "2026-11-23",
