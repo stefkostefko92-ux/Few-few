@@ -60,6 +60,7 @@ for k in ("key", "fill", "top"):
         lights.append(L.matrix_world @ Vector((sx * L.data.size, sy * L.data.size_y, 0)))
 REACH = round(260 * W / 1920)  # px: a shadow further than this from its object is too soft and faint to matter
 cam = S["cam"]
+CAM = "\0camera"  # its key in state(): no object can be called that
 
 
 def state():
@@ -70,6 +71,8 @@ def state():
         st[o.name] = (vis, m, o.get("geo"))  # geo: a boolean cut or a material state that moves no matrix
     for o in lamps:  # a light that switches or moves relights everything: render the frame whole
         st[o.name] = (not o.hide_render, round(o.data.energy, 4), tuple(round(v, 6) for row in o.matrix_world for v in row))
+    st[CAM] = (tuple(round(v, 7) for row in cam.matrix_world for v in row), round(cam.data.lens, 4),
+               round(cam.data.dof.focus_distance, 5))  # a camera move (step 10's push-in): whole frames too
     return st
 
 
@@ -131,7 +134,7 @@ for f in range(start, f1 + 1):
         changed = [n for n in st if st[n] != prev[n]]
         if not changed:
             region = None
-        elif LAMPS & set(changed):
+        elif (LAMPS | {CAM}) & set(changed):
             region = (0, 0, W, H)
         else:
             pts3 = []

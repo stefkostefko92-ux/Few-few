@@ -10,9 +10,9 @@ from timeline import STEPS, DURATION
 WIDTH = 42
 TITLE = 2.0  # s: "Passo k di 11 / title" alone before the step's line
 INTRO = (0.3, 4.0, "Montaggio in undici passi", "Staffa articolata A 45 175 2 + B 45 320 · Regolazione angolare ± 7° · lamiera 5 mm")
-# the outro card (overlay.outro) comes at 111.4 s; its words start once the sill is flush again (109.9 s), so the
-# note for installers stays readable before the end. The address on the card is in the video's description.
-OUTRO_START = 110.4
+# the outro card (overlay.outro) comes 0.4 s after the last step; its words start 0.6 s before that step ends (the sill
+# is flush again), so the note for installers stays readable before the end. The card's address is in the description.
+OUTRO_START = STEPS[-1][1] - 0.6
 OUTRO = ("Montaggio completato: soglia in bolla, tre staffe bloccate.",
          "Sintesi per installatori qualificati: fanno fede i disegni di montaggio del catalogo tecnico e il progetto "
          "dell’impianto.")

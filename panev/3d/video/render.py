@@ -28,7 +28,9 @@ PRESETS = {
     "heavy": {"VIDEO_FPS": "60", "VIDEO_RES": "3840x2160", "VIDEO_OUT": "3840x2160", "VIDEO_DEVICE": "OPTIX",
               "spp": 96, "still_spp": 256, "still_res": "3840x2160"},
 }
-STILL_T = {"intro": 2.0, "hero": 115.0}
+sys.path.insert(0, HERE)
+from timeline import DURATION  # noqa: E402 (pure python, no bpy)
+STILL_T = {"intro": 2.0, "hero": DURATION - 2.0}
 
 
 def blender():
@@ -85,8 +87,6 @@ def shots(cfg, env, root, log, only):
 
 def assemble(cfg, env, root, frames, log):
     os.makedirs(frames, exist_ok=True)
-    sys.path.insert(0, HERE)
-    from timeline import DURATION
     total = round(DURATION * int(cfg["VIDEO_FPS"]))
     todo = [f for f in range(total) if not os.path.exists(os.path.join(frames, f"v{f:05d}.png"))]
     if not todo:

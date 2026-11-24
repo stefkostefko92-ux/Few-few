@@ -1,8 +1,8 @@
 """The music of the mounting video, written here (owner, 24.11.2026: our own, calm and technical): 90 BPM, so every
 whole second lands on an eighth and every step card on the beat grid. D major, I–vi–IV–V in two-bar chords (Dmaj9,
 Bm9, Gmaj9, A6/9). It grows with the work: pad and electric piano for steps 1–3, a soft pulse from the drilling (30 s),
-the full groove from the ratchet (48 s), a counter-melody for the levelling (67 s). The cutting (96 s) drops to a held
-pulse under the grinder (Em9 – Gmaj9♯11 – A7sus4) and resolves on Dmaj9 with the finished sill (111 s).
+the full groove from the ratchet (48 s), a counter-melody for the levelling (67 s). The cutting (112 s) drops to a held
+pulse under the grinder (Em9 – Gmaj9♯11 – A7sus4) and resolves on Dmaj9 with the finished sill (127 s).
 Each step card gets a swell into it and a bell on it. render(n) → stereo music, dry and reverb together."""
 import numpy as np
 from dsp import SR, ns, times, noise, mtof, lowpass, highpass, band, shape, sweep, saw, place, reverb_ir, convolve
@@ -10,8 +10,9 @@ from timeline import STEPS, DURATION
 
 BEAT = 60 / 90.0
 BAR = 4 * BEAT
-CARDS = [a for a, _ in STEPS]           # 4, 13, 21 … 96: the step cards
-FINAL = 111.0                           # the finished sill (hero shot)
+CARDS = [a for a, _ in STEPS]           # 4, 13, 21 … 112: the step cards
+CUT, FINAL = STEPS[-1]                  # the cutting (112 s, bar 42) and the finished sill (127 s, hero shot)
+SLOTS = round(CUT / (2 * BAR))          # two-bar chords up to the cutting
 CH = {  # bass, pad voicing, arpeggio tones, upper tones (counter-melody, bells)
     "D": (38, (54, 57, 61, 64), (62, 66, 69, 73, 76), (76, 73, 69)),
     "Bm": (35, (54, 57, 61, 62), (59, 62, 66, 69, 73), (73, 69, 66)),
@@ -22,10 +23,11 @@ CH = {  # bass, pad voicing, arpeggio tones, upper tones (counter-melody, bells)
     "Asus": (45, (52, 55, 57, 62), (57, 62, 64, 67, 69), (69, 67, 64)),
     "Dend": (38, (50, 54, 57, 61, 64, 69), (62, 66, 69, 73, 76, 81), (81, 78, 76)),
 }
-CHORDS = [(2 * k * BAR, 2 * (k + 1) * BAR, "D Bm G A".split()[k % 4]) for k in range(18)] + \
-    [(36 * BAR, 38 * BAR, "Em"), (38 * BAR, 40 * BAR, "Gl"), (40 * BAR, FINAL, "Asus"), (FINAL, DURATION, "Dend")]
+CHORDS = [(2 * k * BAR, 2 * (k + 1) * BAR, "D Bm G A".split()[k % 4]) for k in range(SLOTS)] + \
+    [(CUT, CUT + 2 * BAR, "Em"), (CUT + 2 * BAR, CUT + 4 * BAR, "Gl"), (CUT + 4 * BAR, FINAL, "Asus"),
+     (FINAL, DURATION, "Dend")]
 CUTOFF = [(0, 500), (3.5, 1300), (4, 1600), (29.5, 2000), (30, 2400), (47.5, 2800), (48, 3300), (83.5, 3500),
-          (84, 4100), (95.5, 4300), (96, 900), (108, 2400), (FINAL, 5200), (113.5, 2600), (DURATION, 1100)]
+          (84, 4100), (CUT - 0.5, 4300), (CUT, 900), (CUT + 12, 2400), (FINAL, 5200), (FINAL + 2.5, 2600), (DURATION, 1100)]
 
 
 def chord_at(t):
@@ -123,14 +125,14 @@ def notes():
         root, _, arp, top = CH[c]
         for i in range(16):
             t = a + i * BEAT / 2
-            if not (CARDS[0] <= t < 96 and t < b):
+            if not (CARDS[0] <= t < CUT and t < b):
                 continue
             if t < 30 and i % 8 not in (0, 3, 4, 6):
                 continue
             j = t + rng.normal(0, 0.004)
             out.append(("ep", j, 0.3, arp[pat[i]], (0.5 if t < 30 else 0.42) * acc[i % 8] * rng.uniform(0.9, 1.05),
                         rng.uniform(-0.25, 0.25)))
-        if 67 <= a < 96:
+        if 67 <= a < CUT:
             for beat, k in ((0, 0), (1.5, 1), (3, 2), (5, 1), (6.5, 2)):
                 out.append(("pluck", a + beat * BEAT, 0.5, top[k] + 12 * (k == 0 and c != "D"), 0.6, 0.35))
         if CARDS[0] < b and a < 30:  # steps 1–3: one held root per chord
@@ -138,7 +140,7 @@ def notes():
             out.append(("bass", s0, b - s0 - 0.1, root, 0.55, 0))
         for bar in range(2):
             s = a + bar * BAR
-            if not 30 <= s < 96:
+            if not 30 <= s < CUT:
                 continue
             for beat, d, up in ((0, 1.25, 0), (1.5, 0.4, 0), (2.5, 1.25, 0), (3.5, 0.4, 12 * (s >= 48))):
                 out.append(("bass", s + beat * BEAT, d * BEAT, root + up, 0.62, 0))
@@ -148,11 +150,11 @@ def notes():
                 out.append(("snap", s + beat * BEAT, 0, 0, 0.7, -0.1))
             for k in range(16):
                 out.append(("shaker", s + k * BEAT / 4, 0, 0, (0.3 if k % 2 == 0 else 0.16) * rng.uniform(0.8, 1), 0.45))
-    for a, b, c in CHORDS[18:21]:  # the cutting: a held pulse, louder towards the end
+    for a, b, c in CHORDS[SLOTS:SLOTS + 3]:  # the cutting: a held pulse, louder towards the end
         k = 0
         while a + k * BEAT / 2 < b - 0.01:
             t = a + k * BEAT / 2
-            out.append(("bass", t, BEAT * 0.4, CH[c][0], 0.3 + 0.35 * (t - 96) / 15, 0))
+            out.append(("bass", t, BEAT * 0.4, CH[c][0], 0.3 + 0.35 * (t - CUT) / (FINAL - CUT), 0))
             if k % 4 == 0:
                 out.append(("ep", t, 0.5, CH[c][2][4 - (k // 4) % 2], 0.3, rng.uniform(-0.2, 0.2)))
             k += 1
@@ -188,7 +190,7 @@ def render(n):
         place(buses["pad"], a, pad(CH[c][1], b - a, 100 + k))
     for c in CARDS[1:] + [FINAL]:
         place(buses["swell"], c - 1.3, swell(1.3, 900 + int(c)), 0.7 if c < FINAL else 1.0)
-    place(buses["swell"], 108.4, swell(FINAL - 108.4, 991), 0.8)
+    place(buses["swell"], FINAL - 2.6, swell(2.6, 991), 0.8)
     xs, ys = zip(*CUTOFF)
     buses["pad"] = sweep(buses["pad"], lambda s: np.exp(np.interp(s, xs, np.log(ys))))
     kicks = [s for kind, s, _, _, v, _ in notes() if kind == "kick" and v > 0 and s >= 48]
@@ -196,7 +198,7 @@ def render(n):
     for s in kicks:  # the pad breathes with the kick in the full groove
         i = ns(s)
         pump[i:i + ns(0.5)] *= 1 - 0.22 * np.exp(-times(min(ns(0.5), n - i)) / 0.16)
-    buses["pad"] *= pump * np.interp(t, (0, 2.5, 96, 97, 111, 112), (0, 1, 1, 0.85, 0.85, 1.1))
+    buses["pad"] *= pump * np.interp(t, (0, 2.5, CUT, CUT + 1, FINAL, FINAL + 1), (0, 1, 1, 0.85, 0.85, 1.1))
     buses["ep"] *= np.stack([1 + 0.12 * np.sin(2 * np.pi * 4.2 * t), 1 - 0.12 * np.sin(2 * np.pi * 4.2 * t)])
     lvl = {"pad": 0.55, "ep": 0.26, "bass": 0.25, "drums": 0.32, "pluck": 0.1, "bell": 0.08, "swell": 0.05}
     send = {"pad": 0.3, "ep": 0.3, "bass": 0.0, "drums": 0.12, "pluck": 0.45, "bell": 0.55, "swell": 0.25}

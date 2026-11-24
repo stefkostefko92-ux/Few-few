@@ -1,6 +1,10 @@
-"""Builds the mounting-video scene: the out-of-plumb concrete wall under the landing, two bracket pairs
-(A 45 175 2 + B 45 320, DX) from the site's 3-D engine, M10 wedge anchors in 10 mm holes, the tools
-(hammer drill, marker, ratchet, spirit level, angle grinder) and the landing-door sill. Returns handles for pose.py."""
+"""Builds the mounting-video scene: the out-of-plumb concrete wall under the landing, three bracket pairs
+(A 45 175 2 + B 45 320) from the site's 3-D engine, M10 wedge anchors in 10 mm holes, the tools (hammer drill,
+marker, ratchet, spirit level, angle grinder), the landing-door sill and, behind the middle bracket, a rebar in the
+concrete. Owner, 24.11.2026: on the left A SX + B SX, on the right A DX + B DX; the middle one starts DX, its drill
+hits the rebar and its B DX is swapped for a B SX on the other face of A DX's web (they are interchangeable), which
+moves the fixing holes 65 mm aside. SX parts are the DX meshes mirrored (the bolts are not: their threads stay
+right-handed, and the joint stack keeps its place). Returns handles for pose.py."""
 import json
 import math
 import os
@@ -13,12 +17,13 @@ from grinder import build_grinder
 from ratchet import build_ratchet
 from cut import build_cut
 from props import SILL_H, build_drill, build_marker, build_level, build_sill
+from rebar import build_rebar
+from hands import HAND, FACE_X, WEB, face_x, mx, mirrored
 
 HERE = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
 LEAN = math.radians(5.0)      # the wall is out of plumb: its top leans 5° into the shaft
 PAIR_X = (0.0, 0.62, 0.31)    # left, right and (step 10) the middle bracket
 ANCHORS = (225.0, 52.0)       # anchor heights on B (mm): middle of the closed slot, the open slot
-FACE_X = -30.0                # centre of B's fixing face (mm, DX)
 
 
 # ---------- the bracket pair ----------
@@ -59,10 +64,16 @@ def centre_of(rec):
 def build_pair(k, wall, M, meta, recs, x):
     rig = empty(f"pair{k}", wall, (x, 0, 0))
     pivot_mm = np.asarray(meta["pivot"])
-    h = {"rig": rig, "hw": {}}
-    h["B"] = object_from(f"B{k}", next(r for r in recs if r["tag"] == "B"), M, (0, 0, 0), rig)
+    h = {"rig": rig, "hw": {}, "hand": HAND[k]}
+    rb, ra = (next(r for r in recs if r["tag"] == t) for t in ("B", "A"))
+    if HAND[k] == "sx":
+        rb, ra = mirrored(rb, 0.0), mirrored(ra, 0.0)
+    h["B"] = object_from(f"B{k}", rb, M, (0, 0, 0), rig)
+    if k == 2:  # the B SX that replaces the middle B DX, on the other face of A's web
+        h["Bs"] = object_from(f"Bs{k}", mirrored(rb, WEB / 2), M, (0, 0, 0), rig)
+        h["Bs"].hide_render = True
     h["pivot"] = empty(f"pivot{k}", rig, tuple(Y_UP @ pivot_mm))
-    h["A"] = object_from(f"A{k}", next(r for r in recs if r["tag"] == "A"), M, pivot_mm, h["pivot"])
+    h["A"] = object_from(f"A{k}", ra, M, pivot_mm, h["pivot"])
     h["A"].location = (0, 0, 0)
     for tag in ("joint", "lock"):
         parent = rig if tag == "joint" else h["pivot"]
@@ -76,7 +87,7 @@ def build_pair(k, wall, M, meta, recs, x):
     spare = {r["kind"]: r for r in recs if r["tag"] == "spare"}
     h["anchors"] = []
     for j, y in enumerate(ANCHORS):
-        grp = empty(f"anchor{k}{j}", rig, tuple(Y_UP @ np.array([FACE_X, y, 0.0])))
+        grp = empty(f"anchor{k}{j}", rig, tuple(Y_UP @ np.array([face_x(k, k == 2), y, 0.0])))
         rot = Matrix.Rotation(math.radians(90), 4, "X")  # three.js +y (Blender +Z after Y_UP) -> wall-local -Y
         parts = []
         for kind, off in (("stud", -75.0), ("washer", 5.0), ("nut", 7.0)):
@@ -90,21 +101,21 @@ def build_pair(k, wall, M, meta, recs, x):
     for j, zmm in enumerate((100.0, 140.0)):  # one in each slot (18) of A, inside the sill; 10 mm of travel back
         ob = object_from(f"sillbolt{k}{j}", spare["bolt30"], M, (0, 0, 0), h["pivot"], 0.8)
         ob.matrix_parent_inverse = Matrix.Identity(4)
-        at = Y_UP @ (np.array([-25.0, 352.0, zmm]) - pivot_mm)
+        at = Y_UP @ (np.array([mx(k, -25.0), 352.0, zmm]) - pivot_mm)
         ob.matrix_basis = Matrix.Translation(at)
         h["sillbolts"].append((ob, Vector(at)))
     # callout points
-    h["pts"] = {
-        "17": empty(f"p17-{k}", rig, tuple(Y_UP @ np.array([FACE_X, 255.0, 5.0]))),
-        "11": empty(f"p11-{k}", rig, tuple(Y_UP @ np.array([-52.0, 120.0, 5.0]))),
-        "12": empty(f"p12-{k}", h["pivot"], tuple(Y_UP @ (np.array([-40.0, 333.0, 150.0]) - pivot_mm))),
+    h["pts"] = {  # the bolt heads (13, 14) stay where they are: the joint stack is the same on SX
+        "17": empty(f"p17-{k}", rig, tuple(Y_UP @ np.array([face_x(k), 255.0, 5.0]))),
+        "11": empty(f"p11-{k}", rig, tuple(Y_UP @ np.array([mx(k, -52.0), 120.0, 5.0]))),
+        "12": empty(f"p12-{k}", h["pivot"], tuple(Y_UP @ (np.array([mx(k, -40.0), 333.0, 150.0]) - pivot_mm))),
         "13": empty(f"p13-{k}", rig, tuple(Y_UP @ np.array([13.0, 302.0, 23.5]))),
         "14": empty(f"p14-{k}", h["pivot"], tuple(Y_UP @ (np.array([13.0, 208.0, 23.5]) - pivot_mm))),
-        "21": empty(f"p21-{k}", rig, tuple(Y_UP @ np.array([-2.5, 207.0, 38.0]))),
-        "18": empty(f"p18-{k}", h["pivot"], tuple(Y_UP @ (np.array([-25.0, 333.0, 128.0]) - pivot_mm))),
+        "21": empty(f"p21-{k}", rig, tuple(Y_UP @ np.array([mx(k, -2.5), 207.0, 38.0]))),
+        "18": empty(f"p18-{k}", h["pivot"], tuple(Y_UP @ (np.array([mx(k, -25.0), 333.0, 128.0]) - pivot_mm))),
     }
     for j, y in enumerate(ANCHORS):
-        h["pts"][f"M{j}"] = empty(f"pM{k}{j}", rig, tuple(Y_UP @ np.array([FACE_X, y, 0.0])))
+        h["pts"][f"M{j}"] = empty(f"pM{k}{j}", rig, tuple(Y_UP @ np.array([face_x(k), y, 0.0])))
     return h
 
 
@@ -125,11 +136,13 @@ def build_wall(M, wall, pairs_x):
     # formwork joints: shallow horizontal steps every 0.30 m
     for zj in np.arange(z_top - 0.18, z0, -0.30):
         d += 0.0
-    # behind the brackets the wall may only recede (the plate bears on the high spots)
-    for px in pairs_x:
+    # behind the brackets the wall may only recede (the plate bears on the high spots): B's side of each pair, both
+    # sides behind the middle one (its B changes side)
+    for k, px in enumerate(pairs_x):
         def ramp(a, b, v):
             return np.clip((v - a) / (b - a), 0, 1)
-        w = ramp(px - 0.16, px - 0.13, X) * (1 - ramp(px + 0.02, px + 0.05, X)) * ramp(-0.05, -0.02, Z) * (1 - ramp(0.34, 0.37, Z))
+        lo, hi = (px - 0.16, px + 0.16) if k == 2 else (px - 0.05, px + 0.16) if HAND[k] == "sx" else (px - 0.16, px + 0.05)
+        w = ramp(lo, lo + 0.03, X) * (1 - ramp(hi - 0.03, hi, X)) * ramp(-0.05, -0.02, Z) * (1 - ramp(0.34, 0.37, Z))
         w = w * w * (3 - 2 * w)
         d = d * (1 - w) + (0.0006 + 0.0004 * np.sin(X * 90) * np.sin(Z * 70)) * w
     # top arris: slightly broken
@@ -235,7 +248,7 @@ def build(scene):
     holes, marks = [], []
     for k, h in enumerate(pairs):
         for j, y in enumerate(ANCHORS):
-            x, z = PAIR_X[k] + FACE_X * MM, y * MM
+            x, z = PAIR_X[k] + face_x(k, k == 2) * MM, y * MM
             d = wall_depth_at(*grid, x, z)
             hole = cylinder(f"hole{k}{j}", 0.0052, 0.0008, M["hole"], loc=(x, d - 0.0006, z), axis="Y", segs=32, parent=wall)
             dust = cylinder(f"dust{k}{j}", 0.0115, 0.0005, M["dust"], loc=(x, d - 0.0003, z), axis="Y", segs=24, parent=wall)
@@ -244,6 +257,7 @@ def build(scene):
                       (x, d - 0.0002, z), 0, wall) for q in range(2)]
             holes.append((k, j, hole, dust))
             marks.append((k, j, mk))
+    rebar = build_rebar(M, wall, PAIR_X[2] + FACE_X * MM, ANCHORS[0] * MM, lambda x, z: wall_depth_at(*grid, x, z))
     drill, bit = build_drill(M)
     marker = build_marker(M)
     ratchet = build_ratchet(M)
@@ -266,6 +280,6 @@ def build(scene):
     return {"M": M, "meta": meta, "wall": wall, "face": face, "z_top": z_top, "grid": grid, "pairs": pairs,
             "holes": holes, "marks": marks, "drill": drill, "bit": bit, "marker": marker, "ratchet": ratchet,
             "level": level, "bub1": bub1, "bub2": bub2, "sill": sill, "ghost_sill": ghost_sill, "car_sill": car_sill,
-            "grinder": grinder, "cuts": cuts,
+            "grinder": grinder, "cuts": cuts, "rebar": rebar,
             "worlds": worlds, "lights": lights, "cam": cam,
             "floor": bpy.data.objects["floor"], "body": bpy.data.objects["wallbody"], "sides": [bpy.data.objects["side-left"], bpy.data.objects["side-right"]], "sill_y": sill_y}

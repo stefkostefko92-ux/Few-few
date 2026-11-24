@@ -2,18 +2,27 @@
 cut.py (they import bpy, so they are repeated here): move an action there, move its sound here. All synthesised:
 struck parts are damped modes, contacts filtered noise, the motors their harmonics. The ratchet clicks once per tooth
 (72 teeth, 5°) on every back stroke, the grinder starts, slows under the cut, crackles with the sparks and runs down,
-the off-cuts land far down the shaft. render(n) → (dry, room send), both stereo."""
+the off-cuts land far down the shaft. In step 10 the middle bracket's first hole stops on a rebar (a clang, the bit
+grinding on steel, the motor stalling), then its B is unbolted and swapped (middle.py). render(n) → (dry, room send),
+both stereo."""
 import numpy as np
 from dsp import SR, ns, times, noise, ease, lowpass, band, peak, shape, modal, burst, place
 from timeline import TIMELINE
 
-CLOSE, MID = {"asm", "drill", "front", "under", "cut"}, {"top3", "side"}
-# (socket on, first stroke, last stroke ends, total turn °, strokes, socket off, pan) — pose.py, the ratchet blocks
-RATCHET = [(48.9, 48.9, 50.1, 120, 3, 50.1, -0.1), (50.5, 50.5, 51.7, 120, 3, 51.7, -0.1),
-           (63.4, 63.6, 64.8, 60, 2, 65.0, 0.0), (79.8, 79.8, 81.2, 150, 3, 81.2, 0.15), (89.2, 89.2, 90.4, 120, 3, 90.4, 0.0)]
-DRILL_RUNS, DRILL_IN = ((33.3, 34.4), (34.9, 36.0)), ((33.55, 34.25), (35.15, 35.85))  # pose.py: bit spin, in the wall
-GRINDER = [(98.8, 102.6, ((99.5, 101.7),), -0.05), (104.9, 108.8, ((105.4, 106.4), (107.25, 108.25)), 0.1)]  # cut.py
-OFFCUT_DOWN = (102.85, 107.55, 109.4)  # each off-cut leaves its plate at the end of the traverse, ~1.15 s to the pit
+CLOSE = {"asm", "drill", "front", "under", "cut", "drill10", "drill10b"}
+MID = {"top3", "side", "swap10", "wide10b"}
+# (socket on, first stroke, last stroke ends, total turn °, strokes, socket off, pan) — pose.py and middle.py
+RATCHET = [(48.9, 48.9, 50.1, 120, 3, 50.1, 0.1), (50.5, 50.5, 51.7, 120, 3, 51.7, 0.1),
+           (63.4, 63.6, 64.8, 60, 2, 65.0, 0.0), (79.8, 79.8, 81.2, 150, 3, 81.2, 0.15), (108.4, 108.4, 109.6, 120, 3, 109.6, 0.15)]
+# rotary hammer: (bit spinning, in the wall) — step 4 (pose.py); step 10 (middle.py): the first run stops on the rebar
+DRILL4 = (((33.3, 34.4), (34.9, 36.0)), ((33.55, 34.25), (35.15, 35.85)), None)
+HIT = 91.45
+DRILL10 = (((90.6, HIT),), ((90.75, HIT),), HIT)
+DRILL10B = (((103.45, 104.25), (104.55, 105.35)), ((103.6, 104.1), (104.7, 105.2)), None)
+T11 = 16.0  # step 11 came 16 s later when step 10 grew (cut.py)
+GRINDER = [(98.8 + T11, 102.6 + T11, ((99.5 + T11, 101.7 + T11),), -0.05),
+           (104.9 + T11, 108.8 + T11, ((105.4 + T11, 106.4 + T11), (107.25 + T11, 108.25 + T11)), 0.1)]  # cut.py
+OFFCUT_DOWN = (102.85 + T11, 107.55 + T11, 109.4 + T11)  # each off-cut leaves its plate, ~1.15 s to the pit
 
 
 def conv1(x, k):
@@ -114,15 +123,17 @@ def ratchet(dry, wet, on, a, b, total, n, off, pan, seed):
     put(dry, wet, off, tick(seed + 900, 1.3), 0.25, pan)
 
 
-def drill(seed):
-    """Rotary hammer: the motor's harmonics and fan, hammer blows (~70 a second) and crushed concrete in the wall."""
-    t0, t1 = 33.2, 36.9
+def drill(seed, runs, into, stall):
+    """Rotary hammer: the motor's harmonics and fan, hammer blows (~70 a second) and crushed concrete in the wall.
+    stall: the moment the bit meets steel — the motor stops within ~0.1 s instead of running down."""
+    t0, t1 = runs[0][0] - 0.1, runs[-1][1] + 0.9
     n = ns(t1 - t0)
     t = times(n) + t0
     spd = np.zeros(n)
-    for a, b in DRILL_RUNS:
-        spd = np.maximum(spd, ease((t - a) / 0.15) * np.where(t < b, 1.0, np.exp(-(t - b) / 0.25)))
-    load = sum(ease((t - a) / 0.08) - ease((t - b) / 0.06) for a, b in DRILL_IN)
+    for a, b in runs:
+        down = 0.05 if stall is not None and abs(b - stall) < 1e-6 else 0.25
+        spd = np.maximum(spd, ease((t - a) / 0.15) * np.where(t < b, 1.0, np.exp(-(t - b) / down)))
+    load = sum(ease((t - a) / 0.08) - ease((t - b) / (0.01 if stall is not None else 0.06)) for a, b in into)
     f = 290 * spd * (1 - 0.12 * load)
     ph = 2 * np.pi * np.cumsum(f) / SR
     rng = np.random.default_rng(seed)
@@ -135,6 +146,16 @@ def drill(seed):
     hammer = conv1(train, kern)
     crunch = shape(noise(n, seed + 3), lambda fr: band(fr, 600, 4000)) * load * (0.3 + conv1(train, np.exp(-times(ns(0.05)) / 0.008)))
     return t0, 0.3 * norm(motor * spd ** 1.5) + 0.15 * norm(fan) + norm(hammer) + 0.3 * norm(crunch)
+
+
+def rebar_hit(seed):
+    """The bit meets the rebar: a dry clang of the bar in the concrete, a short shriek of carbide on steel."""
+    n = ns(0.6)
+    clang = modal((1150, 2650, 4300, 6900), (0.18, 0.12, 0.07, 0.04), (1.0, 0.7, 0.45, 0.2), 0.6, seed, 0.03)
+    t = times(n)
+    shriek = shape(noise(n, seed + 1), lambda f: band(f, 2200, 8000) * peak(f, 3600, 10, 0.3)) * np.exp(-t / 0.05)
+    thud = modal((140, 310), (0.08, 0.05), (1.0, 0.5), 0.6, seed + 2)
+    return 0.6 * norm(clang) * np.exp(-t / 0.2) + 0.5 * norm(shriek) * np.minimum(1, t / 0.003) + 0.4 * norm(thud)
 
 
 def grinder(start, stop, cuts, seed):
@@ -181,13 +202,21 @@ def render(n):
     for k, (a, b) in enumerate(((6.8, 7.8), (8.4, 9.4))):                      # joint and lock bolts
         put(dry, wet, a, scrape(b - a, 3000, 9000, 13 + k, 400), 0.05, 0.1)
         put(dry, wet, b, tick(15 + k), 0.4, 0.1)
-    for t, p in ((16.0, -0.3), (16.2, 0.3), (38.2, -0.3), (38.25, 0.3), (86.8, 0.0)):  # brackets against the wall
-        put(dry, wet, t, knock(int(t * 10)), 0.55, p)
-    for t in (30.8, 31.4):                                                      # step 4: the marker through the slots
-        put(dry, wet, t, marker_dot(int(t * 10)), 0.15, -0.2)
-    t0, y = drill(21)
-    put(dry, wet, t0, y, 0.088, -0.1)
-    for t, p in ((39.4, -0.3), (39.8, -0.3), (40.2, 0.3), (40.6, 0.3), (88.2, 0.0), (88.6, 0.0)):  # anchors in
+    for t, p in ((16.0, -0.3), (16.2, 0.3), (38.2, -0.3), (38.25, 0.3), (86.2, 0.0), (100.6, 0.0), (106.7, 0.0)):
+        put(dry, wet, t, knock(int(t * 10)), 0.55, p)                          # brackets against the wall
+    for t, p in ((30.8, -0.2), (31.4, -0.2), (88.6, -0.1), (89.15, -0.1), (101.6, 0.0), (102.15, 0.0)):
+        put(dry, wet, t, marker_dot(int(t * 10)), 0.15, p)                     # the marker through the slots
+    for i, (runs, into, stall) in enumerate((DRILL4, DRILL10, DRILL10B)):
+        t0, y = drill(21 + i, runs, into, stall)
+        put(dry, wet, t0, y, 0.088, -0.1)
+    put(dry, wet, HIT, rebar_hit(911), 0.5, -0.1)                              # step 10: the rebar
+    for k, (a, b) in enumerate(((94.8, 95.6), (97.5, 98.3))):                  # the joint and lock bolts out, then in
+        put(dry, wet, a, scrape(b - a, 3000, 9000, 950 + k, 400), 0.05, 0.1)
+        put(dry, wet, a if k == 0 else b, tick(952 + k), 0.35, 0.1)
+    put(dry, wet, 95.6, scrape(1.0, 1500, 6000, 960, 120), 0.1, -0.2)          # B DX off A's web, B SX on
+    put(dry, wet, 96.4, scrape(1.0, 1500, 6000, 961, 120), 0.1, 0.2)
+    put(dry, wet, 97.4, modal((650, 1500, 2900), (0.08, 0.05, 0.03), (1.0, 0.5, 0.3), 0.1, 962), 0.35, 0.1)
+    for t, p in ((39.4, -0.3), (39.8, -0.3), (40.2, 0.3), (40.6, 0.3), (107.6, 0.0), (108.0, 0.0)):  # anchors in
         put(dry, wet, t - 0.6, scrape(0.6, 800, 4000, int(t * 10), 80), 0.06, p)
         put(dry, wet, t, tick(int(t * 10) + 1, 0.6), 0.35, p)
     for t, p, g in ((41.4, -0.3, 0.4), (43.6, 0.3, 0.4), (68.4, 0.0, 0.35), (75.4, 0.15, 0.35)):  # the level set down
@@ -197,11 +226,11 @@ def render(n):
     for i, r in enumerate(RATCHET):
         ratchet(dry, wet, *r[:6], r[6], 300 + 50 * i)
     put(dry, wet, 58.2, clonk(58), 0.6, 0.0)                                    # step 6: the sill on the A plates
-    for t, p in ((62.8, -0.3), (62.85, 0.3), (92.2, 0.0)):                     # sill bolts up through the slots
+    for t, p in ((62.8, -0.3), (62.85, 0.3), (111.6, 0.0)):                    # sill bolts up through the slots
         put(dry, wet, t, tick(int(t * 100), 1.1), 0.22, p)
-    put(dry, wet, 96.3, tick(963, 2.2), 0.08, -0.1)                             # step 11: the marker along A
-    put(dry, wet, 96.3, marker_line(964), 0.1, -0.1)
-    for a, b in ((97.8, 98.6), (109.1, 109.9)):                                 # the sill back 10 mm, then flush
+    put(dry, wet, 96.3 + T11, tick(963, 2.2), 0.08, -0.1)                       # step 11: the marker along A
+    put(dry, wet, 96.3 + T11, marker_line(964), 0.1, -0.1)
+    for a, b in ((97.8 + T11, 98.6 + T11), (109.1 + T11, 109.9 + T11)):         # the sill back 10 mm, then flush
         put(dry, wet, a, scrape(b - a, 700, 5000, int(a * 10), 70), 0.12, 0.0)
         put(dry, wet, b, tick(int(b * 10), 0.9), 0.2, 0.0)
     for k, (a, b, cuts, p) in enumerate(GRINDER):

@@ -171,6 +171,8 @@ xvfb-run -a npm run render -- --codes=<id,id> --size=1600x1200 --frames=48 --out
   - Текстовете са в `video/texts.py`. Не са за сайта (още).
   - Звукът (музика + шумове) е синтезиран в код, без чужд семпъл: `score.py`, `sfx.py`, `audio.py` (само numpy и
     FFmpeg). Моментите на шумовете повтарят `pose.py`/`cut.py`, затова се местят заедно с тях.
+  - Ляво/дясно (собственикът, 24.11.2026): вляво A SX + B SX, вдясно A DX + B DX (`video/hands.py`). Средната
+    планка удря армировка и сменя B DX с B SX на същата A DX (`video/middle.py`, `video/rebar.py`).
 
 ## Правила
 
