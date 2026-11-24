@@ -33,7 +33,7 @@ CALLOUTS = [
     # step 10 (owner, 24.11.2026): the rebar and the B DX → B SX swap (middle.py); DX/SX in capitals as in the catalogue
     ("B_2", "", "Terza staffa: A\u00a0DX + B\u00a0DX", 86.2, 88.0, 130, 90),
     ("rebar", "", "Ferro d’armatura", 91.9, 94.5, 150, -90),
-    ("Bdx_2", "", "Staffa B\u00a0DX", 94.7, 96.3, -150, 80), ("A_2", "", "Piastra A\u00a0DX invariata", 95.0, 100.6, 140, -90),
+    ("Bdx_2", "", "Staffa B\u00a0DX", 94.7, 96.3, 150, 40), ("A_2", "", "Piastra A\u00a0DX invariata", 95.0, 100.6, 140, -90),
     ("Bsx_2", "", "Staffa B\u00a0SX", 97.0, 100.6, 140, 90),
     ("M2n", "", "Nuovi fori spostati di 65\u00a0mm", 101.4, 103.0, 150, 70),
     ("B_2", "", "Terza staffa: A\u00a0DX + B\u00a0SX", 108.0, 112.0, 130, 90),
