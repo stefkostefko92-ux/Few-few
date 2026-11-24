@@ -10,6 +10,7 @@ from lib import MM, seg, lerp, look_at
 from build import LEAN, PAIR_X, ANCHORS, FACE_X
 from props import SILL_H, SILL_D
 from cut import pose_cut, sill_push
+from ratchet import stroke
 from motion import basis, show, bump, rig_pose, plumb_tilt, screen, hw_local, hardware
 from timeline import TIMELINE
 
@@ -40,6 +41,7 @@ FOCUS = {
     "hero": ((0.3, -0.08, -0.05), 6.3),
 }
 SILL_BACK = 54.5  # mm from the wall to the sill's back edge: the car-sill measure sets it; A then sticks out ~30 mm
+RATCHET_HINT = (-0.95, 0, -0.3)  # handle to the left and a little down, clear of B's rib
 GAP = 0.03        # car sill to landing sill: 30 mm, inside the 25–32 mm the overlay shows
 
 
@@ -58,7 +60,7 @@ def pose(S, t, scene, shot=None):
     wall.rotation_euler = (0 if intro else LEAN, 0, 0)
     for ob in (S["face"], S["floor"], S["body"], *S["sides"]):
         show(ob, not intro)
-    for ob in ("drill", "marker", "spanner", "level", "sill", "ghost_sill", "car_sill"):
+    for ob in ("drill", "marker", "ratchet", "level", "sill", "ghost_sill", "car_sill"):
         show(S[ob], False)
     W = wall.matrix_world
 
@@ -94,9 +96,9 @@ def pose(S, t, scene, shot=None):
             an["grp"].location = an["home"] + Vector((0, -0.11 * (1 - seg(t, t0, t0 + 1.0)), 0))
             spin = 0.0
             if k == 0:
-                spin = DEG(120) * seg(t, *((48.9, 50.1) if j == 0 else (50.5, 51.7)))
+                spin = stroke(t, *((48.9, 50.1) if j == 0 else (50.5, 51.7)), DEG(120))[1]
             elif k == 2 and j == 0:
-                spin = DEG(120) * seg(t, 89.2, 90.4)
+                spin = stroke(t, 89.2, 90.4, DEG(120))[1]
             for kind, ob, base in an["parts"]:
                 if kind == "nut":
                     ob.matrix_basis = Matrix.Translation(base.translation) @ Matrix.Rotation(spin, 4, "Y") @ base.to_3x3().to_4x4()
@@ -190,42 +192,42 @@ def pose(S, t, scene, shot=None):
         lx = R.to_3x3() @ Vector((1, 0, 0))
         S["bub1"].location.x = max(-0.016, min(0.016, math.asin(max(-1, min(1, lx.z))) / DEG(1) * 0.0032))
         S["bub2"].location.z = 0.026
-    # spanner
+    # the ratchet with the 17 mm deep socket: strokes forward with the fastener, back alone
     sp = None
     if 48.5 <= t < 52.3:  # step 5: the left bracket's anchor nuts
         j = 0 if t < 50.3 else 1
         nut = face_pt(j) + Vector((0, -0.0112, 0))
-        rot = DEG(120) * seg(t, *((48.9, 50.1) if j == 0 else (50.5, 51.7)))
+        swing, _ = stroke(t, *((48.9, 50.1) if j == 0 else (50.5, 51.7)), DEG(120))
         k_in = seg(t, 48.5, 48.9) if j == 0 else 1.0
         k_out = seg(t, 51.7, 52.3)
         if 50.1 <= t < 50.5:
             k_in = 1 - bump(t, 50.1, 50.5)
-        sp = W @ Matrix.Translation(nut + Vector((0, -0.12, 0)) * (1 - k_in + k_out)) @ Matrix.Rotation(rot, 4, "Y") @ basis((0, -1, 0), (-0.95, 0, -0.3))
+        sp = W @ Matrix.Translation(nut + Vector((0, -0.12, 0)) * (1 - k_in + k_out)) @ Matrix.Rotation(swing, 4, "Y") @ basis((0, -1, 0), RATCHET_HINT)
     elif 88.8 <= t < 91.0:  # step 10: the middle bracket's anchor nut
         nut = face_pt(0, 2) + Vector((0, -0.0112, 0))
-        rot = DEG(120) * seg(t, 89.2, 90.4)
+        swing, _ = stroke(t, 89.2, 90.4, DEG(120))
         k = seg(t, 88.8, 89.2) - seg(t, 90.4, 91.0)
-        sp = W @ Matrix.Translation(nut + Vector((0, -0.12, 0)) * (1 - k)) @ Matrix.Rotation(rot, 4, "Y") @ basis((0, -1, 0), (-0.95, 0, -0.3))
+        sp = W @ Matrix.Translation(nut + Vector((0, -0.12, 0)) * (1 - k)) @ Matrix.Rotation(swing, 4, "Y") @ basis((0, -1, 0), RATCHET_HINT)
     elif 63.0 <= t < 65.6:  # step 7: snug a sill bolt from below
         pv = p0["pivot"].matrix_world
         up = (pv.to_3x3() @ Vector((0, 0, 1))).normalized()
         head = pv @ Vector((-0.025, -(100.0 - 23.5) * MM, 0.0235))
-        rot = DEG(45) * seg(t, 63.6, 64.8)
+        swing, _ = stroke(t, 63.6, 64.8, DEG(60), 2)
         k = seg(t, 63.0, 63.4) - seg(t, 65.0, 65.6)
-        sp = Matrix.Translation(head - up * 0.1 * (1 - k)) @ Matrix.Rotation(rot, 4, up) @ basis(-up, (-1, 0, 0))
+        sp = Matrix.Translation(head - up * (0.0045 + 0.1 * (1 - k))) @ Matrix.Rotation(swing, 4, up) @ basis(-up, (0.25, -1, 0))
     elif 79.4 <= t < 81.8:  # step 9: the right bracket's lock bolt
         pv = p1["pivot"].matrix_world
         head = pv @ (Vector((0.0103, 0, 0)) + hw_local(p1, "lock", "bolt"))
         ax = (pv.to_3x3() @ Vector((1, 0, 0))).normalized()
-        rot = DEG(150) * seg(t, 79.8, 81.2)
+        swing, rot = stroke(t, 79.8, 81.2, DEG(150))
         k = seg(t, 79.4, 79.8) - seg(t, 81.2, 81.8)
-        sp = Matrix.Translation(head + ax * 0.09 * (1 - k)) @ Matrix.Rotation(rot, 4, ax) @ basis(ax, (0, -0.45, -0.89))
+        sp = Matrix.Translation(head + ax * (0.004 + 0.09 * (1 - k))) @ Matrix.Rotation(swing, 4, ax) @ basis(ax, (0, -0.9, -0.43))
         for kind, ob, base in p1["hw"]["lock"]:
             if kind == "bolt":
                 ob.rotation_euler = (rot, 0, 0)
     if sp is not None:
-        show(S["spanner"], True)
-        S["spanner"].matrix_world = sp
+        show(S["ratchet"], True)
+        S["ratchet"].matrix_world = sp
     # step 3: where the landing sill goes, and the car sill
     if shot == "top3" and 21.6 <= t < 30.2:
         show(S["car_sill"], True)

@@ -1,6 +1,5 @@
 """python fetch_assets.py — downloads the render inputs into assets/ and checks every file against its pinned hash.
 Poly Haven (CC0 1.0, https://polyhaven.com/license): concrete + dirty_concrete textures, the interior_construction
-HDRI, the Drill_01 and combination_wrench models — straight from the files CDN, no API. Inter 4.0 (SIL OFL 1.1,
 https://github.com/rsms/inter): the overlay's typeface. Writes assets/LICENSES.txt. Safe to run again: skips what is
 already there and correct."""
 import hashlib
@@ -25,11 +24,6 @@ POLYHAVEN = [  # (path under assets/, url, md5) — pinned 23.11.2026
     ("Drill_01/textures/Drill_01_metallic_2k.exr", "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/Drill_01/Drill_01_metallic_2k.exr", "2ff3f1b27dd89f1cdb085ffab028fb1b"),
     ("Drill_01/textures/Drill_01_diff_2k.jpg", "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/Drill_01/Drill_01_diff_2k.jpg", "e228492108e8c22d0d4edb7508b24a47"),
     ("Drill_01/textures/Drill_01_roughness_2k.jpg", "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/Drill_01/Drill_01_roughness_2k.jpg", "2213264258857d064f8ed1c8bd544d2d"),
-    ("combination_wrench/combination_wrench_2k.blend", "https://dl.polyhaven.org/file/ph-assets/Models/blend/2k/combination_wrench/combination_wrench_2k.blend", "0d4c162b5d89ae44edd954ef3ecfe5eb"),
-    ("combination_wrench/textures/combination_wrench_diff_2k.jpg", "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/combination_wrench/combination_wrench_diff_2k.jpg", "df5f40c540ed2e1eda362df44ca78c5e"),
-    ("combination_wrench/textures/combination_wrench_metal_2k.exr", "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/combination_wrench/combination_wrench_metal_2k.exr", "40b0760c2f1e70ab928b05861074e474"),
-    ("combination_wrench/textures/combination_wrench_nor_gl_2k.exr", "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/combination_wrench/combination_wrench_nor_gl_2k.exr", "8b4aaa6fac4c782a02e0673ef6b2061f"),
-    ("combination_wrench/textures/combination_wrench_rough_2k.exr", "https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/combination_wrench/combination_wrench_rough_2k.exr", "3daa6e8985e4c0caa58950e9b01e5ed0"),
 ]
 INTER = ("https://github.com/rsms/inter/releases/download/v4.0/Inter-4.0.zip",
          "ff970a5d4561a04f102a7cb781adbd6ac4e9b6c460914c7a101f15acb7f7d1a4")
@@ -37,7 +31,6 @@ FONTS = ("Inter-Regular", "Inter-Medium", "Inter-SemiBold", "Inter-Bold", "Inter
 LICENSES = """Render inputs of the Panev mounting video — internal, not redistributed, not in git.
 
 Poly Haven assets — CC0 1.0 (public domain), https://polyhaven.com/license
-  textures: concrete (Rob Tuytel), dirty_concrete; HDRI: interior_construction; models: Drill_01, combination_wrench
   source: https://polyhaven.com/a/<name> · downloaded by fetch_assets.py from dl.polyhaven.org, md5-checked
 
 Inter 4.0 — SIL Open Font License 1.1, https://github.com/rsms/inter (fonts/LICENSE.txt)

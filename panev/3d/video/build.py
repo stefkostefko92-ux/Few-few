@@ -1,6 +1,6 @@
 """Builds the mounting-video scene: the out-of-plumb concrete wall under the landing, two bracket pairs
 (A 45 175 2 + B 45 320, DX) from the site's 3-D engine, M10 wedge anchors in 10 mm holes, the tools
-(hammer drill, marker, spanner, spirit level) and the landing-door sill. Returns handles for pose.py."""
+(hammer drill, marker, ratchet, spirit level, angle grinder) and the landing-door sill. Returns handles for pose.py."""
 import json
 import math
 import os
@@ -10,8 +10,9 @@ from mathutils import Matrix, Vector, noise as mnoise
 from lib import MM, Y_UP, link, mesh_from, empty, box, cylinder, node
 from materials import ASSETS, make_materials
 from grinder import build_grinder
+from ratchet import build_ratchet
 from cut import build_cut
-from props import SILL_H, build_drill, build_marker, build_spanner, build_level, build_sill
+from props import SILL_H, build_drill, build_marker, build_level, build_sill
 
 HERE = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
 LEAN = math.radians(5.0)      # the wall is out of plumb: its top leans 5° into the shaft
@@ -245,7 +246,7 @@ def build(scene):
             marks.append((k, j, mk))
     drill, bit = build_drill(M)
     marker = build_marker(M)
-    spanner = build_spanner(M)
+    ratchet = build_ratchet(M)
     level, bub1, bub2 = build_level(M)
     sill = build_sill(M, 0.86)
     ghosts = {}
@@ -263,7 +264,7 @@ def build(scene):
     cam.data.clip_start, cam.data.clip_end = 0.01, 30
     scene.camera = cam
     return {"M": M, "meta": meta, "wall": wall, "face": face, "z_top": z_top, "grid": grid, "pairs": pairs,
-            "holes": holes, "marks": marks, "drill": drill, "bit": bit, "marker": marker, "spanner": spanner,
+            "holes": holes, "marks": marks, "drill": drill, "bit": bit, "marker": marker, "ratchet": ratchet,
             "level": level, "bub1": bub1, "bub2": bub2, "sill": sill, "ghost_sill": ghost_sill, "car_sill": car_sill,
             "grinder": grinder, "cuts": cuts,
             "worlds": worlds, "lights": lights, "cam": cam,

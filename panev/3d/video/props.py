@@ -1,4 +1,4 @@
-"""The tools and the sill of the mounting video: masonry bit, Poly Haven drill and spanner (CC0), marker, spirit level,
+"""The tools and the sill of the mounting video: masonry bit, Poly Haven drill (CC0), marker, spirit level,
 the landing-door sill profile."""
 import math
 import bmesh
@@ -76,17 +76,6 @@ def build_marker(M):
     cylinder("marker-cone", 0.0075, 0.014, M["graphite"], loc=(0, -0.026, 0), axis="Y", r2=0.0024, parent=g)
     cylinder("marker-body", 0.0085, 0.11, M["navy"], loc=(0, -0.136, 0), axis="Y", bev=0.0015, parent=g)
     cylinder("marker-end", 0.0088, 0.018, M["graphite"], loc=(0, -0.148, 0), axis="Y", bev=0.002, parent=g)
-    return g
-
-
-def build_spanner(M):
-    """Photo-scanned combination spanner (Poly Haven combination_wrench) sized for M10 nuts (16 mm): ring centre at
-    the origin, ring axis +z, handle along +x."""
-    g = empty("spanner")
-    ob = scanned_prop("combination_wrench", "combination_wrench/combination_wrench_2k.blend")
-    ob.data.transform(Matrix.Rotation(math.radians(-90), 4, "Z") @ Matrix.Scale(0.82, 4) @ Matrix.Translation((0.0, 0.1393, -0.0049)))
-    ob.matrix_world = Matrix.Identity(4)
-    ob.parent = g
     return g
 
 
