@@ -15,6 +15,7 @@ verify.py checks them (check()). Units: pt."""
 import re
 from html import escape
 import pymupdf
+import anno as A
 import summary as S
 
 NAVY, STEEL = (0.0863, 0.1569, 0.3843), (0.5294, 0.5294, 0.5255)
@@ -145,6 +146,8 @@ def build(base_pdf):
             raise SystemExit(f"ritocchi: the pills of pages {n} and {src} are not centred alike")
         pages.setdefault(n, dict(page=n))["tab"] = dict(label=label, src=src, old=(812, old.y0 - 17, 860, old.y1 + 21), area=(812, new.y0 - 15.9, 841.92, new.y1 + 20.1))
     pages.setdefault(SHIP, dict(page=SHIP))["shipping"] = shipping(doc)
+    for n, y in A.build(doc).items():  # the year (anno.py)
+        pages.setdefault(n, dict(page=n))["year"] = y
     return [pages[n] for n in sorted(pages)]
 
 
@@ -162,7 +165,7 @@ CSS = """
 .rt-row .c { font-weight: 700; color: #162862; }
 .rt-ship { font-size: 7.125pt; line-height: 1; white-space: pre; color: #1b2733; }
 .rt-ship b { font-weight: 700; color: #162862; }
-"""
+""" + A.CSS
 
 
 def sheet(p):
@@ -178,6 +181,8 @@ def sheet(p):
         out += f'<div class="abs rt-rule" style="left:{rx:.2f}pt;top:{ry:.2f}pt;width:{rw:.2f}pt"></div>'
     for t in p.get("shipping", {}).get("lines", []):
         out += f'<div class="abs rt-ship" style="left:{t["x"]:.2f}pt;top:{t["y"] - SHIP_SIZE * ASCENT - 0.27:.2f}pt"><b>{escape(t["bold"])}</b>{escape(t["text"])}</div>'
+    if "year" in p:
+        out += A.sheet(p["year"])
     if "table" in p:
         t = p["table"]
         cols = t["cols"]
@@ -222,6 +227,8 @@ def apply(doc, tpl, gen, data):
             wipe(page, [SHIP_AREA], [])
             if page.get_text("text", clip=SHIP_AREA).strip():
                 raise SystemExit("ritocchi: the old delivery times are still on page 66")
+        if "year" in p:
+            A.apply(page, p["year"])
         if "tab" in p:
             t = p["tab"]
             # The pill and its shadow run past the page's edge, and so does the rectangle that has to cover them
@@ -240,7 +247,8 @@ def check(doc, data):
     flat = lambda t: "".join(t.split()).upper()
     problems = []
     for p in data["pages"]:
-        page = next(x for x in doc if x.get_label() == f"{p['page']:02d}")
+        label = {0: "Copertina", 67: "Retro"}.get(p["page"], f"{p['page']:02d}")  # the cover and the back have names
+        page = next(x for x in doc if x.get_label() == label)
         if "tab" in p and flat(page.get_text(clip=pymupdf.Rect(t := p["tab"]["old"]))) != flat(p["tab"]["label"]):
             problems.append(f"page {p['page']}: the side tab reads {page.get_text(clip=pymupdf.Rect(t))!r}")
         for i in p.get("legend", {}).get("items", []):
@@ -255,6 +263,8 @@ def check(doc, data):
                     problems.append(f"page 63: the comparison table's line at {line['y']:.1f} reads {got}, not {want}")
         if "shipping" in p and flat(page.get_text(clip=SHIP_AREA)) != flat("".join(t["bold"] + t["text"] for t in p["shipping"]["lines"])):
             problems.append(f"page 66: the delivery card reads {page.get_text(clip=SHIP_AREA)!r}")
+        if "year" in p:
+            problems += A.check(page, p["year"])
         if any(k in p for k in ("legend", "table")) and flat(page.get_text(clip=pymupdf.Rect(40, 563, 378, 578.8))):
             problems.append(f"page {p['page']}: text under the footer")
     return problems

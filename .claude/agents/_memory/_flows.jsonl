@@ -884,6 +884,8 @@
 {"t":"handoff","ts":"2026-11-23T09:31:15.932Z","id":"r7782e8d7","from":"razbivacha","to":"kodadjiyata","status":"наред","note":"трети преглед (r6749f409): N1–N8 затворени в b1085eb5d"}
 {"t":"close","ts":"2026-11-23T09:31:15.963Z","id":"r7782e8d7","status":"завършен"}
 {"t":"close","ts":"2026-11-23T09:31:15.996Z","id":"r6749f409","status":"завършен"}
+{"t":"start","ts":"2026-11-23T12:40:52.294Z","id":"r0e509c4a","flow":"авто","lead":"prevodach","auto":true}
+{"t":"handoff","ts":"2026-11-23T12:40:52.294Z","id":"r0e509c4a","from":"prevodach","to":"човек","status":"има бележки","run":"3c954617"}
 {"t":"start","ts":"2026-11-23T11:02:15.968Z","id":"r22b4cdc3","flow":"авто","lead":"razbivacha","auto":true}
 {"t":"handoff","ts":"2026-11-23T11:02:15.969Z","id":"r22b4cdc3","from":"razbivacha","to":"dizayner","status":"наред","run":"4618e1c1"}
 {"t":"handoff","ts":"2026-11-23T11:02:27.804Z","id":"r22b4cdc3","from":"prodavacha","to":"оркестратор","status":"има бележки","run":"1ed663fb"}
@@ -941,6 +943,8 @@
 {"t":"start","ts":"2026-11-23T18:32:26.296Z","id":"r7dcbb68b","flow":"авто","lead":"razbivacha","auto":true}
 {"t":"handoff","ts":"2026-11-23T18:32:26.297Z","id":"r7dcbb68b","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"10e38824"}
 {"t":"close","ts":"2026-11-23T18:35:45.014Z","id":"r7dcbb68b","status":"завършен"}
+{"t":"start","ts":"2026-11-24T07:05:57.952Z","id":"rba6dd326","flow":"авто","lead":"prevodach","auto":true}
+{"t":"handoff","ts":"2026-11-24T07:05:57.952Z","id":"rba6dd326","from":"prevodach","to":"човек","status":"има бележки","run":"231eece6"}
 {"t":"start","ts":"2026-11-24T06:35:12.974Z","id":"r6cc40e27","flow":"авто","lead":"seo","auto":true}
 {"t":"handoff","ts":"2026-11-24T06:35:12.974Z","id":"r6cc40e27","from":"seo","to":"човек","status":"има бележки","run":"15ff79f7"}
 {"t":"start","ts":"2026-11-24T06:40:54.139Z","id":"r6a2fc773","flow":"авто","lead":"pravniyat-razbirach","auto":true}

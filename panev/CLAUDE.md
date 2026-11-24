@@ -22,7 +22,7 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
   `i18n/<език>/families.mjs`): `staffe-porte-di-piano`, `supporti-guide-contrappeso`, `staffe-guida-sg`,
   `staffe-su-misura` (+ EN/BG slug-ове) — H1 с търсената фраза, отговор отпред, таблиците от
   ценоразписа, FAQ, линк към страниците в PDF-а, breadcrumbs (визуални + schema). Продуктите носят
-  Product + Offer (`priceValidUntil` = `CATALOG_VALID_UNTIL` в `products.mjs` — **поднови го за 2027**).
+  Product + Offer (`priceValidUntil` = `CATALOG_VALID_UNTIL` в `products.mjs` — изданието е 2027 от 24.11.2026, **поднови го за 2028**).
 - **Задълбочени страници** (`site/templates/guides.mjs`, текстове в `i18n/<език>/guides.mjs`), по една
   за въпрос, който купувачът задава на търсачка или на AI: **патентът** (`/brevetto`, `/en/patent`,
   `/bg/patent`: данните от сертификата, какво защитава, частите на планката, FAQ) и **неравни зидарии**
