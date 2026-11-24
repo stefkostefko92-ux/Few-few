@@ -220,12 +220,13 @@
       "id": "ultrareview-pricing",
       "kind": "platform",
       "statement": "Ultrareview (`/code-review ultra`, изследователски преглед на Claude Code) на Pro, Max и Ultra: 3 безплатни пускания еднократно на акаунт (не се подновяват), после обикновено $5–25 на преглед от usage credits; броенето започва при старта на облачната сесия. Code Review, PR Steward и Claude Approvals (Claude Ship) са само за Team и Enterprise. Ultra е новото име на Max 20x.",
-      "source": "https://code.claude.com/docs/en/ultrareview.md (Pricing and free runs) + https://code.claude.com/docs/en/feature-availability.md (Availability by subscription plan)",
+      "source": "https://code.claude.com/docs/en/ultrareview.md (Pricing and free runs) + https://code.claude.com/docs/en/feature-availability.md (Availability by subscription plan) + https://code.claude.com/docs/en/claude-ship.md (името Claude Ship за Code Review, PR Steward и Claude Approvals)",
       "agents": [
         "ai-djiyata"
       ],
       "checkedAt": "2026-11-24",
-      "note": "Решение на собственика 24.11.2026 (план Ultra): Ultrareview по избор за PR-и в ядрото, само с „да“; ползва се от core-map.mjs ultrareviewHint, pr-triage и pr-review. Изследователски преглед — цената и наличността се менят."
+      "note": "Решение на собственика 24.11.2026 (план Ultra): Ultrareview по избор за PR-и в ядрото, само с „да“; ползва се от core-map.mjs ultrareviewHint, pr-triage и pr-review. Изследователски преглед — цената и наличността се менят, затова TTL 30 дни (преглед на PR #482, AI-джията). Сумите живеят само тук; core-map и commit-pr сочат този запис.",
+      "ttlDays": 30
     }
   ]
 }

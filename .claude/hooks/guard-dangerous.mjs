@@ -41,6 +41,9 @@ export const CATASTROPHIC = [
   { re: /\b(?:powershell|pwsh)(?:\.exe)?\b[^\n]*\s-e(?:c|nc\w*)?\s+["']?[A-Za-z0-9+/=]{16,}/i, why: "кодирана PowerShell команда (-EncodedCommand крие какво се изпълнява)" },
   // Разбивача, 23.11.2026 (N4): агент, който пуска нова сесия на Claude Code (`claude -p`, с `--bare` — без куки
   // изобщо), минава покрай месечния таван и всички пазачи. Живият гейт я пуска през spawn в Node, не през Bash.
+  // AI-джията, преглед на PR #482 (24.11.2026): `claude ultrareview` е съгласие за таксуване още при пускането,
+  // а с --post публикува в PR без въпрос. Пуска го само собственикът (`/code-review ultra <номер>` в своя терминал).
+  { re: /(?:^|[;&|(]\s*|\n\s*|\b(?:sudo|exec|nohup|env)\s+)claude(?:\.exe)?\s+(?:[^\n;&|]*\s)?ultrareview\b/, why: "платен Ultrareview от агент (claude ultrareview) — таксува usage credits и с --post публикува в PR без въпрос; пуска го само собственикът: /code-review ultra <номер> в своя терминал" },
   { re: /(?:^|[;&|(]\s*|\n\s*|\b(?:sudo|exec|nohup|env)\s+)(?:claude(?:\.exe)?\s+(?:[^\n;&|]*\s)?(?:-p|--print|--bare)\b|npx\s+(?:-y\s+)?@anthropic-ai\/claude-code\b)/, why: "вложена сесия на Claude Code от агент (claude -p) — заобикаля тавана на разхода и пазачите" },
 ];
 

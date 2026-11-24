@@ -37,6 +37,9 @@ test("ядро → Ultrareview по избор: PR режим, само с „д
   assert.match(h, /usage credits/);
   assert.match(h, /клонира PR-а от GitHub/, "не качва работното дърво");
   assert.match(h, /без --post/);
+  assert.ok(!/\$\s?\d/.test(h), "сумите живеят само в claims.json ultrareview-pricing (преглед на PR #482)");
+  assert.match(h, /claims\.json ultrareview-pricing/);
+  assert.match(h, /пазачът го спира/, "от Bash — никога");
   assert.match(ultrareviewHint(coreReport(["CSPos/src/lib/money.ts"])), /\/code-review ultra <номер на PR>/, "без номер — шаблон");
   assert.equal(ultrareviewHint(coreReport(["CSPos/src/app/login/page.tsx"])), "", "листа — нищо");
   assert.equal(ultrareviewHint(null), "");

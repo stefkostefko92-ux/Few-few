@@ -52,15 +52,16 @@ export const PLAN_REVIEW = "↳ ядро: планът минава през в�
 export function planReviewHint(report) { return report?.core?.length ? PLAN_REVIEW : ""; }
 
 // Ядро → по избор и втори, независим преглед извън флота: Ultrareview (решение на собственика 24.11.2026, план
-// Ultra). Платен е (3 безплатни еднократно, после usage credits) и се пуска САМО от човек — Claude не го стартира
+// Ultra). Платен е (usage credits след безплатните) и се пуска САМО от човек — Claude не го стартира
 // сам (договор ultrareview-human-only, цената — claims.json ultrareview-pricing). PR режимът клонира от GitHub, без
 // да качва работното дърво (на Windows без WSL клонът качва и непубликуваните промени във файловете).
-export function ultrareviewHint(report, pr) {
-  if (!report?.core?.length) return "";
+export function ultrareviewLine(pr) {
   return `↳ ядро: по избор и само с „да“ на собственика — Ultrareview: \`/code-review ultra ${pr || "<номер на PR>"}\` ` +
-    "(облачен флот от проверяващи, всяка находка възпроизведена; 3 безплатни еднократно, после ~$5–25 от usage credits). " +
-    "PR режимът клонира PR-а от GitHub и не качва работното дърво; без --post — находките не отиват в PR, освен ако собственикът избере.";
+    "(облачен флот от проверяващи, всяка находка възпроизведена; платен — usage credits след безплатните, цена: claims.json ultrareview-pricing). " +
+    "PR режимът клонира PR-а от GitHub и не качва работното дърво; без --post — находките не отиват в PR, освен ако собственикът избере. " +
+    "От Bash (`claude ultrareview`) не се пуска — пазачът го спира.";
 }
+export function ultrareviewHint(report, pr) { return report?.core?.length ? ultrareviewLine(pr) : ""; }
 
 async function runCli() {
   const argv = process.argv.slice(2);

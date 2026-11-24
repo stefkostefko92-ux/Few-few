@@ -23,7 +23,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { ROOT, ALLOWED, makeWorktree, runJobs, claudeAvailable } from "./evals/live-run.mjs";
 import { LEDGER, triage, changedFiles, loadLedger } from "./pr-triage.mjs";
-import { ultrareviewHint } from "./core-map.mjs";
+import { ultrareviewLine } from "./core-map.mjs";
 import { startBatch, endBatch } from "../lib/learning-batch.mjs";
 import { isMain } from "../lib/is-main.mjs";
 
@@ -155,7 +155,7 @@ export function renderReport(results) {
   for (const row of rows) {
     lines.push(`## #${row.pr} — ${row.worst} — ${row.title}`);
     for (const r of row.rs) lines.push(`- **${r.agent}** · ${r.ok ? verdictOf(r.text) : "неуспешно пускане"} · $${r.costUsd.toFixed(2)}${r.ok && findingsOf(r.text) ? ` — ${findingsOf(r.text)}` : ""}`);
-    if (row.rs.some((r) => r.ultrareview)) lines.push(`- ${ultrareviewHint({ core: [true] }, row.pr)}`);
+    if (row.rs.some((r) => r.ultrareview)) lines.push(`- ${ultrareviewLine(row.pr)}`);
     lines.push("");
   }
   return lines.join("\n");
