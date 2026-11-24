@@ -140,8 +140,12 @@ src/lib/                 http (retry/кеш/curl + ZIP magic-byte валидац
 
 **Carbon Stealth VCC** · ЕИК/VAT **BG208725180** · седалище **ul. Samuil 3,
 2670 Bobov Dol, Bulgaria** · **info@carbonstealth.eu** · тел. +39 379 296 9699
-(IT) / +359 877 414 874 (BG). Попълнени в `config.json → titolare` (импресум,
-privacy, rettifiche). **Не питай собственика повторно за тях.**
+(IT) / +359 877 414 874 (BG). Отговорно лице: **Stefan Kostadinov** (управител;
+собственикът, 24.11.2026). Попълнени в `config.json → titolare`; **единственият** четец е
+`src/lib/titolare.js` → бележките (`#contatti`), footer-а (видимият контакт = контактът в
+схемата) и `#org` в JSON-LD (правните данни са на `parentOrganization`, не на проекта).
+Без сурови данни: `src/render/legal.js` + `orgJsonLd` върху комитнатия site/, после
+`npm run shell && npm run seo`. **Не питай собственика повторно за тях.**
 Хостинг: **Hetzner Online GmbH, Нюрнберг (ЕС)** — `config.hosting`; без
 трансфер извън ЕС → privacy не изисква DPF/SCC клауза. VPS-аджията ползва
 същия модел деплой като другите продукти (виж deploy/README.md).
