@@ -1,6 +1,5 @@
 import type { PrismaClient } from '@prisma/client';
 import type { Channel, ConsentRecord, RegistryName } from '../compliance/types.js';
-import { newest } from './newest.js';
 import type {
   ComplianceStore,
   ConsentInput,
@@ -31,17 +30,18 @@ export class PrismaStore implements ComplianceStore {
     return entries.length;
   }
 
-  async latestRegistryResult(
+  async registryResultsPerKey(
     registry: RegistryName,
     fingerprints: string[],
-  ): Promise<StoredRegistryResult | null> {
+  ): Promise<Map<string, StoredRegistryResult>> {
     const rows = await this.db.registryResult.findMany({
       where: { registry, fingerprint: { in: fingerprints } },
-      orderBy: { checkedAt: 'desc' },
-      take: 20,
-      select: { listed: true, checkedAt: true },
+      // по един ред на отпечатък: най-новият, а при еднаква дата — „вписан“ (true > false)
+      orderBy: [{ checkedAt: 'desc' }, { listed: 'desc' }],
+      distinct: ['fingerprint'],
+      select: { fingerprint: true, listed: true, checkedAt: true },
     });
-    return rows.reduce<StoredRegistryResult | null>((best, r) => newest(best, r), null);
+    return new Map(rows.map((r) => [r.fingerprint, { listed: r.listed, checkedAt: r.checkedAt }]));
   }
 
   async saveSnapshot(
@@ -63,21 +63,30 @@ export class PrismaStore implements ComplianceStore {
     });
   }
 
-  async latestSnapshotResult(
+  async latestSnapshot(
     registry: RegistryName,
     fingerprints: string[],
-  ): Promise<StoredRegistryResult | null> {
+  ): Promise<{ takenAt: Date; listed: Set<string> } | null> {
     const snap = await this.db.registrySnapshot.findFirst({
       where: { registry },
       orderBy: { takenAt: 'desc' },
       select: { id: true, takenAt: true },
     });
     if (!snap) return null;
-    const hit = await this.db.registrySnapshotEntry.findFirst({
+    const hits = await this.db.registrySnapshotEntry.findMany({
       where: { snapshotId: snap.id, fingerprint: { in: fingerprints } },
       select: { fingerprint: true },
     });
-    return { listed: hit !== null, checkedAt: snap.takenAt };
+    return { takenAt: snap.takenAt, listed: new Set(hits.map((h) => h.fingerprint)) };
+  }
+
+  async latestSnapshotSize(registry: RegistryName): Promise<number> {
+    const snap = await this.db.registrySnapshot.findFirst({
+      where: { registry },
+      orderBy: { takenAt: 'desc' },
+      select: { _count: { select: { entries: true } } },
+    });
+    return snap?._count.entries ?? 0;
   }
 
   async isSuppressed(fingerprints: string[]): Promise<boolean> {

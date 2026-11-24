@@ -16,7 +16,7 @@ export interface AppDeps {
   now: () => Date;
   nowSeconds: () => number;
   pingDb: () => Promise<boolean>;
-  onError?: (err: unknown) => void;
+  onError?: (info: { kind: string; status: number }) => void;
 }
 
 const PUBLIC_DIR = fileURLToPath(new URL('../../public/', import.meta.url));
@@ -70,14 +70,21 @@ export function createApp(deps: AppDeps): express.Express {
   app.use(express.static(PUBLIC_DIR, { index: 'index.html', maxAge: '1h' }));
 
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
-    deps.onError?.(err);
     const status =
       typeof err === 'object' && err !== null && 'status' in err && typeof err.status === 'number'
         ? err.status
         : 500;
+    // Само вид и код — съобщението на JSON.parse и на Prisma може да носи откъс от данните.
+    const kind =
+      typeof err === 'object' && err !== null && 'type' in err && typeof err.type === 'string'
+        ? err.type
+        : err instanceof Error
+          ? err.name
+          : 'unknown';
+    if (status >= 500) deps.onError?.({ kind, status });
     res
       .status(status >= 400 && status < 500 ? status : 500)
-      .json({ error: 'Грешка при заявката.' });
+      .json({ error: status < 500 ? 'Невалидна заявка.' : 'Грешка при заявката.' });
   });
   return app;
 }

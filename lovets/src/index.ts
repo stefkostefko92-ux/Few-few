@@ -19,8 +19,7 @@ async function main(): Promise<void> {
       await db.$queryRaw`SELECT 1`;
       return true;
     },
-    onError: (err) =>
-      logger.error({ err: err instanceof Error ? err.message : 'unknown' }, 'request failed'),
+    onError: (info) => logger.error(info, 'request failed'),
   });
   const server = app.listen(config.httpPort, '0.0.0.0', () =>
     logger.info({ port: config.httpPort }, 'lovets listening'),

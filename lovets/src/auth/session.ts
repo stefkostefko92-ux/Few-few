@@ -22,7 +22,10 @@ export function signSession(claims: SessionClaims, secret: string): Promise<stri
 
 export async function verifySession(token: string, secret: string): Promise<SessionClaims | null> {
   try {
-    const { payload } = await jwtVerify(token, key(secret), { algorithms: ['HS256'] });
+    const { payload } = await jwtVerify(token, key(secret), {
+      algorithms: ['HS256'],
+      requiredClaims: ['exp', 'sub'],
+    });
     if (typeof payload.sub !== 'string' || typeof payload.ver !== 'number') return null;
     return { ownerId: payload.sub, version: payload.ver };
   } catch {

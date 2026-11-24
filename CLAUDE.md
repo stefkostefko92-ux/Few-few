@@ -42,6 +42,7 @@ file holds only what is true across all products. Keep it that way.
 | `korpora/` | Korpora — корпусни мебели в браузъра (3D, разкрой, чертежи за пробиване, DXF/G-code) | Node 22 · TS · Express 5 · Prisma · PostgreSQL · three.js · Docker | BG/EN/IT · korpora.carbonstealth.eu · плановете се активират **ръчно** · каталогът е в репото **само шифрован** |
 | `fakturist/` | Фактурист — фактуриране върху EN 16931 (UBL + CII) за фирми и кантори | Node 22 · TS · Express 5 · Prisma · PostgreSQL · Docker | BG/EN · fakturist.carbonstealth.eu |
 | `rilievi/` | Rilievi Impianti — портал за схемите за оглед на асансьори (карти, листове за интервенция, табели) | Node 22 · TS · Express 5 · Prisma · PostgreSQL · Docker | IT · rilievi.carbonstealth.eu (порт 4330) · **само покана** · многофирмен, 7 роли · 2FA по избор |
+| `lovets/` | Ловец — вътрешно B2B търсене на клиенти + „може ли да пишем/звъним“ (КЗП, RPO) | Node 22 · TS · Express 5 · Prisma · PostgreSQL | BG/IT · само собственикът · порт 4360 |
 | `cs-revolution/` | Carbon Stealth — фирменият сайт (уеб агенция и софтуер) | Vite · React 18 SPA (началната) + ~400 статични страници от Python генератори · PHP API · живи сцени от Blender (`public/js/cs-live.js`) | IT/EN/BG · carbonstealth.eu · деплой от клон `deploy-live` с `deploy-all.sh` (**не** през autodeploy) · **логото не се променя** |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`

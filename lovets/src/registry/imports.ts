@@ -1,4 +1,4 @@
-import { normalizeEmail, normalizePhone } from '../compliance/normalize.js';
+import { canonicalDomain, normalizeEmail, normalizePhone } from '../compliance/normalize.js';
 import type { RegistryName } from '../compliance/types.js';
 
 /**
@@ -21,7 +21,6 @@ export interface ImportError {
 
 const YES = new Set(['1', 'да', 'si', 'sì', 'yes', 'y', 'true', 'iscritto', 'вписан', 'listed']);
 const NO = new Set(['0', 'не', 'no', 'n', 'false', 'non iscritto', 'невписан', 'not_listed']);
-const DOMAIN_RE = /^(?=.{4,253}$)([a-z0-9-]+\.)+[a-z]{2,}$/;
 
 function lines(text: string): string[] {
   const all = text.split(/\r?\n/);
@@ -37,9 +36,7 @@ export function normalizeRegistryValue(raw: string, registry: RegistryName): str
     const p = normalizePhone(raw, 'IT');
     return p && p.startsWith('+39') ? p : null;
   }
-  const v = raw.trim().toLowerCase();
-  if (v.includes('@')) return normalizeEmail(v);
-  return DOMAIN_RE.test(v) ? v : null;
+  return raw.includes('@') ? normalizeEmail(raw) : canonicalDomain(raw);
 }
 
 export function parseRegistryResults(

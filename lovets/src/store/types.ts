@@ -30,22 +30,24 @@ export interface ComplianceStore {
     checkedAt: Date,
     source: string,
   ): Promise<number>;
-  /** Най-новият резултат за някой от отпечатъците; при еднаква дата „вписан“ печели. */
-  latestRegistryResult(
+  /** Най-новият резултат за всеки отпечатък поотделно; при еднаква дата „вписан“ печели. */
+  registryResultsPerKey(
     registry: RegistryName,
     fingerprints: string[],
-  ): Promise<StoredRegistryResult | null>;
+  ): Promise<Map<string, StoredRegistryResult>>;
   saveSnapshot(
     registry: RegistryName,
     takenAt: Date,
     fingerprints: string[],
     source: string,
   ): Promise<void>;
-  /** Присъдата на най-новата пълна снимка на регистъра: вписан ли е някой от отпечатъците. */
-  latestSnapshotResult(
+  /** Най-новата пълна снимка: датата ѝ и кои от отпечатъците са вписани в нея. */
+  latestSnapshot(
     registry: RegistryName,
     fingerprints: string[],
-  ): Promise<StoredRegistryResult | null>;
+  ): Promise<{ takenAt: Date; listed: Set<string> } | null>;
+  /** Колко стойности има в най-новата снимка (0 — няма снимка). */
+  latestSnapshotSize(registry: RegistryName): Promise<number>;
   isSuppressed(fingerprints: string[]): Promise<boolean>;
   addSuppression(fingerprint: string, scope: SuppressionScope, reason: string): Promise<void>;
   consentsFor(fingerprint: string, channel?: Channel): Promise<ConsentRecord[]>;

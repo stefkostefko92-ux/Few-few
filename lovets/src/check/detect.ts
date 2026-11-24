@@ -1,3 +1,4 @@
+import { canonicalDomain, emailDomain, normalizeUrl, urlHost } from '../compliance/normalize.js';
 import type { Channel, Market } from '../compliance/types.js';
 
 export interface Detected {
@@ -5,40 +6,37 @@ export interface Detected {
   markets: Market[];
 }
 
+function marketOfDomain(domain: string | null): Market | null {
+  if (!domain) return null;
+  if (domain.endsWith('.bg') || domain.endsWith('.xn--90ae')) return 'BG';
+  if (domain.endsWith('.it')) return 'IT';
+  return null;
+}
+
 /**
- * Какво е въведено в търсачката: имейл, телефон или адрес на страница (LinkedIn профил или форма).
- * Пазарът: от номера (+359/+39), от домейна (.bg/.it), иначе от избора на човека, иначе и двата.
+ * Какво е въведено: имейл, телефон или адрес на страница (LinkedIn профил или форма). Пазарът:
+ * от номера (+359/+39) или от домейна (.bg/.it) — те печелят над избора на човека; иначе изборът;
+ * иначе и двата (по-строгото се вижда в присъдата).
  */
 export function detectQuery(query: string, market?: Market): Detected | null {
   const q = query.trim();
   if (!q) return null;
+  const pick = (byValue: Market | null): Market[] =>
+    byValue ? [byValue] : market ? [market] : ['BG', 'IT'];
   if (q.includes('@')) {
-    const tld = q.toLowerCase().split('.').pop();
-    const byTld: Market | null = tld === 'bg' ? 'BG' : tld === 'it' ? 'IT' : null;
-    return { channel: 'email', markets: market ? [market] : byTld ? [byTld] : ['BG', 'IT'] };
+    return { channel: 'email', markets: pick(marketOfDomain(canonicalDomain(emailDomain(q)))) };
   }
   if (/^https?:\/\//i.test(q)) {
-    const channel: Channel = /(^|\.)linkedin\.com$/i.test(safeHost(q)) ? 'linkedin' : 'form';
-    const tld = safeHost(q).split('.').pop();
-    const byTld: Market | null = tld === 'bg' ? 'BG' : tld === 'it' ? 'IT' : null;
-    return { channel, markets: market ? [market] : byTld ? [byTld] : ['BG', 'IT'] };
+    const url = normalizeUrl(q);
+    const host = url ? urlHost(url) : '';
+    const channel: Channel = host === 'linkedin.com' ? 'linkedin' : 'form';
+    return { channel, markets: pick(channel === 'form' ? marketOfDomain(host || null) : null) };
   }
-  if (/^[+\d][\d\s().\-/]{5,}$/.test(q)) {
-    if (q.replace(/\s/g, '').startsWith('+359') || q.startsWith('00359')) {
-      return { channel: 'phone', markets: ['BG'] };
-    }
-    if (q.replace(/\s/g, '').startsWith('+39') || q.startsWith('0039')) {
-      return { channel: 'phone', markets: ['IT'] };
-    }
-    return { channel: 'phone', markets: market ? [market] : ['BG', 'IT'] };
+  const compact = q.replace(/[\s().\-]/g, '');
+  if (/^(\+|00)?\d{6,}$/.test(compact)) {
+    if (/^(\+|00)359/.test(compact)) return { channel: 'phone', markets: ['BG'] };
+    if (/^(\+|00)39/.test(compact)) return { channel: 'phone', markets: ['IT'] };
+    return { channel: 'phone', markets: pick(null) };
   }
   return null;
-}
-
-function safeHost(url: string): string {
-  try {
-    return new URL(url).hostname.toLowerCase();
-  } catch {
-    return '';
-  }
 }

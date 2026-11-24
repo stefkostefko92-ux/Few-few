@@ -36,17 +36,20 @@ export class MemoryStore implements ComplianceStore {
     return entries.length;
   }
 
-  async latestRegistryResult(
+  async registryResultsPerKey(
     registry: RegistryName,
     fingerprints: string[],
-  ): Promise<StoredRegistryResult | null> {
-    let best: StoredRegistryResult | null = null;
+  ): Promise<Map<string, StoredRegistryResult>> {
+    const out = new Map<string, StoredRegistryResult>();
     for (const r of this.results) {
-      if (r.registry === registry && fingerprints.includes(r.fingerprint)) {
-        best = newest(best, { listed: r.listed, checkedAt: r.checkedAt });
-      }
+      if (r.registry !== registry || !fingerprints.includes(r.fingerprint)) continue;
+      const best = newest(out.get(r.fingerprint) ?? null, {
+        listed: r.listed,
+        checkedAt: r.checkedAt,
+      });
+      if (best) out.set(r.fingerprint, best);
     }
-    return best;
+    return out;
   }
 
   async saveSnapshot(
@@ -58,15 +61,26 @@ export class MemoryStore implements ComplianceStore {
     this.snapshots.push({ registry, takenAt, listed: new Set(fingerprints) });
   }
 
-  async latestSnapshotResult(
+  private newestSnapshot(registry: RegistryName): Snapshot | undefined {
+    return this.snapshots
+      .filter((s) => s.registry === registry)
+      .sort((x, y) => y.takenAt.getTime() - x.takenAt.getTime())[0];
+  }
+
+  async latestSnapshot(
     registry: RegistryName,
     fingerprints: string[],
-  ): Promise<StoredRegistryResult | null> {
-    const latest = this.snapshots
-      .filter((s) => s.registry === registry)
-      .sort((a, b) => b.takenAt.getTime() - a.takenAt.getTime())[0];
-    if (!latest) return null;
-    return { listed: fingerprints.some((f) => latest.listed.has(f)), checkedAt: latest.takenAt };
+  ): Promise<{ takenAt: Date; listed: Set<string> } | null> {
+    const snap = this.newestSnapshot(registry);
+    if (!snap) return null;
+    return {
+      takenAt: snap.takenAt,
+      listed: new Set(fingerprints.filter((f) => snap.listed.has(f))),
+    };
+  }
+
+  async latestSnapshotSize(registry: RegistryName): Promise<number> {
+    return this.newestSnapshot(registry)?.listed.size ?? 0;
   }
 
   async isSuppressed(fingerprints: string[]): Promise<boolean> {

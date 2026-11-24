@@ -27,6 +27,7 @@ const OWNER_EMAIL = 'owner@lovets.example';
 const OWNER_PASSWORD = fake('pass');
 const TOTP = generateTotpSecret();
 
+const logged: unknown[] = [];
 let server: Server;
 let base = '';
 let cookie = '';
@@ -46,6 +47,7 @@ before(async () => {
     now: () => NOW,
     nowSeconds: () => clockSeconds,
     pingDb: async () => true,
+    onError: (info) => logged.push(info),
   });
   server = app.listen(0);
   await new Promise((r) => server.once('listening', r));
@@ -134,7 +136,7 @@ test('търсачката през API: блок без КЗП, позволе�
   r = await post('/api/registry/kzp-snapshot', {
     takenAt: '2026-11-23T00:00:00Z',
     source: 'kzp.bg',
-    text: 'друга@firma2.bg\n',
+    text: 'drug@firma2.bg\n',
   });
   assert.equal(r.status, 200);
 
@@ -213,6 +215,46 @@ test('съгласие през API отключва италиански име
     ((await r.json()) as { results: { decision: string }[] }).results[0]?.decision,
     'allowed',
   );
+});
+
+test('снимка с грешен ред се отказва цяла; рязко по-малка иска потвърждение', async () => {
+  let r = await post('/api/registry/kzp-snapshot', {
+    takenAt: '2026-11-23T12:00:00Z',
+    source: 'kzp.bg',
+    text: 'Петров;ivan@drug.bg\nok@drug.bg\n',
+  });
+  assert.equal(r.status, 400);
+  const big = Array.from({ length: 10 }, (_, i) => `a${i}@drug.bg`).join('\n');
+  r = await post('/api/registry/kzp-snapshot', {
+    takenAt: '2026-11-23T12:00:00Z',
+    source: 'kzp.bg',
+    text: big,
+  });
+  assert.equal(r.status, 200);
+  r = await post('/api/registry/kzp-snapshot', {
+    takenAt: '2026-11-23T13:00:00Z',
+    source: 'kzp.bg',
+    text: 'a1@drug.bg',
+  });
+  assert.equal(r.status, 409);
+  r = await post('/api/registry/kzp-snapshot', {
+    takenAt: '2026-11-23T13:00:00Z',
+    source: 'kzp.bg',
+    text: 'a1@drug.bg',
+    confirmShrink: true,
+  });
+  assert.equal(r.status, 200);
+});
+
+test('невалиден JSON → 400 и нищо от тялото не стига до лога', async () => {
+  logged.length = 0;
+  const r = await fetch(`${base}/api/check`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', origin: ORIGIN, cookie },
+    body: '{"query":ivan.secret@firma.bg}',
+  });
+  assert.equal(r.status, 400);
+  assert.ok(!JSON.stringify(logged).includes('ivan'));
 });
 
 test('изход изтрива бисквитката', async () => {

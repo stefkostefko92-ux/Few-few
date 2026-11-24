@@ -1,11 +1,4 @@
-import type {
-  Channel,
-  ContactTarget,
-  Market,
-  PhoneSource,
-  Policy,
-  Verdict,
-} from '../compliance/types.js';
+import type { ContactTarget, Market, PhoneSource, Policy, Verdict } from '../compliance/types.js';
 import { DEFAULT_POLICY, evaluateContact } from '../compliance/verdict.js';
 import { fingerprint } from '../registry/fingerprint.js';
 import { lookupKeys } from '../registry/keys.js';
@@ -16,7 +9,6 @@ import { detectQuery } from './detect.js';
 export interface CheckInput {
   query: string;
   market?: Market;
-  channel?: Channel;
   sourceUrl?: string | null;
   phoneSource?: PhoneSource;
   businessLineConfirmed?: boolean;
@@ -37,7 +29,8 @@ export interface CheckDeps {
 export async function checkContact(input: CheckInput, deps: CheckDeps): Promise<Verdict[]> {
   const detected = detectQuery(input.query, input.market);
   if (!detected) return [];
-  const channel = input.channel ?? detected.channel;
+  // Каналът е само разпознатият: форма не може да се представи за LinkedIn, за да мине без КЗП.
+  const channel = detected.channel;
   const policy = deps.policy ?? DEFAULT_POLICY;
   const out: Verdict[] = [];
 

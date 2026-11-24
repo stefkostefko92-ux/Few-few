@@ -148,7 +148,8 @@ test('в базата няма открити адреси или номера',
     await db.registryResult.findMany(),
     await db.registrySnapshotEntry.findMany(),
     await db.suppression.findMany(),
-    await db.consent.findMany({ select: { fingerprint: true } }),
+    await db.consent.findMany(),
+    await db.registrySnapshot.findMany(),
   ]);
   for (const plain of [
     'firma.bg',

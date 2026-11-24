@@ -14,7 +14,6 @@ export const LoginBody = z.object({
 export const CheckBody = z.object({
   query: z.string().min(1).max(300),
   market: market.optional(),
-  channel: channel.optional(),
   sourceUrl: z.url().max(2000).nullable().optional(),
   phoneSource: z
     .enum(['public_directory', 'company_site', 'business_registry', 'other'])
@@ -31,6 +30,8 @@ export const RegistryResultsBody = z.object({
 
 export const KzpSnapshotBody = z.object({
   takenAt: isoDate,
+  /** Изрично потвърждение, ако снимката е под половината от предишната (подозрително отрязан файл). */
+  confirmShrink: z.boolean().default(false),
   source: z.string().min(1).max(200),
   text: z.string().max(20_000_000),
 });

@@ -115,6 +115,16 @@ $('#check-form').addEventListener('submit', async (e) => {
   for (const v of results) out.append(renderVerdict(v));
 });
 
+async function importError(res) {
+  try {
+    const j = await res.json();
+    const lines = (j.errors ?? []).map((x) => x.line).slice(0, 20);
+    return lines.length ? `${j.error} Редове: ${lines.join(', ')}.` : (j.error ?? 'Грешка.');
+  } catch {
+    return 'Грешка.';
+  }
+}
+
 async function fileText(form) {
   const file = form.querySelector('input[type=file]').files[0];
   return file ? file.text() : '';
@@ -123,14 +133,20 @@ async function fileText(form) {
 $('#kzp-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = new FormData(e.target);
-  const res = await api('/api/registry/kzp-snapshot', {
+  const body = {
     takenAt: isoFromLocal(f.get('takenAt')),
     source: f.get('source'),
     text: await fileText(e.target),
-  });
-  if (!res.ok) return say(e.target, await errorText(res));
+  };
+  let res = await api('/api/registry/kzp-snapshot', body);
+  if (res.status === 409) {
+    const why = await errorText(res);
+    if (!window.confirm(why)) return say(e.target, 'Отказано — нищо не е внесено.');
+    res = await api('/api/registry/kzp-snapshot', { ...body, confirmShrink: true });
+  }
+  if (!res.ok) return say(e.target, await importError(res));
   const j = await res.json();
-  say(e.target, `Внесени вписани: ${j.listed}; неразпознати редове: ${j.errors.length}.`);
+  say(e.target, `Внесени вписани: ${j.listed}.`);
 });
 
 $('#results-form').addEventListener('submit', async (e) => {
@@ -142,10 +158,9 @@ $('#results-form').addEventListener('submit', async (e) => {
     source: f.get('source'),
     csv: await fileText(e.target),
   });
-  if (!res.ok) return say(e.target, await errorText(res));
+  if (!res.ok) return say(e.target, await importError(res));
   const j = await res.json();
-  const bad = j.errors.length ? ` Редове с грешка: ${j.errors.map((x) => x.line).join(', ')}.` : '';
-  say(e.target, `Внесени резултати: ${j.imported}.${bad}`);
+  say(e.target, `Внесени резултати: ${j.imported}.`);
 });
 
 $('#export-form').addEventListener('submit', async (e) => {
