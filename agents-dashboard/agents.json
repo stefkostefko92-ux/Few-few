@@ -14428,7 +14428,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 366
+        "lessons": 369
       },
       "evolution": [
         {
@@ -14598,9 +14598,20 @@
           "date": "2026-11-24",
           "event": "v36.0 — учене",
           "detail": "Научи: Само slash командата /code-review ultra е „само ръчно“; подкомандата `claude ultrarevie…"
+        },
+        {
+          "version": "36.3.0",
+          "date": "2026-11-24",
+          "event": "v36.3 — учене",
+          "detail": "Научи: Подкомандата `claude ultrareview`, пусната от Claude през Bash, отказва само прегледа н… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „Подкомандата `claude ultrareview`, пусната от Claude през Bash, отказва само прегледа н…\" (+2 още)"
+        },
         {
           "date": "2026-11-24",
           "type": "learning",
