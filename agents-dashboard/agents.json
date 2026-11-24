@@ -49,7 +49,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 496
+        "lessons": 510
       },
       "evolution": [
         {
@@ -647,9 +647,15 @@
           "detail": "Научи: Чл. 27(1) ОРЗД задължава администратора или обработващия да определи писмено представит…"
         },
         {
-          "version": "44.9.0",
+          "version": "46.0.0",
           "date": "2026-11-24",
-          "event": "v44.9 — учене",
+          "event": "v46.0 — учене",
+          "detail": "Научи: ЗЕТ чл. 4, ал. 1, т. 4 изисква и телефон, и адрес на електронна поща (кумулативно); сай… (+13 още)"
+        },
+        {
+          "version": "46.3.0",
+          "date": "2026-11-24",
+          "event": "v46.3 — учене",
           "detail": "Научи: Garante Provv. n. 351 от 14.05.2026 (B2B lead generation, списък от Apollo.io) отхвърля… (+2 още)"
         }
       ],
@@ -658,6 +664,11 @@
           "date": "2026-11-24",
           "type": "learning",
           "summary": "Научи: „Garante Provv. n. 351 от 14.05.2026 (B2B lead generation, списък от Apollo.io) отхвърля…\" (+2 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „ЗЕТ чл. 4, ал. 1, т. 4 изисква и телефон, и адрес на електронна поща (кумулативно); сай…\" (+13 още) · 3 в карантина"
         },
         {
           "date": "2026-11-23",
@@ -1256,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 726
+        "lessons": 732
       },
       "evolution": [
         {
@@ -2110,9 +2121,20 @@
           "date": "2026-11-23",
           "event": "v67.8 — учене",
           "detail": "Научи: spawnSync със stdio pipe и maxBuffer по подразбиране 1 MiB при препълване връща error.c…"
+        },
+        {
+          "version": "68.4.0",
+          "date": "2026-11-24",
+          "event": "v68.4 — учене",
+          "detail": "Научи: Каноничният @id на дружеството, публикуван на живо от carbonstealth.eu, е https://carbo… (+5 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „Каноничният @id на дружеството, публикуван на живо от carbonstealth.eu, е https://carbo…\" (+5 още)"
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
@@ -3976,7 +3998,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 248
+        "lessons": 256
       },
       "evolution": [
         {
@@ -4428,9 +4450,20 @@
           "date": "2026-11-23",
           "event": "v24.2 — учене",
           "detail": "Научи: В cs-revolution страниците на направленията се генерират от scripts/generate-solutions.… (+11 още)"
+        },
+        {
+          "version": "25.0.0",
+          "date": "2026-11-24",
+          "event": "v25.0 — учене",
+          "detail": "Научи: Search Quality Rater Guidelines (версия 11.09.2025) казват, че Trust е най-важният елем… (+7 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „Search Quality Rater Guidelines (версия 11.09.2025) казват, че Trust е най-важният елем…\" (+7 още)"
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
@@ -5156,7 +5189,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 303
+        "lessons": 304
       },
       "evolution": [
         {
@@ -5674,9 +5707,20 @@
           "date": "2026-11-23",
           "event": "v33.1 — учене",
           "detail": "Научи: В Supreme Bot всяка сума в € в FAQ на лендинга трябва да е цена на най-близкото спомена…"
+        },
+        {
+          "version": "33.2.0",
+          "date": "2026-11-24",
+          "event": "v33.2 — учене",
+          "detail": "Научи: Във видеото на panev заглавията на стъпките са безлични съществителни („Serraggio dei t…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „Във видеото на panev заглавията на стъпките са безлични съществителни („Serraggio dei t…\" · 2 в карантина"
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
@@ -9048,6 +9092,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-24",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „youtube-agent-skill (Jakeschincariol, MIT) има 11 умения и 1 commit в main според READM…\""
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
@@ -14368,7 +14417,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 361
+        "lessons": 365
       },
       "evolution": [
         {
@@ -14526,9 +14575,20 @@
           "date": "2026-11-23",
           "event": "v35.5 — учене",
           "detail": "Научи: teams.mjs route при равенство вътре в избрания екип, когато водачът не е сред най-висок… (+1 още)"
+        },
+        {
+          "version": "35.9.0",
+          "date": "2026-11-24",
+          "event": "v35.9 — учене",
+          "detail": "Научи: Към 2026-11-24 в Latest models на Anthropic стоят Fable 5.2 (claude-fable-5-2, $8/$40, … (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „Към 2026-11-24 в Latest models на Anthropic стоят Fable 5.2 (claude-fable-5-2, $8/$40, …\" (+3 още) · 2 в карантина"
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
@@ -14934,7 +14994,7 @@
           "Meta Advertising Standards + Conversions API + Platform Terms/Developer Policies",
           "OWASP ASVS/MASVS (via CASA/MASA), fastlane precheck (metadata lint модел)"
         ],
-        "lessons": 249
+        "lessons": 251
       },
       "evolution": [
         {
@@ -15056,9 +15116,20 @@
           "date": "2026-11-23",
           "event": "v23.3 — учене",
           "detail": "Научи: Discord privileged intents — праг 10 000 уникални потребители (не сървъри); при достига… (+4 още)"
+        },
+        {
+          "version": "23.5.0",
+          "date": "2026-11-24",
+          "event": "v23.5 — учене",
+          "detail": "Научи: Chrome Web Store премахна всички останали MV2 разширения на 31.08.2026 (времевата линия… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „Chrome Web Store премахна всички останали MV2 разширения на 31.08.2026 (времевата линия…\" (+1 още)"
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
@@ -15453,7 +15524,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 227
+        "lessons": 229
       },
       "evolution": [
         {
@@ -15551,9 +15622,20 @@
           "date": "2026-11-23",
           "event": "v22.9 — учене",
           "detail": "Научи: Покритие на тестове, които са обикновени скриптове (не node:test), се мери без c8 — `NO… (+13 още)"
+        },
+        {
+          "version": "23.1.0",
+          "date": "2026-11-24",
+          "event": "v23.1 — учене",
+          "detail": "Научи: Капан върху fenced код в инжекционен eval пада и върху верен отговор, който цитира дока… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „Капан върху fenced код в инжекционен eval пада и върху верен отговор, който цитира дока…\" (+1 още)"
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
@@ -16297,7 +16379,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 236
+        "lessons": 249
       },
       "evolution": [
         {
@@ -16401,9 +16483,20 @@
           "date": "2026-11-23",
           "event": "v33.3 — учене",
           "detail": "Научи: Агент, който работи на Windows хост, се проверява с Windows правопис ($env:NAME, %NAME%… (+1 още)"
+        },
+        {
+          "version": "34.7.0",
+          "date": "2026-11-24",
+          "event": "v34.7 — учене",
+          "detail": "Научи: Пазач, който разгъва shell променлива от присвояване на същата команда, трябва да разгр… (+13 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „Пазач, който разгъва shell променлива от присвояване на същата команда, трябва да разгр…\" (+13 още)"
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
