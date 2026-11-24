@@ -24,7 +24,7 @@ PRESETS = {
     "heavy": {"VIDEO_FPS": "60", "VIDEO_RES": "3840x2160", "VIDEO_OUT": "3840x2160", "VIDEO_DEVICE": "OPTIX",
               "spp": 96, "still_spp": 256, "still_res": "3840x2160"},
 }
-STILL_T = {"intro": 2.0, "hero": 113.0}
+STILL_T = {"intro": 2.0, "hero": 115.0}
 
 
 def blender():

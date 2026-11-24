@@ -169,14 +169,6 @@ def dashed(d, a, b, col, width, dash=14, gap=10):
         pos = e + gap
 
 
-def cut_line(c, t, pts):
-    """Step 11: the red dashed cut line on plate A, flush with the sill's front edge, until the disc reaches it."""
-    a, b = pts.get("cut_a"), pts.get("cut_b")
-    if not (a and b) or a[2] <= 0 or b[2] <= 0:
-        return
-    c.layer(fade(t, 96.3, 98.0, 0.35), lambda d, sh: dashed(d, a[:2], b[:2], (*RED, 255), 5, 16, 9))
-
-
 def angle_panel(c, t, pts):
     al = fade(t, 75.2, 84.0, 0.4)
     k = ease((t - 76.0) / 3.0)
@@ -278,8 +270,6 @@ def frame_overlay(t, pts):
         angle_panel(c, t, pts)
     if 21.0 <= t < 30.0:
         dimension(c, t, pts)
-    if 96.3 <= t < 98.0:
-        cut_line(c, t, pts)
     for name, badge, label, a, b, dx, dy in CALLOUTS:
         if a <= t < b:
             callout(c, t, pts.get(name), badge, label, a, b, dx, dy)

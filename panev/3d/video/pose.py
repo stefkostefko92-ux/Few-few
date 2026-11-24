@@ -9,7 +9,7 @@ from mathutils import Matrix, Vector
 from lib import MM, seg, lerp, look_at
 from build import LEAN, PAIR_X, ANCHORS, FACE_X
 from props import SILL_H, SILL_D
-from cut import pose_cut
+from cut import pose_cut, sill_push
 from motion import basis, show, bump, rig_pose, plumb_tilt, screen, hw_local, hardware
 from timeline import TIMELINE
 
@@ -27,7 +27,7 @@ SHOTS = {  # eye, target, lens; the film cuts (short dissolve) between them
     "wide8": ((0.31, -1.25, 0.3), (0.31, -0.1, -0.06), 36),
     "side": ((1.18, -0.52, 0.05), (0.6, -0.1, -0.1), 44),
     "wide10": ((0.75, -1.28, 0.05), (0.31, -0.08, -0.15), 36),
-    "cut": ((0.16, -0.5, 0.03), (-0.06, -0.19, -0.05), 40),
+    "cut": ((0.15, -0.47, 0.11), (-0.05, -0.185, -0.045), 40),
     "cutw": ((0.45, -0.95, 0.12), (0.29, -0.17, -0.06), 34),
     "hero": ((-0.44, -1.08, 0.1), (0.3, -0.07, -0.14), 36),
 }
@@ -104,7 +104,7 @@ def pose(S, t, scene, shot=None):
         tb = 61.4 if k < 2 else 90.8
         for ob, at in p["sillbolts"]:
             show(ob, (not intro) and t >= tb)
-            ob.matrix_basis = Matrix.Translation(at + Vector((0, 0, -0.03 * (1 - seg(t, tb, tb + 1.4))))) @ Matrix.Rotation(math.pi, 4, "X")
+            ob.matrix_basis = Matrix.Translation(at + Vector((0, sill_push(t), -0.03 * (1 - seg(t, tb, tb + 1.4))))) @ Matrix.Rotation(math.pi, 4, "X")
     bpy.context.view_layer.update()
 
     # --- holes and marks --------------------------------------------------------------------------
@@ -169,7 +169,7 @@ def pose(S, t, scene, shot=None):
         show(S["sill"], True)
         drop = Vector((0, 0, 0.25 * (1 - seg(t, 55.6, 58.2))))
         roll = DEG(0.25) * (1 - seg(t, 69.0, 71.0)) if t < 71.0 else 0.0
-        S["sill"].matrix_world = Matrix.Translation(drop) @ p0["pivot"].matrix_world @ sill_local @ Matrix.Translation((0.43, 0, 0)) @ Matrix.Rotation(roll, 4, "Y") @ Matrix.Translation((-0.43, 0, 0))
+        S["sill"].matrix_world = Matrix.Translation(drop) @ p0["pivot"].matrix_world @ Matrix.Translation((0, sill_push(t), 0)) @ sill_local @ Matrix.Translation((0.43, 0, 0)) @ Matrix.Rotation(roll, 4, "Y") @ Matrix.Translation((-0.43, 0, 0))
     bpy.context.view_layer.update()
     sill_m = S["sill"].matrix_world
     if 67.6 <= t < 72.6:  # level along the sill
@@ -209,7 +209,7 @@ def pose(S, t, scene, shot=None):
     elif 63.0 <= t < 65.6:  # step 7: snug a sill bolt from below
         pv = p0["pivot"].matrix_world
         up = (pv.to_3x3() @ Vector((0, 0, 1))).normalized()
-        head = pv @ Vector((-0.025, -(90.0 - 23.5) * MM, 0.0235))
+        head = pv @ Vector((-0.025, -(100.0 - 23.5) * MM, 0.0235))
         rot = DEG(45) * seg(t, 63.6, 64.8)
         k = seg(t, 63.0, 63.4) - seg(t, 65.0, 65.6)
         sp = Matrix.Translation(head - up * 0.1 * (1 - k)) @ Matrix.Rotation(rot, 4, up) @ basis(-up, (-1, 0, 0))
@@ -255,7 +255,7 @@ def pose(S, t, scene, shot=None):
         pv = p["pivot"].matrix_world
         pts[f"A_{k}"] = pv @ Vector((0.006, -0.11, 0.027))
         pts[f"B_{k}"] = p["rig"].matrix_world @ Vector((-0.03, -0.005, 0.12))
-        pts[f"18u_{k}"] = pv @ Vector((-0.025, -(135.0 - 23.5) * MM, 0.026))
+        pts[f"18u_{k}"] = pv @ Vector((-0.025, -(140.0 - 23.5) * MM, 0.026))
     for j in range(2):
         pts[f"M{j}"] = W @ face_pt(j)
     pts.update(cut_pts)
@@ -264,5 +264,6 @@ def pose(S, t, scene, shot=None):
     pts["cab"] = Vector((0.66, front_y - GAP - SILL_D * 0.5, -0.004))
     pts["piano"] = Vector((0.6, front_y + SILL_D * 0.5, 0.004))
     pts["S"] = sill_m @ Vector((0.6, -SILL_D, SILL_H * 0.4))
+    pts["S0"] = sill_m @ Vector((0.12, -SILL_D, SILL_H * 0.4))
     pts["level"] = S["level"].matrix_world @ Vector((0, -0.013, 0.05))
     return {k: screen(scene, cam, v) for k, v in pts.items()}

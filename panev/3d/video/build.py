@@ -86,7 +86,7 @@ def build_pair(k, wall, M, meta, recs, x):
         h["anchors"].append({"grp": grp, "parts": parts, "home": grp.location.copy()})
     # sill bolts from below through A's slots (18): M8 shown as the M10 bolt at 0.8 scale
     h["sillbolts"] = []
-    for j, zmm in enumerate((90.0, 135.0)):  # one in each slot (18) of A, both under the sill
+    for j, zmm in enumerate((100.0, 140.0)):  # one in each slot (18) of A, inside the sill; 10 mm of travel back
         ob = object_from(f"sillbolt{k}{j}", spare["bolt30"], M, (0, 0, 0), h["pivot"], 0.8)
         ob.matrix_parent_inverse = Matrix.Identity(4)
         at = Y_UP @ (np.array([-25.0, 352.0, zmm]) - pivot_mm)

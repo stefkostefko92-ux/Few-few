@@ -12,7 +12,7 @@ STEP_TEXT = [
     ("Soglia in bolla", "Metti in bolla la soglia in lunghezza."),
     ("Piastre A in bolla e serraggio", "Ruota le piastre A attorno al giunto (13) fino a metterle in bolla, poi serra tutto: giunto (13), bloccaggio (14) e soglia."),
     ("Terza staffa", "Monta una terza staffa assemblata (A + B) al centro della soglia: segna, fora, tassella e serra tutto."),
-    ("Taglio delle piastre A", "Con la smerigliatrice angolare taglia a filo la parte di ogni piastra A che sporge oltre il bordo anteriore della soglia."),
+    ("Taglio delle piastre A", "Segna ogni piastra A con il pennarello a filo soglia, arretra la soglia, taglia sul segno con la smerigliatrice angolare e riporta la soglia a filo."),
 ]
 
 # (point, badge, label, from, to, dx, dy)
@@ -29,7 +29,8 @@ CALLOUTS = [
     ("level", "", "Soglia in bolla", 69.0, 74.0, 130, -100),
     ("13_1", "13", "Giunto articolato", 75.0, 84.0, -160, -80), ("14_1", "14", "Elemento di bloccaggio", 79.6, 84.0, -160, 90),
     ("B_2", "", "Terza staffa", 86.8, 96.0, 130, 90),
-    ("cut_m", "", "Linea di taglio a filo soglia", 96.5, 97.6, -150, -120),
-    ("grinder", "", "Smerigliatrice angolare", 97.4, 99.8, -70, -190),
-    ("cut_m", "", "Taglio a filo soglia", 101.0, 103.0, -150, -120),
+    ("cut_m", "", "Segno a filo soglia", 96.7, 98.0, -150, -120), ("S0", "", "Soglia arretrata", 98.1, 99.4, 120, -120),
+    ("grinder", "", "Smerigliatrice angolare", 99.0, 101.6, -70, -190),
+    ("cut_m", "", "Taglio sul segno", 102.6, 104.5, -150, -120),
+    ("S", "", "Soglia riportata a filo", 109.3, 111.0, 90, -110),
 ]

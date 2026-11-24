@@ -1,5 +1,6 @@
-"""Step 11: each plate A is cut flush with the sill's front edge with the angle grinder, last of all (owner,
-24.11.2026). Booleans on A: a kerf that follows the disc's leading edge while it crosses the plate, then everything in
+"""Step 11, last of all (owner, 24.11.2026): each plate A is marked with the marker along the sill's front edge, the
+sill is pushed back in the slots (18), the angle grinder cuts on the mark, the sill comes forward again, flush. Booleans
+on A: a kerf that follows the disc's leading edge while it crosses the plate, then everything in
 front of the cut plane; the off-cut is a copy of A kept by an intersecting box and drops into the shaft. Sparks are
 ballistic streaks from the leading edge. Every state is a pure function of t (frames render in any order)."""
 import math
@@ -13,10 +14,18 @@ Z_C = -0.045           # disc centre height: the nut stays under the sill (botto
 A_X = (-0.055, 0.005)  # plate A across x, relative to its pair
 LEAD = 0.0605          # disc centre to its leading edge at plate A's height
 RATE, SHUTTER, G = 440.0, 1 / 60, Vector((0, 0, -9.81))
+A_TOP = -0.028         # top of plate A's platform = bottom of the sill
+PUSH = 0.010           # the sill slides back 10 mm in the slots (18) for the disc, then returns flush
+MARK = (96.3, 97.2)    # the marker draws on the left plate in the close-up; the others are marked by then
 # pair, approach, traverse, retreat (s); the close-up cuts the left plate, the wide shot the middle and the right one
-CUTS = [(0, (96.6, 97.4), (97.4, 99.6), (99.7, 100.5)),
-        (2, (103.4, 103.9), (103.9, 104.9), (104.95, 105.25)),
-        (1, (105.25, 105.75), (105.75, 106.75), (106.8, 107.3))]
+CUTS = [(0, (98.8, 99.5), (99.5, 101.7), (101.8, 102.6)),
+        (2, (104.9, 105.4), (105.4, 106.4), (106.45, 106.75)),
+        (1, (106.75, 107.25), (107.25, 108.25), (108.3, 108.8))]
+
+
+def sill_push(t):
+    """How far the sill is pushed back towards the wall (m): out for the cuts, back flush at the end."""
+    return PUSH * (seg(t, 97.8, 98.6) - seg(t, 109.1, 109.9))
 
 
 def build_cut(pairs):
@@ -38,7 +47,9 @@ def build_cut(pairs):
         m = off.modifiers.new("keep", "BOOLEAN")
         m.operation, m.object, m.solver = "INTERSECT", boxes["keep"], "EXACT"
         off.hide_render = True
-        out.append({"A": A, "boxes": boxes, "mods": mods, "off": off})
+        line = box(f"markA{k}", (1, 1, 1), bpy.data.materials.get("mark"))
+        line.hide_render = True
+        out.append({"A": A, "boxes": boxes, "mods": mods, "off": off, "line": line})
     return out
 
 
@@ -95,14 +106,39 @@ def pose_cut(S, t, front_y, pair_x):
     for c in cuts:
         cut_plate(S["cuts"][c["k"]], c, t, front_y)
     sparks(G_, cuts, t)
+    marks(S, cuts, t, front_y)
     pts = {}
     c0 = cuts[0]
-    z_top = -0.0277
-    pts["cut_a"] = Vector((c0["xl"], front_y - 0.0004, z_top))
-    pts["cut_b"] = Vector((c0["xr"], front_y - 0.0004, z_top))
-    pts["cut_m"] = (pts["cut_a"] + pts["cut_b"]) / 2
+    pts["cut_m"] = Vector(((c0["xl"] + c0["xr"]) / 2, front_y - 0.0005, A_TOP))
     pts["grinder"] = rig.matrix_world @ Vector((0.0, HEAD_Y + 0.026, 0.0))
     return pts
+
+
+def marks(S, cuts, t, front_y):
+    """The marker's line on each plate A along the sill's front edge; on the left plate it is drawn in the shot."""
+    mk = S["marker"]
+    for c in cuts:
+        line = S["cuts"][c["k"]]["line"]
+        k = seg(t, *MARK) if c["k"] == 0 else (1.0 if t >= MARK[1] else 0.0)
+        line.hide_render = k <= 0.001
+        if k > 0.001:
+            x1 = c["xl"] + (c["xr"] - c["xl"]) * k
+            place(line, Vector(((c["xl"] + x1) / 2, front_y - 0.001, A_TOP + 0.00008)), (x1 - c["xl"], 0.0018, 0.00016))
+    c0 = cuts[0]
+    if MARK[0] - 0.4 <= t < MARK[1] + 0.4:
+        tip0 = Vector((c0["xl"], front_y - 0.0005, A_TOP + 0.0002))
+        tip1 = Vector((c0["xr"], front_y - 0.0005, A_TOP + 0.0002))
+        lift = Vector((0.03, -0.05, 0.08))
+        if t < MARK[0]:
+            tip = tip0 + lift * (1 - seg(t, MARK[0] - 0.4, MARK[0]))
+        elif t < MARK[1]:
+            tip = tip0.lerp(tip1, seg(t, *MARK))
+        else:
+            tip = tip1 + lift * seg(t, MARK[1], MARK[1] + 0.4)
+        mk.hide_render = False
+        for ch in mk.children_recursive:
+            ch.hide_render = False
+        mk.matrix_world = Matrix.Translation(tip) @ Matrix.Rotation(-0.35, 4, "Y") @ Matrix.Rotation(0.45, 4, "X") @ Matrix.Rotation(-math.pi / 2, 4, "X")
 
 
 def cut_plate(cut, c, t, front_y):
