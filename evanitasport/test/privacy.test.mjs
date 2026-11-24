@@ -35,6 +35,7 @@ test("картата не се зарежда при отваряне — iframe
   assert.match(h, /href="https:\/\/www\.google\.com\/maps\/search\/\?api=1&amp;query=42\.2597447,23\.1238442"/, "алтернатива без вграждане");
   const js = read("js/main.js");
   assert.match(js, /data-map-src/);
+  assert.match(js, /referrerpolicy['"],\s*['"]strict-origin-when-cross-origin/, "минимизация: без пълен URL към Google");
   assert.match(js, /createElement\(['"]iframe['"]\)/);
 });
 
@@ -43,12 +44,19 @@ test("страницата за поверителност носи реални
   for (const s of ["Еванита Спорт ЕООД", "ул. Рилски Езера 1, 2600 Дупница", "+359 88 504 5112", "netcup", "Google", "Viber", "Facebook", "Комисия за защита на личните данни", "бисквитки"]) {
     assert.ok(h.includes(s), `липсва „${s}“`);
   }
+  // ЗЕТ чл. 4 / ТЗ чл. 13: ЕИК, седалище и адрес на управление (Търговски регистър, 24.11.2026)
+  for (const s2 of ["ЕИК 206109065", "ул. „Неофит Рилски“ № 16, 2600 Дупница", "не е регистрирано по ЗДДС"]) assert.ok(h.includes(s2), `липсва „${s2}“`);
+  // Правният Разбирач: основание за картата (съгласие + съвместно администриране), отделно право на възражение
+  assert.match(h, /id="karta"[\s\S]*чл\. 6, пар\. 1, б\. „а“[\s\S]*съвместно с Google/);
+  assert.match(h, /Право на възражение/);
+  assert.match(h, /до 15 дни след записа/);
   assert.match(h, /<meta name="keywords" content="[^"]*Carbon Stealth[^"]*"/);
   assert.match(h, /<link rel="canonical" href="https:\/\/evanita-bg\.com\/poveritelnost\.html"/);
 });
 
 test("връзка „Поверителност“ от началната и от 404, страницата е в sitemap и в деплоя", () => {
   assert.match(read("index.html"), /<a href="\/?poveritelnost\.html">Поверителност<\/a>/);
+  assert.match(read("index.html"), /Еванита Спорт ЕООД · ЕИК 206109065/);
   assert.match(read("404.html"), /href="\/poveritelnost\.html"/);
   assert.match(read("sitemap.xml"), /<loc>https:\/\/evanita-bg\.com\/poveritelnost\.html<\/loc>/);
   const dep = read("deploy.sh");
