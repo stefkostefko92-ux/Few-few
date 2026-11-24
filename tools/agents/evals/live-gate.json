@@ -1,18 +1,28 @@
 {
   "date": "2026-11-24",
-  "ref": "325371adeda0f36ba3a2d08b8f25075b4c95d0e5",
+  "ref": "529a02d1ed8fb50a8c535a2e79af896965c03755",
   "cli": "2.1.331 (Claude Code)",
-  "summary": "проба 1/1 · оценки 1/1 · verifier ✓ · критичните пропуснати (входовете им са непроменени; минаха на 2026-11-24)",
-  "costUsd": 1.47,
+  "summary": "проба 3/3 · оценки 6/6 · pass^k 2/2 · verifier ✓",
+  "costUsd": 8.93,
   "criticalAt": "2026-11-24",
   "probe": [
     {
-      "agent": "ai-studio",
+      "agent": "seo",
+      "ok": true,
+      "problems": []
+    },
+    {
+      "agent": "kodadjiyata",
+      "ok": true,
+      "problems": []
+    },
+    {
+      "agent": "dizayner",
       "ok": true,
       "problems": []
     }
   ],
-  "inputsHash": "5e90cb30726a25821fdfa18373da94e708ff3e0ad3b4b33acfaaa58b778e676a",
+  "inputsHash": "a8cf9f08e4a0d755fc00ee1cbabd2e75a358d3aecfb8e7745fb5ed34dfb42abe",
   "files": {
     ".claude/agents/3d-maniac.md": "bdec637b2b2ca2d29db8fdc0049e65598aaf2cf0bc4552f6a5c8718e75ed162d",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
@@ -60,7 +70,7 @@
     ".claude/hooks/format-on-edit.mjs": "d4f5c6bfd6296f2cc6f64c05927c72a2c71f0f17f5ade5b4b5930b8a60164c4c",
     ".claude/hooks/guard-allowlist.mjs": "a90d10740ab38a53bd8b07abecaad23cd7319ada43a9146f5a796a88e4d026c0",
     ".claude/hooks/guard-config.mjs": "b14433069e4af13b1dc84f7d76dbc5129cdd03688c45bfa9c2292827a3bd4cdd",
-    ".claude/hooks/guard-dangerous.mjs": "99015658b5281af828013bab014d7ab7a9c21dc44873035f224e8f5c4c445c50",
+    ".claude/hooks/guard-dangerous.mjs": "522f11cdcd478d6f3b42e5ebbcc478ff283cd7c8aaa413d7420b1bb8cccb9419",
     ".claude/hooks/guard-engagement.mjs": "0706e7055fe799f7e0f5fd9c1a87314a0cc63905da2108c61830e52ee201dc37",
     ".claude/hooks/guard-exfil.mjs": "a84bda8e920298f7bfe09d62ea3f09de46f07ed30b645203b44aeebd9b8f9d50",
     ".claude/hooks/guard-model.mjs": "3b1e8cba1c4ddfcf6dd2b41e48a3d176d00471327d7ed707bd3785babb8764f4",

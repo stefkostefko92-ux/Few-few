@@ -61,3 +61,10 @@ test("прегледът получава само четящи Bash коман�
   assert.ok(bash.length >= 3);
   for (const b of bash) assert.match(b, /^Bash\((git (diff|log|show)|bash tools\/code\/scan\.sh|node tools\/agents\/verifier\.mjs|npm view|npm pack \* --dry-run)\s?\*\)$/);
 });
+
+test("докладът предлага Ultrareview само за PR с ядро", () => {
+  const base = { title: "fix(cspos)", ok: true, text: "Присъда: чисто", costUsd: 1 };
+  const md = renderReport([{ ...base, pr: 11, agent: "kodadjiyata", ultrareview: true }, { ...base, pr: 12, agent: "kodadjiyata" }]);
+  assert.match(md, /\/code-review ultra 11/);
+  assert.ok(!/\/code-review ultra 12/.test(md));
+});
