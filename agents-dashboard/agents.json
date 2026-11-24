@@ -17296,6 +17296,11 @@
       "activity": [
         {
           "date": "2026-11-24",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „`remotion-dev/skills` няма LICENSE файл на страницата на репото и `package.json` няма п…\""
+        },
+        {
+          "date": "2026-11-24",
           "type": "learning",
           "summary": "Научи: „Когато `gh api` за чуждо репо върне 403 „add_repo“, SHA и дати на комити се четат през …\" · 1 в карантина"
         },
