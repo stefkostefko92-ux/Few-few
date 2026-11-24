@@ -943,3 +943,5 @@
 {"t":"start","ts":"2026-11-23T18:32:26.296Z","id":"r7dcbb68b","flow":"авто","lead":"razbivacha","auto":true}
 {"t":"handoff","ts":"2026-11-23T18:32:26.297Z","id":"r7dcbb68b","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"10e38824"}
 {"t":"close","ts":"2026-11-23T18:35:45.014Z","id":"r7dcbb68b","status":"завършен"}
+{"t":"start","ts":"2026-11-24T07:05:57.952Z","id":"rba6dd326","flow":"авто","lead":"prevodach","auto":true}
+{"t":"handoff","ts":"2026-11-24T07:05:57.952Z","id":"rba6dd326","from":"prevodach","to":"човек","status":"има бележки","run":"231eece6"}
