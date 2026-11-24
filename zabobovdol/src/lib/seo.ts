@@ -163,12 +163,26 @@ export function organizationLd(opts?: { sameAs?: string[] }) {
       height: 512,
     },
     image: OG_IMAGE,
+    // Регистрираното дружество: един @id във всички наши продукти, пълни реквизити, sameAs само
+    // към профилите, посочени от собственика.
     parentOrganization: {
       "@type": "Organization",
-      name: SITE.company.legalName,
-      alternateName: SITE.company.tradeName,
+      "@id": SITE.company.id,
+      name: SITE.company.tradeName,
+      legalName: SITE.company.legalName,
       url: SITE.company.website,
       vatID: SITE.company.vat,
+      taxID: SITE.company.eik,
+      email: SITE.company.email,
+      telephone: SITE.contact.phone,
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: SITE.company.street,
+        addressLocality: SITE.geo.city,
+        postalCode: SITE.geo.postalCode,
+        addressCountry: SITE.geo.countryCode,
+      },
+      sameAs: [...SITE.company.profiles],
     },
     publishingPrinciples: `${SITE.url}/za-nas`,
     knowsLanguage: "bg",
