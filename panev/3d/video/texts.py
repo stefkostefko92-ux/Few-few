@@ -1,4 +1,4 @@
-"""The Italian copy of the mounting video: the ten step cards (title, line) and the part callouts
+"""The Italian copy of the mounting video: the eleven step cards (title, line) and the part callouts
 (catalogue numbering, p. 10). Reviewed by the Translator agent; the owner settled the open points (23.11.2026)."""
 
 STEP_TEXT = [
@@ -12,6 +12,7 @@ STEP_TEXT = [
     ("Soglia in bolla", "Metti in bolla la soglia in lunghezza."),
     ("Piastre A in bolla e serraggio", "Ruota le piastre A attorno al giunto (13) fino a metterle in bolla, poi serra tutto: giunto (13), bloccaggio (14) e soglia."),
     ("Terza staffa", "Monta una terza staffa assemblata (A + B) al centro della soglia: segna, fora, tassella e serra tutto."),
+    ("Taglio delle piastre A", "Con la smerigliatrice angolare taglia a filo la parte di ogni piastra A che sporge oltre il bordo anteriore della soglia."),
 ]
 
 # (point, badge, label, from, to, dx, dy)
@@ -28,4 +29,7 @@ CALLOUTS = [
     ("level", "", "Soglia in bolla", 69.0, 74.0, 130, -100),
     ("13_1", "13", "Giunto articolato", 75.0, 84.0, -160, -80), ("14_1", "14", "Elemento di bloccaggio", 79.6, 84.0, -160, 90),
     ("B_2", "", "Terza staffa", 86.8, 96.0, 130, 90),
+    ("cut_m", "", "Linea di taglio a filo soglia", 96.5, 97.6, -150, -120),
+    ("grinder", "", "Smerigliatrice angolare", 97.4, 99.8, -70, -190),
+    ("cut_m", "", "Taglio a filo soglia", 101.0, 103.0, -150, -120),
 ]

@@ -9,6 +9,8 @@ import numpy as np
 from mathutils import Matrix, Vector, noise as mnoise
 from lib import MM, Y_UP, link, mesh_from, empty, box, cylinder, node
 from materials import ASSETS, make_materials
+from grinder import build_grinder
+from cut import build_cut
 from props import SILL_H, build_drill, build_marker, build_spanner, build_level, build_sill
 
 HERE = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
@@ -84,7 +86,7 @@ def build_pair(k, wall, M, meta, recs, x):
         h["anchors"].append({"grp": grp, "parts": parts, "home": grp.location.copy()})
     # sill bolts from below through A's slots (18): M8 shown as the M10 bolt at 0.8 scale
     h["sillbolts"] = []
-    for j, zmm in enumerate((115.0, 155.0)):  # in the outer slot (18), under the sill
+    for j, zmm in enumerate((90.0, 135.0)):  # one in each slot (18) of A, both under the sill
         ob = object_from(f"sillbolt{k}{j}", spare["bolt30"], M, (0, 0, 0), h["pivot"], 0.8)
         ob.matrix_parent_inverse = Matrix.Identity(4)
         at = Y_UP @ (np.array([-25.0, 352.0, zmm]) - pivot_mm)
@@ -252,6 +254,8 @@ def build(scene):
     wf = ghost_sill.modifiers.new("wire", "WIREFRAME")
     wf.thickness, wf.use_even_offset, wf.use_replace = 0.0011, True, True
     car_sill = build_sill(M, 0.9, "alu", "car-sill")  # the car sill, at the landing, the measuring reference
+    grinder = build_grinder(M)
+    cuts = build_cut(pairs)
     worlds, lights = studio(scene)
     sill_y = (wall.matrix_world @ Vector((0, 0, z_top))).y - 0.004
     cam = link(bpy.data.objects.new("cam", bpy.data.cameras.new("cam")))
@@ -261,5 +265,6 @@ def build(scene):
     return {"M": M, "meta": meta, "wall": wall, "face": face, "z_top": z_top, "grid": grid, "pairs": pairs,
             "holes": holes, "marks": marks, "drill": drill, "bit": bit, "marker": marker, "spanner": spanner,
             "level": level, "bub1": bub1, "bub2": bub2, "sill": sill, "ghost_sill": ghost_sill, "car_sill": car_sill,
+            "grinder": grinder, "cuts": cuts,
             "worlds": worlds, "lights": lights, "cam": cam,
             "floor": bpy.data.objects["floor"], "body": bpy.data.objects["wallbody"], "sides": [bpy.data.objects["side-left"], bpy.data.objects["side-right"]], "sill_y": sill_y}

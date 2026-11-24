@@ -9,6 +9,7 @@ from mathutils import Matrix, Vector
 from lib import MM, seg, lerp, look_at
 from build import LEAN, PAIR_X, ANCHORS, FACE_X
 from props import SILL_H, SILL_D
+from cut import pose_cut
 from motion import basis, show, bump, rig_pose, plumb_tilt, screen, hw_local, hardware
 from timeline import TIMELINE
 
@@ -26,6 +27,8 @@ SHOTS = {  # eye, target, lens; the film cuts (short dissolve) between them
     "wide8": ((0.31, -1.25, 0.3), (0.31, -0.1, -0.06), 36),
     "side": ((1.18, -0.52, 0.05), (0.6, -0.1, -0.1), 44),
     "wide10": ((0.75, -1.28, 0.05), (0.31, -0.08, -0.15), 36),
+    "cut": ((0.16, -0.5, 0.03), (-0.06, -0.19, -0.05), 40),
+    "cutw": ((0.45, -0.95, 0.12), (0.29, -0.17, -0.06), 34),
     "hero": ((-0.44, -1.08, 0.1), (0.3, -0.07, -0.14), 36),
 }
 FOCUS = {
@@ -33,9 +36,10 @@ FOCUS = {
     "top3": ((0.74, -0.2, -0.01), 4.5), "drill": ((-0.03, -0.005, -0.215), 2.8), "work2": ((0.31, -0.02, -0.2), 5.6),
     "front": ((-0.03, -0.01, -0.2), 4.5), "wide6": ((0.3, -0.1, -0.05), 6.3), "under": ((0.0, -0.12, -0.04), 4.5),
     "wide8": ((0.31, -0.12, 0.0), 6.3), "side": ((0.62, -0.1, -0.06), 4.5), "wide10": ((0.31, -0.08, -0.1), 6.3),
+    "cut": ((-0.03, -0.19, -0.045), 4.0), "cutw": ((0.3, -0.19, -0.05), 5.6),
     "hero": ((0.3, -0.08, -0.05), 6.3),
 }
-SILL_BACK = 80.0  # mm from the wall to the sill's back edge: the car-sill measure sets it
+SILL_BACK = 54.5  # mm from the wall to the sill's back edge: the car-sill measure sets it; A then sticks out ~30 mm
 GAP = 0.03        # car sill to landing sill: 30 mm, inside the 25–32 mm the overlay shows
 
 
@@ -118,6 +122,7 @@ def pose(S, t, scene, shot=None):
     pw = W @ (Vector((PAIR_X[0], 0, 0)) + p0["pivot"].location)  # pivot of pair 0 at home (world)
     sill_local = Matrix.Translation((-0.12, -(SILL_BACK - 23.5) * MM, 0.031))
     sill_level = Matrix.Translation(pw) @ sill_local
+    front_y = pw.y - (SILL_BACK - 23.5) * MM - SILL_D
 
     # --- tools -----------------------------------------------------------------------------------------
     if 30.4 <= t < 32.0:  # marker through the slots of the left B
@@ -204,7 +209,7 @@ def pose(S, t, scene, shot=None):
     elif 63.0 <= t < 65.6:  # step 7: snug a sill bolt from below
         pv = p0["pivot"].matrix_world
         up = (pv.to_3x3() @ Vector((0, 0, 1))).normalized()
-        head = pv @ Vector((-0.025, -(115.0 - 23.5) * MM, 0.0235))
+        head = pv @ Vector((-0.025, -(90.0 - 23.5) * MM, 0.0235))
         rot = DEG(45) * seg(t, 63.6, 64.8)
         k = seg(t, 63.0, 63.4) - seg(t, 65.0, 65.6)
         sp = Matrix.Translation(head - up * 0.1 * (1 - k)) @ Matrix.Rotation(rot, 4, up) @ basis(-up, (-1, 0, 0))
@@ -228,6 +233,7 @@ def pose(S, t, scene, shot=None):
         if t >= 22.6:
             show(S["ghost_sill"], True)
             S["ghost_sill"].matrix_world = sill_level
+    cut_pts = pose_cut(S, t, front_y, PAIR_X)
     bpy.context.view_layer.update()
 
     # --- camera ------------------------------------------------------------------------------------------
@@ -252,7 +258,7 @@ def pose(S, t, scene, shot=None):
         pts[f"18u_{k}"] = pv @ Vector((-0.025, -(135.0 - 23.5) * MM, 0.026))
     for j in range(2):
         pts[f"M{j}"] = W @ face_pt(j)
-    front_y = pw.y - (SILL_BACK - 23.5) * MM - SILL_D
+    pts.update(cut_pts)
     pts["dim_a"] = Vector((0.74, front_y, 0.003))
     pts["dim_b"] = Vector((0.74, front_y - GAP, 0.003))
     pts["cab"] = Vector((0.66, front_y - GAP - SILL_D * 0.5, -0.004))

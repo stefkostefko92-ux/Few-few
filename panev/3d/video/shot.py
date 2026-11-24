@@ -50,6 +50,8 @@ except TypeError:
 os.makedirs(out, exist_ok=True)
 
 meshes = [o for o in scene.objects if o.type == "MESH"]
+lamps = [o for o in scene.objects if o.type == "LIGHT"]
+LAMPS = {o.name for o in lamps}
 lights = []  # the key light's corners (its penumbra), the centres of the weaker fill and top lights
 for k in ("key", "fill", "top"):
     L = S["lights"][k]
@@ -65,7 +67,9 @@ def state():
     for o in meshes:
         vis = not o.hide_render
         m = tuple(round(v, 7) for row in o.matrix_world for v in row) if vis else None
-        st[o.name] = (vis, m)
+        st[o.name] = (vis, m, o.get("geo"))  # geo: a boolean cut or a material state that moves no matrix
+    for o in lamps:  # a light that switches or moves relights everything: render the frame whole
+        st[o.name] = (not o.hide_render, round(o.data.energy, 4), tuple(round(v, 6) for row in o.matrix_world for v in row))
     return st
 
 
@@ -127,6 +131,8 @@ for f in range(start, f1 + 1):
         changed = [n for n in st if st[n] != prev[n]]
         if not changed:
             region = None
+        elif LAMPS & set(changed):
+            region = (0, 0, W, H)
         else:
             pts3 = []
             for n in changed:

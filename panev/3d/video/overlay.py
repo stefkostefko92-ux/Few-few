@@ -14,7 +14,7 @@ FONT = os.environ.get("VIDEO_FONTS", os.path.join(_HERE, "assets", "fonts")) + o
 LOGO = os.path.join(_HERE, "..", "..", "img", "brand", "panev-ascensori-logo.webp")
 NAVY, DEEP, ACCENT, WHITE, RED = (22, 40, 98), (16, 29, 73), (143, 176, 255), (255, 255, 255), (229, 72, 77)
 
-from timeline import STEPS as STEP_TIMES
+from timeline import STEPS as STEP_TIMES, DURATION
 from texts import STEP_TEXT, CALLOUTS
 STEPS = [(a, b, *txt) for (a, b), txt in zip(STEP_TIMES, STEP_TEXT)]
 N_STEPS = len(STEPS)
@@ -169,6 +169,14 @@ def dashed(d, a, b, col, width, dash=14, gap=10):
         pos = e + gap
 
 
+def cut_line(c, t, pts):
+    """Step 11: the red dashed cut line on plate A, flush with the sill's front edge, until the disc reaches it."""
+    a, b = pts.get("cut_a"), pts.get("cut_b")
+    if not (a and b) or a[2] <= 0 or b[2] <= 0:
+        return
+    c.layer(fade(t, 96.3, 98.0, 0.35), lambda d, sh: dashed(d, a[:2], b[:2], (*RED, 255), 5, 16, 9))
+
+
 def angle_panel(c, t, pts):
     al = fade(t, 75.2, 84.0, 0.4)
     k = ease((t - 76.0) / 3.0)
@@ -233,14 +241,14 @@ def intro(c, t):
         x, y = 96, 360
         spaced(d, s(x, y), "GUIDA AL MONTAGGIO", font("Inter-SemiBold", 24), (*ACCENT, 255), 5)
         d.text(s(x - 4, y + 44), "Montaggio", font=font("InterDisplay-Bold", 104), fill=WHITE)
-        d.text(s(x - 4, y + 160), "in dieci passi", font=font("InterDisplay-Bold", 104), fill=WHITE)
+        d.text(s(x - 4, y + 160), "in undici passi", font=font("InterDisplay-Bold", 104), fill=WHITE)
         d.text(s(x, y + 304), "Staffa articolata A 45 175 2 + B 45 320", font=font("Inter-Medium", 32), fill=(214, 221, 240, 255))
         d.text(s(x, y + 352), "Regolazione angolare ± 7° · lamiera 5 mm", font=font("Inter-Regular", 26), fill=(184, 196, 228, 255))
     c.layer(al, draw)
 
 
 def outro(c, t):
-    al = fade(t, 96.4, 102.5, 0.7)
+    al = fade(t, STEPS[-1][1] + 0.4, DURATION + 0.5, 0.7)
 
     def draw(d, sh):
         x, y, w, h = 72, H - 72 - 300, 900, 300
@@ -270,10 +278,12 @@ def frame_overlay(t, pts):
         angle_panel(c, t, pts)
     if 21.0 <= t < 30.0:
         dimension(c, t, pts)
+    if 96.3 <= t < 98.0:
+        cut_line(c, t, pts)
     for name, badge, label, a, b, dx, dy in CALLOUTS:
         if a <= t < b:
             callout(c, t, pts.get(name), badge, label, a, b, dx, dy)
-    if t >= 96.0:
+    if t >= STEPS[-1][1]:
         outro(c, t)
     return c.result()
 

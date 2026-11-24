@@ -24,7 +24,7 @@ PRESETS = {
     "heavy": {"VIDEO_FPS": "60", "VIDEO_RES": "3840x2160", "VIDEO_OUT": "3840x2160", "VIDEO_DEVICE": "OPTIX",
               "spp": 96, "still_spp": 256, "still_res": "3840x2160"},
 }
-STILL_T = {"intro": 2.0, "hero": 99.0}
+STILL_T = {"intro": 2.0, "hero": 113.0}
 
 
 def blender():
@@ -81,7 +81,9 @@ def shots(cfg, env, root, log, only):
 
 def assemble(cfg, env, root, frames, log):
     os.makedirs(frames, exist_ok=True)
-    total = round(102.0 * int(cfg["VIDEO_FPS"]))
+    sys.path.insert(0, HERE)
+    from timeline import DURATION
+    total = round(DURATION * int(cfg["VIDEO_FPS"]))
     todo = [f for f in range(total) if not os.path.exists(os.path.join(frames, f"v{f:05d}.png"))]
     if not todo:
         return
@@ -119,7 +121,7 @@ def main():
     env = {**os.environ, **{k: v for k, v in cfg.items() if k.startswith("VIDEO_")}}
     root = os.path.join(HERE, "render", a.preset)
     frames = os.path.join(HERE, "frames", a.preset)
-    out = os.path.join(HERE, "out", f"Panev_montaggio-in-dieci-passi_{'4K60' if a.preset == 'heavy' else 'leggero'}.mp4")
+    out = os.path.join(HERE, "out", f"Panev_montaggio-in-undici-passi_{'4K60' if a.preset == 'heavy' else 'leggero'}.mp4")
     os.makedirs(root, exist_ok=True)
     log = os.path.join(root, "render.log")
     check_inputs()
