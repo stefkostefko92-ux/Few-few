@@ -96,8 +96,8 @@ hooks, skills).
   video that is a product feature (e.g. Piuma's content engine).
 - **Never SVG — any product** (owner, 2026-11-04): drawings, charts, icons — never SVG. Illustrations → 3D
   (three.js, bundled, no CDN); charts → `<canvas>`; icons → raster. Shipped SVG stays until the owner asks.
-- **CI is not watched** (owner, 2026-11-02): Actions jobs don't start — don't wait for, re-run, fix or comment
-  on CI; proof = the product's local gate + `secret-scan`.
+- **CI is not watched** (owner, 2026-11-02): jobs don't start; don't wait, re-run, fix or comment.
+  Proof = the product's local gate + `secret-scan`.
 - **Deploy commands ⇒ merge into `main` first — mandatory, every project** (owner, 2026-11-15): unmerged
   work goes into `main` (gate green, `base.ref` checked), commands only from `main`. → skill `deploy`.
 - **Generic agents: hard cap 10 per session** (anything not in `.claude/agents/`; enforced by the
