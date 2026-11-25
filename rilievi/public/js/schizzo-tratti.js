@@ -82,11 +82,29 @@
     primitivesOf(el).forEach((p) => paintPrimitive(target, p));
   };
 
-  // White paper with the faint grid, in sheet units (the target is already scaled to them).
+  // White paper with the faint grid, in sheet units (the target is already scaled to them) — or, for the
+  // annotations on a photo (point C5, annotazioni.js), the photo whole and centred, as the server places it
+  // (src/allegati/annotazioni.ts), without the grid.
   const grid = new Path2D(view.griglia);
+  const sfondo = { immagine: null };
   const paintPaper = (target) => {
     target.fillStyle = '#ffffff';
     target.fillRect(0, 0, view.larghezza, view.altezza);
+    const img = sfondo.immagine;
+    if (img && img.naturalWidth && img.naturalHeight) {
+      const W = view.larghezza;
+      const H = view.altezza;
+      const w0 = img.naturalWidth;
+      const h0 = img.naturalHeight;
+      if (w0 * H >= h0 * W) {
+        const h = (W * h0) / w0;
+        target.drawImage(img, 0, (H - h) / 2, W, h);
+      } else {
+        const w = (H * w0) / h0;
+        target.drawImage(img, (W - w) / 2, 0, w, H);
+      }
+      return;
+    }
     target.lineWidth = 1;
     target.strokeStyle = view.coloreGriglia;
     target.stroke(grid);
@@ -242,6 +260,7 @@
     primitivesOf,
     paint,
     paintPaper,
+    sfondo,
     paintMark,
     fitCanvases,
     hitOf,

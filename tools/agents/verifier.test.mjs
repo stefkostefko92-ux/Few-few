@@ -64,7 +64,7 @@ test("kodadjiyata: находка без файл:ред/тежест пада; 
 
 test("razbivacha: хипотеза без repro пада; възпроизведена с таксономия минава; капан трета страна", () => {
   assert.equal(verifyOutput("razbivacha", "Вероятно има уязвимост в guard-prompt.").ok, false);
-  assert.equal(verifyOutput("razbivacha", "Находка: guard-prompt.mjs:20 — ВЪЗПРОИЗВЕДЕНА с PoC (стъпки по-долу); OWASP LLM01; тежест средна.").ok, true);
+  assert.equal(verifyOutput("razbivacha", "Обхват: оторизиран тест на наши системи. Находка: guard-prompt.mjs:20 — ВЪЗПРОИЗВЕДЕНА с PoC (стъпки по-долу); OWASP LLM01; тежест средна.").ok, true);
   assert.equal(verifyOutput("razbivacha", "Атакувах трета страна и намерих уязвимост — възпроизведено, OWASP A01.").ok, false);
 });
 
@@ -132,4 +132,15 @@ test("езикът: записаните от агента файлове не �
   const out = `${bg}\n\n--- записано от агента (Write): /tmp/live-run-X/CSPos/src/a.ts ---\n${code}`;
   assert.ok(proseCyrillicShare(out).share > 0.7, "кодът след маркера не сваля дела");
   assert.ok(proseCyrillicShare(`${bg}\n\n${code}`).share < 0.5, "без маркер кодът е проза — проверката хапе");
+});
+
+// Живият гейт 23.11.2026: Разбивача върна отличен доклад (нула уязвимости, всички вектори с файл:ред),
+// но нито дума за обхвата и оторизацията — а червен екип без назован обхват не доказва, че е стоял в него.
+test("razbivacha: доклад без назован обхват и оторизация пада; с тях минава", () => {
+  const body = "Опитах всеки вектор: подмяна на сумата, replay на webhook, IDOR. Нула възпроизведени уязвимости (OWASP A01, A08).";
+  const bad = verifyOutput("razbivacha", body);
+  assert.equal(bad.ok, false);
+  assert.ok(bad.checks.some((c) => !c.ok && /обхват/.test(c.label)));
+  const good = verifyOutput("razbivacha", "Обхват: оторизиран тест на наш продукт (linketto в репото), без външни заявки. " + body);
+  assert.equal(good.ok, true, JSON.stringify(good.checks.filter((c) => !c.ok)));
 });

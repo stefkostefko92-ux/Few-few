@@ -66,10 +66,13 @@ export function route(task, T = loadTeams()) {
   // Вътре в екипа: най-много попадения по ключовете на агента; равенство → водачът.
   const agents = best.team.members.map((m) => ({ m, s: hits(task, T.agents[m]?.keys || []).length }));
   const top = Math.max(...agents.map((a) => a.s));
-  const agent = top === 0 || agents.find((a) => a.m === best.team.lead).s === top
-    ? best.team.lead
-    : agents.find((a) => a.s === top).m;
-  return { team: best.team.id, agent, score: best.score, ambiguous, rival: ambiguous ? second.team.id : null, fallback: false };
+  const leadWins = top === 0 || agents.find((a) => a.m === best.team.lead).s === top;
+  const tied = leadWins ? [] : agents.filter((a) => a.s === top);
+  const agent = leadWins ? best.team.lead : tied[0].m;
+  // Равенство между двама НЕ-водачи се решаваше мълчаливо по реда на членовете (23.11.2026) — вече се вижда.
+  const agentTie = tied.length > 1;
+  return { team: best.team.id, agent, score: best.score, ambiguous, rival: ambiguous ? second.team.id : null,
+    agentTie, agentRival: agentTie ? tied[1].m : null, fallback: false };
 }
 
 // ── карта на агента (инжектира се при старт) ─────────────────────────────────────────────────────
@@ -150,6 +153,7 @@ export function validate(T = loadTeams(), defined = definedAgents()) {
     const r = route(c.task, T);
     if (r.team !== c.team || r.agent !== c.agent) errs.push(`рутинг „${c.task}“ → ${r.team}/${r.agent}, очаквано ${c.team}/${c.agent}`);
     else if (r.ambiguous) errs.push(`рутинг „${c.task}“ е равен между ${r.team} и ${r.rival}`);
+    else if (r.agentTie) errs.push(`рутинг „${c.task}“ е равен вътре в ${r.team}: ${r.agent} и ${r.agentRival}`);
   }
   return errs;
 }
@@ -268,7 +272,7 @@ function main() {
     const team = T.teams.find((t) => t.id === r.team);
     if (argv.includes("--json")) { console.log(JSON.stringify(r)); return; }
     console.log(`Екип: ${team.name} (${team.id})${r.fallback ? " — нищо не хвана, решава водачът на флота" : ""}${r.ambiguous ? ` — РАВНО с ${r.rival}, реши ти или ${nm[T.fallback]}` : ""}`);
-    console.log(`Започни с: ${nm[r.agent] || r.agent} (${r.agent})`);
+    console.log(`Започни с: ${nm[r.agent] || r.agent} (${r.agent})${r.agentTie ? ` — РАВНО с ${nm[r.agentRival] || r.agentRival} вътре в екипа, реши ти или ${nm[team.lead] || team.lead}` : ""}`);
     console.log(`Поток „${team.workflow.name}“: ${team.workflow.steps.map((s) => nm[s.agent] || s.agent).join(" → ")} → човек`);
     console.log(`Човек: ${team.workflow.human}`);
     return;

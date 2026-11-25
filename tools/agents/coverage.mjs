@@ -41,6 +41,7 @@ const MAP = [
   ["Спортен/бетинг анализ", ["goladjiyata"]],
   ["Визуален WOW / WebGL", ["dizayner"]],
   ["Social media", ["socialdjiyata"]],
+  ["Видео продукция (сцени, Blender, FFmpeg/NVENC, Resolve)", ["ai-studio"]],
   ["3D reverse engineering", ["3d-maniac"]],
   ["3D печат (FDM)", ["printadjiyata"]],
   ["CNC / CAM за корпусни мебели (разкрой, DXF, G-code)", ["frezadjiyata"]],

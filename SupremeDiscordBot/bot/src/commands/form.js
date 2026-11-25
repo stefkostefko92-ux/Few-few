@@ -121,6 +121,7 @@ export default {
           serverId: interaction.guildId,
           reviewerId: interaction.user.id,
           reviewerTag: interaction.user.username,
+          reviewerIsAdmin: !!interaction.member?.permissions?.has("ManageGuild"),
         });
         await interaction.editReply(`✅ Application **${appId}** ${action}d successfully.`);
       } catch (err) {

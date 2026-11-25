@@ -103,6 +103,12 @@ describe('a saved calculation', () => {
           t,
           impianto: { indirizzo: 'Via Roma 1, Milano', matricola: '0012345', numeroImpianto: '7' },
           salvato: { quando: '31/10/2026, 10:00', autore: 'Giulia Bianchi' },
+          generato: {
+            quando: '31/10/2026, 10:00',
+            autore: 'Marco Neri',
+            build: '0a1b2c3d4e',
+            impronta: 'AB12-CD34-EF56',
+          },
           testata: {
             intestazione: { nome: 'Ascensori Esempio S.r.l.', righe: ['Via Roma 12, Milano'] },
             logo: null,

@@ -1,6 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  blockFieldInput,
+  blockFieldLabels,
+  blockFieldsFor,
   buildVCard,
   isBlockVisible,
   parseBlockInput,
@@ -102,7 +105,7 @@ test('videoEmbedSrc: YouTube през nocookie + Vimeo', () => {
   );
   assert.equal(
     videoEmbedSrc('https://vimeo.com/12345'),
-    'https://player.vimeo.com/video/12345',
+    'https://player.vimeo.com/video/12345?dnt=1',
   );
   assert.equal(videoEmbedSrc('https://example.com/watch?v=abc'), null);
 });
@@ -153,7 +156,7 @@ test('buildVCard: коректен формат и екраниране', () => 
     phone: '+359877414874',
     email: 'maria@example.com',
     org: 'ACME, Ltd',
-    url: 'https://linketto.carbonstealth.eu/u/maria',
+    url: 'https://piuma.carbonstealth.eu/u/maria',
   });
   assert.ok(card.startsWith('BEGIN:VCARD\r\nVERSION:3.0'));
   assert.ok(card.includes('FN:Мария\\; Петрова'));
@@ -188,4 +191,26 @@ test('parseBlockInput: spotlight (featured) влиза в meta само при �
     extra2: '',
   });
   assert.equal(plain?.meta?.featured, undefined);
+});
+
+test('blockFieldLabels: етикетите отговарят на полетата и на парсера', () => {
+  const kinds = ['LINK', 'HEADER', 'PHONE', 'MAP', 'VIDEO', 'MUSIC', 'APP', 'FORM', 'TIP', 'EMAIL', 'POLL', 'BOOKING', 'VCARD'];
+  for (const kind of kinds) {
+    const labels = blockFieldLabels(kind);
+    const shows = blockFieldsFor(kind);
+    assert.equal(labels.url !== null, shows.url, `${kind} url`);
+    assert.equal(labels.extra1 !== null, shows.extra1, `${kind} extra1`);
+    assert.equal(labels.extra2 !== null, shows.extra2, `${kind} extra2`);
+  }
+  // „Spotify“ е url, „Apple Music“ е extra1 — както ги чете парсерът.
+  assert.deepEqual(blockFieldLabels('MUSIC'), { url: 'spotify', extra1: 'appleMusic', extra2: null });
+  const music = parseBlockInput({ kind: 'MUSIC', url: '', extra1: 'https://music.apple.com/x', extra2: '' });
+  assert.equal(music?.meta?.apple, 'https://music.apple.com/x');
+  assert.deepEqual(blockFieldLabels('APP'), { url: 'appWeb', extra1: 'appStore', extra2: 'googlePlay' });
+  const app = parseBlockInput({ kind: 'APP', url: '', extra1: '', extra2: 'https://play.google.com/store/apps/details?id=x' });
+  assert.equal(app?.meta?.android, 'https://play.google.com/store/apps/details?id=x');
+  // Задължителни са само полетата, без които парсерът винаги връща null.
+  assert.equal(blockFieldInput('phone').required, true);
+  assert.equal(blockFieldInput('spotify').required, false);
+  assert.equal(blockFieldInput('vcardEmail').type, 'email');
 });

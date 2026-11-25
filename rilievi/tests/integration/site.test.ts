@@ -135,6 +135,17 @@ describe('the access request', () => {
       'ACCESS_REQUEST_UPDATE',
     ]);
     assert.ok(audit.every((entry) => entry.actorId === null && entry.aziendaId === null));
+    // Only a fresh request is corrected: an older waiting one is not overwritten by whoever knows the email
+    // (the address is not verified) — the new one is a row of its own for the MASTER.
+    await prisma.$executeRaw`UPDATE "AccessRequest" SET "updatedAt" = now() - interval '11 minutes' WHERE id = ${rows[0]!.id}`;
+    const dopo = await sendRequest(new Browser(), { ...REQUEST, message: 'Scritto da un altro.' });
+    assert.equal(dopo.status, 303);
+    const tutte = await prisma.accessRequest.findMany({
+      where: { email: 'giulia.verdi@example.it' },
+      orderBy: { createdAt: 'asc' },
+    });
+    assert.equal(tutte.length, 2);
+    assert.equal(tutte[0]?.message, 'Secondo tentativo.');
   });
 
   it('keeps one waiting request when the same email is sent twice at once (double click)', async () => {

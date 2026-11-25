@@ -16,6 +16,21 @@ test("версията на three е точна semver от mascot/cinematic/pac
   assert.match(v, /^\d+\.\d+\.\d+$/);
 });
 
+test("иконата се пече с близка рамка, портретът — с портретна, и двете в ultra", () => {
+  // Рендерът иска браузър, затова договорът с mount() се пази в изходния код: без framing иконата
+  // се пече в портретна рамка и маскотът става неразличим на 128 px (дефектът преди 2026-11-14).
+  const src = readFileSync(CLI, "utf8");
+  assert.match(src, /framing:\s*PORTRAIT \? "portrait" : "icon"/);
+  assert.match(src, /\(\{ accent, framing \}\)/, "framing стига до страницата, не само до аргумента");
+  assert.match(src, /quality: "ultra"/);
+});
+
+test("пътят до Chromium не е закован към номер на билд (остарява при обновяване на средата)", () => {
+  const src = readFileSync(CLI, "utf8");
+  assert.doesNotMatch(src, /chromium-\d{4}/);
+  assert.match(src, /CHROME_PATH/, "изричният избор остава възможен");
+});
+
 test("непознат агент → отказ, без да се стартира браузър и без запис", () => {
   const d = mkdtempSync(join(tmpdir(), "icons3d-"));
   try {

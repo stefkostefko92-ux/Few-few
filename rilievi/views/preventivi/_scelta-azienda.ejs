@@ -1,0 +1,30 @@
+<%
+  // Изборът на фирма на нова оферта и на нов клиент (routes/preventivi-vista.ts, `aziendePerPreventivo`): фирмите
+  // с включени оферти; при MASTER — и активните с изключени, в своя група (собственикът, 16 ноември 2026: „не мога
+  // да избера фирма … от мастър акаунта“). Избрана изключена → бележката и „Attiva i preventivi“ — бутонът е на
+  // отделната форма `f-attiva-offerte` (_attiva-offerte.ejs, след тази): Enter в поле на формата не го натиска.
+  // public/js/offerte-spente.js показва бележката и сменя адреса на ключа при всеки нов избор.
+  // Входът: aziende, spente, azienda, errore (текстът на грешката или '').
+  const sceltaSpenta = spente.some((a) => a.id === azienda);
+  const descritto = [errore ? 'err-azienda' : '', sceltaSpenta ? 'nota-offerte-spente' : ''].filter(Boolean).join(' ');
+%><div class="field field--azienda">
+    <label class="field__label" for="f-azienda"><%= t('scheda.field.azienda') %></label>
+    <select class="select" id="f-azienda" name="azienda" required data-scelta-azienda<% if (errore) { %> aria-invalid="true"<% } %><% if (descritto) { %> aria-describedby="<%= descritto %>"<% } %>>
+      <option value=""<% if (!azienda) { %> selected<% } %>>—</option>
+      <% for (const item of aziende) { %><option value="<%= item.id %>"<% if (azienda === item.id) { %> selected<% } %>><%= item.name %></option>
+      <% } %>
+      <% if (spente.length) { %><optgroup label="<%= t('preventivi.spente.gruppo') %>">
+        <% for (const item of spente) { %><option value="<%= item.id %>" data-spenta<% if (azienda === item.id) { %> selected<% } %>><%= item.name %></option>
+        <% } %>
+      </optgroup><% } %>
+    </select>
+    <% if (errore) { %><p class="field__error" id="err-azienda"><%= errore %></p><% } %>
+    <% if (spente.length) { %>
+    <div class="notice offerte-spente" id="nota-offerte-spente" data-offerte-spente<% if (!sceltaSpenta) { %> hidden<% } %>>
+      <%# Бележката назовава фирмата, за която важи ключът: без JavaScript той остава за фирмата от последния отговор
+          на сървъра, дори ако изборът горе се смени (ревюто на Кодаджията); с JavaScript името следва избора. %>
+      <p data-nota-testo="<%= t('preventivi.spente.nota', { azienda: '{azienda}' }) %>"><%= t('preventivi.spente.nota', { azienda: (spente.find((a) => a.id === azienda) || { name: '' }).name }) %></p>
+      <div class="toolbar"><button class="btn" type="submit" form="f-attiva-offerte"><%- include('../partials/icon', { name: 'check' }) %><%= t('preventivi.spente.attiva') %></button></div>
+    </div>
+    <% } %>
+  </div>

@@ -1,0 +1,12 @@
+[Unit]
+# Дневно: седмичният отчет „езикова дупка“ (всеки получава най-много 1 на ~седмица).
+Description=Linketto — седмичен отчет (дневно, 08:10)
+
+[Timer]
+OnCalendar=*-*-* 08:10:00
+Persistent=true
+RandomizedDelaySec=120
+Unit=linketto-cron@digest.service
+
+[Install]
+WantedBy=timers.target

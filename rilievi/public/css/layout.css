@@ -7,6 +7,21 @@
   gap: 8px;
 }
 
+/* Много действия (страницата на картата) на телефон — две равни колони: в ред те се пренасяха 2/2/1/1/2
+   (визуалната проверка, 10 ноември 2026). Дългият надпис се пренася в бутона. */
+@media (max-width: 559px) {
+  .toolbar--griglia {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .toolbar--griglia > .btn {
+    justify-content: flex-start;
+    white-space: normal;
+    text-align: left;
+  }
+}
+
 .flash {
   display: flex;
   gap: 12px;
@@ -240,6 +255,11 @@
 
 .membership-add {
   margin-top: 16px;
+}
+
+/* Името на фирмата е по-дълго от ролята: изборът ѝ взима повече от реда (на таблет се режеше до стрелката). */
+.membership-add .field:first-of-type {
+  flex: 2 1 280px;
 }
 
 /* В списъка: всяка фирма с ролята си на свой ред. */

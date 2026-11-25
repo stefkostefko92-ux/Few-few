@@ -42,6 +42,7 @@ const BASE: readonly Collegamento[] = [
       { luogo: 'eo', campo: 'nFermate' },
       { luogo: 'pa', campo: 'piani' },
       { luogo: 'db', campo: 'fermate' },
+      { luogo: 'gt', campo: 'nFermate' },
     ],
   },
   {
@@ -58,6 +59,7 @@ const BASE: readonly Collegamento[] = [
       { luogo: 'el', campo: 'velocita' },
       { luogo: 'eo', campo: 'velocita' },
       { luogo: 'pa', campo: 'velocita' },
+      { luogo: 'gt', campo: 'velocita' },
     ],
   },
   {
@@ -103,6 +105,7 @@ const BASE: readonly Collegamento[] = [
       { luogo: 'mq', campo: 'portataNominale' },
       { luogo: 'pa', campo: 'portata' },
       { luogo: 'db', campo: 'kg' },
+      { luogo: 'gt', campo: 'portata' },
     ],
   },
   {
@@ -114,6 +117,7 @@ const BASE: readonly Collegamento[] = [
       { luogo: 'dp', campo: 'displayPersone' },
       { luogo: 'pa', campo: 'persone' },
       { luogo: 'db', campo: 'persone' },
+      { luogo: 'gt', campo: 'capienza' },
     ],
   },
   {
@@ -125,6 +129,7 @@ const BASE: readonly Collegamento[] = [
       { luogo: 'dp', campo: 'displayImpianto' },
       { luogo: 'pa', campo: 'nImpianto' },
       { luogo: 'db', campo: 'nImpianto' },
+      { luogo: 'gt', campo: 'nImpianto' },
     ],
   },
   {
@@ -151,6 +156,7 @@ const BASE: readonly Collegamento[] = [
       { luogo: 'eg', campo: 'frenoV' },
       { luogo: 'el', campo: 'frenoVcc' },
       { luogo: 'pa', campo: 'tensioneFreno' },
+      { luogo: 'gt', campo: 'tensioneFreno' },
     ],
   },
   {
@@ -196,6 +202,7 @@ const BASE: readonly Collegamento[] = [
       { luogo: 'scheda', campo: 'doppioAccesso', valori: { si: '2', no: '1' } },
       { luogo: 'oq', campo: 'nAccessi' },
       { luogo: 'mq', campo: 'numeroAccessi' },
+      { luogo: 'gt', campo: 'nAccessi' },
     ],
   },
   {
@@ -227,6 +234,7 @@ const BASE: readonly Collegamento[] = [
       // Elettroquadri: позицията на централата в машинното (oleodinamico). „Con Locale macchina: Basso /
       // Alto“ на gearless — не: листът се отваря при MRL (без машинно), там е „MRL gearless“ (видът).
       { luogo: 'eo', voci: { centralinaAlto: 'ALTO', centralinaBasso: 'BASSO' } },
+      { luogo: 'gt', campo: 'salaMacchina', voci: { alto: 'ALTO', basso: 'BASSO' } },
     ],
   },
   {

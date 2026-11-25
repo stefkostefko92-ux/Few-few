@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { sistemaDi } from '../pwa/sistema.js';
+import { config } from '../config.js';
+import { apriInChrome, samsungInternet, sistemaDi } from '../pwa/sistema.js';
 
 /**
  * „Installa l'app“ (`/app`): как се слага порталът на началния екран на всяко устройство — бутонът на
@@ -15,5 +16,8 @@ installaRouter.get('/app', (req, res) => {
     titleKey: 'installa.title',
     scripts: ['installa'],
     sistema: sistemaDi(req.get('user-agent')),
+    // Samsung Internet: инсталирането оттам Android го бележи „non sicura“ — към Chrome.
+    samsung: samsungInternet(req.get('user-agent')),
+    chromeUrl: apriInChrome(config().PUBLIC_BASE_URL, '/app'),
   });
 });

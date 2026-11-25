@@ -1,6 +1,19 @@
 "use client";
 
 import { useActionState } from "react";
+import { ExternalLink } from "@/components/icons";
+import {
+  FORM,
+  Field,
+  FormError,
+  FormSuccess,
+  Honeypot,
+  INPUT,
+  RequiredNote,
+  SubmitButton,
+  fields,
+  useFormFocus,
+} from "@/components/FormKit";
 import { submitAdRequest, type AdRequestState } from "@/app/reklama/actions";
 import { PrivacyNote } from "@/components/PrivacyNote";
 
@@ -8,95 +21,101 @@ const initial: AdRequestState = { ok: false };
 
 export function AdRequestForm({
   paymentUrl,
-  price,
+  priceText,
 }: {
   paymentUrl: string;
-  price: number;
+  /** Месечната цена за показване („20 €“). */
+  priceText: string;
 }) {
   const [state, action, pending] = useActionState(submitAdRequest, initial);
+  const { errorRef, doneRef } = useFormFocus(state);
 
   if (state.ok) {
+    // Връзката за плащане е САМО тук — след заявката и с изричното „след
+    // уговорка“ (страницата първо казва да се свържем, после да се плати).
     return (
-      <div className="rounded-xl border border-green-200 bg-green-50 p-5">
-        <p className="text-slate-800">
-          Благодарим! Получихме заявката Ви. <strong>Първо ще се свържем с Вас</strong>,
-          за да уточним текста, изображението и линка на рекламата.
+      <FormSuccess
+        title="Благодарим! Получихме заявката ви."
+        headingRef={doneRef}
+        action={
+          <a href={paymentUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary">
+            <ExternalLink className="h-5 w-5 shrink-0" aria-hidden />
+            Платете {priceText} с Revolut (след уговорка)
+            <span className="sr-only"> (отваря се в нов прозорец)</span>
+          </a>
+        }
+      >
+        <p>
+          <strong>Първо ще се свържем с вас</strong>, за да уточним текста, изображението и
+          връзката на рекламата.
         </p>
-        <p className="mt-2 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">
-          <strong>Важно:</strong> платете таксата от {price}€ на месец{" "}
+        <p className="callout-note rounded-xl text-base">
+          <strong>Важно:</strong> платете таксата от {priceText} на месец{" "}
           <strong>едва след като се свържем и се уговорим</strong>.
         </p>
-        <a
-          href={paymentUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-secondary mt-4"
-        >
-          Платете {price}€ с Revolut (след уговорка)
-        </a>
-      </div>
+      </FormSuccess>
     );
   }
 
+  const f = fields(state);
+
   return (
-    <form action={action} className="space-y-4">
-      {state.error && (
-        <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-          {state.error}
-        </div>
-      )}
-      <div>
-        <label className="label" htmlFor="fullName">
-          Три имена *
-        </label>
+    <form key={state.attempt ?? 0} action={action} className={FORM} noValidate>
+      <FormError state={state} innerRef={errorRef} />
+      <RequiredNote />
+
+      <Field name="fullName" label="Три имена" error={f.error("fullName")} hint="Име, презиме и фамилия.">
         <input
-          id="fullName"
-          name="fullName"
+          {...f.props("fullName", { hint: true })}
           required
-          className="input"
-          placeholder="Име Презиме Фамилия"
+          minLength={5}
+          maxLength={120}
           autoComplete="name"
+          className={INPUT}
         />
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label className="label" htmlFor="email">
-            Имейл
-          </label>
-          <input id="email" name="email" inputMode="email" className="input" autoComplete="email" />
-        </div>
-        <div>
-          <label className="label" htmlFor="phone">
-            Телефон
-          </label>
-          <input id="phone" name="phone" inputMode="tel" className="input" autoComplete="tel" />
-        </div>
-      </div>
-      <div>
-        <label className="label" htmlFor="message">
-          Съобщение (по избор)
-        </label>
-        <textarea
-          id="message"
-          name="message"
-          rows={3}
-          className="input"
-          placeholder="Каква реклама желаете? (бизнес, услуга, линк)"
-        />
-      </div>
+      </Field>
 
-      {/* Honeypot против ботове */}
-      <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
+      <fieldset className="fieldset">
+        <legend className="legend">Как да се свържем с вас</legend>
+        <p className="text-base text-slate-600">Нужен е имейл или телефон.</p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field name="email" label="Имейл" error={f.error("email")}>
+            <input
+              {...f.props("email")}
+              type="email"
+              inputMode="email"
+              maxLength={160}
+              autoComplete="email"
+              className={INPUT}
+            />
+          </Field>
+          <Field name="phone" label="Телефон" error={f.error("phone")}>
+            <input
+              {...f.props("phone")}
+              type="tel"
+              inputMode="tel"
+              maxLength={40}
+              autoComplete="tel"
+              className={INPUT}
+            />
+          </Field>
+        </div>
+      </fieldset>
 
-      <p className="text-xs text-slate-600">
-        Посочете поне имейл или телефон. Ще се свържем с Вас, за да подготвим
-        банера.
-      </p>
+      <Field
+        name="message"
+        label="Съобщение"
+        optional
+        error={f.error("message")}
+        hint="Каква реклама желаете — бизнес, услуга, връзка към сайт или телефон."
+      >
+        <textarea {...f.props("message", { hint: true })} rows={3} maxLength={2000} className={INPUT} />
+      </Field>
+
+      <Honeypot />
       <PrivacyNote />
 
-      <button type="submit" className="btn-primary" disabled={pending}>
-        {pending ? "Изпращане…" : "Изпратете заявка"}
-      </button>
+      <SubmitButton pending={pending}>Изпратете заявката</SubmitButton>
     </form>
   );
 }

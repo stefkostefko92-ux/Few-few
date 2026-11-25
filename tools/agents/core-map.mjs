@@ -9,7 +9,7 @@
 //
 //   node tools/agents/core-map.mjs <файл…>            # кои от тях са ядро
 //   node tools/agents/core-map.mjs --diff [base]      # ядро без тест в текущия diff (изход 1)
-// Ползва се от pr-triage (ядро без тест → и Изпитателят) и от уменията commit-pr и verify.
+// Ползва се от pr-triage (ядро без тест → и Изпитателят; ядро → Ultrareview по избор) и от уменията commit-pr и verify.
 
 import { execFileSync } from "node:child_process";
 import { isMain } from "../lib/is-main.mjs";
@@ -45,6 +45,24 @@ export function coreReport(files) {
   return { core, tests, coreWithoutTest: untested };
 }
 
+// Ядро → планът минава през втори наш агент ПРЕДИ кода (Boris Cherny, 2026: „one Claude writes the plan,
+// a second reviews it as a staff engineer“). Сам авторът не вижда дупките в собствения си план.
+export const PLAN_REVIEW = "↳ ядро: планът минава през втори наш агент преди кода — Разбивача (инварианти: пари, фискал, достъп), " +
+  "Качествения (дизайн и поддръжка) или умение razpit; после тест първо, човекът чете тестовете.";
+export function planReviewHint(report) { return report?.core?.length ? PLAN_REVIEW : ""; }
+
+// Ядро → по избор и втори, независим преглед извън флота: Ultrareview (решение на собственика 24.11.2026, план
+// Ultra). Платен е (usage credits след безплатните) и се пуска САМО от човек — Claude не го стартира
+// сам (договор ultrareview-human-only, цената — claims.json ultrareview-pricing). PR режимът клонира от GitHub, без
+// да качва работното дърво (на Windows без WSL клонът качва и непубликуваните промени във файловете).
+export function ultrareviewLine(pr) {
+  return `↳ ядро: по избор и само с „да“ на собственика — Ultrareview: \`/code-review ultra ${pr || "<номер на PR>"}\` ` +
+    "(облачен флот от проверяващи, всяка находка възпроизведена; платен — usage credits след безплатните, цена: claims.json ultrareview-pricing). " +
+    "PR режимът клонира PR-а от GitHub и не качва работното дърво; без --post — находките не отиват в PR, освен ако собственикът избере. " +
+    "От Bash (`claude ultrareview`) не се пуска — пазачът го спира.";
+}
+export function ultrareviewHint(report, pr) { return report?.core?.length ? ultrareviewLine(pr) : ""; }
+
 async function runCli() {
   const argv = process.argv.slice(2);
   if (argv[0] === "--diff") {
@@ -54,6 +72,8 @@ async function runCli() {
     const r = coreReport([...new Set(files)]);
     if (!r.core.length) { console.log("✓ core-map: diff-ът не пипа ядро — листа."); process.exit(0); }
     console.log(`ядро (${r.core.length}): ${r.core.join(", ")}`);
+    console.log(planReviewHint(r));
+    console.log(ultrareviewHint(r));
     if (r.coreWithoutTest.length) {
       console.log(`✗ ядро без тест в същия продукт: ${r.coreWithoutTest.join(", ")} — първо тест (умение test-driven-development), човекът чете тестовете.`);
       process.exit(1);

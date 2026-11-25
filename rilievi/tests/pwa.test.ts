@@ -9,7 +9,7 @@ import vm from 'node:vm';
 import sharp from 'sharp';
 import { translatorFor } from '../src/i18n.js';
 import { ICONE, manifestDi, START_URL } from '../src/pwa/manifest.js';
-import { sistemaDi } from '../src/pwa/sistema.js';
+import { apriInChrome, samsungInternet, sistemaDi } from '../src/pwa/sistema.js';
 
 const PUBLIC = join(import.meta.dirname, '..', 'public');
 const t = translatorFor('it');
@@ -88,11 +88,16 @@ describe('the service worker', () => {
       skipWaiting: () => undefined,
       clients: { claim: async () => undefined },
     };
-    vm.runInNewContext(source, { self, fetch, Response });
+    vm.runInNewContext(source, {
+      self: { ...self, location: { origin: 'https://r.example' } },
+      fetch,
+      Response,
+      URL,
+    });
     return listeners;
   }
 
-  function fetchEvent(request: { mode: string; method: string }) {
+  function fetchEvent(request: { mode: string; method: string; url?: string }) {
     const event = {
       request,
       answer: null as Promise<Response> | null,
@@ -106,8 +111,18 @@ describe('the service worker', () => {
     for (const request of [
       { mode: 'cors', method: 'GET' },
       { mode: 'no-cors', method: 'GET' },
-      // A form that is sent: never answered by the worker, it goes to the server or fails as before.
-      { mode: 'navigate', method: 'POST' },
+      // A form that is not a field document (a deletion, a signature, the sign-in): as before.
+      {
+        mode: 'navigate',
+        method: 'POST',
+        url: 'https://r.example/schede/cm0000000000000000000001/elimina',
+      },
+      {
+        mode: 'navigate',
+        method: 'POST',
+        url: 'https://r.example/interventi/cm0000000000000000000001/firma',
+      },
+      { mode: 'navigate', method: 'POST', url: 'https://r.example/accesso' },
     ]) {
       const event = fetchEvent(request);
       onFetch!(event);
@@ -135,8 +150,8 @@ describe('the service worker', () => {
     assert.doesNotMatch(body, /<script/);
   });
 
-  it('keeps nothing on the device', () => {
-    assert.doesNotMatch(source, /caches\.|indexedDB|localStorage/);
+  it('keeps no page on the device (only an unsent form — tests/bozze-sw.test.ts)', () => {
+    assert.doesNotMatch(source, /caches\.|localStorage|sessionStorage/);
   });
 });
 
@@ -166,5 +181,24 @@ describe('the device of "Installa l\'app"', () => {
     // Not told: every step stays open.
     assert.equal(sistemaDi(undefined), null);
     assert.equal(sistemaDi('curl/8.5.0'), null);
+  });
+
+  it('knows Samsung Internet, whose installed app Android marks as unsafe, and opens the page in Chrome', () => {
+    // The owner, 5 November 2026: the "non sicura" warning comes from the Samsung browser.
+    const samsung =
+      'Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/25.0 Chrome/121.0.0.0 Mobile Safari/537.36';
+    assert.equal(samsungInternet(samsung), true);
+    assert.equal(sistemaDi(samsung), 'android');
+    assert.equal(
+      samsungInternet(
+        'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36',
+      ),
+      false,
+    );
+    assert.equal(samsungInternet(undefined), false);
+    assert.equal(
+      apriInChrome('https://rilievi.carbonstealth.eu', '/app'),
+      'intent://rilievi.carbonstealth.eu/app#Intent;scheme=https;package=com.android.chrome;end',
+    );
   });
 });

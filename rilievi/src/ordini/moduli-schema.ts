@@ -178,9 +178,18 @@ function moduloSchema<F extends z.ZodTypeAny, T extends string>(field: F, tipo: 
      * Формуляр с логика в JavaScript (DMG): JavaScript-ът се маха, бутоните за действие (Salva, Invia,
      * Reset, езиците, стрелките, корицата) и скритите полета не излизат на листа — освен попълнените и
      * показаните от избора (`mostra`); полетата по `nonStampare` (регулярни изрази — „кръпките“, с които
-     * JavaScript-ът сиви недостъпното) — никога.
+     * JavaScript-ът сиви недостъпното) — никога. `sposta` — поле, оставено от автора не на мястото си
+     * (картинката с ширините на четири модела на QF Fixtures стои 20–24 pt под отметките си, върху
+     * заглавието на следващия раздел): на листа излиза на височина `y` — реда на отметките му.
      */
-    pulizia: z.object({ nonStampare: z.array(z.string().min(1)) }).optional(),
+    pulizia: z
+      .object({
+        nonStampare: z.array(z.string().min(1)),
+        sposta: z
+          .array(z.object({ campo: z.string().min(1), y: z.number().min(0).max(2000) }))
+          .optional(),
+      })
+      .optional(),
     sopraLinea: z.number().min(0).max(5).optional(),
     gruppi: z.array(
       z.object({

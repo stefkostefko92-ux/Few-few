@@ -14,7 +14,10 @@ VPS-а (виж `deploy.sh` + `nginx.conf`). Домейн: evanita-bg.com._
 ```
 index.html            едностраничният сайт (hero, програми, график, FAQ, контакт)
 404.html              брандирана 404 (noindex)
+poveritelnost.html    политика за поверителност (реалните обработвания на сайта)
 css/, js/, images/    стилове, клиентска логика, снимки (jpg + webp двойки)
+fonts/                Cormorant Garamond + Onest (woff2, кирилица/латиница, OFL — fonts/OFL.md)
+test/                 node:test без зависимости — поверителността (`node --test evanitasport/test/privacy.test.mjs`)
 llms.txt              AEO съдържание за AI асистенти
 robots.txt            + AI ботове; sitemap.xml; indexnow-key.txt (публичен по протокол)
 apple-touch-icon.png  180×180 върху кремав фон (iOS не поддържа SVG)
@@ -39,5 +42,11 @@ marketing/            вътрешни маркетинг документи (п
   `prefers-reduced-motion` — не връщай безусловния вариант.
 - SEO промяна → `node tools/seo/indexnow.mjs https://evanita-bg.com`
   (ключът е на `/indexnow-key.txt` в web root-а).
-- Гейт: `node tools/qa/static-site-check.mjs evanitasport` (CI:
+- **Нищо от трети страни при зареждане** (собственикът, 24.11.2026): шрифтовете са в `fonts/`
+  (не връщай Google Fonts), картата на Google е iframe едва след клик (`.map-load` в `js/main.js`).
+  Нов външен ресурс → първо `poveritelnost.html` и CSP в `nginx.conf`, после тестът.
+- **Решения на собственика за поверителността (24.11.2026):** без имейл в сайта (само телефон/Viber/Facebook);
+  съобщенията и номерата на хора, които не са станали клиенти, се трият до 2 седмици; сървърът е в Германия
+  (netcup) и договорът за обработване по чл. 28 е сключен. ЕИК 206109065 и седалището — от Търговския регистър.
+- Гейт: `node tools/qa/static-site-check.mjs evanitasport` + `node --test evanitasport/test/privacy.test.mjs` (CI:
   `.github/workflows/evanitasport.yml`).

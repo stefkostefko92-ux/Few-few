@@ -5,7 +5,7 @@
   const errorKeys = Object.keys(errori).filter((k) => k !== '_');
   const erroriImpianto = identita ? Object.keys(identita.errori) : [];
   const nErrori = errorKeys.length + erroriImpianto.length + (identita && identita.aziendaErrore ? 1 : 0);
-  const msgImpianto = (k) => identita.errori[k] === 'required' ? t('argano.libero.erroreIndirizzo') : identita.errori[k] === 'digitsOnly' ? t('scheda.error.digitsOnly') : t('scheda.error.tooLong', { maxLength: k === 'indirizzo' ? 200 : 20 });
+  const msgImpianto = (k) => identita.errori[k] === 'required' ? t('argano.libero.erroreIndirizzo') : identita.errori[k] === 'digitsOnly' ? t('scheda.error.digitsOnly') : t('scheda.error.tooLong', { maxLength: k === 'indirizzo' ? 200 : k === 'matricola' ? 40 : 20 });
   const val = (k) => typeof values[k] === 'string' ? values[k] : '';
   const campo = (key, kind, extra = {}) => include('_campo', { key, kind, values, errori, limiteDi, opzioni: [], ...extra });
   const op = (gruppo, valori) => valori.map((v) => ({ value: String(v), label: t('argano.opzione.' + gruppo + '.' + v) }));
@@ -31,8 +31,8 @@
     <p class="page-head__sub"><%= t('argano.sottotitolo') %></p>
   </div>
   <% if (salvato && salvato.dati && percorso.pdf) { %><div class="toolbar">
-    <a class="btn" href="<%= percorso.pdf %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('argano.pdf') %></a>
-    <a class="btn" href="<%= percorso.pdf %>?inline=1" target="_blank" rel="noopener"><%- include('../partials/icon', { name: 'print' }) %><%= t('argano.stampa') %></a>
+    <a class="btn" data-pdf href="<%= percorso.pdf %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('argano.pdf') %></a>
+    <a class="btn" data-pdf href="<%= percorso.pdf %>?inline=1" target="_blank" rel="noopener"><%- include('../partials/icon', { name: 'print' }) %><%= t('argano.stampa') %></a>
   </div><% } %>
 </div>
 <div class="stack-gap argano">
@@ -134,17 +134,20 @@
   <% for (const s of sezioni) { %>
   <div class="argano__sezione">
     <h3><%= s.titolo %></h3>
+    <div class="table-scorre">
     <table class="table argano__tabella">
       <tbody>
         <% for (const r of s.righe) { %><tr><th scope="row"><%= r.etichetta %></th><td class="argano__valore"><%= r.valore %><% if (r.unita) { %> <%= r.unita %><% } %></td><td class="argano__esito"><% if (r.ok !== undefined) { %><span class="esito esito--<%= r.ok ? 'ok' : 'no' %>"><%= r.ok ? t('argano.r.ok') : t('argano.r.no') %></span><% } %></td></tr>
         <% } %>
       </tbody>
     </table>
+    </div>
     <p class="argano__conclusione esito-testo--<%= s.esito.ok ? 'ok' : 'no' %>"><%= s.esito.testo %></p>
   </div>
   <% } %>
   <% if (sezioni.length) { %><p class="muted argano__nota"><%= t('argano.nota') %></p><% } %>
 </section>
+<%- include('../partials/avvertenza-calcolo') %>
 <% if (percorso.elimina) { %>
 <details class="danger-zone">
   <summary><%= t('argano.libero.elimina.titolo') %></summary>

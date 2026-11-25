@@ -97,7 +97,7 @@ describe('signing an intervention sheet', () => {
       ...FIRME,
     });
     assert.equal(stale.status, 409);
-    assert.match(stale.body, /Il modulo è stato modificato dopo l&#39;apertura di questa pagina/);
+    assert.match(stale.body, /Il foglio è stato modificato dopo l&#39;apertura di questa pagina/);
     assert.match(stale.body, /Monza/, 'the new content is shown');
     assert.match(stale.body, /name="firmaTecnico" value=""/, 'the old signatures are not carried');
     assert.match(stale.body, /name="firmaCliente" value=""/);
@@ -180,7 +180,7 @@ describe('signing an intervention sheet', () => {
       firmaCliente: firme.firmaCliente!,
     });
     assert.equal(replay.status, 422);
-    assert.match(replay.body, /Questa firma è già presente su un altro modulo/);
+    assert.match(replay.body, /Questa firma è già presente su un altro documento/);
     assert.match(replay.body, /name="firmaCliente" value=""/, 'the copied signature is dropped');
     // The technician's strokes in the customer's pad, from another company: refused too.
     const altro = (await signedIn('TECNICO', (await makeAzienda()).id)).browser;

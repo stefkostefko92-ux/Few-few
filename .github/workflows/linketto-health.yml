@@ -1,0 +1,88 @@
+name: linketto health
+
+# Външен монитор на https://piuma.carbonstealth.eu/api/health (моделът на rilievi-health.yml): мъртъв
+# сървър не може да се обади сам. „Втори чифт очи“, не SLA — ограниченията:
+#  - `schedule` върви САМО от основния клон (main): монитор има чак след merge; `workflow_dispatch` — от всеки клон;
+#  - GitHub закъснява пусканията по разписание (минути при натоварване); минутите са изместени (не :00);
+#  - в публично репо разписанието се изключва след 60 дни без активност в репото (пуска се наново от Actions);
+#  - ако GitHub е долу, монитор няма.
+# Аларма = отворен issue с етикет `linketto-down` (GitHub праща известие по имейл на наблюдаващите репото)
+# само при ПРОМЯНА; затваря се сам при възстановяване. Без външни услуги и без тайни: health отговорът
+# няма лични данни, а в issue-то влиза само HTTP кодът.
+# Проверката — tools/vps/monitoring/probe-health.sh (тест: tools/vps/monitoring-probe.test.mjs).
+# Без чужди actions освен checkout (пиннат по SHA); `gh` е на runner-а.
+
+on:
+  schedule:
+    - cron: '3-59/10 * * * *' # :03, :13, … :53 UTC (rilievi е на :07)
+  workflow_dispatch: {}
+
+concurrency:
+  group: linketto-health
+  cancel-in-progress: false
+
+# Least-privilege: чете кода (checkout) и пише само issue-та.
+permissions:
+  contents: read
+  issues: write
+
+env:
+  LINKETTO_HEALTH_URL: https://piuma.carbonstealth.eu/api/health # не е таен
+  LINKETTO_HEALTH_MARKER: '"app":"linketto"'
+
+jobs:
+  health:
+    # Не върви във форкове (би отварял issue-та в чужд репо).
+    if: github.repository == 'stefkostefko92-ux/Few-few'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          sparse-checkout: tools/vps/monitoring
+          persist-credentials: false
+
+      - name: Проверка на /api/health
+        id: check
+        run: bash tools/vps/monitoring/probe-health.sh "$LINKETTO_HEALTH_URL" "$LINKETTO_HEALTH_MARKER"
+
+      - name: Състояние (issue)
+        env:
+          STATE: ${{ steps.check.outputs.state }}
+          DETAIL: ${{ steps.check.outputs.detail }}
+        run: |
+          set -euo pipefail
+          LABEL='linketto-down'
+          TITLE='linketto: сайтът не отговаря отвън'
+          NOW="$(date -u '+%F %H:%M') UTC"
+          RUN="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          case "$STATE" in up | down) ;; *) echo "невалидно състояние" >&2; exit 1 ;; esac
+          case "$DETAIL" in network | '200 unexpected' | [0-9][0-9][0-9]) ;; *) DETAIL='?' ;; esac
+
+          OPEN="$(gh issue list --label "$LABEL" --state open --limit 1 \
+            --json number,updatedAt \
+            --jq 'if length == 0 then empty else .[0] | "\(.number) \(.updatedAt)" end')"
+          NUM="${OPEN%% *}"
+          UPD="${OPEN#* }"
+
+          if [ "$STATE" = "down" ]; then
+            if [ -z "$OPEN" ]; then
+              gh label create "$LABEL" --color B60205 \
+                --description "Външен монитор: linketto не отговаря" 2>/dev/null || true
+              gh issue create --title "$TITLE" --label "$LABEL" \
+                --body "/api/health не отговаря здраво отвън ($DETAIL) — $NOW. Проверка: $RUN. Диагноза: linketto/DEPLOY.md §7 (docker compose ps/logs, journalctl, nginx). Issue-то се затваря само при възстановяване."
+            else
+              # Още е долу: най-много един коментар на час, без ново известие за отваряне.
+              AGE=$(( $(date -u +%s) - $(date -u -d "$UPD" +%s) ))
+              if [ "$AGE" -ge 3600 ]; then
+                gh issue comment "$NUM" --body "Още не отговаря ($DETAIL) — $NOW. Проверка: $RUN"
+              fi
+            fi
+          elif [ -n "$OPEN" ]; then
+            gh issue close "$NUM" --comment "Отново отговаря — $NOW. Проверка: $RUN"
+          else
+            echo "Здрав, без промяна."
+          fi

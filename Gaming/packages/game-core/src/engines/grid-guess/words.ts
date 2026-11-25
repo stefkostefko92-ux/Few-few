@@ -85,12 +85,26 @@ function wrongReason(state: WordsState, word: string): WrongReason | null {
   return null;
 }
 
+/** Граници на часовника от лобито (както при Магнат: 10–120 s) — иначе 0,001 s или
+ *  милиони секунди източват животите/спират часовника. */
+export const WORDS_TURN_SECONDS_MIN = 10;
+export const WORDS_TURN_SECONDS_MAX = 120;
+/** Таван на дължината на въведената дума (най-дългата дума в речника е далеч под него). */
+export const MAX_WORD_LENGTH = 40;
+
+/** Въведената дума във вида, в който се сравнява: без интервали по краищата,
+ *  Unicode NFC (NFD „й“ = „и“+U+0306 иначе не съвпада с речника), малки букви. */
+const normalizeWord = (w: string): string => w.trim().normalize("NFC").toLowerCase();
+
 export const wordsEngine: GameEngine<WordsState, WordsAction, WordsEvent> = {
   init(opts: InitOpts, rng: SeededRng): WordsState {
     const seats = Math.min(Math.max(opts.seats, 2), 4);
     const seed = rng.shuffle(WORD_LIST)[0] ?? "дума";
     const cfg = opts.config as { turnSeconds?: number } | undefined;
-    const turnSeconds = typeof cfg?.turnSeconds === "number" && cfg.turnSeconds > 0 ? cfg.turnSeconds : undefined;
+    const turnSeconds =
+      typeof cfg?.turnSeconds === "number" && Number.isFinite(cfg.turnSeconds)
+        ? Math.min(Math.max(cfg.turnSeconds, WORDS_TURN_SECONDS_MIN), WORDS_TURN_SECONDS_MAX)
+        : undefined;
     return {
       used: [seed],
       lastLetter: lastLetter(seed),
@@ -115,7 +129,12 @@ export const wordsEngine: GameEngine<WordsState, WordsAction, WordsEvent> = {
   validate(state, seat, action) {
     if (state.done || seat !== state.turn) return false;
     if (action.type === "PASS") return true;
-    return action.type === "PLAY" && typeof action.word === "string" && action.word.trim().length > 0;
+    return (
+      action.type === "PLAY" &&
+      typeof action.word === "string" &&
+      action.word.trim().length > 0 &&
+      action.word.length <= MAX_WORD_LENGTH
+    );
   },
 
   reduce(state, action, rng) {
@@ -158,7 +177,8 @@ export const wordsEngine: GameEngine<WordsState, WordsAction, WordsEvent> = {
       throw new IllegalActionError("Непозната команда");
     }
 
-    const word = action.word.trim().toLowerCase();
+    if (action.word.length > MAX_WORD_LENGTH) throw new IllegalActionError("Твърде дълга дума");
+    const word = normalizeWord(action.word);
     const reason = wrongReason(next, word);
     if (reason) {
       // A wrong word costs a life; the player keeps the turn while alive.

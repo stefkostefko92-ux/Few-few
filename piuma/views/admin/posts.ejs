@@ -16,7 +16,7 @@
   <tr>
     <td><span class="chip <%= st.tone %>"><%- icon(st.icon, { class: 'ic-sm' }) %> <%= t(st.key) %></span></td>
     <td><%= p.brand.name %><span class="sub-line">@<%= p.account ? p.account.username : '—' %></span></td>
-    <td><span class="chip"><%- icon(kd.icon, { class: 'ic-sm' }) %> <%= t(kd.key) %></span><% if (p.aiAssisted) { %> <span class="chip accent"><%- icon('sparkle', { class: 'ic-sm' }) %> AI</span><% } %></td>
+    <td><span class="chip"><%- icon(kd.icon, { class: 'ic-sm' }) %> <%= t(kd.key) %></span><% if (p.aiAssisted) { %> <span class="chip accent"><%- icon('sparkle', { class: 'ic-sm' }) %> <%= t('posts.aiChip') %></span><% } %></td>
     <td class="lead"><a href="/admin/posts/<%= p.id %>"><% if (p.caption) { %><%= p.caption.slice(0, 70) %><%= p.caption.length > 70 ? '…' : '' %><% } else { %><em class="muted"><%= t('posts.noCaption') %></em><% } %></a><% if (p.status === 'SCHEDULED' && p.scheduledAt) { %><span class="sub-line"><%= t('posts.scheduledFor', { date: ui.dateTime(p.scheduledAt) }) %></span><% } %></td>
     <td><span class="chip <%= who.tone %>"><%- icon(who.icon, { class: 'ic-sm' }) %> <%= t(who.key) %></span></td>
     <td class="muted when"><%= ui.relative(p.createdAt) %></td>

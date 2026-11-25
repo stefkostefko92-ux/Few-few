@@ -25,6 +25,7 @@ export const KNOWN_PROJECTS = [
   'rilievi',
   'semki',
   'gaming',
+  'fivem',
   'adblock',
   'vpsdashboard',
 ];

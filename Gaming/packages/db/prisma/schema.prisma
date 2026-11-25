@@ -20,6 +20,8 @@ model User {
   displayName   String
   role          Role      @default(PLAYER) // 7-level hierarchy
   locale        String    @default("bg") // bg|it|en
+  // И двете валути никога под 0 — пазено от CHECK в базата (миграция
+  // 20261115120000_currency_ledger) и от условните дебити в кода.
   chips         BigInt    @default(1000) // virtual, NOT cashable
   gems          Int       @default(0) // premium currency (Stripe)
   xp            Int       @default(0)
@@ -41,6 +43,10 @@ model User {
   // Не може да се съкрати/отмени преди изтичане (само удължаване).
   realityCheckMinutes Int       @default(0)
   dailyLimitMinutes   Int?
+  // Вдигане/махане на дневния лимит чака 24 ч (свалянето важи веднага):
+  // от `dailyLimitPendingAt` нататък действа `dailyLimitPendingMinutes` (null = без лимит).
+  dailyLimitPendingMinutes Int?
+  dailyLimitPendingAt      DateTime?
   selfExcludedUntil   DateTime?
   selfExcludedAt      DateTime?
   createdAt     DateTime  @default(now())
@@ -58,6 +64,8 @@ model User {
   friendsSent     Friendship[]   @relation("FriendRequester")
   friendsReceived Friendship[]   @relation("FriendAddressee")
   notifications   Notification[]
+  ledger          CurrencyLedger[]
+  dailyClaims     DailyClaim[]
 
   @@index([level])
   @@index([vipTier])
@@ -211,16 +219,25 @@ model Product {
 model Purchase {
   id        String   @id @default(cuid())
   userId    String
-  productId String
-  stripeId  String   @unique
-  status    String // pending | completed | failed | refunded
+  // Nullable: платена сесия за SKU без ред в Product пак се записва (иначе няма
+  // бизнес-ключ и второ събитие за същата сесия начислява повторно).
+  productId String?
+  // Снимка на SKU-то от сесията — покупката се разпознава и без ред в Product.
+  sku       String?
+  stripeId  String   @unique // Checkout Session id — ключът „една сесия = едно начисляване“
+  // PaymentIntent на сесията: charge.refunded / charge.dispute.created се връзват по него.
+  paymentIntentId String? @unique
+  status    String // pending | completed | failed | refunded | disputed
   // Реално платената сума (session.amount_total) в най-малката единица на валутата —
   // приходите в таблото се сумират от нея, не от текущата цена на продукта.
   amountCents Int
   currency    String   @default("eur")
+  // Реално начисленото при плащането — clawback взема точно това, не текущия продукт.
+  grantedGems  Int     @default(0)
+  grantedChips Int     @default(0)
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([productId])
@@ -301,6 +318,55 @@ model Announcement {
   expiresAt DateTime? // optional auto-expiry; null = shown until deactivated
 
   @@index([active, createdAt])
+}
+
+/// Регистър на всяко движение на chips/gems (одит и равнение). Пише се в СЪЩАТА
+/// транзакция като промяната на баланса. `delta` е реално приложеното (със знак);
+/// `shortfall` — колко от поискания дебит НЕ е взето, защото балансът спира на 0.
+model CurrencyLedger {
+  id        String         @id @default(cuid())
+  userId    String
+  currency  CurrencyKind
+  delta     BigInt
+  shortfall BigInt         @default(0)
+  reason    LedgerReason
+  refId     String? // session/purchase/match/quest id, ден на бонуса, ключ на постижение…
+  createdAt DateTime       @default(now())
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([refId])
+}
+
+enum CurrencyKind {
+  CHIPS
+  GEMS
+}
+
+enum LedgerReason {
+  PURCHASE // платен еднократен продукт (Stripe webhook)
+  VIP_STIPEND // месечните камъни на VIP (invoice.paid)
+  REFUND // автоматичен clawback при пълно връщане (charge.refunded)
+  DISPUTE // clawback при спор (−, charge.dispute.created) и връщане при изход в наша полза (+, charge.dispute.closed)
+  CLAWBACK // clawback при връщане от админа
+  ADMIN // ръчно начисляване/дебит от персонала
+  DAILY
+  QUEST
+  ACHIEVEMENT
+  MATCH // награда от мач или уреждане на залог (Свара)
+  SHOP // харчене на камъни за козметика
+}
+
+/// Един дневен бонус на играч на UTC ден. Записва се в СЪЩАТА транзакция като
+/// кредита: при двусмислен commit (потвърждението изгубено) повторният опит
+/// удря уникалния ключ и не дава втори бонус — Redis заключването е само бърз път.
+model DailyClaim {
+  userId    String
+  day       String // yyyy-mm-dd (UTC)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, day])
 }
 
 // Stripe webhook idempotency (S11.3): dedupe by event.id.
@@ -417,3 +483,20 @@ model Setting {
   value     String   @db.Text
   updatedAt DateTime @updatedAt
 }
+
+/// Пощата на портала, настроена от собственика (OWNER) в админ панела — Brevo SMTP.
+/// Един ред (id = "mail"). Ключът е шифрован (AES-256-GCM, SETTINGS_SECRET_KEY) и
+/// никога не излиза от сървъра. Докато е включена, има предимство пред SMTP_* от .env.
+model MailSettings {
+  id           String   @id @default("mail") @db.VarChar(10)
+  host         String   @db.VarChar(253)
+  port         Int
+  username     String   @db.VarChar(254)
+  passwordEnc  String
+  fromName     String   @db.VarChar(80)
+  fromEmail    String   @db.VarChar(254)
+  active       Boolean  @default(true)
+  updatedAt    DateTime @updatedAt
+  updatedById  String?
+}
+

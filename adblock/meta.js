@@ -169,18 +169,21 @@
   }
 
   // Same gate as the other cosmetic scripts: protection on, feature on, site
-  // not allowlisted and cosmetics not switched off for it — on every change.
-  const st = { enabled: true, feature: true, allowed: false, noCosm: false };
+  // not allowlisted, cosmetics not switched off for it and not in Basic mode (6.0:
+  // nothing of ours on the page; lib/modes.js runs before this file) — on every change.
+  const st = { enabled: true, feature: true, allowed: false, noCosm: false, basic: false, mode: undefined, siteModes: undefined };
+  const isBasic = () => !!globalThis.SA_MODES && SA_MODES.effectiveMode(location.hostname, st.mode, st.siteModes) === "basic";
   function applyGate() {
-    const want = st.enabled && st.feature && !st.allowed && !st.noCosm;
+    const want = st.enabled && st.feature && !st.allowed && !st.noCosm && !st.basic;
     if (want && !run) start();
     else if (!want) run = false;
   }
-  chrome.storage?.local.get(["enabled", "features", "allowlist", "noCosmetics", "metaDebug"], (data) => {
+  chrome.storage?.local.get(["enabled", "features", "allowlist", "noCosmetics", "mode", "siteModes", "metaDebug"], (data) => {
     st.enabled = data.enabled !== false;
     st.feature = (data.features || {}).meta !== false;
     st.allowed = (data.allowlist || []).some(hostMatches);
     st.noCosm = (data.noCosmetics || []).some(hostMatches);
+    st.mode = data.mode; st.siteModes = data.siteModes; st.basic = isBasic();
     debug = data.metaDebug === true;
     applyGate();
   });
@@ -189,7 +192,10 @@
     if (c.features) st.feature = (c.features.newValue || {}).meta !== false;
     if (c.allowlist) st.allowed = (c.allowlist.newValue || []).some(hostMatches);
     if (c.noCosmetics) st.noCosm = (c.noCosmetics.newValue || []).some(hostMatches);
+    if (c.mode) st.mode = c.mode.newValue;
+    if (c.siteModes) st.siteModes = c.siteModes.newValue;
+    if (c.mode || c.siteModes) st.basic = isBasic();
     if (c.metaDebug) debug = c.metaDebug.newValue === true;
-    if (c.enabled || c.features || c.allowlist || c.noCosmetics) applyGate();
+    if (c.enabled || c.features || c.allowlist || c.noCosmetics || c.mode || c.siteModes) applyGate();
   });
 })();

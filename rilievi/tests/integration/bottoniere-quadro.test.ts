@@ -143,6 +143,8 @@ describe('the 24 October 2026 pass', () => {
       'sg-_': '1',
       'sg-ordNo': '77',
       operatore: 'si',
+      operatoreOrdine: 'si',
+      operatoreModulo: 'MODULO_2SG',
       'so-_': '1',
       'so-ordNo': '78',
     });

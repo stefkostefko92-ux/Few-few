@@ -1,13 +1,18 @@
-// The public side in a real Chromium: the landing page and the privacy policy, in Italian only (light
-// and dark, desktop and phone, axe-core WCAG 2.1 AA, no horizontal scroll, no Cyrillic, every photo
-// loaded), then an access request sent from the form and accepted by the MASTER: a new company and the
-// invitation of its administrator.
+// The public side in a real Chromium: the landing page, the prices, the privacy policy, the updates, the terms and
+// the page to report illegal content, in Italian only (light and dark, desktop and phone, axe-core WCAG 2.1 AA, no
+// horizontal scroll, no Cyrillic, every photo loaded), then an access request sent from the form and accepted by
+// the MASTER — a new company and the invitation of its administrator — and a report of illegal content sent from
+// the public form and decided by the MASTER in the console.
 import { join } from 'node:path';
 import { audit, fail, italianOnly, signIn } from './helpers.mjs';
 
 const PAGES = [
   ['home', '/'],
+  ['prezzi', '/prezzi'],
+  ['segnalazioni', '/segnalazioni'],
   ['privacy', '/privacy'],
+  ['novita', '/novita'],
+  ['condizioni', '/condizioni'],
 ];
 
 export async function checkSite(browser, { base, shots, email, password }) {
@@ -76,5 +81,50 @@ export async function checkSite(browser, { base, shots, email, password }) {
   await page.click('form[action$="/accetta"] button[type=submit]');
   const invite = await page.inputValue('#link');
   if (!/\/invito\/[A-Za-z0-9_-]{30,}$/.test(invite)) fail('accepting gave no invitation link');
+
+  // Someone reports a content from a phone; the MASTER — the person responsible for moderation — finds the
+  // report in the console and decides it with the reasons.
+  const segnalante = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const modulo = await segnalante.newPage();
+  await modulo.goto(`${base}/segnalazioni`);
+  await modulo.click('.segnala button[type=submit]');
+  if (!(await modulo.locator('#segnala-errori').count())) fail('an empty report shows no errors');
+  await audit(modulo, 'report with errors');
+  await modulo.fill('#sg-dove', `${base}/schede/prova-${stamp} — la seconda foto del quadro`);
+  await modulo.fill(
+    '#sg-motivo',
+    'La foto mostra una persona riconoscibile senza una base di legge.',
+  );
+  await modulo.fill('#sg-nome', 'Giulia Verdi');
+  await modulo.fill('#sg-email', `segnala.${stamp}@rilievi.test`);
+  await modulo.locator('#sg-buonaFede').evaluate((input) => input.click());
+  await modulo.click('.segnala button[type=submit]');
+  // The browser keeps the fragment of the form's action (#modulo) across the redirect.
+  await modulo.waitForURL(/\/segnalazioni\/inviata\?rif=SG-[0-9A-Z]{8}(#modulo)?$/);
+  const riferimento = new URL(modulo.url()).searchParams.get('rif');
+  await audit(modulo, 'report sent');
+  await italianOnly(modulo, 'report sent');
+  await segnalante.close();
+
+  await page.goto(`${base}/master/segnalazioni`);
+  await audit(page, 'reports list');
+  const voce = page.locator(`a:text-is("${riferimento}")`);
+  if (!(await voce.count())) fail('the new report is not in the console');
+  await voce.click();
+  await audit(page, 'report');
+  await page.locator('input[name=esito][value=NESSUNA_AZIONE]').evaluate((input) => input.click());
+  await page.fill(
+    '#dc-motivazione',
+    'Il contenuto indicato non esiste nel portale: nessuna misura.',
+  );
+  await page.click('form[action$="/decisione"] button[type=submit]');
+  await page.waitForURL(/\/master\/segnalazioni\/[a-z0-9]+$/);
+  if (!(await page.locator('#h-presa').count())) fail('the decision was not recorded');
+  await audit(page, 'report decided');
+  await italianOnly(page, 'report decided');
+  // The alarms page of the console (the webhook address is never shown).
+  await page.goto(`${base}/master/allarmi`);
+  await audit(page, 'alarms');
+  await italianOnly(page, 'alarms');
   await owner.close();
 }

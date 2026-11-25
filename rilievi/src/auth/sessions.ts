@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import type { CookieOptions, NextFunction, Request, Response } from 'express';
 import type { Prisma } from '@prisma/client';
 import { SignJWT, jwtVerify } from 'jose';
@@ -143,6 +144,8 @@ export async function resolveSession(token: string | undefined): Promise<Princip
           theme: true,
           colori: true,
           mustChangePassword: true,
+          novitaLetteAt: true,
+          regoleVersione: true,
           deactivatedAt: true,
           memberships: { select: MEMBERSHIP_SELECT },
         },
@@ -174,7 +177,8 @@ export async function resolveSession(token: string | undefined): Promise<Princip
     if (slid.count === 0) return null;
   }
 
-  const { id, email, name, master, theme, mustChangePassword } = session.user;
+  const { id, email, name, master, theme, mustChangePassword, novitaLetteAt, regoleVersione } =
+    session.user;
   const colori = coloriSalvati(session.user.colori);
   const user: SessionUser = {
     id,
@@ -185,6 +189,8 @@ export async function resolveSession(token: string | undefined): Promise<Princip
     theme,
     colori,
     mustChangePassword,
+    novitaLetteAt,
+    regoleVersione,
   };
   return { user, session: { id: session.id, csrfToken: session.csrfToken } };
 }
@@ -200,9 +206,15 @@ export async function attachSession(
     req.principal = principal;
     res.locals.currentUser = principal.user;
     res.locals.csrfToken = principal.session.csrfToken;
+    // Знакът на акаунта за формите, запазени на устройството без мрежа (public/js/sw.js): псевдоним, не id.
+    res.locals.utenteBozze = createHash('sha256')
+      .update(`rilievi/bozze/${principal.user.id}`)
+      .digest('hex')
+      .slice(0, 16);
   } else {
     res.locals.currentUser = null;
     res.locals.csrfToken = '';
+    res.locals.utenteBozze = '';
   }
   next();
 }

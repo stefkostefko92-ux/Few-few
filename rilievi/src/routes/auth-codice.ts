@@ -45,7 +45,7 @@ export function durataBlocco(res: Response, minutes: number): string {
     : t('auth.durata.ore', { n: Math.ceil(minutes / 60) });
 }
 
-function renderCodice(
+export function renderCodice(
   req: Request,
   res: Response,
   status: number,

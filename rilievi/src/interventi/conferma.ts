@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import { writeAudit } from '../audit.js';
 import { aziendaWhere, type Scope } from '../auth/scope.js';
 import { config } from '../config.js';
@@ -14,7 +15,7 @@ import { improntaContenuto, improntaFirma, sigilloDi, sigilloValido } from './si
  * и потвърждението влизат с ЕДИН UPDATE — подпис без потвърждение в базата няма (CHECK в миграцията).
  */
 
-const NOME_MAX = 120;
+export const NOME_MAX = 120;
 
 export type CampoFirma = 'firmaTecnico' | 'firmaTecnicoNome' | 'firmaCliente' | 'firmaClienteNome';
 export type ErroreFirma = 'mancante' | 'invalid' | 'tooLong' | 'uguale' | 'ripetuta';
@@ -45,47 +46,75 @@ function firma(raw: unknown): { ok: true; value: Firma } | { ok: false; error: E
   return parsed.firma ? { ok: true, value: parsed.firma } : { ok: false, error: 'mancante' };
 }
 
-/** Двата подписа и двете имена — всички грешки наведнъж. Един и същ подпис в двете полета — грешка. */
-export function parseConferma(
+/** Двата подписа на един документ — полетата `<поле>` (щрихите) и `<поле>Nome` (името). */
+export interface DueFirme {
+  firme: [Firma, Firma];
+  nomi: [string, string];
+}
+
+/**
+ * Два подписа с имената — всички грешки наведнъж, по имената на полетата. Един и същ подпис в двете
+ * полета — грешка на второто (`uguale`): вторият не е подписал. Общо за листа за интервенция и протокола.
+ */
+export function parseDueFirme(
   body: unknown,
-): { ok: true; data: DatiConferma } | { ok: false; errors: ErroriConferma } {
+  campi: readonly [string, string],
+): { ok: true; data: DueFirme } | { ok: false; errors: Partial<Record<string, ErroreFirma>> } {
   const raw = body && typeof body === 'object' ? (body as Record<string, unknown>) : {};
-  const tecnico = firma(raw.firmaTecnico);
-  const cliente = firma(raw.firmaCliente);
-  const tecnicoNome = nome(raw.firmaTecnicoNome);
-  const clienteNome = nome(raw.firmaClienteNome);
-  const errors: ErroriConferma = {};
-  if (!tecnico.ok) errors.firmaTecnico = tecnico.error;
-  if (!tecnicoNome.ok) errors.firmaTecnicoNome = tecnicoNome.error;
-  if (!cliente.ok) errors.firmaCliente = cliente.error;
-  else if (tecnico.ok && JSON.stringify(tecnico.value) === JSON.stringify(cliente.value))
-    errors.firmaCliente = 'uguale';
-  if (!clienteNome.ok) errors.firmaClienteNome = clienteNome.error;
-  if (!tecnico.ok || !cliente.ok || !tecnicoNome.ok || !clienteNome.ok || errors.firmaCliente)
+  const [primo, secondo] = campi;
+  const firme = [firma(raw[primo]), firma(raw[secondo])] as const;
+  const nomi = [nome(raw[`${primo}Nome`]), nome(raw[`${secondo}Nome`])] as const;
+  const errors: Partial<Record<string, ErroreFirma>> = {};
+  if (!firme[0].ok) errors[primo] = firme[0].error;
+  if (!nomi[0].ok) errors[`${primo}Nome`] = nomi[0].error;
+  if (!firme[1].ok) errors[secondo] = firme[1].error;
+  else if (firme[0].ok && JSON.stringify(firme[0].value) === JSON.stringify(firme[1].value))
+    errors[secondo] = 'uguale';
+  if (!nomi[1].ok) errors[`${secondo}Nome`] = nomi[1].error;
+  if (!firme[0].ok || !firme[1].ok || !nomi[0].ok || !nomi[1].ok || errors[secondo])
     return { ok: false, errors };
   return {
     ok: true,
+    data: { firme: [firme[0].value, firme[1].value], nomi: [nomi[0].value, nomi[1].value] },
+  };
+}
+
+/** Двата подписа и двете имена на листа за интервенция. */
+export function parseConferma(
+  body: unknown,
+): { ok: true; data: DatiConferma } | { ok: false; errors: ErroriConferma } {
+  const parsed = parseDueFirme(body, ['firmaTecnico', 'firmaCliente']);
+  if (!parsed.ok) return { ok: false, errors: parsed.errors as ErroriConferma };
+  const { firme, nomi } = parsed.data;
+  return {
+    ok: true,
     data: {
-      firmaTecnico: tecnico.value,
-      firmaTecnicoNome: tecnicoNome.value,
-      firmaCliente: cliente.value,
-      firmaClienteNome: clienteNome.value,
+      firmaTecnico: firme[0],
+      firmaTecnicoNome: nomi[0],
+      firmaCliente: firme[1],
+      firmaClienteNome: nomi[1],
     },
   };
 }
 
 /** Пратеното за повторно показване при грешка (същата версия): само низове, с таваните на полетата. */
-export function valoriFirmaDalBody(body: unknown): Record<CampoFirma, string> {
+export function valoriDueFirme(
+  body: unknown,
+  campi: readonly [string, string],
+): Record<string, string> {
   const raw = body && typeof body === 'object' ? (body as Record<string, unknown>) : {};
   const text = (value: unknown, max: number) =>
     typeof value === 'string' && value.length <= max ? value : '';
-  return {
-    firmaTecnico: text(raw.firmaTecnico, MAX_FIRMA_JSON),
-    firmaTecnicoNome: text(raw.firmaTecnicoNome, NOME_MAX * 2),
-    firmaCliente: text(raw.firmaCliente, MAX_FIRMA_JSON),
-    firmaClienteNome: text(raw.firmaClienteNome, NOME_MAX * 2),
-  };
+  return Object.fromEntries(
+    campi.flatMap((campo) => [
+      [campo, text(raw[campo], MAX_FIRMA_JSON)],
+      [`${campo}Nome`, text(raw[`${campo}Nome`], NOME_MAX * 2)],
+    ]),
+  );
 }
+
+export const valoriFirmaDalBody = (body: unknown): Record<CampoFirma, string> =>
+  valoriDueFirme(body, ['firmaTecnico', 'firmaCliente']) as Record<CampoFirma, string>;
 
 let chiave: Buffer | null = null;
 /** INTERVENTI_SEAL_KEY като байтове (config.ts го е проверил: 32 байта в hex). */
@@ -96,13 +125,43 @@ export type EsitoConferma =
   'ok' | 'conflict' | 'chiuso' | 'missing' | { ripetute: Array<'firmaTecnico' | 'firmaCliente'> };
 
 /** Ключът на заключването, което реди потвържденията — проверката за повторен подпис е за всички листове. */
-const LOCK_FIRME = 0x52_49_4c_46; // „RILF“
+export const LOCK_FIRME = 0x52_49_4c_46; // „RILF“
+
+/**
+ * Кои от тези отпечатъци на подписи вече стоят някъде — на лист за интервенция, на протокол или на бон, във
+ * всяка фирма и в което и да е поле. Вика се в транзакцията на потвърждението, след `LOCK_FIRME`.
+ */
+export async function firmeGiaUsate(
+  tx: Prisma.TransactionClient,
+  hashes: readonly string[],
+): Promise<Set<string>> {
+  const list = [...hashes];
+  const [interventi, verbali, buoni] = await Promise.all([
+    tx.intervento.findMany({
+      where: { OR: [{ firmaTecnicoHash: { in: list } }, { firmaClienteHash: { in: list } }] },
+      select: { firmaTecnicoHash: true, firmaClienteHash: true },
+    }),
+    tx.verbale.findMany({
+      where: { OR: [{ firmaTecnicoHash: { in: list } }, { firmaSupervisoreHash: { in: list } }] },
+      select: { firmaTecnicoHash: true, firmaSupervisoreHash: true },
+    }),
+    // Подписите на „Buono di lavoro“ (src/buoni/) — по едно място на ред.
+    tx.buonoFirma.findMany({ where: { hash: { in: list } }, select: { hash: true } }),
+  ]);
+  return new Set(
+    [
+      ...interventi.flatMap((r) => [r.firmaTecnicoHash, r.firmaClienteHash]),
+      ...verbali.flatMap((r) => [r.firmaTecnicoHash, r.firmaSupervisoreHash]),
+      ...buoni.map((r) => r.hash),
+    ].filter((h): h is string => h !== null),
+  );
+}
 
 /**
  * Потвърждението. `base` и `impronta` са каквото страницата за подписа е показала: различна версия или
  * различен отпечатък — „conflict“, нищо не се пише. Условията са и в самия UPDATE (два клика, запис
- * между прочитането и записа). Подпис, чиито щрихи вече стоят на друг лист (на която и да е фирма, в
- * което и да е от двете полета), се отказва: копиран е от страницата, PDF-а или прихванат, не е положен
+ * между прочитането и записа). Подпис, чиито щрихи вече стоят на друг лист или протокол (на която и да е
+ * фирма, в което и да е поле), се отказва: копиран е от страницата, PDF-а или прихванат, не е положен
  * тук. Потвържденията се редят със заключване в транзакцията — два листа с едни и същи щрихи
  * едновременно не минават и двата.
  */
@@ -126,13 +185,7 @@ export async function confermaIntervento(
     const firmaTecnicoHash = improntaFirma(dati.firmaTecnico);
     const firmaClienteHash = improntaFirma(dati.firmaCliente);
     const hashes = [firmaTecnicoHash, firmaClienteHash];
-    const usate = await tx.intervento.findMany({
-      where: {
-        OR: [{ firmaTecnicoHash: { in: hashes } }, { firmaClienteHash: { in: hashes } }],
-      },
-      select: { firmaTecnicoHash: true, firmaClienteHash: true },
-    });
-    const giaUsati = new Set(usate.flatMap((r) => [r.firmaTecnicoHash, r.firmaClienteHash]));
+    const giaUsati = await firmeGiaUsate(tx, hashes);
     const ripetute = (['firmaTecnico', 'firmaCliente'] as const).filter((campo, i) =>
       giaUsati.has(hashes[i]!),
     );
