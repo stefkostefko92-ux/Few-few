@@ -2969,7 +2969,7 @@
           "Sandi Metz „The Wrong Abstraction“ + Page-Jones connascence",
           "Google eng-practices (code review/readability); граница спрямо .claude/agents/kodadjiyata.md"
         ],
-        "lessons": 145
+        "lessons": 147
       },
       "evolution": [
         {
@@ -3043,9 +3043,20 @@
           "date": "2026-11-23",
           "event": "v23.1 — учене",
           "detail": "Научи: grep -i не сгъва регистъра на кирилица в shell-а на агентите (C locale), затова търсене… (+1 още)"
+        },
+        {
+          "version": "23.3.0",
+          "date": "2026-11-25",
+          "event": "v23.3 — учене",
+          "detail": "Научи: В fakturist функциите за адрес за връщане след вход/приемане са три с различни правила,… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „В fakturist функциите за адрес за връщане след вход/приемане са три с различни правила,…\" (+1 още)"
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
