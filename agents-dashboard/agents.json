@@ -1267,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 759
+        "lessons": 760
       },
       "evolution": [
         {
@@ -2151,9 +2151,20 @@
           "date": "2026-11-25",
           "event": "v71.1 — учене",
           "detail": "Научи: .pr-review/335.diff (korpora zod 4) съдържа 13 от 14 файла — lock файлът е само в .stat…"
+        },
+        {
+          "version": "71.2.0",
+          "date": "2026-11-25",
+          "event": "v71.2 — учене",
+          "detail": "Научи: zod 4.6.7 отваря пътя \"./v3\" (import и require), така че миграцията от zod 3 с import {…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „zod 4.6.7 отваря пътя \"./v3\" (import и require), така че миграцията от zod 3 с import {…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
