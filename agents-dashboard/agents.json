@@ -7113,7 +7113,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 304
+        "lessons": 305
       },
       "evolution": [
         {
@@ -7553,9 +7553,20 @@
           "date": "2026-11-25",
           "event": "v27.8 — учене",
           "detail": "Научи: В POSIX sh `out=$(cmd 2>&1); echo \"$out\"; case \"$out\" in …) exit 1;; esac` губи кода на…"
+        },
+        {
+          "version": "27.9.0",
+          "date": "2026-11-25",
+          "event": "v27.9 — учене",
+          "detail": "Научи: Защита на release по монтирани от Docker папки не пази release-а, от който идва само en…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „Защита на release по монтирани от Docker папки не пази release-а, от който идва само en…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
