@@ -1267,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 780
+        "lessons": 781
       },
       "evolution": [
         {
@@ -2139,9 +2139,20 @@
           "date": "2026-11-25",
           "event": "v73.4 — учене",
           "detail": "Научи: Тестът tools/vps/autodeploy-prune.test.mjs изрязва release_mount_sources, rescue_releas…"
+        },
+        {
+          "version": "73.5.0",
+          "date": "2026-11-25",
+          "event": "v73.5 — учене",
+          "detail": "Научи: Във vpsdash `el(tag, {raw: x})` записва с textContent, не с innerHTML — чужд изход, пок…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „Във vpsdash `el(tag, {raw: x})` записва с textContent, не с innerHTML — чужд изход, пок…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
