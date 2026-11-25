@@ -1,0 +1,7 @@
+<%#
+  Лист от скицника като SVG (src/schizzi/): картата, печатът и прегледът във формата. Листът е бял като
+  хартия и в тъмната тема, мрежата — бледа; после примитивите на елементите (src/schizzi/forme.ts) в реда,
+  в който са нарисувани: линии (с пунктир), запълнени върхове на стрелки, елипси и надписи (завъртени —
+  котите). Всичко е проверено при запис и е само от числа и написаното, а EJS екранира атрибутите и текста.
+  `mini`: само елементите в кутия 120 × 120, без хартия — иконката на символ в редактора, скрита от четеца.
+%><% const v = schizzoVista; const piccolo = typeof locals.mini !== 'undefined' && locals.mini; %><% if (piccolo) { %><svg class="schizzo-mini" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><% } else { %><svg class="schizzo" viewBox="0 0 <%= v.larghezza %> <%= v.altezza %>" role="img" aria-label="<%= titolo %>"><rect width="<%= v.larghezza %>" height="<%= v.altezza %>" fill="#ffffff"/><path d="<%= v.griglia %>" stroke="<%= v.coloreGriglia %>" stroke-width="1" fill="none"/><% } %><%- include('_schizzo-primitivi', { foglio }) %></svg>

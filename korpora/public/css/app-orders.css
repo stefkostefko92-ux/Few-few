@@ -1,0 +1,15 @@
+/* orders: who buys, the early-start request, the withdrawal deadline (the quoted statement: app-pages.css) */
+.order-who {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0 0;
+}
+.order-accept {
+  margin: 18px 0 0;
+}
+.order-until {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}

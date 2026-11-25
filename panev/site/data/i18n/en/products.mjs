@@ -4,7 +4,7 @@ export default {
   products: {
     kicker: 'Products & price list',
     title: 'Every code in the catalogue',
-    lead: 'Net unit prices in euro, excl. VAT, 2026 price list. Items marked “on request” are quoted per job. Volume and recurring-supply discounts on request.',
+    lead: 'Net unit prices in euro, excl. VAT, 2027 price list. Items marked “on request” are quoted per job. Volume and recurring-supply discounts on request.',
     chooseTitle: 'Choosing the right system',
     chooseLead: 'Find the best bracket family starting from the component to be fixed and the shaft conditions.',
     chooseHead: ['Application', 'Recommended family', 'Thickness', 'Key feature'],
@@ -58,7 +58,7 @@ export default {
     aletta: '35 mm overlap tab',
     dxsx: 'Ambidextrous bracket: available in right-hand (DX) and left-hand (SX) versions. State the required hand — DX or SX — when ordering.',
     dimsOnDrawing: 'size “A” to shop drawing · th. 4 mm',
-    priceNote: 'Indicative list prices, excl. VAT · 2026 update · the valid commercial offer prevails. Sales reserved to professional operators (B2B) with a VAT number.',
+    priceNote: 'Indicative list prices, excl. VAT · 2027 update · the valid commercial offer prevails. Sales reserved to professional operators (B2B) with a VAT number.',
     sections: {
       doors: {
         num: '01',

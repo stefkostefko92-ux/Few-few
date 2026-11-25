@@ -15,7 +15,9 @@ background.js           service worker — рулсети, allowlist, стати
 theme.js                прилага Carbon Stealth / светла тема
 content.js / .css       козметика (вкл. процедурни селектори) + Smart Detection
 cosmetic_generic.css    EasyList генерична козметика (гейтната с html[data-tbab-on])
-meta.js                 Facebook / Instagram sponsored постове
+meta.js                 Facebook / Instagram / Threads sponsored постове (етикетът за екранния четец, ~70 езика)
+gpc.js + rules/gpc.json Global Privacy Control: navigator.globalPrivacyControl (MAIN, регистриран от SW) +
+                        Sec-GPC: 1 (статичен рулсет, приоритет 1 — разрешен сайт/пауза са над него)
 cookies.js / .css       затваряне на cookie/consent банери (вкл. Shadow DOM)
 antiadblock.js / .css   махане на "disable adblocker" стени
 picker.js / .css        element picker (ръчно скриване) + zapper (еднократно)
@@ -23,31 +25,115 @@ scriptlets/             scriptlet engine (##+js): policy.js (ЕДИНСТВЕН 
                         политиката — инлайнва се в engine-а, importScripts в SW, content
                         script ПРЕДИ content.js в изолирания свят, vm в билда) + engine.js
                         (clean-room код) + list.txt (данни) → main.js
-                        (пече се от build_scriptlets.mjs; MAIN world при document_start)
-youtube_loader.js       инжектира youtube_main в MAIN world (с bypass fallback)
-youtube_main.js         MAIN world — маха рекламните полета от player отговора
+                        (пече се от build_scriptlets.mjs; MAIN world при document_start) + ubo_engine.js (същият
+                        engine в ролята „парче“: чете само `__tbabScriptletChunk` на своето uBO парче — main.js вече
+                        НЕ носи 16 817-те хоста като excludeMatches; Chrome копира всеки регистриран шаблон във всеки
+                        renderer, дублираният списък струваше ~4 MB на процес)
+youtube_loader.js       подава live добавките (данни) на youtube_main чрез DOM събитие
+youtube_main.js         MAIN world (регистриран от SW) — маха рекламите от player/feed отговорите като текст;
+                        5.7: скок над вшита реклама (SSAP), формите на /player след отказ, „abnormality“ колбекът
 youtube_skip.js         auto-skip + enforcement fallback (видеото винаги зарежда)
-youtube.css             скрива рекламните UI елементи на YouTube
+youtube.css             (manifest) само backdrop/scroll на enforcement диалога — остава и при bypass
+youtube_ads.css         рекламните UI елементи на YouTube — регистрира го SW заедно с youtube_main (sa-youtube-css)
+twitch_main.js          MAIN world (регистриран от SW, sa-twitch) — обвива Worker-а на плейъра; вшитите реклами в HLS →
+                        чист поток от друг тип плейър, иначе рекламните сегменти се махат
 rules/                  DNR статични правила: ad_rules + youtube_rules +
                         easylist/easyprivacy/urlhaus/removeparam (билднати от
                         tools/build_filters.mjs) + козметичен bundle + counts
+lib/who.js · rules/who.json  6.0 „Кого спряхме“ (Настройки): блокираните заявки по компания и ден, 31 дни, само на
+                        устройството. Chrome казва само КОЕ правило е блокирало — rules/who.json („правило → компания“)
+                        се ГЕНЕРИРА: `node tools/build_who.mjs` след build_filters/generate_rules и след промяна на
+                        popup/companies.js (`--check` е в tests/who.test.mjs); броенето е в refreshBadge (getMatchedRules,
+                        по timeStamp, белегът на раздела в storage.session), картата — options/who.js
+lib/managed.js          6.1 политики за организации (managed_schema.json): clean/apply/allows/locks; UI — options/managed.js
+lib/modes.js            6.0 режими Basic/Standard/Strict (глобално + `siteModes` по сайт): чист планер (SA_MODES) —
+                        кои страницови скриптове къде (`pageScriptPlan`, id `sa-page-*`); SW, Firefox background,
+                        manifest-ът преди meta.js и tests/modes.test.mjs го ползват
+lib/foreign.js          внос от uBlock Origin / AdGuard / Adblock Plus (Настройки + welcome): само разделя
+                        текста на сайтове и редове; SW проверява всичко отново (`importForeign` →
+                        parseImportedList — правило с път НИКОГА не става блок на целия домейн)
 lib/abp2dnr.js          ЕДИНСТВЕН ABP/uBO → DNR конвертор (класически скрипт, root.ABP2DNR):
                         билдът го ползва през vm, SW през importScripts (листите от автора)
-popup/ · options/       UI (popup + настройки; карти „Филтър-листи" и „Фокус")
-report/                 „Сайтът е счупен?" — бързи поправки + mailto доклад (нищо не се праща само)
+popup/ · options/       UI (popup + настройки; карти „Филтър-листи" и „Фокус"). Popup-ът има 3D щит:
+                        popup/img/*.webp = ПРЕРЕНДЕРИРАН three.js (tools/popup_shield3d.mjs, комитва се;
+                        статичен кадър в CSS, показва се веднага), popup/shield3d.js = ~8 KB собствен
+                        WebGL2 (без библиотека) САМО за преосветяване по курсора — след първото
+                        рисуване, не при reduced-motion/-data/автоматизация/софтуерен GL. Състоянието
+                        идва от `#hero[data-state]` (protected|paused|off|allowed), пише го popup.js.
+                        Liquid Glass: стъклото е само CSS (backdrop-filter + маскиран ръб ::after + --mx/--my
+                        от popup.js), сиянието е body::before; prefers-reduced-transparency → плътни панели.
+                        НЕ ползвай localStorage в popup-а (първият достъп ~40 ms) и не връщай three.js в пакета.
+                        **↶ N** (5.5.0, отмяна на picker-а) е бутон до „Скрий елемент“, не отделен ред: пълното
+                        изречение е aria-label/title; ако редът прелее, `.actions.squeeze` оставя на Settings само
+                        зъбното колело (fitPopup()). Отделен ред за нещо ново = над 600 px на 9 езика (измерено).
+                        **Таван 600 px** (Chrome): fitPopup() стяга отстоянията (`html.tight`) само ако съдържанието
+                        го мине, а долната лента остава само с икони (`.foot.compact`); всичките 73 локала — гейт в
+                        tests/browser/popup-fit.browser.mjs. Нещо ново в popup-а → провери там, не само на английски.
+                        **Отзив в CWS (5.1.8):** ★ в долната лента + карта (лист отдолу, покритото — inert), най-много
+                        2 пъти през ≥ 60 дни, след ≥ 7 дни и ≥ 1000 блокирани, само при работеща защита. Решава SW
+                        (`reviewDue`/`reviewUrl` — линк само при инсталация от CWS), popup-ът рисува; ключът
+                        `reviewAsk` в Настройки маха всичко. БЕЗ стимули, без филтър по мнение, никога по сайтовете
+                        или като известие (CWS Program Policies) — не добавяй „оцени с 5 звезди“ или награди.
+                        **Картите (5.6):** „Сайтовете се чупят?“ (helpDue — веднъж, при признаци) и месечната разписка
+                        (receiptOf — веднъж на месец, данните „около“) са същият лист; **най-много една карта на отваряне,
+                        отзивът с предимство** (showCard), а reviewDue НЕ гледа признаците (иначе е филтър по мнение) —
+                        гейт в tests/cards.test.mjs. „Сподели“ копира чистия адрес на листинга само за CWS инсталация.
+blocked/                страницата вместо опасен сайт: динамично redirect правило (regexSubstitution →
+                        chrome.runtime.getURL — затова е WAR БЕЗ use_dynamic_url), приоритет 2 (под разрешен сайт,
+                        пауза и YouTube bypass). „Продължи“ само през SW (`proceedDangerous`: http(s), хост от URLhaus)
+                        → едно session allow правило; в рамка страницата не прави нищо (click-jacking). Статичното
+                        правило на URLhaus без resourceTypes НЕ хваща main_frame — затова съществува това.
+report/                 „Сайтът е счупен?" — бързи поправки (вкл. „за 1 час“ → allowUntil + аларма allow-expire) + mailto доклад
+welcome/                първо пускане: бързи избори (setFeatures/setList — features се праща ЦЯЛ), вносът, клавишите
 icons/ · _locales/      икони · локализация
 tools/                  build_filters.mjs (EasyList→DNR + каталога tools/lists.json → rules/list_<id>.json,
                         rules/cosmetic_<id>.json, rules/lists.json, THIRD_PARTY_NOTICES.txt; синхронизира
                         rule_resources в manifest-а) + build_scriptlets.mjs (+ uBO scriptlet-и на 64 парчета
                         по хост в scriptlets/ubo/) + генератори + package.sh (Chrome + Firefox zip)
                         + compare_blockers.mjs (публични тестове срещу конкурентите — числата за landing-а)
-                        + promo/ (промо клип 1080p за YouTube/CWS в стила на boy/: film.html + timeline.json —
-                        бурята идва от server/index.html, popup/панелите от store генератора, звукът е
-                        генериран; `PW_ROOT=$(npm root -g) PYTHONPATH=<numpy> node tools/promo/render.mjs`)
+                        + promo/ (промо клипове в стила на boy/: film.html 16:9 за YouTube/сайта/CWS (`--cut store`
+                        — без сравнение и без „free“) + film-social.html 9:16 за Reels/TikTok/Shorts (`--cut social`:
+                        hook „рекламата умира“ в първата секунда, loop, −14 LUFS, корица, 4:5 изрез; „Free“ и
+                        рекламният плейър — НИКОГА в медиите на CWS) + timeline.json; бурята идва от
+                        server/index.html, popup/панелите от store генератора, звукът е генериран;
+                        `PW_ROOT=$(npm root -g) PYTHONPATH=<numpy> FFMPEG=$(command -v ffmpeg) node tools/promo/render.mjs [--cut social]`;
+                        caption-и и правила за публикуване → docs/SOCIAL.md)
+                        **Клиповете НЕ се обновяват повече** (решение на собственика, 2026-10-15): нито при нова
+                        версия, нито при промяна в popup-а/сайта/текстовете — не пускай render.mjs, не предлагай
+                        нов рендер и не пиши стъпки „смени клипа“ в кита/документите. Последният рендер е store
+                        cut 5.1.8. Инструментите остават в репото само за изрично искане на собственика.
+                        + popup_shield3d.mjs (three.js от CDN САМО в инструмента → popup/img/; `PW_ROOT=$(npm root -g) node tools/popup_shield3d.mjs`;
+                        `--hero <png>` = голям щит за промото)
+                        + store_promo.mjs (промо плочка 440×280 + marquee 1400×560: 3D щитът, ударен от мълния — БЕЗ текст,
+                        наситени, запълнени; правилата на Google „Supplying Images“) + generate_icons.py (иконите; 128 = 96×96
+                        рисунка + 16 px отстъп + светъл ореол само по външния силует — install диалогът и магазинът)
                         + e2e_redirect.mjs (истински Chromium през Playwright: DNR redirect → resources/*
                         smoke; `PW_ROOT=$(npm root -g) node tools/e2e_redirect.mjs "$PWD" <url> <global>`)
-tests/                  npm test — engine/live канал/билд/DNR/паритет на политиката (нула зависимости)
-store/ · docs/          store графики + листинг/submission текстове
+tests/                  npm test — engine/билд/DNR/паритет на политиката (нула зависимости)
+store/ · docs/          store графики + листинг/submission текстове. Скрийншотите: `python3 store/screenshots/build.py`
+                        (английските, комитват се) и `--locales` (другите 62 езика на магазина → dist/, JPEG,
+                        надписи в store/screenshots/i18n.json, нужни са Noto шрифтовете) — минимум текст, истинският
+                        popup на съответния език. store/cws-unlisted.json = 10-те езика, които магазинът не показва.
+server/                 сайтът adblock.carbonstealth.eu: index, privacy, support, youtube-ad-blocker,
+                        cookie-banner-blocker, ublock-origin-alternative, for-it-admins, how-we-measure, accessibility,
+                        press, status, bye (+ sitemap, llms.txt, robots, filters.json, sources/). **Нова страница =**
+                        кратък адрес в nginx.conf И Caddyfile + файлът в списъка на deploy/autodeploy.sh + IndexNow
+                        `urlList` там + llms.txt + `node tools/sitemap.mjs` (sitemap.xml се ГЕНЕРИРА от страниците: без
+                        noindex, lastmod = dateModified, hreflang на езиковата група) — `tests/site.test.mjs` гейтва
+                        всичко това. **/status** се генерира: `node tools/status_page.mjs` (версия, листите, filters.json,
+                        ръчният ред за YouTube от tools/status.json — сменѝ го след ръчна проверка и пусни генератора).
+                        **Езиковите страници** server/<bg|de|it|es|fr|pt-br>/index.html се ГЕНЕРИРАТ:
+                        `node tools/site_lang.mjs` от tools/site-lang/<език>.json (en.json е източникът) със стиловете
+                        на youtube-ad-blocker.html — не ги пипай на ръка (`--check` е в site.test). hreflang групата
+                        (английската + 6 + x-default) е взаимна; нов език = JSON + LANGS в генератора + `for l in`
+                        в autodeploy.sh + nginx/Caddy `/<език>` → `/<език>/` + IndexNow + sitemap + llms.txt.
+                        **/bye** (5.5.1) — страницата след деинсталиране (`setUninstallURL`, фиксиран адрес БЕЗ
+                        параметри): `noindex` → сервира се (nginx/Caddy/deploy), но НЕ е в sitemap, IndexNow и
+                        llms.txt; site.test пази и двете посоки. Без скрипт, без форма, без брояч на причините.
+                        **UTM:** всеки `<a>` към CWS носи затворения речник от `docs/METRICS.md`
+                        (`utm_source=site&utm_medium=<страница>`, езиковите — `home_<език>`); JSON-LD — чистия адрес.
+                        Нова стойност = ред в METRICS.md първо (site.test). Без брояч/GA4 на сайта, без UTM изключение
+                        в removeparam.
 ```
 
 ## Качествен гейт (преди „готово")
@@ -55,8 +141,11 @@ store/ · docs/          store графики + листинг/submission тек
 ```
 node -c *.js popup/*.js options/*.js tools/*.mjs   # syntax на всички скриптове
 python3 -c "import json; json.load(...)"     # валиден manifest/rules/locale
-npm test                                      # tests/: engine + live канал + билд + DNR правила + YouTube + cookies
-PW_ROOT=$(npm root -g) npm run test:browser   # реален Chromium: cookies.js фикстури + истинското разширение (не е в CI — иска Playwright)
+npm test                                      # tests/: engine + билд + DNR правила + YouTube + cookies
+PW_ROOT=$(npm root -g) npm run test:browser   # реален Chromium: cookies.js фикстури + истинското разширение + YouTube + back/forward
+                                              # cache + axe (WCAG 2.2 AA, popup (и с картата за отзив)/настройки/welcome/report, двете
+                                              # теми; axe-core през AXE_PATH или до Playwright) + молбата за отзив + popup ≤ 600 px на
+                                              # 73 локала — не е в CI
 PW_ROOT=$(npm root -g) npm run landing:assets # server/*.webp: бранд щитът + РЕАЛНИЯТ popup (след промяна на popup/версия)
 PW_ROOT=$(npm root -g) node tools/perf_speedtest.mjs [--old <разархивиран zip>]  # цена на главната нишка (Speedtest-подобно); след промяна в content scripts/CSS
 node tools/build_scriptlets.mjs --check       # scriptlets/main.js свеж спрямо list.txt
@@ -65,6 +154,42 @@ bash tools/package.sh                         # билд + самопровер�
 
 ## Инварианти (не чупи)
 
+- **Режими (6.0).** content.js/.css, cosmetic_generic.css, cookies, antiadblock и picker НЕ са в manifest-а:
+  SW ги регистрира по `lib/modes.js` (`syncPageScripts`, persistAcrossSessions). Basic — нищо наше на страницата
+  (и без main.js/uBO парчета/gpc.js, без meta.js; YouTube/Twitch остават — свой превключвател: изключват се САМО
+  за разрешен сайт, никога по Basic — 6.1.1, гейт в tests/twitch.test.mjs + youtube.browser); Standard — само
+  top frame + cookies.js в рамките на CMP-тата (`CMP_FRAME_HOSTS` == регекса в cookies.js, гейт); Strict — всички
+  рамки (поведението на 5.8). **main.js следва същия план** (`-content` записите: Standard — главната рамка,
+  Strict — всички, id `sa-scriptlets[-strict|-standard]`); uBO парчетата остават във всички рамки (поправки по
+  хост). Нов страницов скрипт = ред в `PAGE_SCRIPTS`, не в manifest-а. Всяко писане на mode/siteModes вика
+  `syncPageScripts` + `syncScriptlets` само (без storage слушател — двойна работа: всяко scripting извикване
+  струва на Chrome ~0,6 s, смяна на режим ≈ 2 s). И двете минават през ЕДНА опашка (`scriptingChain`), всяко
+  извикване — през `scripting()` с таймаут 20 s (обещание, което Chrome не разреши, не държи опашката вечно), и
+  не пипат нищо, ако вече е регистрирано точно така (`sameRegistrations` — всеки старт на браузъра). Popup-ът
+  има ЕДИН ред „Protection here“ — заместил „Hide ad boxes here“ (старият `noCosmetics` се сгъва в Basic при
+  ъпдейт/внос, `foldNoCosmetics`); нов ред = над 600 px. Гейт: tests/modes.test.mjs + extension.browser (режимите
+  в истински Chromium).
+
+- **Броене (6.1).** „Блокирани“, значката, дневната графика, „спестени“ и „Кого спряхме“ броят САМО блокиращи
+  правила: `getMatchedRules` докладва и изключенията на листите, allowlist-а, паузата и хедърите (GPC/Topics върху
+  всяка заявка — 1 блокирана заявка показваше 7). `blocks()` = `logListKey() !== null` и не е в `rules/passive.json`
+  (генерира го `tools/build_who.mjs` с who.json; `--check` в tests/who.test.mjs — пусни го след build_filters).
+  Белегът по раздел е в `storage.session` (`countBlocked`), никога в паметта на SW.
+- **Allow правила по двойки (6.1).** `allowAllRequests` се закача за рамката при потвърждаване на навигацията —
+  ранна заявка може да мине покрай него (измерено: 1/6 паузи, 1/10 разрешавания). Паузата = 69999 allowAllRequests
+  + 69997 `allow` с празно условие; всеки разрешен сайт = 90000+2i allowAllRequests + 90000+2i+1 `allow` по
+  `initiatorDomains`. Нов вид „разреши“ → същото. Всички записи на динамични правила (без отдалечените листи) — през
+  `inDnrQueue`.
+- **Вложени нива (6.1).** `excludeMatches` винаги бие `matches`: планът в `lib/modes.js` е по региони с отделна
+  регистрация за всяко ниво на влагане (`sa-page-<ниво>[N]-*`); uBO парчетата/gpc изключват Basic родител само
+  точно, ако под него има сайт с друго ниво (`basicExcludes`). Гейт: случайните дървета в tests/modes.test.mjs.
+- **Политики за организации (6.1, `docs/ENTERPRISE.md`).** `chrome.storage.managed` → `lib/managed.js`
+  (`clean` → `apply` в storage.local → `allows` във всеки обработчик, `locks` за UI). Налага се при инсталация,
+  старт, внос, синхронизация и промяна на политиката (`storage.onChanged` area "managed"). Нов потребителски път към
+  заключваема настройка → `SA_MANAGED.allows` в SW, не само изключен контрол в UI. Firefox: `storage` ключът се
+  маха от manifest-а (package.sh). Ръчен тест с истинска политика иска root (`/etc/opt/chrome/policies/managed`) —
+  browser тестът подменя само източника (`managedPolicy`).
+
 - **Единствена цел** (Web Store): блокиране на реклами/тракери. **Без remote
   code, никога.** Единствените мрежови заявки са дневен GET на
   `adblock.carbonstealth.eu/filters.json` (+ `.sig` — Ed25519 подпис, проверява
@@ -72,22 +197,81 @@ bash tools/package.sh                         # билд + самопровер�
   които се валидират строго и не се изпълняват. Данни са разрешени в MV3; код не е.
 - **Scriptlets (`##+js`):** точно uBOL моделът — КОДЪТ (`scriptlets/engine.js`) е
   фиксиран в пакета; per-site директивите се **пекат при билда** от `list.txt` в
-  `scriptlets/main.js`. Scriptlet КОД никога не идва от мрежата; live директиви (само
-  ДАННИ: host + име + аргументи) идват единствено от Ed25519-подписания `filters.json`
-  и се **ре-валидират в engine-а** срещу същия allowlist. Нула eval.
+  `scriptlets/main.js` (+ `scriptlets/ubo/`). **От 5.1.4 няма канал на живо:** нито код,
+  нито директиви идват от мрежата; engine-ът не слуша никакво DOM събитие, а ключ
+  `scriptlets` във `filters.json` се игнорира (CWS: нищо изтеглено не управлява MAIN
+  world). Нула eval.
   Билд-валидаторът е allowlist на имена + строга проверка на аргументите;
   `set-constant` стойностите — само от фиксиран речник. **След промяна на
   engine.js или list.txt пусни `node tools/build_scriptlets.mjs`** и препакетирай.
-- YouTube: **не** блокираме `googlevideo.com`. Player ЗАЯВКАТА получава само
-  добавени boolean флагове (isInlinePlaybackNoAd — спира доставката на реклами
-  при източника); никога не пипаме съществуващи полета (подписи/timestamps) и
-  всичко е try/catch с pass-through. От отговорите само махаме рекламните
-  полета/renderer-и на място. Ако акаунт е флагнат и YouTube откаже
-  възпроизвеждане, `youtube_loader` прави еднократен bypass reload, за да
-  зареди видеото (с реклами) вместо празен плейър; disableRequestFlags в
-  filters.json е аварийният стоп за флаговете.
+- YouTube (5.1.3, след „блокира след 3 клипа“): **не** блокираме `googlevideo.com`, `/ptracking`
+  (playback пинг на съдържанието) и `/api/stats/atr` изобщо — плейър, който не докладва, е
+  сигнал за „трите удара“. `youtube_main.js` е **регистриран от SW** (MAIN world, document_start,
+  `sa-youtube`), не инжектиран с `<script src>`; махнат е от web_accessible_resources. Рекламите се
+  махат като ТЕКСТ преди парсване (`"adPlacements"/"adSlots"/"playerAds"` → `"no_ads"`, метода на
+  uBO), не с глобален `JSON.parse` хук. **Всяка подменена функция — тук и в `scriptlets/engine.js`
+  (`cloak`) — е Proxy на родната с маскиран `Function.prototype.toString`**: `fetch.toString()` трябва
+  да е точно `function fetch() { [native code] }` (тестове + browser проверка). Свежите iframe-и
+  получават същите куки (YouTube взема „чист“ fetch от iframe). Само ATR пингът с рекламното
+  състояние (регексът на uBO) се отговаря локално; таймерът 17000 ms (fake buffering) → 17 ms.
+  **Без** request флагове по подразбиране (isInlinePlaybackNoAd на watch страница е сигнал);
+  filters.json `requestFlags` може да ги пусне, с plain-retry резервата. `youtube_skip` само mute +
+  родния Skip — **никога** 16× (YouTube го брои). Ако YouTube все пак откаже, bypass-ът (6 ч) маха
+  и `sa-youtube`, и scriptlet-ите от YouTube страниците.
+- **YouTube 5.7 (флагнат клиент: вшита реклама, отказ, 0x0, изкуствено забавяне).** По метода на поддръжниците на uBO,
+  като НАШ код в `youtube_main.js` (само www.youtube.com, не за Premium): реклама, вшита в потока („SSAP, AD“ в
+  `getStatsForNerds`) → `seekTo` до края ѝ през API-то на плейъра — единственото позволено превъртане, и никога ако
+  „продължителността на рекламата“ е тази на клипа; `<video>` не се пипа. Отказ (UNPLAYABLE → answer/3037019 +
+  WEB_PAGE_TYPE_UNKNOWN, без captcha) или засядане на 0x0 → `loadVideoById` на място със следващата форма, всяка
+  веднъж, изчаква новия отговор (8 s); ПРЕДИ отказ/засядане заявката не се пипа. **6.1.1 — формите са тези на uBO
+  quick-fixes (2026-11):** watch channel → yahi → inline (isInlinePlaybackNoAd) → oaeb (params oAEBogYBLg) → както е;
+  embed channel → eafg (eAFgAQ); всяка с `#reloadxhr` referer (по него отговор на оформена заявка се познава в
+  `videostatsPlaybackUrl`). Смени ли uBO реда — същото тук + tests/youtube.test.mjs. Засядането: щом плейърът го
+  каже (`Map.prototype.has("onSnackbarMessage")` или самостоятелен Uint8Array от 104/105 байта в `push` — куките
+  само записват часа, четат през родните getter-и) и засядането се задържи 1 s, иначе след 10 s; дума отпреди
+  отговора на последния опит не се брои. Куките стоят САМО докато клипът тръгва (watch/embed, нов клип, опит) и се
+  махат след 2 s игра — `push` е най-горещата функция на страницата. Списъкът с форми е по клип. Всеки опит праща `tbab-yt-retry` на документа
+  (родният dispatchEvent, взет преди страницата) → `youtube_skip` рестартира часовника си (25 s спиране и 8 s
+  Playback ID; най-много 1/s и 20 на страница): bypass-ът от 6 ч е само след изчерпани опити. Отказ завършва с
+  един опит „както е“; засядане — с формите и после заявки както са, без нов опит. След опит в плейлист плейлистът се връща.
+  **Вграденият `ytInitialPlayerResponse` (пълно зареждане)** го чисти `youtube_main` при присвояване (неприсвоен
+  капан се маха при DOMContentLoaded) — правилата на uBO
+  за `www.youtube.com` НЕ тичат (двигателят търси правилата по хоста без „www.“ — отделен дефект, 21 www-ключа) и на
+  Basic изобщо ги няма. „abnormality“ колбекът (иглата е сглобена, за да не я съдържа нашата функция) не тича. Аварийни стопове —
+  `youtube.noShapes` / `youtube.noSsapJump` (булеви). **Изключение от „никога googlevideo“:** само фалшивата заявка с
+  `expire` в миналото — динамично правило 69998 от днешната дата (`fakeGvRule`, опреснява се на 12 ч), НИКОГА фиксиран
+  регекс (този на uBO хваща истински заявки от януари 2027); RE2 има 2 KB лимит — `tests/ytrules.test.mjs`.
+- **Невидимост (5.7).** Всяка кука (youtube_main, twitch_main, `cloak` в engine.js) маха своите `chrome-extension://`
+  редове от `e.stack` при хвърляне — `Function.prototype.toString.call({})` трябва да хвърля като родния. **Никакви
+  обвивки на `appendChild`/`insertBefore`/`append`/`prepend`** в YouTube: под всеки вмъкнат елемент стоеше наш кадър;
+  iframe-ите се закачат през `contentWindow`/`contentDocument` getter-ите и при вмъкване (MutationObserver). На YouTube
+  нищо наше не се пише по страницата: `content.js` там е `genericHideHost` (без AD_SELECTORS, unhide маркери, Smart
+  Detection), рекламното CSS е стил на разширението (`youtube_ads.css`, регистриран — го няма в `document.styleSheets`), `data-tbab-yt-bypass` — само при
+  `attrForced`. Browser гейт: `tests/browser/youtube.browser.mjs`.
+- **Twitch (5.7).** `twitch_main.js` обвива `Worker` само за IVS worker-а на плейъра (blob с
+  `amazon-ivs-wasmworker`): новият blob = изходният текст на `twitchWorker` от САМИЯ файл + JSON константи + скриптът на
+  плейъра непроменен (синхронен XHR на blob-а). Нищо в blob-а не идва от мрежата; без eval/Function. В worker-а:
+  реклама в media плейлистата → токен за embed/popout/autoplay от gql.twitch.tv (публичният client id, БЕЗ
+  Authorization и бисквитки) → същото качество; качеството остава на другия поток за сесията (v3 срещу v6), нов токен
+  само след грешка (нов токен = нова сесия = скок). Всички с реклама → `strip` (сегментите + техните тагове, ad
+  DATERANGE, PREFETCH; MEDIA-SEQUENCE остава верен). Заявки САМО към Twitch. Наш код, който хвърли, не спира плейъра
+  (`try` около него в blob-а). Изключване: разрешен twitch.tv / пауза / `features.twitch: false`. Гейт:
+  `tests/twitch.test.mjs` (истинският blob срещу фалшив Twitch) + `tests/browser/twitch.browser.mjs`.
+- `rules/ad_rules.json` и `rules/youtube_rules.json` идват **само** от `tools/generate_rules.py` — правило се
+  добавя там, не в JSON-а. Id-тата са фиксирани (изваден id не се ползва повторно: YouTube 1001/1003);
+  `tests/generate_rules.test.mjs` ребилдва във временна папка и сравнява байт по байт.
 - Всички `chrome.*.on*.addListener` се регистрират **синхронно на top level** в
   service worker-а.
+- **„Връзки на страницата“** (popup): content.js чете Resource Timing САМО при отваряне на кутията, само в top
+  frame, само за нашето съобщение `getConnections`; „Блокирай тук“ = `siteBlocks[site]` → едно правило на сайт
+  (60000+, `initiatorDomains`, приоритет 5000: над изключенията на листите ≤ 5, под allowlist 10000). Защитен хост
+  (SA_POLICY.protectedHost) никога; импортът минава през `cleanSiteBlocks`. Нов диапазон динамични id → провери
+  `logListKey` и getHealth (бюджетът на Chrome е в „Състояние на ядрото“).
+- **Клавишни комбинации** (manifest `commands`): само `Alt+Shift+<буква>` / `MacCtrl+Shift+<буква>`
+  (Option+Shift пише знаци на Mac). Никога буква, която Chrome пази и тихо отказва като suggested key
+  (B — лентата с отметки, C, P, W, X, Z; измерено в Chromium), нито менютата на Google Docs/Sheets/Slides
+  (F E V I O T H A N D X S R). Днес U (сайтът) и Q (пауза); picker-ът е без клавиш. Гейт в
+  `tests/control.test.mjs`, реалното присвояване — в `tests/browser/control.browser.mjs`.
 - Smart Detection крие само cross-origin iframe с точен IAB рекламен размер —
   консервативно, за да няма false positives.
 - **cookies.js кликва само CMP-специфични бутони глобално**; всичко генерично (текст,
@@ -101,12 +285,27 @@ bash tools/package.sh                         # билд + самопровер�
   текст не струват нищо, една `querySelectorAll` на списък, не на селектор.
 - **Content script ≠ страница на разширението:** SW приема от content script само
   `smartHit`, `getCosmetic`, `saveCustomSelector`, `ytBypass`, `cookieRejected`; всичко
-  друго — само от popup/options/report (`sender.url` на разширението).
+  друго (вкл. `undoHidden`, `importForeign`, `setAllow` с `minutes`, `siteBlock`, `proceedDangerous`) — само от
+  popup/options/report/welcome/blocked
+  (`sender.url` на разширението).
 - **Листи: в пакета само ясно лицензирани.** Лист без лиценз за разпространение (BG, PL NC,
   Dandelicence) никога не влиза в пакета — сваля се от автора САМО при включване от
-  потребителя, конвертира се локално като данни (динамични правила ≥ 200000). Един
+  потребителя, конвертира се локално като данни (динамични правила ≥ 200000). **Точният текст** на всяка
+  вградена листа отива в `server/sources/<sha256>.txt.gz` при билда (GPL/AGPL/MPL — изходният вид да е
+  достъпен; деплоят не трие старите), бележките сочат адреса, а `tools/package.sh` пада, ако лиценз от
+  THIRD_PARTY_NOTICES.txt липсва в пакета. **URLhaus** е с Auth-Key и с условията на abuse.ch (не CC0, не се
+  преиздава, не се архивира): `ABUSECH_AUTH_KEY=<ключ> node tools/build_filters.mjs` — ключът само от средата,
+  НИКОГА във файл (`docs/LICENSES.md`); без него остава записаното копие. След `build_filters.mjs`
+  винаги `build_scriptlets.mjs` (uBO листът се сменя). Един
   невалиден `urlFilter` проваля ЦЕЛИЯ ruleset в Chrome — `tests/rules.test.mjs` и
   реалното зареждане в browser теста го пазят.
-- **Езици:** ≥54 (днес 70), всеки с пълни ключове и същите `$1` плейсхолдъри
+- **Езици:** ≥54 (днес **70 езика = 73 папки**: es/es_419, pt_BR/pt_PT, zh_CN/zh_TW са варианти — твърдим
+  броя ЕЗИЦИ, гейт в `tests/store.test.mjs`; магазинът показва 63, защото af, be, bs, cy, gl, is, kk, km, mn,
+  zu не са в листинга му — Chrome пак ги ползва), всеки с пълни ключове и същите `$1` плейсхолдъри
   (`tests/i18n.test.mjs`). Нов ключ → във ВСИЧКИ `_locales`. CSS — логически свойства
   (`margin-inline-start`, `inset-inline-*`), за да работи RTL.
+- **Името (`extName` = заглавието в магазина):** марката „Supreme AdBlock“ не се превежда; от 5.5.1 само
+  en/bg/de/it носят родова дума след „ – “ (`NAMED` в `tests/i18n.test.mjs`), другите езици — само марката.
+  Към още езици — само ако Impressions в тези четири покажат ръст (`docs/METRICS.md`). Резюмето
+  (`extDescription`) започва с родово съществително, ≤ 132 знака, без превъзходни степени (`tests/store.test.mjs`).
+  `docs/listing/*.txt` отиват и в Edge — никога „Chrome“ в тях (store.test).

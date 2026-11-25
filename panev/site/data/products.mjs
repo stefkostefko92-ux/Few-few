@@ -1,4 +1,4 @@
-// Кодовете, размерите и цените от каталога 2026 — единственият източник на истината за продуктите
+// Кодовете, размерите и цените от каталога 2027 — единственият източник на истината за продуктите
 // (цени в евро, IVA esclusa). Трябва да съвпадат 1:1 с печатния каталог.
 
 export const COMPANY = {
@@ -17,8 +17,10 @@ export const COMPANY = {
 export const PATENT = { number: '202023000002112' };
 
 export const CATALOG_PDF = '/docs/catalogo-staffe-panev-2026.pdf';
-export const CATALOG_EDITION = '2026';
-export const CATALOG_PAGES = 69;
+export const CATALOG_EDITION = '2027';
+export const CATALOG_PAGES = 72;
+// Докога важат цените от листа 2027 (Offer.priceValidUntil в JSON-LD): смени я с новия ценоразпис.
+export const CATALOG_VALID_UNTIL = '2027-12-31';
 
 // Снимките (img) са 3D рендерите на комплекта от img/3d/ (прави ги `cd 3d && npm run site`).
 

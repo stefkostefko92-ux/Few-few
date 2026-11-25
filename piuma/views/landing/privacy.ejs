@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="<%= locale %>">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= t('privacy.meta.title') %></title>
+<meta name="description" content="<%= t('privacy.meta.description') %>">
+<meta name="keywords" content="<%= t('privacy.meta.keywords') %>">
+<meta name="theme-color" content="#14120f">
+<link rel="canonical" href="<%= canonical %>">
+<% alternates.forEach((alt) => { %><link rel="alternate" hreflang="<%= alt.hreflang %>" href="<%= alt.href %>">
+<% }) %><link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/tokens.css">
+<link rel="stylesheet" href="/static/landing.css">
+</head>
+<body class="lp">
+<a class="skip" href="#main"><%= t('landing.nav.skip') %></a>
+
+<header class="lp-top">
+  <div class="lp-wrap lp-top-in">
+    <a class="lp-brand" href="/"><img class="lp-logo" src="/static/landing/logo-160.webp" alt="" width="160" height="160" decoding="async"><span class="wordmark">Piuma</span></a>
+    <div class="lp-top-right">
+      <%- include('../partials/lang') %>
+      <a class="lp-signin" href="/"><%= t('privacy.back') %></a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="lp-wrap lp-legal">
+  <h1><%= t('privacy.title') %></h1>
+  <p class="lp-legal-updated"><%= t('privacy.updated') %></p>
+
+  <section>
+    <h2><%= t('privacy.controllerTitle') %></h2>
+    <p><%= t('privacy.controllerBody') %></p>
+  </section>
+
+  <section>
+    <h2><%= t('privacy.panelTitle') %></h2>
+    <ul>
+      <li><%= t('privacy.panelSessions') %></li>
+      <li><%= t('privacy.panelTwoFactor') %></li>
+      <li><%= t('privacy.panelAudit') %></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><%= t('privacy.retentionTitle') %></h2>
+    <ul>
+      <li><%= t('privacy.retentionSessions') %></li>
+      <li><%= t('privacy.retentionComments') %></li>
+      <li><%= t('privacy.retentionAudit') %></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><%= t('privacy.aiTitle') %></h2>
+    <p><strong><%= t('privacy.aiGenLabel') %></strong> <%= t('privacy.aiGenBody') %></p>
+    <p><strong><%= t('privacy.aiRecipientLabel') %></strong> <%= t('privacy.aiRecipientBody') %></p>
+    <p><strong><%= t('privacy.aiBasisLabel') %></strong> <%= t('privacy.aiBasisBody') %></p>
+  </section>
+
+  <section>
+    <h2><%= t('privacy.rightsTitle') %></h2>
+    <% [['privacy.rightsBody', 'info@carbonstealth.eu', 'mailto:info@carbonstealth.eu', ''], ['privacy.complaint', 'www.cpdp.bg', 'https://www.cpdp.bg', ' target="_blank" rel="noopener"']].forEach(([key, needle, href, extra]) => { const text = t(key); const at = text.indexOf(needle); %>
+    <p><% if (at >= 0) { %><%= text.slice(0, at) %><a href="<%= href %>"<%- extra %>><%= needle %></a><%= text.slice(at + needle.length) %><% } else { %><%= text %> <a href="<%= href %>"<%- extra %>><%= needle %></a><% } %></p>
+    <% }) %>
+  </section>
+</main>
+
+<footer class="lp-foot">
+  <div class="lp-wrap">
+    <p class="lp-foot-imprint"><%= t('landing.footer.imprint') %></p>
+  </div>
+</footer>
+</body>
+</html>

@@ -10,7 +10,7 @@
 // временна файлова система. Мутация (връщане към „само current") → пада.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, existsSync, statSync, rmSync } from "node:fs";
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, existsSync, statSync, rmSync, utimesSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
@@ -68,14 +68,38 @@ test("current без Supreme .env (деплой на друг продукт) �
   } finally { rmSync(L.base, { recursive: true, force: true }); }
 });
 
-test("current ги има → печели над shared (там редактира човекът)", () => {
+// От 3.5.0 (одит на VPS-аджията, 25.09.2026) shared е каноничното копие: преди цикъла огледалото
+// пренася от current само ПО-ПРЕСНИЯ файл, а източникът е shared. Старото „current печели винаги“
+// триеше прясна редакция в shared със старото копие от current.
+function age(dir, minutes) {
+  const t = new Date(Date.now() - minutes * 60_000);
+  for (const f of FILES) utimesSync(join(dir, f), t, t);
+}
+
+test("current е по-пресен → огледалото го пренася в shared, а източникът е shared", () => {
   const L = layout();
   try {
     seed(join(L.releases, "20260916-185118", "Few-few-main", "SupremeDiscordBot"), FILES, "cur");
     execFileSync("ln", ["-sfn", join(L.releases, "20260916-185118", "Few-few-main"), L.current]);
     seed(L.shared, FILES, "shared");
-    const out = run(L, "supreme_env_source").trim();
-    assert.equal(out, join(L.current, "SupremeDiscordBot"));
+    age(L.shared, 60);
+    const out = run(L, `supreme_persist_env "${join(L.current, "SupremeDiscordBot")}"; supreme_env_source`).trim();
+    assert.equal(out, L.shared);
+    assert.equal(readFileSync(join(L.shared, "backend/.env"), "utf8"), "KEY=cur-backend/.env\n");
+  } finally { rmSync(L.base, { recursive: true, force: true }); }
+});
+
+test("shared е по-пресен (редакция там) → огледалото не я трие със старото копие от current", () => {
+  const L = layout();
+  try {
+    const cur = join(L.releases, "20260916-185118", "Few-few-main", "SupremeDiscordBot");
+    seed(cur, FILES, "cur");
+    age(cur, 60);
+    execFileSync("ln", ["-sfn", join(L.releases, "20260916-185118", "Few-few-main"), L.current]);
+    seed(L.shared, FILES, "shared");
+    const out = run(L, `supreme_persist_env "${join(L.current, "SupremeDiscordBot")}"; supreme_env_source`).trim();
+    assert.equal(out, L.shared);
+    assert.equal(readFileSync(join(L.shared, "backend/.env"), "utf8"), "KEY=shared-backend/.env\n");
   } finally { rmSync(L.base, { recursive: true, force: true }); }
 });
 

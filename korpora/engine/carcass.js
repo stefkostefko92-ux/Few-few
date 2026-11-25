@@ -1,0 +1,230 @@
+// Carcass furniture: sides, bottom, top (between / over / rails), partitions, a back per column, plinth or legs,
+// sliding doors across the carcass (o.sliding; the interior stands o.frontZone behind the front edge), then the
+// column interiors in two passes — fronts first (slide pilots, hinge plates), then the 32 mm system holes
+// that avoid them and the shelves that sit on those holes — and last the confirmats into the edges of the panels the
+// interiors drilled, placed clear of every hole there.
+import { panel, groove, holeThrough } from './panel.js';
+import { r1, clamp } from './util.js';
+import { hasGrain, frontStock, STOCK } from './materials.js';
+import { GROOVE, HDF_T, confirmat, confirmatZs, boreClear, systemRows } from './joinery.js';
+import { buildDoors } from './fronts.js';
+import { blindFront } from './blind.js';
+import { buildDrawers } from './drawers.js';
+import { hangRail, RAIL } from './rail.js';
+import { shelvesInZone } from './shelves.js';
+import { cellFronts, cellInteriors, joinCellShelves } from './cells.js';
+import { buildSlidingDoors } from './sliding.js';
+
+const WORKTOP_SCREW = { d: 5 }; // the worktop screws through the rails: lbl.worktopScrew, hw.worktopScrews
+const RAIL_W = 100; // top rails of base cabinets
+const RAIL_DROP = RAIL.topEdge + RAIL.h; // 90: no system holes or shelves above the lower edge of a hanging rail
+const MIN_PLINTH = 40; // lowest plinth board or legs the generator makes
+const CARCASS = STOCK.pb18; // every carcass board; the back is HDF in grooves
+
+export function buildCarcass(ctx, o) {
+  const T = CARCASS.thickness;
+  const x0 = o.x0 ?? 0;
+  const y0 = o.y0 ?? 0;
+  const z0 = o.z0 ?? 0;
+  const { W, H, D } = o;
+  const mod = o.module ?? '';
+  const nm = (s) => (mod ? `${mod} ${s}` : s);
+  const key = (s) => `${mod}${s}`;
+  let plinth = o.plinth ?? { type: 'none', h: 0 };
+  if ((plinth.type === 'panel' || plinth.type === 'legs') && plinth.h > 0 && plinth.h < MIN_PLINTH) {
+    ctx.warn('info', ctx.t(plinth.type === 'panel' ? 'w.plinthTooLow' : 'w.legsTooLow', { what: nm(ctx.t(plinth.type === 'panel' ? 'part.plinth' : 'part.legs')), min: MIN_PLINTH }));
+    plinth = { type: 'none', h: 0 };
+  }
+  const plinthH = plinth.type !== 'none' ? plinth.h : 0;
+  const c = y0 + plinthH;
+  const Hc = H - plinthH;
+  const top = o.top ?? 'between';
+  const sideTop = top === 'over' ? c + Hc - T : c + Hc;
+  const bc = o.bands?.carcass ?? 1;
+  const backFront = z0 + GROOVE.inset + HDF_T;
+  const zEnd = z0 + D;
+  // the front of the interior: partitions, system holes, shelves and rails stand behind sliding doors (sliding.js)
+  const zIn = zEnd - (o.frontZone ?? 0);
+  const carc = { stock: CARCASS.id, decor: o.carcassDecor, grain: hasGrain(o.carcassDecor), module: mod };
+  const out = { panels: {}, columns: [], dims: { x0, y0, z0, W, H, D, T, c, Hc, plinthH, backFront } };
+  const sideBands = { '+z': bc, ...(top === 'over' ? {} : { '+y': o.visibleTop ? bc : 0 }) };
+  if (o.mount === 'wall') sideBands['-y'] = bc; // a wall cabinet is seen from below: the lower ends of its sides show
+
+  const sideL = panel(ctx, { ...carc, key: key('sideL'), name: nm(ctx.t('part.sideL')), role: 'side', box: { min: [x0, c, z0], max: [x0 + T, sideTop, zEnd] }, n: '+x', L: 'y', bands: sideBands, explode: [-1, 0, 0] });
+  const sideR = panel(ctx, { ...carc, key: key('sideR'), name: nm(ctx.t('part.sideR')), role: 'side', box: { min: [x0 + W - T, c, z0], max: [x0 + W, sideTop, zEnd] }, n: '-x', L: 'y', bands: sideBands, explode: [1, 0, 0] });
+  const bottom = panel(ctx, { ...carc, key: key('bottom'), name: nm(ctx.t('part.bottom')), role: 'bottom', box: { min: [x0 + T, c, z0], max: [x0 + W - T, c + T, zEnd] }, n: '+y', L: 'x', bands: { '+z': bc }, explode: [0, -0.6, 0] });
+  out.panels = { sideL, sideR, bottom };
+  const horizontals = [{ part: bottom, y: c + T / 2, zs: confirmatZs(z0 + 50, zEnd - 50) }];
+
+  let topPart = null;
+  const rails = [];
+  if (top === 'between' || top === 'over') {
+    const over = top === 'over';
+    topPart = panel(ctx, {
+      ...carc, key: key('top'), name: nm(ctx.t(over ? 'part.topOver' : 'part.top')), role: 'top',
+      box: { min: [over ? x0 : x0 + T, c + Hc - T, z0], max: [over ? x0 + W : x0 + W - T, c + Hc, zEnd] },
+      n: '-y', L: 'x', bands: over ? { '+z': bc, '-x': bc, '+x': bc } : { '+z': bc }, explode: [0, 1, 0],
+    });
+    if (!over) horizontals.push({ part: topPart, y: c + Hc - T / 2, zs: confirmatZs(z0 + 50, zEnd - 50) });
+    out.panels.top = topPart;
+  } else if (top === 'rails') {
+    const rf = panel(ctx, { ...carc, key: key('railF'), name: nm(ctx.t('part.railF')), role: 'rail', box: { min: [x0 + T, c + Hc - T, zEnd - RAIL_W], max: [x0 + W - T, c + Hc, zEnd] }, n: '-y', L: 'x', explode: [0, 1, 0.4] });
+    const rb = panel(ctx, { ...carc, key: key('railB'), name: nm(ctx.t('part.railB')), role: 'rail', box: { min: [x0 + T, c + Hc - T, backFront], max: [x0 + W - T, c + Hc, backFront + RAIL_W] }, n: '-y', L: 'x', explode: [0, 1, -0.4] });
+    rails.push(rf, rb);
+    horizontals.push({ part: rf, y: c + Hc - T / 2, zs: [zEnd - RAIL_W + 25, zEnd - 25] });
+    horizontals.push({ part: rb, y: c + Hc - T / 2, zs: [backFront + 25, backFront + RAIL_W - 25] });
+    // the worktop (or desk top) is screwed from below through the rails
+    out.topScrews = [];
+    for (const r of rails) {
+      const zc = (r.box.min[2] + r.box.max[2]) / 2;
+      for (const sx of [x0 + T + 60, x0 + W - T - 60]) {
+        holeThrough(r, [sx, c + Hc - T, zc], WORKTOP_SCREW.d, 'screw', { hw: 'worktop', label: ctx.t('lbl.worktopScrew') });
+        out.topScrews.push([sx, c + Hc, zc]);
+      }
+    }
+    ctx.hw('worktopScrews', { name: ctx.t('hw.worktopScrews'), qty: out.topScrews.length, unit: ctx.t('u.pcs'), group: ctx.t('g.fasteners') });
+    Object.assign(out.panels, { railF: rf, railB: rb });
+  }
+  for (const h of horizontals) {
+    confirmat(ctx, sideL, h.part, '-x', h.zs.map((z) => [x0 + T, h.y, z]));
+    confirmat(ctx, sideR, h.part, '+x', h.zs.map((z) => [x0 + W - T, h.y, z]));
+  }
+
+  // columns and partitions
+  const cols = o.columns?.length ? o.columns : [{}];
+  const n = cols.length;
+  const inner0 = x0 + T;
+  const inner1 = x0 + W - T;
+  const avail = inner1 - inner0 - (n - 1) * T;
+  const wsum = cols.reduce((a, cw) => a + (cw.weight ?? 1), 0);
+  const yInnerTop = c + Hc - T;
+  const yInnerBottom = c + T;
+  const partitions = [];
+  let x = inner0;
+  cols.forEach((cw, i) => {
+    const xb = i === n - 1 ? inner1 : r1(x + (avail * (cw.weight ?? 1)) / wsum);
+    out.columns.push({ ...cw, index: i, xa: x, xb, left: i === 0 ? sideL : null, right: i === n - 1 ? sideR : null });
+    x = xb;
+    if (i < n - 1) {
+      const p = panel(ctx, { ...carc, key: key(`part${i + 1}`), name: nm(ctx.t('part.partition', { n: i + 1 })), role: 'partition', box: { min: [x, yInnerBottom, backFront], max: [x + T, yInnerTop, zIn] }, n: '+x', L: 'y', bands: { '+z': bc }, explode: [0, 0, 0.35] });
+      partitions.push(p);
+      out.columns[i].right = p;
+      x += T;
+    }
+  });
+  out.columns.forEach((col, i) => {
+    if (!col.left) col.left = partitions[i - 1];
+  });
+
+  buildBacks(ctx, { x0, W, T, c, Hc, z0, sideTop, sideL, sideR, bottom, topPart, top, partitions, n, mod, key, nm });
+  buildPlinth(ctx, { ...o, plinth }, { x0, y0, W, T, zEnd, plinthH, bc, mod, key, nm });
+  if (o.mount === 'wall') ctx.hw('hangers', { name: ctx.t('hw.hangers'), qty: 1, unit: ctx.t('u.pair'), group: ctx.t('g.hardware') });
+  if (o.sliding) buildSlidingDoors(ctx, o, { x0, W, T, c, Hc, zEnd, nm, key, mod });
+
+  // interiors, pass 1: drawers and doors (slide pilots and hinge plates claim their holes first)
+  const gap = o.gap ?? 3;
+  const fs = frontStock(o);
+  const front = { gap, fs, frontGrain: hasGrain(fs.decor), bf: fs.banded ? o.bands?.front ?? 2 : 0, fT: STOCK[fs.stock].thickness };
+  const hingeSides = [];
+  for (const [i, col] of out.columns.entries()) {
+    col.fl = i === 0 ? x0 : partitions[i - 1].box.min[0] + T / 2;
+    col.fr = i === n - 1 ? x0 + W : partitions[i].box.min[0] + T / 2;
+    if (col.cells) {
+      // a free carcass column (layout.js): its fixed shelves, then the drawers and doors of its cells
+      cellFronts(ctx, o, { i, n, col, xa: col.xa, xb: col.xb, fl: col.fl, fr: col.fr, c, Hc, yInnerTop, zEnd, backFront, T, nm, key, mod, left: col.left, right: col.right, bc, carc, hingeSides, ...front });
+      continue;
+    }
+    col.drawers = Math.max(0, col.drawers ?? 0);
+    col.dzH = col.drawers ? clamp(col.drawerZone ?? col.drawers * 180, 100, Hc) : 0;
+    col.doors = col.drawers && col.dzH >= Hc - 1 ? 0 : col.doors ?? 0;
+    // the drawer zone at the bottom of the column (doors above it), or at the top (drawersOnTop: doors below it)
+    col.dz0 = col.drawersOnTop ? c + Hc - col.dzH : c;
+    const a = { i, n, col, xa: col.xa, xb: col.xb, fl: col.fl, fr: col.fr, c, zEnd, backFront, T, nm, key, mod, left: col.left, right: col.right, ...front };
+    if (col.drawers) buildDrawers(ctx, o, { ...a, dz0: col.dz0, dzH: col.dzH, drawers: col.drawers });
+    const doorZone = col.drawersOnTop ? [c, col.dz0] : [c + col.dzH, c + Hc];
+    const dy = { dy0: doorZone[0] + gap / 2, dy1: doorZone[1] - gap / 2 };
+    // a blind corner cabinet (kitchen.js): the blind front first, the doors on the rest of the column
+    const span = col.blind ? blindFront(ctx, { ...a, ...dy, yTop: c + Hc - T }) : {};
+    col.hingeYs = col.doors ? buildDoors(ctx, o, { ...a, ...span, ...dy, hingeSides }) : [];
+  }
+  // pass 2: system holes where they do not clash, shelves on holes present on both sides, hanging rails
+  const rows = systemRows(zIn, backFront);
+  for (const [i, col] of out.columns.entries()) {
+    if (col.cells) {
+      cellInteriors(ctx, { i, n, col, c, yInnerTop, rows, T, backFront, zEnd, bc, carc, key, nm, mod });
+      continue;
+    }
+    const zoneBottom = col.drawersOnTop ? c + T : c + col.dzH + (col.drawers ? 0 : T);
+    const zoneTop = col.drawersOnTop ? col.dz0 : yInnerTop - (col.rail ? RAIL_DROP : 0);
+    shelvesInZone(ctx, { col, i, n, shelves: col.shelves, c, yInnerTop, zoneBottom, zoneTop, rows, T, backFront, zEnd: zIn, bc, carc, key, nm });
+    if (col.rail) hangRail(ctx, { col, i, yInnerTop, backFront, zEnd: zIn, mod, nm });
+  }
+  // the confirmats of the fixed shelves of free carcass columns, clear of every hole the panels have by now
+  for (const col of out.columns) if (col.cells) joinCellShelves(ctx, { col, backFront, zEnd, z0, T });
+  joinEdges(ctx, { x0, W, T, c, Hc, z0, zEnd, zIn, backFront, top, topPart, rails, sideL, sideR, bottom, partitions });
+  return out;
+}
+
+// Confirmats into the edges of the panels the interiors drill (the sides under a top that sits on them, the
+// partitions), made last: each one moves off the slide, hinge plate and system holes already there, so the bore
+// running 50 mm into the panel keeps MIN_WEB to them. Rails take one confirmat in their middle, which has nowhere to go.
+function joinEdges(ctx, a) {
+  const { x0, W, T, c, Hc, z0, zEnd, zIn, backFront, top, topPart, rails, sideL, sideR, bottom, partitions } = a;
+  const yTop = c + Hc - T;
+  // a partition ends at the front of the interior (zIn, behind sliding doors), a side at the front edge
+  const joint = (face, end, dir, x, y, zStart) => {
+    const zFront = end.role === 'partition' ? zIn : zEnd;
+    const zs = confirmatZs(zStart, zFront - 50, (z) => boreClear(end, dir, [x, y, z]));
+    confirmat(ctx, face, end, dir, zs.map((z) => [x, y, z]));
+  };
+  if (top === 'over') {
+    // the top sits on the sides: confirmat through the top into the side ends
+    joint(topPart, sideL, '+y', x0 + T / 2, yTop, z0 + 50);
+    joint(topPart, sideR, '+y', x0 + W - T / 2, yTop, z0 + 50);
+  }
+  for (const p of partitions) {
+    const pc = p.box.min[0] + T / 2;
+    const zStart = Math.max(backFront + 30, z0 + 50);
+    joint(bottom, p, '-y', pc, c + T, zStart);
+    if (topPart) joint(topPart, p, '+y', pc, yTop, zStart);
+    else for (const r of rails) confirmat(ctx, r, p, '+y', [[pc, yTop, (r.box.min[2] + r.box.max[2]) / 2]]);
+  }
+}
+
+function buildBacks(ctx, a) {
+  const { x0, W, T, c, Hc, z0, sideTop, sideL, sideR, bottom, topPart, top, partitions, n, mod, key, nm } = a;
+  const into = GROOVE.depth - GROOVE.clearance;
+  const gzc = z0 + GROOVE.inset + GROOVE.width / 2;
+  groove(sideL, [x0 + T, c, gzc], [x0 + T, sideTop, gzc], GROOVE.width, GROOVE.depth, 'back-groove');
+  groove(sideR, [x0 + W - T, c, gzc], [x0 + W - T, sideTop, gzc], GROOVE.width, GROOVE.depth, 'back-groove');
+  groove(bottom, [x0 + T, c + T, gzc], [x0 + W - T, c + T, gzc], GROOVE.width, GROOVE.depth, 'back-groove');
+  if (topPart) {
+    const over = top === 'over';
+    groove(topPart, [over ? x0 : x0 + T, c + Hc - T, gzc], [over ? x0 + W : x0 + W - T, c + Hc - T, gzc], GROOVE.width, GROOVE.depth, 'back-groove');
+  }
+  const yb0 = c + T - into;
+  const yb1 = topPart ? c + Hc - T + into : c + Hc - 2; // under top rails the back ends just below them
+  for (let i = 0; i < n; i++) {
+    const left = i === 0 ? x0 + T - into : partitions[i - 1].box.min[0] + T / 2 + 1;
+    const right = i === n - 1 ? x0 + W - T + into : partitions[i].box.min[0] + T / 2 - 1;
+    const zb = [z0 + GROOVE.inset, z0 + GROOVE.inset + HDF_T];
+    panel(ctx, { stock: 'hdf3', decor: 'demo:white', grain: false, module: mod, key: key(`back${i + 1}`), name: nm(n > 1 ? ctx.t('part.backN', { n: i + 1 }) : ctx.t('part.back')), role: 'back', box: { min: [left, yb0, zb[0]], max: [right, yb1, zb[1]] }, n: '+z', L: 'y', explode: [0, 0, -1.2] });
+    // backs of several columns meet behind a partition and are nailed to it every 150 mm; other edges sit in grooves
+    const partitionEdges = (i > 0 ? 1 : 0) + (i < n - 1 ? 1 : 0);
+    if (partitionEdges) ctx.hw('nails', { name: ctx.t('hw.nails'), qty: Math.ceil((partitionEdges * (yb1 - yb0)) / 150), unit: ctx.t('u.pcs'), group: ctx.t('g.fasteners') });
+  }
+}
+
+function buildPlinth(ctx, o, a) {
+  const { x0, y0, W, T, zEnd, plinthH, bc, mod, key, nm } = a;
+  if (o.plinth?.type !== 'legs' && o.plinth?.type !== 'panel') return;
+  const xs = W > 900 ? [x0 + 60, x0 + W / 2, x0 + W - 60] : [x0 + 60, x0 + W - 60];
+  ctx.hw(`legs${plinthH}`, { name: ctx.t('hw.legs', { h: plinthH }), qty: xs.length * 2, unit: ctx.t('u.pcs'), group: ctx.t('g.hardware') });
+  for (const lx of xs) for (const lz of [(o.z0 ?? 0) + 60, zEnd - (o.plinth.type === 'panel' ? 90 : 70)]) ctx.symbols.push({ type: 'leg', x: lx, z: lz, y0, h: plinthH, module: mod });
+  if (o.plinth.type === 'panel') {
+    const fs = frontStock(o);
+    // banded at the ends and along the floor (moisture); the top edge is hidden under the carcass
+    panel(ctx, { stock: fs.stock, decor: fs.decor, grain: hasGrain(fs.decor), module: mod, key: key('plinth'), name: nm(ctx.t('part.plinth')), role: 'plinth', box: { min: [x0, y0, zEnd - 50 - T], max: [x0 + W, y0 + plinthH - 3, zEnd - 50] }, n: '-z', L: 'x', bands: fs.banded ? { '+x': bc, '-x': bc, '-y': bc } : {}, explode: [0, -1, 1] });
+    ctx.hw('plinthClips', { name: ctx.t('hw.plinthClips'), qty: 4, unit: ctx.t('u.pcs'), group: ctx.t('g.hardware') });
+  }
+}

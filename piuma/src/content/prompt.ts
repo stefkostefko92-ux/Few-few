@@ -51,6 +51,23 @@ function trim(text: string, max = 160): string {
 }
 
 /**
+ * Надпис от Instagram = недоверен вход (indirect prompt injection). JSON-кодиран, той няма как
+ * да затвори кавичката и да продължи като инструкция; системният промпт казва, че полето е данни.
+ */
+function untrusted(caption: string): string {
+  return JSON.stringify({ caption: trim(maskMentions(caption)) });
+}
+
+/**
+ * Минимизация: споменат профил (`@потребител`) е лична данна на трето лице и не е нужен на
+ * модела, за да учи ъгъла на поста — към AI доставчика отива само `@…`. Instagram имената са
+ * букви, цифри, точка и долна черта.
+ */
+function maskMentions(text: string): string {
+  return text.replace(/@[\p{L}\p{N}._]+/gu, '@…');
+}
+
+/**
  * Съставя потребителския промпт. Системният блок е байт-стабилен (кеш), затова всичко
  * променливо — план, представяне, платформи — влиза тук, в стабилен ред.
  */
@@ -103,12 +120,12 @@ export function buildUserPrompt(input: PromptInput): string {
     }
     for (const post of perf.top) {
       lines.push(
-        `- Силен (${post.kind}, обхват ${post.reach}, взаимодействия ${post.interactions}): „${trim(post.caption)}“`,
+        `- Силен (${post.kind}, обхват ${post.reach}, взаимодействия ${post.interactions}): ${untrusted(post.caption)}`,
       );
     }
     for (const post of perf.weak) {
       lines.push(
-        `- Слаб (${post.kind}, обхват ${post.reach}, взаимодействия ${post.interactions}): „${trim(post.caption)}“`,
+        `- Слаб (${post.kind}, обхват ${post.reach}, взаимодействия ${post.interactions}): ${untrusted(post.caption)}`,
       );
     }
     lines.push(

@@ -1,4 +1,5 @@
-<%- include('partials/head') %>
+<%# 404 (и скрита визитка) не бива да влиза в индекса. %>
+<%- include('partials/head', { noindex: true }) %>
 <section class="auth-card center">
   <h1>404</h1>
   <p>Няма такава страница или визитката е скрита.</p>

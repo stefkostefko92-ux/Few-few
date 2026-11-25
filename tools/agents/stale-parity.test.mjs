@@ -17,11 +17,14 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const src = (p) => readFileSync(join(ROOT, p), "utf8");
 
-test("oversee и curate ползват classify() на memory-freshness — не своя евристика", () => {
+test("oversee и curate ползват dueOf() на memory-freshness — не своя сметка за срока", () => {
+  // До 2026-10-24 тук се искаше само classify(): класът беше общ, но СРОКЪТ се смяташе три пъти от
+  // датата на научаването и пресверената поука оставаше просрочена. Сега се изисква целият срок.
   for (const f of ["tools/agents/oversee.mjs", "tools/memory/curate.mjs"]) {
     const s = src(f);
-    assert.match(s, /import \{ classify \} from "[./]+\/(agents\/)?memory-freshness\.mjs"/, `${f} трябва да импортира classify`);
+    assert.match(s, /import \{ dueOf \} from "[./]+\/(agents\/)?memory-freshness\.mjs"/, `${f} трябва да импортира dueOf`);
     assert.ok(!/TIME_SENSITIVE|STALE_DAYS/.test(s), `${f} не бива да носи втора дефиниция`);
+    assert.ok(!/REVERIFY_RE\s*=/.test(s), `${f} не бива да смята изричния срок сам`);
   }
   assert.ok(!/export const (STALE_DAYS|TIME_SENSITIVE)/.test(src("tools/agents/oversee-lib.mjs")),
     "oversee-lib не бива да експортира мъртвата евристика (иначе тя се връща)");
@@ -37,4 +40,18 @@ test("върху реалната памет: oversee и memory-freshness дав
   const mf = run(["tools/agents/memory-freshness.mjs", "--json"]);
   const overseeStale = ov.agents.reduce((s, a) => s + (a.stale || 0), 0);
   assert.equal(overseeStale, mf.overdue, `oversee=${overseeStale} · memory-freshness=${mf.overdue} — двете трябва да съвпадат`);
+});
+
+// 2026-10-06: първопричината на разминаването oversee=63 · memory-freshness=61 — гейтът четеше само
+// ПЪРВИЯ ред на поуката, oversee целия блок. Източник на continuation реда сменяше класа.
+test("memory-freshness чете поуката като БЛОК — източник на втория ред определя класа", async () => {
+  const { mkdtempSync, writeFileSync, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { collect } = await import("./memory-freshness.mjs");
+  const dir = mkdtempSync(join(tmpdir(), "mf-block-"));
+  try {
+    writeFileSync(join(dir, "probe.md"), "# Проба\n\n## Проверени поуки\n- **2026-01-01:** Внедрено нещо в продукта\n  source: treydar/src/risk.js:10; confidence: висока\n\n## Карантина\n");
+    const [it] = collect({ dir });
+    assert.equal(it.cls, "наш код", "репо-котвата е на continuation реда — класът трябва да е „наш код“, не „без външен източник“");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
 });

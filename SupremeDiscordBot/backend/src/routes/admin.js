@@ -1,6 +1,6 @@
 // backend/src/routes/admin.js
 import { Router } from "express";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "../lib/prisma.js";
 import { guildIconUrl } from "../lib/discordCdn.js";
 import { planConfig, effectivePremiumWhere } from "../lib/premium.js";
@@ -43,6 +43,7 @@ export const PRESERVED_AUDIT_ACTIONS = Object.freeze([
   "GAME_SEASON_CREATED", "GAME_SEASON_UPDATED", "GAME_SEASON_DELETED", "GAME_RESET_BY_ADMIN",
   "GAME_MEMBER_ADJUSTED", "GAME_COMPANION_GRANTED", "GAME_COMPANION_REVOKED", "TICKET_DELETED_BY_ADMIN",
   "PANEL_DELETED_BY_ADMIN", "FORM_DELETED_BY_ADMIN",
+  "SUPPORT_INVITE_CHANGED",
   "AUDIT_LOG_PURGE",
 ]);
 

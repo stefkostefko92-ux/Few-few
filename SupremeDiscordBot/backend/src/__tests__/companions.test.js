@@ -183,24 +183,25 @@ describe("хранене", () => {
     expect(no.code).toBe("NOT_ENOUGH_SPARKS"); expect(prismaMock.memberCompanion.update).not.toHaveBeenCalled();
     prismaMock.memberCompanion.findFirst.mockResolvedValueOnce({ id: "mc1", companionId: "lime-blip", stage: 1, fed: 80 });
     prismaMock.memberProgress.updateMany.mockResolvedValueOnce({ count: 1 });
-    // Базата прилага increment върху ТЕКУЩАТА стойност (друго хранене е вдигнало
-    // fed на 100 междувременно) — резултатът трябва да е 150, не 80+50.
-    prismaMock.memberCompanion.update
-      .mockImplementationOnce(async ({ data }) => ({ id: "mc1", companionId: "lime-blip", stage: 1, fed: 100 + data.fed.increment }))
-      .mockImplementationOnce(async ({ data }) => ({ id: "mc1", companionId: "lime-blip", fed: 150, ...data }));
+    // И5 (12.11.2026): fed се вдига УСЛОВНО по видяното (fed: 80, stage: 1) —
+    // друго хранене между четенето и записа дава count 0 → BUSY (виж launchGame.test.js).
+    prismaMock.memberCompanion.updateMany.mockResolvedValueOnce({ count: 1 });
+    prismaMock.memberCompanion.findUnique.mockResolvedValueOnce({ id: "mc1", companionId: "lime-blip", stage: 1, fed: 130 });
+    prismaMock.memberCompanion.update.mockImplementationOnce(async ({ data }) => ({ id: "mc1", companionId: "lime-blip", fed: 130, ...data }));
     prismaMock.memberProgress.findUnique.mockResolvedValueOnce({ sparks: 10 });
     const yes = await ops.feedCompanion("222222222222222222", "333333333333333333", "mc1", 50);
     expect(yes).toMatchObject({ ok: true, evolved: true, stage: 2, sparksLeft: 10 });
-    expect(yes.owned.fed).toBe(150);
-    expect(prismaMock.memberCompanion.update.mock.calls[0][0].data).toEqual({ fed: { increment: 50 } }); // одит 25.09.2026: не абсолютна стойност
+    expect(yes.owned.fed).toBe(130);
+    expect(prismaMock.memberCompanion.updateMany.mock.calls[0][0].data).toEqual({ fed: { increment: 50 } }); // одит 25.09.2026: не абсолютна стойност
+    expect(prismaMock.memberCompanion.updateMany.mock.calls[0][0].where).toMatchObject({ id: "mc1", fed: 80, stage: 1 });
     expect(prismaMock.memberProgress.updateMany.mock.calls[1][0].where.sparks).toEqual({ gte: 50 });
   });
   it("над прага за финалната форма се взима само липсващото (одит 26.09.2026)", async () => {
     prismaMock.memberCompanion.findFirst.mockResolvedValueOnce({ id: "mc1", companionId: "lime-blip", stage: 2, fed: 250 });
     prismaMock.memberProgress.updateMany.mockResolvedValueOnce({ count: 1 });
-    prismaMock.memberCompanion.update
-      .mockImplementationOnce(async ({ data }) => ({ id: "mc1", companionId: "lime-blip", stage: 2, fed: 250 + data.fed.increment }))
-      .mockImplementationOnce(async ({ data }) => ({ id: "mc1", companionId: "lime-blip", fed: 300, ...data }));
+    prismaMock.memberCompanion.updateMany.mockResolvedValueOnce({ count: 1 });
+    prismaMock.memberCompanion.findUnique.mockResolvedValueOnce({ id: "mc1", companionId: "lime-blip", stage: 2, fed: 300 });
+    prismaMock.memberCompanion.update.mockImplementationOnce(async ({ data }) => ({ id: "mc1", companionId: "lime-blip", fed: 300, ...data }));
     prismaMock.memberProgress.findUnique.mockResolvedValueOnce({ sparks: 950 });
     const out = await ops.feedCompanion("222222222222222222", "333333333333333333", "mc1", 1000);
     expect(out).toMatchObject({ ok: true, stage: 3, charged: 50, sparksLeft: 950 });

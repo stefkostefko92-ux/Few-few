@@ -24,6 +24,15 @@
   // Type-agnostic member read: the server may tag a number i4/int/double or
   // even string; try the numeric path first, then any tagged text.
   function member(struct, names) {
+    // An item's DIRECT fields first: items carry socketed gems (gem_set.gem_N)
+    // whose same-named fields (is_equipped, is_unique, ...) a descendant search
+    // could read instead - deciding "sell" from the gem, not the item.
+    if (Api.directText) {
+      for (const n of names) {
+        const v = Api.directText(struct, n);
+        if (v != null && v !== '') { const num = Number(v); return Number.isFinite(num) ? num : v; }
+      }
+    }
     for (const n of names) {
       const num = Api.findNum(struct, n);
       if (num != null) return num;
@@ -43,7 +52,7 @@
       const c = cfg();
       if (!c.enabled || !Api.ready()) return null;
       if (!c.sellCommon && !c.sellSpecial) return null;     // nothing to do
-      if (Date.now() - lastScan < 60000) return null;
+      if (Date.now() - lastScan < 60000) { Scheduler.wakeAt(lastScan + 60000); return null; }
 
       return async () => {
         lastScan = Date.now();

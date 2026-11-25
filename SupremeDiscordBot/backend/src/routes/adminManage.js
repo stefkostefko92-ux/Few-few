@@ -13,7 +13,7 @@
 // това, което го няма никъде другаде.
 import { Router } from "express";
 import axios from "axios";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "../lib/prisma.js";
 import { writeAudit } from "../lib/auditLog.js";
 import { requireAuth, loadUser, requireSuperUser, requireMainOwner } from "../middleware/auth.js";
@@ -22,6 +22,7 @@ import { adminIpAllowlist } from "../middleware/adminIpAllowlist.js";
 import { notifyBot, notifyBotVerbose } from "../services/botNotifier.js";
 import { isBlacklistActive } from "../lib/blacklist.js";
 import { levelFromXp } from "../lib/game/xp.js";
+import { fetchMemberNames } from "../lib/memberNames.js";
 import { adjustMember, grantCompanion, resetServerGame, MAX_ADJUST } from "../lib/game/admin.js";
 import { releaseCompanion } from "../lib/game/companionOps.js";
 import { companionById, publicCompanion } from "../lib/game/companions.js";
@@ -48,7 +49,8 @@ async function serverOr404(res, serverId) {
 
 // GET /api/admin/game/servers/:serverId/members?q=&page=
 // Играчите на сървъра: XP, ниво, искри, брой спътници. q = част от id или име
-// (името е известно само за хора, влизали в таблото).
+// (търсенето по име — само за хора, влизали в таблото). Имената на останалите
+// идват живо от бота за показване (lib/memberNames.js) — иначе „unknown name“.
 router.get("/game/servers/:serverId/members", async (req, res, next) => {
   try {
     const server = await serverOr404(res, req.params.serverId);
@@ -72,6 +74,8 @@ router.get("/game/servers/:serverId/members", async (req, res, next) => {
       prisma.memberCompanion.groupBy({ by: ["userId"], where: { serverId: server.id, userId: { in: ids } }, _count: { _all: true } }),
     ]);
     const nameById = Object.fromEntries(users.map((u) => [u.id, u.username]));
+    const live = await fetchMemberNames(server.id, ids.filter((id) => !nameById[id]), { timeout: 4000 });
+    Object.assign(nameById, Object.fromEntries(Object.entries(live.members).filter(([id]) => !nameById[id])));
     const compById = Object.fromEntries(companions.map((c) => [c.userId, c._count._all]));
     res.json({
       server,

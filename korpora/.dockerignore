@@ -1,0 +1,13 @@
+node_modules
+dist
+public/editor
+data
+.env
+.env.*
+!.env.example
+*.log
+tests
+coverage
+.git
+Dockerfile
+docker-compose.yml

@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { build, stripDocumentWrapper, mascotDataUris, assertPublishable, versionRegressions, mascot3dAsGlobal, mascot3dLoader, mascotPortraitUris } from "./build-artifact.mjs";
+import { build, stripDocumentWrapper, mascotDataUris, assertPublishable, versionRegressions, mascot3dAsGlobal, mascot3dLoader, mascotPortraitUris, findSecretsIn } from "./build-artifact.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -33,6 +33,17 @@ test("ЗЪБИ: `</script>` във вграждано съдържание се 
   assert.throws(
     () => assertPublishable("<script>x</script>", { "docs.js": 'var s = "</script>";' }),
     /затвори блока по-рано/);
+});
+
+// Реален случай (2026-11-13): `</script>` в docs.js затваря вградения блок по-рано и оголва остатъка
+// от низа като разметка. Ако в него има „<html“, старият ред на проверките казваше „остана обвиващ
+// таг: <html“ и пращаше търсенето към обвивката, а причината беше във вграденото съдържание.
+test("ЗЪБИ: при `</script>` във вграденото се назовава ТО, не оголеният след него обвиващ таг", () => {
+  const docs = 'var d = {"t": "име със </script> затваря блока, а знакът <html> е проза"};';
+  assert.throws(
+    () => assertPublishable(`<p>ок</p>\n<script>\n${docs}\n</script>`, { "docs.js": docs }),
+    /docs\.js съдържа "<\/script>"/,
+  );
 });
 
 test("ЗЪБИ: останал обвиващ таг в РАЗМЕТКАТА се хваща", () => {
@@ -147,5 +158,45 @@ test("реалният билд: 3D портретите са вградени, 
   assert.ok(!html.includes("-portrait3d.webp`"), "относителен път = блокиран от CSP");
   assert.ok(html.includes("MASCOT_PORTRAITS[agent.id]"), "профилът чете вградената карта");
   const m = /const MASCOT_PORTRAITS = (\{.*?\});/.exec(html);
-  assert.ok(m && Object.keys(JSON.parse(m[1])).length === 28, "портрет за всеки от 28-те агента");
+  // Бройката идва от регистъра, не е твърдо 28 — нов агент (Асансьорчика, 2026-10-05) иначе чупеше теста.
+  const n = JSON.parse(readFileSync(join(ROOT, "agents-dashboard", "agents.json"), "utf8")).agents.length;
+  assert.ok(m && Object.keys(JSON.parse(m[1])).length === n, `портрет за всеки от ${n}-те агента`);
+});
+
+// ── 2026-10-06: артефактът е ПУБЛИЧЕН изход — тайна в него е изтичане, не дефект на разметката ──────
+// Инцидентът: вход за админ (имейл/парола) стигна от поука до FALLBACK-а в index.html и оттам до
+// артефакта на флота. assertPublishable гледаше само разметката. Сега отказва всеки шаблон от ALL
+// (CREDENTIAL + COMMIT_ONLY) — fail closed, с име на шаблона и място, БЕЗ стойността.
+const J = (...p) => p.join("");
+test("ЗЪБИ: тайна в билда (имейл+парола) спира публикуването — с шаблон и ред, без стойността", () => {
+  const pw = J("Mari", "na2025", "!");
+  const html = J('<p>ок</p>\n<script>const FALLBACK = {"text": "admin creds ', "info@", "acme-shop.it/", pw, ', а не env"};</script>');
+  assert.throws(() => assertPublishable(html), (e) => {
+    assert.match(e.message, /Имейл \+ парола/, "трябва да назове шаблона");
+    assert.match(e.message, /ред 2/, "трябва да каже къде");
+    assert.ok(!e.message.includes(pw), "стойността НЕ влиза в съобщението");
+    return true;
+  });
+});
+
+test("ЗЪБИ: и COMMIT_ONLY шаблоните (JWT) спират публикуването — артефактът е публичен като commit", () => {
+  const jwt = J("eyJ", "a".repeat(12), ".eyJ", "b".repeat(12), ".", "c".repeat(24));
+  assert.throws(() => assertPublishable(`<p>${jwt}</p>`), /JWT/);
+});
+
+test("реалният билд НЕ съдържа нито един шаблон за тайна (ALL)", () => {
+  const { html } = build();
+  assert.deepEqual(findSecretsIn(html), [], "реалният артефакт трябва да е чист");
+});
+
+test("вграждането не разгъва $` / $' / $& от съдържанието (31.10.2026: 58 агента вместо 29)", async () => {
+  const { dashReader } = await import("./build-artifact.mjs");
+  const real = dashReader(null, ROOT);
+  // „(`$`)“ дойде с rilievi/CLAUDE.md в docs.js; низова замяна вмъкваше началото на страницата втори път.
+  const reader = { ...real, read: (p) => (p === "docs.js" ? real.read(p) + "\n// (`$`) · $' · $& · $$\n" : real.read(p)) };
+  const { html, agents } = build(join(ROOT, "agents-dashboard"), reader);
+  assert.equal((html.match(/const FALLBACK = \{/g) || []).length, 1, "FALLBACK е вграден веднъж");
+  assert.ok(html.includes("// (`$`) · $' · $& · $$"), "текстът е вграден дословно");
+  const reg = JSON.parse(readFileSync(join(ROOT, "agents-dashboard", "agents.json"), "utf8"));
+  assert.equal(agents, (Array.isArray(reg) ? reg : reg.agents).length);
 });

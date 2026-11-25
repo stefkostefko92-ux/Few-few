@@ -52,7 +52,21 @@ function escape(s) {
 /**
  * Build admin notification email (HTML) when a new contact/quote arrives
  */
-function buildAdminHtml({ nome, email, tel, azienda, citta, servizio, messaggio, items, totale, msgId, ip, source }) {
+// Quantità dal carrello del cliente: sempre un intero 1–999 (il valore arriva grezzo dal form).
+function qtyOf(it) {
+  return Math.max(1, Math.min(999, parseInt(it && it.qty, 10) || 1));
+}
+
+// Prezzo unitario o null per i codici "a preventivo" (nessun prezzo a listino).
+function priceOf(it) {
+  const n = Number(it && it.price);
+  return it && it.price != null && it.price !== '' && Number.isFinite(n) && n > 0 ? n : null;
+}
+
+const euro = (n) => `€ ${n.toFixed(2).replace('.', ',')}`;
+
+// L'IP non entra nell'email: resta solo nel database per la prevenzione degli abusi (informativa privacy).
+function buildAdminHtml({ nome, email, tel, azienda, citta, servizio, messaggio, items, totale, msgId, source }) {
   const isQuote = source === 'carrello' || source === 'quote' || (items && items.length);
 
   const fields = [
@@ -64,7 +78,6 @@ function buildAdminHtml({ nome, email, tel, azienda, citta, servizio, messaggio,
     ['Servizio',   escape(servizio) || '—'],
     ['Fonte',      escape(source) || 'website'],
     ['ID',         escape(msgId)],
-    ['IP',         escape(ip) || '—'],
     ['Data/ora',   new Date().toLocaleString('it-IT', { timeZone: 'Europe/Rome' })],
   ];
   const fieldRows = fields.map(([k, v]) =>
@@ -75,16 +88,19 @@ function buildAdminHtml({ nome, email, tel, azienda, citta, servizio, messaggio,
   let itemsHtml = '';
   if (items && items.length) {
     const rows = items.map(it => {
-      const sub = (Number(it.price) || 0) * (Number(it.qty) || 1);
+      const qty = qtyOf(it);
+      const price = priceOf(it);
       return `<tr style="border-top:1px solid #e1e5eb">
         <td style="padding:10px 12px;font-size:13px">${escape(it.name || '—')}</td>
         <td style="padding:10px 12px;font-family:JetBrains Mono,monospace;font-size:12px;color:#6a6e78">${escape(it.codice || it.id || '')}</td>
-        <td style="padding:10px 12px;text-align:right;font-size:13px">${it.qty || 1}</td>
-        <td style="padding:10px 12px;text-align:right;font-size:13px">€ ${Number(it.price || 0).toFixed(2).replace('.', ',')}</td>
-        <td style="padding:10px 12px;text-align:right;font-weight:600;font-size:13px">€ ${sub.toFixed(2).replace('.', ',')}</td>
+        <td style="padding:10px 12px;text-align:right;font-size:13px">${qty}</td>
+        <td style="padding:10px 12px;text-align:right;font-size:13px">${price === null ? 'a preventivo' : euro(price)}</td>
+        <td style="padding:10px 12px;text-align:right;font-weight:600;font-size:13px">${price === null ? '—' : euro(price * qty)}</td>
       </tr>`;
     }).join('');
-    const totStr = Number(totale || 0).toFixed(2).replace('.', ',');
+    const quoted = items.some(it => priceOf(it) === null);
+    const tot = Number(totale);
+    const totStr = `${(Number.isFinite(tot) ? tot : 0).toFixed(2).replace('.', ',')}${quoted ? ' + preventivo' : ''}`;
     itemsHtml = `
       <h3 style="color:#162861;margin:28px 0 12px;font-family:Georgia,serif;font-weight:500;font-size:15px;letter-spacing:-0.01em">Articoli richiesti (${items.length})</h3>
       <p style="margin:0 0 10px;font-size:12px;color:#8a6e30;background:#fdf6e3;border:1px solid #ecd9a0;border-radius:4px;padding:8px 12px">⚠ Prezzi/quantità indicativi trasmessi dal carrello del cliente — verificare a listino prima di confermare.</p>
@@ -142,9 +158,10 @@ function buildAdminHtml({ nome, email, tel, azienda, citta, servizio, messaggio,
 }
 
 /**
- * Build customer confirmation email
+ * Build customer confirmation email. Fixed text and the reference only: the address comes unverified
+ * from the public form, so nothing the sender typed (name, subject) is mailed on to it.
  */
-function buildUserHtml({ nome, servizio, msgId, isQuote }) {
+function buildUserHtml({ msgId }) {
   return `<!DOCTYPE html>
 <html lang="it"><head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#f5f7fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#0f1114">
@@ -153,14 +170,14 @@ function buildUserHtml({ nome, servizio, msgId, isQuote }) {
 <table width="560" cellpadding="0" cellspacing="0" border="0" style="background:#fffdf7;max-width:560px;border:1px solid #e1e5eb">
 <tr><td style="background:#162861;padding:40px 32px;text-align:center">
   <div style="color:#fff;font-size:11px;letter-spacing:0.24em;text-transform:uppercase;margin-bottom:12px;font-weight:600">Panev Ascensori</div>
-  <h1 style="color:#fff;margin:0;font-size:28px;font-weight:300;font-family:Georgia,serif;letter-spacing:-0.02em">Grazie, ${escape(nome.split(' ')[0])}.</h1>
+  <h1 style="color:#fff;margin:0;font-size:28px;font-weight:300;font-family:Georgia,serif;letter-spacing:-0.02em">Grazie per la richiesta.</h1>
 </td></tr>
 <tr><td style="padding:36px 32px">
   <p style="font-size:16px;line-height:1.65;color:#2a2e35;margin:0 0 20px">
     Abbiamo ricevuto la tua richiesta e ti risponderemo <strong style="color:#162861">nei giorni lavorativi</strong> (lun-ven).
   </p>
   <p style="font-size:15px;line-height:1.65;color:#6a6e78;margin:0 0 28px">
-    La tua richiesta relativa a <strong style="color:#0f1114">${escape(servizio || 'staffe e accessori')}</strong> è in lavorazione.
+    La tua richiesta relativa a staffe e accessori è in lavorazione.
   </p>
   <div style="background:#f4f1ea;padding:18px 22px;margin:0 0 28px;border-left:3px solid #162861">
     <div style="font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#162861;margin-bottom:8px;font-weight:700">Riferimento pratica</div>
@@ -234,12 +251,7 @@ async function sendContactEmails(data) {
         from: MAIL_FROM,
         to: data.email,
         subject: userSubject,
-        html: buildUserHtml({
-          nome: data.nome,
-          servizio: data.servizio,
-          msgId: data.msgId,
-          isQuote,
-        }),
+        html: buildUserHtml({ msgId: data.msgId }),
       });
       result.userSent = true;
     } catch (err) {

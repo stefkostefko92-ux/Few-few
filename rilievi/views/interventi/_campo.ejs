@@ -1,0 +1,17 @@
+<%
+  // Едно поле от главата или от края на листа за интервенция: текст, бележка, дата или часове.
+  const id = 'f-' + key;
+  const errId = 'err-' + key;
+  const text = typeof values[key] === 'string' ? values[key] : '';
+  const error = errors[key];
+  const errText = error ? (key === 'data' && error === 'required' ? t('interventi.dataMancante') : t('scheda.error.' + error, { maxLength, min: 0, max: 9999 })) : null;
+  const aria = errText ? ' aria-invalid="true" aria-describedby="' + errId + '"' : '';
+%><div class="field<%= typeof wide !== 'undefined' && wide ? ' field--wide' : '' %>">
+  <label class="field__label" for="<%= id %>"><%= label %></label>
+  <% if (kind === 'textarea') { %><textarea class="textarea" id="<%= id %>" name="<%= key %>" rows="3" maxlength="<%= maxLength %>"<%- aria %>><%= text %></textarea>
+  <% } else if (kind === 'date') { %><input class="input" id="<%= id %>" name="<%= key %>" type="date" required min="1950-01-01" max="2099-12-31" value="<%= text %>"<%- aria %>>
+  <% } else if (kind === 'decimal') { %><input class="input" id="<%= id %>" name="<%= key %>" type="text" inputmode="decimal" maxlength="10" autocomplete="off" value="<%= text %>"<%- aria %>>
+  <% } else { %><input class="input" id="<%= id %>" name="<%= key %>" type="text" maxlength="<%= maxLength %>" autocomplete="<%= typeof autocomplete !== 'undefined' ? autocomplete : 'off' %>" value="<%= text %>"<%- aria %>>
+  <% } %>
+  <% if (errText) { %><p class="field__error" id="<%= errId %>"><%= errText %></p><% } %>
+</div>

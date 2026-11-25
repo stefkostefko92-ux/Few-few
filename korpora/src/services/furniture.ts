@@ -1,0 +1,162 @@
+import { DEFAULT_LOCALE, type Locale } from '../i18n.js';
+import { engine, type Spec, type TypeParam } from './engine.js';
+
+/**
+ * Видовете мебели за екраните. Групата на всеки вид е ключ от двигателя (`kitchen`…) — името ѝ е
+ * `furniture.group.<ключ>`, а името на вида е `furniture.<id>`. Размерите идват от формата на двигателя,
+ * за да не се разминават с това, което редакторът позволява.
+ */
+export type FurnitureGroup = 'kitchen' | 'bedroom' | 'living' | 'bathroom' | 'custom' | 'other';
+
+const GROUPS: readonly string[] = ['kitchen', 'bedroom', 'living', 'bathroom', 'custom'];
+const isGroup = (value: string): value is FurnitureGroup => GROUPS.includes(value);
+
+function furnitureGroup(type: string): FurnitureGroup {
+  const group = engine().typeGroups[type] ?? '';
+  return isGroup(group) ? group : 'other';
+}
+
+export type FurnitureRange =
+  | { kind: 'width'; min: number; max: number }
+  | { kind: 'modules'; min: number; max: number; widthMin: number; widthMax: number }
+  | { kind: 'mattress'; min: number; max: number };
+
+function range(params: readonly TypeParam[], key: string): { min: number; max: number } | null {
+  const param = params.find((p) => p.key === key);
+  if (!param) return null;
+  if (typeof param.min === 'number' && typeof param.max === 'number')
+    return { min: param.min, max: param.max };
+  const values = (param.options ?? [])
+    .map(([value]) => value)
+    .filter((value): value is number => typeof value === 'number');
+  return values.length ? { min: Math.min(...values), max: Math.max(...values) } : null;
+}
+
+function furnitureRange(type: string): FurnitureRange | null {
+  const params = engine().typeParams[type] ?? [];
+  const modules = range(params, 'modules');
+  const moduleWidth = range(params, 'moduleWidth');
+  if (modules && moduleWidth) {
+    return {
+      kind: 'modules',
+      min: modules.min,
+      max: modules.max,
+      widthMin: moduleWidth.min,
+      widthMax: moduleWidth.max,
+    };
+  }
+  const mattress = range(params, 'mattressW');
+  if (mattress) return { kind: 'mattress', min: mattress.min / 10, max: mattress.max / 10 };
+  const width = range(params, 'width');
+  return width ? { kind: 'width', ...width } : null;
+}
+
+export interface FurnitureKind {
+  id: string;
+  group: FurnitureGroup;
+  range: FurnitureRange | null;
+}
+
+/** Всички видове в реда на двигателя, с групата и диапазона на размера. */
+export function furnitureKinds(): FurnitureKind[] {
+  return engine().listedTypes.map((id) => ({
+    id,
+    group: furnitureGroup(id),
+    range: furnitureRange(id),
+  }));
+}
+
+/** Видовете, подредени по групи — за витрината и за избора на вид при нов проект. */
+export function furnitureByGroup(): Array<{ group: FurnitureGroup; kinds: FurnitureKind[] }> {
+  const groups: Array<{ group: FurnitureGroup; kinds: FurnitureKind[] }> = [];
+  for (const kind of furnitureKinds()) {
+    const last = groups.at(-1);
+    if (last && last.group === kind.group) last.kinds.push(kind);
+    else groups.push({ group: kind.group, kinds: [kind] });
+  }
+  return groups;
+}
+
+/**
+ * Габаритът като текст без думи, за да се чете еднакво на всеки език. Числата са същите като в заглавната
+ * лента на редактора и в рамката на чертежа (горен шкаф — собствената му височина, не ръбът над пода).
+ */
+export function dimensionsText(type: string, spec: Spec): string {
+  const d = engine().typeDims(type, spec);
+  const round = (value: number) => Math.round(value * 10) / 10;
+  return type === 'bed'
+    ? `${round(d.W)} × ${round(d.D)} mm`
+    : `${round(d.W)} × ${round(d.H)} × ${round(d.D)} mm`;
+}
+
+/** Едно поле за размер в страничната лента на редактора, със стойността от проекта. */
+export interface RailField {
+  key: string;
+  label: string;
+  kind: 'range' | 'seg';
+  min: number;
+  max: number;
+  step: number;
+  unit: string;
+  options: Array<{ value: string; label: string }>;
+  value: string;
+  /** `ключ:стойност,стойност` — полето е за тези стойности на друго поле; празно — винаги. */
+  when: string;
+  /** Видимо ли е при стойностите на проекта. */
+  shown: boolean;
+}
+
+export interface EditorRail {
+  type: string;
+  /** Името на вида така, както го пише редакторът (от формата на двигателя, на езика на екрана). */
+  label: string;
+  /** Редът под името на проекта: вид и габарит. */
+  title: string;
+  fields: RailField[];
+}
+
+const text = (value: unknown): string =>
+  typeof value === 'number' || typeof value === 'string' ? String(value) : '';
+
+/**
+ * Каквото редакторът показва най-горе още преди скрипта си: вида мебел, реда с габарита и полетата за
+ * размерите — същите елементи, които после рисува `editor/params-html.js` (тестът ги сверява), на езика
+ * на екрана. Така страницата не подскача, когато редакторът тръгне. Спецификация, която двигателят не
+ * приема, дава null: тогава редакторът рисува всичко сам, както преди.
+ */
+export function editorRail(saved: Spec, locale: Locale = DEFAULT_LOCALE): EditorRail | null {
+  const api = engine();
+  let spec: Spec;
+  try {
+    spec = api.normalizeSpec(saved);
+  } catch {
+    return null;
+  }
+  const type = text(spec.type);
+  if (!api.typeOrder.includes(type)) return null;
+  const words = api.translator(locale);
+  const form = api.typeText(type, words);
+  return {
+    type,
+    label: form.label,
+    title: `${form.label}, ${api.dimsText(type, spec, words)}`,
+    fields: form.params.map((p) => ({
+      key: p.key,
+      label: p.label,
+      kind: p.type === 'range' ? 'range' : 'seg',
+      min: p.min ?? 0,
+      max: p.max ?? 0,
+      step: p.step ?? 1,
+      unit: p.unit ?? '',
+      options: (p.options ?? []).map(([value, optionLabel]) => ({
+        value: text(value),
+        label: optionLabel,
+      })),
+      value: text(spec[p.key]),
+      when: Object.entries(p.when ?? {})
+        .map(([k, vs]) => `${k}:${vs.map(text).join(',')}`)
+        .join(''),
+      shown: Object.entries(p.when ?? {}).every(([k, vs]) => vs.map(text).includes(text(spec[k]))),
+    })),
+  };
+}

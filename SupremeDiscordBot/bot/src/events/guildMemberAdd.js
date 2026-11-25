@@ -58,39 +58,9 @@ export default {
       return;
     }
 
-    // ─── 1. Autorole ──────────────────────────────────────────────────────────
-    const roleIdsToAssign = member.user.bot
-      ? (server.autoroleBotIds || [])
-      : (server.autoroleIds || []);
-
-    // Гард срещу ескалация на права — същият, който Reaction Roles има от
-    // 05.08.2026, но autorole беше БЕЗ него, при това е по-опасен: прилага се
-    // автоматично на ВСЕКИ влизащ, без никакво действие от негова страна.
-    //
-    // Сценарият: админ с Manage Server (който сам може да НЯМА Administrator)
-    // задава autorole → роля с Administrator. Всеки нов член става администратор
-    // и йерархията на Discord е заобиколена през нашия бот. Отказваме и логваме
-    // ясно — по-добре необичайна конфигурация да не сработи, отколкото тих
-    // превзет сървър. (Разбивача, 07.08.2026)
     const botMember = member.guild.members.me;
-    for (const roleId of roleIdsToAssign) {
-      const role = member.guild.roles.cache.get(roleId)
-        || await member.guild.roles.fetch(roleId).catch(() => null);
-      if (!isRoleSafeToSelfAssign(role, botMember)) {
-        console.warn(
-          `[autorole] ОТКАЗАНА роля ${roleId} в guild ${member.guild.id}: опасни права, managed или над ботската роля`,
-        );
-        continue;
-      }
-      try {
-        await member.roles.add(roleId, "Autorole on join");
-      } catch (err) {
-        // Common cause: role hierarchy — bot role must be above target role
-        console.warn(`[autorole] Failed to add ${roleId} to ${member.user.tag}: ${err.message}`);
-      }
-    }
 
-    // ─── 1б. „Лепкави роли": връщане на ролите отпреди напускането ────────────
+    // ─── 1. „Лепкави роли": връщане на ролите отпреди напускането ─────────────
     //
     // Минава през СЪЩИЯ гард като autorole (`isRoleSafeToSelfAssign`), и то по
     // по-силна причина: снимката е направена в миналото, а междувременно ролята
@@ -98,6 +68,10 @@ export default {
     // само каквото е безопасно СЕГА, не каквото е било безопасно тогава.
     //
     // Ботовете се пропускат: техните роли са managed и се дават от интеграцията.
+    //
+    // Редът е нарочен (З3): запазените роли се връщат ПРЕДИ автоматичните, за да
+    // се знае дали човекът вече е верифициран, преди да му се даде „Unverified“.
+    const held = new Set(member.roles?.cache?.keys?.() || []);
     if (server.stickyRolesEnabled && !member.user.bot) {
       try {
         const { data } = await api.get(`/bot/member-roles/${member.guild.id}/${member.id}`);
@@ -112,6 +86,7 @@ export default {
             try {
               await member.roles.add(roleId, "Sticky roles — restored on rejoin");
               restored.push(roleId);
+              held.add(roleId);
             } catch (err) {
               skipped.push(roleId);
               console.warn(`[sticky-roles] ролята ${roleId} не беше върната на ${member.user.tag}: ${err.message}`);
@@ -131,6 +106,48 @@ export default {
         }
       } catch (err) {
         console.warn(`[sticky-roles] връщането за ${member.id} пропадна: ${err?.message}`);
+      }
+    }
+
+    // ─── 2. Autorole ──────────────────────────────────────────────────────────
+    const roleIdsToAssign = member.user.bot
+      ? (server.autoroleBotIds || [])
+      : (server.autoroleIds || []);
+
+    // Ролите, които панел за верификация маха (`removeRoleIds`), не се дават от
+    // автоматичните роли на човек, който вече е верифициран (З3): иначе
+    // „Unverified“ + върнатата „Verified“ стояха заедно и достъпът зависеше от
+    // overwrite-ите на каналите. Питаме бекенда само когато има какво да
+    // се сблъска — върнати роли И автоматични роли.
+    let skipRoleIds = new Set();
+    if (held.size && roleIdsToAssign.length && !member.user.bot) {
+      skipRoleIds = await rolesRemovedByVerified(member.guild.id, held);
+    }
+
+    // Гард срещу ескалация на права — същият, който Reaction Roles има от
+    // 05.08.2026, но autorole беше БЕЗ него, при това е по-опасен: прилага се
+    // автоматично на ВСЕКИ влизащ, без никакво действие от негова страна.
+    //
+    // Сценарият: админ с Manage Server (който сам може да НЯМА Administrator)
+    // задава autorole → роля с Administrator. Всеки нов член става администратор
+    // и йерархията на Discord е заобиколена през нашия бот. Отказваме и логваме
+    // ясно — по-добре необичайна конфигурация да не сработи, отколкото тих
+    // превзет сървър. (Разбивача, 07.08.2026)
+    for (const roleId of roleIdsToAssign) {
+      if (skipRoleIds.has(roleId)) continue;
+      const role = member.guild.roles.cache.get(roleId)
+        || await member.guild.roles.fetch(roleId).catch(() => null);
+      if (!isRoleSafeToSelfAssign(role, botMember)) {
+        console.warn(
+          `[autorole] ОТКАЗАНА роля ${roleId} в guild ${member.guild.id}: опасни права, managed или над ботската роля`,
+        );
+        continue;
+      }
+      try {
+        await member.roles.add(roleId, "Autorole on join");
+      } catch (err) {
+        // Common cause: role hierarchy — bot role must be above target role
+        console.warn(`[autorole] Failed to add ${roleId} to ${member.user.tag}: ${err.message}`);
       }
     }
 
@@ -228,6 +245,26 @@ async function sendWelcomeToChannel(member, server, ctx) {
   } catch (err) {
     console.warn(`[welcomer] ${where}: Discord отказа изпращането в #${channel.name}: ${err?.message}`);
   }
+}
+
+/**
+ * Роли, които панелите за верификация махат от човек, който вече е верифициран
+ * (държи ВСИЧКИ grantRoleIds на поне един панел). Fail-open: при недостъпен
+ * бекенд не се пропуска нищо (автоматичните роли се дават както преди).
+ */
+async function rolesRemovedByVerified(guildId, heldRoleIds) {
+  const out = new Set();
+  try {
+    const { data } = await api.get(`/verification/bot/server/${guildId}/roles`);
+    for (const p of Array.isArray(data?.panels) ? data.panels : []) {
+      const grants = Array.isArray(p.grantRoleIds) ? p.grantRoleIds : [];
+      if (!grants.length || !grants.every((r) => heldRoleIds.has(r))) continue;
+      for (const r of Array.isArray(p.removeRoleIds) ? p.removeRoleIds : []) out.add(r);
+    }
+  } catch (err) {
+    console.warn(`[autorole] ролите на верификацията за guild ${guildId} са недостъпни (${err?.message})`);
+  }
+  return out;
 }
 
 function parseHex(hex) {

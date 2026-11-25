@@ -5,6 +5,7 @@
  * its existing click-to-move logic. Render-on-demand (rAF only while the dice
  * tumble) and honours prefers-reduced-motion.
  */
+import { upgradeMaterial } from "../gl/baked.js";
 import {
   AmbientLight,
   BoxGeometry,
@@ -40,6 +41,7 @@ import {
 } from "../gl/helpers.js";
 import { defaultGfxParams } from "../gl/gfxRegistry.js";
 import { RenderCore } from "../gl/render.js";
+import { clientToNdc, worldToClient } from "../board/projection.js";
 
 export interface BgState {
   points: number[]; // 24 signed (+seat0/white, -seat1/black)
@@ -93,6 +95,7 @@ export class BackgammonScene {
   private prevPts: number[] | null = null;
   private prevBar: [number, number] = [0, 0];
   private moveAnims: { mesh: Mesh; from: Vector3; to: Vector3; start: number }[] = [];
+  private mySeat = 0;
 
   constructor(canvas: HTMLCanvasElement, width: number) {
     this.reduceMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
@@ -200,6 +203,7 @@ export class BackgammonScene {
     const woodN = woodNormal();
     woodN.repeat.set(6, 1);
     const woodMat = new MeshStandardMaterial({ map: woodTex, normalMap: woodN, normalScale: new Vector2(0.6, 0.6), roughness: 0.5, metalness: 0.08 });
+    upgradeMaterial(woodMat, "walnut", { repeat: [6, 1], albedo: true, roughness: 0.9, normalScale: 0.8, onReady: () => this.core.invalidate() });
     const frame = new Mesh(new BoxGeometry(W + 2 * RAIL, 0.7, D + 2 * RAIL), woodMat);
     frame.position.y = -0.35;
     frame.receiveShadow = true;
@@ -208,15 +212,14 @@ export class BackgammonScene {
     // felt bed with a visible weave (was a dead-flat green plane)
     const feltN = clothNormal();
     feltN.repeat.set(30, 18);
-    const bed = new Mesh(
-      new BoxGeometry(W, 0.12, D),
-      new MeshStandardMaterial({
-        color: new Color("#17452c"),
-        roughness: 0.92,
-        normalMap: feltN,
-        normalScale: new Vector2(0.35, 0.35),
-      }),
-    );
+    const feltMat = new MeshStandardMaterial({
+      color: new Color("#17452c"),
+      roughness: 0.92,
+      normalMap: feltN,
+      normalScale: new Vector2(0.35, 0.35),
+    });
+    upgradeMaterial(feltMat, "felt", { repeat: [15, 9], normalScale: 0.5, onReady: () => this.core.invalidate() });
+    const bed = new Mesh(new BoxGeometry(W, 0.12, D), feltMat);
     bed.position.y = 0.02;
     bed.receiveShadow = true;
     this.scene.add(bed);
@@ -236,6 +239,7 @@ export class BackgammonScene {
       clearcoat: 0.6,
       clearcoatRoughness: 0.2,
     });
+    upgradeMaterial(brass, "brass", { repeat: [1, 1], metalness: true, ao: 0.4, onReady: () => this.core.invalidate() });
     for (const sx of [-1, 1]) {
       for (const sz of [-1, 1]) {
         const corner = new Mesh(new BoxGeometry(0.55, 0.1, 0.55), brass);
@@ -345,6 +349,7 @@ export class BackgammonScene {
   }
 
   setState(state: BgState, mySeat: number, highlight?: { from: Set<PointId>; targets: Set<number | "OFF"> }): void {
+    this.mySeat = mySeat;
     // rebuild checkers each state (≤30 cylinders — cheap, and disposed cleanly)
     disposeObject(this.checkerLayer);
     this.checkerLayer.clear();
@@ -546,10 +551,22 @@ export class BackgammonScene {
 
   /** Raycast a screen point to a board point id (or null). */
   pick(clientX: number, clientY: number, rect: DOMRect): PointId | null {
-    const ndc = new Vector2(((clientX - rect.left) / rect.width) * 2 - 1, -(((clientY - rect.top) / rect.height) * 2 - 1));
-    this.ray.setFromCamera(ndc, this.camera);
+    this.ray.setFromCamera(clientToNdc(clientX, clientY, rect), this.camera);
     const hit = this.ray.intersectObjects(this.hitZones, false)[0];
     return hit ? (hit.object.userData.pid as PointId) : null;
+  }
+
+  /** Тестова кука (board/e2eHook): client координати на зоната за клик на
+   *  точка 0..23, на бара или на МОЯ поднос за изнасяне ("OFF"). */
+  screenPoint(pid: PointId, rect: DOMRect): { x: number; y: number } | null {
+    const zone =
+      pid === "OFF"
+        ? this.hitZones.find((z) => z.userData.pid === "OFF" && Math.sign(z.position.z) === (this.mySeat === 1 ? -1 : 1))
+        : this.hitZones.find((z) => z.userData.pid === pid);
+    if (!zone) return null;
+    const box = (zone.geometry as BoxGeometry).parameters;
+    // Центърът на горната стена — там лъчът от камерата влиза първо в зоната.
+    return worldToClient(new Vector3(zone.position.x, zone.position.y + box.height / 2, zone.position.z), this.camera, rect);
   }
 
   resize(width: number): void {

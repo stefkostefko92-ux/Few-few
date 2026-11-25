@@ -1,0 +1,194 @@
+{
+  "segnalazioni": {
+    "meta": {
+      "title": "Segnalare un contenuto illegale | Rilievi Impianti",
+      "description": "Segnala a Carbon Stealth VCC un contenuto illegale su Rilievi Impianti: modulo, tempi, decisione motivata e contatti per autorità e utenti.",
+      "keywords": "segnalazione contenuti illegali, Digital Services Act, DSA articolo 16, punto di contatto, moderazione dei contenuti, Rilievi Impianti, Carbon Stealth"
+    },
+    "nav": "Segnalazioni",
+    "titolo": "Segnalare un contenuto illegale",
+    "intro": "Rilievi Impianti conserva i contenuti che le aziende clienti caricano nel portale. Se pensi che uno di questi contenuti sia illegale, segnalacelo con questo modulo (art. 16 del Regolamento (UE) 2022/2065, «Digital Services Act»).",
+    "aggiornato": "Ultimo aggiornamento: {data}",
+    "cosa": {
+      "titolo": "Cosa puoi segnalare",
+      "testo": "Puoi segnalare una foto, un video, un documento o un testo caricato nel portale, se pensi che sia illegale secondo il diritto dell'Unione europea o di uno Stato membro. Per esempio: un documento che viola il tuo diritto d'autore, dati o immagini che ti riguardano diffusi senza una base di legge, un contenuto diffamatorio. Per i tuoi dati personali puoi anche esercitare i diritti descritti nell'informativa sulla privacy. Questo modulo non serve per i guasti del portale o per l'assistenza: per questi scrivi a {email}."
+    },
+    "modulo": {
+      "titolo": "Modulo di segnalazione",
+      "errori": "Controlla il modulo: {n} campi da correggere.",
+      "dove": {
+        "label": "Dove si trova il contenuto",
+        "hint": "Incolla l'indirizzo della pagina (inizia con https://rilievi.carbonstealth.eu/) oppure descrivi con precisione dove si trova: azienda, documento, sezione, nome del file."
+      },
+      "motivo": {
+        "label": "Perché il contenuto è illegale",
+        "hint": "Spiega quale legge o quale tuo diritto viola e perché. Più sei preciso, prima possiamo decidere."
+      },
+      "nome": {
+        "label": "Nome e cognome o ragione sociale"
+      },
+      "email": {
+        "label": "Email",
+        "hint": "Qui ti mandiamo la conferma e la decisione."
+      },
+      "minori": {
+        "label": "La segnalazione riguarda abusi sessuali su minori o materiale pedopornografico",
+        "hint": "In questo caso nome ed email sono facoltativi."
+      },
+      "buonaFede": {
+        "label": "Dichiaro in buona fede che le informazioni e le affermazioni di questa segnalazione sono precise e complete."
+      },
+      "trappola": "Lascia vuoto questo campo",
+      "privacy": "Usiamo questi dati solo per esaminare la segnalazione e risponderti. I dettagli sono nell'informativa sulla privacy.",
+      "invia": "Invia la segnalazione"
+    },
+    "errore": {
+      "dove": "Indica dove si trova il contenuto (almeno 10 caratteri).",
+      "motivo": "Spiega perché il contenuto è illegale (almeno 20 caratteri).",
+      "nome": "Scrivi il tuo nome o la ragione sociale.",
+      "email": "Scrivi un indirizzo email valido.",
+      "buonaFede": "Per inviare la segnalazione devi confermare la dichiarazione di buona fede.",
+      "troppe": "In questo momento arrivano troppe segnalazioni. Riprova più tardi o scrivi a {email}."
+    },
+    "dopo": {
+      "titolo": "Cosa succede dopo",
+      "testo": "Ti mandiamo subito per email la conferma di ricezione. Una persona, il responsabile della moderazione di Carbon Stealth VCC, esamina la segnalazione senza ritardo ingiustificato e senza strumenti automatici. Poi ti scriviamo la decisione, con i motivi e con le possibilità di contestarla. Se rimuoviamo o limitiamo il contenuto, lo comunichiamo con i motivi anche all'azienda che lo ha caricato. Non le diamo il tuo nome, salvo che sia strettamente necessario."
+    },
+    "ricorso": {
+      "titolo": "Se non sei d'accordo con la decisione",
+      "testo": "Rispondi all'email della decisione o scrivi a {email} spiegando perché. Una persona riesamina la decisione e ti risponde con i motivi, senza costi. Puoi anche rivolgerti al giudice competente o presentare un reclamo al Coordinatore dei servizi digitali del paese in cui vivi o hai sede: in Italia l'AGCOM, in Bulgaria la Commissione per la regolamentazione delle comunicazioni."
+    },
+    "contatto": {
+      "titolo": "Punto di contatto",
+      "testo": "Punto di contatto unico per le autorità degli Stati membri, la Commissione europea e il Comitato europeo per i servizi digitali (art. 11 del Regolamento) e per gli utenti del servizio (art. 12): {email}. Lingue: italiano, bulgaro, inglese. Ti risponde una persona, non un sistema automatico."
+    },
+    "inviata": {
+      "title": "Segnalazione ricevuta | Rilievi Impianti",
+      "titolo": "Segnalazione ricevuta",
+      "testo": "Grazie. Abbiamo registrato la tua segnalazione con il riferimento {riferimento} e, se hai indicato un indirizzo, ti abbiamo mandato la conferma per email. Ti scriviamo la decisione, con i motivi, appena l'abbiamo esaminata.",
+      "senzaEmail": "Senza un indirizzo email non possiamo scriverti la decisione: conserva il riferimento se vuoi chiederne l'esito.",
+      "generica": "Grazie. Abbiamo registrato la tua segnalazione.",
+      "torna": "Torna alla pagina delle segnalazioni"
+    },
+    "mail": {
+      "confermaSubject": "Abbiamo ricevuto la tua segnalazione ({riferimento})",
+      "confermaBody": "Buongiorno,\n\nabbiamo ricevuto la tua segnalazione del {data}. Riferimento: {riferimento}.\n\nLa esamina una persona, il responsabile della moderazione di Carbon Stealth VCC, senza ritardo ingiustificato e senza strumenti automatici. Ti scriveremo la decisione con i motivi e con le possibilità di contestarla.\n\nSe vuoi aggiungere qualcosa, rispondi a questa email. Se non hai inviato tu la segnalazione, ignora questo messaggio.\n\nCarbon Stealth VCC — https://carbonstealth.eu",
+      "masterSubject": "Nuova segnalazione di contenuto illegale ({riferimento})",
+      "masterBody": "È arrivata una segnalazione dalla pagina pubblica. Va esaminata senza ritardo ingiustificato (art. 16 del Regolamento (UE) 2022/2065).\n\n{link}",
+      "decisioneSubject": "Decisione sulla tua segnalazione ({riferimento})",
+      "decisioneBody": "Buongiorno,\n\nabbiamo esaminato la tua segnalazione {riferimento} del {data}.\n\n{esito}\n\nMotivi:\n{motivazione}\n\nLa decisione è stata presa da una persona, il responsabile della moderazione di Carbon Stealth VCC, senza strumenti automatizzati.\n\nSe non sei d'accordo, rispondi a questa email spiegando perché: una persona riesamina la decisione e ti risponde con i motivi, senza costi. Puoi anche rivolgerti al giudice competente o presentare un reclamo al Coordinatore dei servizi digitali del paese in cui vivi o hai sede (in Italia l'AGCOM).\n\nCarbon Stealth VCC — https://carbonstealth.eu",
+      "esito": {
+        "RIMOSSO": "Abbiamo rimosso il contenuto: non è più accessibile nel portale. Abbiamo informato con i motivi l'azienda che lo aveva caricato.",
+        "LIMITATO": "Abbiamo limitato l'accesso al contenuto. Abbiamo informato con i motivi l'azienda che lo aveva caricato.",
+        "NESSUNA_AZIONE": "Abbiamo esaminato il contenuto e non abbiamo adottato misure: non riteniamo che sia illegale né contrario alle nostre condizioni di servizio.",
+        "NON_VALIDA": "Non possiamo esaminare la segnalazione nel merito perché mancano informazioni necessarie. Puoi inviarne una nuova, completa, da https://rilievi.carbonstealth.eu/segnalazioni."
+      },
+      "origine": "una segnalazione ricevuta il {data}",
+      "motivazioneSubject": "Contenuto limitato nel portale: i motivi ({riferimento})",
+      "motivazioneBody": "Gentile amministratore di {azienda},\n\nil {data} abbiamo adottato una misura su un contenuto caricato dalla tua azienda in Rilievi Impianti. Ti indichiamo i motivi, come prevedono l'art. 17 del Regolamento (UE) 2022/2065 e l'art. 25.6 delle Condizioni generali di servizio.\n\nMisura, contenuto interessato, ambito e durata: {misura}\nOrigine: {origine}\nFatti e circostanze: {fatti}\nFondamento: {fondamento}\nPerché: {motivazione}\nMezzi automatizzati: nessuno. Ha deciso una persona, il responsabile della moderazione di Carbon Stealth VCC.\n\nSe non sei d'accordo, rispondi a questa email spiegando perché e allegando ciò che può aiutare. Una persona riesamina la decisione, senza costi: se la richiesta è fondata, revochiamo o modifichiamo la misura senza ritardo, e in ogni caso ti comunichiamo l'esito con i motivi. Restano salvi il ricorso al giudice (art. 22 delle Condizioni) e il reclamo al Coordinatore dei servizi digitali dello Stato in cui ha sede la tua azienda (in Italia l'AGCOM).\n\nCarbon Stealth VCC — https://carbonstealth.eu",
+      "origineIniziativa": "una verifica di nostra iniziativa, avviata il {data}"
+    },
+    "master": {
+      "titolo": "Segnalazioni",
+      "sub": "Contenuti segnalati come illegali dalla pagina pubblica (art. 16 del Regolamento (UE) 2022/2065). Decidi tu, come responsabile della moderazione.",
+      "aperte": "Da esaminare",
+      "decise": "Decise",
+      "nessuna": "Nessuna segnalazione da esaminare.",
+      "nessunaDecisa": "Nessuna segnalazione decisa.",
+      "colonna": {
+        "riferimento": "Riferimento",
+        "ricevuta": "Ricevuta il",
+        "stato": "Stato",
+        "esito": "Esito"
+      },
+      "stato": {
+        "RICEVUTA": "Ricevuta",
+        "IN_ESAME": "In esame",
+        "DECISA": "Decisa",
+        "RIESAME": "Riesame richiesto",
+        "CHIUSA": "Riesame concluso"
+      },
+      "esitoPreso": {
+        "RIMOSSO": "Contenuto rimosso",
+        "LIMITATO": "Accesso limitato",
+        "NESSUNA_AZIONE": "Nessuna azione",
+        "NON_VALIDA": "Non valida o incompleta"
+      },
+      "torna": "Segnalazioni",
+      "ricevutaIl": "Ricevuta il {data}",
+      "segnalazione": "La segnalazione",
+      "dove": "Dove si trova il contenuto",
+      "motivo": "Perché è ritenuto illegale",
+      "segnalante": "Chi segnala",
+      "senzaNome": "non indicato (segnalazione dell'art. 16, par. 2, lett. c)",
+      "minori": "Riguarda abusi sessuali su minori: valuta subito la comunicazione alle autorità (art. 18).",
+      "decisione": {
+        "titolo": "Decisione",
+        "intro": "Decide una persona, senza strumenti automatizzati. La motivazione va a chi ha segnalato; se rimuovi o limiti il contenuto, i motivi dell'art. 17 vanno agli amministratori dell'azienda, senza il nome di chi ha segnalato. Il contenuto lo rimuovi tu nel portale, prima di registrare la decisione.",
+        "esito": "Esito",
+        "opzione": {
+          "RIMOSSO": "Rimuovi il contenuto",
+          "LIMITATO": "Limita l'accesso al contenuto",
+          "NESSUNA_AZIONE": "Nessuna azione: non è illegale",
+          "NON_VALIDA": "Segnalazione non valida o incompleta"
+        },
+        "motivazione": "Motivazione",
+        "motivazioneHint": "Va a chi ha segnalato e, per una misura, anche all'azienda: non scrivere dati di chi ha segnalato.",
+        "misure": "Solo se rimuovi o limiti (art. 17)",
+        "azienda": "Azienda che ha caricato il contenuto",
+        "aziendaNessuna": "— scegli l'azienda —",
+        "misura": "Misura, contenuto interessato, ambito e durata",
+        "misuraHint": "Per esempio: rimozione della foto X della scheda n. 12; per tutti gli utenti; definitiva. Oppure: sospensione dell'account di una persona per 30 giorni.",
+        "fatti": "Fatti e circostanze",
+        "fondamento": "Fondamento",
+        "fondamentoHint": "La norma di legge violata, oppure «art. 4.4, lett. a), delle Condizioni generali di servizio».",
+        "registra": "Registra la decisione e invia le comunicazioni"
+      },
+      "presa": {
+        "titolo": "Decisione presa",
+        "il": "Il {data}, da {nome}.",
+        "ilSenza": "Il {data}.",
+        "azienda": "Azienda informata: {azienda}",
+        "conservata": "Si conserva fino al {data}, poi viene cancellata."
+      },
+      "riesame": {
+        "titolo": "Riesame",
+        "intro": "Se chi ha segnalato o l'azienda chiede il riesame, rispondi tu per email con i motivi e registra qui l'esito.",
+        "esito": "Esito del riesame",
+        "registra": "Registra il riesame",
+        "concluso": "Concluso il {data}."
+      },
+      "autorita": {
+        "titolo": "Comunicazione alle autorità (art. 18)",
+        "intro": "Se sospetti un reato che minaccia la vita o la sicurezza di una persona, informa subito le autorità e registra qui quale e quando.",
+        "campo": "Autorità informata",
+        "registra": "Registra la comunicazione",
+        "fatta": "{autorita}, il {data}."
+      },
+      "errore": {
+        "motivazione": "Scrivi la motivazione (almeno 20 caratteri).",
+        "esito": "Scegli l'esito.",
+        "misura": "Per rimuovere o limitare un contenuto servono l'azienda, la misura, i fatti e il fondamento (art. 17 del Regolamento).",
+        "azienda": "L'azienda scelta non esiste più.",
+        "giaDecisa": "Questa segnalazione è già stata decisa: per cambiare la decisione registra un riesame.",
+        "riesame": "Scrivi l'esito del riesame (almeno 20 caratteri).",
+        "autorita": "Scrivi quale autorità hai informato."
+      },
+      "flash": {
+        "decisa": "Decisione registrata e comunicazioni inviate.",
+        "riesame": "Riesame registrato.",
+        "autorita": "Comunicazione alle autorità registrata."
+      },
+      "iniziativa": {
+        "titolo": "Verifica di nostra iniziativa",
+        "intro": "Se trovi tu un contenuto illegale o contrario alle Condizioni, apri qui il caso e decidilo come una segnalazione: l'azienda riceve la motivazione dell'art. 25.6. Vale anche quando sospendi o chiudi un account o il servizio per i suoi contenuti: scrivilo nella misura.",
+        "dove": "Dove si trova il contenuto",
+        "doveHint": "Per esempio: scheda n. 12 dell'azienda Rossi, foto del quadro.",
+        "motivo": "Perché lo ritieni illegale o contrario alle Condizioni",
+        "apri": "Apri la verifica",
+        "errore": "Scrivi dove si trova il contenuto e il motivo (almeno 20 caratteri).",
+        "segnalante": "Nessun segnalante: verifica di nostra iniziativa."
+      }
+    }
+  }
+}

@@ -7,6 +7,7 @@
 import { Home, AlertCircle, Compass } from "lucide-react";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo from "../components/Seo";
+import { SUPPORT_URL } from "../lib/support";
 
 export default function NotFoundPage() {
   return (
@@ -53,10 +54,10 @@ export default function NotFoundPage() {
             <a href="/cookies" className="cs-btn-secondary text-sm">Cookies</a>
           </nav>
 
-          <div className="text-xs text-cs-dim font-mono">
+          <div className="text-xs text-cs-dim">
             If you believe this is an error, please{" "}
             <a
-              href="https://discord.gg/wpCRpy8B"
+              href={SUPPORT_URL}
               target="_blank"
               rel="noopener"
               className="text-cs-cyan underline"
@@ -72,7 +73,7 @@ export default function NotFoundPage() {
         <div className="max-w-4xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <SupremeLogo size={24} />
-            <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-cs-dim">
+            <span className="text-xs text-cs-dim">
               Created and Designed by{" "}
               <a
                 href="https://carbonstealth.eu"

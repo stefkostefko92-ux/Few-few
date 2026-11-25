@@ -27,12 +27,12 @@ export default async function AdminShell({
   if (!(await getSession())) redirect("/admin/login");
   return (
     <div className="admin">
-      <aside className="ad-side">
-        <div className="ad-brand">
+      <aside className="qba-side">
+        <div className="qba-brand">
           <img src="/assets/img/brand/logo.webp" alt="" />
           <div><b>Qui Bulgaria</b><small>Админ панел</small></div>
         </div>
-        <nav className="ad-nav">
+        <nav className="qba-nav">
           {NAV.map((n) => (
             <Link key={n.key} href={n.href} className={active === n.key ? "active" : ""}>
               {n.icon}
@@ -40,7 +40,7 @@ export default async function AdminShell({
             </Link>
           ))}
         </nav>
-        <div className="ad-side__foot">
+        <div className="qba-side__foot">
           <a href="/" target="_blank" rel="noopener noreferrer">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 5h5v5M19 5l-9 9M19 14v5H5V5h5" strokeLinecap="round" strokeLinejoin="round" /></svg>
             Виж сайта
@@ -49,8 +49,8 @@ export default async function AdminShell({
         </div>
       </aside>
 
-      <main className="ad-main">
-        <div className="ad-head">
+      <main className="qba-main">
+        <div className="qba-head">
           <div>
             <h1>{title}</h1>
             {subtitle && <p>{subtitle}</p>}
