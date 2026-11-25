@@ -1256,7 +1256,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 751
+        "lessons": 753
       },
       "evolution": [
         {
@@ -2206,9 +2206,20 @@
           "date": "2026-11-25",
           "event": "v70.3 — учене",
           "detail": "Научи: .pr-review/348.diff (rilievi netcup) е пълен — 5 diff заглавки при 5 файла в 348.stat; …"
+        },
+        {
+          "version": "70.5.0",
+          "date": "2026-11-25",
+          "event": "v70.5 — учене",
+          "detail": "Научи: В korpora LEGAL_UPDATED.privacy е и DEVICE_CONSENT_VERSION, но версията само се записва… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „В korpora LEGAL_UPDATED.privacy е и DEVICE_CONSENT_VERSION, но версията само се записва…\" (+1 още)"
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
