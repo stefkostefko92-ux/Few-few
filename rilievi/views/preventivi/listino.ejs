@@ -1,0 +1,37 @@
+<%
+  // Ценоразписът на фирмата за тези, които пишат офертите, без да управляват настройките ѝ
+  // (routes/preventivi-listino.ts). Същото съдържание е раздел „Listino prezzi“ на настройките
+  // (views/impostazioni/_listino.ejs) — общата част е _listino-gestione.ejs. С няколко фирми — изборът горе; при
+  // MASTER в него са и фирмите с изключени оферти (_scelta-azienda.ejs): избрана такава — `azienda` е null, на
+  // страницата са само изборът, бележката и ключът „Attiva i preventivi“ (`dopo: listino`).
+%><%- include('../partials/top', { titleKey: 'preventivi.listino.titolo', narrowMain: true, scripts: spente.length > 0 ? ['offerte-spente'] : [] }) %>
+<div class="page-head">
+  <div>
+    <a href="/preventivi"><%= t('preventivi.indietro') %></a>
+    <h1><%= t('preventivi.listino.titolo') %></h1>
+    <% if (azienda) { %><p class="page-head__sub"><%= azienda.name %> · <%= t('preventivi.listino.voci', { n: listino.page.total }) %></p><% } %>
+  </div>
+</div>
+<div class="stack-gap">
+<%- include('_archivio') %>
+<% if (spente.length > 0) { %>
+<form class="filter" method="get" action="/preventivi/listino">
+  <%- include('_scelta-azienda', { aziende, spente, azienda: scelta, errore: '' }) %>
+  <div class="toolbar"><button class="btn" type="submit"><%= t('preventivi.listino.apri') %></button></div>
+</form>
+<%- include('_attiva-offerte', { spente, azienda: scelta, dopo: 'listino' }) %>
+<% } else if (aziende.length > 1) { %>
+<form class="filter" method="get" action="/preventivi/listino">
+  <label class="field__label" for="listino-azienda"><%= t('scheda.field.azienda') %></label>
+  <div class="filter__row">
+    <select class="select" id="listino-azienda" name="azienda">
+      <% for (const a of aziende) { %><option value="<%= a.id %>"<% if (a.id === azienda.id) { %> selected<% } %>><%= a.name %></option>
+      <% } %>
+    </select>
+    <button class="btn" type="submit"><%= t('preventivi.listino.apri') %></button>
+  </div>
+</form>
+<% } %>
+<% if (azienda) { %><%- include('_listino-gestione', { L: listino, da: 'preventivi', base: '/preventivi/listino' }) %><% } %>
+</div>
+<%- include('../partials/bottom') %>

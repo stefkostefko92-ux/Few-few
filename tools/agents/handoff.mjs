@@ -21,6 +21,7 @@
 import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const AGENTS_DIR = join(ROOT, ".claude", "agents");
@@ -35,6 +36,53 @@ export function knownAgentIds(dir = AGENTS_DIR) {
       .filter((f) => f.endsWith(".md") && !f.startsWith("_") && f !== "README.md")
       .map((f) => f.replace(/\.md$/, "")));
   } catch { return null; }
+}
+
+// Българските имена от регистъра („Кодаджията“, „Правният Разбирач“) също са адресати — агентите ги пишат
+// естествено, а отказът заради име вместо id връщаше агента да преписва блока (и губеше отговора му).
+let _names = null;
+export function knownAgentNames(root = ROOT) {
+  if (_names && root === ROOT) return _names;
+  const m = new Map();
+  try {
+    const j = JSON.parse(readFileSync(join(root, "agents-dashboard", "agents.json"), "utf8"));
+    for (const a of j.agents || []) if (a.name && a.id) m.set(String(a.name).toLowerCase(), String(a.id));
+  } catch { /* без регистър — само id */ }
+  if (root === ROOT) _names = m;
+  return m;
+}
+
+function editDistance(a, b) {
+  const prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    let diag = prev[0];
+    prev[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const up = prev[j];
+      prev[j] = Math.min(prev[j] + 1, prev[j - 1] + 1, diag + (a[i - 1] === b[j - 1] ? 0 : 1));
+      diag = up;
+    }
+  }
+  return prev[b.length];
+}
+
+/**
+ * Най-близкият валиден id за сгрешен адресат (02.11.2026): без подсказка агентът гадаеше id-то в нов ход.
+ * Съвпадение по префикс („pravniyat“ → „pravniyat-razbirach“) или до 2 редакции (до ¼ от дължината при
+ * по-дълги); името от регистъра също води до id-то. Далечно име → нищо (по-добре без подсказка, отколкото грешна).
+ */
+export function nearestAgent(word, agentIds, agentNames = new Map()) {
+  const w = String(word || "").toLowerCase();
+  if (w.length < 4 || !agentIds) return null;
+  const pre = [...agentIds].filter((id) => id.startsWith(w + "-"));
+  if (pre.length === 1) return pre[0];
+  let best = null, bestD = Infinity;
+  const cands = [...[...agentIds].map((id) => [id, id]), ...[...agentNames].map(([n, id]) => [n, id])];
+  for (const [label, id] of cands) {
+    const d = editDistance(w, label);
+    if (d < bestD) { bestD = d; best = id; }
+  }
+  return bestD <= Math.max(2, Math.floor(w.length / 4)) ? best : null;
 }
 
 // Извади блока ПРЕДАВАНЕ (последния, ако има няколко — предаването е ПОСЛЕДНОТО нещо в отговора).
@@ -66,7 +114,7 @@ const FILE_LINE = /\b[\w./-]+\.\w{1,6}:\d+\b/;
 const CONFIDENCE = /(?<!\p{L})(сигурно|вероятно|несигурно|verified|probable|unverified)(?!\p{L})/iu;
 
 // Чиста валидация — без I/O, за да е тестваема и преизползваема (hook + CLI + eval).
-export function validateHandoff(text, { agentIds = null, requireBlock = true } = {}) {
+export function validateHandoff(text, { agentIds = null, agentNames = null, requireBlock = true } = {}) {
   const problems = [];
   const block = extractBlock(text);
   if (!block) {
@@ -97,8 +145,12 @@ export function validateHandoff(text, { agentIds = null, requireBlock = true } =
   // Адресатът трябва да е познат агент или човек. Измислено име = веригата сочи в нищото.
   if (toV && agentIds) {
     const clean = toV.replace(/[„“"'`*]/g, "").trim().split(/[\s,(]/)[0];
-    if (!agentIds.has(clean) && !HUMAN_TARGETS.test(clean))
-      problems.push({ field: "Към", msg: `непознат адресат „${clean}" — трябва да е id на наш агент или човек` });
+    const full = toV.replace(/[„“"'`*]/g, "").trim().toLowerCase();
+    const byName = [...(agentNames || knownAgentNames()).keys()].some((n) => full === n || full.startsWith(n + " ") || full.startsWith(n + ","));
+    if (!agentIds.has(clean) && !HUMAN_TARGETS.test(clean) && !byName) {
+      const near = nearestAgent(clean, agentIds, agentNames || knownAgentNames());
+      problems.push({ field: "Към", msg: `непознат адресат „${clean}" — трябва да е id на наш агент или човек${near ? ` (имаше предвид „${near}“?)` : ""}` });
+    }
   }
 
   if (!status) problems.push({ field: "Статус", msg: "липсва „Статус:“" });
@@ -153,4 +205,4 @@ function main() {
   process.exit(1);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main();
+if (isMain(import.meta.url)) main();

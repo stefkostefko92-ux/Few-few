@@ -1,0 +1,28 @@
+<%
+  // Темата „Personalizzato“ (src/http/colori.ts): шестте цвята с избирача на браузъра; нечетима двойка
+  // се връща с грешка до полето. Без JavaScript — цветовете се виждат след запис.
+  const campi = ['sfondo', 'testo', 'menu', 'menuTesto', 'accento', 'linee'];
+  const errori = colori.errors;
+%><section aria-labelledby="h-colori">
+  <h2 class="section__title" id="h-colori"><%= t('account.colori.title') %></h2>
+  <p class="muted"><%= t('account.colori.text') %></p>
+  <% if (Object.keys(errori).length) { %><div class="errors" role="alert"><h2><%= t('account.colori.errore') %></h2></div><% } %>
+  <form class="form" method="post" action="/account/colori" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="colori">
+      <% for (const key of campi) { const err = errori[key]; %><div class="field colore">
+        <label class="field__label" for="c-<%= key %>"><%= t('account.colori.campo.' + key) %></label>
+        <input class="colore__input" id="c-<%= key %>" name="<%= key %>" type="color" value="<%= /^#[0-9a-f]{6}$/.test(colori.values[key] || '') ? colori.values[key] : '#000000' %>"<% if (err) { %> aria-invalid="true" aria-describedby="err-c-<%= key %>"<% } %>>
+        <% if (err) { %><p class="field__error" id="err-c-<%= key %>"><%= t(err === 'contrasto' ? 'account.colori.contrasto.' + key : 'account.colori.invalido') %></p><% } %>
+      </div>
+      <% } %>
+    </div>
+    <div class="toolbar">
+      <button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'palette' }) %><%= t('account.colori.save') %></button>
+    </div>
+  </form>
+  <% if (currentUser.colori) { %><form class="colori__ripristina" method="post" action="/account/colori/ripristina">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <button class="btn" type="submit"><%= t('account.colori.reset') %></button>
+  </form><% } %>
+</section>

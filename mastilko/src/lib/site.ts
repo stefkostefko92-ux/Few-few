@@ -39,7 +39,8 @@ export const ADDRESS_ONE_LINE =
 
 /** @id котви за JSON-LD графа. */
 export const ID = {
-  org: "https://carbonstealth.eu/#org",
+  // Каноничният @id, който публикува самият carbonstealth.eu — общ за всички наши продукти.
+  org: "https://carbonstealth.eu/#organization",
   site: `${SITE_URL}/#site`,
 } as const;
 

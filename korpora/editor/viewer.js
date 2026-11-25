@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MaterialCache } from './viewer-materials.js';
 import { S } from './viewer-hw.js';
-import { extents, addSymbols } from './viewer-scene.js';
+import { extents, addSymbols, runGroups } from './viewer-scene.js';
 import { Stage, TONE_MAPPING, studioEnvironment } from './viewer-studio.js';
 import { Pipeline } from './viewer-render.js';
 import { PhotoMode } from './viewer-photo-mode.js';
@@ -12,6 +12,7 @@ import { addSlides } from './viewer-slides.js';
 import { frameCamera, explodeCamera, bindCameraKeys } from './viewer-camera.js';
 import { pixelRatio } from './viewer-device.js';
 import { reduceMotion } from './dom.js';
+import { tx } from './text.js';
 import {
   addHinges,
   addHingeArms,
@@ -34,10 +35,7 @@ export class Viewer {
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     host.appendChild(this.renderer.domElement);
     this.renderer.domElement.setAttribute('role', 'img');
-    this.renderer.domElement.setAttribute(
-      'aria-label',
-      '3D изглед на мебелта: влачене или стрелки — въртене, колелце или + и − — мащаб, 0 — цялата мебел',
-    );
+    this.renderer.domElement.setAttribute('aria-label', tx('viewer.label'));
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(32, 1, 0.01, 60);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -140,6 +138,11 @@ export class Viewer {
     return new THREE.Vector3((x + this.off[0]) * S, y * S, (z + this.off[2]) * S);
   }
 
+  // What a part or symbol of the run `run` hangs in: the group of its wall (a Г or П kitchen), or the scene's root.
+  parentOf(run) {
+    return this.runs?.get(run) ?? this.root;
+  }
+
   setModel(model) {
     this.model = model;
     for (const child of [...this.root.children]) {
@@ -150,9 +153,14 @@ export class Viewer {
     const ext = extents(model);
     this.ext = ext;
     this.off = [-(ext.x0 + ext.x1) / 2, 0, -(ext.z0 + ext.z1) / 2];
+    this.runs = runGroups(this, model);
     this.items = [];
     const meshOf = new Map();
     const doors = new Map(model.groups.filter((g) => g.type === 'door').map((g) => [g.id, g]));
+    // a sliding door opens along its track (sliding.js: the rear one runs behind the front one)
+    const sliding = new Map(
+      model.groups.filter((g) => g.type === 'sliding-door').map((g) => [g.id, g]),
+    );
     const drawerOf = new Map();
     for (const g of model.groups.filter((x) => x.type === 'drawer'))
       for (const id of g.partIds) drawerOf.set(id, g);
@@ -174,7 +182,7 @@ export class Viewer {
         holder.position.copy(pivot);
         mesh.position.copy(centre).sub(pivot);
         holder.add(mesh);
-        this.root.add(holder);
+        this.parentOf(part.run).add(holder);
         this.items.push({ kind: 'door', part, holder, base: pivot.clone(), explode: part.explode });
         addHinges(this, mesh, part, centre);
       } else if (drawer) {
@@ -182,7 +190,7 @@ export class Viewer {
         if (!holder) {
           holder = new THREE.Group();
           drawerHolders.set(drawer.id, holder);
-          this.root.add(holder);
+          this.parentOf(part.run).add(holder);
           const front = model.parts.find((p) => p.id === drawer.id);
           this.items.push({
             kind: 'drawer',
@@ -199,13 +207,14 @@ export class Viewer {
         const holder = new THREE.Group();
         mesh.position.copy(centre);
         holder.add(mesh);
-        this.root.add(holder);
+        this.parentOf(part.run).add(holder);
         this.items.push({
-          kind: 'part',
+          kind: sliding.has(part.id) ? 'sliding' : 'part',
           part,
           holder,
           base: new THREE.Vector3(),
           explode: part.explode,
+          travel: sliding.get(part.id)?.travel ?? 0,
         });
       }
       addHoles(this, mesh, part, centre, holeGeo);
@@ -216,7 +225,9 @@ export class Viewer {
     holeGeo.dispose(); // only its merged copies are on screen
     addSymbols(this, model, meshOf);
     this.applyPose();
-    this.stage.fit(ext, this.off);
+    // a Г or П kitchen stands against the side walls of the room too
+    const walls = new Set((model.runs ?? []).map((r) => r.id));
+    this.stage.fit(ext, this.off, { left: walls.has('B'), right: walls.has('C') });
     this.mats.trim();
     if (!this.framed || this.lastType !== model.spec.type) {
       this.userMoved = false;
@@ -276,6 +287,7 @@ export class Viewer {
         it.holder.rotation.y =
           (it.part.hingeSide === 'left' ? -1 : 1) * THREE.MathUtils.degToRad(105 * this.open);
       if (it.kind === 'drawer') it.holder.position.z += it.travel * S * this.open;
+      if (it.kind === 'sliding') it.holder.position.x += it.travel * S * this.open;
       if (it.kind === 'slide') it.holder.position.z += it.travel * S * this.open * 0.5;
     }
     this.changed();

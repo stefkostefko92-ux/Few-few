@@ -12,3 +12,4 @@ Supreme AdBlock, ne yaptığınızı izlemeden reklamları her yerde engeller �
 • Site bozuk mu? Tek tıklama düzeltir ya da bize bildirin — siz görmeden hiçbir şey gönderilmez.
 • uBlock Origin, AdGuard veya Adblock Plus'tan mı geçiyorsunuz? İzin verdiğiniz siteleri ve filtrelerinizi tek bir dosyayla getirin.
 • Bir sayfanın başka hangi sitelere bağlandığını görün ve birini tek tıkla yalnızca orada engelleyin.
+• Koruma düzeyi: Temel · Standart · Sıkı

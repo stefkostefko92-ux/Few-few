@@ -3,6 +3,9 @@ services:
     build: .
     image: scuolabulgaramilano:latest
     restart: unless-stopped
+    # Върви като nextjs (Dockerfile: USER) — capability не му трябва.
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
     ports:
       # Bind to loopback ONLY: nginx is the sole entry point. A public bind
       # (0.0.0.0) is reachable directly because Docker's DNAT rules sit in front

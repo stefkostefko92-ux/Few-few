@@ -1,81 +1,159 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
-import { SiteHeader } from '@/components/SiteChrome';
+import { LxPage } from '@/components/landing/LxPage';
+import { AuthShell } from '@/components/AuthShell';
+import { Button } from '@/components/ui/Button';
+import { Callout } from '@/components/ui/Callout';
+import { Input, Label } from '@/components/ui/Field';
 import type { Locale } from '@/i18n/locales';
 import { registerAction } from '@/app/actions/auth';
+import { isValidSlug, normalizeSlug } from '@/lib/slug';
+import { profileUrl } from '@/lib/profile-url';
+import { PASSWORD_MIN } from '@/lib/password-policy';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'auth' });
+  // noindex (не Disallow в robots.txt) — ботът трябва да прочете страницата, за да го види;
+  // вариантите с ?ref=/?handle= се сгъват към чистия адрес.
+  return {
+    title: t('registerTitle'),
+    robots: { index: false, follow: true },
+    alternates: { canonical: `/${locale}/register` },
+  };
+}
 
 export default async function RegisterPage({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ error?: string; ref?: string }>;
+  searchParams: Promise<{ error?: string; ref?: string; handle?: string }>;
 }) {
   const { locale } = await params;
-  const { error, ref } = await searchParams;
+  const { error, ref, handle: rawHandle } = await searchParams;
   const t = await getTranslations('auth');
+  // „Запази си името“ от началната страница: профилът се създава веднага.
+  const handle = normalizeSlug(String(rawHandle ?? '').slice(0, 64));
+  const claimed = handle && isValidSlug(handle) ? handle : null;
 
   return (
     <>
-      <SiteHeader locale={locale as Locale} />
-      <main className="mx-auto max-w-sm px-6 py-16">
-        <h1 className="text-2xl font-bold">{t('registerTitle')}</h1>
+      <LxPage locale={locale as Locale} currentPath="/register">
+      <AuthShell
+        title={t('registerTitle')}
+        footer={
+          <Link
+            href={`/${locale}/login`}
+            className="focus-ring rounded-sm font-semibold text-accent-text underline-offset-4 hover:underline"
+          >
+            {t('haveAccount')}
+          </Link>
+        }
+      >
         {error && (
-          <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
-            {error === 'exists' ? t('errorExists') : t('errorGeneric')}
-          </p>
+          <Callout tone="danger" className="mt-5">
+            {error === 'exists'
+              ? t('errorExists')
+              : error === 'weak'
+                ? t('errorWeak', { min: PASSWORD_MIN })
+                : error === 'terms'
+                  ? t('errorTerms')
+                  : t('errorGeneric')}
+          </Callout>
         )}
         {ref && (
-          <p className="mt-4 rounded-lg bg-linketto-50 p-3 text-sm text-linketto-700">
+          <Callout tone="info" className="mt-5">
             {t('referredBanner')}
-          </p>
+          </Callout>
+        )}
+        {claimed && (
+          <Callout tone="success" className="mt-5">
+            {t.rich('claimedBanner', {
+              url: () => (
+                <strong className="font-semibold [overflow-wrap:anywhere]">
+                  {profileUrl(claimed).replace(/^https?:\/\//, '')}
+                </strong>
+              ),
+            })}
+          </Callout>
         )}
         <form action={registerAction} className="mt-6 space-y-4">
           <input type="hidden" name="locale" value={locale} />
           {ref && <input type="hidden" name="ref" value={ref} />}
-          <label className="block text-sm font-medium">
-            {t('name')}
-            <input
+          {claimed && <input type="hidden" name="handle" value={claimed} />}
+          <div className="space-y-1.5">
+            <Label htmlFor="name">{t('name')}</Label>
+            <Input
+              id="name"
               type="text"
               name="name"
               autoComplete="name"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
             />
-          </label>
-          <label className="block text-sm font-medium">
-            {t('email')}
-            <input
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="email">{t('email')}</Label>
+            <Input
+              id="email"
               type="email"
               name="email"
               required
               autoComplete="email"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
             />
-          </label>
-          <label className="block text-sm font-medium">
-            {t('password')}
-            <input
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="password">{t('password')}</Label>
+            <Input
+              id="password"
               type="password"
               name="password"
               required
-              minLength={8}
+              minLength={PASSWORD_MIN}
+              maxLength={200}
               autoComplete="new-password"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+              aria-describedby="password-hint"
             />
+            <p id="password-hint" className="text-small text-fg-muted">
+              {t('passwordHint', { min: PASSWORD_MIN })}
+            </p>
+          </div>
+          {/* ЗЗП чл. 147а: изрично приемане на ОУ (неотметната, задължителна; сървърът проверява) — над бутона. */}
+          <label className="!mt-6 flex items-start gap-2.5 text-small leading-relaxed text-fg">
+            <input type="checkbox" name="acceptTerms" value="1" required className="mt-1 h-4 w-4 shrink-0" />
+            <span>
+              {t.rich('registerTerms', {
+                terms: (chunks) => (
+                  <Link href={`/${locale}/terms`} target="_blank" className="font-semibold text-accent-text underline underline-offset-2">
+                    {chunks}
+                  </Link>
+                ),
+              })}
+            </span>
           </label>
-          <button
-            type="submit"
-            className="w-full rounded-full bg-linketto-600 py-2.5 font-semibold text-white hover:bg-linketto-700"
-          >
+          <Button type="submit" size="lg" block>
             {t('submitRegister')}
-          </button>
+          </Button>
+          <p className="text-center text-small text-fg-2">
+            {t.rich('registerPrivacy', {
+              privacy: (chunks) => (
+                <Link href={`/${locale}/privacy`} className="font-semibold text-accent-text underline underline-offset-2">
+                  {chunks}
+                </Link>
+              ),
+            })}
+          </p>
+          {/* ePrivacy чл. 13(2): уведомление за седмичния отчет + отказ с 1 клик */}
+          <p className="text-center text-small text-fg-muted">
+            {t('digestNotice')}
+          </p>
         </form>
-        <p className="mt-4 text-sm text-slate-600">
-          <Link href={`/${locale}/login`} className="hover:underline">
-            {t('haveAccount')}
-          </Link>
-        </p>
-      </main>
+      </AuthShell>
+      </LxPage>
     </>
   );
 }

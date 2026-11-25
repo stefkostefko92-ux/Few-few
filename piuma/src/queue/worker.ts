@@ -1,26 +1,33 @@
 import { Worker } from 'bullmq';
+import { runAuditCheck } from '../audit.js';
 import { logger } from '../logger.js';
 import { purgeExpiredSessions } from '../auth/sessions.js';
 import { refreshExpiringTokens } from '../services/accounts.js';
 import { runAutopilot, runAutopilotForBrand } from '../services/autopilot.js';
 import { syncAllInsights } from '../services/insights.js';
 import { publishPost } from '../services/publish.js';
+import { processPrivateReply, purgeOldReplies } from '../services/replies.js';
 import {
+  AUDIT_VERIFY_JOB,
   AUTOPILOT_JOB,
   INSIGHTS_JOB,
   PUBLISH_JOB,
   PUBLISH_QUEUE,
   REFRESH_JOB,
+  REPLY_JOB,
   createRedis,
+  scheduleAuditVerify,
   scheduleManagement,
   scheduleTokenRefresh,
   type AutopilotJobData,
   type PublishJobData,
+  type ReplyJobData,
 } from './publish-queue.js';
 
 async function main(): Promise<void> {
   await scheduleTokenRefresh();
   await scheduleManagement();
+  await scheduleAuditVerify();
 
   const worker = new Worker(
     PUBLISH_QUEUE,
@@ -28,8 +35,18 @@ async function main(): Promise<void> {
       if (job.name === REFRESH_JOB) {
         const result = await refreshExpiringTokens();
         const purgedSessions = await purgeExpiredSessions();
-        logger.info({ ...result, purgedSessions }, 'подновяване на токени и чистене на сесии');
-        return { ...result, purgedSessions };
+        // commentId е псевдонимен личен данен — живее само срока от конфигурацията (PR22).
+        const purgedReplies = await purgeOldReplies();
+        logger.info(
+          { ...result, purgedSessions, purgedReplies },
+          'подновяване на токени, чистене на сесии и стари лични съобщения',
+        );
+        return { ...result, purgedSessions, purgedReplies };
+      }
+      if (job.name === REPLY_JOB) {
+        const { replyId } = job.data as ReplyJobData;
+        const attempts = job.opts.attempts ?? 1;
+        return processPrivateReply(replyId, { lastAttempt: job.attemptsMade + 1 >= attempts });
       }
       if (job.name === PUBLISH_JOB) {
         const { postId } = job.data as PublishJobData;
@@ -47,6 +64,11 @@ async function main(): Promise<void> {
           : await runAutopilot();
         logger.info({ outcomes }, 'цикъл на автопилота');
         return outcomes;
+      }
+      if (job.name === AUDIT_VERIFY_JOB) {
+        // Логът и одит записът при скъсване са в runAuditCheck — тук само резултатът.
+        const chain = await runAuditCheck();
+        return { ok: chain.ok, brokenAt: chain.brokenAt, count: chain.count };
       }
       throw new Error(`Непозната задача: ${job.name}`);
     },

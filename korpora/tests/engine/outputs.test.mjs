@@ -35,7 +35,7 @@ function checkGcode(text, sheet, T, tool) {
     assert.ok(/^[\x20-\x7e]*$/.test(raw), `non-ASCII in G-code: ${raw}`);
     const w = Object.fromEntries([...line.matchAll(/([A-Z])(-?\d+\.?\d*)/g)].map((m) => [m[1], Number(m[2])]));
     const gs = [...line.matchAll(/G(\d+)/g)].map((m) => Number(m[1]));
-    if (gs.includes(81)) canned = true;
+    if (gs.includes(81) || gs.includes(83)) canned = true;
     if (gs.includes(80)) canned = false;
     for (const gc of gs) if ([0, 1, 2, 3].includes(gc)) motion = `G${gc}`;
     const nx = w.X ?? X;
@@ -142,21 +142,24 @@ for (const [ci, input] of specs.entries()) {
   });
 }
 
-test('DXF files pass the ezdxf audit (skipped without Python and ezdxf)', (t) => {
+// The audit counts what ezdxf had to fix as well as what it could not: a file a reader must repair is not clean. With
+// REQUIRE_EZDXF=1 (a machine that must run the audit) a missing ezdxf fails the test instead of skipping it.
+test('DXF files pass the ezdxf audit (skipped without Python and ezdxf, unless REQUIRE_EZDXF=1)', (t) => {
   const py = [
     'import sys, glob',
     'from ezdxf import recover',
     'bad = 0',
     "for f in sorted(glob.glob(sys.argv[1] + '/*.dxf')):",
     '    doc, auditor = recover.readfile(f)',
-    '    if auditor.errors:',
+    '    if auditor.errors or auditor.fixes:',
     '        bad += 1',
-    "        print('DXF errors', f, len(auditor.errors))",
+    "        print('DXF errors', f, len(auditor.errors), 'fixes', len(auditor.fixes))",
     'sys.exit(1 if bad else 0)',
   ].join('\n');
   try {
     execFileSync('python3', ['-c', 'import ezdxf'], { stdio: 'ignore' });
   } catch {
+    assert.notEqual(process.env.REQUIRE_EZDXF, '1', 'REQUIRE_EZDXF=1, but python3 with ezdxf is not available');
     t.skip('python3 with ezdxf is not available');
     return;
   }

@@ -13,10 +13,23 @@
   "indexNowKey": "5b4aa30a56f781cd13180f778257e0e2",
   "titolare": {
     "nome": "Carbon Stealth VCC",
+    "nomeLegale": "Карбон Стелт ЕДПК",
+    "formaGiuridica": "società unipersonale a capitale variabile di diritto bulgaro (ЕДПК)",
+    "responsabile": "Stefan Kostadinov",
+    "ruolo": "amministratore",
     "indirizzo": "ul. Samuil 3, 2670 Bobov Dol, Bulgaria",
-    "eik": "BG208725180",
+    "via": "ul. Samuil 3",
+    "cap": "2670",
+    "citta": "Bobov Dol",
+    "paese": "BG",
+    "eik": "208725180",
+    "partitaIva": "BG208725180",
+    "registro": "Registro di commercio della Bulgaria (Agenzia delle iscrizioni)",
     "email": "info@carbonstealth.eu",
-    "telefono": "+39 379 296 9699"
+    "telefoni": [
+      "+39 379 296 9699",
+      "+359 877 414 874"
+    ]
   },
   "hosting": {
     "provider": "Hetzner Online GmbH (Norimberga, Germania — UE)",

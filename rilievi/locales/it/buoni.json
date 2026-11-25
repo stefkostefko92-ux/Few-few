@@ -1,0 +1,190 @@
+{
+  "buoni": {
+    "list": "Buoni di lavoro",
+    "listSub": "Dati generali del cantiere, sequenze di lavoro, controlli, resoconto e firme.",
+    "new": "Nuovo buono di lavoro",
+    "titolo": "Buono di lavoro",
+    "intestazione": "BUONO DI LAVORO",
+    "indietro": "Torna ai buoni di lavoro",
+    "torna": "Torna al buono",
+    "modifica": "Modifica",
+    "salva": "Salva il buono",
+    "empty": "Nessun buono di lavoro.",
+    "emptyHint": "Crealo dalla scheda dell'impianto oppure da «Nuovo».",
+    "emptyCerca": "Nessun buono corrisponde alla ricerca.",
+    "cerca": "Cerca per N° buono, matricola, ubicazione, ordine, geometra…",
+    "cercaLabel": "Cerca nei buoni di lavoro",
+    "cercaBtn": "Cerca",
+    "risultati": {
+      "one": "{n} buono",
+      "other": "{n} buoni"
+    },
+    "colonna": {
+      "numero": "N° buono",
+      "impianto": "Impianto",
+      "conferma": "Conferma",
+      "firme": "Firme",
+      "azienda": "Azienda"
+    },
+    "senzaNumero": "Senza numero",
+    "firmeNessuna": "Nessuna",
+    "firmeN": {
+      "one": "{n} firma",
+      "other": "{n} firme"
+    },
+    "creato": "Creato da {nome} il {data}",
+    "modificato": "Ultima modifica di {nome} il {data}",
+    "sezione": {
+      "dati": "Dati generali",
+      "sequenze": "Sequenze di lavoro",
+      "controlli": "Controlli",
+      "resoconto": "Resoconto attività",
+      "firme": "Firme"
+    },
+    "campo": {
+      "numero": "N° buono",
+      "dataConferma": "Data conferma",
+      "geometra": "Geometra",
+      "ordine": "Ordine n°",
+      "offerta": "Offerta n°",
+      "inizioPrevisto": "Data prevista inizio lavori",
+      "finePrevista": "Data prevista fine lavori",
+      "matricola": "Matricola impianto",
+      "ubicazione": "Ubicazione impianto",
+      "pos": "P.O.S.",
+      "note": "Note e/o commenti",
+      "noteControlli": "Note e osservazioni per lavori non eseguiti - eseguiti parzialmente",
+      "inizioLavori": "Data inizio lavori",
+      "inizioOra": "Ora inizio",
+      "fineLavori": "Data fine lavori",
+      "fineOra": "Ora fine",
+      "ora": "Ora",
+      "sospensioni": "Eventuali sospensioni (luoghi, date, giustificazioni)",
+      "tecnici": "Cognome dei Tecnici",
+      "sequenze": "Sequenze di lavoro"
+    },
+    "posNota": "Nota bene: Far firmare e tenere copia del P.O.S. in cantiere.",
+    "si": "Sì",
+    "no": "No",
+    "esito": {
+      "ok": "OK",
+      "nonOk": "NON OK",
+      "nessuno": "Nessuno"
+    },
+    "riga": {
+      "titolo": "Sequenza {n}",
+      "numero": "N°",
+      "descrizione": "Descrizione",
+      "esito": "Esito controlli",
+      "data": "Data",
+      "firma": "Firma Oper. o Resp.",
+      "dataFirma": "Data e Firma Oper. o Resp.",
+      "fornitore": "Fornitore di riferimento",
+      "aggiungi": "Aggiungi una sequenza",
+      "nuova": "Nuova sequenza",
+      "hint": "Le sequenze lasciate vuote non si salvano. Ne servono altre? Salva e ne compaiono di nuove."
+    },
+    "controllo": {
+      "colonna": "Controllo",
+      "esito": "Esito",
+      "data": "Data",
+      "firma": "Firma",
+      "gruppoQuadro": "In caso di sostituzione quadro di manovra",
+      "extraCorsa": "Prova degli extra-corsa",
+      "limitatore": "Prova del limitatore di velocità",
+      "organiSicurezza": "Verifica degli organi di sicurezza (cunei)",
+      "serrature": "Controllo serrature",
+      "porteEsterne": "Controllo sicurezza porte esterne",
+      "circuitoCabina": "Controllo circuito di cabina"
+    },
+    "finale": {
+      "custode": "Firma del Custode e del Responsabile in loco",
+      "capoTecnico": "Firma del Capo Tecnico che ha svolto il lavoro",
+      "geometra": "Firma del Geometra",
+      "capoOfficina": "Firma del Capo Officina"
+    },
+    "firma": {
+      "apri": "Firma sullo schermo",
+      "area": "Spazio per la firma: {chi}",
+      "cancella": "Cancella",
+      "togli": "Togli la firma",
+      "acquisita": "Firmata il {quando}, sul dispositivo di {chi}",
+      "nonValida": "Firma non valida: il contenuto firmato è cambiato o la firma è stata alterata.",
+      "vuota": "Non firmata: si può firmare a mano sul foglio stampato.",
+      "facoltative": "Tutte le firme sono facoltative: quelle lasciate vuote restano uno spazio bianco nel PDF, da firmare a mano.",
+      "bloccata": "Sequenza firmata: per modificarla togli prima la firma.",
+      "bloccatoControllo": "Controllo firmato: per modificarlo togli prima la firma.",
+      "finaliHint": "Le firme in fondo valgono per tutto il buono: dopo la prima, i dati non si modificano finché non vengono tolte.",
+      "salva": "Salva le firme",
+      "chiuso": "Il buono ha firme in fondo: per modificare i dati togli prima quelle firme qui sotto."
+    },
+    "errore": {
+      "modificata": "La riga è firmata: per modificarla togli prima la firma.",
+      "tolta": "Una sequenza firmata non si può togliere: togli prima la firma.",
+      "uguale": "La stessa firma compare due volte: ogni firma va fatta a mano.",
+      "ripetuta": "Questa firma è già su un altro documento del portale: va rifatta a mano.",
+      "invalid": "Firma non leggibile: cancellala e rifalla.",
+      "sequenze": "Al massimo {n} sequenze di lavoro.",
+      "range": "La fine non può essere prima dell'inizio.",
+      "esitoFirma": "Per firmare il controllo scegli prima l'esito."
+    },
+    "daScheda": {
+      "testo": "Cerca la scheda: N° buono, matricola, ubicazione e i lavori previsti si compilano da soli. Impianto senza scheda? Compila i campi qui sotto.",
+      "nessuna": "Nessuna scheda trovata: compila il buono a mano qui sotto.",
+      "crea": "Buono di lavoro",
+      "dellaScheda": "Buoni di lavoro"
+    },
+    "mail": {
+      "oggetto": "Buono di lavoro {n} — {azienda}",
+      "corpo": "Buongiorno,\n\nin allegato il buono di lavoro {n}.\n\n{azienda}"
+    },
+    "pdf": "PDF",
+    "scaricaPdf": "Scarica PDF",
+    "apriPdf": "Apri PDF",
+    "elimina": {
+      "titolo": "Elimina il buono",
+      "testo": "Eliminare questo buono di lavoro? L'operazione non si può annullare.",
+      "btn": "Elimina il buono",
+      "firmato": "Un buono con firme non si elimina: togli prima le firme."
+    },
+    "email": {
+      "titolo": "Invia per email",
+      "label": "Indirizzo email",
+      "invia": "Invia il PDF",
+      "hint": "Il PDF del buono parte in allegato; l'indirizzo non viene salvato."
+    },
+    "flash": {
+      "creato": "Buono di lavoro salvato.",
+      "salvato": "Modifiche salvate.",
+      "firme": "Firme salvate.",
+      "firmaTolta": "Firma tolta: ora puoi modificare la riga.",
+      "conflitto": "Il buono è stato modificato da qualcun altro mentre lo guardavi: ecco i tuoi dati, controlla e salva di nuovo.",
+      "conflittoFirme": "Il buono è cambiato mentre lo guardavi: rileggilo e firma di nuovo.",
+      "chiuso": "Il buono ha firme in fondo: per modificare i dati togli prima quelle firme.",
+      "eliminato": "Buono di lavoro eliminato.",
+      "firmato": "Un buono con firme non si elimina: togli prima le firme.",
+      "inviato": "Buono inviato a {email}.",
+      "emailNonValida": "Indirizzo email non valido.",
+      "mailDisattivata": "L'invio delle email non è attivo su questo portale: scarica il PDF e invialo tu.",
+      "nonInviato": "L'email non è partita: riprova più tardi.",
+      "intestazione": "Codice e clausola del buono salvati."
+    },
+    "pdfTesto": {
+      "generato": "Generato con Rilievi Impianti {versione} (Carbon Stealth VCC) il {data}.",
+      "firme": "Firme acquisite sul portale: {n}.",
+      "impronta": "Impronta del buono firmato in fondo: {impronta}.",
+      "nonValide": "Firme non valide (contenuto cambiato dopo la firma): {n}.",
+      "pagina": "Pagina {n} di {tot}",
+      "nonValida": "firma non valida"
+    },
+    "impostazioni": {
+      "intro": "Il buono di lavoro esce con il logo e il nome dell'azienda. Qui scrivi, se ti servono, il codice del modulo (in alto a destra) e la clausola in fondo al foglio.",
+      "codice": "Codice del modulo",
+      "codiceHint": "Esempio: «Mod. PO-05-3 Ed. 02 Emesso: Qualità». Fino a {max} caratteri; vuoto, non compare.",
+      "clausola": "Clausola in fondo al foglio",
+      "clausolaHint": "Per esempio la clausola per i subappaltatori. Fino a {max} caratteri; vuota, non compare.",
+      "errore": "Testo troppo lungo (al massimo {max} caratteri).",
+      "salva": "Salva"
+    }
+  }
+}

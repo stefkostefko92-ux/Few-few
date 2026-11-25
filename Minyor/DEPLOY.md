@@ -28,7 +28,8 @@ docker compose up -d --build
 docker compose exec app npm run db:seed
 ```
 
-Приложението слуша на порт `3000` (конфигурируем чрез `HTTP_PORT`). Поставете
+Приложението слуша на `127.0.0.1:3000` (портът — чрез `HTTP_PORT`; само на loopback,
+отвън не се вижда). Поставете
 пред него обратен прокси (Nginx, Caddy, Traefik) за TLS и пренасочване 80→443.
 
 При стартиране `docker-entrypoint.sh` изчаква базата и прилага схемата с

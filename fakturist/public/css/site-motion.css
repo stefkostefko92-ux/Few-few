@@ -1,0 +1,247 @@
+/*
+ * Движението на началната страница: само transform и opacity, само при `prefers-reduced-motion: no-preference`;
+ * иначе (и без JavaScript) страницата е в крайното си състояние. Една последователност веднъж (~4 s), без
+ * повторение: никога мигане (WCAG 2.3.1), нищо не е над 3 промени в секунда.
+ */
+
+@media (prefers-reduced-motion: no-preference) {
+  .i0 {
+    --i: 0;
+  }
+  .i1 {
+    --i: 1;
+  }
+  .i2 {
+    --i: 2;
+  }
+  .i3 {
+    --i: 3;
+  }
+  .i4 {
+    --i: 4;
+  }
+  .i5 {
+    --i: 5;
+  }
+  .i6 {
+    --i: 6;
+  }
+  .i7 {
+    --i: 7;
+  }
+  .c1 {
+    --k: 0;
+  }
+  .c2 {
+    --k: 1;
+  }
+  .c3 {
+    --k: 2;
+  }
+
+  .stage .inv-kind,
+  .stage .fr {
+    animation: fr-in 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(0.2s + var(--i, 0) * 0.22s);
+  }
+
+  .stage tr.fr {
+    animation-name: fr-fade;
+  }
+
+  .stage .xl.fr {
+    animation-delay: calc(0.36s + var(--i, 0) * 0.22s);
+  }
+
+  .stage .xl.fr::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--code-bt);
+    opacity: 0;
+    pointer-events: none;
+    animation: fr-flash 0.9s ease-out both;
+    animation-delay: calc(0.36s + var(--i, 0) * 0.22s);
+  }
+
+  .wclip {
+    transform-box: fill-box;
+    transform-origin: 0 50%;
+    animation: wipe 0.55s cubic-bezier(0.3, 0.6, 0.2, 1) both;
+    animation-delay: calc(0.5s + var(--i, 0) * 0.22s);
+  }
+
+  .wire circle {
+    animation: fr-fade 0.3s ease-out both;
+    animation-delay: calc(0.5s + var(--i, 0) * 0.22s);
+  }
+
+  /* Само движение, без прозрачност: проверката на контраста (axe) не хваща отметките по средата на появата. */
+  .stage .ck {
+    animation: ck-in 0.4s ease-out both;
+    animation-delay: calc(2.4s + var(--k) * 0.32s);
+  }
+
+  .stage .ck svg {
+    animation: pop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+    animation-delay: calc(2.5s + var(--k) * 0.32s);
+  }
+
+  .stage .seal {
+    animation: fr-fade 0.4s ease-out 3.5s both;
+  }
+
+  .stage .seal-ring {
+    animation: stamp 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2) 3.5s both;
+  }
+
+  .stage.rst * {
+    animation: none !important;
+  }
+
+  [data-rv] {
+    transition:
+      opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1),
+      transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  [data-rv].rv-pre {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .replay {
+    display: none;
+  }
+}
+
+@keyframes fr-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes fr-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fr-flash {
+  30% {
+    opacity: 0.16;
+  }
+}
+
+@keyframes wipe {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0);
+  }
+}
+
+@keyframes stamp {
+  from {
+    opacity: 0;
+    transform: scale(1.7) rotate(-8deg);
+  }
+}
+
+/* Пробата, получателят, пътят */
+
+@media (prefers-reduced-motion: no-preference) {
+  .ln::after,
+  .lk::after {
+    transition: opacity 0.25s ease-out;
+  }
+
+  .lk::after {
+    transition-delay: 0.15s;
+  }
+
+  .ln.is-bad .st {
+    animation: nudge 0.3s ease-out;
+  }
+
+  .recv-grid.rv-in .scan {
+    animation: scan 2.2s ease-in-out 0.3s both;
+  }
+
+  .rv-pre .pf,
+  .rv-pre .guess > div {
+    opacity: 0;
+  }
+
+  .pf,
+  .guess > div {
+    transition: opacity 0.4s ease-out;
+  }
+
+  .pf.t0 {
+    transition-delay: 0.9s;
+  }
+  .pf.t1 {
+    transition-delay: 1.15s;
+  }
+  .pf.t2 {
+    transition-delay: 1.4s;
+  }
+  .pf.t3 {
+    transition-delay: 1.65s;
+  }
+  .pf.t4 {
+    transition-delay: 1.9s;
+  }
+
+  .road-live .rd::after {
+    transition: opacity 0.3s ease-out;
+  }
+}
+
+@keyframes scan {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+
+  10%,
+  90% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(18rem);
+  }
+}
+
+@media print {
+  [data-rv],
+  .stage *,
+  .rv-pre * {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}
+
+@keyframes nudge {
+  from {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+}
+
+@keyframes ck-in {
+  from {
+    transform: translateY(6px);
+  }
+}
