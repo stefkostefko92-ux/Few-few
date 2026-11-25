@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-11-25:** .pr-review/306.diff (vpsdash reclaim) не е отрязан — 4 diff заглавки при 4 файла в 306.stat; в този live-run пускането на node --test иска одобрение _(преглед на PR 306 в live-run worktree; verified; grep -c '^diff --git' .pr-review/306.diff → 4; .pr-review/306.stat → 4 files changed)_
 - **2026-11-25:** Във vpsdash `el(tag, {raw: x})` записва с textContent, не с innerHTML — чужд изход, показан с `raw`, не е XSS sink _(ревю на XSS във vpsdash/public; verified; vpsdash/public/ui.js el() — клонът `else if (k === 'raw') node.textContent = v`)_
 - **2026-11-25:** Тестът tools/vps/autodeploy-prune.test.mjs изрязва release_mount_sources, rescue_release_env и prune_releases от deploy/autodeploy.sh с regex и ги пуска с bash при SHARED_DIR=<tmp>/shared и KEEP_RELEASES=2 върху 6 releases, а docker е заглушен _(преглед на промени по prune_releases и тестовете към нея; verified; tools/vps/autodeploy-prune.test.mjs функции layout, dockerStub и run)_
 - **2026-11-25:** В live-run worktree vizitka/node_modules липсва, затова гейтовете на vizitka не могат да се пуснат при преглед без инсталиране _(преглед на PR за vizitka в live-run worktree; verified; ls -d /tmp/live-run-Z5JIvH/vizitka/node_modules → No such file or directory)_
