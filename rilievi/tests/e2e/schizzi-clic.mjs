@@ -6,7 +6,7 @@
 // before. What it draws is undone at the end: the rest of the flow sees the sheet as it was. Two taps
 // with a pinch between them — checkTapPinchTap (a touch screen).
 import sharp from 'sharp';
-import { fail } from './helpers.mjs';
+import { fail, IPAD_FINGER_RADIUS } from './helpers.mjs';
 
 export async function checkTwoClicks(page, dialog) {
   const canvas = dialog.locator('canvas');
@@ -146,8 +146,10 @@ export async function checkTapPinchTap(tab, dialog, name) {
     x: box.x + box.width * fx,
     y: box.y + box.height * fy,
     id,
-    radiusX: 4,
-    radiusY: 4,
+    // An iPad fingertip (schizzi-ipad.mjs): a touch with a radius of 4 hid that every iPad finger was
+    // taken for a palm.
+    radiusX: IPAD_FINGER_RADIUS,
+    radiusY: IPAD_FINGER_RADIUS,
     force: 1,
   });
   const touch = (type, touchPoints) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints });

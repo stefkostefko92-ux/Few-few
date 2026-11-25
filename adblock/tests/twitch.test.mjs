@@ -248,6 +248,24 @@ ok("twitch_main.js registered MAIN / document_start / every frame on *.twitch.tv
 mock.store.set("allowlist", ["twitch.tv"]);
 await bg.doSyncScriptlets(true);
 ok("Twitch on the allowlist → excluded there (the per-site off switch)", mock.registered().find((s) => s.id === "sa-twitch").excludeMatches.includes("*://*.twitch.tv/*"));
+// 6.1.1: the Basic level keeps the YouTube and Twitch protection ("YouTube keeps its own protection" — the popup)
+{
+  const byId = (id) => mock.registered().find((s) => s.id === id);
+  const covers = (id, host) => !!byId(id) && !(byId(id).excludeMatches || []).some((p) => p.includes(host));
+  mock.store.set("allowlist", []);
+  mock.store.set("mode", "basic");
+  await bg.doSyncScriptlets(true);
+  ok("Basic for every site: YouTube (script + stylesheet) and Twitch still registered there",
+    covers("sa-youtube", "youtube.com") && covers("sa-youtube-css", "youtube.com") && covers("sa-twitch", "twitch.tv"));
+  mock.store.set("mode", "standard");
+  mock.store.set("siteModes", { "youtube.com": "basic", "twitch.tv": "basic", "news.example": "basic" });
+  await bg.doSyncScriptlets(true);
+  ok("youtube.com and twitch.tv set to Basic: not excluded from their own scripts (6.0 dropped them)",
+    covers("sa-youtube", "youtube.com") && covers("sa-youtube-css", "youtube.com") && covers("sa-twitch", "twitch.tv"));
+  ok("…while another Basic site still loses our page scripts (main.js)",
+    mock.registered().filter((s) => (s.js || []).includes("scriptlets/main.js")).every((s) => (s.excludeMatches || []).some((p) => p.includes("news.example"))));
+  mock.store.set("siteModes", {});
+}
 mock.store.set("features", { twitch: false });
 await bg.doSyncScriptlets(true);
 ok("features.twitch: false → not registered", !mock.registered().some((s) => s.id === "sa-twitch"));

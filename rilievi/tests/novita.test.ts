@@ -73,7 +73,9 @@ describe('the entries', () => {
 });
 
 describe('the publication of an entry', () => {
-  const ora = new Date('2026-11-20T09:30:00Z');
+  // The morning of the newest entry's day: a fixed date went stale with the next entry, published "in the
+  // future" of the test's clock (the code then counts it from today — rightly).
+  const ora = new Date(`${VOCI[0]!.data}T09:30:00Z`);
 
   it('on a new installation is the day of each entry: there is no update to announce', () => {
     const nuove = daRegistrare(new Set(), ora);

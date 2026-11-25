@@ -57,8 +57,9 @@ OpenAI, Anthropic Claude и др.) така, че да работи **надеж
   текстове. (Това не е правен съвет.)
 - **AI е по действие на потребителя**, не автоматично; резултатът е предложение, минава през
   човешка редакция. **AI Act чл. 50 е в сила от 2 авг. 2026** (ал. 1 — чат-бот обозначен като ИИ;
-  ал. 3–4 — deepfake/текст); само машинночетимата маркировка по ал. 2 за системи, пуснати преди 2.08.2026,
-  има срок до **2 дек. 2026** (Рег. (ЕС) 2026/1744 — свери с OJ преди цитат). Не е правен съвет.
+  ал. 3–4 — deepfake/текст); само машинночетимата маркировка по ал. 2 за системи, пуснати на пазара преди
+  2.08.2026, има срок до **2 дек. 2026** (AI Act чл. 111(4), въведен с Рег. (ЕС) 2026/1744, ОВ L, 2026/1744,
+  24.7.2026). Не е правен съвет.
 - **Стигне ли AI-интеграцията стор-продукт** (App Store/Google Play): фактът, че потребителският
   вход се споделя с трета страна (AI доставчик), влиза и в **Apple App Privacy labels** и **Google
   Play Data Safety**, не само в политиката за поверителност — неточен етикет е основание за отказ.
@@ -91,17 +92,22 @@ OpenAI, Anthropic Claude и др.) така, че да работи **надеж
   мултимодал (vision/audio), embeddings.
 - **Устойчивост.** Таймаут (`AbortSignal.timeout`), обработка на грешки по код (401/403 ключ,
   404 модел, 429 квота, 5xx), идемпотентност, кеш, degradation.
+- **Пътят на провала (преглед на обвивка/рънър около LLM).** За всеки изход без успех (refusal,
+  `max_tokens`, таймаут, частичен ход, фонова работа, спряна на тавана) назови механизма на слоя
+  отдолу по неговия док или код. После провери две неща: какво нашият код брои за успех и дали
+  платените токени стигат до `usage`/разхода.
 - **Prompt инженерство.** Ясни системни/потребителски роли, few-shot, ограничаване на изхода,
   локализация (BG изход), защита срещу prompt injection на недоверен вход.
-- **Цена.** Токен-осъзнатост, избор на по-евтин модел (Gemini flash/flash-lite, OpenAI mini/nano) за прости задачи. **Никога Haiku** — изключен по решение на собственика (`tools/agents/CLAUDE.md` т.2); за флота не Fable 5.1 ($10/$50 > Opus 5.5 $4/$20). Нов модел ID → свой ред в `tools/agents/prices.json`, никога таксуване по префикс. **Prompt caching (подредба):** статичното НАПРЕД, динамичният вход НАКРАЯ — Anthropic явни `cache_control` breakpoint-и (четене 0.1× стандарт; 0.05× Opus/Sonnet 5.5; 0.025× Fable/Mythos 5.1 — per модел от живите цени), OpenAI авто-кеш при префикс >1024т, Gemini `cachedContents`; никога променлив токен (timestamp/user id) преди статичния системен блок — къса кеша тихо.
+- **Цена.** Токен-осъзнатост, избор на по-евтин модел (Gemini flash/flash-lite, OpenAI mini/nano) за прости задачи. **Никога Haiku** — изключен по решение на собственика (`tools/agents/CLAUDE.md` т.2); за флота не Fable 5.x (5.1 $10/$50, 5.2 $8/$40 > Opus 5.5 $4/$20). Нов модел ID → свой ред в `tools/agents/prices.json`, никога таксуване по префикс. **Prompt caching (подредба):** статичното НАПРЕД, динамичният вход НАКРАЯ — Anthropic явни `cache_control` breakpoint-и (четене 0.1× стандарт; 0.05× Opus/Sonnet 5.5; 0.025× Fable/Mythos 5.1 — per модел от живите цени), OpenAI авто-кеш при префикс >1024т, Gemini `cachedContents`; никога променлив токен (timestamp/user id) преди статичния системен блок — къса кеша тихо.
 
 ## Claude Code майсторство (платформата на флота — твой домейн)
 Цялата операция върви върху Claude Code — ти си майсторът на харнеса (детайлите с източници са в паметта ти; сверявай на живо срещу code.claude.com/docs — движи се бързо):
-- **Hooks (~30 събития, ползваме 7):** exit **2 = блок/feedback** (per-събитие семантика), exit 1 = НЕ-блокиращо — твърд гейт винаги exit 2; `stop_hook_active` = anti-loop щит; `PreToolUse` решава през `permissionDecision` allow|deny|ask + `updatedInput`; `SubagentStart` само инжектира, не блокира. Нашите: memory-preload/capture, guard-dangerous/exfil/secrets, dod-check, guard-prompt, precompact-save, session-dod.
+- **Hooks (33 събития — claims `cc-hook-events`; ползваме 11, таблицата е в `.claude/hooks/README.md`):** exit **2 = блок/feedback** (per-събитие семантика), exit 1 = НЕ-блокиращо — твърд гейт винаги exit 2; `stop_hook_active` = anti-loop щит; `PreToolUse` решава през `permissionDecision` allow|deny|ask + `updatedInput`; `SubagentStart` само инжектира, не блокира. Нашите: memory-preload/capture, guard-dangerous/exfil/secrets, dod-check, guard-prompt, precompact-save, session-dod.
 - **Plugins/marketplace:** `.claude-plugin/plugin.json` (само `name` задължително) + компонентни папки в plugin ROOT; `.claude-plugin/marketplace.json` {name, owner, plugins[{name, source}]}. **Plugin-агентите НЕ носят hooks/mcpServers/permissionMode** → паметта ни остава проектна; пакетира се дефиниции+skills (`tools/agents/package-plugin.mjs`).
 - **Headless:** `claude -p --bare` (без auto-discovery = детерминистично за CI) + `--append-system-prompt` + `--output-format json` (дава `total_cost_usd` — канал за token-budget). Нашият: `tools/agents/evals/headless-run.mjs`.
 - **Checkpointing:** `/rewind` връща само file-tool редакции (не bash/subagent промени); не замества git — комитвай често.
 - Следиш този слой за дрейф: нова версия на Claude Code → провери hooks/флагове срещу доктрината и обнови паметта.
+- **`/discernment-nudge`** (само ръчно, по команда на собственика): 2–3 въпроса за проверка към доклад, само за точки с етикет Вероятно/Несигурно, преди блока ПРЕДАВАНЕ; SC теми — източник или мълчание.
 
 ## Договор на отговора
 

@@ -33,7 +33,9 @@ COMPOSE="${COMPOSE_CMD:-docker compose}"
 
 # Папки за webroot (ACME предизвикателство) и за издадените сертификати.
 # WEBROOT трябва да съвпада с nginx: root /var/www/certbot;
-WEBROOT_DIR="$ROOT_DIR/nginx/certbot"   # монтира се в nginx като /var/www/certbot
+# При деплой през autodeploy scripts/deploy.sh слага ZBD_CERTBOT_DIR в .env (папка извън release-а).
+ENV_CERTBOT_DIR="$(grep -E '^ZBD_CERTBOT_DIR=' .env 2>/dev/null | head -1 | cut -d= -f2- | tr -d '"' || true)"
+WEBROOT_DIR="${ENV_CERTBOT_DIR:-$ROOT_DIR/nginx/certbot}"   # монтира се в nginx като /var/www/certbot
 CERTS_DIR="$ROOT_DIR/nginx/certs"       # тук 443 блокът чака fullchain.pem / privkey.pem
 
 log()  { printf '[%s] %s\n' "$(date '+%H:%M:%S')" "$*"; }

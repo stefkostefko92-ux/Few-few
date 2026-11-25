@@ -9,6 +9,7 @@ import {
   FORMATO_ESPORTAZIONE,
   SELECT_ALLEGATO,
   SELECT_AZIENDA,
+  SELECT_CLIENTE,
   SELECT_FIRMA_BUONO,
   SELECT_FORNITORE,
   SELECT_INVITO,
@@ -53,6 +54,7 @@ export interface PartiDati {
   buoni: Righe;
   preventivi: Righe;
   listino: unknown[];
+  clienti: unknown[];
   fornitori: unknown[];
   ordini: Righe;
   registro: Righe;
@@ -75,6 +77,7 @@ export function componiDati(parti: PartiDati, esportatoIl: Date): Record<Sezione
     buoni: parti.buoni,
     preventivi: parti.preventivi,
     listino: parti.listino,
+    clienti: parti.clienti,
     fornitori: parti.fornitori,
     ordini: parti.ordini,
     registro: parti.registro,
@@ -95,7 +98,7 @@ export async function esportaAzienda(
   });
   if (!azienda) return null;
   // Малките раздели — наведнъж; големите (карти, листове, регистър…) — на страници, ред по ред към файла.
-  const [persone, inviti, cartelli, listino, fornitori] = await Promise.all([
+  const [persone, inviti, cartelli, listino, clienti, fornitori] = await Promise.all([
     prisma.membership.findMany({
       where: { aziendaId },
       orderBy: { createdAt: 'asc' },
@@ -108,6 +111,12 @@ export async function esportaAzienda(
     }),
     prisma.cartello.findMany({ where: { aziendaId }, orderBy: { createdAt: 'asc' } }),
     prisma.voceListino.findMany({ where: { aziendaId }, orderBy: { createdAt: 'asc' } }),
+    // Регистърът на клиентите (до 2000 на фирма) — винаги, и при изключени оферти.
+    prisma.cliente.findMany({
+      where: { aziendaId },
+      orderBy: [{ nome: 'asc' }, { id: 'asc' }],
+      select: SELECT_CLIENTE,
+    }),
     prisma.fornitore.findMany({
       where: { aziendaId },
       orderBy: { nome: 'asc' },
@@ -231,6 +240,7 @@ export async function esportaAzienda(
         PAGINA,
       ),
       listino,
+      clienti,
       fornitori,
       ordini: aPagine(
         (id) =>

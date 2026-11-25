@@ -37,10 +37,10 @@ export const COMPANY = {
 export const CONTENT_UPDATED = '2026-11-12';
 
 /** Последната промяна на политиката за поверителност — показва се на страницата и отива в sitemap. */
-export const PRIVACY_UPDATED = '2026-11-12';
+export const PRIVACY_UPDATED = '2026-11-14';
 
 /** Последната промяна на страницата `/esportazione` (видима дата, sitemap, JSON-LD). */
-export const ESPORTAZIONE_UPDATED = '2026-11-12';
+export const ESPORTAZIONE_UPDATED = '2026-11-21';
 
 /** Последната промяна на текста на `/prezzi` (самите цени идват от плановете в конзолата). */
 export const PREZZI_UPDATED = '2026-11-13';

@@ -10,7 +10,7 @@
 // Exit 1 при HIGH. НЕ замества реален FPS/Lighthouse профил в браузъра.
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, extname } from "node:path";
+import { join, extname, basename } from "node:path";
 
 const args = process.argv.slice(2);
 const CREATIVE = args.includes("--creative"); // творчески режим: reduced-motion е по избор
@@ -21,11 +21,14 @@ if (!root) { console.error("Употреба: node tools/design/motion-a11y.mjs 
 const RM_SEV = CREATIVE ? "INFO" : "HIGH";
 
 const SKIP = new Set(["node_modules", ".git", "dist", "build", ".next", "coverage", "out"]);
+// `.claude/worktrees/*` са пълни копия на репото (агентите работят там с `isolation: worktree`):
+// обходени, те удвояваха находките с чужд код и бавеха `.` над 90 s → tool-contract „увисна“ (2026-11-15).
+const isAgentWorktrees = (dir, name) => name === "worktrees" && basename(dir) === ".claude";
 function walk(dir, acc = [], depth = 0) {
   if (depth > 6) return acc;
   let e = []; try { e = readdirSync(dir); } catch { return acc; }
   for (const name of e) {
-    if (SKIP.has(name)) continue;
+    if (SKIP.has(name) || isAgentWorktrees(dir, name)) continue;
     const p = join(dir, name);
     let st; try { st = statSync(p); } catch { continue; }
     if (st.isDirectory()) walk(p, acc, depth + 1);

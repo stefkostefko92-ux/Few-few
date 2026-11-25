@@ -21,6 +21,7 @@ const PAGINA: Record<TipoAllarme, string> = {
   pagamentoDaVerificare: '/master/pagamenti',
   contestazione: '/master/pagamenti#h-contestazioni',
   rimborsoFallito: '/master/pagamenti#h-rimborsi',
+  rimborsoDopoRifiuto: '/master/pagamenti#h-rimborsi',
   posta: '/master/posta',
   segnalazione: '/master/segnalazioni',
   sogliaIva: '/master/pagamenti',

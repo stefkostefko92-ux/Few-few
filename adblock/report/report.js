@@ -55,6 +55,13 @@ function renderPreview() {
 function reloadTab() {
   if (tabId >= 0) chrome.tabs.reload(tabId).catch(() => {});
 }
+// 6.1: an administrator's policy can refuse a fix — say so instead of "done" (and reload nothing)
+const refusedByPolicy = (res) => !!res && res.ok === false && res.reason === "managed";
+function after(res, msg, fix) {
+  if (refusedByPolicy(res)) { $("fixHint").textContent = L("managedNote", "Set by your organization"); return; }
+  reloadTab();
+  done(msg, fix);
+}
 function done(msg, fix) {
   $("fixHint").textContent = msg;
   if (!fix) return;
@@ -90,19 +97,19 @@ $("fixedNo").addEventListener("click", () => {
 
 $("fixCosm").addEventListener("click", () => {
   if (!host) return;
-  chrome.runtime.sendMessage({ type: "setNoCosmetics", host, off: true }, () => { reloadTab(); done(L("rep_done_cosm", "Element hiding is off on this site. Reloaded — is it fixed?"), "fixCosm"); });
+  chrome.runtime.sendMessage({ type: "setNoCosmetics", host, off: true }, (res) => after(res, L("rep_done_cosm", "Element hiding is off on this site. Reloaded — is it fixed?"), "fixCosm"));
 });
 $("fixAllow").addEventListener("click", () => {
   if (!host) return;
-  chrome.runtime.sendMessage({ type: "setAllow", host, allow: true }, () => { reloadTab(); done(L("rep_done_allow", "Ads are allowed on this site. Reloaded — is it fixed?"), "fixAllow"); });
+  chrome.runtime.sendMessage({ type: "setAllow", host, allow: true }, (res) => after(res, L("rep_done_allow", "Ads are allowed on this site. Reloaded — is it fixed?"), "fixAllow"));
 });
 // for a while only: the SW takes the site off the allowlist again after an hour (alarm "allow-expire")
 $("fixHour").addEventListener("click", () => {
   if (!host) return;
-  chrome.runtime.sendMessage({ type: "setAllow", host, allow: true, minutes: 60 }, () => { reloadTab(); done(L("rep_done_hour", "Ads are allowed on this site for 1 hour. Reloaded — is it fixed?"), "fixHour"); });
+  chrome.runtime.sendMessage({ type: "setAllow", host, allow: true, minutes: 60 }, (res) => after(res, L("rep_done_hour", "Ads are allowed on this site for 1 hour. Reloaded — is it fixed?"), "fixHour"));
 });
 $("fixPause").addEventListener("click", () => {
-  chrome.runtime.sendMessage({ type: "pause", minutes: 30 }, () => { reloadTab(); done(L("rep_done_pause", "Paused for 30 minutes. If the site works now, please tell us below."), "fixPause"); });
+  chrome.runtime.sendMessage({ type: "pause", minutes: 30 }, (res) => after(res, L("rep_done_pause", "Paused for 30 minutes. If the site works now, please tell us below."), "fixPause"));
 });
 $("copy").addEventListener("click", async () => {
   try { await navigator.clipboard.writeText("To: " + REPORT_TO + "\n\n" + report()); $("sendHint").textContent = L("rep_copied", "Copied."); }

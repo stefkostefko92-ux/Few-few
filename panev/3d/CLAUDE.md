@@ -121,6 +121,9 @@ xvfb-run -a npm run render -- --codes=<id,id> --size=1600x1200 --frames=48 --out
     линк към нея. Мястото в оригинала е празно (`build()` го проверява). Без `box-shadow`: Chromium го
     печата като изображение.
     Секция 04 показва и осемте SC; плочка под 100 pt (`NARROW`) носи само кода на опората.
+  - `anno.py` (през `ritocchi.py`) набира наново трите реда с годината на изданието: корицата („Edizione“),
+    ценоразписа (стр. 65, „aggiornamento listino“) и гърба („©“). От 24.11.2026 е 2027 (решение на
+    собственика). Файлът запазва името `catalogo-staffe-panev-2026.pdf`, защото адресът е даден на клиенти.
   - `ritocchi.py` набира наново местата, където оригиналът излиза извън страницата: легендата на
     стр. 04 (десетият ред беше под колонтитула), сравнителната таблица на стр. 63 (три реда липсваха;
     липсващите се четат от продуктовите страници 52 и 54) и страничните табове на стр. 07, 08, 09, 63,
@@ -159,6 +162,17 @@ xvfb-run -a npm run render -- --codes=<id,id> --size=1600x1200 --frames=48 --out
     (в облачната сесия: `CHROMIUM=/opt/pw-browsers/chromium npm run catalog-pdf`).
   - `previews.py` прави наново `panev/img/catalogo/pagina-NN.webp` от готовия PDF в
     `dist/pdf/catalogo/`.
+- **`video/`** — видео инструкцията „Montaggio in undici passi“ (A 45 175 2 + B 45 320, само IT, 16:9).
+  Цялото описание е в `video/README.md`.
+  - Blender + Cycles строи сцената от геометрията на `src/` (`video/export_mesh.mjs` → `video/mesh/`).
+    Надписите се рисуват с Pillow. Всичко се пуска с `py render.py light|heavy`.
+  - Тежката версия (4K/60, OptiX, NVENC) се прави на компютъра на собственика.
+  - `assets/`, `mesh/`, `render/`, `frames/`, `out/` не влизат в git.
+  - Текстовете са в `video/texts.py`. Не са за сайта (още).
+  - Звукът (музика + шумове) е синтезиран в код, без чужд семпъл: `score.py`, `sfx.py`, `audio.py` (само numpy и
+    FFmpeg). Моментите на шумовете повтарят `pose.py`/`cut.py`, затова се местят заедно с тях.
+  - Ляво/дясно (собственикът, 24.11.2026): вляво A SX + B SX, вдясно A DX + B DX (`video/hands.py`). Средната
+    планка удря армировка и сменя B DX с B SX на същата A DX (`video/middle.py`, `video/rebar.py`).
 
 ## Правила
 

@@ -8,7 +8,8 @@
 // без инструменти; критерий е изпълнен само ако И ДВАТА прохода са съгласни.
 //
 //   node tools/agents/evals/rubric-grade.mjs <агент> <изход-файл> [--task <spec id>] [--json]
-// Изход: 0 = satisfied · 1 = needs_revision · 3 = рубриката противоречи на задачата (failed) · 2 = грешка.
+// Изход: 0 = satisfied · 1 = needs_revision · 3 = рубриката противоречи на задачата (failed) · 2 = грешка ·
+//        4 = счупен оценител (пропуснат критерий — присъдата не важи, 19.11.2026).
 // Изходът на агента е НЕДОВЕРЕН текст — обвит е в <pasted_content> със случаен id (Prompting Opus 5.5).
 
 import { readFileSync, existsSync, mkdtempSync, rmSync } from "node:fs";
@@ -55,17 +56,56 @@ export function parseGrade(text) {
   try { return JSON.parse(m[0]); } catch { return null; }
 }
 
-/** Два прохода → общ резултат: изпълнен само при съгласие „да“; несъгласие се показва. */
+/** JSON Schema на присъдата — `claude -p --json-schema` (https://code.claude.com/docs/en/headless.md): структуриран
+ *  изход в `structured_output` вместо алчен регекс върху свободния текст. */
+export const GRADE_SCHEMA = {
+  type: "object",
+  properties: {
+    criteria: { type: "array", items: { type: "object", properties: { id: { type: "string" }, met: { type: "boolean" }, na: { type: "boolean" }, evidence: { type: "string" } }, required: ["id", "met"] } },
+    verdict: { type: "string", enum: ["satisfied", "needs_revision", "failed"] },
+  },
+  required: ["criteria", "verdict"],
+};
+
+/** Отговор на критерий от един проход или null, ако проходът го е пропуснал/счупил (липсващ id, met не е булево). */
+function answer(g, id) {
+  const c = (g?.criteria || []).find((x) => x?.id === id);
+  if (!c) return null;
+  if (c.na === true) return c;
+  return typeof c.met === "boolean" ? c : null;
+}
+
+/**
+ * Два прохода → общ резултат: изпълнен само при съгласие „да“; несъгласие се показва.
+ * „Fail loudly“ (Anthropic, „Building strong safety evaluations“, 13.11.2026): проход, който пропусне критерий,
+ * е СЧУПЕН оценител — редът се маркира `broken` и излиза от сметката за съгласието, а присъдата е
+ * `grader_broken` (изход 4), не тих `needs_revision` със „100% съгласие“ (undefined === undefined).
+ */
 export function combine(criteria, a, b) {
-  const pick = (g, id) => (g?.criteria || []).find((c) => c.id === id) || {};
   const rows = criteria.map((c) => {
-    const x = pick(a, c.id), y = pick(b, c.id);
+    const x = answer(a, c.id), y = answer(b, c.id);
+    if (!x || !y) return { id: c.id, met: false, na: false, agree: false, broken: true, evidence: (x || y)?.evidence || "" };
     const na = !!(x.na && y.na);
-    return { id: c.id, met: na || (x.met === true && y.met === true), na, agree: !!x.na === !!y.na && x.met === y.met, evidence: x.evidence || y.evidence || "" };
+    return { id: c.id, met: na || (x.met === true && y.met === true), na, agree: !!x.na === !!y.na && x.met === y.met, broken: false, evidence: x.evidence || y.evidence || "" };
   });
-  const failed = a?.verdict === "failed" && b?.verdict === "failed";
-  const agreement = rows.length ? rows.filter((r) => r.agree).length / rows.length : 0;
-  return { verdict: failed ? "failed" : rows.every((r) => r.met) ? "satisfied" : "needs_revision", agreement, rows };
+  const broken = rows.filter((r) => r.broken).map((r) => r.id);
+  const scored = rows.filter((r) => !r.broken);
+  const agreement = scored.length ? scored.filter((r) => r.agree).length / scored.length : 0;
+  // „Рубриката противоречи на задачата“ от двата прохода е присъда за рубриката — критериите може законно да липсват.
+  if (a?.verdict === "failed" && b?.verdict === "failed") return { verdict: "failed", agreement, rows, broken };
+  if (broken.length) return { verdict: "grader_broken", agreement, rows, broken };
+  return { verdict: rows.every((r) => r.met) ? "satisfied" : "needs_revision", agreement, rows, broken };
+}
+
+/** Код на изхода за присъдата. */
+export const exitCode = (verdict) => ({ satisfied: 0, needs_revision: 1, failed: 3, grader_broken: 4 })[verdict] ?? 2;
+
+/** Аргументите на един проход на оценителя (чиста функция — тестваема). */
+export function graderArgs(model) {
+  // --no-session-persistence: оценителят не оставя сесия на диска (headless.md); disableAllHooks през --settings —
+  // никакви куки в прохода на съдията (route-hint, Stop куките на потребителя); празна папка пази от проектните.
+  return ["-p", "--model", model, "--tools", "", "--output-format", "json", "--json-schema", JSON.stringify(GRADE_SCHEMA),
+    "--no-session-persistence", "--settings", JSON.stringify({ disableAllHooks: true }), "--max-budget-usd", "0.5"];
 }
 
 // Празна временна папка: в репото оценителят зарежда нашите Stop куки (artifact-sync, session-dod) и
@@ -73,9 +113,10 @@ export function combine(criteria, a, b) {
 function runGrader(prompt, model) {
   const cwd = mkdtempSync(join(tmpdir(), "rubric-grade-"));
   try {
-    const out = execFileSync("claude", ["-p", "--model", model, "--tools", "", "--output-format", "json", "--max-budget-usd", "0.5"], { cwd, input: prompt, encoding: "utf8", maxBuffer: 1 << 24, timeout: 300_000 });
+    const out = execFileSync("claude", graderArgs(model), { cwd, input: prompt, encoding: "utf8", maxBuffer: 1 << 24, timeout: 300_000 });
     const j = JSON.parse(out);
-    const grade = parseGrade(j.result);
+    // structured_output липсва, ако оценителят откаже — тогава резервно от текста (и пак проверка на формата).
+    const grade = j.structured_output && typeof j.structured_output === "object" ? j.structured_output : parseGrade(j.result);
     if (!grade || !Array.isArray(grade.criteria)) throw new Error(`оценителят не върна JSON с criteria: ${String(j.result).slice(0, 160)}`);
     return { grade, cost: Number(j.total_cost_usd) || 0 };
   } finally { rmSync(cwd, { recursive: true, force: true }); }
@@ -96,10 +137,11 @@ async function runCli() {
   let a, b;
   try { a = runGrader(p, model); b = runGrader(p, model); } catch (e) { console.error(`rubric-grade: оценителят не тръгна: ${String(e.message).slice(0, 200)}`); process.exit(2); }
   const r = { agent, grader: model, cost: a.cost + b.cost, ...combine(criteria, a.grade, b.grade) };
-  const code = r.verdict === "satisfied" ? 0 : r.verdict === "failed" ? 3 : 1;
+  const code = exitCode(r.verdict);
   if (argv.includes("--json")) await emitJsonNow(r, code);
   console.log(`rubric · ${agent} · оценител ${model} ×2 · ${r.verdict} · съгласие ${Math.round(r.agreement * 100)}% · $${r.cost.toFixed(2)}`);
-  for (const x of r.rows) console.log(`  ${x.na ? "·" : x.met ? "✓" : "✗"} [${x.id}]${x.agree ? "" : " (несъгласие)"} ${x.evidence.slice(0, 140)}`);
+  if (r.broken.length) console.log(`  ⚠ СЧУПЕН ОЦЕНИТЕЛ: пропуснати критерии ${r.broken.join(", ")} — редовете са извън сметката, присъдата не важи; пусни наново.`);
+  for (const x of r.rows) console.log(`  ${x.broken ? "!" : x.na ? "·" : x.met ? "✓" : "✗"} [${x.id}]${x.broken ? " (пропуснат от оценителя)" : x.agree ? "" : " (несъгласие)"} ${x.evidence.slice(0, 140)}`);
   process.exit(code);
 }
 

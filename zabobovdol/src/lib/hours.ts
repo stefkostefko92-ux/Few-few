@@ -38,7 +38,7 @@ function norm(s: string): string {
 // Намира ден-токен в текст; връща номера на деня или null.
 function dayOf(token: string): number | null {
   const t = token.trim();
-  if (t in DAY_TOKENS) return DAY_TOKENS[t];
+  if (Object.hasOwn(DAY_TOKENS, t)) return DAY_TOKENS[t];
   // По-дълъг токен, който започва с известен корен (напр. „понеделник").
   for (const [k, v] of Object.entries(DAY_TOKENS)) {
     if (t.startsWith(k)) return v;

@@ -139,6 +139,27 @@ describe(
       }
     });
 
+    it('ends a block that does not fit with «…», and counts the rows the way it is told', async () => {
+      const f = await font();
+      const nota = Array.from({ length: 40 }, (_, i) => `Riga ${i + 1} della nota`).join('\n');
+      // What fits is left as it is.
+      assert.deepEqual(fitBlock(f, 'Una riga', 120, 60, 9), { lines: ['Una riga'], size: 9 });
+      // Too long even at the smallest size: as many rows as fit, the last one says there is more.
+      const tagliato = fitBlock(f, nota, 120, 60, 9);
+      assert.equal(tagliato.size, 5);
+      assert.equal(tagliato.lines.length, Math.floor(60 / (5 * 1.18)));
+      assert.equal(tagliato.lines.at(-1), 'Riga 10 della nota…');
+      for (const line of tagliato.lines) assert.ok(f.widthOfTextAtSize(line, 5) <= 120, line);
+      // A last row as wide as the box gives up letters for the «…».
+      const pieno = fitBlock(f, 'W'.repeat(400), 60, 12, 9);
+      assert.match(pieno.lines.at(-1)!, /^W+…$/);
+      assert.ok(f.widthOfTextAtSize(pieno.lines.at(-1)!, 5) <= 60);
+      // Another way of laying the rows (a form field): a taller step means fewer rows in the same box.
+      const largo = fitBlock(f, nota, 120, 60, 9, (righe, size) => righe * size * 2);
+      assert.equal(largo.lines.length, 6);
+      assert.match(largo.lines.at(-1)!, /…$/);
+    });
+
     it('cuts 600 letters without a space in a fraction of a second', async () => {
       const f = await font();
       const long = 'W'.repeat(600);

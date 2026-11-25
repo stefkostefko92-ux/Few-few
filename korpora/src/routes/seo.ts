@@ -131,7 +131,7 @@ seoRouter.get('/llms.txt', (_req, res) => {
         `- Ordering: from the account, with an order button that states the obligation to pay; payment by bank transfer against an invoice. Consumers may withdraw within ${WITHDRAWAL_DAYS} days with the "Withdraw from contract here" button.`,
         '- After the trial ends, existing projects stay available for download; creating or changing projects needs Premium or Lifetime.',
         "- Hinge drilling follows the manufacturers' documents: Blum CLIP top, Hettich Sensys, GTV and Salice Series 200. Drawer slides: GTV H45 PRESTIGE, Blum TANDEM 560H and Blum MOVENTO 760H.",
-        '- Languages: the website, account and admin pages are in Bulgarian, English and Italian; the editor, drawings and CSV tables are in Bulgarian for now.',
+        `- Languages: ${translate('en', 'landing.faq.languages.a')}`,
         '',
         '## Company',
         `- [${COMPANY.name}](${COMPANY.url}) (in Bulgarian: ${COMPANY.nameBg}), ${en('company.legalForm')}, company number (EIK) ${COMPANY.eik}, VAT number ${COMPANY.vat}; ${en('company.street')}, ${COMPANY.postalCode} ${en('company.city')}, ${en('company.country')}; phone ${COMPANY.phone}`,

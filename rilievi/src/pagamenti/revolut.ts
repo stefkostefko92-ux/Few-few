@@ -8,6 +8,8 @@ import { z } from 'zod';
  * продукция) и регистрация на webhook. Тайният ключ — само в заглавието, само към базата на средата; грешката
  * носи само кода (тялото на отговора може да съдържа данни).
  */
+// 2026-09-22 не е въведена: единствената ѝ разлика е отказът на връщане с Revolut Pay (200 вместо 400) —
+// `esitoOrdineRimborso` вече чете и двата отговора.
 export const VERSIONE_API = '2026-08-17';
 
 export const BASI = {
@@ -45,8 +47,43 @@ const ordineSchema = z.object({
   /** `payment` или `refund`; поръчката за връщане сочи върнатата с `related_order_id`. */
   type: z.string().max(20).optional(),
   related_order_id: z.string().max(100).optional(),
+  /**
+   * Плащанията на поръчката (Payment-v3) — само състоянието и причината за отказ. Непредвидена форма не спира
+   * четенето на поръчката (платената остава четима): тогава плащания няма и връщането остава отворено.
+   */
+  payments: z
+    .array(z.object({ state: z.string().max(40), decline_reason: z.string().max(100).optional() }))
+    .max(100)
+    .optional()
+    .catch(undefined),
 });
 export type OrdineRevolut = z.infer<typeof ordineSchema>;
+
+/** Плащане на връщане, което Revolut е отказал (Payment-v3 `state`). */
+const PAGAMENTO_RIFIUTATO = ['declined', 'failed'];
+/** Причината за отказ се пази като код само ако е обикновен код (`suspected_fraud`), иначе — състоянието. */
+const MOTIVO = /^[a-z0-9_]{1,30}$/;
+
+/**
+ * Какво казва поръчката за връщане: `completed` — върнато; `failed`/`cancelled` — отказано; поръчка, чиито плащания
+ * са ВСИЧКИ `declined`/`failed`, — отказано, макар самата поръчка да стои `processing`. При нашата версия
+ * (`VERSIONE_API`, 2026-08-17) синхронният отказ е 400, а такава поръчка идва при четене по-късно (webhook,
+ * поддръжката); 200 с отказано плащане при самото нареждане (Revolut Pay, спецификацията 2026-09-22, „Declined
+ * refunds“) е подготовка за 2026-09-22. Всичко друго — още тече: затворено връщане, което Revolut още може да
+ * плати, би се наредило втори път.
+ */
+export function esitoOrdineRimborso(
+  r: OrdineRevolut,
+): 'completato' | 'inCorso' | { rifiutato: string } {
+  if (r.state === 'completed') return 'completato';
+  if (r.state === 'failed' || r.state === 'cancelled') return { rifiutato: r.state };
+  const pagamenti = r.payments ?? [];
+  if (pagamenti.length === 0 || !pagamenti.every((p) => PAGAMENTO_RIFIUTATO.includes(p.state)))
+    return 'inCorso';
+  const ultimo = pagamenti[pagamenti.length - 1]!;
+  const motivo = ultimo.decline_reason;
+  return { rifiutato: motivo !== undefined && MOTIVO.test(motivo) ? motivo : ultimo.state };
+}
 
 const webhookSchema = z.object({
   id: z.string().min(1).max(100),
@@ -190,7 +227,17 @@ export function leggiDisputa(c: ClienteRevolut, id: string): Promise<DisputaRevo
   );
 }
 
-export const EVENTI_ORDINE = ['ORDER_COMPLETED', 'ORDER_CANCELLED', 'ORDER_FAILED'] as const;
+/**
+ * Поръчките и връщанията (те са поръчки). `ORDER_PAYMENT_DECLINED`/`_FAILED`: отказаното плащане на връщане идва
+ * веднага по webhook-а, а не чак с часовата поддръжка (поръчката му може да остане `processing`).
+ */
+export const EVENTI_ORDINE = [
+  'ORDER_COMPLETED',
+  'ORDER_CANCELLED',
+  'ORDER_FAILED',
+  'ORDER_PAYMENT_DECLINED',
+  'ORDER_PAYMENT_FAILED',
+] as const;
 export const EVENTI_DISPUTA = [
   'DISPUTE_ACTION_REQUIRED',
   'DISPUTE_UNDER_REVIEW',

@@ -33,8 +33,8 @@ export default {
       ],
     },
     products: {
-      title: 'Lift bracket price list 2026 | Panev Ascensori',
-      description: '2026 price list excl. VAT: landing door brackets A/B, SU·SD·SC supports with SG brackets, fixed guide brackets and custom parts. Order by email.',
+      title: 'Lift bracket price list 2027 | Panev Ascensori',
+      description: '2027 price list excl. VAT: landing door brackets A/B, SU·SD·SC supports with SG brackets, fixed guide brackets and custom parts. Order by email.',
       keywords: [
         'lift bracket price list',
         'landing door bracket prices',
@@ -46,12 +46,12 @@ export default {
       ],
     },
     catalog: {
-      title: 'Lift brackets catalogue 2026 (PDF) | Panev Ascensori',
-      description: '2026 technical catalogue of lift brackets: 72 pages with 3D views, dimensions in mm, codes and price list. Browse online or download the PDF.',
+      title: 'Lift brackets catalogue 2027 (PDF) | Panev Ascensori',
+      description: '2027 technical catalogue of lift brackets: 72 pages with 3D views, dimensions in mm, codes and price list. Browse online or download the PDF.',
       keywords: [
         'lift brackets catalogue',
         'lift brackets catalogue PDF',
-        'elevator technical catalogue 2026',
+        'elevator technical catalogue 2027',
         'bracket installation drawings',
         'lift bracket price list PDF',
         'Panev Ascensori',
@@ -96,7 +96,7 @@ export default {
     },
     viewer3d: {
       title: 'Lift brackets in 3D: all 48 catalogue items | Panev',
-      description: 'All 48 brackets of the 2026 catalogue in 3D: rotate them, switch DX/SX, see them assembled with the adjustment and download an HD photo.',
+      description: 'All 48 brackets of the 2027 catalogue in 3D: rotate them, switch DX/SX, see them assembled with the adjustment and download an HD photo.',
       keywords: [
         'lift brackets 3D',
         'landing door bracket 3D model',

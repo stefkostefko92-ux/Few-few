@@ -221,11 +221,21 @@
 // ── Реквизити (config.json) ──────────────────────────────────────────────────
 /**
  * @typedef {object} Titolare реквизити на титуляря
- * @property {string} [nome]
- * @property {string} [indirizzo]
- * @property {string} [eik]
+ * @property {string} [nome] търговското име (латиница)
+ * @property {string} [nomeLegale] името в Търговския регистър (кирилица)
+ * @property {string} [formaGiuridica]
+ * @property {string} [responsabile] отговорното лице (управителят)
+ * @property {string} [ruolo]
+ * @property {string} [indirizzo] адресът за показ
+ * @property {string} [via]
+ * @property {string} [cap]
+ * @property {string} [citta]
+ * @property {string} [paese] ISO 3166-1 alpha-2
+ * @property {string} [eik] ЕИК (регистров номер)
+ * @property {string} [partitaIva] ДДС номер (VIES)
+ * @property {string} [registro]
  * @property {string} [email]
- * @property {string} [telefono]
+ * @property {string[]} [telefoni] първият е италианският
  */
 /**
  * @typedef {object} Hosting хостинг разкритие

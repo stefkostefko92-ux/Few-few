@@ -63,6 +63,7 @@
       "clausole": "Ai sensi e per gli effetti degli artt. 1341 e 1342 del codice civile approvo specificamente, per conto dell'azienda {azienda}, le clausole sopra elencate delle Condizioni generali di servizio, versione del {versione}.",
       "codiceTitolo": "Firma con codice",
       "codiceTesto": "Abbiamo inviato un codice di 6 cifre a {email}. Inserendolo firmi elettronicamente l'approvazione specifica delle clausole elencate e l'accettazione delle Condizioni, versione del {versione}. Il codice vale {minuti} minuti e una sola volta.",
+      "codiceRitardo": "A volte servono 5–10 minuti perché l'email con il codice arrivi: controlla anche lo spam. Se chiedi un nuovo codice, vale solo l'ultimo.",
       "codice": "Codice",
       "firma": "Firma e accetta",
       "nuovoCodice": "Invia un nuovo codice",

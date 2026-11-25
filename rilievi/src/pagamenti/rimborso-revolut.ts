@@ -6,7 +6,12 @@ import { logger } from '../logger.js';
 import { avvisaRimborso, avvisaRimborsoFallito } from './avvisi-rimborsi.js';
 import { clientePer } from './config.js';
 import { avvisaNoteCredito, registraNotaCredito } from './note-credito.js';
-import { ErroreRevolut, rimborsaOrdine, type OrdineRevolut } from './revolut.js';
+import {
+  ErroreRevolut,
+  esitoOrdineRimborso,
+  rimborsaOrdine,
+  type OrdineRevolut,
+} from './revolut.js';
 import { ripartisci, type OrdinePagato } from './rimborsi-riparto.js';
 
 /**
@@ -178,33 +183,51 @@ export async function ordina(c: Cliente, riga: Rimborso, ordine: string): Promis
   }
 }
 
-/** Поръчката за връщане, както я казва Revolut: записва id-то ѝ и действа по състоянието. */
+/**
+ * Поръчката за връщане, както я казва Revolut: записва id-то ѝ и действа по състоянието — и по плащанията ѝ. При
+ * нашата версия на API (2026-08-17) синхронният отказ е 400 (`ordina`); тук отказът идва от поръчка, прочетена
+ * по-късно (webhook `ORDER_PAYMENT_DECLINED`/`_FAILED`, поддръжката), чиито плащания са отказани. 200 с отказано
+ * плащане при самото нареждане е подготовка за 2026-09-22 (Revolut Pay) — минава по същия път.
+ */
 export async function registra(rimborsoId: string, r: OrdineRevolut): Promise<Passo> {
   await prisma.rimborso.updateMany({
     where: { id: rimborsoId, revolutRefundId: null },
     data: { revolutRefundId: r.id },
   });
-  if (r.state === 'completed') {
+  const esito = esitoOrdineRimborso(r);
+  if (esito === 'completato') {
     await completa(rimborsoId);
     return 'completato';
   }
-  if (r.state === 'failed' || r.state === 'cancelled') {
-    await fallisci(rimborsoId, r.state);
-    return { rifiutato: r.state };
+  if (typeof esito === 'object') {
+    await fallisci(rimborsoId, esito.rifiutato);
+    return esito;
   }
   return 'inCorso';
 }
 
-/** Частта е върната: сумата отива при плащането на поръчката; ако нареждането е цяло — плащането се затваря. */
+/**
+ * Частта е върната: сумата отива при плащането на поръчката; ако нареждането е цяло — плащането се затваря.
+ * Върната част, която у нас вече е отказана (FALLITO), не се поправя сама: парите са при клиента, а MASTER може да
+ * нареди второ връщане — лог и аларма, решава MASTER (`completatoDopoRifiuto`).
+ */
 async function completa(rimborsoId: string): Promise<void> {
   const adesso = new Date();
   let dovuta = false;
+  let dopoRifiuto = false;
   const chiuso = await prisma.$transaction(async (tx) => {
     const { count } = await tx.rimborso.updateMany({
       where: { id: rimborsoId, stato: 'IN_CORSO' },
       data: { stato: 'COMPLETATO', completatoAt: adesso },
     });
-    if (count !== 1) return null;
+    if (count !== 1) {
+      const ora = await tx.rimborso.findUnique({
+        where: { id: rimborsoId },
+        select: { stato: true },
+      });
+      dopoRifiuto = ora?.stato === 'FALLITO';
+      return null;
+    }
     const r = await tx.rimborso.findUniqueOrThrow({ where: { id: rimborsoId } });
     await tx.$executeRaw`UPDATE "Pagamento" SET "rimborsoCent" = COALESCE("rimborsoCent", 0) + ${r.importoCent}, "rimborsatoAt" = ${adesso} WHERE id = ${r.pagamentoId}`;
     // Кредитното известие следва фактурата: към плащането, върху чиято поръчка са върнати парите (чл. 12.9).
@@ -241,9 +264,19 @@ async function completa(rimborsoId: string): Promise<void> {
     );
     return { p, totale };
   });
+  if (dopoRifiuto) completatoDopoRifiuto(rimborsoId);
   if (dovuta) void avvisaNoteCredito();
   // Писмата — след записа; не се чакат.
   if (chiuso) void avvisaRimborso(chiuso.p, chiuso.totale);
+}
+
+/** Revolut е върнал част, която у нас е отказана: само лог (id-то, без лични данни) и аларма — нищо не се пипа. */
+function completatoDopoRifiuto(rimborsoId: string): void {
+  logger.error(
+    { evento: 'rimborso.completato_dopo_rifiuto', rimborso: rimborsoId },
+    'revolut: връщане, отказано у нас, е завършено в Revolut — решава MASTER',
+  );
+  void allarme('rimborsoDopoRifiuto');
 }
 
 export async function fallisci(rimborsoId: string, codice: string): Promise<void> {

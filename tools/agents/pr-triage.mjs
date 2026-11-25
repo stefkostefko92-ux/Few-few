@@ -77,15 +77,18 @@ export function rankProducts(files) {
 export const STALE_DAYS = 30;
 
 /** Решението за един PR: кои агенти и защо (или защо никой). Чиста функция. */
-export function decide({ kind, products, ageDays, reviewed = [], coreNoTest = [] }) {
+export function decide({ kind, products, ageDays, reviewed = [], coreNoTest = [], core = [] }) {
   if (kind === "docs" || kind === "empty") return { agents: [], why: "само документи — няма какво да счупи" };
   if (ageDays > STALE_DAYS) return { agents: [], why: `застарял (${ageDays} дни) — първо rebase или затваряне` };
+  // Код в ядрото → и Ultrareview по избор (24.11.2026): платен, втори независим преглед извън флота; пуска го
+  // само собственикът (core-map.mjs ultrareviewHint). Нашите агенти остават главният преглед.
+  const ultrareview = kind === "code" && core.length > 0;
   // „Ядро без тест“ (core-map.mjs, 31.10.2026): пари, фискал, вход или медицински код без променен тест в
   // същия продукт → и Изпитателят. В ядрото първо тест; човекът чете тестовете (Schluntz, Anthropic).
   const all = [...new Set([...agentsFor(kind, products), ...(kind === "code" && coreNoTest.length ? ["izpitatelya"] : [])])];
   const agents = all.filter((a) => !reviewed.includes(a));
-  if (!agents.length) return { agents: [], why: "вече прегледан на тази версия" };
-  return { agents, why: kind === "deps" ? "зависимости" : coreNoTest.length ? `код · ядро без тест (${coreNoTest.length})` : "код" };
+  if (!agents.length) return { agents: [], why: "вече прегледан на тази версия", ultrareview };
+  return { agents, why: kind === "deps" ? "зависимости" : coreNoTest.length ? `код · ядро без тест (${coreNoTest.length})` : "код", ultrareview };
 }
 
 function git(args) { return execFileSync("git", ["-C", ROOT, ...args], { encoding: "utf8", maxBuffer: 1 << 26 }); }
@@ -109,7 +112,8 @@ export function triage(prs, info = changedFiles, ledger = {}) {
     let r;
     try { r = info(p.head.ref); } catch (e) { return { pr: p.number, title: p.title, ref: p.head.ref, error: String(e.message).slice(0, 120), agents: [], why: "грешка при git" }; }
     const kind = kindOf(r.files), products = productsOf(r.files);
-    const d = decide({ kind, products: rankProducts(r.files), ageDays: r.ageDays, reviewed: ledger[r.sha] || [], coreNoTest: coreReport(r.files).coreWithoutTest });
+    const cr = coreReport(r.files);
+    const d = decide({ kind, products: rankProducts(r.files), ageDays: r.ageDays, reviewed: ledger[r.sha] || [], coreNoTest: cr.coreWithoutTest, core: cr.core });
     return { pr: p.number, title: p.title, ref: p.head.ref, sha: r.sha, kind, products, files: r.files.length, ageDays: r.ageDays, ...d };
   });
 }
@@ -129,7 +133,7 @@ function main(argv) {
   const prs = parsePrs(readFileSync(val("--prs"), "utf8")).filter((p) => !skip.includes(p.number));
   const plan = triage(prs, changedFiles, loadLedger());
   if (argv.includes("--json")) { console.log(JSON.stringify(plan, null, 2)); return; }
-  for (const p of plan) console.log(`#${p.pr} ${p.kind || "?"} [${(p.products || []).join(",")}] ${p.ageDays ?? "?"}д → ${p.agents.length ? p.agents.join(" + ") : "без агент"} · ${p.why}${p.error ? " · " + p.error : ""}`);
+  for (const p of plan) console.log(`#${p.pr} ${p.kind || "?"} [${(p.products || []).join(",")}] ${p.ageDays ?? "?"}д → ${p.agents.length ? p.agents.join(" + ") : "без агент"} · ${p.why}${p.ultrareview ? ` · ядро: Ultrareview по избор (/code-review ultra ${p.pr}, само с „да“)` : ""}${p.error ? " · " + p.error : ""}`);
   const need = plan.filter((p) => p.agents.length);
   console.log(`\n${need.length} от ${plan.length} PR-а искат наши агенти · ${need.reduce((a, p) => a + p.agents.length, 0)} прегледа`);
 }

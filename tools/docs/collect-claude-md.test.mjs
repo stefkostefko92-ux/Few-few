@@ -144,3 +144,12 @@ test("генераторът пише там, където сочи DOCS_JS_OUT,
   });
   assert.equal(readFileSync(REAL, "utf8"), realBefore, "истинският docs.js е непроменен след всички тестове дотук");
 });
+
+test("docs.js не съдържа „</script“ дори когато CLAUDE.md го съдържа (вгражда се в <script>)", () => {
+  withFreshDocs(() => {
+    const docs = readFileSync(OUT, "utf8");
+    assert.doesNotMatch(docs, /<\/script/i, "буквално </script затваря вграждащия блок");
+    const files = JSON.parse(docs.match(/window\.__DOCS__ = ([\s\S]*?);\nvar docs/)[1]).files;
+    assert.ok(files.some((f) => /<\/script>/.test(f.content || f.text || JSON.stringify(f))), "съдържанието е запазено след разчитане");
+  });
+});

@@ -23,14 +23,23 @@ export function roleIn(user: AccessUser, aziendaId: string | null): Role | null 
 
 type Membro = AccessUser['memberships'][number];
 /**
+ * Офертите във фирмата: включени (`preventivi`) — всичко по правата; изключени, но с данни
+ * (`preventiviArchivio`) — само четенето (изтриването — `puoTogliere`); иначе — нищо. Собственикът, 14
+ * ноември 2026: правата на хората, за които са данните (чл. 15–17 GDPR; условията, A.9), не спират с функцията.
+ */
+const offerte = (m: Membro, capability: Capability, togliere: boolean): boolean =>
+  !capability.startsWith('preventivi:') ||
+  m.preventivi === true ||
+  (m.preventiviArchivio === true && (togliere || capability === 'preventivi:read'));
+
+/**
  * Свършила фирма (`soloEsportazione`) не дава нищо — износът има своя проверка (routes/impostazioni-esportazione.ts).
- * Офертите — само във фирма, в която MASTER ги е включил (`preventivi`). Изтекъл абонамент (`solaLettura`) —
- * само четенето (src/abbonamenti/regole.ts).
+ * Офертите — `offerte`. Изтекъл абонамент (`solaLettura`) — само четенето (src/abbonamenti/regole.ts).
  */
 const puoMembro = (m: Membro, capability: Capability): boolean =>
   !m.soloEsportazione &&
   (!m.solaLettura || CAPACITA_IN_SOLA_LETTURA.has(capability)) &&
-  (!capability.startsWith('preventivi:') || m.preventivi === true) &&
+  offerte(m, capability, false) &&
   puo(m.role, capability, m.permessi);
 
 /**
@@ -39,9 +48,7 @@ const puoMembro = (m: Membro, capability: Capability): boolean =>
  * трият или отнемат; никога за запис.
  */
 const puoTogliere = (m: Membro, capability: Capability): boolean =>
-  !m.soloEsportazione &&
-  (!capability.startsWith('preventivi:') || m.preventivi === true) &&
-  puo(m.role, capability, m.permessi);
+  !m.soloEsportazione && offerte(m, capability, true) && puo(m.role, capability, m.permessi);
 
 /** Способността за изтриване във фирмата на записа — и при изтекъл абонамент. */
 export function canInPerTogliere(

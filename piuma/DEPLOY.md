@@ -15,13 +15,13 @@ Docker Compose на VPS-а, зад nginx на хоста с Let's Encrypt. Че�
 
 ## 0. Какво трябва да имаш преди да започнеш
 
-| Нещо                                                                 | Откъде                                                      |
-| -------------------------------------------------------------------- | ----------------------------------------------------------- |
-| DNS `A`/`AAAA` запис за `piuma.carbonstealth.eu` → VPS-а             | регистраторът на домейна                                    |
-| Meta App с продукт **Instagram** (Instagram Login)                   | developers.facebook.com → My Apps                           |
-| `IG_APP_ID` + `IG_APP_SECRET`                                        | същото приложение → Instagram → API setup                   |
-| Instagram **професионален** акаунт (Business/Creator), свързан ръчно | инвариант 1 — Meta забранява автоматизирано създаване       |
-| `ANTHROPIC_API_KEY` _(по избор)_                                     | console.anthropic.com — без него черновите се пишат на ръка |
+| Нещо                                                                 | Откъде                                                |
+| -------------------------------------------------------------------- | ----------------------------------------------------- |
+| DNS `A`/`AAAA` запис за `piuma.carbonstealth.eu` → VPS-а             | регистраторът на домейна                              |
+| Meta App с продукт **Instagram** (Instagram Login)                   | developers.facebook.com → My Apps                     |
+| `IG_APP_ID` + `IG_APP_SECRET`                                        | същото приложение → Instagram → API setup             |
+| Instagram **професионален** акаунт (Business/Creator), свързан ръчно | инвариант 1 — Meta забранява автоматизирано създаване |
+| Google Cloud проект с Claude във Vertex AI _(по избор)_              | §1а — без него черновите се пишат на ръка             |
 
 Разрешенията (`IG_SCOPES`) искат преглед от Meta преди да излязат от режим
 „разработка". Подготовката е работа на **Тайния агент** (агентът за одобрения).
@@ -54,7 +54,11 @@ IG_REDIRECT_URI=https://piuma.carbonstealth.eu/auth/instagram/callback
 IG_GRAPH_VERSION=v24.0
 
 TOTP_ISSUER=Piuma
-ANTHROPIC_API_KEY=<по избор>
+# По избор — Claude през Google Cloud Vertex AI в ЕС (§1а). Празно = генерирането е изключено.
+VERTEX_PROJECT_ID=
+VERTEX_REGION=eu
+VERTEX_MODEL=claude-opus-5-5
+GOOGLE_APPLICATION_CREDENTIALS=
 
 # Къде води „Поискай достъп“ на витрината (страница или mailto:). По подразбиране carbonstealth.eu.
 CONTACT_URL=mailto:<адрес за запитвания>
@@ -76,6 +80,46 @@ TZ=Europe/Sofia
 извън `releases/`, тоест преживява и прочистването на старите release-и, и връщане
 назад). Няма файл там → скриптът пропуска Piuma с предупреждение и **не измисля тайни**:
 полу-вдигнат панел, който държи чужди токени, е по-лош изход от ясен отказ.
+
+---
+
+## 1а. Чернови от Claude — Google Cloud Vertex AI в ЕС (по избор)
+
+Черновите се пишат от Claude **само** през Google Cloud Vertex AI на мулти-региона `eu`.
+Първостепенният Claude API няма обработка в ЕС (`inference_geo` е само `us`/`global`), затова
+пътят през `ANTHROPIC_API_KEY` е махнат. Без тази стъпка панелът, публикуването и `/health`
+работят — генерирането просто казва, че AI не е настроен.
+
+1. **Проект и API:** Google Cloud проект с фактуриране → `gcloud services enable
+aiplatform.googleapis.com --project <ПРОЕКТ>`.
+2. **Модел:** Model Garden → Claude Opus 5.5 → Enable. Наличността в `eu` се сверява в
+   таблицата „EU multi-region“ на
+   https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/data-residency.
+3. **Квота:** Vertex AI → Quotas — квота за модела в `eu` (новият проект често е с 0).
+4. **Service account с една роля:**
+   ```bash
+   gcloud iam service-accounts create piuma-vertex --project <ПРОЕКТ> --display-name "Piuma чернови"
+   gcloud projects add-iam-policy-binding <ПРОЕКТ> \
+     --member "serviceAccount:piuma-vertex@<ПРОЕКТ>.iam.gserviceaccount.com" \
+     --role roles/aiplatform.user
+   gcloud iam service-accounts keys create piuma-vertex.json \
+     --iam-account piuma-vertex@<ПРОЕКТ>.iam.gserviceaccount.com
+   ```
+   Само `roles/aiplatform.user` (Vertex AI User) — никакви Owner/Editor.
+5. **Ключът на сървъра** — копира се директно (scp), не минава през репото/имейл/чат, после
+   се трие локално. Собственик uid 1000 = потребителят `node` в образа, който го чете:
+   ```bash
+   sudo install -m 600 -o 1000 -g 1000 piuma-vertex.json /opt/few-few/shared/piuma/vertex-sa.json
+   ```
+   В `.env`: `VERTEX_PROJECT_ID=<ПРОЕКТ>`, `VERTEX_REGION=eu`,
+   `GOOGLE_APPLICATION_CREDENTIALS=/opt/few-few/shared/piuma/vertex-sa.json` (пътят на хоста —
+   Compose го монтира само за четене като `/run/secrets/vertex-sa.json`).
+6. **Проверка:** `/admin/settings` → „Генериране с модел“ е включено. Файл, по-отворен от 600,
+   липсващ или нечетим → генерирането е изключено, а не „полу-работи“. Регион, различен от
+   `eu` → процесът не тръгва. Разходът на всяко извикване е в лога като `ai.usage` (само
+   токени, без съдържание).
+7. **Договор и поверителност:** Google е обработващ по Cloud Data Processing Addendum (чл. 28
+   GDPR) — приеми го в конзолата; текстът за поверителност минава през Правния Разбирач.
 
 ---
 
@@ -268,3 +312,48 @@ sudo RELEASE_DIR=/opt/few-few/releases/<по-стар> PROJECTS="piuma" \
 
 Връщането назад връща **кода**, не схемата. Миграция, която маха колона, не се отменя от
 стар образ — затова бекъпът преди миграция не е формалност.
+
+---
+
+## 8а. Одит-веригата: котвата и преходът v1 → v2
+
+Одитът е верига от записи; от v2 всеки хеш е HMAC с ключ, изведен от `TOKEN_ENC_KEY`.
+Главата на веригата (номер + хеш) живее и **извън базата** — в котвата
+`/var/lib/piuma/audit/audit-head.json` (права 600) на именувания том `piuma_audit-anchor`,
+общ за `app` и `worker`. Без нея който пише само в базата, може да изреже края на веригата
+или да свали цялата v2 опашка до v1 без ключ — затова в продукция `AUDIT_ANCHOR_DIR` е
+**задължителна** (compose я задава сам; без нея процесът не тръгва).
+
+Котвата се мести напред само ако записът на нейния номер е в базата със същия хеш.
+Изрязан край или пренаписана опашка → котвата **стои**, а в лога и в одита излиза
+`audit.chain.broken` (по веднъж на място на скъсване). Проверка на ръка: панелът →
+„Одит“ → „Провери веригата“.
+
+**Последният v1 номер.** Старите записи (v1) са без ключ, затова се приемат само до
+номер, закован извън базата:
+
+- автоматично — при първия запис с котва новият код записва в нея `v1MaxId` (последния
+  v1 номер в този момент) и после не го сменя;
+- или на ръка (има предимство) — `AUDIT_V1_MAX_ID` в `.env`, прочетено **преди**
+  миграцията към v2:
+
+  ```bash
+  cd /opt/few-few/current/piuma
+  sudo docker compose exec -T db psql -U piuma -d piuma -tAc 'SELECT coalesce(max(id), 0) FROM "AuditLog"'
+  ```
+
+**Деплоят на прехода към v2 — спри работника първо.** Старият работник пише v1 записи;
+тръгне ли нов v2 запис преди него, всеки следващ негов запис е v1 над закования номер,
+тоест веригата се отчита като скъсана. Затова:
+
+```bash
+cd /opt/few-few/current/piuma
+sudo docker compose stop worker              # старият работник спира да пише
+sudo PROJECTS="piuma" bash /opt/few-few/current/deploy/fetch-deploy.sh
+sudo docker compose -f /opt/few-few/current/piuma/docker-compose.yml ps worker   # новият тича
+```
+
+**Възстановена база от бекъп.** Котвата тогава е напред от базата и проверката вика
+„скъсано“ — точно както при изрязан край. Едва след като си сигурен, че това е твоето
+връщане, а не намеса: **не трий** стария файл — премести го встрани като доказателство
+(`audit-head.json.<дата>`), и следващият запис създава нова котва.

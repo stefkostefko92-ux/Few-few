@@ -19,7 +19,7 @@
 import { readdirSync, readFileSync, existsSync, appendFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { scoreOutput, validateSpec, summarize, trialStats, trialFiles } from "./eval-lib.mjs";
+import { scoreOutput, validateSpec, summarize, trialStats, trialFiles, fixtureRefs } from "./eval-lib.mjs";
 import { emitJsonNow } from "../../lib/emit.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -86,6 +86,7 @@ if (has("--check")) {
   let bad = 0;
   for (const s of specs) {
     const errs = s._parseError ? [s._parseError] : validateSpec(s, known);
+    if (!s._parseError) for (const f of fixtureRefs(s.task)) if (!existsSync(join(ROOT, f))) errs.push(`липсва фикстура: ${f}`);
     if (errs.length) { bad++; console.log(red(`✗ ${s._file}`)); errs.forEach((e) => console.log(`    ${e}`)); }
   }
   const injCount = specs.filter((s) => s.kind === "injection").length;

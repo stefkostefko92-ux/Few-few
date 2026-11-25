@@ -924,3 +924,17 @@ describe("МАГНАТ — дълг: играчът избира какво да
     throw new Error("no non-doubles roll");
   });
 });
+
+describe("МАГНАТ — validate приема само точната форма на действието", () => {
+  it("легално действие с излишен ключ се отказва; точното (в друг ред на ключовете) минава", () => {
+    const s = init(2);
+    const legal = magnatEngine.legalActions(s, s.turn);
+    expect(legal.length).toBeGreaterThan(0);
+    for (const l of legal) {
+      expect(magnatEngine.validate!(s, s.turn, l)).toBe(true);
+      expect(magnatEngine.validate!(s, s.turn, { ...l, junk: "x" } as unknown as MagnatAction)).toBe(false);
+      const reversed = Object.fromEntries(Object.entries(l).reverse()) as unknown as MagnatAction;
+      expect(magnatEngine.validate!(s, s.turn, reversed)).toBe(true);
+    }
+  });
+});

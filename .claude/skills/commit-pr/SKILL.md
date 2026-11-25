@@ -32,6 +32,14 @@ node tools/agents/core-map.mjs --diff        # ядро = пари, фискал
 `test-driven-development`); човекът чете тестовете първи. Листата (изгледи, стилове, текстове) — свободно.
 Слоевете по Anthropic: в сесията → `security-review` → `code-review` → CI (`security.yml`, `new-deps`).
 
+**Ядро → Ultrareview по избор (решение на собственика, 24.11.2026).** Втори, независим преглед извън флота:
+облачен флот от проверяващи, всяка находка — възпроизведена. **Платен** (usage credits след безплатните;
+цената — `claims.json` `ultrareview-pricing`), затова: само предлагаш реда от `core-map --diff` / `pr-triage` и чакаш изрично „да“ за това
+пускане; **пуска го собственикът** с `/code-review ultra <номер на PR>`. PR режимът клонира от GitHub — не
+качва работното дърво; без `--post`, освен ако собственикът избере. От Bash (`claude ultrareview`) — никога:
+това е съгласие за таксуване още при пускането, затова `guard-dangerous` го спира. Не замества нашите агенти — те остават
+главният преглед. Договор `ultrareview-human-only`, цена `ultrareview-pricing` (`claims.json`).
+
 ## Commit
 - **Conventional, български, описателен:** `type(scope): описание` — type ∈
   `feat|fix|chore|docs|refactor|perf|test|build|ci|style|revert`. Пример: „feat(medqr): спешен SOS изглед".
