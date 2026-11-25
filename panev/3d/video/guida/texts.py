@@ -7,15 +7,16 @@ U+00A0 keeps "SU 220 160", "5 mm", "N1" on one line (overlay.wrap splits on plai
 NB = "\u00a0"
 
 STEP_TEXT = [
-    ("Fili a piombo", f"Cala dall’alto un filo a piombo per ogni guida: passerà 5{NB}mm davanti alla testa della guida."),
+    ("Fili a piombo", f"Cala dall’alto un filo a piombo per ogni guida: passerà a 5{NB}mm dalla testa."),
     ("Tracciatura", "Appoggia il supporto SU al muro, in bolla e in linea con il filo, e segna i fori nelle asole."),
     ("Foratura", f"Fora i punti segnati con il trapano tassellatore, punta da 10{NB}mm."),
-    ("Fissaggio dei supporti SU", "Fissa ogni supporto SU con due tasselli M10, con rondella maggiorata, e serra i dadi."),
-    ("Staffa SG sul supporto", "Bullone M10 con rondella maggiorata sopra; sotto rondella maggiorata, rondella elastica "
-                               "spezzata (grower) e dado. Serraggio leggero: la SG deve ancora scorrere."),
-    ("Guida a piombo", f"Cala la guida contro la flangia della SG e mettila a piombo: 5{NB}mm tra la testa e il filo."),
-    ("SG in avanti", f"Fai scorrere la SG di 20{NB}mm sul supporto, fino al piede della guida."),
-    (f"Graffe{NB}N1", f"Blocca la guida con due graffe{NB}N1: dietro la flangia rondella maggiorata, grower e dado, senza serrare."),
+    ("Fissaggio dei supporti SU", "Fissa ogni supporto SU con due tasselli M10 e rondella maggiorata, poi serra i dadi."),
+    ("Staffa SG sul supporto", "Sopra: bullone M10 con rondella maggiorata. Sotto: rondella maggiorata, rondella "
+                               "elastica spezzata (grower) e dado. Serra leggermente: la SG deve ancora scorrere."),
+    ("Guida a piombo", f"Cala la guida davanti alla SG e mettila a piombo: 5{NB}mm tra la testa e il filo."),
+    ("SG in avanti", f"Fai scorrere la SG di 20{NB}mm fino al piede della guida."),
+    (f"Graffe{NB}N1", f"Monta due graffe{NB}N1 sulla guida, senza serrare. Dietro la flangia della SG: rondella maggiorata, "
+                       "grower e dado."),
     ("Verifica e serraggio", "Controlla la verticalità con la livella, poi serra tutto: i bulloni della SG e i dadi delle "
                              "graffe."),
 ]
@@ -32,12 +33,12 @@ CALLOUTS = [
     ("SG_sx", "", f"Staffa SG{NB}80{NB}150", 45.4, 48.0, 150, -90),
     ("bigtop_sx", "", "Rondella maggiorata", 46.8, 49.4, -170, -80),
     ("bigbot_sx", "", "Rondella maggiorata", 50.4, 53.0, -170, 60),
-    ("grower_sx", "", "Grower spezzata", 51.0, 54.0, -200, 90),
+    ("grower_sx", "", "Rondella grower", 51.0, 54.0, -200, 90),
     ("nut_sx", "", "Serraggio leggero", 52.6, 56.0, 190, -110),
     ("rail_sx", "", "Guida SX", 62.0, 66.0, -150, -100), ("rail_dx", "", "Guida DX", 62.3, 66.0, 150, -100),
     ("slide_sx", "", f"La SG scorre di 20{NB}mm verso la guida", 69.8, 74.0, 170, -150),
     ("clip_sx", "", f"Graffa{NB}N1", 75.4, 78.2, 150, -90),
-    ("cwasher_sx", "", "Rondella maggiorata", 79.0, 81.6, -170, -90), ("cgrower_sx", "", "Grower spezzata", 79.6, 83.0, -170, 60),
+    ("cwasher_sx", "", "Rondella maggiorata", 79.0, 81.6, -170, -90), ("cgrower_sx", "", "Rondella grower", 79.6, 83.0, -170, 60),
     ("level", "", "In bolla", 84.0, 85.5, 150, -90),
     ("nut_sx", "", "Serraggio", 89.0, 93.0, 150, 70), ("cnut_sx", "", "Dadi delle graffe", 93.2, 98.0, -170, -80),
 ]
@@ -45,7 +46,7 @@ CALLOUTS = [
 CARDS = {
     "header": "GUIDA AL MONTAGGIO  ·  SU 220 160 + SG 80 150",
     "intro": ("GUIDA AL MONTAGGIO", "Guide del", "contrappeso", f"Supporto SU{NB}220{NB}160 + staffa SG{NB}80{NB}150",
-              f"Versioni SX e DX · corsa di regolazione 45–155{NB}mm"),
+              f"Versioni SX e DX · corsa di estensione 45–155{NB}mm"),
     "outro": ("MONTAGGIO COMPLETATO", "Guide a piombo, staffe serrate",
               "Sintesi per installatori qualificati: fanno fede i disegni di montaggio del catalogo tecnico e il progetto "
               "dell’impianto.", "panevascensori.it  ·  Catalogo tecnico 2027, pag. 20–21"),
