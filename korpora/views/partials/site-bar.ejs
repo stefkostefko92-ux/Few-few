@@ -12,6 +12,18 @@
       <a href="#prices"><%= t('landing.nav.prices') %></a>
       <a href="#faq"><%= t('landing.nav.faq') %></a>
     </nav>
+    <%# a phone: the same sections in a menu that opens without script; the bar above stays two short rows %>
+    <details class="site-menu">
+      <summary><%= t('landing.nav.menu') %></summary>
+      <nav aria-label="<%= t('landing.nav.label') %>">
+        <a href="#how"><%= t('landing.nav.how') %></a>
+        <a href="#drilling"><%= t('landing.nav.drilling') %></a>
+        <a href="#kinds"><%= t('landing.nav.kinds') %></a>
+        <a href="#machine"><%= t('landing.nav.machine') %></a>
+        <a href="#prices"><%= t('landing.nav.prices') %></a>
+        <a href="#faq"><%= t('landing.nav.faq') %></a>
+      </nav>
+    </details>
     <% } %>
     <div class="site-bar-end">
       <nav class="langs" aria-label="<%= t('common.language') %>">

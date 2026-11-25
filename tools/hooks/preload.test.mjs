@@ -50,3 +50,16 @@ test("selectLessons: спазва токен-бюджета (не изсипва
   const few = selectLessons(all, "", 300);
   assert.ok(few.length > 0 && few.length < all.length, "бюджетът трябва да отреже част от поуките");
 });
+
+test("bulletsUnder: проверена поука на няколко реда стига до агента ЦЯЛА (31.10.2026, 54 поуки)", async () => {
+  const { bulletsUnder } = await import("../../.claude/hooks/memory-preload.mjs");
+  const { mkdtempSync, writeFileSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const f = join(mkdtempSync(join(tmpdir(), "preload-")), "a.md");
+  writeFileSync(f, ["## Проверени поуки", "- **2026-06-26:** първи ред", "  продължение с извода", "  _(дизайн на hero; verified; CLAUDE.md:1)_", "", "### Подраздел", "- **2026-07-01:** друга _(x y; verified; a.ts:1)_", "## Карантина", "- **2026-07-02:** не"].join("\n"));
+  const v = bulletsUnder(f, /^##\s*Проверени поуки/);
+  assert.equal(v.length, 2);
+  assert.equal(v[0], "- **2026-06-26:** първи ред продължение с извода _(дизайн на hero; verified; CLAUDE.md:1)_");
+  assert.ok(!v.join(" ").includes("Подраздел"));
+});

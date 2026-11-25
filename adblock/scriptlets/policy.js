@@ -41,7 +41,32 @@ var SA_POLICY = (function () {
     "nowebrtc": "nowebrtc",
     "no-xhr-if": "no-xhr-if", "prevent-xhr": "no-xhr-if",
     "set-cookie": "set-cookie",
-    "remove-cookie": "remove-cookie",
+    "remove-cookie": "remove-cookie", "cookie-remover": "remove-cookie",
+    // 5.5.0 — the uBO routines the bundled lists use most that we did not run yet.
+    // Same rule as above: our own implementations, baked data only, never trusted-*.
+    "prevent-fetch": "no-fetch-if", "prevent-window-open": "no-window-open-if",
+    "prevent-setTimeout": "no-setTimeout-if", "prevent-setInterval": "no-setInterval-if",
+    "prevent-addEventListener": "addEventListener-defuser",
+    "json-prune-fetch-response": "json-prune-fetch-response",
+    "json-prune-xhr-response": "json-prune-xhr-response",
+    "noeval-if": "noeval-if", "prevent-eval-if": "noeval-if",
+    "noeval": "noeval", "noeval-silent": "noeval", "silent-noeval": "noeval",
+    "nano-setTimeout-booster": "nano-stb", "nano-stb": "nano-stb", "adjust-setTimeout": "nano-stb",
+    "nano-setInterval-booster": "nano-sib", "nano-sib": "nano-sib", "adjust-setInterval": "nano-sib",
+    "set-local-storage-item": "set-local-storage-item",
+    "set-session-storage-item": "set-session-storage-item",
+    "nobab": "nobab", "bab-defuser": "nobab",
+    "nofab": "nofab", "fuckadblock.js-3.2.0": "nofab",
+    "popads-dummy": "popads-dummy", "popads.net": "popads.net",
+    "xml-prune": "xml-prune",
+    "m3u-prune": "m3u-prune",
+    "refresh-defuser": "refresh-defuser", "prevent-refresh": "refresh-defuser",
+    "set-attr": "set-attr",
+    "no-requestAnimationFrame-if": "no-requestAnimationFrame-if", "norafif": "no-requestAnimationFrame-if",
+    "prevent-requestAnimationFrame": "no-requestAnimationFrame-if",
+    "prevent-innerHTML": "prevent-innerHTML",
+    "window.name-defuser": "window.name-defuser",
+    "alert-buster": "alert-buster",
   };
   var CANON = {};
   for (var k in ALIASES) if (hasOwn.call(ALIASES, k)) CANON[ALIASES[k]] = true;
@@ -50,11 +75,26 @@ var SA_POLICY = (function () {
   var LIVE_SCRIPTLET_MAX = 500;      // max live directives per filters.json (SW and engine agree)
   // dotted property chain; may start with "_" or "$" (`_sp_`, jQuery `$`) —
   // __proto__/constructor/prototype stay out via argSafe().
-  var NAME_RE = /^[a-zA-Z_$][\w.$-]{0,60}$/;
+  var NAME_RE = /^[a-zA-Z_$][\w.$-]{0,120}$/;
 
   // set-constant values: fixed dictionary or a plain integer — never code.
+  // "{}"/"[]"/'""' are how the uBO lists spell emptyObj/emptyArr/emptyStr; throwFunc throws.
   var SETCONST_VALUES = ["false", "true", "null", "undefined", "noopFunc", "trueFunc",
-    "falseFunc", "", "emptyStr", "emptyArr", "emptyObj", "''"];
+    "falseFunc", "throwFunc", "", "emptyStr", "emptyArr", "emptyObj", "''", '""', "{}", "[]"];
+  // set-local-storage-item / set-session-storage-item: what may be written — inert words
+  // and small numbers (the uBO dictionary), or "$remove$" to delete the key. Never markup.
+  var STORAGE_VALUES = ["undefined", "null", "false", "true", "on", "off", "yes", "no", "accept",
+    "reject", "accepted", "rejected", "allowed", "denied", "''", '""', "", "{}", "[]", "emptyObj",
+    "emptyArr", "emptyStr", "$remove$"];
+  var STORAGE_KEY = /^"?[\w.$:@#/|\-\[\] ]{1,128}"?$/;
+  // no-fetch-if / no-xhr-if: what a refused request answers with.
+  var FETCH_BODY = /^(|true|emptyObj|emptyArr|emptyStr|length:\d{1,6}(-\d{1,6})?|war:[\w.-]{1,80})$/;
+  var FETCH_TYPES = ["", "basic", "cors", "default", "error", "opaque"];
+  // Chains through a prototype (`Object.prototype.hideAds`, `String.prototype.charCodeAt`) are
+  // how the lists reach a whole class of objects. Allowed in the baked list for the property
+  // routines only; __proto__ and constructor stay banned everywhere.
+  var PROTO_ROUTINES = { "set-constant": 1, "abort-on-property-read": 1, "abort-on-property-write": 1,
+    "abort-current-script": 1, "abort-on-stack-trace": 1 };
 
   // set-cookie: name charset, a denylist of names that are never a consent
   // cookie (session/auth/CSRF/tracking IDs, __Host-/__Secure- prefixes — the
@@ -106,6 +146,46 @@ var SA_POLICY = (function () {
     return typeof a === "string" && a.length <= ARG_MAX &&
       !/__proto__|constructor|prototype/.test(a) &&
       !/<\/?script|<\/?style|-->/i.test(a);
+  }
+  // The baked list's property chains may go through a prototype (see PROTO_ROUTINES).
+  function argSafeProto(a) {
+    return typeof a === "string" && a.length <= ARG_MAX && !/__proto__|constructor/.test(a) &&
+      !/<\/?script|<\/?style|-->/i.test(a);
+  }
+  // uBO varargs after the fixed arguments: "key, value" pairs from a fixed set of keys.
+  function varargsOk(args, from, keys) {
+    if ((args.length - from) % 2) return false;
+    for (var i = from; i < args.length; i += 2) if (keys.indexOf(args[i]) < 0) return false;
+    return true;
+  }
+  function fetchTypeOk(t) {
+    if (FETCH_TYPES.indexOf(t) >= 0) return true;
+    if (t.charAt(0) !== "{") return false;
+    var o;
+    try { o = JSON.parse(t); } catch (e) { return false; }
+    if (!o || typeof o !== "object" || Array.isArray(o)) return false;
+    for (var k in o) {
+      if (!hasOwn.call(o, k)) continue;
+      if (k === "ok" && typeof o[k] === "boolean") continue;
+      if (k === "type" && FETCH_TYPES.indexOf(o[k]) >= 0) continue;
+      if (k === "statusText" && typeof o[k] === "string" && /^[\w ]{0,40}$/.test(o[k])) continue;
+      return false;
+    }
+    return true;
+  }
+  function storageValueOk(v) {
+    return STORAGE_VALUES.indexOf(v) >= 0 || COOKIE_VALUES.indexOf(v) >= 0 || (/^-?\d{1,5}$/.test(v) && Math.abs(+v) <= 32767);
+  }
+  // set-attr: the attribute and what it may be set to (uBO dictionary). URL-bearing
+  // attributes may only take a copy of another attribute of the same element
+  // (`src` ← `[data-src]`, a lazy loader); event handlers and srcdoc never.
+  var SET_ATTR_URLISH = /^(src|href|data|action|formaction|poster|background|codebase|cite|xlink:href)$/i;
+  function setAttrOk(attr, value) {
+    if (!/^[a-zA-Z][\w:-]{0,40}$/.test(attr) || /^on/i.test(attr) || /^(srcdoc|style)$/i.test(attr)) return false;
+    var copy = /^\[[a-zA-Z][\w:-]{0,40}\]$/.test(value);
+    if (SET_ATTR_URLISH.test(attr)) return copy;
+    return copy || value === "" || value === "''" || value === "true" || value === "false" ||
+      (/^\d{1,5}$/.test(value) && +value < 32768);
   }
   function styleOk(decl) {
     return typeof decl === "string" && decl.length <= ARG_MAX && !STYLE_DENY.test(decl);
@@ -171,6 +251,7 @@ var SA_POLICY = (function () {
   function setConstOk(v) {
     return SETCONST_VALUES.indexOf(v) >= 0 || /^-?\d+$/.test(v);
   }
+  var RUN_AT = ["loading", "interactive", "complete", "idle", "asap", "stay", "asap stay", "end"];
   // Resolve a set-constant token to a concrete value (engine use).
   function tokenValue(raw) {
     switch (raw) {
@@ -181,10 +262,14 @@ var SA_POLICY = (function () {
       case "noopFunc": return { ok: true, v: function () {} };
       case "trueFunc": return { ok: true, v: function () { return true; } };
       case "falseFunc": return { ok: true, v: function () { return false; } };
+      case "throwFunc": return { ok: true, v: function () { throw new Error(""); } };
       case "":
       case "emptyStr":
+      case '""':
       case "''": return { ok: true, v: "" };
+      case "[]":
       case "emptyArr": return { ok: true, v: [] };
+      case "{}":
       case "emptyObj": return { ok: true, v: {} };
       default:
         if (/^-?\d+$/.test(raw)) return { ok: true, v: parseInt(raw, 10) };
@@ -206,12 +291,19 @@ var SA_POLICY = (function () {
   // validateDirective(name, args, live) — name must be CANONICAL.
   function validateDirective(name, args, live) {
     if (typeof name !== "string" || !hasOwn.call(CANON, name)) return false;
-    if (!args || typeof args.length !== "number" || args.length > 3) return false;
+    // The response pruners take uBO varargs ("propsToMatch, …"); everything else ≤ 3 (+runAt for set-constant).
+    var maxArgs = name === "json-prune-fetch-response" || name === "json-prune-xhr-response" ? 6 : name === "set-constant" || name === "remove-cookie" ? 4 : 3;
+    if (!args || typeof args.length !== "number" || args.length > maxArgs) return false;
     var n = args.length;
-    for (var i = 0; i < n; i++) if (!argSafe(args[i])) return false;
+    var proto = !live && hasOwn.call(PROTO_ROUTINES, name);
+    for (var i = 0; i < n; i++) if (!(proto && i === 0 ? argSafeProto(args[i]) : argSafe(args[i]))) return false;
+    // The 5.5.0 routines exist for the baked uBO list only (there is no live scriptlet channel).
+    if (live && /^(json-prune-(fetch|xhr)-response|noeval(-if)?|nano-(stb|sib)|set-(local|session)-storage-item|nobab|nofab|popads-dummy|popads\.net|xml-prune|m3u-prune|refresh-defuser|set-attr|no-requestAnimationFrame-if|prevent-innerHTML|window\.name-defuser|alert-buster)$/.test(name)) return false;
     switch (name) {
       case "set-constant":
-        return n === 2 && NAME_RE.test(args[0]) && setConstOk(args[1]);
+        // (chain) = undefined; (chain, value); (chain, value, "runAt", when)
+        return NAME_RE.test(args[0]) && (n === 1 || (n === 2 && setConstOk(args[1])) ||
+          (n === 4 && !live && setConstOk(args[1]) && args[2] === "runAt" && RUN_AT.indexOf(args[3]) >= 0));
       case "abort-on-property-read":
       case "abort-on-property-write":
         return n === 1 && NAME_RE.test(args[0]);
@@ -221,20 +313,61 @@ var SA_POLICY = (function () {
         return n === 2 && NAME_RE.test(args[0]);
       case "no-setTimeout-if":
       case "no-setInterval-if":
-        return n >= 1 && n <= 2 && (n < 2 || /^\d{1,7}$/.test(args[1]));
+        // delay: exact ms, or a range "2000-5000" (baked lists)
+        return n >= 1 && n <= 2 && (n < 2 || args[1] === "" || /^\d{1,7}$/.test(args[1]) || (!live && /^\d{1,7}-\d{1,7}$/.test(args[1])));
       case "no-fetch-if":
+        // (conditions[, body[, type]]) — what the refused request answers with
+        return n >= 1 && (n === 1 || !live) && (n < 2 || FETCH_BODY.test(args[1])) && (n < 3 || fetchTypeOk(args[2]));
       case "no-xhr-if":
-        return n === 1;
+        return n >= 1 && n <= 2 && (n === 1 || !live) && (n < 2 || FETCH_BODY.test(args[1]));
       case "no-window-open-if":
         // No argument = every window.open on that site (uBO): baked lists only.
-        return n === 1 || (!live && n === 0);
+        // (needle, seconds, "obj"|"blank"): hand the page a decoy window instead of null.
+        return (n === 1 || (!live && n === 0)) ||
+          (!live && n >= 2 && /^\d{0,3}$/.test(args[1]) && (n < 3 || args[2] === "" || args[2] === "obj" || args[2] === "blank"));
       case "addEventListener-defuser":
+        return n >= 1 && n <= 2;
       case "json-prune":
+        // (props[, needles[, stack needle]])
+        return n >= 1 && n <= (live ? 2 : 3);
+      case "json-prune-fetch-response":
+      case "json-prune-xhr-response":
+        return n >= 1 && args[0] !== "" && varargsOk(args, 2, ["propsToMatch", "stackToMatch"]);
+      case "noeval-if":
+        return n === 1 && args[0] !== "";
+      case "noeval":
+      case "nobab":
+      case "nofab":
+      case "popads-dummy":
+      case "popads.net":
+      case "window.name-defuser":
+      case "alert-buster":
+        return n === 0;
+      case "nano-stb":
+      case "nano-sib":
+        // (needle, delay | "*", boost 0.02–50)
+        return n <= 3 && (n < 2 || args[1] === "" || args[1] === "*" || /^\d{1,7}$/.test(args[1])) &&
+          (n < 3 || args[2] === "" || /^\d{0,2}(\.\d{1,4})?$/.test(args[2])); // 0 → the 0.02 floor
+      case "set-local-storage-item":
+      case "set-session-storage-item":
+        return n === 2 && STORAGE_KEY.test(args[0]) && storageValueOk(args[1]);
+      case "xml-prune":
+        return n >= 1 && args[0] !== "";
+      case "m3u-prune":
+        return n >= 1 && n <= 2 && args[0] !== "";
+      case "refresh-defuser":
+        return n === 0 || (n === 1 && /^\d{0,4}(\.\d{1,3})?$/.test(args[0]));
+      case "set-attr":
+        return (n === 2 || n === 3) && args[0] !== "" && setAttrOk(args[1], n === 3 ? args[2] : "");
+      case "no-requestAnimationFrame-if":
+        return n === 1 && args[0] !== "";
+      case "prevent-innerHTML":
         return n >= 1 && n <= 2;
       case "remove-attr":
-        return n >= 1 && n <= 2 && (!live || attrsOk(args[0])) && (n < 2 || !live || safeSelector(args[1]));
+        // 3rd: when to act ("stay", "complete", "asap"…) — we always act now and on every change
+        return n >= 1 && n <= 3 && (n < 3 || (!live && RUN_AT.indexOf(args[2]) >= 0)) && (!live || attrsOk(args[0])) && (n < 2 || !live || safeSelector(args[1]));
       case "remove-class":
-        return n >= 1 && n <= 2 && (n < 2 || !live || safeSelector(args[1]));
+        return n >= 1 && n <= 3 && (n < 3 || (!live && RUN_AT.indexOf(args[2]) >= 0)) && (n < 2 || !live || safeSelector(args[1]));
       case "href-sanitizer":
         return n >= 1 && n <= 2 && (!live || safeSelector(args[0]));
       case "remove-node-text":
@@ -244,7 +377,8 @@ var SA_POLICY = (function () {
       case "set-cookie":
         return n === 2 && COOKIE_NAME.test(args[0]) && !COOKIE_NAME_DENY.test(args[0]) && cookieValueOk(args[1]);
       case "remove-cookie":
-        return !live && n === 1; // baked list only — it can log a user out of a site
+        // baked list only — it can log a user out of a site. (needle[, "when", "scroll keydown"])
+        return !live && (n === 1 || (n === 3 && args[1] === "when" && /^(scroll|keydown|load|click)( (scroll|keydown|load|click))*$/.test(args[2])));
       default:
         return false;
     }
@@ -252,7 +386,9 @@ var SA_POLICY = (function () {
 
   return {
     ALIASES: ALIASES, CANON: CANON, NAME_RE: NAME_RE, ARG_MAX: ARG_MAX, LIVE_SCRIPTLET_MAX: LIVE_SCRIPTLET_MAX,
-    SETCONST_VALUES: SETCONST_VALUES, COOKIE_NAME: COOKIE_NAME,
+    SETCONST_VALUES: SETCONST_VALUES, COOKIE_NAME: COOKIE_NAME, STORAGE_VALUES: STORAGE_VALUES,
+    STORAGE_KEY: STORAGE_KEY, FETCH_BODY: FETCH_BODY, storageValueOk: storageValueOk, setAttrOk: setAttrOk,
+    fetchTypeOk: fetchTypeOk, RUN_AT: RUN_AT,
     COOKIE_NAME_DENY: COOKIE_NAME_DENY, COOKIE_VALUES: COOKIE_VALUES,
     UNSAFE_SELECTORS: UNSAFE_SELECTORS, FORM_TARGET: FORM_TARGET, FORM_ATTR: FORM_ATTR,
     UNIVERSAL: UNIVERSAL, ATTR_DENY: ATTR_DENY, TAG_OK: TAG_OK, TAG_DENY: TAG_DENY,

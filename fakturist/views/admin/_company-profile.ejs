@@ -1,0 +1,20 @@
+<%# Данните на фирмата (SPEC 82) и ЕИК с 2FA (SPEC 83) — от картата на организацията. -%>
+<section class="panel stack narrow-form" aria-labelledby="h-profile">
+  <h2 id="h-profile"><%= t('admin.profile.title') %></h2>
+  <form method="post" action="/admin/firmi/<%= org.id %>/danni" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <% ['legalName', 'vatNumber', 'addressStreet', 'addressCity', 'postalCode', 'iban', 'bic', 'bankName', 'email', 'phone'].forEach((field) => { %>
+    <label><%= t('app.settings.profile.' + field) %><input name="<%= field %>" value="<%= org[field] || '' %>" autocomplete="off"></label>
+    <% }) %>
+    <div><button type="submit"><%= t('app.settings.profile.save') %></button></div>
+  </form>
+  <h3><%= t('admin.profile.eikTitle') %></h3>
+  <p class="muted"><%= t('admin.profile.eikIntro') %></p>
+  <form method="post" action="/admin/firmi/<%= org.id %>/eik" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label><%= t('admin.profile.newEik') %><input name="eik" inputmode="numeric" pattern="[0-9]{9}([0-9]{4})?" maxlength="13" required autocomplete="off"></label>
+    <label><%= t('admin.handover.reason') %><textarea name="reason" rows="2" minlength="3" maxlength="200" required></textarea></label>
+    <label><%= t('admin.handover.code') %><input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label>
+    <div><button type="submit" class="button-danger"><%= t('admin.profile.eikButton') %></button></div>
+  </form>
+</section>

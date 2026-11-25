@@ -1,0 +1,46 @@
+/* The furniture type: chosen once per project, so it is one line with the chosen type (styled as the decor
+   pickers below it); the cards open under it. The name comes from the server, the icon slot keeps its size until
+   the editor draws the icon — nothing under it moves when the editor starts. */
+.typebox > summary {
+  list-style: none;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+}
+.typebox > summary::-webkit-details-marker {
+  display: none;
+}
+.typebox > summary::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin: 0 4px 3px 0;
+  border-right: 1.5px solid var(--ink-2);
+  border-bottom: 1.5px solid var(--ink-2);
+  transform: rotate(45deg);
+}
+.typebox[open] > summary::after {
+  margin: 3px 4px 0 0;
+  transform: rotate(-135deg);
+}
+.typebox > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.tslot {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--accent);
+}
+.typebox #type-name {
+  font-weight: 600;
+}
+.typebox > #type-picker {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+/* a picker button is filled by the editor (swatch, name, maker): its height is kept from the first frame */
+.pickbtn {
+  min-height: 45px;
+}

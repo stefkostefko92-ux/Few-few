@@ -11,6 +11,8 @@ export const SETTING_KEYS = {
   revolutUrl: "revolut_url",
   dutyInfo: "duty_info",
   facebookUrl: "facebook_url",
+  // Viber канал „За Бобов дол“ — само за известия (прекъсвания, измами, аптека).
+  viberChannelUrl: "viber_channel_url",
   churchServices: "church_services",
   wasteSchedule: "waste_schedule",
   googleVerification: "google_site_verification",
@@ -26,6 +28,16 @@ export const SETTING_KEYS = {
   androidPackage: "android_package",
   androidFingerprints: "android_fingerprints",
   playStoreUrl: "play_store_url",
+  // Пощата на сайта (Brevo SMTP) — /admin/poshta; ключът е шифрован (mail-config-core.ts).
+  mailEnabled: "mail_enabled",
+  mailHost: "mail_host",
+  mailPort: "mail_port",
+  mailUser: "mail_user",
+  mailKeyEnc: "mail_key_enc",
+  mailFromName: "mail_from_name",
+  mailFromEmail: "mail_from_email",
+  mailUpdatedBy: "mail_updated_by",
+  mailUpdatedAt: "mail_updated_at",
 } as const;
 
 // Връзка към приложението в Google Play (показва се в сайта, ако е зададена).
@@ -124,8 +136,21 @@ export async function getFacebookUrl(): Promise<string> {
   }
 }
 
+// Адрес на Viber канала (празно = каналът още не е създаден и не се показва).
+export async function getViberChannelUrl(): Promise<string> {
+  try {
+    const row = await prisma.siteSetting.findUnique({
+      where: { key: SETTING_KEYS.viberChannelUrl },
+    });
+    const v = (row?.value || "").trim();
+    return /^https:\/\/(invite\.viber\.com|vb\.me|viber\.com|www\.viber\.com)\//i.test(v) ? v : "";
+  } catch {
+    return "";
+  }
+}
+
 // Часове на църковните служби (и празници), редактирани свободно от админа.
-// Показват се в раздела „Религиозен живот" на страница „Опознай Бобов дол".
+// Показват се в раздела „Религиозен живот" на страница „Опознайте Бобов дол".
 export async function getChurchServices(): Promise<string> {
   try {
     const row = await prisma.siteSetting.findUnique({

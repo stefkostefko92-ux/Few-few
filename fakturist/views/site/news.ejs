@@ -1,0 +1,40 @@
+<%
+  const fmtDay = (d) => new Intl.DateTimeFormat(lang === 'bg' ? 'bg-BG' : 'en-GB', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(d + 'T00:00:00Z'));
+-%>
+<%- include('../partials/site-head') %>
+<main id="main">
+
+<article class="article" aria-labelledby="h1">
+  <header class="page-head">
+    <div class="wrap">
+      <h1 id="h1"><%= t('site.news.title') %></h1>
+      <p class="lead" data-speakable><%= t('site.news.lead') %></p>
+      <p class="byline">
+        <span><%= t('site.news.version', { version: softwareVersion }) %></span>
+        <span><%= t('site.news.updated') %>: <time datetime="<%= newsUpdated %>"><%= fmtDay(newsUpdated) %></time></span>
+        <span><a href="<%= newsFeed %>"><%= t('site.news.feed') %></a></span>
+      </p>
+    </div>
+  </header>
+
+  <div class="wrap"><div class="news-days">
+<% for (const day of newsDays) { -%>
+    <section class="news-day" aria-labelledby="d-<%= day.date %>">
+      <h2 id="d-<%= day.date %>"><time datetime="<%= day.date %>"><%= fmtDay(day.date) %></time></h2>
+      <ul class="news-entries">
+<% for (const entry of day.entries) { -%>
+        <li class="news-entry" id="<%= entry.id %>">
+          <p class="news-area"><%= t('news.entries.' + entry.id + '.area') %></p>
+          <h3><a href="#<%= entry.id %>"><%= t('news.entries.' + entry.id + '.title') %></a></h3>
+          <p><%= t('news.entries.' + entry.id + '.text') %></p>
+        </li>
+<% } -%>
+      </ul>
+    </section>
+<% } -%>
+  </div></div>
+</article>
+
+<%- include('../partials/site-cta') %>
+</main>
+<%- include('../partials/site-foot') %>

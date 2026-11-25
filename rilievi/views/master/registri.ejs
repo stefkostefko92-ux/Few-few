@@ -1,0 +1,99 @@
+<%
+  // Регистърът на дейностите по обработване (routes/master-registri.ts; чл. 30 GDPR): данните ни, фирмите-
+  // администратори живо от базата, обработванията като обработващ и като администратор, подобработващите,
+  // трансферите и мерките. За печат — бутонът „Stampa“ (без JavaScript — печатът на браузъра).
+  const r = registro;
+  const giorno = (v) => fmt.day(new Date(v + 'T00:00:00Z'));
+%><%- include('../partials/top', { titleKey: 'master.registri.title' }) %>
+<div class="page-head">
+  <div>
+    <a href="/master"><%= t('master.console.title') %></a>
+    <h1><%= t('master.registri.title') %></h1>
+    <p class="page-head__sub"><%= t('master.registri.sub', { data: giorno(r.versione) }) %></p>
+  </div>
+</div>
+<div class="stack-gap registri">
+  <section aria-labelledby="h-resp">
+    <h2 class="section__title" id="h-resp"><%= t('master.registri.responsabileDati') %></h2>
+    <dl class="kv">
+      <div class="kv__item"><dt><%= t('master.registri.responsabileDati') %></dt><dd><%= t('company.legalName') %>, <%= t('company.eikLabel') %> <%= company.eik %>; <%= t('company.street') %>, <%= company.postalCode %> <%= t('company.city') %>, <%= t('company.country') %></dd></div>
+      <div class="kv__item"><dt><%= t('master.registri.contatto') %></dt><dd><a href="mailto:<%= contatto %>"><%= contatto %></a></dd></div>
+      <div class="kv__item"><dt><%= t('master.registri.rappresentante') %></dt><dd><%= r.rappresentante %></dd></div>
+      <div class="kv__item"><dt><%= t('master.registri.rpd') %></dt><dd><%= r.rpd %></dd></div>
+      <div class="kv__item"><dt><%= t('master.registri.revisione') %></dt><dd><%= r.revisione %></dd></div>
+    </dl>
+  </section>
+
+  <section aria-labelledby="h-titolari">
+    <h2 class="section__title" id="h-titolari"><%= t('master.registri.titolari') %></h2>
+    <p class="muted"><%= t('master.registri.titolariNota') %></p>
+    <div class="table-scorre">
+    <table class="table table--stack">
+      <thead><tr>
+        <% for (const c of ['azienda', 'dichiarati', 'admin', 'versione', 'stato']) { %><th scope="col"><%= t('master.registri.colonne.' + c) %></th>
+        <% } %>
+      </tr></thead>
+      <tbody>
+        <% for (const a of titolari) { %><tr>
+          <th scope="row" data-label="<%= t('master.registri.colonne.azienda') %>"><%= a.nome %></th>
+          <td data-label="<%= t('master.registri.colonne.dichiarati') %>"><% if (a.accettazione && a.accettazione.ragioneSociale) { %><%= a.accettazione.ragioneSociale %><% if (a.accettazione.sede) { %>, <%= a.accettazione.sede %><% } %><% if (a.accettazione.partitaIva) { %>, P. IVA <%= a.accettazione.partitaIva %><% } %><% } else { %><span class="muted"><%= t('master.registri.nessunaFirma') %></span><% } %></td>
+          <td data-label="<%= t('master.registri.colonne.admin') %>" class="email"><%= a.admin.join(', ') || '—' %></td>
+          <td data-label="<%= t('master.registri.colonne.versione') %>"><%= a.accettazione ? giorno(a.accettazione.versione) + ' (' + fmt.dayRoma(a.accettazione.at) + ')' : '—' %></td>
+          <td data-label="<%= t('master.registri.colonne.stato') %>"><%= t('master.registri.stati.' + a.stato) %><% if (a.fino) { %> · <%= fmt.dayRoma(a.fino) %><% } %></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <% for (const parte of ['responsabile', 'titolare']) { const p = r[parte]; %><section aria-labelledby="h-<%= parte %>">
+    <h2 class="section__title" id="h-<%= parte %>"><%= p.titolo %></h2>
+    <div class="table-scorre">
+    <table class="table table--stack">
+      <thead><tr>
+        <th scope="col"><%= t('master.registri.colonne.id') %></th>
+        <th scope="col"><%= t('master.registri.colonne.trattamento') %></th>
+        <th scope="col"><%= t('master.registri.colonne.dati') %></th>
+        <th scope="col"><%= t('master.registri.colonne.interessati') %></th>
+        <th scope="col"><%= t(parte === 'responsabile' ? 'master.registri.colonne.sub' : 'master.registri.colonne.base') %></th>
+        <th scope="col"><%= t('master.registri.colonne.conservazione') %></th>
+      </tr></thead>
+      <tbody>
+        <% for (const x of p.trattamenti) { %><tr>
+          <td data-label="<%= t('master.registri.colonne.id') %>"><%= x.id %></td>
+          <th scope="row" data-label="<%= t('master.registri.colonne.trattamento') %>"><%= x.nome %></th>
+          <td data-label="<%= t('master.registri.colonne.dati') %>"><%= x.dati %></td>
+          <td data-label="<%= t('master.registri.colonne.interessati') %>"><%= x.interessati %></td>
+          <td data-label="<%= t(parte === 'responsabile' ? 'master.registri.colonne.sub' : 'master.registri.colonne.base') %>"><%= parte === 'responsabile' ? x.sub : x.base %></td>
+          <td data-label="<%= t('master.registri.colonne.conservazione') %>"><%= x.conservazione %></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+    </div>
+  </section>
+  <% } %>
+
+  <section aria-labelledby="h-sub">
+    <h2 class="section__title" id="h-sub"><%= t('master.registri.subResponsabili') %></h2>
+    <ul>
+      <% for (const s of r.subResponsabili) { %><li><strong><%= s.nome %></strong>, <%= s.sede %>: <%= s.attivita %>. <%= s.accordo %>.</li>
+      <% } %>
+    </ul>
+  </section>
+
+  <section aria-labelledby="h-trasf">
+    <h2 class="section__title" id="h-trasf"><%= t('master.registri.trasferimenti') %></h2>
+    <ul>
+      <% for (const x of r.responsabile.trasferimenti) { %><li><%= x %></li>
+      <% } %>
+    </ul>
+  </section>
+
+  <section aria-labelledby="h-misure">
+    <h2 class="section__title" id="h-misure"><%= t('master.registri.misure') %></h2>
+    <p><%= r.misure %> <a href="/condizioni#allegato-misure">/condizioni</a></p>
+  </section>
+</div>
+<%- include('../partials/bottom') %>

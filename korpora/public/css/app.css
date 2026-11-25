@@ -52,6 +52,17 @@
 .bar-end .chip {
   text-decoration: none;
 }
+/* the language switch in the bar: as tall as the bar's buttons (a steadier target for a finger) and three cells of
+   one width, so BG, EN and IT no longer differ by 7px. The three together are no wider than before, so the bar
+   wraps at the same widths as it did */
+.bar .langs a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.2em;
+  min-height: 34px;
+  padding-inline: 4px;
+}
 form.inline {
   display: inline;
   margin: 0;
@@ -153,8 +164,10 @@ form.inline {
 .section-grid > .section {
   margin: 0;
 }
+/* one column that may shrink: a wide table inside (the prices) scrolls in its own box instead of widening the page */
 .form {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 2px;
 }
 .form-row {
@@ -211,44 +224,6 @@ form.inline {
   text-align: center;
 }
 
-/* notices (expired plan, unverified email) */
-.notice {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 12px;
-  padding: 16px 18px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--rule-strong);
-  background: var(--panel);
-  margin: 0 0 20px;
-}
-.notice > .i {
-  width: 24px;
-  height: 24px;
-  margin-top: 2px;
-}
-.notice h2 {
-  font-size: 1.05rem;
-  margin: 0 0 4px;
-}
-.notice p {
-  margin: 0 0 10px;
-}
-.notice-bad {
-  border-color: var(--red);
-  background: var(--red-soft);
-}
-.notice-bad > .i {
-  color: var(--red);
-}
-.notice-warn {
-  border-color: var(--amber);
-  background: var(--amber-soft);
-}
-.notice-warn > .i {
-  color: var(--amber);
-}
-
 /* footer */
 .foot {
   display: flex;
@@ -264,6 +239,12 @@ form.inline {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 18px;
+}
+/* every link a target of at least 24 px (WCAG 2.5.8), the text on the line of the words around it */
+.foot a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
 }
 
 @media (max-width: 640px) {

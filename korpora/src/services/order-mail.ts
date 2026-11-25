@@ -7,11 +7,13 @@ import { BUSINESS_TZ } from '../time.js';
 import { errorMessage, logger } from '../logger.js';
 import type { MailAttachment } from '../mail/mailer.js';
 import {
-  greetingName,
   mailOrderConfirmed,
+  mailOrderRejected,
   mailStaffNotice,
   mailWithdrawalReceived,
-} from '../mail/templates.js';
+} from '../mail/order-templates.js';
+import { greetingName } from '../mail/templates.js';
+import { orderNo } from '../plans/order-number.js';
 import { formatMoney, VAT_BG_PERCENT, withVatCents } from '../plans/pricing.js';
 import {
   paidStartAllowedFrom,
@@ -23,6 +25,7 @@ import {
 } from '../plans/withdrawal.js';
 import { legalPath } from '../seo/paths.js';
 import { termsCopy } from './terms-copy.js';
+import { keepTermsCopy, keptTermsCopy } from './terms-snapshots.js';
 
 /**
  * Текстовете на писмата за поръчката и отказа. Всичко се смята от записа на поръчката — същите
@@ -31,6 +34,7 @@ import { termsCopy } from './terms-copy.js';
 export type OrderRecord = Pick<
   UpgradeRequest,
   | 'id'
+  | 'number'
   | 'option'
   | 'months'
   | 'listPriceCents'
@@ -44,6 +48,13 @@ export type OrderRecord = Pick<
 /** Поръчка, от която потребителят се е отказал — моментът на отказа е задължителен за писмата. */
 export type WithdrawnOrder = OrderRecord & { withdrawnAt: Date };
 type Customer = Pick<User, 'email' | 'name' | 'locale' | 'emailVerifiedAt'>;
+/** Заменена поръчка — колкото да се изпише номерът ѝ. */
+export type ReplacedOrder = Pick<UpgradeRequest, 'number' | 'createdAt'>;
+
+/** „KP-2026-000001, KP-2026-000002“ — заменените поръчки в писмата. */
+function numbers(orders: readonly ReplacedOrder[]): string {
+  return orders.map(orderNo).join(', ');
+}
 
 /** Дата и час по София с отместването спрямо UTC — за момента на сключване и на отказа. */
 function sofiaDateTime(at: Date, locale: Locale): string {
@@ -97,41 +108,55 @@ function paymentText(order: OrderRecord, locale: Locale): string {
 }
 
 /**
- * Копието на приетите общи условия (траен носител) — само ако в сила са още същите, които клиентът е
- * приел с поръчката. Грешка при събирането не спира потвърждението: тогава в писмото остава връзката.
+ * Копието на приетите общи условия (траен носител): условията в сила се събират наново и се пазят; за
+ * поръчка по по-стари условия — пазеното копие на нейната версия. Без копие на условията в сила писмото
+ * чака (`retry`): поддръжката опитва пак, вместо да прати само връзка към страница, която се променя.
+ * null (само връзката) остава за поръчка без версия и за стара версия, от която копие няма.
  */
 async function acceptedTermsCopy(
   order: OrderRecord,
   locale: Locale,
-): Promise<MailAttachment | null> {
-  if (order.termsVersion !== LEGAL_UPDATED.terms) return null;
-  try {
-    return await termsCopy(locale, config().PUBLIC_BASE_URL, config().CONTACT_EMAIL);
-  } catch (error) {
-    logger.error({ err: errorMessage(error) }, 'копието на общите условия не се събра');
-    return null;
+): Promise<MailAttachment | null | 'retry'> {
+  const version = order.termsVersion;
+  if (!version) return null;
+  const current = version === LEGAL_UPDATED.terms;
+  if (current) {
+    try {
+      const copy = await termsCopy(locale, config().PUBLIC_BASE_URL, config().CONTACT_EMAIL);
+      await keepTermsCopy(version, locale, copy.content);
+      return copy;
+    } catch (error) {
+      logger.error({ err: errorMessage(error) }, 'копието на общите условия не се събра');
+    }
   }
+  const kept = await keptTermsCopy(version, locale);
+  if (kept) return kept;
+  if (current) return 'retry';
+  logger.error({ version }, 'няма пазено копие на приетите общи условия: писмото е с връзка');
+  return null;
 }
 
 /**
  * Потвърждението на сключения договор — веднага след поръчката (и пак от поддръжката, ако не тръгне),
- * с приетите общи условия като файл. `replaced` — неизпълнените поръчки, които тази е заменила.
+ * с приетите общи условия като файл. `replaced` — неизпълнените поръчки, които тази е заменила. false —
+ * не е тръгнало (SMTP или липсващо копие на условията): поддръжката опитва пак.
  */
 export async function sendOrderConfirmation(
   order: OrderRecord,
   user: Customer,
-  replaced: readonly string[] = [],
+  replaced: readonly ReplacedOrder[] = [],
 ): Promise<boolean> {
   const locale = accountLocale(user);
   const consumer = order.buyerType === 'CONSUMER';
   const copy = await acceptedTermsCopy(order, locale);
+  if (copy === 'retry') return false;
   return mailOrderConfirmed(
     user.email,
     locale,
     greetingName(user),
     {
       when: sofiaDateTime(order.createdAt, locale),
-      id: order.id,
+      id: orderNo(order),
       plan: orderPlanName(order, locale),
       price: price(order, locale),
       buyer: translate(locale, consumer ? 'plan.buyer.consumer' : 'plan.buyer.business'),
@@ -143,7 +168,7 @@ export async function sendOrderConfirmation(
               term: translate(locale, 'plan.months', { n: order.months ?? 0 }),
             }),
       replaces: replaced.length
-        ? `\n\n${translate(locale, 'mail.order.replaces', { ids: replaced.join(', '), contact: config().CONTACT_EMAIL })}`
+        ? `\n\n${translate(locale, 'mail.order.replaces', { ids: numbers(replaced), contact: config().CONTACT_EMAIL })}`
         : '',
       withdrawal: consumer
         ? `${translate(locale, 'mail.order.withdrawalConsumer', {
@@ -190,11 +215,25 @@ export function sendWithdrawalReceipt(
   });
 }
 
+/** Поръчката е отхвърлена от екипа (плащането не е пристигнало): няма да се изпълни и не се плаща. */
+export function sendOrderRejected(
+  order: Pick<OrderRecord, 'number' | 'option' | 'months' | 'createdAt'>,
+  user: Customer,
+): Promise<boolean> {
+  const locale = accountLocale(user);
+  return mailOrderRejected(user.email, locale, greetingName(user), {
+    id: orderNo(order),
+    plan: orderPlanName(order, locale),
+    date: longDate(order.createdAt, locale),
+    contact: config().CONTACT_EMAIL,
+  });
+}
+
 /** Текстът на изявлението за отказ — показва се преди потвърждението и влиза в писмото дума по дума. */
 export function withdrawalStatement(order: OrderRecord, user: Customer, locale: Locale): string {
   return translate(locale, 'mail.withdrawn.statement', {
     plan: orderPlanName(order, locale),
-    id: order.id,
+    id: orderNo(order),
     date: longDate(order.createdAt, locale),
     name: user.name,
     email: user.email,
@@ -208,11 +247,11 @@ export function withdrawalStatement(order: OrderRecord, user: Customer, locale: 
 export function notifyStaffOfOrder(
   order: OrderRecord,
   user: Customer,
-  replaced: readonly string[] = [],
+  replaced: readonly ReplacedOrder[] = [],
 ): Promise<boolean> {
   const allowed = paidStartAllowedFrom(order);
   return mailStaffNotice('staffOrder', {
-    id: order.id,
+    id: orderNo(order),
     email: user.email,
     buyer: translate(
       'bg',
@@ -229,7 +268,7 @@ export function notifyStaffOfOrder(
         ? translate('bg', 'mail.staffOrder.activationAfter', { date: sofiaDateTime(allowed, 'bg') })
         : translate('bg', 'mail.staffOrder.activationNow'),
     replaces: replaced.length
-      ? `\n${translate('bg', 'mail.staffOrder.replaces', { ids: replaced.join(', ') })}`
+      ? `\n${translate('bg', 'mail.staffOrder.replaces', { ids: numbers(replaced) })}`
       : '',
   });
 }
@@ -241,7 +280,7 @@ export function notifyStaffOfWithdrawal(
   outcome: PlanOutcome,
 ): Promise<boolean> {
   return mailStaffNotice('staffWithdrawal', {
-    id: order.id,
+    id: orderNo(order),
     email: user.email,
     plan: orderPlanName(order, 'bg'),
     when: sofiaDateTime(order.withdrawnAt, 'bg'),

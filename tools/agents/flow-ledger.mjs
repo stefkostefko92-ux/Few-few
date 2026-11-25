@@ -21,10 +21,14 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emitJsonNow } from "../lib/emit.mjs";
 
-const LEDGER = join(dirname(fileURLToPath(import.meta.url)), "..", "..", ".claude", "agents", "_memory", "_flows.jsonl");
+// FLOW_LEDGER_PATH — само за тестовете: червеният тест иначе пише в истинския дневник (23.11.2026).
+const LEDGER = process.env.FLOW_LEDGER_PATH || join(dirname(fileURLToPath(import.meta.url)), "..", "..", ".claude", "agents", "_memory", "_flows.jsonl");
 const argv = process.argv.slice(2);
 const JSON_OUT = argv.includes("--json");
-const val = (f) => { const i = argv.indexOf(f); return i >= 0 ? argv[i + 1] : undefined; };
+// Следващият флаг не е стойност: `--handoff --from x` записваше поток с id „--from“ (23.11.2026).
+const val = (f) => { const i = argv.indexOf(f); const v = i >= 0 ? argv[i + 1] : undefined; return v === undefined || v.startsWith("--") ? undefined : v; };
+const started = (id) => readAll().some((l) => l.t === "start" && l.id === id);
+const closed = (id) => readAll().some((l) => l.t === "close" && l.id === id);
 const now = () => new Date().toISOString();
 const OPEN_STALE_H = 24; // отворен поток без движение над това → флаг
 
@@ -49,6 +53,8 @@ if (argv.includes("--handoff")) {
   const id = val("--handoff"), from = val("--from"), to = val("--to"), status = val("--status") || "наред", note = val("--note") || "";
   if (!id || !from || !to) { console.error("нужни: --handoff <id> --from <агент> --to <агент> [--status наред|бележки|блокер] [--note …]"); process.exit(2); }
   if (!STATUS.has(status)) { console.error(`--status ∈ ${[...STATUS].join("|")}`); process.exit(2); }
+  if (!started(id)) { console.error(`няма стартиран поток „${id}“ — първо --start (или виж --report)`); process.exit(2); }
+  if (closed(id)) { console.error(`потокът „${id}“ вече е затворен — нов поток с --start`); process.exit(2); }
   appendFileSync(LEDGER, JSON.stringify({ t: "handoff", ts: now(), id, from, to, status, note }) + "\n");
   if (!JSON_OUT) console.log(`↪ ${from} → ${to} [${status}]`);
   process.exit(0);
@@ -57,6 +63,8 @@ if (argv.includes("--close")) {
   const id = val("--close"), status = val("--status") || "завършен";
   if (!id) { console.error("нужни: --close <id> [--status завършен|блокиран|изоставен]"); process.exit(2); }
   if (!CLOSE.has(status)) { console.error(`--status ∈ ${[...CLOSE].join("|")}`); process.exit(2); }
+  if (!started(id)) { console.error(`няма стартиран поток „${id}“ — първо --start (или виж --report)`); process.exit(2); }
+  if (closed(id)) { console.error(`потокът „${id}“ вече е затворен — нов поток с --start`); process.exit(2); }
   appendFileSync(LEDGER, JSON.stringify({ t: "close", ts: now(), id, status }) + "\n");
   if (!JSON_OUT) console.log(`■ ${id} затворен [${status}]`);
   process.exit(0);

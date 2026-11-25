@@ -2,7 +2,7 @@
 import { Router } from "express";
 import { deleteFormCascade } from "../lib/formDelete.js";
 import { prisma } from "../lib/prisma.js";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { validatePremiumFields, getServerTier } from "../lib/premium.js";
 import { notifyBot, notifyBotVerbose } from "../services/botNotifier.js";

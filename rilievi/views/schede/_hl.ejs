@@ -1,0 +1,1 @@
+<% if (text) { %><% for (const seg of highlight(text, tokens)) { %><% if (seg.hit) { %><mark><%= seg.text %></mark><% } else { %><%= seg.text %><% } %><% } %><% } else { %><span class="muted">—</span><% } %>

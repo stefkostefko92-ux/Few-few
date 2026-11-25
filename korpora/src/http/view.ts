@@ -1,6 +1,7 @@
 import { LOCALE_TAG, translatorFor, type Locale } from '../i18n.js';
 import { countryName } from '../auth/geoip.js';
 import { hwidLabel } from '../auth/device.js';
+import { orderNo } from '../plans/order-number.js';
 import { formatMoney } from '../plans/pricing.js';
 import { displayLabel } from '../labels.js';
 import { BUSINESS_TZ, DAY, HOUR } from '../time.js';
@@ -14,15 +15,19 @@ function buildViewHelpers(locale: Locale) {
     year: 'numeric',
     timeZone: BUSINESS_TZ,
   });
+  // На английски 09/10/2026 се чете и като 10 септември: там месецът е съкратена дума („9 Oct 2026“);
+  // на български и италиански цифрите са недвусмислени (ден, после месец).
+  const month = locale === 'en' ? 'short' : '2-digit';
+  const day = locale === 'en' ? 'numeric' : '2-digit';
   const shortDateFmt = new Intl.DateTimeFormat(tag, {
-    day: '2-digit',
-    month: '2-digit',
+    day,
+    month,
     year: 'numeric',
     timeZone: BUSINESS_TZ,
   });
   const dateTimeFmt = new Intl.DateTimeFormat(tag, {
-    day: '2-digit',
-    month: '2-digit',
+    day,
+    month,
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
@@ -39,6 +44,8 @@ function buildViewHelpers(locale: Locale) {
     num: (value: number | null | undefined) =>
       value === null || value === undefined ? '' : numberFmt.format(value),
     money: (cents: number) => formatMoney(cents, locale),
+    /** Номерът на поръчката за хората („KP-2026-000123“), не вътрешният cuid. */
+    orderNo,
     country: (code: string | null | undefined) => countryName(code, tag),
     hwid: (hash: string | null | undefined) => hwidLabel(hash),
     /** Кой е направил промяната / бележка от системата — знаците стават думи на езика на страницата. */
