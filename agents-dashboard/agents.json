@@ -14544,7 +14544,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 374
+        "lessons": 375
       },
       "evolution": [
         {
@@ -14714,9 +14714,20 @@
           "date": "2026-11-25",
           "event": "v36.8 — учене",
           "detail": "Научи: git merge-tree --write-tree -z --name-only --no-messages A B извежда \"<tree-oid>\\0<конф… (+8 още)"
+        },
+        {
+          "version": "36.9.0",
+          "date": "2026-11-25",
+          "event": "v36.9 — учене",
+          "detail": "Научи: tools/seo/indexnow.mjs слага AbortSignal.timeout на всяко fetch (проба на ключа 10 s, s…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „tools/seo/indexnow.mjs слага AbortSignal.timeout на всяко fetch (проба на ключа 10 s, s…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
