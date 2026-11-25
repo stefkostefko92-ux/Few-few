@@ -15578,7 +15578,7 @@
           "Playwright CI docs; setup-node caching в монорепо; dorny/paths-filter; nektos/act",
           "Това репо: CLAUDE.md (path-filtered CI, security.yml hard-gate, deploy границата), deploy/README.md"
         ],
-        "lessons": 223
+        "lessons": 224
       },
       "evolution": [
         {
@@ -15658,9 +15658,20 @@
           "date": "2026-11-25",
           "event": "v21.9 — учене",
           "detail": "Научи: PR 480 (lovets.yml) е първият нов продуктов workflow, който следва пълната хигиена — ch…"
+        },
+        {
+          "version": "22.0.0",
+          "date": "2026-11-25",
+          "event": "v22.0 — учене",
+          "detail": "Научи: PR 351 (semki.yml) е втори нов продуктов workflow със SHA пинове на checkout и setup-no…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „PR 351 (semki.yml) е втори нов продуктов workflow със SHA пинове на checkout и setup-no…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
