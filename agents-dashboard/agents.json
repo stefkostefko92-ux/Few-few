@@ -7118,7 +7118,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 312
+        "lessons": 313
       },
       "evolution": [
         {
@@ -7552,9 +7552,20 @@
           "date": "2026-11-25",
           "event": "v28.6 — учене",
           "detail": "Научи: В работното дърво за преглед на PR (/tmp/live-run-*) продуктовите папки може да не са и…"
+        },
+        {
+          "version": "28.7.0",
+          "date": "2026-11-25",
+          "event": "v28.7 — учене",
+          "detail": "Научи: FiveM няма автоматичен откат — scripts/deploy.sh няма откат и last-good, а откатът е ръ…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „FiveM няма автоматичен откат — scripts/deploy.sh няма откат и last-good, а откатът е ръ…\" · 1 в карантина"
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
