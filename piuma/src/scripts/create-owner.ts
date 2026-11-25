@@ -3,7 +3,7 @@
  *   OWNER_EMAIL=admin@carbonstealth.eu OWNER_NAME="…" OWNER_PASSWORD='…' node dist/scripts/create-owner.js
  * Идемпотентен: съществуващ имейл → нова парола + роля OWNER + активен.
  */
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { prisma } from '../db.js';
 import { hashPassword, passwordPolicyError } from '../auth/password.js';
 

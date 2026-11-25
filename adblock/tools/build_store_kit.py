@@ -85,8 +85,8 @@ md = f"""# Supreme AdBlock {ver} — Chrome Web Store: всичко за copy/pa
 
 ## 1. Store listing → Product details
 
-**Title**
-{block("Supreme AdBlock")}
+**Title** — идва от manifest-а (`extName`), в таблото само провери, че се вижда новото име:
+{block("Supreme AdBlock – Ad Blocker")}
 **Summary (132 max)**
 {block(summary)}
 **Description**
@@ -121,7 +121,7 @@ md = f"""# Supreme AdBlock {ver} — Chrome Web Store: всичко за copy/pa
 
 **При всеки език: Description + петте му скрийншота** (Google препоръчва скрийншоти по езици, когато разширението е многоезично). В dashboard-а горе избери езика → постави описанието → Graphic assets → Screenshots: изтрий старите и качи `store-screenshots/<код>/screenshot-1…5.jpg` в този ред. Език без свои скрийншоти показва английските.
 
-Готово описание за всеки от {len(LOCALES)}-те локала ({LANGS} езика — es/es_419, pt_BR/pt_PT и zh_CN/zh_TW са варианти) е в `listing/<код>.txt` (кодът = папката в `_locales`). В dashboard-а: **Add language** → избери езика → постави съдържанието на файла в Description. Магазинът показва {len(LOCALES) - len(CWS_UNLISTED)} от тях („{len(LOCALES) - len(CWS_UNLISTED)} languages“ в Details): {", ".join(CWS_UNLISTED)} не са в неговия списък — ако ги няма в Add language, пропусни ги; разширението пак е на тези езици за хората с Chrome на тях. Title остава „Supreme AdBlock“; Summary идва от manifest-а (`extDescription` е преведен). Преводите извън en/bg/it/de са машинно подпомогнати — и описанията, и надписите на скрийншотите (`store/screenshots/i18n.json`); popup-ът и панелите на скрийншотите са истинските низове на разширението. Ако имаш носител на езика, дай му ги да ги прегледа преди да ги поставиш (Преводача отбеляза за преглед: am, kn, ta, ne, bn, si, eu, te, ml, ur, ar, ko, pa, sw, hy, ka, vi, az, gu, mr, uz).
+Готово описание за всеки от {len(LOCALES)}-те локала ({LANGS} езика — es/es_419, pt_BR/pt_PT и zh_CN/zh_TW са варианти) е в `listing/<код>.txt` (кодът = папката в `_locales`). В dashboard-а: **Add language** → избери езика → постави съдържанието на файла в Description. Магазинът показва {len(LOCALES) - len(CWS_UNLISTED)} от тях („{len(LOCALES) - len(CWS_UNLISTED)} languages“ в Details): {", ".join(CWS_UNLISTED)} не са в неговия списък — ако ги няма в Add language, пропусни ги; разширението пак е на тези езици за хората с Chrome на тях. Title и Summary идват от manifest-а (`extName`/`extDescription`, не са поле в таблото): en „Supreme AdBlock – Ad Blocker“, bg/de/it с родова дума, другите езици — „Supreme AdBlock“. Преводите извън en/bg/it/de са машинно подпомогнати — и описанията, и надписите на скрийншотите (`store/screenshots/i18n.json`); popup-ът и панелите на скрийншотите са истинските низове на разширението. Ако имаш носител на езика, дай му ги да ги прегледа преди да ги поставиш (Преводача отбеляза за преглед: am, kn, ta, ne, bn, si, eu, te, ml, ur, ar, ko, pa, sw, hy, ka, vi, az, gu, mr, uz).
 
 Пълните bg/it/de описания (от `docs/STORE_LISTING.md`):
 
@@ -131,7 +131,7 @@ md = f"""# Supreme AdBlock {ver} — Chrome Web Store: всичко за copy/pa
 {block(it)}
 **German (Deutsch) — Description**
 {block(de)}
-Title и Summary за другите езици: същите като английските (името е бранд; summary може и на съответния език — manifest-ът вече носи локализирано кратко описание).
+Title и Summary за другите езици идват от manifest-а: името е „Supreme AdBlock“ (родова дума само в en/bg/de/it), summary е локализираното `extDescription`.
 
 ## 4. Privacy → Single purpose
 
@@ -208,11 +208,19 @@ Chrome Web Store **One Stop Support** → опцията за номинация
 
 ## 10. Microsoft Edge Add-ons (същият zip)
 
-Partner Center → https://partner.microsoft.com/dashboard/microsoftedge/ → Create new extension → качи `supreme-adblock-{ver}.zip` (същия като за Chrome). Category Productivity; privacy/website/support — като горе. Edge иска описание за всеки език в `_locales` — ползвай САМО `listing/<код>.txt` (дългото описание от т. 1 споменава Chrome, а Edge 1.1.2 забранява други браузъри). Search terms (≤7): `ad blocker` · `block ads` · `youtube ad blocker` · `tracker blocker` · `cookie banner blocker` · `popup blocker` · `Carbon Stealth`. Screenshots — същите. Notes for certification — бележката от т. 7 плюс: домейните идват от мрежата, защото рекламните мрежи ги сменят всеки ден; файлът е подписан и съдържа само имена на домейни; листите от автора са по избор.
+Partner Center → https://partner.microsoft.com/dashboard/microsoftedge/ → Create new extension → качи `supreme-adblock-{ver}.zip` (същия като за Chrome). Category Productivity; privacy/website/support — като горе. Edge иска описание за всеки език в `_locales` — ползвай САМО `listing/<код>.txt` (дългото описание от т. 1 споменава Chrome, а Edge 1.1.2 забранява други браузъри). Search terms (≤7): `ad blocker` · `block ads` · `youtube ad blocker` · `tracker blocker` · `cookie banner blocker` · `popup blocker` · `Carbon Stealth`. Screenshots — същите; логото — `edge/logo_300x300.png`. Notes for certification — бележката от т. 7 плюс: домейните идват от мрежата, защото рекламните мрежи ги сменят всеки ден; файлът е подписан и съдържа само имена на домейни; листите от автора са по избор.
 
 ## 11. Firefox Add-ons (AMO)
 
-https://addons.mozilla.org/developers/ → Submit a New Add-on → On this site → качи `supreme-adblock-{ver}-firefox.zip`. `web-ext lint` дава 0 грешки; предупрежденията са за `getMatchedRules` (няма го във Firefox — popup-ът скрива дневника там) и „coin miner“ в EasyPrivacy/AdGuard French — това са правила, които БЛОКИРАТ майнъри; кажи го в бележката. Изходният код е ЗАДЪЛЖИТЕЛЕН (генерирани файлове): качи `supreme-adblock-{ver}-source.zip` от кита; бележка: `node tools/build_scriptlets.mjs` възпроизвежда main.js и ubo/* байт по байт, а rules/*.json са записан снимка на листите (източници, дати и SHA-256 в THIRD_PARTY_NOTICES.txt). Описание за AMO — от `listing/en.txt` (без абзаца за Manifest V3, той е за Chrome). Data collection: none.
+https://addons.mozilla.org/developers/ → Submit a New Add-on → On this site → качи `supreme-adblock-{ver}-firefox.zip`. `web-ext lint` дава 0 грешки; предупрежденията (getMatchedRules/onRuleMatchedDebug/onUserSettingsChanged — проверяват се преди употреба; DANGEROUS_EVAL — рутините noeval ПОДМЕНЯТ window.eval на страницата; coin miner — правила, които БЛОКИРАТ майнъри) и бележката за ревюъра са в `docs/AMO.md` — постави я дословно. Изходният код е ЗАДЪЛЖИТЕЛЕН (генерирани файлове): качи `supreme-adblock-{ver}-source.zip` от кита; бележка: `node tools/build_scriptlets.mjs` възпроизвежда main.js и ubo/* байт по байт, а rules/*.json са записан снимка на листите (източници, дати и SHA-256 в THIRD_PARTY_NOTICES.txt). Описание за AMO — от `listing/en.txt` (без абзаца за Manifest V3, той е за Chrome). Data collection: none. Пакетът е видим и във Firefox за Android (`gecko_android`) — преди това го пробвай на телефон (`docs/AMO.md`).
+
+## 12. Opera Add-ons (същият zip)
+
+https://addons.opera.com/developer/ → влез с Opera акаунт (безплатен) → Upload → `supreme-adblock-{ver}.zip`. Скрийншоти: `opera/screenshot-1…5.png` (800×500 — Opera иска до 800×600). Лиценз: MIT. Описание: `listing/en.txt`. Без „Opera“ в името. Подробно: `docs/OPERA.md`.
+
+## 13. Safari
+
+Иска платено членство в Apple Developer Program — на пауза по решение на собственика. Какво би трябвало: `docs/SAFARI.md`.
 """
 
 KIT.mkdir(parents=True, exist_ok=True)
@@ -223,6 +231,15 @@ for f in ["store_icon_128.png", "promo_small_440x280.png", "marquee_1400x560.png
     shutil.copy2(A / "store" / f, KIT / f)
 for i in range(1, 6):
     shutil.copy2(A / "store" / "screenshots" / f"screenshot-{i}.png", KIT / f"screenshot-{i}.png")
+# Opera Add-ons: скрийншоти до 800×600 (help.opera.com, „Publishing Guidelines“) — същите пет, смалени.
+(KIT / "opera").mkdir(exist_ok=True)
+for i in range(1, 6):
+    subprocess.run(["convert", str(A / "store" / "screenshots" / f"screenshot-{i}.png"), "-resize", "800x500", "-strip",
+                    str(KIT / "opera" / f"screenshot-{i}.png")], check=True)
+# Edge Add-ons: логото — минимум 128×128, препоръчано 300×300 (docs/EDGE.md) — от иконата 512 на сайта.
+(KIT / "edge").mkdir(exist_ok=True)
+subprocess.run(["convert", str(A / "server" / "icon-512.png"), "-resize", "300x300", "-strip",
+                str(KIT / "edge" / "logo_300x300.png")], check=True)
 shutil.copy2(A / "dist" / f"supreme-adblock-{ver}.zip", KIT / f"supreme-adblock-{ver}.zip")
 shutil.copy2(A / "dist" / f"supreme-adblock-{ver}-firefox.zip", KIT / f"supreme-adblock-{ver}-firefox.zip")
 shutil.copy2(A / "dist" / f"supreme-adblock-{ver}-source.zip", KIT / f"supreme-adblock-{ver}-source.zip")

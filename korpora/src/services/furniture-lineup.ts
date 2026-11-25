@@ -43,6 +43,8 @@ export interface LineupItem {
   x0: number;
   width: number;
   height: number;
+  /** Къде в изгледа (от горния ръб на реда) започва този предмет — по-ниските се изрязват отгоре, без празно място. */
+  top: number;
 }
 
 export interface LineupGroup {
@@ -122,12 +124,9 @@ function extents(model: Model): { x0: number; x1: number; y0: number; y1: number
   };
 }
 
-let cached: LineupGroup[] | null = null;
-
-export function furnitureLineup(): LineupGroup[] {
-  if (cached) return cached;
+function lineupOf(groups: Array<{ group: FurnitureGroup; kinds: FurnitureKind[] }>): LineupGroup[] {
   const api = engine();
-  cached = furnitureByGroup().map(({ group, kinds }) => {
+  return groups.map(({ group, kinds }) => {
     const built = kinds.map((kind) => {
       const model = api.buildModel({ type: kind.id }) as unknown as Model;
       return { kind, model, ext: extents(model) };
@@ -142,8 +141,33 @@ export function furnitureLineup(): LineupGroup[] {
         x0: ext.x0,
         width: ext.x1 - ext.x0,
         height: ext.y1 - ext.y0,
+        top: rowHeight - ext.y1,
       })),
     };
   });
+}
+
+let cached: LineupGroup[] | null = null;
+
+export function furnitureLineup(): LineupGroup[] {
+  cached ??= lineupOf(furnitureByGroup());
   return cached;
+}
+
+/** Групите, които в брошурата застават в края на реда на хола: собствен ред не се побира на листа. */
+const BROCHURE_FOLDED: readonly FurnitureGroup[] = ['bathroom', 'custom'];
+
+/**
+ * За брошурата: банята и свободният корпус застават в края на реда на хола — още редове не се побират на листа
+ * (витрината в сайта ги показва като отделни групи).
+ */
+export function brochureLineup(): LineupGroup[] {
+  const groups = furnitureByGroup();
+  const living = groups.find((g) => g.group === 'living');
+  if (!living) return lineupOf(groups);
+  const extra = groups.filter((g) => BROCHURE_FOLDED.includes(g.group)).flatMap((g) => g.kinds);
+  const rows = groups
+    .filter((g) => !BROCHURE_FOLDED.includes(g.group))
+    .map((g) => (g === living ? { group: g.group, kinds: [...g.kinds, ...extra] } : g));
+  return lineupOf(rows);
 }

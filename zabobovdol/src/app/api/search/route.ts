@@ -13,7 +13,9 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const q = (searchParams.get("q") ?? "").trim();
   if (q.length < 2) return NextResponse.json({ results: [] });
-  const results = await search(q, 15);
-  if (results.length === 0) await recordMiss(q);
+  // search() брои търсенето и сам записва слабите резултати; нулевите — тук.
+  // Текстът се маскира (ЕГН, телефони, имейли…) преди запис — виж recordMiss.
+  const results = await search(q, 15, { source: "api" });
+  if (results.length === 0) await recordMiss(q, "api");
   return NextResponse.json({ results });
 }

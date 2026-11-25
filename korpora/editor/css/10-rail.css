@@ -14,7 +14,7 @@
   font: 600 15px var(--f-display);
 }
 /* wide: the parameters stay open (form.js keeps them so); a closed panel keeps its clickable summary */
-@media (min-width: 1040px) {
+@media (min-width: 900px) {
   .railbox[open] > summary {
     cursor: default;
     pointer-events: none;
@@ -237,4 +237,35 @@ td .sw {
 }
 .note {
   max-width: 80ch;
+}
+
+/* a choice that belongs to another (params-html.js): the wrapper does not change the layout, only hides its field */
+.rail .segfield {
+  display: contents;
+}
+.rail .segfield[hidden] {
+  display: none;
+}
+
+/* the pieces of a room (room-items.js): number, type, wall, distance, width, remove */
+.room-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.room-item {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr auto;
+  gap: 6px 8px;
+  align-items: end;
+}
+.room-item .room-n {
+  align-self: center;
+  font-weight: 600;
+}
+.room-item [data-room-remove] {
+  grid-column: 4;
+  grid-row: 1;
 }

@@ -124,11 +124,18 @@ export class Stage {
     scene.fog = new THREE.Fog(0xffffff, 10, 40);
     this.base = new THREE.Vector3();
     this.dark = window.matchMedia?.('(prefers-color-scheme: dark)');
-    this.dark?.addEventListener?.('change', () => {
+    this.onTheme = () => {
       this.applyTheme();
       viewer.changed();
-    });
+    };
+    this.dark?.addEventListener?.('change', this.onTheme);
     this.applyTheme();
+  }
+
+  // The theme listener is the scene's one tie to the page: a viewer that is given up drops it, or the page keeps the
+  // whole scene graph alive (landing/story.js releases its viewer on a slow device or a lost context).
+  dispose() {
+    this.dark?.removeEventListener?.('change', this.onTheme);
   }
 
   applyTheme() {
@@ -140,7 +147,8 @@ export class Stage {
 
   // After a new model: the studio corner behind it, the room (only while it shows: its floor and plaster are big
   // bakes), the key light and the shadow frustum around it.
-  fit(ext, off) {
+  // sides: whether the furniture stands against the left and the right wall of the room too (a Г or П kitchen).
+  fit(ext, off, sides = {}) {
     const W = (ext.x1 - ext.x0) * S;
     const D = (ext.z1 - ext.z0) * S;
     const H = ext.y1 * S;
@@ -149,7 +157,13 @@ export class Stage {
     this.floor.position.set(0, 0, back + 30);
     this.wall.scale.set(60, 14, 1);
     this.wall.position.set(0, 7, back);
-    this.roomSize = { W, back };
+    this.roomSize = {
+      W,
+      D,
+      back,
+      ...(sides.left ? { left: (ext.x0 + off[0]) * S } : {}),
+      ...(sides.right ? { right: (ext.x1 + off[0]) * S } : {}),
+    };
     clearRoom(this.room);
     this.updateRoom();
     const r = Math.hypot(W, H, D) * 0.5;

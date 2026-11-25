@@ -18,6 +18,7 @@
 import { prisma } from "../lib/prisma.js";
 import { ensureUserStub } from "../lib/ensureUser.js";
 import { getServerTier, sanitizeFormForTier } from "../lib/premium.js";
+import { fireApplicationSubmitted } from "../lib/webhookEvents.js";
 
 function formatDuration(seconds) {
   if (seconds < 60) return `${seconds}s`;
@@ -146,6 +147,9 @@ export async function submitApplication({
         status: "PENDING",
       },
     });
+
+    // Webhook APPLICATION_SUBMITTED (А2) — не се чака: страничен ефект, не част от подаването.
+    fireApplicationSubmitted(application);
 
     return { ok: true, application, pingRoleIds: form.pingRoleIds || [] };
   } catch (err) {

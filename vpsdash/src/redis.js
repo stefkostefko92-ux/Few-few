@@ -9,11 +9,44 @@
 //
 // Втората причина: `dump.rdb`/AOF живее в Docker volume, който досега не влизаше
 // в нито един бекъп.
+import fs from 'node:fs';
 import { run } from './exec.js';
 import { assertDockerName } from './docker.js';
 
 export function assertName(name) {
   return assertDockerName(name, 'контейнер');
+}
+
+// Redis като системна услуга (apt redis-server), не в Docker. Табът виждаше само
+// контейнерите — на машина с Redis от пакет секцията мълчеше, а алармите за
+// изхвърлени ключове и провалена снимка не стигаха до него. Името е `host:<порт>`.
+const HOST_RX = /^host:(\d{2,5})$/;
+export const hostPort = (name) => {
+  const m = HOST_RX.exec(String(name || ''));
+  return m && Number(m[1]) > 0 && Number(m[1]) < 65536 ? Number(m[1]) : null;
+};
+
+// `ss -tlnpH` → портовете, на които слуша процес redis-server/valkey-server.
+export function parseHostRedis(ssOut) {
+  const ports = new Set();
+  for (const line of String(ssOut || '').split('\n')) {
+    if (!/"(redis|valkey)-server"/.test(line)) continue;
+    const m = /\s(\S+):(\d+)\s/.exec(line);
+    if (m) ports.add(Number(m[2]));
+  }
+  return [...ports].sort((a, b) => a - b);
+}
+
+// Паролата (requirepass) се чете от конфига и минава през REDISCLI_AUTH в средата —
+// НИКОГА като `-a` аргумент: той се вижда в `ps` от всеки потребител на машината.
+function hostAuthEnv() {
+  try {
+    const conf = fs.readFileSync('/etc/redis/redis.conf', 'utf8');
+    const m = /^\s*requirepass\s+("?)(.+?)\1\s*$/m.exec(conf);
+    return m ? { REDISCLI_AUTH: m[2] } : {};
+  } catch {
+    return {};
+  }
 }
 
 // `redis-cli INFO` връща секции с „ключ:стойност" и коментари с „#".
@@ -82,14 +115,26 @@ export function summarize(info) {
 
 // Открива Redis контейнерите (по образ) + volume-а, в който пази данните си.
 export async function discover() {
-  const ps = await run('docker', ['ps', '--format', '{{.Names}}\t{{.Image}}\t{{.Status}}'], { timeout: 10000 });
-  if (!ps.ok) return { available: false, error: (ps.stderr || 'docker недостъпен').trim().slice(0, 200), instances: [] };
   const found = [];
-  for (const line of ps.stdout.split('\n')) {
-    const [name, image, status] = line.split('\t');
-    if (!name || !/redis|valkey/i.test(image || '')) continue;
-    found.push({ name, image, status });
+  const [ps, ss] = await Promise.all([
+    run('docker', ['ps', '--format', '{{.Names}}\t{{.Image}}\t{{.Status}}'], { timeout: 10000 }),
+    run('ss', ['-tlnpH'], { timeout: 8000 }),
+  ]);
+  if (ss.ok) {
+    for (const port of parseHostRedis(ss.stdout)) {
+      found.push({ name: `host:${port}`, image: 'redis-server (системна услуга)', status: `слуша на ${port}`, host: true });
+    }
   }
+  if (ps.ok) {
+    for (const line of ps.stdout.split('\n')) {
+      const [name, image, status] = line.split('\t');
+      if (!name || !/redis|valkey/i.test(image || '')) continue;
+      found.push({ name, image, status });
+    }
+  }
+  // Без docker пак има какво да се покаже, ако Redis е от пакет — „docker
+  // недостъпен" не бива да скрива системния Redis.
+  if (!ps.ok && !found.length) return { available: false, error: (ps.stderr || 'docker недостъпен').trim().slice(0, 200), instances: [] };
   return { available: true, instances: found };
 }
 
@@ -104,13 +149,80 @@ export async function dataVolume(container) {
   return null;
 }
 
+// ── Redis с парола ───────────────────────────────────────────────────────────
+// `redis-cli` при `requirepass` отговаря „NOAUTH Authentication required." — и
+// излиза с КОД 0 (измерено на redis:7-alpine, 24.10.2026). Затова голият
+// `docker exec … redis-cli INFO` показваше Redis-а на Supreme като „ok" с празни
+// числа (празна нула — лъжа), а BGSAVE „минаваше" като задача, без да е снимал.
+//
+// Паролата е в средата на САМИЯ контейнер (`REDIS_PASSWORD`, както я подава
+// docker-compose на Supreme). Панелът не я чете и не я държи: `sh` в контейнера
+// я прехвърля в `REDISCLI_AUTH` — не в `-a`, където стои в списъка с процеси.
+// Без зададена парола поведението е същото като преди.
+const WITH_AUTH = 'if [ -n "${REDIS_PASSWORD:-}" ]; then export REDISCLI_AUTH="$REDIS_PASSWORD"; fi; ';
+export const INFO_SH = WITH_AUTH + 'exec redis-cli INFO';
+// Кодът на изхода трябва да КАЗВА провала — иначе задачата е зелена без снимка. Успех е САМО по
+// позволен списък: „Background saving started“ или вече течаща снимка. Всичко друго — NOAUTH,
+// „Error: Connection reset“, празен отговор, липсващ redis-cli (127) — е червено, а кодът на
+// redis-cli не се губи (преглед на PR #322: списъкът с лоши думи пропускаше тези случаи).
+const OK_ONLY_ON_SAVE = 'rc=$?; echo "$out"; [ "$rc" -eq 0 ] || exit "$rc"; ' +
+  'case "$out" in *"Background saving started"*|*"already in progress"*) exit 0;; esac; exit 1';
+export const BGSAVE_SH = WITH_AUTH + 'out=$(redis-cli BGSAVE 2>&1); ' + OK_ONLY_ON_SAVE;
+// Системният Redis: паролата идва от конфига през REDISCLI_AUTH в средата на
+// задачата; портът е позиционен аргумент ($1), не текст в скрипта.
+export const HOST_BGSAVE_SH = 'out=$(redis-cli -h 127.0.0.1 -p "$1" BGSAVE 2>&1); ' + OK_ONLY_ON_SAVE;
+
+const firstLine = (s) => String(s || '').split(/\r?\n/).map((l) => l.trim()).find(Boolean) || '';
+
+// Чиста функция: какво значи отговорът на `redis-cli INFO`. Нашето изречение
+// (`error`) и чуждият изход (`detail`) са в различни полета — слети дават низ,
+// който се мени с всяка машина и затова е непреводим.
+export function readInfo(r) {
+  if (!r?.ok) {
+    return { ok: false, reason: 'error', error: 'redis-cli се провали', detail: firstLine(r?.stderr || r?.error).slice(0, 200) };
+  }
+  const err = firstLine(r.stderr);
+  const out = firstLine(r.stdout);
+  // Пълен INFO печели пред предупреждение на stderr: парола в средата при Redis без requirepass
+  // дава „AUTH failed: … without any password configured“, а INFO пак минава (преглед на PR #322).
+  const full = parseInfo(r.stdout);
+  if (full.redis_version) return { ok: true, info: full };
+  // Сгрешена парола: redis-cli казва WRONGPASS на stderr, а INFO пак дава NOAUTH.
+  if (/WRONGPASS|^AUTH failed/i.test(err)) {
+    return { ok: false, reason: 'auth', error: 'Паролата в REDIS_PASSWORD на контейнера не е вярна — Redis отказва INFO.' };
+  }
+  if (/^NOAUTH\b/.test(out)) {
+    return { ok: false, reason: 'auth', error: 'Redis иска парола, а контейнерът няма REDIS_PASSWORD — панелът не може да прочете INFO.' };
+  }
+  if (/^(ERR\b|Could not connect)/.test(out)) {
+    return { ok: false, reason: 'error', error: 'redis-cli върна грешка', detail: out.slice(0, 200) };
+  }
+  // Отговор без нито едно поле на INFO не е „празен Redis" — не знаем нищо.
+  return { ok: false, reason: 'error', error: 'redis-cli не върна INFO', detail: out.slice(0, 200) };
+}
+
+// Образ без `sh` (distroless): пада обратно към голото извикване, както преди.
+const noShell = (r) => !r.ok && /executable file not found|no such file or directory/i.test(r.stderr || '') && /"sh"|\bsh\b/.test(r.stderr || '');
+
 export async function inspect(container) {
+  const port = hostPort(container);
+  if (port) {
+    const r = await run('redis-cli', ['-h', '127.0.0.1', '-p', String(port), 'INFO'], { timeout: 10000, env: hostAuthEnv() });
+    // Същият разбор като за контейнер — празен отговор и тук не е „ok";
+    // само изречението за паролата казва къде да се гледа при системния Redis.
+    const res = readInfo(r);
+    if (!res.ok) {
+      return { name: container, ...res, ...(res.reason === 'auth' ? { error: 'иска парола, а requirepass в /etc/redis/redis.conf не съвпада' } : {}) };
+    }
+    return { name: container, ok: true, ...summarize(res.info), volume: null };
+  }
   const c = assertName(container);
-  const r = await run('docker', ['exec', c, 'redis-cli', 'INFO'], { timeout: 10000 });
-  if (!r.ok) return { name: c, ok: false, error: (r.stderr || 'redis-cli се провали').trim().slice(0, 200) };
-  const info = parseInfo(r.stdout);
+  let r = await run('docker', ['exec', c, 'sh', '-c', INFO_SH], { timeout: 10000 });
+  if (noShell(r)) r = await run('docker', ['exec', c, 'redis-cli', 'INFO'], { timeout: 10000 });
+  const res = readInfo(r);
+  if (!res.ok) return { name: c, ...res };
   const vol = await dataVolume(c);
-  return { name: c, ok: true, ...summarize(info), volume: vol };
+  return { name: c, ok: true, ...summarize(res.info), volume: vol };
 }
 
 export async function overview() {
@@ -198,11 +310,24 @@ export function evictionChecks(prev, now, { memPct = 90 } = {}) {
 // диска), после архивиране на volume-а. Tar върху жив AOF без BGSAVE обикновено
 // се възстановява, но „обикновено" не е дума за бекъп.
 export function saveSpec(container) {
+  const port = hostPort(container);
+  if (port) {
+    return {
+      title: `Redis BGSAVE: ${container}`,
+      // През sh, за да падне задачата при NOAUTH/WRONGPASS (redis-cli дава изход 0).
+      cmd: 'sh',
+      args: ['-c', HOST_BGSAVE_SH, 'sh', String(port)],
+      env: hostAuthEnv(),
+      exclusive: 'backup',
+      timeoutMs: 60000,
+    };
+  }
   const c = assertName(container);
   return {
     title: `Redis BGSAVE: ${c}`,
     cmd: 'docker',
-    args: ['exec', c, 'redis-cli', 'BGSAVE'],
+    // През sh: паролата от средата на контейнера + изход ≠ 0 при отказ (виж BGSAVE_SH).
+    args: ['exec', c, 'sh', '-c', BGSAVE_SH],
     exclusive: 'backup',
     timeoutMs: 60000,
   };

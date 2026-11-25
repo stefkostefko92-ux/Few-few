@@ -9,8 +9,10 @@ export interface StaffActor extends AuditActor {
   role: Role;
 }
 
+/** `flash` — съобщение вместо обичайното за действието, когато успехът носи нещо, което екипът трябва да знае. */
 export type ActionResult =
-  { ok: true; id?: string } | { ok: false; key: string; params?: Record<string, string | number> };
+  | { ok: true; id?: string; flash?: string }
+  | { ok: false; key: string; params?: Record<string, string | number> };
 
 /** Отказ с ключ от речника; числата в текста (граници, срокове) идват като параметри. */
 export const fail = (key: string, params?: Record<string, string | number>): ActionResult => ({

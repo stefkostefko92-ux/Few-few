@@ -21,6 +21,9 @@ const read = (...p) => readFileSync(join(SRC, ...p), "utf8");
 const app = read("App.jsx");
 const login = read("pages", "Login.jsx");             // „/" — английската начална
 const landing = read("pages", "LandingLocalized.jsx"); // /bg, /de, … (7 локала)
+// От 10.10.2026 футърът е ОБЩ компонент — връзките живеят там, а двете начални
+// страници трябва да го рисуват (проверено отделно по-долу).
+const footer = read("components", "LandingParts.jsx");
 
 /** Публичните маршрути на съдържание, обявени в App.jsx. */
 const contentRoutes = [...app.matchAll(/path="(\/(?:guides|compare)\/[a-z0-9-]+)"/g)]
@@ -31,14 +34,14 @@ describe("нула осиротели публични страници", () => 
     expect(contentRoutes.length).toBeGreaterThanOrEqual(5);
   });
 
-  it("всяка се линква от английската начална страница", () => {
-    const missing = contentRoutes.filter((r) => !login.includes(`href="${r}"`));
-    expect(missing, `няма връзка от Login.jsx: ${missing.join(", ")}`).toEqual([]);
+  it("всяка се линква от общия футър на началните страници", () => {
+    const missing = contentRoutes.filter((r) => !footer.includes(`href="${r}"`));
+    expect(missing, `няма връзка от LandingParts.jsx (LandingFooter): ${missing.join(", ")}`).toEqual([]);
   });
 
-  it("всяка се линква и от локализираните начални страници", () => {
-    const missing = contentRoutes.filter((r) => !landing.includes(`href="${r}"`));
-    expect(missing, `няма връзка от LandingLocalized.jsx: ${missing.join(", ")}`).toEqual([]);
+  it("и английската, и локализираните начални страници рисуват общия футър", () => {
+    expect(login).toMatch(/<LandingFooter\b/);
+    expect(landing).toMatch(/<LandingFooter\b/);
   });
 
   it("връзките са и в ПРЕ-РЕНДЕРА, не само в React-а", () => {

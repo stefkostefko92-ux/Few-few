@@ -39,8 +39,9 @@
 sudo PROJECTS="vizitka" bash /root/few-few-*/deploy/autodeploy.sh
 ```
 
-**Ако включиш `www`:** nginx конфигът вече пренасочва `www` към голия домейн, но
-сертификатът трябва да покрива и двете имена:
+**`www` (задължително — DNS-ът на `www` вече сочи сървъра):** nginx конфигът
+пренасочва `www` към голия домейн и по HTTP, и по HTTPS, но сертификатът трябва да
+покрива и двете имена (иначе `https://www.vizitka-bg.com` пада на TLS):
 
 ```bash
 certbot --nginx -d vizitka-bg.com -d www.vizitka-bg.com
@@ -95,7 +96,7 @@ cat > /etc/vizitka/vizitka.env <<'EOF'
 NODE_ENV=production
 PORT=3105
 PUBLIC_BASE_URL=https://vizitka-bg.com
-ADMIN_EMAILS=stefan.kostadinov16@gmail.com
+ADMIN_EMAILS=admin@example.com
 MASTILKO_URL=https://mastilko-bg.com
 
 # Задължителна в продукция — подписва печатния handoff токен към Мастилко.
@@ -138,6 +139,14 @@ nginx -t && systemctl reload nginx
 `client_max_body_size` в nginx е `4m` (банерите са до 3 MB + multipart резерв).
 HSTS/CSP ги задава самото приложение — не ги дублирай в nginx. Certbot подновява
 сертификата автоматично (systemd timer `certbot.timer`).
+
+**ACME пътят не се пренасочва.** Порт 80 връща 308 към HTTPS за всичко ОСВЕН
+`/.well-known/acme-challenge/`, който се сервира от `/var/www/html`. Сертификат, издаден с
+`--webroot` (както прави `server-setup.sh`), се подновява точно оттам — без този блок
+подновяването пада тихо, докато сертификатът не изтече (случи се на 10.10.2026). `autodeploy.sh`
+не пипа nginx за vizitka, затова промяна в `nginx/vizitka.conf` стига до сървъра само с
+`server-setup.sh` или ръчно (`cp` + `nginx -t` + `systemctl reload nginx`). Проверка:
+`certbot renew --cert-name vizitka-bg.com --dry-run`.
 
 Първо пускане: `systemctl start vizitka && curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3105/`
 трябва да върне `200`.

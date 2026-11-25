@@ -58,18 +58,25 @@ export function totpCode(secretBase32: string, timeSeconds: number): string {
   return String(binary % 10 ** TOTP_DIGITS).padStart(TOTP_DIGITS, '0');
 }
 
-export function verifyTotp(
+/**
+ * Стъпката (броячът по RFC 6238), за която кодът съвпада в прозореца ±1, или null. Маршрутите я
+ * подават на `consumeTotpStep` — иначе един код би важал до ~90 s и повторно (виж totp-replay.ts).
+ */
+export function matchTotpStep(
   secretBase32: string,
   code: string,
   nowSeconds: number = Math.floor(Date.now() / 1000),
-): boolean {
+): number | null {
   const given = code.replace(/\s+/g, '');
-  if (!/^\d{6}$/.test(given)) return false;
+  if (!/^\d{6}$/.test(given)) return null;
   for (const drift of [-1, 0, 1]) {
-    const expected = totpCode(secretBase32, nowSeconds + drift * TOTP_STEP_SECONDS);
-    if (timingSafeEqual(Buffer.from(expected), Buffer.from(given))) return true;
+    const at = nowSeconds + drift * TOTP_STEP_SECONDS;
+    const expected = totpCode(secretBase32, at);
+    if (timingSafeEqual(Buffer.from(expected), Buffer.from(given))) {
+      return Math.floor(at / TOTP_STEP_SECONDS);
+    }
   }
-  return false;
+  return null;
 }
 
 export function otpauthUrl(issuer: string, account: string, secretBase32: string): string {

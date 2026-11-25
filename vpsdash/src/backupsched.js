@@ -29,6 +29,7 @@ import { request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
 import { DUMP_DIR } from './databases.js';
 import { plural } from './text.js';
+import { verifyPeer } from './nodes.js';
 
 const STATE = 'backup-sched.json';
 const HOUR_MS = 3600000;
@@ -314,6 +315,11 @@ export class OffsiteShipper {
         error: 'Изнасянето иска https. Дъмпът е цялата база (за medqr — медицински данни по чл. 9); по открит текст не пътува дори през частната мрежа на хостера.',
       };
     }
+    // КОЙ ще получи цялата база — преди първия байт. Адрес, който сочи към нас
+    // самите (стар DNS запис след смяна на сървъра), иначе „изнася" дъмпа на
+    // същия диск: двойно място и зелено „копие извън машината", каквото няма.
+    const who = await verifyPeer(peer);
+    if (!who.ok) return { peer: peer.id, ok: false, error: who.error };
     const cap = Math.max(1, Number(this.cfg.backups?.offsite?.perRun) || 3);
     const maxBytes = Math.max(1, Number(this.cfg.backups?.offsite?.maxMB) || 4096) * 1024 * 1024;
 

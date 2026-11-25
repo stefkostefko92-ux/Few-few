@@ -11,7 +11,7 @@ import {
 import { assertOutboundUrl, sanitizeNotify } from '../src/routes.js';
 import { failUrl } from '../src/notify.js';
 import { safePath } from '../src/accesslog.js';
-import { snapshotEtc, saveBaseline, diffEtc } from '../src/posture.js';
+import { snapshotEtc, saveBaseline, diffEtc, expandWatched, rootCovers } from '../src/posture.js';
 import { hashPassword } from '../src/auth.js';
 import { IP_ALLOWLIST_EXEMPT, ipGateAllows } from '../src/routes.js';
 
@@ -229,6 +229,40 @@ test('снимка на /etc се записва и се чете обратно
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
+
+test('цялост: път, добавен към наблюдението СЛЕД отпечатъка, не вдига фалшив дрейф', () => {
+  // Ъпдейтът разшири списъка (sshd_config.d, ld.so.preload, ключовете на root…).
+  // Без `watched` в отпечатъка всеки файл под новите пътища изглеждаше „добавен" и
+  // самият ъпдейт вдигаше аларма за дрейф на здрав сървър.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-snap-'));
+  const now = snapshotEtc();
+  assert.ok(Object.keys(now.files).includes('/etc/passwd'), 'има поне един следен файл');
+  // Отпечатък, който НЕ е следял нищо: всичко е „ново за следене", нищо не е промяна.
+  saveBaseline(dir, { takenAt: now.takenAt, watched: [], files: {} });
+  let d = diffEtc(dir);
+  assert.equal(d.clean, true);
+  assert.equal(d.added.length, 0);
+  assert.ok(d.newlyTracked.includes('/etc/passwd'));
+  // Същият празен отпечатък, но със СЕГАШНИЯ списък: тогава файловете наистина са добавени.
+  saveBaseline(dir, { takenAt: now.takenAt, watched: now.watched, files: {} });
+  d = diffEtc(dir);
+  assert.equal(d.clean, false);
+  assert.ok(d.added.some((a) => a.path === '/etc/passwd'));
+  // Стар отпечатък без `watched`: старите пътища важат, ключовете на root — не.
+  saveBaseline(dir, { takenAt: now.takenAt, files: {} });
+  d = diffEtc(dir);
+  assert.ok(d.added.some((a) => a.path === '/etc/passwd'), 'стар път — промяна');
+  assert.ok(!d.added.some((a) => a.path.startsWith('/root/.ssh/') || a.path.startsWith('/etc/ssh/sshd_config.d/')), 'нов път — не е промяна');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('уеб сървър: празен конфиг се отказва — nginx -t го приема и сайтът изчезва тихо', async () => {
+  const { writeSite } = await import('../src/webserver.js');
+  const audit = { log: () => {} };
+  for (const empty of ['', '   \n\t ']) {
+    await assert.rejects(writeSite('nginx', 'demo.lab', empty, audit, 'u'), /Празен конфиг/);
+  }
+});
 
 // ── Находки на Разбивача (фаза Ж) ─────────────────────────────────────────────
 test('изходящият адрес не бива да сочи към самата машина или към метаданните', () => {
@@ -460,4 +494,34 @@ test('SSH: „without-password“ е същото като „prohibit-password�
   const f = sshFindings('permitrootlogin without-password\n');
   assert.equal(f.find((x) => x.id === 'ssh-root-key')?.ok, true);
   assert.equal(f.some((x) => x.id === 'ssh-root'), false);
+});
+
+test('posture: един сървър без restic = бекъпите са само на същия диск (и го КАЗВА)', async () => {
+  const { offsiteFindings } = await import('../src/posture.js');
+  const ids = (c, o) => offsiteFindings(c, o).map((f) => f.id);
+  // Точно състоянието след смяната на двата VPS с един: съседа го няма, restic няма.
+  assert.deepEqual(ids({ peers: [] }), ['backup-no-offsite']);
+  assert.equal(offsiteFindings({ peers: [] })[0].severity, 'high');
+  // Съсед без включено изнасяне не е копие извън машината.
+  assert.deepEqual(ids({ peers: [{ id: 'b' }], backups: { offsite: { enabled: false } } }), ['backup-no-offsite']);
+  // Всяко от двете истински копия стига.
+  assert.deepEqual(ids({ peers: [{ id: 'b' }], backups: { offsite: { enabled: true } } }), []);
+  assert.deepEqual(ids({ peers: [] }, { restic: true }), []);
+});
+
+test('отпечатък: `*` е точно един сегмент — ключовете на всеки потребител, не повече', () => {
+  const pat = '/home/*/.ssh/authorized_keys';
+  assert.equal(rootCovers(pat, '/home/deploy/.ssh/authorized_keys'), true);
+  assert.equal(rootCovers(pat, '/home/a/b/.ssh/authorized_keys'), false);
+  assert.equal(rootCovers(pat, '/home/deploy/.ssh/authorized_keys.bak'), false);
+  assert.equal(rootCovers('/var/spool/cron/crontabs', '/var/spool/cron/crontabs/root'), true);
+  assert.equal(rootCovers('/var/spool/cron/crontabs', '/var/spool/cron/crontabsX'), false);
+
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-glob-'));
+  for (const u of ['alice', 'bob']) fs.mkdirSync(path.join(dir, u, '.ssh'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'alice', '.ssh', 'authorized_keys'), 'ssh-ed25519 AAAA test');
+  const got = expandWatched(`${dir}/*/.ssh/authorized_keys`).sort();
+  assert.deepEqual(got, [`${dir}/alice/.ssh/authorized_keys`, `${dir}/bob/.ssh/authorized_keys`]);
+  assert.deepEqual(expandWatched('/etc/hosts'), ['/etc/hosts']);
+  assert.deepEqual(expandWatched(`${dir}/няма/*/x`), []);
 });

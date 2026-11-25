@@ -89,6 +89,33 @@ export function renderMarkdown(src: string): string {
   return html.join("\n");
 }
 
+// Съкращения, след които точката НЕ е край на изречение („2026 г. единствено…“,
+// „ул. Христо Ботев“). Еднобуквените (г., с., т., инициали) — винаги.
+const ABBREVIATIONS = new Set([
+  "гр", "ул", "бул", "обл", "общ", "напр", "вкл", "др", "д-р", "проф", "мин", "лв",
+  "ст", "кв", "ж.к", "бл", "вх", "ет", "ап", "тел", "т.е", "т.нар", "стр", "чл",
+  "ал", "им", "вж", "англ", "сл", "хил", "млн", "млрд", "св",
+]);
+
+/**
+ * Индексът на последния край на изречение („. “, „! “, „? “) преди `max` —
+ * само ако след него идва главна буква (или отваряща кавичка/скоба) и точката
+ * не е след съкращение. Иначе -1.
+ */
+function lastSentenceEnd(t: string, max: number): number {
+  let end = -1;
+  for (const m of t.matchAll(/[.!?](?=\s+[„"«(]?\p{Lu})/gu)) {
+    const i = m.index;
+    if (i >= max - 1) break;
+    if (m[0] === ".") {
+      const word = /([\p{L}.-]+)$/u.exec(t.slice(0, i))?.[1] ?? "";
+      if (word.length === 1 || ABBREVIATIONS.has(word.toLowerCase())) continue;
+    }
+    end = i;
+  }
+  return end;
+}
+
 // Кратко резюме без Markdown — за meta описания и листинги.
 export function plainText(src: string, max = 160): string {
   const t = (src ?? "")
@@ -97,5 +124,13 @@ export function plainText(src: string, max = 160): string {
     .replace(/\s+/g, " ")
     .trim();
   if (t.length <= max) return t;
-  return t.slice(0, max - 1).trimEnd() + "…";
+  const head = t.slice(0, max);
+  // Цяло изречение, което стига поне до 60% от мястото → без „…“.
+  const sentenceEnd = lastSentenceEnd(t, max);
+  if (sentenceEnd >= max * 0.6) return head.slice(0, sentenceEnd + 1);
+  // Иначе — до последната цяла дума, без висяща пунктуация („стойността.…“,
+  // „без да ч…“), и чак тогава „…“.
+  const space = t.lastIndexOf(" ", max - 1);
+  const cut = space > max * 0.5 ? t.slice(0, space) : t.slice(0, max - 1);
+  return cut.replace(/[\s.,;:!?—–-]+$/u, "") + "…";
 }

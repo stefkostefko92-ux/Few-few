@@ -1,0 +1,35 @@
+/* Phone layout for the 4-handed tables (Белот, Бридж, Кент). On a ~320px
+   felt the two side fans met in the middle of the table and a 4-card trick
+   ran over both seats (names unreadable, cards clipped by the rail). Here the
+   side seats shrink to a name plate + card count and move up under the top
+   seat, and the centre drops below them — every seat and card stays visible.
+   Opt in with `className="aso-table--compact"` on <FeltTable>. */
+@media (max-width: 640px) {
+  .aso-table--compact .aso-seat[data-pos="left"],
+  .aso-table--compact .aso-seat[data-pos="right"] {
+    top: 148px;
+    transform: none;
+    gap: 4px;
+  }
+  .aso-table--compact .aso-seat[data-pos="left"] .aso-seat__plate,
+  .aso-table--compact .aso-seat[data-pos="right"] .aso-seat__plate {
+    max-width: 138px;
+  }
+  .aso-table--compact .aso-table__center {
+    top: var(--compact-center-top, 58%);
+  }
+}
+
+/* Card count chip that replaces a side fan on phones. */
+.aso-seat-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 178, 95, 0.28);
+  background: rgba(8, 11, 10, 0.6);
+  color: var(--ink-300);
+  font-size: 0.72rem;
+  font-weight: 700;
+}

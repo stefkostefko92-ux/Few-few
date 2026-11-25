@@ -1,0 +1,79 @@
+<%
+  // Формата за заявка. Работи без JavaScript; при грешка страницата се връща на същото място
+  // (`#richiesta`) с обобщение отгоре и съобщение до всяко поле. Задължителни са име, фирма, имейл и
+  // отметката за политиката — останалите полета носят „по желание“.
+  const shown = requestFields.filter((key) => errors[key]);
+  const label = (key) => key === 'privacy' ? t('site.request.privacy') : t('site.request.' + key);
+  const message = (key) => {
+    const code = errors[key];
+    if (!code) return null;
+    if (key === 'privacy') return t('site.request.error.privacy');
+    return t('site.request.error.' + code, { max: limits[key] ?? 254 });
+  };
+  // Ключът идва от REQUEST_FIELDS (код), не от заявката — затова може в атрибута.
+  const aria = (key) => errors[key] ? ' aria-invalid="true" aria-describedby="err-r-' + key + '"' : '';
+%><form class="request__form" method="post" action="/richiesta-accesso#richiesta" novalidate>
+  <input type="hidden" name="_csrf" value="<%= preCsrf %>">
+  <% if (formError) { %><div class="errors" role="alert"><h3><%= t('site.request.error.' + formError, { email: contactEmail }) %></h3></div><% } %>
+  <% if (shown.length) { %><div class="errors" role="alert" id="request-errors" tabindex="-1">
+    <h3><%= t('site.request.errorSummary', { n: shown.length }) %></h3>
+    <ul>
+      <% for (const key of shown) { %><li><a href="#r-<%= key %>"><%= label(key) %>: <%= message(key) %></a></li>
+      <% } %>
+    </ul>
+  </div><% } %>
+  <div class="request__grid">
+    <div class="field">
+      <label class="field__label" for="r-name"><%= t('site.request.name') %></label>
+      <input class="input" id="r-name" name="name" type="text" autocomplete="name" required maxlength="<%= limits.name %>" value="<%= values.name %>"<%- aria('name') %>>
+      <% if (errors.name) { %><p class="field__error" id="err-r-name"><%= message('name') %></p><% } %>
+    </div>
+    <div class="field">
+      <label class="field__label" for="r-company"><%= t('site.request.company') %></label>
+      <input class="input" id="r-company" name="company" type="text" autocomplete="organization" required maxlength="<%= limits.company %>" value="<%= values.company %>"<%- aria('company') %>>
+      <% if (errors.company) { %><p class="field__error" id="err-r-company"><%= message('company') %></p><% } %>
+    </div>
+    <div class="field">
+      <label class="field__label" for="r-email"><%= t('site.request.email') %></label>
+      <input class="input" id="r-email" name="email" type="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" required maxlength="254" value="<%= values.email %>"<%- aria('email') %>>
+      <% if (errors.email) { %><p class="field__error" id="err-r-email"><%= message('email') %></p><% } %>
+    </div>
+    <div class="field">
+      <label class="field__label" for="r-phone"><%= t('site.request.phone') %><span class="opt"> (<%= t('site.request.optional') %>)</span></label>
+      <input class="input" id="r-phone" name="phone" type="tel" autocomplete="tel" maxlength="<%= limits.phone %>" value="<%= values.phone %>"<%- aria('phone') %>>
+      <% if (errors.phone) { %><p class="field__error" id="err-r-phone"><%= message('phone') %></p><% } %>
+    </div>
+    <div class="field">
+      <label class="field__label" for="r-city"><%= t('site.request.city') %><span class="opt"> (<%= t('site.request.optional') %>)</span></label>
+      <input class="input" id="r-city" name="city" type="text" autocomplete="address-level2" maxlength="<%= limits.city %>" value="<%= values.city %>"<%- aria('city') %>>
+      <% if (errors.city) { %><p class="field__error" id="err-r-city"><%= message('city') %></p><% } %>
+    </div>
+    <div class="field">
+      <label class="field__label" for="r-teamSize"><%= t('site.request.teamSize') %><span class="opt"> (<%= t('site.request.optional') %>)</span></label>
+      <select class="select" id="r-teamSize" name="teamSize"<%- aria('teamSize') %>>
+        <option value=""><%= t('site.request.teamSizeNone') %></option>
+        <% for (const size of teamSizes) { %><option value="<%= size %>"<% if (values.teamSize === size) { %> selected<% } %>><%= t('site.request.team.' + size) %></option>
+        <% } %>
+      </select>
+      <% if (errors.teamSize) { %><p class="field__error" id="err-r-teamSize"><%= message('teamSize') %></p><% } %>
+    </div>
+    <div class="field field--wide">
+      <label class="field__label" for="r-message"><%= t('site.request.message') %><span class="opt"> (<%= t('site.request.optional') %>)</span></label>
+      <textarea class="textarea" id="r-message" name="message" rows="4" maxlength="<%= limits.message %>" aria-describedby="r-message-hint<%= errors.message ? ' err-r-message' : '' %>"<% if (errors.message) { %> aria-invalid="true"<% } %>><%= values.message %></textarea>
+      <p class="field__hint" id="r-message-hint"><%= t('site.request.messageHint') %></p>
+      <% if (errors.message) { %><p class="field__error" id="err-r-message"><%= message('message') %></p><% } %>
+    </div>
+    <div class="field field--wide">
+      <div class="request__privacy">
+        <label class="tick" for="r-privacy"><input id="r-privacy" type="checkbox" name="privacy" value="si"<% if (values.privacy === 'si') { %> checked<% } %><%- aria('privacy') %>><span class="tick__box" aria-hidden="true"></span><span><%= t('site.request.privacy') %></span></label>
+        <a href="<%= privacyPath %>"><%= t('site.request.privacyLink') %></a>
+      </div>
+      <% if (errors.privacy) { %><p class="field__error" id="err-r-privacy"><%= message('privacy') %></p><% } %>
+    </div>
+  </div>
+  <div class="hp" aria-hidden="true">
+    <label for="r-<%= honeypot %>"><%= t('site.request.honeypot') %></label>
+    <input id="r-<%= honeypot %>" name="<%= honeypot %>" type="text" tabindex="-1" autocomplete="off">
+  </div>
+  <div><button class="btn btn--primary btn--lg" type="submit"><%= t('site.request.submit') %></button></div>
+</form>

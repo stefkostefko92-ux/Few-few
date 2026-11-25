@@ -212,7 +212,7 @@
         <div class="contact-info-block">
           <span class="contact-info-label"><%= t('contact.ourAddress') %></span>
           <div class="contact-info-value" style="font-size: var(--fs-md);">
-            Ул. Самуил 3<br>Бобов дол 2670<br>България
+            <% if (lang === 'bg') { %>ул. „Самуил“ № 3<br>2670 Бобов дол<br>България<% } else { %>ul. Samuil 3<br>2670 Bobov Dol<br>Bulgaria<% } %>
           </div>
         </div>
       </div>

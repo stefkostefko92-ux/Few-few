@@ -1,0 +1,17 @@
+URLhaus (abuse.ch) — the terms the malware-site data is used under
+
+The data is no longer published under CC0. Since October 2026 the URLhaus host file
+is downloaded only with an Auth-Key issued by abuse.ch, under the abuse.ch Terms of
+Use (effective 4 November 2025, last updated 21 October 2026, checked 23 October 2026):
+
+  https://abuse.ch/terms-of-use/
+  https://urlhaus.abuse.ch/api/   (named as the terms in the host file itself)
+
+In short, as we read them (not legal advice): access is for authenticated users,
+free of charge for not-for-profit purposes and within the query limits; commercial
+or for-profit use of URLhaus may require a paid subscription through Spamhaus.
+Supreme AdBlock is free and its maker uses the data for the extension's warning
+page only. We do not republish the data anywhere; it ships only as the extension's
+own blocking rules (rules/urlhaus.json).
+
+The data is © abuse.ch AG. Questions about it: urlhaus [at] abuse.ch.

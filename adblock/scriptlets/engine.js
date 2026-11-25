@@ -305,10 +305,22 @@
   // answers for the native: fn.toString() stays "function fetch() { [native code] }".
   // Anti-adblock scripts (YouTube's included) compare exactly that; a plain
   // replacement function gave us away on every site that checks.
+  // An error that passes through a wrapper (`Function.prototype.toString.call({})`, a
+  // JSON.parse of bad text…) carries no frame of ours: the trap's line would name this
+  // file's chrome-extension:// URL — the easiest tell of all. Only the throw path pays.
   var NativeProxy = typeof Proxy === "function" ? Proxy : null;
   var nativeReflectApply = typeof Reflect === "object" && Reflect ? Reflect.apply : null;
   var cloakMap = typeof WeakMap === "function" ? new WeakMap() : null;
   var cloakedToString = false;
+  var OWN_FRAME = /(?:chrome|moz)-extension:\/\//;
+  function scrubStack(e) {
+    try {
+      if (e && typeof e === "object" && typeof e.stack === "string" && OWN_FRAME.test(e.stack)) {
+        e.stack = e.stack.split("\n").filter(function (l) { return !OWN_FRAME.test(l); }).join("\n");
+      }
+    } catch (x) {}
+    return e;
+  }
   function cloak(impl, orig) {
     if (!NativeProxy || !nativeReflectApply || !cloakMap || typeof orig !== "function" || typeof impl !== "function") return impl;
     try {
@@ -318,12 +330,14 @@
         var tsP = new NativeProxy(ts, { apply: function (t, self, args) {
           var o = self, n = 0;
           while (n++ < 8 && cloakMap.has(o)) o = cloakMap.get(o); // a native wrapped twice (two scriptlets) still answers as itself
-          return nativeReflectApply(t, o, args);
+          try { return nativeReflectApply(t, o, args); } catch (e) { throw scrubStack(e); }
         } });
         cloakMap.set(tsP, ts);
         Function.prototype.toString = tsP;
       }
-      var p = new NativeProxy(orig, { apply: function (t, self, args) { return nativeReflectApply(impl, self, args); } });
+      var p = new NativeProxy(orig, { apply: function (t, self, args) {
+        try { return nativeReflectApply(impl, self, args); } catch (e) { throw scrubStack(e); }
+      } });
       cloakMap.set(p, orig);
       return p;
     } catch (e) { return impl; }
@@ -1094,25 +1108,36 @@
   // Shape: { "": [[name, ...args]], "host.tld": [[name, ...args]] }. The ""
   // key holds global directives that run on every page.
   var MAP = /*__SCRIPTLET_MAP__*/{};
+  // Two builds of this one file (6.0): "global" = scriptlets/main.js, registered on
+  // every page (the baked MAP above, entities, the popup guard); "chunk" =
+  // scriptlets/ubo_engine.js, registered only right after a uBO data chunk on that
+  // chunk's hosts (MAP empty, no popup guard). They share no state and leave nothing
+  // on the page, so their order does not matter — and main.js no longer needs the
+  // ~17k chunk hosts as excludeMatches, which Chrome copied into every renderer.
+  var ROLE = /*__ENGINE_ROLE__*/"global";
   // uBlock Origin directives for THIS site come from a chunk script (scriptlets/
   // ubo/cNN.js, DATA baked and validated at build time) that the service worker
-  // registers just before this file for that chunk's hosts — same registration,
-  // guaranteed order. Picked up and removed in this tick, before any page script
-  // exists; each entry is re-checked against the build profile of the policy.
+  // registers just before the chunk build of this file for that chunk's hosts —
+  // same registration, guaranteed order. Picked up and removed in this tick, before
+  // any page script exists; each entry is re-checked against the build profile of
+  // the policy.
   var EXTRA = null;
   // uBO "entity" directives (example.* = example on any public suffix) come from
   // scriptlets/ubo/entities.js, which the manifest injects before this file only
   // where its globs match; the real hostname decides below (entityKeys).
   var ENT = null;
   try {
-    var chunkKey = "__tbabScriptletChunk";
-    var chunkDesc = Object.getOwnPropertyDescriptor(document, chunkKey);
-    if (chunkDesc && chunkDesc.value && typeof chunkDesc.value === "object") EXTRA = chunkDesc.value;
-    delete document[chunkKey];
-    var entKey = "__tbabScriptletEntities";
-    var entDesc = Object.getOwnPropertyDescriptor(document, entKey);
-    if (entDesc && entDesc.value && typeof entDesc.value === "object") ENT = entDesc.value;
-    delete document[entKey];
+    if (ROLE === "chunk") {
+      var chunkKey = "__tbabScriptletChunk";
+      var chunkDesc = Object.getOwnPropertyDescriptor(document, chunkKey);
+      if (chunkDesc && chunkDesc.value && typeof chunkDesc.value === "object") EXTRA = chunkDesc.value;
+      delete document[chunkKey];
+    } else {
+      var entKey = "__tbabScriptletEntities";
+      var entDesc = Object.getOwnPropertyDescriptor(document, entKey);
+      if (entDesc && entDesc.value && typeof entDesc.value === "object") ENT = entDesc.value;
+      delete document[entKey];
+    }
   } catch (e) {}
   // EasyList $popup domains (baked by the build): popunder/popup launchers.
   var POPUP_HOSTS = /*__POPUP_HOSTS__*/[];

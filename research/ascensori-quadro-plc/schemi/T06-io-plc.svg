@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1587 1122" width="1587" height="1122" role="img" aria-label="Ingressi e uscite del PLC (identici da 12 a 24 fermate)">
+<title>T06 — Ingressi e uscite del PLC (identici da 12 a 24 fermate)</title>
+<defs></defs>
+<rect width="1587" height="1122" fill="#ffffff"/>
+
+<rect x="8" y="8" width="1571" height="1106" fill="none" stroke="#111827" stroke-width="2"/>
+<rect x="14" y="14" width="1559" height="1094" fill="none" stroke="#111827" stroke-width="0.8"/>
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<rect x="30" y="54" width="500" height="30" rx="0" fill="#eff6ff" stroke="#111827" stroke-width="1.2"/>
+<text x="40" y="74" font-size="13" text-anchor="start" font-weight="700" fill="#111827"><tspan x="40" dy="0">Ingressi digitali 24 V (32)</tspan></text>
+<rect x="30" y="84" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="84" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="101" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I00</tspan></text>
+<text x="102" y="101" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Controllo fasi / rete presente</tspan></text>
+<rect x="30" y="110" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="110" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="127" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I01</tspan></text>
+<text x="102" y="127" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Catena A — arresti fossa/testata, ispezione (lettura)</tspan></text>
+<rect x="30" y="136" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="136" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="153" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I02</tspan></text>
+<text x="102" y="153" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Catena B — finecorsa finali, limitatore, paracadute (lettura)</tspan></text>
+<rect x="30" y="162" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="162" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="179" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I03</tspan></text>
+<text x="102" y="179" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Catena C — serrature di piano (lettura)</tspan></text>
+<rect x="30" y="188" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="188" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="205" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I04</tspan></text>
+<text x="102" y="205" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Catena D — porta di cabina (lettura)</tspan></text>
+<rect x="30" y="214" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="214" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="231" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I05</tspan></text>
+<text x="102" y="231" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Retroazione KM1</tspan></text>
+<rect x="30" y="240" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="240" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="257" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I06</tspan></text>
+<text x="102" y="257" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Retroazione KM2</tspan></text>
+<rect x="30" y="266" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="266" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="283" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I07</tspan></text>
+<text x="102" y="283" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Retroazione freno 1 (KB1)</tspan></text>
+<rect x="30" y="292" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="292" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="309" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I08</tspan></text>
+<text x="102" y="309" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Retroazione freno 2 (KB2)</tspan></text>
+<rect x="30" y="318" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="318" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="335" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I09</tspan></text>
+<text x="102" y="335" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Zona porta — sensore 1 (copia di comando)</tspan></text>
+<rect x="30" y="344" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="344" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="361" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I10</tspan></text>
+<text x="102" y="361" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Zona porta — sensore 2 (copia di comando)</tspan></text>
+<rect x="30" y="370" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="370" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="387" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I11</tspan></text>
+<text x="102" y="387" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Rallentamento alto (finecorsa di riduzione)</tspan></text>
+<rect x="30" y="396" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="396" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="413" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I12</tspan></text>
+<text x="102" y="413" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Rallentamento basso (finecorsa di riduzione)</tspan></text>
+<rect x="30" y="422" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="422" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="439" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I13</tspan></text>
+<text x="102" y="439" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Commutatore ispezione attivo</tspan></text>
+<rect x="30" y="448" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="448" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="465" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I14</tspan></text>
+<text x="102" y="465" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Chiave pompieri (comando antincendio)</tspan></text>
+<rect x="30" y="474" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="474" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="491" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I15</tspan></text>
+<text x="102" y="491" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Sovraccarico cabina</tspan></text>
+<rect x="30" y="500" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="500" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="517" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I16</tspan></text>
+<text x="102" y="517" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Carico completo (esclude chiamate di piano)</tspan></text>
+<rect x="30" y="526" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="526" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="543" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I17</tspan></text>
+<text x="102" y="543" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Inverter pronto</tspan></text>
+<rect x="30" y="552" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="552" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="569" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I18</tspan></text>
+<text x="102" y="569" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Inverter in guasto</tspan></text>
+<rect x="30" y="578" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="578" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="595" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I19</tspan></text>
+<text x="102" y="595" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">PTC motore</tspan></text>
+<rect x="30" y="604" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="604" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="621" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I20</tspan></text>
+<text x="102" y="621" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Batteria / ARD attivo</tspan></text>
+<rect x="30" y="630" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="630" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="647" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I21</tspan></text>
+<text x="102" y="647" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Chiave SERVIZIO nel quadro</tspan></text>
+<rect x="30" y="656" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="656" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="673" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I22</tspan></text>
+<text x="102" y="673" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Pulsante Wi-Fi locale</tspan></text>
+<rect x="30" y="682" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="682" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="699" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I23</tspan></text>
+<text x="102" y="699" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Porta aperta (finecorsa operatore)</tspan></text>
+<rect x="30" y="708" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="708" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="725" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I24</tspan></text>
+<text x="102" y="725" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Porta chiusa (finecorsa operatore)</tspan></text>
+<rect x="30" y="734" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="734" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="751" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I25</tspan></text>
+<text x="102" y="751" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Barriera / costa porte</tspan></text>
+<rect x="30" y="760" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="760" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="777" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I26</tspan></text>
+<text x="102" y="777" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Pulsante di allarme (copia, il comando è sul citofono)</tspan></text>
+<rect x="30" y="786" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="786" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="803" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I27</tspan></text>
+<text x="102" y="803" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Ispezione: SALITA (serie con MARCIA)</tspan></text>
+<rect x="30" y="812" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="812" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="829" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I28</tspan></text>
+<text x="102" y="829" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Ispezione: DISCESA (serie con MARCIA)</tspan></text>
+<rect x="30" y="838" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="838" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="855" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I29</tspan></text>
+<text x="102" y="855" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Emergenza elettrica: SALITA</tspan></text>
+<rect x="30" y="864" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="864" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="881" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I30</tspan></text>
+<text x="102" y="881" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Emergenza elettrica: DISCESA</tspan></text>
+<rect x="30" y="890" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="92" y="890" width="438" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="38" y="907" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="38" dy="0">I31</tspan></text>
+<text x="102" y="907" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="102" dy="0">Riserva</tspan></text>
+<rect x="560" y="54" width="480" height="30" rx="0" fill="#fff7ed" stroke="#111827" stroke-width="1.2"/>
+<text x="570" y="74" font-size="13" text-anchor="start" font-weight="700" fill="#111827"><tspan x="570" dy="0">Uscite digitali (18)</tspan></text>
+<rect x="560" y="84" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="84" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="101" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">Q00</tspan></text>
+<text x="632" y="101" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Consenso KM1 (attraverso la catena)</tspan></text>
+<rect x="560" y="110" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="110" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="127" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">Q01</tspan></text>
+<text x="632" y="127" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Consenso KM2 (attraverso la catena)</tspan></text>
+<rect x="560" y="136" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="136" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="153" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">Q02</tspan></text>
+<text x="632" y="153" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Consenso freno 1 (KB1)</tspan></text>
+<rect x="560" y="162" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="162" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="179" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">Q03</tspan></text>
+<text x="632" y="179" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Consenso freno 2 (KB2)</tspan></text>
+<rect x="560" y="188" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="188" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="205" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">Q04</tspan></text>
+<text x="632" y="205" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Inverter: marcia salita</tspan></text>
+<rect x="560" y="214" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="214" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="231" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">Q05</tspan></text>
+<text x="632" y="231" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Inverter: marcia discesa</tspan></text>
+<rect x="560" y="240" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="240" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="257" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">Q06</tspan></text>
+<text x="632" y="257" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Inverter: velocità 1 (alta)</tspan></text>
+<rect x="560" y="266" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="266" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="283" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">Q07</tspan></text>
+<text x="632" y="283" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Inverter: velocità 2 (livello)</tspan></text>
+<rect x="560" y="292" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="292" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="309" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">Q08</tspan></text>
+<text x="632" y="309" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Inverter: velocità 3 (ispezione/recupero)</tspan></text>
+<rect x="560" y="318" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="318" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="335" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">Q09</tspan></text>
+<text x="632" y="335" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Inverter: reset</tspan></text>
+<rect x="560" y="344" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="344" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="361" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">Q10</tspan></text>
+<text x="632" y="361" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Operatore porte: apri</tspan></text>
+<rect x="560" y="370" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="370" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="387" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">Q11</tspan></text>
+<text x="632" y="387" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Operatore porte: chiudi</tspan></text>
+<rect x="560" y="396" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="396" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="413" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">Q12</tspan></text>
+<text x="632" y="413" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Luce cabina (con risparmio energetico)</tspan></text>
+<rect x="560" y="422" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="422" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="439" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">Q13</tspan></text>
+<text x="632" y="439" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Ventola cabina / quadro</tspan></text>
+<rect x="560" y="448" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="448" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="465" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">Q14</tspan></text>
+<text x="632" y="465" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Alimentazione Wi-Fi locale (10 min)</tspan></text>
+<rect x="560" y="474" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="474" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="491" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">Q15</tspan></text>
+<text x="632" y="491" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Avvisatore acustico fuori servizio</tspan></text>
+<rect x="560" y="500" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="500" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="517" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">Q16</tspan></text>
+<text x="632" y="517" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Spia «fuori servizio» al piano principale</tspan></text>
+<rect x="560" y="526" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="526" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="543" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">Q17</tspan></text>
+<text x="632" y="543" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Riserva</tspan></text>
+<rect x="560" y="576" width="480" height="30" rx="0" fill="#faf5ff" stroke="#111827" stroke-width="1.2"/>
+<text x="570" y="596" font-size="13" text-anchor="start" font-weight="700" fill="#111827"><tspan x="570" dy="0">Analogici, contatore e bus</tspan></text>
+<rect x="560" y="606" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="606" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="623" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">A0</tspan></text>
+<text x="632" y="623" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Pesacarico 4–20 mA</tspan></text>
+<rect x="560" y="632" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="632" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="649" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">A1</tspan></text>
+<text x="632" y="649" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Temperatura quadro (PT100/NTC)</tspan></text>
+<rect x="560" y="658" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="658" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="675" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">HSC0</tspan></text>
+<text x="632" y="675" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Encoder A/B/Z (contatore veloce)</tspan></text>
+<rect x="560" y="684" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="684" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="701" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">CAN1</tspan></text>
+<text x="632" y="701" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Cabina: COP, display, porte, pesacarico</tspan></text>
+<rect x="560" y="710" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="710" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="727" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">CAN2</tspan></text>
+<text x="632" y="727" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Piani 1…24 (nodi di piano)</tspan></text>
+<rect x="560" y="736" width="62" height="26" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+<rect x="622" y="736" width="418" height="26" rx="0" fill="#fff" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="568" y="753" font-size="11.5" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="568" dy="0">ETH1</tspan></text>
+<text x="632" y="753" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="632" dy="0">Rete OT verso gateway (Modbus TCP)</tspan></text>
+<rect x="1070" y="54" width="490" height="500" rx="8" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="6 4"/>
+<text x="1080" y="70" font-size="12" text-anchor="start" font-weight="700" fill="#6b7280"><tspan x="1080" dy="0">Dimensionamento (indicativo)</tspan></text>
+<text x="1084" y="86" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1084" dy="0">• ≈ 32 ingressi e ≈ 18 uscite digitali, 2 analogici,</tspan></text>
+<text x="1084" y="112" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1084" dy="0">  1 contatore veloce, 2 CAN: stessi per 12 e 24 fermate.</tspan></text>
+<text x="1084" y="138" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1084" dy="0">• Se il PLC base ha meno punti, si aggiunge un modulo</tspan></text>
+<text x="1084" y="164" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1084" dy="0">  di espansione (circa 16 DI + 16 DO), mai per le fermate.</tspan></text>
+<text x="1084" y="190" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1084" dy="0">• Le uscite verso contattori e valvole sono SOLO consensi:</tspan></text>
+<text x="1084" y="216" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1084" dy="0">  la catena di sicurezza li interrompe indipendentemente.</tspan></text>
+<text x="1084" y="242" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1084" dy="0">• Gli ingressi di catena (I01…I04) sono isolati e a</tspan></text>
+<text x="1084" y="268" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1084" dy="0">  basso carico: non alterano la tensione della catena.</tspan></text>
+<text x="1084" y="294" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1084" dy="0">• Scelta I/O: isolamento galvanico, protezione contro</tspan></text>
+<text x="1084" y="320" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1084" dy="0">  inversione, fusibile per gruppo, morsetti estraibili.</tspan></text>
+<text x="1084" y="346" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1084" dy="0">• Ogni ingresso porta la propria etichetta, polarità e</tspan></text>
+<text x="1084" y="372" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1084" dy="0">  filtro (20 ms) nella POU IO_Map (04-software).</tspan></text>
+<text x="1084" y="398" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1084" dy="0">• Idraulico: al posto di Q04…Q09 e I07/I08/I17/I18 si</tspan></text>
+<text x="1084" y="424" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1084" dy="0">  usano le valvole YV1…YV4, la pressione e la</tspan></text>
+<text x="1084" y="450" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1084" dy="0">  temperatura olio (T03). Il resto non cambia.</tspan></text>
+</g>
+
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<rect x="827" y="1010" width="746" height="98" fill="#fff" stroke="#111827" stroke-width="1.2"/>
+<line x1="827" y1="1042" x2="1573" y2="1042" stroke="#111827" stroke-width="0.8"/>
+<line x1="1437" y1="1010" x2="1437" y2="1108" stroke="#111827" stroke-width="0.8"/>
+<line x1="1437" y1="1075" x2="1573" y2="1075" stroke="#111827" stroke-width="0.8"/>
+<text x="837" y="1028" font-size="10" fill="#6b7280">QUADRO DI MANOVRA A PLC — PROGETTO DI FATTIBILITÀ · Carbon Stealth VCC</text>
+<text x="837" y="1062" font-size="17" font-weight="700" fill="#111827">Ingressi e uscite del PLC (identici da 12 a 24 fermate)</text>
+<text x="837" y="1084" font-size="11" fill="#374151">Le chiamate di piano e di cabina viaggiano sul bus CAN: non occupano ingressi fisici</text>
+<text x="837" y="1100" font-size="10" fill="#b45309">Schema di principio: non è un esecutivo. Lo firma un progettista abilitato.</text>
+<text x="1445" y="1026" font-size="10" fill="#6b7280">Tavola</text>
+<text x="1445" y="1056" font-size="26" font-weight="700">T06</text>
+<text x="1445" y="1090" font-size="10" fill="#6b7280">Rev. A · 2026-10-07</text>
+<text x="1445" y="1103" font-size="10" fill="#6b7280">A3 · senza scala</text>
+</g>
+</svg>

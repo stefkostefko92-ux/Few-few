@@ -33,7 +33,7 @@ const tmp = mkdtempSync(join(tmpdir(), "sa-ctl-files-"));
 const ctx = await chromium.launchPersistentContext(profile, {
   channel: "chromium", headless: true,
   args: ["--no-sandbox", `--disable-extensions-except=${ROOT}`, `--load-extension=${ROOT}`,
-    `--host-resolver-rules=MAP www.news-site.org 127.0.0.1:${port}, MAP www.shop-site.org 127.0.0.1:${port}`],
+    `--host-resolver-rules=MAP www.news-site.org 127.0.0.1:${port}, MAP www.shop-site.org 127.0.0.1:${port}`, "--no-proxy-server"],
 });
 const shown = (p, sel) => p.evaluate((s) => { const e = document.querySelector(s); return !!e && getComputedStyle(e).display !== "none"; }, sel);
 try {
@@ -105,6 +105,10 @@ try {
   ok("toggle-site command: the site is allowed (and the tab reloads)", (await get("allowlist")).allowlist.includes("shop-site.org"));
   await sw.evaluate(async (t) => { await runCommand("toggle-site", t); }, { id: shopTab.id, url: shopTab.url });
   ok("…again: blocked again", !(await get("allowlist")).allowlist.includes("shop-site.org"));
+  // the command reloads the tab: let that reload finish first — closing a page mid-reload hung this test
+  // (2 of 3 runs, at page.close; the first toggle above already waited)
+  await shop.waitForLoadState("load").catch(() => {});
+  await shop.waitForTimeout(600);
   await shop.close();
 
   // ---- Settings: chart, GPC, shortcuts, import ----
@@ -171,6 +175,13 @@ try {
   ok("welcome: the shortcuts with a key are listed", (await w.evaluate(() => !document.getElementById("keysCard").hidden && document.querySelectorAll("#keysList li").length === 2)));
   await w.click('[data-feature="cookies"]');
   await w.waitForTimeout(500);
+  const pin = await w.getAttribute("#pinStep", "data-pin");
+  ok(`welcome: the pin tip is highlighted while the icon isn't on the toolbar (data-pin=${pin})`, pin === "todo" && (await shown(w, "#pinStep .ic-todo")) && !(await shown(w, "#pinStep .ic-done")));
+  // the browser reports the icon as pinned (what onUserSettingsChanged hands over) → the same tip, ticked, announced
+  await w.evaluate(() => showPin({ isOnToolbar: true }, true));
+  ok(`…and ticked + announced once the browser says it is pinned (${await w.textContent("#pinTitle")} / ${await w.textContent("#pinLive")})`, (await w.getAttribute("#pinStep", "data-pin")) === "done" &&
+    (await w.textContent("#pinTitle")) === "Pinned to the toolbar" && (await w.textContent("#pinLive")) === "Pinned to the toolbar" &&
+    (await shown(w, "#pinStep .ic-done")) && !(await shown(w, "#pinStep .ic-todo")));
   await w.close();
 
   // ---- high contrast: the popup's switch is redrawn with system colours ----
