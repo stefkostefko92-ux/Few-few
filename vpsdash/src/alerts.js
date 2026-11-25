@@ -471,7 +471,16 @@ export class AlertEngine {
     if ((this.cfg.peers || []).length) {
       const st = await nodesStatus(this.cfg);
       for (const p of st.peers) {
-        if (!p.up) {
+        if (p.self) {
+          // Не „недостъпен" — той отговаря, просто е самият ние. Различна поправка:
+          // не мрежа и жетон, а махане на съседа и на стария DNS запис.
+          out.push({
+            key: `peer:${p.id}`,
+            severity: 'warning',
+            title: 'Съседът в конфига е самата тази машина',
+            body: `${p.name} (${p.id}): ${p.error}`,
+          });
+        } else if (!p.up) {
           out.push({
             key: `peer:${p.id}`,
             severity: 'warning',

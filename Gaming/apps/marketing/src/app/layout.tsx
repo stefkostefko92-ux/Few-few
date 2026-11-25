@@ -1,10 +1,19 @@
 import type { Metadata, Viewport } from "next";
+// Самостоятелно хоствани шрифтове (без външен CDN): Alegreya за заглавия, Alegreya
+// Sans за текст — и двата с кирилица. Преди CSS-ът искаше Playfair/Manrope, но те
+// никъде не се зареждаха и браузърът тихо падаше на Georgia/системния шрифт.
+import "@fontsource/alegreya/700.css";
+import "@fontsource/alegreya/800.css";
+import "@fontsource/alegreya/400-italic.css";
+import "@fontsource/alegreya-sans/400.css";
+import "@fontsource/alegreya-sans/500.css";
+import "@fontsource/alegreya-sans/700.css";
 import "./globals.css";
 import { SITE } from "../lib/site";
 import { JsonLd } from "../components/JsonLd";
 import { Footer, Header } from "../components/Chrome";
 import { organizationLd, webAppLd, websiteLd } from "../lib/jsonld";
-import { alternatesFor } from "../lib/seo";
+import { KEYWORDS, alternatesFor } from "../lib/seo";
 import { I18nProvider } from "../i18n/I18nProvider";
 import { Analytics } from "../components/Analytics";
 
@@ -20,18 +29,7 @@ export const metadata: Metadata = {
   },
   description: SITE.description,
   applicationName: SITE.name,
-  keywords: [
-    "игри на карти",
-    "белот онлайн",
-    "сантасе",
-    "шах онлайн",
-    "табла",
-    "билярд онлайн",
-    "снукър онлайн",
-    "тексас холдем",
-    "браузърни игри",
-    "безплатни игри",
-  ],
+  keywords: KEYWORDS.bg,
   authors: [{ name: SITE.org.legalName, url: SITE.org.url }],
   creator: SITE.org.legalName,
   publisher: SITE.org.legalName,

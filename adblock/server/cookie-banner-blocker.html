@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cookie Banner Blocker for Chrome — Supreme AdBlock</title>
+<meta name="description" content="Supreme AdBlock presses Reject when a cookie banner offers one, clears the blur and scroll lock, and never clicks sign-in or payment buttons. Free." />
+<meta name="keywords" content="cookie banner blocker, reject cookies automatically, block cookie pop-ups, consent banner blocker, GDPR cookie pop-ups, Chrome extension, Supreme AdBlock, Carbon Stealth" />
+<meta name="author" content="Carbon Stealth" />
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+<meta name="theme-color" content="#030303" />
+<link rel="canonical" href="https://adblock.carbonstealth.eu/cookie-banner-blocker" />
+<link rel="icon" href="/favicon-48.png" sizes="48x48" type="image/png" />
+<link rel="icon" href="/icon-512.png" sizes="512x512" type="image/png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Supreme AdBlock — Carbon Stealth" />
+<meta property="og:title" content="Cookie Banner Blocker for Chrome — Supreme AdBlock" />
+<meta property="og:description" content="It presses Reject for you when a banner offers it, clears the leftover blur and scroll lock, and never clicks a sign-in or payment button." />
+<meta property="og:url" content="https://adblock.carbonstealth.eu/cookie-banner-blocker" />
+<meta property="og:image" content="https://adblock.carbonstealth.eu/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Supreme AdBlock shield by Carbon Stealth — a free Chrome extension that blocks ads, trackers and cookie banners" />
+<meta property="og:locale" content="en_US" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Cookie Banner Blocker for Chrome — Supreme AdBlock" />
+<meta name="twitter:description" content="It presses Reject for you when a banner offers it, clears the leftover blur and scroll lock, and never clicks a sign-in or payment button." />
+<meta name="twitter:image" content="https://adblock.carbonstealth.eu/og.png" />
+<meta name="twitter:image:alt" content="Supreme AdBlock shield by Carbon Stealth — a free Chrome extension that blocks ads, trackers and cookie banners" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://adblock.carbonstealth.eu/cookie-banner-blocker#webpage",
+      "url": "https://adblock.carbonstealth.eu/cookie-banner-blocker",
+      "name": "Cookie Banner Blocker for Chrome — Supreme AdBlock",
+      "description": "How Supreme AdBlock answers cookie and consent banners: it presses Reject when the banner offers one, presses Accept only when it finds no Reject button on the banner itself, cleans up what the banner leaves behind and never presses a sign-in or payment button.",
+      "inLanguage": "en",
+      "isPartOf": { "@id": "https://adblock.carbonstealth.eu/#site" },
+      "about": { "@id": "https://adblock.carbonstealth.eu/#app" },
+      "publisher": { "@id": "https://carbonstealth.eu/#organization" },
+      "breadcrumb": { "@id": "https://adblock.carbonstealth.eu/cookie-banner-blocker#breadcrumb" },
+      "primaryImageOfPage": "https://adblock.carbonstealth.eu/og.png",
+      "datePublished": "2026-10-16",
+      "dateModified": "2026-10-23"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://adblock.carbonstealth.eu/cookie-banner-blocker#breadcrumb",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Supreme AdBlock", "item": "https://adblock.carbonstealth.eu/" },
+        { "@type": "ListItem", "position": 2, "name": "Cookie banner blocker", "item": "https://adblock.carbonstealth.eu/cookie-banner-blocker" }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://adblock.carbonstealth.eu/cookie-banner-blocker#faq",
+      "mainEntity": [
+        { "@type": "Question", "name": "Is the cookie banner blocker a separate extension?", "acceptedAnswer": { "@type": "Answer", "text": "No. It is part of Supreme AdBlock, together with the ad and tracker blocking: one free extension, no account." } },
+        { "@type": "Question", "name": "Does it reject cookies on every site?", "acceptedAnswer": { "@type": "Answer", "text": "Not always. Banners change, and a new design can be missed. Report it from the popup with Site broken? so we can add it; until then, Hide element in the popup removes it from view." } },
+        { "@type": "Question", "name": "Will rejecting cookies break websites?", "acceptedAnswer": { "@type": "Answer", "text": "It should not: it presses the site's own Reject button, so the site keeps whatever cookies it treats as necessary. If a page does misbehave, the popup can allow that site in one click." } },
+        { "@type": "Question", "name": "Does it delete my cookies?", "acceptedAnswer": { "@type": "Answer", "text": "No. It answers banners and stops known ad networks from setting third-party tracking cookies. Cookies already in your browser stay until you clear them in the browser's settings." } },
+        { "@type": "Question", "name": "Does it send anything about the sites I visit?", "acceptedAnswer": { "@type": "Answer", "text": "No. Everything happens on your device. For cookie banners it keeps only numbers: how many were rejected for you, in total and per day for the last 30 days, with no list of sites." } }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{color-scheme:dark;
+    --bg:#030303; --bg2:#08090b; --panel:#0b0c0f; --line:#16181d; --line2:#22252c;
+    --cyan:#00e5ff; --cyan-deep:#00b8d4; --cream:#f5f5f0; --body:#d9d9d2; --muted:#a3a39c; --muted2:#8f8f87; --amber:#e6bd4a;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Inter",Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","JetBrains Mono",Menlo,Consolas,"Liberation Mono",monospace}
+  body{font-family:var(--font);background:var(--bg);color:var(--cream);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .field{position:fixed;inset:0;z-index:0;pointer-events:none;background:
+    radial-gradient(1100px 620px at 82% -12%,rgba(0,229,255,.12),transparent 60%),
+    radial-gradient(800px 520px at 6% 112%,rgba(0,255,136,.05),transparent 60%),var(--bg)}
+  a{color:var(--cyan);text-underline-offset:3px}
+  :focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:6px}
+  .skip{position:absolute;left:12px;top:-60px;z-index:100;background:var(--cyan);color:#001014;font-weight:800;padding:10px 16px;border-radius:10px;text-decoration:none}
+  .skip:focus{top:12px}
+  nav.top,.crumbs,main,footer{position:relative;z-index:1}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+  nav.top{display:flex;align-items:center;gap:14px;max-width:1120px;margin:0 auto;padding:22px 24px 0}
+  nav.top .brand{display:flex;align-items:center;gap:12px;color:var(--cream);text-decoration:none}
+  nav.top .mark{width:34px;height:34px;filter:drop-shadow(0 0 12px rgba(0,229,255,.45))}
+  nav.top b{display:block;font-weight:800;letter-spacing:.4px;font-size:16px;line-height:1.1}
+  nav.top .tag{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--cyan);font-family:var(--mono)}
+  nav.top .sp{flex:1}
+  nav.top .links{display:flex;gap:22px}
+  nav.top .links a{font-size:13.5px;color:var(--muted);letter-spacing:.3px;text-decoration:none;padding:4px 0}
+  nav.top .links a:hover{color:var(--cream)}
+  nav.top .links a[aria-current="page"]{color:var(--cream);box-shadow:0 2px 0 var(--cyan)}
+  @media(max-width:860px){nav.top .links{display:none}}
+
+  .crumbs{max-width:1120px;margin:0 auto;padding:30px 24px 0;font-size:13.5px;color:var(--muted)}
+  .crumbs ol{list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+  .crumbs li+li::before{content:"/";color:var(--muted2);margin-right:8px}
+  .crumbs a{color:var(--muted);text-decoration:none}
+  .crumbs a:hover{color:var(--cream);text-decoration:underline}
+
+  .hero{padding:22px 0 8px}
+  .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:center}
+  @media(max-width:940px){.hero .wrap{grid-template-columns:1fr;gap:36px}}
+  h1{font-size:clamp(38px,5.4vw,64px);line-height:1.03;font-weight:900;letter-spacing:-1.4px}
+  .lead{margin-top:20px;font-size:clamp(17px,2vw,19px);color:var(--muted);max-width:58ch}
+  .lead b{color:var(--cream);font-weight:600}
+  .where{margin-top:14px;font-size:14.5px;color:var(--muted2);max-width:58ch}
+  .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+  .btn{display:inline-flex;align-items:center;gap:9px;padding:14px 24px;border-radius:12px;font-size:15px;font-weight:700;letter-spacing:.2px;text-decoration:none;border:1px solid transparent;transition:border-color .2s,box-shadow .2s,color .2s}
+  .btn.primary{background:linear-gradient(135deg,var(--cyan),var(--cyan-deep));color:#001014;box-shadow:0 10px 36px rgba(0,229,255,.25)}
+  .btn.primary:hover{box-shadow:0 14px 48px rgba(0,229,255,.42)}
+  .btn.ghost{background:rgba(255,255,255,.02);border-color:var(--line2);color:var(--cream)}
+  .btn.ghost:hover{border-color:var(--cyan);color:var(--cyan)}
+  .btn svg{width:18px;height:18px;flex:none;fill:currentColor}
+  .verified{display:inline-flex;align-items:center;gap:12px;margin-top:18px;padding:10px 16px 10px 11px;border-radius:14px;
+    border:1px solid rgba(0,229,255,.38);background:linear-gradient(135deg,rgba(0,229,255,.11),rgba(0,229,255,.025));color:var(--cream);text-decoration:none;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 10px 34px rgba(0,229,255,.13);transition:border-color .2s}
+  .verified:hover{border-color:var(--cyan)}
+  .verified .seal{width:32px;height:32px;flex:none;filter:drop-shadow(0 0 10px rgba(0,229,255,.55))}
+  .verified .seal polygon{fill:var(--cyan);stroke:var(--cyan);stroke-width:1.2;stroke-linejoin:round}
+  .verified .seal path{fill:none;stroke:#001014;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+  .verified .vt{display:flex;flex-direction:column;line-height:1.25;text-align:left}
+  .verified .vt b{font-size:14.5px;font-weight:750;letter-spacing:.2px}
+  .verified .vt small{font-size:12px;color:var(--muted);margin-top:2px}
+  .verified .ext{width:14px;height:14px;flex:none;fill:none;stroke:var(--muted2);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+  section.blk{padding:64px 0 0}
+  .prose>*{max-width:760px}
+  h2{font-size:clamp(26px,3.3vw,36px);line-height:1.12;font-weight:850;letter-spacing:-.6px}
+  h3{font-size:18.5px;line-height:1.3;font-weight:750;letter-spacing:-.1px;margin-top:28px;color:var(--cream)}
+  p{color:var(--body);margin-top:12px}
+  h2+p{margin-top:14px}
+  h3+p{margin-top:6px}
+  p b,li b{color:var(--cream);font-weight:650}
+  .dots{list-style:none;margin-top:14px}
+  .dots li{position:relative;padding-left:24px;margin-top:10px;color:var(--body)}
+  .dots li::before{content:"";position:absolute;left:4px;top:.66em;width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px rgba(0,229,255,.55)}
+  .steps{list-style:none;counter-reset:st;margin-top:18px}
+  .steps li{counter-increment:st;position:relative;padding-left:48px;margin-top:16px;color:var(--body);min-height:32px}
+  .steps li::before{content:counter(st);position:absolute;left:0;top:-2px;width:32px;height:32px;border-radius:50%;border:1px solid rgba(0,229,255,.55);color:var(--cyan);font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .limit{margin-top:18px;border:1px solid var(--line2);border-left:3px solid var(--amber);border-radius:12px;background:var(--panel);padding:16px 20px}
+  .limit p:first-child{margin-top:0}
+
+  /* An illustration of a typical banner (not a real one). Class names avoid the words that banner
+     detectors look for — ours included — so no blocker hides the drawing on this page. */
+  .scene{justify-self:center;width:min(440px,100%)}
+  .scene .sheet{background:#f4f4ef;color:#17191d;border-radius:16px;padding:22px 22px 20px;box-shadow:0 30px 80px rgba(0,0,0,.6);transform:rotate(-1.2deg)}
+  .scene .sheet .t{font-weight:800;font-size:17px;letter-spacing:-.2px;color:#17191d;margin:0}
+  .scene .sheet .b{font-size:13.5px;line-height:1.5;color:#3d4148;margin-top:8px}
+  .scene .acts{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .scene .pill{display:inline-flex;align-items:center;justify-content:center;flex:1 1 140px;padding:11px 14px;border-radius:10px;font-size:14px;font-weight:700}
+  .scene .pill.yes{background:#17191d;color:#f4f4ef}
+  .scene .pill.no{position:relative;background:#fff;color:#17191d;border:1.5px solid #17191d;box-shadow:0 0 0 4px var(--cyan),0 0 26px rgba(0,229,255,.75)}
+  .scene .tapped{position:absolute;top:-13px;right:10px;background:var(--cyan);color:#001014;font-size:11px;font-weight:800;letter-spacing:.3px;padding:2px 9px;border-radius:999px}
+  .scene .tally{display:flex;align-items:center;gap:10px;margin:22px auto 0;width:max-content;max-width:100%;padding:9px 14px;border-radius:12px;border:1px solid var(--line2);background:var(--panel);font-size:13.5px;color:var(--cream)}
+  .scene .tally svg{width:18px;height:18px;flex:none;fill:none;stroke:var(--cyan);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .scene figcaption{margin-top:14px;font-size:14px;color:var(--muted);text-align:center}
+
+  .final{text-align:center;padding:84px 24px 10px}
+  .final h2{max-width:22ch;margin:0 auto}
+  .final p{max-width:56ch;margin:14px auto 0;color:var(--muted)}
+  .final .cta{justify-content:center}
+
+  footer{border-top:1px solid var(--line);margin-top:72px}
+  footer .row{max-width:1120px;margin:0 auto;padding:30px 24px;display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap;color:var(--muted2);font-size:13px}
+  footer .who{display:flex;gap:12px;align-items:flex-start;max-width:560px}
+  footer .who img{width:26px;height:26px;flex:none;margin-top:2px}
+  footer .who p{color:var(--muted2);margin:0}
+  footer .who p+p{margin-top:4px}
+  footer nav{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto}
+  footer a{color:var(--muted)}
+  footer nav a{text-decoration:none}
+  footer nav a:hover{text-decoration:underline}
+  footer a:hover{color:var(--cyan)}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="field" aria-hidden="true"></div>
+
+  <nav class="top" aria-label="Main">
+    <a class="brand" href="/">
+      <img class="mark" src="/shield-96.webp?v=4c70aee9f0" alt="" width="34" height="34" />
+      <span><b>Supreme AdBlock</b><span class="tag">Carbon Stealth</span></span>
+    </a>
+    <span class="sp"></span>
+    <div class="links">
+      <a href="/youtube-ad-blocker">YouTube</a>
+      <a href="/cookie-banner-blocker" aria-current="page">Cookie banners</a>
+      <a href="/#features">Features</a>
+      <a href="/support">Support</a>
+      <a href="/privacy">Privacy</a>
+    </div>
+  </nav>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/">Supreme AdBlock</a></li>
+      <li><span aria-current="page">Cookie banner blocker</span></li>
+    </ol>
+  </nav>
+
+  <main id="main">
+    <header class="hero">
+      <div class="wrap">
+        <div>
+          <h1>Cookie banner blocker for Chrome</h1>
+          <p class="lead">Supreme AdBlock answers cookie banners for you. It presses the banner's own <b>Reject</b> button when there is one, then clears the dimmed background and the scroll lock the banner leaves behind. If it finds no Reject button on the banner itself (it does not open the banner's settings), it presses Accept so you are not stuck.</p>
+          <p class="where">Part of Supreme AdBlock, on by default, in Chrome, Edge and Brave.</p>
+          <div class="cta">
+            <a class="btn primary" href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=cookie" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 4 13.2h6.1L9 22l10.5-11.6h-6.4z"/></svg>Add to Chrome — free</a>
+            <a class="btn ghost" href="#never">What it never presses</a>
+          </div>
+          <a class="verified" href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=cookie" target="_blank" rel="noopener">
+            <svg class="seal" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12.00,0.80 14.43,2.92 17.60,2.30 18.65,5.35 21.70,6.40 21.08,9.57 23.20,12.00 21.08,14.43 21.70,17.60 18.65,18.65 17.60,21.70 14.43,21.08 12.00,23.20 9.57,21.08 6.40,21.70 5.35,18.65 2.30,17.60 2.92,14.43 0.80,12.00 2.92,9.57 2.30,6.40 5.35,5.35 6.40,2.30 9.57,2.92"/><path d="M7.7 12.3l2.8 2.8 5.8-6"/></svg>
+            <span class="vt"><b>Established Publisher</b> <small>Verified on the Chrome Web Store, no history of violations</small></span>
+            <svg class="ext" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3h7v7M13 3 4 12"/></svg>
+          </a>
+        </div>
+        <figure class="scene">
+          <div aria-hidden="true">
+            <div class="sheet">
+              <p class="t">We value your privacy</p>
+              <p class="b">We and our 214 partners store and access information on your device to personalise ads and measure their performance.</p>
+              <div class="acts">
+                <span class="pill yes">Accept all</span>
+                <span class="pill no">Reject all<span class="tapped">pressed for you</span></span>
+              </div>
+            </div>
+            <div class="tally"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9 4 4 0 0 1-5-5 4 4 0 0 1-4-4Z"/><path d="m9 10 6 6m0-6-6 6"/></svg>Cookie banners rejected for you: 1,204</div>
+          </div>
+          <figcaption>A drawing of a typical banner. Supreme AdBlock presses Reject and the popup counts it.</figcaption>
+        </figure>
+      </div>
+    </header>
+
+    <section class="blk" id="steps">
+      <div class="wrap prose">
+        <h2>What happens when a banner appears</h2>
+        <ol class="steps">
+          <li><b>It finds the banner's own refusal button</b>, such as “Reject all”, “Necessary only” or “Decline”, and presses it, as you would.</li>
+          <li><b>If it finds no free Reject button on the banner itself</b> (it does not open the banner's settings), it presses Accept as a last resort, so you are not stuck behind the banner. A Reject button whose label mentions paying or subscribing (a “pay or accept” wall) does not count as a way to refuse, and once it has pressed Reject on a page it does not press Accept there. Known ad and tracking requests stay blocked by the filter lists either way.</li>
+          <li><b>It cleans up.</b> A dimmed or blurred background, a locked scroll bar, a page that no longer takes clicks: all of it is cleared.</li>
+          <li><b>It keeps count.</b> The popup shows how many cookie banners it has rejected for you.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="blk" id="cmps">
+      <div class="wrap prose">
+        <h2>Consent tools it knows</h2>
+        <p>Checked against the extension's code (version 5.5.1) on 23 October 2026. These consent-management platforms (the services sites use to run their banners) have buttons that Supreme AdBlock recognises by name:</p>
+        <ul class="dots">
+          <li><b>OneTrust</b>: Reject and Accept buttons.</li>
+          <li><b>Cookiebot</b>: Decline, Reject and Accept buttons.</li>
+          <li><b>Quantcast Choice</b>: the two buttons of its summary screen.</li>
+          <li><b>Didomi</b>: “continue without agreeing”, Disagree and Agree.</li>
+          <li><b>Usercentrics</b>: Deny and Accept buttons.</li>
+          <li><b>TrustArc</b>: its required-only and Accept buttons.</li>
+          <li><b>consentmanager</b>: its No and Yes buttons.</li>
+          <li><b>CookieYes</b>: Reject and Accept buttons.</li>
+          <li><b>Complianz</b>: Deny and Accept buttons.</li>
+          <li><b>iubenda</b>: Reject, “continue without accepting” and Accept buttons.</li>
+          <li><b>Osano</b>: Deny all and Accept all buttons.</li>
+          <li><b>Sourcepoint</b>: Reject all and Accept all, including when it draws its banner in a frame.</li>
+        </ul>
+        <p>Banners from other tools, and banners that sites build themselves, are handled by their wording, labels and test ids, but only inside a box that talks about cookies. It also looks inside frames and open shadow DOM (a hidden sub-tree some tools draw their banners in). Some tools, such as Termly, have no named buttons in the list: their banner is recognised by its container, and its buttons are pressed by their wording, like any other banner.</p>
+        <p>Other tools also answer banners for you. <a href="https://github.com/cavi-au/Consent-O-Matic" target="_blank" rel="noopener">Consent-O-Matic</a> (made at Aarhus University) fills them in with the choices you set once, and Ghostery's <a href="https://www.ghostery.com/blog/never-consent-by-ghostery" target="_blank" rel="noopener">Never-Consent</a> opts you out automatically; both pages were still online when we checked on 23 October 2026.</p>
+      </div>
+    </section>
+
+    <section class="blk" id="never">
+      <div class="wrap prose">
+        <h2>What it never presses</h2>
+        <p>A wrong click on a web page can do real harm, so the rules are strict:</p>
+        <ul class="dots">
+          <li>Never a sign-in, OAuth or payment button.</li>
+          <li>A button found by wording, label or test id never submits a form (except Google's own consent form) and never follows a link off the page.</li>
+          <li>A button found by its wording, such as “Reject” or “OK”, is pressed only inside a banner that is about cookies, never anywhere else on the page.</li>
+          <li>On pages it recognises as sign-in or payment pages by their address, it presses nothing found by wording, label or test id. Only the named buttons of the consent tools above stay active there.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="blk" id="why">
+      <div class="wrap prose">
+        <h2>Why it refuses first</h2>
+        <p>Some cookie tools make banners go away by accepting everything for you. Supreme AdBlock refuses first and presses Accept only when it finds no Reject button on the banner itself.</p>
+        <p>Your refusal is saved by the site's own consent tool, as if you had clicked it yourself, so the banner usually stays away on your next visit.</p>
+      </div>
+    </section>
+
+    <section class="blk" id="choose">
+      <div class="wrap prose">
+        <h2>When you want to choose yourself</h2>
+        <p>Switch off <b>Cookie / consent banners</b> in Settings and every banner is yours to answer again, which helps when you want a site to remember particular choices.</p>
+        <div class="limit">
+          <p>Switching it off does not switch off tracker blocking: known ad and tracking requests are still blocked by the filter lists, and known ad networks are still stopped from setting third-party cookies, whatever a banner says.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="blk" id="faq">
+      <div class="wrap prose">
+        <h2>Questions about cookie banners</h2>
+        <h3>Is the cookie banner blocker a separate extension?</h3>
+        <p>No. It is part of Supreme AdBlock, together with the ad and tracker blocking: one free extension, no account.</p>
+        <h3>Does it reject cookies on every site?</h3>
+        <p>Not always. Banners change, and a new design can be missed. Report it from the popup with Site broken? so we can add it; until then, Hide element in the popup removes it from view.</p>
+        <h3>Will rejecting cookies break websites?</h3>
+        <p>It should not: it presses the site's own Reject button, so the site keeps whatever cookies it treats as necessary. If a page does misbehave, the popup can allow that site in one click.</p>
+        <h3>Does it delete my cookies?</h3>
+        <p>No. It answers banners and stops known ad networks from setting third-party tracking cookies. Cookies already in your browser stay until you clear them in the browser's settings.</p>
+        <h3>Does it send anything about the sites I visit?</h3>
+        <p>No. Everything happens on your device. For cookie banners it keeps only numbers: how many were rejected for you, in total and per day for the last 30 days, with no list of sites.</p>
+      </div>
+    </section>
+
+    <div class="final">
+      <h2>Let it answer the banners</h2>
+      <p>The same extension <a href="/youtube-ad-blocker">blocks YouTube ads</a>, trackers and pop-unders. Free on the Chrome Web Store, for Chrome, Edge and Brave.</p>
+      <div class="cta">
+        <a class="btn primary" href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=cookie" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 4 13.2h6.1L9 22l10.5-11.6h-6.4z"/></svg>Add to Chrome — free</a>
+        <a class="btn ghost" href="/#features">See every feature</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="row">
+      <div class="who">
+        <img src="/shield-96.webp?v=4c70aee9f0" alt="" width="26" height="26" />
+        <div>
+          <p><b style="color:var(--cream)">Supreme AdBlock</b> is made by Carbon Stealth VCC, UIC (ЕИК) 208725180</p>
+          <p>3 Samuil St., 2670 Bobov Dol, Bulgaria, <a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a></p>
+        </div>
+      </div>
+      <nav aria-label="Footer">
+        <a href="/">Home</a>
+        <a href="/youtube-ad-blocker">YouTube ad blocker</a>
+        <a href="/cookie-banner-blocker">Cookie banner blocker</a>
+        <a href="/support">Support</a>
+        <a href="/privacy">Privacy</a>
+        <a href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=cookie" target="_blank" rel="noopener">Chrome Web Store</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

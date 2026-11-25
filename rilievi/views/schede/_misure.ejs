@@ -1,0 +1,13 @@
+<%
+  // Мерките на старите бутониери — ред за всяка спирка, под въпроса „Sì/No“ (src/schede/misure.ts).
+  // Редовете са колкото „Fermate“; app.js добавя нови от шаблона и скрива излишните, докато се пише.
+  // Без JS редовете са колкото е записаният брой (празният ред не се пази).
+  const misureOn = values.bottoniereMisure === 'si';
+%><div class="misure field--wide" id="f-misure" data-when="bottoniereMisure" data-when-values="si"<% if (!misureOn) { %> data-off<% } %> data-misure data-max="<%= maxMisure %>">
+  <p class="field__hint" data-misure-empty<% if (misureRows.length) { %> hidden<% } %>><%= t('scheda.misure.needFermate') %></p>
+  <div class="misure__rows" data-misure-rows>
+    <% for (const row of misureRows) { %><%- include('_misura', { row }) %>
+    <% } %>
+  </div>
+  <template data-misure-template><%- include('_misura', { row: misuraTemplate }) %></template>
+</div>

@@ -1,12 +1,13 @@
 // CNC tab: per-sheet G-code and DXF, the tool table, time estimate and the toolpath simulation.
-import { $, esc, fmt, stat, reduceMotion, setHtml } from './dom.js';
-import { toGcode, POSTS, GROOVE_MILL, CLEAR } from '../engine/cam.js';
+import { $, esc, fmt, num, pct, stat, reduceMotion, setHtml } from './dom.js';
+import { tx, txCount } from './text.js';
+import { toGcode, POSTS, GROOVE_MILL, cncFileName } from '../engine/cam.js';
 import { toDxf } from '../engine/dxf.js';
 import { sheetSvg, sheetTitle } from './render-nest.js';
 
 const RAPID_MM_MIN = 30000; // assumption for the time estimate
-const TOOL_CHANGE_S = 15; // assumption for the time estimate
-const HOLE_EXTRA_S = 0.4; // assumption for the time estimate: positioning and dwell per hole
+const TOOL_CHANGE_S = { iso: 15 + 5, grbl: 60 + 2 }; // assumption: automatic change / by hand with the Z0 touch-off (M0), plus the spindle dwell
+const HOLE_EXTRA_S = 0.4; // assumption for the time estimate: positioning per hole
 // simulation pace: a hole counts as this many mm of path, a rapid at this share of its length; the whole run takes SIM_MS
 const SIM_HOLE_MM = 30;
 const SIM_RAPID_SHARE = 0.25;
@@ -23,7 +24,10 @@ function moveLength(m) {
   return Math.hypot(m.to.X - m.from.X, m.to.Y - m.from.Y, m.to.Z - m.from.Z);
 }
 
-function estimate(g) {
+// The run time of one sheet's G-code. A drill move carries its own path (gcode.js): `cut` mm at the drill's feed,
+// `slow` mm at half of it (the end of a through hole), `retract` mm of rapids the canned cycle makes inside the control
+// (G98: back to the initial level, G83: up to R after each peck).
+export function estimate(g) {
   let cut = 0;
   let rapid = 0;
   let seconds = 0;
@@ -38,14 +42,22 @@ function estimate(g) {
       seconds += (len / RAPID_MM_MIN) * 60;
     } else if (m.type === 'drill') {
       drills += 1;
-      // in from the R plane and back out, at the drill's feed
-      seconds += (((m.depth + CLEAR) * 2) / drillFeed.get(m.tool)) * 60 + HOLE_EXTRA_S;
+      const F = m.F || drillFeed.get(m.tool);
+      rapid += m.retract || 0;
+      seconds +=
+        ((m.cut || 0) / F + (m.slow || 0) / (F / 2) + (m.retract || 0) / RAPID_MM_MIN) * 60 +
+        HOLE_EXTRA_S;
     } else {
       cut += len;
       seconds += (len / (m.F || 3000)) * 60;
     }
   }
-  return { cut, rapid, seconds: seconds + g.tools.length * TOOL_CHANGE_S, drills };
+  return {
+    cut,
+    rapid,
+    seconds: seconds + g.tools.length * (TOOL_CHANGE_S[g.post] ?? TOOL_CHANGE_S.iso),
+    drills,
+  };
 }
 
 function pointOn(m, frac) {
@@ -123,7 +135,8 @@ export function renderCnc(state, meta) {
   state.sheet = Math.min(state.sheet, sheets.length - 1);
   $('#cnc-sheet').innerHTML = sheets
     .map(
-      (sh) => `<option value="${sh.index - 1}">Лист ${sh.index} — ${esc(sheetTitle(sh))}</option>`,
+      (sh) =>
+        `<option value="${sh.index - 1}">${esc(tx('sheetOf', { n: sh.index, title: sheetTitle(sh) }))}</option>`,
     )
     .join('');
   $('#cnc-sheet').value = String(state.sheet);
@@ -145,29 +158,34 @@ export function renderCnc(state, meta) {
   state.progress = 1;
   const est = estimate(g);
   $('#cnc-stats').innerHTML = [
-    stat('Инструменти', fmt(g.tools.length)),
-    stat('Отвори', fmt(est.drills)),
-    stat('Рязане', `${fmt(est.cut / 1000, 1)} m`),
-    stat('Празен ход', `${fmt(est.rapid / 1000, 1)} m`),
-    stat('Време (оценка)', `≈ ${fmt(Math.max(1, Math.round(est.seconds / 60)))} мин`),
+    stat(tx('cnc.tools'), fmt(g.tools.length)),
+    stat(tx('cnc.holes'), fmt(est.drills)),
+    stat(tx('cnc.cut'), `${fmt(est.cut / 1000, 1)} m`),
+    stat(tx('cnc.rapid'), `${fmt(est.rapid / 1000, 1)} m`),
+    stat(
+      tx('cnc.time'),
+      esc(tx('cnc.minutes', { n: fmt(Math.max(1, Math.round(est.seconds / 60))) })),
+    ),
   ].join('');
   setHtml(
     $('#cnc-tools'),
     g.tools
       .map(
         (t) =>
-          `<span class="${g.color.get(t.id)}">${t.id} ${esc(t.kind === 'drill' ? `свредло Ø${String(t.d).replace('.', ',')}` : t.id === GROOVE_MILL.id ? `фреза Ø${t.d}, канали` : `фреза Ø${t.d}, контур`)}</span>`,
+          `<span class="${g.color.get(t.id)}">${t.id} ${esc(tx(t.kind === 'drill' ? 'cnc.drill' : t.id === GROOVE_MILL.id ? 'cnc.grooveMill' : 'cnc.contourMill', { d: num(t.d) }))}</span>`,
       )
       .join(''),
   );
   $('#cnc-manual').innerHTML = g.ops.manual.length
-    ? `<p class="err">${g.ops.manual.length} отвора без свредло в библиотеката: ${[...new Set(g.ops.manual.map((h) => `Ø${h.d}`))].join(', ')} — пробиват се ръчно.</p>`
+    ? `<p class="err">${esc(txCount(g.ops.manual.length, 'cnc.manual', { list: [...new Set(g.ops.manual.map((h) => `Ø${num(h.d)}`))].join(', ') }))}</p>`
     : '';
   $('#gcode').textContent = g.text;
   $('#dxf').textContent = dxf.text;
+  // the names in cnc.zip (and under cnc/ in project.zip)
   $('#gcode-meta').textContent =
-    `${POSTS[state.spec.post].name} · ${g.text.split('\n').length - 1} реда · list-${sh.index}.nc`;
-  $('#dxf-meta').textContent = `DXF R12 · ${dxf.layers.length} слоя · list-${sh.index}.dxf`;
+    `${tx(`post.${POSTS[state.spec.post].id}`)} · ${tx('cnc.lines', { n: g.text.split('\n').length - 1 })} · ${cncFileName(sh.index, 'nc')}`;
+  $('#dxf-meta').textContent =
+    `DXF R12 · ${tx('cnc.layers', { n: dxf.layers.length })} · ${cncFileName(sh.index, 'dxf')}`;
   $('#dxf-layers').innerHTML = dxf.layers.map((l) => `<code>${esc(l)}</code>`).join(' ');
   drawToolpath(state);
 }
@@ -178,7 +196,7 @@ export function drawToolpath(state) {
   setHtml($('#toolpath'), sheetSvg(sh, { paths: pathsFor(state.gcode, state.progress) }));
   const slider = $('#sim-progress');
   slider.value = String(Math.round(state.progress * Number(slider.max)));
-  $('#sim-label').textContent = `${Math.round(state.progress * 100)}%`;
+  $('#sim-label').textContent = pct(Math.round(state.progress * 100));
 }
 
 export function stopSim() {
@@ -186,7 +204,7 @@ export function stopSim() {
   cancelAnimationFrame(sim.raf);
   const b = $('#sim-play');
   if (b) {
-    b.textContent = 'Симулирай';
+    b.textContent = tx('cnc.simulate');
     b.setAttribute('aria-pressed', 'false');
   }
 }
@@ -202,7 +220,7 @@ export function toggleSim(state) {
     return;
   }
   sim = { playing: true, raf: 0 };
-  $('#sim-play').textContent = 'Пауза';
+  $('#sim-play').textContent = tx('cnc.pause');
   $('#sim-play').setAttribute('aria-pressed', 'true');
   if (state.progress >= 1) state.progress = 0;
   let last = performance.now();

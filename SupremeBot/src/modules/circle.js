@@ -92,7 +92,7 @@
     async tick() {
       const c = cfg();
       if (!c.enabled || !Api.ready()) return null;
-      if (Date.now() < cooldownUntil) return null;
+      if (Date.now() < cooldownUntil) { Scheduler.wakeAt(cooldownUntil); return null; }
 
       return async () => {
         const circle = await Api.getCircle();
@@ -128,12 +128,24 @@
         const level = node[0];
         const base = node[5], increment = node[6], factor = node[7];
         const multiple = Number(c.multiple) === 10 ? 10 : 1;
-        let cost = Math.floor((base + level * increment) * factor);
-        if (multiple === 10) {
-          // approximate cost of buying 10 successive levels
-          cost = 0;
-          for (let l = level; l < level + 10; l++) cost += Math.floor((base + l * increment) * factor);
+
+        // Node string layout (from the game client): [0] level, [1] max level,
+        // [2] canUpgrade (1/0), [5..7] gold cost base/increment/factor,
+        // [11] levelsByGold. The server says "no" when canUpgrade is 0 and the
+        // game's own UI refuses to buy - so don't hammer the server with it.
+        if (node[2] === 0) {
+          Logger.info(I18n.t('logCircleBuyFail', [nodeName(best), 'locked or maxed']));
+          nodeFailUntil[best] = Date.now() + 5 * 60000;
+          if (c.mode !== 'manual') cooldownUntil = Date.now() + 5 * 60000;
+          return;
         }
+
+        // Price of the next level = (base + increment * levelsByGold) * factor.
+        // levelsByGold counts levels already bought WITH GOLD; the total level
+        // (node[0]) also includes bloodstone levels and would overstate the price.
+        const lvg = Number.isFinite(node[11]) ? node[11] : level;
+        let cost = 0;
+        for (let k = 0; k < multiple; k++) cost += Math.floor((base + increment * (lvg + k)) * factor);
         if (!Number.isFinite(cost)) { Logger.debug('circle: bad cost', JSON.stringify(node)); cooldownUntil = Date.now() + 5 * 60000; return; }
 
         const currency = c.currency === 'bs' ? 'bs' : 'gold';
@@ -161,8 +173,12 @@
           }
           Stats.bump({ circleNodes: multiple });
         } catch (e) {
-          // Locked/maxed node (common in manual mode) - skip it for a while.
+          // Locked/maxed node - skip it for a while. Manual mode moves on to the
+          // next listed node via nodeFailUntil; auto mode has a single "best"
+          // node, so it must back off as a whole, or a failing purchase would be
+          // retried on EVERY cycle forever (a request storm against the game).
           nodeFailUntil[best] = Date.now() + 5 * 60000;
+          if (c.mode !== 'manual') cooldownUntil = Date.now() + 5 * 60000;
           Logger.warn(I18n.t('logCircleBuyFail', [nodeName(best), e.message]));
         }
       };

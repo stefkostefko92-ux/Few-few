@@ -18,9 +18,9 @@ async function idOf(email: string): Promise<string> {
   return (await prisma.user.findUniqueOrThrow({ where: { email } })).id;
 }
 
-test('the admin sees IP, country and HWID of every sign-in', async () => {
+test('the admin sees IP, country and — with consent — HWID of every sign-in', async () => {
   const admin = await staff('ADMIN', 'admin1@example.test');
-  await customer('seen@example.test', undefined, '8.8.8.8');
+  await customer('seen@example.test', undefined, '8.8.8.8', true);
   const page = await admin.browser.get(`/admin/accounts/${await idOf('seen@example.test')}`);
   assert.equal(page.status, 200);
   assert.match(page.body, /8\.8\.8\.8/);

@@ -5,17 +5,38 @@ import { prisma } from "@/lib/prisma";
 import { slugify, uniqueSlug } from "@/lib/slug";
 import { logAudit } from "@/lib/audit";
 import { rateLimit, clientKey, RATE_LIMIT_MESSAGE } from "@/lib/ratelimit";
+import {
+  EMAIL_RE,
+  MSG,
+  failState,
+  fieldErrorsOf,
+  honeypotFilled,
+  nextAttempt,
+  readValues,
+  type FormState,
+} from "@/lib/form-state";
 
 const schema = z.object({
-  location: z.string().trim().min(3, "Опишете къде се намира (улица, квартал, ориентир).").max(160),
-  description: z.string().trim().min(10, "Опишете сметището по-подробно.").max(3000),
+  location: z
+    .string()
+    .trim()
+    .min(3, "Напишете къде е сметището — улица, квартал или ориентир (поне 3 знака).")
+    .max(160, "Мястото е описано твърде дълго — до 160 знака."),
+  description: z
+    .string()
+    .trim()
+    .min(10, "Опишете сметището по-подробно — поне 10 знака.")
+    .max(3000, "Описанието е твърде дълго — до 3000 знака."),
   photoUrl: z
     .string()
     .trim()
     .max(400)
     .optional()
     .default("")
-    .refine((v) => v === "" || /^https?:\/\//i.test(v), "Линкът към снимка трябва да започва с http(s)://"),
+    .refine(
+      (v) => v === "" || /^https?:\/\//i.test(v),
+      "Връзката към снимката трябва да започва с http:// или https://.",
+    ),
   name: z.string().trim().max(80).optional().default(""),
   phone: z.string().trim().max(40).optional().default(""),
   email: z
@@ -24,56 +45,59 @@ const schema = z.object({
     .max(160)
     .optional()
     .default("")
-    .refine((v) => v === "" || /.+@.+\..+/.test(v), "Невалиден имейл."),
-  website: z.string().max(0).optional().default(""), // honeypot
+    .refine((v) => v === "" || EMAIL_RE.test(v), MSG.email),
 });
 
-export type DumpState = { ok: boolean; error?: string };
+const FIELDS = ["location", "description", "photoUrl", "name", "phone", "email"] as const;
 
-export async function submitDumpReport(
-  _prev: DumpState,
-  formData: FormData,
-): Promise<DumpState> {
-  if (!rateLimit(await clientKey("dump"))) {
-    return { ok: false, error: RATE_LIMIT_MESSAGE };
-  }
-  const parsed = schema.safeParse({
-    location: formData.get("location"),
-    description: formData.get("description"),
-    photoUrl: formData.get("photoUrl") ?? "",
-    name: formData.get("name") ?? "",
-    phone: formData.get("phone") ?? "",
-    email: formData.get("email") ?? "",
-    website: formData.get("website") ?? "",
-  });
+export type DumpState = FormState;
+
+export async function submitDumpReport(prev: DumpState, formData: FormData): Promise<DumpState> {
+  const values = readValues(formData, FIELDS);
+  const attempt = nextAttempt(prev);
+
+  // Ред (като BusinessForm): honeypot → проверка → лимит.
+  if (honeypotFilled(formData)) return failState(values, attempt, MSG.invalid);
+  const parsed = schema.safeParse(values);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Невалидни данни." };
+    return failState(values, attempt, undefined, fieldErrorsOf(parsed.error.issues));
+  }
+  if (!rateLimit(await clientKey("dump"))) {
+    return failState(values, attempt, RATE_LIMIT_MESSAGE);
   }
   const d = parsed.data;
 
-  const existing = await prisma.dumpReport.findMany({ select: { slug: true } });
-  const slug = uniqueSlug(slugify(d.location), new Set(existing.map((e) => e.slug)));
+  try {
+    const existing = await prisma.dumpReport.findMany({ select: { slug: true } });
+    const slug = uniqueSlug(slugify(d.location), new Set(existing.map((e) => e.slug)));
 
-  const created = await prisma.dumpReport.create({
-    data: {
-      slug,
-      location: d.location,
-      description: d.description,
-      photoUrl: d.photoUrl,
-      reporterName: d.name,
-      reporterPhone: d.phone,
-      reporterEmail: d.email,
-      status: "NEW",
-      published: false,
-    },
-  });
+    const created = await prisma.dumpReport.create({
+      data: {
+        slug,
+        location: d.location,
+        description: d.description,
+        photoUrl: d.photoUrl,
+        reporterName: d.name,
+        reporterPhone: d.phone,
+        reporterEmail: d.email,
+        status: "NEW",
+        published: false,
+      },
+    });
 
-  await logAudit(null, {
-    action: "CREATE",
-    entity: "DumpReport",
-    entityId: created.id,
-    summary: `Нов сигнал за сметище: „${d.location}“ (чака одобрение)`,
-  });
+    await logAudit(null, {
+      action: "CREATE",
+      entity: "DumpReport",
+      entityId: created.id,
+      summary: `Нов сигнал за сметище: „${d.location}“ (чака одобрение)`,
+    });
 
-  return { ok: true };
+    return { ok: true, attempt };
+  } catch (err) {
+    console.error(
+      "Грешка при запис на сигнал за сметище:",
+      err instanceof Error ? err.message : "неизвестна",
+    );
+    return failState(values, attempt, MSG.saveFailed);
+  }
 }

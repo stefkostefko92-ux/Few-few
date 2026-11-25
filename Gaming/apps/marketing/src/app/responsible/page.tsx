@@ -6,7 +6,8 @@ import "../legal.css";
 // Metadata stays in the canonical BG source of truth (SEO).
 export const metadata: Metadata = {
   title: "Отговорна игра",
-  description: "АСО е социална игра. Съвети за здравословна и балансирана игра.",
+  description:
+    "АСО е социална игра. Съвети за балансирана игра и инструменти: напомняне за време, дневен лимит и самоизключване.",
   alternates: alternatesFor("bg", "/responsible/"),
 };
 

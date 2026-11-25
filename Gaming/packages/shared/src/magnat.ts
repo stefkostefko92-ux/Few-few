@@ -143,7 +143,7 @@ export const CHEST: Card[] = [
 export interface MagnatState {
   seats: number;
   turn: number;
-  phase: "ROLL" | "BUY" | "MANAGE" | "AUCTION" | "TRADE";
+  phase: "ROLL" | "BUY" | "MANAGE" | "AUCTION" | "TRADE" | "DEBT";
   config: MagnatConfig;
   cash: number[];
   pos: number[];
@@ -176,6 +176,11 @@ export interface MagnatState {
     want: TradeBundle; // to → from
     resumeTurn: number;
   } | null;
+  /** Неплатени задължения (по ред): длъжникът сам избира какво да продаде или
+   *  ипотекира във фаза „DEBT“, после плаща. Липсва в стари снимки. */
+  debts?: MagnatDebt[];
+  /** Фаза и ход, към които играта се връща, щом всички задължения са платени. */
+  debtResume?: { phase: MagnatState["phase"]; turn: number } | null;
   chance: number[];
   chancePtr: number;
   chest: number[];
@@ -183,6 +188,15 @@ export interface MagnatState {
   turns: number;
   done: boolean;
   log: string[];
+}
+
+/** Едно неплатено задължение. `to` = кредитор (null = банката). */
+export interface MagnatDebt {
+  debtor: number;
+  amount: number;
+  to: number | null;
+  /** Такса към банката, която при правилото „джакпот на паркинга“ отива в пота. */
+  pot?: boolean;
 }
 
 export type MagnatAction =
@@ -200,7 +214,9 @@ export type MagnatAction =
   | { type: "PASS_BID" }
   | { type: "TRADE_OFFER"; to: number; give: TradeBundle; want: TradeBundle }
   | { type: "TRADE_ACCEPT" }
-  | { type: "TRADE_DECLINE" };
+  | { type: "TRADE_DECLINE" }
+  /** Плаща първото задължение във фаза „DEBT“ (след продажби/ипотеки). */
+  | { type: "PAY_DEBT" };
 
 export type MagnatEvent =
   | { type: "ROLL"; seat: number; dice: [number, number] }
@@ -214,6 +230,9 @@ export type MagnatEvent =
   /** Third failed attempt: the fine is paid and the player walks. */
   | { type: "JAIL_FEE"; seat: number; amount: number }
   | { type: "BANKRUPT"; seat: number; to: number | null }
+  /** Не стигат парите в брой — длъжникът избира какво да продаде/ипотекира. */
+  | { type: "DEBT"; seat: number; amount: number; to: number | null }
+  | { type: "DEBT_PAID"; seat: number; amount: number; to: number | null }
   | { type: "AUCTION_START"; tile: number }
   | { type: "AUCTION_BID"; seat: number; amount: number; tile: number }
   | { type: "AUCTION_WON"; seat: number; tile: number; amount: number }

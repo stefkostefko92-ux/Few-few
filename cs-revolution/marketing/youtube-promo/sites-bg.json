@@ -1,0 +1,239 @@
+[
+ {
+  "id": "cs",
+  "url": "https://carbonstealth.eu/",
+  "locale": "bg-BG",
+  "storage": {
+   "cs_lang": "bg",
+   "cs_cookie": "accepted"
+  }
+ },
+ {
+  "id": "portfolio",
+  "url": "https://portfolio.carbonstealth.eu/bg/",
+  "locale": "bg-BG"
+ },
+ {
+  "id": "oferta",
+  "url": "https://portfolio.carbonstealth.eu/bg/oferta/",
+  "locale": "bg-BG",
+  "maxH": 2200
+ },
+ {
+  "id": "adblock",
+  "url": "https://adblock.carbonstealth.eu/bg/",
+  "locale": "bg-BG"
+ },
+ {
+  "id": "cws",
+  "url": "https://chromewebstore.google.com/detail/supreme-adblock/chbjbiabkgocfbbfhednpbhfeipjcclk?hl=bg",
+  "locale": "bg-BG",
+  "tall": true,
+  "maxH": 1500,
+  "kinds": [
+   "d"
+  ]
+ },
+ {
+  "id": "zabobovdol",
+  "url": "https://zabobovdol.carbonstealth.eu",
+  "locale": "bg-BG",
+  "tall": true
+ },
+ {
+  "id": "supremebot",
+  "url": "https://supremebot.carbonstealth.eu/bg",
+  "locale": "bg-BG"
+ },
+ {
+  "id": "fivem",
+  "url": "https://fivembulgaria.carbonstealth.eu/bg",
+  "locale": "bg-BG"
+ },
+ {
+  "id": "panev",
+  "url": "https://panevascensori.it/bg/",
+  "locale": "bg-BG"
+ },
+ {
+  "id": "korpora",
+  "url": "https://korpora.carbonstealth.eu/",
+  "locale": "bg-BG"
+ },
+ {
+  "id": "evanita",
+  "url": "https://evanita-bg.com",
+  "locale": "bg-BG"
+ },
+ {
+  "id": "vaptsarov",
+  "url": "https://ouvaptsarov.com",
+  "locale": "bg-BG",
+  "maxH": 2400
+ },
+ {
+  "id": "mastilko",
+  "url": "https://mastilko-bg.com",
+  "locale": "bg-BG"
+ },
+ {
+  "id": "vizitka",
+  "url": "https://vizitka-bg.com",
+  "locale": "bg-BG"
+ },
+ {
+  "id": "scuola",
+  "url": "https://scuolabg.carbonstealth.eu/bg",
+  "locale": "bg-BG"
+ },
+ {
+  "id": "demo-restorant",
+  "url": "https://portfolio.carbonstealth.eu/bg/demo/restorant/",
+  "locale": "bg-BG",
+  "hero": true,
+  "kinds": [
+   "d",
+   "m"
+  ]
+ },
+ {
+  "id": "demo-fitnes",
+  "url": "https://portfolio.carbonstealth.eu/bg/demo/fitnes/",
+  "locale": "bg-BG",
+  "hero": true,
+  "kinds": [
+   "d",
+   "m"
+  ]
+ },
+ {
+  "id": "demo-avtoservis",
+  "url": "https://portfolio.carbonstealth.eu/bg/demo/avtoservis/",
+  "locale": "bg-BG",
+  "hero": true,
+  "kinds": [
+   "d",
+   "m"
+  ]
+ },
+ {
+  "id": "demo-salon-za-krasota",
+  "url": "https://portfolio.carbonstealth.eu/bg/demo/salon-za-krasota/",
+  "locale": "bg-BG",
+  "hero": true,
+  "kinds": [
+   "d",
+   "m"
+  ]
+ },
+ {
+  "id": "demo-onlain-magazin",
+  "url": "https://portfolio.carbonstealth.eu/bg/demo/onlain-magazin/",
+  "locale": "bg-BG",
+  "hero": true,
+  "kinds": [
+   "d",
+   "m"
+  ]
+ },
+ {
+  "id": "demo-hotel-kashta-za-gosti",
+  "url": "https://portfolio.carbonstealth.eu/bg/demo/hotel-kashta-za-gosti/",
+  "locale": "bg-BG",
+  "hero": true,
+  "kinds": [
+   "d",
+   "m"
+  ]
+ },
+ {
+  "id": "demo-advokatska-kantora",
+  "url": "https://portfolio.carbonstealth.eu/bg/demo/advokatska-kantora/",
+  "locale": "bg-BG",
+  "hero": true,
+  "kinds": [
+   "d",
+   "m"
+  ]
+ },
+ {
+  "id": "demo-agencia-za-imoti",
+  "url": "https://portfolio.carbonstealth.eu/bg/demo/agencia-za-imoti/",
+  "locale": "bg-BG",
+  "hero": true,
+  "kinds": [
+   "d",
+   "m"
+  ]
+ },
+ {
+  "id": "demo-avtokashta",
+  "url": "https://portfolio.carbonstealth.eu/bg/demo/avtokashta/",
+  "locale": "bg-BG",
+  "hero": true,
+  "kinds": [
+   "d",
+   "m"
+  ]
+ },
+ {
+  "id": "demo-barzo-hranene",
+  "url": "https://portfolio.carbonstealth.eu/bg/demo/barzo-hranene/",
+  "locale": "bg-BG",
+  "hero": true,
+  "kinds": [
+   "d",
+   "m"
+  ]
+ },
+ {
+  "id": "demo-magazin-za-drehi",
+  "url": "https://portfolio.carbonstealth.eu/bg/demo/magazin-za-drehi/",
+  "locale": "bg-BG",
+  "hero": true,
+  "kinds": [
+   "d",
+   "m"
+  ]
+ },
+ {
+  "id": "demo-mebelen-magazin",
+  "url": "https://portfolio.carbonstealth.eu/bg/demo/mebelen-magazin/",
+  "locale": "bg-BG",
+  "hero": true,
+  "kinds": [
+   "d",
+   "m"
+  ]
+ },
+ {
+  "id": "demo-medicinski-centar",
+  "url": "https://portfolio.carbonstealth.eu/bg/demo/medicinski-centar/",
+  "locale": "bg-BG",
+  "hero": true,
+  "kinds": [
+   "d",
+   "m"
+  ]
+ },
+ {
+  "id": "demo-schetovodna-kashta",
+  "url": "https://portfolio.carbonstealth.eu/bg/demo/schetovodna-kashta/",
+  "locale": "bg-BG",
+  "hero": true,
+  "kinds": [
+   "d",
+   "m"
+  ]
+ },
+ {
+  "id": "demo-stroitelstvo-i-remonti",
+  "url": "https://portfolio.carbonstealth.eu/bg/demo/stroitelstvo-i-remonti/",
+  "locale": "bg-BG",
+  "hero": true,
+  "kinds": [
+   "d",
+   "m"
+  ]
+ }
+]

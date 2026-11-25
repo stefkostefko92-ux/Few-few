@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import './bootEnv'; // must run before any guard reads NODE_ENV
 import path from 'path';
+import fs from 'fs';
+import { renderShell, type SeoLocale } from './lib/seoHead';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -224,9 +226,11 @@ app.use('/api/mythic-plus', mythicPlusRoutes);
 app.use('/api/dsa', dsaRoutes);
 app.use('/api/season', seasonRoutes);
 
-// Serve client build if present (production)
+// Serve client build if present (production). `index: false`: the shell is
+// rendered below (renderShell) so "/?lang=it|bg" gets its own canonical/lang
+// head — express.static would otherwise send the static index.html for "/".
 const clientDist = path.resolve(__dirname, '../../client/dist');
-app.use(express.static(clientDist));
+app.use(express.static(clientDist, { index: false }));
 
 // SEO routes — explicit so the content-type is set correctly and the SPA
 // fallback below never swallows them.
@@ -239,11 +243,21 @@ app.get('/sitemap.xml', (_req, res) => {
   res.sendFile(path.join(clientDist, 'sitemap.xml'));
 });
 
+let shellHtml: string | null = null;
+let seoLocales: Record<string, SeoLocale> | null = null;
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) return next();
-  res.sendFile(path.join(clientDist, 'index.html'), (err) => {
-    if (err) next();
-  });
+  try {
+    shellHtml ??= fs.readFileSync(path.join(clientDist, 'index.html'), 'utf8');
+  } catch {
+    return next();
+  }
+  if (seoLocales === null) {
+    try { seoLocales = JSON.parse(fs.readFileSync(path.join(clientDist, 'seo-locales.json'), 'utf8')); }
+    catch { seoLocales = {}; }
+  }
+  res.set('Content-Type', 'text/html; charset=utf-8');
+  res.send(renderShell(shellHtml, req.path, req.query.lang, seoLocales ?? {}));
 });
 
 // Global JSON error handler — anything uncaught in a route lands here.

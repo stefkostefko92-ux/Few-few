@@ -699,6 +699,50 @@ body.lp::after {
 .lp .lp-foot-made a {
   color: var(--lp-ink-2);
 }
+/* Импресумът: цял ред под колоните — данните на администратора (Дир. 2000/31 чл. 5). */
+.lp-foot-imprint {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--lp-mute);
+}
+.lp .lp-foot-imprint a {
+  color: var(--lp-ink-2);
+}
+
+/* ---------- политиката за поверителност ---------- */
+.lp-legal {
+  max-width: 72ch;
+  padding-top: 56px;
+  padding-bottom: 72px;
+}
+.lp-legal h1 {
+  margin: 0;
+  font-family: var(--lp-serif);
+  font-size: clamp(30px, 4vw, 42px);
+  line-height: 1.15;
+}
+.lp-legal h2 {
+  margin: 40px 0 10px;
+  font-family: var(--lp-serif);
+  font-size: 22px;
+}
+.lp-legal p,
+.lp-legal li {
+  color: var(--lp-ink-2);
+  line-height: 1.6;
+}
+.lp-legal ul {
+  padding-left: 1.2em;
+}
+.lp-legal strong {
+  color: var(--lp-ink);
+}
+.lp-legal-updated {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--lp-mute);
+}
 
 /* ---------- по-тесни екрани ---------- */
 @media (max-width: 1000px) {

@@ -18,6 +18,7 @@ interface FakeUser {
   banned: boolean;
   banReason: string | null;
   banUntil: Date | null;
+  selfExcludedUntil: Date | null;
   deletedAt: Date | null;
   chips: bigint;
   gems: number;
@@ -75,6 +76,7 @@ interface FakePurchase {
   productId: string;
   stripeId: string;
   status: string;
+  amountCents?: number;
   createdAt: Date;
   product: FakeProduct | null;
   user: { id: string; displayName: string; email: string } | null;
@@ -117,6 +119,7 @@ function addUser(overrides: Partial<FakeUser> = {}): FakeUser {
     banned: false,
     banReason: null,
     banUntil: null,
+    selfExcludedUntil: null,
     deletedAt: null,
     chips: 1000n,
     gems: 0,
@@ -170,6 +173,20 @@ function applyCursor<T extends { id: string }>(
 }
 
 vi.mock("@aso/db", () => {
+  // increment/decrement като в Prisma (останалите полета — директно).
+  const applyCurrencyData = (row: FakeUser, data: Where): void => {
+    for (const [k, v] of Object.entries(data)) {
+      const rec = row as unknown as Record<string, unknown>;
+      if (v && typeof v === "object" && ("increment" in v || "decrement" in v)) {
+        const cur = rec[k];
+        const inc = v.increment ?? 0;
+        const dec = v.decrement ?? 0;
+        rec[k] = typeof cur === "bigint" ? cur + BigInt(inc) - BigInt(dec) : (cur as number) + Number(inc) - Number(dec);
+      } else {
+        rec[k] = v;
+      }
+    }
+  };
   const userDelegate = {
     findUnique: vi.fn(async ({ where }: { where: Where }) => {
       if (where.id) return users.get(where.id) ?? null;
@@ -183,6 +200,10 @@ vi.mock("@aso/db", () => {
       if (where.role && typeof where.role === "string") list = list.filter((u) => u.role === where.role);
       if (where.vipTier) list = list.filter((u) => u.vipTier === where.vipTier);
       if (typeof where.banned === "boolean") list = list.filter((u) => u.banned === where.banned);
+      if (where.selfExcludedUntil?.gt) {
+        const gt = (where.selfExcludedUntil.gt as Date).getTime();
+        list = list.filter((u) => u.selfExcludedUntil !== null && u.selfExcludedUntil.getTime() > gt);
+      }
       if (where.OR) {
         list = list.filter((u) =>
           (where.OR as Where[]).some(
@@ -198,13 +219,22 @@ vi.mock("@aso/db", () => {
     update: vi.fn(async ({ where, data }: { where: Where; data: Where }) => {
       const user = users.get(where.id);
       if (!user) throw new Error("user not found");
-      Object.assign(user, data);
+      applyCurrencyData(user, data);
       return { ...user };
     }),
     updateMany: vi.fn(async ({ where, data }: { where: Where; data: Where }) => {
       let count = 0;
       const now = (v: unknown) => (v instanceof Date ? v : new Date(String(v)));
       for (const u of users.values()) {
+        if (where.id && u.id !== where.id) continue;
+        // Условен дебит на валутата (gte / точна стойност) + increment/decrement.
+        let skip = false;
+        for (const f of ["chips", "gems"] as const) {
+          const c = where[f];
+          if (c === undefined) continue;
+          if (typeof c === "object" && c !== null && "gte" in c ? u[f] < c.gte : u[f] !== c) skip = true;
+        }
+        if (skip) continue;
         if (where.email && u.email !== where.email) continue;
         if (where.role?.not && u.role === where.role.not) continue;
         if (typeof where.banned === "boolean" && u.banned !== where.banned) continue;
@@ -213,7 +243,7 @@ vi.mock("@aso/db", () => {
           if (where.banUntil.lte && !(u.banUntil && u.banUntil.getTime() <= now(where.banUntil.lte).getTime()))
             continue;
         }
-        Object.assign(u, data);
+        applyCurrencyData(u, data);
         count++;
       }
       return { count };
@@ -344,6 +374,12 @@ vi.mock("@aso/db", () => {
 
   const purchase = {
     groupBy: vi.fn(async () => []),
+    // Приходите = сума от записаното amountCents (не текуща цена × брой).
+    aggregate: vi.fn(async ({ where }: { where?: Where } = {}) => {
+      const list = purchases.filter((p) => !where?.status || p.status === where.status);
+      const sum = list.reduce((acc, p) => acc + (p.amountCents ?? 0), 0);
+      return { _sum: { amountCents: list.length ? sum : null }, _count: { _all: list.length } };
+    }),
     findMany: vi.fn(async (args: ListArgs = {}) => {
       const where: Where = args.where ?? {};
       let list = [...purchases];
@@ -377,23 +413,27 @@ vi.mock("@aso/db", () => {
     }
   }
 
-  return {
-    prisma: {
-      user: userDelegate,
-      adminAudit,
-      chatReport,
-      matchPlayer,
-      match,
-      collusionFlag: {
-        count: vi.fn(async () => 0),
-        findMany: vi.fn(async () => []),
-        update: vi.fn(async () => ({})),
-      },
-      purchase,
-      product,
-      announcement,
-      $queryRaw,
+  const client: Record<string, unknown> = {
+    user: userDelegate,
+    adminAudit,
+    chatReport,
+    matchPlayer,
+    match,
+    collusionFlag: {
+      count: vi.fn(async () => 0),
+      findMany: vi.fn(async () => []),
+      update: vi.fn(async () => ({})),
     },
+    purchase,
+    product,
+    announcement,
+    currencyLedger: { create: vi.fn(async ({ data }: { data: Where }) => data) },
+    $queryRaw,
+  };
+  client.$transaction = vi.fn(async (fn: (tx: unknown) => unknown) => fn(client));
+
+  return {
+    prisma: client,
     Prisma: { PrismaClientKnownRequestError: FakeKnownRequestError },
     AuthTokenType: { EMAIL_VERIFY: "EMAIL_VERIFY", PASSWORD_RESET: "PASSWORD_RESET" },
     OAuthProvider: { GOOGLE: "GOOGLE", FACEBOOK: "FACEBOOK" },
@@ -404,6 +444,7 @@ vi.mock("@aso/db", () => {
 vi.mock("../redis.js", () => ({
   redis: {
     exists: vi.fn(async () => 0),
+    get: vi.fn(async () => null),
     set: vi.fn(async () => "OK"),
     del: vi.fn(async () => 1),
     call: vi.fn(async () => null),
@@ -532,7 +573,8 @@ describe("PATCH /api/admin/users/:id — ban management", () => {
     const stored = users.get(target.id)!;
     expect(stored.banned).toBe(true);
     expect(stored.banUntil?.toISOString()).toBe(until);
-    expect(redis.set).toHaveBeenCalledWith(`revoked:${target.id}`, "1", "EX", expect.any(Number));
+    // Денилистът пази момента на отмяната (unix сек.), не флаг.
+    expect(redis.set).toHaveBeenCalledWith(`revoked:${target.id}`, expect.stringMatching(/^\d{10,}$/), "EX", expect.any(Number));
     const audit = auditRows.find((a) => a.action === "update_user" && a.targetId === target.id);
     expect(audit).toBeTruthy();
     expect(JSON.parse(audit!.detail)).toMatchObject({ banned: true, banReason: "обиден език" });
@@ -605,6 +647,33 @@ describe("PATCH /api/admin/users/:id — role & self guards", () => {
       .send({ role: "ADMIN" });
     expect(res.status).toBe(200);
     expect(users.get(target.id)!.role).toBe("ADMIN");
+    // Новата роля трябва да влезе в сила веднага — старите access токени се отменят.
+    expect(redis.set).toHaveBeenCalledWith(`revoked:${target.id}`, expect.any(String), "EX", expect.any(Number));
+  });
+
+  it("demoting an ADMIN revokes their live access tokens (role lives in the JWT)", async () => {
+    const owner = addUser({ role: "OWNER" });
+    const target = addUser({ role: "ADMIN" });
+    const res = await request(app)
+      .patch(`/api/admin/users/${target.id}`)
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(owner.id, "OWNER"))
+      .send({ role: "PLAYER" });
+    expect(res.status).toBe(200);
+    expect(users.get(target.id)!.role).toBe("PLAYER");
+    expect(redis.set).toHaveBeenCalledWith(`revoked:${target.id}`, expect.any(String), "EX", expect.any(Number));
+  });
+
+  it("does not revoke when the role is unchanged", async () => {
+    const owner = addUser({ role: "OWNER" });
+    const target = addUser({ role: "MODERATOR" });
+    const res = await request(app)
+      .patch(`/api/admin/users/${target.id}`)
+      .set("Origin", ORIGIN)
+      .set("Cookie", asRole(owner.id, "OWNER"))
+      .send({ role: "MODERATOR", grantGems: 1 });
+    expect(res.status).toBe(200);
+    expect(redis.set).not.toHaveBeenCalledWith(`revoked:${target.id}`, expect.anything(), "EX", expect.anything());
   });
 
   it("forbids changing your own role", async () => {
@@ -677,6 +746,30 @@ describe("GET /api/admin/users", () => {
       .set("Cookie", asRole("user_x", "ADMIN"));
     expect(mods.body.users).toHaveLength(1);
     expect(mods.body.users[0].role).toBe("MODERATOR");
+  });
+
+  it("отговорна игра: филтър selfExcluded=1 и статус в списъка и детайла", async () => {
+    const active = addUser({ selfExcludedUntil: new Date(Date.now() + 7 * 86_400_000) });
+    addUser({ selfExcludedUntil: new Date(Date.now() - 1000) }); // изтекло
+    addUser();
+
+    const res = await request(app)
+      .get("/api/admin/users?selfExcluded=1")
+      .set("Cookie", asRole("user_x", "ADMIN"));
+    expect(res.status).toBe(200);
+    expect(res.body.users.map((u: { id: string }) => u.id)).toEqual([active.id]);
+    expect(res.body.users[0].selfExcluded).toBe(true);
+    expect(res.body.users[0].selfExcludedUntil).toBe(active.selfExcludedUntil!.toISOString());
+
+    const all = await request(app).get("/api/admin/users").set("Cookie", asRole("user_x", "ADMIN"));
+    const flags = (all.body.users as Array<{ selfExcluded: boolean }>).map((u) => u.selfExcluded);
+    expect(flags.filter(Boolean)).toHaveLength(1); // изтеклото не се брои
+
+    const detail = await request(app)
+      .get(`/api/admin/users/${active.id}`)
+      .set("Cookie", asRole("user_x", "ADMIN"));
+    expect(detail.status).toBe(200);
+    expect(detail.body.user.selfExcluded).toBe(true);
   });
 
   it("paginates with a cursor", async () => {
@@ -839,6 +932,31 @@ describe("GET /api/admin/audit", () => {
   });
 });
 
+// ── Приходи: реално платеното, не текуща цена × брой ─────────────────────────
+
+describe("GET /api/admin/stats — revenue", () => {
+  it("сумира Purchase.amountCents; смяна на цената не пренаписва историята", async () => {
+    const prod: FakeProduct = {
+      id: "prod_rev", kind: "GEMS", sku: "gems_small", priceCents: 199,
+      gems: 100, chips: null, cosmeticId: null, active: true,
+    };
+    products.set(prod.id, prod);
+    const base = { userId: "u1", productId: prod.id, createdAt: new Date(), product: prod, user: null };
+    purchases.push(
+      { ...base, id: "p1", stripeId: "cs_1", status: "completed", amountCents: 199 },
+      { ...base, id: "p2", stripeId: "cs_2", status: "completed", amountCents: 199 },
+      { ...base, id: "p3", stripeId: "cs_3", status: "refunded", amountCents: 199 },
+    );
+    // Админът вдига цената след покупките.
+    prod.priceCents = 999;
+
+    const res = await request(app).get("/api/admin/stats").set("Cookie", asRole("user_x", "ADMIN"));
+    expect(res.status).toBe(200);
+    expect(res.body.purchases).toBe(2);
+    expect(res.body.revenueCents).toBe(398); // не 2 × 999
+  });
+});
+
 // ── Economy timeseries ───────────────────────────────────────────────────────
 
 describe("GET /api/admin/stats/timeseries", () => {
@@ -973,6 +1091,17 @@ describe("admin orders", () => {
     expect(res.status).toBe(200);
     expect(res.body.items).toHaveLength(1);
     expect(res.body.items[0]).toMatchObject({ status: "completed", sku: "gems_small", userName: "Купувач" });
+  });
+
+  it("филтърът показва заседналите в „refunding“ (за довършване)", async () => {
+    addPurchase({ status: "completed" });
+    addPurchase({ status: "refunding" });
+    const res = await request(app)
+      .get("/api/admin/orders?status=refunding")
+      .set("Cookie", asRole("s", "SUPPORT"));
+    expect(res.status).toBe(200);
+    expect(res.body.items).toHaveLength(1);
+    expect(res.body.items[0]).toMatchObject({ status: "refunding" });
   });
 
   it("blocks refund below ADMIN", async () => {

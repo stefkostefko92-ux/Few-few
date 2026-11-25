@@ -6,16 +6,30 @@
     "unsaved": "Unsaved changes",
     "saved": "Saved",
     "saveFailed": "Not saved. Try again.",
+    "tooManyDownloads": "Too many downloads in a minute. Try again in {s} s.",
+    "notSaved": "Not saved",
+    "conflictTitle": "The project was changed elsewhere",
+    "conflictText": "Since you opened it here, the project has been saved from another window or device. The changes on this screen are not saved, but they are not lost: save them as a separate project. “Reload” shows the other version, and the changes here are dropped. Files are made from the saved project — for this version, download them from the copy.",
+    "saveCopy": "Save as a copy",
+    "reload": "Reload",
+    "copyFailed": "The copy was not created (you may have reached the maximum number of projects). The changes are still on screen — try again.",
+    "sessionTitle": "Your sign-in has expired",
+    "sessionText": "The changes are on this screen and are not lost — do not close the tab. Sign in again in a new tab and come back here: the save starts by itself, and “Save again” runs it at once.",
+    "signIn": "Sign in in a new tab",
+    "saveAgain": "Save again",
+    "blockedTitle": "The changes cannot be saved",
     "catalogFailed": "The catalogue did not load, so the project is open for viewing only — otherwise its hardware and decors would quietly change to the basic ones. Reload the page.",
     "engineFailed": "This value cannot be computed and the previous one is back. Try another; if the error stays, write to us.",
+    "openFailed": "The project cannot be computed, so it is open for viewing only. Reload the page; if the error stays, write to us.",
     "showFailed": "The project cannot be shown. Reload the page; if the error stays, write to us.",
     "driftTitle": "Part of this project is no longer in the catalogue",
     "driftText": "The editor shows the substitute listed below. Choose again, or save the project as it is — until then the CNC files cannot be downloaded and the drawings are marked as not for production.",
     "noWebgl": "This browser does not support WebGL 2, so the 3D view cannot be shown. The other tabs work.",
+    "noWebglHint": "Turn on hardware acceleration in the browser settings, or open the project on another device.",
+    "toBom": "Go to the specification",
     "save": "Save",
     "download": "Download",
     "readOnlyState": "Read only",
-    "languageNote": "The editor, drawings and tables are in Bulgarian for now.",
     "export": {
       "project": "Whole project (ZIP)",
       "cutlist": "Cut list (CSV)",
@@ -32,6 +46,7 @@
     "project": "Project",
     "furniture": "Furniture",
     "furnitureType": "Furniture type",
+    "changeType": "Change type",
     "sizes": "Sizes and layout",
     "materials": "Materials and colours",
     "carcass": "Carcass, 18 mm melamine board",
@@ -50,7 +65,9 @@
     "machine": "Machine and checks",
     "tool": "Contour cutter",
     "post": "Post-processor",
-    "onion": "Onion skin 0.3 mm — small parts do not move",
+    "grblStepDown": "Step down, mm",
+    "grblMaxFeed": "Maximum feed, mm/min",
+    "onion": "Onion skin 0.5 mm — small parts do not move",
     "compensation": "Cut sizes compensate for the edge banding",
     "shelfLoad": "Shelf load (check: deflection up to 0.5% of the span between supports)",
     "reset": "Restore the defaults",
@@ -60,7 +77,8 @@
       "drill": "Drilling",
       "nest": "Nesting",
       "draw": "Drawings",
-      "catalog": "Catalogue"
+      "catalog": "Catalogue",
+      "build": "Builder"
     },
     "open": "Open doors and drawers",
     "explode": "Exploded view",
@@ -69,11 +87,18 @@
     "room": "Room",
     "photo": "Photorealistic",
     "photoSave": "Save the image (PNG)",
+    "ar": "See it in the room (AR)",
+    "arHint": "Point the phone at the floor and tap to place the furniture. The colours are the decors' own, without their texture.",
+    "arExit": "Leave AR",
+    "arFailed": "AR did not start on this device.",
     "fullscreen": "Full screen",
+    "fullscreenExit": "Close",
+    "zoomArea": "Drawing: the arrow keys move the sheet, + and − zoom, 0 shows the whole sheet",
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
     "zoomFit": "Whole sheet",
     "zoomHint": "Wheel or two fingers — zoom · drag — move · double click — whole sheet",
+    "zoomTap": "Click or tap the drawing — full screen, zoomed in on that spot",
     "photoPreparing": "Preparing the photorealistic view…",
     "photoProgress": "Computing the light: {pct}%",
     "photoReady": "The image is ready.",
@@ -130,6 +155,304 @@
     "pick": "Choose",
     "close": "Close",
     "search": "Search…",
-    "results": "Results"
+    "results": "Results",
+    "build": {
+      "personalize": "Customise",
+      "startFree": "Start a free-form cabinet",
+      "templateText": "“{type}” is a template: its columns follow one rule. Customise it and every column and every compartment becomes yours — widths, heights, shelves, drawers, rails and doors one by one. The sizes, materials and hardware stay.",
+      "otherText": "“{type}” cannot be customised yet. Start a free-form cabinet with the same materials and hardware and lay it out column by column.",
+      "toolbar": "Builder",
+      "undo": "Undo",
+      "redo": "Redo",
+      "addLeft": "Column to the left",
+      "addRight": "Column to the right",
+      "remove": "Remove the column",
+      "split": "Split the compartment",
+      "merge": "Merge with the one above",
+      "mergeRange": "Merge the selected",
+      "showFronts": "Fronts",
+      "view": "Front view of the furniture",
+      "column": "Column",
+      "cell": "compartment",
+      "between": "Boundary between columns",
+      "and": "and",
+      "fixed": "Fixed shelf",
+      "auto": "auto",
+      "colTitle": "Column {n}",
+      "cellTitle": "Compartment {n}",
+      "cellsTitle": "Compartments {from}–{to}",
+      "width": "Column width, mm",
+      "autoWidth": "Auto — shares the remaining width",
+      "height": "Compartment height, mm",
+      "autoHeight": "Auto — shares the remaining height",
+      "fillLabel": "Contents",
+      "fillOpen": "Open",
+      "fillShelves": "Shelves",
+      "fillDrawers": "Drawers",
+      "fillRail": "Rail",
+      "count": "Number",
+      "frontLabel": "Front",
+      "frontNone": "None",
+      "frontDoor": "Door",
+      "frontDoors2": "Two doors",
+      "hinge": "Hinges",
+      "hingeLeft": "Left",
+      "hingeRight": "Right",
+      "drawersOwn": "Drawers have their own fronts — no door goes over them.",
+      "frontOther": "A door covers compartments {from}–{to} here. Select them together to change it, or put a new front here only.",
+      "hint": "Click selects a compartment, Shift+click several one above the other for one door; the arrow keys move the selection. The boundaries between columns and the fixed shelves drag with a mouse or a finger, and with the arrow keys when focused (Shift: 10 mm). Ctrl+Z and Ctrl+Shift+Z undo and redo.",
+      "pickName": "Column {c}, compartment {k}",
+      "toBuild": "Change it in the builder"
+    },
+    "ui": {
+      "currency": {
+        "BGN": "BGN"
+      },
+      "copy": {
+        "done": "Copied",
+        "selected": "Selected — Ctrl+C",
+        "failed": "Copying failed"
+      },
+      "level": {
+        "error": "Error",
+        "warn": "Warning",
+        "info": "Note"
+      },
+      "checks": {
+        "errors": {
+          "one": "{n} error",
+          "other": "{n} errors"
+        },
+        "warns": "{n} to review",
+        "ok": "Checks pass",
+        "none": "No issues with the construction."
+      },
+      "decor": {
+        "uni": "Plain colours",
+        "wood": "Wood",
+        "stone": "Stone",
+        "concrete": "Concrete",
+        "metal": "Metal",
+        "fantasy": "Fantasy",
+        "textile": "Textile",
+        "paint": "Paint",
+        "other": "Other"
+      },
+      "handleType": {
+        "bar": "Bar",
+        "knob": "Knob",
+        "profile": "Profile",
+        "edge": "Edge pull",
+        "shell": "Cup pull",
+        "recessed": "Recessed",
+        "gola": "Gola profile",
+        "ring": "Ring pull",
+        "other": "Other"
+      },
+      "ralGroup": {
+        "1": "Yellows",
+        "2": "Oranges",
+        "3": "Reds",
+        "4": "Violets",
+        "5": "Blues",
+        "6": "Greens",
+        "7": "Greys",
+        "8": "Browns",
+        "9": "Whites and blacks"
+      },
+      "pick": {
+        "decor": "Decor",
+        "ral": "RAL colour (painted MDF)",
+        "handle": "Handle",
+        "all": "All",
+        "allKinds": "All kinds",
+        "onOrder": "to order",
+        "anySpacing": "Any hole spacing"
+      },
+      "handle": {
+        "none": "No handle",
+        "noneNote": "TIP-ON or profile — not included",
+        "noneFronts": "the fronts open with TIP-ON or a profile — not included"
+      },
+      "of": "{a} of {b}",
+      "more": "Show {n} more",
+      "from": "from {price}",
+      "hinges": "Hinges",
+      "noHinges": "No hinges with drilling data",
+      "noSlides": "No drawer slides with drilling data",
+      "noBedFittings": "No bed connectors in the catalogue",
+      "field": {
+        "hidden": "Field hidden: {label}",
+        "shown": "Field shown: {label}"
+      },
+      "paintedMdf": "MDF, painted",
+      "slider": "{label}, slider",
+      "yes": "yes",
+      "no": "no",
+      "cat": {
+        "handles": "Handles",
+        "hinges": "Hinges",
+        "slides": "Drawer slides",
+        "bed": "Bed hardware",
+        "decors": "Decors"
+      },
+      "col": {
+        "name": "Name",
+        "brand": "Brand",
+        "code": "Code",
+        "kind": "Kind",
+        "holes": "Holes",
+        "spacing": "Hole spacing",
+        "length": "Length",
+        "finish": "Finish",
+        "price": "Price",
+        "shop": "Shop",
+        "drillable": "Drillable",
+        "mfrCode": "Manufacturer code",
+        "system": "System",
+        "angle": "Angle",
+        "overlay": "Overlay",
+        "softClose": "Soft close",
+        "lengths": "Lengths",
+        "load": "Load",
+        "manufacturer": "Manufacturer",
+        "gloss": "Gloss",
+        "hex": "HEX (approximate)",
+        "availableBg": "Stocked in BG",
+        "nameEn": "Name (EN)",
+        "nameDe": "Name (DE)"
+      },
+      "drill": {
+        "group": {
+          "door": "Doors",
+          "drawer-front": "Drawer fronts",
+          "side": "Sides",
+          "partition": "Partitions",
+          "other": "Other parts"
+        },
+        "top": "Holes from the top",
+        "cups": "Hinge cups",
+        "plates": "Mounting plates",
+        "handles": "Handles",
+        "slides": "Drawer slides",
+        "inEdges": "In the edges",
+        "noHardware": "This model has no hinges, handles or drawer slides.",
+        "card": {
+          "hinge": "Hinge",
+          "handle": "Handle",
+          "slide": "Drawer slide"
+        },
+        "cup": {
+          "left": "cup Ø{d} × {depth}, {boring} mm from the hinge edge (centre at {centre}); left edge",
+          "right": "cup Ø{d} × {depth}, {boring} mm from the hinge edge (centre at {centre}); right edge"
+        },
+        "heightsFrom": "heights from edge “{edge}”",
+        "byTemplate": "with the manufacturer's template — no holes in the G-code",
+        "handleThrough": "{n} × Ø{d} through",
+        "spacing": "hole spacing {s}",
+        "uvFrom": "u ; v from the corner “{u0}” / “{v0}”",
+        "pilots": {
+          "through": "{n} pilot holes Ø{d} through",
+          "blind": "{n} pilot holes Ø{d} × {depth}"
+        },
+        "plateHoles": {
+          "through": "{n} mounting plate holes Ø{d} through",
+          "blind": "{n} mounting plate holes Ø{d} × {depth}"
+        },
+        "heightsFull": "heights from edge “{edge}” — the full list is on the map and in the CSV",
+        "axes": "X (u) from edge “{u0}” towards “{u1}” · Y (v) from edge “{v0}” towards “{v1}” · face A up",
+        "noHole": "no hole",
+        "throughDepth": "{d} (through)",
+        "horizontal": "{d} horizontal",
+        "inEdge": "in edge “{edge}”"
+      },
+      "sheetOf": "Sheet {n} — {title}",
+      "cnc": {
+        "tools": "Tools",
+        "holes": "Holes",
+        "cut": "Cutting",
+        "rapid": "Rapid moves",
+        "time": "Time (estimate)",
+        "minutes": "≈ {n} min",
+        "drill": "drill Ø{d}",
+        "grooveMill": "cutter Ø{d}, grooves",
+        "contourMill": "cutter Ø{d}, contour",
+        "manual": {
+          "one": "{n} hole has no drill in the library: {list} — drill it by hand.",
+          "other": "{n} holes have no drill in the library: {list} — drill them by hand."
+        },
+        "lines": "{n} lines",
+        "layers": "{n} layers",
+        "simulate": "Simulate",
+        "pause": "Pause"
+      },
+      "post": {
+        "iso": "ISO / Fanuc style (G81, G43, tool change T…M6)",
+        "grbl": "GRBL (hobby, manual tool change)"
+      },
+      "bom": {
+        "parts": "Parts",
+        "sheets": "Sheets",
+        "band": "Edge banding",
+        "hardware": "Hardware",
+        "price": "Hardware, price",
+        "pieces": "{n} pcs",
+        "grain": "The grain runs along the length",
+        "bandLine": "Edge banding {t} × {w} mm for a {boardT} mm board, {glue} glue · {decor}",
+        "bandHint": "Edge banding is given in exact lengths, with no trimming allowance. The weight follows the density of the board. Cabinet under a sink: a P3 board and edge banding with PUR glue.",
+        "unpriced": {
+          "one": "{n} item without a price — a fastener or general fitting.",
+          "other": "{n} items without a price — fasteners and general fittings."
+        },
+        "edgeHint": "Horizontal holes in the edges are not made on a 3-axis machine: use a boring machine or a jig.",
+        "noEdgeOps": "No operations outside the CNC.",
+        "weight": "Boards, weight"
+      },
+      "nest": {
+        "sheetAria": "Sheet {n}: {parts} parts",
+        "offcut": "Offcut {w} × {h}",
+        "white": "white",
+        "yield": "Yield",
+        "spacing": "Spacing",
+        "compensated": "Edge banding compensated",
+        "parts": "{n} parts"
+      },
+      "sheet": "Sheet {n}",
+      "draw": {
+        "assembly": "assembly drawing"
+      },
+      "viewer": {
+        "label": "3D view of the furniture: drag or arrow keys — rotate, wheel or + and − — zoom, 0 — the whole piece"
+      },
+      "room": {
+        "title": "Furniture in the room",
+        "add": "Add a piece",
+        "type": "Type",
+        "wall": "Wall",
+        "x": "From the corner, mm",
+        "width": "Width, mm",
+        "remove": "Remove piece {n}",
+        "hint": "The distance is from the corner along the wall. The other sizes of each piece are its type's defaults."
+      }
+    }
+  },
+  "exports": {
+    "level": {
+      "error": "error",
+      "warn": "warning",
+      "info": "note"
+    },
+    "none": "none",
+    "hash": "Specification SHA-256: {hash}",
+    "saved": "Saved: {at}",
+    "cutList": "the parts to cut (cut sizes, edge banding, decor)",
+    "hardware": "the hardware and fasteners",
+    "drilling": "every hole: part, face, coordinates, diameter, depth",
+    "drawings": "assembly drawing and a drawing of every part with its drilling map (SVG, A3); the number in the name is the sheet number ({assembly} is the assembly drawing)",
+    "cnc": "DXF with layers and G-code for every nesting sheet",
+    "cncBlocked": "NOT ISSUED: the checks found errors, and G-code and DXF must never be wrong. Fix them in the editor and download again:",
+    "checks": "Construction checks:",
+    "machine": "The G-code is for a sample machine profile (tool numbers, zero point at the bottom left corner of the sheet, Z0 on the top surface). Before cutting: simulate it in the machine software and do a dry run.",
+    "cncMm": "The DXF is in MILLIMETRES (R12 has no units field — import it into CAM as mm, or the parts come out 25.4 times larger). In the layer names “P” is the decimal point (Z-18P6 = −18.6 mm); the holes to drill by hand are on the MANUAL_DRILL_… layers."
   }
 }

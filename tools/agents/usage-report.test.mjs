@@ -1,0 +1,69 @@
+// usage-report.test.mjs — съветващата проверка за усилие: реално тичало срещу дефиницията.
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { effortDrift, definedEfforts } from "./usage-report.mjs";
+
+const rec = (agent, effort, ts = "2026-11-02T08:00", extra = {}) => ({ id: `${agent}-${ts}-${effort}`, agent, effort, ts, ...extra });
+
+test("разминаване: агент на high във frontmatter, а тичал на medium → хванато с брой и стойност", () => {
+  const d = effortDrift([rec("prodavacha", "medium"), rec("prodavacha", "high"), rec("kodadjiyata", "medium")],
+    { prodavacha: "high", kodadjiyata: "medium" });
+  assert.deepEqual(d.map((x) => [x.agent, x.off, x.runs, x.seen]), [["prodavacha", 1, 2, { medium: 1 }]]);
+});
+
+test("пускане отпреди смяната на дефиницията, живи проверки и записи без effort не са разминаване", () => {
+  const recs = [rec("kodadjiyata", "high", "2026-10-30T10:00"), rec("kodadjiyata", "high", "2026-11-02T08:00", { eval: "s-pamet" }),
+    { id: "x", agent: "kodadjiyata", ts: "2026-11-02T08:00" }, rec("kodadjiyata", "medium", "2026-11-01T09:00")];
+  assert.deepEqual(effortDrift(recs, { kodadjiyata: "medium" }, { sinceBy: { kodadjiyata: "2026-10-31T11:10" } }), []);
+});
+
+test("дефинициите: всеки наш агент с effort се чете от frontmatter", () => {
+  const d = definedEfforts();
+  assert.equal(d.kodadjiyata, "medium");
+  assert.equal(d.prodavacha, "high");
+  assert.ok(Object.keys(d).length >= 29);
+});
+
+// 02.11.2026: „1 пускане без цена“ беше запис без модел и с 0 токена (30.07) — не липсващ ред в prices.json.
+// Да добавиш „цена“ за празен модел значи да излъжеш таблото; --check ги разделя.
+test("unpricedSplit: запис без модел не се брои за липсваща цена", async () => {
+  const { unpricedSplit } = await import("./usage-report.mjs");
+  const prices = { models: [{ id: "opus-5-5", in: 4, out: 20 }] };
+  const recs = [
+    { model: "claude-opus-5-5", input: 1, output: 1, cacheRead: 0, cacheWrite: 0, turns: 1 },
+    { model: "", input: 0, output: 0, cacheRead: 0, cacheWrite: 0, turns: 0 },
+    { model: "claude-nova-9", input: 1, output: 1, cacheRead: 0, cacheWrite: 0, turns: 1 },
+  ];
+  assert.deepEqual(unpricedSplit(recs, prices), { noModel: 1, noPrice: 1, models: ["claude-nova-9"] });
+});
+
+test("skillCatalog: предзаредените през skills: и само ръчните умения не се мерят като „никога викани“", async () => {
+  const { skillCatalog } = await import("./usage-report.mjs");
+  const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import("node:fs");
+  const { join } = await import("node:path");
+  const { tmpdir } = await import("node:os");
+  const root = mkdtempSync(join(tmpdir(), "ur-sk-"));
+  const sk = (name, extra = "") => { mkdirSync(join(root, "skills", name), { recursive: true }); writeFileSync(join(root, "skills", name, "SKILL.md"), `---\nname: ${name}\ndescription: x\n${extra}---\n\nтяло\n`); };
+  sk("agent-doctrine"); sk("frontend-design"); sk("seo-geo"); sk("discernment-nudge", "disable-model-invocation: true\n");
+  mkdirSync(join(root, "skills", "no-skill-md"), { recursive: true });
+  mkdirSync(join(root, "agents"));
+  writeFileSync(join(root, "agents", "dizayner.md"), "---\nname: dizayner\nskills:\n  - agent-doctrine\n  - frontend-design\nmodel: sonnet\n---\n\nтяло\n");
+  writeFileSync(join(root, "agents", "seo.md"), "---\nname: seo\nskills:\n  - agent-doctrine\n---\n");
+  writeFileSync(join(root, "agents", "README.md"), "skills:\n  - seo-geo\n");
+  const c = skillCatalog(join(root, "skills"), join(root, "agents"));
+  assert.deepEqual(c, { measured: ["seo-geo"], preloaded: ["agent-doctrine", "frontend-design"], manual: ["discernment-nudge"] });
+  rmSync(root, { recursive: true, force: true });
+});
+
+test("skillUsage: брои пусканията по умение и казва кои наши умения никога не са викани", async () => {
+  const { skillUsage } = await import("./usage-report.mjs");
+  const recs = [
+    { id: "1", agent: "seo", skills: { "seo-geo": 2 } },
+    { id: "2", agent: "seo", skills: { "seo-geo": 1, "bezplatna-vidimost": 1 } },
+    { id: "3", agent: "kodadjiyata" },
+  ];
+  const u = skillUsage(recs, ["seo-geo", "bezplatna-vidimost", "keywords-seo"]);
+  assert.equal(u.runsWithField, 2, "броят се само пусканията със записани умения");
+  assert.deepEqual(u.used.get("seo-geo"), { calls: 3, runs: 2, agents: ["seo"] });
+  assert.deepEqual(u.never, ["keywords-seo"]);
+});

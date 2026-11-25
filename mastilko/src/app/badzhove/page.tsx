@@ -3,6 +3,7 @@ import Image from "next/image";
 import BadgeStudio from "@/components/studios/BadgeStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import RelatedTools from "@/components/RelatedTools";
+import ToolGuide from "@/components/ToolGuide";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатни баджове за събития (name tags)";
@@ -65,6 +66,7 @@ export default function BadzhovePage() {
         </p>
       </header>
       <BadgeStudio />
+      <ToolGuide current="/badzhove" howTo={HOWTO} />
       <ToolFaq items={FAQ} />
       <RelatedTools current="/badzhove" />
       <script

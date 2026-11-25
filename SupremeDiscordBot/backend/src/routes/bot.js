@@ -14,14 +14,20 @@ import { generateAutoReply, aiRateLimitOk, AI_MODEL_NAME } from "../services/aiR
 import { getServerTier, planHasFeature, sanitizePanelForTier, sanitizeFormForTier } from "../lib/premium.js";
 import { buildTranscript } from "../lib/appTranscript.js";
 import { submitApplication } from "../services/applicationSubmit.js";
+import { claimApplicationReview, closeApplicationDiscussion, openApplicationDiscussion } from "../lib/applicationReview.js";
 import { writeAudit } from "../lib/auditLog.js";
 import { ensureUserStub, ensureUserStubs } from "../lib/ensureUser.js";
 import { eraseDiscordUser, summarizeDiscordUser } from "../lib/dsr.js";
 import { sealTranscript } from "../lib/transcriptAtRest.js";
 import axios from "axios";
-import { ssrfSafeAgent, validateWebhookUrl } from "../services/webhooks.js";
+import { ssrfSafeAgent, validateWebhookUrl, fireWebhooks } from "../services/webhooks.js";
+import { closeTicketIfOpen, archiveBase, CLOSE_REASON_MAX } from "../lib/ticketClose.js";
+import { loadSanitizedPanel, withSanitizedPanel, withServerLogFallback } from "../lib/ticketPanel.js";
+import { checkTicketLimits } from "../lib/ticketLimits.js";
+import { fireApplicationReviewed } from "../lib/webhookEvents.js";
 
 const router = Router();
+const BOT_SNOWFLAKE = /^\d{17,20}$/;
 
 router.use(requireBotSecret);
 
@@ -78,6 +84,7 @@ router.get("/server/:serverId", async (req, res, next) => {
     // където правилото или важи, или не. (Червен екип, одит 07.08.2026)
     for (const panel of server.panels || []) {
       sanitizePanelForTier(panel, tier.plan);
+      withServerLogFallback(panel, server.logChannelId); // Т19
       for (const btn of panel.buttons || []) sanitizeFormForTier(btn.form, tier.plan);
     }
     for (const form of server.forms || []) sanitizeFormForTier(form, tier.plan);
@@ -312,32 +319,25 @@ router.delete("/server/:serverId", async (req, res, next) => {
 // Silently no-ops if no open ticket for this channel.
 
 router.post("/ticket/by-channel/:channelId/close-if-open", async (req, res, next) => {
-  const { reason } = req.body;
+  const { reason } = req.body || {};
 
   try {
     const ticket = await prisma.ticket.findFirst({
       where: {
         channelId: req.params.channelId,
-        status: { notIn: ["CLOSED", "ARCHIVED"] },
+        status: { in: ["OPEN", "CLAIMED"] },
       },
-      include: { messages: { orderBy: { createdAt: "asc" } }, creator: true, assignee: true },
+      select: { id: true },
     });
 
     if (!ticket) return res.json({ ok: true, closed: false });
 
-    const html = generateHtmlTranscript(ticket);
-    const token = await ensureArchiveToken(ticket.id, ticket.archiveToken);
-
-    await prisma.ticket.update({
-      where: { id: ticket.id },
-      data: {
-        status: "CLOSED",
-        closeReason: reason || "Channel deleted",
-        closedAt: new Date(),
-        archiveHtml: sealTranscript(html),
-        archiveUrl: tokenizedArchiveUrl(ticket.id, token),
-      },
+    // Т2: същото условно затваряне като навсякъде (одит, webhook, транскрипт).
+    const r = await closeTicketIfOpen(ticket.id, {
+      reason: reason || "Channel deleted",
+      source: "channel_deleted",
     });
+    if (!r.ok) return res.json({ ok: true, closed: false });
 
     res.json({ ok: true, closed: true, ticketId: ticket.id });
   } catch (err) {
@@ -351,16 +351,39 @@ router.get("/ticket/by-channel/:channelId", async (req, res, next) => {
   try {
     const ticket = await prisma.ticket.findFirst({
       where: { channelId: req.params.channelId, status: { notIn: ["CLOSED", "ARCHIVED"] } },
-      // panel носи supportRoleIds — /rename, /escalate, /ticket проверяват него
-      // за „staff“. Без include ticket.panel е undefined → само ManageGuild
-      // минаваше, а support-ролите бяха тихо изключени (fail-closed). Одит 11.08.2026.
-      include: { panel: { select: { supportRoleIds: true } } },
+      // panel (supportRoleIds за „staff“ проверките и пълната конфигурация за
+      // затваряне/escalate) се добавя долу от withSanitizedPanel.
     });
     if (!ticket) return res.status(404).json({ error: "No active ticket for this channel" });
-    res.json(ticket);
+    // Т5: пълен, изчистен по план панел (не само supportRoleIds).
+    res.json(await withSanitizedPanel(ticket));
   } catch (err) {
     next(err);
   }
+});
+
+// ─── GET /api/bot/ticket/precheck?serverId&panelId&creatorId (Т12) ───────────
+// Лимитът се проверява ПРЕДИ ботът да създаде Discord канал — иначе всеки отказ
+// беше „създай канал, после го изтрий“ (rate limit + шум в одитния дневник).
+// Авторитетната проверка остава в POST /ticket/create (advisory lock).
+router.get("/ticket/precheck", async (req, res, next) => {
+  const serverId = String(req.query.serverId || "");
+  const creatorId = String(req.query.creatorId || "");
+  const panelId = req.query.panelId ? String(req.query.panelId) : null;
+  if (!BOT_SNOWFLAKE.test(serverId) || !BOT_SNOWFLAKE.test(creatorId)) {
+    return res.status(400).json({ error: "serverId and creatorId required" });
+  }
+  try {
+    const panel = panelId
+      ? await prisma.panel.findFirst({
+          where: { id: panelId, serverId },
+          select: { id: true, name: true, maxOpenPerUser: true, maxOpenPerUserPanel: true },
+        })
+      : null;
+    if (panelId && !panel) return res.status(404).json({ error: "Panel not found", code: "PANEL_NOT_FOUND" });
+    const limit = await checkTicketLimits(prisma, { serverId, panelId, creatorId, panel });
+    res.json(limit);
+  } catch (err) { next(err); }
 });
 
 // ─── POST /api/bot/ticket/create ─────────────────────────────────────────────
@@ -370,15 +393,16 @@ router.get("/ticket/by-channel/:channelId", async (req, res, next) => {
 router.post("/ticket/create", async (req, res, next) => {
   const { serverId, panelId, creatorId, channelId, firstMessage } = req.body;
 
-  if (!serverId || !creatorId) {
+  if (typeof serverId !== "string" || typeof creatorId !== "string" || !serverId || !creatorId) {
     return res.status(400).json({ error: "serverId and creatorId are required" });
   }
 
   try {
-    // Load full panel config (v1.5 — we need many more fields now)
+    // Load full panel config (v1.5 — we need many more fields now).
+    // Скоуп по serverId: panelId идва от тялото и не се вярва (изолация).
     const panel = panelId
-      ? await prisma.panel.findUnique({
-          where: { id: panelId },
+      ? await prisma.panel.findFirst({
+          where: { id: panelId, serverId },
           select: {
             id: true, name: true,
             maxOpenPerUser: true, maxOpenPerUserPanel: true,
@@ -386,30 +410,20 @@ router.post("/ticket/create", async (req, res, next) => {
           },
         })
       : null;
+    if (panelId && !panel) return res.status(404).json({ error: "Panel not found", code: "PANEL_NOT_FOUND" });
 
-    // ── 1a. Per-server open limit enforcement ───────────────────────────────
+    // ── 1. Лимити на отворени тикети (сървър + панел) ───────────────────────
     const maxOpen = panel?.maxOpenPerUser ?? 1;
-    const openCount = await prisma.ticket.count({
-      where: { serverId, creatorId, status: { in: ["OPEN", "CLAIMED"] } },
-    });
-    if (openCount >= maxOpen) {
+    const limit = await checkTicketLimits(prisma, { serverId, panelId, creatorId, panel });
+    if (!limit.allowed) {
       return res.status(429).json({
-        error: `You already have ${openCount} open ticket(s). Please wait for them to be resolved before opening a new one.`,
-        code: "MAX_TICKETS_REACHED",
-    });
-    }
-
-    // ── 1b. Per-panel open limit (v1.5) ─────────────────────────────────────
-    if (panel?.maxOpenPerUserPanel && panelId) {
-      const panelOpenCount = await prisma.ticket.count({
-        where: { panelId, creatorId, status: { in: ["OPEN", "CLAIMED"] } },
-    });
-      if (panelOpenCount >= panel.maxOpenPerUserPanel) {
-        return res.status(429).json({
-          error: `You already have ${panelOpenCount} open ticket(s) for panel "${panel.name}".`,
-          code: "PANEL_LIMIT_REACHED",
-        });
-      }
+        error: limit.code === "PANEL_LIMIT_REACHED"
+          ? `You already have ${limit.count} open ticket(s) for panel "${limit.panelName}".`
+          : `You already have ${limit.count} open ticket(s). Please wait for them to be resolved before opening a new one.`,
+        code: limit.code,
+        count: limit.count,
+        max: limit.max,
+      });
     }
 
     // ── 2. Round-robin assignment (Premium) ────────────────────────────────
@@ -506,6 +520,15 @@ router.post("/ticket/create", async (req, res, next) => {
       number: ticket.number,
     });
 
+    // А2: webhook TICKET_OPEN на всеки път на отваряне (бутон, меню, форма, /new).
+    fireWebhooks(serverId, "TICKET_OPEN", {
+      ticketId: ticket.id,
+      number: ticket.number,
+      creatorId,
+      panelId: panelId || null,
+      channelId: channelId || null,
+    })?.catch?.(() => {});
+
     // Notify the assigned staff member asynchronously
     if (assigneeId) {
       import("../services/botNotifier.js").then(({ notifyBot }) => {
@@ -579,64 +602,43 @@ router.post("/ticket/:ticketId/message", async (req, res, next) => {
 // Bot closes a ticket (from slash command in Discord)
 
 router.post("/ticket/:ticketId/close", async (req, res, next) => {
-  const { closedById, reason } = req.body;
+  const { closedById, reason, serverId, inactiveBeforeMs, source } = req.body || {};
 
   try {
-    // Verify ticket exists and is closeable before updating
-    const existing = await prisma.ticket.findUnique({
-      where: { id: req.params.ticketId },
-      select: { id: true, status: true },
+    // Т2: условно затваряне (`status in OPEN, CLAIMED`; при неактивност и
+    // `lastActivityAt < cutoff`). Две едновременни затваряния → едно успява.
+    const inactiveBefore = Number.isFinite(Number(inactiveBeforeMs)) && Number(inactiveBeforeMs) > 0
+      ? new Date(Number(inactiveBeforeMs))
+      : null;
+    const r = await closeTicketIfOpen(req.params.ticketId, {
+      serverId: typeof serverId === "string" ? serverId : undefined,
+      closedById: closedById || null,
+      reason,
+      inactiveBefore,
+      source: inactiveBefore ? "inactivity" : (["creator_left", "channel_deleted"].includes(source) ? source : "manual"),
     });
-    if (!existing) return res.status(404).json({ error: "Ticket not found" });
-    if (existing.status === "CLOSED" || existing.status === "ARCHIVED") {
-      return res.status(400).json({ error: "Ticket is already closed" });
+    if (!r.ok) {
+      if (r.code === "NOT_FOUND") return res.status(404).json({ error: "Ticket not found", code: r.code });
+      return res.status(409).json({
+        error: r.code === "ACTIVE_AGAIN" ? "Ticket has new activity" : "Ticket is already closed",
+        code: r.code,
+      });
     }
+    const { ticket, archiveUrl } = r;
+    const base = archiveBase(req);
 
-    const ticket = await prisma.ticket.update({
-      where: { id: req.params.ticketId },
-      data: { status: "CLOSED", closeReason: reason, closedAt: new Date() },
-      include: {
-        messages: { orderBy: { createdAt: "asc" } },
-        creator: true, assignee: true,
-        panel: { select: { transcriptChannelId: true, name: true, slaFirstResponseMinutes: true, slaResolutionMinutes: true } },
-        server: { select: { archiveChannelId: true } },
-      },
-    });
-    // v50 — XP за staff, затворил тикет БЕЗ пробив на SLA (само панели със SLA; веднъж на тикет).
-    awardTicketSlaXp(ticket, closedById).catch(() => {});
+    // Изчистеният по план панел — ботът затваря по НЕГО (ЛС, оценка, лог, категория).
+    const panel = ticket.panelId ? await loadSanitizedPanel(ticket.panelId, ticket.serverId) : null;
 
-    // Generate HTML archive
-    const html = generateHtmlTranscript(ticket);
-
-    const token = await ensureArchiveToken(ticket.id, ticket.archiveToken);
-    const archiveUrl = tokenizedArchiveUrl(ticket.id, token);
-    await prisma.ticket.update({
-      where: { id: ticket.id },
-      // Discord Developer Terms §5(c)(i) — транскриптът при покой е шифриран
-      // (lib/transcriptAtRest.js). Основният път на затваряне пишеше открит
-      // текст, докато таблото и DSR минаваха през sealTranscript (одит 26.09.2026).
-      data: { archiveHtml: sealTranscript(html), archiveUrl },
-    });
-
-    // Build full URL — prefer env var, fallback to request headers (for auto-detection)
-    let base = process.env.FRONTEND_URL || process.env.ARCHIVE_BASE_URL || "";
-    if (!base && req.headers["x-forwarded-host"]) {
-      const proto = req.headers["x-forwarded-proto"] || "https";
-      base = `${proto}://${req.headers["x-forwarded-host"]}`;
-    }
-    if (!base && req.headers.host) {
-      // fallback to request host — works only if same host
-      base = `https://${req.headers.host}`;
-    }
-
-    console.log(`[ticket:close] Saved transcript for ${ticket.id}, archiveHtml=${html.length} bytes, base=${base}`);
+    console.log(`[ticket:close] Saved transcript for ${ticket.id}, source=${source || "manual"}`);
 
     res.json({
       ...ticket,
+      panel,
       archiveHtml: undefined, // don't send full HTML over the wire
       archiveUrl,
       fullArchiveUrl: base ? `${base}${archiveUrl}` : archiveUrl,
-      transcriptChannelId: ticket.panel?.transcriptChannelId || ticket.server?.archiveChannelId || null,
+      transcriptChannelId: panel?.transcriptChannelId || ticket.server?.archiveChannelId || null,
     });
   } catch (err) {
     next(err);
@@ -650,28 +652,43 @@ router.get("/ticket/:ticketId", async (req, res, next) => {
   try {
     const ticket = await prisma.ticket.findUnique({
       where: { id: req.params.ticketId },
-      include: { panel: true },
     });
     if (!ticket) return res.status(404).json({ error: "Ticket not found" });
-    res.json(ticket);
+    // Т5: същият изчистен по план панел като `by-channel` (преди: суров панел).
+    res.json(await withSanitizedPanel(ticket));
   } catch (err) { next(err); }
 });
 
 // ─── POST /api/bot/ticket/:ticketId/claim (v1.5 — rewired) ───────────────────
 
 router.post("/ticket/:ticketId/claim", async (req, res, next) => {
-  const { userId } = req.body;
+  const { userId } = req.body || {};
   try {
     if (!(await gateTicketFeature(req, res, "ticket.claim"))) return;
     // `tickets.assigneeId` е външен ключ към `users`. Персонал, който работи
     // само през Discord и никога не е отварял таблото, иначе не може да поеме
     // тикет — точно хората, които го правят най-често.
     await ensureUserStub(prisma, userId);
-    const updated = await prisma.ticket.update({
-      where: { id: req.params.ticketId },
+    // Т4: claim САМО на OPEN тикет (условен запис). Затворен тикет не става
+    // CLAIMED (брои се в лимитите, SLA и авто-затварянето), а чужд claim не се краде.
+    const won = await prisma.ticket.updateMany({
+      where: { id: req.params.ticketId, status: "OPEN" },
       data: { assigneeId: userId, status: "CLAIMED", lastActivityAt: new Date() },
     });
-    res.json(updated);
+    if (won.count === 0) {
+      const cur = await prisma.ticket.findUnique({
+        where: { id: req.params.ticketId },
+        select: { status: true, assigneeId: true },
+      });
+      if (!cur) return res.status(404).json({ error: "Ticket not found" });
+      if (cur.status === "CLAIMED") {
+        return res.status(409).json({
+          error: "Ticket is already claimed", code: "ALREADY_CLAIMED", assigneeId: cur.assigneeId,
+        });
+      }
+      return res.status(409).json({ error: "Ticket is not open", code: "NOT_OPEN", status: cur.status });
+    }
+    res.json(await prisma.ticket.findUnique({ where: { id: req.params.ticketId } }));
   } catch (err) { next(err); }
 });
 
@@ -679,11 +696,17 @@ router.post("/ticket/:ticketId/claim", async (req, res, next) => {
 
 router.post("/ticket/:ticketId/unclaim", async (req, res, next) => {
   try {
-    const updated = await prisma.ticket.update({
-      where: { id: req.params.ticketId },
+    // Само CLAIMED → OPEN: иначе unclaim „съживяваше“ затворен тикет.
+    const won = await prisma.ticket.updateMany({
+      where: { id: req.params.ticketId, status: "CLAIMED" },
       data: { assigneeId: null, status: "OPEN", lastActivityAt: new Date() },
     });
-    res.json(updated);
+    if (won.count === 0) {
+      const cur = await prisma.ticket.findUnique({ where: { id: req.params.ticketId }, select: { status: true } });
+      if (!cur) return res.status(404).json({ error: "Ticket not found" });
+      return res.status(409).json({ error: "Ticket is not claimed", code: "NOT_CLAIMED", status: cur.status });
+    }
+    res.json(await prisma.ticket.findUnique({ where: { id: req.params.ticketId } }));
   } catch (err) { next(err); }
 });
 
@@ -727,19 +750,17 @@ router.patch("/ticket/:ticketId/priority", async (req, res, next) => {
 // ─── POST /api/bot/ticket/:ticketId/reopen (v1.5) ────────────────────────────
 
 router.post("/ticket/:ticketId/reopen", async (req, res, next) => {
-  const { reopenerId } = req.body;
+  const { reopenerId } = req.body || {};
   try {
     const existing = await prisma.ticket.findUnique({
       where: { id: req.params.ticketId },
       select: { status: true, serverId: true },
     });
     if (!existing) return res.status(404).json({ error: "Ticket not found" });
-    if (existing.status !== "CLOSED") {
-      return res.status(400).json({ error: "Only closed tickets can be reopened" });
-    }
 
-    const updated = await prisma.ticket.update({
-      where: { id: req.params.ticketId },
+    // Условно: само CLOSED → OPEN (две едновременни отваряния дават едно).
+    const won = await prisma.ticket.updateMany({
+      where: { id: req.params.ticketId, status: "CLOSED" },
       data: {
         status: "OPEN",
         reopenedAt: new Date(),
@@ -748,6 +769,10 @@ router.post("/ticket/:ticketId/reopen", async (req, res, next) => {
         lastActivityAt: new Date(),
       },
     });
+    if (won.count === 0) {
+      return res.status(409).json({ error: "Only closed tickets can be reopened", code: "NOT_CLOSED" });
+    }
+    const updated = await prisma.ticket.findUnique({ where: { id: req.params.ticketId } });
 
     await writeAudit({
       actorId: reopenerId || null,
@@ -756,6 +781,14 @@ router.post("/ticket/:ticketId/reopen", async (req, res, next) => {
       action: "TICKET_REOPENED",
       targetId: req.params.ticketId,
     });
+
+    // А2: webhook на всеки път на отваряне наново.
+    fireWebhooks(existing.serverId, "TICKET_REOPEN", {
+      ticketId: updated?.id ?? req.params.ticketId,
+      number: updated?.number ?? null,
+      creatorId: updated?.creatorId ?? null,
+      reopenedBy: reopenerId || null,
+    })?.catch?.(() => {});
 
     res.json(updated);
   } catch (err) { next(err); }
@@ -817,6 +850,12 @@ router.post("/ticket/:ticketId/delete", async (req, res, next) => {
         archiveUrl,
       },
     });
+
+    // А2: webhook на всеки път на изтриване.
+    fireWebhooks(existing.serverId, "TICKET_DELETE", {
+      ticketId: req.params.ticketId,
+      deletedBy: deleterId || null,
+    })?.catch?.(() => {});
 
     res.json({ ok: true, archived: true });
   } catch (err) { next(err); }
@@ -1031,15 +1070,20 @@ router.get("/user/:userId/open-tickets/:guildId", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ─── GET /api/bot/panel/:panelId ─────────────────────────────────────────────
-
+// ─── GET /api/bot/panel/:panelId?serverId= ───────────────────────────────────
+// serverId е ЗАДЪЛЖИТЕЛЕН и търсенето е по (id, serverId). Без него `/panel spawn`
+// приемаше свободно въведен id: панелът на чужд сървър (id-то се вижда в
+// custom_id на бутоните му) се публикуваше у нападателя, а записът му се
+// презаписваше (червен екип, 10.10.2026). Чужд id → 404, както несъществуващ.
 router.get("/panel/:panelId", async (req, res, next) => {
+  const serverId = String(req.query.serverId || "");
+  if (!BOT_SNOWFLAKE.test(serverId)) return res.status(400).json({ error: "serverId required" });
   try {
-    const panel = await prisma.panel.findUnique({
-      where: { id: req.params.panelId },
+    const panel = await prisma.panel.findFirst({
+      where: { id: req.params.panelId, serverId },
       include: {
         buttons: { include: { form: { include: { questions: { orderBy: { order: "asc" } } } } } },
-        server: { select: { id: true, isPremium: true } },
+        server: { select: { id: true, isPremium: true, logChannelId: true } },
       },
     });
     if (!panel) return res.status(404).json({ error: "Panel not found" });
@@ -1063,6 +1107,7 @@ router.get("/panel/:panelId", async (req, res, next) => {
       // на свален план. (Червен екип, кръг 2, 07.08.2026)
       for (const btn of panel.buttons || []) sanitizeFormForTier(btn.form, effectivePlan);
     }
+    withServerLogFallback(panel, panel.server?.logChannelId); // Т19
 
     // Групово съобщение: няколко панела делят един messageId. Редакцията на
     // ЕДИН панел трябва да пресглоби ЦЯЛОТО съобщение, иначе останалите
@@ -1072,7 +1117,7 @@ router.get("/panel/:panelId", async (req, res, next) => {
     // на Discord. Безусловната втора заявка там е чиста загуба.
     if (req.query.siblings === "1" && panel.channelId && panel.messageId) {
       const siblings = await prisma.panel.findMany({
-        where: { channelId: panel.channelId, messageId: panel.messageId },
+        where: { serverId, channelId: panel.channelId, messageId: panel.messageId },
         include: { buttons: { include: { form: { include: { questions: { orderBy: { order: "asc" } } } } } } },
         // Редът, избран от потребителя при публикуване (groupOrder); createdAt
         // е само резервен за заварени групи отпреди полето.
@@ -1103,14 +1148,18 @@ router.get("/panel/:panelId", async (req, res, next) => {
 // Bot reports back the Discord message/channel IDs after spawning a panel
 
 router.patch("/panel/:panelId/spawned", async (req, res, next) => {
-  const { channelId, messageId } = req.body;
+  const { channelId, messageId, serverId } = req.body || {};
+  if (!BOT_SNOWFLAKE.test(String(serverId))) return res.status(400).json({ error: "serverId required" });
+  if (!BOT_SNOWFLAKE.test(String(channelId)) || !BOT_SNOWFLAKE.test(String(messageId))) return res.status(400).json({ error: "channelId and messageId required" });
 
   try {
-    const panel = await prisma.panel.update({
-      where: { id: req.params.panelId },
-      data: { channelId, messageId },
+    // Условно по сървъра: чужд панел не се презаписва (виж GET по-горе).
+    const r = await prisma.panel.updateMany({
+      where: { id: req.params.panelId, serverId: String(serverId) },
+      data: { channelId: String(channelId), messageId: String(messageId) },
     });
-    res.json(panel);
+    if (r.count !== 1) return res.status(404).json({ error: "Panel not found" });
+    res.json({ ok: true });
   } catch (err) {
     next(err);
   }
@@ -1199,7 +1248,7 @@ router.post("/dsr/erase", async (req, res, next) => {
     // Самообслужване = обхват identity (съдържанието на тикетите е запис на
     // оператора; за пълно изтриване → заявка към нас, админ конзола).
     const result = await eraseDiscordUser(String(userId), { scope: "identity", via: "bot", requestedBy: String(userId), guildId: guildId ? String(guildId) : null });
-    if (!result.ok) return res.status(409).json(result);
+    if (!result.ok) return res.status(result.code === "ERASE_FAILED" ? 503 : 409).json(result);
     dsrRecent.set(String(userId), Date.now());
     if (dsrRecent.size > 10000) dsrRecent.clear();
     res.json(result);
@@ -1248,9 +1297,15 @@ router.get("/servers/with-custom-tokens", async (req, res, next) => {
 
 router.post("/application/:appId/review", async (req, res, next) => {
   const { action, note, reviewerId, reviewerTag, serverId } = req.body;
+  // Ботът казва дали ревюърът има Manage Server (той вижда правата в Discord).
+  const reviewerIsAdmin = req.body.reviewerIsAdmin === true;
 
   if (!["approve", "deny"].includes(action)) {
     return res.status(400).json({ error: "action must be approve or deny" });
+  }
+  // Prisma маха филтъра при undefined -> без тази проверка скоупът се губи.
+  if (typeof serverId !== "string" || !serverId) {
+    return res.status(400).json({ error: "serverId required" });
   }
 
   try {
@@ -1267,20 +1322,25 @@ router.post("/application/:appId/review", async (req, res, next) => {
     });
 
     if (!application) return res.status(404).json({ error: "Application not found" });
-    if (application.status !== "PENDING") {
-      return res.status(400).json({ error: "Application already reviewed" });
+    // Собствената кандидатура решава само човек с Manage Server (червен екип,
+    // 13.11.2026): мениджър подаваше в своя формуляр и си я одобряваше сам —
+    // взимаше ролите от acceptRoleIds и сваляше изпитателната. Забранен е и
+    // отказът: и той раздава и маха роли.
+    if (!reviewerIsAdmin && reviewerId && String(reviewerId) === String(application.userId)) {
+      return res.status(403).json({ error: "You cannot review your own application", code: "SELF_REVIEW" });
     }
-
     const statusMap = { approve: "APPROVED", deny: "DENIED" };
 
-    const updated = await prisma.application.update({
-      where: { id: application.id },
-      data: {
-        status: statusMap[action],
-        reviewerId: reviewerId || null,
-        reviewNote: note || null,
-      },
+    // Т6: условен запис по PENDING — вторият ревюър/двоен клик получава 409, роли и ЛС веднъж.
+    const won = application.status === "PENDING" && await claimApplicationReview({
+      id: application.id, serverId: application.serverId, status: statusMap[action], reviewerId, note,
     });
+    if (!won) {
+      return res.status(409).json({ error: "Application already reviewed", code: "ALREADY_REVIEWED" });
+    }
+    const updated = { ...application, status: statusMap[action], reviewerId: reviewerId || null, reviewNote: note || null };
+    delete updated.form; delete updated.user;
+    closeApplicationDiscussion({ applicationId: application.id, serverId: application.serverId, outcome: action }).catch(() => {});
 
     await writeAudit({
       actorId: reviewerId || null,
@@ -1290,6 +1350,9 @@ router.post("/application/:appId/review", async (req, res, next) => {
       targetId: application.id,
       metadata: { note: note || null, via: "discord_button" },
     });
+    // Webhook — същият помощник като при решение от таблото (А2). Преди решение от
+    // бутон в Discord не пращаше нищо.
+    fireApplicationReviewed(application, action, { reviewerId: reviewerId || null, note });
 
     // Grant/remove roles + DM the applicant. The Discord-button path previously
     // only changed status, so approvals granted no role and sent no notification —
@@ -1306,11 +1369,16 @@ router.post("/application/:appId/review", async (req, res, next) => {
     const customMessage = action === "approve" ? form.acceptMessage : form.denyMessage;
     let dmMessage;
     if (customMessage) {
-      dmMessage = customMessage
-        .replaceAll("{user}", application.user?.id ? `<@${application.user.id}>` : "")
-        .replaceAll("{username}", application.user?.username || "")
-        .replaceAll("{server}", application.serverId)
-        .replaceAll("{note}", note || "");
+      // Т18: `{server}` е ИМЕТО на сървъра, не суровият snowflake.
+      const serverRow = await prisma.server.findUnique({ where: { id: application.serverId }, select: { name: true } });
+      const vars = {
+        user: application.user?.id ? `<@${application.user.id}>` : "",
+        username: application.user?.username || "",
+        server: serverRow?.name || "",
+        note: note || "",
+      };
+      // Един проход: подменен текст (напр. име „{note}“) не се тълкува повторно.
+      dmMessage = customMessage.replace(/\{(user|username|server|note)\}/g, (_, k) => vars[k]);
     } else {
       const statusEmoji = action === "approve" ? "✅" : "❌";
       const statusWord  = action === "approve" ? "approved" : "denied";
@@ -1400,6 +1468,31 @@ router.patch("/ticket-message/:messageId", async (req, res, next) => {
   }
 });
 
+// ─── POST /api/bot/reaction-roles/message/:messageId/deleted ─────────────────
+// З9: изтрито в Discord съобщение с роли по реакция → непубликувано в таблото (иначе остава
+// „публикувано“ и се брои в лимита). serverId е ЗАДЪЛЖИТЕЛЕН низ (Prisma маха филтъра при undefined).
+// Чуждо/непознато съобщение е нормален случай (всяко ботско съобщение минава оттук) → count 0 не е грешка.
+router.post("/reaction-roles/message/:messageId/deleted", async (req, res, next) => {
+  const serverId = req.body?.serverId;
+  if (typeof serverId !== "string" || !/^\d{17,20}$/.test(serverId)) return res.status(400).json({ error: "serverId required" });
+  try {
+    const r = await prisma.reactionRoleMessage.updateMany({
+      where: { messageId: req.params.messageId, serverId },
+      data: { messageId: null, channelId: null },
+    });
+    res.json({ ok: true, updated: r.count });
+  } catch (err) { next(err); }
+});
+
+// ─── GET /api/bot/sticky-roles/servers ───────────────────────────────────────
+// В5: кои сървъри имат включено запазване на роли — ботът затопля кеша на членовете САМО за тях.
+router.get("/sticky-roles/servers", async (_req, res, next) => {
+  try {
+    const rows = await prisma.server.findMany({ where: { stickyRolesEnabled: true }, select: { id: true }, take: 20000 });
+    res.json({ serverIds: rows.map((r) => r.id) });
+  } catch (err) { next(err); }
+});
+
 // ─── GET /api/bot/reaction-roles/message/:messageId ──────────────────────────
 // Ботът резолвва Discord messageId → reaction-role mapping (при реакция).
 router.get("/reaction-roles/message/:messageId", async (req, res, next) => {
@@ -1458,72 +1551,38 @@ router.post("/application/:appId/discuss", async (req, res, next) => {
     // не се хваща тук, ботът създава Discord канал, а ticket.create гърми с
     // P2002 (осиротял канал + 500). Активен → връщаме канала; затворен →
     // 409 (дискусията вече е водена — не пресъздаваме нов канал). (Кодаджията)
-    const existingTicket = await prisma.ticket.findUnique({
-      where: { applicationId: app.id },
-    });
-    if (existingTicket) {
-      if (["CLOSED", "ARCHIVED"].includes(existingTicket.status)) {
-        return res.status(409).json({
-          error: "A discussion was already opened for this application (the channel was closed).",
-          code: "DISCUSSION_ALREADY_CLOSED",
-        });
-      }
-      return res.json({
-        ok: true,
-        alreadyExists: true,
-        channelId: existingTicket.channelId,
-        ticketId: existingTicket.id,
-    });
-    }
-
     const transcript = buildTranscript(app.form.questions, app.answers);
-
-    const { notifyBot } = await import("../services/botNotifier.js");
-    const botResult = await notifyBot("APPLICATION_DISCUSS", {
-      serverId,
-      applicantId: app.userId,
-      applicantTag: app.user?.username || "applicant",
-      reviewerId,
-      reviewerTag: reviewerTag || "staff",
-      applicationId: app.id,
-      formName: app.form.name,
-      managerRoleIds: app.form.managerRoleIds || [],
-      discussCategoryId: app.form.discussCategoryId || null, // v34 — фиксирана категория
-      transcript,
-    });
-
-    if (!botResult?.ok || !botResult?.channelId) {
-      return res.status(502).json({
-        error: botResult?.error || "Bot failed to create discussion channel",
-    });
-    }
-
-    // Кандидатът може да няма ред в `users` (външен ключ с RESTRICT).
-    await ensureUserStub(prisma, app.userId);
-    const ticket = await prisma.ticket.create({
-      data: {
+    // Т6: мястото се заема ПРЕДИ каналът да бъде създаден (lib/applicationReview.js).
+    const r = await openApplicationDiscussion({ app, serverId, reviewerId, reviewerTag, transcript });
+    if (r.status === 200 && r.body.ticketId && !r.body.alreadyExists) {
+      await writeAudit({
+        actorId: reviewerId,
+        actorTag: reviewerTag || "BOT",
         serverId,
-        creatorId: app.userId,
-        applicationId: app.id,
-        channelId: botResult.channelId,
-        status: "OPEN",
-      },
-    });
-
-    // writeAudit сам не хвърля — .catch() вече е излишен.
-    await writeAudit({
-      actorId: reviewerId,
-      actorTag: reviewerTag || "BOT",
-      serverId,
-      action: "APPLICATION_DISCUSSION_STARTED",
-      targetId: app.id,
-      metadata: { channelId: botResult.channelId, ticketId: ticket.id, via: "discord_button" },
-    });
-
-    res.json({ ok: true, channelId: botResult.channelId, ticketId: ticket.id });
+        action: "APPLICATION_DISCUSSION_STARTED",
+        targetId: app.id,
+        metadata: { channelId: r.body.channelId, ticketId: r.body.ticketId, via: "discord_button" },
+      });
+    }
+    res.status(r.status).json(r.body);
   } catch (err) {
     next(err);
   }
+});
+
+// ─── GET /api/bot/application/:appId/reviewers?serverId= ─────────────────────
+// Т11: ботът пита кои роли са „мениджъри на кандидатури“ на формата (скоуп по serverId).
+router.get("/application/:appId/reviewers", async (req, res, next) => {
+  const serverId = req.query.serverId;
+  if (typeof serverId !== "string" || !/^\d{17,20}$/.test(serverId)) return res.status(400).json({ error: "serverId required" });
+  try {
+    const row = await prisma.application.findFirst({
+      where: { id: req.params.appId, serverId },
+      select: { form: { select: { managerRoleIds: true } } },
+    });
+    if (!row) return res.status(404).json({ error: "Application not found" });
+    res.json({ managerRoleIds: row.form?.managerRoleIds || [] });
+  } catch (err) { next(err); }
 });
 
 // ─── GET /api/bot/application/:appId ─────────────────────────────────────────

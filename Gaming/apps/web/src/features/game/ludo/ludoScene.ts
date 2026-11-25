@@ -4,6 +4,7 @@
  * peg tokens in seat colours, a single 3D die, and raycast picking of a token.
  * Shares gl/helpers (composer, env, disposal). Render-on-demand; reduced-motion.
  */
+import { upgradeMaterial } from "../gl/baked.js";
 import {
   AmbientLight,
   BoxGeometry,
@@ -37,7 +38,9 @@ import {
 } from "../gl/helpers.js";
 import { defaultGfxParams } from "../gl/gfxRegistry.js";
 import { RenderCore } from "../gl/render.js";
+import { clientToNdc, worldToClient } from "../board/projection.js";
 import { BASE, CENTER, HOME, N, SEAT_COLORS, TRACK, tokenCoord } from "./board.js";
+import { pickToken, type LudoToken } from "./pickToken.js";
 
 const SCENE_RATIO = 0.84;
 const DICE_MS = 760;
@@ -48,10 +51,7 @@ const H = (N - 1) / 2; // 5
 const gx = (col: number) => col - H;
 const gz = (row: number) => row - H;
 
-export interface LudoToken {
-  seat: number;
-  token: number;
-}
+export type { LudoToken };
 
 /** Classic turned Ludo pawn: base disc → waisted stem → collar → ball head. */
 function pawnGeometry(): LatheGeometry {
@@ -192,6 +192,7 @@ export class LudoScene {
     const woodN = woodNormal();
     woodN.repeat.set(4, 4);
     const woodMat = new MeshStandardMaterial({ map: woodTex, normalMap: woodN, normalScale: new Vector2(0.5, 0.5), roughness: 0.52, metalness: 0.08 });
+    upgradeMaterial(woodMat, "walnut", { repeat: [4, 4], albedo: true, roughness: 0.9, normalScale: 0.7, onReady: () => this.core.invalidate() });
     const base = new Mesh(new BoxGeometry(N + 0.9, 0.5, N + 0.9), woodMat);
     base.position.y = -0.05;
     base.receiveShadow = true;
@@ -444,14 +445,20 @@ export class LudoScene {
     }
   }
 
-  pick(clientX: number, clientY: number, rect: DOMRect): LudoToken | null {
-    const ndc = new Vector2(((clientX - rect.left) / rect.width) * 2 - 1, -(((clientY - rect.top) / rect.height) * 2 - 1));
-    this.ray.setFromCamera(ndc, this.camera);
-    const hit = this.ray.intersectObjects(this.tokenLayer.children, true)[0];
-    if (!hit) return null;
-    let o = hit.object;
-    while (o && !o.userData.tk) o = o.parent as typeof o;
-    return o ? (o.userData.tk as LudoToken) : null;
+  /** Тестова кука (board/e2eHook): client координати на средата на пула
+   *  `"<място>:<пул>"` — където е СЕГА (и по време на ход). */
+  screenPoint(id: string, rect: DOMRect): { x: number; y: number } | null {
+    const g = this.tokenMap.get(id);
+    if (!g) return null;
+    // Средата на тялото: групата е на плочката, тялото е +0.08 … +0.91 над нея.
+    return worldToClient(new Vector3(g.position.x, g.position.y + 0.45, g.position.z), this.camera, rect);
+  }
+
+  /** Пулът под точката; `prefer` (напр. „мой и може да се мести“) печели пред
+   *  пул, застанал пред него на лъча. */
+  pick(clientX: number, clientY: number, rect: DOMRect, prefer?: (tk: LudoToken) => boolean): LudoToken | null {
+    this.ray.setFromCamera(clientToNdc(clientX, clientY, rect), this.camera);
+    return pickToken(this.ray, this.tokenLayer, prefer);
   }
 
   resize(width: number): void {

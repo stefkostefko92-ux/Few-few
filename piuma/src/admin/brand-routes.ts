@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { Prisma } from '@prisma/client';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { audit } from '../audit.js';
 import { prisma } from '../db.js';
 import { requireCapability, requireCsrf, requireLogin } from '../auth/guards.js';
