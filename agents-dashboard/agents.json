@@ -2129,99 +2129,17 @@
           "detail": "Научи: guard-self блокира Bash `node -e`, чийто код внася модул под .claude/ (дори само за чет… (+7 още)"
         },
         {
-          "version": "72.5.0",
-          "date": "2026-11-25",
-          "event": "v72.5 — учене",
-          "detail": "Научи: .pr-review/323.diff (mastilko sec) съдържа 24 от 25 файла — lock файлът е само в .stat;… (+38 още)"
-        },
-        {
-          "version": "72.6.0",
-          "date": "2026-11-25",
-          "event": "v72.6 — учене",
-          "detail": "Научи: В deploy/autodeploy.sh release-ите имат обвивка (<TS>/<обвивка>/<продукт>/) при GitHub …"
-        },
-        {
-          "version": "72.7.0",
-          "date": "2026-11-25",
-          "event": "v72.7 — учене",
-          "detail": "Научи: В live-run worktree node --test върху единичен тестов файл иска одобрение, затова гейто…"
-        },
-        {
-          "version": "72.9.0",
-          "date": "2026-11-25",
-          "event": "v72.9 — учене",
-          "detail": "Научи: Чистенето на vpsdash в /api/reclaim/run смята списъка с пътища наново на сървъра (recla… (+1 още)"
-        },
-        {
-          "version": "73.0.0",
-          "date": "2026-11-25",
-          "event": "v73.0 — учене",
-          "detail": "Научи: В vpsdash ui.js el() свойството raw се записва с textContent (безопасно), а html — с in…"
-        },
-        {
-          "version": "73.1.0",
-          "date": "2026-11-25",
-          "event": "v73.1 — учене",
-          "detail": "Научи: deploy/autodeploy.sh не копира nginx vhost за vizitka — промени във vizitka/deploy/ngin…"
-        },
-        {
-          "version": "73.2.0",
-          "date": "2026-11-25",
-          "event": "v73.2 — учене",
-          "detail": "Научи: В live-run worktree Ivan/backend/node_modules липсва, затова тестовете на Ivan не могат…"
-        },
-        {
           "version": "73.3.0",
           "date": "2026-11-25",
           "event": "v73.3 — учене",
-          "detail": "Научи: В live-run worktree vizitka/node_modules липсва, затова гейтовете на vizitka не могат д…"
+          "detail": "Научи: В live-run worktree vizitka/node_modules липсва, затова гейтовете на vizitka не могат д… (+46 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „В live-run worktree vizitka/node_modules липсва, затова гейтовете на vizitka не могат д…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „В live-run worktree eternaltouch/node_modules липсва, затова npm test (node test/smoke.…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „В live-run worktree Ivan/backend/node_modules липсва, затова тестовете на Ivan не могат…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „deploy/autodeploy.sh не копира nginx vhost за vizitka — промени във vizitka/deploy/ngin…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „В vpsdash ui.js el() свойството raw се записва с textContent (безопасно), а html — с in…\" · 1 в карантина"
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „Чистенето на vpsdash в /api/reclaim/run смята списъка с пътища наново на сървъра (recla…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „В live-run worktree node --test върху единичен тестов файл иска одобрение, затова гейто…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „В deploy/autodeploy.sh release-ите имат обвивка (<TS>/<обвивка>/<продукт>/) при GitHub …\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „.pr-review/323.diff (mastilko sec) съдържа 24 от 25 файла — lock файлът е само в .stat;…\" (+38 още) · 5 в карантина"
+          "summary": "Научи: „В live-run worktree vizitka/node_modules липсва, затова гейтовете на vizitka не могат д…\" (+46 още) · 7 в карантина"
         },
         {
           "date": "2026-11-24",
@@ -4562,50 +4480,17 @@
           "detail": "Научи: Search Quality Rater Guidelines (версия 11.09.2025) казват, че Trust е най-важният елем… (+7 още)"
         },
         {
-          "version": "25.4.0",
-          "date": "2026-11-25",
-          "event": "v25.4 — учене",
-          "detail": "Научи: PR само с dependency bump и смяна на импорт (zod→zod/v3 в API маршрути, студия и lib) н… (+3 още)"
-        },
-        {
-          "version": "25.5.0",
-          "date": "2026-11-25",
-          "event": "v25.5 — учене",
-          "detail": "Научи: В PR, който добавя ACME изключение (location ^~ /.well-known/acme-challenge/) към HTTP …"
-        },
-        {
-          "version": "25.6.0",
-          "date": "2026-11-25",
-          "event": "v25.6 — учене",
-          "detail": "Научи: PR с реквизити на дружеството в eternaltouch (locales updateDate, home/footer/legal/pri…"
-        },
-        {
           "version": "25.7.0",
           "date": "2026-11-25",
           "event": "v25.7 — учене",
-          "detail": "Научи: Във vizitka organizationNode носи legalName (латиница, както във вписването) и alternat…"
+          "detail": "Научи: Във vizitka organizationNode носи legalName (латиница, както във вписването) и alternat… (+6 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „Във vizitka organizationNode носи legalName (латиница, както във вписването) и alternat…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „PR с реквизити на дружеството в eternaltouch (locales updateDate, home/footer/legal/pri…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „В PR, който добавя ACME изключение (location ^~ /.well-known/acme-challenge/) към HTTP …\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „PR само с dependency bump и смяна на импорт (zod→zod/v3 в API маршрути, студия и lib) н…\" (+3 още)"
+          "summary": "Научи: „Във vizitka organizationNode носи legalName (латиница, както във вписването) и alternat…\" (+6 още)"
         },
         {
           "date": "2026-11-24",
@@ -7591,61 +7476,17 @@
           "detail": "Научи: GNU sed -i без --follow-symlinks подменя симлинка с обикновен файл, затова редакция на … (+27 още)"
         },
         {
-          "version": "27.5.0",
-          "date": "2026-11-25",
-          "event": "v27.5 — учене",
-          "detail": "Научи: fakturist/deploy/deploy.sh връща код 0 и когато няма TLS сертификат за домейна (sync_ng… (+1 още)"
-        },
-        {
-          "version": "27.6.0",
-          "date": "2026-11-25",
-          "event": "v27.6 — учене",
-          "detail": "Научи: Предварителен филтър с grep -F \"$RELEASES_DIR/\" върху Mounts.Source прави мъртъв всеки …"
-        },
-        {
-          "version": "27.7.0",
-          "date": "2026-11-25",
-          "event": "v27.7 — учене",
-          "detail": "Научи: Функция, която строи shell скрипт и е изнесена навън само за тест (напр. previewSpecFor…"
-        },
-        {
-          "version": "27.8.0",
-          "date": "2026-11-25",
-          "event": "v27.8 — учене",
-          "detail": "Научи: В POSIX sh `out=$(cmd 2>&1); echo \"$out\"; case \"$out\" in …) exit 1;; esac` губи кода на…"
-        },
-        {
           "version": "27.9.0",
           "date": "2026-11-25",
           "event": "v27.9 — учене",
-          "detail": "Научи: Защита на release по монтирани от Docker папки не пази release-а, от който идва само en…"
+          "detail": "Научи: Защита на release по монтирани от Docker папки не пази release-а, от който идва само en… (+5 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „Защита на release по монтирани от Docker папки не пази release-а, от който идва само en…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „В POSIX sh `out=$(cmd 2>&1); echo \"$out\"; case \"$out\" in …) exit 1;; esac` губи кода на…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „Функция, която строи shell скрипт и е изнесена навън само за тест (напр. previewSpecFor…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „Предварителен филтър с grep -F \"$RELEASES_DIR/\" върху Mounts.Source прави мъртъв всеки …\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „fakturist/deploy/deploy.sh връща код 0 и когато няма TLS сертификат за домейна (sync_ng…\" (+1 още) · 2 в карантина"
+          "summary": "Научи: „Защита на release по монтирани от Docker папки не пази release-а, от който идва само en…\" (+5 още) · 2 в карантина"
         },
         {
           "date": "2026-11-23",
@@ -12367,13 +12208,8 @@
       "activity": [
         {
           "date": "2026-11-25",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „PR, който променя само текст в TSX/TS (правни страници, константи), няма как да засегне…\""
-        },
-        {
-          "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „Форма с `novalidate`, чието сървърно рендериране показва грешка само през `aria-invalid…\" (+1 още)"
+          "summary": "Научи: „Форма с `novalidate`, чието сървърно рендериране показва грешка само през `aria-invalid…\" (+1 още) · 1 в карантина"
         },
         {
           "date": "2026-11-23",
@@ -14874,28 +14710,17 @@
           "detail": "Научи: Към 2026-11-24 в Latest models на Anthropic стоят Fable 5.2 (claude-fable-5-2, $8/$40, … (+3 още)"
         },
         {
-          "version": "37.0.0",
-          "date": "2026-11-25",
-          "event": "v37.0 — учене",
-          "detail": "Научи: GENERIC_RULE в tools/security/secret-scan.mjs иска кавичка веднага след \":\" или \"=\" и п… (+10 още)"
-        },
-        {
           "version": "37.1.0",
           "date": "2026-11-25",
           "event": "v37.1 — учене",
-          "detail": "Научи: GENERIC_RULE в secret-scan хваща само стойност в кавички с поне 12 знака след secret/pa…"
+          "detail": "Научи: GENERIC_RULE в secret-scan хваща само стойност в кавички с поне 12 знака след secret/pa… (+11 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „GENERIC_RULE в secret-scan хваща само стойност в кавички с поне 12 знака след secret/pa…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „GENERIC_RULE в tools/security/secret-scan.mjs иска кавичка веднага след \":\" или \"=\" и п…\" (+10 още)"
+          "summary": "Научи: „GENERIC_RULE в secret-scan хваща само стойност в кавички с поне 12 знака след secret/pa…\" (+11 още)"
         },
         {
           "date": "2026-11-24",
