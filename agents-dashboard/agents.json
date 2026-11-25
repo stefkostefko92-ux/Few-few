@@ -2135,154 +2135,17 @@
           "detail": "Научи: Когато текст на витрината интерполира числа от базата с резервна стойност за липсващ ре… (+21 още)"
         },
         {
-          "version": "70.9.0",
-          "date": "2026-11-25",
-          "event": "v70.9 — учене",
-          "detail": "Научи: .pr-review/486.diff (fakturist IndexNow) е пълен — 5 diff заглавки при 5 файла в 486.st…"
-        },
-        {
-          "version": "71.0.0",
-          "date": "2026-11-25",
-          "event": "v71.0 — учене",
-          "detail": "Научи: .pr-review/337.diff е празен (0 байта), защото PR-ът пипа само lock файл; промяната се …"
-        },
-        {
-          "version": "71.1.0",
-          "date": "2026-11-25",
-          "event": "v71.1 — учене",
-          "detail": "Научи: .pr-review/335.diff (korpora zod 4) съдържа 13 от 14 файла — lock файлът е само в .stat…"
-        },
-        {
-          "version": "71.2.0",
-          "date": "2026-11-25",
-          "event": "v71.2 — учене",
-          "detail": "Научи: zod 4.6.7 отваря пътя \"./v3\" (import и require), така че миграцията от zod 3 с import {…"
-        },
-        {
-          "version": "71.3.0",
-          "date": "2026-11-25",
-          "event": "v71.3 — учене",
-          "detail": "Научи: В live-run worktree локалният main може да е остарял — git diff main...HEAD -- <lock> п…"
-        },
-        {
-          "version": "71.4.0",
-          "date": "2026-11-25",
-          "event": "v71.4 — учене",
-          "detail": "Научи: nodemailer 10.x изисква node >=20.0.0 (в 9.x беше >=6.0.0) — при ъпгрейд сверявай engin…"
-        },
-        {
-          "version": "71.6.0",
-          "date": "2026-11-25",
-          "event": "v71.6 — учене",
-          "detail": "Научи: .pr-review/333.diff (eternaltouch deps) съдържа само package.json (646 байта); lock фай… (+1 още)"
-        },
-        {
-          "version": "71.8.0",
-          "date": "2026-11-25",
-          "event": "v71.8 — учене",
-          "detail": "Научи: nodemailer 10.2.1 носи собствени типове (dist/esm/nodemailer.d.ts и dist/cjs/nodemailer… (+1 още)"
-        },
-        {
-          "version": "71.9.0",
-          "date": "2026-11-25",
-          "event": "v71.9 — учене",
-          "detail": "Научи: В live-run worktree пазачът guard-self блокира `node -e` в Bash (смята го за код за инт…"
-        },
-        {
-          "version": "72.0.0",
-          "date": "2026-11-25",
-          "event": "v72.0 — учене",
-          "detail": "Научи: .pr-review/325.diff (linketto sec) съдържа само package.json (666 байта); промяната в l…"
-        },
-        {
-          "version": "72.2.0",
-          "date": "2026-11-25",
-          "event": "v72.2 — учене",
-          "detail": "Научи: nodemailer@10.6.1 е ESM пакет (\"type\":\"module\") с top-level \"types\" ./dist/cjs/nodemail… (+1 още)"
-        },
-        {
-          "version": "72.4.0",
-          "date": "2026-11-25",
-          "event": "v72.4 — учене",
-          "detail": "Научи: nodemailer 10.x носи собствени типове (dist/cjs и dist/esm nodemailer.d.ts) без условие… (+1 още)"
-        },
-        {
           "version": "72.5.0",
           "date": "2026-11-25",
           "event": "v72.5 — учене",
-          "detail": "Научи: .pr-review/323.diff (mastilko sec) съдържа 24 от 25 файла — lock файлът е само в .stat;…"
+          "detail": "Научи: .pr-review/323.diff (mastilko sec) съдържа 24 от 25 файла — lock файлът е само в .stat;… (+16 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „.pr-review/323.diff (mastilko sec) съдържа 24 от 25 файла — lock файлът е само в .stat;…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „nodemailer 10.x носи собствени типове (dist/cjs и dist/esm nodemailer.d.ts) без условие…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-25",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „Етикетът на увереност в полето „Находки“ на ПРЕДАВАНЕ трябва да е Сигурно/Вероятно/Неси…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „nodemailer@10.6.1 е ESM пакет (\"type\":\"module\") с top-level \"types\" ./dist/cjs/nodemail…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „.pr-review/325.diff (linketto sec) съдържа само package.json (666 байта); промяната в l…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „В live-run worktree пазачът guard-self блокира `node -e` в Bash (смята го за код за инт…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „nodemailer 10.2.1 носи собствени типове (dist/esm/nodemailer.d.ts и dist/cjs/nodemailer…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „.pr-review/333.diff (eternaltouch deps) съдържа само package.json (646 байта); lock фай…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „nodemailer 10.x изисква node >=20.0.0 (в 9.x беше >=6.0.0) — при ъпгрейд сверявай engin…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „В live-run worktree локалният main може да е остарял — git diff main...HEAD -- <lock> п…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „zod 4.6.7 отваря пътя \"./v3\" (import и require), така че миграцията от zod 3 с import {…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „.pr-review/335.diff (korpora zod 4) съдържа 13 от 14 файла — lock файлът е само в .stat…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „.pr-review/337.diff е празен (0 байта), защото PR-ът пипа само lock файл; промяната се …\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „.pr-review/486.diff (fakturist IndexNow) е пълен — 5 diff заглавки при 5 файла в 486.st…\""
+          "summary": "Научи: „.pr-review/323.diff (mastilko sec) съдържа 24 от 25 файла — lock файлът е само в .stat;…\" (+16 още) · 1 в карантина"
         },
         {
           "date": "2026-11-25",
@@ -4634,28 +4497,17 @@
           "detail": "Научи: Файлът `.pr-review/<n>.diff` пак може да е съкратен (376: 10 от 26 файла); списъкът с ф… (+1 още)"
         },
         {
-          "version": "25.3.0",
-          "date": "2026-11-25",
-          "event": "v25.3 — учене",
-          "detail": "Научи: PR с bump на next/nodemailer/eslint-config-next и само смяна на типов импорт в server-o…"
-        },
-        {
           "version": "25.4.0",
           "date": "2026-11-25",
           "event": "v25.4 — учене",
-          "detail": "Научи: PR само с dependency bump и смяна на импорт (zod→zod/v3 в API маршрути, студия и lib) н…"
+          "detail": "Научи: PR само с dependency bump и смяна на импорт (zod→zod/v3 в API маршрути, студия и lib) н… (+1 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „PR само с dependency bump и смяна на импорт (zod→zod/v3 в API маршрути, студия и lib) н…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „PR с bump на next/nodemailer/eslint-config-next и само смяна на типов импорт в server-o…\""
+          "summary": "Научи: „PR само с dependency bump и смяна на импорт (zod→zod/v3 в API маршрути, студия и lib) н…\" (+1 още)"
         },
         {
           "date": "2026-11-25",
@@ -15992,39 +15844,17 @@
           "detail": "Научи: Капан върху fenced код в инжекционен eval пада и върху верен отговор, който цитира дока… (+1 още)"
         },
         {
-          "version": "23.2.0",
-          "date": "2026-11-25",
-          "event": "v23.2 — учене",
-          "detail": "Научи: zod@4 пакетът пази подпът `zod/v3` (legacy API) в `exports`, затова мажор-бъмп на zod с…"
-        },
-        {
-          "version": "23.3.0",
-          "date": "2026-11-25",
-          "event": "v23.3 — учене",
-          "detail": "Научи: В Zod 4 `ZodError.flatten()`, `.format()` и `.strict()` са остарели, но не са махнати, …"
-        },
-        {
           "version": "23.4.0",
           "date": "2026-11-25",
           "event": "v23.4 — учене",
-          "detail": "Научи: zod 4 запазва подпът `zod/v3` (без срок за премахване), но v3 `ZodType` не е присвоим к…"
+          "detail": "Научи: zod 4 запазва подпът `zod/v3` (без срок за премахване), но v3 `ZodType` не е присвоим к… (+2 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „zod 4 запазва подпът `zod/v3` (без срок за премахване), но v3 `ZodType` не е присвоим к…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „В Zod 4 `ZodError.flatten()`, `.format()` и `.strict()` са остарели, но не са махнати, …\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „zod@4 пакетът пази подпът `zod/v3` (legacy API) в `exports`, затова мажор-бъмп на zod с…\""
+          "summary": "Научи: „zod 4 запазва подпът `zod/v3` (без срок за премахване), но v3 `ZodType` не е присвоим к…\" (+2 още)"
         },
         {
           "date": "2026-11-24",

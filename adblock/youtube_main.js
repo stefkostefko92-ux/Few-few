@@ -33,13 +33,22 @@
 //       "SSAP, AD") is jumped over to its end — the response holds nothing to prune;
 //     - a refusal (UNPLAYABLE, pointing at the ad-blocker help page) or a player
 //       stuck at 0x0 with an empty buffer is retried in place (loadVideoById) with
-//       the next request shape — clientScreen CHANNEL, params 8AUB, a "#reloadxhr"
-//       referer, params YAHI — and finally as sent. Until a refusal, requests go
+//       the next request shape — 6.1.1, as the uBO quick fixes of 2026-11: a watch
+//       page tries clientScreen CHANNEL, params YAHI, isInlinePlaybackNoAd, params
+//       oAEBogYBLg; an embed CHANNEL and params eAFgAQ; each with a "#reloadxhr"
+//       referer. A refusal ends with one more try as sent; a stuck start, its shapes
+//       tried, goes back to requests as built and leaves the rest to youtube_skip.
+//       A stuck start is retried as soon as the player itself says so (a second of
+//       it confirmed), not after 10 s. Until a refusal or a stuck start, requests go
 //       out exactly as YouTube built them;
 //     - the page's "abnormality detected" callback is never run.
 //     The live update can switch the shapes or the jump off (data, not code).
+//  8. (6.1.1) The first player answer of a full page load (var ytInitialPlayerResponse)
+//     is cleaned here too, as it is assigned: it was left to the uBO rules for the
+//     host, which do not run on the Basic level — a reload there played the ad.
 // Feed / search / next responses lose their ad renderers the same way (text in,
-// text out). Nothing here touches the video stream or its signatures.
+// text out), and a reel sequence its ad entries. Nothing here touches the video
+// stream or its signatures.
 (function () {
   "use strict";
 
@@ -75,6 +84,9 @@
   const fnToString = Function.prototype.toString;
   const nativeThen = Promise.prototype.then;
   const nativeSetInterval = typeof setInterval === "function" ? setInterval : null;
+  // Taken now, before any page code: the retry note to youtube_skip goes out through these.
+  const NativeEvent = typeof Event === "function" ? Event : null;
+  const nativeDispatch = (() => { try { return EventTarget.prototype.dispatchEvent; } catch { return null; } })();
 
   // ---- no frame of ours in an error's stack ------------------------------------
   const OWN_RE = /(?:chrome|moz)-extension:\/\//;
@@ -88,10 +100,14 @@
   }
   const rethrow = (e) => { throw scrub(e); };
 
-  // ---- request shapes after a refusal (www.youtube.com) -----------------------
-  const SHAPES = ["channel", "lactmilli", "inline", "yahi"];
+  // ---- request shapes after a refusal or a stuck start (www.youtube.com) -------
+  // The order of the uBO quick fixes (2026-11; "lactmilli" — params 8AUB with a fresh lactMilliseconds —
+  // was dropped there for "oaeb"). Every shaped request also carries the "#reloadxhr" referer; the player's
+  // tracking URL then says so, which tells a stuck answer to a shaped request from one to a request as built.
+  const WATCH_SHAPES = ["channel", "yahi", "inline", "oaeb"];
+  const EMBED_SHAPES = ["channel", "eafg"];
   let shape = "";        // what /player requests carry now ("" = exactly as YouTube built them)
-  let nextShape = 0;     // where the next retry starts in SHAPES
+  let left = null;       // the shapes still to try on this page (null = the full list for its kind)
   let shapesOn = WWW;    // live kill switches (data): youtube.noShapes / youtube.noSsapJump
   let ssapOn = WWW;
 
@@ -109,20 +125,33 @@
   }
 
   // The body of a /player request with the current shape; anything else untouched.
+  // A watch page's request carries attestationRequest; an embed's carries its third-party context.
   function shapeBody(text) {
-    if (!shape || !shapesOn || typeof text !== "string" || text.indexOf('"attestationRequest"') === -1 || premium()) return text;
+    if (!shape || !shapesOn || typeof text !== "string" || premium()) return text;
+    if (text.indexOf('"attestationRequest"') === -1 && text.indexOf('"embeddedPlayerContext"') === -1 &&
+      text.indexOf('"serializedThirdPartyEmbedConfig"') === -1) return text;
     let o;
     try { o = nativeParse(text); } catch { return text; }
-    if (!o || typeof o !== "object" || !o.attestationRequest) return text;
+    if (!o || typeof o !== "object") return text;
     const client = o.context && o.context.client;
+    const third = o.context && o.context.thirdParty;
     const cpc = o.playbackContext && o.playbackContext.contentPlaybackContext;
-    if (shape === "channel" && client && client.clientName === "WEB") client.clientScreen = "CHANNEL";
-    if (shape === "lactmilli") o.params = "8AUB";
-    if (shape === "yahi") o.params = "YAHI";
-    if (cpc && typeof cpc === "object") {
-      if (shape === "channel" || shape === "lactmilli") cpc.lactMilliseconds = String(Date.now());
-      if (typeof cpc.referer === "string" && !/#reloadxhr$/.test(cpc.referer)) cpc.referer += "#reloadxhr";
+    const watch = !!o.attestationRequest;
+    const embed = !!(third && third.embeddedPlayerContext);
+    const embedCfg = !!o.serializedThirdPartyEmbedConfig;
+    if (!watch && !embed && !embedCfg) return text;
+    if (watch) {
+      if (shape === "channel" && client && client.clientName === "WEB") client.clientScreen = "CHANNEL";
+      if (shape === "yahi") o.params = "YAHI";
+      if (shape === "oaeb") o.params = "oAEBogYBLg";
+      if (shape === "inline" && cpc && typeof cpc === "object") cpc.isInlinePlaybackNoAd = true;
     }
+    if (embedCfg) {
+      if (shape === "channel" && client && client.clientName === "WEB_EMBEDDED_PLAYER") client.clientScreen = "CHANNEL";
+      if (shape === "eafg") o.params = "eAFgAQ";
+    }
+    if ((watch || (embed && (shape === "channel" || shape === "eafg"))) && cpc && typeof cpc.referer === "string" &&
+      !/#reloadxhr$/.test(cpc.referer)) cpc.referer += "#reloadxhr";
     return nativeStringify(o);
   }
 
@@ -187,9 +216,26 @@
       if (v && typeof v === "object") pruneRenderers(v, depth + 1);
     }
   }
+  // Shorts: an ad in the reel sequence is an entry whose command says adClientParams.isAd (the uBO rule
+  // json-prune entries.[-].command.reelWatchEndpoint.adClientParams.isAd — on Basic only this runs).
+  function isReelAd(e) {
+    try { const p = e.command.reelWatchEndpoint.adClientParams; return !!(p && p.isAd); } catch { return false; }
+  }
+  function pruneReelAds(o) {
+    const list = o && typeof o === "object" ? o.entries : null;
+    if (Array.isArray(list)) for (let i = list.length - 1; i >= 0; i--) if (isReelAd(list[i])) list.splice(i, 1);
+  }
   function pruneFeedText(text) {
-    if (typeof text !== "string" || !RENDERER_RE.test(text)) return text; // the common case: untouched
-    try { const o = nativeParse(text); pruneRenderers(o, 0); return nativeStringify(o); } catch { return text; }
+    if (typeof text !== "string") return text;
+    const renderers = RENDERER_RE.test(text);
+    const reels = text.indexOf('"isAd":true') !== -1;
+    if (!renderers && !reels) return text; // the common case: untouched
+    try {
+      const o = nativeParse(text);
+      if (renderers) pruneRenderers(o, 0);
+      if (reels) pruneReelAds(o);
+      return nativeStringify(o);
+    } catch { return text; }
   }
   const classify = (url) => (PLAYER_RE.test(url) ? "player" : FEED_RE.test(url) ? "feed" : "");
   const transform = (kind, text) => (kind === "player" ? renameText(text) : kind === "feed" ? pruneFeedText(text) : text);
@@ -351,7 +397,7 @@
             }
             if (v && typeof v === "object" && !m.done) { // responseType "json"
               m.done = true;
-              if (kind === "player") renameInObject(v, 0); else pruneRenderers(v, 0);
+              if (kind === "player") renameInObject(v, 0); else { pruneRenderers(v, 0); pruneReelAds(v); }
             }
           } catch {}
           return v;
@@ -432,13 +478,73 @@
     } catch {}
   }
 
-  // ---- the player: stitched ads, refusals, stuck loads (www.youtube.com) -------
-  const STUCK_MS = 10 * 1000;
+  const onWatch = () => { try { const p = location.pathname; return p === "/watch" || p.indexOf("/embed/") === 0; } catch { return false; } };
+  const onEmbed = () => { try { return location.pathname.indexOf("/embed/") === 0; } catch { return false; } };
+
+  // ---- the player's own word that a start is stuck (www.youtube.com) -----------
+  // When YouTube starves a flagged client the player says so at once — it looks up its "onSnackbarMessage"
+  // handler and queues a 104/105-byte message — while its stats show 0x0 with an empty buffer. The uBO
+  // maintainers retry right then; we waited 10 s for the stats alone, and that wait was the delay at the
+  // start of a clip (6.1.1). The hooks only note the time (no page code runs under them); the guard below
+  // acts on it, once the stuck state has held for a second. The 10 s timer stays as the fallback for a player
+  // that stops saying so. Array.prototype.push is the hottest function of the page, so the hooks are there only
+  // while a clip is starting (from the watch page or a new clip until it has played 2 s), then the natives
+  // are put back.
+  let signalAt = 0;
+  let hooks = null; // while armed: [proto, prop, native, ours]
+  const getter = (o, k) => { try { const d = Object.getOwnPropertyDescriptor(o, k); return d && d.get; } catch { return null; } };
+  const isView = ArrayBuffer.isView;
+  const TA = Object.getPrototypeOf(Uint8Array.prototype);
+  const taTag = getter(TA, Symbol.toStringTag), taLen = getter(TA, "length"), taBuf = getter(TA, "buffer");
+  const abLen = getter(ArrayBuffer.prototype, "byteLength");
+  const MAP_PROTO = Object.getPrototypeOf(new Map());
+  const ARRAY_PROTO = Object.getPrototypeOf([]);
+  // A standalone Uint8Array of 104 or 105 bytes, read through the natives (no getter of the page runs,
+  // a Proxy or a DataView is not one, and an array from another frame still counts).
+  const signalBytes = (n) => {
+    if (!isView(n) || !taTag || !taLen || !taBuf || !abLen) return false;
+    try {
+      if (Reflect.apply(taTag, n, []) !== "Uint8Array") return false;
+      const len = Reflect.apply(taLen, n, []);
+      return (len === 104 || len === 105) && Reflect.apply(abLen, Reflect.apply(taBuf, n, []), []) === len;
+    } catch { return false; }
+  };
+  function armSignals() {
+    if (hooks || !WWW) return;
+    hooks = [];
+    const note = (proto, prop, test) => {
+      try {
+        const orig = proto[prop];
+        if (typeof orig !== "function") return;
+        const ours = cloaked(orig, (target, thisArg, args) => {
+          try { if (args.length && test(args[0])) signalAt = Date.now(); } catch {}
+          return Reflect.apply(target, thisArg, args);
+        });
+        proto[prop] = ours;
+        hooks.push([proto, prop, orig, ours]);
+      } catch {}
+    };
+    note(MAP_PROTO, "has", (k) => k === "onSnackbarMessage");
+    note(ARRAY_PROTO, "push", signalBytes);
+  }
+  function disarmSignals() {
+    if (!hooks) return;
+    for (const [proto, prop, orig, ours] of hooks) { try { if (proto[prop] === ours) proto[prop] = orig; } catch {} }
+    hooks = null;
+  }
+  if (WWW && onWatch()) armSignals();
+
+  // ---- the player: stitched ads, refusals, stuck starts (www.youtube.com) ------
+  const STUCK_MS = 10 * 1000;            // a stuck start the player did not report: retried after this long
+  const TOLD_MS = 1000;                  // …one it did report: once the stuck state has held this long
+  const SIGNAL_MS = 3 * 1000;            // the player's word counts this long
   const SETTLE_MS = 8 * 1000;            // a reload's own answer gets this long to replace the old one
-  const MAX_RETRIES = SHAPES.length + 1; // every shape once, then as sent
+  const MAX_RETRIES = WATCH_SHAPES.length + 1; // per clip: every shape once, then as sent
   let clip = "", retries = 0, stuckSince = 0, jumpedAt = 0;
   let reloadedFrom = null, reloadedAt = 0;  // the response a retry replaced, and when
-  const onWatch = () => { try { const p = location.pathname; return p === "/watch" || p.indexOf("/embed/") === 0; } catch { return false; } };
+  let answerAt = 0;                         // when the answer to the last retry landed (older words were about the old one)
+  let reloadStart = 0, playlistDone = true; // where the retried clip starts; its playlist is back
+  let lastCurrent = -1, playingTicks = 0;   // the clip has been playing for this many ticks in a row
   // UNPLAYABLE with the ad-blocker help page as the way out (a captcha is not us).
   function refused(ps) {
     if (!ps || ps.status !== "UNPLAYABLE") return false;
@@ -461,31 +567,72 @@
       return !!(st && st.isBuffering) && stats.buffer_health_seconds === "0.00 s" && stats.resolution === "0x0";
     } catch { return false; }
   }
-  function reloadClip(mp, resp) {
+  // The answer to a shaped request: its tracking URL carries the "#reloadxhr" referer.
+  function shapedAnswer(resp) {
+    try { const u = resp.playbackTracking.videostatsPlaybackUrl.baseUrl; return typeof u === "string" && u.indexOf("reloadxhr") !== -1; } catch { return false; }
+  }
+  // youtube_skip (isolated world) starts its stall clock again on every retry: its reload and the six-hour
+  // bypass are for a clip that still does not start once these retries are over, not for one being retried.
+  function announceRetry() {
+    try { if (NativeEvent && nativeDispatch) Reflect.apply(nativeDispatch, document, [new NativeEvent("tbab-yt-retry")]); } catch {}
+  }
+  // The clip again, in place, with the first shape of `next`. Nothing is counted when it cannot be retried.
+  function retry(mp, resp, next) {
     const id = resp && resp.videoDetails && resp.videoDetails.videoId;
-    if (!id || typeof mp.loadVideoById !== "function") return;
+    if (!id || typeof mp.loadVideoById !== "function") return false;
     let start = 0;
     try {
       const cfg = resp.playerConfig && resp.playerConfig.playbackStartConfig;
       start = (cfg && Number(cfg.startSeconds)) || parseInt(new URLSearchParams(location.search).get("t"), 10) || 0;
     } catch {}
-    reloadedFrom = resp; reloadedAt = Date.now();
+    left = next; shape = next[0] || ""; retries++;
+    reloadedFrom = resp; reloadedAt = Date.now(); reloadStart = start; playlistDone = false;
+    stuckSince = 0; signalAt = 0; playingTicks = 0;
+    armSignals();
+    announceRetry();
     try { mp.loadVideoById(id, start); } catch {}
+    return true;
+  }
+  // loadVideoById drops the playlist the clip was played from: once the retried clip runs, it is put back
+  // (as in the uBO quick fix) — otherwise the next clip of the list never comes.
+  function restorePlaylist(mp, prog) {
+    if (playlistDone || !prog) return;
+    const ran = prog.current - reloadStart;
+    if (!(ran > 0.1)) return;
+    playlistDone = true;
+    if (ran >= 5) return;
+    try {
+      if (location.search.indexOf("list=") === -1 || typeof mp.getPlaylistId !== "function" || mp.getPlaylistId() !== null) return;
+      const mgr = typeof document.querySelector === "function" ? document.querySelector("yt-playlist-manager") : null;
+      const data = mgr && typeof mgr.getPlaylistData === "function" ? mgr.getPlaylistData() : null;
+      if (!data) return;
+      if (typeof mgr.setPlaylistData === "function") mgr.setPlaylistData(data);
+      if (typeof mgr.setPlayerPlaybackControlData === "function") mgr.setPlayerPlaybackControlData({ playlistPanelRenderer: data });
+    } catch {}
   }
   function guard() {
-    if (!onWatch()) { nextShape = 0; return; } // a new clip from a list starts the rotation again; the shape stays
+    if (!onWatch()) { left = null; disarmSignals(); return; } // a new watch page starts the list again; the shape stays (as uBO's)
     const mp = document.getElementById("movie_player");
     if (!mp || typeof mp.getPlayerResponse !== "function" || premium()) return;
     let resp = null, stats = null, prog = null;
     try { resp = mp.getPlayerResponse(); } catch {}
     try { stats = mp.getStatsForNerds ? mp.getStatsForNerds() : null; } catch {}
+    try { prog = mp.getProgressState ? mp.getProgressState() : null; } catch {}
     const id = (resp && resp.videoDetails && resp.videoDetails.videoId) || "";
-    if (id && id !== clip) { clip = id; retries = 0; stuckSince = 0; } // a gap while reloading is not a new clip
+    // a new clip (a gap while reloading is not one): its own retries and its own list of shapes
+    if (id && id !== clip) { clip = id; retries = 0; stuckSince = 0; left = null; playlistDone = true; playingTicks = 0; armSignals(); }
+    // the answer to the last retry has landed: what the player said before it was about the old one
+    if (reloadedFrom && resp && resp !== reloadedFrom) { reloadedFrom = null; answerAt = Date.now(); }
+    // the clip plays (2 s of progress with a picture): the natives go back
+    const cur = prog && typeof prog.current === "number" ? prog.current : -1;
+    if (stats && stats.resolution && stats.resolution !== "0x0" && cur > lastCurrent + 0.1 && lastCurrent >= 0) playingTicks++;
+    else playingTicks = 0;
+    lastCurrent = cur;
+    if (playingTicks >= 4) disarmSignals();
     // 1) an ad stitched into the stream: jump to its end
     if (stats && typeof stats.debug_info === "string" && stats.debug_info.indexOf("SSAP, AD") === 0) {
       stuckSince = 0;
       if (!ssapOn) return;
-      try { prog = mp.getProgressState ? mp.getProgressState() : null; } catch {}
       const len = Number(resp && resp.videoDetails && resp.videoDetails.lengthSeconds) || 0;
       const now = Date.now();
       // never when the "ad" duration is the clip's own (that jump would end the clip)
@@ -495,47 +642,66 @@
       }
       return;
     }
-    if (!shapesOn || retries >= MAX_RETRIES || nextShape > SHAPES.length) return; // every shape tried, the last time as sent
+    restorePlaylist(mp, prog);
+    if (!shapesOn || retries >= MAX_RETRIES) return;
+    if (left === null) left = (onEmbed() ? EMBED_SHAPES : WATCH_SHAPES).slice();
     // the clip was just retried: the player still holds the old answer until the new one lands
     if (reloadedFrom && Date.now() - reloadedAt < SETTLE_MS && (resp === reloadedFrom || !resp)) return;
-    // 2) refused: the next shape (a refusal moves past the first one, as uBO's does)
+    // 2) refused: the next shape (a refusal moves past the first one, as uBO's does); once the list is
+    //    empty the clip goes out once more as built, then nothing
     if (resp && refused(resp.playabilityStatus)) {
-      retries++; stuckSince = 0;
-      if (nextShape === 0) nextShape = 1;
-      shape = SHAPES[nextShape++] || "";
-      reloadClip(mp, resp);
+      if (left.length) retry(mp, resp, left.slice(1));
       return;
     }
-    // 3) stuck at 0x0 with an empty buffer for 10 s, visible tab, online
+    // 3) stuck at 0x0 with an empty buffer (visible tab, online): after a second when the player has said so
+    //    since the last answer landed, after STUCK_MS when it has not
     let online = true;
     try { online = navigator.onLine !== false; } catch {}
-    if (stats && stuck(mp, stats) && online && document.visibilityState !== "hidden") {
-      const now = Date.now();
-      if (!stuckSince) { stuckSince = now; return; }
-      if (now - stuckSince < STUCK_MS) return;
-      stuckSince = 0; retries++;
-      shape = SHAPES[nextShape++] || "";
-      reloadClip(mp, resp);
-    } else stuckSince = 0;
+    if (!stats || !stuck(mp, stats) || !online || document.visibilityState === "hidden") { stuckSince = 0; return; }
+    const now = Date.now();
+    if (!stuckSince) stuckSince = now;
+    const told = signalAt > 0 && signalAt >= answerAt && now - signalAt < SIGNAL_MS;
+    if (now - stuckSince < (told ? TOLD_MS : STUCK_MS)) return;
+    // the shape in force got stuck too → the next one
+    const next = left.length && (shapedAnswer(resp) || (shape && shape === left[0])) ? left.slice(1) : left;
+    // every shape tried: requests go out as built again, no further retry here — youtube_skip's stall clock,
+    // no longer restarted, decides (a page reload, then the bypass)
+    if (!next.length) { left = next; shape = ""; stuckSince = 0; signalAt = 0; return; }
+    retry(mp, resp, next);
   }
   if (WWW && nativeSetInterval) {
     try { nativeSetInterval.call(window, () => { try { guard(); } catch {} }, 500); } catch {}
   }
 
-  // The first feed arrives inline (var ytInitialData = …): prune it as it is assigned.
-  // ytInitialPlayerResponse is handled by the uBO set-constant scriptlets for the host.
-  try {
-    if (!Object.getOwnPropertyDescriptor(window, "ytInitialData")) {
-      // One-shot: the first assignment prunes and turns it back into a plain data
-      // property (a lingering accessor would itself be a tell).
-      Object.defineProperty(window, "ytInitialData", {
+  // ---- the inline first answers of a full page load ---------------------------
+  // var ytInitialData = … and var ytInitialPlayerResponse = … arrive inline; each is cleaned as it is
+  // assigned, then turned back into a plain data property (a lingering accessor would itself be a tell).
+  // The player answer used to be left to the uBO set-constant rules for the host, which never ran there (6.1.1:
+  // a reload played the ad). Where such a rule got there first, it keeps it. A page that never assigns one (no
+  // player on it) keeps no accessor of ours: an untouched trap is removed at DOMContentLoaded.
+  const traps = [];
+  function cleanOnAssign(name, clean) {
+    try {
+      if (Object.getOwnPropertyDescriptor(window, name)) return;
+      const trap = {
         configurable: true, enumerable: true,
         get() { return undefined; },
         set(v) {
-          try { pruneRenderers(v, 0); } catch {}
-          try { Object.defineProperty(window, "ytInitialData", { value: v, writable: true, enumerable: true, configurable: true }); } catch {}
+          try { clean(v); } catch {}
+          try { Object.defineProperty(window, name, { value: v, writable: true, enumerable: true, configurable: true }); } catch {}
         },
-      });
-    }
+      };
+      Object.defineProperty(window, name, trap);
+      traps.push([name, trap.get]);
+    } catch {}
+  }
+  cleanOnAssign("ytInitialData", (v) => pruneRenderers(v, 0));
+  cleanOnAssign("ytInitialPlayerResponse", (v) => renameInObject(v, 0));
+  try {
+    document.addEventListener("DOMContentLoaded", () => {
+      for (const [name, get] of traps) {
+        try { const d = Object.getOwnPropertyDescriptor(window, name); if (d && d.get === get) delete window[name]; } catch {}
+      }
+    }, { once: true, capture: true });
   } catch {}
 })();
