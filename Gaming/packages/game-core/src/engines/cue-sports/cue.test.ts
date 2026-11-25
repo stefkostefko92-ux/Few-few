@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { SeededRng } from "../../kernel/rng.js";
 import { ball, runShot, TABLE, type Ball, type ShotResult } from "@aso/shared";
@@ -52,6 +53,16 @@ describe("billiard physics", () => {
     const res = runShot(rackNineBall(), { angle: 0, power: 1 });
     expect(res.firstContact).not.toBeNull();
   });
+
+  it("uses only operations every JS engine rounds the same (server ≡ browser)", () => {
+    // Math.sin/cos/atan2/hypot/… are engine-approximated: Node 22 and Chrome
+    // 153 disagreed on the last bit of cos/sin, so the browser's replay of a
+    // shot ended a few ulps away from the server's resting balls.
+    const src = readFileSync(new URL("../../../../shared/src/cue.ts", import.meta.url), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/.*$/gm, "");
+    expect(src.match(/Math\.(?!sqrt\b|abs\b|min\b|max\b|round\b|floor\b|ceil\b|trunc\b|sign\b)\w+/g)).toBeNull();
+  });
 });
 
 describe.each([
@@ -80,6 +91,24 @@ describe.each([
     }
     // With real aiming the best shot pots a meaningful share over 80 attempts.
     expect(minSeen).toBeLessThan(start - 1);
+  });
+
+  it("отхвърля удар за стара маса (shotNo) — двоен клик не играе втори удар", () => {
+    const s0 = engine.init({ seats: 2 }, rng()) as CueStateX;
+    const shot = { ...engine.legalActions(s0, 0)[0]!, shotNo: 0 } as CueActionX;
+    expect(engine.validate!(s0, 0, shot)).toBe(true); // за текущата маса
+    expect(engine.validate!(s0, 0, { ...shot, shotNo: 1 } as CueActionX)).toBe(false);
+    expect(engine.validate!(s0, 0, { ...shot, shotNo: "0" } as unknown as CueActionX)).toBe(false);
+    // Удар, при който стрелецът продължава: повторното изпращане на СЪЩИЯ
+    // удар (shotNo 3) вече е за стара маса и се отхвърля.
+    const s3: CueStateX = { ...s0, shotNo: 3, ballInHand: false, turn: 0 };
+    const again = { type: "SHOOT", angle: 0.3, power: 0.5, shotNo: 3 } as CueActionX;
+    expect(engine.validate!(s3, 0, again)).toBe(true);
+    const next = engine.reduce(s3, again, rng()).state as CueStateX;
+    expect(next.shotNo).toBe(4);
+    expect(engine.validate!({ ...next, turn: 0, phase: "PLAY" }, 0, again)).toBe(false);
+    // Без shotNo (бот / стар клиент) — поведението е непроменено.
+    expect(engine.validate!(s3, 0, { type: "SHOOT", angle: 0.3, power: 0.5 })).toBe(true);
   });
 
   it("plays many bot shots without throwing and conserves the ball set", () => {

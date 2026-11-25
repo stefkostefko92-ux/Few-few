@@ -22,14 +22,32 @@ export function drawGalaxyPhoto(ctx, W, H, cx, cy, R, img, cleanImg, ready, { zo
     ctx.save();
     ctx.translate(cx - (reducedMotion ? 0 : gx) * R * 0.045, cy - (reducedMotion ? 0 : gy) * R * 0.045);
     if (!reducedMotion) ctx.rotate(gal * 0.9);
+    // Обсидиан грейд на снимката (собственика, 2026-11-14): десатурация + притъмняване + контраст,
+    // за да напусне NGC 4414 своето виолетово-топло и да чете като студен обсидиан. ctx.filter е
+    // част от запазеното състояние — нулира се на restore(); ако средата не го поддържа, се пренебрегва.
+    ctx.filter = "saturate(0.5) brightness(0.84) contrast(1.08)";
     ctx.drawImage(src, -dw / 2, -dh / 2, dw, dh);
     ctx.restore();
   }
-  ctx.fillStyle = "rgba(0,2,10,.32)";
+  // Пренасочване на тона към студен обсидиан: blend „color" взема ХРОМАТА на запълването, но пази
+  // ЛУМИНАНЦИЯТА на снимката — така виолетово-топлото на NGC 4414 става студено синьо-тюркоазено,
+  // без да зависи от поддръжката на ctx.filter (по-надеждно от десатурацията по-горе). После воал
+  // и притъмняване за дълбочина.
+  ctx.globalCompositeOperation = "color";
+  ctx.globalAlpha = 0.62;
+  ctx.fillStyle = "#0b2a3e";
   ctx.fillRect(0, 0, W, H);
-  const v = ctx.createRadialGradient(cx, cy, R * 0.14, cx, cy, Math.max(W, H) * 0.72);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = "rgba(7,16,28,.26)";
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = "rgba(0,2,10,.42)";
+  ctx.fillRect(0, 0, W, H);
+  // Кинематографична виньетка (3 спирки) — по-дълбока и по-студена за обсидиановата рамка.
+  const v = ctx.createRadialGradient(cx, cy, R * 0.10, cx, cy, Math.max(W, H) * 0.74);
   v.addColorStop(0, "rgba(0,0,0,0)");
-  v.addColorStop(1, "rgba(0,1,6,.74)");
+  v.addColorStop(0.62, "rgba(1,3,10,.34)");
+  v.addColorStop(1, "rgba(0,1,7,.88)");
   ctx.fillStyle = v;
   ctx.fillRect(0, 0, W, H);
 }

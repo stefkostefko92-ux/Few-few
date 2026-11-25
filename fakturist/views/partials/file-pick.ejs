@@ -1,0 +1,13 @@
+<%#
+  Полето за файл на езика на страницата: родният бутон е на езика на браузъра („Choose File / No file chosen“).
+  Полето остава истинско — с клавиатура, `required` и `accept`; надписът е наш, името на избрания файл го пише
+  public/js/app.js (без JS — само надписът). Параметри: name, accept, label, hint, hintId.
+-%>
+<label class="file-pick"><span><%= label %></span>
+  <span class="file-pick-row">
+    <input type="file" class="sr-only" name="<%= name %>" accept="<%= accept %>" required<%- locals.hintId ? ' aria-describedby="' + hintId + '"' : '' %>>
+    <span class="button-secondary file-pick-button" aria-hidden="true"><%= t('app.file.choose') %></span>
+    <span class="file-pick-name" aria-hidden="true" data-file-name><%= t('app.file.none') %></span>
+  </span>
+  <% if (locals.hint) { %><span class="hint"<%- locals.hintId ? ' id="' + hintId + '"' : '' %>><%= hint %></span><% } %>
+</label>

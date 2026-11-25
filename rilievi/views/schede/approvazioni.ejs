@@ -1,0 +1,18 @@
+<%# Le schede inviate per approvazione (routes/schede-approvazione.ts), le più vecchie prima. %><%- include('../partials/top', { titleKey: 'flusso.approvazione.elenco' }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('flusso.approvazione.elenco') %></h1>
+    <p class="page-head__sub"><%= t('flusso.approvazione.elencoSub') %></p>
+  </div>
+</div>
+<div class="stack-gap">
+  <% if (righe.length === 0) { %><p class="muted"><%= t('flusso.approvazione.nessuna') %></p><% } else { %>
+  <ul class="elenco-semplice" role="list">
+    <% for (const r of righe) { %><li>
+      <span><a href="/schede/<%= r.id %>"><strong><%= r.indirizzo || r.matricola || r.numeroImpianto || r.id %></strong></a><% if (r.matricola) { %> · <%= r.matricola %><% } %> · <%= r.azienda.name %></span>
+      <span class="muted"><%= t('flusso.approvazione.inviataDa', { nome: r.updatedBy ? r.updatedBy.name : '—', data: fmt.dateTime(r.updatedAt) }) %></span>
+    </li>
+    <% } %>
+  </ul><% } %>
+</div>
+<%- include('../partials/bottom') %>

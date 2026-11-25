@@ -17,15 +17,13 @@ export default function robots(): MetadataRoute.Robots {
   const disallow = [
     '/api/',
     '/*/dashboard',
-    '/*/login',
-    '/*/register',
     '/*/admin',
+    // login/register/forgot/reset НЕ са тук: имат noindex, а ботът трябва да го прочете.
     '/u/*/l/', // click redirect-и — не са съдържание
-    '/u/*/delivery',
+    '/u/*/p/', // клик по продукт → линкът за плащане на създателя
     '/u/*/subscribe/', // потвърждение на абонамент (GET с токен)
     '/u/*/unsubscribe', // отписване (GET с токен) — ботове да не го задействат
     '/s/', // съкратени линкове (302 redirect, без HTML/meta)
-    '/buyer/', // magic-link вход на купувача (токен в URL)
     '/d/', // собствените домейни се индексират на своя host, не тук
   ];
   return {

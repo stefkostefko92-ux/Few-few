@@ -64,6 +64,26 @@ print/, public/      print assets and static files
 - **SEO/GEO/AEO** is first-class: structured JSON-LD graph in `@/lib/seo`, plus
   `robots.txt`, `sitemap.xml`, `llms.txt`, IndexNow.
 - **Escape all user-generated content** (see `markdown.ts`, `linkify.ts`).
+- **Mail (Brevo SMTP) from the admin panel** — `/admin/poshta` (ADMIN only), modelled on rilievi #32:
+  `src/lib/mail-config-core.ts` (pure: strict form — hostname only in production, ports 587/2525/465,
+  no control chars/header injection; AES-256-GCM key sealed with an HKDF key from `AUTH_SECRET`;
+  resolution panel → `SMTP_*` env → off), `mail-config.ts` (SiteSetting `mail_*`, 20 s cache),
+  `admin/mail-actions.ts` (save needs the admin's own password; key write-only, never shown/audited;
+  test mail to the admin, only the error code). Rotating `AUTH_SECRET` makes the stored key unreadable →
+  mail falls back to `.env` and the page asks for the key again. Tests: `mail-config.test.ts`.
+- **Admin navigation** is task-oriented and lives in `src/lib/admin/nav.ts` (groups: Входящи,
+  Публикации от хората, Справочник, Новини и известия, Анализ, Сайт и настройки). A new admin page or
+  resource must be added there — `admin-nav.test.ts` fails if a resource is missing or a page doesn't exist.
+- **Forwarding from the panel** („Изпрати сега“): `src/lib/forward-core.ts` builds the mail from the DB
+  record (same text as the public auto-forward); complaints include the sender's contacts, dump reports
+  never do (reporter data is internal only). Actions: `admin/forward-actions.ts`.
+- **Sessions carry a password stamp** (`pv` = HMAC(`AUTH_SECRET`, passwordHash), `account-core.ts`):
+  any password change revokes every other session at once. `/admin/profil` — own email/password with the
+  current password. Seed never creates a second ADMIN from `.env` once an admin exists
+  (`prisma/admin-seed-core.ts`); `ADMIN_PASSWORD` is needed only for the very first admin.
+- **React #418 patch:** `npm run build`/`dev` first run `scripts/patch-react-replay.mjs`
+  (React 19.3 hydration-replay fix inserted into Next's bundled react-dom; fails the build
+  if the spot is missing). Remove it once Next ships React ≥ 19.3.
 
 ## Deployment
 

@@ -1,0 +1,59 @@
+{
+  "name": "lovets",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Ловец by Carbon Stealth VCC — вътрешен инструмент за търсене на B2B клиенти в България и Италия с проверка на допустимостта на всеки контакт.",
+  "license": "UNLICENSED",
+  "author": "Carbon Stealth VCC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stefkostefko92-ux/Few-few.git",
+    "directory": "lovets"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "Carbon Stealth",
+    "B2B търсене на клиенти",
+    "ePrivacy съответствие",
+    "Registro pubblico delle opposizioni",
+    "регистър на КЗП",
+    "вътрешен CRM"
+  ],
+  "scripts": {
+    "dev": "tsx watch --env-file=.env src/index.ts",
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json",
+    "lint": "prettier --check .",
+    "format": "prettier --write .",
+    "test": "tsx --test tests/*.test.ts",
+    "gate": "prisma generate && npm run lint && npm run typecheck && npm test && npm run build",
+    "prisma:migrate": "prisma migrate deploy",
+    "owner:create": "node dist/cli/create-owner.js",
+    "test:integration": "tsx --test --test-concurrency=1 tests/integration/*.test.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "argon2": "^0.45.2",
+    "cookie-parser": "^1.4.7",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.5",
+    "helmet": "^8.3.0",
+    "jose": "^6.2.18",
+    "pino": "^10.4.0",
+    "pino-http": "^11.0.0",
+    "prisma": "^6.19.3",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.20.5",
+    "prettier": "^3.10.1",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3"
+  }
+}

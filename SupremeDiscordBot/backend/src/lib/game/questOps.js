@@ -107,29 +107,36 @@ export async function contribute(serverId, type, entries, now = new Date()) {
  * свободен слот. Идемпотентно по rewardedAt (условен updateMany).
  */
 export async function rewardQuest(quest) {
-  const claim = await prisma.serverQuest.updateMany({ where: { id: quest.id, rewardedAt: null }, data: { rewardedAt: new Date() } });
-  if (claim.count !== 1) return { rewards: [], chest: null, alreadyRewarded: true };
-  const contributions = (await prisma.questContribution.findMany({ where: { questId: quest.id }, orderBy: { amount: "desc" } })) || [];
-  const { rewards, topUserId } = splitRewards(contributions, quest.rewardSparks);
-  for (const r of rewards) {
-    await ensureProgress(prisma, quest.serverId, r.userId);
-    await prisma.memberProgress.update({ where: { serverId_userId: { serverId: quest.serverId, userId: r.userId } }, data: { sparks: { increment: r.sparks } } });
-  }
-  let chest = null;
-  if (topUserId) {
-    const tier = await getServerTier(quest.serverId);
-    const owned = await prisma.memberCompanion.count({ where: { serverId: quest.serverId, userId: topUserId } });
-    let companion = null;
-    if (owned < tier.limits.companionSlots) {
-      const season = await getCurrentSeason();
-      const c = pickSpawn({ isPremium: !!tier.isPremium, season });
-      const pc = publicCompanion(c, 1, season);
-      await prisma.memberCompanion.create({ data: { serverId: quest.serverId, userId: topUserId, companionId: c.id, seasonId: pc.seasonId } });
-      companion = pc;
+  // Четенията, които не зависят от транзакцията, са ПРЕДИ нея (кеширани са).
+  const tier = await getServerTier(quest.serverId);
+  const season = await getCurrentSeason();
+  // И7: заявката (rewardedAt) и ВСИЧКИ начисления са в ЕДНА транзакция. Преди това
+  // claim-ът ставаше първо, а цикълът с `update` след него: срив по средата
+  // оставяше част от хората без искри завинаги (claim-ът вече е взет — fail-open).
+  // Хвърлена грешка вътре връща и claim-а, така че наградата може да се опита пак.
+  return prisma.$transaction(async (tx) => {
+    const claim = await tx.serverQuest.updateMany({ where: { id: quest.id, rewardedAt: null }, data: { rewardedAt: new Date() } });
+    if (claim.count !== 1) return { rewards: [], chest: null, alreadyRewarded: true };
+    const contributions = (await tx.questContribution.findMany({ where: { questId: quest.id }, orderBy: { amount: "desc" } })) || [];
+    const { rewards, topUserId } = splitRewards(contributions, quest.rewardSparks);
+    for (const r of rewards) {
+      await ensureProgress(tx, quest.serverId, r.userId);
+      await tx.memberProgress.update({ where: { serverId_userId: { serverId: quest.serverId, userId: r.userId } }, data: { sparks: { increment: r.sparks } } });
     }
-    chest = { userId: topUserId, sparks: rewards.find((r) => r.userId === topUserId)?.sparks || 0, companion };
-  }
-  return { rewards, chest };
+    let chest = null;
+    if (topUserId) {
+      const owned = await tx.memberCompanion.count({ where: { serverId: quest.serverId, userId: topUserId } });
+      let companion = null;
+      if (owned < tier.limits.companionSlots) {
+        const c = pickSpawn({ isPremium: !!tier.isPremium, season });
+        const pc = publicCompanion(c, 1, season);
+        await tx.memberCompanion.create({ data: { serverId: quest.serverId, userId: topUserId, companionId: c.id, seasonId: pc.seasonId } });
+        companion = pc;
+      }
+      chest = { userId: topUserId, sparks: rewards.find((r) => r.userId === topUserId)?.sparks || 0, companion };
+    }
+    return { rewards, chest };
+  });
 }
 
 /** Живите куестове на сървър с приносa на един член (за /quest). */

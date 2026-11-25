@@ -1,12 +1,19 @@
+import { translator } from './i18n.js';
+
 // Board stock, commercial decors and RAL colours. Catalog data is registered at runtime (registerDecors/registerRal);
 // the four built-in decors keep the engine usable without a catalog.
 
+// density: kg/m³, usual values for the board (door weight → number of hinges, BOM weights): particleboard ≈ 650 at
+// 16–18 mm and ≈ 620 at 25 mm, MDF ≈ 710–740, HDF ≈ 850. E: modulus in bending, N/mm², the EN 312 P2 minimum by
+// thickness (1600 for >13–20 mm, 1500 for >20–25 mm); for MDF the P2 value as well, on the safe side (EN 622-5 gives
+// more), none for the 3 mm HDF backs, which carry no shelf. grade: the board class — EN 312 P2 (interior fitments, dry
+// conditions; P3 is for humid ones), MDF and HDF to EN 622-5; mr: moisture-resistant MDF (MDF.H), none in the stock.
 export const STOCK = {
-  pb18: { id: 'pb18', name: 'ЛПДЧ', thickness: 18, sheet: [2800, 2070] },
-  pb16: { id: 'pb16', name: 'ЛПДЧ', thickness: 16, sheet: [2800, 2070] },
-  pb25: { id: 'pb25', name: 'ЛПДЧ', thickness: 25, sheet: [2800, 2070] },
-  mdf18: { id: 'mdf18', name: 'МДФ за боядисване', thickness: 18, sheet: [2800, 2070], painted: true },
-  hdf3: { id: 'hdf3', name: 'HDF', thickness: 3, sheet: [2800, 2070] },
+  pb18: { id: 'pb18', name: 'ЛПДЧ', thickness: 18, sheet: [2800, 2070], density: 650, E: 1600, grade: 'P2' },
+  pb16: { id: 'pb16', name: 'ЛПДЧ', thickness: 16, sheet: [2800, 2070], density: 650, E: 1600, grade: 'P2' },
+  pb25: { id: 'pb25', name: 'ЛПДЧ', thickness: 25, sheet: [2800, 2070], density: 620, E: 1500, grade: 'P2' },
+  mdf18: { id: 'mdf18', name: 'МДФ за боядисване', thickness: 18, sheet: [2800, 2070], painted: true, density: 720, E: 1600, grade: 'MDF', mr: false },
+  hdf3: { id: 'hdf3', name: 'HDF', thickness: 3, sheet: [2800, 2070], density: 850, grade: 'HDF' },
 };
 
 const BASE_MANUFACTURER = 'Основни';
@@ -57,10 +64,13 @@ export const ralList = () => [...rals.values()];
 export const hasGrain = (id) => decor(id).category === 'wood';
 // one of the built-in decors: their code is only a short name, not a catalog code
 export const isBaseDecor = (d) => d?.manufacturer === BASE_MANUFACTURER;
-export const decorName = (id) => {
+// t: the model's language (i18n.js); the built-in decors and the stock are named in it, the catalogue's as the shop has them
+export const decorName = (id, t = translator('bg')) => {
   const d = decor(id);
-  return isBaseDecor(d) || d.manufacturer === 'RAL' ? d.name : `${d.manufacturer} ${d.code} ${d.name}`;
+  if (isBaseDecor(d)) return t(`decor.${d.id}`);
+  return d.manufacturer === 'RAL' ? d.name : `${d.manufacturer} ${d.code} ${d.name}`;
 };
+export const stockName = (id, t = translator('bg')) => t(`stock.${id}`);
 
 // Front material: laminated board in a decor (edge banded) or MDF lacquered in a RAL colour (no edge band).
 export function frontStock(spec) {

@@ -31,12 +31,11 @@
 <meta name="twitter:image" content="https://evanita-bg.com/images/og.jpg" />
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400;1,500&family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" href="/fonts/Onest-normal-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/CormorantGaramond-normal-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
 
 <link rel="preload" href="images/evelina1.webp" as="image" type="image/webp" fetchpriority="high">
-<link rel="stylesheet" href="css/style.css?v=20260810c">
+<link rel="stylesheet" href="css/style.css?v=20261124a">
 <noscript><style>.splash{display:none}</style></noscript>
 
 <script type="application/ld+json">
@@ -311,7 +310,7 @@
       <div class="loc-block reveal d3"><h4>фирма</h4><p>Еванита Спорт ЕООД</p></div>
       <div class="loc-block reveal"><h4>паркинг</h4><p>Безплатен, пред входа</p></div>
     </div>
-    <div class="loc-map reveal d1"><iframe title="Карта — Evanita Sport, ул. Рилски Езера 1, Дупница" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?q=42.2597447,23.1238442&amp;z=17&amp;output=embed"></iframe></div>
+    <div class="loc-map reveal d1"><div class="map-consent"><p>Картата се зарежда от Google едва когато я поискате — тогава Google получава IP адреса ви и може да постави бисквитки. <a href="/poveritelnost.html#karta">Повече</a></p><button type="button" class="btn map-load" data-map-src="https://maps.google.com/maps?q=42.2597447,23.1238442&amp;z=17&amp;output=embed" data-map-title="Карта — Evanita Sport, ул. Рилски Езера 1, Дупница">Покажи картата</button><a class="map-open" href="https://www.google.com/maps/search/?api=1&amp;query=42.2597447,23.1238442" target="_blank" rel="noopener">Отвори в Google Maps</a></div></div>
   </div>
 </section>
 
@@ -330,11 +329,11 @@
   <div class="foot-grid">
     <div class="col"><img src="images/logo_full.png" loading="lazy" decoding="async" alt="Evanita Sport" class="foot-logo" width="400" height="400" /><div class="foot-tag">Evanita Sport (Еванита) — дамско студио за Kangoo Jumps и силови тренировки в Дупница.</div><a href="https://www.facebook.com/share/1HTagjNPXA/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:9px 18px 9px 14px;background:var(--cream);border:1px solid var(--line);border-radius:999px;font-size:12px;color:var(--wine-deep);font-weight:500;transition:all .3s"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a></div>
     <div class="col"><h4>Навигация</h4><a href="#about">Студио</a><a href="#programs">Програми</a><a href="#evelina">Евелина</a><a href="#gallery">Галерия</a><a href="#schedule">График</a></div>
-    <div class="col"><h4>Полезно</h4><a href="#faq">Въпроси</a><a href="#first-visit">Първо посещение</a><a href="#pricing">Цени</a></div>
+    <div class="col"><h4>Полезно</h4><a href="#faq">Въпроси</a><a href="#first-visit">Първо посещение</a><a href="#pricing">Цени</a><a href="/poveritelnost.html">Поверителност</a></div>
     <div class="col"><h4>Контакт</h4><p>ул. Рилски Езера 1, 2600 Дупница</p><a href="tel:+359885045112">+359 88 504 5112</a><a href="viber://chat?number=%2B359885045112">Viber</a><a href="https://www.facebook.com/share/1HTagjNPXA/" target="_blank" rel="noopener">Facebook</a></div>
   </div>
   <div class="foot-bottom">
-    <span class="copy">&copy; 2026 Еванита Спорт ЕООД</span>
+    <span class="copy">&copy; 2026 Еванита Спорт ЕООД · ЕИК 206109065</span>
     <a class="foot-credit" href="https://carbonstealth.eu" target="_blank" rel="noopener">
       <span class="cs-logo">CS</span>
       <span class="cs-text">
@@ -351,6 +350,6 @@
   <a class="sb-btn sb-book" href="#schedule">График</a>
 </div>
 
-<script src="js/main.js?v=20260810c" defer></script>
+<script src="js/main.js?v=20261124a" defer></script>
 </body>
 </html>

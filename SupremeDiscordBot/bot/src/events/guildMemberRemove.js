@@ -4,7 +4,24 @@
 
 import api from "../utils/api.js";
 import { logServerEvent, fetchRemovalCause } from "../utils/serverEventLog.js";
-import { DANGER, WARNING } from "../utils/colors.js";
+import { WARNING } from "../utils/colors.js";
+import { closeTicket } from "../utils/ticketLifecycle.js";
+import { t, resolveLangForGuild } from "../i18n/index.js";
+
+const AUDIT_RETRY_MS = 1000;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// В4: банът/изгонването е „наказание“ — снимка на ролите след него би го самоанулирала.
+// Записът в одитния дневник идва със закъснение (и guildMemberRemove обикновено е по-бърз от него),
+// затова при липса изчакваме ~1 s и проверяваме пак, а накрая питаме и списъка с банове.
+async function isBanned(guild, userId) {
+  try {
+    const b = await guild.bans.fetch(userId);
+    return !!b;
+  } catch {
+    return false; // 10026 Unknown Ban (не е баннат) или не можем да разберем → пазим както преди
+  }
+}
 
 export default {
   name: "guildMemberRemove",
@@ -24,7 +41,15 @@ export default {
     try {
       const targetTag = member.user?.tag || member.user?.username || null;
       // ЕДНА заявка към audit log за двете причини (виж fetchRemovalCause).
-      const cause = await fetchRemovalCause(member.guild, member.id, 5000);
+      let cause = await fetchRemovalCause(member.guild, member.id, 5000);
+      // В4: записът още липсва, а има какво да се снима → второ четене след ~1 s; и ако пак мълчи —
+      // списъкът с банове (guild.bans.fetch). Частичен член няма роли, не плащаме за проверката.
+      const worthChecking = !member.partial && [...member.roles.cache.values()].some((r) => r.id !== member.guild.id && !r.managed);
+      if (!cause && worthChecking) {
+        await sleep(AUDIT_RETRY_MS);
+        cause = await fetchRemovalCause(member.guild, member.id, 5000 + AUDIT_RETRY_MS);
+        if (!cause && (await isBanned(member.guild, member.id))) cause = { kind: "ban", executorId: null, executorTag: null, reason: null };
+      }
       kick = cause?.kind === "kick" ? cause : null;
       ban = cause?.kind === "ban" ? cause : null;
       if (kick) {
@@ -64,6 +89,14 @@ export default {
       console.log(
         `[sticky-roles] ${member.id} напусна принудително (${kick ? "kick" : "ban"}) — ролите НЕ се пазят`,
       );
+      // И старата снимка си отива: ако е останала от предишно доброволно напускане
+      // (връщането не е станало или изтриването ѝ е паднало), след разбан ролите
+      // щяха да се върнат (червен екип, 13.11.2026).
+      await api.delete(`/bot/member-roles/${member.guild.id}/${member.id}`).catch(() => {});
+    } else if (member.partial) {
+      // В5: частичен член (извън кеша) няма роли — празна снимка би изтрила истинската.
+      // Тикетът и логът по-долу/по-горе продължават да работят.
+      console.log(`[sticky-roles] ${member.id} е частичен член (извън кеша) — снимка на роли не се прави`);
     } else try {
       const roleIds = [...member.roles.cache.values()]
         .filter((r) => r.id !== member.guild.id && !r.managed)   // @everyone има id = guild id
@@ -79,44 +112,39 @@ export default {
 
       if (!Array.isArray(tickets) || !tickets.length) return;
 
+      const lang = await resolveLangForGuild(member.guild.id);
       for (const ticket of tickets) {
         const panel = ticket.panel;
         if (!panel?.autoCloseOnLeave) continue;
 
-        // Close the ticket via backend.
-        // `.catch(() => {})` тук значеше, че провалено затваряне минава НЕЗАБЕЛЯЗАНО
-        // и въпреки това публикуваме „🔒 Ticket Auto-Closed“ в канала. Персоналът
-        // чете, че тикетът е затворен, а в базата той е отворен: брои се в
-        // лимитите, стои в таблото и никой не го поглежда пак.
-        // (Разбивача, 07.08.2026)
-        let closed = true;
+        // Т2: ЕДНОТО затваряне (utils/ticketLifecycle.js) — категория „затворени“ /
+        // заключена нишка, Reopen/Delete, транскрипт, ЛС и оценка по изчистения
+        // панел, лог, webhook. Преди: само статус в базата, каналът оставаше
+        // отворен и пишем, а известието казваше „use the buttons above“ без бутони.
+        // Провалено затваряне НЕ се маскира като успех (Разбивача, 07.08.2026):
+        // казваме го в канала, а тикетът остава отворен за ръчно затваряне.
+        let failed = false;
         try {
-          await api.post(`/bot/ticket/${ticket.id}/close`, {
-            reason: "Ticket creator left the server",
+          await closeTicket(member.client, {
+            ticketId: ticket.id,
+            guildId: member.guild.id,
+            closedById: null,
+            reason: t("tkt.autoCloseLeft", lang),
+            source: "creator_left",
+            lang,
           });
         } catch (err) {
-          closed = false;
+          failed = true;
           console.warn(`[guildMemberRemove] тикет ${ticket.id} НЕ беше затворен: ${err?.message}`);
         }
 
-        // Optionally delete the channel — keeps it if just closed
-        const ch = await member.guild.channels.fetch(ticket.channelId).catch(() => null);
-        if (ch && !closed) {
-          // Казваме истината: тикетът остава отворен и иска ръчно затваряне.
-          await ch.send({
+        if (failed && ticket.channelId) {
+          const ch = await member.guild.channels.fetch(ticket.channelId).catch(() => null);
+          await ch?.send({
             embeds: [{
-              title: "⚠️ Auto-close failed",
-              description: `<@${member.id}> has left the server, but this ticket could not be closed automatically. Please close it manually.`,
+              title: t("tkt.autoCloseFailedTitle", lang),
+              description: t("tkt.autoCloseFailedBody", lang, { user: `<@${member.id}>` }),
               color: WARNING,
-              timestamp: new Date().toISOString(),
-            }],
-          }).catch(() => {});
-        } else if (ch) {
-          await ch.send({
-            embeds: [{
-              title: "🔒 Ticket Auto-Closed",
-              description: `<@${member.id}> has left the server. This ticket has been automatically closed.`,
-              color: DANGER,
               timestamp: new Date().toISOString(),
             }],
           }).catch(() => {});

@@ -1,6 +1,7 @@
 // Nesting tab and the sheet SVG shared with the CNC simulation.
 import { $, esc, fmt, mm, pct, stat } from './dom.js';
-import { STOCK, decor, decorName, hasGrain } from '../engine/materials.js';
+import { STOCK, decor, decorName, hasGrain, stockName } from '../engine/materials.js';
+import { tx, words } from './text.js';
 
 // Readable ink on a decor colour (relative luminance).
 function inkFor(hex) {
@@ -19,7 +20,7 @@ export function sheetSvg(sh, opts = {}) {
   const d = decor(sh.decor);
   const fill = sh.stock === 'hdf3' ? '#e9e4da' : d.hex;
   const ink = inkFor(fill);
-  let s = `<svg viewBox="${-pad} ${-pad} ${sh.w + 2 * pad} ${sh.h + 2 * pad}" class="sheet" role="img" aria-label="Лист ${sh.index}: ${sh.placements.length} детайла">`;
+  let s = `<svg viewBox="${-pad} ${-pad} ${sh.w + 2 * pad} ${sh.h + 2 * pad}" class="sheet" role="img" aria-label="${esc(tx('nest.sheetAria', { n: sh.index, parts: sh.placements.length }))}">`;
   s += `<rect class="stock" x="0" y="0" width="${sh.w}" height="${sh.h}"/>`;
   if (hasGrain(sh.decor) && sh.stock !== 'hdf3')
     for (let y = 60; y < sh.h; y += 90)
@@ -28,7 +29,7 @@ export function sheetSvg(sh, opts = {}) {
     const r = sh.remnant;
     s += `<rect class="remnant" x="${r.x}" y="${flip(r.y, r.h)}" width="${r.w}" height="${r.h}"/>`;
     if (r.w > 900 && r.h > 260)
-      s += `<text class="rlabel" x="${r.x + r.w / 2}" y="${flip(r.y, r.h) + r.h / 2 + 30}" text-anchor="middle">Остатък ${r.w} × ${r.h}</text>`;
+      s += `<text class="rlabel" x="${r.x + r.w / 2}" y="${flip(r.y, r.h) + r.h / 2 + 30}" text-anchor="middle">${esc(tx('nest.offcut', { w: r.w, h: r.h }))}</text>`;
   }
   for (const p of sh.placements) {
     const y = flip(p.y, p.h);
@@ -48,7 +49,7 @@ export function sheetSvg(sh, opts = {}) {
 }
 
 export const sheetTitle = (sh) =>
-  `${STOCK[sh.stock].name} ${STOCK[sh.stock].thickness} mm\u00a0· ${sh.stock === 'hdf3' ? 'бял' : decorName(sh.decor)}`;
+  `${stockName(sh.stock, words())} ${STOCK[sh.stock].thickness} mm\u00a0· ${sh.stock === 'hdf3' ? tx('nest.white') : decorName(sh.decor, words())}`;
 
 // one sheet on full screen (fullscreen.js binds the click); the label is the page's own (editor.fullscreen)
 const fsButton = (label) =>
@@ -60,16 +61,16 @@ export function renderNesting(state, fullscreenLabel) {
   const total = sheets.reduce((a, s) => a + s.w * s.h, 0);
   const used = sheets.reduce((a, s) => a + s.yield * s.w * s.h, 0);
   $('#nest-summary').innerHTML = [
-    stat('Листове', fmt(sheets.length)),
-    stat('Оползотворяване', pct(total ? (used / total) * 100 : 0, 1)),
-    stat('Отстояние', `${spacing} mm`),
-    stat('Кант компенсиран', state.spec.bandCompensation ? 'да' : 'не'),
+    stat(tx('bom.sheets'), fmt(sheets.length)),
+    stat(tx('nest.yield'), pct(total ? (used / total) * 100 : 0, 1)),
+    stat(tx('nest.spacing'), `${spacing} mm`),
+    stat(tx('nest.compensated'), tx(state.spec.bandCompensation ? 'yes' : 'no')),
   ].join('');
   $('#nest-errors').innerHTML = errors.map((e) => `<p class="err">${esc(e)}</p>`).join('');
   $('#nest-sheets').innerHTML = sheets
     .map(
       (sh) =>
-        `<figure class="sheetcard"><figcaption><span class="ttl"><strong>Лист ${sh.index}</strong><span class="meta">${esc(sheetTitle(sh))}</span></span><span class="side"><span class="num">${sh.placements.length} дет.\u00a0· ${pct(sh.yield * 100, 1)}</span>${button}</span></figcaption>${sheetSvg(sh)}</figure>`,
+        `<figure class="sheetcard"><figcaption><span class="ttl"><strong>${esc(tx('sheet', { n: sh.index }))}</strong><span class="meta">${esc(sheetTitle(sh))}</span></span><span class="side"><span class="num">${esc(tx('nest.parts', { n: sh.placements.length }))}\u00a0· ${pct(sh.yield * 100, 1)}</span>${button}</span></figcaption>${sheetSvg(sh)}</figure>`,
     )
     .join('');
 }

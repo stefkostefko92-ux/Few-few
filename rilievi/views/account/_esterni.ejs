@@ -1,0 +1,37 @@
+<%
+  // „Accesso con Microsoft o Google“ (D1, routes/accesso-esterno.ts): свързаните акаунти — с „Scollega“;
+  // доставчиците, които фирмата е включила и още не са свързани — с паролата и „Collega“. Няма ги — нищо.
+  const est = typeof esterni !== 'undefined' && esterni ? esterni : { offerti: [], collegati: [] };
+  const nomi = { microsoft: 'Microsoft', google: 'Google' };
+  const chiave = { MICROSOFT: 'microsoft', GOOGLE: 'google' };
+  const collegati = new Map(est.collegati.map((c) => [chiave[c.fornitore], c]));
+  const elenco = ['microsoft', 'google'].filter((f) => collegati.has(f) || est.offerti.includes(f));
+%><% if (elenco.length > 0) { %>
+<section class="esterni" aria-labelledby="h-esterni">
+  <h2 class="section__title" id="h-esterni"><%= t('esterno.account.titolo') %></h2>
+  <p class="muted"><%= t('esterno.account.intro') %></p>
+  <% for (const f of elenco) { const c = collegati.get(f); %>
+  <div class="esterni__voce">
+  <h3><%= nomi[f] %></h3>
+  <% if (c) { %>
+  <p><%= c.etichetta ? t('esterno.account.collegato', { etichetta: c.etichetta, data: fmt.dayRoma(c.createdAt) }) : t('esterno.account.collegatoSenza', { data: fmt.dayRoma(c.createdAt) }) %></p>
+  <p class="muted"><%= c.usataAt ? t('esterno.account.ultimo', { fornitore: nomi[f], data: fmt.dateTime(c.usataAt) }) : t('esterno.account.mai') %></p>
+  <form method="post" action="/account/esterno/<%= f %>/scollega">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="toolbar"><button class="btn" type="submit"><%= t('esterno.account.scollega', { fornitore: nomi[f] }) %></button></div>
+  </form>
+  <% } else { %>
+  <form class="row-form" method="post" action="/account/esterno/<%= f %>/collega" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="field">
+      <label class="field__label" for="esterno-<%= f %>-password"><%= t('esterno.account.password') %></label>
+      <input class="input" id="esterno-<%= f %>-password" name="password" type="password" autocomplete="current-password" required>
+    </div>
+    <button class="btn" type="submit"><%= t('esterno.account.collega', { fornitore: nomi[f] }) %></button>
+  </form>
+  <% } %>
+  </div>
+  <% } %>
+  <p class="field__hint"><%= t('esterno.account.nota') %></p>
+</section>
+<% } %>

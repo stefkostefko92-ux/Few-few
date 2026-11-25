@@ -9,7 +9,9 @@ import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { notifyBot, notifyBotVerbose } from "../services/botNotifier.js";
 import { requirePremium, getServerTier, BASE_LIMITS, PREMIUM_LIMITS } from "../lib/premium.js";
-import { pickRandom } from "../lib/shuffle.js";
+import { drawWinners } from "../lib/giveawayDraw.js";
+import { isValidTimeZone, anchorDayOf } from "../lib/recurrence.js";
+import { firePollClosed, fireGiveawayEnded } from "../lib/webhookEvents.js";
 import { pushPollUpdate } from "../lib/pollUpdate.js";
 import { createWithinLimit } from "../lib/withinLimit.js";
 
@@ -91,15 +93,22 @@ router.post("/:serverId/polls/:id/close", requireServerAdmin, async (req, res, n
   try {
     const existing = await prisma.poll.findFirst({
       where: { id: req.params.id, serverId: req.params.serverId },
-      select: { id: true },
+      select: { id: true, closedAt: true },
     });
     if (!existing) return res.status(404).json({ error: "Poll not found" });
-    const poll = await prisma.poll.update({
-      where: { id: req.params.id },
+    // Условно затваряне: втори клик/cron в същата минута не праща второ
+    // известие и не презаписва closedAt.
+    const closed = await prisma.poll.updateMany({
+      where: { id: existing.id, serverId: req.params.serverId, closedAt: null },
       data: { closedAt: new Date() },
     });
-    // Tell bot to re-render the Discord message in its closed state (with final counts)
-    pushPollUpdate(poll.id).catch(() => {});
+    const poll = await prisma.poll.findFirst({ where: { id: existing.id, serverId: req.params.serverId } });
+    if (closed.count === 1) {
+      // Tell bot to re-render the Discord message in its closed state (with final counts)
+      pushPollUpdate(existing.id).catch(() => {});
+      // А2: изходящ webhook POLL_CLOSED
+      firePollClosed(existing.id, req.params.serverId).catch(() => {});
+    }
     res.json(poll);
   } catch (err) { next(err); }
 });
@@ -190,14 +199,20 @@ router.post("/:serverId/giveaways/:id/end", requireServerAdmin, async (req, res,
       include: { entries: true },
     });
     if (!g) return res.status(404).json({ error: "Giveaway not found" });
-    if (g.endedAt) return res.status(400).json({ error: "Already ended" });
+    if (g.endedAt) return res.status(409).json({ error: "Already ended" });
 
-    const winners = pickRandom(g.entries, g.winnerCount).map((e) => e.userId);
+    // А4: само хора, които още са в сървъра.
+    const winners = await drawWinners(g, g.entries);
 
-    const updated = await prisma.giveaway.update({
-      where: { id: g.id },
-      data: { endedAt: new Date(), winnerIds: winners },
+    // А3: условен запис (endedAt: null). Проверката по-горе и записът не са
+    // атомарни — cron-ът или `/giveaway end` в същата минута приключваха
+    // втори път с други победители и две обявявания. count 0 → 409.
+    const endedAt = new Date();
+    const won = await prisma.giveaway.updateMany({
+      where: { id: g.id, serverId: g.serverId, endedAt: null },
+      data: { endedAt, winnerIds: winners },
     });
+    if (won.count !== 1) return res.status(409).json({ error: "Already ended" });
 
     notifyBot("GIVEAWAY_ENDED", {
       // serverId е задължителен: ботът резолвва канала В РАМКИТЕ на guild-а,
@@ -206,8 +221,11 @@ router.post("/:serverId/giveaways/:id/end", requireServerAdmin, async (req, res,
       giveawayId: g.id, channelId: g.channelId, messageId: g.messageId,
       prize: g.prize, winners,
     }).catch(() => {});
+    // А2: изходящ webhook GIVEAWAY_ENDED (и от таблото, не само от командата)
+    fireGiveawayEnded(g, winners, g.entries.length).catch(() => {});
 
-    res.json({ ...updated, winners });
+    const { entries, ...rest } = g;
+    res.json({ ...rest, endedAt, winnerIds: winners, winners });
   } catch (err) { next(err); }
 });
 
@@ -218,14 +236,16 @@ router.post("/:serverId/giveaways/:id/reroll", requireServerAdmin, async (req, r
       include: { entries: true },
     });
     if (!g) return res.status(404).json({ error: "Giveaway not found" });
+    // А3: reroll само СЛЕД края — иначе обявява победители на още течаща томбола.
+    if (!g.endedAt) return res.status(409).json({ error: "Giveaway has not ended yet", code: "NOT_ENDED" });
 
-    const eligible = g.entries.filter((e) => !g.winnerIds.includes(e.userId));
-    const winners = pickRandom(eligible, g.winnerCount).map((e) => e.userId);
+    const winners = await drawWinners(g, g.entries, { reroll: true });
 
-    const updated = await prisma.giveaway.update({
-      where: { id: g.id },
+    const written = await prisma.giveaway.updateMany({
+      where: { id: g.id, serverId: g.serverId, endedAt: { not: null } },
       data: { winnerIds: winners },
     });
+    if (written.count !== 1) return res.status(409).json({ error: "Giveaway has not ended yet", code: "NOT_ENDED" });
 
     notifyBot("GIVEAWAY_ENDED", {
       // serverId е задължителен и тук — иначе ботът търси channelId през ВСИЧКИ
@@ -234,8 +254,10 @@ router.post("/:serverId/giveaways/:id/reroll", requireServerAdmin, async (req, r
       giveawayId: g.id, channelId: g.channelId, messageId: g.messageId,
       prize: g.prize, winners, reroll: true,
     }).catch(() => {});
+    fireGiveawayEnded(g, winners, g.entries.length, { reroll: true }).catch(() => {});
 
-    res.json({ ...updated, winners });
+    const { entries, ...rest } = g;
+    res.json({ ...rest, winnerIds: winners, winners });
   } catch (err) { next(err); }
 });
 
@@ -347,8 +369,13 @@ router.get("/:serverId/scheduled", requireServerAdmin, async (req, res, next) =>
 });
 
 router.post("/:serverId/scheduled", requireServerAdmin, requirePremium("automation.scheduled"), async (req, res, next) => {
-  const { channelId, content, embedTitle, embedDescription, embedColor, sendAt, recurrence } = req.body;
+  const { channelId, content, embedTitle, embedDescription, embedColor, sendAt, recurrence, timeZone } = req.body;
   if (!channelId || !content || !sendAt) return res.status(400).json({ error: "channelId, content, sendAt required" });
+  // Зоната на браузъра, в която човекът е въвел часа (А5). Непозната зона се
+  // отказва — тихо „UTC“ би върнало бягащия час, заради който полето съществува.
+  if (timeZone != null && !isValidTimeZone(timeZone)) {
+    return res.status(400).json({ error: "timeZone must be a valid IANA time zone" });
+  }
   // Валидирай recurrence — иначе неразпознат низ тихо ставаше „monthly“ в
   // scheduler.js (клиентска стойност → неочаквано поведение). Празно/липсва =
   // еднократно.
@@ -386,6 +413,9 @@ router.post("/:serverId/scheduled", requireServerAdmin, requirePremium("automati
         embedColor: embedColor || "#00e5ff",
         sendAt: new Date(sendAt),
         recurrence: recurrence || null,
+        // Само за повтарящите се: зоната и денят от месеца в нея (lib/recurrence.js).
+        timeZone: recurrence ? (timeZone || null) : null,
+        anchorDay: recurrence ? anchorDayOf(new Date(sendAt), timeZone || null) : null,
         createdBy: req.user.id,
       },
       }),

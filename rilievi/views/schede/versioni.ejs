@@ -1,0 +1,46 @@
+<%
+  // Le versioni della scheda (routes/schede-versioni.ts): l'elenco, o le differenze di una versione rispetto
+  // alla precedente — campo, prima, dopo.
+%><%- include('../partials/top', { title: t('flusso.versioni.titolo') + ' — ' + (ident.length > 40 ? ident.slice(0, 39) + '…' : ident) }) %>
+<div class="page-head">
+  <div>
+    <a href="/schede/<%= scheda.id %>"><%= t('flusso.versioni.torna') %></a>
+    <h1><%= versione ? t('flusso.versioni.differenzeDi', { n: versione.numero }) : t('flusso.versioni.titolo') %></h1>
+    <p class="page-head__sub"><%= ident %></p>
+  </div>
+</div>
+<div class="stack-gap">
+  <% if (versioni) { %><p class="muted"><%= t('flusso.versioni.sub') %></p>
+  <div class="table-scorre">
+  <table class="table table--stack">
+    <thead><tr><th scope="col"><%= t('flusso.versioni.colonne.numero') %></th><th scope="col"><%= t('flusso.versioni.colonne.data') %></th><th scope="col"><%= t('flusso.versioni.colonne.autore') %></th></tr></thead>
+    <tbody>
+      <% for (const v of versioni) { %><tr>
+        <th scope="row" data-label="<%= t('flusso.versioni.colonne.numero') %>"><a href="/schede/<%= scheda.id %>/versioni/<%= v.numero %>"><%= v.numero %></a></th>
+        <td data-label="<%= t('flusso.versioni.colonne.data') %>"><%= fmt.dateTime(v.at) %></td>
+        <td data-label="<%= t('flusso.versioni.colonne.autore') %>"><%= v.autore ? v.autore.name : '—' %></td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+  </div>
+  <% } else { %>
+  <p class="muted"><%= fmt.dateTime(versione.at) %><% if (versione.autore) { %> · <%= versione.autore %><% } %> · <a href="/schede/<%= scheda.id %>/versioni"><%= t('flusso.versioni.elenco') %></a></p>
+  <% if (versione.prima) { %><p><%= t('flusso.versioni.prima_versione') %></p>
+  <% } else if (versione.righe.length === 0) { %><p><%= t('flusso.versioni.nessunaDifferenza') %></p>
+  <% } else { %><div class="table-scorre">
+  <table class="table table--stack">
+    <thead><tr><th scope="col"></th><th scope="col"><%= t('flusso.versioni.prima') %></th><th scope="col"><%= t('flusso.versioni.dopo') %></th></tr></thead>
+    <tbody>
+      <% for (const r of versione.righe) { %><tr>
+        <th scope="row"><%= r.etichetta %></th>
+        <td data-label="<%= t('flusso.versioni.prima') %>"><%= r.dettaglio ? '' : r.prima %></td>
+        <td data-label="<%= t('flusso.versioni.dopo') %>"><%= r.dettaglio ? '' : r.dopo %></td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+  </div><% } %>
+  <% } %>
+</div>
+<%- include('../partials/bottom') %>
