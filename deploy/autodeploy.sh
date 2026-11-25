@@ -401,11 +401,29 @@ zbd_health_url() {
   printf '%s\n' "$ZBD_HEALTH_URL"
 }
 
+# Папката, от която РЕАЛНО върви zabobovdol (етикетът на compose върху app), ако още я има.
+# `current` не е надежден: деплой само на друг продукт мести current към release без zabobovdol.
+zbd_running_dir() {
+  command -v docker >/dev/null 2>&1 || return 1
+  local wd
+  wd="$(timeout 20 docker ps -a --filter label=com.docker.compose.project=zabobovdol --filter label=com.docker.compose.service=app \
+    --format '{{.Label "com.docker.compose.project.working_dir"}}' 2>/dev/null | head -1)" || return 1
+  [ -n "$wd" ] && [ -f "$wd/docker-compose.yml" ] || return 1
+  printf '%s\n' "$wd"
+}
+
 # Откат САМО на кода: вдига предишния release на zabobovdol със същото compose име. Базата не се
 # пипа — миграциите са адитивни по правило (prisma-migrate skill), значи старият код работи с нея.
 zbd_rollback() {
   local prev="$1"
   [ -n "$prev" ] && [ -d "$prev" ] || { warn "zabobovdol: няма предишен release за откат — оставям както е."; return 1; }
+  # Release, в който zabobovdol не е разгръщан (current след деплой само на друг продукт), няма .env:
+  # compose спира още на интерполацията и откатът не вдига нищо (живо, 23.10.2026). Тайните — от дома.
+  if [ ! -f "$prev/.env" ]; then
+    [ -f "$ZBD_ENV" ] || { warn "zabobovdol: предишният код няма .env, а $ZBD_ENV липсва — откатът не може да тръгне."; return 1; }
+    cp -a "$ZBD_ENV" "$prev/.env"; chmod 600 "$prev/.env"
+  fi
+  [ -e "$prev/backups" ] || ln -sfnT "$ZBD_BACKUPS" "$prev/backups"
   warn "zabobovdol: връщам предишния код ($prev)…"
   ( cd "$prev" && if docker compose version >/dev/null 2>&1; then docker compose up -d --build; else docker-compose up -d --build; fi ) \
     || { warn "zabobovdol: откатът не вдигна предишния код — нужен е човек."; return 1; }
@@ -422,9 +440,10 @@ deploy_zabobovdol() {
   local d="$SRC/zabobovdol"
   [ -d "$d" ] || { warn "Няма zabobovdol/ в архива — пропускам."; return; }
   log "Разгръщам zabobovdol (Docker Compose)…"
-  # Предишният работещ код (за откат) — current още сочи стария release, мести се само при успех.
+  # Предишният работещ код (за откат): където реално върви app; current е само резерва.
   local prev=""
-  [ -d "$CURRENT_LINK/zabobovdol" ] && prev="$(readlink -f "$CURRENT_LINK/zabobovdol" || true)"
+  prev="$(zbd_running_dir || true)"
+  [ -z "$prev" ] && [ -d "$CURRENT_LINK/zabobovdol" ] && prev="$(readlink -f "$CURRENT_LINK/zabobovdol" || true)"
   [ "$prev" = "$(readlink -f "$d")" ] && prev=""
   # Тайните живеят на сървъра, не в архива: стабилен дом → current → най-нов release.
   if [ ! -f "$d/.env" ]; then
@@ -2570,6 +2589,18 @@ release_mount_sources() {
   timeout 30 docker inspect --format '{{range .Mounts}}{{.Source}}{{"\n"}}{{end}}' $ids 2>/dev/null || return 1
 }
 
+# Още една защита (23.10.2026): release, от който върви compose проект (етикетът working_dir — и на
+# спрелите контейнери), дори без монтирани файлове оттам. Деплои без zabobovdol триеха папката
+# изпод работещия стек; откатът и `docker compose` командите от DEPLOY.md сочат натам.
+compose_workdirs() {
+  command -v docker >/dev/null 2>&1 || return 0
+  local ids
+  ids="$(timeout 20 docker ps -aq 2>/dev/null)" || return 1
+  [ -n "$ids" ] || return 0
+  # shellcheck disable=SC2086 # ID-тата са едно-словни; разделянето е нарочно
+  timeout 30 docker inspect --format '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' $ids 2>/dev/null || return 1
+}
+
 # Преди триене: .env, който живее САМО в този release (няма го в shared и в никой друг release), се
 # спасява в $SHARED_DIR/<продукт>/.env (600). На 11.10.2026 единственото копие на zabobovdol/.env
 # беше в изтрития release — спаси ни само това, че стойностите още живееха в контейнерите.
@@ -2597,7 +2628,7 @@ rescue_release_env() {
 }
 
 prune_releases() {
-  local keep_rel live_rel lg_rel lg_ril lg_fak lg_lnk lg_semki old old_real keep protected mounts m lg lg_any=""
+  local keep_rel live_rel lg_rel lg_ril lg_fak lg_lnk lg_semki old old_real keep protected mounts m lg lg_any="" workdirs wd
   keep_rel="$(cd "$SRC" && pwd -P)"
   live_rel="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
   lg_rel="$(readlink -f "$(cat "$KORPORA_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
@@ -2618,6 +2649,10 @@ prune_releases() {
     return 0
   fi
   mounts="$(printf '%s\n' "$mounts" | grep -F "$RELEASES_DIR/" || true)"
+  if ! workdirs="$(compose_workdirs)"; then
+    warn "Docker не отговаря — не трия стари releases (не мога да видя кои compose проекти вървят оттам)."
+    return 0
+  fi
   # От най-стария към най-новия (tac) — виж rescue_release_env.
   while read -r old; do
     [ -n "$old" ] || continue
@@ -2636,6 +2671,12 @@ prune_releases() {
         "$old_real"|"$old_real"/*) keep=1 ;;
       esac
     done <<< "$lg_any"
+    while IFS= read -r wd; do
+      [ -n "$wd" ] || continue
+      case "$wd" in
+        "${old%/}"|"${old%/}"/*|"$old_real"|"$old_real"/*) keep=1 ;;
+      esac
+    done <<< "$workdirs"
     while IFS= read -r m; do
       [ -n "$m" ] || continue
       case "$m" in
