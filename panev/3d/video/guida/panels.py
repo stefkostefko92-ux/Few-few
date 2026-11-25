@@ -1,5 +1,5 @@
 """Drawings of the counterweight-guide film over the frame (overlay.frame_overlay calls draw()): the 5 mm between the
-front of the rail's blade and its plumb line while the rail is hung on it (step 6)."""
+head of the rail (the end of the T's stem) and its plumb line while the rail is hung on it (step 6)."""
 import math
 from overlay import fade, s, WHITE, callout
 
@@ -20,4 +20,4 @@ def draw(c, t, pts):
         d.line(s(p[0] - nx * 56, p[1] - ny * 56, q[0] - nx * 56, q[1] - ny * 56), fill=(*WHITE, 255), width=3 * 2)
     c.layer(fade(t, a, b, 0.4), lines)
     m = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2 - 56, 1]
-    callout(c, t, m, "", "5\u00a0mm tra la lama e il filo", a, b, 70, -110)
+    callout(c, t, m, "", "5\u00a0mm tra la testa e il filo", a, b, 70, -110)

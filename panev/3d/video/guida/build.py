@@ -1,7 +1,7 @@
 """Builds the counterweight-guide scene: the concrete wall of the shaft, two plumb lines, and on three levels the SU 220 160
 + SG 80 150 brackets with their T rails from the site's 3-D engine (guida/export_mesh.mjs): SX on the left, DX on the
-right, the rail heads 600 mm apart and facing each other, the rail's foot 105 mm off the wall, each plumb line 5 mm in
-front of its rail's blade; the SU 20 mm further from its rail than the catalogue pairing, and the SG slid 20 mm along it
+right, the rail heads 600 mm apart and facing each other, the rail's foot 105 mm off the wall, each plumb line on the
+axis of its T, 5 mm off the head; the SU 20 mm further from its rail than the catalogue pairing, and the SG slid 20 mm along it
 towards the rail on camera, so it stands 20 mm proud of the arm (owner, 25.11.2026). The film mounts level 0; the
 others are on the wall too.
 Hardware per the owner: two M10 wedge anchors per SU, M10 x 30 bolts above and below the SG, the forged N1 clips; a
@@ -21,7 +21,7 @@ from parts import film_materials, big_washer, grower, n1_clip, place, plumb, BIG
 
 HERE = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
 GAP = 0.600               # m between the rail heads (owner)
-WIRE = 0.005              # m from the blade's front face to its plumb line, in front of the blade's middle (owner)
+WIRE = 0.005              # m from the head of the T (the blade's tip) to its plumb line, on the T's axis (owner)
 LINE_R = 0.00075          # m: the plumb line's radius
 BOLT_AT = (15.0, 95.0)    # mm along the SG from its wall end: 80 mm apart (the large washers clear), one in each arm
 #                           slot (catalogue stations of SG 80 150, pp. 57-59; the engine's own pick at this reach)
@@ -189,9 +189,8 @@ def build(scene):
                                         M["mark"], (p.x, -0.0002, p.z), 0) for q in range(2)]))
     wires = {}
     for side in ("sx", "dx"):
-        front = (meta["reach"] + 2.5) * MM                     # the blade's front face, from the wall
-        mid = SIDE_X[side] + SIGN[side] * (meta["flangeX"] + 5.0 + 22.5) * MM  # the blade's middle: foot 5, blade 45
-        wires[side] = plumb(f"wire-{side}", M, (mid, -(front + WIRE + LINE_R), 4.4))
+        x = -SIGN[side] * (GAP / 2 - WIRE - LINE_R)  # off the head, towards the other rail
+        wires[side] = plumb(f"wire-{side}", M, (x, -meta["reach"] * MM, 4.4))  # on the blade's middle plane
     drill, bit = build_drill(M)
     level, bub1, bub2 = build_level(M)
     worlds, lights = studio(scene, GUIDE_LIGHTS)

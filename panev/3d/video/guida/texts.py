@@ -1,19 +1,19 @@
 """The Italian copy of the counterweight-guide film: the nine step cards (title, line), the part callouts and the cards
 that differ from the landing-door film (header, intro, closing). Owner's procedure and values (25.11.2026): plumb line
-5 mm in front of the rail's blade, two M10 anchors per SU, a large washer on every fastener and a grower under every
+on the axis of the T, 5 mm off its head, two M10 anchors per SU, a large washer on every fastener and a grower under every
 nut of the SG and of the N1 clips, the SU 20 mm back and the SG slid 20 mm along it to the rail on camera,
 everything tightened at the end.
 U+00A0 keeps "SU 220 160", "5 mm", "N1" on one line (overlay.wrap splits on plain spaces only)."""
 NB = "\u00a0"
 
 STEP_TEXT = [
-    ("Fili a piombo", f"Cala dall’alto un filo a piombo per ogni guida: passerà 5{NB}mm davanti alla lama."),
+    ("Fili a piombo", f"Cala dall’alto un filo a piombo per ogni guida: passerà 5{NB}mm davanti alla testa della guida."),
     ("Tracciatura", "Appoggia il supporto SU al muro, in bolla e in linea con il filo, e segna i fori nelle asole."),
     ("Foratura", f"Fora i punti segnati con il trapano tassellatore, punta da 10{NB}mm."),
     ("Fissaggio dei supporti SU", "Fissa ogni supporto SU con due tasselli M10, con rondella maggiorata, e serra i dadi."),
     ("Staffa SG sul supporto", "Bullone M10 con rondella maggiorata sopra; sotto rondella maggiorata, rondella elastica "
                                "spezzata (grower) e dado. Serraggio leggero: la SG deve ancora scorrere."),
-    ("Guida a piombo", f"Cala la guida contro la flangia della SG e mettila a piombo: 5{NB}mm tra la lama e il filo."),
+    ("Guida a piombo", f"Cala la guida contro la flangia della SG e mettila a piombo: 5{NB}mm tra la testa e il filo."),
     ("SG in avanti", f"Fai scorrere la SG di 20{NB}mm sul supporto, fino al piede della guida."),
     (f"Graffe{NB}N1", f"Blocca la guida con due graffe{NB}N1: dietro la flangia rondella maggiorata, grower e dado, senza serrare."),
     ("Verifica e serraggio", "Controlla la verticalità con la livella, poi serra tutto: i bulloni della SG e i dadi delle "
