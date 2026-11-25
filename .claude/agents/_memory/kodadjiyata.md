@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-11-25:** .pr-review/453.diff (linketto ColorField) не е отрязан — 31 diff заглавки при 31 файла в 453.stat; кодът е от ред 865 нататък _(ревю на PR 453 в live-run worktree; verified; Grep ^diff --git в .pr-review/453.diff (31 попадения, src от ред 865) срещу .pr-review/453.stat (31 files changed))_
 - **2026-11-25:** .pr-review/461.diff (adblock 6.1.1) е пълен — 25 от 25 файла по 461.stat, около 149 KB, без отрязване; кодът се чете от diff-а _(преглед на PR 461 в live-run worktree; verified; grep -n '^diff --git' .pr-review/461.diff (25 попадения) срещу .pr-review/461.stat (25 files changed))_
 - **2026-11-25:** В live-run worktree дори read-only `node tools/agents/rubric.mjs` и съставни команди с `cd … &&` искат одобрение; единичен `cat` с абсолютни пътища минава — тежестта тогава се смята ръчно по критериите и се казва в покритието _(ревю на PR в live-run worktree; verified; Bash `node /tmp/live-run-C05EQ0/tools/agents/rubric.mjs --kind security ...` → „This command requires approval“ (ревю PR 480))_
 - **2026-11-25:** tools/video/presets.mjs поддържа подкоманда loudnorm (два прохода, --in/--out) и frames с --audio (добавя AAC 384k и -shortest) _(ревю на видео пайплайни, които викат presets.mjs; verified; tools/video/presets.mjs:15-16,103-109,145-152 (Grep))_
