@@ -606,6 +606,8 @@ sys.exit(0 if r == "ok" else 4)'
 SQLITES=()
 backup_sqlite(){
   local f=$1 dst="$STAGE/sqlite$1" own had_wal=0 had_shm=0 st=0
+  # Symlink като „база“ не се отваря от root (CWE-59) — пропуска се, не се следва.
+  if [ -L "$f" ]; then return 0; fi
   if [ -e "$f-wal" ]; then had_wal=1; fi
   if [ -e "$f-shm" ]; then had_shm=1; fi
   mkdir -p "$(dirname "$dst")"
@@ -617,8 +619,11 @@ backup_sqlite(){
     st=127; printf 'няма python3 и sqlite3' > "$ERR"
   fi
   own="$(stat -c %u:%g "$f")"
-  if [ "$had_wal" = 0 ] && [ -e "$f-wal" ]; then chown "$own" "$f-wal"; fi
-  if [ "$had_shm" = 0 ] && [ -e "$f-shm" ]; then chown "$own" "$f-shm"; fi
+  # Собствеността на създадените от нас -wal/-shm се връща на собственика на базата. Папката е
+  # негова: между проверката и chown той може да подмени файла със symlink (CWE-367). Затова само
+  # обикновен файл и `chown -h` — той сменя самата връзка, никога целта (преглед на PR #312).
+  if [ "$had_wal" = 0 ] && [ ! -L "$f-wal" ] && [ -f "$f-wal" ]; then chown -h -- "$own" "$f-wal"; fi
+  if [ "$had_shm" = 0 ] && [ ! -L "$f-shm" ] && [ -f "$f-shm" ]; then chown -h -- "$own" "$f-shm"; fi
   if [ "$st" = 0 ]; then SQLITES+=("$f · $(du -h "$dst" | cut -f1) · $(stat -c %U "$f") · ok")
   else fail "SQLite $f: копието не мина (код $st) — $(errline); суровият файл е в архива"; SQLITES+=("$f · — · ПРОВАЛ"); fi
 }

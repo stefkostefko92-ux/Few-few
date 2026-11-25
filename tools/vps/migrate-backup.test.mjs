@@ -96,3 +96,30 @@ test("горещ архив в пясъчник: съдържание, изкл�
   assert.ok(list.includes(`migrate/secrets${rel}/20260101T000000Z/p/.env`), ".env от стария release липсва");
   rmSync(t, { recursive: true, force: true });
 });
+
+// Преглед на PR #312 (Кодаджията — High, CWE-59/367): root правеше `chown "$own" "$f-wal"` след
+// `[ -e ]` — и двете следват symlink. Нападател с папка под /var/www подменя x.db-wal със symlink
+// към /run/docker.sock и нощната задача му дава собствеността. Тест: python3 е заглушен и създава
+// -wal като symlink към файл на root; след backup_sqlite целта остава на root.
+test("backup_sqlite: -wal/-shm като symlink НЕ прехвърля собствеността на целта", { skip: !isRoot && "иска root (chown)" }, () => {
+  const src = readFileSync(script, "utf8");
+  const fn = src.match(/^backup_sqlite\(\)\{\n[\s\S]*?^\}/m)?.[0];
+  assert.ok(fn, "backup_sqlite съществува");
+  const base = mkdtempSync(join(tmpdir(), "mbsq-"));
+  try {
+    const app = join(base, "www"), bin = join(base, "bin"), stage = join(base, "stage");
+    for (const d of [app, bin, stage]) mkdirSync(d, { recursive: true });
+    const db = join(app, "x.db");
+    writeFileSync(db, "SQLite format 3\0");
+    const target = join(base, "docker.sock");
+    writeFileSync(target, "");
+    spawnSync("chown", ["65534:65534", db, app]);
+    // „python3“: копието минава, а междувременно -wal и -shm се появяват като symlink към целта.
+    writeFileSync(join(bin, "python3"), `#!/bin/sh\nln -s "${target}" "$4-wal"; ln -s "${target}" "$4-shm"; : > "$5"; exit 0\n`, { mode: 0o755 });
+    const cfg = ["set -uo pipefail", `export PATH="${bin}:$PATH"`, `STAGE="${stage}"`, `ERR="${join(base, "err")}"`,
+      "SQLITE_PY=x", "SQLITES=()", "fail(){ :; }", "errline(){ :; }", fn, `backup_sqlite "${db}"`].join("\n");
+    const r = spawnSync("bash", ["-c", cfg], { encoding: "utf8" });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(statSync(target).uid, 0, "целта на symlink-а остава на root");
+  } finally { rmSync(base, { recursive: true, force: true }); }
+});
