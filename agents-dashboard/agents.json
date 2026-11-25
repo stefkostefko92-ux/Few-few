@@ -1256,7 +1256,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 747
+        "lessons": 748
       },
       "evolution": [
         {
@@ -2182,9 +2182,20 @@
           "date": "2026-11-25",
           "event": "v69.9 — учене",
           "detail": "Научи: .pr-review/432.diff (piuma Vertex) е пълен — 29 diff заглавки при 30 файла в 432.stat (… (+1 още)"
+        },
+        {
+          "version": "70.0.0",
+          "date": "2026-11-25",
+          "event": "v70.0 — учене",
+          "detail": "Научи: В live-run worktree permission системата иска одобрение за node --test, node tools/agen…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „В live-run worktree permission системата иска одобрение за node --test, node tools/agen…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
