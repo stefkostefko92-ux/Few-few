@@ -44,7 +44,7 @@ file holds only what is true across all products. Keep it that way.
 | `rilievi/` | Rilievi Impianti — портал за схемите за оглед на асансьори (карти, листове за интервенция, табели) | Node 22 · TS · Express 5 · Prisma · PostgreSQL · Docker | IT · rilievi.carbonstealth.eu (порт 4330) · **само покана** · многофирмен, 7 роли · 2FA по избор |
 | `lovets/` | Ловец — вътрешно B2B търсене на клиенти + „може ли да пишем/звъним“ (КЗП, RPO) | Node 22 · TS · Express 5 · Prisma · PostgreSQL | BG/IT · само собственикът · порт 4360 |
 | `cs-revolution/` | Carbon Stealth — фирменият сайт (уеб агенция и софтуер) | Vite · React 18 SPA (началната) + ~400 статични страници от Python генератори · PHP API · живи сцени от Blender (`public/js/cs-live.js`) | IT/EN/BG · carbonstealth.eu · деплой от клон `deploy-live` с `deploy-all.sh` (**не** през autodeploy) · **логото не се променя** |
-| `semki/` | Semki Bot — Discord бот за изтичането на семките във FiveM (праг в % / оставащо време → таг на роля в канал) + дашборд с вход през Discord | Node 22 · TS strict (ESM) · Express 5 · EJS · discord.js v14 · Prisma · PostgreSQL · Docker | BG · vps2.carbonstealth.eu (порт — първият свободен от 4340, `HTTP_PORT`) · партиди с команди и от дашборда · роли за дашборда и командите от настройките · часови прозорец |
+| `semki/` | Semki Bot — Discord бот за изтичането на семките във FiveM + дашборд с вход през Discord | Node 22 · TS · Express 5 · discord.js v14 · Prisma · PostgreSQL · Docker | BG · vps2.carbonstealth.eu (порт от 4340, `HTTP_PORT`) |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
 (agents' "hands" — real scripts), `deploy/` (autodeploy), `.claude/` (agents,
@@ -94,10 +94,8 @@ hooks, skills).
 - **Promo clips are frozen — any product** (owner, 2026-10-15): no re-render, proposal or "replace
   the clip" step on any version/UI/copy change; only on the owner's explicit request. Not covered:
   video that is a product feature (e.g. Piuma's content engine).
-- **Never SVG — any product** (owner, 2026-11-04): drawings, illustrations, charts and icons are never
-  SVG. Illustrations → photorealistic 3D (three.js/WebGL, PBR, bundled from our origin — no CDN);
-  charts → `<canvas>`; icons/images → raster (PNG/WebP/AVIF). First applied in `semki/` (dashboard);
-  SVG already shipped in other products stays until the owner asks for it to be replaced.
+- **Never SVG — any product** (owner, 2026-11-04): drawings, charts, icons — never SVG. Illustrations → 3D
+  (three.js, bundled, no CDN); charts → `<canvas>`; icons → raster. Shipped SVG stays until the owner asks.
 - **Deploy commands ⇒ merge into `main` first — mandatory, every project** (owner, 2026-11-15): unmerged
   work goes into `main` (gate green, `base.ref` checked), commands only from `main`. → skill `deploy`.
 - **Generic agents: hard cap 10 per session** (anything not in `.claude/agents/`; enforced by the
@@ -138,11 +136,7 @@ Shared glossary `ф:р · PI · LT · QG · RM · SC · ИоМ` — internal not
 
 ## Skills — `.claude/skills/`
 
-Ours (BG, vetted; 66; metadata only until triggered): **агентски** — agent-doctrine; **процедури** — deploy · prisma-migrate · quality-gate · verify ·
-seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
-razpit · skill-author · sapernik; **предпазители** — fiscal-bg · stripe-payment · revolut-payment · motion-a11y · gdpr-launch ·
-db-readonly · owasp-review · wcag-audit · incident-breach · pentest-engagement; **SEO/perf** — indexnow · keywords-seo · i18n-parity · bezplatna-vidimost ·
-web-vitals; plus uchitel; **домейн** — youtube-reddit · fivem-mlo · fivem-clothing · fivem-livery; **външни, адаптирани** (17, вкл. archify-diagrams, model-na-zaplahite, igrovo-studio, animacia) и **правни** (15) — ростерът е в `tools/agents/CLAUDE.md`, произходът в `.claude/skills/THIRD_PARTY_NOTICES.md`. Gate: `tools/skills/lint.mjs` + `trigger-check.mjs --check`.
+Ours (BG, vetted; 66; metadata only until triggered): procedures (deploy · quality-gate · verify · commit-pr …), guardrails (fiscal-bg · stripe-payment · revolut-payment · gdpr-launch · owasp-review …), SEO/perf, domain, **външни, адаптирани** (17) и **правни** (15) — пълният ростер е в `tools/agents/CLAUDE.md`, произходът в `.claude/skills/THIRD_PARTY_NOTICES.md`. Gate: `tools/skills/lint.mjs` + `trigger-check.mjs --check`.
 **Own BG skills; never import third-party wholesale**; външно — само с изрично „да“ от собственика (`tools/agents/CLAUDE.md`).
 
 **Guard hooks (8):** `guard-prompt` · `guard-dangerous` (only catastrophic Bash) · `guard-secrets` (before the write) ·
