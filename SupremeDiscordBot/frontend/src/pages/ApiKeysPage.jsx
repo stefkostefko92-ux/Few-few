@@ -5,12 +5,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Key, Plus, Trash2, Copy, Eye, CheckCircle2, AlertTriangle } from "lucide-react";
 import { getApiKeys, createApiKey, revokeApiKey, getApiScopes } from "../api";
 import { useT } from "../contexts/I18nContext";
+import PageHeader from "../components/PageHeader";
 import { useToast } from "../contexts/ToastContext";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
 
 export default function ApiKeysPage() {
-  const { t } = useT();
+  const { t, lang } = useT();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const [creating, setCreating] = useState(false);
@@ -61,20 +62,20 @@ export default function ApiKeysPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-4xl">
-      <div className="flex flex-wrap justify-between items-start gap-3 mb-8">
-        <div>
-          <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
-            <Key className="w-7 h-7 text-cs-cyan" /> API Keys
-          </h1>
-          <p className="text-cs-muted mt-2 max-w-2xl">
-            Create bearer tokens for the public REST API at <code className="text-cs-cyan">{window.location.origin}/public/v1</code>.
-            Keys are shown only once at creation.
-          </p>
-        </div>
-        <button onClick={() => { setCreating(true); setNewlyCreated(null); }} className="cs-btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" aria-hidden="true" /> New Key
-        </button>
-      </div>
+      <PageHeader
+        title={t("nav.apikeys")}
+        subtitle={(
+          <>
+            {t("apikeys.introLead")} <code className="text-cs-cyan break-all">{window.location.origin}/public/v1</code>.{" "}
+            {t("apikeys.introOnce")}
+          </>
+        )}
+        actions={(
+          <button onClick={() => { setCreating(true); setNewlyCreated(null); }} className="cs-btn-primary cs-btn-sm flex items-center gap-2">
+            <Plus className="w-4 h-4" aria-hidden="true" /> {t("apikeys.new")}
+          </button>
+        )}
+      />
 
       {/* ═══ Newly created key reveal ═══ */}
       {newlyCreated && (
@@ -82,9 +83,9 @@ export default function ApiKeysPage() {
           <div className="flex items-start gap-3">
             <CheckCircle2 className="w-6 h-6 text-success flex-shrink-0" aria-hidden="true" />
             <div className="flex-1">
-              <h2 className="text-cs-text font-bold">Key created: {newlyCreated.name}</h2>
+              <h2 className="text-cs-text font-bold">{t("apikeys.created", { name: newlyCreated.name })}</h2>
               <p className="text-xs text-warning mt-1 mb-3">
-                ⚠️ {newlyCreated.warning}
+                ⚠️ {t("apikeys.onceWarning")}
               </p>
               <div className="flex items-center gap-2">
                 <code className="flex-1 bg-cs-black border border-green-500/30 px-3 py-2 text-xs font-mono text-green-300 rounded break-all">
@@ -92,12 +93,12 @@ export default function ApiKeysPage() {
                 </code>
                 <button onClick={copyKey} className="cs-btn-primary flex items-center gap-2" aria-label={t("apikeys.copyKey")}>
                   {copied ? <CheckCircle2 className="w-4 h-4" aria-hidden="true" /> : <Copy className="w-4 h-4" aria-hidden="true" />}
-                  {copied ? "Copied" : "Copy"}
+                  {copied ? t("common.copied") : t("common.copy")}
                 </button>
               </div>
-              <span role="status" className="sr-only">{copied ? "API key copied to clipboard" : ""}</span>
+              <span role="status" className="sr-only">{copied ? t("apikeys.copiedSr") : ""}</span>
               <button onClick={() => setNewlyCreated(null)} className="text-xs text-cs-dim hover:text-white mt-3">
-                Dismiss
+                {t("common.dismiss")}
               </button>
             </div>
           </div>
@@ -118,13 +119,13 @@ export default function ApiKeysPage() {
           className="cs-card mb-6 space-y-4"
         >
           <label className="block">
-            <span className="text-xs text-cs-muted uppercase tracking-wider font-mono block mb-1">Name</span>
+            <span className="text-xs text-cs-muted block mb-1">{t("common.name")}</span>
             <input required className="cs-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder={t("apikeys.ph.name")} />
           </label>
 
           <fieldset>
-            <legend className="text-xs text-cs-muted uppercase tracking-wider font-mono block mb-2">Scopes</legend>
+            <legend className="text-xs text-cs-muted block mb-2">{t("apikeys.scopes")}</legend>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               {(scopes?.scopes || []).map((s) => (
                 <label key={s} className="flex items-center gap-2 text-sm text-cs-text">
@@ -136,16 +137,16 @@ export default function ApiKeysPage() {
           </fieldset>
 
           <label className="block">
-            <span className="text-xs text-cs-muted uppercase tracking-wider font-mono block mb-1">Expires in (days, optional)</span>
+            <span className="text-xs text-cs-muted block mb-1">{t("apikeys.expiresIn")}</span>
             <input type="number" min={1} max={3650} className="cs-input" value={form.expiresInDays}
               onChange={(e) => setForm({ ...form, expiresInDays: e.target.value })}
               placeholder={t("apikeys.ph.expiry")} />
           </label>
 
           <div className="flex justify-end gap-2">
-            <button type="button" onClick={() => setCreating(false)} className="cs-btn-secondary">Cancel</button>
+            <button type="button" onClick={() => setCreating(false)} className="cs-btn-secondary">{t("common.cancel")}</button>
             <button type="submit" className="cs-btn-primary" disabled={createM.isPending || !form.name || !form.scopes.length}>
-              {createM.isPending ? "Creating…" : "Create Key"}
+              {createM.isPending ? t("common.creating") : t("apikeys.create")}
             </button>
           </div>
         </form>
@@ -154,7 +155,7 @@ export default function ApiKeysPage() {
       {/* ═══ Keys list ═══ */}
       {isLoading && (
         <div className="cs-card h-20 animate-pulse" role="status">
-          <span className="sr-only">Loading API keys…</span>
+          <span className="sr-only">{t("apikeys.loading")}</span>
         </div>
       )}
       {!isLoading && !keys.length && !creating && (
@@ -174,20 +175,20 @@ export default function ApiKeysPage() {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-cs-text font-bold">{k.name}</span>
                 {k.expiresAt && new Date(k.expiresAt) < new Date()
-                  ? <span className="cs-badge text-danger">Expired</span>
-                  : <span className="cs-badge text-success">Active</span>}
+                  ? <span className="cs-badge text-danger">{t("apikeys.expired")}</span>
+                  : <span className="cs-badge text-success">{t("common.active")}</span>}
               </div>
               <code className="text-xs font-mono text-cs-dim">{k.keyPrefix}…</code>
               <div className="flex items-center gap-4 text-xs text-cs-muted mt-1 flex-wrap">
-                <span>Scopes: {k.scopes.join(", ")}</span>
-                {k.lastUsedAt && <span>Last used: {new Date(k.lastUsedAt).toLocaleDateString()}</span>}
-                {k.expiresAt && <span>Expires: {new Date(k.expiresAt).toLocaleDateString()}</span>}
+                <span>{t("apikeys.scopesList", { list: k.scopes.join(", ") })}</span>
+                {k.lastUsedAt && <span>{t("apikeys.lastUsed", { date: new Date(k.lastUsedAt).toLocaleDateString(lang) })}</span>}
+                {k.expiresAt && <span>{t("apikeys.expires", { date: new Date(k.expiresAt).toLocaleDateString(lang) })}</span>}
               </div>
             </div>
             <button
               onClick={() => setConfirmRevoke(k)}
               className="text-danger hover:text-red-300 p-2"
-              aria-label={`Revoke API key ${k.name}`}
+              aria-label={t("apikeys.revokeAria", { name: k.name })}
               title={t("apikeys.revoke")}
             >
               <Trash2 className="w-4 h-4" aria-hidden="true" />
@@ -198,7 +199,7 @@ export default function ApiKeysPage() {
 
       {/* ═══ API docs teaser ═══ */}
       <div className="cs-card mt-8 bg-cs-surface">
-        <h2 className="text-cs-text font-bold mb-2">Quick start</h2>
+        <h2 className="text-cs-text font-bold mb-2">{t("apikeys.quickStart")}</h2>
         <pre className="text-xs font-mono bg-cs-black p-3 rounded overflow-x-auto text-cs-cyan">{`curl ${window.location.origin}/public/v1/tickets \\
   -H "Authorization: Bearer bpk_live_..."`}</pre>
         <p className="text-xs text-cs-dim mt-2">{t("ui.hint.rateLimit")}</p>
@@ -207,8 +208,8 @@ export default function ApiKeysPage() {
       <ConfirmDialog
         open={!!confirmRevoke}
         title={t("apikeys.revokeTitle")}
-        message={confirmRevoke ? `Revoke "${confirmRevoke.name}"? This cannot be undone.` : ""}
-        confirmLabel="Revoke Key"
+        message={confirmRevoke ? t("apikeys.revokeConfirm", { name: confirmRevoke.name }) : ""}
+        confirmLabel={t("apikeys.revoke")}
         destructive
         loading={revokeM.isPending}
         onConfirm={() => confirmRevoke && revokeM.mutate(confirmRevoke.id)}

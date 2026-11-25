@@ -215,3 +215,47 @@ test('the catalogue is only for signed-in people and supports conditional reques
   assert.ok(etag);
   assert.equal((await b.get('/app/catalog.json', { 'if-none-match': etag })).status, 304);
 });
+
+test('a free carcass keeps its grid through a save, and every export is made from it', async () => {
+  const b = await customer('grid@example.test');
+  const id = await newProject(b);
+  const { csrf, base } = await openEditor(b, id);
+  const grid = {
+    columns: [
+      {
+        w: 450,
+        cells: [
+          { h: 540, fill: 'drawers', n: 3 },
+          { h: null, fill: 'rail', n: 0 },
+        ],
+        fronts: [{ from: 1, to: 1, kind: 'door', hinge: 'left' }],
+      },
+      {
+        w: null,
+        cells: [
+          { h: 800, fill: 'shelves', n: 2 },
+          { h: null, fill: 'open', n: 0 },
+        ],
+        fronts: [{ from: 0, to: 0, kind: 'door', hinge: 'right' }],
+      },
+    ],
+  };
+  const save = await saveProject(b, id, csrf, {
+    spec: { type: 'custom', width: 1000, height: 2000, depth: 600, grid },
+    base,
+  });
+  assert.equal(save.status, 200);
+  const stored = (await prisma.project.findUniqueOrThrow({ where: { id } })).spec as {
+    type: string;
+    grid: unknown;
+  };
+  assert.equal(stored.type, 'custom');
+  assert.deepEqual(stored.grid, grid, 'stored as normalized, which is what was sent');
+  for (const kind of ['cut-list.csv', 'drilling.csv', 'drawings.zip', 'cnc.zip']) {
+    assert.equal((await b.get(`/app/p/${id}/export/${kind}`)).status, 200, kind);
+  }
+  const bad = await saveProject(b, id, csrf, {
+    spec: { type: 'custom', grid: { columns: [{ ...grid.columns[0], w: '450' }] } },
+  });
+  assert.equal(bad.status, 400, 'a grid in another shape is refused');
+});

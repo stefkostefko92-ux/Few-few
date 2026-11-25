@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { formatDateTimeNumeric } from "@/lib/format-date";
 
 export const dynamic = "force-dynamic";
 
@@ -49,13 +50,7 @@ export default async function AuditPage({
               logs.map((l) => (
                 <tr key={l.id}>
                   <td className="whitespace-nowrap p-3 text-slate-600">
-                    {new Intl.DateTimeFormat("bg-BG", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }).format(l.createdAt)}
+                    {formatDateTimeNumeric(l.createdAt)}
                   </td>
                   <td className="p-3">
                     <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">

@@ -76,6 +76,9 @@ export const mfaRegenerateCodes = (code) => api.post("/auth/mfa/backup-codes", {
 // ─── v3.4 Админ операции ────────────────────────────────────────────────────
 export const getAdminSystem    = () => api.get("/admin/system").then((r) => r.data);
 export const getAdminSecurity  = () => api.get("/admin/security").then((r) => r.data);
+// Поканата към сървъра за поддръжка — към нея води публичният адрес /support.
+export const getAdminSupportInvite = () => api.get("/admin/support-invite").then((r) => r.data);
+export const setAdminSupportInvite = (url) => api.put("/admin/support-invite", { url }).then((r) => r.data);
 export const adminUnblock      = (scope, key) => api.post("/admin/security/unblock", { scope, key }).then((r) => r.data);
 export const adminRevokeApiKey = (id) => api.delete(`/admin/security/apikeys/${id}`).then((r) => r.data);
 export const adminResetUserMfa = (userId, reason) => api.post(`/admin/users/${userId}/mfa/reset`, { reason }).then((r) => r.data);
@@ -334,6 +337,9 @@ export const openApplicationDiscussion = (sid, appId) =>
   api.post(`/applications/${sid}/${appId}/discuss`).then((r) => r.data);
 
 // ─── v50 Server Season (dashboard) ───────────────────────────────────────────
+// v52 — канал-стръв за спам ботове (пътят /honeypot е вътрешното име от v52)
+export const getBait           = (sid) => api.get(`/honeypot/${sid}`).then((r) => r.data);
+export const updateBait        = (sid, data) => api.put(`/honeypot/${sid}`, data).then((r) => r.data);
 export const getGame           = (sid) => api.get(`/game/${sid}`).then((r) => r.data);
 export const updateGameSettings= (sid, data) => api.put(`/game/${sid}/settings`, data).then((r) => r.data);
 export const getGameShop       = (sid) => api.get(`/game/${sid}/shop`).then((r) => r.data);

@@ -138,7 +138,7 @@ Discord [App Discovery: Content Requirements Policy](https://support-dev.discord
 - Купуване на валута — превръща играта в pay-to-win и в хазарт-подобна.
 - Глобална икономика между сървъри — балансът се чупи, а GDPR обхватът расте.
 
-## 7. Статус на изпълнението (v50, 18.09.2026)
+## 8. Статус на изпълнението (v50, 18.09.2026)
 
 | Етап | Какво | Къде |
 |---|---|---|
@@ -146,6 +146,7 @@ Discord [App Discovery: Content Requirements Policy](https://support-dev.discord
 | 2 ✅ | 60 оригинални спътника (маскотът на Carbon Stealth в 12 палитри × 3 форми, растеризирани), поява при активност, улавяне като надпревара, хранене/еволюция (100/300 искри), размяна (10 min), сезонни | `lib/game/companions.js`, `companionOps.js`, `routes/bot_companions.js`, `frontend/scripts/companions-art.mjs`, `frontend/public/game/companions/` |
 | 3 ✅ | Седмични сървърни куестове (ротация, цел по играчи, лента за напредък, награди за всеки принесъл + сандък), Counting (само в обявения канал), trivia (60 проверени въпроса; Premium: от базата знания), `/wyr`, `/tod` | `lib/game/quests.js`, `questOps.js`, `counting.js`, `trivia.js`, `data/triviaBank.js`, `bot/src/utils/minigames.js`, `bot/src/data/partyBanks.js` |
 | 4 ✅ | Сезони от админ конзолата (`game_seasons`: код, име, дати, сезонни спътници); краят на сезона: топ 3 → обява, `seasonXp` → 0, нива/искри/спътници остават; `docs/DISCORD_VERIFICATION.md` §3.1 (Counting като 4-та употреба на Message Content); `/features/discord-leveling-game` (SEO/AEO) | `lib/game/seasons.js`, `season.js`, `routes/adminOps.js` (Season), scheduler `game-season`, `frontend/src/data/featurePages.js` |
+| 5 ✅ | Битки между спътници (v53/v54): `/companion train` (статистики за искри), `/companion attack` (симулира се на сървъра; загубилият губи 1–3 % от искрите си), `/companion pvp on\|off`; охлаждане 5 min, същият противник веднъж на час, щит 30 min, дневни тавани; записите се пазят 30 дни | `lib/game/battles.js`, `battleOps.js`, `bot/src/commands/companion.js`, `jobs/dataRetention.js` |
 
 Scheduler: `game-shop-expiry` (*/15), `game-quests` (:07), `game-trivia` (:11), `game-season` (*/5 — нулирането трие ≤ 5 min от XP-то на новия сезон; сезоните не се застъпват). GDPR: `/privacy info|delete` покрива всички игрови редове (`lib/dsr.js`), 30-дневната чистка на напуснал сървър — `jobs/dataRetention.js`.
 

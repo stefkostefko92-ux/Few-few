@@ -1,0 +1,1069 @@
+{
+  "id": "mastech-qi-touch",
+  "fornitore": "Mastech",
+  "titolo": "Modulo Mastech QI Touch",
+  "fonte": "Document_261014_144801.pdf caricato dal proprietario del portale il 14/10/2026: scansione in due pagine del Modulo Mastech (A4EltEnquiryFormIT rev.03, 28/04/16), senza testo",
+  "file": "mastech-qi-touch.pdf",
+  "sha256": "2e5284be30fa7ac71ce634ddcb158e0c358cb29bcc6496e6844a9771a29e3895",
+  "tipo": "overlay",
+  "dimensione": 9,
+  "sopraLinea": 0,
+  "gruppi": [
+    {
+      "titolo": "Informazioni clienti",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "offerta",
+              "kind": "check",
+              "label": "Offerta",
+              "box": [363.1, 76.19999999999999, 370.2, 81.5]
+            },
+            {
+              "key": "offertaNr",
+              "kind": "text",
+              "label": "Offerta Nr.",
+              "maxLength": 20,
+              "line": [410.4, 500.4, 81.7]
+            },
+            {
+              "key": "ordine",
+              "kind": "check",
+              "label": "Ordine",
+              "box": [363.1, 87.39999999999999, 370.2, 95.2]
+            },
+            {
+              "key": "ordineNr",
+              "kind": "text",
+              "label": "Ordine Nr.",
+              "maxLength": 20,
+              "line": [410.4, 500.4, 94.3]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "cliente",
+              "kind": "text",
+              "label": "Cliente",
+              "maxLength": 60,
+              "line": [119.9, 294.5, 112.3],
+              "prefill": "azienda"
+            },
+            {
+              "key": "dataOrdine",
+              "kind": "text",
+              "label": "Data ordine",
+              "maxLength": 20,
+              "line": [403.9, 574.2, 112.3],
+              "prefill": "data"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "rifCliente",
+              "kind": "text",
+              "label": "Rif. cliente",
+              "maxLength": 60,
+              "line": [119.9, 294.5, 130.7],
+              "prefill": "rif"
+            },
+            {
+              "key": "dataConsegna",
+              "kind": "text",
+              "label": "Data consegna",
+              "maxLength": 20,
+              "line": [403.9, 541.8, 130.7]
+            },
+            {
+              "key": "consegna48h",
+              "kind": "check",
+              "label": "48h",
+              "box": [567.6, 122.6, 577.1999999999999, 131.9]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "commessa",
+              "kind": "text",
+              "label": "Commessa",
+              "maxLength": 40,
+              "line": [119.9, 294.5, 149.0]
+            },
+            {
+              "key": "destinazione",
+              "kind": "text",
+              "label": "Destinazione",
+              "maxLength": 60,
+              "line": [403.9, 574.2, 149.0]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Dati impianto",
+      "righe": [
+        {
+          "titolo": "Norme di riferimento",
+          "campi": [
+            {
+              "key": "en811",
+              "kind": "check",
+              "label": "EN81-1",
+              "box": [124.39999999999999, 177.7, 134.0, 186.6]
+            },
+            {
+              "key": "a32009",
+              "kind": "check",
+              "label": "A3:2009",
+              "box": [188.2, 177.4, 197.8, 186.6]
+            },
+            {
+              "key": "normativa9516",
+              "kind": "check",
+              "label": "Normativa 95/16",
+              "box": [251.9, 177.4, 261.5, 187.0]
+            },
+            {
+              "key": "dm236",
+              "kind": "check",
+              "label": "DM236 (Legge 13)",
+              "box": [314.90000000000003, 177.4, 324.5, 186.6]
+            },
+            {
+              "key": "dm2005",
+              "kind": "check",
+              "label": "DM2005",
+              "box": [378.6, 177.4, 388.2, 186.6]
+            },
+            {
+              "key": "en8121",
+              "kind": "check",
+              "label": "EN81-21",
+              "box": [442.0, 177.4, 451.59999999999997, 187.0]
+            },
+            {
+              "key": "en8170",
+              "kind": "check",
+              "label": "EN81-70",
+              "box": [505.3, 177.4, 515.3, 187.0]
+            },
+            {
+              "key": "en8172",
+              "kind": "check",
+              "label": "EN81-72",
+              "box": [124.8, 195.0, 134.4, 204.20000000000002]
+            },
+            {
+              "key": "en8173",
+              "kind": "check",
+              "label": "EN81-73",
+              "box": [188.2, 195.0, 198.1, 204.20000000000002]
+            },
+            {
+              "key": "normaAltra1",
+              "kind": "check",
+              "label": "Altro 1",
+              "box": [251.9, 195.0, 261.79999999999995, 204.6]
+            },
+            {
+              "key": "normaAltra1Testo",
+              "kind": "text",
+              "label": "Altro 1 (specificare)",
+              "maxLength": 12,
+              "line": [265.7, 310.3, 202.9]
+            },
+            {
+              "key": "normaAltra2",
+              "kind": "check",
+              "label": "Altro 2",
+              "box": [315.20000000000005, 195.0, 324.79999999999995, 204.20000000000002]
+            },
+            {
+              "key": "normaAltra2Testo",
+              "kind": "text",
+              "label": "Altro 2 (specificare)",
+              "maxLength": 40,
+              "line": [328.7, 574.2, 202.7]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "tipoImpianto",
+              "kind": "text",
+              "label": "Tipo impianto",
+              "maxLength": 40,
+              "line": [119.9, 294.5, 224.3],
+              "prefill": "tipoImpianto"
+            },
+            {
+              "key": "tipoAvviamento",
+              "kind": "text",
+              "label": "Tipo avviamento",
+              "maxLength": 40,
+              "line": [403.9, 574.2, 224.6]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "portataNominale",
+              "kind": "text",
+              "label": "Portata nominale [kg]",
+              "maxLength": 8,
+              "line": [119.9, 272.9, 243.4]
+            },
+            {
+              "key": "velocita",
+              "kind": "text",
+              "label": "Velocità impianto [m/s]",
+              "maxLength": 8,
+              "line": [403.9, 550.1, 243.4]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "forzaMotrice",
+              "kind": "text",
+              "label": "Forza motrice",
+              "maxLength": 40,
+              "line": [119.9, 294.5, 261.7]
+            },
+            {
+              "key": "taglia",
+              "kind": "text",
+              "label": "Taglia",
+              "maxLength": 20,
+              "line": [403.9, 574.2, 263.5]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "tipoFornitura",
+              "kind": "text",
+              "label": "Tipo fornitura",
+              "maxLength": 40,
+              "line": [119.9, 294.5, 279.0]
+            },
+            {
+              "key": "impiantoPrecablato",
+              "kind": "text",
+              "label": "Impianto precablato",
+              "maxLength": 30,
+              "line": [403.9, 574.2, 279.4]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Manovra e fermate",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "numeroFermate",
+              "kind": "text",
+              "label": "Numero fermate",
+              "maxLength": 4,
+              "line": [119.9, 294.5, 313.2]
+            },
+            {
+              "key": "numeroAccessi",
+              "kind": "text",
+              "label": "Numero accessi",
+              "maxLength": 4,
+              "line": [403.9, 574.2, 313.2]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "numeroServizi",
+              "kind": "text",
+              "label": "Numero servizi",
+              "maxLength": 4,
+              "line": [119.9, 294.5, 331.9]
+            },
+            {
+              "key": "tipoAccesso",
+              "kind": "text",
+              "label": "Tipo accesso",
+              "maxLength": 40,
+              "line": [403.9, 574.2, 331.9]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "tensioneManovra",
+              "kind": "text",
+              "label": "Tensione manovra",
+              "maxLength": 20,
+              "line": [119.9, 294.5, 350.3]
+            },
+            {
+              "key": "tipoManovra",
+              "kind": "text",
+              "label": "Tipo manovra",
+              "maxLength": 40,
+              "line": [403.9, 574.2, 349.9]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Motore",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "modelloMotore",
+              "kind": "text",
+              "label": "Modello motore",
+              "maxLength": 40,
+              "line": [119.9, 294.5, 386.3]
+            },
+            {
+              "key": "numeroPoli",
+              "kind": "text",
+              "label": "Numero poli",
+              "maxLength": 6,
+              "line": [403.9, 574.2, 385.9]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "potenzaMotore",
+              "kind": "text",
+              "label": "Potenza motore [kW]",
+              "maxLength": 8,
+              "line": [119.9, 270.0, 405.4]
+            },
+            {
+              "key": "correnteMotore",
+              "kind": "text",
+              "label": "Corrente motore [A]",
+              "maxLength": 8,
+              "line": [403.9, 560.2, 405.0]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "tensioneFreno",
+              "kind": "text",
+              "label": "Tensione freno",
+              "maxLength": 20,
+              "line": [119.9, 294.5, 422.3]
+            },
+            {
+              "key": "fornituraEncoder",
+              "kind": "text",
+              "label": "Fornitura encoder",
+              "maxLength": 30,
+              "line": [403.9, 574.2, 421.9]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "tipoEncoder",
+              "kind": "text",
+              "label": "Tipo encoder",
+              "maxLength": 30,
+              "line": [119.9, 294.5, 440.3]
+            },
+            {
+              "key": "schedaEncoder",
+              "kind": "text",
+              "label": "Scheda encoder",
+              "maxLength": 30,
+              "line": [403.9, 574.2, 439.9]
+            }
+          ]
+        },
+        {
+          "titolo": "Opzioni",
+          "campi": [
+            {
+              "key": "contattoTermicoNC",
+              "kind": "check",
+              "label": "Contatto termico N.C.",
+              "box": [124.1, 450.20000000000005, 133.70000000000002, 459.09999999999997]
+            },
+            {
+              "key": "motoreAltra1",
+              "kind": "check",
+              "label": "Altro 1",
+              "box": [254.0, 450.6, 263.29999999999995, 459.5]
+            },
+            {
+              "key": "motoreAltra1Testo",
+              "kind": "text",
+              "label": "Altro 1 (specificare)",
+              "maxLength": 30,
+              "line": [267.1, 414.0, 458.1]
+            },
+            {
+              "key": "motoreAltra2",
+              "kind": "check",
+              "label": "Altro 2",
+              "box": [420.70000000000005, 450.20000000000005, 430.7, 459.5]
+            },
+            {
+              "key": "motoreAltra2Testo",
+              "kind": "text",
+              "label": "Altro 2 (specificare)",
+              "maxLength": 30,
+              "line": [434.5, 574.2, 457.9]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Operatore porte",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "tipoOperatore1",
+              "kind": "text",
+              "label": "Tipo operatore 1",
+              "maxLength": 40,
+              "line": [119.9, 294.5, 493.9],
+              "prefill": "tipoPorte"
+            },
+            {
+              "key": "modelloOperatore1",
+              "kind": "text",
+              "label": "Modello operatore 1",
+              "maxLength": 40,
+              "line": [403.9, 574.2, 493.9]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "tipoOperatore2",
+              "kind": "text",
+              "label": "Tipo operatore 2",
+              "maxLength": 40,
+              "line": [119.9, 294.5, 512.3]
+            },
+            {
+              "key": "modelloOperatore2",
+              "kind": "text",
+              "label": "Modello operatore 2",
+              "maxLength": 40,
+              "line": [403.9, 574.2, 512.3]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "dispositivoFotocellula",
+              "kind": "text",
+              "label": "Dispositivo fotocellula/barriera",
+              "maxLength": 40,
+              "line": [119.9, 294.5, 536.6]
+            },
+            {
+              "key": "tensionePattino",
+              "kind": "text",
+              "label": "Tensione pattino retrattile",
+              "maxLength": 20,
+              "line": [403.9, 574.2, 536.6]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "rallentamentoApertura",
+              "kind": "text",
+              "label": "Rallentamento apertura",
+              "maxLength": 20,
+              "line": [119.9, 294.5, 562.7]
+            },
+            {
+              "key": "rallentamentoChiusura",
+              "kind": "text",
+              "label": "Rallentamento chiusura",
+              "maxLength": 20,
+              "line": [403.9, 574.2, 562.3]
+            }
+          ]
+        },
+        {
+          "titolo": "Opzioni",
+          "campi": [
+            {
+              "key": "alimentatoInMarcia",
+              "kind": "check",
+              "label": "Alimentato in marcia",
+              "box": [124.1, 574.1, 134.0, 582.6]
+            },
+            {
+              "key": "stazionamentoAperte",
+              "kind": "check",
+              "label": "Stazionamento porte aperte",
+              "box": [244.0, 574.1, 253.9, 582.6]
+            },
+            {
+              "key": "stazionamentoChiuse",
+              "kind": "check",
+              "label": "Stazionamento porte chiuse",
+              "box": [398.0, 574.1, 407.59999999999997, 582.6]
+            },
+            {
+              "key": "finecorsaApertura",
+              "kind": "check",
+              "label": "Finecorsa apertura",
+              "box": [124.1, 590.6, 133.70000000000002, 599.5]
+            },
+            {
+              "key": "finecorsaChiusura",
+              "kind": "check",
+              "label": "Finecorsa chiusura",
+              "box": [235.7, 590.6, 245.6, 599.1999999999999]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Opzioni",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "tensioneAllarme",
+              "kind": "text",
+              "label": "Tensione allarme",
+              "maxLength": 20,
+              "line": [119.9, 294.5, 633.6]
+            },
+            {
+              "key": "chiaveFuoriServizio",
+              "kind": "text",
+              "label": "Chiave fuori servizio",
+              "maxLength": 30,
+              "line": [403.9, 574.2, 633.6]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "ritornoPiano",
+              "kind": "text",
+              "label": "Ritorno al piano in emergenza",
+              "maxLength": 30,
+              "line": [119.9, 294.5, 658.3]
+            },
+            {
+              "key": "limitatoreVelocita",
+              "kind": "text",
+              "label": "Limitatore di velocità",
+              "maxLength": 30,
+              "line": [403.9, 574.2, 656.6]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "modelloPesacarico",
+              "kind": "text",
+              "label": "Modello pesacarico",
+              "maxLength": 30,
+              "line": [119.9, 294.5, 679.0]
+            },
+            {
+              "key": "fornituraPesacarico",
+              "kind": "text",
+              "label": "Fornitura pesacarico",
+              "maxLength": 30,
+              "line": [403.9, 574.2, 679.0]
+            }
+          ]
+        },
+        {
+          "titolo": "Opzioni",
+          "campi": [
+            {
+              "key": "controlloSequenzaFasi",
+              "kind": "check",
+              "label": "Controllo sequenza fasi",
+              "box": [123.39999999999999, 688.2, 133.3, 697.8]
+            },
+            {
+              "key": "bottonieraIspezione",
+              "kind": "check",
+              "label": "Bottoniera di ispezione nel quadro di manovra",
+              "box": [257.6, 688.9, 266.9, 698.1999999999999]
+            },
+            {
+              "key": "combinatoreTelefonico",
+              "kind": "check",
+              "label": "Combinatore telefonico",
+              "box": [123.39999999999999, 705.8000000000001, 133.3, 714.6999999999999]
+            },
+            {
+              "key": "opzioneAltra",
+              "kind": "check",
+              "label": "Altro",
+              "box": [257.6, 705.8000000000001, 267.2, 714.4]
+            },
+            {
+              "key": "opzioneAltraTesto",
+              "kind": "text",
+              "label": "Altro (specificare)",
+              "maxLength": 60,
+              "line": [271.1, 574.2, 713.2]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Note",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "note",
+              "kind": "textarea",
+              "label": "Note",
+              "maxLength": 450,
+              "area": [21.6, 736.2, 574.2, 791.3],
+              "righe": [751.7, 769.7, 788.4]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Rilievi",
+      "pagina": 2,
+      "righe": [
+        {
+          "titolo": "Sezione vano 1",
+          "campi": [
+            {
+              "key": "s1Fossa",
+              "kind": "text",
+              "label": "Fossa",
+              "maxLength": 6,
+              "line": [23.8, 41.8, 431.6]
+            },
+            {
+              "key": "s1Interpiano1",
+              "kind": "text",
+              "label": "Interpiano 1",
+              "maxLength": 6,
+              "line": [23.8, 60.5, 388.8]
+            },
+            {
+              "key": "s1Interpiano2",
+              "kind": "text",
+              "label": "Interpiano 2",
+              "maxLength": 6,
+              "line": [23.8, 60.5, 332.1]
+            },
+            {
+              "key": "s1Interpiano3",
+              "kind": "text",
+              "label": "Interpiano 3",
+              "maxLength": 6,
+              "line": [23.8, 60.5, 276.8]
+            },
+            {
+              "key": "s1Interpiano4",
+              "kind": "text",
+              "label": "Interpiano 4",
+              "maxLength": 6,
+              "line": [23.8, 60.5, 221.0]
+            },
+            {
+              "key": "s1Interpiano5",
+              "kind": "text",
+              "label": "Interpiano 5",
+              "maxLength": 6,
+              "line": [23.8, 60.5, 165.2]
+            }
+          ]
+        },
+        {
+          "titolo": "Sezione vano 2",
+          "campi": [
+            {
+              "key": "s2Interpiano6",
+              "kind": "text",
+              "label": "Interpiano 6",
+              "maxLength": 6,
+              "line": [172.1, 213.1, 402.8]
+            },
+            {
+              "key": "s2Interpiano7",
+              "kind": "text",
+              "label": "Interpiano 7",
+              "maxLength": 6,
+              "line": [172.1, 213.1, 345.2]
+            },
+            {
+              "key": "s2Interpiano8",
+              "kind": "text",
+              "label": "Interpiano 8",
+              "maxLength": 6,
+              "line": [172.1, 213.1, 288.5]
+            },
+            {
+              "key": "s2Interpiano9",
+              "kind": "text",
+              "label": "Interpiano 9",
+              "maxLength": 6,
+              "line": [172.1, 213.1, 230.9]
+            },
+            {
+              "key": "s2Testata",
+              "kind": "text",
+              "label": "Testata",
+              "maxLength": 6,
+              "line": [172.1, 194.4, 173.9]
+            }
+          ]
+        },
+        {
+          "titolo": "Pianta vano 1",
+          "campi": [
+            {
+              "key": "p1Larghezza",
+              "kind": "text",
+              "label": "Larghezza vano",
+              "maxLength": 8,
+              "line": [425.5, 518.4, 310.3]
+            },
+            {
+              "key": "p1Profondita",
+              "kind": "text",
+              "label": "Profondità vano",
+              "maxLength": 8,
+              "line": [425.5, 468.0, 394.7]
+            }
+          ]
+        },
+        {
+          "titolo": "Pianta vano 2",
+          "campi": [
+            {
+              "key": "p2Larghezza",
+              "kind": "text",
+              "label": "Larghezza vano",
+              "maxLength": 8,
+              "line": [424.8, 518.4, 139.3]
+            },
+            {
+              "key": "p2Profondita",
+              "kind": "text",
+              "label": "Profondità vano",
+              "maxLength": 8,
+              "line": [424.8, 468.0, 218.3]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "fossaTestata",
+              "kind": "text",
+              "label": "Fossa e testata [mm]",
+              "maxLength": 20,
+              "line": [119.9, 265.7, 475.2]
+            },
+            {
+              "key": "corsa",
+              "kind": "text",
+              "label": "Corsa [mm]",
+              "maxLength": 8,
+              "line": [417.6, 547.2, 473.0]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "posizioneQuadro",
+              "kind": "text",
+              "label": "Posizione quadro di manovra",
+              "maxLength": 40,
+              "line": [119.9, 294.5, 498.6]
+            },
+            {
+              "key": "distanzaQuadroVano",
+              "kind": "text",
+              "label": "Distanza quadro di manovra - vano [mm]",
+              "maxLength": 8,
+              "line": [403.9, 547.2, 493.9]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "fornituraCavi",
+              "kind": "text",
+              "label": "Fornitura cavi di potenza",
+              "maxLength": 40,
+              "line": [119.9, 294.5, 524.2]
+            },
+            {
+              "key": "distanzaQuadroMotore",
+              "kind": "text",
+              "label": "Distanza quadro di manovra - motore [mm]",
+              "maxLength": 8,
+              "line": [403.9, 547.2, 519.1]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Bottoniera di cabina",
+      "pagina": 2,
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "cabTipoFornitura",
+              "kind": "text",
+              "label": "Tipo fornitura",
+              "maxLength": 40,
+              "line": [119.9, 294.5, 561.2]
+            },
+            {
+              "key": "cabModello",
+              "kind": "text",
+              "label": "Modello bottoniera",
+              "maxLength": 40,
+              "line": [403.9, 574.2, 559.4]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "cabTipoDisplay",
+              "kind": "text",
+              "label": "Tipo display",
+              "maxLength": 40,
+              "line": [119.9, 294.5, 579.6]
+            },
+            {
+              "key": "cabSegnalazioni",
+              "kind": "text",
+              "label": "Segnalazioni",
+              "maxLength": 40,
+              "line": [403.9, 574.2, 577.8]
+            }
+          ]
+        },
+        {
+          "titolo": "Opzioni",
+          "campi": [
+            {
+              "key": "cabSovraccarico",
+              "kind": "check",
+              "label": "Sovraccarico",
+              "box": [125.5, 588.8000000000001, 135.5, 597.0]
+            },
+            {
+              "key": "cabPienoCarico",
+              "kind": "check",
+              "label": "Pieno carico",
+              "box": [210.5, 588.1, 220.1, 596.3]
+            },
+            {
+              "key": "cabFrecce",
+              "kind": "check",
+              "label": "Frecce di direzione",
+              "box": [291.5, 587.8000000000001, 300.7, 595.9]
+            },
+            {
+              "key": "cabGong",
+              "kind": "check",
+              "label": "Gong",
+              "box": [401.6, 587.0, 411.59999999999997, 595.6]
+            },
+            {
+              "key": "cabAltra",
+              "kind": "check",
+              "label": "Altro",
+              "box": [125.89999999999999, 605.0, 135.5, 614.3]
+            },
+            {
+              "key": "cabAltraTesto",
+              "kind": "text",
+              "label": "Altro (specificare)",
+              "maxLength": 60,
+              "line": [139.3, 574.2, 612.7]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Bottoniere di piano",
+      "pagina": 2,
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "pianoTipoFornitura",
+              "kind": "text",
+              "label": "Tipo fornitura",
+              "maxLength": 40,
+              "line": [119.9, 294.5, 648.4]
+            },
+            {
+              "key": "pianoModello",
+              "kind": "text",
+              "label": "Modello bottoniere",
+              "maxLength": 40,
+              "line": [403.9, 574.2, 646.2]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "pianoTipoDisplay",
+              "kind": "text",
+              "label": "Tipo display",
+              "maxLength": 40,
+              "line": [119.9, 294.5, 666.7]
+            },
+            {
+              "key": "pianoSegnalazioni",
+              "kind": "text",
+              "label": "Segnalazioni",
+              "maxLength": 40,
+              "line": [403.9, 574.2, 664.6]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "pianoPosizioneDisplay",
+              "kind": "text",
+              "label": "Posizione display",
+              "maxLength": 40,
+              "line": [119.9, 294.5, 684.7]
+            }
+          ]
+        },
+        {
+          "titolo": "Segnalazioni",
+          "campi": [
+            {
+              "key": "segnalazione1",
+              "kind": "check",
+              "label": "Segnalazione 1",
+              "box": [126.19999999999999, 694.7, 135.8, 703.6]
+            },
+            {
+              "key": "segnalazione1Testo",
+              "kind": "text",
+              "label": "Segnalazione 1 (specificare)",
+              "maxLength": 30,
+              "line": [139.7, 266.4, 702.2]
+            },
+            {
+              "key": "segnalazione2",
+              "kind": "check",
+              "label": "Segnalazione 2",
+              "box": [272.8, 693.6, 282.7, 703.1999999999999]
+            },
+            {
+              "key": "segnalazione2Testo",
+              "kind": "text",
+              "label": "Segnalazione 2 (specificare)",
+              "maxLength": 30,
+              "line": [286.6, 413.3, 701.5]
+            },
+            {
+              "key": "segnalazione3",
+              "kind": "check",
+              "label": "Segnalazione 3",
+              "box": [417.8, 692.2, 427.79999999999995, 701.8]
+            },
+            {
+              "key": "segnalazione3Testo",
+              "kind": "text",
+              "label": "Segnalazione 3 (specificare)",
+              "maxLength": 30,
+              "line": [431.6, 574.2, 700.0]
+            },
+            {
+              "key": "segnalazione4",
+              "kind": "check",
+              "label": "Segnalazione 4",
+              "box": [126.19999999999999, 712.7, 135.8, 722.3]
+            },
+            {
+              "key": "segnalazione4Testo",
+              "kind": "text",
+              "label": "Segnalazione 4 (specificare)",
+              "maxLength": 60,
+              "line": [139.7, 574.2, 720.5]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Note (pagina 2)",
+      "pagina": 2,
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "noteRilievi",
+              "kind": "textarea",
+              "label": "Note",
+              "maxLength": 300,
+              "area": [21.6, 740.2, 574.2, 777.6],
+              "righe": [755.6, 774.7]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

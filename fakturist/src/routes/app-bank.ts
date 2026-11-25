@@ -1,0 +1,177 @@
+import { Router, type Request } from 'express';
+import { rateLimit } from 'express-rate-limit';
+import { prisma } from '../db.js';
+import { HttpError, requireOrg } from '../auth/guards.js';
+import { roleCan } from '../auth/roles.js';
+import { orgHasFeature } from '../billing/entitlements.js';
+import { documentUpload, uploadStatus } from '../http/upload.js';
+import { HOUR } from '../time.js';
+import { BankFormatError } from '../bank/entries.js';
+import {
+  DocumentPaymentError,
+  ignoreLine,
+  importStatement,
+  matchLine,
+  deleteStatement,
+  ReconcileError,
+  suggestMany,
+  undoLine,
+} from '../bank/reconcile.js';
+import { param } from './app-shared.js';
+import { afterDate, PAGE_SIZE, pageOf, pagerLinks, readCursor } from '../http/pagination.js';
+
+/**
+ * „Банка“ (SPEC 54): качване на извлечение (camt.053/CSV), новите постъпления с предложение за
+ * фактура, потвърждение (или друг номер), пропускане, отмяна. Четене — `documents.read`; запис —
+ * `documents.issue`; план с `bank-matching`.
+ */
+const uploadLimiter = rateLimit({
+  windowMs: HOUR,
+  limit: 30,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  keyGenerator: (req) => req.principal?.user.id ?? 'anonymous',
+});
+
+function code(value: unknown): string {
+  return typeof value === 'string' && /^[a-zA-Z]{2,30}$/.test(value) ? value : '';
+}
+
+function failure(error: unknown): string | null {
+  if (error instanceof ReconcileError || error instanceof BankFormatError) return error.code;
+  if (error instanceof DocumentPaymentError)
+    return `payment${error.code[0]!.toUpperCase()}${error.code.slice(1)}`;
+  return null;
+}
+
+async function writer(req: Request) {
+  return requireOrg(req, 'documents.issue');
+}
+
+export function appBankRouter(): Router {
+  const router = Router();
+
+  router.get('/app/o/:orgId/banka', async (req, res) => {
+    const access = await requireOrg(req, 'documents.read');
+    // Два списъка с отделни страници: „За свързване“ (`novi`) и „Обработени“ (`gotovi`).
+    const freshCursor = readCursor(req.query['novi']);
+    const doneCursor = readCursor(req.query['gotovi']);
+    const [org, freshRows, doneRows, statements, feature] = await Promise.all([
+      prisma.organization.findUniqueOrThrow({
+        where: { id: access.organizationId },
+        select: { id: true, legalName: true },
+      }),
+      prisma.bankLine.findMany({
+        where: {
+          organizationId: access.organizationId,
+          status: 'NEW',
+          ...afterDate('bookingDate', freshCursor, 'desc'),
+        },
+        orderBy: [{ bookingDate: 'desc' }, { id: 'desc' }],
+        take: PAGE_SIZE + 1,
+      }),
+      prisma.bankLine.findMany({
+        where: {
+          organizationId: access.organizationId,
+          status: { not: 'NEW' },
+          ...afterDate('bookingDate', doneCursor, 'desc'),
+        },
+        orderBy: [{ bookingDate: 'desc' }, { id: 'desc' }],
+        take: PAGE_SIZE + 1,
+        include: {
+          documentPayment: { select: { document: { select: { id: true, number: true } } } },
+        },
+      }),
+      prisma.bankStatement.findMany({
+        where: { organizationId: access.organizationId },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      }),
+      orgHasFeature(access.organizationId, 'bank-matching', { viaFirmId: access.viaFirmId }),
+    ]);
+    const fresh = pageOf(freshRows, PAGE_SIZE, (line) => line.bookingDate);
+    const done = pageOf(doneRows, PAGE_SIZE, (line) => line.bookingDate);
+    const suggestions = await suggestMany(access.organizationId, fresh.items);
+    const path = `/app/o/${org.id}/banka`;
+    res.render('app/bank', {
+      org,
+      lines: fresh.items.map((line, i) => ({ line, suggestion: suggestions[i] })),
+      done: done.items,
+      freshPager: pagerLinks(req, path, 'novi', ['gotovi'], fresh.next),
+      donePager: pagerLinks(req, path, 'gotovi', ['novi'], done.next),
+      statements,
+      feature,
+      canWrite: roleCan(access.role, 'documents.issue'),
+      ok: code(req.query['ok']),
+      err: code(req.query['err']),
+      counts: {
+        total: Number(req.query['total']) || 0,
+        created: Number(req.query['created']) || 0,
+        skipped: Number(req.query['skipped']) || 0,
+      },
+    });
+  });
+
+  router.post('/app/o/:orgId/banka', uploadLimiter, documentUpload(), async (req, res) => {
+    const access = await writer(req);
+    const base = `/app/o/${access.organizationId}/banka`;
+    const status = uploadStatus(req);
+    if (status !== 'ok' || !req.file)
+      return res.redirect(303, `${base}?err=${status === 'tooLarge' ? 'tooLarge' : 'file'}`);
+    try {
+      const result = await importStatement(access, req.principal!.user.id, {
+        name: req.file.originalname,
+        buffer: req.file.buffer,
+      });
+      res.redirect(
+        303,
+        `${base}?ok=imported&total=${result.total}&created=${result.created}&skipped=${result.skipped}`,
+      );
+    } catch (error) {
+      const reason = failure(error);
+      if (!reason) throw error;
+      res.redirect(303, `${base}?err=${reason}`);
+    }
+  });
+
+  router.post('/app/o/:orgId/banka/izvlechenie/:statementId/iztriy', async (req, res) => {
+    const access = await writer(req);
+    try {
+      await deleteStatement(access, req.principal!.user.id, param(req, 'statementId'));
+    } catch (error) {
+      if (error instanceof ReconcileError) throw new HttpError(404);
+      throw error;
+    }
+    res.redirect(303, `/app/o/${access.organizationId}/banka?ok=deleted`);
+  });
+
+  router.post('/app/o/:orgId/banka/:lineId/:action', async (req, res) => {
+    const access = await writer(req);
+    const base = `/app/o/${access.organizationId}/banka`;
+    const lineId = param(req, 'lineId');
+    const actor = req.principal!.user.id;
+    const action = String(req.params['action']);
+    try {
+      if (action === 'svarzhi') {
+        const number = (req.body as Record<string, unknown>)['number'];
+        if (typeof number !== 'string' || !/^\d{1,10}$/.test(number.trim())) {
+          return res.redirect(303, `${base}?err=number`);
+        }
+        await matchLine(access, actor, lineId, number);
+      } else if (action === 'propusni') {
+        await ignoreLine(access, actor, lineId);
+      } else if (action === 'otmeni') {
+        await undoLine(access, actor, lineId);
+      } else {
+        return res.redirect(303, base);
+      }
+    } catch (error) {
+      const reason = failure(error);
+      if (!reason) throw error;
+      return res.redirect(303, `${base}?err=${reason}`);
+    }
+    res.redirect(303, `${base}?ok=${action}`);
+  });
+
+  return router;
+}

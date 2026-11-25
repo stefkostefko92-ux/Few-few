@@ -29,7 +29,7 @@ const causes = [
       "Доброволци помагат безплатно — как да си направите имейл, да ползвате " +
       "Viber, да внимавате с измами и още. Потърсете ни и ще намерим начин да " +
       "помогнем на вас или ваш близък.",
-    contactEmail: "zabobovdol@carbonstealth.eu",
+    contactEmail: "info@carbonstealth.eu",
   },
   {
     slug: "darete-vreme-ili-veshti-nuzhdaeshti-se",
@@ -42,7 +42,7 @@ const causes = [
       "помощ в дома или да дарите топли дрехи, продукти или дърва за зимата — " +
       "свържете се с нас. Ще ви насочим към хора, на които това наистина ще " +
       "помогне.",
-    contactEmail: "zabobovdol@carbonstealth.eu",
+    contactEmail: "info@carbonstealth.eu",
   },
 ];
 
@@ -72,7 +72,7 @@ const volunteers = [
     about:
       "Помагаме безплатно на възрастните хора да се справят с телефона и " +
       "интернет. Пишете ни и ще намерим начин да помогнем на вас или ваш близък.",
-    email: "zabobovdol@carbonstealth.eu",
+    email: "info@carbonstealth.eu",
   },
 ];
 
@@ -95,7 +95,8 @@ async function main() {
     await prisma.memory.upsert({
       where: { slug: m.slug },
       update: { ...m },
-      create: { ...m, published: true },
+      // Примерният спомен е само за формата — не се показва на посетителите.
+      create: { ...m, published: !m.content.startsWith("Това е примерен спомен") },
     });
   }
   console.log(

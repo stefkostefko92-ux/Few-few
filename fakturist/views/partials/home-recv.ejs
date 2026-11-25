@@ -1,0 +1,48 @@
+<%# „Какво вижда програмата на получателя“: PDF като картина срещу XML като полета. Декоративната страница е aria-hidden; смисълът е в текста. -%>
+<section class="section recv" aria-labelledby="recv-h">
+  <div class="wrap">
+    <div class="recv-head" data-rv>
+      <h2 id="recv-h"><%= t('landing.recv.title') %></h2>
+      <p class="muted"><%= t('landing.recv.lead') %></p>
+    </div>
+    <div class="recv-grid" data-rv data-recv>
+      <div class="rc rc-pdf">
+        <p class="rc-file mono"><%= t('landing.recv.pdfName') %></p>
+        <div class="rc-row">
+        <div class="page" aria-hidden="true">
+          <svg viewBox="0 0 240 300" width="240" height="300" focusable="false">
+            <rect x="24" y="26" width="92" height="12" rx="2" class="pg-d"/>
+            <rect x="150" y="28" width="66" height="8" rx="2" class="pg-l"/>
+            <rect x="24" y="64" width="70" height="6" rx="2" class="pg-l"/><rect x="24" y="78" width="96" height="6" rx="2" class="pg-l"/>
+            <rect x="140" y="64" width="76" height="6" rx="2" class="pg-l"/><rect x="140" y="78" width="60" height="6" rx="2" class="pg-l"/>
+            <rect x="24" y="118" width="192" height="1.5" class="pg-l"/>
+            <rect x="24" y="132" width="110" height="7" rx="2" class="pg-l"/><rect x="170" y="132" width="46" height="7" rx="2" class="pg-d"/>
+            <rect x="24" y="152" width="70" height="7" rx="2" class="pg-l"/><rect x="176" y="152" width="40" height="7" rx="2" class="pg-d"/>
+            <rect x="24" y="176" width="192" height="1.5" class="pg-d"/>
+            <rect x="24" y="190" width="80" height="9" rx="2" class="pg-d"/><rect x="164" y="190" width="52" height="9" rx="2" class="pg-d"/>
+            <circle cx="52" cy="248" r="16" class="pg-s"/><rect x="78" y="240" width="86" height="6" rx="2" class="pg-l"/><rect x="78" y="252" width="60" height="6" rx="2" class="pg-l"/>
+          </svg>
+          <span class="scan"></span>
+        </div>
+        <dl class="guess">
+          <div><dt><%= t('site.home.doc.number') %></dt><dd><span class="q" aria-hidden="true">?</span><%= t('landing.recv.unknown') %></dd></div>
+          <div><dt><%= t('site.home.doc.total') %></dt><dd><span class="q" aria-hidden="true">?</span><%= t('landing.recv.unknown') %></dd></div>
+          <div><dt><%= t('site.home.doc.vat') %></dt><dd><span class="q" aria-hidden="true">?</span><%= t('landing.recv.unknown') %></dd></div>
+        </dl>
+        </div>
+        <h3><%= t('landing.recv.pdfTitle') %></h3>
+        <p><%= t('landing.recv.pdfText') %></p>
+      </div>
+      <div class="rc rc-xml">
+        <p class="rc-file mono"><%= t('landing.recv.xmlName') %></p>
+        <dl class="parsed">
+<% [['BT-1', t('site.home.doc.number'), '0000000124'], ['BT-2', t('site.home.doc.issueDate'), '2026-11-12'], ['BT-5', t('site.home.doc.currency'), 'EUR'], ['BT-110', t('site.home.doc.vat'), '200.00'], ['BT-115', t('site.home.doc.total'), '1200.00']].forEach((r, k) => { -%>
+          <div class="pf t<%= k %>"><dt><span class="bt"><%= r[0] %></span> <%= r[1] %></dt><dd><span class="mono"><%= r[2] %></span><svg class="pf-ok" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 4.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr"> <%= t('landing.recv.read') %></span></dd></div>
+<% }) -%>
+        </dl>
+        <h3><%= t('landing.recv.xmlTitle') %></h3>
+        <p><%= t('landing.recv.xmlText') %></p>
+      </div>
+    </div>
+  </div>
+</section>

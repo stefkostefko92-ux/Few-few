@@ -11,14 +11,14 @@ export function PremiumBadge({ small = false }) {
   const { t } = useT();
   if (small) {
     return (
-      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-cs-gold/10 text-cs-gold text-[9px] font-bold uppercase tracking-wider border border-cs-gold/30">
+      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-cs-gold/10 text-cs-gold text-xs font-bold border border-cs-gold/30">
         <Star className="w-2.5 h-2.5 fill-current" />
         {t("premium.badge")}
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cs-gold/10 text-cs-gold text-[10px] font-bold uppercase tracking-wider border border-cs-gold/30">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cs-gold/10 text-cs-gold text-xs font-bold border border-cs-gold/30">
       <Star className="w-3 h-3 fill-current" />
       {t("premium.badge")}
     </span>
@@ -41,7 +41,7 @@ export function PremiumGate({ locked, feature, children, className = "" }) {
       <div className="absolute inset-0 flex items-center justify-center bg-cs-black/40 backdrop-blur-[1px] rounded-lg">
         <Link
           to={`/dashboard/${serverId}/premium`}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-cs-gold/20 hover:bg-cs-gold/30 text-cs-gold text-xs font-bold uppercase tracking-wider border border-cs-gold/40 transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-cs-gold/20 hover:bg-cs-gold/30 text-cs-gold text-xs font-bold border border-cs-gold/40 transition-colors"
         >
           <Lock className="w-3 h-3" />
           {feature ? t("premium.upgradeTo", { feature }) : t("premium.required")}
@@ -66,7 +66,7 @@ export function PremiumLockCard({ feature, description }) {
       </p>
       <Link
         to={`/dashboard/${serverId}/premium`}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cs-gold hover:bg-cs-goldDim text-black text-xs font-bold uppercase tracking-wider transition-colors"
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cs-gold hover:bg-cs-goldDim text-black text-xs font-bold transition-colors"
       >
         <Star className="w-3 h-3 fill-current" />
         {t("premium.upgradeToPremium")}

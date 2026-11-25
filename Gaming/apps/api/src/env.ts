@@ -76,6 +76,13 @@ const envSchema = z.object({
   // true = TLS от първия байт (порт 465); false = STARTTLS (порт 587).
   SMTP_SECURE: envBool(false),
   EMAIL_FROM: z.string().default("АСО <no-reply@gaming.carbonstealth.eu>"),
+  // Ключ за шифроване на тайните от админ панела (ключът за Brevo SMTP): 64 hex.
+  // autodeploy.sh го създава сам; празно = конзолата за пощата не записва.
+  SETTINGS_SECRET_KEY: z
+    .string()
+    .optional()
+    .default("")
+    .refine((v) => v === "" || /^[0-9a-f]{64}$/i.test(v), "SETTINGS_SECRET_KEY трябва да е 64 hex знака"),
 
   // OAuth (optional, env-gated). A provider is enabled only when BOTH its id
   // and secret are present. Secrets never leave env (§14).

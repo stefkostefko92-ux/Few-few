@@ -2,6 +2,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { lintFile } from "./manifest-lint.mjs";
+import { mkdtempSync, mkdirSync, writeFileSync, copyFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 const codes = (fs) => new Set(fs.map((f) => f.code));
 
@@ -62,4 +67,18 @@ test("server/main.lua и client/main.lua се разпознават по път
 test("SQL конкатенация с кавичка вътре в низа не минава за чисто", () => {
   const src = `MySQL.update("UPDATE users SET name='" .. name .. "' WHERE id=" .. id)`;
   assert.ok(codes(lintFile(src, "server/db.lua")).has("sql-concat"));
+});
+
+test("БЛОКЕР: скрипт в път с интервал и кирилица пак върви (exit 1 при HIGH, не тих exit 0)", () => {
+  const base = mkdtempSync(join(tmpdir(), "mlint-"));
+  try {
+    const sd = join(base, "инстр ументи"); mkdirSync(sd);
+    const copy = join(sd, "manifest-lint.mjs");
+    copyFileSync(fileURLToPath(new URL("./manifest-lint.mjs", import.meta.url)), copy);
+    const res = join(base, "res"); mkdirSync(res);
+    writeFileSync(join(res, "fxmanifest.lua"), "game 'gta5'\n");
+    const r = spawnSync("node", [copy, res], { encoding: "utf8" });
+    assert.equal(r.status, 1, r.stdout + r.stderr);
+    assert.match(r.stdout, /no-fx-version/);
+  } finally { rmSync(base, { recursive: true, force: true }); }
 });

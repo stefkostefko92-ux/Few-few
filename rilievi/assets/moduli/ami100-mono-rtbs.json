@@ -1,0 +1,204 @@
+{
+  "id": "ami100-mono-rtbs",
+  "titolo": "AMI 100 Mono RTBS",
+  "fonte": "Campi e ordine dall'elenco «Ami_100.pdf» caricato dal proprietario del portale il 30/10/2026 (i dati per preparare l’ordine, senza modulo): foglio disegnato da Rilievi Impianti (scripts/moduli/ami100.mjs); le scelte fisse dal catalogo AMI100 (tensione 24/48 Vdc, fune del limitatore a sinistra o a destra, guide 7-8-9-16 mm, economizzatore)",
+  "file": "ami100-mono-rtbs.pdf",
+  "sha256": "7ab378d0181a2953ac38a78314f77efe6e844766f8c5c15a46aa2e6dcb6cb55b",
+  "tipo": "overlay",
+  "dimensione": 10,
+  "sopraLinea": 2,
+  "gruppi": [
+    {
+      "titolo": "Intestazione",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "mittente",
+              "kind": "text",
+              "label": "Mittente",
+              "maxLength": 120,
+              "prefill": "azienda",
+              "line": [184, 529, 149.5]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "data",
+              "kind": "text",
+              "label": "Data",
+              "maxLength": 20,
+              "prefill": "data",
+              "line": [184, 529, 176.5]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "riferimento",
+              "kind": "text",
+              "label": "Riferimento impianto",
+              "maxLength": 120,
+              "prefill": "rif",
+              "line": [184, 529, 203.5]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "AMI 100 Mono RTBS",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "disponibilita",
+              "kind": "text",
+              "label": "Disponibilità",
+              "maxLength": 60,
+              "line": [318, 529, 278]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "numeroOrdine",
+              "kind": "text",
+              "label": "Numero d'ordine",
+              "maxLength": 30,
+              "line": [318, 529, 312]
+            }
+          ]
+        },
+        {
+          "titolo": "Tensione di alimentazione",
+          "campi": [
+            {
+              "key": "tensione24",
+              "kind": "check",
+              "label": "24 Vdc",
+              "box": [318, 338, 325, 345]
+            },
+            {
+              "key": "tensione48",
+              "kind": "check",
+              "label": "48 Vdc",
+              "box": [376.2, 338, 383.2, 345]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "codiceAmi",
+              "kind": "text",
+              "label": "Codice AMI 100 MONO RTBS",
+              "maxLength": 40,
+              "line": [318, 529, 380]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "codiceStaffa",
+              "kind": "text",
+              "label": "Codice staffa",
+              "maxLength": 40,
+              "line": [318, 529, 414]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "numeroStaffe",
+              "kind": "text",
+              "label": "Numero staffe",
+              "maxLength": 6,
+              "line": [318, 529, 448]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "codiceSopralzo",
+              "kind": "text",
+              "label": "Codice sopralzo universale",
+              "maxLength": 40,
+              "line": [318, 529, 482]
+            }
+          ]
+        },
+        {
+          "titolo": "Spessore guida [mm]",
+          "campi": [
+            {
+              "key": "spessore7",
+              "kind": "check",
+              "label": "7",
+              "box": [318, 508, 325, 515]
+            },
+            {
+              "key": "spessore8",
+              "kind": "check",
+              "label": "8",
+              "box": [354.2, 508, 361.2, 515]
+            },
+            {
+              "key": "spessore9",
+              "kind": "check",
+              "label": "9",
+              "box": [391.3, 508, 398.3, 515]
+            },
+            {
+              "key": "spessore16",
+              "kind": "check",
+              "label": "16",
+              "box": [428.3, 508, 435.3, 515]
+            }
+          ]
+        },
+        {
+          "titolo": "Economizzatore",
+          "campi": [
+            {
+              "key": "economizzatoreSi",
+              "kind": "check",
+              "label": "Sì",
+              "box": [318, 542, 325, 549]
+            },
+            {
+              "key": "economizzatoreNo",
+              "kind": "check",
+              "label": "No",
+              "box": [357.6, 542, 364.6, 549]
+            }
+          ]
+        },
+        {
+          "titolo": "Posizione della fune del limitatore rispetto alla guida",
+          "campi": [
+            {
+              "key": "funeSinistra",
+              "kind": "check",
+              "label": "Sinistra",
+              "box": [318, 576, 325, 583]
+            },
+            {
+              "key": "funeDestra",
+              "kind": "check",
+              "label": "Destra",
+              "box": [381.5, 576, 388.5, 583]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
