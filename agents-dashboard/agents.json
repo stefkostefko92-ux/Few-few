@@ -1267,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 758
+        "lessons": 759
       },
       "evolution": [
         {
@@ -2145,9 +2145,20 @@
           "date": "2026-11-25",
           "event": "v71.0 — учене",
           "detail": "Научи: .pr-review/337.diff е празен (0 байта), защото PR-ът пипа само lock файл; промяната се …"
+        },
+        {
+          "version": "71.1.0",
+          "date": "2026-11-25",
+          "event": "v71.1 — учене",
+          "detail": "Научи: .pr-review/335.diff (korpora zod 4) съдържа 13 от 14 файла — lock файлът е само в .stat…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „.pr-review/335.diff (korpora zod 4) съдържа 13 от 14 файла — lock файлът е само в .stat…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
