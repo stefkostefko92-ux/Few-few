@@ -4953,7 +4953,7 @@
           "PageSpeed Insights = Lighthouse (лаб) + CrUX (поле) — полето НЕ съществува преди пускане",
           "Наследява CWV работата на SEO (tools/seo/cwv.mjs)"
         ],
-        "lessons": 150
+        "lessons": 152
       },
       "evolution": [
         {
@@ -5075,9 +5075,20 @@
           "date": "2026-11-23",
           "event": "v21.1 — учене",
           "detail": "Научи: prelaunch-audit дава фалшив съвет за render-blocking на Next.js polyfills-*.js, защото … (+6 още)"
+        },
+        {
+          "version": "21.3.0",
+          "date": "2026-11-25",
+          "event": "v21.3 — учене",
+          "detail": "Научи: Фактурист регистрацията е на /registraciya (не /registratsiya, което е 404) и е 404-под… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „Фактурист регистрацията е на /registraciya (не /registratsiya, което е 404) и е 404-под…\" (+1 още)"
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
