@@ -9561,7 +9561,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 326
+        "lessons": 327
       },
       "evolution": [
         {
@@ -9935,9 +9935,20 @@
           "date": "2026-11-25",
           "event": "v31.2 — учене",
           "detail": "Научи: panev/3d/video е офлайн Python/Blender/ffmpeg инструмент за рендериране на клипа; няма …"
+        },
+        {
+          "version": "31.3.0",
+          "date": "2026-11-25",
+          "event": "v31.3 — учене",
+          "detail": "Научи: ColorField и color-palette в linketto са само клиентски UI (localStorage за последните …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „ColorField и color-palette в linketto са само клиентски UI (localStorage за последните …\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
