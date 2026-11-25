@@ -1,0 +1,20 @@
+# Памет на „AI Studio" (v0.1 · самообучаващ се цикъл)
+
+Проверена, преизползваема памет на видео студиото (сцени с код, Blender, FFmpeg/NVENC, звук, мастер за
+DaVinci Resolve) на компютъра на собственика (Windows + NVIDIA). Пълни се от `SubagentStop` hook-а
+(verified → тук, друго → Карантина).
+**Закон:** поука е `verified` само с източник, отворен в сесията (документация на YouTube, Blackmagic, Blender,
+FFmpeg, Remotion) или `файл` + символ. Активите са собствени или лицензирани. Публикува човек.
+
+## Проверени поуки (verified)
+- **2026-11-24:** Когато `gh api` за чуждо репо върне 403 „add_repo“, SHA и дати на комити се четат през `https://github.com/<owner>/<repo>/commits/<branch>.atom` с WebFetch; `api.github.com` през WebFetch дава 403. _(триаж на външни репа само за четене в среда с ограничен достъп до GitHub; verified; пробите в тази сесия (2026-11-24) — gh api 403, api.github.com 403, commits/main.atom върна SHA)_
+
+- **2026-11-23:** YouTube за 2160p при 48–60 fps SDR препоръчва 53–68 Mbps, H.264 High, 2 последователни B-кадъра, затворен GOP с дължина половината от кадрите в секунда, 4:2:0, BT.709, MP4 с fast start и AAC-LC 48 kHz / 384 kbps стерео. _(при експорт на видео за YouTube в 4K/60; verified; https://support.google.com/youtube/answer/1722171 (2026-11-23))_
+- **2026-11-23:** Безплатният DaVinci Resolve работи с 8-битови формати до Ultra HD 3840×2160 при 60 fps; хардуерното H.264/H.265 декодиране и кодиране е изброено в Studio, а дали безплатният го няма, страницата не казва изрично — затова мастерът към Resolve е DNxHR HQ (8-бита), а файлът за YouTube се кодира с NVENC извън Resolve. _(при мастер и експорт през безплатния Resolve; verified; https://www.blackmagicdesign.com/products/davinciresolve/studio (2026-11-23))_
+- **2026-11-23:** Remotion 4.x е безплатен за физически лица и за фирми с общо до 3 души — сътрудниците и фрийлансърите по проекта се броят, а при проект на клиент се събират хората на двете фирми; над това — фирмен лиценз. Рендерът от командния ред праща телеметрия само при зададен `licenseKey` (и при „free-license“), а рендерът в браузъра — винаги; при 5.0 лицензът се сменя. _(при избор и пускане на Remotion; verified; https://raw.githubusercontent.com/remotion-dev/remotion/main/LICENSE.md + https://www.remotion.dev/docs/license/faq.md + https://www.remotion.dev/docs/telemetry (2026-11-23))_
+
+## Карантина (непроверени / спорни — НЕ са факт)
+- **2026-11-24:** `remotion-dev/skills` няма LICENSE файл на страницата на репото и `package.json` няма поле `license`; лицензът на skill файловете не е потвърден. _(преди копиране на файлове от официалния Remotion skill; probable; https://raw.githubusercontent.com/remotion-dev/skills/main/package.json (2026-11-24); LICENSE.md върна 404)_
+- **2026-11-24:** `remotion-dev/skills` няма LICENSE файл в страницата на репото и `package.json` няма поле `license`; лицензът на skill файловете не е потвърден. _(преди копиране на файлове от официалния Remotion skill; probable; https://github.com/remotion-dev/skills и https://raw.githubusercontent.com/remotion-dev/skills/main/package.json (2026-11-24); LICENSE.md → 404)_
+
+- **2026-11-23:** Търговската употреба на безплатния DaVinci Resolve не е потвърдена в лицензионното споразумение (то се вижда само при сваляне и в инсталатора); собственикът го чете при инсталиране и пази PDF или снимка с версията. _(при търговска употреба на безплатния Resolve; unverified; форумни отговори на поддръжката на Blackmagic, 403 при отваряне)_

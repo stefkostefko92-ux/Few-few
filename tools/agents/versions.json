@@ -145,8 +145,8 @@
       "id": "claude-models",
       "manual": true,
       "ttlDays": 30,
-      "current": "Claude 5: Fable 5.1 (claude-fable-5-1) · Opus 5.5 (claude-opus-5-5) · Sonnet 5.5 (claude-sonnet-5-5) · Haiku 5.5 (claude-haiku-5-5). Предишни, още налични: Opus 5 · Sonnet 5 · Opus 4.8. Цени (USD/1M вход/изход): Opus 5.5 $4/$20 · Sonnet 5.5 $2/$10 · кеш-четене 0.05× при 5.5 — живеят в tools/agents/prices.json.",
-      "checkedAt": "2026-10-24",
+      "current": "Claude 5: Fable 5.2 (claude-fable-5-2) · Opus 5.5 (claude-opus-5-5) · Sonnet 5.5 (claude-sonnet-5-5) · Haiku 5.5 (claude-haiku-5-5). Предишни, още налични: Fable 5.1 · Opus 5 · Sonnet 5 · Opus 4.8; Mythos 5.2 — ограничен достъп. Цени (USD/1M вход/изход): Fable 5.2 $8/$40 · Opus 5.5 $4/$20 · Sonnet 5.5 $2/$10 · кеш-четене 0.05× при Opus/Sonnet 5.5, 0.025× при Fable 5.2/5.1, 0.1× при Haiku 5.5 — живеят в tools/agents/prices.json.",
+      "checkedAt": "2026-11-24",
       "source": "https://platform.claude.com/docs/en/about-claude/models/overview + https://platform.claude.com/docs/en/about-claude/pricing"
     },
     {
@@ -156,6 +156,18 @@
       "current": "Manifest V3 е единственият приеман от Web Store; MV2 е мъртъв — Chrome 138 е последната версия с MV2, а на 2026-08-31 всички останали MV2 разширения са махнати от Web Store",
       "checkedAt": "2026-10-28",
       "source": "https://developer.chrome.com/docs/extensions/develop/migrate/mv2-deprecation-timeline"
+    },
+    {
+      "id": "anthropic-sdk",
+      "npm": "@anthropic-ai/sdk",
+      "current": "1.5.0",
+      "checkedAt": "2026-11-19"
+    },
+    {
+      "id": "anthropic-vertex-sdk",
+      "npm": "@anthropic-ai/vertex-sdk",
+      "current": "1.1.2",
+      "checkedAt": "2026-11-19"
     }
   ]
 }

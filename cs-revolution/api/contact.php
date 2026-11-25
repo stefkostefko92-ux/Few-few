@@ -11,6 +11,7 @@ header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('Cache-Control: no-store');
 require_once __DIR__.'/_auth.php';
+require_once __DIR__.'/_contact.php';   // полета (+ B2B: фирма, държава, тип, бюджет), ред в лога, писмото до нас
 
 $allowed = ['https://carbonstealth.eu','https://www.carbonstealth.eu'];
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -32,10 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && ($_GET['action'] ?? '') === 'log') {
         foreach ($files as $f) {
             $lines = file($f, FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES);
             foreach (array_reverse($lines) as $line) {
-                $parts = explode(' | ', $line, 6);
-                if (count($parts) >= 4) {
-                    $entries[] = ['date'=>trim($parts[0]),'name'=>trim($parts[1]),'email'=>trim($parts[2]),'phone'=>trim($parts[3]),'lang'=>trim($parts[4] ?? ''),'message'=>trim($parts[5] ?? '')];
-                }
+                $e = cs_contact_log_parse($line);   // стар (6 полета) и нов (10 полета) формат
+                if ($e !== null) $entries[] = $e;
             }
         }
     }
@@ -85,25 +84,22 @@ if ($rlOver) {
 $raw = file_get_contents('php://input');
 $data = json_decode($raw, true) ?: $_POST;
 
-$name    = trim(strip_tags($data['name'] ?? ''));
-$email   = trim(strip_tags($data['email'] ?? ''));
-$phone   = trim(strip_tags($data['phone'] ?? ''));
-$message = trim(strip_tags($data['message'] ?? ''));
-$lang    = trim(strip_tags($data['lang'] ?? 'en'));
-$gotcha  = trim($data['_gotcha'] ?? '');
+if (!is_array($data)) $data = [];
+$f       = cs_contact_fields($data);
+$name    = $f['name'];
+$email   = $f['email'];
+$phone   = $f['phone'];
+$message = $f['message'];
+$lang    = $f['lang'];
+$gotcha  = trim(is_scalar($data['_gotcha'] ?? null) ? (string)$data['_gotcha'] : '');
 
 // Honeypot
 if ($gotcha !== '') { echo json_encode(['ok'=>true]); exit; }
 
-// Validation
-if ($name === '' || strlen($name) < 2 || strlen($name) > 200) {
-    http_response_code(400); echo json_encode(['ok'=>false,'error'=>'Invalid name']); exit;
-}
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    http_response_code(400); echo json_encode(['ok'=>false,'error'=>'Invalid email']); exit;
-}
-if ($message === '' || strlen($message) < 5 || strlen($message) > 5000) {
-    http_response_code(400); echo json_encode(['ok'=>false,'error'=>'Invalid message']); exit;
+// Validation (задължителните полета — непроменени; новите B2B полета са по избор)
+$err = cs_contact_invalid($f);
+if ($err !== null) {
+    http_response_code(400); echo json_encode(['ok'=>false,'error'=>$err]); exit;
 }
 
 // reCAPTCHA v3 (enforced whenever a secret is configured).
@@ -125,38 +121,10 @@ if (defined('RECAPTCHA_SECRET') && RECAPTCHA_SECRET !== '') {
 
 // ── Build email ──
 $ts = date('Y-m-d H:i:s T');
-$ua = substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 200);
 $langFlag = match($lang) { 'it'=>'IT', 'bg'=>'BG', default=>'EN' };
-$nameH=cs_h($name); $emailH=cs_h($email); $phoneH=cs_h($phone); $messageH=cs_h($message); $uaH=cs_h($ua); $ipH=cs_h($ip);
-
-$html = <<<H
-<table style="width:100%;max-width:600px;font-family:monospace;background:#0a0a0a;color:#f5f5f0;padding:24px">
-<tr><td>
-  <div style="border-bottom:1px solid #00e5ff33;padding-bottom:12px;margin-bottom:16px">
-    <strong style="color:#00e5ff;font-size:14px">CARBON STEALTH VCC — NEW CONTACT</strong>
-  </div>
-  <table style="width:100%;font-size:13px;line-height:2">
-    <tr><td style="color:#999;width:90px">Name:</td><td><strong>$nameH</strong></td></tr>
-    <tr><td style="color:#999">Email:</td><td><a href="mailto:$emailH" style="color:#00e5ff">$emailH</a></td></tr>
-    <tr><td style="color:#999">Phone:</td><td>$phoneH</td></tr>
-    <tr><td style="color:#999">Language:</td><td>$langFlag</td></tr>
-  </table>
-  <div style="margin-top:16px;padding:16px;background:#111;border-left:3px solid #00e5ff">
-    <div style="color:#999;font-size:10px;margin-bottom:8px">MESSAGE:</div>
-    <div style="white-space:pre-wrap">$messageH</div>
-  </div>
-  <div style="margin-top:16px;font-size:10px;color:#666">
-    $ts
-  </div>
-</td></tr></table>
-H;
-
-$txt = "CARBON STEALTH VCC — New Contact\n"
-     . str_repeat("=", 50) . "\n"
-     . "Name:     $name\nEmail:    $email\nPhone:    $phone\nLang:     $langFlag\n\n"
-     . "Message:\n$message\n\n"
-     . str_repeat("-", 50) . "\n"
-     . "Date: $ts";  // IP and browser stay in the server log only, not in the mailbox (GDPR minimisation)
+// писмото до нас (HTML + текст), с фирмата, държавата, типа и бюджета: всичко от посетителя е екранирано;
+// IP и браузърът остават само в сървърния лог, не в пощата (GDPR минимизация)
+[$html, $txt] = cs_contact_mail($f, $ts);
 
 // Auto-reply per lingua.
 // SECURITY: the body must contain NO attacker-controlled text. This mail is
@@ -254,8 +222,7 @@ if (!$sent) {
 // Attempt 3: Log to file (never lose a message)
 // one line per entry: strip CR/LF and the " | " separator so a visitor cannot forge log rows;
 // mb_substr keeps Cyrillic intact (a split byte made json_encode fail in the admin view)
-$logClean = function ($v) { return str_replace(['|', "\r", "\n"], ['/', ' ', ' '], (string)$v); };
-$logEntry = date('c').' | '.$logClean($name).' | '.$logClean($email).' | '.$logClean($phone).' | '.$logClean($langFlag).' | '.$logClean(mb_substr($message,0,200,'UTF-8'))."\n";
+$logEntry = cs_contact_log_line($f, date('c'));   // нов формат (10 полета) — виж api/_contact.php
 $cLog = cs_log_dir().'/contacts_'.date('Y-m').'.log';
 $cNew = !file_exists($cLog);
 @file_put_contents($cLog, $logEntry, FILE_APPEND|LOCK_EX);

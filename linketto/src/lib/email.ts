@@ -7,25 +7,22 @@
 // Brevo НЕ приема стандартни хедъри (вкл. List-Unsubscribe) и сам добавя свой
 // List-Unsubscribe към транзакционните писма — отписването от седмичния отчет е
 // нашата връзка в тялото на писмото (DEPLOY.md §2: настройката при Brevo).
+import { envSetting, parseSender, type EmailSender, type SettingKey } from '@/lib/settings-spec';
+
+export { parseSender, type EmailSender } from '@/lib/settings-spec';
+
+// Ключът и подателят — от админ панела или .env (lib/settings.ts). Той е
+// server-only (база), затова се зарежда при нужда: чистите строители по-долу
+// остават тестваеми, а извън сървъра на Next (node:test) важи само .env.
+async function setting(key: SettingKey): Promise<string | null> {
+  try {
+    return await (await import('@/lib/settings')).setting(key);
+  } catch {
+    return envSetting(key);
+  }
+}
 
 const BREVO_URL = 'https://api.brevo.com/v3/smtp/email';
-const EMAIL_RE = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
-
-export interface EmailSender {
-  name?: string;
-  email: string;
-}
-
-/** EMAIL_FROM „Linketto <no-reply@…>“ или само адрес → подател за Brevo. */
-export function parseSender(raw: string): EmailSender | null {
-  const value = raw.trim();
-  const match = /^(.*?)\s*<([^>]+)>$/.exec(value);
-  const email = (match ? match[2] : value).trim();
-  if (!EMAIL_RE.test(email)) return null;
-  const name = match?.[1].trim().replace(/^"|"$/g, '').trim();
-  return name ? { name, email } : { email };
-}
-
 /** Тялото на POST /v3/smtp/email (само полетата, които ползваме). */
 export function brevoPayload(input: {
   sender: EmailSender;
@@ -43,10 +40,9 @@ export function brevoPayload(input: {
   };
 }
 
-export function emailConfigured(): boolean {
-  return Boolean(
-    process.env.BREVO_API_KEY && parseSender(process.env.EMAIL_FROM ?? ''),
-  );
+/** Brevo е настроен (ключ + подател) — от админ панела или от .env. */
+export async function emailReady(): Promise<boolean> {
+  return Boolean((await setting('brevo.apiKey')) && parseSender((await setting('brevo.sender')) ?? ''));
 }
 
 export async function sendEmail(input: {
@@ -56,8 +52,8 @@ export async function sendEmail(input: {
   /** Етикет в Brevo за филтриране (delivery, digest, newsletter…). */
   tag?: string;
 }): Promise<boolean> {
-  const apiKey = process.env.BREVO_API_KEY;
-  const sender = parseSender(process.env.EMAIL_FROM ?? '');
+  const apiKey = await setting('brevo.apiKey');
+  const sender = parseSender((await setting('brevo.sender')) ?? '');
   if (!apiKey || !sender) return false;
   try {
     const res = await fetch(BREVO_URL, {
@@ -77,6 +73,22 @@ export async function sendEmail(input: {
   }
 }
 
+/** Проверка на ключа от админа: GET /v3/account — отговорът не се показва. */
+export async function brevoPing(): Promise<{ ok: boolean; status?: number }> {
+  const apiKey = await setting('brevo.apiKey');
+  if (!apiKey) return { ok: false };
+  try {
+    const res = await fetch('https://api.brevo.com/v3/account', {
+      headers: { 'api-key': apiKey, Accept: 'application/json' },
+      signal: AbortSignal.timeout(10_000),
+      cache: 'no-store',
+    });
+    return res.ok ? { ok: true } : { ok: false, status: res.status };
+  } catch {
+    return { ok: false };
+  }
+}
+
 const esc = (value: string) =>
   value.replace(/[&<>"]/g, (c) =>
     c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;' : '&quot;',
@@ -84,7 +96,8 @@ const esc = (value: string) =>
 
 // ── Бюлетин (email capture): потвърждение + разпращане ────────────────
 interface NewsletterStrings {
-  confirmSubject: (who: string) => string;
+  /** Без името на профила (то е текст от създателя — Разбивача т. 5); името е само в тялото. */
+  confirmSubject: string;
   confirmIntro: (who: string) => string;
   confirmButton: string;
   confirmIgnore: string;
@@ -94,7 +107,7 @@ interface NewsletterStrings {
 
 const NEWSLETTER_STRINGS: Record<string, NewsletterStrings> = {
   bg: {
-    confirmSubject: (w) => `Потвърди абонамента за ${w}`,
+    confirmSubject: 'Linketto: потвърди абонамента си за бюлетина',
     confirmIntro: (w) => `Записа се за бюлетина на <strong>${w}</strong>. Потвърди имейла си:`,
     confirmButton: 'Потвърди абонамента',
     confirmIgnore: 'Ако не си ти, просто игнорирай този имейл — нищо няма да получиш.',
@@ -102,7 +115,7 @@ const NEWSLETTER_STRINGS: Record<string, NewsletterStrings> = {
     sentVia: 'Изпратено през Linketto',
   },
   en: {
-    confirmSubject: (w) => `Confirm your subscription to ${w}`,
+    confirmSubject: 'Linketto: confirm your newsletter subscription',
     confirmIntro: (w) => `You signed up for <strong>${w}</strong>'s newsletter. Please confirm your email:`,
     confirmButton: 'Confirm subscription',
     confirmIgnore: "If this wasn't you, just ignore this email — you won't receive anything.",
@@ -110,7 +123,7 @@ const NEWSLETTER_STRINGS: Record<string, NewsletterStrings> = {
     sentVia: 'Sent via Linketto',
   },
   it: {
-    confirmSubject: (w) => `Conferma l'iscrizione a ${w}`,
+    confirmSubject: "Linketto: conferma l'iscrizione alla newsletter",
     confirmIntro: (w) => `Ti sei iscritto alla newsletter di <strong>${w}</strong>. Conferma la tua email:`,
     confirmButton: "Conferma l'iscrizione",
     confirmIgnore: 'Se non sei stato tu, ignora questa email — non riceverai nulla.',
@@ -118,7 +131,7 @@ const NEWSLETTER_STRINGS: Record<string, NewsletterStrings> = {
     sentVia: 'Inviato tramite Linketto',
   },
   es: {
-    confirmSubject: (w) => `Confirma tu suscripción a ${w}`,
+    confirmSubject: 'Linketto: confirma tu suscripción al boletín',
     confirmIntro: (w) => `Te suscribiste al boletín de <strong>${w}</strong>. Confirma tu correo:`,
     confirmButton: 'Confirmar suscripción',
     confirmIgnore: 'Si no fuiste tú, ignora este correo — no recibirás nada.',
@@ -126,7 +139,7 @@ const NEWSLETTER_STRINGS: Record<string, NewsletterStrings> = {
     sentVia: 'Enviado a través de Linketto',
   },
   de: {
-    confirmSubject: (w) => `Bestätige dein Abo von ${w}`,
+    confirmSubject: 'Linketto: bestätige dein Newsletter-Abo',
     confirmIntro: (w) => `Du hast den Newsletter von <strong>${w}</strong> abonniert. Bitte bestätige deine E-Mail:`,
     confirmButton: 'Abo bestätigen',
     confirmIgnore: 'Falls du das nicht warst, ignoriere diese E-Mail — du erhältst nichts.',
@@ -134,7 +147,7 @@ const NEWSLETTER_STRINGS: Record<string, NewsletterStrings> = {
     sentVia: 'Gesendet über Linketto',
   },
   fr: {
-    confirmSubject: (w) => `Confirmez votre abonnement à ${w}`,
+    confirmSubject: 'Linketto : confirmez votre abonnement à la newsletter',
     confirmIntro: (w) => `Vous vous êtes inscrit à la newsletter de <strong>${w}</strong>. Confirmez votre e-mail :`,
     confirmButton: "Confirmer l'abonnement",
     confirmIgnore: "Si ce n'était pas vous, ignorez cet e-mail — vous ne recevrez rien.",
@@ -147,8 +160,8 @@ function newsletterStrings(locale?: string): NewsletterStrings {
   return NEWSLETTER_STRINGS[locale ?? 'bg'] ?? NEWSLETTER_STRINGS.en;
 }
 
-export function subscribeConfirmSubject(who: string, locale?: string): string {
-  return newsletterStrings(locale).confirmSubject(who);
+export function subscribeConfirmSubject(_who: string, locale?: string): string {
+  return newsletterStrings(locale).confirmSubject;
 }
 
 /** Имейл за двойно съгласие (GDPR) с линк за потвърждение. */

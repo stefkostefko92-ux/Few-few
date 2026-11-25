@@ -25,10 +25,10 @@
 panev/
 ├── server.js                 ← Express: static + clean URLs + /api/contact + admin
 ├── site/                     ← ИЗТОЧНИК на сайта (генераторът)
-│   ├── build.mjs             ← node site/build.mjs → 36 страници + sitemap + 404
+│   ├── build.mjs             ← node site/build.mjs → 42 страници + sitemap + 404
 │   ├── data/products.mjs     ← всички кодове/цени от каталога (истина)
 │   ├── data/i18n/{it,en,bg}.mjs
-│   └── templates/{layout,pages,products,families,regola}.mjs
+│   └── templates/{layout,pages,products,families,guides,regola}.mjs
 ├── index.html · prodotti.html · catalogo.html · contatti.html
 │   privacy.html · condizioni.html          ← генерирани (IT)
 ├── en/ · bg/                 ← генерирани (EN, BG)

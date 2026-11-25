@@ -2166,19 +2166,40 @@ linketto_install_cron() {
   install -m 644 "$d/deploy/systemd/linketto-cron@.service" /etc/systemd/system/linketto-cron@.service
   # Пътят до тайните следва LINKETTO_STATE_DIR, ако е сменен.
   install -d -m 755 /etc/systemd/system/linketto-cron@.service.d
-  printf '[Service]\nEnvironment=LINKETTO_ENV=%s/.env\n' "$LINKETTO_STATE_DIR" \
+  # ReadWritePaths: единственото място, където cron пише — базата IP → държава
+  # (отделна папка на root, монтирана :ro в контейнера; не data/, която е на app).
+  install -d -m 755 -o root -g root "$LINKETTO_STATE_DIR/geoip"
+  # И шифрованите дневни бекъпи (linketto-cron backup) — 700, само root.
+  install -d -m 700 -o root -g root "$LINKETTO_STATE_DIR/backups/daily"
+  printf '[Service]\nEnvironment=LINKETTO_ENV=%s/.env\nReadWritePaths=-%s/geoip\nReadWritePaths=-%s/backups/daily\n' \
+    "$LINKETTO_STATE_DIR" "$LINKETTO_STATE_DIR" "$LINKETTO_STATE_DIR" \
     > /etc/systemd/system/linketto-cron@.service.d/env.conf
-  for t in plans digest retention; do
+  for t in plans digest retention geoip backup; do
     install -m 644 "$d/deploy/systemd/linketto-cron-$t.timer" "/etc/systemd/system/linketto-cron-$t.timer"
   done
   systemctl daemon-reload >/dev/null 2>&1 \
     || { warn "linketto: systemctl daemon-reload не мина — таймерите НЕ са активни (cron §9 не върви)."; return 0; }
   local bad=0
-  for t in plans digest retention; do
+  for t in plans digest retention geoip backup; do
     systemctl enable --now "linketto-cron-$t.timer" >/dev/null 2>&1 \
       || { bad=1; warn "linketto: linketto-cron-$t.timer не се активира — виж systemctl status linketto-cron-$t.timer"; }
   done
-  [ "$bad" = "0" ] && ok "linketto: таймери активни (планове :17 всеки час · отчет 08:10 · срокове 03:40)."
+  [ "$bad" = "0" ] && ok "linketto: таймери активни (планове :17 всеки час · отчет 08:10 · срокове 03:40 · бекъп 02:50 · IP база месечно)."
+  # Бекъпът е fail-closed: без age или без публичен ключ unit-ът пада всяка нощ (видимо в
+  # `systemctl --failed`), вместо да пише нешифровани дъмпове.
+  command -v age >/dev/null 2>&1 \
+    || warn "linketto: няма age (apt-get install -y age) — дневният шифрован бекъп ще пада (DEPLOY.md §7, „Бекъпи“)."
+  grep -qE '^BACKUP_AGE_RECIPIENTS=age1' "$LINKETTO_STATE_DIR/.env" \
+    || warn "linketto: BACKUP_AGE_RECIPIENTS е празен — дневният бекъп ще пада, докато не сложиш ПУБЛИЧНИЯ age ключ (DEPLOY.md §7)."
+  # Езикът по държава иска базата IP → държава — при първи деплой я сваляме веднага
+  # (иначе чака таймера до 3-то число). Без нея сайтът работи, езикът пада към браузъра.
+  if [ ! -s "$LINKETTO_STATE_DIR/geoip/dbip-country-lite.mmdb" ]; then
+    if systemctl start linketto-cron@geoip.service >/dev/null 2>&1; then
+      ok "linketto: базата IP → държава е свалена (езикът по държава работи)."
+    else
+      warn "linketto: базата IP → държава не се свали — виж journalctl -u linketto-cron@geoip (езикът засега е по браузъра)."
+    fi
+  fi
   return 0
 }
 
@@ -2233,7 +2254,11 @@ deploy_linketto() {
     install -m 600 /dev/null "$LINKETTO_STATE_DIR/.env"
     cat > "$LINKETTO_STATE_DIR/.env" <<EOF
 # Linketto — тайни (mode 600). Генериран от deploy/autodeploy.sh. Пълен списък: linketto/DEPLOY.md §2.
+# Собственикът на базата (миграции, бекъп). app НЕ я получава — той е с ролята linketto_app и
+# APP_DB_PASSWORD (scripts/deploy.sh я генерира; DATABASE_URL на app се сглобява в docker-compose.yml).
 POSTGRES_PASSWORD=${dbp}
+# Само за откат към release отпреди ролите (неговият compose чете DATABASE_URL оттук); текущият
+# docker-compose.yml го подменя с ролята на приложението.
 DATABASE_URL=postgresql://linketto:${dbp}@db:5432/linketto
 PUBLIC_BASE_URL=https://${LINKETTO_DOMAIN}
 # Път В КОНТЕЙНЕРА; на хоста е ${LINKETTO_STATE_DIR}/data (извън releases).
@@ -2253,10 +2278,55 @@ GEMINI_API_KEY=
 GEMINI_MODEL=gemini-2.5-flash
 # 1 само за ПЛАТЕН акаунт с DPA; празно = AI функциите са изключени (fail-closed).
 GEMINI_PAID_TIER=
+# ПУБЛИЧНИЯТ age ключ на собственика (age1…; няколко — със запетая) за дневния бекъп. Частният
+# ключ НИКОГА не е на сървъра. Празно = бекъпът пада (fail-closed), DEPLOY.md §7 „Бекъпи“.
+BACKUP_AGE_RECIPIENTS=
 EOF
     ok "linketto: $LINKETTO_STATE_DIR/.env създаден (600)."
   fi
   chmod 600 "$LINKETTO_STATE_DIR/.env" 2>/dev/null || true
+  # Главният ключ за шифрованите тайни (2FA секрети, ключове на доставчици) —
+  # генерира се веднъж, ако липсва; НЕ се сменя после (загубен ключ = 2FA и
+  # шифрованите настройки стават нечетими). Бекъпни .env извън сървъра.
+  # Пазач (VPS-аджията/Стражата): празен ред SETTINGS_KEY="" е „липсващ“; ако
+  # преди е имало ключ (отпечатък sha256 — не самият ключ), нов НЕ се генерира;
+  # смяна е позволена само със стария в SETTINGS_KEY_OLD (ротация).
+  local sk sk_old fp_file fp_cur fp_prev
+  sk="$(sed -n 's/^SETTINGS_KEY=//p' "$LINKETTO_STATE_DIR/.env" | tail -1 | tr -d "\"' \r")"
+  sk_old="$(sed -n 's/^SETTINGS_KEY_OLD=//p' "$LINKETTO_STATE_DIR/.env" | tail -1 | tr -d "\"' \r")"
+  fp_file="$LINKETTO_STATE_DIR/settings-key.sha256"
+  fp_prev="$(cat "$fp_file" 2>/dev/null || true)"
+  if [ -z "$sk" ]; then
+    if [ -n "$fp_prev" ]; then
+      warn "linketto: SETTINGS_KEY липсва, а преди е имало ключ ($fp_file) — НЕ генерирам нов."
+      warn "  Върни SETTINGS_KEY от копието на .env (иначе 2FA и шифрованите ключове стават нечетими)."
+      deploy_failed=1
+      return
+    fi
+    sk="$(openssl rand -base64 32 || true)"
+    if [ "${#sk}" -ge 40 ]; then
+      sed -i '/^SETTINGS_KEY=/d' "$LINKETTO_STATE_DIR/.env"
+      printf '\n# Главен ключ за шифрованите тайни (2FA, ключове на доставчици). НЕ го сменяй; пази копие офлайн.\nSETTINGS_KEY=%s\n' "$sk" >> "$LINKETTO_STATE_DIR/.env"
+      ok "linketto: SETTINGS_KEY е генериран (пази копие на .env офлайн)."
+    else
+      sk=""
+      warn "linketto: openssl не даде SETTINGS_KEY — 2FA и шифрованите настройки остават изключени."
+    fi
+  fi
+  if [ -n "$sk" ]; then
+    fp_cur="$(printf '%s' "$sk" | sha256sum | cut -c1-64)"
+    if [ -n "$fp_prev" ] && [ "$fp_prev" != "$fp_cur" ]; then
+      if [ -n "$sk_old" ] && [ "$(printf '%s' "$sk_old" | sha256sum | cut -c1-64)" = "$fp_prev" ]; then
+        ok "linketto: ротация на SETTINGS_KEY (старият е в SETTINGS_KEY_OLD — дръж го, докато всичко се прешифрова)."
+      else
+        warn "linketto: SETTINGS_KEY е сменен без стария в SETTINGS_KEY_OLD — шифрованите данни биха станали нечетими."
+        warn "  Върни стария SETTINGS_KEY или го сложи в SETTINGS_KEY_OLD и пусни деплоя пак."
+        deploy_failed=1
+        return
+      fi
+    fi
+    ( umask 077; printf '%s\n' "$fp_cur" > "$fp_file" )
+  fi
   # Портът — от .env (същото чете docker-compose.yml); изричният LINKETTO_HEALTH_URL побеждава.
   local port
   port="$(sed -n 's/^HTTP_PORT=//p' "$LINKETTO_STATE_DIR/.env" 2>/dev/null | tail -1 | tr -dc '0-9' || true)"
@@ -2286,6 +2356,15 @@ EOF
   else
     install -d -o www-data -g adm -m 0755 /var/log/nginx/linketto 2>/dev/null \
       || warn "не мога да създам /var/log/nginx/linketto — nginx няма да тръгне с vhost-а на linketto."
+  fi
+  # Кешът на vhost-а (proxy_cache_path в linketto/deploy/nginx.conf): nginx прави само ПОСЛЕДНАТА
+  # папка, не родителите — без /var/cache/nginx `nginx -t` пада. Същият пазач срещу симлинк.
+  if [ -L /var/cache/nginx/linketto ]; then
+    warn "/var/cache/nginx/linketto е СИМЛИНК — отказвам да пипам правата му; провери ръчно."
+  else
+    install -d -m 0755 /var/cache/nginx 2>/dev/null \
+      && install -d -o www-data -g www-data -m 0700 /var/cache/nginx/linketto 2>/dev/null \
+      || warn "не мога да създам /var/cache/nginx/linketto — nginx -t ще падне с vhost-а на linketto."
   fi
   if [ -f "$d/deploy/logrotate.conf" ]; then
     install -m 0644 "$d/deploy/logrotate.conf" /etc/logrotate.d/linketto \

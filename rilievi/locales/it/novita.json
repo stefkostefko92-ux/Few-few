@@ -25,6 +25,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-21-versione-5-7": {
+        "area": "Portale",
+        "titolo": "Versione 5.7: etichetta QR e tabelle più comode",
+        "testo": "Abbiamo ricontrollato tutte le pagine del portale su telefono, tablet e computer, con il tema chiaro e quello scuro e con ruoli diversi. Nella pagina dell'etichetta QR la scelta «Etichette sul foglio» ora ha lo stesso aspetto degli altri campi del portale e, sul telefono, la scritta sta sopra la scelta invece di andare a capo tre volte. Le tabelle più larghe dello schermo, come quelle dei registri, si possono scorrere anche con la tastiera: il tasto Tab le raggiunge e le frecce le fanno scorrere. Nella pagina sull'esportazione dei dati il pulsante ha ora il suo nome vero, «Scarica tutti i dati»."
+      },
       "2026-11-17-versione-5-6": {
         "area": "Schizzi",
         "titolo": "Versione 5.6: schizzi e annotazioni con il dito su iPad",

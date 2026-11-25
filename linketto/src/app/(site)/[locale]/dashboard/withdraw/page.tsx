@@ -1,11 +1,17 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { SiteHeader } from '@/components/SiteChrome';
+import { DashShell } from '@/components/DashShell';
+import { Button, ButtonLink } from '@/components/ui/Button';
+import { Callout } from '@/components/ui/Callout';
+import { Card } from '@/components/ui/Card';
+import { Field, Input } from '@/components/ui/Field';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { planFor } from '@/lib/plans';
 import { type Locale } from '@/i18n/locales';
 import { getSessionUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { withdrawalRefund } from '@/lib/withdrawal-refund';
 import { canWithdraw, withdrawalLastDay } from '@/lib/withdrawal';
 import { withdrawPlanAction } from '@/app/actions/withdrawal';
 import { ChevronLeftIcon } from '@/components/icons';
@@ -44,71 +50,114 @@ export default async function WithdrawPage({
       now,
     });
   const fmt = (d: Date) => new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(d);
+  // Б6: сумата за връщане, ако отказът е подаден СЕГА (окончателната се смята при потвърждението).
+  const preview =
+    order && allowed
+      ? withdrawalRefund({
+          amountCents: order.amountCents,
+          vatCents: order.vatCents,
+          plan: order.plan,
+          interval: order.interval,
+          prevPlan: order.prevPlan,
+          prevExpiresAt: order.prevExpiresAt,
+          completedAt: order.completedAt ?? now,
+          requestedAt: now,
+          immediateStartAt: order.immediateStartAt,
+          applied: order.applied,
+        })
+      : null;
+
+  const profileList = await prisma.profile.findMany({
+    where: { userId: user.id },
+    select: { id: true, slug: true },
+    orderBy: { createdAt: 'asc' },
+  });
+  const planId = planFor(user.plan).id;
 
   return (
-    <>
-      <SiteHeader locale={locale as Locale} />
-      <main className="dash mx-auto max-w-2xl space-y-6 px-6 py-10">
-        <Link
-          href={`/${locale}/dashboard#plan`}
-          className="inline-flex items-center gap-1 text-sm font-medium text-linketto-700 hover:underline"
-        >
-          <ChevronLeftIcon className="h-4 w-4" />
-          {t('withdrawBack')}
-        </Link>
-        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">{t('withdrawTitle')}</h1>
+    <DashShell
+      locale={locale as Locale}
+      page="withdraw"
+      profiles={profileList}
+      activeId={profileList[0]?.id}
+      planId={planId}
+    >
+      <PageHeader
+        title={t('withdrawTitle')}
+        description={t('withdrawIntro2')}
+        actions={
+          <ButtonLink
+            href={`/${locale}/dashboard#plan`}
+            variant="secondary"
+            size="sm"
+            className="gap-1.5"
+          >
+            <ChevronLeftIcon className="h-4 w-4 rtl:rotate-180" />
+            {t('withdrawBack')}
+          </ButtonLink>
+        }
+      />
+      <div className="max-w-2xl">
         {!order || !allowed ? (
-          <p role="alert" className="rounded-lg bg-amber-50 p-4 text-sm text-amber-800">
-            {t('withdrawNotAvailable')}
-          </p>
+          <Callout tone="warning">{t('withdrawNotAvailable')}</Callout>
         ) : (
-          <form action={withdrawPlanAction} className="dash-card space-y-5 rounded-2xl border border-slate-200 bg-white p-6">
-            <input type="hidden" name="uiLocale" value={locale} />
-            <input type="hidden" name="orderId" value={order.id} />
-            <p className="text-sm text-slate-600">{t('withdrawIntro')}</p>
-            <dl className="grid gap-2 text-sm sm:grid-cols-[10rem_1fr]">
-              <dt className="font-medium text-slate-500">{t('withdrawContract')}</dt>
-              <dd className="text-slate-900">
-                Linketto {PLAN_NAMES[order.plan] ?? order.plan} ·{' '}
-                {order.interval === 'lifetime' ? t('planForever') : t(`interval_${order.interval}`)} · €
-                {(order.amountCents / 100).toFixed(2)}
-              </dd>
-              <dt className="font-medium text-slate-500">{t('withdrawOrderedOn')}</dt>
-              <dd className="text-slate-900">{fmt(order.completedAt ?? order.createdAt)}</dd>
-              <dt className="font-medium text-slate-500">{t('withdrawOrderRef')}</dt>
-              <dd className="font-mono text-xs text-slate-700">{order.id}</dd>
-              <dt className="font-medium text-slate-500">{t('withdrawEmail')}</dt>
-              <dd className="text-slate-900">{user.email}</dd>
-              <dt className="font-medium text-slate-500">{t('withdrawUntil')}</dt>
-              <dd className="text-slate-900">{fmt(withdrawalLastDay(order.completedAt as Date))}</dd>
-            </dl>
-            <label className="block text-sm font-medium text-slate-700">
-              {t('withdrawName')}
-              <input
-                type="text"
-                name="name"
-                required
-                maxLength={120}
-                autoComplete="name"
-                defaultValue={user.name ?? ''}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
-              />
-            </label>
-            {error === 'name' && (
-              <p role="alert" className="text-sm text-red-700">
-                {t('withdrawNameError')}
-              </p>
-            )}
-            <p className="text-xs text-slate-500">{t('withdrawRefundNote')}</p>
-            <button
-              type="submit"
-              className="rounded-full bg-red-600 px-6 py-2.5 font-semibold text-white hover:bg-red-700"
-            >
-              {t('withdrawConfirm')}
-            </button>
-          </form>
+          <Card as="section" padding="lg" className="dash-card">
+            <form action={withdrawPlanAction} className="space-y-5">
+              <p className="text-body text-fg-2">{t('withdrawIntro')}</p>
+              {/* Сумата за връщане — най-важното число на екрана (визуалният обход), над подробностите. */}
+              {preview && (
+                <div className="rounded-card border border-line bg-accent-soft p-4">
+                  <p className="text-small font-semibold text-accent-soft-fg">{t('withdrawRefundAmount')}</p>
+                  <p className="mt-1 text-[1.75rem] font-bold leading-tight tabular-nums text-fg">
+                    €{(preview.refundCents / 100).toFixed(2)}
+                  </p>
+                  {preview.refundCents < order.amountCents && (
+                    <p className="mt-2 text-small leading-relaxed text-fg-2">
+                      {t('withdrawKeptNote', { kept: `€${((order.amountCents - preview.refundCents) / 100).toFixed(2)}` })}
+                    </p>
+                  )}
+                </div>
+              )}
+              <dl className="grid gap-x-4 gap-y-1 rounded-card border border-line bg-surface-2 p-4 text-small sm:grid-cols-[10rem_1fr] sm:gap-y-2.5 [&>dt:not(:first-child)]:mt-3 sm:[&>dt:not(:first-child)]:mt-0">
+                <dt className="font-medium text-fg-muted">{t('withdrawContract')}</dt>
+                <dd className="text-fg">
+                  Linketto {PLAN_NAMES[order.plan] ?? order.plan} ·{' '}
+                  {order.interval === 'lifetime' ? t('planForever') : t(`interval_${order.interval}`)} · €
+                  {(order.amountCents / 100).toFixed(2)}
+                </dd>
+                <dt className="font-medium text-fg-muted">{t('withdrawOrderedOn')}</dt>
+                <dd className="text-fg">{fmt(order.completedAt ?? order.createdAt)}</dd>
+                <dt className="font-medium text-fg-muted">{t('withdrawOrderRef')}</dt>
+                <dd className="font-mono text-micro text-fg-2" title={order.id}>
+                  …{order.id.slice(-10)}
+                </dd>
+                <dt className="font-medium text-fg-muted">{t('withdrawEmail')}</dt>
+                <dd className="break-all text-fg">{user.email}</dd>
+                <dt className="font-medium text-fg-muted">{t('withdrawUntil')}</dt>
+                <dd className="text-fg">{fmt(withdrawalLastDay(order.completedAt as Date))}</dd>
+              </dl>
+              <Field id="withdraw-name" label={t('withdrawName')}>
+                <Input
+                  id="withdraw-name"
+                  type="text"
+                  name="name"
+                  required
+                  maxLength={120}
+                  autoComplete="name"
+                  defaultValue={user.name ?? ''}
+                />
+              </Field>
+              {error === 'name' && <Callout tone="danger">{t('withdrawNameError')}</Callout>}
+              <p className="text-small text-fg-muted">{t('withdrawRefundNote')}</p>
+              <Button type="submit" variant="danger" size="lg">
+                {t('withdrawConfirm')}
+              </Button>
+              <input type="hidden" name="uiLocale" value={locale} />
+              <input type="hidden" name="orderId" value={order.id} />
+            </form>
+          </Card>
         )}
-      </main>
-    </>
+      </div>
+    </DashShell>
   );
 }

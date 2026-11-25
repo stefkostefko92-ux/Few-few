@@ -5,7 +5,8 @@
 #   sudo bash scripts/deploy.sh
 #
 # Редът НЕ е произволен:
-#   бекъп → билд на новия образ → база → миграции с НОВИЯ образ → смяна на app → сонда.
+#   бекъп → билд на новия образ → база → миграции с НОВИЯ образ (ролята собственик) →
+#   ролята на приложението (linketto_app) → смяна на app → сонда.
 # Докато се строи и мигрира, старият app продължава да обслужва (миграциите ни са
 # адитивни — старият код работи и с новата схема). Бекъпът е ПРЕДИ миграцията,
 # защото след нея е закъснял.
@@ -30,7 +31,24 @@ SKIP_BACKUP="${LINKETTO_SKIP_BACKUP:-0}"
 [ -f .env ] || fail 2 "Няма linketto/.env — тайните живеят на сървъра (/opt/few-few/shared/linketto/.env, виж DEPLOY.md §7)."
 chmod 600 .env 2>/dev/null || true
 grep -qE '^POSTGRES_PASSWORD=.+' .env || fail 2 "В .env липсва POSTGRES_PASSWORD."
-grep -qE '^DATABASE_URL=.+' .env || fail 2 "В .env липсва DATABASE_URL."
+
+# Паролата на ролята на приложението (linketto_app, DEPLOY.md §7 „Роли в базата“). Генерира се веднъж,
+# ако липсва — ПРЕДИ първото `docker compose` (compose файлът я иска за app). Само hex: влиза в
+# DATABASE_URL и в SQL без екраниране. Дописва се с водещ нов ред: ред, залепен към последната
+# стойност без краен нов ред, би я повредил тихо.
+APP_DB_PASSWORD="$(sed -n 's/^APP_DB_PASSWORD=//p' .env | tail -1 | tr -d "\"' \r")"
+if [ -z "$APP_DB_PASSWORD" ]; then
+  APP_DB_PASSWORD="$(openssl rand -hex 32 2>/dev/null || true)"
+  [ "${#APP_DB_PASSWORD}" -eq 64 ] || fail 2 "openssl не даде парола за linketto_app — спирам, вместо да пиша слаба."
+  # --follow-symlinks: на сървъра .env е симлинк към /opt/few-few/shared/linketto/.env — голо `sed -i`
+  # би подменило симлинка с обикновен файл в release-а и паролата нямаше да стигне до общия файл.
+  sed -i --follow-symlinks '/^APP_DB_PASSWORD=/d' .env
+  printf '\n# Ролята на приложението в базата (без DDL; DEPLOY.md §7). Генерирана от scripts/deploy.sh.\n' >> .env
+  printf 'APP_DB_PASSWORD=%s\n' "$APP_DB_PASSWORD" >> .env
+  ok "APP_DB_PASSWORD е генерирана (ролята linketto_app)."
+fi
+[[ "$APP_DB_PASSWORD" =~ ^[0-9a-f]{32,128}$ ]] \
+  || fail 2 "APP_DB_PASSWORD в .env трябва да е hex (32–128 знака) — например openssl rand -hex 32."
 
 # Портът на хоста: HTTP_PORT от .env (същото чете docker-compose.yml), иначе 4350.
 PORT="$(sed -n 's/^HTTP_PORT=//p' .env | tail -1 | tr -dc '0-9' || true)"
@@ -76,7 +94,12 @@ HAS_DB="$($DC ps -aq db 2>/dev/null || true)"
 if [ "$SKIP_BACKUP" = "1" ]; then
   warn "LINKETTO_SKIP_BACKUP=1 — без нов дъмп (само при откат на кода)."
 elif [ -n "$HAS_DB" ]; then
-  $DC up -d db >/dev/null 2>&1 || true
+  # `up -d db` САМО ако базата е спряна: върху работещ контейнер със стара конфигурация (друг образ,
+  # мрежа, read_only) `up` би го ПРЕСЪЗДАЛ преди дъмпа — ако новият не тръгне, остава без база и без
+  # бекъп. Дъмпът се прави от работещия контейнер какъвто е; смяната на конфигурацията е в стъпка 3.
+  if [ -z "$($DC ps -q --status running db 2>/dev/null || true)" ]; then
+    $DC up -d db >/dev/null 2>&1 || true
+  fi
   for i in $(seq 1 30); do
     $DC exec -T db pg_isready -U linketto -d linketto >/dev/null 2>&1 && break
     [ "$i" = "30" ] && fail 2 "Базата съществува, но не отговаря — спирам ПРЕДИ миграцията, вместо да мигрирам без бекъп."
@@ -124,9 +147,40 @@ done
 ok "Базата отговаря."
 
 # ── 4) Миграции с НОВИЯ образ, в еднократен контейнер, ПРЕДИ смяната на app ──
-log "Пускам миграциите (prisma migrate deploy)…"
-$DC run --rm --no-deps -T app npx --no-install prisma migrate deploy \
+# Услугата `migrate` (docker-compose.yml): същият образ, но с ролята СОБСТВЕНИК — app няма DDL права.
+log "Пускам миграциите (prisma migrate deploy, ролята собственик)…"
+$DC run --rm --no-deps -T migrate \
   || fail 4 "Миграцията падна — работи старият код. Бекъпът отпреди нея е в backups/ (DEPLOY.md §7, „Провалена миграция“)."
+
+# ── 4б) Ролята на приложението и правата ѝ — СЛЕД миграциите (новите таблици също) ──
+# Идемпотентно при всеки деплой. Като собственика през локалния сокет на контейнера (без парола
+# в argv). Паролата стига до psql през stdin (`\set`), не като аргумент — `ps` вижда argv.
+# Без SUPERUSER/CREATEDB/CREATEROLE/REPLICATION/BYPASSRLS; без CREATE в схемата; `_prisma_migrations`
+# — само четене. ALTER DEFAULT PRIVILEGES покрива таблиците от бъдещи миграции (собственик linketto).
+log "Ролята на приложението (linketto_app)…"
+$DC exec -T db psql -X -q -U linketto -d linketto -v ON_ERROR_STOP=1 >/dev/null <<SQL \
+  || fail 2 "Ролята linketto_app не се настрои — работи старият код (схемата вече е мигрирана; миграциите са адитивни)."
+\set app_pw '${APP_DB_PASSWORD}'
+DO \$\$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'linketto_app') THEN
+    CREATE ROLE linketto_app LOGIN;
+  END IF;
+END \$\$;
+ALTER ROLE linketto_app WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS
+  NOINHERIT CONNECTION LIMIT 50 PASSWORD :'app_pw';
+REVOKE ALL ON DATABASE linketto FROM PUBLIC;
+GRANT CONNECT ON DATABASE linketto TO linketto_app;
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+GRANT USAGE ON SCHEMA public TO linketto_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO linketto_app;
+GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO linketto_app;
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON TABLE public."_prisma_migrations" FROM linketto_app;
+ALTER DEFAULT PRIVILEGES FOR ROLE linketto IN SCHEMA public
+  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO linketto_app;
+ALTER DEFAULT PRIVILEGES FOR ROLE linketto IN SCHEMA public
+  GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO linketto_app;
+SQL
+ok "linketto_app: без SUPERUSER/CREATEDB, само DML."
 
 # ── 5) Смяна на app ──────────────────────────────────────────────────────────
 log "Вдигам новия app…"

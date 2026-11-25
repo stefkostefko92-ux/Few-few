@@ -79,6 +79,7 @@ npx vite build                     # public/ + src/ → dist/
 python3 scripts/generate-*.py      # regenerate a static content cluster
 python3 scripts/inject-widgets.py  # re-inject WA float + a11y + SW after regenerating
 python3 scripts/rebrand-static.py  # nav/footer tweaks (logo size, pricing link, footer link style)
+python3 scripts/solutions-nav.py   # one menu on every page (HOME · SOLUZIONI ▾ · SETTORI · CASI STUDIO · PREZZI · CHI SIAMO · CONTATTI), "part of" line on service pages, Solutions block on /en/ and /bg/
 python3 scripts/seo-footer-links.py # "Risorse" row in every static footer (hubs are otherwise orphans)
 python3 scripts/seo-keywords.py    # <meta keywords> on every page that lacks one (≥5, "Carbon Stealth")
 python3 scripts/adsense-inject.py  # Google AdSense loader in every <head> (CSP in nginx allows it; ads.txt in public/)

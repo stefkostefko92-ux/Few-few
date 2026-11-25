@@ -1,4 +1,4 @@
-# Linketto — продукционният стек (db + app). Тайните НЕ влизат тук: идват от
+# Linketto — продукционният стек (db + app + еднократният migrate). Тайните НЕ влизат тук: идват от
 # `.env` до този файл — на сървъра симлинк към /opt/few-few/shared/linketto/.env
 # (mode 600), слаган от deploy/autodeploy.sh.
 #
@@ -6,11 +6,25 @@
 # всеки release е в нова папка — тогава откатът и cron-ът (deploy/linketto-cron.sh)
 # трябва да познават от коя папка е вдигнат стекът. Така томът е винаги
 # `linketto_db`, а контейнерите — `linketto-db-1` / `linketto-app-1`.
+#
+# Две роли в базата (DEPLOY.md §7, „Роли в базата“):
+#   linketto      — собственикът (POSTGRES_USER на образа): миграции, бекъп, сроковете. Паролата
+#                   му (POSTGRES_PASSWORD) стига САМО до db и migrate, никога до app.
+#   linketto_app  — приложението: само SELECT/INSERT/UPDATE/DELETE, без SUPERUSER/CREATEDB/
+#                   CREATEROLE и без DDL. Създава я и ѝ дава правата scripts/deploy.sh след миграциите.
 name: linketto
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
 
 services:
   db:
-    image: postgres:16-alpine
+    # Заковано по digest (същият като korpora/docker-compose.yml — един образ на сървъра).
+    # Обновяване: `docker buildx imagetools inspect postgres:16-alpine` → нов digest, в двата файла.
+    image: postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
     restart: unless-stopped
     # Без env_file: базата получава САМО паролата си (интерполация от `.env`),
     # не и ключовете на Revolut/Brevo/Gemini — най-малка привилегия.
@@ -20,14 +34,34 @@ services:
       POSTGRES_DB: linketto
     volumes:
       - db:/var/lib/postgresql/data
+    # Само вътрешната мрежа: без изход навън и без публикуван порт. app и migrate стигат до `db:5432`.
+    networks: [backend]
+    # Моделът на korpora: файловата система е само за четене, пише се в тома и в tmpfs; от
+    # capabilities остават само тези, с които entrypoint-ът сменя собственика на данните и потребителя.
+    read_only: true
+    tmpfs:
+      - /var/run/postgresql:size=4m
+      - /tmp:size=64m
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m
+    memswap_limit: 512m
+    cpus: 1
+    pids_limit: 256
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U linketto -d linketto']
       interval: 10s
       timeout: 5s
       retries: 5
+    logging: *logging
 
   app:
     build: .
+    # Изрично име = името по подразбиране на Compose (`<проект>-<услуга>`): по него migrate ползва
+    # СЪЩИЯ образ, а откатът към стар release (без този ред) тагва пак `linketto-app`.
+    image: linketto-app:latest
     restart: unless-stopped
     depends_on:
       db:
@@ -35,26 +69,51 @@ services:
     env_file: .env
     environment:
       NODE_ENV: production
+      # Ролята на приложението, не собственикът. Побеждава DATABASE_URL от `.env` (стар ред от първия
+      # деплой сочи собственика — тук се подменя). Паролата е само hex (scripts/deploy.sh го проверява).
+      DATABASE_URL: postgresql://linketto_app:${APP_DB_PASSWORD:?липсва APP_DB_PASSWORD в .env — пусни scripts/deploy.sh}@db:5432/linketto
+      # Паролата на собственика НЕ стига до процеса на приложението (env_file би я донесъл).
+      POSTGRES_PASSWORD: ''
       # В контейнера DATA_DIR е винаги /data — истинското място е томът по-долу.
       DATA_DIR: /data
+      # Базата IP → държава (DB-IP Lite) — сваля я root cron-ът на хоста в
+      # отделна папка, монтирана само за четене (не в /data, която е на app).
+      GEOIP_DB: /geoip/dbip-country-lite.mmdb
     # Само loopback: навън се излиза през nginx на хоста с TLS (deploy/nginx.conf).
     # Портът на хоста = HTTP_PORT от .env, по подразбиране 4350. НЕ 4340: на живия сървър
     # 4340/4341/4342 са на rilievi/semki/fakturist (първият деплой падна с „port is already
     # allocated“, 17.11.2026). Смяна → само HTTP_PORT в .env (+ proxy_pass в vhost-а).
     ports:
       - '127.0.0.1:${HTTP_PORT:-4350}:3000'
+    # `backend` — до базата; `egress` — навън (Revolut, Brevo, Gemini, DNS за TXT проверката) и
+    # публикуваният порт (вътрешна мрежа не може да публикува порт).
+    networks: [backend, egress]
     # Качените аватари/фонове живеят на СТАБИЛЕН път извън release-а (DEPLOY.md §2):
     # нов release = нова папка, а снимките трябва да оцелеят. Собственик 1001:1001
     # (потребителят `nextjs` в образа) — autodeploy създава папката с тези права.
     volumes:
       - ${LINKETTO_DATA_HOST:-/opt/few-few/shared/linketto/data}:/data
+      - ${LINKETTO_GEOIP_HOST:-/opt/few-few/shared/linketto/geoip}:/geoip:ro
+    # Коренът е само за четене (кодът е и собственост на root в образа). Пише се само в /data (томът),
+    # в кеша на `next start` (оптимизираните картинки, кешът на fetch) и в /tmp — двата tmpfs са в
+    # паметта и се броят към mem_limit, затова са малки.
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777,noexec,nosuid,nodev
+      - /app/.next/cache:size=64m,uid=1001,gid=1001,mode=0700,noexec,nosuid,nodev
     # Процесът не иска никакви capabilities (порт 3000 > 1024, без chown/setuid).
     cap_drop: [ALL]
     security_opt:
       - no-new-privileges:true
     # Споделен VPS: без таван OOM killer-ът избира жертва глобално по хоста и може
     # да свали чужд продукт заради нас (sharp върху снимка до 8 MB е най-тежкото).
+    # 1g: измереният връх с MALLOC_ARENA_MAX=2 (Dockerfile) е 731–790 MB при паралелни sharp
+    # декодирания; + tmpfs по-горе (≤ 96 MB) остават ~130 MB резерв. Без swap над тавана
+    # (memswap_limit = mem_limit): по-добре OOM и рестарт, отколкото swap, който бави целия хост.
     mem_limit: 1g
+    memswap_limit: 1g
+    cpus: 2
+    pids_limit: 256
     healthcheck:
       # Образът е node:22-slim — без wget/curl; пита се със самия node.
       test:
@@ -68,6 +127,38 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
+    logging: *logging
+
+  # Еднократен: `docker compose run --rm --no-deps -T migrate` (scripts/deploy.sh, стъпка 4).
+  # Същият образ като app, но с ролята СОБСТВЕНИК — само тук има DDL права. Профилът `tools`
+  # го държи извън `up`. Без изход навън: само вътрешната мрежа.
+  migrate:
+    image: linketto-app:latest
+    pull_policy: never
+    profiles: [tools]
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://linketto:${POSTGRES_PASSWORD:?липсва POSTGRES_PASSWORD в .env}@db:5432/linketto
+      # Prisma CLI не проверява за нова версия (няма и изход навън).
+      CHECKPOINT_DISABLE: '1'
+    command: ['node_modules/.bin/prisma', 'migrate', 'deploy']
+    networks: [backend]
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777,nosuid,nodev
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m
+    cpus: 1
+    pids_limit: 128
+    logging: *logging
+
+networks:
+  # Вътрешна: без шлюз навън. Postgres е само тук.
+  backend:
+    internal: true
+  egress: {}
 
 volumes:
   db:

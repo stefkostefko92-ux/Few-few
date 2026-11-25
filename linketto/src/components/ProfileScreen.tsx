@@ -9,7 +9,6 @@ import { SITE_URL } from '@/lib/seo';
 import {
   DIALECT_LOCALES,
   dirFor,
-  localeFromGeo,
   LOCALE_NAMES,
 } from '@/i18n/locales';
 import {
@@ -20,12 +19,21 @@ import {
 } from '@/lib/blocks';
 import { brandFor, isSensitiveUrl } from '@/lib/brands';
 import { countryOf } from '@/lib/analytics';
+import { requestCountry } from '@/lib/geoip';
+import {
+  applyAutoTranslation,
+  autoTranslateActive,
+  isBotUserAgent,
+  pickProfileView,
+  profileSource,
+} from '@/lib/auto-translate';
+import { autoTranslation } from '@/lib/auto-translate-server';
+import { BrowserTranslate } from '@/components/BrowserTranslate';
 import { BrandIcon, BRAND_COLORS } from '@/components/brand-icons';
 import { ShareButton } from '@/components/ShareButton';
 import { VideoFacade } from '@/components/VideoFacade';
 import {
   backgroundCss,
-  buttonCss,
   buttonShadowClass,
   buttonShapeClass,
   fontFamily,
@@ -33,6 +41,15 @@ import {
   readableOn,
 } from '@/lib/style';
 import {
+  THEME_DEFS,
+  buttonVars,
+  customVars,
+  resolveProfileTheme,
+  safeAccent,
+  themeVars,
+} from '@/lib/profile-themes';
+import {
+  GlobeIcon,
   HeartIcon,
   MapPinIcon,
   MusicIcon,
@@ -48,13 +65,6 @@ import { submitBookingAction } from '@/app/actions/booking';
 
 // Общото публично рендиране на профил — ползва се от /u/[slug]
 // и от собствените домейни (/d/[domain] през middleware rewrite).
-
-const THEME_CLASSES: Record<string, string> = {
-  aurora:
-    'bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 text-white',
-  mono: 'bg-white text-slate-900',
-  dusk: 'bg-gradient-to-b from-rose-950 via-slate-900 to-slate-950 text-white',
-};
 
 // Поздравът над името — на езика, на който посетителят гледа профила.
 const GREETING_BY_LOCALE: Record<string, string> = {
@@ -87,13 +97,14 @@ export async function loadProfileBy(where: Prisma.ProfileWhereUniqueInput) {
       translations: true,
       links: {
         where: { active: true },
-        orderBy: { position: 'asc' },
+        // Същият ред като в таблото (равни позиции → по създаване).
+        orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
         include: { translations: true },
       },
       // Само продукти с линк за плащане на създателя (решение О-1).
       products: {
         where: { active: true, externalUrl: { not: null } },
-        orderBy: { position: 'asc' },
+        orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
         include: { translations: true },
       },
       user: {
@@ -107,14 +118,17 @@ export async function loadProfileBy(where: Prisma.ProfileWhereUniqueInput) {
   });
 }
 
+/** Платформи, които не са самоличност (плащания, чатове) — извън Person.sameAs. */
+const NOT_IDENTITY_BRANDS = new Set(['paypal', 'revolut', 'buymeacoffee', 'kofi', 'whatsapp', 'telegram', 'discord', 'onlyfans']);
+
 export type LoadedProfile = NonNullable<
   Awaited<ReturnType<typeof loadProfileBy>>
 >;
 
-export function profileMetadata(
+export async function profileMetadata(
   profile: LoadedProfile | null,
   hl?: string,
-): Metadata {
+): Promise<Metadata> {
   if (!profile || !profile.published || profile.bannedAt) {
     return { title: 'Linketto', robots: { index: false } };
   }
@@ -145,25 +159,31 @@ export function profileMetadata(
   };
   // Профили с 18+ линкове не се индексират (защита на непълнолетни).
   const hasSensitive = profile.links.some((link) => isSensitiveUrl(link.url));
+  const name = main?.displayName ?? profile.slug;
+  // Без био — описание на езика на профила (иначе страницата остава без meta description).
+  const tSeo = await getTranslations({ locale: main?.locale ?? profile.defaultLocale, namespace: 'seo' });
+  const description = main?.bio?.trim() || tSeo('profileDescription', { name });
   return {
     title,
-    description: main?.bio ?? undefined,
+    description,
+    // Правилото на репото: ≥5 ключови думи, една от тях „Carbon Stealth“.
+    keywords: [name, `@${profile.slug}`, 'Linketto', 'link in bio', 'Carbon Stealth'],
     ...(hasSensitive ? { robots: { index: false } } : {}),
     alternates: { canonical, languages },
     openGraph: {
       type: 'profile',
       siteName: 'Linketto',
-      title: main?.displayName ?? profile.slug,
-      description: main?.bio ?? undefined,
+      title: name,
+      description,
       url: canonical,
       images: [ogImage],
     },
-    twitter: { card: 'summary_large_image', images: [ogImage.url] },
+    twitter: { card: 'summary_large_image', title: name, description, images: [ogImage.url] },
   };
 }
 
 export async function ProfileScreen({
-  profile,
+  profile: loaded,
   hl,
   sent,
   formError,
@@ -173,6 +193,7 @@ export async function ProfileScreen({
   voted,
   booked,
   bookError,
+  preview = false,
 }: {
   profile: LoadedProfile;
   hl?: string;
@@ -184,44 +205,69 @@ export async function ProfileScreen({
   voted?: string;
   booked?: string;
   bookError?: string;
+  /** Жив преглед от таблото: не се брои посещение, нищо не е кликаемо. */
+  preview?: boolean;
 }) {
-  const slug = profile.slug;
-  const available = profile.translations.map((t) => t.locale);
+  // Езикът (docs/geo-autotranslate-spec.md, Б): изричен ?hl → браузър → държава по
+  // IP (без диалекти) → … ; ако създателят няма този език — автоматичен превод
+  // (кеширан; ботовете и прегледът от таблото никога не получават машинен превод).
   const requestHeaders = await headers();
-  let viewLocale: string;
-  if (hl && available.includes(hl)) {
-    // Явният избор (?hl) винаги печели.
-    viewLocale = hl;
-  } else {
-    // Иначе автоматично по IP геолокация (държава) в рамките на езиците,
-    // които създателят е превел; после Accept-Language. Диалектите не се
-    // избират автоматично.
-    viewLocale = localeFromGeo({
-      country: requestHeaders.get('cf-ipcountry'),
-      acceptLanguage: requestHeaders.get('accept-language'),
-      available,
-      fallback: available.includes(profile.defaultLocale)
-        ? profile.defaultLocale
-        : available[0],
+  const available = loaded.translations.map((t) => t.locale);
+  const country = requestCountry(requestHeaders);
+  const pick = pickProfileView({
+    hl,
+    country,
+    acceptLanguage: requestHeaders.get('accept-language'),
+    available,
+    defaultLocale: loaded.defaultLocale,
+    autoTranslate: autoTranslateActive(loaded) && !preview,
+    isBot: isBotUserAgent(requestHeaders.get('user-agent')),
+  });
+  const viewLocale = pick.locale;
+  let profile = loaded;
+  // Езикът на оригинала, когато съдържанието е преведено автоматично на сървъра
+  // (autoFrom) или чака превода на браузъра (browserFrom).
+  let autoFrom: string | null = null;
+  let browserFrom: string | null = null;
+  const source = pick.mode === 'auto' ? profileSource(loaded) : null;
+  if (source) {
+    // Пресен (платен) превод — само при автоматичен избор на езика; изричното
+    // ?hl= на чужд език чете само кеша (защита на разхода).
+    const entry = await autoTranslation(loaded.id, source, viewLocale, {
+      fresh: !(hl && hl === viewLocale),
     });
+    if (entry) {
+      profile = applyAutoTranslation(loaded, viewLocale, entry, source.from);
+      autoFrom = source.from;
+    } else {
+      browserFrom = source.from;
+    }
   }
+  const slug = profile.slug;
+  // Езикът на съдържанието на създателя, когато е различен от интерфейса
+  // (оригинал, който чака превода на браузъра) — за екранните четци и за
+  // предложението за превод на браузъра.
+  const contentLang = browserFrom ?? undefined;
+  const ct = { 'data-ct': '', lang: contentLang } as const;
 
   const translation =
     profile.translations.find((t) => t.locale === viewLocale) ??
+    profile.translations.find((t) => t.locale === profile.defaultLocale) ??
     profile.translations[0];
   const t = await getTranslations({
     locale: viewLocale,
     namespace: 'profile',
   });
 
-  // Преглед на страницата — без бисквитки, без лични данни.
-  await prisma.clickEvent
+  // Преглед на страницата — без бисквитки, без лични данни. Прегледът от
+  // таблото не е посещение.
+  if (!preview) await prisma.clickEvent
     .create({
       data: {
         profileId: profile.id,
         locale: viewLocale,
         referrerHost: hostOf(requestHeaders.get('referer')),
-        country: countryOf(requestHeaders.get('cf-ipcountry')),
+        country: countryOf(country),
       },
     })
     .catch(() => undefined);
@@ -229,39 +275,115 @@ export async function ProfileScreen({
   // Стилов енджин — „персонализация до крайна степен“.
   const styleCfg = parseStyle(profile.style);
   const isTheme = styleCfg.bgStyle === 'theme';
-  const themeClass = isTheme
-    ? (THEME_CLASSES[profile.theme] ?? THEME_CLASSES.aurora)
-    : '';
-  const baseTextColor =
+  const themeId = resolveProfileTheme(profile.theme);
+  const themeDef = THEME_DEFS[themeId];
+  const accent = safeAccent(profile.accent);
+  // Собствен фон (solid/gradient/image): цветът на текста идва от фона или
+  // от избора на създателя; темата тогава не участва.
+  const customFg =
     styleCfg.textColor ??
-    (isTheme
-      ? undefined
-      : styleCfg.bgStyle === 'image'
-        ? '#ffffff'
-        : readableOn(styleCfg.bgColor1));
-  const accent = profile.accent ?? '#3b82c4';
-  const accentFor = (meta: BlockMeta | null) => meta?.color ?? accent;
+    (styleCfg.bgStyle === 'image' ? '#ffffff' : readableOn(styleCfg.bgColor1));
+  const customLight =
+    styleCfg.bgStyle !== 'image' && readableOn(styleCfg.bgColor1) !== '#ffffff';
+  const rootStyle: React.CSSProperties = isTheme
+    ? {
+        ...themeVars(themeId),
+        // Изричният цвят на текста от таблото важи и върху тема (както преди редизайна);
+        // textColor е валидиран hex от zod схемата в lib/style.ts.
+        ...(styleCfg.textColor
+          ? ({
+              '--pf-fg': styleCfg.textColor,
+              '--pf-muted': `color-mix(in srgb, ${styleCfg.textColor} 76%, transparent)`,
+            } as React.CSSProperties)
+          : {}),
+      }
+    : {
+        ...backgroundCss(styleCfg),
+        ...customVars({ fg: customFg, light: customLight, accent }),
+        color: customFg,
+      };
+  const auraOn = isTheme ? themeDef.aura : !customLight;
+  const framed = isTheme && themeDef.cardAlways === true;
+  const nameFont =
+    isTheme && themeDef.displayName === 'serif' && styleCfg.font === 'sans'
+      ? fontFamily({ ...styleCfg, font: 'serif' })
+      : undefined;
+  const accentFor = (meta: BlockMeta | null) =>
+    meta?.color && /^#[0-9a-fA-F]{6}$/.test(meta.color) ? meta.color : accent;
   const shapeClass = buttonShapeClass(styleCfg);
   const shadowClass = buttonShadowClass(styleCfg);
   const boxShape =
     styleCfg.buttonShape === 'square' ? 'rounded-none' : 'rounded-2xl';
-  const btnClass = `pf-sheen block border px-6 py-3.5 text-center font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl ${shapeClass} ${shadowClass}`;
-  const gridSpan = styleCfg.layout === 'grid' ? 'col-span-2' : '';
-  const buttonStyle = buttonCss(styleCfg, accent);
+  // Плочката с иконата следва формата на бутона.
+  const tileRadius =
+    styleCfg.buttonShape === 'square'
+      ? '0'
+      : styleCfg.buttonShape === 'rounded'
+        ? '0.7rem'
+        : '9999px';
+  const isGrid = styleCfg.layout === 'grid';
+  const isStart = styleCfg.align === 'start';
+  // В решетка плочките в един ред са с еднаква височина (h-full), съдържанието — центрирано.
+  const btnClass = `pf-btn ${isGrid ? 'flex h-full items-center justify-center' : 'block'} min-h-[3.25rem] border px-3 py-2.5 font-semibold ${shapeClass} ${shadowClass}`;
+  const gridSpan = isGrid ? 'col-span-2' : '';
+  const bv = (a: string) =>
+    buttonVars(styleCfg.buttonFill, a, isTheme, readableOn(a));
+  // Бутон за изпращане във формите: плътен; ако панелът е плътен — обратен.
+  const submitVars = (a: string): React.CSSProperties => {
+    const ink = readableOn(a);
+    return styleCfg.buttonFill === 'solid'
+      ? ({
+          '--b-bg': ink,
+          '--b-fg': a,
+          '--b-bd': ink,
+          '--b-hbg': ink,
+          '--b-hbd': ink,
+        } as React.CSSProperties)
+      : buttonVars('solid', a, isTheme, ink);
+  };
+  const submitClass = `pf-btn w-full min-h-11 border px-4 py-2 font-semibold ${shapeClass}`;
   const avatarShapeClass =
     styleCfg.avatarShape === 'circle'
       ? 'rounded-full'
       : styleCfg.avatarShape === 'rounded'
         ? 'rounded-2xl'
         : '';
-  // Светъл фон → тъмно стъкло; тъмен фон → светло стъкло.
-  const isLightBg = isTheme
-    ? profile.theme === 'mono'
-    : styleCfg.bgStyle !== 'image' &&
-      readableOn(styleCfg.bgColor1) === '#111827';
-  const glassClass = isLightBg
-    ? 'border-black/10 bg-white/70'
-    : 'border-white/15 bg-white/10';
+  // Нечуплими пилюли: само рамка от цвета на текста (върху фона на темата
+  // контрастът на второстепенния текст остава непроменен).
+  const chipStyle: React.CSSProperties = {
+    borderColor: 'color-mix(in srgb, var(--pf-fg) 26%, transparent)',
+  };
+  const dangerStyle: React.CSSProperties = { color: 'var(--pf-danger)' };
+  // Съдържание на бутон: иконата в плочка отляво, заглавието в средата.
+  const btnInner = (
+    icon: React.ReactNode,
+    title: string,
+    badge?: React.ReactNode,
+    big?: boolean,
+  ) => (
+    <span className="flex items-center gap-3">
+      {icon && (
+        <span
+          className="pf-tile shrink-0"
+          style={{ borderRadius: tileRadius }}
+        >
+          {icon}
+        </span>
+      )}
+      <span
+        {...ct}
+        className={`min-w-0 flex-1 break-words ${
+          isStart ? 'text-start' : 'text-center'
+        } ${big ? 'text-lg font-bold' : ''}`}
+      >
+        {title}
+        {badge && <span className="ms-2 align-middle">{badge}</span>}
+      </span>
+      {icon && !isStart && !isGrid && (
+        <span aria-hidden className="w-8 shrink-0" />
+      )}
+    </span>
+  );
 
   const titleFor = (link: LoadedProfile['links'][number]) =>
     (
@@ -321,10 +443,14 @@ export async function ProfileScreen({
   const shareUrl = profileUrl(slug);
   const canonicalUrl = `${SITE_URL}/u/${slug}`;
 
-  // GEO: създателят като субект — Person/ProfilePage JSON-LD, sameAs от
-  // публичните линкове (само истински http(s) цели, без tel:/vcard).
+  // GEO: създателят като субект — Person/ProfilePage JSON-LD. sameAs = само профили в
+  // социални мрежи (по домейна), не магазини, плащания или чужди страници.
   const sameAs = profile.links
-    .filter((link) => link.active && link.url?.startsWith('http'))
+    .filter((link) => {
+      if (!link.active || !link.url?.startsWith('http')) return false;
+      const brand = brandFor(link.url);
+      return brand !== null && !NOT_IDENTITY_BRANDS.has(brand);
+    })
     .map((link) => link.url as string)
     .slice(0, 20);
   const personJsonLd = {
@@ -337,7 +463,9 @@ export async function ProfileScreen({
       name: translation.displayName,
       description: translation.bio ?? undefined,
       url: canonicalUrl,
-      ...(styleCfg.avatarUrl ? { image: styleCfg.avatarUrl } : {}),
+      ...(styleCfg.avatarUrl
+        ? { image: styleCfg.avatarUrl.startsWith('/') ? `${SITE_URL}${styleCfg.avatarUrl}` : styleCfg.avatarUrl }
+        : {}),
       ...(sameAs.length > 0 ? { sameAs } : {}),
     },
   };
@@ -385,10 +513,13 @@ export async function ProfileScreen({
     <main
       lang={viewLocale}
       dir={dirFor(viewLocale)}
-      className={`relative flex min-h-screen flex-col items-center overflow-x-clip px-3 py-8 sm:px-6 sm:py-16 ${themeClass}`}
+      // Прегледът е само за гледане: inert спира и клик, и фокус/Enter (без
+      // записани кликове и изпратени формуляри).
+      inert={preview || undefined}
+      data-ai-translated={autoFrom ? viewLocale : undefined}
+      className="relative flex min-h-screen flex-col items-center overflow-x-clip px-4 py-6 sm:px-6 sm:py-16"
       style={{
-        ...backgroundCss(styleCfg),
-        color: baseTextColor,
+        ...rootStyle,
         fontFamily: fontFamily(styleCfg),
       }}
     >
@@ -400,6 +531,14 @@ export async function ProfileScreen({
           ),
         }}
       />
+      {/* Модна сцена на темата (chrome/acid) — само CSS, без SVG */}
+      {isTheme && themeDef.scene && (
+        <div aria-hidden className={`pf-scene pf-${themeDef.scene}`}>
+          <span />
+          <span />
+          <span />
+        </div>
+      )}
       {/* Жива сцена върху фона — по избор от стиловия енджин */}
       {styleCfg.bgEffect !== 'none' && (
         <div
@@ -453,11 +592,13 @@ export async function ProfileScreen({
         </div>
       )}
       <div
-        className={`pf-card-aura ${isLightBg ? '' : 'pf-dark'} relative w-full max-w-lg border shadow-2xl backdrop-blur-xl ${glassClass} ${
-          styleCfg.buttonShape === 'square' ? 'rounded-none' : 'rounded-3xl'
-        } px-5 py-10 sm:px-10 ${
-          styleCfg.align === 'start' ? 'text-start' : 'text-center'
-        }`}
+        className={`pf-card ${framed ? 'pf-card-all px-4 pb-6' : 'px-1 pb-4'} ${auraOn ? 'pf-card-aura' : ''} relative w-full max-w-[30rem] pt-10 sm:px-10 sm:pb-10 sm:pt-12 ${
+          styleCfg.buttonShape === 'square'
+            ? 'rounded-none'
+            : framed
+              ? 'rounded-3xl'
+              : 'sm:rounded-3xl'
+        } ${isStart ? 'text-start' : 'text-center'}`}
         style={{ '--aura': accent } as React.CSSProperties}
       >
         <ShareButton
@@ -475,10 +616,12 @@ export async function ProfileScreen({
           <img
             src={styleCfg.avatarUrl}
             alt=""
-            width={96}
-            height={96}
-            className={`pf-pop pf-ring mb-5 h-24 w-24 object-cover shadow-xl ${avatarShapeClass} ${
-              styleCfg.align === 'start' ? '' : 'mx-auto'
+            width={112}
+            height={112}
+            fetchPriority="high"
+            decoding="async"
+            className={`pf-pop pf-ring mb-6 h-28 w-28 object-cover shadow-xl ${avatarShapeClass} ${
+              isStart ? '' : 'mx-auto'
             }`}
             style={{ '--ring': accent } as React.CSSProperties}
           />
@@ -487,36 +630,84 @@ export async function ProfileScreen({
           // Без качена снимка: монограм в акцента — профилът не зее празен отгоре.
           <div
             aria-hidden
-            className={`pf-pop pf-ring mb-5 flex h-24 w-24 select-none items-center justify-center text-3xl font-bold tracking-tight shadow-xl ${avatarShapeClass} ${
-              styleCfg.align === 'start' ? '' : 'mx-auto'
+            className={`pf-pop pf-ring mb-6 flex h-28 w-28 select-none items-center justify-center text-4xl font-bold tracking-tight shadow-xl ${avatarShapeClass} ${
+              isStart ? '' : 'mx-auto'
             }`}
             style={
               {
                 '--ring': accent,
-                background: `linear-gradient(140deg, ${accent}, color-mix(in srgb, ${accent} 45%, #6d28d9))`,
-                color: /^#[0-9a-f]{6}$/i.test(accent)
-                  ? readableOn(accent)
-                  : '#ffffff',
+                background: `linear-gradient(140deg, ${accent}, color-mix(in srgb, ${accent} 62%, ${readableOn(accent) === '#ffffff' ? '#000000' : '#ffffff'}))`,
+                color: readableOn(accent),
               } as React.CSSProperties
             }
           >
             {initials}
           </div>
         )}
-        <p
-          className="pf-greet text-sm font-semibold uppercase tracking-[0.25em]"
-          style={{ color: `color-mix(in srgb, ${accent} 55%, currentColor)` }}
+        <p className="pf-muted text-sm font-medium">{greeting}</p>
+        <h1
+          {...ct}
+          className={`pf-name mt-0.5 font-bold leading-[1.1] tracking-tight ${
+            nameFont ? 'text-[2.15rem] sm:text-4xl' : 'text-[1.85rem] sm:text-3xl'
+          }`}
+          style={nameFont ? { fontFamily: nameFont, fontWeight: 600 } : undefined}
         >
-          {greeting}
-        </p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight">{translation.displayName}</h1>
+          {translation.displayName}
+        </h1>
         {translation.bio && (
-          <p className="mx-auto mt-2 max-w-sm text-[15px] leading-relaxed opacity-75">{translation.bio}</p>
+          <p
+            {...ct}
+            className={`pf-bio pf-muted mt-3 max-w-sm text-[15px] leading-relaxed ${
+              isStart ? '' : 'mx-auto'
+            }`}
+          >
+            {translation.bio}
+          </p>
+        )}
+        {autoFrom && (
+          <p className="pf-muted mt-3 text-xs">
+            {t('autoTranslated', {
+              language: LOCALE_NAMES[autoFrom as keyof typeof LOCALE_NAMES] ?? autoFrom,
+            })}{' '}
+            ·{' '}
+            <a href={`/u/${slug}?hl=${autoFrom}`} className="underline underline-offset-2">
+              {t('showOriginal')}
+            </a>
+          </p>
+        )}
+        {browserFrom && source && (
+          <BrowserTranslate
+            from={browserFrom}
+            to={viewLocale}
+            texts={[
+              source.content.displayName,
+              source.content.bio ?? '',
+              // Само видимите сега блокове — насрочените не бива да изтичат в страницата.
+              ...source.content.links
+                .filter((item) => {
+                  const block = loaded.links.find((link) => link.id === item.id);
+                  return block ? isBlockVisible(block, new Date()) : false;
+                })
+                .map((link) => link.title),
+              ...(source.content.products ?? []).map((product) => product.title),
+            ].filter(Boolean).slice(0, 300)}
+            originalHref={`/u/${slug}?hl=${browserFrom}`}
+            labels={{
+              done: t('autoTranslated', {
+                language: LOCALE_NAMES[browserFrom as keyof typeof LOCALE_NAMES] ?? browserFrom,
+              }),
+              showOriginal: t('showOriginal'),
+              translate: t('translateInBrowser', {
+                language: LOCALE_NAMES[viewLocale as keyof typeof LOCALE_NAMES] ?? viewLocale,
+              }),
+              translating: t('translating'),
+            }}
+          />
         )}
         {unsub && (
           <p
             role="status"
-            className="pf-note mx-auto mt-3 max-w-sm rounded-lg px-3 py-2 text-xs opacity-90"
+            className="pf-note mx-auto mt-3 max-w-sm rounded-lg px-3 py-2 text-xs"
           >
             {t('unsubDone')}
           </p>
@@ -524,29 +715,17 @@ export async function ProfileScreen({
 
         {(available.length > 1 || monthViews !== null) && (
           <div
-            className={`mt-3 flex flex-wrap gap-2 text-xs font-medium ${
-              styleCfg.align === 'start' ? '' : 'justify-center'
+            className={`mt-4 flex flex-wrap gap-2 text-xs font-medium ${
+              isStart ? '' : 'justify-center'
             }`}
           >
             {available.length > 1 && (
-              <span
-                className="rounded-full border px-3 py-1"
-                style={{
-                  borderColor: `${accent}66`,
-                  backgroundColor: `${accent}1a`,
-                }}
-              >
+              <span className="pf-muted rounded-full border px-3 py-1" style={chipStyle}>
                 {t('speaksLangs', { count: available.length })}
               </span>
             )}
             {monthViews !== null && (
-              <span
-                className="rounded-full border px-3 py-1"
-                style={{
-                  borderColor: `${accent}66`,
-                  backgroundColor: `${accent}1a`,
-                }}
-              >
+              <span className="pf-muted rounded-full border px-3 py-1" style={chipStyle}>
                 {t('viewsBadge', {
                   count: new Intl.NumberFormat(viewLocale, {
                     notation: 'compact',
@@ -560,26 +739,23 @@ export async function ProfileScreen({
         {available.length > 1 && (
           <nav
             aria-label="Language"
-            className={`mt-4 flex flex-wrap gap-2 ${
-              styleCfg.align === 'start' ? '' : 'justify-center'
+            className={`pf-lang mt-3 flex flex-wrap gap-1.5 ${
+              isStart ? '' : 'justify-center'
             }`}
           >
             {available.map((loc) => (
               <a
                 key={loc}
                 href={`/u/${slug}?hl=${loc}`}
-                className={`rounded-full border px-3.5 py-1.5 text-xs transition-all duration-300 ${
+                aria-current={loc === viewLocale ? 'true' : undefined}
+                className={`inline-flex min-h-9 items-center rounded-full border px-3.5 text-[13px] ${
                   loc === viewLocale
                     ? 'font-semibold'
-                    : 'border-transparent opacity-75 hover:-translate-y-0.5 hover:opacity-100'
+                    : 'pf-muted border-transparent hover:text-[color:var(--pf-fg)] hover:underline hover:underline-offset-4'
                 }`}
                 style={
                   loc === viewLocale
-                    ? {
-                        borderColor: accent,
-                        backgroundColor: `${accent}26`,
-                        boxShadow: `0 0 16px ${accent}55`,
-                      }
+                    ? { borderColor: accent, borderWidth: 2 }
                     : undefined
                 }
               >
@@ -590,7 +766,7 @@ export async function ProfileScreen({
         )}
 
         <ul
-          className={`mt-8 text-start ${
+          className={`mt-7 text-start ${
             styleCfg.layout === 'grid' ? 'grid grid-cols-2 gap-3' : 'space-y-3'
           }`}
         >
@@ -609,7 +785,7 @@ export async function ProfileScreen({
                   <li key={link.id} className={`pf-rise pt-4 ${gridSpan}`} style={rise()}>
                     <div className="flex items-center gap-3">
                       <span aria-hidden className="h-px flex-1 bg-current opacity-15" />
-                      <h2 className="text-xs font-semibold uppercase tracking-[0.2em] opacity-70">
+                      <h2 {...ct} className="pf-muted text-sm font-semibold">
                         {title}
                       </h2>
                       <span aria-hidden className="h-px flex-1 bg-current opacity-15" />
@@ -622,12 +798,9 @@ export async function ProfileScreen({
                     <a
                       href={link.url ?? '#'}
                       className={btnClass}
-                      style={buttonCss(styleCfg, accentFor(meta))}
+                      style={bv(accentFor(meta))}
                     >
-                      <span className="inline-flex items-center gap-2">
-                        <PhoneIcon className="h-4 w-4 shrink-0" />
-                        {title}
-                      </span>
+                      {btnInner(<PhoneIcon className="h-4 w-4" />, title)}
                     </a>
                   </li>
                 );
@@ -654,18 +827,18 @@ export async function ProfileScreen({
                 return (
                   <li key={link.id} className={`pf-rise ${gridSpan}`} style={rise()}>
                     <div
-                      className={`border px-6 py-3 text-center ${boxShape} ${shadowClass}`}
-                      style={buttonCss(styleCfg, accentFor(meta))}
+                      className={`pf-panel border px-5 py-3.5 text-center ${boxShape} ${shadowClass}`}
+                      style={bv(accentFor(meta))}
                     >
                       <p className="inline-flex items-center gap-2 font-semibold">
                         <MusicIcon className="h-4 w-4 shrink-0" />
-                        {title}
+                        <span {...ct}>{title}</span>
                       </p>
                       <p className="mt-2 flex justify-center gap-3 text-sm">
                         {meta?.spotify && (
                           <a
                             href={`${clickHref}&svc=spotify`}
-                            className="underline-offset-2 hover:underline"
+                            className="inline-flex min-h-9 items-center underline underline-offset-4"
                           >
                             Spotify
                           </a>
@@ -673,7 +846,7 @@ export async function ProfileScreen({
                         {meta?.apple && (
                           <a
                             href={`${clickHref}&svc=apple`}
-                            className="underline-offset-2 hover:underline"
+                            className="inline-flex min-h-9 items-center underline underline-offset-4"
                           >
                             Apple Music
                           </a>
@@ -686,10 +859,10 @@ export async function ProfileScreen({
                 return (
                   <li key={link.id} className={`pf-rise ${gridSpan}`} style={rise()}>
                     <div
-                      className={`border px-6 py-4 ${boxShape} ${shadowClass}`}
-                      style={buttonCss(styleCfg, accentFor(meta))}
+                      className={`pf-panel border px-5 py-4 ${boxShape} ${shadowClass}`}
+                      style={bv(accentFor(meta))}
                     >
-                      <p className="text-center font-medium">{title}</p>
+                      <p {...ct} className="text-center font-medium">{title}</p>
                       {sent ? (
                         <p className="mt-3 text-center text-sm opacity-80">
                           {t('formSent')}
@@ -734,7 +907,7 @@ export async function ProfileScreen({
                             className="pf-field"
                           />
                           {formError && (
-                            <p className={`text-xs ${isLightBg ? 'text-red-700' : 'text-red-300'}`}>
+                            <p className="text-xs font-medium" style={dangerStyle}>
                               {t('formError')}
                             </p>
                           )}
@@ -750,8 +923,8 @@ export async function ProfileScreen({
                           </p>
                           <button
                             type="submit"
-                            className="w-full rounded-full border px-4 py-2 font-semibold transition hover:scale-[1.01]"
-                            style={{ borderColor: accentFor(meta) }}
+                            className={submitClass}
+                            style={submitVars(accentFor(meta))}
                           >
                             {t('formSend')}
                           </button>
@@ -764,10 +937,10 @@ export async function ProfileScreen({
                 return (
                   <li key={link.id} className={`pf-rise ${gridSpan}`} style={rise()}>
                     <div
-                      className={`border px-6 py-4 ${boxShape} ${shadowClass}`}
-                      style={buttonCss(styleCfg, accentFor(meta))}
+                      className={`pf-panel border px-5 py-4 ${boxShape} ${shadowClass}`}
+                      style={bv(accentFor(meta))}
                     >
-                      <p className="text-center font-medium">{title}</p>
+                      <p {...ct} className="text-center font-medium">{title}</p>
                       {subscribed ? (
                         <p className="mt-3 text-center text-sm opacity-80">
                           {subscribed === 'confirmed'
@@ -799,7 +972,7 @@ export async function ProfileScreen({
                             className="pf-field"
                           />
                           {subError && (
-                            <p className={`text-xs ${isLightBg ? 'text-red-700' : 'text-red-300'}`}>
+                            <p className="text-xs font-medium" style={dangerStyle}>
                               {t('subError')}
                             </p>
                           )}
@@ -822,8 +995,8 @@ export async function ProfileScreen({
                           </label>
                           <button
                             type="submit"
-                            className="w-full rounded-full border px-4 py-2 font-semibold transition hover:scale-[1.01]"
-                            style={{ borderColor: accentFor(meta) }}
+                            className={submitClass}
+                            style={submitVars(accentFor(meta))}
                           >
                             {t('subButton')}
                           </button>
@@ -848,10 +1021,10 @@ export async function ProfileScreen({
                     style={rise()}
                   >
                     <div
-                      className={`border px-6 py-4 ${boxShape} ${shadowClass}`}
-                      style={buttonCss(styleCfg, accentFor(meta))}
+                      className={`pf-panel border px-5 py-4 ${boxShape} ${shadowClass}`}
+                      style={bv(accentFor(meta))}
                     >
-                      <p className="text-center font-medium">{title}</p>
+                      <p {...ct} className="text-center font-medium">{title}</p>
                       <div className="mt-3 space-y-2">
                         {options.map((option, i) => (
                           <form
@@ -911,10 +1084,10 @@ export async function ProfileScreen({
                 return (
                   <li key={link.id} className={`pf-rise ${gridSpan}`} style={rise()}>
                     <div
-                      className={`border px-6 py-4 ${boxShape} ${shadowClass}`}
-                      style={buttonCss(styleCfg, accentFor(meta))}
+                      className={`pf-panel border px-5 py-4 ${boxShape} ${shadowClass}`}
+                      style={bv(accentFor(meta))}
                     >
-                      <p className="text-center font-medium">{title}</p>
+                      <p {...ct} className="text-center font-medium">{title}</p>
                       {booked ? (
                         <p className="mt-3 text-center text-sm opacity-80">
                           {t('bookingSent')}
@@ -965,7 +1138,7 @@ export async function ProfileScreen({
                             className="pf-field"
                           />
                           {bookError && (
-                            <p className={`text-xs ${isLightBg ? 'text-red-700' : 'text-red-300'}`}>
+                            <p className="text-xs font-medium" style={dangerStyle}>
                               {t('subError')}
                             </p>
                           )}
@@ -980,8 +1153,8 @@ export async function ProfileScreen({
                           </p>
                           <button
                             type="submit"
-                            className="w-full rounded-full border px-4 py-2 font-semibold transition hover:scale-[1.01]"
-                            style={{ borderColor: accentFor(meta) }}
+                            className={submitClass}
+                            style={submitVars(accentFor(meta))}
                           >
                             {t('bookingSend')}
                           </button>
@@ -1007,14 +1180,20 @@ export async function ProfileScreen({
                   <HeartIcon className="h-4 w-4 shrink-0" />
                 ) : link.kind === 'VCARD' ? (
                   <UserRoundPlusIcon className="h-4 w-4 shrink-0" />
-                ) : null;
+                ) : (
+                  <GlobeIcon className="h-4 w-4 shrink-0" />
+                );
                 const badge = sensitive && (
-                  <span className="rounded border border-current px-1 text-[10px] font-bold leading-4 opacity-80">
+                  <span className="rounded border border-current px-1 text-[10px] font-bold leading-4">
                     18+
                   </span>
                 );
-                // Spotlight: голяма карта с дишащо сияние в акцента на блока.
+                // Spotlight: голяма плътна карта в акцента с дишащо сияние.
                 if (featured) {
+                  const a = accentFor(meta);
+                  const ink = readableOn(a);
+                  const end = `color-mix(in srgb, ${a} 72%, ${ink === '#ffffff' ? '#000000' : '#ffffff'})`;
+                  const grad = `linear-gradient(135deg, ${a}, ${end})`;
                   return (
                     <li
                       key={link.id}
@@ -1023,19 +1202,19 @@ export async function ProfileScreen({
                     >
                       <a
                         href={clickHref}
-                        className={`pf-spot pf-sheen block border px-6 py-6 text-center text-lg font-bold transition-all duration-200 hover:-translate-y-1 ${shapeClass}`}
+                        className={`pf-spot pf-sheen pf-btn block min-h-[4.5rem] border px-4 py-5 ${shapeClass}`}
                         style={
                           {
-                            ...buttonCss(styleCfg, accentFor(meta)),
-                            '--spot': accentFor(meta),
+                            '--b-bg': grad,
+                            '--b-hbg': grad,
+                            '--b-fg': ink,
+                            '--b-bd': a,
+                            '--b-hbd': a,
+                            '--spot': a,
                           } as React.CSSProperties
                         }
                       >
-                        <span className="inline-flex items-center gap-2.5">
-                          {icon}
-                          {title}
-                          {badge}
-                        </span>
+                        {btnInner(icon, title, badge, true)}
                       </a>
                     </li>
                   );
@@ -1047,16 +1226,12 @@ export async function ProfileScreen({
                       className={`${btnClass}${brandColor ? ' pf-brand' : ''}`}
                       style={
                         {
-                          ...buttonCss(styleCfg, accentFor(meta)),
+                          ...bv(accentFor(meta)),
                           ...(brandColor ? { '--brand': brandColor } : {}),
                         } as React.CSSProperties
                       }
                     >
-                      <span className="inline-flex items-center gap-2">
-                        {icon}
-                        {title}
-                        {badge}
-                      </span>
+                      {btnInner(icon, title, badge)}
                     </a>
                   </li>
                 );
@@ -1067,17 +1242,17 @@ export async function ProfileScreen({
 
         {shopLive && (
           <section className="mt-10 text-start">
-            <h2 className="flex items-center justify-center gap-2 text-center text-sm font-semibold uppercase tracking-wide opacity-70">
+            <h2 className="pf-muted flex items-center justify-center gap-2 text-center text-sm font-semibold">
               <ShoppingBagIcon className="h-4 w-4" />
               {t('shopTitle')}
             </h2>
             {/* Дир. 2011/83 чл. 6а: продавачът е създателят (статут), Linketto
                 не е страна по покупката — плащането е при него (решение О-1). */}
-            <p className="mt-2 text-center text-[11px] leading-snug opacity-80">
+            <p className="pf-muted mt-2 text-center text-xs leading-relaxed">
               {t('shopSellerNote')} {profile.user.isTrader ? t('sellerTrader') : t('sellerPrivate')}.{' '}
               {t('shopExternalNote')}
             </p>
-            <ul className="mt-4 space-y-5">
+            <ul className="mt-4 space-y-3">
               {profile.products.map((product) => {
                 const productTr =
                   product.translations.find((tr) => tr.locale === viewLocale) ??
@@ -1086,23 +1261,27 @@ export async function ProfileScreen({
                 const productTitle = productTr?.title;
                 if (!productTitle || !product.externalUrl) return null;
                 return (
-                  <li key={product.id} className="pf-product">
+                  <li key={product.id}>
                     <a
                       href={`/u/${slug}/p/${product.id}?hl=${viewLocale}`}
                       target="_blank"
                       rel="nofollow noopener noreferrer ugc"
-                      className={`flex w-full items-center justify-between gap-3 border px-6 py-3.5 text-start transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl ${shapeClass} ${shadowClass}`}
-                      style={buttonStyle}
+                      className={`pf-btn flex min-h-[3.5rem] w-full items-center justify-between gap-4 border px-5 py-3 text-start ${
+                        styleCfg.buttonShape === 'pill' ? 'rounded-3xl' : shapeClass
+                      } ${shadowClass}`}
+                      style={bv(accent)}
                     >
                       <span className="min-w-0">
-                        <span className="block font-semibold">{productTitle}</span>
+                        <span {...ct} className="block font-semibold">{productTitle}</span>
                         {productTr?.description && (
-                          <span className="mt-0.5 block text-xs font-normal opacity-75">
+                          <span className="mt-0.5 block text-xs font-normal opacity-80">
                             {productTr.description}
                           </span>
                         )}
                       </span>
-                      <span className="shrink-0 font-bold">€{(product.priceCents / 100).toFixed(2)}</span>
+                      <span className="shrink-0 text-base font-bold tabular-nums">
+                        €{(product.priceCents / 100).toFixed(2)}
+                      </span>
                     </a>
                   </li>
                 );
@@ -1115,38 +1294,47 @@ export async function ProfileScreen({
             на собственика (бонус при платен план). Абсолютен URL — работи и
             на собствен/кратък домейн. Скрива се само на платени планове. */}
         {!styleCfg.hideBadge && (
-          <p className="mt-12 text-center">
+          <p className="mt-10 text-center">
             <a
               href={`${SITE_URL}/${viewLocale}/register${
                 profile.user.referralCode
                   ? `?ref=${encodeURIComponent(profile.user.referralCode)}`
                   : ''
               }`}
-              className="group inline-flex max-w-full flex-col items-center rounded-2xl border border-current px-5 py-2 opacity-75 transition hover:opacity-100"
+              className="pf-muted inline-flex min-h-10 max-w-full flex-wrap items-center justify-center gap-x-2.5 gap-y-0.5 rounded-3xl border px-4 py-2 text-center text-[13px] font-medium transition-transform hover:-translate-y-px"
+              style={chipStyle}
             >
-              <span className="text-[10px] font-semibold uppercase tracking-[0.25em] opacity-80">
+              <span className="font-bold" style={{ color: 'var(--pf-fg)' }}>
                 Linketto
               </span>
-              <span className="mt-0.5 text-sm font-semibold">
-                {t('badgeCta')}{' '}
-                <span
-                  aria-hidden="true"
-                  className="inline-block transition-transform group-hover:translate-x-0.5"
-                >
-                  →
-                </span>
-              </span>
+              <span aria-hidden="true" className="hidden h-3.5 w-px shrink-0 bg-current opacity-40 min-[480px]:inline-block" />
+              <span className="whitespace-nowrap">{t('badgeCta')}</span>
             </a>
           </p>
         )}
         {/* DSA чл. 16: път за сигнали — дискретен, но винаги наличен */}
-        <p className={`${styleCfg.hideBadge ? 'mt-12' : 'mt-3'} text-center`}>
+        <p className={`${styleCfg.hideBadge ? 'mt-10' : 'mt-2'} text-center`}>
           <a
             href={`/u/${slug}/report?hl=${viewLocale}`}
             rel="nofollow"
-            className="text-[11px] opacity-70 transition hover:underline hover:opacity-100"
+            className="pf-muted inline-flex min-h-10 items-center px-3 text-xs underline-offset-4 hover:underline"
           >
             {t('report')}
+          </a>
+          <a
+            href={`/${viewLocale}/privacy`}
+            className="pf-muted inline-flex min-h-10 items-center px-3 text-xs underline-offset-4 hover:underline"
+          >
+            {t('formPrivacyLink')}
+          </a>
+          {/* Лицензът на DB-IP Lite (CC BY 4.0) изисква атрибуция там, където се ползва. */}
+          <a
+            href="https://db-ip.com"
+            rel="nofollow noopener"
+            target="_blank"
+            className="pf-muted inline-flex min-h-10 items-center px-3 text-[11px] underline-offset-4 hover:underline"
+          >
+            IP Geolocation by DB-IP
           </a>
         </p>
       </div>

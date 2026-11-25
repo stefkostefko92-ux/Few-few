@@ -2,18 +2,19 @@ import { NextResponse } from 'next/server';
 import { timingSafeEqual } from 'node:crypto';
 import { prisma } from '@/lib/db';
 import { SITE_URL } from '@/lib/seo';
-import { emailConfigured, sendEmail } from '@/lib/email';
+import { emailReady, sendEmail } from '@/lib/email';
 import { applyPlanLimits } from '@/lib/plan-limits';
 import { expiryAction } from '@/lib/plan-orders';
 import { planReminderEmail } from '@/lib/plan-reminder';
 import {
   alertStuckRefunds,
+  releaseReferralBonuses,
   resendDisputeAlerts,
   sendPlanConfirmation,
   settlePlanOrder,
   settlePlanRefund,
 } from '@/lib/plan-order-service';
-import { revolutConfigured } from '@/lib/revolut';
+import { revolutReady } from '@/lib/revolut';
 import { notifyAdmins } from '@/lib/admin-alert';
 import { sendWithdrawalAck } from '@/lib/withdrawal-service';
 import type { PlanId } from '@/lib/plans';
@@ -52,11 +53,14 @@ export async function POST(request: Request): Promise<NextResponse> {
     downgraded: 0,
     reminded: 0,
     disputeAlerts: 0,
+    referralsReleased: 0,
     errors: 0,
   };
+  // Кои поръчки са гръмнали (вътрешни id, без лични данни) — за алармата; не влизат в отговора.
+  const failedOrders: string[] = [];
 
   // (1) P9: висящи поръчки на възраст 15 мин. – 3 дни.
-  if (revolutConfigured()) {
+  if (await revolutReady()) {
     const pending = await prisma.planOrder.findMany({
       where: {
         state: 'pending',
@@ -73,12 +77,13 @@ export async function POST(request: Request): Promise<NextResponse> {
         if (result !== 'pending' && result !== 'noop') report.reconciled += 1;
       } catch {
         report.errors += 1;
+        failedOrders.push(`${order.id} (плащане)`);
       }
     }
   }
 
   // (1б) Висящи refund-и (Revolut ги приключва до 2 дни).
-  if (revolutConfigured()) {
+  if (await revolutReady()) {
     const refunds = await prisma.planOrder.findMany({
       where: { state: 'refund_pending', refundOrderId: { not: null } },
       orderBy: { updatedAt: 'asc' },
@@ -91,6 +96,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         if (result === 'refunded' || result === 'failed') report.refunds += 1;
       } catch {
         report.errors += 1;
+        failedOrders.push(`${order.id} (връщане)`);
       }
     }
   }
@@ -102,6 +108,15 @@ export async function POST(request: Request): Promise<NextResponse> {
     report.errors += 1;
   }
 
+  // (1б‴) Реферални бонуси: задържаните по чисти поръчки след 30 дни → в баланса (abuse-money-spec А2).
+  if (await revolutReady()) {
+    try {
+      report.referralsReleased = (await releaseReferralBonuses(now)).released;
+    } catch {
+      report.errors += 1;
+    }
+  }
+
   // (1б′) Алармите за спорове, които не са тръгнали (Brevo/ADMIN_EMAILS) — до успех.
   try {
     report.disputeAlerts = await resendDisputeAlerts(now);
@@ -110,7 +125,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   // (1в) P14: неизпратени потвърждения (Brevo е бил недостъпен) — до 3 дни назад.
-  if (emailConfigured()) {
+  if (await emailReady()) {
     const unconfirmed = await prisma.planOrder.findMany({
       where: {
         state: 'completed',
@@ -131,7 +146,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   // (1г) Чл. 11а(4): неизпратени потвърждения за получен отказ — до 14 дни назад.
-  if (emailConfigured()) {
+  if (await emailReady()) {
     const acks = await prisma.planOrder.findMany({
       where: {
         withdrawalRequestedAt: { not: null, gt: new Date(now.getTime() - 14 * DAY) },
@@ -179,7 +194,7 @@ export async function POST(request: Request): Promise<NextResponse> {
           await applyPlanLimits(user.id); // R-limits: изтичането е окончателно
           report.downgraded += 1;
         }
-      } else if (action.remind && user.planExpiresAt && emailConfigured()) {
+      } else if (action.remind && user.planExpiresAt && (await emailReady())) {
         // Резервираме етапа ПРЕДИ изпращането — два паралелни cron-а не пращат
         // двойно; при неуспешно изпращане резервацията се връща.
         const reserved = await prisma.user.updateMany({
@@ -212,6 +227,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (report.errors) {
     await notifyAdmins('Cron на плановете: грешки', [
       `Грешки: ${report.errors}`,
+      ...(failedOrders.length ? [`Поръчки: ${failedOrders.slice(0, 20).join(', ')}${failedOrders.length > 20 ? ' …' : ''}`] : []),
       `Уредени: ${report.reconciled}, refund-и: ${report.refunds}, потвърждения: ${report.confirmed}, свалени: ${report.downgraded}, напомняния: ${report.reminded}`,
       'Подробности — в журнала на сървъра ([plan-order]).',
     ]).catch(() => undefined);

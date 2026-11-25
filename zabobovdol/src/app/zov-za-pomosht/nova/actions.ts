@@ -1,13 +1,12 @@
 "use server";
 
 import { z } from "zod";
-import { isPhoneInput, normalizePhoneInput } from "@/lib/phone";
+import { contactFields } from "@/lib/contact-schema";
 import { prisma } from "@/lib/prisma";
 import { slugify, uniqueSlug } from "@/lib/slug";
 import { logAudit } from "@/lib/audit";
 import { rateLimit, clientKey, RATE_LIMIT_MESSAGE } from "@/lib/ratelimit";
 import {
-  EMAIL_RE,
   MSG,
   failState,
   fieldErrorsOf,
@@ -33,24 +32,7 @@ const schema = z.object({
     .trim()
     .min(15, "Опишете по-подробно — поне 15 знака.")
     .max(4000, "Описанието е твърде дълго — до 4000 знака."),
-  contactName: z.string().trim().max(80).optional().default(""),
-  // Непълен номер не стига до публикуване — иначе на мястото му стои
-  // „Телефонът се проверява“. „359…“ и мобилен без 0 се допълват.
-  contactPhone: z
-    .string()
-    .trim()
-    .max(40)
-    .optional()
-    .default("")
-    .transform(normalizePhoneInput)
-    .refine((v) => v === "" || isPhoneInput(v), MSG.phone),
-  contactEmail: z
-    .string()
-    .trim()
-    .max(160)
-    .optional()
-    .default("")
-    .refine((v) => v === "" || EMAIL_RE.test(v), MSG.email),
+  ...contactFields({ emailMax: 160 }),
 });
 
 const FIELDS = [

@@ -3,12 +3,12 @@
 Всяко външно умение тук е **адаптирано копие**, не внесено наготово. Минало е два независими прегледа без
 изпълнение на чужд код (партиди 2026-10-28 и 2026-10-31): първи — Кодаджията и Разбивача; втори, върху
 адаптираните копия — Разбивача наново и Правния Разбирач. Партида 2026-11-08 (последните три реда и
-karpathy-guidelines) е минала и двата прегледа (втори: Разбивача + Правния Разбирач, 2026-11-08). Партида 2026-11-14 (рийл „30 Claude плъгина“: последните четири реда) — същите два прегледа на 2026-11-14. Правните умения от двете партиди ползват общ
+karpathy-guidelines) е минала и двата прегледа (втори: Разбивача + Правния Разбирач, 2026-11-08). Партида 2026-11-14 (рийл „30 Claude плъгина“: четирите реда до `archify-diagrams`) — същите два прегледа на 2026-11-14. Партида 2026-11-23 (рийл „Codex plugins + skills“: `model-na-zaplahite` и `igrovo-studio`) — същите два прегледа на 2026-11-23. Партида 2026-11-24 (рийл „9 skills para animar con Claude“: `animacia`) — първото външно умение с изпълним код; първи преглед Кодаджията и Разбивача, втори върху адаптираното копие — Разбивача, Правния Разбирач и Кодаджията, 2026-11-24; кодът е покрит с тест от край до край (`tools/video/animacia.test.mjs`). Правните умения от двете партиди ползват общ
 „Наш профил“ и общи предпазители (генерирани от един източник). Всеки файл е сверен по sha256 с raw.githubusercontent.com при
 закотвения commit. Пътят е описан в `tools/agents/CLAUDE.md` („Външно умение влиза само по този път“).
 
-Всеки променен файл носи видима бележка за промяната в началото си (Apache-2.0 §4(b)); пълният текст на
-лиценза е в `LICENSE.txt` до всяко умение.
+Всеки променен файл носи видима бележка за промяната в началото си (при Apache-2.0 — изискване на §4(b)); пълният
+текст на лиценза е в `LICENSE.txt` или `LICENSE` до всяко умение.
 
 ## Вписани
 
@@ -44,6 +44,9 @@ karpathy-guidelines) е минала и двата прегледа (втори:
 | `deprecation-and-migration` | addyosmani/agent-skills @ `39b723ceebf8` · `skills/deprecation-and-migration` (14.11) | MIT · Addy Osmani | Качествения |
 | `ui-ux-pro-max` (каталог + локална търсачка) | nextlevelbuilder/ui-ux-pro-max-skill @ `6ae86f61f520` · `.claude/skills/ui-ux-pro-max/` без тестовете и `validate_data.py` (14.11); данни: метаданни на иконки от `@phosphor-icons/core` 2.1.1 (MIT, по-долу), метаданни от google/fonts и Google Fonts API (без файлове на шрифтове) | MIT · Next Level Builder | Дизайнера |
 | `archify-diagrams` | tt-a1i/archify @ `e37848822238` · цялата папка `archify/` (14.11; 187 от 191 сверени файла вградени, каналите за обновления и марки по мрежа махнати — виж бележката на файла и по-долу) | Apache-2.0 · Copyright (c) 2026 tt-a1i (Archify) + (c) 2025 Cocoon AI | Летописецът |
+| `model-na-zaplahite` | openai/skills @ `49f948faa925` · `skills/.curated/security-threat-model` (без `agents/openai.yaml`) (23.11) | Apache-2.0 · хранилище на OpenAI; носител не е посочен (`LICENSE.txt:189` е шаблонът), NOTICE в източника няма | Стражата |
+| `igrovo-studio` | openai/plugins @ `981b02c0c440` · `plugins/game-studio` — 9 умения слети в едно + 16 справочника; без `scripts/`, `assets/`, `.codex-plugin/`, `agents/openai.yaml` (23.11) | MIT — обявен само в `.codex-plugin/plugin.json` (`"license": "MIT"`, автор OpenAI; sha256 `edd750d7ab6d…`); LICENSE файл в източника няма — нашият `LICENSE` е стандартният текст, произходът е в `NOTICE` | Дизайнера (плейтест — Изпитателя) |
+| `animacia` (+ `manim/` справочник) | cth9191/animate @ `7e5eb56feb2d` · `plugins/animate/skills/animate/` без `tools/capture.mjs` и `examples/history-of-ai` (реални хора); `tools/` → `scripts/` + наш `scripts/safe.mjs` (браузър без мрежа и без WebRTC, пътища и след symlink, парче със symlink → отказ, числа за ffmpeg, JSON в `<script>`); героят на crosshatch — без звездичката и теракотата на Anthropic, образците на crosshatch и isometric — наново от нашите демота · awesome-skills/manim-skill @ `f8479fa475aa` → `manim/` (24.11) | MIT · cth9191 (`LICENSE`); MIT · awesome-skills (`manim/LICENSE`) | AI Studio |
 
 **Какво сменихме навсякъде:** описание на български; „Наши предпазители“ най-отгоре (те печелят пред
 останалия текст и оцеляват при компактиране); нищо не се изпълнява, инсталира или записва извън

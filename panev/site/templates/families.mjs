@@ -75,6 +75,7 @@ ${cantiereSection(t, key)}
     <h2>${esc(sh.otherTitle)}</h2>
     <nav class="fam-links" aria-label="${esc(sh.familiesLabel)}"><ul>${others}</ul></nav>
     <p><a href="${pagePath(t, 'products')}">${esc(sh.fullList)}</a> · <a href="${pagePath(t, 'catalog')}">${esc(t.nav.catalog)}</a></p>
+    <p class="sec-more"><a href="${pagePath(t, 'walls')}">${esc(t.guides.walls.h1)}</a> · <a href="${pagePath(t, 'patent')}">${esc(t.guides.patent.link)}</a></p>
   </div>
 </section>
 

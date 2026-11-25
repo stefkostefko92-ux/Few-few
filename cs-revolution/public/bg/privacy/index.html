@@ -46,7 +46,18 @@ a{color:var(--cs-c)}
 .nav img{height:34px!important;width:auto!important}
 .nav>div a{display:inline-block;padding:7px 0}
 /* last nav link (Contatti / Contact / Контакти) = the call to action, like the SPA's ring-glow CTA */
-@media(min-width:901px){.nav>div a:last-child{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}.nav>div a:last-child:hover{background:rgba(0,229,255,.08)}}
+@media(min-width:901px){.nav>div>a:last-child{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}.nav>div>a:last-child:hover{background:rgba(0,229,255,.08)}}
+/* „Soluzioni ▾“ (scripts/solutions-nav.py): четирите направления под връзката към хъба — отварят се с мишка или
+   с клавиатура (:focus-within), без JS; на телефон стоят отворени в менюто */
+.nav-dd{position:relative;display:inline-block}
+.nav-dd-t::after{content:" \25BE";opacity:.7}
+.nav-dd-m{position:absolute;left:0;top:100%;display:none;flex-direction:column;min-width:250px;padding:8px 0;background:rgba(10,12,14,.98);
+  border:1px solid rgba(0,229,255,.25);box-shadow:0 14px 32px rgba(0,0,0,.55);z-index:1003}
+.nav-dd:hover>.nav-dd-m,.nav-dd:focus-within>.nav-dd-m{display:flex}
+.nav .nav-dd-m a{margin:0!important;padding:10px 18px!important;font-size:11px!important;letter-spacing:.08em!important;white-space:nowrap}
+.nav .nav-dd-m a:hover,.nav .nav-dd-m a:focus-visible{background:rgba(0,229,255,.08);color:var(--cs-c)!important}
+.cs-dir{font-size:11px;letter-spacing:.12em;color:var(--cs-ink2);margin-top:10px}
+.cs-games{border-top:1px solid rgba(0,229,255,.14);border-bottom:1px solid rgba(0,229,255,.14);padding:14px 0;margin:28px 0;font-size:12px;letter-spacing:.06em}
 /* portfolio: screenshots were 860px wide one after another; tighter and paired with their text */
 .w>.work-shot{max-width:720px}
 .nav-toggle{display:none}
@@ -105,6 +116,10 @@ a{color:var(--cs-c)}
   .js .nav.open>div>a{flex:none}
   .js .nav.open>div>a:first-child{margin-top:auto}
   .js .nav.open>div>a:last-child{margin-bottom:auto}
+  .js .nav.open .nav-dd{display:flex;flex-direction:column;align-items:center;gap:6px;flex:none}
+  .js .nav.open .nav-dd-t::after{content:none}
+  .js .nav.open .nav-dd-m{position:static;display:flex;gap:6px;min-width:0;padding:0;background:none;border:0;box-shadow:none}
+  .js .nav.open .nav-dd-m a{min-width:210px;font-size:11px!important;padding:10px 20px!important;color:var(--cs-ink2)!important;border-color:rgba(0,229,255,.16)}
   .nav.open .nav-toggle span:nth-child(1){transform:translateY(7px) rotate(45deg)}
   .nav.open .nav-toggle span:nth-child(2){opacity:0}
   .nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
@@ -159,9 +174,9 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 <a href="https://carbonstealth.eu" class="bk">← CARBON STEALTH</a>
 <div class="lg"><a href="/privacy/">IT</a><a href="/en/privacy/">EN</a><a href="/bg/privacy/">BG</a></div>
 <h1>ПОЛИТИКА ЗА ПОВЕРИТЕЛНОСТ</h1>
-<p><strong>Последна актуализация:</strong> 25 септември 2026</p>
+<p><strong>Последна актуализация:</strong> 22 ноември 2026</p>
 <p><strong>Администратор:</strong> Carbon Stealth VCC, ул. Самуил 3, Бобов дол 2670, България — ЕИК 208725180</p>
-<h2>1. Данни които събираме</h2><p>Събираме: данни за контакт (име, имейл, телефон); технически данни (IP, браузър, ОС); данни за навигация; бисквитки (виж Политика за Бисквитки).</p>
+<h2>1. Данни които събираме</h2><p>Събираме: данни за контакт (име, имейл, телефон) от формите и, ако ги посочите, фирма, държава, вид решение и приблизителен бюджет; технически данни (IP, браузър, ОС); данни за навигация; бисквитки (виж Политика за Бисквитки).</p>
 <h2>2. Правно основание</h2><p>Обработваме данни на база: съгласие (Чл. 6(1)(a) GDPR), изпълнение на договор (Чл. 6(1)(b)), легитимен интерес (Чл. 6(1)(f)), законови задължения (Чл. 6(1)(c)).</p>
 <h2>3. Цели</h2><ul><li>Предоставяне на заявени услуги</li><li>Комуникация по проекти</li><li>Подобряване на сайта и UX</li><li>Анонимен статистически анализ</li><li>Законови и данъчни задължения</li></ul>
 <h2>4. Споделяне</h2><p>Не продаваме данни. Споделяме само с доставчиците, необходими за услугата: хостинг (Hetzner, Германия), изпращане на имейл от формата за контакт (SMTP доставчик), Google PageSpeed Insights (само за анализа на сайт, който заявявате на /test/) и Google AdSense (Google Ireland Ltd / Google LLC) за рекламите на сайта. Рекламите са неперсонализирани, докато не натиснете ПРИЕМИ в банера за бисквитки; с ваше съгласие Google може да ползва бисквитки и идентификатори, за да ги персонализира (<a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">как Google използва данните</a>). Шрифтовете се зареждат от нашия сървър — без заявки към Google Fonts.</p>

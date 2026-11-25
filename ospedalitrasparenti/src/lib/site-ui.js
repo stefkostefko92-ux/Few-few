@@ -9,6 +9,14 @@
 
 import { esc } from './format.js';
 import { keywordsPagina } from './seo.js';
+import { TITOLARE, telefoni, telHref } from './titolare.js';
+
+/** Видимият контакт във footer-а — същият като в Organization (NAP); празно, ако config няма имейл. */
+function contattoFooter(t = TITOLARE) {
+  if (!t.email) return '';
+  const tel = telefoni(t)[0];
+  return ` Contatti: <a href="mailto:${esc(t.email)}">${esc(t.email)}</a>${tel ? ` · <a href="${telHref(tel)}">${esc(tel)}</a>` : ''}.`;
+}
 
 /**
  * Точка от графика: `[година, стойност]` (масив от 2 числа — избягва
@@ -709,8 +717,8 @@ export function shellBottom({ rel = '' }) {
   <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
   <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
   elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p></div>
-  <div class="f-bot"><span>Progetto di trasparenza civica senza scopo di lucro di <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a>. Non è una testata giornalistica.</span>
-    <ul><li><a href="${rel}note-legali.html">Note legali</a></li><li><a href="${rel}privacy.html">Privacy</a></li><li><a href="${rel}accessibilita.html">Accessibilità</a></li><li><a href="${rel}feed.xml">RSS</a></li></ul></div>
+  <div class="f-bot"><span>Progetto di trasparenza civica senza scopo di lucro di <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a>. Non è una testata giornalistica.${contattoFooter()}</span>
+    <ul><li><a href="${rel}note-legali.html#contatti">Contatti</a></li><li><a href="${rel}note-legali.html">Note legali</a></li><li><a href="${rel}privacy.html">Privacy</a></li><li><a href="${rel}accessibilita.html">Accessibilità</a></li><li><a href="${rel}feed.xml">RSS</a></li></ul></div>
 </div></footer>
 <script>${SHELL_JS}</script>`;
 }

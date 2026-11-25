@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="bg"><head><meta charset="UTF-8"><script id="cs-ads-npa">(function(){var a=window.adsbygoogle=window.adsbygoogle||[];try{if(localStorage.getItem("cs_cookie")!=="accepted")a.requestNonPersonalizedAds=1}catch(e){a.requestNonPersonalizedAds=1}})()</script><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9580994554261732" crossorigin="anonymous"></script><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Carbon Stealth VCC | Уеб агенция: изработка на сайтове, онлайн магазини, ERP, SEO</title>
+<title>Carbon Stealth | Уеб агенция: сайтове, онлайн магазини, ERP, SEO</title>
 <meta name="description" content="Дигитална агенция за България и Италия: изработка на сайтове от €790 с ДДС, онлайн магазини, ERP софтуер, мобилни приложения и SEO/AEO. Безплатна оферта до 24 часа.">
 <meta name="keywords" content="уеб агенция, изработка на сайт, уеб дизайн, изработка на онлайн магазин, софтуер по поръчка, ERP система, мобилни приложения, SEO оптимизация, България, Италия, Carbon Stealth">
 <link rel="canonical" href="https://carbonstealth.eu/bg/">
@@ -9,7 +9,7 @@
 <link rel="alternate" hreflang="x-default" href="https://carbonstealth.eu/en/" />
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Carbon Stealth VCC">
-<meta property="og:title" content="Carbon Stealth VCC | Уеб агенция: изработка на сайтове, онлайн магазини, ERP, SEO">
+<meta property="og:title" content="Carbon Stealth | Уеб агенция: сайтове, онлайн магазини, ERP, SEO">
 <meta property="og:description" content="Уеб разработка, ERP софтуер, мобилни приложения, игри, IoT, SEO/GEO/AEO. Бобов дол, България. Работим за цяла Европа.">
 <meta property="og:url" content="https://carbonstealth.eu/bg/">
 <meta property="og:image" content="https://carbonstealth.eu/og-image-bg.png">
@@ -19,7 +19,7 @@
 <meta property="og:locale:alternate" content="it_IT">
 <meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Carbon Stealth VCC | Уеб агенция: изработка на сайтове, онлайн магазини, ERP, SEO">
+<meta name="twitter:title" content="Carbon Stealth | Уеб агенция: сайтове, онлайн магазини, ERP, SEO">
 <meta name="twitter:description" content="Уеб разработка, ERP, мобилни приложения, игри, IoT, SEO/AEO. България.">
 <meta name="twitter:image" content="https://carbonstealth.eu/og-image-bg.png">
 <meta name="geo.region" content="BG-14">
@@ -60,7 +60,18 @@ a{color:var(--cs-c)}
 .nav img{height:34px!important;width:auto!important}
 .nav>div a{display:inline-block;padding:7px 0}
 /* last nav link (Contatti / Contact / Контакти) = the call to action, like the SPA's ring-glow CTA */
-@media(min-width:901px){.nav>div a:last-child{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}.nav>div a:last-child:hover{background:rgba(0,229,255,.08)}}
+@media(min-width:901px){.nav>div>a:last-child{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}.nav>div>a:last-child:hover{background:rgba(0,229,255,.08)}}
+/* „Soluzioni ▾“ (scripts/solutions-nav.py): четирите направления под връзката към хъба — отварят се с мишка или
+   с клавиатура (:focus-within), без JS; на телефон стоят отворени в менюто */
+.nav-dd{position:relative;display:inline-block}
+.nav-dd-t::after{content:" \25BE";opacity:.7}
+.nav-dd-m{position:absolute;left:0;top:100%;display:none;flex-direction:column;min-width:250px;padding:8px 0;background:rgba(10,12,14,.98);
+  border:1px solid rgba(0,229,255,.25);box-shadow:0 14px 32px rgba(0,0,0,.55);z-index:1003}
+.nav-dd:hover>.nav-dd-m,.nav-dd:focus-within>.nav-dd-m{display:flex}
+.nav .nav-dd-m a{margin:0!important;padding:10px 18px!important;font-size:11px!important;letter-spacing:.08em!important;white-space:nowrap}
+.nav .nav-dd-m a:hover,.nav .nav-dd-m a:focus-visible{background:rgba(0,229,255,.08);color:var(--cs-c)!important}
+.cs-dir{font-size:11px;letter-spacing:.12em;color:var(--cs-ink2);margin-top:10px}
+.cs-games{border-top:1px solid rgba(0,229,255,.14);border-bottom:1px solid rgba(0,229,255,.14);padding:14px 0;margin:28px 0;font-size:12px;letter-spacing:.06em}
 /* portfolio: screenshots were 860px wide one after another; tighter and paired with their text */
 .w>.work-shot{max-width:720px}
 .nav-toggle{display:none}
@@ -119,6 +130,10 @@ a{color:var(--cs-c)}
   .js .nav.open>div>a{flex:none}
   .js .nav.open>div>a:first-child{margin-top:auto}
   .js .nav.open>div>a:last-child{margin-bottom:auto}
+  .js .nav.open .nav-dd{display:flex;flex-direction:column;align-items:center;gap:6px;flex:none}
+  .js .nav.open .nav-dd-t::after{content:none}
+  .js .nav.open .nav-dd-m{position:static;display:flex;gap:6px;min-width:0;padding:0;background:none;border:0;box-shadow:none}
+  .js .nav.open .nav-dd-m a{min-width:210px;font-size:11px!important;padding:10px 20px!important;color:var(--cs-ink2)!important;border-color:rgba(0,229,255,.16)}
   .nav.open .nav-toggle span:nth-child(1){transform:translateY(7px) rotate(45deg)}
   .nav.open .nav-toggle span:nth-child(2){opacity:0}
   .nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
@@ -170,9 +185,14 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 @keyframes ctblHint{from{--ctl:0px;--ctr:36px}to{--ctl:36px;--ctr:0px}}
 @supports (animation-timeline:scroll()){.ctbl{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 var(--ctl),#000 calc(100% - var(--ctr)),transparent 100%);animation:ctblHint linear both;animation-timeline:scroll(self inline)}.ctbl:focus-visible{-webkit-mask-image:none;mask-image:none}}
 </style></head><body>
-<nav class="nav"><a href="/bg/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/bg/">ГЛАВНА</a><a href="/bg/za-nas/">ЗА НАС</a><a href="/bg/ekip/">ЕКИП</a><a href="/bg/uslugi/web-razrabotka/">УСЛУГИ</a><a href="/bg/portfolio/">ПОРТФОЛИО</a><a href="/bg/blog/">БЛОГ</a><a href="/bg/test/">АНАЛИЗ</a><a href="/bg/ceni/">ЦЕНИ</a><a href="/bg/kontakti/">КОНТАКТИ</a></div></nav>
-<div class="hero-s"><div class="w"><div class="tag">// ДИГИТАЛНА АГЕНЦИЯ</div><h1>Carbon Stealth VCC — уеб агенция за сайтове, онлайн магазини и софтуер</h1><p>Дигитална агенция със седалище в Бобов дол, България (ЕИК 208725180). Разработваме сайтове, ERP софтуер, електронна търговия, мобилни приложения, браузърни игри и анти-чийт системи, правим reverse engineering на части и устройства и 3D печат на прототипи и резервни части за клиенти в Италия, България и Европа — на италиански, английски и български.</p><a class="cta" href="/?lang=bg">ИНТЕРАКТИВНА ВЕРСИЯ →</a></div></div>
+<nav class="nav"><a href="/bg/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/bg/">ГЛАВНА</a><span class="nav-dd"><a href="/bg/resheniya/" class="nav-dd-t">РЕШЕНИЯ</a><span class="nav-dd-m"><a href="/bg/resheniya/biznes-softuer/">Бизнес софтуер</a><a href="/bg/resheniya/industrialni-tehnologii/">Индустриални технологии</a><a href="/bg/resheniya/saytove-i-magazini/">Сайтове и магазини</a><a href="/bg/resheniya/igri-i-interaktiv/">Игри и интерактив</a></span></span><a href="/bg/branshove/">БРАНШОВЕ</a><a href="/bg/keys-studii/">КЕЙС СТЪДИТА</a><a href="/bg/ceni/">ЦЕНИ</a><a href="/bg/za-nas/">ЗА НАС</a><a href="/bg/kontakti/">КОНТАКТИ</a></div></nav>
+<div class="hero-s"><div class="w"><div class="tag">// ДИГИТАЛНА АГЕНЦИЯ</div><h1>Carbon Stealth VCC — софтуер по поръчка за фирми и индустрия</h1><p>Дигитална агенция със седалище в Бобов дол, България (ЕИК 208725180). Разработваме сайтове, ERP софтуер, електронна търговия, мобилни приложения, браузърни игри и анти-чийт системи, правим reverse engineering на части и устройства и 3D печат на прототипи и резервни части за клиенти в Италия, България и Европа — на италиански, английски и български.</p><a class="cta" href="/?lang=bg">ИНТЕРАКТИВНА ВЕРСИЯ →</a></div></div>
 <div class="w">
+<!--cs-solutions--><h2>Решения</h2>
+<div class="grid"><div class="card"><h3><a href="/bg/resheniya/biznes-softuer/">Бизнес софтуер</a></h3><p>Софтуер по процесите на фирмата: поръчка, производство, склад, фактура.</p><span class="price">ERP Ascensori · Rilievi Impianti · Фактурист</span></div><div class="card"><h3><a href="/bg/resheniya/industrialni-tehnologii/">Индустриални технологии</a></h3><p>От физическия детайл до софтуера: модели, файлове за машините, 3D каталози.</p><span class="price">Korpora · Panev Ascensori</span></div><div class="card"><h3><a href="/bg/resheniya/saytove-i-magazini/">Сайтове и магазини</a></h3><p>Сайтове и магазини, които се намират и продават.</p><span class="price">За Бобов дол · ОУ „Никола Вапцаров“ · Treti Mart</span></div></div>
+<p>Реални проекти: <a href="/bg/keys-studii/erp-ascensori/">ERP Ascensori</a> · <a href="/bg/branshove/ascensori/">Rilievi Impianti</a> · <a href="https://panevascensori.it" target="_blank" rel="noopener">Panev Ascensori</a> — <a href="/bg/resheniya/">Всички решения &rarr;</a></p>
+<p>По бранш: <a href="/bg/branshove/ascensori/">Асансьорен бранш</a> · <a href="/bg/branshove/">всички браншове</a></p>
+<!--/cs-solutions-->
 <h2>Услуги</h2>
 <div class="grid">
 <div class="card"><h3><a href="/bg/uslugi/web-razrabotka/">Уеб Разработка</a></h3><p>Корпоративни сайтове, портали и landing страници с висока конверсия. React, Next.js, WordPress.</p><span class="price">от €790 с ДДС</span></div>
@@ -188,6 +208,7 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 <ul><li>Full-stack екип с над 50 завършени проекта</li><li>Конкурентни цени без компромис с качеството</li><li>Поддръжка на три езика: италиански, английски, български</li><li>Навременна доставка с 3 месеца безплатна поддръжка</li><li>Безплатна оферта до 24 часа — <a href="/bg/test/">опитайте безплатния анализ на сайт</a></li></ul>
 <h2>Къде работим</h2>
 <p>Дистанционно в целия ЕС, с локален фокус върху България — <a href="/bg/geo/sofia/">София</a>, <a href="/bg/geo/plovdiv/">Пловдив</a>, <a href="/bg/geo/varna/">Варна</a>, <a href="/bg/geo/burgas/">Бургас</a>, <a href="/bg/geo/ruse/">Русе</a>, <a href="/bg/geo/stara-zagora/">Стара Загора</a>, <a href="/bg/geo/veliko-tarnovo/">Велико Търново</a>, <a href="/bg/geo/blagoevgrad/">Благоевград</a>, <a href="/bg/geo/kyustendil/">Кюстендил</a>, <a href="/bg/geo/dupnitsa/">Дупница</a> — и Италия — <a href="/bg/geo/milano/">Милано</a>, <a href="/bg/geo/roma/">Рим</a>, <a href="/bg/geo/torino/">Торино</a>, <a href="/bg/geo/firenze/">Флоренция</a>, <a href="/bg/geo/napoli/">Неапол</a>, <a href="/bg/geo/bologna/">Болоня</a>, <a href="/bg/geo/verona/">Верона</a>, <a href="/bg/geo/genova/">Генуа</a>, <a href="/bg/geo/bari/">Бари</a>, <a href="/bg/geo/padova/">Падуа</a>. <a href="/bg/geo/">Всички градове →</a></p>
+<!--cs-games--><p class="cs-games">Игри и интерактив — <a href="/bg/resheniya/igri-i-interaktiv/">Nexus Dominion и мултиплейър браузър игри &rarr;</a></p><!--/cs-games-->
 <h2>Контакти</h2>
 <p>Carbon Stealth VCC<br>ул. Самуил 3, Бобов дол 2670, България<br>ЕИК: 208725180<br>IT: <a href="tel:+393792969699">+39 379 296 9699</a> | BG: <a href="tel:+359877414874">+359 877 414 874</a><br><a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a></p>
 <a class="cta" href="/bg/kontakti/">ЗАЯВИ БЕЗПЛАТНА ОФЕРТА</a>

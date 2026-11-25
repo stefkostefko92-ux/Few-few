@@ -29,7 +29,7 @@ test("куката е закачена за Agent|Task преди пускане
   const s = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "../../.claude/settings.json"), "utf8"));
   const g = s.hooks.PreToolUse.find((x) => x.hooks.some((h) => /agent-cap\.mjs/.test(h.command)));
   assert.ok(g, "agent-cap липсва в PreToolUse");
-  assert.equal(g.matcher, "Agent|Task");
+  assert.equal(g.matcher, "Agent|Task|Workflow");
   assert.equal(s.env.CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS, "10");
   assert.equal(s.env.CLAUDE_CODE_SUBAGENT_EFFORT, "medium");
 });

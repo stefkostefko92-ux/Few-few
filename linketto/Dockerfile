@@ -1,6 +1,7 @@
 # Linketto — многослоен билд за продукция (Next.js 15 + Prisma + sharp).
 # Крайният образ носи само prod зависимостите, генерирания Prisma клиент и
 # `.next`; върви като непривилегирован потребител (моделът на zabobovdol/Minyor).
+# Здравната проба е в docker-compose.yml (node fetch към /api/health — в slim няма curl).
 #
 # Защо node:22-slim, а не alpine: Prisma разпознава libssl по системната
 # библиотека, а sharp и Prisma engine-ите имат glibc сборки по подразбиране —
@@ -44,15 +45,24 @@ ENV NODE_ENV=production
 ENV PORT=3000
 # Качените снимки (DATA_DIR) — монтира се стабилен път от хоста (docker-compose.yml).
 ENV DATA_DIR=/data
+# По-малко malloc арени: паралелните sharp декодирания държат ~160–220 MB по-малко RSS
+# при mem_limit 1g (Разбивача, Н1: 925–959 → 731–790 MB).
+ENV MALLOC_ARENA_MAX=2
 RUN groupadd -g 1001 nodejs && useradd -u 1001 -g nodejs -m nextjs \
   && install -d -o 1001 -g 1001 -m 750 /data
-COPY --from=prod-deps --chown=1001:1001 /app/node_modules ./node_modules
-COPY --from=build --chown=1001:1001 /app/.next ./.next
-COPY --from=build --chown=1001:1001 /app/public ./public
-COPY --from=build --chown=1001:1001 /app/prisma ./prisma
-COPY --from=build --chown=1001:1001 /app/package.json ./package.json
+# Кодът е собственост на root (само за четене за nextjs): пробив в процеса не може да подмени
+# собствения си код, дори коренът да не е read_only. Пише се само в /data (томът) и в кеша на
+# `next start` — /app/.next/cache, който в Compose е tmpfs (docker-compose.yml, read_only: true).
+COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=build /app/.next ./.next
+COPY --from=build /app/public ./public
+COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/package.json ./package.json
 # `next start` чете конфига и в рънтайм (poweredByHeader, bodySizeLimit).
-COPY --from=build --chown=1001:1001 /app/next.config.mjs ./next.config.mjs
+COPY --from=build /app/next.config.mjs ./next.config.mjs
+RUN install -d -o 1001 -g 1001 -m 700 /app/.next/cache
 USER nextjs
 EXPOSE 3000
-CMD ["npm", "run", "start"]
+# Направо `next start`, не `npm run start`: npm пише дневник в ~/.npm (коренът е само за четене) и
+# е излишен посредник за SIGTERM при `docker stop`.
+CMD ["node", "node_modules/next/dist/bin/next", "start"]

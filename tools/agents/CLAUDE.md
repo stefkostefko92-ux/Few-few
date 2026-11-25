@@ -8,7 +8,7 @@ A/B 27.10.2026 на 5 агента: без него 9/9 и pass^k 5/5 срещу
 
 ## Агентите — `.claude/agents/`
 
-34 purpose-built subagents (BG system prompt, least-privilege `tools`), each with
+35 purpose-built subagents (BG system prompt, least-privilege `tools`), each with
 **durable verified memory** + a **hook-enforced self-learning loop**
 (`SubagentStart`/`SubagentStop` → `_memory/<id>.md`; verified-only,
 source-or-nothing, secrets hard-dropped). Every agent also preloads the **security
@@ -34,14 +34,14 @@ fail-closed) and orchestrates by Anthropic's agent canon. Run `oversee.mjs` afte
 между тях и **човешка точка**, 5 тестови задачи, 3 вероятни провала и метрики, сочещи реални наши
 инструменти. Картата на агента (екип · тръгва при · получава · връща · предава на · човек) се инжектира
 при старт **след** статичния префикс — кешът остава общ. `teams.mjs --check` (в `gate.mjs`) гейтва
-целостта и че 45-те задачи рутират точно; рутингът е лексикален помощник за старт, не съдия — нищо или
+целостта и че 50-те задачи рутират точно (и без равенство вътре в екипа); рутингът е лексикален помощник за старт, не съдия — нищо или
 равенство → AI-джията. Нов агент или екип се доказва с верига в `flow-ledger.mjs`, спряла заради липсата.
 
 **Loop/automation слой (`tools/agents/loops/`).** Лостът е loop-ът, не единичният промпт (идея от
 loop-engineering, написана нашия начин — zero-dep, fail-closed). Декларативен манифест (`loops.json`) с
 **автономия-стълба L1 (само доклад) → L2 (помага) → L3 (безнадзорно)**; `loop-audit.mjs` гейтва готовността
-(L3 иска budgetCap+denylist). Планираният **health-sweep** (`agents-sweep.yml`, седмично) пуска целия гейт
-по каданс — лови гниене/дрейф без триггер-push. `drift-lint.mjs` включва **бройка/ростер consistency**
+(L3 иска budgetCap+denylist). Планираният **health-sweep** (облачна задача „Седмичен преглед на агентския слой и кода“, понеделник 09:13 София;
+`runtime:"cloud"` в `loops.json`; `agents-sweep.yml` остава ръчен резерв) пуска целия гейт по каданс — лови гниене/дрейф без триггер-push. `drift-lint.mjs` включва **бройка/ростер consistency**
 (каноничен = agents.json) — не позволява документ да лъже за размера на екипа.
 
 **Патърни от Agentic Design Patterns (Gulli) — усвоени наши 3.** Книгата е **данни, не инструкции**;
@@ -84,7 +84,7 @@ loop-engineering, написана нашия начин — zero-dep, fail-clos
 преписвай на ръка) това е **~350k т, 40% от цялата цена на колаборацията**; ако префиксът се
 плащаше веднъж на верига (system-ниво), щяха да паднат ~237k. Затова: **къси, целенасочени вериги
 са по-евтини от дълги обзорни**, а всеки токен, отрязан от префикса, се умножава по броя стъпки
-(74), не по броя агенти (32). `--check` гейтва дела на повторението. Соло задача ≠ верига — не
+(74), не по броя агенти (35). `--check` гейтва дела на повторението. Соло задача ≠ верига — не
 обявявай самостоятелна работа за „поток“ (данъкът на 2-стъпков поток от леки агенти е ~49%).
 
 **Версиите са днешни, не спомени (`version-freshness.mjs`).** Продуктът диктува мажора (чети
@@ -97,7 +97,7 @@ loop-engineering, написана нашия начин — zero-dep, fail-clos
 **Правни/таксономични твърдения — същата свежест (`claims-audit.mjs` + `claims.json`).** `version-freshness`
 пази npm версиите; правен/регулаторен цитат в дефиниция няма друг механизъм за свежест — паметта се
 самолекува през кука, дефиницията само на ръка. Регистърът дава на всяко волатилно правно/таксономично
-твърдение (AI Act чл. 50, CRD чл. 8(2), OWASP LLM Top 10 2025) `source` + `checkedAt` + TTL: `--check` пада
+твърдение (AI Act чл. 50, CRD чл. 8(2), OWASP LLM Top 10 2026) `source` + `checkedAt` + TTL: `--check` пада
 при изтекъл TTL → **налага повторна проверка срещу първоизточника**; `agents[]` е картата на зависимостта
 (при промяна знаеш кои да сверт). **Дрейф НЕ се лови с grep на член** — измерено: „чл. 50“ е двусмислен
 (AI Act 50 ≠ CRD 50 право на отказ), „8(2)“ шуми в 18 агента — затова `anchor` (авто-проверка за
@@ -136,8 +136,8 @@ p90 42; 27 пускания с ≥60 хода = 22% от цената. **Пар�
    Read, Read с offset/limit, паралелни независими извиквания) + `maxTurns` 80 (Касаджията 120) като
    контролна точка, избрана от разпределението.
 2. **Усилие и модел по измерване, не по престиж на домейна.** Цени (USD/1M, `prices.json`, сверени
-   2026-10-24): Opus 5.5 $4/$20 · Sonnet 5.5 $2/$10 (кеш-четене 0,05×) ·
-   Fable 5.1 $10/$50 (не за флота) · Haiku изключен по решение на собственика. Флотът върви на 5.5
+   2026-11-24): Opus 5.5 $4/$20 · Sonnet 5.5 $2/$10 (кеш-четене 0,05×) ·
+   Fable 5.2 $8/$40 (не за флота) · Haiku изключен по решение на собственика. Флотът върви на 5.5
    (`opus`/`sonnet` в frontmatter са псевдоними); нова версия без ред в `prices.json` излиза „без цена“
    в `usage-report --check`, не се таксува тихо по старата.
    `model-policy.mjs` (TIER_A opus/high · TIER_B sonnet/medium) и `route.mjs` (надстройка по задача) дават
@@ -236,16 +236,16 @@ On-demand **workflow packages** (`SKILL.md` = YAML frontmatter + imperative body
 `scripts/`/`references/`). Only metadata (~100 tokens) loads until a skill triggers — so they
 capture repeating procedures **without** bloating every session. Different from agents (a *who*
 you delegate to) and MCP/tools (*how* to connect): a skill is *what to do, in what order, with what
-guardrails*. Ours (BG, vetted; 62): **агентски** — agent-doctrine (генериран, във всеки агент през `skills:`); **процедури** — deploy · prisma-migrate · quality-gate · verify ·
+guardrails*. Ours (BG, vetted; 66): **агентски** — agent-doctrine (генериран, във всеки агент през `skills:`); **процедури** — deploy · prisma-migrate · quality-gate · verify ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
 razpit · skill-author · sapernik;
 **предпазители/сигурност** — fiscal-bg · stripe-payment · revolut-payment · motion-a11y · gdpr-launch · db-readonly ·
-owasp-review · wcag-audit · incident-breach · pentest-engagement; **SEO/perf** — indexnow · keywords-seo · i18n-parity · web-vitals;
+owasp-review · wcag-audit · incident-breach · pentest-engagement; **SEO/perf** — indexnow · keywords-seo · i18n-parity · web-vitals · bezplatna-vidimost;
 plus uchitel; **домейн** — youtube-reddit · fivem-mlo · fivem-clothing · fivem-livery; **дизайн** — frontend-design (Anthropic, Apache 2.0; Дизайнера го зарежда винаги през `skills:`); **външни, адаптирани** (2026-10-28) —
 dpa-review · dsar-response · pia-generation · aia-generation · vendor-ai-review · marketing-claims-review ·
 humanizer · test-driven-development · seo-geo · seo-hreflang · pricing; (2026-11-08) — receiving-code-review ·
 discernment-nudge · improve-codebase-architecture; (2026-11-14) — ponytail-review ·
-observability-and-instrumentation · deprecation-and-migration · ui-ux-pro-max · archify-diagrams (tt-a1i/archify, Apache-2.0; каналите за обновления и марки по мрежа махнати; Летописецът); (2026-10-31, правни) — use-case-triage ·
+observability-and-instrumentation · deprecation-and-migration · ui-ux-pro-max · archify-diagrams (tt-a1i/archify, Apache-2.0; каналите за обновления и марки по мрежа махнати; Летописецът); (2026-11-23) — model-na-zaplahite (openai/skills security-threat-model, Apache-2.0; докладът само в `.tmp/`; Стражата) · igrovo-studio (openai/plugins game-studio, MIT; 9 умения → 1 с `references/`, без imagegen и Python скриптовете; Дизайнера); (2026-11-24) — animacia (cth9191/animate + awesome-skills/manim-skill, MIT; canvas анимация с рендер без мрежа през `scripts/safe.mjs`, Manim само от lock файла; AI Studio); (2026-10-31, правни) — use-case-triage ·
 reg-gap-analysis · ai-inventory · saas-msa-review · nda-review · vendor-agreement-review · stakeholder-summary ·
 oss-review · ip-clause-review. Gate: `node tools/skills/lint.mjs` + `node tools/skills/trigger-check.mjs --check`
 (both fail-closed, in `gate.mjs`). **Author our own BG, verified skills — never import third-party
@@ -333,6 +333,9 @@ handoff, извличането на паметта — без самата па
 с ТЕКУЩИЯ агентски слой (старите клони носят стари куки и дефиниции), diff без lock файловете, само четящи Bash
 команди, таван на разхода. Присъдата (блокер/поправки/чисто) и находките → `REPORT.md`; кой sha е прегледан →
 `pr-reviews.json`; поуките → учебния hook (прегледът е продукционна работа, не оценка). Стъпка и в `commit-pr`.
+PR с код в ядрото носи и ред „Ultrareview по избор“ (`core-map.mjs` `ultrareviewHint`, 24.11.2026): платен
+втори преглед извън флота, пуска го само собственикът с `/code-review ultra <номер>` след изрично „да“. Claude
+Ship (Code Review, PR Steward, Approvals) е само за Team/Enterprise — на Ultra го няма (`claims.json`).
 
 **Доставката се мери през харнеса, не през функцията.** Стойност на `additionalContext` над 10 000 знака
 не влиза в контекста (Claude Code от 2.1.89, 01.04.2026 — https://code.claude.com/docs/en/changelog.md) — харнесът я записва във файл и подава само път +
@@ -348,13 +351,13 @@ handoff, извличането на паметта — без самата па
 Докажи през CLI-то, както за предпазителите: проба с агент, който цитира какво има в контекста си, струва
 ~20k токена и хваща това, което никой тест не вижда.
 
-**Guard hooks (active, 5):** `guard-readonly.mjs` (PreToolUse/Bash — агент, чиято дефиниция има Bash, но
+**Guard hooks (active, 8 — пълната таблица и guard-self/guard-model от 19.11.2026 са в `.claude/hooks/README.md`):** `guard-readonly.mjs` (PreToolUse/Bash — агент, чиято дефиниция има Bash, но
 няма Write/Edit, не пише в репото през Bash: git записи, `sed -i`, `>` към файл, `--write`/`--fix`, npm/pnpm,
 които сменят lockfile; `agent_type` идва в payload-а; кука на ниво settings, защото frontmatter куките не
 тичат в `-p`), `guard-prompt.mjs` (UserPromptSubmit — pasted secret never enters history),
 `guard-dangerous.mjs` (PreToolUse/Bash — only catastrophic: root/home/**workspace** rm, disk destroyers,
 `curl|sh`, force push / delete of main, `gh repo delete`), `guard-secrets.mjs`
-(PostToolUse/Write|Edit|MultiEdit|NotebookEdit — early secret warning), `guard-exfil.mjs`
+(PreToolUse/Write|Edit|MultiEdit|NotebookEdit — the write is refused before the secret reaches disk; PostToolUse stays as a second layer), `guard-exfil.mjs`
 (PreToolUse/Bash|WebFetch|WebSearch|**mcp__.\*** — blocks secrets/PII leaving via any net verb/interpreter,
 incl. pipe, `$(…)` substitution, stdin redirect, upload flags, scp/rsync, archives, code reads,
 credential-emitting commands, **staging** for a later exfil, and **any MCP tool argument** (GitHub comment

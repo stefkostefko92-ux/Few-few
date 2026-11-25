@@ -2,9 +2,10 @@ import 'server-only';
 import { prisma } from '@/lib/db';
 import { getRevolutDispute, getRevolutOrder, refundRevolutOrder } from '@/lib/revolut';
 import { applyPlanLimits } from '@/lib/plan-limits';
-import { emailConfigured, sendEmail } from '@/lib/email';
+import { emailReady, sendEmail } from '@/lib/email';
 import { notifyAdmins } from '@/lib/admin-alert';
 import { SITE_URL } from '@/lib/seo';
+export { RefundUnreadableError } from './plan-order-core';
 import { createPlanOrderService } from '@/lib/plan-order-core';
 
 // Сървърната обвивка на ядрото за поръчките на планове (lib/plan-order-core.ts)
@@ -15,7 +16,7 @@ export type { DisputeRecord, RefundRequest, SettleResult } from '@/lib/plan-orde
 const service = createPlanOrderService({
   db: prisma,
   revolut: { getOrder: getRevolutOrder, refund: refundRevolutOrder, getDispute: getRevolutDispute },
-  email: { configured: emailConfigured, send: sendEmail },
+  email: { configured: emailReady, send: sendEmail },
   notifyAdmins,
   applyPlanLimits,
   siteUrl: SITE_URL,
@@ -27,7 +28,9 @@ export const {
   sendPlanConfirmation,
   requestPlanRefund,
   settlePlanRefund,
+  closeRefundManually,
   recordDispute,
   resendDisputeAlerts,
   alertStuckRefunds,
+  releaseReferralBonuses,
 } = service;

@@ -3,9 +3,9 @@
 export default {
   catalogPage: {
     kicker: 'Catalogo tecnico & commerciale',
-    title: 'Catalogo 2026 — sfoglia e scarica',
+    title: 'Catalogo 2027 — sfoglia e scarica',
     lead: '72 pagine con le viste 3D delle staffe, i disegni di montaggio quotati in millimetri, legenda dei codici, quadro comparativo, listino completo e il riepilogo di tutta la gamma. Consultalo direttamente qui o scaricalo in PDF.',
-    edition: 'Edizione 2026',
+    edition: 'Edizione 2027',
     pages: '72 pagine',
     sizeNote: 'PDF · 8 MB · quote in mm',
     download: 'Scarica il catalogo (PDF, 8 MB)',

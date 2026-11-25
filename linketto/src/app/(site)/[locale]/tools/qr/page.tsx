@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
+import { LxPage } from '@/components/landing/LxPage';
 import { ToolPage } from '@/components/ToolPage';
 import { QrTool } from '@/components/QrTool';
 import type { Locale } from '@/i18n/locales';
@@ -46,7 +46,7 @@ export default async function QrToolPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
-      <SiteHeader locale={locale as Locale} />
+      <LxPage locale={locale as Locale} currentPath="/tools/qr">
       <ToolPage
         eyebrow={t('eyebrow')}
         title={t('qrTitle')}
@@ -71,7 +71,7 @@ export default async function QrToolPage({
           }}
         />
       </ToolPage>
-      <SiteFooter locale={locale as Locale} currentPath="/tools/qr" />
+      </LxPage>
     </>
   );
 }

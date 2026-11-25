@@ -2,6 +2,9 @@
 
 import { useActionState, useState } from 'react';
 import { publicBioAction, type BioToolState } from '@/app/actions/tools';
+import { Button } from '@/components/ui/Button';
+import { Callout } from '@/components/ui/Callout';
+import { Input, Label, Select, Textarea } from '@/components/ui/Field';
 
 // Публичният AI генератор на био: форма → server action (лимит по IP) →
 // готов текст с „Копирай“. Нищо не се записва.
@@ -42,69 +45,65 @@ export function BioTool({
           aria-hidden="true"
           className="hidden"
         />
-        <label className="block text-sm font-semibold text-slate-800">
-          {labels.name}
-          <input type="text" name="name" maxLength={80} className="auth-field" />
-        </label>
-        <label className="block text-sm font-semibold text-slate-800">
-          {labels.language}
-          <select name="language" defaultValue={locale} className="auth-field">
+        <div className="space-y-1.5">
+          <Label htmlFor="bio-name">{labels.name}</Label>
+          <Input id="bio-name" type="text" name="name" maxLength={80} />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="bio-language">{labels.language}</Label>
+          <Select id="bio-language" name="language" defaultValue={locale}>
             {languages.map((lang) => (
               <option key={lang.code} value={lang.code}>
                 {lang.name}
               </option>
             ))}
-          </select>
-        </label>
-        <label className="block text-sm font-semibold text-slate-800 sm:col-span-2">
-          {labels.about}
-          <textarea
+          </Select>
+        </div>
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label htmlFor="bio-about">{labels.about}</Label>
+          <Textarea
+            id="bio-about"
             name="keywords"
             required
             maxLength={300}
             rows={3}
             placeholder={labels.aboutPlaceholder}
-            className="auth-field resize-y"
           />
-        </label>
+        </div>
         <div className="sm:col-span-2">
-          <button
-            type="submit"
-            disabled={pending}
-            className="btn-shine rounded-full bg-linketto-600 px-6 py-3 font-semibold text-white shadow-lg shadow-linketto-600/25 transition hover:-translate-y-0.5 hover:bg-linketto-700 disabled:cursor-wait disabled:opacity-70"
-          >
-            {pending ? labels.generating : labels.generate}
-          </button>
-          <p className="mt-3 text-xs leading-relaxed text-slate-500">
+          {/* Изпращането към доставчик извън ЕС — над бутона и четимо (не дребно под него). */}
+          <Callout tone="info" className="mb-4">
             {labels.notice}
-          </p>
+          </Callout>
+          <Button type="submit" size="lg" disabled={pending}>
+            {pending ? labels.generating : labels.generate}
+          </Button>
         </div>
       </form>
 
       <div aria-live="polite">
         {state.error && (
-          <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
-            {labels.errors[state.error]}
-          </p>
+          <Callout tone="danger">{labels.errors[state.error]}</Callout>
         )}
         {state.bio && (
-          <figure className="rounded-2xl border border-linketto-200 bg-linketto-50/70 p-5">
-            <figcaption className="text-xs font-semibold uppercase tracking-wider text-linketto-700">
+          <figure className="rounded-card border border-accent/30 bg-accent-soft p-5">
+            <figcaption className="text-small font-semibold text-accent-soft-fg">
               {labels.result}
             </figcaption>
-            <p className="mt-2 text-lg leading-relaxed text-slate-900">{state.bio}</p>
-            <button
-              type="button"
+            <p className="mt-2 text-lead text-fg">{state.bio}</p>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="mt-4"
               onClick={() => {
                 void navigator.clipboard?.writeText(state.bio ?? '').then(() => {
                   setCopied(true);
                   setTimeout(() => setCopied(false), 2000);
                 });
               }}
-              className="mt-4 rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 transition hover:bg-white"
             >
               {copied ? labels.copied : labels.copy}
-            </button>
+            </Button>
           </figure>
         )}
       </div>

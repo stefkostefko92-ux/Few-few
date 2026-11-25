@@ -10,7 +10,13 @@
       "autonomy": "L1",
       "escalation": "Провал → CI е червен + уведомление; НИЩО не се авто-поправя. Човек/AI-джията решава.",
       "budgetCap": null,
-      "denylist": []
+      "denylist": [],
+      "runtime": "cloud",
+      "connectors": [],
+      "network": "trusted",
+      "secretsInEnv": false,
+      "output": "report",
+      "cloudTask": "Седмичен преглед на агентския слой и кода (облачна планирана задача, понеделник 09:13 Europe/Sofia, среда Default с ограничена мрежа — само пакетни регистри; без конектори; push известие). Заменя седмичния agents-sweep.yml, който няма рънър (19.11.2026)."
     },
     {
       "id": "memory-curation",
@@ -88,7 +94,12 @@
       "escalation": "Само доклад — нищо не се пипа автоматично. Рефактор е промяна с поведение-запазващи тестове, по решение на собственика за всеки продукт.",
       "budgetCap": null,
       "denylist": [],
-      "runtime": "ci"
+      "runtime": "cloud",
+      "connectors": [],
+      "network": "trusted",
+      "secretsInEnv": false,
+      "output": "report",
+      "cloudTask": "Седмичен преглед на агентския слой и кода (облачна планирана задача, понеделник 09:13 Europe/Sofia, среда Default с ограничена мрежа — само пакетни регистри; без конектори; push известие). Заменя седмичния agents-sweep.yml, който няма рънър (19.11.2026)."
     },
     {
       "id": "ablation-watch",

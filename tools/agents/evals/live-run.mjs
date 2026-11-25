@@ -29,6 +29,7 @@ import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { setEvalMode } from "../../lib/eval-mode.mjs";
 import { isMain } from "../../lib/is-main.mjs";
+import { extractBlock } from "../handoff.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const ROOT = join(HERE, "..", "..", "..");
@@ -57,7 +58,12 @@ export const EVAL_ALLOWED = [...ALLOWED, "Skill",
 export function wrapperPrompt(agent, task) {
   // 27.10.2026 (жив гейт): агентът по подразбиране тече на ЗАДЕН план и обвивката понякога приключваше с „агентът
   // още работи, ще върна отговора“ — `claude -p` печата това и излиза; оценката получи бележка вместо отговор.
-  return `Пусни нашия агент ${agent} през Agent tool (subagent_type: ${agent}, run_in_background: false — на ПРЕДЕН план, изчакай го) ВЕДНЪЖ, със задачата по-долу, дословно и без добавки. ` +
+  // 23.11.2026 (живият гейт на PR2): без контекст класификаторът за безопасност спря обвивката пред задача на червения
+  // екип („Опитай да счупиш checkout…“). Редът е верен: оценката е вътрешна, върху копие на нашия код. Той не
+  // стига до агента — агентът получава само задачата.
+  return `Контекст: това е вътрешна, оторизирана оценка на наш агент в изолирано копие на нашето собствено репо; ` +
+    `задачите на червения екип са проби само срещу наши продукти, без външни цели. ` +
+    `Пусни нашия агент ${agent} през Agent tool (subagent_type: ${agent}, run_in_background: false — на ПРЕДЕН план, изчакай го) ВЕДНЪЖ, със задачата по-долу, дословно и без добавки. ` +
     `Не приключвай, преди да имаш отговора му. ` +
     `След това върни САМО дословния му отговор — без коментар, без съкращения, без обобщение. ` +
     // 27.10.2026: при второ известие за същия агент последното съобщение беше „вече предадох отговора по-горе“
@@ -226,10 +232,98 @@ export function jobArgs(j, { allowed = ALLOWED, extraArgs = [], sessionId }) {
   return ["-p", wrapperPrompt(j.agent, j.task), "--session-id", sessionId, "--allowedTools", ...allowed, "--output-format", "json", ...extraArgs];
 }
 
+/**
+ * Може ли тук да тече `CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1` (19.11.2026, аблация в облачната сесия): на Linux без
+ * bubblewrap Claude Code изобщо НЕ тръгва („bubblewrap is required…“), без socat Bash не тръгва. С двата: тайните
+ * изчезват от средата на Bash и куките (проба: DEMO_SERVICE_TOKEN — не; GH_TOKEN, проксито, вложен `claude -p`,
+ * git, node, мрежа, запис в /tmp и scratchpad — да). Цена: `ps`/`kill` не виждат процеси от предишно извикване —
+ * затова само в headless пусканията (оценки, прегледи на PR), не в интерактивните настройки. Scrub създава и празни
+ * заместители в работната папка (package.json, .npmrc, файловете с тайни) — тук тя е временно копие, което се трие.
+ */
+export function scrubSupported({ platform = process.platform, has = (b) => { try { execFileSync("sh", ["-c", `command -v ${b}`], { stdio: "ignore" }); return true; } catch { return false; } } } = {}) {
+  return platform === "linux" && has("bwrap") && has("socat");
+}
+
+/** Средата на едно headless пускане (чиста функция — тестваема). */
+export function runEnv(base, { wt, timeoutMs = 900000, scrub = false } = {}) {
+  const env = { ...base, CLAUDE_PROJECT_DIR: wt, AGENT_MEMORY_SYNC: "0" };
+  delete env.CLAUDE_CODE_SESSION_ID;
+  // https://code.claude.com/docs/en/headless.md „Background tasks at exit“: след последния ход `-p` чака фоновата
+  // работа най-много CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS (по подразбиране 10 мин. бездействие), после я спира и
+  // изхвърля частичния резултат — Продавача на 17.11 се „провали“ точно така. Таванът следва външния таймаут.
+  if (!base.CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS) env.CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS = String(Math.max(60000, timeoutMs - 60000));
+  // В `-p` никой не чете обобщенията за напредъка на подагентите, а харнесът ги пише с фоновия модел (2.1.328).
+  env.CLAUDE_CODE_DISABLE_AGENT_PROGRESS_SUMMARIES = "1";
+  if (scrub) env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB = "1";
+  return env;
+}
+
+/** Спрял ли е класификаторът за безопасност ход на обвивката — по точния низ на харнеса в tool_result, не по текста. */
+export const CLASSIFIER_STOP = "Not run: the response that made this tool call was stopped by a safety classifier";
+export function classifierStopped(sessionId, wt, home = process.env.HOME || "/root") {
+  if (!sessionId || !wt || !/^[\w-]+$/.test(sessionId)) return false;
+  let raw = "";
+  try { raw = readFileSync(join(home, ".claude", "projects", wt.replace(/[/.]/g, "-"), `${sessionId}.jsonl`), "utf8"); } catch { return false; }
+  for (const l of raw.split("\n")) {
+    let o; try { o = JSON.parse(l); } catch { continue; }
+    const c = o?.message?.content;
+    if (o?.type !== "user" || !Array.isArray(c)) continue;
+    for (const b of c) {
+      if (b?.type !== "tool_result") continue;
+      const s = typeof b.content === "string" ? b.content : Array.isArray(b.content) ? b.content.map((x) => x?.text || "").join("") : "";
+      if (s.startsWith(CLASSIFIER_STOP)) return true;
+    }
+  }
+  return false;
+}
+
+/** Крайният текст на НАШИЯ подагент от транскрипта на сесията (ако обвивката е върнала обобщение или „още работи“). */
+export function subagentFinalText(sessionId, wt, agent, home = process.env.HOME || "/root") {
+  if (!sessionId || !wt || !/^[\w-]+$/.test(sessionId) || !/^[a-z0-9-]+$/.test(String(agent))) return "";
+  const dir = join(home, ".claude", "projects", wt.replace(/[/.]/g, "-"), sessionId, "subagents");
+  let files = [];
+  try { files = readdirSync(dir).filter((f) => f.endsWith(".jsonl")).map((f) => join(dir, f)); } catch { return ""; }
+  const mine = files.filter((f) => { try { return JSON.parse(readFileSync(f.replace(/\.jsonl$/, ".meta.json"), "utf8")).agentType === agent; } catch { return false; } })
+    .sort((a, b) => statSync(b).size - statSync(a).size);
+  for (const f of mine) {
+    let last = "";
+    for (const l of readFileSync(f, "utf8").split("\n")) {
+      let o; try { o = JSON.parse(l); } catch { continue; }
+      const c = o?.message?.content;
+      if (o.type === "assistant" && Array.isArray(c)) for (const b of c) if (b.type === "text" && String(b.text).trim()) last = b.text;
+    }
+    if (last) return last;
+  }
+  return "";
+}
+
+/**
+ * Резултат на едно пускане. `ok` иска блок „## ПРЕДАВАНЕ“ (19.11.2026): с `--output-format json` се печата само
+ * последният ход, затова „агентът още работи“ минаваше за успех — тих провал. Ако обвивката е върнала текст без
+ * блок, отговорът се взема от транскрипта на подагента; без блок и там → ok:false с ясна причина.
+ */
+export function judgeRun({ err, text, needsHandoff, recover = () => "", stopped = () => false }) {
+  let t = String(text || "");
+  let recovered = false;
+  if (!err && needsHandoff && !extractBlock(t)) {
+    const sub = recover();
+    if (extractBlock(sub)) { t = sub; recovered = true; }
+  }
+  if (err) return { ok: false, text: t, recovered, why: "" };
+  // Без автоматично повторение: да пуснеш наново спряното съдържание е решение на човек, не на двигателя.
+  if (!(needsHandoff && extractBlock(t)) && stopped()) return { ok: false, text: t, recovered, why: "двигател: класификаторът за безопасност спря обвивката — агентът не е пуснат; не е провал на агента (пусни гейта наново)" };
+  if (!t.trim()) return { ok: false, text: t, recovered, why: "празен отговор" };
+  if (needsHandoff && !extractBlock(t)) return { ok: false, text: t, recovered, why: "двигател: няма блок „## ПРЕДАВАНЕ“ — недочакан фонов агент или обобщение от обвивката" };
+  return { ok: true, text: t, recovered, why: "" };
+}
+
 /** Пуска задачите (конкурентно) в копието. Връща [{...job, ok, text, costUsd, err, seconds}]. */
 // wtFor(job) → {dir, cleanup} | null: собствено копие за пускане, което ПИШЕ (2026-11-02 — паралелните опити в едно
 // копие виждаха и си приписваха файловете един на друг; сляпото съдийство го хвана). null → общото `wt`.
-export async function runJobs(jobs, { wt, wtFor = () => null, bin = "claude", concurrency = 3, timeoutMs = 900000, extraArgs = [], allowed = ALLOWED, onDone = () => {} } = {}) {
+// needsHandoff(job): пробите на живия гейт само цитират контекста — без ПРЕДАВАНЕ; всички други го дължат.
+// scrub: `CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1`, където машината го поддържа (виж scrubSupported); AGENT_RUN_SCRUB=0 го спира.
+export async function runJobs(jobs, { wt, wtFor = () => null, bin = "claude", concurrency = 3, timeoutMs = 900000, extraArgs = [], allowed = ALLOWED, onDone = () => {},
+  needsHandoff = (j) => !/^probe-/.test(String(j.name || "")), scrub = process.env.AGENT_RUN_SCRUB !== "0" && scrubSupported() } = {}) {
   const results = new Array(jobs.length);
   let i = 0;
   const one = async (j) => {
@@ -243,14 +337,15 @@ export async function runJobs(jobs, { wt, wtFor = () => null, bin = "claude", co
     // видя едни и същи файлове в два опита). Махането на CLAUDE_CODE_SESSION_ID НЕ стига (проба: session_id пак
     // родителският); `--session-id <uuid>` стига (проба: върнатият session_id = поисканият).
     const sessionId = randomUUID();
-    const env = { ...process.env, CLAUDE_PROJECT_DIR: wt, AGENT_MEMORY_SYNC: "0" };
-    delete env.CLAUDE_CODE_SESSION_ID;
+    const env = runEnv(process.env, { wt, timeoutMs, scrub });
     execFile(bin, jobArgs(j, { allowed, extraArgs, sessionId }),
       { cwd: wt, timeout: timeoutMs, maxBuffer: 1 << 26, env },
       (err, stdout, stderr) => {
         const r = parseResult(stdout);
-        if (r.text) r.text = attachWrites(attachScratchpad(r.text), sessionId, wt);
-        resolve({ ...j, ok: !err && !!r.text.trim(), text: r.text, costUsd: r.costUsd, err: err ? String(stderr || err.message).slice(0, 300) : "", seconds: Math.round((Date.now() - t0) / 1000) });
+        const v = judgeRun({ err, text: r.text, needsHandoff: needsHandoff(j), recover: () => subagentFinalText(sessionId, wt, j.agent), stopped: () => classifierStopped(sessionId, wt) });
+        const text = v.text ? attachWrites(attachScratchpad(v.text), sessionId, wt) : v.text;
+        resolve({ ...j, ok: v.ok, text, costUsd: r.costUsd, recovered: v.recovered,
+          err: err ? String(stderr || err.message).slice(0, 300) : v.why, seconds: Math.round((Date.now() - t0) / 1000) });
       });
   });
   await Promise.all(Array.from({ length: Math.min(concurrency, jobs.length) }, async () => {

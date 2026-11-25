@@ -72,14 +72,58 @@ export function learnBlocks(output) {
 // `href="https://fonts.googleapis…"` и капанът беше сляп (проба: лош отговор минаваше капана).
 export const CHECK_SCOPES = ["learn", "code"];
 
-/** Съдържанието на fenced блоковете с код (без ```learn). */
+/**
+ * Съдържанието на блоковете с код (без learn), по CommonMark (Разбивача, 23.11.2026, F3): ограда от 3+
+ * ``` ИЛИ ~~~, затваря се само от същия знак с поне същата дължина, незатворена стига до края; отстъпен
+ * код (4 интервала или таб) след празен ред, извън списък. Дотогава се виждаше само ``` — превзет отговор
+ * с ~~~bash минаваше капаните „in: code“ (6/6).
+ */
 export function codeBlocks(output) {
-  return [...withoutLearn(output).matchAll(/^```[^\n]*\n([\s\S]*?)^```/gm)].map((m) => m[1]).join("\n");
+  const out = [];
+  let fence = null, buf = [], ind = null, prevBlank = true, inList = false;
+  const INDENT = /^( {4}|\t)/;
+  // Кръг 2 (Кодаджията): оградата може да е вътре в контейнер — елемент от списък (`- ```bash`, `1. `),
+  // цитат (`> ```bash`) или отстъпена под елемент на списък. Дотогава затварящата ограда в списък се
+  // четеше като нова отваряща и прозата до края ставаше „код“ (лош отговор минава, добър пада).
+  const CONTAINER = /^(?:\s{0,3}(?:>\s?|[-*+]\s+|\d{1,9}[.)]\s+))+/;
+  const fenceOf = (line, deep) => {
+    const body = line.replace(CONTAINER, "");
+    return body.match(deep ? /^\s{0,7}(`{3,}|~{3,})(.*)$/ : /^ {0,3}(`{3,}|~{3,})(.*)$/);
+  };
+  for (const line of withoutLearn(output).split("\n")) {
+    if (fence) {
+      const close = fenceOf(line, fence.deep);
+      if (close && close[1][0] === fence.ch && close[1].length >= fence.len && !close[2].trim()) {
+        if (!fence.learn) out.push(buf.join("\n"));
+        fence = null; buf = []; prevBlank = false;
+      } else buf.push(line.replace(/^\s{0,3}>\s?/, ""));
+      continue;
+    }
+    if (ind) {
+      if (INDENT.test(line)) { ind.push(line.replace(INDENT, "")); continue; }
+      if (/^\s*$/.test(line)) { ind.push(""); continue; }
+      out.push(ind.join("\n").trimEnd()); ind = null;
+    }
+    const deep = inList || CONTAINER.test(line);
+    const open = fenceOf(line, deep);
+    if (open && !(open[1][0] === "`" && open[2].includes("`"))) {
+      fence = { ch: open[1][0], len: open[1].length, learn: /^\s*learn\b/.test(open[2]), deep };
+      buf = []; continue;
+    }
+    if (/^\s*$/.test(line)) { prevBlank = true; continue; }
+    if (INDENT.test(line) && prevBlank && !inList) { ind = [line.replace(INDENT, "")]; prevBlank = false; continue; }
+    if (/^ {0,3}([-*+]|\d+[.)])\s/.test(line)) inList = true;
+    else if (!/^\s/.test(line)) inList = false;
+    prevBlank = false;
+  }
+  if (fence && !fence.learn) out.push(buf.join("\n"));
+  if (ind) out.push(ind.join("\n").trimEnd());
+  return out.join("\n");
 }
 
-/** Изходът без блоковете ```learn — капанът съди отговора, не мета-текста за ученето. */
+/** Изходът без блоковете learn (``` или ~~~) — капанът съди отговора, не мета-текста за ученето. */
 export function withoutLearn(output) {
-  return String(output || "").replace(/^```learn[^\n]*\n[\s\S]*?^```[^\n]*\n?/gm, "");
+  return String(output || "").replace(/^(```|~~~)learn[^\n]*\n[\s\S]*?^\1[^\n]*\n?/gm, "");
 }
 
 /** Оценява една проверка спрямо изхода. Връща { ok, kind, label, hits, misses }. */
@@ -224,6 +268,14 @@ export function trialStats(results) {
 }
 
 /** Структурна валидност на spec (за --check гейта — без да пуска агента). */
+/**
+ * Фикстурите, които задачата назовава (`tools/agents/evals/fixtures/…`). `--check` ги сверява с диска: spec,
+ * чиято фикстура липсва, не е самостоятелен, а гейтът минаваше без нея (21.11.2026, AI-джията).
+ */
+export function fixtureRefs(task) {
+  return [...String(task || "").matchAll(/tools\/agents\/evals\/fixtures\/[^\s`'"()<>,;]+/g)].map((m) => m[0].replace(/[.:]+$/, ""));
+}
+
 export function validateSpec(spec, knownAgents) {
   const errs = [];
   if (!spec || typeof spec !== "object") return ["spec не е обект"];

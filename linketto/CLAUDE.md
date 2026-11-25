@@ -31,7 +31,7 @@ DATABASE_URL_TEST=postgresql://…/linketto_test npx tsx --test src/lib/__tests_
 ```
 
 Env: виж `.env.example`. Ключовете на Revolut/Brevo са на Carbon Stealth VCC —
-**само през env на сървъра, никога в кода**.
+**през env на сървъра или от админ панела (шифровани в базата), никога в кода**.
 
 ## Архитектура
 
@@ -68,6 +68,10 @@ src/lib/blocks.ts      Блокова система (по linkie.to): kinds LIN
                        MAP/VIDEO/MUSIC/APP/FORM; parseBlockInput валидира и
                        нормализира входа (tel:, Google Maps URL, embed проверка);
                        videoEmbedSrc (YouTube nocookie/Vimeo allowlist).
+                       blockFieldsFor/blockFieldLabels/blockFieldInput = кои полета,
+                       с какъв етикет и тип ползва видът (MUSIC: url=Spotify,
+                       extra1=Apple Music) — формата „Добави блок“ е клиентската
+                       AddBlockFields, редакцията — същите функции на сървъра.
                        FORM блокът пише в ContactMessage (публично действие с
                        honeypot; съобщенията се четат в дашборда).
 src/app/actions/       Server actions (auth, profile, billing) — zod вход,
@@ -95,16 +99,41 @@ src/app/(public)/u/[slug]/qr/  Безплатен QR (SVG, акцентен цв
 рендиране, и при клик. VCARD блокът връща .vcf през click route-а.
 
 SEO: src/lib/seo.ts (SITE_URL, pageMetadata → canonical+hreflang за 6-те
-локала, siteJsonLd/faqJsonLd). Профилите: profileMetadata (OG, canonical,
-noindex при 18+ линк) + ProfilePage/Person JSON-LD. sitemap.ts (hreflang
-alternates, без 18+ профили), robots.ts (AI ботове изрично allow),
+локала, siteJsonLd/faqJsonLd; `keywords` се слага само ако е подаден — иначе `undefined`
+презаписва тези от layout-а). Всяка индексируема страница има собствени title/description
+(privacy/terms/cookies — `seo.*Description`); login/register/forgot/reset са noindex и НЕ са в
+Disallow (ботът трябва да прочете noindex). Профилите: profileMetadata (async; OG, canonical,
+ключови думи с „Carbon Stealth“, резервно описание `seo.profileDescription`, noindex при 18+ линк)
++ ProfilePage/Person JSON-LD (sameAs — само социални мрежи по домейна). sitemap.ts (hreflang
+alternates, без 18+ профили и без профили без езикова версия; фиксиран lastModified), robots.ts (AI ботове изрично allow),
 public/llms.txt. Правно: DSA сигнали = /u/[slug]/report (модел Report,
 actions/report.ts, категории в src/lib/report.ts); чл. 13 бележка под FORM
 блока; ContactMessage
 се чисти след 12 мес.; legal.* текстовете са пълни (одитирани 2026-07-08).
 
 Админ: /[locale]/admin (noindex, robots disallow) — само за имейли от env
-ADMIN_EMAILS (src/lib/admin.ts requireAdmin; НИКАКВИ админ флагове в БД).
+ADMIN_EMAILS (src/lib/admin.ts requireAdmin; НИКАКВИ админ флагове в БД) И
+`adminGate` (lib/admin-list.ts): потвърден имейл + включена 2FA + сесия, потвърдена с код;
+потвърждението на имейл по връзка важи само в сесията на СЪЩИЯ потребител, за всеки адрес
+(`lib/verify-email-policy.ts` — иначе адрес, добавен в ADMIN_EMAILS по-късно, наследява чуждо потвърждение);
+„Забравена парола“ (docs/password-reset-spec.md): `/[locale]/forgot` (без изброяване на акаунти, лимит
+по IP и имейл) → токен `reset-password` 60 мин → `/[locale]/reset` (GET само форма; POST сменя паролата и
+прекратява всички сесии); едно правило за нова парола (`lib/password-policy.ts`, ≥10). Регистрацията иска
+изрична отметка за ОУ (ЗЗП чл. 147а) → `User.termsAcceptedAt/termsVersion` (`lib/terms.ts`, вдигай
+`TERMS_VERSION` при промяна на ОУ); писмото за потвърждение потвърждава и регистрацията с връзка към ОУ.
+опасните действия (смяна на имейл/парола, изтриване, refund, изплащане, ключове) —
+`requireStepUp` (код ≤10 мин.). Админ не пипа ДРУГ админ (`guardTarget`). Връзка „Админ“ в
+хедъра и в таблото за админите.
+Сигурност на акаунта (docs/security-2fa-settings-spec.md): TOTP без зависимости
+(lib/totp.ts) + 10 резервни кода (sha256), тайните шифровани с AES-256-GCM
+(lib/secret-box.ts, `SETTINGS_KEY`/`SETTINGS_KEY_OLD`, AAD контекст); вход на 2 стъпки
+(LoginChallenge + `__Host-linketto_mfa`); сесии `__Host-linketto_session` с изтичане при
+неактивност 7 дни (админ 12 ч) и абсолютно 30 дни (админ 24 ч); дневник `SecurityEvent`
+(lib/security-events.ts, 90 дни, имейлът при неуспешен вход — само HMAC) + аларми по прагове.
+Ключове на доставчиците от панела: секция „Плащания и имейл“ (actions/integrations.ts,
+components/admin/IntegrationsPanel.tsx) → таблица `Setting` (тайните шифровани, никога
+обратно към браузъра); `setting(key)` в lib/settings.ts — базата печели пред .env, кеш 30 s;
+`revolutReady()`/`emailReady()` са async. Само Revolut — друг доставчик на плащания няма.
 actions/admin.ts: бан/отбан (Profile.bannedAt — баннат = notFound на ВСИЧКИ
 публични маршрути + извън sitemap, без публичен банер), смяна на
 имейл/име/план, нова парола (bcrypt 12; старата не се вижда; всички сесии
@@ -116,9 +145,12 @@ actions/admin.ts: бан/отбан (Profile.bannedAt — баннат = notFoun
 actions/auth.ts, 90 дни, декларирано в политиката; НЕ важи за посетители).
 
 Качени изображения: src/lib/media.ts (sharp → webp, маха EXIF, ≤8 MB) →
-DATA_DIR/uploads, сервирани от /media/[file] (стриктен allowlist на името).
+DATA_DIR/uploads, сервирани от /media/[file] (стриктен allowlist на името). `lib/image-process.ts`:
+40 Mpx по заглавката, ≤2 обработки, опашка ≤4, 1 качване в ход на потребител; неползваните файлове
+се трият (`removeUnusedMedia`).
 Шрифтове: src/app/fonts.ts (next/font, self-hosted — нула външни заявки).
 
+Теми на профила: `src/lib/profile-themes.ts` (PROFILE_THEMES = единственият списък — action, табло, ProfileScreen; токени → CSS променливи `--pf-*`, `auto` през light-dark(); непознато ID → aurora; контраст AA пази тестът; сцените chrome/acid са само CSS, без SVG).
 Стилов енджин: Profile.style (Json) + src/lib/style.ts (zod схема,
 DEFAULT_STYLE, прощаващ parseStyle — невалидно поле пада към подразбирането;
 backgroundCss/buttonCss/fontFamily/readableOn). Нова стилова опция = поле в
@@ -142,20 +174,30 @@ checkPurchase (lib/plan-orders.ts; FOUNDER не се купува пак, по-�
 реда на потребителя, пуска checkPurchase ОТНОВО (иначе → `conflict`: платена, неприложена),
 пази снимка prevPlan/prevExpiresAt и праща потвърждение (lib/plan-confirmation.ts, P14).
 Връщане: само от /admin → refund поръчка при Revolut (`refund_pending`, до 2 дни) → при
-`completed` планът се връща към снимката (отпада само платеното с поръчката). Реферал
-бонусът (REFERRAL_PERCENT=15 от платената сума) е в същата транзакция.
+`completed` (САМО по живо четене: type refund + точна сума + EUR; CAS по `refundOrderId` и опита —
+червен екип 2026-11-22) планът се връща към снимката (отпада само платеното с поръчката).
+Разминаване в сумата → аларма най-много веднъж на 24 ч (маркер `refundStuckAlertedAt`) и бутон
+„Приключи ръчно“ в /admin след сверка в Revolut Business (`closeRefundManually`,
+docs/refund-manual-close-spec.md — решава живото четене; реалната сума влиза в `refundCents`). Реферал
+бонусът (REFERRAL_PERCENT=15 от платената сума) се записва в същата транзакция като
+**задържан** (`releasedAt null`, docs/abuse-money-spec.md А) и влиза в баланса след 30 дни от
+cron-а (`releaseReferralBonuses`: живо GET, условен запис); отказ/връщане/спор го сторнират,
+спечелен спор го връща в задържане. Отказът е с **пропорционално плащане** (чл. 14(3);
+`lib/withdrawal-refund.ts`, сумата се пази в `refundCents`) при задължителна отметка за ранно
+начало (текстът се пази дословно и се цитира в P14).
 Теглене: REFERRAL_MIN_PAYOUT_CENTS=10000 (€100); requestPayoutAction снапшотва
 баланса в ReferralPayout и нулира referralCreditCents (транзакция, под праг = грешка);
 админът маркира платено (adminMarkPayoutPaidAction).
 Реферали: lib/referral.ts (referralRewardCents по план, generateReferralCode).
 User.referralCode/referredById/referralCreditCents + модел Referral (ledger,
 unique referredUserId, planOrderId). registerAction обвързва реферера от ?ref;
-settlePlanOrder начислява бонуса при първата платена поръчка (идемпотентно). Дашборд:
-ReferralCard + ensureReferralCodeAction за стари профили. Кредитът се вижда
-и в админ панела (за изплащане).
+settlePlanOrder записва бонуса (задържан) при първата платена поръчка (идемпотентно). Дашборд:
+ReferralCard + ensureReferralCodeAction за стари профили. Кредитът (и задържаните) се вижда
+и в админ панела (за изплащане). Таваните на профила (200 блока, 100 кратки линка) — под
+заключения ред (`lib/profile-lock.ts`).
 
 Транзакционен имейл: src/lib/email.ts (Brevo API v3, `sendEmail` → 201; без
-BREVO_API_KEY/валиден EMAIL_FROM = no-op). Brevo добавя собствен List-Unsubscribe —
+ключ/валиден подател — от панела или BREVO_API_KEY/EMAIL_FROM — = no-op). Brevo добавя собствен List-Unsubscribe —
 стандартни заглавия не се подават. AI преводът (lib/ai.ts) покрива и продуктите
 (заглавие+описание). Health probe: /api/health. Deploy чеклист: DEPLOY.md.
 
@@ -215,7 +257,10 @@ actions/shop.ts (по userId); статут търговец/частно лиц
 `ugc.production.linktr.ee` → sharp). **Безплатни инструменти** `/[locale]/tools` (QR — изцяло в браузъра;
 AI био — `actions/tools.ts`, лимит по IP + дневен таван, нищо не се пази). **Сравнения** `/[locale]/vs/<id>`
 — фактите САМО в `lib/comparisons.ts` с дата и първоизточник (Дир. 2006/114 чл. 4); твърдения без
-източник не влизат („Linktree е само на английски“ и „12/9%“ вече НЕ са верни — да не се връщат).
+източник не влизат („Linktree е само на английски“ и „12/9%“ вече НЕ са верни — да не се връщат;
+„Linktree няма собствен домейн“ е махнато 2026-11-22 — източникът е 404). Цените на Linktree се
+рисуват в браузъра по регион: проверка с Chromium, не с fetch (ботът получава текст без цени).
+„Отговорът отпред“ над таблицата се сглобява от същите редове (`vs.summaryRow`).
 **Седмичен отчет** „езикова дупка“: `lib/digest.ts` (чисти функции) + `POST /api/cron/digest`
 (Bearer `CRON_SECRET`, дневен cron, ≤1 на ~седмица по `User.lastDigestAt`) + отписване с 1 клик
 `/api/digest/unsubscribe` (HMAC подпис, GET без странични ефекти, POST = RFC 8058) и от таблото

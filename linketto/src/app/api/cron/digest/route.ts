@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { timingSafeEqual } from 'node:crypto';
 import { prisma } from '@/lib/db';
 import { SITE_URL } from '@/lib/seo';
-import { emailConfigured, sendEmail } from '@/lib/email';
+import { emailReady, sendEmail } from '@/lib/email';
 import { languageDemand } from '@/lib/language-gap';
 import { daysAgo } from '@/lib/retention-days';
 import {
@@ -35,7 +35,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (!authorized(request, secret)) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
-  if (!emailConfigured()) {
+  if (!(await emailReady())) {
     return NextResponse.json({ error: 'email not configured' }, { status: 503 });
   }
 

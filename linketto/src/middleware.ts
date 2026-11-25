@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { routing } from './i18n/routing';
 import { DEFAULT_LOCALE, isLocale, localeFromGeo } from './i18n/locales';
 import { profileHost, shortPathSlug } from './lib/profile-url';
+import { requestCountry } from './lib/geoip';
 import { SITE_URL } from './lib/seo';
 
 const intl = createMiddleware(routing);
@@ -46,9 +47,8 @@ export default function middleware(request: NextRequest): NextResponse {
       cookieLocale && isLocale(cookieLocale)
         ? cookieLocale
         : localeFromGeo({
-            country:
-              request.headers.get('cf-ipcountry') ??
-              request.headers.get('x-vercel-ip-country'),
+            // Прокси заглавка (Cloudflare/Vercel) или локалната база по IP — без диалекти.
+            country: requestCountry(request.headers),
             acceptLanguage: request.headers.get('accept-language'),
             fallback: DEFAULT_LOCALE,
           });
@@ -73,6 +73,8 @@ function primaryHost(): string | null {
 }
 
 export const config = {
+  // Node (не Edge): справката IP → държава чете локалната база от диска.
+  runtime: 'nodejs',
   // Публичните профили (/u, /d), съкратените линкове (/s),
   // API и статичните файлове са извън локализирания рутинг.
   // „api/“ и „api“ точно — не префиксът „api“: иначе slug като „apicoltura“

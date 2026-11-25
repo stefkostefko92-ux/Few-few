@@ -69,3 +69,31 @@ test('P14: ред с бутона „Откажете се от договора
   assert.match(html, /28 ноември 2026/);
   assert.ok(html.includes('https://l.example/bg/dashboard#plan'));
 });
+
+test('P14: при изрично искане за ранно начало — текстът за пропорционалното плащане (Б2)', () => {
+  const base = {
+    locale: 'bg',
+    name: 'Иван',
+    plan: 'PRO',
+    interval: 'monthly',
+    amountCents: 400,
+    vatCents: 67,
+    vatRateBp: 2000,
+    paidUntil: new Date('2026-04-01T00:00:00Z'),
+    orderRef: 'ord1',
+    termsUrl: 'https://example.com/bg/terms',
+  };
+  const consent = 'Искам планът да започне веднага <b>&</b>. Разбирам.';
+  const withConsent = planConfirmationEmail({
+    ...base,
+    immediateStartAt: new Date('2026-03-01T10:00:00Z'),
+    immediateStartText: consent,
+  }).html;
+  assert.match(withConsent, /пропорционална/);
+  assert.match(withConsent, /изрично поиска/);
+  assert.doesNotMatch(withConsent, /без да удържаме нищо/);
+  // ЗЗП чл. 49, ал. 9: приетият текст — дословно (екраниран) в писмото на траен носител.
+  assert.match(withConsent, /като отметна: „Искам планът да започне веднага &lt;b&gt;&amp;&lt;\/b&gt;\. Разбирам\.“/);
+  assert.doesNotMatch(withConsent, /<b>&<\/b>/);
+  assert.match(planConfirmationEmail(base).html, /без да удържаме нищо/);
+});
