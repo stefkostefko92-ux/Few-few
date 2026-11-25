@@ -10,6 +10,9 @@
   <div class="wrap">
     <h1 id="h1"><%= t('site.pricing.title') %></h1>
     <p class="lead"><%= t('site.pricing.lead') %></p>
+<% if (locals.registrationOpen !== false) { -%>
+    <p class="landing-cta"><a class="btn" href="<%= app.register %>"><%= t('site.cta.registerFree') %></a></p>
+<% } -%>
   </div>
 </section>
 
@@ -153,6 +156,7 @@
   </div>
 </section>
 
+<%- include('../partials/site-guides') %>
 <%- include('../partials/site-faq') %>
 <%- include('../partials/site-cta') %>
 </main>

@@ -115,6 +115,24 @@ test('на съществуващ профил: веднага собствен�
     where: { id: orgId },
     data: { ownerReviewPendingAt: new Date(), ownershipLockedAt: new Date() },
   });
+  // Отворена покана с неизпратено писмо — мастърът я отменя, писмото не тръгва (Качествения, 25.11.2026).
+  await prisma.transferInvite.create({
+    data: {
+      organizationId: orgId,
+      email: 'drug@example.test',
+      tokenHash: 'a'.repeat(64),
+      fromUserId: ownerId,
+      expiresAt: new Date(Date.now() + 86_400_000),
+    },
+  });
+  const pendingMail = await prisma.notification.create({
+    data: {
+      organizationId: orgId,
+      kind: 'transfer.invite',
+      toEmail: 'drug@example.test',
+      payload: {},
+    },
+  });
   await masterHandover({
     organizationId: orgId,
     actorId: masterId,
@@ -122,6 +140,8 @@ test('на съществуващ профил: веднага собствен�
     reason: 'Решение на съдружниците от 10.11.2026',
     target: { kind: 'person', email: 'NASLEDNIK@example.test', keepOldOwner: true },
   });
+  const mail = await prisma.notification.findUniqueOrThrow({ where: { id: pendingMail.id } });
+  assert.equal(mail.status, 'FAILED', 'писмото с отменената покана не тръгва');
   assert.equal(await role(next.id, orgId), 'OWNER');
   assert.equal(await role(ownerId, orgId), 'ADMIN');
   const org = await prisma.organization.findUniqueOrThrow({ where: { id: orgId } });

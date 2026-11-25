@@ -52,6 +52,7 @@ test('sitemap: всяка страница на двата езика с hreflan
   );
   assert.ok(robotsTxt(BASE).includes(`Sitemap: ${BASE}/sitemap.xml`));
   assert.ok(robotsTxt(BASE).includes('Disallow: /admin/'));
+  assert.ok(robotsTxt(BASE).includes('Disallow: /api/'), 'REST API — не е за обхождане');
   assert.ok(llmsTxt(BASE).includes(`${BASE}/e-fakturi-2028`));
 });
 

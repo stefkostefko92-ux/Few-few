@@ -295,6 +295,22 @@ test('оттеглен ключ, загубено право на създате
     where: { userId: ownerId, organizationId: orgId },
     data: { role: 'OWNER' },
   });
+
+  // SPEC 92: създателят не е приел актуалните условия → интеграцията спира като приложението.
+  const accepted = await prisma.legalAcceptance.findMany({ where: { userId: ownerId } });
+  await prisma.legalAcceptance.updateMany({
+    where: { userId: ownerId },
+    data: { version: '2026-11-13.3' },
+  });
+  const pendingIssue = await post(issueKey, body());
+  assert.equal(pendingIssue.status, 403);
+  assert.equal(((await pendingIssue.json()) as { error: string }).error, 'legal');
+  assert.equal((await api(issueKey, '/api/v1/series')).status, 403, 'и четенето');
+  assert.equal(await prisma.document.count({ where: { organizationId: orgId } }), 3);
+  for (const row of accepted) {
+    await prisma.legalAcceptance.update({ where: { id: row.id }, data: { version: row.version } });
+  }
+  assert.equal((await api(issueKey, '/api/v1/series')).status, 200, 'след приемането — пак работи');
 });
 
 test('невалиден JSON и твърде голямо тяло — JSON грешка, не HTML', async () => {
@@ -362,6 +378,17 @@ test('ревю: махнат създател → ключът не чете; м
   });
   const membership = await prisma.membership.create({
     data: { userId: helper.id, organizationId: orgId, role: 'ADMIN' },
+  });
+  // Членът е приел общите условия (при поканата) — иначе ключът му спира на гейта (SPEC 92).
+  const { LEGAL_DOCUMENTS } = await import('../../src/legal/documents.js');
+  await prisma.legalAcceptance.create({
+    data: {
+      userId: helper.id,
+      organizationId: null,
+      document: 'terms',
+      version: LEGAL_DOCUMENTS.terms.version,
+      acceptedAt: new Date(),
+    },
   });
   const { createApiKey } = await import('../../src/api/keys.js');
   const { key } = await createApiKey(
