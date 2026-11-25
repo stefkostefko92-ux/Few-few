@@ -9,6 +9,20 @@ const { prisma } = await import('../../src/db.js');
 const { seedPlans } = await import('../../src/billing/seed-plans.js');
 const { createServer } = await import('../../src/server.js');
 const { signupReport } = await import('../../src/marketing/report.js');
+const { audit } = await import('../../src/audit.js');
+const { invalidateSettings } = await import('../../src/admin/settings.js');
+
+/** Белегът на самостоятелната регистрация — както го пише `register()`. */
+const registered = (organizationId: string) =>
+  prisma.$transaction((tx) =>
+    audit(tx, {
+      actorId: null,
+      organizationId,
+      action: 'account.registered',
+      targetType: 'Organization',
+      targetId: organizationId,
+    }),
+  );
 
 /**
  * SPEC 93–94: етикетът на кампанията се носи в адресите на витрината и в скритите полета на регистрацията
@@ -67,8 +81,13 @@ test('витрината носи етикета в адресите към ре
   // Сайтът, от който идва посетителят, не се разнася във вътрешните връзки — само до регистрацията.
   assert.match(referral, /href="\/za-schetovoditeli"/);
   assert.doesNotMatch(referral, /href="\/za-schetovoditeli\?utm_source/);
+  assert.match(res.headers.get('vary') ?? '', /Referer/i);
   const plain = await page('/');
   assert.match(plain, /href="\/registraciya"/);
+  // Без етикет — пак Vary: Referer: общ кеш не бива да даде варианта без етикет на посетител от друг сайт.
+  const bare = await fetch(`${http.origin}/ceni`);
+  assert.match(bare.headers.get('vary') ?? '', /Referer/i);
+  assert.notEqual(bare.headers.get('cache-control'), 'private');
 });
 
 test('формата носи етикета в скрити полета; регистрацията го записва на фирмата', async () => {
@@ -128,6 +147,7 @@ test('„Източници“: регистрации по източник, к
       signupCampaign: 'start',
     },
   });
+  await registered(firm.id);
   await prisma.payment.create({
     data: {
       organizationId: firm.id,
@@ -154,4 +174,52 @@ test('„Източници“: регистрации по източник, к
   assert.equal(rows[0]?.source, 'google', 'най-много регистрации — първи');
   const none = await signupReport({ since: new Date(Date.now() + 86_400_000) });
   assert.deepEqual(none, []);
+});
+
+test('„Източници“: предадената на кантора остава; клиентът на кантора, изтритата и доставчикът — не', async () => {
+  const before = await signupReport({ since: null });
+  const count = (rows: typeof before, source: string) =>
+    rows.filter((r) => r.source === source).reduce((sum, r) => sum + r.companies + r.firms, 0);
+  const firm = await prisma.organization.findFirstOrThrow({ where: { kind: 'ACCOUNTING_FIRM' } });
+  const make = async (eik: string, source: string, extra: Record<string, unknown> = {}) =>
+    prisma.organization.create({
+      data: {
+        kind: 'COMPANY',
+        legalName: `Фирма ${eik}`,
+        eik,
+        addressStreet: 'ул. 1',
+        addressCity: 'Перник',
+        postalCode: '2300',
+        signupSource: source,
+        ...extra,
+      },
+    });
+  // Регистрирана сама, после поета от кантора (SPEC 86: `createdByFirmId` = кантората).
+  const handed = await make('130460283', 'bing');
+  await registered(handed.id);
+  await prisma.organization.update({
+    where: { id: handed.id },
+    data: { createdByFirmId: firm.id },
+  });
+  // Клиент, добавен от кантора — без запис за регистрация.
+  await make('175074752', 'yahoo', { createdByFirmId: firm.id });
+  // Регистрирана сама и после изтрита.
+  const gone = await make('131071587', 'duckduckgo');
+  await registered(gone.id);
+  await prisma.organization.update({ where: { id: gone.id }, data: { deletedAt: new Date() } });
+  // Организацията, която издава фактурите за плановете.
+  const supplier = await make('208725180', 'ecosia');
+  await registered(supplier.id);
+  await prisma.setting.upsert({
+    where: { key: 'billing.supplierOrgId' },
+    create: { key: 'billing.supplierOrgId', value: supplier.id },
+    update: { value: supplier.id },
+  });
+  invalidateSettings();
+
+  const after = await signupReport({ since: null });
+  assert.equal(count(after, 'bing') - count(before, 'bing'), 1, 'предадената на кантора остава');
+  assert.equal(count(after, 'yahoo'), 0, 'клиентът, добавен от кантора — не');
+  assert.equal(count(after, 'duckduckgo'), 0, 'изтритата — не');
+  assert.equal(count(after, 'ecosia'), 0, 'доставчикът на плановете — не');
 });

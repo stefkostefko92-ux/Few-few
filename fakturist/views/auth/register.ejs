@@ -2,11 +2,13 @@
 <%
   const v = (name) => (values && typeof values[name] === 'string' ? values[name] : '');
   const err = (name) => errors[name] ? t('auth.errors.' + errors[name]) : '';
+  // Фокусът отива на първото грешно поле (по реда във формата) — без скрипт.
+  const first = ['name', 'email', 'password', 'legalName', 'eik', 'vatNumber', 'addressStreet', 'addressCity', 'postalCode', 'iban', 'acceptTerms'].find((n) => errors[n]);
   const field = (name, label, attrs) => {
     const e = err(name);
     return '<label' + (e ? ' class="has-error"' : '') + '>' + label +
       '<input name="' + name + '" value="' + v(name).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;') + '" ' + (attrs || '') +
-      (e ? ' aria-invalid="true" aria-describedby="e-' + name + '"' : '') + '>' +
+      (e ? ' aria-invalid="true" aria-describedby="e-' + name + '"' : '') + (name === first ? ' autofocus' : '') + '>' +
       (e ? '<span class="field-error" id="e-' + name + '">' + e.replace(/</g,'&lt;') + '</span>' : '') + '</label>';
   };
 %>
@@ -27,7 +29,7 @@
       <legend><%= t('auth.you') %></legend>
       <%- field('name', t('auth.name'), 'autocomplete="name" required') %>
       <%- field('email', t('auth.email'), 'type="email" autocomplete="email" required') %>
-      <label<%- errors.password ? ' class="has-error"' : '' %>><%= t('auth.password') %><input type="password" name="password" autocomplete="new-password" minlength="12" required aria-describedby="pw-help"><span class="hint" id="pw-help"><%= t('auth.passwordHelp') %></span><% if (errors.password) { %><span class="field-error"><%= t('auth.errors.' + errors.password) %></span><% } %></label>
+      <label<%- errors.password ? ' class="has-error"' : '' %>><%= t('auth.password') %><input type="password" name="password" autocomplete="new-password" minlength="12" required aria-describedby="pw-help<%= errors.password ? ' e-password' : '' %>"<%- errors.password ? ' aria-invalid="true"' : '' %><%- first === 'password' ? ' autofocus' : '' %>><span class="hint" id="pw-help"><%= t('auth.passwordHelp') %></span><% if (errors.password) { %><span class="field-error" id="e-password"><%= t('auth.errors.' + errors.password) %></span><% } %></label>
     </fieldset>
     <fieldset>
       <legend><%= v('kind') === 'accountant' ? t('auth.firm') : t('auth.company') %></legend>
@@ -43,7 +45,8 @@
       </div>
       <%- field('iban', t('auth.iban'), 'class="mono"') %>
     </fieldset>
-    <%- include('../partials/legal-accept', { orgName: v('legalName'), invalid: Boolean(errors.acceptTerms) }) %>
+    <% if (errors.acceptTerms) { %><p class="error" id="e-terms" role="alert"><%= t('auth.invite.errors.acceptTerms') %></p><% } %>
+    <%- include('../partials/legal-accept', { orgName: v('legalName'), invalid: Boolean(errors.acceptTerms), describedBy: 'e-terms', autofocus: first === 'acceptTerms' }) %>
     <button type="submit"><%= t('auth.create') %></button>
   </form>
   <% } %>

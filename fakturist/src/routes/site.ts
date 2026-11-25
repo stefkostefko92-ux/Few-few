@@ -60,8 +60,10 @@ async function renderSitePage(
   const explicit = readCampaign(req.query, undefined, selfHost);
   const campaign = explicit ?? readCampaign({}, req.get('referer') ?? undefined, selfHost);
   const carried = campaignQuery(explicit);
-  // Страницата зависи от етикета — не се пази в общ кеш.
-  if (campaign) res.set({ 'Cache-Control': 'private', Vary: 'Referer' });
+  // Страницата зависи от Referer винаги (и без етикет — иначе общ кеш би дал варианта без етикет на всеки,
+  // Кодаджията, 25.11.2026); с етикет — изобщо не се пази в общ кеш.
+  res.vary('Referer');
+  if (campaign) res.set('Cache-Control', 'private');
   res.locals.urls = Object.fromEntries(
     SITE_PAGES.map((page) => [
       page.id,

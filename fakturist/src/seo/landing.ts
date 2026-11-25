@@ -31,11 +31,15 @@ export function landingParams(
 ): Record<string, string> {
   const free = plans.find((plan) => plan.audience === 'company' && plan.priceMonthlyCents === 0);
   const name = (plan: PublicPlan) => (locale === 'bg' ? plan.nameBg : plan.nameEn);
+  // Без безплатен план (скрит, или плановете не се заредиха) — нито число, нито „без лимит“: обещание, което
+  // базата не потвърждава, е заблуждаваща реклама (Кодаджията, 25.11.2026).
+  const limit = !free
+    ? t('site.landing.limitUnknown')
+    : free.monthlyDocumentSoftLimit != null
+      ? String(free.monthlyDocumentSoftLimit)
+      : t('site.landing.unlimited');
   return {
-    limit:
-      free?.monthlyDocumentSoftLimit != null
-        ? String(free.monthlyDocumentSoftLimit)
-        : t('site.landing.unlimited'),
+    limit,
     safTPlans:
       plans
         .filter((plan) => plan.features.includes('saf-t'))

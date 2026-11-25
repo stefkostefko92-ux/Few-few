@@ -1177,6 +1177,63 @@ td.actions {
   }
 }
 
+/* Редовете на документа на телефон (Дизайнера, 25.11.2026): вместо таблица с хоризонтален скрол, в която се
+   виждат само „#“ и „Стока“ — карта на ред: наименованието на цял ред, останалите полета по две, с етикет над
+   всяко (`data-label`; полетата пазят и `aria-label`). */
+@media (max-width: 40rem) {
+  table.lines thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  table.lines,
+  table.lines tbody {
+    display: block;
+    width: 100%;
+  }
+  table.lines tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem 0.75rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  table.lines td {
+    display: block;
+    border: 0;
+    padding: 0;
+    min-width: 0;
+  }
+  table.lines td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 0.15rem;
+    font-size: 0.78rem;
+    color: var(--ink-2);
+  }
+  table.lines td.line-no {
+    grid-column: 1 / -1;
+    font-weight: 600;
+  }
+  table.lines td.line-no::before {
+    content: '#';
+    display: inline;
+  }
+  table.lines td:nth-child(2) {
+    grid-column: 1 / -1;
+  }
+  table.lines input,
+  table.lines select,
+  table.lines input.s,
+  table.lines input.xs,
+  table.lines td:nth-child(2) input {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
 /* Необратимо действие на мастъра (отнемане на собственост): различно от основния бутон. */
 button.button-danger,
 a.button-danger {

@@ -7,6 +7,11 @@
     "ok": "Got it"
   },
   "entries": {
+    "2026-11-25-versiya-2-2": {
+      "area": "App",
+      "title": "The document form on phones and clearer errors (version 2.2)",
+      "text": "On a phone the document lines are cards: the name on a full row, the quantity, price and VAT below it, with no sideways scrolling. In the sign-up, sign-in and terms forms the error is written next to the field and the cursor goes to it. An API key whose creator has not yet accepted the current terms stops with the same error as the app until they accept them."
+    },
     "2026-11-16-versiya-2-0": {
       "area": "Fakturist",
       "title": "Ownership handover, company details and a manual (version 2.0)",

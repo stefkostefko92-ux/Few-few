@@ -197,6 +197,29 @@ export async function retrieveRevolutDispute(
 }
 
 /**
+ * Id-тата на споровете с „нужен е отговор“, създадени от `from` насам — за спор, чийто уебхук `DISPUTE_*` е
+ * изгубен (Продавача, 25.11.2026). `GET /api/disputes` (retrieveDisputeList, 2026-08-17): масив `Dispute`,
+ * `state` и `from_created_date` са филтри, `limit` до 500. Само в продукционната среда. Запис без валидно id
+ * се пропуска (подробностите се четат отделно по id); отговор, който не е масив → `invalidResponse`.
+ */
+export async function listOpenRevolutDisputes(
+  from: Date,
+  fetchImpl: FetchLike = fetch,
+): Promise<string[]> {
+  const query = new URLSearchParams({
+    state: 'needs_response',
+    from_created_date: from.toISOString(),
+    limit: '100',
+  });
+  const json = await call('GET', `/api/disputes?${query.toString()}`, null, fetchImpl);
+  if (!Array.isArray(json)) throw new RevolutError('invalidResponse');
+  return json.flatMap((item: unknown) => {
+    const id = record(item)?.['id'];
+    return typeof id === 'string' && DISPUTE_ID.test(id) ? [id] : [];
+  });
+}
+
+/**
  * Поръчката с нашето основание (възстановяване след таймаут при създаването). Списъкът носи съкратен
  * запис — пълният се чете наново по id.
  */

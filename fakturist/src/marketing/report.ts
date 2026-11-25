@@ -15,13 +15,17 @@ export interface SignupRow {
 /**
  * Регистрациите от `since` насам по източник — само самостоятелните (фирма или кантора от „Регистрация“):
  * клиентите, добавени от кантора, и организацията, която издава фактурите за плановете, не са реклама.
+ * Белегът е записът `account.registered` в одита — пише се само при регистрацията и остава, когато фирмата
+ * по-късно мине към кантора (`createdByFirmId` тогава се сменя — Кодаджията, 25.11.2026). Изтритата фирма
+ * не се брои: етикетът се пази, „докато фирмата е регистрирана“ (политиката), и се трие с нея.
  * Най-много регистрации — първи; „без източник“ е ред с `source: null`.
  */
 export async function signupReport(input: { since: Date | null }): Promise<SignupRow[]> {
   const supplierOrgId = await setting('billing.supplierOrgId');
   const orgs = await prisma.organization.findMany({
     where: {
-      createdByFirmId: null,
+      deletedAt: null,
+      auditEntries: { some: { action: 'account.registered' } },
       ...(input.since ? { createdAt: { gte: input.since } } : {}),
       ...(supplierOrgId ? { id: { not: supplierOrgId } } : {}),
     },

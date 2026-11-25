@@ -11,7 +11,7 @@
     "einvoicing2028": "E-invoicing 2028",
     "news": "What’s new",
     "help": "How it works",
-    "freeInvoicing": "Free invoicing",
+    "freeInvoicing": "Free invoicing software",
     "proforma": "Pro forma invoice",
     "vatLedgers": "VAT ledgers",
     "saft": "SAF-T data"
@@ -55,6 +55,7 @@
   },
   "foot": {
     "eik": "Company ID (EIK)",
+    "register": "Commercial Register and Register of Non-Profit Legal Entities",
     "vat": "VAT no.",
     "phone": "tel.",
     "nav": "Footer links",
@@ -201,7 +202,7 @@
         "a": "No. No such approval exists today. According to the bill as introduced there will be accredited providers and certified software, with the conditions set in an ordinance that is not out yet. When they are published, we will say so here."
       },
       "3": {
-        "q": "What does the free plan include?",
+        "q": "Is there a free plan?",
         "a": "One company and one user, the VAT checks and EN 16931 XML. There is a soft monthly limit on documents: a document is always issued, and above the limit we invite you to choose a paid plan."
       },
       "4": {
@@ -253,7 +254,7 @@
     },
     "pay": {
       "title": "How to pay",
-      "text": "By bank transfer to Revolut Business or by card through Revolut. We activate the plan once we receive the payment. We do not offer automatic renewal: each period is paid separately."
+      "text": "By bank transfer to Revolut Business or by card through Revolut. By card the plan turns on by itself as soon as Revolut confirms the payment; by bank transfer — once we receive the transfer. We do not offer automatic renewal: each period is paid separately."
     },
     "planned": {
       "title": "What “Coming” means",
@@ -270,11 +271,11 @@
       },
       "3": {
         "q": "How do I pay?",
-        "a": "By bank transfer to Revolut Business or by card through Revolut. We activate the plan once we receive the payment."
+        "a": "By bank transfer to Revolut Business or by card through Revolut. By card the plan turns on by itself as soon as Revolut confirms the payment; by bank transfer — once we receive the transfer."
       },
       "4": {
         "q": "Does the plan renew automatically?",
-        "a": "We do not promise automatic renewal. Each period is paid separately, and activation is manual."
+        "a": "We do not promise automatic renewal. Each period is paid separately."
       },
       "5": {
         "q": "How much does the accounting firm plan cost?",
@@ -488,12 +489,13 @@
     "seePrices": "See the prices",
     "seeAlso": "See also",
     "unlimited": "unlimited",
+    "limitUnknown": "a set number of",
     "paidPlans": "the paid plans"
   },
   "freeInvoicing": {
     "meta": {
       "title": "Free online invoicing software | Fakturist",
-      "description": "Issue invoices, credit notes and pro formas for free in the browser: PDF and e-invoice (UBL and CII) under EN 16931, gap-free numbering, no card.",
+      "description": "Issue invoices for free in the browser: PDF and e-invoice (UBL, CII) under EN 16931, gap-free numbering, no card and no trial.",
       "keywords": "Carbon Stealth, free invoicing software, online invoicing, invoicing software Bulgaria, issue invoices, free invoice maker, Fakturist"
     },
     "title": "Free invoicing software",
@@ -554,7 +556,7 @@
       },
       "4": {
         "q": "Can I issue invoices in a foreign currency?",
-        "a": "Yes. You enter the ECB rate for the date of the taxable event, and the taxable amount and VAT in euro are calculated for you."
+        "a": "Yes. You enter the latest ECB rate published at the moment the tax becomes chargeable (for an advance — when the payment is received), and the taxable amount and VAT in euro are calculated for you."
       }
     }
   },
@@ -601,7 +603,7 @@
       },
       "2": {
         "q": "Does a pro forma go into the sales ledger?",
-        "a": "No. Only invoices and notes go into the VAT ledgers."
+        "a": "No. The ledger takes the tax documents — invoices, notes and protocols — and the sales reports. A pro forma is not one of them."
       },
       "3": {
         "q": "Can I send the pro forma by email?",
@@ -656,7 +658,7 @@
       },
       "2": {
         "q": "Can I change the month of a received invoice?",
-        "a": "Yes, up to 12 months after it was issued, as the VAT Act allows, and mark whether you have a right to input tax credit."
+        "a": "Yes — in one of the next 12 months, and mark whether you have a right to input tax credit. The law (Art. 72(1) of the VAT Act) counts from the month the right arose; Fakturist counts from the month of issue — if the right arose earlier, check the deadline with your accountant."
       },
       "3": {
         "q": "What about a copy of the same invoice?",
@@ -684,7 +686,7 @@
           "2": "Customers — the customers from those documents.",
           "3": "Products — the goods and services.",
           "4": "TaxTable and UOMTable — the tax codes and units of measure under the NRA’s nomenclatures.",
-          "5": "The files are checked automatically against the SAF-T XSD, version 1.0.3, with every Fakturist update. Check them with the NRA’s tools before filing."
+          "5": "The files are checked automatically against a copy of the SAF-T XSD, version 1.0.3, with every Fakturist update; checking the copy against the NRA’s official archive is still to be done. Check them with the NRA’s tools before filing."
         }
       },
       "3": {
@@ -712,7 +714,7 @@
       },
       "2": {
         "q": "Which schema version is used?",
-        "a": "XSD 1.0.3 — the current version of the SAF-T schema in Bulgaria, with the nomenclatures of its Annex 2."
+        "a": "XSD 1.0.3 with the nomenclatures of its Annex 2. We check against a copy of the schema; checking it against the NRA’s official archive is still to be done."
       },
       "3": {
         "q": "Which plan is it in?",

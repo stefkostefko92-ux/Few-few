@@ -234,8 +234,15 @@ a {
 }
 
 .btn-small {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem; /* 44 px — главният бутон в лентата и на телефон (Дизайнера, 25.11.2026) */
   padding: 0.45rem 0.8rem;
   font-size: var(--step--1);
+}
+
+.nw {
+  white-space: nowrap;
 }
 
 .actions {
@@ -1136,6 +1143,18 @@ figcaption {
   font-weight: 500;
 }
 
+/* На телефон лепкавата колона е тясна — иначе заема ~65 % от екрана и плановете не се виждат. */
+@media (max-width: 51.99rem) {
+  .compare {
+    min-width: 44rem;
+  }
+  .compare tbody th[scope='row'] {
+    width: 8.5rem;
+    min-width: 8.5rem;
+    hyphens: auto;
+  }
+}
+
 .compare .grp {
   padding-top: 1.4rem;
   background: var(--tint);
@@ -1405,6 +1424,19 @@ figcaption {
   margin-top: 1.25rem;
 }
 
+/* Цели за докосване на телефон (Дизайнера, 25.11.2026): връзките до бутона, съдържанието и футъра. */
+.landing-cta .link,
+.toc a {
+  display: inline-block;
+  padding-block: 0.55rem;
+}
+
+/* Отговорът отпред — в главата на страницата, до бутона (над сгъвката). */
+.page-head .summary {
+  max-width: var(--measure);
+  margin: 1rem 0 0.5rem;
+}
+
 .included {
   list-style: none;
 }
@@ -1495,7 +1527,7 @@ figcaption {
 
 .foot li a {
   display: inline-block;
-  padding: 0.25rem 0;
+  padding: 0.45rem 0;
   text-decoration: none;
 }
 

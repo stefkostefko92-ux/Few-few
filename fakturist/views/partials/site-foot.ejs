@@ -12,7 +12,7 @@
       <p class="foot-tag"><%= brand.tagline[lang] %></p>
       <address>
         <strong><%= lang === 'bg' ? company.nameBg : company.name %></strong><br>
-        <%= t('site.foot.eik') %>&nbsp;<%= company.eik %>, <%= t('site.foot.vat') %>&nbsp;<%= company.vat %><br>
+        <%= t('site.foot.eik') %>&nbsp;<%= company.eik %> (<%= t('site.foot.register') %>), <%= t('site.foot.vat') %>&nbsp;<%= company.vat %><br>
         <%= company.postalCode %>&nbsp;<%= company.city[lang] %>, <%= company.region[lang] %>, <%= company.street[lang] %><br>
         <%= t('site.foot.phone') %>&nbsp;<%= company.phone %><br>
         <a href="mailto:<%= company.email %>"><%= company.email %></a>
