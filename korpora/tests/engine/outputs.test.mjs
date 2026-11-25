@@ -3,14 +3,12 @@
 // above the spoilboard limit, DXF structure — and, when Python with ezdxf is available, a DXF audit.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { registerFixtures, FIXTURE } from './fixtures.mjs';
+import { registerFixtures, FIXTURE, OUTPUT_SPECS as specs, outputMeta as metaOf } from './fixtures.mjs';
 import { buildModel, SHEET_TRIM } from '../../engine/model.js';
-import { TYPE_ORDER } from '../../engine/types.js';
 import { buildBom, csvCell, cutListCsv, hardwareCsv } from '../../engine/bom.js';
 import { drillCsv, hardwareCards, partHoles } from '../../engine/drill.js';
 import { nest } from '../../engine/nest.js';
@@ -18,7 +16,6 @@ import { toGcode } from '../../engine/cam.js';
 import { toDxf } from '../../engine/dxf.js';
 import { cutSize } from '../../engine/panel.js';
 import { STOCK } from '../../engine/materials.js';
-import { canonicalJson } from '../../engine/util.js';
 
 registerFixtures();
 
@@ -38,7 +35,7 @@ function checkGcode(text, sheet, T, tool) {
     assert.ok(/^[\x20-\x7e]*$/.test(raw), `non-ASCII in G-code: ${raw}`);
     const w = Object.fromEntries([...line.matchAll(/([A-Z])(-?\d+\.?\d*)/g)].map((m) => [m[1], Number(m[2])]));
     const gs = [...line.matchAll(/G(\d+)/g)].map((m) => Number(m[1]));
-    if (gs.includes(81)) canned = true;
+    if (gs.includes(81) || gs.includes(83)) canned = true;
     if (gs.includes(80)) canned = false;
     for (const gc of gs) if ([0, 1, 2, 3].includes(gc)) motion = `G${gc}`;
     const nx = w.X ?? X;
@@ -68,17 +65,6 @@ function checkGcode(text, sheet, T, tool) {
   assert.ok(minZ >= -(T + 2), `Z below the spoilboard limit: ${minZ}`);
   assert.ok(lines.some((l) => l.startsWith('M30')), 'missing M30');
 }
-
-const specs = TYPE_ORDER.map((type) => ({ type }));
-specs.push(
-  { type: 'wardrobe', width: 3000, post: 'grbl', tool: 8, onion: false, hinge: 'fx:hettich' },
-  { type: 'bed', mattressW: 900, footHeight: 0 },
-  { type: 'kitchen', modules: 6, bandCompensation: false, hinge: 'fx:gtv' },
-  { type: 'wardrobe', hinge: 'fx:salice' },
-  { type: 'bookcase', columns: 3, hinge: 'fx:gtv' },
-);
-
-const metaOf = (model) => ({ product: 'Korpora', hash: createHash('sha256').update(canonicalJson(model.spec)).digest('hex'), owner: 'Carbon Stealth VCC', date: '2026-10-02' });
 
 for (const [ci, input] of specs.entries()) {
   test(`outputs ${ci + 1}: ${input.type}${Object.keys(input).length > 1 ? ' variant' : ''}`, () => {
@@ -125,7 +111,8 @@ for (const [ci, input] of specs.entries()) {
         assert.ok(p.x >= edge && p.y >= edge && p.x + p.w <= sh.w - edge && p.y + p.h <= sh.h - edge, `${label}: placement outside trim: ${p.name}`);
         const part = model.parts.find((q) => q.id === p.partId);
         if (part.grain) assert.equal(p.rot, false, `${label}: ${p.name} rotated against grain`);
-        assert.equal(p.rot ? p.w : p.h, cutSize(part, model.spec.bandCompensation).W, `${label}: placement size mismatch`);
+        const cut = cutSize(part, model.spec.bandCompensation);
+        assert.deepEqual(p.rot ? [p.h, p.w] : [p.w, p.h], [cut.L, cut.W], `${label}: ${p.name} placed at the wrong cut size`);
       }
       for (let i = 0; i < pls.length; i++) {
         for (let j = i + 1; j < pls.length; j++) {
@@ -155,21 +142,24 @@ for (const [ci, input] of specs.entries()) {
   });
 }
 
-test('DXF files pass the ezdxf audit (skipped without Python and ezdxf)', (t) => {
+// The audit counts what ezdxf had to fix as well as what it could not: a file a reader must repair is not clean. With
+// REQUIRE_EZDXF=1 (a machine that must run the audit) a missing ezdxf fails the test instead of skipping it.
+test('DXF files pass the ezdxf audit (skipped without Python and ezdxf, unless REQUIRE_EZDXF=1)', (t) => {
   const py = [
     'import sys, glob',
     'from ezdxf import recover',
     'bad = 0',
     "for f in sorted(glob.glob(sys.argv[1] + '/*.dxf')):",
     '    doc, auditor = recover.readfile(f)',
-    '    if auditor.errors:',
+    '    if auditor.errors or auditor.fixes:',
     '        bad += 1',
-    "        print('DXF errors', f, len(auditor.errors))",
+    "        print('DXF errors', f, len(auditor.errors), 'fixes', len(auditor.fixes))",
     'sys.exit(1 if bad else 0)',
   ].join('\n');
   try {
     execFileSync('python3', ['-c', 'import ezdxf'], { stdio: 'ignore' });
   } catch {
+    assert.notEqual(process.env.REQUIRE_EZDXF, '1', 'REQUIRE_EZDXF=1, but python3 with ezdxf is not available');
     t.skip('python3 with ezdxf is not available');
     return;
   }

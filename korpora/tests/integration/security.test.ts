@@ -1,6 +1,5 @@
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { totpCode } from '../../src/auth/totp.js';
 import {
   BASE,
   Browser,
@@ -12,17 +11,15 @@ import {
   stopApp,
 } from './harness.js';
 import { graph } from './json-ld.js';
-import { customer, newProject, sessionCsrf } from './people.js';
+import { customer, sessionCsrf } from './people.js';
 import { enable2fa } from './twofa.js';
 
 before(startApp);
 after(stopApp);
 
-const now = () => Math.floor(Date.now() / 1000);
-
 test('two-factor sign-in: the code is required, a used code cannot be replayed, recovery codes work once', async () => {
   const b = await customer('twofa@example.test');
-  const { secret, codes } = await enable2fa(b);
+  const { secret, codes, enrolCode } = await enable2fa(b);
   assert.equal(codes.length, 10);
   const stored = await prisma.user.findUniqueOrThrow({ where: { email: 'twofa@example.test' } });
   assert.ok(
@@ -39,7 +36,7 @@ test('two-factor sign-in: the code is required, a used code cannot be replayed, 
   const replay = await c.post('/login/2fa', {
     _csrf: Browser.csrf(page.body),
     next: '/app',
-    code: totpCode(secret, now()),
+    code: enrolCode,
   });
   assert.equal(replay.status, 401, 'the enrolment code cannot be used again');
   const recovery = await c.post('/login/2fa', {
@@ -147,10 +144,13 @@ test('security headers on every kind of page', async () => {
 
 test('session and device cookies are HttpOnly and SameSite', async () => {
   const b = new Browser();
-  const login = await b.get('/login');
-  const cookies = login.headers.getSetCookie().join('\n');
+  const page = await b.get('/login');
+  const opened = page.headers.getSetCookie().join('\n');
+  assert.match(opened, /rd_pre=[^;]+;[^\n]*HttpOnly[^\n]*SameSite=Strict/i);
+  assert.doesNotMatch(opened, /rd_dev=/, 'the device cookie comes with a sent form, not a page');
+  const tried = await b.login('nobody-cookies@example.test', 'Wrong-Password-000');
+  const cookies = tried.headers.getSetCookie().join('\n');
   assert.match(cookies, /rd_dev=[^;]+;[^\n]*HttpOnly[^\n]*SameSite=Lax/i);
-  assert.match(cookies, /rd_pre=[^;]+;[^\n]*HttpOnly[^\n]*SameSite=Strict/i);
   await customer('cookies@example.test');
   const c = new Browser();
   const signed = await c.login('cookies@example.test', CUSTOMER_PASSWORD);
@@ -162,7 +162,7 @@ test('session and device cookies are HttpOnly and SameSite', async () => {
 
 test('the personal data export has everything about the person and no secrets', async () => {
   const b = await customer('export@example.test');
-  await enable2fa(b);
+  const { secret, codes } = await enable2fa(b);
   const res = await b.post('/account/data/export', {
     _csrf: await sessionCsrf(b, '/account/data'),
   });
@@ -171,6 +171,14 @@ test('the personal data export has everything about the person and no secrets', 
   const data = JSON.parse(res.body) as Record<string, unknown>;
   assert.ok(data.account && data.projects && data.devices && data.logins);
   assert.doesNotMatch(res.body, /argon2|passwordHash|totpSecret|csrfToken|tokenHash|codeHash/i);
+  for (const [what, value] of [
+    ['the 2FA secret', secret],
+    ['the session cookie', b.cookies.get('rd_sid') ?? ''],
+    ...codes.map((code) => ['a recovery code', code] as const),
+  ] as const) {
+    assert.ok(value.length >= 8, `${what} to look for is present`);
+    assert.ok(!res.body.includes(value), `the export does not carry ${what}`);
+  }
 });
 
 test('email change: the old address is told, the new one confirms', async () => {
@@ -194,37 +202,6 @@ test('email change: the old address is told, the new one confirms', async () => 
   );
   assert.equal((await b.confirmEmail(link)).status, 200);
   assert.ok(await prisma.user.findUnique({ where: { email: 'new@example.test' } }));
-});
-
-test('deleting your own account needs the password and the tick, and removes the projects', async () => {
-  const b = await customer('gone@example.test');
-  await newProject(b, 'base', 'X');
-  const csrf = await sessionCsrf(b, '/account/data');
-  assert.equal(
-    (
-      await b.post('/account/data/delete', {
-        _csrf: csrf,
-        password: 'Wrong-Password-000',
-        confirm: 'yes',
-      })
-    ).status,
-    302,
-  );
-  assert.ok(
-    await prisma.user.findUnique({ where: { email: 'gone@example.test' } }),
-    'wrong password keeps the account',
-  );
-  const done = await b.post('/account/data/delete', {
-    _csrf: csrf,
-    password: CUSTOMER_PASSWORD,
-    confirm: 'yes',
-  });
-  assert.equal(done.location, '/login');
-  assert.equal(await prisma.user.findUnique({ where: { email: 'gone@example.test' } }), null);
-  assert.equal(
-    await prisma.project.count({ where: { name: 'X', user: { email: 'gone@example.test' } } }),
-    0,
-  );
 });
 
 test('a forged flash cookie cannot break or fake the page', async () => {

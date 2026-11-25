@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  modelContext,
   quickIntent,
   cleanExcerpt,
   toApiMessages,
@@ -56,4 +57,15 @@ test("toGeminiContents: ползва роли user/model и завършва с 
   assert.equal(c[0].role, "model");
   assert.equal(c[c.length - 1].role, "user");
   assert.equal(c[c.length - 1].parts[0].text, "телефон на кмета");
+});
+
+// Общият контекст за Claude и Gemini (21.11.2026 — извадено от двете копия, без смяна на поведението).
+test("modelContext: номерирани откъси с източник и до 4 източника за показване", () => {
+  const ctx = Array.from({ length: 5 }, (_, i) => ({ title: `Т${i + 1}`, body: `тяло ${i + 1}`, url: `/u/${i + 1}` }));
+  const { context, sources } = modelContext(ctx);
+  assert.ok(context.startsWith("[1] Т1\nтяло 1\nИзточник: "));
+  assert.ok(context.includes("/u/1\n\n[2] Т2\nтяло 2\nИзточник: "));
+  assert.equal(context.split("\n\n").length, 5);
+  assert.deepEqual(sources, [1, 2, 3, 4].map((i) => ({ title: `Т${i}`, url: `/u/${i}` })));
+  assert.deepEqual(modelContext([]), { context: "", sources: [] });
 });

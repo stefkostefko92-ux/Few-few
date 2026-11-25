@@ -41,7 +41,14 @@ export function buildFixture(game: GameKey): Fixture {
   let moves = 0;
   while (moves < 60 && !engine.isTerminal(state)) {
     const s = actingSeat(engine, state, seats);
-    if (s < 0) break;
+    if (s < 0) {
+      // Server-driven engines (Бинго): advance with the host's timed action.
+      const srv = engine.serverAction?.(state);
+      if (!srv || moves >= target) break;
+      state = engine.reduce(state, srv.action, rng).state;
+      moves++;
+      continue;
+    }
     // Once enough moves are in, stop on seat 0's turn for an interactive look.
     if (moves >= target && s === 0) break;
     const legal = engine.legalActions(state, s);
@@ -69,7 +76,7 @@ export function buildFixture(game: GameKey): Fixture {
   const turn = typeof redacted.turn === "number" ? (redacted.turn as number) : 0;
   const players: MatchPlayerInfo[] = Array.from({ length: seats }, (_, i) => ({
     seat: i,
-    displayName: i === 0 ? "Admin" : "АСО Бот",
+    displayName: i === 0 ? "Admin" : `Бот ${i}`,
     isBot: i !== 0,
   }));
 

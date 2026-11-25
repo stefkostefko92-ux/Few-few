@@ -33,7 +33,9 @@
   margin-top: 34px;
   align-items: start;
 }
-@media (min-width: 900px) {
+/* side by side only where the cut list's seven columns fit their 648 px whole; narrower, the table takes the full width
+   instead of a sideways scroll */
+@media (min-width: 1200px) {
   .outputs {
     grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
   }
@@ -62,6 +64,26 @@
 }
 .output table {
   font-size: 0.86rem;
+}
+.output th {
+  white-space: nowrap;
+}
+/* seven columns in the 648 px of the wide layout: a header stays on one line and the table still fits without a scroll
+   in all three languages (BG is the longest) */
+.output th,
+.output td {
+  padding-inline: 10px;
+}
+/* a sideways scroll says so: a soft shade on the edge that still has more behind it (no script — the cover gradients
+   scroll with the content, the shades stay) */
+.output .table-wrap {
+  background:
+    linear-gradient(to right, var(--panel) 30%, transparent) 0 0 / 36px 100% local no-repeat,
+    linear-gradient(to left, var(--panel) 30%, transparent) 100% 0 / 36px 100% local no-repeat,
+    radial-gradient(farthest-side at 0 50%, var(--rule-strong), transparent) 0 0 / 14px 100% scroll
+      no-repeat,
+    radial-gradient(farthest-side at 100% 50%, var(--rule-strong), transparent) 100% 0 / 14px 100%
+      scroll no-repeat;
 }
 .output pre {
   margin: 0;
@@ -148,88 +170,6 @@
 /* the paper stays light in the dark theme too, where the light --focus would vanish on it */
 .sheet-paper :focus-visible {
   outline-color: #2c6a10;
-}
-
-/* furniture types: every kind as the engine draws it from the front, one scale for all, bottoms on one line */
-.lineup {
-  display: grid;
-  gap: clamp(28px, 4vw, 44px);
-}
-.lineup-group h3 {
-  font-size: 1.05rem;
-  padding-bottom: 8px;
-  margin-bottom: 18px;
-  border-bottom: 2px solid var(--ink);
-}
-.lineup-row {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 26px clamp(22px, 3.4vw, 46px);
-}
-.lineup-row li {
-  display: grid;
-  gap: 4px;
-  justify-items: start;
-}
-.elev {
-  display: block;
-  max-width: 100%;
-  height: auto;
-  overflow: visible;
-  margin-bottom: 8px;
-  border-bottom: 1.5px solid var(--ink);
-}
-.elev .l-body {
-  fill: var(--panel);
-  stroke: var(--ink);
-  stroke-width: 1px;
-  vector-effect: non-scaling-stroke;
-}
-.elev .l-front {
-  fill: #e8dbc9;
-  stroke: var(--ink);
-  stroke-width: 1px;
-  vector-effect: non-scaling-stroke;
-}
-.elev .l-leg {
-  fill: var(--ink);
-}
-.elev .l-top {
-  fill: var(--oak);
-  stroke: var(--ink);
-  stroke-width: 1px;
-  vector-effect: non-scaling-stroke;
-}
-.elev .l-open,
-.elev .l-mattress {
-  fill: none;
-  stroke: var(--ink-3);
-  stroke-width: 0.8px;
-  stroke-dasharray: 5 4;
-  vector-effect: non-scaling-stroke;
-}
-.elev .l-handle {
-  stroke: var(--ink);
-  stroke-width: 2px;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-}
-.lineup-name {
-  font-weight: 620;
-}
-.lineup-note {
-  margin-top: 22px;
-  font-size: 0.9rem;
-  color: var(--ink-2);
-}
-.rules {
-  margin-top: 30px;
-  max-width: var(--measure);
-  color: var(--ink-2);
 }
 
 /* machine */

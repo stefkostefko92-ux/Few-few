@@ -51,7 +51,10 @@
 button.aso-card {
   cursor: pointer;
 }
-button.aso-card:hover {
+button.aso-card:disabled {
+  cursor: default;
+}
+button.aso-card:not(:disabled):hover {
   /* Lift + a whisper of scale so the raised card reads as nearer the eye, with
      a warm brass ambient halo the felt light would cast under the raised edge. */
   transform: translateY(-12px) scale(1.035);
@@ -181,8 +184,11 @@ button.aso-card:hover {
 /* --cb-a / --cb-b are set inline by PlayingCard when a CARDBACK cosmetic is
    equipped; they fall back to the default felt gradient otherwise. */
 .aso-card__back {
+  /* Рейвънхолд house back: an oxblood heraldic field (a CARDBACK cosmetic
+     still overrides both colours via --cb-a / --cb-b). */
   background:
-    linear-gradient(135deg, var(--cb-a, var(--felt-700)) 0%, var(--cb-b, var(--felt-900)) 100%);
+    radial-gradient(90% 70% at 30% 20%, rgba(255, 200, 140, 0.12), transparent 60%),
+    linear-gradient(135deg, var(--cb-a, #5a1219) 0%, var(--cb-b, #1f0508) 100%);
   border: 1px solid rgba(217, 178, 95, 0.35);
 }
 .aso-card__back::before {
@@ -196,22 +202,25 @@ button.aso-card:hover {
     repeating-linear-gradient(-45deg, rgba(217, 178, 95, 0.1) 0 4px, transparent 4px 9px);
 }
 .aso-card__back::after {
-  content: "A";
+  content: "А";
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
+  padding-bottom: 3px;
   font-family: var(--font-display, "Playfair Display", serif);
-  font-size: 1.4rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  color: var(--brass-300);
-  opacity: 0.85;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  color: #2a0a0d;
+  /* the house arms: a gilded heater shield carrying the initial */
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 48'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23f4e3b6'/><stop offset='.45' stop-color='%23d9b25f'/><stop offset='1' stop-color='%238a6a35'/></linearGradient></defs><path d='M3 3h34v19c0 12-8 19-17 23C11 41 3 34 3 22z' fill='url(%23g)' stroke='%232a0a0d' stroke-width='1.5'/></svg>")
+    center / 52% auto no-repeat;
+  text-shadow: 0 1px 0 rgba(255, 236, 190, 0.45);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .aso-card,
-  button.aso-card:hover {
+  button.aso-card:not(:disabled):hover {
     transition: none;
   }
   .aso-card {
@@ -261,6 +270,9 @@ button.aso-card:hover {
   height: 52px;
   border-radius: 12px;
   font-size: 1.6rem;
+  /* Dark ink on the ivory face: without it the label inherited the page's
+     light ink and vanished (Риба's rank buttons rendered blank; Белот's ♣/♠). */
+  color: var(--suit-black);
   background: linear-gradient(to bottom, #fffdf6, #ece3cf);
   border: 1px solid rgba(217, 178, 95, 0.5);
   box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.5);
@@ -296,6 +308,29 @@ button.aso-card:hover {
 .aso-fx-layer .aso-announce {
   position: static;
   transform: none;
+  /* Своя входна анимация: общата носи translateX(-50%) на абсолютния банер —
+     в слоя банерът влиташе изместен наляво и после подскачаше в центъра. */
+  animation-name: announce-in-stacked;
+}
+@keyframes announce-in-stacked {
+  from { opacity: 0; transform: translateY(-8px) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aso-fx-layer .aso-announce { animation: none; }
+}
+/* Телефон: дълъг банер („X плаща 32 наем на Y“, „… взима раздаването (+2)“)
+   се пренася на редове, вместо да излиза от двете страни. Изричната ширина е
+   нужна: центриран с left:50%, слоят иначе се свива в половината маса. */
+@media (max-width: 639px) {
+  .aso-fx-layer {
+    width: max-content;
+    max-width: calc(100% - 16px);
+  }
+  .aso-fx-layer .aso-announce {
+    white-space: normal;
+    text-align: center;
+  }
 }
 .aso-announce[data-tone="win"] {
   background: linear-gradient(to bottom, #d8f5d0, #6fbf73);

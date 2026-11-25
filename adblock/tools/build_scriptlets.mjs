@@ -44,13 +44,42 @@ function validate(name, args) {
   return SA_POLICY.validateDirective(name, args, false) ? [name, ...args] : null;
 }
 
-// Split "a, b, c" respecting nothing fancy (uBO uses plain comma separation;
-// regex args must not contain a comma — a known uBO limitation we mirror).
+// Split "a, b, c" the way uBO does: commas separate arguments, "\\," is a literal
+// comma, and an argument wrapped in ' " or ` quotes keeps its commas and spaces
+// (`xml-prune, 'xpath(//a[contains(text(),"x")])'`). Unquoted arguments are trimmed.
 function splitArgs(s) {
-  return s.split(",").map((x) => x.trim());
+  const out = [];
+  const n = s.length;
+  let i = 0;
+  for (;;) {
+    while (i < n && s[i] === " ") i++;
+    const q = s[i];
+    if (q === "'" || q === '"' || q === "`") {
+      let j = i + 1, buf = "";
+      while (j < n && s[j] !== q) { if (s[j] === "\\" && (s[j + 1] === q || s[j + 1] === ",")) { buf += s[j + 1]; j += 2; continue; } buf += s[j++]; }
+      let k = j + 1;
+      while (k < n && s[k] === " ") k++;
+      if (j < n && (k >= n || s[k] === ",")) { // a well-formed quoted argument
+        out.push(buf);
+        if (k >= n) return out;
+        i = k + 1;
+        continue;
+      }
+    }
+    let buf = "", j = i;
+    while (j < n && s[j] !== ",") { if (s[j] === "\\" && s[j + 1] === ",") { buf += ","; j += 2; continue; } buf += s[j++]; }
+    out.push(buf.trim());
+    if (j >= n) return out;
+    i = j + 1;
+  }
 }
 
 const HOST_RE = /^[a-z0-9.-]+\.[a-z]{2,}$/;
+// uBO "entity": example.* = example on ANY public suffix (example.de, example.co.uk…).
+// Chrome match patterns cannot say that, so these directives travel in their own
+// data file, injected by a manifest content script only where its include_globs
+// match (*://*example.*/*), and the engine checks the real hostname.
+const ENTITY_RE = /^[a-z0-9-]+(\.[a-z0-9-]+)*\.\*$/;
 
 function parseLine(line) {
   line = line.trim();
@@ -67,13 +96,20 @@ function parseLine(line) {
   const directive = validate(canonical, parts);
   if (!directive) return null;
 
-  // Domains: comma-separated bare hosts, or empty for global.
+  // Domains: comma-separated bare hosts and entities (example.*), "~host" to
+  // exclude one (it becomes an exception entry there), or empty for global.
   let hosts = [""];
+  const entities = [], negated = [];
   if (domainPart) {
-    hosts = domainPart.split(",").map((d) => d.trim().toLowerCase()).filter(Boolean);
-    if (!hosts.every((h) => HOST_RE.test(h))) return null;
+    hosts = [];
+    for (const raw of domainPart.split(",").map((d) => d.trim().toLowerCase()).filter(Boolean)) {
+      const neg = raw.startsWith("~"), d = neg ? raw.slice(1) : raw;
+      if (!HOST_RE.test(d) && !ENTITY_RE.test(d)) return null; // anything else (`x>>`, regex hosts): drop the line
+      (neg ? negated : ENTITY_RE.test(d) ? entities : hosts).push(d);
+    }
+    if (!hosts.length && !entities.length) return null;
   }
-  return { hosts, directive };
+  return { hosts, entities, negated, directive };
 }
 
 // Enforce the cross-file name connascence: every ALIASES canonical must have an
@@ -81,7 +117,7 @@ function parseLine(line) {
 // alias) or no-ops (missing IMPL). Turn that drift into a loud build failure.
 function assertNamesInSync(engine) {
   const implKeys = new Set(
-    [...engine.matchAll(/^ {4}"([\w-]+)": function/gm)].map((m) => m[1])
+    [...engine.matchAll(/^ {4}"([\w.-]+)": function/gm)].map((m) => m[1])
   );
   const canonical = new Set(Object.values(ALIASES));
   for (const c of canonical) {
@@ -102,6 +138,7 @@ function assertNamesInSync(engine) {
 // source + the host→directives map.
 function bake(engine, lines, { quiet = false } = {}) {
   const map = {};
+  const emap = {}; // entity (example.*) → directives, shipped in scriptlets/ubo/entities.js
   let kept = 0;
   let dropped = 0;
   for (const line of lines) {
@@ -112,12 +149,19 @@ function bake(engine, lines, { quiet = false } = {}) {
     const isExc = line.includes("#@#+js(");
     const parsed = parseLine(isExc ? line.replace("#@#+js(", "##+js(") : line);
     if (!parsed) { dropped++; if (!quiet) console.warn("  drop:", line.trim()); continue; }
-    for (const h of parsed.hosts) {
-      (map[h] = map[h] || []).push(isExc ? ["#@"].concat(parsed.directive) : parsed.directive);
+    const d = isExc ? ["#@"].concat(parsed.directive) : parsed.directive;
+    for (const h of parsed.hosts) (map[h] = map[h] || []).push(d);
+    for (const e of parsed.entities) (emap[e] = emap[e] || []).push(d);
+    // "~sub.example.com": an exception entry there (the engine cancels the directive
+    // on that host even when it comes from a parent domain or an entity).
+    if (!isExc) for (const n of parsed.negated) {
+      const target = ENTITY_RE.test(n) ? emap : map;
+      (target[n] = target[n] || []).push(["#@"].concat(parsed.directive));
     }
     kept++;
   }
-  const mapJson = JSON.stringify(map);
+  // list.txt (main.js) may name entities too: they sit in the same MAP under "name.*".
+  const mapJson = JSON.stringify(Object.assign({}, map, emap));
   const POLICY_MARKER = "/*__SCRIPTLET_POLICY__*/";
   if (!engine.includes(POLICY_MARKER)) { console.error("ERROR: engine.js is missing the /*__SCRIPTLET_POLICY__*/ marker"); process.exit(1); }
   const MARKER = "/*__SCRIPTLET_MAP__*/{}";
@@ -134,10 +178,39 @@ function bake(engine, lines, { quiet = false } = {}) {
   // $` and $' — and args legitimately contain "$" (regex anchors like /ads\.js$/).
   // Inline the policy first (the engine references SA_POLICY), then bake the MAP.
   const popupJson = JSON.stringify(POPUP_HOSTS);
-  const out = header + engine.replace(POLICY_MARKER, () => POLICY_SRC).replace(MARKER, () => mapJson).replace(POPUP_MARKER, () => popupJson);
+  if (!engine.includes(ROLE_MARKER)) { console.error(`ERROR: engine.js is missing the ${ROLE_MARKER} marker`); process.exit(1); }
+  const out = header + engine.replace(POLICY_MARKER, () => POLICY_SRC).replace(MARKER, () => mapJson).replace(POPUP_MARKER, () => popupJson).replace(ROLE_MARKER, () => '"global"');
   // Paranoia: a String.replace "$1" artifact would be valid JS and a silent breakage.
   if (/^\$\d+$/m.test(out) || /^\$\d+$/m.test(engine)) { console.error("ERROR: $N replacement artifact in engine/main.js"); process.exit(1); }
-  return { out, map, kept, dropped };
+  return { out, map, emap, kept, dropped };
+}
+
+// The chunk build (6.0): the same engine with no baked MAP, no popup guard and the
+// "chunk" role — it only runs the uBO data chunk registered right before it.
+const ROLE_MARKER = '/*__ENGINE_ROLE__*/"global"';
+const CHUNK_ENGINE = "scriptlets/ubo_engine.js";
+function chunkEngine(engine) {
+  const header =
+    "// GENERATED by tools/build_scriptlets.mjs: the chunk build of scriptlets/engine.js — DO NOT EDIT.\n" +
+    "// Registered only right after a uBO data chunk (scriptlets/ubo/cNN.js), on that chunk's hosts.\n";
+  return header + engine.replace("/*__SCRIPTLET_POLICY__*/", () => POLICY_SRC).replace("/*__SCRIPTLET_MAP__*/{}", () => "{}")
+    .replace("/*__POPUP_HOSTS__*/[]", () => "[]").replace(ROLE_MARKER, () => '"chunk"');
+}
+
+// The manifest content script that carries scriptlets/ubo/entities.js: Chrome injects
+// it (before the registered engine) only where one of its include_globs matches.
+const ENTITY_FILE = "scriptlets/ubo/entities.js";
+function manifestWithEntities(names) {
+  const m = JSON.parse(readFileSync(join(ROOT, "manifest.json"), "utf8"));
+  const cs = (m.content_scripts || []).filter((c) => !(c.js || []).includes(ENTITY_FILE));
+  if (names.length) {
+    cs.push({
+      matches: ["<all_urls>"], include_globs: names.map((n) => "*://*" + n.slice(0, -1) + "*/*"),
+      js: [ENTITY_FILE], run_at: "document_start", all_frames: true, world: "MAIN",
+    });
+  }
+  m.content_scripts = cs;
+  return JSON.stringify(m, null, 2) + "\n";
 }
 
 // Directive ARGUMENTS are needles ("eval(", "new Function") — data, but a store
@@ -191,6 +264,12 @@ function main() {
     const uboLines = readFileSync(UBO_LIST, "utf8").split("\n");
     const ubo = bake(engine, uboLines, { quiet: true });
     delete ubo.map[""]; // never global: build_filters.mjs already leaves those out
+    // main.js (global) no longer sees the chunk data, so a uBO exception (#@#+js) aimed at one of
+    // OUR global directives would silently stop working — refuse the build instead (6.0).
+    const globals = new Set((map[""] || []).map((d) => d.join("\u0001")));
+    const hits = Object.entries(ubo.map).flatMap(([h, list]) => list.filter((d) => d[0] === "#@" && globals.has(d.slice(1).join("\u0001"))).map(() => h));
+    if (hits.length) { console.error("ERROR: uBO exceptions target global directives on " + hits.slice(0, 5).join(", ") + " — main.js would not see them"); process.exit(1); }
+    checkOrWrite(join(ROOT, CHUNK_ENGINE), chunkEngine(engine), check, CHUNK_ENGINE);
     const N = 64;
     const group = (h) => h.split(".").slice(-2).join(".");
     const hash = (s) => { let x = 2166136261; for (let i = 0; i < s.length; i++) x = Math.imul(x ^ s.charCodeAt(i), 16777619) >>> 0; return x; };
@@ -209,10 +288,20 @@ function main() {
       checkOrWrite(join(ROOT, file), src, check, file);
       index.push({ file, hosts: hostsK });
     });
+    seen.add(ENTITY_FILE);
     if (!check) for (const f of readdirSync(join(ROOT, "scriptlets", "ubo"))) if (!seen.has("scriptlets/ubo/" + f)) unlinkSync(join(ROOT, "scriptlets", "ubo", f));
     checkOrWrite(join(ROOT, "scriptlets", "ubo_index.json"), JSON.stringify(index) + "\n", check, "scriptlets/ubo_index.json");
+    // Entities: one data file + the manifest entry that injects it where it can apply.
+    // It removes itself after this tick if no engine took it (protection off, site
+    // allowed): nothing of ours is left on the page.
+    const names = Object.keys(ubo.emap).sort();
+    const entSrc = "// GENERATED by tools/build_scriptlets.mjs from the uBlock Origin filters (GPL-3.0) — DATA, not code.\n" +
+      'Object.defineProperty(document, "__tbabScriptletEntities", { value: ' + dataJson(Object.fromEntries(names.map((k) => [k, ubo.emap[k]]))) + ", configurable: true });\n" +
+      'setTimeout(function () { try { delete document.__tbabScriptletEntities; } catch (e) {} }, 0);\n';
+    checkOrWrite(join(ROOT, ENTITY_FILE), entSrc, check, ENTITY_FILE);
+    checkOrWrite(join(ROOT, "manifest.json"), manifestWithEntities(names), check, "manifest.json (entity content script)");
     const nHosts = index.reduce((n, c) => n + c.hosts.length, 0);
-    uboNote = `; uBO: ${ubo.kept} directive(s) on ${nHosts} host(s) in ${index.length} chunk(s) (${ubo.dropped} dropped by the validator)`;
+    uboNote = `; uBO: ${ubo.kept} directive(s) on ${nHosts} host(s) in ${index.length} chunk(s) + ${names.length} entities (${ubo.dropped} dropped by the validator)`;
   }
 
   if (check) { console.log("scriptlets: main.js is up to date" + (uboNote ? " (+ uBO chunks)" : "")); return; }

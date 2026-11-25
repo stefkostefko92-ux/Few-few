@@ -131,6 +131,16 @@ body {
   font-optical-sizing: auto;
   text-rendering: optimizeLegibility;
 }
+/* Geologica and JetBrains Mono carry the Bulgarian cursive letter shapes behind `locl` (т as m, и as u, д as g, в as B),
+   which read as Latin in upright text: „код“ turns into „kog“. Switched off on every Bulgarian page, for every element,
+   because the `font` shorthand (editor, read-outs) resets font-feature-settings to its initial value on each element it
+   sets — hence the universal selector and !important instead of one inherited declaration on <html>. */
+:lang(bg),
+:lang(bg) *,
+:lang(bg) *::before,
+:lang(bg) *::after {
+  font-feature-settings: 'locl' 0 !important;
+}
 img,
 svg {
   max-width: 100%;

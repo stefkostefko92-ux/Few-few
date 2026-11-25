@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta
+      name="keywords"
+      content="Carbon Stealth, Ловец, проверка на контакт, регистър на КЗП, Registro pubblico delle opposizioni, ePrivacy"
+    />
+    <title>Ловец — може ли да пишем?</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Ловец</h1>
+      <p class="sub">Вътрешен инструмент · само за собственика</p>
+      <button id="logout" type="button" hidden>Изход</button>
+    </header>
+
+    <main>
+      <section id="login" hidden>
+        <h2>Вход</h2>
+        <form id="login-form">
+          <label>Имейл <input name="email" type="email" autocomplete="username" required /></label>
+          <label
+            >Парола <input name="password" type="password" autocomplete="current-password" required
+          /></label>
+          <label
+            >Код от приложението
+            <input
+              name="code"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              maxlength="6"
+              required
+          /></label>
+          <button type="submit">Влез</button>
+          <p class="msg" role="alert"></p>
+        </form>
+      </section>
+
+      <div id="app" hidden>
+        <section>
+          <h2>Може ли да пишем или да се обадим?</h2>
+          <form id="check-form">
+            <label class="wide"
+              >Имейл, телефон, форма за контакт или LinkedIn профил
+              <input
+                name="query"
+                required
+                placeholder="info@firma.bg · +39 02 1234 5678 · https://…"
+            /></label>
+            <label class="wide"
+              >Откъде е контактът (URL)
+              <input name="sourceUrl" type="url" placeholder="https://firma.bg/kontakti"
+            /></label>
+            <label
+              >Пазар
+              <select name="market">
+                <option value="">по стойността</option>
+                <option value="BG">България</option>
+                <option value="IT">Италия</option>
+              </select>
+            </label>
+            <label
+              >Източник на номера
+              <select name="phoneSource">
+                <option value="">—</option>
+                <option value="public_directory">публичен телефонен указател</option>
+                <option value="company_site">сайтът на фирмата</option>
+                <option value="business_registry">търговски регистър</option>
+                <option value="other">друго</option>
+              </select>
+            </label>
+            <label class="check"
+              ><input name="businessLineConfirmed" type="checkbox" /> Мобилният е публикуван като
+              фирмена линия</label
+            >
+            <button type="submit">Провери</button>
+          </form>
+          <div id="results" aria-live="polite"></div>
+        </section>
+
+        <section>
+          <h2>Регистри за отказ</h2>
+          <details>
+            <summary>Снимка на регистъра на КЗП (вписаните адреси)</summary>
+            <form id="kzp-form">
+              <label
+                >Дата на снимката <input name="takenAt" type="datetime-local" required
+              /></label>
+              <label>Източник <input name="source" value="kzp.bg" required /></label>
+              <label class="wide"
+                >Файл (по един имейл или домейн на ред)
+                <input name="file" type="file" accept=".txt,.csv" required
+              /></label>
+              <button type="submit">Внеси</button>
+              <p class="msg" role="status"></p>
+            </form>
+          </details>
+          <details>
+            <summary>Резултат от проверка (RPO или КЗП)</summary>
+            <form id="results-form">
+              <label
+                >Регистър
+                <select name="registry">
+                  <option value="RPO">Registro pubblico delle opposizioni</option>
+                  <option value="KZP">КЗП</option>
+                </select>
+              </label>
+              <label
+                >Дата на проверката <input name="checkedAt" type="datetime-local" required
+              /></label>
+              <label>Източник <input name="source" value="portale operatori RPO" required /></label>
+              <label class="wide"
+                >Файл: „стойност;да/не“ на ред
+                <input name="file" type="file" accept=".txt,.csv" required
+              /></label>
+              <button type="submit">Внеси</button>
+              <p class="msg" role="status"></p>
+            </form>
+          </details>
+          <details>
+            <summary>Списък с италиански номера за качване в RPO</summary>
+            <form id="export-form">
+              <label class="wide"
+                >Номера (по един на ред) <textarea name="numbers" rows="5"></textarea>
+              </label>
+              <label
+                >Формат
+                <select name="format">
+                  <option value="national">без +39</option>
+                  <option value="e164">с +39</option>
+                </select>
+              </label>
+              <button type="submit">Свали файла</button>
+            </form>
+          </details>
+        </section>
+
+        <section>
+          <h2>„Не ме търсете“ и съгласия</h2>
+          <details>
+            <summary>Добави в „не ме търсете“</summary>
+            <form id="suppress-form">
+              <label class="wide">Имейл, домейн или телефон <input name="value" required /></label>
+              <label
+                >Обхват
+                <select name="scope">
+                  <option value="value">само тази стойност</option>
+                  <option value="domain">целият домейн</option>
+                </select>
+              </label>
+              <label
+                >Пазар на номера
+                <select name="market">
+                  <option value="BG">България</option>
+                  <option value="IT">Италия</option>
+                </select>
+              </label>
+              <label class="wide">Причина <input name="reason" required /></label>
+              <button type="submit">Запиши</button>
+              <p class="msg" role="status"></p>
+            </form>
+          </details>
+          <details>
+            <summary>Запиши съгласие</summary>
+            <form id="consent-form">
+              <label class="wide">Имейл, телефон или профил <input name="value" required /></label>
+              <label
+                >Канал
+                <select name="channel">
+                  <option value="email">имейл</option>
+                  <option value="phone">телефон</option>
+                  <option value="form">форма</option>
+                  <option value="linkedin">LinkedIn</option>
+                </select>
+              </label>
+              <label
+                >Пазар на номера
+                <select name="market">
+                  <option value="BG">България</option>
+                  <option value="IT">Италия</option>
+                </select>
+              </label>
+              <label>Кога е дадено <input name="givenAt" type="datetime-local" required /></label>
+              <label class="wide"
+                >Как (устно по телефона, писмено…) <input name="method" required
+              /></label>
+              <label class="wide"
+                >Точният текст, на който е казано „да“
+                <textarea name="wording" rows="3" required></textarea>
+              </label>
+              <button type="submit">Запиши</button>
+              <p class="msg" role="status"></p>
+            </form>
+          </details>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <a href="https://carbonstealth.eu" target="_blank" rel="noopener"
+        >Created and Designed by Carbon Stealth VCC</a
+      >
+      <span>· не е правен съвет</span>
+    </footer>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

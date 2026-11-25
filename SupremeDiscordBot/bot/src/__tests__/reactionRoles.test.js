@@ -33,6 +33,9 @@ describe("isRoleSafeToSelfAssign — privilege-escalation гард (A01)", () =>
       PermissionsBitField.Flags.ManageRoles,
       PermissionsBitField.Flags.BanMembers,
       PermissionsBitField.Flags.MentionEveryone,
+      // червен екип, 13.11.2026 — гласова модерация, чужди нишки и събития
+      PermissionsBitField.Flags.MuteMembers, PermissionsBitField.Flags.DeafenMembers, PermissionsBitField.Flags.MoveMembers,
+      PermissionsBitField.Flags.ManageThreads, PermissionsBitField.Flags.ManageEvents,
     ]) {
       expect(isRoleSafeToSelfAssign(fakeRole({ permsBits: flag, position: 3 }), botMember)).toBe(false);
     }

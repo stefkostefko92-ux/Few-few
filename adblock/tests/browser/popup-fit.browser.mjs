@@ -1,5 +1,5 @@
 // Popup-ът на Chrome е най-много 600 px висок — всичко отгоре е скролбар. На всеки от 73-те локала (70 езика) (с
-// всичко видимо: сайт, бисквитки, „Сайтът е счупен?“, ★) съдържанието трябва да се събира, долната лента
+// всичко видимо: сайт, бисквитки, „Върни последния“, „Сайтът е счупен?“, ★) съдържанието трябва да се събира, долната лента
 // да не прелива (иначе — само икони), а картата за отзив да не покрива повече от половината popup.
 // Езикът се сменя с низовете от _locales (Chromium не сменя UI езика без рестарт) — после fitPopup(),
 // точно както popup.js след getStats. Не е в `npm test` — `PW_ROOT=$(npm root -g) npm run test:browser`.
@@ -44,14 +44,34 @@ try {
       document.getElementById("listDot").textContent = msg("filtersCount", "60,936");
       document.getElementById("siteHost").textContent = "news.example.com";
       document.getElementById("reportBtn").hidden = false;
+      // 5.5.0: what the picker hid here (Undo) and a site allowed for a while (the longer label)
+      document.getElementById("undoCount").textContent = "12"; document.getElementById("undoBtn").hidden = false;
+      document.getElementById("allowLabel").textContent = msg("allowedFor", "59");
       document.getElementById("rate").hidden = false;
+      document.getElementById("share").hidden = false; // 5.6
       fitPopup();
       const foot = document.querySelector(".foot");
-      const clipped = [...foot.querySelectorAll(".links a:not([hidden]) span")].some((s) => !foot.classList.contains("compact") && s.scrollWidth > s.clientWidth + 1);
-      const r = { bottom: Math.ceil(document.body.getBoundingClientRect().bottom), footOver: foot.scrollWidth > foot.clientWidth + 1 || clipped };
+      const clippedNow = () => [...foot.querySelectorAll(".links > :not([hidden]) span")].some((s) => !foot.classList.contains("compact") && s.scrollWidth > s.clientWidth + 1);
+      const clipped = clippedNow();
+      const site = document.querySelector(".site");
+      const undo = document.querySelector(".actions");
+      const r = { bottom: Math.ceil(document.body.getBoundingClientRect().bottom), footOver: foot.scrollWidth > foot.clientWidth + 1 || clipped,
+        siteOver: !!site && site.scrollWidth > site.clientWidth + 1, undoOver: undo.scrollWidth > undo.clientWidth + 1 };
+      // 5.6: Share right after a click says „Link copied“ (popup.js re-runs fitPopup for it)
+      document.querySelector("#share span").textContent = msg("shareCopied"); fitPopup();
+      r.footOver = r.footOver || foot.scrollWidth > foot.clientWidth + 1 || clippedNow();
+      r.bottom = Math.max(r.bottom, Math.ceil(document.body.getBoundingClientRect().bottom));
       document.getElementById("reviewTitle").textContent = msg("reviewBlocked", "54,321");
       document.getElementById("review").hidden = false;
       r.card = Math.round(document.getElementById("review").getBoundingClientRect().height);
+      document.getElementById("review").hidden = true;
+      // 5.6: the help card and the monthly receipt — the same bottom sheet, the longest numbers
+      document.getElementById("help").hidden = false;
+      r.help = Math.round(document.getElementById("help").getBoundingClientRect().height);
+      document.getElementById("help").hidden = true;
+      document.getElementById("receiptText").textContent = msg("receiptText", "1,234,567").replace(/\$2/g, "12,345").replace(/\$3/g, "1.2 GB");
+      document.getElementById("receipt").hidden = false;
+      r.receipt = Math.round(document.getElementById("receipt").getBoundingClientRect().height);
       return r;
     }, { M, l }) });
   }
@@ -62,6 +82,11 @@ try {
 const over = rows.filter((r) => r.bottom > 600), foot = rows.filter((r) => r.footOver), big = rows.filter((r) => r.card > 300);
 ok(`every language fits the 600 px popup (${rows.length} locales, tallest ${Math.max(...rows.map((r) => r.bottom))} px${over.length ? "; over: " + over.map((r) => `${r.l} ${r.bottom}`).join(", ") : ""})`, rows.length >= 54 && !over.length);
 ok(`footer never overflows or clips a label (${foot.map((r) => r.l).join(", ") || "none"})`, !foot.length);
+const siteOver = rows.filter((r) => r.siteOver || r.undoOver);
+ok(`“Allowed · N min left” and ↶ N next to the picker fit their rows (${siteOver.map((r) => r.l).join(", ") || "none"})`, !siteOver.length);
 ok(`review card stays under half the popup (tallest ${Math.max(...rows.map((r) => r.card))} px${big.length ? "; " + big.map((r) => r.l).join(", ") : ""})`, !big.length);
+const bigHelp = rows.filter((r) => r.help > 300), bigRec = rows.filter((r) => r.receipt > 300);
+ok(`help card stays under half the popup (tallest ${Math.max(...rows.map((r) => r.help))} px${bigHelp.length ? "; " + bigHelp.map((r) => r.l).join(", ") : ""})`, !bigHelp.length);
+ok(`monthly receipt stays under half the popup (tallest ${Math.max(...rows.map((r) => r.receipt))} px${bigRec.length ? "; " + bigRec.map((r) => r.l).join(", ") : ""})`, !bigRec.length);
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

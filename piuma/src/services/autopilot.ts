@@ -3,7 +3,8 @@ import { audit } from '../audit.js';
 import { config } from '../config.js';
 import { prisma } from '../db.js';
 import { logger } from '../logger.js';
-import { createAnthropicClient, generateDrafts } from '../content/generate.js';
+import { generateDrafts } from '../content/generate.js';
+import { aiSetup, vertexDraftModel } from '../content/vertex.js';
 import { parsePlan, type BrandPlan } from '../content/plan.js';
 import { draftsNeeded, kindMix, nextPillars, nextSlots, pickAssets } from '../content/schedule.js';
 import { brandPostPerformance, performanceContext } from './insights.js';
@@ -63,7 +64,8 @@ export async function runAutopilotForBrand(
   const plan = parsePlan(brand.plan);
   if (!brand.managed || !plan)
     return { ...outcome, reason: 'Брандът не е под управление или няма план.' };
-  if (!cfg.ANTHROPIC_API_KEY) return { ...outcome, reason: 'Липсва ANTHROPIC_API_KEY на сървъра.' };
+  const ai = aiSetup(cfg);
+  if (!ai.ready) return { ...outcome, reason: `AI не е настроен: ${ai.reason}` };
   if (!plan.assets.length) return { ...outcome, reason: 'Библиотеката с материали е празна.' };
   const account = brand.accounts[0];
   if (!account) return { ...outcome, reason: 'Няма активен Instagram акаунт.' };
@@ -110,11 +112,11 @@ export async function runAutopilotForBrand(
     new Set(scheduled.map((row) => row.scheduledAt!.getTime())),
   );
   const performance = performanceContext(await brandPostPerformance(brand.id));
-  const client = createAnthropicClient(cfg.ANTHROPIC_API_KEY);
+  const model = vertexDraftModel(ai, 'автопилот');
 
   for (const [index, asset] of assets.entries()) {
     const topic = pillars[index] ?? plan.pillars[0]!;
-    const drafts = await generateDrafts(client, {
+    const drafts = await generateDrafts(model, {
       brand: {
         name: brand.name,
         summary: brand.summary,

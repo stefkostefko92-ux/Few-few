@@ -1,0 +1,41 @@
+{
+  "api": {
+    "intro": "Una chiave API permette a un altro programma (il gestionale della tua azienda, Excel) di leggere le schede dell'azienda. Solo lettura: con una chiave non si può modificare né cancellare nulla. Ogni chiave scade dopo un anno e si può revocare in qualsiasi momento.",
+    "nome": "Nome della chiave",
+    "nomeHint": "Per riconoscerla, ad esempio «Gestionale ufficio». Al massimo 80 caratteri.",
+    "crea": "Crea la chiave",
+    "revoca": "Revoca",
+    "revocata": "Chiave revocata: non funziona più.",
+    "mai": "Mai usata",
+    "hub0": "Nessuna chiave attiva",
+    "hubN": {
+      "one": "{n} chiave attiva",
+      "other": "{n} chiavi attive"
+    },
+    "nuova": {
+      "titolo": "Chiave creata. Copiala adesso: non la mostreremo più.",
+      "label": "La nuova chiave",
+      "hint": "Tienila come una password. Se la perdi, revocala e creane un'altra."
+    },
+    "errore": {
+      "nome": "Scrivi un nome (al massimo 80 caratteri).",
+      "piene": "L'azienda ha già 10 chiavi attive: revocane una prima di crearne un'altra."
+    },
+    "colonna": {
+      "nome": "Nome",
+      "prefisso": "Inizio della chiave",
+      "usata": "Ultimo uso",
+      "stato": "Stato"
+    },
+    "stato": {
+      "attiva": "Attiva fino al {data}",
+      "scaduta": "Scaduta",
+      "revocata": "Revocata il {data}"
+    },
+    "uso": {
+      "titolo": "Come si usa",
+      "testo": "Il programma invia la chiave nell'intestazione Authorization. Il portale risponde in JSON: l'elenco delle schede (con la stessa ricerca del portale, 100 per pagina, parametro p per la pagina) e una scheda con i suoi campi.",
+      "limiti": "Al massimo 600 richieste all'ora per chiave. Le schede nel cestino non compaiono."
+    }
+  }
+}

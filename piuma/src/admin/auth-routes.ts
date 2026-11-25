@@ -1,13 +1,18 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import QRCode from 'qrcode';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { audit } from '../audit.js';
 import { config } from '../config.js';
 import { decryptSecret, encryptSecret } from '../crypto.js';
 import { prisma } from '../db.js';
 import { humanPrincipal, requireCsrf, requireLogin } from '../auth/guards.js';
-import { hashPassword, passwordPolicyError, verifyPassword } from '../auth/password.js';
+import {
+  PASSWORD_MAX_LENGTH,
+  hashPassword,
+  passwordPolicyError,
+  verifyPassword,
+} from '../auth/password.js';
 import {
   createSession,
   destroyAllSessions,
@@ -16,7 +21,8 @@ import {
   sessionCookieName,
   sessionCookieOptions,
 } from '../auth/sessions.js';
-import { generateTotpSecret, otpauthUrl, verifyTotp } from '../auth/totp.js';
+import { generateTotpSecret, matchTotpStep, otpauthUrl } from '../auth/totp.js';
+import { consumeTotpStep } from '../auth/totp-replay.js';
 import { actorOf, setFlash, stringField, tr } from './helpers.js';
 
 const MAX_FAILED = 5;
@@ -35,7 +41,11 @@ const totpLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1).max(200) });
+/** Таванът е този на политиката — иначе парола, приета при смяна, после не би влязла. */
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1).max(PASSWORD_MAX_LENGTH),
+});
 
 export const authRouter: Router = Router();
 
@@ -158,8 +168,13 @@ authRouter.post('/admin/2fa', totpLimiter, async (req, res) => {
     return;
   }
   const secret = decryptSecret(user.totpSecretEnc, config().TOKEN_ENC_KEY);
-  if (!verifyTotp(secret, stringField(req.body, 'code'))) {
-    await audit(actorOf(req), { action: 'auth.totp.failed' });
+  // Един код = едно ползване: вече използвана (или по-стара) стъпка е отказ, като грешен код.
+  const step = matchTotpStep(secret, stringField(req.body, 'code'));
+  if (step === null || !(await consumeTotpStep(user.id, step))) {
+    await audit(actorOf(req), {
+      action: 'auth.totp.failed',
+      detail: step === null ? undefined : { reason: 'replay' },
+    });
     res.status(401).render('admin/2fa', {
       title: tr(res, 'auth.twoFactor'),
       error: tr(res, 'flash.wrongCode'),
@@ -191,7 +206,11 @@ authRouter.post('/admin/profile/2fa/start', requireLogin, requireCsrf, async (re
   // Тайната се пази криптирана, но НЕ е активна, докато кодът не бъде потвърден.
   await prisma.user.update({
     where: { id: user.id },
-    data: { totpSecretEnc: encryptSecret(secret, config().TOKEN_ENC_KEY), totpEnabledAt: null },
+    data: {
+      totpSecretEnc: encryptSecret(secret, config().TOKEN_ENC_KEY),
+      totpEnabledAt: null,
+      totpLastStep: null,
+    },
   });
   const url = otpauthUrl(config().TOTP_ISSUER, user.email, secret);
   const qrDataUrl = await QRCode.toDataURL(url, { margin: 1, width: 220 });
@@ -215,7 +234,8 @@ authRouter.post(
       return;
     }
     const secret = decryptSecret(user.totpSecretEnc, config().TOKEN_ENC_KEY);
-    if (!verifyTotp(secret, stringField(req.body, 'code'))) {
+    const step = matchTotpStep(secret, stringField(req.body, 'code'));
+    if (step === null || !(await consumeTotpStep(user.id, step))) {
       setFlash(res, 'error', tr(res, 'flash.codeMismatch'));
       res.redirect('/admin/profile');
       return;

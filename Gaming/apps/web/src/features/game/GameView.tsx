@@ -1,7 +1,15 @@
-import { lazy, Suspense, type ComponentType } from "react";
+import { lazy, Suspense, useEffect, useState, type ComponentType } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { buyInFor, isGameKey, type GameKey } from "@aso/shared";
+import {
+  DAILY_LIMIT_CODE,
+  SELF_EXCLUDED_CODE,
+  SOCKET_EVENTS,
+  buyInFor,
+  isGameKey,
+  type GameKey,
+  type SocketErrorMsg,
+} from "@aso/shared";
 import { Button, Panel } from "../../ui";
 import { useAuthStore, useMatchStore } from "../../lib/store";
 import { GAME_CATALOG, gameTitle } from "../lobby/games";
@@ -9,33 +17,37 @@ import { CinematicStage } from "./cinematic/CinematicStage";
 import { ChatDock } from "./chat/ChatDock";
 import { MatchStatus } from "./MatchStatus";
 import { GameHelp } from "./GameHelp";
-import { ReclaimBanner } from "./ReclaimBanner";
 import { OutOfChips } from "./OutOfChips";
+import { PlayPaused } from "./PlayPaused";
+import { getSocket } from "../../lib/socket";
 
 // Game views pull in heavy WebGL/3D scene code (three.js). Lazy-load them so the
 // lobby/shell bundle stays small; each game's chunk loads only when entered.
 type ViewProps = { title: string };
-const titled = (p: Promise<Record<string, ComponentType<ViewProps>>>, name: string) =>
-  lazy(() => p.then((m) => ({ default: m[name]! })));
+// The loader is a THUNK: `import()` must run inside lazy()'s factory. Passing an
+// already-started promise (the old signature) fetched every game chunk the
+// moment this module loaded — i.e. on every route, even /login.
+const titled = (load: () => Promise<Record<string, ComponentType<ViewProps>>>, name: string) =>
+  lazy(() => load().then((m) => ({ default: m[name]! })));
 
-const ChessView = titled(import("./chess/ChessView"), "ChessView");
-const SantaseView = titled(import("./santase/SantaseView"), "SantaseView");
-const BeloteView = titled(import("./belote/BeloteView"), "BeloteView");
-const SvaraView = titled(import("./svara/SvaraView"), "SvaraView");
-const KentView = titled(import("./kent/KentView"), "KentView");
-const BridgeView = titled(import("./bridge/BridgeView"), "BridgeView");
-const WarView = titled(import("./war/WarView"), "WarView");
-const RummyView = titled(import("./rummy/RummyView"), "RummyView");
-const GoFishView = titled(import("./gofish/GoFishView"), "GoFishView");
-const DraughtsView = titled(import("./draughts/DraughtsView"), "DraughtsView");
-const BackgammonView = titled(import("./backgammon/BackgammonView"), "BackgammonView");
-const LudoView = titled(import("./ludo/LudoView"), "LudoView");
-const BattleshipView = titled(import("./battleship/BattleshipView"), "BattleshipView");
-const DiceView = titled(import("./dice/DiceView"), "DiceView");
-const BingoView = titled(import("./bingo/BingoView"), "BingoView");
-const WordsView = titled(import("./words/WordsView"), "WordsView");
-const DominoView = titled(import("./domino/DominoView"), "DominoView");
-const MagnatView = titled(import("./magnat/MagnatView"), "MagnatView");
+const ChessView = titled(() => import("./chess/ChessView"), "ChessView");
+const SantaseView = titled(() => import("./santase/SantaseView"), "SantaseView");
+const BeloteView = titled(() => import("./belote/BeloteView"), "BeloteView");
+const SvaraView = titled(() => import("./svara/SvaraView"), "SvaraView");
+const KentView = titled(() => import("./kent/KentView"), "KentView");
+const BridgeView = titled(() => import("./bridge/BridgeView"), "BridgeView");
+const WarView = titled(() => import("./war/WarView"), "WarView");
+const RummyView = titled(() => import("./rummy/RummyView"), "RummyView");
+const GoFishView = titled(() => import("./gofish/GoFishView"), "GoFishView");
+const DraughtsView = titled(() => import("./draughts/DraughtsView"), "DraughtsView");
+const BackgammonView = titled(() => import("./backgammon/BackgammonView"), "BackgammonView");
+const LudoView = titled(() => import("./ludo/LudoView"), "LudoView");
+const BattleshipView = titled(() => import("./battleship/BattleshipView"), "BattleshipView");
+const DiceView = titled(() => import("./dice/DiceView"), "DiceView");
+const BingoView = titled(() => import("./bingo/BingoView"), "BingoView");
+const WordsView = titled(() => import("./words/WordsView"), "WordsView");
+const DominoView = titled(() => import("./domino/DominoView"), "DominoView");
+const MagnatView = titled(() => import("./magnat/MagnatView"), "MagnatView");
 const GenericGameView = lazy(() =>
   import("./generic/GenericGameView").then((m) => ({ default: m.GenericGameView })),
 );
@@ -116,6 +128,21 @@ export function GameView() {
   const meta = GAME_CATALOG.find((g) => g.key === gameKey);
   const playable = !!gameKey && isGameKey(gameKey) && !!meta?.ready;
 
+  // Отговорна игра: сървърът е отказал маса (дневен лимит / самоизключване) →
+  // ясен екран вместо безкрайно „Търсим съперник…“. Нова игра/епоха го нулира.
+  const [paused, setPaused] = useState<SocketErrorMsg | null>(null);
+  useEffect(() => {
+    setPaused(null);
+    const socket = getSocket();
+    const onError = (msg: SocketErrorMsg) => {
+      if (msg.code === DAILY_LIMIT_CODE || msg.code === SELF_EXCLUDED_CODE) setPaused(msg);
+    };
+    socket.on(SOCKET_EVENTS.ERROR, onError);
+    return () => {
+      socket.off(SOCKET_EVENTS.ERROR, onError);
+    };
+  }, [gameKey, epoch]);
+
   if (!meta || !playable || !gameKey) {
     return (
       <div className="mx-auto max-w-md text-center">
@@ -138,6 +165,8 @@ export function GameView() {
     return <OutOfChips minBuyIn={buyIn} chips={Number(user.chips)} />;
   }
 
+  if (paused) return <PlayPaused code={paused.code} until={paused.until} />;
+
   return (
     <CinematicStage key={epoch} tone={TONE[key] ?? "default"}>
       <Suspense
@@ -151,7 +180,6 @@ export function GameView() {
       </Suspense>
       <MatchStatus />
       <GameHelp game={key} />
-      <ReclaimBanner />
       <ChatDock />
     </CinematicStage>
   );

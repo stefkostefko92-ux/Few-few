@@ -118,4 +118,50 @@ describe("заглавия за сигурност", () => {
   it("версията на nginx не изтича в Server заглавието", () => {
     expect(live.split("\n").some((l) => /server_tokens\s+off;/.test(l))).toBe(true);
   });
+
+  // Втвърдяване 10.10.2026 — стойностите, не само имената. Старият „XSS
+  // auditor“ („1; mode=block“) е махнат от браузърите и в старите сам беше
+  // XS-Leak; правилната стойност е 0 (OWASP Secure Headers). Хардуерните API-та
+  // и Topics са изключени изрично — таблото не ползва нито едно.
+  it("X-XSS-Protection е 0, а Permissions-Policy забранява хардуер и Topics", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const snippet = await readFile(snippetPath, "utf8");
+    expect(snippet).toMatch(/add_header X-XSS-Protection "0" always;/);
+    const pp = snippet.match(/add_header Permissions-Policy "([^"]+)"/)?.[1] || "";
+    for (const f of ["camera=()", "microphone=()", "geolocation=()", "usb=()", "serial=()", "bluetooth=()", "browsing-topics=()"]) {
+      expect(pp, `Permissions-Policy без ${f}`).toContain(f);
+    }
+    expect(snippet).toMatch(/Strict-Transport-Security "max-age=\d{8,}; includeSubDomains; preload"/);
+  });
+
+  it("транскриптите по споделен линк не влизат в access лога (токенът `?t=` е в адреса)", () => {
+    const archive = live.slice(live.indexOf("location /archive"));
+    const block = archive.slice(0, archive.indexOf("}"));
+    expect(block, "блокът /archive не е намерен").toContain("location /archive");
+    expect(block).toMatch(/access_log\s+off;/);
+  });
+});
+
+describe("nginx.conf — access логът не пише тайни от адреса", () => {
+  // Стандартният формат `main` пише `$request` с целия query низ: `code`/`state`
+  // при всеки вход през Discord и `?t=` токена на всеки отворен транскрипт.
+  it("server блокът ползва собствен формат, а не подразбиращия се `main`", () => {
+    expect(live).toMatch(/access_log\s+\S+\s+supreme_noargs\s*;/);
+    expect(live).not.toMatch(/access_log\s+\S+\s+main\s*;/);
+  });
+
+  it("форматът няма нищо, което носи query частта", () => {
+    const m = live.match(/log_format\s+supreme_noargs\s+([\s\S]*?);/);
+    expect(m, "log_format supreme_noargs липсва").toBeTruthy();
+    for (const v of ["$request ", "$request\"", "$request_uri", "$args", "$query_string", "$arg_", "$http_referer"]) {
+      expect(m[1], v).not.toContain(v);
+    }
+    expect(m[1]).toContain("$supreme_log_path");
+  });
+
+  it("пътят за лога е само частта на $request_uri ПРЕДИ „?“", () => {
+    const map = live.match(/map\s+\$request_uri\s+\$supreme_log_path\s*\{([\s\S]*?)\}/);
+    expect(map, "map за пътя липсва").toBeTruthy();
+    expect(map[1]).toMatch(/\[\^\?\]\*/);
+  });
 });

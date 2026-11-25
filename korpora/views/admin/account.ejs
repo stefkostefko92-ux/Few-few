@@ -1,18 +1,20 @@
-<%- include('../partials/page-top', { title: account.email }) %>
-<%- include('../partials/admin-nav') %>
-<%- include('../partials/flash') %>
+<%- include('../partials/page-top', { title: account.email, styles: ['app', 'app-admin-panel', 'app-admin-tables'] }) %>
 <% const locked = account.lockedUntil && account.lockedUntil > now; %>
+<%# заглавието е над подменюто, както на останалите страници на панела; връщането към списъка е над него %>
+<a class="back-link" href="/admin/accounts"><%- include('../partials/icon', { name: 'back' }) %><%= t('admin.account.back') %></a>
 <div class="acc-head">
   <h1><%= account.name %></h1>
   <div class="chips-row">
-    <%- include('../partials/plan-chip', { plan }) %>
+    <%- include('../partials/plan-chip', { plan, banned: !!account.bannedAt }) %>
     <% if (account.role !== 'CUSTOMER') { %><span class="chip chip-gold"><%- include('../partials/icon', { name: 'shield' }) %><%= t('role.' + account.role) %></span><% } %>
     <% if (account.bannedAt) { %><span class="chip chip-bad"><%- include('../partials/icon', { name: 'ban' }) %><%= t('admin.chip.banned') %></span><% } %>
     <% if (locked) { %><span class="chip chip-warn"><%- include('../partials/icon', { name: 'lock' }) %><%= t('admin.chip.locked') %></span><% } %>
     <% if (account.totpEnabledAt) { %><span class="chip chip-ok"><%- include('../partials/icon', { name: 'shield' }) %>2FA</span><% } %>
   </div>
 </div>
-<p class="muted"><%= account.email %>, <%= t('admin.account.since', { date: fmt.date(account.createdAt) }) %><% if (account.signupCountry) { %>, <%= t('admin.account.signupFrom', { country: fmt.country(account.signupCountry) }) %><% } %></p>
+<p class="muted acc-meta"><%= account.email %>, <%= t('admin.account.since', { date: fmt.date(account.createdAt) }) %><% if (account.signupCountry) { %>, <%= t('admin.account.signupFrom', { country: fmt.country(account.signupCountry) }) %><% } %></p>
+<%- include('../partials/admin-nav') %>
+<%- include('../partials/flash') %>
 <% if (!manageable) { %><div class="flash flash-info" role="status"><%- include('../partials/icon', { name: 'info' }) %><span><%= t('admin.account.readOnly') %></span></div><% } %>
 
 <div class="acc-grid">
@@ -23,6 +25,8 @@
       <dt><%= t('admin.col.plan') %></dt><dd><%= t('plan.name.' + account.plan) %></dd>
       <dt><%= t('admin.account.until') %></dt><dd><%= account.plan === 'LIFETIME' ? t('admin.account.forever') : account.planExpiresAt ? fmt.dateTime(account.planExpiresAt) : t('admin.account.notStarted') %><% if (plan.daysLeft) { %> <small>(<%= t('admin.account.daysLeft', { n: plan.daysLeft }) %>)</small><% } %></dd>
     </dl>
+    <% const openOrders = account.upgradeRequests.filter((r) => r.status === 'OPEN'); %>
+    <% if (!request && openOrders.length) { %><div class="flash flash-info" role="status"><%- include('../partials/icon', { name: 'receipt' }) %><span><%= t('admin.account.openOrders') %> <% openOrders.forEach((r, i) => { %><%= i ? ', ' : '' %><a href="/admin/accounts/<%= account.id %>?request=<%= r.id %>#plan"><%= t('admin.account.openOrder', { id: r.id, option: r.option === 'lifetime' ? t('plan.lifetime') : t('plan.months', { n: r.months }), date: fmt.date(r.createdAt) }) %></a><% }) %></span></div><% } %>
     <% if (request) { %><div class="flash flash-info" role="status"><%- include('../partials/icon', { name: 'receipt' }) %><span><%= t('admin.account.fromRequest', { option: request.option === 'lifetime' ? t('plan.lifetime') : t('plan.months', { n: request.months }), price: fmt.money(request.listPriceCents) }) %> <%= t('admin.account.orderTerms', { buyer: t(request.buyerType === 'CONSUMER' ? 'plan.buyer.consumerShort' : 'plan.buyer.businessShort'), early: t(request.earlyStartRequestedAt ? 'admin.account.yes' : 'admin.account.no'), date: fmt.dateTime(request.allowedFrom) }) %></span></div><% } %>
     <% if (manageable && can('accounts:plan')) { %>
     <form method="post" action="/admin/accounts/<%= account.id %>/plan#plan" class="form" data-plan-form>
@@ -50,13 +54,14 @@
         <p class="hint" data-for-plan="LIFETIME"><%= t('admin.account.lifetimeHint', { price: fmt.money(lifetimeCents) }) %></p>
         <p class="hint" data-for-plan="PREMIUM"><%= t('admin.account.premiumHint') %></p>
         <div class="field"><label for="p-note"><%= t('admin.account.note') %></label><input id="p-note" name="note" type="text" maxlength="<%= limits.noteMax %>" placeholder="<%= t('admin.account.notePlaceholder') %>"></div>
-        <label class="check"><input type="checkbox" name="notify" value="yes" checked><span><%= t('admin.account.notify') %></span></label>
+        <% if (request) { %><p class="hint"><%= t('admin.account.notifyOrder') %></p><% } else { %><label class="check"><input type="checkbox" name="notify" value="yes" checked><span><%= t('admin.account.notify') %></span></label><% } %>
       </fieldset>
       <div class="actions"><button class="btn btn-primary" type="submit"><%= t('admin.account.applyPlan') %></button></div>
     </form>
     <% } %>
     <h3><%= t('admin.account.planHistory') %></h3>
-    <div class="table-wrap"><table class="stack">
+    <% if (!account.planChanges.length) { %><p class="muted"><%= t('admin.account.noPlanChanges') %></p><% } else { %>
+    <div class="table-wrap"><table class="stack stack-kv">
       <thead><tr><th><%= t('security.col.when') %></th><th><%= t('admin.account.change') %></th><th><%= t('admin.account.by') %></th></tr></thead>
       <tbody>
       <% for (const c of account.planChanges) { %>
@@ -66,13 +71,14 @@
       <% } %>
       </tbody>
     </table></div>
+    <% } %>
   </section>
 
   <% if (showLogins) { %>
   <section class="section" aria-labelledby="ip-h" id="logins">
     <h2 id="ip-h"><%- include('../partials/icon', { name: 'globe' }) %><%= t('admin.account.ipsTitle') %></h2>
     <% if (!ips.length) { %><p class="muted"><%= t('admin.account.noLogins') %></p><% } else { %>
-    <div class="table-wrap"><table class="stack">
+    <div class="table-wrap"><table class="stack stack-kv">
       <thead><tr><th>IP</th><th><%= t('admin.col.country') %></th><th class="num"><%= t('admin.col.logins') %></th><th><%= t('admin.col.last') %></th></tr></thead>
       <tbody><% for (const r of ips) { %><tr><td data-label="IP" class="mono-sm"><a href="/admin/accounts?q=<%= encodeURIComponent(r.ip || '') %>"><%= r.ip || '—' %></a></td><td data-label="<%= t('admin.col.country') %>"><%= r.country ? fmt.country(r.country) + ' (' + r.country + ')' : '—' %></td><td data-label="<%= t('admin.col.logins') %>" class="num"><%= fmt.num(r.count) %></td><td data-label="<%= t('admin.col.last') %>" class="nowrap"><%= fmt.dateTime(r.last) %></td></tr><% } %></tbody>
     </table></div>
@@ -80,24 +86,26 @@
 
     <h3><%= t('admin.account.devicesTitle') %></h3>
     <% if (!account.devices.length) { %><p class="muted"><%= t('admin.account.noDevices') %></p><% } else { %>
-    <div class="table-wrap"><table class="stack">
+    <div class="table-wrap"><table class="stack stack-kv">
       <thead><tr><th>HWID</th><th><%= t('security.col.device') %></th><th><%= t('admin.col.last') %></th><th class="num"><%= t('admin.col.logins') %></th></tr></thead>
-      <tbody><% for (const d of account.devices) { %><tr><td data-label="HWID" class="hwid"><%= fmt.hwid(d.fingerprintHash) || '—' %></td><td data-label="<%= t('security.col.device') %>" class="mini"><%= d.summary %><br><small><%= t('admin.account.firstSeen', { date: fmt.shortDate(d.firstSeenAt) }) %></small></td><td data-label="<%= t('admin.col.last') %>"><span class="nowrap"><%= fmt.dateTime(d.lastSeenAt) %></span><br><small class="mono-sm"><%= d.lastIp || '' %></small><% if (d.lastCountry) { %> <small><%= d.lastCountry %></small><% } %></td><td data-label="<%= t('admin.col.logins') %>" class="num"><%= fmt.num(d.loginCount) %></td></tr><% } %></tbody>
+      <tbody><% for (const d of account.devices) { %><tr><td data-label="HWID" class="hwid"><%= fmt.hwid(d.fingerprintHash) || '—' %></td><td data-label="<%= t('security.col.device') %>" class="mini"><% const head = d.summary.split(', ').slice(0, 2).join(', '); const rest = d.summary.slice(head.length + 2); %><%= head %><% if (rest) { %><details class="more"><summary><%= t('admin.account.deviceMore') %></summary><%= rest %></details><% } else { %><br><% } %><small><%= t('admin.account.firstSeen', { date: fmt.shortDate(d.firstSeenAt) }) %></small></td><td data-label="<%= t('admin.col.last') %>"><span class="nowrap"><%= fmt.dateTime(d.lastSeenAt) %></span><br><small class="mono-sm"><%= d.lastIp || '' %></small><% if (d.lastCountry) { %> <small><%= d.lastCountry %></small><% } %></td><td data-label="<%= t('admin.col.logins') %>" class="num"><%= fmt.num(d.loginCount) %></td></tr><% } %></tbody>
     </table></div>
     <% } %>
 
     <h3><%= t('admin.account.loginsTitle') %></h3>
-    <div class="table-wrap"><table class="stack">
+    <% if (!logins.length) { %><p class="muted"><%= t('admin.account.noAttempts') %></p><% } else { %>
+    <div class="table-wrap"><table class="stack stack-kv">
       <thead><tr><th><%= t('security.col.when') %></th><th><%= t('security.col.result') %></th><th>IP</th><th>HWID</th></tr></thead>
       <tbody><% for (const l of logins) { const good = isGoodLogin(l.outcome); %><tr><td data-label="<%= t('security.col.when') %>" class="nowrap"><%= fmt.dateTime(l.createdAt) %></td><td data-label="<%= t('security.col.result') %>"><span class="chip <%= good ? 'chip-ok' : 'chip-bad' %>"><%- include('../partials/icon', { name: good ? 'check' : 'x' }) %><%= t('outcome.' + l.outcome) %></span></td><td data-label="IP"><span class="mono-sm"><%= l.ip || '—' %></span><% if (l.country) { %> <small><%= l.country %></small><% } %></td><td data-label="HWID" class="hwid"><%= fmt.hwid(l.fingerprintHash || (l.device && l.device.fingerprintHash)) || '—' %></td></tr><% } %></tbody>
     </table></div>
+    <% } %>
   </section>
 
   <section class="section" aria-labelledby="link-h" id="linked">
     <h2 id="link-h"><%- include('../partials/icon', { name: 'link' }) %><%= t('admin.account.linkedTitle') %></h2>
     <p class="hint"><%= t('admin.account.linkedHint') %></p>
     <% if (!linked.length) { %><p class="muted"><%= t('admin.account.noLinked') %></p><% } else { %>
-    <div class="table-wrap"><table class="stack">
+    <div class="table-wrap"><table class="stack stack-kv">
       <thead><tr><th><%= t('admin.col.account') %></th><th><%= t('admin.account.sharedBy') %></th><th><%= t('admin.col.plan') %></th></tr></thead>
       <tbody><% for (const u of linked) { %><tr><td data-label="<%= t('admin.col.account') %>" class="who"><a href="/admin/accounts/<%= u.id %>"><%= u.email %></a><small><%= u.name %>, <%= fmt.shortDate(u.createdAt) %></small></td><td data-label="<%= t('admin.account.sharedBy') %>"><div class="chips-row"><% for (const r of u.reasons) { %><span class="chip <%= r === 'ip' ? '' : 'chip-warn' %>"><%- include('../partials/icon', { name: r === 'ip' ? 'globe' : r === 'hwid' ? 'layers' : 'device' }) %><%= t('admin.account.shared.' + r) %></span><% } %></div></td><td data-label="<%= t('admin.col.plan') %>"><%= t('plan.name.' + u.plan) %><% if (u.bannedAt) { %> <span class="chip chip-bad"><%- include('../partials/icon', { name: 'ban' }) %><%= t('admin.chip.banned') %></span><% } %></td></tr><% } %></tbody>
     </table></div>
@@ -108,7 +116,7 @@
   <section class="section" aria-labelledby="proj-h" id="projects">
     <h2 id="proj-h"><%- include('../partials/icon', { name: 'folder' }) %><%= t('admin.account.projectsTitle', { n: account._count.projects }) %></h2>
     <% if (!account.projects.length) { %><p class="muted"><%= t('admin.account.noProjects') %></p><% } else { %>
-    <div class="table-wrap"><table class="stack">
+    <div class="table-wrap"><table class="stack stack-kv">
       <thead><tr><th><%= t('app.name') %></th><th><%= t('app.type') %></th><th><%= t('admin.col.last') %></th><th><span class="sr-only"><%= t('plan.col.actions') %></span></th></tr></thead>
       <tbody><% for (const p of account.projects) { %><tr><td data-label="<%= t('app.name') %>"><%= p.name %></td><td data-label="<%= t('app.type') %>"><%= t('furniture.' + p.type) %></td><td data-label="<%= t('admin.col.last') %>" class="nowrap"><%= fmt.dateTime(p.updatedAt) %></td><td><% if (manageable && can('accounts:security')) { %><a class="btn btn-small" href="/admin/projects/<%= p.id %>/export"><%- include('../partials/icon', { name: 'download' }) %>ZIP</a><% } %></td></tr><% } %></tbody>
     </table></div>
@@ -126,15 +134,16 @@
       <form method="post" action="/admin/accounts/<%= account.id %>/unban#access" class="form">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div class="field"><label for="unban-note"><%= t('admin.account.unbanNote') %></label><input id="unban-note" name="note" type="text" maxlength="<%= limits.noteMax %>"></div>
+        <div class="field"><label class="check"><input type="checkbox" name="mistake" value="yes" aria-describedby="unban-mistake-hint"><span><%= t('admin.account.unbanMistake') %></span></label><p class="hint" id="unban-mistake-hint"><%= t('admin.account.unbanMistakeHint') %></p></div>
         <div class="actions"><button class="btn btn-primary" type="submit"><%- include('../partials/icon', { name: 'unlock' }) %><%= t('admin.account.unban') %></button></div>
       </form>
       <% } %>
     <% } else { %>
       <p class="ok-text"><%= t('admin.account.notBanned') %></p>
       <% if (manageable && can('accounts:ban')) { %>
-      <form method="post" action="/admin/accounts/<%= account.id %>/ban#access" class="form" data-confirm="<%= t('admin.account.banConfirm') %>">
+      <form method="post" action="/admin/accounts/<%= account.id %>/ban#access" class="form" data-confirm="<%= t('admin.account.banConfirm', { email: account.email }) %>">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <div class="field"><label for="ban-reason"><%= t('admin.account.banReason') %></label><textarea id="ban-reason" name="reason" required minlength="<%= limits.banReason.min %>" maxlength="<%= limits.banReason.max %>" aria-describedby="ban-hint"></textarea><p class="hint" id="ban-hint"><%= t('admin.account.banHint') %></p></div>
+        <div class="field"><label for="ban-reason"><%= t('admin.account.banReason') %></label><textarea id="ban-reason" name="reason" required minlength="<%= limits.banReason.min %>" maxlength="<%= limits.banReason.max %>" aria-describedby="ban-hint"></textarea><p class="hint" id="ban-hint"><%= t('admin.account.banHint', { days: banWarning }) %></p></div>
         <div class="actions"><button class="btn btn-danger" type="submit"><%- include('../partials/icon', { name: 'ban' }) %><%= t('admin.account.ban') %></button></div>
       </form>
       <% } %>
@@ -142,7 +151,7 @@
     <% if (account.bans.length) { %>
     <h3><%= t('admin.account.banHistory') %></h3>
     <ul class="mini">
-      <% for (const b of account.bans) { %><li><%= fmt.dateTime(b.createdAt) %>, <%= fmt.label(b.bannedByLabel) %>: <%= b.reason %><% if (b.liftedAt) { %><br><small><%= t('admin.account.liftedBy', { date: fmt.dateTime(b.liftedAt), who: fmt.label(b.liftedByLabel) }) %><% if (b.liftNote) { %>: <%= b.liftNote %><% } %></small><% } %></li><% } %>
+      <% for (const b of account.bans) { %><li><%= fmt.dateTime(b.createdAt) %>, <%= fmt.label(b.bannedByLabel) %>: <%= b.reason %><% if (b.liftedAt) { %><br><small><%= t('admin.account.liftedBy', { date: fmt.dateTime(b.liftedAt), who: fmt.label(b.liftedByLabel) }) %><% if (b.liftNote) { %>: <%= b.liftNote %><% } %><% if (b.mistake) { %> — <b><%= t('admin.account.liftedMistake') %></b><% } %></small><% } %></li><% } %>
     </ul>
     <% } %>
   </section>
@@ -157,10 +166,10 @@
     </dl>
     <% if (manageable && can('accounts:security')) { %>
     <div class="actions">
-      <form method="post" action="/admin/accounts/<%= account.id %>/sessions/revoke#security"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-small" type="submit"><%- include('../partials/icon', { name: 'logout' }) %><%= t('admin.account.revokeSessions') %></button></form>
+      <form method="post" action="/admin/accounts/<%= account.id %>/sessions/revoke#security" data-confirm="<%= t('admin.account.revokeConfirm', { email: account.email }) %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-small" type="submit"><%- include('../partials/icon', { name: 'logout' }) %><%= t('admin.account.revokeSessions') %></button></form>
       <form method="post" action="/admin/accounts/<%= account.id %>/reset-password#security"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-small" type="submit"><%- include('../partials/icon', { name: 'mail' }) %><%= t('admin.account.sendReset') %></button></form>
       <% if (locked) { %><form method="post" action="/admin/accounts/<%= account.id %>/unlock#security"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-small" type="submit"><%- include('../partials/icon', { name: 'unlock' }) %><%= t('admin.account.unlock') %></button></form><% } %>
-      <% if (account.totpEnabledAt) { %><form method="post" action="/admin/accounts/<%= account.id %>/2fa-reset#security" data-confirm="<%= t('admin.account.reset2faConfirm') %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-small btn-danger" type="submit"><%- include('../partials/icon', { name: 'key' }) %><%= t('admin.account.reset2fa') %></button></form><% } %>
+      <% if (account.totpEnabledAt) { %><form method="post" action="/admin/accounts/<%= account.id %>/2fa-reset#security" data-confirm="<%= t('admin.account.reset2faConfirm', { email: account.email }) %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-small btn-danger" type="submit"><%- include('../partials/icon', { name: 'key' }) %><%= t('admin.account.reset2fa') %></button></form><% } %>
     </div>
     <% } %>
   </section>
@@ -178,7 +187,7 @@
       </fieldset>
     </form>
     <% if (manageable && can('staff:manage') && roles.length) { %>
-    <form method="post" action="/admin/accounts/<%= account.id %>/role#profile" class="form" data-confirm="<%= t('admin.account.roleConfirm') %>">
+    <form method="post" action="/admin/accounts/<%= account.id %>/role#profile" class="form" data-confirm="<%= t('admin.account.roleConfirm', { email: account.email }) %>">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="form-row">
         <div class="field"><label for="e-role"><%= t('admin.account.role') %></label><select id="e-role" name="role"><% for (const r of roles) { %><option value="<%= r %>"<%= account.role === r ? ' selected' : '' %>><%= t('role.' + r) %></option><% } %></select></div>
@@ -187,22 +196,36 @@
       <p class="hint"><%= t('admin.account.roleHint') %></p>
     </form>
     <% } %>
+    <% if (manageable && canGrantOwner) { %>
+    <form method="post" action="/admin/accounts/<%= account.id %>/owner#profile" class="form" data-confirm="<%= t('admin.account.ownerConfirm', { email: account.email }) %>">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <fieldset>
+        <legend><%= t('admin.account.ownerTitle') %></legend>
+        <p class="hint"><%= t('admin.account.ownerHint') %></p>
+        <div class="form-row">
+          <div class="field"><label for="o-pw"><%= t('account.currentPassword') %></label><input id="o-pw" name="password" type="password" required autocomplete="current-password"></div>
+          <div class="field"><label for="o-code"><%= t('security.currentCode') %></label><input id="o-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required maxlength="20"></div>
+        </div>
+        <div class="actions"><button class="btn btn-danger" type="submit"><%= t('admin.account.ownerButton') %></button></div>
+      </fieldset>
+    </form>
+    <% } %>
   </section>
 
   <% if (audit.length) { %>
   <section class="section" aria-labelledby="aud-h" id="audit">
     <h2 id="aud-h"><%- include('../partials/icon', { name: 'history' }) %><%= t('admin.account.auditTitle') %></h2>
-    <ul class="mini">
-      <% for (const a of audit) { %><li><span class="nowrap"><%= fmt.dateTime(a.at) %></span>: <code><%= a.action %></code>, <%= fmt.label(a.actorLabel) %></li><% } %>
-    </ul>
+    <ol class="audit-list">
+      <% for (const a of audit) { %><li><time class="nowrap" datetime="<%= fmt.isoDate(a.at) %>"><%= fmt.dateTime(a.at) %></time><span class="audit-label" title="<%= a.code %>"><%= a.label %></span><span class="audit-by"><%- include('../partials/audit-ref', { ref: a.actor }) %></span><% if (a.details.length) { %><small class="audit-detail"><%= a.details.join(' · ') %></small><% } %></li><% } %>
+    </ol>
   </section>
   <% } %>
 
   <% if (manageable && can('accounts:delete')) { %>
   <section class="section danger" aria-labelledby="del-h" id="delete">
     <h2 id="del-h"><%- include('../partials/icon', { name: 'trash' }) %><%= t('admin.account.deleteTitle') %></h2>
-    <p><%= t('admin.account.deleteText') %></p>
-    <form method="post" action="/admin/accounts/<%= account.id %>/delete" class="form" data-confirm="<%= t('admin.account.deleteConfirm') %>">
+    <p><%= t('admin.account.deleteText', { kept: ordersKept }) %></p>
+    <form method="post" action="/admin/accounts/<%= account.id %>/delete" class="form">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="field"><label for="d-email"><%= t('admin.account.typeEmail', { email: account.email }) %></label><input id="d-email" name="confirmEmail" type="email" required autocomplete="off"></div>
       <div class="actions"><button class="btn btn-danger" type="submit"><%= t('admin.account.deleteButton') %></button></div>

@@ -3,6 +3,7 @@ import Image from "next/image";
 import CvStudio from "@/components/studios/CvStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import RelatedTools from "@/components/RelatedTools";
+import ToolGuide from "@/components/ToolGuide";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатна автобиография (CV) и Europass шаблон";
@@ -82,6 +83,7 @@ export default function CvPage() {
         </p>
       </header>
       <CvStudio />
+      <ToolGuide current="/cv" howTo={HOWTO} />
       <ToolFaq items={FAQ} heading="Въпроси за автобиографията" />
       <RelatedTools current="/cv" />
       <script

@@ -17,7 +17,7 @@ export function Pager({ page, limit, total, onPage }) {
   if (pages <= 1) return null;
   return (
     <nav className="flex items-center justify-between gap-3 mt-4 text-xs text-cs-muted" aria-label="Pagination">
-      <span>Page {page} of {pages} · {total} total</span>
+      <span className="tabular-nums">Page {page} of {pages}, {total} total</span>
       <div className="flex gap-2">
         <button type="button" className="cs-btn-ghost cs-btn-sm" disabled={page <= 1} onClick={() => onPage(page - 1)} aria-label="Previous page">
           <ChevronLeft className="w-4 h-4" aria-hidden="true" /> Prev
