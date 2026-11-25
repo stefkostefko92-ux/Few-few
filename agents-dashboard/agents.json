@@ -1267,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 766
+        "lessons": 767
       },
       "evolution": [
         {
@@ -2181,9 +2181,20 @@
           "date": "2026-11-25",
           "event": "v71.8 — учене",
           "detail": "Научи: nodemailer 10.2.1 носи собствени типове (dist/esm/nodemailer.d.ts и dist/cjs/nodemailer… (+1 още)"
+        },
+        {
+          "version": "71.9.0",
+          "date": "2026-11-25",
+          "event": "v71.9 — учене",
+          "detail": "Научи: В live-run worktree пазачът guard-self блокира `node -e` в Bash (смята го за код за инт…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „В live-run worktree пазачът guard-self блокира `node -e` в Bash (смята го за код за инт…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
