@@ -83,7 +83,8 @@ export function createWebApp(deps: WebDeps): express.Express {
 
   app.use(express.static(path.join(ROOT, 'public'), { index: false, maxAge: '7d' }));
   app.use(cookieParser());
-  app.use(express.urlencoded({ extended: false, limit: '20kb', parameterLimit: 50 }));
+  // До 500 отметки (idListSchema) + служебните полета: 50 параметъра/20 kB връщаха 413 → страница 500 (PR #351).
+  app.use(express.urlencoded({ extended: false, limit: '64kb', parameterLimit: 600 }));
   app.use(
     rateLimit({ windowMs: 60_000, limit: 240, standardHeaders: 'draft-7', legacyHeaders: false }),
   );

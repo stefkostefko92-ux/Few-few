@@ -116,3 +116,46 @@ test('setup-env избира първия свободен порт от 4340 н
   assert.equal(withFakeTools([], '', SETUP, 'free_port').out, '4340');
   assert.equal(withFakeTools([4340, 4341], '', SETUP, 'free_port').out, '4342');
 });
+
+// VPS-аджията, преглед на PR #351 (25.11.2026): първият 200 идва преди фаталния вход в Discord — контейнерът
+// тръгва, отговаря, пада и се рестартира, а деплоят го записваше като работещ (SEMKI_LAST_GOOD). wait_stable иска
+// същия контейнер жив и без нов рестарт след STABLE_WAIT секунди.
+function stable(restartsBefore: number, restartsAfter: number, running = 'true'): number {
+  const dir = mkdtempSync(path.join(tmpdir(), 'semki-stable-'));
+  try {
+    const n = path.join(dir, 'n');
+    writeFileSync(n, '0');
+    const docker = path.join(dir, 'docker');
+    writeFileSync(
+      docker,
+      `#!/bin/bash
+case "$*" in
+  "compose ps -q app") echo abc123 ;;
+  *"{{.State.Running}}"*) echo ${running} ;;
+  *"{{.RestartCount}}"*) c=$(cat "${n}"); echo $((c+1)) > "${n}"; [ "$c" = 0 ] && echo ${restartsBefore} || echo ${restartsAfter} ;;
+  *) exit 1 ;;
+esac
+`,
+      { mode: 0o755 },
+    );
+    const r = spawnSync(
+      'bash',
+      [
+        '-c',
+        `source "$1"; wait_healthy() { return 0; }; STABLE_WAIT=0 wait_stable 4341`,
+        'x',
+        SCRIPT,
+      ],
+      { encoding: 'utf8', env: { ...process.env, PATH: `${dir}:${process.env.PATH}` } },
+    );
+    return r.status ?? -1;
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+test('wait_stable: без нов рестарт и жив → 0; рестарт или спрян → не 0', () => {
+  assert.equal(stable(0, 0), 0);
+  assert.notEqual(stable(0, 1), 0, 'рестарт след първия 200');
+  assert.notEqual(stable(2, 2, 'false'), 0, 'контейнерът е спрян');
+});

@@ -176,3 +176,18 @@ test('докато ботът се свързва: изходът работи, 
     await offline.close();
   }
 });
+
+// Кодаджията, преглед на PR #351 (25.11.2026): parameterLimit 50 срещу до 500 отметки — при 50+ отметки
+// „Изтрий отметнатите“ връщаше 413, показан като страница 500. Парсерът трябва да пусне 500 id-та до валидацията.
+test('500 отметки стигат до валидацията (не 413/500 от парсера на формата)', async () => {
+  const { cookie, csrf } = await sessionCookie();
+  const body = new URLSearchParams({ _csrf: csrf });
+  for (let i = 1; i <= 500; i++) body.append('ids', String(2_000_000_000 + i));
+  const res = await fetch(`${app.url}/batches/delete-selected`, {
+    method: 'POST',
+    redirect: 'manual',
+    headers: { cookie, 'content-type': 'application/x-www-form-urlencoded', origin: app.url },
+    body,
+  });
+  assert.ok(![413, 500].includes(res.status), `статус ${res.status}`);
+});

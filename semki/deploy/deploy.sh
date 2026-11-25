@@ -122,6 +122,20 @@ backup_db() {
     tail -n "+$((KEEP_BACKUPS + 1))" | cut -d' ' -f2- | xargs -r rm -f
 }
 
+# Първият 200 може да дойде преди фатален вход в Discord: контейнерът тръгва, отговаря, пада и се рестартира —
+# и цикълът от рестарти минаваше за успех, а SEMKI_LAST_GOOD сочеше счупения release (VPS-аджията, PR #351).
+# Затова след здравата проба: същият контейнер, жив, без нов рестарт след STABLE_WAIT s, и пак здрав.
+wait_stable() {
+  local id before after
+  id="$(docker compose ps -q app 2>/dev/null)" && [ -n "$id" ] || return 1
+  before="$(docker inspect -f '{{.RestartCount}}' "$id" 2>/dev/null)" || return 1
+  sleep "${STABLE_WAIT:-20}"
+  [ "$(docker inspect -f '{{.State.Running}}' "$id" 2>/dev/null)" = "true" ] || return 1
+  after="$(docker inspect -f '{{.RestartCount}}' "$id" 2>/dev/null)" || return 1
+  [ "$before" = "$after" ] || return 1
+  wait_healthy "$1"
+}
+
 # Код 200 сам не казва КОЙ отговаря на порта: чака се маркерът на Semki и база, която отговаря.
 wait_healthy() {
   local url="http://127.0.0.1:$1/health" body deadline=$((SECONDS + HEALTH_WAIT))
@@ -217,7 +231,9 @@ main() {
   docker compose up -d --remove-orphans || fail 4 "docker compose up се провали."
   wait_healthy "$port" ||
     fail 4 "на 127.0.0.1:$port не отговаря Semki след ${HEALTH_WAIT} s. Виж: cd $APP_DIR && docker compose logs --tail=80 app"
-  ok "жив на 127.0.0.1:$port"
+  wait_stable "$port" ||
+    fail 4 "Semki отговори, но после се рестартира или спря (вход в Discord?) — не го записвам като работещ. Виж: cd $APP_DIR && docker compose logs --tail=80 app"
+  ok "жив и стабилен на 127.0.0.1:$port"
   # Новият код вече работи: оттук нататък нищо не сменя изхода 0.
   remember_live || warn "не записах $LAST_GOOD — откатът сочи предишния release"
   sync_nginx "$port" || warn "nginx не е обновен — Semki е жив на 127.0.0.1:$port"
