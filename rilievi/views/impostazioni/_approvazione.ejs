@@ -1,0 +1,11 @@
+<%# L'approvazione delle schede (C7, routes/impostazioni-flusso.ts): accesa o spenta per l'azienda, di default spenta. %><section aria-labelledby="h-approvazione">
+  <h2 class="section__title" id="h-approvazione"><%= t('flusso.approvazione.impostazione.titolo') %></h2>
+  <p class="muted"><%= t('flusso.approvazione.impostazione.testo') %></p>
+  <p><span class="badge<%= azienda.approvazioneSchede ? '' : ' badge--off' %>"><%= t(azienda.approvazioneSchede ? 'flusso.approvazione.impostazione.attiva' : 'flusso.approvazione.impostazione.spenta') %></span></p>
+  <form method="post" action="/impostazioni/approvazione">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="azienda" value="<%= azienda.id %>">
+    <input type="hidden" name="attiva" value="<%= azienda.approvazioneSchede ? '0' : '1' %>">
+    <div class="toolbar"><button class="btn" type="submit"><%= t(azienda.approvazioneSchede ? 'flusso.approvazione.impostazione.disattivare' : 'flusso.approvazione.impostazione.attivare') %></button></div>
+  </form>
+</section>

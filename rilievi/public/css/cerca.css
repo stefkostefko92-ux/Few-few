@@ -1,0 +1,308 @@
+/* Търсенето (страницата /cerca и прозорецът Ctrl K — views/navigazione/, public/js/cerca.js) и изборът
+   на „Nuovo“ (/nuovo). Едно парче с резултатите и на двете места. */
+
+.cerca__form {
+  margin-bottom: 24px;
+}
+
+.cerca {
+  display: grid;
+  gap: 22px;
+}
+
+.cerca__vuoto {
+  color: var(--muted);
+}
+
+.cerca__gruppo h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+.cerca__n {
+  font-variant-numeric: tabular-nums;
+}
+
+.cerca__gruppo ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.cerca__riga {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.cerca__riga > .cerca__voce:first-child {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.cerca__voce {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  color: inherit;
+  text-decoration: none;
+}
+
+.cerca__voce > .icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  color: var(--muted);
+}
+
+.cerca__voce:hover,
+.cerca__voce:focus-visible {
+  background: var(--hover);
+}
+
+.cerca__voce:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: -2px;
+}
+
+.cerca__testo {
+  display: grid;
+  min-width: 0;
+}
+
+.cerca__titolo {
+  font-weight: 600;
+}
+
+.cerca__sotto {
+  color: var(--muted);
+  font-size: 0.875rem;
+  overflow-wrap: break-word;
+}
+
+.cerca__azioni {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 0 8px 6px 40px;
+}
+
+@media (min-width: 640px) {
+  .cerca__azioni {
+    padding: 0 8px 0 0;
+  }
+}
+
+.cerca__mini {
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.cerca__tutte {
+  display: inline-flex;
+  min-height: 44px;
+  margin-top: 4px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Прозорецът Ctrl K: горе в средата, на телефон — почти целият екран. */
+.palette {
+  width: min(680px, calc(100vw - 24px));
+  max-height: min(78vh, 720px);
+  margin: 10vh auto auto;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--fg);
+  box-shadow: 0 24px 64px rgb(0 0 0 / 0.35);
+  overflow: hidden;
+}
+
+.palette[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.palette::backdrop {
+  background: rgb(0 0 0 / 0.55);
+}
+
+.palette__form {
+  border-bottom: 1px solid var(--line);
+}
+
+.palette__box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px 0 16px;
+}
+
+.palette__box > .icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  color: var(--muted);
+}
+
+.palette__campo {
+  flex: 1;
+  min-width: 0;
+  min-height: 56px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  font-size: 1.0625rem;
+}
+
+.palette__campo:focus {
+  outline: none;
+}
+
+.palette__campo::-webkit-search-cancel-button {
+  display: none;
+}
+
+.palette__chiudi {
+  padding: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.palette__chiudi kbd {
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 0.75rem;
+}
+
+.palette__risultati {
+  flex: 1;
+  padding: 14px 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.palette__risultati:empty {
+  display: none;
+}
+
+.palette__aiuto {
+  padding: 8px 16px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 767px) {
+  .palette {
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 24px);
+    margin-top: 12px;
+  }
+
+  .palette__aiuto {
+    display: none;
+  }
+}
+
+/* „Nuovo“: една карта за всяко нещо, което човекът може да създаде. */
+.scelte {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 720px) {
+  .scelte {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.scelta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 100%;
+  min-height: 84px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: inherit;
+  text-decoration: none;
+}
+
+.scelta:hover {
+  border-color: var(--fg);
+}
+
+.scelta:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}
+
+.scelta__icona {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: var(--primary-bg);
+  color: var(--primary-fg);
+}
+
+.scelta__icona .icon {
+  width: 22px;
+  height: 22px;
+}
+
+.scelta__testo {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+
+.scelta__titolo {
+  font-weight: 600;
+}
+
+.scelta__desc {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.scelta > .icon:last-child {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  color: var(--muted);
+  transform: rotate(-90deg);
+}

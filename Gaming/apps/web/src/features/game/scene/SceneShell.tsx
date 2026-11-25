@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../../ui";
@@ -6,8 +7,11 @@ import { playCue } from "../../../lib/sound";
 import { getSocket } from "../../../lib/socket";
 import { useLobbyStore, useMatchStore } from "../../../lib/store";
 import { WinConfetti } from "./WinConfetti";
+import { fitOverlap } from "./handLayout";
 import { PlayingCard } from "../cards/PlayingCard";
 import { RulesButton } from "../GameHelp";
+import { MatchPills } from "../MatchStatus";
+import { ChatHeaderButton } from "../chat/ChatDock";
 import { SOCKET_EVENTS, type GameOverMsg, type MatchFoundMsg } from "@aso/shared";
 import "../cards/cards.css";
 
@@ -24,11 +28,18 @@ export function SceneHeader({ title }: { title: string }) {
     const id = setTimeout(() => setArmed(false), 3000);
     return () => clearTimeout(id);
   }, [armed]);
-  const live = useMatchStore.getState().phase === "playing";
+  const live = useMatchStore((s) => s.phase) === "playing";
   return (
-    <div className="mb-4 flex items-center justify-between gap-3">
+    // The live status (turn clock, timeout warning, „take your seat back“) sits
+    // in this row — between the title and the buttons on wide screens, on its
+    // own line under them on phones — instead of floating over the table.
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
       <h1 className="text-3xl text-brass-300">{title}</h1>
+      <div className={`order-last flex w-full justify-center sm:order-none sm:w-auto sm:flex-1 ${live ? "min-h-8" : ""}`}>
+        <MatchPills />
+      </div>
       <div className="flex items-center gap-2">
+      <ChatHeaderButton />
       <RulesButton />
       <Button
         variant="ghost"
@@ -91,7 +102,10 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
   useEffect(() => {
     playCue(won ? "win" : mine === "loss" ? "loss" : "deal");
   }, [won, mine]);
-  return (
+  // Portal: the overlay is `position: fixed` and must cover the VIEWPORT — inside
+  // the game stage it was laid out against the stage box and the verdict card
+  // (with „Играй пак“ / „Към лобито“) could sit below the fold.
+  return createPortal(
     <div className="cine-over" role="dialog" aria-modal="true">
       {won ? <WinConfetti /> : null}
       <div className={`cine-over__card cine-over__card--${mine ?? "draw"}`}>
@@ -121,7 +135,11 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
                 {reward.chips.toLocaleString("bg-BG")} {t("wallet.chips")}
               </span>
             ) : null}
-            {reward.xp > 0 ? <span className="text-cyan-300"> · +{reward.xp} XP</span> : null}
+            {reward.xp > 0 ? (
+              <span className="text-cyan-300">
+                {reward.chips !== 0 ? " · " : ""}+{reward.xp} XP
+              </span>
+            ) : null}
           </p>
         ) : null}
         {lobbyWaiting ? (
@@ -137,7 +155,8 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
           {t("game.backToLobby")}
         </Button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -162,24 +181,8 @@ export function ScorePill({ label, value, highlight }: { label: string; value: R
   );
 }
 
-const CARD_W = { sm: 60, md: 88, lg: 120 } as const;
-
-/** Target hand width — scales with the monitor (compact on phones, spread on
- *  big screens) so the larger cards make full use of the adaptive table. */
-function handTarget(): number {
-  const w = typeof window === "undefined" ? 1024 : window.innerWidth;
-  return Math.round(Math.min(Math.max(w * 0.82, 320), 600));
-}
-
-/** Overlap (px) so a hand of `count` cards fits ~`target`px wide — more overlap
- *  for bigger hands (e.g. Bridge/Kent's 13) so they never clip on mobile. */
-export function fitOverlap(count: number, size: "sm" | "md" | "lg" = "md", target = handTarget()): number {
-  if (count <= 1) return 0;
-  const W = CARD_W[size];
-  const step = (target - W) / (count - 1);
-  const min = size === "sm" ? 16 : 22;
-  return Math.min(W - 16, Math.max(min, W - step));
-}
+/** Hand fan geometry lives in handLayout.ts (pure, unit-tested). */
+export { fitOverlap };
 
 /** A hand card that captures its DOM node so the scene can animate the play.
  *  Pass `count` (hand size) for an auto-fit overlap, or a fixed `overlap`. */
@@ -208,6 +211,7 @@ export function HandCard({
         card={card}
         size={size}
         dimmed={!playable}
+        interactive
         onClick={playable ? () => onPlay(card, ref.current) : undefined}
       />
     </div>

@@ -429,6 +429,19 @@ function tradableBy(s: MagnatState, seat: Seat, i: number): boolean {
   return true;
 }
 
+/** Каноничен низ на действие (ключовете подредени) — за точно сравнение на формата. */
+function canon(v: unknown): string {
+  if (Array.isArray(v)) return `[${v.map(canon).join(",")}]`;
+  if (v && typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    return `{${Object.keys(o)
+      .sort()
+      .map((k) => `${JSON.stringify(k)}:${canon(o[k])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(v) ?? "null";
+}
+
 /** Minimal shape of any action: a non-null object with a string `type`. */
 function isActionShape(a: unknown): boolean {
   return typeof a === "object" && a !== null && typeof (a as { type?: unknown }).type === "string";
@@ -795,10 +808,10 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
       );
     }
     if (a.type === "TRADE_OFFER") return canOffer(state, seat, a.to, a.give, a.want);
-    // everything else is enumerable — match the legal set by shape.
-    return magnatEngine
-      .legalActions(state, seat)
-      .some((l) => l.type === a.type && (l as { tile?: number }).tile === (a as { tile?: number }).tile);
+    // everything else is enumerable — match the legal set EXACTLY (type, tile и
+    // нищо друго): излишен ключ в действието не бива да мине към reduce/събитията.
+    const want = canon(a);
+    return magnatEngine.legalActions(state, seat).some((l) => canon(l) === want);
   },
 
   reduce(state, action, rng: SeededRng) {

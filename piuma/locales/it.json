@@ -122,7 +122,9 @@
       "rights": "Un prodotto Carbon Stealth VCC.",
       "panel": "Pannello",
       "language": "Lingua",
-      "contact": "Contatti"
+      "contact": "Contatti",
+      "privacy": "Privacy",
+      "imprint": "Carbon Stealth VCC · Codice identificativo (EIK) 208725180 · Partita IVA BG208725180 · ul. Samuil 3, 2670 Bobov Dol, Bulgaria · info@carbonstealth.eu"
     },
     "who": {
       "title": "Per chi è Piuma",
@@ -253,7 +255,8 @@
     "emptyHint": "Togli il filtro o scrivi una nuova bozza.",
     "newDraft": "Nuova bozza",
     "allPosts": "Tutti i post",
-    "noCaption": "(senza testo)"
+    "noCaption": "(senza testo)",
+    "aiChip": "AI"
   },
   "post": {
     "createdLine": "Creato da {who} · {date}",
@@ -300,7 +303,8 @@
     "mediaAlt": "Il media del post",
     "noPreview": "Video senza copertina — l’anteprima è nel file stesso",
     "approveBlockedHint": "C’è un rilievo bloccante del lint — correggilo e salva prima di approvare.",
-    "ownDraftHint": "È una tua bozza — la approva un’altra persona («quattro occhi»)."
+    "ownDraftHint": "È una tua bozza — la approva un’altra persona («quattro occhi»).",
+    "aiApproveNote": "Il testo è stato generato dall’AI (Claude). Approvandolo, ti assumi la responsabilità editoriale del testo. Se il post informa il pubblico su una questione di interesse pubblico (politica, salute, eventi pubblici), rivedilo come farebbe un redattore oppure indica nel post che è stato creato con l’AI (art. 50, par. 4, dell’AI Act — Regolamento UE 2024/1689)."
   },
   "form": {
     "brand": "Marchio",
@@ -330,14 +334,14 @@
     "saveDraft": "Salva la bozza",
     "fromModel": "Bozze dal modello",
     "generationOff": "Disattivato",
-    "generationOffHint": "Sul server manca ANTHROPIC_API_KEY.",
+    "generationOffHint": "Google Cloud Vertex AI (regione eu) non è configurato sul server.",
     "generationDenied": "Nessun accesso",
     "generationDeniedHint": "Il tuo ruolo non permette la generazione.",
     "mediaDescription": "Il materiale mostra",
     "mediaDescriptionHint": "facoltativo, ma aiuta",
     "variantCount": "Numero di varianti",
     "generate": "Genera le bozze",
-    "generateHint": "Il piano del marchio e i numeri reali degli Insights entrano nel prompt in automatico."
+    "generateHint": "Il piano del marchio, il tema, la descrizione del materiale ed estratti di didascalie pubblicate con i numeri degli Insights vengono inviati al modello di AI Claude su Google Cloud (Vertex AI), regione UE. Non inserire dati personali di clienti o dipendenti."
   },
   "brands": {
     "title": "Marchi",
@@ -355,7 +359,7 @@
     "allBrands": "Tutti i marchi"
   },
   "brandForm": {
-    "subtitle": "Quello che scrivi qui entra nel prompt di ogni bozza — dell'autopilota e della generazione manuale.",
+    "subtitle": "Quello che scrivi qui entra nel prompt di ogni bozza — sia dell’autopilota sia della generazione manuale — e viene inviato al modello di AI. Non inserire dati personali.",
     "who": "Chi è il marchio",
     "name": "Nome",
     "slug": "Slug",
@@ -410,7 +414,7 @@
     "variantsFor": "Varianti per",
     "weekly": "In automatico ogni lunedì alle 06:00.",
     "libraryEmpty": "La libreria dei materiali è vuota — l'autopilota non ha da cosa creare bozze.",
-    "noApiKey": "Sul server manca ANTHROPIC_API_KEY — l'autopilota non può scrivere.",
+    "noApiKey": "L'AI non è configurata sul server (Google Cloud Vertex AI, regione eu) — l'autopilota non può scrivere.",
     "runNow": "Avvia un ciclo adesso",
     "accounts30": "Account — ultimi 30 giorni",
     "noAccount": "Nessun account collegato",
@@ -455,7 +459,8 @@
     "disconnectConfirm": "Il token verrà distrutto. Vuoi continuare?",
     "needsOAuth": "serve un nuovo OAuth",
     "empty": "Nessun account collegato",
-    "emptyHint": "Scegli un marchio qui sopra e passa dall'OAuth di Instagram."
+    "emptyHint": "Scegli un marchio qui sopra e passa dall'OAuth di Instagram.",
+    "replies": "Risposte"
   },
   "users": {
     "title": "Utenti",
@@ -587,7 +592,12 @@
     "AUTOPILOT": "Autopilota",
     "IMAGE": "Immagine",
     "REELS": "Reel",
-    "unknown": "—"
+    "unknown": "—",
+    "PAUSED": "In pausa",
+    "QUEUED": "In coda",
+    "SENDING": "In invio",
+    "SENT": "Inviato",
+    "SKIPPED": "Saltato"
   },
   "role": {
     "OWNER": "Proprietario",
@@ -629,7 +639,7 @@
     "autopilotQueued": "L'autopilota è in coda — le bozze appariranno tra un minuto.",
     "insightsQueued": "La sincronizzazione degli Insights è in coda.",
     "metricsRefreshed": "Le metriche sono aggiornate.",
-    "generationOff": "La generazione è disattivata — sul server manca ANTHROPIC_API_KEY.",
+    "generationOff": "La generazione è disattivata — l'AI non è configurata sul server (Google Cloud Vertex AI, regione eu).",
     "draftsReady": "{count} bozze sono pronte per la revisione.",
     "draftSaved": "La bozza è salvata.",
     "draftSavedLint": "La bozza è salvata con {count} rilievi dai controlli.",
@@ -653,6 +663,7 @@
     "stateActive": "attivato",
     "stateSuspended": "sospeso",
     "generationFailed": "La generazione non è riuscita: {error}",
+    "generationTruncated": "la risposta del modello è stata troncata (limite di lunghezza raggiunto) — chiedi meno bozze e riprova.",
     "invalidUser": "Dati utente non validi.",
     "invalidRole": "Ruolo non valido.",
     "genericError": "L'azione non è andata a buon fine.",
@@ -669,6 +680,91 @@
     "unknownError": "Errore sconosciuto.",
     "noUser": "Nessun utente con questo identificativo.",
     "selfManaged": "Il proprio account si gestisce da «Profilo».",
-    "noRightOverUser": "Non hai diritti su un utente di ruolo pari o superiore."
+    "noRightOverUser": "Non hai diritti su un utente di ruolo pari o superiore.",
+    "ruleCreated": "La regola è salvata come bozza — attende l’approvazione di una seconda persona.",
+    "ruleSaved": "La regola è salvata e torna in bozza.",
+    "ruleApproved": "La regola è attiva.",
+    "rulePaused": "La regola è in pausa.",
+    "ruleResumed": "La regola è di nuovo attiva.",
+    "ruleDeleted": "La regola è stata eliminata.",
+    "commentsSubscribed": "Le notifiche dei commenti sono attive per @{username}."
+  },
+  "replies": {
+    "title": "Risposta per parola chiave · @{username}",
+    "subtitle": "Chi scrive la parola annunciata sotto un post → riceve <strong>un</strong> messaggio privato con testo approvato. API ufficiale Private Replies; la regola parte solo dopo l’approvazione di una seconda persona.",
+    "featureOff": "La funzione è spenta: sul server manca IG_WEBHOOK_VERIFY_TOKEN.",
+    "scopeMissing": "Il token dell’account non ha instagram_business_manage_comments — aggiungilo a IG_SCOPES e ricollega l’account.",
+    "legalMissing": "Manca REPLY_PRIVACY_URL: senza un’informativa privacy pubblicata nessuna regola può essere approvata.",
+    "webhookUrl": "URL delle notifiche per Meta: {url}",
+    "subscribe": "Attiva le notifiche dei commenti",
+    "newRule": "Nuova regola",
+    "keyword": "Parola chiave",
+    "keywordHint": "2–30 caratteri: lettere, cifre, trattino. Una parola, es. PREZZO.",
+    "media": "Post",
+    "chooseMedia": "— post pubblicato —",
+    "noMedia": "Questo account non ha post pubblicati.",
+    "message": "Testo del messaggio privato",
+    "messageHint": "Dà esattamente ciò che il post promette. L’eventuale prezzo è finale, IVA inclusa.",
+    "footerPreview": "Nota sotto ogni messaggio ({bytes} byte; testo + nota ≤ 1000):",
+    "announced": "Il post dice chiaramente cosa riceverà chi commenta",
+    "confirm": "Verificato: il testo dà solo ciò che il post promette e l’eventuale prezzo è finale, IVA inclusa",
+    "create": "Salva come bozza",
+    "save": "Salva (torna in bozza)",
+    "edit": "Modifica",
+    "approve": "Approva",
+    "pause": "Pausa",
+    "resume": "Riattiva",
+    "delete": "Elimina",
+    "deleteConfirm": "La regola sarà eliminata. Continuare?",
+    "rules": "Regole",
+    "empty": "Nessuna regola",
+    "emptyHint": "Crea una regola per un post specifico la cui didascalia annuncia la parola.",
+    "approvedAt": "Approvata",
+    "stats": "Ultimi {days} giorni",
+    "errKeyword": "La parola chiave ha 2–30 caratteri: lettere, cifre o trattino, senza spazi.",
+    "errMessage": "Il testo è vuoto o supera i 1000 byte.",
+    "errMedia": "Scegli un post pubblicato da questo account.",
+    "errTooLong": "Il testo con la nota sotto supera i 1000 byte — accorcia il testo.",
+    "errMissing": "Regola inesistente.",
+    "errState": "La regola non è nello stato giusto per questa azione (forse è stata modificata nel frattempo).",
+    "errFourEyes": "Non puoi approvare una regola con un tuo testo — serve una seconda persona.",
+    "errAnnounced": "Servono entrambe le conferme: l’annuncio nel post (autore) e il contenuto (revisore).",
+    "errLegal": "Manca l’URL dell’informativa privacy (REPLY_PRIVACY_URL).",
+    "errScope": "L’account non è attivo o il suo token non ha il permesso per i commenti.",
+    "errNotAnnounced": "La didascalia del post non contiene la parola chiave — annunciala prima nel post.",
+    "errSubscribe": "Meta non ha confermato l’iscrizione ai commenti.",
+    "footer": "— Messaggio automatico di {brand} (Carbon Stealth VCC) in risposta al tuo commento «{keyword}». Non ti scriveremo di nuovo se non rispondi. Privacy: {privacyUrl} · Per non ricevere altri messaggi: {contact}",
+    "errReconnect": "L’account è stato collegato prima di questa funzione — ricollegalo per salvare l’IG_ID (l’id nelle notifiche di Meta).",
+    "reconnect": "L’account non ha l’IG_ID — ricollegalo da “Account Instagram”, altrimenti le notifiche dei commenti non vengono riconosciute."
+  },
+  "privacy": {
+    "meta": {
+      "title": "Privacy — Piuma",
+      "description": "Come Piuma di Carbon Stealth VCC tratta i dati personali: pannello, tempi di conservazione, generazione di testi con l’AI su Google Cloud nell’UE, i tuoi diritti e il reclamo all’autorità bulgara per la protezione dei dati (CPDP).",
+      "keywords": "Piuma, informativa privacy, dati personali, GDPR, intelligenza artificiale, Carbon Stealth"
+    },
+    "back": "Torna a Piuma",
+    "title": "Informativa sulla privacy",
+    "updated": "Ultimo aggiornamento: 19 novembre 2026",
+    "controllerTitle": "Titolare del trattamento",
+    "controllerBody": "Carbon Stealth VCC, codice identificativo (EIK) 208725180, ul. Samuil 3, 2670 Bobov Dol, Bulgaria, info@carbonstealth.eu.",
+    "panelTitle": "Il pannello: finalità e base giuridica",
+    "panelSessions": "Accesso e sessioni: email, nome, hash della password (Argon2id) e sessione nel nostro database — per farti accedere al pannello. Base giuridica: esecuzione del contratto (art. 6, par. 1, lett. b) GDPR).",
+    "panelTwoFactor": "Autenticazione a due fattori: il segreto per i codici monouso, cifrato a riposo — per proteggere il tuo account. Base giuridica: esecuzione del contratto (art. 6, par. 1, lett. b) GDPR).",
+    "panelAudit": "Audit: chi ha fatto cosa nel pannello e quando; l’indirizzo IP è conservato solo come hash con chiave — per la sicurezza e la tracciabilità delle azioni. Base giuridica: legittimo interesse (art. 6, par. 1, lett. f) GDPR).",
+    "retentionTitle": "Tempi di conservazione",
+    "retentionSessions": "Sessioni del pannello: al massimo 30 giorni, poi scadono e vengono cancellate.",
+    "retentionComments": "«Risposta per parola chiave»: l’identificativo del commento è conservato da 9 a 30 giorni, poi viene cancellato. Il nome, il profilo e il testo del commento non vengono registrati.",
+    "retentionAudit": "Traccia di audit: [DA COMPLETARE A CURA DEL PROPRIETARIO — periodo di conservazione].",
+    "aiTitle": "AI e destinatari",
+    "aiGenLabel": "Generazione di testi con l’intelligenza artificiale.",
+    "aiGenBody": "Quando chiedi delle bozze nel pannello o le prepara l’autopilota, Piuma invia al modello di AI Claude: la descrizione e il piano del marchio, il tema, la descrizione del materiale ed estratti di didascalie già pubblicate con i numeri di Instagram Insights. Non inviamo email, password, indirizzi IP né dati delle persone che hanno commentato su Instagram.",
+    "aiRecipientLabel": "Destinatario:",
+    "aiRecipientBody": "Google Cloud (Vertex AI) — responsabile del trattamento ai sensi del Cloud Data Processing Addendum (art. 28 GDPR). Il trattamento da parte del modello avviene nella multi-regione «eu» di Google Cloud, all’interno dell’UE.",
+    "aiBasisLabel": "Base giuridica:",
+    "aiBasisBody": "esecuzione del contratto con il cliente (art. 6, par. 1, lett. b) GDPR). Per i dati di terzi presenti nei contenuti del marchio, il titolare del trattamento è il cliente e noi li trattiamo su sua istruzione.",
+    "rightsTitle": "I tuoi diritti",
+    "rightsBody": "Accesso, rettifica, cancellazione, limitazione del trattamento, portabilità dei dati e opposizione — scrivi a info@carbonstealth.eu.",
+    "complaint": "Hai il diritto di proporre reclamo alla Commissione bulgara per la protezione dei dati personali (CPDP, www.cpdp.bg) o all’autorità di controllo dello Stato in cui vivi (art. 77 GDPR)."
   }
 }

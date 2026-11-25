@@ -1,0 +1,8 @@
+<%
+  // Странициране: „Precedente / Pagina 2 di 5 / Successiva“, заявката се пази.
+  const link = (p) => base + (base.includes('?') ? '&' : '?') + 'p=' + p;
+%><% if (pages > 1) { %><nav class="pager" aria-label="<%= t('pager.label') %>">
+  <% if (page > 1) { %><a class="btn btn--sm" href="<%= link(page - 1) %>" rel="prev"><%= t('pager.prev') %></a><% } else { %><span></span><% } %>
+  <span class="muted"><%= t('pager.status', { page, pages }) %></span>
+  <% if (page < pages) { %><a class="btn btn--sm" href="<%= link(page + 1) %>" rel="next"><%= t('pager.next') %></a><% } else { %><span></span><% } %>
+</nav><% } %>

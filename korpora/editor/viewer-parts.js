@@ -136,7 +136,8 @@ export function addShelfPins(viewer, model, meshOf) {
   for (const shelf of model.parts.filter((p) => p.role === 'shelf' && p.pinY !== undefined)) {
     const xs = [shelf.box.min[0] - 1, shelf.box.max[0] + 1];
     for (const part of model.parts) {
-      if (part.role !== 'side' && part.role !== 'partition') continue;
+      // the sides of the shelf's own wall (a Г or П kitchen: the same x on another wall is another cabinet)
+      if ((part.role !== 'side' && part.role !== 'partition') || part.run !== shelf.run) continue;
       for (const f of part.features) {
         if (f.kind !== 'system' || Math.abs(f.world[1] - shelf.pinY) > 0.6) continue;
         if (!xs.some((x) => Math.abs(f.world[0] - x) < 0.6)) continue;

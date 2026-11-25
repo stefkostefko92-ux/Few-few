@@ -1,0 +1,16 @@
+igrovo-studio — произход и лиценз
+
+Източник: https://github.com/openai/plugins @ 981b02c0c44058b595f3b4180002c3ae3c806d40, папка plugins/game-studio/.
+Автор по манифеста: OpenAI (plugins/game-studio/.codex-plugin/plugin.json, "version": "0.1.2":
+"author": {"name": "OpenAI"}, "license": "MIT").
+Манифестът при закотвения commit (единственият носител на гранта; не е внесен):
+https://github.com/openai/plugins/blob/981b02c0c44058b595f3b4180002c3ae3c806d40/plugins/game-studio/.codex-plugin/plugin.json
+sha256 edd750d7ab6df61834916cfc2498fd71c0c19fd9523e1e300fd4d958630e6cd5 (сверен с raw.githubusercontent.com на 2026-11-23).
+Файл с лиценза няма нито в папката на плъгина, нито в корена на хранилището; LICENSE тук е стандартният
+текст на MIT (SPDX: MIT) с автора от манифеста. Ако авторът публикува свой текст, той заменя този.
+Не е свързано с OpenAI и не е одобрено от OpenAI.
+
+Променено от Carbon Stealth VCC на 2026-11-23: деветте умения са слети в едно (SKILL.md + references/skill-*.md),
+„plugin“ → „skill“, махнати са стъпката с imagegen и рецептите с Python скриптовете, плейтестът е ограничен
+до localhost, добавени са описание, бележка и „Наши предпазители“. Не са внесени scripts/, assets/,
+.codex-plugin/ и agents/openai.yaml.

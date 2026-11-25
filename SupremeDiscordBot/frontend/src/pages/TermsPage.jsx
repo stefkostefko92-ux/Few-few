@@ -1,8 +1,8 @@
 // frontend/src/pages/TermsPage.jsx
 import Seo from "../components/Seo";
+import { SUPPORT_URL } from "../lib/support";
 
 export default function TermsPage() {
-  const SUPPORT_URL = import.meta.env.VITE_SUPPORT_URL || "https://discord.gg/support";
   const COMPANY    = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
   const EMAIL      = import.meta.env.VITE_CONTACT_EMAIL || "legal@carbonstealth.eu";
   const COUNTRY    = import.meta.env.VITE_COMPANY_COUNTRY || "Bulgaria";
@@ -60,8 +60,8 @@ export default function TermsPage() {
           <li>An API backend processing requests and storing data.</li>
         </ul>
         <p>
-          The Free Tier and Premium Tier features are described on the{" "}
-          <a href="/pricing" className="text-cs-cyan hover:underline">Pricing page</a>.
+          The Free Tier and Premium Tier features are described in the{" "}
+          <a href="/#pricing" className="text-cs-cyan hover:underline">pricing section of the home page</a>.
           Feature availability may change with reasonable prior notice.
         </p>
       </S>

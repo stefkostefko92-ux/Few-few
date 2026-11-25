@@ -212,6 +212,8 @@ describe("SLA breach scheduler job", () => {
 
     // Second (good) ticket still got processed despite the first one throwing.
     expect(prismaMock.ticket.update).toHaveBeenCalledTimes(2);
-    expect(dmUserMock).toHaveBeenCalledTimes(1);
+    // Т14: маркерът се записва СЛЕД известието → и за „лошия“ тикет ЛС е изпратено
+    // (преди: маркер → ЛС, затова ЛС беше 1). Всеки от двата тикета е известен веднъж.
+    expect(dmUserMock).toHaveBeenCalledTimes(2);
   });
 });

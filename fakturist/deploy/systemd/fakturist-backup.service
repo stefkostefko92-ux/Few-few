@@ -1,0 +1,19 @@
+# Дневният бекъп на Фактурист (deploy/backup.sh от последния работещ release): базата, проверено
+# възстановяване (броят редове и веригите на "Document" и "AuditLog"), срок до 90 дни, копие извън
+# сървъра по избор. Слага го deploy.sh; ръчно — deploy/README.md (fakturist).
+[Unit]
+Description=Fakturist — daily database backup
+Requires=docker.service
+After=docker.service
+# Провал — аларма (журнал, LAST_ERROR, FAKTURIST_ALERT_URL).
+OnFailure=fakturist-backup-alert.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'exec /usr/bin/env bash "$(head -n 1 /opt/few-few/shared/fakturist/last-good)/deploy/backup.sh"'
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+TimeoutStartSec=2h
+Nice=10
+IOSchedulingClass=idle

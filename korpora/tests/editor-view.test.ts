@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROOT } from '../src/paths.js';
-import { browserGlobals, editorModule } from './editor-modules.js';
+import { browserGlobals, editorModule, editorWords } from './editor-modules.js';
 
 interface View {
   x: number;
@@ -82,6 +82,7 @@ browserGlobals({
   DOMPoint: FakePoint,
   getComputedStyle: (text: { size: number }) => ({ fontSize: `${String(text.size)}px` }),
 });
+await editorWords();
 const { PanZoom, ZOOM_STEP } = await editorModule<PanZoomModule>('panzoom.js', [
   'PanZoom',
   'ZOOM_STEP',
