@@ -19,7 +19,8 @@ const { boltGeometry, nutGeometry, washerGeometry, railGeometry, M10 } = await i
 
 const OUT = process.argv[2] ?? fileURLToPath(new URL('mesh/', import.meta.url));
 mkdirSync(OUT, { recursive: true });
-const REACH = 100; // mm, wall to the rail's axis once aligned (the SG slides 45–155 on SU 220 160, catalogue p. 21)
+const REACH = 100; // mm, mid-travel (45–155 on SU 220 160, catalogue p. 21) with the rail at the SG's wall end;
+// the video then pushes the SG 25 mm further out (build.py, SG_PUSH)
 const mat = (name) => ({ name });
 const M = { part: [mat('zinc'), mat('edge')], hw: mat('hw'), forged: mat('forged'), rail: mat('rail') };
 const meshes = [];
@@ -112,6 +113,17 @@ for (const [kind, geo] of [['nut', nutGeometry()], ['washer', washerGeometry()],
   grab(new THREE.Mesh(geo, M.hw), 'spare', kind, I);
 }
 grab(new THREE.Mesh(clipGeometry({ left: false }), [M.forged, M.hw]), 'spare', 'clip', I);
+// The N1 clip's own M10 shank (the video forges its head): a 30 mm bolt without its head, the blank 2.2 mm under it.
+grab(new THREE.Mesh(boltGeometry(30, { left: false }), M.hw), 'spare', 'shank', I);
+{
+  const keep = meshes.at(-1).chunks.hw;
+  const p = keep.p, out = [];
+  for (let k = 0; k < keep.i.length; k += 3) {
+    const t = [keep.i[k], keep.i[k + 1], keep.i[k + 2]];
+    if (t.every((q) => p[q * 3 + 1] <= 29.6)) out.push(...t);
+  }
+  keep.i = out;
+}
 
 const arm = armOf('SU 220 160');
 const meta = { reach: REACH, supportH: SUPPORT_H, sgFlange: SG_FLANGE, sgT: SG_T, flangeX: arm.x1, arm, N1, M10, frames, meshes: [] };

@@ -6,14 +6,14 @@ U+00A0 keeps "SU 220 160", "5 mm", "N1" on one line (overlay.wrap splits on plai
 NB = "\u00a0"
 
 STEP_TEXT = [
-    ("Fili a piombo", f"Cala dall’alto un filo a piombo per ogni guida, a 5{NB}mm dalla testa della guida."),
+    ("Fili a piombo", f"Cala dall’alto un filo a piombo per ogni guida, 5{NB}mm davanti alla testa della guida."),
     ("Tracciatura", "Appoggia il supporto SU al muro, in bolla e in linea con il filo, e segna i fori nelle asole."),
     ("Foratura", f"Fora i punti segnati con il trapano tassellatore, punta da 10{NB}mm."),
-    ("Fissaggio dei supporti SU", "Fissa ogni supporto SU con due tasselli M10 e serra i dadi."),
+    ("Fissaggio dei supporti SU", "Fissa ogni supporto SU con due tasselli M10, con rondella maggiorata, e serra i dadi."),
     ("Staffa SG sul supporto", "Bullone M10 con rondella maggiorata sopra; sotto rondella maggiorata, rondella elastica "
                                "spezzata (grower) e dado. Serraggio leggero: la SG deve ancora scorrere."),
     ("Posa della guida", "Appoggia la guida alla flangia della staffa SG."),
-    (f"Graffe{NB}N1", f"Blocca la guida con due graffe{NB}N1: dietro la flangia rondella, grower e dado, senza serrare."),
+    (f"Graffe{NB}N1", f"Blocca la guida con due graffe{NB}N1: dietro la flangia rondella maggiorata, grower e dado, senza serrare."),
     ("Guida a piombo", f"Fai scorrere la SG sul braccio finché la testa della guida è a 5{NB}mm dal filo, poi controlla "
                        "la verticalità con la livella."),
     ("Serraggio finale", "Con la guida a piombo serra tutto: i bulloni della SG e i dadi delle graffe."),
@@ -35,7 +35,7 @@ CALLOUTS = [
     ("nut_sx", "", "Serraggio leggero", 52.6, 56.0, 190, -110),
     ("rail_sx", "", "Guida SX", 62.0, 66.0, -150, -100), ("rail_dx", "", "Guida DX", 62.3, 66.0, 150, -100),
     ("clip_sx", "", f"Graffa{NB}N1", 67.4, 70.2, 150, -90),
-    ("cwasher_sx", "", "Rondella", 71.0, 73.2, -170, -90), ("cgrower_sx", "", "Grower spezzata", 71.6, 75.0, -170, 60),
+    ("cwasher_sx", "", "Rondella maggiorata", 71.0, 73.2, -170, -90), ("cgrower_sx", "", "Grower spezzata", 71.6, 75.0, -170, 60),
     ("slide_sx", "", "La SG scorre sul braccio", 76.2, 79.8, -170, 90),
     ("level", "", "Guida a piombo", 83.2, 85.0, -170, -90),
     ("nut_sx", "", "Serraggio", 89.0, 93.0, 150, 70), ("cnut_sx", "", "Dadi delle graffe", 93.2, 98.0, -170, -80),

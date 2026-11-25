@@ -23,7 +23,7 @@ BOLT_TOP = {"sx": ((46.0, 46.8), (46.4, 47.2)), "dx": ((57.3, 57.31), (57.3, 57.
 BOLT_LOW = {"sx": ((49.6, 50.6), (50.0, 51.0)), "dx": ((57.3, 57.31), (57.3, 57.31))}
 SPIN_ON = {"sx": ((50.6, 51.8), (51.0, 52.2)), "dx": ((57.3, 57.31), (57.3, 57.31))}
 SNUG = {"sx": ((52.6, 53.6), (54.0, 55.0)), "dx": ((57.3, 57.31), (57.3, 57.31))}   # light: the grower a third down
-RAIL_IN = {"sx": (59.6, 62.6, 62.8, 63.8), "dx": (59.9, 62.9, 63.1, 64.1)}            # down, then onto the flange
+RAIL_IN = {"sx": (59.6, 63.4), "dx": (59.9, 63.7)}  # lowered from above, straight down past its plumb line
 CLIP_IN = {"sx": ((66.6, 67.5), (67.2, 68.1)), "dx": (74.0, 74.01)}
 CSTACK_IN = {"sx": ((70.6, 71.4), (71.0, 71.8)), "dx": (74.5, 74.51)}
 CSPIN = {"sx": ((71.6, 72.8), (72.0, 73.2)), "dx": (74.6, 74.61)}
@@ -122,16 +122,11 @@ def sg(h, t, hero):
 def rail(h, t, hero):
     if "rail" not in h:
         return
-    side = h["side"]
-    a, b, c, d = RAIL_IN[side]
+    a, b = RAIL_IN[h["side"]]
     on = hero or t >= a
     show(h["rail"], on)
-    if not on:
-        return
-    home = h["rail_home"]
-    k1 = 1.0 if hero else seg(t, a, b)
-    k2 = 1.0 if hero else seg(t, c, d)
-    h["rail"].location = home + Vector((SIGN[side] * 0.07 * (1 - k2), 0, 0.5 * (1 - k1)))
+    if on:
+        h["rail"].location = h["rail_home"] + Vector((0, 0, 0.6 * (1 - (1.0 if hero else seg(t, a, b)))))
 
 
 def clips(h, t, hero):

@@ -1,8 +1,9 @@
 """Builds the counterweight-guide scene: the concrete wall of the shaft, two plumb lines, and on three levels the SU 220 160
 + SG 80 150 brackets with their T rails from the site's 3-D engine (guida/export_mesh.mjs): SX on the left, DX on the
-right, the rail heads 600 mm apart and facing each other (owner, 25.11.2026). The film mounts level 0; the others are
-seen at the end. Hardware per the owner: two M10 wedge anchors per SU, M10 x 30 bolts with a large washer above and
-below the SG and a grower under the nut, washer + grower + nut on every N1 clip. Returns handles for pose.py."""
+right, the rail heads 600 mm apart and facing each other, the SG pushed 25 mm further out than mid-travel, each plumb
+line 5 mm in front of its rail's head (owner, 25.11.2026). The film mounts level 0; the others are on the wall too.
+Hardware per the owner: two M10 wedge anchors per SU, M10 x 30 bolts above and below the SG, the forged N1 clips; a
+large washer on every one, a grower under every nut of the SG and of the clips. Returns handles for pose.py."""
 import math
 import os
 import bpy
@@ -14,11 +15,14 @@ from stage import load_meshes, object_from, studio
 from props import build_drill, build_marker, build_level
 from ratchet import build_ratchet
 from hands import mirrored
-from parts import film_materials, big_washer, grower, place, plumb, BIG, WASHER_H, GROWER
+from parts import film_materials, big_washer, grower, n1_clip, place, plumb, BIG, WASHER_H, GROWER
 
 HERE = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
 GAP = 0.600               # m between the rail heads (owner)
-WIRE = 0.005              # m from the head of the rail to its plumb line (owner)
+WIRE = 0.005              # m from the front of the rail's head to its plumb line, in front of it (owner)
+LINE_R = 0.00075          # m: the plumb line's radius
+SG_PUSH = 0.025           # m: the SG (and its rail) further out along the arm than mid-travel (owner: 2–3 cm)
+BOLT_AT = (35.0, 55.0)    # mm along the SG from its wall end: the stations that stand in the arm's outer slot, pushed
 TIP = 270.0               # mm: three.js x of the SX rail head (SG flange face 220 + T50 rail 50)
 SIDE_X = {"sx": -(GAP / 2 + TIP * MM), "dx": GAP / 2 + TIP * MM}
 SIGN = {"sx": 1.0, "dx": -1.0}  # the DX meshes are mirrored about their x = 0
@@ -68,15 +72,16 @@ def bolt_stack(tag, sg, spare, M, nut_mm, axis, sgref):
 
 
 def clip_stack(tag, sg, spare, M, nut_mm, axis, sgref):
-    """Behind an N1 clip's flange slot: washer + grower + nut on the clip's shank."""
+    """Behind an N1 clip's flange slot: large washer + grower + the clip's black nut on its shank."""
     ax = bdir(axis)
     base = bl(np.asarray(nut_mm) - np.asarray(axis) * WASHER_H - sgref)  # the SG flange's back face
     h = {"down": ax, "base": base}
-    h["washer"] = object_from(f"cwasher-{tag}", spare["washer"], M, (0, 0, 0), sg)
+    h["washer"] = big_washer(f"cwasher-{tag}", M, sg)
     h["grower"] = grower(f"cgrower-{tag}", M, sg)
     h["nut"] = object_from(f"cnut-{tag}", spare["nut"], M, (0, 0, 0), sg)
-    h["home"] = {"washer": (base, ax), "grower": (base + ax * WASHER_H * MM, ax),
-                 "nut": (base + ax * (WASHER_H + GROWER[2]) * MM, ax)}
+    h["nut"].data.materials[0] = M["oiled"]
+    h["home"] = {"washer": (base, ax), "grower": (base + ax * BIG[2] * MM, ax),
+                 "nut": (base + ax * (BIG[2] + GROWER[2]) * MM, ax)}
     for k, (at, a) in h["home"].items():
         place(h[k], at, a)
     return h
@@ -89,7 +94,7 @@ def build_side(side, lv, z, M, recs, meta, spare):
     h["SU"] = part(f"SU-{side}{lv}", recs[f"SU-{side}"], M, (0, 0, 0), rig, (0, 0, 0))
     sgrec = recs[f"SG-{side}"]
     sgref = (sgrec["p"].min(0) + sgrec["p"].max(0)) / 2
-    h["sg"] = sg = empty(f"sg-{side}{lv}", rig, tuple(bl(sgref)))
+    h["sg"] = sg = empty(f"sg-{side}{lv}", rig, tuple(bl(sgref) + Vector((0, -SG_PUSH, 0))))
     h["sg_home"] = sg.location.copy()
     h["SG"] = part(f"SG-{side}{lv}", sgrec, M, sgref, sg, (0, 0, 0))
     if lv == 0:  # one rail per side, through every level: it rides on the mounted level's SG
@@ -100,21 +105,25 @@ def build_side(side, lv, z, M, recs, meta, spare):
     fr = next(f for f in meta["frames"] if f["hand"] == side)
     h["clips"] = []
     for i, c in enumerate(fr["clips"]):
-        ob = part(f"clip-{side}{lv}-{i}", recs[f"clip-{side}-{i}"], M, c["p"], sg, np.asarray(c["p"]) - sgref)
-        h["clips"].append({"ob": ob, "home": ob.location.copy(), "out": bdir(c["z"])})
+        ob = n1_clip(f"clip-{side}{lv}-{i}", M, spare, sg)
+        cy, cz = bdir(c["y"]), bdir(c["z"])
+        ob.matrix_basis = Matrix.Translation(bl(np.asarray(c["p"]) - sgref)) @ Matrix((cy.cross(cz), cy, cz)).transposed().to_4x4()
+        h["clips"].append({"ob": ob, "home": ob.location.copy(), "out": cz})
     h["bolts"], h["cstack"] = [], []
-    for i, n in enumerate(fr["bolts"]):
-        if abs(n["y"][1]) > 0.9:
-            h["bolts"].append(bolt_stack(f"{side}{lv}-{i}", sg, spare, M, n["p"], n["y"], sgref))
-        else:
-            h["cstack"].append(clip_stack(f"{side}{lv}-{i}", sg, spare, M, n["p"], n["y"], sgref))
+    sg0 = sgrec["p"][:, 2].min()  # the SG's wall end (three.js z)
+    verticals = [n for n in fr["bolts"] if abs(n["y"][1]) > 0.9]
+    for i, (n, at) in enumerate(zip(verticals, BOLT_AT)):
+        h["bolts"].append(bolt_stack(f"{side}{lv}-{i}", sg, spare, M, [n["p"][0], n["p"][1], sg0 + at], n["y"], sgref))
+    for i, n in enumerate(n for n in fr["bolts"] if abs(n["y"][1]) <= 0.9):
+        h["cstack"].append(clip_stack(f"{side}{lv}-{i}", sg, spare, M, n["p"], n["y"], sgref))
     h["anchors"] = []
     for j, ax in enumerate(ANCHOR_X):
         grp = empty(f"anchor-{side}{lv}{j}", rig, tuple(bl((s * ax, 32.5, 0.0))))
         rot = Matrix.Rotation(math.radians(90), 4, "X")  # the stud's +Z -> out of the wall (-Y)
         parts = []
-        for kind, off in (("stud", -75.0), ("washer", 5.0), ("nut", 7.0)):
-            ob = object_from(f"anchor-{kind}-{side}{lv}{j}", spare[kind], M, (0, 0, 0), grp)
+        for kind, off in (("stud", -75.0), ("washer", 5.0), ("nut", 5.0 + BIG[2])):
+            ob = (big_washer(f"anchor-washer-{side}{lv}{j}", M, grp) if kind == "washer"
+                  else object_from(f"anchor-{kind}-{side}{lv}{j}", spare[kind], M, (0, 0, 0), grp))
             ob.matrix_parent_inverse = Matrix.Identity(4)
             ob.matrix_basis = Matrix.Translation((0, -off * MM, 0)) @ rot
             parts.append((kind, ob, ob.matrix_basis.copy()))
@@ -173,8 +182,8 @@ def build(scene):
                                         M["mark"], (p.x, -0.0002, p.z), 0) for q in range(2)]))
     wires = {}
     for side in ("sx", "dx"):
-        x = -SIGN[side] * (GAP / 2 - WIRE - 0.00075)
-        wires[side] = plumb(f"wire-{side}", M, (x, -meta["reach"] * MM, 4.4))
+        front = meta["reach"] * MM + SG_PUSH + 0.0025  # the head's front face, from the wall
+        wires[side] = plumb(f"wire-{side}", M, (-SIGN[side] * GAP / 2, -(front + WIRE + LINE_R), 4.4))
     drill, bit = build_drill(M)
     level, bub1, bub2 = build_level(M)
     worlds, lights = studio(scene, GUIDE_LIGHTS)

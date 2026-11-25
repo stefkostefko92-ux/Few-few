@@ -1,8 +1,11 @@
-"""Hardware and props of the counterweight-guide film (owner, 25.11.2026): slightly larger washers above and below the
-SG bolts, a split lock washer (grower spezzata) under every nut of the SG bolts and of the N1 clips, the yellow plumb
-lines with their bobs, the oiled T rail.
-- large washer: ISO 7093-1 for M10, 10.5 × 30 × 2.5 mm (the ISO 7089 washer of the clips is 10.5 × 20 × 2);
-- grower: DIN 127 B for M10, 10.2 × 18.1, section 3.7 × 2.2 mm, its cut ends sprung 2.2 mm apart (flat once tight).
+"""Hardware and props of the counterweight-guide film (owner, 25.11.2026): the large washer on every fastener (SG bolts
+above and below, anchors, N1 clips), a split lock washer (grower spezzata) under every nut of the SG bolts and of the
+clips, the forged N1 rail clip, the yellow plumb lines with their bobs, the oiled T rail.
+- large washer: ISO 7093-1 for M10, 10.5 × 30 × 2.5 mm;
+- grower: DIN 127 B for M10, 10.2 × 18.1, section 3.7 × 2.2 mm, its cut ends sprung 2.2 mm apart (flat once tight);
+- N1 clip: the trade's forged T-head clip for T45/T50 rails (Donati GF01027: N.1, M10, head 22 × 32 mm, oiled steel,
+  nut UNI 5588), its head stepped underneath by the rail foot's 5 mm, so the nose bears on the foot and the heel on the
+  bracket: tightening the nut clamps the foot. Head height and the step's place are ours (not in the source).
 Every part is built along its local +Z from z = 0 (the face it bears with), so place() can pile them on an axis."""
 import math
 import bmesh
@@ -31,7 +34,16 @@ def line_fibre(nt, b):
     nt.links.new(bp.outputs["Normal"], b.inputs["Normal"])
 
 
+def forged_black(nt, b):
+    """Black oiled forging: hammered pits, a satin sheen that varies."""
+    nt.links.new(maprange(nt, noise(nt, 60.0, 4.0, 0.6), 0.32, 0.55).outputs["Result"], b.inputs["Roughness"])
+    bp = node(nt, "ShaderNodeBump", Strength=0.25, Distance=0.0004)
+    nt.links.new(noise(nt, 900.0, 5.0, 0.65).outputs["Fac"], bp.inputs["Height"])
+    nt.links.new(bp.outputs["Normal"], b.inputs["Normal"])
+
+
 def film_materials(M):
+    M["oiled"] = material("oiled", (0.05, 0.05, 0.055), 0.42, 0.75, forged_black)
     M["rail"] = material("rail", (0.33, 0.335, 0.34), 0.45, 0.85, rail_steel)
     M["line"] = material("line", (0.86, 0.78, 0.02), 0.6, 0.0, line_fibre)
     M["brass"] = material("brass", (0.78, 0.6, 0.3), 0.3, 1.0)
@@ -101,3 +113,47 @@ def plumb(name, M, top):
     lathe_z(f"{name}-bobbody", [(0.0, 0.0012), (-0.004, 0.005), (-0.008, 0.011), (-0.012, 0.012), (-0.048, 0.012),
                                 (-0.074, 0.0005)], M["brass"], bob, segs=48)
     return pv, line, bob
+
+
+N1 = {"nose": 16.0, "heel": 16.0, "wide": 22.0, "narrow": 16.0, "top": 12.0, "step": -7.0, "foot": 5.0, "shank": 25.0}
+
+
+def n1_clip(name, M, spare, parent=None):
+    """The forged N1 clip in its own frame (mm values from N1): origin on the shank axis at the bracket face, +x away
+    from the rail (the heel), +y along the rail, +z out of the bracket. The head tapers from 22 mm at the nose to 18 at
+    the heel; underneath it is stepped: x < step stands on the rail foot (z = 5), the rest on the bracket (z = 0). A sunk
+    panel on top carries a raised N1. The M10 shank (25 mm) runs down -z, its nut (UNI 5588, black) comes with it."""
+    import bpy
+    from mathutils import Vector
+    from stage import object_from
+    g = empty(name, parent)
+    n = {k: v * MM for k, v in N1.items()}
+    prof = [(-n["nose"], n["foot"]), (n["step"], n["foot"]), (n["step"], 0.0), (n["heel"], 0.0), (n["heel"], n["top"]),
+            (-n["nose"], n["top"])]
+    half = lambda x: (n["wide"] + (n["narrow"] - n["wide"]) * (x + n["nose"]) / (n["nose"] + n["heel"])) / 2
+    bm = bmesh.new()
+    sides = [[bm.verts.new((x, s * half(x), z)) for x, z in prof] for s in (-1, 1)]
+    k = len(prof)
+    for i in range(k):
+        bm.faces.new((sides[0][i], sides[0][(i + 1) % k], sides[1][(i + 1) % k], sides[1][i]))
+    bm.faces.new(sides[0][::-1])
+    bm.faces.new(sides[1])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    top = next(f for f in bm.faces if f.normal.z > 0.9 and min(v.co.z for v in f.verts) > n["top"] - 1e-6)
+    bmesh.ops.inset_region(bm, faces=[top], thickness=0.0026, depth=-0.0012)  # the forged rim round a sunk panel
+    head = bm_object(f"{name}-head", bm, M["oiled"], parent=g)
+    bv = head.modifiers.new("bevel", "BEVEL")
+    bv.width, bv.segments, bv.limit_method, bv.angle_limit = 0.0011, 3, "ANGLE", math.radians(30)
+    shank = object_from(f"{name}-shank", spare["shank"], M, (0, 0, 0), g)
+    shank.data.materials[0] = M["oiled"]
+    place(shank, Vector((0, 0, -n["shank"])), Vector((0, 0, 1)))
+    shank.scale.z = N1["shank"] / 29.6
+    txt = bpy.data.curves.new(f"{name}-mark", "FONT")
+    txt.body, txt.size, txt.extrude, txt.align_x, txt.align_y = "N1", 0.0075, 0.00045, "CENTER", "CENTER"
+    mark = bpy.data.objects.new(f"{name}-mark", txt)
+    bpy.context.scene.collection.objects.link(mark)
+    mark.parent = g
+    mark.data.materials.append(M["oiled"])
+    mark.location = (0.001, 0.0, n["top"] - 0.0012)
+    mark.rotation_euler = (0, 0, math.radians(90))
+    return g

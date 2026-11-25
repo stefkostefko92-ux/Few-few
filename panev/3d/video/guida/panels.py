@@ -3,7 +3,7 @@ head of the rail and its plumb line while the rail is set to it (step 8)."""
 import math
 from overlay import fade, s, WHITE, callout
 
-GAP_SHOW = (80.0, 82.6)
+GAP_SHOW = (80.2, 82.4)
 
 
 def draw(c, t, pts):
