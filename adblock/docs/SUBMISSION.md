@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/supreme-adblock-6.1.0.zip
+bash tools/package.sh      # → dist/supreme-adblock-6.1.1.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -287,7 +287,7 @@ so this is an **update of the existing item**, not a new one:
    the privacy policy with Google's Limited Use statement goes live, and `filters.json`
    (data only — no `scriptlets` key) is published with a fresh Ed25519 signature. Check
    `https://adblock.carbonstealth.eu/privacy` shows the Limited Use section before you submit.
-1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-6.1.0.zip`.
+1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-6.1.1.zip`.
 2. Refresh the listing (§3: description + the new feature bullets) **in every
    language that has its own description** — a package update does NOT replace the
    live text, and an old localised description still saying "100% free" fails the
@@ -324,7 +324,7 @@ so this is an **update of the existing item**, not a new one:
 
 ## 7. Pre-flight checklist
 
-- [ ] `manifest.json` and `package.json` versions match (6.1.0)
+- [ ] `manifest.json` and `package.json` versions match (6.1.1)
 - [ ] `npm test` (tests/) and `node tools/build_scriptlets.mjs --check` are green
 - [ ] `PW_ROOT=$(npm root -g) npm run test:browser` is green — real Chromium, including the
       back/forward-cache check (the page is restored on Back, with the extension on)

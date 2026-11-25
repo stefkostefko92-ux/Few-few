@@ -36,15 +36,11 @@ def jitter(t, k):
 
 
 def rig_pose(k, t):
-    """matrix_basis of pair k's rig (wall-local) at time t, or None when it is not on stage."""
+    """matrix_basis of the left or right pair's rig (wall-local) at time t, or None when it is not on stage (the middle
+    pair: middle.rig2)."""
     home = Matrix.Translation((PAIR_X[k], 0, 0))
     floating = Matrix.Translation((PAIR_X[k], -0.28, 0.0)) @ Matrix.Rotation(-LEAN, 4, "X")  # B upright, in the air
     away = Matrix.Translation((PAIR_X[k], -0.3, -0.16))
-    if k == 2:
-        if t < 84.0:
-            return None
-        start = Matrix.Translation((PAIR_X[2], -0.32, -0.22))
-        return blend(start, home, seg(t, 84.6, 86.8))
     if k == 1 and t < 13.0:
         return None
     if t < 13.0:
