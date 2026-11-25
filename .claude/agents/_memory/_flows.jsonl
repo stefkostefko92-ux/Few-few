@@ -588,6 +588,8 @@
 {"t":"handoff","ts":"2026-11-11T07:35:34.776Z","id":"ra01a74db","from":"skorostnika","to":"kodadjiyata","status":"блокер","run":"58a71ac2"}
 {"t":"start","ts":"2026-11-11T07:59:54.898Z","id":"re52b88e2","flow":"авто","lead":"asansyorchika","auto":true}
 {"t":"handoff","ts":"2026-11-11T07:59:54.898Z","id":"re52b88e2","from":"asansyorchika","to":"човек","status":"има бележки","run":"d3a0ef9f"}
+{"t":"start","ts":"2026-11-11T08:28:06.828Z","id":"r68f4bcc4","flow":"авто","lead":"asansyorchika","auto":true}
+{"t":"handoff","ts":"2026-11-11T08:28:06.828Z","id":"r68f4bcc4","from":"asansyorchika","to":"човек","status":"има бележки","run":"7eaf184f"}
 {"t":"start","ts":"2026-11-12T23:55:33.981Z","id":"rcc42b32b","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-12T23:55:33.981Z","id":"rcc42b32b","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"5e0d8616"}
 {"t":"start","ts":"2026-11-12T23:08:30.124Z","id":"r9e44955c","flow":"авто","lead":"dizayner","auto":true}
