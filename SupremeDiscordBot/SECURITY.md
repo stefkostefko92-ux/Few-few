@@ -244,6 +244,34 @@ answer is accepted without validation: format validation is a convenience for
 the applicant, while a live bot is a condition for every tenant, and refusing
 would hand an attacker exactly the outcome they want.
 
+**Tenant isolation on bot-internal routes.** Commands accept free-typed ids
+(autocomplete is only a hint), so every internal route that takes a panel or
+giveaway id also requires the guild it came from (a Discord snowflake, else 400)
+and reads and writes by `(id, serverId)`; another server's id is a 404. Roles are
+granted only through one guard (`roleAssignabilityReason`): managed roles, roles
+with dangerous permissions and roles above the bot are never handed out — a
+static test fails the build if any `.roles.add(` in the bot bypasses it.
+
+**Cross-site requests.** All of the owner's products share one registrable
+domain, so `SameSite=Lax` does not separate them: a form on a sibling subdomain
+is "same-site" and would carry the session cookie. State-changing `/api`
+requests are therefore accepted only from our own `Origin`; without an `Origin`,
+a `Sec-Fetch-Site` other than `same-origin` or `none` is refused. The API takes
+JSON only, with no HTML form parser. Webhooks, the bot and the public API carry no cookie and are
+authenticated by signature, shared secret or bearer key instead.
+
+**One code, one sign-in.** A TOTP code and a backup code are each consumed with
+a conditional write (compare-and-set), so two simultaneous requests with the
+same code cannot both pass — proven against a live Postgres in
+`integration/mfaRace.integration.test.js`, not only against a mock.
+
+**Rate limits and logs.** Every limiter keys IPv6 clients by /56 — a subscriber
+usually controls a whole /56 or /64, so per-address limits would be meaningless.
+Shared transcript links carry their token in the query string, so that query is
+dropped from the backend access log, nginx does not log `/archive` at all, and
+Sentry events, transactions, spans and breadcrumbs are stripped of query strings
+and client IPs before they leave the server.
+
 **Containers.** The three services we build run as non-root (`USER node`;
 `nginx-unprivileged`) with `no-new-privileges` and all Linux capabilities
 dropped. Postgres and Redis are deliberately excluded from the capability drop:

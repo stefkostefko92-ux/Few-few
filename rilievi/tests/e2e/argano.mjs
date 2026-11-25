@@ -1,8 +1,10 @@
 // The machine calculation of a scheda in a real browser (the owner, 31 October 2026 — from the RT-E MOD
 // workbook): the button on the scheda, the form (axe; its rows aligned at 360, 768 and 1280 px), the
 // first case of the workbook typed in and saved, the results by section with OK/NO, the PDF. axe on the
-// form and on the results. Then the page in the menu: the number of the lift leads straight to this
-// calculation, and a lift without a scheda gets its own calculation — saved, drawn, deleted.
+// form and on the results. The rope (argano.js): the card under the choice follows it, the fields typed by
+// hand show only for "Altra fune" and "Altra misura". Then the page in the menu: the number of the lift
+// leads straight to this calculation, and a lift without a scheda gets its own calculation — saved,
+// drawn, deleted.
 import { join } from 'node:path';
 import { aligned, audit, fail } from './helpers.mjs';
 
@@ -30,6 +32,23 @@ const SCELTE = {
   compensazione: 'nessuna',
 };
 
+/** The card of the chosen rope and the fields typed by hand follow the choices, before anything is sent. */
+async function checkRopeChoice(page, name) {
+  const visible = (selector) => page.locator(selector).isVisible();
+  await page.selectOption('#f-fune', 'donati-12-152');
+  if ((await page.textContent('[data-dato="sezione"]')) !== '52,6 mm²')
+    fail(`${name}: the card does not show the rope just chosen`);
+  if (await visible('#f-altroD')) fail(`${name}: the fields of another rope show for a table rope`);
+  await page.selectOption('#f-fune', 'altro');
+  if (!(await visible('#f-altroClasse')) || (await visible('[data-scheda-fune]')))
+    fail(`${name}: "Altra fune" does not swap the card for the fields typed by hand`);
+  await page.selectOption('#f-compensazione', 'catene');
+  if (await visible('#f-compAltroD'))
+    fail(`${name}: compensation by hand shown before "Altra misura"`);
+  await page.selectOption('#f-compMisura', 'altro');
+  if (!(await visible('#f-compAltroMassa'))) fail(`${name}: "Altra misura" shows no fields`);
+}
+
 async function fillCase(page) {
   for (const [key, value] of Object.entries(NUMERI)) await page.fill(`#f-${key}`, value);
   for (const [key, value] of Object.entries(SCELTE)) await page.selectOption(`#f-${key}`, value);
@@ -52,6 +71,7 @@ export async function checkArgano(page, { shots, scheme, sheetUrl, aziendaId }) 
     await aligned(page, `${name} form @${width}px`);
   }
   await page.setViewportSize(viewport);
+  await checkRopeChoice(page, name);
   await fillCase(page);
   await page.click('form.form button[type=submit]');
   await page.waitForURL(/\/calcolo-argano#risultati$/);
@@ -59,8 +79,8 @@ export async function checkArgano(page, { shots, scheme, sheetUrl, aziendaId }) 
   const sezioni = await page.locator('.argano__sezione').count();
   if (sezioni !== 5) fail(`${name}: ${sezioni} result sections instead of 5`);
   const testo = await page.textContent('#risultati');
-  // The first case of the workbook: 0,733 m/s from 1400 rpm, 1:50, Ø 500; traction 2,223 ≤ 2,286.
-  for (const atteso of ['0,733 m/s', '2,223', '2,286', 'Aderenza verificata nei due casi'])
+  // The first case of the workbook: 0,733 m/s (shown as 0,73) from 1400 rpm, 1:50, Ø 500; traction 2,223 ≤ 2,286.
+  for (const atteso of ['0,73 m/s', '2,223', '2,286', 'aderenza nei due casi'])
     if (!testo.includes(atteso)) fail(`${name}: "${atteso}" missing from the results`);
   await audit(page, `${name} results`);
   await page.screenshot({ path: join(shots, `${scheme}-calcolo-argano.png`), fullPage: true });
@@ -79,7 +99,7 @@ async function checkMenuPage(page, { name, sheetPath, aziendaId, origin }) {
     fail(`${name}: the calculation page is not the current item of the menu`);
   await audit(page, `${name} list`);
   await page.fill('#f-cerca', numero);
-  await page.click('form[role=search] button');
+  await page.click('main form[role=search] button');
   await page.waitForURL(new RegExp(`${sheetPath}/calcolo-argano$`));
 
   await page.goto(`${origin}/calcolo-argano/nuovo`);

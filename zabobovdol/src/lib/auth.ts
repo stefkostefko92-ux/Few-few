@@ -4,7 +4,9 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
+import { timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/prisma";
+import { sessionStamp } from "@/lib/account-core";
 
 const COOKIE = "zbd_session";
 const MAX_AGE = 60 * 60 * 8; // 8 часа
@@ -43,11 +45,15 @@ export async function verifyPassword(
   return bcrypt.compare(plain, hash);
 }
 
+// Печатът (pv) е от хеша на паролата: нова парола → всички стари сесии падат.
 export async function createSession(user: SessionUser): Promise<void> {
+  const row = await prisma.user.findUnique({ where: { id: user.id }, select: { passwordHash: true } });
+  if (!row) throw new Error("Няма такъв потребител.");
   const token = await new SignJWT({
     email: user.email,
     name: user.name,
     role: user.role,
+    pv: sessionStamp(process.env.AUTH_SECRET ?? "", row.passwordHash),
   })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(user.id)
@@ -78,11 +84,13 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   const token = store.get(COOKIE)?.value;
   if (!token) return null;
   let sub: string;
+  let pv: string;
   try {
     const { payload } = await jwtVerify(token, secret(), {
       algorithms: ["HS256"],
     });
     sub = String(payload.sub);
+    pv = typeof payload.pv === "string" ? payload.pv : "";
   } catch {
     return null;
   }
@@ -91,6 +99,10 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   // базата, за да е винаги актуална (а не „замразена“ в стария токен).
   const user = await prisma.user.findUnique({ where: { id: sub } });
   if (!user || !user.active) return null;
+  // Сменена парола (или токен отпреди печата) → сесията вече не важи.
+  const expected = Buffer.from(sessionStamp(process.env.AUTH_SECRET ?? "", user.passwordHash));
+  const got = Buffer.from(pv);
+  if (got.length !== expected.length || !timingSafeEqual(got, expected)) return null;
   return {
     id: user.id,
     email: user.email,

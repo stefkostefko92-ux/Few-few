@@ -30,7 +30,7 @@
               "label": "Ragione Sociale",
               "acro": "Testo2",
               "maxLength": 78,
-              "prefill": "azienda"
+              "prefill": "societaNome"
             }
           ]
         },
@@ -41,7 +41,8 @@
               "kind": "text",
               "label": "Indirizzo",
               "acro": "Testo3",
-              "maxLength": 78
+              "maxLength": 78,
+              "prefill": "societaIndirizzo"
             }
           ]
         },
@@ -52,21 +53,24 @@
               "kind": "text",
               "label": "Città",
               "acro": "Testo4",
-              "maxLength": 52
+              "maxLength": 52,
+              "prefill": "societaCitta"
             },
             {
               "key": "prov",
               "kind": "text",
               "label": "Prov",
               "acro": "Testo5",
-              "maxLength": 11
+              "maxLength": 11,
+              "prefill": "societaProvincia"
             },
             {
               "key": "cap",
               "kind": "text",
               "label": "C.A.P",
               "acro": "Testo6",
-              "maxLength": 11
+              "maxLength": 11,
+              "prefill": "societaCap"
             }
           ]
         },
@@ -77,7 +81,8 @@
               "kind": "text",
               "label": "Telefono",
               "acro": "Testo7",
-              "maxLength": 22
+              "maxLength": 22,
+              "prefill": "societaTelefono"
             },
             {
               "key": "fax",
@@ -91,7 +96,8 @@
               "kind": "text",
               "label": "email",
               "acro": "Testo9",
-              "maxLength": 38
+              "maxLength": 38,
+              "prefill": "societaEmail"
             }
           ]
         }

@@ -1,14 +1,18 @@
 import type { Request, Response } from 'express';
+import { buildCorrente, improntaCalcolo } from '../build.js';
 import { calcolaArgano } from '../argano/calcolo.js';
 import type { ValoriForm } from '../argano/da-scheda.js';
 import { limiteDi, type DatiArgano, type ErroriArgano } from '../argano/dati.js';
+import { CORDATURE, datiFune, etichettaFune } from '../argano/fune.js';
 import type { ErroriImpianto, ValoriImpianto } from '../argano/impianto.js';
 import { renderCalcoloArgano } from '../argano/pdf.js';
 import { righeRisultato } from '../argano/righe.js';
 import { aziendaDelCalcolo, type CalcoloSalvato } from '../argano/service.js';
 import { CATENE, FUNI, FUNI_COMPENSAZIONE } from '../argano/tabelle.js';
 import { testataDi } from '../aziende/intestazione.js';
+import { principalOf } from '../auth/guards.js';
 import { config } from '../config.js';
+import { registraEmissione } from '../legale/emissioni.js';
 
 /**
  * Общото на изчислението за аргано на карта (calcolo-argano.ts) и без карта (calcolo-argano-libero.ts):
@@ -75,6 +79,14 @@ export const valoriDalBody = (body: Record<string, unknown>): ValoriForm =>
     ),
   );
 
+/** Въжетата от таблиците за избора: група по производител, кратък надпис, данните за картата под него. */
+const FUNI_SCELTA = FUNI.map((f) => ({
+  id: f.id,
+  marca: f.marca,
+  etichetta: etichettaFune(f),
+  dati: datiFune(f),
+}));
+
 export function renderCalcolo(res: Response, status: number, vista: VistaCalcolo): void {
   const t = res.locals.t as T;
   const dati = vista.salvato?.dati ?? null;
@@ -91,7 +103,8 @@ export function renderCalcolo(res: Response, status: number, vista: VistaCalcolo
     // При грешки или конфликт записаните резултати не отговарят на формата — не се показват.
     sezioni:
       dati && senzaErrori && !vista.conflitto ? righeRisultato(calcolaArgano(dati), dati, t) : [],
-    funi: FUNI,
+    funi: FUNI_SCELTA,
+    cordature: CORDATURE,
     catene: CATENE,
     funiCompensazione: FUNI_COMPENSAZIONE,
     limiteDi,
@@ -108,12 +121,18 @@ export async function inviaPdf(
     impianto: Impianto;
     aziendaId: string;
     nome: string;
+    /** Изчислението и картата му — за записа на изтеглянето (src/legale/emissioni.ts). */
+    rif: { calcoloId: string | null; schedaId: string | null };
   },
 ): Promise<void> {
   const t = res.locals.t as T;
+  const sezioni = righeRisultato(calcolaArgano(opts.dati), opts.dati, t);
+  const build = buildCorrente();
+  const impronta = improntaCalcolo('argano', build, opts.dati);
+  const azienda = await aziendaDelCalcolo(opts.aziendaId);
   const pdf = await renderCalcoloArgano({
     dati: opts.dati,
-    sezioni: righeRisultato(calcolaArgano(opts.dati), opts.dati, t),
+    sezioni,
     t,
     impianto: {
       indirizzo: opts.impianto.indirizzo ?? '',
@@ -124,9 +143,30 @@ export async function inviaPdf(
       quando: res.locals.fmt.dateTime(opts.salvato.updatedAt),
       autore: opts.salvato.autore ?? '',
     },
-    testata: await testataDi(await aziendaDelCalcolo(opts.aziendaId)),
+    // Който тегли PDF-а сега: „Generato con Rilievi Impianti da <име> il <кога>“ на всяка страница.
+    generato: {
+      quando: res.locals.fmt.dateTime(new Date()),
+      autore: res.locals.currentUser?.name ?? '',
+      build,
+      impronta,
+    },
+    testata: await testataDi(azienda),
     fontDir: config().PDF_FONT_DIR,
   });
+  const { id, name: nome, email } = principalOf(req).user;
+  // Само изпратен PDF (HEAD изрисува, но не праща).
+  if (req.method === 'GET')
+    await registraEmissione({
+      calcolo: 'argano',
+      impronta,
+      build,
+      dati: opts.dati,
+      risultato: sezioni,
+      ...opts.rif,
+      azienda,
+      user: { id, name: nome, email },
+      pdf,
+    });
   const name = `calcolo-argano-${opts.nome}.pdf`.replace(/[^A-Za-z0-9._-]/g, '');
   res
     .status(200)

@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { allegatiDi } from '../allegati/service.js';
-import { aziendeConSchizzi } from '../aziende/funzioni.js';
-import { gruppiScelta, nelFoglioDi, sezioniFoto } from '../allegati/stampa.js';
+import { datiDelleAziende } from '../aziende/intestazione.js';
+import { gruppiScelta, nelFoglioDi, ordineScelte, sezioniFoto } from '../allegati/stampa.js';
 import { principalOf } from '../auth/guards.js';
 import { roleIn, spansAziende } from '../auth/scope.js';
 import { collegatiDelGruppo } from '../ordini/collegamenti.js';
@@ -39,6 +39,8 @@ export interface FormView {
   conferma?: boolean;
   /** Редът на разделите на фирмата за нова карта (при редакция — този на картата, `scheda.azienda`). */
   ordineSezioni?: readonly string[];
+  /** „Duplica“: името на картата, от която идват полетата (бележка над формата). */
+  duplicataDa?: string;
 }
 
 export async function renderForm(
@@ -51,8 +53,20 @@ export async function renderForm(
   const t = res.locals.t;
   // Модулите на доставчиците: при първото отваряне — от огледа, от другия модул, от фирмата и от
   // човека, който пише (ролята му в ТАЗИ фирма).
-  const aziendaId = view.scheda?.aziendaId || view.azienda || null;
+  // Нова карта: само фирма, в която човекът е (от избора или единствената му) — никога каквото е
+  // пратила формата, иначе данните на чужда фирма биха излезли в страницата (одит, 4 ноември 2026).
+  const aziendaNuova =
+    view.azienda &&
+    (view.aziende.some((a) => a.id === view.azienda) ||
+      user.memberships.some((m) => m.aziendaId === view.azienda))
+      ? view.azienda
+      : null;
+  const aziendaId = view.scheda?.aziendaId || aziendaNuova;
   const role = roleIn(user, aziendaId);
+  const societa = await datiDelleAziende([
+    ...(aziendaId ? [aziendaId] : []),
+    ...view.aziende.map((a) => a.id),
+  ]);
   const contesto = {
     azienda:
       view.scheda?.azienda.name ??
@@ -64,6 +78,7 @@ export async function renderForm(
   };
   const { values, auto, scritti } = withPrefill(view.values, {
     ...contesto,
+    societa: (aziendaId && societa.get(aziendaId)) || null,
     etichetta: (campo, valore) => t(`scheda.option.${campo}.${valore}`),
   });
   const discrepanze = discrepanzeDi(values, t);
@@ -76,18 +91,33 @@ export async function renderForm(
   const stampa = Array.isArray(values.stampa) ? values.stampa : [...ORDINABILI];
   const viste = new Set(Array.isArray(values.fotoMostrate) ? values.fotoMostrate : []);
   const pratese = new Set(Array.isArray(values.fotoStampa) ? values.fotoStampa : []);
+  const sezioniDelleFoto = sezioniFoto(ordine, t);
+  const scelte = new Set(
+    allegati.filter((a) => (viste.has(a.id) ? pratese.has(a.id) : a.inStampa)).map((a) => a.id),
+  );
+  // Редът и големината в печата: пратените (формата се връща), иначе записаните.
+  const ordinePratese = Array.isArray(values.fotoOrdine) ? values.fotoOrdine : null;
+  const ordineSalvato = ordineScelte(sezioniDelleFoto, allegati, scelte);
   const fotoStampa = {
     gruppi: gruppiScelta(
-      sezioniFoto(ordine, t),
+      sezioniDelleFoto,
       allegati,
       nelFoglioDi(
         shown.sections,
         ORDINABILI.filter((key) => !stampa.includes(key)),
       ),
     ),
-    scelte: new Set(
-      allegati.filter((a) => (viste.has(a.id) ? pratese.has(a.id) : a.inStampa)).map((a) => a.id),
-    ),
+    scelte,
+    ordine: ordinePratese
+      ? [
+          ...ordinePratese.filter((id) => scelte.has(id)),
+          ...ordineSalvato.filter((id) => !ordinePratese.includes(id)),
+        ]
+      : ordineSalvato,
+    dimensione:
+      typeof values.fotoDimensione === 'string'
+        ? values.fotoDimensione
+        : (view.scheda?.fotoDimensione ?? 'MEDIE'),
   };
   res.status(status).render('schede/form', {
     ...view,
@@ -114,7 +144,11 @@ export async function renderForm(
       scritti,
       discrepanze: new Map(discrepanze.map((d) => [d.key, d])),
       delGruppo: collegatiDelGruppo,
-      json: collegatiPerBrowser(t, contesto),
+      json: collegatiPerBrowser(t, {
+        ...contesto,
+        aziendaId: aziendaId ?? '',
+        societa: Object.fromEntries(societa),
+      }),
     },
     conferma: view.conferma ? { discrepanze, impronta: improntaDi(discrepanze) } : null,
     allegati,
@@ -125,24 +159,10 @@ export async function renderForm(
 }
 
 /**
- * Скицникът във формата — при фирма, която го има; на нова карта с избор на фирма — фирмите с него,
- * а блокът следва избраната (schizzi.js). Листовете — пратените (формата се връща), иначе записаните;
- * отметката за печата се вижда и при изключен скицник, ако картата има листове (те остават в печата).
+ * Скицникът във формата — винаги (собственикът, 10 ноември 2026: „attiva gli schizzi per tutti gli utenti
+ * e togli l'opzione per disattivarli“). Листовете — пратените (формата се връща), иначе записаните.
  */
 async function schizziDelForm(view: FormView, values: FormValues) {
-  const scelta = !view.scheda && view.aziende.length > 0;
-  const candidate = view.scheda
-    ? [view.scheda.aziendaId]
-    : scelta
-      ? view.aziende.map((a) => a.id)
-      : view.azienda
-        ? [view.azienda]
-        : [];
-  const per = view.scheda
-    ? view.scheda.azienda.schizzi
-      ? candidate
-      : []
-    : [...(await aziendeConSchizzi(candidate))];
   const pratesi = values[SCHIZZO_KEY];
   const fogli: Foglio[] = Array.isArray(pratesi)
     ? pratesi.flatMap((json) => {
@@ -154,9 +174,9 @@ async function schizziDelForm(view: FormView, values: FormValues) {
       : [];
   const stampati = values[SCHIZZI_STAMPA_KEY];
   return {
-    attivo: per.length > 0,
-    per: scelta ? per.join(' ') : '',
-    nascosto: scelta && !per.includes(view.azienda),
+    attivo: true,
+    per: '',
+    nascosto: false,
     fogli: fogli.map((foglio) => ({ foglio, json: JSON.stringify(foglio) })),
     stampati:
       typeof stampati === 'string' ? stampati === '1' : (view.scheda?.schizziStampati ?? true),

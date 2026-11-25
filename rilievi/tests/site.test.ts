@@ -91,18 +91,34 @@ describe('the access request form', () => {
 });
 
 describe('the public addresses', () => {
-  it('are one Italian site: the home at the root, the policy, no language prefixes', () => {
+  it('are one Italian site: the home at the root, the policy, the updates, no language prefixes', () => {
     assert.equal(HOME_PATH, '/');
     assert.equal(PRIVACY_PATH, '/privacy');
     assert.equal(SENT_PATH, '/richiesta-inviata');
-    assert.deepEqual([...PUBLIC_PATHS], ['/', '/privacy']);
+    assert.deepEqual(
+      [...PUBLIC_PATHS],
+      ['/', '/prezzi', '/privacy', '/novita', '/condizioni', '/esportazione', '/segnalazioni'],
+    );
   });
 
   it('let robots crawl only the public pages, the sign-in page and the static files', () => {
     const robots = robotsTxt(BASE, 'abc123');
-    for (const path of ['/', '/privacy']) assert.ok(robots.includes(`Allow: ${path}$\n`), path);
+    for (const path of [
+      '/',
+      '/privacy',
+      '/novita',
+      '/condizioni',
+      '/condizioni.pdf',
+      '/esportazione',
+      // Version 4.0: the prices and the page to report illegal content (art. 16 of Regulation (EU) 2022/2065).
+      '/prezzi',
+      '/segnalazioni',
+    ])
+      assert.ok(robots.includes(`Allow: ${path}$\n`), path);
     assert.doesNotMatch(robots, /\/bg\/|\/en\//);
     assert.match(robots, /Allow: \/accesso\$\n/);
+    // "Installa l'app" is public and noindex: a robot must be allowed in to read the noindex.
+    assert.match(robots, /Allow: \/app\$\n/);
     assert.match(robots, /Allow: \/abc123\.txt\n/);
     assert.match(robots, /\nDisallow: \/\n/);
     assert.match(robots, new RegExp(`Sitemap: ${BASE}/sitemap.xml`));
@@ -111,7 +127,10 @@ describe('the public addresses', () => {
 
   it('list every public page once in the sitemap, without language alternates', () => {
     const xml = sitemapXml(BASE);
-    assert.equal(xml.match(/<url>/g)?.length, 2);
+    assert.equal(xml.match(/<url>/g)?.length, 7);
+    assert.match(xml, /<loc>https:\/\/rilievi\.example\.test\/prezzi<\/loc>/);
+    assert.match(xml, /<loc>https:\/\/rilievi\.example\.test\/segnalazioni<\/loc>/);
+    assert.match(xml, /<loc>https:\/\/rilievi\.example\.test\/esportazione<\/loc>/);
     assert.match(xml, /<loc>https:\/\/rilievi\.example\.test\/<\/loc>/);
     assert.match(xml, /<loc>https:\/\/rilievi\.example\.test\/privacy<\/loc>/);
     assert.match(xml, /<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/);
@@ -126,6 +145,7 @@ describe('the public addresses', () => {
     assert.match(text, /valido 7 giorni/);
     assert.match(text, /\n- Posso registrarmi da solo\? No\. /);
     assert.match(text, new RegExp(`\\(${BASE}/privacy\\)`));
+    assert.match(text, new RegExp(`\\(${BASE}/esportazione\\): Scarica tutti i dati`));
     assert.doesNotMatch(text, /\{\w+\}/);
     assert.doesNotMatch(text, /[\u0400-\u04FF]/);
   });
@@ -191,12 +211,24 @@ describe('the structured data', () => {
     assert.equal(howTo.step.length, STEPS.length);
     assert.equal(howTo.step[0]?.url, `${BASE}/#passo-1`);
     const org = graph.find((node) => Array.isArray(node['@type'])) as {
+      logo: { '@type': string; url: string; width: number; height: number };
+      image: string;
+      knowsAbout: string[];
+      sameAs: string[];
       address: { postalCode: string };
       vatID: string;
       telephone: string;
       contactPoint: Array<{ telephone: string; availableLanguage: string }>;
     };
     assert.equal(org.address.postalCode, '2670');
+    // The mark of the portal as the logo of the company node, on this site; the knowledge areas in Italian.
+    assert.equal(org.logo['@type'], 'ImageObject');
+    assert.match(org.logo.url, new RegExp(`^${BASE}/static/img/icon-512\\.png$`));
+    assert.deepEqual([org.logo.width, org.logo.height], [512, 512]);
+    assert.equal(org.image, `${BASE}/static/img/og.png`);
+    assert.ok(org.knowsAbout.length >= 3 && org.knowsAbout.every((k) => /^[a-zà-ù ]+$/i.test(k)));
+    // Only profiles that answer (checked 4 November 2026): the YouTube channel of Carbon Stealth VCC.
+    assert.deepEqual(org.sameAs, ['https://www.youtube.com/@CarbonStealth']);
     assert.equal(org.vatID, 'BG208725180');
     // The Italian number first (the site is for Italy), then the one of the registered office.
     assert.equal(org.telephone, '+39 379 29 69 699');

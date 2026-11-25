@@ -7,9 +7,11 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { prisma } from "../lib/prisma.js";
-import { gameDataFor, gameEraseSteps } from "../lib/game/privacy.js";
+import { gameDataFor } from "../lib/game/privacy.js";
+import { eraseDiscordUser } from "../lib/dsr.js";
 import { requireAuth, loadUser } from "../middleware/auth.js";
 import { redisStore } from "../lib/rateLimitStore.js";
+import { ipKey } from "../lib/ipKey.js";
 
 const router = Router();
 router.use(requireAuth, loadUser);
@@ -27,7 +29,7 @@ const subjectRightsLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 5,
   store: redisStore("rl:gdpr"),
-  keyGenerator: (req) => req.user?.id || req.ip,
+  keyGenerator: (req) => req.user?.id || ipKey(req.ip),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many data-subject requests. Try again in an hour." },
@@ -300,74 +302,17 @@ router.post("/delete-account", subjectRightsLimiter, async (req, res, next) => {
       });
     }
 
-    // Anonymize user data (soft delete preserving referential integrity)
-    await prisma.$transaction(async (tx) => {
-      // 1. Anonymize profile — only fields that actually exist on User model
-      await tx.user.update({
-        where: { id: userId },
-        data: {
-          username: `[deleted-user-${userId.slice(-6)}]`,
-          discriminator: "0",
-          avatar: null,
-          // Имейлът ИМА поле на User (schema.prisma) — идва от OAuth scope
-          // `email`. Стар коментар тук твърдеше обратното и заради него имейлът
-          // преживяваше „изтриването“: чл. 17 дефект, намерен при одита 07.08.2026.
-          email: null,
-          // accessToken/refreshToken живеят в Session и падат на следващата стъпка.
-        },
-      });
-
-      // 1b. Псевдонимизирай денормализирания подпис в тикет-съобщенията.
-      // `authorTag` пази „User#1234" като СТРИНГ — пряко идентифициращо, което
-      // преживяваше анонимизацията (чл. 17 дефект). Съдържанието се пази
-      // (референтна цялост към чуждите тикети), но подписът се сверява с
-      // анонимизираното име.
-      await tx.ticketMessage.updateMany({
-        where: { authorId: userId },
-        data: { authorTag: `[deleted-user-${userId.slice(-6)}]` },
-      }).catch(() => {});
-
-      // 1в. Снимките на Discord роли (v45) са лични данни без стойност след
-      // изтриване на акаунта — премахват се изцяло (чл. 17).
-      //
-      // Promise.resolve().then(...) а не пряко извикване: липсващ/непознат
-      // модел (например преди прилагане на миграцията) е СИНХРОНЕН TypeError,
-      // който би прекъснал цялата транзакция по изтриването — тоест едно ново
-      // поле би счупило правото на изтриване. Същата причина като в експорта.
-      await Promise.resolve()
-        .then(() => tx.memberRoleSnapshot.deleteMany({ where: { userId } }))
-        .catch(() => {});
-
-      // 1г. Server Season (v50) — същите стъпки като /privacy в бота (dsr.js).
-      // Преди таблото не ги пипаше: изтритият акаунт оставаше с цял профил в
-      // играта (одит на Кодаджията и Правния Разбирач, 25.09.2026).
-      for (const [, step] of gameEraseSteps(tx, userId)) {
-        await Promise.resolve().then(step).catch(() => {});
-      }
-
-      // 2. Delete all sessions (revokes OAuth tokens — they're stored here)
-      await tx.session.deleteMany({ where: { userId } }).catch(() => {});
-
-      // 3. Revoke all API keys
-      await tx.apiKey.updateMany({
-        where: { userId },
-        data: { revokedAt: new Date() },
-      }).catch(() => {});
-
-      // 4. Audit trail — immutable record of deletion request
-      await tx.auditLog.create({
-        data: {
-          actorId: userId,
-          serverId: null,
-          action: "GDPR_ACCOUNT_DELETED",
-          targetId: userId,
-          metadata: {
-            anonymizedAt: new Date().toISOString(),
-            reason: "User-requested deletion under GDPR Article 17",
-          },
-        },
-      });
-    });
+    // А7: ЕДНО изтриване за таблото и за `/privacy` (lib/dsr.js). Преди тук
+    // живееше втора реализация, която пропускаше гласове в анкети, участия и
+    // победители в раздавания, formCooldown, опити за верификация, членство и
+    // втори фактор. Профилът се анонимизира (референтна цялост към чужди
+    // записи), одитът е `DSR_ERASED` с via: "dashboard".
+    const result = await eraseDiscordUser(userId, { scope: "identity", via: "dashboard", requestedBy: userId });
+    if (!result.ok) {
+      // ERASE_FAILED = временен провал, нищо не е изтрито → 503 „опитай пак“.
+      const status = result.code === "INVALID_ID" ? 400 : result.code === "ERASE_FAILED" ? 503 : 409;
+      return res.status(status).json({ error: result.error, code: result.code });
+    }
 
     // Destroy session
     req.session?.destroy?.(() => {});

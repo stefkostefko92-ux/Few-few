@@ -45,7 +45,10 @@ COPY locales ./locales
 COPY public ./public
 COPY package.json ./package.json
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
-RUN chmod +x ./docker-entrypoint.sh && chown -R node:node /app
+# Котвата на одит-веригата (AUDIT_ANCHOR_DIR) — именуван том на app и worker. Празен нов том
+# взима собственика и правата на тази папка от образа, затова тя е на `node` с 700.
+RUN chmod +x ./docker-entrypoint.sh && chown -R node:node /app \
+  && install -d -o node -g node -m 700 /var/lib/piuma/audit
 # Непривилегирован потребител — образът няма нужда от root, за да слуша на 4310.
 USER node
 EXPOSE 4310

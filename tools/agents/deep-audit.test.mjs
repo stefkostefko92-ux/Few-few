@@ -188,7 +188,8 @@ test("нито една дефиниция не сочи към несъщест
   const skills = new Set(readdirSync(skillsDir).filter((f) => existsSync(join(skillsDir, f, "SKILL.md"))));
   const bad = [];
   for (const f of readdirSync(join(ROOT, ".claude", "agents")).filter((x) => x.endsWith(".md") && !x.startsWith("_") && x !== "README.md")) {
-    const src = readFileSync(join(ROOT, ".claude", "agents", f), "utf8");
+    // Само тялото: във frontmatter `tools: …, Skill` + нов ред `skills:` не е препратка към умение „skills“ (28.10.2026).
+    const src = readFileSync(join(ROOT, ".claude", "agents", f), "utf8").replace(/^---\n[\s\S]*?\n---\n/, "");
     for (const m of src.matchAll(/агент[аът]{1,2}\s+\*{0,2}([А-Я][а-яА-Я-]+)/g))
       if (!names.has(m[1])) bad.push(`${f}: „агентът ${m[1]}" не е в регистъра`);
     for (const m of src.matchAll(/(?:skill|умение(?:то)?)\s+\*{0,2}`?([a-z][a-z0-9-]{2,})`?/gi))

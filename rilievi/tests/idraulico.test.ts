@@ -60,7 +60,7 @@ describe('the kind of lift', () => {
       centralinaMarca: 'GMV 3010',
       emendamentoA3: 'si',
       tuboFlessibile: 'si',
-      tuboFlessibileDiametroMm: '25,4',
+      tuboFlessibileDiametroMm: '1" (25,4 mm)',
       tuboFlessibileLunghezzaM: '6',
       tuboFlessibileNote: 'Raccordi da 1"',
       centralinaNote: 'Perdita alla valvola',
@@ -69,7 +69,7 @@ describe('the kind of lift', () => {
     assert.equal(vecchia.centralinaMarca, 'GMV 3010');
     assert.equal(vecchia.emendamentoA3, true);
     assert.equal(vecchia.tuboFlessibile, true);
-    assert.equal(Number(vecchia.tuboFlessibileDiametroMm), 25.4);
+    assert.equal(vecchia.tuboFlessibileDiametroMm, '1" (25,4 mm)', 'the diameter is free text');
     assert.equal(Number(vecchia.tuboFlessibileLunghezzaM), 6);
     assert.equal(vecchia.tuboFlessibileNote, 'Raccordi da 1"');
     assert.equal(vecchia.centralinaNote, 'Perdita alla valvola');
@@ -114,6 +114,27 @@ describe('the kind of lift', () => {
     assert.equal(noAmendment.tuboFlessibileLunghezzaM, null);
   });
 
+  it('takes the diameter of the hose as free text, up to 40 characters (the owner, 9 November 2026)', () => {
+    const hose = {
+      ...minimal,
+      tipoImpianto: 'IDRAULICO',
+      centralinaDaFare: 'no',
+      emendamentoA3: 'si',
+      tuboFlessibile: 'si',
+    };
+    for (const diametro of ['1/2"', 'DN 25', '25,4 mm', '3/4" - raccordi da 1"'])
+      assert.equal(
+        parsedOrFail({ ...hose, tuboFlessibileDiametroMm: diametro }).tuboFlessibileDiametroMm,
+        diametro,
+      );
+    assert.equal(
+      parsedOrFail({ ...hose, tuboFlessibileDiametroMm: '  ' }).tuboFlessibileDiametroMm,
+      null,
+    );
+    const lungo = parseScheda({ ...hose, tuboFlessibileDiametroMm: 'x'.repeat(41) });
+    assert.equal(!lungo.ok && lungo.errors.tuboFlessibileDiametroMm, 'tooLong');
+  });
+
   it('no longer asks the data of the power unit taken off the sheet', () => {
     const data = parsedOrFail({
       ...minimal,
@@ -134,7 +155,7 @@ describe('the kind of lift', () => {
     }
   });
 
-  it('checks the size of the flexible hose like every other number of the sheet', () => {
+  it('checks the length of the flexible hose like every other number; the diameter is text', () => {
     const result = parseScheda({
       ...minimal,
       tipoImpianto: 'IDRAULICO',
@@ -145,7 +166,7 @@ describe('the kind of lift', () => {
       tuboFlessibileLunghezzaM: '5000',
     });
     assert.equal(result.ok, false);
-    assert.equal(!result.ok && result.errors.tuboFlessibileDiametroMm, 'decimal');
+    assert.equal(!result.ok && result.errors.tuboFlessibileDiametroMm, undefined);
     assert.equal(!result.ok && result.errors.tuboFlessibileLunghezzaM, 'range');
   });
 });

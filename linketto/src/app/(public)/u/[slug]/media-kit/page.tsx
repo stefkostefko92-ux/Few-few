@@ -8,11 +8,14 @@ import { languageDemand } from '@/lib/language-gap';
 import { ctr } from '@/lib/analytics';
 import { mediaKitStrings } from '@/lib/mediakit';
 import { PrintButton } from '@/components/PrintButton';
+import { requestCountry } from '@/lib/geoip';
 
 export const dynamic = 'force-dynamic';
 
 // Медиа китът е частен документ за брандове — не се индексира.
-export const metadata: Metadata = { robots: { index: false, follow: false } };
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  return { title: `Media kit · @${(await params).slug} · Linketto`, robots: { index: false, follow: false } };
+}
 
 const WINDOW_DAYS = 30;
 
@@ -40,7 +43,7 @@ export default async function MediaKitPage({
     hl && available.includes(hl)
       ? hl
       : localeFromGeo({
-          country: requestHeaders.get('cf-ipcountry'),
+          country: requestCountry(requestHeaders),
           acceptLanguage: requestHeaders.get('accept-language'),
           available,
           fallback: available.includes(profile.defaultLocale)
@@ -56,11 +59,11 @@ export default async function MediaKitPage({
   const since = new Date(Date.now() - WINDOW_DAYS * 86_400_000);
   const where = { profileId: profile.id, createdAt: { gte: since } };
   const [views, clicks, byCountry] = await Promise.all([
-    prisma.clickEvent.count({ where: { ...where, linkId: null } }),
-    prisma.clickEvent.count({ where: { ...where, linkId: { not: null } } }),
+    prisma.clickEvent.count({ where: { ...where, linkId: null, productId: null } }),
+    prisma.clickEvent.count({ where: { ...where, OR: [{ linkId: { not: null } }, { productId: { not: null } }] } }),
     prisma.clickEvent.groupBy({
       by: ['country'],
-      where: { ...where, linkId: null, country: { not: null } },
+      where: { ...where, linkId: null, productId: null, country: { not: null } },
       _count: { _all: true },
       orderBy: { _count: { country: 'desc' } },
       take: 40,
@@ -187,7 +190,13 @@ export default async function MediaKitPage({
           </div>
         )}
 
-        <p className="mt-6 text-[11px] text-slate-400">{s.window}</p>
+        <p className="mt-6 text-[11px] text-slate-400">
+          {s.window}{' '}
+          {/* Държавите идват от DB-IP Lite (CC BY 4.0) — атрибуцията е задължителна. */}
+          <a href="https://db-ip.com" rel="nofollow noopener" target="_blank" className="underline-offset-2 hover:underline">
+            IP Geolocation by DB-IP
+          </a>
+        </p>
 
         <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4 print:hidden">
           <span className="text-xs text-slate-400">{s.poweredBy}</span>

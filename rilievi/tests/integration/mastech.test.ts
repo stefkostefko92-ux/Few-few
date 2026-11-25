@@ -128,8 +128,12 @@ describe('a hydraulic lift', () => {
       centralinaDaFare: 'no',
       centralinaMarca: 'GMV',
       emendamentoA3: 'si',
+      centralinaInOpera: 'ALTRO',
+      kitA3Valvola: 'HSV_150_BIS',
+      kitA3Altro: ['SARACINESCA', 'PRESSOSTATO'],
+      kitA3Saracinesca: 'ASS_2',
       tuboFlessibile: 'si',
-      tuboFlessibileDiametroMm: '25',
+      tuboFlessibileDiametroMm: '3/4"',
       tuboFlessibileLunghezzaM: '6,5',
       tuboFlessibileNote: 'Passaggio sotto il pavimento',
       centralinaNote: 'Perdita alla valvola',
@@ -150,19 +154,22 @@ describe('a hydraulic lift', () => {
     assert.equal(row.centralinaMarca, 'GMV');
     assert.equal(row.emendamentoA3, true);
     assert.deepEqual(
-      [
-        row.tuboFlessibile,
-        String(row.tuboFlessibileDiametroMm),
-        String(row.tuboFlessibileLunghezzaM),
-      ],
-      [true, '25', '6.5'],
+      [row.tuboFlessibile, row.tuboFlessibileDiametroMm, String(row.tuboFlessibileLunghezzaM)],
+      [true, '3/4"', '6.5'],
     );
     assert.equal(row.centralinaNote, 'Perdita alla valvola');
     assert.equal(row.arganoPreventivo, null);
     assert.equal(row.preventivoArgano, null);
     const print = await browser.get(`/schede/${id}/stampa`);
     assert.match(print.body, /<h2>Centralina<\/h2>/);
-    assert.match(print.body, /<dt>Emendamento A3 da installare<\/dt>/);
+    assert.match(print.body, /<dt>Kit A3 da installare<\/dt>/);
+    // The kit for the unit in place (owner's sheet, 3 November 2026).
+    assert.deepEqual(
+      [row.centralinaInOpera, row.kitA3Valvola, row.kitA3Altro, row.kitA3Saracinesca],
+      ['ALTRO', 'HSV_150_BIS', ['SARACINESCA', 'PRESSOSTATO'], 'ASS_2'],
+    );
+    assert.match(print.body, /<dt>Tipo centralina in opera<\/dt>/);
+    assert.match(print.body, /Saracinesca 0611\/HM-SV\/AXI/);
     assert.match(print.body, /<dt>Lunghezza tubo flessibile<\/dt>\s*<dd>6,5\sm<\/dd>/);
     assert.match(print.body, /<dt>Note centralina<\/dt>\s*<dd>Perdita alla valvola<\/dd>/);
     // A sheet with the power unit notes is found by them.
@@ -181,7 +188,7 @@ describe('the sections of the print', () => {
     const keep = ['ubicazione', 'tipologia', 'quadro', 'allarme'];
     const id = await create(browser, {
       ...SURVEY,
-      noteImpianto: 'Nota da non stampare',
+      noteQuadretto: 'Nota da non stampare',
       allarmePortineria: 'si',
       'stampa-_': '1',
       stampa: keep,

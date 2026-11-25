@@ -1,3 +1,4 @@
+import { unaRiga } from '../interventi/pdf-parti.js';
 import type { DisplayField } from './format.js';
 import {
   CONTENT_WIDTH,
@@ -10,6 +11,28 @@ import {
   type PdfContext,
 } from './pdf-layout.js';
 import type { SchedaFull } from './service.js';
+
+const GRANDE = 19.5;
+const GRANDE_MIN = 8;
+
+/**
+ * Голямата стойност на табелата на ЕДИН ред (матрикулата е свободен текст до 40 знака от 10 ноември 2026,
+ * номерът — до 20 цифри): размерът пада от 19,5 до 8 pt (колкото надписите на табелата), докато се
+ * събере, и чак тогава — „…“; иначе pdfkit я пренася върху реда с товара и спирките.
+ */
+function grandeInRiga(
+  doc: PDFKit.PDFDocument,
+  text: string,
+  width: number,
+): { size: number; text: string } {
+  let size = GRANDE;
+  doc.fontSize(size);
+  while (size > GRANDE_MIN && doc.widthOfString(text) > width) {
+    size -= 0.5;
+    doc.fontSize(size);
+  }
+  return { size, text: unaRiga(doc, text, width) };
+}
 
 /**
  * Горната част на първата страница на PDF-а: заглавната лента и табелата. Разделът „Impianto“ не се
@@ -139,9 +162,22 @@ export function drawPlate(
     width: half,
     align: 'right',
   });
-  doc.font('Sans-Bold').fontSize(19.5).fillColor(INK);
-  doc.text(scheda.matricola ?? '—', inner, top + 28, { width: half });
-  doc.text(scheda.numeroImpianto ?? '—', inner + half, top + 28, { width: half, align: 'right' });
+  doc.font('Sans-Bold').fillColor(INK);
+  // Двете стойности делят реда: номерът (до 20 цифри) взима колкото му трябва от дясната половина,
+  // матрикулата — останалото без 16 pt между тях; по-малкият шрифт стои на същата основна линия.
+  const yDi = (size: number) => top + 28 + (GRANDE - size) * 0.8;
+  const numero = grandeInRiga(doc, scheda.numeroImpianto ?? '—', half - 8);
+  doc.fontSize(numero.size).text(numero.text, inner + half, yDi(numero.size), {
+    width: half,
+    align: 'right',
+    lineBreak: false,
+  });
+  const restante = innerWidth - doc.widthOfString(numero.text) - 16;
+  const matricola = grandeInRiga(doc, scheda.matricola ?? '—', restante);
+  doc.fontSize(matricola.size).text(matricola.text, inner, yDi(matricola.size), {
+    width: restante,
+    lineBreak: false,
+  });
   const lineY = top + 58;
   doc
     .moveTo(inner, lineY)

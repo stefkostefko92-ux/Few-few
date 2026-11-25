@@ -1,0 +1,18 @@
+<%
+  const appC = locals.appUrls || { register: '/registraciya', login: '/vhod' };
+-%>
+<section class="section closing" aria-labelledby="cta-h">
+  <div class="wrap split">
+    <div>
+      <h2 id="cta-h"><%= t('site.home.cta.title') %></h2>
+      <p><%= t('site.home.cta.text') %></p>
+    </div>
+    <div class="closing-act">
+<% if (locals.registrationOpen !== false) { -%>
+      <a class="btn" href="<%= appC.register %>"><%= t('site.cta.registerFree') %></a>
+<% } else { -%>
+      <p class="muted"><%= t('site.cta.closed') %></p>
+<% } -%>
+    </div>
+  </div>
+</section>

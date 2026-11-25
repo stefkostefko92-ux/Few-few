@@ -83,6 +83,13 @@ async function bootSmoke() {
     }
     pass('key routes render 200 (home, /en, /it, /privacy, admin login, fonts)');
 
+    // IndexNow: tools/seo/indexnow.mjs reads the key from /indexnow-key.txt on the live site.
+    const ik = await fetch(`${B}/indexnow-key.txt`);
+    assert.equal(ik.status, 200, '/indexnow-key.txt should be 200');
+    assert.match(ik.headers.get('content-type') || '', /^text\/plain/, 'IndexNow key must be text/plain, not an HTML page');
+    assert.match((await ik.text()).trim(), /^[a-f0-9]{32}$/, 'IndexNow key = 32 hex chars');
+    pass('IndexNow key served as text/plain at /indexnow-key.txt');
+
     const home = await fetch(`${B}/it`);
     const html = await home.text();
     assert.ok(!/fonts\.(googleapis|gstatic)\.com/.test(html), 'no Google Fonts requests (self-hosted)');

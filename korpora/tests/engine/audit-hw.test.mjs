@@ -214,7 +214,7 @@ test('hinge cups keep MIN_WEB to the cut edge of the door: the plate is chosen s
   }
 });
 
-test('a hinge whose plates cannot keep the cup MIN_WEB from the cut edge gets a warning', async () => {
+test('a hinge whose plates cannot keep the cup MIN_WEB from the cut edge is a blocker', async () => {
   // registered last: the extra hinge system never becomes a default for the tests above
   const { registerHingeSystems, registerHinges } = await import('../../engine/hardware.js');
   const salice = HINGE_SYSTEMS.find((s) => s.id === 'salice_series200');
@@ -225,7 +225,7 @@ test('a hinge whose plates cannot keep the cup MIN_WEB from the cut edge gets a 
   const rims = cupRims(m);
   assert.ok(rims.length > 0 && rims.every((r) => Math.abs(r.rim - 1.5) < 0.01), rims.map((r) => r.rim).join(', '));
   const notes = m.warnings.filter((w) => w.text.includes('Чашка на панта'));
-  assert.ok(notes.length > 0 && notes.every((n) => n.level === 'warn' && n.text.includes('1,5 mm от ръба')), m.warnings.map((w) => w.text).join(' | '));
-  // inside the hinge maker's range: a warning, not a blocker
-  assert.deepEqual(errorsOf(m), []);
+  assert.ok(notes.length > 0 && notes.every((n) => n.level === 'error' && n.text.includes('1,5 mm от ръба')), m.warnings.map((w) => w.text).join(' | '));
+  // inside the hinge maker's range, but 1,5 mm of board would crack at the edge: a blocker (owner's decision, 2026-11)
+  assert.ok(notes.every((n) => blockers(m).includes(n.text)));
 });

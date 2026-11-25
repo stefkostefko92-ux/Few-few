@@ -1,6 +1,6 @@
 import { Router, type Response } from 'express';
 import { z } from 'zod';
-import { mailEnabled } from '../config.js';
+import { mailEnabled } from '../mail/posta.js';
 import { writeUserAudit } from '../audit.js';
 import { issuePreCsrf, requireCsrf, requirePreAuthCsrf, safeNext } from '../auth/guards.js';
 import { PASSWORD_MAX_LENGTH } from '../auth/password.js';

@@ -36,7 +36,7 @@ const profile = mkdtempSync(join(tmpdir(), "sa-gpc-"));
 const ctx = await chromium.launchPersistentContext(profile, {
   channel: "chromium", headless: true,
   args: ["--no-sandbox", `--disable-extensions-except=${ROOT}`, `--load-extension=${ROOT}`,
-    `--host-resolver-rules=MAP www.news-site.org 127.0.0.1:${port}, MAP www.allowed-site.org 127.0.0.1:${port}`],
+    `--host-resolver-rules=MAP www.news-site.org 127.0.0.1:${port}, MAP www.allowed-site.org 127.0.0.1:${port}`, "--no-proxy-server"],
 });
 const visit = async (host) => {
   seen.length = 0;

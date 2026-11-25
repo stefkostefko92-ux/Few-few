@@ -3,6 +3,7 @@ import type { NomeRuolo } from './auth/nomi-ruoli.js';
 import type { Flash } from './http/flash.js';
 import type { ViewHelpers } from './http/view.js';
 import type { Locale, Translator } from './i18n.js';
+import type { NovitaPopup } from './novita/popup.js';
 import type { Principal, SessionUser } from './types.js';
 
 declare global {
@@ -30,6 +31,8 @@ declare global {
       ruolo: NomeRuolo;
       /** Таваните на снимките и клиповете — подсказката до качването (config.ts). */
       limitiAllegati: { file: number; foto: number; video: number; minuti: number };
+      /** Прозорецът с новините след обновяване (src/novita/popup.ts); null — няма нови. */
+      novitaPopup?: NovitaPopup | null;
     }
   }
 }

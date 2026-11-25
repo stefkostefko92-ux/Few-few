@@ -37,11 +37,21 @@ export function layout() {
   };
 }
 
+// Леко изпъкнала леща (сферична шапка, а не плосък диск): плосък диск отразява ЕДНА посока от
+// средата — равномерна плоча без градиент. Купол с голям радиус дава плавния преход на отражението,
+// по който окото разпознава стъкло. Ръбът е на равнината на лещата, центърът излиза съвсем малко напред.
+function domedLensGeometry(radius, sphereR = 1.4) {
+  const g = new THREE.SphereGeometry(sphereR, 48, 10, 0, Math.PI * 2, 0, Math.asin(radius / sphereR));
+  g.rotateX(Math.PI / 2);
+  g.translate(0, 0, -sphereR * Math.cos(Math.asin(radius / sphereR)));
+  return g;
+}
+
 function glassesRing(sign, materials) {
   const g = new THREE.Group();
   const L = layout();
   const ring = new THREE.Mesh(new THREE.TorusGeometry(RING_R, TUBE_R, 20, 72, Math.PI * 2), materials.acetate);
-  const lensMesh = new THREE.Mesh(new THREE.CircleGeometry(RING_R * 0.94, 40), materials.lens);
+  const lensMesh = new THREE.Mesh(domedLensGeometry(RING_R * 0.94), materials.lens);
   lensMesh.position.z = L.lensZ - L.ringZ;
   // A soft, rounded, upper-left softbox catchlight painted directly on the lens — see materials.js
   // `catchlight`. Additive + a soft radial falloff, so it brightens the glass without ever hiding

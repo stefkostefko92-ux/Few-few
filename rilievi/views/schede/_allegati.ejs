@@ -4,14 +4,18 @@
   // _allegati-forms.ejs): качването не праща картата, картата не праща файловете. С JavaScript всичко
   // върви без презареждане и с ход на качването (allegati.js); без него формата се праща и се връща тук
   // (`ritorno`). Без файлове разделът показва само „Aggiungi foto o video“ (сгънато); само за четене —
-  // нищо. Нова карта — още няма къде: първо записът.
+  // нищо. Нова карта — още няма къде: първо записът. На телефон и таблет (сензорен екран) до него —
+  // „Scatta foto“ (собственикът, 10 ноември 2026): отваря камерата (`capture`), а снимката тръгва веднага
+  // (carica.js; без JavaScript — с „Carica“).
   const sezione = section.key;
   const qui = allegati.filter((a) => a.sezione === sezione);
 %><% if (!scheda) { %><p class="allegati allegati--nota"><%- include('../partials/icon', { name: 'camera' }) %><span><%= t('allegati.dopoSalvataggio') %></span></p>
 <% } else if (modifica || qui.length) { %><div class="allegati" id="a-<%= sezione %>" data-allegati="<%= sezione %>">
-  <div class="allegati__galleria" data-galleria="<%= sezione %>" data-aggiorna="/schede/<%= scheda.id %>/allegati/sezione/<%= sezione %>?ritorno=<%= ritorno %>" tabindex="-1"><%- include('_allegati-galleria', { allegati: qui, modifica, ritorno }) %></div>
+  <div class="allegati__galleria" data-galleria="<%= sezione %>" data-aggiorna="/schede/<%= scheda.id %>/allegati/sezione/<%= sezione %>?ritorno=<%= ritorno %>" tabindex="-1"><%- include('_allegati-galleria', { allegati: qui, modifica, ritorno, elimina: locals.elimina === true }) %></div>
   <p class="allegati__avvisi" data-avvisi="<%= sezione %>" role="status" aria-live="polite"></p>
   <% if (modifica) { %>
+  <div class="allegati__azioni">
+  <label class="allegati__scatta"><input class="visually-hidden" id="cam-<%= sezione %>" type="file" name="file" form="carica-<%= sezione %>" accept="image/*" capture="environment" data-scatta><%- include('../partials/icon', { name: 'camera' }) %><span><%= t('allegati.scatta') %></span></label>
   <details class="allegati__aggiungi">
     <summary><%- include('../partials/icon', { name: 'upload' }) %><span><%= t('allegati.aggiungi') %></span></summary>
     <div class="allegati__carica" data-carica-campi="<%= sezione %>" data-max-foto="<%= limitiAllegati.foto %>" data-max-video="<%= limitiAllegati.video %>" data-msg-preparazione="<%= t('allegati.preparazione') %>" data-msg-caricamento="<%= t('allegati.caricamento') %>" data-msg-rete="<%= t('allegati.rete') %>" data-msg-nessuno="<%= t('allegati.errore.nessuno') %>" data-max-file="<%= limitiAllegati.file %>" data-msg-troppi="<%= t('allegati.errore.troppi', { n: limitiAllegati.file }) %>" data-msg-grande="<%= t('allegati.errore.dimensioneFile') %>" data-msg-totale="<%= t('allegati.errore.totale') %>" data-msg-errore="<%= t('allegati.errore.caricamento') %>">
@@ -31,6 +35,7 @@
       </div>
     </div>
   </details>
+  </div>
   <% } %>
 </div>
 <% } %>

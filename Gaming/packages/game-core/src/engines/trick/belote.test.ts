@@ -276,16 +276,12 @@ describe("belote engine — задължения при игра", () => {
 });
 
 describe("belote engine — belote-rebelote", () => {
-  it("зачита 20 едва при реалното изиграване на K и Q коз от същия играч", () => {
-    let s = craft({
-      hands: [
-        ["KS", "QS", "7C"],
-        ["7H", "8H", "9C"],
-        ["9H", "TH", "TC"],
-        ["7D", "8D", "JC"],
-      ],
-      contract: "S",
-      trump: "S",
+  /** Мачът по средата: seat 0 води; K и Q пика (коз) са у него. */
+  const table = (hands: string[][], contract: Contract = "S") =>
+    craft({
+      hands,
+      contract,
+      trump: contract === "NT" || contract === "AT" ? null : contract,
       declarer: 0,
       turn: 0,
       leader: 0,
@@ -293,57 +289,107 @@ describe("belote engine — belote-rebelote", () => {
       belotePairs: [],
       teamPoints: [0, 0],
     });
+  const pairHands = [
+    ["KS", "QS", "7C"],
+    ["7H", "8H", "9C"],
+    ["9H", "TH", "TC"],
+    ["7D", "8D", "JC"],
+  ];
+  const runner = (start: BeloteState) => {
+    let s = start;
     const evs: BeloteEvent[] = [];
-    const play = (card: string) => {
-      const r = beloteEngine.reduce(s, { type: "PLAY", card } as BeloteAction, rng());
+    const play = (card: string, belote?: boolean) => {
+      const r = beloteEngine.reduce(s, { type: "PLAY", card, ...(belote === undefined ? {} : { belote }) } as BeloteAction, rng());
       s = r.state;
       evs.push(...r.events);
     };
-    // Взятка 1: seat 0 води с KS (коз) → „белот"; още без начисляване.
-    play("KS");
-    expect(evs.some((e) => e.type === "BELOTE" && e.half === "belote")).toBe(true);
-    expect(s.belotePairs.find((p) => p.seat === 0 && p.suit === "S")?.played).toBe(1);
-    play("7H");
-    play("9H");
-    play("7D");
-    // seat 0 печели козовата взятка и води взятка 2 с QS → „ребелот" + 20.
-    play("QS");
-    expect(evs.some((e) => e.type === "BELOTE" && e.half === "rebelote")).toBe(true);
-    play("8H");
-    play("TH");
-    play("8D");
-    // 20-те са начислени на отбор 0 (в teamPoints, преди последната взятка).
-    expect(s.teamPoints[0]).toBeGreaterThanOrEqual(20);
-    // Раздаването не е приключило (по 1 карта в ръка) → teamPoints пази обявата.
-    expect(s.phase).toBe("PLAY");
+    return { play, evs, get s() { return s; } };
+  };
+
+  it("обявен при първата фигура: „Белот“ и +20 веднага; ребелот при втората — без нови точки", () => {
+    const g = runner(table(pairHands));
+    g.play("KS", true);
+    expect(g.evs).toContainEqual({ type: "BELOTE", seat: 0, suit: "S", half: "belote" });
+    expect(g.s.teamPoints[0]).toBe(20); // точките идват с обявата
+    g.play("7H");
+    g.play("9H");
+    g.play("7D");
+    expect(g.s.teamPoints[0]).toBe(24); // + взятката: KS коз = 4
+    g.play("QS");
+    expect(g.evs).toContainEqual({ type: "BELOTE", seat: 0, suit: "S", half: "rebelote" });
+    expect(g.s.teamPoints[0]).toBe(24); // ребелот само потвърждава — без нови 20
+    g.play("8H");
+    g.play("TH");
+    g.play("8D");
+    expect(g.s.teamPoints[0]).toBe(37); // + взятката: QS коз 3 + TH 10
+    expect(g.s.phase).toBe("PLAY"); // по 1 карта в ръка — раздаването не е свършило
   });
 
-  it("не начислява белот, ако K и Q коз са у различни играчи", () => {
-    let s = craft({
-      hands: [
+  it("„Без обява“: нито събитие, нито точки — и втората фигура не носи нищо", () => {
+    const g = runner(table(pairHands));
+    g.play("KS", false);
+    expect(g.evs.some((e) => e.type === "BELOTE")).toBe(false);
+    expect(g.s.teamPoints[0]).toBe(0);
+    g.play("7H");
+    g.play("9H");
+    g.play("7D");
+    g.play("QS");
+    g.play("8H");
+    g.play("TH");
+    g.play("8D");
+    expect(g.evs.some((e) => e.type === "BELOTE")).toBe(false);
+    expect(g.s.teamPoints[0]).toBe(17); // само картите: 4 + 13, без 20 за белот
+  });
+
+  it("без флаг (бот, стар клиент, изтекло време) — обявява се", () => {
+    const g = runner(table(pairHands));
+    g.play("KS");
+    expect(g.evs).toContainEqual({ type: "BELOTE", seat: 0, suit: "S", half: "belote" });
+    expect(g.s.teamPoints[0]).toBe(20);
+  });
+
+  it("„обявяване“ без двойката (K и Q у различни играчи) не носи нищо", () => {
+    const g = runner(
+      table([
         ["KS", "7C", "9C"],
         ["QS", "8H", "TC"],
         ["9H", "TH", "JC"],
         ["7D", "8D", "JH"],
-      ],
-      contract: "S",
-      trump: "S",
-      declarer: 0,
-      turn: 0,
-      leader: 0,
-      trick: [],
-      belotePairs: [],
-      teamPoints: [0, 0],
-    });
-    const evs: BeloteEvent[] = [];
-    const play = (card: string) => {
-      const r = beloteEngine.reduce(s, { type: "PLAY", card } as BeloteAction, rng());
-      s = r.state;
-      evs.push(...r.events);
-    };
-    play("KS"); // seat 0 няма QS в ръката → без „белот"
-    expect(evs.some((e) => e.type === "BELOTE")).toBe(false);
-    expect(s.belotePairs).toHaveLength(0);
+      ]),
+    );
+    g.play("KS", true);
+    expect(g.evs.some((e) => e.type === "BELOTE")).toBe(false);
+    expect(g.s.belotePairs).toHaveLength(0);
+    expect(g.s.teamPoints[0]).toBe(0);
+  });
+
+  it("всичко коз: белот във всяка боя; без коз: никакъв белот", () => {
+    const at = runner(table([["KH", "QH", "7C"], ["7S", "8S", "9C"], ["9S", "TS", "TC"], ["7D", "8D", "JC"]], "AT"));
+    at.play("QH", true);
+    expect(at.evs).toContainEqual({ type: "BELOTE", seat: 0, suit: "H", half: "belote" });
+    const nt = runner(table(pairHands, "NT"));
+    nt.play("KS", true);
+    expect(nt.evs.some((e) => e.type === "BELOTE")).toBe(false);
+  });
+
+  it("„Без обява“ е отделен позволен ход само за първата фигура от белот", () => {
+    const s = table(pairHands);
+    const acts = beloteEngine.legalActions(s, 0) as Array<{ card: string; belote?: boolean }>;
+    expect(acts).toContainEqual({ type: "PLAY", card: "KS" });
+    expect(acts).toContainEqual({ type: "PLAY", card: "KS", belote: false });
+    expect(acts).toContainEqual({ type: "PLAY", card: "QS", belote: false });
+    expect(acts.filter((a) => a.card === "7C")).toEqual([{ type: "PLAY", card: "7C" }]);
+    // След обявата втората фигура е само ребелот — без избор.
+    const after = beloteEngine.reduce(s, { type: "PLAY", card: "KS" }, rng()).state;
+    const later = { ...after, turn: 0 as const, trick: [] };
+    expect((beloteEngine.legalActions(later, 0) as Array<{ belote?: boolean }>).some((a) => a.belote === false)).toBe(false);
+  });
+
+  it("ботът обявява белот, когато играе първата фигура", () => {
+    let s = table([["KS", "QS"], ["7H", "8H"], ["9H", "TH"], ["7D", "8D"]]);
+    const a = beloteEngine.bot!(s, 0, rng()) as Extract<BeloteAction, { type: "PLAY" }>;
+    s = beloteEngine.reduce(s, a, rng()).state;
+    if (a.card === "KS" || a.card === "QS") expect(a.belote ?? true).toBe(true);
   });
 });
 

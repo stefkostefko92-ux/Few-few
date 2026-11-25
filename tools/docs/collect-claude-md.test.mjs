@@ -117,3 +117,12 @@ test("--check ХВАЩА реален дрейф на съдържанието (
     assert.equal(readFileSync(OUT, "utf8"), original, "възстановяването се провали");
   }
 });
+
+test("docs.js не съдържа „</script“ дори когато CLAUDE.md го съдържа (вгражда се в <script>)", () => {
+  withFreshDocs(() => {
+    const docs = readFileSync(OUT, "utf8");
+    assert.doesNotMatch(docs, /<\/script/i, "буквално </script затваря вграждащия блок");
+    const files = JSON.parse(docs.match(/window\.__DOCS__ = ([\s\S]*?);\nvar docs/)[1]).files;
+    assert.ok(files.some((f) => /<\/script>/.test(f.content || f.text || JSON.stringify(f))), "съдържанието е запазено след разчитане");
+  });
+});

@@ -1,0 +1,28 @@
+<%# VAT when the VAT number is not valid in VIES (routes/master-pagamenti-iva.ts): the switch and the sales
+    outside the portal that count for the 10 000 EUR threshold. %>
+<% const v = 'vies.master.'; %>
+<section class="panel pagamenti-pannello" aria-labelledby="h-iva">
+  <h2 class="section__title" id="h-iva"><%= t(v + 'ivaTitolo') %></h2>
+  <p class="muted"><%= t(v + 'ivaTesto') %></p>
+  <p><strong><%= t(v + 'ivaAnno', { portale: euro(iva.vendite.portale), altre: euro(iva.vendite.altre), totale: euro(iva.vendite.corrente), soglia: euro(iva.soglia), quota: iva.quota }) %></strong></p>
+  <p class="muted"><%= t(v + 'ivaAnnoScorso', { totale: euro(iva.vendite.precedente), soglia: euro(iva.soglia) }) %></p>
+  <% if (iva.vendite.precedente > iva.soglia) { %><p role="status"><strong><%= t(v + 'ivaPrecedente') %></strong></p><% } %>
+  <form class="form" method="post" action="/master/pagamenti/iva" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <fieldset class="choice">
+      <legend><%= t(v + 'ivaAttivoTitolo') %></legend>
+      <div class="choice__opts"><label class="tick"><input type="checkbox" name="senzaVies" value="1"<% if (iva.senzaVies) { %> checked<% } %> aria-describedby="iva-spento"><span class="tick__box" aria-hidden="true"></span><span><%= t(v + 'ivaAttivo') %></span></label></div>
+      <p class="field__hint" id="iva-spento"><%= t(v + 'ivaSpento') %></p>
+    </fieldset>
+    <div class="field field--wide">
+      <label class="field__label" for="iva-altre"><%= t(v + 'ivaAltre') %></label>
+      <input class="input" id="iva-altre" name="altre" type="text" inputmode="decimal" maxlength="14" value="<%= euro(iva.vendite.altre) %>" aria-describedby="iva-altre-hint">
+      <p class="field__hint" id="iva-altre-hint"><%= t(v + 'ivaAltreHint') %></p>
+    </div>
+    <div class="field field--wide">
+      <label class="field__label" for="iva-altre-prec"><%= t(v + 'ivaAltrePrecedente') %></label>
+      <input class="input" id="iva-altre-prec" name="altrePrecedente" type="text" inputmode="decimal" maxlength="14" value="<%= euro(iva.vendite.altrePrecedente) %>">
+    </div>
+    <div class="toolbar"><button class="btn" type="submit"><%= t(v + 'ivaSalva') %></button></div>
+  </form>
+</section>

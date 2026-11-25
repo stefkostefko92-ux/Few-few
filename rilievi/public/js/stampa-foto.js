@@ -2,7 +2,8 @@
 // file the icons are plain ticks saved with the sheet. Here: "select all" and "none", the count, the mark
 // of a section that is not on the sheet (it follows the section ticks and the conditions while they
 // change), and after an upload or a deletion in a section (allegati.js tells) the icons come again from
-// the server — what was ticked here and not saved yet stays ticked.
+// the server — what was ticked here and not saved yet stays ticked, and so do the order and the size of
+// the photos (foto-ordine.js draws them again on `rilievi:foto-stampa`).
 (() => {
   'use strict';
 
@@ -75,15 +76,24 @@
       const fresh = template.content.firstElementChild;
       if (!fresh || !fresh.hasAttribute('data-foto-stampa')) return;
       const kept = new Map(ticks().map((tick) => [tick.value, tick.checked]));
+      const order = box.querySelector('input[name="fotoOrdine"]');
+      const size = box.querySelector('input[name="fotoDimensione"]:checked');
       const focused = document.activeElement;
       const focusedValue =
         box.contains(focused) && focused.name === 'fotoStampa' ? focused.value : '';
       fresh.querySelectorAll('input[name="fotoStampa"]').forEach((tick) => {
         if (kept.has(tick.value)) tick.checked = kept.get(tick.value);
       });
+      const freshOrder = fresh.querySelector('input[name="fotoOrdine"]');
+      if (order && freshOrder) freshOrder.value = order.value;
+      if (size) {
+        const same = fresh.querySelector(`input[name="fotoDimensione"][value="${size.value}"]`);
+        if (same) same.checked = true;
+      }
       box.replaceWith(fresh);
       box = fresh;
       ready();
+      document.dispatchEvent(new Event('rilievi:foto-stampa'));
       if (focusedValue) {
         const again = box.querySelector(`input[name="fotoStampa"][value="${focusedValue}"]`);
         if (again) again.focus();

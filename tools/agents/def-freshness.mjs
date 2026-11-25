@@ -13,6 +13,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emitJsonNow } from "../lib/emit.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 const AGENTS_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", ".claude", "agents");
 const TODAY = process.env.OVERSEE_TODAY || new Date().toISOString().slice(0, 10);
@@ -36,7 +37,7 @@ function agentIds() {
   return readdirSync(AGENTS_DIR).filter((f) => f.endsWith(".md") && !f.startsWith("_") && f !== "README.md").map((f) => f.replace(/\.md$/, "")).sort();
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await runCli();
+if (isMain(import.meta.url)) await runCli();
 async function runCli() {
 const rows = [];
 let overdue = 0, staleMarkers = 0, mentions = 0;
