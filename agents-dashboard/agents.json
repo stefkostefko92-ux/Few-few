@@ -7080,7 +7080,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 302
+        "lessons": 303
       },
       "evolution": [
         {
@@ -7508,9 +7508,20 @@
           "date": "2026-11-25",
           "event": "v27.6 — учене",
           "detail": "Научи: Предварителен филтър с grep -F \"$RELEASES_DIR/\" върху Mounts.Source прави мъртъв всеки …"
+        },
+        {
+          "version": "27.7.0",
+          "date": "2026-11-25",
+          "event": "v27.7 — учене",
+          "detail": "Научи: Функция, която строи shell скрипт и е изнесена навън само за тест (напр. previewSpecFor…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „Функция, която строи shell скрипт и е изнесена навън само за тест (напр. previewSpecFor…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
