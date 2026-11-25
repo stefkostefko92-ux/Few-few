@@ -58,7 +58,7 @@ SFTP клиент ──2022/tcp──▶ Wings (SFTP сървърът му)
 
 ### 0. Веднъж, преди всичко
 
-1. **DNS** (A запис към `178.104.77.242`, при IPv6 и AAAA): `mc.carbonstealth.eu` и
+1. **DNS** (A запис към IP-то на VPS-а — сега `159.195.130.183`, при IPv6 и AAAA): `mc.carbonstealth.eu` и
    `node-mc.carbonstealth.eu`.
 2. **Hetzner Firewall** (ако се ползва): входящи `25565/tcp` и `2022/tcp` (80/443 вече са отворени).
    `ufw` скриптът го отваря сам.
