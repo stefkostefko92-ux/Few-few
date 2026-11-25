@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-11-25:** В live-run worktree vizitka/node_modules липсва, затова гейтовете на vizitka не могат да се пуснат при преглед без инсталиране _(преглед на PR за vizitka в live-run worktree; verified; ls -d /tmp/live-run-Z5JIvH/vizitka/node_modules → No such file or directory)_
 - **2026-11-25:** В live-run worktree Ivan/backend/node_modules липсва, затова тестовете на Ivan не могат да се пуснат при преглед и това се отбелязва в покритието _(преглед на PR за Ivan в live-run worktree; verified; ls /tmp/live-run-JVaXpN/Ivan/backend/node_modules → No such file or directory)_
 - **2026-11-25:** deploy/autodeploy.sh не копира nginx vhost за vizitka — промени във vizitka/deploy/nginx/vizitka.conf стигат до сървъра само през vizitka/deploy/server-setup.sh или ръчно _(ревю на nginx промени във vizitka/deploy; verified; Grep nginx в deploy/autodeploy.sh → попадения само за panev, adblock, fivembulgaria, linketto, без vizitka)_
 - **2026-11-25:** В vpsdash ui.js el() свойството raw се записва с textContent (безопасно), а html — с innerHTML; raw с чужд изход не е XSS. _(ревю на XSS в vpsdash/public/*.js; verified; vpsdash/public/ui.js:55-56 (k === 'raw' → node.textContent; k === 'html' → node.innerHTML))_
