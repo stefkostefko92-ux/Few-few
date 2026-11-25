@@ -14,7 +14,11 @@ const ASCII_DOMAIN_RE =
  * съвпадение е безопасната посока.
  */
 export function canonicalDomain(raw: string): string | null {
-  const v = raw.trim().toLowerCase().replace(/\.$/, '').replace(/^www\./, '');
+  const v = raw
+    .trim()
+    .toLowerCase()
+    .replace(/\.$/, '')
+    .replace(/^www\./, '');
   if (!v || INVISIBLE_RE.test(v)) return null;
   const ascii = domainToASCII(v);
   return ascii && ASCII_DOMAIN_RE.test(ascii) ? ascii : null;

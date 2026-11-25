@@ -249,7 +249,12 @@ test('снимка с грешен ред се отказва цяла; рязк
 test('празна снимка на КЗП се отказва — и при първо внасяне, и с confirmShrink (иначе всички стават „не е вписан“)', async () => {
   for (const extra of [{}, { confirmShrink: true }]) {
     for (const text of ['', '\n\n  \n']) {
-      const r = await post('/api/registry/kzp-snapshot', { takenAt: '2026-11-23T14:00:00Z', source: 'kzp.bg', text, ...extra });
+      const r = await post('/api/registry/kzp-snapshot', {
+        takenAt: '2026-11-23T14:00:00Z',
+        source: 'kzp.bg',
+        text,
+        ...extra,
+      });
       assert.equal(r.status, 400, JSON.stringify({ text, extra }));
     }
   }
