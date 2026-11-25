@@ -1,0 +1,10 @@
+<%
+  // „Listino prezzi“ в настройките (собственикът, 13 ноември 2026 — „направи го от impostazioni“): редовете,
+  // с които се попълват офертите — нов ред, внасяне наведнъж от Excel, търсене, промяна, износ. Общата част
+  // е views/preventivi/_listino-gestione.ejs; записите са под /preventivi/listino… и връщат тук (`da`).
+%><section aria-labelledby="h-listino">
+  <h2 class="section__title" id="h-listino"><%= t('impostazioni.pagine.listino.titolo') %></h2>
+  <div class="stack-gap">
+    <%- include('../preventivi/_listino-gestione', { L: listino, da: 'impostazioni', base: '/impostazioni/listino' }) %>
+  </div>
+</section>

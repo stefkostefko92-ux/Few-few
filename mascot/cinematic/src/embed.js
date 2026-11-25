@@ -8,6 +8,7 @@ import { Post } from './post.js';
 import { QUALITY, initialTier, createGovernor } from './quality.js';
 import { buildScene } from './scene.js';
 import { tintPalette } from './palette.js';
+import { FRAMING } from './framing.js';
 
 export function hasWebGL2() {
   try {
@@ -36,6 +37,7 @@ function disposeScene(scene) {
  * Returns `null` when WebGL2 is unavailable so the caller's existing SVG/poster fallback stays in
  * charge — this module never throws to signal that. Only ONE instance should be live at a time
  * (one WebGL context); call the returned `dispose()` before mounting another.
+ * `opts.framing`: `'portrait'` (по подразбиране) или `'icon'` — близка рамка за 128 px.
  * `opts.onLowFps()` fires once if the frame rate stays low even at minimum internal resolution and
  * the lightest quality tier — the caller should `dispose()` and fall back to a static asset.
  */
@@ -56,17 +58,24 @@ export function mount(el, opts = {}) {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   const palette = tintPalette(opts.accent);
-  const { scene, animate } = buildScene(renderer, palette);
+  const { scene, animate } = buildScene(renderer, palette, { dispersion: reducedMotion ? 0.25 : 0 }); // дисперсията е скъпа: само за статичния (печен) кадър
+  renderer.transmissionResolutionScale = reducedMotion ? 1 : 0.5; // пречупеният фон е размит — на живо половин разделителна способност стига
   scene.background = null; // the host card paints its own backdrop behind the canvas
 
-  const CAM_DIST = 11.0;
-  const camera = new THREE.PerspectiveCamera(26, 1, 0.1, 40);
-  camera.position.set(0, 0.3, CAM_DIST);
-  camera.lookAt(0, -0.05, 0);
+  // Кадрите са снимка с дълъг обектив (като продуктова фотография): маскотът пълни рамката, а не
+  // плува в средата на сета. `portrait` — целият герой с шапка и крачета; `icon` — по-близо до
+  // главата и гърдите, за да се четат очилата и усмивката на 128 px (стъпалата са извън кадъра).
+  const frame = FRAMING[opts.framing] ?? FRAMING.portrait;
+  const CAM_DIST = frame.dist;
+  const camera = new THREE.PerspectiveCamera(frame.fov, 1, 0.1, 40);
+  camera.position.set(0, frame.camY, CAM_DIST);
+  camera.lookAt(0, frame.lookY, 0);
 
   let tier = coarse ? 'low' : opts.quality && opts.quality !== 'auto' ? opts.quality : initialTier(coarse, Math.min(innerWidth, innerHeight));
   const post = new Post(renderer, QUALITY[tier]);
   const governor = createGovernor();
+
+  const params = { focus: CAM_DIST, coc: 3.2, maxBlur: 5, bloom: 0.34, exposure: 1.8, grain: 0.03, ao: 0.6, streak: 0, time: 0 };
 
   function resize() {
     const w = el.clientWidth || 1;
@@ -81,6 +90,10 @@ export function mount(el, opts = {}) {
     const inH = Math.max(2, Math.round(outH * governor.scale));
     renderer.setSize(w, h, false);
     post.setSize(inW, inH, outW, outH);
+    // Размитостта на фона е в ПИКСЕЛИ, затова следва височината на кадъра — иначе 128 px иконата
+    // и 464 px портретът биха имали различна дълбочина на рязкост за един и същ обектив.
+    params.coc = outH * frame.coc;
+    params.maxBlur = outH * frame.maxBlur;
   }
   const ro = new ResizeObserver(resize);
   ro.observe(el);
@@ -105,7 +118,6 @@ export function mount(el, opts = {}) {
   let last = performance.now();
   let slowStreak = 0;
   let lowFpsFired = false;
-  const params = { focus: CAM_DIST, coc: 3.2, maxBlur: 5, bloom: 0.34, exposure: 1.6, grain: 0.03, ao: 0.6, streak: 0, time: 0 };
 
   function renderOnce() {
     post.render(scene, camera, params);

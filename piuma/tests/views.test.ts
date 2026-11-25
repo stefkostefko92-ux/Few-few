@@ -97,3 +97,20 @@ test('прегледът на поста пази мястото си и не п
     'скритата медия не заема рамката',
   );
 });
+
+/* AI Act чл. 50(4): преди одобрение на AI чернова човекът вижда, че поема редакционната
+   отговорност — само за чернова от модел, не за ръчно писан пост. */
+test('бележката за AI текста стои само при AI чернова, преди одобрение', () => {
+  const detail = readFileSync(join(VIEWS, 'post-detail.ejs'), 'utf8');
+  const line = detail.split('\n').find((l) => l.includes("t('post.aiApproveNote')"));
+  assert.ok(line, 'post-detail.ejs не показва post.aiApproveNote');
+  assert.match(line, /post\.aiAssisted && post\.status === 'DRAFT'/);
+});
+
+/* Инвариант 14: „AI“ на чипа беше единственият зашит низ на латиница — гейтът за
+   кирилица не го хваща, затова го пазим поименно. */
+test('чипът за AI в списъка минава през речника', () => {
+  const posts = readFileSync(join(VIEWS, 'posts.ejs'), 'utf8');
+  assert.doesNotMatch(posts, /%>\s*AI<\/span>/);
+  assert.match(posts, /t\('posts\.aiChip'\)/);
+});

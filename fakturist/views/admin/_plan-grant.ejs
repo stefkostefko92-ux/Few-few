@@ -1,0 +1,43 @@
+<% const day = (d) => bgDate(new Date(d)); %>
+<% const planName = (code) => { const p = grant.allPlans.find((x) => x.code === code); return p ? (lang === 'bg' ? p.nameBg : p.nameEn) : code; }; %>
+<section class="panel stack narrow-form" aria-labelledby="h-grant">
+  <h2 id="h-grant"><%= t('admin.grant.title') %></h2>
+  <% if (grant.current) { %>
+  <p>
+    <%= t('admin.grant.current') %>: <strong><%= planName(grant.current.planCode) %></strong>
+    · <%= grant.current.forever ? t('admin.grant.forever') : t('admin.grant.until', { date: day(grant.current.end) }) %>
+    · <%= grant.current.granted ? t('admin.grant.kindGranted') : (grant.current.paid ? t('admin.grant.kindPaid') : t('admin.grant.kindStart')) %>
+  </p>
+  <% if (grant.current.granted && grant.current.note) { %><p class="muted"><%= t('admin.grant.noteShown', { note: grant.current.note }) %></p><% } %>
+  <% } %>
+  <% if (terminated) { %>
+  <p class="callout"><%= t('admin.grant.terminated') %></p>
+  <% } else { %>
+  <p><%= t('admin.grant.intro') %></p>
+  <form method="post" action="/admin/firmi/<%= orgId %>/plan" class="stack">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label><%= t('admin.grant.plan') %>
+      <select name="planCode" required>
+        <% grant.plans.forEach((p) => { %><option value="<%= p.code %>"><%= lang === 'bg' ? p.nameBg : p.nameEn %></option><% }) %>
+      </select>
+    </label>
+    <label><%= t('admin.grant.months') %>
+      <select name="months" required>
+        <% [1, 3, 6, 12, 24, 36, 60, 120].forEach((m) => { %><option value="<%= m %>"<%= m === 12 ? ' selected' : '' %>><%= m === 1 ? t('admin.grant.monthsOne') : t('admin.grant.monthsMany', { count: m }) %></option><% }) %>
+        <option value="forever"><%= t('admin.grant.foreverOption') %></option>
+      </select>
+    </label>
+    <label><%= t('admin.grant.note') %><input name="note" required minlength="3" maxlength="200" autocomplete="off"><span class="hint"><%= t('admin.grant.noteHint') %></span></label>
+    <% if (grant.current && grant.current.paid && !grant.current.granted && !grant.current.forever) { %>
+    <label class="check"><input type="checkbox" name="replacePaid"> <%= t('admin.grant.replacePaid', { date: day(grant.current.end) }) %></label>
+    <% } %>
+    <button type="submit"><%= t('admin.grant.button') %></button>
+  </form>
+  <% if (grant.current && grant.current.granted) { %>
+  <form method="post" action="/admin/firmi/<%= orgId %>/plan/prekrati">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <button type="submit" class="button-secondary"><%= t('admin.grant.end') %></button>
+  </form>
+  <% } %>
+  <% } %>
+</section>

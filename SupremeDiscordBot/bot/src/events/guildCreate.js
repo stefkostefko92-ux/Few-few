@@ -4,6 +4,7 @@ import { registerServer } from "../utils/api.js";
 import { checkBotPermissions, reinviteUrl } from "../utils/permissionCheck.js";
 import { BRAND, WARNING } from "../utils/colors.js";
 import { t, resolveLangForGuild } from "../i18n/index.js";
+import { memberCacheWarmer } from "../utils/memberCacheWarm.js";
 
 const DASHBOARD_URL = process.env.DASHBOARD_URL || "https://supremebot.carbonstealth.eu";
 const SUPPORT_URL = process.env.SUPPORT_URL || "https://supremebot.carbonstealth.eu/support";
@@ -18,6 +19,9 @@ export default {
     } catch (err) {
       console.error("Failed to register server:", err.message);
     }
+
+    // В5: затопляне на кеша на членовете — само ако сървърът има включено запазване на роли.
+    memberCacheWarmer.warmGuild(guild).catch(() => {});
 
     await sendWelcome(guild).catch((err) => {
       console.error(`[guildCreate] Failed to send welcome for ${guild.id}:`, err.message);

@@ -9,6 +9,7 @@
 // Изход: 0 = чисто/само INFO, 1 = има HIGH находки. Евристичен помощник, не заместител на ревю/тест.
 
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
+import { isAgentWorktrees } from "../lib/walk-skip.mjs";
 import { join, extname } from "node:path";
 
 const root = process.argv[2] || ".";
@@ -19,7 +20,7 @@ function walk(dir, acc = []) {
   let entries = [];
   try { entries = readdirSync(dir); } catch { return acc; }
   for (const e of entries) {
-    if (e === "node_modules" || e === ".git" || e === "dist" || e === "build") continue;
+    if (e === "node_modules" || e === ".git" || e === "dist" || e === "build" || isAgentWorktrees(dir, e)) continue;
     const p = join(dir, e);
     let st;
     try { st = statSync(p); } catch { continue; }

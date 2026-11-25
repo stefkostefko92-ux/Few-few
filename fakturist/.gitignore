@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+# Шрифтовете се копират от @fontsource при `npm run build` (scripts/fonts.mjs).
+public/fonts/
+# Официалните валидационни артефакти (XSD + Schematron) — свалят се с проверка на SHA-256.
+scripts/conformance/.cache/
+# Примерните фактури от `npm run samples` (UBL/CII) — генерират се, не се пазят.
+samples/

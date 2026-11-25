@@ -1,0 +1,100 @@
+/* „Installa l'app“ (views/app/installa.ejs): стъпките за всяко устройство — разгъващи се, на устройството
+   отворени (installa.js). И точката в менюто и връзката на входа — скрити, когато порталът вече е
+   приложението на началния екран. */
+
+.installa__pronta {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+
+/* Скритото остава скрито: `display: grid` горе иначе надделява атрибута `hidden` — бутонът „Installa“
+   излизаше и на iPhone, където не прави нищо (собственикът, 5 ноември 2026). */
+.installa__pronta[hidden] {
+  display: none;
+}
+
+.installa__os {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface, var(--bg));
+}
+
+.installa__elenco {
+  display: grid;
+  gap: 10px;
+}
+
+.installa__os > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-height: 48px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+}
+
+.installa__os > summary::-webkit-details-marker {
+  display: none;
+}
+
+.installa__os > summary::before {
+  content: '+';
+  flex: none;
+  width: 1em;
+  font-weight: 400;
+}
+
+.installa__os[open] > summary::before {
+  content: '−';
+}
+
+.installa__testa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}
+
+.installa__tuo {
+  padding: 2px 8px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.installa__passi,
+.installa__perche {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0 20px 16px 44px;
+}
+
+.installa__perche {
+  padding: 0 0 0 20px;
+}
+
+/* Сайтът е отворен като приложението: да се инсталира няма какво. */
+@media (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui) {
+  [data-installa-link],
+  .sidenav__nav ul[data-installa-link] {
+    display: none;
+  }
+}
+
+/* В менюто — след групите, отделено с линия (като „кой съм“ долу). */
+.sidenav__nav .sidenav__app {
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid var(--bar-line);
+}
+
+/* Приложението на телефон с изрез и лента за жестове (`viewport-fit=cover`): менюто не стига под тях. */
+.sidenav {
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+}

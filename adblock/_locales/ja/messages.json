@@ -856,5 +856,50 @@
   },
   "welTest": {
     "message": "テストページで動作を確認する"
+  },
+  "modeHere": {
+    "message": "このサイトの保護"
+  },
+  "modeBasic": {
+    "message": "ベーシック"
+  },
+  "modeStandard": {
+    "message": "スタンダード"
+  },
+  "modeStrict": {
+    "message": "ストリクト"
+  },
+  "opt_mode": {
+    "message": "保護レベル"
+  },
+  "opt_mode_sub": {
+    "message": "すべてのサイトに適用されます。サイトごとに変えるには、そのサイトで拡張機能を開いてください。"
+  },
+  "modeHint": {
+    "message": "ベーシック：ネットワークでのブロックのみ。スタンダード：おすすめ。ストリクト：フレーム内も。ページが再読み込みされます。"
+  },
+  "modeBasicDesc": {
+    "message": "ネットワークでのブロックのみ。最も軽く、ほとんど何も壊れません。YouTube は専用の保護を維持します。"
+  },
+  "modeStandardDesc": {
+    "message": "おすすめ。ページ自体を完全に保護します。"
+  },
+  "modeStrictDesc": {
+    "message": "埋め込みフレーム内も保護。最も多く非表示にし、最も多くのメモリを使います。"
+  },
+  "opt_who": {
+    "message": "ブロックした相手"
+  },
+  "opt_who_sub": {
+    "message": "過去 30 日間に、ブラウザーがサーバーへ接続しないようにした企業です。この端末だけで、企業ごと・日ごとに数えます。アドレスもサイトも記録しません。"
+  },
+  "opt_who_empty": {
+    "message": "まだ何も数えていません。しばらく閲覧してから、もう一度ご覧ください。"
+  },
+  "opt_who_row": {
+    "message": "リクエスト：$1 · 日数：$2"
+  },
+  "managedNote": {
+    "message": "組織によって設定されています"
   }
 }

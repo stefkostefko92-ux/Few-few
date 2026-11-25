@@ -24,7 +24,7 @@
   `.env`. Почти нулеви фалшиви тревоги → гейтът е достоверен и не се изключва. `--strict`
   добавя по-шумен generic-режим за ръчен одит.
 - **CI** (`.github/workflows/security.yml`): secret-scan като **твърд гейт** + gitleaks по
-  цялата git история + `dependency-review` на PR.
+  цялата git история + `dependency-review` на PR (последните два — best-effort, `continue-on-error`).
 - **Локален предпазител:** `git config core.hooksPath .githooks` включва pre-commit скенера
   (блокира тайна, преди да влезе в git).
 

@@ -25,8 +25,9 @@ description: >-
 
 ## Не обещавай, не измисляй
 - Никакви измислени CWV числа — измерва се с `node tools/seo/cwv.mjs <url> mobile` (Lighthouse/CrUX).
-- Никакво обещание за класиране. HowTo/FAQ rich results са **оттеглени** (май 2026) — стойността им сега е
-  само AI-разбиране, не SERP звезди.
+- Никакво обещание за класиране. Rich results за HowTo са махнати на 14.09.2023, за FAQ — на 07.05.2026
+  (developers.google.com/search/updates, проверено 27.10.2026). `FAQPage`/`HowTo` JSON-LD не носи SERP
+  ефект; пази го само ако описва реално съдържание — ползата за AI отговорите не е потвърдена от Google.
 
 ## След промяна
 Промяна на откриваемост (sitemap/страници/canonical/hreflang/JSON-LD/robots/llms) → **подай** през skill

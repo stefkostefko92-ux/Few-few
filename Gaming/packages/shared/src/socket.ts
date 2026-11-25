@@ -36,6 +36,8 @@ export const SOCKET_EVENTS = {
   CHAT_MESSAGE: "chat:message",
   PRESENCE: "game:presence",
   ERROR: "game:error",
+  /** Токенът на сокета изтече, но достъпът е валиден: клиентът обновява бисквитката, без да се прекъсва. */
+  AUTH_REAUTH: "auth:reauth",
   // lobby: server -> client
   LOBBY_STATE: "lobby:state",
   LOBBY_LIST_RESULT: "lobby:listResult",
@@ -147,6 +149,8 @@ export interface GameOverMsg {
 export interface SocketErrorMsg {
   code: string;
   message: string;
+  /** Отговорна игра (self_excluded / daily_limit): ISO момент, до който масите са затворени. */
+  until?: string;
 }
 
 /** Client -> server: a chat line for the player's current match. */
