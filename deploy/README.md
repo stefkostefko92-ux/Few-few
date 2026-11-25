@@ -196,6 +196,12 @@ ZIP отпреди месец.
   дневен бекъп (`rilievi-backup.timer`), vhost-ът от репото щом има сертификат. Откатът е към
   `RILIEVI_LAST_GOOD` с `RILIEVI_SKIP_BACKUP=1`; при провалена миграция — човек → `rilievi/DEPLOY.md`.
   Първият MASTER — веднъж с `rilievi/deploy/create-master.sh`; останалите само с покана.
+- **semki** (Semki Bot — Discord бот за семките във FiveM + дашборд): моделът на rilievi — Docker
+  Compose (db + app на `127.0.0.1:<HTTP_PORT>`, първият свободен от 4340), стъпките са в `semki/deploy/deploy.sh`: тайните от
+  `/opt/few-few/shared/semki/.env` (прави ги веднъж `semki/deploy/setup-env.sh` — Discord токен, client
+  secret, ID-тата; без тях semki се пропуска като „още ненастроен“), `pg_dump` преди смяната, сонда с
+  маркер `"app":"semki"`, vhost-ът `vps2.carbonstealth.eu` от репото щом има сертификат. Откатът е към
+  `SEMKI_LAST_GOOD` с `SEMKI_SKIP_BACKUP=1`; при провалена миграция — човек → `semki/DEPLOY.md`.
 - **fakturist** (Фактурист — фактуриране върху EN 16931, `fakturist.carbonstealth.eu`): моделът на
   rilievi — Docker Compose (db + app; по подразбиране `127.0.0.1:4340`, **на живия сървър
   `HTTP_PORT=4342`** — 4340 е на rilievi, 4341 на semki, проверено 13.11.2026), стъпките са в
@@ -274,7 +280,7 @@ ZIP отпреди месец.
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fakturist fivem linketto` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fakturist fivem linketto semki` | кои проекти да се разгръщат тук |
 | `FIVEM_HEALTH_URL` | `http://127.0.0.1:3010/api/health` | health на fivem |
 | `FIVEM_DOMAIN` | `thraex.carbonstealth.eu` | домейн на fivem (за `.env` и IndexNow) |
 | `LINKETTO_HEALTH_URL` · `LINKETTO_DOMAIN` · `LINKETTO_STATE_DIR` · `LINKETTO_INDEXNOW` | празно → `http://127.0.0.1:<HTTP_PORT от .env, иначе 4350>/api/health` · `piuma.carbonstealth.eu` · `/opt/few-few/shared/linketto` · `1` | сонда, домейн, тайни/бекъпи/снимки/last-good, IndexNow на linketto |
@@ -290,6 +296,7 @@ ZIP отпреди месец.
 | `KORPORA_LAST_GOOD` | `/opt/few-few/shared/korpora/last-good` | пътят на последния release на korpora, който е отговорил — към него е откатът |
 | `KORPORA_SHARED` · `KORPORA_HEALTH_WAIT` · `KORPORA_INDEXNOW` | `/opt/few-few/shared/korpora` · `90` · `1` | тайни/бекъпи/данни (и за `autodeploy.sh`: къде са дъмповете), секунди за сондата, IndexNow |
 | `RILIEVI_SHARED` · `RILIEVI_LAST_GOOD` · `RILIEVI_HEALTH_WAIT` | `/opt/few-few/shared/rilievi` · `…/last-good` · `90` | тайни и бекъпи на rilievi, последният работещ release (целта на отката), секунди за сондата |
+| `SEMKI_SHARED` · `SEMKI_LAST_GOOD` · `SEMKI_HEALTH_WAIT` | `/opt/few-few/shared/semki` · `…/last-good` · `90` | тайни и бекъпи на semki, последният работещ release (целта на отката), секунди за сондата |
 | `FAKTURIST_SHARED` · `FAKTURIST_LAST_GOOD` · `FAKTURIST_HEALTH_WAIT` | `/opt/few-few/shared/fakturist` · `…/last-good` · `90` | тайни, бекъпи и отпечатък на `LEDGER_SEAL_KEY` на fakturist, последният работещ release (целта на отката), секунди за сондата |
 | `VPSDASH_DIR` / `VPSDASH_SERVICE` / `VPSDASH_HEALTH_URL` | `/opt/vps-dashboard` · `vps-dashboard` · `http://127.0.0.1:7700/api/ping` | път, systemd услуга и health на VPS таблото |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив (до него задължително `<архив>.sha256`) |

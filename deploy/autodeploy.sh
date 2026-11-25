@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fakturist fivem linketto}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fakturist fivem linketto semki}"
 
 # fivem (Thraex PVP — Docker Compose модел) — web слуша само на
 # 127.0.0.1:3010, зад Nginx с TLS. Отделен `cron` контейнер върти пингването,
@@ -200,6 +200,12 @@ KORPORA_LAST_GOOD="${KORPORA_LAST_GOOD:-$KORPORA_SHARED/last-good}"
 RILIEVI_SHARED="${RILIEVI_SHARED:-/opt/few-few/shared/rilievi}"
 RILIEVI_LAST_GOOD="${RILIEVI_LAST_GOOD:-$RILIEVI_SHARED/last-good}"
 
+# semki (Semki Bot — Discord бот за семките във FiveM + дашборд; Docker Compose: db + app на
+# 127.0.0.1:4340 зад nginx на хоста, vps2.carbonstealth.eu). Моделът на rilievi: стъпките са в
+# semki/deploy/deploy.sh — тайните от /opt/few-few/shared/semki/.env, бекъп преди миграция, сонда с
+# маркер "app":"semki", vhost-ът от репото. Тук остават откатът и паметта за последния работещ release.
+SEMKI_SHARED="${SEMKI_SHARED:-/opt/few-few/shared/semki}"
+SEMKI_LAST_GOOD="${SEMKI_LAST_GOOD:-$SEMKI_SHARED/last-good}"
 # fakturist (Фактурист — Docker Compose: db + app на 127.0.0.1:4340 зад nginx на хоста). Моделът на
 # rilievi: стъпките са в fakturist/deploy/deploy.sh (същият скрипт и за ръчния деплой) — тайните от
 # /opt/few-few/shared/fakturist/.env, бекъп преди миграция, сонда на /health с проверка, че портът е
@@ -1658,6 +1664,55 @@ fakturist_rollback() {
   fi
 }
 
+# ── 3й-кватер) semki — Docker Compose (db + app); стъпките са в semki/deploy/deploy.sh ──
+# Кодовете са като на rilievi: 0 — жив; 3 — няма .env (машината не е настроена: пропуск, не провал);
+# 4 — контейнерите са сменени, но Semki не отговаря → откат на кода; друго — спрян преди смяната.
+deploy_semki() {
+  local d="$SRC/semki" rc=0
+  [ -d "$d" ] || { warn "Няма semki/ в архива — пропускам."; return; }
+  [ -f "$d/deploy/deploy.sh" ] || { warn "semki: няма deploy/deploy.sh в архива — пропускам."; return; }
+  log "Разгръщам semki (Docker Compose)…"
+  # `|| rc=$?`, не голо извикване: под `set -e` ненулев изход тук би убил ЦЕЛИЯ autodeploy.
+  bash "$d/deploy/deploy.sh" || rc=$?
+  case "$rc" in
+    0)
+      install -d -m 700 "$(dirname "$SEMKI_LAST_GOOD")"
+      printf '%s\n' "$(readlink -f "$d")" > "$SEMKI_LAST_GOOD.tmp" && mv -f "$SEMKI_LAST_GOOD.tmp" "$SEMKI_LAST_GOOD"
+      ;;
+    3) warn "semki: тази машина още не е настроена (няма .env) — пропускам, не е провал (semki/DEPLOY.md, т. 2)." ;;
+    4)
+      deploy_failed=1
+      if docker compose -f "$d/docker-compose.yml" logs --no-color --tail 300 app 2>/dev/null | grep -qE 'P3009|P3018'; then
+        warn "semki: миграцията на базата се провали — откат само на кода не помага. Бекъпът отпреди нея е в $SEMKI_SHARED/backups; процедурата — semki/DEPLOY.md, „Провалена миграция“."
+      else
+        semki_rollback "$d" || true
+      fi
+      ;;
+    *) deploy_failed=1; warn "semki: деплоят спря преди смяната на контейнерите (код $rc) — работи предишният код." ;;
+  esac
+}
+
+# Откат САМО на кода към последния release, който е отговорил (никога провалилият се). Без нов дъмп.
+semki_rollback() {
+  local failed prev="" cand
+  failed="$(readlink -f "$1" || true)"
+  cand="$(cat "$SEMKI_LAST_GOOD" 2>/dev/null || true)"
+  if [ -n "$cand" ] && [ -f "$cand/deploy/deploy.sh" ] && [ "$(readlink -f "$cand" || true)" != "$failed" ]; then
+    prev="$cand"
+  fi
+  if [ -z "$prev" ]; then
+    warn "semki: няма предишен работещ release за откат — нужен е човек (cd $1 && docker compose logs app)."
+    return 1
+  fi
+  warn "semki: връщам предишния код ($prev)…"
+  if SEMKI_SKIP_BACKUP=1 bash "$prev/deploy/deploy.sh"; then
+    ok "semki: предишният код отговаря."
+  else
+    warn "semki: откатът не тръгна — нужен е човек (cd $prev && docker compose logs app)."
+    return 1
+  fi
+}
+
 # ── 3и) vps-dashboard — systemd (Node, нула runtime зависимости) ──────────────
 # Панелът обслужва себе си (public/ статика + src/ API). Деплоят е rsync на кода +
 # рестарт. Конфигът (/etc/vps-dashboard/config.json) и state (/var/lib/vps-dashboard)
@@ -2442,6 +2497,7 @@ for p in $PROJECTS; do
     gaming|Gaming|aso) deploy_gaming ;;
     rilievi)    deploy_rilievi ;;
     fakturist)  deploy_fakturist ;;
+    semki)      deploy_semki ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     fivem|FiveM)          deploy_fivem ;;
@@ -2474,9 +2530,9 @@ fi
 # Третото: release-ът, към който сочи паметта на Korpora за последния работещ (KORPORA_LAST_GOOD).
 # Без него няколко деплоя без korpora (PROJECTS="piuma") изтриваха целта на отката и той падаше към
 # код, който никога не е разгръщан за Korpora. Същото за Rilievi (RILIEVI_LAST_GOOD): там е и
-# docker-compose.yml, от който тече дневният бекъп. И за Фактурист (FAKTURIST_LAST_GOOD).
+# docker-compose.yml, от който тече дневният бекъп. И за Фактурист (FAKTURIST_LAST_GOOD) и Semki (SEMKI_LAST_GOOD).
 prune_releases() {
-  local keep_rel live_rel lg_rel lg_ril lg_fak lg_lnk old old_real keep protected
+  local keep_rel live_rel lg_rel lg_ril lg_fak lg_lnk lg_semki old old_real keep protected
   keep_rel="$(cd "$SRC" && pwd -P)"
   live_rel="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
   lg_rel="$(readlink -f "$(cat "$KORPORA_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
@@ -2484,12 +2540,13 @@ prune_releases() {
   lg_fak="$(readlink -f "$(cat "$FAKTURIST_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
   # Целта на отката на linketto: без нея деплоите на други продукти я изтриваха изпод отката.
   lg_lnk="$(readlink -f "$(cat "$LINKETTO_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
+  lg_semki="$(readlink -f "$(cat "$SEMKI_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
   while read -r old; do
     [ -n "$old" ] || continue
     old_real="$(cd "$old" 2>/dev/null && pwd -P || true)"
     [ -n "$old_real" ] || continue
     keep=0
-    for protected in "$keep_rel" "$live_rel" "$lg_rel" "$lg_ril" "$lg_fak" "$lg_lnk"; do
+    for protected in "$keep_rel" "$live_rel" "$lg_rel" "$lg_ril" "$lg_fak" "$lg_lnk" "$lg_semki"; do
       [ -n "$protected" ] || continue
       case "$protected" in
         "$old_real"|"$old_real"/*) keep=1 ;;
