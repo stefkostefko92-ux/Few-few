@@ -160,18 +160,58 @@ async function deployBackups(cfg) {
 // backup (./scripts) не намериха файловете си и сайтът върна 502. Връща null, ако Docker не отговаря:
 // тогава не можем да знаем кое е в употреба и не предлагаме нищо (fail closed). Същото пази
 // prune_releases в deploy/autodeploy.sh.
-export async function protectedReleases(relDir, currentLink, runFn = run) {
+// Паритет с prune_releases (преглед на PR #306): и целта на отката на всеки продукт
+// ($SHARED/*/last-good), и release с ЕДИНСТВЕНОТО копие на .env (няма го в $SHARED/<продукт>/.env).
+// Пътищата се сравняват след realpath — releases/ и монтираните файлове може да са през symlink.
+export const KEEP_RELEASES = 5; // колкото KEEP_RELEASES в deploy/autodeploy.sh
+export async function protectedReleases(relDir, currentLink, runFn = run, { sharedDir = '/opt/few-few/shared' } = {}) {
   const names = new Set();
+  // realpath на най-дългия съществуващ родител: монтиран файл може вече да липсва, а пътят му пак
+  // минава през symlink (например /opt/few-few/current/…), който трябва да стигне до истинския release.
+  const real = async (p) => {
+    let head = p;
+    const tail = [];
+    while (head && head !== path.dirname(head)) {
+      try {
+        return path.join(await fs.promises.realpath(head), ...tail);
+      } catch {
+        tail.unshift(path.basename(head));
+        head = path.dirname(head);
+      }
+    }
+    return p;
+  };
+  const relReal = await real(relDir);
   const nameOf = (p) => {
-    const rel = path.relative(relDir, p);
-    if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) return null;
-    return rel.split(path.sep)[0];
+    for (const root of [relReal, relDir]) {
+      const rel = path.relative(root, p);
+      if (rel && !rel.startsWith('..') && !path.isAbsolute(rel)) return rel.split(path.sep)[0];
+    }
+    return null;
   };
   try {
     const live = nameOf(await fs.promises.realpath(currentLink));
     if (live) names.add(live);
   } catch {
     /* няма current — нищо за пазене оттам */
+  }
+  // Целите на отката: първият ред на всеки $SHARED/<продукт>/last-good.
+  for (const prod of await fs.promises.readdir(sharedDir).catch(() => [])) {
+    const lg = await fs.promises.readFile(path.join(sharedDir, prod, 'last-good'), 'utf8').catch(() => '');
+    const target = lg.split('\n')[0].trim();
+    const n = target && nameOf(await real(target));
+    if (n) names.add(n);
+  }
+  // Единственото копие на .env: <release>/<обвивка>/<продукт>/.env без $SHARED/<продукт>/.env.
+  for (const rel of await fs.promises.readdir(relReal).catch(() => [])) {
+    for (const wrap of await fs.promises.readdir(path.join(relReal, rel)).catch(() => [])) {
+      for (const prod of await fs.promises.readdir(path.join(relReal, rel, wrap)).catch(() => [])) {
+        const hasEnv = await fs.promises.access(path.join(relReal, rel, wrap, prod, '.env')).then(() => true, () => false);
+        if (!hasEnv) continue;
+        const saved = await fs.promises.access(path.join(sharedDir, prod, '.env')).then(() => true, () => false);
+        if (!saved) names.add(rel);
+      }
+    }
   }
   const ps = await runFn('docker', ['ps', '-aq'], { timeout: 20000 });
   if (!ps.ok) return null;
@@ -182,7 +222,8 @@ export async function protectedReleases(relDir, currentLink, runFn = run) {
     });
     if (!ins.ok) return null;
     for (const src of ins.stdout.split('\n')) {
-      const n = src.trim() && nameOf(src.trim());
+      const t = src.trim();
+      const n = t && (nameOf(await real(t)) || nameOf(t));
       if (n) names.add(n);
     }
   }
@@ -195,8 +236,8 @@ export function pickOldReleases(entries, keep, protectedSet) {
   return sorted.slice(0, Math.max(0, sorted.length - keep)).filter((d) => !protectedSet.has(d));
 }
 
-// Стари releases. ПАЗИМ последните три (текущият + два за откат), `current` и всичко, което
-// контейнер монтира (виж protectedReleases).
+// Стари releases. ПАЗИМ последните KEEP_RELEASES, `current`, целите на отката, единствените копия на
+// .env и всичко, което контейнер монтира (виж protectedReleases).
 async function oldReleases(cfg) {
   const relDir = cfg?.paths?.releasesDir || '/opt/few-few/releases';
   let entries = [];
@@ -205,8 +246,10 @@ async function oldReleases(cfg) {
   } catch {
     return null;
   }
-  const KEEP = 3;
-  const guard = await protectedReleases(relDir, cfg?.paths?.currentLink || '/opt/few-few/current');
+  const KEEP = KEEP_RELEASES;
+  const guard = await protectedReleases(relDir, cfg?.paths?.currentLink || '/opt/few-few/current', run, {
+    sharedDir: cfg?.paths?.sharedDir || '/opt/few-few/shared',
+  });
   if (!guard) return null;
   const old = pickOldReleases(entries, KEEP, guard);
   if (!old.length) return null;
@@ -214,7 +257,7 @@ async function oldReleases(cfg) {
   return {
     id: 'old-releases',
     title: 'Стари releases',
-    why: `Разгърнати версии отпреди. Пазят се последните ${KEEP} (текущият + два за откат), release-ът на current и всеки, от който контейнер монтира файлове.`,
+    why: `Разгърнати версии отпреди. Пазят се последните ${KEEP} (като autodeploy.sh), release-ът на current, целта на отката на всеки продукт, release с единственото копие на .env и всеки, от който контейнер монтира файлове.`,
     bytes,
     count: old.length,
     safety: 'safe',
