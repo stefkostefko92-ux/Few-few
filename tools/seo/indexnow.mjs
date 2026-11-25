@@ -15,7 +15,12 @@
 //     --dry-run            само покажи какво ще подадеш, без да пращаш
 //   node tools/seo/indexnow.mjs --gen-key    # генерира нов 32-hex ключ (за нов сайт)
 //
-// Изход: 0 при успех (200/202), 1 при неуспех, 2 при грешен аргумент.
+// Изход: 0 = ВСИЧКИ адреси от източника са подадени (200/202); 1 при неуспех; 2 при грешен аргумент.
+// Sitemap, който не се прочита или няма нито един <loc>, е неуспех (1) и НИЩО не се подава — не пада
+// към началната страница. Индекс, от който се чете само част: прочетеното се подава, изходът е 1.
+// Само началната страница се подава, когато е поискана: `--url <siteUrl>/`.
+// Променливата INDEXNOW_ENDPOINT сменя адреса за подаване (по подразбиране api.indexnow.org);
+// тестовете сочат локален двойник, за да не стига нищо до търсачките.
 //
 // GOOGLE: не поддържа IndexNow и спря ping-а за sitemap (юни 2023). За Google
 // автоматичното е: (1) свеж sitemap.xml (открива се сам) + (2) Search Console
@@ -84,15 +89,16 @@ async function resolveKey() {
   return "";
 }
 
+// Връща { xml, why }: `why` е причината sitemap-ът да не се прочете (празно = прочетен).
 async function readSitemap(src) {
   try {
     if (/^https?:\/\//.test(src)) {
       const r = await fetch(src, { cache: "no-store", signal: AbortSignal.timeout(20000) });
-      return r.ok ? await r.text() : "";
+      return r.ok ? { xml: await r.text(), why: "" } : { xml: "", why: `HTTP ${r.status}` };
     }
-    return await readFile(src, "utf8");
-  } catch {
-    return "";
+    return { xml: await readFile(src, "utf8"), why: "" };
+  } catch (e) {
+    return { xml: "", why: e?.cause?.code || e?.code || e?.name || "грешка при четене" };
   }
 }
 // В XML „&“ в адреса е задължително `&amp;` — подаваме истинския адрес, не ескейпа.
@@ -102,20 +108,46 @@ const locs = (xml) =>
     .map((m) => m[1].trim().replace(/&(amp|lt|gt|quot|apos);/g, (_, e) => XML_ENT[e]))
     .filter(Boolean);
 
-async function collectUrls(key) {
+// Sitemap, който не се прочита, спира подаването. Преди (до 2026-11-13) тук имаше мълчаливо падане към
+// `[<сайт>/]`: подаваше се само началната страница, излизаше „✓ Подадени 1 URL“ и код 0, а деплой
+// скриптовете (и хешът на sitemap-а при korpora и rilievi) го брояха за пълно подаване.
+function sitemapFailed(lines) {
+  console.error(`✘ ${lines[0]}`);
+  for (const l of lines.slice(1)) console.error(`  ${l}`);
+  console.error(`  Нищо не е подадено. Само началната страница се подава изрично: --url ${base}/`);
+  process.exit(1);
+}
+
+// Връща { urls, unread }: `unread` са под-sitemap-ите от индекс, които не се прочетоха.
+async function collectUrls() {
   const explicit = getAll("--url");
-  if (explicit.length) return explicit;
+  if (explicit.length) return { urls: explicit, unread: [] };
   const src = getOpt("--sitemap") || `${base}/sitemap.xml`;
-  const xml = await readSitemap(src);
-  let urls = locs(xml);
+  const top = await readSitemap(src);
+  if (top.why) sitemapFailed([`Sitemap-ът не се прочете: ${src} (${top.why}).`]);
+  let urls = locs(top.xml);
+  const unread = [];
   // Индекс на sitemap-и (<sitemapindex>) — <loc> са ДРУГИ sitemap-и, не страници. Реален дефект
   // (2026-10-24): ospedalitrasparenti има индекс с 2214 страници, а подадени бяха 3 адреса — самите
   // под-sitemap файлове. Разгръщаме едно ниво (стандартът не допуска вложени индекси).
-  if (/<sitemapindex[\s>]/i.test(xml)) {
-    const children = await Promise.all(urls.slice(0, 50).map((u) => readSitemap(u)));
-    urls = children.flatMap(locs);
+  if (/<sitemapindex[\s>]/i.test(top.xml)) {
+    const children = urls.slice(0, 50);
+    const got = await Promise.all(children.map((u) => readSitemap(u)));
+    got.forEach((g, i) => { if (g.why) unread.push(`${children[i]} (${g.why})`); });
+    urls = got.flatMap((g) => locs(g.xml));
   }
-  return urls.length ? [...new Set(urls)].slice(0, 9000) : [`${base}/`];
+  if (!urls.length)
+    sitemapFailed(unread.length
+      ? [`От индекса ${src} не се прочете нито един под-sitemap:`, ...unread]
+      : [`В sitemap-а няма нито един <loc>: ${src}`, "(HTML вместо XML е типично за SPA fallback — всеки непознат път връща index.html)."]);
+  return { urls: [...new Set(urls)].slice(0, 9000), unread };
+}
+
+// Частично прочетен индекс: прочетеното е подадено, но изход 0 би значел „всичко“.
+function reportUnread(unread) {
+  if (!unread.length) return;
+  console.error(`✘ Непълно: ${unread.length} под-sitemap не се прочете — страниците от него НЕ са подадени:`);
+  for (const u of unread) console.error(`  ${u}`);
 }
 
 const key = await resolveKey();
@@ -131,18 +163,20 @@ if (!key || !KEY_RE.test(key)) {
 // в deploy hook-а). IndexNow позволява keyLocation да е кой да е адрес на хоста,
 // стига да съдържа ключа. Смени с --key-location при нужда от <key>.txt схема.
 const keyLocation = getOpt("--key-location") || `${base}/indexnow-key.txt`;
-const urlList = await collectUrls(key);
+const { urls: urlList, unread } = await collectUrls();
+const endpoint = process.env.INDEXNOW_ENDPOINT || "https://api.indexnow.org/indexnow";
 
 console.log(`IndexNow · host=${host} · ${urlList.length} URL · keyLocation=${keyLocation}`);
 if (dryRun) {
   for (const u of urlList.slice(0, 20)) console.log("  " + u);
   if (urlList.length > 20) console.log(`  … (+${urlList.length - 20})`);
   console.log("(--dry-run: нищо не е подадено)");
-  process.exit(0);
+  reportUnread(unread);
+  process.exit(unread.length ? 1 : 0);
 }
 
 try {
-  const res = await fetch("https://api.indexnow.org/indexnow", {
+  const res = await fetch(endpoint, {
     method: "POST",
     headers: {
       "content-type": "application/json; charset=utf-8",
@@ -154,7 +188,8 @@ try {
   });
   if (res.status === 200 || res.status === 202) {
     console.log(`✓ Подадени ${urlList.length} URL (HTTP ${res.status}). Bing/Yandex/Seznam/Naver ще ги обходят.`);
-    process.exit(0);
+    reportUnread(unread);
+    process.exit(unread.length ? 1 : 0);
   }
   const body = (await res.text().catch(() => "")).replace(/\s+/g, " ").trim().slice(0, 200);
   console.error(`✘ IndexNow върна ${res.status}. ${body}`);

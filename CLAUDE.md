@@ -80,7 +80,7 @@ hooks, skills).
   **IndexNow** (Bing, Yandex, Seznam, Naver, Yep — one call reaches all):
   `node tools/seo/indexnow.mjs https://<live-domain>` (needs the site deployed with
   its `indexnow-key.txt` at web root). `deploy/autodeploy.sh` pings after a healthy release for
-  zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock, korpora and linketto (details: `deploy/README.md`);
+  zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock, korpora, rilievi, fivem, panev and linketto (details: `deploy/README.md`);
   for the rest run the command yourself. **Google does NOT
   support IndexNow** (sitemap ping retired 2023) — for Google keep the sitemap fresh
   (auto-discovered) and use Search Console (`tools/seo/gsc.mjs`).
@@ -167,9 +167,8 @@ sudo bash /root/deploy/fetch-deploy.sh                    # main, all configured
 sudo REF=<клон|таг|SHA> PROJECTS="piuma" bash /opt/few-few/current/deploy/fetch-deploy.sh
 ```
 
-`fetch-deploy.sh` downloads, verifies the archive really is this repo, keeps the last two
-downloads and passes `ARCHIVE=` explicitly to `autodeploy.sh`. Uploading a ZIP by hand
-still works and is the fallback when the box has no outbound network:
+Box without outbound network → upload the ZIP by hand and run its `autodeploy.sh`
+(fallback flow: `deploy/README.md`).
 
 ```bash
 cd /root && unzip -o Few-few.zip >/dev/null
