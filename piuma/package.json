@@ -43,7 +43,8 @@
     "landing:variants": "node src/scripts/landing-variants.mjs"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.124.0",
+    "@anthropic-ai/sdk": "^1.5.0",
+    "@anthropic-ai/vertex-sdk": "^1.1.2",
     "@prisma/client": "^6.2.1",
     "argon2": "^0.45.1",
     "bullmq": "^5.34.0",
@@ -57,7 +58,7 @@
     "pino-http": "^10.4.0",
     "prisma": "^6.2.1",
     "qrcode": "^1.5.4",
-    "zod": "^3.24.1"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",

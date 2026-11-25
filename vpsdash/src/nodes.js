@@ -3,6 +3,7 @@
 // Така единият панел управлява и двата VPS-а от един интерфейс (вкл. SSE).
 import { request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
+import { randomBytes } from 'node:crypto';
 import { probe } from './probe.js';
 import { headerValue } from './notify.js';
 
@@ -26,11 +27,25 @@ const HOP_BY_HOP = new Set([
 // е наше решение, не негово.
 const PASS_THROUGH = new Set(['content-type', 'content-length', 'content-encoding', 'last-modified', 'etag']);
 
+// Случаен отпечатък на ТОЗИ процес — връща се в `/api/ping`. Не е тайна и не
+// се извежда от тайна: казва само „отговорих аз", когато съседът се окаже нашият
+// собствен адрес. Сменя се при рестарт, а това е без значение — сравнява се жив
+// процес със самия себе си.
+export const INSTANCE = randomBytes(9).toString('base64url');
+
+/** Самоличността на съседа ПРЕДИ да му пратим данни (бекъп, одит). */
+export async function verifyPeer(peer) {
+  const st = await peerStatus(peer);
+  if (st.up) return { ok: true };
+  if (st.self) return { ok: false, error: 'Съседът е ТАЗИ машина — копие на същия диск не е копие извън нея. Махни съседа от „Достъп на съседа“.' };
+  return { ok: false, error: `Съседът не е потвърден: ${st.error || 'няма отговор'}` };
+}
+
 export function findPeer(cfg, id) {
   return (cfg.peers || []).find((p) => p.id === id) || null;
 }
 
-export function proxyToPeer(peer, req, res, restPath, search) {
+export function proxyToPeer(peer, req, res, restPath, search, { actor } = {}) {
   let target;
   try {
     target = new URL(peer.url);
@@ -55,6 +70,10 @@ export function proxyToPeer(peer, req, res, restPath, search) {
     return;
   }
   headers['x-csd'] = '1'; // proxy заявките носят CSRF маркера — оригиналът вече е проверен локално
+  // Кой човек стои зад заявката — за одита на съседа. Задава се ВИНАГИ от нас
+  // (или се маха): заглавка със същото име от браузъра не бива да мине нагоре.
+  delete headers['x-csd-actor'];
+  if (actor && /^[A-Za-z0-9._-]{1,64}@[A-Za-z0-9._-]{1,64}$/.test(actor)) headers['x-csd-actor'] = actor;
 
   const upstream = reqFn(
     {
@@ -75,6 +94,21 @@ export function proxyToPeer(peer, req, res, restPath, search) {
       // Policy` (по-слаба от нашата), `Access-Control-Allow-Origin: *`,
       // `Strict-Transport-Security`, `Clear-Site-Data`. Компрометиран съсед не
       // бива да пренаписва политиките на нашата страница; той доставя ДАННИ.
+      // 401 от СЪСЕДА никога не е за НАШАТА сесия: тя вече е проверена от
+      // guard-а, преди заявката да тръгне насам. Подаден нагоре едно към едно,
+      // той караше интерфейса да покаже входа — човекът влиза правилно, следващата
+      // заявка пак отива към съседа, пак 401, пак вход. Безкраен цикъл, в който
+      // изглежда, че „правилният код не минава". Открито на живо при свързване
+      // на втори VPS. Казваме истината: съседът отказа жетона.
+      if (up.statusCode === 401) {
+        up.resume();
+        res.writeHead(502, { 'content-type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({
+          error: `Съседът „${peer.name || peer.id}" отказа жетона (401) — peerToken на двата възела не съвпада.`,
+          peerAuth: true,
+        }));
+        return;
+      }
       const outHeaders = {};
       for (const [k, v] of Object.entries(up.headers)) {
         if (PASS_THROUGH.has(k.toLowerCase())) outHeaders[k] = v;
@@ -134,6 +168,12 @@ export async function nodesStatus(cfg) {
 // отхвърляше цялото, и `/api/nodes` връщаше 500 „Вътрешна грешка". Тоест един
 // зле подаден токен скриваше СПИСЪКА С ВСИЧКИ ВЪЗЛИ — включително локалния,
 // който е жив и няма нищо общо. Съсед се проваля САМ.
+//
+// „Съседът е ДРУГА машина" ≠ „съседът съм АЗ". Второто се случи на живо: двата
+// VPS бяха сменени с един, DNS на стария `vps2.…` остана и сочеше към новия
+// сървър, а конфигът пазеше съседа — панелът говореше сам със себе си, а копията
+// „извън машината" лягаха на същия диск. Разпознава се по `INSTANCE`, не по
+// имената в конфига: две машини с подразбиращото се `nodeId: "local"` не са една.
 export function peerStatus(p) {
   return new Promise((resolve) => {
     const done = (v) => resolve({ id: p.id, name: p.name, ...v });
@@ -201,16 +241,22 @@ export function peerStatus(p) {
             // преместен peer), иначе минава за „наред" и панелът показва чужди
             // числа под името на нашия възел.
             const claimed = typeof body?.nodeId === 'string' ? body.nodeId : null;
+            const self = body?.instance === INSTANCE;
             const mismatch = Boolean(claimed && p.id && claimed !== p.id);
             done({
-              up: !mismatch,
+              up: !mismatch && !self,
               status,
               ms,
               nodeId: claimed,
               nodeName: typeof body?.nodeName === 'string' ? body.nodeName.slice(0, 80) : null,
               version: typeof body?.version === 'string' ? body.version.slice(0, 40) : null,
-              identityMismatch: mismatch || undefined,
-              error: mismatch ? `представя се за „${claimed}", а очакваме „${p.id}"` : undefined,
+              identityMismatch: mismatch || self || undefined,
+              self: self || undefined,
+              error: self
+                ? `това е ТАЗИ машина — ${target.hostname} сочи насам. Съсед няма: махни го от „Достъп на съседа“ и DNS записа`
+                : mismatch
+                  ? `представя се за „${claimed}", а очакваме „${p.id}"`
+                  : undefined,
             });
           });
           up.on('error', (err) => done({ up: false, error: err.message, ms: Date.now() - started }));

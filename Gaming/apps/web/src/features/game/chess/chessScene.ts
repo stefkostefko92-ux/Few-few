@@ -26,9 +26,11 @@ import {
   Vector3,
   type BufferGeometry,
 } from "three";
+import { grainUv, upgradeMaterial } from "../gl/baked.js";
 import { contactShadow, disposeObject, easeInOut, woodNormal, woodTexture } from "../gl/helpers.js";
 import { defaultGfxParams } from "../gl/gfxRegistry.js";
 import { RenderCore } from "../gl/render.js";
+import { clientToNdc, worldToClient } from "../board/projection.js";
 import { parseFen, type Orientation } from "./types.js";
 
 const SQ = 1; // square size
@@ -177,9 +179,11 @@ export class ChessScene {
     woodTex.repeat.set(4, 1);
     const woodN = woodNormal();
     woodN.repeat.set(4, 1);
+    const frameMat = new MeshStandardMaterial({ map: woodTex, normalMap: woodN, normalScale: new Vector2(0.6, 0.6), roughness: 0.5, metalness: 0.08 });
+    upgradeMaterial(frameMat, "walnut", { repeat: [1.5, 1], albedo: true, roughness: 0.9, normalScale: 0.8, onReady: () => this.core.invalidate() });
     const frame = new Mesh(
       new BoxGeometry(W + 2 * RAIL, 0.5, W + 2 * RAIL),
-      new MeshStandardMaterial({ map: woodTex, normalMap: woodN, normalScale: new Vector2(0.6, 0.6), roughness: 0.5, metalness: 0.08 }),
+      frameMat,
     );
     frame.position.y = -0.1;
     frame.receiveShadow = true;
@@ -188,15 +192,19 @@ export class ChessScene {
     const lightMat = new MeshPhysicalMaterial({ color: new Color("#ddccA3".toLowerCase()), roughness: 0.45, clearcoat: 0.4, clearcoatRoughness: 0.4 });
     const darkMat = new MeshPhysicalMaterial({ color: new Color("#5f3f24"), roughness: 0.45, clearcoat: 0.4, clearcoatRoughness: 0.4 });
     const sqGeo = new BoxGeometry(SQ * 0.99, 0.12, SQ * 0.99);
+    // Инкрустация: тъмните полета — орех, светлите — само жилката под лака (кленов тон).
+    upgradeMaterial(darkMat, "walnut", { repeat: [1, 1], albedo: true, color: 0xffffff, roughness: 0.8, normalScale: 0.5, ao: 0.3, onReady: () => this.core.invalidate() });
+    upgradeMaterial(lightMat, "walnut", { repeat: [1, 1], roughness: 0.8, normalScale: 0.4, ao: 0.2, onReady: () => this.core.invalidate() });
     for (let f = 0; f < 8; f++) {
       for (let r = 0; r < 8; r++) {
-        const sq = new Mesh(sqGeo, (f + r) % 2 === 0 ? darkMat : lightMat);
+        const sq = new Mesh(grainUv(sqGeo, f * 8 + r + 1), (f + r) % 2 === 0 ? darkMat : lightMat);
         const [x, z] = this.squareWorld(f, r);
         sq.position.set(x, 0.1, z);
         sq.receiveShadow = true;
         this.scene.add(sq);
       }
     }
+    sqGeo.dispose(); // само шаблон за grainUv клоновете
   }
 
   /** File (0..7) + rank (0..7) → world XZ (white plays from +Z). */
@@ -306,10 +314,16 @@ export class ChessScene {
     this.hiLayer.add(m);
   }
 
+  /** Тестова кука (board/e2eHook): client координати на центъра на поле "e4". */
+  screenPoint(square: string, rect: DOMRect): { x: number; y: number } | null {
+    if (!/^[a-h][1-8]$/.test(square)) return null;
+    const [x, z] = this.squareIdWorld(square);
+    return worldToClient(new Vector3(x, -this.boardPlane.constant, z), this.camera, rect);
+  }
+
   /** Raycast a screen point to a square id (e.g. "e4") or null. */
   pick(clientX: number, clientY: number, rect: DOMRect): string | null {
-    const ndc = new Vector2(((clientX - rect.left) / rect.width) * 2 - 1, -(((clientY - rect.top) / rect.height) * 2 - 1));
-    this.ray.setFromCamera(ndc, this.camera);
+    this.ray.setFromCamera(clientToNdc(clientX, clientY, rect), this.camera);
     const hit = new Vector3();
     if (!this.ray.ray.intersectPlane(this.boardPlane, hit)) return null;
     const file = Math.round(hit.x + 3.5);

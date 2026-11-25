@@ -1,0 +1,10 @@
+<%- include('../partials/app-head', { title: t('admin.chain') }) %>
+<p><a href="/admin/r/organizations/<%= org.id %>">← <%= org.legalName %></a></p>
+<h1><%= t('admin.chain') %></h1>
+<%- include('_nav') %>
+<% if (problem) { %>
+  <p class="error" role="alert"><%= t('admin.chainBroken', { at: String(problem.at), kind: problem.kind }) %></p>
+<% } else { %>
+  <p class="ok" role="status"><%= t('admin.chainOk', { count }) %></p>
+<% } %>
+<%- include('../partials/app-foot') %>

@@ -60,6 +60,7 @@
     <h2><%- icon('play') %> <%= t('common.actions') %></h2>
     <% if (post.status === 'DRAFT' && can('posts:approve') && ownDraft) { %><p class="sub"><%- icon('users', { class: 'ic-sm' }) %> <%= t('post.ownDraftHint') %></p><% } %>
     <% if (post.status === 'DRAFT' && can('posts:approve') && !ownDraft && blocked) { %><p class="sub"><%- icon('severity-high', { class: 'ic-sm' }) %> <%= t('post.approveBlockedHint') %></p><% } %>
+    <% if (post.aiAssisted && post.status === 'DRAFT') { %><p class="sub"><%- icon('sparkle', { class: 'ic-sm' }) %> <%= t('post.aiApproveNote') %></p><% } %>
     <div class="row">
       <% if (post.status === 'DRAFT' && can('posts:approve') && !ownDraft) { %>
         <form method="post" action="/admin/posts/<%= post.id %>/approve" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn primary" type="submit"><%- icon('approve') %> <%= t('post.approve') %></button></form>

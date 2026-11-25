@@ -5,17 +5,27 @@
 // дължина по платформа, липсващ alt текст (достъпност), UTM на връзките (аналитика), твърде много
 // хаштагове, тайна/PII в текста, споменаване без явен guard. Целта е грешки да не стигат до платформа.
 //
-// Формат (JSON): { "posts": [ { "platform": "x|instagram|linkedin|facebook|threads|tiktok",
-//                               "text": "...", "link": "https://…", "alt": "…", "hashtags": ["…"] } ] }
+// Формат (JSON): { "posts": [ { "platform": "x|instagram|linkedin|facebook|threads|tiktok|youtube",
+//                               "text": "...", "link": "https://…", "alt": "…", "hashtags": ["…"],
+//                               "title": "…", "thumbnailText": "…" } ] }   // title/thumbnailText — YouTube
+//
+// Заглавие и миниатюра като двойка (23.11.2026, идея от youtube-agent-skill, наш код): двете се виждат заедно —
+// миниатюрата трябва да ДОБАВЯ към заглавието, не да го повтаря; заглавието се реже в търсенето след ~70 знака.
 //
 // Употреба:  node tools/social/post-lint.mjs <файл.json|папка>
 // Изход: 0 = чисто/само INFO, 1 = има HIGH находки.
 
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, extname } from "node:path";
+import { isMain } from "../lib/is-main.mjs";
 
 // Лимити на дължина (символи) по платформа — консервативни, публично известни.
-const LIMIT = { x: 280, twitter: 280, threads: 500, mastodon: 500, instagram: 2200, tiktok: 2200, facebook: 63206, linkedin: 3000 };
+const LIMIT = { x: 280, twitter: 280, threads: 500, mastodon: 500, instagram: 2200, tiktok: 2200, facebook: 63206, linkedin: 3000, youtube: 5000 };
+// YouTube: заглавие до 100 знака (твърд лимит), описание до 5000; в търсенето заглавието се вижда ~70 знака.
+const TITLE_MAX = 100, TITLE_VISIBLE = 70, THUMB_WORDS = 5;
+const TITLED = new Set(["youtube"]);
+// Съдържателни думи за сравнение: малки букви, без пунктуация, поне 3 знака или число.
+const contentWords = (s) => new Set(String(s || "").toLowerCase().split(/[^\p{L}\p{N}%]+/u).filter((w) => w.length >= 3 || /\d/.test(w)));
 const MAX_HASHTAGS = { x: 3, twitter: 3, threads: 5, instagram: 30, tiktok: 8, facebook: 5, linkedin: 5, mastodon: 5 };
 // Груби сигнали за тайна/PII в публичен текст.
 const SECRET_RE = /(sk-[A-Za-z0-9]{20,}|api[_-]?key\s*[:=]|Bearer\s+[A-Za-z0-9._-]{20,}|-----BEGIN)/i;
@@ -47,6 +57,22 @@ export function lintPost(post, idx) {
   // UTM на връзка (иначе трафикът не се приписва)
   if (post.link && /^https?:\/\//.test(post.link) && !/[?&]utm_source=/.test(post.link))
     add("INFO", "no-utm", "Връзката няма `utm_source` — трафикът от този пост няма да се проследи в аналитиката. Добави UTM.");
+
+  // Заглавие + миниатюра (YouTube): лимит, видимост в търсенето, двойката да не се повтаря.
+  if (TITLED.has(plat)) {
+    const title = String(post.title || "").trim();
+    const thumb = String(post.thumbnailText || "").trim();
+    if ([...title].length > TITLE_MAX) add("HIGH", "title-too-long", `Заглавието е ${[...title].length} знака > ${TITLE_MAX} — YouTube не го приема.`);
+    else if ([...title].length > TITLE_VISIBLE) add("INFO", "title-truncated", `Заглавието е ${[...title].length} знака — в търсенето се вижда ~${TITLE_VISIBLE}; ключовото сложи отпред.`);
+    if (title && !thumb) add("INFO", "no-thumb-pair", "Има заглавие, но няма `thumbnailText` — проверката на двойката заглавие/миниатюра не може да мине.");
+    if (thumb) {
+      const n = thumb.split(/\s+/).filter(Boolean).length;
+      if (n > THUMB_WORDS) add("INFO", "thumb-too-wordy", `Текстът на миниатюрата е ${n} думи — на телефон се чете до ~${THUMB_WORDS} (евристика).`);
+      const tw = contentWords(thumb), hw = contentWords(title);
+      const shared = [...tw].filter((w) => hw.has(w) || [...hw].some((h) => h.length >= 5 && w.length >= 5 && (h.startsWith(w.slice(0, 5)) || w.startsWith(h.slice(0, 5)))));
+      if (tw.size && shared.length / tw.size >= 0.6) add("MEDIUM", "thumb-repeats-title", `Миниатюрата повтаря заглавието (${shared.join(", ")}) — двете се виждат заедно; миниатюрата да добавя (обещание, емоция, контраст), не да повтаря.`);
+    }
+  }
 
   // Прекалено много хаштагове
   const tags = Array.isArray(post.hashtags) ? post.hashtags : (text.match(/#[\p{L}0-9_]+/gu) || []);
@@ -102,4 +128,4 @@ function runCli() {
   process.exit(findings.some((f) => f.sev === "HIGH") ? 1 : 0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) runCli();
+if (isMain(import.meta.url)) runCli();

@@ -1,0 +1,6 @@
+<% if (typeof flash !== 'undefined' && flash) { const icons = { ok: 'check', error: 'alert', info: 'info' }; %>
+<div class="flash flash-<%= flash.kind %>" role="<%= flash.kind === 'error' ? 'alert' : 'status' %>">
+  <%- include('icon', { name: icons[flash.kind] }) %>
+  <span><%= t(flash.key, flash.params) %></span>
+</div>
+<% } %>

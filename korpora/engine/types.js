@@ -1,0 +1,291 @@
+// Furniture types: parameter schema (drives the form), defaults, limits and the builder that turns the spec
+// into carcasses, beds or compositions of modules.
+import { buildCarcass } from './carcass.js';
+import { buildBed, bedOuter } from './bed.js';
+import { buildDesk } from './desk.js';
+import { buildCustom } from './custom.js';
+import { buildKitchen, baseCabinet, wallCabinet, kitchenDims, SHAPES } from './kitchen.js';
+import { buildWardrobe, doorsFor, columnWidth } from './wardrobe.js';
+import { buildVanity, buildMirrorCabinet } from './bathroom.js';
+import { buildRoom, roomDims, ROOM_SHAPES } from './room.js';
+import { holeThrough, mark } from './panel.js';
+import { CONFIRMAT } from './joinery.js';
+import { MAX_CARCASS_W } from './layout.js'; // wider wardrobes and free carcasses are split into several carcasses
+import { clamp, r1 } from './util.js';
+import { translator } from './i18n.js';
+
+const R = (key, label, min, max, step, unit = 'mm') => ({ key, label, type: 'range', min, max, step, unit });
+const S = (key, label, options) => ({ key, label, type: 'seg', options });
+
+// The modules of a side wall: a range the form shows only for the shapes that have that wall (when).
+const sideWall = (key, label, shapes) => ({ ...R(key, label, 1, 6, 1, ''), when: { shape: shapes } });
+const SHAPE_LABELS = { line: 'Права', left: 'Г, крило вляво', right: 'Г, крило вдясно', u: 'П' };
+const ROOM_SHAPE_LABELS = { line: 'Една стена', left: 'Г, и лявата', right: 'Г, и дясната', u: 'П, три стени' };
+const FRONTS = S('fronts', 'Фронт', [['doors', 'Врати'], ['drawers', 'Чекмеджета'], ['mixed', 'Чекмедже + врати']]);
+const DOORS = S('doors', 'Врати', [[1, '1'], [2, '2']]);
+
+// The defaults are our choice (наш избор) within GTV's rule for the default slide, GTV H45: no drawer box wider than
+// the slide's nominal length (engine/data/slide-systems.js, maxWidth) — hence the 500 mm drawer module of the kitchen,
+// 4 wardrobe columns, 2 chest columns, a 400 mm nightstand and a 1500 mm TV unit with 4 columns
+// (tests/engine/defaults.test.mjs: no warning on any type's defaults).
+export const TYPES = {
+  base: {
+    label: 'Долен шкаф', group: 'kitchen',
+    params: [R('width', 'Ширина', 300, 1200, 1), R('height', 'Височина с крачетата', 600, 1000, 1), R('depth', 'Дълбочина', 300, 650, 1), R('legs', 'Крачета', 0, 150, 5), FRONTS, DOORS, R('drawers', 'Чекмеджета', 1, 5, 1, ''), R('shelves', 'Рафтове', 0, 4, 1, '')],
+    defaults: { width: 600, height: 820, depth: 560, legs: 100, fronts: 'doors', doors: 1, drawers: 3, shelves: 1 },
+  },
+  wall: {
+    label: 'Горен шкаф', group: 'kitchen',
+    params: [R('width', 'Ширина', 300, 1200, 1), R('height', 'Височина', 300, 1000, 1), R('depth', 'Дълбочина', 250, 400, 1), R('mount', 'Монтаж от пода (долен ръб)', 1300, 1800, 10), DOORS, R('shelves', 'Рафтове', 0, 4, 1, '')],
+    defaults: { width: 600, height: 720, depth: 320, mount: 1450, doors: 1, shelves: 2 },
+  },
+  tall: {
+    label: 'Колона', group: 'kitchen',
+    params: [R('width', 'Ширина', 300, 1200, 1), R('height', 'Височина с крачетата', 1200, 2500, 1), R('depth', 'Дълбочина', 300, 650, 1), R('legs', 'Крачета', 0, 150, 5), DOORS, R('drawers', 'Чекмеджета отдолу', 0, 4, 1, ''), R('shelves', 'Рафтове', 0, 8, 1, '')],
+    defaults: { width: 600, height: 2100, depth: 580, legs: 100, doors: 1, drawers: 0, shelves: 4 },
+  },
+  // straight, Г (the side wall on the left or on the right) or П; the modules of the back wall do not count its corner
+  // cabinets (kitchen.js)
+  kitchen: {
+    label: 'Кухня', group: 'kitchen',
+    params: [S('shape', 'Форма', SHAPES.map((v) => [v, SHAPE_LABELS[v]])), R('modules', 'Модули на задната стена (А)', 2, 6, 1, ''), sideWall('modulesLeft', 'Модули на лявата стена (Б)', ['left', 'u']), sideWall('modulesRight', 'Модули на дясната стена (В)', ['right', 'u']), R('moduleWidth', 'Ширина на модул с врати', 400, 900, 10), R('drawerModuleWidth', 'Ширина на модул с чекмеджета', 400, 900, 10), R('height', 'Долни шкафове с крачетата', 820, 900, 1), R('depth', 'Дълбочина долни', 500, 600, 1), R('wallHeight', 'Горни шкафове', 500, 900, 10), R('mount', 'Горни от пода', 1350, 1700, 10)],
+    // the drawer module narrower than the door modules: with GTV H45 in a 560 mm carcass (NL 500) a drawer of a 600 mm
+    // module would be wider than its slide (drawers.js); 500 keeps the box at 438,6 mm
+    defaults: { shape: 'line', modules: 4, modulesLeft: 2, modulesRight: 2, moduleWidth: 600, drawerModuleWidth: 500, height: 860, depth: 560, wallHeight: 720, mount: 1450 },
+    // a kitchen saved before drawerModuleWidth had all its modules moduleWidth wide: it opens as it was saved (the
+    // GTV check then says what to change), never silently with a narrower drawer module than the customer drew
+    legacy: { drawerModuleWidth: 'moduleWidth' },
+  },
+  wardrobe: {
+    label: 'Гардероб', group: 'bedroom',
+    params: [R('width', 'Ширина', 800, 3000, 10), R('height', 'Височина с крачетата', 1800, 2600, 10), R('depth', 'Дълбочина', 450, 650, 10), R('legs', 'Цокъл', 0, 150, 5), R('columns', 'Колони', 2, 5, 1, ''), S('layout', 'Разпределение', [['mixed', 'Смесено'], ['hanging', 'Закачалки'], ['shelves', 'Рафтове']]), S('doorType', 'Врати', [['hinged', 'Крилни'], ['sliding', 'Плъзгащи']]), { ...S('doorsPerColumn', 'Врати на колона', [[0, 'Авто'], [1, '1'], [2, '2']]), when: { doorType: ['hinged'] } }],
+    defaults: { width: 2000, height: 2400, depth: 600, legs: 100, columns: 4, layout: 'mixed', doorType: 'hinged', doorsPerColumn: 0 },
+  },
+  chest: {
+    label: 'Скрин', group: 'bedroom',
+    params: [R('width', 'Ширина', 400, 1600, 10), R('height', 'Височина с крачетата', 500, 1300, 10), R('depth', 'Дълбочина', 350, 600, 10), R('legs', 'Крачета', 0, 150, 5), R('columns', 'Колони', 1, 2, 1, ''), R('drawers', 'Чекмеджета в колона', 2, 8, 1, '')],
+    defaults: { width: 800, height: 850, depth: 450, legs: 60, columns: 2, drawers: 4 },
+  },
+  nightstand: {
+    label: 'Нощно шкафче', group: 'bedroom',
+    params: [R('width', 'Ширина', 350, 650, 5), R('height', 'Височина с крачетата', 400, 750, 5), R('depth', 'Дълбочина', 300, 500, 5), R('legs', 'Крачета', 0, 150, 5), R('drawers', 'Чекмеджета', 1, 3, 1, '')],
+    defaults: { width: 400, height: 550, depth: 400, legs: 60, drawers: 2 },
+  },
+  bed: {
+    label: 'Легло', group: 'bedroom',
+    params: [
+      S('mattressW', 'Матрак, ширина', [[900, '90'], [1200, '120'], [1400, '140'], [1600, '160'], [1800, '180'], [2000, '200']]),
+      S('mattressL', 'Матрак, дължина', [[1900, '190'], [2000, '200']]),
+      R('headHeight', 'Табла глава', 700, 1300, 10), R('footHeight', 'Табла крака (0 = само царга)', 0, 700, 10), R('railHeight', 'Височина на царгата', 200, 350, 5), R('railBottom', 'Царга от пода', 100, 300, 5),
+    ],
+    defaults: { mattressW: 1600, mattressL: 2000, headHeight: 1000, footHeight: 450, railHeight: 250, railBottom: 150 },
+  },
+  bookcase: {
+    label: 'Етажерка', group: 'living',
+    params: [R('width', 'Ширина', 400, 2400, 10), R('height', 'Височина с крачетата', 800, 2400, 10), R('depth', 'Дълбочина', 250, 450, 5), R('legs', 'Крачета', 0, 150, 5), R('columns', 'Колони', 1, 4, 1, ''), R('shelves', 'Рафтове в отворената част', 1, 8, 1, ''), S('doorZone', 'Долен корпус с врати', [[0, 'Без'], [400, '400'], [600, '600'], [800, '800']])],
+    defaults: { width: 900, height: 1900, depth: 300, legs: 60, columns: 2, shelves: 3, doorZone: 800 },
+  },
+  tv: {
+    label: 'ТВ шкаф', group: 'living',
+    params: [R('width', 'Ширина', 1000, 2600, 10), R('height', 'Височина с крачетата', 350, 700, 5), R('depth', 'Дълбочина', 350, 500, 5), R('legs', 'Крачета', 0, 150, 5), R('columns', 'Колони', 2, 4, 1, ''), S('tvFronts', 'Фронт на крайните колони', [['drawers', 'Чекмеджета'], ['doors', 'Врати']])],
+    defaults: { width: 1500, height: 480, depth: 420, legs: 100, columns: 4, tvFronts: 'drawers' },
+  },
+  desk: {
+    label: 'Бюро', group: 'living',
+    params: [R('width', 'Ширина', 900, 1800, 10), R('depth', 'Дълбочина', 500, 800, 10), R('height', 'Височина', 720, 780, 5), S('pedestal', 'Шкафче', [['right', 'Вдясно'], ['left', 'Вляво'], ['none', 'Без']]), R('drawers', 'Чекмеджета', 2, 4, 1, '')],
+    defaults: { width: 1400, depth: 650, height: 750, pedestal: 'right', drawers: 3 },
+  },
+  wallunit: {
+    label: 'Холна секция', group: 'living',
+    params: [R('width', 'Обща ширина', 2200, 3600, 10), R('height', 'Височина на колоните', 1800, 2400, 10), R('depth', 'Дълбочина на колоните', 350, 450, 5), R('sideWidth', 'Ширина на колона', 400, 700, 10), R('tvHeight', 'ТВ шкаф, височина', 400, 600, 5)],
+    defaults: { width: 2800, height: 2000, depth: 400, sideWidth: 500, tvHeight: 480 },
+  },
+  // Bathroom (bathroom.js): the cabinet under a sink — hung on the wall (its lower edge `floor` above the floor) or on
+  // legs, rails for the basin, no shelf — and the mirror cabinet over it, its doors with a glued mirror
+  vanity: {
+    label: 'Шкаф за мивка', group: 'bathroom',
+    params: [R('width', 'Ширина', 400, 1200, 1), R('height', 'Височина на корпуса', 400, 900, 1), R('depth', 'Дълбочина', 350, 550, 1), S('mount', 'Монтаж', [['wall', 'На стената'], ['legs', 'На крачета']]), { ...R('floor', 'Долен ръб от пода', 150, 600, 10), when: { mount: ['wall'] } }, { ...R('legs', 'Крачета', 100, 200, 5), when: { mount: ['legs'] } }, DOORS],
+    defaults: { width: 800, height: 520, depth: 460, mount: 'wall', floor: 330, legs: 150, doors: 2 },
+  },
+  mirror: {
+    label: 'Огледален шкаф', group: 'bathroom',
+    params: [R('width', 'Ширина', 400, 1200, 1), R('height', 'Височина', 500, 900, 1), R('depth', 'Дълбочина', 120, 200, 1), R('mount', 'Долен ръб от пода', 1000, 1500, 10), DOORS, R('shelves', 'Рафтове', 0, 4, 1, '')],
+    defaults: { width: 700, height: 700, depth: 150, mount: 1200, doors: 2, shelves: 2 },
+  },
+  // A room (room.js): its walls here, the pieces of furniture on them in spec.items
+  room: {
+    label: 'Стая', group: 'custom',
+    params: [S('shape', 'Стени', ROOM_SHAPES.map((v) => [v, ROOM_SHAPE_LABELS[v]])), R('roomWidth', 'Задна стена (А)', 1500, 8000, 10), { ...R('roomDepth', 'Странични стени (Б, В)', 1500, 6000, 10), when: { shape: ['left', 'right', 'u'] } }],
+    defaults: { shape: 'line', roomWidth: 4000, roomDepth: 3000 },
+  },
+  // The free carcass („Свободен корпус“): the outside here, the columns, cells and fronts in spec.grid (layout.js).
+  custom: {
+    label: 'Свободен корпус', group: 'custom',
+    params: [
+      R('width', 'Ширина', 300, 2 * MAX_CARCASS_W, 1), R('height', 'Височина', 300, 2600, 1), R('depth', 'Дълбочина', 250, 650, 1),
+      S('placement', 'Монтаж', [['floor', 'На пода'], ['wall', 'На стената']]),
+      R('legs', 'Цокъл или крачета', 0, 150, 5), S('plinth', 'Основа', [['legs', 'Крачета'], ['panel', 'Цокъл']]),
+      S('top', 'Таван', [['between', 'Между страниците'], ['over', 'Върху страниците'], ['rails', 'Траверси (под плот)']]),
+      R('mount', 'Монтаж от пода (долен ръб)', 1300, 1800, 10),
+    ],
+    defaults: { width: 1000, height: 2000, depth: 600, placement: 'floor', legs: 100, plinth: 'panel', top: 'between', mount: 1450 },
+  },
+};
+
+// The form of a type in a language: its name and the labels of its parameters and options. Bulgarian is the source,
+// right here in TYPES; another language has type.<id>, p.<id>.<key> and o.<id>.<key>.<value> in its catalogue (the test
+// asks for every one); an option that is only a number is the same in every language.
+const BG = translator('bg');
+export function typeText(type, t = BG) {
+  const def = TYPES[type] ?? TYPES.base;
+  if (t.lang === 'bg') return { label: def.label, params: def.params };
+  return {
+    label: t(`type.${type}`),
+    params: def.params.map((p) => ({
+      ...p,
+      label: t(`p.${type}.${p.key}`),
+      ...(p.options ? { options: p.options.map(([v, l]) => [v, /^\d+$/.test(l) ? l : t(`o.${type}.${p.key}.${v}`)]) } : {}),
+    })),
+  };
+}
+// Every key typeText reads in another language.
+export function typeTextKeys() {
+  return Object.entries(TYPES).flatMap(([type, def]) => [
+    `type.${type}`,
+    ...def.params.flatMap((p) => [`p.${type}.${p.key}`, ...(p.options ?? []).filter(([, l]) => !/^\d+$/.test(l)).map(([v]) => `o.${type}.${p.key}.${v}`)]),
+  ]);
+}
+
+export const TYPE_ORDER = ['base', 'wall', 'tall', 'kitchen', 'wardrobe', 'chest', 'nightstand', 'bed', 'bookcase', 'tv', 'desk', 'wallunit', 'vanity', 'mirror', 'room', 'custom'];
+// The types the screens offer (the new-project picker, the editor, the landing): a type marked `unlisted` is built and
+// stored like any other but not offered yet — the free carcass until its editor ships.
+export const LISTED_TYPES = TYPE_ORDER.filter((t) => !TYPES[t].unlisted);
+
+export function normalizeParams(type, input) {
+  const t = TYPES[type] ?? TYPES.base;
+  const s = { ...t.defaults };
+  for (const p of t.params) {
+    const v = input[p.key];
+    if (v === undefined || v === null || v === '') continue;
+    if (p.type === 'range') {
+      // on the parameter's own step from its minimum: a plinth of 3 mm or a width of 601,5 cannot come in
+      const x = clamp(Number(v) || p.min, p.min, p.max);
+      s[p.key] = clamp(Math.round(Math.round((x - p.min) / p.step) * p.step * 1000) / 1000 + p.min, p.min, p.max);
+    }
+    else if (p.type === 'seg') {
+      const opt = p.options.find(([ov]) => String(ov) === String(v));
+      if (opt) s[p.key] = opt[0];
+    }
+  }
+  // a parameter added after the spec was saved takes the value its geometry had then (TYPES[].legacy)
+  const given = (k) => input[k] !== undefined && input[k] !== null && input[k] !== '';
+  for (const [key, from] of Object.entries(t.legacy ?? {})) if (!given(key) && given(from)) s[key] = s[from];
+  return s;
+}
+
+const common = (s) => ({
+  carcassDecor: s.carcassDecor, frontDecor: s.frontDecor, frontMaterial: s.frontMaterial, frontRal: s.frontRal,
+  bands: { carcass: s.bandCarcass, front: s.bandFront }, gap: s.gap, hinge: s.hinge, handle: s.handle, slide: s.slide, kind: s.type,
+  // the form has a columns parameter: "add a column" is advice the user can follow
+  columnsParam: s.type === 'custom' || (TYPES[s.type]?.params.some((p) => p.key === 'columns') ?? false),
+});
+
+export const BUILDERS = {
+  base: (ctx, s) => baseCabinet(ctx, s, common(s)),
+  wall: (ctx, s) => wallCabinet(ctx, s, common(s)),
+  tall: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'between', visibleTop: true, columns: [{ shelves: s.shelves, doors: s.doors, drawers: s.drawers }] }),
+  kitchen: (ctx, s) => buildKitchen(ctx, s, common(s)),
+  wardrobe: (ctx, s) => buildWardrobe(ctx, s, common(s)),
+  chest: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'over', columns: Array.from({ length: s.columns }, () => ({ drawers: s.drawers, drawerZone: s.height - s.legs - 18 })) }),
+  nightstand: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'over', columns: [{ drawers: s.drawers, drawerZone: s.height - s.legs - 18 }] }),
+  bed: (ctx, s) => buildBed(ctx, s),
+  bookcase: (ctx, s) => {
+    const plinth = { type: s.legs ? 'legs' : 'none', h: s.legs };
+    const open = (n) => Array.from({ length: s.columns }, () => ({ shelves: n }));
+    const zone = s.doorZone > 0 && s.height - s.legs - s.doorZone >= 350 ? s.doorZone : 0;
+    if (s.doorZone > 0 && !zone) ctx.warn('info', ctx.t('w.bookcaseLow'));
+    if (!zone) return buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth, top: 'between', visibleTop: true, columns: open(s.shelves) });
+    // two stacked carcasses: lower one with doors, open upper one screwed onto it (no confirmat clash at partitions)
+    const doors = doorsFor(columnWidth(s.width, s.columns));
+    const lowH = s.legs + zone;
+    const lower = buildCarcass(ctx, { ...common(s), module: ctx.t('mod.lower'), W: s.width, H: lowH, D: s.depth, plinth, top: 'between', columns: Array.from({ length: s.columns }, (_, i) => ({ shelves: 1, doors, hingeSide: i % 2 === 0 ? 'left' : 'right' })) });
+    const upper = buildCarcass(ctx, { ...common(s), module: ctx.t('mod.upper'), y0: lowH, W: s.width, H: s.height - lowH, D: s.depth, plinth: { type: 'none', h: 0 }, top: 'between', visibleTop: true, columns: open(s.shelves) });
+    joinStacked(ctx, lower, upper);
+  },
+  tv: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'over', columns: Array.from({ length: s.columns }, (_, i) => {
+    const outer = i === 0 || i === s.columns - 1;
+    if (!outer) return { shelves: 1, doors: 0 };
+    return s.tvFronts === 'drawers' ? { drawers: 2, drawerZone: s.height - s.legs - 18 } : { shelves: 1, doors: 1, hingeSide: i === 0 ? 'left' : 'right' };
+  }) }),
+  desk: (ctx, s) => buildDesk(ctx, s, common(s)),
+  vanity: (ctx, s) => buildVanity(ctx, s, common(s)),
+  mirror: (ctx, s) => buildMirrorCabinet(ctx, s, common(s)),
+  room: (ctx, s) => buildRoom(ctx, s, BUILDERS),
+  custom: (ctx, s) => buildCustom(ctx, s, common(s)),
+  wallunit: (ctx, s) => {
+    const sw = s.sideWidth;
+    const mid = s.width - 2 * sw;
+    buildCarcass(ctx, { ...common(s), module: ctx.t('mod.left'), x0: 0, W: sw, H: s.height, D: s.depth, plinth: { type: 'legs', h: 100 }, top: 'between', visibleTop: true, columns: [{ shelves: SIDE_SHELVES, doors: 1, hingeSide: 'left' }] });
+    buildCarcass(ctx, { ...common(s), module: ctx.t('mod.right'), x0: s.width - sw, W: sw, H: s.height, D: s.depth, plinth: { type: 'legs', h: 100 }, top: 'between', visibleTop: true, columns: [{ shelves: SIDE_SHELVES, doors: 1, hingeSide: 'right' }] });
+    // a wide TV part: two open columns in the middle and the drawers in the two narrower end columns (weight 0,75), so a
+    // GTV H45 drawer stays no wider than its slide (NL 350 at the default depth); a narrow one: two drawer columns
+    const wide = mid > 1600;
+    const drawerCol = { drawers: 2, drawerZone: s.tvHeight - 100 - 18 };
+    const tvColumns = wide ? [{ ...drawerCol, weight: 0.75 }, { shelves: 1 }, { shelves: 1 }, { ...drawerCol, weight: 0.75 }] : [drawerCol, drawerCol];
+    const tv = buildCarcass(ctx, { ...common(s), module: ctx.t('mod.tv'), x0: sw, W: mid, H: s.tvHeight, D: s.depth + 20, plinth: { type: 'legs', h: 100 }, top: 'over', columns: tvColumns });
+    // the TV top spans the whole gap between the columns: if it outgrows the sheet, the sheet-fit error says why
+    tv.panels.top.fitHint = ctx.t('hint.wallunitTop');
+    const shelfH = 350;
+    buildCarcass(ctx, { ...common(s), module: ctx.t('mod.shelf'), x0: sw, y0: s.height - shelfH - 150, W: mid, H: shelfH, D: 300, plinth: { type: 'none', h: 0 }, top: 'between', mount: 'wall', visibleTop: true, columns: Array.from({ length: Math.max(2, Math.round(mid / 600)) }, () => ({ shelves: 0 })) });
+  },
+};
+
+const SIDE_SHELVES = 5; // shelves in each side column of a wall unit
+
+// Upper carcass standing on a lower one: 4 screws from inside the upper carcass through its bottom (Ø5 clearance)
+// into the top of the lower one. 4 × 30 through 18 mm leaves 12 mm in the 18 mm top: the tip stays inside it. The
+// pilot in the lower top is drilled on site through the clearance hole, after stacking (from below the CNC would
+// have to turn the part), so the drawing marks the place. Both boards carry Ø5 × 50 confirmat bores in from the sides,
+// the front ones at the depth (z) of the front screws: the screws sit 10 mm past the end of the bores, not in them.
+const STACK_INSET = CONFIRMAT.edgeDepth + 10;
+function joinStacked(ctx, lower, upper) {
+  if (!lower.panels.top) throw new Error('joinStacked: the lower carcass needs a top panel');
+  const { x0, W, T, backFront, z0, D } = upper.dims;
+  const y = upper.dims.c;
+  const pts = [];
+  for (const x of [x0 + T + STACK_INSET, x0 + W - T - STACK_INSET]) for (const z of [backFront + 50, z0 + D - 50]) pts.push([x, y + T, z]);
+  for (const p of pts) {
+    holeThrough(upper.panels.bottom, p, 5, 'screw', { hw: 'stack', label: ctx.t('lbl.stackScrew') });
+    mark(lower.panels.top, [p[0], y, p[2]], 'stack-pilot', { hw: 'stack', label: ctx.t('lbl.stackPilot') });
+  }
+  ctx.hw('stackScrews', { name: ctx.t('hw.stackScrews'), qty: pts.length, unit: ctx.t('u.pcs'), group: ctx.t('g.fasteners') });
+}
+
+export { kitchenModules } from './kitchen.js';
+
+// The overall size people read (title bar, drawing frame, project list): a wall cabinet shows its own height, not its
+// top edge above the floor; a kitchen, from the floor to the top of its wall cabinets, and as deep as its worktop or
+// its longest side wall. Numbers only — every caller adds
+// its own words.
+export function typeDims(type, s) {
+  switch (type) {
+    case 'bed': {
+      const { W, D } = bedOuter(s);
+      return { W, H: s.headHeight, D };
+    }
+    case 'kitchen':
+      return kitchenDims(s);
+    case 'room':
+      return roomDims(s);
+    case 'vanity':
+      return { W: s.width, H: s.height + (s.mount === 'legs' ? s.legs : 0), D: s.depth };
+    default:
+      return { W: s.width, H: s.height, D: s.depth };
+  }
+}
+
+export const dimsText = (type, s, t = BG) => {
+  const d = typeDims(type, s);
+  if (type === 'bed') return t('dims.bed', { w: s.mattressW / 10, l: s.mattressL / 10, W: d.W, D: d.D });
+  return `${r1(d.W)} × ${r1(d.H)} × ${r1(d.D)} mm`;
+};

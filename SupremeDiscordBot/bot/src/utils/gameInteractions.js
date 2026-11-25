@@ -6,7 +6,7 @@ import api from "./api.js";
 import { t, resolveLang } from "../i18n/index.js";
 import { friendlyError } from "./friendlyError.js";
 import { SUCCESS, WARNING } from "./colors.js";
-import { grantShopRole } from "./game.js";
+import { grantShopRole, shopRoleBlocker } from "./game.js";
 import { closeTriviaMessage, wyrVote, wyrMessage } from "./minigames.js";
 
 export async function handleGameInteraction(interaction) {
@@ -47,19 +47,43 @@ async function confirmPurchase(interaction, itemId) {
 async function buyItem(interaction, itemId) {
   const lang = await resolveLang(interaction);
   await interaction.deferUpdate();
+
+  // И1: преди да се вземат искри — може ли ролята изобщо да се даде и не я ли
+  // има вече човекът (постоянна). Списъкът е кратък и вече е бил зареждан за менюто.
+  let listed = null;
+  try {
+    const { data: items } = await api.get(`/bot/game/shop/${interaction.guildId}`);
+    listed = (items || []).find((i) => i.id === itemId) || null;
+  } catch { /* backend-ът пак ще отсъди (ITEM_NOT_FOUND и т.н.) */ }
+  if (listed?.type === "ROLE" && listed.roleId) {
+    const blocked = await shopRoleBlocker(interaction.guild, listed.roleId);
+    if (blocked) return interaction.editReply({ content: t("game.shop.roleUnavailable", lang, { reason: blocked }), embeds: [], components: [] });
+    if (!listed.durationDays && interaction.member.roles.cache.has(listed.roleId)) {
+      return interaction.editReply({ content: t("game.shop.alreadyOwned", lang), embeds: [], components: [] });
+    }
+  }
+
   let out;
   try {
     ({ data: out } = await api.post(`/bot/game/shop/${interaction.guildId}/buy`, { userId: interaction.user.id, itemId }));
   } catch (err) {
     const d = err?.response?.data || {};
-    const map = { NOT_ENOUGH_SPARKS: "game.shop.notEnough", SOLD_OUT: "game.shop.soldOut", ITEM_NOT_FOUND: "game.shop.gone", GAME_DISABLED: "game.disabled" };
+    const map = { NOT_ENOUGH_SPARKS: "game.shop.notEnough", SOLD_OUT: "game.shop.soldOut", ITEM_NOT_FOUND: "game.shop.gone", GAME_DISABLED: "game.disabled", ALREADY_OWNED: "game.shop.alreadyOwned" };
     const key = map[d.code];
     return interaction.editReply({ content: key ? t(key, lang, { sparks: d.sparks ?? 0, price: d.price ?? 0 }) : friendlyError(err, interaction).content, embeds: [], components: [] });
   }
   let note = "";
   if (out.item.type === "ROLE" && out.item.roleId) {
     const reason = await grantShopRole(interaction.guild, interaction.member, out.item.roleId);
-    if (reason) note = `\n\n${t("game.shop.roleFailed", lang, { reason })}`;
+    if (reason) {
+      // И1: неполучена роля → искрите се връщат (идемпотентно в backend-а).
+      const refunded = await api.post(`/bot/game/shop/${interaction.guildId}/purchase/${out.purchase.id}/refund`, { userId: interaction.user.id })
+        .then(() => true).catch(() => false);
+      if (refunded) {
+        return interaction.editReply({ content: t("game.shop.roleRefunded", lang, { reason, sparks: out.item.priceSparks }), embeds: [], components: [] });
+      }
+      note = `\n\n${t("game.shop.roleFailed", lang, { reason })}`;
+    }
   } else if (out.item.type === "CUSTOM") {
     note = `\n\n${t("game.shop.customNote", lang)}`;
   }

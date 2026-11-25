@@ -23,6 +23,41 @@ Plus a draggable panel inside the game, a toolbar popup, a full settings page, a
 stats page and Telegram/Discord alerts. See `FEATURES.md` for the full map of
 which game actions are covered and which are left out on purpose.
 
+## Alerts and pacing
+
+- **Two independent channels.** Chrome desktop pop-ups follow *Desktop
+  notifications*; Telegram/Discord webhooks follow their own settings. Turn the
+  desktop toggle off and everything still goes to Discord.
+- **Every alert says who and where:** character (+ level), server (e.g. `s1-us`),
+  what the bot is doing right now, and the guild. Discord alerts are embeds
+  coloured by level (success / warning / error / info).
+- **What is sent:** start, stop, level-up and licence problems by default.
+  Optional: *Webhook on every action* (one message per action, with the module's
+  own result line - Discord rate-limits a webhook to roughly 30 messages a
+  minute, so pair it with a fixed interval) and *Periodic status every N min*.
+  The per-action and periodic reports never raise a Chrome pop-up.
+- **Pacing.** By default the delay between actions is humanized (min/max). Set
+  *Fixed interval between actions* (seconds, `0` = auto) to program it; the
+  panel's "Next action in" counts down to the earliest moment the next action can
+  happen, never earlier than the game's own busy timer.
+- **Reconnect.** If the session drops and auto-login reloads the page, a bot that
+  was running starts again once you are back in.
+- **Timers, not polling.** While the hero is busy (adventure, work, mission,
+  cave) or a module waits on a cooldown or energy regen, the bot sleeps until
+  that exact moment and acts right after it ends (about 0.25 s with humanize
+  off, a short 0.3-1.2 s human-like beat with it on; a fixed interval, if set,
+  is respected). With nothing to wait for it only re-checks every 30 s.
+
+## Several heroes
+
+Every hero (server + name) has his **own saved settings**. The first time a
+hero is seen he starts from the defaults; from then on the panel, the popup and
+the options page change only that hero. Several heroes can run at once, each in
+his own tab. In the options page pick the hero under *Settings for*
+(*Default* = what a new hero starts with); the popup's Settings button opens
+the hero you are looking at, and with several hero tabs open (none in front)
+the popup lets you choose which one to control.
+
 ## Install (unpacked)
 
 1. `chrome://extensions` -> enable Developer mode -> Load unpacked -> pick this
@@ -44,22 +79,32 @@ one-line change.
 ## Subscription
 
 Paid via Revolut, two plans: €4/month (31-day key) or €20 lifetime (one-off,
-locks to the first machine it's activated on). New installs get a 3-day trial
+bound to the browser it's activated in; a real one-machine lock across
+computers needs the licence server, see below). New installs get a 3-day trial
 with everything unlocked; after that, Start needs a key. The popup, options page
 and panel paywall all have pay buttons (they open the Revolut link; you enter
 the amount) and an Activate field for the key.
 
-Issuing keys (seller side): set your own `REVOLUT_PAYMENT_URL` and
-`LICENSE_SECRET` in `src/shared/payment.js`, then:
+Issuing keys (seller side). Keys are **ECDSA P-256** signatures: you sign with
+a private key that only you hold; the extension and the licence server carry
+only the public key (`LICENSE_PUBLIC_KEY` in `src/shared/payment.js`), so a key
+can be checked offline but cannot be minted from the extension's code.
 
 ```
-node tools/genkey.mjs 31        # monthly
-node tools/genkey.mjs 365000    # lifetime
+# once: create a key pair OUTSIDE the repo, paste the printed public key into
+# LICENSE_PUBLIC_KEY (and set your own REVOLUT_PAYMENT_URL)
+node tools/genkey.mjs --new-keypair ~/.tanoth-license
+
+export LICENSE_PRIVATE_KEY_FILE=~/.tanoth-license/tanoth-license-private.pem
+node tools/genkey.mjs 31          # monthly
+node tools/genkey.mjs lifetime    # lifetime
 ```
 
-Offline keys are signed with `LICENSE_SECRET`. Because that secret ships in the
-extension, offline checks are a deterrent, not real DRM. For cross-machine
-enforcement run the license server (`server/`) and set `LICENSE_SERVER_URL`.
+Back the private key up: lose it and you cannot issue keys that the shipped
+extension accepts; leak it and anyone can. Rotating it invalidates every key
+issued so far. Offline, a lifetime key is bound to the browser it was activated
+in; for a one-machine lock across computers run the licence server (`server/`)
+and set `LICENSE_SERVER_URL`.
 
 ## Build for the Web Store
 
@@ -70,7 +115,7 @@ bash tools/package.sh
 Produces `dist/tanoth-master-bot-<version>.zip` with only the extension files
 (manifest, icons, _locales, popup, options, stats, src). It leaves out
 `controller/`, `server/`, `tools/` (including the key generator) and screenshots.
-Change `LICENSE_SECRET` before publishing.
+The zip only ever contains the public key.
 
 ## Tests
 

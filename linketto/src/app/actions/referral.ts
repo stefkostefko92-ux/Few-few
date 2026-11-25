@@ -1,6 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { dash } from '@/lib/dashboard-url';
 import { prisma } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
 import { isLocale } from '@/i18n/locales';
@@ -15,7 +16,7 @@ export async function ensureReferralCodeAction(
   const uiLocale = isLocale(raw) ? raw : 'en';
   const user = await getSessionUser();
   if (!user) redirect(`/${uiLocale}/login`);
-  if (user.referralCode) redirect(`/${uiLocale}/dashboard`);
+  if (user.referralCode) redirect(await dash(uiLocale));
 
   // Малко повторни опита при рядка колизия на кода (unique).
   for (let attempt = 0; attempt < 5; attempt++) {
@@ -37,7 +38,7 @@ export async function ensureReferralCodeAction(
       throw error;
     }
   }
-  redirect(`/${uiLocale}/dashboard`);
+  redirect(await dash(uiLocale));
 }
 
 // Заявка за изплащане на натрупания реферал бонус (при достигнат праг).
@@ -51,7 +52,7 @@ export async function requestPayoutAction(
   const user = await getSessionUser();
   if (!user) redirect(`/${uiLocale}/login`);
   const method = String(formData.get('method') ?? '').trim().slice(0, 200);
-  if (!method) redirect(`/${uiLocale}/dashboard?error=payout`);
+  if (!method) redirect(await dash(uiLocale, '?error=payout'));
 
   // Четем баланса наново под транзакция. Обикновеният прочит (READ
   // COMMITTED) не пази от две едновременни заявки, затова нулираме с
@@ -78,8 +79,8 @@ export async function requestPayoutAction(
         data: { userId: user.id, amountCents: balance, method },
       });
     })
-    .catch(() => {
-      redirect(`/${uiLocale}/dashboard?error=payout`);
+    .catch(async () => {
+      redirect(await dash(uiLocale, '?error=payout'));
     });
-  redirect(`/${uiLocale}/dashboard?payout=1`);
+  redirect(await dash(uiLocale, '?payout=1'));
 }

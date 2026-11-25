@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { Prisma, prisma } from "@aso/db";
+import { recordLedger } from "@aso/db/ledger";
 import {
   buyCosmeticSchema,
   equipCosmeticSchema,
@@ -13,6 +14,7 @@ import {
 } from "@aso/shared";
 import { asyncHandler, badRequest, conflict, forbidden, unauthorized } from "../http.js";
 import { requireAuth } from "../middleware/requireAuth.js";
+import { assertNotSelfExcluded } from "../account/responsible.js";
 
 export const cosmeticsRouter: Router = Router();
 
@@ -76,6 +78,8 @@ cosmeticsRouter.post(
     const userId = req.user!.sub;
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw unauthorized();
+    // Отговорна игра: самоизключеният не купува и с камъни.
+    assertNotSelfExcluded(user);
 
     if (cosmetic.vipExclusive && !canUseExclusive(user.vipTier as VipTier)) {
       throw forbidden("Този артикул е само за VIP (Silver и нагоре)");
@@ -101,6 +105,7 @@ cosmeticsRouter.post(
           data: { gems: { decrement: cosmetic.gemPrice } },
         });
         if (debited.count !== 1) throw badRequest("insufficient_gems", "Нямаш достатъчно камъни");
+        await recordLedger(tx, { userId, currency: "GEMS", delta: -cosmetic.gemPrice, reason: "SHOP", refId: id });
         await tx.inventoryItem.create({ data: { userId, cosmeticId: id } });
         const fresh = await tx.user.findUnique({ where: { id: userId }, select: { gems: true } });
         gems = fresh?.gems ?? gems;

@@ -11,6 +11,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isMain } from "../lib/is-main.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const MEM_DIR = join(HERE, "..", "..", ".claude", "agents", "_memory");
@@ -70,7 +71,7 @@ export function auditAll(dir = MEM_DIR) {
 }
 
 // CLI
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   const check = process.argv.includes("--check");
   const all = auditAll();
   const leaks = all.filter((f) => f.kind === "empty_source");

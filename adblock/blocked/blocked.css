@@ -1,0 +1,30 @@
+/* The warning page reuses the settings styles (options.css); only its own layout here. */
+body { display: grid; place-items: center; min-height: 100vh; padding: 32px 16px; }
+.danger {
+  max-width: 560px;
+  width: 100%;
+  text-align: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-top: 3px solid #ff5a5a;
+  border-radius: 16px;
+  padding: 32px 28px;
+}
+.sign { display: block; margin: 0 auto; width: 56px; height: 56px; fill: none; stroke: #ff5a5a; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+html[data-theme="light"] .sign { stroke: #b42318; }
+html[data-theme="light"] .danger { border-top-color: #b42318; }
+h1 { font-size: 22px; margin: 14px 0 10px; line-height: 1.25; }
+.host { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 15px; font-weight: 700; word-break: break-all; margin-bottom: 10px; }
+.danger p { color: var(--muted); font-size: 14px; line-height: 1.55; }
+.danger .host { color: var(--text); }
+.acts { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 22px 0 6px; }
+.note { margin-top: 10px; font-size: 12.5px !important; }
+.note a { color: var(--accent-2); }
+
+@media (forced-colors: active) {
+  .danger { border-color: CanvasText; border-top-color: Mark; }
+  .sign { stroke: CanvasText; }
+}
+@media (prefers-contrast: more) {
+  html[data-theme] { --muted: var(--text); }
+}

@@ -80,12 +80,23 @@ export async function writeSite(server, name, content, audit, user) {
   const full = path.join(dir, base);
   const text = String(content ?? '');
   if (text.length > MAX_CONF) throw Object.assign(new Error('Конфигът е твърде голям'), { status: 400 });
+  // Празният файл е ВАЛИДЕН за `nginx -t` — значи минаваше проверката, reload-ът
+  // махаше сайта, а панелът казваше „валидно". Видяно в лабораторията: едно
+  // „избери всичко + изтрий" сваля сайт без нито едно предупреждение. Изключването
+  // има свой бутон (и своя проверка); празен запис не е начинът.
+  if (!text.trim()) {
+    throw Object.assign(new Error('Празен конфиг би махнал сайта тихо — за това ползвай „Изключи".'), { status: 400 });
+  }
 
   const existed = fs.existsSync(full);
   const backup = existed ? fs.readFileSync(full, 'utf8') : null;
   audit.log({ action: 'webserver.write', server, name: base, bytes: text.length, user });
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(full, text, { mode: 0o644 });
+  // `mode` важи само при СЪЗДАВАНЕ. Презаписан съществуващ файл пазеше старите си
+  // права — а конфиг на nginx, в който пише всеки, е път към root (master процесът
+  // отваря логовете като root). Затягаме изрично.
+  fs.chmodSync(full, 0o644);
 
   const check = await validate(server);
   if (!check.ok) {

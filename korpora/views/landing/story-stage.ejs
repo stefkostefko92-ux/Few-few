@@ -1,0 +1,34 @@
+<%#
+  Сцената до стъпките: снимки от същата 3D сцена (по една за стъпка; първата е LCP и се зарежда веднага, останалите —
+  чак когато потрябват, от landing/main.js), мястото за живата сцена и отчетът с числата на примера (от сървъра; живата
+  сцена сменя само реда с G-кода). Декоративна е — стъпките казват същото с думи.
+%><div class="stage" data-story data-step="1" data-example="<%= JSON.stringify(storyExample) %>" aria-hidden="true">
+  <div class="stage-frame">
+    <%# Снимки 2–4 носят прозрачен пиксел в src (валиден <img> и без скрипт); истинският адрес е в data-src до първата нужда %>
+    <% const blank = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='; %>
+    <% for (const n of howSteps) { const first = n === 1; const still = (w) => `/static/img/story/step-${n}-${w}.webp?v=${v}`; const set = `${still(640)} 640w, ${still(1120)} 1120w`; %>
+    <img class="still" data-still="<%= n %>" src="<%= first ? still(1120) : blank %>" <%- first ? 'srcset="' + set + '"' : 'data-src="' + still(1120) + '" data-srcset="' + set + '"' %> sizes="(min-width: 900px) 58vw, 100vw" width="1120" height="1400" alt="" decoding="async"<%- first ? ' fetchpriority="high"' : '' %>>
+    <% } %>
+    <div class="stage-gl" data-story-gl></div>
+    <% const story = assets.story; const kitchen = assets.example; %>
+    <div class="stage-hud" data-story-hud>
+      <dl data-hud="1">
+        <div><dt><%= t('landing.story.model') %></dt><dd><%= t('landing.story.modelValue', { doors: fmt.num(kitchen.doorModules), width: fmt.num(kitchen.moduleWidth), drawers: fmt.num(kitchen.drawerModules), drawerWidth: fmt.num(kitchen.drawerModuleWidth) }) %></dd></div>
+        <div><dt><%= t('landing.story.size') %></dt><dd><%= t('landing.story.sizeValue', { w: fmt.num(story.size.W), h: fmt.num(story.size.H), d: fmt.num(story.size.D) }) %></dd></div>
+      </dl>
+      <dl data-hud="2">
+        <div><dt><%= t('landing.story.parts') %></dt><dd><%= fmt.num(story.parts) %></dd></div>
+        <div><dt><%= t('landing.story.materials') %></dt><dd><%= fmt.num(story.materials) %></dd></div>
+      </dl>
+      <dl data-hud="3">
+        <div><dt><%= t('landing.story.sheets') %></dt><dd><%= t('landing.story.sheetsValue', { n: fmt.num(story.sheets), w: fmt.num(story.sheetW), h: fmt.num(story.sheetH) }) %></dd></div>
+        <div><dt><%= t('landing.story.yield') %></dt><dd><%= t('landing.story.yieldValue', { pct: fmt.num(story.yieldPct) }) %></dd></div>
+      </dl>
+      <dl data-hud="4">
+        <div><dt><%= t('landing.story.sheet1') %></dt><dd><%= fmt.num(story.sheet1Parts) %></dd></div>
+        <div><dt><%= t('landing.story.holes') %></dt><dd><%= fmt.num(story.sheet1Holes) %></dd></div>
+        <div class="hud-line"><dt><%= t('landing.story.program') %></dt><dd data-story-line><%= story.firstMove %></dd></div>
+      </dl>
+    </div>
+  </div>
+</div>

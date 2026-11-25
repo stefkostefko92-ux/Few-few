@@ -40,12 +40,15 @@
       return Number(sessionStorage.getItem("tbab_yt_bypass_n") || 0) || 0;
     } catch { return 0; }
   }
-  // youtube.css hides ad UI only while html[data-tbab-yt-bypass] is absent, so a
-  // bypassed (clean-client) page does not keep hiding ad containers — YouTube can
-  // detect that too. Enforcement overlay/scroll-lock rules stay ungated.
+  // A bypassed (clean-client) page must not keep hiding ad containers — YouTube can
+  // detect that too. Since 5.7 the ad-hiding stylesheet (youtube_ads.css) is simply not
+  // registered during a bypass (every bypass reloads), so no attribute of ours sits on
+  // <html> there. The attribute is left for ONE case: the bypass could not be armed and
+  // YouTube's own dialog must be visible (attrForced). Overlay/scroll-lock rules
+  // (youtube.css) stay ungated.
   function syncBypassAttr() {
     try {
-      if (bgBypass || attrForced) document.documentElement.setAttribute("data-tbab-yt-bypass", "1");
+      if (attrForced) document.documentElement.setAttribute("data-tbab-yt-bypass", "1");
       else document.documentElement.removeAttribute("data-tbab-yt-bypass");
     } catch {}
   }
@@ -163,6 +166,21 @@
   let lastSeenTime = -1;
   let lastSrc = "";
   let advanced = false; // this clip has played on this page
+  // youtube_main (MAIN world) retried the clip in place with the next request shape: the stall clock and the
+  // Playback ID clock start again. The reload and the six-hour bypass below are for a clip that still does
+  // not start once those retries are over — 6.1.1: the clock used to run through them, and a slow rotation
+  // ended in six hours of ads ("after a refresh the 15-second ads start").
+  // At most one restart a second and 20 a page: a page script that learned the name cannot hold the clock
+  // forever (past the cap the clock simply runs, as before 6.1.1).
+  let retryResets = 0, retryResetAt = 0;
+  try {
+    document.addEventListener("tbab-yt-retry", () => {
+      const now = Date.now();
+      if (retryResets >= 20 || now - retryResetAt < 1000) return;
+      retryResets++; retryResetAt = now;
+      stallSince = 0; errSeenAt = 0;
+    }, true);
+  } catch {}
   function isLive(video, player) {
     if (!isFinite(Number(video.duration))) return true;
     try { if (player && player.classList.contains("ytp-live")) return true; } catch {}
@@ -218,19 +236,21 @@
         prevMuted = video.muted;
         prevRate = video.playbackRate;
       }
-      // No seek to the end. With server-side stitched ads (SSAP) the media
-      // element's duration covers the WHOLE stream (ad + clip), so seeking to
-      // `duration` ends the clip itself: black player, autoplay to the next
-      // video — "the clip never played". Speed + mute + the native Skip click
-      // below are enough: a 30s ad is over in ~2s and nothing is skipped past.
+      // An ad that still got through (server-stitched, or before the response
+      // rewrite caught it) is MUTED and its native Skip button clicked — nothing
+      // more here. No seek on the <video> (with SSAP its duration covers ad + clip:
+      // seeking it ends the clip) and NO playbackRate change: an ad "watched" at
+      // 16× is one of the signals YouTube counts towards its three strikes. A
+      // stitched ad is jumped over by youtube_main through the player's own API
+      // (the ad's progress, never the clip's). The ad-state ping that would report
+      // the mute is answered locally by youtube_main.
       try {
         video.muted = true;
-        video.playbackRate = 16;
       } catch {}
     } else if (adActive && video) {
       adActive = false;
       try {
-        video.playbackRate = prevRate || 1;
+        if (video.playbackRate !== (prevRate || 1)) video.playbackRate = prevRate || 1;
         video.muted = prevMuted;
       } catch {}
     }

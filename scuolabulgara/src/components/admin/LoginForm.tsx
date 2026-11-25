@@ -36,16 +36,16 @@ export default function LoginForm({ next }: { next?: string }) {
 
   return (
     <form onSubmit={onSubmit}>
-      {error && <div className="ad-err">{error}</div>}
-      <div className="ad-field">
+      {error && <div className="qba-err">{error}</div>}
+      <div className="qba-field">
         <label htmlFor="email">Имейл</label>
         <input id="email" name="email" type="email" autoComplete="username" required autoFocus />
       </div>
-      <div className="ad-field">
+      <div className="qba-field">
         <label htmlFor="password">Парола</label>
         <input id="password" name="password" type="password" autoComplete="current-password" required />
       </div>
-      <button className="ad-btn ad-btn--primary" type="submit" disabled={busy} style={{ width: "100%", justifyContent: "center", marginTop: ".4rem" }}>
+      <button className="qba-btn qba-btn--primary" type="submit" disabled={busy} style={{ width: "100%", justifyContent: "center", marginTop: ".4rem" }}>
         {busy ? "Влизане…" : "Вход"}
       </button>
     </form>

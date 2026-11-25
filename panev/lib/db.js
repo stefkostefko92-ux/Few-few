@@ -111,6 +111,14 @@ db.exec(`
   );
 `);
 
+// ── Migrations (additive only) ────────────────────────────────
+// token_version: part of every admin session token. A password change (in /admin or with
+// scripts/admin-password.js) bumps it, so every session issued before the change stops working.
+const adminColumns = db.prepare('PRAGMA table_info(admin_users)').all().map((c) => c.name);
+if (!adminColumns.includes('token_version')) {
+  db.exec('ALTER TABLE admin_users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0');
+}
+
 // ── Helpers ───────────────────────────────────────────────────
 function genId(prefix = '') {
   const rnd = Math.random().toString(36).slice(2, 8);
@@ -166,7 +174,9 @@ const stmts = {
   getAdminByEmail: db.prepare('SELECT * FROM admin_users WHERE lower(email) = lower(?)'),
   getAdminById:    db.prepare('SELECT * FROM admin_users WHERE id = ?'),
   createAdmin:     db.prepare(`INSERT INTO admin_users (email, password_hash, name) VALUES (?, ?, ?)`),
-  updateAdminPw:   db.prepare(`UPDATE admin_users SET password_hash = ? WHERE id = ?`),
+  updateAdminPw:   db.prepare(`UPDATE admin_users SET password_hash = ?, token_version = token_version + 1 WHERE id = ?`),
+  revokeAdminSessions: db.prepare(`UPDATE admin_users SET token_version = token_version + 1 WHERE id = ?`),
+  listAdmins:      db.prepare(`SELECT id, email, name, created_at, last_login_at FROM admin_users ORDER BY id`),
   updateAdminLastLogin: db.prepare(`UPDATE admin_users SET last_login_at = datetime('now') WHERE id = ?`),
 
   // Products
@@ -244,6 +254,8 @@ const stmts = {
   clearLoginAttempt:  db.prepare(`DELETE FROM login_attempts WHERE ip = ?`),
   cleanupLoginAttempts: db.prepare(`DELETE FROM login_attempts WHERE last_at < datetime('now', '-1 day')`),
   pruneOldMessages: db.prepare(`DELETE FROM messages WHERE created_at < datetime('now', '-24 months')`),
+  // L'IP serve solo contro gli abusi del modulo: dopo 30 giorni si cancella, il messaggio resta (informativa privacy).
+  clearOldMessageIps: db.prepare(`UPDATE messages SET ip_address = NULL WHERE ip_address IS NOT NULL AND created_at < datetime('now', '-30 days')`),
 };
 
 // ── High-level API ────────────────────────────────────────────
@@ -252,7 +264,10 @@ const api = {
   getAdminByEmail(email)        { return stmts.getAdminByEmail.get(email); },
   getAdminById(id)              { return stmts.getAdminById.get(id); },
   createAdmin(email, hash, name){ return stmts.createAdmin.run(email, hash, name || null); },
+  // Also ends every session of this admin (token_version + 1).
   updateAdminPassword(id, hash) { return stmts.updateAdminPw.run(hash, id); },
+  revokeAdminSessions(id)       { return stmts.revokeAdminSessions.run(id); },
+  listAdmins()                  { return stmts.listAdmins.all(); },
   markAdminLoggedIn(id)         { stmts.updateAdminLastLogin.run(id); },
 
   // Products
@@ -344,6 +359,7 @@ const api = {
   clearLoginAttempt(ip) { return stmts.clearLoginAttempt.run(ip).changes; },
   cleanupLoginAttempts() { return stmts.cleanupLoginAttempts.run().changes; },
   pruneOldMessages()      { return stmts.pruneOldMessages.run().changes; },
+  clearOldMessageIps()    { return stmts.clearOldMessageIps.run().changes; },
 
   // Raw db handle if needed
   raw: db,

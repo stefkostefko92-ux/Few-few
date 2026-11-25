@@ -1,0 +1,6 @@
+<nav class="subnav" aria-label="<%= t('nav.account') %>">
+  <a href="/account" aria-current="<%= section === 'overview' ? 'page' : 'false' %>"><%- include('icon', { name: 'user' }) %><%= t('account.nav.overview') %></a>
+  <a href="/account/plan" aria-current="<%= section === 'plan' ? 'page' : 'false' %>"><%- include('icon', { name: 'receipt' }) %><%= t('account.nav.plan') %></a>
+  <a href="/account/security" aria-current="<%= section === 'security' ? 'page' : 'false' %>"><%- include('icon', { name: 'shield' }) %><%= t('account.nav.security') %></a>
+  <a href="/account/data" aria-current="<%= section === 'data' ? 'page' : 'false' %>"><%- include('icon', { name: 'folder' }) %><%= t('account.nav.data') %></a>
+</nav>

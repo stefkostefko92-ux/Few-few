@@ -7,18 +7,28 @@
 - after the rigid arm a 3D page is inserted: a copy of the product page keeps its header, side tab and
   footer, its body is removed by redaction and the sheet is laid over it, with a link back to the
   drawing;
-- page labels follow the printed numbers ("14", "14 · 3D", ...);
+- the general index's right column whole, in two lists, every entry visible and linked (indice.py);
+- on each section cover, a row of the section's renders, each linked to its page (sezioni.py);
+- the legend of page 04 and the comparison table of page 63 whole, the side tabs' cut labels whole (ritocchi.py);
+- before the back, the summary of the whole range (summary.py): copies of the price list page with
+  the sheets over them, every article linked to its page, and an outline entry;
+- page labels follow the printed numbers ("14", "14 · 3D", ..., the summary "67" to "69");
 - the logo is the owner's new one on every page (logo.py);
 - "Proprietà intellettuale di Panev Ascensori SAS" in every footer but the cover's and on every
-  technical drawing (notice.py; the renders carry it from their sheets).
+  technical drawing (notice.py; the renders carry it from their sheets);
+- the document language is set (it-IT) and every printed "panevascensori.it" and e-mail address is a link.
 Every other thing stays as it is: drawings, dimensions, ranges, tables and prices.
 Writes dist/pdf/catalogo-staffe-panev-2026.pdf."""
 import json
 import os
 import pymupdf
+import indice as I
 import inline
 import logo
 import notice
+import ritocchi as R
+import sezioni as Z
+import summary as S
 
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "dist", "pdf")
 data = json.load(open(os.path.join(OUT, "spec.json")))
@@ -28,7 +38,7 @@ gen = pymupdf.open(os.path.join(OUT, "gen.pdf"))
 doc = pymupdf.open(os.path.join(OUT, "base.pdf"))
 tpl = pymupdf.open(os.path.join(OUT, "base.pdf"))  # untouched copy: templates of the inserted pages
 n_base = doc.page_count
-if gen.page_count != len(spec) + 2 + len(stamps):  # the sheets, pages 7 and 6, the stamps
+if gen.page_count != len(spec) + 2 + len(stamps) + len(data["summary"]["pages"]) + 1 + len(data["sezioni"]["pages"]) + len(data["ritocchi"]["pages"]):  # the sheets, pages 7 and 6, the stamps, the summary, the index, the covers' rows, the retouches
     raise SystemExit("gen.pdf does not match spec.json: run gen.py and print.mjs again")
 
 # Page 7: remove the two line illustrations, lay the renders over the cards.
@@ -40,6 +50,9 @@ for info in drawings:
     p06.delete_image(info["xref"])
 p06.show_pdf_page(p06.rect, gen, data["p06"])
 inline.p05(doc[5], gen, data["p05"])
+I.apply(doc[I.PAGE], gen, data["index"]["pno"])
+Z.apply(doc, gen, data["sezioni"])
+R.apply(doc, tpl, gen, data["ritocchi"])
 for k, page_spec in enumerate(spec):
     if page_spec["mode"] == "inline":
         inline.product(doc[page_spec["target"] - 1], gen, k, page_spec)
@@ -48,7 +61,7 @@ BODY = pymupdf.Rect(0, 40.5, 815.5, 569.5)  # below the header bar, above the fo
 PAGENO = pymupdf.Rect(780, 575, 815, 591)
 LINK = pymupdf.Rect(560, 538, 802.2, 562)  # "Disegni tecnici · pag. NN"
 
-order = list(range(n_base))  # base index at each final position; None marks an inserted page
+order = list(range(n_base))  # base index at each final position; an inserted page is its label
 for k, page_spec in sorted(standalone, key=lambda t: -t[1]["after"]):  # from the back: earlier indices stay put
     at = page_spec["after"]  # 1-based page it follows == 0-based position of the new page
     doc.insert_pdf(tpl, from_page=page_spec["src"] - 1, to_page=page_spec["src"] - 1, start_at=at, links=False, annots=False)
@@ -60,13 +73,15 @@ for k, page_spec in sorted(standalone, key=lambda t: -t[1]["after"]):  # from th
         raise SystemExit(f"page after {at}: text of the product page left in the body")
     page.show_pdf_page(page.rect, gen, k)
     page.insert_link({"kind": pymupdf.LINK_GOTO, "from": LINK, "page": page_spec["refs"][0][0] - 1, "to": pymupdf.Point(0, 0)})
-    order.insert(at, None)
+    order.insert(at, page_spec["label"])
+S.insert(doc, tpl, gen, data["summary"], order, BODY, PAGENO)
+I.links(doc, data["index"], order)
+Z.links(doc, data["sezioni"], order)
 
 logo.apply(doc, tpl)  # the owner's logo on every page, in place of the old one (logo.py)
 
 base_labels = {i: "Copertina" if i == 0 else "Retro" if i == n_base - 1 else f"{i:02d}" for i in range(n_base)}
-added = iter(p["label"] for _, p in sorted(standalone, key=lambda t: t[1]["after"]))
-labels = [base_labels[i] if i is not None else next(added) for i in order]
+labels = [base_labels[i] if isinstance(i, int) else i for i in order]
 for pos, lab in enumerate(labels):
     if lab.endswith(" · 3D") and lab != f"{labels[pos - 1]} · 3D":
         raise SystemExit(f"label {lab} follows {labels[pos - 1]}")
@@ -75,6 +90,18 @@ doc.set_page_labels([{"startpage": pos, "prefix": lab, "style": "", "firstpagenu
 kind, value = doc.xref_get_key(doc.pdf_catalog(), "PageLabels")
 doc.xref_set_key(doc.pdf_catalog(), "PageLabels", value.replace("\\302\\267", "\\267"))
 notice.apply(doc, gen, stamps)  # the intellectual property notice, by the labels (notice.py)
+
+# The document says which language it is in (screen readers, search engines), and the site's address
+# and the e-mail are links wherever a page prints them: the PDF travels on its own, as an advert.
+SITE, MAIL = "https://panevascensori.it/", "info@panevascensori.it"
+doc.xref_set_key(doc.pdf_catalog(), "Lang", "(it-IT)")  # set_language() keeps the language only, without the region
+for page in doc:
+    taken = [pymupdf.Rect(lk["from"]) for lk in page.get_links() if lk.get("uri")]
+    for word, uri in ((MAIL, f"mailto:{MAIL}"), ("panevascensori.it", SITE)):  # the e-mail first: it holds the site's name
+        for hit in page.search_for(word):
+            if not any(hit.intersects(r) for r in taken):
+                page.insert_link({"kind": pymupdf.LINK_URI, "from": hit, "uri": uri})
+                taken.append(hit)
 
 out = os.path.join(OUT, "catalogo-staffe-panev-2026.pdf")
 doc.save(out, garbage=4, deflate=True)

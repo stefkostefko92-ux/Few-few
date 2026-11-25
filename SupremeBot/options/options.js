@@ -28,12 +28,12 @@ const CIRCLE_NODES = [
   { n: 8, label: 'Amethyst (adventure gold)', aliases: ['amethyst', 'advgold', 'adventuregold'] },
   { n: 9, label: 'Diamond (shop discount)', aliases: ['diamond', 'discount', 'cheaper'] },
   { n: 10, label: "Tiger's Eye (travel speed)", aliases: ["tiger's eye", 'tigers eye', 'tigerseye', 'tiger', 'speed', 'travel'] },
-  { n: 11, label: 'Negotiation Rune (INT)', aliases: ['negotiation', 'int', 'intelligence'] },
+  { n: 11, label: 'Negotiation Rune (INT)', aliases: ['negotiation', 'int', 'intelligence', 'преговор'] },
   { n: 12, label: 'Wisdom Rune (CON)', aliases: ['wisdom', 'con', 'constitution'] },
   { n: 13, label: 'Diligence Rune (DEX)', aliases: ['diligence', 'dex', 'dexterity'] },
   { n: 14, label: 'Courage Rune (STR)', aliases: ['courage', 'str', 'strength'] },
   { n: 15, label: 'Glory Rune (drop rate)', aliases: ['glory', 'drop', 'droprate', 'loot'] },
-  { n: 16, label: 'Demon Skull (major bonuses)', aliases: ['demon skull', 'skull', 'demon'] }
+  { n: 16, label: 'Demon Skull (major bonuses)', aliases: ['demon skull', 'skull', 'demon', 'череп'] }
 ];
 
 // Same resolution rule as circle.js resolveNodes: numbers pass through,
@@ -64,6 +64,7 @@ const SCHEMA = [
     { k: 'humanize', type: 'bool' },
     { k: 'minActionDelayMs', type: 'number', min: 300, max: 60000, step: 100 },
     { k: 'maxActionDelayMs', type: 'number', min: 500, max: 120000, step: 100 },
+    { k: 'actionIntervalSec', type: 'number', min: 0, max: 86400 },
     { k: 'pauseAfterErrors', type: 'number', min: 0, max: 50 },
     { k: 'keepGoldReserve', type: 'number', min: 0 },
     { k: 'notifications', type: 'bool' },
@@ -151,7 +152,8 @@ const SCHEMA = [
     { k: 'discordThreadId', type: 'text' },
     { k: 'discordMention', type: 'text' },
     { k: 'discordFooter', type: 'text' },
-    { k: 'statusMinutes', type: 'number', min: 0, max: 1440 }
+    { k: 'statusMinutes', type: 'number', min: 0, max: 1440 },
+    { k: 'notifyEachAction', type: 'bool' }
   ] },
   { id: 'autologin', fields: [
     { k: 'enabled', type: 'bool' },
@@ -169,6 +171,9 @@ const SCHEMA = [
 ];
 
 let settings = mergeSettings(null);
+// Which hero's settings this page edits: null = the defaults a NEW hero starts
+// from; otherwise "<server>:<name>". Opened from the popup it arrives as ?hero=.
+let heroKey = new URLSearchParams(location.search).get('hero') || null;
 
 const navEl = document.getElementById('nav');
 const formEl = document.getElementById('form');
@@ -218,8 +223,15 @@ function renderChecklist(section, f) {
   const current = String(settings[section][f.k] || '').split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean);
   const selected = new Set(current.map(resolveNodeToken).filter((n) => n != null).map(String));
 
+  // Manual mode buys in LIST order, so keep the order already set (from the
+  // panel or earlier clicks) and append newly ticked nodes at the end.
+  const order = current.map(resolveNodeToken).filter((n) => n != null).map(String)
+    .filter((v, i, a) => a.indexOf(v) === i);
   function commit() {
-    const chosen = Array.from(box.querySelectorAll('input:checked')).map((cb) => cb.value);
+    const checked = new Set(Array.from(box.querySelectorAll('input:checked')).map((cb) => cb.value));
+    for (let i = order.length - 1; i >= 0; i--) if (!checked.has(order[i])) order.splice(i, 1);
+    checked.forEach((v) => { if (!order.includes(v)) order.push(v); });
+    const chosen = order.slice();
     settings[section][f.k] = chosen.join(', ');
     settings.circle.mode = chosen.length ? 'manual' : 'auto';
     // Keep the visible Mode dropdown in sync with the checklist.
@@ -371,19 +383,65 @@ function renderField(section, f) {
 }
 
 async function load() {
-  settings = mergeSettings(await chrome.runtime.sendMessage({ type: 'GET_SETTINGS' }));
+  settings = mergeSettings(await chrome.runtime.sendMessage({ type: 'GET_SETTINGS', heroKey }));
   render();
 }
 
+// Hero picker: every hero has his own saved settings (several heroes can run
+// at once in different tabs). "Default" is what a hero gets on his first visit.
+async function renderHeroPicker() {
+  const heroes = (await chrome.runtime.sendMessage({ type: 'LIST_HEROES' })) || [];
+  if (heroKey && !heroes.some((h) => h.key === heroKey)) heroKey = null;
+  let box = document.getElementById('hero-box');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'hero-box'; box.className = 'hero-box';
+    const lab = document.createElement('label');
+    lab.htmlFor = 'hero-sel'; lab.className = 'hero-label'; lab.textContent = t('optHeroLabel');
+    const sel = document.createElement('select');
+    sel.id = 'hero-sel';
+    sel.addEventListener('change', async () => {
+      heroKey = sel.value || null;
+      const u = new URL(location.href);
+      if (heroKey) u.searchParams.set('hero', heroKey); else u.searchParams.delete('hero');
+      history.replaceState(null, '', u);
+      forget.hidden = !heroKey;
+      await load();
+    });
+    const forget = document.createElement('button');
+    forget.type = 'button'; forget.id = 'hero-forget'; forget.className = 'linkbtn';
+    forget.textContent = t('optHeroForget');
+    forget.addEventListener('click', async () => {
+      if (!heroKey || !confirm(t('optHeroForgetConfirm'))) return;
+      await chrome.runtime.sendMessage({ type: 'FORGET_HERO', heroKey });
+      heroKey = null;
+      await renderHeroPicker(); await load();
+    });
+    box.append(lab, sel, forget);
+    document.querySelector('aside .brand').after(box);
+  }
+  const sel = box.querySelector('select');
+  const def = document.createElement('option');
+  def.value = ''; def.textContent = t('optHeroDefault');
+  const opts = heroes.map((h) => {
+    const o = document.createElement('option');
+    o.value = h.key; o.textContent = `${h.name}${h.server ? ' · ' + h.server : ''}`;
+    return o;
+  });
+  sel.replaceChildren(def, ...opts);
+  sel.value = heroKey || '';
+  box.querySelector('#hero-forget').hidden = !heroKey;
+}
+
 document.getElementById('save').addEventListener('click', async () => {
-  await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings });
+  await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings, heroKey });
   hintEl.textContent = t('optSaved');
   setTimeout(() => { hintEl.textContent = ''; }, 2500);
 });
 
 document.getElementById('reset').addEventListener('click', async () => {
   if (!confirm(t('optConfirmReset'))) return;
-  const r = await chrome.runtime.sendMessage({ type: 'RESET_SETTINGS' });
+  const r = await chrome.runtime.sendMessage({ type: 'RESET_SETTINGS', heroKey });
   settings = mergeSettings(r.settings || DEFAULT_SETTINGS);
   render();
   hintEl.textContent = t('optResetDone');
@@ -451,8 +509,9 @@ async function renderSubscription() {
     const mer = document.getElementById('sub-merchant');
     if (mer) mer.textContent = t('legalMerchant', [lic.payment.merchant || 'Carbon Stealth VCC']);
   }
-  subEl.note.textContent = t('subNote', [String(lic.payment ? lic.payment.trialDays : 3)]);
-  subEl.card.classList.toggle('expired', lic.status === 'expired' || lic.wrongDevice);
+  // Never render "undefined-day": fall back to the default trial length.
+  subEl.note.textContent = t('subNote', [String(Number(lic.payment && lic.payment.trialDays) || 3)]);
+  subEl.card.classList.toggle('expired', !!(lic.status === 'expired' || lic.wrongDevice));
   if (lic.wrongDevice) subEl.status.innerHTML = '<b>' + t('licWrongDevice') + '</b>';
   else if (lic.status === 'lifetime') subEl.status.innerHTML = t('licLifetime');
   else if (lic.status === 'active') subEl.status.innerHTML = t('licActive', [String(lic.daysLeft)]);
@@ -478,14 +537,18 @@ PRESET_IDS.forEach((id) => {
 });
 document.getElementById('preset-apply').addEventListener('click', async () => {
   settings = applyPreset(settings, presetSel.value);
-  await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings });
+  await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings, heroKey });
   render();
   flashTool(t('toolPresetApplied', [t('preset_' + presetSel.value)]));
 });
 
 // Export / Import
 document.getElementById('export-btn').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
+  // Webhook credentials stay on this machine: a settings file gets shared,
+  // and a Telegram token / Discord webhook URL is a secret.
+  const out = JSON.parse(JSON.stringify(settings));
+  if (out.webhooks) { out.webhooks.telegramToken = ''; out.webhooks.telegramChat = ''; out.webhooks.discordWebhook = ''; }
+  const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = 'tanoth-bot-settings.json';
@@ -498,8 +561,14 @@ document.getElementById('import-file').addEventListener('change', (ev) => {
   const reader = new FileReader();
   reader.onload = async () => {
     try {
+      // Keep the CURRENT webhook destinations: a file from someone else must not
+      // silently redirect your alerts (with hero/server data) to their webhook.
+      const keep = settings.webhooks || {};
       settings = mergeSettings(JSON.parse(reader.result));
-      await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings });
+      settings.webhooks = Object.assign({}, settings.webhooks, {
+        telegramToken: keep.telegramToken || '', telegramChat: keep.telegramChat || '', discordWebhook: keep.discordWebhook || ''
+      });
+      await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings, heroKey });
       render(); flashTool(t('toolImported'));
     } catch (e) { flashTool(t('toolImportError'), false); }
   };
@@ -517,13 +586,13 @@ async function refreshProfiles() {
 document.getElementById('profile-save').addEventListener('click', async () => {
   const name = document.getElementById('profile-name').value.trim();
   if (!name) return flashTool(t('toolProfileNeedName'), false);
-  await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings });
+  await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings, heroKey });
   await chrome.runtime.sendMessage({ type: 'SAVE_PROFILE', name });
   await refreshProfiles(); flashTool(t('toolProfileSaved', [name]));
 });
 document.getElementById('profile-load').addEventListener('click', async () => {
   const name = profileSel.value; if (!name) return;
-  const r = await chrome.runtime.sendMessage({ type: 'LOAD_PROFILE', name });
+  const r = await chrome.runtime.sendMessage({ type: 'LOAD_PROFILE', heroKey, name });
   if (r && r.ok) { settings = mergeSettings(r.settings); render(); flashTool(t('toolProfileLoaded', [name])); }
 });
 document.getElementById('profile-delete').addEventListener('click', async () => {
@@ -534,7 +603,8 @@ document.getElementById('profile-delete').addEventListener('click', async () => 
 
 // Test notification + stats link
 document.getElementById('notify-test').addEventListener('click', async () => {
-  const r = await chrome.runtime.sendMessage({ type: 'TEST_WEBHOOK', title: 'Tanoth Bot', message: t('toolTestBody') });
+  // Test what is typed in the form right now, not the last saved settings.
+  const r = await chrome.runtime.sendMessage({ type: 'TEST_WEBHOOK', title: 'Tanoth Bot', message: t('toolTestBody'), webhooks: settings.webhooks });
   flashTool(r && r.sent ? t('toolTestSent', [String(r.sent)]) : t('toolTestNone'), !!(r && r.sent));
 });
 document.getElementById('open-stats').addEventListener('click', () => {
@@ -551,5 +621,5 @@ document.querySelectorAll('[data-i18n-ph]').forEach((el) => {
   el.placeholder = t(el.getAttribute('data-i18n-ph'));
 });
 
-load();
+renderHeroPicker().then(load);
 renderSubscription();
