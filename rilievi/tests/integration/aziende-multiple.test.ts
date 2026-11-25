@@ -64,7 +64,9 @@ describe('the MASTER', () => {
     const self = await browser.get(`/utenti/${master.id}`);
     assert.equal(self.status, 200);
     assert.match(self.body, new RegExp(`action="/utenti/${master.id}/account"`));
-    assert.match(self.body, new RegExp(`action="/utenti/${master.id}/reimposta"`));
+    // Its own password only on "Il tuo account", with the current one (audit, 4 November 2026).
+    assert.doesNotMatch(self.body, new RegExp(`action="/utenti/${master.id}/reimposta"`));
+    assert.match(self.body, /href="\/account"/);
     assert.doesNotMatch(self.body, new RegExp(`action="/utenti/${master.id}/stato"`));
     assert.match(self.body, /Non puoi disattivare il tuo account/);
 

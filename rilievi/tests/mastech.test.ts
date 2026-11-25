@@ -15,7 +15,8 @@ import {
   type ModuloOverlay,
 } from '../src/ordini/moduli.js';
 import { renderModulo } from '../src/ordini/pdf.js';
-import { modelliMancanti, sceltoNellaScheda, SLOTS } from '../src/ordini/registry.js';
+import { modelliMancanti } from '../src/ordini/registry-controlli.js';
+import { sceltoNellaScheda, SLOTS } from '../src/ordini/registry.js';
 import { riepilogoModuli } from '../src/ordini/riepilogo.js';
 import { activeFields } from '../src/schede/fields.js';
 import { pdfFontPaths } from '../src/schede/pdf.js';
@@ -205,10 +206,12 @@ describe('the Mastech orders and the sheet', () => {
       arganoPreventivo: null,
       preventivoArgano: null,
       sospensioni: null,
-      operatore: null,
+      operatoreModulo: null,
       ordineSospensioni: null,
-      ami100: null,
-      ami100Tipo: null,
+      testataInterventi: [],
+      fossaInterventi: [],
+      bottoniereOrdine: null,
+      ordineBottoniere: null,
       ordineAmi: null,
     };
     assert.deepEqual(riepilogoModuli(scheda), [

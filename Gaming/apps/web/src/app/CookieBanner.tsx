@@ -1,3 +1,4 @@
+import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -9,6 +10,9 @@ const KEY = "aso_cookie_ok";
  * acknowledgement is remembered in localStorage (never leaves the device).
  */
 export function CookieBanner() {
+  // A game fills the screen: a floating layer over it would cover the hand or
+  // the controls (and swallow their clicks). The footer still carries both.
+  const onTable = useLocation().pathname.startsWith("/play/");
   const { t } = useTranslation();
   const [show, setShow] = useState(false);
 
@@ -20,7 +24,7 @@ export function CookieBanner() {
     }
   }, []);
 
-  if (!show) return null;
+  if (!show || onTable) return null;
 
   function accept() {
     try {

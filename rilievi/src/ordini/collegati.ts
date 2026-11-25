@@ -13,7 +13,7 @@ import {
 } from './collegamenti.js';
 import type { ModuloField } from './moduli.js';
 import { opzioneDi } from './opzioni.js';
-import { slotAperto, SLOTS, type Prefisso } from './registry.js';
+import { scelto, slotAperto, SLOTS, type Prefisso } from './registry.js';
 import { nameOf, type Valori } from './valori.js';
 
 /**
@@ -31,6 +31,8 @@ type MembroModulo = Exclude<MembroNumero, { luogo: 'scheda' }>;
 interface Attivi {
   scheda: Set<string>;
   moduli: Set<Prefisso>;
+  /** Уредбата на картата е хидравлична — мястото с `idraulico` е другото поле на модула. */
+  idraulico: boolean;
 }
 
 /** Кое се вижда: полетата на картата по условията им, модулите — при „Sì“ на въпроса си. */
@@ -39,8 +41,13 @@ function attiviDi(values: FormValues): Attivi {
   const moduli = new Set<Prefisso>(
     SLOTS.filter((s) => slotAperto(s, scheda, (key) => values[key])).map((s) => s.prefix),
   );
-  return { scheda, moduli };
+  const idraulico = scheda.has('tipoImpianto') && scelto(values.tipoImpianto, 'IDRAULICO');
+  return { scheda, moduli, idraulico };
 }
+
+/** Полето на мястото в модула: при хидравлична уредба — `idraulico`, ако го има. */
+const campoDi = (m: { campo: string; idraulico?: string }, idraulico: boolean): string =>
+  idraulico && m.idraulico !== undefined ? m.idraulico : m.campo;
 
 const testo = (value: string | string[] | undefined): string =>
   typeof value === 'string' ? value.trim() : '';
@@ -59,7 +66,7 @@ function leggiNumero(m: MembroNumero, values: FormValues, attivi: Attivi): strin
     const [a, b] = m.campi;
     return coppiaDi(testo(values[nameOf(m.luogo, a)]), testo(values[nameOf(m.luogo, b)])) || null;
   }
-  return testo(values[nameOf(m.luogo, m.campo)]) || null;
+  return testo(values[nameOf(m.luogo, campoDi(m, attivi.idraulico))]) || null;
 }
 
 /** Избраното на едно място (ключовете от `voci`, по реда им), или null. */
@@ -200,9 +207,10 @@ function scriviNumero(
   target: MembroModulo,
   value: string,
   fields: ReadonlyMap<string, ModuloField>,
+  idraulico: boolean,
 ): Valori {
   const out: Valori = {};
-  const keys = 'campi' in target ? target.campi : [target.campo];
+  const keys = 'campi' in target ? target.campi : [campoDi(target, idraulico)];
   const parti = 'campi' in target ? dividiCoppia(value) : [value];
   keys.forEach((key, i) => {
     const field = fields.get(key);
@@ -236,7 +244,7 @@ export function prefillCollegati(prefix: Prefisso, values: FormValues): Valori {
         .filter((m) => m.luogo !== prefix)
         .map((m) => leggiNumero(m, values, attivi))
         .find((value): value is string => value !== null);
-      if (source) Object.assign(valori, scriviNumero(target, source, fields));
+      if (source) Object.assign(valori, scriviNumero(target, source, fields, attivi.idraulico));
       continue;
     }
     const target = link.membri.find((m) => m.luogo === prefix);

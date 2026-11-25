@@ -1,5 +1,5 @@
-// The sketch pad in a real browser (public/js/schizzi.js, schizzo-*.js): the MASTER turns it on for the
-// company, a new sheet opens the full-screen editor, every tool draws (schizzi-strumenti.mjs) — with two
+// The sketch pad in a real browser (public/js/schizzi.js, schizzo-*.js): on for every company, with no
+// switch on the company page (the owner, 10 November 2026), a new sheet opens the full-screen editor, every tool draws (schizzi-strumenti.mjs) — with two
 // clicks too (schizzi-clic.mjs); "Done" gives the sheet back to the form (preview, unsaved changes) with
 // the text still being typed, the sheet is drawn again from a tap on its preview (schizzi-tastiera.mjs),
 // saved, shown (a tap — on the whole screen), printed; the editor (with a menu open) and the
@@ -18,13 +18,8 @@ import {
 
 export async function checkSketches(page, { base, aziendaPath, sheetUrl, shots, scheme }) {
   await page.goto(base + aziendaPath);
-  const toggle = page.locator('form[action$="/schizzi"] button');
-  if (!(await toggle.textContent()).includes('Disattiva')) {
-    await toggle.click();
-    await page.waitForURL(base + aziendaPath);
-  }
-  if (!(await page.locator('form[action$="/schizzi"] button').textContent()).includes('Disattiva'))
-    fail('sketches: the company did not turn them on');
+  if (await page.locator('form[action$="/schizzi"]').count())
+    fail('sketches: the company page still has a switch');
 
   await page.goto(`${sheetUrl}/modifica`);
   const block = page.locator('#s-schizzi');

@@ -6,7 +6,7 @@
 // before. What it draws is undone at the end: the rest of the flow sees the sheet as it was. Two taps
 // with a pinch between them — checkTapPinchTap (a touch screen).
 import sharp from 'sharp';
-import { fail } from './helpers.mjs';
+import { fail, IPAD_FINGER_RADIUS } from './helpers.mjs';
 
 export async function checkTwoClicks(page, dialog) {
   const canvas = dialog.locator('canvas');
@@ -34,6 +34,13 @@ export async function checkTwoClicks(page, dialog) {
     await input.waitFor({ state: 'visible' });
     await input.fill(text);
     await input.press('Enter');
+    // The bar closes and the sheet takes its room back in the next frame (ResizeObserver → fit): a click
+    // sent before that lands on the sheet as it was with the bar open — the next point of a chain of
+    // dimensions missed the end of the last one.
+    await input.waitFor({ state: 'hidden' });
+    await page.evaluate(
+      () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
+    );
   };
   const start = (await elements()).length;
 
@@ -139,8 +146,10 @@ export async function checkTapPinchTap(tab, dialog, name) {
     x: box.x + box.width * fx,
     y: box.y + box.height * fy,
     id,
-    radiusX: 4,
-    radiusY: 4,
+    // An iPad fingertip (schizzi-ipad.mjs): a touch with a radius of 4 hid that every iPad finger was
+    // taken for a palm.
+    radiusX: IPAD_FINGER_RADIUS,
+    radiusY: IPAD_FINGER_RADIUS,
     force: 1,
   });
   const touch = (type, touchPoints) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints });

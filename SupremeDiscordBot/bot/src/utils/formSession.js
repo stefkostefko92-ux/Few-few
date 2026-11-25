@@ -7,16 +7,15 @@
 
 import {
   ActionRowBuilder,
-  ChannelType,
   StringSelectMenuBuilder,
 } from "discord.js";
 import {
   submitApplication,
-  createTicket,
   updateApplicationReviewMessage,
+  getServer,
 } from "./api.js";
-import { buildReviewEmbed, buildTicketOpenEmbed } from "./embed.js";
-import { SUCCESS, INFO, DANGER } from "./colors.js";
+import { buildReviewEmbed } from "./embed.js";
+import { SUCCESS, DANGER } from "./colors.js";
 
 import { sessionStore } from "./sessionStore.js";
 import { t, resolveLang } from "../i18n/index.js";
@@ -308,6 +307,14 @@ async function sendTextQuestion(client, dmChannel, session, sessionKey, question
       return;
     }
 
+    // Т18: задължителен текстов въпрос не приема празен отговор само с прикачен
+    // файл (`content` е празен, а съобщението има attachments).
+    if (!content && question.required) {
+      await dmChannel.send(t("form.requiredWarning", lang));
+      await sendQuestion(client, dmChannel, session, sessionKey);
+      return;
+    }
+
     if (question.minLength && content.length < question.minLength) {
       await dmChannel.send(t("form.tooShort", lang, { min: question.minLength }));
       await sendQuestion(client, dmChannel, session, sessionKey);
@@ -394,10 +401,9 @@ async function finishSession(client, dmChannel, session, sessionKey) {
   // клиентът ПЛАЩА), отказът се гълташе в общ catch. Кандидатът виждаше зелена
   // отметка за кандидатура, която не съществува, а екипът не получаваше нищо.
   // Платената функция работеше, а човекът срещу нея беше излъган.
-  if (session.form.isApplication || !session.panel?.categoryId) {
-    // No panel category means there is no ticket channel to create
-    // (e.g. /form spawn or /apply with a stub panel) — store the answers
-    // as a submission record so they are never silently discarded.
+  if (!usesTicketFlow(session)) {
+    // Кандидатура или формуляр без реален панел (`/form spawn`, `/apply`):
+    // отговорите се записват като подаване, за да не се губят.
     const result = await handleApplicationSubmission(client, session);
     if (result && !result.ok) {
       await dmChannel.send({
@@ -406,7 +412,10 @@ async function finishSession(client, dmChannel, session, sessionKey) {
       return;
     }
   } else {
-    await handleTicketFromForm(client, session);
+    // Т1: тикет по ЕДИНИЯ път (същият като бутон без формуляр). Отказът (лимит,
+    // врата, права) е показан на човека от самия път — не твърдим „подадено“.
+    const opened = await openTicketFromForm(client, session, buildDmContext(client, session, dmChannel));
+    if (!opened.ok) return;
   }
 
   await dmChannel.send({
@@ -421,14 +430,88 @@ async function finishSession(client, dmChannel, session, sessionKey) {
 // ─── Shared finishing path (also used by the modal submit handler — v2.9) ────
 // Same branching finishSession() uses below, minus the DM-only "thank you"
 // send: the modal path acks with its own ephemeral confirmation instead.
-export async function submitFormAnswers(client, session) {
-  if (session.form.isApplication || !session.panel?.categoryId) {
+export async function submitFormAnswers(client, session, ctx = null) {
+  if (!usesTicketFlow(session)) {
     // Връща `{ok:false, code}` при отказ по правило — викащият ТРЯБВА да го
     // покаже, иначе кандидатът вижда потвърждение за нищо. (Одит кръг 2)
-    return handleApplicationSubmission(client, session);
+    const r = await handleApplicationSubmission(client, session);
+    return r?.ok ? { ...r, kind: "application" } : r;
   }
-  await handleTicketFromForm(client, session);
-  return { ok: true };
+  const opened = await openTicketFromForm(client, session, ctx);
+  return { ok: true, kind: "ticket", opened: opened.ok };
+}
+
+/**
+ * Т1: ТИКЕТ ли е резултатът на формуляра? Преди: условието беше
+ * `!panel.categoryId`, а таблото пише само `categoryOpenId` — всеки нов панел с
+ * формуляр на бутон записваше отговорите като Application („подадено“) и не
+ * отваряше тикет. Критерият е реален панел (с `id`) и формуляр, който не е
+ * кандидатура; категорията не е условие (няма категория → корен на сървъра).
+ */
+export function usesTicketFlow(session) {
+  return !session.form?.isApplication && !!session.panel?.id;
+}
+
+/**
+ * Контекст, който прилича на interaction за `createTicketFromPanel` в DM сесията
+ * (токенът на оригиналния interaction може да е изтекъл, а сесията е в Redis).
+ * `editReply` праща в ЛС. Езикът е този на сесията.
+ */
+export function buildDmContext(client, session, dmChannel) {
+  const guild = client.guilds.cache.get(session.guildId);
+  const member = guild?.members?.cache?.get(session.userId);
+  return {
+    client,
+    guild,
+    guildId: session.guildId,
+    user: member?.user || client.users.cache.get(session.userId) || { id: session.userId, username: "user", tag: "user" },
+    member,
+    channelId: session.channelId,
+    channel: client.channels.cache.get(session.channelId),
+    locale: session.lang,
+    id: `dm:${session.userId}`,
+    editReply: (payload) => dmChannel.send(typeof payload === "string" ? { content: payload } : payload),
+  };
+}
+
+// ─── Ticket from form ─────────────────────────────────────────────────────────
+
+/**
+ * Тикет от формуляр: същият път като бутон без формуляр (`createTicketFromPanel`)
+ * — ред в базата, номер, Close/Claim, лимит преди канал, врата — с отговорите
+ * като `formAnswers`. Заменя `handleTicketFromForm`, който създаваше канала
+ * ПЪРВО, игнорираше `MAX_TICKETS_REACHED` и оставяше канал без ред в базата.
+ * @returns {Promise<{ok:boolean}>}
+ */
+export async function openTicketFromForm(client, session, ctx) {
+  const guild = client.guilds.cache.get(session.guildId) || await client.guilds.fetch(session.guildId).catch(() => null);
+  if (!guild) return { ok: false };
+
+  let interactionLike = ctx;
+  if (interactionLike && !interactionLike.guild) interactionLike = { ...interactionLike, guild };
+  if (interactionLike && !interactionLike.member) {
+    const member = await guild.members.fetch(session.userId).catch(() => null);
+    interactionLike = { ...interactionLike, member, user: member?.user || interactionLike.user };
+  }
+  if (!interactionLike?.member) return { ok: false };
+
+  // Въпрос → отговор (по етикет), без празните — стойности, а не ID-та на въпроси.
+  const formAnswers = {};
+  for (const q of session.questions || []) {
+    const a = session.answers?.[q.id];
+    if (a !== undefined && String(a).trim() !== "") formAnswers[q.label || q.id] = String(a);
+  }
+
+  // Динамичен импорт: interactionCreate.js ползва този модул статично (без цикъл при зареждане).
+  const { createTicketFromPanel } = await import("../events/interactionCreate.js");
+  try {
+    const r = await createTicketFromPanel(interactionLike, session.panel, formAnswers);
+    return { ok: !!r?.ok };
+  } catch (err) {
+    console.error("Failed to create ticket from form:", err?.message);
+    await interactionLike.editReply?.(t("error.ticketCreateFailed", session.lang || "en")).catch?.(() => {});
+    return { ok: false };
+  }
 }
 
 // ─── Application submission ───────────────────────────────────────────────────
@@ -475,19 +558,43 @@ async function handleApplicationSubmission(client, session) {
       : null;
     if (!reviewChannel) {
       console.error(`Review channel ${reviewChannelId} not found in guild ${session.guildId}`);
-      return { ok: true }; // записана Е — липсва само embed-ът за екипа
+      // Записана Е — липсва само съобщението за екипа. Екипът трябва да го научи
+      // (Т10): преди кандидатурата потъваше тихо и броеше срещу лимита.
+      await warnUnpostableReview(guild, session);
+      return { ok: true };
     }
 
-    const discordUser = await client.users.fetch(session.userId);
+    // Т10: от тук нататък кандидатурата Е записана. Провал при публикуването не е
+    // „неуспех“ за кандидата — иначе чува „опитай пак“, а при лимит 1 няма втори
+    // опит и екипът не вижда нищо. Човекът чува „подадена е“, екипът — предупреждение.
+    let msg;
+    try {
+      const discordUser = await client.users.fetch(session.userId);
 
-    const { embeds, components } = buildReviewEmbed(
-      application,           // contains real .id used for button customIds
-      session.form.name,
-      discordUser,
-      session.questions
-    );
+      const { embeds, components } = buildReviewEmbed(
+        application,           // contains real .id used for button customIds
+        session.form.name,
+        discordUser,
+        session.questions
+      );
 
-    const msg = await reviewChannel.send({ embeds, components });
+      // Ролите за известяване от настройката на формуляра (`pingRoleIds`) — досега
+      // настройката беше мъртва. Само роли на ТОЗИ сървър; `allowedMentions` пуска
+      // точно тях и нищо друго (без @everyone през текст на отговор).
+      const pingRoles = (application.pingRoleIds || []).filter((id) => guild.roles.cache.has(id));
+      msg = await reviewChannel.send({
+        embeds,
+        components,
+        ...(pingRoles.length && {
+          content: pingRoles.map((id) => `<@&${id}>`).join(" "),
+          allowedMentions: { roles: pingRoles },
+        }),
+      });
+    } catch (err) {
+      console.error(`Review message for application ${application.id} could not be posted: ${err?.message}`);
+      await warnUnpostableReview(guild, session);
+      return { ok: true };
+    }
 
     // Step 3: Update the application with the Discord message reference
     await updateApplicationReviewMessage(application.id, msg.id, reviewChannelId);
@@ -495,6 +602,27 @@ async function handleApplicationSubmission(client, session) {
   } catch (err) {
     console.error("Failed to submit application:", err.message);
     return { ok: false, code: "ERROR" };
+  }
+}
+
+/**
+ * Т10: кандидатурата е записана, но съобщението за преглед не може да се
+ * публикува (изтрит канал, липсващи права). Предупреждение в лог канала на
+ * сървъра, на езика на сървъра. Никога не хвърля — това е известие, не работа.
+ */
+async function warnUnpostableReview(guild, session) {
+  if (!guild) return;
+  try {
+    const server = await getServer(guild.id);
+    if (!server?.logChannelId) return;
+    const logChannel = await guild.channels.fetch(server.logChannelId).catch(() => null);
+    if (!logChannel?.send) return;
+    await logChannel.send({
+      content: t("app.review.logUnpostable", server.language || "en", { user: `<@${session.userId}>` }),
+      allowedMentions: { parse: [] },
+    });
+  } catch (err) {
+    console.warn(`[applications] предупреждението за непубликуван преглед не стигна до екипа: ${err?.message}`);
   }
 }
 
@@ -528,62 +656,4 @@ function formatRemaining(seconds) {
   if (s < 3600) return `${Math.ceil(s / 60)}m`;
   if (s < 86400) return `${Math.ceil(s / 3600)}h`;
   return `${Math.ceil(s / 86400)}d`;
-}
-
-// ─── Ticket from form ─────────────────────────────────────────────────────────
-
-async function handleTicketFromForm(client, session) {
-  try {
-    const panel = session.panel;
-    if (!panel?.categoryId) return; // Cannot create channel without a category configured
-
-    const guild = client.guilds.cache.get(session.guildId);
-    if (!guild) return;
-
-    const member = await guild.members.fetch(session.userId).catch(() => null);
-    if (!member) return;
-
-    const safeName =
-      member.user.username.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 90) || "user";
-
-    const channel = await guild.channels.create({
-      name: `ticket-${safeName}`,
-      type: ChannelType.GuildText,
-      parent: panel.categoryId,
-      permissionOverwrites: [
-        { id: guild.id, deny: ["ViewChannel"] },
-        { id: session.userId, allow: ["ViewChannel", "SendMessages", "ReadMessageHistory"] },
-        ...(panel.supportRoleIds || []).map((roleId) => ({
-          id: roleId,
-          allow: ["ViewChannel", "SendMessages", "ReadMessageHistory", "ManageMessages"],
-        })),
-      ],
-    });
-
-    // ticketNumber не се подава: записът в базата се създава по-надолу
-    // (createTicket), затова номерът още не съществува тук. Останалото —
-    // support ролите и клиентът (за брандирания footer) — е налично.
-    await channel.send({
-      embeds: [buildTicketOpenEmbed(member.user, panel.name, panel.defaultPriority, {
-        supportRoleIds: panel.supportRoleIds || [],
-        client,
-      })],
-    });
-
-    const transcript = session.questions
-      .map((q) => `**${q.label}**\n${session.answers[q.id] || "*No answer*"}`)
-      .join("\n\n");
-
-    await channel.send({
-      embeds: [{
-        title: "📋 Form Submission",
-        description: transcript.slice(0, 4096),
-        color: INFO,
-      }],
-    });
-
-    await createTicket(session.guildId, panel.id, session.userId, channel.id);
-  } catch (err) {
-    console.error("Failed to create ticket from form:", err.message);
-  }
 }

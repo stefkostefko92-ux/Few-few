@@ -1,7 +1,10 @@
 import { COMPANY, CONTENT_UPDATED } from '../company.js';
+import { VERSIONE_SOFTWARE } from '../versione.js';
 import { config } from '../config.js';
 import { jsonForScript } from '../http/json-script.js';
 import { DEFAULT_LOCALE, LOCALE_TAG, type Translator } from '../i18n.js';
+import { vociAttive } from '../novita/attive.js';
+import { ULTIMO_AGGIORNAMENTO } from '../novita/voci.js';
 import { INVITE_DAYS } from '../services/invites.js';
 import { FAQ_IDS, FEATURES, SERVIZI, STEPS } from '../site/landing.js';
 import { HOME_PATH } from './paths.js';
@@ -12,10 +15,23 @@ import { HOME_PATH } from './paths.js';
  */
 
 /** Езикът на сайта — само италиански. */
-const IN_LANGUAGE = LOCALE_TAG[DEFAULT_LOCALE];
+export const IN_LANGUAGE = LOCALE_TAG[DEFAULT_LOCALE];
 
-/** Фирмата — един възел за Organization и LocalBusiness (едно `@id`). Работно време не е обявено. */
-function organization(t: Translator) {
+/** Какво знае фирмата — за търсачките и AI отговорите; само областите, които порталът покрива. */
+const KNOWS_ABOUT = [
+  'ascensori',
+  'rilievo impianti ascensori',
+  'manutenzione ascensori',
+  'quadri di manovra',
+  'argani e funi per ascensori',
+];
+
+/**
+ * Фирмата — един възел за Organization и LocalBusiness (едно `@id`). Работно време не е обявено. Логото
+ * е марката на портала върху черно (`npm run brand:logo`, 512 × 512 — квадратно, както го иска Google),
+ * на този сайт; образът — картинката за споделяне.
+ */
+export function organization(t: Translator, base: string) {
   const email = config().CONTACT_EMAIL;
   return {
     '@type': ['Organization', 'LocalBusiness'],
@@ -23,6 +39,15 @@ function organization(t: Translator) {
     name: COMPANY.name,
     legalName: COMPANY.name,
     url: COMPANY.url,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${base}/static/img/icon-512.png`,
+      width: 512,
+      height: 512,
+    },
+    image: `${base}/static/img/og.png`,
+    knowsAbout: KNOWS_ABOUT,
+    sameAs: [...COMPANY.profiles],
     email,
     telephone: COMPANY.phone,
     contactPoint: COMPANY.phones.map(({ number }) => ({
@@ -51,7 +76,7 @@ function organization(t: Translator) {
   };
 }
 
-function website(base: string) {
+export function website(base: string) {
   return {
     '@type': 'WebSite',
     '@id': `${base}/#website`,
@@ -62,7 +87,7 @@ function website(base: string) {
   };
 }
 
-function breadcrumb(canonical: string, items: Array<{ name: string; url: string }>) {
+export function breadcrumb(canonical: string, items: Array<{ name: string; url: string }>) {
   return {
     '@type': 'BreadcrumbList',
     '@id': `${canonical}#breadcrumb`,
@@ -78,7 +103,7 @@ function breadcrumb(canonical: string, items: Array<{ name: string; url: string 
 export function landingStructuredData(t: Translator, canonical: string): string {
   const base = config().PUBLIC_BASE_URL;
   const graph = [
-    organization(t),
+    organization(t, base),
     website(base),
     {
       '@type': 'WebPage',
@@ -92,7 +117,8 @@ export function landingStructuredData(t: Translator, canonical: string): string 
       dateModified: CONTENT_UPDATED,
       breadcrumb: { '@id': `${canonical}#breadcrumb` },
       primaryImageOfPage: `${base}/static/img/og.png`,
-      speakable: { '@type': 'SpeakableSpecification', cssSelector: ['.hero__lead', '.faq__a'] },
+      // Един-два кратки пасажа, не всичките отговори (SEO, 12 ноември 2026).
+      speakable: { '@type': 'SpeakableSpecification', cssSelector: ['.hero__lead'] },
     },
     breadcrumb(canonical, [{ name: 'Rilievi Impianti', url: canonical }]),
     {
@@ -102,6 +128,7 @@ export function landingStructuredData(t: Translator, canonical: string): string 
       image: `${base}/static/img/og.png`,
       applicationCategory: 'BusinessApplication',
       operatingSystem: 'Web',
+      softwareVersion: VERSIONE_SOFTWARE,
       browserRequirements: t('site.meta.browser'),
       url: canonical,
       description: t('site.meta.description'),
@@ -140,29 +167,89 @@ export function landingStructuredData(t: Translator, canonical: string): string 
   return jsonForScript({ '@context': 'https://schema.org', '@graph': graph });
 }
 
-export function privacyStructuredData(t: Translator, canonical: string, updated: string): string {
+/** Обикновена правна страница (поверителността, условията): страницата и пътят до нея. */
+export function paginaStructuredData(
+  t: Translator,
+  canonical: string,
+  p: { title: string; description: string; updated: string },
+): string {
   const base = config().PUBLIC_BASE_URL;
-  const title = t('privacy.title');
   return jsonForScript({
     '@context': 'https://schema.org',
     '@graph': [
-      organization(t),
+      organization(t, base),
       website(base),
       {
         '@type': 'WebPage',
         '@id': `${canonical}#page`,
         url: canonical,
-        name: title,
-        description: t('privacy.metaDescription'),
+        name: p.title,
+        description: p.description,
         inLanguage: IN_LANGUAGE,
         isPartOf: { '@id': `${base}/#website` },
-        dateModified: updated,
+        dateModified: p.updated,
         breadcrumb: { '@id': `${canonical}#breadcrumb` },
+      },
+      breadcrumb(canonical, [
+        { name: 'Rilievi Impianti', url: `${base}${HOME_PATH}` },
+        { name: p.title, url: canonical },
+      ]),
+    ],
+  });
+}
+
+export function privacyStructuredData(t: Translator, canonical: string, updated: string): string {
+  return paginaStructuredData(t, canonical, {
+    title: t('privacy.title'),
+    description: t('privacy.metaDescription'),
+    updated,
+  });
+}
+
+/**
+ * Новините: страницата, пътят до нея и всяка новина като елемент на списък с котвата си — заглавията
+ * дума по дума от страницата.
+ */
+export function novitaStructuredData(t: Translator, canonical: string): string {
+  const base = config().PUBLIC_BASE_URL;
+  const title = t('novita.titolo');
+  return jsonForScript({
+    '@context': 'https://schema.org',
+    '@graph': [
+      organization(t, base),
+      website(base),
+      {
+        '@type': 'WebPage',
+        '@id': `${canonical}#page`,
+        url: canonical,
+        name: t('novita.meta.title'),
+        description: t('novita.meta.description'),
+        inLanguage: IN_LANGUAGE,
+        isPartOf: { '@id': `${base}/#website` },
+        about: { '@id': `${base}/#app` },
+        dateModified: ULTIMO_AGGIORNAMENTO,
+        breadcrumb: { '@id': `${canonical}#breadcrumb` },
+        mainEntity: { '@id': `${canonical}#elenco` },
+        speakable: { '@type': 'SpeakableSpecification', cssSelector: ['.novita-pagina__lead'] },
       },
       breadcrumb(canonical, [
         { name: 'Rilievi Impianti', url: `${base}${HOME_PATH}` },
         { name: title, url: canonical },
       ]),
+      {
+        '@type': 'ItemList',
+        '@id': `${canonical}#elenco`,
+        name: t('novita.elenco'),
+        itemListOrder: 'https://schema.org/ItemListOrderDescending',
+        numberOfItems: vociAttive().length,
+        itemListElement: vociAttive().map((voce, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: t(`novita.voci.${voce.id}.titolo`),
+          description: t(`novita.voci.${voce.id}.testo`),
+          url: `${canonical}#${voce.id}`,
+        })),
+      },
     ],
   });
 }

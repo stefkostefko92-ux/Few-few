@@ -1,11 +1,53 @@
-# Дневният бекъп на Rilievi Impianti (deploy/backup.sh от последния работещ release).
+# Дневният бекъп на Rilievi Impianti (deploy/backup.sh от последния работещ release): базата, снимките,
+# проверено възстановяване, копие извън сървъра по избор.
 [Unit]
 Description=Rilievi Impianti — daily database backup
 Requires=docker.service
 After=docker.service
+# Провал — аларма (журнал, ULTIMO_ERRORE, RILIEVI_ALERT_URL).
+OnFailure=rilievi-backup-alert.service
 
 [Service]
 Type=oneshot
 ExecStart=/bin/sh -c 'exec /usr/bin/env bash "$(head -n 1 /opt/few-few/shared/rilievi/last-good)/deploy/backup.sh"'
 Nice=10
 IOSchedulingClass=idle
+UMask=0077
+
+# --- Пясъчник ---
+# Върви като root заради сокета на docker (pg_dump и restore-test.sh са през него) — а сокетът на docker
+# Е root на хоста: процес с достъп до него пуска привилегирован контейнер. Затова пясъчникът тук не прави
+# скрипта непробиваем, а маха всичко, което му е излишно, и пази хоста от грешка в самия скрипт.
+#
+# ProtectSystem=full, НЕ strict — нарочно. Снимките се пазят като ТВЪРДИ ВРЪЗКИ от тома
+# (/var/lib/docker/volumes/<том>/_data/schede) към /opt/few-few/shared/rilievi/backups/media (`cp -al`,
+# backup.sh). При strict всеки ReadWritePaths е ОТДЕЛНА точка на монтиране, а link() през граница на
+# монтиране е EXDEV дори на същия диск — моментната снимка би падала всяка нощ. При full /usr, /boot,
+# /efi и /etc са само за четене, а /var и /opt остават на една точка на монтиране.
+ProtectSystem=full
+# /root/.ssh (ключът и known_hosts за RILIEVI_OFFSITE по SSH) се чете; /home — също само за четене.
+ProtectHome=read-only
+PrivateTmp=true
+PrivateDevices=true
+NoNewPrivileges=true
+# Само нужното на root без пълните права: да чете и свързва файловете на тома, които са на потребителя на
+# контейнера (DAC_READ_SEARCH, FOWNER — fs.protected_hardlinks), да ги запазва с правата и собственика им
+# (`cp -a`: CHOWN, FOWNER) и да трие старите снимки в папки, които не са негови (DAC_OVERRIDE).
+CapabilityBoundingSet=CAP_CHOWN CAP_DAC_OVERRIDE CAP_DAC_READ_SEARCH CAP_FOWNER
+AmbientCapabilities=
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@mount @swap @reboot @obsolete @module @raw-io @debug
+SystemCallErrorNumber=EPERM
+# docker — unix сокет; ssh/rsync към RILIEVI_OFFSITE и curl към алармата/heartbeat — IPv4/IPv6.
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6

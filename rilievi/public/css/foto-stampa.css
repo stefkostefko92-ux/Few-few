@@ -111,3 +111,139 @@
   outline: 2px solid var(--fg);
   outline-offset: 2px;
 }
+
+/* Редът и големината в печата (собственикът, 10 ноември 2026): радиото за големината, списъкът на
+   отметнатите със стрелките и прегледът на страниците на снимките — като в PDF-а (foto-ordine.js,
+   foto-righe.js). Две колони от 720 px; на телефон — едно под друго. */
+.foto-disposizione {
+  display: grid;
+  gap: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.foto-disposizione__dimensione {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.foto-disposizione__dimensione legend {
+  margin-bottom: 8px;
+  padding: 0;
+}
+
+.foto-disposizione__ordine {
+  display: grid;
+  gap: 16px;
+  align-items: start;
+}
+
+.foto-disposizione__ordine[hidden] {
+  display: none;
+}
+
+@media (min-width: 720px) {
+  .foto-disposizione__ordine {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.foto-ordine {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.foto-ordine__voce {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.foto-ordine__voce img {
+  display: block;
+  width: 64px;
+  height: 48px;
+  border-radius: calc(var(--radius) - 2px);
+  object-fit: cover;
+}
+
+.foto-ordine__testo {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.foto-ordine__azioni {
+  display: flex;
+  gap: 4px;
+}
+
+.foto-ordine__sposta {
+  min-width: 40px;
+  font-size: 1.125rem;
+}
+
+/* Прегледът: страница A4 в мащаб, снимките на местата си, номерът им в ъгъла. */
+.foto-anteprima {
+  display: grid;
+  gap: 10px;
+  max-width: 360px;
+  margin-top: 8px;
+}
+
+.foto-anteprima__pagina {
+  position: relative;
+  aspect-ratio: 210 / 297;
+  border: 1px solid var(--line);
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.foto-anteprima__numero {
+  position: absolute;
+  right: 6px;
+  bottom: 4px;
+  font-size: 0.75rem;
+  color: #555555;
+}
+
+.foto-anteprima__titolo {
+  position: absolute;
+  height: 1px;
+  background: #000000;
+}
+
+.foto-anteprima__foto {
+  position: absolute;
+  background: #e6e6e6;
+}
+
+.foto-anteprima__foto img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.foto-anteprima__posto {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  min-width: 16px;
+  padding: 0 3px;
+  border-radius: 3px;
+  background: #000000;
+  color: #ffffff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}

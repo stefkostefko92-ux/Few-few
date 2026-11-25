@@ -6,7 +6,7 @@ import { prisma } from '../db.js';
 import { errorMessage, logger } from '../logger.js';
 import { percorsi, rimuoviFile, type Percorsi } from './archivio.js';
 import { leggiFirma, riconosci } from './formati.js';
-import { comprimiFoto, type EsitoFoto } from './foto.js';
+import { comprimiFoto, FotoTroppoGrande, type EsitoFoto } from './foto.js';
 import {
   comprimiVideo,
   ErroreVideo,
@@ -18,9 +18,9 @@ import {
 
 /**
  * Опашката на обработката — в самата база (без Redis): фоновият процес (src/worker.ts) взима най-стария
- * файл „в опашката“ (`FOR UPDATE SKIP LOCKED` — два процеса никога не взимат един и същ), компресира го
- * и го отбелязва „готов“ или „грешка“. Прекъснатият при спиране се връща в опашката; при срив — при
- * следващия старт. Файл, който е свалил процеса три пъти, става „грешка“, вместо да го сваля вечно.
+ * файл „в опашката“ (`FOR UPDATE SKIP LOCKED` — два процеса никога не взимат един и същ наведнъж),
+ * компресира го и го отбелязва „готов“ или „грешка“. Прекъснатият при спиране се връща в опашката; при
+ * срив — при следващия старт (тогава и файлът на друг жив процес — затова никой не трие чуждото готово). Файл, който е свалил процеса три пъти, става „грешка“, вместо да го сваля вечно.
  * При грешка оригиналът се трие — човекът качва наново; при успех — също (остава компресираното).
  */
 
@@ -60,18 +60,29 @@ export async function prendiProssimo(): Promise<Lavoro | null> {
   return rows[0] ?? null;
 }
 
+/**
+ * Файловете на реда се трият само ако той е бил наш или го няма. Втори процес, пуснат докато първият
+ * още работи, връща файла в опашката и го взима пак (`ripristinaInterrotti`): който свърши втори, не
+ * трие готовото на другия (одит, 4 ноември 2026 — редът оставаше „готов“ без файл, 404 завинаги).
+ */
+async function rimuoviSeNostro(lavoro: Lavoro, p: Percorsi, nostro: boolean): Promise<void> {
+  if (nostro || (await prisma.allegato.count({ where: { id: lavoro.id } })) === 0)
+    await rimuoviFile(p);
+}
+
 async function fallisci(lavoro: Lavoro, p: Percorsi, codice: string): Promise<'ERRORE'> {
-  await prisma.allegato.updateMany({
+  const { count } = await prisma.allegato.updateMany({
     where: { id: lavoro.id, stato: 'IN_LAVORAZIONE' },
     data: { stato: 'ERRORE', errore: codice },
   });
-  await rimuoviFile(p);
+  await rimuoviSeNostro(lavoro, p, count > 0);
   return 'ERRORE';
 }
 
 /** Ключът на грешката за човека (`allegati.errore.<…>`). */
 function codiceDi(error: unknown): string {
   if (error instanceof ErroreVideo) return error.codice;
+  if (error instanceof FotoTroppoGrande) return 'troppoGrande';
   if (error instanceof Error && /pixel limit/i.test(error.message)) return 'troppoGrande';
   return 'illeggibile';
 }
@@ -107,20 +118,21 @@ export async function elabora(
         durataMs: 'durataMs' in esito ? esito.durataMs : null,
       },
     });
-    // Изтрит, докато се е обработвал: компресираното не остава без ред.
+    // Изтрит, докато се е обработвал: компресираното не остава без ред. Готов от друг процес — остава.
     if (done.count === 0) {
-      await rimuoviFile(p);
+      await rimuoviSeNostro(lavoro, p, false);
       return 'ERRORE';
     }
     await rm(p.originale, { force: true });
     return 'PRONTO';
   } catch (error) {
     if (error instanceof Interrotto) {
-      await prisma.allegato.updateMany({
+      const { count } = await prisma.allegato.updateMany({
         where: { id: lavoro.id, stato: 'IN_LAVORAZIONE' },
         data: { stato: 'IN_CODA', tentativi: { decrement: 1 } },
       });
-      await Promise.all([p.file, p.mini, p.riquadro].map((file) => rm(file, { force: true })));
+      if (count > 0)
+        await Promise.all([p.file, p.mini, p.riquadro].map((file) => rm(file, { force: true })));
       return 'IN_CODA';
     }
     logger.warn({ id: lavoro.id, err: errorMessage(error) }, 'allegato: обработката не успя');

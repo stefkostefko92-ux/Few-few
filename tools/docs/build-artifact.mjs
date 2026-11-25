@@ -32,6 +32,7 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 // Тайните в билда — по единствения списък (същият като secret-scan/куките), в отделен модул.
 import { findSecretsIn } from "./artifact-secrets.mjs";
+import { isMain } from "../lib/is-main.mjs";
 export { findSecretsIn };
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -79,6 +80,8 @@ const DOCS_TAG = '<script src="./docs.js"></script>';
 // се вгражда точно като docs.js — по-стари върхове на паметта (преди 2026-09-25) нямат тага, значи
 // вграждането е УСЛОВНО (виж build(), огледално на m3d по-долу), за да не чупи стар артифакт-билд.
 const GALAXY_TAG = '<script src="./galaxy.js"></script>';
+// „Чака теб“ (23.11.2026): данните на панела, вградени като docs.js; условно — стари върхове нямат тага.
+const WAITING_TAG = '<script src="./waiting.js"></script>';
 const IMG_SRC = 'src="./mascots/${encodeURIComponent(id)}-icon3d.webp"';
 const IMG_SRC_INLINE = "src=\"${MASCOT_ICONS[id] || ''}\"";
 // 3D кадърът-резерв в профила (startMascot) — като иконите: data: URI вместо относителен път.
@@ -224,18 +227,26 @@ export function build(dash = DASH, reader = null) {
 
   const docs = rd.read("docs.js").trim();
   if (!html.includes(DOCS_TAG)) throw new Error(`не намирам ${DOCS_TAG} — таблото е сменено`);
-  html = html.replace(DOCS_TAG, `<script>\n${docs}\n</script>`);
+  // Замяна с ФУНКЦИЯ, не с низ: в низа `$`` / `$'` / `$&` са шаблони — „(`$`)“ в rilievi/CLAUDE.md
+  // вмъкна цялото начало на страницата втори път (31.10.2026, 58 агента вместо 29).
+  html = html.replace(DOCS_TAG, () => `<script>\n${docs}\n</script>`);
+
+  if (html.includes(WAITING_TAG)) {
+    let waiting = "window.WAITING = null;";
+    try { waiting = rd.read("waiting.js").trim(); } catch { /* няма снимка — панелът не се показва */ }
+    html = html.replace(WAITING_TAG, () => `<script>\n${waiting}\n</script>`);
+  }
 
   // Галактиката: условно (виж бележката при GALAXY_TAG) — по-стари върхове на паметта я нямат.
   let galaxy = "";
   if (html.includes(GALAXY_TAG)) {
     galaxy = rd.read("galaxy.js").trim();
-    html = html.replace(GALAXY_TAG, `<script>\n${galaxy}\n</script>`);
+    html = html.replace(GALAXY_TAG, () => `<script>\n${galaxy}\n</script>`);
   }
 
   const icons = mascotDataUris(join(dash, "mascots"), reader);
   if (!html.includes(IMG_SRC)) throw new Error("не намирам <img src> към mascots/ — таблото е сменено");
-  html = html.replace(IMG_SRC, IMG_SRC_INLINE);
+  html = html.replace(IMG_SRC, () => IMG_SRC_INLINE);
 
   // Картата се обявява ПРЕДИ главния скрипт: top-level `const` е видим за следващите блокове.
   // Ръчният билд я слагаше СЛЕД употребата — работеше, но само защото функцията се вика по-късно.
@@ -259,7 +270,7 @@ export function build(dash = DASH, reader = null) {
   return { html, icons: Object.keys(icons).length, agents: lessons.length, lessons: lessons.reduce((a, b) => a + b, 0) };
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   const argv = process.argv.slice(2);
   const flag = (k) => { const i = argv.indexOf(k); return i === -1 ? null : (argv[i + 1] || ""); };
   const mark = flag("--mark-published");

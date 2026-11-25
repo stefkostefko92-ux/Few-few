@@ -19,7 +19,7 @@ describe('sign-in', () => {
     const browser = new Browser();
     const page = await browser.get('/accesso');
     assert.equal(page.status, 200);
-    assert.match(page.body, /Accesso riservato: solo su invito/);
+    assert.match(page.body, /Accesso solo su invito/);
     assert.doesNotMatch(page.body, /registr/i);
     for (const path of ['/registrazione', '/register', '/signup']) {
       assert.equal((await browser.get(path)).status, 404, path);

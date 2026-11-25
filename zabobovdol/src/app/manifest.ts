@@ -7,7 +7,10 @@ export default function manifest(): MetadataRoute.Manifest {
     name: `${SITE.name} — ${SITE.slogan}`,
     short_name: SITE.shortName,
     description: SITE.description,
-    start_url: "/",
+    // ?s=app — за да се брои (само като брой на ден) колко пъти сайтът е
+    // отворен от иконата на началния екран. id остава „/“, затова вече
+    // инсталираните икони не се смятат за друго приложение.
+    start_url: "/?s=app",
     scope: "/",
     display: "standalone",
     orientation: "portrait",
@@ -16,7 +19,10 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: "#1a2575",
     theme_color: "#212f8a",
     lang: "bg",
-    categories: ["government", "education", "lifestyle"],
+    // Без „government“: сайтът е независим, не е държавно/общинско приложение
+    // (и правилата на Google Play за TWA забраняват да се внушава връзка с
+    // държавен орган).
+    categories: ["news", "utilities", "lifestyle"],
     icons: [
       { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
       { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },

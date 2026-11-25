@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { BINGO_DRAW_MS } from "@aso/game-core";
 import { rulesForGame, turnSecondsFor, type GameKey } from "@aso/shared";
-import { Modal } from "../../ui";
+import { Button, Modal } from "../../ui";
 
 /** Fired by the "?" button in the scene header (SceneHeader) to open the rules. */
 export const OPEN_RULES_EVENT = "aso:open-rules";
@@ -41,7 +42,16 @@ export function GameHelp({ game }: { game: GameKey }) {
 
   return (
     <>
-      <Modal open={open} onClose={() => setOpen(false)} title={t("rules.title", { defaultValue: "Как се играе" })}>
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title={t("rules.title", { defaultValue: "Как се играе" })}
+        footer={
+          <Button className="w-full" onClick={() => setOpen(false)}>
+            {t("rules.gotIt")}
+          </Button>
+        }
+      >
         <div className="space-y-4 text-ink-100">
           <p className="text-base">{rules.objective}</p>
 
@@ -74,12 +84,21 @@ export function GameHelp({ game }: { game: GameKey }) {
             <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-brass-300">
               {t("rules.clockTitle")}
             </h3>
-            <ul className="list-disc space-y-1 pl-5 text-sm text-ink-300">
-              <li>{t("rules.clock", { s: turnSecondsFor(game) })}</li>
-              <li>{game === "WORDS" ? t("rules.timeoutWords") : t("rules.timeout")}</li>
-              <li>{t("rules.takeover")}</li>
-            </ul>
+            {/* Бинго няма ход и часовник: числата се теглят сами, всички маркират едновременно. */}
+            {game === "BINGO" ? (
+              <ul className="list-disc space-y-1 pl-5 text-sm text-ink-300">
+                <li>{t("rules.clockBingo", { s: BINGO_DRAW_MS / 1000 })}</li>
+                <li>{t("rules.takeoverBingo")}</li>
+              </ul>
+            ) : (
+              <ul className="list-disc space-y-1 pl-5 text-sm text-ink-300">
+                <li>{t("rules.clock", { s: turnSecondsFor(game) })}</li>
+                <li>{game === "WORDS" ? t("rules.timeoutWords") : t("rules.timeout")}</li>
+                <li>{t("rules.takeover")}</li>
+              </ul>
+            )}
           </div>
+
         </div>
       </Modal>
     </>

@@ -14,6 +14,7 @@
 import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join, dirname, resolve, relative } from "node:path";
 import { emitJsonNow } from "../lib/emit.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 const argv = process.argv.slice(2);
 const JSON_OUT = argv.includes("--json");
@@ -96,4 +97,4 @@ async function main() {
   process.exit(r.failed.length ? 1 : 0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await main();
+if (isMain(import.meta.url)) await main();

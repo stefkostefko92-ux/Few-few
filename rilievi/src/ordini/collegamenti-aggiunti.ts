@@ -20,28 +20,32 @@ export const AGGIUNTI: readonly Collegamento[] = [
       { luogo: 'eg', campo: 'nServizi' },
       { luogo: 'el', campo: 'nServizi' },
       { luogo: 'eo', campo: 'nServizi' },
+      { luogo: 'gt', campo: 'nServizi' },
     ],
   },
   {
     key: 'poli',
     tipo: 'numero',
     membri: [
+      { luogo: 'dp', campo: 'motorePoli' },
       { luogo: 'mn', campo: 'nPoli' },
       { luogo: 'mq', campo: 'numeroPoli' },
       { luogo: 'pa', campo: 'poli' },
     ],
   },
   {
-    // В kW. „Pot. Mot.“ на MoviLift е без мерна единица — не е тук.
+    // В kW. „Pot. Mot.“ на MoviLift е без мерна единица — не е тук. Pitagora: „VVVF“ или „HYDRO“.
     key: 'potenzaMotore',
     tipo: 'numero',
     membri: [
+      { luogo: 'dp', campo: 'motoreKw', idraulico: 'centralinaKw' },
       { luogo: 'mn', campo: 'potenzaKw' },
       { luogo: 'mq', campo: 'potenzaMotore' },
       { luogo: 'eg', campo: 'motoreKw' },
       { luogo: 'el', campo: 'motoreKw' },
       { luogo: 'eo', campo: 'motoreKw' },
       { luogo: 'pa', campo: 'potenzaKw' },
+      { luogo: 'gt', campo: 'motoreKw' },
     ],
   },
   {
@@ -49,6 +53,7 @@ export const AGGIUNTI: readonly Collegamento[] = [
     key: 'taglia',
     tipo: 'scelta',
     membri: [
+      { luogo: 'dp', campo: 'taglia', voci: { taglia11: '1:1', taglia21: '2:1' } },
       { luogo: 'mn', voci: { taglia11: '1:1', taglia21: '2:1' } },
       { luogo: 'pa', voci: { taglia11: '1:1', taglia12: '2:1' } },
     ],
@@ -73,11 +78,14 @@ export const AGGIUNTI: readonly Collegamento[] = [
     key: 'tensionePattino',
     tipo: 'numero',
     membri: [
+      { luogo: 'oq', campo: 'pattiniRetrattiliVcc' },
       { luogo: 'om', campo: 'elettrPattinoV' },
+      { luogo: 'dp', campo: 'pattinoV' },
       { luogo: 'mn', campo: 'tensionePattino' },
       { luogo: 'mq', campo: 'tensionePattino' },
       { luogo: 'eg', campo: 'pattinoV' },
       { luogo: 'eo', campo: 'pattinoV' },
+      { luogo: 'gt', campo: 'pattinoTensione' },
     ],
   },
   {
@@ -88,6 +96,7 @@ export const AGGIUNTI: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'centralinaMarca' },
       { luogo: 'om', campo: 'centralina' },
+      { luogo: 'dp', campo: 'centralinaMarca' },
       { luogo: 'eo', campo: 'centralinaMarca' },
     ],
   },

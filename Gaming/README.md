@@ -45,7 +45,7 @@ infra/        Dockerfiles, docker-compose, nginx
       catalog, i18n (bg/it/en), Carbon Stealth footer.
 - [x] **S2 — game-core kernel + first 2 engines**: deterministic FSM contract
       (`init/legalActions/reduce/isTerminal/score/redact`), seeded PRNG +
-      commit-reveal fairness (SHA-256), chess (via chess.js) and backgammon
+      commit-reveal helpers (SHA-256; not yet wired into matches), chess (via chess.js) and backgammon
       (full rules: bar/hits/bearing-off/gammon) engines, random-bot playout
       driver. Vitest: Fool's-mate → checkmate, full backgammon game to a winner,
       deterministic replay (13 tests).

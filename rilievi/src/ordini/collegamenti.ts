@@ -17,11 +17,13 @@ export type Luogo = 'scheda' | Prefisso;
 /**
  * Стойност — число или текст („1,0“, „400 V“, „Via Roma 1“). В картата — поле с текст, цифри или число
  * (`valori` превежда отговор „Sì/No“ на картата: „si“ → „2“); в модула — ред, падащ списък или два реда
- * за едно нещо (`campi`: „LUCE PORTA: [800] x [2000]“).
+ * за едно нещо (`campi`: „LUCE PORTA: [800] x [2000]“). `idraulico` — модулът пише същото другаде, когато
+ * уредбата на картата е хидравлична (Pitagora: „V“ на мотора в „VVVF“, а на централата — в „HYDRO“;
+ * MoviLift: „Fune“ и „Idraulico“): мястото е едно, полето — според вида.
  */
 export type MembroNumero =
   | { luogo: 'scheda'; campo: string; valori?: Readonly<Record<string, string>> }
-  | { luogo: Prefisso; campo: string }
+  | { luogo: Prefisso; campo: string; idraulico?: string }
   | { luogo: Prefisso; campi: readonly [string, string] };
 
 /**
@@ -51,9 +53,13 @@ export function moduloFields(prefix: Prefisso): ModuloField[] {
   return fieldsOf(slot.modulo);
 }
 
-/** Полетата на модула, които едно място заема: полето му, двата му реда, иначе отметките му. */
+/**
+ * Полетата на модула, които едно място заема: полето му (и това при хидравлична уредба), двата му реда,
+ * иначе отметките му.
+ */
 export function campiDi(m: MembroNumero | MembroScelta): string[] {
   if ('campi' in m) return [...m.campi];
+  if ('idraulico' in m && m.idraulico !== undefined) return [m.campo, m.idraulico];
   if ('campo' in m && m.campo !== undefined) return [m.campo];
   return 'voci' in m ? Object.keys(m.voci) : [];
 }
@@ -68,7 +74,7 @@ export function campiCollegati(prefix: Prefisso): Set<string> {
 }
 
 const NUMERO_SCHEDA: readonly string[] = ['int', 'decimal', 'text', 'digits'];
-const NUMERO_MODULO: readonly string[] = ['text', 'select'];
+const NUMERO_MODULO: readonly string[] = ['text', 'textarea', 'select'];
 
 /** Проверка при зареждане: всяко място съществува и е от правилния вид — иначе процесът не тръгва. */
 function verifica(): void {
@@ -101,7 +107,7 @@ function verifica(): void {
       const fields = new Map(moduloFields(m.luogo).map((f) => [f.key, f]));
       for (const key of campiDi(m)) {
         const field = fields.get(key);
-        // Стойност — ред или падащ списък (двата реда — само редове); избор — отметки, или радио
+        // Стойност — ред, текстово поле или падащ списък (двата реда — само редове); избор — отметки, или радио
         // група, сред чиито опции са всички `voci`.
         const radio = 'voci' in m && m.campo !== undefined ? m.voci : null;
         const ok =

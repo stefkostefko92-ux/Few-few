@@ -1,3 +1,4 @@
+import { setTimeout as attendi } from 'node:timers/promises';
 import { writeUserAudit } from '../audit.js';
 import { normalizeEmail } from '../auth/email.js';
 import {
@@ -69,26 +70,56 @@ export async function accessoAttivo(userId: string): Promise<LoggedUser | null> 
   };
 }
 
-/** Входът е завършен (паролата и, ако има, кодът): броячите падат, последният вход, одит. */
+/**
+ * Входът е завършен (паролата или доставчикът на самоличност и, ако има, кодът): броячите падат,
+ * последният вход, одит — с втория фактор или с доставчика.
+ */
 export async function completaAccesso(
   userId: string,
-  via: 'password' | 'totp' | 'recupero',
+  via: 'password' | 'totp' | 'recupero' | 'microsoft' | 'google',
 ): Promise<void> {
   await attemptSucceeded(userId, true);
   await prisma.user.update({ where: { id: userId }, data: { lastLoginAt: new Date() } });
+  const meta =
+    via === 'password'
+      ? null
+      : via === 'totp' || via === 'recupero'
+        ? { secondoFattore: via }
+        : { fornitore: via };
   await writeUserAudit(
     {
       actorId: userId,
       action: 'LOGIN',
       targetType: 'user',
       targetId: userId,
-      ...(via === 'password' ? {} : { meta: { secondoFattore: via } }),
+      ...(meta ? { meta } : {}),
     },
     userId,
   );
 }
 
+/**
+ * Неуспешният вход отговаря не по-рано от толкова след заявката: познат имейл с грешна парола прави
+ * няколко заявки към базата повече от непознат (заемането на опита, броячът) — разлика от милисекунди
+ * над Argon2 (~250 ms), но издава кои имейли имат акаунт на търпелив налучквач (одит, 4 ноември 2026).
+ */
+export const ESITO_NEGATIVO_MS = 400;
+
 export async function login(
+  emailRaw: string,
+  password: string,
+  ip: string | null | undefined,
+): Promise<LoginOutcome> {
+  const started = performance.now();
+  const outcome = await tentaLogin(emailRaw, password, ip);
+  if (outcome.kind === 'invalid' || outcome.kind === 'locked' || outcome.kind === 'throttled') {
+    const resto = started + ESITO_NEGATIVO_MS - performance.now();
+    if (resto > 0) await attendi(resto);
+  }
+  return outcome;
+}
+
+async function tentaLogin(
   emailRaw: string,
   password: string,
   ip: string | null | undefined,

@@ -207,6 +207,7 @@ calcoloLiberoRouter.get('/calcolo-argano/:id/pdf', read, pdfLimiter, async (req,
     impianto: calcolo.impianto,
     aziendaId: calcolo.aziendaId,
     nome: calcolo.impianto.numeroImpianto ?? calcolo.impianto.matricola ?? calcolo.id.slice(-8),
+    rif: { calcoloId: calcolo.id, schedaId: null },
   });
 });
 

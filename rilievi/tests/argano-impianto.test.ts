@@ -25,10 +25,19 @@ describe('the lift of a calculation without a scheda', () => {
     );
   });
 
-  it('wants the address, digits only and at most 20 of them, and text — never a guess', () => {
+  it('wants the address, a matricola of free text up to 40, a number of digits up to 20 — never a guess', () => {
     assert.deepEqual(
-      parseImpianto({ indirizzo: '   ', matricola: '12A', numeroImpianto: '1'.repeat(21) }).errori,
-      { indirizzo: 'required', matricola: 'digitsOnly', numeroImpianto: 'tooLong' },
+      parseImpianto({ indirizzo: '   ', matricola: 'x'.repeat(41), numeroImpianto: '1'.repeat(21) })
+        .errori,
+      { indirizzo: 'required', matricola: 'tooLong', numeroImpianto: 'tooLong' },
+    );
+    assert.deepEqual(parseImpianto({ indirizzo: 'Via A', numeroImpianto: '12A' }).errori, {
+      numeroImpianto: 'digitsOnly',
+    });
+    // The matricola is free text since 10 November 2026, like on the scheda.
+    assert.equal(
+      parseImpianto({ indirizzo: 'Via A', matricola: ' MI-0012/24 ' }).impianto?.matricola,
+      'MI-0012/24',
     );
     assert.deepEqual(parseImpianto({}).errori, { indirizzo: 'required' });
     assert.deepEqual(parseImpianto({ indirizzo: 'x'.repeat(201) }).errori, {

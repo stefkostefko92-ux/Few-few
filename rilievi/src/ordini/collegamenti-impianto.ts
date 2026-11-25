@@ -12,6 +12,7 @@ export const IMPIANTO: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'indirizzo' },
       { luogo: 'pa', campo: 'indirizzo' },
+      { luogo: 'db', campo: 'indirizzo' },
     ],
   },
   {
@@ -20,6 +21,8 @@ export const IMPIANTO: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'matricola' },
       { luogo: 'pa', campo: 'matricola' },
+      { luogo: 'db', campo: 'matricola' },
+      { luogo: 'gt', campo: 'matricola' },
     ],
   },
   {
@@ -40,9 +43,16 @@ export const IMPIANTO: readonly Collegamento[] = [
         campo: 'tipoImpianto',
         voci: { ELETTRICO: 'ELETTRICO', IDRAULICO: 'IDRAULICO', GEARLESS: 'GEARLESS' },
       },
-      { luogo: 'oq', voci: { tqIdraulico: 'IDRAULICO' } },
+      // „MRL“ на картата: таблото „per MRL 400 x 2220“ на Pelazza, „Armadio MRL“ на MoviLift.
+      { luogo: 'oq', voci: { tqIdraulico: 'IDRAULICO', dimMrl: 'GEARLESS' } },
+      { luogo: 'om', campo: 'armadio', voci: { mrl: 'GEARLESS' } },
       // Gearless на Elettroquadri се отваря при MRL: „MRL gearless“ (не „Con Locale macchina“).
       { luogo: 'el', voci: { mrlGearless: 'GEARLESS' } },
+      {
+        luogo: 'gt',
+        campo: 'tipoImpianto',
+        voci: { idraulico: 'IDRAULICO', gearless: 'GEARLESS' },
+      },
     ],
   },
   {
@@ -54,10 +64,12 @@ export const IMPIANTO: readonly Collegamento[] = [
     membri: [
       { luogo: 'oq', campo: 'opModello' },
       { luogo: 'om', campo: 'marcaOpA' },
+      { luogo: 'dp', campo: 'motorePorteMarca' },
       { luogo: 'mq', campo: 'modelloOperatore1' },
       { luogo: 'eg', campo: 'operatoreMarca' },
       { luogo: 'el', campo: 'operatoreTipo' },
       { luogo: 'eo', campo: 'operatoreMarca' },
+      { luogo: 'gt', campo: 'operatoreMarca' },
     ],
   },
   {
@@ -68,12 +80,14 @@ export const IMPIANTO: readonly Collegamento[] = [
     membri: [
       { luogo: 'oq', campo: 'motIn' },
       { luogo: 'om', campo: 'amp' },
+      { luogo: 'dp', campo: 'motoreA', idraulico: 'centralinaA' },
       { luogo: 'mn', campo: 'correnteNominale' },
       { luogo: 'mq', campo: 'correnteMotore' },
       { luogo: 'eg', campo: 'motoreIn' },
       { luogo: 'el', campo: 'motoreAmp' },
       { luogo: 'eo', campo: 'motoreAmp' },
       { luogo: 'pa', campo: 'ampere' },
+      { luogo: 'gt', campo: 'correnteNominale' },
     ],
   },
   {
@@ -81,6 +95,7 @@ export const IMPIANTO: readonly Collegamento[] = [
     tipo: 'numero',
     membri: [
       { luogo: 'om', campo: 'numGiri' },
+      { luogo: 'dp', campo: 'motoreGiri' },
       { luogo: 'pa', campo: 'giri' },
     ],
   },

@@ -1,0 +1,316 @@
+/* Менюто, второ парче (views/partials/header.ejs, src/http/menu.ts): търсенето на уредба и „Nuovo“ горе в
+   страничната лента, лентата долу на телефона (до 767 px) и колоната с иконите на таблета (768–1099 px).
+   „Menu“ в тях отваря цялата лента (menu.js). На страниците с черната лента „Salva“ (`.actions`) лентата
+   долу на телефона отстъпва — тогава горе е ☰. */
+
+.sidenav__azioni {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  padding: 14px 12px 4px;
+}
+
+.sidecerca__box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 8px 0 11px;
+  border: 1px solid var(--bar-line);
+  border-radius: var(--radius);
+  color: var(--bar-muted);
+}
+
+.sidecerca__box:focus-within {
+  border-color: var(--bar-fg);
+}
+
+.sidecerca__box .icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+.sidecerca__campo {
+  flex: 1;
+  width: 0;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--bar-fg);
+  font: inherit;
+  font-size: 0.9375rem;
+}
+
+.sidecerca__campo::placeholder {
+  color: var(--bar-muted);
+  opacity: 1;
+}
+
+.sidecerca__campo:focus {
+  outline: none;
+}
+
+.sidecerca__campo::-webkit-search-cancel-button {
+  filter: invert(1);
+}
+
+.sidecerca__kbd {
+  flex: none;
+  padding: 1px 6px;
+  border: 1px solid var(--bar-line);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Подсказката за клавиатурата — само където има клавиатура и мишка. */
+@media (max-width: 1099px), (pointer: coarse) {
+  .sidecerca__kbd {
+    display: none;
+  }
+}
+
+.nuovo__btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 0 12px;
+  border-radius: var(--radius);
+  background: var(--bar-fg);
+  color: var(--bar);
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+}
+
+.nuovo__btn::-webkit-details-marker {
+  display: none;
+}
+
+.nuovo__btn .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.nuovo__btn .icon:last-child {
+  margin-left: auto;
+  transition: transform 0.15s ease;
+}
+
+.nuovo[open] .nuovo__btn .icon:last-child {
+  transform: rotate(180deg);
+}
+
+.nuovo__btn:focus-visible {
+  outline: 2px solid var(--bar-fg);
+  outline-offset: 2px;
+}
+
+.nuovo__lista {
+  display: grid;
+  gap: 2px;
+  margin: 6px 0 0;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid var(--bar-line);
+  border-radius: var(--radius);
+}
+
+.nuovo__lista a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 8px;
+  border-radius: var(--radius);
+  color: var(--bar-muted);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.nuovo__lista a:hover,
+.nuovo__lista a[aria-current='page'] {
+  color: var(--bar-fg);
+  background: var(--bar-hover);
+}
+
+.nuovo__lista .icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nuovo__btn .icon:last-child {
+    transition: none;
+  }
+}
+
+/* Горната лента: местата са твърди — ☰ изчезва там, където „Menu“ е в лентата долу или в колоната. */
+.appbar > .appbar__menu {
+  grid-column: 1;
+}
+
+.appbar > .brand {
+  grid-column: 2;
+}
+
+.appbar > .appbar__account {
+  grid-column: 3;
+  justify-self: end;
+}
+
+.rapida {
+  display: none;
+}
+
+.rapida ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rapida__voce {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 4px;
+  color: var(--bar-muted);
+  text-align: center;
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.rapida__voce .icon {
+  box-sizing: content-box;
+  width: 22px;
+  height: 22px;
+  padding: 5px;
+  border-radius: 999px;
+}
+
+.rapida__voce:hover,
+.rapida__voce[aria-current='page'] {
+  color: var(--bar-fg);
+}
+
+.rapida__voce:focus-visible {
+  outline: 2px solid var(--bar-fg);
+  outline-offset: -4px;
+}
+
+/* „Nuovo“ — кръгът, както главното действие на телефона (Android: Layout and navigation patterns). */
+.rapida__voce--nuovo .icon {
+  background: var(--bar-fg);
+  color: var(--bar);
+}
+
+@media (max-width: 767px) {
+  .rapida {
+    display: block;
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 30;
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--bar);
+    border-top: 1px solid var(--bar-edge);
+  }
+
+  .rapida ul {
+    display: grid;
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+  }
+
+  .rapida__voce {
+    min-height: 62px;
+    gap: 1px;
+    padding: 4px 2px 6px;
+  }
+
+  .rapida__voce[aria-current='page'] {
+    box-shadow: inset 0 3px 0 var(--bar-fg);
+  }
+
+  body.with-nav {
+    padding-bottom: calc(63px + env(safe-area-inset-bottom));
+  }
+
+  .appbar > .appbar__menu {
+    display: none;
+  }
+
+  body:has(.actions) .rapida {
+    display: none;
+  }
+
+  body.with-nav:has(.actions) {
+    padding-bottom: 0;
+  }
+
+  body:has(.actions) .appbar > .appbar__menu {
+    display: inline-flex;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1099px) {
+  .rapida {
+    display: block;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 30;
+    width: 88px;
+    padding: calc(var(--chrome-top) + 10px) 0 calc(10px + env(safe-area-inset-bottom));
+    overflow-y: auto;
+    background: var(--bar);
+    border-right: 1px solid var(--bar-edge);
+  }
+
+  .rapida ul {
+    display: grid;
+    gap: 4px;
+  }
+
+  .rapida__voce {
+    min-height: 66px;
+    padding: 8px 4px;
+  }
+
+  .rapida__voce[aria-current='page'] {
+    box-shadow: inset 3px 0 0 var(--bar-fg);
+    background: var(--bar-current);
+  }
+
+  body.with-nav {
+    padding-left: 88px;
+  }
+
+  .appbar > .appbar__menu {
+    display: none;
+  }
+}
+
+/* Без JavaScript „Menu“ води до лентата, която тогава е над съдържанието. */
+html:not(.js) .rapida__voce[data-nav-open] {
+  cursor: pointer;
+}
+
+@media print {
+  .rapida {
+    display: none !important;
+  }
+
+  body.with-nav {
+    padding: 0 !important;
+  }
+}

@@ -1,0 +1,51 @@
+<%
+  // Състоянието на услугата (routes/stato.ts; условията 2026-11-12, чл. 2.4): общото, частите сега,
+  // прекъсванията в ход, планираната поддръжка, историята и целите за възстановяване. Без числа отвътре.
+  const p = 'stato.pagina.';
+  const quando = (a) => a.fine ? t(p + 'dalAl', { dal: fmt.dateTime(a.inizio), al: fmt.dateTime(a.fine) }) : t(p + 'dal', { dal: fmt.dateTime(a.inizio) });
+  const avvisi = (lista, id) => lista.length === 0 ? '' : include('_stato-avvisi', { lista, id, quando });
+%><%- include('top', { pageTitle: t(p + 'meta.title'), description: t(p + 'meta.description'), keywords: t(p + 'meta.keywords'), extraSheets: ['site-percorso', 'site-legale'] }) %>
+<div class="prose legale-pagina stato-pagina">
+  <nav class="percorso" aria-label="<%= t('novita.percorso') %>">
+    <ol>
+      <li><a href="<%= homePath %>">Rilievi Impianti</a></li>
+      <li><a href="<%= statoPath %>" aria-current="page"><%= t('stato.nav') %></a></li>
+    </ol>
+  </nav>
+  <h1><%= t(p + 'titolo') %></h1>
+  <p class="stato-generale stato-generale--<%= generale %>" role="status"><strong><%= t(p + 'generale.' + generale) %></strong></p>
+  <p class="prose__updated"><%= t(p + 'controllato', { data: fmt.dateTime(controllatoIl) }) %></p>
+
+  <section aria-labelledby="h-parti">
+    <h2 id="h-parti"><%= t(p + 'parti.titolo') %></h2>
+    <ul class="stato-parti" role="list">
+      <% for (const c of parti) { %><li><span><%= t(p + 'parti.' + c.chiave) %></span> <strong class="stato-esito stato-esito--<%= c.esito %>"><%= t(p + 'esito.' + c.esito) %></strong></li>
+      <% } %>
+    </ul>
+  </section>
+
+  <section aria-labelledby="h-in-corso">
+    <h2 id="h-in-corso"><%= t(p + 'inCorso.titolo') %></h2>
+    <% if (inCorso.length === 0) { %><p><%= t(p + 'inCorso.nessuno') %></p><% } else { %><%- avvisi(inCorso, 'in-corso') %><% } %>
+  </section>
+
+  <section aria-labelledby="h-programmate">
+    <h2 id="h-programmate"><%= t(p + 'programmate.titolo') %></h2>
+    <% if (programmate.length === 0) { %><p><%= t(p + 'programmate.nessuna') %></p><% } else { %><%- avvisi(programmate, 'programmate') %><% } %>
+  </section>
+
+  <section aria-labelledby="h-ripristino">
+    <h2 id="h-ripristino"><%= t(p + 'ripristino.titolo') %></h2>
+    <ul>
+      <li><%= t(p + 'ripristino.dati', { ore: rpoOre }) %></li>
+      <li><%= t(p + 'ripristino.tempo', { ore: rtoOre }) %></li>
+    </ul>
+    <p class="muted"><%= t(p + 'ripristino.nota') %> <a href="<%= condizioniPath %>"><%= t(p + 'ripristino.condizioni') %></a>.</p>
+  </section>
+
+  <section aria-labelledby="h-storico">
+    <h2 id="h-storico"><%= t(p + 'storico.titolo', { giorni: giorniStorico }) %></h2>
+    <% if (storico.length === 0) { %><p><%= t(p + 'storico.nessuno') %></p><% } else { %><%- avvisi(storico, 'storico') %><% } %>
+  </section>
+</div>
+<%- include('bottom') %>

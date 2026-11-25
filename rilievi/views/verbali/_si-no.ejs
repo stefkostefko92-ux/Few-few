@@ -1,0 +1,11 @@
+<%
+  // „SÌ / NO“ във формата на протокола („Certificato“ на реда, „Verbale positivo“): два радио бутона, които
+  // се махат с повторно докосване (`data-clearable`, public/js/app.js) — неизбраното остава празно.
+  const value = typeof values[name] === 'string' ? values[name] : '';
+%><fieldset class="choice verbale-sn" id="f-<%= name %>"<% if (errors[name]) { %> aria-describedby="err-<%= name %>"<% } %>>
+  <legend><%= legend %></legend>
+  <div class="choice__opts">
+    <% for (const v of ['si', 'no']) { %><label class="tick"><input type="radio" name="<%= name %>" value="<%= v %>" data-clearable<% if (value === v) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('verbali.' + v) %></span></label><% } %>
+  </div>
+  <% if (errors[name]) { %><p class="field__error" id="err-<%= name %>"><%= message %></p><% } %>
+</fieldset>

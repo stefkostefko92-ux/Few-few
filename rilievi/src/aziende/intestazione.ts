@@ -4,7 +4,7 @@ import type { ModelloId } from '../cartelli/modelli.js';
 import type { AziendaCartello } from '../cartelli/pdf.js';
 import { prisma } from '../db.js';
 import type { SessionUser } from '../types.js';
-import { intestazioneDi, type DatiSocietari } from './dati.js';
+import { datiSalvati, intestazioneDi, type DatiSocietari } from './dati.js';
 import { aziendaLogo } from './service.js';
 
 /**
@@ -76,4 +76,25 @@ export async function testataDi(azienda: {
     intestazione: intestazioneDi(azienda.name, azienda.datiSocietari),
     logo: logo?.data ?? null,
   };
+}
+
+/**
+ * Данните на фирмите от настройките им, по id — за „Dati cliente“ на MoviLift във формата на картата
+ * (и за всяка фирма, която може да се избере за нова карта). Фирма без записани данни я няма.
+ */
+export async function datiDelleAziende(
+  ids: readonly string[],
+): Promise<Map<string, DatiSocietari>> {
+  const unici = [...new Set(ids.filter(Boolean))];
+  if (unici.length === 0) return new Map();
+  const rows = await prisma.azienda.findMany({
+    where: { id: { in: unici } },
+    select: { id: true, datiSocietari: true },
+  });
+  return new Map(
+    rows.flatMap((row) => {
+      const dati = datiSalvati(row.datiSocietari);
+      return dati ? [[row.id, dati] as const] : [];
+    }),
+  );
 }

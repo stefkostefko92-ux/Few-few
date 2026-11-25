@@ -2,6 +2,7 @@
 // numbers, "1:50" and "2:53", the motor poles, the compensation), a saved calculation read back into the
 // form and parsed again to the same input, and the A4 PDF — every case of the workbook, at most two pages.
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
@@ -102,6 +103,12 @@ describe('a saved calculation', () => {
           t,
           impianto: { indirizzo: 'Via Roma 1, Milano', matricola: '0012345', numeroImpianto: '7' },
           salvato: { quando: '31/10/2026, 10:00', autore: 'Giulia Bianchi' },
+          generato: {
+            quando: '31/10/2026, 10:00',
+            autore: 'Marco Neri',
+            build: '0a1b2c3d4e',
+            impronta: 'AB12-CD34-EF56',
+          },
           testata: {
             intestazione: { nome: 'Ascensori Esempio S.r.l.', righe: ['Via Roma 12, Milano'] },
             logo: null,
@@ -115,6 +122,13 @@ describe('a saved calculation', () => {
         );
         const { width, height } = doc.getPage(0).getSize();
         assert.deepEqual([Math.round(width), Math.round(height)], [595, 842], nome);
+        // The head of the company is there in words, not only a page of the right size.
+        const text = spawnSync('pdftotext', ['-layout', '-', '-'], { input: pdf });
+        if (text.error === undefined) {
+          const words = text.stdout.toString('utf8');
+          assert.match(words, /Ascensori Esempio S\.r\.l\./, nome);
+          assert.match(words, /Via Roma 12, Milano/, nome);
+        }
       }
     },
   );

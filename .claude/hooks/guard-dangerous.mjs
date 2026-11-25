@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { isMain as isEntryPoint } from "../../tools/lib/is-main.mjs"; // isMain тук е проверка за клон main
 // guard-dangerous.mjs — PreToolUse(Bash) предпазител. Блокира САМО еднозначно катастрофални команди
 // (трият системата/диска). Всичко останало минава — не пречим на нормалната работа. **Fail-open:**
 // всяка вътрешна грешка → разрешаваме (хук-бъг никога не спира работата).
@@ -19,18 +20,8 @@ export const CATASTROPHIC = [
   { re: /chmod\s+-[a-z]*R[a-z]*\s+0*777\s+\/(\s|$)/i, why: "chmod -R 777 на корен" },
   // Изтегляне+изпълнение (curl|sh и роднините) НЕ е тук — живее в isRemoteExec() по-долу: иска изглед
   // „само код" и котва за командна позиция, което един регекс върху суровия ред не може да даде.
-  // Red-team 2026-07-30 (F5b): шаблонът искаше ДЪЛГИЯ флаг `--force`, затова най-краткият и най-често
-  // писан вариант `git push -f origin main` минаваше необезпокоявано. Сега и `-f`, и `--force`.
-  // КОМАНДНА ПОЗИЦИЯ (същият урок като FOREIGN_PUSH в guard-exfil): без котва шаблонът съвпада и когато
-  // командата е само СПОМЕНАТА в текстов аргумент. Хванато на живо 2026-09-08 — записът в дневника на
-  // грешките, чието описание цитираше „git push origin +main", беше блокиран от самия предпазител.
-  { re: /(?:^|[;&|]\s*|\n\s*)(?:sudo\s+)?git\b[^\n;&|]*\bpush\b[^\n;&|]*(--force\b|\s-[a-zA-Z]*f\b)(?![^\n;&|]*--force-with-lease)[^\n;&|]*\b(origin\s+)?(main|master)\b/i, why: "git push --force/-f към main (ползвай --force-with-lease към feature клон)" },
-  // Red-team 2026-09-08: третият правопис на force push — `+` пред refspec-а (`git push origin +main`,
-  // `+HEAD:main`, `+refs/heads/main`) е force по git спецификация, без нито един флаг. Минаваше.
-  { re: /(?:^|[;&|]\s*|\n\s*)(?:sudo\s+)?git\b[^\n;&|]*\bpush\b[^\n;&|]*\s\+(refs\/heads\/|[\w/.-]+:)?(main|master)\b/i, why: "git push с +refspec към main (това е force push без флаг)" },
-  // Кръг 2 (2026-09-09): ИЗТРИВАНЕ на подразбиращия се клон — `git push origin :main` (празен източник
-  // в refspec-а), `git push --delete origin main`, `-d`. Feature клон (`:refs/heads/claude/x`) е нормално.
-  { re: /(?:^|[;&|]\s*|\n\s*)(?:sudo\s+)?git\b[^\n;&|]*\bpush\b[^\n;&|]*(\s(--delete|-d)\s[^\n;&|]*\b(main|master)\b|\s:(refs\/heads\/)?(main|master)\b)/i, why: "изтриване на отдалечения main/master (git push :main / --delete)" },
+  // `git push` към main (force, +refspec, изтриване) НЕ е тук — живее в gitPushDanger() по-долу: съди
+  // ДУМИТЕ на командата, не суровия ред (2026-10-28, виж shellWords).
   // Кръг 2: репото като цяло — `gh repo delete`, `gh api -X DELETE /repos/…`.
   { re: /(?:^|[;&|]\s*|\n\s*)gh\s+(repo\s+delete\b|api\s+[^\n;&|]*-X\s+DELETE\b)/i, why: "изтриване на репо през gh" },
   // Red-team 2026-09-08: `find / -delete` (и `find / … -exec rm`) изтрива системата също толкова
@@ -39,7 +30,78 @@ export const CATASTROPHIC = [
   // Red-team 2026-09-08: унищожаване на диск без dd/mkfs — wipefs, shred, blkdiscard, sgdisk --zap-all,
   // parted mklabel. Изискваме суров /dev/ диск: `shred файл.txt` е нормално.
   { re: /\b(wipefs|shred|blkdiscard|sgdisk\s+(-Z|--zap-all)|parted\s+\S+\s+mklabel|nvme\s+format)\b[^\n]*\/dev\/(sd|nvme|vd|hd|disk|mmcblk)/i, why: "унищожаване на суров диск (wipefs/shred/blkdiscard/sgdisk)" },
+  // Red-team 2026-11-23 (F1): AI Studio работи на Windows. Форматиране на том/диск в PowerShell и cmd.
+  // `Format-Table`/`Format-List` са нормални — затова само Volume/Disk/Partition и `format <буква>:`.
+  { re: /(?:^|[;&|(]\s*|\n\s*|["'])\s*(?:Format-Volume|Clear-Disk|Initialize-Disk|Remove-Partition)\b/i, why: "форматиране или изчистване на диск (PowerShell)" },
+  { re: /(?:^|[;&|(]\s*|\n\s*|["'])\s*format(?:\.com)?\s+[A-Za-z]:/i, why: "форматиране на диск (format C:)" },
+  // curl|sh на PowerShell: изтегли и изпълни (`iwr … | iex`, `iex (iwr …)`, `DownloadString`) и кодирана
+  // команда (`-enc <base64>` скрива какво се изпълнява — агентът няма легитимна нужда от нея).
+  // Изтегли-и-изпълни се съди в psDownloadExec() по-долу: в отделни изрази (`$c=(iwr …).Content; iex $c`),
+  // през `%{ iex $_ }` и `[scriptblock]::Create` (кръг 2, Разбивача) един регекс по ред не стига.
+  { re: /\b(?:powershell|pwsh)(?:\.exe)?\b[^\n]*\s-e(?:c|nc\w*)?\s+["']?[A-Za-z0-9+/=]{16,}/i, why: "кодирана PowerShell команда (-EncodedCommand крие какво се изпълнява)" },
+  // Разбивача, 23.11.2026 (N4): агент, който пуска нова сесия на Claude Code (`claude -p`, с `--bare` — без куки
+  // изобщо), минава покрай месечния таван и всички пазачи. Живият гейт я пуска през spawn в Node, не през Bash.
+  // AI-джията, преглед на PR #482 (24.11.2026): `claude ultrareview` е съгласие за таксуване още при пускането,
+  // а с --post публикува в PR без въпрос. Пуска го само собственикът (`/code-review ultra <номер>` в своя терминал).
+  { re: /(?:^|[;&|(]\s*|\n\s*|\b(?:sudo|exec|nohup|env)\s+)claude(?:\.exe)?\s+(?:[^\n;&|]*\s)?ultrareview\b/, why: "платен Ultrareview от агент (claude ultrareview) — таксува usage credits и с --post публикува в PR без въпрос; пуска го само собственикът: /code-review ultra <номер> в своя терминал" },
+  { re: /(?:^|[;&|(]\s*|\n\s*|\b(?:sudo|exec|nohup|env)\s+)(?:claude(?:\.exe)?\s+(?:[^\n;&|]*\s)?(?:-p|--print|--bare)\b|npx\s+(?:-y\s+)?@anthropic-ai\/claude-code\b)/, why: "вложена сесия на Claude Code от агент (claude -p) — заобикаля тавана на разхода и пазачите" },
 ];
+
+// curl|sh на PowerShell: изтегляне (iwr/irm/DownloadString/WebClient/BITS) И изпълнение на код от низ (iex,
+// Invoke-Expression, [scriptblock]::Create) в една и съща команда — независимо от реда и разделителите.
+// Два линейни теста вместо един шаблон с `.*` между тях (без квадратично връщане назад).
+const PS_DOWNLOAD = /\b(?:iwr|irm|Invoke-WebRequest|Invoke-RestMethod|Start-BitsTransfer|DownloadString|DownloadData|DownloadFile|Net\.WebClient)\b/i;
+const PS_EXEC_STRING = /(?:^|[^\w-])(?:iex|Invoke-Expression)\b|\[scriptblock\]::Create\s*\(/i;
+export function psDownloadExec(s) {
+  return PS_DOWNLOAD.test(s) && PS_EXEC_STRING.test(s) ? "изтегляне и изпълнение на код в PowerShell (iwr … iex / scriptblock)" : null;
+}
+
+// Red-team 2026-11-23 (F1): триене на Windows. `Remove-Item -Recurse -Force C:\Users\owner`,
+// `rd /s /q …` и `del /s C:\*` минаваха с изход 0 — isCatastrophicRm познава само `rm` и Unix пътища.
+// Съдим ДУМИТЕ на всеки сегмент: рекурсивно триене + цел, която е корен на устройство, профил или
+// системна папка. Поддиректория (`.\build`, `…\AppData\Local\Temp\render`) е нормална работа.
+const WIN_DEL_VERB = /^(?:remove-item|ri|rm|rmdir|rd|del|erase)$/i;
+const WIN_LIST_VERB = /^(?:get-childitem|gci|dir|ls|get-item|gi)$/i;
+const WIN_DANGER_TARGET = [
+  /^[A-Za-z]:[\\/]?(?:\*(?:\.\*)?)?$/, // C:  C:\  C:\*  C:\*.*
+  /^[\\/]\*?$/, // корен на текущото устройство
+  /^[A-Za-z]:[\\/]Users(?:[\\/][^\\/]+)?[\\/]?(?:\*(?:\.\*)?)?$/i, // C:\Users, C:\Users\<име>
+  /^[A-Za-z]:[\\/](?:Windows|Program Files(?: \(x86\))?|ProgramData)(?:[\\/]System32)?[\\/]?\*?$/i,
+  // `$env:X` и скобестото `${env:X}` (кръг 2, Разбивача); `$HOME`, `~`, `%X%`.
+  /^(?:\$\{?env:(?:USERPROFILE|SystemDrive|HOMEDRIVE|HOMEPATH|SystemRoot|windir|ProgramFiles)\}?|\$\{?HOME\}?|~|%(?:USERPROFILE|SystemDrive|HOMEDRIVE|HOMEPATH|SystemRoot|windir|ProgramFiles)%)[\\/]?\*?$/i,
+  // Git Bash и WSL виждат устройството като `/c/` и `/mnt/c/` (кръг 2, Кодаджията — High).
+  /^\/(?:mnt\/)?[A-Za-z](?:\/(?:Users(?:\/[^/]+)?|Windows|ProgramData|Program Files(?: \(x86\))?))?\/?\*?$/i,
+];
+const winTokens = (seg) => (seg.match(/"[^"]*"|'[^']*'|\S+/g) || []).map((t) => t.replace(/^["']|["']$/g, ""));
+const winDanger = (t) => WIN_DANGER_TARGET.some((re) => re.test(t));
+const isFlag = (t) => /^-/.test(t) || /^\/[A-Za-z?]$/.test(t);
+
+export function isCatastrophicWin(cmd, depth = 0) {
+  if (depth > 3) return null;
+  for (const pipeline of String(cmd || "").split(/\r?\n|;|&&|\|\||(?<![|&])&(?![&])/)) {
+    const segs = pipeline.split(/(?<!\|)\|(?!\|)/).map((x) => x.trim()).filter(Boolean);
+    for (let i = 0; i < segs.length; i++) {
+      // Обвивки: `cmd /c "…"`, `powershell -Command "…"` — съдим вътрешната команда.
+      const wrap = segs[i].match(/^(?:cmd(?:\.exe)?\s+\/[ck]|(?:powershell|pwsh)(?:\.exe)?\b.*?\s-c(?:ommand)?)\s+([\s\S]+)$/i);
+      if (wrap) { const why = isCatastrophicWin(wrap[1].replace(/^["']|["']$/g, ""), depth + 1); if (why) return why; continue; }
+      const t = winTokens(segs[i]);
+      if (!t.length || !WIN_DEL_VERB.test(t[0])) continue;
+      const verb = t[0].toLowerCase();
+      const isRecursive = (words, v) => words.some((w) => (v === "rm" ? /^-[a-z]*r[a-z]*$/i.test(w) && !/^-force$/i.test(w) : false)
+        || /^-r(?:e(?:c(?:u(?:r(?:s(?:e)?)?)?)?)?)?(?::\$true)?$/i.test(w) || /^\/s$/i.test(w));
+      const targets = t.slice(1).filter((w) => !isFlag(w));
+      if (isRecursive(t, verb) && targets.some(winDanger)) return "рекурсивно триене на корен, профил или системна папка на Windows";
+      // `Get-ChildItem C:\ | Remove-Item -Recurse` — целта идва по пайпа. Рекурсията може да е и на
+      // изброителя: `Get-ChildItem C:\Users\owner -Recurse | Remove-Item -Force` (кръг 2, Разбивача).
+      if (!targets.length && i > 0) {
+        const prev = winTokens(segs[i - 1]);
+        if (WIN_LIST_VERB.test(prev[0] || "") && (isRecursive(t, verb) || isRecursive(prev, ""))
+          && prev.slice(1).filter((w) => !isFlag(w)).some(winDanger)) return "рекурсивно триене на корен или профил на Windows през пайп";
+      }
+    }
+  }
+  return null;
+}
 
 // Red-team 2026-07-30 (F5a): `rm -rf /` се хващаше, но `rm -r -f /` — НЕ, защото шаблонът искаше r и f
 // в ЕДНА флагова група. Разделените флагове са също толкова катастрофални и се пишат също толкова лесно.
@@ -126,7 +188,7 @@ export function codeView(cmd) {
       if (i < s.length) { out += '"'; i++; }
       continue;
     }
-    if (c === "<" && s[i + 1] === "<" && s[i + 2] !== "<") { // heredoc (не here-string `<<<`)
+    if (c === "<" && s[i + 1] === "<" && s[i + 2] !== "<" && s[i - 1] !== "<") { // heredoc (не here-string `<<<` — и от второто `<` нататък; 19.11.2026)
       const m = /^<<(-?)\s*(['"]?)([\w.-]+)\2/.exec(s.slice(i));
       if (m) {
         const seg = out.slice(out.lastIndexOf("\n") + 1).split(/[;&|(]/).pop();
@@ -175,7 +237,7 @@ export const REMOTE_EXEC = [
 const SHELL_C = new RegExp(`${SEP}${PRE}(?:(?:\\S*\\/)?(?:ba|z|k|da|a|c|tc|fi)?sh(?:\\s+-\\S+)*?\\s+-[a-zA-Z]*c[a-zA-Z]*\\s+|eval\\s+)(['"])`, "gi");
 const FETCH_AT = new RegExp(`${SEP}${PRE}(${FETCH})`, "gi");
 const EXEC_AT = new RegExp(`${SEP}${PRE}(?:(${INTERP}|source|\\.)(?:\\s+-\\S+)*\\s+)?["']?([^\\s"';&|<>()]+)`, "gi");
-const base = (p) => String(p).replace(/[?#].*$/, "").replace(/\/+$/, "").split("/").pop();
+export const base = (p) => String(p).replace(/[?#].*$/, "").replace(/\/+$/, "").split("/").pop();
 
 // `curl … | python3 -c '…'` / `| node -e '…'`: кодът е в АРГУМЕНТА, stdin е само ДАННИ (JSON/HTML за
 // разбор). FP-пробата върху 9 749 реални команди от транскриптите: 9 от 9 останали блока бяха точно това.
@@ -255,17 +317,179 @@ export function isRemoteExec(cmd, depth = 0) {
   return null;
 }
 
-export function isCatastrophic(cmd) {
-  const s = sanitize(cmd); // `rm<U+200B> -rf /` минаваше — невидимият знак чупеше `\brm\b`
-  if (isCatastrophicRm(s)) return "rm -rf на корен/дом (вкл. разделени флагове)";
-  const remote = isRemoteExec(s);
-  if (remote) return remote;
-  for (const p of CATASTROPHIC) if (p.re.test(s)) return p.why;
+// ── Думи по правилата на обвивката (2026-10-28) ─────────────────────────────────────────────────────
+// Регекс върху суровия ред не различава ДУМА от НИЗ. Хванато от Разбивача при прегледа на чуждото умение
+// webapp-testing (with_server.py подава --server на shell=True): `--server "git push --force origin main"`,
+// `bash -c "…"`, `ssh host "…"` и `g""it push …` минаваха, а `git commit -m "… push --force origin main"`
+// се блокираше. Предишната история на правилата за git push: `-f` (F5b, 2026-07-30), `+main` и `:main`
+// (2026-09-08/09), котва за командна позиция (2026-09-08) — всички остават в gitPushDanger().
+// shellWords() връща простите команди като масиви от думи (кавичките се слепват: g""it = git) и низовете,
+// които обвивката ще изпълни ($(…), `…`, heredoc към обвивка); низовете за изпълнение в argv (sh -c, eval,
+// ssh host, su/flock/script -c, --server/--cmd/--run…, concurrently/parallel/watch) се анализират рекурсивно.
+const SHELL_NAME = /^(?:ba|z|k|da|a|c|tc|fi)?sh$/;
+const HEREDOC_RUNNER = /^(?:(?:ba|z|k|da|a|c|tc|fi)?sh|ssh|eval|source)$/;
+const WRAP_ARG = { sudo: /^-[ugChpU]$/, doas: /^-[uC]$/, env: /^-[uSC]$/, xargs: /^-[InPLdaEs]$/, timeout: /^-[sk]$/, nice: /^-n$/, stdbuf: /^-[ioe]$/ };
+
+/** argv без префиксите, които не сменят командата (VAR=x, sudo, env, timeout 30, xargs -I {} …). */
+export function commandOf(argv) {
+  const a = argv.slice();
+  for (let n = 0; a.length && n < 20; n++) {
+    const w = a[0], name = base(w);
+    if (/^[A-Za-z_]\w*=/.test(w) || /^(?:\{|\}|!|then|do|else|elif|if|while|until|time|nohup|exec|command|builtin)$/.test(w)) { a.shift(); continue; }
+    if (!Object.hasOwn(WRAP_ARG, name)) break;
+    a.shift();
+    while (a.length && (a[0].startsWith("-") || (name === "env" && /^[A-Za-z_]\w*=/.test(a[0])))) if (WRAP_ARG[name].test(a.shift())) a.shift();
+    if (name === "timeout" && a.length) a.shift(); // продължителността
+  }
+  return a;
+}
+
+/** Простите команди (масиви от думи) + низовете, които обвивката ще изпълни. */
+export function shellWords(src) {
+  const s = String(src ?? "");
+  const cmds = [], subs = [], heredocs = [];
+  let argv = [], word = "", inWord = false;
+  const endWord = () => { if (inWord) argv.push(word); word = ""; inWord = false; };
+  const endCmd = () => { endWord(); if (argv.length) cmds.push(argv); argv = []; };
+  const sub = (open) => { const k = closeParen(s, open); subs.push(s.slice(open + 1, k)); return k; };
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (c === "\\") { if (s[i + 1] !== "\n") { word += s[i + 1] ?? ""; inWord = true; } i++; continue; }
+    if (c === "'") { let j = s.indexOf("'", i + 1); if (j < 0) j = s.length; word += s.slice(i + 1, j); inWord = true; i = j; continue; }
+    if (c === '"') {
+      inWord = true;
+      for (i++; i < s.length && s[i] !== '"'; i++) {
+        if (s[i] === "\\" && /["\\$`\n]/.test(s[i + 1] ?? "")) { word += s[++i]; continue; }
+        if (s[i] === "$" && s[i + 1] === "(") { const k = sub(i + 1); word += s.slice(i, k + 1); i = k; continue; }
+        if (s[i] === "`") { let k = s.indexOf("`", i + 1); if (k < 0) k = s.length; subs.push(s.slice(i + 1, k)); i = k; continue; }
+        word += s[i];
+      }
+      continue;
+    }
+    if (c === "$" && s[i + 1] === "(") { const k = sub(i + 1); word += s.slice(i, k + 1); inWord = true; i = k; continue; }
+    if (c === "`") { let k = s.indexOf("`", i + 1); if (k < 0) k = s.length; subs.push(s.slice(i + 1, k)); inWord = true; i = k; continue; }
+    if (c === "#" && !inWord) { const j = s.indexOf("\n", i); i = (j < 0 ? s.length : j) - 1; continue; }
+    if (c === "<" && s[i + 1] === "<" && s[i + 2] !== "<" && s[i - 1] !== "<") { // heredoc (не here-string `<<<` — и от второто `<` нататък; 19.11.2026)
+      const m = /^<<(-?)\s*(['"]?)([\w.-]+)\2/.exec(s.slice(i));
+      if (m) {
+        endWord();
+        const head = commandOf(argv)[0];
+        heredocs.push({ delim: m[3], strip: m[1] === "-", exec: head != null && HEREDOC_RUNNER.test(base(head)) });
+        i += m[0].length - 1; continue;
+      }
+    }
+    if (c === "\n") {
+      endCmd();
+      for (const h of heredocs.splice(0)) { // тялото е данни, освен ако обвивка го чете
+        let p = i + 1, bodyEnd = s.length, end = s.length;
+        while (p < s.length) {
+          let nl = s.indexOf("\n", p); if (nl < 0) nl = s.length;
+          if ((h.strip ? s.slice(p, nl).replace(/^\t+/, "") : s.slice(p, nl)) === h.delim) { bodyEnd = p; end = nl; break; }
+          p = nl + 1;
+        }
+        if (h.exec) subs.push(s.slice(i + 1, bodyEnd));
+        i = end - 1;
+      }
+      continue;
+    }
+    if (/[;&|()]/.test(c)) { endCmd(); continue; }
+    if (/\s/.test(c)) { endWord(); continue; }
+    word += c; inWord = true;
+  }
+  endCmd();
+  return { cmds, subs };
+}
+
+/** `git push` към main/master: force (--force, -f, --force-with-lease), +refspec или изтриване. */
+export function gitPushDanger(argv) {
+  const a = commandOf(argv);
+  if (!a.length || base(a[0]) !== "git") return null;
+  let i = 1;
+  while (i < a.length && a[i].startsWith("-")) i += /^(?:-C|-c|--git-dir|--work-tree|--namespace|--exec-path|--config-env)$/.test(a[i]) ? 2 : 1;
+  if (a[i] !== "push") return null;
+  const pos = [];
+  let force = false, del = false;
+  for (let k = i + 1; k < a.length; k++) {
+    const w = a[k];
+    if (w === "--") { pos.push(...a.slice(k + 1)); break; }
+    if (/^--(?:force|force-with-lease|force-if-includes)(?:=|$)/.test(w)) { force = true; continue; }
+    if (w === "--delete") { del = true; continue; }
+    if (/^(?:-o|--push-option|--repo|--receive-pack|--exec)$/.test(w)) { k++; continue; }
+    if (w.startsWith("--")) continue;
+    if (/^-[a-zA-Z]+$/.test(w)) { if (w.includes("f")) force = true; if (w.includes("d")) del = true; continue; }
+    pos.push(w);
+  }
+  const refs = pos.length > 1 ? pos.slice(1) : pos; // първата позиционна дума е remote-ът
+  const isMain = (r) => /^(?:refs\/heads\/)?(?:main|master)$/.test(r.replace(/^[+:]/, "").split(":").pop());
+  if (refs.some((r) => r.startsWith(":") && isMain(r)) || (del && refs.some(isMain))) return "изтриване на отдалечения main/master (git push :main / --delete)";
+  if (refs.some((r) => r.startsWith("+") && isMain(r))) return "git push с +refspec към main (това е force push без флаг)";
+  if (force && refs.some(isMain)) return "git push --force/-f към main (ползвай --force-with-lease към feature клон)";
   return null;
 }
 
+/** `claude … ultrareview` по argv — пълен път, VAR=, timeout, command, time, env, xargs, then и кавички не го
+ *  скриват (Кодаджията, втори преглед на PR #482: регексът по началото на реда се заобикаляше). Непокрито остава
+ *  alias или shell функция (`c(){ claude "$@"; }; c ultrareview`) — там помага питането за Bash. */
+export const ULTRAREVIEW_WHY = "платен Ultrareview от агент (claude ultrareview) — таксува usage credits и с --post публикува в PR без въпрос; пуска го само собственикът: /code-review ultra <номер> в своя терминал";
+export function claudeUltrareview(argv) {
+  const a = commandOf(argv);
+  if (!a.length || !/^claude(?:\.exe)?$/i.test(base(a[0]))) return null;
+  return a.slice(1).includes("ultrareview") ? ULTRAREVIEW_WHY : null;
+}
+
+const RUN_FLAG = /^--(?:server|cmd|command|exec|execute|run|shell)(?:=([\s\S]*))?$/;
+/** Низовете в argv, които програмата ще подаде на обвивка. */
+export function execStrings(argv) {
+  const a = commandOf(argv), out = [];
+  if (!a.length) return out;
+  const name = base(a[0]);
+  const after = (re) => { const k = a.findIndex((w, j) => j > 0 && re.test(w)); if (k > 0 && a[k + 1] != null) out.push(a[k + 1]); };
+  if (SHELL_NAME.test(name)) after(/^-[a-zA-Z]*c[a-zA-Z]*$/);
+  if (/^(?:su|flock|script)$/.test(name)) after(/^(?:-c|--command)$/);
+  if (name === "eval") out.push(a.slice(1).join(" "));
+  if (name === "ssh") {
+    let k = 1;
+    while (k < a.length && a[k].startsWith("-")) k += /^-[bcDEeFIiJLlmOoPpQRSWw]$/.test(a[k]) ? 2 : 1;
+    if (k + 1 < a.length) out.push(a.slice(k + 1).join(" "));
+  }
+  const r = a.findIndex((w) => /^(?:concurrently|parallel|watch)$/.test(base(w)));
+  if (r >= 0) for (const w of a.slice(r + 1)) if (/\s/.test(w)) out.push(w);
+  a.forEach((w, k) => { const m = RUN_FLAG.exec(w); if (m) { const v = m[1] ?? a[k + 1]; if (v != null) out.push(v); } });
+  return out;
+}
+
+function wordDanger(s, depth) {
+  let parsed;
+  try { parsed = shellWords(s); } catch { return null; }
+  for (const argv of parsed.cmds) {
+    const g = gitPushDanger(argv) || claudeUltrareview(argv);
+    if (g) return g;
+    for (const inner of execStrings(argv)) { const why = isCatastrophic(inner, depth + 1); if (why) return why; }
+  }
+  for (const inner of parsed.subs) { const why = isCatastrophic(inner, depth + 1); if (why) return why; }
+  return null;
+}
+
+// Кръг 2 (Кодаджията): `isRemoteExec` с `curl` + 50 000 пайпа отнема ~30 s, а таймаутът на куката (10 s)
+// пада „отворено“ — значи от ~30 KB нагоре вратата е отворена. Над тавана командата се спира с молба да
+// се раздели; агент няма нужда от 32 KB в една команда (същият таван като guard-exfil).
+export const MAX_COMMAND = 32 * 1024;
+
+export function isCatastrophic(cmd, depth = 0) {
+  if (depth > 3) return null;
+  if (String(cmd || "").length > MAX_COMMAND) return `командата е над ${MAX_COMMAND / 1024} KB — раздели я (дълъг вход прави проверката бавна, а таймаутът я пуска)`;
+  const s = sanitize(cmd); // `rm<U+200B> -rf /` минаваше — невидимият знак чупеше `\brm\b`
+  if (isCatastrophicRm(s)) return "rm -rf на корен/дом (вкл. разделени флагове)";
+  const win = isCatastrophicWin(s) || psDownloadExec(s);
+  if (win) return win;
+  const remote = isRemoteExec(s);
+  if (remote) return remote;
+  for (const p of CATASTROPHIC) if (p.re.test(s)) return p.why;
+  return wordDanger(s, depth);
+}
+
 // CLI (fail-open навсякъде)
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isEntryPoint(import.meta.url)) {
   let buf = "";
   process.stdin.on("data", (d) => (buf += d));
   process.stdin.on("end", () => {

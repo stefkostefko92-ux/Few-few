@@ -1,10 +1,19 @@
 // Bill of materials: cut list (finished and cut sizes, edge banding, grain), edge band metres, board area per
 // stock and decor, hardware grouped for purchase, and the CSV exports of all three.
 import { cutSize, edgeSummary } from './panel.js';
-import { STOCK, decorName } from './materials.js';
-import { axisOf, dimTxt } from './util.js';
+import { STOCK, stockName, decorName } from './materials.js';
+import { axisOf } from './util.js';
+import { translator } from './i18n.js';
 
-const GROUP_ORDER = ['Обков', 'Крепежи', 'Покупни'];
+// the hardware groups in the order of the list, by their names in the model's language
+const GROUP_ORDER = ['g.hardware', 'g.fasteners', 'g.purchased'];
+// Edge band rolls come in these widths, mm (the usual commercial ones); a board takes the narrowest that overhangs it by
+// at least 1,5 mm on each face (our rule). Glue: EVA hot melt; PUR is for wet zones — the model does not know which
+// cabinet stands under the sink (model.js notes it), so every line says EVA.
+const BAND_WIDTHS = [19, 22, 23, 28, 33, 43];
+const BAND_OVERHANG = 1.5;
+const bandWidth = (boardT) => BAND_WIDTHS.find((w) => w >= boardT + 2 * BAND_OVERHANG) ?? Math.ceil(boardT + 2 * BAND_OVERHANG);
+const kg2 = (v) => Math.round(v * 100) / 100;
 
 // A text cell that starts like a formula (= + - @, tab, CR) gets a leading ' so a spreadsheet shows it as
 // text instead of running it; plain numbers such as -12 or -3,5 stay numbers.
@@ -17,14 +26,16 @@ export const csvCell = (v) => {
 };
 // Semicolon CSV with CRLF (opens directly in a Bulgarian-locale Excel / LibreOffice).
 export const toCsv = (rows) => `${rows.map((r) => r.map(csvCell).join(';')).join('\r\n')}\r\n`;
-// Money in the CSV: always two decimals with a decimal comma (0.83 → "0,83"), as on the screen.
-const price2 = (v) => v.toFixed(2).replace('.', ',');
+// Money in the CSV: always two decimals, with the decimal sign of the language (0.83 → "0,83"), as on the screen.
+const price2 = (v, t) => (t.lang === 'en' ? v.toFixed(2) : v.toFixed(2).replace('.', ','));
 
 export function buildBom(model) {
   const { parts, spec } = model;
+  const tr = translator(model.lang);
   const rows = parts.map((p) => {
     const cut = cutSize(p, spec.bandCompensation);
     const e = edgeSummary(p);
+    const stock = STOCK[p.stock];
     return {
       id: p.id,
       key: p.key,
@@ -37,9 +48,11 @@ export function buildBom(model) {
       cutL: cut.L,
       cutW: cut.W,
       stock: p.stock,
-      stockName: STOCK[p.stock].name,
+      stockName: stockName(p.stock, tr),
+      grade: stock.grade,
+      kg: kg2(((cut.L * cut.W * p.T) / 1e9) * stock.density), // the cut board, kg
       decor: p.decor,
-      decorName: decorName(p.decor),
+      decorName: decorName(p.decor, tr),
       grain: Boolean(p.grain),
       edgesL: e.L,
       edgesW: e.W,
@@ -54,8 +67,8 @@ export function buildBom(model) {
     for (const [dir, t] of Object.entries(p.bands)) {
       if (!t) continue;
       const len = axisOf(dir) === axisOf(p.frame.eu) ? p.W : p.L;
-      const k = `${t}|${p.decor}`;
-      const cur = bands.get(k) ?? { thickness: t, decor: p.decor, decorName: decorName(p.decor), metres: 0 };
+      const k = `${t}|${p.decor}|${p.T}`;
+      const cur = bands.get(k) ?? { thickness: t, boardT: p.T, width: bandWidth(p.T), glue: 'EVA', decor: p.decor, decorName: decorName(p.decor, tr), metres: 0 };
       cur.metres += len / 1000;
       bands.set(k, cur);
     }
@@ -64,26 +77,34 @@ export function buildBom(model) {
   const boards = new Map();
   for (const r of rows) {
     const k = `${r.stock}|${r.decor}`;
-    const cur = boards.get(k) ?? { stock: r.stock, stockName: r.stockName, thickness: r.T, decor: r.decor, decorName: r.decorName, parts: 0, area: 0 };
+    const cur = boards.get(k) ?? { stock: r.stock, stockName: r.stockName, grade: r.grade, thickness: r.T, decor: r.decor, decorName: r.decorName, parts: 0, area: 0, kg: 0 };
     cur.parts += 1;
     cur.area += (r.cutL * r.cutW) / 1e6;
+    cur.kg = kg2(cur.kg + r.kg);
     boards.set(k, cur);
   }
-  const hardware = [...model.hardware].sort((a, b) => GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group) || a.name.localeCompare(b.name, 'bg'));
+  const order = GROUP_ORDER.map((k) => tr(k));
+  const hardware = [...model.hardware].sort((a, b) => order.indexOf(a.group) - order.indexOf(b.group) || a.name.localeCompare(b.name, tr.lang));
   const priced = hardware.filter((h) => Number.isFinite(h.price) && h.currency);
   // money is summed in whole cents (never float euros) and turned back into euros once, for display
   const cents = {};
   for (const h of priced) cents[h.currency] = (cents[h.currency] ?? 0) + Math.round(h.price * 100) * h.qty;
   const totals = Object.fromEntries(Object.entries(cents).map(([cur, c]) => [cur, c / 100]));
-  return { rows, bands: [...bands.values()], boards: [...boards.values()], hardware, hardwareTotals: totals, unpriced: hardware.length - priced.length };
+  return { lang: tr.lang, rows, bands: [...bands.values()], boards: [...boards.values()], hardware, hardwareTotals: totals, unpriced: hardware.length - priced.length };
 }
 
+const CUT_HEAD = ['no', 'part', 'module', 'material', 'decor', 'thickness', 'length', 'width', 'cutLength', 'cutWidth', 'qty', 'grain', 'bandL', 'bandW', 'holes', 'grooves', 'edgeHoles', 'kg', 'grade'];
+const HW_HEAD = ['group', 'item', 'brand', 'code', 'qty', 'unit', 'price', 'currency', 'shop', 'link'];
+
 export function cutListCsv(bom) {
-  const head = ['№', 'Детайл', 'Модул', 'Материал', 'Декор', 'Дебелина', 'Дължина', 'Ширина', 'Дължина за разкрой', 'Ширина за разкрой', 'Бр.', 'Шарка по дължината', 'Кант по дължината', 'Кант по ширината', 'Отвори', 'Канали', 'Хоризонтални отвори'];
-  return toCsv([head, ...bom.rows.map((r) => [r.id, r.name, r.module, r.stockName, r.decorName, r.T, dimTxt(r.L), dimTxt(r.W), dimTxt(r.cutL), dimTxt(r.cutW), r.qty, r.grain ? 'да' : 'не', r.edgesL.map(dimTxt).join('+'), r.edgesW.map(dimTxt).join('+'), r.holes, r.grooves, r.edgeHoles])]);
+  const t = translator(bom.lang);
+  const head = CUT_HEAD.map((k) => t(`csv.cut.${k}`));
+  const kg = (v) => (t.lang === 'en' ? v.toFixed(2) : v.toFixed(2).replace('.', ','));
+  return toCsv([head, ...bom.rows.map((r) => [r.id, r.name, r.module, r.stockName, r.decorName, r.T, t.num(r.L), t.num(r.W), t.num(r.cutL), t.num(r.cutW), r.qty, r.grain ? t('yes') : t('no'), r.edgesL.map(t.num).join('+'), r.edgesW.map(t.num).join('+'), r.holes, r.grooves, r.edgeHoles, kg(r.kg), r.grade])]);
 }
 
 export function hardwareCsv(bom) {
-  const head = ['Група', 'Артикул', 'Марка', 'Код', 'Бр.', 'Мярка', 'Ед. цена', 'Валута', 'Магазин', 'Линк'];
-  return toCsv([head, ...bom.hardware.map((h) => [h.group, h.name, h.brand ?? '', h.sku ?? '', h.qty, h.unit, Number.isFinite(h.price) ? price2(h.price) : '', h.currency ?? '', h.shop ?? '', h.url ?? ''])]);
+  const t = translator(bom.lang);
+  const head = HW_HEAD.map((k) => t(`csv.hw.${k}`));
+  return toCsv([head, ...bom.hardware.map((h) => [h.group, h.name, h.brand ?? '', h.sku ?? '', h.qty, h.unit, Number.isFinite(h.price) ? price2(h.price, t) : '', h.currency ?? '', h.shop ?? '', h.url ?? ''])]);
 }

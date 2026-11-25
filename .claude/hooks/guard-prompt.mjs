@@ -16,6 +16,7 @@
 // описва състояние, което не съществува. Сега импортира и се пази от същия тест.
 
 import { readFileSync } from "node:fs";
+import { isMain } from "../../tools/lib/is-main.mjs";
 import { SECRET_RE, sanitize } from "./guard-secrets.mjs"; // единствен източник + санитизация
 
 // [name, re] кортежи (запазен формат за консуматорите) — от CREDENTIAL, никога преписани.
@@ -41,4 +42,4 @@ function main() {
   process.exit(2);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) { try { main(); } catch { process.exit(0); } }
+if (isMain(import.meta.url)) { try { main(); } catch { process.exit(0); } }
