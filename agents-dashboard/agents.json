@@ -13633,7 +13633,7 @@
           "discord.py docs — алтернативен Python стек",
           "Discord Developer Policy & ToS — verification, привилегировани intents, данни"
         ],
-        "lessons": 222
+        "lessons": 223
       },
       "evolution": [
         {
@@ -13971,9 +13971,20 @@
           "date": "2026-11-23",
           "event": "v21.9 — учене",
           "detail": "Научи: Prisma-мок тестове с vi.resetAllMocks нулират и mockResolvedValue на модулни мокове (dn… (+7 още)"
+        },
+        {
+          "version": "22.0.0",
+          "date": "2026-11-25",
+          "event": "v22.0 — учене",
+          "detail": "Научи: PR #346 (Hetzner → netcup) е чисто текстов; i18n ключът privacy.sub.hetzner е преименув…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „PR #346 (Hetzner → netcup) е чисто текстов; i18n ключът privacy.sub.hetzner е преименув…\""
+        },
         {
           "date": "2026-11-23",
           "type": "learning",

@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-11-25:** PR #346 (Hetzner → netcup) е чисто текстов; i18n ключът privacy.sub.hetzner е преименуван във всичките 8 dashboard локала и се ползва само от PrivacySettingsPage.jsx, така че няма риск от липсващ превод. _(преглед на PR-и, които преименуват i18n ключове или подпроцесори в SupremeDiscordBot; verified; Grep "privacy.sub\." в SupremeDiscordBot/frontend/src → 8 локала + PrivacySettingsPage.jsx:116)_
 
 - **2026-11-12:** Prisma-мок тестове с vi.resetAllMocks нулират и mockResolvedValue на модулни мокове (dns, grantXpOnce, pushPollUpdate), затова се пренастройват в beforeEach, иначе .catch върху undefined дава фалшив 500 _(backend vitest с vi.mock и resetAllMocks в SupremeDiscordBot; verified; SupremeDiscordBot/backend/src/__tests__/launchAutomation.test.js и launchWebhooks.test.js (beforeEach))_
 - **2026-11-12:** Audit log събитието MemberDisconnect (и MemberMove) не носи target потребител (само count), затова атрибуция на изключен от модератор по target не може да се провери; discord.js го отбелязва в коментар. _(логване на гласови изключвания от модератор във всеки Discord бот; verified; SupremeDiscordBot/bot/node_modules/discord.js/src/structures/GuildAuditLogsEntry.js:221-226,303 + https://docs.discord.com/developers/resources/audit-log (само count за MEMBER_DISCONNECT))_
