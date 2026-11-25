@@ -829,7 +829,8 @@ async function doSyncScriptlets(on) {
 async function scriptletPlan() {
   const { allowlist = [], features = {}, ytBypassUntil = 0, mode, siteModes } = await chrome.storage.local.get(["allowlist", "features", "ytBypassUntil", "mode", "siteModes"]);
   const ytBypass = ytBypassUntil > Date.now();
-  // 6.0: a site in Basic gets none of our MAIN-world scripts either, exactly like an allowed one
+  // 6.0: a site in Basic gets none of our MAIN-world scripts either, exactly like an allowed one —
+  // except YouTube and Twitch, which keep their own switch on every level (6.1.1; the popup says so)
   const basicMode = SA_MODES.normMode(mode) === "basic";
   const hostPatterns = (list) => {
     const out = [];
@@ -900,22 +901,24 @@ async function scriptletPlan() {
       ...(excludeMatches.length ? { excludeMatches } : {}),
     });
   }
+  // YouTube and Twitch: off only for an allowed site (and YouTube for the bypass), never for a Basic level —
+  // 6.0 left youtube.com set to Basic with no YouTube protection at all, against the promise in the popup.
   if (features.youtube !== false && !ytBypass) {
     all.push({
       id: YT_MAIN_SCRIPT_ID, matches: YT_PATTERNS, js: ["youtube_main.js"], runAt: "document_start",
       allFrames: true, world: "MAIN", persistAcrossSessions: true,
-      ...(excludeMatches.length ? { excludeMatches } : {}),
+      ...(allowPatterns.length ? { excludeMatches: allowPatterns } : {}),
     }, {
       id: YT_CSS_ID, matches: YT_PATTERNS, css: ["youtube_ads.css"], runAt: "document_start",
       allFrames: true, persistAcrossSessions: true,
-      ...(excludeMatches.length ? { excludeMatches } : {}),
+      ...(allowPatterns.length ? { excludeMatches: allowPatterns } : {}),
     });
   }
   if (features.twitch !== false) {
     all.push({
       id: TW_MAIN_SCRIPT_ID, matches: TW_PATTERNS, js: ["twitch_main.js"], runAt: "document_start",
       allFrames: true, world: "MAIN", persistAcrossSessions: true,
-      ...(excludeMatches.length ? { excludeMatches } : {}),
+      ...(allowPatterns.length ? { excludeMatches: allowPatterns } : {}),
     });
   }
   return all;
