@@ -2563,27 +2563,37 @@ fi
 release_mount_sources() {
   command -v docker >/dev/null 2>&1 || return 0
   local ids
-  ids="$(docker ps -aq 2>/dev/null)" || return 1
+  # timeout: увиснал демон не бива да задържа деплоя завинаги (провал → fail closed, нищо не се трие).
+  ids="$(timeout 20 docker ps -aq 2>/dev/null)" || return 1
   [ -n "$ids" ] || return 0
   # shellcheck disable=SC2086
-  docker inspect --format '{{range .Mounts}}{{.Source}}{{"\n"}}{{end}}' $ids 2>/dev/null || return 1
+  timeout 30 docker inspect --format '{{range .Mounts}}{{.Source}}{{"\n"}}{{end}}' $ids 2>/dev/null || return 1
 }
 
 # Преди триене: .env, който живее САМО в този release (няма го в shared и в никой друг release), се
 # спасява в $SHARED_DIR/<продукт>/.env (600). На 11.10.2026 единственото копие на zabobovdol/.env
 # беше в изтрития release — спаси ни само това, че стойностите още живееха в контейнерите.
 # Никога не презаписва съществуващ shared файл. prune обхожда от най-стария към най-новия, затова
-# спасеното е най-новото копие, а не някое застаряло.
+# спасеното е най-новото копие, а не някое застаряло. Обхват: <release>/<обвивка>/<продукт>/.env —
+# плосък release (без обвивка) и вложени .env (напр. SupremeDiscordBot/backend) не се виждат;
+# Supreme има свой стабилен дом (SUPREME_ENV_DIR).
 rescue_release_env() {
-  local old="${1%/}" envf proj shared other
+  # rc трупа провалите: статусът на while е само този на последната итерация, а провал в средна
+  # итерация (ENOSPC при пълен диск) иначе се губеше и release-ът се триеше с единственото копие.
+  local old="${1%/}" envf proj shared other rc=0
   while IFS= read -r envf; do
     proj="$(basename "$(dirname "$envf")")"
     shared="$SHARED_DIR/$proj/.env"
     [ -f "$shared" ] && continue
     other="$(find "$RELEASES_DIR" -mindepth 4 -maxdepth 4 -path "*/$proj/.env" -type f ! -path "$old/*" -print -quit 2>/dev/null || true)"
     [ -n "$other" ] && continue
-    install -D -m 600 "$envf" "$shared" && warn "Спасих $proj/.env от изтриван release → $shared"
+    if install -D -m 600 "$envf" "$shared"; then
+      warn "Спасих $proj/.env от изтриван release → $shared"
+    else
+      warn "НЕ успях да спася $proj/.env от $old"; rc=1
+    fi
   done < <(find "$old" -mindepth 3 -maxdepth 3 -path '*/*/.env' -type f 2>/dev/null)
+  return "$rc"
 }
 
 prune_releases() {
@@ -2624,7 +2634,7 @@ prune_releases() {
         && log "Пазя $(basename "${old%/}") — контейнер монтира файлове от него."
       continue
     fi
-    rescue_release_env "$old"
+    rescue_release_env "$old" || { warn "Пазя $(basename "${old%/}") — .env не е спасен"; continue; }
     rm -rf "$old"
   done < <(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | tail -n +$((KEEP_RELEASES + 1)) | tac)
 }

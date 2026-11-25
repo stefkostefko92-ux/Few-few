@@ -122,3 +122,26 @@ test(".env НЕ се презаписва, ако shared вече го има; �
     assert.ok(!existsSync(join(L.shared, "eternaltouch", ".env")), "запазеният release още го има — carry_env ще го намери");
   } finally { rmSync(L.base, { recursive: true, force: true }); }
 });
+
+// Преглед на PR #305 (Кодаджията + VPS-аджията, 25.11.2026): провал на `install` в средна итерация
+// се губеше (статусът на while е последната итерация) и rm -rf триеше единственото копие на .env.
+// Пълен диск (ENOSPC) е точно мигът, в който prune е нужен — тогава спасяването пада.
+test("СПАСЯВАНЕТО ПАДНЕ → release-ът НЕ се трие, скриптът не умира, другият .env пак е спасен", () => {
+  const L = layout();
+  try {
+    dockerStub(L, { mounts: [] });
+    for (const p of ["zabobovdol", "linketto"]) {
+      mkdirSync(join(L.rel[0], "few-few", p), { recursive: true });
+      writeFileSync(join(L.rel[0], "few-few", p, ".env"), `${p.toUpperCase()}=1\n`);
+    }
+    // install пада само за zabobovdol (пълен диск при първото копие); за другите работи истинският.
+    const real = execFileSync("bash", ["-c", "command -v install"], { encoding: "utf8" }).trim();
+    writeFileSync(join(L.bin, "install"), `#!/bin/sh\ncase "$*" in *zabobovdol*) exit 1 ;; esac\nexec ${real} "$@"\n`, { mode: 0o755 });
+    const log = run(L); // хвърля, ако set -e убие скрипта
+    assert.ok(existsSync(join(L.rel[0], "few-few", "zabobovdol", ".env")), "единственото копие остава");
+    assert.match(log, /НЕ успях да спася zabobovdol\/\.env/);
+    assert.match(log, /Пазя 20260918-130341 — \.env не е спасен/);
+    assert.equal(readFileSync(join(L.shared, "linketto", ".env"), "utf8"), "LINKETTO=1\n", "успешното спасяване не чака провала");
+    assert.ok(!existsSync(L.rel[1]), "останалите стари releases се чистят нормално");
+  } finally { rmSync(L.base, { recursive: true, force: true }); }
+});
