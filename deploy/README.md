@@ -208,6 +208,10 @@ ZIP отпреди месец.
   `…/fakturist/ledger-seal-key.sha256` и друг ключ спира деплоя преди build-а. Откатът е към
   `FAKTURIST_LAST_GOOD` с `FAKTURIST_SKIP_BACKUP=1`; при провалена миграция (`P3009`/`P3018`) — човек.
   Мастър акаунтът — веднъж с `fakturist/deploy/create-owner.sh` (паролата през stdin).
+  **IndexNow** — само след зелен деплой (`fakturist_indexnow` в `autodeploy.sh`, 25.11.2026): ключът от
+  `fakturist/public/indexnow-key.txt` (приложението го сервира на `/<ключ>.txt`), адресите от живия
+  `sitemap.xml`; `FAKTURIST_DOMAIN` сменя сайта, `FAKTURIST_INDEXNOW=0` го спира; провалът не е фатален.
+  Google не участва — там sitemap и Search Console.
 
   **Бекъпи на fakturist** (само PostgreSQL — медия няма; моделът на `rilievi/deploy/backup.sh`):
   - Преди всяка миграция: `…/fakturist/backups/pre-deploy-*.sql.gz` (последните 5).
