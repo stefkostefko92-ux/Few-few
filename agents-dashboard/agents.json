@@ -7102,7 +7102,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 308
+        "lessons": 309
       },
       "evolution": [
         {
@@ -7542,9 +7542,20 @@
           "date": "2026-11-25",
           "event": "v28.2 — учене",
           "detail": "Научи: Чистенето на releases от vpsdash (POST /api/reclaim/run) пресмята списъка на сървъра не…"
+        },
+        {
+          "version": "28.3.0",
+          "date": "2026-11-25",
+          "event": "v28.3 — учене",
+          "detail": "Научи: Compose пише етикета com.docker.compose.project.working_dir на всеки контейнер, включит…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „Compose пише етикета com.docker.compose.project.working_dir на всеки контейнер, включит…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
