@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-11-25:** fakturist/deploy/deploy.sh връща код 0 и когато няма TLS сертификат за домейна (sync_nginx само предупреждава и връща 0), затова всяко действие след деплоя, вързано на код 0, тръгва и докато сайтът още не е публичен _(преглед на стъпки в deploy_fakturist, които разчитат на публичния домейн (IndexNow, външни проверки); verified; fakturist/deploy/deploy.sh:235-238 (sync_nginx, return 0 при липсващ fullchain.pem))_
 - **2026-11-25:** Нощният бекъп на vpsdash открива Postgres контейнерите по образ (ancestor=postgres или име на образ с postgres/pgvector) и дъмпва всяка база с POSTGRES_USER от контейнера, затова нов Compose продукт с postgres образ влиза в нощния дъмп без собствен таймер, но само ако графикът на панела е включен и копието остава на същия диск _(преглед на нов Docker Compose продукт с Postgres без собствен backup timer; verified; vpsdash/src/backups.js:63-75 (docker ps филтър + pg_dump цикъл))_
 
 - **2026-11-22:** GNU sed -i без --follow-symlinks подменя симлинка с обикновен файл, затова редакция на .env, който е симлинк към общ файл, иска sed -i --follow-symlinks _(деплой скриптове, които редактират симлинкнати файлове с тайни; verified; ln -s shared/f rel/f; sed -i '/^B=/d' rel/f → LINK-REPLACED; със sed -i --follow-symlinks → still-link, mode 600 запазен)_
