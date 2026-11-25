@@ -653,39 +653,17 @@
           "detail": "Научи: AI Act чл. 50(4) задължава внедрителя да разкрие само deep fake (чл. 3(60) — наподобява… (+17 още)"
         },
         {
-          "version": "46.5.0",
-          "date": "2026-11-25",
-          "event": "v46.5 — учене",
-          "detail": "Научи: При надгробие (soft-delete, което зачиства полета вместо да трие реда) колоните, добаве…"
-        },
-        {
-          "version": "46.6.0",
-          "date": "2026-11-25",
-          "event": "v46.6 — учене",
-          "detail": "Научи: Правните страници на brevo.com (/legal/termsofuse/, /gdpr/) се рендират с JS и WebFetch…"
-        },
-        {
           "version": "46.7.0",
           "date": "2026-11-25",
           "event": "v46.7 — учене",
-          "detail": "Научи: При транзакционни писма през Brevo полето contactPixelTrackingConsent=false само аноним…"
+          "detail": "Научи: При транзакционни писма през Brevo полето contactPixelTrackingConsent=false само аноним… (+2 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „При транзакционни писма през Brevo полето contactPixelTrackingConsent=false само аноним…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „Правните страници на brevo.com (/legal/termsofuse/, /gdpr/) се рендират с JS и WebFetch…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „При надгробие (soft-delete, което зачиства полета вместо да трие реда) колоните, добаве…\" · 1 в карантина"
+          "summary": "Научи: „При транзакционни писма през Brevo полето contactPixelTrackingConsent=false само аноним…\" (+2 още) · 1 в карантина"
         },
         {
           "date": "2026-11-24",
@@ -2151,39 +2129,17 @@
           "detail": "Научи: guard-self блокира Bash `node -e`, чийто код внася модул под .claude/ (дори само за чет… (+7 още)"
         },
         {
-          "version": "73.3.0",
-          "date": "2026-11-25",
-          "event": "v73.3 — учене",
-          "detail": "Научи: В live-run worktree vizitka/node_modules липсва, затова гейтовете на vizitka не могат д… (+46 още)"
-        },
-        {
-          "version": "74.0.0",
-          "date": "2026-11-25",
-          "event": "v74.0 — учене",
-          "detail": "Научи: FiveM docker-compose подава целия .env с env_file на трите услуги, затова при смяна на … (+6 още)"
-        },
-        {
           "version": "74.1.0",
           "date": "2026-11-25",
           "event": "v74.1 — учене",
-          "detail": "Научи: Под set -e присвояване var=\"$(cmd)\" прекратява скрипта, ако cmd върне ненулев код, зато…"
+          "detail": "Научи: Под set -e присвояване var=\"$(cmd)\" прекратява скрипта, ако cmd върне ненулев код, зато… (+54 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „Под set -e присвояване var=\"$(cmd)\" прекратява скрипта, ако cmd върне ненулев код, зато…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „FiveM docker-compose подава целия .env с env_file на трите услуги, затова при смяна на …\" (+6 още)"
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „В live-run worktree vizitka/node_modules липсва, затова гейтовете на vizitka не могат д…\" (+46 още) · 7 в карантина"
+          "summary": "Научи: „Под set -e присвояване var=\"$(cmd)\" прекратява скрипта, ако cmd върне ненулев код, зато…\" (+54 още) · 7 в карантина"
         },
         {
           "date": "2026-11-24",
@@ -4529,28 +4485,17 @@
           "detail": "Научи: Search Quality Rater Guidelines (версия 11.09.2025) казват, че Trust е най-важният елем… (+7 още)"
         },
         {
-          "version": "25.7.0",
-          "date": "2026-11-25",
-          "event": "v25.7 — учене",
-          "detail": "Научи: Във vizitka organizationNode носи legalName (латиница, както във вписването) и alternat… (+6 още)"
-        },
-        {
           "version": "25.8.0",
           "date": "2026-11-25",
           "event": "v25.8 — учене",
-          "detail": "Научи: PR само с текст в deploy/DEPLOY.md и коментари в началото на nginx vhost (без промяна в…"
+          "detail": "Научи: PR само с текст в deploy/DEPLOY.md и коментари в началото на nginx vhost (без промяна в… (+7 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „PR само с текст в deploy/DEPLOY.md и коментари в началото на nginx vhost (без промяна в…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „Във vizitka organizationNode носи legalName (латиница, както във вписването) и alternat…\" (+6 още)"
+          "summary": "Научи: „PR само с текст в deploy/DEPLOY.md и коментари в началото на nginx vhost (без промяна в…\" (+7 още)"
         },
         {
           "date": "2026-11-24",
@@ -7547,50 +7492,17 @@
           "detail": "Научи: GNU sed -i без --follow-symlinks подменя симлинка с обикновен файл, затова редакция на … (+27 още)"
         },
         {
-          "version": "27.9.0",
-          "date": "2026-11-25",
-          "event": "v27.9 — учене",
-          "detail": "Научи: Защита на release по монтирани от Docker папки не пази release-а, от който идва само en… (+5 още)"
-        },
-        {
-          "version": "28.5.0",
-          "date": "2026-11-25",
-          "event": "v28.5 — учене",
-          "detail": "Научи: deploy_fivem пише FiveM/.env само ако файлът липсва (пръв деплой), затова преименуван к… (+5 още)"
-        },
-        {
-          "version": "28.6.0",
-          "date": "2026-11-25",
-          "event": "v28.6 — учене",
-          "detail": "Научи: В работното дърво за преглед на PR (/tmp/live-run-*) продуктовите папки може да не са и…"
-        },
-        {
           "version": "28.7.0",
           "date": "2026-11-25",
           "event": "v28.7 — учене",
-          "detail": "Научи: FiveM няма автоматичен откат — scripts/deploy.sh няма откат и last-good, а откатът е ръ…"
+          "detail": "Научи: FiveM няма автоматичен откат — scripts/deploy.sh няма откат и last-good, а откатът е ръ… (+13 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „FiveM няма автоматичен откат — scripts/deploy.sh няма откат и last-good, а откатът е ръ…\" · 1 в карантина"
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „В работното дърво за преглед на PR (/tmp/live-run-*) продуктовите папки може да не са и…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „deploy_fivem пише FiveM/.env само ако файлът липсва (пръв деплой), затова преименуван к…\" (+5 още)"
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „Защита на release по монтирани от Docker папки не пази release-а, от който идва само en…\" (+5 още) · 2 в карантина"
+          "summary": "Научи: „FiveM няма автоматичен откат — scripts/deploy.sh няма откат и last-good, а откатът е ръ…\" (+13 още) · 3 в карантина"
         },
         {
           "date": "2026-11-23",
@@ -14814,28 +14726,17 @@
           "detail": "Научи: Към 2026-11-24 в Latest models на Anthropic стоят Fable 5.2 (claude-fable-5-2, $8/$40, … (+3 още)"
         },
         {
-          "version": "37.1.0",
-          "date": "2026-11-25",
-          "event": "v37.1 — учене",
-          "detail": "Научи: GENERIC_RULE в secret-scan хваща само стойност в кавички с поне 12 знака след secret/pa… (+11 още)"
-        },
-        {
           "version": "37.4.0",
           "date": "2026-11-25",
           "event": "v37.4 — учене",
-          "detail": "Научи: Сензорът undefined-function в tools/vps/deploy-check.mjs (част от gate.mjs) пропуска са… (+2 още)"
+          "detail": "Научи: Сензорът undefined-function в tools/vps/deploy-check.mjs (част от gate.mjs) пропуска са… (+14 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „Сензорът undefined-function в tools/vps/deploy-check.mjs (част от gate.mjs) пропуска са…\" (+2 още)"
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „GENERIC_RULE в secret-scan хваща само стойност в кавички с поне 12 знака след secret/pa…\" (+11 още)"
+          "summary": "Научи: „Сензорът undefined-function в tools/vps/deploy-check.mjs (част от gate.mjs) пропуска са…\" (+14 още)"
         },
         {
           "date": "2026-11-24",
